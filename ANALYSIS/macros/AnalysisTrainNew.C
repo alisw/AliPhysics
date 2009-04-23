@@ -22,20 +22,22 @@ const char *proof_dataset = "/COMMON/COMMON/LHC09a4_run8100X#/esdTree";
 // === ALIEN
 const char *dataset   = "";
 const char *alien_datadir = "/alice/sim/PDC_09/LHC09a4/";
-Int_t run_numbers[10] = {81071,     0,     0,     0,     0,
+Int_t run_numbers[10] = {81072,     0,     0,     0,     0,
                              0,     0,     0,     0,     0};
 
 Bool_t useDBG        = kTRUE;
-Bool_t useMC         = kFALSE;
-Bool_t usePAR        = kTRUE;
+Bool_t useMC         = kTRUE;
+Bool_t useTAGS       = kFALSE;
+Bool_t useKFILTER    = kTRUE;
+Bool_t usePAR        = kFALSE;
 Bool_t useTR         = kFALSE;
 Bool_t usePLUGIN     = kTRUE;
 Bool_t useCORRFW     = kFALSE; // do not change
+Bool_t useAODTAGS    = kTRUE;
     
 Int_t iAODanalysis   = 0;
 Int_t iAODhandler    = 1;
 Int_t iESDfilter     = 1;
-Int_t iMUONfilter    = 0;
 Int_t iMUONcopyAOD   = 0;
 Int_t iJETAN         = 1;
 Int_t iPWG4partcorr  = 1;
@@ -67,7 +69,6 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    if (iAODanalysis) printf("=  AOD analysis                                                  =\n");
    else              printf("=  ESD analysis                                                  =\n");
    if (iESDfilter)   printf("=  ESD filter                                                    =\n");
-   if (iMUONfilter)  printf("=  MUON filter                                                   =\n");
    if (iMUONcopyAOD) printf("=  MUON copy AOD                                                 =\n");
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
    if (iPWG2spectra) printf("=  PWG2 proton, checkCascade, checkV0, strange                   =\n");
@@ -79,7 +80,10 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    if (iPWG4pi0)     printf("=  PWG4 pi0 analysis                                             =\n");
    printf("==================================================================\n");
    printf(":: use MC truth      %d\n", (UInt_t)useMC);
+   printf(":: use KINE filter   %d\n", (UInt_t)useKFILTER);
    printf(":: use track refs    %d\n", (UInt_t)useTR);
+   printf(":: use tags          %d\n", (UInt_t)useTAGS);
+   printf(":: use AOD tags      %d\n", (UInt_t)useAODTAGS);
    printf(":: use debugging     %d\n", (UInt_t)useDBG);
    printf(":: use PAR files     %d\n", (UInt_t)usePAR);
    printf(":: use AliEn plugin  %d\n", (UInt_t)usePLUGIN);
@@ -115,6 +119,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    } else {   
    // ESD input handler
       AliESDInputHandler *esdHandler = new AliESDInputHandler();
+      if (useTAGS) esdHandler->SetReadTags();
       mgr->SetInputEventHandler(esdHandler);       
    }
    // Monte Carlo handler
@@ -150,16 +155,17 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    if (iESDfilter && !iAODanalysis) {
       //  ESD filter task configuration.
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
-      AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter();
+      AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER);
    }   
 
-   // Muon filter
-   if (iMUONfilter && !iAODanalysis) {
-      // There is no configuration from outside for this task yet.
-      AliAnalysisTaskESDMuonFilter *taskesdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
-      mgr->AddTask(taskesdmuonfilter);
-      // Connect to data containers
-      mgr->ConnectInput  (taskesdmuonfilter,  0, mgr->GetCommonInputContainer());
+   // AOD tags
+   if (useAODTAGS) {
+      AliAnalysisTaskTagCreator* tagTask = new AliAnalysisTaskTagCreator("AOD Tag Creator");
+      mgr->AddTask(tagTask);
+      AliAnalysisDataContainer *coutTags = mgr->CreateContainer("cTag",  TTree::Class(), 
+                                           AliAnalysisManager::kOutputContainer, "AOD.tag.root");
+      mgr->ConnectInput (tagTask, 0, mgr->GetCommonInputContainer());
+      mgr->ConnectOutput(tagTask, 1, coutTags);
    }   
     
     // Jet analysis
@@ -186,14 +192,14 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    
    // PWG4 hadron correlations
    if (iPWG4partcorr) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskGammaHadronCorr.C");
-      AliAnalysisTaskParticleCorrelation *taskgammahadron = AddTaskGammaHadronCorr();  
+      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
+      AliAnalysisTaskParticleCorrelation *taskgammahadron = AddTaskPartCorr("GammaHadron", "AOD", "PHOS");
    }   
        
    // PWG4 pi0
    if (iPWG4pi0) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPi0.C");
-      AliAnalysisTaskParticleCorrelation *taskpi0 = AddTaskPi0();  
+      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
+      AliAnalysisTaskParticleCorrelation *taskpi0 = AddTaskPartCorr("Pi0", "AOD", "PHOS");
    }   
     
    //==========================================================================
@@ -262,20 +268,21 @@ void CheckModuleFlags(const char *mode) {
       useMC = kFALSE;
       useTR = kFALSE;
       iESDfilter   = 0;
-      iMUONfilter  = 0;
       // Disable tasks that do not work yet on AOD data
    } else {   
    // ESD analysis
       iMUONcopyAOD = 0;
       iPWG3vertexing = 0;
    }       
-   if (iMUONfilter || iJETAN) iESDfilter=1;
+   if (iJETAN) iESDfilter=1;
    if (iESDfilter) iAODhandler=1;
    if (iAODanalysis || !iAODhandler) {
       iPWG4partcorr=0;
       iPWG4pi0=0;
    }   
    if (iPWG2spectra || iPWG2flow) useCORRFW = kTRUE;
+   if (useKFILTER && !useMC) useKFILTER = kFALSE;
+   if (useAODTAGS && !iAODhandler) useAODTAGS = kFALSE;
 }
 
 //______________________________________________________________________________
@@ -398,7 +405,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 {
 // Load common analysis libraries.
    Bool_t success = kTRUE;
-   if (iMUONfilter) {
+   if (iESDfilter) {
       if (!LoadLibrary("PWG3base", mode, kTRUE) ||
           !LoadLibrary("PWG3muon", mode, kTRUE)) return kFALSE;
    }   
@@ -530,9 +537,9 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
             if (!strlen(dataset)) {
                // Local ESD
                chain = new TChain("esdTree");
-               if (gSystem->AccessPathName("AliESDs.root")) 
+               if (gSystem->AccessPathName("data/AliESDs.root")) 
                   ::Error("CreateChain", "File: AliESDs.root not in current dir");
-               else chain->Add("AliESDs.root");
+               else chain->Add("data/AliESDs.root");
             } else {
                // Interactive ESD
                chain = CreateChainSingle(dataset, "esdTree");
