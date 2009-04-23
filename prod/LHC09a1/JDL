@@ -1,0 +1,38 @@
+Executable = "aliroot_new";
+
+Jobtag={"comment:pp, jet-jet events 15 < pt hard < 50 GeV, ID #76"};
+
+# sequence is really essential here!! 
+Packages={"VO_ALICE@AliRoot::v4-16-Rev-09","VO_ALICE@GEANT3::v1-9-8","VO_ALICE@ROOT::v5-23-02","VO_ALICE@APISCONFIG::V2.4"};
+TTL = "72000";
+PRICE = 1;
+
+ValidationCommand="/alice/cern.ch/user/a/aliprod/LHC09a1/validation.sh";
+
+InputFile= {"LF:/alice/cern.ch/user/a/aliprod/LHC09a1/Config.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a1/simrun.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a1/sim.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a1/rec.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a1/rec2.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a1/tag.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a1/ConfigJetAnalysis.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a1/ConfigJetAnalysisMC.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a1/runAODFilterJets.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a1/CheckESD.C"};
+
+OutputArchive={"log_archive:stdout,stderr,*.log@ALICE::Grenoble::DPM","root_archive.zip:galice.root,geometry.root,Kinematics.root,TrackRefs.root,AliESDs*.root,AliESDfriends*.root,AliAOD*.root,*tag.root,*QA*.root,pyxsec.root@ALICE::FZK::SE,ALICE::Torino::DPM,ALICE::IPNO::DPM"};
+
+OutputFile={"Run*.root@ALICE::FZK::SE,ALICE::Torino::DPM,ALICE::IPNO::DPM"};
+
+OutputDir="/alice/sim/PDC_08b/LHC09a1/$1/#alien_counter_03i#";
+
+JDLVariables={"Packages", "OutputDir"};
+GUIDFILE="guid.txt";
+
+
+# pthardbin 0: 15- 50 1: 50-100 2: 100 - inf defined in simrun.C
+# change for diferent procution cycles!!
+splitarguments="simrun.C --run $1 --event 150 --aliencounter #alien_counter# --process kPyJetJet --pthardbin 0  --quench 0 --qhat 0" ;
+split="production:1-1000";
+
+Workdirectorysize={"4000MB"};
