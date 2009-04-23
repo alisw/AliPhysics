@@ -249,8 +249,10 @@ Bool_t AliITStrackV2::Update(const AliCluster* c, Double_t chi2, Int_t index)
   if (chi2<0) return kTRUE;
 
   // fill residuals for ITS+TPC tracks 
-  if (fESDtrack->GetStatus()&AliESDtrack::kTPCin) {
-    AliTracker::FillResiduals(this,p,cov,c->GetVolumeId());
+  if (fESDtrack) {
+    if (fESDtrack->GetStatus()&AliESDtrack::kTPCin) {
+      AliTracker::FillResiduals(this,p,cov,c->GetVolumeId());
+    }
   }
 
   fIndex[n]=index;
