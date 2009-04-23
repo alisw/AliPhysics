@@ -7,6 +7,7 @@ AliVZEROCalibData.cxx
 AliVZEROPreprocessor.cxx
 AliVZERODataDCS.cxx
 AliVZEROQAChecker.cxx
+AliVZEROMisAligner.cxx
 )
 
 # fill list of header files from list of source files
