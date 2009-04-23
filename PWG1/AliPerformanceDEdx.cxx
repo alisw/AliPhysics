@@ -1,0 +1,447 @@
+//------------------------------------------------------------------------------
+// Implementation of AliPerformanceDEdx class. It keeps information from 
+// comparison of reconstructed and MC particle tracks. In addtion, 
+// it keeps selection cuts used during comparison. The comparison 
+// information is stored in the ROOT histograms. Analysis of these 
+// histograms can be done by using Analyse() class function. The result of 
+// the analysis (histograms/graphs) are stored in the folder which is 
+// a data of AliPerformanceDEdx.
+//  
+// Author: J.Otwinowski 04/02/2008 
+//------------------------------------------------------------------------------
+
+/*
+ 
+  // after running comparison task, read the file, and get component
+  gROOT->LoadMacro("$ALICE_ROOT/PWG1/Macros/LoadMyLibs.C");
+  LoadMyLibs();
+  TFile f("Output.root");
+  //AliPerformanceDEdx * compObj = (AliPerformanceDEdx*)f.Get("AliPerformanceDEdx");
+  AliPerformanceDEdx * compObj = (AliPerformanceDEdx*)coutput->FindObject("AliPerformanceDEdx");
+
+  // Analyse comparison data
+  compObj->Analyse();
+
+  // the output histograms/graphs will be stored in the folder "folderDEdx" 
+  compObj->GetAnalysisFolder()->ls("*");
+
+  // user can save whole comparison object (or only folder with anlysed histograms) 
+  // in the seperate output file (e.g.)
+  TFile fout("Analysed_DEdx.root"."recreate");
+  compObj->Write(); // compObj->GetAnalysisFolder()->Write();
+  fout.Close();
+
+*/
+
+#include <TDirectory.h>
+#include <TAxis.h>
+#include <TCanvas.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TF1.h>
+
+#include "AliPerformanceDEdx.h" 
+#include "AliESDEvent.h"
+#include "AliMCEvent.h"
+#include "AliESDtrack.h"
+#include "AliStack.h"
+#include "AliLog.h" 
+#include "AliMCInfoCuts.h" 
+#include "AliMathBase.h"
+#include "AliRecInfoCuts.h" 
+#include "AliTreeDraw.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
+
+using namespace std;
+
+ClassImp(AliPerformanceDEdx)
+
+//_____________________________________________________________________________
+AliPerformanceDEdx::AliPerformanceDEdx():
+  AliPerformanceObject("AliPerformanceDEdx"),
+
+  // dEdx 
+  fDeDxHisto(0),
+  
+  // Cuts 
+  fCutsRC(0), 
+  fCutsMC(0),
+
+  // histogram folder 
+  fAnalysisFolder(0)
+{
+  // default constructor	
+  Init();
+}
+
+//_____________________________________________________________________________
+AliPerformanceDEdx::AliPerformanceDEdx(Char_t* name="AliPerformanceDEdx", Char_t* title="AliPerformanceDEdx",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE):
+  AliPerformanceObject(name,title),
+
+  // dEdx 
+  fDeDxHisto(0),
+  
+  // Cuts 
+  fCutsRC(0), 
+  fCutsMC(0),
+
+  // histogram folder 
+  fAnalysisFolder(0)
+{
+  // named constructor
+
+  SetAnalysisMode(analysisMode);
+  SetHptGenerator(hptGenerator);
+  Init();
+}
+
+
+//_____________________________________________________________________________
+AliPerformanceDEdx::~AliPerformanceDEdx()
+{
+  // destructor
+  if(fDeDxHisto)  delete fDeDxHisto; fDeDxHisto=0; 
+  if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
+}
+
+//_____________________________________________________________________________
+void AliPerformanceDEdx::Init()
+{
+  // Init histograms
+  
+  // TPC dEdx
+  // set pt bins
+  Int_t nPBins = 50;
+  Double_t pMin = 1.e-2, pMax = 10.;
+
+  Double_t *binsP = 0;
+  if (IsHptGenerator())  { 
+    nPBins = 100; pMax = 100.;
+    binsP = CreateLogAxis(nPBins,pMin,pMax);
+  } else {
+    binsP = CreateLogAxis(nPBins,pMin,pMax);
+  }
+
+
+  /*
+  Int_t nPBins = 31;
+    Double_t binsP[32] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.25,2.5,2.75,3.,3.5,4.,5.,6.,8.,10.};
+    Double_t pMin = 0., pMax = 10.;
+
+    if(IsHptGenerator() == kTRUE) {
+      nPBins = 100;
+      pMin = 0.; pMax = 100.;
+    }
+   */
+
+   //dedx:alpha:y:z:snp:tgl:ncls:p
+   //dedx:phi:y:z:snp:tgl:ncls:p
+   //Int_t binsQA[8]    = {300, 50, 50,  50, 50, 50, 80, nPBins};
+   //Double_t xminQA[8] = {0, -4,-20,-250, -1, -2, 0, pMin};
+   //Double_t xmaxQA[8] = {300, 4, 20, 250,  1,  2, 160, pMax};
+   Int_t binsQA[8]    = {300, 144, 50,  50, 50, 50, 80, nPBins};
+   Double_t xminQA[8] = {0, -TMath::Pi(),-20,-250, -1, -2, 0, pMin};
+   Double_t xmaxQA[8] = {300, TMath::Pi(), 20, 250,  1,  2, 160, pMax};
+
+   //fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:alpha:y:z:snp:tgl:ncls:momentum",8,binsQA,xminQA,xmaxQA);
+   fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:phi:y:z:snp:tgl:ncls:momentum",8,binsQA,xminQA,xmaxQA);
+   fDeDxHisto->SetBinEdges(7,binsP);
+
+   fDeDxHisto->GetAxis(0)->SetTitle("dedx (a.u.)");
+   fDeDxHisto->GetAxis(1)->SetTitle("#phi (rad)");
+   fDeDxHisto->GetAxis(2)->SetTitle("y (cm)");
+   fDeDxHisto->GetAxis(3)->SetTitle("z (cm)");
+   fDeDxHisto->GetAxis(4)->SetTitle("snp");
+   fDeDxHisto->GetAxis(5)->SetTitle("tgl");
+   fDeDxHisto->GetAxis(6)->SetTitle("ncls");
+   fDeDxHisto->GetAxis(7)->SetTitle("p (GeV/c)");
+   fDeDxHisto->Sumw2();
+
+   // Init cuts
+   if(!fCutsMC) 
+     AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
+   if(!fCutsRC) 
+     AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
+
+   // init folder
+   fAnalysisFolder = CreateFolder("folderDEdx","Analysis de/dx Folder");
+}
+
+//_____________________________________________________________________________
+void AliPerformanceDEdx::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack)
+{
+  if(!esdTrack) return;
+
+  const AliExternalTrackParam *innerParam =  esdTrack->GetInnerParam();
+  if(!innerParam) return;
+
+  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
+  esdTrack->GetImpactParametersTPC(dca,cov);
+
+  if((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
+  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
+  { 
+    Float_t dedx = esdTrack->GetTPCsignal();
+    Int_t ncls = esdTrack->GetTPCNcls();
+
+    Double_t pt = innerParam->Pt();
+    Double_t lam = TMath::ATan2(innerParam->Pz(),innerParam->Pt());
+    Double_t p = pt/TMath::Cos(lam);
+    //Double_t alpha = innerParam->GetAlpha();
+    Double_t phi = TMath::ATan2(innerParam->Py(),innerParam->Px());
+    //if(phi<0.) phi += 2.*TMath::Phi();
+    Double_t y = innerParam->GetY();
+    Double_t z = innerParam->GetZ();
+    Double_t snp = innerParam->GetSnp();
+    Double_t tgl = innerParam->GetTgl();
+
+    //Double_t vDeDxHisto[8] = {dedx,alpha,y,z,snp,tgl,ncls,p};
+    Double_t vDeDxHisto[8] = {dedx,phi,y,z,snp,tgl,ncls,p};
+    fDeDxHisto->Fill(vDeDxHisto); 
+  }
+
+  if(!stack) return;
+}
+
+//_____________________________________________________________________________
+void AliPerformanceDEdx::ProcessTPCITS(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/)
+{
+  // Fill dE/dx  comparison information
+  
+   AliDebug(AliLog::kWarning, "Warning: Not implemented");
+}
+
+//_____________________________________________________________________________
+void AliPerformanceDEdx::ProcessConstrained(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/)
+{
+  // Fill dE/dx  comparison information
+  
+   AliDebug(AliLog::kWarning, "Warning: Not implemented");
+}
+
+//_____________________________________________________________________________
+Long64_t AliPerformanceDEdx::Merge(TCollection* const list) 
+{
+  // Merge list of objects (needed by PROOF)
+
+  if (!list)
+  return 0;
+
+  if (list->IsEmpty())
+  return 1;
+
+  TIterator* iter = list->MakeIterator();
+  TObject* obj = 0;
+
+  // collection of generated histograms
+  Int_t count=0;
+  while((obj = iter->Next()) != 0) 
+  {
+    AliPerformanceDEdx* entry = dynamic_cast<AliPerformanceDEdx*>(obj);
+    if (entry == 0) continue;
+
+    fDeDxHisto->Add(entry->fDeDxHisto);
+    count++;
+  }
+
+return count;
+}
+
+//_____________________________________________________________________________
+void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliESDEvent* const esdEvent, const Bool_t bUseMC)
+{
+  // Process comparison information 
+  //
+  if(!esdEvent) 
+  {
+      AliDebug(AliLog::kError, "esdEvent not available");
+      return;
+  }
+  AliHeader* header = 0;
+  AliGenEventHeader* genHeader = 0;
+  AliStack* stack = 0;
+  TArrayF vtxMC(3);
+  
+  if(bUseMC)
+  {
+    if(!mcEvent) {
+      AliDebug(AliLog::kError, "mcEvent not available");
+      return;
+    }
+
+    // get MC event header
+    header = mcEvent->Header();
+    if (!header) {
+      AliDebug(AliLog::kError, "Header not available");
+      return;
+    }
+    // MC particle stack
+    stack = mcEvent->Stack();
+    if (!stack) {
+      AliDebug(AliLog::kError, "Stack not available");
+      return;
+    }
+
+    // get MC vertex
+    genHeader = header->GenEventHeader();
+    if (!genHeader) {
+      AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");
+      return;
+    }
+    genHeader->PrimaryVertex(vtxMC);
+
+  } // end bUseMC
+
+  //  Process events
+  for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
+  { 
+    AliESDtrack *track = esdEvent->GetTrack(iTrack);
+    if(!track) continue;
+
+    if(GetAnalysisMode() == 0) ProcessTPC(stack,track);
+    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track);
+    else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track);
+    else {
+      printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
+      return;
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void AliPerformanceDEdx::Analyse()
+{
+  // Analyze comparison information and store output histograms
+  // in the folder "folderDEdx"
+  //
+  TH1::AddDirectory(kFALSE);
+  TH1F *h1D=0;
+  TH2F *h2D=0;
+  TObjArray *aFolderObj = new TObjArray;
+
+  char name[256];
+  char title[256];
+
+  for(Int_t i=1; i<8; i++) { 
+    //
+    h2D = (TH2F*)fDeDxHisto->Projection(0,i);
+
+    sprintf(name,"h_dedx_%d_vs_%d",0,i);
+    h2D->SetName(name);
+    sprintf(title,"%s vs %s",fDeDxHisto->GetAxis(0)->GetTitle(),fDeDxHisto->GetAxis(i)->GetTitle());
+    h2D->SetTitle(title);
+    h2D->GetXaxis()->SetTitle(fDeDxHisto->GetAxis(i)->GetTitle());
+    h2D->GetYaxis()->SetTitle(fDeDxHisto->GetAxis(0)->GetTitle());
+
+    if(i==7) h2D->SetBit(TH1::kLogX);
+    aFolderObj->Add(h2D);
+  }
+
+  // resolution histograms for mips
+  fDeDxHisto->GetAxis(2)->SetRangeUser(-15.,14.999);
+  fDeDxHisto->GetAxis(3)->SetRangeUser(-120.,119.999);
+  fDeDxHisto->GetAxis(4)->SetRangeUser(-0.4, 0.399);
+  fDeDxHisto->GetAxis(5)->SetRangeUser(-1.,0.999);
+  fDeDxHisto->GetAxis(6)->SetRangeUser(60.,140.);
+  fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.499);
+
+  h1D=(TH1F*)fDeDxHisto->Projection(0);
+  h1D->SetName("dedx_mips");
+
+  h1D->SetTitle("dedx_mips");
+  h1D->GetXaxis()->SetTitle(fDeDxHisto->GetAxis(0)->GetTitle());
+  aFolderObj->Add(h1D);
+
+  //
+  TObjArray *arr[7] = {0};
+  TF1 *f1[7] = {0};
+  
+  for(Int_t i=1; i<8; i++) 
+  { 
+    arr[i] = new TObjArray;
+    f1[i] = new TF1("gaus","gaus");
+    //printf("i %d \n",i);
+
+    h2D = (TH2F*)fDeDxHisto->Projection(0,i);
+
+    f1[i]->SetRange(40,60); // should be pion peak
+    h2D->FitSlicesY(f1[i],0,-1,10,"QNR",arr[i]); // gaus fit of pion peak
+
+    h1D = (TH1F*)arr[i]->At(1);
+    sprintf(name,"mean_dedx_mips_vs_%d",i);
+    h1D->SetName(name);
+    sprintf(title,"%s vs %s","mean_dedx_mips (a.u.)",fDeDxHisto->GetAxis(i)->GetTitle());
+    h1D->SetTitle(title);
+    h1D->GetXaxis()->SetTitle(fDeDxHisto->GetAxis(i)->GetTitle());
+    h1D->GetYaxis()->SetTitle("mean_dedx_mips (a.u.)");
+    //h1D->SetMinimum(40);
+    //h1D->SetMaximum(60);
+
+    aFolderObj->Add(h1D);
+
+    h1D = (TH1F*)arr[i]->At(2);
+    sprintf(name,"res_dedx_mips_vs_%d",i);
+    h1D->SetName(name);
+    sprintf(title,"%s vs %s","res_dedx_mips (a.u)",fDeDxHisto->GetAxis(i)->GetTitle());
+    h1D->SetTitle(title);
+    h1D->GetXaxis()->SetTitle(fDeDxHisto->GetAxis(i)->GetTitle());
+    h1D->GetYaxis()->SetTitle("res_dedx_mips (a.u.)");
+    //h1D->SetMinimum(0);
+    //h1D->SetMaximum(6);
+
+    aFolderObj->Add(h1D);
+  }
+
+  // export objects to analysis folder
+  fAnalysisFolder = ExportToFolder(aFolderObj);
+
+  // delete only TObjrArray
+  if(aFolderObj) delete aFolderObj;
+}
+
+//_____________________________________________________________________________
+TFolder* AliPerformanceDEdx::ExportToFolder(TObjArray * array) 
+{
+  // recreate folder avery time and export objects to new one
+  //
+  AliPerformanceDEdx * comp=this;
+  TFolder *folder = comp->GetAnalysisFolder();
+
+  TString name, title;
+  TFolder *newFolder = 0;
+  Int_t i = 0;
+  Int_t size = array->GetSize();
+
+  if(folder) { 
+     // get name and title from old folder
+     name = folder->GetName();  
+     title = folder->GetTitle();  
+
+	 // delete old one
+     delete folder;
+
+	 // create new one
+     newFolder = CreateFolder(name.Data(),title.Data());
+     newFolder->SetOwner();
+
+	 // add objects to folder
+     while(i < size) {
+	   newFolder->Add(array->At(i));
+	   i++;
+	 }
+  }
+
+return newFolder;
+}
+
+
+//_____________________________________________________________________________
+TFolder* AliPerformanceDEdx::CreateFolder(TString name,TString title) { 
+// create folder for analysed histograms
+TFolder *folder = 0;
+  folder = new TFolder(name.Data(),title.Data());
+
+  return folder;
+}
+
