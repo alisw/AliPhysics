@@ -36,6 +36,7 @@ ClassImp(AliMUONClusterInfo)
 //_____________________________________________________________________________
 AliMUONClusterInfo::AliMUONClusterInfo()
 : TObject(),
+  fRunId(0),
   fEventId(0),
   fZ(0.),
   fClusterId(0),
@@ -55,6 +56,8 @@ AliMUONClusterInfo::AliMUONClusterInfo()
   fTrackYErr(0.),
   fTrackChi2(0.),
   fTrackCharge(0),
+  fTrackNHits(0),
+  fTrackChamberHitMap(0),
   fNPads(0),
   fPads(new TClonesArray("AliMUONPadInfo",10))
 {
@@ -64,6 +67,7 @@ AliMUONClusterInfo::AliMUONClusterInfo()
 //_____________________________________________________________________________
 AliMUONClusterInfo::AliMUONClusterInfo (const AliMUONClusterInfo& clusterInfo)
 : TObject(clusterInfo),
+  fRunId(clusterInfo.fRunId),
   fEventId(clusterInfo.fEventId),
   fZ(clusterInfo.fZ),
   fClusterId(clusterInfo.fClusterId),
@@ -83,6 +87,8 @@ AliMUONClusterInfo::AliMUONClusterInfo (const AliMUONClusterInfo& clusterInfo)
   fTrackYErr(clusterInfo.fTrackYErr),
   fTrackChi2(clusterInfo.fTrackChi2),
   fTrackCharge(clusterInfo.fTrackCharge),
+  fTrackNHits(clusterInfo.fTrackNHits),
+  fTrackChamberHitMap(clusterInfo.fTrackChamberHitMap),
   fNPads(clusterInfo.fNPads),
   fPads(new TClonesArray("AliMUONPadInfo",clusterInfo.fNPads))
 {
@@ -102,6 +108,7 @@ AliMUONClusterInfo& AliMUONClusterInfo::operator=(const AliMUONClusterInfo& clus
   
   TObject::operator=(clusterInfo); // don't forget to invoke the base class' assignment operator
   
+  fRunId = clusterInfo.fRunId;
   fEventId = clusterInfo.fEventId;
   fZ = clusterInfo.fZ;
   fClusterId = clusterInfo.fClusterId;
@@ -121,6 +128,8 @@ AliMUONClusterInfo& AliMUONClusterInfo::operator=(const AliMUONClusterInfo& clus
   fTrackYErr = clusterInfo.fTrackYErr;
   fTrackChi2 = clusterInfo.fTrackChi2;
   fTrackCharge = clusterInfo.fTrackCharge;
+  fTrackNHits = clusterInfo.fTrackNHits;
+  fTrackChamberHitMap = clusterInfo.fTrackChamberHitMap;
   fNPads = clusterInfo.fNPads;
   
   fPads->Clear("C");
@@ -184,5 +193,102 @@ void AliMUONClusterInfo::Print(Option_t* option) const
     }
   }
   
+}
+
+Double_t AliMUONClusterInfo::GetClusterCharge(Int_t iPlaneType) const
+{
+  Double_t lClusterChargeC = 0.;
+  if (!fPads) {
+    lClusterChargeC = GetClusterCharge()/2.;
+  }
+  else {
+    AliMUONPadInfo *pad = (AliMUONPadInfo*) fPads->First();
+    while (pad) {
+      if (pad->GetPadPlaneType()==iPlaneType) lClusterChargeC += pad->GetPadCharge();
+      pad = (AliMUONPadInfo*) fPads->After(pad);
+    }    
+  }
+  return lClusterChargeC;
+}
+
+Int_t AliMUONClusterInfo::GetNPads(Int_t iPlaneType) const
+{
+  Int_t iNPads = 0;
+
+  if (!fPads) {
+    iNPads = GetNPads();
+  }
+  else {
+    AliMUONPadInfo *pad = (AliMUONPadInfo*) fPads->First();
+    while (pad) {
+      if (pad->GetPadPlaneType()==iPlaneType) {
+	iNPads++;
+      }
+      pad = (AliMUONPadInfo*) fPads->After(pad);
+    }   
+  }
+  return iNPads;
+}
+
+Int_t AliMUONClusterInfo::GetNPadsX(Int_t iPlaneType) const
+{
+  Int_t iNPadsX = 0;
+  Double_t lPadXMin = 10000.;
+  Double_t lPadXMax = -10000.;
+  Int_t nChangedMin = 0;
+  Int_t nChangedMax = 0;
+
+  if (!fPads) {
+    iNPadsX = GetNPads();
+  }
+  else {
+    AliMUONPadInfo *pad = (AliMUONPadInfo*) fPads->First();
+    while (pad) {
+      if (pad->GetPadPlaneType()==iPlaneType) {
+	if (pad->GetPadX()<lPadXMin){
+	  lPadXMin = pad->GetPadX();
+	  nChangedMin++;
+	}
+	if (pad->GetPadX()>lPadXMax){
+	  lPadXMax = pad->GetPadX();
+	  nChangedMax++;
+	}  
+      }    
+      pad = (AliMUONPadInfo*) fPads->After(pad);
+    }    
+    iNPadsX = TMath::Max(nChangedMin+nChangedMax-1,0);
+  }
+  return iNPadsX;
+}
+
+Int_t AliMUONClusterInfo::GetNPadsY(Int_t iPlaneType) const
+{
+  Int_t iNPadsY = 0;
+  Double_t lPadYMin = 10000.;
+  Double_t lPadYMax = -10000.;
+  Int_t nChangedMin = 0;
+  Int_t nChangedMax = 0;
+
+  if (!fPads) {
+    iNPadsY = GetNPads();
+  }
+  else {
+    AliMUONPadInfo *pad = (AliMUONPadInfo*) fPads->First();
+    while (pad) {
+      if (pad->GetPadPlaneType()==iPlaneType) {
+	if (pad->GetPadY()<lPadYMin){
+	  lPadYMin = pad->GetPadY();
+	  nChangedMin++;
+	}
+	if (pad->GetPadY()>lPadYMax){
+	  lPadYMax = pad->GetPadY();
+	  nChangedMax++;
+	}  
+      }    
+      pad = (AliMUONPadInfo*) fPads->After(pad);
+    }    
+    iNPadsY = TMath::Max(nChangedMin+nChangedMax-1,0);
+  }
+  return iNPadsY;
 }
 

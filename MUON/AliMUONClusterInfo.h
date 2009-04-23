@@ -29,10 +29,16 @@ public:
   
   
   // ------ general info ------
+  /// set run number
+  void     SetRunId(Int_t runId) {fRunId = runId;}
+  /// return run ID
+  Int_t    GetRunId() const {return fRunId;}
+
   /// set event number
   void     SetEventId(Int_t eventId) {fEventId = eventId;}
   /// return event ID
   Int_t    GetEventId() const {return fEventId;}
+
   
   /// Set cluster/track Z-position (cm)
   void     SetZ(Double_t z) {fZ = z;}
@@ -75,6 +81,12 @@ public:
   void     SetClusterCharge(Double_t charge) {fClusterCharge = charge;}
   /// Return the total cluster charge
   Double_t GetClusterCharge() const {return fClusterCharge;}
+  /// Return the cluster charge for cathode iC
+  Double_t GetClusterCharge(Int_t iC) const ;
+  /// Return the bending cluster charge
+  Double_t GetClusterChargeB() const {return GetClusterCharge(0);}
+  /// Return the non bending cluster charge
+  Double_t GetClusterChargeNB() const {return GetClusterCharge(1);}
   
   
   // ------ track info ------
@@ -116,11 +128,40 @@ public:
   void     SetTrackCharge(Short_t charge) {fTrackCharge = charge;}
   /// Return the muon charge
   Short_t  GetTrackCharge() const {return fTrackCharge;}
-  
+
+  /// Get the total number of hits associated to the track leaving this cluster
+  UChar_t  GetTrackNHits(void) const {return fTrackNHits;}
+  /// Set the total number of hits associated to the track leaving this cluster
+    void     SetTrackNHits(UInt_t NHits) {fTrackNHits = NHits;}
+
+  /// Get the map of hit chambers
+  UInt_t   GetTrackChamberHitMap() const {return fTrackChamberHitMap;}
+  /// Set the map of hit chambers
+  void     SetTrackChamberHitMap(UInt_t trackChamberHitMap) {fTrackChamberHitMap = trackChamberHitMap;}
+  /// Is chamber hit by track
+  Bool_t   IsChamberHit(Int_t chamber) const {return (Bool_t) ((fTrackChamberHitMap & BIT(chamber)) != 0);}
   
   // ------ pad info ------
   /// return the number of pads attached to the cluster
   Int_t    GetNPads() const {return fPads->GetEntriesFast();}
+  /// return the number of pads attached to the cluster in cathode iC
+  Int_t    GetNPads(Int_t iC) const ;
+  /// return the number of bending pads attached to the cluster
+  Int_t    GetNPadsB() const {return GetNPads(0);}
+  /// return the number of non bending pads attached to the cluster
+  Int_t    GetNPadsNB() const {return GetNPads(1);}
+  /// return the number of pads attached to the cluster
+  Int_t    GetNPadsX(Int_t iC) const ;
+  /// return the number of pads attached to the cluster
+  Int_t    GetNPadsXB() const {return GetNPadsX(0);}
+  /// return the number of pads attached to the cluster
+  Int_t    GetNPadsXNB() const {return GetNPadsX(1);}
+  /// return the number of pads attached to the cluster
+  Int_t    GetNPadsY(Int_t iC) const ;
+  /// return the number of pads attached to the cluster
+  Int_t    GetNPadsYB() const {return GetNPadsY(0);}
+  /// return the number of pads attached to the cluster
+  Int_t    GetNPadsYNB() const {return GetNPadsY(1);}
   /// return the array of pads attached to the cluster
   TClonesArray& GetPads() const {return *fPads;}
   /// attach a pad to the cluster
@@ -130,6 +171,7 @@ public:
 protected:
   
   // general info
+  Int_t      fRunId;    ///< run number
   Int_t      fEventId;    ///< event number
   Double32_t fZ;          ///< track/cluster Z position
   
@@ -153,11 +195,13 @@ protected:
   Double32_t fTrackYErr;   ///< track Y resolution
   Double32_t fTrackChi2;   ///< track normalized chi2
   Short_t    fTrackCharge; ///< track charge  
-  
+  UChar_t    fTrackNHits;   ///< track number of hits
+  UInt_t     fTrackChamberHitMap; ///< Map of clusters in tracking chambers
+
   Int_t         fNPads; ///< nPads  
   TClonesArray* fPads;  ///< Array of pads attached to the cluster
     
-  ClassDef(AliMUONClusterInfo, 2)
+  ClassDef(AliMUONClusterInfo, 3)
 };
 
 #endif

@@ -38,6 +38,7 @@ ClassImp(AliMUONPadInfo)
 AliMUONPadInfo::AliMUONPadInfo()
 : TObject(),
   fPadId(0),
+  fPadPlaneType(0),
   fPadX(0.),
   fPadY(0.),
   fPadDimX(0.),
@@ -60,6 +61,7 @@ AliMUONPadInfo::AliMUONPadInfo()
 AliMUONPadInfo::AliMUONPadInfo (const AliMUONPadInfo& padInfo)
 : TObject(padInfo),
   fPadId(padInfo.fPadId),
+  fPadPlaneType(padInfo.fPadPlaneType),
   fPadX(padInfo.fPadX),
   fPadY(padInfo.fPadY),
   fPadDimX(padInfo.fPadDimX),
@@ -87,6 +89,7 @@ AliMUONPadInfo& AliMUONPadInfo::operator=(const AliMUONPadInfo& padInfo)
   TObject::operator=(padInfo); // don't forget to invoke the base class' assignment operator
   
   fPadId = padInfo.fPadId;
+  fPadPlaneType = padInfo.fPadPlaneType;
   fPadX = padInfo.fPadX;
   fPadY = padInfo.fPadY;
   fPadDimX = padInfo.fPadDimX;

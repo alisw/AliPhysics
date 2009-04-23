@@ -40,6 +40,10 @@ public:
   Int_t    GetManuChannel() const {return (fPadId & 0x3F000000) >> 24;}
   /// Return the cathode number, part of the uniqueID
   Int_t    GetCathode() const     {return (fPadId & 0x40000000) >> 30;}
+  /// Return the plane type 0=Bending 1=NonBending
+  Int_t    GetPadPlaneType() const     {return fPadPlaneType;}
+  /// Set the plane type 0=Bending 1=NonBending
+  void     SetPadPlaneType(Int_t planeType) {fPadPlaneType = planeType;}
   
   /// Set pad coordinates (cm)
   void     SetPadXY(Double_t x, Double_t y) {fPadX = x; fPadY = y;}
@@ -99,6 +103,7 @@ protected:
     
   // pad info
   UInt_t     fPadId;         ///< pad ID
+  Int_t      fPadPlaneType;   ///< pad plane tye (0=Bending; 1=NonBending)
   Double32_t fPadX;          ///< pad X position
   Double32_t fPadY;          ///< pad Y position
   Double32_t fPadDimX;       ///< pad X dimension
@@ -116,7 +121,7 @@ protected:
   Int_t      fGainThres;     ///< threshold of quadratic behaviour of gain
   Int_t      fGainQual;      ///< quality of gain parameters
   
-  ClassDef(AliMUONPadInfo, 1)
+  ClassDef(AliMUONPadInfo, 2)
 };
 
 #endif
