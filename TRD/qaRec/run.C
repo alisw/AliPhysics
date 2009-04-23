@@ -270,11 +270,6 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   // verbosity
   printf("\n\tCLEANING UP TRAIN:\n");
   mgr->GetTasks()->Delete();
-//   for(Int_t it=tt->GetEntriesFast(); it--;){
-//     if(!(task = (AliAnalysisTask*)tt->At(it))) continue;
-//     printf("Cleaning up %s [%s] ...\n", task->GetName(), task->GetTitle());
-//     delete task;
-//   }
 
   if(mcH) delete mcH;
   delete esdH;
@@ -360,9 +355,9 @@ Int_t ParseTRD(Char_t *trd)
       fHasMCdata = kFALSE;
     } else { 
       Bool_t foundOpt = kFALSE;  
-      for(Int_t itask = 0; itask < NTRDTASKS; itask++){
+      for(Int_t itask = 2; itask < NTRDTASKS; itask++){
         if(s.CompareTo(fgkTRDtaskOpt[itask]) != 0) continue;
-        SETBIT(fSteerTask, itask); SETBIT(fSteerTask, 0);
+        SETBIT(fSteerTask, itask); SETBIT(fSteerTask, kInfoGen);
         foundOpt = kTRUE;
         break;
       }

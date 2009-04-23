@@ -31,19 +31,11 @@ public:
     ,kTracklet        =  1 // tracklet - track y pulls
     ,kTrackletPhi     =  2 // tracklet - track angular pulls residuals
     ,kMCcluster       =  3 // cluster - mc residuals/systematics
-    ,kMCtrackletY     =  4 // tracklet - mc y resolution/systematics
-    ,kMCtrackletYPull =  5 // tracklet - mc y resolution/systematics
-    ,kMCtrackletZ     =  6 // tracklet - mc z resolution/systematics (pad row cross)
-    ,kMCtrackletZPull =  7 // tracklet - mc z resolution/systematics (pad row cross)
-    ,kMCtrackletPhi   =  8 // tracklet - mc phi resolution/systematics
-    ,kMCtrackY        =  9 // Kalman Y resolution
-    ,kMCtrackYPull    = 10 // Kalman Y resolution
-    ,kMCtrackZIn      = 11 // Kalman Z resolution
-    ,kMCtrackZOut     = 12 // Kalman Z resolution
-    ,kMCtrackZInPull  = 13 // Kalman Z resolution
-    ,kMCtrackZOutPull = 14 // Kalman Z resolution
-    ,kMCtrackPt       = 15 // Kalman Pt resolution
-    ,kNhistos         = 16
+    ,kMCtracklet      =  4 // tracklet - mc y resolution/systematics
+    ,kMCtrackTPC      =  5 // Kalman TPC track quality
+    ,kMCtrackHMPID    =  6 // Kalman HMPID track quality
+    ,kMCtrack         =  7 // Kalman track resolution
+    ,kNhistos         =  8
   };
   enum ETRDresolutionSteer {
     kVerbose  = 0
@@ -60,14 +52,13 @@ public:
   Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}
   Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
   Bool_t  PostProcess();
-  Bool_t  Process(ETRDresolutionPlot ip, TF1 *f=0x0,  Float_t scale=1.);
-  Bool_t  Process3D(ETRDresolutionPlot ip, TF1 *f=0x0,  Float_t scale=1.);
 
   TH1*    PlotCluster(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTracklet(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTrackletPhi(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTrackIn(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotMC(const AliTRDtrackV1 *t=0x0);
+  void    DumpAxTitle(Int_t plot, Int_t fig=-1);
 
   void    SetRecoParam(AliTRDrecoParam *r);
   void    SetVerbose(Bool_t v = kTRUE) {v ? SETBIT(fStatus ,kVerbose): CLRBIT(fStatus ,kVerbose);}
@@ -78,9 +69,14 @@ public:
 private:
   AliTRDresolution(const AliTRDresolution&);
   AliTRDresolution& operator=(const AliTRDresolution&);
-  void        AdjustF1(TH1 *h, TF1 *f);
+  void    AdjustF1(TH1 *h, TF1 *f);
+  Bool_t  Process(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
+  Bool_t  Process3D(ETRDresolutionPlot ip, TF1 *f=0x0,  Float_t scale=1.);
+  Bool_t  GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t idx=-1);
 
   UChar_t             fStatus;          // steer parameter of the task
+  static UChar_t      fNElements[kNhistos]; // number of componets per task
+  static Char_t       *fAxTitle[25][3]; // axis title for all ref histos
   AliTRDReconstructor *fReconstructor;  //! local reconstructor
   AliTRDgeometry      *fGeo;            //! TRD geometry
   TObjArray           *fGraphS;         //! result holder - sigma values
@@ -92,6 +88,6 @@ private:
   TObjArray           *fMCcl;   //! cluster2mc calib
   TObjArray           *fMCtrklt;//! tracklet2mc calib
   
-  ClassDef(AliTRDresolution, 1) // TRD tracking resolution task
+  ClassDef(AliTRDresolution, 2) // TRD tracking resolution task
 };
 #endif

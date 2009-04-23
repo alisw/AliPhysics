@@ -15,7 +15,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, AliAnalysisDataContainer **ci, Al
   mgr->AddTask(task = new AliTRDresolution());
   task->SetMCdata(mgr->GetMCtruthEventHandler());
   task->SetPostProcess(kFALSE);
-  task->SetDebugLevel(0);
+  task->SetDebugLevel(1);
   mgr->ConnectInput( task, 0, ci[0]);
   mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
 

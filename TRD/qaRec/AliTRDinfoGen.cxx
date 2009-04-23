@@ -217,12 +217,12 @@ void AliTRDinfoGen::Exec(Option_t *){
       if(alab < UInt_t(nTracksMC)){ 
         trackMap[alab] = kTRUE; 
       } else { 
-        AliError(Form("MC label[%d] outside scope for ESD[%d].", label, itrk));
+        AliError(Form("MC label[%d] outside scope for Ev[%d] Trk[%d].", label, (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), itrk));
         continue; 
       }
       AliMCParticle *mcParticle = 0x0; 
       if(!(mcParticle = fMC->GetTrack(alab))){
-        AliError(Form("MC particle label[%d] missing for ESD[%d].", label, itrk));
+        AliError(Form("MC particle label[%d] missing for Ev[%d] Trk[%d].", label, (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), itrk));
         continue;
       }
       fPdg = mcParticle->Particle()->GetPdgCode();
