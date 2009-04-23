@@ -6,7 +6,8 @@ SRCS= AliVZEROLoader.cxx \
       AliVZEROCalibData.cxx \
       AliVZEROPreprocessor.cxx \
       AliVZERODataDCS.cxx \
-      AliVZEROQAChecker.cxx
+      AliVZEROQAChecker.cxx \
+      AliVZEROMisAligner.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
