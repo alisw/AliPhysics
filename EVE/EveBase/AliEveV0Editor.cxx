@@ -197,6 +197,10 @@ void AliEveV0Editor::DisplayDetailed()
   pack->NewSlot()->MakeCurrent();
   TEveViewer *bpViewer = gEve->SpawnNewViewer("V0 bending plane View");
   TEveScene  *bpScene  = gEve->SpawnNewScene("V0 bending plane Scene");
+  
+  TEveProjectionManager *projMgr = new TEveProjectionManager();
+  bpScene->AddElement(projMgr);
+  bpViewer->AddScene(bpScene);
 
   TEveUtil::LoadMacro("geom_gentle.C");
   Long_t result = gInterpreter->ProcessLine("geom_gentle_rphi()");
@@ -204,22 +208,23 @@ void AliEveV0Editor::DisplayDetailed()
   {
     TEveGeoShape *geomRPhi = reinterpret_cast<TEveGeoShape*>(result);
     geomRPhi->IncDenyDestroy();
-    TEveProjectionManager *projMgr = new TEveProjectionManager();
-    projMgr->ImportElements(geomRPhi, bpScene);
+    projMgr->SetCurrentDepth(-10); // to put the geometry behind the projection of the V0 -> clearer
+    projMgr->ImportElements(geomRPhi);
+    projMgr->SetCurrentDepth(0);
   }
   else
   {
     Warning("DisplayDetailed", "Import of R-Phi geometry failed.");
   }
+  
+  // Projection of the different elements onto the 2D view
+  projMgr->ImportElements(fM);
+  projMgr->ImportElements(lv0TransverseMomentumDirection);
+  projMgr->ImportElements(pvlocation);
+  projMgr->ImportElements(v0location);
 
-  bpViewer->AddScene(bpScene);
-  bpScene->AddElement(fM);
-  bpScene->AddElement(lv0TransverseMomentumDirection);
-  bpScene->AddElement(pvlocation);
-  bpScene->AddElement(v0location);
-
-  if (negDaughterCluster) bpScene->AddElement(negDaughterCluster);
-  if (posDaughterCluster) bpScene->AddElement(posDaughterCluster);
+  if (negDaughterCluster) projMgr->ImportElements(negDaughterCluster);
+  if (posDaughterCluster) projMgr->ImportElements(posDaughterCluster);
 
   // This is the to-do list for the bending plane:
   // 1. fix the view to orthographic XOY (no rotation allowed but moving the center ok) ->done! 
@@ -307,7 +312,7 @@ void AliEveV0Editor::DisplayDetailed()
   // Calculation of the invariant mass with the max prob PID hypothesis first
   // pseudorapidity, phi angle, pt, radius, dcas
   char info[100] = {0};
-  sprintf(info,"#phi = %.3frad = %.1f°",fM->GetPhi(),(180./TMath::Pi())*fM->GetPhi());
+  sprintf(info,"#phi = %.3f rad = %.1f deg",fM->GetPhi(),(180./TMath::Pi())*fM->GetPhi());
   TLatex* ltx = new TLatex(0.05, 0.9, info);
   ltx->SetTextSize(0.08);
   ltx->Draw();
