@@ -14,7 +14,6 @@ class AliCFManager;
 class AliMCEvent;
 class AliESDEvent;
 class AliAODEvent;
-class TRandom;
 
 // AliFlowEventSimpleMaker:
 // Class to fill the AliFlowEventSimple with AliFlowTrackSimple objects
@@ -54,10 +53,6 @@ class AliFlowEventSimpleMaker {
   void SetMultiplicityOfEvent(Int_t multevnt) {this->fMultiplicityOfEvent = multevnt;}
   Int_t GetMultiplicityOfEvent() const {return this->fMultiplicityOfEvent;} 
   
-  void SetSigmaFlow(Double_t sigmav) {this->fSigmaFlow = sigmav;}
-  void SetSigmaMult(Double_t sigmam) {this->fSigmaMult = sigmam;}
-  void UseRandomRP(Bool_t randomRP=kTRUE) {this->fUseRandomRP = randomRP;}
-
  private:
   AliFlowEventSimpleMaker(const AliFlowEventSimpleMaker& anAnalysis);            //copy constructor
   AliFlowEventSimpleMaker& operator=(const AliFlowEventSimpleMaker& anAnalysis); //assignment operator
@@ -67,10 +62,6 @@ class AliFlowEventSimpleMaker {
   Int_t     fNoOfLoops; // number of times to use the same particle (nonflow) 
   Double_t  fEllipticFlowValue; // Add Flow. Must be in range [0,1].
   Int_t     fMultiplicityOfEvent; // Set maximal multiplicity.
-  TRandom   *fRandom;
-  Bool_t    fUseRandomRP;
-  Double_t  fSigmaMult;     
-  Double_t  fSigmaFlow;
      
   ClassDef(AliFlowEventSimpleMaker,0)    // macro for rootcint
 };

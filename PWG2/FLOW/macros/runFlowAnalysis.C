@@ -42,6 +42,13 @@ Double_t phiMaxDiff = 7.5;
 Double_t phiMinDiff = 0.;
 Int_t PIDDiff       = 211;
 //--------------------------------------------------------------------------------------
+// FLOW SETTINGS (R.Rietkerk)
+Int_t nLoops=1; 		// Number of times to use the same particle (nonflow).
+Double_t xEllipticFlowValue=0.1;	// Add Elliptic Flow. Must be in range [0,1].
+Int_t nMultiplicityOfEvent=500;// Set Average Multiplicity.
+Double_t xSigmaFlow=0.00;	// Add Elliptic Flow. Must be in range [0,1].
+Int_t nSigmaMult=50;// Set Average Multiplicity.
+//--------------------------------------------------------------------------------------
 
 enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 //mLocal: Analyze data on your computer using aliroot
@@ -50,9 +57,10 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 
 Int_t offset = 0;
                                           
-int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char* 
+int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 1000, const char* 
 		    //			  dir="/data/alice1/kolk/KineOnly3/")
-		    dir="/Users/snelling/alice_data/KineOnly3/")
+		    		    dir="/Users/snelling/alice_data/KineOnly3/")
+		    //		    dir="/Users/snelling/alice_data/stoomboot/5b/")
 {
   TStopwatch timer;
   timer.Start();
@@ -68,15 +76,14 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
   
   LoadLibraries(mode);
 
+  TRandom3 random3Temp; //init for manual settings (R.Rietkerk)
+  TTimeStamp dt;
+  Int_t sseed = dt.GetNanoSec()/1000;
+  random3Temp.SetSeed(sseed);
+
   if (mode == mLocal || mode == mLocalPAR) {
     // AliFlow event in aliroot or with pars
     AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker();
-    //    fEventMaker->SetNoOfLoops(2);
-    //    fEventMaker->SetEllipticFlowValue(0.05);
-    //    fEventMaker->SetSigmaFlow(0.005);
-    //    fEventMaker->SetMultiplicityOfEvent(250);
-    //    fEventMaker->SetSigmaMult(10.);
-    //    fEventMaker->UseRandomRP();
   }
   else if (mode == mLocalSource) {
     // flow event in source mode
@@ -303,7 +310,8 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
 	  TTree* kTree;
 	  TIter next(kineEventsList); 
 	  TKey* key;
-	  
+
+	  Double_t xRPAngle;	  
 	  //loop over the events
 	  while( key=(TKey *)next() ) 
 	    {
@@ -321,6 +329,17 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
 	      
 	      //-----------------------------------------------------------
 	      //fill and save the flow event	      
+
+	      Int_t nNewMultOfEvent = random3Temp.Gaus(nMultiplicityOfEvent,nSigmaMult);
+	      cout << "new multiplicity: " << nNewMultOfEvent << endl;
+  	      Double_t xNewFlowValue = random3Temp.Gaus(xEllipticFlowValue,xSigmaFlow);
+	      cout << "new flow value: " << xNewFlowValue << endl;
+  	      fEventMaker->SetNoOfLoops(nLoops);
+	      fEventMaker->SetEllipticFlowValue(xNewFlowValue);
+	      fEventMaker->SetMultiplicityOfEvent(nNewMultOfEvent);
+	      xRPAngle=TMath::TwoPi()*random3Temp.Rndm();
+	      fEventMaker->SetMCReactionPlaneAngle(xRPAngle);
+
 	      AliFlowEventSimple *fEvent = fEventMaker->FillTracks(kTree, cutsInt, cutsDiff); 
 	                    
 	      // do flow analysis for various methods
