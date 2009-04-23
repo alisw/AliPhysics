@@ -39,6 +39,7 @@ AliAnalysisCuts(name, title)
 , fMaxVz(0)
 , fMinTPCSignal(0)
 , fMaxTPCSignal(0)
+, fMinTrackLength(0)
 , aTrackParticles(0)
 {
   // default constructor 
@@ -66,6 +67,7 @@ void AliMCInfoCuts::Init()
   SetMaxR();
   SetMaxVz();
   SetRangeTPCSignal();
+  SetMinTrackLength();
 
   // create aTrackParticles array
   aTrackParticles = new TArrayI(kNParticles); // max nb. of particles

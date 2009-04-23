@@ -59,6 +59,8 @@ public:
 
   static TH1F*  CreateResHistoI(TH2F* hRes2, TH1F **phMean, Int_t integ=0, 
 			       Bool_t drawBinFits = kTRUE);
+  static TH1F*  CreateResHistoII(TH2F* hRes2, TH1F **phMean, Int_t integ=0, 
+			       Bool_t drawBinFits = kTRUE, Int_t cut=0);
 
 
 

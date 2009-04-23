@@ -22,6 +22,7 @@ class AliESDEvent;
 class AliMCEvent;
 class THnSparse;
 class TObjArray;
+class TClonesArray;
 
 class AliTPCtaskQA : public AliAnalysisTask {
 public:

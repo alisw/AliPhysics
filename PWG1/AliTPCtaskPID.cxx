@@ -164,7 +164,7 @@ void AliTPCtaskPID::Init(){
   //
   // 
   nbins[6]=60;
-  xmin[6]=1; xmax[6]=6;
+  xmin[6]=0.5; xmax[6]=6;
 
   nbins[5]=400;
   xmin[5]=20; xmax[5]=400;
@@ -334,7 +334,8 @@ void  AliTPCtaskPID::ProcessMCInfo(){
     //
     Double_t mom = in->GetP();
     if (track->GetP()>5)  mom= track->GetP();
-    if (out&&out->GetX()<300)  mom= (in->GetP()+out->GetP())*0.5;
+    if (out&&out->GetX()<260&&TMath::Abs(out->GetZ())<250)  mom= (in->GetP()+out->GetP())*0.5;
+    //
     Double_t dedx=track->GetTPCsignal();
     Double_t mass = particle->GetMass();
     Double_t bg  =mom/mass;
