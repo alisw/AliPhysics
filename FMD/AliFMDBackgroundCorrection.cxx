@@ -375,7 +375,7 @@ AliFMDBackgroundCorrection::AliFMDInputBG::ProcessEvent(UShort_t det,
     nextStripTrack = fLastTrackByStrip.operator()(det,ring,sec,strip+1);
   */
   
-  Float_t thisStripTrack = fLastTrackByStrip.operator()(det,ring,0,0);
+  Float_t thisStripTrack = fLastTrackByStrip.operator()(det,ring,sec,strip);
   // if(nTrack == fLastTrackByStrip.operator()(det,ring,sec,strip))
   //  std::cout<<"Track # "<<nTrack<<"  failed the cut in "<<det<<"   "<<ring<<"   "<<sec<<"  "<<strip<<std::endl;
   // else
