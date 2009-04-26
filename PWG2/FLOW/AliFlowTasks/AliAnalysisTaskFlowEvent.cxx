@@ -60,7 +60,8 @@ class AliAnalysisTask;
 
 
 ClassImp(AliAnalysisTaskFlowEvent)
-  //extern void ConfigFlowAnalysis(AliAnalysisTaskFlowEvent*); 
+  
+extern void ConfigFlowAnalysis(AliAnalysisTaskFlowEvent*); 
 
 //________________________________________________________________________
 AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on) : 
@@ -165,7 +166,7 @@ void AliAnalysisTaskFlowEvent::CreateOutputObjects()
     exit(1);
   }
 
-  //ConfigFlowAnalysis(this); 
+  ConfigFlowAnalysis(this); 
 
   // Flow Event maker
   fEventMaker = new AliFlowEventSimpleMaker();
