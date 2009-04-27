@@ -36,7 +36,7 @@ class AliITSVertexer3D : public AliITSVertexer {
     SetMaxRCut(dr);
     SetMaxZCut(dz);
   }
-  void SetDeltaPhiCuts(Float_t dphiloose=0.5, Float_t dphitight=0.01){
+  void SetDeltaPhiCuts(Float_t dphiloose=0.5, Float_t dphitight=0.025){
     SetCoarseDiffPhiCut(dphiloose);
     SetDiffPhiMax(dphitight);
   }
@@ -48,7 +48,7 @@ class AliITSVertexer3D : public AliITSVertexer {
   void SetZCutDiamond(Float_t zcut = 20.0){fZCutDiamond=zcut;}
   void SetMaxZCut(Float_t dz = 0.5){fMaxZCut=dz;}
   void SetDCACut(Float_t dca=0.1){fDCAcut=dca;} 
-  void SetDiffPhiMax(Float_t pm = 0.01){fDiffPhiMax = pm;}
+  void SetDiffPhiMax(Float_t pm = 0.025){fDiffPhiMax = pm;}
   void SetMeanPSelTracks(Float_t pGeV=0.875){fMeanPSelTrk = pGeV;}
   void SetMeanPtSelTracks(Float_t ptGeV=0.630){fMeanPtSelTrk = ptGeV;}
   void SetMeanPPtSelTracks(Float_t fieldTesla);

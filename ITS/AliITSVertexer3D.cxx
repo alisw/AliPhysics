@@ -134,7 +134,6 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
 //______________________________________________________________________
 void AliITSVertexer3D::FindVertex3D(TTree *itsClusterTree){
   // 3D algorithm
-  fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
   /*  uncomment to debug
       printf("Vertex found in first iteration:\n");
       fVert3D.Print();
@@ -145,7 +144,7 @@ void AliITSVertexer3D::FindVertex3D(TTree *itsClusterTree){
     Int_t nolines = FindTracklets(itsClusterTree,1);
     if(nolines>=2){
       Int_t rc=Prepare3DVertex(1);
-      if(rc==0) fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
+      if(rc!=0) fVert3D.SetNContributors(0); // exclude this vertex
     }
   }
   /*  uncomment to debug 
@@ -577,6 +576,7 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   AliDebug(1,Form("Number of tracklets (after 2nd compression) %d",fLines.GetEntriesFast()));
 
   if(fLines.GetEntriesFast()>1){
+    retcode=0;
     //  find a first candidate for the primary vertex
     fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0); 
     // make a further selection on tracklets based on this first candidate
@@ -588,11 +588,9 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     }
     fLines.Compress();
     AliDebug(1,Form("Number of tracklets (after 3rd compression) %d",fLines.GetEntriesFast()));
-    if(fLines.GetEntriesFast()>1) retcode=0; // this new tracklet selection is used
-    else retcode =1; // the previous tracklet selection will be used
-  }
-  else {
-    retcode = 0;
+    if(fLines.GetEntriesFast()>1){// this new tracklet selection is used
+      fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
+    }
   }
   return retcode;  
 }
