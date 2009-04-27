@@ -12,7 +12,7 @@ void AliAnalysisTaskSEVertexingHFTest()
   TString mode="local"; // otherwise, "grid" 
   Bool_t useParFiles=kFALSE;
 
-  gROOT->LoadMacro("LoadLibraries.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
   LoadLibraries(useParFiles);
 
   TChain *chain = 0;
