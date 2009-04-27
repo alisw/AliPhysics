@@ -12,7 +12,6 @@ SRCS = 	AliITS.cxx \
 		AliITSDetTypeSim.cxx \
 		AliITSmodule.cxx \
 		AliITSsimulationFastPoints.cxx \
-		AliITSsimulationFastPointsV0.cxx \
 		AliITSsimulation.cxx \
 		AliITSsimulationSPD.cxx \
 		AliITSsimulationSDD.cxx \
@@ -24,7 +23,6 @@ SRCS = 	AliITS.cxx \
 		AliITSstatistics2.cxx \
 		AliITSsDigitize.cxx \
 		AliITSDigitizer.cxx \
-		AliITSFDigitizer.cxx \
 		AliITSFOEfficiencySPD.cxx \
 		AliITSFOEfficiencySPDColumn.cxx \
 		AliITSFONoiseSPD.cxx \

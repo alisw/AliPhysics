@@ -69,7 +69,7 @@ void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod,
   TClonesArray &pt=*recp;
   AliITS *aliITS  = (AliITS*)gAlice->GetModule("ITS");
   AliITSgeom *gm = aliITS->GetITSgeom();
-  const Float_t kdEdXtoQ = 2.778e+8; 
+  const Float_t kdEdXtoQ = 1.0e+6;  // GeV->KeV
 
   Int_t lay,lad,det;
   gm->GetModuleId(module,lay,lad,det);
@@ -130,10 +130,11 @@ void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod,
 	  locals[0] += deltaXl;
 	  locals[2] += deltaZl;
 	  Int_t lab[4] = {hit->GetTrack(),-3,-3,ind};
-	  Float_t hitv[5] = {locals[0],locals[2],sigmarphi*sigmarphi,sigmaz*sigmaz,kdEdXtoQ*(hitdestep+deltaDe)};
+	  Float_t q=kdEdXtoQ*(hitdestep+deltaDe);
+	  if(hitlay<3) q=1.; // SPD binary readout
+	  Float_t hitv[5] = {locals[0],locals[2],sigmarphi*sigmarphi,sigmaz*sigmaz,q};
 	  Int_t info[3] = {0,0,lyr};
 	  AliITSRecPoint rp(lab,hitv,info,kTRUE);
-	  rp.SetdEdX(hitdestep+deltaDe);
 
 	  new (pt[irecp]) AliITSRecPoint(rp);
 	  irecp++;

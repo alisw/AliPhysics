@@ -39,7 +39,6 @@
 #pragma link C++ class  AliITSsimulationSSD+;
 #pragma link C++ class  AliITSTableSSD+;
 #pragma link C++ class  AliITSsimulationFastPoints+;
-#pragma link C++ class  AliITSsimulationFastPointsV0+;
 #pragma link C++ class  AliITSSimuParam+;
 #pragma link C++ class  AliITSDetTypeSim+;
 #pragma link C++ class  AliITSstatistics+;
@@ -52,7 +51,6 @@
 // SSD simulation and reconstruction
 #pragma link C++ class AliITSsDigitize+;
 #pragma link C++ class AliITSDigitizer+;
-#pragma link C++ class AliITSFDigitizer+;
 //#pragma link C++ class DisplayITSv11+;
 // Raw data
 

@@ -13,7 +13,6 @@ set(SRCS
 		AliITSDetTypeSim.cxx 
 		AliITSmodule.cxx 
 		AliITSsimulationFastPoints.cxx 
-		AliITSsimulationFastPointsV0.cxx 
 		AliITSsimulation.cxx 
 		AliITSsimulationSPD.cxx 
 		AliITSsimulationSDD.cxx 
@@ -25,7 +24,6 @@ set(SRCS
 		AliITSstatistics2.cxx 
 		AliITSsDigitize.cxx 
 		AliITSDigitizer.cxx 
-		AliITSFDigitizer.cxx 
 		AliITSTrigger.cxx 
 		AliITSv11.cxx 
 		AliITSv11Geometry.cxx 
