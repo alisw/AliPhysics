@@ -34,6 +34,7 @@ public:
 		  Float_t x1=-1, Float_t x2=-1, Float_t y1=-1, Float_t y2=-1); //draw tracks
   TClonesArray * GenerTPCClonesArray(TClonesArray * arr); //generate TClonnesArray of digits
   //only for demonstration purpose
+  void GlitchFilter();
 private:
   void InvalidateTrack();
  
@@ -50,7 +51,7 @@ private:
   Int_t       fNlevel;   //number of tracks etries  for one digit
   Int_t       fTrBufType;  //buffer type of the tracks
   // Bool_t      ClassError( ); //signalize class error 
-  ClassDef(AliSimDigits,2) 
+  ClassDef(AliSimDigits,3) 
 };
 
 

@@ -311,7 +311,11 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
         pdig1++;
         ptr1++;
      }
-    
+    //
+    //  glitch filter
+    //
+    digrow->GlitchFilter();
+    //
     digrow->CompresBuffer(1,zerosup);
     digrow->CompresTrackBuffer(1);
     tree->Fill();

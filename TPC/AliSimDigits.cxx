@@ -421,4 +421,37 @@ TClonesArray *  AliSimDigits::GenerTPCClonesArray(TClonesArray * arr)
     }    
   return digits;
 }
+void AliSimDigits::GlitchFilter(){
+  //
+  //  glitch filter, optionally
+  //
+  
+  for (Int_t i=0;i<fNcols;i++){ //pads
+    for(Int_t j=1;j<fNrows-1;j++){ //time bins
+      // first and last time bins are checked separately
+      if(GetDigitFast(j,i)){// nonzero digit
+        if (!GetDigitFast(j-1,i) && !GetDigitFast(j+1,i)) {
+          SetDigitFast(0,j,i);
+          SetTrackIDFast(-1,j,i,0);
+          SetTrackIDFast(-1,j,i,1);
+          SetTrackIDFast(-1,j,i,2);
+	}
+      }
+    }//time
+   
+    if(GetDigitFast(0,i) && !GetDigitFast(1,i)) {
+        SetDigitFast(0,0,i);
+        SetTrackIDFast(-1,0,i,0);
+        SetTrackIDFast(-1,0,i,1);
+        SetTrackIDFast(-1,0,i,2);
+    }
+    if(GetDigitFast(fNrows-1,i) && !GetDigitFast(fNrows-2,i)){ 
+       SetDigitFast(0,fNrows-1,i);
+       SetTrackIDFast(-1,fNrows-1,i,0);
+       SetTrackIDFast(-1,fNrows-1,i,1);
+       SetTrackIDFast(-1,fNrows-1,i,2);    
+    }
+  }//pads
+ 
+}
 
