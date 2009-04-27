@@ -78,7 +78,7 @@
 #include <EveDet/AliEveTRDTrackListEditor.h>
 
 #include <qaRec/AliTRDrecoTask.h>
-#include <qaRec/run.h>
+#include <qaRec/macros/AliTRDperformanceTrain.h>
 
 ClassImp(AliEveTRDTrackList)
 
@@ -272,7 +272,7 @@ void AliEveTRDTrackList::AddStandardContent()
   if(gSystem->Load("libTRDqaRec.so")<0) return;
   AliTRDrecoTask *task = 0x0;
   TList *fPlots = 0x0;
-  for(Int_t it=0; it<NQATASKS; it++){
+  for(Int_t it=0; it<NTRDQATASKS; it++){
     TClass c(fgkTRDtaskClassName[it]);
     task = (AliTRDrecoTask*)c.New();
     task->SetMCdata(kFALSE);
