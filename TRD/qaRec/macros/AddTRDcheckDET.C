@@ -1,15 +1,18 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "TRD/qaRec/run.h"
-#include "TRD/qaRec/AliTRDcheckDetector.h"
+#include "TRD/qaRec/macros/AliTRDperformanceTrain.h"
+#include "TRD/qaRec/AliTRDcheckDET.h"
 #include "TRD/qaRec/AliTRDcalibration.h"
 #endif
 
-void AddTRDcheckDetector(AliAnalysisManager *mgr, AliAnalysisDataContainer **ci, AliAnalysisDataContainer **/*co*/, Int_t map)
+void AddTRDcheckDET(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
-  AliTRDcheckDetector *task = 0x0;
-  mgr->AddTask(task = new AliTRDcheckDetector());
+  Int_t map = ParseOptions(trd);
+  if(!(TSTBIT(map, kCheckDET))) return;
+
+  AliTRDcheckDET *task = 0x0;
+  mgr->AddTask(task = new AliTRDcheckDET());
   task->SetDebugLevel(0);
   task->SetMCdata(mgr->GetMCtruthEventHandler());
   
