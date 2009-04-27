@@ -432,24 +432,24 @@ void AliSimDigits::GlitchFilter(){
       if(GetDigitFast(j,i)){// nonzero digit
         if (!GetDigitFast(j-1,i) && !GetDigitFast(j+1,i)) {
           SetDigitFast(0,j,i);
-          SetTrackIDFast(-1,j,i,0);
-          SetTrackIDFast(-1,j,i,1);
-          SetTrackIDFast(-1,j,i,2);
+          SetTrackIDFast(-2,j,i,0);
+          SetTrackIDFast(-2,j,i,1);
+          SetTrackIDFast(-2,j,i,2);
 	}
       }
     }//time
    
     if(GetDigitFast(0,i) && !GetDigitFast(1,i)) {
         SetDigitFast(0,0,i);
-        SetTrackIDFast(-1,0,i,0);
-        SetTrackIDFast(-1,0,i,1);
-        SetTrackIDFast(-1,0,i,2);
+        SetTrackIDFast(-2,0,i,0);
+        SetTrackIDFast(-2,0,i,1);
+        SetTrackIDFast(-2,0,i,2);
     }
     if(GetDigitFast(fNrows-1,i) && !GetDigitFast(fNrows-2,i)){ 
        SetDigitFast(0,fNrows-1,i);
-       SetTrackIDFast(-1,fNrows-1,i,0);
-       SetTrackIDFast(-1,fNrows-1,i,1);
-       SetTrackIDFast(-1,fNrows-1,i,2);    
+       SetTrackIDFast(-2,fNrows-1,i,0);
+       SetTrackIDFast(-2,fNrows-1,i,1);
+       SetTrackIDFast(-2,fNrows-1,i,2);    
     }
   }//pads
  
