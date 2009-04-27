@@ -23,6 +23,13 @@ set(SRCS
 	AliMCTrackingTestTask.cxx
 	AliTPCtaskPID.cxx
 	AliTPCtaskQA.cxx 
+	AliPerformanceTask.cxx
+	AliPerformanceObject.cxx
+	AliPerformanceRes.cxx
+	AliPerformanceEff.cxx
+	AliPerformanceDEdx.cxx
+	AliPerformanceDCA.cxx
+	AliPerformanceTPC.cxx
 )
 
 # fill list of header files from list of source files
