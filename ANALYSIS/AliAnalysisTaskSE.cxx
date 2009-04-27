@@ -315,12 +315,25 @@ const char* AliAnalysisTaskSE::CurrentFileName()
     else return "";
 }
 
-void AliAnalysisTaskSE::AddAODBranch(const char* cname, void* addobj)
+void AliAnalysisTaskSE::AddAODBranch(const char* cname, void* addobj, const char *fname)
 {
     // Add a new branch to the aod tree
     AliAODHandler* handler = (AliAODHandler*) 
 	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if (handler) {
-	handler->AddBranch(cname, addobj);
+	handler->AddBranch(cname, addobj, fname);
     }
+}
+
+Bool_t AliAnalysisTaskSE::IsStandardAOD() const
+{
+// Check if the output AOD handler is configured for standard or delta AOD.
+// Users should first check that AODEvent() returns non-null.
+    AliAODHandler* handler = (AliAODHandler*) 
+         ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    if (!handler) {
+       Error("IsStandardAOD", "No AOD handler. Please use AODEvent() to check this first");
+       return kTRUE;
+    }
+    return handler->IsStandard();   
 }
