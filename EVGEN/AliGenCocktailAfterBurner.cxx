@@ -175,7 +175,9 @@ void AliGenCocktailAfterBurner::Generate()
     else
     { //Here we are in the first call of the method
       fCurrentEvent=0;
-      Int_t numberOfEvents = AliRunLoader::Instance()->GetNumberOfEvents() + 1;
+      Int_t numberOfEvents = AliRunLoader::Instance()->GetNumberOfEventsPerRun();
+      cout << Nnumber of events per run" <<  numberOfEvents << endl;
+      
       //Create stacks
       fInternalStacks      = new TObjArray(numberOfEvents + fNBgEvents); //Create array of internal stacks
       fCollisionGeometries = new AliCollisionGeometry*[numberOfEvents + fNBgEvents]; //Create array of collision geometries
@@ -275,7 +277,7 @@ void AliGenCocktailAfterBurner::Generate()
 AliStack* AliGenCocktailAfterBurner::GetStack(Int_t n) const
 {
 //Returns the pointer to the N'th stack (event)
-  if( ( n<0 ) || ( n >= (GetNumberOfEvents()+1) ) )
+  if( ( n<0 ) || ( n >= (GetNumberOfEvents()) ) )
     {
       Fatal("AliGenCocktailAfterBurner::GetStack","Asked for non existing stack (%d)",n);
       return 0; 

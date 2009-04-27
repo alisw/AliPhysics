@@ -155,7 +155,8 @@ class AliRunLoader: public TNamed
     void        SetDirName(TString& dirname);
     Int_t       GetFileOffset() const;
     void        SetNumberOfEventsPerFile(Int_t nevpf){fNEventsPerFile = nevpf;}
-    
+    void        SetNumberOfEventsPerRun(Int_t nevpr) {fNEventsPerRun = nevpr;}
+    Int_t       GetNumberOfEventsPerRun()            {return fNEventsPerRun;}
     void        SetDigitsFileNameSuffix(const TString& suffix);//adds the suffix before ".root", 
                                                                //e.g. TPC.Digits.root -> TPC.DigitsMerged.root
                                                                //made on Jiri Chudoba demand
@@ -229,7 +230,8 @@ protected:
     AliDataLoader     *fTrackRefsDataLoader;//track reference data loader
     
     Int_t              fNEventsPerFile;  //defines number of events stored per one file
-    TString            fUnixDirName;    //! name of unix path to directory that contains event
+    Int_t              fNEventsPerRun;   //defines number of event per run
+    TString            fUnixDirName;     //! name of unix path to directory that contains event
     static const TString   fgkDefaultKineFileName;//default file name with kinamatics
     static const TString   fgkDefaultTrackRefsFileName;//default file name with kinamatics
     static const TString   fgkDefaultTriggerFileName;//default file name with trigger

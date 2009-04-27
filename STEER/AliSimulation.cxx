@@ -615,6 +615,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
    
   if (nEvents > 0) fNEvents = nEvents;
 
+  
   // generation and simulation -> hits
   if (fRunGeneration) {
     if (!RunSimulation()) if (fStopOnError) return kFALSE;
@@ -970,6 +971,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   if(AliCDBManager::Instance()->GetRun() >= 0) { 
     AliRunLoader::Instance()->SetRunNumber(AliCDBManager::Instance()->GetRun());
+    AliRunLoader::Instance()->SetNumberOfEventsPerRun(fNEvents);
   } else {
   	AliWarning("Run number not initialized!!");
   }

@@ -95,6 +95,7 @@ AliRunLoader::AliRunLoader():
  fKineDataLoader(0x0),
  fTrackRefsDataLoader(0x0),
  fNEventsPerFile(1),
+ fNEventsPerRun(0),
  fUnixDirName(".")
 {
   AliConfig::Instance();//force to build the folder structure
@@ -115,6 +116,7 @@ AliRunLoader::AliRunLoader(const char* eventfoldername):
  fKineDataLoader(new AliDataLoader(fgkDefaultKineFileName,fgkKineContainerName,"Kinematics")),
  fTrackRefsDataLoader(new AliDataLoader(fgkDefaultTrackRefsFileName,fgkTrackRefsContainerName,"Track References")),
  fNEventsPerFile(1),
+ fNEventsPerRun(0),
  fUnixDirName(".")
 {
 //ctor
@@ -163,6 +165,7 @@ AliRunLoader::AliRunLoader(TFolder* topfolder):
  fKineDataLoader(new AliDataLoader(fgkDefaultKineFileName,fgkKineContainerName,"Kinematics")),
  fTrackRefsDataLoader(new AliDataLoader(fgkDefaultTrackRefsFileName,fgkTrackRefsContainerName,"Track References")),
  fNEventsPerFile(1),
+ fNEventsPerRun(0),
  fUnixDirName(".")
 {
 //ctor
