@@ -30,11 +30,11 @@ public:
     kCluster          =  0 // cluster - track
     ,kTracklet        =  1 // tracklet - track y pulls
     ,kTrackletPhi     =  2 // tracklet - track angular pulls residuals
-    ,kMCcluster       =  3 // cluster - mc residuals/systematics
-    ,kMCtracklet      =  4 // tracklet - mc y resolution/systematics
-    ,kMCtrackTPC      =  5 // Kalman TPC track quality
-    ,kMCtrackHMPID    =  6 // Kalman HMPID track quality
-    ,kMCtrack         =  7 // Kalman track resolution
+    ,kMCcluster       =  3 // cluster-mc resolution/pulls
+    ,kMCtracklet      =  4 // tracklet-mc resolution/pulls
+    ,kMCtrackTPC      =  5 // TPC track monitor
+    ,kMCtrackHMPID    =  6 // TOF/HMPID track monitor
+    ,kMCtrack         =  7 // TRD track monitor
     ,kNhistos         =  8
   };
   enum ETRDresolutionSteer {
@@ -65,6 +65,7 @@ public:
   void    SetVisual(Bool_t v = kTRUE) {v ? SETBIT(fStatus, kVisual) : CLRBIT(fStatus, kVisual);}
 
   void    Terminate(Option_t *);
+  Bool_t  GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t idx=-1);
   
 private:
   AliTRDresolution(const AliTRDresolution&);
@@ -72,11 +73,10 @@ private:
   void    AdjustF1(TH1 *h, TF1 *f);
   Bool_t  Process(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
   Bool_t  Process3D(ETRDresolutionPlot ip, TF1 *f=0x0,  Float_t scale=1.);
-  Bool_t  GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t idx=-1);
 
   UChar_t             fStatus;          // steer parameter of the task
   static UChar_t      fNElements[kNhistos]; // number of componets per task
-  static Char_t       *fAxTitle[25][3]; // axis title for all ref histos
+  static Char_t       *fAxTitle[32][3]; // axis title for all ref histos
   AliTRDReconstructor *fReconstructor;  //! local reconstructor
   AliTRDgeometry      *fGeo;            //! TRD geometry
   TObjArray           *fGraphS;         //! result holder - sigma values

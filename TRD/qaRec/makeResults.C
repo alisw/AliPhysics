@@ -140,7 +140,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
 
      // setup filelist
     nFiles = 0;
-    TString mark(Form("%s.root", task->GetName()));
+    TString mark("TRD.Performance.root");
     string filename;
     if(files){
       ifstream filestream(files);
@@ -149,7 +149,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
         nFiles++;
       }
     } else {
-      nFiles = !gSystem->AccessPathName(Form("TRD.Task%s.root", task->GetName()));
+      nFiles = !gSystem->AccessPathName("TRD.Performance.root");
     }
 
     if(!nFiles){
@@ -161,7 +161,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
 
     if(files){
       fFM = new TFileMerger(kTRUE);
-      fFM->OutputFile(Form("%s/merge/TRD.Task%s.root",  gSystem->ExpandPathName("$PWD"), task->GetName()));
+      fFM->OutputFile(Form("%s/merge/TRD.Performance.root",  gSystem->ExpandPathName("$PWD")));
 
       ifstream file(files);
       while(getline(file, filename)){
@@ -170,12 +170,12 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
       }
       fFM->Merge();
       delete fFM;
-      if(!task->Load(Form("%s/merge/TRD.Task%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()))){
+      if(!task->Load(Form("%s/merge/TRD.Performance.root", gSystem->ExpandPathName("$PWD")))){
         delete task;
         break;
       }
     } else{
-      if(!task->Load(Form("%s/TRD.Task%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()))){
+      if(!task->Load(Form("%s/TRD.Performance.root", gSystem->ExpandPathName("$PWD")))){
         delete task;
         break;
       }
@@ -183,7 +183,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
 
     printf("Processing ...\n");
     task->PostProcess();
-    TCanvas *c=new TCanvas();
+    TCanvas *c=new TCanvas("c", "TRD Performance", 10, 10, 800, 500);
     for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
       if(!task->GetRefFigure(ipic)) continue;
       c->SaveAs(Form("%s_fig%d.gif", task->GetName(), ipic));
