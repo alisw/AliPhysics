@@ -705,7 +705,7 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
   } // end for module
   
   ClearModules();
-  
+ 
   // Add random noise to FO signals
   if (all || det[0]) { // SPD present
     fDetTypeSim->ProcessNoiseForFastOr();
@@ -1110,16 +1110,12 @@ void AliITS::Digits2Raw(){
   if (!itsLoader) {
     AliError("ITS loader is NULL.");
   }
-  else {
-    AliBaseLoader* foLoader = itsLoader->GetFOSignalsLoader();
-    if (!foLoader) {
-      AliError("FO signals base loader not retrieved.");
-    }
-    else {
-      foLoader->Load();
-      foSignals = (AliITSFOSignalsSPD*) foLoader->Get();
-    }
-  }
+   else {
+      if(!itsLoader->TreeD()) AliError("   !!! No TreeD available !!!");
+      foSignals = (AliITSFOSignalsSPD*)itsLoader->TreeD()->GetUserInfo()->FindObject("AliITSFOSignalsSPD");
+      if(!foSignals) AliError("FO signals not retrieved");
+     }
+ 
   Bool_t deleteFOsignalsLater = kFALSE;
   if (!foSignals) {
     AliError("FO signals not available. No FO bits will be written.");

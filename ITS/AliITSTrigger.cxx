@@ -82,20 +82,21 @@ void AliITSTrigger::Trigger() {
   // Get the FO signals for this event
   AliITSFOSignalsSPD* foSignals = NULL;
   AliRunLoader* runLoader = AliRunLoader::Instance();
+  runLoader->LoadDigits();
   AliITSLoader* itsLoader = (AliITSLoader*) runLoader->GetLoader("ITSLoader");
   if (!itsLoader) {
     AliError("ITS loader is NULL.");
   }
-  else {
-    AliBaseLoader* foLoader = itsLoader->GetFOSignalsLoader();
-    if (!foLoader) {
-      AliError("FO signals base loader not retrieved.");
-    }
-    else {
-      foLoader->Load();
-      foSignals = (AliITSFOSignalsSPD*) foLoader->Get();
-    }
-  }
+
+   else {
+      TTree *tree = itsLoader->TreeD();
+      if(!tree) {
+        AliError("TreeD not available");
+        return;
+      }
+      foSignals = (AliITSFOSignalsSPD*)tree->GetUserInfo()->FindObject("AliITSFOSignalsSPD");
+      if(!foSignals) AliError("FO signals not retrieved");
+     }
 
   // Process the FO signals
   if (foSignals) {

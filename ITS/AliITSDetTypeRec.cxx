@@ -851,16 +851,11 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
     if (!itsLoader) {
       AliError("ITS loader is NULL.");
     }
-    else {
-      AliBaseLoader* foLoader = itsLoader->GetFOSignalsLoader();
-      if (!foLoader) {
-	AliError("FO signals base loader not retrieved.");
-      }
-      else {
-	foLoader->Load();
-	fFOSignals = (AliITSFOSignalsSPD*) foLoader->Get();
-      }
-    }
+   else {
+      fFOSignals = (AliITSFOSignalsSPD*)itsLoader->TreeD()->GetUserInfo()->FindObject("AliITSFOSignalsSPD");
+      if(!fFOSignals) AliError("FO signals not retrieved");
+     }
+
   }
 
   

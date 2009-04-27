@@ -85,12 +85,6 @@ fGeom(0){
     fDataLoaders->Add(cascadeDataLoader);
     cascadeDataLoader->SetEventFolder(fEventFolder);
     cascadeDataLoader->SetFolder(GetDetectorDataFolder());
-    
-    // 2009/03/03: addition of object loader for fast-or signals (Henrik Tydesjo)
-    AliDataLoader* dl = GetDigitsDataLoader();
-    AliBaseLoader* foLoader = new AliObjectLoader("AliITSFOSignalsSPD",dl);
-    dl->AddBaseLoader(foLoader);
-    
 }
 /**********************************************************************/
 AliITSLoader::AliITSLoader(const Char_t *name,TFolder *topfolder): 
@@ -131,13 +125,6 @@ fGeom(0){
     fDataLoaders->Add(cascadeDataLoader);
     cascadeDataLoader->SetEventFolder(fEventFolder);
     cascadeDataLoader->SetFolder(GetDetectorDataFolder());
-    
-    // 2009/03/03: addition of object loader for fast-or signals (Henrik Tydesjo)
-    AliDataLoader* dl = GetDigitsDataLoader();
-    AliBaseLoader* foLoader = new AliObjectLoader("AliITSFOSignalsSPD",dl);
-    dl->AddBaseLoader(foLoader);
-
-    
 }
 
 
@@ -373,14 +360,3 @@ void AliITSLoader::SetITSgeom(AliITSgeom *geom){
     }// end if
     fGeom=geom;
 }
-//______________________________________________________________________
-AliBaseLoader* AliITSLoader::GetFOSignalsLoader() {
-  // return pointer to FO signals base loader
-  AliDataLoader* dl = GetDigitsDataLoader();
-  if (!dl) {
-    AliError("Data loader is NULL.");
-    return NULL;
-  }
-  return dl->GetBaseLoader("AliITSFOSignalsSPD");
-}
-

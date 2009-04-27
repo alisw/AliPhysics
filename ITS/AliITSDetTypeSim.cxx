@@ -999,18 +999,12 @@ void AliITSDetTypeSim::WriteFOSignals() {
     return;
   }
 
-  AliBaseLoader* foLoader = fLoader->GetFOSignalsLoader();
-  if (!foLoader) {
-    AliError("Base loader (FO) not retrieved.");
-    return;
+  if(!fLoader->TreeD()){
+   AliError("No TreeD available");
+   return;
   }
-  
-  // make a new fo signals object - to have the loader own and delete as it wants later
-  AliITSFOSignalsSPD *foSignals = new AliITSFOSignalsSPD(*GetFOSignals());
-
-  foLoader->Post(foSignals);
-
-  foLoader->WriteData();
-
+  TTree *tree = fLoader->TreeD();
+  AliITSFOSignalsSPD *foSignals = new AliITSFOSignalsSPD(*GetFOSignals()); 
+  tree->GetUserInfo()->Add(foSignals);
 }
 
