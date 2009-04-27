@@ -176,7 +176,7 @@ void AliGenCocktailAfterBurner::Generate()
     { //Here we are in the first call of the method
       fCurrentEvent=0;
       Int_t numberOfEvents = AliRunLoader::Instance()->GetNumberOfEventsPerRun();
-      cout << Nnumber of events per run" <<  numberOfEvents << endl;
+      cout << "Number of events per run" <<  numberOfEvents << endl;
       
       //Create stacks
       fInternalStacks      = new TObjArray(numberOfEvents + fNBgEvents); //Create array of internal stacks
