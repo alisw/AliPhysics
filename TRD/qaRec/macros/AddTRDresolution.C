@@ -2,15 +2,18 @@
 #include "TTree.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "TRD/qaRec/run.h"
+#include "TRD/qaRec/macros/AliTRDperformanceTrain.h"
 #include "TRD/qaRec/AliTRDresolution.h"
 #include "TRD/qaRec/AliTRDclusterResolution.h"
 #include "TRD/qaRec/AliTRDalignmentTask.h"
 #endif
 
 
-void AddTRDresolution(AliAnalysisManager *mgr, AliAnalysisDataContainer **ci, AliAnalysisDataContainer **co, Int_t map)
+void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
+  Int_t map = ParseOptions(trd);
+  if(!(TSTBIT(map, kResolution))) return;
+
   AliTRDresolution *task = 0x0;
   mgr->AddTask(task = new AliTRDresolution());
   task->SetMCdata(mgr->GetMCtruthEventHandler());
@@ -22,6 +25,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, AliAnalysisDataContainer **ci, Al
   // Create output containers for calibration tasks
   const Int_t nc = 4;
   const Char_t *cn[nc] = {"Cl", "Trklt", "MC_Cl", "MC_Trklt"}; 
+  AliAnalysisDataContainer *co[] = {0x0, 0x0, 0x0, 0x0};
   for(Int_t ic = 0; ic<nc; ic++){
     co[ic] = mgr->CreateContainer(Form("%s%s", task->GetName(), cn[ic]), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
     mgr->ConnectOutput(task, 1+ic, co[ic]);

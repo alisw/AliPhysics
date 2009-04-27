@@ -1,15 +1,18 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "TRD/qaRec/run.h"
+#include "TRD/qaRec/macros/AliTRDperformanceTrain.h"
 #include "TRD/qaRec/AliTRDefficiency.h"
 #include "TRD/qaRec/AliTRDefficiencyMC.h"
 #include "TRD/qaRec/AliTRDmultiplicity.h"
 #endif
 
 
-void AddTRDefficiency(AliAnalysisManager *mgr, AliAnalysisDataContainer **ci, AliAnalysisDataContainer **/*co*/, Int_t map)
+void AddTRDefficiency(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
+  Int_t map = ParseOptions(trd);
+  if(!(TSTBIT(map, kEfficiency))) return;
+
   Bool_t mc = mgr->GetMCtruthEventHandler();
   AliTRDefficiency *eff = 0x0;
   mgr->AddTask(eff = new AliTRDefficiency());

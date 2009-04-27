@@ -3,10 +3,14 @@
 #include "AliAnalysisDataContainer.h"
 #include "TRD/qaRec/AliTRDinfoGen.h"
 #include "TRD/qaRec/info/AliTRDeventInfo.h"
+#include "TRD/qaRec/macros/AliTRDperformanceTrain.h"
 #endif
 
-void AddTRDinfoGen(AliAnalysisManager *mgr, AliAnalysisDataContainer **/*ci*/, AliAnalysisDataContainer **co)
+void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **/*ci*/, AliAnalysisDataContainer **co)
 {
+  Int_t map = ParseOptions(trd);
+  if(!(TSTBIT(map, kInfoGen))) return;
+
   AliTRDinfoGen *info = 0x0;
   mgr->AddTask(info = new AliTRDinfoGen());
   info->SetDebugLevel(0);

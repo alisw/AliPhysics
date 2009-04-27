@@ -1,5 +1,5 @@
-#ifndef ALITRDCHECKDETECTOR_H
-#define ALITRDCHECKDETECTOR_H
+#ifndef ALITRDCHECKDET_H
+#define ALITRDCHECKDET_H
 
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
@@ -15,13 +15,12 @@ class AliTRDgeometry;
 class AliTRDReconstructor;
 class AliTRDrecoParam;
 class AliTRDeventInfo;
-
-class AliTRDcheckDetector : public AliTRDrecoTask{
+class AliTRDcheckDET : public AliTRDrecoTask{
 public:
   // The Histogram number
   enum  HistType_t {
     kNclustersTrack     = 0,
-    kNclustersTracklet   = 1,
+    kNclustersTracklet  = 1,
     kNtrackletsTrack    = 2,
     kNtrackletsSTA      = 3,
     kNtrackletsBAR      = 4,
@@ -38,8 +37,8 @@ public:
     kTriggerPurity      = 15
   };
 
-  AliTRDcheckDetector();
-  virtual ~AliTRDcheckDetector();
+  AliTRDcheckDET();
+  virtual ~AliTRDcheckDET();
 
   virtual void ConnectInputData(const Option_t *);
   virtual void CreateOutputObjects();
@@ -68,8 +67,8 @@ public:
   void SetRecoParam(AliTRDrecoParam *r);
 
 private:
-  AliTRDcheckDetector(const AliTRDcheckDetector &);
-  AliTRDcheckDetector& operator=(const AliTRDcheckDetector &);
+  AliTRDcheckDET(const AliTRDcheckDET &);
+  AliTRDcheckDET& operator=(const AliTRDcheckDET &);
   void GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tracklet, AliTRDcluster *c);
   void MakePlotNTracklets();
   void MakePlotPulseHeight();
@@ -79,7 +78,7 @@ private:
   AliTRDReconstructor *fReconstructor; // TRD Reconstructor
   AliTRDgeometry *fGeo;                // TRD Geometry object
     
-  ClassDef(AliTRDcheckDetector, 1)
+  ClassDef(AliTRDcheckDET, 1)
 };
 #endif
 

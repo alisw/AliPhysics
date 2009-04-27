@@ -45,7 +45,7 @@ ClassImp(AliTRDefficiency)
 
 //____________________________________________________________________
 AliTRDefficiency::AliTRDefficiency()
-  :AliTRDrecoTask("Efficiency", "Barrel Tracking Efficiency")
+  :AliTRDrecoTask("efficiency", "TRD barrel tracking efficiency checker")
   ,fMissed(0x0)
 {
   //

@@ -35,7 +35,7 @@
 
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDeventInfo.h"
-#include "AliTRDcheckDetector.h"
+#include "AliTRDcheckDET.h"
 
 #include <cstdio>
 #include <iostream>
@@ -54,8 +54,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 //_______________________________________________________
-AliTRDcheckDetector::AliTRDcheckDetector():
-  AliTRDrecoTask("DetChecker", "Basic Detector Checker")
+AliTRDcheckDET::AliTRDcheckDET():
+  AliTRDrecoTask("checkDET", "Basic TRD data checker")
   ,fEventInfo(0x0)
   ,fTriggerNames(0x0)
   ,fReconstructor(0x0)
@@ -72,7 +72,7 @@ AliTRDcheckDetector::AliTRDcheckDetector():
 }
 
 //_______________________________________________________
-AliTRDcheckDetector::~AliTRDcheckDetector(){
+AliTRDcheckDET::~AliTRDcheckDET(){
   //
   // Destructor
   // 
@@ -82,7 +82,7 @@ AliTRDcheckDetector::~AliTRDcheckDetector(){
 }
 
 //_______________________________________________________
-void AliTRDcheckDetector::ConnectInputData(Option_t *opt){
+void AliTRDcheckDET::ConnectInputData(Option_t *opt){
   //
   // Connect the Input data with the task
   //
@@ -91,7 +91,7 @@ void AliTRDcheckDetector::ConnectInputData(Option_t *opt){
 }
 
 //_______________________________________________________
-void AliTRDcheckDetector::CreateOutputObjects(){
+void AliTRDcheckDET::CreateOutputObjects(){
   //
   // Create Output Objects
   //
@@ -101,7 +101,7 @@ void AliTRDcheckDetector::CreateOutputObjects(){
 }
 
 //_______________________________________________________
-void AliTRDcheckDetector::Exec(Option_t *opt){
+void AliTRDcheckDET::Exec(Option_t *opt){
   //
   // Execution function
   // Filling TRD quality histos
@@ -135,14 +135,14 @@ void AliTRDcheckDetector::Exec(Option_t *opt){
 }
 
 //_______________________________________________________
-void AliTRDcheckDetector::Terminate(Option_t *){
+void AliTRDcheckDET::Terminate(Option_t *){
   //
   // Terminate function
   //
 }
 
 //_______________________________________________________
-Bool_t AliTRDcheckDetector::PostProcess(){
+Bool_t AliTRDcheckDET::PostProcess(){
   //
   // Do Postprocessing (for the moment set the number of Reference histograms)
   //
@@ -178,7 +178,7 @@ Bool_t AliTRDcheckDetector::PostProcess(){
 }
 
 //_______________________________________________________
-Bool_t AliTRDcheckDetector::GetRefFigure(Int_t ifig){
+Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
   //
   // Setting Reference Figures
   //
@@ -233,7 +233,7 @@ Bool_t AliTRDcheckDetector::GetRefFigure(Int_t ifig){
 }
 
 //_______________________________________________________
-TObjArray *AliTRDcheckDetector::Histos(){
+TObjArray *AliTRDcheckDET::Histos(){
   //
   // Create QA histograms
   //
@@ -377,7 +377,7 @@ TObjArray *AliTRDcheckDetector::Histos(){
 */
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotNClustersTracklet(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDET::PlotNClustersTracklet(const AliTRDtrackV1 *track){
   //
   // Plot the mean number of clusters per tracklet
   //
@@ -400,7 +400,7 @@ TH1 *AliTRDcheckDetector::PlotNClustersTracklet(const AliTRDtrackV1 *track){
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotNClustersTrack(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
   //
   // Plot the number of clusters in one track
   //
@@ -452,7 +452,7 @@ TH1 *AliTRDcheckDetector::PlotNClustersTrack(const AliTRDtrackV1 *track){
 
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
   //
   // Plot the number of tracklets
   //
@@ -498,7 +498,7 @@ TH1 *AliTRDcheckDetector::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
 
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotNTrackletsRowCross(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDET::PlotNTrackletsRowCross(const AliTRDtrackV1 *track){
   //
   // Plot the number of tracklets
   //
@@ -525,7 +525,7 @@ TH1 *AliTRDcheckDetector::PlotNTrackletsRowCross(const AliTRDtrackV1 *track){
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotFindableTracklets(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
   //
   // Plots the ratio of number of tracklets vs.
   // number of findable tracklets
@@ -648,7 +648,7 @@ TH1 *AliTRDcheckDetector::PlotFindableTracklets(const AliTRDtrackV1 *track){
 
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotChi2(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDET::PlotChi2(const AliTRDtrackV1 *track){
   //
   // Plot the chi2 of the track
   //
@@ -667,7 +667,7 @@ TH1 *AliTRDcheckDetector::PlotChi2(const AliTRDtrackV1 *track){
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotChi2Norm(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDET::PlotChi2Norm(const AliTRDtrackV1 *track){
   //
   // Plot the chi2 of the track
   //
@@ -694,7 +694,7 @@ TH1 *AliTRDcheckDetector::PlotChi2Norm(const AliTRDtrackV1 *track){
 
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotPHt(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
   //
   // Plot the average pulse height
   //
@@ -755,7 +755,7 @@ TH1 *AliTRDcheckDetector::PlotPHt(const AliTRDtrackV1 *track){
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotPHx(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDET::PlotPHx(const AliTRDtrackV1 *track){
   //
   // Plots the average pulse height vs the distance from the anode wire
   // (plus const anode wire offset)
@@ -791,7 +791,7 @@ TH1 *AliTRDcheckDetector::PlotPHx(const AliTRDtrackV1 *track){
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotChargeCluster(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDET::PlotChargeCluster(const AliTRDtrackV1 *track){
   //
   // Plot the cluster charge
   //
@@ -818,7 +818,7 @@ TH1 *AliTRDcheckDetector::PlotChargeCluster(const AliTRDtrackV1 *track){
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotChargeTracklet(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDET::PlotChargeTracklet(const AliTRDtrackV1 *track){
   //
   // Plot the charge deposit per chamber
   //
@@ -875,7 +875,7 @@ TH1 *AliTRDcheckDetector::PlotChargeTracklet(const AliTRDtrackV1 *track){
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDetector::PlotNTracksSector(const AliTRDtrackV1 *track){
+TH1 *AliTRDcheckDET::PlotNTracksSector(const AliTRDtrackV1 *track){
   //
   // Plot the number of tracks per Sector
   //
@@ -906,14 +906,14 @@ TH1 *AliTRDcheckDetector::PlotNTracksSector(const AliTRDtrackV1 *track){
 
 
 //________________________________________________________
-void AliTRDcheckDetector::SetRecoParam(AliTRDrecoParam *r)
+void AliTRDcheckDET::SetRecoParam(AliTRDrecoParam *r)
 {
 
   fReconstructor->SetRecoParam(r);
 }
 
 //________________________________________________________
-void AliTRDcheckDetector::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tracklet, AliTRDcluster *c)
+void AliTRDcheckDET::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tracklet, AliTRDcluster *c)
 {
   Float_t x = c->GetX();
   dist[0] = c->GetY() - tracklet->GetYat(x);
@@ -921,7 +921,7 @@ void AliTRDcheckDetector::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tr
 }
 
 //________________________________________________________
-void AliTRDcheckDetector::MakePlotNTracklets(){
+void AliTRDcheckDET::MakePlotNTracklets(){
   //
   // Make nice bar plot of the number of tracklets in each method
   //
@@ -968,7 +968,7 @@ void AliTRDcheckDetector::MakePlotNTracklets(){
 }
 
 //________________________________________________________
-void AliTRDcheckDetector::MakePlotPulseHeight(){
+void AliTRDcheckDET::MakePlotPulseHeight(){
   //
   // Create Plot of the Pluse Height Spectrum
   //
@@ -1003,7 +1003,7 @@ void AliTRDcheckDetector::MakePlotPulseHeight(){
 }
 
 //________________________________________________________
-Bool_t AliTRDcheckDetector::MakeBarPlot(TH1 *histo, Int_t color){
+Bool_t AliTRDcheckDET::MakeBarPlot(TH1 *histo, Int_t color){
   //
   // Draw nice bar plots
   //

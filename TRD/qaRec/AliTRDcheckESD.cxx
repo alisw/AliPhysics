@@ -49,7 +49,7 @@ const Float_t AliTRDcheckESD::fgkxTOF = 365.;
 
 //____________________________________________________________________
 AliTRDcheckESD::AliTRDcheckESD():
-  AliAnalysisTask("ESDchecker", "ESD checker for TRD info")
+  AliAnalysisTask("checkESD", "ESD checker for TRD info")
   ,fStatus(0)
   ,fESD(0x0)
   ,fMC(0x0)

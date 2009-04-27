@@ -1,5 +1,5 @@
-#ifndef ALITRDPIDCHECKER_H
-#define ALITRDPIDCHECKER_H
+#ifndef ALITRDCHECKPID_H
+#define ALITRDCHECKPID_H
 
 //////////////////////////////////////////////////////
 //
@@ -21,7 +21,7 @@
 
 class AliTRDReconstructor;
 class AliTRDpidUtil;
-class AliTRDpidChecker : public AliTRDrecoTask 
+class AliTRDcheckPID : public AliTRDrecoTask 
 {
   // Plots registered for this task
   enum{
@@ -37,8 +37,8 @@ class AliTRDpidChecker : public AliTRDrecoTask
     ,kNPlots         =  9     // Number of plots for this tasks 
   };
 public:
-  AliTRDpidChecker();
-  virtual ~AliTRDpidChecker();
+  AliTRDcheckPID();
+  virtual ~AliTRDcheckPID();
   
   virtual void    CreateOutputObjects();
   virtual Bool_t  GetRefFigure(Int_t ifig);
@@ -68,8 +68,8 @@ public:
   inline Bool_t IsInRange(Double_t momentum);
 
 private:
-  AliTRDpidChecker(const AliTRDpidChecker&);               // not implemented
-  AliTRDpidChecker& operator=(const AliTRDpidChecker&);    // not implemented
+  AliTRDcheckPID(const AliTRDcheckPID&);               // not implemented
+  AliTRDcheckPID& operator=(const AliTRDcheckPID&);    // not implemented
 
   Int_t  CalcPDG(AliTRDtrackV1* track = 0x0);
   Bool_t CheckTrackQuality(const AliTRDtrackV1* track = 0x0);
@@ -81,11 +81,11 @@ private:
   TAxis               *fMomentumAxis;      //! helper mementum binning
   Int_t                fMinNTracklets;     // minimum number of required Tracklets (for systematic studies)
   Int_t                fMaxNTracklets;     // maximum number of required Tracklets (for systematic studies) 
-  ClassDef(AliTRDpidChecker, 1); // TRD PID checker
+  ClassDef(AliTRDcheckPID, 1); // TRD PID checker
 };
 
 //________________________________________________________________________
-inline void AliTRDpidChecker::SetMomentumBinning(Int_t nBins, Double_t *bins){
+inline void AliTRDcheckPID::SetMomentumBinning(Int_t nBins, Double_t *bins){
   //
   // Set the Momentum Bins
   //
@@ -94,7 +94,7 @@ inline void AliTRDpidChecker::SetMomentumBinning(Int_t nBins, Double_t *bins){
 }
 
 //________________________________________________________________________
-inline Int_t AliTRDpidChecker::FindBin(Int_t species, Double_t momentum){
+inline Int_t AliTRDcheckPID::FindBin(Int_t species, Double_t momentum){
   //
   // Find the Bin in the 2D Histogram
   //
@@ -102,7 +102,7 @@ inline Int_t AliTRDpidChecker::FindBin(Int_t species, Double_t momentum){
 }
 
 //________________________________________________________________________
-inline Bool_t AliTRDpidChecker::IsInRange(Double_t momentum){
+inline Bool_t AliTRDcheckPID::IsInRange(Double_t momentum){
   //
   // Check Whether momentum is in the defined Range
   //

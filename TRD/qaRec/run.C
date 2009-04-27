@@ -62,43 +62,26 @@
 
 #include "TRD/AliTRDtrackerV1.h"
 #include "TRD/AliTRDcalibDB.h"
-#include "TRD/qaRec/info/AliTRDeventInfo.h"
-#include "TRD/qaRec/AliTRDcheckESD.h"
-#include "TRD/qaRec/AliTRDinfoGen.h"
-#include "TRD/qaRec/AliTRDefficiency.h"
-#include "TRD/qaRec/AliTRDefficiencyMC.h"
-#include "TRD/qaRec/AliTRDresolution.h"
-#include "TRD/qaRec/AliTRDcalibration.h"
-#include "TRD/qaRec/AliTRDalignmentTask.h"
-#include "TRD/qaRec/AliTRDpidChecker.h"
-#include "TRD/qaRec/AliTRDpidRefMaker.h"
-#include "TRD/qaRec/AliTRDcheckDetector.h"
-#include "TRD/qaRec/AliTRDclusterResolution.h"
-#include "TRD/qaRec/AliTRDmultiplicity.h"
 
+#include "TRD/qaRec/macros/AddTRDcheckESD.C"
+#include "TRD/qaRec/macros/AddTRDinfoGen.C"
+#include "TRD/qaRec/macros/AddTRDcheckDET.C"
+#include "TRD/qaRec/macros/AddTRDefficiency.C"
+#include "TRD/qaRec/macros/AddTRDresolution.C"
+#include "TRD/qaRec/macros/AddTRDcheckPID.C"
 
-#include "PWG1/AliPerformanceTask.h"
-#include "PWG1/AliPerformanceEff.h"
-#include "PWG1/AliPerformanceDEdx.h"
-#include "PWG1/AliPerformanceTPC.h"
-#include "PWG1/AliPerformanceDCA.h"
-#include "PWG1/AliPerformanceRes.h"
-#include "PWG1/AliMCInfoCuts.h"
-#include "PWG1/AliRecInfoCuts.h"
 #endif
 
-#include "run.h"
+#include "macros/AliTRDperformanceTrain.h"
+#include "../../PWG1/macros/AddPerformanceTask.C"
+
 
 Bool_t MEM = kFALSE;
 Bool_t fHasMCdata = kTRUE;
 Bool_t fHasFriends = kTRUE;
-const Int_t kTPCmode = 0; //
-const Int_t kTPChpt = 0; //
 
 TChain* MakeChainLST(const char* filename = 0x0);
 TChain* MakeChainXML(const char* filename = 0x0);
-Int_t   ParseTRD(Char_t *opt);
-Int_t   ParseTPC(Char_t *opt);
 void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t nev=1234567890, Long64_t first = 0)
 {
   TMemStat *mem = 0x0;
@@ -118,7 +101,11 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   if(gSystem->Load("libANALYSIS.so")<0) return;
   if(gSystem->Load("libANALYSISalice.so")<0) return;
 
-
+/*    } else if(s.CompareTo("NOFR") == 0){ 
+      fHasFriends = kFALSE;
+    } else if(s.CompareTo("NOMC") == 0){ 
+      fHasMCdata = kFALSE;
+*/
   
   // INITIALIZATION OF RUNNING ENVIRONMENT
   //TODO We should use the GRP if available similar to AliReconstruction::InitGRP()!
@@ -128,17 +115,13 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   cdbManager->SetRun(0);
   cdbManager->SetCacheFlag(kFALSE);
   // initialize magnetic field.
-  AliMagF *field = 0x0;
-  field = new AliMagF("Maps","Maps", 2, 1., 10., AliMagF::k5kG);
-  //field = new AliMagF("Maps","Maps", 2, 0., 10., AliMagF::k2kG);
-  TGeoGlobalMagField::Instance()->SetField(field);
-
-  // initialize TRD settings
-  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-  AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBins());
-  AliGeomManager::LoadGeometry();
-
-
+  if(!TGeoGlobalMagField::Instance()->GetField()){
+    TGeoGlobalMagField::Instance()->SetField(
+      new AliMagF("Maps","Maps", 2, 1., 10., AliMagF::k5kG)
+      //AliMagF("Maps","Maps", 2, 0., 10., AliMagF::k2kG);
+    );
+    AliGeomManager::LoadGeometry();
+  }
 
 
   // DEFINE DATA CHAIN
@@ -157,7 +140,6 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   chain->Lookup();
   chain->GetListOfFiles()->Print();
   printf("\n ----> CHAIN HAS %d ENTRIES <----\n\n", (Int_t)chain->GetEntries());
-  
 
 
   // BUILD ANALYSIS MANAGER
@@ -174,82 +156,53 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
 ///////////////////////////////////////////////////////////
   // TRD specific library
   if(gSystem->Load("libTRDqaRec.so")<0) return;
-  // Parse TRD options
-  Int_t fSteerTRD = ParseTRD(trd);
   // TRD data containers
   AliAnalysisDataContainer *ci[] = {0x0, 0x0};
-  AliAnalysisDataContainer *co[] = {0x0, 0x0, 0x0, 0x0};
+
+
+  // initialize TRD settings
+  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBins());
 
   // plug (set of) TRD wagons in the train
-  for(Int_t it=0; it<NQATASKS; it++){
-    if(!(TSTBIT(fSteerTRD, it))) continue;
-    if(gROOT->LoadMacro(Form("$ALICE_ROOT/TRD/qaRec/macros/Add%s.C+", TString(fgkTRDtaskClassName[it])(3,20).Data()))) {
-      Error("run.C", Form("Error loading %s task.", fgkTRDtaskClassName[it]));
-      return;
-    } 
-
-    switch(it){
-    case kCheckESD:
-      AddTRDcheckESD(mgr); break;
-    case kInfoGen:
-      AddTRDinfoGen(mgr, 0x0, ci); break;
-    case kCheckDetector:
-      AddTRDcheckDetector(mgr, ci, co, fSteerTRD); break;
-    case kEfficiency:
-      AddTRDefficiency(mgr, ci, co, fSteerTRD); break;
-    case kResolution:
-      AddTRDresolution(mgr, ci, co, fSteerTRD); break;
-    case kPID:
-      AddTRDpidChecker(mgr, ci, co, fSteerTRD); break;
-    default:
-      Warning("run.C", Form("No performance task registered at slot %d.", it)); 
+  if(trd){
+    for(Int_t it=0; it<NTRDQATASKS; it++){
+      if(gROOT->LoadMacro(Form("$ALICE_ROOT/TRD/qaRec/macros/Add%s.C+", TString(fgkTRDtaskClassName[it])(3,20).Data()))) {
+        Error("run.C", Form("Error loading %s task.", fgkTRDtaskClassName[it]));
+        return;
+      } 
+  
+      switch(it){
+      case kCheckESD:
+        AddTRDcheckESD(mgr); break;
+      case kInfoGen:
+        AddTRDinfoGen(mgr, trd, 0x0, ci); break;
+      case kCheckDET:
+        AddTRDcheckDET(mgr, trd, ci); break;
+      case kEfficiency:
+        AddTRDefficiency(mgr, trd, ci); break;
+      case kResolution:
+        AddTRDresolution(mgr, trd, ci); break;
+      case kCheckPID:
+        AddTRDcheckPID(mgr, trd, ci); break;
+      default:
+        Warning("run.C", Form("No performance task registered at slot %d.", it)); 
+      }
     }
   }
-
 
 ///////////////////////////////////////////////////////////
 ///////////////         TPC                     ///////////
 ///////////////////////////////////////////////////////////
   if(gSystem->Load("libPWG1.so")<0) return;
-  // Parse TPC options
-  Int_t fSteerTPC = ParseTPC(tpc);
-  // Create TPC-ESD track reconstruction cuts
-  AliRecInfoCuts *pRecInfoCuts = new AliRecInfoCuts(); 
-  pRecInfoCuts->SetPtRange(0.20,200.0);
-  //pRecInfoCuts->SetEtaRange(-0.9,0.9);
-  pRecInfoCuts->SetMaxDCAToVertexXY(3.0);
-  pRecInfoCuts->SetMaxDCAToVertexZ(3.0);
-  pRecInfoCuts->SetMinNClustersTPC(50);
-  pRecInfoCuts->SetMinNClustersITS(2);
-  pRecInfoCuts->SetMinTPCsignalN(50);
-  pRecInfoCuts->SetHistogramsOn(kFALSE); 
-  // Create TPC-MC track reconstruction cuts
-  AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts();
-  pMCInfoCuts->SetMinRowsWithDigits(50);
-  pMCInfoCuts->SetMaxR(0.025); // from diamond xy size (pp@10TeV) 
-  pMCInfoCuts->SetMaxVz(15.);  // from diamond z size  (pp@10TeV)
-  pMCInfoCuts->SetRangeTPCSignal(0.5,1.4); 
-  pMCInfoCuts->SetMinTrackLength(70);
   
   // BUILD STEERING TASK FOR TPC
-  if(fSteerTPC){
+  if(tpc){
     if(gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddPerformanceTask.C+")) {
       Error("run.C", "Error loading AliPerformanceTask task.");
       return;
     } 
-    AliPerformanceTask *TPC = AddPerformanceTask(mgr);
-
-    // plug (set of) TPC wagons in the train
-    TClass ctask; AliPerformanceObject *perf = 0x0;
-    for(Int_t icomp=1; icomp<NTPCTASKS; icomp++){
-      if(!(TSTBIT(fSteerTPC, icomp))) continue;
-      new(&ctask) TClass(fgkTPCtaskClassName[icomp]);
-      TPC->AddPerformanceObject((perf = (AliPerformanceObject*)ctask.New()));
-      perf->SetAnalysisMode(kTPCmode);
-      perf->SetHptGenerator(kTPChpt);
-      perf->SetAliRecInfoCuts(pRecInfoCuts);
-      perf->SetAliMCInfoCuts(pMCInfoCuts);
-    }
+    AddPerformanceTask(mgr, tpc);
   }
 
   if (!mgr->InitAnalysis()) return;
@@ -337,72 +290,3 @@ TChain* MakeChainXML(const char* xmlfile)
   }
   return chain;
 }
-
-
-//____________________________________________
-Int_t ParseTRD(Char_t *trd)
-{
-  Int_t fSteerTask = 1;
-  TObjArray *tasksArray = TString(trd).Tokenize(" ");
-  for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
-    TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
-    if(s.CompareTo("ALL") == 0){
-      for(Int_t itask = 0; itask < NQATASKS; itask++) SETBIT(fSteerTask, itask);
-      continue;
-    } else if(s.CompareTo("NOFR") == 0){ 
-      fHasFriends = kFALSE;
-    } else if(s.CompareTo("NOMC") == 0){ 
-      fHasMCdata = kFALSE;
-    } else { 
-      Bool_t foundOpt = kFALSE;  
-      for(Int_t itask = 2; itask < NTRDTASKS; itask++){
-        if(s.CompareTo(fgkTRDtaskOpt[itask]) != 0) continue;
-        SETBIT(fSteerTask, itask); SETBIT(fSteerTask, kInfoGen);
-        foundOpt = kTRUE;
-        break;
-      }
-      if(!foundOpt) Info("run.C", Form("TRD task %s not implemented (yet).", s.Data()));
-    }
-  }
-  // extra rules for calibration tasks
-  if(TSTBIT(fSteerTask, kCalibration)) SETBIT(fSteerTask, kCheckDetector);
-  if(TSTBIT(fSteerTask, kMultiplicity)) SETBIT(fSteerTask, kEfficiency);
-  if(TSTBIT(fSteerTask, kEfficiencyMC)) SETBIT(fSteerTask, kEfficiency);
-  if(TSTBIT(fSteerTask, kClErrParam)) SETBIT(fSteerTask, kResolution);
-  if(TSTBIT(fSteerTask, kAlignment)) SETBIT(fSteerTask, kResolution);
-  if(TSTBIT(fSteerTask, kPIDRefMaker)) SETBIT(fSteerTask, kPIDChecker);
-
-  return fSteerTask;
-}
-
-
-
-//____________________________________________
-Int_t ParseTPC(Char_t *tpc)
-{
-  Int_t fSteerTask = 0;
-  TObjArray *tasksArray = TString(tpc).Tokenize(" ");
-  for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
-    TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
-    if(s.CompareTo("ALL") == 0){
-      for(Int_t itask = 0; itask < NTPCPERFORMANCE; itask++) SETBIT(fSteerTask, itask);
-      continue;
-    } else if(s.CompareTo("NOFR") == 0){ 
-      fHasFriends = kFALSE;
-    } else if(s.CompareTo("NOMC") == 0){ 
-      fHasMCdata = kFALSE;
-    } else { 
-      Bool_t foundOpt = kFALSE;  
-      for(Int_t itask = 0; itask < NTPCTASKS; itask++){
-        if(s.CompareTo(fgkTPCtaskOpt[itask]) != 0) continue;
-        SETBIT(fSteerTask, itask); SETBIT(fSteerTask, 0);
-        foundOpt = kTRUE;
-        break;
-      }
-      if(!foundOpt) Info("run.C", Form("TPC task %s not implemented (yet).", s.Data()));
-    }
-  }
-  return fSteerTask;
-}
-
-

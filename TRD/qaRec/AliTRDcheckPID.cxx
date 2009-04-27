@@ -29,17 +29,17 @@
 #include "AliCDBManager.h"
 #include "AliTRDpidUtil.h"
 
-#include "AliTRDpidChecker.h"
+#include "AliTRDcheckPID.h"
 #include "info/AliTRDtrackInfo.h"
 
 // calculate pion efficiency at 90% electron efficiency for 11 momentum bins
 // this task should be used with simulated data only
 
-ClassImp(AliTRDpidChecker)
+ClassImp(AliTRDcheckPID)
 
 //________________________________________________________________________
-AliTRDpidChecker::AliTRDpidChecker() 
-  :AliTRDrecoTask("PID", "PID Checker")
+AliTRDcheckPID::AliTRDcheckPID() 
+  :AliTRDrecoTask("checkPID", "TRD PID checker")
   ,fReconstructor(0x0)
   ,fUtil(0x0)
   ,fGraph(0x0)
@@ -67,7 +67,7 @@ AliTRDpidChecker::AliTRDpidChecker()
 
 
 //________________________________________________________________________
-AliTRDpidChecker::~AliTRDpidChecker() 
+AliTRDcheckPID::~AliTRDcheckPID() 
 {
  if(fGraph){fGraph->Delete(); delete fGraph;}
  if(fReconstructor) delete fReconstructor;
@@ -76,7 +76,7 @@ AliTRDpidChecker::~AliTRDpidChecker()
 
 
 //________________________________________________________________________
-void AliTRDpidChecker::CreateOutputObjects()
+void AliTRDcheckPID::CreateOutputObjects()
 {
   // Create histograms
   // Called once
@@ -87,7 +87,7 @@ void AliTRDpidChecker::CreateOutputObjects()
 
 
 //_______________________________________________________
-TObjArray * AliTRDpidChecker::Histos(){
+TObjArray * AliTRDcheckPID::Histos(){
 
   //
   // Create QA histograms
@@ -184,7 +184,7 @@ TObjArray * AliTRDpidChecker::Histos(){
 
 
 //________________________________________________________________________
-Bool_t AliTRDpidChecker::CheckTrackQuality(const AliTRDtrackV1* track) 
+Bool_t AliTRDcheckPID::CheckTrackQuality(const AliTRDtrackV1* track) 
 {
   //
   // Check if the track is ok for PID
@@ -199,7 +199,7 @@ Bool_t AliTRDpidChecker::CheckTrackQuality(const AliTRDtrackV1* track)
 }
 
 //________________________________________________________________________
-Int_t AliTRDpidChecker::CalcPDG(AliTRDtrackV1* track) 
+Int_t AliTRDcheckPID::CalcPDG(AliTRDtrackV1* track) 
 {
 
   track -> SetReconstructor(fReconstructor);
@@ -226,7 +226,7 @@ Int_t AliTRDpidChecker::CalcPDG(AliTRDtrackV1* track)
 
 
 //_______________________________________________________
-TH1 *AliTRDpidChecker::PlotLQ(const AliTRDtrackV1 *track)
+TH1 *AliTRDcheckPID::PlotLQ(const AliTRDtrackV1 *track)
 {
   //
   // Plot the probabilities for electrons using 2-dim LQ
@@ -286,7 +286,7 @@ TH1 *AliTRDpidChecker::PlotLQ(const AliTRDtrackV1 *track)
 
 
 //_______________________________________________________
-TH1 *AliTRDpidChecker::PlotNN(const AliTRDtrackV1 *track)
+TH1 *AliTRDcheckPID::PlotNN(const AliTRDtrackV1 *track)
 {
   //
   // Plot the probabilities for electrons using 2-dim LQ
@@ -345,7 +345,7 @@ TH1 *AliTRDpidChecker::PlotNN(const AliTRDtrackV1 *track)
 
 
 //_______________________________________________________
-TH1 *AliTRDpidChecker::PlotESD(const AliTRDtrackV1 *track)
+TH1 *AliTRDcheckPID::PlotESD(const AliTRDtrackV1 *track)
 {
   //
   // Plot the probabilities for electrons using 2-dim LQ
@@ -403,7 +403,7 @@ TH1 *AliTRDpidChecker::PlotESD(const AliTRDtrackV1 *track)
 
 
 //_______________________________________________________
-TH1 *AliTRDpidChecker::PlotdEdx(const AliTRDtrackV1 *track)
+TH1 *AliTRDcheckPID::PlotdEdx(const AliTRDtrackV1 *track)
 {
   //
   // Plot the probabilities for electrons using 2-dim LQ
@@ -455,7 +455,7 @@ TH1 *AliTRDpidChecker::PlotdEdx(const AliTRDtrackV1 *track)
 
 
 //_______________________________________________________
-TH1 *AliTRDpidChecker::PlotdEdxSlice(const AliTRDtrackV1 *track)
+TH1 *AliTRDcheckPID::PlotdEdxSlice(const AliTRDtrackV1 *track)
 {
   //
   // Plot the probabilities for electrons using 2-dim LQ
@@ -509,7 +509,7 @@ TH1 *AliTRDpidChecker::PlotdEdxSlice(const AliTRDtrackV1 *track)
 
 
 //_______________________________________________________
-TH1 *AliTRDpidChecker::PlotPH(const AliTRDtrackV1 *track)
+TH1 *AliTRDcheckPID::PlotPH(const AliTRDtrackV1 *track)
 {
   //
   // Plot the probabilities for electrons using 2-dim LQ
@@ -560,7 +560,7 @@ TH1 *AliTRDpidChecker::PlotPH(const AliTRDtrackV1 *track)
 
 
 //_______________________________________________________
-TH1 *AliTRDpidChecker::PlotNClus(const AliTRDtrackV1 *track)
+TH1 *AliTRDcheckPID::PlotNClus(const AliTRDtrackV1 *track)
 {
   //
   // Plot the probabilities for electrons using 2-dim LQ
@@ -608,7 +608,7 @@ TH1 *AliTRDpidChecker::PlotNClus(const AliTRDtrackV1 *track)
 }
 
 //_______________________________________________________
-TH1 *AliTRDpidChecker::PlotNTracklets(const AliTRDtrackV1 *track)
+TH1 *AliTRDcheckPID::PlotNTracklets(const AliTRDtrackV1 *track)
 {
   //
   // Plot the probabilities for electrons using 2-dim LQ
@@ -647,7 +647,7 @@ TH1 *AliTRDpidChecker::PlotNTracklets(const AliTRDtrackV1 *track)
 }
 
 //_______________________________________________________
-TH1 *AliTRDpidChecker::PlotMom(const AliTRDtrackV1 *track)
+TH1 *AliTRDcheckPID::PlotMom(const AliTRDtrackV1 *track)
 {
   //
   // Plot the probabilities for electrons using 2-dim LQ
@@ -686,7 +686,7 @@ TH1 *AliTRDpidChecker::PlotMom(const AliTRDtrackV1 *track)
 
 
 //_______________________________________________________
-TH1 *AliTRDpidChecker::PlotMomBin(const AliTRDtrackV1 *track)
+TH1 *AliTRDcheckPID::PlotMomBin(const AliTRDtrackV1 *track)
 {
   //
   // Plot the probabilities for electrons using 2-dim LQ
@@ -725,7 +725,7 @@ TH1 *AliTRDpidChecker::PlotMomBin(const AliTRDtrackV1 *track)
 
 
 //________________________________________________________
-Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
+Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
 {
   Bool_t FIRST = kTRUE;
   TGraphErrors *g = 0x0;
@@ -918,7 +918,7 @@ Bool_t AliTRDpidChecker::GetRefFigure(Int_t ifig)
 }
 
 //________________________________________________________________________
-Bool_t AliTRDpidChecker::PostProcess()
+Bool_t AliTRDcheckPID::PostProcess()
 {
   // Draw result to the screen
   // Called once at the end of the query
@@ -941,7 +941,7 @@ Bool_t AliTRDpidChecker::PostProcess()
 }
 
 //________________________________________________________________________
-void AliTRDpidChecker::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray *results, Float_t electron_efficiency){
+void AliTRDcheckPID::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray *results, Float_t electron_efficiency){
   fUtil->SetElectronEfficiency(electron_efficiency);
 
   Color_t colors[3] = {kBlue, kGreen+2, kRed};
@@ -1001,7 +1001,7 @@ void AliTRDpidChecker::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArr
 }
 
 //________________________________________________________________________
-void AliTRDpidChecker::Terminate(Option_t *) 
+void AliTRDcheckPID::Terminate(Option_t *) 
 {
   // Draw result to the screen
   // Called once at the end of the query

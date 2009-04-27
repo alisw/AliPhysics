@@ -68,7 +68,7 @@ const Float_t AliTRDinfoGen::xTOF = 365.;
 
 //____________________________________________________________________
 AliTRDinfoGen::AliTRDinfoGen():
-  AliTRDrecoTask("InfoGen", "Track List Generator")
+  AliTRDrecoTask("infoGen", "MC-REC TRD-track list generator")
   ,fESD(0x0)
   ,fMC(0x0)
   ,fESDfriend(0x0)

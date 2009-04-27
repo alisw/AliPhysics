@@ -138,7 +138,7 @@ Char_t *AliTRDresolution::fAxTitle[32][3] = {
 
 //________________________________________________________
 AliTRDresolution::AliTRDresolution()
-  :AliTRDrecoTask("Resolution", "Spatial and Momentum Resolution")
+  :AliTRDrecoTask("resolution", "Spatial and momentum TRD resolution checker")
   ,fStatus(0)
   ,fReconstructor(0x0)
   ,fGeo(0x0)
