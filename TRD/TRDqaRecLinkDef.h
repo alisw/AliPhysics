@@ -14,11 +14,11 @@
 #pragma link C++ class  AliTRDcheckESD+;
 #pragma link C++ class  AliTRDinfoGen+;
 #pragma link C++ class  AliTRDrecoTask+;
-#pragma link C++ class  AliTRDcheckDetector+;
+#pragma link C++ class  AliTRDcheckDET+;
 #pragma link C++ class  AliTRDresolution+;
 #pragma link C++ class  AliTRDefficiency+;
 #pragma link C++ class  AliTRDefficiencyMC+;
-#pragma link C++ class  AliTRDpidChecker+;
+#pragma link C++ class  AliTRDcheckPID+;
 
 // reconstruction calibration tasks
 #pragma link C++ class  AliTRDmultiplicity+;
