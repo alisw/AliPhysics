@@ -98,7 +98,14 @@ void AliAnalysisTaskSEVertexingHF::UserCreateOutputObjects()
   // Create the output container
   //
   if(fDebug > 1) printf("AnalysisTaskSEVertexingHF::UserCreateOutPutData() \n");
-
+  // Support both the case when the AOD + deltaAOD are produced in an ESD
+  // analysis or if the deltaAOD is produced on an analysis on AOD's. (A.G. 27/04/09)
+  if (!AODEvent()) {
+     Fatal("UserCreateOutputObjects", "This task needs an AOD handler");
+     return;
+  }   
+  TString filename = "AliAOD.VertexingHF.root";
+  if (!IsStandardAOD()) filename = "";
   if(!fVHF) {
     printf("AnalysisTaskSEVertexingHF::UserCreateOutPutData() \n ERROR! no fvHF!\n");
     return;
@@ -106,48 +113,48 @@ void AliAnalysisTaskSEVertexingHF::UserCreateOutputObjects()
 
   fVerticesHFTClArr = new TClonesArray("AliAODVertex", 0);
   fVerticesHFTClArr->SetName("VerticesHF");
-  AddAODBranch("TClonesArray", &fVerticesHFTClArr);
+  AddAODBranch("TClonesArray", &fVerticesHFTClArr, filename);
 
   if(fVHF->GetD0toKpi()) {
     fD0toKpiTClArr = new TClonesArray("AliAODRecoDecayHF2Prong", 0);
     fD0toKpiTClArr->SetName("D0toKpi");
-    AddAODBranch("TClonesArray", &fD0toKpiTClArr);
+    AddAODBranch("TClonesArray", &fD0toKpiTClArr, filename);
   }
 
   if(fVHF->GetJPSItoEle()) {
     fJPSItoEleTClArr = new TClonesArray("AliAODRecoDecayHF2Prong", 0);
     fJPSItoEleTClArr->SetName("JPSItoEle");
-    AddAODBranch("TClonesArray", &fJPSItoEleTClArr);
+    AddAODBranch("TClonesArray", &fJPSItoEleTClArr, filename);
   }
 
   if(fVHF->Get3Prong()) {
     fCharm3ProngTClArr = new TClonesArray("AliAODRecoDecayHF3Prong", 0);
     fCharm3ProngTClArr->SetName("Charm3Prong");
-    AddAODBranch("TClonesArray", &fCharm3ProngTClArr);
+    AddAODBranch("TClonesArray", &fCharm3ProngTClArr, filename);
   }
 
   if(fVHF->Get4Prong()) {
     fCharm4ProngTClArr = new TClonesArray("AliAODRecoDecayHF4Prong", 0);
     fCharm4ProngTClArr->SetName("Charm4Prong");
-    AddAODBranch("TClonesArray", &fCharm4ProngTClArr);
+    AddAODBranch("TClonesArray", &fCharm4ProngTClArr, filename);
   }
 
   if(fVHF->GetDstar()) {
     fDstarTClArr = new TClonesArray("AliAODRecoCascadeHF", 0);
     fDstarTClArr->SetName("Dstar");
-    AddAODBranch("TClonesArray", &fDstarTClArr);
+    AddAODBranch("TClonesArray", &fDstarTClArr, filename);
   }
 
   if(fVHF->GetLikeSign()) {                      
     fLikeSign2ProngTClArr = new TClonesArray("AliAODRecoDecayHF2Prong", 0);
     fLikeSign2ProngTClArr->SetName("LikeSign2Prong");
-    AddAODBranch("TClonesArray", &fLikeSign2ProngTClArr);
+    AddAODBranch("TClonesArray", &fLikeSign2ProngTClArr, filename);
   }
 
   if(fVHF->GetLikeSign() && fVHF->Get3Prong()) {                      
     fLikeSign3ProngTClArr = new TClonesArray("AliAODRecoDecayHF3Prong", 0);
     fLikeSign3ProngTClArr->SetName("LikeSign3Prong");
-    AddAODBranch("TClonesArray", &fLikeSign3ProngTClArr);
+    AddAODBranch("TClonesArray", &fLikeSign3ProngTClArr, filename);
   }
 
   return;
@@ -160,6 +167,9 @@ void AliAnalysisTaskSEVertexingHF::UserExec(Option_t */*option*/)
   // heavy flavor vertexing
   
   AliVEvent *event = dynamic_cast<AliVEvent*> (InputEvent());
+  // In case there is an AOD handler writing a standard AOD, use the AOD 
+  // event in memory rather than the input (ESD) event. (A.G. 27/04/09)
+  if (AODEvent() && IsStandardAOD()) event = dynamic_cast<AliVEvent*> (AODEvent());
 
   // heavy flavor vertexing
   fVHF->FindCandidates(event,
