@@ -23,6 +23,7 @@
 
 #include <TTree.h>
 #include <TFile.h>
+#include <TRef.h>
 #include <TString.h>
 #include <TList.h>
 
@@ -64,7 +65,8 @@ AliAODHandler::AliAODHandler() :
     fMCEventH(NULL),
     fTreeA(NULL),
     fFileA(NULL),
-    fFileName("")
+    fFileName(""),
+    fExtensions(NULL)
 {
   // default constructor
 }
@@ -88,13 +90,15 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
     fMCEventH(NULL),
     fTreeA(NULL),
     fFileA(NULL),
-    fFileName("")
+    fFileName(""),
+    fExtensions(NULL)
 {
 }
 
 //______________________________________________________________________________
 AliAODHandler::~AliAODHandler() 
 {
+ // Destructor.
   delete fAODEvent;
   if(fFileA){
     // is already handled in TerminateIO
@@ -102,7 +106,7 @@ AliAODHandler::~AliAODHandler()
     delete fFileA;
   }
   delete fTreeA;
- // destructor
+  if (fExtensions) delete fExtensions;
 }
 
 //______________________________________________________________________________
@@ -126,8 +130,8 @@ Bool_t AliAODHandler::Init(Option_t* opt)
        fFileA = gFile;
        CreateTree(1);
     } else {   
-       // Merging in memory
-       CreateTree(0);
+       // Merging in memory (not needed anymore)
+       CreateTree(1);
     }   
   } else {
     // local and grid
@@ -136,10 +140,15 @@ Bool_t AliAODHandler::Init(Option_t* opt)
     CreateTree(1);
     owd->cd();
   }
+  if (fExtensions) {
+     TIter next(fExtensions);
+     AliAODExtension *ext;
+     while ((ext=(AliAODExtension*)next())) ext->Init(option);
+  }   
   return kTRUE;
 }
 
-
+//______________________________________________________________________________
 void AliAODHandler::StoreMCParticles(){
 
   // 
@@ -350,6 +359,7 @@ void AliAODHandler::StoreMCParticles(){
 
 }
 
+//______________________________________________________________________________
 Bool_t AliAODHandler::FinishEvent()
 {
   // Fill data structures
@@ -357,6 +367,14 @@ Bool_t AliAODHandler::FinishEvent()
     fAODEvent->MakeEntriesReferencable();
     StoreMCParticles();
     FillTree();
+    if (fExtensions) {
+      TIter next(fExtensions);
+      AliAODExtension *ext;
+      while ((ext=(AliAODExtension*)next())) {
+        ext->GetAOD()->MakeEntriesReferencable();
+        ext->GetTree()->Fill();
+      }  
+    }       
   }
 
   if (fIsStandard) fAODEvent->ResetStd();
@@ -368,20 +386,31 @@ Bool_t AliAODHandler::FinishEvent()
 //______________________________________________________________________________
 Bool_t AliAODHandler::Terminate()
 {
-    // Terminate 
-    AddAODtoTreeUserInfo();
-    return kTRUE;
+  // Terminate 
+  AddAODtoTreeUserInfo();
+  if (fExtensions) {
+    TIter next(fExtensions);
+    AliAODExtension *ext;
+    while ((ext=(AliAODExtension*)next())) ext->GetTree()->GetUserInfo()->Add(ext->GetAOD());
+  }  
+  return kTRUE;
 }
 
 //______________________________________________________________________________
 Bool_t AliAODHandler::TerminateIO()
 {
-    // Terminate IO
-    if (fFileA) {
-	fFileA->Close();
-	delete fFileA;
-    }
-    return kTRUE;
+  // Terminate IO
+  if (fFileA) {
+    fFileA->Close();
+    delete fFileA;
+    fFileA = 0;
+  }
+  if (fExtensions) {
+    TIter next(fExtensions);
+    AliAODExtension *ext;
+    while ((ext=(AliAODExtension*)next())) ext->TerminateIO();
+  }  
+  return kTRUE;
 }
 
 //______________________________________________________________________________
@@ -390,6 +419,7 @@ void AliAODHandler::CreateTree(Int_t flag)
     // Creates the AOD Tree
     fTreeA = new TTree("aodTree", "AliAOD tree");
     fTreeA->Branch(fAODEvent->GetList());
+    TRef junk = (TObject*)fTreeA->BranchRef();
     if (flag == 0) fTreeA->SetDirectory(0);
 }
 
@@ -408,9 +438,15 @@ void AliAODHandler::AddAODtoTreeUserInfo()
 }
 
 //______________________________________________________________________________
-void AliAODHandler::AddBranch(const char* cname, void* addobj)
+void AliAODHandler::AddBranch(const char* cname, void* addobj, const char* filename)
 {
-    // Add a new branch to the aod 
+    // Add a new branch to the aod. Added optional filename parameter if the
+    // branch should be written to a separate file.
+    if (strlen(filename)) {
+       AliAODExtension *ext = AddExtension(filename);
+       ext->AddBranch(cname, addobj);
+       return;
+    }
     TDirectory *owd = gDirectory;
     if (fFileA) {
       fFileA->cd();
@@ -435,6 +471,24 @@ void AliAODHandler::AddBranch(const char* cname, void* addobj)
 }
 
 //______________________________________________________________________________
+AliAODExtension *AliAODHandler::AddExtension(const char *filename, const char *title)
+{
+// Add an AOD extension with some branches in a different file.
+   TString fname(filename);
+   if (!fname.EndsWith(".root")) fname += ".root";
+   if (!fExtensions) {
+      fExtensions = new TObjArray();
+      fExtensions->SetOwner();
+   }   
+   AliAODExtension *ext = (AliAODExtension*)fExtensions->FindObject(fname);
+   if (!ext) {
+      ext = new AliAODExtension(fname, title);
+      fExtensions->Add(ext);
+   }   
+   return ext;
+}
+   
+//______________________________________________________________________________
 void AliAODHandler::SetOutputFileName(const char* fname)
 {
 // Set file name.
@@ -448,6 +502,7 @@ const char *AliAODHandler::GetOutputFileName()
    return fFileName.Data();
 }
 
+//______________________________________________________________________________
 void  AliAODHandler::SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader *genHeader){
 
 
@@ -455,13 +510,9 @@ void  AliAODHandler::SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader 
   // Needed since different ProcessType and ImpactParamter are not 
   // in the base class...
   // We don't encode process types for event cocktails yet
-  // coul be done e.g. by adding offsets depnding on the generator
-
+  // could be done e.g. by adding offsets depnding on the generator
 
   mcHeader->AddGeneratorName(genHeader->GetName());
-
-
-
   if(!genHeader)return;
   AliGenPythiaEventHeader *pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
     if (pythiaGenHeader) {
@@ -484,4 +535,81 @@ void  AliAODHandler::SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader 
   
   AliWarning(Form("MC Eventheader not known: %s",genHeader->GetName()));
 
+}
+
+ClassImp(AliAODExtension)
+
+//-------------------------------------------------------------------------
+//     Support class for AOD extensions. This is created by the user analysis
+//     that requires a separate file for some AOD branches. The name of the 
+//     AliAODExtension object is the file name where the AOD branches will be
+//     stored.
+//-------------------------------------------------------------------------
+
+//______________________________________________________________________________
+AliAODExtension::~AliAODExtension()
+{
+// Destructor.
+  delete fAODEvent;
+  if(fFileE){
+    // is already handled in TerminateIO
+    fFileE->Close();
+    delete fFileE;
+  }
+  delete fTreeE;
+}
+
+//______________________________________________________________________________
+void AliAODExtension::AddBranch(const char* cname, void* addobj)
+{
+    // Add a new branch to the aod 
+    if (!fAODEvent) Init("");
+    TDirectory *owd = gDirectory;
+    if (fFileE) {
+      fFileE->cd();
+    }
+    char** apointer = (char**) addobj;
+    TObject* obj = (TObject*) *apointer;
+
+    fAODEvent->AddObject(obj);
+ 
+    const Int_t kSplitlevel = 99; // default value in TTree::Branch()
+    const Int_t kBufsize = 32000; // default value in TTree::Branch()
+
+    if (!fTreeE->FindBranch(obj->GetName())) {
+      // Do the same as if we book via 
+      // TTree::Branch(TCollection*)
+      
+      fTreeE->Bronch(obj->GetName(), cname, fAODEvent->GetList()->GetObjectRef(obj),
+		     kBufsize, kSplitlevel - 1);
+      //    fTreeA->Branch(obj->GetName(), cname, addobj);
+    }
+    owd->cd();
+}
+
+//______________________________________________________________________________
+Bool_t AliAODExtension::Init(Option_t */*option*/)
+{
+// Initialize IO.
+  if(!fAODEvent) fAODEvent = new AliAODEvent();
+  TDirectory *owd = gDirectory;
+  fFileE = new TFile(GetName(), "RECREATE");
+  fTreeE = new TTree("aodTree", "AliAOD tree");
+  fTreeE->Branch(fAODEvent->GetList());
+  TRef junk = (TObject*)fTreeE->BranchRef();
+  owd->cd();
+  return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliAODExtension::TerminateIO()
+{
+  // Terminate IO
+  if (fFileE) {
+    fFileE->Write();
+    fFileE->Close();
+    delete fFileE;
+    fFileE = 0;
+  }
+  return kTRUE;
 }

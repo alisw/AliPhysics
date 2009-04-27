@@ -15,8 +15,10 @@
 class AliAODEvent;
 class TFile;
 class TTree;
+class TObjArray;
 class AliMCEventHandler;
 class AliAODMCHeader;
+class AliAODExtension;
 class AliGenEventHeader;
 
 
@@ -53,10 +55,12 @@ class AliAODHandler : public AliVEventHandler {
     //
     AliAODEvent*         GetAOD()  {return fAODEvent;}
     virtual TTree*       GetTree() const {return fTreeA;}
+    TObjArray*           GetExtensions() const {return fExtensions;}
     void                 CreateTree(Int_t flag);
     void                 FillTree();
     void                 AddAODtoTreeUserInfo();
-    void                 AddBranch(const char* cname, void* addobj);
+    void                 AddBranch(const char* cname, void* addobj, const char *fname="");
+    AliAODExtension*     AddExtension(const char *filename, const char *title="");                 
     Bool_t               IsStandard() {return fIsStandard;}
     Bool_t               GetFillAOD(){return fFillAOD;} 
     Bool_t               NeedsHeaderReplication() {return  fNeedsHeaderReplication;}
@@ -95,7 +99,39 @@ class AliAODHandler : public AliVEventHandler {
     TTree                   *fTreeA;                  //! tree for AOD persistency
     TFile                   *fFileA;                  //! Output file
     TString                  fFileName;               //  Output file name
-    ClassDef(AliAODHandler, 3)
+    TObjArray               *fExtensions;             //  List of extensions
+    ClassDef(AliAODHandler, 4)
 };
 
+//-------------------------------------------------------------------------
+//     Support class for AOD extensions. This is created by the user analysis
+//     that requires a separate file for some AOD branches. The name of the 
+//     AliAODExtension object is the file name where the AOD branches will be
+//     stored.
+//     Author: Andrei Gheata, CERN
+//-------------------------------------------------------------------------
+
+class AliAODExtension : public TNamed {
+    
+ public:
+    AliAODExtension() : TNamed(), fAODEvent(0), fTreeE(0), fFileE(0)   {;}
+    AliAODExtension(const char* name, const char* title) : TNamed(name,title), fAODEvent(0), fTreeE(0), fFileE(0) {;}
+    virtual ~AliAODExtension();
+    void                 AddBranch(const char* cname, void* addobj);
+    const char*          GetOutputFileName() const {return TNamed::GetName();}
+    AliAODEvent*         GetAOD() const            {return fAODEvent;}
+    TTree*               GetTree() const           {return fTreeE;}
+    Bool_t               Init(Option_t *option);
+    void                 SetOutputFileName(const char* fname) {TNamed::SetName(fname);}
+    Bool_t               TerminateIO();
+ private:
+    AliAODExtension(const AliAODExtension&);             // Not implemented
+    AliAODExtension& operator=(const AliAODExtension&);  // Not implemented
+
+ private:
+    AliAODEvent             *fAODEvent;               //! Pointer to the AOD event
+    TTree                   *fTreeE;                  //! tree for AOD persistency
+    TFile                   *fFileE;                  //! Output file
+    ClassDef(AliAODExtension, 1)                      // Support for extra AOD branches in a separate AOD file
+};
 #endif
