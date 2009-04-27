@@ -58,6 +58,7 @@ class AliITSResidualsAnalysis : public AliAlignmentTracks {
   TString GetFileNameGeometry() const { return fGeom; };
   void SetFileNameTrackPoints(TString name) { fAliTrackPoints=name; };
   void SetFileNameGeometry(TString name) { fGeom=name; };
+  void SetUseGausFit(Bool_t opt=kTRUE) {fUseGausFit=opt;}
 
   enum ModulePhiZ{
     kPhiSPD1=20,
@@ -120,13 +121,14 @@ class AliITSResidualsAnalysis : public AliAlignmentTracks {
   TClonesArray *fClonesArray;   // pointer to the TClonesArray with the final AliAlignObjParams
   TString fAliTrackPoints;      // Filename with the AliTrackPoints
   TString fGeom;                // Filename with the Geometry
+  Bool_t  fUseGausFit;          // Fit residual histos with gaussians
 
 private:
   AliITSResidualsAnalysis(const AliITSResidualsAnalysis&); // Not implemented
   AliITSResidualsAnalysis& operator=(const AliITSResidualsAnalysis&); // Not implemented
 
 
-  ClassDef(AliITSResidualsAnalysis,2) // Residuals analysis for the ITS
+  ClassDef(AliITSResidualsAnalysis,3) // Residuals analysis for the ITS
     
     };
     

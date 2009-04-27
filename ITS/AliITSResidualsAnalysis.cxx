@@ -103,7 +103,8 @@ ClassImp(AliITSResidualsAnalysis)
     fRealignObjFileIsOpen(kFALSE),
     fClonesArray(0),
     fAliTrackPoints("AliTrackPoints.root"),
-    fGeom("geometry.root")
+    fGeom("geometry.root"),
+    fUseGausFit(kFALSE)
 {
 
   //
@@ -158,7 +159,8 @@ AliITSResidualsAnalysis::AliITSResidualsAnalysis(const TString aliTrackPoints,
   fRealignObjFileIsOpen(kFALSE),
   fClonesArray(0),
   fAliTrackPoints(aliTrackPoints),
-  fGeom(geom)
+  fGeom(geom),
+  fUseGausFit(kFALSE)
 { 
   //
   // Standard Constructor (alitrackpoints)
@@ -211,8 +213,8 @@ AliITSResidualsAnalysis::AliITSResidualsAnalysis(const TArrayI *volIDs):
   fRealignObjFileIsOpen(kFALSE),
   fClonesArray(0),
   fAliTrackPoints("AliTrackPoints.root"),
-  fGeom("geometry.root")
-
+  fGeom("geometry.root"),
+  fUseGausFit(kFALSE)
 { 
   //
   // Original Constructor
@@ -748,7 +750,7 @@ Bool_t AliITSResidualsAnalysis::SaveHists(Int_t minNpoints, TString outname) con
   TTree *analysisTree=new TTree("analysisTree","Tree with the residuals");
 
   // Declares Variables to be stored into the TTree
-  TF1 *gauss;
+  TF1 *gauss=new TF1("gauss","gaus",-10.,10.);
   Int_t volID,entries,nHistAnalyzed=0;
   Double_t meanResRPHI,meanResZ,meanResX,rmsResRPHI,rmsResZ,rmsResX,coordVol[3],x,y,z;
   TH1F *histRPHI = new TH1F();
@@ -800,27 +802,39 @@ Bool_t AliITSResidualsAnalysis::SaveHists(Int_t minNpoints, TString outname) con
       // Filling the RPHI
       histRPHI=fVolResHistRPHI[j];
       rmsResRPHI=fVolResHistRPHI[j]->GetRMS();
+      if(fUseGausFit){
         // Fit (for average)
-      gauss=new TF1("gauss","gaus",-3*rmsResRPHI,3*rmsResRPHI);
-      fVolResHistRPHI[j]->Fit("gauss","QRN");
-      meanResRPHI=gauss->GetParameter(1);
+	gauss->SetRange(-3*rmsResRPHI,3*rmsResRPHI);
+	fVolResHistRPHI[j]->Fit("gauss","QRN");
+	meanResRPHI=gauss->GetParameter(1);
+      }else{
+	meanResRPHI=fVolResHistRPHI[j]->GetMean();
+      }
 
       // Filling the Z
       histZ=fResHistZ[j];
       rmsResZ=fResHistZ[j]->GetRMS();
+      if(fUseGausFit){
         // Fit (for average)
-      gauss=new TF1("gauss","gaus",-3*rmsResZ,3*rmsResZ);
-      fResHistZ[j]->Fit("gauss","QRN");
-      meanResZ=gauss->GetParameter(1);
+	gauss->SetRange(-3*rmsResZ,3*rmsResZ);
+	fResHistZ[j]->Fit("gauss","QRN");
+	meanResZ=gauss->GetParameter(1);
+      }else{
+	meanResZ=fResHistZ[j]->GetMean();
+      }
 
       // Filling the X
       histX=fResHistX[j];
       rmsResX=fResHistX[j]->GetRMS();
+      if(fUseGausFit){
         // Fit (for average)
-      gauss=new TF1("gauss","gaus",-3*rmsResX,3*rmsResX);
-      fResHistX[j]->Fit("gauss","QRN");
-      meanResX=gauss->GetParameter(1);
- 
+	gauss->SetRange(-3*rmsResX,3*rmsResX);
+	fResHistX[j]->Fit("gauss","QRN");
+	meanResX=gauss->GetParameter(1);
+      }else{
+	meanResX=fResHistX[j]->GetMean();
+      }
+
       histXLocsddL=fResHistXLocsddL[j];
       histXLocsddR=fResHistXLocsddR[j];
       histCoordGlobY=fHistCoordGlobY[j];
@@ -854,6 +868,7 @@ Bool_t AliITSResidualsAnalysis::SaveHists(Int_t minNpoints, TString outname) con
     }
 
   }
+  delete gauss;
 
   cout<<"-> Modules Analyzed: "<<nHistAnalyzed<<endl;
   cout<<"   With "<<blimps<<" events"<<endl;
@@ -1951,8 +1966,8 @@ void AliITSResidualsAnalysis::CalculateResiduals(const TArrayI *volids,
   cout<<"   -> Non-Fitted tracks: "<<ecount<<"/"<<totcount<<endl; 
   
   UnloadPoints(pointsDim,points);
-
   SaveHists(3,outname);
+
   
   return;
   
