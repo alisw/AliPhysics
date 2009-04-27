@@ -6,10 +6,13 @@ void AliAnalysisTaskSEVertexingHFTest()
   //
 
   Bool_t inputAOD=kTRUE; // otherwise, ESD
+  Bool_t createAOD=kFALSE; // kTRUE: create AOD and use it as input to vertexing
+                          // kFALSE: use ESD as input to vertexing
+  Bool_t writeKineToAOD = kTRUE;
   TString mode="local"; // otherwise, "grid" 
   Bool_t useParFiles=kFALSE;
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+  gROOT->LoadMacro("LoadLibraries.C");
   LoadLibraries(useParFiles);
 
   TChain *chain = 0;
@@ -72,10 +75,42 @@ void AliAnalysisTaskSEVertexingHFTest()
   
   // Output 
   AliAODHandler *aodHandler = new AliAODHandler();
-  aodHandler->SetOutputFileName("AliAOD.VertexingHF.root");
-  aodHandler->SetCreateNonStandardAOD();
+  if(createAOD) {
+    aodHandler->SetOutputFileName("AliAODs.root");
+  } else {
+    aodHandler->SetOutputFileName("AliAOD.VertexingHF.root");
+    aodHandler->SetCreateNonStandardAOD();
+  }
   mgr->SetOutputEventHandler(aodHandler);
   
+  if(!inputAOD && createAOD) {
+    // MC Truth
+    AliMCEventHandler* mcHandler = new AliMCEventHandler();
+    if(writeKineToAOD) mgr->SetMCtruthEventHandler(mcHandler);
+    AliAnalysisTaskMCParticleFilter *kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Filter");
+    if(writeKineToAOD) mgr->AddTask(kinefilter);  
+    // Barrel Tracks
+    AliAnalysisTaskESDfilter *filter = new AliAnalysisTaskESDfilter("Filter");
+    mgr->AddTask(filter);
+
+    AliESDtrackCuts* esdTrackCutsHF = new AliESDtrackCuts("AliESDtrackCuts", "Heavy flavour");
+    esdTrackCutsHF->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    
+    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
+    trackFilter->AddCuts(esdTrackCutsHF);
+
+    filter->SetTrackFilter(trackFilter);
+   
+    // Pipelining
+    mgr->ConnectInput(filter,0,mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(filter,0,mgr->GetCommonOutputContainer());
+    if(writeKineToAOD) {
+      mgr->ConnectInput(kinefilter,0,mgr->GetCommonInputContainer());
+      mgr->ConnectOutput(kinefilter,0,mgr->GetCommonOutputContainer());
+    }
+ 
+  }
+
   // Vertexing analysis task    
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskVertexingHF.C");
   AliAnalysisTaskSEVertexingHF *hfTask = AddTaskVertexingHF();
