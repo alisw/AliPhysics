@@ -43,8 +43,16 @@
 #include "TSystem.h"
 #include "TFile.h"
 #include "TTreeStream.h"
-#include "AliLog.h"
 #include "TTimeStamp.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
+#include "TF1.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "THnSparse.h"
+
+
+#include "AliLog.h"
 #include "AliESDEvent.h"
 
 
@@ -237,4 +245,90 @@ void AliTPCcalibBase::RegisterDebugOutput(const char *path){
   AliInfo(Form("copy %s\t%s\n",dsName.Data(),dsName2.Data()));
   printf("copy %s\t%s\n",dsName.Data(),dsName2.Data());
   TFile::Cp(dsName.Data(),dsName2.Data());
+}
+
+
+
+TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries, Int_t nmaxBin, Float_t fracLow, Float_t fracUp){
+  //
+  // Fitting slices of the projection(axisDim1,axisDim2) of a sparse histogram
+  // 
+  TH2D * hist = h->Projection(axisDim1, axisDim2);
+  Double_t *xvec = new Double_t[hist->GetNbinsX()];
+  Double_t *yvec = new Double_t[hist->GetNbinsX()];
+  Double_t *xerr = new Double_t[hist->GetNbinsX()];
+  Double_t *yerr = new Double_t[hist->GetNbinsX()];
+  Int_t counter  = 0;
+  TH1D * projectionHist =0;
+  //
+
+  for(Int_t i=1; i < hist->GetNbinsX(); i++) {
+    Int_t nsum=0;
+    Int_t imin   =  i;
+    Int_t imax   =  i;
+
+    for (Int_t idelta=0; idelta<nmaxBin; idelta++){
+      //
+      imin   =  TMath::Max(i-idelta,1);
+      imax   =  TMath::Min(i+idelta,hist->GetNbinsX());
+      nsum = TMath::Nint(hist->Integral(imin,imax,0,hist->GetNbinsY()));
+      if (nsum==0) break;
+      if (nsum>minEntries) break;
+    }
+    if (nsum<minEntries) continue;
+    //
+    hist->GetXaxis()->SetRange(imin,imax);
+    projectionHist = hist->ProjectionY("gain",imin,imax);
+    // Determine Median:
+    Float_t xMin = projectionHist->GetXaxis()->GetXmin();
+    Float_t xMax = projectionHist->GetXaxis()->GetXmax();
+    Float_t xMedian = (xMin+xMax)*0.5;
+    Float_t integral = projectionHist->GetSum();
+    //
+    //
+    Float_t currentSum=0;
+    for(Int_t jbin=1; jbin<projectionHist->GetNbinsX()-1; jbin++) {
+      currentSum += projectionHist->GetBinContent(jbin);
+      if (currentSum/integral<fracLow) xMin = projectionHist->GetBinCenter(jbin);
+      if (currentSum/integral<fracUp)  xMax = projectionHist->GetBinCenter(jbin+1);      
+      if (currentSum/integral<0.5 && projectionHist->GetBinContent(jbin)>0){
+	xMedian = (projectionHist->GetBinCenter(jbin)*projectionHist->GetBinContent(jbin)+
+		   projectionHist->GetBinCenter(jbin+1)*projectionHist->GetBinContent(jbin+1))/
+	  (projectionHist->GetBinContent(jbin)+projectionHist->GetBinContent(jbin+1));
+      }
+    }
+    //
+    Float_t rms  = projectionHist->GetRMS();
+    //    i += interval;
+    //
+    Double_t xcenter =  hist->GetMean(); 
+    Double_t xrms    =  hist->GetRMS()+hist->GetXaxis()->GetBinWidth(1)/TMath::Sqrt(12.); 
+    Double_t binWidth = projectionHist->GetXaxis()->GetBinWidth(1);
+    if (rms>0){
+      TF1 funcGaus("funcGaus","gaus");
+      // cut on +- 4 RMS
+      projectionHist->Fit(&funcGaus,"QN","",xMin, xMax);
+      //  
+      xvec[counter] = xcenter;
+      yvec[counter] = funcGaus.GetParameter(1);
+      xerr[counter] = xrms;
+      yerr[counter] = funcGaus.GetParError(1); 
+      counter++;
+    }else{
+      xvec[counter] = xcenter;
+      yvec[counter] = xMedian;
+      xerr[counter] = xrms;
+      yerr[counter] = binWidth/TMath::Sqrt(12.); 
+      counter++;
+    }
+    delete projectionHist;
+  }
+  
+  TGraphErrors * graphErrors = new TGraphErrors(counter, xvec, yvec, xerr, yerr);
+  delete [] xvec;
+  delete [] yvec;
+  delete [] xerr;
+  delete [] yerr;
+  delete hist;
+  return graphErrors;
 }

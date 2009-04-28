@@ -15,6 +15,9 @@ class AliESDEvent;
 class AliESDtrack;
 class TCollection;
 class TTreeSRedirector;
+class TGraph;
+class TGraphErrors;
+class THnSparse;
 
 class AliTPCcalibBase:public TNamed {
 public:
@@ -42,6 +45,7 @@ public:
   Int_t      GetDebugLevel() const {return fDebugLevel;}
   virtual void RegisterDebugOutput(const char *path);
   static     Bool_t HasLaser(AliESDEvent *event);
+  static TGraphErrors *        FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries, Int_t nmaxBin, Float_t fracLow=0.1, Float_t fracUp=0.9);
 
 protected: 
   TTreeSRedirector *fDebugStreamer;     //! debug streamer
