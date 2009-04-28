@@ -133,7 +133,7 @@ class AliAnalysisVertexingHF : public TNamed {
 
   Bool_t fInputAOD; // input from AOD (kTRUE) or ESD (kFALSE) 
 
-  Int_t *fAODMap; // map between index and ID for AOD tracks
+  Int_t *fAODMap; //[100000] map between index and ID for AOD tracks
 
   Double_t fBzkG; // z componenent of field in kG
 
