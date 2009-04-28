@@ -9,6 +9,7 @@ set(SRCS
        vertexingHF/AliAnalysisTaskSEVertexingHF.cxx 
        vertexingHF/AliAnalysisTaskSESelectHF.cxx
        vertexingHF/AliAnalysisTaskSECompareHF.cxx
+       vertexingHF/AliAnalysisTaskSEBkgLikeSignJPSI.cxx
        vertexingHF/AliCFHeavyFlavourTask.cxx
        vertexingHF/AliCFHeavyFlavourTaskMultiVar.cxx
        vertexingHF/AliMultiDimVector.cxx

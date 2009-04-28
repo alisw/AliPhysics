@@ -12,6 +12,7 @@ SRCS:=   vertexingHF/AliAODRecoDecayHF.cxx \
        vertexingHF/AliCFHeavyFlavourTaskMultiVar.cxx \
        vertexingHF/AliMultiDimVector.cxx vertexingHF/AliSignificanceCalculator.cxx \
        vertexingHF/AliHFMassFitter.cxx \
+       vertexingHF/AliAnalysisTaskSEBkgLikeSignJPSI.cxx \
        vertexingHF/AliAnalysisBtoJPSItoEle.cxx \
        vertexingHF/AliAnalysisTaskSEBtoJPSItoEle.cxx \
        vertexingHF/AliBtoJPSItoEleCDFfitFCN.cxx \
