@@ -43,6 +43,7 @@ AliMUONGlobalTriggerBoard::AliMUONGlobalTriggerBoard(): AliMUONTriggerBoard()
 
    for (Int_t i=0;i<16;i++) fRegionalResponse[i] = 0;
    for (Int_t i=0;i< 4;i++) fGlobalInput[i] = 0;
+   for (Int_t i=0;i< 4;i++) fMask[i] = 0xffffffff;
 }
 
 //___________________________________________
@@ -52,6 +53,7 @@ AliMUONGlobalTriggerBoard::AliMUONGlobalTriggerBoard(const char *name, Int_t a) 
 
    for (Int_t i=0;i<16;i++) fRegionalResponse[i] = 0;
    for (Int_t i=0;i< 4;i++) fGlobalInput[i] = 0;
+   for (Int_t i=0;i< 4;i++) fMask[i] = 0xffffffff;
 }
 
 //___________________________________________
@@ -122,11 +124,14 @@ void AliMUONGlobalTriggerBoard::Response()
    usLpt = ((t[0] & 0x2 ) != 0);
    usHpt = ((t[0] & 0x20) != 0);
 
-   sHpt  <<= 1;
-   lsLpt <<= 2;
-   lsHpt <<= 3;
-   usLpt <<= 4;
-   usHpt <<= 5;
+   // LSB is zero (trigger choice to send to CTP: sLpt or sHpt)
+
+   sLpt  <<= 1;
+   sHpt  <<= 2;
+   lsLpt <<= 3;
+   lsHpt <<= 4;
+   usLpt <<= 5;
+   usHpt <<= 6;
 
    fResponse = sLpt | sHpt | lsLpt | lsHpt | usLpt |usHpt;
    
@@ -199,11 +204,15 @@ void AliMUONGlobalTriggerBoard::BuildGlobalInput()
   TBits rs(8), rsi(8);
   for (Int_t iReg = 0; iReg < 16; iReg++) {
 
-    // invert bit in regional response
+    // invert bits in regional response ?
     rs.Set(8,&fRegionalResponse[iReg]);
     for (Int_t i = 0; i < 4; i++) {
-      rsi[2*i]   = rs[2*i+1];
-      rsi[2*i+1] = rs[2*i];
+      // ... YES
+      //rsi[2*i]   = rs[2*i+1];
+      //rsi[2*i+1] = rs[2*i];
+      // ... NO
+      rsi[2*i]   = rs[2*i];
+      rsi[2*i+1] = rs[2*i+1];
     }
     regRespInv = 0;
     rsi.Get(&regRespInv);
@@ -254,7 +263,7 @@ void AliMUONGlobalTriggerBoard::MaskGlobalInput()
       // Hpt
       fRegionalResponse[iReg] |= ((gitmp[3] >> (4*(iReg-8))) & 0xF) << 4;
     }
-    // invert bit in regional response
+    // invert bits in regional response ?
     rs.Set(8,&fRegionalResponse[iReg]);
     for (Int_t i = 0; i < 4; i++) {
       rsi[2*i]   = rs[2*i+1];
@@ -262,7 +271,8 @@ void AliMUONGlobalTriggerBoard::MaskGlobalInput()
     }
     regRespInv = 0;
     rsi.Get(&regRespInv);
-    fRegionalResponse[iReg] = regRespInv;
+    // uncomment if ... YES
+    //fRegionalResponse[iReg] = regRespInv;
   }
 
 }
@@ -271,7 +281,7 @@ void AliMUONGlobalTriggerBoard::MaskGlobalInput()
 void AliMUONGlobalTriggerBoard::Scan(Option_t*) const
 {
   /// print global trigger output 
-  TBits w(6); w.Set(6,&fResponse);
+  TBits w(7); w.Set(7,&fResponse);
 
 // TRG[1:0]
 // 00 noth
@@ -281,11 +291,11 @@ void AliMUONGlobalTriggerBoard::Scan(Option_t*) const
 
    Int_t iS[2] = {0,0};
 
-   iS[0] = (Int_t)w.TestBitNumber(0);
-   iS[1] = (Int_t)w.TestBitNumber(1);
+   iS[0] = (Int_t)w.TestBitNumber(1);
+   iS[1] = (Int_t)w.TestBitNumber(2);
 
-   Int_t iPU[2] = {w[4],w[5]};
-   Int_t iPL[2] = {w[2],w[3]};
+   Int_t iPU[2] = {w[5],w[6]};
+   Int_t iPL[2] = {w[3],w[4]};
 
    printf("============================================\n");
    printf(" Global Trigger output       Low pt  High pt\n");

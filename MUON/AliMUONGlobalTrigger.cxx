@@ -112,15 +112,14 @@ void AliMUONGlobalTrigger::SetFromGlobalResponse(UShort_t globalResponse)
   /// [US:2, LS:2, Single:2] with [Hpt, Lpt]
   /// remove Apt
 
-  // don't have the information anymore of the sign
-  fSingleLpt = globalResponse & 0x1;
-  fSingleHpt = (globalResponse >> 1) & 0x1;
+  fSingleLpt = (globalResponse >> 1) & 0x1;
+  fSingleHpt = (globalResponse >> 2) & 0x1;
 
-  fPairUnlikeLpt = (globalResponse >> 4)  & 0x1;
-  fPairUnlikeHpt = (globalResponse >> 5)  & 0x1;
+  fPairLikeLpt = (globalResponse >> 3)  & 0x1;
+  fPairLikeHpt = (globalResponse >> 4)  & 0x1;
   
-  fPairLikeLpt = (globalResponse >> 2)  & 0x1;
-  fPairLikeHpt = (globalResponse >> 3)  & 0x1;
+  fPairUnlikeLpt = (globalResponse >> 5)  & 0x1;
+  fPairUnlikeHpt = (globalResponse >> 6)  & 0x1;
   
 }
 
@@ -131,16 +130,16 @@ UChar_t AliMUONGlobalTrigger::GetGlobalResponse() const
   /// from class member values
   /// [US:2, LS:2, Single:2] with [Hpt, Lpt]
 
-  Int_t response = 0;
+  UChar_t response = 0;
 
-  if (SingleLpt())     response|= 0x1;
-  if (SingleHpt())     response|= 0x2;
+  if (SingleLpt())     response|= 0x2;
+  if (SingleHpt())     response|= 0x4;
 
-  if (PairLikeLpt())   response|= 0x4;
-  if (PairLikeHpt())   response|= 0x8;
+  if (PairLikeLpt())   response|= 0x8;
+  if (PairLikeHpt())   response|= 0x10;
  
-  if (PairUnlikeLpt()) response|= 0x10;
-  if (PairUnlikeHpt()) response|= 0x20;
+  if (PairUnlikeLpt()) response|= 0x20;
+  if (PairUnlikeHpt()) response|= 0x40;
 
   return response;
 }
