@@ -80,6 +80,52 @@ AliHFMassFitter::AliHFMassFitter (TH1F *histoToFit, Double_t minvalue, Double_t 
   else  cout<<"Type of fit For Background = "<<ftypeOfFit4Bkg<<endl;
 }
 
+//_________________________________________________________________________
+
+AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
+  TNamed(),
+  fhistoInvMass(mfit.fhistoInvMass),
+  fminMass(mfit.fminMass),
+  fmaxMass(mfit.fmaxMass),
+  fNbin(mfit.fNbin),
+  fWithBkg(mfit.fWithBkg),
+  ftypeOfFit4Bkg(mfit.ftypeOfFit4Bkg),
+  ftypeOfFit4Sgn(mfit.ftypeOfFit4Sgn),
+  ffactor(mfit.ffactor),
+  fntuParam(mfit.fntuParam),
+  fMass(mfit.fMass),
+  fSigmaSgn(mfit.fSigmaSgn),
+  fSideBands(mfit.fSideBands)
+
+{
+  //copy constructor
+  for(Int_t i=0;i<30;i++) fFitPars[i]=mfit.fFitPars[i];
+}
+
+//_________________________________________________________________________
+
+AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
+
+  //assignment operator
+
+  if(&mfit == this) return *this;
+  fhistoInvMass= mfit.fhistoInvMass;
+  fminMass= mfit.fminMass;
+  fmaxMass= mfit.fmaxMass;
+  fNbin= mfit.fNbin;
+  fWithBkg= mfit.fWithBkg;
+  ftypeOfFit4Bkg= mfit.ftypeOfFit4Bkg;
+  ftypeOfFit4Sgn= mfit.ftypeOfFit4Sgn;
+  ffactor= mfit.ffactor;
+  fntuParam= mfit.fntuParam;
+  fMass= mfit.fMass;
+  fSigmaSgn= mfit.fSigmaSgn;
+  fSideBands= mfit.fSideBands;
+  for(Int_t i=0;i<30;i++) fFitPars[i]=mfit.fFitPars[i];
+
+  return *this;
+}
+
 //___________________________________________________________________________
 
 Double_t AliHFMassFitter::FitFunction4MassDistr (Double_t *x, Double_t *par){
@@ -455,7 +501,7 @@ void AliHFMassFitter::MassFitter(Bool_t draw){
     cout<<i<<"\t"<<fFitPars[i]<<endl;
     }
   */
-  /*
+  
   if(draw){
     TCanvas *canvas=new TCanvas("canvas",fhistoInvMass->GetName());
     TH1F *fhistocopy=new TH1F(*fhistoInvMass);
@@ -473,15 +519,15 @@ void AliHFMassFitter::MassFitter(Bool_t draw){
     funcmass->Draw("sames");
     
   }
-  */
+  
 }
 
 //_________________________________________________________________________
-void  AliHFMassFitter::GetFitPars(Float_t *vector25) const {
+void  AliHFMassFitter::GetFitPars(Float_t *params) const {
   // Return fit parameters
 
-  for(Int_t i=0;i<25;i++){
-    vector25[i]=fFitPars[i];
+  for(Int_t i=0;i<30;i++){
+    params[i]=fFitPars[i];
   }
 }
 
@@ -730,3 +776,4 @@ void AliHFMassFitter::Significance(Double_t nOfSigma,Double_t &significance,Doub
 }
 
 //__________________________________________________________________________
+
