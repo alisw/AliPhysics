@@ -147,7 +147,7 @@ Bool_t AliTOFtrack::PropagateToInnerTOF()
   
   
   Double_t x = GetX();
-  Int_t nsteps=Int_t((370.-x)/0.5); // 0.5 cm Steps
+  Int_t nsteps=Int_t((AliTOFGeometry::Rmin()-x)/0.5); // 0.5 cm Steps
   for (Int_t istep=0;istep<nsteps;istep++){
     Float_t xp = x+istep*0.5; 
     Double_t param[2];  

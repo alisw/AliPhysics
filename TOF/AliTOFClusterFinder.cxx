@@ -1198,24 +1198,28 @@ void AliTOFClusterFinder::GetClusterPars(Int_t *ind, Double_t* pos,Double_t* cov
   // -----------------------------------------------------   |
   // x <-----------------------------------------------------
 
-  Float_t localX=(ind[4]-23.5)*AliTOFGeometry::XPad();
-  Float_t localY=0;
-  Float_t localZ=(ind[3]- 0.5)*AliTOFGeometry::ZPad();
-
+  /*
+  Float_t localX = (ind[4]-23.5)*AliTOFGeometry::XPad();
+  Float_t localY = 0;
+  Float_t localZ = (ind[3]- 0.5)*AliTOFGeometry::ZPad();
+  */
+  Float_t localX = (ind[4]-AliTOFGeometry::NpadX()/2)*AliTOFGeometry::XPad()+AliTOFGeometry::XPad()/2.;
+  Float_t localY = 0;
+  Float_t localZ = (ind[3]-AliTOFGeometry::NpadZ()/2)*AliTOFGeometry::ZPad()+AliTOFGeometry::ZPad()/2.;
   //move to the tracking ref system
 
   Double_t lpos[3];
-  lpos[0]=localX;
-  lpos[1]=localY;
-  lpos[2]=localZ; 
+  lpos[0] = localX;
+  lpos[1] = localY;
+  lpos[2] = localZ; 
 
   const TGeoHMatrix *l2t= AliGeomManager::GetTracking2LocalMatrix(volIndex);
   // Get The position in the track ref system
   Double_t tpos[3];
   l2t->MasterToLocal(lpos,tpos);
-  pos[0]=tpos[0];
-  pos[1]=tpos[1];
-  pos[2]=tpos[2];
+  pos[0] = tpos[0];
+  pos[1] = tpos[1];
+  pos[2] = tpos[2];
 
   //Get The cluster covariance in the track ref system
   Double_t lcov[9];
@@ -1225,15 +1229,15 @@ void AliTOFClusterFinder::GetClusterPars(Int_t *ind, Double_t* pos,Double_t* cov
   // 0     0   0
   // 0     0   sz2
 
-  lcov[0]=AliTOFGeometry::XPad()*AliTOFGeometry::XPad()/12.;
-  lcov[1]=0;
-  lcov[2]=0;
-  lcov[3]=0;
-  lcov[4]=0;
-  lcov[5]=0;
-  lcov[6]=0;
-  lcov[7]=0;
-  lcov[8]=AliTOFGeometry::ZPad()*AliTOFGeometry::ZPad()/12.;
+  lcov[0] = AliTOFGeometry::XPad()*AliTOFGeometry::XPad()/12.;
+  lcov[1] = 0;
+  lcov[2] = 0;
+  lcov[3] = 0;
+  lcov[4] = 0;
+  lcov[5] = 0;
+  lcov[6] = 0;
+  lcov[7] = 0;
+  lcov[8] = AliTOFGeometry::ZPad()*AliTOFGeometry::ZPad()/12.;
 
   //cluster covariance in the tracking system:
   TGeoHMatrix m;
