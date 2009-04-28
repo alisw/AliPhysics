@@ -120,8 +120,8 @@ AliVertexerTracks::~AliVertexerTracks()
   // The objects pointed by the following pointer are not owned
   // by this class and are not deleted
   fCurrentVertex = 0;
-  if(fTrksToSkip) { delete [] fTrksToSkip; fTrksToSkip=NULL; }
-  if(fIdSel) { delete [] fIdSel; fIdSel=NULL; }
+  if(fTrksToSkip) { delete fTrksToSkip; fTrksToSkip=NULL; }
+  if(fIdSel) { delete fIdSel; fIdSel=NULL; }
 }
 //----------------------------------------------------------------------------
 AliESDVertex* AliVertexerTracks::FindPrimaryVertex(AliVEvent *vEvent)
@@ -208,7 +208,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(AliVEvent *vEvent)
   FindPrimaryVertex(&trkArrayOrig,idOrig);
 
   if(fMode==0) trkArrayOrig.Delete();
-  delete [] idOrig; idOrig=NULL;
+  delete idOrig; idOrig=NULL;
 
   if(f) {
     f->Close(); delete f; f = NULL;
@@ -261,7 +261,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
     // fill fTrkArraySel, for VertexFinder()
     fIdSel = new UShort_t[nTrksOrig];
     PrepareTracks(*trkArrayOrig,idOrig,0);
-    if(fIdSel) { delete [] fIdSel; fIdSel=NULL; }
+    if(fIdSel) { delete fIdSel; fIdSel=NULL; }
     Double_t cutsave = fDCAcut;  
     fDCAcut = fDCAcutIter0;
     // vertex finder
@@ -301,7 +301,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
   //                   between initVertex and fCurrentVertex) 
   for(Int_t iter=1; iter<=2; iter++) {
     if(fOnlyFitter && iter==1) continue; 
-    if(fIdSel) { delete [] fIdSel; fIdSel=NULL; }
+    if(fIdSel) { delete fIdSel; fIdSel=NULL; }
     fIdSel = new UShort_t[nTrksOrig];
     Int_t nTrksSel = PrepareTracks(*trkArrayOrig,idOrig,iter);
     AliDebug(1,Form("N tracks selected in iteration %d: %d",iter,nTrksSel));
@@ -342,7 +342,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
       indices[jj] = fIdSel[jj];
     fCurrentVertex->SetIndices(nIndices,indices);
   }
-  delete [] indices; indices=NULL;
+  if (indices) {delete indices; indices=NULL;}
   //
 
   // set vertex title
@@ -357,9 +357,9 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
   AliDebug(1,Form("xyz: %f %f %f; nc %d",fCurrentVertex->GetXv(),fCurrentVertex->GetYv(),fCurrentVertex->GetZv(),fCurrentVertex->GetNContributors()));
 
   // clean up
-  delete [] fIdSel; fIdSel=NULL;
+  delete fIdSel; fIdSel=NULL;
   fTrkArraySel.Delete();
-  if(fTrksToSkip) { delete [] fTrksToSkip; fTrksToSkip=NULL; }
+  if(fTrksToSkip) { delete fTrksToSkip; fTrksToSkip=NULL; }
   //
   
   return fCurrentVertex;
@@ -825,7 +825,7 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
     }
   }
   outVtx->SetIndices(nIndices,outindices);
-  delete [] outindices;
+  if (outindices) delete outindices;
 
   /*
     printf("Vertex before removing tracks:");
@@ -1238,8 +1238,8 @@ void AliVertexerTracks::TooFewTracks()
   }
 
   if(!fTrkArraySel.IsEmpty()) fTrkArraySel.Delete(); 
-  if(fIdSel) {delete [] fIdSel; fIdSel=NULL;}
-  if(fTrksToSkip) {delete [] fTrksToSkip; fTrksToSkip=NULL;}
+  if(fIdSel) {delete fIdSel; fIdSel=NULL;}
+  if(fTrksToSkip) {delete fTrksToSkip; fTrksToSkip=NULL;}
 
   return;
 }
@@ -1569,7 +1569,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray,
   Double_t d0z0[2],covd0z0[3];
   AliExternalTrackParam *t = 0;
   if(fCurrentVertex->GetNContributors()>0) {
-    indices = new UShort_t[fCurrentVertex->GetNContributors()];
+    indices = new UShort_t[fTrkArraySel.GetEntriesFast()];
     for(Int_t jj=0; jj<(Int_t)fTrkArraySel.GetEntriesFast(); jj++) {
       indices[jj] = fIdSel[jj];
       t = (AliExternalTrackParam*)fTrkArraySel.At(jj);
@@ -1586,8 +1586,8 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray,
   }
 
   // clean up
-  if (indices) {delete [] indices; indices=NULL;}
-  delete [] fIdSel; fIdSel=NULL;
+  if (indices) {delete indices; indices=NULL;}
+  delete fIdSel; fIdSel=NULL;
   fTrkArraySel.Delete();
   
   return fCurrentVertex;
@@ -1612,7 +1612,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedESDTracks(TObjArray *trkArray,
     
   VertexForSelectedTracks(trkArray,id,optUseFitter,optPropagate);
 
-  delete [] id; id=NULL;
+  delete id; id=NULL;
 
   return fCurrentVertex;
 }
