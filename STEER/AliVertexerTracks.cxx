@@ -1586,7 +1586,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray,
   }
 
   // clean up
-  delete [] indices; indices=NULL;
+  if (indices) {delete [] indices; indices=NULL;}
   delete [] fIdSel; fIdSel=NULL;
   fTrkArraySel.Delete();
   
