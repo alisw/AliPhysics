@@ -6,7 +6,7 @@
 //    root[1] AnalysisTrainNew("grid", "full")
 // CAF mode (requires root v5-23-02 + aliroot v4-16-Rev08)
 //    root[2] AnalysisTrainNew("proof")
-// Local mode requires AliESds.root or AliAOD.root in the work directory
+// Local mode requires AliESds.root or AliAOD.root in ./data directory
 //    root[3] AnalysisTrainNew("local")
 
 const char *root_version    = "v5-23-02";
@@ -42,11 +42,12 @@ Int_t iMUONcopyAOD   = 0;
 Int_t iJETAN         = 1;
 Int_t iPWG4partcorr  = 1;
 Int_t iPWG4pi0       = 1;
-Int_t iPWG3vertexing = 0;
+Int_t iPWG4gammajet  = 1;
+Int_t iPWG3vertexing = 1;
 Int_t iPWG2femto     = 0;
 Int_t iPWG2spectra   = 1;
 Int_t iPWG2flow      = 0;
-Int_t iPWG2res       = 0;
+Int_t iPWG2res       = 1;
 
 TString anaPars = "";
 TString anaLibs = "";
@@ -78,6 +79,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    if (iPWG3vertexing) printf("=  PWG3 vertexing                                            =\n");
    if (iPWG4partcorr)  printf("=  PWG4 gamma-hadron correlations                            =\n");
    if (iPWG4pi0)     printf("=  PWG4 pi0 analysis                                             =\n");
+   if (iPWG4gammajet)  printf("=  PWG4 gamma jet analysis                                       =\n");
    printf("==================================================================\n");
    printf(":: use MC truth      %d\n", (UInt_t)useMC);
    printf(":: use KINE filter   %d\n", (UInt_t)useKFILTER);
@@ -190,6 +192,12 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
       AliAnalysisTaskStrange *taskstrange = AddTaskStrange();
    }   
    
+   // PWG3 vertexing
+   if (iPWG3vertexing) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskVertexingHF.C");
+      AliAnalysisTaskSEVertexingHF *taskvertexingHF = AddTaskVertexingHF();
+   }   
+      
    // PWG4 hadron correlations
    if (iPWG4partcorr) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
@@ -202,6 +210,11 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
       AliAnalysisTaskParticleCorrelation *taskpi0 = AddTaskPartCorr("Pi0", "AOD", "PHOS");
    }   
     
+   // PWG4 gamma jet finder
+   if (iPWG4gammajet) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
+      AliAnalysisTaskParticleCorrelation *taskgammajet = AddTaskPartCorr("GammaJetFinder", "AOD", "PHOS");
+   }   
    //==========================================================================
    // FOR THE REST OF THE TASKS THE MACRO AddTaskXXX() is not yet implemented/
    // Run the analysis
@@ -272,7 +285,7 @@ void CheckModuleFlags(const char *mode) {
    } else {   
    // ESD analysis
       iMUONcopyAOD = 0;
-      iPWG3vertexing = 0;
+//      iPWG3vertexing = 0;
    }       
    if (iJETAN) iESDfilter=1;
    if (iESDfilter) iAODhandler=1;
@@ -280,7 +293,11 @@ void CheckModuleFlags(const char *mode) {
       iPWG4partcorr=0;
       iPWG4pi0=0;
    }   
-   if (iPWG2spectra || iPWG2flow) useCORRFW = kTRUE;
+   if (iPWG4gammajet && !iJETAN) {
+      ::Error("CheckModuleFlags", "Gamma jet finder needs JETAN. Disabling.");
+      iPWG4gammajet = 0;
+   }
+   if (iPWG2spectra || iPWG2flow || iPWG3vertexing) useCORRFW = kTRUE;
    if (useKFILTER && !useMC) useKFILTER = kFALSE;
    if (useAODTAGS && !iAODhandler) useAODTAGS = kFALSE;
 }
@@ -442,7 +459,8 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    }   
    // Vertexing HF
    if (iPWG3vertexing) {
-      if (!LoadLibrary("PWG3vertexingHF", mode, kTRUE)) return kFALSE;
+      if (!LoadLibrary("PWG3base", mode, kTRUE) ||
+          !LoadLibrary("PWG3vertexingHF", mode, kTRUE)) return kFALSE;
    }   
    ::Info("LoadAnalysisLibraries", "Load other libraries:   SUCCESS");
    return kTRUE;
