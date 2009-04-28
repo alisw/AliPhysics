@@ -29,11 +29,14 @@
 ClassImp(AliHFMassFitter)
 
   //constructors
-AliHFMassFitter::AliHFMassFitter() : TNamed(),
+AliHFMassFitter::AliHFMassFitter() : 
+  TNamed(),
   fhistoInvMass(0),
   fminMass(0),
   fmaxMass(0),
   fNbin(1),
+  fParsSize(1),
+  fFitPars(0),
   fWithBkg(0),
   ftypeOfFit4Bkg(0),
   ftypeOfFit4Sgn(0),
@@ -56,6 +59,8 @@ AliHFMassFitter::AliHFMassFitter (TH1F *histoToFit, Double_t minvalue, Double_t 
  fminMass(0),
  fmaxMass(0),
  fNbin(1),
+ fParsSize(1),
+ fFitPars(0),
  fWithBkg(0),
  ftypeOfFit4Bkg(0),
  ftypeOfFit4Sgn(0),
@@ -78,9 +83,11 @@ AliHFMassFitter::AliHFMassFitter (TH1F *histoToFit, Double_t minvalue, Double_t 
   else fWithBkg=kTRUE;
   if (!fWithBkg) cout<<"Fit Histogram of Signal only"<<endl;
   else  cout<<"Type of fit For Background = "<<ftypeOfFit4Bkg<<endl;
+
+  ComputeParSize();
+  fFitPars=new Float_t[fParsSize];
 }
 
-//_________________________________________________________________________
 
 AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
   TNamed(),
@@ -88,6 +95,8 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
   fminMass(mfit.fminMass),
   fmaxMass(mfit.fmaxMass),
   fNbin(mfit.fNbin),
+  fParsSize(mfit.fParsSize),
+  fFitPars(0),
   fWithBkg(mfit.fWithBkg),
   ftypeOfFit4Bkg(mfit.ftypeOfFit4Bkg),
   ftypeOfFit4Sgn(mfit.ftypeOfFit4Sgn),
@@ -99,7 +108,20 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
 
 {
   //copy constructor
-  for(Int_t i=0;i<30;i++) fFitPars[i]=mfit.fFitPars[i];
+  
+  if(mfit.fParsSize > 0){
+    fFitPars=new Float_t[fParsSize];
+    memcpy(fFitPars,mfit.fFitPars,mfit.fParsSize*sizeof(Float_t));
+  }
+  //for(Int_t i=0;i<fParsSize;i++) fFitPars[i]=mfit.fFitPars[i];
+}
+
+//_________________________________________________________________________
+
+AliHFMassFitter::~AliHFMassFitter() {
+  if(fhistoInvMass) delete   fhistoInvMass;
+  if(fntuParam)     delete   fntuParam;
+  if(fFitPars)      delete[] fFitPars;
 }
 
 //_________________________________________________________________________
@@ -113,6 +135,7 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
   fminMass= mfit.fminMass;
   fmaxMass= mfit.fmaxMass;
   fNbin= mfit.fNbin;
+  fParsSize= mfit.fParsSize;
   fWithBkg= mfit.fWithBkg;
   ftypeOfFit4Bkg= mfit.ftypeOfFit4Bkg;
   ftypeOfFit4Sgn= mfit.ftypeOfFit4Sgn;
@@ -121,9 +144,52 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
   fMass= mfit.fMass;
   fSigmaSgn= mfit.fSigmaSgn;
   fSideBands= mfit.fSideBands;
-  for(Int_t i=0;i<30;i++) fFitPars[i]=mfit.fFitPars[i];
+  if(mfit.fParsSize > 0){
+    if(fFitPars) delete[] fFitPars;
+    fFitPars=new Float_t[fParsSize];
+    memcpy(fFitPars,mfit.fFitPars,mfit.fParsSize*sizeof(Float_t));
+  }
+// fFitPars=new Float_t[fParsSize];
+//   for(Int_t i=0;i<fParsSize;i++) fFitPars[i]=mfit.fFitPars[i];
 
   return *this;
+}
+//__________________________________________________________________________
+
+void AliHFMassFitter::ComputeParSize() {
+  switch (ftypeOfFit4Bkg) {//npar backround func
+  case 0:
+    fParsSize = 2*3;
+    break;
+  case 1:
+    fParsSize = 2*3;
+    break;
+  case 2:
+    fParsSize = 3*3;
+    break;
+  case 3:
+    fParsSize = 1*2;
+    break;
+  default:
+    cout<<"Error computing fParsSize: check ftypeOfFit4Bkg"<<endl;
+    break;
+  }
+
+  fParsSize += 3; //npar refl
+  fParsSize += 3; //npar signal gaus
+
+  fParsSize*=2; //add errors
+  cout<<"Parameters array size "<<fParsSize<<endl;
+}
+
+//___________________________________________________________________________
+
+  void AliHFMassFitter::SetType(Int_t fittypeb, Int_t fittypes) {
+    ftypeOfFit4Bkg = fittypeb; 
+    ftypeOfFit4Sgn = fittypes; 
+    ComputeParSize();
+    fFitPars = new Float_t[fParsSize];
+
 }
 
 //___________________________________________________________________________
@@ -517,17 +583,17 @@ void AliHFMassFitter::MassFitter(Bool_t draw){
     }
     cout<<"funcmass "<<funcmass<<endl;
     funcmass->Draw("sames");
-    
+    cout<<"Drawn"<<endl;
   }
   
 }
 
 //_________________________________________________________________________
-void  AliHFMassFitter::GetFitPars(Float_t *params) const {
+void  AliHFMassFitter::GetFitPars(Float_t *vector) const {
   // Return fit parameters
 
-  for(Int_t i=0;i<30;i++){
-    params[i]=fFitPars[i];
+  for(Int_t i=0;i<fParsSize;i++){
+    vector[i]=fFitPars[i];
   }
 }
 
@@ -712,7 +778,7 @@ void AliHFMassFitter::Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsig
   else funcbkg=fhistoInvMass->GetFunction("funcbkg1");
   Double_t min=mean-nOfSigma*sigma;
   Double_t max=mean+nOfSigma*sigma;
-  signal=funcmass->Integral(min,max)-funcbkg->Integral(min,max);
+  signal=(funcmass->Integral(min,max)-funcbkg->Integral(min,max))/(Double_t)fhistoInvMass->GetBinWidth(2);
   errsignal=intSerr/intS*signal; // assume relative error is the same as for total integral
   
   return;
@@ -753,7 +819,7 @@ void AliHFMassFitter::Background(Double_t nOfSigma,Double_t &background,Double_t
   else funcbkg=fhistoInvMass->GetFunction("funcbkg1");
   Double_t min=mean-nOfSigma*sigma;
   Double_t max=mean+nOfSigma*sigma;
-  background=funcbkg->Integral(min,max);
+  background=funcbkg->Integral(min,max)/(Double_t)fhistoInvMass->GetBinWidth(2);
   errbackground=intBerr/intB*background;
 
   return;
