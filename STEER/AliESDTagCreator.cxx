@@ -31,6 +31,7 @@
 #include <TLorentzVector.h>
 #include <TMap.h>
 #include <TTimeStamp.h>
+#include <TRefArray.h>
 
 //ROOT-AliEn
 #include <TGrid.h>
@@ -257,7 +258,8 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
   localFileName += ".ESD.tag.root";
 
   TString fileName;
-  
+  TRefArray tmp;
+ 
   if(fStorage == 0) {
     fileName = localFileName.Data();      
     AliInfo(Form("Writing tags to local file: %s",fileName.Data()));
@@ -504,8 +506,10 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     evTag->SetNumOfElectronsAbove3GeV(nEl3GeV);
     evTag->SetNumOfElectronsAbove10GeV(nEl10GeV);
     
-    evTag->SetNumOfPHOSClusters(esd->GetNumberOfPHOSClusters());
-    evTag->SetNumOfEMCALClusters(esd->GetNumberOfEMCALClusters());
+    tmp.Clear();
+    evTag->SetNumOfPHOSClusters(esd->GetPHOSClusters(&tmp));
+    tmp.Clear();
+    evTag->SetNumOfEMCALClusters(esd->GetEMCALClusters(&tmp));
     
     evTag->SetTotalMomentum(totalP);
     evTag->SetMeanPt(meanPt);
@@ -595,6 +599,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
   Int_t fVertexflag;
   Int_t iRunNumber = 0;
   TString fVertexName;
+  TRefArray tmp;
 
   AliRunTag *tag = new AliRunTag();
   AliEventTag *evTag = new AliEventTag();
@@ -837,8 +842,10 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
     evTag->SetNumOfElectronsAbove3GeV(nEl3GeV);
     evTag->SetNumOfElectronsAbove10GeV(nEl10GeV);
     
-    evTag->SetNumOfPHOSClusters(esd->GetNumberOfPHOSClusters());
-    evTag->SetNumOfEMCALClusters(esd->GetNumberOfEMCALClusters());
+    tmp.Clear();
+    evTag->SetNumOfPHOSClusters(esd->GetPHOSClusters(&tmp));
+    tmp.Clear();
+    evTag->SetNumOfEMCALClusters(esd->GetEMCALClusters(&tmp));
     
     evTag->SetTotalMomentum(totalP);
     evTag->SetMeanPt(meanPt);
@@ -938,6 +945,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
   Int_t fVertexflag;
   Int_t iRunNumber = 0;
   TString fVertexName;
+  TRefArray tmp;
 
   AliRunTag *tag = new AliRunTag();
   AliEventTag *evTag = new AliEventTag();
@@ -1171,8 +1179,10 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
     evTag->SetNumOfElectronsAbove3GeV(nEl3GeV);
     evTag->SetNumOfElectronsAbove10GeV(nEl10GeV);
     
-    evTag->SetNumOfPHOSClusters(esd->GetNumberOfPHOSClusters());
-    evTag->SetNumOfEMCALClusters(esd->GetNumberOfEMCALClusters());
+    tmp.Clear();
+    evTag->SetNumOfPHOSClusters(esd->GetPHOSClusters(&tmp));
+    tmp.Clear();
+    evTag->SetNumOfEMCALClusters(esd->GetEMCALClusters(&tmp));
     
     evTag->SetTotalMomentum(totalP);
     evTag->SetMeanPt(meanPt);
@@ -1272,6 +1282,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   Int_t fVertexflag;
   Int_t iRunNumber = 0;
   TString fVertexName("default");
+  TRefArray tmp;
   
   AliInfo(Form("Creating the ESD tags......."));	
 
@@ -1522,8 +1533,10 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
     evTag->SetNumOfElectronsAbove3GeV(nEl3GeV);
     evTag->SetNumOfElectronsAbove10GeV(nEl10GeV);
     
-    evTag->SetNumOfPHOSClusters(esd->GetNumberOfPHOSClusters());
-    evTag->SetNumOfEMCALClusters(esd->GetNumberOfEMCALClusters());
+    tmp.Clear();
+    evTag->SetNumOfPHOSClusters(esd->GetPHOSClusters(&tmp));
+    tmp.Clear();
+    evTag->SetNumOfEMCALClusters(esd->GetEMCALClusters(&tmp));
     
     evTag->SetTotalMomentum(totalP);
     evTag->SetMeanPt(meanPt);

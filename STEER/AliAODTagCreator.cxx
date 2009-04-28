@@ -27,6 +27,7 @@
 #include <TSystem.h>
 #include <TChain.h>
 #include <TLorentzVector.h>
+#include <TRefArray.h>
 
 //ROOT-AliEn
 #include <TGrid.h>
@@ -187,7 +188,6 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
     if(fLastEvent == -1) lastEvent = (Int_t)fChain->GetEntries();
     else lastEvent = fLastEvent;
 
-
     char fileName[256];
     sprintf(fileName, "Run%d.Event%d_%d.AOD.tag.root", 
 	    fAODEvent->GetRunNumber(), fFirstEvent, lastEvent );
@@ -218,8 +218,7 @@ void AliAODTagCreator::CreateTag(TChain* chain, const char *type) {
     // Private method that creates tag files
     //
 
-
-    //reading the esd tag file                                                  
+    //reading the esd tag file 
     fTreeTEsd = new TChain("T");
     const char * tagPattern = "ESD.tag";
     // Open the working directory
@@ -230,8 +229,7 @@ void AliAODTagCreator::CreateTag(TChain* chain, const char *type) {
 	if (strstr(name,tagPattern)) fTreeTEsd->Add(name);
     }//directory loop
     AliInfo(Form("Chained tag files: %d", fTreeTEsd->GetEntries()));
-  
-    
+      
     fChain = chain;
     
     TString fSession = type;
@@ -300,7 +298,7 @@ void AliAODTagCreator::CreateTags(const char* type)
     Int_t ntags    = 0;
     Int_t tagentry = 0;
     const TClonesArray *evTagList = 0;
-
+   
     for (Int_t iEventNumber = 0; iEventNumber < nEvents; iEventNumber++) {
 	// Copy old tag information
 	if (iEventNumber >= ntags) {
@@ -393,6 +391,8 @@ void AliAODTagCreator::FillEventTag(AliAODEvent* aod, AliEventTag* evTag)
     Int_t   nMu1GeV = 0, nMu3GeV = 0, nMu10GeV = 0;
     Int_t   nEl1GeV = 0, nEl3GeV = 0, nEl10GeV = 0;
     Float_t maxPt =  .0, meanPt = .0, totalP =  .0;
+
+    TRefArray tmp;
 
     Int_t nTracks = fAODEvent->GetNTracks();
     // loop over vertices 
@@ -492,6 +492,11 @@ void AliAODTagCreator::FillEventTag(AliAODEvent* aod, AliEventTag* evTag)
     evTag->SetNumOfElectronsAbove1GeV(nEl1GeV);
     evTag->SetNumOfElectronsAbove3GeV(nEl3GeV);
     evTag->SetNumOfElectronsAbove10GeV(nEl10GeV);
+
+    tmp.Clear();
+    evTag->SetNumOfPHOSClusters(fAODEvent->GetPHOSClusters(&tmp));
+    tmp.Clear();
+    evTag->SetNumOfEMCALClusters(fAODEvent->GetEMCALClusters(&tmp));
 	
     evTag->SetTotalMomentum(totalP);
     evTag->SetMeanPt(meanPt);
