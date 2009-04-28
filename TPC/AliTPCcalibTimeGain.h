@@ -15,13 +15,14 @@ class TH3F;
 class TH2F;
 class THnSparse;
 class TList;
+class TGraphErrors;
 class AliESDEvent;
 class AliESDtrack;
 class AliTPCcalibLaser;
 
 #include "TTreeStream.h"
 
- 
+
 class AliTPCcalibTimeGain:public AliTPCcalibBase {
 public:
   AliTPCcalibTimeGain(); 
@@ -32,14 +33,17 @@ public:
   virtual Long64_t       Merge(TCollection *li);
   virtual void           Analyze();
   //
+  void                   ProcessCosmicEvent(AliESDEvent *event);
+  void                   ProcessBeamEvent(AliESDEvent *event);
+  //
   void                   CalculateBetheAlephParams(TH2F *hist, Double_t * ini);
   static void            BinLogX(THnSparse *h, Int_t axisDim);
   static void            BinLogX(TH1 *h);
-  static TGraph *        FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries);
   //
   THnSparse *            GetHistGainTime(){return (THnSparse*) fHistGainTime;};
-  TGraph    *            GetGraphGainVsTime(){return fGainVsTime;};
   TH2F      *            GetHistDeDxTotal(){return (TH2F*) fHistDeDxTotal;};
+  //
+  TGraphErrors *         GetGraphGainVsTime(){return fGainVsTime;};
   //
   void SetMIP(Float_t MIP){fMIP = MIP;};  
   void SetLowerTrunc(Float_t LowerTrunc){fLowerTrunc = LowerTrunc;};
@@ -48,16 +52,17 @@ public:
   void SetUsePosNorm(Bool_t UsePosNorm){fUsePosNorm = UsePosNorm;};
   void SetUsePadNorm(Int_t UsePadNorm){fUsePadNorm = UsePadNorm;};
   void SetIsCosmic(Bool_t IsCosmic){fIsCosmic = IsCosmic;};
+  void SetLowMemoryConsumption(Bool_t LowMemoryConsumption){fLowMemoryConsumption = LowMemoryConsumption;};
 
 private:
   //
-  THnSparse * fHistGainTime;            // dEdx vs. time, type, Driftlength, momentum P
-  TGraph    * fGainVsTime;              // multiplication factor vs. time
-  TH2F      * fHistDeDxTotal;           // dEdx vs. momentum for quality assurance
+  THnSparse    * fHistGainTime;            // dEdx vs. time, type, Driftlength, momentum P
+  TGraphErrors * fGainVsTime;              // multiplication factor vs. time
+  TH2F         * fHistDeDxTotal;           // dEdx vs. momentum for quality assurance
   //
   Float_t fIntegrationTimeDeDx;         // required statistics for each dEdx time bin
   //
-  Float_t fMIP;                         // rough MIP position in order to have scalable histograms
+  Float_t fMIP;                         // rough MIP position in order to have scaleable histograms
   //
   Float_t fLowerTrunc;                  // lower truncation of dE/dx ; at most 5%
   Float_t fUpperTrunc;                  // upper truncation of dE/dx ; ca. 70%
@@ -65,7 +70,8 @@ private:
   Bool_t  fUsePosNorm;                  // charge correction (analytical?)
   Int_t   fUsePadNorm;                  // normalization of pad geometries
   //
-  Bool_t  fIsCosmic;                    // kTRUE if the analyzed runs are contain cosmic events
+  Bool_t  fIsCosmic;                    // kTRUE if the analyzed runs contain cosmic events
+  Bool_t  fLowMemoryConsumption;        // set this option kTRUE if the momenta information should not be stored in order to save memory
   //
   AliTPCcalibTimeGain(const AliTPCcalibTimeGain&); 
   AliTPCcalibTimeGain& operator=(const AliTPCcalibTimeGain&); 

@@ -283,15 +283,19 @@ TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t ax
     Float_t xMin = projectionHist->GetXaxis()->GetXmin();
     Float_t xMax = projectionHist->GetXaxis()->GetXmax();
     Float_t xMedian = (xMin+xMax)*0.5;
-    Float_t integral = projectionHist->GetSum();
+    Float_t integral = 0;
+    for(Int_t jbin=1; jbin<projectionHist->GetNbinsX()-1; jbin++) {
+      integral+=projectionHist->GetBinContent(jbin);
+    }
+    printf("Integral %f\t%f\n",integral, projectionHist->GetSum());
     //
     //
     Float_t currentSum=0;
     for(Int_t jbin=1; jbin<projectionHist->GetNbinsX()-1; jbin++) {
       currentSum += projectionHist->GetBinContent(jbin);
-      if (currentSum/integral<fracLow) xMin = projectionHist->GetBinCenter(jbin);
-      if (currentSum/integral<fracUp)  xMax = projectionHist->GetBinCenter(jbin+1);      
-      if (currentSum/integral<0.5 && projectionHist->GetBinContent(jbin)>0){
+      if (currentSum<fracLow*integral) xMin = projectionHist->GetBinCenter(jbin);
+      if (currentSum<fracUp*integral)  xMax = projectionHist->GetBinCenter(jbin+1);      
+      if (currentSum<0.5*integral && projectionHist->GetBinContent(jbin)>0){
 	xMedian = (projectionHist->GetBinCenter(jbin)*projectionHist->GetBinContent(jbin)+
 		   projectionHist->GetBinCenter(jbin+1)*projectionHist->GetBinContent(jbin+1))/
 	  (projectionHist->GetBinContent(jbin)+projectionHist->GetBinContent(jbin+1));
