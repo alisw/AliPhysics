@@ -31,10 +31,6 @@
 // -- Authors: F. Pierella, A. Seganti, D. Vicinanza                       //
 //_________________________________________________________________________//
 
-//#include "TArrayI.h"
-
-#include "AliLog.h"
-
 #include "AliTOFGeometry.h"
 #include "AliTOFSDigit.h"
 
@@ -194,22 +190,34 @@ void AliTOFSDigit::Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track)
     }
   }
   
-  if (sameTime >= 0) {
+  if (sameTime >= 0) { // another time measurement happens during the
+		       // dead time of the hit pad => it corresponds
+		       // to the same time measurement
     (*fAdc)[sameTime] += adc;
-    // update track - find the first -1  value and replace it by the
-    // track number
-    for (Int_t iTrack=0; iTrack<kMAXDIGITS; iTrack++) {
-      if ((*fTracks)[sameTime*kMAXDIGITS+iTrack] == -1) {
-	(*fTracks)[sameTime*kMAXDIGITS+iTrack] = track;
-	break;
-      }
-      // write warning about many tracks going to this pad
-      if (iTrack == kMAXDIGITS) {
-	AliWarning("Many hits in the padhit");
-	//	ToAliWarning(PrintPad());
+
+    // update track index array in case the current digit track index
+    // is different from -1
+    if (track!=-1) {
+
+      //Find the first -1 value of the track index array and replace
+      //it by the current digit track index
+      for (Int_t iTrack=0; iTrack<kMAXDIGITS; iTrack++) {
+	if (track==(*fTracks)[sameTime*kMAXDIGITS+iTrack]) break;
+	if ((*fTracks)[sameTime*kMAXDIGITS+iTrack] == -1) {
+	  (*fTracks)[sameTime*kMAXDIGITS+iTrack] = track;
+	  break;
+	}
+	// write warning about many tracks going to this pad
+	if (iTrack == kMAXDIGITS-1) {
+	  printf("W-AliTOFSDigit::Update: Many different tracks in the same TOF pad (%2d %1d %2d %1d %2d)\n",
+		 fSector,fPlate,fStrip,fPadz,fPadx);
+	  //ToAliWarning(PrintPad());
+	}
       }
     }
-  } else {
+
+  } else { // they are two different time measurements
+
     // add new time slot
     fNDigits++;
     fTdc->Set(fNDigits);
@@ -218,9 +226,9 @@ void AliTOFSDigit::Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track)
     (*fAdc)[fNDigits-1] = adc;
     fTracks->Set(fNDigits*kMAXDIGITS);
     (*fTracks)[(fNDigits-1)*kMAXDIGITS] = track;
-    for (Int_t i = 1; i <kMAXDIGITS; i++) {
+    for (Int_t i = 1; i <kMAXDIGITS; i++)
       (*fTracks)[(fNDigits-1)*kMAXDIGITS+i] = -1;
-    }
+
   }
   
 }
@@ -233,55 +241,30 @@ void AliTOFSDigit::Update(AliTOFSDigit* sdig)
   // Perform the sum with sdig
   //
 
-  // start loop on all sdig locations
-  Int_t nlocations=sdig->GetNDigits();
+  Float_t tdcbin = AliTOFGeometry::TdcBinWidth();// [ps] hardwired for the time being
 
+  Int_t track = -1;
+  Int_t adc = -1;
+  Int_t tdc = -1;
+
+  // start loop on all sdig locations
+  Int_t nlocations = sdig->GetNDigits();
   for (Int_t j = 0; j < nlocations; j++) {
-    Float_t tdcbin = AliTOFGeometry::TdcBinWidth();// [ps] hardwired for the time being
-    Int_t tdc=(Int_t)sdig->GetTdc(j);
-    Int_t adc=(Int_t)sdig->GetAdc(j);
+    tdc = (Int_t)sdig->GetTdc(j);
+    adc = (Int_t)sdig->GetAdc(j);
+
     // getting here only the first track number
-    Int_t track=GetTrack(j,0);
-    
-    
-    Int_t sameTime = -1;
-    Float_t tdcwindow = AliTOFGeometry::DeadTime()/tdcbin;
-    for (Int_t i = 0; i < fNDigits; i++) {
-      if (TMath::Abs(tdc-fTdc->At(i)) < tdcwindow) {
-	sameTime = i;
-	break;
-      }
-    }
-    
-    if (sameTime >= 0) {
-      (*fAdc)[sameTime] += adc;
-      // update track - find the first -1  value and replace it by the
-      // track number
-      for (Int_t iTrack=0; iTrack<kMAXDIGITS; iTrack++) {
-	if ((*fTracks)[sameTime*kMAXDIGITS+iTrack] == -1) {
-	  (*fTracks)[sameTime*kMAXDIGITS+iTrack] = track;
-	  break;
-	}
-	// write warning about many tracks going to this pad
-	if (iTrack == kMAXDIGITS) {
-	  AliWarning("Many hits in the padhit");
-	  //	ToAliWarning(PrintPad());
-	}
-      }
-    } else {
-      // add new time slot
-      fNDigits++;
-      fTdc->Set(fNDigits);
-      (*fTdc)[fNDigits-1] = tdc;
-      fAdc->Set(fNDigits);
-      (*fAdc)[fNDigits-1] = adc;
-      fTracks->Set(fNDigits*kMAXDIGITS);
-      (*fTracks)[(fNDigits-1)*kMAXDIGITS] = track;
-      for (Int_t i = 1; i <kMAXDIGITS; i++) {
-	(*fTracks)[(fNDigits-1)*kMAXDIGITS+i] = -1;
-      } // for (Int_t i = 1; i <kMAXDIGITS; i++)
-    } // if (sameTime >= 0)
+    //Int_t track = GetTrack(j,0);
+
+    // getting here all the track numbers
+    for (Int_t iTrack = 0; iTrack<kMAXDIGITS; iTrack++) {
+      track = sdig->GetTrack(j,iTrack);
+      Update(tdcbin, tdc, adc, track);
+    } // end loop on tracks
+
   } // end loop on sdig locations
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -304,8 +287,7 @@ Int_t AliTOFSDigit::GetTotPad() const
   // starting from the digits data.
   //
   
-  Int_t pad = 2*fPadx + fPadz;
-  //Int_t pad = fPadx+AliTOFGeometry::NpadX()*fPadz;
+  Int_t pad = AliTOFGeometry::NpadZ()*fPadx + fPadz;
   Int_t before=0;
   
   switch(fPlate){ 

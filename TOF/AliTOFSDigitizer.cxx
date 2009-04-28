@@ -459,7 +459,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 	}
 	
 	geantTime *= 1.e+09;  // conversion from [s] to [ns]
-	
+
 	// selection case for sdigitizing only hits in a given plate of a given sector
 	if(thereIsNotASelection || (vol[0]==fSelectedSector && vol[1]==fSelectedPlate)){
 	  
@@ -497,10 +497,15 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 	      for(Int_t indexOfPad=0; indexOfPad<nActivatedPads; indexOfPad++) {
 		if(isFired[indexOfPad]){ // the pad has fired
 		  Float_t timediff=geantTime-tofAfterSimul[indexOfPad];
-		  
-		  if (tofAfterSimul[indexOfPad]>=AliTOFGeometry::MatchingWindow()*1E-3) continue;
 
-		  if(timediff>=0.2) nlargeTofDiff++;
+		  // TOF matching window (~200ns) control
+		  if (tofAfterSimul[indexOfPad]>=AliTOFGeometry::MatchingWindow()*1E-3) {
+		    AliWarning(Form("Time measurement (%f) greater than the matching window (%f)",
+				    tofAfterSimul[indexOfPad], AliTOFGeometry::MatchingWindow()*1E-3));
+		    continue;
+		  }
+
+		  if(timediff>=0.2) nlargeTofDiff++; // greater than 200ps
 		  
 		  digit[0] = (Int_t) ((tofAfterSimul[indexOfPad]*1.e+03)/AliTOFGeometry::TdcBinWidth()); // TDC bin number (each bin -> 24.4 ps)
 		  
@@ -557,7 +562,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
       AliInfo("       <AliTOFSDigitizer>    ");
       AliInfo(Form("After sdigitizing %d hits in event %d", nselectedHitsinEv, iEvent));
       //" (" << nHitsFromPrim << " from primaries and " << nHitsFromSec << " from secondaries) TOF hits, " 
-      AliInfo(Form("%d digits have been created", ntotalsdigitsinEv));
+      AliInfo(Form("%d sdigits have been created", ntotalsdigitsinEv));
       AliInfo(Form("(%d due to signals and %d due to border effect)", nsignalsdigitsinEv, nnoisesdigitsinEv));
       AliInfo(Form("%d total updates of the hit map have been performed in current event", ntotalupdatesinEv));
       AliInfo("----------------------------------------");

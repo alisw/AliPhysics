@@ -214,7 +214,11 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
   fSDigitsArray->Clear();
 
   treeD->Fill();
- 
+
+  AliInfo("----------------------------------------");
+  AliInfo(Form("%d digits have been created", fDigits->GetEntriesFast()));
+  AliInfo("----------------------------------------");
+
   outgime->WriteDigits("OVERWRITE");
   outgime->UnloadDigits();
   fDigits->Clear();

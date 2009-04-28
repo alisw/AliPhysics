@@ -155,8 +155,7 @@ Int_t AliTOFdigit::GetTotPad() const
     break;
   }
   
-  Int_t pad = 2*fPadx + fPadz;
-  //Int_t pad = fPadx+AliTOFGeometry::NpadX()*fPadz;
+  Int_t pad = AliTOFGeometry::NpadZ()*fPadx + fPadz;
   Int_t strip  = fStrip + before;
   Int_t padTot = AliTOFGeometry::NpadXStrip()*strip + pad;
 
@@ -170,13 +169,13 @@ void AliTOFdigit::AddTrack(Int_t track)
 // Add a new and different track to the digit 
 //
   if (track==fTracks[0] || track==fTracks[1] || track==fTracks[2]) return;
-   if (fTracks[1]==0){
+   if (fTracks[1]==-1)
       fTracks[1] = track;
-   }else if (fTracks[2]==0){
+   else if (fTracks[2]==-1)
       fTracks[2] = track;
-   }else{
-   // printf("AliTOFdigit::AddTrack ERROR: Too many Tracks (>3) \n");
-   }
+   else
+     printf("W-AliTOFdigit::AddTrack: Too many tracks (>3) that contribute to the same TOF digit\n");
+
 }
 
 // Overloading of Streaming, Sum and Comparison operators
