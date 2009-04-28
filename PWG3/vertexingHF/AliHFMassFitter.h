@@ -28,9 +28,11 @@ class AliHFMassFitter : public TNamed {
   AliHFMassFitter(TH1F* histoToFit, Double_t minvalue, Double_t maxvalue, Int_t rebin=1,Int_t fittypeb=0,Int_t fittypes=0);
   virtual ~AliHFMassFitter(){if(fhistoInvMass) delete fhistoInvMass; if(fntuParam) delete fntuParam;}
 
+  AliHFMassFitter(const AliHFMassFitter &mfit);
+  AliHFMassFitter& operator=(const AliHFMassFitter &mfit);
 
   //setters
-  void     SetHisto(TH1F *histoToFit){fhistoInvMass=histoToFit;};
+  void     SetHisto(TH1F *histoToFit) {fhistoInvMass=histoToFit;}
   void     SetRangeFit(Double_t minvalue, Double_t maxvalue){fminMass=minvalue; fmaxMass=maxvalue;};
   void     SetMinRangeFit(Double_t minvalue){fminMass=minvalue;};
   void     SetMaxRangeFit(Double_t maxvalue){fmaxMass=maxvalue;};
@@ -68,7 +70,7 @@ class AliHFMassFitter : public TNamed {
 
  private:
 
-  TH1F*    fhistoInvMass;  // histogram to fit
+  TH1F    *fhistoInvMass;  // histogram to fit
   Double_t fminMass;       // lower mass limit
   Double_t fmaxMass;       // upper mass limit
   Int_t    fNbin;          // number of bins
@@ -86,4 +88,5 @@ class AliHFMassFitter : public TNamed {
 };
 
 #endif
+
 
