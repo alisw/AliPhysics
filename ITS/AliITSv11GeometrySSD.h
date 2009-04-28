@@ -19,6 +19,7 @@ class TList;
 class TGeoTube;
 class TGeoHMatrix;
 class TGeoTranslation;
+class TGeoRotation;
 class TGeoXtru;
 class TGeoVolumeAssembly;
 #include "AliITSv11Geometry.h"
@@ -429,10 +430,9 @@ private:
   void CreateCoolingTubes();			// Create/set cooling tubes 
   TGeoVolume* GetSSDCoolingBlock(Int_t nedges); 
 									    // Method generating StiffenerFlex
-  TGeoVolume* GetSSDChipCables(Double_t SSDChipCablesHeigth, Int_t nedges); 
+  void GetSSDChipCables(TGeoVolume *&cableL, TGeoVolume *&cableR, Double_t SSDChipCablesHeigth, Int_t nedges); 
 										// Method setting ChipCables
-  TList* GetSSDChipSystem();			// Method setting Chip System
-  TGeoVolume* GetSSDChips() const;     // Method generating Chips
+  TGeoVolume* GetSSDChip() const;     // Method generating Chips
   TList* GetLadderCableSegment(Double_t ssdendladdercablelength); 
 										// Method generating LadderCableSegment
   TGeoVolume* GetLadderCable(Int_t n, Double_t ssdendladdercablelength); 

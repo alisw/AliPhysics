@@ -2249,62 +2249,51 @@ TList* AliITSv11GeometrySSD::GetSSDHybridParts(){
   // Mother Volumes Containers 
   /////////////////////////////////////////////////////////////
   const Int_t kmothernumber = 2;
-  const Int_t kmothervertexnumber = 12;
+  const Int_t kmothervertexnumber = 8;
   Double_t xmothervertex[kmothernumber][kmothervertexnumber]; 
   Double_t ymothervertex[kmothernumber][kmothervertexnumber]; 
-  ///////////////////////
-  // Setting the vertices 
-  ///////////////////////
-  xmothervertex[0][0]  = -0.5*fgkSSDStiffenerLength;
-  xmothervertex[0][1]  = xmothervertex[0][0]; 
-  xmothervertex[0][2]  = fgkSSDFlexLength[0]-0.5*fgkSSDStiffenerLength;
-  xmothervertex[0][3]  = xmothervertex[0][2];
-  xmothervertex[0][4]  = xmothervertex[0][0];
-  xmothervertex[0][5]  = xmothervertex[0][4];
-  xmothervertex[0][6]  = -xmothervertex[0][0];
-  xmothervertex[0][7]  = xmothervertex[0][6];
-  xmothervertex[0][8]  = -xmothervertex[0][2];
-  xmothervertex[0][9]  = xmothervertex[0][8];
-  xmothervertex[0][10] = xmothervertex[0][7];
-  xmothervertex[0][11] = xmothervertex[0][10];
-  for(Int_t i=0; i<kmothervertexnumber; i++) xmothervertex[1][i] = xmothervertex[0][i];
-  for(Int_t i = 0; i<kmothernumber; i++){
-      ymothervertex[i][0]  = -(fgkSSDChipWidth-(0.5*fgkSSDStiffenerWidth-fgkSSDStiffenerToChipDist)
-                           + ssdchipcablesradius[i]+fgkSSDChipCablesWidth[1]+fgkSSDChipCablesWidth[2]);
-      ymothervertex[i][1]  = ssdstiffenerseparation-0.5*fgkSSDStiffenerWidth-fgkSSDFlexWidth[0];
-      ymothervertex[i][2]  = ymothervertex[i][1];
-      ymothervertex[i][3]  = ssdstiffenerseparation-0.5*fgkSSDStiffenerWidth;
-      ymothervertex[i][4]  = ymothervertex[i][3];
-      ymothervertex[i][5]  = ymothervertex[i][4]+0.5*fgkSSDStiffenerWidth-ymothervertex[i][0];
-      ymothervertex[i][6]  = ymothervertex[i][5];
-      ymothervertex[i][7]  = 0.5*fgkSSDStiffenerWidth+fgkSSDFlexWidth[0];
-      ymothervertex[i][8]  = ymothervertex[i][7];
-      ymothervertex[i][9]  = 0.5*fgkSSDStiffenerWidth;
-      ymothervertex[i][10] = ymothervertex[i][9];
-      ymothervertex[i][11] = ymothervertex[i][0];
-  }
-  TGeoXtru* ssdhybridmothershape[kmothernumber];
-  //TGeoVolume* ssdhybridmother[kmothernumber];
-  TGeoVolumeAssembly* ssdhybridmother[kmothernumber];
+
+  TGeoVolumeAssembly* ssdhybridassembly[kmothernumber];
+  TGeoVolume* ssdhybridmother[kmothernumber][2];
+
+  TGeoRotation hybridmotherrotR(TGeoRotation("",-90.0,0.0,0.0)*TGeoRotation("",0.0,90.0,0.0)*TGeoRotation("",90.,180.,-90));
+  TGeoRotation hybridmotherrotL(TGeoRotation("",180.,0.0,0.0)*hybridmotherrotR);
+  TGeoRotation *hybridmotherrotInv = new TGeoRotation(hybridmotherrotR.Inverse());
+
   const char* ssdhybridmothername[kmothernumber] = {"SSDHybridMother1","SSDHybridMother2"};
   for(Int_t i=0; i<kmothernumber; i++){
-      ssdhybridmothershape[i] = new TGeoXtru(2);
-      ssdhybridmothershape[i]->DefinePolygon(kmothervertexnumber,xmothervertex[i],
-                                          ymothervertex[i]);
-      /*
-      cout << "ssd hybrid mother " << i << " polygon " << endl;
-      for (Int_t lll = 0; lll < kmothervertexnumber; lll++) {
-	cout << "vtx " << lll << ": " << xmothervertex[i][lll] << " " << ymothervertex[i][lll] << endl;
-      }
-      */
-      ssdhybridmothershape[i]->DefineSection(0,-0.5*fgkSSDStiffenerHeight-fgkSSDChipHeight      
-                                               -fgkSSDChipCablesHeight[i+2]);
-      ssdhybridmothershape[i]->DefineSection(1, 0.5*fgkSSDStiffenerHeight);
-      // cout << " sections " << -0.5*fgkSSDStiffenerHeight-fgkSSDChipHeight      
-      //	-fgkSSDChipCablesHeight[i+2] << " " << 0.5*fgkSSDStiffenerHeight << endl;
-      //ssdhybridmother[i] = new TGeoVolume(ssdhybridmothername[i],ssdhybridmothershape[i],
-      //                                    fSSDAir);
-      ssdhybridmother[i] = new TGeoVolumeAssembly(ssdhybridmothername[i]);
+    xmothervertex[i][0] = -0.5*fgkSSDStiffenerWidth;
+    ymothervertex[i][0] = 0.5*fgkSSDStiffenerHeight;
+    xmothervertex[i][1] = -0.5*fgkSSDStiffenerWidth;
+    ymothervertex[i][1] = -0.5*fgkSSDStiffenerHeight-fgkSSDChipHeight      
+      -fgkSSDChipCablesHeight[i+2];
+    
+    xmothervertex[i][2] = 0.5*(fgkSSDSensorLength-ssdstiffenerseparation); //0.5*fgkSSDStiffenerWidth;
+    ymothervertex[i][2] = -0.5*fgkSSDStiffenerHeight-fgkSSDChipHeight -fgkSSDChipCablesHeight[i+2];
+    xmothervertex[i][3] = xmothervertex[i][2];
+    ymothervertex[i][3] = ymothervertex[i][2]+fgkSSDChipCablesHeight[0]+fgkSSDChipCablesHeight[1];
+
+    xmothervertex[i][4] = xmothervertex[i][2]-0.4;  
+    ymothervertex[i][4] = ymothervertex[i][3];
+    xmothervertex[i][5] = xmothervertex[i][4];
+    ymothervertex[i][5] = ymothervertex[i][4]+2*ssdchipcablesradius[i];
+
+    xmothervertex[i][6] = 0.5*fgkSSDStiffenerWidth+ssdchipcablesradius[i]+0.3*fgkmm;
+    ymothervertex[i][6] = ymothervertex[i][5];
+    
+    xmothervertex[i][7] = xmothervertex[i][6];
+    ymothervertex[i][7] = 0.5*fgkSSDStiffenerHeight;
+
+    for (Int_t j = 0; j<8; j++) {
+      cout << "vtx " << j << " " <<  xmothervertex[i][j] << " " << ymothervertex[i][j] << endl;
+    }
+    TGeoXtru *shape = new TGeoXtru(2);
+    shape->DefinePolygon(8,xmothervertex[i],ymothervertex[i]);
+    shape->DefineSection(0,-0.5*fgkSSDStiffenerLength);
+    shape->DefineSection(1,0.5*fgkSSDStiffenerLength);
+    ssdhybridmother[i][0] = new TGeoVolume(TString(ssdhybridmothername[i])+"L",shape,fSSDAir);
+    ssdhybridmother[i][1] = new TGeoVolume(TString(ssdhybridmothername[i])+"R",shape,fSSDAir);
+    ssdhybridassembly[i] = new TGeoVolumeAssembly(ssdhybridmothername[i]);
    }   
   /////////////////////////////////////////////////////////////
   // SSD Stiffener   
@@ -2316,52 +2305,61 @@ TList* AliITSv11GeometrySSD::GetSSDHybridParts(){
   TGeoVolume* ssdstiffener = new TGeoVolume("SSDStiffener",ssdstiffenershape,
                                             fSSDStiffenerMedium);  
   ssdstiffener->SetLineColor(fColorStiffener); 
-  TGeoTranslation* ssdstiffenertrans[kssdstiffenernumber];
-  for(Int_t i=0; i<kssdstiffenernumber; i++) 
-      ssdstiffenertrans[i] = new TGeoTranslation(0.,i*ssdstiffenerseparation,0.);
-  /////////////////////////////////////////////////////////////
-  // SSD Chip System	
-  /////////////////////////////////////////////////////////////
-  TList* ssdchipsystemlist = GetSSDChipSystem(); 
-  Double_t ssdchipseparation = fgkSSDSensorLength
-                             - 2.*fgkSSDModuleStiffenerPosition[1]
-                             - 2.*(fgkSSDStiffenerWidth-fgkSSDStiffenerToChipDist
-                             - 0.5*fgkSSDChipWidth);
-  Double_t ssdchipsystemlength = (fgkSSDChipNumber-1)*(fgkSSDChipLength 
-			       +  fgkSSDChipSeparationLength)+fgkSSDChipCablesLength[1];
-  TGeoTranslation* ssdchipsystemtrans = new TGeoTranslation(0.5*fgkSSDChipCablesLength[1]
-                                      - 0.5*ssdchipsystemlength,
-                                        0.5*(ssdstiffenerseparation-ssdchipseparation),
-                                      - 0.5*(fgkSSDChipHeight+fgkSSDStiffenerHeight)); 	
+
 ////////////////////////////
 // Capacitor 0603-2200 nF
 ///////////////////////////
   const Int_t knapacitor0603number = 5;
   TGeoBBox* capacitor0603shape =  new TGeoBBox("Capacitor0603Shape",
-											 0.5*fgkSSDCapacitor0603Length,
-											 0.5*(fgkSSDCapacitor0603Width),
-											 0.5*fgkSSDCapacitor0603Height);
+					       0.5*fgkSSDCapacitor0603Length,
+					       0.5*(fgkSSDCapacitor0603Width),
+					       0.5*fgkSSDCapacitor0603Height);
   TGeoVolume* capacitor0603 = new TGeoVolume("Capacitor0603",capacitor0603shape,
                                              fSSDStiffener0603CapacitorMedium); 
   capacitor0603->SetLineColor(fColorAl);
+
+  TGeoVolume* ssdchip = GetSSDChip();
+
+  const Int_t knedges = 5;
+  TGeoVolume *ssdchipcables[2];
+
   for(Int_t i=0; i<kmothernumber; i++){
+    for(Int_t j=0; j<kssdstiffenernumber; j++){
+      ssdhybridmother[i][j]->AddNode(ssdstiffener,1,hybridmotherrotInv);
+      for(Int_t k=1; k<knapacitor0603number+1; k++){
+	ssdhybridmother[i][j]->AddNode(capacitor0603,k,
+				       new TGeoCombiTrans("",
+							  -0.5*(fgkSSDStiffenerWidth - fgkSSDCapacitor0603Width),
+							  -0.5*(fgkSSDStiffenerHeight+fgkSSDCapacitor0603Height),
+							  (k-3.)/6*fgkSSDStiffenerLength,
+							  hybridmotherrotInv));
+      }
+    }
+    
+    GetSSDChipCables(ssdchipcables[0],ssdchipcables[1],fgkSSDChipCablesHeight[i+2],knedges);
+    for(Int_t k=0; k<fgkSSDChipNumber; k++){
+      TGeoTranslation *chipcabletrans = new TGeoTranslation("",0.5*fgkSSDStiffenerWidth-fgkSSDChipWidth,
+							    - 0.5*fgkSSDStiffenerHeight - fgkSSDChipHeight
+							    - fgkSSDChipCablesHeight[i+2],
+							    (k+0.5-fgkSSDChipNumber/2)*
+							    (fgkSSDChipLength + fgkSSDChipSeparationLength));
+      TGeoCombiTrans *chiptrans = new TGeoCombiTrans("",0.5*(fgkSSDStiffenerWidth-fgkSSDChipWidth),
+						     - 0.5*(fgkSSDChipHeight+fgkSSDStiffenerHeight),
+						     (k+0.5-fgkSSDChipNumber/2)*(fgkSSDChipLength + fgkSSDChipSeparationLength),
+						     hybridmotherrotInv);
       for(Int_t j=0; j<kssdstiffenernumber; j++){
-            ssdhybridmother[i]->AddNode(ssdstiffener,j+1,ssdstiffenertrans[j]);
-            for(Int_t k=1; k<knapacitor0603number+1; k++){
-                  ssdhybridmother[i]->AddNode(capacitor0603,knapacitor0603number*j+k,
-                        new TGeoTranslation((k-3.)/6*fgkSSDStiffenerLength,
-                                           j*ssdstiffenerseparation
-                        +                    0.5*((j==0? 1:-1)*fgkSSDStiffenerWidth
-                        +                    (j==0? -1:+1)*fgkSSDCapacitor0603Width),
-                        -                    0.5*(fgkSSDStiffenerHeight+fgkSSDCapacitor0603Height)));
-            }
-      } 
-      ssdhybridmother[i]->AddNode((TGeoVolume*)ssdchipsystemlist->At(i),i+1,ssdchipsystemtrans);
-      ssdhybridlist->Add(ssdhybridmother[i]);
+	ssdhybridmother[i][j]->AddNode(ssdchipcables[j],k+1,chipcabletrans);
+	ssdhybridmother[i][j]->AddNode(ssdchip,k+1,chiptrans);
+      }
+    }  
+    // Final placement by assembly
+    ssdhybridassembly[i]->AddNode(ssdhybridmother[i][0],1,new TGeoCombiTrans(TGeoTranslation("",0,0,0),hybridmotherrotL));
+    ssdhybridassembly[i]->AddNode(ssdhybridmother[i][1],1,new TGeoCombiTrans(TGeoTranslation("",0,ssdstiffenerseparation,0),hybridmotherrotR));
+    ssdhybridlist->Add(ssdhybridassembly[i]);
   }    
-/////////////////////////////////////////////////////////////
-// Mother Volume Containing Capacitor Part 
-/////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Mother Volume Containing Capacitor Part 
+  /////////////////////////////////////////////////////////////
   const Int_t kcapacitormothernumber = 8;
   Double_t xcapacitorvertex[kcapacitormothernumber];
   Double_t ycapacitorvertex[kcapacitormothernumber];  
@@ -2501,7 +2499,6 @@ TList* AliITSv11GeometrySSD::GetSSDHybridParts(){
   /////////////////////////////////////////////////////////////
   delete hybridwirecombitrans[0];
   delete hybridwirecombitrans[1];
-  delete ssdchipsystemlist;
   return ssdhybridlist;
   /////////////////////////////////////////////////////////////
 }
@@ -2587,47 +2584,20 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingBlockSystem(){
   coolingsystemothershape->DefineSection(1, 0.5*(fgkSSDCoolingBlockHoleCenter
 											   + fgkCoolingTubeRmax));
   TGeoVolume* coolingsystemother = new TGeoVolumeAssembly("CoolingBlockSystem");
-//  TGeoVolume* coolingsystemother = new TGeoVolume("CoolingBlockSystem",
-//							  coolingsystemothershape,fSSDAir);
-  /////////////////////////////////////////////////////////////
-  // SSD Cooling Tube Part 
-  /////////////////////////////////////////////////////////////
-  /*
-  TGeoTube* coolingtubeshape[fgkcoolingtubenumber];
-  coolingtubeshape[0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
-										 0.5*(fgkSSDCoolingBlockWidth-fgkSSDTolerance)); 
-  coolingtubeshape[1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
-									 0.5*(fgkSSDCoolingBlockWidth-fgkSSDTolerance));
-  TGeoVolume* coolingtube[fgkcoolingtubenumber];
-  coolingtube[0] = new TGeoVolume("OuterCoolingTube",coolingtubeshape[0],
-									fSSDCoolingTubePhynox);
-  coolingtube[1] = new TGeoVolume("InnerCoolingTube",coolingtubeshape[1],
-									fSSDCoolingTubeWater);
-  coolingtube[0]->SetLineColor(fColorPhynox);
-  coolingtube[1]->SetLineColor(fColorWater);
-  */
   TGeoVolume* ssdcoolingblock = GetSSDCoolingBlock(30);
   /////////////////////////////////////////////////////////////
   // Adding Cooling block to mother volume
   /////////////////////////////////////////////////////////////
-   for(Int_t i=0; i<kcoolingblocknumber; i++){ 
-	coolingsystemother->AddNode(ssdcoolingblock,i+1,coolingblockmatrix[i]);
-	//coolingsystemother->AddNode(coolingtube[0],i+1,coolingtubematrix[i]);
-	//coolingsystemother->AddNode(coolingtube[1],i+1,coolingtubematrix[i]);
+  for(Int_t i=0; i<kcoolingblocknumber; i++){ 
+    coolingsystemother->AddNode(ssdcoolingblock,i+1,coolingblockmatrix[i]);
   }
   /////////////////////////////////////////////////////////////
   // Deallocating memory
   /////////////////////////////////////////////////////////////
-	delete coolingblocktransvector;
-	delete localcoolingblockrot;
-	//delete localcoolingtubetrans;
-	//delete localcoolingtuberot;
-  /////////////////////////////////////////////////////////////
-  // Checking overlaps	
-  /////////////////////////////////////////////////////////////
-	//coolingsystemother->CheckOverlaps(0.01);
-  /////////////////////////////////////////////////////////////
-	return coolingsystemother;
+  delete coolingblocktransvector;
+  delete localcoolingblockrot;
+
+  return coolingsystemother;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDStiffenerFlex()const{
@@ -3365,7 +3335,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDCoolingBlock(Int_t nedges){
   return ssdcoolingblock;
 }
 /////////////////////////////////////////////////////////////////////////////////
-TGeoVolume* AliITSv11GeometrySSD::GetSSDChipCables(Double_t SSDChipCablesHeight, Int_t nedges){
+void AliITSv11GeometrySSD::GetSSDChipCables(TGeoVolume *&cableL, TGeoVolume *&cableR, Double_t SSDChipCablesHeight, Int_t nedges){
   ///////////////////////////////////////////////////////
   static const Int_t kssdchipcablesnumber    = 2;  // Number of cables: left and right
   static const Int_t kssdchipcableslaynumber = 2;  // Number of layers: Al and Kapton
@@ -3481,11 +3451,6 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDChipCables(Double_t SSDChipCablesHeight,
   /////////////////////////////////////////////////////////////
   // Mother Volume definition 
   /////////////////////////////////////////////////////////////
-  Double_t ssdchipseparation = fgkSSDSensorLength
-							 - 2.*fgkSSDModuleStiffenerPosition[1]
-							 - 2.*(fgkSSDStiffenerWidth-fgkSSDStiffenerToChipDist
-							 - 0.5*fgkSSDChipWidth)-fgkSSDChipWidth;
-
   static const Int_t kmothervertexnumber = 8;
   Double_t xmothervertex[kmothervertexnumber];
   Double_t ymothervertex[kmothervertexnumber];
@@ -3510,28 +3475,14 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDChipCables(Double_t SSDChipCablesHeight,
   ssdchipcablemothershape->DefineSection(0,-0.5*fgkSSDChipCablesLength[1]);
   ssdchipcablemothershape->DefineSection(1,+0.5*fgkSSDChipCablesLength[1]);
 
-  TGeoVolume* ssdchipcablesmother[kssdchipcablesnumber];
-  ssdchipcablesmother[0] = new TGeoVolume("SSDChipCableMotherLeft",ssdchipcablemothershape,fSSDAir);
-  ssdchipcablesmother[1] = new TGeoVolume("SSDChipCableMotherRight",ssdchipcablemothershape,fSSDAir);
+  cableL = new TGeoVolume("SSDChipCableMotherLeft",ssdchipcablemothershape,fSSDAir);
+  cableR = new TGeoVolume("SSDChipCableMotherRight",ssdchipcablemothershape,fSSDAir);
 
-  /////////////////////////////////////////////////////////////
-  // Rotation and Translation Definition for positioning 
-  /////////////////////////////////////////////////////////////
-  TGeoRotation* ssdchipcablesrot[5];
-  ssdchipcablesrot[0] = new TGeoRotation("",90.,180.,-90);
-  ssdchipcablesrot[1] = new TGeoRotation("",0.0,90.0,0.0);
-  ssdchipcablesrot[2] = new TGeoRotation((*ssdchipcablesrot[1])*(*ssdchipcablesrot[0]));
-  ssdchipcablesrot[3] = new TGeoRotation("",180.,0.0,0.0);
-  ssdchipcablesrot[4] = new TGeoRotation((*ssdchipcablesrot[3])*(*ssdchipcablesrot[2]));
-  TGeoCombiTrans* ssdchipcablescombitrans = new TGeoCombiTrans(-ssdchipseparation,0.,0.,ssdchipcablesrot[2]);
-  ssdchipcablesmother[0]->AddNode(ssdchipcable[0],1);
-  ssdchipcablesmother[0]->AddNode(ssdchipcable[1],1);
-  ssdchipcablesmother[1]->AddNode(ssdchipcable[2],1);
-  ssdchipcablesmother[1]->AddNode(ssdchipcable[3],1);  
+  cableL->AddNode(ssdchipcable[0],1);
+  cableL->AddNode(ssdchipcable[1],1);
+  cableR->AddNode(ssdchipcable[2],1);
+  cableR->AddNode(ssdchipcable[3],1);  
 
-  TGeoVolumeAssembly* ssdchipcablesassembly = new TGeoVolumeAssembly("SSDChipCablesAssembly");
-  ssdchipcablesassembly->AddNode(ssdchipcablesmother[0],1,ssdchipcablesrot[4]);
-  ssdchipcablesassembly->AddNode(ssdchipcablesmother[1],1,ssdchipcablescombitrans);
   /////////////////////////////////////////////////////////////
   // Deallocating memory
   /////////////////////////////////////////////////////////////
@@ -3542,83 +3493,13 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDChipCables(Double_t SSDChipCablesHeight,
   for(Int_t i=0; i<kssdchipcableslaynumber; i++) delete [] vertexposition[i];
   for(Int_t i=0; i<kssdchipcableslaynumber; i++) delete transvector[i];
   delete vertex; 
-  delete ssdchipcablesrot[0];
-  delete ssdchipcablesrot[1];
-  delete ssdchipcablesrot[3];
   /////////////////////////////////////////////////////////////
-  return ssdchipcablesassembly;
 }
-///////////////////////////////////////////////////////////////////////////////
-TList* AliITSv11GeometrySSD::GetSSDChipSystem(){
-  /////////////////////////////////////////////////////////////
-  // SSD Chip Assembly
-  /////////////////////////////////////////////////////////////
-  TGeoVolume* ssdchipassembly = GetSSDChips();
-  TList* ssdchipsystemlist = new TList();
-//  const Int_t knedges = 20;
-  const Int_t knedges = 5;
-  const Int_t kchipsystemnumber = 2;
-
-  TGeoVolumeAssembly* chipsystemother[kchipsystemnumber];
-  const char* chipsytemothername[kchipsystemnumber] = 
-					{"SSDChipSytemother1","SSDChipSytemother2"};
-  for(Int_t i=0; i<kchipsystemnumber; i++){
-    chipsystemother[i] = new TGeoVolumeAssembly(chipsytemothername[i]);
-  }
-  /////////////////////////////////////////////////////////////
-  // SSD Chip Cables
-  /////////////////////////////////////////////////////////////
-  TGeoVolume* ssdchipcables[kchipsystemnumber];
-  TGeoRotation** ssdchipcablesrot[kchipsystemnumber];
-  TGeoTranslation** ssdchipcablestrans[kchipsystemnumber];
-  TGeoCombiTrans** ssdchipcablescombitrans[kchipsystemnumber];
-  //////////////////
-  for(Int_t i=0; i<kchipsystemnumber; i++){
-		ssdchipcables[i] = 
-		GetSSDChipCables(fgkSSDChipCablesHeight[i+2],knedges);
-		ssdchipcablestrans[i] = new TGeoTranslation*[fgkSSDChipNumber];
-		ssdchipcablesrot[i] = new TGeoRotation*[fgkSSDChipNumber];
-		ssdchipcablescombitrans[i] = new TGeoCombiTrans*[fgkSSDChipNumber];
-  }
-  for(Int_t i=0; i<kchipsystemnumber; i++){
-	for(Int_t j=0; j<fgkSSDChipNumber; j++){
-		ssdchipcablestrans[i][j] = new TGeoTranslation();
-		ssdchipcablesrot[i][j] = new TGeoRotation();
-		ssdchipcablescombitrans[i][j] = new TGeoCombiTrans();
-		ssdchipcablesrot[i][j]->SetAngles(-90.0,0.0,0.0);
-		ssdchipcablestrans[i][j]->SetTranslation(j*(fgkSSDChipLength
-						  +                fgkSSDChipSeparationLength),
-											0.5*fgkSSDChipWidth,
-						  -					0.5*fgkSSDChipHeight
-						  -					fgkSSDChipCablesHeight[i+2]);
-		ssdchipcablescombitrans[i][j]->SetRotation(*ssdchipcablesrot[i][j]);
-		ssdchipcablescombitrans[i][j]->SetTranslation(*ssdchipcablestrans[i][j]);
-		chipsystemother[i]->AddNode(ssdchipcables[i],j+1,ssdchipcablescombitrans[i][j]);
-	}
-	chipsystemother[i]->AddNode(ssdchipassembly,i+1);
-	ssdchipsystemlist->Add(chipsystemother[i]);	
-  }
-  /////////////////////////////////////////////////////////////
-  // Deallocating memory
-  /////////////////////////////////////////////////////////////
-  for(Int_t i=0; i<kchipsystemnumber; i++){
-	for(Int_t j=0; j<fgkSSDChipNumber; j++){
-		delete ssdchipcablesrot[i][j];
-		delete ssdchipcablestrans[i][j];
-	}
-	delete [] ssdchipcablesrot[i];
-	delete [] ssdchipcablestrans[i];
-  }
-  /////////////////////////////////////////////////////////////
-  return ssdchipsystemlist;
-}
-
 //_____________________________________________________________________________
-TGeoVolume* AliITSv11GeometrySSD::GetSSDChips() const{
+TGeoVolume* AliITSv11GeometrySSD::GetSSDChip() const{
   /////////////////////////////////////////////////////////////
   // SSD Chip Assembly Generation    
   /////////////////////////////////////////////////////////////
-  const Int_t kssdchiprownumber = 2;
   TGeoBBox* ssdchipcompshape[2];
   ssdchipcompshape[0] =  new TGeoBBox("SSDChipCompShape",
 										0.5*fgkSSDChipLength,
@@ -3646,54 +3527,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDChips() const{
   TGeoVolume* ssdchip = new TGeoVolume("SSDChip",ssdvirtualchipshape,fSSDAir);
   /////////////////////////////////////////////////////////////
   for(Int_t i=0; i<2; i++) ssdchip->AddNode(ssdchipcomp[i],1,ssdchipcomptrans[i]);
-  Double_t ssdchipseparation[2] = {fgkSSDChipLength+fgkSSDChipSeparationLength,
-						  fgkSSDSensorLength-2.*fgkSSDModuleStiffenerPosition[1]
-				   -  2.*(fgkSSDStiffenerWidth-fgkSSDStiffenerToChipDist
-				   -  0.5*fgkSSDChipWidth)};
-  /////////////////////////////////////////////////////////////
-  // Virtual Volume containing SSDChipAssembly   
-  /////////////////////////////////////////////////////////////
-  TGeoXtru* ssdchipmothershape = new TGeoXtru(2);
-  const Int_t kssdmothervertexnumber = 2*fgkSSDChipNumber;  
-  Double_t xmothervertex[kssdmothervertexnumber];
-  Double_t ymothervertex[kssdmothervertexnumber];
-  ///////////////////////
-  // Setting the vertices 
-  ///////////////////////
-  xmothervertex[0] = -0.5*fgkSSDChipLength,ymothervertex[0] = -0.5*fgkSSDChipWidth;
-  xmothervertex[1] = xmothervertex[0], ymothervertex[1] = ssdchipseparation[1]
-				   - ymothervertex[0];
-  xmothervertex[2] = (fgkSSDChipNumber-1)*ssdchipseparation[0]-xmothervertex[0];
-  ymothervertex[2] = ymothervertex[1];
-  xmothervertex[3] = xmothervertex[2], ymothervertex[3] = ymothervertex[0];
-  xmothervertex[4] = ssdchipseparation[0]+xmothervertex[0];
-  ymothervertex[4] = ymothervertex[0];
-  xmothervertex[5] = xmothervertex[4], ymothervertex[5] = -ymothervertex[4];
-  xmothervertex[6] = (fgkSSDChipNumber-1)*ssdchipseparation[0]
-				   + (0.5*fgkSSDChipLength-fgkSSDChipWidth);
-  ymothervertex[6] = ymothervertex[5];
-  xmothervertex[7] = xmothervertex[6], ymothervertex[7] = ymothervertex[2]
-				   - fgkSSDChipWidth;
-  xmothervertex[8] = -0.5*fgkSSDChipLength+fgkSSDChipWidth;
-  ymothervertex[8] = ymothervertex[7];
-  xmothervertex[9] = -0.5*fgkSSDChipLength+fgkSSDChipWidth;
-  ymothervertex[9] = ymothervertex[6];
-  xmothervertex[10] = -xmothervertex[0], ymothervertex[10] = ymothervertex[9];
-  xmothervertex[11] = xmothervertex[10], ymothervertex[11] = ymothervertex[0];
-  //////////////////////////////////////////////////////////
-  ssdchipmothershape->DefinePolygon(kssdmothervertexnumber,
-									xmothervertex,ymothervertex);
-  ssdchipmothershape->DefineSection(0,-0.5*fgkSSDChipHeight);
-  ssdchipmothershape->DefineSection(1, 0.5*fgkSSDChipHeight);
-//  TGeoVolume* ssdchipmother = new TGeoVolume("SSDChipContainer",
-//							  ssdchipmothershape,fSSDAir);
-  TGeoVolumeAssembly* ssdchipmother = new TGeoVolumeAssembly("SSDChipContainer");
-   /////////////////////////////////////////////////////////////
-  for(Int_t i=0; i<kssdchiprownumber; i++)
-    for(Int_t j=0; j<fgkSSDChipNumber; j++) 
-		ssdchipmother->AddNode(ssdchip,fgkSSDChipNumber*i+j+1,
-		new TGeoTranslation(j*ssdchipseparation[0],i*ssdchipseparation[1],0.));
-  return ssdchipmother;
+  return ssdchip;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TList* AliITSv11GeometrySSD::GetLadderCableSegment(Double_t ssdendladdercablelength){
