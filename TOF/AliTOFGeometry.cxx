@@ -118,8 +118,9 @@ Revision 0.01  2003/12/04 S.Arcelli
 //#include "TGeoMatrix.h"
 #include "TMath.h"
 
-#include "AliLog.h"
 #include "AliConst.h"
+#include "AliGeomManager.h"
+#include "AliLog.h"
 
 #include "AliTOFGeometry.h"
 
@@ -414,36 +415,57 @@ Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, Float_t *pos) const
 Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix mat, Float_t *pos, Float_t *dist3d) const
 {
 //
-// Returns true if space point with coor pos (x,y,z) (cm) falls 
-// inside pad with Detector Indices idet (iSect,iPlate,iStrip,iPadX,iPadZ) 
+// Returns true if space point with coor pos (x,y,z) [cm] falls inside
+// pad identified by the matrix mat. In case when dist3d!=0, the
+// dist3d vector has been filled with the 3d distance between the
+// impact point on the pad and the pad centre (in the reference frame
+// of the TOF pad identified by the matrix mat.).
 //
 
   const Float_t kPadDepth = 0.5;      // heigth of Sensitive Layer
-  Double_t vecg[3];
-  vecg[0]=pos[0];
-  vecg[1]=pos[1];
-  vecg[2]=pos[2];
-  Double_t veclr[3]={-1.,-1.,-1.};
-  Double_t vecl[3]={-1.,-1.,-1.};
-  mat.MasterToLocal(vecg,veclr);  
-  vecl[0]=veclr[1];
-  vecl[1]=veclr[0];
-  //take into account reflections 
-  vecl[2]=-veclr[2];
 
-  Float_t xr = vecl[0];
-  Float_t yr = vecl[1];
-  Float_t zr = vecl[2];
+  Double_t posg[3];
+  posg[0] = pos[0];
+  posg[1] = pos[1];
+  posg[2] = pos[2];
+  Double_t posl[3] = {0., 0., 0.};
 
-  if (dist3d){
-    dist3d[0] = vecl[0];
-    dist3d[1] = vecl[1];
-    dist3d[2] = vecl[2];
+  // from ALICE global reference system
+  // towards TOF pad local reference system
+  mat.MasterToLocal(posg,posl);
+
+  Float_t xr = posl[0];
+  Float_t yr = posl[1];
+  Float_t zr = posl[2];
+
+  Bool_t isInside=false; 
+  if (TMath::Abs(yr)<= kPadDepth*0.5 &&
+      TMath::Abs(xr)<= (fgkXPad*0.5) &&
+      TMath::Abs(zr)<= (fgkZPad*0.5))
+    isInside = true; 
+
+  if (dist3d) {
+    //Double_t padl[3] = {0., 0., 0.};
+    dist3d[0] = posl[0]/* - padl[0]*/;
+    dist3d[1] = posl[1]/* - padl[1]*/;
+    dist3d[2] = posl[2]/* - padl[2]*/;
+
+    /*
+    Double_t padg[3] = {0., 0., 0.};
+    // from TOF pad local reference system
+    // towards ALICE global reference system
+    TGeoHMatrix inverse = mat.Inverse();
+    inverse.MasterToLocal(padl,padg);
+
+    // returns the 3d distance
+    // between the impact point on the pad
+    // and the pad centre (in the ALICE global reference frame)
+    dist3d[0] = posg[0] - padg[0];
+    dist3d[1] = posg[1] - padg[1];
+    dist3d[2] = posg[2] - padg[2];
+    */
   }
  
-  Bool_t isInside=false; 
-  if(TMath::Abs(xr)<= kPadDepth*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
-    isInside=true; 
   return isInside;
 
 }
@@ -633,11 +655,11 @@ Int_t AliTOFGeometry::GetPlate(Float_t *pos) const
       }
     }
 
-  if      (zLocal>-fgkZlenA*0.5/*fgkMaxhZtof*/ && zLocal<-kExterInterModBorder2)       iPlate = 0;
-  else if (zLocal>-kExterInterModBorder1       && zLocal<-kInterCentrModBorder2)       iPlate = 1;
-  else if (zLocal>-kInterCentrModBorder1       && zLocal< kInterCentrModBorder1)       iPlate = 2;
-  else if (zLocal> kInterCentrModBorder2       && zLocal< kExterInterModBorder1)       iPlate = 3;
-  else if (zLocal> kExterInterModBorder2       && zLocal< fgkZlenA*0.5/*fgkMaxhZtof*/) iPlate = 4;
+  if      (zLocal>-fgkZlenA*0.5          && zLocal<-kExterInterModBorder2) iPlate = 0;
+  else if (zLocal>-kExterInterModBorder1 && zLocal<-kInterCentrModBorder2) iPlate = 1;
+  else if (zLocal>-kInterCentrModBorder1 && zLocal< kInterCentrModBorder1) iPlate = 2;
+  else if (zLocal> kInterCentrModBorder2 && zLocal< kExterInterModBorder1) iPlate = 3;
+  else if (zLocal> kExterInterModBorder2 && zLocal< fgkZlenA*0.5)          iPlate = 4;
   
   return iPlate;
 
@@ -650,9 +672,6 @@ Int_t AliTOFGeometry::GetSector(Float_t *pos) const
   // Returns the Sector index 
   //
 
-  //const Float_t khAlWall = 0.1;
-  //const Float_t kModuleWallThickness = 0.3;
-
   Int_t   iSect = -1; 
 
   Float_t x = pos[0];
@@ -661,10 +680,8 @@ Int_t AliTOFGeometry::GetSector(Float_t *pos) const
 
   Float_t rho = TMath::Sqrt(x*x + y*y);
 
-  //if (!((z>=-fgkMaxhZtof && z<=fgkMaxhZtof) &&
   if (!((z>=-fgkZlenA*0.5 && z<=fgkZlenA*0.5) &&
 	(rho>=(fgkRmin) && rho<=(fgkRmax)))) {
-    //(rho>=(fgkRmin-0.05)+kModuleWallThickness && rho<=(fgkRmax-0.05)-kModuleWallThickness-khAlWall-kModuleWallThickness))) {
     //AliError("Detector Index could not be determined");
     return iSect;
   }
@@ -883,20 +900,14 @@ Int_t AliTOFGeometry::GetPadZ(Float_t *pos) const
   }
   Rotation(posLocal,angles);
 
-  //if (TMath::Abs(posLocal[0])<=klsensmx*0.5 && /*TMath::Abs(posLocal[1])<=khsensmy*0.5+0.005 &&*/ TMath::Abs(posLocal[2])<=kwsensmz*0.5) {
-  //if (TMath::Abs(posLocal[1])<=khsensmy*0.5) {
+  step[0] =-0.5*kNpadX*fgkXPad;
+  step[1] = 0.;
+  step[2] =-0.5*kNpadZ*fgkZPad;
+  Translation(posLocal,step);
 
-    step[0] =-0.5*kNpadX*fgkXPad;
-    step[1] = 0.;
-    step[2] =-0.5*kNpadZ*fgkZPad;
-    Translation(posLocal,step);
-
-    iPadZ = (Int_t)(posLocal[2]/fgkZPad);
-    if (iPadZ==kNpadZ) iPadZ--;
-    else if (iPadZ>kNpadZ) iPadZ=-1;
-
-  //}
-  // else AliError("Detector Index could not be determined");
+  iPadZ = (Int_t)(posLocal[2]/fgkZPad);
+  if (iPadZ==kNpadZ) iPadZ--;
+  else if (iPadZ>kNpadZ) iPadZ=-1;
 
   return iPadZ;
 
@@ -982,20 +993,14 @@ Int_t AliTOFGeometry::GetPadX(Float_t *pos) const
   }
   Rotation(posLocal,angles);
 
-  //if (TMath::Abs(posLocal[0])<=klsensmx*0.5 && /*TMath::Abs(posLocal[1])<=khsensmy*0.5+0.005 &&*/ TMath::Abs(posLocal[2])<=kwsensmz*0.5) {
-  //if (TMath::Abs(posLocal[1])<=khsensmy*0.5) {
+  step[0] =-0.5*kNpadX*fgkXPad;
+  step[1] = 0.;
+  step[2] =-0.5*kNpadZ*fgkZPad;
+  Translation(posLocal,step);
 
-    step[0] =-0.5*kNpadX*fgkXPad;
-    step[1] = 0.;
-    step[2] =-0.5*kNpadZ*fgkZPad;
-    Translation(posLocal,step);
-
-    iPadX = (Int_t)(posLocal[0]/fgkXPad);
-    if (iPadX==kNpadX) iPadX--;
-    else if (iPadX>kNpadX) iPadX=-1;
-
-  //}
-  //else AliError("Detector Index could not be determined");
+  iPadX = (Int_t)(posLocal[0]/fgkXPad);
+  if (iPadX==kNpadX) iPadX--;
+  else if (iPadX>kNpadX) iPadX=-1;
 
   return iPadX;
 
@@ -1034,7 +1039,6 @@ Float_t AliTOFGeometry::GetX(Int_t *det) const
   */
 
   // Pad reference frame -> FSTR reference frame
-  //  /*
   Float_t posLocal[3] = {0., 0., 0.};
   Float_t step[3] = {-(ipadx+0.5)*fgkXPad, 0., -(ipadz+0.5)*fgkZPad};
   Translation(posLocal,step);
@@ -1042,7 +1046,6 @@ Float_t AliTOFGeometry::GetX(Int_t *det) const
   step[0] = kNpadX*0.5*fgkXPad;
   step[1] = 0.;
   step[2] = kNpadZ*0.5*fgkZPad;
-  //  */
   /*
   Float_t posLocal[3] = {(ipadx+0.5)*fgkXPad, 0., (ipadz+0.5)*fgkZPad};
   Float_t step[3]= {kNpadX*0.5*fgkXPad, 0., kNpadZ*0.5*fgkZPad};
@@ -1147,7 +1150,6 @@ Float_t AliTOFGeometry::GetY(Int_t *det) const
   */
 
   // Pad reference frame -> FSTR reference frame
-  //  /*
   Float_t posLocal[3] = {0., 0., 0.};
   Float_t step[3] = {-(ipadx+0.5)*fgkXPad, 0., -(ipadz+0.5)*fgkZPad};
   Translation(posLocal,step);
@@ -1155,7 +1157,6 @@ Float_t AliTOFGeometry::GetY(Int_t *det) const
   step[0] = kNpadX*0.5*fgkXPad;
   step[1] = 0.;
   step[2] = kNpadZ*0.5*fgkZPad;
-  //  */
   /*
   Float_t posLocal[3] = {(ipadx+0.5)*fgkXPad, 0., (ipadz+0.5)*fgkZPad};
   Float_t step[3]= {kNpadX*0.5*fgkXPad, 0., kNpadZ*0.5*fgkZPad};
@@ -1247,7 +1248,6 @@ Float_t AliTOFGeometry::GetZ(Int_t *det) const
   */
 
   // Pad reference frame -> FSTR reference frame
-  //  /*
   Float_t posLocal[3] = {0., 0., 0.};
   Float_t step[3] = {-(ipadx+0.5)*fgkXPad, 0., -(ipadz+0.5)*fgkZPad};
   Translation(posLocal,step);
@@ -1255,7 +1255,6 @@ Float_t AliTOFGeometry::GetZ(Int_t *det) const
   step[0] = kNpadX*0.5*fgkXPad;
   step[1] = 0.;
   step[2] = kNpadZ*0.5*fgkZPad;
-  //  */
   /*
   Float_t posLocal[3] = {(ipadx+0.5)*fgkXPad, 0., (ipadz+0.5)*fgkZPad};
   Float_t step[3]= {kNpadX*0.5*fgkXPad, 0., kNpadZ*0.5*fgkZPad};
@@ -1791,34 +1790,17 @@ Int_t AliTOFGeometry::GetIndex(Int_t *detId)
     return -1;
   }
   Int_t istrip = detId[2];
+  Int_t stripOffset = GetStripNumberPerSM(iplate,istrip);
+  if (stripOffset==-1) {
+    printf("Wrong strip number per SM in TOF (%d) !\n",stripOffset);
+    return -1;
+  }
+
   Int_t ipadz = detId[3];
   Int_t ipadx = detId[4];
-  Int_t stripOffset = 0;
-  switch (iplate) {
-  case 0:
-    stripOffset = 0;
-    break;
-  case 1:
-    stripOffset = kNStripC;
-    break;
-  case 2:
-    stripOffset = kNStripC+kNStripB;
-    break;
-  case 3:
-    stripOffset = kNStripC+kNStripB+kNStripA;
-    break;
-  case 4:
-    stripOffset = kNStripC+kNStripB+kNStripA+kNStripB;
-    break;
-  default:
-    printf("Wrong plate number in TOF (%d) !\n",iplate);
-    return -1;
-  };
 
-  Int_t idet = ((2*(kNStripC+kNStripB)+kNStripA)
-               *kNpadZ*kNpadX)*isector +
+  Int_t idet = ((2*(kNStripC+kNStripB)+kNStripA)*kNpadZ*kNpadX)*isector +
                (stripOffset*kNpadZ*kNpadX)+
-               (kNpadZ*kNpadX)*istrip+
 	       (kNpadX)*ipadz+
 	        ipadx;
   return idet;
@@ -1858,8 +1840,8 @@ void AliTOFGeometry::GetVolumeIndices(Int_t index, Int_t *detId)
 
   Int_t padPerStrip = ( index - ( NStripXSector()*NpadXStrip()*detId[0]) ) - dummyStripPerModule*NpadXStrip();
 
-  detId[3] = padPerStrip / kNpadX;
-  detId[4] = padPerStrip - detId[3]*kNpadX;
+  detId[3] = padPerStrip / kNpadX; // padZ
+  detId[4] = padPerStrip - detId[3]*kNpadX; // padX
 
 }
 //_____________________________________________________________________________
@@ -1888,5 +1870,100 @@ Int_t AliTOFGeometry::NStrip(Int_t nPlate)
   }
 
   return nStrips;
+
+}
+//-------------------------------------------------------------------------
+
+UShort_t AliTOFGeometry::GetAliSensVolIndex(Int_t isector, Int_t iplate, Int_t istrip) const
+{
+  //
+  // Get the index of the TOF alignable volume in the AliGeomManager order.
+  //
+
+  Int_t index = GetStripNumber(isector, iplate, istrip);
+
+  UShort_t volIndex = AliGeomManager::LayerToVolUID(AliGeomManager::kTOF,index);
+
+  return volIndex;
+
+}
+//-------------------------------------------------------------------------
+
+Int_t AliTOFGeometry::GetStripNumber(Int_t isector, Int_t iplate, Int_t istrip)
+{
+  //
+  // Get the serial number of the TOF strip number istrip [0,14/18],
+  //   in the module number iplate [0,4],
+  //   in the TOF SM number isector [0,17].
+  // This number will range in [0,1637].
+  //
+
+  Bool_t check = (isector >= kNSectors);
+
+  if (check)
+    printf("E-AliTOFGeometry::GetStripNumber: Wrong sector number in TOF (%d)!\n",isector);
+
+  Int_t index = -1;
+  Int_t stripInSM = GetStripNumberPerSM(iplate, istrip);
+  if (!check && stripInSM!=-1)
+    index = (2*(kNStripC+kNStripB)+kNStripA)*isector + stripInSM;
+
+  return index;
+
+}
+//-------------------------------------------------------------------------
+
+Int_t AliTOFGeometry::GetStripNumberPerSM(Int_t iplate, Int_t istrip)
+{
+  //
+  // Get the serial number of the TOF strip number istrip [0,14/18],
+  //   in the module number iplate [0,4].
+  // This number will range in [0,90].
+  //
+
+  Int_t index = -1;
+
+  Bool_t check = (
+		  (iplate<0 || iplate>=kNPlates)
+		  ||
+		  (
+		   (iplate==2 && (istrip<0 || istrip>=kNStripA))
+		   ||
+		   (iplate!=2 && (istrip<0 || istrip>=kNStripC))
+		   )
+		  );
+
+  if (iplate<0 || iplate>=kNPlates)
+    printf("E-AliTOFGeometry::GetStripNumberPerSM: Wrong plate number in TOF (%1d)!\n",iplate);
+
+  if (
+      (iplate==2 && (istrip<0 || istrip>=kNStripA))
+      ||
+      (iplate!=2 && (istrip<0 || istrip>=kNStripC))
+      )
+    printf("E-AliTOFGeometry::GetStripNumberPerSM: Wrong strip number in TOF (strip=%2d in the plate=%1d)!\n",istrip,iplate);
+
+  Int_t stripOffset = 0;
+  switch (iplate) {
+  case 0:
+    stripOffset = 0;
+    break;
+  case 1:
+    stripOffset = kNStripC;
+    break;
+  case 2:
+    stripOffset = kNStripC+kNStripB;
+    break;
+  case 3:
+    stripOffset = kNStripC+kNStripB+kNStripA;
+    break;
+  case 4:
+    stripOffset = kNStripC+kNStripB+kNStripA+kNStripB;
+    break;
+  };
+
+  if (!check) index = stripOffset + istrip;
+
+  return index;
 
 }

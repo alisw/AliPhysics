@@ -206,6 +206,16 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
       t->SetTOFLabel(tlab);
       AliTOFtrack *track = new AliTOFtrack(*seed); 
       t->UpdateTrackParams(track,AliESDtrack::kTOFout);   
+
+      Double_t time[10]; t->GetIntegratedTimes(time);
+      AliDebug(1,Form("%d %f %f %f %f %f",i,
+		      time[0],
+		      time[1],
+		      time[2],
+		      time[3],
+		      time[4]
+		      ));
+
       delete track;
     }
   }
@@ -256,8 +266,8 @@ void AliTOFtracker::CollectESD() {
 
     AliTOFtrack *track = new AliTOFtrack(*t); // New
     Double_t x = track->GetX(); //New
-    if (((t->GetStatus()&AliESDtrack::kTRDout)!=0 ) && 
-	 ( x >= AliTOFGeometry::RinTOF()) ){
+    if ( ( (t->GetStatus()&AliESDtrack::kTRDout)!=0 ) && 
+	 ( x >= AliTOFGeometry::RinTOF() ) ) {
       track->SetSeedIndex(i);
       t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
       new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
@@ -457,31 +467,51 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
       Float_t ctrackPos[3];	
 
-      ctrackPos[0]= trackPos[0][istep];
-      ctrackPos[1]= trackPos[1][istep];
-      ctrackPos[2]= trackPos[2][istep];
+      ctrackPos[0] = trackPos[0][istep];
+      ctrackPos[1] = trackPos[1][istep];
+      ctrackPos[2] = trackPos[2][istep];
 
       //now see whether the track matches any of the TOF clusters            
 
-      Float_t dist3d[3];
-      accept=kFALSE;
-      for (Int_t i=0; i<nc; i++){
-        isInside=fGeom->IsInsideThePad(global[i],ctrackPos,dist3d);
+      Float_t dist3dLoc[3];
+      accept = kFALSE;
+      for (Int_t i=0; i<nc; i++) {
+        isInside = fGeom->IsInsideThePad(global[i],ctrackPos,dist3dLoc);
 
-        if( mLastStep){
-          Float_t xLoc=dist3d[0];
-          Float_t rLoc=TMath::Sqrt(dist3d[1]*dist3d[1]+dist3d[2]*dist3d[2]);
-	  accept = (TMath::Abs(xLoc)<padDepth*0.5 && rLoc<dCut);
+        if( mLastStep ) {
+          Float_t yLoc = dist3dLoc[1];
+          Float_t rLoc = TMath::Sqrt(dist3dLoc[0]*dist3dLoc[0]+dist3dLoc[2]*dist3dLoc[2]);
+	  accept = (TMath::Abs(yLoc)<padDepth*0.5 && rLoc<dCut);
 	}
-	else{
+	else {
 	  accept = isInside;
 	}
-	if(accept){
-	  dist[nfound]=TMath::Sqrt(dist3d[0]*dist3d[0]+dist3d[1]*dist3d[1]+dist3d[2]*dist3d[2]);
-	  distZ[nfound]=dist3d[2];
-	  crecL[nfound]=trackPos[3][istep];
-	  index[nfound]=clind[i]; // store cluster id 	    
-	  cxpos[nfound]=AliTOFGeometry::RinTOF()+istep*0.1; //store prop.radius
+	if (accept) {
+
+	  dist[nfound] = TMath::Sqrt(dist3dLoc[0]*dist3dLoc[0] +
+				     dist3dLoc[1]*dist3dLoc[1] +
+				     dist3dLoc[2]*dist3dLoc[2]);
+
+	  Float_t differenceT[3] = {0.,0.,0.};
+	  PadRS2TrackingRS(ctrackPos, differenceT);
+	  distZ[nfound] = differenceT[2];
+
+	  AliDebug(1,Form("   dist3dLoc[2] = %f --- distZ[%d] = %f",
+			  dist3dLoc[2],nfound,distZ[nfound]));
+
+	  /*
+	  Double_t padl[3] = {0., 0., 0.};
+	  Double_t padg[3] = {0., 0., 0.};
+	  TGeoHMatrix inverse = global[i].Inverse();
+	  inverse.MasterToLocal(padl,padg);
+
+	  dist3d[0] = ctrackPos[0] - padg[0];
+	  dist3d[1] = ctrackPos[1] - padg[1];
+	  dist3d[2] = ctrackPos[2] - padg[2];
+	  */
+	  crecL[nfound] = trackPos[3][istep];
+	  index[nfound] = clind[i]; // store cluster id 	    
+	  cxpos[nfound] = AliTOFGeometry::RinTOF()+istep*0.1; //store prop.radius
 	  nfound++;
 	  if(accept &&!mLastStep)break;
 	}//end if accept
@@ -594,9 +624,10 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     //Tracking info
     Double_t time[AliPID::kSPECIES]; t->GetIntegratedTimes(time);
     Double_t mom=t->GetP();
+    AliDebug(1,Form("Momentum for track %d -> %f", iseed,mom));
     for(Int_t j=0;j<AliPID::kSPECIES;j++){
       Double_t mass=AliPID::ParticleMass(j);
-      time[j]+=(recL-trackPos[3][0])/3e-2*TMath::Sqrt(mom*mom+mass*mass)/mom;
+      time[j]+=(recL-trackPos[3][0])/2.99792458e-2*TMath::Sqrt(mom*mom+mass*mass)/mom;
     }
 
     AliTOFtrack *trackTOFout = new AliTOFtrack(*t); 
@@ -938,5 +969,98 @@ void AliTOFtracker::FillClusterArray(TObjArray* arr) const
     arr = 0x0;
   else
     for (Int_t i=0; i<fN; ++i) arr->Add(fClusters[i]);
+
+}
+//_________________________________________________________________________
+
+void AliTOFtracker::PadRS2TrackingRS(Float_t *ctrackPos, Float_t *differenceT)
+{
+  //
+  // To convert the 3D distance ctrackPos, referred to the hit pad,
+  // into the 3D distance differenceT, referred to the tracking
+  // reference system.
+  //
+
+  for (Int_t ii=0; ii<3; ii++) differenceT[ii] = 0.;
+
+  AliDebug(1,Form(" track position in ALICE global Ref. frame -> %f, %f, %f",
+		  ctrackPos[0],ctrackPos[1],ctrackPos[2]));
+
+  Int_t detId[5] = {
+    fGeom->GetSector(ctrackPos),
+    fGeom->GetPlate(ctrackPos),
+    fGeom->GetStrip(ctrackPos),
+    fGeom->GetPadZ(ctrackPos),
+    fGeom->GetPadX(ctrackPos)};
+  UShort_t alignableStripIndex = fGeom->GetAliSensVolIndex(detId[0],detId[1],detId[2]);
+  AliDebug(1,Form(" sector = %2d, plate = %1d, strip = %2d ---> stripIndex = %4d",
+		  detId[0], detId[1], detId[2], alignableStripIndex));
+
+  // pad centre coordinates in the strip ref. frame
+  Double_t padCentreL[3] = {(detId[4]-AliTOFGeometry::NpadX()/2)*AliTOFGeometry::XPad()+AliTOFGeometry::XPad()/2.,
+			    0.,
+			    (detId[3]-AliTOFGeometry::NpadZ()/2)*AliTOFGeometry::XPad()+AliTOFGeometry::XPad()/2.};
+  // pad centre coordinates in the strip tracking frame
+  Double_t padCentreT[3] = {0., 0., 0.};
+  TGeoHMatrix l2t = *AliGeomManager::GetTracking2LocalMatrix(alignableStripIndex);
+  l2t.MasterToLocal(padCentreL,padCentreT);
+
+
+  Char_t path[100];
+  // pad centre coordinates in its ref. frame
+  Double_t padCentreL2[3] = {0., 0., 0.};
+  // pad centre coordinates in the ALICE global ref. frame
+  Double_t padCentreG[3] = {0., 0., 0.};
+  fGeom->GetVolumePath(detId,path);
+  gGeoManager->cd(path);
+  TGeoHMatrix g2l = *gGeoManager->GetCurrentMatrix();
+  TGeoHMatrix l2g = g2l.Inverse();
+  l2g.MasterToLocal(padCentreL2,padCentreG);
+
+
+  Char_t path2[100];
+  // strip centre coordinates in its ref. frame
+  Double_t stripCentreL[3] = {0., 0., 0.};
+  // strip centre coordinates in the ALICE global ref. frame
+  Double_t stripCentreG[3] = {0., 0., 0.};
+  fGeom->GetVolumePath(detId[0],detId[1],detId[2],path2);
+  gGeoManager->cd(path2);
+  TGeoHMatrix g2lb = *gGeoManager->GetCurrentMatrix();
+  TGeoHMatrix l2gb = g2lb.Inverse();
+  l2gb.MasterToLocal(stripCentreL,stripCentreG);
+
+  TGeoHMatrix g2t = 0;
+  AliGeomManager::GetTrackingMatrix(alignableStripIndex, g2t);
+
+  // track position in the ALICE global ref. frame
+  Double_t posG[3];
+  for (Int_t ii=0; ii<3; ii++) posG[ii] = (Double_t)ctrackPos[ii];
+
+  // strip centre coordinates in the tracking ref. frame
+  Double_t stripCentreT[3] = {0., 0., 0.};
+  // track position in the tracking ref. frame
+  Double_t posT[3] = {0., 0., 0.};
+  g2t.MasterToLocal(posG,posT);
+  g2t.MasterToLocal(stripCentreG,stripCentreT);
+
+  for (Int_t ii=0; ii<3; ii++)
+    AliDebug(1,Form(" track position in ALICE global and tracking Ref. frames -> posG[%d] = %f --- posT[%d] = %f",
+		    ii, posG[ii], ii, posT[ii]));
+  for (Int_t ii=0; ii<3; ii++)
+    AliDebug(1,Form(" pad centre coordinates in its, the ALICE global and tracking Ref. frames -> padCentreL[%d] = %f --- padCentreG[%d] = %f --- padCentreT[%d] = %f",
+		    ii, padCentreL[ii],
+		    ii, padCentreG[ii],
+		    ii, padCentreT[ii]));
+  for (Int_t ii=0; ii<3; ii++)
+    AliDebug(1,Form(" strip centre coordinates in its, the ALICE global and tracking Ref. frames -> stripCentreL[%d] = %f --- stripCentreG[%d] = %f --- stripCentreT[%d] = %f",
+		    ii, stripCentreL[ii],
+		    ii, stripCentreG[ii],
+		    ii, stripCentreT[ii]));
+  for (Int_t ii=0; ii<3; ii++)
+    AliDebug(1,Form(" difference between the track position and the pad centre in the tracking Ref. frame -> posT[%d]-padCentreT[%d] = %f",
+		    ii,ii,
+		    posT[ii]-padCentreT[ii]));
+
+  for (Int_t ii=0; ii<3; ii++) differenceT[ii] = (Float_t)(posT[ii]-padCentreT[ii]);
 
 }

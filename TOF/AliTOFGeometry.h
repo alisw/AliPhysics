@@ -109,6 +109,11 @@ class AliTOFGeometry: public TObject{
   static Int_t GetIndex(Int_t *detId); // Get channel index from det Id (for calibration mainly)
   static void GetVolumeIndices(Int_t index, Int_t *detId); // Get volume index from channel index
 
+  UShort_t GetAliSensVolIndex(Int_t sec, Int_t pla, Int_t str) const; // Get the index of the TOF alignable volume in the AliGeomManager order
+  static Int_t GetStripNumber(Int_t isector, Int_t iplate, Int_t istrip); // Get the serial number of the TOF alignable volume, i.e. the TOF strip
+  static Int_t GetStripNumberPerSM(Int_t iplate, Int_t istrip); // Get the serial number of the TOF strip in a TOF SM
+
+
   private:
 
   enum {
