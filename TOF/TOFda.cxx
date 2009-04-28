@@ -160,7 +160,8 @@ int main(int argc, char **argv) {
 	}
         meantime = allData[49][0];
 	*/
-        meantime = rawReaderT0->GetData(49,0);
+        //meantime = rawReaderT0->GetData(49,0); //OLD
+        meantime = (rawReaderT0->GetData(51,0)+rawReaderT0->GetData(52,0))/2.; //Alla
 	//        printf("time zero (ns) = %i (%f) \n", meantime, (meantime*24.4-200)*1E-3);   // debugging purpose
       }
       
