@@ -38,13 +38,16 @@ ClassImp(AliFlowEventSimpleMakerOnTheFly)
 //========================================================================
 
 
-AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly():
- fMultiplicityOfRP(0),
- fMultiplicitySpreadOfRP(0.),
- fPtFormula(NULL),
- fPhiFormula(NULL) 
+AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
+  fMultiplicityOfRP(0),
+  fMultiplicitySpreadOfRP(0.),
+  fPtFormula(NULL),
+  fPhiFormula(NULL),
+  fMyTRandom3(NULL),
+  fCount(0)
  {
   // constructor
+   fMyTRandom3 = new TRandom3(iseed); 
  }
 
 
@@ -56,6 +59,7 @@ AliFlowEventSimpleMakerOnTheFly::~AliFlowEventSimpleMakerOnTheFly()
  // destructor
   if (fPtFormula) delete fPtFormula;
   if (fPhiFormula) delete fPhiFormula;
+  if (fMyTRandom3) delete  fMyTRandom3;
 }
 
 
@@ -68,6 +72,8 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(fMultiplicityOfRP);
   
+  //reaction plane
+  Double_t fMCReactionPlaneAngle = fMyTRandom3->Uniform(0.,TMath::TwoPi());
   
   // pt:   
   Double_t dPtMin = 0.; // to be improved 
@@ -94,10 +100,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   // eta:
   Double_t dEtaMin = -1.; // to be improved 
   Double_t dEtaMax = 1.; // to be improved 
-  TRandom3 myTRandom3;
 
-  //reaction plane
-  Double_t fMCReactionPlaneAngle = TMath::TwoPi()*myTRandom3.Rndm();
 
   Int_t iGoodTracks = 0;
   Int_t iSelParticlesRP = 0;
@@ -105,8 +108,8 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   for(Int_t i=0;i<fMultiplicityOfRP;i++) {
     AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
     pTrack->SetPt(fPtFormula->GetRandom());
-    pTrack->SetEta(myTRandom3.Uniform(dEtaMin,dEtaMax));
-    pTrack->SetPhi(fPhiFormula->GetRandom()-fMCReactionPlaneAngle);
+    pTrack->SetEta(fMyTRandom3->Uniform(dEtaMin,dEtaMax));
+    pTrack->SetPhi(fPhiFormula->GetRandom()+fMCReactionPlaneAngle);
     pTrack->SetForRPSelection(kTRUE);
     iSelParticlesRP++;
     pTrack->SetForPOISelection(kTRUE);
@@ -120,6 +123,13 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   pEvent->SetNumberOfTracks(iGoodTracks);//tracks used either for RP or for POI selection
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
 
+  if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
+  else cout<<" MC Reaction Plane Angle = unknown "<< endl;
+
+  cout<<" iGoodTracks = "<< iGoodTracks << endl;
+  cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;
+  cout<<" # of POI selected tracks = "<<iSelParticlesPOI<<endl;  
+  cout << "# " << ++fCount << " events processed" << endl;
 
  return pEvent;  
  

@@ -18,6 +18,7 @@
 #define ALIFLOWEVENTSIMPLEMAKERONTHEFLY_H
 
 class TF1;
+class TRandom3;
 
 #include "AliFlowEventSimple.h"  //needed as include
     
@@ -25,7 +26,7 @@ class AliFlowEventSimpleMakerOnTheFly {
 
  public:
 
-  AliFlowEventSimpleMakerOnTheFly();          // constructor
+  AliFlowEventSimpleMakerOnTheFly(UInt_t);    // constructor
   virtual ~AliFlowEventSimpleMakerOnTheFly(); // destructor
 
   AliFlowEventSimple* CreateEventOnTheFly();  // create an event on the fly
@@ -45,7 +46,7 @@ class AliFlowEventSimpleMakerOnTheFly {
   void SetMultiplicitySpreadOfRP(Double_t multSpreadRP) {this->fMultiplicitySpreadOfRP = multSpreadRP;}
   Double_t GetMultiplicitySpreadOfRP() const {return this->fMultiplicitySpreadOfRP;} 
   //................................................................................................
-   
+
  private:
  
   AliFlowEventSimpleMakerOnTheFly(const AliFlowEventSimpleMakerOnTheFly& anAnalysis);            // copy constructor
@@ -65,8 +66,12 @@ class AliFlowEventSimpleMakerOnTheFly {
   // equations for distributions: 
   TF1 *fPtFormula;  // transverse momentum distribution
   TF1 *fPhiFormula; // azimuthal distribution
+
   //................................................................................................
   
+  TRandom3* fMyTRandom3; // our random generator
+  Int_t fCount;
+
   ClassDef(AliFlowEventSimpleMakerOnTheFly,0) // macro for rootcint
 };
  
