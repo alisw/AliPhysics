@@ -86,9 +86,8 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   fPtSpectra = new TF1("fPtSpectra","[0]*x*TMath::Exp(-x*x)",dPtMin,dPtMax);  
   fPtSpectra->SetParName(0,"Multiplicity of RPs");  
   // sampling the multiplicity:
-  fMultiplicityOfRP = fMyTRandom3->Gaus(fMultiplicityOfRP,fMultiplicitySpreadOfRP);
-  fPtSpectra->SetParameter(0,fMultiplicityOfRP);
-  
+  Int_t fNewMultiplicityOfRP = fMyTRandom3->Gaus(fMultiplicityOfRP,fMultiplicitySpreadOfRP);
+  fPtSpectra->SetParameter(0,fNewMultiplicityOfRP);
   
   
   // phi:
@@ -114,7 +113,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   Int_t iGoodTracks = 0;
   Int_t iSelParticlesRP = 0;
   Int_t iSelParticlesPOI = 0;
-  for(Int_t i=0;i<fMultiplicityOfRP;i++) {
+  for(Int_t i=0;i<fNewMultiplicityOfRP;i++) {
     AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
     pTrack->SetPt(fPtSpectra->GetRandom());
     pTrack->SetEta(fMyTRandom3->Uniform(dEtaMin,dEtaMax));
@@ -140,7 +139,9 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   cout<<" # of POI selected tracks = "<<iSelParticlesPOI<<endl;  
   cout << "# " << ++fCount << " events processed" << endl;
 
- return pEvent;  
+  delete fPhiDistribution;
+  delete fPtSpectra;
+  return pEvent;  
  
 } // end of CreateEventOnTheFly()
 
