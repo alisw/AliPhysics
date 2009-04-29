@@ -161,8 +161,8 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   Double_t *fhBinLimClusterITS;	//[fhNBinsClusterITS] bin limits: cluster ITS
   Double_t *fhBinLimClusterTRD;	//[fhNBinsClusterTRD] bin limits: cluster TRD
   Double_t *fhBinLimFoundClusterTPC;//[fhNBinsFoundClusterTPC] bin limits: ratio found / findable number of clusters in TPC
-  Double_t *fhBinLimTrackletTRD;//[fhNBinsTrackletsTRD] bin limits: number of tracklets in TRD
-  Double_t *fhBinLimTrackletTRDpid;//[fhNBinsTrackletsTRDpid] bin limits: number of tracklets for TRD pid
+  Double_t *fhBinLimTrackletTRD;    //[fhNBinsTrackletTRD] bin limits: number of tracklets in TRD
+  Double_t *fhBinLimTrackletTRDpid; //[fhNBinsTrackletTRDpid] bin limits: number of tracklets for TRD pid
   Double_t *fhBinLimChi2TPC;	//[fhNBinsChi2TPC] bin limits: chi2 per cluster TPC
   Double_t *fhBinLimChi2ITS;	//[fhNBinsChi2ITS] bin limits: chi2 per cluster ITS
   Double_t *fhBinLimChi2TRD;	//[fhNBinsChi2TRD] bin limits: chi2 per cluster TRD
