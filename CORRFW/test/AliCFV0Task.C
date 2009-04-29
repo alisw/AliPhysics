@@ -102,8 +102,10 @@ Bool_t AliCFV0Task(
 
   //Acceptance Cuts
   AliCFPairAcceptanceCuts *mcAccCuts = new AliCFPairAcceptanceCuts("mcAccCuts","MC acceptance cuts for V0");
-  mcAccCuts->SetMinNHitITS(mintrackrefsITS,mintrackrefsITS);
-  mcAccCuts->SetMinNHitTPC(mintrackrefsTPC,mintrackrefsTPC);
+  mcAccCuts->GetNegCut()->SetMinNHitITS(mintrackrefsITS);
+  mcAccCuts->GetPosCut()->SetMinNHitITS(mintrackrefsITS);
+  mcAccCuts->GetNegCut()->SetMinNHitTPC(mintrackrefsTPC);
+  mcAccCuts->GetPosCut()->SetMinNHitTPC(mintrackrefsTPC);
 
   // Rec-Level kinematic cuts
   AliCFTrackKineCuts *recKineCuts = new AliCFTrackKineCuts("recKineCuts","V0 rec-level kine cuts");
@@ -112,9 +114,12 @@ Bool_t AliCFV0Task(
   recKineCuts->SetChargeRec(0);
 
   AliCFPairQualityCuts *recQualityCuts = new AliCFPairQualityCuts("recQualityCuts","V0 rec-level quality cuts");
-  if (!readAOD) recQualityCuts->SetMinNClusterTPC(minclustersTPC,minclustersTPC);
-  recQualityCuts->SetStatus(AliESDtrack::kTPCrefit & AliESDtrack::kITSrefit, 
-			    AliESDtrack::kTPCrefit & AliESDtrack::kITSrefit) ;
+  if (!readAOD) {
+    recQualityCuts->GetNegCut()->SetMinNClusterTPC(minclustersTPC);
+    recQualityCuts->GetPosCut()->SetMinNClusterTPC(minclustersTPC);
+  }
+  recQualityCuts->GetNegCut()->SetStatus(AliESDtrack::kTPCrefit & AliESDtrack::kITSrefit);
+  recQualityCuts->GetPosCut()->SetStatus(AliESDtrack::kTPCrefit & AliESDtrack::kITSrefit);
 
   AliCFV0TopoCuts *recTopoCuts = new AliCFV0TopoCuts("recTopoCuts","V0 Topological Cuts");
   recTopoCuts->SetMaxDcaDaughters(0.1);
@@ -135,15 +140,36 @@ Bool_t AliCFV0Task(
 					   0.7152 ,
 					   0.0442,
 					   0.0733 };
-  cutPID->SetPriors(prior_pp);
-  cutPID->SetDetectors("ITS TPC TRD","ITS TPC TRD");
-  if (readAOD) cutPID->SetAODmode(kTRUE);
-  else         cutPID->SetAODmode(kFALSE);
-  cutPID->SetProbabilityCut(0,0);
+  cutPID->GetNegCut()->SetPriors(prior_pp);
+  cutPID->GetPosCut()->SetPriors(prior_pp);
+  cutPID->GetNegCut()->SetDetectors("ITS TPC TRD");
+  cutPID->GetPosCut()->SetDetectors("ITS TPC TRD");
+
+  if (readAOD) {
+    cutPID->GetNegCut()->SetAODmode(kTRUE);
+    cutPID->GetPosCut()->SetAODmode(kTRUE);
+  }
+  else {
+    cutPID->GetNegCut()->SetAODmode(kFALSE);
+    cutPID->GetPosCut()->SetAODmode(kFALSE);
+  }
+
+  cutPID->GetNegCut()->SetProbabilityCut(0);
+  cutPID->GetPosCut()->SetProbabilityCut(0);
+
   switch(TMath::Abs(PDG)) {
-  case  310    : cutPID->SetParticleType(AliPID::kPion  , kTRUE, AliPID::kPion  , kTRUE); break;
-  case  3122   : cutPID->SetParticleType(AliPID::kPion  , kTRUE, AliPID::kProton, kTRUE); break;
-  case -3122   : cutPID->SetParticleType(AliPID::kProton, kTRUE, AliPID::kPion  , kTRUE); break;
+  case  310    : 
+    cutPID->GetNegCut()->SetParticleType(AliPID::kPion  , kTRUE);
+    cutPID->GetPosCut()->SetParticleType(AliPID::kPion  , kTRUE);
+    break;
+  case  3122   : 
+    cutPID->GetNegCut()->SetParticleType(AliPID::kPion  , kTRUE);
+    cutPID->GetPosCut()->SetParticleType(AliPID::kProton, kTRUE);
+    break;
+  case -3122   : 
+    cutPID->GetNegCut()->SetParticleType(AliPID::kProton, kTRUE);
+    cutPID->GetPosCut()->SetParticleType(AliPID::kPion  , kTRUE);
+    break;
   default      : printf("UNDEFINED PID\n"); break;
   }
 

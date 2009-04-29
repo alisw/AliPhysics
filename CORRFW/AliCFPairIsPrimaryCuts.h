@@ -38,14 +38,8 @@ class AliCFPairIsPrimaryCuts : public AliCFCutBase
 
   Bool_t IsSelected(TObject* obj) ;
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
-  virtual void SetMaxNSigmaToVertex(Double32_t neg, Double32_t pos) 
-  {fCutNeg->SetMaxNSigmaToVertex(neg); fCutPos->SetMaxNSigmaToVertex(pos);}
-  void SetRequireSigmaToVertex(Bool_t b1, Bool_t b2)
-  {fCutNeg->SetRequireSigmaToVertex(b1); fCutPos->SetRequireSigmaToVertex(b2);}
-  void SetAcceptKinkDaughters(Bool_t b1, Bool_t b2)
-  {fCutNeg->SetAcceptKinkDaughters(b1); fCutPos->SetAcceptKinkDaughters(b2);}
-  void SetAODType(Char_t typeNeg, Char_t typePos)
-  {fCutNeg->SetAODType(typeNeg); fCutPos->SetAODType(typePos);}
+  virtual AliCFTrackIsPrimaryCuts* GetNegCut() const {return fCutNeg;}
+  virtual AliCFTrackIsPrimaryCuts* GetPosCut() const {return fCutPos;}
 
   ClassDef(AliCFPairIsPrimaryCuts,2);
 

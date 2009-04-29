@@ -40,19 +40,9 @@ class AliCFPairQualityCuts : public AliCFCutBase
 
   Bool_t IsSelected(TObject* obj) ; 
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
-  virtual void SetMinNClusterTPC (UInt_t nClusNeg, UInt_t nClusPos) 
-  {fCutNeg->SetMinNClusterTPC(nClusNeg); fCutPos->SetMinNClusterTPC(nClusPos);}
-  virtual void SetMinNClusterITS (UInt_t nClusNeg, UInt_t nClusPos) 
-  {fCutNeg->SetMinNClusterITS(nClusNeg); fCutPos->SetMinNClusterITS(nClusPos);}
-  virtual void SetMaxChi2PerClusterTPC(Double32_t chi2Neg, Double32_t chi2Pos) 
-  {fCutNeg->SetMaxChi2PerClusterTPC(chi2Neg); fCutPos->SetMaxChi2PerClusterTPC(chi2Pos);}
-  virtual void SetMaxChi2PerClusterITS(Double32_t chi2Neg, Double32_t chi2Pos) 
-  {fCutNeg->SetMaxChi2PerClusterITS(chi2Neg); fCutPos->SetMaxChi2PerClusterITS(chi2Pos);}
-  virtual void SetMaxCovDiagonalElements(Double32_t* neg/*[5]*/, Double32_t* pos/*[5]*/) {
-    fCutNeg->SetMaxCovDiagonalElements(neg[0],neg[1],neg[2],neg[3],neg[4]); 
-    fCutPos->SetMaxCovDiagonalElements(pos[0],pos[1],pos[2],pos[3],pos[4]); }
-  virtual void SetStatus(ULong_t statusNeg, ULong_t statusPos) 
-  {fCutNeg->SetStatus(statusNeg); fCutPos->SetStatus(statusPos);}
+
+  virtual AliCFTrackQualityCuts* GetNegCut() const {return fCutNeg;}
+  virtual AliCFTrackQualityCuts* GetPosCut() const {return fCutPos;}
 
  private :
   AliCFTrackQualityCuts *fCutNeg ; // quality cut on negative daughter

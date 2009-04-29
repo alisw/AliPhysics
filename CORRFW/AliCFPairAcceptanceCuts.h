@@ -43,11 +43,8 @@ class AliCFPairAcceptanceCuts : public AliCFCutBase
   Bool_t IsSelected(TObject* obj) ;
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
   virtual void SetEvtInfo(TObject *mcInfo) ;
-  virtual void SetMinNHitITS  (Int_t nHitNeg, Int_t nHitPos) {fCutNeg->SetMinNHitITS (nHitNeg); fCutPos->SetMinNHitITS (nHitPos);}
-  virtual void SetMinNHitTPC  (Int_t nHitNeg, Int_t nHitPos) {fCutNeg->SetMinNHitTPC (nHitNeg); fCutPos->SetMinNHitTPC (nHitPos);}
-  virtual void SetMinNHitTRD  (Int_t nHitNeg, Int_t nHitPos) {fCutNeg->SetMinNHitTRD (nHitNeg); fCutPos->SetMinNHitTRD (nHitPos);}
-  virtual void SetMinNHitTOF  (Int_t nHitNeg, Int_t nHitPos) {fCutNeg->SetMinNHitTOF (nHitNeg); fCutPos->SetMinNHitTOF (nHitPos);}
-  virtual void SetMinNHitMUON (Int_t nHitNeg, Int_t nHitPos) {fCutNeg->SetMinNHitMUON(nHitNeg); fCutPos->SetMinNHitMUON(nHitPos);}
+  virtual AliCFAcceptanceCuts* GetNegCut() const {return fCutNeg;}
+  virtual AliCFAcceptanceCuts* GetPosCut() const {return fCutPos;}
 
   enum {
     kNCuts=2

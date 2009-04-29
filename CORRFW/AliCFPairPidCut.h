@@ -40,20 +40,8 @@ class AliCFPairPidCut : public AliCFCutBase
   AliCFPairPidCut& operator=(const AliCFPairPidCut& c) ;
   virtual ~AliCFPairPidCut() {delete fCutNeg; delete fCutPos; };
 
-  void SetDetectors(TString detsNeg, TString detsPos) 
-  {fCutNeg->SetDetectors(detsNeg); fCutPos->SetDetectors(detsPos);}     //sets the chosen detectors
-  void SetPriors(Double_t r[AliPID::kSPECIES]) 
-  {fCutNeg->SetPriors(r); fCutPos->SetPriors(r);}                       //sets the a priori concentrations
-  void SetProbabilityCut(Double32_t cut1, Double32_t cut2)
-  {fCutNeg->SetProbabilityCut(cut1); fCutPos->SetProbabilityCut(cut2);} //sets the prob cut
-  void SetParticleType(Int_t iType1, Bool_t tocombine1, Int_t iType2, Bool_t tocombine2)        //sets the particle to be identified and the mode
-  {fCutNeg->SetParticleType(iType1,tocombine1); fCutPos->SetParticleType(iType2,tocombine2);}   // (single detector kFALSE/ combined kTRUE)
-  void SetMinDiffResp(Bool_t check1, Double_t mindiff1, Bool_t check2, Double_t mindiff2) 
-  {fCutNeg->SetMinDiffResp(check1,mindiff1); fCutPos->SetMinDiffResp(check2,mindiff2);}     //set checking at det. response level
-  void SetMinDiffProb(Bool_t check1, Double_t mindiff1, Bool_t check2, Double_t mindiff2)
-  {fCutNeg->SetMinDiffProb(check1,mindiff1); fCutPos->SetMinDiffProb(check2,mindiff2);}  //set checking at probability level
-  void SetAODmode(Bool_t mode) {fCutNeg->SetAODmode(mode); fCutPos->SetAODmode(mode);}
-  void SetProbThreshold(Double_t value1, Double_t value2) {fCutNeg->SetProbThreshold(value1); fCutPos->SetProbThreshold(value2);}
+  virtual AliCFTrackCutPid* GetNegCut() const {return fCutNeg;}
+  virtual AliCFTrackCutPid* GetPosCut() const {return fCutPos;}
 
   Bool_t IsSelected(TObject *obj); //boolean for detectors
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}

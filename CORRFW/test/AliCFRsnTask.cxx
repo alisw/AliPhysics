@@ -37,6 +37,7 @@
 #include "AliRsnMCInfo.h"
 #include "AliRsnPairParticle.h"
 #include "AliAODEvent.h"
+#include "AliRsnReader.h"
 
 //__________________________________________________________________________
 AliCFRsnTask::AliCFRsnTask() :
@@ -168,26 +169,23 @@ void AliCFRsnTask::UserExec(Option_t *)
       Int_t label2 = track2->GetLabel();
       if (label2<0) continue;
 
-      //Create Resonance daughter objects
-      AliRsnDaughter* daughter1tmp = 0x0 ;
-      AliRsnDaughter* daughter2tmp = 0x0 ;
+      AliRsnDaughter daughter1;
+      AliRsnDaughter daughter2;
+
+      AliRsnReader reader ; //needed for conversion ESD/AOD->AliRsnDaughter
+
       if (isESDEvent) {
-	daughter1tmp = new AliRsnDaughter((AliESDtrack*)track1) ;
-	daughter2tmp = new AliRsnDaughter((AliESDtrack*)track2) ;
+	if (!reader.ConvertTrack(&daughter1,(AliESDtrack*)track1)) Error("UserExec","Could not convert ESD track") ;
+	if (!reader.ConvertTrack(&daughter2,(AliESDtrack*)track2)) Error("UserExec","Could not convert ESD track") ;
       }
       else if (isAODEvent) {
-	daughter1tmp = new AliRsnDaughter((AliAODTrack*)track1) ;
-	daughter2tmp = new AliRsnDaughter((AliAODTrack*)track2) ;
+	if (!reader.ConvertTrack(&daughter1,(AliAODTrack*)track1)) Error("UserExec","Could not convert AOD track") ;
+	if (!reader.ConvertTrack(&daughter2,(AliAODTrack*)track2)) Error("UserExec","Could not convert AOD track") ;
       }
       else {
 	Error("UserExec","Error: input data file is not an ESD nor an AOD");
 	return;
       }
-
-      AliRsnDaughter daughter1(*daughter1tmp);
-      AliRsnDaughter daughter2(*daughter2tmp);
-      delete daughter1tmp;
-      delete daughter2tmp;
 
       AliCFPair pair(track1,track2); // This object is used for cuts 
                                      // (to be replaced when AliRsnPairParticle 
