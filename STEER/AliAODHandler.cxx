@@ -26,6 +26,7 @@
 #include <TRef.h>
 #include <TString.h>
 #include <TList.h>
+#include <TROOT.h>
 
 #include "AliLog.h"
 #include "AliAODHandler.h"
@@ -123,23 +124,19 @@ Bool_t AliAODHandler::Init(Option_t* opt)
   // File opening according to execution mode
   TString option(opt);
   option.ToLower();
+  TDirectory *owd = gDirectory;
   if (option.Contains("proof")) {
     // proof
-    if (option.Contains("special")) {
-       // File for tree already opened on slave -> merging via files
-       fFileA = gFile;
-       CreateTree(1);
-    } else {   
-       // Merging in memory (not needed anymore)
-       CreateTree(1);
-    }   
+    // Merging via files. Need to access analysis manager via interpreter.
+    gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->OpenProofFile(%s, \"RECREATE\");", fFileName.Data()));
+    gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->GetCommonOutputContainer()->SetFile((TFile*)0x%lx);", gFile));
+    fFileA = gFile;
   } else {
     // local and grid
-    TDirectory *owd = gDirectory;
     fFileA = new TFile(fFileName.Data(), "RECREATE");
-    CreateTree(1);
-    owd->cd();
   }
+  CreateTree(1);
+  owd->cd();
   if (fExtensions) {
      TIter next(fExtensions);
      AliAODExtension *ext;
@@ -588,12 +585,21 @@ void AliAODExtension::AddBranch(const char* cname, void* addobj)
 }
 
 //______________________________________________________________________________
-Bool_t AliAODExtension::Init(Option_t */*option*/)
+Bool_t AliAODExtension::Init(Option_t *option)
 {
 // Initialize IO.
   if(!fAODEvent) fAODEvent = new AliAODEvent();
   TDirectory *owd = gDirectory;
-  fFileE = new TFile(GetName(), "RECREATE");
+  TString opt(option);
+  opt.ToLower();
+  if (opt.Contains("proof")) {
+    // proof
+    // Merging via files. Need to access analysis manager via interpreter.
+    gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->OpenProofFile(%s, \"RECREATE\");", fName.Data()));
+    fFileE = gFile;
+  } else {
+    fFileE = new TFile(GetName(), "RECREATE");
+  }  
   fTreeE = new TTree("aodTree", "AliAOD tree");
   fTreeE->Branch(fAODEvent->GetList());
   TRef junk = (TObject*)fTreeE->BranchRef();
