@@ -162,6 +162,24 @@ void AliUA1JetFinderV1::FindJets()
      etbgTotal = etbgTotalN; // update with new background estimation
   } //end while
 
+  // add tracks to the jet if it wasn't yet done                                                         
+  if (header->GetBackgMode() == 0){
+    Float_t rc= header->GetRadius();
+    for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array                     
+      for(Int_t ijet=0; ijet<nj; ijet++){
+        Float_t deta = etaT[jpart] - etaJet[ijet];
+        Float_t dphi = phiT[jpart] - phiJet[ijet];
+	if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
+	if (dphi >  TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
+        Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
+	if(dr <= rc){ // particles inside this cone                                                    
+          injet[jpart] = ijet;
+          break;
+        }
+      }// end jets loop                                                                                
+    } //end particle loop                                                                              
+  }
+  
   // add jets to list
   Int_t* idxjets = new Int_t[nj];
   Int_t nselectj = 0;
