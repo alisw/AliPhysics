@@ -1,4 +1,13 @@
-void runProofSPDdNdEta (Int_t MBTrigg, Bool_t kreadmc, Bool_t kallStat, Int_t nEntries, Int_t firstEntry, Char_t* dataSet) {
+/*************************************************************************
+* Macro runProofSPDdNdEta                                                *
+* To run dN/dEta reconstruction analysis                                 *
+*                                                                        *
+* Author:  M. Nicassio (INFN Bari)                                       *
+* Contact: Maria.Nicassio@ba.infn.it, Domenico.Elia@ba.infn.it           *
+**************************************************************************/
+
+void runProofSPDdNdEta (Int_t MBTrigg, Bool_t kreadmc, Bool_t kppAna, 
+                        Bool_t kallStat, Int_t nEntries, Int_t firstEntry, Char_t* dataSet) {
 
  // Connecting to the PROOF cluster
  TProof::Open("alicecaf");
@@ -7,7 +16,7 @@ void runProofSPDdNdEta (Int_t MBTrigg, Bool_t kreadmc, Bool_t kallStat, Int_t nE
  gProof->UploadPackage("AF-v4-16");
  gProof->EnablePackage("AF-v4-16");
 
-// gProof->ShowEnabledPackages(); // show a list of enabled packages
+// gProof->ShowEnabledPackages(); 
 
  // Create the analysis manager
  mgr = new AliAnalysisManager("SPD dN/dEta Analysis");
@@ -21,10 +30,12 @@ void runProofSPDdNdEta (Int_t MBTrigg, Bool_t kreadmc, Bool_t kallStat, Int_t nE
  mgr->SetInputEventHandler(esdH);
  // Add MC handler
  if (kreadmc) {
- AliMCEventHandler*   mcH = new AliMCEventHandler();
- mgr->SetMCtruthEventHandler(mcH);
- task->SetReadMC(kTRUE);  
- } else task->SetReadMC(kFALSE);
+   AliMCEventHandler*   mcH = new AliMCEventHandler();
+   mgr->SetMCtruthEventHandler(mcH);
+ } 
+ task->SetReadMC(kreadmc);
+
+ task->SetppAnalysis(kppAna);
 
  task->SetTrigger(MBTrigg);
 
