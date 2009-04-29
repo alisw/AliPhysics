@@ -271,15 +271,9 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
          TIter nextout(fOutputs);
          AliAnalysisDataContainer *c_aod;
          while ((c_aod=(AliAnalysisDataContainer*)nextout())) if (!strcmp(c_aod->GetFileName(),"default")) break;
-         if (c_aod && c_aod->IsSpecialOutput()) {
-            // Merging via files
-            if (fDebug > 1) printf("   Initializing special output file %s...\n", fOutputEventHandler->GetOutputFileName());
-            OpenProofFile(fOutputEventHandler->GetOutputFileName(), "RECREATE");
-            c_aod->SetFile(gFile);
-            init = fOutputEventHandler->Init("proofspecial");
-            if (!init) msg = "Failed to initialize output handler on worker using special proof output";
-         } else {
-            // Merging in memory
+         if (c_aod) {
+            // Merging AOD's in PROOF via TProofOutputFile
+            if (fDebug > 1) printf("   Initializing AOD output file %s...\n", fOutputEventHandler->GetOutputFileName());
             init = fOutputEventHandler->Init("proof");
             if (!init) msg = "Failed to initialize output handler on worker";
          }   
