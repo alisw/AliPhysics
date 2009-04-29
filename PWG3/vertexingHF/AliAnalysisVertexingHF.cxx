@@ -54,7 +54,6 @@ ClassImp(AliAnalysisVertexingHF)
 //----------------------------------------------------------------------------
 AliAnalysisVertexingHF::AliAnalysisVertexingHF():
 fInputAOD(kFALSE),
-fAODMap(0),
 fBzkG(0.),
 fSecVtxWithKF(kFALSE),
 fRecoPrimVtxSkippingTrks(kFALSE),
@@ -84,7 +83,6 @@ fFindVertexForDstar(kTRUE)
 AliAnalysisVertexingHF::AliAnalysisVertexingHF(const AliAnalysisVertexingHF &source) : 
 TNamed(source),
 fInputAOD(source.fInputAOD),
-fAODMap(source.fAODMap),
 fBzkG(source.fBzkG),
 fSecVtxWithKF(source.fSecVtxWithKF),
 fRecoPrimVtxSkippingTrks(source.fRecoPrimVtxSkippingTrks),
@@ -169,6 +167,12 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
   TString evtype = event->IsA()->GetName();
   fInputAOD = ((evtype=="AliAODEvent") ? kTRUE : kFALSE);
+
+  if(fInputAOD) {
+    AliDebug(2,"Creating HF candidates from AOD");
+  } else {
+    AliDebug(2,"Creating HF candidates from ESD");
+  }
 
   if(!aodVerticesHFTClArr) {
     printf("ERROR: no aodVerticesHFTClArr");
@@ -770,7 +774,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
   if(fInputAOD) {
     seleTrksArray.Delete(); 
-    if(fAODMap) { delete [] fAODMap; fAODMap=NULL; }
   }
 
   return;
@@ -1531,7 +1534,6 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
   const AliVVertex *vprimary = event->GetPrimaryVertex();
 
   if(fV1) { delete fV1; fV1=NULL; }
-  if(fAODMap) { delete [] fAODMap; fAODMap=NULL; }
 
   Int_t nindices=0;
   UShort_t *indices = 0;
@@ -1544,7 +1546,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
     vprimary->GetCovarianceMatrix(cov);
     fV1 = new AliESDVertex(pos,cov,100.,100,vprimary->GetName());
     indices = new UShort_t[event->GetNumberOfTracks()];
-    fAODMap = new Int_t[100000];
+    for(Int_t j=0; j<100000; j++) fAODMap[j]=-1;
   }
 
 
