@@ -416,9 +416,9 @@ Bool_t LoadCommonLibraries(const char *mode)
             if (useCORRFW) success &= LoadLibrary("CORRFW", mode);
          } else { 
             ires = gProof->EnablePackage(AFversion);
+            if (ires<0) success = kFALSE;
             if (useCORRFW) success &= LoadLibrary("CORRFW", mode);
          }
-         if (ires<0) success = kFALSE;
          break;         
       default:
          ::Error("LoadCommonLibraries", "Unknown run mode: %s", mode);
