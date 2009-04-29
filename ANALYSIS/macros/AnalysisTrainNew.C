@@ -8,6 +8,7 @@
 //    root[2] AnalysisTrainNew("proof")
 // Local mode requires AliESds.root or AliAOD.root in ./data directory
 //    root[3] AnalysisTrainNew("local")
+// In proof and grid modes, a token is needed and sourcing the produced environment file.
 
 const char *root_version    = "v5-23-02";
 const char *aliroot_version = "v4-16-Rev-08";
@@ -17,37 +18,45 @@ const char *AFversion       = "";
 // Dataset name. If empty assumes local ESD/AOD. In CAF it is a dataset name.
 //               In grid has to point to an xml file or be empty if using the plugin
 // === PROOF
+// Change CAF dataset here
 const char *proof_dataset = "/COMMON/COMMON/LHC09a4_run8100X#/esdTree";
 
 // === ALIEN
 const char *dataset   = "";
+// Change production base directory here
 const char *alien_datadir = "/alice/sim/PDC_09/LHC09a4/";
+// Use up to 10 non-zero run numbers
 Int_t run_numbers[10] = {81072,     0,     0,     0,     0,
                              0,     0,     0,     0,     0};
-
-Bool_t useDBG        = kTRUE;
-Bool_t useMC         = kTRUE;
-Bool_t useTAGS       = kFALSE;
-Bool_t useKFILTER    = kTRUE;
-Bool_t usePAR        = kFALSE;
-Bool_t useTR         = kFALSE;
-Bool_t usePLUGIN     = kTRUE;
+// Activate the following flags ONLY in grid mode and ONLY if the code is not available
+// in the deployed AliRoot versions. Par file search path: local dir, if not there $ALICE_ROOT.
+// To refresh par files, remove the ones in the workdir, then do "make <target.par>" in 
+// AliRoot.
+Bool_t usePAR        = kFALSE;  // use par files for extra libs
+Bool_t useCPAR       = kFALSE;  // use par files for common libs
+// Other flags to steer the analysis
+Bool_t useDBG        = kTRUE;  // activate debugging
+Bool_t useMC         = kTRUE;  // use MC info
+Bool_t useTAGS       = kFALSE; // use ESD tags for selection
+Bool_t useKFILTER    = kTRUE;  // use Kinematics filter
+Bool_t useTR         = kFALSE; // use track references
+Bool_t usePLUGIN     = kTRUE;  // use AliEn plugin
 Bool_t useCORRFW     = kFALSE; // do not change
-Bool_t useAODTAGS    = kTRUE;
+Bool_t useAODTAGS    = kFALSE; // use AOD tags
     
-Int_t iAODanalysis   = 0;
-Int_t iAODhandler    = 1;
-Int_t iESDfilter     = 1;
-Int_t iMUONcopyAOD   = 0;
-Int_t iJETAN         = 1;
-Int_t iPWG4partcorr  = 1;
-Int_t iPWG4pi0       = 1;
-Int_t iPWG4gammajet  = 1;
-Int_t iPWG3vertexing = 1;
-Int_t iPWG2femto     = 0;
-Int_t iPWG2spectra   = 1;
-Int_t iPWG2flow      = 0;
-Int_t iPWG2res       = 1;
+Int_t iAODanalysis   = 0;      // Analysis on input AOD's
+Int_t iAODhandler    = 1;      // Analysis produces an AOD or dAOD's
+Int_t iESDfilter     = 1;      // ESD to AOD filter (barrel + muon tracks)
+Int_t iMUONcopyAOD   = 0;      // Task that copies only muon events in a separate AOD (PWG3)
+Int_t iJETAN         = 1;      // Jet analysis (PWG4) - needs ESD filter
+Int_t iPWG4partcorr  = 1;      // Gamma-hadron correlations task (PWG4)
+Int_t iPWG4pi0       = 1;      // Pi0 task (PWG4)
+Int_t iPWG4gammajet  = 1;      // Gamma-jet correlations (PWG3)
+Int_t iPWG3vertexing = 1;      // Vertexing HF task (PWG2)
+Int_t iPWG2femto     = 0;      // Femtoscopy task (PWG2)
+Int_t iPWG2spectra   = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
+Int_t iPWG2flow      = 0;      // Flow analysis task (PWG2)
+Int_t iPWG2res       = 1;      // Resonances task (PWG2)
 
 TString anaPars = "";
 TString anaLibs = "";
@@ -55,7 +64,7 @@ TString anaLibs = "";
 class AliAnalysisGrid;
 
 //______________________________________________________________________________
-void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode="test")
+void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode="full")
 {
 // Example of running analysis train
    TString smode(analysis_mode);
@@ -378,13 +387,22 @@ Bool_t LoadCommonLibraries(const char *mode)
    switch (imode) {
       case 0:
       case 2:
-         success &= LoadLibrary("libSTEERBase.so", mode);
-         success &= LoadLibrary("libESD.so", mode);
-         success &= LoadLibrary("libAOD.so", mode);
-         success &= LoadLibrary("libANALYSIS.so", mode);
-         success &= LoadLibrary("libANALYSISalice.so", mode);
-         if (useCORRFW) success &= LoadLibrary("libCORRFW.so", mode);
-         gROOT->ProcessLine(".include $ALICE_ROOT/include");
+         if (useCPAR) {
+            success &= LoadLibrary("STEERBase", mode, kTRUE);
+            success &= LoadLibrary("ESD", mode, kTRUE);
+            success &= LoadLibrary("AOD", mode, kTRUE);
+            success &= LoadLibrary("ANALYSIS", mode, kTRUE);
+            success &= LoadLibrary("ANALYSISalice", mode, kTRUE);
+            if (useCORRFW) success &= LoadLibrary("CORRFW", mode, kTRUE);
+         } else {   
+            success &= LoadLibrary("libSTEERBase.so", mode);
+            success &= LoadLibrary("libESD.so", mode);
+            success &= LoadLibrary("libAOD.so", mode);
+            success &= LoadLibrary("libANALYSIS.so", mode);
+            success &= LoadLibrary("libANALYSISalice.so", mode);
+            if (useCORRFW) success &= LoadLibrary("libCORRFW.so", mode);
+            gROOT->ProcessLine(".include $ALICE_ROOT/include");
+         }   
          break;
       case 1:
          Int_t ires = -1;
@@ -685,6 +703,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
    TString ana_sources = "";
    TString ana_add = "";
    if (usePAR && anaPars.Length()) {
+      printf("%s\n", anaPars.Data());
       TObjArray *arr;
       TObjString *objstr;
       arr = anaPars.Tokenize(" ");
