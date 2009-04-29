@@ -7,6 +7,7 @@ SRCS= FLOW/AliFlowCommon/AliFlowEventSimple.cxx \
       FLOW/AliFlowCommon/AliFlowCommonConstants.cxx \
       FLOW/AliFlowCommon/AliFlowLYZConstants.cxx \
       FLOW/AliFlowCommon/AliFlowCumuConstants.cxx \
+      FLOW/AliFlowCommon/AliFlowEventSimpleMakerOnTheFly.cxx \
       FLOW/AliFlowCommon/AliFlowCommonHist.cxx \
       FLOW/AliFlowCommon/AliFlowCommonHistResults.cxx \
       FLOW/AliFlowCommon/AliFlowLYZHist1.cxx \
