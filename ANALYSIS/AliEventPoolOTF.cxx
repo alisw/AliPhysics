@@ -29,6 +29,8 @@
 #include "AliEventTagCuts.h"
 #include "AliTagAnalysis.h"
 
+#include <TMath.h>
+
 ClassImp(AliEventPoolOTF)
 
 
@@ -42,13 +44,16 @@ AliEventPoolOTF::AliEventPoolOTF():
     fDetectorCuts(0),
     fEventCuts(0),
     fTagDirectory(0),
-    fMultMin(0),
-    fMultMax(0),
-    fMultStep(0),
-    fMultiplicity(),
-    fBinNumber(0)
+    fValueMin(),
+    fValueMax(),
+    fValueStep(),
+    fValue(),    
+    fBinNumber(0),
+    fNoMore(0)
+
 {
   // Default constructor
+    InitArrays();
 }
 
 AliEventPoolOTF::AliEventPoolOTF(const char* name, const char* title):
@@ -59,13 +64,16 @@ AliEventPoolOTF::AliEventPoolOTF(const char* name, const char* title):
     fDetectorCuts(new AliDetectorTagCuts()),
     fEventCuts(new AliEventTagCuts()),
     fTagDirectory("."),
-    fMultMin(0),
-    fMultMax(0),
-    fMultStep(0),
-    fMultiplicity(),
-    fBinNumber(0)
+    fValueMin(),
+    fValueMax(),
+    fValueStep(),
+    fValue(),    
+    fBinNumber(0),
+    fNoMore(0)
+
 {
   // Constructor
+    InitArrays();
 }
 
 
@@ -77,13 +85,15 @@ AliEventPoolOTF::AliEventPoolOTF(const AliEventPoolOTF& obj):
     fDetectorCuts(0),
     fEventCuts(0),
     fTagDirectory(0),
-    fMultMin(0),
-    fMultMax(0),
-    fMultStep(0),
-    fMultiplicity(),
-    fBinNumber(0)
+    fValueMin(),
+    fValueMax(),
+    fValueStep(),
+    fValue(),    
+    fBinNumber(0),
+    fNoMore(0)
 {
     // Copy constructor
+    InitArrays();
 }
 
 AliEventPoolOTF& AliEventPoolOTF::operator=(const AliEventPoolOTF& other)
@@ -98,7 +108,7 @@ void AliEventPoolOTF::Init()
 {
     //
     fTagAnalysis->ChainLocalTags(fTagDirectory);
-    fMultiplicity = fMultMin;
+    for (Int_t i = 0; i < 4; i++) fValue[i] = fValueMin[i];    
 }
 
 TChain* AliEventPoolOTF::GetNextChain()
@@ -106,13 +116,32 @@ TChain* AliEventPoolOTF::GetNextChain()
     //
     TChain* chain = 0;
     fBinNumber++;
-    Int_t mmax = fMultiplicity + fMultStep - 1;
-    if (mmax > fMultMax) {
+    if (fNoMore) {
 	return 0;
     } else {
-	fEventCuts->SetMultiplicityRange(fMultiplicity, mmax);
+	printf("Current bin (lower) %13.3f %13.3f %13.3f \n", fValue[kMultiplicity], fValue[kZVertex], fValue[kEventPlane]);
+	printf("Current bin (upper) %13.3f %13.3f %13.3f \n", fValue[kMultiplicity] + fValueStep[kMultiplicity], 
+	                                                      fValue[kZVertex]      + fValueStep[kZVertex], 
+	                                                      fValue[kEventPlane]   + fValueStep[kEventPlane]);
+	
+	fEventCuts->SetMultiplicityRange(Int_t(fValue[kMultiplicity]) , Int_t(fValue[kMultiplicity] + fValueStep[kMultiplicity]));
+	fEventCuts->SetPrimaryVertexZRange(fValue[kZVertex] , fValue[kZVertex] + fValueStep[kZVertex]);
+	fEventCuts->SetEventPlaneAngleRange(fValue[kEventPlane] , fValue[kEventPlane] + fValueStep[kEventPlane]);
 	chain = fTagAnalysis->QueryTags(fRunCuts, fLHCCuts, fDetectorCuts, fEventCuts);
-	fMultiplicity += fMultStep;
+//
+//      Next bin 
+//
+	for (Int_t i = 2; i >= 0; i--) 
+	{
+	    fValue[i] += fValueStep[i];
+	    if (i > 0  && fValue[i] >= fValueMax[i]) {
+		fValue[i] = fValueMin[i];
+	    } else if (i == 0 && fValue[i] >= fValueMax[i]) {
+		fNoMore = kTRUE;
+	    } else {
+		break;
+	    }
+	}
 	return chain;
     }
 }
@@ -125,6 +154,18 @@ void  AliEventPoolOTF::GetCurrentBin(Float_t* /*bin*/)
 Int_t AliEventPoolOTF::GetDimension()
 {
     //
-    return (1);
+    return (3);
 }
+
+void AliEventPoolOTF::InitArrays()
+{
+    // Initializes the pool axis
+    
+    SetMultiplicityBinning(0, 20000, 20000);
+    SetZVertexBinning(-1000., 1000., 2000.);
+    SetEventPlaneBinning(-1000., 1000., 2000.);
+    SetLeadingParticleEtaBinning(-1.0, 1.0, 2.);    
+    for (Int_t i = 0; i < 4; i++) fValue[i] = fValueMin[i];
+}
+
 
