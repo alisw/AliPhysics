@@ -67,7 +67,12 @@ void MakeGeometry()
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(1);
-  gAlice->Init("$ALICE_ROOT/macros/g4ConfigGeometry.C");
+
+  // MC application initialization
+  TString configFileName = "$ALICE_ROOT/macros/g4ConfigGeometry.C";
+  gROOT->LoadMacro(configFileName.Data());
+  gInterpreter->ProcessLine(gAlice->GetConfigFunction());
+  gAlice->GetMCApp()->Init();
   
   // Generate geometry file
   //
@@ -86,7 +91,12 @@ void Init()
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(0);
-  gAlice->Init("$ALICE_ROOT/macros/g4Config.C");
+ 
+  // MC application initialization
+  TString configFileName = "$ALICE_ROOT/macros/g4Config.C";
+  gROOT->LoadMacro(configFileName.Data());
+  gInterpreter->ProcessLine(gAlice->GetConfigFunction());
+  gAlice->GetMCApp()->Init();
 
   cout << endl
        << "Only MonteCarlo initialization has been performed. " << endl
