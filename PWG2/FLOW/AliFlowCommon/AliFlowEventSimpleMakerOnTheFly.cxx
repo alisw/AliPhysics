@@ -41,8 +41,12 @@ ClassImp(AliFlowEventSimpleMakerOnTheFly)
 AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fMultiplicityOfRP(0),
   fMultiplicitySpreadOfRP(0.),
-  fPtFormula(NULL),
-  fPhiFormula(NULL),
+  fV1RP(0.), 
+  fV1SpreadRP(0.), 
+  fV2RP(0.), 
+  fV2SpreadRP(0.), 
+  fPtSpectra(NULL),
+  fPhiDistribution(NULL),
   fMyTRandom3(NULL),
   fCount(0)
  {
@@ -57,8 +61,8 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
 AliFlowEventSimpleMakerOnTheFly::~AliFlowEventSimpleMakerOnTheFly()
 {
  // destructor
-  if (fPtFormula) delete fPtFormula;
-  if (fPhiFormula) delete fPhiFormula;
+  if (fPtSpectra) delete fPtSpectra;
+  if (fPhiDistribution) delete fPhiDistribution;
   if (fMyTRandom3) delete  fMyTRandom3;
 }
 
@@ -79,37 +83,42 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   Double_t dPtMin = 0.; // to be improved 
   Double_t dPtMax = 10.; // to be improved 
   
-  fPtFormula = new TF1("PtFormula","[0]*x*TMath::Exp(-x*x)",dPtMin,dPtMax);
+  fPtSpectra = new TF1("fPtSpectra","[0]*x*TMath::Exp(-x*x)",dPtMin,dPtMax);  
+  fPtSpectra->SetParName(0,"Multiplicity of RPs");  
+  // sampling the multiplicity:
+  fMultiplicityOfRP = fMyTRandom3->Gaus(fMultiplicityOfRP,fMultiplicitySpreadOfRP);
+  fPtSpectra->SetParameter(0,fMultiplicityOfRP);
   
-  fPtFormula->SetParName(0,"Multiplicity of RPs");
-  fPtFormula->SetParameter(0,fMultiplicityOfRP);
   
-
+  
   // phi:
   Double_t dPhiMin = 0.; // to be improved 
   Double_t dPhiMax = TMath::TwoPi(); // to be improved 
   
-  fPhiFormula = new TF1("phiDistribution","(1)*(1+2.*[0]*TMath::Cos(2*x))",dPhiMin,dPhiMax);
+  fPhiDistribution = new TF1("fPhiDistribution","1+2.*[0]*TMath::Cos(x)+2.*[1]*TMath::Cos(2*x)",dPhiMin,dPhiMax);
+
+  // sampling the V1:
+  fPhiDistribution->SetParName(0,"directed flow");
+  if(fV1RP>0.0) fV1RP = fMyTRandom3->Gaus(fV1RP,fV1SpreadRP);
+  fPhiDistribution->SetParameter(0,fV1RP);
  
-  Double_t dV2 = 0.044; // to be improved
- 
-  fPhiFormula->SetParName(0,"elliptic flow");
-  fPhiFormula->SetParameter(0,dV2);
- 
-  
+  // sampling the V2:
+  fPhiDistribution->SetParName(1,"elliptic flow");
+  fV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
+  fPhiDistribution->SetParameter(1,fV2RP);
+   
   // eta:
   Double_t dEtaMin = -1.; // to be improved 
   Double_t dEtaMax = 1.; // to be improved 
-
-
+  
   Int_t iGoodTracks = 0;
   Int_t iSelParticlesRP = 0;
   Int_t iSelParticlesPOI = 0;
   for(Int_t i=0;i<fMultiplicityOfRP;i++) {
     AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-    pTrack->SetPt(fPtFormula->GetRandom());
+    pTrack->SetPt(fPtSpectra->GetRandom());
     pTrack->SetEta(fMyTRandom3->Uniform(dEtaMin,dEtaMax));
-    pTrack->SetPhi(fPhiFormula->GetRandom()+fMCReactionPlaneAngle);
+    pTrack->SetPhi(fPhiDistribution->GetRandom()+fMCReactionPlaneAngle);
     pTrack->SetForRPSelection(kTRUE);
     iSelParticlesRP++;
     pTrack->SetForPOISelection(kTRUE);
