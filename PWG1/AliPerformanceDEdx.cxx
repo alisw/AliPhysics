@@ -152,8 +152,8 @@ void AliPerformanceDEdx::Init()
    fDeDxHisto->GetAxis(1)->SetTitle("#phi (rad)");
    fDeDxHisto->GetAxis(2)->SetTitle("y (cm)");
    fDeDxHisto->GetAxis(3)->SetTitle("z (cm)");
-   fDeDxHisto->GetAxis(4)->SetTitle("snp");
-   fDeDxHisto->GetAxis(5)->SetTitle("tgl");
+   fDeDxHisto->GetAxis(4)->SetTitle("sin#phi");
+   fDeDxHisto->GetAxis(5)->SetTitle("tan#lambda");
    fDeDxHisto->GetAxis(6)->SetTitle("ncls");
    fDeDxHisto->GetAxis(7)->SetTitle("p (GeV/c)");
    fDeDxHisto->Sumw2();
@@ -169,7 +169,14 @@ void AliPerformanceDEdx::Init()
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDEdx::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack)
+void AliPerformanceDEdx::ProcessTPC(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/)
+{
+  // Fill dE/dx  comparison information
+  AliDebug(AliLog::kWarning, "Warning: Not implemented");
+}
+
+//_____________________________________________________________________________
+void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *const esdTrack)
 {
   if(!esdTrack) return;
 
@@ -302,6 +309,7 @@ void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliESDEvent* const esdE
     if(GetAnalysisMode() == 0) ProcessTPC(stack,track);
     else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track);
     else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track);
+    else if(GetAnalysisMode() == 3) ProcessInnerTPC(stack,track);
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;

@@ -52,7 +52,8 @@ public :
   TFolder *ExportToFolder(TObjArray * array=0);
 
   // Process events
-  void  ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack);
+  void  ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack); // not implemented
+  void  ProcessInnerTPC(AliStack* const stack, AliESDtrack *const esdTrack);
   void  ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack);      // not implemented
   void  ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack); // not implemented
 
