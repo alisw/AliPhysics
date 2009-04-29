@@ -98,13 +98,14 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
 
   // sampling the V1:
   fPhiDistribution->SetParName(0,"directed flow");
-  if(fV1RP>0.0) fV1RP = fMyTRandom3->Gaus(fV1RP,fV1SpreadRP);
-  fPhiDistribution->SetParameter(0,fV1RP);
+  Double_t fNewV1RP=0.;
+  if(fV1RP>0.0) {fNewV1RP = fMyTRandom3->Gaus(fV1RP,fV1SpreadRP);}
+  fPhiDistribution->SetParameter(0,fNewV1RP);
  
   // sampling the V2:
   fPhiDistribution->SetParName(1,"elliptic flow");
-  fV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
-  fPhiDistribution->SetParameter(1,fV2RP);
+  Double_t fNewV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
+  fPhiDistribution->SetParameter(1,fNewV2RP);
    
   // eta:
   Double_t dEtaMin = -1.; // to be improved 
