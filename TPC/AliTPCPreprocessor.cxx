@@ -341,9 +341,8 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   // Central Electrode processing
 
   if( runType == kPhysicsRunType || 
-      runType == kDaqRunType ) {    
+      runType == kLaserRunType ) {    
 
-//   if (true) {                 // do CE processing for all run types
     Int_t numSources = 1;
     Int_t ceSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
     TString source = fConfEnv->GetValue("CE","DAQ");
@@ -362,7 +361,11 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
        ceResult = ExtractCE(ceSource[i]);
        if ( ceResult == 0 ) break;
      }
-     result += ceResult;
+
+   // only flag error if CE result is missing from LASER runs
+   //    -- for PHYSICS run do CE processing if data available
+   
+     if ( runType == kLaserRunType ) result += ceResult;
      status = new TParameter<int>("ceResult",ceResult);
      resultArray->Add(status);
 
