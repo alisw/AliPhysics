@@ -2283,10 +2283,11 @@ TList* AliITSv11GeometrySSD::GetSSDHybridParts(){
     
     xmothervertex[i][7] = xmothervertex[i][6];
     ymothervertex[i][7] = 0.5*fgkSSDStiffenerHeight;
-
+    /*
     for (Int_t j = 0; j<8; j++) {
-      //      cout << "vtx " << j << " " <<  xmothervertex[i][j] << " " << ymothervertex[i][j] << endl;
+      cout << "vtx " << j << " " <<  xmothervertex[i][j] << " " << ymothervertex[i][j] << endl;
     }
+    */
     TGeoXtru *shape = new TGeoXtru(2);
     shape->DefinePolygon(8,xmothervertex[i],ymothervertex[i]);
     shape->DefineSection(0,-0.5*fgkSSDStiffenerLength);
