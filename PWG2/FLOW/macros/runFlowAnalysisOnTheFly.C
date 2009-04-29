@@ -12,25 +12,28 @@ Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE; 
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
-Bool_t FQD   = kTRUE;
+Bool_t FQD   = kFALSE;
 Bool_t MCEP  = kTRUE; 
 //--------------------------------------------------------------------------------------
 
-//.................................................................................  
-
+//......................................................................................  
 // Set the event parameters:
 Int_t iMultiplicityOfRP = 500; // multiplicity of RPs
+Double_t dMultiplicitySpreadOfRP = 100; // multiplicity spread of RPs
 
-//.................................................................................
- 
+Double_t dV2RP = 0.05; // elliptic flow of RPs
+Double_t dV2SpreadRP = 0.001; // elliptic flow spread of RPs
 
+Double_t dV1RP = 0.0; // directed flow of RPs
+Double_t dV1SpreadRP = 0.0; // directed flow spread of RPs
+//...................................................................................... 
 
 enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 // mLocal: Analyze data on your computer using aliroot
 // mLocalPAR: Analyze data on your computer using root + PAR files
 // mLocalSource: Analyze data on your computer using root + source files
                                           
-int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1)
+int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=100)
 {
  TStopwatch timer;
  timer.Start();
@@ -49,10 +52,9 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1)
  cout<<endl;
  cout<<endl;
  
- 
  LoadLibraries(mode);
 
- //initialize the random generator
+ // Initialize the random generator
  TTimeStamp dt;
  UInt_t sseed = dt.GetNanoSec()/1000;
 
@@ -60,7 +62,6 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1)
  // Initialize the flowevent maker
  AliFlowEventSimpleMakerOnTheFly* eventMakerOnTheFly = new AliFlowEventSimpleMakerOnTheFly(sseed);
   
-
  //---------------------------------------------------------------------------------------
  // Initialize all the flow methods:  
  AliFlowAnalysisWithQCumulants    *qc    = NULL;
@@ -158,12 +159,16 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1)
  }
  //---------------------------------------------------------------------------------------
   
+ // set the global event parameters: 
+ eventMakerOnTheFly->SetMultiplicityOfRP(iMultiplicityOfRP);
+ eventMakerOnTheFly->SetMultiplicitySpreadOfRP(dMultiplicitySpreadOfRP);
+ eventMakerOnTheFly->SetV1RP(dV1RP);
+ eventMakerOnTheFly->SetV1SpreadRP(dV1SpreadRP);  
+ eventMakerOnTheFly->SetV2RP(dV2RP);
+ eventMakerOnTheFly->SetV2SpreadRP(dV2SpreadRP);  
       
  //---------------------------------------------------------------------------------------  
  // create and analyze events 'on the fly':
-
- // set the global event parameters: 
- eventMakerOnTheFly->SetMultiplicityOfRP(iMultiplicityOfRP);
 
  for(Int_t i=0;i<nEvts;i++) {   
    // creating the event with above settings:
