@@ -1,6 +1,14 @@
 #ifndef AliAnalysisTaskSPDdNdEta_cxx
 #define AliAnalysisTaskSPDdNdEta_cxx
 
+/*************************************************************************
+* Class AliAnalysisTaskSPDdNdEta                                         *
+* Analysis task for dN/dEta reconstruction with the SPD                  *
+*                                                                        *
+* Author:  M. Nicassio (INFN Bari)                                       *
+* Contact: Maria.Nicassio@ba.infn.it, Domenico.Elia@ba.infn.it           *
+**************************************************************************/
+
 class TH1F;
 class TH2F;
 class TH3F;
@@ -19,6 +27,7 @@ class AliAnalysisTaskSPDdNdEta : public AliAnalysisTask {
   virtual void   Terminate(Option_t *);
   void SetReadMC(Bool_t readmc = kFALSE) { fCorr = readmc; }
   void SetTrigger(Int_t MBtrigger) { fTrigger = MBtrigger; } 
+  void SetppAnalysis(Bool_t ppAna) { fppAna = ppAna; }
  
  protected:
   AliESDEvent *fESD;               //ESD object
@@ -26,6 +35,7 @@ class AliAnalysisTaskSPDdNdEta : public AliAnalysisTask {
   
   Bool_t fCorr;
   Int_t fTrigger;
+  Bool_t fppAna;
  
   //Data to be corrected 
   TH2F        *fHistSPDRAWMultvsZ;
@@ -66,7 +76,6 @@ class AliAnalysisTaskSPDdNdEta : public AliAnalysisTask {
   TH2F        *fHistnFiredChipsLay2vsnFiredChipsLay1;
   TH2F        *fHistnFiredChipsLay2vsnFiredChipsLay1novtxrec;
 
- 
   //Track level correction histograms
   TH2F* fHistBkgCorrNum;
   TH2F* fHistBkgCorrDen;
@@ -87,7 +96,7 @@ class AliAnalysisTaskSPDdNdEta : public AliAnalysisTask {
   TH2F* fHistMCEtavsZTriggESDvtxEvts;
   TH2F* fHistMCEtavsZ;
 
-  //Check histos
+  //Additional check histos
   TH1F* fHistTRradius;
   TH2F* fHistContributorsvsDeVtx;
   TH3F* fHistoDetectableNotr;
@@ -97,14 +106,19 @@ class AliAnalysisTaskSPDdNdEta : public AliAnalysisTask {
   TH2F* fHistoDetectedLay2;
   TH1F* fHistoPt;
   TH2F* fHistoDetectableTRm1;
-  TH2F* fHistoDetectableTR0;
-  TH2F* fHistoDetectableTR1;
-  TH2F* fHistoDetectableTR2;
-  TH2F* fHistoDetectableTR3;
-  TH2F* fHistoDetectableTR4;
-  TH2F* fHistoDetectableTR5;
-  TH2F* fHistoDetectableTR6;
+  TH2F* fHistoDetectableTrITS;
+  TH2F* fHistoDetectableTrTPC;
+  TH2F* fHistoDetectableTrFRAME;
+  TH2F* fHistoDetectableTrTRD;
+  TH2F* fHistoDetectableTrTOF;
+  TH2F* fHistoDetectableTrMUON;
+  TH2F* fHistoDetectableTrHMPID;
+  TH2F* fHistoDetectableTrT0;
+  TH2F* fHistoDetectableTrEMCAL;
+  TH2F* fHistoDetectableTrFMD;
+  TH2F* fHistoDetectableTrVZERO;
   TH1F* fHistoRTRm1;
+
  private:    
   AliAnalysisTaskSPDdNdEta(const AliAnalysisTaskSPDdNdEta&); 
   AliAnalysisTaskSPDdNdEta& operator=(const AliAnalysisTaskSPDdNdEta&); 
