@@ -6,20 +6,20 @@
 //--------------------------------------------------------------------------------------
 // RUN SETTINGS
 // flow analysis method can be: (set to kTRUE or kFALSE)
-Bool_t SP    = kFALSE;
-Bool_t LYZ1  = kFALSE;
+Bool_t SP    = kTRUE;
+Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;  
 Bool_t LYZEP = kFALSE; 
-Bool_t GFC   = kFALSE;
-Bool_t QC    = kFALSE;
-Bool_t FQD   = kFALSE;
+Bool_t GFC   = kTRUE;
+Bool_t QC    = kTRUE;
+Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kTRUE; 
 //--------------------------------------------------------------------------------------
 
 //.................................................................................  
 
 // Set the event parameters:
-Int_t iMultiplicityOfRP = 4400; // multiplicity of RPs
+Int_t iMultiplicityOfRP = 500; // multiplicity of RPs
 
 //.................................................................................
  
@@ -52,9 +52,13 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1)
  
  LoadLibraries(mode);
 
+ //initialize the random generator
+ TTimeStamp dt;
+ UInt_t sseed = dt.GetNanoSec()/1000;
+
  //---------------------------------------------------------------------------------------
  // Initialize the flowevent maker
- AliFlowEventSimpleMakerOnTheFly* eventMakerOnTheFly = new AliFlowEventSimpleMakerOnTheFly();
+ AliFlowEventSimpleMakerOnTheFly* eventMakerOnTheFly = new AliFlowEventSimpleMakerOnTheFly(sseed);
   
 
  //---------------------------------------------------------------------------------------
@@ -163,19 +167,9 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1)
 
  for(Int_t i=0;i<nEvts;i++) {   
    // creating the event with above settings:
-   
-   cout<<endl;
-   cout<<" ---- CREATING EVENT No "<<i+1<<" ---- "<<endl;
-   cout<<endl;   
-   
    AliFlowEventSimple *event = eventMakerOnTheFly->CreateEventOnTheFly(); 
-   cout<<" .... done .... "<<endl;
    
    // analyzing the created event 'on the fly':
-   cout<<endl;
-   cout<<" ---- ANALYZING EVENT No "<<i+1<<" ---- "<<endl;
-   cout<<endl; 
-   
    // do flow analysis for various methods:
    if(MCEP) mcep->Make(event);
    if(QC) qc->Make(event);
@@ -185,9 +179,6 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1)
    if(LYZ2) lyz2->Make(event);
    if(LYZEP) lyzep->Make(event,ep);
    if(SP) sp->Make(event);
-   
-   cout<<" .... done .... "<<endl;
-   cout<<endl;
    
    delete event;
  } // end of for(Int_t i=0;i<nEvts;i++)
