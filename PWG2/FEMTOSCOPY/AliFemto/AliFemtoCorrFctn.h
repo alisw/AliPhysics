@@ -8,6 +8,7 @@
 #include "AliFemtoAnalysis.h"
 #include "AliFemtoEvent.h"
 #include "AliFemtoPair.h"
+#include "AliFemtoPairCut.h"
 
 class AliFemtoCorrFctn{
 
@@ -34,9 +35,11 @@ public:
 
   AliFemtoAnalysis* HbtAnalysis(){return fyAnalysis;};
   void SetAnalysis(AliFemtoAnalysis* aAnalysis);
+  void SetPairSelectionCut(AliFemtoPairCut* aCut);
 
 protected:
-  AliFemtoAnalysis* fyAnalysis;
+  AliFemtoAnalysis* fyAnalysis; //! link to the analysis
+  AliFemtoPairCut* fPairCut;    //! this is a PairSelection criteria for this Correlation Function
 
   private:
 
@@ -45,12 +48,13 @@ protected:
 inline void AliFemtoCorrFctn::AddRealPair(AliFemtoPair*) { cout << "Not implemented" << endl; }
 inline void AliFemtoCorrFctn::AddMixedPair(AliFemtoPair*) { cout << "Not implemented" << endl; }
 
-inline AliFemtoCorrFctn::AliFemtoCorrFctn(const AliFemtoCorrFctn& /* c */):fyAnalysis(0) {}
-inline AliFemtoCorrFctn::AliFemtoCorrFctn(): fyAnalysis(0) {/* no-op */}
+inline AliFemtoCorrFctn::AliFemtoCorrFctn(const AliFemtoCorrFctn& /* c */):fyAnalysis(0),fPairCut(0x0) {}
+inline AliFemtoCorrFctn::AliFemtoCorrFctn(): fyAnalysis(0),fPairCut(0x0) {/* no-op */}
 inline void AliFemtoCorrFctn::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }
-inline AliFemtoCorrFctn& AliFemtoCorrFctn::operator=(const AliFemtoCorrFctn& aCorrFctn) { if (this == &aCorrFctn) return *this; fyAnalysis = aCorrFctn.fyAnalysis; return *this; }
+inline AliFemtoCorrFctn& AliFemtoCorrFctn::operator=(const AliFemtoCorrFctn& aCorrFctn) { if (this == &aCorrFctn) return *this; fyAnalysis = aCorrFctn.fyAnalysis; fPairCut = aCorrFctn.fPairCut; return *this; }
 
 inline void AliFemtoCorrFctn::EventBegin(const AliFemtoEvent* /* aEvent */) { /* no-op */ }
 inline void AliFemtoCorrFctn::EventEnd(const AliFemtoEvent* /* aEvent */) { /* no-op */ }
+inline void AliFemtoCorrFctn::SetPairSelectionCut(AliFemtoPairCut* aCut) { fPairCut =  aCut; }
 
 #endif
