@@ -12,17 +12,18 @@ Bool_t LYZ2  = kFALSE;
 Bool_t LYZEP = kFALSE; 
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
-Bool_t FQD   = kFALSE;
+Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kTRUE; 
 //--------------------------------------------------------------------------------------
 
 //......................................................................................  
 // Set the event parameters:
+Int_t iLoops = 1; // number of times to use each track (to simulate nonflow)
 Int_t iMultiplicityOfRP = 500; // multiplicity of RPs
-Double_t dMultiplicitySpreadOfRP = 100; // multiplicity spread of RPs
+Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs
 
 Double_t dV2RP = 0.05; // elliptic flow of RPs
-Double_t dV2SpreadRP = 0.001; // elliptic flow spread of RPs
+Double_t dV2SpreadRP = 0.; // elliptic flow spread of RPs
 
 Double_t dV1RP = 0.0; // directed flow of RPs
 Double_t dV1SpreadRP = 0.0; // directed flow spread of RPs
@@ -160,6 +161,7 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=100)
  //---------------------------------------------------------------------------------------
   
  // set the global event parameters: 
+ eventMakerOnTheFly->SetNoOfLoops(iLoops);
  eventMakerOnTheFly->SetMultiplicityOfRP(iMultiplicityOfRP);
  eventMakerOnTheFly->SetMultiplicitySpreadOfRP(dMultiplicitySpreadOfRP);
  eventMakerOnTheFly->SetV1RP(dV1RP);
