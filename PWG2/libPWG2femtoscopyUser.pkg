@@ -38,11 +38,9 @@ DHDR:= PWG2femtoscopyUserLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto  PWG2/FEMTOSCOPY/AliFemtoUser 
-
-EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto PWG2/AOD
+EINCLUDE:= PWG2/AOD PWG2/FEMTOSCOPY/AliFemto PWG2/FEMTOSCOPY/AliFemtoUser
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lPWG2femtoscopy
+                         -lPWG2AOD -lPWG2femtoscopy
 endif
