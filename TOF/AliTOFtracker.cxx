@@ -473,48 +473,29 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
       //now see whether the track matches any of the TOF clusters            
 
-      Float_t dist3dLoc[3];
+      Float_t dist3d[3];
       accept = kFALSE;
       for (Int_t i=0; i<nc; i++) {
-        isInside = fGeom->IsInsideThePad(global[i],ctrackPos,dist3dLoc);
+        isInside = fGeom->IsInsideThePad(global[i],ctrackPos,dist3d);
 
-        if( mLastStep ) {
-          Float_t yLoc = dist3dLoc[1];
-          Float_t rLoc = TMath::Sqrt(dist3dLoc[0]*dist3dLoc[0]+dist3dLoc[2]*dist3dLoc[2]);
-	  accept = (TMath::Abs(yLoc)<padDepth*0.5 && rLoc<dCut);
+        if( mLastStep){
+          Float_t xLoc = dist3d[0];
+          Float_t rLoc = TMath::Sqrt(dist3d[1]*dist3d[1]+dist3d[2]*dist3d[2]);
+	  accept = (TMath::Abs(xLoc)<padDepth*0.5 && rLoc<dCut);
 	}
 	else {
 	  accept = isInside;
 	}
 	if (accept) {
-
-	  dist[nfound] = TMath::Sqrt(dist3dLoc[0]*dist3dLoc[0] +
-				     dist3dLoc[1]*dist3dLoc[1] +
-				     dist3dLoc[2]*dist3dLoc[2]);
-
-	  Float_t differenceT[3] = {0.,0.,0.};
-	  PadRS2TrackingRS(ctrackPos, differenceT);
-	  distZ[nfound] = differenceT[2];
-
-	  AliDebug(1,Form("   dist3dLoc[2] = %f --- distZ[%d] = %f",
-			  dist3dLoc[2],nfound,distZ[nfound]));
-
-	  /*
-	  Double_t padl[3] = {0., 0., 0.};
-	  Double_t padg[3] = {0., 0., 0.};
-	  TGeoHMatrix inverse = global[i].Inverse();
-	  inverse.MasterToLocal(padl,padg);
-
-	  dist3d[0] = ctrackPos[0] - padg[0];
-	  dist3d[1] = ctrackPos[1] - padg[1];
-	  dist3d[2] = ctrackPos[2] - padg[2];
-	  */
+	  dist[nfound]  = TMath::Sqrt(dist3d[0]*dist3d[0]+dist3d[1]*dist3d[1]+dist3d[2]*dist3d[2]);
+	  distZ[nfound] = dist3d[2];
 	  crecL[nfound] = trackPos[3][istep];
 	  index[nfound] = clind[i]; // store cluster id 	    
 	  cxpos[nfound] = AliTOFGeometry::RinTOF()+istep*0.1; //store prop.radius
 	  nfound++;
 	  if(accept &&!mLastStep)break;
 	}//end if accept
+
       } //end for on the clusters
       if(accept &&!mLastStep)break;
     } //end for on the steps     

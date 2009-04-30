@@ -415,57 +415,36 @@ Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, Float_t *pos) const
 Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix mat, Float_t *pos, Float_t *dist3d) const
 {
 //
-// Returns true if space point with coor pos (x,y,z) [cm] falls inside
-// pad identified by the matrix mat. In case when dist3d!=0, the
-// dist3d vector has been filled with the 3d distance between the
-// impact point on the pad and the pad centre (in the reference frame
-// of the TOF pad identified by the matrix mat.).
+// Returns true if space point with coor pos (x,y,z) (cm) falls 
+// inside pad with Detector Indices idet (iSect,iPlate,iStrip,iPadX,iPadZ) 
 //
 
   const Float_t kPadDepth = 0.5;      // heigth of Sensitive Layer
+  Double_t vecg[3];
+  vecg[0]=pos[0];
+  vecg[1]=pos[1];
+  vecg[2]=pos[2];
+  Double_t veclr[3]={-1.,-1.,-1.};
+  Double_t vecl[3]={-1.,-1.,-1.};
+  mat.MasterToLocal(vecg,veclr);  
+  vecl[0]=veclr[1];
+  vecl[1]=veclr[0];
+  //take into account reflections 
+  vecl[2]=-veclr[2];
 
-  Double_t posg[3];
-  posg[0] = pos[0];
-  posg[1] = pos[1];
-  posg[2] = pos[2];
-  Double_t posl[3] = {0., 0., 0.};
+  Float_t xr = vecl[0];
+  Float_t yr = vecl[1];
+  Float_t zr = vecl[2];
 
-  // from ALICE global reference system
-  // towards TOF pad local reference system
-  mat.MasterToLocal(posg,posl);
-
-  Float_t xr = posl[0];
-  Float_t yr = posl[1];
-  Float_t zr = posl[2];
-
-  Bool_t isInside=false; 
-  if (TMath::Abs(yr)<= kPadDepth*0.5 &&
-      TMath::Abs(xr)<= (fgkXPad*0.5) &&
-      TMath::Abs(zr)<= (fgkZPad*0.5))
-    isInside = true; 
-
-  if (dist3d) {
-    //Double_t padl[3] = {0., 0., 0.};
-    dist3d[0] = posl[0]/* - padl[0]*/;
-    dist3d[1] = posl[1]/* - padl[1]*/;
-    dist3d[2] = posl[2]/* - padl[2]*/;
-
-    /*
-    Double_t padg[3] = {0., 0., 0.};
-    // from TOF pad local reference system
-    // towards ALICE global reference system
-    TGeoHMatrix inverse = mat.Inverse();
-    inverse.MasterToLocal(padl,padg);
-
-    // returns the 3d distance
-    // between the impact point on the pad
-    // and the pad centre (in the ALICE global reference frame)
-    dist3d[0] = posg[0] - padg[0];
-    dist3d[1] = posg[1] - padg[1];
-    dist3d[2] = posg[2] - padg[2];
-    */
+  if (dist3d){
+    dist3d[0] = vecl[0];
+    dist3d[1] = vecl[1];
+    dist3d[2] = vecl[2];
   }
  
+  Bool_t isInside=false; 
+  if(TMath::Abs(xr)<= kPadDepth*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
+    isInside=true; 
   return isInside;
 
 }
