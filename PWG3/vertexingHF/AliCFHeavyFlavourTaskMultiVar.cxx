@@ -179,19 +179,19 @@ void AliCFHeavyFlavourTaskMultiVar::UserExec(Option_t *)
 	fCountMC += icountMC;
 	// load heavy flavour vertices
 
-	TClonesArray *arrayVerticesHF = (TClonesArray*)((aodEvent->GetList())->FindObject("D0toKpi")); 	
-	if (!arrayVerticesHF) AliError("Could not find array of HF vertices");
-	AliDebug(2, Form("Found %d vertices",arrayVerticesHF->GetEntriesFast()));
+	TClonesArray *arrayD0toKpi = (TClonesArray*)((aodEvent->GetList())->FindObject("D0toKpi")); 	
+	if (!arrayD0toKpi) AliError("Could not find array of HF vertices");
+	AliDebug(2, Form("Found %d vertices",arrayD0toKpi->GetEntriesFast()));
 	
-	for (Int_t iVertex = 0; iVertex<arrayVerticesHF->GetEntriesFast(); iVertex++) {
+	for (Int_t iD0toKpi = 0; iD0toKpi<arrayD0toKpi->GetEntriesFast(); iD0toKpi++) {
 		
-		AliAODRecoDecayHF2Prong* vtx = (AliAODRecoDecayHF2Prong*)arrayVerticesHF->At(iVertex);
+		AliAODRecoDecayHF2Prong* d0tokpi = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->At(iD0toKpi);
 		
 		// cuts can't be applied to RecoDecays particles
-		// if (!fCFManager->CheckParticleCuts(1  , vtx)) continue;  // 1 stands for AOD level
+		// if (!fCFManager->CheckParticleCuts(1  , d0tokpi)) continue;  // 1 stands for AOD level
 		
 		// find associated MC particle
-		Int_t mcLabel = vtx->MatchToMC(421,mcArray) ;
+		Int_t mcLabel = d0tokpi->MatchToMC(421,mcArray) ;
 		if (mcLabel == -1) 
 			{
 				AliDebug(2,"No MC particle found");
@@ -211,25 +211,25 @@ void AliCFHeavyFlavourTaskMultiVar::UserExec(Option_t *)
 
 			// fill the container
 			// either with reconstructed values....
-			Double_t pt = vtx->Pt();
-			Double_t rapidity = vtx->YD0();
+			Double_t pt = d0tokpi->Pt();
+			Double_t rapidity = d0tokpi->YD0();
 			
 			Double_t cosThetaStar = 9999.;
 			Double_t pTpi = 0.;
 			Double_t pTK = 0.;
 			Int_t pdgCode = mcVtxHF->GetPdgCode();
 			if (pdgCode > 0){
-				cosThetaStar = vtx->CosThetaStarD0();
-				pTpi = vtx->PtProng(0);
-				pTK = vtx->PtProng(1);
+				cosThetaStar = d0tokpi->CosThetaStarD0();
+				pTpi = d0tokpi->PtProng(0);
+				pTK = d0tokpi->PtProng(1);
 			}
 			else {
-				cosThetaStar = vtx->CosThetaStarD0bar();
-				pTpi = vtx->PtProng(1);
-				pTK = vtx->PtProng(0);
+				cosThetaStar = d0tokpi->CosThetaStarD0bar();
+				pTpi = d0tokpi->PtProng(1);
+				pTK = d0tokpi->PtProng(0);
 			}
 
-			Double_t cT = vtx->CtD0();
+			Double_t cT = d0tokpi->CtD0();
 			AliDebug(2, Form("cT from reconstructed vertex = %f (micron)",cT*1E4));
 			AliDebug(2, Form("pdg code from MC = %d",TMath::Abs(mcVtxHF->GetPdgCode())));
 
