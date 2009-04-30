@@ -27,7 +27,7 @@ public:
     kSaveAs    = BIT(22)
    ,kExB       = BIT(23)
   };
-  AliTRDclusterResolution(const char *name="ClErrParam");
+  AliTRDclusterResolution(const char *name="ClErrParam", const char *title="Cluster error monitor");
   virtual ~AliTRDclusterResolution();
 
   void          ConnectInputData(Option_t *);

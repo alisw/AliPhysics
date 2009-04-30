@@ -186,6 +186,7 @@
 #include "TGraphErrors.h"
 #include "TLine.h"
 #include "TH2I.h"
+#include "THnSparse.h"
 #include "TMath.h"
 #include "TLinearFitter.h"
 
@@ -197,8 +198,8 @@ ClassImp(AliTRDclusterResolution)
 
 const Float_t AliTRDclusterResolution::fgkTimeBinLength = 1./ AliTRDCommonParam::Instance()->GetSamplingFrequency();
 //_______________________________________________________
-AliTRDclusterResolution::AliTRDclusterResolution(const char *name)
-  : AliTRDrecoTask(name, "Cluster Error Parametrization")
+AliTRDclusterResolution::AliTRDclusterResolution(const char *name, const char *title)
+  : AliTRDrecoTask(name, title)
   ,fCanvas(0x0)
   ,fInfo(0x0)
   ,fResults(0x0)
@@ -326,19 +327,26 @@ TObjArray* AliTRDclusterResolution::Histos()
   TH2I *h2 = 0x0;
   TObjArray *arr = 0x0;
 
-  fContainer->AddAt(h2 = new TH2I("h_q", "", 50, 2.2, 7.5, 100, -.5, .5), kQRes);
+  fContainer->AddAt(h2 = new TH2I("h_q", "dy=f(q)", 50, 2.2, 7.5, 100, -.5, .5), kQRes);
   h2->SetXTitle("log(q) [a.u.]");
   h2->SetYTitle("#Delta y[cm]");
   h2->SetZTitle("entries");
 
-  fContainer->AddAt(arr = new TObjArray(AliTRDgeometry::kNlayer), kCenter);
-  arr->SetName("y(PadWidth)");
-  for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
-    arr->AddAt(h2 = new TH2I(Form("h_y%d", ily), Form("Ly[%d]", ily), 51, -.51, .51, 100, -.5, .5), ily);
-    h2->SetXTitle("y_{w} [w]");
-    h2->SetYTitle("#Delta y[cm]");
-    h2->SetZTitle("entries");
+  THnSparseS *hn = 0x0;
+  const Int_t    nd = 4;
+  //                     ly    x     pw   dy
+  Int_t   nbins[nd] = {   6,   24,   51, 100};
+  Double_t xmin[nd] = {-0.5, -0.5,-0.51,-0.5},
+           xmax[nd] = { 5.5, 23.5, 0.51, 0.5};
+  if(!(hn = (THnSparseS*)gROOT->FindObject("hn"))){
+    hn = new THnSparseS("hn", "dy=f(pw|x,ly)", nd, nbins, xmin, xmax);
+    arr = hn->GetListOfAxes();
+    ((TAxis*)arr->At(0))->SetTitle("layer");
+    ((TAxis*)arr->At(1))->SetTitle("x");
+    ((TAxis*)arr->At(2))->SetTitle("pw");
+    ((TAxis*)arr->At(3))->SetTitle("dy");
   }
+  fContainer->AddAt(hn, kCenter);
 
   fContainer->AddAt(arr = new TObjArray(kN), kSigm);
   arr->SetName("Resolution");
@@ -375,11 +383,12 @@ void AliTRDclusterResolution::Exec(Option_t *)
   Int_t det, t;
   Float_t x, y, z, q, dy, dydx, dzdx, cov[3], covcl[3];
   TH2I *h2 = 0x0;
+  THnSparseS *hn = 0x0;
 
   // define limits around ExB for which x contribution is negligible
   const Float_t kDtgPhi = 3.5e-2; //(+- 2 deg)
 
-  TObjArray *arr0 = (TObjArray*)fContainer->At(kCenter);
+  //TObjArray *arr0 = (TObjArray*)fContainer->At(kCenter);
   TObjArray *arr1 = (TObjArray*)fContainer->At(kSigm);
   TObjArray *arr2 = (TObjArray*)fContainer->At(kMean);
 
@@ -406,8 +415,14 @@ void AliTRDclusterResolution::Exec(Option_t *)
     // resolution as a function of y displacement from pad center
     // only for phi equal exB
     if(TMath::Abs(dydx-fExB) < kDtgPhi){
-      h2 = (TH2I*)arr0->At(AliTRDgeometry::GetLayer(det));
-      h2->Fill(cli->GetYDisplacement(), dy);
+      hn = (THnSparseS*)fContainer->At(kCenter);
+      Double_t x[]={
+        AliTRDgeometry::GetLayer(det),
+        t,
+        cli->GetYDisplacement(),
+        dy
+      };
+      hn->Fill(x);
     }
 
     Int_t it = fAt->FindBin((t+.5)*fgkTimeBinLength);
@@ -628,38 +643,46 @@ void AliTRDclusterResolution::ProcessCharge()
 //_______________________________________________________
 void AliTRDclusterResolution::ProcessCenterPad()
 {
-  TObjArray *arr = (TObjArray*)fContainer->At(kCenter);
-  if(!arr) {
-    AliWarning("Missing dy=f(y_d) container");
+  THnSparseS *hn = (THnSparseS*)fContainer->At(kCenter);
+  if(!hn) {
+    AliWarning("Missing dy=f(y | x, ly) container");
     return;
   }
   TF1 f("f", "gaus", -.5, .5);
-  TAxis *ax = 0x0;
+  TAxis *aly = 0x0, *ax = 0x0, *ay = 0x0;
   TH1D *h1 = 0x0, *h11 = 0x0;
-  TH2I *h2 = 0x0;
 
   TObjArray *arrg = (TObjArray*)fResults->At(kCenter);
   TH2F *hym = (TH2F*)arrg->At(0);
   TH2F *hys = (TH2F*)arrg->At(1);
   TH2F *hyp = (TH2F*)arrg->At(2);
-  for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
-    if(!(h2 = (TH2I*)arr->At(ily))) continue;
-    ax = h2->GetXaxis();
-    for(Int_t ix=1; ix<=ax->GetNbins(); ix++){
-      Float_t yd = ax->GetBinCenter(ix);
-      h1 = h2->ProjectionY("py", ix, ix);
-      Int_t entries = (Int_t)h1->GetEntries();
-      if(entries < 50) continue;
-      //Adjust(&f, h1);
-      h1->Fit(&f, "QN");
-  
-      // Fill sy = f(y_w)
-      hyp->Fill(ily, yd, entries);
-      hym->Fill(ily, yd, f.GetParameter(1));
-      //hym->SetPointError(ip, 0., f.GetParError(1));
-      hys->Fill(ily, yd, f.GetParameter(2));
-      //hys->SetPointError(ip, 0., f.GetParError(2));
-    } 
+
+  aly = hn->GetAxis(0); // layer axis
+  ax  = hn->GetAxis(1); // drift length axis
+  ay  = hn->GetAxis(2); // y2center axis
+  for(Int_t ily=0; ily<aly->GetNbins(); ily++){
+    aly->SetRangeUser(ily, ily+1);
+    for(Int_t ix=0; ix<ax->GetNbins(); ix++){
+      ax->SetRangeUser(ix, ix+1);
+      for(Int_t iy=0; iy<ay->GetNbins(); ix++){
+        ay->SetRangeUser(iy, iy+1); 
+        // finish navigation in the HnSparse
+
+        Double_t yd = ay->GetBinCenter(iy+1);
+        h1 = hn->Projection(3, "O");
+        Int_t entries = (Int_t)h1->GetEntries();
+        if(entries < 50) continue;
+        //Adjust(&f, h1);
+        h1->Fit(&f, "QN");
+    
+        // Fill sy = f(y_w)
+        hyp->Fill(ily, yd, entries);
+        hym->Fill(ily, yd, f.GetParameter(1));
+        //hym->SetPointError(ip, 0., f.GetParError(1));
+        hys->Fill(ily, yd, f.GetParameter(2));
+        //hys->SetPointError(ip, 0., f.GetParError(2));
+      } 
+    }
   }
 
   // POSTPROCESS SPECTRA
