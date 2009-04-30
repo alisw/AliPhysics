@@ -20,6 +20,7 @@ Currently there are the documentation pages on
 - \ref README_rec
 - \ref README_base
 - \ref README_mchview 
+- \ref README_eve
 - \ref README_evaluation 
 - \ref README_cosmics
 - \ref README_fast
