@@ -116,7 +116,6 @@ Bool_t AliAODHandler::Init(Option_t* opt)
   // Initialize IO
   //
   // Create the AODevent object
-  printf(">>>> AliAODHandler::Init\n");
   if(!fAODEvent){
     fAODEvent = new AliAODEvent();
     if (fIsStandard) fAODEvent->CreateStdContent();
@@ -129,7 +128,6 @@ Bool_t AliAODHandler::Init(Option_t* opt)
   if (option.Contains("proof")) {
     // proof
     // Merging via files. Need to access analysis manager via interpreter.
-    printf("Calling OpenProofFile()\n");
     gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->OpenProofFile(\"%s\", \"RECREATE\");", fFileName.Data()));
     gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->GetCommonOutputContainer()->SetFile((TFile*)0x%lx);", gFile));
     fFileA = gFile;
