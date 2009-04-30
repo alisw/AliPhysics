@@ -48,7 +48,8 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fPtSpectra(NULL),
   fPhiDistribution(NULL),
   fMyTRandom3(NULL),
-  fCount(0)
+  fCount(0),
+  fNoOfLoops(1)
  {
   // constructor
    fMyTRandom3 = new TRandom3(iseed); 
@@ -114,18 +115,25 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   Int_t iGoodTracks = 0;
   Int_t iSelParticlesRP = 0;
   Int_t iSelParticlesPOI = 0;
+  Double_t fTmpPt =0;
+  Double_t fTmpEta =0;
+  Double_t fTmpPhi =0;
   for(Int_t i=0;i<fNewMultiplicityOfRP;i++) {
-    AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-    pTrack->SetPt(fPtSpectra->GetRandom());
-    pTrack->SetEta(fMyTRandom3->Uniform(dEtaMin,dEtaMax));
-    pTrack->SetPhi(fPhiDistribution->GetRandom()+fMCReactionPlaneAngle);
-    pTrack->SetForRPSelection(kTRUE);
-    iSelParticlesRP++;
-    pTrack->SetForPOISelection(kTRUE);
-    iSelParticlesPOI++;
-
-    pEvent->TrackCollection()->Add(pTrack);
-    iGoodTracks++;
+    fTmpPt = fPtSpectra->GetRandom();
+    fTmpEta = fMyTRandom3->Uniform(dEtaMin,dEtaMax);
+    fTmpPhi = fPhiDistribution->GetRandom()+fMCReactionPlaneAngle;
+    for(Int_t d=0;d<fNoOfLoops;d++) {
+      AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
+      pTrack->SetPt(fTmpPt);
+      pTrack->SetEta(fTmpEta);
+      pTrack->SetPhi(fTmpPhi);
+      pTrack->SetForRPSelection(kTRUE);
+      iSelParticlesRP++;
+      pTrack->SetForPOISelection(kTRUE);
+      iSelParticlesPOI++;
+      pEvent->TrackCollection()->Add(pTrack);
+      iGoodTracks++;
+    }
   }
  
   pEvent->SetEventNSelTracksRP(iSelParticlesRP);  

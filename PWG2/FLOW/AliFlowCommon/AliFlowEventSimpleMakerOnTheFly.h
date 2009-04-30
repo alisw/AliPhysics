@@ -56,6 +56,9 @@ class AliFlowEventSimpleMakerOnTheFly {
   Double_t GetV2SpreadRP() const {return this->fV2SpreadRP;} 
   //................................................................................................
   
+  void SetNoOfLoops(Int_t noofl) {this->fNoOfLoops = noofl;}
+  Int_t GetNoOfLoops() const {return this->fNoOfLoops;} 
+
  private:
  
   AliFlowEventSimpleMakerOnTheFly(const AliFlowEventSimpleMakerOnTheFly& anAnalysis);            // copy constructor
@@ -63,22 +66,24 @@ class AliFlowEventSimpleMakerOnTheFly {
   
   //................................................................................................
   // global parameters:
-  Int_t fMultiplicityOfRP;          // multiplicity of RPs
-  Double_t fMultiplicitySpreadOfRP; // multiplicity spread of RPs  
-  Double_t fV1RP;                   // directed flow of RPs
-  Double_t fV1SpreadRP;             // directed flow spread of RPs
-  Double_t fV2RP;                   // elliptic flow of RPs
-  Double_t fV2SpreadRP;             // elliptic flow spread of RPs
+  Int_t     fMultiplicityOfRP;          // multiplicity of RPs
+  Double_t  fMultiplicitySpreadOfRP; // multiplicity spread of RPs  
+  Double_t  fV1RP;                   // directed flow of RPs
+  Double_t  fV1SpreadRP;             // directed flow spread of RPs
+  Double_t  fV2RP;                   // elliptic flow of RPs
+  Double_t  fV2SpreadRP;             // elliptic flow spread of RPs
   //................................................................................................
   
   //................................................................................................
   // equations for distributions: 
-  TF1 *fPtSpectra;  // transverse momentum distribution
-  TF1 *fPhiDistribution; // azimuthal distribution
+  TF1*      fPtSpectra;  // transverse momentum distribution
+  TF1*      fPhiDistribution; // azimuthal distribution
   //................................................................................................
   
   TRandom3* fMyTRandom3; // our random generator
-  Int_t fCount;
+  Int_t     fCount;
+  Int_t     fNoOfLoops; // number of times to use the same particle (nonflow)
+
 
   ClassDef(AliFlowEventSimpleMakerOnTheFly,0) // macro for rootcint
 };
