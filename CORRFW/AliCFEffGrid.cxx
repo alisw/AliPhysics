@@ -114,8 +114,8 @@ void AliCFEffGrid::CalculateEfficiency(Int_t istep1,Int_t istep2, Option_t *opti
 
   fSelNum=istep1;
   fSelDen=istep2;
-  AliCFVGrid *num=fContainer->GetGrid(fSelNum);
-  AliCFVGrid *den=fContainer->GetGrid(fSelDen);
+  AliCFVGrid *num=GetNum();
+  AliCFVGrid *den=GetDen();
   num->SumW2();
   den->SumW2();
   this->SumW2();
@@ -146,8 +146,8 @@ Double_t AliCFEffGrid::GetAverage() const
   Double_t valnum=0;
   Double_t valden=0;
   for(Int_t i=0;i<fNDim;i++){
-    valnum+=fContainer->GetGrid(fSelNum)->GetElement(i);
-    valden+=fContainer->GetGrid(fSelDen)->GetElement(i);
+    valnum+=GetNum()->GetElement(i);
+    valden+=GetDen()->GetElement(i);
   }
   if(valden>0)val=valnum/valden;
   AliInfo(Form(" The Average Efficiency = %f ",val)); 
@@ -194,8 +194,8 @@ Double_t AliCFEffGrid::GetAverage(Double_t *varMin, Double_t* varMax ) const
       if(!(index[j]>=indexMin[j] && index[j]<=indexMax[j]))isIn=kFALSE;   
     }
     if(isIn){
-      valnum+=fContainer->GetGrid(fSelNum)->GetElement(i);
-      valden+=fContainer->GetGrid(fSelDen)->GetElement(i);
+      valnum+=GetNum()->GetElement(i);
+      valden+=GetDen()->GetElement(i);
     }
   } 
   delete [] index;
@@ -226,38 +226,14 @@ TH1D *AliCFEffGrid::Project(Int_t ivar) const
   // Make a 1D projection along variable ivar 
   //
  
-  TH1D *proj1D=0;
-  Int_t nbins =fNVarBins[ivar];
-  Double_t *bins = new Double_t[nbins+1];    
-  for(Int_t ibin =0;ibin<nbins+1;ibin++){
-    bins[ibin] = fVarBinLimits[ibin+fOffset[ivar]];
-  }
-  
-  char pname[30];
-  sprintf(pname,"%s%s%i%i%s%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj1D_var", ivar);
-  char htitle[30];
-  sprintf(htitle,"%s%s%i%i%s%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj1D_var", ivar);
-  
-  if(!proj1D){
-    proj1D =new TH1D(pname,htitle, nbins, bins);
-  }  
-  
-  //unset the use of axis range to be able to divide the histos
-  fContainer->GetGrid(fSelNum)->UseAxisRange(kFALSE);
-  fContainer->GetGrid(fSelDen)->UseAxisRange(kFALSE);
-
-  proj1D->Sumw2();
-  proj1D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar),fContainer->GetGrid(fSelDen)->Project(ivar),1.,1.,"B");
-
-  fContainer->GetGrid(fSelNum)->UseAxisRange(kTRUE);
-  fContainer->GetGrid(fSelDen)->UseAxisRange(kTRUE);
-  proj1D->GetXaxis()->SetRange(
-			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar)->GetFirst(),
-			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar)->GetLast()
-			       );
-
-  delete [] bins; 
-  return proj1D;
+  const Int_t nDim = 1 ;
+  Int_t dim[nDim] = {ivar} ;
+  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
+  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
+  THnSparse* ratio = (THnSparse*)hNum->Clone();
+  ratio->Divide(hNum,hDen,1.,1.,"B");
+  delete hNum; delete hDen;
+  return ratio->Projection(ivar);
 } 
 //___________________________________________________________________
 TH2D *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
@@ -265,50 +241,15 @@ TH2D *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
   //
   // Make a 2D projection along variable ivar1,ivar2 
   //
- 
-  TH2D *proj2D=0;
-
-  Int_t nbins1 =fNVarBins[ivar1];
-  Double_t *bins1 = new Double_t[nbins1+1];    
-  Int_t nbins2 =fNVarBins[ivar2];
-  Double_t *bins2 = new Double_t[nbins2+1];    
-  for(Int_t ibin1 =0;ibin1<nbins1+1;ibin1++){
-    bins1[ibin1] = fVarBinLimits[ibin1+fOffset[ivar1]];
-  }
-  for(Int_t ibin2 =0;ibin2<nbins2+1;ibin2++){
-    bins2[ibin2] = fVarBinLimits[ibin2+fOffset[ivar2]];
-  }
   
-  char pname[30];
-  sprintf(pname,"%s%s%i%i%s%i%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj2D_var", ivar1,ivar2);
-  char htitle[30];
-  sprintf(htitle,"%s%s%i%i%s%i%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj2D_var",ivar1,ivar2);
-  
-  if(!proj2D){
-    proj2D =new TH2D(pname,htitle, nbins1,bins1,nbins2,bins2);
-  }  
-  
-  //unset the use of axis range to be able to divide the histos
-  fContainer->GetGrid(fSelNum)->UseAxisRange(kFALSE);
-  fContainer->GetGrid(fSelDen)->UseAxisRange(kFALSE);
-  
-  proj2D->Sumw2();
-  proj2D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar1,ivar2),fContainer->GetGrid(fSelDen)->Project(ivar1,ivar2),1.,1.,"B");
-  
-  fContainer->GetGrid(fSelNum)->UseAxisRange(kTRUE);
-  fContainer->GetGrid(fSelDen)->UseAxisRange(kTRUE);
-  proj2D->GetXaxis()->SetRange(
-			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar1)->GetFirst(),
-			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar1)->GetLast()
-			       );
-  proj2D->GetYaxis()->SetRange(
-			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar2)->GetFirst(),
-			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar2)->GetLast()
-			       );
-
-  delete [] bins1;
-  delete [] bins2; 
-  return proj2D;
+  const Int_t nDim = 2 ;
+  Int_t dim[nDim] = {ivar1,ivar2} ;
+  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
+  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
+  THnSparse* ratio = (THnSparse*)hNum->Clone();
+  ratio->Divide(hNum,hDen,1.,1.,"B");
+  delete hNum; delete hDen;
+  return ratio->Projection(ivar1,ivar2);
 } 
 //___________________________________________________________________
 TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
@@ -317,63 +258,13 @@ TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   // Make a 3D projection along variable ivar1,ivar2,ivar3 
   //
 
-  TH3D *proj3D=0;
-
-  Int_t nbins1 =fNVarBins[ivar1];
-  Int_t nbins2 =fNVarBins[ivar2];
-  Int_t nbins3 =fNVarBins[ivar3];
-  
-  Double_t *bins1 = new Double_t[nbins1+1];         
-  Double_t *bins2 = new Double_t[nbins2+1];     
-  Double_t *bins3 = new Double_t[nbins3+1];     
-  
-  for(Int_t ibin =0;ibin<nbins1+1;ibin++){
-    bins1[ibin] = fVarBinLimits[ibin+fOffset[ivar1]];
-  }
-  for(Int_t ibin =0;ibin<nbins2+1;ibin++){
-    bins2[ibin] = fVarBinLimits[ibin+fOffset[ivar2]];
-  }
-  for(Int_t ibin =0;ibin<nbins3+1;ibin++){
-    bins3[ibin] = fVarBinLimits[ibin+fOffset[ivar3]];
-  }
-  
-  char pname[30];
-  sprintf(pname,"%s%s%i%i%s%i%i%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj3D_var",ivar1,ivar2,ivar3);
-  char htitle[30];
-  sprintf(htitle,"%s%s%i%i%s%i%i%i",GetName(),"_SelStep",fSelNum,fSelDen,"_proj3D_var",ivar1,ivar2,ivar3);
-   
-  
-  if(!proj3D){
-    proj3D =new TH3D(pname,htitle, nbins1, bins1,nbins2,bins2,nbins3,bins3);
-  }  
-  
-  //unset the use of axis range to be able to divide the histos
-  fContainer->GetGrid(fSelNum)->UseAxisRange(kFALSE);
-  fContainer->GetGrid(fSelDen)->UseAxisRange(kFALSE);
-
-  proj3D->Sumw2();
-  proj3D->Divide(fContainer->GetGrid(fSelNum)->Project(ivar1,ivar2,ivar3),fContainer->GetGrid(fSelDen)->Project(ivar1,ivar2,ivar3),1.,1.,"B");
-  
-  fContainer->GetGrid(fSelNum)->UseAxisRange(kTRUE);
-  fContainer->GetGrid(fSelDen)->UseAxisRange(kTRUE);
-
-  proj3D->GetXaxis()->SetRange(
-			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar1)->GetFirst(),
-			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar1)->GetLast()
-			       );
-  proj3D->GetYaxis()->SetRange(
-			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar2)->GetFirst(),
-			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar2)->GetLast()
-			       );
-  proj3D->GetZaxis()->SetRange(
-			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar3)->GetFirst(),
-			       ((AliCFGridSparse*)GetNum())->GetGrid()->GetAxis(ivar3)->GetLast()
-			       );
-
-  delete [] bins1;
-  delete [] bins2;
-  delete [] bins3; 
-  
-  return proj3D;
+  const Int_t nDim = 3 ;
+  Int_t dim[nDim] = {ivar1,ivar2,ivar3} ;
+  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
+  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
+  THnSparse* ratio = (THnSparse*)hNum->Clone();
+  ratio->Divide(hNum,hDen,1.,1.,"B");
+  delete hNum; delete hDen;
+  return ratio->Projection(ivar1,ivar2,ivar3);
 } 
 
