@@ -29,7 +29,8 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 
 
 ifneq ($(FASTJET),)
-	SRCS+= AliFastJetFinder.cxx AliFastJetHeader.cxx 
+	SRCS+= AliFastJetFinder.cxx AliFastJetHeader.cxx \
+	AliSISConeJetFinder.cxx AliSISConeJetHeader.cxx
 endif
 
 

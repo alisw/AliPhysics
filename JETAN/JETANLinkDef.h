@@ -49,6 +49,8 @@
 #ifdef WITHFASTJET
 #pragma	link C++ class AliFastJetFinder+;
 #pragma	link C++ class AliFastJetHeader+;
+#pragma	link C++ class AliSISConeJetFinder+;
+#pragma	link C++ class AliSISConeJetHeader+;
 #endif
 
 #endif
