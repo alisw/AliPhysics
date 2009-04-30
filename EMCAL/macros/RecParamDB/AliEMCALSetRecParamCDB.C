@@ -23,7 +23,7 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
 
   //Activate CDB storage
   AliCDBManager* cdb = AliCDBManager::Instance();
-  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://OCDB");
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
 
   // Create reconstruction parameter object and set parameter values
