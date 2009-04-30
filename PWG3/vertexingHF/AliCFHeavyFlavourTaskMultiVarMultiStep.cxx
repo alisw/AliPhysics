@@ -249,17 +249,25 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	fCountMC += icountMC;
 	fCountAcc += icountAcc;
 
+	// AOD primary vertex
+	AliAODVertex *vtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
+
 	// load heavy flavour vertices
-	TClonesArray *arrayVerticesHF = (TClonesArray*)((aodEvent->GetList())->FindObject("D0toKpi")); 	
-	if (!arrayVerticesHF) AliError("Could not find array of HF vertices");
-	AliDebug(2, Form("Found %d vertices",arrayVerticesHF->GetEntriesFast()));
+	TClonesArray *arrayD0toKpi = (TClonesArray*)((aodEvent->GetList())->FindObject("D0toKpi")); 	
+	if (!arrayD0toKpi) AliError("Could not find array of HF vertices");
+	AliDebug(2, Form("Found %d vertices",arrayD0toKpi->GetEntriesFast()));
 	
-	for (Int_t iVertex = 0; iVertex<arrayVerticesHF->GetEntriesFast(); iVertex++) {
+	for (Int_t iD0toKpi = 0; iD0toKpi<arrayD0toKpi->GetEntriesFast(); iD0toKpi++) {
 		
-		AliAODRecoDecayHF2Prong* vtx = (AliAODRecoDecayHF2Prong*)arrayVerticesHF->At(iVertex);
-		
+		AliAODRecoDecayHF2Prong* d0tokpi = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->At(iD0toKpi);
+		Bool_t unsetvtx=kFALSE;
+		if(!d0tokpi->GetOwnPrimaryVtx()) {
+		  d0tokpi->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+		  unsetvtx=kTRUE;
+		}
+
 		// find associated MC particle
-		Int_t mcLabel = vtx->MatchToMC(421, mcArray) ;
+		Int_t mcLabel = d0tokpi->MatchToMC(421, mcArray) ;
 		if (mcLabel == -1) 
 			{
 				AliDebug(2,"No MC particle found");
@@ -279,34 +287,34 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 
 
 			// fill the container...
-			Double_t pt = vtx->Pt();
-			Double_t rapidity = vtx->YD0();
+			Double_t pt = d0tokpi->Pt();
+			Double_t rapidity = d0tokpi->YD0();
 			
 			Double_t cosThetaStar = 9999.;
 			Double_t pTpi = 0.;
 			Double_t pTK = 0.;
-			Double_t dca = vtx->GetDCA();
+			Double_t dca = d0tokpi->GetDCA();
 			Double_t d0pi = 0.;
 			Double_t d0K = 0.;
-			Double_t d0xd0 = vtx->Prodd0d0();
-			Double_t cosPointingAngle = vtx->CosPointingAngle();
+			Double_t d0xd0 = d0tokpi->Prodd0d0();
+			Double_t cosPointingAngle = d0tokpi->CosPointingAngle();
 			Int_t pdgCode = mcVtxHF->GetPdgCode();
 			if (pdgCode > 0){
-				cosThetaStar = vtx->CosThetaStarD0();
-				pTpi = vtx->PtProng(0);
-				pTK = vtx->PtProng(1);
-				d0pi = vtx->Getd0Prong(0);
-				d0K = vtx->Getd0Prong(1);
+				cosThetaStar = d0tokpi->CosThetaStarD0();
+				pTpi = d0tokpi->PtProng(0);
+				pTK = d0tokpi->PtProng(1);
+				d0pi = d0tokpi->Getd0Prong(0);
+				d0K = d0tokpi->Getd0Prong(1);
 			}
 			else {
-				cosThetaStar = vtx->CosThetaStarD0bar();
-				pTpi = vtx->PtProng(1);
-				pTK = vtx->PtProng(0);
-				d0pi = vtx->Getd0Prong(1);
-				d0K = vtx->Getd0Prong(0);
+				cosThetaStar = d0tokpi->CosThetaStarD0bar();
+				pTpi = d0tokpi->PtProng(1);
+				pTK = d0tokpi->PtProng(0);
+				d0pi = d0tokpi->Getd0Prong(1);
+				d0K = d0tokpi->Getd0Prong(0);
 			}
 
-			Double_t cT = vtx->CtD0();
+			Double_t cT = d0tokpi->CtD0();
 
 			if (!fFillFromGenerated){
 				// ...either with reconstructed values....
@@ -348,8 +356,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;   
 
 			// cut in acceptance
-			Bool_t acceptanceProng0 = (TMath::Abs(vtx->EtaProng(0))< 0.9 && vtx->PtProng(0) > 0.1);
-			Bool_t acceptanceProng1 = (TMath::Abs(vtx->EtaProng(1))< 0.9 && vtx->PtProng(1) > 0.1);
+			Bool_t acceptanceProng0 = (TMath::Abs(d0tokpi->EtaProng(0))< 0.9 && d0tokpi->PtProng(0) > 0.1);
+			Bool_t acceptanceProng1 = (TMath::Abs(d0tokpi->EtaProng(1))< 0.9 && d0tokpi->PtProng(1) > 0.1);
 			if (acceptanceProng0 && acceptanceProng1) {
 				AliDebug(2,"D0 reco daughters in acceptance");
 				fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoAcceptance) ;
@@ -357,7 +365,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 
 				// cut on the min n. of clusters in ITS
 				Int_t ncls0=0;
-				for(Int_t l=0;l<6;l++) if(TESTBIT(vtx->GetITSClusterMap(),l)) ncls0++;
+				for(Int_t l=0;l<6;l++) if(TESTBIT(d0tokpi->GetITSClusterMap(),l)) ncls0++;
 				AliDebug(2, Form("n clusters = %d", ncls0));
 				if (ncls0 >= fMinITSClusters){
 					fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters) ;
@@ -450,7 +458,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				}
 			}
 		}
-	}
+		if(unsetvtx) d0tokpi->UnsetOwnPrimaryVtx();
+	} // end loop on D0->Kpi
 
 	AliDebug(2, Form("Found %i Reco particles that are D0!!",icountReco));
 
