@@ -168,7 +168,7 @@ void AliTRDrecoTask::SetDebugLevel(Int_t level)
   fDebugLevel = level;
   if(fDebugLevel>=1){
     TDirectory *savedir = gDirectory;
-    fDebugStream = new TTreeSRedirector(Form("TRD.Debug%s.root", GetName()));
+    fDebugStream = new TTreeSRedirector(Form("TRD.DBG%s.root", GetName()));
     savedir->cd();
   }
 }

@@ -28,8 +28,8 @@ class AliTRDresolution : public AliTRDrecoTask
 public:
   enum ETRDresolutionPlot {
     kCluster          =  0 // cluster - track
-    ,kTracklet        =  1 // tracklet - track y pulls
-    ,kTrackletPhi     =  2 // tracklet - track angular pulls residuals
+    ,kTracklet        =  1 // tracklet - track residuals/pulls
+    ,kTrackTPC        =  2 // tracklet - track residuals/pulls at lower TRD entrance 
     ,kMCcluster       =  3 // cluster-mc resolution/pulls
     ,kMCtracklet      =  4 // tracklet-mc resolution/pulls
     ,kMCtrackTPC      =  5 // TPC track monitor
@@ -55,8 +55,7 @@ public:
 
   TH1*    PlotCluster(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTracklet(const AliTRDtrackV1 *t=0x0);
-  TH1*    PlotTrackletPhi(const AliTRDtrackV1 *t=0x0);
-  TH1*    PlotTrackIn(const AliTRDtrackV1 *t=0x0);
+  TH1*    PlotTrackTPC(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotMC(const AliTRDtrackV1 *t=0x0);
   void    DumpAxTitle(Int_t plot, Int_t fig=-1);
 
