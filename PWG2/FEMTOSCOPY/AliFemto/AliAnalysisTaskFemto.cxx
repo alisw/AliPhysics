@@ -186,6 +186,17 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
       }    
     }
 
+    // Get ESD
+    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    
+    if (!esdH) {
+      Printf("ERROR: Could not get ESDInputHandler");
+      return;
+    } 
+    else {
+      fESD = esdH->GetEvent();
+    }
+
     printf("Tracks in ESD: %d \n",fESD->GetNumberOfTracks());
 
     if (fESD->GetNumberOfTracks() >= 0) {
@@ -222,6 +233,19 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
       Printf("ERROR: fAOD not available");
       return;
     }
+
+    // Get AOD
+    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+      
+    if (!aodH) {
+      Printf("ERROR: Could not get AODInputHandler");
+      return;
+    } 
+    else {
+
+      fAOD = aodH->GetEvent();
+    }
+
     printf("Tracks in AOD: %d \n",fAOD->GetNumberOfTracks());
     
     if (fAOD->GetNumberOfTracks() > 0) {
