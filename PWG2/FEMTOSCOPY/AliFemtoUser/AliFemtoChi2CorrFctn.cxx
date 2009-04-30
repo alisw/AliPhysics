@@ -212,36 +212,60 @@ void AliFemtoChi2CorrFctn::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
 
-  fChi2ITSSUMNumerator->Fill(tQinv, 
-			  (pair->Track1()->Track()->ITSchi2() + 
-			   pair->Track2()->Track()->ITSchi2())/
-			  (pair->Track1()->Track()->ITSncls() +
-			   pair->Track2()->Track()->ITSncls()));
-  fChi2TPCSUMNumerator->Fill(tQinv, 
-			  (pair->Track1()->Track()->TPCchi2() +
-			   pair->Track2()->Track()->TPCchi2())/
-			  (pair->Track1()->Track()->TPCncls() +
-			   pair->Track2()->Track()->TPCncls()));
-  if ((pair->Track1()->Track()->ITSchi2()/pair->Track1()->Track()->ITSncls()) > (pair->Track2()->Track()->ITSchi2()/pair->Track2()->Track()->ITSncls())) {
-    fChi2ITSONENumerator->Fill(tQinv, 
-			    (pair->Track1()->Track()->ITSchi2()/
-			     pair->Track1()->Track()->ITSncls()));
+  if ((pair->Track1()->Track()->ITSncls() == 0) && (pair->Track2()->Track()->ITSncls() == 0))
+    fChi2ITSSUMNumerator->Fill(tQinv, 1000.0);
+  else 
+    fChi2ITSSUMNumerator->Fill(tQinv, 
+			       (pair->Track1()->Track()->ITSchi2() + 
+				pair->Track2()->Track()->ITSchi2())/
+			       (pair->Track1()->Track()->ITSncls() +
+				pair->Track2()->Track()->ITSncls()));
+  if ((pair->Track1()->Track()->TPCncls() == 0) && (pair->Track2()->Track()->TPCncls() == 0))
+    fChi2TPCSUMNumerator->Fill(tQinv, 1000.0);
+  else
+    fChi2TPCSUMNumerator->Fill(tQinv, 
+			       (pair->Track1()->Track()->TPCchi2() +
+				pair->Track2()->Track()->TPCchi2())/
+			       (pair->Track1()->Track()->TPCncls() +
+				pair->Track2()->Track()->TPCncls()));
+  double chi2perpointITS1, chi2perpointITS2;
+  if (pair->Track1()->Track()->ITSncls() == 0)
+    chi2perpointITS1 = 1000.0;
+  else
+    chi2perpointITS1 = pair->Track1()->Track()->ITSchi2()/pair->Track1()->Track()->ITSncls();
+
+  if (pair->Track2()->Track()->ITSncls() == 0)
+    chi2perpointITS2 = 1000.0;
+  else
+    chi2perpointITS2 = pair->Track2()->Track()->ITSchi2()/pair->Track2()->Track()->ITSncls();
+
+
+  if (chi2perpointITS1 > chi2perpointITS2) {
+    fChi2ITSONENumerator->Fill(tQinv, chi2perpointITS1);
   }
   else {
-    fChi2ITSONENumerator->Fill(tQinv, 
-			    (pair->Track2()->Track()->ITSchi2()/
-			     pair->Track2()->Track()->ITSncls()));
+    fChi2ITSONENumerator->Fill(tQinv, chi2perpointITS2);
   }
-  if ((pair->Track1()->Track()->TPCchi2()/pair->Track1()->Track()->TPCncls()) > (pair->Track2()->Track()->TPCchi2()/pair->Track2()->Track()->TPCncls())) {
-    fChi2TPCONENumerator->Fill(tQinv, 
-			    (pair->Track1()->Track()->TPCchi2()/
-			     pair->Track1()->Track()->TPCncls()));
+
+  double chi2perpointTPC1, chi2perpointTPC2;
+  if (pair->Track1()->Track()->TPCncls() == 0)
+    chi2perpointTPC1 = 1000.0;
+  else
+    chi2perpointTPC1 = pair->Track1()->Track()->TPCchi2()/pair->Track1()->Track()->TPCncls();
+
+  if (pair->Track2()->Track()->TPCncls() == 0)
+    chi2perpointTPC2 = 1000.0;
+  else
+    chi2perpointTPC2 = pair->Track2()->Track()->TPCchi2()/pair->Track2()->Track()->TPCncls();
+
+
+  if (chi2perpointTPC1 > chi2perpointTPC2) {
+    fChi2TPCONENumerator->Fill(tQinv, chi2perpointTPC1);
   }
   else {
-    fChi2TPCONENumerator->Fill(tQinv, 
-			    (pair->Track2()->Track()->TPCchi2()/
-			     pair->Track2()->Track()->TPCncls()));
+    fChi2TPCONENumerator->Fill(tQinv, chi2perpointTPC2);
   }
+
   if (pair->Track1()->Track()->SigmaToVertex() > pair->Track2()->Track()->SigmaToVertex()) {
     fSigmaToVertexNumerator->Fill(tQinv, 
 				  pair->Track1()->Track()->SigmaToVertex());
@@ -256,35 +280,58 @@ void AliFemtoChi2CorrFctn::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
 
-  fChi2ITSSUMDenominator->Fill(tQinv, 
-			    (pair->Track1()->Track()->ITSchi2() + 
-			     pair->Track2()->Track()->ITSchi2())/
-			    (pair->Track1()->Track()->ITSncls() +
-			     pair->Track2()->Track()->ITSncls()));
-  fChi2TPCSUMDenominator->Fill(tQinv, 
-			    (pair->Track1()->Track()->TPCchi2() +
-			     pair->Track2()->Track()->TPCchi2())/
-			    (pair->Track1()->Track()->TPCncls() +
-			     pair->Track2()->Track()->TPCncls()));
-  if ((pair->Track1()->Track()->ITSchi2()/pair->Track1()->Track()->ITSncls()) > (pair->Track2()->Track()->ITSchi2()/pair->Track2()->Track()->ITSncls())) {
-    fChi2ITSONEDenominator->Fill(tQinv, 
-			    (pair->Track1()->Track()->ITSchi2()/
-			     pair->Track1()->Track()->ITSncls()));
+  if ((pair->Track1()->Track()->ITSncls() == 0) && (pair->Track2()->Track()->ITSncls() == 0))
+    fChi2ITSSUMDenominator->Fill(tQinv, 1000.0);
+  else 
+    fChi2ITSSUMDenominator->Fill(tQinv, 
+				 (pair->Track1()->Track()->ITSchi2() + 
+				  pair->Track2()->Track()->ITSchi2())/
+				 (pair->Track1()->Track()->ITSncls() +
+				  pair->Track2()->Track()->ITSncls()));
+  if ((pair->Track1()->Track()->TPCncls() == 0) && (pair->Track2()->Track()->TPCncls() == 0))
+    fChi2TPCSUMDenominator->Fill(tQinv, 1000.0);
+  else
+    fChi2TPCSUMDenominator->Fill(tQinv, 
+				 (pair->Track1()->Track()->TPCchi2() +
+				  pair->Track2()->Track()->TPCchi2())/
+				 (pair->Track1()->Track()->TPCncls() +
+				  pair->Track2()->Track()->TPCncls()));
+  double chi2perpointITS1, chi2perpointITS2;
+  if (pair->Track1()->Track()->ITSncls() == 0)
+    chi2perpointITS1 = 1000.0;
+  else
+    chi2perpointITS1 = pair->Track1()->Track()->ITSchi2()/pair->Track1()->Track()->ITSncls();
+
+  if (pair->Track2()->Track()->ITSncls() == 0)
+    chi2perpointITS2 = 1000.0;
+  else
+    chi2perpointITS2 = pair->Track2()->Track()->ITSchi2()/pair->Track2()->Track()->ITSncls();
+
+
+  if (chi2perpointITS1 > chi2perpointITS2) {
+    fChi2ITSONEDenominator->Fill(tQinv, chi2perpointITS1);
   }
   else {
-    fChi2ITSONEDenominator->Fill(tQinv, 
-			    (pair->Track2()->Track()->ITSchi2()/
-			     pair->Track2()->Track()->ITSncls()));
+    fChi2ITSONEDenominator->Fill(tQinv, chi2perpointITS2);
   }
-  if ((pair->Track1()->Track()->TPCchi2()/pair->Track1()->Track()->TPCncls()) > (pair->Track2()->Track()->TPCchi2()/pair->Track2()->Track()->TPCncls())) {
-    fChi2TPCONEDenominator->Fill(tQinv, 
-			    (pair->Track1()->Track()->TPCchi2()/
-			     pair->Track1()->Track()->TPCncls()));
+
+  double chi2perpointTPC1, chi2perpointTPC2;
+  if (pair->Track1()->Track()->TPCncls() == 0)
+    chi2perpointTPC1 = 1000.0;
+  else
+    chi2perpointTPC1 = pair->Track1()->Track()->TPCchi2()/pair->Track1()->Track()->TPCncls();
+
+  if (pair->Track2()->Track()->TPCncls() == 0)
+    chi2perpointTPC2 = 1000.0;
+  else
+    chi2perpointTPC2 = pair->Track2()->Track()->TPCchi2()/pair->Track2()->Track()->TPCncls();
+
+
+  if (chi2perpointTPC1 > chi2perpointTPC2) {
+    fChi2TPCONEDenominator->Fill(tQinv, chi2perpointTPC1);
   }
   else {
-    fChi2TPCONEDenominator->Fill(tQinv, 
-			    (pair->Track2()->Track()->TPCchi2()/
-			     pair->Track2()->Track()->TPCncls()));
+    fChi2TPCONEDenominator->Fill(tQinv, chi2perpointTPC2);
   }
   if (pair->Track1()->Track()->SigmaToVertex() > pair->Track2()->Track()->SigmaToVertex()) {
     fSigmaToVertexDenominator->Fill(tQinv, 
