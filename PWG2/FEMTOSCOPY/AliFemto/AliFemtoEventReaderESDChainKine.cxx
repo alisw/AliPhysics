@@ -156,23 +156,38 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       fVCov[4] = -1001.0;
   }
   else {
-    fEvent->GetPrimaryVertex()->GetXYZ(fV1);
-    fEvent->GetPrimaryVertex()->GetCovMatrix(fVCov);
+    if (fEvent->GetPrimaryVertex()) {
+      fEvent->GetPrimaryVertex()->GetXYZ(fV1);
+      fEvent->GetPrimaryVertex()->GetCovMatrix(fVCov);
 
-    if (!fEvent->GetPrimaryVertex()->GetStatus()) {
-      // Get the vertex from SPD
-      fEvent->GetPrimaryVertexSPD()->GetXYZ(fV1);
-      fEvent->GetPrimaryVertexSPD()->GetCovMatrix(fVCov);
-      
-      
-      if (!fEvent->GetPrimaryVertexSPD()->GetStatus())
-	fVCov[4] = -1001.0;
-      else {
+      if (!fEvent->GetPrimaryVertex()->GetStatus()) {
+	// Get the vertex from SPD
+	fEvent->GetPrimaryVertexSPD()->GetXYZ(fV1);
+	fEvent->GetPrimaryVertexSPD()->GetCovMatrix(fVCov);
+	
+	
+	if (!fEvent->GetPrimaryVertexSPD()->GetStatus())
+	  fVCov[4] = -1001.0;
+	else {
+	  fEvent->GetPrimaryVertexSPD()->GetXYZ(fV1);
+	  fEvent->GetPrimaryVertexSPD()->GetCovMatrix(fVCov);
+	}
+      }
+    }
+    else {
+      if (fEvent->GetPrimaryVertexSPD()) {
 	fEvent->GetPrimaryVertexSPD()->GetXYZ(fV1);
 	fEvent->GetPrimaryVertexSPD()->GetCovMatrix(fVCov);
       }
     }
-    
+    if ((!fEvent->GetPrimaryVertex()) && (!fEvent->GetPrimaryVertexSPD()))
+      {
+	cout << "No vertex found !!!" << endl;
+	fV1[0] = 10000.0;
+	fV1[1] = 10000.0;
+	fV1[2] = 10000.0;
+	fVCov[4] = -1001.0;
+      }
   }
 
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
