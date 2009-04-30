@@ -329,10 +329,9 @@ void EMCalNumbering()
   tTRU->Branch("iRCU",&iRCU,"iRCU/I");
   tTRU->Branch("iBranch",&iBranch,"iBranch/I");
   tTRU->Branch("iGTL",&iGTL,"iGTL/I");
-  int iTRUchip = 0; // extramarker for TRU, together with (GTL==0 && Branch==0 && RCU==0)
+  // TRU is identified by (GTL==0 && !(Branch==0 && RCU==0))
   int iTRUFirstChan = 0; 
-  int iTRULastChan = 15; // info from Hans and Dong, July 22, 2008
-  tTRU->Branch("iTRUchip",&iTRUchip,"iTRUchip/I");
+  int iTRULastChan = 127; // maximum allowed number of fake ALTRO channels=128 from TRU
   tTRU->Branch("iTRUFirstChan",&iTRUFirstChan,"iTRUFirstChan/I");
   tTRU->Branch("iTRULastChan",&iTRULastChan,"iTRULastChan/I");
 

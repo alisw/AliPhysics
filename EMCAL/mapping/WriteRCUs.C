@@ -16,8 +16,8 @@ Author: David Silvermyr, ORNL; silvermy@mail.phy.ornl.gov
 */
 
 // First we define some constants - the main method WriteRCUs comes later
-const int kNTRU = 3;
-const int kNTRUChanBlocks = 16; // per TRU - info from Dong and Hans, July 22, 2008
+const int kNTRU = 3; // per SM
+const int kNTRUChanBlocks = 128; // max. per TRU 
 const int kNLED = 24; // one per StripModule
 
 const int kNGAIN = 2; // low (0) and high (1)
@@ -139,7 +139,6 @@ void WriteRCUs(const char *filename="map.root")
   tTRU->SetBranchAddress("iRCU",&iRCU);
   tTRU->SetBranchAddress("iBranch",&iBranch);
   tTRU->SetBranchAddress("iGTL",&iGTL);
-  tTRU->SetBranchAddress("iTRUchip",&iTRUchip);
   tTRU->SetBranchAddress("iTRUFirstChan",&iTRUFirstChan);
   tTRU->SetBranchAddress("iTRULastChan",&iTRULastChan);
 
@@ -236,7 +235,7 @@ void WriteRCUs(const char *filename="map.root")
     if (isect==0) { // select just the 1st sector; same motivation as for FEE
       for (int ichan=iTRUFirstChan; ichan<=iTRULastChan; ichan++) {
 	TRUchid = makeHWAddress( iBranch, iGTL, 
-				 iTRUchip, ichan );
+				 ichan/16, ichan%16 );
 	out[iRCU][iside] << TRUchid << " " 
 			 << dummyRow << " "
 			 << ichan << " " // channel # coded as Column.. 
