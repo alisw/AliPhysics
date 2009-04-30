@@ -34,7 +34,7 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 // mLocalPAR: Analyze data on your computer using root + PAR files
 // mLocalSource: Analyze data on your computer using root + source files
                                           
-int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=100)
+int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1000)
 {
  TStopwatch timer;
  timer.Start();
@@ -358,9 +358,8 @@ void LoadLibraries(const anaModes mode) {
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx+"); 
     gROOT->LoadMacro("AliFlowCommon/AliFittingQDistribution.cxx+");
     
-    // Class to fill the FlowEvent without aliroot dependence
-    // can be found in the directory FlowEventMakers
-    gROOT->LoadMacro("FlowEventMakers/FlowEventSimpleMaker.cxx+");   
+    // Class to fill the FlowEvent on the fly (generate Monte Carlo events)
+    gROOT->LoadMacro("AliFlowCommon/AliFlowEventSimpleMakerOnTheFly.cxx+");   
     
     cout << "finished loading macros!" << endl;  
     
