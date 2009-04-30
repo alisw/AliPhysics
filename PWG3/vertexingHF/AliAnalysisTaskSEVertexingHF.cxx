@@ -30,6 +30,7 @@
 #include "AliESDEvent.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSEVertexingHF.h"
 
 ClassImp(AliAnalysisTaskSEVertexingHF)
@@ -88,6 +89,7 @@ void AliAnalysisTaskSEVertexingHF::Init()
 
   fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
   fVHF->PrintStatus();
+  AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile("AliAOD.VertexingHF.root");
 
   return;
 }
