@@ -288,7 +288,7 @@ void AliNeutralMesonSelection::Print(const Option_t * opt) const
   if(! opt)
     return;
   
-  Info("Print", "%s %s", GetName(), GetTitle() ) ;
+  printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
 
   printf("mass : %f  \n", fM );
   printf("Invariant mass limits : %f < m < %f \n", fInvMassMinCut , fInvMassMinCut );

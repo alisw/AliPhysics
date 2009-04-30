@@ -179,7 +179,7 @@ Bool_t AliFidutialCut::IsInFidutialCut(TLorentzVector momentum, TString det) con
     selection =  fPHOSFidutialCut ; 
   }
   else
-    printf("AliFidutialCut::IsInFidutialCut() - Wrong detector name = %s", det.Data());
+    printf("AliFidutialCut::IsInFidutialCut() - Wrong detector name = %s\n", det.Data());
 
   //printf("IsInFidutialCut::nphiregions = %d, netaregions = %d\n",nphiregions, netaregions);
 

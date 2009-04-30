@@ -122,7 +122,10 @@ void AliAnaPi0::InitParameters()
 {
 //Init parameters when first called the analysis
 //Set default parameters
-  SetInputAODName("photons");
+  SetInputAODName("PWG4Particle");
+  
+  AddToHistogramsName("AnaPi0_");
+
   fNCentrBin = 1;
   fNZvertBin = 1;
   fNrpBin    = 1;
@@ -165,7 +168,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   //If Geometry library loaded, do geometry selection during analysis.
 #ifdef __PHOSGEO__
-  printf("PHOS geometry initialized!\n");
+  printf("AliAnaPi0::GetCreateOutputObjects() - PHOS geometry initialized!\n");
   fPHOSGeo = new AliPHOSGeoUtils("PHOSgeo") ;
 #endif	
   
@@ -266,7 +269,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimAccPhi = new TH1D("hPrimAccPhi","Azimithal of primary pi0 with accepted daughters",180,-0.,360.) ; 
     outputContainer->Add(fhPrimAccPhi) ;
   }
-  
+
   //Save parameters used for analysis
   TString parList ; //this will be list of parameters used for this analysis.
   char onePar[255] ;
@@ -299,8 +302,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 void AliAnaPi0::Print(const Option_t * /*opt*/) const
 {
   //Print some relevant parameters set for the analysis
+  printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaPartCorrBaseClass::Print(" ");
-  printf("Class AliAnaPi0 for gamma-gamma inv.mass construction \n") ;
+
   printf("Number of bins in Centrality:  %d \n",fNCentrBin) ;
   printf("Number of bins in Z vert. pos: %d \n",fNZvertBin) ;
   printf("Number of bins in Reac. Plain: %d \n",fNrpBin) ;
@@ -339,7 +343,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   fhEvents->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
   
   Int_t nPhot = GetInputAODBranch()->GetEntriesFast() ;
-  if(GetDebug() > 1) printf("AliAnaPi0::FillHistos: photon entries %d\n", nPhot);
+  if(GetDebug() > 1) printf("AliAnaPi0::MakeAnalysisFillHistograms() - Photon entries %d\n", nPhot);
   
   for(Int_t i1=0; i1<nPhot-1; i1++){
     AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
@@ -351,7 +355,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       Double_t pt = (photon1 + photon2).Pt();
       Double_t a  = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
       if(GetDebug() > 2)
-	printf("AliAnaPi0::FillHistos: Current Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
+	printf("AliAnaPi0::MakeAnalysisFillHistograms() - Current Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
 	       p1->Pt(), p2->Pt(), pt,m,a);
       for(Int_t ipid=0; ipid<fNPID; ipid++)
 	{
@@ -376,7 +380,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     TClonesArray* ev2= (TClonesArray*) (evMixList->At(ii));
     Int_t nPhot2=ev2->GetEntriesFast() ;
     Double_t m = -999;
-    if(GetDebug() > 1) printf("AliAnaPi0::FillHistos: Mixed event %d photon entries %d\n", ii, nPhot);
+    if(GetDebug() > 1) printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mixed event %d photon entries %d\n", ii, nPhot);
     
     for(Int_t i1=0; i1<nPhot; i1++){
       AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
@@ -389,7 +393,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 	Double_t pt = (photon1 + photon2).Pt();
 	Double_t a  = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
 	if(GetDebug() > 2)
-	  printf("AliAnaPi0::FillHistos: Mixed Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
+	  printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mixed Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
 		 p1->Pt(), p2->Pt(), pt,m,a);			
 	for(Int_t ipid=0; ipid<fNPID; ipid++){ 
 	  if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
@@ -486,11 +490,11 @@ void AliAnaPi0::Terminate()
   printf(" *** %s Terminate:\n", GetName()) ; 
   
   if (!fhRe1) {
-     Error("Terminate", "Remote output histograms not imported in AliAnaPi0 object");
+     printf("AliAnaPi0::Terminate() - Error: Remote output histograms not imported in AliAnaPi0 object");
      return;
   }
       
-  printf("        Mgg Real        : %5.3f , RMS : %5.3f \n", fhRe1[0]->GetMean(),   fhRe1[0]->GetRMS() ) ;
+  printf("AliAnaPi0::Terminate()         Mgg Real        : %5.3f , RMS : %5.3f \n", fhRe1[0]->GetMean(),   fhRe1[0]->GetRMS() ) ;
  
   TCanvas  * cIM = new TCanvas("cIM", "", 400, 10, 600, 700) ;
   cIM->Divide(2, 2);
@@ -572,7 +576,7 @@ void AliAnaPi0::Terminate()
   sprintf(line, ".!rm -fR *.eps"); 
   gROOT->ProcessLine(line);
  
-  printf("!! All the eps files are in %s.tar.gz !!!\n", GetName());
+  printf(" AliAnaPi0::Terminate() - !! All the eps files are in %s.tar.gz !!!\n", GetName());
 
 }
 

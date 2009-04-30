@@ -91,7 +91,7 @@ void AliCaloTrackAODReader::FillInputCTS() {
     
     if(fCTSPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"CTS")){
       
-      if(fDebug > 2 && momentum.Pt() > 0.1)printf("FillInputCTS():: Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+      if(fDebug > 2 && momentum.Pt() > 0.1) printf("AliCaloTrackAODReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						  momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
       
       if(first){
@@ -103,7 +103,7 @@ void AliCaloTrackAODReader::FillInputCTS() {
     }//Pt and Fidutial cut passed. 
     //}// track status
   }// track loop
-  if(fDebug > 1) printf("FillInputCTS():: aod entries %d\n", fAODCTS->GetEntriesFast());
+  if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputCTS() - aod entries %d\n", fAODCTS->GetEntriesFast());
 }
 
 //____________________________________________________________________________
@@ -127,7 +127,7 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 	
 	if(fEMCALPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"EMCAL")){
     
-	  if(fDebug > 2 && momentum.E() > 0.1)printf("FillInputEMCAL():: Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+	  if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	  
 	  if(first){
@@ -140,7 +140,7 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
     }// cluster exists
   }//esd cluster loop
   
-  if(fDebug > 1) printf("FillInputEMCAL():: aod entries %d\n", fAODEMCAL->GetEntriesFast());
+  if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputEMCAL() - aod entries %d\n", fAODEMCAL->GetEntriesFast());
 
 }
 
@@ -166,7 +166,7 @@ void AliCaloTrackAODReader::FillInputPHOS() {
 	
 	if(fPHOSPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"PHOS")){
 	  
-	  if(fDebug > 2 && momentum.E() > 0.1)printf("FillInputPHOS():: Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+	  if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	  
 	  if(first){
@@ -179,7 +179,7 @@ void AliCaloTrackAODReader::FillInputPHOS() {
     }//cluster exists
   }//esd cluster loop
   
-  if(fDebug > 1) printf("FillInputPHOS():: aod entries %d\n", fAODPHOS->GetEntriesFast());
+  if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputPHOS() - aod entries %d\n", fAODPHOS->GetEntriesFast());
 
 
 }
@@ -223,7 +223,7 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent*
     SetOutputEvent(aod);
   }
   else{ 
-    printf("AliCaloTrackAODReader::SetInputOutputMCEvent() - ABORT::Unknown data format: %s\n",input->GetName());
+    printf("AliCaloTrackAODReader::SetInputOutputMCEvent() - ABORT : Wrong data format: %s\n",input->GetName());
     abort();
   }
   

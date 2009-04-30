@@ -25,7 +25,6 @@
 //#include <Riostream.h>
 
 //---- AliRoot system ----
-#include "AliAODPWG4ParticleCorrelation.h"
 #include "AliAnaPartCorrBaseClass.h"
 #include "AliCaloTrackReader.h"
 #include "AliCaloPID.h"
@@ -46,6 +45,7 @@ ClassImp(AliAnaPartCorrBaseClass)
     fReader(0x0), fInputAODBranch(0x0), fInputAODName(""),
     fOutputAODBranch(0x0), fNewAOD(kFALSE),
     fOutputAODName(""), fOutputAODClassName(""),
+    fAODRefArrayName(""), fAddToHistogramsName(""),
     fAODCaloCells(0x0),//fAODCaloClusters(0x0),  
     fCaloPID(0x0), fFidCut(0x0), fIC(0x0),fMCUtils(0x0), fNMS(0x0),
     fHistoNPtBins(0),  fHistoPtMax(0.),  fHistoPtMin(0.),
@@ -73,6 +73,8 @@ AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass &
   fInputAODBranch(new TClonesArray(*abc.fInputAODBranch)), fInputAODName(abc.fInputAODName),
   fOutputAODBranch(new TClonesArray(*abc.fOutputAODBranch)),fNewAOD(abc.fNewAOD), 
   fOutputAODName(abc.fOutputAODName), fOutputAODClassName(abc.fOutputAODClassName),
+  fAODRefArrayName(abc.fAODRefArrayName),
+  fAddToHistogramsName(abc.fAddToHistogramsName),
   //fAODCaloClusters(new TClonesArray(*abc.fAODCaloClusters)),
   fAODCaloCells(new AliAODCaloCells(*abc.fAODCaloCells)),
   fCaloPID(abc.fCaloPID), fFidCut(abc.fFidCut), fIC(abc.fIC),fMCUtils(abc.fMCUtils), fNMS(abc.fNMS),
@@ -110,13 +112,15 @@ AliAnaPartCorrBaseClass & AliAnaPartCorrBaseClass::operator = (const AliAnaPartC
   fMCUtils = abc.fMCUtils;
   fNMS     = abc.fNMS;
   
-  fInputAODBranch     = new TClonesArray(*abc.fInputAODBranch) ;
-  fInputAODName       = abc.fInputAODName;
-  fOutputAODBranch    = new TClonesArray(*abc.fOutputAODBranch) ;
-  fNewAOD             = abc.fNewAOD ; 
-  fOutputAODName      = abc.fOutputAODName; 
-  fOutputAODClassName = abc.fOutputAODClassName;
-  
+  fInputAODBranch      = new TClonesArray(*abc.fInputAODBranch) ;
+  fInputAODName        = abc.fInputAODName;
+  fOutputAODBranch     = new TClonesArray(*abc.fOutputAODBranch) ;
+  fNewAOD              = abc.fNewAOD ; 
+  fOutputAODName       = abc.fOutputAODName; 
+  fOutputAODClassName  = abc.fOutputAODClassName;
+  fAddToHistogramsName = abc.fAddToHistogramsName;
+  fAODRefArrayName     = abc.fAODRefArrayName;
+
   fHistoNPtBins  = abc.fHistoNPtBins;  fHistoPtMax  = abc.fHistoPtMax;  fHistoPtMin  = abc.fHistoPtMin;
   fHistoNPhiBins = abc.fHistoNPhiBins; fHistoPhiMax = abc.fHistoPhiMax; fHistoPhiMin = abc.fHistoPhiMin;
   fHistoNEtaBins = abc.fHistoNEtaBins; fHistoEtaMax = abc.fHistoEtaMax; fHistoEtaMin = abc.fHistoEtaMin;
@@ -284,11 +288,23 @@ TString  AliAnaPartCorrBaseClass::GetBaseParametersList()  {
   parList+=onePar ;
   sprintf(onePar,"fCheckFidCut=%d (Check Fidutial cut selection on/off) \n",fCheckFidCut) ;
   parList+=onePar ;
-  sprintf(onePar,"fCheckCaloPIC =%d (Use Bayesian PID in calorimetes, on/off) \n",fCheckCaloPID) ;
+  sprintf(onePar,"fCheckCaloPID =%d (Use Bayesian PID in calorimetes, on/off) \n",fCheckCaloPID) ;
   parList+=onePar ;
   sprintf(onePar,"fRecalculateCaloPID  =%d (Calculate PID from shower/tof/tracking parameters, on/off) \n",fRecalculateCaloPID) ;
   parList+=onePar ;
-  
+  sprintf(onePar,"fInputAODName  =%s Input AOD name \n",fInputAODName.Data()) ;
+  parList+=onePar ;	
+  if(fNewAOD){
+     sprintf(onePar,"fOutputAODName  =%s Output AOD name \n",fOutputAODName.Data()) ;
+     parList+=onePar ;	
+	 sprintf(onePar,"fOutputAODClassName  =%s Output AOD class name \n",fOutputAODClassName.Data()) ;
+	 parList+=onePar ;	
+  }
+  sprintf(onePar,"fAODRefArrayName  =%s Reference arrays in AOD name \n",fAODRefArrayName.Data()) ;
+  parList+=onePar ;	
+  sprintf(onePar,"fAddToHistogramsName  =%s String added to beginning of histograms name \n",fAddToHistogramsName.Data()) ;
+  parList+=onePar ;	
+	
   return parList; 
 
 }
@@ -373,7 +389,9 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fOutputAODName = "PartCorr";
   fOutputAODClassName = "AliAODPWG4Particle";
   fInputAODName = "PartCorr";
-  
+  fAddToHistogramsName = "";
+  fAODRefArrayName="Ref";
+
   //Histogrammes settings
   fHistoNPtBins = 240 ;
   fHistoPtMax   = 120 ;
@@ -396,6 +414,7 @@ void AliAnaPartCorrBaseClass::Print(const Option_t * opt) const
   
   if(! opt)
     return;
+	
   printf("New AOD:            =     %d\n",fNewAOD);
   printf("Input AOD name:     =     %s\n",fInputAODName.Data());
   printf("Output AOD name:    =     %s\n",fOutputAODName.Data());
@@ -410,7 +429,9 @@ void AliAnaPartCorrBaseClass::Print(const Option_t * opt) const
   printf("Histograms: %3.1f < pT < %3.1f,  Nbin = %d\n", fHistoPtMin,  fHistoPtMax,  fHistoNPtBins);
   printf("Histograms: %3.1f < phi < %3.1f, Nbin = %d\n", fHistoPhiMin, fHistoPhiMax, fHistoNPhiBins);
   printf("Histograms: %3.1f < eta < %3.1f, Nbin = %d\n", fHistoEtaMin, fHistoEtaMax, fHistoNEtaBins);
-  
+  printf("Name of reference array      : %s\n", fAODRefArrayName.Data());	
+  printf("String added histograms name : %s\n",fAddToHistogramsName.Data());
+	
   printf("    \n") ;
   
 } 

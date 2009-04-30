@@ -91,7 +91,7 @@ void AliCaloTrackESDReader::FillInputCTS() {
       
       if(fCTSPtMin < momentum.Pt() &&fFidutialCut->IsInFidutialCut(momentum,"CTS")){
 	
-	if(fDebug > 3 && momentum.Pt() > 0.2)printf("FillInputCTS():: Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+	if(fDebug > 3 && momentum.Pt() > 0.2) printf("AliCaloTrackESDReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						    momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	
 	track->GetXYZ(pos);
@@ -129,7 +129,7 @@ void AliCaloTrackESDReader::FillInputCTS() {
     fAODCTS->Add(track);				
   }	
   
-  if(fDebug > 1) printf("FillInputCTS():: aod entries %d\n", fAODCTS->GetEntriesFast());
+  if(fDebug > 1) printf("AliCaloTrackESDReader::FillInputCTS() - aod entries %d\n", fAODCTS->GetEntriesFast());
 }
 
 //____________________________________________________________________________
@@ -140,27 +140,25 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
   Double_t v[3] ; //vertex ;
   GetVertex(v);
   
-  //Loop to select clusters in fidutial cut and fill container with aodClusters
-  Int_t naod = (fOutputEvent->GetCaloClusters())->GetEntriesFast();
   Float_t pos[3] ;
-  //   Double_t * pid = new Double_t[AliPID::kSPECIESN];
+  Int_t naod      = (fOutputEvent->GetCaloClusters())->GetEntriesFast();
+  Int_t nTracks   = fInputEvent->GetNumberOfTracks() ;
+  
+  //Loop to select clusters in fidutial cut and fill container with aodClusters
   for (Int_t iclus = 0; iclus < ((AliESDEvent*)fInputEvent)->GetNumberOfCaloClusters(); iclus++) {
     AliESDCaloCluster * clus = 0;
     if ( (clus = ((AliESDEvent*)fInputEvent)->GetCaloCluster(iclus)) ) {
       if (clus->IsEMCAL()){
 	TLorentzVector momentum ;
 	clus->GetMomentum(momentum, v);      
-	if(fDebug > 3 && momentum.E() > 0.1)printf("FillInputEMCAL():: all clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+	if(fDebug > 3 && momentum.E() > 0.2) printf("AliCaloTrackESDReader::FillInputEMCAL() - all clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta()); 
 	if(fEMCALPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"EMCAL")){
 	  
-	  if(fDebug > 2 && momentum.E() > 0.2)printf("FillInputEMCAL():: Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+	  if(fDebug > 2 && momentum.E() > 0.2) printf("AliCaloTrackESDReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
-	  //       pid=clus->GetPid();      
+	  
 	  clus->GetPosition(pos) ;
-	  //       printf("Reader PID ESD: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f,pi %0.2f, k %0.2f, p %0.2f, k0 %0.2f, n %0.2f, mu %0.2f \n",
-	  // 	     pid[AliPID::kPhoton],pid[AliPID::kPi0],pid[AliPID::kElectron],pid[AliPID::kEleCon],pid[AliPID::kPion],
-	  // 	     pid[AliPID::kKaon],pid[AliPID::kProton], pid[AliPID::kKaon0],pid[AliPID::kNeutron], pid[AliPID::kMuon]);
 	  Int_t id = clus->GetID();
 	  Int_t nLabel = clus->GetNLabels();
 	  Int_t *labels=0x0;
@@ -173,6 +171,9 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
 	  AliAODCaloCluster *caloCluster = new((*(fOutputEvent->GetCaloClusters()))[naod++]) 
 	    AliAODCaloCluster(id,nLabel,labels,energy, pos, NULL,ttype,0);
 	  
+	  //       printf("Reader PID ESD: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f,pi %0.2f, k %0.2f, p %0.2f, k0 %0.2f, n %0.2f, mu %0.2f \n",
+	  // 	     pid[AliPID::kPhoton],pid[AliPID::kPi0],pid[AliPID::kElectron],pid[AliPID::kEleCon],pid[AliPID::kPion],
+	  // 	     pid[AliPID::kKaon],pid[AliPID::kProton], pid[AliPID::kKaon0],pid[AliPID::kNeutron], pid[AliPID::kMuon]);
 	  caloCluster->SetPIDFromESD(clus->GetPid());
 	  caloCluster->SetCaloCluster(clus->GetDistanceToBadChannel(), clus->GetClusterDisp(), 
 				      clus->GetM20(), clus->GetM02(),   
@@ -180,7 +181,7 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
 	  
 	  
 	  if(fDebug > 3 && momentum.E() > 0.2)
-	    printf("FillInputEMCAL():: Selected clusters Distance BC %2.2f, dispersion %2.2f, M20 %f, M02 %3.2f, NexMax %d, TOF %e\n",
+	    printf("AliCaloTrackESDReader::FillInputEMCAL() - Selected clusters Distance BC %2.2f, dispersion %2.2f, M20 %f, M02 %3.2f, NexMax %d, TOF %e\n",
 		   clus->GetDistanceToBadChannel(), clus->GetClusterDisp(),clus->GetM20(), clus->GetM02(),
 		   clus->GetNExMax(), clus->GetTOF());
 	  
@@ -189,9 +190,11 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
 	  caloCluster->SetCellsAmplitudeFraction(clus->GetCellsAmplitudeFraction());
 	  
 	  TArrayI* matchedT = 	clus->GetTracksMatched();
-	  if (matchedT && clus->GetTrackMatched() > 0) {	
+	  if (nTracks > 0 && matchedT && clus->GetTrackMatched() >= 0) {	
 	    for (Int_t im = 0; im < matchedT->GetSize(); im++) {
-	      caloCluster->AddTrackMatched((fInputEvent->GetTrack(im)));
+	      Int_t iESDtrack = matchedT->At(im);
+	      if(iESDtrack < nTracks && iESDtrack > -1)
+		caloCluster->AddTrackMatched((fInputEvent->GetTrack(iESDtrack)));
 	    }
 	  }
 	  //Fill reference array
@@ -205,7 +208,7 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
     AliAODCaloCluster * clus =  (AliAODCaloCluster*) (fOutputEvent->GetCaloClusters())->At(iclus);	
     fAODEMCAL->Add(clus);				
   }
-  if(fDebug > 1) printf("FillInputEMCAL():: aod entries %d\n", fAODEMCAL->GetEntriesFast());
+  if(fDebug > 1) printf("AliCaloTrackESDReader::FillInputEMCAL() - aod entries %d\n", fAODEMCAL->GetEntriesFast());
   
 }
 
@@ -217,28 +220,24 @@ void AliCaloTrackESDReader::FillInputPHOS() {
   Double_t v[3] ; //vertex ;
   GetVertex(v);
   
-  //Loop to select clusters in fidutial cut and fill container with aodClusters
-  Int_t naod = (fOutputEvent->GetCaloClusters())->GetEntriesFast();
   Float_t pos[3] ;
   Double_t * pid = new Double_t[AliPID::kSPECIESN];
-  
+  Int_t naod      = (fOutputEvent->GetCaloClusters())->GetEntriesFast();
+  Int_t nTracks   = fInputEvent->GetNumberOfTracks() ;
+
+  //Loop to select clusters in fidutial cut and fill container with aodClusters
   for (Int_t iclus = 0; iclus < ((AliESDEvent*)fInputEvent)->GetNumberOfCaloClusters(); iclus++) {
     AliESDCaloCluster * clus = 0;
     if ( (clus = ((AliESDEvent*)fInputEvent)->GetCaloCluster(iclus)) ) {
       if (clus->IsPHOS()){
 	TLorentzVector momentum ;
 	clus->GetMomentum(momentum, v);      
-	if(fDebug > 3 && momentum.E() > 0.1)printf("FillInputPHOS():: all clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+	if(fDebug > 3 && momentum.E() > 0.1)printf("AliCaloTrackESDReader::FillInputPHOS() - all clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	if(fPHOSPtMin < momentum.Pt() && fFidutialCut->IsInFidutialCut(momentum,"PHOS")){
 	  
-	  if(fDebug > 2 && momentum.E() > 0.1)printf("FillInputPHOS():: Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+	  if(fDebug > 2 && momentum.E() > 0.1)printf("AliCaloTrackESDReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
-	  
-	  pid=clus->GetPid();      
-	  // printf("Reader PID ESD: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f,pi %0.2f, k %0.2f, p %0.2f, k0 %0.2f, n %0.2f, mu %0.2f \n",
-	  // 	 pid[AliPID::kPhoton],pid[AliPID::kPi0],pid[AliPID::kElectron],pid[AliPID::kEleCon],pid[AliPID::kPion],
-	  // 	 pid[AliPID::kKaon],pid[AliPID::kProton], pid[AliPID::kKaon0],pid[AliPID::kNeutron], pid[AliPID::kMuon]);
 	  
 	  clus->GetPosition(pos) ;
 	  Int_t id = clus->GetID();
@@ -248,6 +247,10 @@ void AliCaloTrackESDReader::FillInputPHOS() {
 	  Float_t energy = clus->E();
 	  
 	  //Phos cluster type
+	  pid = clus->GetPid();
+	  // printf("Reader PID ESD: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f,pi %0.2f, k %0.2f, p %0.2f, k0 %0.2f, n %0.2f, mu %0.2f \n",
+	  // 	 pid[AliPID::kPhoton],pid[AliPID::kPi0],pid[AliPID::kElectron],pid[AliPID::kEleCon],pid[AliPID::kPion],
+	  // 	 pid[AliPID::kKaon],pid[AliPID::kProton], pid[AliPID::kKaon0],pid[AliPID::kNeutron], pid[AliPID::kMuon]);
 	  Char_t ttype= AliAODCluster::kPHOSNeutral;
 	  Float_t wNeutral = pid[AliPID::kNeutron]+ pid[AliPID::kKaon0]+pid[AliPID::kPhoton]+pid[AliPID::kPi0];
 	  Float_t wCharged = pid[AliPID::kMuon] + pid[AliPID::kElectron] + pid[AliPID::kEleCon]+ 
@@ -257,23 +260,28 @@ void AliCaloTrackESDReader::FillInputPHOS() {
 	  //Put new aod object in file in AOD calo clusters array
 	  AliAODCaloCluster *caloCluster = new((*(fOutputEvent->GetCaloClusters()))[naod++]) 
 	    AliAODCaloCluster(id,nLabel,labels,energy, pos, NULL, ttype, 0);
-	  caloCluster->SetPIDFromESD(clus->GetPid());   
+
+
+	  caloCluster->SetPIDFromESD(pid);   
 	  caloCluster->SetCaloCluster(clus->GetDistanceToBadChannel(), clus->GetClusterDisp(), 
 				      clus->GetM20(), clus->GetM02(),  
 				      clus->GetEmcCpvDistance(),  clus->GetNExMax()) ;
 	  
 	  if(fDebug > 3 && momentum.E() > 0.2)
-	    printf("FillInputPHOS():: Selected clusters Distance BC %2.2f, dispersion %2.2f, M20 %f, M02 %3.2f, EmcCpvDist %3.3f, NexMax %d, TOF %e\n",
+	    printf("AliCaloTrackESDReader::FillInputPHOS() - Selected clusters Distance BC %2.2f, dispersion %2.2f, M20 %f, M02 %3.2f, EmcCpvDist %3.3f, NexMax %d, TOF %e\n",
 		   clus->GetDistanceToBadChannel(), clus->GetClusterDisp(),clus->GetM20(), clus->GetM02(),
 		   clus->GetEmcCpvDistance(),  clus->GetNExMax(), clus->GetTOF());
 	  
 	  caloCluster->SetNCells(clus->GetNCells());
 	  caloCluster->SetCellsAbsId(clus->GetCellsAbsId());
 	  caloCluster->SetCellsAmplitudeFraction(clus->GetCellsAmplitudeFraction());
+
 	  TArrayI* matchedT = 	clus->GetTracksMatched();
-	  if (matchedT) {	
+	  if (nTracks > 0 && matchedT && clus->GetTrackMatched() >= 0) {	
 	    for (Int_t im = 0; im < matchedT->GetSize(); im++) {
-	      caloCluster->AddTrackMatched((fInputEvent->GetTrack(im)));
+	      Int_t iESDtrack = matchedT->At(im);
+	      if(iESDtrack < nTracks && iESDtrack > -1)
+		caloCluster->AddTrackMatched((fInputEvent->GetTrack(iESDtrack)));
 	    }
 	  }
 	}//Pt and Fidutial cut passed.
@@ -320,7 +328,7 @@ void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* a
   // Connect the data pointers
   
   if(strcmp(esd->GetName(),"AliESDEvent")){
-    printf("ABORT::Wrong reader, here only ESDs. Input name: %s != AliESDEvent \n",esd->GetName());
+    printf("AliCaloTrackESDReader::SetInputOutputMCEvent() - ABORT::Wrong reader, here only ESDs. Input name: %s != AliESDEvent \n",esd->GetName());
     abort();
   }
   

@@ -18,7 +18,6 @@ class TH2F;
 
 //---- Analysis system ----
 #include "AliAnaPartCorrBaseClass.h"
-class AliAODPWG4ParticleCorrelation ;
 
 class AliAnaParticleJetFinderCorrelation : public AliAnaPartCorrBaseClass {
        
@@ -38,13 +37,13 @@ class AliAnaParticleJetFinderCorrelation : public AliAnaPartCorrBaseClass {
   
   void Print(const Option_t * opt) const;
   
-  Float_t  GetConeSize() const {return fConeSize ; }
-  Float_t  GetPtThresholdInCone() const {return fPtThresholdInCone ; }	   
-  Double_t GetDeltaPhiMaxCut() const {return fDeltaPhiMaxCut ; }
-  Double_t GetDeltaPhiMinCut() const {return fDeltaPhiMinCut ; }
-  Double_t GetRatioMaxCut() const {return fRatioMaxCut ; }
-  Double_t GetRatioMinCut() const {return fRatioMinCut ; }  	   
-  Bool_t	 AreJetRefTracks() const {return fUseJetRefTracks ; }
+  Float_t  GetConeSize()          const { return fConeSize ; }
+  Float_t  GetPtThresholdInCone() const { return fPtThresholdInCone ; }	   
+  Double_t GetDeltaPhiMaxCut()    const { return fDeltaPhiMaxCut ; }
+  Double_t GetDeltaPhiMinCut()    const { return fDeltaPhiMinCut ; }
+  Double_t GetRatioMaxCut()       const { return fRatioMaxCut ; }
+  Double_t GetRatioMinCut()       const { return fRatioMinCut ; }  	   
+  Bool_t   AreJetRefTracks()      const { return fUseJetRefTracks ; }
   Bool_t   IsCorrelationMadeInHistoMaker() const {return fMakeCorrelationInHistoMaker ;} 
   
   void SetConeSize(Float_t cone) {fConeSize = cone; }
@@ -58,7 +57,7 @@ class AliAnaParticleJetFinderCorrelation : public AliAnaPartCorrBaseClass {
   
  private:
   
-  Int_t SelectJet(AliAODPWG4ParticleCorrelation * particle) const ;
+  Int_t SelectJet(AliAODPWG4Particle * particle) const ;
   
   void MakeAnalysisFillAOD() ;
   void MakeAnalysisFillHistograms() ;

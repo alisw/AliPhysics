@@ -220,10 +220,11 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       if(GetNeutralMesonSelection()->AreNeutralMesonSelectionHistosKept())
 	for(Int_t i = 0; i < nmsHistos->GetEntries(); i++) outputContainer->Add(nmsHistos->At(i)) ;
     }
-    
+	
   }//Correlation with neutral hadrons
   
   return outputContainer;
+
 }
 
 //____________________________________________________________________________
@@ -231,7 +232,10 @@ void AliAnaParticleHadronCorrelation::InitParameters()
 {
   
   //Initialize the parameters of the analysis.
-  SetInputAODName("photons");
+  SetInputAODName("PWG4Particle");
+  SetAODRefArrayName("Hadrons");  
+  AddToHistogramsName("AnaHadronCorr_");
+
   SetPtCutRange(2,300);
   fDeltaPhiMinCut = 1.5 ;
   fDeltaPhiMaxCut = 4.5 ;
@@ -246,9 +250,9 @@ void AliAnaParticleHadronCorrelation::Print(const Option_t * opt) const
   if(! opt)
     return;
   
-  Info("*** Print *** ", "%s %s", GetName(), GetTitle() ) ;
-  printf("pT Hadron       >    %2.2f\n", GetMinPt()) ; 
-  printf("pT Hadron       <    %2.2f\n", GetMaxPt()) ; 
+  printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
+  AliAnaPartCorrBaseClass::Print(" ");
+
   printf("Phi trigger particle-Hadron      <     %3.2f\n", fDeltaPhiMaxCut) ; 
   printf("Phi trigger particle-Hadron      >     %3.2f\n", fDeltaPhiMinCut) ;
   printf("Isolated Trigger?  %d\n", fSelectIsolated) ;
@@ -260,43 +264,45 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
   //Particle-Hadron Correlation Analysis, fill AODs
   
   if(!GetInputAODBranch()){
-    printf("ParticleHadronCorrelation::FillAOD: No input particles in AOD with name branch < %s >, ABORT \n",GetInputAODName().Data());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s >, ABORT \n",GetInputAODName().Data());
     abort();
   }
   if(GetDebug() > 1){
-    printf("Begin hadron correlation analysis, fill AODs \n");
-    printf("In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
-    printf("In CTS aod entries %d\n", GetAODCTS()->GetEntriesFast());
-    printf("In EMCAL aod entries %d\n", GetAODEMCAL()->GetEntriesFast());
-    printf("In PHOS aod entries %d\n", GetAODPHOS()->GetEntriesFast());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - Begin hadron correlation analysis, fill AODs \n");
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In CTS aod entries %d\n", GetAODCTS()->GetEntriesFast());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In EMCAL aod entries %d\n", GetAODEMCAL()->GetEntriesFast());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In PHOS aod entries %d\n", GetAODPHOS()->GetEntriesFast());
   }
   
   //Loop on stored AOD particles, trigger
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+		
     //Make correlation with charged hadrons
     if(GetReader()->IsCTSSwitchedOn() )
-      MakeChargedCorrelation(particle, (TSeqCollection*)GetAODCTS(),kFALSE);
+      MakeChargedCorrelation(particle, GetAODCTS(),kFALSE);
     
     //Make correlation with neutral pions
     //Trigger particle in PHOS, correlation with EMCAL
     if(particle->GetDetector()=="PHOS" && GetReader()->IsEMCALSwitchedOn() && GetAODEMCAL()->GetEntriesFast() > 0)
-      MakeNeutralCorrelation(particle,(TSeqCollection*)GetAODEMCAL(),kFALSE);
+      MakeNeutralCorrelation(particle, GetAODEMCAL(),kFALSE);
     //Trigger particle in EMCAL, correlation with PHOS
     else if(particle->GetDetector()=="EMCAL" && GetReader()->IsPHOSSwitchedOn() && GetAODPHOS()->GetEntriesFast() > 0)
-      MakeNeutralCorrelation(particle,(TSeqCollection*)GetAODPHOS(),kFALSE);
+      MakeNeutralCorrelation(particle, GetAODPHOS(),kFALSE);
     //Trigger particle in CTS, correlation with PHOS, EMCAL and CTS
     else if(particle->GetDetector()=="CTS" ){
       if(GetReader()->IsPHOSSwitchedOn() && GetAODPHOS()->GetEntriesFast() > 0) 
-	MakeNeutralCorrelation(particle,(TSeqCollection*)GetAODPHOS(),kFALSE);
+	MakeNeutralCorrelation(particle, GetAODPHOS(),kFALSE);
       if(GetReader()->IsEMCALSwitchedOn() && GetAODEMCAL()->GetEntriesFast() > 0) 
-	MakeNeutralCorrelation(particle,(TSeqCollection*)GetAODEMCAL(),kFALSE);
+	MakeNeutralCorrelation(particle, GetAODEMCAL(),kFALSE);
     }
-    
+  
+	
   }//Aod branch loop
   
-  if(GetDebug() > 1) printf("End hadron correlation analysis, fill AODs \n");
+  if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - End fill AODs \n");
   
 }
 
@@ -306,45 +312,48 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   //Particle-Hadron Correlation Analysis, fill histograms
   
   if(!GetInputAODBranch()){
-    printf("ParticleHadronCorrelation::FillHistos: No input particles in AOD with name branch < %s >, ABORT \n",GetInputAODName().Data());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - No input particles in AOD with name branch < %s >, ABORT \n",GetInputAODName().Data());
     abort();
   }
+	
   if(GetDebug() > 1){
-    printf("Begin hadron correlation analysis, fill histograms \n");
-    printf("In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Begin hadron correlation analysis, fill histograms \n");
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
   }
-  
+    
   //Loop on stored AOD particles
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   for(Int_t iaod = 0; iaod < naod ; iaod++){
-    AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-    
-    if(GetDebug() > 1){
-      printf("Particle %d, In Track Refs  entries %d\n", iaod, (particle->GetRefTracks())->GetEntriesFast());
-      printf("Particle %d, In Cluster Refs entries %d\n",iaod, (particle->GetRefClusters())->GetEntriesFast());
-    }
-    
-    if(OnlyIsolated() && !particle->IsIsolated()) continue;
-    
-    //Make correlation with charged hadrons
-    if((particle->GetRefTracks())->GetEntriesFast() > 0)
-      MakeChargedCorrelation(particle, (TSeqCollection*) (particle->GetRefTracks()),kTRUE);
-    
-    //Make correlation with neutral pions
-    if((particle->GetRefClusters())->GetEntriesFast() > 0)
-      MakeNeutralCorrelation(particle,  (TSeqCollection*) (particle->GetRefClusters()), kTRUE);
-    
+	  AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+		  
+	  //check if the particle is isolated or if we want to take the isolation into account
+	  if(OnlyIsolated() && !particle->IsIsolated()) continue;
+		  
+	  //Make correlation with charged hadrons
+	  TRefArray * reftracks   = particle->GetRefArray(GetAODRefArrayName()+"Tracks");
+	  if(reftracks){
+		  if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Particle %d, In Track Refs  entries %d\n", iaod, reftracks->GetEntriesFast());
+		  if(reftracks->GetEntriesFast() > 0) MakeChargedCorrelation(particle, reftracks,kTRUE);
+	  }
+		  
+	  //Make correlation with neutral pions
+	  TRefArray * refclusters = particle->GetRefArray(GetAODRefArrayName()+"Clusters");
+	  if(refclusters && refclusters->GetEntriesFast() > 0){
+		  if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Particle %d, In Cluster Refs entries %d\n",iaod, refclusters->GetEntriesFast());      
+		  if(refclusters->GetEntriesFast() > 0) MakeNeutralCorrelation(particle,refclusters, kTRUE);
+	  }
+	  
   }//Aod branch loop
   
-  if(GetDebug() > 1) printf("End hadron correlation analysis, fill histograms \n");
+  if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - End fill histograms \n");
   
 }
 
 //____________________________________________________________________________
-void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle, TSeqCollection* pl, const Bool_t bFillHisto)
+void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle, TRefArray* pl, const Bool_t bFillHisto)
 {  
   // Charged Hadron Correlation Analysis
-  if(GetDebug() > 1)printf("Make trigger particle - charged hadron correlation \n");
+  if(GetDebug() > 1)printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Make trigger particle - charged hadron correlation \n");
   
   Double_t ptTrig  = aodParticle->Pt();
   Double_t phiTrig = aodParticle->Phi();
@@ -355,6 +364,11 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   Double_t p[3];
   Bool_t   first=kTRUE;
   
+  TRefArray * reftracks    =0x0;
+  if(!bFillHisto) 
+    reftracks    = new TRefArray;
+  
+
   //Track loop, select tracks with good pt, phi and fill AODs or histograms
   for(Int_t ipr = 0;ipr < pl->GetEntries() ; ipr ++ ){
     AliAODTrack * track = (AliAODTrack *) (pl->At(ipr)) ;
@@ -375,7 +389,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     if(pt < GetMinPt() || pt > GetMaxPt()) continue ;
     
     if(GetDebug() > 2)
-      printf("charged hadron: pt %f, phi %f, phi trigger %f. Cuts:  delta phi min %2.2f,  max%2.2f, pT min %2.2f \n",
+      printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Charged hadron: pt %f, phi %f, phi trigger %f. Cuts:  delta phi min %2.2f,  max%2.2f, pT min %2.2f \n",
 	     pt,phi,phiTrig,fDeltaPhiMinCut, fDeltaPhiMaxCut, GetMinPt());
 
     if(bFillHisto){
@@ -387,7 +401,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
       fhDeltaPhiChargedPt->Fill(pt,phiTrig-phi);
       //Selection within angular range
       if(((phiTrig-phi)> fDeltaPhiMinCut) && ((phiTrig-phi)<fDeltaPhiMaxCut) ){
-	if(GetDebug() > 2 ) printf("Selected charge for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f ",pt,phi,eta);
+	if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Selected charge for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f \n",pt,phi,eta);
 	fhPtImbalanceCharged->Fill(ptTrig,rat);
       } 
     }
@@ -395,21 +409,27 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
       //Fill AODs
       
       if(first) {
-	new (aodParticle->GetRefTracks()) TRefArray(TProcessID::GetProcessWithUID(track)); 
+	new (reftracks) TRefArray(TProcessID::GetProcessWithUID(track)); 
 	first = kFALSE;
       }
-      
-      aodParticle->AddTrack(track);
+
+      reftracks->Add(track);
       
     }//aod particle loop
   }// track loop
 
+  //Fill AOD with reference tracks, if not filling histograms
+  if(!bFillHisto && reftracks->GetEntriesFast() > 0) {
+    reftracks->SetName(GetAODRefArrayName()+"Tracks");
+    aodParticle->AddRefArray(reftracks);
+  }
+
 }  
 //____________________________________________________________________________
-void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleCorrelation * aodParticle,TSeqCollection* pl, const Bool_t bFillHisto)  
+void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleCorrelation * aodParticle,TRefArray* pl, const Bool_t bFillHisto)  
 {  
   // Neutral Pion Correlation Analysis
-  if(GetDebug() > 1) printf("Make trigger particle - neutral hadron correlation \n");
+  if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelation() - Make trigger particle - neutral hadron correlation \n");
   
   Double_t pt = -100.;
   Double_t rat = -100.; 
@@ -424,8 +444,11 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Particle
   TLorentzVector gammaj;
   
   Double_t vertex[] = {0,0,0};
-
   if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
+  
+  TRefArray * refclusters    =0x0;
+  if(!bFillHisto) 
+    refclusters    = new TRefArray;
   
   //Cluster loop, select pairs with good pt, phi and fill AODs or histograms
   for(Int_t iclus = 0;iclus < pl->GetEntries() ; iclus ++ ){
@@ -437,7 +460,7 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Particle
       if(!SelectCluster(calo, vertex, gammai, pdg)) continue ;
       
       if(GetDebug() > 2)
-	printf("neutral cluster: pt %f, phi %f, phi trigger %f. Cuts:  delta phi min %2.2f,  max%2.2f, pT min %2.2f \n",
+	printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelation() - Neutral cluster: pt %f, phi %f, phi trigger %f. Cuts:  delta phi min %2.2f,  max%2.2f, pT min %2.2f \n",
 	       gammai.Pt(),gammai.Phi(),phiTrig,fDeltaPhiMinCut, fDeltaPhiMaxCut, GetMinPt());
       
       //2 gamma overlapped, found with PID
@@ -447,12 +470,12 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Particle
 	if(gammai.Pt() < GetMinPt() || gammai.Pt() > GetMaxPt()) continue ;
 	
 	if(first) {
-	  new (aodParticle->GetRefClusters()) TRefArray(TProcessID::GetProcessWithUID(calo)); 
+	  new (refclusters) TRefArray(TProcessID::GetProcessWithUID(calo)); 
 	  first = kFALSE;
 	}
 	
-	aodParticle->AddCluster(calo);
-	if(GetDebug() > 2) printf("Correlated with selected pi0 (pid): pt %f, phi %f",gammai.Pt(),gammai.Phi());
+	refclusters->Add(calo);
+	if(GetDebug() > 2) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelation() - Correlated with selected pi0 (pid): pt %f, phi %f\n",gammai.Pt(),gammai.Phi());
 	
       }// pdg = 111
       
@@ -474,7 +497,7 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Particle
 	    //Select good pair (aperture and invariant mass)
 	    if(GetNeutralMesonSelection()->SelectPair(gammai, gammaj)){
 	      
-	      if(GetDebug() > 2 ) printf("Neutral Hadron Correlation: AOD Selected gamma pair: pt %2.2f, phi %2.2f, eta %2.2f, M %2.3f",
+	      if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelation() - Neutral Hadron Correlation: AOD Selected gamma pair: pt %2.2f, phi %2.2f, eta %2.2f, M %2.3f\n",
 					 (gammai+gammaj).Pt(),(gammai+gammaj).Phi(),(gammai+gammaj).Eta(), (gammai+gammaj).M());
 	      Int_t labels[]={calo->GetLabel(0),calo2->GetLabel(0)};
 	      Float_t pid[]={0,0,0,0,0,0,1,0,0,0,0,0,0};//Pi0 weight 1
@@ -485,11 +508,12 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Particle
 	      GetReader()->GetAODEMCAL()->Add(caloCluster);
 	      
 	      if(first) {
-		new (aodParticle->GetRefClusters()) TRefArray(TProcessID::GetProcessWithUID(caloCluster)); 
+		new (refclusters) TRefArray(TProcessID::GetProcessWithUID(caloCluster)); 
 		first = kFALSE;
 	      }
-	      
-	      aodParticle->AddCluster(caloCluster);
+     
+	      refclusters->Add(calo);
+
 	    }//Pair selected
 	  }//if pair of gammas
 	}//2nd loop
@@ -506,7 +530,7 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Particle
       phi = gammai.Phi() ;
       eta = gammai.Eta() ;
       
-      if(GetDebug() > 2 ) printf("Neutral Hadron Correlation: Histograms selected gamma pair: pt %2.2f, phi %2.2f, eta %2.2f",pt,phi,eta);
+      if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelation() - Neutral Hadron Correlation: Histograms selected gamma pair: pt %2.2f, phi %2.2f, eta %2.2f\n",pt,phi,eta);
       
       fhEtaNeutral->Fill(ptTrig,eta);
       fhPhiNeutral->Fill(ptTrig,phi);
@@ -515,12 +539,17 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Particle
       fhDeltaPhiNeutralPt->Fill(pt,phiTrig-phi);
       //Selection within angular range
       if(((phiTrig-phi)> fDeltaPhiMinCut) && ((phiTrig-phi)<fDeltaPhiMaxCut) ){
-	if(GetDebug() > 2 ) printf("Selected neutral for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f ",pt,phi,eta);
+	if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelation() - Selected neutral for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f \n",pt,phi,eta);
 	fhPtImbalanceNeutral->Fill(ptTrig,rat);
       }    
     }//Fill histograms
   }//1st loop
   
+  //Fill AOD with reference tracks, if not filling histograms
+  if(!bFillHisto && refclusters->GetEntriesFast() > 0) {
+    refclusters->SetName(GetAODRefArrayName()+"Clusters");
+    aodParticle->AddRefArray(refclusters);
+  }
 }
 
 //____________________________________________________________________________
@@ -546,7 +575,7 @@ Bool_t  AliAnaParticleHadronCorrelation::SelectCluster(AliAODCaloCluster * calo,
      else
        pdg = GetCaloPID()->GetPdg(detector,mom,calo);//PID recalculated
      
-     if(GetDebug() > 1) printf("PDG of identified particle %d\n",pdg);
+     if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::SelectCluster() - PDG of identified particle %d\n",pdg);
      
      //If it does not pass pid, skip
      if(pdg != AliCaloPID::kPhoton || pdg != AliCaloPID::kPi0) {
@@ -564,7 +593,7 @@ Bool_t  AliAnaParticleHadronCorrelation::SelectCluster(AliAODCaloCluster * calo,
      if(! in ) { return kFALSE ;}
    }
    
-   if(GetDebug() > 1) printf("Correlation photon selection cuts passed: pT %3.2f, pdg %d\n",mom.Pt(), pdg);
+   if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::SelectCluster() - Correlation photon selection cuts passed: pT %3.2f, pdg %d\n",mom.Pt(), pdg);
    
    return kTRUE;
    

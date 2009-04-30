@@ -85,7 +85,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
   //Check origin of the candidates, good for PYTHIA
   
   if(!stack) {
-    printf("AliMCAnalysisUtils::CheckOrigin() - Stack is not available, check analysis settings in configuration file, STOP!!");
+    printf("AliMCAnalysisUtils::CheckOrigin() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
     abort();
   }
   //  printf("label %d, ntrack %d, nprim %d\n",label, stack->GetNtrack(), stack->GetNprimary());
@@ -205,9 +205,9 @@ TList * AliMCAnalysisUtils::GetJets(Int_t iEvent, AliStack * stack, AliGenEventH
     TParticle * parton1 =  stack->Particle(6);
     TParticle * parton2 =  stack->Particle(7);
     if(fDebug > 2){
-      printf("parton 6 : %s, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f \n",
+      printf("AliMCAnalysisUtils::GetJets() - parton 6 : %s, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f \n",
 	     parton1->GetName(),parton1->Pt(),parton1->Energy(),parton1->Phi()*TMath::RadToDeg(),parton1->Eta());
-      printf("parton 7 : %s, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f \n",
+      printf("AliMCAnalysisUtils::GetJets() - parton 7 : %s, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f \n",
 	     parton2->GetName(),parton2->Pt(),parton2->Energy(),parton2->Phi()*TMath::RadToDeg(),parton2->Eta());
 		}
 // 		//Trace the jet from the mother parton
@@ -253,8 +253,9 @@ TList * AliMCAnalysisUtils::GetJets(Int_t iEvent, AliStack * stack, AliGenEventH
       TParticle * jet =  new TParticle;
       AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) geh;
       nTriggerJets =  pygeh->NTriggerJets();
-      //if(fDebug > 1)
-      printf("PythiaEventHeader: Njets: %d\n",nTriggerJets);
+      if(fDebug > 1)
+         printf("AliMCAnalysisUtils::GetJets() - PythiaEventHeader: Njets: %d\n",nTriggerJets);
+		
       Int_t iparton = -1;
       for(Int_t i = 0; i< nTriggerJets; i++){
 	iparton=-1;
@@ -267,7 +268,7 @@ TList * AliMCAnalysisUtils::GetJets(Int_t iEvent, AliStack * stack, AliGenEventH
 	else  jet->SetFirstMother(6);
 	//jet->Print();
 	if(fDebug > 1)
-	  printf("PYTHIA Jet %d: mother %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f \n",
+	  printf("AliMCAnalysisUtils::GetJets() - PYTHIA Jet %d: mother %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f \n",
 		 i, jet->GetFirstMother(),jet->Pt(),jet->Energy(),jet->Phi()*TMath::RadToDeg(),jet->Eta());
 	fJetsList->Add(jet);			
       }
@@ -293,7 +294,7 @@ TList * AliMCAnalysisUtils::GetJets(Int_t iEvent, AliStack * stack, AliGenEventH
 	//tmp->Print();
 	//jet1->Print();
 	if(fDebug > 1)			
-	  printf("HERWIG Jet 1: mother %d, status %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f \n",
+	  printf("AliMCAnalysisUtils::GetJets() - HERWIG Jet 1: mother %d, status %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f \n",
 		 jet1->GetFirstMother(),jet1->GetStatusCode(),jet1->Pt(),jet1->Energy(),jet1->Phi()*TMath::RadToDeg(),jet1->Eta());
       }//not photon
       
@@ -314,11 +315,11 @@ TList * AliMCAnalysisUtils::GetJets(Int_t iEvent, AliStack * stack, AliGenEventH
 	fJetsList->Add(jet2);
 	//jet2->Print();
 	if(fDebug > 1)
-	  printf("HERWIG Jet 2: mother %d, status %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f \n",
+	  printf("AliMCAnalysisUtils::GetJets() - HERWIG Jet 2: mother %d, status %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f \n",
 		 jet2->GetFirstMother(),jet2->GetStatusCode(),jet2->Pt(),jet2->Energy(),jet2->Phi()*TMath::RadToDeg(),jet2->Eta());
-	Int_t first =  tmp->GetFirstDaughter();
-	Int_t last  =  tmp->GetLastDaughter();
-	printf("jet 2:  first daughter %d, last daughter %d, pdg %d\n",first, last, tmp->GetPdgCode());
+	//Int_t first =  tmp->GetFirstDaughter();
+	//Int_t last  =  tmp->GetLastDaughter();
+	//printf("jet 2:  first daughter %d, last daughter %d, pdg %d\n",first, last, tmp->GetPdgCode());
 				//	for(Int_t d = first ; d < last+1; d++){
 //						tmp = stack->Particle(d);
 //						if(i == tmp->GetFirstMother())

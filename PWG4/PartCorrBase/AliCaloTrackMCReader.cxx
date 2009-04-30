@@ -202,7 +202,7 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
     
     SetCaloClusterPID(pdg,calo) ;
     if(fDebug > 3 && momentum.Pt() > 0.2)
-      printf("Fill MC PHOS :: Selected tracks %s E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+      printf("AliCaloTrackMCReader::FillCalorimeters() - PHOS : Selected cluster %s E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 	     particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());			
     fAODPHOS->Add(calo);//reference the selected object to the list
   }
@@ -223,7 +223,7 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
     
     SetCaloClusterPID(pdg,calo) ;
     if(fDebug > 3 && momentum.Pt() > 0.2)
-      printf("Fill MC EMCAL :: Selected tracks %s E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+      printf("AliCaloTrackMCReader::FillCalorimeters() - EMCAL : Selected cluster %s E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 	     particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());	
     fAODEMCAL->Add(calo);//reference the selected object to the list
   }
@@ -259,7 +259,7 @@ void AliCaloTrackMCReader::FillInputEvent(Int_t iEntry){
 	if(fFillCTS){
 	  //Particles in CTS acceptance
 	  if(fDebug > 3 && momentum.Pt() > 0.2)
-	    printf("Fill MC CTS :: Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+	    printf("AliCaloTrackMCReader::FillInputEvent() - CTS : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 		   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	  
 	  x[0] = particle->Vx(); x[1] = particle->Vy(); x[2] = particle->Vz();
@@ -353,7 +353,7 @@ void AliCaloTrackMCReader::Print(const Option_t * opt) const
   if(! opt)
     return;
   
-  Info("**** Print **** ", "%s %s", GetName(), GetTitle() ) ;
+  printf("**** Print **** %s %s ****\n", GetName(), GetTitle() ) ;
   
   printf("Decay Pi0?          : %d\n", fDecayPi0) ;
   printf("Check Overlap in Calo?    : %d\n", fCheckOverlap) ;
