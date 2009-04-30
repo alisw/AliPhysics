@@ -17,6 +17,8 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt():
   fPtPhi(0),
   fEtaPhi(0),
   fEtaPt(0),
+  fEtaPhiW(0),
+  fEtaPtW(0),
   fMass(0.13957)
 {
   // Default constructor
@@ -25,6 +27,8 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt():
   fPtPhi = new TH2D("PtPhi", "Pt vs Phi",               100,  0.1, 2.0, 100, -TMath::Pi(), TMath::Pi());
   fEtaPhi = new TH2D("EtaPhi", "Pseudorapidity vs Phi", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi());
   fEtaPt = new TH2D("EtaPt", "Pseudorapidity vs Pt",    100, -1.0, 1.0, 100, 0.1, 2.0);
+  fEtaPhiW = new TH2D("EtaPhiW", "Pseudorapidity vs Phi chi2/N weighted", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi());
+  fEtaPtW = new TH2D("EtaPtW", "Pseudorapidity vs Pt chi2/N weighted",    100, -1.0, 1.0, 100, 0.1, 2.0);
 }
 
 AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, float aMass):
@@ -34,6 +38,8 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, 
   fPtPhi(0),
   fEtaPhi(0),
   fEtaPt(0),
+  fEtaPhiW(0),
+  fEtaPtW(0),
   fMass(aMass)
 {
   // Normal constructor
@@ -48,6 +54,10 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, 
   fEtaPhi = new TH2D(name, "Pseudorapidity vs Phi", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi());
   snprintf(name, 200, "EtaPt%s", aName);
   fEtaPt = new TH2D(name, "Pseudorapidity vs Pt",    100, -1.0, 1.0, 100, 0.1, 2.0);
+  snprintf(name, 200, "EtaPhiW%s", aName);
+  fEtaPhiW = new TH2D(name, "Pseudorapidity vs Phi chi2/N weighted", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi());
+  snprintf(name, 200, "EtaPtW%s", aName);
+  fEtaPtW = new TH2D(name, "Pseudorapidity vs Pt chi2/N weighted",    100, -1.0, 1.0, 100, 0.1, 2.0);
 }
 
 AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const AliFemtoCutMonitorParticleYPt &aCut):
@@ -57,6 +67,8 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const AliFemtoCutMo
   fPtPhi(0),
   fEtaPhi(0),
   fEtaPt(0),
+  fEtaPhiW(0),
+  fEtaPtW(0),
   fMass(0.13957)
 {
   // copy constructor
@@ -66,6 +78,8 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const AliFemtoCutMo
   fPtPhi = new TH2D(*aCut.fPtPhi);
   fEtaPhi = new TH2D(*aCut.fEtaPhi);
   fEtaPt = new TH2D(*aCut.fEtaPt);
+  fEtaPhiW = new TH2D(*aCut.fEtaPhiW);
+  fEtaPtW = new TH2D(*aCut.fEtaPtW);
   fMass = aCut.fMass; 
 }
 
@@ -77,6 +91,8 @@ AliFemtoCutMonitorParticleYPt::~AliFemtoCutMonitorParticleYPt()
   delete fPtPhi;
   delete fEtaPhi;
   delete fEtaPt;
+  delete fEtaPhiW;
+  delete fEtaPtW;
 }
 
 AliFemtoCutMonitorParticleYPt& AliFemtoCutMonitorParticleYPt::operator=(const AliFemtoCutMonitorParticleYPt& aCut)
@@ -95,6 +111,10 @@ AliFemtoCutMonitorParticleYPt& AliFemtoCutMonitorParticleYPt::operator=(const Al
   fEtaPhi = new TH2D(*aCut.fEtaPhi);
   if (fEtaPt) delete fEtaPt;
   fEtaPt = new TH2D(*aCut.fEtaPt);
+  if (fEtaPhiW) delete fEtaPhiW;
+  fEtaPhiW = new TH2D(*aCut.fEtaPhiW);
+  if (fEtaPtW) delete fEtaPtW;
+  fEtaPtW = new TH2D(*aCut.fEtaPtW);
   
   return *this;
 }
@@ -114,12 +134,19 @@ void AliFemtoCutMonitorParticleYPt::Fill(const AliFemtoTrack* aTrack)
   float tPt = ::sqrt((aTrack->P().x())*(aTrack->P().x())+(aTrack->P().y())*(aTrack->P().y()));
   float tEta = -TMath::Log(TMath::Tan(aTrack->P().theta()/2.0));
   float tPhi = aTrack->P().phi();
+  float chi2w;
+  if (aTrack->TPCncls() > 0)
+    chi2w = aTrack->TPCchi2()/aTrack->TPCncls();
+  else
+    chi2w = 6.0;
 
   fYPt->Fill(tRapidity, tPt);
   fYPhi->Fill(tRapidity, tPhi);
   fPtPhi->Fill(tPt, tPhi);
   fEtaPhi->Fill(tEta, tPhi);
   fEtaPt->Fill(tEta, tPt);
+  fEtaPhiW->Fill(tEta, tPhi, chi2w);
+  fEtaPtW->Fill(tEta, tPt, chi2w);
 }
 
 void AliFemtoCutMonitorParticleYPt::Write()
@@ -130,6 +157,8 @@ void AliFemtoCutMonitorParticleYPt::Write()
   fPtPhi->Write();
   fEtaPhi->Write();
   fEtaPt->Write();
+  fEtaPhiW->Write();
+  fEtaPtW->Write();
 }
 
 TList *AliFemtoCutMonitorParticleYPt::GetOutputList()
@@ -140,6 +169,8 @@ TList *AliFemtoCutMonitorParticleYPt::GetOutputList()
   tOutputList->Add(fPtPhi);
   tOutputList->Add(fEtaPhi);
   tOutputList->Add(fEtaPt);
+  tOutputList->Add(fEtaPhiW);
+  tOutputList->Add(fEtaPtW);
 
   return tOutputList;
 }
