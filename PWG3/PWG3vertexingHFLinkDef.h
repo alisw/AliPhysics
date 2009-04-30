@@ -16,6 +16,7 @@
 #pragma link C++ class AliAnalysisTaskSECompareHF+;
 #pragma link C++ class AliCFHeavyFlavourTask+;
 #pragma link C++ class AliCFHeavyFlavourTaskMultiVar+;
+#pragma link C++ class AliCFHeavyFlavourTaskMultiVarMultiStep+;
 #pragma link C++ class AliMultiDimVector+;
 #pragma link C++ class AliSignificanceCalculator+;
 #pragma link C++ class AliHFMassFitter+;
