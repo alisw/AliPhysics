@@ -50,9 +50,6 @@ class AliCFHeavyFlavourTask : public AliAnalysisTaskSE {
   AliCFManager* GetCFManager() const {return fCFManager;} // get corr manager
 
   void SetPDG(Int_t code) {fPDG = code; } // defines the PDG code of searched HF
-  Int_t IsMcVtx(AliAODRecoDecayHF2Prong* const vtx) const ; // checks if the AliAODRecoDecayHF2Prong can be associated to an MC particle, returns mother label
-  Int_t GetVtxLabel(Int_t* labels) const ; // returns label of vertex given the daughter labels
-
   
  protected:
   Int_t fPDG;         //  PDG code of searched V0's

@@ -56,8 +56,6 @@ class AliCFHeavyFlavourTaskMultiVar : public AliAnalysisTaskSE {
   AliCFManager * GetCFManager()                 {return fCFManager;} // get corr manager
 
   void     SetPDG(Int_t code) {fPDG = code; }     // defines the PDG code of searched HF
-  Int_t    IsMcVtx(AliAODRecoDecayHF2Prong* vtx); // checks if the AliAODv0 can be associated, returns mother label
-  Int_t    GetVtxLabel(Int_t* labels);            // returns label of vertex given the daughter labels
   Double_t CosThetaStar(AliAODMCParticle* mcPart, AliAODMCParticle* mcPartDaughter0, AliAODMCParticle* mcPartDaughter1) const;  // returns cos(ThetaStar) of the D0 decay
   Double_t CT(AliAODMCParticle* mcPart, AliAODMCParticle* mcPartDaughter0, AliAODMCParticle* mcPartDaughter1) const;            // returns cT of the D0 decay
   void     SetFillFromGenerated(Bool_t flag) {fFillFromGenerated = flag;}
@@ -72,10 +70,8 @@ class AliCFHeavyFlavourTaskMultiVar : public AliAnalysisTaskSE {
   Int_t fEvents;                //  n. of events
   Bool_t fFillFromGenerated;    //  flag to indicate whether data container should be filled 
                                 //  with generated values also for reconstructed particles
-  Int_t fSkipped;               //  n. of reco decays skipped after checking on the decay (MUST be D0->K+pi)
-
   
-  ClassDef(AliCFHeavyFlavourTaskMultiVar,0); // class for HF corrections as a function of many variables
+  ClassDef(AliCFHeavyFlavourTaskMultiVar,1); // class for HF corrections as a function of many variables
 };
 
 #endif
