@@ -70,10 +70,11 @@
 #include "TRD/qaRec/macros/AddTRDresolution.C"
 #include "TRD/qaRec/macros/AddTRDcheckPID.C"
 
+#include "../../PWG1/macros/AddPerformanceTask.C"
 #endif
 
 #include "macros/AliTRDperformanceTrain.h"
-#include "../../PWG1/macros/AddPerformanceTask.C"
+#include "../../PWG1/macros/AddPerformanceTask.h"
 
 
 Bool_t MEM = kFALSE;
