@@ -123,11 +123,12 @@ inline Bool_t AliTRDcluster::IsRPhiMethod(ETRDclusterStatus m) const
 //________________________________________________
 inline void AliTRDcluster::SetRPhiMethod(ETRDclusterStatus m)
 {
+  SetBit(kCOG,0);SetBit(kLUT,0);SetBit(kGAUS,0);
   switch(m){
   case kCOG: SetBit(kCOG); break;
   case kLUT: SetBit(kLUT); break;
   case kGAUS: SetBit(kGAUS); break;
-  default: break;
+  default: SetBit(kLUT); break;
   }
 }
 
