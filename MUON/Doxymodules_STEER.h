@@ -11,7 +11,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERBaseLinkDef.h 30912 2009-02-06 18:04:37Z hristov
+// From STEERBaseLinkDef.h 31877 2009-04-07 23:54:19Z morsch
 
     enum  AliLog::EType_t {};
  
@@ -22,6 +22,8 @@
     class AliVHeader {};
     class AliVEventHandler {};
     class AliVEventPool {};
+
+    class AliMixedEvent {};
 
     class AliPID {};
     class AliLog {};
@@ -46,6 +48,7 @@
     class AliGenHijingEventHeader {};
     class AliCollisionGeometry {};
     class AliGenDPMjetEventHeader {};
+    class AliGenGeVSimEventHeader {};
     class AliStack {};
     class AliMCEventHandler {};
     class AliInputEventHandler {};
@@ -70,6 +73,8 @@
     class AliTimeStamp {};
     class AliTriggerScalers {};
     class AliTriggerScalersRecord {};
+    
+    class AliExternalTrackParam {};
 
 /** @} */
 
@@ -78,7 +83,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERLinkDef.h 30912 2009-02-06 18:04:37Z hristov
+// From STEERLinkDef.h 31150 2009-02-21 22:04:32Z schutz
 
     enum VertexSmear_t {};
     enum VertexSource_t {};
@@ -144,6 +149,7 @@
     class AliAlignObj {};
     class AliAlignObjParams {};
     class AliAlignObjMatrix {};
+    class AliMisAligner {};
 
     class AliTrackFitter {};
     class AliTrackFitterRieman {};
@@ -231,7 +237,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From ESDLinkDef.h 30522 2009-01-05 14:06:19Z belikov
+// From ESDLinkDef.h 31714 2009-03-28 08:15:12Z morsch
 
     enum   AliESDEvent::ESDListIndex {};
 
@@ -267,7 +273,6 @@
     class  AliKFVertex {};
 
     class  AliKalmanTrack {};
-    class  AliExternalTrackParam {};
     class  AliNeutralTrackParam {};
     class  AliVertexerTracks {};
     class  AliStrLine {};
@@ -339,6 +344,7 @@
     class AliShuttleInterface {};
 
     class AliGRPDCS {};
+    class AliCDBHandler {};
 
     class  TTreeDataElement {};
     class  TTreeStream {};
@@ -377,6 +383,7 @@
     class AliAODv0 {};
     class AliAODcascade {};
     class AliAODHandler {};
+    class AliAODExtension {};
     class AliAODInputHandler {};
     class AliMultiAODInputHandler {};
     class AliAODTracklets {};
