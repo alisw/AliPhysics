@@ -32,7 +32,7 @@ public:
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & g) ;//cpy assignment
   virtual ~AliAnaParticleIsolation() ; //virtual dtor
   
-  Bool_t CheckInvMass(const Int_t icalo,const AliAODPWG4ParticleCorrelation * ph) const ;
+  Bool_t CheckInvMass(const Int_t icalo,const AliAODPWG4Particle * ph) const ;
   
   TList *  GetCreateOutputObjects();
   

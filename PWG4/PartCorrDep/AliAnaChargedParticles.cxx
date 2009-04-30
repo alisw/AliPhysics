@@ -128,69 +128,70 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   
   if(IsDataMC()){
     
-    fhPtPion  = new TH1F ("hPtChargedPion","p_T distribution from #pi", nptbins,ptmin,ptmax); 
+    fhPtPion  = new TH1F ("hPtMCPion","p_T distribution from #pi", nptbins,ptmin,ptmax); 
     fhPtPion->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtPion);
     
-    fhPhiPion  = new TH2F ("hPhiChargedPion","#phi distribution from #pi",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+    fhPhiPion  = new TH2F ("hPhiMCPion","#phi distribution from #pi",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
     fhPhiPion->SetXTitle("#phi (rad)");
     outputContainer->Add(fhPhiPion);
     
-    fhEtaPion  = new TH2F ("hEtaChargedPion","#eta distribution from #pi",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
+    fhEtaPion  = new TH2F ("hEtaMCPion","#eta distribution from #pi",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
     fhEtaPion->SetXTitle("#eta ");
     outputContainer->Add(fhEtaPion);
     
-    fhPtProton  = new TH1F ("hPtChargedProton","p_T distribution from proton", nptbins,ptmin,ptmax); 
+    fhPtProton  = new TH1F ("hPtMCProton","p_T distribution from proton", nptbins,ptmin,ptmax); 
     fhPtProton->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtProton);
     
-    fhPhiProton  = new TH2F ("hPhiChargedProton","#phi distribution from proton",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+    fhPhiProton  = new TH2F ("hPhiMCProton","#phi distribution from proton",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
     fhPhiProton->SetXTitle("#phi (rad)");
     outputContainer->Add(fhPhiProton);
     
-    fhEtaProton  = new TH2F ("hEtaChargedProton","#eta distribution from proton",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
+    fhEtaProton  = new TH2F ("hEtaMCProton","#eta distribution from proton",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
     fhEtaProton->SetXTitle("#eta ");
     outputContainer->Add(fhEtaProton);
     
-    fhPtKaon  = new TH1F ("hPtChargedKaon","p_T distribution from kaon", nptbins,ptmin,ptmax); 
+    fhPtKaon  = new TH1F ("hPtMCKaon","p_T distribution from kaon", nptbins,ptmin,ptmax); 
     fhPtKaon->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtKaon);
     
-    fhPhiKaon  = new TH2F ("hPhiChargedKaon","#phi distribution from kaon",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+    fhPhiKaon  = new TH2F ("hPhiMCKaon","#phi distribution from kaon",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
     fhPhiKaon->SetXTitle("#phi (rad)");
     outputContainer->Add(fhPhiKaon);
     
-    fhEtaKaon  = new TH2F ("hEtaChargedKaon","#eta distribution from kaon",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
+    fhEtaKaon  = new TH2F ("hEtaMCKaon","#eta distribution from kaon",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
     fhEtaKaon->SetXTitle("#eta ");
     outputContainer->Add(fhEtaKaon);
     
-    
-    fhPtElectron  = new TH1F ("hPtChargedElectron","p_T distribution from electron", nptbins,ptmin,ptmax); 
+    fhPtElectron  = new TH1F ("hPtMCElectron","p_T distribution from electron", nptbins,ptmin,ptmax); 
     fhPtElectron->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtElectron);
     
-    fhPhiElectron  = new TH2F ("hPhiChargedElectron","#phi distribution from electron",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+    fhPhiElectron  = new TH2F ("hPhiMCElectron","#phi distribution from electron",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
     fhPhiElectron->SetXTitle("#phi (rad)");
     outputContainer->Add(fhPhiElectron);
     
-    fhEtaElectron  = new TH2F ("hEtaChargedElectron","#eta distribution from electron",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
+    fhEtaElectron  = new TH2F ("hEtaMCElectron","#eta distribution from electron",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
     fhEtaElectron->SetXTitle("#eta ");
     outputContainer->Add(fhEtaElectron);
     
-    fhPtUnknown  = new TH1F ("hPtChargedUnknown","p_T distribution from unknown", nptbins,ptmin,ptmax); 
+    fhPtUnknown  = new TH1F ("hPtMCUnknown","p_T distribution from unknown", nptbins,ptmin,ptmax); 
     fhPtUnknown->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtUnknown);
     
-    fhPhiUnknown  = new TH2F ("hPhiChargedUnknown","#phi distribution from unknown",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+    fhPhiUnknown  = new TH2F ("hPhiMCUnknown","#phi distribution from unknown",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
     fhPhiUnknown->SetXTitle("#phi (rad)");
     outputContainer->Add(fhPhiUnknown);
     
-    fhEtaUnknown  = new TH2F ("hEtaChargedUnknown","#eta distribution from unknown",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
+    fhEtaUnknown  = new TH2F ("hEtaMCUnknown","#eta distribution from unknown",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
     fhEtaUnknown->SetXTitle("#eta ");
     outputContainer->Add(fhEtaUnknown);
     
   }
+  
   return outputContainer;
+
 }
 
 //__________________________________________________
@@ -198,7 +199,10 @@ void AliAnaChargedParticles::InitParameters()
 { 
   //Initialize the parameters of the analysis.
   SetOutputAODClassName("AliAODPWG4Particle");
-  SetOutputAODName("Charged");
+  SetOutputAODName("PWG4Particle");
+
+  AddToHistogramsName("AnaCharged_");
+
   fPdg = -1; //Select all tracks 
   
 }
@@ -210,6 +214,9 @@ void AliAnaChargedParticles::Print(const Option_t * opt) const
   if(! opt)
     return;
   
+  printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
+  AliAnaPartCorrBaseClass::Print(" ");	
+	
   printf("Min Pt = %3.2f\n", GetMinPt());
   printf("Max Pt = %3.2f\n", GetMaxPt());
   printf("Select clusters with pdg %d \n",fPdg);
@@ -222,7 +229,7 @@ void AliAnaChargedParticles::Init()
   //Init
   //Do some checks
   if(!GetReader()->IsCTSSwitchedOn()){
-    printf("!!ABORT: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!\n");
+    printf("AliAnaChargedParticles::Init() - !!ABORT: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!\n");
     abort();
   }
   
@@ -237,7 +244,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   
   //Some prints
   if(GetDebug() > 0)
-    printf("AliAnaChargedParticles : in CTS aod entries %d\n", ntracks);
+    printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
   
   //Fill AODParticle with CTS aods
   TVector3 p3;
@@ -251,7 +258,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     
     //Acceptance selection
     Bool_t in =  GetFidutialCut()->IsInFidutialCut(mom,"CTS") ;
-    if(GetDebug() > 1) printf("track pt %2.2f, phi %2.2f, in fidutial cut %d\n",p3.Pt(), p3.Phi(), in);
+    if(GetDebug() > 1) printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, in fidutial cut %d\n",p3.Pt(), p3.Phi(), in);
     if(p3.Pt() > GetMinPt() && in) {
       //Keep only particles identified with fPdg
       //Selection not done for the moment
@@ -266,7 +273,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   }//loop
   
   if(GetDebug() > 0) 	
-    printf("AliAnaChargedParticles: final aod branch entries %d\n", GetOutputAODBranch()->GetEntriesFast());   
+    printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - Final aod branch entries %d\n", GetOutputAODBranch()->GetEntriesFast());   
 } 
 
 //__________________________________________________________________
@@ -276,7 +283,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
   
   //Loop on stored AODParticles
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
-  if(GetDebug() > 0) printf("AliAnaChargedParticles::histo aod branch entries %d\n", naod);
+  if(GetDebug() > 0) printf("AliAnaChargedParticles::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4Particle* tr =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     

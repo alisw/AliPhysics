@@ -83,8 +83,9 @@ AliAODPWG4Particle::~AliAODPWG4Particle()
 //______________________________________________________________________________
 AliAODPWG4Particle::AliAODPWG4Particle(const AliAODPWG4Particle& part) :
   AliVParticle(part),
-  fMomentum(0), fPdg(part.fPdg), fTag(part.fTag), fLabel(part.fLabel), fCaloLabel(), fTrackLabel(),
-  fDetector(part.fDetector),fDisp(part.fDisp), fTof(part.fTof), fCharged(part.fCharged),  fBadDist(part.fBadDist)
+  fMomentum(0), fPdg(part.fPdg), fTag(part.fTag), fLabel(part.fLabel), 
+  fCaloLabel(), fTrackLabel(), fDetector(part.fDetector),fDisp(part.fDisp), 
+  fTof(part.fTof), fCharged(part.fCharged),  fBadDist(part.fBadDist)
     
 {
   // Copy constructor
@@ -102,20 +103,21 @@ AliAODPWG4Particle& AliAODPWG4Particle::operator=(const AliAODPWG4Particle& part
   // Assignment operator
   if(this!=&part) {
     
-    fPdg = part.fPdg;
-    fTag = part.fTag;
+    fPdg   = part.fPdg;
+    fTag   = part.fTag;
     fLabel = part.fLabel;
+	
     fCaloLabel [0] = part.fCaloLabel[0];
     fCaloLabel [1] = part.fCaloLabel[1];
     fTrackLabel[0] = part.fTrackLabel[0];
     fTrackLabel[1] = part.fTrackLabel[1];
-    fDetector =part.fDetector;
-    
-    fDisp = part.fDisp; 
-    fTof = part.fTof; 
-    fCharged = part.fCharged; 
-    fBadDist=part.fBadDist;
-    
+	
+    fDetector = part.fDetector;
+    fDisp     = part.fDisp; 
+    fTof      = part.fTof; 
+    fCharged  = part.fCharged; 
+    fBadDist  = part.fBadDist;
+
     if (fMomentum ) delete fMomentum;	
     fMomentum = new TLorentzVector(*part.fMomentum);
   }
@@ -150,15 +152,17 @@ void AliAODPWG4Particle::Print(Option_t* /*option*/) const
 {
   // Print information of all data members
   printf("Particle 4-vector:\n");
-  printf("     E  = %13.3f\n", E() );
-  printf("     Px = %13.3f\n", Px());
-  printf("     Py = %13.3f\n", Py());
+  printf("     E  = %13.3f", E() );
+  printf("     Px = %13.3f", Px());
+  printf("     Py = %13.3f", Py());
   printf("     Pz = %13.3f\n", Pz());
-  printf("TOF bit        : %d\n",fTof);
-  printf("Charged bit    : %d\n",fCharged);
-  printf("Dispersion bit : %d\n",fDisp);
-  printf("pdg : %d\n",fPdg);
-  printf("tag : %d\n",fTag);  
-  printf("Trigger Detector : %s\n",fDetector.Data());
+  printf("PID bits :\n");
+  printf("     TOF        : %d",fTof);
+  printf("     Charged    : %d",fCharged);
+  printf("     Dispersion : %d\n",fDisp);
+  printf("PDG       : %d\n",fPdg);
+  printf("Tag       : %d\n",fTag);    
+  printf("Dist. to bad channel : %d\n",fBadDist);  
+  printf("Detector  : %s\n",fDetector.Data());
   
 }

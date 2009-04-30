@@ -27,8 +27,8 @@
 
 // --- ROOT system ---
 #include "TClonesArray.h"
-class TString ;
 #include "TList.h"
+#include "TH1.h"
 //#include "Riostream.h"
 
 //---- AliRoot system ---- 
@@ -144,16 +144,28 @@ TList *AliAnaPartCorrMaker::GetOutputContainer()
     printf("AliAnaPartCorrMaker::GetOutputContainer() - Analysis job list not initialized\n");
     abort();
   }
+
+  char newname[128];
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
     AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
     if(fMakeHisto){// Analysis with histograms as output on
       //Fill container with appropriate histograms			
       TList * templist =  ana -> GetCreateOutputObjects(); 
-      for(Int_t i = 0; i < templist->GetEntries(); i++)
+      for(Int_t i = 0; i < templist->GetEntries(); i++){
+
+	//Add only  to the histogram name the name of the task
+	if(   strcmp((templist->At(i))->ClassName(),"TObjString")   ) {
+	  sprintf(newname,"%s%s", (ana->GetAddedHistogramsStringToName()).Data(), (templist->At(i))->GetName());  
+	  ((TH1*) templist->At(i))->SetName(newname);
+	}
+	//Add histogram to general container
 	fOutputContainer->Add(templist->At(i)) ;
+      }
     }// Analysis with histograms as output on
   }//Loop on analysis defined
+  
   return fOutputContainer;
+
 }
 
 //________________________________________________________________________

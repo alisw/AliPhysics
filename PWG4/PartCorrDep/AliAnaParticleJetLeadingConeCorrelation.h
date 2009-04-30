@@ -24,7 +24,6 @@ class AliAODTrack;
 class AliAODCaloCluster;
 class AliCaloTrackReader;
 class AliNeutralMesonSelection;
-class AliAODPWG4ParticleCorrelation ;
 
 #include "AliAnaPartCorrBaseClass.h"
 

@@ -22,7 +22,6 @@ class TList ;
 
 // --- ANALYSIS system ---
 #include "AliAnaPartCorrBaseClass.h"
-class AliAODPWG4ParticleCorrelation ;
 
 class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
 

@@ -356,15 +356,15 @@ AliAnaParticleJetLeadingConeCorrelation::~AliAnaParticleJetLeadingConeCorrelatio
 Double_t AliAnaParticleJetLeadingConeCorrelation::CalculateJetRatioLimit(const Double_t ptg, const Double_t *par, const Double_t *x) const {
   //Calculate the ratio of the jet and trigger particle limit for the selection
   //WARNING: need to check what it does
-  //Info("CalculateLimit","x1 %f, x2%f",x[0],x[1]);
+  //printf("CalculateLimit: x1 %f, x2%f\n",x[0],x[1]);
   Double_t ePP = par[0] + par[1] * ptg ;
   Double_t sPP = par[2] + par[3] * ptg ;
   Double_t f   = x[0]   + x[1]   * ptg ;
   Double_t ePbPb = ePP + par[4] ;
   Double_t sPbPb = TMath::Sqrt(sPP*sPP+ par[5]*par[5]) ;
   Double_t rat = (ePbPb - sPbPb * f) / ptg ;
-  //Info("CalculateLimit","ePP %f, sPP %f, f %f", ePP, sPP, f);
-  //Info("CalculateLimit","ePbPb %f, sPbPb %f, rat %f", ePbPb, sPbPb, rat);
+  //printf("CalculateLimit: ePP %f, sPP %f, f %f\n", ePP, sPP, f);
+  //printf("CalculateLimit: ePbPb %f, sPbPb %f, rat %f\n", ePbPb, sPbPb, rat);
   return rat ;
 }
 
@@ -404,8 +404,8 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
   
   //Construct fragmentation function
   TRefArray * pl = new TRefArray;
-  if(type == "Jet") pl = particle->GetRefTracks();
-  else if(type == "Bkg") pl = particle->GetRefBackgroundTracks();
+  if(type == "Jet") pl = particle->GetRefArray(GetAODRefArrayName()+"Tracks");
+  else if(type == "Bkg") particle->GetRefArray(GetAODRefArrayName()+"TracksBkg");
 
   //Different pt cut for jet particles in different collisions systems
   //Only needed when jet is recalculated from AODs
@@ -779,13 +779,13 @@ TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
   
   if(GetDebug()>2){
     printf("AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects() - All histograms names : \n");
-    
     for(Int_t i  = 0 ;  i<  fOutCont->GetEntries(); i++)
       printf("Histo i %d name %s",i,((fOutCont->At(i))->GetName()));
     //cout<< (fOutCont->At(i))->GetName()<<endl;
   }
   
   return fOutCont;
+
 }
 
 //____________________________________________________________________________
@@ -963,8 +963,10 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleC
 void AliAnaParticleJetLeadingConeCorrelation::InitParameters()
 {
   //Initialize the parameters of the analysis.
-  
-  SetInputAODName("photons");
+  SetInputAODName("PWG4Particle");
+  SetAODRefArrayName("JetLeadingCone");    
+  AddToHistogramsName("AnaJetLCCorr_");
+
   fJetsOnlyInCTS      = kFALSE ;
   fPbPb               = kFALSE ;
   fReMakeJet          = kFALSE ;
@@ -1127,7 +1129,7 @@ Bool_t AliAnaParticleJetLeadingConeCorrelation::IsJetSelected(const Double_t ptT
     Double_t min = CalculateJetRatioLimit(ptTrig, par, xmin);
     Double_t max = CalculateJetRatioLimit(ptTrig, par, xmax);
     
-    if(GetDebug() > 3)printf("Jet selection?  : Limits min %f, max %f,  pt_jet %f,  pt_gamma %f, pt_jet / pt_gamma %f",min,max,ptjet,ptTrig,rat);
+    if(GetDebug() > 3)printf("AliAnaParticleJetLeadingConeCorrelation::IsJetSelected() - Jet selection?  : Limits min %f, max %f,  pt_jet %f,  pt_gamma %f, pt_jet / pt_gamma %f\n",min,max,ptjet,ptTrig,rat);
     
     if(( min < rat ) && ( max > ptjet/rat))
       return kTRUE;
@@ -1146,7 +1148,7 @@ Bool_t AliAnaParticleJetLeadingConeCorrelation::IsJetSelected(const Double_t ptT
   }// fSelect = 2
   //###############################################################
   else{
-    AliError("Jet selection option larger than 2, DON'T SELECT JETS");
+    printf("AliAnaParticleJetLeadingConeCorrelation::IsJetSelected() - Jet selection option larger than 2, DON'T SELECT JETS\n");
     return kFALSE ;
   }
   
@@ -1190,9 +1192,9 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillAOD()
   }	
   if(GetDebug() > 1){
     printf("AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillAOD() - Begin jet leading cone  correlation analysis, fill AODs \n");
-    printf("In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
-    printf("In CTS aod entries %d\n", GetAODCTS()->GetEntriesFast());
-    printf("In EMCAL aod entries %d\n", GetAODEMCAL()->GetEntriesFast());
+    printf("AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillAOD() - In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
+    printf("AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillAOD() - In CTS aod entries %d\n", GetAODCTS()->GetEntriesFast());
+    printf("AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillAOD() - In EMCAL aod entries %d\n", GetAODEMCAL()->GetEntriesFast());
   }
   
   TLorentzVector pLeading(0,0,0,0); //It will contain the kinematics of the found leading particle
@@ -1200,15 +1202,15 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillAOD()
   //Loop on stored AOD particles, trigger
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   for(Int_t iaod = 0; iaod < naod ; iaod++){
-    AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-    
+    AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));		  
+	
     //Search leading particles in CTS and EMCAL 
     if(GetLeadingParticle(particle, pLeading)){
       
       //Construct the jet around the leading, Fill AOD jet particle list, select jet 
       //and fill AOD with jet and background     
       MakeAODJet(particle, pLeading);
-      
+	       
     }//Leading found
   }//AOD trigger particle loop
   
@@ -1229,9 +1231,9 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms()
   }
   if(GetDebug() > 1){
     printf("AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms() - Begin jet leading cone  correlation analysis, fill histograms \n");
-    printf("In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
-    printf("In CTS aod entries %d\n", GetAODCTS()->GetEntriesFast());
-    printf("In EMCAL aod entries %d\n", GetAODEMCAL()->GetEntriesFast());
+    printf("AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms() - In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
+    printf("AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms() - In CTS aod entries %d\n", GetAODCTS()->GetEntriesFast());
+    printf("AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms() - In EMCAL aod entries %d\n", GetAODEMCAL()->GetEntriesFast());
   }
   
   TLorentzVector pLeading(0,0,0,0) ;
@@ -1345,6 +1347,10 @@ const {
   
   //Fill jet with tracks
   TVector3 p3;
+  //Initialize reference arrays that will contain jet and background tracks
+  TRefArray * reftracks  = new TRefArray;
+  TRefArray * reftracksbkg  = new TRefArray;
+
   for(Int_t ipr = 0;ipr < (GetAODCTS())->GetEntriesFast() ; ipr ++ ){
     AliAODTrack* track = (AliAODTrack *)((GetAODCTS())->At(ipr)) ;
     p3.SetXYZ(track->Px(),track->Py(),track->Pz());
@@ -1353,11 +1359,12 @@ const {
     if(IsParticleInJetCone(p3.Eta(), p3.Phi(), etal, phil)){
 
       if(first) {
-	new (particle->GetRefTracks()) TRefArray(TProcessID::GetProcessWithUID(track)); 
+	new (reftracks) TRefArray(TProcessID::GetProcessWithUID(track)); 
 	first = kFALSE;
       }
       
-      particle->AddTrack(track); 
+      reftracks->Add(track); 
+
       if(p3.Pt() > ptcut ){
 	lv.SetVect(p3);
 	jet+=lv;
@@ -1367,11 +1374,12 @@ const {
     else if(IsParticleInJetCone(p3.Eta(),p3.Phi(),etal, phiTrig)) { 
 
       if(firstbkg) {
-	new (particle->GetRefBackgroundTracks()) TRefArray(TProcessID::GetProcessWithUID(track)); 
+	new (reftracksbkg) TRefArray(TProcessID::GetProcessWithUID(track)); 
 	firstbkg = kFALSE;
       }
       
-      particle->AddBackgroundTrack(track); 
+      reftracksbkg->Add(track); 
+
       if(p3.Pt() > ptcut ){
 	lv.SetVect(p3);
 	bkg+=lv;
@@ -1379,7 +1387,20 @@ const {
     }
   }//Track loop
   
+  //Add referenced tracks to AOD
+  if(reftracks->GetEntriesFast() > 0 ){
+	  reftracks->SetName(GetAODRefArrayName()+"Tracks");
+	  particle->AddRefArray(reftracks);
+  }
+  if(reftracksbkg->GetEntriesFast() > 0 ){
+	  reftracksbkg->SetName(GetAODRefArrayName()+"TracksBkg");
+	  particle->AddRefArray(reftracksbkg);
+  }
+	
   //Add neutral particles to jet
+  //Initialize reference arrays that will contain jet and background tracks
+  TRefArray * refclusters  = new TRefArray;
+  TRefArray * refclustersbkg  = new TRefArray;
   if(!fJetsOnlyInCTS && GetAODEMCAL()){
     
     Double_t vertex[] = {0,0,0};
@@ -1387,6 +1408,7 @@ const {
 
     first = kTRUE;
     firstbkg = kTRUE;
+    
     for(Int_t iclus = 0;iclus < (GetAODEMCAL())->GetEntriesFast() ; iclus ++ ){
       AliAODCaloCluster * calo = (AliAODCaloCluster *) (GetAODEMCAL()->At(iclus)) ;
       
@@ -1396,29 +1418,41 @@ const {
       calo->GetMomentum(lv,vertex);
       //Particles in jet 
       if(IsParticleInJetCone(lv.Eta(),lv.Phi(), etal, phil)){
-
+	
 	if(first) {
-	  new (particle->GetRefClusters()) TRefArray(TProcessID::GetProcessWithUID(calo)); 
+	  new (refclusters) TRefArray(TProcessID::GetProcessWithUID(calo)); 
 	  first = kFALSE;
 	}
-
-	particle->AddCluster(calo); 
+	
+	refclusters->Add(calo); 
+	
 	if(lv.Pt() > ptcut )  jet+=lv;
       }
       //Background around (phi_gamma-pi, eta_leading)
       else if(IsParticleInJetCone(lv.Eta(),lv.Phi(),etal, phiTrig)){
-
+	
 	if(firstbkg) {
-	  new (particle->GetRefBackgroundClusters()) TRefArray(TProcessID::GetProcessWithUID(calo)); 
+	  new (refclustersbkg) TRefArray(TProcessID::GetProcessWithUID(calo)); 
 	  firstbkg = kFALSE;
 	}
 	
-	particle->AddBackgroundCluster(calo); 
+	refclustersbkg->Add(calo); 
+	
 	if(lv.Pt() > ptcut )  bkg+=lv;
       }
     }//cluster loop
   }//jets with neutral particles
   
+  //Add referenced clusters to AOD
+  if(refclusters->GetEntriesFast() > 0 ){
+	  refclusters->SetName(GetAODRefArrayName()+"Clusters");
+	  particle->AddRefArray(refclusters);
+  }
+  if(refclustersbkg->GetEntriesFast() > 0 ){
+      refclustersbkg->SetName(GetAODRefArrayName()+"ClustersBkg");
+      particle->AddRefArray(refclustersbkg);
+  }
+	
   //If there is any jet found, select after some criteria and 
   //and fill AOD with corresponding TLorentzVector kinematics
   if(IsJetSelected(particle->Pt(), jet.Pt())) {
@@ -1443,53 +1477,65 @@ const {
   Double_t phil = pLeading.Phi();
   Double_t etal = pLeading.Eta();
   
+  TRefArray * refclusters = particle->GetRefArray(GetAODRefArrayName()+"Clusters");
+  TRefArray * reftracks   = particle->GetRefArray(GetAODRefArrayName()+"Tracks");
+  TRefArray * refclustersbkg = particle->GetRefArray(GetAODRefArrayName()+"ClustersBkg");
+  TRefArray * reftracksbkg   = particle->GetRefArray(GetAODRefArrayName()+"TracksBkg");
+
   //Different pt cut for jet particles in different collisions systems
   Float_t ptcut = fJetPtThreshold;
   if(fPbPb && !fSeveralConeAndPtCuts && ptTrig > fPtTriggerSelectionCut)  ptcut = fJetPtThresPbPb ;
-
+  
   //Fill jet with tracks
   //Particles in jet   
   TVector3 p3;
-  for(Int_t ipr = 0;ipr < (particle->GetRefTracks())->GetEntriesFast() ; ipr ++ ){
-    AliAODTrack* track = (AliAODTrack *) ((particle-> GetRefTracks())->At(ipr)) ;
-    p3.SetXYZ(track->Px(),track->Py(),track->Pz());
-    if(p3.Pt() > ptcut && IsParticleInJetCone(p3.Eta(), p3.Phi(), etal, phil) ){
-      lv.SetVect(p3);
-      jet+=lv;
-    }
-  }//jet Track loop
-  
+  if(reftracks){
+    for(Int_t ipr = 0;ipr < reftracks->GetEntriesFast() ; ipr ++ ){
+      AliAODTrack* track = (AliAODTrack *) reftracks->At(ipr) ;
+      p3.SetXYZ(track->Px(),track->Py(),track->Pz());
+      if(p3.Pt() > ptcut && IsParticleInJetCone(p3.Eta(), p3.Phi(), etal, phil) ){
+	lv.SetVect(p3);
+	jet+=lv;
+      }
+    }//jet Track loop
+  }
   //Particles in background   
-  for(Int_t ipr = 0;ipr < (particle-> GetRefBackgroundTracks())->GetEntriesFast() ; ipr ++ ){
-    AliAODTrack* track = (AliAODTrack *) ((particle->GetRefBackgroundTracks())->At(ipr)) ;
-    p3.SetXYZ(track->Px(),track->Py(),track->Pz());
-    if(p3.Pt() > ptcut && IsParticleInJetCone(p3.Eta(),p3.Phi(),etal, phiTrig) ) {  
-      lv.SetVect(p3);
-      bkg+=lv;   
-    }
-  }//background Track loop
-  
+  if(reftracksbkg){
+     for(Int_t ipr = 0;ipr < reftracksbkg->GetEntriesFast() ; ipr ++ ){
+         AliAODTrack* track = (AliAODTrack *) reftracksbkg->At(ipr) ;
+         p3.SetXYZ(track->Px(),track->Py(),track->Pz());
+         if(p3.Pt() > ptcut && IsParticleInJetCone(p3.Eta(),p3.Phi(),etal, phiTrig) ) {  
+		    lv.SetVect(p3);
+            bkg+=lv;   
+         }
+     }//background Track loop
+  }
+	
   //Add neutral particles to jet
-  if(!fJetsOnlyInCTS && (particle->GetRefClusters())){
+  if(!fJetsOnlyInCTS && refclusters){
     
     Double_t vertex[] = {0,0,0};
     if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
     
     //Loop on jet particles
-    for(Int_t iclus = 0;iclus < (particle->GetRefClusters())->GetEntriesFast() ; iclus ++ ){
-      AliAODCaloCluster * calo = (AliAODCaloCluster *) ((particle->GetRefClusters())->At(iclus)) ;
-      calo->GetMomentum(lv,vertex); 
-      if(lv.Pt() > ptcut && IsParticleInJetCone(lv.Eta(),lv.Phi(), etal, phil)) jet+=lv;   
-    }//jet cluster loop
-    
-     //Loop on background particles
-    for(Int_t iclus = 0;iclus < (particle->GetRefClusters())->GetEntriesFast() ; iclus ++ ){
-      AliAODCaloCluster * calo = (AliAODCaloCluster *) ((particle->GetRefClusters())->At(iclus)) ;
-      calo->GetMomentum(lv,vertex);
-      if( lv.Pt() > ptcut &&IsParticleInJetCone(lv.Eta(),lv.Phi(),etal, phiTrig)) bkg+=lv;
-    }//background cluster loop 
+	if(refclusters){
+       for(Int_t iclus = 0;iclus < refclusters->GetEntriesFast() ; iclus ++ ){
+           AliAODCaloCluster * calo = (AliAODCaloCluster *) refclusters->At(iclus) ;
+           calo->GetMomentum(lv,vertex); 
+           if(lv.Pt() > ptcut && IsParticleInJetCone(lv.Eta(),lv.Phi(), etal, phil)) jet+=lv;   
+       }//jet cluster loop
+    }
+	  
+	//Loop on background particles
+	if(refclustersbkg){
+	   for(Int_t iclus = 0;iclus < refclustersbkg->GetEntriesFast() ; iclus ++ ){
+           AliAODCaloCluster * calo = (AliAODCaloCluster *) refclustersbkg->At(iclus) ;
+           calo->GetMomentum(lv,vertex);
+           if( lv.Pt() > ptcut && IsParticleInJetCone(lv.Eta(),lv.Phi(),etal, phiTrig)) bkg+=lv;
+       }//background cluster loop 
+     }
   }//clusters in jet
-  
+
   //If there is any jet found, leave jet and bkg as they are, 
   //if not set them to 0.
   if(!IsJetSelected(particle->Pt(), jet.Pt())) {
@@ -1497,7 +1543,7 @@ const {
     bkg.SetPxPyPzE(0.,0.,0.,0.);
   }
   else
-    if(GetDebug()>1) printf("AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD()::Found jet: Trigger  pt %f, Jet pt %f, Bkg pt %f\n",ptTrig,jet.Pt(),bkg.Pt());
+    if(GetDebug()>1) printf("AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD() - Found jet: Trigger  pt %f, Jet pt %f, Bkg pt %f\n",ptTrig,jet.Pt(),bkg.Pt());
   
 }
 
@@ -1507,34 +1553,34 @@ Bool_t  AliAnaParticleJetLeadingConeCorrelation::SelectCluster(AliAODCaloCluster
   
   //Skip matched clusters with tracks
   if(calo->GetNTracksMatched() > 0) return kFALSE;
-   
-   //Check PID
-   calo->GetMomentum(mom,vertex);//Assume that come from vertex in straight line
-   pdg = AliCaloPID::kPhoton;   
-   if(IsCaloPIDOn()){
-     //Get most probable PID, 2 options check PID weights (in MC this option is mandatory)
-     //or redo PID, recommended option for EMCal.
-     if(!IsCaloPIDRecalculationOn() || GetReader()->GetDataType() == AliCaloTrackReader::kMC )
-       pdg = GetCaloPID()->GetPdg("EMCAL",calo->PID(),mom.E());//PID with weights
-     else
-       pdg = GetCaloPID()->GetPdg("EMCAL",mom,calo);//PID recalculated
-     
-     if(GetDebug() > 1) printf("AliAnaParticleJetLeadingConeCorrelation::SelectCluster() - PDG of identified particle %d\n",pdg);
-     //If it does not pass pid, skip
-     if(pdg != AliCaloPID::kPhoton || pdg != AliCaloPID::kPi0) 
-       return kFALSE ;
-   }//CaloPID
-   
+  
+  //Check PID
+  calo->GetMomentum(mom,vertex);//Assume that come from vertex in straight line
+  pdg = AliCaloPID::kPhoton;   
+  if(IsCaloPIDOn()){
+    //Get most probable PID, 2 options check PID weights (in MC this option is mandatory)
+    //or redo PID, recommended option for EMCal.
+    if(!IsCaloPIDRecalculationOn() || GetReader()->GetDataType() == AliCaloTrackReader::kMC )
+      pdg = GetCaloPID()->GetPdg("EMCAL",calo->PID(),mom.E());//PID with weights
+    else
+      pdg = GetCaloPID()->GetPdg("EMCAL",mom,calo);//PID recalculated
+    
+    if(GetDebug() > 1) printf("AliAnaParticleJetLeadingConeCorrelation::SelectCluster() - PDG of identified particle %d\n",pdg);
+    //If it does not pass pid, skip
+    if(pdg != AliCaloPID::kPhoton || pdg != AliCaloPID::kPi0) 
+      return kFALSE ;
+  }//CaloPID
+  
    //Check acceptance selection
-   if(IsFidutialCutOn()){
-     Bool_t in = GetFidutialCut()->IsInFidutialCut(mom,"EMCAL") ;
-     if(! in ) return kFALSE ;
-   }
-   
-   if(GetDebug() > 1) printf("AliAnaParticleJetLeadingConeCorrelation::SelectCluster() - Cluster selection cuts passed: pT %3.2f, pdg %d\n",mom.Pt(), pdg);
-   
-   return kTRUE; 
-   
+  if(IsFidutialCutOn()){
+    Bool_t in = GetFidutialCut()->IsInFidutialCut(mom,"EMCAL") ;
+    if(! in ) return kFALSE ;
+  }
+  
+  if(GetDebug() > 1) printf("AliAnaParticleJetLeadingConeCorrelation::SelectCluster() - Cluster selection cuts passed: pT %3.2f, pdg %d\n",mom.Pt(), pdg);
+  
+  return kTRUE; 
+  
 }
 
 //__________________________________________________________________
@@ -1545,8 +1591,9 @@ void AliAnaParticleJetLeadingConeCorrelation::Print(const Option_t * opt) const
   if(! opt)
     return;
   
-  Info("Print", "%s %s", GetName(), GetTitle() ) ;
-  
+  printf("**** Print  %s %s ****\n", GetName(), GetTitle() ) ;
+  AliAnaPartCorrBaseClass::Print(" ");
+
   if(fJetsOnlyInCTS)printf("Jets reconstructed in CTS \n");
   else printf("Jets reconstructed in CTS+EMCAL \n");
 

@@ -30,6 +30,7 @@
 #include <TList.h>
 #include <TObjString.h>
 #include <TH2F.h>
+//#include <Riostream.h>
 
 // --- Analysis system --- 
 #include "AliAnaParticleIsolation.h" 
@@ -293,7 +294,7 @@ AliAnaParticleIsolation::~AliAnaParticleIsolation()
 }
 
 //_________________________________________________________________________
-Bool_t AliAnaParticleIsolation::CheckInvMass(const Int_t iaod, const AliAODPWG4ParticleCorrelation * part1) const
+Bool_t AliAnaParticleIsolation::CheckInvMass(const Int_t iaod, const AliAODPWG4Particle * part1) const
 {
   // Search if there is a companion decay photon to the candidate 
   // and discard it in such case
@@ -307,7 +308,7 @@ Bool_t AliAnaParticleIsolation::CheckInvMass(const Int_t iaod, const AliAODPWG4P
     mom2 = *(part2->Momentum());
     //Select good pair (good phi, pt cuts, aperture and invariant mass)
     if(GetNeutralMesonSelection()->SelectPair(mom1, mom2)){
-      if(GetDebug() > 1)printf("Selected gamma pair: pt %f, phi %f, eta%f",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
+      if(GetDebug() > 1)printf("AliAnaParticleIsolation::CheckInvMass() - Selected gamma pair: pt %f, phi %f, eta%f",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
       return kTRUE ;
     }
   }//loop
@@ -343,136 +344,136 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   if(!fMakeSeveralIC){
     
     fhConeSumPt  = new TH2F
-      ("hConePtSum","#Sigma p_{T}  in cone ",nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      ("hConePtSum","#Sigma p_{T} in isolation cone ",nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
     fhConeSumPt->SetYTitle("#Sigma p_{T}");
-    fhConeSumPt->SetXTitle("p_{T #gamma} (GeV/c)");
+    fhConeSumPt->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhConeSumPt) ;
     
     fhPtInCone  = new TH2F
-      ("hPtInCone","p_{T} in cone ",nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      ("hPtInCone","p_{T} in isolation cone ",nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
     fhPtInCone->SetYTitle("p_{T in cone} (GeV/c)");
-    fhPtInCone->SetXTitle("p_{T #gamma} (GeV/c)");
+    fhPtInCone->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtInCone) ;
     
-    fhPtIso  = new TH1F("hPtIso","Isolated Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
+    fhPtIso  = new TH1F("hPt","Isolated Number of particles",nptbins,ptmin,ptmax); 
     fhPtIso->SetYTitle("N");
-    fhPtIso->SetXTitle("p_{T #gamma}(GeV/c)");
+    fhPtIso->SetXTitle("p_{T}(GeV/c)");
     outputContainer->Add(fhPtIso) ; 
     
     fhPhiIso  = new TH2F
-      ("hPhiIso","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      ("hPhi","Isolated Number of particles",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
     fhPhiIso->SetYTitle("#phi");
-    fhPhiIso->SetXTitle("p_{T #gamma} (GeV/c)");
+    fhPhiIso->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPhiIso) ; 
     
     fhEtaIso  = new TH2F
-      ("hEtaIso","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEta","Isolated Number of particles",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
     fhEtaIso->SetYTitle("#eta");
-    fhEtaIso->SetXTitle("p_{T #gamma} (GeV/c)");
+    fhEtaIso->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhEtaIso) ;
     
     if(IsDataMC()){
       
-      fhPtIsoPrompt  = new TH1F("hPtIsoPrompt","Isolated Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
+      fhPtIsoPrompt  = new TH1F("hPtMCPrompt","Isolated Number of #gamma prompt",nptbins,ptmin,ptmax); 
       fhPtIsoPrompt->SetYTitle("N");
       fhPtIsoPrompt->SetXTitle("p_{T #gamma}(GeV/c)");
       outputContainer->Add(fhPtIsoPrompt) ; 
       
       fhPhiIsoPrompt  = new TH2F
-	("hPhiIsoPrompt","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+	("hPhiMCPrompt","Isolated Number of #gamma prompt",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
       fhPhiIsoPrompt->SetYTitle("#phi");
       fhPhiIsoPrompt->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhPhiIsoPrompt) ; 
       
       fhEtaIsoPrompt  = new TH2F
-	("hEtaIsoPrompt","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+	("hEtaMCPrompt","Isolated Number of #gamma prompt ",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
       fhEtaIsoPrompt->SetYTitle("#eta");
       fhEtaIsoPrompt->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhEtaIsoPrompt) ;
       
-      fhPtIsoFragmentation  = new TH1F("hPtIsoFragmentation","Isolated Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
+      fhPtIsoFragmentation  = new TH1F("hPtMCFragmentation","Isolated Number of #gamma",nptbins,ptmin,ptmax); 
       fhPtIsoFragmentation->SetYTitle("N");
       fhPtIsoFragmentation->SetXTitle("p_{T #gamma}(GeV/c)");
       outputContainer->Add(fhPtIsoFragmentation) ; 
       
       fhPhiIsoFragmentation  = new TH2F
-	("hPhiIsoFragmentation","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+	("hPhiMCFragmentation","Isolated Number of #gamma fragmentation",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
       fhPhiIsoFragmentation->SetYTitle("#phi");
       fhPhiIsoFragmentation->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhPhiIsoFragmentation) ; 
       
       fhEtaIsoFragmentation  = new TH2F
-	("hEtaIsoFragmentation","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+	("hEtaMCFragmentation","Isolated Number of #gamma fragmentation",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
       fhEtaIsoFragmentation->SetYTitle("#eta");
       fhEtaIsoFragmentation->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhEtaIsoFragmentation) ;
       
-      fhPtIsoPi0Decay  = new TH1F("hPtIsoPi0Decay","Isolated Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
+      fhPtIsoPi0Decay  = new TH1F("hPtMCPi0Decay","Isolated Number of #gamma from #pi^{0} decay",nptbins,ptmin,ptmax); 
       fhPtIsoPi0Decay->SetYTitle("N");
       fhPtIsoPi0Decay->SetXTitle("p_{T #gamma}(GeV/c)");
       outputContainer->Add(fhPtIsoPi0Decay) ; 
       
       fhPhiIsoPi0Decay  = new TH2F
-	("hPhiIsoPi0Decay","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+	("hPhiMCPi0Decay","Isolated Number of #gamma from #pi^{0} decay",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
       fhPhiIsoPi0Decay->SetYTitle("#phi");
       fhPhiIsoPi0Decay->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhPhiIsoPi0Decay) ; 
       
       fhEtaIsoPi0Decay  = new TH2F
-	("hEtaIsoPi0Decay","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+	("hEtaMCPi0Decay","Isolated Number of #gamma from #pi^{0} decay",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
       fhEtaIsoPi0Decay->SetYTitle("#eta");
       fhEtaIsoPi0Decay->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhEtaIsoPi0Decay) ;
       
-      fhPtIsoOtherDecay  = new TH1F("hPtIsoOtherDecay","Isolated Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
+      fhPtIsoOtherDecay  = new TH1F("hPtMCOtherDecay","Isolated Number of #gamma from non #pi^{0} decay",nptbins,ptmin,ptmax); 
       fhPtIsoOtherDecay->SetYTitle("N");
       fhPtIsoOtherDecay->SetXTitle("p_{T #gamma}(GeV/c)");
       outputContainer->Add(fhPtIsoOtherDecay) ; 
       
       fhPhiIsoOtherDecay  = new TH2F
-	("hPhiIsoOtherDecay","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+	("hPhiMCOtherDecay","Isolated Number of #gamma from non #pi^{0} decay",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
       fhPhiIsoOtherDecay->SetYTitle("#phi");
       fhPhiIsoOtherDecay->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhPhiIsoOtherDecay) ; 
       
       fhEtaIsoOtherDecay  = new TH2F
-	("hEtaIsoOtherDecay","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+	("hEtaMCOtherDecay","Isolated Number of #gamma non #pi^{0} decay",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
       fhEtaIsoOtherDecay->SetYTitle("#eta");
       fhEtaIsoOtherDecay->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhEtaIsoOtherDecay) ;
       
-      fhPtIsoConversion  = new TH1F("hPtIsoConversion","Isolated Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
+      fhPtIsoConversion  = new TH1F("hPtMCConversion","Isolated Number of #gamma converted",nptbins,ptmin,ptmax); 
       fhPtIsoConversion->SetYTitle("N");
       fhPtIsoConversion->SetXTitle("p_{T #gamma}(GeV/c)");
       outputContainer->Add(fhPtIsoConversion) ; 
       
       fhPhiIsoConversion  = new TH2F
-	("hPhiIsoConversion","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+	("hPhiMCConversion","Isolated Number of #gamma converted",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
       fhPhiIsoConversion->SetYTitle("#phi");
       fhPhiIsoConversion->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhPhiIsoConversion) ; 
       
       fhEtaIsoConversion  = new TH2F
-	("hEtaIsoConversion","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+	("hEtaMCConversion","Isolated Number of #gamma converted",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
       fhEtaIsoConversion->SetYTitle("#eta");
       fhEtaIsoConversion->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhEtaIsoConversion) ;
       
-      fhPtIsoUnknown  = new TH1F("hPtIsoUnknown","Isolated Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
+      fhPtIsoUnknown  = new TH1F("hPtMCUnknown","Isolated Number of non #gamma particles",nptbins,ptmin,ptmax); 
       fhPtIsoUnknown->SetYTitle("N");
-      fhPtIsoUnknown->SetXTitle("p_{T #gamma}(GeV/c)");
+      fhPtIsoUnknown->SetXTitle("p_{T}(GeV/c)");
       outputContainer->Add(fhPtIsoUnknown) ; 
       
       fhPhiIsoUnknown  = new TH2F
-	("hPhiIsoUnknown","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+	("hPhiMCUnknown","Isolated Number of non #gamma particles",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
       fhPhiIsoUnknown->SetYTitle("#phi");
-      fhPhiIsoUnknown->SetXTitle("p_{T #gamma} (GeV/c)");
+      fhPhiIsoUnknown->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhPhiIsoUnknown) ; 
       
       fhEtaIsoUnknown  = new TH2F
-	("hEtaIsoUnknown","Isolated #phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+	("hEtaMCUnknown","Isolated Number of non #gamma particles",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
       fhEtaIsoUnknown->SetYTitle("#eta");
-      fhEtaIsoUnknown->SetXTitle("p_{T #gamma} (GeV/c)");
+      fhEtaIsoUnknown->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhEtaIsoUnknown) ;
     }//Histos with MC
     
@@ -482,7 +483,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 		char name[128];
 		char title[128];
 		for(Int_t icone = 0; icone<fNCones; icone++){
-		  sprintf(name,"hPtSumIsolated_Cone_%d",icone);
+		  sprintf(name,"hPtSum_Cone_%d",icone);
 		  sprintf(title,"Candidate cone sum p_{T} for cone size %d vs candidate p_{T}",icone);
 		  fhPtSumIsolated[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
 		  fhPtSumIsolated[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
@@ -490,42 +491,42 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 		  outputContainer->Add(fhPtSumIsolated[icone]) ; 
 		  
 		  if(IsDataMC()){
-		    sprintf(name,"hPtSumIsolatedPrompt_Cone_%d",icone);
+		    sprintf(name,"hPtSumPrompt_Cone_%d",icone);
 		    sprintf(title,"Candidate Prompt cone sum p_{T} for cone size %d vs candidate p_{T}",icone);
 		    fhPtSumIsolatedPrompt[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
 		    fhPtSumIsolatedPrompt[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
 		    fhPtSumIsolatedPrompt[icone]->SetXTitle("p_{T} (GeV/c)");
 		    outputContainer->Add(fhPtSumIsolatedPrompt[icone]) ; 
 		    
-		    sprintf(name,"hPtSumIsolatedFragmentation_Cone_%d",icone);
+		    sprintf(name,"hPtSumFragmentation_Cone_%d",icone);
 		    sprintf(title,"Candidate Fragmentation cone sum p_{T} for cone size %d vs candidate p_{T}",icone);
 		    fhPtSumIsolatedFragmentation[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
 		    fhPtSumIsolatedFragmentation[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
 		    fhPtSumIsolatedFragmentation[icone]->SetXTitle("p_{T} (GeV/c)");
 		    outputContainer->Add(fhPtSumIsolatedFragmentation[icone]) ; 
 		    
-		    sprintf(name,"hPtSumIsolatedPi0Decay_Cone_%d",icone);
+		    sprintf(name,"hPtSumPi0Decay_Cone_%d",icone);
 		    sprintf(title,"Candidate Pi0Decay cone sum p_{T} for cone size %d vs candidate p_{T}",icone);
 		    fhPtSumIsolatedPi0Decay[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
 		    fhPtSumIsolatedPi0Decay[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
 		    fhPtSumIsolatedPi0Decay[icone]->SetXTitle("p_{T} (GeV/c)");
 		    outputContainer->Add(fhPtSumIsolatedPi0Decay[icone]) ; 
 		    
-		    sprintf(name,"hPtSumIsolatedOtherDecay_Cone_%d",icone);
+		    sprintf(name,"hPtSumOtherDecay_Cone_%d",icone);
 		    sprintf(title,"Candidate OtherDecay cone sum p_{T} for cone size %d vs candidate p_{T}",icone);
 		    fhPtSumIsolatedOtherDecay[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
 		    fhPtSumIsolatedOtherDecay[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
 		    fhPtSumIsolatedOtherDecay[icone]->SetXTitle("p_{T} (GeV/c)");
 		    outputContainer->Add(fhPtSumIsolatedOtherDecay[icone]) ; 
 		    
-		    sprintf(name,"hPtSumIsolatedConversion_Cone_%d",icone);
+		    sprintf(name,"hPtSumConversion_Cone_%d",icone);
 		    sprintf(title,"Candidate Conversion cone sum p_{T} for cone size %d vs candidate p_{T}",icone);
 		    fhPtSumIsolatedConversion[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
 		    fhPtSumIsolatedConversion[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
 		    fhPtSumIsolatedConversion[icone]->SetXTitle("p_{T} (GeV/c)");
 		    outputContainer->Add(fhPtSumIsolatedConversion[icone]) ; 
 		    
-		    sprintf(name,"hPtSumIsolatedUnknown_Cone_%d",icone);
+		    sprintf(name,"hPtSumUnknown_Cone_%d",icone);
 		    sprintf(title,"Candidate Unknown cone sum p_{T} for cone size %d vs candidate p_{T}",icone);
 		    fhPtSumIsolatedUnknown[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
 		    fhPtSumIsolatedUnknown[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
@@ -535,86 +536,86 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 		  }//Histos with MC
 		  
 		  for(Int_t ipt = 0; ipt<fNPtThresFrac;ipt++){ 
-		    sprintf(name,"hPtThresIsol_Cone_%d_Pt%d",icone,ipt);
+		    sprintf(name,"hPtThres_Cone_%d_Pt%d",icone,ipt);
 		    sprintf(title,"Isolated candidate p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		    fhPtThresIsolated[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		    fhPtThresIsolated[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		    outputContainer->Add(fhPtThresIsolated[icone][ipt]) ; 
 		    
-		    sprintf(name,"hPtFracIsol_Cone_%d_Pt%d",icone,ipt);
+		    sprintf(name,"hPtFrac_Cone_%d_Pt%d",icone,ipt);
 		    sprintf(title,"Isolated candidate p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		    fhPtFracIsolated[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		    fhPtFracIsolated[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		    outputContainer->Add(fhPtFracIsolated[icone][ipt]) ; 
 		    
 		    if(IsDataMC()){
-		      sprintf(name,"hPtThresIsolPrompt_Cone_%d_Pt%d",icone,ipt);
+		      sprintf(name,"hPtThresMCPrompt_Cone_%d_Pt%d",icone,ipt);
 		      sprintf(title,"Isolated candidate Prompt p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtThresIsolatedPrompt[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		      fhPtThresIsolatedPrompt[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		      outputContainer->Add(fhPtThresIsolatedPrompt[icone][ipt]) ; 
 		      
-		      sprintf(name,"hPtFracIsolPrompt_Cone_%d_Pt%d",icone,ipt);
+		      sprintf(name,"hPtFracMCPrompt_Cone_%d_Pt%d",icone,ipt);
 		      sprintf(title,"Isolated candidate Prompt p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtFracIsolatedPrompt[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		      fhPtFracIsolatedPrompt[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		      outputContainer->Add(fhPtFracIsolatedPrompt[icone][ipt]) ; 
 		      
-		      sprintf(name,"hPtThresIsolFragmentation_Cone_%d_Pt%d",icone,ipt);
+		      sprintf(name,"hPtThresMCFragmentation_Cone_%d_Pt%d",icone,ipt);
 		      sprintf(title,"Isolated candidate Fragmentation p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtThresIsolatedFragmentation[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		      fhPtThresIsolatedFragmentation[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		      outputContainer->Add(fhPtThresIsolatedFragmentation[icone][ipt]) ; 
 		      
-		      sprintf(name,"hPtFracIsolFragmentation_Cone_%d_Pt%d",icone,ipt);
+		      sprintf(name,"hPtFracMCFragmentation_Cone_%d_Pt%d",icone,ipt);
 		      sprintf(title,"Isolated candidate Fragmentation p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtFracIsolatedFragmentation[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		      fhPtFracIsolatedFragmentation[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		      outputContainer->Add(fhPtFracIsolatedFragmentation[icone][ipt]) ; 
 		      
-		      sprintf(name,"hPtThresIsolPi0Decay_Cone_%d_Pt%d",icone,ipt);
+		      sprintf(name,"hPtThresMCPi0Decay_Cone_%d_Pt%d",icone,ipt);
 		      sprintf(title,"Isolated candidate Pi0Decay p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtThresIsolatedPi0Decay[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		      fhPtThresIsolatedPi0Decay[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		      outputContainer->Add(fhPtThresIsolatedPi0Decay[icone][ipt]) ; 
 		      
-		      sprintf(name,"hPtFracIsolPi0Decay_Cone_%d_Pt%d",icone,ipt);
+		      sprintf(name,"hPtFracMCPi0Decay_Cone_%d_Pt%d",icone,ipt);
 		      sprintf(title,"Isolated candidate Pi0Decay p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtFracIsolatedPi0Decay[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		      fhPtFracIsolatedPi0Decay[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		      outputContainer->Add(fhPtFracIsolatedPi0Decay[icone][ipt]) ; 
 		      
-		      sprintf(name,"hPtThresIsolOtherDecay_Cone_%d_Pt%d",icone,ipt);
+		      sprintf(name,"hPtThresMCOtherDecay_Cone_%d_Pt%d",icone,ipt);
 		      sprintf(title,"Isolated candidate OtherDecay p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtThresIsolatedOtherDecay[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		      fhPtThresIsolatedOtherDecay[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		      outputContainer->Add(fhPtThresIsolatedOtherDecay[icone][ipt]) ; 
 		      
-		      sprintf(name,"hPtFracIsolOtherDecay_Cone_%d_Pt%d",icone,ipt);
+		      sprintf(name,"hPtFracMCOtherDecay_Cone_%d_Pt%d",icone,ipt);
 		      sprintf(title,"Isolated candidate OtherDecay p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtFracIsolatedOtherDecay[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		      fhPtFracIsolatedOtherDecay[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		      outputContainer->Add(fhPtFracIsolatedOtherDecay[icone][ipt]) ;
 		      
-		      sprintf(name,"hPtThresIsolConversion_Cone_%d_Pt%d",icone,ipt);
+		      sprintf(name,"hPtThresMCConversion_Cone_%d_Pt%d",icone,ipt);
 		      sprintf(title,"Isolated candidate Conversion p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtThresIsolatedConversion[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		      fhPtThresIsolatedConversion[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		      outputContainer->Add(fhPtThresIsolatedConversion[icone][ipt]) ; 
 		      
-		      sprintf(name,"hPtFracIsolConversion_Cone_%d_Pt%d",icone,ipt);
+		      sprintf(name,"hPtFracMCConversion_Cone_%d_Pt%d",icone,ipt);
 		      sprintf(title,"Isolated candidate Conversion p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtFracIsolatedConversion[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		      fhPtFracIsolatedConversion[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		      outputContainer->Add(fhPtFracIsolatedConversion[icone][ipt]) ;
 		      
-		      sprintf(name,"hPtThresIsolUnknown_Cone_%d_Pt%d",icone,ipt);
+		      sprintf(name,"hPtThresMCUnknown_Cone_%d_Pt%d",icone,ipt);
 		      sprintf(title,"Isolated candidate Unknown p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtThresIsolatedUnknown[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		      fhPtThresIsolatedUnknown[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		      outputContainer->Add(fhPtThresIsolatedUnknown[icone][ipt]) ; 
 		      
-		      sprintf(name,"hPtFracIsolUnknown_Cone_%d_Pt%d",icone,ipt);
+		      sprintf(name,"hPtFracMCUnknown_Cone_%d_Pt%d",icone,ipt);
 		      sprintf(title,"Isolated candidate Unknown p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtFracIsolatedUnknown[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
 		      fhPtFracIsolatedUnknown[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
@@ -633,7 +634,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     if(GetNeutralMesonSelection()->AreNeutralMesonSelectionHistosKept())
       for(Int_t i = 0; i < nmsHistos->GetEntries(); i++) outputContainer->Add(nmsHistos->At(i)) ;
   }
-  
   
   //Save parameters used for analysis
   TString parList ; //this will be list of parameters used for this analysis.
@@ -691,9 +691,10 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   //Search for the isolated photon in fCalorimeter with pt > GetMinPt()
   
   if(!GetInputAODBranch()){
-    printf("ParticleIsolation::FillAOD: No input particles in AOD with name branch < %s >, STOP \n",GetInputAODName().Data());
+    printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s >, STOP \n",GetInputAODName().Data());
     abort();
   }
+  
   Int_t n = 0, nfrac = 0;
   Bool_t isolated = kFALSE ; 
   Float_t coneptsum = 0 ;
@@ -712,24 +713,25 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   TLorentzVector mom ;
   
   for(Int_t iaod = 0; iaod < GetInputAODBranch()->GetEntriesFast(); iaod++){
-    AliAODPWG4ParticleCorrelation * aod =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+    AliAODPWG4ParticleCorrelation * aodinput =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
     //If too small or too large pt, skip
-    if(aod->Pt() < GetMinPt() || aod->Pt() > GetMaxPt() ) continue ; 
+    if(aodinput->Pt() < GetMinPt() || aodinput->Pt() > GetMaxPt() ) continue ; 
     
     //Check invariant mass, if pi0, skip.
     Bool_t decay = kFALSE ;
-    if(fMakeInvMass) decay = CheckInvMass(iaod,aod);
+    if(fMakeInvMass) decay = CheckInvMass(iaod,aodinput);
     if(decay) continue ;
-    
+
+    //After cuts, study isolation
     n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
-    GetIsolationCut()->MakeIsolationCut(GetAODCTS(),pl,
-					fVertex, kTRUE, aod, n,nfrac,coneptsum, isolated);
-    aod->SetIsolated(isolated);
+    GetIsolationCut()->MakeIsolationCut(GetAODCTS(),pl,fVertex, kTRUE, aodinput, GetAODRefArrayName(), n,nfrac,coneptsum, isolated);
+    aodinput->SetIsolated(isolated);
+
     
   }//loop
   
-  if(GetDebug() > 1) printf("End fill AODs ");  
+  if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() - End fill AODs ");  
   
 }
 
@@ -744,17 +746,18 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   
   //Loop on stored AOD 
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
-  if(GetDebug() > 0) printf("histo aod branch entries %d\n", naod);
+  if(GetDebug() > 0) printf(" AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Histo aod branch entries %d\n", naod);
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4ParticleCorrelation* aod =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-    Bool_t isolation = aod->IsIsolated();              
+
+    Bool_t isolation   = aod->IsIsolated();              
     Float_t ptcluster  = aod->Pt();
     Float_t phicluster = aod->Phi();
     Float_t etacluster = aod->Eta();
-    
-    //is pt too small skip it
-    if(ptcluster < GetMinPt() || ptcluster > GetMaxPt() ) continue ; 
-    
+    //Recover reference arrays with clusters and tracks
+	TRefArray * refclusters = aod->GetRefArray(GetAODRefArrayName()+"Clusters");
+    TRefArray * reftracks = aod->GetRefArray(GetAODRefArrayName()+"Tracks");
+  
     if(fMakeSeveralIC) {
       //Analysis of multiple IC at same time
       MakeSeveralICAnalysis(aod);
@@ -763,30 +766,32 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     else if(fReMakeIC){
       //In case a more strict IC is needed in the produced AOD
       n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
-      GetIsolationCut()->MakeIsolationCut(aod->GetRefIsolationConeTracks(), 
-					  aod->GetRefIsolationConeClusters(), 
-					  fVertex, kFALSE, aod,
-					  n,nfrac,coneptsum, isolated);
+      GetIsolationCut()->MakeIsolationCut(reftracks, refclusters, fVertex, kFALSE, aod, "", n,nfrac,coneptsum, isolated);
       fhConeSumPt->Fill(ptcluster,coneptsum);       
     }
     
     //Fill pt distribution of particles in cone
     //Tracks
     coneptsum=0;
-    for(Int_t itrack=0; itrack < (aod->GetRefIsolationConeTracks())->GetEntriesFast(); itrack++){
-      AliAODTrack* track = (AliAODTrack *)((aod->GetRefIsolationConeTracks())->At(itrack));
-      fhPtInCone->Fill(ptcluster,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
-      coneptsum+=track->Pt();
-    }
+	if(reftracks){  
+        for(Int_t itrack=0; itrack < reftracks->GetEntriesFast(); itrack++){
+            AliAODTrack* track = (AliAODTrack *) reftracks->At(itrack);
+            fhPtInCone->Fill(ptcluster,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
+            coneptsum+=track->Pt();
+        }
+	}
+	  
     //CaloClusters
-    TLorentzVector mom ;
-    for(Int_t icalo=0; icalo < (aod->GetRefIsolationConeClusters())->GetEntriesFast(); icalo++){
-      AliAODCaloCluster* calo = (AliAODCaloCluster *)((aod->GetRefIsolationConeClusters())->At(icalo));
-      calo->GetMomentum(mom,fVertex);//Assume that come from vertex in straight line
-      fhPtInCone->Fill(ptcluster, mom.Pt());
-      coneptsum+=mom.Pt();
+	if(refclusters){    
+		TLorentzVector mom ;
+        for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++){
+            AliAODCaloCluster* calo = (AliAODCaloCluster *) refclusters->At(icalo);
+            calo->GetMomentum(mom,fVertex);//Assume that come from vertex in straight line
+            fhPtInCone->Fill(ptcluster, mom.Pt());
+            coneptsum+=mom.Pt();
+       }
     }
-    
+	  
     if(!fReMakeIC) fhConeSumPt->Fill(ptcluster,coneptsum);
     
     if(isolation){    
@@ -845,8 +850,10 @@ void AliAnaParticleIsolation::InitParameters()
 {
   
   //Initialize the parameters of the analysis.
-  SetInputAODName("photons");
-  
+  SetInputAODName("PWG4Particle");
+  SetAODRefArrayName("IsolationCone");  
+  AddToHistogramsName("AnaIsolation_");
+
   fCalorimeter = "PHOS" ;
   fReMakeIC = kFALSE ;
   fMakeSeveralIC = kFALSE ;
@@ -891,15 +898,16 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   for(Int_t icone = 0; icone<fNCones; icone++){
     GetIsolationCut()->SetConeSize(fConeSizes[icone]);
     coneptsum = 0 ;
+
     //Loop on ptthresholds
     for(Int_t ipt = 0; ipt<fNPtThresFrac ;ipt++){
       n[icone][ipt]=0;
       nfrac[icone][ipt]=0;
       GetIsolationCut()->SetPtThreshold(fPtThresholds[ipt]);
-      GetIsolationCut()->MakeIsolationCut(ph->GetRefIsolationConeTracks(), 
-					  ph->GetRefIsolationConeClusters(), 
-					  fVertex, kFALSE, ph,
-					  n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
+      GetIsolationCut()->MakeIsolationCut(ph->GetRefArray(GetAODRefArrayName()+"Tracks"), 
+				  ph->GetRefArray(GetAODRefArrayName()+"Clusters"),
+				  fVertex, kFALSE, ph, "",n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
+
       //Normal ptThreshold cut
       if(n[icone][ipt] == 0) {
 	fhPtThresIsolated[icone][ipt]->Fill(ptC);
@@ -956,9 +964,7 @@ void AliAnaParticleIsolation::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  
-  printf("Min Gamma pT       =     %2.2f\n",  GetMinPt()) ;
-  printf("Max Gamma pT       =     %3.2f\n",  GetMaxPt()) ;
+  AliAnaPartCorrBaseClass::Print(" ");
   
   printf("ReMake Isolation          = %d \n",  fReMakeIC) ;
   printf("Make Several Isolation    = %d \n",  fMakeSeveralIC) ;

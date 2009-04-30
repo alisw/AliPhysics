@@ -13,13 +13,12 @@
 //ROOT
 class TClonesArray ;
 class TRefArray ;
-#include <TList.h>
+#include <TList.h> 
 #include <TObject.h>
 
 //Analysis
 class AliAODCaloCluster;
 class AliAODCaloCells;
-#include "AliAODPWG4Particle.h"
 class AliCaloTrackReader ;   
 class AliCaloPID ;
 class AliFidutialCut ;
@@ -29,7 +28,7 @@ class AliNeutralMesonSelection ;
 class AliStack ; 
 class AliHeader ; 
 class AliGenEventHeader ; 
-
+#include "AliAODPWG4ParticleCorrelation.h"
 
 class AliAnaPartCorrBaseClass : public TObject {
 	
@@ -41,14 +40,17 @@ public:
   virtual ~AliAnaPartCorrBaseClass() ; //virtual dtor
   
 //	virtual void AddAODCaloCluster(AliAODCaloCluster calo) ;
-  virtual void AddAODParticle(AliAODPWG4Particle pc) ;
-//
+  virtual void AddAODParticle(AliAODPWG4Particle part) ;
+  
 //	virtual void ConnectAODCaloClusters();
   virtual void ConnectAODPHOSCells();
   virtual void ConnectAODEMCALCells();
   virtual void ConnectInputOutputAODBranches();
   
   virtual TList * GetCreateOutputObjects() { return (new TList) ;}
+  
+  virtual void AddToHistogramsName(TString add) { fAddToHistogramsName = add; }  
+  virtual TString GetAddedHistogramsStringToName() {return fAddToHistogramsName ;}
   
   virtual void Init() {;}
   virtual void InitParameters() ;
@@ -79,6 +81,9 @@ public:
   virtual TString GetOutputAODClassName() const {return fOutputAODClassName;}
   virtual void SetOutputAODClassName(TString name) {fOutputAODClassName = name; }
   
+  virtual TString GetAODRefArrayName() const {return fAODRefArrayName;}
+  virtual void SetAODRefArrayName(TString name) {fAODRefArrayName = name; }
+
   virtual TClonesArray* GetInputAODBranch() const {return fInputAODBranch ;}
   virtual TClonesArray* GetOutputAODBranch() const {return fOutputAODBranch ;}
 
@@ -169,8 +174,7 @@ public:
   Int_t   GetHistoNEtaBins() const { return fHistoNEtaBins ; }
   Float_t GetHistoEtaMin()   const { return fHistoEtaMin ; }
   Float_t GetHistoEtaMax()   const { return fHistoEtaMax ; }
-  
-  
+    
  private:    
   
   Bool_t  fDataMC ;             // Flag to access MC data when using ESD or AOD     
@@ -189,6 +193,8 @@ public:
   Bool_t        fNewAOD ;            //  Flag, new aod branch added to the analysis or not.
   TString       fOutputAODName ;     //  Name of output AOD branch;
   TString       fOutputAODClassName; //  Type of aod objects to be stored in the TClonesArray (AliAODPWG4Particle, AliAODPWG4ParticleCorrelation ...)	
+  TString       fAODRefArrayName ;   // Name of ref array kept in a TList in AliAODParticleCorrelation with clusters or track references.
+  TString       fAddToHistogramsName;// Add this string to histograms name
   
   //TClonesArray* fAODCaloClusters ;  //! selected PHOS/EMCAL CaloClusters
   AliAODCaloCells * fAODCaloCells ; //! selected PHOS/EMCAL CaloCells

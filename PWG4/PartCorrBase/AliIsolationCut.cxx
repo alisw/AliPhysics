@@ -114,6 +114,7 @@ void AliIsolationCut::InitParameters()
 //__________________________________________________________________
 void  AliIsolationCut::MakeIsolationCut(TRefArray * plCTS,  TRefArray * plNe, Double_t * vertex, 
 					const Bool_t fillAOD, AliAODPWG4ParticleCorrelation  *pCandidate, 
+					const TString aodArrayRefName,
 					Int_t & n, Int_t & nfrac, Float_t &coneptsum,  Bool_t  &isolated) const
 {  
   //Search in cone around a candidate particle if it is isolated 
@@ -128,7 +129,16 @@ void  AliIsolationCut::MakeIsolationCut(TRefArray * plCTS,  TRefArray * plNe, Do
   n = 0 ;
   coneptsum = 0.; 
   isolated = kFALSE;
-  
+
+  //Initialize the array with refrences
+  TRefArray * refclusters = 0x0;
+  TRefArray * reftracks    =0x0;
+
+  if(fillAOD) {
+    refclusters = new TRefArray;
+    reftracks    = new TRefArray;
+  }
+
   //Check charged particles in cone.
   if(plCTS){
     TVector3 p3;
@@ -148,10 +158,10 @@ void  AliIsolationCut::MakeIsolationCut(TRefArray * plCTS,  TRefArray * plNe, Do
       if(rad < fConeSize){
 	if(fillAOD) {
 	  if(first) {
-	    new (pCandidate->GetRefIsolationConeTracks()) TRefArray(TProcessID::GetProcessWithUID(track)); 
+	    new (reftracks) TRefArray(TProcessID::GetProcessWithUID(track)); 
 	    first = kFALSE;
 	  }
-	  pCandidate->AddIsolationConeTrack(track);
+	  reftracks->Add(track);
 	}
 	//printf("charged in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
 	coneptsum+=pt;
@@ -184,10 +194,10 @@ void  AliIsolationCut::MakeIsolationCut(TRefArray * plCTS,  TRefArray * plNe, Do
       if(rad < fConeSize){
 	if(fillAOD) {
 	  if(first) {
-	    new (pCandidate->GetRefIsolationConeClusters()) TRefArray(TProcessID::GetProcessWithUID(calo)); 
+	    new (refclusters) TRefArray(TProcessID::GetProcessWithUID(calo)); 
 	    first = kFALSE;
 	  }
-	  pCandidate->AddIsolationConeCluster(calo);
+	  refclusters->Add(calo);
 	}
 	//printf("neutral in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
 	coneptsum+=pt;
@@ -199,6 +209,18 @@ void  AliIsolationCut::MakeIsolationCut(TRefArray * plCTS,  TRefArray * plNe, Do
   
   //printf("Isolation Cut: in cone with: pT>pTthres %d, pT > pTfrac*pTcandidate %d \n",n,nfrac);
   
+  //Add reference arrays to AOD when filling AODs only
+  if(fillAOD) {
+	if(refclusters->GetEntriesFast() > 0){ 
+		refclusters->SetName(aodArrayRefName+"Clusters");
+		pCandidate->AddRefArray(refclusters);
+	}
+	if(reftracks->GetEntriesFast()   > 0){
+		reftracks->SetName(aodArrayRefName+"Tracks");
+		pCandidate->AddRefArray(reftracks);
+	} 
+  }
+
   //Check isolation, depending on method.
   if( fICMethod == kPtThresIC){
     if(n==0) isolated = kTRUE ;

@@ -94,6 +94,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   ana->SwitchOffCaloPID();
   ana->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
+  ana->SwitchOnTrackMatchRejection(); //Only in use when OnCaloPID
   ana->SwitchOffFidutialCut();
   ana->SetOutputAODName("Photons");
   ana->SetOutputAODClassName("AliAODPWG4Particle");

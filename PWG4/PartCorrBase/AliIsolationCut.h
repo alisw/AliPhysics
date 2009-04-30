@@ -38,7 +38,7 @@ class AliIsolationCut : public TObject {
   TString    GetICParametersList() ; 
   
   void MakeIsolationCut(TRefArray * plCTS, TRefArray * plNe, Double_t * vertex, 
-			const Bool_t fillAOD, AliAODPWG4ParticleCorrelation  * pCandidate,
+			const Bool_t fillAOD, AliAODPWG4ParticleCorrelation  * pCandidate, const TString aodRefArrayName,
 			Int_t &n, Int_t & nfrac, Float_t &ptsum, Bool_t & isolated) const ;  
   
   void Print(const Option_t * opt)const;
