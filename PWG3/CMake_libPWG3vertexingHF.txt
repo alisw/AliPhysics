@@ -12,6 +12,7 @@ set(SRCS
        vertexingHF/AliAnalysisTaskSEBkgLikeSignJPSI.cxx
        vertexingHF/AliCFHeavyFlavourTask.cxx
        vertexingHF/AliCFHeavyFlavourTaskMultiVar.cxx
+       vertexingHF/AliCFHeavyFlavourTaskMultiVarMultiStep.cxx
        vertexingHF/AliMultiDimVector.cxx
        vertexingHF/AliSignificanceCalculator.cxx
        vertexingHF/AliHFMassFitter.cxx
