@@ -61,6 +61,8 @@ public:
   void SetTrkCutAlphaMin(Double_t value) {fTrkCutAlphaMin = value;}
   void SetTrkCutAlphaMax(Double_t value) {fTrkCutAlphaMax = value;}
   void SetTrkCutAngle(Double_t value)    {fTrkCutAngle = value;}
+  void SetTrkCutNITS(Double_t value)        {fTrkCutNITS = value;}
+  void SetTrkCutNTPC(Double_t value)        {fTrkCutNTPC = value;}
   /* track matching cut getters */
   Double_t GetTrkCutX() const        {return fTrkCutX;}
   Double_t GetTrkCutY() const        {return fTrkCutY;}
@@ -69,6 +71,8 @@ public:
   Double_t GetTrkCutAlphaMin() const {return fTrkCutAlphaMin;}
   Double_t GetTrkCutAlphaMax() const {return fTrkCutAlphaMax;}
   Double_t GetTrkCutAngle() const    {return fTrkCutAngle;}
+  Double_t GetTrkCutNITS() const        {return fTrkCutNITS;}
+  Double_t GetTrkCutNTPC() const        {return fTrkCutNTPC;}
 
   //Raw signal fitting (Jenn)
   /* raw signal setters */
@@ -114,7 +118,9 @@ private:
   Double_t  fTrkCutAlphaMin;       // cut on 'alpha' parameter for track matching (min)
   Double_t  fTrkCutAlphaMax;       // cut on 'alpha' parameter for track matching (min)
   Double_t  fTrkCutAngle;          // cut on relative angle between different track points for track matching
-
+  Double_t  fTrkCutNITS;              // Number of ITS hits for track matching
+  Double_t  fTrkCutNTPC;              // Number of TPC hits for track matching
+ 
   //Raw signal fitting parameters (Jenn)
   Double_t fHighLowGainFactor;     //gain factor to convert between high and low gain
   Int_t    fOrderParameter;        //order parameter for raw signal fit

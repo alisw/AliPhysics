@@ -62,6 +62,8 @@ public:
 	void                SetCutZ(Double_t value) {fCutZ=value;}
 	void                SetGeometry(AliEMCALGeometry *geom) {fGeom=geom;}
 	void                SetMaxDistance(Double_t value) {fMaxDist=value;}
+	void                SetCutNITS(Double_t value) {fCutNITS=value;}
+	void                SetCutNTPC(Double_t value) {fCutNTPC=value;}
 	void                SetNumberOfSteps(Int_t n) {fNPropSteps=n;if(!n)SetTrackCorrectionMode("NONE");}
 	void                SetTrackCorrectionMode(Option_t *option);
 	
@@ -142,7 +144,9 @@ private:
 	Double_t    fCutAlphaMax;     // cut on difference between track 'alpha' and phi
 	Double_t    fCutAngle;        // cut on angle between track projection and cluster
 	Double_t    fMaxDist;         // maximum allowed total distance between track proj an cluster
-	
+	Double_t fCutNITS;         // mimimum number of track hits in the ITS
+	Double_t fCutNTPC;         // mimimum number of track hits in the TPC
+
 	Double_t    fRho;             // energy correction: density
 	Double_t    fX0;              // energy correction: radiation length
 

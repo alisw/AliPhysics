@@ -45,7 +45,9 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fTrkCutR(10.0),
   fTrkCutAlphaMin(-50.0), 
   fTrkCutAlphaMax(50.0), 
-  fTrkCutAngle(10000.0), //track matching
+  fTrkCutAngle(10000.0),
+  fTrkCutNITS(3.0),
+  fTrkCutNTPC(20.0), //track matching
   fHighLowGainFactor(16.0), 
   fOrderParameter(2), 
   fTau(2.35), 
@@ -178,7 +180,9 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
   fTrkCutR(rp.fTrkCutR),
   fTrkCutAlphaMin(rp.fTrkCutAlphaMin), 
   fTrkCutAlphaMax(rp.fTrkCutAlphaMax), 
-  fTrkCutAngle(rp.fTrkCutAngle), //track matching
+  fTrkCutAngle(rp.fTrkCutAngle),
+  fTrkCutNITS(rp.fTrkCutNITS),
+  fTrkCutNTPC(rp.fTrkCutNTPC), // track matching
   fHighLowGainFactor(rp.fHighLowGainFactor), 
   fOrderParameter(rp.fOrderParameter), 
   fTau(rp.fTau), 
@@ -217,7 +221,9 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fTrkCutR = rp.fTrkCutR;
     fTrkCutAlphaMin = rp.fTrkCutAlphaMin;
     fTrkCutAlphaMax = rp.fTrkCutAlphaMax;
-    fTrkCutAngle = rp.fTrkCutAngle; //track matching
+    fTrkCutAngle = rp.fTrkCutAngle;
+    fTrkCutNITS = rp.fTrkCutNITS;
+    fTrkCutNTPC = rp.fTrkCutNTPC; //track matching
     fHighLowGainFactor = rp.fHighLowGainFactor; 
     fOrderParameter = rp.fOrderParameter;
     fTau = rp.fTau;
@@ -291,7 +297,7 @@ void AliEMCALRecParam::Print(Option_t *) const
   AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f \n",
 	       fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut));
 
-  AliInfo(Form("Track-matching cuts :\n x %f, y %f, z %f, R %f \n alphaMin %f, alphaMax %f, Angle %f\n", fTrkCutX, fTrkCutY, fTrkCutZ, fTrkCutR,fTrkCutAlphaMin,fTrkCutAlphaMax, fTrkCutAngle));
+  AliInfo(Form("Track-matching cuts :\n x %f, y %f, z %f, R %f \n alphaMin %f, alphaMax %f, Angle %f, NITS %f, NTPC %f\n", fTrkCutX, fTrkCutY, fTrkCutZ, fTrkCutR,fTrkCutAlphaMin,fTrkCutAlphaMax, fTrkCutAngle,fTrkCutNITS,fTrkCutNTPC));
 
   AliInfo(Form("PID parameters, Gamma :\n"));
   for(Int_t i = 0; i < 6; i++){

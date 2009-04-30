@@ -47,6 +47,8 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
     recParamDB->SetTrkCutR(10.0);
     recParamDB->SetTrkCutAlphaMin(-50.0);
     recParamDB->SetTrkCutAlphaMax( 50.0);
+    recParamDB->SetTrkCutNITS(3.0);
+    recParamDB->SetTrkCutNTPC(20.0);
     recParamDB->SetTrkCutAngle(10000.0);      // i.e. exclude this for the moment
     
     //PID

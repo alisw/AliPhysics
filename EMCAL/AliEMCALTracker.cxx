@@ -72,6 +72,8 @@ AliEMCALTracker::AliEMCALTracker()
     fCutAlphaMax(200.0),
     fCutAngle(100.0),
     fMaxDist(10.0),
+    fCutNITS(3.0),
+    fCutNTPC(20.0),
     fRho(1.0),
     fX0(1.0),
     fTracks(0),
@@ -101,6 +103,8 @@ AliEMCALTracker::AliEMCALTracker(const AliEMCALTracker& copy)
     fCutAlphaMax(copy.fCutAlphaMax),
     fCutAngle(copy.fCutAngle),
     fMaxDist(copy.fMaxDist),
+    fCutNITS(copy.fCutNITS),
+    fCutNTPC(copy.fCutNTPC),
     fRho(copy.fRho),
     fX0(copy.fX0),
     fTracks((TObjArray*)copy.fTracks->Clone()),
@@ -130,6 +134,8 @@ AliEMCALTracker& AliEMCALTracker::operator=(const AliEMCALTracker& copy)
 	fCutAlphaMax = copy.fCutAlphaMax;
 	fCutAngle = copy.fCutAngle;
 	fMaxDist = copy.fMaxDist;
+	fCutNITS = copy.fCutNITS;
+	fCutNTPC = copy.fCutNTPC;
 	
 	fTracks = (TObjArray*)copy.fTracks->Clone();
 	fClusters = (TObjArray*)copy.fClusters->Clone();
@@ -161,7 +167,9 @@ void AliEMCALTracker::InitParameters()
   fCutAngle =  recParam->GetTrkCutAngle();
   fCutAlphaMin =  recParam->GetTrkCutAlphaMin();
   fCutAlphaMax =  recParam->GetTrkCutAlphaMax();
-  
+  fCutNITS = recParam->GetTrkCutNITS();
+  fCutNTPC = recParam->GetTrkCutNTPC();
+
 }
 //
 //------------------------------------------------------------------------------
@@ -439,6 +447,11 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
 		trackID = track->GetSeedIndex();
 		AliESDtrack *esdTrack = esd->GetTrack(trackID);
 		if (!esdTrack) continue;
+
+		// cut on its and tpc track hits
+		if(esdTrack->GetNcls(0)<=fCutNITS)continue;
+		if(esdTrack->GetNcls(1)<=fCutNTPC)continue;
+
 		if (TMath::Abs(esdTrack->GetLabel()) == cluster->Label()) {
 			esdTrack->SetEMCALcluster(cluster->Index());
 			nGood++;
