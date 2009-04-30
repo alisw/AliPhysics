@@ -268,18 +268,13 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
    // Call Init of EventHandler
    if (fOutputEventHandler) {
       if (fMode == kProofAnalysis) {
-         TIter nextout(fOutputs);
-         AliAnalysisDataContainer *c_aod;
-         while ((c_aod=(AliAnalysisDataContainer*)nextout())) if (!strcmp(c_aod->GetFileName(),"default")) break;
-         if (c_aod) {
-            // Merging AOD's in PROOF via TProofOutputFile
-            if (fDebug > 1) printf("   Initializing AOD output file %s...\n", fOutputEventHandler->GetOutputFileName());
-            init = fOutputEventHandler->Init("proof");
-            if (!init) msg = "Failed to initialize output handler on worker";
-         }   
+         // Merging AOD's in PROOF via TProofOutputFile
+         if (fDebug > 1) printf("   Initializing AOD output file %s...\n", fOutputEventHandler->GetOutputFileName());
+         init = fOutputEventHandler->Init("proof");
+         if (!init) msg = "Failed to initialize output handler on worker";
       } else {
          init = fOutputEventHandler->Init("local");
-         if (!init) msg = "Failed to initialize output handler on worker";
+         if (!init) msg = "Failed to initialize output handler";
       }
       initOK &= init;
       if (!fSelector) Error("SlaveBegin", "Selector not set");
@@ -1306,5 +1301,6 @@ void AliAnalysisManager::SetOutputEventHandler(AliVEventHandler*  handler)
 // Set the input event handler and create a container for it.
    fOutputEventHandler   = handler;
    fCommonOutput = CreateContainer("cAUTO_OUTPUT", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
+   fCommonOutput->SetSpecialOutput();
    Warning("SetOutputEventHandler", " An automatic output container for the output tree was created.\nPlease use: mgr->GetCommonOutputContainer() to access it.");
 }
