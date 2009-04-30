@@ -56,16 +56,24 @@ void RunAnalysisAODVertexingHF()
   //
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskCompareHF.C");
   AliAnalysisTaskSECompareHF *cmpTask = AddTaskCompareHF();
-  //gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskSelectHF.C");
-  //AliAnalysisTaskSESelectHF *seleTask = AddTaskSelectHF();
-  //gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskBkgLikeSign.C");
-  //AliAnalysisTaskSEBkgLikeSignJPSI *lsTask = AddTaskBkgLikeSign();
+
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskSelectHF.C");
+  AliAnalysisTaskSESelectHF *seleTask = AddTaskSelectHF();
+
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskBkgLikeSign.C");
+  AliAnalysisTaskSEBkgLikeSignJPSI *lsTask = AddTaskBkgLikeSign();
+
   //gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskBtoJPSItoEle.C");
   //AliAnalysisTaskSEBtoJPSItoEle *jpsiTask = AddTaskBtoJPSItoEle();
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskCF.C");
-  AliCFHeavyFlavourTask *cfTask = AddTaskCF();
+
+  //gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskCF.C");
+  //AliCFHeavyFlavourTask *cfTask = AddTaskCF();
+
   //gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskCFMultiVar.C");
   //AliCFHeavyFlavourTaskMultiVar *cfmvTask = AddTaskCFMultiVar();
+
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskCFMultiVarMultiStep.C");
+  AliCFHeavyFlavourTaskMultiVarMultiStep *cfmvmsTask = AddTaskCFMultiVarMultiStep();
 
 
   //-------------------------------------------------------------------
