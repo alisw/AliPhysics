@@ -57,7 +57,7 @@ enum EAliAnalysisFlags {
    AliAnalysisManager(const AliAnalysisManager& other);
    AliAnalysisManager& operator=(const AliAnalysisManager& other);
    
-   // Management
+   // Management methods called by the framework
    void                StartAnalysis(const char *type="local", TTree *tree=0, Long64_t nentries=1234567890, Long64_t firstentry=0);
    void                StartAnalysis(const char *type, const char *dataset, Long64_t nentries=1234567890, Long64_t firstentry=0);
 
@@ -87,6 +87,7 @@ enum EAliAnalysisFlags {
                        GetAnalysisType() const {return fMode;}
    Bool_t              IsUsingDataSet() const  {return TObject::TestBit(kUseDataSet);}
 
+   void                RegisterExtraFile(const char *fname);
    void                SetAnalysisType(EAliAnalysisExecMode mode) {fMode = mode;}
    void                SetCurrentEntry(Long64_t entry) {fCurrentEntry = entry;}
    void                SetDebugLevel(UInt_t level) {fDebug = level;}
@@ -107,6 +108,8 @@ enum EAliAnalysisFlags {
    AliAnalysisDataContainer *GetCommonOutputContainer() {return fCommonOutput;}
    AliAnalysisGrid*    GetGridHandler()         {return fGridHandler;}
    AliVEventPool*      GetEventPool()           {return fEventPool;}
+   Bool_t              GetFileFromWrapper(const char *filename, TList *source);
+   TString             GetExtraFiles() const {return fExtraFiles;}
 
    // Container handling
    AliAnalysisDataContainer *CreateContainer(const char *name, TClass *datatype, 
@@ -160,6 +163,7 @@ private:
    AliAnalysisDataContainer *fCommonOutput;      // Common output container
    AliAnalysisSelector    *fSelector;            //! Current selector
    AliAnalysisGrid        *fGridHandler;         //! Grid handler plugin
+   TString                 fExtraFiles;          //! List of extra files to be merged
 
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
    ClassDef(AliAnalysisManager,4)  // Analysis manager class

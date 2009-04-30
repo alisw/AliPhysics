@@ -960,6 +960,11 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
          if (fOutputFiles.Length()) fOutputFiles += " ";
          fOutputFiles += filename;
       }
+      // Add extra files registered to the analysis manager
+      if (mgr->GetExtraFiles().Length()) {
+         if (fOutputFiles.Length()) fOutputFiles += " ";
+         fOutputFiles += mgr->GetExtraFiles();
+      }   
    }
 //   if (!fCloseSE.Length()) fCloseSE = gSystem->Getenv("alien_CLOSE_SE");
    if (TestBit(AliAnalysisGrid::kOffline)) {

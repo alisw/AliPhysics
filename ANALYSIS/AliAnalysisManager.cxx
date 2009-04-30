@@ -73,7 +73,8 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fCommonInput(NULL),
                     fCommonOutput(NULL),
                     fSelector(NULL),
-                    fGridHandler(NULL)
+                    fGridHandler(NULL),
+                    fExtraFiles("")
 {
 // Default constructor.
    fgAnalysisManager = this;
@@ -109,7 +110,8 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fCommonInput(NULL),
                     fCommonOutput(NULL),
                     fSelector(NULL),
-                    fGridHandler(NULL)
+                    fGridHandler(NULL),
+                    fExtraFiles()
 {
 // Copy constructor.
    fTasks      = new TObjArray(*other.fTasks);
@@ -147,6 +149,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fCommonOutput = NULL;
       fSelector   = NULL;
       fGridHandler = NULL;
+      fExtraFiles = other.fExtraFiles;
       fgAnalysisManager = this;
    }
    return *this;
@@ -582,33 +585,15 @@ void AliAnalysisManager::ImportWrappers(TList *source)
          // Copy merged file from PROOF scratch space. 
          // In case of grid the files are already in the current directory.
          if (!inGrid) {
-            char full_path[512];
-            char ch_url[512];
-            TObject *pof =  source->FindObject(filename);
-            if (!pof || !pof->InheritsFrom("TProofOutputFile")) {
-               Error("ImportWrappers", "TProofOutputFile object not found in output list for container %s", cont->GetName());
-               continue;
+            if (isManagedByHandler && fExtraFiles.Length()) {
+               // Copy extra registered dAOD files.
+               TObjArray *arr = fExtraFiles.Tokenize(" ");
+               TObjString *os;
+               TIter nextfilename(arr);
+               while ((os=(TObjString*)nextfilename())) GetFileFromWrapper(os->GetString(), source);
+               delete arr;
             }
-            gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", ((TProofOutputFile*)0x%lx)->GetOutputFileName();)", full_path, pof));
-            gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", gProof->GetUrl();)", ch_url));
-            TString clientUrl(ch_url);
-            TString full_path_str(full_path);
-            if (clientUrl.Contains("localhost")){
-               TObjArray* array = full_path_str.Tokenize ( "//" );
-               TObjString *strobj = ( TObjString *)array->At(1);
-               TObjArray* arrayPort = strobj->GetString().Tokenize ( ":" );
-               TObjString *strobjPort = ( TObjString *) arrayPort->At(1);
-               full_path_str.ReplaceAll(strobj->GetString().Data(),"localhost:PORT");
-               full_path_str.ReplaceAll(":PORT",Form(":%s",strobjPort->GetString().Data()));
-               if (fDebug > 1) Info("ImportWrappers","Using tunnel from %s to %s",full_path_str.Data(),filename);
-            }
-            if (fDebug > 1) 
-               printf("   Copying file %s from PROOF scratch space\n", full_path_str.Data());
-            Bool_t gotit = TFile::Cp(full_path_str.Data(), filename); 
-            if (!gotit) {
-               Error("ImportWrappers", "Could not get file %s from proof scratch space", cont->GetFileName());
-               continue;
-            }
+            if (!GetFileFromWrapper(filename, source)) continue;
          }   
          // Normally we should connect data from the copied file to the
          // corresponding output container, but it is not obvious how to do this
@@ -1303,4 +1288,49 @@ void AliAnalysisManager::SetOutputEventHandler(AliVEventHandler*  handler)
    fCommonOutput = CreateContainer("cAUTO_OUTPUT", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
    fCommonOutput->SetSpecialOutput();
    Warning("SetOutputEventHandler", " An automatic output container for the output tree was created.\nPlease use: mgr->GetCommonOutputContainer() to access it.");
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::RegisterExtraFile(const char *fname)
+{
+// This method is used externally to register output files which are not
+// connected to any output container, so that the manager can properly register,
+// retrieve or merge them when running in distributed mode. The file names are
+// separated by blancs. The method has to be called in MyAnalysisTask::LocalInit().
+   if (fExtraFiles.Length()) fExtraFiles += " ";
+   fExtraFiles += fname;
+}
+
+//______________________________________________________________________________
+Bool_t AliAnalysisManager::GetFileFromWrapper(const char *filename, TList *source)
+{
+// Copy a file from the location specified ina the wrapper with the same name from the source list.
+   char full_path[512];
+   char ch_url[512];
+   TObject *pof =  source->FindObject(filename);
+   if (!pof || !pof->InheritsFrom("TProofOutputFile")) {
+      Error("GetFileFromWrapper", "TProofOutputFile object not found in output list for file %s", filename);
+      return kFALSE;
+   }
+   gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", ((TProofOutputFile*)0x%lx)->GetOutputFileName();)", full_path, pof));
+   gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", gProof->GetUrl();)", ch_url));
+   TString clientUrl(ch_url);
+   TString full_path_str(full_path);
+   if (clientUrl.Contains("localhost")){
+      TObjArray* array = full_path_str.Tokenize ( "//" );
+      TObjString *strobj = ( TObjString *)array->At(1);
+      TObjArray* arrayPort = strobj->GetString().Tokenize ( ":" );
+      TObjString *strobjPort = ( TObjString *) arrayPort->At(1);
+      full_path_str.ReplaceAll(strobj->GetString().Data(),"localhost:PORT");
+      full_path_str.ReplaceAll(":PORT",Form(":%s",strobjPort->GetString().Data()));
+      if (fDebug > 1) Info("GetFileFromWrapper","Using tunnel from %s to %s",full_path_str.Data(),filename);
+      delete arrayPort;
+      delete array;
+   }
+   if (fDebug > 1) 
+      Info("GetFileFromWrapper","Copying file %s from PROOF scratch space", full_path_str.Data());
+   Bool_t gotit = TFile::Cp(full_path_str.Data(), filename); 
+   if (!gotit)
+      Error("GetFileFromWrapper", "Could not get file %s from proof scratch space", filename);
+   return gotit;
 }
