@@ -89,6 +89,9 @@ AliFemtoString AliFemtoModelCorrFctnDirectYlm::Report()
 void AliFemtoModelCorrFctnDirectYlm::AddRealPair(AliFemtoPair* aPair)
 {
   // add real (effect) pair
+  if (fPairCut)
+    if (!(fPairCut->Pass(aPair))) return;
+
   Double_t weight = fManager->GetWeight(aPair);
   
   fCYlmTrue->AddRealPair(aPair->QOutPf(), aPair->QSidePf(), aPair->QLongPf(), weight);
@@ -97,6 +100,9 @@ void AliFemtoModelCorrFctnDirectYlm::AddRealPair(AliFemtoPair* aPair)
 void AliFemtoModelCorrFctnDirectYlm::AddMixedPair(AliFemtoPair* aPair)
 {
   // add mixed (background) pair
+  if (fPairCut)
+    if (!(fPairCut->Pass(aPair))) return;
+
   Double_t weight = fManager->GetWeight(aPair);
 
   fCYlmTrue->AddMixedPair(aPair->QOutPf(), aPair->QSidePf(), aPair->QLongPf(), 1.0);

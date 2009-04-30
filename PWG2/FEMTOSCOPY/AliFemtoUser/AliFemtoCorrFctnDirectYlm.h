@@ -18,6 +18,7 @@
 #include <TFile.h>
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoYlm.h"
+#include "AliFemtoPairCut.h"
 
 using namespace std;
 

@@ -271,6 +271,9 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const AliFemtoCorrFctnDirec
   fSout = aCorrFctn.fSout;
   fSside = aCorrFctn.fSside;
   fSlong = aCorrFctn.fSlong;
+
+  if (aCorrFctn.fPairCut)
+    fPairCut = aCorrFctn.fPairCut;
 }
 
 AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCorrFctnDirectYlm& aCorrFctn)
@@ -371,6 +374,9 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
   fSside = aCorrFctn.fSside;
   fSlong = aCorrFctn.fSlong;
 
+  if (aCorrFctn.fPairCut)
+    fPairCut = aCorrFctn.fPairCut;
+
   return *this;
 }
 
@@ -409,6 +415,8 @@ AliFemtoCorrFctnDirectYlm::~AliFemtoCorrFctnDirectYlm()
 
   if (fcovnum) delete fcovnum;
   if (fcovden) delete fcovden;
+
+  if (fPairCut) delete fPairCut;
 }
 
 double AliFemtoCorrFctnDirectYlm::ClebschGordan(double aJot1, double aEm1, double aJot2, double aEm2, double aJot, double aEm)
@@ -924,10 +932,16 @@ AliFemtoString AliFemtoCorrFctnDirectYlm::Report()
 
 void AliFemtoCorrFctnDirectYlm::AddRealPair(AliFemtoPair* aPair)
 {
+  if (fPairCut)
+    if (!fPairCut->Pass(aPair)) return;
+
   AddRealPair(aPair->QOutPf(), aPair->QSidePf(), aPair->QLongPf(), 1.0);
 }
 void AliFemtoCorrFctnDirectYlm::AddMixedPair(AliFemtoPair* aPair)
 {
+  if (fPairCut)
+    if (!fPairCut->Pass(aPair)) return;
+  
   AddMixedPair(aPair->QOutPf(), aPair->QSidePf(), aPair->QLongPf(), 1.0);
 }
 
