@@ -47,8 +47,9 @@ ClassImp(AliRunTag)
     fEventTag("AliEventTag", 1000),
     fDetectorTag(),
     fLHCTag(), 
+    fQA(),  
     fQALength(0), 
-    fQA(NULL), 
+    fQAArray(NULL), 
     fESLength(0), 
     fEventSpecies(NULL)
 {
@@ -59,8 +60,8 @@ ClassImp(AliRunTag)
 AliRunTag::~AliRunTag() {
   //Destructor
   fEventTag.Delete();
-  if ( fQA ) 
-    delete [] fQA ; 
+  if ( fQAArray ) 
+    delete [] fQAArray ; 
   if ( fEventSpecies )
     delete [] fEventSpecies ; 
 }
@@ -85,17 +86,18 @@ fNumDetectors(tag.fNumDetectors),
 fEventTag(tag.fEventTag),
 fDetectorTag(tag.fDetectorTag),
 fLHCTag(tag.fLHCTag), 
+fQA(tag.fQA),
 fQALength(tag.fQALength),
-fQA(NULL), 
+fQAArray(NULL), 
 fESLength(tag.fESLength),
 fEventSpecies(NULL)
 {
   //copy constructor
   if (fQALength == 0 ) 
-    fQA = NULL ; 
+    fQAArray = NULL ; 
   else {
-    fQA = new ULong_t[fQALength] ; 
-    memcpy(fQA, tag.fQA, fQALength*sizeof(ULong_t)) ;
+    fQAArray = new ULong_t[fQALength] ; 
+    memcpy(fQAArray, tag.fQAArray, fQALength*sizeof(ULong_t)) ;
   }
   if (fESLength == 0 ) 
     fEventSpecies = NULL ; 
@@ -126,14 +128,15 @@ AliRunTag& AliRunTag::operator = (const AliRunTag& tag) {
     fEventTag                 = tag.fEventTag ;
     fDetectorTag              = tag.fDetectorTag ;
     fLHCTag                   = tag.fLHCTag ;  
+    fQA                       = tag.fQA ;      
     fQALength                 = tag.fQALength ; 
-    if (fQA) 
-      delete [] fQA ; 
+    if (fQAArray) 
+      delete [] fQAArray ; 
     if (fQALength == 0 ) 
-      fQA = NULL ; 
+      fQAArray = NULL ; 
     else {
-      fQA = new ULong_t[fQALength] ; 
-      memcpy(fQA, tag.fQA, fQALength*sizeof(ULong_t)) ;
+      fQAArray = new ULong_t[fQALength] ; 
+      memcpy(fQAArray, tag.fQAArray, fQALength*sizeof(ULong_t)) ;
     }
     fESLength                 = tag.fESLength ; 
     if (fEventSpecies)
@@ -165,19 +168,20 @@ void AliRunTag::CopyStandardContent(AliRunTag *oldtag) {
   SetDataType(oldtag->GetDataType());
   SetLHCTag(oldtag->GetLHCTag()->GetLuminosity(),oldtag->GetLHCTag()->GetLHCState());
   SetDetectorTag(oldtag->GetDetectorTags()->GetIntDetectorMask());
-  SetQA(oldtag->GetQA(), oldtag->GetQALength()) ;  
+  SetQA(*(oldtag->GetQA())) ;  	
+  SetQAArray(oldtag->GetQAArray(), oldtag->GetQALength()) ;  
 	SetEventSpecies(oldtag->GetEventSpecies(), oldtag->GetESLength()) ;  
 }
 
 //___________________________________________________________________________
-void AliRunTag::SetQA(ULong_t * qa, Int_t qalength) {
+void AliRunTag::SetQAArray(ULong_t * qa, Int_t qalength) {
   //Setter for the qa bits 
   if (qa && qalength > 0) {
     fQALength = qalength ; 
-    if (fQA) 
-      delete [] fQA ; 
-    fQA = new ULong_t[qalength] ; 
-    memcpy(fQA, qa, qalength*sizeof(ULong_t)) ;
+    if (fQAArray) 
+      delete [] fQAArray ; 
+    fQAArray = new ULong_t[qalength] ; 
+    memcpy(fQAArray, qa, qalength*sizeof(ULong_t)) ;
   }
 }
 

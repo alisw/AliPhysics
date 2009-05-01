@@ -1552,7 +1552,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
     tag->SetBeamType(beamtype);
     
     //QA setting 
-    tag->SetQA(qa, qalength) ; 
+    tag->SetQAArray(qa, qalength) ; 
     tag->SetEventSpecies(es, eslength) ;
 
     tag->AddEventTag(*evTag);

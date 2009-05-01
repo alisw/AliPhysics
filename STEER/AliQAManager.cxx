@@ -396,7 +396,7 @@ AliQA * AliQAManager::GetQA(UInt_t run, UInt_t evt)
   AliRunTag * tag = new AliRunTag ; 
   tagTree->SetBranchAddress("AliTAG", &tag) ; 
   tagTree->GetEntry(evt) ; 
-  AliQA * qa = AliQA::Instance(tag->GetQALength(), tag->GetQA(), tag->GetESLength(), tag->GetEventSpecies()) ; 
+  AliQA * qa = AliQA::Instance(tag->GetQALength(), tag->GetQAArray(), tag->GetESLength(), tag->GetEventSpecies()) ; 
   tagFile->Close() ; 
   return qa ; 
 }
