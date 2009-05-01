@@ -76,10 +76,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   // method to create event on the fly
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(fMultiplicityOfRP);
-  
-  //reaction plane
-  Double_t fMCReactionPlaneAngle = fMyTRandom3->Uniform(0.,TMath::TwoPi());
-  
+    
   // pt:   
   Double_t dPtMin = 0.; // to be improved 
   Double_t dPtMax = 10.; // to be improved 
@@ -95,17 +92,23 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   Double_t dPhiMin = 0.; // to be improved 
   Double_t dPhiMax = TMath::TwoPi(); // to be improved 
   
-  fPhiDistribution = new TF1("fPhiDistribution","1+2.*[0]*TMath::Cos(x)+2.*[1]*TMath::Cos(2*x)",dPhiMin,dPhiMax);
+  fPhiDistribution = new TF1("fPhiDistribution","1+2.*[0]*TMath::Cos(x-[2])+2.*[1]*TMath::Cos(2*(x-[2]))",dPhiMin,dPhiMax);
+  
+  // samling the reaction plane
+  Double_t fMCReactionPlaneAngle = fMyTRandom3->Uniform(0.,TMath::TwoPi());
+  fPhiDistribution->SetParName(2,"Reaction Plane");
+  fPhiDistribution->SetParameter(2,fMCReactionPlaneAngle);
 
   // sampling the V1:
   fPhiDistribution->SetParName(0,"directed flow");
-  Double_t fNewV1RP=0.;
-  if(fV1RP>0.0) {fNewV1RP = fMyTRandom3->Gaus(fV1RP,fV1SpreadRP);}
+  Double_t fNewV1RP=fV1RP;
+  if(fV1SpreadRP>0.0) {fNewV1RP = fMyTRandom3->Gaus(fV1RP,fV1SpreadRP);}
   fPhiDistribution->SetParameter(0,fNewV1RP);
  
   // sampling the V2:
   fPhiDistribution->SetParName(1,"elliptic flow");
-  Double_t fNewV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
+  Double_t fNewV2RP = fV2RP;
+  if(fV2SpreadRP>0.0) fNewV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
   fPhiDistribution->SetParameter(1,fNewV2RP);
    
   // eta:
@@ -118,10 +121,11 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   Double_t fTmpPt =0;
   Double_t fTmpEta =0;
   Double_t fTmpPhi =0;
+  
   for(Int_t i=0;i<fNewMultiplicityOfRP;i++) {
     fTmpPt = fPtSpectra->GetRandom();
     fTmpEta = fMyTRandom3->Uniform(dEtaMin,dEtaMax);
-    fTmpPhi = fPhiDistribution->GetRandom()+fMCReactionPlaneAngle;
+    fTmpPhi = fPhiDistribution->GetRandom();
     for(Int_t d=0;d<fNoOfLoops;d++) {
       AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
       pTrack->SetPt(fTmpPt);
