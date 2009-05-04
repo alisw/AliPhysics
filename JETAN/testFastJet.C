@@ -1,8 +1,17 @@
 
 void testFastJet(const char* file="testdata.dat")
+
 {
+      gSystem->Load("libTree.so");
+      gSystem->Load("libEG.so");
+      gSystem->Load("libVMC.so");
+      gSystem->Load("libPhysics.so");
+
       gSystem->Load("libCGAL.so");
+
       gSystem->Load("libfastjet.so");
+      gSystem->Load("libSISConePlugin.so");
+      
      
       gSystem->Load("libANALYSIS.so");
       gSystem->Load("libSTEERBase.so");
