@@ -87,10 +87,7 @@
 #pragma link C++ class  AliHLTTPCCARow+;
 #pragma link C++ class  AliHLTTPCCAGrid+;
 #pragma link C++ class  AliHLTTPCCAHitArea+;
-#pragma link C++ class  AliHLTTPCCAGBHit+;
 #pragma link C++ class  AliHLTTPCCAMCPoint+;
-#pragma link C++ class  AliHLTTPCCAGBTrack+;
-#pragma link C++ class  AliHLTTPCCAGBTracker+;
 #pragma link C++ class  AliHLTTPCCATrackerComponent+;
 #pragma link C++ class  AliHLTTPCCANeighboursFinder+;
 #pragma link C++ class  AliHLTTPCCANeighboursCleaner+;

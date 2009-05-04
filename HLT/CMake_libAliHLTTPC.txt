@@ -85,10 +85,7 @@ TPCLib/tracking-ca/AliHLTTPCCAParam.cxx
 TPCLib/tracking-ca/AliHLTTPCCARow.cxx
 TPCLib/tracking-ca/AliHLTTPCCAGrid.cxx
 TPCLib/tracking-ca/AliHLTTPCCAHitArea.cxx
-TPCLib/tracking-ca/AliHLTTPCCAGBHit.cxx
 TPCLib/tracking-ca/AliHLTTPCCAMCPoint.cxx
-TPCLib/tracking-ca/AliHLTTPCCAGBTrack.cxx
-TPCLib/tracking-ca/AliHLTTPCCAGBTracker.cxx
 TPCLib/tracking-ca/AliHLTTPCCATrackerComponent.cxx
 TPCLib/tracking-ca/AliHLTTPCCANeighboursFinder.cxx
 TPCLib/tracking-ca/AliHLTTPCCANeighboursCleaner.cxx
@@ -103,6 +100,7 @@ TPCLib/tracking-ca/AliHLTTPCCAGlobalMergerComponent.cxx
 TPCLib/tracking-ca/AliHLTTPCCAClusterData.cxx
 TPCLib/tracking-ca/AliHLTTPCCASliceData.cxx
 TPCLib/tracking-ca/AliHLTTPCCASliceOutput.cxx
+TPCLib/tracking-ca/AliHLTTPCCAStandaloneFramework.cxx
 TPCLib/tracking-ca/AliTPCtrackerCA.cxx 
 )
 
