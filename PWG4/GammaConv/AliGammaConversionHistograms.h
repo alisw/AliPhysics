@@ -70,28 +70,27 @@ class AliGammaConversionHistograms{
   void FillTable(TString tableName, Double_t xValue) const;		
 
  private:
-  TMap* fHistogramMap;
+  TMap* fHistogramMap; // histogram map
 
-  Int_t fNPhiIndex;
-  Int_t fNRIndex;
-  Double_t fMinRadius;
-  Double_t fMaxRadius;
-  Double_t fDeltaR;
-  Double_t fMinPhi;
-  Double_t fMaxPhi;
-  Double_t fDeltaPhi;
+  Int_t fNPhiIndex; //phi index
+  Int_t fNRIndex; //r index
+  Double_t fMinRadius; //min radius cut
+  Double_t fMaxRadius; //max radius cut
+  Double_t fDeltaR; // delta r
+  Double_t fMinPhi; //min phi
+  Double_t fMaxPhi; // max phi
+  Double_t fDeltaPhi;//delta phi
 
-  TList * fMappingContainer;
-  TList * fBackgroundContainer;
-  TList * fDebugContainer;
-  TList * fResolutionContainer;
-  TList * fMatchContainer;
-  TList * fESDContainer;
-  TList * fMCContainer;
-  TList * fTableContainer;	
-  TList * fOtherContainer;
+  TList * fMappingContainer; //mapping container
+  TList * fBackgroundContainer; // background container
+  TList * fDebugContainer; // debug container
+  TList * fResolutionContainer; //resolution container
+  TList * fMatchContainer; //match container
+  TList * fESDContainer;//esd container
+  TList * fMCContainer; // MC container
+  TList * fTableContainer; // table container
+  TList * fOtherContainer; // other container
 
-  
   ClassDef(AliGammaConversionHistograms,2)
 };
 
