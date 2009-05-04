@@ -300,6 +300,32 @@ Bool_t plotESDTrueConvGammaTrackLengthVSInvMass =kTRUE;
 Bool_t plotPi0Spectra = kTRUE;
 Bool_t plotEtaSpectra = kTRUE;
 
+/////////////Chi_c Analysis//////////////////////////
+Bool_t plotStatsElectrons                                  = kTRUE;
+Bool_t plotRecENegJPsiPtDiff                               = kTRUE;
+Bool_t plotRecEPosJPsiPtDiff                               = kTRUE;
+Bool_t plotRecEPosENegR                                    = kTRUE;
+Bool_t plotRecEPosENegEta                                  = kTRUE;
+Bool_t plotESDInvMassePluseMinus                           = kTRUE;
+Bool_t plotESDInvMassGammaePluseMinusChiC                  = kTRUE;
+Bool_t plotESDInvMassGammaePluseMinusPi0                   = kTRUE;
+Bool_t plotESDElectronPosNegPt                             = kTRUE;
+Bool_t plotESDElectronPosNegEta                            = kTRUE;
+Bool_t plotESDElectronPosNegAngle                          = kTRUE;
+Bool_t plotMCElectronPosNegPt                              = kTRUE;
+Bool_t plotMCElectronPosNegEta                             = kTRUE;
+Bool_t plotMCElectronPosNegJPsiAngle                       = kTRUE;
+Bool_t plotESDElectronPosNegPi0Angle                       = kTRUE;
+Bool_t plotMCElectronPosNegPi0Angle                        = kTRUE;
+Bool_t plotTableElectrons                                  = kTRUE;
+Bool_t plotESDEPosBackground                               = kTRUE;
+Bool_t plotESDENegBackground                               = kTRUE;
+Bool_t plotESDEPosENegBackground                           = kTRUE;
+Bool_t plotESDEPosENegBackgroundCut                        = kTRUE;
+Bool_t plotESDePoseNegAngle                                = kTRUE;
+Bool_t plotESDEPosENegGammaBackgroundMX                    = kTRUE;
+Bool_t plotMCLabels                                        = kTRUE;
+///////////////////////////////////////////////////////////////////
 
 /** ----------------- end define which histograms to plot here -------------------------------*/
 
@@ -455,6 +481,63 @@ Double_t lastYBinSpectra = 50.;
 Int_t nXBinsTrackLength = 1000;
 Double_t firstXBinTrackLength = 0;
 Double_t lastXBinTrackLength = 500;
+
+/////////Chic_Analysis///////////////////////////////////
+Int_t nXBinsEPt = 1000;
+Double_t firstXBinEPt = 0.;
+Double_t lastXBinJPsiPt  = 10;
+
+Int_t nXBinsJPsiMass = 1000;
+Double_t firstXBinJPsiMass = 0.;
+Double_t lastXBinJPsiMass = 10.;
+
+Int_t nXBinsChicMass = 1000;
+Double_t firstXBinChicMass = 0.;
+Double_t lastXBinChicMass  = 10.;
+
+Int_t nXBinsPi0Mass  = 1000;
+Double_t firstXBinPi0Mass = 0.;
+Double_t lastXBinPi0Mass  = 1.;
+
+Int_t nXBinsEPosNegPt = 1000;
+Double_t firstXBinEPosNegPt = 0.;
+Double_t lastXBinEPosNegPt  = 10.;
+
+Int_t nXBinsEPosNegEta = 200;
+Double_t firstXBinEPosNegEta = -1.2;
+Double_t lastXBinEPosNegEta  = 1.2;
+
+
+Int_t nXBinsEPosNegAngle = 200;
+Double_t firstXBinEPosNegAngle = 0.;
+Double_t lastXBinEPosNegAngle = TMath::Pi();
+
+Int_t nXBinsEBackground = 1000;
+Double_t firstXBinEBackground = 0.;
+Double_t lastXBinEBackground  = 10.;
+
+Int_t nXBinsEBackgroundCut = 100;
+Double_t firstXBinEBackgroundCut = 0.;
+Double_t lastXBinEBackgroundCut  = 0.015.;
+
+Int_t nXBinsMCLabels = 10;
+Double_t firstXBinMCLabels = 0.;
+Double_t lastXBinMCLabels  = 10.;
+
+Int_t nElementsElectronTable = 19;
+
+//18 elements
+const char * electronTable[] = {
+  "Num. Events",  "MC e+ J/Psi |\\eta|<0.9","MC e- J/Psi |\\eta|<0.9","MC e+ e+ from J/Psi |\\eta|<0.9",
+  "ESDtracks",    "Kink Cut",
+  "Vertex Cut","TRDOut","TRDrefit","TPCrefit",
+  "ITSrefit","TRDout+TPC+TPC+ITS+nsigma>3 Pass","pid!=0","ESDElec","ESD e+ JPsi",
+  "ESD e- JPsi","ESD e+ e- JPSI","MC: gamma < 1.2","e+,e- < 0.9 g <1.2"
+
+};
+
+////////////////////////////////////////////////////////
+
 
 /** ---------- end Define the binning for the different plot types here ----------------------*/
 
@@ -809,12 +892,77 @@ void ConfigGammaConversion(TString arguments){
 
 
   if(plotPi0Spectra == kTRUE){
-histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt" ,"Invariant Mass vs Pt" , nXBinsSpectra, firstXBinSpectra, lastXBinSpectra,nYBinsSpectra, firstYBinSpectra, lastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
-}
+    histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt" ,"Invariant Mass vs Pt" , nXBinsSpectra, firstXBinSpectra, lastXBinSpectra,nYBinsSpectra, firstYBinSpectra, lastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
+    histograms->AddHistogram("ESD_Mother_InvMass","Invariant mass",nXBinsSpectra,firstXBinSpectra, lastXBinSpectra,"InvMass [GeV]","Counts");
+  }
   if(plotPi0Spectra == kTRUE && calculateBackground == kTRUE){
-histograms->AddHistogram("ESD_Background_InvMass_vs_Pt" ,"Background Invariant Mass vs Pt" , nXBinsSpectra, firstXBinSpectra, lastXBinSpectra,nYBinsSpectra, firstYBinSpectra, lastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
-}
+    histograms->AddHistogram("ESD_Background_InvMass_vs_Pt" ,"Background Invariant Mass vs Pt" , nXBinsSpectra, firstXBinSpectra, lastXBinSpectra,nYBinsSpectra, firstYBinSpectra, lastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
+    histograms->AddHistogram("ESD_Background_InvMass","Invariant mass background",nXBinsSpectra,firstXBinSpectra, lastXBinSpectra,"InvMass BG [GeV]","Counts");
+  }
 	
+//////////////////////////////Chi_c Analysis/////////////////////////////////////////////////////////////////
+
+     if(plotESDInvMassePluseMinus == kTRUE){histograms->AddHistogram("ESD_InvMass_ePluseMinus","",nXBinsJPsiMass, firstXBinJPsiMass, lastXBinJPsiMass, "",
+"");}
+      if(plotESDInvMassePluseMinus == kTRUE){histograms->AddHistogram("ESD_InvMass_ePluseMinusTest","",nXBinsJPsiMass, firstXBinJPsiMass, lastXBinJPsiMass,
+ "","");}
+      if(plotESDInvMassePluseMinus == kTRUE){histograms->AddHistogram("ESD_InvMass_xPlusxMinus","",nXBinsJPsiMass, firstXBinJPsiMass, lastXBinJPsiMass, "",
+"");}
+
+
+     if(plotESDElectronPosNegPt == kTRUE){histograms->AddHistogram("ESD_ElectronPosNegPt","",nXBinsEPosNegPt,firstXBinEPosNegPt,lastXBinEPosNegPt,"","");}
+     if(plotESDElectronPosNegEta == kTRUE){histograms->AddHistogram("ESD_ElectronPosNegEta","",nXBinsEPosNegEta,firstXBinEPosNegEta,lastXBinEPosNegEta,"","
+");}
+
+
+     if(plotESDElectronPosNegPt == kTRUE){histograms->AddHistogram("ESD_ElectronPosPt","",nXBinsEPosNegPt,firstXBinEPosNegPt,lastXBinEPosNegPt,"","");}
+     if(plotESDElectronPosNegPt == kTRUE){histograms->AddHistogram("ESD_ElectronNegPt","",nXBinsEPosNegPt,firstXBinEPosNegPt,lastXBinEPosNegPt,"","");}
+
+
+     if(plotESDElectronPosNegAngle == kTRUE){histograms->AddHistogram("ESD_ElectronPosNegJPsiAngle","",nXBinsEPosNegAngle,firstXBinEPosNegAngle,lastXBinEPo
+sNegAngle,"","");}
+
+
+    if(plotMCElectronPosNegPt == kTRUE){histograms->AddHistogram("MC_ElectronPosNegPt","",nXBinsEPosNegPt,firstXBinEPosNegPt,lastXBinEPosNegPt,"","");}
+     if(plotMCElectronPosNegEta == kTRUE){histograms->AddHistogram("MC_ElectronPosNegEta","",nXBinsEPosNegEta,firstXBinEPosNegEta,lastXBinEPosNegEta,"","")
+;}
+     if(plotMCElectronPosNegJPsiAngle == kTRUE){histograms->AddHistogram("MC_ElectronPosNegJPsiAngle","",nXBinsEPosNegAngle,firstXBinEPosNegAngle,lastXBinE
+PosNegAngle,"","");}
+      if(plotESDePoseNegAngle == kTRUE){histograms->AddHistogram("ESD_eNegePosAngleBeforeCut","",nXBinsEPosNegAngle,firstXBinEPosNegAngle,lastXBinEPosNegAn
+gle,"","");}
+        if(plotESDePoseNegAngle == kTRUE){histograms->AddHistogram("ESD_eNegePosAngleAfterCut","",nXBinsEPosNegAngle,firstXBinEPosNegAngle,lastXBinEPosNegA
+ngle,"","");}
+
+
+     if(plotESDInvMassGammaePluseMinusChiC == kTRUE) {histograms->AddHistogram("ESD_InvMass_GammaePluseMinusChiC","",nXBinsChicMass,firstXBinChicMass,lastX
+BinChicMass,"","");}
+     if(plotESDInvMassGammaePluseMinusChiC == kTRUE) {histograms->AddHistogram("ESD_InvMass_GammaePluseMinusChiCDiff","",nXBinsChicMass,firstXBinChicMass,l
+astXBinChicMass,"","");}
+     if(plotESDInvMassGammaePluseMinusPi0 == kTRUE) {histograms->AddHistogram("ESD_InvMass_GammaePluseMinusPi0","",nXBinsPi0Mass,firstXBinPi0Mass,lastXBinP
+i0Mass,"","");}
+
+
+     if(plotESDElectronPosNegPi0Angle == kTRUE){histograms->AddHistogram("ESD_ElectronPosNegPi0Angle","",nXBinsEPosNegAngle,firstXBinEPosNegAngle,lastXBinE
+PosNegAngle,"","");}
+if(plotMCElectronPosNegPi0Angle == kTRUE){histograms->AddHistogram("MC_ElectronPosNegPi0Angle","",nXBinsEPosNegAngle,firstXBinEPosNegAngle,lastXBinEPosNegAngle,"","");}
+
+     if(plotESDEPosBackground == kTRUE){histograms->AddHistogram("ESD_EPosBackground","",nXBinsEBackground,firstXBinEBackground,lastXBinEBackground,"","");}
+
+    if(plotESDEPosBackground == kTRUE){histograms->AddHistogram("ESD_EPosENegNoJPsiBG","",nXBinsEBackground,firstXBinEBackground,lastXBinEBackground,"","");}
+
+
+   if(plotESDENegBackground == kTRUE){histograms->AddHistogram("ESD_ENegBackground","",nXBinsEBackground,firstXBinEBackground,lastXBinEBackground,"","");}
+     if(plotESDEPosENegBackground == kTRUE){histograms->AddHistogram("ESD_EPosENegBackground","",nXBinsEBackground,firstXBinEBackground,lastXBinEBackground,"","");}
+     if(plotESDEPosENegBackgroundCut == kTRUE){histograms->AddHistogram("ESD_EPosENegBackgroundCut","",nXBinsEBackgroundCut,firstXBinEBackgroundCut,lastXBinEBackgroundCut,"","");}
+
+     if(plotESDEPosENegGammaBackgroundMX == kTRUE){histograms->AddHistogram("ESD_EPosENegGammaBackgroundMX","",nXBinsEBackground,firstXBinEBackground,lastXBinEBackground,"","");}
+      if(plotESDEPosENegGammaBackgroundMX == kTRUE){histograms->AddHistogram("ESD_EPosENegGammaBackgroundMXDiff","",nXBinsEBackground,firstXBinEBackground,lastXBinEBackground,"","");}
+
+
+
+    if(plotTableElectrons == kTRUE){ histograms->AddTable("Table_Electrons","",nElementsElectronTable,electronTable);}
+
+///////////////////////////////////////////////////End Chic_Analysis/////////////////////////////////////////////////////////////
 	
 	
   //------------------------------ end Creating the histograms -----------------------------

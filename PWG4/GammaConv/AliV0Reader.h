@@ -49,6 +49,11 @@ class AliV0Reader : public TObject {
   void Initialize();
 
   /*
+   * Returns  AliESDEvent
+   */			
+   AliESDEvent* GetESDEvent() const{return fESDEvent;}	
+
+  /*
    *Returns the number of v0s in the event, no cuts applied.
    */
   Int_t GetNumberOfV0s() const{return fESDEvent->GetNumberOfV0s();}
@@ -491,7 +496,7 @@ class AliV0Reader : public TObject {
   vector<AliKFParticle> fCurrentEventGoodV0s;
   vector<AliKFParticle> fPreviousEventGoodV0s;
 
-  ClassDef(AliV0Reader,1)
+  ClassDef(AliV0Reader,2)
 };
 
 
