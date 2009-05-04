@@ -324,11 +324,12 @@ AliTOFFEEReader::GetMatchingWindow(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t i
    * matching window
    *
    */
-
+  
   AliTOFFEEConfig *feeConfig;
   AliTOFCrateConfig *crateConfig;
   AliTOFTRMConfig *trmConfig;
-  Int_t maskPB, maskTDC;
+
+  iChain = 0; iTDC = 0; iChannel = 0; /* dummy for the time being */
   
   /* get and check fee config */
   if (!(feeConfig = GetFEEConfig()))
