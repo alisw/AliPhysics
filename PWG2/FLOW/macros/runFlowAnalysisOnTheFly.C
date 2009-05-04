@@ -16,20 +16,34 @@ Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kTRUE; 
 //--------------------------------------------------------------------------------------
 
-//......................................................................................  
+Bool_t bSameSeed = kFALSE; // use always the same seed for random generators
+Bool_t bConstantHarmonics = kTRUE; // harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)
+
 // Set the event parameters:
 Int_t iLoops = 1; // number of times to use each track (to simulate nonflow)
+
 Int_t iMultiplicityOfRP = 500; // multiplicity of RPs
 Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs
 
+//......................................................................................  
+// if you use (pt,eta) dependent harmonics (bConstantHarmonics = kFALSE):
+Double_t dPtCutOff = 2.0; // V2(pt) is linear up to pt = 2 GeV and for pt > 2 GeV it is constant: V2(pt) = dVRPMax
+Double_t dV2RPMax = 0.2; // maximum value of V2(pt) for pt >= 2GeV
+//...................................................................................... 
+
+//......................................................................................  
+// if you use constant harmonics (bConstantHarmonics = kTRUE):
 Double_t dV2RP = 0.05; // elliptic flow of RPs
 Double_t dV2SpreadRP = 0.; // elliptic flow spread of RPs
 
 Double_t dV1RP = 0.0; // directed flow of RPs
 Double_t dV1SpreadRP = 0.0; // directed flow spread of RPs
-//...................................................................................... 
 
-enum anaModes {mLocal,mLocalSource,mLocalPAR,};
+Double_t dV4RP = 0.0; // harmonic V4 of RPs (to be improved: name needed)
+Double_t dV4SpreadRP = 0.0; // harmonic V4's spread of RPs (to be improved: name needed)
+//......................................................................................  
+
+enum anaModes {mLocal,mLocalSource,mLocalPAR};
 // mLocal: Analyze data on your computer using aliroot
 // mLocalPAR: Analyze data on your computer using root + PAR files
 // mLocalSource: Analyze data on your computer using root + source files
@@ -55,13 +69,24 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1000)
  
  LoadLibraries(mode);
 
- // Initialize the random generator
- TTimeStamp dt;
- UInt_t sseed = dt.GetNanoSec()/1000;
+ // Initialize the seed for random generator
+ UInt_t sseed = 0;
+ 
+ if(bSameSeed) 
+ {
+  sseed = 44; // the default constant value for seed for random generators
+ } 
 
+ if(!bSameSeed)
+ {
+  TTimeStamp dt;
+  sseed = dt.GetNanoSec()/1000;
+ }
+ 
  //---------------------------------------------------------------------------------------
  // Initialize the flowevent maker
  AliFlowEventSimpleMakerOnTheFly* eventMakerOnTheFly = new AliFlowEventSimpleMakerOnTheFly(sseed);
+ eventMakerOnTheFly->Init();
   
  //---------------------------------------------------------------------------------------
  // Initialize all the flow methods:  
@@ -164,11 +189,27 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1000)
  eventMakerOnTheFly->SetNoOfLoops(iLoops);
  eventMakerOnTheFly->SetMultiplicityOfRP(iMultiplicityOfRP);
  eventMakerOnTheFly->SetMultiplicitySpreadOfRP(dMultiplicitySpreadOfRP);
+
  eventMakerOnTheFly->SetV1RP(dV1RP);
  eventMakerOnTheFly->SetV1SpreadRP(dV1SpreadRP);  
- eventMakerOnTheFly->SetV2RP(dV2RP);
- eventMakerOnTheFly->SetV2SpreadRP(dV2SpreadRP);  
-      
+ eventMakerOnTheFly->SetV4RP(dV4RP);
+ eventMakerOnTheFly->SetV4SpreadRP(dV4SpreadRP);  
+ 
+ // constant harmonic V2:
+ if(bConstantHarmonics)
+ { 
+  eventMakerOnTheFly->SetUseConstantHarmonics(bConstantHarmonics);
+  eventMakerOnTheFly->SetV2RP(dV2RP);
+  eventMakerOnTheFly->SetV2SpreadRP(dV2SpreadRP);  
+ }
+ // (pt,eta) dependent harmonic V2:
+ if(!bConstantHarmonics)
+ {
+  eventMakerOnTheFly->SetUseConstantHarmonics(bConstantHarmonics);
+  eventMakerOnTheFly->SetV2RPMax(dV2RPMax);
+  eventMakerOnTheFly->SetPtCutOff(dPtCutOff);  
+ }
+       
  //---------------------------------------------------------------------------------------  
  // create and analyze events 'on the fly':
 
