@@ -28,6 +28,7 @@
 #include <TParticle.h>
 #include <TH1I.h>
 #include <TStyle.h>
+#include <TFile.h>
 
 #include "AliCFHeavyFlavourTaskMultiVarMultiStep.h"
 #include "AliStack.h"
@@ -373,7 +374,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					AliDebug(2,Form("pT = %f, dca = %f, cosThetaStar = %f, pTpi = %f, pTK = %f, d0pi = %f, d0K = %f, d0xd0 = %f, cosPointingAngle = %f", pt, dca, cosThetaStar,pTpi, pTK, d0pi*1E4, d0K*1E4, d0xd0*1E8, cosPointingAngle));
 
 					// PPR cuts 
-					Double_t cuts[6];
+					Double_t cuts[6] = {9999999., 1.1, 0., 9999999., 9999999., 0.};
 					if (pt <= 1){
 						cuts[0] = 400;
 						cuts[1] = 0.8;
@@ -839,6 +840,45 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h102->Draw("p");
 	c4->cd(6);
 	c4->cd();
+
+	TFile* file_projection = new TFile("file_projection.root","RECREATE");
+	h00->Write("pT_D0_step0");
+	h10->Write("rapidity_step0");
+	h20->Write("cosThetaStar_step0");
+	h30->Write("pT_pi_step0");
+	h40->Write("pT_K_step0");
+	h50->Write("cT_step0");
+	h60->Write("dca_step0");
+	h70->Write("d0_pi_step0");
+	h80->Write("d0_K_step0");
+	h90->Write("d0xd0_step0");
+	h100->Write("cosPointingAngle_step0");
+
+	h01->Write("pT_D0_step1");
+	h11->Write("rapidity_step1");
+	h21->Write("cosThetaStar_step1");
+	h31->Write("pT_pi_step1");
+	h41->Write("pT_K_step1");
+	h51->Write("cT_step1");
+	h61->Write("dca_step1");
+	h71->Write("d0_pi_step1");
+	h81->Write("d0_K_step1");
+	h91->Write("d0xd0_step1");
+	h101->Write("cosPointingAngle_step1");
+
+	h02->Write("pT_D0_step2");
+	h12->Write("rapidity_step2");
+	h22->Write("cosThetaStar_step2");
+	h32->Write("pT_pi_step2");
+	h42->Write("pT_K_step2");
+	h52->Write("cT_step2");
+	h62->Write("dca_step2");
+	h72->Write("d0_pi_step2");
+	h80->Write("d0_K_step2");
+	h92->Write("d0xd0_step2");
+	h102->Write("cosPointingAngle_step2");
+
+	file_projection->Close();
 
 	/*
 	c1->SaveAs("Plots/pT_rapidity_cosThetaStar.eps");
