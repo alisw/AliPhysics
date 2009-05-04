@@ -1105,7 +1105,7 @@ void AliTRDmcmSim::CalcFitreg()
 
   //???
   // TRAP parameters:
-  const uint16_t lutPos[128] = {   // move later to some other file
+  const UShort_t lutPos[128] = {   // move later to some other file
     0,  1,  1,  2,  2,  3,  3,  4,  4,  5,  5,  6,  6,  7,  7,  8,  8,  9,  9, 10, 10, 11, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15,
     16, 16, 16, 17, 17, 18, 18, 19, 19, 19, 20, 20, 20, 21, 21, 22, 22, 22, 23, 23, 23, 24, 24, 24, 24, 25, 25, 25, 26, 26, 26, 26,
     27, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 27, 27, 27, 27, 26,
@@ -1717,10 +1717,10 @@ UInt_t AliTRDmcmSim::AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits) const
   return sum;
 }
 
-void AliTRDmcmSim::Sort2(uint16_t  idx1i, uint16_t  idx2i, \
-                            uint16_t  val1i, uint16_t  val2i, \
-                            uint16_t *idx1o, uint16_t *idx2o, \
-                            uint16_t *val1o, uint16_t *val2o) const
+void AliTRDmcmSim::Sort2(UShort_t  idx1i, UShort_t  idx2i, \
+                            UShort_t  val1i, UShort_t  val2i, \
+                            UShort_t *idx1o, UShort_t *idx2o, \
+                            UShort_t *val1o, UShort_t *val2o) const
 {
   // sorting for tracklet selection
 
@@ -1740,10 +1740,10 @@ void AliTRDmcmSim::Sort2(uint16_t  idx1i, uint16_t  idx2i, \
     }
 }
 
-void AliTRDmcmSim::Sort3(uint16_t  idx1i, uint16_t  idx2i, uint16_t  idx3i, \
-                            uint16_t  val1i, uint16_t  val2i, uint16_t  val3i, \
-                            uint16_t *idx1o, uint16_t *idx2o, uint16_t *idx3o, \
-                            uint16_t *val1o, uint16_t *val2o, uint16_t *val3o)
+void AliTRDmcmSim::Sort3(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, \
+                            UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, \
+                            UShort_t *idx1o, UShort_t *idx2o, UShort_t *idx3o, \
+                            UShort_t *val1o, UShort_t *val2o, UShort_t *val3o)
 {
   // sorting for tracklet selection
 
@@ -1818,17 +1818,17 @@ void AliTRDmcmSim::Sort3(uint16_t  idx1i, uint16_t  idx2i, uint16_t  idx3i, \
 //    printf("output channels %d %d %d, charges %d %d %d \n",*idx1o, *idx2o, *idx3o, *val1o, *val2o, *val3o);
 }
 
-void AliTRDmcmSim::Sort6To4(uint16_t  idx1i, uint16_t  idx2i, uint16_t  idx3i, uint16_t  idx4i, uint16_t  idx5i, uint16_t  idx6i, \
-                               uint16_t  val1i, uint16_t  val2i, uint16_t  val3i, uint16_t  val4i, uint16_t  val5i, uint16_t  val6i, \
-                               uint16_t *idx1o, uint16_t *idx2o, uint16_t *idx3o, uint16_t *idx4o, \
-                               uint16_t *val1o, uint16_t *val2o, uint16_t *val3o, uint16_t *val4o)
+void AliTRDmcmSim::Sort6To4(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, UShort_t  idx4i, UShort_t  idx5i, UShort_t  idx6i, \
+                               UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, UShort_t  val4i, UShort_t  val5i, UShort_t  val6i, \
+                               UShort_t *idx1o, UShort_t *idx2o, UShort_t *idx3o, UShort_t *idx4o, \
+                               UShort_t *val1o, UShort_t *val2o, UShort_t *val3o, UShort_t *val4o)
 {
   // sorting for tracklet selection
 
-    uint16_t idx21s, idx22s, idx23s, dummy;
-    uint16_t val21s, val22s, val23s;
-    uint16_t idx23as, idx23bs;
-    uint16_t val23as, val23bs;
+    UShort_t idx21s, idx22s, idx23s, dummy;
+    UShort_t val21s, val22s, val23s;
+    UShort_t idx23as, idx23bs;
+    UShort_t val23as, val23bs;
 
     Sort3(idx1i, idx2i, idx3i, val1i, val2i, val3i,
                  idx1o, &idx21s, &idx23as,
@@ -1846,16 +1846,16 @@ void AliTRDmcmSim::Sort6To4(uint16_t  idx1i, uint16_t  idx2i, uint16_t  idx3i, u
 
 }
 
-void AliTRDmcmSim::Sort6To2Worst(uint16_t  idx1i, uint16_t  idx2i, uint16_t  idx3i, uint16_t  idx4i, uint16_t  idx5i, uint16_t  idx6i, \
-                                    uint16_t  val1i, uint16_t  val2i, uint16_t  val3i, uint16_t  val4i, uint16_t  val5i, uint16_t  val6i, \
-                                    uint16_t *idx5o, uint16_t *idx6o)
+void AliTRDmcmSim::Sort6To2Worst(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, UShort_t  idx4i, UShort_t  idx5i, UShort_t  idx6i, \
+                                    UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, UShort_t  val4i, UShort_t  val5i, UShort_t  val6i, \
+                                    UShort_t *idx5o, UShort_t *idx6o)
 {
   // sorting for tracklet selection
 
-    uint16_t idx21s, idx22s, idx23s, dummy1, dummy2, dummy3, dummy4, dummy5;
-    uint16_t val21s, val22s, val23s;
-    uint16_t idx23as, idx23bs;
-    uint16_t val23as, val23bs;
+    UShort_t idx21s, idx22s, idx23s, dummy1, dummy2, dummy3, dummy4, dummy5;
+    UShort_t val21s, val22s, val23s;
+    UShort_t idx23as, idx23bs;
+    UShort_t val23as, val23bs;
 
     Sort3(idx1i, idx2i,   idx3i, val1i, val2i, val3i,
                  &dummy1, &idx21s, &idx23as,
