@@ -3,8 +3,12 @@
 // types -> type of fit function for signal. Can be 0, 1 (see AliHFMassFitter.cxx for details)
 // factor4refl -> sigmaRefl=factor4refl*sigmaSgn (have a look to AliHFMassFitter.cxx for details). Set it if types=1
 
-void AliHFMassFitterTest(TH1F *hinvMass, Int_t typeb=0, Int_t types=0, Int_t factor4refl=1){
-  
+void AliHFMassFitterTest(TH1F *hinvMass, Int_t typeb, Int_t types, Int_t factor4refl=1){
+
+  Bool_t useParFiles=kFALSE;
+  Int_t load=gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+  LoadLibraries(useParFiles);
+
   Int_t nbin=hinvMass->GetNbinsX();
   Double_t min=hinvMass->GetBinLowEdge(1),max=hinvMass->GetBinLowEdge(nbin)+hinvMass->GetBinWidth(nbin);
   //TH1F *hMass=new TH1F("hMass","Invariant Mass",nbin,min,max);
