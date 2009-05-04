@@ -11,6 +11,7 @@
 #include "TCanvas.h"
 #include "TSystem.h"
 #include "TFile.h"
+#include "TInterpreter.h"
 
 #include "AliAnalysisTask.h"
 
@@ -27,7 +28,7 @@ ClassImp(AliAnalysisTaskFemto)
 
 // Default name for the setup macro of femto analysis  
 // This function MUST be defined in the separate file !!!
-extern AliFemtoManager *ConfigFemtoAnalysis();
+// extern AliFemtoManager *ConfigFemtoAnalysis();
 
 //________________________________________________________________________
   AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name): 
@@ -135,7 +136,9 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
 void AliAnalysisTaskFemto::CreateOutputObjects() {
   printf("Creating Femto Analysis objects\n");
 
-  SetFemtoManager(ConfigFemtoAnalysis());
+  gROOT->LoadMacro("ConfigFemtoAnalysis.C");
+  //  fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
+  SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine("ConfigFemtoAnalysis()"));
 
   TList *tOL;
   fOutputList = fManager->Analysis(0)->GetOutputList();

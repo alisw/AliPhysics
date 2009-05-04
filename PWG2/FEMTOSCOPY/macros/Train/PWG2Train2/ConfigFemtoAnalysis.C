@@ -18,6 +18,7 @@
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoESDTrackCut.h"
+#include "AliFemtoCorrFctn.h"
 #include "AliFemtoCutMonitorParticleYPt.h"
 #include "AliFemtoCutMonitorParticleVertPos.h"
 #include "AliFemtoCutMonitorParticleMomRes.h"
