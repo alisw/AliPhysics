@@ -26,7 +26,7 @@
 #include "AliAnalysisTaskGammaConversion.h"
 #include "AliStack.h"
 #include "AliLog.h"
-#include <vector>
+#include "TNtuple.h"
 
 class AliKFVertex;
 class AliAODHandler;
@@ -58,8 +58,8 @@ AliAnalysisTaskSE(),
   fMCGammaChic(),
   fKFReconstructedGammas(),
   fIsTrueReconstructedGammas(),
-  electronv1(),
-  electronv2(),
+  fElectronv1(),
+  fElectronv2(),
   fElectronMass(-1),
   fGammaMass(-1),
   fPi0Mass(-1),
@@ -96,8 +96,8 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fMCGammaChic(),
   fKFReconstructedGammas(),
   fIsTrueReconstructedGammas(),
-  electronv1(),
-  electronv2(),
+  fElectronv1(),
+  fElectronv2(),
   fElectronMass(-1),
   fGammaMass(-1),
   fPi0Mass(-1),
@@ -158,8 +158,8 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
 	
   fKFReconstructedGammas.clear();
   fIsTrueReconstructedGammas.clear();
-  electronv1.clear();
-  electronv2.clear();
+  fElectronv1.clear();
+  fElectronv2.clear();
 	
   //Clear the data in the v0Reader
   fV0Reader->UpdateEventByEventData();
@@ -556,7 +556,8 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 
 
 void AliAnalysisTaskGammaConversion::FillNtuple(){
-	
+  //Fills the ntuple with the different values
+
   if(fGammaNtuple == NULL){
     return;
   }
@@ -605,6 +606,7 @@ void AliAnalysisTaskGammaConversion::FillNtuple(){
 }
 
 void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
+  // Process all the V0's without applying any cuts to it
 
   Int_t numberOfV0s = fV0Reader->GetNumberOfV0s();
   for(Int_t i=0;i<numberOfV0s;i++){
@@ -732,8 +734,8 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     // end mapping
 		
     fKFReconstructedGammas.push_back(*fV0Reader->GetMotherCandidateKFCombination());
-    electronv1.push_back(fV0Reader->GetCurrentV0()->GetPindex());
-    electronv2.push_back(fV0Reader->GetCurrentV0()->GetNindex());
+    fElectronv1.push_back(fV0Reader->GetCurrentV0()->GetPindex());
+    fElectronv2.push_back(fV0Reader->GetCurrentV0()->GetNindex());
 
 		
     //----------------------------------- checking for "real" conversions (MC match) --------------------------------------
@@ -842,10 +844,10 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
       AliKFParticle * twoGammaDecayCandidateDaughter0 = &fKFReconstructedGammas[firstGammaIndex];
       AliKFParticle * twoGammaDecayCandidateDaughter1 = &fKFReconstructedGammas[secondGammaIndex];
       
-      if(electronv1[firstGammaIndex]==electronv1[secondGammaIndex] || electronv1[firstGammaIndex]==electronv2[secondGammaIndex]){
+      if(fElectronv1[firstGammaIndex]==fElectronv1[secondGammaIndex] || fElectronv1[firstGammaIndex]==fElectronv2[secondGammaIndex]){
 	continue;
       }
-      if(electronv2[firstGammaIndex]==electronv1[secondGammaIndex] || electronv2[firstGammaIndex]==electronv2[secondGammaIndex]){
+      if(fElectronv2[firstGammaIndex]==fElectronv1[secondGammaIndex] || fElectronv2[firstGammaIndex]==fElectronv2[secondGammaIndex]){
 	continue;
       }
 
@@ -866,8 +868,8 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 				
 	if(chi2TwoGammaCandidate>0 && chi2TwoGammaCandidate<fV0Reader->GetChi2CutMeson()){					
 					
-	  TVector3 MomentumVectorTwoGammaCandidate(twoGammaCandidate->GetPx(),twoGammaCandidate->GetPy(),twoGammaCandidate->GetPz());
-	  TVector3 SpaceVectorTwoGammaCandidate(twoGammaCandidate->GetX(),twoGammaCandidate->GetY(),twoGammaCandidate->GetZ());
+	  TVector3 momentumVectorTwoGammaCandidate(twoGammaCandidate->GetPx(),twoGammaCandidate->GetPy(),twoGammaCandidate->GetPz());
+	  TVector3 spaceVectorTwoGammaCandidate(twoGammaCandidate->GetX(),twoGammaCandidate->GetY(),twoGammaCandidate->GetZ());
 					
 	  Double_t openingAngleTwoGammaCandidate = twoGammaDecayCandidateDaughter0->GetAngle(*twoGammaDecayCandidateDaughter1);					
 	  Double_t rapidity;
@@ -882,15 +884,15 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 
 	  fHistograms->FillHistogram("ESD_Mother_GammaDaughter_OpeningAngle", openingAngleTwoGammaCandidate);
 	  fHistograms->FillHistogram("ESD_Mother_Energy", twoGammaCandidate->GetE());
-	  fHistograms->FillHistogram("ESD_Mother_Pt", MomentumVectorTwoGammaCandidate.Pt());
-	  fHistograms->FillHistogram("ESD_Mother_Eta", MomentumVectorTwoGammaCandidate.Eta());
+	  fHistograms->FillHistogram("ESD_Mother_Pt", momentumVectorTwoGammaCandidate.Pt());
+	  fHistograms->FillHistogram("ESD_Mother_Eta", momentumVectorTwoGammaCandidate.Eta());
 	  fHistograms->FillHistogram("ESD_Mother_Rapid", rapidity);					
-	  fHistograms->FillHistogram("ESD_Mother_Phi", SpaceVectorTwoGammaCandidate.Phi());
+	  fHistograms->FillHistogram("ESD_Mother_Phi", spaceVectorTwoGammaCandidate.Phi());
 	  fHistograms->FillHistogram("ESD_Mother_Mass", massTwoGammaCandidate);
-	  fHistograms->FillHistogram("ESD_Mother_R", SpaceVectorTwoGammaCandidate.Pt());    // Pt in Space == R!!!
-	  fHistograms->FillHistogram("ESD_Mother_ZR", twoGammaCandidate->GetZ(), SpaceVectorTwoGammaCandidate.Pt());
+	  fHistograms->FillHistogram("ESD_Mother_R", spaceVectorTwoGammaCandidate.Pt());    // Pt in Space == R!!!
+	  fHistograms->FillHistogram("ESD_Mother_ZR", twoGammaCandidate->GetZ(), spaceVectorTwoGammaCandidate.Pt());
 	  fHistograms->FillHistogram("ESD_Mother_XY", twoGammaCandidate->GetX(), twoGammaCandidate->GetY());
-	  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt",massTwoGammaCandidate ,MomentumVectorTwoGammaCandidate.Pt());
+	  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 	}
       }
       delete twoGammaCandidate;
@@ -995,7 +997,7 @@ void AliAnalysisTaskGammaConversion::UserCreateOutputObjects()
   fOutputContainer->SetName(GetName());
 }
 
-Double_t AliAnalysisTaskGammaConversion::GetMCOpeningAngle(TParticle* daughter0, TParticle* daughter1) const{
+Double_t AliAnalysisTaskGammaConversion::GetMCOpeningAngle(TParticle* const daughter0, TParticle* const daughter1) const{
   //helper function
   TVector3 v3D0(daughter0->Px(),daughter0->Py(),daughter0->Pz());
   TVector3 v3D1(daughter1->Px(),daughter1->Py(),daughter1->Pz());
