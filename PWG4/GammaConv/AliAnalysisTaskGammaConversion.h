@@ -13,8 +13,8 @@
 #include "AliAnalysisTaskSE.h"
 #include <vector>
 #include "AliV0Reader.h"
-#include "TNtuple.h"
 
+class TNtuple;
 class AliGammaConversionHistograms;
 class AliESDv0;
 class AliKFParticle;
@@ -43,7 +43,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void ProcessV0sNoCut();
   void ProcessV0s();
   void ProcessGammasForNeutralMesonAnalysis();
-  void SetHistograms(AliGammaConversionHistograms *histograms){fHistograms=histograms;}
+  void SetHistograms(AliGammaConversionHistograms *const histograms){fHistograms=histograms;}
   void SetDoMCTruth(Bool_t flag){fDoMCTruth=flag;}
   void SetElectronMass(Double_t electronMass){fElectronMass = electronMass;}
   void SetGammaMass(Double_t gammaMass){fGammaMass = gammaMass;}
@@ -53,56 +53,56 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetEtaMass(Double_t etaMass){fEtaMass = etaMass;}
   void SetEtaWidth(Double_t etaWidth){fEtaWidth = etaWidth;}
   void SetMinOpeningAngleGhostCut(Double_t ghostCut){fMinOpeningAngleGhostCut = ghostCut;}
-  void SetV0Reader(AliV0Reader* reader){fV0Reader=reader;}
+  void SetV0Reader(AliV0Reader* const reader){fV0Reader=reader;}
   void SetCalculateBackground(Bool_t bg){fCalculateBackground=bg;}
   void CalculateBackground();
   void SetWriteNtuple(Bool_t writeNtuple){fWriteNtuple = writeNtuple;}
   void FillNtuple();
-  Double_t GetMCOpeningAngle(TParticle* daughter0, TParticle* daughter1) const;
+  Double_t GetMCOpeningAngle(TParticle* const daughter0, TParticle* const daughter1) const;
 
  private:
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
   AliAnalysisTaskGammaConversion& operator=(const AliAnalysisTaskGammaConversion&); // Not implemented
 
-  AliV0Reader* fV0Reader;
+  AliV0Reader* fV0Reader; // The V0 reader object 
 
-  AliStack * fStack;
+  AliStack * fStack; // pointer to the MC particle stack
 
   TList * fOutputContainer ; // Histogram container
 
-  AliGammaConversionHistograms *fHistograms;
+  AliGammaConversionHistograms *fHistograms; // Pointer to the histogram handling class
 
-  Bool_t fDoMCTruth;
+  Bool_t fDoMCTruth; // Flag to switch on/off MC truth 
     
-  vector<TParticle*> fMCAllGammas;
-  vector<TParticle*> fMCPi0s;
-  vector<TParticle*> fMCEtas;
-  vector<TParticle*> fMCGammaChic;
+  vector<TParticle*> fMCAllGammas; // vector containing all MC gammas
+  vector<TParticle*> fMCPi0s; //vector containing all MC Pi0s
+  vector<TParticle*> fMCEtas; //vector containing all MC Etas
+  vector<TParticle*> fMCGammaChic; //vector containing all MC Chi_c's
 
-  vector<AliKFParticle> fKFReconstructedGammas;
-  vector<Bool_t> fIsTrueReconstructedGammas;
-  vector<Int_t> electronv1;
-  vector<Int_t> electronv2;
+  vector<AliKFParticle> fKFReconstructedGammas; // vector containing all reconstructed gammas
+  vector<Bool_t> fIsTrueReconstructedGammas;    // vector containing information if this was a true gamma or not (follows the index of fKFReconstructedGammas)
+  vector<Int_t> fElectronv1; // vector containing index of electron 1
+  vector<Int_t> fElectronv2; // vector containing index of electron 2
 
   //mass defines
-  Double_t fElectronMass;
-  Double_t fGammaMass;
-  Double_t fPi0Mass;
-  Double_t fEtaMass;
+  Double_t fElectronMass; //electron mass
+  Double_t fGammaMass;    //gamma mass
+  Double_t fPi0Mass;      //pi0mass
+  Double_t fEtaMass;      //eta mass
 
   // width defines
-  Double_t fGammaWidth;
-  Double_t fPi0Width;
-  Double_t fEtaWidth;
+  Double_t fGammaWidth; //gamma width cut
+  Double_t fPi0Width;   // pi0 width cut
+  Double_t fEtaWidth;   // eta width cut
 
-  Double_t fMinOpeningAngleGhostCut;
+  Double_t fMinOpeningAngleGhostCut; // minimum angle cut
 
-  Bool_t fCalculateBackground;
-  Bool_t fWriteNtuple;
-  TNtuple *fGammaNtuple;
-  TNtuple *fNeutralMesonNtuple;
+  Bool_t fCalculateBackground; //flag to set backgrount calculation on/off
+  Bool_t fWriteNtuple;         // flag to set if writing to ntuple on/off
+  TNtuple *fGammaNtuple;       // Ntuple for gamma values
+  TNtuple *fNeutralMesonNtuple;// NTuple for mesons
 
-  Int_t fTotalNumberOfAddedNtupleEntries;
+  Int_t fTotalNumberOfAddedNtupleEntries; // number of added ntuple entries
 
   ClassDef(AliAnalysisTaskGammaConversion, 2); // Analysis task for gamma conversions
 };
