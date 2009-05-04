@@ -133,7 +133,8 @@ class AliAnalysisVertexingHF : public TNamed {
 
   Bool_t fInputAOD; // input from AOD (kTRUE) or ESD (kFALSE) 
 
-  Int_t fAODMap[100000]; // map between index and ID for AOD tracks
+  Int_t fAODMapSize; // size of fAODMap 
+  Int_t *fAODMap; //[fAODMapSize] map between index and ID for AOD tracks
 
   Double_t fBzkG; // z componenent of field in kG
 
@@ -291,7 +292,7 @@ class AliAnalysisVertexingHF : public TNamed {
   void   SetPrimaryVertex(AliESDVertex *v1) { fV1 = v1; }
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
   //
-  ClassDef(AliAnalysisVertexingHF,10);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,11);  // Reconstruction of HF decay candidates
 };
 
 
