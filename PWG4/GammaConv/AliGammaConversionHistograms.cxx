@@ -50,6 +50,7 @@ AliGammaConversionHistograms::AliGammaConversionHistograms() :
   fMatchContainer(NULL),
   fESDContainer(NULL),
   fMCContainer(NULL),
+  fTableContainer(NULL),	
   fOtherContainer(NULL)
 {
   // see header file for documenation
@@ -73,6 +74,7 @@ AliGammaConversionHistograms::AliGammaConversionHistograms(const AliGammaConvers
   fMatchContainer(original.fMatchContainer),
   fESDContainer(original.fESDContainer),
   fMCContainer(original.fMCContainer),
+  fTableContainer(original.fTableContainer), 
   fOtherContainer(original.fOtherContainer)
 {    
   //see header file for documentation
@@ -108,6 +110,26 @@ void AliGammaConversionHistograms::AddHistogram(TString histogramName, TString h
   tmp->GetYaxis()->SetTitle(yAxisTitle);
   TObjString *tobjstring = new TObjString(histogramName.Data());
   fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+}
+
+void AliGammaConversionHistograms::AddTable(TString tableName,TString tableTitle,Int_t nXBins,const char * axesLabel[]){
+
+
+        TH1F *tmp = new TH1F(tableName,tableTitle,nXBins,0,nXBins);
+        for(Int_t xbin=1; xbin<=nXBins; xbin++){
+         tmp->GetXaxis()->SetBinLabel(xbin,axesLabel[xbin-1]);
+        }
+        tmp->SetStats(0);
+
+        TObjString *tobjstring = new TObjString(tableName.Data());
+        fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+}
+
+void AliGammaConversionHistograms::FillTable(TString tableName,Double_t xValue) const {
+        TH1 *tmp = (TH1*)fHistogramMap->GetValue(tableName.Data());
+        if(tmp){
+             tmp->Fill(xValue);
+        }
 }
 
 void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t xValue) const{
@@ -202,6 +224,15 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	  fMCContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
 	}
       }
+      else if(histogramString.Contains("Table")){// means it should be put in the Table Folder
+	if(fTableContainer == NULL){
+	   fTableContainer = new TList();
+	   fTableContainer->SetName("Tables");
+	}
+	if(fTableContainer != NULL){
+	   fTableContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+	}
+      }			
       else{
 	if(fOtherContainer == NULL){
 	  fOtherContainer = new TList();
@@ -234,6 +265,9 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
     if(fMCContainer != NULL){
       fOutputContainer->Add(fMCContainer);
     }
+    if(fTableContainer !=  NULL){
+       fOutputContainer->Add(fTableContainer);	
+    }		
     if(fOtherContainer != NULL){
       fOutputContainer->Add(fMCContainer);
     }

@@ -61,6 +61,24 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Double_t GetMCOpeningAngle(TParticle* const daughter0, TParticle* const daughter1) const;
   void CheckV0Efficiency();
 
+
+  //////////////////Chi_c Analysis////////////////////////////
+  void GetPID(AliESDtrack *track, Stat_t &pid, Stat_t &weight);	
+  double GetSigmaToVertex(AliESDtrack* t);
+  void ElectronBackground(TString hBg, vector <TLorentzVector> e);
+  void FillAngle(TString histoName,vector <TLorentzVector> TLVeNeg, vector <TLorentzVector> TLVePos);
+  void FillElectronInvMass(TString histoName, vector <TLorentzVector> NegativeElectron, 
+	vector <TLorentzVector> PositiveElectron);
+  void FillGammaElectronInvMass(TString histoMass,TString histoDiff,vector <AliKFParticle> fKFGammas,
+        vector <TLorentzVector> TLVeNeg,vector<TLorentzVector> TLVePos);
+  void CleanWithAngleCuts(vector <AliESDtrack*> NegativeElectrons,
+	vector <AliESDtrack*> PositiveElectrons, vector <AliKFParticle> Gammas);
+  vector <TLorentzVector> GetTLorentzVector(vector <AliESDtrack*> ESDtrack);	
+  void ProcessGammaElectronsForChicAnalysis();
+  ///////////////////////////////////////////////////////////////
+
+
+
  private:
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
   AliAnalysisTaskGammaConversion& operator=(const AliAnalysisTaskGammaConversion&); // Not implemented
@@ -68,7 +86,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   AliV0Reader* fV0Reader; // The V0 reader object 
 
   AliStack * fStack; // pointer to the MC particle stack
-
+  AliESDEvent* fESDEvent; //pointer to the ESDEvent
   TList * fOutputContainer ; // Histogram container
 
   AliGammaConversionHistograms *fHistograms; // Pointer to the histogram handling class
@@ -84,6 +102,16 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   vector<Bool_t> fIsTrueReconstructedGammas;    // vector containing information if this was a true gamma or not (follows the index of fKFReconstructedGammas)
   vector<Int_t> fElectronv1; // vector containing index of electron 1
   vector<Int_t> fElectronv2; // vector containing index of electron 2
+
+  ///////Chi_c Analysis///////////////////////////
+  vector<AliESDtrack*> fCurrentEventPosElectron;       // comment here
+  vector<AliESDtrack*> fPreviousEventPosElectron;      //comment here
+  vector<AliESDtrack*> fCurrentEventNegElectron;       //comment here
+  vector<AliESDtrack*> fPreviousEventNegElectron;      //comment here
+  vector<AliKFParticle> fKFReconstructedGammasCut;     //comment here
+  vector<TLorentzVector> fPreviousEventTLVNegElectron; //comment here
+  vector<TLorentzVector> fPreviousEventTLVPosElectron; //comment here
+  //////////////////////////////////////////////////	
 
   //mass defines
   Double_t fElectronMass; //electron mass
@@ -105,7 +133,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 
   Int_t fTotalNumberOfAddedNtupleEntries; // number of added ntuple entries
 
-  ClassDef(AliAnalysisTaskGammaConversion, 2); // Analysis task for gamma conversions
+  ClassDef(AliAnalysisTaskGammaConversion, 3); // Analysis task for gamma conversions
 };
  
 #endif //ALIANALYSISTASKGAMMA_H

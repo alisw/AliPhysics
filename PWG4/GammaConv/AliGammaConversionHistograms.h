@@ -49,6 +49,12 @@ class AliGammaConversionHistograms{
   void AddHistogram(TString histogramName, TString histogramTitle, Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle="", TString yAxisTitle="");
 
   /*
+   *  Adds a TH1F Table to the table map and create a key for it
+   */
+  void AddTable(TString tableName,TString tableTitle,Int_t nXBins, const char * axesLabel[]);	
+
+
+  /*
    * Fills a TH1F histogram with the given name with the given value 
    */
   void FillHistogram(TString histogramName, Double_t xValue) const;
@@ -57,6 +63,11 @@ class AliGammaConversionHistograms{
    * Fills a TH2F histogram with the given name with the given value 
    */
   void FillHistogram(TString histogramName, Double_t xValue, Double_t yValue) const;
+
+  /*
+   * Fills a TH1F table with the given name with the given value
+   */			
+  void FillTable(TString tableName, Double_t xValue) const;		
 
  private:
   TMap* fHistogramMap;
@@ -77,10 +88,11 @@ class AliGammaConversionHistograms{
   TList * fMatchContainer;
   TList * fESDContainer;
   TList * fMCContainer;
+  TList * fTableContainer;	
   TList * fOtherContainer;
 
   
-  ClassDef(AliGammaConversionHistograms,1)
+  ClassDef(AliGammaConversionHistograms,2)
 };
 
 
