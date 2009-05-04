@@ -442,7 +442,7 @@ class AliV0Reader : public TObject {
   AliESDInputHandler* fESDHandler;      //! pointer to esd object
   AliESDEvent *fESDEvent;               //! pointer to esd object
 
-  AliGammaConversionHistograms *fHistograms;
+  AliGammaConversionHistograms *fHistograms; //! pointer to histogram handling class
   
   Int_t fCurrentV0IndexNumber;
   AliESDv0 * fCurrentV0;                //! pointer to the current v0
@@ -457,44 +457,44 @@ class AliV0Reader : public TObject {
   TLorentzVector * fPositiveTrackLorentzVector; //! pointer to the positive Track Lorentz Vector
   TLorentzVector * fMotherCandidateLorentzVector;   //! pointer to the mother candidate Track Lorentz Vector
 
-  Double_t fCurrentXValue;
-  Double_t fCurrentYValue;
-  Double_t fCurrentZValue;
+  Double_t fCurrentXValue;   // current x value
+  Double_t fCurrentYValue;   // current y value
+  Double_t fCurrentZValue;   // current z value
 
-  Int_t fPositiveTrackPID;
-  Int_t fNegativeTrackPID;
+  Int_t fPositiveTrackPID;   // positive track pid
+  Int_t fNegativeTrackPID;   // negative track pid
 
   TParticle *fNegativeMCParticle;      //!
   TParticle *fPositiveMCParticle;      //!
   TParticle *fMotherMCParticle;        //!
 
-  Double_t fMotherCandidateKFMass;
-  Double_t fMotherCandidateKFWidth;
+  Double_t fMotherCandidateKFMass;   // mass of mother candidate KF particle
+  Double_t fMotherCandidateKFWidth;  // width of mother candidate KF particle
 
-  Bool_t fUseKFParticle;
-  Bool_t fUseESDTrack;
-  Bool_t fDoMC;
+  Bool_t fUseKFParticle;   // flag 
+  Bool_t fUseESDTrack;     // flag 
+  Bool_t fDoMC;            // flag 
 
   //cuts
-  Double_t fMaxR;
-  Double_t fEtaCut;
-  Double_t fPtCut;
-  Double_t fLineCutZRSlope;
-  Double_t fLineCutZValue;
-  Double_t fChi2CutConversion;
-  Double_t fChi2CutMeson;
-  Double_t fPIDProbabilityCutNegativeParticle;
-  Double_t fPIDProbabilityCutPositiveParticle;
-  Double_t fXVertexCut;
-  Double_t fYVertexCut;
-  Double_t fZVertexCut;
+  Double_t fMaxR; //r cut
+  Double_t fEtaCut; //eta cut
+  Double_t fPtCut; // pt cut
+  Double_t fLineCutZRSlope; //linecut
+  Double_t fLineCutZValue; //linecut
+  Double_t fChi2CutConversion; //chi2cut
+  Double_t fChi2CutMeson;  //chi2cut
+  Double_t fPIDProbabilityCutNegativeParticle; //pid cut
+  Double_t fPIDProbabilityCutPositiveParticle; //pid cut
+  Double_t fXVertexCut; //vertex cut
+  Double_t fYVertexCut; //vertex cut
+  Double_t fZVertexCut; // vertexcut
   
-  Double_t fNSigmaMass;
+  Double_t fNSigmaMass; //nsigma cut
   
-  Bool_t fUseImprovedVertex;
+  Bool_t fUseImprovedVertex; //flag
   
-  vector<AliKFParticle> fCurrentEventGoodV0s;
-  vector<AliKFParticle> fPreviousEventGoodV0s;
+  vector<AliKFParticle> fCurrentEventGoodV0s; //vector of good v0s
+  vector<AliKFParticle> fPreviousEventGoodV0s; // vector of good v0s from prevous events
 
   ClassDef(AliV0Reader,2)
 };
