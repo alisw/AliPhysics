@@ -40,19 +40,19 @@ class AliAnalysisTaskSEBkgLikeSignJPSI : public AliAnalysisTaskSE
   AliAnalysisTaskSEBkgLikeSignJPSI& operator=(const AliAnalysisTaskSEBkgLikeSignJPSI& source); 
 
   TList   *fOutput;                //! list send on output slot 0
-  TH1F    *fHistMassJPSI;          // output histograms
-  TH1F    *fHistMassLS;            //
-  TH1F    *fHistCtsJPSI;           // Cosine of decay angle
-  TH1F    *fHistCtsLS;             //
-  TH1F    *fHistCtsLSpos;          //
-  TH1F    *fHistCtsLSneg;          //
-  TH1F    *fHistCPtaJPSI;          // Cosine of pointing angle
-  TH1F    *fHistCPtaLS;            //
-  TH1F    *fHistd0d0JPSI;          // Product of impact parameters
-  TH1F    *fHistd0d0LS;            //
-  TH1F    *fHistDCAJPSI;           // Distance of closest approach
-  TH1F    *fHistDCALS;             //
-  AliAnalysisVertexingHF *fVHF;    // Vertexer heavy flavour (used to pass the cuts)
+  TH1F    *fHistMassJPSI;          //! output histograms
+  TH1F    *fHistMassLS;            //!
+  TH1F    *fHistCtsJPSI;           //! Cosine of decay angle
+  TH1F    *fHistCtsLS;             //!
+  TH1F    *fHistCtsLSpos;          //!
+  TH1F    *fHistCtsLSneg;          //!
+  TH1F    *fHistCPtaJPSI;          //! Cosine of pointing angle
+  TH1F    *fHistCPtaLS;            //!
+  TH1F    *fHistd0d0JPSI;          //! Product of impact parameters
+  TH1F    *fHistd0d0LS;            //!
+  TH1F    *fHistDCAJPSI;           //! Distance of closest approach
+  TH1F    *fHistDCALS;             //!
+  AliAnalysisVertexingHF *fVHF;    //! Vertexer heavy flavour (used to pass the cuts)
 
   Int_t fTotPosPairs;              //
   Int_t fTotNegPairs;              // normalization

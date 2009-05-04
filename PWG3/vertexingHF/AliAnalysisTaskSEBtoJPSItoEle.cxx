@@ -57,9 +57,6 @@ fNameMCfile(""),
 fOkMinimize(kFALSE)
 {
   // default constructor
- 
-  // Output slot #1 writes into a TList container
-  DefineOutput(1,TList::Class());  //My private output
 }                 
 //_________________________________________________________________________________________________
 AliAnalysisTaskSEBtoJPSItoEle::AliAnalysisTaskSEBtoJPSItoEle(const char* name) :
@@ -79,7 +76,7 @@ fOkAODMC(kFALSE),
 fNameMCfile(""),
 fOkMinimize(kFALSE)
 {
-  // default constructor
+  // standard constructor
 
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output

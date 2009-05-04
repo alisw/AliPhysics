@@ -58,8 +58,6 @@ fLsNormalization(1.)
   //
   // Default constructor
   //
-  // Output slot #1 writes into a TList container
-  DefineOutput(1,TList::Class());  //My private output
 }
 
 //________________________________________________________________________
@@ -84,7 +82,7 @@ fTotNegPairs(0),
 fLsNormalization(1.)
 {
   //
-  // Default constructor
+  // Standard constructor
   //
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
