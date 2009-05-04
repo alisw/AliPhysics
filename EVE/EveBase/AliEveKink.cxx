@@ -10,17 +10,9 @@
 #include "AliEveKink.h"
 
 #include <TEveTrack.h>
+#include <TEveTrackPropagator.h>
+
 #include <TEveManager.h>
-
-#include <TPolyLine3D.h>
-#include <TPolyMarker3D.h>
-#include <TColor.h>
-
-#include <TDatabasePDG.h>
-#include <TParticlePDG.h>
-
-#include <vector>
-
 
 /***********************************************************************
 *
@@ -43,7 +35,7 @@ AliEveKink::AliEveKink() :
   fRnrStyleDaugh(0),
   fESDKinkIndex(-1),
   fDaugMaxProbPdg(0),
-  fDaugMaxProbPid(0)  
+  fDaugMaxProbPid(0)
 {
   // Default constructor.
 
@@ -60,7 +52,7 @@ AliEveKink::AliEveKink(TEveRecTrack* tMoth, TEveRecTrack* tDaug,
   fMotherMomentum(kink->fPMother),
   fDaughterMomentum(kink->fPDaughter),
   fMotherTrack(new TEveTrack(tMoth, rsMoth)),
-  fDaughterTrack(new TEveTrack(tDaug, rsDaugh)), 
+  fDaughterTrack(new TEveTrack(tDaug, rsDaugh)),
   fRnrStyleMoth(rsMoth),
   fRnrStyleDaugh(rsDaugh),
   fESDKinkIndex(-1),
@@ -82,9 +74,9 @@ AliEveKink::AliEveKink(TEveRecTrack* tMoth, TEveRecTrack* tDaug,
   fMotherTrack->AddPathMark(*pmM);
 
   fDaughterTrack->SetLineColor(7);  // light blue
-  fDaughterTrack->SetLineWidth(3);  // 
+  fDaughterTrack->SetLineWidth(3);  //
   fDaughterTrack->SetStdTitle();
-  
+
   fMotherTrack->IncDenyDestroy();
   AddElement(fMotherTrack);
   fDaughterTrack->IncDenyDestroy();
@@ -119,11 +111,11 @@ Float_t AliEveKink::GetInvMass(Int_t dPdgCode) const
   Double_t dMass=TDatabasePDG::Instance()->GetParticle(dPdgCode)->Mass();
 
   Double_t eDaug = TMath::Sqrt(dMass*dMass + lDaugMomentum.Mag2());
-  Double_t otherDaug=TMath::Sqrt( 
-  (lMothMomentum.fX-lDaugMomentum.fX)*(lMothMomentum.fX-lDaugMomentum.fX)+ 
-  (lMothMomentum.fY-lDaugMomentum.fY)*(lMothMomentum.fY-lDaugMomentum.fY)+ 
+  Double_t otherDaug=TMath::Sqrt(
+  (lMothMomentum.fX-lDaugMomentum.fX)*(lMothMomentum.fX-lDaugMomentum.fX)+
+  (lMothMomentum.fY-lDaugMomentum.fY)*(lMothMomentum.fY-lDaugMomentum.fY)+
   (lMothMomentum.fZ-lDaugMomentum.fZ)*(lMothMomentum.fZ-lDaugMomentum.fZ));
-  
+
   return TMath::Sqrt( (eDaug+otherDaug)*(eDaug+otherDaug) - lMothMomentum.Mag2());
 }
 
@@ -131,13 +123,13 @@ Float_t AliEveKink::GetInvMass(Int_t dPdgCode) const
 Float_t AliEveKink::GetQt() const
 {
   // Returns the kink daughter Qt
-  
+
   TEveVector lDaugMomentum = fDaughterTrack->GetMomentum();
-  Float_t daugMom=TMath::Sqrt( 
-  (lDaugMomentum.fX)*(lDaugMomentum.fX)+ 
-  (lDaugMomentum.fY)*(lDaugMomentum.fY)+ 
+  Float_t daugMom=TMath::Sqrt(
+  (lDaugMomentum.fX)*(lDaugMomentum.fX)+
+  (lDaugMomentum.fY)*(lDaugMomentum.fY)+
   (lDaugMomentum.fZ)*(lDaugMomentum.fZ));
-  
+
   return TMath::Sin(fKinkAngle[2])*daugMom ;
 }
 
@@ -165,9 +157,8 @@ ClassImp(AliEveKinkList)
 //______________________________________________________________________________
 AliEveKinkList::AliEveKinkList() :
   TEveElementList(),
-  fTitle(),
   fRnrStyleMoth(0),
-  fRnrStyleDaugh(0), 
+  fRnrStyleDaugh(0),
   fRnrKinkDaughter(kTRUE),
   fRnrKinkvtx(kTRUE),
   fMothColor(0),
@@ -191,7 +182,6 @@ AliEveKinkList::AliEveKinkList() :
 //______________________________________________________________________________
 AliEveKinkList::AliEveKinkList(TEveTrackPropagator* rsMoth,TEveTrackPropagator* rsDaugh) :
   TEveElementList(),
-  fTitle(),
   fRnrStyleMoth(rsMoth),
   fRnrStyleDaugh(rsDaugh),
   fRnrKinkDaughter(kTRUE),
@@ -207,7 +197,7 @@ AliEveKinkList::AliEveKinkList(TEveTrackPropagator* rsMoth,TEveTrackPropagator* 
   fMinInvariantMass(0),
   fMaxInvariantMass(1.0),
   fDaugCheckedPid(0),
-  fDaugCheckedProb(0) 
+  fDaugCheckedProb(0)
 {
   // Constructor with given track-propagator..
 
@@ -219,7 +209,6 @@ AliEveKinkList::AliEveKinkList(TEveTrackPropagator* rsMoth,TEveTrackPropagator* 
 //______________________________________________________________________________
 AliEveKinkList::AliEveKinkList(const Text_t* name, TEveTrackPropagator* rsMoth, TEveTrackPropagator* rsDaugh) :
   TEveElementList(),
-  fTitle(),
   fRnrStyleMoth(rsMoth),
   fRnrStyleDaugh(rsDaugh),
   fRnrKinkDaughter(kTRUE),
@@ -352,23 +341,22 @@ void AliEveKinkList::FilterByInvariantMass(Float_t minInvariantMass, Float_t max
 //______________________________________________________________________________
 void AliEveKinkList::FilterByCheckedPidMinProb(Int_t rFlag, Int_t rPid, Float_t rProb)
 {
+  // Select visibility of elements based on the kink daughter PID.
 
-    fDaugCheckedPid  = rPid;
-    fDaugCheckedProb = rProb;
- 
-  // Select visibility of elements based on the kink daughter PID
+  fDaugCheckedPid  = rPid;
+  fDaugCheckedProb = rProb;
+
   for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)
   {
     AliEveKink* kink = (AliEveKink*) *i;
-    Int_t   pid = 0;
-    Float_t prob = 0.0;
-    Bool_t  show = 0;
- 
-      pid  = kink->GetDaugMaxProbPdg();
-      prob = kink->GetDaugMaxProbPid();
-      show = (pid == fDaugCheckedPid && prob > fDaugCheckedProb) || !rFlag ; 
-    
- 
+    Int_t   pid  = 0;
+    Float_t prob = 0;
+    Bool_t  show = kFALSE;
+
+    pid  = kink->GetDaugMaxProbPdg();
+    prob = kink->GetDaugMaxProbPid();
+    show = (pid == fDaugCheckedPid && prob > fDaugCheckedProb) || !rFlag ;
+
     kink->SetRnrState(show);
   }
   ElementChanged();
