@@ -11,10 +11,7 @@ TRACKING_CA:=	tracking-ca/AliHLTTPCCATrack.h \
 		tracking-ca/AliHLTTPCCARow.h \
 		tracking-ca/AliHLTTPCCAGrid.h \
 		tracking-ca/AliHLTTPCCAHitArea.h \
-		tracking-ca/AliHLTTPCCAGBHit.h  \
 		tracking-ca/AliHLTTPCCAMCPoint.h  \
-		tracking-ca/AliHLTTPCCAGBTrack.h  \
-		tracking-ca/AliHLTTPCCAGBTracker.h \
 		tracking-ca/AliHLTTPCCATrackerComponent.h \
 		tracking-ca/AliHLTTPCCANeighboursFinder.h \
 		tracking-ca/AliHLTTPCCANeighboursCleaner.h \
@@ -29,6 +26,7 @@ TRACKING_CA:=	tracking-ca/AliHLTTPCCATrack.h \
 		tracking-ca/AliHLTTPCCAClusterData.h \
 		tracking-ca/AliHLTTPCCASliceData.h \
 		tracking-ca/AliHLTTPCCASliceOutput.h \
+		tracking-ca/AliHLTTPCCAStandaloneFramework.h \
 		tracking-ca/AliTPCtrackerCA.h 
 #TRACKING_CA:=	
 
@@ -169,7 +167,7 @@ DHDR:=$(patsubst %,TPCLib/%,$(MODULE_DHDR))
 CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
 EDEFINE      := ${HLTDEFS}
-PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCXXFLAGS := ${HLTCXXFLAGS} -Wshadow
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 PACKSOFLAGS  := $(HLTSOFLAGS)
