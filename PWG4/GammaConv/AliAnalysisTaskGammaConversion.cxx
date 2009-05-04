@@ -183,6 +183,8 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
   
   // Process reconstructed gammas
   ProcessGammasForNeutralMesonAnalysis();
+
+  CheckV0Efficiency();
   
   PostData(1, fOutputContainer);
 	
@@ -893,6 +895,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	  fHistograms->FillHistogram("ESD_Mother_ZR", twoGammaCandidate->GetZ(), spaceVectorTwoGammaCandidate.Pt());
 	  fHistograms->FillHistogram("ESD_Mother_XY", twoGammaCandidate->GetX(), twoGammaCandidate->GetY());
 	  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+	  fHistograms->FillHistogram("ESD_Mother_InvMass",massTwoGammaCandidate);
 	}
       }
       delete twoGammaCandidate;
@@ -950,6 +953,7 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	  fHistograms->FillHistogram("ESD_Background_ZR", backgroundCandidate->GetZ(), SpaceVectorbackgroundCandidate.Pt());
 	  fHistograms->FillHistogram("ESD_Background_XY", backgroundCandidate->GetX(), backgroundCandidate->GetY());
 	  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,MomentumVectorbackgroundCandidate.Pt());
+	  fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
 	}
       }
       delete backgroundCandidate;   
@@ -1002,4 +1006,76 @@ Double_t AliAnalysisTaskGammaConversion::GetMCOpeningAngle(TParticle* const daug
   TVector3 v3D0(daughter0->Px(),daughter0->Py(),daughter0->Pz());
   TVector3 v3D1(daughter1->Px(),daughter1->Py(),daughter1->Pz());
   return v3D0.Angle(v3D1);
+}
+
+void AliAnalysisTaskGammaConversion::CheckV0Efficiency(){
+
+  vector<Int_t> indexOfGammaParticle;
+
+  fStack = fV0Reader->GetMCStack();
+
+  if(fV0Reader->CheckForPrimaryVertex() == kFALSE){
+    return; // aborts if the primary vertex does not have contributors.
+  }
+
+  for (Int_t iTracks = 0; iTracks < fStack->GetNprimary(); iTracks++) {
+    TParticle* particle = (TParticle *)fStack->Particle(iTracks);
+    if(particle->GetPdgCode()==22){     //Gamma
+      if(particle->GetNDaughters() >= 2){
+	TParticle* electron=NULL;
+	TParticle* positron=NULL; 
+	for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
+	  TParticle *tmpDaughter = fStack->Particle(daughterIndex);
+	  if(tmpDaughter->GetUniqueID() == 5){
+	    if(tmpDaughter->GetPdgCode() == 11){
+	      electron = tmpDaughter;
+	    }
+	    else if(tmpDaughter->GetPdgCode() == -11){
+	      positron = tmpDaughter;
+	    }
+	  }
+	}
+	if(electron!=NULL && positron!=0){
+	  if(electron->R()<160){
+	    indexOfGammaParticle.push_back(iTracks);
+	  }
+	}
+      }
+    }
+  }
+
+  Int_t nFoundGammas=0;
+  Int_t nNotFoundGammas=0;
+
+  Int_t numberOfV0s = fV0Reader->GetNumberOfV0s();
+  for(Int_t i=0;i<numberOfV0s;i++){
+    fV0Reader->GetV0(i);
+    
+    if(fV0Reader->HasSameMCMother() == kFALSE){
+      continue;
+    }
+    
+    TParticle * negativeMC = (TParticle*)fV0Reader->GetNegativeMCParticle();
+    TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
+    
+    if(TMath::Abs(negativeMC->GetPdgCode())!=11 || TMath::Abs(positiveMC->GetPdgCode())!=11){
+      continue;
+    }
+    if(negativeMC->GetPdgCode()==positiveMC->GetPdgCode()){
+      continue;
+    }
+    
+    if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 22){
+      //TParticle * v0Gamma = fV0Reader->GetMotherMCParticle();
+      for(UInt_t mcIndex=0;mcIndex<indexOfGammaParticle.size();mcIndex++){
+	if(negativeMC->GetFirstMother()==indexOfGammaParticle[mcIndex]){
+	  nFoundGammas++;
+	}
+	else{
+	  nNotFoundGammas++;
+	}
+      }
+    }
+  }
+  //  cout<<"Found: "<<nFoundGammas<<"  of: "<<indexOfGammaParticle.size()<<endl;
 }
