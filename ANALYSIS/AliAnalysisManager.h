@@ -85,6 +85,7 @@ enum EAliAnalysisFlags {
    Long64_t            GetCurrentEntry() const {return fCurrentEntry;}
    EAliAnalysisExecMode 
                        GetAnalysisType() const {return fMode;}
+   void                GetAnalysisTypeString(TString &type) const;                    
    Bool_t              IsUsingDataSet() const  {return TObject::TestBit(kUseDataSet);}
 
    void                RegisterExtraFile(const char *fname);

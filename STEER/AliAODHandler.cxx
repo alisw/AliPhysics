@@ -560,7 +560,11 @@ AliAODExtension::~AliAODExtension()
 void AliAODExtension::AddBranch(const char* cname, void* addobj)
 {
     // Add a new branch to the aod 
-    if (!fAODEvent) Init("");
+    if (!fAODEvent) {
+       char type[20];
+       gROOT->ProcessLine(Form("TString s_tmp; AliAnalysisManager::GetAnalysisManager()->GetAnalysisTypeString(s_tmp); sprintf((char*)0x%lx, \"%%s\", s_tmp.Data());", type));
+       Init(type);
+    }
     TDirectory *owd = gDirectory;
     if (fFileE) {
       fFileE->cd();

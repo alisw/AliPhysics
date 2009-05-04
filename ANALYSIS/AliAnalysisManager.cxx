@@ -1334,3 +1334,22 @@ Bool_t AliAnalysisManager::GetFileFromWrapper(const char *filename, TList *sourc
       Error("GetFileFromWrapper", "Could not get file %s from proof scratch space", filename);
    return gotit;
 }
+
+//______________________________________________________________________________
+void AliAnalysisManager::GetAnalysisTypeString(TString &type) const
+{
+// Fill analysis type in the provided string.
+   switch (fMode) {
+      case kLocalAnalysis:
+         type = "local";
+         return;
+      case kProofAnalysis:
+         type = "proof";
+         return;
+      case kGridAnalysis:
+         type = "grid";
+         return;
+      case kMixingAnalysis:
+         type = "mix";
+   }
+}
