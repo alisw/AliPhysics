@@ -59,6 +59,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetWriteNtuple(Bool_t writeNtuple){fWriteNtuple = writeNtuple;}
   void FillNtuple();
   Double_t GetMCOpeningAngle(TParticle* const daughter0, TParticle* const daughter1) const;
+  void CheckV0Efficiency();
 
  private:
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
