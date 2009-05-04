@@ -54,6 +54,8 @@ ClassImp(AliAnalysisVertexingHF)
 //----------------------------------------------------------------------------
 AliAnalysisVertexingHF::AliAnalysisVertexingHF():
 fInputAOD(kFALSE),
+fAODMapSize(0),
+fAODMap(0),
 fBzkG(0.),
 fSecVtxWithKF(kFALSE),
 fRecoPrimVtxSkippingTrks(kFALSE),
@@ -83,6 +85,8 @@ fFindVertexForDstar(kTRUE)
 AliAnalysisVertexingHF::AliAnalysisVertexingHF(const AliAnalysisVertexingHF &source) : 
 TNamed(source),
 fInputAOD(source.fInputAOD),
+fAODMapSize(source.fAODMapSize),
+fAODMap(source.fAODMap),
 fBzkG(source.fBzkG),
 fSecVtxWithKF(source.fSecVtxWithKF),
 fRecoPrimVtxSkippingTrks(source.fRecoPrimVtxSkippingTrks),
@@ -117,6 +121,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   //
   if(&source == this) return *this;
   fInputAOD = source.fInputAOD;
+  fAODMapSize = source.fAODMapSize;
   fBzkG = source.fBzkG;
   fSecVtxWithKF = source.fSecVtxWithKF;
   fRecoPrimVtxSkippingTrks = source.fRecoPrimVtxSkippingTrks;
@@ -148,6 +153,7 @@ AliAnalysisVertexingHF::~AliAnalysisVertexingHF() {
   if(fV1) { delete fV1; fV1=0; }
   if(fTrackFilter) { delete fTrackFilter; fTrackFilter=0; }
   if(fTrackFilterSoftPi) { delete fTrackFilterSoftPi; fTrackFilterSoftPi=0; }
+  if(fAODMap) { delete fAODMap; fAODMap=0; }
 }
 //----------------------------------------------------------------------------
 void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
@@ -774,6 +780,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
   if(fInputAOD) {
     seleTrksArray.Delete(); 
+    if(fAODMap) { delete fAODMap; fAODMap=NULL; }
   }
 
   return;
@@ -1534,6 +1541,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
   const AliVVertex *vprimary = event->GetPrimaryVertex();
 
   if(fV1) { delete fV1; fV1=NULL; }
+  if(fAODMap) { delete fAODMap; fAODMap=NULL; }
 
   Int_t nindices=0;
   UShort_t *indices = 0;
@@ -1546,7 +1554,8 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
     vprimary->GetCovarianceMatrix(cov);
     fV1 = new AliESDVertex(pos,cov,100.,100,vprimary->GetName());
     indices = new UShort_t[event->GetNumberOfTracks()];
-    for(Int_t j=0; j<100000; j++) fAODMap[j]=-1;
+    fAODMapSize = 100000;
+    fAODMap = new Int_t[fAODMapSize];
   }
 
 
