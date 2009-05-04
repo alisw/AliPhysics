@@ -27,6 +27,7 @@
 #include "TMath.h"
 #include "TF1.h"
 #include "TRandom3.h"
+//#include "TUnuran.h"
 
 #include "AliFlowEventSimpleMakerOnTheFly.h"
 #include "AliFlowEventSimple.h"
@@ -41,10 +42,15 @@ ClassImp(AliFlowEventSimpleMakerOnTheFly)
 AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fMultiplicityOfRP(0),
   fMultiplicitySpreadOfRP(0.),
+  fUseConstantHarmonics(kFALSE),
   fV1RP(0.), 
   fV1SpreadRP(0.), 
   fV2RP(0.), 
   fV2SpreadRP(0.), 
+  fV4RP(0.), 
+  fV4SpreadRP(0.), 
+  fV2RPMax(0.), 
+  fPtCutOff(0.), 
   fPtSpectra(NULL),
   fPhiDistribution(NULL),
   fMyTRandom3(NULL),
@@ -52,7 +58,11 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fNoOfLoops(1)
  {
   // constructor
-   fMyTRandom3 = new TRandom3(iseed); 
+  fMyTRandom3 = new TRandom3(iseed);   
+  gRandom->SetSeed(fMyTRandom3->Integer(65539));
+ 
+  //fMyUnuran = new TUnuran(); 
+  //fMyUnuran->SetSeed(iseed);  
  }
 
 
@@ -62,54 +72,71 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
 AliFlowEventSimpleMakerOnTheFly::~AliFlowEventSimpleMakerOnTheFly()
 {
  // destructor
-  if (fPtSpectra) delete fPtSpectra;
-  if (fPhiDistribution) delete fPhiDistribution;
-  if (fMyTRandom3) delete  fMyTRandom3;
+ if (fPtSpectra) delete fPtSpectra;
+ if (fPhiDistribution) delete fPhiDistribution;
+ if (fMyTRandom3) delete fMyTRandom3;
 }
 
 
 //========================================================================
 
 
+void AliFlowEventSimpleMakerOnTheFly::Init()
+{
+ // define the pt spectra and phi distribution
+ 
+ // pt spectra:   
+ Double_t dPtMin = 0.; // to be improved (move this to the body of contstructor?)
+ Double_t dPtMax = 10.; // to be improved (move this to the body of contstructor?) 
+  
+ fPtSpectra = new TF1("fPtSpectra","[0]*x*TMath::Exp(-x*x)",dPtMin,dPtMax);  
+ fPtSpectra->SetParName(0,"Multiplicity of RPs");  
+ 
+ // phi distribution:
+ Double_t dPhiMin = 0.; // to be improved (move this to the body of contstructor?)
+ Double_t dPhiMax = TMath::TwoPi(); // to be improved (move this to the body of contstructor?)
+  
+ fPhiDistribution = new TF1("fPhiDistribution","1+2.*[0]*TMath::Cos(x-[2])+2.*[1]*TMath::Cos(2*(x-[2]))+2.*[3]*TMath::Cos(4*(x-[2]))",dPhiMin,dPhiMax);
+ fPhiDistribution->SetParName(0,"directed flow");
+ fPhiDistribution->SetParName(1,"elliptic flow"); 
+ fPhiDistribution->SetParName(2,"Reaction Plane");
+ fPhiDistribution->SetParName(3,"harmonic 4"); // to be improved (name)
+}
+
+//========================================================================
+
 AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
 {
   // method to create event on the fly
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(fMultiplicityOfRP);
-    
-  // pt:   
-  Double_t dPtMin = 0.; // to be improved 
-  Double_t dPtMax = 10.; // to be improved 
-  
-  fPtSpectra = new TF1("fPtSpectra","[0]*x*TMath::Exp(-x*x)",dPtMin,dPtMax);  
-  fPtSpectra->SetParName(0,"Multiplicity of RPs");  
+   
   // sampling the multiplicity:
-  Int_t fNewMultiplicityOfRP = fMyTRandom3->Gaus(fMultiplicityOfRP,fMultiplicitySpreadOfRP);
-  fPtSpectra->SetParameter(0,fNewMultiplicityOfRP);
+  Int_t iNewMultiplicityOfRP = fMultiplicityOfRP;
+  if(fMultiplicitySpreadOfRP>0.0) iNewMultiplicityOfRP = (Int_t)fMyTRandom3->Gaus(fMultiplicityOfRP,fMultiplicitySpreadOfRP);
+  fPtSpectra->SetParameter(0,iNewMultiplicityOfRP);
   
-  
-  // phi:
-  Double_t dPhiMin = 0.; // to be improved 
-  Double_t dPhiMax = TMath::TwoPi(); // to be improved 
-  
-  fPhiDistribution = new TF1("fPhiDistribution","1+2.*[0]*TMath::Cos(x-[2])+2.*[1]*TMath::Cos(2*(x-[2]))",dPhiMin,dPhiMax);
-  
-  // samling the reaction plane
-  Double_t fMCReactionPlaneAngle = fMyTRandom3->Uniform(0.,TMath::TwoPi());
-  fPhiDistribution->SetParName(2,"Reaction Plane");
-  fPhiDistribution->SetParameter(2,fMCReactionPlaneAngle);
+  // sampling the reaction plane
+  Double_t dMCReactionPlaneAngle = fMyTRandom3->Uniform(0.,TMath::TwoPi());
+  fPhiDistribution->SetParameter(2,dMCReactionPlaneAngle);
 
   // sampling the V1:
-  fPhiDistribution->SetParName(0,"directed flow");
-  Double_t fNewV1RP=fV1RP;
-  if(fV1SpreadRP>0.0) {fNewV1RP = fMyTRandom3->Gaus(fV1RP,fV1SpreadRP);}
-  fPhiDistribution->SetParameter(0,fNewV1RP);
+  Double_t dNewV1RP=fV1RP;
+  if(fV1SpreadRP>0.0) {dNewV1RP = fMyTRandom3->Gaus(fV1RP,fV1SpreadRP);}
+  fPhiDistribution->SetParameter(0,dNewV1RP);
  
   // sampling the V2:
-  fPhiDistribution->SetParName(1,"elliptic flow");
-  Double_t fNewV2RP = fV2RP;
-  if(fV2SpreadRP>0.0) fNewV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
-  fPhiDistribution->SetParameter(1,fNewV2RP);
+  if(fUseConstantHarmonics)
+  {
+   Double_t dNewV2RP = fV2RP;
+   if(fV2SpreadRP>0.0) dNewV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
+   fPhiDistribution->SetParameter(1,dNewV2RP);
+  }
+  
+  // sampling the V4:
+  Double_t dNewV4RP = fV4RP;
+  if(fV4SpreadRP>0.0) dNewV4RP = fMyTRandom3->Gaus(fV4RP,fV4SpreadRP);
+  fPhiDistribution->SetParameter(3,dNewV4RP);
    
   // eta:
   Double_t dEtaMin = -1.; // to be improved 
@@ -118,19 +145,29 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   Int_t iGoodTracks = 0;
   Int_t iSelParticlesRP = 0;
   Int_t iSelParticlesPOI = 0;
-  Double_t fTmpPt =0;
-  Double_t fTmpEta =0;
-  Double_t fTmpPhi =0;
-  
-  for(Int_t i=0;i<fNewMultiplicityOfRP;i++) {
-    fTmpPt = fPtSpectra->GetRandom();
-    fTmpEta = fMyTRandom3->Uniform(dEtaMin,dEtaMax);
-    fTmpPhi = fPhiDistribution->GetRandom();
+  Double_t dTmpPt = 0.;
+  Double_t dTmpEta = 0.;
+  Double_t dTmpV2 = 0.;
+  Double_t dTmpPhi = 0.;
+  for(Int_t i=0;i<iNewMultiplicityOfRP;i++) {
+    dTmpPt = fPtSpectra->GetRandom();
+    dTmpEta = fMyTRandom3->Uniform(dEtaMin,dEtaMax);
+    // to be improved:
+    if(!fUseConstantHarmonics) {
+      if(dTmpPt >= fPtCutOff) { 
+	dTmpV2 = fV2RPMax;
+      } else {
+	dTmpV2 = fV2RPMax*(dTmpPt/fPtCutOff);
+      }  
+      fPhiDistribution->SetParameter(1,dTmpV2);         
+    }
+    dTmpPhi = fPhiDistribution->GetRandom();
+    // add the track to the event
     for(Int_t d=0;d<fNoOfLoops;d++) {
       AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-      pTrack->SetPt(fTmpPt);
-      pTrack->SetEta(fTmpEta);
-      pTrack->SetPhi(fTmpPhi);
+      pTrack->SetPt(dTmpPt);
+      pTrack->SetEta(dTmpEta);
+      pTrack->SetPhi(dTmpPhi);
       pTrack->SetForRPSelection(kTRUE);
       iSelParticlesRP++;
       pTrack->SetForPOISelection(kTRUE);
@@ -139,21 +176,20 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
       iGoodTracks++;
     }
   }
- 
+  
+  // update the event quantities
   pEvent->SetEventNSelTracksRP(iSelParticlesRP);  
   pEvent->SetNumberOfTracks(iGoodTracks);//tracks used either for RP or for POI selection
-  pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
+  pEvent->SetMCReactionPlaneAngle(dMCReactionPlaneAngle);
 
-  if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
+  if (!dMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  dMCReactionPlaneAngle << endl;
   else cout<<" MC Reaction Plane Angle = unknown "<< endl;
 
   cout<<" iGoodTracks = "<< iGoodTracks << endl;
   cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;
   cout<<" # of POI selected tracks = "<<iSelParticlesPOI<<endl;  
   cout << "# " << ++fCount << " events processed" << endl;
-
-  delete fPhiDistribution;
-  delete fPtSpectra;
+  
   return pEvent;  
  
 } // end of CreateEventOnTheFly()
