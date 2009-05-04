@@ -50,8 +50,7 @@ fVHF(0)
 {
   // Default constructor
 
-  // Output slot #1 writes into a TList container
-  DefineOutput(1,TList::Class());  //My private output
+  // NO DefineOutput() HERE (ONLY IN STANDARD CONSTRUCTOR)
 }
 
 //________________________________________________________________________
@@ -62,7 +61,7 @@ fNtupleD0Cmp(0),
 fHistMass(0),
 fVHF(0)
 {
-  // Default constructor
+  // Standard constructor
 
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
@@ -88,12 +87,12 @@ void AliAnalysisTaskSECompareHF::Init()
   // Initialization
 
   if(fDebug > 1) printf("AnalysisTaskSECompareHF::Init() \n");
-
+  
   gROOT->LoadMacro("ConfigVertexingHF.C");
 
   fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
   fVHF->PrintStatus();
-
+  
   return;
 }
 
@@ -124,9 +123,10 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event:
   // heavy flavor candidates association to MC truth
+
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
- 
+  
   // load D0->Kpi candidates                                                   
   TClonesArray *inputArrayD0toKpi =
     (TClonesArray*)aod->GetList()->FindObject("D0toKpi");
@@ -135,7 +135,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
     return;
   }
 
-  /*
+ 
   // load D*+ candidates                                                   
   TClonesArray *inputArrayDstar =
     (TClonesArray*)aod->GetList()->FindObject("Dstar");
@@ -143,7 +143,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
     printf("AliAnalysisTaskSECompareHF::UserExec: Dstar branch not found!\n");
     return;
   }
-  */
+  
 
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
@@ -196,18 +196,18 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 
 
   // SIMPLE EXAMPLE OF D*+ MATCHING
-  /*
+
+    
   // loop over D*+ candidates
   for (Int_t iDstar = 0; iDstar < inputArrayDstar->GetEntries(); iDstar++) {
     AliAODRecoCascadeHF *c = (AliAODRecoCascadeHF*)inputArrayDstar->UncheckedAt(iDstar);
     Int_t labDstar = c->MatchToMC(413,421,mcArray);
     if(labDstar>=0) printf("GOOD MATCH FOR D*+\n"); 
   }
-  */
+  
 
   return;
 }
-
 //________________________________________________________________________
 void AliAnalysisTaskSECompareHF::Terminate(Option_t */*option*/)
 {

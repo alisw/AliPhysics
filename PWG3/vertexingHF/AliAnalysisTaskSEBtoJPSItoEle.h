@@ -47,16 +47,16 @@ class AliAnalysisTaskSEBtoJPSItoEle : public AliAnalysisTaskSE
   AliAnalysisTaskSEBtoJPSItoEle& operator=(const AliAnalysisTaskSEBtoJPSItoEle& source); 
   //
   TList *fOutput;                            //! list send on output slot 0
-  AliAnalysisBtoJPSItoEle *fCdfFit;          // Unbinned log-likelihood minimizer 
-  TNtuple *fNtupleJPSI;                      // Ntuple of pseudo-proper decay time & invariant mass values
-  TH1F *fhDecayTimeMCjpsifromB;              // Pseudo-proper decay time distribution used as template for JPSIs from B
-  TH1F *fhDecayTime;                         // Pseudo-proper decay time distribution
-  TH1F *fhInvMass;                           // Invariant mass distribution
-  TH1F *fhD0;                                // Impact parameter distribution
-  TH1F *fhD0D0;                              // Product of impact parameters distributions
-  TH1F *fhCosThetaStar;                      // Cosine of decay angle distribution
-  TH1F *fhCosThetaPointing;                  // Cosine of pointing angle distribution
-  TH2F *fhCtsVsD0D0;                         // Cos theta star Vs. D0D0 distribution
+  AliAnalysisBtoJPSItoEle *fCdfFit;          //! Unbinned log-likelihood minimizer 
+  TNtuple *fNtupleJPSI;                      //! Ntuple of pseudo-proper decay time & invariant mass values
+  TH1F *fhDecayTimeMCjpsifromB;              //! Pseudo-proper decay time distribution used as template for JPSIs from B
+  TH1F *fhDecayTime;                         //! Pseudo-proper decay time distribution
+  TH1F *fhInvMass;                           //! Invariant mass distribution
+  TH1F *fhD0;                                //! Impact parameter distribution
+  TH1F *fhD0D0;                              //! Product of impact parameters distributions
+  TH1F *fhCosThetaStar;                      //! Cosine of decay angle distribution
+  TH1F *fhCosThetaPointing;                  //! Cosine of pointing angle distribution
+  TH2F *fhCtsVsD0D0;                         //! Cos theta star Vs. D0D0 distribution
   Bool_t fOkAODMC;                           // Flag to read AOD monte carlo information
   TString fNameMCfile;                       // Name of the MC file with X template
   Bool_t fOkMinimize;                        // Flag to enable unbinned log-likelihood minimization
