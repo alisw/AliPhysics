@@ -496,7 +496,9 @@ void AliAnaPi0::Terminate()
       
   printf("AliAnaPi0::Terminate()         Mgg Real        : %5.3f , RMS : %5.3f \n", fhRe1[0]->GetMean(),   fhRe1[0]->GetRMS() ) ;
  
-  TCanvas  * cIM = new TCanvas("cIM", "", 400, 10, 600, 700) ;
+  char nameIM[128];
+  sprintf(nameIM,"AliAnaPi0_%s_cPt",fCalorimeter.Data());
+  TCanvas  * cIM = new TCanvas(nameIM, "", 400, 10, 600, 700) ;
   cIM->Divide(2, 2);
 
   cIM->cd(1) ; 
@@ -530,10 +532,13 @@ void AliAnaPi0::Terminate()
   hIMPt20->SetTitle("10 < p_{T, #gamma#gamma} < 20 GeV/c");
   hIMPt20->Draw();
    
-  cIM->Print("Mgg.eps");
+  char nameIMF[128];
+  sprintf(nameIMF,"AliAnaPi0_%s_Mgg.eps",fCalorimeter.Data());
+  cIM->Print(nameIMF);
 
-
- TCanvas  * cPt = new TCanvas("cPt", "", 400, 10, 600, 700) ;
+  char namePt[128];
+  sprintf(namePt,"AliAnaPi0_%s_cPt",fCalorimeter.Data());
+  TCanvas  * cPt = new TCanvas(namePt, "", 400, 10, 600, 700) ;
   cPt->Divide(2, 2);
 
   cPt->cd(1) ; 
@@ -567,16 +572,18 @@ void AliAnaPi0::Terminate()
   hPtIM3->SetTitle("0.11 < M_{#gamma#gamma} < 0.15 GeV/c^{2}");
   hPtIM3->Draw();
    
-  cPt->Print("Pt.eps");
+  char namePtF[128];
+  sprintf(namePtF,"AliAnaPi0_%s_Pt.eps",fCalorimeter.Data());
+  cPt->Print(namePtF);
 
  
   char line[1024] ; 
-  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
+  sprintf(line, ".!tar -zcf %s_%s.tar.gz *.eps", GetName(),fCalorimeter.Data()) ; 
   gROOT->ProcessLine(line);
-  sprintf(line, ".!rm -fR *.eps"); 
+  sprintf(line, ".!rm -fR AliAnaPi0_%s*.eps",fCalorimeter.Data()); 
   gROOT->ProcessLine(line);
  
-  printf(" AliAnaPi0::Terminate() - !! All the eps files are in %s.tar.gz !!!\n", GetName());
+  printf(" AliAnaPi0::Terminate() - !! All the eps files are in %s_%s.tar.gz !!!\n", GetName(), fCalorimeter.Data());
 
 }
 
