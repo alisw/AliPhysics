@@ -73,7 +73,7 @@ void visscan_init(Bool_t show_extra_geo=kFALSE)
   }
   if (gShowMUON) {
     TEveUtil::LoadMacro("geom_gentle_muon.C");
-    gGeomGentleMUON = geom_gentle_muon();
+    gGeomGentleMUON = geom_gentle_muon(kFALSE);
   }
 
   // Scenes

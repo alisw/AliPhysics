@@ -13,7 +13,7 @@ void DrawDeep(TEveGeoShape *gsre) {
 
 }
 
-TEveGeoShape* geom_gentle_muon() {
+TEveGeoShape* geom_gentle_muon(Bool_t updateScene = kTRUE) {
 
   TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo_muon.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle MUON");
@@ -24,6 +24,11 @@ TEveGeoShape* geom_gentle_muon() {
   gsre->SetRnrSelf(kFALSE);
 
   DrawDeep(gsre);
+
+  if ( updateScene ) {
+    TGLViewer* v = gEve->GetDefaultGLViewer();
+    v->UpdateScene();
+  }
 
   return gsre;
 
