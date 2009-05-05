@@ -20,7 +20,7 @@
   ProofEnableAliRoot("/u/jacek/alice/AliRoot/HEAD/");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-  TChain* chain = CreateESDChain("esd_v4-16-Rev-08-grid.txt", 200, 0);
+  TChain* chain = CreateESDChain("esd_v4-16-Rev-08-grid.txt", 500, 0);
   //TChain* chain = CreateESDChain("esd_TRUNK_flat_ideal_geom.txt", 50, 0);
   chain->Lookup();
 
@@ -53,27 +53,11 @@
   AliPerformanceRes * compObjRes = (AliPerformanceRes*)coutput->FindObject("AliPerformanceResTPCInner");
   compObjRes->Analyse();
   compObjRes->GetAnalysisFolder()->ls("*");
-  compObjRes->DrawHisto();
+  compObjRes->PrintHisto(kTRUE,"PerformanceResTPCInnerQA.ps");
   TFile fout("AnalysedResTPCInner.root","recreate");
   compObjRes->GetAnalysisFolder()->Write();
   fout.Close();
   f.Close();
-
-  TFile f("TPC.Performance.root");
-  AliPerformanceRes * compObjRes = (AliPerformanceRes*)coutput->FindObject("AliPerformanceRes");
-  compObjRes->Analyse();
-  compObjRes->GetAnalysisFolder()->ls("*");
-  compObjRes->DrawHisto();
-  TFile fout("AnalysedResTPC.root","recreate");
-  compObjRes->GetAnalysisFolder()->Write();
-  fout.Close();
-  f.Close();
-
-
-
-
-
-
 
 
 */

@@ -17,8 +17,7 @@
   LoadMyLibs();
 
   TFile f("Output.root");
-  //AliPerformanceRes * compObj = (AliPerformanceRes*)f.Get("AliPerformanceRes");
-  AliPerformanceRes * compObj = (AliPerformanceRes*)cOutput->FindObject("AliPerformanceRes");
+  AliPerformanceRes * compObj = (AliPerformanceRes*)coutput->FindObject("AliPerformanceRes");
  
   // analyse comparison data
   compObj->Analyse();
@@ -144,34 +143,40 @@ void AliPerformanceRes::Init(){
     zMin = -100.; zMax = 100.; 
   }
 
-  // res_y:res_z:res_phi,res_lambda:res_1pt:y:z:eta:phi:pt
-  Int_t binsResolHisto[10]={100,100,100,100,100,25,50,30,144,nPtBins};
-  Double_t minResolHisto[10]={-1.,-1.,-0.03,-0.03,-0.2, yMin, zMin,-1.5,0.,ptMin};
-  Double_t maxResolHisto[10]={ 1., 1., 0.03, 0.03, 0.2, yMax, zMax, 1.5,2.*TMath::Pi(), ptMax};
+  // res_y:res_z:res_phi,res_lambda:res_pt:y:z:eta:phi:pt
+  Int_t binsResolHisto[10]={100,100,100,100,100,25,50,144,30,nPtBins};
+  Double_t minResolHisto[10]={-1.,-1.,-0.03,-0.03,-0.2, yMin, zMin, 0., -1.5, ptMin};
+  Double_t maxResolHisto[10]={ 1., 1., 0.03, 0.03, 0.2, yMax, zMax, 2.*TMath::Pi(), 1.5, ptMax};
 
-  fResolHisto = new THnSparseF("fResolHisto","res_y:res_z:res_phi:res_lambda:res_1pt:y:z:eta:phi:pt",10,binsResolHisto,minResolHisto,maxResolHisto);
+  fResolHisto = new THnSparseF("fResolHisto","res_y:res_z:res_phi:res_lambda:res_pt:y:z:phi:eta:pt",10,binsResolHisto,minResolHisto,maxResolHisto);
   fResolHisto->SetBinEdges(9,binsPt);
 
   fResolHisto->GetAxis(0)->SetTitle("y-y_{mc} (cm)");
   fResolHisto->GetAxis(1)->SetTitle("z-z_{mc} (cm)");
   fResolHisto->GetAxis(2)->SetTitle("#phi-#phi_{mc} (rad)");
   fResolHisto->GetAxis(3)->SetTitle("#lambda-#lambda_{mc} (rad)");
-  fResolHisto->GetAxis(4)->SetTitle("(p_{Tmc}/p_{T}-1)");
+  fResolHisto->GetAxis(4)->SetTitle("(p_{T}/p_{Tmc}-1)");
   fResolHisto->GetAxis(5)->SetTitle("y_{mc} (cm)");
   fResolHisto->GetAxis(6)->SetTitle("z_{mc} (cm)");
-  fResolHisto->GetAxis(7)->SetTitle("#eta_{mc}");
-  fResolHisto->GetAxis(8)->SetTitle("#phi_{mc} (rad)");
+  fResolHisto->GetAxis(7)->SetTitle("#phi_{mc} (rad)");
+  fResolHisto->GetAxis(8)->SetTitle("#eta_{mc}");
   fResolHisto->GetAxis(9)->SetTitle("p_{Tmc} (GeV/c)");
   fResolHisto->Sumw2();
 
-  //pull_y:pull_z:pull_lambda:pull_phi:pull_1pt:y:z:eta:phi:pt
-  Int_t binsPullHisto[10]={100,100,100,100,100,50,50,30,144,nPtBins};
-  Double_t minPullHisto[10]={-5.,-5.,-5.,-5.,-5.,yMin, zMin,-1.5, 0., ptMin};
-  Double_t maxPullHisto[10]={ 5., 5., 5., 5., 5., yMax, zMax, 1.5, 2.*TMath::Pi(),ptMax};
+  ////pull_y:pull_z:pull_phi:pull_lambda:pull_1pt:y:z:eta:phi:pt
+  //Int_t binsPullHisto[10]={100,100,100,100,100,50,50,30,144,nPtBins};
+  //Double_t minPullHisto[10]={-5.,-5.,-5.,-5.,-5.,yMin, zMin,-1.5, 0., ptMin};
+  //Double_t maxPullHisto[10]={ 5., 5., 5., 5., 5., yMax, zMax, 1.5, 2.*TMath::Pi(),ptMax};
+  //fPullHisto = new THnSparseF("fPullHisto","pull_y:pull_z:pull_phi:pull_lambda:pull_1pt:y:z:eta:phi:pt",10,binsPullHisto,minPullHisto,maxPullHisto);
 
-  fPullHisto = new THnSparseF("fPullHisto","pull_y:pull_z:pull_phi:pull_lambda:pull_1pt:y:z:eta:phi:pt",10,binsPullHisto,minPullHisto,maxPullHisto);
-  if(!IsHptGenerator()) fPullHisto->SetBinEdges(9,binsPt);
+  //pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt
+  Int_t binsPullHisto[10]={100,100,100,100,100,50,50,50,50,nPtBins};
+  Double_t minPullHisto[10]={-5.,-5.,-5.,-5.,-5.,yMin, zMin,-1., -2.0, ptMin};
+  Double_t maxPullHisto[10]={ 5., 5., 5., 5., 5., yMax, zMax, 1., 2.0, ptMax};
+  fPullHisto = new THnSparseF("fPullHisto","pull_y:pull_z:pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt",10,binsPullHisto,minPullHisto,maxPullHisto);
 
+  /*
+  if(!IsHptGenerator()) fPullHisto->SetBinEdges(9,bins1Pt);
   fPullHisto->GetAxis(0)->SetTitle("(y-y_{mc})/#sigma");
   fPullHisto->GetAxis(1)->SetTitle("(z-z_{mc})/#sigma");
   fPullHisto->GetAxis(2)->SetTitle("(#phi-#phi_{mc})/#sigma");
@@ -182,6 +187,19 @@ void AliPerformanceRes::Init(){
   fPullHisto->GetAxis(7)->SetTitle("#eta_{mc}");
   fPullHisto->GetAxis(8)->SetTitle("#phi_{mc} (rad)");
   fPullHisto->GetAxis(9)->SetTitle("p_{Tmc} (GeV/c)");
+  fPullHisto->Sumw2();
+  */
+
+  fPullHisto->GetAxis(0)->SetTitle("(y-y_{mc})/#sigma");
+  fPullHisto->GetAxis(1)->SetTitle("(z-z_{mc})/#sigma");
+  fPullHisto->GetAxis(2)->SetTitle("(sin#phi-sin#phi_{mc})/#sigma");
+  fPullHisto->GetAxis(3)->SetTitle("(tan#lambda-tan#lambda_{mc})/#sigma");
+  fPullHisto->GetAxis(4)->SetTitle("(p_{Tmc}/p_{T}-1)/#sigma");
+  fPullHisto->GetAxis(5)->SetTitle("y_{mc} (cm)");
+  fPullHisto->GetAxis(6)->SetTitle("z_{mc} (cm)");
+  fPullHisto->GetAxis(7)->SetTitle("sin#phi_{mc}");
+  fPullHisto->GetAxis(8)->SetTitle("tan#lambda_{mc}");
+  fPullHisto->GetAxis(9)->SetTitle("1/p_{Tmc} (GeV/c)^{-1}");
   fPullHisto->Sumw2();
 
   // Init cuts 
@@ -219,13 +237,15 @@ void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   if(particle->GetPDG()->Charge()==0) return;
   //printf("charge %d \n",particle->GetPDG()->Charge());
 
-  Float_t delta1PtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
+  Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
 
   Float_t mceta =  particle->Eta();
   Float_t mcphi =  particle->Phi();
   if(mcphi<0) mcphi += 2.*TMath::Pi();
   Float_t mcpt = particle->Pt();
+  Float_t mcsnp = TMath::Sin(TMath::ATan2(particle->Py(),particle->Px()));
+  Float_t mctgl = TMath::Tan(TMath::ATan2(particle->Pz(),particle->Pt()));
 
   // nb. TPC clusters cut
   if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return;
@@ -233,29 +253,32 @@ void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   // select primaries
   if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
   { 
+    if(mcpt == 0) return;
+    
     deltaYTPC= track->GetY()-particle->Vy();
     deltaZTPC = track->GetZ()-particle->Vz();
     deltaLambdaTPC = TMath::ATan2(track->Pz(),track->Pt())-TMath::ATan2(particle->Pz(),particle->Pt());
     deltaPhiTPC = TMath::ATan2(track->Py(),track->Px())-TMath::ATan2(particle->Py(),particle->Px());
-    delta1PtTPC = (track->OneOverPt()-1./mcpt)*mcpt;
+    //delta1PtTPC = (track->OneOverPt()-1./mcpt)*mcpt;
+    deltaPtTPC = (track->Pt()-mcpt) / mcpt;
 
     pullYTPC= (track->GetY()-particle->Vy()) / TMath::Sqrt(track->GetSigmaY2());
     pullZTPC = (track->GetZ()-particle->Vz()) / TMath::Sqrt(track->GetSigmaZ2());
  
-    Double_t sigma_lambda = 1./(1.+track->GetTgl()*track->GetTgl()) * TMath::Sqrt(track->GetSigmaTgl2()); 
-    Double_t sigma_phi = 1./TMath::Sqrt(1-track->GetSnp()*track->GetSnp()) * TMath::Sqrt(track->GetSigmaSnp2());
-    pullLambdaTPC = deltaLambdaTPC / sigma_lambda;
-    pullPhiTPC = deltaPhiTPC / sigma_phi;
+    //Double_t sigma_lambda = 1./(1.+track->GetTgl()*track->GetTgl()) * TMath::Sqrt(track->GetSigmaTgl2()); 
+    //Double_t sigma_phi = 1./TMath::Sqrt(1-track->GetSnp()*track->GetSnp()) * TMath::Sqrt(track->GetSigmaSnp2());
+    pullPhiTPC = (track->GetSnp() - mcsnp) / TMath::Sqrt(track->GetSigmaSnp2());
+    pullLambdaTPC = (track->GetTgl() - mctgl) / TMath::Sqrt(track->GetSigmaTgl2());
 
     //pullLambdaTPC = deltaLambdaTPC / TMath::Sqrt(track->GetSigmaTgl2());
     //pullPhiTPC = deltaPhiTPC / TMath::Sqrt(track->GetSigmaSnp2()); 
     if (mcpt) pull1PtTPC = (track->OneOverPt()-1./mcpt) / TMath::Sqrt(track->GetSigma1Pt2());
     else pull1PtTPC = 0.;
 
-    Double_t vResolHisto[10] = {deltaYTPC,deltaZTPC,deltaPhiTPC,deltaLambdaTPC,delta1PtTPC,particle->Vy(),particle->Vz(),mceta,mcphi,mcpt};
+    Double_t vResolHisto[10] = {deltaYTPC,deltaZTPC,deltaPhiTPC,deltaLambdaTPC,deltaPtTPC,particle->Vy(),particle->Vz(),mcphi,mceta,mcpt};
     fResolHisto->Fill(vResolHisto);
 
-    Double_t vPullHisto[10] = {pullYTPC,pullZTPC,pullPhiTPC,pullLambdaTPC,pull1PtTPC,particle->Vy(),particle->Vz(),mceta,mcphi,mcpt};
+    Double_t vPullHisto[10] = {pullYTPC,pullZTPC,pullPhiTPC,pullLambdaTPC,pull1PtTPC,particle->Vy(),particle->Vz(),mcsnp,mctgl,1./mcpt};
     fPullHisto->Fill(vPullHisto);
   }
 }
@@ -286,18 +309,50 @@ void AliPerformanceRes::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
   Float_t mcphi =  particle->Phi();
   if(mcphi<0) mcphi += 2.*TMath::Pi();
   Float_t mcpt = particle->Pt();
+  Float_t mcsnp = TMath::Sin(TMath::ATan2(particle->Py(),particle->Px()));
+  Float_t mctgl = TMath::Tan(TMath::ATan2(particle->Pz(),particle->Pt()));
 
   if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
   if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters  
   Int_t clusterITS[200];
   if(esdTrack->GetITSclusters(clusterITS)<fCutsRC->GetMinNClustersITS()) return;  // min. nb. ITS clusters
 
-  Float_t delta1PtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
+  Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
 
   // select primaries
   if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
   { 
+    if(mcpt == 0) return;
+    
+    deltaYTPC= esdTrack->GetY()-particle->Vy();
+    deltaZTPC = esdTrack->GetZ()-particle->Vz();
+    deltaLambdaTPC = TMath::ATan2(esdTrack->Pz(),esdTrack->Pt())-TMath::ATan2(particle->Pz(),particle->Pt());
+    deltaPhiTPC = TMath::ATan2(esdTrack->Py(),esdTrack->Px())-TMath::ATan2(particle->Py(),particle->Px());
+    //delta1PtTPC = (esdTrack->OneOverPt()-1./mcpt)*mcpt;
+    deltaPtTPC = (esdTrack->Pt()-mcpt) / mcpt;
+
+    pullYTPC= (esdTrack->GetY()-particle->Vy()) / TMath::Sqrt(esdTrack->GetSigmaY2());
+    pullZTPC = (esdTrack->GetZ()-particle->Vz()) / TMath::Sqrt(esdTrack->GetSigmaZ2());
+ 
+    //Double_t sigma_lambda = 1./(1.+esdTrack->GetTgl()*esdTrack->GetTgl()) * TMath::Sqrt(esdTrack->GetSigmaTgl2()); 
+    //Double_t sigma_phi = 1./TMath::Sqrt(1-esdTrack->GetSnp()*esdTrack->GetSnp()) * TMath::Sqrt(esdTrack->GetSigmaSnp2());
+    pullPhiTPC = (esdTrack->GetSnp() - mcsnp) / TMath::Sqrt(esdTrack->GetSigmaSnp2());
+    pullLambdaTPC = (esdTrack->GetTgl() - mctgl) / TMath::Sqrt(esdTrack->GetSigmaTgl2());
+
+    //pullLambdaTPC = deltaLambdaTPC / TMath::Sqrt(esdTrack->GetSigmaTgl2());
+    //pullPhiTPC = deltaPhiTPC / TMath::Sqrt(esdTrack->GetSigmaSnp2()); 
+    if (mcpt) pull1PtTPC = (esdTrack->OneOverPt()-1./mcpt) / TMath::Sqrt(esdTrack->GetSigma1Pt2());
+    else pull1PtTPC = 0.;
+
+    Double_t vResolHisto[10] = {deltaYTPC,deltaZTPC,deltaPhiTPC,deltaLambdaTPC,deltaPtTPC,particle->Vy(),particle->Vz(),mcphi,mceta,mcpt};
+    fResolHisto->Fill(vResolHisto);
+
+    Double_t vPullHisto[10] = {pullYTPC,pullZTPC,pullPhiTPC,pullLambdaTPC,pull1PtTPC,particle->Vy(),particle->Vz(),mcsnp,mctgl,1./mcpt};
+    fPullHisto->Fill(vPullHisto);
+
+   
+    /*
     deltaYTPC= esdTrack->GetY()-particle->Vy();
     deltaZTPC = esdTrack->GetZ()-particle->Vz();
     deltaLambdaTPC = TMath::ATan2(esdTrack->Pz(),esdTrack->Pt())-TMath::ATan2(particle->Pz(),particle->Pt());
@@ -322,6 +377,7 @@ void AliPerformanceRes::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
 
     Double_t vPullHisto[10] = {pullYTPC,pullZTPC,pullPhiTPC,pullLambdaTPC,pull1PtTPC,particle->Vy(),particle->Vz(),mceta,mcphi,mcpt};
     fPullHisto->Fill(vPullHisto);
+    */
   }
 }
 
@@ -355,16 +411,49 @@ void AliPerformanceRes::ProcessConstrained(AliStack* const stack, AliESDtrack *c
   Float_t mcphi =  particle->Phi();
   if(mcphi<0) mcphi += 2.*TMath::Pi();
   Float_t mcpt = particle->Pt();
+  Float_t mcsnp = TMath::Sin(TMath::ATan2(particle->Py(),particle->Px()));
+  Float_t mctgl = TMath::Tan(TMath::ATan2(particle->Pz(),particle->Pt()));
 
   if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
   if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters
 
-  Float_t delta1PtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
+  Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
 
   // select primaries
   if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
   { 
+
+    if(mcpt == 0) return;
+    
+    deltaYTPC= track->GetY()-particle->Vy();
+    deltaZTPC = track->GetZ()-particle->Vz();
+    deltaLambdaTPC = TMath::ATan2(track->Pz(),track->Pt())-TMath::ATan2(particle->Pz(),particle->Pt());
+    deltaPhiTPC = TMath::ATan2(track->Py(),track->Px())-TMath::ATan2(particle->Py(),particle->Px());
+    //delta1PtTPC = (track->OneOverPt()-1./mcpt)*mcpt;
+    deltaPtTPC = (track->Pt()-mcpt) / mcpt;
+
+    pullYTPC= (track->GetY()-particle->Vy()) / TMath::Sqrt(track->GetSigmaY2());
+    pullZTPC = (track->GetZ()-particle->Vz()) / TMath::Sqrt(track->GetSigmaZ2());
+ 
+    //Double_t sigma_lambda = 1./(1.+track->GetTgl()*track->GetTgl()) * TMath::Sqrt(track->GetSigmaTgl2()); 
+    //Double_t sigma_phi = 1./TMath::Sqrt(1-track->GetSnp()*track->GetSnp()) * TMath::Sqrt(track->GetSigmaSnp2());
+    pullPhiTPC = (track->GetSnp() - mcsnp) / TMath::Sqrt(track->GetSigmaSnp2());
+    pullLambdaTPC = (track->GetTgl() - mctgl) / TMath::Sqrt(track->GetSigmaTgl2());
+
+    //pullLambdaTPC = deltaLambdaTPC / TMath::Sqrt(track->GetSigmaTgl2());
+    //pullPhiTPC = deltaPhiTPC / TMath::Sqrt(track->GetSigmaSnp2()); 
+    if (mcpt) pull1PtTPC = (track->OneOverPt()-1./mcpt) / TMath::Sqrt(track->GetSigma1Pt2());
+    else pull1PtTPC = 0.;
+
+    Double_t vResolHisto[10] = {deltaYTPC,deltaZTPC,deltaPhiTPC,deltaLambdaTPC,deltaPtTPC,particle->Vy(),particle->Vz(),mcphi,mceta,mcpt};
+    fResolHisto->Fill(vResolHisto);
+
+    Double_t vPullHisto[10] = {pullYTPC,pullZTPC,pullPhiTPC,pullLambdaTPC,pull1PtTPC,particle->Vy(),particle->Vz(),mcsnp,mctgl,1./mcpt};
+    fPullHisto->Fill(vPullHisto);
+
+    /*
+
     deltaYTPC= track->GetY()-particle->Vy();
     deltaZTPC = track->GetZ()-particle->Vz();
     deltaLambdaTPC = TMath::ATan2(track->Pz(),track->Pt())-TMath::ATan2(particle->Pz(),particle->Pt());
@@ -390,6 +479,8 @@ void AliPerformanceRes::ProcessConstrained(AliStack* const stack, AliESDtrack *c
 
     Double_t vPullHisto[10] = {pullYTPC,pullZTPC,pullPhiTPC,pullLambdaTPC,pull1PtTPC,particle->Vy(),particle->Vz(),mceta,mcphi,mcpt};
     fPullHisto->Fill(vPullHisto);
+
+    */
   }
 }
  
@@ -440,16 +531,49 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   Float_t mcphi =  ref0->Phi();
   if(mcphi<0) mcphi += 2.*TMath::Pi();
   Float_t mcpt = ref0->Pt();
+  Float_t mcsnp = TMath::Sin(TMath::ATan2(ref0->Py(),ref0->Px()));
+  Float_t mctgl = TMath::Tan(TMath::ATan2(ref0->Pz(),ref0->Pt()));
 
   if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
   if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters
 
-  Float_t delta1PtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
+  Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
 
   // select primaries
   if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
   { 
+    if(mcpt == 0) return;
+    
+    deltaYTPC= track->GetY(); // already rotated
+    deltaZTPC = track->GetZ()-ref0->Z();
+    deltaLambdaTPC = TMath::ATan2(track->Pz(),track->Pt())-TMath::ATan2(ref0->Pz(),ref0->Pt());
+    deltaPhiTPC = TMath::ATan2(track->Py(),track->Px())-TMath::ATan2(ref0->Py(),ref0->Px());
+    //delta1PtTPC = (track->OneOverPt()-1./mcpt)*mcpt;
+    deltaPtTPC = (track->Pt()-mcpt) / mcpt;
+
+    pullYTPC= track->GetY() / TMath::Sqrt(track->GetSigmaY2());
+    pullZTPC = (track->GetZ()-ref0->Z()) / TMath::Sqrt(track->GetSigmaZ2());
+ 
+    //Double_t sigma_lambda = 1./(1.+track->GetTgl()*track->GetTgl()) * TMath::Sqrt(track->GetSigmaTgl2()); 
+    //Double_t sigma_phi = 1./TMath::Sqrt(1-track->GetSnp()*track->GetSnp()) * TMath::Sqrt(track->GetSigmaSnp2());
+    pullPhiTPC = (track->GetSnp() - mcsnp) / TMath::Sqrt(track->GetSigmaSnp2());
+    pullLambdaTPC = (track->GetTgl() - mctgl) / TMath::Sqrt(track->GetSigmaTgl2());
+
+    //pullLambdaTPC = deltaLambdaTPC / TMath::Sqrt(track->GetSigmaTgl2());
+    //pullPhiTPC = deltaPhiTPC / TMath::Sqrt(track->GetSigmaSnp2()); 
+    if (mcpt) pull1PtTPC = (track->OneOverPt()-1./mcpt) / TMath::Sqrt(track->GetSigma1Pt2());
+    else pull1PtTPC = 0.;
+
+    Double_t vResolHisto[10] = {deltaYTPC,deltaZTPC,deltaPhiTPC,deltaLambdaTPC,deltaPtTPC,ref0->Y(),ref0->Z(),mcphi,mceta,mcpt};
+    fResolHisto->Fill(vResolHisto);
+
+    Double_t vPullHisto[10] = {pullYTPC,pullZTPC,pullPhiTPC,pullLambdaTPC,pull1PtTPC,ref0->Y(),ref0->Z(),mcsnp,mctgl,1./mcpt};
+    fPullHisto->Fill(vPullHisto);
+
+
+    /*
+
     //deltaYTPC= track->GetY()-ref0->Y();
     deltaYTPC= track->GetY(); // it corresponds to deltaY after alpha rotation 
     deltaZTPC = track->GetZ()-ref0->Z();
@@ -478,6 +602,8 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
 
     Double_t vPullHisto[10] = {pullYTPC,pullZTPC,pullPhiTPC,pullLambdaTPC,pull1PtTPC,ref0->Y(),ref0->Z(),mceta,mcphi,mcpt};
     fPullHisto->Fill(vPullHisto);
+
+    */
   }
 
   if(track) delete track;
@@ -575,7 +701,7 @@ TH1F* AliPerformanceRes::MakeResol(TH2F * his, Int_t integ, Bool_t type, Int_t c
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::Analyse(){
+void AliPerformanceRes::Analyse() {
   // Analyse comparison information and store output histograms
   // in the folder "folderRes"
   //
@@ -595,7 +721,7 @@ void AliPerformanceRes::Analyse(){
   {
     for(Int_t j=5; j<10; j++) 
     {
-      if(j!=7) fResolHisto->GetAxis(7)->SetRangeUser(-0.9,0.9); // eta window
+      if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.9); // eta window
       fResolHisto->GetAxis(9)->SetRangeUser(0.16,10.); // pt threshold
       if(GetAnalysisMode() == 3) fResolHisto->GetAxis(5)->SetRangeUser(-80.,80.); // y range
 
@@ -603,16 +729,6 @@ void AliPerformanceRes::Analyse(){
 
       h = AliPerformanceRes::MakeResol(h2D,1,0,100);
       sprintf(name,"h_res_%d_vs_%d",i,j);
-
-      /*
-      if(i<2) {
-        h->SetMinimum(0.);
-        h->SetMaximum(1.);
-      } else {
-        h->SetMinimum(0.);
-        h->SetMaximum(0.2);
-      }
-      */
       h->SetName(name);
 
       h->GetXaxis()->SetTitle(fResolHisto->GetAxis(j)->GetTitle());
@@ -627,17 +743,6 @@ void AliPerformanceRes::Analyse(){
       h = AliPerformanceRes::MakeResol(h2D,1,1,100);
       //h = (TH1F*)arr->At(1);
       sprintf(name,"h_mean_res_%d_vs_%d",i,j);
-      /*
-      h->SetMinimum(-0.05);
-      h->SetMaximum(0.05);
-      if(i<2) {
-        h->SetMinimum(-0.05);
-        h->SetMaximum(0.05);
-      } else {
-        h->SetMinimum(-0.02);
-        h->SetMaximum(0.02);
-      }
-      */
       h->SetName(name);
 
       h->GetXaxis()->SetTitle(fResolHisto->GetAxis(j)->GetTitle());
@@ -650,20 +755,19 @@ void AliPerformanceRes::Analyse(){
       if(j==9) h->SetBit(TH1::kLogX);    
       aFolderObj->Add(h);
 
-      fResolHisto->GetAxis(7)->SetRangeUser(-1.5,1.5);
+      fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.5);
       fResolHisto->GetAxis(9)->SetRangeUser(0.0,10.);
 
       //
-      if(j!=7) fPullHisto->GetAxis(7)->SetRangeUser(-0.9,0.9); // eta window
-      fPullHisto->GetAxis(9)->SetRangeUser(0.16,10.);  // pt threshold
+      if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-1.0,1.0); // theta window
+      else  fPullHisto->GetAxis(8)->SetRangeUser(-1.5,1.5); // theta window
+      fPullHisto->GetAxis(9)->SetRangeUser(0.0,10.);  // pt threshold
       if(GetAnalysisMode() == 3) fPullHisto->GetAxis(5)->SetRangeUser(-80.,80.); // y range
 
       h2D = (TH2F*)fPullHisto->Projection(i,j);
 
       h = AliPerformanceRes::MakeResol(h2D,1,0,100);
       sprintf(name,"h_pull_%d_vs_%d",i,j);
-      //h->SetMinimum(0.);
-      //h->SetMaximum(2.);
       h->SetName(name);
 
       h->GetXaxis()->SetTitle(fPullHisto->GetAxis(j)->GetTitle());
@@ -672,13 +776,11 @@ void AliPerformanceRes::Analyse(){
       sprintf(title,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
       h->SetTitle(title);
 
-      if(j==9) h->SetBit(TH1::kLogX);    
+      //if(j==9) h->SetBit(TH1::kLogX);    
       aFolderObj->Add(h);
 
       h = AliPerformanceRes::MakeResol(h2D,1,1,100);
       sprintf(name,"h_mean_pull_%d_vs_%d",i,j);
-      //h->SetMinimum(-0.2);
-      //h->SetMaximum(0.2);
       h->SetName(name);
 
       h->GetXaxis()->SetTitle(fPullHisto->GetAxis(j)->GetTitle());
@@ -687,11 +789,8 @@ void AliPerformanceRes::Analyse(){
       sprintf(title,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
       h->SetTitle(title);
 
-      if(j==9) h->SetBit(TH1::kLogX);    
+      //if(j==9) h->SetBit(TH1::kLogX);    
       aFolderObj->Add(h);
-
-      fPullHisto->GetAxis(7)->SetRangeUser(-1.5,1.5);
-      fPullHisto->GetAxis(9)->SetRangeUser(0.0,10.);
     }
   }
 
