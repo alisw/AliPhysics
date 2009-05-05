@@ -160,13 +160,16 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
    // Create task
    //===========================================================================
-  AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation ("PartCorr");
+  AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation ("PartCorr"+calorimeter);
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
   task->SetAnalysisMaker(maker);				
   mgr->AddTask(task);
   
-  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form("PartCorr"),TList::Class(),
+  char name[128];
+  sprintf(name,"PartCorr_%s",calorimeter.Data());
+cout<<"Name of task "<<name<<endl;
+  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form(name),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, Form("PartCorr_%s.root",calorimeter.Data()));
   
   // Create ONLY the output containers for the data produced by the task.
