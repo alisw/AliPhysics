@@ -16,15 +16,16 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   //==================================================================================
   //             set here which plots will be shown by default
   //==================================================================================
-  Bool_t plotIntFlow = kTRUE;     //integrated flow (no-name) // to be improved
+  Bool_t plotIntFlow = kTRUE;                  // integrated flow (no-name) // to be improved
   // RP = particles used to determine the reaction plane
-  Bool_t plotIntFlowRP = kTRUE;     //integrated flow RP
-  Bool_t plotDiffFlowPtRP = kTRUE;  //differential flow (Pt,RP)
-  Bool_t plotDiffFlowEtaRP = kTRUE; //differential flow (Eta,RP)
+  Bool_t plotIntFlowRP = kTRUE;                // integrated flow RP
+  Bool_t plotDiffFlowPtRP = kTRUE;             // differential flow (Pt,RP)
+  Bool_t plotDiffFlowEtaRP = kTRUE;            // differential flow (Eta,RP)
+  Bool_t plotDiffFlowPtRelativeToMCRP = kTRUE; // plot |v{MC}-v{method}/v{MC}| as a function of pt for RPs   
   // POI = particle of interest
-  Bool_t plotIntFlowPOI = kTRUE;     //integrated flow POI
-  Bool_t plotDiffFlowPtPOI = kTRUE;   //differential flow (Pt,POI)
-  Bool_t plotDiffFlowEtaPOI = kTRUE;   //differential flow (Eta,POI)
+  Bool_t plotIntFlowPOI = kTRUE;               //integrated flow POI
+  Bool_t plotDiffFlowPtPOI = kTRUE;            //differential flow (Pt,POI)
+  Bool_t plotDiffFlowEtaPOI = kTRUE;           //differential flow (Eta,POI)
   //==================================================================================
   
   
@@ -38,8 +39,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Bool_t plotGFC8PtRP  = kTRUE;
   Bool_t plotQC2PtRP   = kTRUE;
   Bool_t plotQC4PtRP   = kTRUE;
-  Bool_t plotQC6PtRP   = kTRUE;
-  Bool_t plotQC8PtRP   = kTRUE;
+  Bool_t plotQC6PtRP   = kFALSE; // not calculated yet
+  Bool_t plotQC8PtRP   = kFALSE; // not calculated yet
   Bool_t plotLYZ2PtRP  = kTRUE;
   
   // set here which methods will be plotted by default for differential flow (Eta,RP):
@@ -51,10 +52,23 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Bool_t plotGFC8EtaRP  = kTRUE;
   Bool_t plotQC2EtaRP   = kTRUE;
   Bool_t plotQC4EtaRP   = kTRUE;
-  Bool_t plotQC6EtaRP   = kTRUE;
-  Bool_t plotQC8EtaRP   = kTRUE;
+  Bool_t plotQC6EtaRP   = kFALSE; // not calculated yet
+  Bool_t plotQC8EtaRP   = kFALSE; // not calculated yet
   Bool_t plotLYZ2EtaRP  = kTRUE;
   Bool_t plotLYZEPEtaRP = kTRUE;
+  
+  // set here which methods will be plotted by default for |v{MC}-v{method}/v{MC}| as a function of pt for RPs 
+  Bool_t plotSPRelativeToMCRP    = kTRUE;
+  Bool_t plotGFC2RelativeToMCRP  = kTRUE;
+  Bool_t plotGFC4RelativeToMCRP  = kTRUE;
+  Bool_t plotGFC6RelativeToMCRP  = kTRUE;
+  Bool_t plotGFC8RelativeToMCRP  = kTRUE;
+  Bool_t plotQC2RelativeToMCRP   = kTRUE;
+  Bool_t plotQC4RelativeToMCRP   = kTRUE;
+  Bool_t plotQC6RelativeToMCRP   = kFALSE; // not calculated yet
+  Bool_t plotQC8RelativeToMCRP   = kFALSE; // not calculated yet
+  Bool_t plotLYZ2RelativeToMCRP  = kTRUE;
+  Bool_t plotLYZEPRelativeToMCRP = kTRUE;  
   
   // set here which methods will be plotted by default for differential flow (Pt,POI):
   Bool_t plotMCPtPOI    = kFALSE;
@@ -65,8 +79,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Bool_t plotGFC8PtPOI  = kTRUE;
   Bool_t plotQC2PtPOI   = kTRUE;
   Bool_t plotQC4PtPOI   = kTRUE;
-  Bool_t plotQC6PtPOI   = kTRUE;
-  Bool_t plotQC8PtPOI   = kTRUE;
+  Bool_t plotQC6PtPOI   = kFALSE;
+  Bool_t plotQC8PtPOI   = kFALSE;
   Bool_t plotLYZ2PtPOI  = kTRUE;
   Bool_t plotLYZEPPtPOI = kTRUE; 
   
@@ -79,8 +93,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Bool_t plotGFC8EtaPOI  = kTRUE;
   Bool_t plotQC2EtaPOI   = kTRUE;
   Bool_t plotQC4EtaPOI   = kTRUE;
-  Bool_t plotQC6EtaPOI   = kTRUE;
-  Bool_t plotQC8EtaPOI   = kTRUE;
+  Bool_t plotQC6EtaPOI   = kFALSE; // not calculated yet
+  Bool_t plotQC8EtaPOI   = kFALSE; // not calculated yet
   Bool_t plotLYZ2EtaPOI  = kTRUE;
   Bool_t plotLYZEPEtaPOI = kTRUE;
   //==================================================================================
@@ -101,10 +115,10 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Int_t markerStyleGFC4 = 20; // full circle
   Int_t markerColorGFC4 = kAzure+3;
   // GFC{6}
-  Int_t markerStyleGFC6 = 25; // open circle
+  Int_t markerStyleGFC6 = 25; // open square
   Int_t markerColorGFC6 = kAzure-7;
   // GFC{8}
-  Int_t markerStyleGFC8 = 24; // open square
+  Int_t markerStyleGFC8 = 24; // open circle
   Int_t markerColorGFC8 = kAzure+3;
   // QC{2}
   Int_t markerStyleQC2 = 21; // full square
@@ -113,10 +127,10 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Int_t markerStyleQC4 = 20; // full circle
   Int_t markerColorQC4 = kOrange+3;
   // QC{6}
-  Int_t markerStyleQC6 = 25; // open circle
+  Int_t markerStyleQC6 = 25; // open square
   Int_t markerColorQC6 = kOrange-7;
   // QC{8}
-  Int_t markerStyleQC8 = 24; // open square
+  Int_t markerStyleQC8 = 24; // open circle
   Int_t markerColorQC8 = kOrange+3;
   // LYZ2
   Int_t markerStyleLYZ2 = 22; // full triangle
@@ -2306,6 +2320,386 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   }
  }// end of if(plotDiffFlowEtaRP)
  //----------------------------------------------------------------------------------
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ //----------------------------------------------------------------------------------
+ // final drawing for plot |(v{method}-v{MC})/v{MC}| as a function of pt for RPs  
+ if(plotDiffFlowPtRelativeToMCRP)
+ {  
+  TCanvas* diffFlowPtRelativeToMCRP = new TCanvas("Differential Flow (Pt) of RPs relative to MC","Differential Flow (Pt) of RPs relative to MC",1000,600);
+  
+  diffFlowPtRelativeToMCRP->Divide(2,1);
+ 
+  //1st pad is for plot:
+  (diffFlowPtRelativeToMCRP->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+ 
+  if(styleHistPt)
+  {
+   (styleHistPt->GetYaxis())->SetRangeUser(-0.3,1.0);
+   styleHistPt->Draw();
+  }
+ 
+  TH1D *spDiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+  TH1D *gfc2DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+  TH1D *gfc4DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+  TH1D *gfc6DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+  TH1D *gfc8DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+  TH1D *qc2DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+  TH1D *qc4DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+  TH1D *qc6DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+  TH1D *qc8DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+  TH1D *lyz2DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+  TH1D *lyzepDiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+    
+  if(mcepCommonHistRes->GetHistDiffFlowPtRP())
+  {
+   for(Int_t p=1;p<iNbinsPt+1;p++)
+   {
+    Double_t dvnMC = (mcepCommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(p);
+    
+    // SP:
+    Double_t dvnSP = 0.;
+    if(spCommonHistRes && spCommonHistRes->GetHistDiffFlowPtRP())
+    {
+     dvnSP = (spCommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(p);
+    }
+    if(dvnMC!=0. && dvnSP!=0.) 
+    {
+     spDiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnSP-dvnMC)/dvnMC));
+    }
+    
+    // GFC{2}:
+    Double_t dvnGFC2 = 0.;
+    if(gfcCommonHistRes2 && gfcCommonHistRes2->GetHistDiffFlowPtRP())
+    {
+     dvnGFC2 = (gfcCommonHistRes2->GetHistDiffFlowPtRP())->GetBinContent(p);
+    }
+    if(dvnMC!=0. && dvnGFC2!=0.) 
+    {
+     gfc2DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnGFC2-dvnMC)/dvnMC));
+    }
+    
+    // GFC{4}:
+    Double_t dvnGFC4 = 0.;
+    if(gfcCommonHistRes4 && gfcCommonHistRes4->GetHistDiffFlowPtRP())
+    {
+     dvnGFC4 = (gfcCommonHistRes4->GetHistDiffFlowPtRP())->GetBinContent(p);
+    }
+    if(dvnMC!=0. && dvnGFC4!=0.) 
+    {
+     gfc4DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnGFC4-dvnMC)/dvnMC));
+    }
+    
+    // GFC{6}:
+    Double_t dvnGFC6 = 0.;
+    if(gfcCommonHistRes6 && gfcCommonHistRes6->GetHistDiffFlowPtRP())
+    {
+     dvnGFC6 = (gfcCommonHistRes6->GetHistDiffFlowPtRP())->GetBinContent(p);
+    }
+    if(dvnMC!=0. && dvnGFC6!=0.) 
+    {
+     gfc6DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnGFC6-dvnMC)/dvnMC));
+    }
+    
+    // GFC{8}:
+    Double_t dvnGFC8 = 0.;
+    if(gfcCommonHistRes8 && gfcCommonHistRes8->GetHistDiffFlowPtRP())
+    {
+     dvnGFC8 = (gfcCommonHistRes8->GetHistDiffFlowPtRP())->GetBinContent(p);
+    }
+    if(dvnMC!=0. && dvnGFC8!=0.) 
+    {
+     gfc8DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnGFC8-dvnMC)/dvnMC));
+    }
+    
+    // QC{2}:
+    Double_t dvnQC2 = 0.;
+    if(qcCommonHistRes2 && qcCommonHistRes2->GetHistDiffFlowPtRP())
+    {
+     dvnQC2 = (qcCommonHistRes2->GetHistDiffFlowPtRP())->GetBinContent(p);
+    }
+    if(dvnMC!=0. && dvnQC2!=0.) 
+    {
+     qc2DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnQC2-dvnMC)/dvnMC));
+    }
+    
+    // QC{4}:
+    Double_t dvnQC4 = 0.;
+    if(qcCommonHistRes4 && qcCommonHistRes4->GetHistDiffFlowPtRP())
+    {
+     dvnQC4 = (qcCommonHistRes4->GetHistDiffFlowPtRP())->GetBinContent(p);
+    }
+    if(dvnMC!=0. && dvnQC4!=0.) 
+    {
+     qc4DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnQC4-dvnMC)/dvnMC));
+    }
+    
+    // QC{6}:
+    Double_t dvnQC6 = 0.;
+    if(qcCommonHistRes6 && qcCommonHistRes6->GetHistDiffFlowPtRP())
+    {
+     dvnQC6 = (qcCommonHistRes6->GetHistDiffFlowPtRP())->GetBinContent(p);
+    }
+    if(dvnMC!=0. && dvnQC6!=0.) 
+    {
+     qc6DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnQC6-dvnMC)/dvnMC));
+    }
+    
+    // QC{8}:
+    Double_t dvnQC8 = 0.;
+    if(qcCommonHistRes8 && qcCommonHistRes8->GetHistDiffFlowPtRP())
+    {
+     dvnQC8 = (qcCommonHistRes8->GetHistDiffFlowPtRP())->GetBinContent(p);
+    }
+    if(dvnMC!=0. && dvnQC8!=0.) 
+    {
+     qc8DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnQC8-dvnMC)/dvnMC));
+    }
+    
+    // LYZ2:
+    Double_t dvnLYZ2 = 0.;
+    if(lyz2CommonHistRes && lyz2CommonHistRes->GetHistDiffFlowPtRP())
+    {
+     dvnLYZ2 = (lyz2CommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(p);
+    }
+    if(dvnMC!=0. && dvnLYZ2!=0.) 
+    {
+     lyz2DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnLYZ2-dvnMC)/dvnMC));
+    }
+      
+    // LYZEP:
+    Double_t dvnLYZEP = 0.;
+    if(lyzepCommonHistRes && lyzepCommonHistRes->GetHistDiffFlowPtRP())
+    {
+     dvnLYZEP = (lyzepCommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(p);
+    }
+    if(dvnMC!=0. && dvnLYZEP!=0.) 
+    {
+     lyzepDiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnLYZEP-dvnMC)/dvnMC));
+    }  
+ 
+   } // end of for(Int_t p=1;p<iNbinsPt+1;p++)
+  } // end of if(mcepCommonHistRes->GetHistDiffFlowPtRP())
+  
+  
+  // final drawings: 
+  spDiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorSP);
+  spDiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleSP);
+  if(plotSPRelativeToMCRP && spCommonHistRes) spDiffFlowPtRelativeToMCRP->Draw("PSAME");
+  
+  gfc2DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorGFC2);
+  gfc2DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleGFC2);
+  if(plotGFC2RelativeToMCRP && gfcCommonHistRes2) gfc2DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  
+  gfc4DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorGFC4);
+  gfc4DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleGFC4);
+  if(plotGFC4RelativeToMCRP && gfcCommonHistRes4) gfc4DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  
+  gfc6DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorGFC6);
+  gfc6DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleGFC6);
+  if(plotGFC6RelativeToMCRP && gfcCommonHistRes6) gfc6DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  
+  gfc8DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorGFC8);
+  gfc8DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleGFC8);
+  if(plotGFC8RelativeToMCRP && gfcCommonHistRes8) gfc8DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  
+  qc2DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorQC2);
+  qc2DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleQC2);
+  if(plotQC2RelativeToMCRP && qcCommonHistRes2) qc2DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  
+  qc4DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorQC4);
+  qc4DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleQC4);
+  if(plotQC4RelativeToMCRP && qcCommonHistRes4) qc4DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  
+  qc6DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorQC6);
+  qc6DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleQC6);
+  if(plotQC6RelativeToMCRP && qcCommonHistRes6) qc6DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  
+  qc8DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorQC8);
+  qc8DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleQC8);
+  if(plotQC8RelativeToMCRP && qcCommonHistRes8) qc8DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  
+  lyz2DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorLYZ2);
+  lyz2DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleLYZ2);
+  if(plotLYZ2RelativeToMCRP && lyz2CommonHistRes) lyz2DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  
+  lyzepDiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorLYZEP);
+  lyzepDiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleLYZEP);
+  if(plotLYZEPRelativeToMCRP && lyzepCommonHistRes) lyzepDiffFlowPtRelativeToMCRP->Draw("PSAME");
+  
+  //2nd pad is for legend:
+  (diffFlowPtRelativeToMCRP->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+  
+  TLegend* legendDiffFlowPtRP = new TLegend(0.02,0.12,0.97,0.70);
+  legendDiffFlowPtRP->SetTextFont(72);
+  legendDiffFlowPtRP->SetTextSize(0.06);
+ 
+  //legend's entries:Pt
+  TString *entryDiffMCPtRP    = new TString("MC ....... ");
+  TString *entryDiffSPPtRP    = new TString("SP ....... ");
+  TString *entryDiffGFC2PtRP  = new TString("GFC{2} ... ");
+  TString *entryDiffGFC4PtRP  = new TString("GFC{4} ... ");
+  TString *entryDiffGFC6PtRP  = new TString("GFC{6} ... ");
+  TString *entryDiffGFC8PtRP  = new TString("GFC{8} ... "); 
+  TString *entryDiffQC2PtRP   = new TString("QC{2} .... ");
+  TString *entryDiffQC4PtRP   = new TString("QC{4} .... ");
+  TString *entryDiffQC6PtRP   = new TString("QC{6} .... ");
+  TString *entryDiffQC8PtRP   = new TString("QC{8} .... ");
+  TString *entryDiffLYZ2PtRP  = new TString("LYZ ...... ");
+  TString *entryDiffLYZEPPtRP = new TString("LYZEP ... ");
+  
+  //MC
+  if(mcepCommonHistRes)
+  {
+   (mcepCommonHistRes->GetHistDiffFlowPtRP())->SetFillStyle(meshStyleDiffFlowPtRP);
+   (mcepCommonHistRes->GetHistDiffFlowPtRP())->SetFillColor(meshColorDiffFlowPtRP);
+   entryDiffMCPtRP->Append("M = ");
+   (*entryDiffMCPtRP)+=(Long_t)avMultDiffFlowMCRP;
+   entryDiffMCPtRP->Append(", N = ");
+   (*entryDiffMCPtRP)+=(Long_t)nEvtsDiffFlowMCRP; 
+   //legendDiffFlowPtRP->AddEntry(mcepCommonHistRes->GetHistDiffFlowPtRP(),entryDiffMCPtRP->Data(),"f");
+  }
+  
+  //SP
+  if(spCommonHistRes)
+  {
+   entryDiffSPPtRP->Append("M = ");
+   (*entryDiffSPPtRP)+=(Long_t)avMultDiffFlowSPRP;
+   entryDiffSPPtRP->Append(", N = ");
+   (*entryDiffSPPtRP)+=(Long_t)nEvtsDiffFlowSPRP; 
+   if(plotSPRelativeToMCRP) legendDiffFlowPtRP->AddEntry(spCommonHistRes->GetHistDiffFlowPtRP(),entryDiffSPPtRP->Data(),"p");
+  }
+
+  //GFC
+  if(plotGFC2PtRP && gfcCommonHistRes2)
+  {
+   entryDiffGFC2PtRP->Append("M = ");
+   (*entryDiffGFC2PtRP)+=(Long_t)avMultDiffFlowGFCRP;
+   entryDiffGFC2PtRP->Append(", N = ");
+   (*entryDiffGFC2PtRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
+   if(plotGFC2RelativeToMCRP) legendDiffFlowPtRP->AddEntry(gfcCommonHistRes2->GetHistDiffFlowPtRP(),entryDiffGFC2PtRP->Data(),"p");
+  }
+  if(plotGFC4PtRP && gfcCommonHistRes4)
+  {
+   entryDiffGFC4PtRP->Append("M = ");
+   (*entryDiffGFC4PtRP)+=(Long_t)avMultDiffFlowGFCRP;
+   entryDiffGFC4PtRP->Append(", N = ");
+   (*entryDiffGFC4PtRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
+   if(plotGFC4RelativeToMCRP) legendDiffFlowPtRP->AddEntry(gfcCommonHistRes4->GetHistDiffFlowPtRP(),entryDiffGFC4PtRP->Data(),"p");
+  }
+  if(plotGFC6PtRP && gfcCommonHistRes6)
+  {
+   entryDiffGFC6PtRP->Append("M = ");
+   (*entryDiffGFC6PtRP)+=(Long_t)avMultDiffFlowGFCRP;
+   entryDiffGFC6PtRP->Append(", N = ");
+   (*entryDiffGFC6PtRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
+   if(plotGFC6RelativeToMCRP) legendDiffFlowPtRP->AddEntry(gfcCommonHistRes6->GetHistDiffFlowPtRP(),entryDiffGFC6PtRP->Data(),"p");
+  } 
+  if(plotGFC8PtRP && gfcCommonHistRes8)
+  {
+   entryDiffGFC8PtRP->Append("M = ");
+   (*entryDiffGFC8PtRP)+=(Long_t)avMultDiffFlowGFCRP;
+   entryDiffGFC8PtRP->Append(", N = ");
+   (*entryDiffGFC8PtRP)+=(Long_t)nEvtsDiffFlowGFCRP; 
+   if(plotGFC8RelativeToMCRP) legendDiffFlowPtRP->AddEntry(gfcCommonHistRes8->GetHistDiffFlowPtRP(),entryDiffGFC8PtRP->Data(),"p");
+  }  
+  
+  //QC
+  if(plotQC2PtRP && qcCommonHistRes2)
+  {
+   entryDiffQC2PtRP->Append("M = ");
+   (*entryDiffQC2PtRP)+=(Long_t)avMultDiffFlowQC2RP;
+   entryDiffQC2PtRP->Append(", N = ");
+   (*entryDiffQC2PtRP)+=(Long_t)nEvtsDiffFlowQC2RP; 
+   if(plotQC2RelativeToMCRP) legendDiffFlowPtRP->AddEntry(qcCommonHistRes2->GetHistDiffFlowPtRP(),entryDiffQC2PtRP->Data(),"p");
+  }
+  if(plotQC4PtRP && qcCommonHistRes4)
+  {
+   entryDiffQC4PtRP->Append("M = ");
+   (*entryDiffQC4PtRP)+=(Long_t)avMultDiffFlowQC4RP;
+   entryDiffQC4PtRP->Append(", N = ");
+   (*entryDiffQC4PtRP)+=(Long_t)nEvtsDiffFlowQC4RP; 
+   if(plotQC4RelativeToMCRP) legendDiffFlowPtRP->AddEntry(qcCommonHistRes4->GetHistDiffFlowPtRP(),entryDiffQC4PtRP->Data(),"p");
+  }
+  if(plotQC6PtRP && qcCommonHistRes6)
+  {
+   entryDiffQC6PtRP->Append("M = ");
+   (*entryDiffQC6PtRP)+=(Long_t)avMultDiffFlowQC6RP;
+   entryDiffQC6PtRP->Append(", N = ");
+   (*entryDiffQC6PtRP)+=(Long_t)nEvtsDiffFlowQC6RP; 
+   if(plotQC6RelativeToMCRP) legendDiffFlowPtRP->AddEntry(qcCommonHistRes6->GetHistDiffFlowPtRP(),entryDiffQC6PtRP->Data(),"p");
+  }
+  if(plotQC8PtRP && qcCommonHistRes8)
+  {
+   entryDiffQC8PtRP->Append("M = ");
+   (*entryDiffQC8PtRP)+=(Long_t)avMultDiffFlowQC8RP;
+   entryDiffQC8PtRP->Append(", N = ");
+   (*entryDiffQC8PtRP)+=(Long_t)nEvtsDiffFlowQC8RP; 
+   if(plotQC8RelativeToMCRP) legendDiffFlowPtRP->AddEntry(qcCommonHistRes8->GetHistDiffFlowPtRP(),entryDiffQC8PtRP->Data(),"p");
+  }
+  
+  //LYZ2
+  if(plotLYZ2PtRP && lyz2CommonHistRes)
+  {
+   entryDiffLYZ2PtRP->Append("M = ");
+   (*entryDiffLYZ2PtRP)+=(Long_t)avMultDiffFlowLYZ2RP;
+   entryDiffLYZ2PtRP->Append(", N = ");
+   (*entryDiffLYZ2PtRP)+=(Long_t)nEvtsDiffFlowLYZ2RP; 
+   if(plotLYZ2RelativeToMCRP) legendDiffFlowPtRP->AddEntry(lyz2CommonHistRes->GetHistDiffFlowPtRP(),entryDiffLYZ2PtRP->Data(),"p");
+  }
+  
+  //LYZEP
+  if(plotLYZEPPtRP && lyzepCommonHistRes)
+  {
+   entryDiffLYZEPPtRP->Append("M = ");
+   (*entryDiffLYZEPPtRP)+=(Long_t)avMultDiffFlowLYZEPRP;
+   entryDiffLYZEPPtRP->Append(", N = ");
+   (*entryDiffLYZEPPtRP)+=(Long_t)nEvtsDiffFlowLYZEPRP; 
+   if(plotLYZEPRelativeToMCRP) legendDiffFlowPtRP->AddEntry(lyzepCommonHistRes->GetHistDiffFlowPtRP(),entryDiffLYZEPPtRP->Data(),"p");
+  }
+
+  //drawing finally the legend in the 2nd pad:         
+  if(textDefault) textDefault->Draw();
+  
+  if(legendDiffFlowPtRP)
+  {
+   legendDiffFlowPtRP->SetMargin(0.15);
+   legendDiffFlowPtRP->Draw();
+  } 
+ } 
+ //----------------------------------------------------------------------------------
 
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Pt, POI):
@@ -2524,7 +2918,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   }
  }//end of if(plotDiffFlowPtPOI)
  //----------------------------------------------------------------------------------
- 
+
 
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Eta, POI):
