@@ -32,7 +32,6 @@
 #include "TClonesArray.h"
 
 #include "AliTRDgtuSim.h"
-#include "AliTRDmcmTracklet.h"
 #include "AliTRDgtuTMU.h"
 #include "AliTRDtrackGTU.h"
 #include "AliTRDtrackletWord.h"

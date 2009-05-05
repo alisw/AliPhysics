@@ -4,8 +4,8 @@ set(SRCS
       AliTRDcluster.cxx
       AliTRDclusterizer.cxx 
       AliTRDtransform.cxx 
-      AliTRDtracklet.cxx 
       AliTRDtrack.cxx 
+      AliTRDtracklet.cxx 
       AliTRDtracker.cxx 
       AliTRDseed.cxx 
       AliTRDpropagationLayer.cxx 

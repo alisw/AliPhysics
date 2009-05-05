@@ -47,21 +47,16 @@ set(SRCS
       AliTRDSensor.cxx
       AliTRDSensorArray.cxx
       AliTRDalignment.cxx
-      AliTRDmcmTracklet.cxx
       AliTRDtrapConfig.cxx
       AliTRDmcmSim.cxx
-      AliTRDmcm.cxx
-      AliTRDtrigParam.cxx
+      AliTRDmcmTracklet.cxx
       AliTRDtrackGTU.cxx
       AliTRDtrackletBase.cxx
       AliTRDtrackletGTU.cxx
       AliTRDtrackletMCM.cxx
       AliTRDtrackletWord.cxx
-      AliTRDltuTracklet.cxx
-      AliTRDgtuTrack.cxx
       AliTRDgtuSim.cxx
       AliTRDgtuTMU.cxx
-      AliTRDtrapAlu.cxx
       AliTRDhit.cxx
       AliTRDrecoParam.cxx
       AliTRDSimParam.cxx

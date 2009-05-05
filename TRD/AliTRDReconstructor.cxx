@@ -36,7 +36,6 @@
 #include "AliTRDclusterizer.h"
 #include "AliTRDtracker.h"
 #include "AliTRDpidESD.h"
-#include "AliTRDgtuTrack.h"
 #include "AliTRDrawData.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDtrackerV1.h"

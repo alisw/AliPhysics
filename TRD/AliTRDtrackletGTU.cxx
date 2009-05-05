@@ -28,7 +28,6 @@
 
 #include "AliTRDtrackletGTU.h"
 #include "AliTRDtrackletWord.h"
-#include "AliTRDmcmTracklet.h"
 #include "AliTRDtrackletMCM.h"
 #include "AliLog.h"
 #include "AliTRDgtuParam.h"
