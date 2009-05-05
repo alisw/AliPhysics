@@ -61,7 +61,7 @@ AliPerformanceObject::~AliPerformanceObject(){
 }
 
 //_____________________________________________________________________________
-void AliPerformanceObject::DrawHisto(Bool_t logz) {
+void AliPerformanceObject::PrintHisto(Bool_t logz, Char_t * outFileName) {
   // draw all histograms from the folder 
   // and store them in the output *.ps file
  
@@ -77,7 +77,10 @@ void AliPerformanceObject::DrawHisto(Bool_t logz) {
 
   char fname[256];
   const char* suffix=".ps"; 
-  sprintf(fname,"%s%s",folder->GetName(),suffix);
+
+  if(outFileName) sprintf(fname,"%s",outFileName);
+  else sprintf(fname,"%s%s",folder->GetName(),suffix);
+  
   TPostScript *ps = new TPostScript(fname,112);
   Printf("Histograms are stored in %s", fname); 
   TIter iter(folder->GetListOfFolders());

@@ -16,8 +16,7 @@
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/Macros/LoadMyLibs.C");
   LoadMyLibs();
   TFile f("Output.root");
-  //AliPerformanceEff * compObj = (AliPerformanceEff*)f.Get("AliPerformanceEff");
-  AliPerformanceEff * compObj = (AliPerformanceEff*)cOutput->FindObject("AliPerformanceEff");
+  AliPerformanceEff * compObj = (AliPerformanceEff*)coutput->FindObject("AliPerformanceEff");
 
   // Analyse comparison data
   compObj->Analyse();

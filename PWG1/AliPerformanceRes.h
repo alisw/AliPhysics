@@ -83,10 +83,11 @@ private:
   //
 
   // resolution histogram
-  THnSparseF *fResolHisto; //-> res_y:res_z:res_phi:res_lambda:res_1pt:y:z:eta:phi:pt
+  THnSparseF *fResolHisto; //-> res_y:res_z:res_phi:res_lambda:res_pt:y:z:phi:eta:pt
 
   // pull histogram
-  THnSparseF *fPullHisto;     //-> pull_y:pull_z:pull_phi:pull_lambda:pull_1pt:y:z:eta:phi:pt
+  //THnSparseF *fPullHisto;  //-> pull_y:pull_z:pull_phi:pull_lambda:pull_1pt:y:z:eta:phi:pt
+  THnSparseF *fPullHisto;  //-> pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt
 
   // Global cuts objects
   AliRecInfoCuts*  fCutsRC;      // selection cuts for reconstructed tracks

@@ -169,9 +169,9 @@ void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   esdTrack->GetImpactParametersTPC(dca,cov);
 
   //Float_t q = esdTrack->Charge();
-  Float_t pt = esdTrack->Pt();
-  Float_t eta = esdTrack->Eta();
-  Float_t phi = esdTrack->Phi();
+  Float_t pt = track->Pt();
+  Float_t eta = track->Eta();
+  Float_t phi = track->Phi();
   Int_t nClust = esdTrack->GetTPCclusters(0);
   Int_t nFindableClust = esdTrack->GetTPCNclsF();
 

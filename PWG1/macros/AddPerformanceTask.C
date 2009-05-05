@@ -98,7 +98,7 @@ void AddPerformanceTask(AliAnalysisManager *mgr=0, Char_t *tpc="ALL")
     if(!(TSTTPCBIT(fSteerTPC, icomp))) continue;
     TString  s(fgkTPCtaskClassName[icomp]);
     if(s.CompareTo("AliPerformanceRes") == 0) {
-      task->AddPerformanceObject((perf = new AliPerformanceRes("AliPerformanceResTPCinner","AliPerformanceResTPCinner",kTPCInnerMode,fHpt)));
+      task->AddPerformanceObject((perf = new AliPerformanceRes("AliPerformanceResTPCInner","AliPerformanceResTPCInner",kTPCInnerMode,fHpt)));
     } else if (s.CompareTo("AliPerformanceDEdx") == 0) {
       task->AddPerformanceObject((perf = new AliPerformanceDEdx("AliPerformanceDEdxTPCInner","AliPerformanceDEdxTPCInner",kTPCInnerMode,fHpt)));
     } else {
