@@ -25,8 +25,8 @@ class AliGenCorrHF : public AliGenMC
 {
  public:
     AliGenCorrHF();
-    AliGenCorrHF(Int_t npart, Int_t param);
-    AliGenCorrHF(char* tname, Int_t npart, Int_t param);
+    AliGenCorrHF(Int_t npart, Int_t idquark, Int_t energy);
+    AliGenCorrHF(char* tname, Int_t npart, Int_t idquark, Int_t energy);
      
     virtual ~AliGenCorrHF();
     virtual void Generate();
@@ -41,14 +41,15 @@ class AliGenCorrHF : public AliGenMC
     // Computation of cumulative sums of cell wght-s, needed by GetQuarkPair
     static Double_t ComputeIntegral(TFile* fG);
 
-    // fG - input file w QQbar kinematical grid (TTree) and fragm. functions (24 TH2-s)
+    // fG - input file with QQbar kinematical grid (TTree) and fragm. functions (24 TH2-s)
     static void GetQuarkPair(TFile* fG, Double_t* fInt, Double_t &y1, Double_t &y2, Double_t &pt1, Double_t &pt2, Double_t &dphi);              
     static void GetHadronPair(TFile* fG, Int_t idq, Double_t y1, Double_t y2, Double_t pt1, Double_t pt2, Int_t &id3, Int_t &id4, Double_t &pz3, Double_t &pz4, Double_t &pt3, Double_t &pt4); 
 
  protected:
     TString     fFileName;    // Name of the input file
     TFile*      fFile;        //! Pointer to input file
-    Int_t       fQuark;       // Quark type 
+    Int_t       fQuark;       // Quark type
+    Int_t       fEnergy;      // p-p c.m.s. energy 
     Float_t     fBias;        // Biasing factor
     Int_t       fTrials;      // Number of trials
     AliDecayer* fDecayer;     //! Pointer to pythia object for decays
@@ -60,10 +61,10 @@ class AliGenCorrHF : public AliGenMC
     static Double_t* fgIntegral; //! Pointer to array of cumulative sums of wght-s
     static Int_t  fgnptbins;             // =12 Number of bins for the fragm. 
                                          //   function dependence on quark pt
-    // Number of the grid bins in deltaphi, y and pt:  18, 30 and 32
+    // Number of the grid bins in deltaphi, y and pt:  18, 30 and 50
     static Double_t fgdph[19];           // deltaphi bin coordinates  
     static Double_t fgy[31];             // y bin coordinates
-    static Double_t fgpt[33];            // pt bin coordinates
+    static Double_t fgpt[51];            // pt bin coordinates
     static Double_t fgptbmin[12];        // min & max coordinates of pt bins for
     static Double_t fgptbmax[12];        // the fragm. function
 

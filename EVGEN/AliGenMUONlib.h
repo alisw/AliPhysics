@@ -51,8 +51,6 @@ class AliGenMUONlib :
     static Double_t PtJpsiCDFscaled( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiCDFscaledPP( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiCDFscaledPP10( const Double_t *px, const Double_t *dummy);
-    static Double_t PtJpsiCDFscaledold( const Double_t *px, const Double_t *dummy);
-    static Double_t PtJpsiCDFscaledPPold( const Double_t *px, const Double_t *dummy);
     static Double_t YJpsi(const Double_t *py, const Double_t *dummy);
     static Double_t PtJpsiPbPb( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiBPbPb( const Double_t *px, const Double_t *dummy);
@@ -60,8 +58,6 @@ class AliGenMUONlib :
     static Double_t YJpsiCDFscaled(const Double_t *py, const Double_t *dummy);
     static Double_t YJpsiCDFscaledPP( const Double_t *px, const Double_t *dummy);
     static Double_t YJpsiCDFscaledPP10( const Double_t *px, const Double_t *dummy);
-    static Double_t YJpsiCDFscaledold(const Double_t *py, const Double_t *dummy);
-    static Double_t YJpsiCDFscaledPPold( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiPP( const Double_t *px, const Double_t *dummy);
     static Double_t YJpsiPP(const Double_t *py, const Double_t *dummy);
     static Double_t YJpsiBPbPb(const Double_t *py, const Double_t *dummy);
@@ -75,9 +71,11 @@ class AliGenMUONlib :
     static Double_t PtUpsilon( const Double_t *px, const Double_t *dummy );
     static Double_t PtUpsilonCDFscaled( const Double_t *px, const Double_t *dummy );
     static Double_t PtUpsilonCDFscaledPP( const Double_t *px, const Double_t *dummy );
+    static Double_t PtUpsilonCDFscaledPP10( const Double_t *px, const Double_t *dummy );
     static Double_t YUpsilon(const Double_t *py, const Double_t *dummy);
     static Double_t YUpsilonCDFscaled(const Double_t *py, const Double_t *dummy);
     static Double_t YUpsilonCDFscaledPP( const Double_t *px, const Double_t *dummy );
+    static Double_t YUpsilonCDFscaledPP10( const Double_t *px, const Double_t *dummy );
     static Double_t PtUpsilonPbPb( const Double_t *px, const Double_t *dummy );
     static Double_t YUpsilonPbPb(const Double_t *py, const Double_t *dummy);
     static Double_t PtUpsilonPP( const Double_t *px, const Double_t *dummy );

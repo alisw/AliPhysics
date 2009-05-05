@@ -178,21 +178,6 @@ Double_t AliGenMUONlib::PtJpsiCDFscaled( const Double_t *px, const Double_t */*d
   return x/TMath::Power(pass1,kxn);
 }
 
-Double_t AliGenMUONlib::PtJpsiCDFscaledold( const Double_t *px, const Double_t */*dummy*/)
-{
-// J/Psi pT
-//
-// PbPb 5.5 TeV
-// scaled from CDF "old" data at 2 TeV
-
-  const Double_t kpt0 = 4.703;
-  const Double_t kxn  = 3.826;
-  Double_t x=*px;
-  //
-  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
-  return x/TMath::Power(pass1,kxn);
-}
-
 Double_t AliGenMUONlib::PtJpsiCDFscaledPP( const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT
@@ -202,21 +187,6 @@ Double_t AliGenMUONlib::PtJpsiCDFscaledPP( const Double_t *px, const Double_t */
 
   const Double_t kpt0 = 5.630;
   const Double_t kxn  = 4.071;
-  Double_t x=*px;
-  //
-  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
-  return x/TMath::Power(pass1,kxn);
-}
-
-Double_t AliGenMUONlib::PtJpsiCDFscaledPPold( const Double_t *px, const Double_t */*dummy*/)
-{
-// J/Psi pT
-//
-// pp 14 TeV
-// scaled from CDF "old" data at 2 TeV
-
-  const Double_t kpt0 = 5.355;
-  const Double_t kxn  = 3.821;
   Double_t x=*px;
   //
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
@@ -367,19 +337,7 @@ Double_t AliGenMUONlib::YJpsiCDFscaled( const Double_t *px, const Double_t* dumm
     return AliGenMUONlib::YJpsiPbPb(px, dummy);
 }
 
-Double_t AliGenMUONlib::YJpsiCDFscaledold( const Double_t *px, const Double_t* dummy)
-{
-    // J/Psi y 
-    return AliGenMUONlib::YJpsiPbPb(px, dummy);
-}
-
 Double_t AliGenMUONlib::YJpsiCDFscaledPP( const Double_t *px, const Double_t* dummy)
-{
-    // J/Psi y 
-    return AliGenMUONlib::YJpsiPP(px, dummy);
-}
-
-Double_t AliGenMUONlib::YJpsiCDFscaledPPold( const Double_t *px, const Double_t* dummy)
 {
     // J/Psi y 
     return AliGenMUONlib::YJpsiPP(px, dummy);
@@ -543,6 +501,22 @@ Double_t AliGenMUONlib::PtUpsilonCDFscaledPP( const Double_t *px, const Double_t
   return x/TMath::Power(pass1,kxn);
 }
 
+Double_t AliGenMUONlib::PtUpsilonCDFscaledPP10( const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon pT
+//
+// pp 10 TeV
+//
+// scaled from CDF data at 2 TeV
+
+  const Double_t kpt0 = 8.235;
+  const Double_t kxn  = 3.051;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
 Double_t AliGenMUONlib::PtUpsilonFlat( const Double_t */*px*/, const Double_t */*dummy*/ )
 {
   return 1.;
@@ -550,7 +524,6 @@ Double_t AliGenMUONlib::PtUpsilonFlat( const Double_t */*px*/, const Double_t */
 
 Double_t AliGenMUONlib::PtUpsilonPbPb( const Double_t *px, const Double_t */*dummy*/)
 {
-
 //
 // Upsilon pT
 //
@@ -579,7 +552,6 @@ Double_t AliGenMUONlib::PtUpsilonPbPb( const Double_t *px, const Double_t */*dum
 
 Double_t AliGenMUONlib::PtUpsilonPP( const Double_t *px, const Double_t */*dummy*/)
 {
-
 //
 // Upsilon pT
 //
@@ -640,9 +612,8 @@ Double_t AliGenMUONlib::YUpsilonPbPb( const Double_t *px, const Double_t */*dumm
 
     Double_t c[7] = {3.40036e-01, -3.98882e-07, -4.48398e-03, 8.46411e-08, -6.10854e-04,
 		     -2.99753e-09, 1.28895e-05};
-        
-    Double_t x = px[0];
-    if (TMath::Abs(x) > 5.55) return 0.;
+    Double_t x = TMath::Abs(px[0]);
+    if (x > 5.55) return 0.;
     Int_t j;
     Double_t y = c[j = 6];
     while (j > 0) y  = y * x +c[--j];
@@ -670,6 +641,25 @@ Double_t AliGenMUONlib::YUpsilonFlat( const Double_t */*px*/, const Double_t */*
     
 }
 
+Double_t AliGenMUONlib::YUpsilonCDFscaledPP10( const Double_t *px, const Double_t */*dummy*/)
+{
+
+//
+// Upsilon y
+//
+// pp 10 TeV
+// scaled from YUpsilonPP(14 TeV) using 10 TeV / 14 TeV ratio of y-spectra in LO pQCD. 
+// see S.Grigoryan, PWG3 Meeting, 27th Oct 2008
+//
+    Double_t c[4] = {1.12979e+00, -2.46155e-02, -7.37561e-04, 1.58824e-05};
+    Double_t x = TMath::Abs(px[0]);
+    if (x > 6.1) return 0.;
+    Int_t j;
+    Double_t y = c[j = 3];
+    while (j > 0) y  = y * x*x +c[--j];
+    return y;
+}
+
 Double_t AliGenMUONlib::YUpsilonPP( const Double_t *px, const Double_t */*dummy*/)
 {
 
@@ -684,9 +674,8 @@ Double_t AliGenMUONlib::YUpsilonPP( const Double_t *px, const Double_t */*dummy*
 //
     Double_t c[7] = {8.91936e-01, -6.46645e-07, -1.52774e-02, 4.28677e-08, -7.01517e-04, 
 		     -6.20539e-10, 1.29943e-05};
-                
-    Double_t x = px[0];
-    if (TMath::Abs(x) > 6.2) return 0.;
+    Double_t x = TMath::Abs(px[0]);
+    if (x > 6.2) return 0.;
     Int_t j;
     Double_t y = c[j = 6];
     while (j > 0) y  = y * x +c[--j];
@@ -1723,10 +1712,6 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiCDFscaledPP;
 	} else if (sname == "CDF pp 10") {
 	    func=PtJpsiCDFscaledPP10;
-	} else if (sname == "CDF scaled old") {
-	    func=PtJpsiCDFscaledold;
-	} else if (sname == "CDF pp old") {
-	    func=PtJpsiCDFscaledPPold;
 	} else if (sname == "Flat") {
 	    func=PtJpsiFlat;
 	} else {
@@ -1748,6 +1733,8 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtUpsilonCDFscaled;
 	} else if (sname == "CDF pp") {
 	    func=PtUpsilonCDFscaledPP;
+	} else if (sname == "CDF pp 10") {
+	    func=PtUpsilonCDFscaledPP10;
 	} else if (sname == "Flat") {
 	    func=PtUpsilonFlat;
 	} else {
@@ -1868,10 +1855,6 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiCDFscaledPP;
 	} else if (sname == "CDF pp 10") {
 	    func=YJpsiCDFscaledPP10;
-	} else if (sname == "CDF scaled old") {
-	    func=YJpsiCDFscaledold;
-	} else if (sname == "CDF pp old") {
-	    func=YJpsiCDFscaledPPold;
 	} else if (sname == "Flat") {
 	    func=YJpsiFlat;
 	} else {
@@ -1893,6 +1876,8 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YUpsilonCDFscaled;
 	} else if (sname == "CDF pp") {
 	    func=YUpsilonCDFscaledPP;
+	} else if (sname == "CDF pp 10") {
+	    func=YUpsilonCDFscaledPP10;
 	} else if (sname == "Flat") {
 	    func=YUpsilonFlat;
 	} else {

@@ -20,13 +20,14 @@
 // and quark fragmentation functions.
 // Is a generalisation of AliGenParam class for correlated pairs of hadrons.
 // In this version quark pairs and fragmentation functions are obtained from
-// Pythia6.124 using 100K events generated with kCharmppMNRwmi&kBeautyppMNRwmi 
-// in pp collisions at 14 TeV.
-// Decays are performed by Pythia. Used AliRoot version: v4-04-Release
+// ~2.10^6 Pythia6.214 events generated with kCharmppMNRwmi & kBeautyppMNRwmi, 
+// CTEQ5L PDF and Pt_hard = 2.76 GeV/c in p-p collisions at 10 and 14 TeV.
+// Decays are performed by Pythia.
 // Author: S. Grigoryan, LPC Clermont-Fd & YerPhI, Smbat.Grigoryan@cern.ch
 // July 07: added quarks in the stack (B. Vulpescu)
+// April 09: added energy choice between 10 and 14 TeV (S. Grigoryan)
 //-------------------------------------------------------------------------
-// How it works (for the given flavor):
+// How it works (for the given flavor and p-p energy):
 //
 // 1) Reads QQbar kinematical grid from the Input file and generates
 // quark pairs according to the weights of the cells.
@@ -39,7 +40,7 @@
 // on 2 variables - light cone energy-momentum fractions:
 //     z1=(E_H + Pz_H)/(E_Q + Pz_Q),  z2=(E_H - Pz_H)/(E_Q - Pz_Q).
 // "soft" & "hard" FFs correspond to "slower" & "faster" quark of a pair 
-// (see details in GetHadronPair).
+// (see details in GetHadronPair). Fragmentation does not depend on p-p energy.
 // 3) Decays the hadrons and saves all the particles in the event stack in the
 // following order: HF hadron from Q, then its decay products, then HF hadron
 // from Qbar, then its decay productes, then next HF hadon pair (if any) 
@@ -47,12 +48,11 @@
 // 4) It is fast, e.g., generates the same number of events with a beauty pair 
 //  ~15 times faster than AliGenPythia with kBeautyppMNRwmi (w/o tracking)
 //
-// An Input file for each quark flavor is included in EVGEN/dataCorrHF/
+// An Input file for each quark flavor and p-p energy is in EVGEN/dataCorrHF/
 // One can use also user-defined Input files.
 //
 // More details could be found in my presentation at DiMuonNet Workshop, Dec 2006: 
-// http://www-dapnia.cea.fr/Sphn/Alice/DiMuonNet
-// and will be published in an Internal Note. 
+// http://www-dapnia.cea.fr/Sphn/Alice/DiMuonNet.
 //
 //-------------------------------------------------------------------------
 // How to use it:
@@ -60,10 +60,10 @@
 // add the following typical lines in Config.C
 /*
   if (!strcmp(option,"corr")) {
-    // Example for correlated charm or beauty hadron pair production 
+    // Example for correlated charm or beauty hadron pair production at 14 TeV
 
-    // AliGenCorrHF *gener = new AliGenCorrHF(1, 4);  // for charm, 1 pair per event
-    AliGenCorrHF *gener = new AliGenCorrHF(1, 5);  // for beauty, 1 pair per event
+    // AliGenCorrHF *gener = new AliGenCorrHF(1, 4, 14);  // for charm, 1 pair per event
+    AliGenCorrHF *gener = new AliGenCorrHF(1, 5, 14);  // for beauty, 1 pair per event
 
     gener->SetMomentumRange(0,9999);
     gener->SetCutOnChild(0);        // 1/0 means cuts on children enable/disable
@@ -113,7 +113,7 @@ ClassImp(AliGenCorrHF)
 
 Double_t AliGenCorrHF::fgdph[19] = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180};
 Double_t AliGenCorrHF::fgy[31] = {-10,-7, -6.5, -6, -5.5, -5, -4.5, -4, -3.5, -3, -2.5, -2,- 1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 10};
-Double_t AliGenCorrHF::fgpt[33] = {0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.6, 7.2, 7.8, 8.4, 9, 9.6, 10.3, 11.1, 12, 13.1, 14.3, 15.6, 17.1, 19, 21, 24, 28, 35, 50, 100};
+Double_t AliGenCorrHF::fgpt[51] = {0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.6, 7.2, 7.8, 8.4, 9, 9.6, 10.3, 11.1, 12, 13, 14, 15, 16, 17, 18, 19, 20.1, 21.5, 23, 24.5, 26, 27.5, 29.1, 31, 33, 35, 37, 39.2, 42, 45, 48, 51, 55.2, 60, 65, 71, 81, 100};
 Int_t AliGenCorrHF::fgnptbins = 12;
 Double_t AliGenCorrHF::fgptbmin[12] = {0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 9};
 Double_t AliGenCorrHF::fgptbmax[12] = {0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 9, 100};
@@ -125,6 +125,7 @@ Double_t* AliGenCorrHF::fgIntegral = 0;
 	fFileName(0),
 	fFile(0),
 	fQuark(0),
+	fEnergy(0),
 	fBias(0.),
 	fTrials(0),
 	fDecayer(0)
@@ -133,22 +134,30 @@ Double_t* AliGenCorrHF::fgIntegral = 0;
 }
 
 //____________________________________________________________
-AliGenCorrHF::AliGenCorrHF(Int_t npart, Int_t param):
+AliGenCorrHF::AliGenCorrHF(Int_t npart, Int_t idquark, Int_t energy):
     AliGenMC(npart),
     fFileName(0),
     fFile(0),
-    fQuark(param),
+    fQuark(idquark),
+    fEnergy(energy),
     fBias(0.),
     fTrials(0),
     //    fDecayer(new AliDecayerPythia())
     fDecayer(0)
 {
-// Constructor using number of particles, quark type & default InputFile
+// Constructor using particle number, quark type, energy & default InputFile
 //
-    if (fQuark != 5) fQuark = 4;
-    fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/CharmppMNRwmiCorr100K.root";
-    if (fQuark == 5) fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/BeautyppMNRwmiCorr100K.root";
-
+    if (fQuark == 5) {
+      if (fEnergy == 10)
+           fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/Beautypp10MNRwmiCorr.root";
+      else fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/Beautypp14MNRwmiCorr.root";
+    }
+    else {
+      fQuark = 4;
+      if (fEnergy == 10)
+           fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/Charmpp10MNRwmiCorr.root";
+      else fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/Charmpp14MNRwmiCorr.root";
+    }
     fName = "Default";
     fTitle= "Generator for correlated pairs of HF hadrons";
       
@@ -163,17 +172,18 @@ AliGenCorrHF::AliGenCorrHF(Int_t npart, Int_t param):
 }
 
 //___________________________________________________________________
-AliGenCorrHF::AliGenCorrHF(char* tname, Int_t npart, Int_t param):
+AliGenCorrHF::AliGenCorrHF(char* tname, Int_t npart, Int_t idquark, Int_t energy):
     AliGenMC(npart),
     fFileName(tname),
     fFile(0),
-    fQuark(param),
+    fQuark(idquark),
+    fEnergy(energy),
     fBias(0.),
     fTrials(0),
     //    fDecayer(new AliDecayerPythia())
     fDecayer(0)
 {
-// Constructor using number of particles, quark type & user-defined InputFile
+// Constructor using particle number, quark type, energy & user-defined InputFile
 //
     if (fQuark != 5) fQuark = 4;
     fName = "UserDefined";
@@ -270,7 +280,7 @@ void AliGenCorrHF::Generate()
   
   // Calculating vertex position per event
   for (j=0;j<3;j++) origin0[j]=fOrigin[j];
-  if(fVertexSmear==kPerEvent) {
+  if (fVertexSmear==kPerEvent) {
     Vertex();
     for (j=0;j<3;j++) origin0[j]=fVertex[j];
   }
@@ -290,9 +300,9 @@ void AliGenCorrHF::Generate()
     
     // Cut on theta
     theta=TMath::ATan2(pth[0],plh[0]);
-    if(theta<fThetaMin || theta>fThetaMax) continue;
+    if (theta<fThetaMin || theta>fThetaMax) continue;
     theta=TMath::ATan2(pth[1],plh[1]);
-    if(theta<fThetaMin || theta>fThetaMax) continue;
+    if (theta<fThetaMin || theta>fThetaMax) continue;
     
     // Cut on momentum
     ph[0]=TMath::Sqrt(pth[0]*pth[0]+plh[0]*plh[0]);
@@ -431,7 +441,7 @@ void AliGenCorrHF::Generate()
 		ipF = iparticle->GetFirstDaughter();
 		ipL = iparticle->GetLastDaughter();	
 		if (ipF > 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
-	      } else{
+	      } else {
 		trackIt[i]     = 0;
 		pSelected[i]   = 1;
 	      }
@@ -694,7 +704,8 @@ void AliGenCorrHF::GetHadronPair(TFile* fG, Int_t idq, Double_t y1, Double_t y2,
       id3   = fIpParaFunc(gRandom);
       mh    = TDatabasePDG::Instance()->GetParticle(id3)->Mass();
       ptemp = z11*z21*(e1*e1-pz1*pz1) - mh*mh;
-      pt3   = (idq-3)*rand[0];                // some smearing at low pt, try better
+      if (idq==5) pt3   = pt1;                // an approximation at low pt, try better
+      else        pt3   = rand[0];
       if (ptemp > 0) pt3 = TMath::Sqrt(ptemp);
       if (pz1 > 0)   pz3 = (z11*(e1 + pz1) - z21*(e1 - pz1)) / 2;
       else           pz3 = (z21*(e1 + pz1) - z11*(e1 - pz1)) / 2;
@@ -703,7 +714,8 @@ void AliGenCorrHF::GetHadronPair(TFile* fG, Int_t idq, Double_t y1, Double_t y2,
       id4   = - fIpParaFunc(gRandom);
       mh    = TDatabasePDG::Instance()->GetParticle(id4)->Mass();
       ptemp = z12*z22*(e2*e2-pz2*pz2) - mh*mh;
-      pt4   = (idq-3)*rand[1];                // some smearing at low pt, try better
+      if (idq==5) pt4   = pt2;                // an approximation at low pt, try better
+      else        pt4   = rand[1];
       if (ptemp > 0) pt4 = TMath::Sqrt(ptemp);
       if (pz2 > 0)   pz4 = (z12*(e2 + pz2) - z22*(e2 - pz2)) / 2;
       else           pz4 = (z22*(e2 + pz2) - z12*(e2 - pz2)) / 2;
