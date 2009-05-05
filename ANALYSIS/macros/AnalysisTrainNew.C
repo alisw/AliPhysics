@@ -11,7 +11,7 @@
 // In proof and grid modes, a token is needed and sourcing the produced environment file.
 
 const char *root_version    = "v5-23-02";
-const char *aliroot_version = "v4-16-Rev-08";
+const char *aliroot_version = "v4-17-00";
 const char *cluster         = "alicecaf.cern.ch";
 //const char *AFversion       = "AF-v4-16";
 const char *AFversion       = "";
@@ -50,8 +50,6 @@ Int_t iESDfilter     = 1;      // ESD to AOD filter (barrel + muon tracks)
 Int_t iMUONcopyAOD   = 0;      // Task that copies only muon events in a separate AOD (PWG3)
 Int_t iJETAN         = 1;      // Jet analysis (PWG4) - needs ESD filter
 Int_t iPWG4partcorr  = 1;      // Gamma-hadron correlations task (PWG4)
-Int_t iPWG4pi0       = 1;      // Pi0 task (PWG4)
-Int_t iPWG4gammajet  = 1;      // Gamma-jet correlations (PWG3)
 Int_t iPWG3vertexing = 1;      // Vertexing HF task (PWG2)
 Int_t iPWG2femto     = 0;      // Femtoscopy task (PWG2)
 Int_t iPWG2spectra   = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
@@ -86,9 +84,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    if (iPWG2flow)    printf("=  PWG2 flow                                                     =\n");
    if (iPWG2res)     printf("=  PWG2 resonances                                               =\n");
    if (iPWG3vertexing) printf("=  PWG3 vertexing                                            =\n");
-   if (iPWG4partcorr)  printf("=  PWG4 gamma-hadron correlations                            =\n");
-   if (iPWG4pi0)     printf("=  PWG4 pi0 analysis                                             =\n");
-   if (iPWG4gammajet)  printf("=  PWG4 gamma jet analysis                                       =\n");
+   if (iPWG4partcorr)  printf("=  PWG4 gamma-hadron, pi0 and gamma-jet correlations         =\n");
    printf("==================================================================\n");
    printf(":: use MC truth      %d\n", (UInt_t)useMC);
    printf(":: use KINE filter   %d\n", (UInt_t)useKFILTER);
@@ -144,7 +140,9 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
       // AOD output handler
       AliAODHandler* aodHandler   = new AliAODHandler();
       mgr->SetOutputEventHandler(aodHandler);
-      aodHandler->SetOutputFileName("AliAOD.root");
+      if (iAODanalysis) aodHandler->SetCreateNonStandardAOD();
+      if (iPWG3vertexing) aodHandler->SetOutputFileName("AliAOD.VertexingHF.root");
+      else aodHandler->SetOutputFileName("AliAOD.root");
    }
    // Debugging if needed
    if (useDBG) mgr->SetDebugLevel(3);
@@ -182,7 +180,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
     // Jet analysis
    if (iJETAN) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJets.C");
-      AliAnalysisTaskJets *taskjets = AddTaskJets("ESD", "UA1");
+      AliAnalysisTaskJets *taskjets = AddTaskJets("AOD", "UA1");
    }
        
    // Proton analysis
@@ -191,13 +189,13 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskProtons.C");
       AliAnalysisTaskProtons *taskprotons = AddTaskProtons();
       // cascades
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCheckCascade.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskCheckCascade.C");
       AliAnalysisTaskCheckCascade *taskcheckcascade = AddTaskCheckCascade();      
       // v0's
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCheckV0.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskCheckV0.C");
       AliAnalysisTaskCheckV0 *taskcheckV0 = AddTaskCheckV0();
       // strangeness
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskStrange.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskStrange.C");
       AliAnalysisTaskStrange *taskstrange = AddTaskStrange();
    }   
    
@@ -210,19 +208,8 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    // PWG4 hadron correlations
    if (iPWG4partcorr) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
-      AliAnalysisTaskParticleCorrelation *taskgammahadron = AddTaskPartCorr("GammaHadron", "AOD", "PHOS");
-   }   
-       
-   // PWG4 pi0
-   if (iPWG4pi0) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
-      AliAnalysisTaskParticleCorrelation *taskpi0 = AddTaskPartCorr("Pi0", "AOD", "PHOS");
-   }   
-    
-   // PWG4 gamma jet finder
-   if (iPWG4gammajet) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
-      AliAnalysisTaskParticleCorrelation *taskgammajet = AddTaskPartCorr("GammaJetFinder", "AOD", "PHOS");
+      AliAnalysisTaskParticleCorrelation *taskparcorrPHOS = AddTaskPartCorr("AOD", "PHOS");
+      AliAnalysisTaskParticleCorrelation *taskpartcorrEMCAL = AddTaskPartCorr("AOD", "EMCAL");
    }   
    //==========================================================================
    // FOR THE REST OF THE TASKS THE MACRO AddTaskXXX() is not yet implemented/
@@ -248,14 +235,14 @@ void StartAnalysis(const char *mode, TChain *chain) {
             ::Error("StartAnalysis", "Cannot create the chain");
             return;
          }   
-         mgr->StartAnalysis(mode, chain);
+         mgr->StartAnalysis(mode, chain, 100);
          return;
       case 1:
          if (!strlen(proof_dataset)) {
             ::Error("StartAnalysis", "proof_dataset is empty");
             return;
          }   
-         mgr->StartAnalysis(mode, proof_dataset, 1000);
+         mgr->StartAnalysis(mode, proof_dataset, 100000);
          return;
       case 2:
          if (usePLUGIN) {
@@ -284,12 +271,14 @@ void CheckModuleFlags(const char *mode) {
    if (!strcmp(mode, "GRID"))  imode = 2;
    if (imode==1) {
       usePAR = kTRUE;
-   }   
+   }  
+   if (imode != 2) usePLUGIN = kFALSE; 
    if (iAODanalysis) {
    // AOD analysis
       useMC = kFALSE;
       useTR = kFALSE;
       iESDfilter   = 0;
+      iJETAN = 0;
       // Disable tasks that do not work yet on AOD data
    } else {   
    // ESD analysis
@@ -299,13 +288,12 @@ void CheckModuleFlags(const char *mode) {
    if (iJETAN) iESDfilter=1;
    if (iESDfilter) iAODhandler=1;
    if (iAODanalysis || !iAODhandler) {
-      iPWG4partcorr=0;
-      iPWG4pi0=0;
+//      iPWG4partcorr=0;
    }   
-   if (iPWG4gammajet && !iJETAN) {
-      ::Error("CheckModuleFlags", "Gamma jet finder needs JETAN. Disabling.");
-      iPWG4gammajet = 0;
-   }
+//   if (iPWG4gammajet && !iJETAN) {
+//      ::Error("CheckModuleFlags", "Gamma jet finder needs JETAN. Disabling.");
+//      iPWG4gammajet = 0;
+//   }
    if (iPWG2spectra || iPWG2flow || iPWG3vertexing) useCORRFW = kTRUE;
    if (useKFILTER && !useMC) useKFILTER = kFALSE;
    if (useAODTAGS && !iAODhandler) useAODTAGS = kFALSE;
@@ -450,11 +438,11 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    }   
             
    // PWG4 particle correlations
-   if (iPWG4partcorr || iPWG4pi0) {   
+   if (iPWG4partcorr) {   
       if (!LoadLibrary("PWG4PartCorrBase", mode, kTRUE) ||
           !LoadLibrary("PWG4PartCorrDep", mode, kTRUE)) return kFALSE;
-      TFile::Cp(gSystem->ExpandPathName("$(ALICE_ROOT)/PWG4/macros/ConfigAnalysisGammaHadronCorrelation.C"), "ConfigAnalysisGammaHadronCorrelation.C");
-      TFile::Cp(gSystem->ExpandPathName("$(ALICE_ROOT)/PWG4/macros/ConfigAnalysisPi0.C"), "ConfigAnalysisPi0.C");
+//      TFile::Cp(gSystem->ExpandPathName("$(ALICE_ROOT)/PWG4/macros/ConfigAnalysisGammaHadronCorrelation.C"), "ConfigAnalysisGammaHadronCorrelation.C");
+//      TFile::Cp(gSystem->ExpandPathName("$(ALICE_ROOT)/PWG4/macros/ConfigAnalysisPi0.C"), "ConfigAnalysisPi0.C");
    }
    // PWG2 task protons 
    if (iPWG2spectra) {
@@ -562,9 +550,9 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
             if (!strlen(dataset)) {
                // Local AOD
                chain = new TChain("aodTree");
-               if (gSystem->AccessPathName("AliAOD.root")) 
-                  ::Error("CreateChain", "File: AliAOD.root not in current dir");
-               else chain->Add("AliAOD.root");
+               if (gSystem->AccessPathName("data/AliAOD.root")) 
+                  ::Error("CreateChain", "File: AliAOD.root not in ./data dir");
+               else chain->Add("data/AliAOD.root");
             } else {
                // Interactive AOD
                chain = CreateChainSingle(dataset, "aodTree");
@@ -574,7 +562,7 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
                // Local ESD
                chain = new TChain("esdTree");
                if (gSystem->AccessPathName("data/AliESDs.root")) 
-                  ::Error("CreateChain", "File: AliESDs.root not in current dir");
+                  ::Error("CreateChain", "File: AliESDs.root not in ./data dir");
                else chain->Add("data/AliESDs.root");
             } else {
                // Interactive ESD
@@ -683,7 +671,8 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
 // Define production directory LFN
    plugin->SetGridDataDir(alien_datadir);
 // Set data search pattern
-   plugin->SetDataPattern("*ESDs.root");
+   if (iAODanalysis) plugin->SetDataPattern("*AliAOD.root");
+   else              plugin->SetDataPattern("*AliESDs.root");
 // ...then add run numbers to be considered
    for (Int_t i=0; i<10; i++) {
       if (run_numbers[i]==0) break;
@@ -696,7 +685,8 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
 //   plugin->AddDataFile("tag.xml");
 //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
 // Define alien work directory where all files will be copied. Relative to alien $HOME.
-   plugin->SetGridWorkingDir("analysisESD");
+   if (iAODanalysis) plugin->SetGridWorkingDir("analysisAOD");
+   else              plugin->SetGridWorkingDir("analysisESD");
 // Declare alien output directory. Relative to working directory.
    plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
 
