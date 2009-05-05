@@ -174,6 +174,8 @@ void AliITSSimuParam::PrintParameters() const{
   printf("Coupling value (column)   = %f\n",fSPDCouplCol);
   printf("Coupling value (row)      = %f\n",fSPDCouplRow);
   printf("Eccentricity in diffusion = %f\n",fSPDEccDiff);
+  printf("Flag to add noisy         = %d\n",fSPDAddNoisyFlag);
+  printf("Flag to remove dead       = %d\n",fSPDRemoveDeadFlag);
   printf("\n");
   printf("=====  SDD parameters  =====\n");
   printf("Electronic chips          = %d\n",fSDDElectronics);
