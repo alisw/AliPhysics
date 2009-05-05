@@ -10,7 +10,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
 { 
 
   // load needed libraries:                       
-  LoadLibraries(mode);
+  LoadPlotLibraries(mode);
 
 
   //==================================================================================
@@ -2749,7 +2749,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
 
 }
 
-void LoadLibraries(const libModes mode) {
+void LoadPlotLibraries(const libModes mode) {
   
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
