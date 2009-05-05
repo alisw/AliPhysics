@@ -38,7 +38,12 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     void    SetDecayer(AliDecayer* decayer){fDecayer = decayer;}
     void    SetDecayModeResonance(Decay_t decay){ fDecayModeResonance = decay;}
     void    SetDecayModePythia(Decay_t decay){ fDecayModePythia = decay;}
+    void    SetResPolarization(Double_t JpsiPol, Double_t PsiPPol, Double_t UpsPol, 
+    				Double_t UpsPPol, Double_t UpsPPPol, char *PolFrame);
 
+    
+    void    SetCMSEnergy(Int_t einc)      { fCMSEnergy = einc; }
+    void    SetSigmaReaction(Double_t sig)      { fSigmaReaction = sig; }    
     void    SetSigmaJPsi(Double_t sig)      { fSigmaJPsi = sig; }
     void    SetSigmaPsiP(Double_t sig)      { fSigmaPsiP = sig; }
     void    SetSigmaUpsilon(Double_t sig)   { fSigmaUpsilon = sig; }
@@ -48,7 +53,6 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     void    SetSigmaBBbar(Double_t sig)     { fSigmaBBbar = sig; }
 
     void    SetSigmaSilent() { fSigmaSilent = kTRUE; }
-
  protected:
 
     //
@@ -66,6 +70,10 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     Float_t fMuonOriginCut; //use only muons whose "part->Vz()" value is larger than fMuonOrigin
     Int_t   fNSucceded;// Number of Succes in the (di)-muon generation in the acceptance
     Int_t   fNGenerated;// Number of generated cocktails
+    Double_t fJpsiPol, fPsiPPol, fUpsPol, fUpsPPol, fUpsPPPol;//Resonances polarization parameters
+    Int_t    fPolFrame;//Resonances polarization frame (Collins-Soper / Helicity)
+    Int_t fCMSEnergy; // CMS beam energy
+    Double_t fSigmaReaction; //  cross-section pp
     Double_t fSigmaJPsi;      // cross-section JPsi resonance
     Double_t fSigmaPsiP;      // cross-section Psi-prime resonance
     Double_t fSigmaUpsilon;   // cross-section Upsilon resonance
@@ -79,8 +87,6 @@ class AliGenMUONCocktailpp : public AliGenCocktail
 };
 
 #endif
-
-
 
 
 
