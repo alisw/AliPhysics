@@ -54,19 +54,19 @@ AliCheb3DCalc::AliCheb3DCalc(const AliCheb3DCalc& src) :
   // copy constructor
   //
   if (src.fNColsAtRow) {
-    fNColsAtRow = new Int_t[fNRows]; 
+    fNColsAtRow = new UShort_t[fNRows]; 
     for (int i=fNRows;i--;) fNColsAtRow[i] = src.fNColsAtRow[i];
   }
   if (src.fColAtRowBg) {
-    fColAtRowBg = new Int_t[fNRows]; 
+    fColAtRowBg = new UShort_t[fNRows]; 
     for (int i=fNRows;i--;) fColAtRowBg[i] = src.fColAtRowBg[i];
   }
   if (src.fCoefBound2D0) {
-    fCoefBound2D0 = new Int_t[fNElemBound2D];
+    fCoefBound2D0 = new UShort_t[fNElemBound2D];
     for (int i=fNElemBound2D;i--;) fCoefBound2D0[i] = src.fCoefBound2D0[i];
   }
   if (src.fCoefBound2D1) {
-    fCoefBound2D1 = new Int_t[fNElemBound2D];
+    fCoefBound2D1 = new UShort_t[fNElemBound2D];
     for (int i=fNElemBound2D;i--;) fCoefBound2D1[i] = src.fCoefBound2D1[i];
   }
   if (src.fCoefs) {
@@ -107,19 +107,19 @@ AliCheb3DCalc& AliCheb3DCalc::operator=(const AliCheb3DCalc& rhs)
     fNRows  = rhs.fNRows;
     fNCols  = rhs.fNCols;    
     if (rhs.fNColsAtRow) {
-      fNColsAtRow = new Int_t[fNRows]; 
+      fNColsAtRow = new UShort_t[fNRows]; 
       for (int i=fNRows;i--;) fNColsAtRow[i] = rhs.fNColsAtRow[i];
     }
     if (rhs.fColAtRowBg) {
-      fColAtRowBg = new Int_t[fNRows]; 
+      fColAtRowBg = new UShort_t[fNRows]; 
       for (int i=fNRows;i--;) fColAtRowBg[i] = rhs.fColAtRowBg[i];
     }
     if (rhs.fCoefBound2D0) {
-      fCoefBound2D0 = new Int_t[fNElemBound2D];
+      fCoefBound2D0 = new UShort_t[fNElemBound2D];
       for (int i=fNElemBound2D;i--;) fCoefBound2D0[i] = rhs.fCoefBound2D0[i];
     }
     if (rhs.fCoefBound2D1) {
-      fCoefBound2D1 = new Int_t[fNElemBound2D];
+      fCoefBound2D1 = new UShort_t[fNElemBound2D];
       for (int i=fNElemBound2D;i--;) fCoefBound2D1[i] = rhs.fCoefBound2D1[i];
     }
     if (rhs.fCoefs) {
@@ -329,9 +329,9 @@ void AliCheb3DCalc::InitRows(int nr)
   if (fColAtRowBg) delete[] fColAtRowBg;
   if (fTmpCf0)     delete[] fTmpCf0;
   fNRows = nr;
-  fNColsAtRow = new Int_t[fNRows];
+  fNColsAtRow = new UShort_t[fNRows];
   fTmpCf0     = new Float_t [fNRows];
-  fColAtRowBg = new Int_t[fNRows];
+  fColAtRowBg = new UShort_t[fNRows];
   for (int i=fNRows;i--;) fNColsAtRow[i] = fColAtRowBg[i] = 0;
 }
 
@@ -342,8 +342,8 @@ void AliCheb3DCalc::InitElemBound2D(int ne)
   if (fCoefBound2D0) delete[] fCoefBound2D0; 
   if (fCoefBound2D1) delete[] fCoefBound2D1; 
   fNElemBound2D = ne;
-  fCoefBound2D0 = new Int_t[fNElemBound2D];
-  fCoefBound2D1 = new Int_t[fNElemBound2D];
+  fCoefBound2D0 = new UShort_t[fNElemBound2D];
+  fCoefBound2D1 = new UShort_t[fNElemBound2D];
   for (int i=fNElemBound2D;i--;) fCoefBound2D0[i] = fCoefBound2D1[i] = 0;
 }
 

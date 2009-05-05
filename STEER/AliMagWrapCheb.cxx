@@ -22,52 +22,17 @@ ClassImp(AliMagWrapCheb)
 
 //__________________________________________________________________________________________
 AliMagWrapCheb::AliMagWrapCheb() : 
-  fNParamsSol(0),
-  fNSegZSol(0),
-  fNParamsTPCInt(0),
-  fNSegZTPCInt(0),
-  fNParamsDip(0),
+fNParamsSol(0),fNZSegSol(0),fNPSegSol(0),fNRSegSol(0),
+  fSegZSol(0),fSegPSol(0),fSegRSol(0),
+  fBegSegPSol(0),fNSegPSol(0),fBegSegRSol(0),fNSegRSol(0),fSegIDSol(0),fMinZSol(1.e6),fMaxZSol(-1.e6),fParamsSol(0),fMaxRSol(0),
 //
-  fNZSegDip(0),
-  fNYSegDip(0),
-  fNXSegDip(0),
+  fNParamsTPC(0),fNZSegTPC(0),fNPSegTPC(0),fNRSegTPC(0),
+  fSegZTPC(0),fSegPTPC(0),fSegRTPC(0),
+  fBegSegPTPC(0),fNSegPTPC(0),fBegSegRTPC(0),fNSegRTPC(0),fSegIDTPC(0),fMinZTPC(1.e6),fMaxZTPC(-1.e6),fParamsTPC(0),fMaxRTPC(0),
 //
-  fSegZSol(0),
-  fSegRSol(0),
-//
-  fSegZTPCInt(0),
-  fSegRTPCInt(0),
-//
-  fSegZDip(0),
-  fSegYDip(0),
-  fSegXDip(0),
-//
-  fNSegRSol(0),
-  fSegZIdSol(0),
-//
-  fNSegRTPCInt(0),
-  fSegZIdTPCInt(0),
-//
-  fBegSegYDip(0),
-  fNSegYDip(0),
-  fBegSegXDip(0),
-  fNSegXDip(0),
-  fSegIDDip(0),
-//
-  fMinZSol(1e6),
-  fMaxZSol(-1e6),
-  fMaxRSol(-1e6), 
-//
-  fMinZDip(1e6),
-  fMaxZDip(-1e6),
-//
-  fMinZTPCInt(1e6),
-  fMaxZTPCInt(-1e6),
-  fMaxRTPCInt(-1e6), 
-//
-  fParamsSol(0),
-  fParamsDip(0),
-  fParamsTPCInt(0)
+  fNParamsDip(0),fNZSegDip(0),fNYSegDip(0),fNXSegDip(0),
+  fSegZDip(0),fSegYDip(0),fSegXDip(0),
+  fBegSegYDip(0),fNSegYDip(0),fBegSegXDip(0),fNSegXDip(0),fSegIDDip(0),fMinZDip(1.e6),fMaxZDip(-1.e6),fParamsDip(0)
 //
 {
   // default constructor
@@ -76,52 +41,17 @@ AliMagWrapCheb::AliMagWrapCheb() :
 //__________________________________________________________________________________________
 AliMagWrapCheb::AliMagWrapCheb(const AliMagWrapCheb& src) : 
   TNamed(src),
-  fNParamsSol(0),
-  fNSegZSol(0),
-  fNParamsTPCInt(0),
-  fNSegZTPCInt(0),
-  fNParamsDip(0),
+  fNParamsSol(0),fNZSegSol(0),fNPSegSol(0),fNRSegSol(0),
+  fSegZSol(0),fSegPSol(0),fSegRSol(0),
+  fBegSegPSol(0),fNSegPSol(0),fBegSegRSol(0),fNSegRSol(0),fSegIDSol(0),fMinZSol(1.e6),fMaxZSol(-1.e6),fParamsSol(0),fMaxRSol(0),
 //
-  fNZSegDip(0),
-  fNYSegDip(0),
-  fNXSegDip(0),
+  fNParamsTPC(0),fNZSegTPC(0),fNPSegTPC(0),fNRSegTPC(0),
+  fSegZTPC(0),fSegPTPC(0),fSegRTPC(0),
+  fBegSegPTPC(0),fNSegPTPC(0),fBegSegRTPC(0),fNSegRTPC(0),fSegIDTPC(0),fMinZTPC(1.e6),fMaxZTPC(-1.e6),fParamsTPC(0),fMaxRTPC(0),
 //
-  fSegZSol(0),
-  fSegRSol(0),
-//
-  fSegZTPCInt(0),
-  fSegRTPCInt(0),
-//
-  fSegZDip(0),
-  fSegYDip(0),
-  fSegXDip(0),
-//
-  fNSegRSol(0),
-  fSegZIdSol(0),
-//
-  fNSegRTPCInt(0),
-  fSegZIdTPCInt(0),
-//
-  fBegSegYDip(0),
-  fNSegYDip(0),
-  fBegSegXDip(0),
-  fNSegXDip(0),
-  fSegIDDip(0),
-//
-  fMinZSol(1e6),
-  fMaxZSol(-1e6),
-  fMaxRSol(-1e6), 
-//
-  fMinZDip(1e6),
-  fMaxZDip(-1e6),
-//
-  fMinZTPCInt(1e6),
-  fMaxZTPCInt(-1e6),
-  fMaxRTPCInt(-1e6), 
-//
-  fParamsSol(0),
-  fParamsDip(0),
-  fParamsTPCInt(0)
+  fNParamsDip(0),fNZSegDip(0),fNYSegDip(0),fNXSegDip(0),
+  fSegZDip(0),fSegYDip(0),fSegXDip(0),
+  fBegSegYDip(0),fNSegYDip(0),fBegSegXDip(0),fNSegXDip(0),fSegIDDip(0),fMinZDip(1.e6),fMaxZDip(-1.e6),fParamsDip(0)
 {
   // copy constructor
   CopyFrom(src);
@@ -134,36 +64,53 @@ void AliMagWrapCheb::CopyFrom(const AliMagWrapCheb& src)
   Clear();
   SetName(src.GetName());
   SetTitle(src.GetTitle());
+  //
   fNParamsSol    = src.fNParamsSol;
-  fNSegZSol      = src.fNSegZSol;
-  fNParamsTPCInt = src.fNParamsTPCInt;
-  fNSegZTPCInt   = src.fNSegZTPCInt; 
-  fNParamsDip    = src.fNParamsDip;
-  //
-  fNZSegDip      = src.fNZSegDip;
-  fNYSegDip      = src.fNYSegDip;
-  fNXSegDip      = src.fNXSegDip;  
-  //
-  fMinZSol       = src.fMinZSol; 
+  fNZSegSol      = src.fNZSegSol;
+  fNPSegSol      = src.fNPSegSol;
+  fNRSegSol      = src.fNRSegSol;  
+  fMinZSol       = src.fMinZSol;
   fMaxZSol       = src.fMaxZSol;
-  fMaxRSol       = src.fMaxRSol; 
-  //
-  fMinZDip       = src.fMinZDip;
-  fMaxZDip       = src.fMaxZDip;
-  //
-  fMinZTPCInt    = src.fMinZTPCInt;
-  fMaxZTPCInt    = src.fMaxZTPCInt;
-  fMaxRTPCInt    = src.fMaxRTPCInt; 
-  // 
+  fMaxRSol       = src.fMaxRSol;
   if (src.fNParamsSol) {
-    memcpy(fSegZSol  = new Float_t[fNSegZSol], src.fSegZSol, sizeof(Float_t)*fNSegZSol);
-    memcpy(fSegRSol  = new Float_t[fNParamsSol], src.fSegRSol, sizeof(Float_t)*fNParamsSol);
-    memcpy(fNSegRSol = new Int_t[fNSegZSol], src.fNSegRSol, sizeof(Int_t)*fNSegZSol);
-    memcpy(fSegZIdSol= new Int_t[fNSegZSol], src.fSegZIdSol, sizeof(Int_t)*fNSegZSol);
-    fParamsSol       = new TObjArray(fNParamsSol);
+    memcpy(fSegZSol   = new Float_t[fNZSegSol], src.fSegZSol, sizeof(Float_t)*fNZSegSol);
+    memcpy(fSegPSol   = new Float_t[fNPSegSol], src.fSegPSol, sizeof(Float_t)*fNPSegSol);
+    memcpy(fSegRSol   = new Float_t[fNRSegSol], src.fSegRSol, sizeof(Float_t)*fNRSegSol);
+    memcpy(fBegSegPSol= new Int_t[fNZSegSol], src.fBegSegPSol, sizeof(Int_t)*fNZSegSol);
+    memcpy(fNSegPSol  = new Int_t[fNZSegSol], src.fNSegPSol, sizeof(Int_t)*fNZSegSol);
+    memcpy(fBegSegRSol= new Int_t[fNPSegSol], src.fBegSegRSol, sizeof(Int_t)*fNPSegSol);
+    memcpy(fNSegRSol  = new Int_t[fNPSegSol], src.fNSegRSol, sizeof(Int_t)*fNPSegSol);
+    memcpy(fSegIDSol  = new Int_t[fNRSegSol], src.fSegIDSol, sizeof(Int_t)*fNRSegSol);
+    fParamsSol        = new TObjArray(fNParamsSol);
     for (int i=0;i<fNParamsSol;i++) fParamsSol->AddAtAndExpand(new AliCheb3D(*src.GetParamSol(i)),i);
   }
   //
+  fNParamsTPC    = src.fNParamsTPC;
+  fNZSegTPC      = src.fNZSegTPC;
+  fNPSegTPC      = src.fNPSegTPC;
+  fNRSegTPC      = src.fNRSegTPC;  
+  fMinZTPC       = src.fMinZTPC;
+  fMaxZTPC       = src.fMaxZTPC;
+  fMaxRTPC       = src.fMaxRTPC;
+  if (src.fNParamsTPC) {
+    memcpy(fSegZTPC   = new Float_t[fNZSegTPC], src.fSegZTPC, sizeof(Float_t)*fNZSegTPC);
+    memcpy(fSegPTPC   = new Float_t[fNPSegTPC], src.fSegPTPC, sizeof(Float_t)*fNPSegTPC);
+    memcpy(fSegRTPC   = new Float_t[fNRSegTPC], src.fSegRTPC, sizeof(Float_t)*fNRSegTPC);
+    memcpy(fBegSegPTPC= new Int_t[fNZSegTPC], src.fBegSegPTPC, sizeof(Int_t)*fNZSegTPC);
+    memcpy(fNSegPTPC  = new Int_t[fNZSegTPC], src.fNSegPTPC, sizeof(Int_t)*fNZSegTPC);
+    memcpy(fBegSegRTPC= new Int_t[fNPSegTPC], src.fBegSegRTPC, sizeof(Int_t)*fNPSegTPC);
+    memcpy(fNSegRTPC  = new Int_t[fNPSegTPC], src.fNSegRTPC, sizeof(Int_t)*fNPSegTPC);
+    memcpy(fSegIDTPC  = new Int_t[fNRSegTPC], src.fSegIDTPC, sizeof(Int_t)*fNRSegTPC);
+    fParamsTPC        = new TObjArray(fNParamsTPC);
+    for (int i=0;i<fNParamsTPC;i++) fParamsTPC->AddAtAndExpand(new AliCheb3D(*src.GetParamTPCInt(i)),i);
+  }
+  //
+  fNParamsDip    = src.fNParamsDip;
+  fNZSegDip      = src.fNZSegDip;
+  fNYSegDip      = src.fNYSegDip;
+  fNXSegDip      = src.fNXSegDip;  
+  fMinZDip       = src.fMinZDip;
+  fMaxZDip       = src.fMaxZDip;
   if (src.fNParamsDip) {
     memcpy(fSegZDip   = new Float_t[fNZSegDip], src.fSegZDip, sizeof(Float_t)*fNZSegDip);
     memcpy(fSegYDip   = new Float_t[fNYSegDip], src.fSegYDip, sizeof(Float_t)*fNYSegDip);
@@ -175,15 +122,6 @@ void AliMagWrapCheb::CopyFrom(const AliMagWrapCheb& src)
     memcpy(fSegIDDip  = new Int_t[fNXSegDip], src.fSegIDDip, sizeof(Int_t)*fNXSegDip);
     fParamsDip        = new TObjArray(fNParamsDip);
     for (int i=0;i<fNParamsDip;i++) fParamsDip->AddAtAndExpand(new AliCheb3D(*src.GetParamDip(i)),i);
-  }
-  //
-  if (src.fNParamsTPCInt) {
-    memcpy(fSegZTPCInt  = new Float_t[fNSegZTPCInt], src.fSegZTPCInt, sizeof(Float_t)*fNSegZTPCInt);
-    memcpy(fSegRTPCInt  = new Float_t[fNParamsTPCInt], src.fSegRTPCInt, sizeof(Float_t)*fNParamsTPCInt);
-    memcpy(fNSegRTPCInt = new Int_t[fNSegZTPCInt], src.fNSegRTPCInt, sizeof(Int_t)*fNSegZTPCInt);
-    memcpy(fSegZIdTPCInt= new Int_t[fNSegZTPCInt], src.fSegZIdTPCInt, sizeof(Int_t)*fNSegZTPCInt);
-    fParamsTPCInt       = new TObjArray(fNParamsTPCInt);
-    for (int i=0;i<fNParamsTPCInt;i++) fParamsTPCInt->AddAtAndExpand(new AliCheb3D(*src.GetParamTPCInt(i)),i);
   }
   //
 }
@@ -205,36 +143,51 @@ void AliMagWrapCheb::Clear(const Option_t *)
 {
   // clear all dynamic parts
   if (fNParamsSol) {
-    delete   fParamsSol;
-    delete[] fSegZSol;
-    delete[] fSegRSol;
-    delete[] fNSegRSol;
-    delete[] fSegZIdSol;
+    delete   fParamsSol;  fParamsSol = 0;
+    delete[] fSegZSol;    fSegZSol   = 0;
+    delete[] fSegPSol;    fSegPSol   = 0;
+    delete[] fSegRSol;    fSegRSol   = 0;
+    delete[] fBegSegPSol; fBegSegPSol = 0;
+    delete[] fNSegPSol;   fNSegPSol   = 0;
+    delete[] fBegSegRSol; fBegSegRSol = 0;
+    delete[] fNSegRSol;   fNSegRSol   = 0;
+    delete[] fSegIDSol;   fSegIDSol   = 0;   
   }
+  fNParamsSol = fNZSegSol = fNPSegSol = fNRSegSol = 0;
+  fMinZSol = 1e6;
+  fMaxZSol = -1e6;
+  fMaxRSol = 0;
   //
-  if (fNParamsTPCInt) {
-    delete   fParamsTPCInt;
-    delete[] fSegZTPCInt;
-    delete[] fSegRTPCInt;
-    delete[] fNSegRTPCInt;
-    delete[] fSegZIdTPCInt;
+  if (fNParamsTPC) {
+    delete   fParamsTPC;  fParamsTPC = 0;
+    delete[] fSegZTPC;    fSegZTPC   = 0;
+    delete[] fSegPTPC;    fSegPTPC   = 0;
+    delete[] fSegRTPC;    fSegRTPC   = 0;
+    delete[] fBegSegPTPC; fBegSegPTPC = 0;
+    delete[] fNSegPTPC;   fNSegPTPC   = 0;
+    delete[] fBegSegRTPC; fBegSegRTPC = 0;
+    delete[] fNSegRTPC;   fNSegRTPC   = 0;
+    delete[] fSegIDTPC;   fSegIDTPC   = 0;   
   }
-  // 
+  fNParamsTPC = fNZSegTPC = fNPSegTPC = fNRSegTPC = 0;
+  fMinZTPC = 1e6;
+  fMaxZTPC = -1e6;
+  fMaxRTPC = 0;
+  //
   if (fNParamsDip) {
-    delete   fParamsDip;
-    delete[] fSegZDip;
-    delete[] fSegYDip;
-    delete[] fSegXDip;
-    delete[] fBegSegYDip;
-    delete[] fNSegYDip;
-    delete[] fBegSegXDip;
-    delete[] fNSegXDip;
-    delete[] fSegIDDip;
+    delete   fParamsDip;  fParamsDip = 0;
+    delete[] fSegZDip;    fSegZDip   = 0;
+    delete[] fSegYDip;    fSegYDip   = 0; 
+    delete[] fSegXDip;    fSegXDip   = 0;
+    delete[] fBegSegYDip; fBegSegYDip = 0;
+    delete[] fNSegYDip;   fNSegYDip   = 0;
+    delete[] fBegSegXDip; fBegSegXDip = 0; 
+    delete[] fNSegXDip;   fNSegXDip   = 0;
+    delete[] fSegIDDip;   fSegIDDip   = 0;
   }
-  fNParamsSol = fNParamsTPCInt = fNParamsDip = fNZSegDip = fNYSegDip = fNXSegDip = 0;
-  fNSegZSol = fNSegZTPCInt = 0;
-  fMinZSol = fMinZDip = fMinZTPCInt = 1e6;
-  fMaxZSol = fMaxZDip = fMaxZTPCInt = fMaxRSol = fMaxRTPCInt = -1e6;
+  fNParamsDip = fNZSegDip = fNYSegDip = fNXSegDip = 0;
+  fMinZDip = 1e6;
+  fMaxZDip = -1e6;
   //
 }
 
@@ -243,33 +196,27 @@ void AliMagWrapCheb::Field(const Double_t *xyz, Double_t *b) const
 {
   // compute field in cartesian coordinates. If point is outside of the parameterized region
   // get it at closest valid point
-  static Double_t rphiz[3];
+  Double_t rphiz[3];
   //
 #ifndef _BRING_TO_BOUNDARY_  // exact matching to fitted volume is requested
-  if ( !(xyz[2]>=GetMinZSol()&&xyz[2]<=GetMaxZSol()) && 
-       !(xyz[2]>=GetMinZDip()&&xyz[2]<=GetMaxZDip())  ) {for (int i=3;i--;) b[i]=0; return;}
+  b[0] = b[1] = b[2] = 0;
 #endif
   //
-  if (xyz[2]<fMaxZDip) {    // dipole part?
-#ifndef _BRING_TO_BOUNDARY_
-    AliCheb3D* par = GetParamDip(FindDipSegment(xyz));
-    if (par->IsInside(xyz)) {par->Eval(xyz,b); return;}
-    for (int i=3;i--;) b[i]=0; return;
-#else
-    GetParamDip(FindDipSegment(xyz))->Eval(xyz,b); return;  
-#endif
+  if (xyz[2]>fMinZSol) {
+    CartToCyl(xyz,rphiz);
+    FieldCylSol(rphiz,b);
+    // convert field to cartesian system
+    CylToCartCylB(rphiz, b,b);  
+    return;
   }
   //
-  // Sol region: convert coordinates to cyl system
-  CartToCyl(xyz,rphiz);
+  int iddip = FindDipSegment(xyz);
+  if (iddip<0) return;
+  AliCheb3D* par = GetParamDip(iddip);
 #ifndef _BRING_TO_BOUNDARY_
-  if (rphiz[0]>GetMaxRSol()) {for (int i=3;i--;) b[i]=0; return;}
+  if (!par->IsInside(xyz)) return;
 #endif
-  //
-  FieldCylSol(rphiz,b);
-  //
-  // convert field to cartesian system
-  CylToCartCylB(rphiz, b,b);
+  par->Eval(xyz,b); 
   //
 }
 
@@ -278,29 +225,20 @@ Double_t AliMagWrapCheb::GetBz(const Double_t *xyz) const
 {
   // compute Bz for the point in cartesian coordinates. If point is outside of the parameterized region
   // get it at closest valid point
-  static Double_t rphiz[3];
+  Double_t rphiz[3];
   //
-#ifndef _BRING_TO_BOUNDARY_  // exact matching to fitted volume is requested
-  if ( !(xyz[2]>=GetMinZSol()&&xyz[2]<=GetMaxZSol()) && 
-       !(xyz[2]>=GetMinZDip()&&xyz[2]<=GetMaxZDip())  ) return 0.;
-#endif
-  //
-  if (xyz[2]<fMaxZDip) {    // dipole part?
-#ifndef _BRING_TO_BOUNDARY_
-    AliCheb3D* par = GetParamDip(FindDipSegment(xyz));
-    if (par->IsInside(xyz)) return par->Eval(xyz,2);
-    else return 0.;
-#else
-    return GetParamDip(FindDipSegment(xyz))->Eval(xyz,2);
-#endif
+  if (xyz[2]>fMinZSol) {
+    CartToCyl(xyz,rphiz);
+    return FieldCylSolBz(rphiz);
   }
-  // Sol region: convert coordinates to cyl system
-  CartToCyl(xyz,rphiz);
-#ifndef _BRING_TO_BOUNDARY_
-  if (rphiz[0]>GetMaxRSol()) return 0.;
-#endif
   //
-  return FieldCylSolBz(rphiz);
+  int iddip = FindDipSegment(xyz);
+  if (iddip<0) return 0.;
+  AliCheb3D* par = GetParamDip(iddip);
+#ifndef _BRING_TO_BOUNDARY_
+  if (!par->IsInside(xyz)) return 0.;
+#endif
+  return par->Eval(xyz,2);
 }
 
 
@@ -317,38 +255,15 @@ void AliMagWrapCheb::Print(Option_t *) const
       GetParamSol(i)->Print();
     }
   }
-  /*
-  for (int iz=0;iz<fNSegZSol;iz++) {
-    AliCheb3D* param = GetParamSol( fSegZIdSol[iz] );
-    printf("*** Z Segment %2d (%+7.2f<Z<%+7.2f)\t***\n",iz,param->GetBoundMin(2),param->GetBoundMax(2));
-    for (int ir=0;ir<fNSegRSol[iz];ir++) {
-      param = GetParamSol( fSegZIdSol[iz]+ir );
-      printf("    R Segment %2d (%+7.2f<R<%+7.2f, Precision: %.1e) (ID=%2d)\n",ir, param->GetBoundMin(0),
-	     param->GetBoundMax(0),param->GetPrecision(),fSegZIdSol[iz]+ir);
-    }
-  }
-  */
   //
-  printf("Segmentation for TPC field integral (%+.2f<Z<%+.2f cm | R<%.2f cm)\n",fMinZTPCInt,fMaxZTPCInt,fMaxRTPCInt);
+  printf("Segmentation for TPC field integral (%+.2f<Z<%+.2f cm | R<%.2f cm)\n",fMinZTPC,fMaxZTPC,fMaxRTPC);
   //
-  if (fParamsTPCInt) {
-    for (int i=0;i<fNParamsTPCInt;i++) {
+  if (fParamsTPC) {
+    for (int i=0;i<fNParamsTPC;i++) {
       printf("TPC%4d ",i);
       GetParamTPCInt(i)->Print();
     }
   }
-  //
-  /*
-  for (int iz=0;iz<fNSegZTPCInt;iz++) {
-    AliCheb3D* param = GetParamTPCInt( fSegZIdTPCInt[iz] );
-    printf("*** Z Segment %2d (%+7.2f<Z<%+7.2f)\t***\n",iz,param->GetBoundMin(2),param->GetBoundMax(2));
-    for (int ir=0;ir<fNSegRTPCInt[iz];ir++) {
-      param = GetParamTPCInt( fSegZIdTPCInt[iz]+ir );
-      printf("    R Segment %2d (%+7.2f<R<%+7.2f, Precision: %.1e) (ID=%2d)\n",ir, param->GetBoundMin(0),
-	     param->GetBoundMax(0),param->GetPrecision(),fSegZIdTPCInt[iz]+ir);
-    }
-  }
-  */
   //
   printf("Segmentation for Dipole (%+.2f<Z<%+.2f cm)\n",fMinZDip,fMaxZDip);
   if (fParamsDip) {
@@ -360,11 +275,11 @@ void AliMagWrapCheb::Print(Option_t *) const
   //
 }
 
-
 //__________________________________________________________________________________________________
-Int_t    AliMagWrapCheb::FindDipSegment(const Double_t *xyz) const 
+Int_t AliMagWrapCheb::FindDipSegment(const Double_t *xyz) const 
 {
   // find the segment containing point xyz. If it is outside find the closest segment 
+  if (!fNParamsDip) return -1;
   int xid,yid,zid = TMath::BinarySearch(fNZSegDip,fSegZDip,(Float_t)xyz[2]); // find zsegment
   int ysegBeg = fBegSegYDip[zid];
   //
@@ -379,6 +294,47 @@ Int_t    AliMagWrapCheb::FindDipSegment(const Double_t *xyz) const
   //
   return fSegIDDip[xid];
 }
+
+//__________________________________________________________________________________________________
+Int_t AliMagWrapCheb::FindSolSegment(const Double_t *rpz) const 
+{
+  // find the segment containing point xyz. If it is outside find the closest segment 
+  if (!fNParamsSol) return -1;
+  int rid,pid,zid = TMath::BinarySearch(fNZSegSol,fSegZSol,(Float_t)rpz[2]); // find zsegment
+  int psegBeg = fBegSegPSol[zid];
+  //
+  for (pid=0;pid<fNSegPSol[zid];pid++) if (rpz[1]<fSegPSol[psegBeg+pid]) break;
+  if ( --pid < 0 ) pid = 0;
+  pid +=  psegBeg;
+  //
+  int rsegBeg = fBegSegRSol[pid];
+  for (rid=0;rid<fNSegRSol[pid];rid++) if (rpz[0]<fSegRSol[rsegBeg+rid]) break;
+  if ( --rid < 0) rid = 0;
+  rid +=  rsegBeg;
+  //
+  return fSegIDSol[rid];
+}
+
+//__________________________________________________________________________________________________
+Int_t AliMagWrapCheb::FindTPCSegment(const Double_t *rpz) const 
+{
+  // find the segment containing point xyz. If it is outside find the closest segment 
+  if (!fNParamsTPC) return -1;
+  int rid,pid,zid = TMath::BinarySearch(fNZSegTPC,fSegZTPC,(Float_t)rpz[2]); // find zsegment
+  int psegBeg = fBegSegPTPC[zid];
+  //
+  for (pid=0;pid<fNSegPTPC[zid];pid++) if (rpz[1]<fSegPTPC[psegBeg+pid]) break;
+  if ( --pid < 0 ) pid = 0;
+  pid +=  psegBeg;
+  //
+  int rsegBeg = fBegSegRTPC[pid];
+  for (rid=0;rid<fNSegRTPC[pid];rid++) if (rpz[0]<fSegRTPC[rsegBeg+rid]) break;
+  if ( --rid < 0) rid = 0;
+  rid +=  rsegBeg;
+  //
+  return fSegIDTPC[rid];
+}
+
 
 //__________________________________________________________________________________________
 void AliMagWrapCheb::GetTPCInt(const Double_t *xyz, Double_t *b) const
@@ -407,12 +363,14 @@ void AliMagWrapCheb::FieldCylSol(const Double_t *rphiz, Double_t *b) const
 {
   // compute Solenoid field in Cylindircal coordinates
   // note: if the point is outside the volume get the field in closest parameterized point
-  int SolZId = 0;
-  while (rphiz[2]>fSegZSol[SolZId] && SolZId<fNSegZSol-1) ++SolZId;    // find Z segment
-  int SolRId = fSegZIdSol[SolZId];        // first R segment for this Z
-  int SolRMax = SolRId + fNSegRSol[SolZId];
-  while (rphiz[0]>fSegRSol[SolRId] && SolRId<SolRMax-1) ++SolRId;    // find R segment
-  GetParamSol( SolRId )->Eval(rphiz,b);
+  int id = FindSolSegment(rphiz);
+  if (id<0) return;
+  AliCheb3D* par = GetParamSol(id);
+#ifndef _BRING_TO_BOUNDARY_  // exact matching to fitted volume is requested  
+  if (!par->IsInside(rphiz)) return;
+#endif
+  par->Eval(rphiz,b);
+  return;
   //
 }
 
@@ -421,12 +379,13 @@ Double_t AliMagWrapCheb::FieldCylSolBz(const Double_t *rphiz) const
 {
   // compute Solenoid field in Cylindircal coordinates
   // note: if the point is outside the volume get the field in closest parameterized point
-  int SolZId = 0;
-  while (rphiz[2]>fSegZSol[SolZId] && SolZId<fNSegZSol-1) ++SolZId;    // find Z segment
-  int SolRId = fSegZIdSol[SolZId];        // first R segment for this Z
-  int SolRMax = SolRId + fNSegRSol[SolZId];
-  while (rphiz[0]>fSegRSol[SolRId] && SolRId<SolRMax-1) ++SolRId;    // find R segment
-  return GetParamSol( SolRId )->Eval(rphiz,2);
+  int id = FindSolSegment(rphiz);
+  if (id<0) return 0.;
+  AliCheb3D* par = GetParamSol(id);
+#ifndef _BRING_TO_BOUNDARY_  
+  return par->IsInside(rphiz) ? par->Eval(rphiz,2) : 0;
+#endif
+  return par->Eval(rphiz,2);
   //
 }
 
@@ -435,12 +394,15 @@ void AliMagWrapCheb::GetTPCIntCyl(const Double_t *rphiz, Double_t *b) const
 {
   // compute field integral in TPC region in Cylindircal coordinates
   // note: the check for the point being inside the parameterized region is done outside
-  int tpcIntZId = 0;
-  while (rphiz[2]>fSegZTPCInt[tpcIntZId] && tpcIntZId<fNSegZTPCInt) ++tpcIntZId;    // find Z segment
-  int tpcIntRId = fSegZIdTPCInt[tpcIntZId];        // first R segment for this Z
-  int tpcIntRIdMax = tpcIntRId + fNSegRTPCInt[tpcIntZId];
-  while (rphiz[0]>fSegRTPCInt[tpcIntRId] && tpcIntRId<tpcIntRIdMax) ++tpcIntRId;    // find R segment
-  GetParamTPCInt( tpcIntRId )->Eval(rphiz,b);
+  int id = FindTPCSegment(rphiz);
+  if (id<0) {
+    b[0] = b[1] = b[2] = 0;
+    return;
+  }
+  AliCheb3D* par = GetParamTPCInt(id);
+  if (par->IsInside(rphiz)) {par->Eval(rphiz,b); return;}
+  b[0] = b[1] = b[2] = 0;
+  return;
   //
 }
 
@@ -539,11 +501,49 @@ void AliMagWrapCheb::LoadData(const char* inpfile)
   // ---------------------------------------------------------------------------
   fclose(stream);
   BuildTableSol();
-  BuildTableTPCInt();
   BuildTableDip();
+  BuildTableTPCInt();
+  //
   printf("Loaded magnetic field \"%s\" from %s\n",GetName(),strf.Data());
   //
 }
+
+//__________________________________________________________________________________________
+void AliMagWrapCheb::BuildTableSol()
+{
+  BuildTable(fNParamsSol,fParamsSol,
+	     fNZSegSol,fNPSegSol,fNRSegSol,
+	     fMinZSol,fMaxZSol, 
+	     &fSegZSol,&fSegPSol,&fSegRSol,
+	     &fBegSegPSol,&fNSegPSol,
+	     &fBegSegRSol,&fNSegRSol, 
+	     &fSegIDSol);
+}
+
+//__________________________________________________________________________________________
+void AliMagWrapCheb::BuildTableDip()
+{
+  BuildTable(fNParamsDip,fParamsDip,
+	     fNZSegDip,fNYSegDip,fNXSegDip,
+	     fMinZDip,fMaxZDip, 
+	     &fSegZDip,&fSegYDip,&fSegXDip,
+	     &fBegSegYDip,&fNSegYDip,
+	     &fBegSegXDip,&fNSegXDip, 
+	     &fSegIDDip);
+}
+
+//__________________________________________________________________________________________
+void AliMagWrapCheb::BuildTableTPCInt()
+{
+  BuildTable(fNParamsTPC,fParamsTPC,
+	     fNZSegTPC,fNPSegTPC,fNRSegTPC,
+	     fMinZTPC,fMaxZTPC, 
+	     &fSegZTPC,&fSegPTPC,&fSegRTPC,
+	     &fBegSegPTPC,&fNSegPTPC,
+	     &fBegSegRTPC,&fNSegRTPC, 
+	     &fSegIDTPC);
+}
+
 #endif
 
 //_______________________________________________
@@ -551,53 +551,17 @@ void AliMagWrapCheb::LoadData(const char* inpfile)
 
 //__________________________________________________________________________________________
 AliMagWrapCheb::AliMagWrapCheb(const char* inputFile) : 
-  fNParamsSol(0),
-  fNSegZSol(0),
-  fNParamsTPCInt(0),
-  fNSegZTPCInt(0),
-  fNParamsDip(0),
+  fNParamsSol(0),fNZSegSol(0),fNPSegSol(0),fNRSegSol(0),
+  fSegZSol(0),fSegPSol(0),fSegRSol(0),
+  fBegSegPSol(0),fNSegPSol(0),fBegSegRSol(0),fNSegRSol(0),fSegIDSol(0),fMinZSol(1.e6),fMaxZSol(-1.e6),fParamsSol(0),fMaxRSol(0),
 //
-  fNZSegDip(0),
-  fNYSegDip(0),
-  fNXSegDip(0),
+  fNParamsTPC(0),fNZSegTPC(0),fNPSegTPC(0),fNRSegTPC(0),
+  fSegZTPC(0),fSegPTPC(0),fSegRTPC(0),
+  fBegSegPTPC(0),fNSegPTPC(0),fBegSegRTPC(0),fNSegRTPC(0),fSegIDTPC(0),fMinZTPC(1.e6),fMaxZTPC(-1.e6),fParamsTPC(0),fMaxRTPC(0),
 //
-  fSegZSol(0),
-  fSegRSol(0),
-//
-  fSegZTPCInt(0),
-  fSegRTPCInt(0),
-//
-  fSegZDip(0),
-  fSegYDip(0),
-  fSegXDip(0),
-//
-  fNSegRSol(0),
-  fSegZIdSol(0),
-//
-  fNSegRTPCInt(0),
-  fSegZIdTPCInt(0),
-//
-  fBegSegYDip(0),
-  fNSegYDip(0),
-  fBegSegXDip(0),
-  fNSegXDip(0),
-  fSegIDDip(0),
-//
-  fMinZSol(0),
-  fMaxZSol(0),
-  fMaxRSol(0), 
-//
-  fMinZDip(0),
-  fMaxZDip(0),
-//
-  fMinZTPCInt(0),
-  fMaxZTPCInt(0),
-  fMaxRTPCInt(0), 
-//
-  fParamsSol(0),
-  fParamsDip(0),
-  fParamsTPCInt(0)
-//
+  fNParamsDip(0),fNZSegDip(0),fNYSegDip(0),fNXSegDip(0),
+  fSegZDip(0),fSegYDip(0),fSegXDip(0),
+  fBegSegYDip(0),fNSegYDip(0),fBegSegXDip(0),fNSegXDip(0),fSegIDDip(0),fMinZDip(1.e6),fMaxZDip(-1.e6),fParamsDip(0)
 //
 {
   // construct from coeffs from the text file
@@ -613,6 +577,7 @@ void AliMagWrapCheb::AddParamSol(const AliCheb3D* param)
   if (!fParamsSol) fParamsSol = new TObjArray();
   fParamsSol->Add( (AliCheb3D*)param );
   fNParamsSol++;
+  if (fMaxRSol<param->GetBoundMax(0)) fMaxRSol = param->GetBoundMax(0);
   //
 }
 
@@ -622,9 +587,10 @@ void AliMagWrapCheb::AddParamTPCInt(const AliCheb3D* param)
   // adds new parameterization piece for TPCInt
   // NOTE: pieces must be added strictly in increasing R then increasing Z order
   //
-  if (!fParamsTPCInt) fParamsTPCInt = new TObjArray();
-  fParamsTPCInt->Add( (AliCheb3D*)param);
-  fNParamsTPCInt++;
+  if (!fParamsTPC) fParamsTPC = new TObjArray();
+  fParamsTPC->Add( (AliCheb3D*)param);
+  fNParamsTPC++;
+  if (fMaxRTPC<param->GetBoundMax(0)) fMaxRTPC = param->GetBoundMax(0);
   //
 }
 
@@ -643,26 +609,123 @@ void AliMagWrapCheb::AddParamDip(const AliCheb3D* param)
 void AliMagWrapCheb::ResetTPCInt()
 {
   // clean TPC field integral (used for update)
-  if (!fNParamsTPCInt) return;
-  delete fParamsTPCInt;  
-  delete[] fSegZTPCInt;
-  delete[] fSegRTPCInt;
-  delete[] fNSegRTPCInt;
-  delete[] fSegZIdTPCInt;
-  //
-  fNParamsTPCInt = 0; 
-  fNSegZTPCInt   = 0;
-  fSegZTPCInt    = 0; 
-  fSegRTPCInt    = 0; 
-  fNSegRTPCInt   = 0; 
-  fSegZIdTPCInt  = 0;
-  fMinZTPCInt    = 0; 
-  fMaxZTPCInt    = 0; 
-  fMaxRTPCInt    = 0; 
-  fParamsTPCInt  = 0;
+  if (fNParamsTPC) {
+    delete   fParamsTPC;  fParamsTPC = 0;
+    delete[] fSegZTPC;    fSegZTPC   = 0;
+    delete[] fSegPTPC;    fSegPTPC   = 0;
+    delete[] fSegRTPC;    fSegRTPC   = 0;
+    delete[] fBegSegPTPC; fBegSegPTPC = 0;
+    delete[] fNSegPTPC;   fNSegPTPC   = 0;
+    delete[] fBegSegRTPC; fBegSegRTPC = 0;
+    delete[] fNSegRTPC;   fNSegRTPC   = 0;
+    delete[] fSegIDTPC;   fSegIDTPC   = 0;   
+  }
+  fNParamsTPC = fNZSegTPC = fNPSegTPC = fNRSegTPC = 0;
+  fMinZTPC = 1e6;
+  fMaxZTPC = -1e6;
+  fMaxRTPC = 0;
   //
 }
 
+
+//__________________________________________________
+void AliMagWrapCheb::BuildTable(Int_t npar,TObjArray *parArr, Int_t &nZSeg, Int_t &nYSeg, Int_t &nXSeg,
+				Float_t &minZ,Float_t &maxZ,
+				Float_t **segZ,Float_t **segY,Float_t **segX,
+				Int_t **begSegY,Int_t **nSegY,
+				Int_t **begSegX,Int_t **nSegX,
+				Int_t **segID)
+{
+  // build lookup table for dipole
+  //
+  if (npar<1) return;
+  TArrayF segYArr,segXArr;
+  TArrayI begSegYDipArr,begSegXDipArr;
+  TArrayI nSegYDipArr,nSegXDipArr;
+  TArrayI segIDArr;
+  float *tmpSegZ,*tmpSegY,*tmpSegX;
+  //
+  // create segmentation in Z
+  nZSeg = SegmentDimension(&tmpSegZ, parArr, npar, 2, 1,-1, 1,-1, 1,-1) - 1;
+  nYSeg = 0;
+  nXSeg = 0;
+  //
+  // for each Z slice create segmentation in Y
+  begSegYDipArr.Set(nZSeg);
+  nSegYDipArr.Set(nZSeg);
+  float xyz[3];
+  for (int iz=0;iz<nZSeg;iz++) {
+    printf("\nZSegment#%d  %+e : %+e\n",iz,tmpSegZ[iz],tmpSegZ[iz+1]);
+    int ny = SegmentDimension(&tmpSegY, parArr, npar, 1, 
+			      1,-1, 1,-1, tmpSegZ[iz],tmpSegZ[iz+1]) - 1;
+    segYArr.Set(ny + nYSeg);
+    for (int iy=0;iy<ny;iy++) segYArr[nYSeg+iy] = tmpSegY[iy];
+    begSegYDipArr[iz] = nYSeg;
+    nSegYDipArr[iz] = ny;
+    printf(" Found %d YSegments, to start from %d\n",ny, begSegYDipArr[iz]);
+    //
+    // for each slice in Z and Y create segmentation in X
+    begSegXDipArr.Set(nYSeg+ny);
+    nSegXDipArr.Set(nYSeg+ny);
+    xyz[2] = (tmpSegZ[iz]+tmpSegZ[iz+1])/2.; // mean Z of this segment
+    //
+    for (int iy=0;iy<ny;iy++) {
+      int isg = nYSeg+iy;
+      printf("\n   YSegment#%d  %+e : %+e\n",iy, tmpSegY[iy],tmpSegY[iy+1]);
+      int nx = SegmentDimension(&tmpSegX, parArr, npar, 0, 
+				1,-1, tmpSegY[iy],tmpSegY[iy+1], tmpSegZ[iz],tmpSegZ[iz+1]) - 1;
+      //
+      segXArr.Set(nx + nXSeg);
+      for (int ix=0;ix<nx;ix++) segXArr[nXSeg+ix] = tmpSegX[ix];
+      begSegXDipArr[isg] = nXSeg;
+      nSegXDipArr[isg] = nx;
+      printf("   Found %d XSegments, to start from %d\n",nx, begSegXDipArr[isg]);
+      //
+      segIDArr.Set(nXSeg+nx);
+      //
+      // find corresponding params
+      xyz[1] = (tmpSegY[iy]+tmpSegY[iy+1])/2.; // mean Y of this segment
+      //
+      for (int ix=0;ix<nx;ix++) {
+	xyz[0] = (tmpSegX[ix]+tmpSegX[ix+1])/2.; // mean X of this segment
+	for (int ipar=0;ipar<npar;ipar++) {
+	  AliCheb3D* cheb = (AliCheb3D*) parArr->At(ipar);
+	  if (!cheb->IsInside(xyz)) continue;
+	  segIDArr[nXSeg+ix] = ipar;
+	  break;
+	}
+      }
+      nXSeg += nx;
+      //
+      delete[] tmpSegX;
+    }
+    delete[] tmpSegY;
+    nYSeg += ny;
+  }
+  //
+  minZ = tmpSegZ[0];
+  maxZ = tmpSegZ[nZSeg];
+  (*segZ)  = new Float_t[nZSeg];
+  for (int i=nZSeg;i--;) (*segZ)[i] = tmpSegZ[i];
+  delete[] tmpSegZ;
+  //
+  (*segY)    = new Float_t[nYSeg];
+  (*segX)    = new Float_t[nXSeg];
+  (*begSegY) = new Int_t[nZSeg];
+  (*nSegY)   = new Int_t[nZSeg];
+  (*begSegX) = new Int_t[nYSeg];
+  (*nSegX)   = new Int_t[nYSeg];
+  (*segID)   = new Int_t[nXSeg];
+  //
+  for (int i=nYSeg;i--;) (*segY)[i] = segYArr[i];
+  for (int i=nXSeg;i--;) (*segX)[i] = segXArr[i];
+  for (int i=nZSeg;i--;) {(*begSegY)[i] = begSegYDipArr[i]; (*nSegY)[i] = nSegYDipArr[i];}
+  for (int i=nYSeg;i--;) {(*begSegX)[i] = begSegXDipArr[i]; (*nSegX)[i] = nSegXDipArr[i];}
+  for (int i=nXSeg;i--;) {(*segID)[i]   = segIDArr[i];}
+  //
+}
+
+/*
 //__________________________________________________
 void AliMagWrapCheb::BuildTableDip()
 {
@@ -676,7 +739,7 @@ void AliMagWrapCheb::BuildTableDip()
   float *tmpSegZ,*tmpSegY,*tmpSegX;
   //
   // create segmentation in Z
-  fNZSegDip = SegmentDipDimension(&tmpSegZ, fParamsDip, fNParamsDip, 2, 1,-1, 1,-1, 1,-1) - 1;
+  fNZSegDip = SegmentDimension(&tmpSegZ, fParamsDip, fNParamsDip, 2, 1,-1, 1,-1, 1,-1) - 1;
   fNYSegDip = 0;
   fNXSegDip = 0;
   //
@@ -686,7 +749,7 @@ void AliMagWrapCheb::BuildTableDip()
   float xyz[3];
   for (int iz=0;iz<fNZSegDip;iz++) {
     printf("\nZSegment#%d  %+e : %+e\n",iz,tmpSegZ[iz],tmpSegZ[iz+1]);
-    int ny = SegmentDipDimension(&tmpSegY, fParamsDip, fNParamsDip, 1, 
+    int ny = SegmentDimension(&tmpSegY, fParamsDip, fNParamsDip, 1, 
 				 1,-1, 1,-1, tmpSegZ[iz],tmpSegZ[iz+1]) - 1;
     segY.Set(ny + fNYSegDip);
     for (int iy=0;iy<ny;iy++) segY[fNYSegDip+iy] = tmpSegY[iy];
@@ -702,8 +765,8 @@ void AliMagWrapCheb::BuildTableDip()
     for (int iy=0;iy<ny;iy++) {
       int isg = fNYSegDip+iy;
       printf("\n   YSegment#%d  %+e : %+e\n",iy, tmpSegY[iy],tmpSegY[iy+1]);
-      int nx = SegmentDipDimension(&tmpSegX, fParamsDip, fNParamsDip, 0, 
-				   1,-1, tmpSegY[iy],tmpSegY[iy+1], tmpSegZ[iz],tmpSegZ[iz+1]) - 1;
+      int nx = SegmentDimension(&tmpSegX, fParamsDip, fNParamsDip, 0, 
+				1,-1, tmpSegY[iy],tmpSegY[iy+1], tmpSegZ[iz],tmpSegZ[iz+1]) - 1;
       //
       segX.Set(nx + fNXSegDip);
       for (int ix=0;ix<nx;ix++) segX[fNXSegDip+ix] = tmpSegX[ix];
@@ -754,98 +817,9 @@ void AliMagWrapCheb::BuildTableDip()
   for (int i=fNXSegDip;i--;) {fSegIDDip[i]   = segID[i];}
   //
 }
+*/
 
-//__________________________________________________________________________________________
-void AliMagWrapCheb::BuildTableSol()
-{
-  // build the indexes for each parameterization of Solenoid
-  //
-  const float kSafety=0.001;
-  //
-  if (fNParamsSol<1) return;
-  fNSegZSol = 0;
-  fMaxRSol = 0;
-  fSegRSol   = new Float_t[fNParamsSol];
-  float *tmpbufF  = new float[fNParamsSol+1];
-  int   *tmpbufI  = new int[fNParamsSol+1];
-  int   *tmpbufI1 = new int[fNParamsSol+1];
-  //
-  // count number of Z slices and number of R slices in each Z slice
-  for (int ip=0;ip<fNParamsSol;ip++) {
-    if (ip==0 || (GetParamSol(ip)->GetBoundMax(2)-GetParamSol(ip-1)->GetBoundMax(2))>kSafety) { // new Z slice
-      tmpbufF[fNSegZSol] = GetParamSol(ip)->GetBoundMax(2);                                     // 
-      tmpbufI[fNSegZSol] = 0;
-      tmpbufI1[fNSegZSol++] = ip;
-    }
-    fSegRSol[ip] = GetParamSol(ip)->GetBoundMax(0);  // upper R
-    tmpbufI[fNSegZSol-1]++;
-    if (fMaxRSol<fSegRSol[ip]) fMaxRSol = fSegRSol[ip];
-  }
-  //
-  fSegZSol   = new Float_t[fNSegZSol];
-  fSegZIdSol = new Int_t[fNSegZSol];
-  fNSegRSol  = new Int_t[fNSegZSol];
-  for (int iz=0;iz<fNSegZSol;iz++) {
-    fSegZSol[iz]   = tmpbufF[iz];
-    fNSegRSol[iz]  = tmpbufI[iz];
-    fSegZIdSol[iz] = tmpbufI1[iz];
-  }
-  //
-  fMinZSol = GetParamSol(0)->GetBoundMin(2);
-  fMaxZSol = GetParamSol(fNParamsSol-1)->GetBoundMax(2);
-  //
-  delete[] tmpbufF;
-  delete[] tmpbufI;
-  delete[] tmpbufI1;
-  //
-  //
-}
-
-//__________________________________________________________________________________________
-void AliMagWrapCheb::BuildTableTPCInt()
-{
-  // build the indexes for each parameterization of TPC field integral
-  //
-  const float kSafety=0.001;
-  //
-  if (fNParamsTPCInt<1) return;
-  fNSegZTPCInt = 0;
-  fSegRTPCInt     = new Float_t[fNParamsTPCInt];
-  float *tmpbufF  = new float[fNParamsTPCInt+1];
-  int   *tmpbufI  = new int[fNParamsTPCInt+1];
-  int   *tmpbufI1 = new int[fNParamsTPCInt+1];
-  //
-  // count number of Z slices and number of R slices in each Z slice
-  for (int ip=0;ip<fNParamsTPCInt;ip++) {
-    if (ip==0 || (GetParamTPCInt(ip)->GetBoundMax(2)-GetParamTPCInt(ip-1)->GetBoundMax(2))>kSafety) { // new Z slice
-      tmpbufF[fNSegZTPCInt] = GetParamTPCInt(ip)->GetBoundMax(2);                                     // 
-      tmpbufI[fNSegZTPCInt] = 0;
-      tmpbufI1[fNSegZTPCInt++] = ip;
-    }
-    fSegRTPCInt[ip] = GetParamTPCInt(ip)->GetBoundMax(0);  // upper R
-    tmpbufI[fNSegZTPCInt-1]++;
-  }
-  //
-  fSegZTPCInt   = new Float_t[fNSegZTPCInt];
-  fSegZIdTPCInt = new Int_t[fNSegZTPCInt];
-  fNSegRTPCInt  = new Int_t[fNSegZTPCInt];
-  for (int iz=0;iz<fNSegZTPCInt;iz++) {
-    fSegZTPCInt[iz]   = tmpbufF[iz];
-    fNSegRTPCInt[iz]  = tmpbufI[iz];
-    fSegZIdTPCInt[iz] = tmpbufI1[iz];
-  }
-  //
-  fMinZTPCInt = GetParamTPCInt(0)->GetBoundMin(2);
-  fMaxZTPCInt = GetParamTPCInt(fNParamsTPCInt-1)->GetBoundMax(2);
-  fMaxRTPCInt = GetParamTPCInt(fNParamsTPCInt-1)->GetBoundMax(0);
-  //
-  delete[] tmpbufF;
-  delete[] tmpbufI;
-  delete[] tmpbufI1;
-  //
-  //
-}
-
+//________________________________________________________________
 void AliMagWrapCheb::SaveData(const char* outfile) const
 {
   // writes coefficients data to output text file
@@ -861,8 +835,8 @@ void AliMagWrapCheb::SaveData(const char* outfile) const
   //
   // TPCInt part ---------------------------------------------------------
   fprintf(stream,"# Set of Chebyshev parameterizations for ALICE magnetic field\nSTART %s\n",GetName());
-  fprintf(stream,"START TPCINT\n#Number of pieces\n%d\n",fNParamsTPCInt);
-  for (int ip=0;ip<fNParamsTPCInt;ip++) GetParamTPCInt(ip)->SaveData(stream);
+  fprintf(stream,"START TPCINT\n#Number of pieces\n%d\n",fNParamsTPC);
+  for (int ip=0;ip<fNParamsTPC;ip++) GetParamTPCInt(ip)->SaveData(stream);
   fprintf(stream,"#\nEND TPCINT\n");
   //
   // Dip part   ---------------------------------------------------------
@@ -876,7 +850,7 @@ void AliMagWrapCheb::SaveData(const char* outfile) const
   //
 }
 
-Int_t AliMagWrapCheb::SegmentDipDimension(float** seg,const TObjArray* par,int npar, int dim, 
+Int_t AliMagWrapCheb::SegmentDimension(float** seg,const TObjArray* par,int npar, int dim, 
 				       float xmn,float xmx,float ymn,float ymx,float zmn,float zmx)
 {
   // find all boundaries in deimension dim for boxes in given region.

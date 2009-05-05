@@ -13,7 +13,7 @@ class TSystem;
 
 // to decrease the compilable code size comment this define. This will exclude the routines 
 // used for the calculation and saving of the coefficients. 
-#define _INC_CREATION_ALICHEB3D_
+//#define _INC_CREATION_ALICHEB3D_
 
 // when _BRING_TO_BOUNDARY_ is defined, the point outside of the fitted folume is assumed
 // to be on the surface 
@@ -43,14 +43,15 @@ class AliCheb3DCalc: public TNamed
   void       InitRows(int nr);
   void       InitCols(int nc);
   Int_t      GetNCoefs()                                                const {return fNCoefs;}
-  Int_t      GetNCols()                                                 const {return fNCols;}
-  Int_t      GetNRows()                                                 const {return fNRows;}
+  Int_t      GetNCols()                                                 const {return (Int_t)fNCols;}
+  Int_t      GetNRows()                                                 const {return (Int_t)fNRows;}
+  Int_t      GetNElemBound2D()                                          const {return (Int_t)fNElemBound2D;}  
   Int_t      GetMaxColsAtRow()                                          const;
-  Int_t*     GetNColsAtRow()                                            const {return fNColsAtRow;}
-  Int_t*     GetColAtRowBg()                                            const {return fColAtRowBg;}
+  UShort_t*  GetNColsAtRow()                                            const {return fNColsAtRow;}
+  UShort_t*  GetColAtRowBg()                                            const {return fColAtRowBg;}
   void       InitElemBound2D(int ne);
-  Int_t*     GetCoefBound2D0()                                          const {return fCoefBound2D0;}
-  Int_t*     GetCoefBound2D1()                                          const {return fCoefBound2D1;}
+  UShort_t*  GetCoefBound2D0()                                          const {return fCoefBound2D0;}
+  UShort_t*  GetCoefBound2D1()                                          const {return fCoefBound2D1;}
   void       Clear(const Option_t* option = "");
   static Float_t    ChebEval1D(Float_t  x, const Float_t * array, int ncf);
   static Float_t    ChebEval1Deriv(Float_t  x, const Float_t * array, int ncf);
@@ -60,39 +61,24 @@ class AliCheb3DCalc: public TNamed
   //
   static void ReadLine(TString& str,FILE* stream);
   //
-  template <class T>
-    T        Eval(const T  *par)                                        const {
-    // evaluate Chebyshev parameterization for 3D function.
-    // VERY IMPORTANT: par must contain the function arguments ALREADY MAPPED to [-1:1] interval
-    if (!fNRows) return 0.;
-    int ncfRC;
-    for (int id0=fNRows;id0--;) {
-      int nCLoc = fNColsAtRow[id0];                   // number of significant coefs on this row
-      int col0  = fColAtRowBg[id0];                   // beginning of local column in the 2D boundary matrix
-      for (int id1=nCLoc;id1--;) {
-	int id = id1+col0;
-	fTmpCf1[id1] = (ncfRC=fCoefBound2D0[id]) ? ChebEval1D(par[2],fCoefs + fCoefBound2D1[id], ncfRC) : 0.0;
-      }
-      fTmpCf0[id0] = nCLoc>0 ? ChebEval1D(par[1],fTmpCf1,nCLoc):0.0;
-    }
-    return ChebEval1D(par[0],fTmpCf0,fNRows);
-    }
+  Float_t    Eval(const Float_t  *par)                                  const;
+  Double_t   Eval(const Double_t *par)                                  const;
   //
  protected:
   Int_t      fNCoefs;            // total number of coeeficients
   Int_t      fNRows;             // number of significant rows in the 3D coeffs matrix
   Int_t      fNCols;             // max number of significant cols in the 3D coeffs matrix
   Int_t      fNElemBound2D;      // number of elements (fNRows*fNCols) to store for the 2D boundary of significant coeffs
-  Int_t*     fNColsAtRow;        //[fNRows] number of sighificant columns (2nd dim) at each row of 3D coefs matrix
-  Int_t*     fColAtRowBg;        //[fNRows] beginnig of significant columns (2nd dim) for row in the 2D boundary matrix
-  Int_t*     fCoefBound2D0;      //[fNElemBound2D] 2D matrix defining the boundary of significance for 3D coeffs.matrix (Ncoefs for col/row)
-  Int_t*     fCoefBound2D1;      //[fNElemBound2D] 2D matrix defining the start beginnig of significant coeffs for col/row
+  UShort_t*  fNColsAtRow;        //[fNRows] number of sighificant columns (2nd dim) at each row of 3D coefs matrix
+  UShort_t*  fColAtRowBg;        //[fNRows] beginnig of significant columns (2nd dim) for row in the 2D boundary matrix
+  UShort_t*  fCoefBound2D0;      //[fNElemBound2D] 2D matrix defining the boundary of significance for 3D coeffs.matrix (Ncoefs for col/row)
+  UShort_t*  fCoefBound2D1;      //[fNElemBound2D] 2D matrix defining the start beginnig of significant coeffs for col/row
   Float_t *  fCoefs;             //[fNCoefs] array of Chebyshev coefficients
   //
   Float_t *  fTmpCf1;            //[fNCols] temp. coeffs for 2d summation
   Float_t *  fTmpCf0;            //[fNRows] temp. coeffs for 1d summation
   //
-  ClassDef(AliCheb3DCalc,1)      // Class for interpolation of 3D->1 function by Chebyshev parametrization 
+  ClassDef(AliCheb3DCalc,3)      // Class for interpolation of 3D->1 function by Chebyshev parametrization 
 };
 
 //__________________________________________________________________________________________
@@ -110,6 +96,44 @@ inline Float_t AliCheb3DCalc::ChebEval1D(Float_t  x, const Float_t * array, int 
   }
   return b0 - x*b1;
   //
+}
+
+//__________________________________________________________________________________________
+inline Float_t AliCheb3DCalc::Eval(const Float_t  *par) const 
+{
+  // evaluate Chebyshev parameterization for 3D function.
+  // VERY IMPORTANT: par must contain the function arguments ALREADY MAPPED to [-1:1] interval
+  if (!fNRows) return 0.;
+  int ncfRC;
+  for (int id0=fNRows;id0--;) {
+    int nCLoc = fNColsAtRow[id0];                   // number of significant coefs on this row
+    int col0  = fColAtRowBg[id0];                   // beginning of local column in the 2D boundary matrix
+    for (int id1=nCLoc;id1--;) {
+      int id = id1+col0;
+      fTmpCf1[id1] = (ncfRC=fCoefBound2D0[id]) ? ChebEval1D(par[2],fCoefs + fCoefBound2D1[id], ncfRC) : 0.0;
+    }
+    fTmpCf0[id0] = nCLoc>0 ? ChebEval1D(par[1],fTmpCf1,nCLoc):0.0;
+  }
+  return ChebEval1D(par[0],fTmpCf0,fNRows);
+}
+
+//__________________________________________________________________________________________
+inline Double_t AliCheb3DCalc::Eval(const Double_t  *par) const 
+{
+  // evaluate Chebyshev parameterization for 3D function.
+  // VERY IMPORTANT: par must contain the function arguments ALREADY MAPPED to [-1:1] interval
+  if (!fNRows) return 0.;
+  int ncfRC;
+  for (int id0=fNRows;id0--;) {
+    int nCLoc = fNColsAtRow[id0];                   // number of significant coefs on this row
+    int col0  = fColAtRowBg[id0];                   // beginning of local column in the 2D boundary matrix
+    for (int id1=nCLoc;id1--;) {
+      int id = id1+col0;
+      fTmpCf1[id1] = (ncfRC=fCoefBound2D0[id]) ? ChebEval1D(par[2],fCoefs + fCoefBound2D1[id], ncfRC) : 0.0;
+    }
+    fTmpCf0[id0] = nCLoc>0 ? ChebEval1D(par[1],fTmpCf1,nCLoc):0.0;
+  }
+  return ChebEval1D(par[0],fTmpCf0,fNRows);
 }
 
 #endif

@@ -91,16 +91,16 @@ class AliCheb3D: public TNamed
   AliCheb3D(const char* funName, Int_t DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t  prec=1E-6);
   AliCheb3D(void (*ptr)(float*,float*), Int_t DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t  prec=1E-6);
   AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npX,Int_t *npY,Int_t *npZ, Float_t prec=1E-6);
-  AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Float_t prec=1E-6);
+  AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Float_t prec=1E-6, Bool_t run=kTRUE);
 #endif
   //
   ~AliCheb3D()                                                                 {Clear();}
   //
   AliCheb3D&   operator=(const AliCheb3D& rhs);
-  template <class T>
-    void       Eval(const T  *par, T *res);
-  template <class T>
-    T          Eval(const T  *par,int idim);
+  void         Eval(const Float_t  *par, Float_t *res);
+  Float_t      Eval(const Float_t  *par,int idim);
+  void         Eval(const Double_t  *par, Double_t *res);
+  Double_t     Eval(const Double_t  *par,int idim);
   //
   void         EvalDeriv(int dimd, const Float_t  *par, Float_t  *res);
   void         EvalDeriv2(int dimd1, int dimd2, const Float_t  *par,Float_t  *res);
@@ -109,8 +109,8 @@ class AliCheb3D: public TNamed
   void         EvalDeriv3D(const Float_t *par, Float_t dbdr[3][3]); 
   void         EvalDeriv3D2(const Float_t *par, Float_t dbdrdr[3][3][3]); 
   void         Print(const Option_t* opt="")                             const;
-  template <class T>
-    Bool_t       IsInside(const T  *par)                                 const;
+  Bool_t       IsInside(const Float_t  *par)                             const;
+  Bool_t       IsInside(const Double_t *par)                             const;
   //
   AliCheb3DCalc*  GetChebCalc(int i)                                     const {return (AliCheb3DCalc*)fChebCalc.UncheckedAt(i);}
   Float_t      GetBoundMin(int i)                                        const {return fBMin[i];}
@@ -124,8 +124,8 @@ class AliCheb3D: public TNamed
   void         LoadData(FILE* stream);
   //
 #ifdef _INC_CREATION_ALICHEB3D_
-  int*         GetNCNeeded(float xyz[3],int DimVar, float mn,float mx, float prec);
-  void         EstimateNPoints(float Prec, int gridBC[3][3]);
+  int*         GetNCNeeded(float xyz[3],int DimVar, float mn,float mx, float prec, Int_t npCheck=30);
+  void         EstimateNPoints(float Prec, int gridBC[3][3],Int_t npd1=30,Int_t npd2=30,Int_t npd3=30);
   void         SaveData(const char* outfile,Bool_t append=kFALSE)        const;
   void         SaveData(FILE* stream=stdout)                             const;
   //
@@ -149,10 +149,10 @@ class AliCheb3D: public TNamed
   void         SetPrecision(float prec)                      {fPrec = prec;}
 #endif
   //
-  template <class T>
-    T          MapToInternal(T  x,Int_t d)       const; // map x to [-1:1]
-  template <class T>
-    T          MapToExternal(T  x,Int_t d)       const {return x/fBScale[d]+fBOffset[d];}   // map from [-1:1] to x
+  Float_t      MapToInternal(Float_t  x,Int_t d)       const; // map x to [-1:1]
+  Float_t      MapToExternal(Float_t  x,Int_t d)       const {return x/fBScale[d]+fBOffset[d];}   // map from [-1:1] to x
+  Double_t     MapToInternal(Double_t  x,Int_t d)      const; // map x to [-1:1]
+  Double_t     MapToExternal(Double_t  x,Int_t d)      const {return x/fBScale[d]+fBOffset[d];}   // map from [-1:1] to x
   //  
  protected:
   Int_t        fDimOut;            // dimension of the ouput array
@@ -166,30 +166,41 @@ class AliCheb3D: public TNamed
   Int_t        fMaxCoefs;          //! max possible number of coefs per parameterization
   Int_t        fNPoints[3];        //! number of used points in each dimension
   Float_t      fArgsTmp[3];        //! temporary vector for coefs caluclation
-  Float_t      fBuff[6];           //! buffer for coordinate transformations
   Float_t *    fResTmp;            //! temporary vector for results of user function caluclation
   Float_t *    fGrid;              //! temporary buffer for Chebyshef roots grid
   Int_t        fGridOffs[3];       //! start of grid for each dimension
   TString      fUsrFunName;        //! name of user macro containing the function of  "void (*fcn)(float*,float*)" format
   TMethodCall* fUsrMacro;          //! Pointer to MethodCall for function from user macro 
   //
-  ClassDef(AliCheb3D,1)  // Chebyshev parametrization for 3D->N function
+  ClassDef(AliCheb3D,2)  // Chebyshev parametrization for 3D->N function
 };
 
 //__________________________________________________________________________________________
-template <class T>
-inline Bool_t  AliCheb3D::IsInside(const T  *par) const 
+inline Bool_t  AliCheb3D::IsInside(const Float_t *par) const 
 {
   // check if the point is inside of the fitted box
-  const float kTol = 1.e-4; 
-  for (int i=3;i--;) if (fBMin[i]-par[i]>kTol || par[i]-fBMax[i]>kTol) return kFALSE;
-  //if(par[i]<fBMin[i]||par[i]>fBMax[i]) return kFALSE;
+  for (int i=3;i--;) if (fBMin[i]>par[i] || par[i]>fBMax[i]) return kFALSE;
   return kTRUE;
 }
 
 //__________________________________________________________________________________________
-template <class T>
-inline void AliCheb3D::Eval(const T  *par, T  *res)
+inline Bool_t  AliCheb3D::IsInside(const Double_t *par) const 
+{
+  // check if the point is inside of the fitted box
+  for (int i=3;i--;) if (fBMin[i]>par[i] || par[i]>fBMax[i]) return kFALSE;
+  return kTRUE;
+}
+
+//__________________________________________________________________________________________
+inline void AliCheb3D::Eval(const Float_t  *par, Float_t  *res)
+{
+  // evaluate Chebyshev parameterization for 3d->DimOut function
+  for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
+  for (int i=fDimOut;i--;) res[i] = GetChebCalc(i)->Eval(fArgsTmp);
+  //
+}
+//__________________________________________________________________________________________
+inline void AliCheb3D::Eval(const Double_t  *par, Double_t  *res)
 {
   // evaluate Chebyshev parameterization for 3d->DimOut function
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
@@ -198,8 +209,16 @@ inline void AliCheb3D::Eval(const T  *par, T  *res)
 }
 
 //__________________________________________________________________________________________
-template <class T>
-inline T AliCheb3D::Eval(const T  *par, int idim)
+inline Double_t AliCheb3D::Eval(const Double_t  *par, int idim)
+{
+  // evaluate Chebyshev parameterization for idim-th output dimension of 3d->DimOut function
+  for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
+  return GetChebCalc(idim)->Eval(fArgsTmp);
+  //
+}
+
+//__________________________________________________________________________________________
+inline Float_t AliCheb3D::Eval(const Float_t  *par, int idim)
 {
   // evaluate Chebyshev parameterization for idim-th output dimension of 3d->DimOut function
   for (int i=3;i--;) fArgsTmp[i] = MapToInternal(par[i],i);
@@ -261,8 +280,21 @@ inline Float_t AliCheb3D::EvalDeriv2(int dimd1,int dimd2, const Float_t  *par, i
 }
 
 //__________________________________________________________________________________________
-template <class T>
-inline T AliCheb3D::MapToInternal(T  x,Int_t d) const
+inline Float_t AliCheb3D::MapToInternal(Float_t  x,Int_t d) const
+{
+  // map x to [-1:1]
+#ifdef _BRING_TO_BOUNDARY_
+  T res = (x-fBOffset[d])*fBScale[d];
+  if (res<-1) return -1;
+  if (res> 1) return 1;
+  return res;
+#else
+  return (x-fBOffset[d])*fBScale[d];
+#endif
+}
+
+//__________________________________________________________________________________________
+inline Double_t AliCheb3D::MapToInternal(Double_t  x,Int_t d) const
 {
   // map x to [-1:1]
 #ifdef _BRING_TO_BOUNDARY_

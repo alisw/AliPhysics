@@ -57,11 +57,11 @@ class AliMagWrapCheb: public TNamed
   virtual void Clear(const Option_t * = "");
   //
   Int_t      GetNParamsSol()                              const {return fNParamsSol;}
-  Int_t      GetNSegZSol()                                const {return fNSegZSol;}
-  Float_t*   GetSegZSol() const {return fSegZSol;}
+  Int_t      GetNSegZSol()                                const {return fNZSegSol;}
+  Float_t*   GetSegZSol()                                 const {return fSegZSol;}
   //
-  Int_t      GetNParamsTPCInt()                           const {return fNParamsTPCInt;}
-  Int_t      GetNSegZTPCInt()                             const {return fNSegZTPCInt;}
+  Int_t      GetNParamsTPCInt()                           const {return fNParamsTPC;}
+  Int_t      GetNSegZTPCInt()                             const {return fNZSegTPC;}
   //
   Int_t      GetNParamsDip()                              const {return fNParamsDip;}
   Int_t      GetNSegZDip()                                const {return fNZSegDip;}
@@ -76,12 +76,12 @@ class AliMagWrapCheb: public TNamed
   Float_t    GetMinZDip()                                 const {return fMinZDip;}
   Float_t    GetMaxZDip()                                 const {return fMaxZDip;}
   //
-  Float_t    GetMinZTPCInt()                              const {return fMinZTPCInt;}
-  Float_t    GetMaxZTPCInt()                              const {return fMaxZTPCInt;}
-  Float_t    GetMaxRTPCInt()                              const {return fMaxRTPCInt;}
+  Float_t    GetMinZTPCInt()                              const {return fMinZTPC;}
+  Float_t    GetMaxZTPCInt()                              const {return fMaxZTPC;}
+  Float_t    GetMaxRTPCInt()                              const {return fMaxRTPC;}
   //
   AliCheb3D* GetParamSol(Int_t ipar)                      const {return (AliCheb3D*)fParamsSol->UncheckedAt(ipar);}
-  AliCheb3D* GetParamTPCInt(Int_t ipar)                   const {return (AliCheb3D*)fParamsTPCInt->UncheckedAt(ipar);}
+  AliCheb3D* GetParamTPCInt(Int_t ipar)                   const {return (AliCheb3D*)fParamsTPC->UncheckedAt(ipar);}
   AliCheb3D* GetParamDip(Int_t ipar)                      const {return (AliCheb3D*)fParamsDip->UncheckedAt(ipar);}
   //
   virtual void Print(Option_t * = "")                     const;
@@ -93,6 +93,8 @@ class AliMagWrapCheb: public TNamed
   void GetTPCInt(const Double_t *xyz, Double_t *b)        const;
   void GetTPCIntCyl(const Double_t *rphiz, Double_t *b)   const;
   //
+  Int_t       FindSolSegment(const Double_t *xyz)         const; 
+  Int_t       FindTPCSegment(const Double_t *xyz)         const; 
   Int_t       FindDipSegment(const Double_t *xyz)         const; 
   static void CylToCartCylB(const Double_t *rphiz, const Double_t *brphiz,Double_t *bxyz);
   static void CylToCartCartB(const Double_t *xyz,  const Double_t *brphiz,Double_t *bxyz);
@@ -106,14 +108,17 @@ class AliMagWrapCheb: public TNamed
   //
   AliMagWrapCheb(const char* inputFile);
   void       SaveData(const char* outfile)                const;
-  Int_t      SegmentDipDimension(Float_t** seg,const TObjArray* par,int npar, int dim, 
-				 Float_t xmn,Float_t xmx,Float_t ymn,Float_t ymx,Float_t zmn,Float_t zmx);
+  Int_t      SegmentDimension(Float_t** seg,const TObjArray* par,int npar, int dim, 
+			      Float_t xmn,Float_t xmx,Float_t ymn,Float_t ymx,Float_t zmn,Float_t zmx);
   //
   void       AddParamSol(const AliCheb3D* param);
   void       AddParamTPCInt(const AliCheb3D* param);
   void       AddParamDip(const AliCheb3D* param);
-  void       BuildTableDip();
+  void       BuildTable(Int_t npar,TObjArray *parArr, Int_t &nZSeg, Int_t &nYSeg, Int_t &nXSeg,
+			Float_t &minZ,Float_t &maxZ,Float_t **segZ,Float_t **segY,Float_t **segX,
+			Int_t **begSegY,Int_t **nSegY,Int_t **begSegX,Int_t **nSegX,Int_t **segID);
   void       BuildTableSol();
+  void       BuildTableDip();
   void       BuildTableTPCInt();
   void       ResetTPCInt();
   //
@@ -126,55 +131,57 @@ class AliMagWrapCheb: public TNamed
   //
  protected:
   //
-  Int_t      fNParamsSol;            // Total number of parameterization pieces for Sol 
-  Int_t      fNSegZSol;              // Number of segments in Z for Solenoid field
+  Int_t      fNParamsSol;            // Total number of parameterization pieces for solenoid 
+  Int_t      fNZSegSol;              // number of distinct Z segments in Solenoid
+  Int_t      fNPSegSol;              // number of distinct P segments in Solenoid
+  Int_t      fNRSegSol;              // number of distinct R segments in Solenoid
+  Float_t*   fSegZSol;               //[fNZSegSol] coordinates of distinct Z segments in Solenoid
+  Float_t*   fSegPSol;               //[fNPSegSol] coordinated of P segments for each Zsegment in Solenoid
+  Float_t*   fSegRSol;               //[fNRSegSol] coordinated of R segments for each Psegment in Solenoid
+  Int_t*     fBegSegPSol;            //[fNPSegSol] beginning of P segments array for each Z segment
+  Int_t*     fNSegPSol;              //[fNZSegSol] number of P segments for each Z segment
+  Int_t*     fBegSegRSol;            //[fNPSegSol] beginning of R segments array for each P segment
+  Int_t*     fNSegRSol;              //[fNPSegSol] number of R segments for each P segment
+  Int_t*     fSegIDSol;              //[fNRSegSol] ID of the solenoid parameterization for given RPZ segment
+  Float_t    fMinZSol;               // Min Z of Solenoid parameterization
+  Float_t    fMaxZSol;               // Max Z of Solenoid parameterization
+  TObjArray* fParamsSol;             // Parameterization pieces for Solenoid field
+  Float_t    fMaxRSol;               // max raduis for Solenoid field
   //
-  Int_t      fNParamsTPCInt;         // Total number of parameterization pieces for TPC field integral 
-  Int_t      fNSegZTPCInt;           // Number of segments in Z for TPC field integral
+  Int_t      fNParamsTPC;            // Total number of parameterization pieces for TPCint 
+  Int_t      fNZSegTPC;              // number of distinct Z segments in TPCint
+  Int_t      fNPSegTPC;              // number of distinct P segments in TPCint
+  Int_t      fNRSegTPC;              // number of distinct R segments in TPCint
+  Float_t*   fSegZTPC;               //[fNZSegTPC] coordinates of distinct Z segments in TPCint
+  Float_t*   fSegPTPC;               //[fNPSegTPC] coordinated of P segments for each Zsegment in TPCint
+  Float_t*   fSegRTPC;               //[fNRSegTPC] coordinated of R segments for each Psegment in TPCint
+  Int_t*     fBegSegPTPC;            //[fNPSegTPC] beginning of P segments array for each Z segment
+  Int_t*     fNSegPTPC;              //[fNZSegTPC] number of P segments for each Z segment
+  Int_t*     fBegSegRTPC;            //[fNPSegTPC] beginning of R segments array for each P segment
+  Int_t*     fNSegRTPC;              //[fNPSegTPC] number of R segments for each P segment
+  Int_t*     fSegIDTPC;              //[fNRSegTPC] ID of the TPCint parameterization for given RPZ segment
+  Float_t    fMinZTPC;               // Min Z of TPCint parameterization
+  Float_t    fMaxZTPC;               // Max Z of TPCint parameterization
+  TObjArray* fParamsTPC;             // Parameterization pieces for TPCint field
+  Float_t    fMaxRTPC;               // max raduis for Solenoid field integral in TPC
   //
   Int_t      fNParamsDip;            // Total number of parameterization pieces for dipole 
   Int_t      fNZSegDip;              // number of distinct Z segments in Dipole
   Int_t      fNYSegDip;              // number of distinct Y segments in Dipole
   Int_t      fNXSegDip;              // number of distinct X segments in Dipole
-  //
-  Float_t*   fSegZSol;               //[fNSegZSol]      upper boundaries of Z segments
-  Float_t*   fSegRSol;               //[fNParamsSol]    upper boundaries of R segments
-  //
-  Float_t*   fSegZTPCInt;            //[fNSegZTPCInt]    upper boundaries of Z segments
-  Float_t*   fSegRTPCInt;            //[fNParamsTPCInt]  upper boundaries of R segments
-  //
   Float_t*   fSegZDip;               //[fNZSegDip] coordinates of distinct Z segments in Dipole
   Float_t*   fSegYDip;               //[fNYSegDip] coordinated of Y segments for each Zsegment in Dipole
   Float_t*   fSegXDip;               //[fNXSegDip] coordinated of X segments for each Ysegment in Dipole
-  //
-  Int_t*     fNSegRSol;              //[fNSegZSol]      number of R segments for each Z segment
-  Int_t*     fSegZIdSol;             //[fNSegZSol]      Id of the first R segment of each Z segment in the fSegRSol...
-  //
-  Int_t*     fNSegRTPCInt;           //[fNSegZTPCInt]   number of R segments for each Z segment
-  Int_t*     fSegZIdTPCInt;          //[fNSegZTPCInt]   Id of the first R segment of each Z segment in the fSegRTPCInt...
-  //
   Int_t*     fBegSegYDip;            //[fNZSegDip] beginning of Y segments array for each Z segment
   Int_t*     fNSegYDip;              //[fNZSegDip] number of Y segments for each Z segment
   Int_t*     fBegSegXDip;            //[fNYSegDip] beginning of X segments array for each Y segment
   Int_t*     fNSegXDip;              //[fNYSegDip] number of X segments for each Y segment
   Int_t*     fSegIDDip;              //[fNXSegDip] ID of the dipole parameterization for given XYZ segment
-  //
-  Float_t    fMinZSol;               // Min Z of Sol parameterization (in CYL. coordinates)
-  Float_t    fMaxZSol;               // Max Z of Sol parameterization (in CYL. coordinates)
-  Float_t    fMaxRSol;               // Max R of Sol parameterization (in CYL. coordinates)
-  //
   Float_t    fMinZDip;               // Min Z of Dipole parameterization
   Float_t    fMaxZDip;               // Max Z of Dipole parameterization
-  //
-  Float_t    fMinZTPCInt;            // Min Z of TPCInt parameterization (in CYL. coordinates)
-  Float_t    fMaxZTPCInt;            // Max Z of TPCInt parameterization (in CYL. coordinates)
-  Float_t    fMaxRTPCInt;            // Max R of TPCInt parameterization (in CYL. coordinates)
-  // 
-  TObjArray* fParamsSol;             // Parameterization pieces for Solenoid field
   TObjArray* fParamsDip;             // Parameterization pieces for Dipole field
-  TObjArray* fParamsTPCInt;          // Parameterization pieces for Solenoid field integrals in TPC region
   //
-  ClassDef(AliMagWrapCheb,4)         // Wrapper class for the set of Chebishev parameterizations of Alice mag.field
+  ClassDef(AliMagWrapCheb,5)         // Wrapper class for the set of Chebishev parameterizations of Alice mag.field
   //
  };
 
@@ -184,6 +191,7 @@ inline void AliMagWrapCheb::FieldCyl(const Double_t *rphiz, Double_t *b) const
 {
   // compute field in Cylindircal coordinates
   //  if (rphiz[2]<GetMinZSol() || rphiz[2]>GetMaxZSol() || rphiz[0]>GetMaxRSol()) {for (int i=3;i--;) b[i]=0; return;}
+  b[0] = b[1] = b[2] = 0;
   FieldCylSol(rphiz,b);
 }
 

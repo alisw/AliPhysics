@@ -199,7 +199,7 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
-AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Float_t prec) : 
+AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Float_t prec, Bool_t run) : 
   fDimOut(0), 
   fPrec(TMath::Max(1.E-12f,prec)), 
   fChebCalc(1), 
@@ -221,14 +221,16 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
   PrepareBoundaries(bmin,bmax);
   SetUsrFunction(ptr);
   //
-  int gridNC[3][3];
-  EstimateNPoints(prec,gridNC);
-  DefineGrid(gridNC[0]);
-  ChebFit(0);
-  DefineGrid(gridNC[1]);
-  ChebFit(1);
-  DefineGrid(gridNC[2]);
-  ChebFit(2);
+  if (run) {
+    int gridNC[3][3];
+    EstimateNPoints(prec,gridNC);
+    DefineGrid(gridNC[0]);
+    ChebFit(0);
+    DefineGrid(gridNC[1]);
+    ChebFit(1);
+    DefineGrid(gridNC[2]);
+    ChebFit(2);
+  }
   //
 }
 #endif
@@ -456,7 +458,7 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   Float_t  *tmpCoef2D  = new Float_t [ fNPoints[0]*fNPoints[1] ]; 
   Float_t  *tmpCoef1D  = new Float_t [ maxDim ];
   //
-  Float_t rTiny = fPrec/Float_t(maxDim); // neglect coefficient below this threshold
+  Float_t rTiny = 0.1*fPrec/Float_t(maxDim); // neglect coefficient below this threshold
   //
   // 1D Cheb.fit for 0-th dimension at current steps of remaining dimensions
   int ncmax = 0;
@@ -509,7 +511,7 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   }
   //
   // now find 2D surface which separates significant coefficients of 3D matrix from nonsignificant ones (up to fPrec)
-  int *tmpCoefSurf = new Int_t[ fNPoints[0]*fNPoints[1] ];
+  UShort_t *tmpCoefSurf = new UShort_t[ fNPoints[0]*fNPoints[1] ];
   for (int id0=fNPoints[0];id0--;) for (int id1=fNPoints[1];id1--;) tmpCoefSurf[id1+id0*fNPoints[1]]=0;  
   Double_t resid = 0;
   for (int id0=fNPoints[0];id0--;) {
@@ -542,7 +544,7 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   */
   // see if there are rows to reject, find max.significant column at each row
   int nRows = fNPoints[0];
-  int *tmpCols = new int[nRows]; 
+  UShort_t *tmpCols = new UShort_t[nRows]; 
   for (int id0=fNPoints[0];id0--;) {
     int id1 = fNPoints[1];
     while (id1>0 && tmpCoefSurf[(id1-1)+id0*fNPoints[1]]==0) id1--;
@@ -552,8 +554,8 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   for (int id0=nRows;id0--;) {if (tmpCols[id0]>0) break; nRows--;}
   // find max significant column and fill the permanent storage for the max sigificant column of each row
   cheb->InitRows(nRows);                  // create needed arrays;
-  int *nColsAtRow = cheb->GetNColsAtRow();
-  int *colAtRowBg = cheb->GetColAtRowBg();
+  UShort_t *nColsAtRow = cheb->GetNColsAtRow();
+  UShort_t *colAtRowBg = cheb->GetColAtRowBg();
   int nCols = 0;
   int NElemBound2D = 0;
   for (int id0=0;id0<nRows;id0++) {
@@ -569,8 +571,8 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   // and count the number of siginifacnt coefficients
   //
   cheb->InitElemBound2D(NElemBound2D);
-  int *coefBound2D0 = cheb->GetCoefBound2D0();
-  int *coefBound2D1 = cheb->GetCoefBound2D1();
+  UShort_t *coefBound2D0 = cheb->GetCoefBound2D0();
+  UShort_t *coefBound2D1 = cheb->GetCoefBound2D1();
   fMaxCoefs = 0; // redefine number of coeffs
   for (int id0=0;id0<nRows;id0++) {
     int nCLoc = nColsAtRow[id0];
@@ -762,6 +764,40 @@ TH1* AliCheb3D::TestRMS(int idim,int npoints,TH1* histo)
 
 //_______________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
+
+void AliCheb3D::EstimateNPoints(float Prec, int gridBC[3][3],Int_t npd1,Int_t npd2,Int_t npd3)
+{
+  // Estimate number of points to generate a training data
+  //
+  const int kScp = 9;
+  const float kScl[9] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
+  //
+  const float sclDim[2] = {0.001,0.999};
+  const int   compDim[3][2] = { {1,2}, {2,0}, {0,1} };
+  static float xyz[3];
+  Int_t npdTst[3] = {npd1,npd2,npd3};
+  //
+
+  for (int i=3;i--;)for (int j=3;j--;) gridBC[i][j] = -1;
+  //
+  for (int idim=0;idim<3;idim++) {
+    float dimMN = fBMin[idim] + sclDim[0]*(fBMax[idim]-fBMin[idim]);
+    float dimMX = fBMin[idim] + sclDim[1]*(fBMax[idim]-fBMin[idim]);
+    //
+    int id1 = compDim[idim][0]; // 1st fixed dim
+    int id2 = compDim[idim][1]; // 2nd fixed dim
+    for (int i1=0;i1<kScp;i1++) {
+      xyz[ id1 ] = fBMin[id1] + kScl[i1]*( fBMax[id1]-fBMin[id1] );
+      for (int i2=0;i2<kScp;i2++) {
+	xyz[ id2 ] = fBMin[id2] + kScl[i2]*( fBMax[id2]-fBMin[id2] );
+	int* npt = GetNCNeeded(xyz,idim, dimMN,dimMX, Prec, npdTst[idim]); // npoints for Bx,By,Bz
+	for (int ib=0;ib<3;ib++) if (npt[ib]>gridBC[ib][idim]) gridBC[ib][idim] = npt[ib];
+      }
+    }
+  }
+}
+
+/*
 void AliCheb3D::EstimateNPoints(float Prec, int gridBC[3][3])
 {
   // Estimate number of points to generate a training data
@@ -837,4 +873,41 @@ int* AliCheb3D::GetNCNeeded(float xyz[3],int DimVar, float mn,float mx, float pr
   return retNC;
   //
 }
+*/
+
+
+int* AliCheb3D::GetNCNeeded(float xyz[3],int DimVar, float mn,float mx, float prec, Int_t npCheck)
+{
+  // estimate needed number of chebyshev coefs for given function description in DimVar dimension
+  // The values for two other dimensions must be set beforehand
+  //
+  static int retNC[3];
+  static int npChLast = 0;
+  static float *gridVal=0,*coefs=0;
+  if (npCheck<3) npCheck = 3;
+  if (npChLast<npCheck) {
+    if (gridVal) delete[] gridVal;
+    if (coefs)   delete[] coefs;
+    gridVal = new float[3*npCheck];
+    coefs   = new float[3*npCheck];
+    npChLast = npCheck;
+  }
+  //
+  float scale = mx-mn;
+  float offs  = mn + scale/2.0;
+  scale = 2./scale;
+  //
+  for (int i=0;i<3;i++) fArgsTmp[i] = xyz[i];
+  for (int i=0;i<npCheck;i++) {
+    fArgsTmp[DimVar] =  TMath::Cos( TMath::Pi()*(i+0.5)/npCheck)/scale+offs; // map to requested interval
+    EvalUsrFunction();
+    for (int ib=3;ib--;) gridVal[ib*npCheck + i] = fResTmp[ib];
+  } 
+  //
+  for (int ib=0;ib<3;ib++) retNC[ib] = AliCheb3D::CalcChebCoefs(&gridVal[ib*npCheck], npCheck, &coefs[ib*npCheck],prec);
+  return retNC;
+  //
+}
+
+
 #endif
