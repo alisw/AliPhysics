@@ -22,17 +22,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 
-#define TrackletsinTRD_cxx
-#include "TrackletsinTRD.h"
+#define AliTrackletsinTRD_cxx
+#include "AliTrackletsinTRD.h"
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
 
-void TrackletsinTRD::Loop()
+void AliTrackletsinTRD::Loop()
 {
     //   In a ROOT session, you can do:
-    //      Root > .L TrackletsinTRD.C
-    //      Root > TrackletsinTRD t
+    //      Root > .L AliTrackletsinTRD.C
+    //      Root > AliTrackletsinTRD t
     //      Root > t.GetEntry(12); // Fill t data members with entry number 12
     //      Root > t.Show();       // Show values of entry 12
     //      Root > t.Show(16);     // Read and show values of entry 16
@@ -125,11 +125,11 @@ void TrackletsinTRD::Loop()
             Long64_t ientry = LoadTree(jentry);
             if (ientry < 0) break;
             nb = fChain->GetEntry(jentry);   nbytes += nb;
-            xpos[layer]=xtrack;
-            ypos[layer]=ytrack;
+            xpos[flayer]=fxtrack;
+            ypos[flayer]=fytrack;
 
 
-            if(layer==5)
+            if(flayer==5)
             {
                 Float_t x[6]= {xpos[0],xpos[1],xpos[2],xpos[3],xpos[4],xpos[5]};
                 Float_t y[6]= {ypos[0],ypos[1],ypos[2],ypos[3],ypos[4],ypos[5]};
@@ -152,11 +152,11 @@ void TrackletsinTRD::Loop()
                 Float_t px;
                 Float_t py;
 
-                if(eventcounter==ev)
+                if(feventcounter==ev)
                 {
                     for(Int_t b=0;b<540;b++)
                     {
-                        if(b==dettracklet)
+                        if(b==fdettracklet)
                         {
                             Int_t counter_distcalc;
                             Float_t distance_sum=0;

@@ -1,50 +1,50 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
 // Fri Mar 20 09:42:44 2009 by ROOT version 5.21/01
-// from TTree TrackletsinTRD/TrackletsinTRD
+// from TTree AliTrackletsinTRD/AliTrackletsinTRD
 // found on file: TRD.DebugTrackingMultiplicity.root
 //////////////////////////////////////////////////////////
 
-#ifndef TrackletsinTRD_h
-#define TrackletsinTRD_h
+#ifndef ALITRACKLETSINTRD_h
+#define ALITRACKLETSINTRD_h
 
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
 
-class TrackletsinTRD {
+class AliTrackletsinTRD {
 public :
-   TTree          *fChain;   //!pointer to the analyzed TTree or TChain
+   TTree           *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
 
    // Declaration of leaf types
-   Int_t           standalone;
-   Int_t           eventcounter;
-   Int_t           layer;
-   Float_t         xtracklet;
-   Double_t        xtrack;
-   Float_t         ytracklet;
-   Double_t        ytrack;
-   Float_t         ztracklet;
-   Double_t        ztrack;
-   Int_t           num_tracklets;
-   Int_t           dettracklet;
+   Int_t           fstandalone;   //!flag is track reconstructed in TPC only or TPC+TRD
+   Int_t           feventcounter; //!event number
+   Int_t           flayer;        //!layer number
+   Float_t         fxtracklet;    //!x position of tracklet
+   Double_t        fxtrack;       //!x position of track
+   Float_t         fytracklet;    //!y position of tracklet
+   Double_t        fytrack;       //!y position of track
+   Float_t         fztracklet;    //!z position of tracklet
+   Double_t        fztrack;       //!z position of track
+   Int_t           fnumtracklets; //!number of tracklets
+   Int_t           fdettracklet;  //!detector number
 
    // List of branches
-   TBranch        *b_B0;   //!
-   TBranch        *b_B1;   //!
-   TBranch        *b_B2;   //!
-   TBranch        *b_B3;   //!
-   TBranch        *b_B4;   //!
-   TBranch        *b_B5;   //!
-   TBranch        *b_B6;   //!
-   TBranch        *b_B7;   //!
-   TBranch        *b_B8;   //!
-   TBranch        *b_B9;   //!
-   TBranch        *b_B10;  //!
+   TBranch        *fbB0;   //!
+   TBranch        *fbB1;   //!
+   TBranch        *fbB2;   //!
+   TBranch        *fbB3;   //!
+   TBranch        *fbB4;   //!
+   TBranch        *fbB5;   //!
+   TBranch        *fbB6;   //!
+   TBranch        *fbB7;   //!
+   TBranch        *fbB8;   //!
+   TBranch        *fbB9;   //!
+   TBranch        *fbB10;  //!
 
-   TrackletsinTRD(TTree *tree=0);
-   virtual ~TrackletsinTRD();
+   AliTrackletsinTRD(TTree *tree=0);
+   virtual ~AliTrackletsinTRD();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -52,12 +52,29 @@ public :
    virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
+
+
+   AliTrackletsinTRD (AliTrackletsinTRD& p):
+       fChain(p.fChain),
+       fbB0(p.fbB0),
+       fbB1(p.fbB1),
+       fbB2(p.fbB2),
+       fbB3(p.fbB3),
+       fbB4(p.fbB4),
+       fbB5(p.fbB5),
+       fbB6(p.fbB6),
+       fbB7(p.fbB7),
+       fbB8(p.fbB8),
+       fbB9(p.fbB9),
+       fbB10(p.fbB10)
+   {
+   }
+
 };
 
-#endif
+  
 
-#ifdef TrackletsinTRD_cxx
-TrackletsinTRD::TrackletsinTRD(TTree *tree)
+AliTrackletsinTRD::AliTrackletsinTRD(TTree *tree)
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -72,19 +89,19 @@ TrackletsinTRD::TrackletsinTRD(TTree *tree)
    Init(tree);
 }
 
-TrackletsinTRD::~TrackletsinTRD()
+AliTrackletsinTRD::~AliTrackletsinTRD()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-Int_t TrackletsinTRD::GetEntry(Long64_t entry)
+Int_t AliTrackletsinTRD::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t TrackletsinTRD::LoadTree(Long64_t entry)
+Long64_t AliTrackletsinTRD::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -99,7 +116,7 @@ Long64_t TrackletsinTRD::LoadTree(Long64_t entry)
    return centry;
 }
 
-void TrackletsinTRD::Init(TTree *tree)
+void AliTrackletsinTRD::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -115,21 +132,21 @@ void TrackletsinTRD::Init(TTree *tree)
    fCurrent = -1;
    fChain->SetMakeClass(1);
 
-   fChain->SetBranchAddress("standalone", &standalone, &b_B0);
-   fChain->SetBranchAddress("eventcounter", &eventcounter, &b_B1);
-   fChain->SetBranchAddress("layer", &layer, &b_B2);
-   fChain->SetBranchAddress("xtracklet", &xtracklet, &b_B3);
-   fChain->SetBranchAddress("xtrack", &xtrack, &b_B4);
-   fChain->SetBranchAddress("ytracklet", &ytracklet, &b_B5);
-   fChain->SetBranchAddress("ytrack", &ytrack, &b_B6);
-   fChain->SetBranchAddress("ztracklet", &ztracklet, &b_B7);
-   fChain->SetBranchAddress("ztrack", &ztrack, &b_B8);
-   fChain->SetBranchAddress("num_tracklets", &num_tracklets, &b_B9);
-   fChain->SetBranchAddress("dettracklet", &dettracklet, &b_B10);
+   fChain->SetBranchAddress("standalone", &fstandalone, &fbB0);
+   fChain->SetBranchAddress("eventcounter", &feventcounter, &fbB1);
+   fChain->SetBranchAddress("layer", &flayer, &fbB2);
+   fChain->SetBranchAddress("xtracklet", &fxtracklet, &fbB3);
+   fChain->SetBranchAddress("xtrack", &fxtrack, &fbB4);
+   fChain->SetBranchAddress("ytracklet", &fytracklet, &fbB5);
+   fChain->SetBranchAddress("ytrack", &fytrack, &fbB6);
+   fChain->SetBranchAddress("ztracklet", &fztracklet, &fbB7);
+   fChain->SetBranchAddress("ztrack", &fztrack, &fbB8);
+   fChain->SetBranchAddress("num_tracklets", &fnumtracklets, &fbB9);
+   fChain->SetBranchAddress("dettracklet", &fdettracklet, &fbB10);
    Notify();
 }
 
-Bool_t TrackletsinTRD::Notify()
+Bool_t AliTrackletsinTRD::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -140,18 +157,18 @@ Bool_t TrackletsinTRD::Notify()
    return kTRUE;
 }
 
-void TrackletsinTRD::Show(Long64_t entry)
+void AliTrackletsinTRD::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t TrackletsinTRD::Cut(Long64_t entry)
+Int_t AliTrackletsinTRD::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
 }
-#endif // #ifdef TrackletsinTRD_cxx
+#endif // #ifdef AliTrackletsinTRD_cxx
