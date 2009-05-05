@@ -15,12 +15,12 @@
  **************************************************************************/
 //--------------------------------------------------------------------//
 //                                                                    //
-// AliCFDataGrid Class                                        //
+// AliCFDataGrid Class                                                //
 // Class to handle observed data and correct them                     // 
 //                                                                    //
 // -- Author : S.Arcelli                                              //
 //                                                                    //
-//                                                                    //
+// substantially modified by r. vernet                                //
 //                                                                    //
 //--------------------------------------------------------------------//
 //
@@ -67,17 +67,17 @@ AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const Int_
 }
 //____________________________________________________________________
 AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const AliCFContainer &c) :  
-  AliCFGridSparse(name,title,c.GetNVar(),c.GetNBins(),c.GetBinLimits()),
+  AliCFGridSparse(name,title),
   fSelData(-1),
   fContainer(0x0)
 {
   //
   // main constructor
   //
-  SumW2();
-   //assign the container;
-  fContainer=&c;
 
+  //assign the container;
+  fContainer=&c;
+  fNVar = c.GetNVar();
 }
 //____________________________________________________________________
 AliCFDataGrid::AliCFDataGrid(const AliCFDataGrid& data) :   AliCFGridSparse(),
@@ -114,22 +114,12 @@ void AliCFDataGrid::SetMeasured(Int_t istep)
   //
   // Deposit observed data over the grid
   //
-  Int_t nEmptyBins=0;
-  fSelData=istep;
-  //Initially, set the corrected data to the measured data
-  for(Int_t i=0;i<fNDim;i++){
-    Float_t meas=fContainer->GetGrid(fSelData)->GetElement(i);
-    Float_t dmeas=fContainer->GetGrid(fSelData)->GetElementError(i);
-    SetElement(i,meas);
-    SetElementError(i,dmeas);
-    if(meas <=0)nEmptyBins++;
-  }
-
-  //fNentriesTot=fNDim;
-  GetGrid()->SetEntries(GetData()->GetEntries());
-  //
-
-  AliInfo(Form("retrieving measured data from Container %s at selection step %i: %i empty bins were found.",fContainer->GetName(),fSelData,nEmptyBins));
+  
+  fSelData = istep ;
+  //simply clones the container's data at specified step
+  fData = (THnSparse*) ((AliCFGridSparse*)fContainer->GetGrid(istep))->GetGrid()->Clone();
+  SumW2();
+  AliInfo(Form("retrieving measured data from Container %s at selection step %i.",fContainer->GetName(),fSelData));
 } 
 //____________________________________________________________________
 void AliCFDataGrid::ApplyEffCorrection(const AliCFEffGrid &c)
@@ -142,36 +132,8 @@ void AliCFDataGrid::ApplyEffCorrection(const AliCFEffGrid &c)
     AliInfo("Different number of variables, cannot apply correction");
     return;
   }
-  if(c.GetNDim()!=fNDim){
-    AliInfo("Different number of dimension, cannot apply correction");
-    return;
-  }
-
-  //Get the data
-  Int_t ncorr=0;    
-  Int_t nnocorr=0;    
-  Float_t eff,deff,unc,dunc,corr,dcorr;
-  //Apply the correction
-  for(Int_t i=0;i<fNDim;i++){
-    eff =c.GetElement(i);    
-    deff =c.GetElementError(i);    
-    unc =GetElement(i);    
-    dunc =GetElementError(i);    
-    
-    if(eff>0 && unc>0){      
-      ncorr++;
-      corr=unc/eff;
-      dcorr=TMath::Sqrt(dunc*dunc/unc/unc+deff*deff/eff/eff)*corr;
-      SetElement(i,corr);
-      SetElementError(i,dcorr);
-    } else{
-      if(unc>0)nnocorr++;
-      SetElement(i,0);
-      SetElementError(i,0);
-    }
-  }
-  AliInfo(Form("correction applied for %i cells in correction matrix of Container %s, having entries in Data Container %s.",ncorr,c.GetName(),GetName()));
-  AliInfo(Form("No correction applied for %i empty bins in correction matrix of Container %s, having entries in Data Container %s. Their content in the corrected data container was set to zero",nnocorr,c.GetName(),GetName()));
+  Divide(&c);
+  AliInfo(Form("correction applied on data grid %s with efficiency %s.",GetName(),c.GetName()));
 }
 //____________________________________________________________________
 void AliCFDataGrid::ApplyBGCorrection(const AliCFDataGrid &c)
@@ -184,35 +146,16 @@ void AliCFDataGrid::ApplyBGCorrection(const AliCFDataGrid &c)
     AliInfo("Different number of variables, cannot apply correction");
     return;
   }
-  if(c.GetNDim()!=fNDim){
-    AliInfo("Different number of dimension, cannot apply correction");
-    return;
-  }
-
-  //Get the data
-  Float_t bkg,dbkg,unc,dunc,corr,dcorr;
-
-  //Apply the correction
-
-  for(Int_t i=0;i<fNDim;i++){
-    bkg =c.GetElement(i);    
-    dbkg =c.GetElementError(i);    
-    unc =GetElement(i);    
-    dunc =GetElementError(i);    
-    corr=unc-bkg;
-    dcorr=TMath::Sqrt(unc+bkg); //stat err only...
-    SetElement(i,corr);
-    SetElementError(i,dcorr);
-      
-  }
+  Add(&c);
+  AliInfo(Form("background %s subtracted from data %s.",c.GetName(),GetName()));
 }
 //____________________________________________________________________
-void AliCFDataGrid::Copy(TObject& eff) const
+void AliCFDataGrid::Copy(TObject& c) const
 {
   // copy function
 
-  Copy(eff);
-  AliCFDataGrid& target = (AliCFDataGrid &) eff;
+  Copy(c);
+  AliCFDataGrid& target = (AliCFDataGrid &) c;
   target.fContainer=fContainer;
   target.fSelData=fSelData;
 

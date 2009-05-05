@@ -270,7 +270,9 @@ AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, Int_t* vars, Double_t* va
   //
   Int_t* steps = new Int_t[fNStep];
   for (Int_t iStep=0;iStep<fNStep;iStep++) steps[iStep]=iStep;
-  return MakeSlice(nVars,vars,varMin,varMax,fNStep,steps);
+  AliCFContainer* out = MakeSlice(nVars,vars,varMin,varMax,fNStep,steps);
+  delete [] steps ;
+  return out;
 }
 
 //____________________________________________________________________
@@ -285,24 +287,38 @@ AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, Int_t* vars, Double_t* va
   if (nVars < 1 || nVars > fNVar)   AliError("Bad number of dimensions required for the slice");
   if (nSteps< 1 || nSteps> fNStep)  AliError("Bad number of steps required for the slice");
 
+  AliInfo(Form("Making a slice in %d dimension(s)",nVars));
+
+  // create the output grids
+  AliCFVGrid** grids = new AliCFVGrid*[nSteps] ;
+  for (Int_t iStep=0; iStep<nSteps; iStep++) grids[iStep] = fGrid[steps[iStep]]->Project(nVars,vars,varMin,varMax);
+  
+  TAxis ** axis = new TAxis*[nVars];
+  for (Int_t iVar=0; iVar<nVars; iVar++) axis[iVar] = ((AliCFGridSparse*)grids[0])->GetGrid()->GetAxis(iVar); //same axis for every grid
+
   //define new binning for new container
   Int_t* bins=new Int_t[nVars];
-  for (Int_t iVar=0; iVar<nVars; iVar++) bins[iVar] = fNVarBins[vars[iVar]];
+  for (Int_t iVar=0; iVar<nVars; iVar++) bins[iVar] = axis[iVar]->GetNbins();
+
   AliCFContainer* out = new AliCFContainer(fName,fTitle,nSteps,nVars,bins);
 
   //set the bin limits
   for (Int_t iVar=0; iVar<nVars; iVar++) {
-    Double_t *array = new Double_t[fNVarBins[vars[iVar]]+1];
-    GetBinLimits(vars[iVar],array);
+    Int_t nBins = bins[iVar];
+    Double_t *array = new Double_t[nBins+1];
+    for (Int_t iBin=1; iBin<=nBins; iBin++) {
+      array[iBin-1] = axis[iVar]->GetBinLowEdge(iBin);
+    }
+    array[nBins] = axis[iVar]->GetBinUpEdge(nBins);
     out->SetBinLimits(iVar,array);
-    delete array;
+    delete [] array;
   }
 
   //set grid for the given steps
-  AliInfo(Form("Making a slice in %d dimension(s)",nVars));
-  for (Int_t iStep=0; iStep<nSteps; iStep++) out->SetGrid(iStep,fGrid[steps[iStep]]->Project(nVars,vars,varMin,varMax));
+  for (Int_t iStep=0; iStep<nSteps; iStep++) out->SetGrid(iStep,grids[iStep]);
 
   delete bins;
+  delete [] axis ;
   return out;
 }
 

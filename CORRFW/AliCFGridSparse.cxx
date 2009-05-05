@@ -414,7 +414,7 @@ void AliCFGridSparse::SumW2()
 }
 
 //____________________________________________________________________
-void AliCFGridSparse::Add(AliCFVGrid* aGrid, Double_t c)
+void AliCFGridSparse::Add(const AliCFVGrid* aGrid, Double_t c)
 {
   //
   //add aGrid to the current one
@@ -425,20 +425,14 @@ void AliCFGridSparse::Add(AliCFVGrid* aGrid, Double_t c)
     AliInfo("Different number of variables, cannot add the grids");
     return;
   } 
-  if(aGrid->GetNDim()!=fNDim){
-    AliInfo("Different number of dimensions, cannot add the grids!");
-    return;
-  } 
   
   if(!fSumW2  && aGrid->GetSumW2())SumW2();
 
-
   fData->Add(((AliCFGridSparse*)aGrid)->GetGrid(),c);
-
 }
 
 //____________________________________________________________________
-void AliCFGridSparse::Add(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Double_t c2)
+void AliCFGridSparse::Add(const AliCFVGrid* aGrid1, const AliCFVGrid* aGrid2, Double_t c1,Double_t c2)
 {
   //
   //Add aGrid1 and aGrid2 and deposit the result into the current one
@@ -446,10 +440,6 @@ void AliCFGridSparse::Add(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Do
 
   if(fNVar!=aGrid1->GetNVar()|| fNVar!=aGrid2->GetNVar()){
     AliInfo("Different number of variables, cannot add the grids");
-    return;
-  } 
-  if(fNDim!=aGrid1->GetNDim()|| fNDim!=aGrid2->GetNDim()){
-    AliInfo("Different number of dimensions, cannot add the grids!");
     return;
   } 
   
@@ -463,7 +453,7 @@ void AliCFGridSparse::Add(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Do
 }
 
 //____________________________________________________________________
-void AliCFGridSparse::Multiply(AliCFVGrid* aGrid, Double_t c)
+void AliCFGridSparse::Multiply(const AliCFVGrid* aGrid, Double_t c)
 {
   //
   // Multiply aGrid to the current one
@@ -472,10 +462,6 @@ void AliCFGridSparse::Multiply(AliCFVGrid* aGrid, Double_t c)
 
   if(aGrid->GetNVar()!=fNVar){
     AliInfo("Different number of variables, cannot multiply the grids");
-    return;
-  } 
-  if(aGrid->GetNDim()!=fNDim){
-    AliInfo("Different number of dimensions, cannot multiply the grids!");
     return;
   } 
   
@@ -489,7 +475,7 @@ void AliCFGridSparse::Multiply(AliCFVGrid* aGrid, Double_t c)
 }
 
 //____________________________________________________________________
-void AliCFGridSparse::Multiply(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Double_t c2)
+void AliCFGridSparse::Multiply(const AliCFVGrid* aGrid1, const AliCFVGrid* aGrid2, Double_t c1,Double_t c2)
 {
   //
   //Multiply aGrid1 and aGrid2 and deposit the result into the current one
@@ -497,10 +483,6 @@ void AliCFGridSparse::Multiply(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t 
 
   if(fNVar!=aGrid1->GetNVar()|| fNVar!=aGrid2->GetNVar()){
     AliInfo("Different number of variables, cannot multiply the grids");
-    return;
-  } 
-  if(fNDim!=aGrid1->GetNDim()|| fNDim!=aGrid2->GetNDim()){
-    AliInfo("Different number of dimensions, cannot multiply the grids!");
     return;
   } 
   
@@ -518,7 +500,7 @@ void AliCFGridSparse::Multiply(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t 
 
 
 //____________________________________________________________________
-void AliCFGridSparse::Divide(AliCFVGrid* aGrid, Double_t c)
+void AliCFGridSparse::Divide(const AliCFVGrid* aGrid, Double_t c)
 {
   //
   // Divide aGrid to the current one
@@ -527,10 +509,6 @@ void AliCFGridSparse::Divide(AliCFVGrid* aGrid, Double_t c)
 
   if(aGrid->GetNVar()!=fNVar){
     AliInfo("Different number of variables, cannot divide the grids");
-    return;
-  } 
-  if(aGrid->GetNDim()!=fNDim){
-    AliInfo("Different number of dimensions, cannot divide the grids!");
     return;
   } 
   
@@ -544,7 +522,7 @@ void AliCFGridSparse::Divide(AliCFVGrid* aGrid, Double_t c)
 }
 
 //____________________________________________________________________
-void AliCFGridSparse::Divide(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Double_t c2, Option_t *option)
+void AliCFGridSparse::Divide(const AliCFVGrid* aGrid1, const AliCFVGrid* aGrid2, Double_t c1,Double_t c2, Option_t *option)
 {
   //
   //Divide aGrid1 and aGrid2 and deposit the result into the current one
@@ -555,10 +533,10 @@ void AliCFGridSparse::Divide(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1
     AliInfo("Different number of variables, cannot divide the grids");
     return;
   } 
-  if(fNDim!=aGrid1->GetNDim()|| fNDim!=aGrid2->GetNDim()){
-    AliInfo("Different number of dimensions, cannot divide the grids!");
-    return;
-  } 
+//   if(fNDim!=aGrid1->GetNDim()|| fNDim!=aGrid2->GetNDim()){
+//     AliInfo("Different number of dimensions, cannot divide the grids!");
+//     return;
+//   } 
   
   if(!fSumW2  && (aGrid1->GetSumW2() || aGrid2->GetSumW2()))SumW2();
 

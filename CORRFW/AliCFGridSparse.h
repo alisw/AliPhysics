@@ -63,12 +63,12 @@ class AliCFGridSparse : public AliCFVGrid
   //basic operations
 
   virtual void SumW2();
-  virtual void Add(AliCFVGrid* aGrid, Double_t c=1.);
-  virtual void Add(AliCFVGrid* aGrid1 ,AliCFVGrid* aGrid2, Double_t c1=1.,Double_t c2=1.);
-  virtual void Multiply(AliCFVGrid* aGrid, Double_t c=1.);
-  virtual void Multiply(AliCFVGrid* aGrid1,AliCFVGrid* aGrid2, Double_t c1=1.,Double_t c2=1.);
-  virtual void Divide(AliCFVGrid* aGrid, Double_t c=1.);
-  virtual void Divide(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1=1., Double_t c2=1.,Option_t *option=0);
+  virtual void Add(const AliCFVGrid* aGrid, Double_t c=1.);
+  virtual void Add(const AliCFVGrid* aGrid1 ,const AliCFVGrid* aGrid2, Double_t c1=1.,Double_t c2=1.);
+  virtual void Multiply(const AliCFVGrid* aGrid, Double_t c=1.);
+  virtual void Multiply(const AliCFVGrid* aGrid1,const AliCFVGrid* aGrid2, Double_t c1=1.,Double_t c2=1.);
+  virtual void Divide(const AliCFVGrid* aGrid, Double_t c=1.);
+  virtual void Divide(const AliCFVGrid* aGrid1, const AliCFVGrid* aGrid2, Double_t c1=1., Double_t c2=1.,Option_t *option=0);
 
   virtual void Rebin(const Int_t* group);
   virtual void SetGrid(THnSparse* grid) {fData=grid;}

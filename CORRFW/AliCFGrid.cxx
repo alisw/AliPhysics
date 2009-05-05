@@ -817,7 +817,7 @@ TH1D *AliCFGrid::Slice(Int_t ivar, Double_t *varMin, Double_t* varMax) const
 
 
 //____________________________________________________________________
-void AliCFGrid::Add(AliCFVGrid* aGrid, Double_t c)
+void AliCFGrid::Add(const AliCFVGrid* aGrid, Double_t c)
 {
   //
   //add aGrid to the current one
@@ -851,7 +851,7 @@ void AliCFGrid::Add(AliCFVGrid* aGrid, Double_t c)
   }
 }
 //____________________________________________________________________
-void AliCFGrid::Add(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Double_t c2)
+void AliCFGrid::Add(const AliCFVGrid* aGrid1, const AliCFVGrid* aGrid2, Double_t c1,Double_t c2)
 {
   //
   //add aGrid1 and aGrid2
@@ -890,7 +890,7 @@ void AliCFGrid::Add(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Double_t
   }
 }
 //____________________________________________________________________
-void AliCFGrid::Multiply(AliCFVGrid* aGrid, Double_t c)
+void AliCFGrid::Multiply(const AliCFVGrid* aGrid, Double_t c)
 {
   //
   //multiply grid aGrid by the current one
@@ -929,7 +929,7 @@ void AliCFGrid::Multiply(AliCFVGrid* aGrid, Double_t c)
   }
 }
 //____________________________________________________________________
-void AliCFGrid::Multiply(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1, Double_t c2)
+void AliCFGrid::Multiply(const AliCFVGrid* aGrid1, const AliCFVGrid* aGrid2, Double_t c1, Double_t c2)
 {
   //
   //multiply grids aGrid1 and aGrid2
@@ -967,7 +967,7 @@ void AliCFGrid::Multiply(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1, Do
   }
 }
 //____________________________________________________________________
-void AliCFGrid::Divide(AliCFVGrid* aGrid, Double_t c)
+void AliCFGrid::Divide(const AliCFVGrid* aGrid, Double_t c)
 {
   //
   //divide current grid by grid aGrid
@@ -1009,7 +1009,7 @@ void AliCFGrid::Divide(AliCFVGrid* aGrid, Double_t c)
   }
 }
 //____________________________________________________________________
-void AliCFGrid::Divide(AliCFVGrid* aGrid1, AliCFVGrid* aGrid2, Double_t c1,Double_t c2, Option_t *option)
+void AliCFGrid::Divide(const AliCFVGrid* aGrid1, const AliCFVGrid* aGrid2, Double_t c1,Double_t c2, Option_t *option)
 {
   //
   //divide grids aGrid1,aGrid2

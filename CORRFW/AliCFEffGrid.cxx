@@ -111,6 +111,9 @@ void AliCFEffGrid::CalculateEfficiency(Int_t istep1,Int_t istep2, Option_t *opti
   // Calculate the efficiency matrix and its error between selection
   // Steps istep1 and istep2
   //
+  // 'option' is used as an argument for THnSparse::Divide
+  // default is "B" : binomial error calculation
+  //
 
   fSelNum=istep1;
   fSelDen=istep2;
@@ -121,19 +124,7 @@ void AliCFEffGrid::CalculateEfficiency(Int_t istep1,Int_t istep2, Option_t *opti
   this->SumW2();
   this->Divide(num,den,1.,1.,option);
 
-  Int_t nEmptyBinsNum=0;
-  Int_t nEmptyBinsNumAndDen=0;
-  for(Int_t iel=0;iel<fNDim;iel++){
-    if(den->GetElement(iel)>0){
-      if(num->GetElement(iel)==0)nEmptyBinsNum++; //num==0,den!=0
-    }
-    else{
-      nEmptyBinsNumAndDen++;
-    }
-  }    
-  // Some monitoring printout:
-  AliInfo(Form("Efficiency calculated for steps %i and %i: %i empty bins in the numerator && !denominator and %i empty bins in numerator && denominator were found.",fSelNum,fSelDen,nEmptyBinsNumAndDen,nEmptyBinsNum));
-  AliInfo(Form("The correction map contains %i empty bins ",nEmptyBinsNum+nEmptyBinsNumAndDen));
+  AliInfo(Form("Efficiency calculated for steps %i and %i.",fSelNum,fSelDen));
 } 
 //_____________________________________________________________________
 Double_t AliCFEffGrid::GetAverage() const 
@@ -145,13 +136,14 @@ Double_t AliCFEffGrid::GetAverage() const
   Double_t val=0;
   Double_t valnum=0;
   Double_t valden=0;
-  for(Int_t i=0;i<fNDim;i++){
-    valnum+=GetNum()->GetElement(i);
-    valden+=GetDen()->GetElement(i);
-  }
-  if(valden>0)val=valnum/valden;
-  AliInfo(Form(" The Average Efficiency = %f ",val)); 
 
+  THnSparse* num = ((AliCFGridSparse*)GetNum())->GetGrid() ;
+  THnSparse* den = ((AliCFGridSparse*)GetDen())->GetGrid() ;
+
+  for (Long_t iBin=0; iBin<num->GetNbins(); iBin++) valnum+=num->GetBinContent(iBin);
+  for (Long_t iBin=0; iBin<den->GetNbins(); iBin++) valden+=den->GetBinContent(iBin);
+  if (valden>0) val=valnum/valden;
+  AliInfo(Form(" The Average Efficiency = %f ",val)); 
   return val;
 } 
 //_____________________________________________________________________
@@ -159,8 +151,7 @@ Double_t AliCFEffGrid::GetAverage(Double_t *varMin, Double_t* varMax ) const
 {
   //
   // Get ave efficiency in a range
-  //
-
+  // (may not work properly, should be modified)
 
   Double_t val=0;
   Int_t *indexMin = new Int_t[fNVar];
