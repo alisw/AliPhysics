@@ -58,7 +58,8 @@ ClassImp(AliHLTTPCHWCFDataReverterComponent)
     fLastRow(0),
     fNTimeBins(0),
     fVectorInitialized(kFALSE),
-    fMapping(NULL)
+    fMapping(NULL),
+    fInterleave(kTRUE)
 {
   // see header file for class documentation
   // or
@@ -154,6 +155,12 @@ int AliHLTTPCHWCFDataReverterComponent::DoInit( int argc, const char** argv )
       i+=2;
       continue;
     }
+    // -- number of timebins
+    if ( !strcmp( argv[i], "-interleave-off" )) {
+      fInterleave = kFALSE;
+      i++;
+      continue;
+    }
      
     HLTError("HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
 
@@ -210,12 +217,13 @@ void AliHLTTPCHWCFDataReverterComponent::InitializePadArray(){
     AliHLTTPCPadVector tmpRow;
     for(Int_t j=0;j<fNumberOfPadsInRow[i];j++){
       AliHLTTPCPad *tmpPad = new AliHLTTPCPad();
-      if(fFirstPadHigh[i] != 0){
+      if(fFirstPadHigh[i] == 0){
 	if(fMapping->GetHwAddress(i,j) > 2047){
 	  fFirstPadHigh[i]=j;
 	}
       }
       tmpPad->SetID(i,j);
+      tmpPad->SetDataToDefault();
       tmpRow.push_back(tmpPad);
     }
     fRowPadVector.push_back(tmpRow);
@@ -314,6 +322,14 @@ int AliHLTTPCHWCFDataReverterComponent::DoEvent( const AliHLTComponentEventData&
     if( iter->fSize > sizeof(AliRawDataHeader )){
   
       AliHLTAltroEncoder *altroEncoder = new AliHLTAltroEncoder;
+      altroEncoder->SetUse32BitFormat(kTRUE);
+      Int_t ddlno=768;
+      if (patch>1) ddlno+=72+4*slice+(patch-2);
+      else ddlno+=2*slice+patch;
+      altroEncoder->SetDDLid(ddlno);
+      altroEncoder->SetSlice(slice);
+      altroEncoder->SetPartition(patch);
+      
       altroEncoder->SetBuffer(outputPtr,capacity); //tests if one overwrite the buffer is done in the encoder
 
       // set CDH from the beginning of buffer
@@ -331,52 +347,79 @@ int AliHLTTPCHWCFDataReverterComponent::DoEvent( const AliHLTComponentEventData&
       altroEncoder->SetRCUTrailer(RCUTrailer, RCUTrailerSize);
 
       for(Int_t row = 0; row< fNumberOfRows;row++){
-	Int_t padHigh=fFirstPadHigh[row];
 
-	Int_t padLowIndex=0;
-	Int_t padHighIndex= padHigh;
-	  
-	while(padLowIndex < padHigh || padHighIndex < fNumberOfPadsInRow[row]){
+	if(fInterleave == kFALSE){
 	  Int_t currentTime = 0;
 	  Int_t bunchSize = 0;
-	  //add the data from low side
-	  if(padLowIndex < padHigh){
-	    AliHLTTPCPad * lowPad= fRowPadVector[row][padLowIndex];
-	    while(lowPad->GetNextGoodSignal(currentTime, bunchSize)){
-	      for(Int_t i=0;i<bunchSize;i++){
-		if (altroEncoder->AddSignal((AliHLTUInt16_t)(lowPad->GetDataSignal(currentTime+i)),(AliHLTUInt16_t)(currentTime+i))<0) {
-		  HLTWarning("can not add channel: slice %d, partition %d, hw address %d, row %d, pad %d, time %d, bunch size %d",
-			     slice, patch, fMapping->GetHwAddress(row,padLowIndex), row, padLowIndex, currentTime+i, bunchSize);
-		  break;
+	  for(Int_t ipad=0;ipad<fNumberOfPadsInRow[row];ipad++){
+	    AliHLTTPCPad * pad = fRowPadVector[row][ipad];
+	    if(pad->GetNAddedSignals() > 0){
+	      while(pad->GetNextGoodSignal(currentTime, bunchSize)){
+		for(Int_t i=bunchSize-1;i>=0;i--){
+		  if (altroEncoder->AddSignal((AliHLTUInt16_t)(pad->GetDataSignal(currentTime+i)),(AliHLTUInt16_t)(currentTime+i))<0) {
+		    HLTWarning("can not add channel: slice %d, partition %d, hw address %d, row %d, pad %d, time %d, bunch size %d Charge %d",
+			       slice, patch, fMapping->GetHwAddress(row,ipad), row, ipad, currentTime+i, bunchSize,pad->GetDataSignal(currentTime+i));
+		    break;
+		  }
 		}
 	      }
+	      altroEncoder->SetChannel(fMapping->GetHwAddress(row,ipad));
+	      currentTime = 0;
+	      bunchSize = 0;
 	    }
-	    altroEncoder->SetChannel(fMapping->GetHwAddress(row,padLowIndex));
 	  }
-	  currentTime = 0;
-	  bunchSize = 0;
-	  //add the data from the high side
-	  if(padHighIndex < fNumberOfPadsInRow[row]){
-	    AliHLTTPCPad * highPad= fRowPadVector[row][padHighIndex];
-	    while(highPad->GetNextGoodSignal(currentTime, bunchSize)){
-	      for(Int_t i=0;i<bunchSize;i++){
-		if (altroEncoder->AddSignal((AliHLTUInt16_t)(highPad->GetDataSignal(currentTime+i)),(AliHLTUInt16_t)(currentTime+i))<0) {
-		  HLTWarning("can not add channel: slice %d, partition %d, hw address %d, row %d, pad %d, time %d, bunch size %d",
-			     slice, patch, fMapping->GetHwAddress(row,padHighIndex), row, padHighIndex, currentTime+i, bunchSize);
-		  break;
-		}
-	      }
-	    }
-	    altroEncoder->SetChannel(fMapping->GetHwAddress(row,padHighIndex));
-	  }
-	  padLowIndex++;
-	  padHighIndex++;
 	}
-      }
-	
-      altroEncoder->Revert40BitWords(sizeof(AliRawDataHeader),RCUTrailerSize);
-
+	else{
+	  Int_t padHigh=fFirstPadHigh[row];
+	  
+	  Int_t padLowIndex=0;
+	  Int_t padHighIndex= padHigh;
+	  
+	  while(padLowIndex < padHigh || padHighIndex < fNumberOfPadsInRow[row]){
+	    Int_t currentTime = 0;
+	    Int_t bunchSize = 0;
+	    //add the data from low side
+	    if(padLowIndex < padHigh){
+	      AliHLTTPCPad * lowPad= fRowPadVector[row][padLowIndex];
+	      if(lowPad->GetNAddedSignals()>0){
+		while(lowPad->GetNextGoodSignal(currentTime, bunchSize)){
+		  for(Int_t i=bunchSize-1;i>=0;i--){
+		    if (altroEncoder->AddSignal((AliHLTUInt16_t)(lowPad->GetDataSignal(currentTime+i)),(AliHLTUInt16_t)(currentTime+i))<0) {
+		      HLTWarning("can not add channel: slice %d, partition %d, hw address %d, row %d, pad %d, time %d, bunch size %d",
+				 slice, patch, fMapping->GetHwAddress(row,padLowIndex), row, padLowIndex, currentTime+i, bunchSize);
+		      break;
+		    }
+		  }
+		}
+		altroEncoder->SetChannel(fMapping->GetHwAddress(row,padLowIndex));
+	      }
+	    }
+	    currentTime = 0;
+	    bunchSize = 0;
+	    //add the data from the high side
+	    if(padHighIndex < fNumberOfPadsInRow[row]){
+	      AliHLTTPCPad * highPad= fRowPadVector[row][padHighIndex];
+	      if(highPad->GetNAddedSignals()>0){
+		while(highPad->GetNextGoodSignal(currentTime, bunchSize)){
+		  for(Int_t i=bunchSize-1;i>=0;i--){
+		    if (altroEncoder->AddSignal((AliHLTUInt16_t)(highPad->GetDataSignal(currentTime+i)),(AliHLTUInt16_t)(currentTime+i))<0) {
+		      HLTWarning("can not add channel: slice %d, partition %d, hw address %d, row %d, pad %d, time %d, bunch size %d",
+				 slice, patch, fMapping->GetHwAddress(row,padHighIndex), row, padHighIndex, currentTime+i, bunchSize);
+		      break;
+		    }
+		  }
+		}
+	      }
+	      altroEncoder->SetChannel(fMapping->GetHwAddress(row,padHighIndex));
+	    }
+	    padLowIndex++;
+	    padHighIndex++;
+	  }
+	}
+      }	
+      
       int sizeOfData=altroEncoder->SetLength();
+      
 
       if (sizeOfData<0) {
 	HLTError("data encoding failed");
