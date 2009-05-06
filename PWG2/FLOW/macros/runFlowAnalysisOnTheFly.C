@@ -7,9 +7,9 @@
 // RUN SETTINGS
 // flow analysis method can be: (set to kTRUE or kFALSE)
 Bool_t SP    = kTRUE;
-Bool_t LYZ1  = kFALSE;
+Bool_t LYZ1  = kTRUE;
 Bool_t LYZ2  = kFALSE;
-Bool_t LYZEP = kTRUE;
+Bool_t LYZEP = kFALSE;
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
 Bool_t FQD   = kTRUE;
