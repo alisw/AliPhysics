@@ -9,7 +9,7 @@ void rec() {
 			  Form("local://%s",gSystem->pwd()));
   reco.SetRunQA("ALL:ALL") ;
   
-  reco.SetQARefefaultStorage("local://$ALICE_ROOT/QAref") ;
+  reco.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     reco.SetQACycles(det, 999) ;
