@@ -63,51 +63,51 @@ int main(int /*argc*/, const char** /*argv*/)
     {'T','R','D',' '}};
 
   test_t tests[] = {
-    {{kAliHLTDataTypeDDLRaw|"TRD "} , {testdt5          }  , 1 , true },
-    {{kAliHLTDataTypeDDLRaw|"TRD "} , {testdt5          }  , 0 , false},
+    {kAliHLTDataTypeDDLRaw|"TRD " , testdt5            , 1 , true },
+    {kAliHLTDataTypeDDLRaw|"TRD " , testdt5            , 0 , false},
 
-    {{kAliHLTDataTypeDDLRaw} , {testdt5          }  , 1 , true },
-    {{kAliHLTDataTypeDDLRaw} , {testdt5          }  , 0 , false},
+    {kAliHLTDataTypeDDLRaw , testdt5            , 1 , true },
+    {kAliHLTDataTypeDDLRaw , testdt5            , 0 , false},
 
-//     {{testdt1            } , {testdt1            }  , 1 , true },
-//     {{testdt1            } , {testdt1            }  , 0 , false},
+//     {testdt1             , testdt1              , 1 , true },
+//     {testdt1             , testdt1              , 0 , false},
 
-    {{testdt1            } , {testdt2            }  , 1 , false},
-    {{testdt1            } , {testdt2            }  , 0 , true },
+    {testdt1             , testdt2              , 1 , false},
+    {testdt1             , testdt2              , 0 , true },
 
-    {{testdt1            } , {testdt3            }  , 1 , true },
-    {{testdt1            } , {testdt3            }  , 0 , false},
+    {testdt1             , testdt3              , 1 , true },
+    {testdt1             , testdt3              , 0 , false},
 
-    {{testdt1            } , {testdt4            }  , 1 , true },
-    {{testdt1            } , {testdt4            }  , 0 , false},
+    {testdt1             , testdt4              , 1 , true },
+    {testdt1             , testdt4              , 0 , false},
 
-    {{testdt3            } , {testdt4            }  , 1 , true },
-    {{testdt3            } , {testdt4            }  , 0 , false},
+    {testdt3             , testdt4              , 1 , true },
+    {testdt3             , testdt4              , 0 , false},
 
-    {{testdt2            } , {testdt4            }  , 1 , false},
-    {{testdt2            } , {testdt4            }  , 0 , true },
+    {testdt2             , testdt4              , 1 , false},
+    {testdt2             , testdt4              , 0 , true },
 
-    {{testdt1            } , {kAliHLTAnyDataType }  , 1 , true },
-    {{testdt1            } , {kAliHLTAnyDataType }  , 0 , false},
+    {testdt1             , kAliHLTAnyDataType   , 1 , true },
+    {testdt1             , kAliHLTAnyDataType   , 0 , false},
 
     //
-    {{kAliHLTAnyDataType } , {kAliHLTAnyDataType }  , 1 , true },
-    {{kAliHLTAnyDataType } , {kAliHLTAnyDataType }  , 0 , false},
+    {kAliHLTAnyDataType  , kAliHLTAnyDataType   , 1 , true },
+    {kAliHLTAnyDataType  , kAliHLTAnyDataType   , 0 , false},
 
-    {{kAliHLTVoidDataType} , {kAliHLTAnyDataType }  , 1 , false},
-    {{kAliHLTVoidDataType} , {kAliHLTAnyDataType }  , 0 , true },
+    {kAliHLTVoidDataType , kAliHLTAnyDataType   , 1 , false},
+    {kAliHLTVoidDataType , kAliHLTAnyDataType   , 0 , true },
 
-    {{kAliHLTVoidDataType} , {kAliHLTVoidDataType}  , 1 , true },
-    {{kAliHLTVoidDataType} , {kAliHLTVoidDataType}  , 0 , false},
+    {kAliHLTVoidDataType , kAliHLTVoidDataType  , 1 , true },
+    {kAliHLTVoidDataType , kAliHLTVoidDataType  , 0 , false},
 
-    {{kAliHLTVoidDataType} , {testdt5}  , 1 , false },
-    {{kAliHLTVoidDataType} , {testdt5}  , 0 , true},
+    {kAliHLTVoidDataType , testdt5  , 1 , false },
+    {kAliHLTVoidDataType , testdt5  , 0 , true},
 
-    {{kAliHLTVoidDataType|"TRD "} , {kAliHLTVoidDataType}  , 1 , false },
-    {{kAliHLTVoidDataType|"TRD "} , {kAliHLTVoidDataType}  , 0 , true  },
+    {kAliHLTVoidDataType|"TRD " , kAliHLTVoidDataType  , 1 , false },
+    {kAliHLTVoidDataType|"TRD " , kAliHLTVoidDataType  , 0 , true  },
 
-    {{kAliHLTVoidDataType|"TRD "} , {testdt5}  , 1 , false },
-    {{kAliHLTVoidDataType|"TRD "} , {testdt5}  , 0 , true },
+    {kAliHLTVoidDataType|"TRD " , testdt5  , 1 , false },
+    {kAliHLTVoidDataType|"TRD " , testdt5  , 0 , true },
   };
 
   int result=0;
