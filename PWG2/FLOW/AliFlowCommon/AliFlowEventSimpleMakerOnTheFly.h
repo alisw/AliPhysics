@@ -19,7 +19,6 @@
 
 class TF1;
 class TRandom3;
-//class TUnuran;
 
 #include "AliFlowEventSimple.h"  //needed as include
     
@@ -45,6 +44,9 @@ class AliFlowEventSimpleMakerOnTheFly {
   
   void SetMultiplicitySpreadOfRP(Double_t multSpreadRP) {this->fMultiplicitySpreadOfRP = multSpreadRP;}
   Double_t GetMultiplicitySpreadOfRP() const {return this->fMultiplicitySpreadOfRP;} 
+  
+  void SetTemperatureOfRP(Double_t temperatureRP) {this->fTemperatureOfRP = temperatureRP;}
+  Double_t GetTemperatureOfRP() const {return this->fTemperatureOfRP;} 
   
   void SetUseConstantHarmonics(Bool_t const uch) {this->fUseConstantHarmonics = uch;};
   Bool_t GetUseConstantHarmonics() const {return this->fUseConstantHarmonics;};
@@ -88,7 +90,8 @@ class AliFlowEventSimpleMakerOnTheFly {
   // global parameters:
   Int_t     fMultiplicityOfRP;       // multiplicity of RPs
   Double_t  fMultiplicitySpreadOfRP; // multiplicity spread of RPs 
-  Bool_t    fUseConstantHarmonics;      // harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)     
+  Double_t  fTemperatureOfRP;        // "temperature" of RPs in GeV/c (increase this parameter to get more high pt RPs) 
+  Bool_t    fUseConstantHarmonics;   // harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)     
   // constant harmonics: 
   Double_t  fV1RP;                   // directed flow of RPs
   Double_t  fV1SpreadRP;             // directed flow spread of RPs
@@ -108,7 +111,6 @@ class AliFlowEventSimpleMakerOnTheFly {
   //................................................................................................
   
   TRandom3* fMyTRandom3; // our TRandom3 generator
-  //TUnuran*  fMyUnuran;   // our TUnuran generator
   Int_t     fCount;      // count number of events 
   Int_t     fNoOfLoops;  // number of times to use the same particle (nonflow)
 

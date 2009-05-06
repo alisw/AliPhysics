@@ -27,7 +27,6 @@
 #include "TMath.h"
 #include "TF1.h"
 #include "TRandom3.h"
-//#include "TUnuran.h"
 
 #include "AliFlowEventSimpleMakerOnTheFly.h"
 #include "AliFlowEventSimple.h"
@@ -42,6 +41,7 @@ ClassImp(AliFlowEventSimpleMakerOnTheFly)
 AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fMultiplicityOfRP(0),
   fMultiplicitySpreadOfRP(0.),
+  fTemperatureOfRP(0.),  
   fUseConstantHarmonics(kFALSE),
   fV1RP(0.), 
   fV1SpreadRP(0.), 
@@ -60,9 +60,6 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   // constructor
   fMyTRandom3 = new TRandom3(iseed);   
   gRandom->SetSeed(fMyTRandom3->Integer(65539));
- 
-  //fMyUnuran = new TUnuran(); 
-  //fMyUnuran->SetSeed(iseed);  
  }
 
 
@@ -84,13 +81,14 @@ AliFlowEventSimpleMakerOnTheFly::~AliFlowEventSimpleMakerOnTheFly()
 void AliFlowEventSimpleMakerOnTheFly::Init()
 {
  // define the pt spectra and phi distribution
- 
- // pt spectra:   
+
+ // pt spectra of pions (Boltzman):   
  Double_t dPtMin = 0.; // to be improved (move this to the body of contstructor?)
  Double_t dPtMax = 10.; // to be improved (move this to the body of contstructor?) 
   
- fPtSpectra = new TF1("fPtSpectra","[0]*x*TMath::Exp(-x*x)",dPtMin,dPtMax);  
+ fPtSpectra = new TF1("fPtSpectra","[0]*x*TMath::Exp(-pow(0.13957*0.13957+x*x,0.5)/[1])",dPtMin,dPtMax);  
  fPtSpectra->SetParName(0,"Multiplicity of RPs");  
+ fPtSpectra->SetParName(1,"Temperature of RPs");
  
  // phi distribution:
  Double_t dPhiMin = 0.; // to be improved (move this to the body of contstructor?)
@@ -115,6 +113,9 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   Int_t iNewMultiplicityOfRP = fMultiplicityOfRP;
   if(fMultiplicitySpreadOfRP>0.0) iNewMultiplicityOfRP = (Int_t)fMyTRandom3->Gaus(fMultiplicityOfRP,fMultiplicitySpreadOfRP);
   fPtSpectra->SetParameter(0,iNewMultiplicityOfRP);
+  
+  // set the 'temperature' of RPs
+  fPtSpectra->SetParameter(1,fTemperatureOfRP);  
   
   // sampling the reaction plane
   Double_t dMCReactionPlaneAngle = fMyTRandom3->Uniform(0.,TMath::TwoPi());

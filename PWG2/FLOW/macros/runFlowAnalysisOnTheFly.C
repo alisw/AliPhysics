@@ -8,8 +8,8 @@
 // flow analysis method can be: (set to kTRUE or kFALSE)
 Bool_t SP    = kTRUE;
 Bool_t LYZ1  = kTRUE;
-Bool_t LYZ2  = kFALSE;  
-Bool_t LYZEP = kFALSE; 
+Bool_t LYZ2  = kFALSE;
+Bool_t LYZEP = kFALSE;
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
 Bool_t FQD   = kTRUE;
@@ -17,18 +17,19 @@ Bool_t MCEP  = kTRUE;
 //--------------------------------------------------------------------------------------
 
 Bool_t bSameSeed = kFALSE; // use always the same seed for random generators
-Bool_t bConstantHarmonics = kTRUE; // harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)
+Bool_t bConstantHarmonics = kFALSE; // harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)
 
 // Set the event parameters:
 Int_t iLoops = 1; // number of times to use each track (to simulate nonflow)
 
 Int_t iMultiplicityOfRP = 500; // multiplicity of RPs
 Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs
+Double_t dTemperatureOfRP = 0.44; // 'temperature' of RPs in GeV/c (increase this parameter to get more high pt RPs) 
 
 //......................................................................................  
 // if you use (pt,eta) dependent harmonics (bConstantHarmonics = kFALSE):
 Double_t dPtCutOff = 2.0; // V2(pt) is linear up to pt = 2 GeV and for pt > 2 GeV it is constant: V2(pt) = dVRPMax
-Double_t dV2RPMax = 0.2; // maximum value of V2(pt) for pt >= 2GeV
+Double_t dV2RPMax = 0.20; // maximum value of V2(pt) for pt >= 2GeV
 //...................................................................................... 
 
 //......................................................................................  
@@ -48,7 +49,7 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR};
 // mLocalPAR: Analyze data on your computer using root + PAR files
 // mLocalSource: Analyze data on your computer using root + source files
                                           
-int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1000)
+int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=100)
 {
  TStopwatch timer;
  timer.Start();
@@ -189,6 +190,7 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1000)
  eventMakerOnTheFly->SetNoOfLoops(iLoops);
  eventMakerOnTheFly->SetMultiplicityOfRP(iMultiplicityOfRP);
  eventMakerOnTheFly->SetMultiplicitySpreadOfRP(dMultiplicitySpreadOfRP);
+ eventMakerOnTheFly->SetTemperatureOfRP(dTemperatureOfRP);
 
  eventMakerOnTheFly->SetV1RP(dV1RP);
  eventMakerOnTheFly->SetV1SpreadRP(dV1SpreadRP);  
