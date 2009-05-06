@@ -62,7 +62,6 @@ public:
   };
 
   AliTRDpidRefMaker();
-  AliTRDpidRefMaker(const Char_t *InFileNN, const Char_t *InFileLQ); 
 
   virtual ~AliTRDpidRefMaker();
   
@@ -88,7 +87,7 @@ public:
   void    MakeTrainingLists();                                 // build the training and the test list
   void    MonitorTraining(Int_t mombin);                       // monitor training process
   void    LoadContainer(const Char_t *InFileCont);
-  void    CreateGraphs();
+  //void    CreateGraphs();
 
 private:
   AliTRDpidRefMaker(const AliTRDpidRefMaker&);              // not implemented
