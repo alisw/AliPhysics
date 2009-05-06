@@ -318,8 +318,7 @@ void AliMultiplicityTask::Exec(Option_t*)
     {
       Int_t nESDTracks05 = 0;
       Int_t nESDTracks10 = 0;
-      Int_t nESDTracks15 = 0;
-      Int_t nESDTracks20 = 0;
+      Int_t nESDTracks14 = 0;
 
       for (Int_t i=0; i<inputCount; ++i)
       {
@@ -331,14 +330,11 @@ void AliMultiplicityTask::Exec(Option_t*)
         if (TMath::Abs(eta) < 1.0)
           nESDTracks10++;
 
-        if (TMath::Abs(eta) < 1.5)
-          nESDTracks15++;
-
-        if (TMath::Abs(eta) < 2.0)
-          nESDTracks20++;
+        if (TMath::Abs(eta) < 1.4)
+          nESDTracks14++;
       }
 
-      fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
+      fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks10, nESDTracks14);
     }
   }
   else if (fReadMC)   // Processing of MC information
@@ -419,8 +415,7 @@ void AliMultiplicityTask::Exec(Option_t*)
       // tracks in different eta ranges
       Int_t nMCTracks05 = 0;
       Int_t nMCTracks10 = 0;
-      Int_t nMCTracks15 = 0;
-      Int_t nMCTracks20 = 0;
+      Int_t nMCTracks14 = 0;
       Int_t nMCTracksAll = 0;
 
       // tracks per particle species, in |eta| < 2 (systematic study)
@@ -489,11 +484,8 @@ void AliMultiplicityTask::Exec(Option_t*)
         if (TMath::Abs(particle->Eta()) < 1.0)
           nMCTracks10 += particleWeight;
 
-        if (TMath::Abs(particle->Eta()) < 1.5)
-          nMCTracks15 += particleWeight;
-
-        if (TMath::Abs(particle->Eta()) < 2.0)
-          nMCTracks20 += particleWeight;
+        if (TMath::Abs(particle->Eta()) < 1.4)
+          nMCTracks14 += particleWeight;
 
         nMCTracksAll += particleWeight;
         
@@ -519,14 +511,13 @@ void AliMultiplicityTask::Exec(Option_t*)
         }
       } // end of mc particle
 
-      fMultiplicity->FillGenerated(vtxMC[2], eventTriggered, eventVertex, processType, (Int_t) nMCTracks05, (Int_t) nMCTracks10, (Int_t) nMCTracks15, (Int_t) nMCTracks20, (Int_t) nMCTracksAll);
+      fMultiplicity->FillGenerated(vtxMC[2], eventTriggered, eventVertex, processType, (Int_t) nMCTracks05, (Int_t) nMCTracks10, (Int_t) nMCTracks14, (Int_t) nMCTracksAll);
 
       if (eventTriggered && eventVertex)
       {
         Int_t nESDTracks05 = 0;
         Int_t nESDTracks10 = 0;
-        Int_t nESDTracks15 = 0;
-        Int_t nESDTracks20 = 0;
+        Int_t nESDTracks14 = 0;
 
         // tracks per particle species, in |eta| < 2 (systematic study)
         Int_t nESDTracksSpecies[7]; // (pi, K, p, other, nolabel, doublecount_prim, doublecount_all)
@@ -600,12 +591,8 @@ void AliMultiplicityTask::Exec(Option_t*)
           if (TMath::Abs(eta) < 1.0)
             nESDTracks10 += particleWeight;
 
-          if (TMath::Abs(eta) < 1.5)
-            nESDTracks15 += particleWeight;
-
-          if (TMath::Abs(eta) < 2.0)
-            nESDTracks20 += particleWeight;
-
+          if (TMath::Abs(eta) < 1.4)
+            nESDTracks14 += particleWeight;
 
           if (fParticleSpecies)
           {
@@ -788,16 +775,16 @@ void AliMultiplicityTask::Exec(Option_t*)
         delete[] foundPrimaries;
         delete[] foundPrimaries2;
 
-        if ((Int_t) nMCTracks15 > 10 && nESDTracks15 <= 3)
+        if ((Int_t) nMCTracks14 > 10 && nESDTracks14 <= 3)
         {
             TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-            printf("WARNING: Event %lld %s (vtx-z = %f, recon: %f, contrib: %d, res: %f) has %d generated and %d reconstructed...\n", tree->GetReadEntry(), tree->GetCurrentFile()->GetName(), vtxMC[2], vtx[2], vtxESD->GetNContributors(), vtxESD->GetZRes(), nMCTracks15, nESDTracks15);
+            printf("WARNING: Event %lld %s (vtx-z = %f, recon: %f, contrib: %d, res: %f) has %d generated and %d reconstructed...\n", tree->GetReadEntry(), tree->GetCurrentFile()->GetName(), vtxMC[2], vtx[2], vtxESD->GetNContributors(), vtxESD->GetZRes(), nMCTracks14, nESDTracks14);
         }
 
         // fill response matrix using vtxMC (best guess)
-        fMultiplicity->FillCorrection(vtxMC[2],  nMCTracks05,  nMCTracks10,  nMCTracks15,  nMCTracks20,  nMCTracksAll,  nESDTracks05,  nESDTracks10,  nESDTracks15,  nESDTracks20);
+        fMultiplicity->FillCorrection(vtxMC[2],  nMCTracks05,  nMCTracks10,  nMCTracks14,  nMCTracksAll,  nESDTracks05,  nESDTracks10, nESDTracks14);
 
-        fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
+        fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks10, nESDTracks14);
 
         if (fParticleSpecies)
           fParticleSpecies->Fill(vtxMC[2], nMCTracksSpecies[0], nMCTracksSpecies[1], nMCTracksSpecies[2], nMCTracksSpecies[3], nESDTracksSpecies[0], nESDTracksSpecies[1], nESDTracksSpecies[2], nESDTracksSpecies[3], nESDTracksSpecies[4], nESDTracksSpecies[5], nESDTracksSpecies[6]);

@@ -32,7 +32,7 @@ class TCollection;
 class AliMultiplicityCorrection : public TNamed {
   public:
     enum EventType { kTrVtx = 0, kMB, kINEL, kNSD };
-    enum { kESDHists = 4, kMCHists = 5, kCorrHists = 8, kQualityRegions = 3 };
+    enum { kESDHists = 3, kMCHists = 4, kCorrHists = 6, kQualityRegions = 3 };
 
     AliMultiplicityCorrection();
     AliMultiplicityCorrection(const Char_t* name, const Char_t* title);
@@ -42,10 +42,10 @@ class AliMultiplicityCorrection : public TNamed {
 
     virtual Long64_t Merge(TCollection* list);
 
-    void FillMeasured(Float_t vtx, Int_t measured05, Int_t measured10, Int_t measured15, Int_t measured20);
-    void FillGenerated(Float_t vtx, Bool_t triggered, Bool_t vertex, AliPWG0Helper::MCProcessType processType, Int_t generated05, Int_t generated10, Int_t generated15, Int_t generated20, Int_t generatedAll);
+    void FillMeasured(Float_t vtx, Int_t measured05, Int_t measured10, Int_t measured14);
+    void FillGenerated(Float_t vtx, Bool_t triggered, Bool_t vertex, AliPWG0Helper::MCProcessType processType, Int_t generated05, Int_t generated10, Int_t generated14, Int_t generatedAll);
 
-    void FillCorrection(Float_t vtx, Int_t generated05, Int_t generated10, Int_t generated15, Int_t generated20, Int_t generatedAll, Int_t measured05, Int_t measured10, Int_t measured15, Int_t measured20);
+    void FillCorrection(Float_t vtx, Int_t generated05, Int_t generated10, Int_t generated14, Int_t generatedAll, Int_t measured05, Int_t measured10, Int_t measured14);
 
     Bool_t LoadHistograms(const Char_t* dir = 0);
     void SaveHistograms(const char* dir = 0);
@@ -104,14 +104,14 @@ class AliMultiplicityCorrection : public TNamed {
     TH2* fCurrentCorrelation; //! current correlation
     TH1* fCurrentEfficiency;  //! current efficiency
 
-    TH2F* fMultiplicityESD[kESDHists]; // multiplicity histogram: vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.5, 2 (0..3)
+    TH2F* fMultiplicityESD[kESDHists]; // multiplicity histogram: vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.4 (0..2)
 
-    TH2F* fMultiplicityVtx[kMCHists];  // multiplicity histogram of events that have a reconstructed vertex : vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.5, 2, inf (0..4)
-    TH2F* fMultiplicityMB[kMCHists];   // multiplicity histogram of triggered events                        : vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.5, 2, inf (0..4)
-    TH2F* fMultiplicityINEL[kMCHists]; // multiplicity histogram of all (inelastic) events                  : vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.5, 2, inf (0..4)
-    TH2F* fMultiplicityNSD[kMCHists]; // multiplicity histogram of NSD events                  : vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.5, 2, inf (0..4)
+    TH2F* fMultiplicityVtx[kMCHists];  // multiplicity histogram of events that have a reconstructed vertex : vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.4, inf (0..3)
+    TH2F* fMultiplicityMB[kMCHists];   // multiplicity histogram of triggered events                        : vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.4, inf (0..3)
+    TH2F* fMultiplicityINEL[kMCHists]; // multiplicity histogram of all (inelastic) events                  : vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.4, inf (0..3)
+    TH2F* fMultiplicityNSD[kMCHists]; // multiplicity histogram of NSD events                  : vtx vs multiplicity; array: |eta| < 0.5, 1.0, 1.4, inf (0..3)
 
-    TH3F* fCorrelation[kCorrHists];              // vtx vs. (gene multiplicity (trig+vtx)) vs. (meas multiplicity); array: |eta| < 0.5, 1, 1.5, 2 (0..3 and 4..7), the first corrects to the eta range itself, the second to full phase space
+    TH3F* fCorrelation[kCorrHists];              // vtx vs. (gene multiplicity (trig+vtx)) vs. (meas multiplicity); array: |eta| < 0.5, 1, 1.4, (0..2 and 3..5), the first corrects to the eta range itself, the second to full phase space
 
     TH1F* fMultiplicityESDCorrected[kCorrHists]; // corrected histograms
 
@@ -129,7 +129,7 @@ class AliMultiplicityCorrection : public TNamed {
     AliMultiplicityCorrection(const AliMultiplicityCorrection&);
     AliMultiplicityCorrection& operator=(const AliMultiplicityCorrection&);
 
-  ClassDef(AliMultiplicityCorrection, 4);
+  ClassDef(AliMultiplicityCorrection, 5);
 };
 
 #endif

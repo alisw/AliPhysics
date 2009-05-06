@@ -17,6 +17,8 @@
 #include <TLegend.h>
 #include <TLine.h>
 #include <TMath.h>
+#include <TLegend.h>
+#include <TText.h>
 
 #include <AliLog.h>
 #include <AliESD.h>
@@ -530,7 +532,7 @@ void AliHighMultiplicitySelector::ReadHistograms(const char* filename)
   }
 }
 
-TH1* AliHighMultiplicitySelector::GetTriggerEfficiency(TH2* multVsLayer, Int_t cut)
+TH1* AliHighMultiplicitySelector::GetTriggerEfficiency(TH2* multVsLayer, Int_t cut, Int_t upperCut)
 {
   //
   // returns the trigger efficiency as function of multiplicity with a given cut
@@ -541,7 +543,7 @@ TH1* AliHighMultiplicitySelector::GetTriggerEfficiency(TH2* multVsLayer, Int_t c
   //allEvents->Sumw2();
 
   //cut and multiply with x-section
-  TH1* proj = multVsLayer->ProjectionX(Form("%s_x", multVsLayer->GetName()), cut, 1001);
+  TH1* proj = multVsLayer->ProjectionX(Form("%s_x", multVsLayer->GetName()), cut, upperCut);
   //proj->Sumw2();
 
   //new TCanvas; allEvents->DrawCopy(); gPad->SetLogy();
@@ -1310,6 +1312,7 @@ void AliHighMultiplicitySelector::Contamination2()
 void AliHighMultiplicitySelector::Contamination3()
 {
   //
+  // draws the contamination as function of treshold depending on a number a set of input MC and rate parameters
   //
 
   /*
@@ -1323,100 +1326,304 @@ void AliHighMultiplicitySelector::Contamination3()
 
   */
 
+  // output file
+  TFile* output = TFile::Open("contamination3.root", "RECREATE");
+
   // get x-sections
-  TFile* file = TFile::Open("crosssectionEx.root");
+  TFile* file = TFile::Open("crosssectionEx_10TeV.root");
   if (!file)
     return;
-
-  TH1* xSections[2];
-  xSections[0] = dynamic_cast<TH1*> (gFile->Get("xSection2Ex"));
-  xSections[1] = dynamic_cast<TH1*> (gFile->Get("xSection15Ex"));
-
-  // prob for a collision in a bunch crossing
-  Int_t nRates = 3;
-  Float_t rates[] = {0.07, 0.1, 0.2};
-
-  new TCanvas;
-
-  Int_t colors[] = { 2, 3, 4, 6, 7, 8 };
-  Int_t markers[] = { 7, 2, 4, 5, 6, 27 };
-
-  // put to 2 for second layer
-  for (Int_t i=0; i<1; ++i)
+    
+  TCanvas* c = new TCanvas;
+  c->SetGridx();
+  c->SetGridy();
+  
+  TLegend* legend = new TLegend(0.7, 0.2, 1, 0.5);
+  legend->SetNColumns(2);
+  
+  TH2* dummy = new TH2F("dummy", ";Layer 1 Threshold;Contamination", 100, 95, 255, 100, 0, 1);
+  dummy->SetStats(kFALSE);
+  dummy->Draw();
+    
+  for (Int_t mc = 0; mc < 6; mc++)
   {
-    if (!xSections[i])
-      continue;
-
-    // relative x-section, once we have a collision
-    xSections[i]->Scale(1.0 / xSections[i]->Integral());
-
-    Int_t max = xSections[i]->GetNbinsX();
-    max = 500;
-
-    Float_t* xSection = new Float_t[max];
-    for (Int_t mult = 0; mult < max; mult++)
-      xSection[mult] = xSections[i]->GetBinContent(mult+1);
-
-    TH2* fMvsL = (i == 0) ? fMvsL1: fMvsL2;
-
-    for (Int_t currentRate = 0; currentRate<nRates; ++currentRate)
+    TH1* xSections[2];
+    TString str;
+    str.Form("xSection2Ex_%d_%d", mc/3, mc%3);
+    Printf("%s", str.Data());
+    file->cd();
+    xSections[0] = dynamic_cast<TH1*> (gFile->Get(str));
+    //xSections[1] = dynamic_cast<TH1*> (gFile->Get("xSection15Ex"));
+  
+    // prob for a collision in a bunch crossing
+    Int_t nRates = 1;
+    //Float_t rates[] = {0.02, 0.05, 0.1, 0.15, 0.2};
+    Float_t rates[] = {0.0636};
+    
+    // bunch crossing rate in Hz
+    Float_t bunchCrossingRate = 24. * 11245.5;
+  
+    Int_t colors[] = { 2, 3, 4, 6, 7, 8 };
+    Int_t markers[] = { 7, 2, 4, 5, 6, 27 };
+  
+    // put to 2 for second layer
+    for (Int_t i=0; i<1; ++i)
     {
-      TGraph* graph = new TGraph;
-      graph->SetMarkerColor(colors[currentRate]);
-      graph->SetMarkerStyle(markers[currentRate]);
-
-      Float_t rate = rates[currentRate];
-
-      for (Int_t cut = 100; cut <= 201; cut += 10)
+      if (!xSections[i])
+        continue;
+  
+      // relative x-section, once we have a collision
+      xSections[i]->Scale(1.0 / xSections[i]->Integral());
+  
+      Int_t max = xSections[i]->GetNbinsX();
+      max = 500;
+  
+      Float_t* xSection = new Float_t[max];
+      for (Int_t mult = 0; mult < max; mult++)
+        xSection[mult] = xSections[i]->GetBinContent(mult+1);
+  
+      TH2* fMvsL = (i == 0) ? fMvsL1: fMvsL2;
+  
+      for (Int_t currentRate = 0; currentRate<nRates; ++currentRate)
       {
-        Printf("cut at %d", cut);
+        TGraph* graph = new TGraph;
+        graph->SetMarkerColor(colors[currentRate]);
+        graph->SetMarkerStyle(markers[currentRate]);
+ 
+	TGraph* graph2 = new TGraph;
+ 
+        Float_t rate = rates[currentRate];
+  
+        Double_t singleRate = TMath::Poisson(1, rate);
+        Double_t doubleRate = TMath::Poisson(2, rate);
+        Double_t tripleRate = TMath::Poisson(3, rate);
+  
+        Printf("single = %f, double = %f, triple = %f", singleRate, doubleRate, tripleRate);
+    
+        for (Int_t cut = 100; cut <= 251; cut += 10)
+        {
+          Printf("Cut at %d", cut);
+  
+          TH1* triggerEffHist = (TH1*) GetTriggerEfficiency(fMvsL, cut)->Clone("triggerEff");
+          Float_t* triggerEff = new Float_t[max];
+          for (Int_t mult = 0; mult < max; mult++)
+            triggerEff[mult] = triggerEffHist->GetBinContent(mult+1);
+    
+          Double_t triggerRate = 0;
+          for (Int_t mult = 0; mult < max; mult++)
+            triggerRate += xSection[mult] * triggerEff[mult];
+    
+          //Printf("  Raw value for 1  collision is %e; Rate: %.1f Hz", triggerRate, triggerRate * singleRate * bunchCrossingRate);
+    
+          Double_t triggerRate2 = 0;
+          for (Int_t mult = 0; mult < max; mult++)
+            for (Int_t mult2 = mult; mult2 < max; mult2++)
+              if (mult+mult2 < max)
+                triggerRate2 += ((mult2 > mult) ? 2. : 1.) * xSection[mult] * xSection[mult2] * triggerEff[mult+mult2];
+    
+          //Printf("  Raw value for 2 collisions is %e; Rate: %.1f Hz", triggerRate2, triggerRate2 * doubleRate * bunchCrossingRate);
+    
+          Double_t triggerRate3 = 0;
+          for (Int_t mult = 0; mult < max; mult++)
+            for (Int_t mult2 = 0; mult2 < max; mult2++)
+              for (Int_t mult3 = 0; mult3 < max; mult3++)
+                if (mult+mult2+mult3 < max)
+                  triggerRate3 += xSection[mult] * xSection[mult2] * xSection[mult3] * triggerEff[mult+mult2+mult3];
+          
+          //Printf("  Raw value for 3 collisions is %e; Rate: %.1f Hz", triggerRate3, triggerRate3 * tripleRate * bunchCrossingRate);
+          
+          Printf("  Rates: %.1f Hz; %.1f Hz; %.1f Hz", triggerRate * singleRate * bunchCrossingRate, triggerRate2 * doubleRate * bunchCrossingRate, triggerRate3 * tripleRate * bunchCrossingRate);
+          
+          Float_t totalTrigger = (triggerRate * singleRate + triggerRate2 * doubleRate + triggerRate3 * tripleRate);
+          
+          Printf("  Total trigger rate: %.1f Hz", totalTrigger * bunchCrossingRate);
+          
+          //if (totalTrigger * bunchCrossingRate > 200)
+          //  continue;
+    
+          Float_t totalContamination = (triggerRate2 * doubleRate + triggerRate3 * tripleRate) / totalTrigger;
+          //if (totalContamination > 0.99)
+	  //  break;
+    
+          Printf("  Total contamination is %.1f%%", totalContamination * 100);
+    
+          graph->SetPoint(graph->GetN(), cut, totalContamination);
+	  graph2->SetPoint(graph->GetN(), cut, totalTrigger * bunchCrossingRate);
+        }
+  
+        graph->SetMarkerStyle(mc+20);
+        graph->SetMarkerColor(currentRate+1);
+        graph->Draw("P SAME");
+        graph->GetXaxis()->SetTitle("Layer 1 threshold");
+        graph->GetYaxis()->SetTitle("Contamination");
+        graph->GetYaxis()->SetRangeUser(0, 1);
+        
+        if (currentRate == 0)
+        {
+          const char* legendLabel[] = { "Pythia Slope 1", "Pythia Slope 2", "Pythia Slope 3", "Phojet Slope 1", "Phojet Slope 2", "Phojet Slope 3" };
+          legend->AddEntry(graph, legendLabel[mc], "P");
+        }
 
-      TH1* triggerEffHist = (TH1*) GetTriggerEfficiency(fMvsL, cut)->Clone("triggerEff");
-      Float_t* triggerEff = new Float_t[max];
-      for (Int_t mult = 0; mult < max; mult++)
-        triggerEff[mult] = triggerEffHist->GetBinContent(mult+1);
-
-      Double_t triggerRate = 0;
-      for (Int_t mult = 0; mult < max; mult++)
-        triggerRate += xSection[mult] * triggerEff[mult];
-
-      Printf("Raw value for 1 collision is %e", triggerRate);
-
-      Double_t triggerRate2 = 0;
-      for (Int_t mult = 0; mult < max; mult++)
-        for (Int_t mult2 = mult; mult2 < max; mult2++)
-          if (mult+mult2 < max)
-            triggerRate2 += ((mult2 > mult) ? 2. : 1.) * xSection[mult] * xSection[mult2] * triggerEff[mult+mult2];
-
-      Printf("Raw value for 2 collisions is %e", triggerRate2);
-
-      Double_t triggerRate3 = 0;
-      for (Int_t mult = 0; mult < max; mult++)
-        for (Int_t mult2 = 0; mult2 < max; mult2++)
-          for (Int_t mult3 = 0; mult3 < max; mult3++)
-            if (mult+mult2+mult3 < max)
-              triggerRate3 += xSection[mult] * xSection[mult2] * xSection[mult3] * triggerEff[mult+mult2+mult3];
-
-      Printf("Raw value for 3 collisions is %e", triggerRate3);
-
-      Double_t singleRate = TMath::Poisson(1, rate);
-      Double_t doubleRate = TMath::Poisson(2, rate);
-      Double_t tripleRate = TMath::Poisson(3, rate);
-
-      Printf("single = %f, double = %f, triple = %f", singleRate, doubleRate, tripleRate);
-
-      Float_t totalContamination = (triggerRate2 * doubleRate + triggerRate3 * tripleRate) / (triggerRate * singleRate + triggerRate2 * doubleRate + triggerRate3 * tripleRate);
-
-        //Printf("Total contamination is %.1f%%", totalContamination * 100);
-
-      graph->SetPoint(graph->GetN(), cut, totalContamination);
+	output->cd();
+	graph->Write(Form("%s_%d_cont", str.Data(), currentRate));
+	graph2->Write(Form("%s_%d_rate", str.Data(), currentRate));
       }
-
-      graph->Draw((currentRate == 0) ? "A*" : "* SAME");
-      graph->GetXaxis()->SetTitle("layer 1 threshold");
-      graph->GetYaxis()->SetTitle("contamination");
-      graph->GetYaxis()->SetRangeUser(0, 1);
     }
+  }
+  
+  output->Close();
+  
+  legend->Draw();
+}
+
+void AliHighMultiplicitySelector::Contamination_Reach()
+{
+  // plot the multiplicity reach based on the output from Contamination3()
+  // for each rate case and each MC, a certain number of events is required starting counting from the highest multiplicity
+  // note that the reach of different MC cannot be compared with each other
+
+  /*
+
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libPWG0base");
+  .L AliHighMultiplicitySelector.cxx+g
+  x = new AliHighMultiplicitySelector();
+  x->ReadHistograms("highmult_hijing100k.root");
+  x->Contamination_Reach();
+
+  */
+
+  TCanvas* c = new TCanvas("c", "c", 800, 600);
+  c->Divide(2, 3);
+  
+  // prob for a collision in a bunch crossing
+  Int_t nRates = 1;
+  //Float_t rates[] = {0.02, 0.05, 0.1, 0.15, 0.2};
+  Float_t rates[] = {0.0636};
+
+  // bunch crossing rate in Hz
+  Float_t bunchCrossingRate = 24. * 11245.5;
+
+  TH2* dummy = new TH2F("dummy", ";Coll/bunch crossing;multiplicity reach", 100, 0, 0.3, 100, 50, 350);
+  //TH2* dummy = new TH2F("dummy", ";Coll/bunch crossing;fractional cross-section", 100, 0, 0.3, 1000, 1e-6, 0.1);
+  dummy->SetStats(kFALSE);
+
+  const char* legendLabel[] = { "Pythia Slope 1", "Pythia Slope 2", "Pythia Slope 3", "Phojet Slope 1", "Phojet Slope 2", "Phojet Slope 3" };
+
+  TFile* mcFile = TFile::Open("crosssectionEx_10TeV.root");
+  TFile* contFile = TFile::Open("contamination3.root");
+
+  // for comparison: how many MB events can one take at the same time
+  Int_t mbEvents = 2e6 * 500;
+
+  for (Int_t mc=0; mc<6; mc++)
+  {
+    mcFile->cd();
+    TH1* mcHist = (TH1*) gFile->Get(Form("xSection2Ex_%d_%d", mc/3, mc%3));
+    mcHist->Scale(1.0 / mcHist->Integral());
+    
+    c->cd(mc+1);//->SetLogy();
+    c->SetGridx();
+    c->SetGridy();
+    dummy->Draw();
+    
+    Int_t color = 0;
+    for (Int_t requiredEvents = 300; requiredEvents <= 3000000; requiredEvents *= 10)
+    {
+      TGraph* reach = new TGraph;
+
+      color++;
+      if (color == 5)
+        color++;
+      
+      Float_t requiredRate = (Float_t) requiredEvents / 1e6;
+      Printf("Required rate is %f", requiredRate);
+    
+      // find reach without trigger
+      Int_t mbReach = 1000;
+      while (mcHist->Integral(mcHist->FindBin(mbReach), mcHist->GetNbinsX()) < (Float_t) requiredEvents / mbEvents && mbReach > 1)
+        mbReach--;
+      Printf("MB reach is %d with %f events", mbReach, mcHist->Integral(mcHist->FindBin(mbReach), mcHist->GetNbinsX()) * mbEvents);
+      
+      for (Int_t rate=0; rate<nRates; rate++)
+      {
+        contFile->cd();
+        TGraph* cont = (TGraph*) gFile->Get(Form("xSection2Ex_%d_%d_%d_cont", mc/3, mc%3, rate));
+        TGraph* rateh = (TGraph*) gFile->Get(Form("xSection2Ex_%d_%d_%d_rate", mc/3, mc%3, rate));
+  
+        Double_t singleRate = TMath::Poisson(1, rates[rate]);
+        Double_t totalCollRate = singleRate * bunchCrossingRate;
+        Printf("collisions/bc: %f; coll. rate: %f", singleRate, totalCollRate);
+  
+        // find 200 Hz limit
+        Int_t low = 100;
+        while (rateh->Eval(low) > 200)
+          low++;
+  
+        // find contamination limit
+        Int_t high = 100;
+        while (cont->Eval(high) < 0.9 && high < 250)
+          high++;
+  
+        Printf("MC %d Rate %d: Acceptable threshold region is %d to %d", mc, rate, low, high);
+        // find reachable multiplicity; include contamination in rate calculation
+        // TH1* triggerEffHist = (TH1*) GetTriggerEfficiency(fMvsL, cut)->Clone("triggerEff");
+  
+        // trigger efficiency as function of multiplicity in range mult <= ... <= high
+        //new TCanvas; fMvsL1->Draw("COLZ");
+        TH1* triggerEffHist = (TH1*) GetTriggerEfficiency(fMvsL1, low, high);
+        
+        //new TCanvas; triggerEffHist->DrawCopy();
+        triggerEffHist->Multiply(mcHist);
+        
+        Float_t fractionXSection = triggerEffHist->Integral();
+        Printf("The fraction of the cross-section is %f", fractionXSection);
+        
+        //new TCanvas; triggerEffHist->DrawCopy();
+        triggerEffHist->Scale(totalCollRate);
+        //new TCanvas; triggerEffHist->DrawCopy(); gPad->SetLogy();
+        
+        Float_t achievedRate = 0;
+        Int_t mult = 1000;
+        while (1)
+        {
+          achievedRate = triggerEffHist->Integral(triggerEffHist->FindBin(mult), triggerEffHist->GetNbinsX());
+  
+          if (achievedRate >= requiredRate)
+            break;
+      
+          if (mult == 1)
+            break;
+      
+          mult--;
+        } 
+  
+        Printf("Achieved rate %f above multiplicity %d", achievedRate, mult);
+        
+        if (achievedRate < requiredRate)
+        {
+          Printf("Achieved rate too low");
+          continue;
+        }
+  
+        reach->SetPoint(reach->GetN(), rates[rate], mult);
+        //reach->SetPoint(reach->GetN(), rates[rate], fractionXSection);
+        
+      
+        //return;
+      }
+  
+      reach->SetMarkerColor(color);
+      reach->Draw("SAME*");
+      
+      TLine* line = new TLine(0, mbReach, 0.3, mbReach);
+      line->SetLineColor(color);
+      //line->Draw();
+    }    
+  
+    TText* text = new TText;
+    text->DrawText(0.2, 325, legendLabel[mc]);
+    //return;
   }
 }
 
