@@ -278,16 +278,16 @@ void AliCdfJetFinder::FindJets()
 //    cout << "Printing jet " << endl;
     if (debug) jet.Print("");
 
+    if (fromAod) {
+      for (Int_t parts = 0; parts < nPart; parts++ ) { 
+        if (vectParticle[parts]->njet == nJets-1) 
+          jet.AddTrack(refs->At(parts));
+      }
+    }
+
 //    cout << "Adding jet ... " ;
     AddJet(jet);
 //    cout << "added \n" << endl;
-
-//     if (fromAod)
-//       {
-//       for (Int_t parts = 0; parts < nPart; parts++ )
-//          { if (idx_jetT[parts] == nr_jet) {jet.AddTrack(refs->At(parts));} }
-//       }
-
 
     }
     // end of while loop over particles ; ends when all particles were flagged as used and all jets defined
