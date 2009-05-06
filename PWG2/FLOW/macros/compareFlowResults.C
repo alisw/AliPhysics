@@ -2370,7 +2370,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     if(dvnMC!=0. && dvnSP!=0.) 
     {
      spDiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnSP-dvnMC)/dvnMC);
-     spDiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorSP);
+     spDiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorSP/dvnMC);
     }
     
     // GFC{2}:
@@ -2384,7 +2384,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     if(dvnMC!=0. && dvnGFC2!=0.) 
     {
      gfc2DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnGFC2-dvnMC)/dvnMC);
-     gfc2DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorGFC2);
+     gfc2DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorGFC2/dvnMC);
     }
     
     // GFC{4}:
@@ -2398,7 +2398,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     if(dvnMC!=0. && dvnGFC4!=0.) 
     {
      gfc4DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnGFC4-dvnMC)/dvnMC);
-     gfc4DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorGFC4);
+     gfc4DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorGFC4/dvnMC);
     }
     
     // GFC{6}:
@@ -2412,7 +2412,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     if(dvnMC!=0. && dvnGFC6!=0.) 
     {
      gfc6DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnGFC6-dvnMC)/dvnMC);
-     gfc6DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorGFC6);
+     gfc6DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorGFC6/dvnMC);
     }
     
     // GFC{8}:
@@ -2426,7 +2426,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     if(dvnMC!=0. && dvnGFC8!=0.) 
     {
      gfc8DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnGFC8-dvnMC)/dvnMC);
-     gfc8DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorGFC8);
+     gfc8DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorGFC8/dvnMC);
     }
     
     // QC{2}:
@@ -2440,7 +2440,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     if(dvnMC!=0. && dvnQC2!=0.) 
     {
      qc2DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnQC2-dvnMC)/dvnMC);
-     qc2DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC2);
+     qc2DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC2/dvnMC);
     }
     
     // QC{4}:
@@ -2454,7 +2454,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     if(dvnMC!=0. && dvnQC4!=0.) 
     {
      qc4DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnQC4-dvnMC)/dvnMC);
-     qc4DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC4);
+     qc4DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC4/dvnMC);
     }
     
     // QC{6}:
@@ -2468,7 +2468,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     if(dvnMC!=0. && dvnQC6!=0.) 
     {
      qc6DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnQC6-dvnMC)/dvnMC);
-     qc6DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC6);
+     qc6DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC6/dvnMC);
     }
     
     // QC{8}:
@@ -2482,7 +2482,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     if(dvnMC!=0. && dvnQC8!=0.) 
     {
      qc8DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnQC8-dvnMC)/dvnMC);
-     qc8DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC8);
+     qc8DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC8/dvnMC);
     }
     
     // LYZ2:
@@ -2496,7 +2496,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     if(dvnMC!=0. && dvnLYZ2!=0.) 
     {
      lyz2DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnLYZ2-dvnMC)/dvnMC);
-     lyz2DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorLYZ2);
+     lyz2DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorLYZ2/dvnMC);
     }
       
     // LYZEP:
@@ -2510,7 +2510,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     if(dvnMC!=0. && dvnLYZEP!=0.) 
     {
      lyzepDiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnLYZEP-dvnMC)/dvnMC);
-     lyzepDiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorLYZEP);
+     lyzepDiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorLYZEP/dvnMC);
     }  
  
    } // end of for(Int_t p=1;p<iNbinsPt+1;p++)
