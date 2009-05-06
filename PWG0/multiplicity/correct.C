@@ -66,47 +66,51 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
 
   AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open(fileNameMC, folder);
   AliMultiplicityCorrection* esd = AliMultiplicityCorrection::Open(fileNameESD, folderESD);
+  
+  AliUnfolding::SetNbins(150, 150);
 
-  TH2F* hist = esd->GetMultiplicityESD(histID);
-  TH2F* hist2 = esd->GetMultiplicityMC(histID, eventType);
-  TH1* mcCompare = hist2->ProjectionY("mcmchist", 1, hist2->GetNbinsX());
-
-  mult->SetMultiplicityESD(histID, hist);
-
-  // small hack to get around charge conservation for full phase space ;-)
-  if (fullPhaseSpace)
+  for (hID = ((histID == -1) ? 0 : histID); hID <= ((histID == -1) ? 2 : histID); hID++)
   {
-    TH1* corr = mult->GetCorrelation(histID + 4);
-
-    for (Int_t i=2; i<=corr->GetNbinsX(); i+=2)
-      for (Int_t j=1; j<=corr->GetNbinsY(); ++j)
-      {
-        corr->SetBinContent(i, j, corr->GetBinContent(i-1, j));
-        corr->SetBinError(i, j, corr->GetBinError(i-1, j));
-      }
+    TH2F* hist = esd->GetMultiplicityESD(hID);
+    TH2F* hist2 = esd->GetMultiplicityMC(hID, eventType);
+  
+    mult->SetMultiplicityESD(histID, hist);
+  
+    // small hack to get around charge conservation for full phase space ;-)
+    if (fullPhaseSpace)
+    {
+      TH1* corr = mult->GetCorrelation(histID + 4);
+  
+      for (Int_t i=2; i<=corr->GetNbinsX(); i+=2)
+        for (Int_t j=1; j<=corr->GetNbinsY(); ++j)
+        {
+          corr->SetBinContent(i, j, corr->GetBinContent(i-1, j));
+          corr->SetBinError(i, j, corr->GetBinError(i-1, j));
+        }
+    }
+  
+    if (chi2)
+    {
+      AliUnfolding::SetChi2Regularization(AliUnfolding::kPol0, beta);
+      //mult->SetCreateBigBin(kFALSE);
+      //mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0); //mult->SetCreateBigBin(kFALSE);
+      //mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0, 125); mult->SetCreateBigBin(kFALSE);
+      //mult->SetRegularizationParameters(AliMultiplicityCorrection::kEntropy, 1e4);
+      //mult->SetRegularizationParameters(AliMultiplicityCorrection::kLog, 1e5);
+      
+      //mult->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kTRUE, mcCompare);
+      //mult->SetMultiplicityESDCorrected(histID, (TH1F*) mcCompare);
+      
+      mult->ApplyMinuitFit(hID, fullPhaseSpace, eventType, kFALSE); //hist2->ProjectionY("mymchist"));
+      //mult->ApplyNBDFit(histID, fullPhaseSpace, eventType);
+    }
+    else
+    {
+      mult->ApplyBayesianMethod(hID, fullPhaseSpace, eventType, 1, 10, 0, kTRUE);
+    }
+  
+    mult->SetMultiplicityMC(hID, eventType, hist2);
   }
-
-  if (chi2)
-  {
-    AliUnfolding::SetChi2Regularization(AliUnfolding::kPol0, beta);
-    //mult->SetCreateBigBin(kFALSE);
-    //mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0); //mult->SetCreateBigBin(kFALSE);
-    //mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0, 125); mult->SetCreateBigBin(kFALSE);
-    //mult->SetRegularizationParameters(AliMultiplicityCorrection::kEntropy, 1e4);
-    //mult->SetRegularizationParameters(AliMultiplicityCorrection::kLog, 1e5);
-    
-    //mult->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kTRUE, mcCompare);
-    //mult->SetMultiplicityESDCorrected(histID, (TH1F*) mcCompare);
-    
-    mult->ApplyMinuitFit(histID, fullPhaseSpace, eventType, kFALSE); //hist2->ProjectionY("mymchist"));
-    //mult->ApplyNBDFit(histID, fullPhaseSpace, eventType);
-  }
-  else
-  {
-    mult->ApplyBayesianMethod(histID, fullPhaseSpace, eventType, 1, 10, 0, kTRUE);
-  }
-
-  mult->SetMultiplicityMC(histID, eventType, hist2);
   
   Printf("Writing result to %s", targetFile);
   TFile* file = TFile::Open(targetFile, "RECREATE");
@@ -114,7 +118,12 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
   file->Write();
   file->Close();
 
-  mult->DrawComparison((chi2) ? "MinuitChi2" : "Bayesian", histID, fullPhaseSpace, kTRUE, mcCompare);
+  for (hID = ((histID == -1) ? 0 : histID); hID <= ((histID == -1) ? 2 : histID); hID++)
+  {
+    TH2F* hist2 = esd->GetMultiplicityMC(hID, eventType);
+    TH1* mcCompare = hist2->ProjectionY("mcmchist", 1, hist2->GetNbinsX());
+    mult->DrawComparison(Form("%s_%d", (chi2) ? "MinuitChi2" : "Bayesian", hID), hID, fullPhaseSpace, kTRUE, mcCompare);
+  }
 }
 
 void DrawBayesianIterations(const char* fileNameMC = "multiplicityMC.root", const char* fileNameESD = "multiplicityESD.root", Int_t histID = 1, Int_t eventType = 0 /* AliMultiplicityCorrection::kTrVtx */)

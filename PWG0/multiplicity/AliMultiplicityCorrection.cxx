@@ -175,29 +175,30 @@ AliMultiplicityCorrection::AliMultiplicityCorrection(const Char_t* name, const C
   #define NBINNING fgkMaxParams, binLimitsN*/
 
   #define NBINNING 201, -0.5, 200.5
-  #define VTXBINNING 1, -6, 6
+  
+  Double_t vtxRange[] = { 15, 6, 2 };
 
   for (Int_t i = 0; i < kESDHists; ++i)
-    fMultiplicityESD[i] = new TH2F(Form("fMultiplicityESD%d", i), "fMultiplicityESD;vtx-z;Ntracks;Count", VTXBINNING, NBINNING);
+    fMultiplicityESD[i] = new TH2F(Form("fMultiplicityESD%d", i), "fMultiplicityESD;vtx-z;Ntracks;Count", 1, -vtxRange[i], vtxRange[i], NBINNING);
 
   for (Int_t i = 0; i < kMCHists; ++i)
   {
-    fMultiplicityVtx[i] = dynamic_cast<TH2F*> (fMultiplicityESD[0]->Clone(Form("fMultiplicityVtx%d", i)));
+    fMultiplicityVtx[i] = dynamic_cast<TH2F*> (fMultiplicityESD[i%3]->Clone(Form("fMultiplicityVtx%d", i)));
     fMultiplicityVtx[i]->SetTitle("fMultiplicityVtx;vtx-z;Npart");
 
-    fMultiplicityMB[i] = dynamic_cast<TH2F*> (fMultiplicityVtx[0]->Clone(Form("fMultiplicityMB%d", i)));
+    fMultiplicityMB[i] = dynamic_cast<TH2F*> (fMultiplicityVtx[i]->Clone(Form("fMultiplicityMB%d", i)));
     fMultiplicityMB[i]->SetTitle("fMultiplicityMB");
 
-    fMultiplicityINEL[i] = dynamic_cast<TH2F*> (fMultiplicityVtx[0]->Clone(Form("fMultiplicityINEL%d", i)));
+    fMultiplicityINEL[i] = dynamic_cast<TH2F*> (fMultiplicityVtx[i]->Clone(Form("fMultiplicityINEL%d", i)));
     fMultiplicityINEL[i]->SetTitle("fMultiplicityINEL");
     
-    fMultiplicityNSD[i] = dynamic_cast<TH2F*> (fMultiplicityVtx[0]->Clone(Form("fMultiplicityNSD%d", i)));
+    fMultiplicityNSD[i] = dynamic_cast<TH2F*> (fMultiplicityVtx[i]->Clone(Form("fMultiplicityNSD%d", i)));
     fMultiplicityNSD[i]->SetTitle("fMultiplicityNSD");
   }
 
   for (Int_t i = 0; i < kCorrHists; ++i)
   {
-    fCorrelation[i] = new TH3F(Form("fCorrelation%d", i), "fCorrelation;vtx-z;Npart;Ntracks", VTXBINNING, NBINNING, NBINNING);
+    fCorrelation[i] = new TH3F(Form("fCorrelation%d", i), "fCorrelation;vtx-z;Npart;Ntracks", 1, -vtxRange[i%3], vtxRange[i%3], NBINNING, NBINNING);
     fMultiplicityESDCorrected[i] = new TH1F(Form("fMultiplicityESDCorrected%d", i), "fMultiplicityESDCorrected;Npart;dN/dN", NBINNING);
   }
 
@@ -455,7 +456,7 @@ void AliMultiplicityCorrection::SaveHistograms(const char* dir)
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::FillGenerated(Float_t vtx, Bool_t triggered, Bool_t vertex, AliPWG0Helper::MCProcessType processType, Int_t generated05, Int_t generated10, Int_t generated15, Int_t generated20, Int_t generatedAll)
+void AliMultiplicityCorrection::FillGenerated(Float_t vtx, Bool_t triggered, Bool_t vertex, AliPWG0Helper::MCProcessType processType, Int_t generated05, Int_t generated10, Int_t generated14, Int_t generatedAll)
 {
   //
   // Fills an event from MC
@@ -465,38 +466,34 @@ void AliMultiplicityCorrection::FillGenerated(Float_t vtx, Bool_t triggered, Boo
   {
     fMultiplicityMB[0]->Fill(vtx, generated05);
     fMultiplicityMB[1]->Fill(vtx, generated10);
-    fMultiplicityMB[2]->Fill(vtx, generated15);
-    fMultiplicityMB[3]->Fill(vtx, generated20);
-    fMultiplicityMB[4]->Fill(vtx, generatedAll);
+    fMultiplicityMB[2]->Fill(vtx, generated14);
+    fMultiplicityMB[3]->Fill(vtx, generatedAll);
 
     if (vertex)
     {
       fMultiplicityVtx[0]->Fill(vtx, generated05);
       fMultiplicityVtx[1]->Fill(vtx, generated10);
-      fMultiplicityVtx[2]->Fill(vtx, generated15);
-      fMultiplicityVtx[3]->Fill(vtx, generated20);
-      fMultiplicityVtx[4]->Fill(vtx, generatedAll);
+      fMultiplicityVtx[2]->Fill(vtx, generated14);
+      fMultiplicityVtx[3]->Fill(vtx, generatedAll);
     }
   }
 
   fMultiplicityINEL[0]->Fill(vtx, generated05);
   fMultiplicityINEL[1]->Fill(vtx, generated10);
-  fMultiplicityINEL[2]->Fill(vtx, generated15);
-  fMultiplicityINEL[3]->Fill(vtx, generated20);
-  fMultiplicityINEL[4]->Fill(vtx, generatedAll);
+  fMultiplicityINEL[2]->Fill(vtx, generated14);
+  fMultiplicityINEL[3]->Fill(vtx, generatedAll);
   
   if (processType != AliPWG0Helper::kSD)
   {
     fMultiplicityNSD[0]->Fill(vtx, generated05);
     fMultiplicityNSD[1]->Fill(vtx, generated10);
-    fMultiplicityNSD[2]->Fill(vtx, generated15);
-    fMultiplicityNSD[3]->Fill(vtx, generated20);
-    fMultiplicityNSD[4]->Fill(vtx, generatedAll);
+    fMultiplicityNSD[2]->Fill(vtx, generated14);
+    fMultiplicityNSD[3]->Fill(vtx, generatedAll);
   }
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::FillMeasured(Float_t vtx, Int_t measured05, Int_t measured10, Int_t measured15, Int_t measured20)
+void AliMultiplicityCorrection::FillMeasured(Float_t vtx, Int_t measured05, Int_t measured10, Int_t measured14)
 {
   //
   // Fills an event from ESD
@@ -504,12 +501,11 @@ void AliMultiplicityCorrection::FillMeasured(Float_t vtx, Int_t measured05, Int_
 
   fMultiplicityESD[0]->Fill(vtx, measured05);
   fMultiplicityESD[1]->Fill(vtx, measured10);
-  fMultiplicityESD[2]->Fill(vtx, measured15);
-  fMultiplicityESD[3]->Fill(vtx, measured20);
+  fMultiplicityESD[2]->Fill(vtx, measured14);
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::FillCorrection(Float_t vtx, Int_t generated05, Int_t generated10, Int_t generated15, Int_t generated20, Int_t generatedAll, Int_t measured05, Int_t measured10, Int_t measured15, Int_t measured20)
+void AliMultiplicityCorrection::FillCorrection(Float_t vtx, Int_t generated05, Int_t generated10, Int_t generated14, Int_t generatedAll, Int_t measured05, Int_t measured10, Int_t measured14)
 {
   //
   // Fills an event into the correlation map with the information from MC and ESD
@@ -517,13 +513,11 @@ void AliMultiplicityCorrection::FillCorrection(Float_t vtx, Int_t generated05, I
 
   fCorrelation[0]->Fill(vtx, generated05, measured05);
   fCorrelation[1]->Fill(vtx, generated10, measured10);
-  fCorrelation[2]->Fill(vtx, generated15, measured15);
-  fCorrelation[3]->Fill(vtx, generated20, measured20);
+  fCorrelation[2]->Fill(vtx, generated14, measured14);
 
-  fCorrelation[4]->Fill(vtx, generatedAll, measured05);
-  fCorrelation[5]->Fill(vtx, generatedAll, measured10);
-  fCorrelation[6]->Fill(vtx, generatedAll, measured15);
-  fCorrelation[7]->Fill(vtx, generatedAll, measured20);
+  fCorrelation[3]->Fill(vtx, generatedAll, measured05);
+  fCorrelation[4]->Fill(vtx, generatedAll, measured10);
+  fCorrelation[5]->Fill(vtx, generatedAll, measured14);
 }
 
 //____________________________________________________________________

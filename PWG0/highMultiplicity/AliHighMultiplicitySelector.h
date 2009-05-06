@@ -38,6 +38,7 @@ class AliHighMultiplicitySelector : public AliSelectorRL {
     void Contamination();
     void Contamination2();
     void Contamination3();
+    void Contamination_Reach();
     void MBComparison();
 
  protected:
@@ -45,7 +46,7 @@ class AliHighMultiplicitySelector : public AliSelectorRL {
     void MakeGraphs2(const char* title, TH1* xSection, TH2* fMvsL);
 
     TH1* GetXSectionCut(TH1* xSection, TH2* multVsLayer, Int_t cut);
-    TH1* GetTriggerEfficiency(TH2* multVsLayer, Int_t cut);
+    TH1* GetTriggerEfficiency(TH2* multVsLayer, Int_t cut, Int_t upperCut = 1001);
 
     TH1F* fChipsLayer1;   // fired chips in layer 1
     TH1F* fChipsLayer2;   // fired chips in layer 2

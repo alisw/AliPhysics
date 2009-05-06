@@ -929,7 +929,9 @@ void DrawResiduals(const char* fileName, const char* epsName)
 
   // projection
   TH1* residualHist = new TH1F("residualHist", ";", 11, -3, 3);
+  residualHist->Sumw2();
 
+  Float_t chi2 = 0;
   for (Int_t i=1; i<=displayRange+1; ++i)
   {
     if (measured->GetBinError(i) > 0)
@@ -938,6 +940,7 @@ void DrawResiduals(const char* fileName, const char* epsName)
       residual->SetBinError(i, 1);
 
       residualHist->Fill(residual->GetBinContent(i));
+      chi2 += residual->GetBinContent(i) * residual->GetBinContent(i);
     }
     else
     {
@@ -945,6 +948,8 @@ void DrawResiduals(const char* fileName, const char* epsName)
       residual->SetBinError(i, 0);
     }
   }
+  
+  Printf("chi2 / ndf = %f / %d = %f", chi2, displayRange+1, chi2 / (displayRange+1));
 
   residual->GetYaxis()->SetTitle("Residuals:   (1/e) (M - R  #otimes U)");
   residual->GetYaxis()->SetRangeUser(-4.5, 4.5);
@@ -958,7 +963,8 @@ void DrawResiduals(const char* fileName, const char* epsName)
   residualHist->SetStats(kFALSE);
   residualHist->SetLabelSize(0.08, "xy");
   residualHist->Fit("gaus");
-  residualHist->Draw();
+  residualHist->Draw("HIST");
+  residualHist->FindObject("gaus")->Draw("SAME");
 
   canvas->Modified();
   canvas->SaveAs(canvas->GetName());
@@ -2058,7 +2064,7 @@ void EfficiencyComparison(Int_t eventType = 2, Bool_t uncertainty = kTRUE)
 
   loadlibs();
 
-  TCanvas* canvas = new TCanvas("EfficiencyComparison", "EfficiencyComparison", 800, 500);
+  TCanvas* canvas = new TCanvas("EfficiencyComparison", "EfficiencyComparison", 800, 600);
   canvas->SetGridx();
   canvas->SetGridy();
   canvas->SetRightMargin(0.05);
@@ -2914,7 +2920,7 @@ void finalPlot(Bool_t tpc = 0, Bool_t small = kFALSE)
 
   //TH1* errorNSD = SystematicsSummary(tpc, 1);
 
-  TCanvas* canvas = new TCanvas("finalPlot.eps", "finalPlot.eps", (small) ? 600 : 800, 500);
+  TCanvas* canvas = new TCanvas("finalPlot.eps", "finalPlot.eps", 800, 500); 
   canvas->SetRightMargin(0.05);
   canvas->SetTopMargin(0.05);
   canvas->SetGridx();
@@ -3022,6 +3028,122 @@ void finalPlot(Bool_t tpc = 0, Bool_t small = kFALSE)
   text->DrawText(10, 1e-5, "corrected to ineleastic events in |#eta| < 0.9");
   text->Draw();*/
 
+
+  canvas->SaveAs(canvas->GetName());
+}
+
+void finalPlot2(Bool_t tpc = 0)
+{
+  loadlibs();
+
+  if (tpc)
+    SetTPC();
+
+  //TH1* errorNSD = SystematicsSummary(tpc, 1);
+
+  TCanvas* canvas = new TCanvas("finalPlot2.eps", "finalPlot2.eps", 800, 600); 
+  canvas->SetRightMargin(0.05);
+  canvas->SetTopMargin(0.05);
+  canvas->SetGridx();
+  canvas->SetGridy();
+  canvas->SetLogy();
+  
+  legend = new TLegend(0.5, 0.7, 0.9, 0.9);
+  legend->SetFillColor(0);
+  legend->SetTextSize(0.04);
+  
+  Int_t displayRanges[] = { 50, 80, 120 };
+  
+  TH2* dummy = new TH2F("dummy", ";True multiplicity N_{ch};P(N_{ch})", 100, -0.5, displayRanges[2]+10, 1000, 5e-5, 5);
+  dummy->SetStats(0);
+  dummy->Draw();
+  
+  TList list;
+  
+  Int_t count = 0;
+  for (AliMultiplicityCorrection::EventType eventType = AliMultiplicityCorrection::kINEL; eventType <= AliMultiplicityCorrection::kNSD; eventType++)
+  {
+    AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open((eventType == AliMultiplicityCorrection::kINEL) ? "chi2_inel.root" : "chi2_nsd.root");
+    //TH1* mcHist = mult->GetMultiplicityMC(etaRange, eventType)->ProjectionY("mymc");
+    for (Int_t etaR = 0; etaR <= 2; etaR++)
+    {
+      TH1* result = mult->GetMultiplicityESDCorrected(etaR);
+    
+      //DrawResultRatio(mcHist, result, Form("finalPlotCheck_%d.eps", (Int_t) eventType));
+  
+      // normalize result
+      result->Scale(TMath::Power(5, etaR) / result->Integral(1, displayRanges[etaR]));
+    
+      result->GetXaxis()->SetRangeUser(0, displayRanges[etaR]);
+      //result->SetBinContent(1, 0); result->SetBinError(1, 0);
+      //result->SetTitle(Form(""));
+      result->SetMarkerStyle(0);
+      result->SetLineColor(1);
+      result->SetLineWidth(2);
+      //result->SetMarkerStyle(4);
+      //result->SetStats(kFALSE);
+    
+      // systematic error
+      TH1* error = SystematicsSummary(tpc, (eventType == AliMultiplicityCorrection::kNSD));
+      
+      TH1* systError = (TH1*) result->Clone("systError");
+      // small hack until we have syst. errors for all eta ranges
+      Float_t factor = 80.0 / displayRanges[etaR];
+      for (Int_t i=1; i<=systError->GetNbinsX(); ++i)
+      {
+        systError->SetBinError(i, systError->GetBinContent(i) * error->GetBinContent(factor * i));
+      }
+    
+      // change error drawing style
+      systError->SetFillColor(15);
+      
+      if (eventType == AliMultiplicityCorrection::kNSD)
+      {
+        result->SetLineColor(2);
+        result->SetMarkerColor(2);
+        result->SetMarkerStyle(5);
+      }
+      
+      canvas->cd();
+      systError->GetXaxis()->SetRangeUser(0, displayRanges[etaR]);
+      systError->DrawCopy("E2 ][ SAME");
+      list.Add(result);
+      
+      if (eventType == AliMultiplicityCorrection::kINEL)
+      {
+        TLatex* Tl = new TLatex;
+        Tl->SetTextSize(0.04);
+        //Tl->SetBit(TLatex::kTextNDC);
+        Tl->SetTextAlign(32);
+
+        Float_t etaRangeArr[] = { 0.5, 1.0, 1.4 };
+        TString tmpStr;
+        tmpStr.Form("|#eta| < %.1f (x %d)", etaRangeArr[etaR], (Int_t) TMath::Power(5, etaR));
+        if (etaR == 0)
+          Tl->DrawLatex(36, result->GetBinContent(41), tmpStr);
+        if (etaR == 1)
+        {
+          Tl->SetTextAlign(12);
+          Tl->DrawLatex(82, result->GetBinContent(81), tmpStr);
+        }
+        if (etaR == 2)
+        {
+          Tl->SetTextAlign(12);
+          Tl->DrawLatex(106, result->GetBinContent(101), tmpStr);
+        }
+      }
+      
+      if (etaR == 0)
+        legend->AddEntry(result, (eventType == AliMultiplicityCorrection::kINEL) ? "Inelastic events" : "NSD events", (eventType == AliMultiplicityCorrection::kINEL) ? "L" : "P");
+      
+      count++;
+    }
+  }
+  
+  for (Int_t i=0; i<list.GetEntries(); i++)
+    ((TH1*) list.At(i))->DrawCopy("SAME E ][");
+  
+  legend->Draw();
 
   canvas->SaveAs(canvas->GetName());
 }
