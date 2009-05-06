@@ -177,6 +177,11 @@ if test ! "x$have_aliroot" = "xno" ; then
   
   # check for certain AliRoot libraries/files/features
   # libSTEERBase present since Aug 7 2007
+  # ###########################################
+  # temporary workaround for circular dependency libSTEERbase libSTEER 	 
+  # https://savannah.cern.ch/bugs/index.php?49914
+  # disable the sequence of checks and load libraries in parallel
+  ALIROOT_LIBS="$ALIROOT_LIBS -lAOD -lCDB -lRAWDatabase -lRAWDatarec -lESD -lSTEER"
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=STEERBase
   AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
