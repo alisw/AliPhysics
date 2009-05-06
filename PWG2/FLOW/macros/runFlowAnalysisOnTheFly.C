@@ -7,19 +7,28 @@
 // RUN SETTINGS
 // flow analysis method can be: (set to kTRUE or kFALSE)
 Bool_t SP    = kTRUE;
-Bool_t LYZ1  = kTRUE;
+Bool_t LYZ1  = kFALSE;
 Bool_t LYZ2  = kFALSE;
-Bool_t LYZEP = kFALSE;
+Bool_t LYZEP = kTRUE;
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
 Bool_t FQD   = kTRUE;
 Bool_t MCEP  = kTRUE; 
 //--------------------------------------------------------------------------------------
 
-Bool_t bSameSeed = kFALSE; // use always the same seed for random generators
-Bool_t bConstantHarmonics = kFALSE; // harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)
+// Weights 
+// use weights for Q-vector:
+Bool_t usePhiWeights = kFALSE; // phi weights (correction for non-uniform azimuthal acceptance)
+Bool_t usePtWeights  = kFALSE; // pt weights 
+Bool_t useEtaWeights = kFALSE; // eta weights
 
-// Set the event parameters:
+// Parameters for the simulation of events 'on the fly': 
+Bool_t bSameSeed = kFALSE; // use always the same seed for random generators. 
+                           // usage od same seed (kTRUE) is relevant in two cases:
+                           // 1.) If you want to use LYZ method to calcualte differential flow;
+                           // 2.) If you want to use phi weights for GFC, QC and FQD
+Bool_t bConstantHarmonics = kTRUE; // harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)
+
 Int_t iLoops = 1; // number of times to use each track (to simulate nonflow)
 
 Int_t iMultiplicityOfRP = 500; // multiplicity of RPs
@@ -49,7 +58,7 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR};
 // mLocalPAR: Analyze data on your computer using root + PAR files
 // mLocalSource: Analyze data on your computer using root + source files
                                           
-int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=100)
+int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1000)
 {
  TStopwatch timer;
  timer.Start();
@@ -85,6 +94,22 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=100)
  }
  
  //---------------------------------------------------------------------------------------
+ // If the weights are used: 
+ TFile *fileWithWeights = NULL;
+ TList *listWithWeights = NULL;
+  
+ if(usePhiWeights||usePtWeights||useEtaWeights) {
+   fileWithWeights = TFile::Open("weights.root","READ");
+   if(fileWithWeights) {
+     listWithWeights = (TList*)fileWithWeights->Get("weights");
+   }
+   else
+     {cout << " WARNING: the file <weights.root> with weights from the previous run was not found."<<endl;
+      break;
+     }    
+ }
+ 
+ //---------------------------------------------------------------------------------------
  // Initialize the flowevent maker
  AliFlowEventSimpleMakerOnTheFly* eventMakerOnTheFly = new AliFlowEventSimpleMakerOnTheFly(sseed);
  eventMakerOnTheFly->Init();
@@ -110,18 +135,28 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=100)
  if(QC) { 
    AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
    qc->Init();
+   if(listWithWeights) qc->SetWeightsList(listWithWeights);
+   if(usePhiWeights) qc->SetUsePhiWeights(usePhiWeights);
+   if(usePtWeights) qc->SetUsePtWeights(usePtWeights);
+   if(useEtaWeights) qc->SetUseEtaWeights(useEtaWeights);
  }
   
  // GFC = Generating Function Cumulants 
  if(GFC) {
    AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants();
    gfc->Init();
+   if(listWithWeights) gfc->SetWeightsList(listWithWeights);
+   if(usePhiWeights) gfc->SetUsePhiWeights(usePhiWeights);
+   if(usePtWeights) gfc->SetUsePtWeights(usePtWeights);
+   if(useEtaWeights) gfc->SetUseEtaWeights(useEtaWeights);
  }
  
  // FQD = Fitting q-distribution 
  if(FQD) {
    AliFittingQDistribution* fqd = new AliFittingQDistribution();
    fqd->Init();
+   if(listWithWeights) fqd->SetWeightsList(listWithWeights);
+   if(usePhiWeights) fqd->SetUsePhiWeights(usePhiWeights);  
  }
  
  // SP = Scalar Product 

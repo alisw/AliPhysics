@@ -22,7 +22,7 @@ enum libModes {mLocal,mLocalSource};
 void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder="4th", Int_t mode=mLocal)
 {
  // load needed libraries:
-  LoadLibraries(mode);
+  LoadWeightLibraries(mode);
 
 
  // open the output file from the first run of the specified method:
@@ -118,7 +118,7 @@ void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder
   Double_t ptMin = AliFlowCommonConstants::GetPtMin();
   Double_t ptMax = AliFlowCommonConstants::GetPtMax();
   Int_t nBinsPt  = AliFlowCommonConstants::GetNbinsPt();
-  Double_t ptCutOff = 4.0; // for pt > ptCutOff use constant weights 
+  Double_t ptCutOff = 2.0; // for pt > ptCutOff use constant weights 
   if(nBinsPt==0) 
   { 
    cout<<" WARNING: number of pt bins is 0. "<<endl;
@@ -161,7 +161,7 @@ void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder
 }  
 
 
-void LoadLibraries(const libModes mode) {
+void LoadWeightLibraries(const libModes mode) {
   
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
