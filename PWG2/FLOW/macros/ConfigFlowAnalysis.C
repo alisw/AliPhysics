@@ -27,7 +27,7 @@ const Double_t ymax1  = 1.;
 const Int_t mintrackrefsTPC1 = 2;
 const Int_t mintrackrefsITS1 = 3;
 const Int_t charge1 = 1; //do not use
-Bool_t UsePIDIntegratedFlow = kFALSE;
+Bool_t UsePIDIntegratedFlow = kTRUE;
 const Int_t PDG1 = 211;
 const Int_t minclustersTPC1 = 50;
 const Int_t maxnsigmatovertex1 = 3;
@@ -40,8 +40,8 @@ const Double_t ymax2  = 1.;
 const Int_t mintrackrefsTPC2 = 2;
 const Int_t mintrackrefsITS2 = 3;
 const Int_t charge2 = 1; //do not use
-Bool_t UsePIDDifferentialFlow = kFALSE;
-const Int_t PDG2 = 211;
+Bool_t UsePIDDifferentialFlow = kTRUE;
+const Int_t PDG2 = 321;
 const Int_t minclustersTPC2 = 50;
 const Int_t maxnsigmatovertex2 = 3;
 
@@ -154,7 +154,7 @@ prior[0] = 0.0244519 ;
 
  AliCFTrackCutPid* cutPID1 = NULL;
  if(UsePIDIntegratedFlow) {
-   AliCFTrackCutPid* cutPID1 = new AliCFTrackCutPid("cutPID1","ESD_PID for integrated flow") ;
+   cutPID1 = new AliCFTrackCutPid("cutPID1","ESD_PID for integrated flow") ;
    cutPID1->SetPriors(prior);
    cutPID1->SetProbabilityCut(0.0);
    cutPID1->SetDetectors("TPC TOF");
@@ -173,7 +173,7 @@ prior[0] = 0.0244519 ;
 		  
 AliCFTrackCutPid* cutPID2 = NULL;
  if (UsePIDDifferentialFlow) {
-   AliCFTrackCutPid* cutPID2 = new AliCFTrackCutPid("cutPID2","ESD_PID for differential flow") ;
+   cutPID2 = new AliCFTrackCutPid("cutPID2","ESD_PID for differential flow") ;
    cutPID2->SetPriors(prior);
    cutPID2->SetProbabilityCut(0.0);
    cutPID2->SetDetectors("TPC TOF");
