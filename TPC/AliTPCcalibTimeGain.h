@@ -9,6 +9,7 @@
 #include "TF1.h"
 #include "TArrayD.h"
 #include "TObjArray.h"
+#include "AliSplineFit.h"
 
 class TH1F;
 class TH3F;
@@ -19,6 +20,7 @@ class TGraphErrors;
 class AliESDEvent;
 class AliESDtrack;
 class AliTPCcalibLaser;
+class AliTPCseed;
 
 #include "TTreeStream.h"
 
@@ -31,7 +33,7 @@ public:
   //
   virtual void           Process(AliESDEvent *event);
   virtual Long64_t       Merge(TCollection *li);
-  virtual void           Analyze();
+  virtual void           AnalyzeRun(Int_t minEntries);
   //
   void                   ProcessCosmicEvent(AliESDEvent *event);
   void                   ProcessBeamEvent(AliESDEvent *event);
@@ -43,9 +45,11 @@ public:
   THnSparse *            GetHistGainTime(){return (THnSparse*) fHistGainTime;};
   TH2F      *            GetHistDeDxTotal(){return (TH2F*) fHistDeDxTotal;};
   //
-  TGraphErrors *         GetGraphGainVsTime(){return fGainVsTime;};
+  TGraphErrors *         GetGraphGainVsTime(Int_t runNumber = 0, Int_t minEntries = 2000);
+  static AliSplineFit *  MakeSplineFit(TGraphErrors * graph);
   //
-  void SetMIP(Float_t MIP){fMIP = MIP;};  
+  void SetMIP(Float_t MIP){fMIP = MIP;};
+  void SetUseMax(Bool_t UseMax){fUseMax = UseMax;};
   void SetLowerTrunc(Float_t LowerTrunc){fLowerTrunc = LowerTrunc;};
   void SetUpperTrunc(Float_t UpperTrunc){fUpperTrunc = UpperTrunc;};
   void SetUseShapeNorm(Bool_t UseShapeNorm){fUseShapeNorm = UseShapeNorm;};
@@ -53,8 +57,11 @@ public:
   void SetUsePadNorm(Int_t UsePadNorm){fUsePadNorm = UsePadNorm;};
   void SetIsCosmic(Bool_t IsCosmic){fIsCosmic = IsCosmic;};
   void SetLowMemoryConsumption(Bool_t LowMemoryConsumption){fLowMemoryConsumption = LowMemoryConsumption;};
+  void SetUseCookAnalytical(Bool_t UseCookAnalytical){fUseCookAnalytical = UseCookAnalytical;};
 
 private:
+  //
+  Float_t GetTPCdEdx(AliTPCseed * seed);   // wrapper for CookdEdxNorm or analytical
   //
   THnSparse    * fHistGainTime;            // dEdx vs. time, type, Driftlength, momentum P
   TGraphErrors * fGainVsTime;              // multiplication factor vs. time
@@ -64,11 +71,13 @@ private:
   //
   Float_t fMIP;                         // rough MIP position in order to have scaleable histograms
   //
+  Bool_t  fUseMax;                      // true: use max charge for dE/dx calculation, false: use total charge for dE/dx calculation
   Float_t fLowerTrunc;                  // lower truncation of dE/dx ; at most 5%
   Float_t fUpperTrunc;                  // upper truncation of dE/dx ; ca. 70%
   Bool_t  fUseShapeNorm;                // use empirical correction of dependencies
   Bool_t  fUsePosNorm;                  // charge correction (analytical?)
   Int_t   fUsePadNorm;                  // normalization of pad geometries
+  Bool_t  fUseCookAnalytical;           // true if CookdEdxAnalytical should be used
   //
   Bool_t  fIsCosmic;                    // kTRUE if the analyzed runs contain cosmic events
   Bool_t  fLowMemoryConsumption;        // set this option kTRUE if the momenta information should not be stored in order to save memory

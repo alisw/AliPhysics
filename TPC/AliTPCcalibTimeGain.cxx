@@ -15,7 +15,10 @@
 
 /*
 
-//0.  Libraries to lod
+This class provides the calibration of the time dependence of the TPC gain due to pressure and temperature changes etc.
+
+
+//0.  Libraries to load
 gSystem->Load("libANALYSIS");
 gSystem->Load("libSTAT");
 gSystem->Load("libTPCcalib");
@@ -31,25 +34,22 @@ gSystem->Load("libTPCcalib");
 TFile fcalib("CalibObjects.root");
 TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
 AliTPCcalibTimeGain * gain = ( AliTPCcalibTimeGain *)array->FindObject("calibTimeGain");
-TGraphErrors * gr = AliTPCcalibBase::FitSlices(gain->GetHistGainTime(),0,1,2000,10,0.2,0.8);
-gain->GetHistGainTime()->Projection(0,1)->Draw("colz")
-gr->SetMarkerStyle(25);
-gr->Draw("lp")
+TGraphErrors * gr = gain->GetGraphGainVsTime(0,500)
 
+TH2D * GainTime = gain->GetHistGainTime()->Projection(0,1)
+GainTime->GetXaxis()->SetTimeDisplay(kTRUE)
+GainTime->GetXaxis()->SetTimeFormat("#splitline{%d/%m}{%H:%M}")
+GainTime->Draw("colz")
 
 //
 // MakeSlineFit example
 //
-AliSplineFit fit;
-fit.SetGraph(gr)
-fit->SetMinPoints(gr->GetN()+1);
-fit->InitKnots(gr,2,0,0.001)
-fit.SplineFit(0)
-fit.MakeDiffHisto(gr)->Draw();
+AliSplineFit *fit = AliTPCcalibTimeGain::MakeSplineFit(gr)
+
 TGraph * grfit = fit.MakeGraph(gr->GetX()[0],gr->GetX()[gr->GetN()-1],50000,0);
 
 gr->SetMarkerStyle(25);
-gr->Draw("alp");
+gr->Draw("lp");
 grfit->SetLineColor(2);
 grfit->Draw("lu");
 
@@ -108,11 +108,13 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain()
    fHistDeDxTotal(0),
    fIntegrationTimeDeDx(0),
    fMIP(0),
+   fUseMax(0),
    fLowerTrunc(0),
    fUpperTrunc(0),
    fUseShapeNorm(0),
    fUsePosNorm(0),
    fUsePadNorm(0),
+   fUseCookAnalytical(0),
    fIsCosmic(0),
    fLowMemoryConsumption(0)
 {  
@@ -127,11 +129,13 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
    fHistDeDxTotal(0),
    fIntegrationTimeDeDx(0),
    fMIP(0),
+   fUseMax(0),
    fLowerTrunc(0),
    fUpperTrunc(0),
    fUseShapeNorm(0),
    fUsePosNorm(0),
    fUsePadNorm(0),
+   fUseCookAnalytical(0),
    fIsCosmic(0),
    fLowMemoryConsumption(0)
  {
@@ -146,12 +150,12 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
   Double_t deltaTime = EndTime - StartTime;
   
 
-  // main histogram for time dependence: dE/dx, time, type (1-muon cosmic,2-pion beam data), meanDriftlength, momenta (only filled if enough space is available)
+  // main histogram for time dependence: dE/dx, time, type (1-muon cosmic,2-pion beam data), meanDriftlength, momenta (only filled if enough space is available), run number
   Int_t timeBins = TMath::Nint(deltaTime/deltaIntegrationTimeGain);
-  Int_t binsGainTime[5]    = {100,  timeBins,    2,  25, 200};
-  Double_t xminGainTime[5] = {0.5, StartTime,  0.5,   0, 0.1};
-  Double_t xmaxGainTime[5] = {  4,   EndTime,  2.5, 250, 50};
-  fHistGainTime = new THnSparseF("HistGainTime","dEdx time dep.;dEdx;dEdx,time,type,driftlength,momenta",5,binsGainTime,xminGainTime,xmaxGainTime);
+  Int_t binsGainTime[6]    = {100,  timeBins,    2,  25, 200, 10000000};
+  Double_t xminGainTime[6] = {0.5, StartTime,  0.5,   0, 0.1,    -0.5};
+  Double_t xmaxGainTime[6] = {  4,   EndTime,  2.5, 250,  50, 9999999.5};
+  fHistGainTime = new THnSparseF("HistGainTime","dEdx time dep.;dEdx,time,type,driftlength,momenta,run number;dEdx",6,binsGainTime,xminGainTime,xmaxGainTime);
   BinLogX(fHistGainTime, 4);
   //
   fHistDeDxTotal = new TH2F("DeDx","dEdx; momentum p (GeV); TPC signal (a.u.)",250,0.01,100.,1000,0.,1000);
@@ -159,14 +163,16 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
   
   // default values for dE/dx
   fMIP = 50.;
+  fUseMax = kTRUE;
   fLowerTrunc = 0.0;
   fUpperTrunc = 0.7;
   fUseShapeNorm = kTRUE;
   fUsePosNorm = kFALSE;
   fUsePadNorm = kFALSE;
+  fUseCookAnalytical = kFALSE;
   //
   fIsCosmic = kTRUE;
-  fLowMemoryConsumption = kTRUE;
+  fLowMemoryConsumption = kFALSE;
   //
   
  }
@@ -211,6 +217,7 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
   //
   UInt_t time = event->GetTimeStamp();
   Int_t ntracks = event->GetNumberOfTracks();
+  Int_t runNumber = event->GetRunNumber();
   //
   // track loop
   //
@@ -244,15 +251,15 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
     }    
 
     if (seed) { 
-      Double_t TPCsignalMax = (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,1,0,159,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
-      fHistDeDxTotal->Fill(meanP, TPCsignalMax);
+      Double_t TPCsignal = GetTPCdEdx(seed);
+      fHistDeDxTotal->Fill(meanP, TPCsignal);
       //
       if (fLowMemoryConsumption) {
 	if (meanP < 20) continue;
 	meanP = 30; // set all momenta to one in order to save memory
       }
       //dE/dx, time, type (1-muon cosmic,2-pion beam data), momenta
-      Double_t vec[5] = {TPCsignalMax,time,1,meanDrift,meanP}; 
+      Double_t vec[6] = {TPCsignal,time,1,meanDrift,meanP,runNumber};
       fHistGainTime->Fill(vec);
     }
     
@@ -272,6 +279,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
   //
   UInt_t time = event->GetTimeStamp();
   Int_t ntracks = event->GetNumberOfTracks();
+  Int_t runNumber = event->GetRunNumber();
   //
   // track loop
   //
@@ -305,15 +313,15 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
     }    
 
     if (seed) { 
-      Double_t TPCsignalMax = (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,1,0,159,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
-      fHistDeDxTotal->Fill(meanP, TPCsignalMax);
+      Double_t TPCsignal = GetTPCdEdx(seed);
+      fHistDeDxTotal->Fill(meanP, TPCsignal);
       //
       if (fLowMemoryConsumption) {
 	if (meanP > 0.5 || meanP < 0.4) continue;
 	meanP = 0.45; // set all momenta to one in order to save memory
       }
       //dE/dx, time, type (1-muon cosmic,2-pion beam data), momenta
-      Double_t vec[5] = {TPCsignalMax,time,1,meanDrift,meanP}; 
+      Double_t vec[6] = {TPCsignal,time,2,meanDrift,meanP,runNumber};
       fHistGainTime->Fill(vec);
     }
     
@@ -322,7 +330,21 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
 }
 
 
-void AliTPCcalibTimeGain::Analyze() {
+Float_t AliTPCcalibTimeGain::GetTPCdEdx(AliTPCseed * seed) {
+
+  Double_t signal = 0;
+  //
+  if (!fUseCookAnalytical) {
+    signal = (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,fUseMax,0,159,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
+  } else {
+    signal = (1/fMIP)*seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,fUseMax);
+  }
+  //
+  return signal;
+}
+
+
+void AliTPCcalibTimeGain::AnalyzeRun(Int_t minEntries) {
   //
   //
   //
@@ -334,11 +356,28 @@ void AliTPCcalibTimeGain::Analyze() {
     fHistGainTime->GetAxis(4)->SetRangeUser(0.39,0.51); // only MIP pions
   }
   //
-  fGainVsTime = AliTPCcalibBase::FitSlices(fHistGainTime,0,1,2000,10);
+  fGainVsTime = AliTPCcalibBase::FitSlices(fHistGainTime,0,1,minEntries,10);
   //
   return;
 }
 
+
+TGraphErrors * AliTPCcalibTimeGain::GetGraphGainVsTime(Int_t runNumber, Int_t minEntries) {
+  //
+  //
+  //
+  if (runNumber == 0) {
+    if (!fGainVsTime) {
+      AnalyzeRun(minEntries);
+    }
+  } else {
+    // 1st check if the current run was cosmic or beam event
+    fHistGainTime->GetAxis(5)->SetRangeUser(runNumber,runNumber);
+    AnalyzeRun(minEntries);
+  }
+  if (fGainVsTime->GetN() == 0) return 0;
+  return fGainVsTime;
+}
 
 Long64_t AliTPCcalibTimeGain::Merge(TCollection *li) {
 
@@ -361,6 +400,19 @@ Long64_t AliTPCcalibTimeGain::Merge(TCollection *li) {
   
 }
 
+
+AliSplineFit * AliTPCcalibTimeGain::MakeSplineFit(TGraphErrors * graph) {
+  //
+  //
+  //
+  AliSplineFit *fit = new AliSplineFit();
+  fit->SetGraph(graph);
+  fit->SetMinPoints(graph->GetN()+1);
+  fit->InitKnots(graph,2,0,0.001);
+  fit->SplineFit(0);
+  return fit;
+  
+}
 
 
 void AliTPCcalibTimeGain::BinLogX(THnSparse *h, Int_t axisDim) {

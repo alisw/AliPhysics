@@ -24,6 +24,7 @@ class TGraphErrors;
 class TTree;
 class TH2F;
 class AliTPCLaserTrack;
+class TCut;
 
 class AliTPCcalibLaser:public AliTPCcalibBase {
 public:
@@ -33,10 +34,11 @@ public:
   AliTPCcalibLaser & operator=(const AliTPCcalibLaser& calibLaser);
   virtual ~AliTPCcalibLaser();
   virtual void     Process(AliESDEvent *event);
+  Int_t   GetNtracks(){return fNtracks;}
   virtual void Analyze();
   virtual Long64_t Merge(TCollection *li);
   virtual void DumpMeanInfo(Float_t bfield, Int_t run=-1);
-  static  void DumpScanInfo(TTree * tree);
+  static  void DumpScanInfo(TTree * tree, const char * cutUser="entries>300&&(gz2<0.15&&gphi2<0.1&&gp42<0.02&&abs(gp41)<0.03)");
   static  void DumpFitInfo(TTree * chainFit, Int_t id);
   static  TH1* GetLaserProjection(TH2F* his, Int_t laser){return his->ProjectionY("aaa",laser+1,laser+1);}
   //
@@ -58,6 +60,8 @@ public:
 
   AliESDEvent  * fESD;             //! ESD event  - not OWNER
   AliESDfriend * fESDfriend;       //! ESD event  - not OWNER
+  Int_t          fNtracks;         //! counter of associated laser tracks
+  //
   TObjArray      fTracksMirror;    //! tracks with mirror information
   TObjArray      fTracksEsd;       //! tracks with reconstructed information - 
   //                               not owner ESD
@@ -73,8 +77,8 @@ public:
   TObjArray      fDeltaZ;          //-> array of histograms of delta z for each track
   TObjArray      fDeltaP3;         //-> array of histograms of P3      for each track
   TObjArray      fDeltaP4;         //-> array of histograms of P4      for each track
-  TObjArray      fDeltaPhi;        //-> array of histograms of delta z for each track
-  TObjArray      fDeltaPhiP;       //-> array of histograms of delta z for each track
+  TObjArray      fDeltaPhi;        //-> array of histograms of delta Phi for each track
+  TObjArray      fDeltaPhiP;       //-> array of histograms of delta Phi direction for each track
   TObjArray      fSignals;         //->Array of dedx signals
   //
   // Refit residuals histogram

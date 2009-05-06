@@ -129,7 +129,8 @@ ClassImp(AliTPCcalibLaser)
 AliTPCcalibLaser::AliTPCcalibLaser():
   AliTPCcalibBase(),
   fESD(0),
-  fESDfriend(),
+  fESDfriend(0),
+  fNtracks(0),
   fTracksMirror(336),
   fTracksEsd(336),
   fTracksEsdParam(336),
@@ -191,9 +192,9 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   fDeltaZres2(336),   //->2D histo fo residuals
   //fDeltaYres3(336),   //->2D histo of residuals
   //fDeltaZres3(336),   //->2D histo fo residuals
-  fFitAside(new TVectorD(3)),
-  fFitCside(new TVectorD(3)),      
-  fFitACside(new TVectorD(4)),      
+  fFitAside(new TVectorD(5)),
+  fFitCside(new TVectorD(5)),      
+  fFitACside(new TVectorD(6)),      
   fEdgeXcuts(3),    
   fEdgeYcuts(3),    
   fNClCuts(5),      
@@ -209,6 +210,7 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title, Bool
   AliTPCcalibBase(),
   fESD(0),
   fESDfriend(0),
+  fNtracks(0),
   fTracksMirror(336),
   fTracksEsd(336),
   fTracksEsdParam(336),
@@ -274,9 +276,9 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title, Bool
   fDeltaZres2(336),  
   //  fDeltaYres3(336),
   //fDeltaZres3(336),  
-  fFitAside(new TVectorD(3)),        // drift fit - A side
-  fFitCside(new TVectorD(3)),        // drift fit - C- side
-  fFitACside(new TVectorD(4)),        // drift fit - AC- side
+  fFitAside(new TVectorD(5)),        // drift fit - A side
+  fFitCside(new TVectorD(5)),        // drift fit - C- side
+  fFitACside(new TVectorD(6)),        // drift fit - AC- side
   fEdgeXcuts(3),       // cuts in local x direction; used in the refit of the laser tracks
   fEdgeYcuts(3),       // cuts in local y direction; used in the refit of the laser tracks
   fNClCuts(5),         // cuts on the number of clusters per tracklet; used in the refit of the laser tracks
@@ -294,6 +296,7 @@ AliTPCcalibLaser::AliTPCcalibLaser(const AliTPCcalibLaser& calibLaser):
   AliTPCcalibBase(calibLaser), 
   fESD(0),
   fESDfriend(0),
+  fNtracks(0),
   fTracksMirror(336),
   fTracksEsd(336),
   fTracksEsdParam(336),
@@ -358,9 +361,9 @@ AliTPCcalibLaser::AliTPCcalibLaser(const AliTPCcalibLaser& calibLaser):
   fDeltaZres2(((calibLaser.fDeltaZres))),  
   //  fDeltaYres3(((calibLaser.fDeltaYres))),
   //fDeltaZres3(((calibLaser.fDeltaZres))),  
-  fFitAside(new TVectorD(3)),        // drift fit - A side
-  fFitCside(new TVectorD(3)),        // drift fit - C- side
-  fFitACside(new TVectorD(4)),        // drift fit - C- side
+  fFitAside(new TVectorD(5)),        // drift fit - A side
+  fFitCside(new TVectorD(5)),        // drift fit - C- side
+  fFitACside(new TVectorD(6)),        // drift fit - C- side
   fEdgeXcuts(3),       // cuts in local x direction; used in the refit of the laser tracks
   fEdgeYcuts(3),       // cuts in local y direction; used in the refit of the laser tracks
   fNClCuts(5),         // cuts on the number of clusters per tracklet; used in the refit of the laser tracks
@@ -495,6 +498,7 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   Int_t counter=0;
   for (Int_t i=0;i<n;++i) {
     AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
+    if (!friendTrack) continue;
     AliESDtrack *track=fESD->GetTrack(i);
     TObject *calibObject=0;
     AliTPCseed *seed=0;
@@ -507,7 +511,8 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
       if (id>0) counter++;
     }
     //
-  }  
+  } 
+  fNtracks=counter;
   if (counter<kMinTracks) return;
 
   FitDriftV();
@@ -1753,22 +1758,27 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run){
     Float_t rmsphiP = hisphiP->GetRMS();
     Float_t meanZ = hisZ->GetMean();
     Float_t rmsZ = hisZ->GetRMS();
-    hisphi->Fit(&fg,"","",hisphi->GetMean()-4*hisphi->GetRMS(),hisphi->GetMean()+4*hisphi->GetRMS());
+    if (hisphi->GetRMS()>0)
+      hisphi->Fit(&fg,"","",hisphi->GetMean()-4*hisphi->GetRMS(),hisphi->GetMean()+4*hisphi->GetRMS());
     Double_t gphi1 = fg.GetParameter(1);
     Double_t gphi2 = fg.GetParameter(2);
-    hisphiP->Fit(&fg,"","",hisphiP->GetMean()-4*hisphiP->GetRMS(),hisphiP->GetMean()+4*hisphiP->GetRMS());
+    if (hisphiP->GetRMS()>0)
+      hisphiP->Fit(&fg,"","",hisphiP->GetMean()-4*hisphiP->GetRMS(),hisphiP->GetMean()+4*hisphiP->GetRMS());
     Double_t gphiP1 = fg.GetParameter(1);
     Double_t gphiP2 = fg.GetParameter(2);
     //
-    hisZ->Fit(&fg,"","",hisZ->GetMean()-4*hisZ->GetRMS()-0.1,hisZ->GetMean()+4*hisZ->GetRMS()+0.1);
+    if (hisZ->GetRMS()>0)
+      hisZ->Fit(&fg,"","",hisZ->GetMean()-4*hisZ->GetRMS()-0.1,hisZ->GetMean()+4*hisZ->GetRMS()+0.1);
     Double_t gz1 = fg.GetParameter(1);
     Double_t gz2 = fg.GetParameter(2);
     //
-    hisP3->Fit(&fg,"","",hisP3->GetMean()-4*hisP3->GetRMS(),hisP3->GetMean()+4*hisP3->GetRMS());
+    if (hisP3->GetRMS()>0)
+      hisP3->Fit(&fg,"","",hisP3->GetMean()-4*hisP3->GetRMS(),hisP3->GetMean()+4*hisP3->GetRMS());
     Double_t gp31 = fg.GetParameter(1);
     Double_t gp32 = fg.GetParameter(2);
     //
-    hisP4->Fit(&fg,"","",hisP4->GetMean()-4*hisP4->GetRMS(),hisP4->GetMean()+4*hisP4->GetRMS());
+    if (hisP4->GetRMS()>0)
+      hisP4->Fit(&fg,"","",hisP4->GetMean()-4*hisP4->GetRMS(),hisP4->GetMean()+4*hisP4->GetRMS());
     Double_t gp41 = fg.GetParameter(1);
     Double_t gp42 = fg.GetParameter(2);
     //
@@ -2099,7 +2109,7 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run){
 
 
 
-void AliTPCcalibLaser::DumpScanInfo(TTree * chain){
+void AliTPCcalibLaser::DumpScanInfo(TTree * chain, const char * cutUser){
   //
   //
   //
@@ -2127,10 +2137,11 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain){
   Double_t pphi[3];
   Double_t pphiP[3];
   Double_t pmZ[3];
+  Double_t pmP4[3];
   //
   for (Int_t id=0; id<336; id++){
     // id =205;
-    sprintf(cut,"isOK&&fId==%d",id);
+    sprintf(cut,"fId==%d&&%s",id,cutUser);
     Int_t entries = chain->Draw("bz",cut,"goff");
     if (entries<3) continue;
     AliTPCLaserTrack *ltrp = 0;
@@ -2148,17 +2159,17 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain){
     //
     chain->Draw("gphi1",cut,"goff");
     memcpy(mphi, chain->GetV1(), entries*sizeof(Double_t));
-    chain->Draw("0.05*abs(mphi)+gphi2",cut,"goff");
+    chain->Draw("0.05*abs(mphi)+abs(gphi2)*0.5+0.05",cut,"goff");
     memcpy(smphi, chain->GetV1(), entries*sizeof(Double_t));
     //
     chain->Draw("gphiP1",cut,"goff");
     memcpy(mphiP, chain->GetV1(), entries*sizeof(Double_t));
-    chain->Draw("0.05*abs(mphiP)+gphiP2",cut,"goff");
+    chain->Draw("0.05*abs(mphiP)+abs(gphiP2)*0.5+0.001",cut,"goff");
     memcpy(smphiP, chain->GetV1(), entries*sizeof(Double_t));
     //
     chain->Draw("gz1",cut,"goff");
     memcpy(mZ, chain->GetV1(), entries*sizeof(Double_t));
-    chain->Draw("0.01*abs(meanZ)+gz2",cut,"goff");
+    chain->Draw("0.01*abs(meanZ)+abs(gz2)*0.5+0.1",cut,"goff");
     memcpy(smZ, chain->GetV1(), entries*sizeof(Double_t));
     //
     //
@@ -2167,6 +2178,16 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain){
     // store data  
     // phi
     f->cd("dirphi");
+    Float_t phiB0 =0;
+    Float_t phiPB0=0;
+    Float_t zB0=0;
+    for (Int_t ientry=0; ientry<entries; ientry++){
+      if (TMath::Abs(bz[ientry])<0.05){
+	phiB0  = mphi[ientry];
+	phiPB0 = mphiP[ientry];
+	zB0    = mZ[ientry];
+      }
+    }
     TGraphErrors *grphi = new TGraphErrors(entries,bz,mphi,sbz,smphi);
     grphi->Draw("a*");
     grphi->Fit(&fp);
@@ -2216,7 +2237,9 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain){
 
     gPad->SaveAs(Form("pic/z/z_%s.gif",grnamefull));
     grmZ->Write();
-    
+    //
+    // P4
+    //
 
     for (Int_t ientry=0; ientry<entries; ientry++){
       (*pcstream)<<"Mean"<<
@@ -2231,19 +2254,23 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain){
 	"lpx1="<<lpxyz[1]<<          // reference y
 	"lpx2="<<lpxyz[2]<<          // refernece z            
 	//values
+	"phiB0="<<phiB0<<          // position shift at 0 field
+	"phiPB0="<<phiPB0<<        // angular  shift at 0 field
+	"zB0="<<zB0<<              // z shift for 0 field
+	//
 	"gphi1="<<mphi[ientry]<< // mean - from gaus fit
 	"pphi0="<<pphi[0]<<   // offset
-	"pphi1="<<pphi[1]<<   // mean
+	"pphi1="<<pphi[1]<<   // slope
 	"pphi2="<<pphi[2]<<   // norm chi2
 	//
 	"gphiP1="<<mphiP[ientry]<< // mean - from gaus fit
 	"pphiP0="<<pphiP[0]<< // offset
-	"pphiP1="<<pphiP[1]<< // mean
+	"pphiP1="<<pphiP[1]<< // slope
 	"pphiP2="<<pphiP[2]<< // norm chi2
 	//
 	"gz1="<<mZ[ientry]<<
 	"pmZ0="<<pmZ[0]<<     // offset
-	"pmZ1="<<pmZ[1]<<     // mean
+	"pmZ1="<<pmZ[1]<<     // slope
 	"pmZ2="<<pmZ[2]<<     // norm chi2
 	"\n";
     }
