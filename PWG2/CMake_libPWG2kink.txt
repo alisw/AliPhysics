@@ -1,0 +1,14 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+    KINK/AliAnalysisKinkESDMC.cxx
+    KINK/AliResonanceKinkLikeSign.cxx
+    KINK/AliResonanceKinkPID.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(PWG2kink "${SRCS}" "${HDRS}")
+

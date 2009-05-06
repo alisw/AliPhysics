@@ -14,6 +14,7 @@ class TF1;
 class TTree;
 class AliESDEvent;
 class AliPID;
+class AliAnalysisTaskSE;
 
 class AliResonanceKinkLikeSign : public AliAnalysisTaskSE {
  public:

@@ -15,6 +15,7 @@ ${CMAKE_SOURCE_DIR}/PWG2/FEMTOSCOPY/AliFemto
 ${CMAKE_SOURCE_DIR}/PWG2/FEMTOSCOPY/AliFemtoUser
 ${CMAKE_SOURCE_DIR}/PWG2/FLOW/AliFlowCommon
 ${CMAKE_SOURCE_DIR}/PWG2/FLOW/AliFlowTasks
+${CMAKE_SOURCE_DIR}/PWG2/KINK
 ${CMAKE_SOURCE_DIR}/PWG2/SPECTRA
 ${CMAKE_SOURCE_DIR}/STEER
 ${CMAKE_SOURCE_DIR}/CORRFW
@@ -33,6 +34,8 @@ link_directories( ${LINK_DIRECTORIES})
 SetModule()
 
 include(CMake_libPWG2spectra.txt)
+
+include(CMake_libPWG2kink.txt)
 
 include(CMake_libPWG2flowCommon.txt)
 
