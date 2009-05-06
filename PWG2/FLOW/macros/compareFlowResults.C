@@ -42,6 +42,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Bool_t plotQC6PtRP   = kFALSE; // not calculated yet
   Bool_t plotQC8PtRP   = kFALSE; // not calculated yet
   Bool_t plotLYZ2PtRP  = kTRUE;
+  Bool_t plotLYZEPPtRP = kTRUE;  
   
   // set here which methods will be plotted by default for differential flow (Eta,RP):
   Bool_t plotMCEtaRP    = kFALSE;
@@ -79,8 +80,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Bool_t plotGFC8PtPOI  = kTRUE;
   Bool_t plotQC2PtPOI   = kTRUE;
   Bool_t plotQC4PtPOI   = kTRUE;
-  Bool_t plotQC6PtPOI   = kFALSE;
-  Bool_t plotQC8PtPOI   = kFALSE;
+  Bool_t plotQC6PtPOI   = kFALSE; // not calculated yet
+  Bool_t plotQC8PtPOI   = kFALSE; // not calculated yet
   Bool_t plotLYZ2PtPOI  = kTRUE;
   Bool_t plotLYZEPPtPOI = kTRUE; 
   
@@ -1885,7 +1886,6 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
 
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Pt, RP):
- Bool_t plotLYZEPPtRP = kTRUE;  
  if(plotDiffFlowPtRP)
  {
   TCanvas* diffFlowPtAllCanvasRP = new TCanvas("Differential Flow (Pt) of RP","Differential Flow (Pt) of RP ",1000,600);
@@ -2397,7 +2397,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     }
     if(dvnMC!=0. && dvnSP!=0.) 
     {
-     spDiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnSP-dvnMC)/dvnMC));
+     spDiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnSP-dvnMC)/dvnMC);
     }
     
     // GFC{2}:
@@ -2408,7 +2408,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     }
     if(dvnMC!=0. && dvnGFC2!=0.) 
     {
-     gfc2DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnGFC2-dvnMC)/dvnMC));
+     gfc2DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnGFC2-dvnMC)/dvnMC);
     }
     
     // GFC{4}:
@@ -2419,7 +2419,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     }
     if(dvnMC!=0. && dvnGFC4!=0.) 
     {
-     gfc4DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnGFC4-dvnMC)/dvnMC));
+     gfc4DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnGFC4-dvnMC)/dvnMC);
     }
     
     // GFC{6}:
@@ -2430,7 +2430,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     }
     if(dvnMC!=0. && dvnGFC6!=0.) 
     {
-     gfc6DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnGFC6-dvnMC)/dvnMC));
+     gfc6DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnGFC6-dvnMC)/dvnMC);
     }
     
     // GFC{8}:
@@ -2441,7 +2441,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     }
     if(dvnMC!=0. && dvnGFC8!=0.) 
     {
-     gfc8DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnGFC8-dvnMC)/dvnMC));
+     gfc8DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnGFC8-dvnMC)/dvnMC);
     }
     
     // QC{2}:
@@ -2452,7 +2452,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     }
     if(dvnMC!=0. && dvnQC2!=0.) 
     {
-     qc2DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnQC2-dvnMC)/dvnMC));
+     qc2DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnQC2-dvnMC)/dvnMC);
     }
     
     // QC{4}:
@@ -2463,7 +2463,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     }
     if(dvnMC!=0. && dvnQC4!=0.) 
     {
-     qc4DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnQC4-dvnMC)/dvnMC));
+     qc4DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnQC4-dvnMC)/dvnMC);
     }
     
     // QC{6}:
@@ -2474,7 +2474,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     }
     if(dvnMC!=0. && dvnQC6!=0.) 
     {
-     qc6DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnQC6-dvnMC)/dvnMC));
+     qc6DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnQC6-dvnMC)/dvnMC);
     }
     
     // QC{8}:
@@ -2485,7 +2485,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     }
     if(dvnMC!=0. && dvnQC8!=0.) 
     {
-     qc8DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnQC8-dvnMC)/dvnMC));
+     qc8DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnQC8-dvnMC)/dvnMC);
     }
     
     // LYZ2:
@@ -2496,7 +2496,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     }
     if(dvnMC!=0. && dvnLYZ2!=0.) 
     {
-     lyz2DiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnLYZ2-dvnMC)/dvnMC));
+     lyz2DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnLYZ2-dvnMC)/dvnMC);
     }
       
     // LYZEP:
@@ -2507,7 +2507,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     }
     if(dvnMC!=0. && dvnLYZEP!=0.) 
     {
-     lyzepDiffFlowPtRelativeToMCRP->SetBinContent(p,TMath::Abs((dvnLYZEP-dvnMC)/dvnMC));
+     lyzepDiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnLYZEP-dvnMC)/dvnMC);
     }  
  
    } // end of for(Int_t p=1;p<iNbinsPt+1;p++)
