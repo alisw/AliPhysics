@@ -143,6 +143,16 @@ class AliHLTAltroEncoder : AliHLTLogging {
    */
   void Revert40BitWords(Int_t CDHSize, Int_t trailerSize);
 
+  void SetUse32BitFormat(Bool_t flag){f32BitFormat=flag;}
+
+  void PrintDebug();
+
+  void SetDDLid(Int_t ddl){fDDLid=ddl;}
+
+  void SetSlice(UInt_t slice){fSlice=slice;}
+
+  void SetPartition(UInt_t partition){fPartition=partition;}
+
   enum {
     kUnknownOrder = 0,
     kAscending,
@@ -205,10 +215,23 @@ class AliHLTAltroEncoder : AliHLTLogging {
   /// common data header
   TArrayC* fpCDH; //!transient
 
+  // size of CDH
+  Int_t fCDHSize; //! transient
+
   /// RCU trailer
   TArrayC* fpRCUTrailer; //!transient
 
-  ClassDef(AliHLTAltroEncoder, 1);
+  Bool_t f32BitFormat;
+  AliHLTUInt8_t *fPointerToCurrentAltroHeader;   //! transient Pointer to the AltroHeader of the current channel (pad)
+  AliHLTUInt8_t *fPointerToCurrentBunchWord;     //! transient This points to the first 8 bit in the 32 bit word that contain the bunch length information 
+  Int_t fWordLocationOfBunchCount;               //! Number containing information on which of the 3 10 bit words containing the bunch size 
+  Int_t fNumberOfAltroHeadersInPayload;          //! transient
+  Bool_t fFillWord;                              //! transient
+  Int_t fDDLid;                                  //! transient
+  UInt_t fSlice;                                 //! transient
+  UInt_t fPartition;                             //! transient
+
+  ClassDef(AliHLTAltroEncoder, 2);
 };
 
 #endif

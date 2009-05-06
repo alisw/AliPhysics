@@ -43,7 +43,17 @@ AliHLTAltroEncoder::AliHLTAltroEncoder()
   f10bitWords(0),
   fOrder(kUnknownOrder),
   fpCDH(NULL),
-  fpRCUTrailer(NULL)
+  fCDHSize(0),
+  fpRCUTrailer(NULL),
+  f32BitFormat(kFALSE),
+  fPointerToCurrentAltroHeader(NULL),
+  fPointerToCurrentBunchWord(NULL),
+  fWordLocationOfBunchCount(0),
+  fNumberOfAltroHeadersInPayload(0),
+  fFillWord(kFALSE),
+  fDDLid(0),
+  fSlice(0),
+  fPartition(0)
 {
   // see header file for class documentation
   // or
@@ -65,7 +75,17 @@ AliHLTAltroEncoder::AliHLTAltroEncoder(AliHLTUInt8_t* pBuffer, int iSize)
   f10bitWords(0),
   fOrder(kUnknownOrder),
   fpCDH(NULL),
-  fpRCUTrailer(NULL)
+  fCDHSize(0),
+  fpRCUTrailer(NULL),
+  f32BitFormat(kFALSE),
+  fPointerToCurrentAltroHeader(NULL),
+  fPointerToCurrentBunchWord(NULL),
+  fWordLocationOfBunchCount(0),
+  fNumberOfAltroHeadersInPayload(0),
+  fFillWord(kFALSE),
+  fDDLid(0),
+  fSlice(0),
+  fPartition(0)
 {
   // see header file for class documentation
 }
@@ -123,34 +143,75 @@ int AliHLTAltroEncoder::SetChannel(AliHLTUInt16_t hwaddress)
 {
   // see header file for class documentation
   int iResult=0;
-  int added10BitWords=0;
-  if (!fpBuffer) return -ENODEV;
-  if (fOffset+5>=fBufferSize-(fpRCUTrailer?fpRCUTrailer->GetSize():0)) {
-    HLTWarning("buffer too small too finalize channel: %d of %d byte(s) already used", fOffset, fBufferSize);
-    return -ENOSPC;
-  }
+  if(f32BitFormat == kTRUE){
+    if(fPointerToCurrentAltroHeader==NULL){
+      return -1; //Add correct error
+    }
 
-  if (iResult>=0 && 
-      (iResult=SetBunch())>=0) {
-    AliHLTUInt16_t length=f10bitWords-fChannelStart;
-    if ((iResult=Pad40Bit())<0) return iResult;
-    // 2 words for the SetBunch (end time and length) and the
-    // padded words to fill 40bit word
-    added10BitWords=iResult+2;
-    assert((length+iResult)%4==0);
-    //HLTInfo("%d %x", hwaddress, hwaddress);
-    fpBuffer[fOffset++]=hwaddress&0xff;
-    fpBuffer[fOffset++]=0xa0 | ((hwaddress>>8)&0xf);
-    fpBuffer[fOffset++]=length&0xff;
-    fpBuffer[fOffset++]=0xa8 | ((length>>8)&0x3);
-    fpBuffer[fOffset++]=0xaa;
-    f10bitWords+=4;
+
+    SetBunch();//finalize the last bunch
+
+    f10bitWords-=2;//remove the two words that was reserved for the next bunch
+    
+    // set all bits in the altro header to 0
+    for(Int_t i=0;i<4;i++){
+      fPointerToCurrentAltroHeader[i]=0;
+    }
+    //set the HW address to bit 0-15
+    fPointerToCurrentAltroHeader[0]=hwaddress&0xff;      // copy the first 8 bits
+    fPointerToCurrentAltroHeader[1]=(hwaddress>>8)&0xff; // copy the last 8 bits
+    
+    // set number of 10 bit words to bit 16-28
+    AliHLTUInt16_t length= f10bitWords - fChannelStart;
+    fPointerToCurrentAltroHeader[2]= length&0xff;     // copy the first 8 bits
+    fPointerToCurrentAltroHeader[3]= (length>>8)&0xf; // copy the last 4 bits
+
+ 
+    //fill up with fillwords
+    while((f10bitWords%3) != 0){
+      fFillWord=kTRUE;
+      Add10BitValue(0);
+    }
+    fFillWord= kFALSE;
+
+    // Set the error bit to 0 (bit 29) and the bit 30 and 31 to 10(mark that this is the altro header)
+    // These three bits are already zero, so in effect it is only bit 31 which is set to 1
+    fPointerToCurrentAltroHeader[3] |= 0x40; // (0x80 = 1 0 0 0 0 0 0 0)
     fChannelStart=f10bitWords;
-    fChannels.push_back(hwaddress);
-    fPrevTimebin=AliHLTUInt16MAX;
+    fNumberOfAltroHeadersInPayload++;
   }
-  if (iResult<0) return iResult;
-  return added10BitWords;
+  else{
+    int added10BitWords=0;
+    if (!fpBuffer) return -ENODEV;
+    if (fOffset+5>=fBufferSize-(fpRCUTrailer?fpRCUTrailer->GetSize():0)) {
+      HLTWarning("buffer too small too finalize channel: %d of %d byte(s) already used", fOffset, fBufferSize);
+      return -ENOSPC;
+    }
+    
+    if (iResult>=0 && 
+	(iResult=SetBunch())>=0) {
+      AliHLTUInt16_t length=f10bitWords-fChannelStart;
+      if ((iResult=Pad40Bit())<0) return iResult;
+      // 2 words for the SetBunch (end time and length) and the
+      // padded words to fill 40bit word
+      added10BitWords=iResult+2;
+      assert((length+iResult)%4==0);
+      //HLTInfo("%d %x", hwaddress, hwaddress);
+      fpBuffer[fOffset++]=hwaddress&0xff;
+      fpBuffer[fOffset++]=0xa0 | ((hwaddress>>8)&0xf);
+      fpBuffer[fOffset++]=length&0xff;
+      fpBuffer[fOffset++]=0xa8 | ((length>>8)&0x3);
+      fpBuffer[fOffset++]=0xaa;
+      f10bitWords+=4;
+      fChannelStart=f10bitWords;
+      fChannels.push_back(hwaddress);
+      fPrevTimebin=AliHLTUInt16MAX;
+    }
+    if (iResult<0) return iResult;
+    
+    return added10BitWords;
+  }
+  return 0;
 }
 
 int AliHLTAltroEncoder::AddChannelSignal(AliHLTUInt16_t signal, AliHLTUInt16_t timebin, AliHLTUInt16_t hwaddress)
@@ -195,11 +256,106 @@ int AliHLTAltroEncoder::SetBunch()
   if (fBunchLength==0) return 0;
 
   // fill time bin and bunch length
-  if ((iResult=Add10BitValue(fPrevTimebin))>=0) {
-    iResult=Add10BitValue(fBunchLength+2);
-    fBunchLength=0;
-    iResult=2;
+  if(f32BitFormat == kTRUE){
+    if(fWordLocationOfBunchCount==3){
+      //means we have to put the n10bitWords into word 3 
+      //of the 32 bit word and the timebin value into word 2
+      fBunchLength+=2;//takes the n10bitwords and the timebin value into account
+
+      //insert the first 4 bits of the 10 bit word into the end of 8bit word 3.
+      fPointerToCurrentBunchWord[2] |= (fBunchLength<<4)&0xf0;
+      
+      //insert the last 6 bits of the 10 bit word into the beginning of 8bitword 4
+      fPointerToCurrentBunchWord[3] |= (fBunchLength>>4)&0x3f;
+      
+      //set the timebin value
+      //insert the first 6 bits of the 10bitword into the end of 8bit word 2
+      fPointerToCurrentBunchWord[1] |= ((fPrevTimebin+fBunchLength-3)<<2)&0xfc;
+      //insert the last 4 bits of the 10bitWord into the beginning of 8bit word 3
+      fPointerToCurrentBunchWord[2] |= ((fPrevTimebin+fBunchLength-3)>>6)&0xf;
+      // set the bunch word pointer and which word the n10bitwords are in
+      fPointerToCurrentBunchWord = &fpBuffer[fOffset];
+      fWordLocationOfBunchCount = 3-f10bitWords%3;
+      if(fWordLocationOfBunchCount<3){
+	fOffset+=4;
+	fpBuffer[fOffset]=0;
+	fpBuffer[fOffset+1]=0;
+	fpBuffer[fOffset+2]=0;
+	fpBuffer[fOffset+3]=0;
+      }
+      f10bitWords+=2;// makes room for the n10bitwords and the timebin
+      fBunchLength=0;
+    }
+    else if(fWordLocationOfBunchCount==2){
+      //means we have to put the n10bitWords into word 2 of the 32 bit word
+      //and the timebin value into word 1
+
+      fBunchLength+=2;//takes the n10bitwords and the timebin value into account
+
+      //insert the first 6 bits of the 10 bit word into the end of 8bit word 2.
+      fPointerToCurrentBunchWord[1] |= (fBunchLength<<2)&0xfc;
+      
+      //insert the last 4 bits of the 10 bit word into the beginning of 8bitword 3
+      fPointerToCurrentBunchWord[2] |= (fBunchLength>>6)&0xf;
+      
+      //set the timebin value
+      //insert the first 8 bits of the 10bitword into the end of 8bit word 1
+      fPointerToCurrentBunchWord[0] |= (fPrevTimebin+fBunchLength-3)&0xff;
+      //insert the last 2 bits of the 10bitWord into the beginning of 8bit word 2
+      fPointerToCurrentBunchWord[1] |= ((fPrevTimebin+fBunchLength-3)>>8)&0x3;
+      // set the bunch word pointer and which word the n10bitwords are in
+      fPointerToCurrentBunchWord = &fpBuffer[fOffset];
+      fWordLocationOfBunchCount = 3-f10bitWords%3;
+      if(fWordLocationOfBunchCount<3){
+	fOffset+=4;
+	fpBuffer[fOffset]=0;
+	fpBuffer[fOffset+1]=0;
+	fpBuffer[fOffset+2]=0;
+	fpBuffer[fOffset+3]=0;
+      }
+      f10bitWords+=2;// makes room for the n10bitwords and the timebin
+      fBunchLength=0;
+    }
+    else if(fWordLocationOfBunchCount==1){
+      //means we have to put the n10bitWords into word 1 of the 32 bit word
+      //and the timebin value into word 3 of the next 32 bit word
+
+      fBunchLength+=2;//takes the n10bitwords and the timebin value into account
+
+      //insert the first 8 bits of the 10 bit word into the beginning of 8bit word 1.
+      fPointerToCurrentBunchWord[0] |= fBunchLength&0xff;
+      
+      //insert the last 2 bits of the 10 bit word into the beginning of 8bitword 2
+      fPointerToCurrentBunchWord[1] |= (fBunchLength>>8)&0x3;
+      
+      //set the timebin value
+      //insert the first 4 bits of the 10bitword into the end of 8bit word 7
+      fPointerToCurrentBunchWord[6] |= ((fPrevTimebin+fBunchLength-3)<<4)&0xf0;
+      //insert the last 6 bits of the 10bitWord into the beginning of 8bit word 8
+      fPointerToCurrentBunchWord[7] |= ((fPrevTimebin+fBunchLength-3)>>4)&0x3f;
+      // set the bunch word pointer and which word the n10bitwords are in
+      fPointerToCurrentBunchWord = &fpBuffer[fOffset];
+      fWordLocationOfBunchCount = 3-f10bitWords%3;
+      if(fWordLocationOfBunchCount<3){
+	fOffset+=4;
+	fpBuffer[fOffset]=0;
+	fpBuffer[fOffset+1]=0;
+	fpBuffer[fOffset+2]=0;
+	fpBuffer[fOffset+3]=0;
+      }
+      f10bitWords+=2;// makes room for the n10bitwords and the timebin
+      fBunchLength=0;
+    }
+    
   }
+  else{
+    if ((iResult=Add10BitValue(fPrevTimebin))>=0) {
+      iResult=Add10BitValue(fBunchLength+2);
+      fBunchLength=0;
+      iResult=2;
+    }
+  }
+  //  fPrevTimebin=AliHLTUInt16MAX;// resets the timebin number
   return iResult;
 }
 
@@ -213,17 +369,83 @@ int AliHLTAltroEncoder::Add10BitValue(AliHLTUInt16_t value)
     return -ENOSPC;
   }
 
-  int bit=(f10bitWords%4)*10;
-  int shift=bit%8;
-  unsigned short maskLow=~((0xff<<shift)>>8);
-  //unsigned short maskHigh=~((0xff<<((bit+10)%8))>>8);
-  if (bit==0) fpBuffer[fOffset]=0;
-  fpBuffer[fOffset++]|=maskLow&(value<<shift);
-  fpBuffer[fOffset]=(value&0x3ff)>>(8-shift);
-  f10bitWords++;
-  if (f10bitWords%4==0) fOffset++;
+  if(value>1023){
+    HLTError("10 bit value cannot be larger than 1023, something is wrong.");
+    return -1; //TODO find better error
+  }
 
-  return iResult;
+  if(f32BitFormat == kFALSE){
+    int bit=(f10bitWords%4)*10;
+    int shift=bit%8;
+    unsigned short maskLow=~((0xff<<shift)>>8);
+    //unsigned short maskHigh=~((0xff<<((bit+10)%8))>>8);
+    if (bit==0) fpBuffer[fOffset]=0;
+    fpBuffer[fOffset++]|=maskLow&(value<<shift);
+    fpBuffer[fOffset]=(value&0x3ff)>>(8-shift);
+    f10bitWords++;
+    if (f10bitWords%4==0) fOffset++;
+    return iResult;
+  }
+  else{
+    if(f10bitWords == fChannelStart){ //means that there is a new channel(or the first)
+      fPointerToCurrentAltroHeader = &fpBuffer[fOffset]; // set a pointer to the beginning of the altro header
+
+      fOffset+=4; //Makes space for the altro header in front of the altrodata (1 32 bit word)
+      
+      fpBuffer[fOffset]=0;
+      fpBuffer[fOffset+1]=0;
+      fpBuffer[fOffset+2]=0;
+      fpBuffer[fOffset+3]=0;
+      
+      //set the pointer to the bunch currently being filled
+      //it is always in the 3d 10 bit word when a new channel has started.
+      fPointerToCurrentBunchWord = &fpBuffer[fOffset];
+      fWordLocationOfBunchCount=3;
+      //make room for the n10BitWords, and the timebin value
+      //      fOffset+=2;
+      f10bitWords+=2;
+    }
+
+    int bit=20-(f10bitWords%3)*10;
+
+    if(bit ==20){//means we should fill the third word
+      //set bits 25-32 to 0, this also takes care of setting the marker (00) at the end.
+      fpBuffer[fOffset+3] = 0;
+      //copy the last 6 bits of the signal into the first 6 bits of 8BitWord 3
+      fpBuffer[fOffset+3] |= (value>>4)&0x3f;
+      //set bits 17-24 to 0
+      fpBuffer[fOffset+2]=0;
+      //copy the first 4 bits of the signal into the last 4 bits of 8BitWord 2
+      fpBuffer[fOffset+2] |= (value<<4)&0xf0;
+      f10bitWords++;
+    }
+    else if(bit == 10){//means we should fill the middle (2nd) word
+      //copy the last 4 bits of the signal into the first 4 bits of 8BitWord 2
+      fpBuffer[fOffset+2] |= (value>>6)&0xf;
+      //set bits 8-16 to 0
+      fpBuffer[fOffset+1]=0;
+      //copy the first 6 bits of the signal into the last 6 bits of 8BitWord 1
+      fpBuffer[fOffset+1] |= (value<<2)&0xfc;
+      f10bitWords++;
+    }
+    else if(bit == 0){
+      //set bits 0-7 to 0
+      fpBuffer[fOffset]=0;
+      //copy the last 2 bits of the signal into the first 2 bits of 8BitWord 1
+      fpBuffer[fOffset+1] |= (value>>8)&0x3;
+      //copy the first 8 bits of the signal into the first 8 bits of 8BitWord 0
+      fpBuffer[fOffset] |= value&0xff;
+      f10bitWords++;
+      if(fFillWord == kFALSE){
+	fOffset += 4; // only increase when the last word is added
+	fpBuffer[fOffset]=0;
+	fpBuffer[fOffset+1]=0;
+	fpBuffer[fOffset+2]=0;
+	fpBuffer[fOffset+3]=0;
+      }
+    }
+  }
+  return f10bitWords;
 }
 
 int AliHLTAltroEncoder::Pad40Bit()
@@ -256,6 +478,7 @@ int AliHLTAltroEncoder::SetCDH(AliHLTUInt8_t* pCDH,int size)
       fpCDH->Set(0);
       fpCDH->Set(size, (const char*)pCDH);
       fOffset=size;
+      fCDHSize=size;
     } else {
       iResult=-ENOMEM;
     }
@@ -308,31 +531,109 @@ int AliHLTAltroEncoder::SetLength()
     *pCdhSize=fOffset;//set the first word in the header to be the fOffset(number of bytes added)  
     HLTDebug("Size set in the header: %d",*pCdhSize);
   }
+  if(f32BitFormat == kTRUE){
+    //set all bits to 1 in the first 32 bit of the cdh
+    
+    //word 0
+    fpBuffer[0] |= 0xff;
+    fpBuffer[1] |= 0xff;
+    fpBuffer[2] |= 0xff;
+    fpBuffer[3] |= 0xff;
+    
+    //word 3
+    fpBuffer[14] =0;
+    fpBuffer[14] |= 0x2;
+
+  }
   return fOffset;
 }
 
-void AliHLTAltroEncoder::Revert40BitWords(Int_t CDHSize, Int_t trailerSize)
+void AliHLTAltroEncoder::Revert40BitWords(Int_t /*CDHSize*/, Int_t /*trailerSize*/)
 {
   // see headerfile for class documentation
-  
-  //initialize to last 40 bit word in the payload
-  AliHLTUInt8_t * pointerToHighEnd40BitWord = fpBuffer + fOffset - trailerSize -5;
-  
-  //initialize to first 40 bit word in the payload
-  AliHLTUInt8_t * pointerToLowEnd40BitWord = fpBuffer+CDHSize;
-
-  assert(((pointerToHighEnd40BitWord - pointerToLowEnd40BitWord)+5)%5 == 0 );//check that it is a whole number of 40 bit words
-
-  Int_t total40BitWords = ((pointerToHighEnd40BitWord - pointerToLowEnd40BitWord) + 5)/(5);
-
-  AliHLTUInt8_t tmp8BitWords[5] = {0,0,0,0,0};
-
-  for(Int_t numberOf40BitWordMoves = 0 ; numberOf40BitWordMoves < total40BitWords/2 ; numberOf40BitWordMoves++){
-    memcpy(&tmp8BitWords, pointerToLowEnd40BitWord, 5);              // copy 40 bit word in to temporary from low side
-    memcpy(pointerToLowEnd40BitWord, pointerToHighEnd40BitWord, 5); // copy the high side 40 bit word to the low side
-    memcpy(pointerToHighEnd40BitWord, &tmp8BitWords, 5);             // copy from the temporary to the high side 40 bits 
-    pointerToLowEnd40BitWord += 5;
-    pointerToHighEnd40BitWord -= 5;
-  }
-
+  HLTWarning("Revert40BitWords function no longer has any function, please remove this function call from your analysis");
 }
+
+void AliHLTAltroEncoder::PrintDebug()
+{
+  int n32bitWords = fOffset/4;
+  int word8Counter = 0;
+  Bool_t isAnAltroHeader=kFALSE;
+  Bool_t isData=kFALSE;
+  Bool_t isCDH=kFALSE;
+  Bool_t isTrailer=kFALSE;
+  
+  for(Int_t n32bit=0;n32bit<n32bitWords;n32bit++){
+    isAnAltroHeader=kFALSE;
+    isData=kFALSE;
+    isCDH=kFALSE;
+    isTrailer=kFALSE;
+    for(Int_t w=0;w<4;w++){
+      Int_t wordPosition = 4-word8Counter%4;
+      AliHLTUInt8_t word = fpBuffer[n32bit*4+wordPosition-1];
+      
+      if(n32bit < fCDHSize/4){
+	isCDH = kTRUE;
+      }
+      else if(wordPosition==4 && (word & 0x80)==0 && (word & 0x40)!=0){//means we have a altroheader 
+	isAnAltroHeader=kTRUE;
+      }
+      else if(wordPosition==4 && (word & 0x80)==0 && (word & 0x40)==0){//means we have data
+	isData=kTRUE;
+      }
+      else if(wordPosition==4 && (word & 0x80) !=0 && (word & 0x40)==0){//means we have trailer
+	isTrailer=kTRUE;
+      }
+      else if(wordPosition==4 && (word & 0x80) !=0 && (word & 0x40) !=0){//means we have trailer (last trailer word)
+	isTrailer=kTRUE;
+      }
+      for(int n=7; n>=0; n--){
+	if(isAnAltroHeader == kTRUE){
+	  if((wordPosition == 4 && n==5) || (wordPosition == 4 && n==4) /*|| wordPosition == 4 && n==0*/){
+	    printf("\t");
+	  }
+	  if(wordPosition == 2 && n==7){
+	    printf("\t");
+	  }
+	}
+	else if(isData == kTRUE){
+	  if(wordPosition == 4 && n==5){
+	    printf("\t");
+	  }
+	  if(wordPosition == 3 && n==3){
+	    printf("\t");
+	  }
+	  if(wordPosition == 2 && n==1){
+	    printf("\t");
+	  }
+	}
+	else if(isTrailer == kTRUE){
+	  if(wordPosition == 4 && n==5){
+	    printf("\t");
+	  }
+	}
+	//print the byte values
+	if((((word>>n)<<7)&0x80) != 0){
+	  printf("1");
+	}
+	else{
+	  printf("0");
+	}
+      }
+      word8Counter++;
+    }
+    if(isCDH == kTRUE){
+      printf("\t CDH %d\n",n32bit);
+    }
+    else if(isAnAltroHeader == kTRUE){
+      printf("\t AltroHeader \n");
+    }
+    else if(isData == kTRUE){
+      printf("\t Data \n");
+    }
+    else if(isTrailer == kTRUE){
+      printf("\t Trailer \n");
+    }
+  }
+}
+
