@@ -48,11 +48,14 @@ Int_t ShowITSHitsRecPoints(Bool_t align=kFALSE,
   if(!gGeoManager){
     AliGeomManager::LoadGeometry("geometry.root");
   }
+
   if(align) {
     TFile f(alignfile.Data());
     TClonesArray* ar = (TClonesArray*)f.Get("ITSAlignObjs");
     AliGeomManager::ApplyAlignObjsToGeom(*ar);
     f.Close();
+  } else {
+    AliGeomManager::ApplyAlignObjsFromCDB("ITS");
   }
 
   AliRunLoader* rl = AliRunLoader::Open("galice.root");
@@ -363,7 +366,10 @@ Int_t ShowITSHitsRecPointsNtuple(Bool_t align=kFALSE,
     TClonesArray* ar = (TClonesArray*)f.Get("ITSAlignObjs");
     AliGeomManager::ApplyAlignObjsToGeom(*ar);
     f.Close();
+  } else {
+    AliGeomManager::ApplyAlignObjsFromCDB("ITS");
   }
+
 
   AliRunLoader* rl = AliRunLoader::Open("galice.root");
   if (rl == 0x0){
