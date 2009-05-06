@@ -217,13 +217,10 @@ TH1D *AliCFEffGrid::Project(Int_t ivar) const
   // Make a 1D projection along variable ivar 
   //
  
-  const Int_t nDim = 1 ;
-  Int_t dim[nDim] = {ivar} ;
-  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
-  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
+  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid();
+  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid();
   THnSparse* ratio = (THnSparse*)hNum->Clone();
   ratio->Divide(hNum,hDen,1.,1.,"B");
-  delete hNum; delete hDen;
   return ratio->Projection(ivar);
 } 
 //___________________________________________________________________
@@ -232,14 +229,10 @@ TH2D *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
   //
   // Make a 2D projection along variable ivar1,ivar2 
   //
-  
-  const Int_t nDim = 2 ;
-  Int_t dim[nDim] = {ivar1,ivar2} ;
-  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
-  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
+  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid();
+  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid();
   THnSparse* ratio = (THnSparse*)hNum->Clone();
   ratio->Divide(hNum,hDen,1.,1.,"B");
-  delete hNum; delete hDen;
   return ratio->Projection(ivar1,ivar2);
 } 
 //___________________________________________________________________
@@ -249,13 +242,10 @@ TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   // Make a 3D projection along variable ivar1,ivar2,ivar3 
   //
 
-  const Int_t nDim = 3 ;
-  Int_t dim[nDim] = {ivar1,ivar2,ivar3} ;
-  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
-  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
+  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid();
+  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid();
   THnSparse* ratio = (THnSparse*)hNum->Clone();
   ratio->Divide(hNum,hDen,1.,1.,"B");
-  delete hNum; delete hDen;
   return ratio->Projection(ivar1,ivar2,ivar3);
 } 
 
