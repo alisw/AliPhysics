@@ -1535,29 +1535,29 @@ void AliAnalysisTaskGammaConversion::ElectronBackground(TString hBg, vector <TLo
 void AliAnalysisTaskGammaConversion::CleanWithAngleCuts(vector <AliESDtrack*> NegativeElectrons,
 							vector <AliESDtrack*> PositiveElectrons, vector <AliKFParticle> Gammas){
 
-  UInt_t  N = NegativeElectrons.size();
-  UInt_t  P = PositiveElectrons.size();
-  UInt_t  G = Gammas.size();
+  UInt_t  Nsize = NegativeElectrons.size();
+  UInt_t  Psize = PositiveElectrons.size();
+  UInt_t  Gsize = Gammas.size();
 
 
 
-  vector <Bool_t> xNegBand(N);
-  vector <Bool_t> xPosBand(P);
-  vector <Bool_t> gammaBand(G);
+  vector <Bool_t> xNegBand(Nsize);
+  vector <Bool_t> xPosBand(Psize);
+  vector <Bool_t> gammaBand(Gsize);
 
 
-  for(UInt_t iNeg=0; iNeg < N; iNeg++) xNegBand[iNeg]=kTRUE;
-  for(UInt_t iPos=0; iPos < P; iPos++) xPosBand[iPos]=kTRUE;
-  for(UInt_t iGam=0; iGam < G; iGam++) gammaBand[iGam]=kTRUE;
+  for(UInt_t iNeg=0; iNeg < Nsize; iNeg++) xNegBand[iNeg]=kTRUE;
+  for(UInt_t iPos=0; iPos < Psize; iPos++) xPosBand[iPos]=kTRUE;
+  for(UInt_t iGam=0; iGam < Gsize; iGam++) gammaBand[iGam]=kTRUE;
 
 
-  for(UInt_t iPos=0; iPos < P; iPos++){
+  for(UInt_t iPos=0; iPos < Psize; iPos++){
 	
     Double_t P[3]; PositiveElectrons[iPos]->GetConstrainedPxPyPz(P); 
 
     TVector3 ePosV(P[0],P[1],P[2]);
 
-    for(UInt_t iNeg=0; iNeg < N; iNeg++){
+    for(UInt_t iNeg=0; iNeg < Nsize; iNeg++){
 	
       Double_t N[3]; NegativeElectrons[iNeg]->GetConstrainedPxPyPz(N); 
       TVector3 eNegV(N[0],N[1],N[2]);
@@ -1567,7 +1567,7 @@ void AliAnalysisTaskGammaConversion::CleanWithAngleCuts(vector <AliESDtrack*> Ne
 	xNegBand[iNeg]=kFALSE;
       }
 
-      for(UInt_t iGam=0; iGam < G; iGam++){
+      for(UInt_t iGam=0; iGam < Gsize; iGam++){
 	AliKFParticle* GammaCandidate = &Gammas[iGam];
 	TVector3 GammaCandidateVector(GammaCandidate->Px(),GammaCandidate->Py(),GammaCandidate->Pz());
 	if(ePosV.Angle(GammaCandidateVector) < 0.05 || eNegV.Angle(GammaCandidateVector) < 0.05)
@@ -1579,17 +1579,17 @@ void AliAnalysisTaskGammaConversion::CleanWithAngleCuts(vector <AliESDtrack*> Ne
 
 
 
-  for(UInt_t iPos=0; iPos < P; iPos++){
+  for(UInt_t iPos=0; iPos < Psize; iPos++){
     if(xPosBand[iPos]){
       fCurrentEventPosElectron.push_back(PositiveElectrons[iPos]);
     }
   }
-  for(UInt_t iNeg=0;iNeg < N; iNeg++){
+  for(UInt_t iNeg=0;iNeg < Nsize; iNeg++){
     if(xNegBand[iNeg]){
       fCurrentEventNegElectron.push_back(NegativeElectrons[iNeg]);
     }
   }
-  for(UInt_t iGam=0; iGam < G; iGam++){
+  for(UInt_t iGam=0; iGam < Gsize; iGam++){
     if(gammaBand[iGam]){
       fKFReconstructedGammasCut.push_back(Gammas[iGam]);
     }
