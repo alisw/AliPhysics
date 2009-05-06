@@ -18,14 +18,14 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   //==================================================================================
   Bool_t plotIntFlow = kTRUE;                  // integrated flow (no-name) // to be improved
   // RP = particles used to determine the reaction plane
-  Bool_t plotIntFlowRP = kTRUE;                // integrated flow RP
+  Bool_t plotIntFlowRP = kTRUE;               // integrated flow RP
   Bool_t plotDiffFlowPtRP = kTRUE;             // differential flow (Pt,RP)
   Bool_t plotDiffFlowEtaRP = kTRUE;            // differential flow (Eta,RP)
   Bool_t plotDiffFlowPtRelativeToMCRP = kTRUE; // plot |v{MC}-v{method}/v{MC}| as a function of pt for RPs   
   // POI = particle of interest
-  Bool_t plotIntFlowPOI = kTRUE;               //integrated flow POI
-  Bool_t plotDiffFlowPtPOI = kTRUE;            //differential flow (Pt,POI)
-  Bool_t plotDiffFlowEtaPOI = kTRUE;           //differential flow (Eta,POI)
+  Bool_t plotIntFlowPOI = kTRUE;              //integrated flow POI
+  Bool_t plotDiffFlowPtPOI = kTRUE;           //differential flow (Pt,POI)
+  Bool_t plotDiffFlowEtaPOI = kTRUE;          //differential flow (Eta,POI)
   //==================================================================================
   
   
@@ -2320,39 +2320,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   }
  }// end of if(plotDiffFlowEtaRP)
  //----------------------------------------------------------------------------------
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
  
  //----------------------------------------------------------------------------------
  // final drawing for plot |(v{method}-v{MC})/v{MC}| as a function of pt for RPs  
@@ -2367,10 +2335,12 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
  
   if(styleHistPt)
   {
-   (styleHistPt->GetYaxis())->SetRangeUser(-0.3,1.0);
-   styleHistPt->Draw();
+   TH1D *styleHistPtReleativeToMC = new TH1D(*styleHistPt);
+   (styleHistPtReleativeToMC->GetYaxis())->SetRangeUser(-4.0,4.0);
+   (styleHistPtReleativeToMC->GetYaxis())->SetTitle("(v_{n}\{method\} - v_{n}\{MC\})/v_{n}\{MC\}");
+   styleHistPtReleativeToMC->Draw();
   }
- 
+  
   TH1D *spDiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
   TH1D *gfc2DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
   TH1D *gfc4DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
@@ -2391,123 +2361,156 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     
     // SP:
     Double_t dvnSP = 0.;
+    Double_t dvnErrorSP = 0.;
     if(spCommonHistRes && spCommonHistRes->GetHistDiffFlowPtRP())
     {
      dvnSP = (spCommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorSP = (spCommonHistRes->GetHistDiffFlowPtRP())->GetBinError(p);
     }
     if(dvnMC!=0. && dvnSP!=0.) 
     {
      spDiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnSP-dvnMC)/dvnMC);
+     spDiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorSP);
     }
     
     // GFC{2}:
     Double_t dvnGFC2 = 0.;
+    Double_t dvnErrorGFC2 = 0.;
     if(gfcCommonHistRes2 && gfcCommonHistRes2->GetHistDiffFlowPtRP())
     {
      dvnGFC2 = (gfcCommonHistRes2->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorGFC2 = (gfcCommonHistRes2->GetHistDiffFlowPtRP())->GetBinError(p);
     }
     if(dvnMC!=0. && dvnGFC2!=0.) 
     {
      gfc2DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnGFC2-dvnMC)/dvnMC);
+     gfc2DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorGFC2);
     }
     
     // GFC{4}:
     Double_t dvnGFC4 = 0.;
+    Double_t dvnErrorGFC4 = 0.;
     if(gfcCommonHistRes4 && gfcCommonHistRes4->GetHistDiffFlowPtRP())
     {
      dvnGFC4 = (gfcCommonHistRes4->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorGFC4 = (gfcCommonHistRes4->GetHistDiffFlowPtRP())->GetBinError(p);
     }
     if(dvnMC!=0. && dvnGFC4!=0.) 
     {
      gfc4DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnGFC4-dvnMC)/dvnMC);
+     gfc4DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorGFC4);
     }
     
     // GFC{6}:
     Double_t dvnGFC6 = 0.;
+    Double_t dvnErrorGFC6 = 0.;
     if(gfcCommonHistRes6 && gfcCommonHistRes6->GetHistDiffFlowPtRP())
     {
      dvnGFC6 = (gfcCommonHistRes6->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorGFC6 = (gfcCommonHistRes6->GetHistDiffFlowPtRP())->GetBinError(p);
     }
     if(dvnMC!=0. && dvnGFC6!=0.) 
     {
      gfc6DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnGFC6-dvnMC)/dvnMC);
+     gfc6DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorGFC6);
     }
     
     // GFC{8}:
     Double_t dvnGFC8 = 0.;
+    Double_t dvnErrorGFC8 = 0.;
     if(gfcCommonHistRes8 && gfcCommonHistRes8->GetHistDiffFlowPtRP())
     {
      dvnGFC8 = (gfcCommonHistRes8->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorGFC8 = (gfcCommonHistRes8->GetHistDiffFlowPtRP())->GetBinError(p);
     }
     if(dvnMC!=0. && dvnGFC8!=0.) 
     {
      gfc8DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnGFC8-dvnMC)/dvnMC);
+     gfc8DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorGFC8);
     }
     
     // QC{2}:
     Double_t dvnQC2 = 0.;
+    Double_t dvnErrorQC2 = 0.;
     if(qcCommonHistRes2 && qcCommonHistRes2->GetHistDiffFlowPtRP())
     {
      dvnQC2 = (qcCommonHistRes2->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorQC2 = (qcCommonHistRes2->GetHistDiffFlowPtRP())->GetBinError(p);
     }
     if(dvnMC!=0. && dvnQC2!=0.) 
     {
      qc2DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnQC2-dvnMC)/dvnMC);
+     qc2DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC2);
     }
     
     // QC{4}:
     Double_t dvnQC4 = 0.;
+    Double_t dvnErrorQC4 = 0.;
     if(qcCommonHistRes4 && qcCommonHistRes4->GetHistDiffFlowPtRP())
     {
      dvnQC4 = (qcCommonHistRes4->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorQC4 = (qcCommonHistRes4->GetHistDiffFlowPtRP())->GetBinError(p);
     }
     if(dvnMC!=0. && dvnQC4!=0.) 
     {
      qc4DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnQC4-dvnMC)/dvnMC);
+     qc4DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC4);
     }
     
     // QC{6}:
     Double_t dvnQC6 = 0.;
+    Double_t dvnErrorQC6 = 0.;
     if(qcCommonHistRes6 && qcCommonHistRes6->GetHistDiffFlowPtRP())
     {
      dvnQC6 = (qcCommonHistRes6->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorQC6 = (qcCommonHistRes6->GetHistDiffFlowPtRP())->GetBinError(p);
     }
     if(dvnMC!=0. && dvnQC6!=0.) 
     {
      qc6DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnQC6-dvnMC)/dvnMC);
+     qc6DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC6);
     }
     
     // QC{8}:
     Double_t dvnQC8 = 0.;
+    Double_t dvnErrorQC8 = 0.;
     if(qcCommonHistRes8 && qcCommonHistRes8->GetHistDiffFlowPtRP())
     {
      dvnQC8 = (qcCommonHistRes8->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorQC8 = (qcCommonHistRes8->GetHistDiffFlowPtRP())->GetBinError(p);
     }
     if(dvnMC!=0. && dvnQC8!=0.) 
     {
      qc8DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnQC8-dvnMC)/dvnMC);
+     qc8DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC8);
     }
     
     // LYZ2:
     Double_t dvnLYZ2 = 0.;
+    Double_t dvnErrorLYZ2 = 0.;
     if(lyz2CommonHistRes && lyz2CommonHistRes->GetHistDiffFlowPtRP())
     {
      dvnLYZ2 = (lyz2CommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorLYZ2 = (lyz2CommonHistRes->GetHistDiffFlowPtRP())->GetBinError(p);
     }
     if(dvnMC!=0. && dvnLYZ2!=0.) 
     {
      lyz2DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnLYZ2-dvnMC)/dvnMC);
+     lyz2DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorLYZ2);
     }
       
     // LYZEP:
     Double_t dvnLYZEP = 0.;
+    Double_t dvnErrorLYZEP = 0.;
     if(lyzepCommonHistRes && lyzepCommonHistRes->GetHistDiffFlowPtRP())
     {
      dvnLYZEP = (lyzepCommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorLYZEP = (lyzepCommonHistRes->GetHistDiffFlowPtRP())->GetBinError(p);
     }
     if(dvnMC!=0. && dvnLYZEP!=0.) 
     {
      lyzepDiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnLYZEP-dvnMC)/dvnMC);
+     lyzepDiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorLYZEP);
     }  
  
    } // end of for(Int_t p=1;p<iNbinsPt+1;p++)
@@ -2517,23 +2520,23 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   // final drawings: 
   spDiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorSP);
   spDiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleSP);
-  if(plotSPRelativeToMCRP && spCommonHistRes) spDiffFlowPtRelativeToMCRP->Draw("PSAME");
+  if(plotSPRelativeToMCRP && spCommonHistRes) spDiffFlowPtRelativeToMCRP->Draw("E1PSAME");
   
   gfc2DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorGFC2);
   gfc2DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleGFC2);
-  if(plotGFC2RelativeToMCRP && gfcCommonHistRes2) gfc2DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  if(plotGFC2RelativeToMCRP && gfcCommonHistRes2) gfc2DiffFlowPtRelativeToMCRP->Draw("E1PSAME");
   
   gfc4DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorGFC4);
   gfc4DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleGFC4);
-  if(plotGFC4RelativeToMCRP && gfcCommonHistRes4) gfc4DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  if(plotGFC4RelativeToMCRP && gfcCommonHistRes4) gfc4DiffFlowPtRelativeToMCRP->Draw("E1PSAME");
   
   gfc6DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorGFC6);
   gfc6DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleGFC6);
-  if(plotGFC6RelativeToMCRP && gfcCommonHistRes6) gfc6DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  if(plotGFC6RelativeToMCRP && gfcCommonHistRes6) gfc6DiffFlowPtRelativeToMCRP->Draw("E1PSAME");
   
   gfc8DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorGFC8);
   gfc8DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleGFC8);
-  if(plotGFC8RelativeToMCRP && gfcCommonHistRes8) gfc8DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  if(plotGFC8RelativeToMCRP && gfcCommonHistRes8) gfc8DiffFlowPtRelativeToMCRP->Draw("E1PSAME");
   
   qc2DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorQC2);
   qc2DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleQC2);
@@ -2553,11 +2556,11 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   
   lyz2DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorLYZ2);
   lyz2DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleLYZ2);
-  if(plotLYZ2RelativeToMCRP && lyz2CommonHistRes) lyz2DiffFlowPtRelativeToMCRP->Draw("PSAME");
+  if(plotLYZ2RelativeToMCRP && lyz2CommonHistRes) lyz2DiffFlowPtRelativeToMCRP->Draw("E1PSAME");
   
   lyzepDiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorLYZEP);
   lyzepDiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleLYZEP);
-  if(plotLYZEPRelativeToMCRP && lyzepCommonHistRes) lyzepDiffFlowPtRelativeToMCRP->Draw("PSAME");
+  if(plotLYZEPRelativeToMCRP && lyzepCommonHistRes) lyzepDiffFlowPtRelativeToMCRP->Draw("E1PSAME");
   
   //2nd pad is for legend:
   (diffFlowPtRelativeToMCRP->cd(2))->SetPad(0.75,0.0,1.0,1.0);
