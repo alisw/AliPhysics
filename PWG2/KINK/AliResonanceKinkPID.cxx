@@ -70,8 +70,6 @@ void AliResonanceKinkPID::ConnectInputData(Option_t *)
 {
   // Connect ESD or AOD here
   // Called once
-  AliPID *pidObject;
-  pidObject->Init();
 
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
   if (!tree) {

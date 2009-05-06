@@ -15,13 +15,16 @@
 
 class AliESDVertex;
 class AliESDEvent;
+class AliESDtrack;
 class TTree;
+class TF1;
 class TH1F;
 class TH2F;
 class TH1D;
 class TH2D;
 class AliPID;
-class AliAnalysisTaskSE;
+
+#include "AliAnalysisTaskSE.h"
 
 class AliAnalysisKinkESDMC : public AliAnalysisTaskSE {
  public:
