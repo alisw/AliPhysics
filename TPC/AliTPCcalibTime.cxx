@@ -36,9 +36,12 @@ b) analyse calibration object on Proof in calibration train
 AliTPCcalibTime *calibTime = new AliTPCcalibTime("cosmicTime","cosmicTime", StartTimeStamp, EndTimeStamp, IntegrationTimeVdrift, IntegrationTimeDeDx);
 s
 c) plot results
+ .x ~/NimStyle.C
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libTPCcalib");
 
 TFile f("CalibObjects.root");
-AliTPCcalibTime *cal = (AliTPCcalibTime *)f->Get("TPCCalib")->FindObject("cosmicTime");
+AliTPCcalibTime *cal = (AliTPCcalibTime *)f->Get("TPCCalib")->FindObject("calibTime");
 cal->GetHistVdrift()->Projection(1,0)->Draw()
 
     4. Analysis using debug streamers.    
@@ -99,7 +102,6 @@ ClassImp(AliTPCcalibTime)
 
 AliTPCcalibTime::AliTPCcalibTime() 
   :AliTPCcalibBase(), 
-   fTriggerMask(0),
    fHistDeDxTgl(0),
    fHistDeDx(0),
    fHistVdrift(0),
@@ -111,18 +113,37 @@ AliTPCcalibTime::AliTPCcalibTime()
    fdEdxRatio(0),   // current dEdx ratio
    fTl(0),          // current tan(lambda)
    fCutMaxD(5),        // maximal distance in rfi ditection
-   fCutMaxDz(20),        // maximal distance in rfi ditection
+   fCutMaxDz(20),      // maximal distance in rfi ditection
    fCutTheta(0.03),    // maximal distan theta
-   fCutMinDir(-0.99)   // direction vector products
+   fCutMinDir(-0.99),  // direction vector products
+   fMapDz(0),          //NEW! Tmap of V drifts for different triggers
+   fTimeBins(0),
+   fTimeStart(0),
+   fTimeEnd(0),
+   fPtBins(0),
+   fPtStart(0),
+   fPtEnd(0),
+   fVdriftBins(0),
+   fVdriftStart(0),
+   fVdriftEnd(0),
+   fRunBins(0),
+   fRunStart(0),
+   fRunEnd(0)
+//   fBinsVdrift(fTimeBins,fPtBins,fVdriftBins),
+//   fXminVdrift(fTimeStart,fPtStart,fVdriftStart),
+//   fXmaxVdrift(fTimeEnd,fPtEnd,fVdriftEnd)
 
 {  
   AliInfo("Default Constructor");  
+  for (Int_t i=0;i<3;i++) {
+    fHistVdriftLaserA[i]=0;
+    fHistVdriftLaserC[i]=0;
+  }
 }
 
 
-AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, ULong64_t TriggerMask, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeDeDx, Int_t deltaIntegrationTimeVdrift)
+AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeDeDx, Int_t deltaIntegrationTimeVdrift)
   :AliTPCcalibBase(),
-   fTriggerMask(0),
    fHistDeDxTgl(0),
    fHistDeDx(0),
    fHistVdrift(0),
@@ -134,17 +155,33 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, ULong6
    fdEdxRatio(0),   // current dEdx ratio
    fTl(0),          // current tan(lambda)
    fCutMaxD(5),        // maximal distance in rfi ditection
-   fCutMaxDz(20),        // maximal distance in rfi ditection
+   fCutMaxDz(20),      // maximal distance in rfi ditection
    fCutTheta(0.03),    // maximal distan theta
-   fCutMinDir(-0.99)   // direction vector products
+   fCutMinDir(-0.99),  // direction vector products
+   fMapDz(0),          //NEW! Tmap of V drifts for different triggers
+   fTimeBins(0),
+   fTimeStart(0),
+   fTimeEnd(0),
+   fPtBins(0),
+   fPtStart(0),
+   fPtEnd(0),
+   fVdriftBins(0),
+   fVdriftStart(0),
+   fVdriftEnd(0),
+   fRunBins(0),
+   fRunStart(0),
+   fRunEnd(0)
 {
   
   SetName(name);
   SetTitle(title);
+  for (Int_t i=0;i<3;i++) {
+    fHistVdriftLaserA[i]=0;
+    fHistVdriftLaserC[i]=0;
+  }
 
   AliInfo("Non Default Constructor");
 
-  fTriggerMask = TriggerMask;
 
   fIntegrationTimeDeDx = deltaIntegrationTimeDeDx;
   fIntegrationTimeVdrift = deltaIntegrationTimeVdrift;
@@ -156,9 +193,9 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, ULong6
   Double_t xmaxVdrift[2] = {EndTime, 20};
   fHistVdrift = new THnSparseF("HistVdrift","vDrift; time;#Delta z",2,binsVdrift,xminVdrift,xmaxVdrift);
 
-  Int_t binsDeDxTgl[3] = {TMath::Nint(deltaTime/deltaIntegrationTimeDeDx),30,100};
-  Double_t xminDeDxTgl[3] = {StartTime,-1,0.7};
-  Double_t xmaxDeDxTgl[3] = {EndTime,1,1.3};
+  Int_t binsDeDxTgl[4] = {TMath::Nint(deltaTime/deltaIntegrationTimeDeDx),30,100,10000};
+  Double_t xminDeDxTgl[4] = {StartTime,-1,0.7,-0.5};
+  Double_t xmaxDeDxTgl[4] = {EndTime,1,1.3,999.5};
   fHistDeDxTgl = new THnSparseF("HistDeDxTgl","dEdx vs tgl;time;tgl;dEdxUp/dEdxLow",3,binsDeDxTgl,xminDeDxTgl,xmaxDeDxTgl); 
 
   Int_t binsDeDx[2] = {TMath::Nint(deltaTime/deltaIntegrationTimeDeDx),100};
@@ -166,15 +203,64 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, ULong6
   Double_t xmaxDeDx[2] = {EndTime,100};
   fHistDeDx = new THnSparseF("HistDeDx","dEdx l;time;dEdx",2,binsDeDx,xminDeDx,xmaxDeDx);
 
+//  fLaser =  new AliTPCcalibLaser("laserTPC","laserTPC",kFALSE);
+
+  fTimeBins   =TMath::Nint(deltaTime/deltaIntegrationTimeVdrift);
+  fTimeStart  =StartTime; //(((TObjString*)(mapGRP->GetValue("fAliceStartTime")))->GetString()).Atoi();
+  fTimeEnd    =EndTime;   //(((TObjString*)(mapGRP->GetValue("fAliceStopTime")))->GetString()).Atoi();
+  fPtBins     = 200;
+  fPtStart    = -0.04;
+  fPtEnd      =  0.04;
+  fVdriftBins = 200;
+  fVdriftStart= -20.0/500.0;
+  fVdriftEnd  =  20.0/500.0;
+  fRunBins    = 10000;
+  fRunStart   = -0.5;
+  fRunEnd     = 0.5;
+
+  Int_t    binsVdriftLaser[4] = {fTimeBins , fPtBins , fVdriftBins*20, fRunBins };
+  Double_t xminVdriftLaser[4] = {fTimeStart, fPtStart, fVdriftStart  , fRunStart};
+  Double_t xmaxVdriftLaser[4] = {fTimeEnd  , fPtEnd  , fVdriftEnd    , fRunEnd  };
+
+  for (Int_t i=0;i<3;i++) {
+    fHistVdriftLaserA[i] = new THnSparseF("HistVdriftLaser","HistVdriftLaser;time;p/T ratio;Vdrift;run",4,binsVdriftLaser,xminVdriftLaser,xmaxVdriftLaser);
+    fHistVdriftLaserC[i] = new THnSparseF("HistVdriftLaser","HistVdriftLaser;time;p/T ratio;Vdrift;run",4,binsVdriftLaser,xminVdriftLaser,xmaxVdriftLaser);
+  }
+  fBinsVdrift[0] = fTimeBins;
+  fBinsVdrift[1] = fPtBins;
+  fBinsVdrift[2] = fVdriftBins;
+  fBinsVdrift[3] = fRunBins;
+  fXminVdrift[0] = fTimeStart;
+  fXminVdrift[1] = fPtStart;
+  fXminVdrift[2] = fVdriftStart;
+  fXminVdrift[3] = fRunStart;
+  fXmaxVdrift[0] = fTimeEnd;
+  fXmaxVdrift[1] = fPtEnd;
+  fXmaxVdrift[2] = fVdriftEnd;
+  fXmaxVdrift[3] = fRunEnd;
+
+  fMapDz=new TMap();
 }
 
 
 
 AliTPCcalibTime::~AliTPCcalibTime(){
   //
+  // Destructor
   //
-  //
+  delete fHistDeDxTgl;
+  delete fHistDeDx;
+  delete fHistVdrift;
+  for (Int_t i=0;i<3;i++){
+    delete fHistVdriftLaserA[i];
+    delete fHistVdriftLaserC[i];
+  }
+  fMapDz->SetOwner();
+  fMapDz->Delete();
+  delete fMapDz;  
 }
+
+
 void AliTPCcalibTime::ResetCurrent(){
   //
   // reset current values
@@ -186,27 +272,57 @@ void AliTPCcalibTime::ResetCurrent(){
 
 }
 
+Bool_t AliTPCcalibTime::IsLaser(AliESDEvent *event){
+  return ((event->GetFiredTriggerClasses()).Contains("0LSR")==1);
+}
 
-void AliTPCcalibTime::Process(AliESDEvent *event) {
-  //
-  //
-  //
-  Int_t ntracks=event->GetNumberOfTracks();
-  if (ntracks<2) return;
+void AliTPCcalibTime::Process(AliESDEvent *event){
+  if(!event) return;
+  if (event->GetNumberOfTracks()<2) return;
   ResetCurrent();
-  //
+  
+//  if(IsLaser(event))
+  ProcessLaser (event);
+//  else               
   ProcessCosmic(event);
-  if (fTrigger==16){
-    if (!fLaser) fLaser =  new AliTPCcalibLaser("laserTPC","laserTPC",kFALSE);
-    fLaser->Process(event);
-  }
-  //  
-  // fill debug streamer
-  if (fStreamLevel>0 && fDz!=0){
+}
+
+void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
+  //
+  // Fit drift velocity using laser 
+  // 
+  // 0. cuts
+  const Int_t    kMinTracks     = 20;    // minimal number of laser tracks
+  const Int_t    kMinTracksSide = 10;    // minimal number of tracks per side
+  const Float_t  kMaxRMS        = 0.1;   // maximal RMS of tracks
+  const Float_t  kMaxDeltaZ     = 3.;    // maximal deltaZ A-C side
+  const Float_t  kMaxDeltaV     = 0.01;  // maximal deltaV A-C side
+  const Float_t  kMaxDeltaY     = 2.;    // maximal deltaY A-C side
+  /*
+    TCut cutRMS("sqrt(laserA.fElements[4])<0.1&&sqrt(laserC.fElements[4])<0.1");
+    TCut cutZ("abs(laserA.fElements[0]-laserC.fElements[0])<3");
+    TCut cutV("abs(laserA.fElements[1]-laserC.fElements[1])<0.01");
+    TCut cutY("abs(laserA.fElements[2]-laserC.fElements[2])<2");
+    TCut cutAll = cutRMS+cutZ+cutV+cutY;
+  */
+  if (event->GetNumberOfTracks()<kMinTracks) return;
+  //
+  if(!fLaser) fLaser = new AliTPCcalibLaser("laserTPC","laserTPC",kFALSE);
+  fLaser->Process(event);
+  if (fLaser->GetNtracks()<kMinTracks) return;   // small amount of tracks cut
+  if (fLaser->fFitAside->GetNrows()==0) return;  // no fit A side
+  if (fLaser->fFitCside->GetNrows()==0) return;  // no fit C side
+  //
+  // debug streamer  - activate stream level
+  // Use it for tuning of the cuts
+  //
+  if (fStreamLevel>0){
+    printf("Trigger: %s\n",event->GetFiredTriggerClasses().Data());
+
     TTreeSRedirector *cstream = GetDebugStreamer();
     if (cstream){
       TTimeStamp tstamp(fTime);
-      Float_t valuePressure0  = AliTPCcalibDB::GetPressure(tstamp,fRun,0);
+      Float_t valuePressure0 = AliTPCcalibDB::GetPressure(tstamp,fRun,0);
       Float_t valuePressure1 = AliTPCcalibDB::GetPressure(tstamp,fRun,1);
       Double_t ptrelative0   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
       Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
@@ -214,19 +330,13 @@ void AliTPCcalibTime::Process(AliESDEvent *event) {
       Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
       TVectorD vecGoofie(20);
       AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
-      if (goofieArray) 
+      if (goofieArray){
 	for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
 	  AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
 	  if (gsensor) vecGoofie[isensor]=gsensor->GetValue(tstamp);
 	}
-
-      TVectorD vdriftA, vdriftC,vdriftAC;
-      if (fLaser && fTrigger==16) {
-	if (fLaser->fFitAside)  vdriftA=*(fLaser->fFitAside);
-	if (fLaser->fFitCside)  vdriftC=*(fLaser->fFitCside);
-	if (fLaser->fFitACside) vdriftAC=*(fLaser->fFitACside);
       }
-      (*cstream)<<"timeInfo"<<
+      (*cstream)<<"laserInfo"<<
 	"run="<<fRun<<              //  run number
 	"event="<<fEvent<<          //  event number
 	"time="<<fTime<<            //  time stamp of event
@@ -240,27 +350,73 @@ void AliTPCcalibTime::Process(AliESDEvent *event) {
 	"temp0="<<temp0<<
 	"temp1="<<temp1<<
 	"vecGoofie.=<<"<<&vecGoofie<<
-	//
-	// accumulated values
-	//
-	"fDz="<<fDz<<          //! current delta z
-	"fdEdx="<<fdEdx<<        //! current dEdx
-	"fdEdxRatio="<<fdEdxRatio<<   //! current dEdx ratio
-	"fTl="<<fTl<<          //! current tan(lambda)
-	//
 	//laser
-	//
-	"laserA.="<<&vdriftA<<
-	"laserC.="<<&vdriftC<<
-	"laserAC.="<<&vdriftAC<<
+	"laserA.="<<fLaser->fFitAside<<
+	"laserC.="<<fLaser->fFitCside<<
+	"laserAC.="<<fLaser->fFitACside<<
+	"trigger="<<event->GetFiredTriggerClasses()<<
 	"\n";
     }
   }
+  //
+  // Apply custs
+  //
+  if ((*fLaser->fFitAside)[3] <kMinTracksSide) return; // enough tracks A side
+  if ((*fLaser->fFitCside)[3]<kMinTracksSide) return;  // enough tracks C side
+  //
+  if (TMath::Abs((*fLaser->fFitAside)[0]-(*fLaser->fFitCside)[0])>kMaxDeltaZ) return;
+  if (TMath::Abs((*fLaser->fFitAside)[2]-(*fLaser->fFitCside)[2])>kMaxDeltaY) return;
+  if (TMath::Abs((*fLaser->fFitAside)[1]-(*fLaser->fFitCside)[1])>kMaxDeltaV) return;
+  if (TMath::Sqrt(TMath::Abs((*fLaser->fFitAside)[4]))>kMaxRMS) return;
+  if (TMath::Sqrt(TMath::Abs((*fLaser->fFitCside)[4]))>kMaxRMS) return;
+  //
+  // fill histos
+  //
+  TVectorD vdriftA(5), vdriftC(5),vdriftAC(5);
+  vdriftA=*(fLaser->fFitAside);
+  vdriftC=*(fLaser->fFitCside);
+  vdriftAC=*(fLaser->fFitACside);
+  Int_t npointsA=0, npointsC=0;
+  Float_t chi2A=0, chi2C=0;
+  npointsA= TMath::Nint(vdriftA[3]);
+  chi2A= vdriftA[4];
+  npointsC= TMath::Nint(vdriftC[3]);
+  chi2C= vdriftC[4];
+  //
+  //
+
+  //  
+  TTimeStamp tstamp(fTime);
+  Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
+  Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
+  //
+  Double_t vecVdriftLaserA[4]={fTime,(ptrelative0+ptrelative1)/2.0,1./((*(fLaser->fFitAside))[1])-1,event->GetRunNumber()};
+  Double_t vecVdriftLaserC[4]={fTime,(ptrelative0+ptrelative1)/2.0,1./((*(fLaser->fFitCside))[1])-1,event->GetRunNumber()};
+
+  for (Int_t i=0;i<3;i++){
+    if (i==0){ //z0 shift
+      vecVdriftLaserA[3]=(*(fLaser->fFitAside))[0]/250.;
+      vecVdriftLaserA[3]=(*(fLaser->fFitCside))[0]/250.;
+    }
+    if (i==1){ //vdrel shift
+      vecVdriftLaserA[3]=1./(*(fLaser->fFitAside))[1]-1.;
+      vecVdriftLaserA[3]=1./(*(fLaser->fFitCside))[1]-1.;
+    }
+    if (i==2){ //gy shift - full gy - full drift
+      vecVdriftLaserA[3]=(*(fLaser->fFitAside))[2]/250.;
+      vecVdriftLaserA[3]=(*(fLaser->fFitCside))[2]/250.;
+    }
+    fHistVdriftLaserA[i]->Fill(vecVdriftLaserA);
+    fHistVdriftLaserC[i]->Fill(vecVdriftLaserC);
+  }
+  //
+  //
+  //
+
+
 }
 
-
-
-void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event) {
+void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
 
   if (!event) {
     Printf("ERROR: ESD not available");
@@ -271,11 +427,10 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event) {
     return;
   }
 
-  if (fTriggerMask != 0 && event->GetTriggerMask() != fTriggerMask) return;
 
   UInt_t time = event->GetTimeStamp();
 
-  //
+  //fd
   // Find cosmic pairs
   // 
   // Track0 is choosen in upper TPC part
@@ -404,8 +559,19 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event) {
 	 Double_t vecVdrift[2] = {time, param0.GetZ() - param1.GetZ()};
 	 
 	 if (track0->GetTPCNcls() > 80) {
-	   fHistVdrift->Fill(vecVdrift);
 	   fDz = param0.GetZ() - param1.GetZ();
+           TTimeStamp tstamp(fTime);
+           Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
+           Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
+           THnSparse* curHist   =(THnSparseF*)(fMapDz->GetValue(event->GetFiredTriggerClasses()));
+           if(!curHist){
+             curHist=new THnSparseF(event->GetFiredTriggerClasses(),"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
+             fMapDz->Add(new TObjString(event->GetFiredTriggerClasses()),curHist);
+           }
+           Double_t vecVdrift2[4]={fTime,(ptrelative0+ptrelative1)/2.0,fDz/500.0,event->GetRunNumber()};
+           curHist->Fill(vecVdrift2);
+
+	   fHistVdrift->Fill(vecVdrift);
 	 }
        }
        if (isPair && z0 > 0 && z1 > 0) {
@@ -421,8 +587,51 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event) {
     } // end 2nd order loop        
   } // end 1st order loop
 
+  if (fStreamLevel>0){
+    TTreeSRedirector *cstream = GetDebugStreamer();
+    if (cstream){
+      TTimeStamp tstamp(fTime);
+      Float_t valuePressure0 = AliTPCcalibDB::GetPressure(tstamp,fRun,0);
+      Float_t valuePressure1 = AliTPCcalibDB::GetPressure(tstamp,fRun,1);
+      Double_t ptrelative0   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
+      Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
+      Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
+      Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
+      TVectorD vecGoofie(20);
+      AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
+      if (goofieArray){
+	for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
+	  AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
+	  if (gsensor) vecGoofie[isensor]=gsensor->GetValue(tstamp);
+	}
+      }
+      (*cstream)<<"timeInfo"<<
+	"run="<<fRun<<              //  run number
+	"event="<<fEvent<<          //  event number
+	"time="<<fTime<<            //  time stamp of event
+	"trigger="<<fTrigger<<      //  trigger
+	"mag="<<fMagF<<             //  magnetic field
+	// Environment values
+	"press0="<<valuePressure0<<
+	"press1="<<valuePressure1<<
+	"pt0="<<ptrelative0<<
+	"pt1="<<ptrelative1<<
+	"temp0="<<temp0<<
+	"temp1="<<temp1<<
+	"vecGoofie.=<<"<<&vecGoofie<<
+	//
+	// accumulated values
+	//
+	"fDz="<<fDz<<          //! current delta z
+	"fdEdx="<<fdEdx<<        //! current dEdx
+	"fdEdxRatio="<<fdEdxRatio<<   //! current dEdx ratio
+	"fTl="<<fTl<<          //! current tan(lambda)
+	"trigger="<<event->GetFiredTriggerClasses()<<
+	"\n";
+    }
+  }
+  printf("Trigger: %s\n",event->GetFiredTriggerClasses().Data());
 }
-
 
 void AliTPCcalibTime::Analyze() {
   //
@@ -431,7 +640,6 @@ void AliTPCcalibTime::Analyze() {
   TH2D * hVdrift = GetHistVdrift()->Projection(1,0);
   hVdrift->Draw();
 }
-
 
 Long64_t AliTPCcalibTime::Merge(TCollection *li) {
 
@@ -449,13 +657,31 @@ Long64_t AliTPCcalibTime::Merge(TCollection *li) {
     fHistVdrift->Add(cal->GetHistVdrift());
     fHistDeDx->Add(cal->GetHistDeDx());
 
+    for (Int_t imeas=0; imeas<3; imeas++){
+      if (cal->GetHistVdriftLaserA(imeas) && cal->GetHistVdriftLaserA(imeas)){
+	fHistVdriftLaserA[imeas]->Add(cal->GetHistVdriftLaserA(imeas));
+	fHistVdriftLaserC[imeas]->Add(cal->GetHistVdriftLaserC(imeas));
+      }
+    }
+    TMap * addMap=cal->GetMapDz();
+    if(!addMap) return 0;
+    TIterator* iterator = addMap->MakeIterator();
+    iterator->Reset();
+    TPair* addPair=0;
+    while((addPair=(TPair *)(addMap->FindObject(iterator->Next())))){
+      THnSparse* addHist=dynamic_cast<THnSparseF*>(addPair->Value());
+      if (!addHist) continue;
+      addHist->Print();
+      THnSparse* localHist=dynamic_cast<THnSparseF*>(fMapDz->GetValue(addHist->GetName()));
+      if(!localHist){
+        localHist=new THnSparseF(addHist->GetName(),"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
+        fMapDz->Add(new TObjString(addHist->GetName()),localHist);
+      }
+      localHist->Add(addHist);
+    }
   }
-  
   return 0;
-  
 }
-
-
 
 Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1){
   //
@@ -488,84 +714,3 @@ Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPara
 }
 
 
-
-/*
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-    gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
-    AliXRDPROOFtoolkit tool;
-    TChain * chainTime = tool.MakeChain("time.txt","timeInfo",0,10200);
-    chainTime->Lookup();
-
-TCut dzc("abs(fDz-500*(1-pt1))<4")
-chainTime->SetMarkerSize(0.2);
-chainTime->SetMarkerStyle(24);
-
-
-chainTime->SetMarkerColor(2);
-chainTime->Draw("fDz:time","trigger==4"+dzc);
-chainTime->SetMarkerColor(1);
-chainTime->Draw("fDz:time","trigger==8"+dzc,"same");
-htemp->SetXTitle("time")
-htemp->SetYTitle("#Delta_{z}(cm)")
-gPad->SaveAs("~/Calibration/driftV/pic/cosmicdzraw_time.gif");
-
-
-chainTime->SetMarkerColor(2);
-chainTime->Draw("fDz:500*(1-pt1)","trigger==4"+dzc);
-chainTime->SetMarkerColor(1);
-chainTime->Draw("fDz:500*(1-pt1)","trigger==8"+dzc,"same");
-htemp->SetXTitle("2L#frac{#Delta_{P/T}}{P/T}")
-htemp->SetYTitle("#Delta_{z}(cm)")
-gPad->SaveAs("~/Calibration/driftV/pic/cosmicdzraw_PT1.gif");
-
-
-
-
-chainTime->SetLineColor(2);
-chainTime->Draw("fDz-500*0.965*(1-pt1)","trigger==4"+dzc);
-chainTime->SetLineColor(1);
-chainTime->Draw("fDz-500*0.965*(1-pt1)","trigger==8"+dzc,"same");
-htemp->SetXTitle("#Delta_{z}(cm)")
-htemp->SetYTitle("")
-gPad->SaveAs("~/Calibration/driftV/pic/cosmicdzcorr_1D.gif");
-
-
-chainTime->SetMarkerColor(2);
-chainTime->Draw("fDz-500*0.965*(1-pt1):time","trigger==4"+dzc);
-chainTime->SetMarkerColor(1);
-chainTime->Draw("fDz-500*0.965*(1-pt1):time","trigger==8"+dzc,"same");
-htemp->SetXTitle("time")
-htemp->SetYTitle("#Delta_{z}(cm)")
-gPad->SaveAs("~/Calibration/driftV/pic/cosmicdzcorr_time.gif");
-
-
-
-gSystem->Load("libSTAT.so");
-TStatToolkit toolkit;
-Double_t chi2=0;
-Int_t    npoints=0;
-TVectorD fitParam;
-TMatrixD covMatrix;
-
-
-chainTime->SetAlias("dpr","(1-press0/970)");
-chainTime->SetAlias("dtr","(1-(temp0+273.15)/293.)");
-chainTime->SetAlias("d1pt","(1-(temp0+273.15)/293.)");
-chainTime->SetAlias("dptr","(press0/(273.15+temp0))/(970./293.15)");
-
-
-chainTime->SetAlias("dvr","fDz");
-TString *strvd = toolkit.FitPlane(chainTime,"fDz","dpr*500++dtr*500", "trigger==4"+dzc, chi2,npoints,fitParam,covMatrix,0.99);
-strvd.Tokenize("++")->Print();
-chainTime->SetAlias("vdcorr",strvd->Data());
-
-TString *strvdpt1 = toolkit.FitPlane(chainTime,"fDz","(1-dptr)*500", "trigger==4"+dzc, chi2,npoints,fitParam,covMatrix,0.99);
-strvdpt1.Tokenize("++")->Print();
-chainTime->SetAlias("vdcorrpt1",strvdpt1->Data());
-
-
-TString *strdedx = toolkit.FitPlane(chainTime,"1-fdEdx/27","(1-dptr)", "trigger==4&&run<62000"+dzc, chi2,npoints,fitParam,covMatrix,0.99);
-strdedx.Tokenize("++")->Print();
-chainTime->SetAlias("vdcorrpt1",strvdpt1->Data());
-
-*/
