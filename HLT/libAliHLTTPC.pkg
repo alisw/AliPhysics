@@ -42,6 +42,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCDigitReaderPacked.h \
 		AliHLTTPCDigitReaderUnpacked.h \
 		AliHLTTPCDigitReaderDecoder.h \
+		AliHLTTPCDigitReader32Bit.h \
 		AliHLTTPCDigitDumpComponent.h \
 		AliHLTTPCZeroSuppressionComponent.h \
 		AliHLTTPCNoiseMap.h \
