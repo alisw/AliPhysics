@@ -36,9 +36,9 @@
 
 #include "TH1.h"
 #include "TFile.h"
-
 #include <fstream>
 #include <iostream>
+#include <cmath>
 
 #include "AliCaloRawStream.h"
 
@@ -54,8 +54,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   TObject(),
   fPedestalLowGain(),
   fPedestalHighGain(),
-  fSampleLowGain(),
-  fSampleHighGain(),
+  fPedestalRMSLowGain(),
+  fPedestalRMSHighGain(),
   fPeakMinusPedLowGain(),
   fPeakMinusPedHighGain(),
   fPedestalLowGainDiff(),
@@ -82,7 +82,10 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   fRowMultiplier(0),
   fCaloString(),
   fMapping(NULL),
-  fRunNumber(-1)
+  fRunNumber(-1),
+  fSelectPedestalSamples(kTRUE), 
+  fFirstPedestalSample(0),
+  fLastPedestalSample(15)
 {
   //Default constructor. First we set the detector-type related constants.
   if (detectorType == kPhos) {
@@ -129,20 +132,20 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
 					 fColumns, 0.0, fColumns, 
 					 fRows, fRowMin, fRowMax,"s"));
     //All Samples, low gain
-    name = "hSamplelowgain";
+    name = "hPedestalRMSlowgain";
     name += i;
-    title = "All Samples, low gain, module ";
+    title = "Pedestal RMS, low gain, module ";
     title += i; 
-    fSampleLowGain.Add(new TProfile2D(name, title,
+    fPedestalRMSLowGain.Add(new TProfile2D(name, title,
 					fColumns, 0.0, fColumns, 
 					fRows, fRowMin, fRowMax,"s"));
   
     //All Samples, high gain
-    name = "hSamplehighgain";
+    name = "hPedestalRMShighgain";
     name += i;
-    title = "All Samples, high gain, module ";
+    title = "Pedestal RMS, high gain, module ";
     title += i; 
-    fSampleHighGain.Add(new TProfile2D(name, title,
+    fPedestalRMSHighGain.Add(new TProfile2D(name, title,
 					 fColumns, 0.0, fColumns, 
 					 fRows, fRowMin, fRowMax,"s"));
   
@@ -176,8 +179,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   //Compress the arrays, in order to remove the empty objects (a 16 slot array is created by default)
   fPedestalLowGain.Compress();
   fPedestalHighGain.Compress();
-  fSampleLowGain.Compress();
-  fSampleHighGain.Compress();
+  fPedestalRMSLowGain.Compress();
+  fPedestalRMSHighGain.Compress();
   fPeakMinusPedLowGain.Compress();
   fPeakMinusPedHighGain.Compress();
   fDeadMap.Compress();
@@ -203,8 +206,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   TObject(ped),
   fPedestalLowGain(),
   fPedestalHighGain(),
-  fSampleLowGain(),
-  fSampleHighGain(),
+  fPedestalRMSLowGain(),
+  fPedestalRMSHighGain(),
   fPeakMinusPedLowGain(),
   fPeakMinusPedHighGain(),
   fPedestalLowGainDiff(),
@@ -231,15 +234,18 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   fRowMultiplier(ped.GetRowMultiplier()),
   fCaloString(ped.GetCaloString()),
   fMapping(NULL), //! note that we are not copying the map info
-  fRunNumber(ped.GetRunNumber())
+  fRunNumber(ped.GetRunNumber()),
+  fSelectPedestalSamples(ped.GetSelectPedestalSamples()),
+  fFirstPedestalSample(ped.GetFirstPedestalSample()),
+  fLastPedestalSample(ped.GetLastPedestalSample())
 {
   // Then the ObjArray ones; we add the histograms rather than trying TObjArray = assignment
   //DS: this has not really been tested yet..
   for (int i = 0; i < fModules; i++) {
     fPedestalLowGain.Add( ped.GetPedProfileLowGain(i) );
     fPedestalHighGain.Add( ped.GetPedProfileHighGain(i) );
-    fSampleLowGain.Add( ped.GetSampleProfileLowGain(i) );
-    fSampleHighGain.Add( ped.GetSampleProfileHighGain(i) );
+    fPedestalRMSLowGain.Add( ped.GetPedRMSProfileLowGain(i) );
+    fPedestalRMSHighGain.Add( ped.GetPedRMSProfileHighGain(i) );
     fPeakMinusPedLowGain.Add( ped.GetPeakProfileLowGain(i) );
     fPeakMinusPedHighGain.Add( ped.GetPeakProfileHighGain(i) );
 
@@ -249,8 +255,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   //Compress the arrays, in order to remove the empty objects (a 16 slot array is created by default)
   fPedestalLowGain.Compress();
   fPedestalHighGain.Compress();
-  fSampleLowGain.Compress();
-  fSampleHighGain.Compress();
+  fPedestalRMSLowGain.Compress();
+  fPedestalRMSHighGain.Compress();
   fPeakMinusPedLowGain.Compress();
   fPeakMinusPedHighGain.Compress();
   fDeadMap.Compress();
@@ -331,18 +337,52 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
 { 
   // Method to process=analyze one event in the data stream
   if (!in) return kFALSE; //Return right away if there's a null pointer
-  
   fNEvents++; // one more event
-  int sample, i = 0; //The sample temp, and the sample number in current event.
-  int max = fgkSampleMin, min = fgkSampleMax;//Use these for picking the pedestal
+  
+  // indices for the reading
+  int sample = 0;
   int gain = 0;
+  int time = 0;
+  // counters
+  int i = 0; // the sample number in current event.
+  int max = fgkSampleMin, min = fgkSampleMax;//Use these for picking the pedestal
+
+  // for the pedestal calculation
+  int sampleSum = 0; // sum of samples
+  int squaredSampleSum = 0; // sum of samples squared
+  int nSum = 0; // number of samples in sum
+  // calc. quantities
+  double mean = 0, squaredMean = 0, rms = 0;
   
   while (in->Next()) {
     sample = in->GetSignal(); //Get the adc signal
     if (sample < min) min = sample;
     if (sample > max) max = sample;
     i++;
+
+    // should we add it for the pedestal calculation?
+    time = in->GetTime();
+    if ( (fFirstPedestalSample<=time && time<=fLastPedestalSample) || // sample time in range
+	 !fSelectPedestalSamples ) { // or we don't restrict the sample range.. - then we'll take all 
+      sampleSum += sample;
+      squaredSampleSum += sample*sample;
+      nSum++;
+    }
+
     if ( i >= in->GetTimeLength()) {
+      // calculate pedesstal estimate: mean of possibly selected samples
+      if (nSum > 0) {
+	mean = sampleSum / (1.0 * nSum);
+	squaredMean = squaredSampleSum / (1.0 * nSum);
+	// The variance (rms squared) is equal to the mean of the squares minus the square of the mean..
+	rms = sqrt(squaredMean - mean*mean); 
+      }
+      else {
+	mean = 0;
+	squaredMean = 0;
+	rms  = 0;
+      }
+
       //If we're here then we're done with this tower
       gain = -1; // init to not valid value
       if ( in->IsLowGain() ) {
@@ -351,7 +391,7 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
       else if ( in->IsHighGain() ) {
 	gain = 1;
       }
-
+      
       int arrayPos = in->GetModule(); //The modules are numbered starting from 0
       if (arrayPos >= fModules) {
 	//TODO: return an error message, if appopriate (perhaps if debug>0?)
@@ -367,18 +407,28 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
       //NOTE: coordinates are (column, row) for the profiles
       if (gain == 0) {
 	//fill the low gain histograms
-	((TProfile2D*)fPedestalLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), min);
 	((TProfile2D*)fPeakMinusPedLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), max - min);
-	((TProfile2D*)fSampleLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), sample);
+	if (nSum>0) { // only fill pedestal info in case it could be calculated
+	  ((TProfile2D*)fPedestalLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), mean); 
+	  ((TProfile2D*)fPedestalRMSLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), rms);
+	}
       } 
-      else if (gain == 1) {//fill the high gain ones
-	((TProfile2D*)fPedestalHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), min);
+      else if (gain == 1) {
+      	//fill the high gain ones
 	((TProfile2D*)fPeakMinusPedHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), max - min);
-	((TProfile2D*)fSampleHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), sample);
+	if (nSum>0) { // only fill pedestal info in case it could be calculated
+	  ((TProfile2D*)fPedestalHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), mean); 
+	  ((TProfile2D*)fPedestalRMSHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), rms);
+	}
       }//end if gain
 
+      // reset counters
       max = fgkSampleMin; min = fgkSampleMax;
       i = 0;
+      // also pedestal calc counters
+      sampleSum = 0; // sum of samples
+      squaredSampleSum = 0; // sum of samples squared
+      nSum = 0; // number of samples in sum
     
     }//End if end of tower
    
@@ -412,12 +462,13 @@ Bool_t AliCaloCalibPedestal::SaveHistograms(TString fileName, Bool_t saveEmptyHi
     }
     if( ((TProfile2D *)fPedestalHighGain[i])->GetEntries() || saveEmptyHistos) {
       fPedestalHighGain[i]->Write();
+      Printf("save %d", i);
     }
-    if( ((TProfile2D *)fSampleLowGain[i])->GetEntries() || saveEmptyHistos) {
-      fSampleLowGain[i]->Write();
+    if( ((TProfile2D *)fPedestalRMSLowGain[i])->GetEntries() || saveEmptyHistos) {
+      fPedestalRMSLowGain[i]->Write();
     }
-    if( ((TProfile2D *)fSampleHighGain[i])->GetEntries() || saveEmptyHistos) {
-      fSampleHighGain[i]->Write();
+    if( ((TProfile2D *)fPedestalRMSHighGain[i])->GetEntries() || saveEmptyHistos) {
+      fPedestalRMSHighGain[i]->Write();
     }
   } 
   

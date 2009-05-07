@@ -62,22 +62,22 @@ class AliCaloCalibPedestal : public TObject {
   // Main profiles:
   TProfile2D * GetPedProfileLowGain(int i) const {return (TProfile2D*)fPedestalLowGain[i];};	// Return a pointer to the low-gain pedestal profile
   TProfile2D * GetPedProfileHighGain(int i) const {return (TProfile2D*)fPedestalHighGain[i];};	// Return a pointer to the high-gain pedestal profile
-  TProfile2D * GetSampleProfileLowGain(int i) const {return (TProfile2D*)fSampleLowGain[i];};	// Return a pointer to the low-gain profile of all samples
-  TProfile2D * GetSampleProfileHighGain(int i) const {return (TProfile2D*)fSampleHighGain[i];};	// Return a pointer to the high-gain profile of all samples
-  TProfile2D * GetPeakProfileLowGain(int i) const {return (TProfile2D*)fPeakMinusPedLowGain[i];};	// Return a pointer to the low-gain pedestal profile
-  TProfile2D * GetPeakProfileHighGain(int i) const {return (TProfile2D*)fPeakMinusPedHighGain[i];};	// Return a pointer to the high-gain pedestal profile
+  TProfile2D * GetPedRMSProfileLowGain(int i) const {return (TProfile2D*)fPedestalRMSLowGain[i];};	// Return a pointer to the low-gain rms profile 
+  TProfile2D * GetPedRMSProfileHighGain(int i) const {return (TProfile2D*)fPedestalRMSHighGain[i];};	// Return a pointer to the high-gain rms profile 
+  TProfile2D * GetPeakProfileLowGain(int i) const {return (TProfile2D*)fPeakMinusPedLowGain[i];};	// Return a pointer to the low-gain peak-pedestal profile
+  TProfile2D * GetPeakProfileHighGain(int i) const {return (TProfile2D*)fPeakMinusPedHighGain[i];};	// Return a pointer to the high-gain peak-pedestal profile
   
   // Differences to references:
   TProfile2D * GetPedProfileLowGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalLowGainDiff[i];};	// Return a pointer to the low-gain pedestal profile difference
   TProfile2D * GetPedProfileHighGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalHighGainDiff[i];};	// Return a pointer to the high-gain pedestal profile difference
-  TProfile2D * GetPeakProfileLowGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedLowGainDiff[i];};	// Return a pointer to the low-gain pedestal profile difference
-  TProfile2D * GetPeakProfileHighGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedHighGainDiff[i];};	// Return a pointer to the high-gain pedestal profile difference
+  TProfile2D * GetPeakProfileLowGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedLowGainDiff[i];};	// Return a pointer to the low-gain peak-pedestal profile difference
+  TProfile2D * GetPeakProfileHighGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedHighGainDiff[i];};	// Return a pointer to the high-gain peak-pedestal profile difference
   
   // Ratio to references:
   TProfile2D * GetPedProfileLowGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalLowGainRatio[i];};	// Return a pointer to the low-gain pedestal profile ratio
   TProfile2D * GetPedProfileHighGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalHighGainRatio[i];};	// Return a pointer to the high-gain pedestal profile ratio
-  TProfile2D * GetPeakProfileLowGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedLowGainRatio[i];};	// Return a pointer to the low-gain pedestal profile ratio
-  TProfile2D * GetPeakProfileHighGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedHighGainRatio[i];};	// Return a pointer to the high-gain pedestal profile ratio
+  TProfile2D * GetPeakProfileLowGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedLowGainRatio[i];};	// Return a pointer to the low-gain peak-pedestal profile ratio
+  TProfile2D * GetPeakProfileHighGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedHighGainRatio[i];};	// Return a pointer to the high-gain peak-pedestal profile ratio
   
   TH2D * GetDeadMap(int i) const {return (TH2D*)fDeadMap[i];};
 
@@ -96,6 +96,14 @@ class AliCaloCalibPedestal : public TObject {
   void SetRunNumber(int runNo) {fRunNumber = runNo;};
   int GetRunNumber() const {return fRunNumber;};
   int GetRefRunNumber() const {if (fReference) return fReference->GetRunNumber(); else return -1;};
+
+  // Possibility to select only some samples for the pedestal calculation
+  void SetSelectPedestalSamples(Bool_t flag = kFALSE) {fSelectPedestalSamples = flag;} // select to to use only some range of samples for pedestal calc.
+  Bool_t GetSelectPedestalSamples() const {return fSelectPedestalSamples;} // select to to use only some range of samples for pedestal calc.
+  void SetFirstPedestalSample(int i) {fFirstPedestalSample = i;} // first sample to use
+  void SetLastPedestalSample(int i) {fLastPedestalSample = i;} // last sample to use
+  int GetFirstPedestalSample() const {return fFirstPedestalSample;}; // first sample to use
+  int GetLastPedestalSample() const {return fLastPedestalSample;}; // last sample to use
 
   // Basic counters
   int GetNEvents() const {return fNEvents;};
@@ -118,7 +126,6 @@ class AliCaloCalibPedestal : public TObject {
   AliCaloCalibPedestal * GetReference() const {return fReference;}; //Get the reference object. Needed for debug, will probably be removed later
   void ComputeDeadTowers(int threshold = 5, const char * deadMapFile = 0);//Computes the dead tower values
   
-  
   //Saving functions
   Bool_t SaveHistograms(TString fileName, Bool_t saveEmptyHistos = kFALSE); //Saves the histograms to a .root file
   
@@ -131,8 +138,8 @@ class AliCaloCalibPedestal : public TObject {
   //since we have only around 12 objects (maximum) in the array anyway.
   TObjArray fPedestalLowGain; // pedestal info for low gain
   TObjArray fPedestalHighGain; // pedestal info for high gain
-  TObjArray fSampleLowGain; // all sample info for low gain
-  TObjArray fSampleHighGain; // all sample info for high gain
+  TObjArray fPedestalRMSLowGain; // pedestal rms info for low gain
+  TObjArray fPedestalRMSHighGain; // pedestal rms info for high gain
   TObjArray fPeakMinusPedLowGain; // (peak-pedestal) info for low gain
   TObjArray fPeakMinusPedHighGain; // (peak-pedestal) info for high gain
   
@@ -171,6 +178,9 @@ class AliCaloCalibPedestal : public TObject {
   TString fCaloString; // id for which detector type we have 
   AliCaloAltroMapping **fMapping;    //! Altro Mapping object
   int fRunNumber; //The run number. Needs to be set by the user.
+  Bool_t fSelectPedestalSamples; // select to to use only some range of samples for pedestal calc.
+  int fFirstPedestalSample; // first sample to use
+  int fLastPedestalSample; // last sample to use
 
   //Constants needed by the class
   static const int fgkSampleMax = 1023; // highest possible sample value (10-bit = 0x3ff)
@@ -184,7 +194,7 @@ class AliCaloCalibPedestal : public TObject {
   static const int fgkEmCalCols = 48; // number of columns per module for EMCAL
   static const int fgkEmCalModules = 12; // number of modules for EMCAL
   
-  ClassDef(AliCaloCalibPedestal,2)
+  ClassDef(AliCaloCalibPedestal,3)
 
 };
     
