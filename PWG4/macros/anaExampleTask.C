@@ -1,13 +1,5 @@
-/* $Id: anaGammaAnalysis.C 25095 2008-04-11 12:54:47Z schutz $ */
-/* $Log$
-/* Revision 1.2  2007/12/13 09:45:45  gustavo
-/* Scaling option and more comentaries added
-/*
-/* Revision 1.1  2007/12/07 14:13:02  gustavo
-/* Example macros for execution and configuration of the analysis
-/* */
-
-//---------------------------------------------------
+/* $Id:  $ */
+//--------------------------------------------------
 // Example macro to do analysis with the 
 // AliAnalysisTaksSE
 // Can be executed with Root and AliRoot
@@ -27,9 +19,8 @@ enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 //Settings to read locally several files, only for "mLocal" mode
 //The different values are default, they can be set with environmental 
 //variables: INDIR, PATTERN, NEVENT, respectivelly
-char * kInDir = "/user/data"; 
-char * kPattern = ""; // Data are in diles /data/Run0, 
-// /Data/Run1 ...
+char * kInDir = "/user/data/files/"; 
+char * kPattern = ""; // Data are in files kInDir/kPattern+i 
 Int_t kEvent = 1; // Number of files
 //---------------------------------------------------------------------------
 //Collection file for grid analysis
@@ -45,7 +36,8 @@ const Int_t kNumberOfEventsPerFile = 100;
 //---------------------------------------------------------------------------
 
 const Bool_t kMC = kTRUE; //With real data kMC = kFALSE
-const TString kInputData = "ESD";
+const TString kInputData = "ESD";//ESD, AOD, MC
+TString kTreeName = "esdTree";
 
 void anaExampleTask(Int_t mode=mLocal)
 {
@@ -61,7 +53,15 @@ void anaExampleTask(Int_t mode=mLocal)
   //-------------------------------------------------------------------------------------------------
   //Create chain from ESD and from cross sections files, look below for options.
   //------------------------------------------------------------------------------------------------- 
-  TChain *chain   = new TChain("esdTree") ;
+  if(kInputData == "ESD") kTreeName = "esdTree" ;
+  else if(kInputData == "AOD") kTreeName = "aodTree" ;
+  else if (kInputData == "MC") kTreeName = "TE" ;
+  else {
+    cout<<"Wrong  data type "<<kInputData<<endl;
+    break;
+  }
+	
+  TChain *chain   = new TChain(kTreeName) ;
   TChain * chainxs = new TChain("Xsection") ;
   CreateChain(mode, chain, chainxs);  
 
@@ -73,10 +73,11 @@ void anaExampleTask(Int_t mode=mLocal)
     //-------------------------------------
     AliAnalysisManager *mgr  = new AliAnalysisManager("Manager", "Manager");
     // MC handler
-    if(kMC){
+    if(kMC || kInputData == "MC"){
       AliMCEventHandler* mcHandler = new AliMCEventHandler();
       mcHandler->SetReadTR(kFALSE);//Do not search TrackRef file
       mgr->SetMCtruthEventHandler(mcHandler);
+      if( kInputData == "MC") mgr->SetInputEventHandler(NULL);
     }
 
     // AOD output handler
@@ -97,7 +98,7 @@ void anaExampleTask(Int_t mode=mLocal)
       mgr->SetInputEventHandler(aodHandler);
     }
 
-    //mgr->SetDebugLevel(10); // For debugging
+    //mgr->SetDebugLevel(-1); // For debugging
 
     //-------------------------------------------------------------------------
     //Define task, put here any other task that you want to use.
@@ -127,8 +128,10 @@ void anaExampleTask(Int_t mode=mLocal)
       
       AliAnaScale * scale = new AliAnaScale("scale") ;
       scale->Set(xsection/ntrials/kNumberOfEventsPerFile/nfiles) ;
+      scale->MakeSumw2(kFALSE);//If you want histograms with error bars set to kTRUE
+      //scale->SetDebugLevel(2);
       mgr->AddTask(scale);
-      
+		
       AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("histosscaled", TList::Class(),
 								AliAnalysisManager::kOutputContainer, "gammahistosscaled.root");
       mgr->ConnectInput  (scale,     0, coutput2);
@@ -149,6 +152,9 @@ void anaExampleTask(Int_t mode=mLocal)
     mgr->InitAnalysis();
     mgr->PrintStatus();
     mgr->StartAnalysis(smode.Data(),chain);
+	  
+    cout <<" Analysis ended sucessfully "<< endl ;
+	  
   }
   else cout << "Chain was not produced ! "<<endl;
   
@@ -178,7 +184,7 @@ void  LoadLibraries(const anaModes mode) {
     //gSystem->Load("libANALYSIS");
     //gSystem->Load("libANALYSISalice");
     //gSystem->Load("libPWG4PartCorrBase");
-     //gSystem->Load("libPWG4PartCorrDep");
+	//gSystem->Load("libPWG4PartCorrDep");
 
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
@@ -238,7 +244,8 @@ void SetupPar(char* pararchivename)
     TString processline(Form(".! make %s", parpar.Data())) ; 
     gROOT->ProcessLine(processline.Data()) ;
     gSystem->ChangeDirectory(cdir) ; 
-    processline = Form(".! mv /tmp/%s .", parpar.Data()) ;
+    //processline = Form(".! mv /tmp/%s .", parpar.Data()) ;
+	processline = Form(".! mv $ALICE_ROOT/%s .", parpar.Data()) ;
     gROOT->ProcessLine(processline.Data()) ;
   } 
   if ( gSystem->AccessPathName(pararchivename) ) {  
@@ -320,7 +327,12 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
       cout<<"INDIR : "<<kInDir<<endl;
       cout<<"NEVENT : "<<kEvent<<endl;
       cout<<"PATTERN: " <<kPattern<<endl;
-      
+		
+      TString datafile="";
+      if(kInputData == "ESD") datafile = "AliESDs.root" ;
+      else if(kInputData == "AOD") datafile = "aod.root" ;
+      else if(kInputData == "MC")  datafile = "galice.root" ;
+
       //Loop on ESD files, add them to chain
       Int_t event =0;
       Int_t skipped=0 ; 
@@ -328,12 +340,12 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
       char filexs[120] ;
       
       for (event = 0 ; event < kEvent ; event++) {
-	sprintf(file, "%s/%s%d/AliESDs.root", kInDir,kPattern,event) ; 
+	sprintf(file, "%s/%s%d/%s", kInDir,kPattern,event,datafile.Data()) ; 
 	sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ; 
 	TFile * fESD = 0 ; 
 	//Check if file exists and add it, if not skip it
 	if ( fESD = TFile::Open(file)) {
-	  if ( fESD->Get("esdTree") ) { 
+	  if ( fESD->Get(kTreeName) ) { 
 	    printf("++++ Adding %s\n", file) ;
 	    chain->AddFile(file);
 	    chainxs->Add(filexs) ; 
@@ -344,7 +356,7 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
 	  skipped++ ;
 	}
       }
-      printf("number of entries # %lld, skipped %d\n", chain->GetEntries(), skipped*100) ; 	
+      printf("number of entries # %lld, skipped %d\n", chain->GetEntries(), skipped) ; 	
     }
     else {
       TString input = "AliESDs.root" ;

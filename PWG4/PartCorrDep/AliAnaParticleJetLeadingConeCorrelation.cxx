@@ -382,24 +382,25 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
   Double_t etaJet = jet.Eta();
   Double_t etaLead = leading.Eta();
 
-   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"Pt"+lastname))->
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"Pt"+lastname))->
      Fill(ptTrig,ptJet);
-   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"RatioPt"+lastname))->
+	
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"RatioPt"+lastname))->
      Fill(ptTrig,ptJet/ptTrig);
-   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"LeadingRatioPt"+lastname))->
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"LeadingRatioPt"+lastname))->
      Fill(ptTrig,ptLead/ptJet);
-//   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"Phi"+lastname))->
+//   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"Phi"+lastname))->
 //     Fill(ptTrig,phiJet);
-   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"DeltaPhi"+lastname))->
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"DeltaPhi"+lastname))->
      Fill(ptTrig,phiJet-phiTrig);
-   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"LeadingDeltaPhi"+lastname))->
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"LeadingDeltaPhi"+lastname))->
      Fill(ptTrig,phiJet-phiLead);
    
-   //   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"Eta"+lastname))->
+   //   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"Eta"+lastname))->
    //     Fill(ptTrig,etaJet);
-   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"DeltaEta"+lastname))->
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"DeltaEta"+lastname))->
      Fill(ptTrig,etaJet-etaTrig);
-   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"LeadingDeltaEta"+lastname))->
+   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"LeadingDeltaEta"+lastname))->
      Fill(ptTrig,etaJet-etaLead);
   
   //Construct fragmentation function
@@ -424,16 +425,16 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
     
     nTracksInCone++; 
    
-    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"FFz"+lastname))
+    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"FFz"+lastname))
       ->Fill(ptTrig,p3.Pt()/ptTrig);
-    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"FFxi"+lastname))
+    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"FFxi"+lastname))
       ->Fill(ptTrig,TMath::Log(ptTrig/p3.Pt()));
-    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"FFpt"+lastname))
+    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"FFpt"+lastname))
       ->Fill(ptTrig,p3.Pt());
     
   }//track loop
 
-  if(nTracksInCone > 0) dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(type+"NTracksInCone"+lastname))
+  if(nTracksInCone > 0) dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"NTracksInCone"+lastname))
     ->Fill(ptTrig, nTracksInCone);
   
 }
@@ -777,10 +778,10 @@ TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
     } //icone
   }//If we want to study any cone or pt threshold
   
-  if(GetDebug()>2){
+  if(GetDebug() > 2){
     printf("AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects() - All histograms names : \n");
     for(Int_t i  = 0 ;  i<  fOutCont->GetEntries(); i++)
-      printf("Histo i %d name %s",i,((fOutCont->At(i))->GetName()));
+      printf("Histo i %d name %s\n",i,((fOutCont->At(i))->GetName()));
     //cout<< (fOutCont->At(i))->GetName()<<endl;
   }
   

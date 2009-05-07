@@ -21,8 +21,8 @@ enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 //Settings to read locally several files, only for "mLocal" mode
 //The different values are default, they can be set with environmental 
 //variables: INDIR, PATTERN, NEVENT, respectivelly
-char * kInDir = "/user/data/files"; 
-char * kPattern = ""; // Data are in files kInDir/kPattern+i
+char * kInDir = "/user/data/files/"; 
+char * kPattern = ""; // Data are in files kInDir/kPattern+i 
 Int_t kEvent = 1; // Number of files
 //---------------------------------------------------------------------------
 //Collection file for grid analysis
@@ -38,7 +38,9 @@ const Int_t kNumberOfEventsPerFile = 100;
 //---------------------------------------------------------------------------
 
 const Bool_t kMC = kTRUE; //With real data kMC = kFALSE
-const TString kInputData = "ESD";
+const TString kInputData = "ESD";//ESD, AOD, MC
+TString kTreeName = "esdTree";
+
 void anaPartCorrJetAn(Int_t mode=mLocal, TString configName = "ConfigAnalysisGammaJetFinderCorrelation")
 {
   // Main
@@ -53,7 +55,15 @@ void anaPartCorrJetAn(Int_t mode=mLocal, TString configName = "ConfigAnalysisGam
   //-------------------------------------------------------------------------------------------------
   //Create chain from ESD and from cross sections files, look below for options.
   //------------------------------------------------------------------------------------------------- 
-  TChain *chain   = new TChain("esdTree") ;
+  if(kInputData == "ESD") kTreeName = "esdTree" ;
+  else if(kInputData == "AOD") kTreeName = "aodTree" ;
+  else if (kInputData == "MC") kTreeName = "TE" ;
+  else {
+    cout<<"Wrong  data type "<<kInputData<<endl;
+    break;
+  }
+	
+  TChain *chain   = new TChain(kTreeName) ;
   TChain * chainxs = new TChain("Xsection") ;
   CreateChain(mode, chain, chainxs);  
 
@@ -65,10 +75,11 @@ void anaPartCorrJetAn(Int_t mode=mLocal, TString configName = "ConfigAnalysisGam
     //-------------------------------------
     AliAnalysisManager *mgr  = new AliAnalysisManager("Manager", "Manager");
     // MC handler
-    if(kMC){
+    if(kMC || kInputData == "MC"){
       AliMCEventHandler* mcHandler = new AliMCEventHandler();
       mcHandler->SetReadTR(kFALSE);//Do not search TrackRef file
-      mgr->SetMCtruthEventHandler(mcHandler);
+      mgr->SetMCtruthEventHandler(mcHandler); 
+	  if( kInputData == "MC") mgr->SetInputEventHandler(NULL);
     }
 
     // AOD output handler
@@ -366,7 +377,12 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
       cout<<"INDIR : "<<kInDir<<endl;
       cout<<"NEVENT : "<<kEvent<<endl;
       cout<<"PATTERN: " <<kPattern<<endl;
-      
+		
+	  TString datafile="";
+      if(kInputData == "ESD") datafile = "AliESDs.root" ;
+      else if(kInputData == "AOD") datafile = "aod.root" ;
+      else if(kInputData == "MC")  datafile = "galice.root" ;
+		
       //Loop on ESD files, add them to chain
       Int_t event =0;
       Int_t skipped=0 ; 
@@ -374,12 +390,12 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
       char filexs[120] ;
       
       for (event = 0 ; event < kEvent ; event++) {
-	sprintf(file, "%s/%s%d/AliESDs.root", kInDir,kPattern,event) ; 
+	sprintf(file, "%s/%s%d/%s", kInDir,kPattern,event,datafile.Data()) ;  
 	sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ; 
 	TFile * fESD = 0 ; 
 	//Check if file exists and add it, if not skip it
 	if ( fESD = TFile::Open(file)) {
-	  if ( fESD->Get("esdTree") ) { 
+	  if ( fESD->Get(kTreeName) ) { 
 	    printf("++++ Adding %s\n", file) ;
 	    chain->AddFile(file);
 	    chainxs->Add(filexs) ; 
@@ -390,7 +406,7 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
 	  skipped++ ;
 	}
       }
-      printf("number of entries # %lld, skipped %d\n", chain->GetEntries(), skipped*100) ; 	
+      printf("number of entries # %lld, skipped %d\n", chain->GetEntries(), skipped) ; 	
     }
     else {
       TString input = "AliESDs.root" ;
