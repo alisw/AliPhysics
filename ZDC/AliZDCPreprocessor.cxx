@@ -35,11 +35,16 @@ AliZDCPreprocessor::AliZDCPreprocessor(AliShuttleInterface* shuttle) :
   fData(0)
 {
   // constructor
+  // May 2009 - run types updated according to
+  // http://alice-ecs.web.cern.ch/alice-ecs/runtypes_3.36.html
   AddRunType("STANDALONE_PEDESTAL");
   AddRunType("STANDALONE_LASER");
-  AddRunType("STANDALONE_EMD");
   AddRunType("STANDALONE_COSMIC");
-  AddRunType("STANDALONE_BC");
+  AddRunType("CALIBRATION_EMD");
+  AddRunType("CALIBRATION_MB");
+  AddRunType("CALIBRATION_CENTRAL");
+  AddRunType("CALIBRATION_SEMICENTRAL");
+  AddRunType("CALIBRATION_BC");
   AddRunType("PHYSICS");
 }
 
@@ -83,8 +88,8 @@ UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
   //
   TIter iter(daqSource);
   TObjString* source = 0;
-  Int_t isou=0;
-  Int_t res=999;
+  Int_t isou = 0;
+  Int_t res = 999;
   Int_t readMap[48][6]; 
   //
   while((source = dynamic_cast<TObjString*> (iter.Next()))){
@@ -225,15 +230,16 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   Bool_t resultAl = kTRUE;
   resultAl = Store("Align","Data", array, &md, 0, 0);
   
-// *************** From DAQ ******************
-Bool_t resChMap=kTRUE, resPedCal=kTRUE, resLaserCal=kTRUE, resECal=kTRUE;
-// 
-const char* beamType = GetRunParameter("beamType");
-TString runType = GetRunType();
-printf("\n\t AliZDCPreprocessor -> beamType %s\n",beamType);
-printf("\t AliZDCPreprocessor -> runType  %s\n\n",runType.Data());
-
-if(strcmp(beamType,"p-p")==0){
+ // *************** From DAQ ******************
+ Bool_t resChMap=kTRUE, resPedCal=kTRUE, resLaserCal=kTRUE, resECal=kTRUE;
+ // 
+ const char* beamType = GetRunParameter("beamType");
+ TString runType = GetRunType();
+ printf("\n\t AliZDCPreprocessor -> beamType %s\n",beamType);
+ printf("\t AliZDCPreprocessor -> runType  %s\n\n",runType.Data());
+ 
+ // -------------- p-p data -------------
+ if(strcmp(beamType,"p-p")==0){
    
    // --- Cheking if there is already the entry in the OCDB
    AliCDBEntry *cdbEntry = GetFromOCDB("Calib", "EMDCalib");
@@ -262,17 +268,18 @@ if(strcmp(beamType,"p-p")==0){
      printf("\t AliZDCPreprocessor -> ZDC/Calib/EMDCalib object already existing in OCDB!!!\n");
      resECal = kTRUE;
    }
-}
-// ******************************************
-//   ZDC ADC channel mapping
-// ******************************************
-resChMap = ProcessChMap(runType);
-// 
-// *****************************************************
-// [a] PEDESTALS -> Pedestal subtraction
-// *****************************************************
-// 
-if(runType=="STANDALONE_PEDESTAL"){
+ }
+ 
+ // ******************************************
+ //   ZDC ADC channel mapping
+ // ******************************************
+ resChMap = ProcessChMap(runType);
+ // 
+ // *****************************************************
+ // [a] PEDESTALS -> Pedestal subtraction
+ // *****************************************************
+ // 
+ if(runType=="STANDALONE_PEDESTAL"){
   TList* daqSources = GetFileSources(kDAQ, "PEDESTALS");
   if(!daqSources){
     Log(Form("No source for STANDALONE_PEDESTAL run %d !", fRun));
@@ -339,11 +346,11 @@ if(runType=="STANDALONE_PEDESTAL"){
       resPedCal = Store("Calib","Pedestals",pedCalib, &metaData, 0, 1);
   }
   delete daqSources; daqSources = 0;
-}
-// *****************************************************
-// [b] STANDALONE_LASER EVENTS -> Signal stability
-// *****************************************************
-else if(runType=="STANDALONE_LASER"){
+ }
+ // *****************************************************
+ // [b] STANDALONE_LASER EVENTS -> Signal stability
+ // *****************************************************
+ else if(runType=="STANDALONE_LASER"){
   TList* daqSources = GetFileSources(kDAQ, "LASER");
   if(!daqSources){
     AliError(Form("No sources for STANDALONE_LASER run %d !", fRun));
@@ -401,17 +408,17 @@ else if(runType=="STANDALONE_LASER"){
        resLaserCal = Store("Calib","LaserCalib",lCalib, &metaData, 0, 1);
   }
   
-}
-// *****************************************************
-// [c] EMD EVENTS -> Energy calibration and equalization
-// *****************************************************
-else if(runType=="STANDALONE_EMD" && strcmp(beamType,"Pb-Pb")==0){
+ }
+ // *****************************************************
+ // [c] EMD EVENTS -> Energy calibration and equalization
+ // *****************************************************
+ else if(runType=="CALIBRATION_EMD" && strcmp(beamType,"Pb-Pb")==0){
   TList* daqSources = GetFileSources(kDAQ, "EMDCALIB");
   if(!daqSources){
-    AliError(Form("No sources for STANDALONE_EMD run %d !", fRun));
+    AliError(Form("No sources for CALIBRATION_EMD run %d !", fRun));
     return 1;
   }
-  Log("\t List of sources for STANDALONE_EMD");
+  Log("\t List of sources for CALIBRATION_EMD");
   daqSources->Print();
   //
   TIter iter2(daqSources);
@@ -472,7 +479,7 @@ else if(runType=="STANDALONE_EMD" && strcmp(beamType,"Pb-Pb")==0){
       //
       resECal = Store("Calib","EMDCalib",eCalib, &metaData, 0, 1);
   }
-}
+ }
 
 
   // note that the parameters are returned as character strings!
