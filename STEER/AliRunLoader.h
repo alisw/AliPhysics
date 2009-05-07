@@ -258,7 +258,7 @@ protected:
     static const TString   fgkKineBranchName;         //default name of the branch with kinematics
     static const TString   fgkGAliceName;             //default name for gAlice file    
     
-    ClassDef(AliRunLoader,2)
+    ClassDef(AliRunLoader,3)
 };
 
 #endif
