@@ -38,7 +38,7 @@ class AliPMDQADataMakerRec: public AliQADataMakerRec {
     virtual void   MakeRecPoints(TTree * recpoTree) ; 
     virtual void   MakeESDs(AliESDEvent * esd) ;
     virtual void   StartOfDetectorCycle() ; 
-    virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** list) ;
+    virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
     
     ClassDef(AliPMDQADataMakerRec,1)  // description 
 

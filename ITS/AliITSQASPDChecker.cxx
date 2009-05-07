@@ -41,7 +41,7 @@ AliITSQASPDChecker& AliITSQASPDChecker::operator = (const AliITSQASPDChecker& qa
 
 
 //__________________________________________________________________
-Double_t AliITSQASPDChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray * list)
+Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * list)
 {
   AliDebug(1,Form("AliITSQASPDChecker called with offset: %d\n", fSubDetOffset));
 

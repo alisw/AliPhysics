@@ -47,7 +47,7 @@
 ClassImp(AliACORDEQADataMakerRec)
            
 //____________________________________________________________________________ 
-AliACORDEQADataMakerRec::AliACORDEQADataMakerRec():AliQADataMakerRec(AliQA::GetDetName(AliQA::kACORDE), "ACORDE Quality Assurance Data Maker")
+AliACORDEQADataMakerRec::AliACORDEQADataMakerRec():AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kACORDE), "ACORDE Quality Assurance Data Maker")
 {
 
 }
@@ -66,11 +66,11 @@ AliACORDEQADataMakerRec& AliACORDEQADataMakerRec::operator = (const AliACORDEQAD
   return *this;
 }
 //____________________________________________________________________________
-void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  AliQAChecker::Instance()->Run(AliQA::kACORDE, task, list) ;
+  AliQAChecker::Instance()->Run(AliQAv1::kACORDE, task, list) ;
 }
 
 //____________________________________________________________________________

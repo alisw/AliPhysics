@@ -32,7 +32,7 @@ private:
   virtual void   MakeSDigits(TClonesArray * /*sdigits*/) {;} 
   virtual void   MakeSDigits(TTree * /*sdigTree*/) {;}
   virtual void   StartOfDetectorCycle(); 
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list);
+  virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list);
   //
   TClonesArray   *fHits; 	//! Array containing ZDC hits
   AliZDCDigit    *fDigit; 	//! Pointer to digit in tree  

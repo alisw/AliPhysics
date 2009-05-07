@@ -202,14 +202,14 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   
 /*
 	// check the QA result for RAWS
-  AliQA * qa = AliQA::Instance(AliQA::kPHOS) ; 
-  if ( qa->IsSet(AliQA::kPHOS, AliQA::kRAW, AliQA::kFATAL)) {
+  AliQAv1 * qa = AliQAv1::Instance(AliQAv1::kPHOS) ; 
+  if ( qa->IsSet(AliQAv1::kPHOS, AliQAv1::kRAW, AliQAv1::kFATAL)) {
 	AliFatal("QA status in RAW was Fatal") ;
-  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kRAW, AliQA::kERROR)) {
+  } else if ( qa->IsSet(AliQAv1::kPHOS, AliQAv1::kRAW, AliQAv1::kERROR)) {
 	AliError("QA status in RAW was Error") ;
-  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kRAW, AliQA::kWARNING) ) {
+  } else if ( qa->IsSet(AliQAv1::kPHOS, AliQAv1::kRAW, AliQAv1::kWARNING) ) {
 	AliWarning("QA status in RAW was Warning") ;
-  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kRAW, AliQA::kINFO) ) {
+  } else if ( qa->IsSet(AliQAv1::kPHOS, AliQAv1::kRAW, AliQAv1::kINFO) ) {
 	AliInfo("QA status in RAW was Info") ;
   }
 */
@@ -280,13 +280,13 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 //    // make Quality Assurance data
 //
 //    if (GetQADataMaker()->IsCycleDone() ) {
-//      GetQADataMaker()->EndOfCycle(AliQA::kHITS) ; 
-//	  GetQADataMaker()->EndOfCycle(AliQA::kSDIGITS) ; 
-//      GetQADataMaker()->StartOfCycle(AliQA::kHITS) ; 
-//	  GetQADataMaker()->StartOfCycle(AliQA::kSDIGITS, kTRUE) ; 
+//      GetQADataMaker()->EndOfCycle(AliQAv1::kHITS) ; 
+//	  GetQADataMaker()->EndOfCycle(AliQAv1::kSDIGITS) ; 
+//      GetQADataMaker()->StartOfCycle(AliQAv1::kHITS) ; 
+//	  GetQADataMaker()->StartOfCycle(AliQAv1::kSDIGITS, kTRUE) ; 
 //   }
-//    GetQADataMaker()->Exec(AliQA::kHITS, hits) ; 
-//    GetQADataMaker()->Exec(AliQA::kSDIGITS, sdigits) ; 
+//    GetQADataMaker()->Exec(AliQAv1::kHITS, hits) ; 
+//    GetQADataMaker()->Exec(AliQAv1::kSDIGITS, sdigits) ; 
 //    GetQADataMaker()->Increment() ;
 	
     //Now write SDigits
@@ -307,8 +307,8 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   }// event loop
   
 //  //Write the quality assurance data 
-//  GetQADataMaker()->EndOfCycle(AliQA::kHITS) ;    
-//  GetQADataMaker()->EndOfCycle(AliQA::kSDIGITS) ;    
+//  GetQADataMaker()->EndOfCycle(AliQAv1::kHITS) ;    
+//  GetQADataMaker()->EndOfCycle(AliQAv1::kSDIGITS) ;    
 //  GetQADataMaker()->Finish() ;
 
   Unload();

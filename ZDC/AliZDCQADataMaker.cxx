@@ -35,7 +35,7 @@ ClassImp(AliZDCQADataMaker)
            
 //____________________________________________________________________________ 
   AliZDCQADataMaker::AliZDCQADataMaker() : 
-      AliQADataMaker(AliQA::GetDetName(AliQA::kZDC), "ZDC Quality Assurance Data Maker"),
+      AliQADataMaker(AliQAv1::GetDetName(AliQAv1::kZDC), "ZDC Quality Assurance Data Maker"),
       fHits("AliZDCHit", 1000),
       fDigits("AliZDCDigit", 1000)
 
@@ -594,8 +594,8 @@ void AliZDCQADataMaker::StartOfDetectorCycle()
 }
 
 //____________________________________________________________________________ 
-void AliZDCQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list)
+void AliZDCQADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  AliQAChecker::Instance()->Run(AliQA::kZDC, task, list) ;  
+  AliQAChecker::Instance()->Run(AliQAv1::kZDC, task, list) ;  

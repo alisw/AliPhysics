@@ -43,7 +43,7 @@ ClassImp(AliCorrQADataMakerRec)
            
 //____________________________________________________________________________ 
 AliCorrQADataMakerRec::AliCorrQADataMakerRec(AliQADataMaker ** qadm ) : 
-AliQADataMakerRec(AliQA::GetDetName(AliQA::kCORR), "Corr Quality Assurance Data Maker"),
+AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kCORR), "Corr Quality Assurance Data Maker"),
   fMaxRawVar(0),  
   fqadm(qadm)
 {
@@ -87,12 +87,12 @@ AliCorrQADataMakerRec::~AliCorrQADataMakerRec()
 }
   
 //____________________________________________________________________________ 
-void AliCorrQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** /*list*/)
+void AliCorrQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** /*list*/)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  if (task == AliQA::kRAWS) {
-     AliQAChecker::Instance()->Run(AliQA::kCORR, task, fCorrNt) ; 
+  if (task == AliQAv1::kRAWS) {
+     AliQAChecker::Instance()->Run(AliQAv1::kCORR, task, fCorrNt) ; 
   }
 }
 
@@ -121,7 +121,7 @@ void AliCorrQADataMakerRec::InitRaws()
   delete fRawsQAList ; // not needed for the time being 
   fRawsQAList = NULL ; 
   TString varlist("") ;
-  for ( Int_t detIndex = 0 ; detIndex < AliQA::kNDET ; detIndex++ ) {
+  for ( Int_t detIndex = 0 ; detIndex < AliQAv1::kNDET ; detIndex++ ) {
     AliQADataMaker * qadm = fqadm[detIndex] ; 
     if ( ! qadm ) 
       continue ;
@@ -141,7 +141,7 @@ void AliCorrQADataMakerRec::InitRaws()
     AliWarning("NTUPLE not created") ; 
   } else {
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      char * name = Form("%s_%s", AliQA::GetQACorrName(), AliRecoParam::GetEventSpecieName(specie)) ; 
+      char * name = Form("%s_%s", AliQAv1::GetQACorrName(), AliRecoParam::GetEventSpecieName(specie)) ; 
       fCorrNt[specie] = new TNtupleD(name, "Raws data correlation among detectors", varlist.Data()) ;  
     }
   }  
@@ -164,7 +164,7 @@ void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
     const Int_t kSize = fMaxRawVar ; 
     Double_t  *varvalue = new Double_t[kSize] ;
     Int_t index = 0 ;
-    for ( Int_t detIndex = 0 ; detIndex < AliQA::kNDET ; detIndex++ ) {
+    for ( Int_t detIndex = 0 ; detIndex < AliQAv1::kNDET ; detIndex++ ) {
       AliQADataMaker * qadm = fqadm[detIndex] ; 
       if ( ! qadm ) 
         continue ;

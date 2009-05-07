@@ -51,7 +51,7 @@ ClassImp(AliTRDQADataMakerRec)
 
 //____________________________________________________________________________ 
   AliTRDQADataMakerRec::AliTRDQADataMakerRec() : 
-  AliQADataMakerRec(AliQA::GetDetName(AliQA::kTRD), "TRD Quality Assurance Data Maker")
+  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kTRD), "TRD Quality Assurance Data Maker")
 {
   //
   // Default constructor
@@ -84,7 +84,7 @@ AliTRDQADataMakerRec& AliTRDQADataMakerRec::operator=(const AliTRDQADataMakerRec
 }
 
 //____________________________________________________________________________ 
-void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //
   // Detector specific actions at end of cycle
@@ -94,7 +94,7 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
   
   AliInfo("End of TRD cycle");
   
-  if (task == AliQA::kRECPOINTS) {
+  if (task == AliQAv1::kRECPOINTS) {
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       TH1D * hist = new TH1D("fitHist", "", 200, -0.5, 199.5);
       //list[specie]->Print();
@@ -201,7 +201,7 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
   // const char *suf[knbits] = {"TPCi", "TPCo", "TPCz", "TRDo", "TRDr", "TRDz"};
   //const char *sufRatio[4] = {"TRDrTRDo", "TRDoTPCo", "TRDrTPCo", "TRDzTPCo"};
 
-  if (task == AliQA::kESDS) {
+  if (task == AliQAv1::kESDS) {
     
     const Int_t knRatio = 4;
     const Int_t kN[knRatio] = {4,3,4,5};
@@ -228,7 +228,7 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
     }
   }
   // call the checker
-  AliQAChecker::Instance()->Run(AliQA::kTRD, task, list) ;    
+  AliQAChecker::Instance()->Run(AliQAv1::kTRD, task, list) ;    
 }
 
 //____________________________________________________________________________ 

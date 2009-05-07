@@ -71,5 +71,6 @@
 #pragma link C++ class AliTriggerScalersRecord+;
 
 #pragma link C++ class  AliExternalTrackParam+;
+#pragma link C++ class AliQA+;
 
 #endif

@@ -34,7 +34,7 @@
 #include "AliITSQASDDDataMakerSim.h"
 #include "AliITSQASSDDataMakerSim.h"
 #include "AliLog.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliITSQAChecker.h"
 #include "AliRawReader.h"
@@ -43,7 +43,7 @@ ClassImp(AliITSQADataMakerSim)
 
 //____________________________________________________________________________ 
 AliITSQADataMakerSim::AliITSQADataMakerSim(Short_t subDet) :
-AliQADataMakerSim(AliQA::GetDetName(AliQA::kITS), "ITS Quality Assurance Data Maker"),
+AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kITS), "ITS Quality Assurance Data Maker"),
 fSubDetector(subDet),
 fSPDDataMaker(NULL),
 fSDDDataMaker(NULL),
@@ -112,12 +112,12 @@ void AliITSQADataMakerSim::StartOfDetectorCycle()
 }
 
 //____________________________________________________________________________ 
-void AliITSQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray** list)
+void AliITSQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list)
 {
   // launch the QA checking
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     SetEventSpecie(specie) ; 
-    AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
+    AliDebug(1,"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
     if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list[specie]);
     if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list[specie]);
     if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list[specie]);
@@ -136,7 +136,7 @@ void AliITSQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
 	Int_t offset=GetDetTaskOffset(subdet, task);
 	qacb->SetDetTaskOffset(subdet,offset);
       }
-    qac->Run( AliQA::kITS , task, list); 
+    qac->Run( AliQAv1::kITS , task, list); 
   }
 }
 
@@ -250,7 +250,7 @@ void AliITSQADataMakerSim::MakeHits(TTree * hits)
 
 //_________________________________________________________________
 
-Int_t AliITSQADataMakerSim::GetDetTaskOffset(Int_t subdet,AliQA::TASKINDEX_t task)
+Int_t AliITSQADataMakerSim::GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task)
 {
   switch(subdet)
     {

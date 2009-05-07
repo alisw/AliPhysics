@@ -105,7 +105,7 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list,
 		AliError("Max number of authorized QA objects is 10000") ; 
   } else {    
     if (expert) 
-      hist->SetBit(AliQA::GetExpertBit()) ; 
+      hist->SetBit(AliQAv1::GetExpertBit()) ; 
 		TH1 * histClone[AliRecoParam::kNSpecies] ; 
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       histClone[specie] = CloneMe(hist, specie) ; 
@@ -131,23 +131,23 @@ TH1 *  AliQADataMaker::CloneMe(TH1 * hist, Int_t specie) const
   // clones a histogram 
   char * name = Form("%s_%s", AliRecoParam::GetEventSpecieName(specie), hist->GetName()) ;
   TH1 * hClone = dynamic_cast<TH1 *>(hist->Clone(name)) ; 
-  if ( hist->TestBit(AliQA::GetExpertBit()) )
-       hClone->SetBit(AliQA::GetExpertBit()) ; 
+  if ( hist->TestBit(AliQAv1::GetExpertBit()) )
+       hClone->SetBit(AliQAv1::GetExpertBit()) ; 
   return hClone ; 
 }
 
 //____________________________________________________________________________
-void AliQADataMaker::DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t task) 
+void AliQADataMaker::DefaultEndOfDetectorCycle(AliQAv1::TASKINDEX_t task) 
 {
 	// this method must be oveloaded by detectors
 	// sets the QA result to Fatal
-	AliQA::Instance(AliQA::GetDetIndex(GetName())) ;
-	AliQA * qa = AliQA::Instance(task) ;
+	AliQAv1::Instance(AliQAv1::GetDetIndex(GetName())) ;
+	AliQAv1 * qa = AliQAv1::Instance(task) ;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    qa->Set(AliQA::kFATAL, specie) ; 
-	AliQA::GetQAResultFile()->cd() ; 
-	qa->Write(AliQA::GetQAName(), kWriteDelete) ;   
-	AliQA::GetQAResultFile()->Close() ; 
+    qa->Set(AliQAv1::kFATAL, specie) ; 
+	AliQAv1::GetQAResultFile()->cd() ; 
+	qa->Write(AliQAv1::GetQAName(), kWriteDelete) ;   
+	AliQAv1::GetQAResultFile()->Close() ; 
 }
 
 //____________________________________________________________________________ 

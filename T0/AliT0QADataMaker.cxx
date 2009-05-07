@@ -44,7 +44,7 @@ ClassImp(AliT0QADataMaker)
            
 //____________________________________________________________________________ 
   AliT0QADataMaker::AliT0QADataMaker() : 
-  AliQADataMaker(AliQA::GetDetName(AliQA::kT0), "T0 Quality Assurance Data Maker")
+  AliQADataMaker(AliQAv1::GetDetName(AliQAv1::kT0), "T0 Quality Assurance Data Maker")
 
 {
   // ctor
@@ -91,11 +91,11 @@ AliT0QADataMaker& AliT0QADataMaker::operator = (const AliT0QADataMaker& qadm )
   return *this;
 }
 //____________________________________________________________________________
-void AliT0QADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list)
+void AliT0QADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX task, TObjArray * list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  AliQAChecker::Instance()->Run(AliQA::kT0, task, list) ;
+  AliQAChecker::Instance()->Run(AliQAv1::kT0, task, list) ;
 }
 
 //____________________________________________________________________________

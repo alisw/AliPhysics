@@ -142,7 +142,7 @@
 
 #pragma link C++ class AliGRPObject+;
 
-#pragma link C++ class AliQA+;
+#pragma link C++ class AliQAv1+;
 
 #pragma link C++ class AliRunInfo+;
 #pragma link C++ class AliEventInfo+;

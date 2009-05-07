@@ -19,7 +19,7 @@ class TFile ;
 class TH2F ;  
 
 // --- AliRoot header files ---
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQACheckerBase.h"
 
 class AliITSQASPDChecker;
@@ -48,8 +48,8 @@ public:
   virtual void SetDetTaskOffset(Int_t subdet=0,Int_t offset=0);
 
 protected:
-  virtual Double_t * Check(AliQA::ALITASK_t /*index*/) ;
-  virtual Double_t * Check(AliQA::ALITASK_t index, TObjArray ** list ) ;
+  virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/) ;
+  virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list ) ;
   virtual void SetSPDTaskOffset(Int_t SPDOffset){fSPDOffset = SPDOffset;} ;
   virtual void SetSDDTaskOffset(Int_t SDDOffset){fSDDOffset = SDDOffset;} ;
   virtual void SetSSDTaskOffset(Int_t SSDOffset){fSSDOffset = SSDOffset;} ;

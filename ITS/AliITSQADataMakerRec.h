@@ -36,7 +36,7 @@ public:
   AliITSQADataMakerRec(const AliITSQADataMakerRec& qadm);
   AliITSQADataMakerRec& operator = (const AliITSQADataMakerRec& qac);
   virtual void StartOfDetectorCycle();
-  virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list);
+  virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list);
   virtual void EndOfDetectorCycle(const char *fgDataName);
   virtual void InitRaws();
   virtual void InitRecPoints();
@@ -49,7 +49,7 @@ public:
   Bool_t GetHLTMode(){return fHLTMode;};
   virtual ~AliITSQADataMakerRec(); // dtor
  Short_t GetSubDet(){return fSubDetector;};
- Int_t GetDetTaskOffset(Int_t subdet,AliQA::TASKINDEX_t task);
+ Int_t GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task);
 
 
 private:

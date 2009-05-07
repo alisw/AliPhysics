@@ -48,7 +48,7 @@ ClassImp(AliTPCQADataMakerSim)
 
 //____________________________________________________________________________ 
 AliTPCQADataMakerSim::AliTPCQADataMakerSim() : 
-  AliQADataMakerSim(AliQA::GetDetName(AliQA::kTPC), 
+  AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kTPC), 
 		    "TPC Sim Quality Assurance Data Maker")
 {
   // ctor
@@ -78,11 +78,11 @@ AliTPCQADataMakerSim& AliTPCQADataMakerSim::operator = (const AliTPCQADataMakerS
 }
  
 //____________________________________________________________________________ 
-void AliTPCQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliTPCQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  AliQAChecker::Instance()->Run(AliQA::kTPC, task, list) ;  
+  AliQAChecker::Instance()->Run(AliQAv1::kTPC, task, list) ;  
 }
 
 //____________________________________________________________________________ 

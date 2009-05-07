@@ -44,7 +44,7 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliT0QAChecker.h"
 
@@ -52,7 +52,7 @@ ClassImp(AliT0QAChecker)
 
 
 //____________________________________________________________________________
-Double_t * AliT0QAChecker::Check(AliQA::ALITASK_t /*index*/)
+Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t /*index*/)
 {
   Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
@@ -61,7 +61,7 @@ Double_t * AliT0QAChecker::Check(AliQA::ALITASK_t /*index*/)
 }
 
 //__________________________________________________________________
-Double_t * AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray ** list)
+Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index,TObjArray ** list)
 {
 
   // Super-basic check on the QA histograms on the input list:
@@ -82,7 +82,7 @@ Double_t * AliT0QAChecker::Check(AliQA::ALITASK_t index,TObjArray ** list)
   TH1 *fhESD[2];
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    //  TString dataType = AliQA::GetAliTaskName(index);
+    //  TString dataType = AliQAv1::GetAliTaskName(index);
     if (list[specie]->GetEntries() == 0){
       test[specie] = 1. ; // nothing to check
     }

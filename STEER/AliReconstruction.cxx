@@ -162,7 +162,7 @@
 #include "AliMultiplicity.h"
 #include "AliPID.h"
 #include "AliPlaneEff.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQADataMakerRec.h" 
 #include "AliQAManager.h"
 #include "AliRawEvent.h"
@@ -279,7 +279,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
   }
-  for (Int_t iDet = 0; iDet < AliQA::kNDET; iDet++) {
+  for (Int_t iDet = 0; iDet < AliQAv1::kNDET; iDet++) {
     fQACycles[iDet] = 999999 ;
     fQAWriteExpert[iDet] = kFALSE ; 
   }
@@ -378,7 +378,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
     fTracker[iDet] = NULL;
   }  
   
-  for (Int_t iDet = 0; iDet < AliQA::kNDET; iDet++) {
+  for (Int_t iDet = 0; iDet < AliQAv1::kNDET; iDet++) {
     fQACycles[iDet] = rec.fQACycles[iDet];
     fQAWriteExpert[iDet] = rec.fQAWriteExpert[iDet] ; 
   }
@@ -455,7 +455,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
     delete fTracker[iDet]; fTracker[iDet] = NULL;
   }
   
-  for (Int_t iDet = 0; iDet < AliQA::kNDET; iDet++) {
+  for (Int_t iDet = 0; iDet < AliQAv1::kNDET; iDet++) {
     fQACycles[iDet] = rec.fQACycles[iDet];
     fQAWriteExpert[iDet] = rec.fQAWriteExpert[iDet] ;
   } 
@@ -558,28 +558,28 @@ void AliReconstruction::InitQA()
   
   if (fRunQA) {
   fQAManager->SetActiveDetectors(fQADetectors) ; 
-  for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
-    fQAManager->SetCycleLength(AliQA::DETECTORINDEX_t(det), fQACycles[det]) ;  
-    fQAManager->SetWriteExpert(AliQA::DETECTORINDEX_t(det)) ;
+  for (Int_t det = 0 ; det < AliQAv1::kNDET ; det++) {
+    fQAManager->SetCycleLength(AliQAv1::DETECTORINDEX_t(det), fQACycles[det]) ;  
+    fQAManager->SetWriteExpert(AliQAv1::DETECTORINDEX_t(det)) ;
   }
-  if (!fRawReader && fQATasks.Contains(AliQA::kRAWS))
-    fQATasks.ReplaceAll(Form("%d",AliQA::kRAWS), "") ;
+  if (!fRawReader && fQATasks.Contains(AliQAv1::kRAWS))
+    fQATasks.ReplaceAll(Form("%d",AliQAv1::kRAWS), "") ;
   fQAManager->SetTasks(fQATasks) ; 
   fQAManager->InitQADataMaker(AliCDBManager::Instance()->GetRun()) ; 
   }
   if (fRunGlobalQA) {
     Bool_t sameCycle = kFALSE ;
-    AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQA::kGLOBAL);
+    AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQAv1::kGLOBAL);
     AliInfo(Form("Initializing the global QA data maker"));
-    if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) {
-      qadm->StartOfCycle(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
-      TObjArray **arr=qadm->Init(AliQA::kRECPOINTS);
+    if (fQATasks.Contains(Form("%d", AliQAv1::kRECPOINTS))) {
+      qadm->StartOfCycle(AliQAv1::kRECPOINTS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
+      TObjArray **arr=qadm->Init(AliQAv1::kRECPOINTS);
       AliTracker::SetResidualsArray(arr);
       sameCycle = kTRUE ; 
     }
-    if (fQATasks.Contains(Form("%d", AliQA::kESDS))) {
-      qadm->StartOfCycle(AliQA::kESDS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
-      qadm->Init(AliQA::kESDS);
+    if (fQATasks.Contains(Form("%d", AliQAv1::kESDS))) {
+      qadm->StartOfCycle(AliQAv1::kESDS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
+      qadm->Init(AliQAv1::kESDS);
     }
   }
     AliSysInfo::AddStamp("InitQA") ; 
@@ -662,7 +662,7 @@ void AliReconstruction::SetQARefDefaultStorage(const char* uri) {
   // Activate it later within the Run() method
   
   fQARefUri = uri;
-  AliQA::SetQARefStorage(fQARefUri.Data()) ;
+  AliQAv1::SetQARefStorage(fQARefUri.Data()) ;
   
 }
 //_____________________________________________________________________________
@@ -1814,10 +1814,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     fQAManager->RunOneEvent(fesd) ; 
   }
   if (fRunGlobalQA) {
-      AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQA::kGLOBAL);
+      AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQAv1::kGLOBAL);
       qadm->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
-    if (qadm && fQATasks.Contains(Form("%d", AliQA::kESDS)))
-      qadm->Exec(AliQA::kESDS, fesd);
+    if (qadm && fQATasks.Contains(Form("%d", AliQAv1::kESDS)))
+      qadm->Exec(AliQAv1::kESDS, fesd);
   }
 
     if (fWriteESDfriend) {
@@ -1925,12 +1925,12 @@ void AliReconstruction::SlaveTerminate()
     fQAManager->EndOfCycle() ;
   
   if (fRunGlobalQA) {
-    AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQA::kGLOBAL);
+    AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQAv1::kGLOBAL);
     if (qadm) {
-      if (fQATasks.Contains(Form("%d", AliQA::kRECPOINTS))) 
-        qadm->EndOfCycle(AliQA::kRECPOINTS);
-      if (fQATasks.Contains(Form("%d", AliQA::kESDS))) 
-        qadm->EndOfCycle(AliQA::kESDS);
+      if (fQATasks.Contains(Form("%d", AliQAv1::kRECPOINTS))) 
+        qadm->EndOfCycle(AliQAv1::kRECPOINTS);
+      if (fQATasks.Contains(Form("%d", AliQAv1::kESDS))) 
+        qadm->EndOfCycle(AliQAv1::kESDS);
       qadm->Finish();
     }
   }
@@ -1946,7 +1946,7 @@ void AliReconstruction::Terminate()
   AliCodeTimerAuto("");
 
   AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
-  esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent,fGRPData, AliQA::Instance()->GetQA(), AliQA::Instance()->GetEventSpecies(), AliQA::kNDET, AliRecoParam::kNSpecies);
+  esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent,fGRPData, AliQAv1::Instance()->GetQA(), AliQAv1::Instance()->GetEventSpecies(), AliQAv1::kNDET, AliRecoParam::kNSpecies);
 
   // Cleanup of CDB manager: cache and active storages!
   AliCDBManager::Instance()->ClearCache();
@@ -2895,24 +2895,24 @@ void AliReconstruction::CheckQA()
 //	TString newRunTracking ;
 //	TString newFillESD ;
 //	 
-//	for (Int_t iDet = 0; iDet < AliQA::kNDET; iDet++) {
-//		TString detName(AliQA::GetDetName(iDet)) ;
-//		AliQA * qa = AliQA::Instance(AliQA::DETECTORINDEX_t(iDet)) ;       
-//      if ( qa->IsSet(AliQA::DETECTORINDEX_t(iDet), AliQA::kSIM, specie, AliQA::kFATAL)) {
+//	for (Int_t iDet = 0; iDet < AliQAv1::kNDET; iDet++) {
+//		TString detName(AliQAv1::GetDetName(iDet)) ;
+//		AliQAv1 * qa = AliQAv1::Instance(AliQAv1::DETECTORINDEX_t(iDet)) ;       
+//      if ( qa->IsSet(AliQAv1::DETECTORINDEX_t(iDet), AliQAv1::kSIM, specie, AliQAv1::kFATAL)) {
 //        AliInfo(Form("QA status for %s %s in Hits and/or SDIGITS  and/or Digits was Fatal; No reconstruction performed", 
 //                   detName.Data(), AliRecoParam::GetEventSpecieName(es))) ;
 //			} else {
-//			if ( fRunLocalReconstruction.Contains(AliQA::GetDetName(iDet)) || 
+//			if ( fRunLocalReconstruction.Contains(AliQAv1::GetDetName(iDet)) || 
 //					fRunLocalReconstruction.Contains("ALL") )  {
 //				newRunLocalReconstruction += detName ; 
 //				newRunLocalReconstruction += " " ; 			
 //			}
-//			if ( fRunTracking.Contains(AliQA::GetDetName(iDet)) || 
+//			if ( fRunTracking.Contains(AliQAv1::GetDetName(iDet)) || 
 //					fRunTracking.Contains("ALL") )  {
 //				newRunTracking += detName ; 
 //				newRunTracking += " " ; 			
 //			}
-//			if ( fFillESD.Contains(AliQA::GetDetName(iDet)) || 
+//			if ( fFillESD.Contains(AliQAv1::GetDetName(iDet)) || 
 //					fFillESD.Contains("ALL") )  {
 //				newFillESD += detName ; 
 //				newFillESD += " " ; 			
@@ -3059,16 +3059,16 @@ Bool_t AliReconstruction::SetRunQA(TString detAndAction)
 		fQADetectors = fFillESD ; 
 		fQATasks   = detAndAction(colon+1, detAndAction.Sizeof() ) ; 
 	if (fQATasks.Contains("ALL") ) {
-		fQATasks = Form("%d %d %d", AliQA::kRAWS, AliQA::kRECPOINTS, AliQA::kESDS) ; 
+		fQATasks = Form("%d %d %d", AliQAv1::kRAWS, AliQAv1::kRECPOINTS, AliQAv1::kESDS) ; 
 	} else {
 		fQATasks.ToUpper() ; 
 		TString tempo("") ; 
 		if ( fQATasks.Contains("RAW") ) 
-			tempo = Form("%d ", AliQA::kRAWS) ; 
+			tempo = Form("%d ", AliQAv1::kRAWS) ; 
 		if ( fQATasks.Contains("RECPOINT") ) 
-			tempo += Form("%d ", AliQA::kRECPOINTS) ; 
+			tempo += Form("%d ", AliQAv1::kRECPOINTS) ; 
 		if ( fQATasks.Contains("ESD") ) 
-			tempo += Form("%d ", AliQA::kESDS) ; 
+			tempo += Form("%d ", AliQAv1::kESDS) ; 
 		fQATasks = tempo ; 
 		if (fQATasks.IsNull()) {
 			AliInfo("No QA requested\n")  ;
@@ -3077,9 +3077,9 @@ Bool_t AliReconstruction::SetRunQA(TString detAndAction)
 		}
 	}	
 	TString tempo(fQATasks) ; 
-	tempo.ReplaceAll(Form("%d", AliQA::kRAWS), AliQA::GetTaskName(AliQA::kRAWS)) 	;
-	tempo.ReplaceAll(Form("%d", AliQA::kRECPOINTS), AliQA::GetTaskName(AliQA::kRECPOINTS)) ;	
-	tempo.ReplaceAll(Form("%d", AliQA::kESDS), AliQA::GetTaskName(AliQA::kESDS)) ; 	
+	tempo.ReplaceAll(Form("%d", AliQAv1::kRAWS), AliQAv1::GetTaskName(AliQAv1::kRAWS)) 	;
+	tempo.ReplaceAll(Form("%d", AliQAv1::kRECPOINTS), AliQAv1::GetTaskName(AliQAv1::kRECPOINTS)) ;	
+	tempo.ReplaceAll(Form("%d", AliQAv1::kESDS), AliQAv1::GetTaskName(AliQAv1::kESDS)) ; 	
 	AliInfo( Form("QA will be done on \"%s\" for \"%s\"\n", fQADetectors.Data(), tempo.Data()) ) ;  
 	fRunQA = kTRUE ;
 	return kTRUE; 

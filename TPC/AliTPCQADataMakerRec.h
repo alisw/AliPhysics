@@ -40,7 +40,7 @@ public:
   
 private:
   virtual void   StartOfDetectorCycle() {}; // empty 
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray** list) ;
+  virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray** list) ;
 
   // ESD QA
   virtual void   InitESDs() ; 

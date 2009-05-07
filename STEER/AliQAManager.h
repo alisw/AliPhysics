@@ -10,17 +10,17 @@
 // class for running the QA makers                                           //
 //                                                                           //
 //   AliQAManager qas;                                                //
-//   qas.Run(AliQA::kRAWS, rawROOTFileName);                                 //
-//   qas.Run(AliQA::kHITS);                                                  //
-//   qas.Run(AliQA::kSDIGITS);                                               //
-//   qas.Run(AliQA::kDIGITS);                                                //
-//   qas.Run(AliQA::kRECPOINTS);                                             //
-//   qas.Run(AliQA::kESDS);                                                  //
+//   qas.Run(AliQAv1::kRAWS, rawROOTFileName);                                 //
+//   qas.Run(AliQAv1::kHITS);                                                  //
+//   qas.Run(AliQAv1::kSDIGITS);                                               //
+//   qas.Run(AliQAv1::kDIGITS);                                                //
+//   qas.Run(AliQAv1::kRECPOINTS);                                             //
+//   qas.Run(AliQAv1::kESDS);                                                  //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TNamed.h>
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliLoader.h"
 #include "AliCDBManager.h"
 #include "AliRecoParam.h"
@@ -45,8 +45,8 @@ public:
 	void        EndOfCycle(TObjArray * detArray=0x0) ; 
   void        EndOfCycle(TString detectors) ; 
 	UInt_t      GetCurrentEvent() const { return fCurrentEvent ; }
-	TObjArray * GetFromOCDB(AliQA::DETECTORINDEX_t det, AliQA::TASKINDEX_t task, const char * year) const ; 
-  AliQA     * GetQA(UInt_t run, UInt_t evt) ; 
+	TObjArray * GetFromOCDB(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, const char * year) const ; 
+  AliQAv1     * GetQA(UInt_t run, UInt_t evt) ; 
 	AliQADataMaker * GetQADataMaker(const Int_t iDet) ; 
 	void        Increment() ;
 	void        InitQADataMaker(UInt_t run, TObjArray * detArray=0x0) ;
@@ -55,7 +55,7 @@ public:
   Bool_t      MergeXML(const char * collection, const char * subFile = 0, const char * outFile = 0) ; 
   static      AliQAManager * QAManager(const Char_t * mode="", TMap *entryCache = NULL, Int_t run = -1) ;
 	void        Reset(const Bool_t sameCycle = kFALSE) ;  
-	TString     Run(const char * detectors, const AliQA::TASKINDEX_t taskIndex=AliQA::kNULLTASKINDEX, Bool_t const sameCycle = kFALSE, const char * fileName = NULL) ; 
+	TString     Run(const char * detectors, const AliQAv1::TASKINDEX_t taskIndex=AliQAv1::kNULLTASKINDEX, Bool_t const sameCycle = kFALSE, const char * fileName = NULL) ; 
 	TString     Run(const char * detectors, AliRawReader * rawReader, Bool_t const sameCycle = kFALSE) ; 
 	TString     Run(const char * detectors, const char * filename, Bool_t const sameCycle = kFALSE) ;
 	void        RunOneEvent(AliRawReader * rawReader) ; 
@@ -63,8 +63,8 @@ public:
 	void        RunOneEvent(AliESDEvent *& esd)  ;
 	Bool_t      Save2OCDB(const Int_t runNumber, AliRecoParam::EventSpecie_t es, const char * year = "08", const char * detectors = "ALL") const ; 
 	void        SetActiveDetectors(TString aDet) { fDetectors = aDet ;  }
-	void        SetCycleLength(const AliQA::DETECTORINDEX_t det, const Int_t cycle) { fQACycles[det] = cycle ; }
-	void        SetWriteExpert(const AliQA::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
+	void        SetCycleLength(const AliQAv1::DETECTORINDEX_t det, const Int_t cycle) { fQACycles[det] = cycle ; }
+	void        SetWriteExpert(const AliQAv1::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
 	void        SetEventRange(UInt_t first, UInt_t last) { fFirstEvent = first ; fMaxEvents = last - first + 1 ; }    
   void        SetEventSpecie(AliRecoParam::EventSpecie_t es) ; 
 	void        SetFirsEvent(UInt_t first) { fFirstEvent = first ; }      
@@ -75,13 +75,13 @@ public:
 	void        SetTasks(TString tasks) { fTasks = tasks ; }
   void        SetWriteExpert() ; 
 private: 
-	Bool_t			  DoIt(const AliQA::TASKINDEX_t taskIndex) ;
+	Bool_t			  DoIt(const AliQAv1::TASKINDEX_t taskIndex) ;
 	AliLoader   * GetLoader(Int_t iDet) ; 
 	Int_t         GetQACycles(const Int_t iDet) const { return fQACycles[iDet] ; }
-	Bool_t			  InitQA(const AliQA::TASKINDEX_t taskIndex, const  char * fileName = NULL) ;
+	Bool_t			  InitQA(const AliQAv1::TASKINDEX_t taskIndex, const  char * fileName = NULL) ;
 	Bool_t        InitRunLoader() ; 
 	Bool_t        IsSelected(const char * detName)  ;
-	Bool_t        Finish(const AliQA::TASKINDEX_t taskIndex) ;
+	Bool_t        Finish(const AliQAv1::TASKINDEX_t taskIndex) ;
 	Bool_t        MergeData(const Int_t runNumber) const ;  
 	Bool_t        MergeResults(const Int_t runNumber) const ;  
 	Bool_t        SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const char * year, AliRecoParam::EventSpecie_t es) const ;  
@@ -104,7 +104,7 @@ private:
 	Bool_t                  fRawReaderDelete ;              //! tells if the rawReader has been created by this
 	AliRunLoader *          fRunLoader ;                    //! current run loader object
 	TString                 fTasks ;                        //! list of QA tasks to be performed
-	static const UInt_t     fgkNDetectors = AliQA::kNDET ;  //! number of detectors    
+	static const UInt_t     fgkNDetectors = AliQAv1::kNDET ;  //! number of detectors    
 	AliLoader      *        fLoader[fgkNDetectors];         //! array of detectors loader
 	AliQADataMaker *        fQADataMaker[fgkNDetectors];    //! array of QA data maker objects
 	Int_t                   fQACycles[fgkNDetectors];       //! array of QA cycle length

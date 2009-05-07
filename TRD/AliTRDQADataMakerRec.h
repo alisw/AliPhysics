@@ -35,7 +35,7 @@ class AliTRDQADataMakerRec: public AliQADataMakerRec {
 
  private:
 
-  virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list) ;
+  virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list) ;
   virtual void InitESDs() ; 
   virtual void InitRecPoints() ; 
   virtual void InitRaws() ; 

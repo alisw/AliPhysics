@@ -41,7 +41,7 @@ class AliRecoParam;
 class AliDetectorRecoParam;
 class AliRunInfo;
 class AliGRPObject;
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliEventInfo.h"
 #include "AliRecoParam.h"
 
@@ -138,8 +138,8 @@ public:
   void        ImportRunLoader(AliRunLoader* rl) { fRunLoader = rl; }
 
   // Quality Assurance 
-  void    SetQACycles(AliQA::DETECTORINDEX_t det, Int_t cycles) { fQACycles[det] = cycles ; }
-  void    SetQAWriteExpert(AliQA::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
+  void    SetQACycles(AliQAv1::DETECTORINDEX_t det, Int_t cycles) { fQACycles[det] = cycles ; }
+  void    SetQAWriteExpert(AliQAv1::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
   Bool_t  SetRunQA(TString detAndAction="ALL:ALL") ; 
   void    SetRunGlobalQA(Bool_t flag=kTRUE){fRunGlobalQA = flag;}
   void    SetQARefDefaultStorage(const char* uri);
@@ -268,8 +268,8 @@ private:
   Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
 
   //Quality Assurance
-  Int_t  fQACycles[     AliQA::kNDET];  // # events over which QA data are accumulated
-  Bool_t fQAWriteExpert[AliQA::kNDET];  // Flag to save or not expert QA data
+  Int_t  fQACycles[     AliQAv1::kNDET];  // # events over which QA data are accumulated
+  Bool_t fQAWriteExpert[AliQAv1::kNDET];  // Flag to save or not expert QA data
   TString               fQADetectors ;  // list of detectors to be QA'ed 	
   AliQAManager * fQAManager    ;   //! steering class to run QA
   TString               fQATasks ;      // list of QA tasks to be performed	

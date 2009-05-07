@@ -40,7 +40,7 @@ private:
   virtual void   MakeDigits(TTree* digitsTree) ;   //Fill Digit QA histo
   virtual void   MakeRecPoints(TTree * clusters)    ;  //Fill cluster QA histo
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray * list) ;
+  virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX, TObjArray * list) ;
   virtual void   StartOfDetectorCycle() ;
   ClassDef(AliT0QADataMaker,1)  // description 
 

@@ -43,7 +43,7 @@ ClassImp(AliPMDQADataMakerSim)
            
 //____________________________________________________________________________ 
 AliPMDQADataMakerSim::AliPMDQADataMakerSim() : 
-    AliQADataMakerSim(AliQA::GetDetName(AliQA::kPMD), "PMD Quality Assurance Data Maker")
+    AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kPMD), "PMD Quality Assurance Data Maker")
 {
     // ctor
 }
@@ -333,9 +333,9 @@ void AliPMDQADataMakerSim::StartOfDetectorCycle()
 }
 //____________________________________________________________________________ 
 
-void AliPMDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliPMDQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
     //Detector specific actions at end of cycle
     // do the QA checking
-    AliQAChecker::Instance()->Run(AliQA::kPMD, task, list) ;  
+    AliQAChecker::Instance()->Run(AliQAv1::kPMD, task, list) ;  
 }

@@ -35,14 +35,14 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliCorrQAChecker.h"
 
 ClassImp(AliCorrQAChecker)
 
 //__________________________________________________________________
-Double_t * AliCorrQAChecker::Check(AliQA::ALITASK_t index, TNtupleD ** nData) 
+Double_t * AliCorrQAChecker::Check(AliQAv1::ALITASK_t index, TNtupleD ** nData) 
 {
  // check the QA of correlated data stored in a ntuple
   
@@ -50,7 +50,7 @@ Double_t * AliCorrQAChecker::Check(AliQA::ALITASK_t index, TNtupleD ** nData)
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
     test[specie] = 0. ; 
     
-  if ( index != AliQA::kRAW ) {
+  if ( index != AliQAv1::kRAW ) {
     AliWarning("Checker not implemented") ; 
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
       test[specie] = 1. ; 

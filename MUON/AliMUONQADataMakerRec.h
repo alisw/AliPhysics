@@ -43,9 +43,9 @@ protected:
   virtual void MakeRecPoints(TTree* recpo); 
   virtual void MakeESDs(AliESDEvent* esd) ;
   
-  virtual void DefaultEndOfDetectorCycle(AliQA::TASKINDEX_t) {}
+  virtual void DefaultEndOfDetectorCycle(AliQAv1::TASKINDEX_t) {}
 
-  virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray** list);
+  virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list);
 
 private:
   /// Raw histograms indices
@@ -144,7 +144,7 @@ private:
 private:
 	
   void Ctor();
-  void DisplayTriggerInfo(AliQA::TASKINDEX_t task);
+  void DisplayTriggerInfo(AliQAv1::TASKINDEX_t task);
   Bool_t FillTriggerDCSHistos();
   void InitRecPointsTracker();
   void InitRecPointsTrigger();

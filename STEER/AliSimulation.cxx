@@ -206,7 +206,7 @@ AliSimulation::AliSimulation(const char* configFileName,
 // for QA
 	fQAManager = AliQAManager::QAManager("sim") ; 
 	fQAManager->SetActiveDetectors(fQADetectors) ; 
-	fQATasks = Form("%d %d %d", AliQA::kHITS, AliQA::kSDIGITS, AliQA::kDIGITS) ; 
+	fQATasks = Form("%d %d %d", AliQAv1::kHITS, AliQAv1::kSDIGITS, AliQAv1::kDIGITS) ; 
 	fQAManager->SetTasks(fQATasks) ; 	
 }
 
@@ -253,7 +253,7 @@ void AliSimulation::InitQA()
 
   fQAManager = AliQAManager::QAManager("sim") ; 
   fQAManager->SetActiveDetectors(fQADetectors) ; 
-  fQATasks = Form("%d %d %d", AliQA::kHITS, AliQA::kSDIGITS, AliQA::kDIGITS) ; 
+  fQATasks = Form("%d %d %d", AliQAv1::kHITS, AliQAv1::kSDIGITS, AliQAv1::kDIGITS) ; 
   fQAManager->SetTasks(fQATasks) ;
  	if (fWriteQAExpertData)
     fQAManager->SetWriteExpert() ; 
@@ -383,7 +383,7 @@ void AliSimulation::SetQARefDefaultStorage(const char* uri) {
   // Activate it later within the Run() method
   
   fQARefUri = uri;
-  AliQA::SetQARefStorage(fQARefUri.Data()) ;
+  AliQAv1::SetQARefStorage(fQARefUri.Data()) ;
 }
 
 //_____________________________________________________________________________
@@ -2064,16 +2064,16 @@ Bool_t AliSimulation::SetRunQA(TString detAndAction)
 		fQADetectors = Form("%s %s", fMakeDigits.Data(), fMakeDigitsFromHits.Data()) ; 
 		fQATasks   = detAndAction(colon+1, detAndAction.Sizeof() ) ; 
 	if (fQATasks.Contains("ALL") ) {
-		fQATasks = Form("%d %d %d", AliQA::kHITS, AliQA::kSDIGITS, AliQA::kDIGITS) ; 
+		fQATasks = Form("%d %d %d", AliQAv1::kHITS, AliQAv1::kSDIGITS, AliQAv1::kDIGITS) ; 
 	} else {
 		fQATasks.ToUpper() ; 
 		TString tempo("") ; 
 		if ( fQATasks.Contains("HIT") ) 
-			tempo = Form("%d ", AliQA::kHITS) ; 
+			tempo = Form("%d ", AliQAv1::kHITS) ; 
 		if ( fQATasks.Contains("SDIGIT") ) 
-			tempo += Form("%d ", AliQA::kSDIGITS) ; 
+			tempo += Form("%d ", AliQAv1::kSDIGITS) ; 
 		if ( fQATasks.Contains("DIGIT") ) 
-			tempo += Form("%d ", AliQA::kDIGITS) ; 
+			tempo += Form("%d ", AliQAv1::kDIGITS) ; 
 		fQATasks = tempo ; 
 		if (fQATasks.IsNull()) {
 			AliInfo("No QA requested\n")  ;
@@ -2082,15 +2082,15 @@ Bool_t AliSimulation::SetRunQA(TString detAndAction)
 		}
 	}	
 	TString tempo(fQATasks) ; 
-    tempo.ReplaceAll(Form("%d", AliQA::kHITS), AliQA::GetTaskName(AliQA::kHITS)) 	;
-    tempo.ReplaceAll(Form("%d", AliQA::kSDIGITS), AliQA::GetTaskName(AliQA::kSDIGITS)) ;	
-    tempo.ReplaceAll(Form("%d", AliQA::kDIGITS), AliQA::GetTaskName(AliQA::kDIGITS)) ; 	
+    tempo.ReplaceAll(Form("%d", AliQAv1::kHITS), AliQAv1::GetTaskName(AliQAv1::kHITS)) 	;
+    tempo.ReplaceAll(Form("%d", AliQAv1::kSDIGITS), AliQAv1::GetTaskName(AliQAv1::kSDIGITS)) ;	
+    tempo.ReplaceAll(Form("%d", AliQAv1::kDIGITS), AliQAv1::GetTaskName(AliQAv1::kDIGITS)) ; 	
 	AliInfo( Form("QA will be done on \"%s\" for \"%s\"\n", fQADetectors.Data(), tempo.Data()) ) ;  
 	fRunQA = kTRUE ;
 	fQAManager->SetActiveDetectors(fQADetectors) ; 
 	fQAManager->SetTasks(fQATasks) ; 
-  for (Int_t det = 0 ; det < AliQA::kNDET ; det++) 
-    fQAManager->SetWriteExpert(AliQA::DETECTORINDEX_t(det)) ;
+  for (Int_t det = 0 ; det < AliQAv1::kNDET ; det++) 
+    fQAManager->SetWriteExpert(AliQAv1::DETECTORINDEX_t(det)) ;
   
 	return kTRUE; 
 } 

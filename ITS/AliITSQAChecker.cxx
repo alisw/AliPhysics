@@ -84,7 +84,7 @@ AliITSQAChecker& AliITSQAChecker::operator=(const AliITSQAChecker& qac){
 }
 
 //____________________________________________________________________________
-Double_t * AliITSQAChecker::Check(AliQA::ALITASK_t /*index*/)
+Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t /*index*/)
 {
   Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
@@ -93,16 +93,16 @@ Double_t * AliITSQAChecker::Check(AliQA::ALITASK_t /*index*/)
 }
 
 //____________________________________________________________________________
-Double_t * AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
+Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
 {
   
   // Super-basic check on the QA histograms on the input list:
   // look whether they are empty!
-  if(index == AliQA::kESD){
+  if(index == AliQAv1::kESD){
     Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       rv[specie] = 0.0 ; 
-      if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+      if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
         continue ; 
       AliDebug(1,"Checker for ESD");
       Int_t tested = 0;
@@ -248,7 +248,7 @@ Double_t * AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
     fSPDChecker->SetTaskOffset(fSPDOffset);
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       retval[specie] = 1.0 ; 
-      if ( AliQA::Instance()->IsEventSpecieSet(specie) ) {
+      if ( AliQAv1::Instance()->IsEventSpecieSet(specie) ) {
         spdCheck = fSPDChecker->Check(index, list[specie]);
         if(spdCheck<retval[specie])retval[specie] = spdCheck;
       }
@@ -263,7 +263,7 @@ Double_t * AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
     fSDDChecker->SetTaskOffset(fSDDOffset);
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       retval[specie] = 1.0 ; 
-      if ( AliQA::Instance()->IsEventSpecieSet(specie) ) {
+      if ( AliQAv1::Instance()->IsEventSpecieSet(specie) ) {
         sddCheck = fSDDChecker->Check(index, list[specie]);
         if(sddCheck<retval[specie])retval[specie] = sddCheck;
       }
@@ -279,7 +279,7 @@ Double_t * AliITSQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
     fSSDChecker->SetTaskOffset(fSSDOffset);
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       retval[specie] = 1.0 ; 
-      if ( AliQA::Instance()->IsEventSpecieSet(specie) ) {
+      if ( AliQAv1::Instance()->IsEventSpecieSet(specie) ) {
         ssdCheck = fSSDChecker->Check(index, list[specie]);
         if(ssdCheck<retval[specie])retval[specie] = ssdCheck;  
       }

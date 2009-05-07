@@ -31,7 +31,7 @@ public:
   AliITSQADataMakerSim(const AliITSQADataMakerSim& qadm);
   AliITSQADataMakerSim& operator = (const AliITSQADataMakerSim& qac);
   virtual void StartOfDetectorCycle();
-  virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list);
+  virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list);
   virtual void InitDigits();
   virtual void InitSDigits();
   virtual void InitHits();
@@ -43,7 +43,7 @@ public:
   virtual void MakeHits(TTree * hits);
   virtual ~AliITSQADataMakerSim(); // dtor
   Short_t GetSubDet(){return fSubDetector;};
-  Int_t GetDetTaskOffset(Int_t subdet,AliQA::TASKINDEX_t task);
+  Int_t GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task);
 
 private:
 

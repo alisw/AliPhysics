@@ -49,7 +49,7 @@ ClassImp(AliVZEROQADataMakerRec)
            
 //____________________________________________________________________________ 
   AliVZEROQADataMakerRec::AliVZEROQADataMakerRec() : 
-	AliQADataMakerRec(AliQA::GetDetName(AliQA::kVZERO), "VZERO Quality Assurance Data Maker"),
+	AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kVZERO), "VZERO Quality Assurance Data Maker"),
 	fCalibData(0x0),
     fEvent(0)
     
@@ -118,16 +118,16 @@ AliVZEROCalibData* AliVZEROQADataMakerRec::GetCalibData() const
 
  
 //____________________________________________________________________________ 
-void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   // Detector specific actions at end of cycle
   // Does the QA checking
   
-  AliQAChecker::Instance()->Run(AliQA::kVZERO, task, list) ;
+  AliQAChecker::Instance()->Run(AliQAv1::kVZERO, task, list) ;
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     SetEventSpecie(specie) ; 
-    if(task == AliQA::kRAWS){
+    if(task == AliQAv1::kRAWS){
   	  int nMaxBin = GetRawsData(kPedestalTimeInt0)->GetNbinsY();
       if(fCurrentCycle%nMaxBin==0) {
         GetRawsData(kPedestalTimeInt0)->Reset();
@@ -150,7 +150,7 @@ void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArr
           delete hProj;
         }
       }
-    } else if (task == AliQA::kESDS) {
+    } else if (task == AliQAv1::kESDS) {
     }
   }
 }
@@ -679,37 +679,37 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	} // END of SWITCH : EVENT TYPE 
 	
 	fEvent++; 
-	TParameter<double> * p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kMultiV0A)->GetName()))) ; 
+	TParameter<double> * p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kMultiV0A)->GetName()))) ; 
 	p->SetVal((double)mulV0A) ; 
 
-	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kMultiV0C)->GetName()))) ; 
+	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kMultiV0C)->GetName()))) ; 
 	p->SetVal((double)mulV0C) ;                     
 
-	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kChargeV0A)->GetName()))) ; 
+	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kChargeV0A)->GetName()))) ; 
 	p->SetVal((double)chargeV0A) ; 
 
-	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kChargeV0C)->GetName()))) ; 
+	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kChargeV0C)->GetName()))) ; 
 	p->SetVal((double)chargeV0C) ;                     
 
-	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kChargeV0)->GetName()))) ; 
+	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kChargeV0)->GetName()))) ; 
 	p->SetVal((double)(chargeV0A + chargeV0C)) ;                     
 	
-	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kRawMIPV0A)->GetName()))) ; 
+	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kRawMIPV0A)->GetName()))) ; 
 	p->SetVal((double)mipV0A) ; 
 	
-	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kRawMIPV0C)->GetName()))) ; 
+	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kRawMIPV0C)->GetName()))) ; 
 	p->SetVal((double)mipV0C) ;                     
 	
-	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kRawMIPV0)->GetName()))) ; 
+	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kRawMIPV0)->GetName()))) ; 
 	p->SetVal((double)(mipV0A + mipV0C)) ;                     
 	
-	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kV0ATime)->GetName()))) ; 
+	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kV0ATime)->GetName()))) ; 
 	p->SetVal((double)timeV0A) ; 
 	
-	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kV0CTime)->GetName()))) ; 
+	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kV0CTime)->GetName()))) ; 
 	p->SetVal((double)timeV0C) ;                     
 	
-	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kDiffTime)->GetName()))) ; 
+	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kDiffTime)->GetName()))) ; 
 	p->SetVal((double)diffTime) ;                     
 	
   	delete rawStream; rawStream = 0x0;      

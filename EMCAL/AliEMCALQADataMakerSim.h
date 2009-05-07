@@ -31,7 +31,7 @@ public:
   virtual ~AliEMCALQADataMakerSim() {;} // dtor
   
 private:
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** list) ;
+  virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
   virtual void   InitHits() ; 
   virtual void   InitDigits() ; 
   virtual void   InitSDigits() ; 

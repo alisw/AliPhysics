@@ -34,7 +34,7 @@
 #include "AliITSQASSDDataMakerRec.h"
 #include "AliQADataMakerRec.h"
 #include "AliLog.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
@@ -178,13 +178,13 @@ void AliITSQASSDDataMakerRec::StartOfDetectorCycle()
 }
 
 //____________________________________________________________________________ 
-void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TObjArray* /*list*/)
+void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, TObjArray* /*list*/)
 {
   // launch the QA checking
   if (  fAliITSQADataMakerRec->GetRawsData(0) == NULL ) // Raws not defined
     return ; 
   // launch the QA checking
-  AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
+  AliDebug(1,"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
   AliInfo(Form("Offset: %d\n",fGenRawsOffset));
   //Data size per DDL
   for(Int_t i = 0; i < fgkNumOfDDLs; i++) {
@@ -280,7 +280,7 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TO
 
   fSSDEventPerCycle = 0;
   
- // AliQAChecker::Instance()->Run( AliQA::kITS , task, list);
+ // AliQAChecker::Instance()->Run( AliQAv1::kITS , task, list);
 }
 
 //____________________________________________________________________________ 
@@ -1244,13 +1244,13 @@ void AliITSQASSDDataMakerRec::MakeRecPoints(TTree *clustersTree)
 }
 
 //____________________________________________________________________________ 
-Int_t AliITSQASSDDataMakerRec::GetOffset(AliQA::TASKINDEX_t task) {
+Int_t AliITSQASSDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task) {
   // Returns offset number according to the specified task 
   Int_t offset=0;
-  if( task == AliQA::kRAWS ) {
+  if( task == AliQAv1::kRAWS ) {
     offset=fGenRawsOffset;  
   }
-  else if( task == AliQA::kRECPOINTS ) {
+  else if( task == AliQAv1::kRECPOINTS ) {
     offset=fGenRecPointsOffset;   
   }
   else {
@@ -1261,14 +1261,14 @@ Int_t AliITSQASSDDataMakerRec::GetOffset(AliQA::TASKINDEX_t task) {
 }
 
 //____________________________________________________________________________ 
-Int_t AliITSQASSDDataMakerRec::GetTaskHisto(AliQA::TASKINDEX_t task) {
+Int_t AliITSQASSDDataMakerRec::GetTaskHisto(AliQAv1::TASKINDEX_t task) {
   // Returns the number of histograms associated to the specified task
   Int_t histotot=0;
 
-  if( task == AliQA::kRAWS ) {
+  if( task == AliQAv1::kRAWS ) {
     histotot=fSSDhRawsTask;  
   }
-  else if( task == AliQA::kRECPOINTS ){
+  else if( task == AliQAv1::kRECPOINTS ){
     histotot=fSSDhRecPointsTask;   
   }
   else { 

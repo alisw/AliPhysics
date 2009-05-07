@@ -31,7 +31,7 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliTRDQAChecker.h"
 

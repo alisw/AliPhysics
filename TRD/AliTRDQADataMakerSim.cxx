@@ -55,7 +55,7 @@ ClassImp(AliTRDQADataMakerSim)
 
 //____________________________________________________________________________ 
   AliTRDQADataMakerSim::AliTRDQADataMakerSim() : 
-  AliQADataMakerSim(AliQA::GetDetName(AliQA::kTRD), "TRD Quality Assurance Data Maker")
+  AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kTRD), "TRD Quality Assurance Data Maker")
 {
   //
   // Default constructor
@@ -88,7 +88,7 @@ AliTRDQADataMakerSim& AliTRDQADataMakerSim::operator=(const AliTRDQADataMakerSim
 }
 
 //____________________________________________________________________________ 
-void AliTRDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliTRDQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //
   // Detector specific actions at end of cycle
@@ -97,7 +97,7 @@ void AliTRDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
   //AliInfo(Form("EndOfCycle", "Fitting RecPoints %d", task));
 
   // call the checker
-  AliQAChecker::Instance()->Run(AliQA::kTRD, task, list) ;    
+  AliQAChecker::Instance()->Run(AliQAv1::kTRD, task, list) ;    
 
 
 }

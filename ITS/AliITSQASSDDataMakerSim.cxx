@@ -41,7 +41,7 @@
 #include "AliITSQADataMakerSim.h"
 #include "AliITSQASSDDataMakerSim.h"
 #include "AliLog.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliRawReader.h"
 
@@ -94,11 +94,11 @@ void AliITSQASSDDataMakerSim::StartOfDetectorCycle() {
 }
 
 //____________________________________________________________________________ 
-void AliITSQASSDDataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TObjArray* /*list*/) {
+void AliITSQASSDDataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, TObjArray* /*list*/) {
   // launch the QA checking
-  AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
+  AliDebug(1,"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
   
-//  AliQAChecker::Instance()->Run( AliQA::kITS , task, list);
+//  AliQAChecker::Instance()->Run( AliQAv1::kITS , task, list);
 }
 
 //____________________________________________________________________________ 
@@ -289,16 +289,16 @@ void AliITSQASSDDataMakerSim::MakeHits(TTree *hits) {
 
 
 //____________________________________________________________________________ 
-Int_t AliITSQASSDDataMakerSim::GetOffset(AliQA::TASKINDEX_t task){
+Int_t AliITSQASSDDataMakerSim::GetOffset(AliQAv1::TASKINDEX_t task){
   // Returns histogram offset according to the specified task
   Int_t offset=0;
-  if( task == AliQA::kHITS){
+  if( task == AliQAv1::kHITS){
     offset=fGenOffsetH;  
   }
-  else if( task == AliQA::kSDIGITS) {
+  else if( task == AliQAv1::kSDIGITS) {
     offset=fGenOffsetS;   
   }
-  else if( task == AliQA::kDIGITS) {
+  else if( task == AliQAv1::kDIGITS) {
     offset=fGenOffsetD;   
   }
   else {
@@ -310,16 +310,16 @@ Int_t AliITSQASSDDataMakerSim::GetOffset(AliQA::TASKINDEX_t task){
 
 
 //____________________________________________________________________________ 
-Int_t AliITSQASSDDataMakerSim::GetTaskHisto(AliQA::TASKINDEX_t task) {
+Int_t AliITSQASSDDataMakerSim::GetTaskHisto(AliQAv1::TASKINDEX_t task) {
   // Returns the number of booked histograms for the selected task
   Int_t histotot=0;
-  if( task == AliQA::kHITS) {
+  if( task == AliQAv1::kHITS) {
     histotot=fSSDhHTask ;  
   }
-  else if( task == AliQA::kSDIGITS) {
+  else if( task == AliQAv1::kSDIGITS) {
     histotot=fSSDhSTask;   
   }
-  else if( task == AliQA::kDIGITS) {
+  else if( task == AliQAv1::kDIGITS) {
     histotot=fSSDhDTask ;   
   }
   else {

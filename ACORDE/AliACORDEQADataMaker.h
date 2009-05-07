@@ -51,8 +51,8 @@ private:
   virtual Int_t  Add2RecPointsList(TH1*, Int_t){return 0;};
   virtual Int_t  Add2RawsList(TH1*, Int_t){return 0;};
   virtual Int_t  Add2SDigitsList(TH1*, Int_t){return 0;};
-  virtual void   Exec(AliQA::TASKINDEX_t, TObject*){};
-  virtual void   EndOfCycle(AliQA::TASKINDEX_t){};
+  virtual void   Exec(AliQAv1::TASKINDEX_t, TObject*){};
+  virtual void   EndOfCycle(AliQAv1::TASKINDEX_t){};
   virtual Int_t  Add2ESDsList(TH1*, Int_t){return 0;};
   virtual TH1*   GetDigitsData(Int_t){return 0;};
   virtual TH1*   GetESDsData(Int_t){return 0;};
@@ -60,10 +60,10 @@ private:
   virtual TH1*   GetRecPointsData(Int_t){return 0;};
   virtual TH1*   GetRawsData(Int_t){return 0;};
   virtual TH1*   GetSDigitsData(Int_t){return 0;};
-  virtual TObjArray* Init(AliQA::TASKINDEX_t, Int_t, Int_t){return 0;};
-  virtual void   Init(AliQA::TASKINDEX_t, TObjArray*, Int_t, Int_t){};
-  virtual void   StartOfCycle(AliQA::TASKINDEX_t, Bool_t){};
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray*){};
+  virtual TObjArray* Init(AliQAv1::TASKINDEX_t, Int_t, Int_t){return 0;};
+  virtual void   Init(AliQAv1::TASKINDEX_t, TObjArray*, Int_t, Int_t){};
+  virtual void   StartOfCycle(AliQAv1::TASKINDEX_t, Bool_t){};
+  virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray*){};
   virtual void   InitSDigits(){};
   virtual void   MakeHits(TClonesArray*){};
   virtual void   MakeDigits(TClonesArray*){};

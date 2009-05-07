@@ -16,7 +16,7 @@
 
 /* $Id$ */
 
-#include "AliQA.h"
+#include "AliQAv1.h"
 class AliITSQADataMakerSim;
 class TObjArray;
 class TClonesArray;
@@ -29,7 +29,7 @@ public:
   AliITSQASPDDataMakerSim& operator = (const AliITSQASPDDataMakerSim& qac);
 
   virtual void StartOfDetectorCycle();
-  virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
+  virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASPDDataMakerSim() {;}   // dtor
   virtual void InitDigits();
   virtual void InitSDigits();
@@ -40,8 +40,8 @@ public:
   virtual void MakeDigits(TTree * digits);
   virtual void MakeSDigits(TTree * sdigits);
   virtual void MakeHits(TTree * hits);
-  Int_t GetOffset(AliQA::TASKINDEX_t task);
-  Int_t GetTaskHisto(AliQA::TASKINDEX_t task);
+  Int_t GetOffset(AliQAv1::TASKINDEX_t task);
+  Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
   //Int_t GetOffsetH() { return fGenOffsetH; }
   //Int_t GetOffsetS() { return fGenOffsetS; }
   //Int_t GetOffsetD() { return fGenOffsetD; }

@@ -87,7 +87,7 @@ void AliTRDqaRecPoints::Process(const char* filename)
   
   AliInfo("End of TRD cycle");
   
-  //if (task == AliQA::kRECPOINTS) {
+  //if (task == AliQAv1::kRECPOINTS) {
   
   TH1D *hist = new TH1D("fitHist", "", 200, -0.5, 199.5);
   //fHist->Print();

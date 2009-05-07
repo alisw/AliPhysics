@@ -19,7 +19,7 @@ class TFile ;
 class TH2F ;  
 
 // --- AliRoot header files ---
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQACheckerBase.h"
 #include "AliITSQAChecker.h"
 class AliITSLoader ; 
@@ -30,7 +30,7 @@ public:
   AliITSQASPDChecker():fSubDetOffset(0) {;}          // ctor
   AliITSQASPDChecker& operator = (const AliITSQASPDChecker& qac) ; //operator =
   virtual ~AliITSQASPDChecker() {;} // dtor
-  Double_t Check(AliQA::ALITASK_t index, TObjArray * list);
+  Double_t Check(AliQAv1::ALITASK_t index, TObjArray * list);
   void SetTaskOffset(Int_t TaskOffset);
 private:
   

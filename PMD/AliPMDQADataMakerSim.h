@@ -41,7 +41,7 @@ private:
   virtual void   MakeDigits(TClonesArray * digits) ; 
   virtual void   MakeDigits(TTree * digitTree) ; 
   virtual void   StartOfDetectorCycle() ; 
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** list) ;
+  virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
 
 
   ClassDef(AliPMDQADataMakerSim,1)  // description 

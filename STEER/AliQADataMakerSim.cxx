@@ -98,23 +98,23 @@ AliQADataMakerSim& AliQADataMakerSim::operator = (const AliQADataMakerSim& qadm 
 void AliQADataMakerSim::EndOfCycle() 
 { 
   // Finishes a cycle of QA for all tasks
-  EndOfCycle(AliQA::kHITS) ; 
-  EndOfCycle(AliQA::kSDIGITS) ; 
-  EndOfCycle(AliQA::kDIGITS) ;
+  EndOfCycle(AliQAv1::kHITS) ; 
+  EndOfCycle(AliQAv1::kSDIGITS) ; 
+  EndOfCycle(AliQAv1::kDIGITS) ;
   ResetCycle() ; 
 }
 
 //____________________________________________________________________________
-void AliQADataMakerSim::EndOfCycle(AliQA::TASKINDEX_t task) 
+void AliQADataMakerSim::EndOfCycle(AliQAv1::TASKINDEX_t task) 
 { 
   // Finishes a cycle of QA data acquistion
 	TObjArray ** list = NULL ; 
 	
-	if ( task == AliQA::kHITS ) 
+	if ( task == AliQAv1::kHITS ) 
 		list = fHitsQAList ; 
-	else if ( task == AliQA::kSDIGITS )
+	else if ( task == AliQAv1::kSDIGITS )
 		list = fSDigitsQAList ; 
-	else if ( task == AliQA::kDIGITS ) 
+	else if ( task == AliQAv1::kDIGITS ) 
 		list = fDigitsQAList ; 
   
   if ( ! list ) 
@@ -122,7 +122,7 @@ void AliQADataMakerSim::EndOfCycle(AliQA::TASKINDEX_t task)
 	EndOfDetectorCycle(task, list) ; 
   TDirectory * subDir = NULL ;
 	if (fDetectorDir) 
-    subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
+    subDir = fDetectorDir->GetDirectory(AliQAv1::GetTaskName(task)) ; 
 	if (subDir) { 
 		subDir->cd() ; 
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
@@ -132,16 +132,16 @@ void AliQADataMakerSim::EndOfCycle(AliQA::TASKINDEX_t task)
         TIter next(list[specie]) ; 
         TObject * obj ; 
         while ( (obj = next()) )  {
-          if (!obj->TestBit(AliQA::GetExpertBit()))
+          if (!obj->TestBit(AliQAv1::GetExpertBit()))
             obj->Write() ;
         }
         if (WriteExpert()) {
-          TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQA::GetExpert()) ; 
+          TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQAv1::GetExpert()) ; 
           if ( expertDir ) {
             expertDir->cd() ;
             next.Reset() ; 
             while ( (obj = next()) ) {
-              if (!obj->TestBit(AliQA::GetExpertBit()))
+              if (!obj->TestBit(AliQAv1::GetExpertBit()))
                 continue ; 
             obj->Write() ;
             }      
@@ -155,11 +155,11 @@ void AliQADataMakerSim::EndOfCycle(AliQA::TASKINDEX_t task)
 }
  
 //____________________________________________________________________________
-void AliQADataMakerSim::Exec(AliQA::TASKINDEX_t task, TObject * data) 
+void AliQADataMakerSim::Exec(AliQAv1::TASKINDEX_t task, TObject * data) 
 { 
   // creates the quality assurance data for the various tasks (Hits, SDigits, Digits, ESDs)
     
-	if ( task == AliQA::kHITS ) {  
+	if ( task == AliQAv1::kHITS ) {  
 		AliDebug(1, "Processing Hits QA") ; 
 		TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
 		if (arr) { 
@@ -172,7 +172,7 @@ void AliQADataMakerSim::Exec(AliQA::TASKINDEX_t task, TObject * data)
 				AliWarning("data are neither a TClonesArray nor a TTree") ; 
 			}
 		}
-	} else if ( task == AliQA::kSDIGITS ) {
+	} else if ( task == AliQAv1::kSDIGITS ) {
 		AliDebug(1, "Processing SDigits QA") ; 
 		TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
 		if (arr) { 
@@ -185,7 +185,7 @@ void AliQADataMakerSim::Exec(AliQA::TASKINDEX_t task, TObject * data)
 				AliWarning("data are neither a TClonesArray nor a TTree") ; 
 			}
 		}
-	} else if ( task == AliQA::kDIGITS ) {
+	} else if ( task == AliQAv1::kDIGITS ) {
 		AliDebug(1, "Processing Digits QA") ; 
 		TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
 		if (arr) { 
@@ -202,39 +202,39 @@ void AliQADataMakerSim::Exec(AliQA::TASKINDEX_t task, TObject * data)
 }
 
 //____________________________________________________________________________ 
-TObjArray **  AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, Int_t cycles)
+TObjArray **  AliQADataMakerSim::Init(AliQAv1::TASKINDEX_t task, Int_t cycles)
 {
   // general intialisation
 	
 	if (cycles > 0)
 		SetCycle(cycles) ;  
 	TObjArray ** rv = NULL ; 
-	if ( task == AliQA::kHITS ) {
+	if ( task == AliQAv1::kHITS ) {
 		if ( ! fHitsQAList ) {
       fHitsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
         fHitsQAList[specie] = new TObjArray(100) ;	 
-        fHitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ;
+        fHitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ;
       }
 			InitHits() ;
 		}
 		rv = fHitsQAList ;
-	} else if ( task == AliQA::kSDIGITS ) {
+	} else if ( task == AliQAv1::kSDIGITS ) {
 		if ( ! fSDigitsQAList ) {
       fSDigitsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
         fSDigitsQAList[specie] = new TObjArray(100) ; 
-        fSDigitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
+        fSDigitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
       }
       InitSDigits() ;
 		}
 		rv = fSDigitsQAList ;
-   } else if ( task == AliQA::kDIGITS ) {
+   } else if ( task == AliQAv1::kDIGITS ) {
 	   if ( ! fDigitsQAList ) {
        fDigitsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
        for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {    
          fDigitsQAList[specie] = new TObjArray(100) ;
-         fDigitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ;
+         fDigitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ;
        }
 		   InitDigits() ;
 	   }
@@ -245,7 +245,7 @@ TObjArray **  AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, Int_t cycles)
 }
 
 //____________________________________________________________________________ 
-void AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, TObjArray ** list, Int_t run, Int_t cycles)
+void AliQADataMakerSim::Init(AliQAv1::TASKINDEX_t task, TObjArray ** list, Int_t run, Int_t cycles)
 {
   // Intialisation by passing the list of QA data booked elsewhere
   
@@ -253,11 +253,11 @@ void AliQADataMakerSim::Init(AliQA::TASKINDEX_t task, TObjArray ** list, Int_t r
 	if (cycles > 0)
 		SetCycle(cycles) ;  
 	
-	if ( task == AliQA::kHITS ) {
+	if ( task == AliQAv1::kHITS ) {
 		fHitsQAList = list ;	 
-	} else if ( task == AliQA::kSDIGITS) {
+	} else if ( task == AliQAv1::kSDIGITS) {
 		fSDigitsQAList = list ; 
-	} else if ( task == AliQA::kDIGITS ) {
+	} else if ( task == AliQAv1::kDIGITS ) {
 		fDigitsQAList = list ; 
 	} 
 }
@@ -267,14 +267,14 @@ void AliQADataMakerSim::StartOfCycle(Int_t run)
 { 
   // Finishes a cycle of QA for all tasks
   Bool_t samecycle = kFALSE ; 
-  StartOfCycle(AliQA::kHITS,    run, samecycle) ;
+  StartOfCycle(AliQAv1::kHITS,    run, samecycle) ;
   samecycle = kTRUE ; 
-  StartOfCycle(AliQA::kSDIGITS, run, samecycle) ;
-  StartOfCycle(AliQA::kDIGITS,  run, samecycle) ;
+  StartOfCycle(AliQAv1::kSDIGITS, run, samecycle) ;
+  StartOfCycle(AliQAv1::kDIGITS,  run, samecycle) ;
 }
 
 //____________________________________________________________________________
-void AliQADataMakerSim::StartOfCycle(AliQA::TASKINDEX_t task, Int_t run, const Bool_t sameCycle) 
+void AliQADataMakerSim::StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const Bool_t sameCycle) 
 { 
   // Finishes a cycle of QA data acquistion
   if ( run > 0 ) 
@@ -283,27 +283,27 @@ void AliQADataMakerSim::StartOfCycle(AliQA::TASKINDEX_t task, Int_t run, const B
 		ResetCycle() ;
 	if (fOutput) 
 		fOutput->Close() ; 
-	fOutput = AliQA::GetQADataFile(GetName(), fRun) ; 	
+	fOutput = AliQAv1::GetQADataFile(GetName(), fRun) ; 	
 	}	
 
 	AliInfo(Form(" Run %d Cycle %d task %s file %s", 
-				 fRun, fCurrentCycle, AliQA::GetTaskName(task).Data(), fOutput->GetName() )) ;
+				 fRun, fCurrentCycle, AliQAv1::GetTaskName(task).Data(), fOutput->GetName() )) ;
 
 	fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 
 	if (!fDetectorDir)
 		fDetectorDir = fOutput->mkdir(GetDetectorDirName()) ; 
 
-	TDirectory * subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
+	TDirectory * subDir = fDetectorDir->GetDirectory(AliQAv1::GetTaskName(task)) ; 
 	if (!subDir)
-		subDir = fDetectorDir->mkdir(AliQA::GetTaskName(task)) ;  
+		subDir = fDetectorDir->mkdir(AliQAv1::GetTaskName(task)) ;  
   
   for ( Int_t index = AliRecoParam::kDefault ; index < AliRecoParam::kNSpecies ; index++ ) {
     TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(index)) ; 
     if (!eventSpecieDir) 
       eventSpecieDir = subDir->mkdir(AliRecoParam::GetEventSpecieName(index)) ; 
-    TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQA::GetExpert()) ; 
+    TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQAv1::GetExpert()) ; 
     if (!expertDir) 
-      expertDir = eventSpecieDir->mkdir(AliQA::GetExpert()) ; 
+      expertDir = eventSpecieDir->mkdir(AliQAv1::GetExpert()) ; 
    }   
 	StartOfDetectorCycle() ; 
 }

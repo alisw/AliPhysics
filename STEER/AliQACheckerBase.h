@@ -15,7 +15,7 @@
 
 // --- ROOT system ---
 #include <TNamed.h>
-#include "AliQA.h"
+#include "AliQAv1.h"
 class TFile ; 
 class TH1 ; 
 class TObjArray ; 
@@ -34,20 +34,20 @@ public:
   AliQACheckerBase& operator = (const AliQACheckerBase& qac) ;
   virtual ~AliQACheckerBase() ; // dtor
 
-  virtual void   Init(const AliQA::DETECTORINDEX_t det)   { AliQA::Instance(det) ; }
-  void           Run(AliQA::ALITASK_t tsk, TObjArray ** list = NULL); 
-  void           Run(AliQA::ALITASK_t /*tsk*/, TNtupleD ** /*nt*/) {;} 
+  virtual void   Init(const AliQAv1::DETECTORINDEX_t det)   { AliQAv1::Instance(det) ; }
+  void           Run(AliQAv1::ALITASK_t tsk, TObjArray ** list = NULL); 
+  void           Run(AliQAv1::ALITASK_t /*tsk*/, TNtupleD ** /*nt*/) {;} 
   void           SetHiLo(Float_t * hiValue, Float_t * lowValue) ; 
   void           SetRefandData(TDirectory * ref, TObjArray ** refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
 
 protected:
-  virtual      Double_t * Check(AliQA::ALITASK_t index) ;
-  virtual      Double_t * Check(AliQA::ALITASK_t, TObjArray **) ; 
+  virtual      Double_t * Check(AliQAv1::ALITASK_t index) ;
+  virtual      Double_t * Check(AliQAv1::ALITASK_t, TObjArray **) ; 
 
   Double_t     DiffC(const TH1 * href, const TH1 * hin) const ;   
   Double_t     DiffK(const TH1 * href, const TH1 * hin) const ;   
   void         Finish() const ; 
-  virtual void SetQA(AliQA::ALITASK_t index, Double_t * value) const ;	
+  virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;	
 
   TDirectory  * fDataSubDir     ; //! directory for the current task directory in the current detector directory in the data file
   TDirectory  * fRefSubDir      ; //! directory for the current task directory in the current detector directory in the reference file

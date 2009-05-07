@@ -30,8 +30,8 @@ public:
 //  AliACORDEQAChecker(const AliACORDEQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // constructor   
   virtual ~AliACORDEQAChecker() {;} // destructor
 
-  virtual Double_t * Check(AliQA::ALITASK_t index) ;
-  virtual Double_t * Check(AliQA::ALITASK_t index, TObjArray ** list) ;
+  virtual Double_t * Check(AliQAv1::ALITASK_t index) ;
+  virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list) ;
 
   Double_t CheckAcordeRefHits(TObjArray *AcordeList, TObjArray *AcordeRef) const;
 

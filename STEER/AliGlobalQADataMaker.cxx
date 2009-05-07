@@ -18,11 +18,11 @@
 ClassImp(AliGlobalQADataMaker)
  
 //____________________________________________________________________________ 
-void AliGlobalQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliGlobalQADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  AliQAChecker::Instance()->Run(AliQA::kGLOBAL, task, list) ;  
+  AliQAChecker::Instance()->Run(AliQAv1::kGLOBAL, task, list) ;  
 }
 
 //____________________________________________________________________________ 

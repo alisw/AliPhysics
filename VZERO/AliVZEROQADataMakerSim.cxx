@@ -41,7 +41,7 @@ ClassImp(AliVZEROQADataMakerSim)
            
 //____________________________________________________________________________ 
   AliVZEROQADataMakerSim::AliVZEROQADataMakerSim() : 
-  AliQADataMakerSim(AliQA::GetDetName(AliQA::kVZERO), "VZERO Quality Assurance Data Maker")
+  AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kVZERO), "VZERO Quality Assurance Data Maker")
 
 {
   // constructor
@@ -68,11 +68,11 @@ AliVZEROQADataMakerSim& AliVZEROQADataMakerSim::operator = (const AliVZEROQAData
   return *this;
 }
 //____________________________________________________________________________
-void AliVZEROQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliVZEROQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  AliQAChecker::Instance()->Run(AliQA::kVZERO, task, list) ;
+  AliQAChecker::Instance()->Run(AliQAv1::kVZERO, task, list) ;
 }
 
  

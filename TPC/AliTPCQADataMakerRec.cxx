@@ -68,7 +68,7 @@ ClassImp(AliTPCQADataMakerRec)
 
 //____________________________________________________________________________ 
 AliTPCQADataMakerRec::AliTPCQADataMakerRec() : 
-  AliQADataMakerRec(AliQA::GetDetName(AliQA::kTPC), 
+  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kTPC), 
 		    "TPC Rec Quality Assurance Data Maker"),
   fTPCdataQA(NULL)
 {
@@ -129,12 +129,12 @@ AliTPCQADataMakerRec::~AliTPCQADataMakerRec()
 }
  
 //____________________________________________________________________________ 
-void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ; 
     if(fTPCdataQA[specie] != NULL) { // do the final step of the QA for Raw data
 
@@ -228,7 +228,7 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray
       }
     }
   }
-  AliQAChecker::Instance()->Run(AliQA::kTPC, task, list) ;  
+  AliQAChecker::Instance()->Run(AliQAv1::kTPC, task, list) ;  
 }
 
 //____________________________________________________________________________ 

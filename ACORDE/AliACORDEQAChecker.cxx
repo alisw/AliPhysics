@@ -33,7 +33,7 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliACORDEQAChecker.h"
 #include "AliCDBEntry.h"
@@ -42,7 +42,7 @@
 ClassImp(AliACORDEQAChecker)
 
 //____________________________________________________________________________
-Double_t * AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/)
+Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/)
 {
   Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
@@ -51,7 +51,7 @@ Double_t * AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/)
 }
 
 //__________________________________________________________________
-Double_t * AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray ** list)
+Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list)
 {
 
 	// We added one check to the ACORDE's QA histograms:
@@ -67,7 +67,7 @@ Double_t * AliACORDEQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray ** li
 
 	// Look at the QAref data for ACORDE
 
-	char * acoOCDBDir = Form("ACORDE/%s/%s",AliQA::GetRefOCDBDirName(),AliQA::GetRefDataDirName());
+	char * acoOCDBDir = Form("ACORDE/%s/%s",AliQAv1::GetRefOCDBDirName(),AliQAv1::GetRefDataDirName());
 	AliCDBEntry *acoQARefDir = AliQAManager::QAManager()->Get(acoOCDBDir);
 
 

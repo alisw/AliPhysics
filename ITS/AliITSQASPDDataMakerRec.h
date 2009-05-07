@@ -19,7 +19,7 @@ class TObjArray;
 class AliRawReader;
 class AliITSRawStreamSPDErrorLog;
 class AliITSQADataMakerRec;
-class AliQA;
+class AliQAv1;
 
 class AliITSQASPDDataMakerRec : public TObject {
 
@@ -33,10 +33,10 @@ public:
   virtual void MakeRaws(AliRawReader *rawReader);
   virtual void MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();
-  virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
+  virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASPDDataMakerRec();   // dtor
-  Int_t GetOffset(AliQA::TASKINDEX_t task);
-  Int_t GetTaskHisto(AliQA::TASKINDEX_t task);
+  Int_t GetOffset(AliQAv1::TASKINDEX_t task);
+  Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
 
 private: 
 

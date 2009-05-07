@@ -28,7 +28,7 @@
 #include "TObjArray.h"
 
 #include "AliLog.h"
-//#include "AliQA.h"
+//#include "AliQAv1.h"
 //#include "AliQAChecker.h"
 
 #include "AliTOFQAChecker.h"
@@ -36,7 +36,7 @@
 ClassImp(AliTOFQAChecker)
 
 //____________________________________________________________________________
-Double_t * AliTOFQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray ** list) 
+Double_t * AliTOFQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list) 
 {
 
   // Super-basic check on the QA histograms on the input list: 
@@ -47,7 +47,7 @@ Double_t * AliTOFQAChecker::Check(AliQA::ALITASK_t /*index*/, TObjArray ** list)
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     test[specie] = 1.0 ; 
-    if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ; 
     if (list[specie]->GetEntries() == 0){  
       test[specie] = 0.0 ; // nothing to check

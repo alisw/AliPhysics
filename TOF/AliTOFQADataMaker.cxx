@@ -43,7 +43,7 @@ ClassImp(AliTOFQADataMaker)
            
 //____________________________________________________________________________ 
   AliTOFQADataMaker::AliTOFQADataMaker() : 
-  AliQADataMaker(AliQA::GetDetName(AliQA::kTOF), "TOF Quality Assurance Data Maker")
+  AliQADataMaker(AliQAv1::GetDetName(AliQAv1::kTOF), "TOF Quality Assurance Data Maker")
 {
   //
   // ctor
@@ -566,12 +566,12 @@ void AliTOFQADataMaker::StartOfDetectorCycle()
 }
 
 //____________________________________________________________________________ 
-void AliTOFQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list)
+void AliTOFQADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX task, TObjArray * list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
 
-  AliQAChecker::Instance()->Run(AliQA::kTOF, task, list) ;  
+  AliQAChecker::Instance()->Run(AliQAv1::kTOF, task, list) ;  
 }
 //____________________________________________________________________________
 void AliTOFQADataMaker::GetMapIndeces(Int_t* in , Int_t* out)

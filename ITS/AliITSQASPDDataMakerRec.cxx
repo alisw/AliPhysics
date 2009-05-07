@@ -35,7 +35,7 @@
 #include "AliITSQADataMakerRec.h"
 #include "AliITSQASPDDataMakerRec.h"
 #include "AliLog.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSPDErrorLog.h"
@@ -98,12 +98,12 @@ void AliITSQASPDDataMakerRec::StartOfDetectorCycle()
 }
 
 //____________________________________________________________________________ 
-void AliITSQASPDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TObjArray* /*list*/)
+void AliITSQASPDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, TObjArray* /*list*/)
 {
   // launch the QA checking
-  AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
+  AliDebug(1,"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
   
-  //AliQAChecker::Instance()->Run( AliQA::kITS , task, list);
+  //AliQAChecker::Instance()->Run( AliQAv1::kITS , task, list);
 }
 
 //____________________________________________________________________________ 
@@ -448,13 +448,13 @@ void AliITSQASPDDataMakerRec::MakeRecPoints(TTree * clusterTree)
 
 //_______________________________________________________________
 
-Int_t AliITSQASPDDataMakerRec::GetOffset(AliQA::TASKINDEX_t task) {
+Int_t AliITSQASPDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task) {
   // Returns offset number according to the specified task
   Int_t offset=0;
-  if( task == AliQA::kRAWS ) {
+  if( task == AliQAv1::kRAWS ) {
     offset=fGenRawsOffset;
   }
-  else if( task == AliQA::kRECPOINTS ) {
+  else if( task == AliQAv1::kRECPOINTS ) {
     offset=fGenRecPointsOffset;
   }
   else {
@@ -466,14 +466,14 @@ Int_t AliITSQASPDDataMakerRec::GetOffset(AliQA::TASKINDEX_t task) {
 
 //_______________________________________________________________
 
-Int_t AliITSQASPDDataMakerRec::GetTaskHisto(AliQA::TASKINDEX_t task) {
+Int_t AliITSQASPDDataMakerRec::GetTaskHisto(AliQAv1::TASKINDEX_t task) {
   // Returns the number of histograms associated to the specified task
   Int_t histotot=0;
 
-  if( task == AliQA::kRAWS ) {
+  if( task == AliQAv1::kRAWS ) {
     histotot=fSPDhRawsTask;
   }
-  else if( task == AliQA::kRECPOINTS ){
+  else if( task == AliQAv1::kRECPOINTS ){
     histotot=fSPDhRecPointsTask;
   }
   else {

@@ -44,7 +44,7 @@ ClassImp(AliT0QADataMakerRec)
            
 //____________________________________________________________________________ 
   AliT0QADataMakerRec::AliT0QADataMakerRec() : 
-AliQADataMakerRec(AliQA::GetDetName(AliQA::kT0), 
+AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kT0), 
 		  "T0 Quality Assurance Data Maker"),
   fnEvent(0)
 
@@ -81,14 +81,14 @@ AliT0QADataMakerRec& AliT0QADataMakerRec::operator = (const AliT0QADataMakerRec&
   return *this;
 }
 //____________________________________________________________________________
-void AliT0QADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  AliQAChecker::Instance()->Run(AliQA::kT0, task, list) ;
+  AliQAChecker::Instance()->Run(AliQAv1::kT0, task, list) ;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     SetEventSpecie(specie) ; 
-    if ( task == AliQA::kRAWS ) {
+    if ( task == AliQAv1::kRAWS ) {
       const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
       for (Int_t itr=0; itr<6; itr++) {
         GetRawsData(197)->Fill(triggers[itr], fNumTriggersCal[itr]);
@@ -104,7 +104,7 @@ void AliT0QADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray 
       GetRawsData(207)->GetXaxis()->SetTitle("#PMT");
       GetRawsData(207)->GetYaxis()->SetTitle("Charge, #channels");
     }
-    if ( task == AliQA::kRECPOINTS) {
+    if ( task == AliQAv1::kRECPOINTS) {
       GetRecPointsData(0)->SetOption("COLZ");
       GetRecPointsData(1)->SetOption("COLZ");
       GetRecPointsData(0)->GetXaxis()->SetTitle("#PMT");

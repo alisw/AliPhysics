@@ -13,7 +13,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id$ */
+/* $Id: AliQAv1.cxx 31503 2009-03-16 11:01:16Z schutz $ */
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -42,126 +42,157 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 
 
-ClassImp(AliQA)
-AliQA    * AliQA::fgQA                   = 0x0 ;
-TFile    * AliQA::fgQADataFile           = 0x0 ;   
-TString    AliQA::fgQADataFileName       = "QA" ;  // will transform into Det.QA.run.cycle.root  
-TFile    * AliQA::fgQARefFile            = 0x0 ;   
-TString    AliQA::fgQARefDirName	       = "" ; 
-TString    AliQA::fgQARefFileName        = "QA.root" ;
-TFile    * AliQA::fgQAResultFile         = 0x0 ;  
-TString    AliQA::fgQAResultDirName      = "" ;  
-TString    AliQA::fgQAResultFileName     = "QA.root" ; 
-TString    AliQA::fgDetNames[]           = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
+ClassImp(AliQAv1)
+AliQAv1    * AliQAv1::fgQA                   = 0x0 ;
+TFile    * AliQAv1::fgQADataFile           = 0x0 ;   
+TString    AliQAv1::fgQADataFileName       = "QA" ;  // will transform into Det.QA.run.root  
+TFile    * AliQAv1::fgQARefFile            = 0x0 ;   
+TString    AliQAv1::fgQARefDirName	       = "" ; 
+TString    AliQAv1::fgQARefFileName        = "QA.root" ;
+TFile    * AliQAv1::fgQAResultFile         = 0x0 ;  
+TString    AliQAv1::fgQAResultDirName      = "" ;  
+TString    AliQAv1::fgQAResultFileName     = "QA.root" ; 
+TString    AliQAv1::fgDetNames[]           = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
                                             "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global", "CORR"} ;   
-TString    AliQA::fgGRPPath              = "GRP/GRP/Data" ; 
-TString    AliQA::fgRTNames[]            = {"UNKNOWN", "AUTO_TEST", "CALIBRATION", "CALIBRATION_PULSER", "CHANNEL_DELAY_TUNING", "COSMIC", 
-																						"COSMICS", "DAQ_FO_UNIF_SCAN", "DAQ_GEN_DAC_SCAN", "DAQ_MEAN_TH_SCAN", "DAQ_MIN_TH_SCAN", 
-																						"DAQ_NOISY_PIX_SCAN", "DAQ_PIX_DELAY_SCAN", "DAQ_UNIFORMITY_SCAN", "DCS_FO_UNIF_SCAN", 
-																						"DCS_MEAN_TH_SCAN", "DCS_MIN_TH_SCAN", "DCS_PIX_DELAY_SCAN", "DCS_UNIFORMITY_SCAN", 
-																						"DDL_TEST", "GAIN", "PEDESTAL", "INJECTOR",  "LASER", "MONTECARLO", "NOISE", "NOISY_PIX_SCAN", 
-																						"PHYSICS", "PULSER", "STANDALONE", "STANDALONE_BC", "STANDALONE_CENTRAL", "STANDALONE_COSMIC", 
-																						"STANDALONE_EMD", "STANDALONE_LASER", "STANDALONE_MB", "STANDALONE_PEDESTAL", 
-																						"STANDALONE_SEMICENTRAL", "STANDALONE_PULSER" } ;   
-TString       AliQA::fgTaskNames[]       = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
-const TString AliQA::fkgLabLocalFile     = "file://"  ; 
-const TString AliQA::fkgLabLocalOCDB     = "local://" ;  
-const TString AliQA::fkgLabAliEnOCDB     = "alien://" ;  
-const TString AliQA::fkgRefFileName      = "QA.root" ; 
-const TString AliQA::fkgQAName           = "QA"  ; 
-const TString AliQA::fkgQACorrNtName     = "CorrQA" ;  
-const TString AliQA::fkgRefOCDBDirName   = "Ref"  ; 
-TString AliQA::fkgRefDataDirName	       = ""  ; 
-const TString AliQA::fkgQARefOCDBDefault = "alien://folder=/alice/QA/20"  ; 
-const TString AliQA::fkgExpert           = "Expert" ; 
-const UInt_t  AliQA::fkgExpertBit        = 16 ; 
-const UInt_t  AliQA::fkgQABit            = 17 ; 
+TString    AliQAv1::fgGRPPath              = "GRP/GRP/Data" ; 
+TString       AliQAv1::fgTaskNames[]       = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
+const TString AliQAv1::fgkLabLocalFile     = "file://"  ; 
+const TString AliQAv1::fgkLabLocalOCDB     = "local://" ;  
+const TString AliQAv1::fgkLabAliEnOCDB     = "alien://" ;  
+const TString AliQAv1::fgkRefFileName      = "QA.root" ; 
+const TString AliQAv1::fgkQAName           = "QA"  ; 
+const TString AliQAv1::fgkQACorrNtName     = "CorrQA" ;  
+const TString AliQAv1::fgkRefOCDBDirName   = "QA"  ; 
+TString AliQAv1::fgRefDataDirName	         = ""  ; 
+const TString AliQAv1::fgkQARefOCDBDefault = "alien://folder=/alice/QA/20"  ; 
+const TString AliQAv1::fgkExpert           = "Expert" ; 
+const UInt_t  AliQAv1::fgkExpertBit        = 16 ; 
+const UInt_t  AliQAv1::fgkQABit            = 17 ; 
 
 //____________________________________________________________________________
-AliQA::AliQA() : 
+AliQAv1::AliQAv1() : 
   TNamed("", ""), 
   fNdet(kNDET), 
-  fQA(new ULong_t[fNdet]), 
+  fNEventSpecies(AliRecoParam::kNSpecies), 
+  fLengthQA(fNdet*fNEventSpecies),
+  fQA(new ULong_t[fLengthQA]), 
   fDet(kNULLDET),
-  fTask(kNULLTASK)
-  	
+  fTask(kNULLTASK), 
+  fEventSpecie(AliRecoParam::kDefault), 
+  fEventSpecies(new Bool_t[fNEventSpecies])
 {
   // default constructor
-  // beware singleton: not to be used
-  
-  for (Int_t index = 0 ; index < fNdet ; index++) 
-	fQA[index] = 0 ; 
+  memset(fQA,0,fLengthQA*sizeof(ULong_t));
+  memset(fEventSpecies,kFALSE,fNEventSpecies*sizeof(Bool_t));
 }
 
 //____________________________________________________________________________
-AliQA::AliQA(const AliQA& qa) :
+AliQAv1::AliQAv1(const AliQAv1& qa) :
   TNamed(qa),
   fNdet(qa.fNdet), 
-  fQA(qa.fQA), 
+  fNEventSpecies(qa.fNEventSpecies), 
+  fLengthQA(qa.fLengthQA),
+  fQA(new ULong_t[fLengthQA]), 
   fDet(qa.fDet),
-  fTask(qa.fTask)
+  fTask(qa.fTask), 
+  fEventSpecie(qa.fEventSpecie), 
+  fEventSpecies(new Bool_t[fNEventSpecies])
 { 
   // cpy ctor
+  memcpy(fQA,qa.fQA,fLengthQA*sizeof(ULong_t));
+  memcpy(fEventSpecies,qa.fEventSpecies,fNEventSpecies*sizeof(Bool_t));
 }
 
 //_____________________________________________________________________________
-AliQA& AliQA::operator = (const AliQA& qa)
+AliQAv1& AliQAv1::operator = (const AliQAv1& qa)
 {
-// assignment operator
+  // assignment operator
+  if(&qa != this) {
+    TNamed::operator=(qa);
+    fNdet          = qa.fNdet;
+    fNEventSpecies = qa.fNEventSpecies; 
+    fLengthQA      = qa.fLengthQA;
 
-  this->~AliQA();
-  new(this) AliQA(qa);
+    if(fQA) delete [] fQA;
+    fQA = new ULong_t[fLengthQA];
+    memcpy(fQA,qa.fQA,fLengthQA*sizeof(ULong_t));
+
+    fDet = qa.fDet;
+    fTask = qa.fTask;
+    fEventSpecie = qa.fEventSpecie; 
+    if(fEventSpecies) delete [] fEventSpecies;
+    fEventSpecies = new Bool_t[fNEventSpecies];
+    memcpy(fEventSpecies,qa.fEventSpecies,fNEventSpecies*sizeof(Bool_t));
+  }  
   return *this;
 }
 
 //_______________________________________________________________
-AliQA::AliQA(const DETECTORINDEX_t det) :
-  TNamed("QA", "Quality Assurance status"),
-  fNdet(kNDET),  
-  fQA(new ULong_t[fNdet]), 
-  fDet(det),
-  fTask(kNULLTASK) 
+AliQAv1::AliQAv1(const Int_t qalength, ULong_t * qa, const Int_t eslength, Bool_t * es) :
+TNamed("QA", "Quality Assurance status"),
+fNdet(kNDET), 
+fNEventSpecies(eslength), 
+fLengthQA(qalength),
+fQA(new ULong_t[fLengthQA]), 
+fDet(kNULLDET),
+fTask(kNULLTASK), 
+fEventSpecie(AliRecoParam::kDefault), 
+fEventSpecies(new Bool_t[fNEventSpecies])
 {
   // constructor to be used
-  if (! CheckRange(det) ) {
-    fDet = kNULLDET ; 
-    return ;
-  } 
-  Int_t index ; 
-  for (index = 0; index < fNdet; index++) 
-    fQA[index] = 0 ; 
+  memcpy(fQA, qa, fLengthQA*sizeof(ULong_t));
+  memcpy(fEventSpecies, es, fNEventSpecies*sizeof(Bool_t));
+}
+
+//_______________________________________________________________
+AliQAv1::AliQAv1(const DETECTORINDEX_t det) :
+  TNamed("QA", "Quality Assurance status"),
+  fNdet(kNDET), 
+  fNEventSpecies(AliRecoParam::kNSpecies), 
+  fLengthQA(fNdet*fNEventSpecies),
+  fQA(new ULong_t[fLengthQA]), 
+  fDet(det),
+  fTask(kNULLTASK), 
+  fEventSpecie(AliRecoParam::kDefault), 
+  fEventSpecies(new Bool_t[fNEventSpecies])
+{
+  // constructor to be used
+  if (! CheckRange(det) ) fDet = kNULLDET ; 
+  memset(fQA,0,fLengthQA*sizeof(ULong_t));
+  memset(fEventSpecies,kFALSE,fNEventSpecies*sizeof(Bool_t));
 }
   
 //_______________________________________________________________
-AliQA::AliQA(const ALITASK_t tsk) :
-  TNamed("QA", "Quality Assurance status"), 
-  fNdet(kNDET),
-  fQA(new ULong_t[fNdet]), 
+AliQAv1::AliQAv1(const ALITASK_t tsk) :
+  TNamed("QA", "Quality Assurance status"),
+  fNdet(kNDET), 
+  fNEventSpecies(AliRecoParam::kNSpecies), 
+  fLengthQA(fNdet*fNEventSpecies),
+  fQA(new ULong_t[fLengthQA]), 
   fDet(kNULLDET),
-  fTask(tsk)
+  fTask(tsk), 
+  fEventSpecie(AliRecoParam::kDefault), 
+  fEventSpecies(new Bool_t[fNEventSpecies])
 {
   // constructor to be used in the AliRoot module (SIM, REC, ESD or ANA)
-  if (! CheckRange(tsk) ) {
-    fTask = kNULLTASK ; 
-    return ;
-  } 
-  Int_t index ; 
-  for (index = 0; index < fNdet; index++) 
-    fQA[index] = 0 ; 
+  if (! CheckRange(tsk) ) fTask = kNULLTASK ; 
+  memset(fQA,0,fLengthQA*sizeof(ULong_t));
+  memset(fEventSpecies,kFALSE,fNEventSpecies*sizeof(Bool_t));
 }
 
 //____________________________________________________________________________
-AliQA::~AliQA() 
+AliQAv1::~AliQAv1() 
 {
   // dtor  
-  delete[] fQA ;
+  delete [] fQA;
+  delete [] fEventSpecies;
 }
 
 //_______________________________________________________________
-void AliQA::Close() 
+void AliQAv1::Close() 
 {
 	// close the open files
 	if (fgQADataFile) 
@@ -176,18 +207,18 @@ void AliQA::Close()
 } 
 
 //_______________________________________________________________
-Bool_t AliQA::CheckFatal() const
+Bool_t AliQAv1::CheckFatal() const
 {
   // check if any FATAL status is set
   Bool_t rv = kFALSE ;
   Int_t index ;
   for (index = 0; index < kNDET ; index++)
-    rv = rv || IsSet(DETECTORINDEX_t(index), fTask, kFATAL) ;
+    rv = rv || IsSet(DETECTORINDEX_t(index), fTask, fEventSpecie, kFATAL) ;
   return rv ;
 }
 
 //_______________________________________________________________
-Bool_t AliQA::CheckRange(DETECTORINDEX_t det) const
+Bool_t AliQAv1::CheckRange(DETECTORINDEX_t det) const
 { 
   // check if detector is in given detector range: 0-kNDET
 
@@ -198,7 +229,7 @@ Bool_t AliQA::CheckRange(DETECTORINDEX_t det) const
 }
 
 //_______________________________________________________________
-Bool_t AliQA::CheckRange(ALITASK_t task) const
+Bool_t AliQAv1::CheckRange(ALITASK_t task) const
 { 
   // check if task is given taskk range: 0:kNTASK
   Bool_t rv = ( task < kRAW || task > kNTASK )  ? kFALSE : kTRUE ;
@@ -208,7 +239,7 @@ Bool_t AliQA::CheckRange(ALITASK_t task) const
 }
 
 //_______________________________________________________________
-Bool_t AliQA::CheckRange(QABIT_t bit) const
+Bool_t AliQAv1::CheckRange(QABIT_t bit) const
 { 
   // check if bit is in given bit range: 0-kNBit
 
@@ -218,10 +249,35 @@ Bool_t AliQA::CheckRange(QABIT_t bit) const
   return rv ;
 }
 
-
+//_______________________________________________________________
+Bool_t AliQAv1::CheckRange(AliRecoParam::EventSpecie_t es) const
+{ 
+  // check if bit is in given bit range: 0-kNBit
+  Bool_t rv = kFALSE ; 
+  switch (es) {
+    case AliRecoParam::kDefault: 
+      rv = kTRUE ; 
+      break ; 
+    case AliRecoParam::kLowMult: 
+      rv = kTRUE ; 
+      break ; 
+    case AliRecoParam::kHighMult: 
+      rv = kTRUE ; 
+      break ; 
+    case AliRecoParam::kCosmic: 
+      rv = kTRUE ; 
+      break ; 
+    case AliRecoParam::kCalib: 
+      rv = kTRUE ; 
+      break ; 
+  }
+  if (!rv)
+    AliFatal(Form("Event Specie %d is not valid", es)) ;
+  return rv ;
+}
 
 //_______________________________________________________________
-char * AliQA::GetAliTaskName(ALITASK_t tsk)
+const char * AliQAv1::GetAliTaskName(ALITASK_t tsk)
 {
 	// returns the char name corresponding to module index
 	TString tskName ;
@@ -247,11 +303,11 @@ char * AliQA::GetAliTaskName(ALITASK_t tsk)
 			tsk = kNULLTASK ; 
 			break ;
 	}
-	return Form("%s", tskName.Data()) ;
+	return tskName.Data() ;
 }
 
 //_______________________________________________________________
-char * AliQA::GetBitName(QABIT_t bit) const
+const char * AliQAv1::GetBitName(QABIT_t bit) const
 {
 	// returns the char name corresponding to bit 
 	TString bitName ;
@@ -274,11 +330,11 @@ char * AliQA::GetBitName(QABIT_t bit) const
 			bit = kNULLBit ; 
 			break ;
 	}
-	return Form("%s", bitName.Data()) ; 
+	return bitName.Data() ;
 }
 
 //_______________________________________________________________
-AliQA::DETECTORINDEX_t AliQA::GetDetIndex(const char * name) 
+AliQAv1::DETECTORINDEX_t AliQAv1::GetDetIndex(const char * name) 
 {
 	// returns the detector index corresponding to a given name
 	TString sname(name) ; 
@@ -293,7 +349,7 @@ AliQA::DETECTORINDEX_t AliQA::GetDetIndex(const char * name)
 }
 
 //_______________________________________________________________
-const char * AliQA::GetDetName(Int_t det) 
+const char * AliQAv1::GetDetName(Int_t det) 
 {
 	// returns the detector name corresponding to a given index (needed in a loop)
 	
@@ -304,7 +360,7 @@ const char * AliQA::GetDetName(Int_t det)
 }
 
 //_______________________________________________________________
-TFile * AliQA::GetQADataFile(const char * name, const Int_t run) 
+TFile * AliQAv1::GetQADataFile(const char * name, Int_t run) 
 {
   // opens the file to store the detectors Quality Assurance Data Maker results
 	const char * temp = Form("%s.%s.%d.root", name, fgQADataFileName.Data(), run) ; 
@@ -331,13 +387,13 @@ TFile * AliQA::GetQADataFile(const char * name, const Int_t run)
 } 
 
 //_____________________________________________________________________________
-TFile * AliQA::GetQADataFile(const char * fileName)
+TFile * AliQAv1::GetQADataFile(const char * fileName)
 {
   // Open if necessary the Data file and return its pointer
 
   if (!fgQADataFile) 
 	if (!fileName) 
-		fileName = AliQA::GetQADataFileName() ; 
+		fileName = AliQAv1::GetQADataFileName() ; 
 	if  (!gSystem->AccessPathName(fileName)) {
 		fgQADataFile =  TFile::Open(fileName) ;
 	} else {
@@ -348,7 +404,7 @@ TFile * AliQA::GetQADataFile(const char * fileName)
 }
 
 //_______________________________________________________________
-TFile * AliQA::GetQAResultFile() 
+TFile * AliQAv1::GetQAResultFile() 
 {
   // opens the file to store the  Quality Assurance Data Checker results
 	if (fgQAResultFile) 
@@ -356,8 +412,8 @@ TFile * AliQA::GetQAResultFile()
 	fgQAResultFile = 0x0 ; 
 //	if (!fgQAResultFile) { 
 		TString dirName(fgQAResultDirName) ; 
-		if ( dirName.Contains(fkgLabLocalFile)) 
-			dirName.ReplaceAll(fkgLabLocalFile, "") ;
+		if ( dirName.Contains(fgkLabLocalFile)) 
+			dirName.ReplaceAll(fgkLabLocalFile, "") ;
 		TString fileName(dirName + fgQAResultFileName) ; 
 		TString opt("") ; 
 		if ( !gSystem->AccessPathName(fileName) )
@@ -374,26 +430,7 @@ TFile * AliQA::GetQAResultFile()
 }
 
 //_______________________________________________________________
-const TString AliQA::GetRunTypeName(RUNTYPE_t rt) 
-{ 
-	TString rv("Invalid Run Type") ; 	
-	if ( rt == kNULLTYPE ) {
-		rv = "Known RUN_TYPE are: \n" ; 
-		for (Int_t index = 0 ; index < kNTYPE; index++) {
-			rv += Form("%2d -- %s\n", index, fgRTNames[index].Data()) ;  
-		}
-		printf("%s", rv.Data()) ; 
-		return "" ; 
-	}
-	else {
-		if ( rt > kNULLTYPE && rt < kNTYPE )
-			rv = fgRTNames[rt] ; 
-	}
-	return rv ; 
-}
-
-//_______________________________________________________________
-AliQA::TASKINDEX_t AliQA::GetTaskIndex(const char * name) 
+AliQAv1::TASKINDEX_t AliQAv1::GetTaskIndex(const char * name) 
 {
 	// returns the detector index corresponding to a given name
 	TString sname(name) ; 
@@ -408,32 +445,44 @@ AliQA::TASKINDEX_t AliQA::GetTaskIndex(const char * name)
 }
 
 //_______________________________________________________________
-Bool_t AliQA::IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const
+Bool_t AliQAv1::IsSet(DETECTORINDEX_t det, ALITASK_t tsk, Int_t ies, QABIT_t bit) const 
+{
+  // Checks is the requested bit is set
+   
+  const AliRecoParam::EventSpecie_t es = AliRecoParam::Convert(ies) ; 
+  return IsSet(det, tsk, es, bit) ; 
+  
+}  
+
+//_______________________________________________________________
+Bool_t AliQAv1::IsSet(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit) const
 {
   // Checks is the requested bit is set
 	
   CheckRange(det) ; 
   CheckRange(tsk) ;
   CheckRange(bit) ;
+  CheckRange(es) ;
 	
   ULong_t offset = Offset(tsk) ;
-  ULong_t status = GetStatus(det) ;
+  ULong_t status = GetStatus(det, es) ;
   offset+= bit ;
   status = (status & 1 << offset) != 0 ;
   return status ;
 }
 
 //_______________________________________________________________
-Bool_t AliQA::IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk) const
+Bool_t AliQAv1::IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es) const
 {
   // Checks is the requested bit is set
 	
   CheckRange(det) ; 
   CheckRange(tsk) ;
+  CheckRange(es) ;
 	
   ULong_t offset = Offset(tsk) ;
-  ULong_t status = GetStatus(det) ;
-	UShort_t st = 0 ; 
+  ULong_t status = GetStatus(det, es) ;
+	ULong_t st = 0 ; 
 	for ( Int_t bit = 0 ; bit < kNBIT ; bit++) {
 		offset+= bit ;
 		st += (status & 1 << offset) != 0 ;		
@@ -444,14 +493,15 @@ Bool_t AliQA::IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk) const
 		return kTRUE ;
 }
 //_______________________________________________________________
-Bool_t AliQA::IsSetAny(DETECTORINDEX_t det) const
+Bool_t AliQAv1::IsSetAny(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es) const
 {
   // Checks is the requested bit is set
 	
   CheckRange(det) ; 
+  CheckRange(es) ; 
 	
-	ULong_t status = GetStatus(det) ;
-	UShort_t st = 0 ; 
+	ULong_t status = GetStatus(det, es) ;
+	ULong_t st = 0 ; 
 	for ( Int_t tsk = 0 ; tsk < kNTASK ; tsk++) {
 		ULong_t offset = Offset(ALITASK_t(tsk)) ;
 		for ( Int_t bit = 0 ; bit < kNBIT ; bit++) {
@@ -466,52 +516,67 @@ Bool_t AliQA::IsSetAny(DETECTORINDEX_t det) const
 }
 
 //_______________________________________________________________
-AliQA * AliQA::Instance()
+AliQAv1 * AliQAv1::Instance()
 {
-  // Get an instance of the singleton.
-  // Object must have been instantiated with Instance(ALITASK) first
+  // Get an instance of the singleton. The only authorized way to call the ctor
 
+  if ( ! fgQA) {
+    TFile * f = GetQAResultFile() ; 
+    fgQA = dynamic_cast<AliQAv1 *>(f->Get("QA")) ; 
+    if ( ! fgQA ) 
+      fgQA = new AliQAv1() ;
+  }	
   return fgQA ;
 }
 
 //_______________________________________________________________
-AliQA * AliQA::Instance(const DETECTORINDEX_t det)
+AliQAv1 * AliQAv1::Instance(const Int_t qalength, ULong_t * qa, const Int_t eslength, Bool_t * es)
+{
+  // Get an instance of the singleton. The only authorized way to call the ctor
+  
+  if ( ! fgQA) 
+    fgQA = new AliQAv1(qalength, qa, eslength, es) ;
+  return fgQA ;
+}
+
+//_______________________________________________________________
+AliQAv1 * AliQAv1::Instance(const DETECTORINDEX_t det)
 {
   // Get an instance of the singleton. The only authorized way to call the ctor
   
   if ( ! fgQA) {
     TFile * f = GetQAResultFile() ; 
-	fgQA = dynamic_cast<AliQA *>(f->Get("QA")) ; 
+	fgQA = dynamic_cast<AliQAv1 *>(f->Get("QA")) ; 
     if ( ! fgQA ) 
-		fgQA = new AliQA(det) ;
+		fgQA = new AliQAv1(det) ;
   }		
   fgQA->Set(det) ;
   return fgQA ;
 }
 
 //_______________________________________________________________
-AliQA * AliQA::Instance(const ALITASK_t tsk)
+AliQAv1 * AliQAv1::Instance(const ALITASK_t tsk)
 {
-  // get an instance of the singleton.
+  // Get an instance of the singleton. The only authorized way to call the ctor
 
   if ( ! fgQA)
     switch (tsk) {
     case kNULLTASK:
       break ;
 	case kRAW:
-      fgQA = new AliQA(tsk) ;
+      fgQA = new AliQAv1(tsk) ;
       break ;
 	case kSIM:
-      fgQA = new AliQA(tsk) ;
+      fgQA = new AliQAv1(tsk) ;
       break ;
     case kREC:
       printf("fgQA = gAlice->GetQA()") ;
       break ;
     case kESD:
-      printf("fgQA = dynamic_cast<AliQA *> (esdFile->Get(\"QA\")") ;
+      printf("fgQA = dynamic_cast<AliQAv1 *> (esdFile->Get(\"QA\")") ;
       break ;
     case kANA:
-      printf("fgQA = dynamic_cast<AliQA *> (esdFile->Get(\"QA\")") ;
+      printf("fgQA = dynamic_cast<AliQAv1 *> (esdFile->Get(\"QA\")") ;
       break ;
     case kNTASK:
       break ;
@@ -522,7 +587,7 @@ AliQA * AliQA::Instance(const ALITASK_t tsk)
 }
 
 //_______________________________________________________________
-AliQA *  AliQA::Instance(const TASKINDEX_t tsk) 
+AliQAv1 *  AliQAv1::Instance(const TASKINDEX_t tsk) 
 {
 	// get an instance of the singleton.
 	
@@ -541,8 +606,8 @@ AliQA *  AliQA::Instance(const TASKINDEX_t tsk)
 }
 
 //_______________________________________________________________
-void AliQA::Merge(TCollection * list) {
-	// Merge the QA resuls in the list into this single AliQA object
+void AliQAv1::Merge(TCollection * list) {
+	// Merge the QA resuls in the list into this single AliQAv1 object
 	
 	for (Int_t det = 0 ; det < kNDET ; det++) {
 		Set(DETECTORINDEX_t(det)) ; 
@@ -550,10 +615,12 @@ void AliQA::Merge(TCollection * list) {
 			Set(ALITASK_t(task)) ; 
 			for (Int_t bit = 0 ; bit < kNBIT ; bit++) {
 				TIter next(list) ;
-				AliQA * qa ; 
-				while ( (qa = (AliQA*)next() ) ) {
-					qa->IsSet(DETECTORINDEX_t(det), ALITASK_t(task), QABIT_t(bit)) ;
-					Set(QABIT_t(bit)) ; 
+				AliQAv1 * qa ; 
+				while ( (qa = (AliQAv1*)next() ) ) {
+          for (Int_t es = 0 ; es < fNEventSpecies ; es++) {
+            if (qa->IsSet(DETECTORINDEX_t(det), ALITASK_t(task), es, QABIT_t(bit)))
+              Set(QABIT_t(bit), es) ; 
+          }
 				} // qa list
 			} // bit
 		} // task
@@ -561,7 +628,7 @@ void AliQA::Merge(TCollection * list) {
 }
 
 //_______________________________________________________________
-ULong_t AliQA::Offset(ALITASK_t tsk) const
+ULong_t AliQAv1::Offset(ALITASK_t tsk) const
 {
   // Calculates the bit offset for a given module (SIM, REC, ESD, ANA)
 
@@ -594,25 +661,40 @@ ULong_t AliQA::Offset(ALITASK_t tsk) const
 }
 
 //_______________________________________________________________
-void AliQA::Set(QABIT_t bit)
+void AliQAv1::ResetStatus(DETECTORINDEX_t det) 
+{ 
+  // reset the status of det for all event specie
+  for (Int_t es = 0 ; es < fNEventSpecies ; es++)
+    fQA[det*fNdet+es] = 0 ; 
+}
+
+//_______________________________________________________________
+void AliQAv1::Set(QABIT_t bit, Int_t ies)
 {
-  // Set the status bit of the current detector in the current module
+  // Set the status bit of the current detector in the current module and for the current event specie 
+   Set(bit, AliRecoParam::Convert(ies)) ;
+}
+
+//_______________________________________________________________
+void AliQAv1::Set(QABIT_t bit, AliRecoParam::EventSpecie_t es)
+{
+  // Set the status bit of the current detector in the current module and for the current event specie 
   
-  SetStatusBit(fDet, fTask, bit) ;
+  SetStatusBit(fDet, fTask, es, bit) ;
 }
 
 //_____________________________________________________________________________
-void AliQA::SetQARefStorage(const char * name)
+void AliQAv1::SetQARefStorage(const char * name)
 {
 	// Set the root directory where the QA reference data are stored
 
 	fgQARefDirName = name ; 
-	if ( fgQARefDirName.Contains(fkgLabLocalFile) )
-		fgQARefFileName =  fkgRefFileName ; 
-	else if ( fgQARefDirName.Contains(fkgLabLocalOCDB) )
-		fgQARefFileName =  fkgQAName ; 
-	else if ( fgQARefDirName.Contains(fkgLabAliEnOCDB) )
-		fgQARefFileName =  fkgQAName ; 
+	if ( fgQARefDirName.Contains(fgkLabLocalFile) )
+		fgQARefFileName =  fgkRefFileName ; 
+	else if ( fgQARefDirName.Contains(fgkLabLocalOCDB) )
+		fgQARefFileName =  fgkQAName ; 
+	else if ( fgQARefDirName.Contains(fgkLabAliEnOCDB) )
+		fgQARefFileName =  fgkQAName ; 
 
   else {
 	  printf("ERROR: %s is an invalid storage definition\n", name) ; 
@@ -620,76 +702,74 @@ void AliQA::SetQARefStorage(const char * name)
 	  fgQARefFileName = "" ; 
   }	
 	TString tmp(fgQARefDirName) ; // + fgQARefFileName) ;
-	printf("AliQA::SetQARefDir: QA references are in  %s\n", tmp.Data() ) ;
+	printf("AliQAv1::SetQARefDir: QA references are in  %s\n", tmp.Data() ) ;
 }
 
 //_____________________________________________________________________________
-void AliQA::SetQARefDataDirName(const char * name) 
-{
-  // Set the lower level directory name where reference data are found
-  TString test(name) ; 
-  RUNTYPE_t rt = kNULLTYPE ; 
-  for (Int_t index = 0; index < kNTYPE; index++) {
-    if (test.CompareTo(fgRTNames[index]) == 0) {
-      rt = (RUNTYPE_t) index ; 
-      break ; 
-    } 
-	}
-	
-	if (rt == kNULLTYPE) {
-      printf("AliQA::SetQARefDataDirName: %s is an unknown RUN TYPE name\n", name) ; 
-      return ; 
-	}
- 
-	SetQARefDataDirName(rt) ; 
-}
-
-//_____________________________________________________________________________
-void AliQA::SetQAResultDirName(const char * name)
+void AliQAv1::SetQAResultDirName(const char * name)
 {
   // Set the root directory where to store the QA status object
 
   fgQAResultDirName.Prepend(name) ; 
-  printf("AliQA::SetQAResultDirName: QA results are in  %s\n", fgQAResultDirName.Data()) ;
-  if ( fgQAResultDirName.Contains(fkgLabLocalFile)) 
-    fgQAResultDirName.ReplaceAll(fkgLabLocalFile, "") ;
+  printf("AliQAv1::SetQAResultDirName: QA results are in  %s\n", fgQAResultDirName.Data()) ;
+  if ( fgQAResultDirName.Contains(fgkLabLocalFile)) 
+    fgQAResultDirName.ReplaceAll(fgkLabLocalFile, "") ;
   fgQAResultFileName.Prepend(fgQAResultDirName) ;
 }
 
 //_______________________________________________________________
-void AliQA::SetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit)
+void AliQAv1::SetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit)
 {
  // Set the status bit for a given detector and a given task
 
   CheckRange(det) ;
   CheckRange(tsk) ;
   CheckRange(bit) ;
+  CheckRange(es) ;
 
   ULong_t offset = Offset(tsk) ;
-  ULong_t status = GetStatus(det) ;
+  ULong_t status = GetStatus(det, es) ;
   offset+= bit ;
   status = status | 1 << offset ;
-  SetStatus(det, status) ;
+  SetStatus(det, es, status) ;
 }
 
 //_______________________________________________________________
-void AliQA::ShowAll() const
+void AliQAv1::Show(DETECTORINDEX_t det) const 
+{ 
+  // dispplay the QA status word
+  if ( det == kNULLDET) 
+    det = fDet ;  
+  for (Int_t ies = 0 ; ies < fNEventSpecies ; ies++) {
+    const Bool_t what = IsEventSpecieSet(ies) ;
+    if ( what )
+      ShowStatus(det, kNULLTASK, AliRecoParam::Convert(ies)) ; 
+  }
+}
+
+//_______________________________________________________________
+void AliQAv1::ShowAll() const 
 {
   // dispplay the QA status word
   Int_t index ;
   for (index = 0 ; index < kNDET ; index++) {
 		for (Int_t tsk = kRAW ; tsk < kNTASK ; tsk++) {
-			ShowStatus(DETECTORINDEX_t(index), ALITASK_t(tsk)) ;
-		}
+      for (Int_t ies = 0 ; ies < fNEventSpecies ; ies++) {
+        const Bool_t what = IsEventSpecieSet(ies) ;
+        if ( what )
+          ShowStatus(DETECTORINDEX_t(index), ALITASK_t(tsk), AliRecoParam::Convert(ies)) ;
+      }
+    }
 	}
 }
 
 //_______________________________________________________________
-void AliQA::ShowStatus(DETECTORINDEX_t det, ALITASK_t tsk) const
+void AliQAv1::ShowStatus(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es) const
 {
 	// Prints the full QA status of a given detector
 	CheckRange(det) ;
-	ULong_t status = GetStatus(det) ;
+	CheckRange(es) ;
+	ULong_t status = GetStatus(det, es) ;
 	ULong_t tskStatus[kNTASK] ; 
 	tskStatus[kRAW] = status & 0x0000f ;
 	tskStatus[kSIM] = status & 0x000f0 ;
@@ -697,52 +777,60 @@ void AliQA::ShowStatus(DETECTORINDEX_t det, ALITASK_t tsk) const
 	tskStatus[kESD] = status & 0x0f000 ;
 	tskStatus[kANA] = status & 0xf0000 ;
 
-	AliInfo(Form("====> QA Status for %8s raw =0x%x, sim=0x%x, rec=0x%x, esd=0x%x, ana=0x%x", GetDetName(det).Data(), 
+	AliInfo(Form("====> QA Status for %8s %8s raw =0x%x, sim=0x%x, rec=0x%x, esd=0x%x, ana=0x%x", GetDetName(det).Data(), AliRecoParam::GetEventSpecieName(es), 
 				 tskStatus[kRAW], tskStatus[kSIM], tskStatus[kREC], tskStatus[kESD], tskStatus[kANA] )) ;
 	if (tsk == kNULLTASK) {
 		for (Int_t itsk = kRAW ; itsk < kNTASK ; itsk++) {
-			ShowASCIIStatus(det, ALITASK_t(itsk), tskStatus[itsk]) ; 
+			ShowASCIIStatus(es, det, ALITASK_t(itsk), tskStatus[itsk]) ; 
 		} 
 	} else {
-			ShowASCIIStatus(det, tsk, tskStatus[tsk]) ; 
+			ShowASCIIStatus(es, det, tsk, tskStatus[tsk]) ; 
 	}
 }
 
 //_______________________________________________________________
-void AliQA::ShowASCIIStatus(DETECTORINDEX_t det, ALITASK_t tsk, const ULong_t status) const 
+void AliQAv1::ShowASCIIStatus(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t det, ALITASK_t tsk, const ULong_t status) const 
 {
 	// print the QA status in human readable format
 	TString text; 
 	for (Int_t bit = kINFO ; bit < kNBIT ; bit++) {
-		if (IsSet(det, tsk, QABIT_t(bit))) {
+		if (IsSet(det, tsk, es, QABIT_t(bit))) {
 			text = GetBitName(QABIT_t(bit)) ; 
 			text += " " ; 
 		}
 	}
 	if (! text.IsNull())
-		printf("           %8s %4s 0x%4lx, Problem signalled: %8s \n", GetDetName(det).Data(), GetAliTaskName(tsk), status, text.Data()) ; 
+		printf("           %8s %8s %4s 0x%4lx, Problem signalled: %8s \n", AliRecoParam::GetEventSpecieName(es), GetDetName(det).Data(), GetAliTaskName(tsk), status, text.Data()) ; 
 }
 
 //_______________________________________________________________
-void AliQA::UnSet(QABIT_t bit)
+void AliQAv1::UnSet(QABIT_t bit, Int_t ies)
+{
+	// UnSet the status bit of the current detector in the current module
+		UnSet(bit, AliRecoParam::Convert(ies)) ;
+}
+
+//_______________________________________________________________
+void AliQAv1::UnSet(QABIT_t bit, AliRecoParam::EventSpecie_t es)
 {
 	// UnSet the status bit of the current detector in the current module
 	
-	UnSetStatusBit(fDet, fTask, bit) ;
+	UnSetStatusBit(fDet, fTask, es, bit) ;
 }
 
 //_______________________________________________________________
-void AliQA::UnSetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit)
+void AliQAv1::UnSetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit)
 {
 	// UnSet the status bit for a given detector and a given task
 	
 	CheckRange(det) ;
 	CheckRange(tsk) ;
 	CheckRange(bit) ;
+	CheckRange(es) ;
 	
 	ULong_t offset = Offset(tsk) ;
-	ULong_t status = GetStatus(det) ;
+	ULong_t status = GetStatus(det, es) ;
 	offset+= bit ;
 	status = status & 0 << offset ;
-	SetStatus(det, status) ;
+	SetStatus(det, es, status) ;
 }

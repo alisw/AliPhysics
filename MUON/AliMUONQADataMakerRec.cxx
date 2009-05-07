@@ -87,7 +87,7 @@ ClassImp(AliMUONQADataMakerRec)
            
 //____________________________________________________________________________ 
 AliMUONQADataMakerRec::AliMUONQADataMakerRec() : 
-AliQADataMakerRec(AliQA::GetDetName(AliQA::kMUON), "MUON Quality Assurance Data Maker"),
+AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kMUON), "MUON Quality Assurance Data Maker"),
 fIsInitRaws(kFALSE),
 fIsInitRecPointsTracker(kFALSE),
 fIsInitRecPointsTrigger(kFALSE),
@@ -173,7 +173,7 @@ AliMUONQADataMakerRec::~AliMUONQADataMakerRec()
 }
 
 //____________________________________________________________________________ 
-void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray** list)
+void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list)
 {
   ///Detector specific actions at end of cycle
   
@@ -184,7 +184,7 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     SetEventSpecie(specie) ; 
-    if ( task == AliQA::kRAWS && fTrackerDataMaker ) 
+    if ( task == AliQAv1::kRAWS && fTrackerDataMaker ) 
       {
         TIter next(list[specie]);
         TObject* o;
@@ -218,7 +218,7 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
       }
     
     // Normalize RecPoints histos
-    if ( task == AliQA::kRECPOINTS ) {
+    if ( task == AliQAv1::kRECPOINTS ) {
       
       TH1* hTrackerClusterChargePerChMean = GetRecPointsData(kTrackerClusterChargePerChMean);
       TH1* hTrackerClusterChargePerChSigma = GetRecPointsData(kTrackerClusterChargePerChSigma);
@@ -271,7 +271,7 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
     }
     
     // Normalize ESD histos
-    if ( task == AliQA::kESDS ) {
+    if ( task == AliQAv1::kESDS ) {
       
       Double_t nTracks = GetESDsData(kESDnClustersPerTrack)->GetEntries();
       if (nTracks <= 0) continue;
@@ -431,7 +431,7 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
   }
   
   // do the QA checking
-  AliQAChecker::Instance()->Run(AliQA::kMUON, task, list) ;
+  AliQAChecker::Instance()->Run(AliQAv1::kMUON, task, list) ;
 }
 
 //____________________________________________________________________________ 
@@ -1226,14 +1226,14 @@ void AliMUONQADataMakerRec::StartOfDetectorCycle()
 }
 
 //____________________________________________________________________________ 
-void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQA::TASKINDEX_t task)
+void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQAv1::TASKINDEX_t task)
 {
   //
   /// Display trigger information in a user-friendly way:
   /// from local board and strip numbers to their position on chambers
   //
 
-  if(task!=AliQA::kRECPOINTS && task!=AliQA::kRAWS) return;
+  if(task!=AliQAv1::kRECPOINTS && task!=AliQAv1::kRAWS) return;
 
   AliMUONTriggerDisplay triggerDisplay;
   
@@ -1242,12 +1242,12 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQA::TASKINDEX_t task)
 
   for (Int_t iCath = 0; iCath < AliMpConstants::NofCathodes(); iCath++)
   {
-    if(task==AliQA::kRECPOINTS){
+    if(task==AliQAv1::kRECPOINTS){
       ERecPoints hindex 
 	= ( iCath == 0 ) ? kTriggerDigitsBendPlane : kTriggerDigitsNonBendPlane;
       histoStrips = (TH3F*)GetRecPointsData(hindex);
     }
-    else if(task==AliQA::kRAWS){
+    else if(task==AliQAv1::kRAWS){
       ERaw hindex 
 	= ( iCath == 0 ) ? kTriggerScalersBP : kTriggerScalersNBP;
       histoStrips = (TH3F*)GetRawsData(hindex);
@@ -1256,24 +1256,24 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQA::TASKINDEX_t task)
     
     for (Int_t iChamber = 0; iChamber < AliMpConstants::NofTriggerChambers(); iChamber++)
     {
-      if(task==AliQA::kRECPOINTS){
+      if(task==AliQAv1::kRECPOINTS){
 	histoDisplayStrips = (TH2F*)GetRecPointsData(kTriggerDigitsDisplay + AliMpConstants::NofTriggerChambers()*iCath + iChamber);
       }
-      else if(task==AliQA::kRAWS){
+      else if(task==AliQAv1::kRAWS){
 	histoDisplayStrips = (TH2F*)GetRawsData(kTriggerScalersDisplay + AliMpConstants::NofTriggerChambers()*iCath + iChamber);
       }
       Int_t bin = histoStrips->GetXaxis()->FindBin(11+iChamber);
       histoStrips->GetXaxis()->SetRange(bin,bin);
       TH2F* inputHisto = (TH2F*)histoStrips->Project3D("zy");
       triggerDisplay.FillDisplayHistogram(inputHisto, histoDisplayStrips, AliMUONTriggerDisplay::kDisplayStrips, iCath, iChamber);
-      if(task==AliQA::kRAWS) {
+      if(task==AliQAv1::kRAWS) {
         Float_t acquisitionTime = ((TH1F*)GetRawsData(kTriggerScalersTime))->GetBinContent(1);
         histoDisplayStrips->Scale(1./acquisitionTime);
       }
     } // iChamber
   } // iCath
 
-  if(task==AliQA::kRAWS){    
+  if(task==AliQAv1::kRAWS){    
     TH2F* histoI  = (TH2F*) GetRawsData(kTriggerRPCi);
     TH2F* histoHV = (TH2F*) GetRawsData(kTriggerRPChv);
     FillTriggerDCSHistos();
@@ -1287,7 +1287,7 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQA::TASKINDEX_t task)
     }
   }
 
-  if(task==AliQA::kRECPOINTS){
+  if(task==AliQAv1::kRECPOINTS){
     TH1F* histoBoards = (TH1F*)GetRecPointsData(kTriggeredBoards);
     TH2F* histoDisplayBoards = (TH2F*)GetRecPointsData(kTriggerBoardsDisplay);
     triggerDisplay.FillDisplayHistogram(histoBoards, histoDisplayBoards, AliMUONTriggerDisplay::kDisplayBoards, 0, 0);

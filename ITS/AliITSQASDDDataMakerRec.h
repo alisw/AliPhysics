@@ -14,7 +14,7 @@
 
 /* $Id$ */
 
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliITSQADataMakerRec.h"
 
 class TObjArray;
@@ -31,12 +31,12 @@ public:
   virtual void MakeRaws(AliRawReader *rawReader);
   virtual void MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();
-  virtual void EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
+  virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
 
 
   virtual ~AliITSQASDDDataMakerRec(); // dtor
-  Int_t GetOffset(AliQA::TASKINDEX_t task);
-  Int_t GetTaskHisto(AliQA::TASKINDEX_t task);
+  Int_t GetOffset(AliQAv1::TASKINDEX_t task);
+  Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
 
   void SetHLTMode(Bool_t khltmode=kFALSE){fHLTMode=khltmode;};
   Bool_t GetHLTMode(){return fHLTMode;};

@@ -46,10 +46,10 @@ AliITSQASDDChecker& AliITSQASDDChecker::operator = (const AliITSQASDDChecker& qa
 }
 
 //__________________________________________________________________
-Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t index, TObjArray * list) 
+Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list) 
 {  
   AliDebug(1,Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset));
-  char * detOCDBDir = Form("ITS/%s/%s", AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
+  char * detOCDBDir = Form("ITS/%s/%s", AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
   AliCDBEntry *QARefObj = AliQAManager::QAManager()->Get(detOCDBDir);
   if( !QARefObj){
     AliError("Calibration object retrieval failed! SDD will not be processed");
@@ -59,7 +59,7 @@ Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
   Double_t test = 0.0;
   Int_t offset = 0;
 
-  if(index==AliQA::kRAW){  //analizing RAWS
+  if(index==AliQAv1::kRAW){  //analizing RAWS
     TH1F *ModPattern = (TH1F*)QARefObj->GetObject();
     if (list->GetEntries() == 0){
       test = 1. ; // nothing to check
@@ -95,7 +95,7 @@ Double_t AliITSQASDDChecker::Check(AliQA::ALITASK_t index, TObjArray * list)
   } // if(index==0)
 
   
-  if( index==AliQA::kREC){ //analizing RECP
+  if( index==AliQAv1::kREC){ //analizing RECP
     //printf("analizing recp, offset %d \n",fSubDetOffset);
     if (list->GetEntries() == 0){
       test = 1. ; // nothing to check

@@ -46,7 +46,7 @@ ClassImp(AliFMDQADataMakerSim)
 #endif
 //_____________________________________________________________________
 AliFMDQADataMakerSim::AliFMDQADataMakerSim() 
-  :  AliQADataMakerSim(AliQA::GetDetName(AliQA::kFMD),
+  :  AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kFMD),
 		       "FMD Quality Assurance Data Maker"),
      fSDigitsArray("AliFMDSDigit", 1000),
      fDigitsArray("AliFMDDigit", 1000),
@@ -85,7 +85,7 @@ AliFMDQADataMakerSim::~AliFMDQADataMakerSim()
 }
 
 //_____________________________________________________________________
-void AliFMDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, 
+void AliFMDQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, 
 					      TObjArray ** list)
 {
   //Detector specific actions at end of cycle
@@ -94,7 +94,7 @@ void AliFMDQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task,
 		  "AliFMDQADataMakerSim","AliFMDQADataMakerSim",
 		  "AliFMDQADataMakerSim::EndOfDetectorCycle",
 		  "AliFMDQADataMakerSim.cxx",83);
-  AliQAChecker::Instance()->Run(AliQA::kFMD, task, list) ;  
+  AliQAChecker::Instance()->Run(AliQAv1::kFMD, task, list) ;  
   
 }
 //_____________________________________________________________________

@@ -36,7 +36,7 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliQACheckerBase.h"
 #include "AliQADataMaker.h"
@@ -54,22 +54,22 @@ AliQACheckerBase::AliQACheckerBase(const char * name, const char * title) :
   fUpTestValue(0x0)
 {
   // ctor
-  fLowTestValue = new Float_t[AliQA::kNBIT] ; 
-  fUpTestValue  = new Float_t[AliQA::kNBIT] ; 
-  fLowTestValue[AliQA::kINFO]    =  0.5   ; 
-  fUpTestValue[AliQA::kINFO]     = 1.0 ; 
-  fLowTestValue[AliQA::kWARNING] =  0.002 ; 
-  fUpTestValue[AliQA::kWARNING]  = 0.5 ; 
-  fLowTestValue[AliQA::kERROR]   =  0.0   ; 
-  fUpTestValue[AliQA::kERROR]    = 0.002 ; 
-  fLowTestValue[AliQA::kFATAL]   = -1.0   ; 
-  fUpTestValue[AliQA::kFATAL]    = 0.0 ; 
+  fLowTestValue = new Float_t[AliQAv1::kNBIT] ; 
+  fUpTestValue  = new Float_t[AliQAv1::kNBIT] ; 
+  fLowTestValue[AliQAv1::kINFO]    =  0.5   ; 
+  fUpTestValue[AliQAv1::kINFO]     = 1.0 ; 
+  fLowTestValue[AliQAv1::kWARNING] =  0.002 ; 
+  fUpTestValue[AliQAv1::kWARNING]  = 0.5 ; 
+  fLowTestValue[AliQAv1::kERROR]   =  0.0   ; 
+  fUpTestValue[AliQAv1::kERROR]    = 0.002 ; 
+  fLowTestValue[AliQAv1::kFATAL]   = -1.0   ; 
+  fUpTestValue[AliQAv1::kFATAL]    = 0.0 ; 
   
   AliInfo("Default setting is:") ;
-  printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQA::kINFO], fUpTestValue[AliQA::kINFO]) ; 
-  printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQA::kWARNING], fUpTestValue[AliQA::kWARNING]) ; 
-  printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQA::kERROR], fUpTestValue[AliQA::kERROR]) ; 
-  printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQA::kFATAL], fUpTestValue[AliQA::kFATAL]) ; 
+  printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO]) ; 
+  printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING]) ; 
+  printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR]) ; 
+  printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
   
 }
 
@@ -83,7 +83,7 @@ AliQACheckerBase::AliQACheckerBase(const AliQACheckerBase& qac) :
   fUpTestValue(qac.fLowTestValue)
 {
   //copy ctor
-  for (Int_t index = 0 ; index < AliQA::kNBIT ; index++) {
+  for (Int_t index = 0 ; index < AliQAv1::kNBIT ; index++) {
     fLowTestValue[index]  = qac.fLowTestValue[index] ; 
     fUpTestValue[index] = qac.fUpTestValue[index] ; 
   }
@@ -107,7 +107,7 @@ AliQACheckerBase::~AliQACheckerBase()
 }
 
 //____________________________________________________________________________
-Double_t * AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/) 
+Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/) 
 {
   // Performs a basic checking
   // Compares all the histograms stored in the directory
@@ -118,7 +118,7 @@ Double_t * AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/)
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     test[specie] = 1.0 ; 
-    if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ; 
     if (!fDataSubDir) {
       test[specie] = 0. ; // nothing to check
@@ -158,7 +158,7 @@ Double_t * AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/)
 }  
 
 //____________________________________________________________________________
-Double_t * AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/, TObjArray ** list) 
+Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list) 
 {
   // Performs a basic checking
   // Compares all the histograms in the list
@@ -168,7 +168,7 @@ Double_t * AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/, TObjArray ** list
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     test[specie] = 1.0 ; 
-    if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ; 
     if (list[specie]->GetEntries() == 0)  
       test[specie] = 0. ; // nothing to check
@@ -181,7 +181,7 @@ Double_t * AliQACheckerBase::Check(AliQA::ALITASK_t /*index*/, TObjArray ** list
         count[specie] = 0 ; 
         while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
           if ( hdata) { 
-            if ( hdata->TestBit(AliQA::GetExpertBit()) )  // does not perform the test for expert data
+            if ( hdata->TestBit(AliQAv1::GetExpertBit()) )  // does not perform the test for expert data
               continue ; 
             TH1 * href = NULL ; 
             if (fRefSubDir) 
@@ -234,9 +234,9 @@ Double_t AliQACheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
 }
 
 //____________________________________________________________________________
-void AliQACheckerBase::Run(AliQA::ALITASK_t index, TObjArray ** list) 
+void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, TObjArray ** list) 
 { 
-	AliDebug(1, Form("Processing %s", AliQA::GetAliTaskName(index))) ; 
+	AliDebug(1, Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
   
 	Double_t * rv = NULL ;
   if ( !list) 
@@ -245,7 +245,7 @@ void AliQACheckerBase::Run(AliQA::ALITASK_t index, TObjArray ** list)
     rv = Check(index, list) ;
 	SetQA(index, rv) ; 	
 	
-  AliDebug(1, Form("Test result of %s", AliQA::GetAliTaskName(index))) ;
+  AliDebug(1, Form("Test result of %s", AliQAv1::GetAliTaskName(index))) ;
 	
   if (rv) 
     delete [] rv ; 
@@ -256,51 +256,51 @@ void AliQACheckerBase::Run(AliQA::ALITASK_t index, TObjArray ** list)
 void AliQACheckerBase::Finish() const 
 {
 	// wrap up and save QA in proper file
-	AliQA * qa = AliQA::Instance() ; 
+	AliQAv1 * qa = AliQAv1::Instance() ; 
 	qa->Show() ;
-	AliQA::GetQAResultFile()->cd() ; 
+	AliQAv1::GetQAResultFile()->cd() ; 
 	qa->Write(qa->GetName(), kWriteDelete) ;   
-	AliQA::GetQAResultFile()->Close() ; 
+	AliQAv1::GetQAResultFile()->Close() ; 
 }
 
 //____________________________________________________________________________
 void AliQACheckerBase::SetHiLo(Float_t * hiValue, Float_t * lowValue) 
 {
   AliInfo("Previous setting was:") ;
-  printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQA::kINFO], fUpTestValue[AliQA::kINFO]) ; 
-  printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQA::kWARNING], fUpTestValue[AliQA::kWARNING]) ; 
-  printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQA::kERROR], fUpTestValue[AliQA::kERROR]) ; 
-  printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQA::kFATAL], fUpTestValue[AliQA::kFATAL]) ; 
+  printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO]) ; 
+  printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING]) ; 
+  printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR]) ; 
+  printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
   
-  for (Int_t index = 0 ; index < AliQA::kNBIT ; index++) {
+  for (Int_t index = 0 ; index < AliQAv1::kNBIT ; index++) {
     fLowTestValue[index]  = lowValue[index] ; 
     fUpTestValue[index] = hiValue[index] ; 
   }
   AliInfo("Current setting is:") ;
-  printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQA::kINFO], fUpTestValue[AliQA::kINFO]) ; 
-  printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQA::kWARNING], fUpTestValue[AliQA::kWARNING]) ; 
-  printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQA::kERROR], fUpTestValue[AliQA::kERROR]) ; 
-  printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQA::kFATAL], fUpTestValue[AliQA::kFATAL]) ; 
+  printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO]) ; 
+  printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING]) ; 
+  printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR]) ; 
+  printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
 }
 
 //____________________________________________________________________________
-void AliQACheckerBase::SetQA(AliQA::ALITASK_t index, Double_t * value) const
+void AliQACheckerBase::SetQA(AliQAv1::ALITASK_t index, Double_t * value) const
 {
 	// sets the QA according the return value of the Check
 
-  AliQA * qa = AliQA::Instance(index) ;
+  AliQAv1 * qa = AliQAv1::Instance(index) ;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     if (  value == NULL ) { // No checker is implemented, set all QA to Fatal
-      qa->Set(AliQA::kFATAL, specie) ; 
+      qa->Set(AliQAv1::kFATAL, specie) ; 
     } else {
-      if ( value[specie] >= fLowTestValue[AliQA::kFATAL] && value[specie] < fUpTestValue[AliQA::kFATAL] ) 
-        qa->Set(AliQA::kFATAL, specie) ; 
-      else if ( value[specie] > fLowTestValue[AliQA::kERROR] && value[specie] <= fUpTestValue[AliQA::kERROR]  )
-        qa->Set(AliQA::kERROR, specie) ; 
-      else if ( value[specie] > fLowTestValue[AliQA::kWARNING] && value[specie] <= fUpTestValue[AliQA::kWARNING]  )
-        qa->Set(AliQA::kWARNING, specie) ;
-      else if ( value[specie] > fLowTestValue[AliQA::kINFO] && value[specie] <= fUpTestValue[AliQA::kINFO] ) 
-        qa->Set(AliQA::kINFO, specie) ; 	
+      if ( value[specie] >= fLowTestValue[AliQAv1::kFATAL] && value[specie] < fUpTestValue[AliQAv1::kFATAL] ) 
+        qa->Set(AliQAv1::kFATAL, specie) ; 
+      else if ( value[specie] > fLowTestValue[AliQAv1::kERROR] && value[specie] <= fUpTestValue[AliQAv1::kERROR]  )
+        qa->Set(AliQAv1::kERROR, specie) ; 
+      else if ( value[specie] > fLowTestValue[AliQAv1::kWARNING] && value[specie] <= fUpTestValue[AliQAv1::kWARNING]  )
+        qa->Set(AliQAv1::kWARNING, specie) ;
+      else if ( value[specie] > fLowTestValue[AliQAv1::kINFO] && value[specie] <= fUpTestValue[AliQAv1::kINFO] ) 
+        qa->Set(AliQAv1::kINFO, specie) ; 	
     }
   }
 }

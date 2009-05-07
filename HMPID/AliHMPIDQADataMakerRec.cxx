@@ -49,7 +49,7 @@ ClassImp(AliHMPIDQADataMakerRec)
            
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec() : 
-  AliQADataMakerRec(AliQA::GetDetName(AliQA::kHMPID), "HMPID Quality Assurance Data Maker"),fEvtRaw(0)
+  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kHMPID), "HMPID Quality Assurance Data Maker"),fEvtRaw(0)
 {
   // ctor
 }
@@ -274,12 +274,12 @@ void AliHMPIDQADataMakerRec::StartOfDetectorCycle()
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray **histos)
+void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray **histos)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
   
-  if(task==AliQA::kRAWS) {
+  if(task==AliQAv1::kRAWS) {
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       for(Int_t iddl=0;iddl<14;iddl++) {
         TH1F *h = (TH1F*)histos[specie]->At(14+iddl); //ddl histos scaled by the number of events 
@@ -288,7 +288,7 @@ void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArr
     }
   }
   
-   AliQAChecker::Instance()->Run(AliQA::kHMPID, task, histos);
+   AliQAChecker::Instance()->Run(AliQAv1::kHMPID, task, histos);
 
 }
 

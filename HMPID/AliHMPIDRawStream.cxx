@@ -495,7 +495,7 @@ Bool_t AliHMPIDRawStream::CheckEoE(Int_t &nDil)
 //    fRawReader->AddMajorErrorLog(kEoEDILOGICErr,Form("eoe dil %d != %d",da,dilogic));
 //    AliDebug(1,Form("Wrong DILOGIC address found in end-of-event: %d, expected %d!",da,dilogic));
 //    fNumOfErr[kEoEDILOGICErr]++;
-//    return kFALSE;  AliQAChecker::Instance()->Run(AliQA::kHMPID, task, obj) ;  
+//    return kFALSE;  AliQAChecker::Instance()->Run(AliQAv1::kHMPID, task, obj) ;  
 
 //  }
 //  UInt_t ca = (eOfEvent >> 22) & 0x1f;

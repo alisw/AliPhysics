@@ -15,7 +15,7 @@
 #include <TNamed.h>
 #include <TString.h>
 #include <TObjArray.h>
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQAManager.h"
 
 class AliCDBId;
@@ -112,10 +112,10 @@ public:
 
   //Quality Assurance
   Int_t       GetDetIndex(const char * detector);
-  void        SetQACycles(AliQA::DETECTORINDEX_t det, const Int_t cycles) {  fQAManager->SetCycleLength(det, cycles) ; }
+  void        SetQACycles(AliQAv1::DETECTORINDEX_t det, const Int_t cycles) {  fQAManager->SetCycleLength(det, cycles) ; }
   Bool_t      RunQA() ;
   Bool_t      SetRunQA(TString detAndAction="ALL:ALL") ; 
-  void        SetQAWriteExpert(AliQA::DETECTORINDEX_t det) { fQAManager->SetWriteExpert(det) ; }  
+  void        SetQAWriteExpert(AliQAv1::DETECTORINDEX_t det) { fQAManager->SetWriteExpert(det) ; }  
   void        SetQARefDefaultStorage(const char* uri);
   void        InitQA();
   void        SetEventSpecie(AliRecoParam::EventSpecie_t es) { fEventSpecie = es ; }

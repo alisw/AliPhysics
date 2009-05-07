@@ -51,7 +51,7 @@
 ClassImp(AliACORDEQADataMaker)
            
 //____________________________________________________________________________ 
-AliACORDEQADataMaker::AliACORDEQADataMaker():AliQADataMaker(AliQA::GetDetName(AliQA::kACORDE), "ACORDE Quality Assurance Data Maker")
+AliACORDEQADataMaker::AliACORDEQADataMaker():AliQADataMaker(AliQAv1::GetDetName(AliQAv1::kACORDE), "ACORDE Quality Assurance Data Maker")
 {
 	// Acorde QA Data Maker
 }

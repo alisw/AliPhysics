@@ -49,7 +49,7 @@
 ClassImp(AliACORDEQADataMakerSim)
            
 //____________________________________________________________________________ 
-AliACORDEQADataMakerSim::AliACORDEQADataMakerSim():AliQADataMakerSim(AliQA::GetDetName(AliQA::kACORDE), "ACORDE Quality Assurance Data Maker")
+AliACORDEQADataMakerSim::AliACORDEQADataMakerSim():AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kACORDE), "ACORDE Quality Assurance Data Maker")
 {
 }
 //____________________________________________________________________________ 
@@ -68,13 +68,13 @@ AliACORDEQADataMakerSim& AliACORDEQADataMakerSim::operator = (const AliACORDEQAD
   return *this;
 }
 //____________________________________________________________________________
-void AliACORDEQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliACORDEQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
    AliInfo("ACORDE---->Detector specific actions at END of cycle\n................\n");
 
-  AliQAChecker::Instance()->Run(AliQA::kACORDE, task, list) ;
+  AliQAChecker::Instance()->Run(AliQAv1::kACORDE, task, list) ;
 }
 //____________________________________________________________________________
 void AliACORDEQADataMakerSim::StartOfDetectorCycle()

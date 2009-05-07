@@ -217,6 +217,7 @@
     class AliGRPObject {};
 
     class AliQA {};
+    class AliQAv1 {};
 
     class AliRunInfo {};
     class AliEventInfo {};

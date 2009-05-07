@@ -50,7 +50,7 @@ private:
       /// make SDigits QA from Tree
   virtual void   MakeDigits(TTree* digitsTree);
   
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray** list);
+  virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list);
 
   AliMUONVHitStore*   fHitStore;   //!< pointer to hit store
   AliMUONVDigitStore* fDigitStore; //!< pointer to digit store

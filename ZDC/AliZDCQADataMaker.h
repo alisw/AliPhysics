@@ -39,7 +39,7 @@ private:
   virtual void  MakeRaws(AliRawReader* rawReader);
   virtual void  MakeESDs(AliESDEvent * esd);	     
   virtual void  StartOfDetectorCycle();
-  virtual void  EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray * list);
+  virtual void  EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
   //
   TClonesArray * fHits; 	//! Array containing ZDC hits
   TClonesArray * fDigits; 	//! Array containing ZDC digits

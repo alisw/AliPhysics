@@ -41,7 +41,7 @@ ClassImp(AliHMPIDQADataMaker)
            
 //____________________________________________________________________________ 
   AliHMPIDQADataMaker::AliHMPIDQADataMaker() : 
-  AliQADataMaker(AliQA::GetDetName(AliQA::kHMPID), "HMPID Quality Assurance Data Maker")
+  AliQADataMaker(AliQAv1::GetDetName(AliQAv1::kHMPID), "HMPID Quality Assurance Data Maker")
 {
   // ctor
 }
@@ -380,10 +380,10 @@ void AliHMPIDQADataMaker::StartOfDetectorCycle()
   
 }
 
-void AliHMPIDQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * obj)
+void AliHMPIDQADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX task, TObjArray * obj)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-//  AliQAChecker::Instance()->Run(AliQA::kHMPID, task, obj) ;  
+//  AliQAChecker::Instance()->Run(AliQAv1::kHMPID, task, obj) ;  
 }
 

@@ -46,7 +46,7 @@ ClassImp(AliMUONQADataMakerSim)
            
 //____________________________________________________________________________ 
 AliMUONQADataMakerSim::AliMUONQADataMakerSim() : 
-    AliQADataMakerSim(AliQA::GetDetName(AliQA::kMUON), "MUON Quality Assurance Data Maker"),
+    AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kMUON), "MUON Quality Assurance Data Maker"),
     fHitStore(0x0),
     fDigitStore(0x0)   
 {
@@ -199,11 +199,11 @@ void AliMUONQADataMakerSim::MakeDigits(TTree* digitsTree)
 }
       
 //____________________________________________________________________________ 
-void AliMUONQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray** list)
+void AliMUONQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list)
 {
     ///Detector specific actions at end of cycle
     // do the QA checking
-    AliQAChecker::Instance()->Run(AliQA::kMUON, task, list) ;  
+    AliQAChecker::Instance()->Run(AliQAv1::kMUON, task, list) ;  
 }
 
 

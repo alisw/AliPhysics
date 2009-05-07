@@ -24,15 +24,15 @@ public:
   AliMUONQAChecker(const AliMUONQAChecker& qac);
   virtual ~AliMUONQAChecker();
 
-  virtual void   Init(const AliQA::DETECTORINDEX_t det) ; 
+  virtual void   Init(const AliQAv1::DETECTORINDEX_t det) ; 
 
 protected:
 
   using AliQACheckerBase::Check;
   
-  virtual Double_t * Check(AliQA::ALITASK_t index) ;
-  virtual Double_t * Check(AliQA::ALITASK_t index, TObjArray ** list) ;
-  virtual void SetQA(AliQA::ALITASK_t index, Double_t * value) const ;	
+  virtual Double_t * Check(AliQAv1::ALITASK_t index) ;
+  virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list) ;
+  virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;	
 	
   Double_t * CheckRaws(TObjArray** list);
   Double_t * CheckRecPoints(TObjArray** list);

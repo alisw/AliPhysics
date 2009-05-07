@@ -44,7 +44,7 @@ ClassImp(AliPHOSQADataMakerSim)
            
 //____________________________________________________________________________ 
 AliPHOSQADataMakerSim::AliPHOSQADataMakerSim() : 
-  AliQADataMakerSim(AliQA::GetDetName(AliQA::kPHOS), "PHOS Quality Assurance Data Maker"),
+  AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kPHOS), "PHOS Quality Assurance Data Maker"),
   fHits(0x0)
 {
   // ctor
@@ -72,11 +72,11 @@ AliPHOSQADataMakerSim& AliPHOSQADataMakerSim::operator = (const AliPHOSQADataMak
 }
  
 //____________________________________________________________________________ 
-void AliPHOSQADataMakerSim::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliPHOSQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  AliQAChecker::Instance()->Run(AliQA::kPHOS, task, list) ;  
+  AliQAChecker::Instance()->Run(AliQAv1::kPHOS, task, list) ;  
 }
 
 //____________________________________________________________________________ 

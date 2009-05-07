@@ -39,7 +39,7 @@
 // --- AliRoot header files ---
 #include "AliITSQASDDDataMakerRec.h"
 #include "AliLog.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliRawReader.h"
 #include "AliITSRawStream.h"
@@ -127,10 +127,10 @@ void AliITSQASDDDataMakerRec::StartOfDetectorCycle()
 }
 
 //____________________________________________________________________________ 
-void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t /*task*/, TObjArray* /*list*/)
+void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, TObjArray* /*list*/)
 {
   // launch the QA checking
-  AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
+  AliDebug(1,"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
 }
 
 //____________________________________________________________________________ 
@@ -618,15 +618,15 @@ void AliITSQASDDDataMakerRec::SetHLTModeFromEnvironment()
 
 //_______________________________________________________________
 
-Int_t AliITSQASDDDataMakerRec::GetOffset(AliQA::TASKINDEX_t task)
+Int_t AliITSQASDDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task)
 {
   Int_t offset=0;
-  if( task == AliQA::kRAWS )
+  if( task == AliQAv1::kRAWS )
     {
       offset=fGenRawsOffset;  
     }
   else
-    if( task == AliQA::kRECPOINTS )
+    if( task == AliQAv1::kRECPOINTS )
       {
 	offset=fGenRecPointsOffset;   
       }
@@ -636,17 +636,17 @@ Int_t AliITSQASDDDataMakerRec::GetOffset(AliQA::TASKINDEX_t task)
 
 //_______________________________________________________________
 
-Int_t AliITSQASDDDataMakerRec::GetTaskHisto(AliQA::TASKINDEX_t task)
+Int_t AliITSQASDDDataMakerRec::GetTaskHisto(AliQAv1::TASKINDEX_t task)
 {
 
   Int_t histotot=0;
 
-  if( task == AliQA::kRAWS )
+  if( task == AliQAv1::kRAWS )
     {
       histotot=fSDDhRawsTask ;  
     }
   else
-    if( task == AliQA::kRECPOINTS )
+    if( task == AliQAv1::kRECPOINTS )
       {
 	histotot=fSDDhRecPointsTask;   
       }

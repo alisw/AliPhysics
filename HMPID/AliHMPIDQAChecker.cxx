@@ -35,7 +35,7 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliHMPIDQAChecker.h"
 #include "AliCDBEntry.h"
@@ -44,7 +44,7 @@
 ClassImp(AliHMPIDQAChecker)
 
 //____________________________________________________________________________
-Double_t * AliHMPIDQAChecker::Check(AliQA::ALITASK_t /*index*/)
+Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t /*index*/)
 {
   Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
@@ -53,7 +53,7 @@ Double_t * AliHMPIDQAChecker::Check(AliQA::ALITASK_t /*index*/)
 }
 
 //_________________________________________________________________
-Double_t * AliHMPIDQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list) 
+Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list) 
 {
 //
 // Main check function: Depending on the TASK, different checks are applied
@@ -62,7 +62,7 @@ Double_t * AliHMPIDQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
   Double_t * check = new Double_t[AliRecoParam::kNSpecies] ; 
   
   AliInfo(Form("Fix needed ....."));
-  char * detOCDBDir = Form("HMPID/%s/%s", AliQA::GetRefOCDBDirName(), AliQA::GetRefDataDirName()) ; 
+  char * detOCDBDir = Form("HMPID/%s/%s", AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
   AliCDBEntry *QARefRec = AliQAManager::QAManager()->Get(detOCDBDir);
   if( !QARefRec){
     AliInfo("QA reference data NOT retrieved for Reconstruction check. No HMPIDChecker  ...exiting");
@@ -72,7 +72,7 @@ Double_t * AliHMPIDQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
 // checking for empy histograms
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     check[specie] = 1.0;
-    if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ; 
     if(CheckEntries(list[specie]) == 0)  {
       AliWarning("histograms are empty");
@@ -80,7 +80,7 @@ Double_t * AliHMPIDQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
     }
   
     // checking rec points
-    if(index == AliQA::kREC) check[specie] = CheckRecPoints(list[specie],(TObjArray *)QARefRec->GetObject());
+    if(index == AliQAv1::kREC) check[specie] = CheckRecPoints(list[specie],(TObjArray *)QARefRec->GetObject());
 
     //default check response. It will be changed when reasonable checks will be considered
     else check[specie] = 0.7 ; // /-> Corresponds to kINFO see AliQACheckerBase::Run 

@@ -51,7 +51,7 @@ ClassImp(AliPHOSQADataMakerRec)
            
 //____________________________________________________________________________ 
   AliPHOSQADataMakerRec::AliPHOSQADataMakerRec() : 
-  AliQADataMakerRec(AliQA::GetDetName(AliQA::kPHOS), "PHOS Quality Assurance Data Maker")
+  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kPHOS), "PHOS Quality Assurance Data Maker")
 {
   // ctor
 }
@@ -75,7 +75,7 @@ AliPHOSQADataMakerRec& AliPHOSQADataMakerRec::operator = (const AliPHOSQADataMak
 }
  
 //____________________________________________________________________________ 
-void AliPHOSQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArray ** list)
+void AliPHOSQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
   if(GetRawsData(kHGqualMod1) && GetRawsData(kHGmod1))
@@ -89,7 +89,7 @@ void AliPHOSQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, TObjArra
   if(GetRawsData(kHGqualMod5) && GetRawsData(kHGmod5))
     GetRawsData(kHGqualMod5)->Divide( GetRawsData(kHGmod5) ) ;
   // do the QA checking
-  AliQAChecker::Instance()->Run(AliQA::kPHOS, task, list) ;  
+  AliQAChecker::Instance()->Run(AliQAv1::kPHOS, task, list) ;  
 }
 
 //____________________________________________________________________________ 
@@ -445,16 +445,16 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   }                    
   delete decoder;
   GetRawsData(kEtotLG)->Fill(lgEtot) ; 
-  TParameter<double> * p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kEtotLG)->GetName()))) ; 
+  TParameter<double> * p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kEtotLG)->GetName()))) ; 
   p->SetVal(lgEtot) ; 
   GetRawsData(kEtotHG)->Fill(hgEtot) ;  
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kEtotHG)->GetName()))) ; 
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kEtotHG)->GetName()))) ; 
   p->SetVal(hgEtot) ; 
   GetRawsData(kNtotLG)->Fill(lgNtot) ;
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kNtotLG)->GetName()))) ; 
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kNtotLG)->GetName()))) ; 
   p->SetVal(lgNtot) ; 
   GetRawsData(kNtotHG)->Fill(hgNtot) ;
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQA::GetTaskName(AliQA::kRAWS).Data(), GetRawsData(kNtotHG)->GetName()))) ; 
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kNtotHG)->GetName()))) ; 
   p->SetVal(hgNtot) ; 
 }
 //____________________________________________________________________________

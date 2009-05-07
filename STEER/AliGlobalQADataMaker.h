@@ -28,7 +28,7 @@ public:
 	AliQADataMakerRec(qadm) {;}
 
 private:
-	void   EndOfDetectorCycle(AliQA::TASKINDEX_t, TObjArray ** list) ;
+	void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
 
 	void InitRaws(); 
 	void InitRecPoints();

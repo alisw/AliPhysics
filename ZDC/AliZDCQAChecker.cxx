@@ -28,20 +28,20 @@
 ClassImp(AliZDCQAChecker)
 
 //____________________________________________________________________________
-Double_t * AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list) 
+Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list) 
 {
   // Checks the QA histograms on the input list: 
   //
   Double_t * test   = new Double_t[AliRecoParam::kNSpecies] ;
   Int_t *    ntests = new Int_t[AliRecoParam::kNSpecies]  ; 
-  const char* taskName = AliQA::GetAliTaskName(index);
+  const char* taskName = AliQAv1::GetAliTaskName(index);
   //
   
   //YS Int_t beamType=0; // 0 -> protons, 1 -> ions
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     test[specie] = 1.0 ; 
     ntests[specie] = 0 ; 
-    if ( !AliQA::Instance()->IsEventSpecieSet(specie) ) 
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ; 
     // ====================================================================
     // 	Checks for p-p events
@@ -59,7 +59,7 @@ Double_t * AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
       while((hdata = dynamic_cast<TH1 *>(next()))){
         if(hdata){ 
           // -------------------------------------------------------------------
-          if(index == AliQA::kSIM){
+          if(index == AliQAv1::kSIM){
             //AliInfo(Form("\tAliZDCQAChecker-> checking histo %s",hdata->GetName()));
             // Check DIGITS histos
             if(!(strncmp(hdata->GetName(),"hDig",4))){
@@ -76,7 +76,7 @@ Double_t * AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
               }
             }
             // -------------------------------------------------------------------
-          } else if(index == AliQA::kRAW) {
+          } else if(index == AliQAv1::kRAW) {
             if(hdata->GetEntries()!=0){
               if(hdata->GetMean()>10.) 
                 test[specie] += 1.; 
@@ -85,7 +85,7 @@ Double_t * AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
               ntests[specie]++;
             }
             // -------------------------------------------------------------------
-          } else if(index == AliQA::kESD) {
+          } else if(index == AliQAv1::kESD) {
             Int_t    esdInd=0;
             if(hdata->GetEntries()!=0){
               if(esdInd>1){
@@ -131,7 +131,7 @@ Double_t * AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
           Float_t  res=0.;
           Int_t    testgood=0;
           // -------------------------------------------------------------------
-          if(index == AliQA::kSIM){
+          if(index == AliQAv1::kSIM){
             Int_t    digInd=0;
             // Check DIGITS histos
             if (!(strncmp(hdata->GetName(),"hDig",4))){
@@ -257,7 +257,7 @@ Double_t * AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
             }
           }
           // -------------------------------------------------------------------
-          else if(index == AliQA::kRAW){
+          else if(index == AliQAv1::kRAW){
             Int_t    rawInd=0;
             // [1] check response of ZNC vs. ZNA
             if(rawInd==0 || rawInd==1){
@@ -362,7 +362,7 @@ Double_t * AliZDCQAChecker::Check(AliQA::ALITASK_t index, TObjArray ** list)
             rawInd++;
           }
           // -------------------------------------------------------------------
-          else if(index == AliQA::kESD){
+          else if(index == AliQAv1::kESD){
             Double_t eneQZNC, eneQZNA ;  
             Double_t eneQZPC, eneQZPA ;  
             Double_t eneCZNC, eneCZNA ;  

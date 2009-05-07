@@ -50,7 +50,7 @@ ClassImp(AliFMDQADataMakerRec)
            
 //_____________________________________________________________________
 AliFMDQADataMakerRec::AliFMDQADataMakerRec() : 
-  AliQADataMakerRec(AliQA::GetDetName(AliQA::kFMD), 
+  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kFMD), 
 		    "FMD Quality Assurance Data Maker"),
   fDigitsArray("AliFMDDigit", 0),
   fRecPointsArray("AliFMDRecPoint", 1000)
@@ -61,7 +61,7 @@ AliFMDQADataMakerRec::AliFMDQADataMakerRec() :
 
 //_____________________________________________________________________
 AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm) 
-  : AliQADataMakerRec(AliQA::GetDetName(AliQA::kFMD), 
+  : AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kFMD), 
 		      "FMD Quality Assurance Data Maker"),
     fDigitsArray(qadm.fDigitsArray),
     fRecPointsArray(qadm.fRecPointsArray)
@@ -89,7 +89,7 @@ AliFMDQADataMakerRec::~AliFMDQADataMakerRec()
 //_____________________________________________________________________ 
 
 void 
-AliFMDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task, 
+AliFMDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, 
 					 TObjArray ** list)
 {
   // Detector specific actions at end of cycle
@@ -98,7 +98,7 @@ AliFMDQADataMakerRec::EndOfDetectorCycle(AliQA::TASKINDEX_t task,
 		  "AliFMDQADataMakerRec","AliFMDQADataMakerRec",
 		  "AliFMDQADataMakerRec::EndOfDetectorCycle",
 		  "AliFMDQADataMakerRec.cxx",95);
-  AliQAChecker::Instance()->Run(AliQA::kFMD, task, list);
+  AliQAChecker::Instance()->Run(AliQAv1::kFMD, task, list);
 }
 
 //_____________________________________________________________________ 

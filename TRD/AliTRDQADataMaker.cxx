@@ -53,7 +53,7 @@ ClassImp(AliTRDQADataMaker)
 
 //____________________________________________________________________________ 
   AliTRDQADataMaker::AliTRDQADataMaker() : 
-  AliQADataMaker(AliQA::GetDetName(AliQA::kTRD), "TRD Quality Assurance Data Maker")
+  AliQADataMaker(AliQAv1::GetDetName(AliQAv1::kTRD), "TRD Quality Assurance Data Maker")
 {
   //
   // Default constructor
@@ -86,7 +86,7 @@ AliTRDQADataMaker& AliTRDQADataMaker::operator=(const AliTRDQADataMaker& qadm)
 }
 
 //____________________________________________________________________________ 
-void AliTRDQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list)
+void AliTRDQADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX task, TObjArray * list)
 {
   //
   // Detector specific actions at end of cycle
@@ -97,7 +97,7 @@ void AliTRDQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * li
   //AliInfo(Form("EndOfCycle", "Fitting RecPoints %d", task))
   TH1D *hist = new TH1D("fitHist", "", 200, -0.5, 199.5);
  
-  if (task == AliQA::kRECPOINTS) {
+  if (task == AliQAv1::kRECPOINTS) {
 
     //list->Print();
     
@@ -161,7 +161,7 @@ void AliTRDQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * li
   delete hist;
   
   // call the checker
-  AliQAChecker::Instance()->Run(AliQA::kTRD, task, list) ;    
+  AliQAChecker::Instance()->Run(AliQAv1::kTRD, task, list) ;    
 
   //watch.Stop();
   //watch.Print();
