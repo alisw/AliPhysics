@@ -29,13 +29,13 @@ AliAnalysisTaskFemto *AddTaskFemto()
 
   // C. Create the task, add it to manager.
   //===========================================================================
-  gSystem->SetIncludePath("-I$ROOTSYS/include  -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I$ALICE_ROOT/include");
-  if (dynamic_cast<TProofLite *> gProof) {
-    gProof->Exec(".L ConfigFemtoAnalysis.C");
-  }
-  else if (gProof) {
-    gProof->Load("ConfigFemtoAnalysis.C");
-  }
+//  gSystem->SetIncludePath("-I$ROOTSYS/include  -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I$ALICE_ROOT/include");
+  if (TProofMgr::GetListOfManagers()->GetEntries()) {
+    if (dynamic_cast<TProofLite *> gProof)
+      gProof->Exec(".L ConfigFemtoAnalysis.C");
+    else
+      gProof->Load("ConfigFemtoAnalysis.C");
+  }  
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto");
