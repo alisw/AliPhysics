@@ -1,0 +1,18 @@
+#-*- Mode: Makefile -*-
+
+SRCS= KINK/AliAnalysisKinkESDMC.cxx \
+      KINK/AliResonanceKinkLikeSign.cxx \
+      KINK/AliResonanceKinkPID.cxx
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=PWG2kinkLinkDef.h
+
+EXPORT:=
+
+EINCLUDE:= 
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lESD -lAOD -lSTEERBase -lCORRFW
+endif
