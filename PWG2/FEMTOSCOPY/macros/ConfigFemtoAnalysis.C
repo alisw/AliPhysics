@@ -15,6 +15,7 @@
 // returns:
 // a pointer to the created AliFemtoManager
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliFemtoManager.h"
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoSimpleAnalysis.h"
@@ -26,6 +27,7 @@
 #include "AliFemtoShareQualityCorrFctn.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
 #include "AliFemtoVertexMultAnalysis.h"
+#endif
 
 AliFemtoManager *ConfigFemtoAnalysis()
 {
