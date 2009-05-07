@@ -35,6 +35,7 @@
 #include "AliITSDDLModuleMapSDD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSCalibrationSDD.h"
+#include "AliITSMapSDD.h"
 #include "AliITSHLTforSDD.h"
 #include "AliITSCalibrationSSD.h"
 #include "AliITSNoiseSSDv2.h"
@@ -56,7 +57,7 @@
 #include "AliITSLoader.h"
 
 class AliITSDriftSpeedArraySDD;
-class AliITSMapSDD;
+class AliITSCorrMapSDD;
 class AliITSRecoParam;
 
 const Int_t AliITSDetTypeRec::fgkNdettypes = 3;
@@ -562,6 +563,13 @@ Bool_t AliITSDetTypeRec::GetCalibrationSDD(Bool_t cacheStatus) {
   AliITSCalibration* cal;
   Float_t avegain=0.;
   Float_t nGdAnodes=0;
+  Bool_t oldMapFormat=kFALSE;
+  TObject* objmap=(TObject*)mapT->At(0);
+  TString cname(objmap->ClassName());
+  if(cname.CompareTo("AliITSMapSDD")==0){ 
+    oldMapFormat=kTRUE;
+    AliInfo("SDD Maps converted to new format");
+  }
   for(Int_t iddl=0; iddl<AliITSDDLModuleMapSDD::GetNDDLs(); iddl++){
     for(Int_t icar=0; icar<AliITSDDLModuleMapSDD::GetNModPerDDL();icar++){
       Int_t iMod=fDDLMapSDD->GetModuleNumber(iddl,icar);
@@ -576,15 +584,21 @@ Bool_t AliITSDetTypeRec::GetCalibrationSDD(Bool_t cacheStatus) {
 	nGdAnodes++;
       }
       AliITSDriftSpeedArraySDD* arr0 = (AliITSDriftSpeedArraySDD*) drSp->At(i0);
-      //      AliITSMapSDD* ma0 = (AliITSMapSDD*)mapAn->At(i0);
-      AliITSMapSDD* mt0 = (AliITSMapSDD*)mapT->At(i0);
       AliITSDriftSpeedArraySDD* arr1 = (AliITSDriftSpeedArraySDD*) drSp->At(i1);
-      //      AliITSMapSDD* ma1 = (AliITSMapSDD*)mapAn->At(i1);
-      AliITSMapSDD* mt1 = (AliITSMapSDD*)mapT->At(i1);
+
+      AliITSCorrMapSDD* mt0 = 0;
+      AliITSCorrMapSDD* mt1 = 0;
+      if(oldMapFormat){ 
+	AliITSMapSDD* oldmap0=(AliITSMapSDD*)mapT->At(i0);
+	AliITSMapSDD* oldmap1=(AliITSMapSDD*)mapT->At(i1);
+	mt0=oldmap0->ConvertToNewFormat();
+	mt1=oldmap1->ConvertToNewFormat();
+      }else{
+	mt0=(AliITSCorrMapSDD*)mapT->At(i0);
+	mt1=(AliITSCorrMapSDD*)mapT->At(i1);
+      }
       cal->SetDriftSpeed(0,arr0);
       cal->SetDriftSpeed(1,arr1);
-//       cal->SetMapA(0,ma0);
-//       cal->SetMapA(1,ma1);
       cal->SetMapT(0,mt0);
       cal->SetMapT(1,mt1);
       SetCalibrationModel(iMod, cal);

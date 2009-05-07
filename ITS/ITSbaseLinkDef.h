@@ -55,8 +55,9 @@
 #pragma link C++ class  AliITSChannelStatus+;
 #pragma link C++ class  AliITSHLTforSDD+;
 #pragma link C++ class  AliITSMapSDD+;
-#pragma link C++ class  AliITSMap1DSDD+;
-#pragma link C++ class  AliITSMap2DSDD+;
+#pragma link C++ class  AliITSCorrMapSDD+;
+#pragma link C++ class  AliITSCorrMap1DSDD+;
+#pragma link C++ class  AliITSCorrMap2DSDD+;
 #pragma link C++ class  AliITSDriftSpeedSDD+;
 #pragma link C++ class  AliITSDriftSpeedArraySDD+;
 #pragma link C++ class  AliITSDDLModuleMapSDD+;

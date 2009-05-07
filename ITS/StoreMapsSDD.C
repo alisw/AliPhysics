@@ -1,7 +1,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliCDBManager.h"
 #include "AliITSCalibrationSDD.h"
-#include "AliITSMapSDD.h"
+#include "AliITSCorrMapSDD.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBStorage.h"
 #include "AliCDBId.h"
@@ -13,10 +13,9 @@
 
 void StoreMapsSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
   ///////////////////////////////////////////////////////////////////////
-  // Macro to generate and store the residual maps for SDD             //
+  // Macro to generate and store the correction maps for SDD           //
   // Generates:                                                        //
-  //  1 file with 520 AliITSMapSDD anode maps (MapsAnodeSDD)           //
-  //  1 file with 520 AliITSMapSDD drift coordinate maps (MapsTimeSDD) //
+  //  1 file with 520 AliITSCorrMapSDD drift maps (MapsTimeSDD)        //
   ///////////////////////////////////////////////////////////////////////
   
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
@@ -38,8 +37,8 @@ void StoreMapsSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
 
   TRandom3 *gran = new TRandom3();
   
-  AliITSMapSDD* mapTime0;
-  AliITSMapSDD* mapTime1;
+  AliITSCorrMapSDD* mapTime0;
+  AliITSCorrMapSDD* mapTime1;
   for(Int_t mod=0;mod<260;mod++){
     // maps
     Char_t name[20];
@@ -48,14 +47,14 @@ void StoreMapsSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
     if(mod==10 || mod==240){
       nbinsan=256;
       sprintf(name,"DriftTimeMap_%d_%d\n",mod,0);
-      mapTime0 = new AliITSMap2DSDD(name,nbinsan,72);
+      mapTime0 = new AliITSCorrMap2DSDD(name,nbinsan,72);
       sprintf(name,"DriftTimeMap_%d_%d\n",mod,1);
-      mapTime1 = new AliITSMap2DSDD(name,nbinsan,72);
+      mapTime1 = new AliITSCorrMap2DSDD(name,nbinsan,72);
     }else{
       sprintf(name,"DriftTimeMap_%d_%d\n",mod,0);
-      mapTime0 = new AliITSMap1DSDD(name,72);
+      mapTime0 = new AliITSCorrMap1DSDD(name,72);
       sprintf(name,"DriftTimeMap_%d_%d\n",mod,1);
-      mapTime1 = new AliITSMap1DSDD(name,72);
+      mapTime1 = new AliITSCorrMap1DSDD(name,72);
     }
     for(Int_t nan = 0;nan< nbinsan;nan++){
       for(Int_t nt = 0;nt<36*2;nt++){

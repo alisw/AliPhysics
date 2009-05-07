@@ -33,8 +33,9 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSCalibrationSSD.cxx \
                 AliITSChannelStatus.cxx \
 		AliITSMapSDD.cxx \
-		AliITSMap1DSDD.cxx \
-		AliITSMap2DSDD.cxx \
+		AliITSCorrMapSDD.cxx \
+		AliITSCorrMap1DSDD.cxx \
+		AliITSCorrMap2DSDD.cxx \
 		AliITSHLTforSDD.cxx \
 		AliITSDriftSpeedSDD.cxx \
 		AliITSDDLModuleMapSDD.cxx \

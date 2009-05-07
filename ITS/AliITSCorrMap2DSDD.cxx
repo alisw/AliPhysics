@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -24,27 +24,27 @@
 
 #include "TH1F.h"
 #include "TH2F.h"
-#include "AliITSMapSDD.h"
-#include "AliITSMap2DSDD.h"
+#include "AliITSCorrMapSDD.h"
+#include "AliITSCorrMap2DSDD.h"
 
-ClassImp(AliITSMap2DSDD)
+ClassImp(AliITSCorrMap2DSDD)
 //______________________________________________________________________
-AliITSMap2DSDD::AliITSMap2DSDD():
-AliITSMapSDD()
+AliITSCorrMap2DSDD::AliITSCorrMap2DSDD():
+AliITSCorrMapSDD()
 {
   // default constructor
   ResetMap();
 }
 //______________________________________________________________________
-AliITSMap2DSDD::AliITSMap2DSDD(Char_t *mapname):
-AliITSMapSDD(mapname)
+AliITSCorrMap2DSDD::AliITSCorrMap2DSDD(Char_t *mapname):
+AliITSCorrMapSDD(mapname)
 {
   // standard constructor
   ResetMap();
 }
 //______________________________________________________________________
-AliITSMap2DSDD::AliITSMap2DSDD(Char_t *mapname, Int_t nbinsan, Int_t nbinsdr):
-AliITSMapSDD(mapname)
+AliITSCorrMap2DSDD::AliITSCorrMap2DSDD(Char_t *mapname, Int_t nbinsan, Int_t nbinsdr):
+AliITSCorrMapSDD(mapname)
 {
   // standard constructor
   ResetMap();
@@ -52,17 +52,17 @@ AliITSMapSDD(mapname)
   SetNBinsDrift(nbinsdr);
 }
 //______________________________________________________________________
-void AliITSMap2DSDD::ResetMap(){
+void AliITSCorrMap2DSDD::ResetMap(){
   // Sets contents to zero
   for(Int_t iAn=0;iAn<kMaxNAnodePts; iAn++){
     for(Int_t iDr=0;iDr<kMaxNDriftPts; iDr++){
-      fMap[iAn][iDr]=0;
+      fCorrMap[iAn][iDr]=0;
     }
   }
 }
 
 //______________________________________________________________________
-void AliITSMap2DSDD::Set2DMap(TH2F* hmap){
+void AliITSCorrMap2DSDD::Set2DMap(TH2F* hmap){
   // Fill map staring from 2D histo 
   // with anodes on x axis and drift dist. on y axis
   if(hmap->GetNbinsX()!=fNAnodePts || hmap->GetNbinsY()!=fNDriftPts){ 

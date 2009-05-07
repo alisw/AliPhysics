@@ -12,7 +12,7 @@
 #include <TObject.h>
 #include <TString.h>
 #include "AliLog.h"
-#include "AliITSMapSDD.h"
+#include "AliITSCorrMapSDD.h"
 #include "AliITSDriftSpeedArraySDD.h"
 
 class AliITSsegmentation;
@@ -55,8 +55,8 @@ class AliITSCalibration : public TObject {
 
     virtual Int_t  NDetParam() const = 0;
     virtual void   GetDetParam(Double_t *) const = 0;
-    virtual void   SetMapA(Int_t, AliITSMapSDD*) {AliError("This method must be implemented in a derived class");}
-    virtual void   SetMapT(Int_t, AliITSMapSDD*) {AliError("This method must be implemented in a derived class");}
+    virtual void   SetMapA(Int_t, AliITSCorrMapSDD*) {AliError("This method must be implemented in a derived class");}
+    virtual void   SetMapT(Int_t, AliITSCorrMapSDD*) {AliError("This method must be implemented in a derived class");}
     virtual void   SetDriftSpeed(Int_t, AliITSDriftSpeedArraySDD*) {AliError("This method must be implemented in a derived class");}
     // Set sigmas of the charge spread function
     virtual void    SetSigmaSpread(Double_t, Double_t) = 0;

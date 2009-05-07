@@ -10,7 +10,7 @@
 #include "AliITSsegmentationSDD.h"
 #include "TArrayI.h"
 
-class AliITSMapSDD;
+class AliITSCorrMapSDD;
 class AliITSDriftSpeedArraySDD;
 
 ///////////////////////////////////////////////////////
@@ -112,7 +112,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
       if(i<256) return fMapAW0->GetCellContent(i,j);
       else return fMapAW1->GetCellContent(i-256,j);
     }
-    virtual void SetMapA(Int_t wing,AliITSMapSDD* mapA) {
+    virtual void SetMapA(Int_t wing,AliITSCorrMapSDD* mapA) {
       if(wing==0) fMapAW0=mapA;
       else fMapAW1=mapA;
     } 
@@ -120,7 +120,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
       if(i<256) return fMapTW0->GetCellContent(i,j);
       else return fMapTW1->GetCellContent(i-256,j);
     }
-    virtual void SetMapT(Int_t wing,AliITSMapSDD* mapT) {
+    virtual void SetMapT(Int_t wing,AliITSCorrMapSDD* mapT) {
       if(wing==0) fMapTW0=mapT;
       else fMapTW1=mapT;
     } 
@@ -177,10 +177,10 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     TArrayI  fBadChannels;                   //Array with bad anodes number (0-512) 
 
     
-    AliITSMapSDD* fMapAW0;     //! map of residuals on anode coord. wing 0
-    AliITSMapSDD* fMapAW1;     //! map of residuals on anode coord. wing 1
-    AliITSMapSDD* fMapTW0;     //! map of residuals on time coord. wing 0
-    AliITSMapSDD* fMapTW1;     //! map of residuals on time coord. wing 1
+    AliITSCorrMapSDD* fMapAW0;     //! map of residuals on anode coord. wing 0
+    AliITSCorrMapSDD* fMapAW1;     //! map of residuals on anode coord. wing 1
+    AliITSCorrMapSDD* fMapTW0;     //! map of residuals on time coord. wing 0
+    AliITSCorrMapSDD* fMapTW1;     //! map of residuals on time coord. wing 1
     AliITSDriftSpeedArraySDD* fDrSpeed0; //! drift speed for wing 0
     AliITSDriftSpeedArraySDD* fDrSpeed1; //! drift speed for wing 1
 

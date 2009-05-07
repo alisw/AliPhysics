@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -23,43 +23,43 @@
 ///////////////////////////////////////////////////////////////////
 
 #include "TH1F.h"
-#include "AliITSMapSDD.h"
-#include "AliITSMap1DSDD.h"
+#include "AliITSCorrMapSDD.h"
+#include "AliITSCorrMap1DSDD.h"
 
-ClassImp(AliITSMap1DSDD)
+ClassImp(AliITSCorrMap1DSDD)
 //______________________________________________________________________
-AliITSMap1DSDD::AliITSMap1DSDD():
-AliITSMapSDD()
+AliITSCorrMap1DSDD::AliITSCorrMap1DSDD():
+AliITSCorrMapSDD()
 {
   // default constructor
   ResetMap();
   SetNBinsAnode(1);
 }
 //______________________________________________________________________
-AliITSMap1DSDD::AliITSMap1DSDD(Char_t *mapname):
-AliITSMapSDD(mapname)
+AliITSCorrMap1DSDD::AliITSCorrMap1DSDD(Char_t *mapname):
+AliITSCorrMapSDD(mapname)
 {
   // standard constructor
   ResetMap();
   SetNBinsAnode(1);
 }
 //______________________________________________________________________
-AliITSMap1DSDD::AliITSMap1DSDD(Char_t *mapname, Int_t nbinsdr):
-AliITSMapSDD(mapname)
+AliITSCorrMap1DSDD::AliITSCorrMap1DSDD(Char_t *mapname, Int_t nbinsdr):
+AliITSCorrMapSDD(mapname)
 {
   ResetMap();
   SetNBinsAnode(1);
   SetNBinsDrift(nbinsdr);
 }
 //______________________________________________________________________
-void AliITSMap1DSDD::ResetMap(){
+void AliITSCorrMap1DSDD::ResetMap(){
   // Sets contents to zero
   for(Int_t iDr=0;iDr<kMaxNDriftPts; iDr++){
-    fMap[iDr]=0;
+    fCorrMap[iDr]=0;
   }
 }
 //______________________________________________________________________
-void AliITSMap1DSDD::Set1DMap(TH1F* hmap){
+void AliITSCorrMap1DSDD::Set1DMap(TH1F* hmap){
   // Fill map staring from 1D histo of rediduals vs. x
   if(hmap->GetNbinsX()!=fNDriftPts){ 
     AliError(Form("N. of histo bins (%d) not matching N. of map cells (%d)\n",hmap->GetNbinsX(),fNDriftPts));

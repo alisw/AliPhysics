@@ -45,6 +45,7 @@
 #include "AliITSCalibration.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSMapSDD.h"
+#include "AliITSCorrMapSDD.h"
 #include "AliITSDriftSpeedArraySDD.h"
 #include "AliITSDriftSpeedSDD.h"
 #include "AliITSHLTforSDD.h"
@@ -620,6 +621,13 @@ if(!deadSPD || !noisySPD || !foEffSPD || !foNoiSPD
   
   fDDLMapSDD->SetDDLMap(ddlsdd);
   fIsHLTmodeC=hltsdd->IsHLTmodeC();
+  Bool_t oldMapFormat=kFALSE;
+  TObject* objmap=(TObject*)mapT->At(0);
+  TString cname(objmap->ClassName());
+  if(cname.CompareTo("AliITSMapSDD")==0){ 
+    oldMapFormat=kTRUE;
+    AliInfo("SDD Maps converted to new format");
+  }
 
   for (Int_t i=0; i<fgkDefaultNModulesSDD; i++) {
     Int_t iddl,icarlos;
@@ -640,15 +648,21 @@ if(!deadSPD || !noisySPD || !foEffSPD || !foNoiSPD
       Int_t i0=2*i;
       Int_t i1=1+2*i;
       AliITSDriftSpeedArraySDD* arr0 = (AliITSDriftSpeedArraySDD*) drSp->At(i0);
-//       AliITSMapSDD* ma0 = (AliITSMapSDD*)mapAn->At(i0);
-      AliITSMapSDD* mt0 = (AliITSMapSDD*)mapT->At(i0);
       AliITSDriftSpeedArraySDD* arr1 = (AliITSDriftSpeedArraySDD*) drSp->At(i1);
- //      AliITSMapSDD* ma1 = (AliITSMapSDD*)mapAn->At(i1);
-      AliITSMapSDD* mt1 = (AliITSMapSDD*)mapT->At(i1);
+
+      AliITSCorrMapSDD* mt0 = 0;
+      AliITSCorrMapSDD* mt1 = 0;
+      if(oldMapFormat){ 
+	AliITSMapSDD* oldmap0=(AliITSMapSDD*)mapT->At(i0);
+	AliITSMapSDD* oldmap1=(AliITSMapSDD*)mapT->At(i1);
+	mt0=oldmap0->ConvertToNewFormat();
+	mt1=oldmap1->ConvertToNewFormat();
+      }else{
+	mt0=(AliITSCorrMapSDD*)mapT->At(i0);
+	mt1=(AliITSCorrMapSDD*)mapT->At(i1);
+      }
       cal->SetDriftSpeed(0,arr0);
       cal->SetDriftSpeed(1,arr1);
-//       cal->SetMapA(0,ma0);
-//       cal->SetMapA(1,ma1);
       cal->SetMapT(0,mt0);
       cal->SetMapT(1,mt1);
       SetCalibrationModel(iMod, cal);
