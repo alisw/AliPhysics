@@ -23,6 +23,8 @@
 #include "TVector3.h"
 #include "TF1.h"
 #include "TH1D.h"
+#include <TDatabasePDG.h>
+#include <TParticlePDG.h>
 #include "TLorentzVector.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -64,10 +66,7 @@ void AliResonanceKinkLikeSign::ConnectInputData(Option_t *)
   if (!tree) {
     Printf("ERROR: Could not read chain from input slot 0");
   } else {
-    // Disable all branches, we want to process only MC
-    tree->SetBranchStatus("*",kTRUE );
-    tree->SetBranchStatus("*Calo*", kFALSE);
-
+  
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
     if (!esdH) {
@@ -113,8 +112,8 @@ void AliResonanceKinkLikeSign::Exec(Option_t *)
   // Main loop
   // Called for each event
  
-   Float_t daughter1Mass=AliPID::ParticleMass(AliPID::kKaon);
-   Float_t daughter2Mass=AliPID::ParticleMass(AliPID::kPion);
+   Double_t daughter1Mass=TDatabasePDG::Instance()->GetParticle(kKPlus)->Mass();
+   Double_t daughter2Mass=TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass();
 
   if (!fESD) {
     Printf("ERROR: fESD not available");

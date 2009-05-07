@@ -25,6 +25,8 @@
 #include "TH2D.h"
 #include "TParticle.h"
 #include <TVector3.h>
+#include <TDatabasePDG.h>
+#include <TParticlePDG.h>
 #include "TF1.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -75,9 +77,6 @@ void AliResonanceKinkPID::ConnectInputData(Option_t *)
   if (!tree) {
     Printf("ERROR: Could not read chain from input slot 0");
   } else {
-    // Disable all branches, we want to process only MC
-    tree->SetBranchStatus("*",kTRUE );
-    tree->SetBranchStatus("*Calo*", kFALSE);
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
@@ -165,9 +164,9 @@ void AliResonanceKinkPID::Exec(Option_t *)
    Int_t daughter1=kdaughterKaon;
    Int_t daughter2=kdaughterPion;
    
-   Float_t daughter1Mass=AliPID::ParticleMass(AliPID::kKaon);
-   Float_t daughter2Mass=AliPID::ParticleMass(AliPID::kPion);
-
+   Double_t daughter1Mass=TDatabasePDG::Instance()->GetParticle(kKPlus)->Mass();
+   Double_t daughter2Mass=TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass();
+   
    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
    if (!eventHandler) {
     Printf("ERROR: Could not retrieve MC event handler");

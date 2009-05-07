@@ -14,7 +14,7 @@ class TF1;
 class TString;
 class TTree;
 class AliESDEvent;
-class AliPID;
+class AliESDtrack;
 
 class AliResonanceKinkPID : public AliAnalysisTaskSE {
  public:

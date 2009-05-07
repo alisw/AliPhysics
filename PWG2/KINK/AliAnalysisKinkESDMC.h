@@ -22,7 +22,6 @@ class TH1F;
 class TH2F;
 class TH1D;
 class TH2D;
-class AliPID;
 
 #include "AliAnalysisTaskSE.h"
 
