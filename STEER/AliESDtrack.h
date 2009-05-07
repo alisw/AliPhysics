@@ -208,8 +208,11 @@ public:
   
 // A.Bercuci
   void    SetTRDntracklets(UChar_t q){fTRDntracklets = q;}
-  UChar_t GetTRDntrackletsPID() const {return (fTRDntracklets>>3)&7;}
-  UChar_t GetTRDntracklets() const {return fTRDntracklets&7;}
+  UChar_t GetTRDntracklets() const {return (fTRDntracklets>>3)&7;}
+  UChar_t GetTRDntrackletsPID() const {return fTRDntracklets&7;}
+  // TEMPORARY alias asked by the HFE group to allow 
+  // reading of the v4-16-Release data with TRUNK related software (A.Bercuci@Apr 30th 09) 
+  UChar_t GetTRDpidQuality() const {return GetTRDntrackletsPID();}
 // end A.Bercuci
 
   void     SetNumberOfTRDslices(Int_t n);

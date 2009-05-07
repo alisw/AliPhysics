@@ -810,7 +810,7 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   if(!nPID) track->SetTRDntracklets(n);
   else {
     track->SetTRDpid(fPID);
-    n |= (nPID<<3);
-    track->SetTRDntracklets(n);
+    nPID |= (n<<3);
+    track->SetTRDntracklets(nPID);
   }
 }
