@@ -26,7 +26,7 @@ const char *dataset   = "";
 // Change production base directory here
 const char *alien_datadir = "/alice/sim/PDC_09/LHC09a4/";
 // Use up to 10 non-zero run numbers
-Int_t run_numbers[10] = {81072,     0,     0,     0,     0,
+Int_t run_numbers[10] = {81272,     0,     0,     0,     0,
                              0,     0,     0,     0,     0};
 // Activate the following flags ONLY in grid mode and ONLY if the code is not available
 // in the deployed AliRoot versions. Par file search path: local dir, if not there $ALICE_ROOT.
@@ -51,10 +51,11 @@ Int_t iMUONcopyAOD   = 0;      // Task that copies only muon events in a separat
 Int_t iJETAN         = 1;      // Jet analysis (PWG4) - needs ESD filter
 Int_t iPWG4partcorr  = 1;      // Gamma-hadron correlations task (PWG4)
 Int_t iPWG3vertexing = 1;      // Vertexing HF task (PWG2)
-Int_t iPWG2femto     = 0;      // Femtoscopy task (PWG2)
+Int_t iPWG2femto     = 1;      // Femtoscopy task (PWG2)
 Int_t iPWG2spectra   = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
 Int_t iPWG2flow      = 0;      // Flow analysis task (PWG2)
 Int_t iPWG2res       = 1;      // Resonances task (PWG2)
+Int_t iPWG2kink      = 1;      // Kink analysis task (PWG2)
 
 TString anaPars = "";
 TString anaLibs = "";
@@ -83,6 +84,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    if (iPWG2femto)   printf("=  PWG2 femtoscopy                                               =\n");
    if (iPWG2flow)    printf("=  PWG2 flow                                                     =\n");
    if (iPWG2res)     printf("=  PWG2 resonances                                               =\n");
+   if (iPWG2kink)    printf("=  PWG2 kink analysis                                            =\n");
    if (iPWG3vertexing) printf("=  PWG3 vertexing                                            =\n");
    if (iPWG4partcorr)  printf("=  PWG4 gamma-hadron, pi0 and gamma-jet correlations         =\n");
    printf("==================================================================\n");
@@ -105,7 +107,8 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    if (!LoadCommonLibraries(smode)) {
       ::Error("AnalysisTrain", "Could not load common libraries");
       return;
-   }   
+   }   Int_t iPWG2res       = 0;      // Resonances task (PWG2)
+
     
    // Load analysis specific libraries
    if (!LoadAnalysisLibraries(smode)) {
@@ -181,6 +184,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    if (iJETAN) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJets.C");
       AliAnalysisTaskJets *taskjets = AddTaskJets("AOD", "UA1");
+      if (!taskjets) ::Warning("AnalysisTrainNew", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
    }
        
    // Proton analysis
@@ -188,28 +192,55 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
       // protons
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskProtons.C");
       AliAnalysisTaskProtons *taskprotons = AddTaskProtons();
+      if (!taskprotons) ::Warning("AnalysisTrainNew", "AliAnalysisTaskProtons cannot run for this train conditions - EXCLUDED");
       // cascades
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskCheckCascade.C");
       AliAnalysisTaskCheckCascade *taskcheckcascade = AddTaskCheckCascade();      
+      if (!taskcheckcascade) ::Warning("AnalysisTrainNew", "AliAnalysisTaskCheckCascade cannot run for this train conditions - EXCLUDED");
       // v0's
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskCheckV0.C");
       AliAnalysisTaskCheckV0 *taskcheckV0 = AddTaskCheckV0();
+      if (!taskcheckV0) ::Warning("AnalysisTrainNew", "AliAnalysisTaskCheckV0 cannot run for this train conditions - EXCLUDED");
       // strangeness
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskStrange.C");
       AliAnalysisTaskStrange *taskstrange = AddTaskStrange();
+      if (!taskstrange) ::Warning("AnalysisTrainNew", "AliAnalysisTaskStrange cannot run for this train conditions - EXCLUDED");
    }   
    
-   // PWG3 vertexing
+   // Femtoscopy analysis modules
+   if (iPWG2femto) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/FEMTOSCOPY/macros/AddTaskFemto.C");
+      AliAnalysisTaskFemto *taskfemto = AddTaskFemto();
+      if (!taskfemto) ::Warning("AnalysisTrainNew", "AliAnalysisTaskFemto cannot run for this train conditions - EXCLUDED");
+   }   
+
+   // Kink analysis
+   if (iPWG2kink) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKink.C");
+      AliAnalysisKinkESDMC *taskkink = AddTaskKink();
+      if (!taskkink) ::Warning("AnalysisTrainNew", "AliAnalysisKinkESDMC cannot run for this train conditions - EXCLUDED");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKinkResonance.C");
+      AliResonanceKinkPID *taskkinkres = AddTaskKinkResonance();
+      if (!taskkinkres) ::Warning("AnalysisTrainNew", "AliResonanceKinkPID cannot run for this train conditions - EXCLUDED");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKinkResonanceLikeSign.C");
+      AliResonanceKinkLikeSign *taskkinklikesign = AddTaskKinkResonanceLikeSign();
+      if (!taskkinklikesign) ::Warning("AnalysisTrainNew", "AliResonanceKinkLikeSign cannot run for this train conditions - EXCLUDED");
+   }   
+      
+  // PWG3 vertexing
    if (iPWG3vertexing) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskVertexingHF.C");
       AliAnalysisTaskSEVertexingHF *taskvertexingHF = AddTaskVertexingHF();
+      if (!taskvertexingHF) ::Warning("AnalysisTrainNew", "AliAnalysisTaskSEVertexingHF cannot run for this train conditions - EXCLUDED");
    }   
       
    // PWG4 hadron correlations
    if (iPWG4partcorr) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
-      AliAnalysisTaskParticleCorrelation *taskparcorrPHOS = AddTaskPartCorr("AOD", "PHOS");
+      AliAnalysisTaskParticleCorrelation *taskpartcorrPHOS = AddTaskPartCorr("AOD", "PHOS");
+      if (!taskpartcorrPHOS) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation PHOS cannot run for this train conditions - EXCLUDED");
       AliAnalysisTaskParticleCorrelation *taskpartcorrEMCAL = AddTaskPartCorr("AOD", "EMCAL");
+      if (!taskpartcorrEMCAL) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation EMCAL cannot run for this train conditions - EXCLUDED");
    }   
    //==========================================================================
    // FOR THE REST OF THE TASKS THE MACRO AddTaskXXX() is not yet implemented/
@@ -235,7 +266,7 @@ void StartAnalysis(const char *mode, TChain *chain) {
             ::Error("StartAnalysis", "Cannot create the chain");
             return;
          }   
-         mgr->StartAnalysis(mode, chain, 100);
+         mgr->StartAnalysis(mode, chain);
          return;
       case 1:
          if (!strlen(proof_dataset)) {
@@ -270,30 +301,39 @@ void CheckModuleFlags(const char *mode) {
    if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    if (imode==1) {
-      usePAR = kTRUE;
+      if (!usePAR) {
+         ::Info("CheckModuleFlags", "PAR files enabled due to PROOF analysis");
+         usePAR = kTRUE;
+      }   
    }  
-   if (imode != 2) usePLUGIN = kFALSE; 
+   if (imode != 2) {
+      ::Info("CheckModuleFlags", "AliEn plugin disabled since not in GRID mode");
+      usePLUGIN = kFALSE; 
+   }   
    if (iAODanalysis) {
    // AOD analysis
+      if (useMC)
+         ::Info("CheckModuleFlags", "MC usage disabled in analysis on AOD's");
       useMC = kFALSE;
       useTR = kFALSE;
+      if (iESDfilter)
+         ::Info("CheckModuleFlags", "ESD filter disabled in analysis on AOD's");
       iESDfilter   = 0;
-      iJETAN = 0;
+      if (!iAODhandler) {
+         if (iJETAN) 
+            ::Info("CheckModuleFlags", "JETAN disabled in analysis on AOD's without AOD handler");
+         iJETAN = 0;
+      }
       // Disable tasks that do not work yet on AOD data
+      if (iPWG2kink)         
+         ::Info("CheckModuleFlags", "PWG2kink disabled in analysis on AOD's");
+      iPWG2kink = 0;
    } else {   
    // ESD analysis
       iMUONcopyAOD = 0;
-//      iPWG3vertexing = 0;
    }       
    if (iJETAN) iESDfilter=1;
    if (iESDfilter) iAODhandler=1;
-   if (iAODanalysis || !iAODhandler) {
-//      iPWG4partcorr=0;
-   }   
-//   if (iPWG4gammajet && !iJETAN) {
-//      ::Error("CheckModuleFlags", "Gamma jet finder needs JETAN. Disabling.");
-//      iPWG4gammajet = 0;
-//   }
    if (iPWG2spectra || iPWG2flow || iPWG3vertexing) useCORRFW = kTRUE;
    if (useKFILTER && !useMC) useKFILTER = kFALSE;
    if (useAODTAGS && !iAODhandler) useAODTAGS = kFALSE;
@@ -457,11 +497,16 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    if (iPWG2res) {
       if (!LoadLibrary("PWG2resonances", mode, kTRUE)) return kFALSE;
    }   
+   // PWG2 kink
+   if (iPWG2kink) {
+      if (!LoadLibrary("PWG2kink", mode, kTRUE)) return kFALSE;
+   }   
    // PWG2 femtoscopy
    if (iPWG2femto) {
       if (!LoadLibrary("PWG2AOD", mode, kTRUE) ||
           !LoadLibrary("PWG2femtoscopy", mode, kTRUE) ||
           !LoadLibrary("PWG2femtoscopyUser", mode, kTRUE)) return kFALSE;
+      TFile::Cp(gSystem->ExpandPathName("$(ALICE_ROOT)/PWG2/FEMTOSCOPY/macros/ConfigFemtoAnalysis.C"), "ConfigFemtoAnalysis.C");
    }   
    // Vertexing HF
    if (iPWG3vertexing) {
