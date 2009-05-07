@@ -77,6 +77,7 @@ void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisPhoton")
       AliMCEventHandler* mcHandler = new AliMCEventHandler();
       mcHandler->SetReadTR(kFALSE);//Do not search TrackRef file
       mgr->SetMCtruthEventHandler(mcHandler);
+      if( kInputData == "MC") mgr->SetInputEventHandler(NULL);
     }
 
     // AOD output handler
@@ -372,7 +373,7 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
 	  skipped++ ;
 	}
       }
-      printf("number of entries # %lld, skipped %d\n", chain->GetEntries(), skipped*100) ; 	
+      printf("number of entries # %lld, skipped %d\n", chain->GetEntries(), skipped) ; 	
     }
     else {
       TString input = "AliESDs.root" ;

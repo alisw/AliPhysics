@@ -308,7 +308,7 @@ Bool_t AliAnaParticleIsolation::CheckInvMass(const Int_t iaod, const AliAODPWG4P
     mom2 = *(part2->Momentum());
     //Select good pair (good phi, pt cuts, aperture and invariant mass)
     if(GetNeutralMesonSelection()->SelectPair(mom1, mom2)){
-      if(GetDebug() > 1)printf("AliAnaParticleIsolation::CheckInvMass() - Selected gamma pair: pt %f, phi %f, eta%f",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
+      if(GetDebug() > 1)printf("AliAnaParticleIsolation::CheckInvMass() - Selected gamma pair: pt %f, phi %f, eta%f\n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
       return kTRUE ;
     }
   }//loop
@@ -711,8 +711,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   
   //Loop on AOD branch, filled previously in AliAnaPhoton
   TLorentzVector mom ;
-  
-  for(Int_t iaod = 0; iaod < GetInputAODBranch()->GetEntriesFast(); iaod++){
+  Int_t naod = GetInputAODBranch()->GetEntriesFast();
+  if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() - Input aod branch entries %d\n", naod);
+  for(Int_t iaod = 0; iaod < naod; iaod++){
     AliAODPWG4ParticleCorrelation * aodinput =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
     //If too small or too large pt, skip
@@ -727,11 +728,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
     n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
     GetIsolationCut()->MakeIsolationCut(GetAODCTS(),pl,fVertex, kTRUE, aodinput, GetAODRefArrayName(), n,nfrac,coneptsum, isolated);
     aodinput->SetIsolated(isolated);
-
-    
+    if(GetDebug() > 1 && isolated) printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() : Particle %d IS ISOLATED \n",iaod);  
+	  
   }//loop
   
-  if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() - End fill AODs ");  
+  if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() - End fill AODs \n");  
   
 }
 
@@ -746,7 +747,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   
   //Loop on stored AOD 
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
-  if(GetDebug() > 0) printf(" AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Histo aod branch entries %d\n", naod);
+  if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Histo aod branch entries %d\n", naod);
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4ParticleCorrelation* aod =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
 
@@ -767,8 +768,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       //In case a more strict IC is needed in the produced AOD
       n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
       GetIsolationCut()->MakeIsolationCut(reftracks, refclusters, fVertex, kFALSE, aod, "", n,nfrac,coneptsum, isolated);
-      fhConeSumPt->Fill(ptcluster,coneptsum);       
-    }
+      fhConeSumPt->Fill(ptcluster,coneptsum);    
+	  if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Energy Sum in Isolation Cone %2.2f\n", coneptsum);    
+	}
     
     //Fill pt distribution of particles in cone
     //Tracks
@@ -792,9 +794,14 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
        }
     }
 	  
-    if(!fReMakeIC) fhConeSumPt->Fill(ptcluster,coneptsum);
+	if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d Energy Sum in Isolation Cone %2.2f\n", iaod, coneptsum);
+    
+	if(!fReMakeIC) fhConeSumPt->Fill(ptcluster,coneptsum);
     
     if(isolation){    
+		
+	  if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d ISOLATED, fill histograms\n", iaod);
+		
       fhPtIso  ->Fill(ptcluster);
       fhPhiIso ->Fill(ptcluster,phicluster);
       fhEtaIso ->Fill(ptcluster,etacluster);
