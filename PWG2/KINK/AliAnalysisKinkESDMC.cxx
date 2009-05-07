@@ -94,11 +94,6 @@ void AliAnalysisKinkESDMC::ConnectInputData(Option_t *)
   if (!tree) {
     Printf("ERROR: Could not read chain from input slot 0");
   } else {
-    // Disable all branches, we want to process only MC
-    tree->SetBranchStatus("*", kTRUE);
-   // tree->SetBranchStatus("fTracks.*", kTRUE);
-   tree->SetBranchStatus("*Calo*", kFALSE);
-   tree->SetBranchStatus("FMD", kFALSE);
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
