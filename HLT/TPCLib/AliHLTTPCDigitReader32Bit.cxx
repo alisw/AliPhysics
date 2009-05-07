@@ -50,6 +50,12 @@ AliHLTTPCDigitReader32Bit::AliHLTTPCDigitReader32Bit()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  
+  // initlialized here to get more accurate comparison with the 
+  // digitReaderDecoder when using SimpleComponentWrapper
+  if(fRawReaderMemory ==NULL){
+    fRawReaderMemory = new AliRawReaderMemory();
+  }
 }
 
 AliHLTTPCDigitReader32Bit::~AliHLTTPCDigitReader32Bit()
@@ -79,7 +85,9 @@ int AliHLTTPCDigitReader32Bit::InitBlock(void* ptr,unsigned long size, Int_t pat
   if (patch>1) ddlno+=72+4*slice+(patch-2);
   else ddlno+=2*slice+patch;
 
-  fRawReaderMemory = new AliRawReaderMemory();
+  if(fRawReaderMemory == NULL){
+    fRawReaderMemory = new AliRawReaderMemory();
+  }
   if(!fRawReaderMemory){
     return -ENODEV;
   }
@@ -88,8 +96,12 @@ int AliHLTTPCDigitReader32Bit::InitBlock(void* ptr,unsigned long size, Int_t pat
   fRawReaderMemory->Reset();
   fRawReaderMemory->NextEvent();
 
+  if(fAltroRawStreamV3 != NULL){
+    delete fAltroRawStreamV3;
+    fAltroRawStreamV3=NULL;
+  }
   fAltroRawStreamV3= new AliAltroRawStreamV3(fRawReaderMemory);
-  //  fAltroRawStreamV3->SelectRawData("TPC");
+
   if (!fAltroRawStreamV3){
     return -ENODEV;
   }
