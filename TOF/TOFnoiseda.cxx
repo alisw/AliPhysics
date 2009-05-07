@@ -94,9 +94,9 @@ int main(int argc, char **argv) {
   AliTOFNoiseConfigHandler* tofHandler = new AliTOFNoiseConfigHandler();
   TSAXParser *parser = new TSAXParser();
   parser->ConnectToHandler("AliTOFNoiseConfigHandler", tofHandler);  
-  if (parser->ParseFile("./TOFNoiseConfig.xml") != 0){
-	  printf("Failed parsing config file! retunring... \n");
-	  return -1;
+  if (parser->ParseFile("./TOFNoiseConfig.xml") != 0) {
+    printf("Failed parsing config file! retunring... \n");
+    return -1;
   }
 
   Int_t debugFlag = tofHandler->GetDebugFlag();
@@ -106,6 +106,26 @@ int main(int argc, char **argv) {
   /* init some counters */
   int nevents_physics=0;
   int nevents_total=0;
+
+
+  Int_t nPDBEntriesToT = 0;
+  Int_t nDBEntriesToT = 0;
+  AliTOFHitData *HitData;
+  Int_t dummy = -1;
+  Int_t Volume[5];
+  for (Int_t i=0;i<5;i++) Volume[i]=-1;
+  AliTOFRawStream *rawStreamTOF = new AliTOFRawStream();
+  const AliRawDataHeader *currentCDH;
+  AliTOFDecoder * decoderTOF = new AliTOFDecoder();
+  AliTOFHitDataBuffer *DataBuffer[AliDAQ::NumberOfDdls("TOF")];
+  AliTOFHitDataBuffer *PackedDataBuffer[AliDAQ::NumberOfDdls("TOF")];
+  for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++) {
+    DataBuffer[i]=new AliTOFHitDataBuffer();
+    PackedDataBuffer[i]=new AliTOFHitDataBuffer();
+  }
+  Int_t currentEquipment;
+  Int_t currentDDL;
+  UChar_t *data = 0x0;
 
   /* read the data files */
   int n;
@@ -140,27 +160,18 @@ int main(int argc, char **argv) {
 
       if (eventT==PHYSICS_EVENT) {
 	//printf ("event %i \n", nevents_physics);
-	Int_t nPDBEntriesToT = 0;
-	Int_t nDBEntriesToT = 0;
-	AliTOFHitData *HitData;
-	Int_t dummy = -1;
-	Int_t Volume[5];
+
+	nPDBEntriesToT = 0;
+        nDBEntriesToT = 0;
+	dummy = -1;
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-	AliTOFRawStream *rawStreamTOF = new AliTOFRawStream(rawReader);
-        const AliRawDataHeader *currentCDH;
-	AliTOFDecoder * decoderTOF = new AliTOFDecoder();
-	AliTOFHitDataBuffer *DataBuffer[72]; 
-	AliTOFHitDataBuffer *PackedDataBuffer[72];	
-	for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){
-	  DataBuffer[i]=new AliTOFHitDataBuffer();
-	  PackedDataBuffer[i]=new AliTOFHitDataBuffer();
-	}
-	Int_t currentEquipment;
-	Int_t currentDDL;
-	UChar_t *data = 0x0;
+	rawStreamTOF->SetRawReader(rawReader);
+	data = 0x0;
+
 	while(rawReader->ReadHeader()){
-	  //printf ("ldcId = %i \n",ldcId);
 	  ldcId = rawReader->GetLDCId(); 
+	  //debugging printings
+	  //if (debugFlag) printf ("ldcId = %i \n",ldcId);
 
 	  //memory leak prevention (actually data should be always 0x0 here)
 	  if (data != 0x0) delete [] data;
@@ -176,14 +187,18 @@ int main(int argc, char **argv) {
 	  else {
 	    nchDDL = 2208;
 	  }
+
 	  Int_t * array = new Int_t[nchDDL];
+  
+	  for (Int_t ii=0; ii<nchDDL; ii++) array[ii] = 0;
 	  decoderTOF->GetArrayDDL(array, currentDDL);
 
-	  for (Int_t i=0;i<nchDDL;i++){
+	  for (Int_t i=0;i<nchDDL;i++) {
 	    if (htofNoise->GetBinContent(array[i]+1)<0) htofNoise->SetBinContent(array[i]+1,0);
 	  }
 
-	  //printf(" Equipment = %i, and DDL = %i \n", currentEquipment,currentDDL); 
+	  //debugging printings
+	  //	  if (debugFlag) printf(" Equipment = %i, and DDL = %i \n", currentEquipment,currentDDL); 
 	  const Int_t kDataSize = rawReader->GetDataSize();
 	  const Int_t kDataWords = kDataSize / 4;
 	  data = new UChar_t[kDataSize];
@@ -197,7 +212,7 @@ int main(int argc, char **argv) {
 	    data = 0x0;
 	    continue;
 	  }
-	  if (decoderTOF->Decode((UInt_t *)data, kDataWords, currentCDH) == kTRUE ){
+	  if (decoderTOF->Decode((UInt_t *)data, kDataWords, currentCDH) == kTRUE ) {
 	    rawReader->AddMajorErrorLog(AliTOFRawStream::kDDLDecoder,Form("DDL # = %d",currentDDL));
 	    printf("Error while decoding DDL # %d: decoder returned with errors \n", currentDDL);
 	  }
@@ -214,6 +229,7 @@ int main(int argc, char **argv) {
 	    HitData = PackedDataBuffer[currentDDL]->GetHit(iHit);
 	    /* add volume information */
 	    HitData->SetDDLID(currentDDL);
+	    for (Int_t i=0;i<5;i++) Volume[i]=-1;
 	    rawStreamTOF->EquipmentId2VolumeId(HitData, Volume);
 	    if (Volume[0]==-1 ||
 		Volume[1]==-1 ||
@@ -239,7 +255,7 @@ int main(int argc, char **argv) {
 	      //printf ("index = %i \n",index);
 	      htofNoise->Fill(index); //channel index start from 0, bin index from 1
 	      //debugging printings
-	      if (debugFlag) printf("sector %i, plate %i, strip %i, padz %i, padx %i \n",Volume[0],Volume[1],Volume[2],Volume[3],Volume[4]);
+	      // if (debugFlag) printf("sector %i, plate %i, strip %i, padz %i, padx %i \n",Volume[0],Volume[1],Volume[2],Volume[3],Volume[4]); // too verbose
 	    }
 	  }
 	  /* reset buffer */
@@ -249,19 +265,11 @@ int main(int argc, char **argv) {
 	  delete [] array;
 	}
 
-	//printf(" Packed Hit Buffer Entries = %i \n",nPDBEntriesToT);
-	//printf(" Hit Buffer Entries = %i \n",nDBEntriesToT);
-	
-	delete decoderTOF;
-	decoderTOF=0x0;
-
-	for (Int_t i=0;i<72;i++){ 
-	  delete DataBuffer[i];
-	  delete PackedDataBuffer[i];
-	}
-	
-	delete rawStreamTOF;
-	rawStreamTOF = 0x0;
+	//debugging printings
+	//if (debugFlag) {
+	//  printf(" Packed Hit Buffer Entries = %i \n",nPDBEntriesToT);
+	//  printf(" Hit Buffer Entries = %i \n",nDBEntriesToT);
+	//	}
 
 	delete rawReader;
 	rawReader = 0x0;
@@ -274,29 +282,44 @@ int main(int argc, char **argv) {
     }
 
   }
+
+  delete decoderTOF;
+  decoderTOF=0x0;
+
+  for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){ 
+    delete DataBuffer[i];
+    delete PackedDataBuffer[i];
+  }
+
+  delete rawStreamTOF;
+  rawStreamTOF = 0x0;
+
   delete geom;
   geom = 0x0;
 
   Int_t noisyChannels = 0;
   Int_t checkedChannels = 0;
   Float_t time = nevents_physics; // acquisition time in number of events
-  //printf(" Noise run lasted %f s \n",time);
+  //debugging printings
+  if (debugFlag) printf(" Noise run lasted %f s \n",time);
   for (Int_t ibin =1;ibin<=size;ibin++){
     Float_t cont = htofNoise->GetBinContent(ibin);
     if (cont!=-1) {
       checkedChannels++;
-      //printf(" content = %f \n", cont); 
+      //debugging printings
+      if (debugFlag) printf(" content = %f \n", cont); 
       htofNoise->SetBinContent(ibin,cont/time);
-      //printf(" scaled content = %f \n", cont/time);
+      //debugging printings
+      if (debugFlag) printf(" scaled content = %f \n", cont/time);
       if (cont != 0){
 	noisyChannels++;
       }
     } 
   }  
 
-  if (debugFlag){
-	  printf("Number of checked channels = %i\n",checkedChannels);
-	  printf("Number of noisy channels = %i\n",noisyChannels);
+  if (debugFlag) {
+    printf("Number of checked channels = %i\n",checkedChannels);
+    printf("Number of noisy channels (before applying threshold) = %i\n",noisyChannels);
   }
 
   //write the Run level file   
