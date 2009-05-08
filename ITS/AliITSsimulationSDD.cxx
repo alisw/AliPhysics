@@ -168,9 +168,8 @@ void AliITSsimulationSDD::Init(){
     Double_t timeStep  = (Double_t)seg->Dpx(0);
 
     if(anodePitch*(fNofMaps/2) > sddWidth) {
-        Warning("AliITSsimulationSDD",
-                "Too many anodes %d or too big pitch %f \n",
-                fNofMaps/2,anodePitch);
+      AliWarning(Form("Too many anodes %d or too big pitch %f ",
+                fNofMaps/2,anodePitch));
     } // end if
 
 
@@ -391,7 +390,6 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
   //    Int_t      arg[6]   = {0,0,0,0,0,0};
   Int_t     nofAnodes  = fNofMaps/2;
   Double_t  sddLength  = seg->Dx();
-  Double_t  sddWidth   = seg->Dz();
   Double_t  anodePitch = seg->Dpz(0);
   Double_t  timeStep   = seg->Dpx(0);
   Double_t  driftSpeed ;  // drift velocity (anode dependent)
@@ -458,7 +456,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     zAnode=seg->GetAnodeFromLocal(xloc,zloc); // anode number in the range 0.-511.
     driftSpeed = res->GetDriftSpeedAtAnode(zAnode);
     if(timeStep*fMaxNofSamples < sddLength/driftSpeed) {
-      AliWarning("Time Interval > Allowed Time Interval\n");
+      AliWarning("Time Interval > Allowed Time Interval");
     }
     depEnergy  *= kconv;
     if (!depEnergy) {
@@ -473,7 +471,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     tof=0.;
     AliITShit* h=(AliITShit*)hits->At(ii);
     if(h) tof=h->GetTOF()*1E9; 
-    AliDebug(1,Form("TOF for hit %d on mod %d (particle %d)=%g\n",ii,fModule,h->Track(),tof));
+    AliDebug(1,Form("TOF for hit %d on mod %d (particle %d)=%g",ii,fModule,h->Track(),tof));
    
     xL[0] += 0.0001*gRandom->Gaus( 0, jitter ); //
     pathInSDD = TMath::Sqrt(dxL[0]*dxL[0]+dxL[1]*dxL[1]+dxL[2]*dxL[2]);
@@ -521,23 +519,9 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
       sigT       = sigA/driftSpeed;
 
       drTime+=tof; // take into account Time Of Flight from production point
-      timeSample = (Int_t) (fScaleSize*drTime/timeStep + 1); // time bin in range 1-256 !!!
-      if(timeSample > fScaleSize*fMaxNofSamples) {
-	AliWarning(Form("Wrong Time Sample: %e",timeSample));
-	continue;
-      } // end if timeSample > fScaleSize*fMaxNofSamples
+      timeSample = (Int_t) (fScaleSize*drTime/timeStep + 1.001); // time bin in range 1-256 !!!
       if(zAnode>nofAnodes) zAnode-=nofAnodes;  // to have the anode number between 0. and 256.
-      if(zAnode*anodePitch > sddWidth || zAnode*anodePitch < 0.) 
-	AliWarning(Form("Exceeding sddWidth=%e Z = %e",sddWidth,zAnode*anodePitch));
-      iAnode = (Int_t) (1.+zAnode); // iAnode in range 1-256 !!!!
-      if(iAnode < 1 || iAnode > nofAnodes) {
-	AliWarning(Form("Wrong iAnode: 1<%d>%d  (xanode=%e)",iAnode,nofAnodes, zAnode));
-	continue;
-      } // end if iAnode < 1 || iAnode > nofAnodes
-      
-	// store straight away the particle position in the array
-	// of particles and take idhit=ii only when part is entering (this
-	// requires FillModules() in the macro for analysis) :
+      iAnode = (Int_t) (1.001+zAnode); // iAnode in range 1-256 !!!!
       
 	// Peak amplitude in nanoAmpere
       amplitude  = fScaleSize*160.*depEnergy/
@@ -556,16 +540,30 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
       anodeWindow = (Int_t)(nsigma*sigA/anodePitch+1);
       timeWindow  = (Int_t) (fScaleSize*nsigma*sigT/timeStep+1.);
       jamin = (iAnode - anodeWindow - 2)*nsplitAn+1;
-      jamax = (iAnode + anodeWindow + 2)*nsplitAn;
       if(jamin <= 0) jamin = 1;
-      if(jamax > nofAnodes*nsplitAn) 
-	jamax = nofAnodes*nsplitAn;
-      // jtmin and jtmax are Hard-wired
+      if(jamin > nofAnodes*nsplitAn){ 
+	AliDebug(1,Form("Energy deposition completely outside anode acceptance: anode min=%d",jamin));
+	continue;
+      }
+      jamax = (iAnode + anodeWindow + 2)*nsplitAn;
+      if(jamax > nofAnodes*nsplitAn) jamax = nofAnodes*nsplitAn;
+      if(jamax <=0){ 
+	AliDebug(1,Form("Energy deposition completely outside anode acceptance: anode max=%d",jamax));
+	continue;
+      }
       jtmin = (Int_t)(timeSample-timeWindow-2)*nsplitTb+1;
-      jtmax = (Int_t)(timeSample+timeWindow+2)*nsplitTb;
       if(jtmin <= 0) jtmin = 1;
-      if(jtmax > fScaleSize*fMaxNofSamples*nsplitTb) 
-	jtmax = fScaleSize*fMaxNofSamples*nsplitTb;
+      if(jtmin > fScaleSize*fMaxNofSamples*nsplitTb){ 
+	AliDebug(1,Form("Energy deposition completely outside time acceptance: time sample min=%d  tof=%f",jtmin,tof));
+	continue; 
+      }
+      jtmax = (Int_t)(timeSample+timeWindow+2)*nsplitTb;
+      if(jtmax > fScaleSize*fMaxNofSamples*nsplitTb) jtmax = fScaleSize*fMaxNofSamples*nsplitTb;
+      if(jtmax <= 0){
+	AliDebug(1,Form("Energy deposition completely outside time acceptance: time sample max=%d  tof=%f",jtmax,tof));
+	continue; 
+      }
+
       // Spread the charge in the anode-time window
       for(ka=jamin; ka <=jamax; ka++) {	  
 	ia = (ka-1)/nsplitAn + 1;
@@ -733,7 +731,7 @@ void AliITSsimulationSDD::ApplyCrosstalk(Int_t mod) {
     // create and inizialice crosstalk map
     Float_t* ctk = new Float_t[fNofMaps*fMaxNofSamples+1];
     if( ctk == NULL ) {
-        Error( "ApplyCrosstalk", "no memory for temporal map: exit \n" );
+        Error( "ApplyCrosstalk", "no memory for temporal map: exit " );
         return;
     }
     memset( ctk, 0, sizeof(Float_t)*(fNofMaps*fMaxNofSamples+1) );
@@ -766,7 +764,7 @@ void AliITSsimulationSDD::ApplyCrosstalk(Int_t mod) {
                         memset( dev, 0, sizeof(Float_t)*(fMaxNofSamples+1) );
                         if( ctk == NULL ) {
                             Error( "ApplyCrosstalk", 
-                                   "no memory for temporal array: exit \n" );
+                                   "no memory for temporal array: exit " );
                             return;
                         }
                         for( Int_t i=tstart; i<tstop; i++ ) {   
