@@ -13,7 +13,7 @@ Bool_t LYZEP = kFALSE;
 Bool_t GFC   = kTRUE;
 Bool_t QC    = kTRUE;
 Bool_t FQD   = kTRUE;
-Bool_t MCEP  = kTRUE; 
+Bool_t MCEP  = kTRUE;
 //--------------------------------------------------------------------------------------
 
 // Weights 
@@ -27,12 +27,22 @@ Bool_t bSameSeed = kFALSE; // use always the same seed for random generators.
                            // usage od same seed (kTRUE) is relevant in two cases:
                            // 1.) If you want to use LYZ method to calcualte differential flow;
                            // 2.) If you want to use phi weights for GFC, QC and FQD
+                           
 Bool_t bConstantHarmonics = kTRUE; // harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)
 
 Int_t iLoops = 1; // number of times to use each track (to simulate nonflow)
 
-Int_t iMultiplicityOfRP = 500; // multiplicity of RPs
-Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs
+Bool_t bMultDistrOfRPsIsGauss = kTRUE; // 1.) if kTRUE  = multiplicitiy of RPs is sampled e-b-e from Gaussian distribution with
+                                        //                 mean = iMultiplicityOfRP and spread = dMultiplicitySpreadOfRP
+                                        // 2.) if kFALSE = multiplicitiy of RPs is sampled e-b-e uniformly from 
+                                        //                 interval [iMinMultOfRP,iMaxMultOfRP]
+                                        // 3.) for a fixed multiplicity use Gaussian with zero spread or use uniform with iMinMult=iMaxMult
+                                         
+Int_t iMultiplicityOfRP = 500;        // mean multiplicity of RPs (if sampled from Gaussian)
+Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs (if sampled from Gaussian)
+Int_t iMinMultOfRP = 400;             // minimal multiplicity of RPs (if sampled uniformly)
+Int_t iMaxMultOfRP = 600;             // maximal multiplicity of RPs (if sampled uniformly)
+
 Double_t dTemperatureOfRP = 0.44; // 'temperature' of RPs in GeV/c (increase this parameter to get more high pt RPs) 
 
 //......................................................................................  
@@ -58,7 +68,7 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR};
 // mLocalPAR: Analyze data on your computer using root + PAR files
 // mLocalSource: Analyze data on your computer using root + source files
                                           
-int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1000)
+int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
 {
  TStopwatch timer;
  timer.Start();
@@ -223,8 +233,19 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=1000)
   
  // set the global event parameters: 
  eventMakerOnTheFly->SetNoOfLoops(iLoops);
- eventMakerOnTheFly->SetMultiplicityOfRP(iMultiplicityOfRP);
- eventMakerOnTheFly->SetMultiplicitySpreadOfRP(dMultiplicitySpreadOfRP);
+ 
+ if(bMultDistrOfRPsIsGauss)
+ {
+  eventMakerOnTheFly->SetMultDistrOfRPsIsGauss(bMultDistrOfRPsIsGauss);
+  eventMakerOnTheFly->SetMultiplicityOfRP(iMultiplicityOfRP);
+  eventMakerOnTheFly->SetMultiplicitySpreadOfRP(dMultiplicitySpreadOfRP);
+ } else
+   {
+    eventMakerOnTheFly->SetMultDistrOfRPsIsGauss(bMultDistrOfRPsIsGauss);
+    eventMakerOnTheFly->SetMinMultOfRP(iMinMultOfRP);
+    eventMakerOnTheFly->SetMaxMultOfRP(iMaxMultOfRP); 
+   }
+  
  eventMakerOnTheFly->SetTemperatureOfRP(dTemperatureOfRP);
 
  eventMakerOnTheFly->SetV1RP(dV1RP);
