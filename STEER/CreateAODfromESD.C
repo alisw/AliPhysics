@@ -108,6 +108,9 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     
     AliAnalysisDataContainer *coutputT
 	= mgr->CreateContainer("cTag",  TTree::Class(), AliAnalysisManager::kOutputContainer, "AOD.tag.root");
+
+    coutput1->SetSpecialOutput();
+    coutputT->SetSpecialOutput();
     
     if(bKineFilter) {
 	mgr->ConnectInput  (kinefilter,     0, cinput1  );
