@@ -26,9 +26,10 @@ class AliEMCALQADataMakerRec: public AliQADataMakerRec {
 
 public:
   //Histograms for Raw data control
-  enum HRawType_t {kNsmodLG,kNsmodHG,kLGtime,kHGtime,
-		   kSpecLG,kSpecHG,kNtotLG,kNtotHG,
-		   kEtotLG,kEtotHG} ;
+  enum HRawType_t {kNsmodLG,kNsmodHG,kTimeLG,kTimeHG,
+		   kSigLG,kSigHG,kNtotLG,kNtotHG,
+		   kPedLG,kPedHG,
+		   kPedRMSLG,kPedRMSHG} ;
 
   //Histograms for RecPoints  control
   enum HRPType_t {kRecPE,kRecPM,kRecPDigM};
@@ -42,6 +43,9 @@ public:
   AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qadm) ;   
   AliEMCALQADataMakerRec& operator = (const AliEMCALQADataMakerRec& qadm) ;
   virtual ~AliEMCALQADataMakerRec() {;} // dtor
+
+  void SetSuperModules(int i) {fSuperModules = i;}; //The number of SuperModules
+  int GetSuperModules() const {return fSuperModules;}; //The number of SuperModules
   
 private:
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
@@ -53,7 +57,9 @@ private:
   virtual void   MakeRaws(AliRawReader* rawReader) ; 
   virtual void   StartOfDetectorCycle() ; 
 
-  ClassDef(AliEMCALQADataMakerRec,1)  // description 
+  int fSuperModules; //The number of SuperModules activated
+
+  ClassDef(AliEMCALQADataMakerRec,2)  // description 
 
 };
 

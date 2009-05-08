@@ -26,8 +26,10 @@ Authors:  J.Klay (Cal Poly) May 2008
 #include <TH1F.h> 
 #include <TH1I.h> 
 #include <TH2F.h> 
+#include <TProfile.h> 
 
 // --- Standard library ---
+
 
 // --- AliRoot header files ---
 #include "AliESDCaloCluster.h"
@@ -41,12 +43,14 @@ Authors:  J.Klay (Cal Poly) May 2008
 #include "AliEMCALReconstructor.h"
 #include "AliEMCALRecParam.h"
 #include "AliRawReader.h"
+#include "AliCaloRawStream.h"
 
 ClassImp(AliEMCALQADataMakerRec)
            
 //____________________________________________________________________________ 
   AliEMCALQADataMakerRec::AliEMCALQADataMakerRec() : 
-  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kEMCAL), "EMCAL Quality Assurance Data Maker")
+    AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kEMCAL), "EMCAL Quality Assurance Data Maker"),
+    fSuperModules(4) // FIXME!!! number of SuperModules; 4 for 2009; update default to 12 for later runs..
 {
   // ctor
 }
@@ -58,6 +62,7 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qad
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
+  fSuperModules = qadm.GetSuperModules();
 }
 
 //__________________________________________________________________
@@ -127,47 +132,60 @@ void AliEMCALQADataMakerRec::InitRecPoints()
 void AliEMCALQADataMakerRec::InitRaws()
 {
   // create Raws histograms in Raws subdir
-  //these need more thought
-  /*
    const Bool_t expert   = kTRUE ; 
    const Bool_t saveCorr = kTRUE ; 
    const Bool_t image    = kTRUE ; 
-  
-  TH1I * h0 = new TH1I("hLowEmcalSupermodules",    "Low Gain digits in EMCAL supermodules",       12, 0, 12) ;
-  h0->Sumw2() ;
+
+  int nTowersPerSM = 1152; // number of towers in a SuperModule; 24x48
+  int nTot = fSuperModules * nTowersPerSM; // max number of towers in all SuperModules
+
+  // counter info: number of channels per event (bins are SM index)
+  TProfile * h0 = new TProfile("hLowEmcalSupermodules", "Low Gain EMC: # of towers vs SuperMod",
+			       fSuperModules, -0.5, fSuperModules-0.5) ;
   Add2RawsList(h0, kNsmodLG, !expert, image, !saveCorr) ;
-  TH1I * h1 = new TH1I("hHighEmcalSupermodules",   "High Gain Digits in EMCAL supermodules",       12, 0, 12) ;
-  h1->Sumw2() ;
+  TProfile * h1 = new TProfile("hHighEmcalSupermodules", "High Gain EMC: # of towers vs SuperMod",  
+			       fSuperModules, -0.5, fSuperModules-0.5) ; 
   Add2RawsList(h1, kNsmodHG, !expert, image, !saveCorr) ;
 
-  TH1F * h2 = new TH1F("hLowEmcalRawtime", "Low Gain Time of raw digits in EMCAL", 500, -50., 200.) ;
-  h2->Sumw2() ;
-  Add2RawsList(h2, kLGtime, !expert, image, !saveCorr) ;
-  TH1F * h3 = new TH1F("hHighEmcalRawtime", "High Gain Time of raw digits in EMCAL", 500, -50., 200.) ;
-  h3->Sumw2() ;
-  Add2RawsList(h3, kHGtime, !expert, image, !saveCorr) ;
+  // where did max sample occur? (bins are towers)
+  TProfile * h2 = new TProfile("hLowEmcalRawtime", "Low Gain EMC: Time at Max vs towerId", 
+			       nTot, -0.5, nTot-0.5) ;
+  Add2RawsList(h2, kTimeLG, !expert, image, !saveCorr) ;
+  TProfile * h3 = new TProfile("hHighEmcalRawtime", "High Gain EMC: Time at Max vs towerId", 
+			       nTot, -0.5, nTot-0.5) ;
+  Add2RawsList(h3, kTimeHG, !expert, image, !saveCorr) ;
 
-  TH1F * h4 = new TH1F("hLowEmcalRawEnergy", "Low Gain Energy of raw digits in EMCAL", 500, 0., 1000.) ;
-  h4->Sumw2() ;
-  Add2RawsList(h4, kSpecLG, !expert, image, !saveCorr) ;
-  TH1F * h5 = new TH1F("hHighEmcalRawEnergy", "High Gain Energy of raw digits in EMCAL",500,0., 1000.) ;
-  h5->Sumw2() ;
-  Add2RawsList(h5, kSpecHG, !expert, image, !saveCorr) ;
+  // how much above pedestal was the max sample?  (bins are towers)
+  TProfile * h4 = new TProfile("hLowEmcalRawMaxMinusMin", "Low Gain EMC: Max - Min vs towerId", 
+			       nTot, -0.5, nTot-0.5) ;
+  Add2RawsList(h4, kSigLG, !expert, image, !saveCorr) ;
+  TProfile * h5 = new TProfile("hHighEmcalRawMaxMinusMin", "High Gain EMC: Max - Min vs towerId",
+			       nTot, -0.5, nTot-0.5) ;
+  Add2RawsList(h5, kSigHG, !expert, image, !saveCorr) ;
 
-  TH1I * h6 = new TH1I("hLowNtot", "Low Gain Total Number of raw digits in EMCAL", 500, 0, 10000) ;
+  // total counter: channels per event
+  TH1I * h6 = new TH1I("hLowNtot", "Low Gain EMC: Total Number of found towers", 200, 0, nTot) ;
   h6->Sumw2() ;
   Add2RawsList(h6, kNtotLG, !expert, image, !saveCorr) ;
-  TH1I * h7 = new TH1I("hHighNtot", "High Gain Total Number of raw digits in EMCAL",500,0, 10000) ;
+  TH1I * h7 = new TH1I("hHighNtot", "High Gain EMC: Total Number of found towers", 200,0, nTot) ;
   h7->Sumw2() ;
   Add2RawsList(h7, kNtotHG, !expert, image, !saveCorr) ;
 
-  TH1F * h8 = new TH1F("hLowEtot", "Low Gain Total Energy of raw digits in EMCAL", 500, 0., 5000.) ;
-  h8->Sumw2() ;
-  Add2RawsList(h8, kEtotLG, !expert, image, !saveCorr) ;
-  TH1F * h9 = new TH1F("hHighEtot", "High Gain Total Energy of raw digits in EMCAL",500,0., 100000.) ;
-  h9->Sumw2() ;
-  Add2RawsList(h9, kEtotHG, !expert, image, !saveCorr) ;
-  */
+  // pedestal (bins are towers)
+  TProfile * h8 = new TProfile("hLowEmcalRawPed", "Low Gain EMC: Pedestal vs towerId", 
+			       nTot, -0.5, nTot-0.5) ;
+  Add2RawsList(h8, kPedLG, !expert, image, !saveCorr) ;
+  TProfile * h9 = new TProfile("hHighEmcalRawPed", "High Gain EMC: Pedestal vs towerId",
+			       nTot, -0.5, nTot-0.5) ;
+  Add2RawsList(h9, kPedHG, !expert, image, !saveCorr) ;
+
+  // pedestal rms (standard dev = sqrt of variance estimator for pedestal) (bins are towers)
+  TProfile * h10 = new TProfile("hLowEmcalRawPedRMS", "Low Gain EMC: Pedestal RMS vs towerId", 
+				nTot, -0.5, nTot-0.5) ;
+  Add2RawsList(h10, kPedRMSLG, !expert, image, !saveCorr) ;
+  TProfile * h11 = new TProfile("hHighEmcalRawPedRMS", "High Gain EMC: Pedestal RMS vs towerId",
+				nTot, -0.5, nTot-0.5) ;
+  Add2RawsList(h11, kPedRMSHG, !expert, image, !saveCorr) ;
   
 }
 
@@ -209,7 +227,143 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   //emcal raw data method, but this doesn't seem to be allowed in
   //AliQADataMakerRec.h
 
-	rawReader->Reset() ;
+  // For now, to avoid redoing the expensive signal fits we just
+  // look at max vs min of the signal spextra, a la online usage in
+  // AliCaloCalibPedestal
+
+  rawReader->Reset() ;
+  AliCaloRawStream in(rawReader,"EMCAL"); 
+
+  // setup
+  int nTowersPerSM = 1152; // number of towers in a SuperModule; 24x48
+  int nRows = 24; // number of rows per SuperModule
+  int sampleMin = 0; 
+  int sampleMax = 0x3ff; // 1023 = 10-bit range
+
+  // for the pedestal calculation
+  Bool_t selectPedestalSamples = kTRUE;
+  int firstPedestalSample = 0;
+  int lastPedestalSample = 15;
+
+  // SM counters; decl. should be safe, assuming we don't get more than 12 SuperModules..
+  int nTotalSMLG[12] = {0};
+  int nTotalSMHG[12] = {0};
+
+  // indices for the reading
+  int iSM = 0;
+  int sample = 0;
+  int gain = 0;
+  int time = 0;
+  // counters, on sample level
+  int i = 0; // the sample number in current event.
+  int max = sampleMin, min = sampleMax;//Use these for picking the pedestal
+  int maxTime = 0;
+
+  // for the pedestal calculation
+  int sampleSum = 0; // sum of samples
+  int squaredSampleSum = 0; // sum of samples squared
+  int nSum = 0; // number of samples in sum
+  // calc. quantities
+  double meanPed = 0, squaredMean = 0, rmsPed = 0;
+  
+  while (in.Next()) { // loop over input stream
+    sample = in.GetSignal(); //Get the adc signal
+    time = in.GetTime();
+    if (sample < min) { min = sample; }
+    if (sample > max) { 
+      max = sample;
+      maxTime = time;
+    }
+    i++;
+
+    // should we add it for the pedestal calculation?
+    if ( (firstPedestalSample<=time && time<=lastPedestalSample) || // sample time in range
+	 !selectPedestalSamples ) { // or we don't restrict the sample range.. - then we'll take all 
+      sampleSum += sample;
+      squaredSampleSum += sample*sample;
+      nSum++;
+    }
+
+    if ( i >= in.GetTimeLength()) {
+      // calculate pedesstal estimate: mean of possibly selected samples
+      if (nSum > 0) {
+	meanPed = sampleSum / (1.0 * nSum);
+	squaredMean = squaredSampleSum / (1.0 * nSum);
+	// The variance (rms squared) is equal to the mean of the squares minus the square of the mean..
+	rmsPed = sqrt(squaredMean - meanPed*meanPed); 
+      }
+      else {
+	meanPed = 0;
+	squaredMean = 0;
+	rmsPed  = 0;
+      }
+
+      //If we're here then we're done with this tower
+      gain = -1; // init to not valid value
+      if ( in.IsLowGain() ) {
+	gain = 0;
+      }
+      else if ( in.IsHighGain() ) {
+	gain = 1;
+      }
+      
+      iSM = in.GetModule(); //The modules are numbered starting from 0
+
+      if (iSM>=0 && iSM<fSuperModules) { // valid module reading, can go on with filling
+
+	int towerId = iSM*nTowersPerSM + in.GetColumn()*nRows + in.GetRow();
+
+	if (gain == 0) { 
+	  //fill the low gain histograms, and counters
+	  nTotalSMLG[iSM]++; // one more channel found
+	  GetRawsData(kSigLG)->Fill(towerId, max - min);
+	  GetRawsData(kTimeLG)->Fill(towerId, maxTime);
+	  if (nSum>0) { // only fill pedestal info in case it could be calculated
+	    GetRawsData(kPedLG)->Fill(towerId, meanPed);
+	    GetRawsData(kPedRMSLG)->Fill(towerId, rmsPed);
+	  }
+	} // gain==0
+	else if (gain == 1) {       	
+	  //fill the high gain ones
+	  nTotalSMHG[iSM]++; // one more channel found
+	  GetRawsData(kSigHG)->Fill(towerId, max - min);
+	  GetRawsData(kTimeHG)->Fill(towerId, maxTime);
+	  if (nSum>0) { // only fill pedestal info in case it could be calculated
+	    GetRawsData(kPedHG)->Fill(towerId, meanPed);
+	    GetRawsData(kPedRMSHG)->Fill(towerId, rmsPed);
+	  }
+	}
+      } // SM index OK
+
+      // reset counters
+      max = sampleMin; min = sampleMax;
+      maxTime = 0;
+      i = 0;
+      // also pedestal calc counters
+      sampleSum = 0; // sum of samples
+      squaredSampleSum = 0; // sum of samples squared
+      nSum = 0; // number of samples in sum
+    
+    }//End if, of channel
+   
+  }//end while, of stream
+
+  // let's also fill the SM and event counter histograms
+  int nTotalHG = 0;
+  int nTotalLG = 0;
+  for (iSM=0; iSM<fSuperModules; iSM++) {  
+    nTotalLG += nTotalSMLG[iSM]; 
+    nTotalHG += nTotalSMHG[iSM]; 
+    GetRawsData(kNsmodLG)->Fill(iSM, nTotalSMLG[iSM]); 
+    GetRawsData(kNsmodHG)->Fill(iSM, nTotalSMHG[iSM]); 
+  }
+  GetRawsData(kNtotLG)->Fill(nTotalLG);
+  GetRawsData(kNtotHG)->Fill(nTotalHG);
+
+  // just in case the next rawreader consumer forgets to reset; let's do it here again..
+  rawReader->Reset() ;
+
+  return;
 }
 
 //____________________________________________________________________________
@@ -243,3 +397,4 @@ void AliEMCALQADataMakerRec::StartOfDetectorCycle()
   //Detector specific actions at start of cycle
   
 }
+
