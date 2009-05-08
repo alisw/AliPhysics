@@ -82,7 +82,7 @@ AliESDtrackCuts *CreateCuts(Int_t iCut){
     esdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
     esdTrackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
     esdTrackCuts->SetRequireTPCRefit(kTRUE);
-    esdTrackCuts->SetMinNsigmaToVertex(3);
+    esdTrackCuts->SetMaxNsigmaToVertex(3);
     esdTrackCuts->SetRequireSigmaToVertex(kTRUE);
     esdTrackCuts->SetAcceptKingDaughters(kFALSE);
   }

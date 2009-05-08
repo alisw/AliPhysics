@@ -144,21 +144,38 @@ AliJetFinder *CreateJetFinder(Char_t *jf){
   case "UA1":
     AliUA1JetHeaderV1 *jh=new AliUA1JetHeaderV1();
     jh->SetComment("UA1 jet code with default parameters");
-    jh->BackgMode(2);
+    jh->BackgMode(0);
+    jh->SetRadius(0.4);
+    jh->SetEtSeed(4.);
+    jh->SetLegoNbinPhi(432);
+    jh->SetLegoNbinEta(274);
+    jh->SetLegoEtaMin(-2);
+    jh->SetLegoEtaMax(+2);
+    jh->SetMinJetEt(10.);
+    jh->SetJetEtaMax(1.5);
+    jh->SetJetEtaMin(-1.5);
+
+    jetFinder = new AliUA1JetFinderV1();
+    if (jh) jetFinder->SetJetHeader(jh);
+    break;
+
+  case "UA1MC":
+    AliUA1JetHeaderV1 *jh=new AliUA1JetHeaderV1();
+    jh->SetComment("UA1 jet code with default MC parameters");
+    jh->BackgMode(0);
     jh->SetRadius(1.0);
     jh->SetEtSeed(4.);
     jh->SetLegoNbinPhi(432);
     jh->SetLegoNbinEta(274);
     jh->SetLegoEtaMin(-2);
     jh->SetLegoEtaMax(+2);
-    jh->SetJetEtaMax(0.5);
-    jh->SetJetEtaMin(-0.5);
     jh->SetMinJetEt(10.);
+    jh->SetJetEtaMax(1.5);
+    jh->SetJetEtaMin(-1.5);
 
     jetFinder = new AliUA1JetFinderV1();
     if (jh) jetFinder->SetJetHeader(jh);
     break;
-
   case default:
     ::Error("AddTaskJets", "Wrong jet finder selected\n");
     return 0;
@@ -183,7 +200,17 @@ AliJetReader *CreateJetReader(Char_t *jr){
     er = new AliJetKineReader();
     er->SetReaderHeader(jrh);
     break;
-
+  case "MC2":
+    AliJetKineReaderHeader *jrh = new AliJetKineReaderHeader();
+    jrh->SetComment("MC full Kinematics spearate config");
+    jrh->SetFastSimTPC(kFALSE);
+    jrh->SetFastSimEMCAL(kFALSE);
+    jrh->SetPtCut(0.);
+    jrh->SetFiducialEta(-2.1,2.1); // to take all MC particles default is 0 .9                                                                             
+    // Define reader and set its header                                     
+    er = new AliJetKineReader();
+    er->SetReaderHeader(jrh);
+    break;
   case "ESD":
     AliJetESDReaderHeader *jrh = new AliJetESDReaderHeader();
     jrh->SetComment("Testing");
