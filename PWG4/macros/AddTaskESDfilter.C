@@ -1,5 +1,5 @@
 AliESDtrackCuts *CreateCuts(Int_t iCut = 0); // create the standard cuts
-AliAnalysisTaskESDfilter *AddTaskESDfilter()
+AliAnalysisTaskESDfilter *AddTaskESDfilter(bool bUseKineFilter = true)
 {
 // Creates a jet fider task, configures it and adds it to the analysis manager.
 
@@ -18,8 +18,26 @@ AliAnalysisTaskESDfilter *AddTaskESDfilter()
       return NULL;
    }
 
+   // Check if MC handler is connected in case kine filter requested            
+   AliMCEventHandler *mcH = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
+   if (!mcH && bUseKineFilter) {
+     ::Error("AddTaskESDFilter", "No MC handler connected while kine filtering requested");
+      return NULL;
+   }
+
+
    // Create the task and configure it.
    //===========================================================================
+
+   // this task is also needed to set the MCEventHandler                        
+   // to the AODHandler, this will not be needed when                           
+   // AODHandler goes to ANALYSISalice                                          
+   AliAnalysisTaskMCParticleFilter *kinefilter = 0;
+   if (useKineFilter) {
+      kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Kine Filter");
+      mgr->AddTask(kinefilter);
+   }
+
 
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
    trackFilter->AddCuts(CreateCuts(0));
@@ -33,6 +51,13 @@ AliAnalysisTaskESDfilter *AddTaskESDfilter()
    //==============================================================================
    mgr->ConnectInput  (esdfilter, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (esdfilter, 0, mgr->GetCommonOutputContainer());
+
+   if (bUseKineFilter) {
+     mgr->ConnectInput  (kinefilter,  0, mgr->GetCommonInputContainer());
+     mgr->ConnectOutput (kinefilter,  0, mgr->GetCommonOutputContainer());
+   }
+
+
    return esdfilter;
 }
 
