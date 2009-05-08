@@ -789,10 +789,11 @@ else
     # changed to AliTRDReconstructor::SetStreamLevel() due to revision 27797, Tue Aug 5 2008
     # changed to AliTRDReconstructor::SetClusters() according to revision 28069, Mon Aug 18 2008
     # changed to AliTRDCluster according to revision 30461, Thu Dec 18 2008
-    AC_MSG_CHECKING([for required functions in AliTRDCluster])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDcluster.h>], 
-                                       [AliTRDcluster c;
-				       c.SetDetector(0)])],
+    # changed to AliTRDclusterizer::GetAddedClusters according to revision 31299, Wed Mar 4 2009
+    AC_MSG_CHECKING([for required functions in AliTRDclusterizer])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDclusterizer.h>], 
+                                       [AliTRDclusterizer c;
+				       c.GetAddedClusters()])],
                                        [], 
   				       [enable_trd="no...requires.AliRoot>v4-16-Release"])
     AC_MSG_RESULT([$enable_trd])       
@@ -883,6 +884,25 @@ if test "x$enable_muon" = "xyes" ; then
   				      [AC_DEFINE(HAVE_NOT_MUON_DIGITMAKER_GETRAWSTREAM)])
     LIBS=$save_LIBS
   AC_MSG_RESULT([$have_muon_digitmaker_getrawstream])
+
+  dnl
+  dnl Check for AliMpPad::GetPositionX/Y
+  dnl change of implementation in MUON code
+  dnl revision 31769, Wed Apr 1 2009
+  dnl 
+  have_muon_alimppad_getposition=no
+  AC_MSG_CHECKING(for GetPosition methods of AliMpPad)
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/MUON/mapping"
+    LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
+    LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS $ALIMUON_LIBS"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliMpPad.h>], 
+                                    [AliMpPad pad;
+				     pad.GetPositionX();])],
+                                    [have_muon_alimppad_getposition=yes], 
+  				      [AC_DEFINE(HAVE_NOT_MUON_ALIMPPAD_GETPOSITION)])
+    LIBS=$save_LIBS
+  AC_MSG_RESULT([$have_muon_alimppad_getposition])
+
   CPPFLAGS="$save_CPPFLAGS"
 
   AC_LANG_POP(C++)

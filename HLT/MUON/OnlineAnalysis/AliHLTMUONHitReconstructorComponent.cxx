@@ -962,27 +962,48 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 				for (Int_t iX = 0; iX<= maxIX ; iX++)
 				for (Int_t iY = 0; iY<= maxIY ; iY++)
 				{
+#ifndef HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 					if (not seg->HasPadByIndices(iX,iY)) continue;
+#else // old AliMpPad functionality < r 31742
+					if (not seg->HasPad(AliMpIntPair(iX,iY))) continue;
+#endif
 
+#ifndef HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 					AliMpPad pad = seg->PadByIndices(iX,iY, kFALSE);
+#else // old AliMpPad functionality < r 31742
+					AliMpPad pad = seg->PadByIndices(AliMpIntPair(iX,iY), kFALSE);
+#endif
 					
 					// Getting Manu id
+#ifndef HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 					manuId = pad.GetManuId();
+#else // old AliMpPad functionality < r 31742
+					manuId = pad.GetLocation().GetFirst();
+#endif
 					manuId &= 0x7FF; // 11 bits 
 					if(!calibData.Pedestals(detElemId, manuId)) continue;
 			
 					buspatchId = ddlStore->GetBusPatchId(detElemId,manuId);
 					
 					// Getting channel id
+#ifndef HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 					channelId =  pad.GetManuChannel();
+#else // old AliMpPad functionality < r 31742
+					channelId =  pad.GetLocation().GetSecond();
+#endif
 					channelId &= 0x3F; // 6 bits
 					
 					idManuChannel = buspatchId << 11;
 					idManuChannel = (idManuChannel | manuId) << 6;
 					idManuChannel |= channelId;
 					
+#ifndef HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 					localX = pad.GetPositionX();
 					localY = pad.GetPositionY();
+#else // old AliMpPad functionality < r 31769
+					localX = pad.Position().X();
+					localY = pad.Position().Y();
+#endif //HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 					localZ = 0.0;
 					
 					chamberGeometryTransformer.Local2Global(
@@ -990,8 +1011,13 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 						realX,realY,realZ
 					);
 					
+#ifndef HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 					padSizeX = AliHLTFloat32_t( pad.GetDimensionX() );
 					padSizeY = AliHLTFloat32_t( pad.GetDimensionY() );
+#else // old AliMpPad functionality < r 31769
+					padSizeX = AliHLTFloat32_t( pad.Dimensions().X() );
+					padSizeY = AliHLTFloat32_t( pad.Dimensions().Y() );
+#endif //HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 					
 					if (fUseIdealGain)
 					{

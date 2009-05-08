@@ -18,7 +18,6 @@
 #ifdef use_root
 #include <TError.h>
 #include <TFile.h>
-#include <TGeoGlobalMagField.h>
 #include <TTimeStamp.h>
 #include <TUnixSystem.h>
 #endif

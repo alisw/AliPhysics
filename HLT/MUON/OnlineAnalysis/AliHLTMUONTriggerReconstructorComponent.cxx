@@ -980,7 +980,12 @@ int AliHLTMUONTriggerReconstructorComponent::ReadLutFromCDB()
 						Int_t offset = 0;
 						if (iCathode && localBoard->GetSwitch(6)) offset = -8;
 						
+// just use this switch for simplicity for two different but shortly after each other applied changes
+#ifndef HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 						AliMpPad pad = seg->PadByLocation(boardId, bitxy+offset, kFALSE);
+#else // old AliMpPad functionality < r 31742
+						AliMpPad pad = seg->PadByLocation(AliMpIntPair(boardId, bitxy+offset), kFALSE);
+#endif //HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 					
 						if (! pad.IsValid())
 						{
@@ -989,8 +994,13 @@ int AliHLTMUONTriggerReconstructorComponent::ReadLutFromCDB()
 						}
 						
 						// Get the global coodinates of the pad.
+#ifndef HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 						Float_t lx = pad.GetPositionX();
 						Float_t ly = pad.GetPositionY();
+#else // old AliMpPad functionality < r 31769
+						Float_t lx = pad.Position().X();
+						Float_t ly = pad.Position().Y();
+#endif //HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 						Float_t gx, gy, gz;
 						detElemTransform->Local2Global(lx, ly, 0, gx, gy, gz);
 						

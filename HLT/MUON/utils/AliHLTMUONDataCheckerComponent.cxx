@@ -1813,7 +1813,11 @@ bool AliHLTMUONDataCheckerComponent::CheckRawDataBlock(
 					continue;
 				}
 				
+#ifndef HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 				AliMpPad pad = seg->PadByLocation(manuId, channelId, warn);
+#else // old AliMpPad functionality < r 31742
+				AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId, channelId), warn);
+#endif //HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 				if (not pad.IsValid())
 				{
 					HLTError("Problem found with data block %d, fDataType = '%s',"
@@ -2458,7 +2462,11 @@ bool AliHLTMUONDataCheckerComponent::CheckChannelsBlock(
 			}
 			
 			AliMpPad pad = seg->PadByLocation(
+#ifndef HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 					channel.fManu, channel.fChannelAddress,
+#else // old AliMpPad functionality < r 31742
+					AliMpIntPair(channel.fManu, channel.fChannelAddress),
+#endif //HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 					warn
 				);
 			if (not pad.IsValid())
