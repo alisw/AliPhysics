@@ -82,7 +82,8 @@ AliSymMatrix&  AliSymMatrix::operator=(const AliSymMatrix& src)
       for (int i=0;i<fNrows;i++) delete[] fElemsAdd[i]; 
       delete[] fElemsAdd;
       //
-      fNrowIndex = fNcols = src.GetSize();
+      fNrowIndex = src.GetSize(); 
+      fNcols = src.GetSize();
       fNrows = 0;
       fElems     = new Double_t[fNcols*(fNcols+1)/2];
       int nmainel = src.fNcols*(src.fNcols+1);
@@ -121,7 +122,9 @@ void AliSymMatrix::Clear(Option_t*)
     delete[] fElemsAdd;
     fElemsAdd = 0;
   }
-  fNrowIndex = fNcols = fNrows = 0;
+  fNrowIndex = 0;
+  fNcols = 0;
+  fNrows = 0;
   //
 }
 
@@ -164,12 +167,12 @@ void AliSymMatrix::MultiplyByVec(Double_t *vecIn,Double_t *vecOut) const
 AliSymMatrix* AliSymMatrix::DecomposeChol() 
 {
   // Return a matrix with Choleski decomposition
-  /*Adopted from Numerical Recipes in C, ch.2-9, http://www.nr.com
-    consturcts Cholesky decomposition of SYMMETRIC and
-    POSITIVELY-DEFINED matrix a (a=L*Lt)
-    Only upper triangle of the matrix has to be filled.
-    In opposite to function from the book, the matrix is modified:
-    lower triangle and diagonal are refilled. */
+  // Adopted from Numerical Recipes in C, ch.2-9, http://www.nr.com
+  // consturcts Cholesky decomposition of SYMMETRIC and
+  // POSITIVELY-DEFINED matrix a (a=L*Lt)
+  // Only upper triangle of the matrix has to be filled.
+  // In opposite to function from the book, the matrix is modified:
+  // lower triangle and diagonal are refilled.
   //
   if (!fgBuffer || fgBuffer->GetSize()!=GetSize()) {
     delete fgBuffer; 
@@ -186,18 +189,20 @@ AliSymMatrix* AliSymMatrix::DecomposeChol()
   AliSymMatrix& mchol = *fgBuffer;
   //
   for (int i=0;i<fNrowIndex;i++) {
+    Double_t *rowi = mchol.GetRow(i);
     for (int j=i;j<fNrowIndex;j++) {
-      double sum=(*this)(i,j);
-      for (int k=i-1;k>=0;k--) sum -= mchol(i,k)*mchol(j,k);
+      Double_t *rowj = mchol.GetRow(j);
+      double sum = rowj[i];
+      for (int k=i-1;k>=0;k--) if (rowi[k]&&rowj[k]) sum -= rowi[k]*rowj[k];
       if (i == j) {
 	if (sum <= 0.0) { // not positive-definite
 	  printf("The matrix is not positive definite [%e]\n"
 		 "Choleski decomposition is not possible\n",sum);
 	  return 0;
 	}
-	mchol(i,i) = TMath::Sqrt(sum);
+	rowi[i] = TMath::Sqrt(sum);
 	//
-      } else mchol(j,i) = sum/mchol(i,i);
+      } else rowj[i] = sum/rowi[i];
     }
   }
   return fgBuffer;
@@ -218,6 +223,7 @@ Bool_t AliSymMatrix::InvertChol()
   return kTRUE;
   //
 }
+
 //___________________________________________________________
 void AliSymMatrix::InvertChol(AliSymMatrix* pmchol) 
 {
@@ -230,9 +236,12 @@ void AliSymMatrix::InvertChol(AliSymMatrix* pmchol)
   for (int i=0;i<fNrowIndex;i++) { 
     mchol(i,i) =  1.0/mchol(i,i);
     for (int j=i+1;j<fNrowIndex;j++) { 
+      Double_t *rowj = mchol.GetRow(j);
       sum = 0.0; 
-      for (int k=i;k<j;k++) sum -= mchol(j,k)*mchol(k,i);
-      mchol(j,i) = sum/mchol(j,j);
+      for (int k=i;k<j;k++) if (rowj[k]) { 
+	double &mki = mchol(k,i); if (mki) sum -= rowj[k]*mki;
+      }
+      rowj[i] = sum/rowj[j];
     } 
   }
   //
@@ -240,7 +249,13 @@ void AliSymMatrix::InvertChol(AliSymMatrix* pmchol)
   for (int i=fNrowIndex;i--;) {
     for (int j=i+1;j--;) {
       sum = 0;
-      for (int k=i;k<fNrowIndex;k++) sum += mchol(i,k)*mchol(j,k);
+      for (int k=i;k<fNrowIndex;k++) {
+	double &mik = mchol(i,k); 
+	if (mik) {
+	  double &mjk = mchol(j,k);
+	  if (mjk) sum += mik*mjk;
+	}
+      }
       (*this)(j,i) = sum;
     }
   }
@@ -251,12 +266,12 @@ void AliSymMatrix::InvertChol(AliSymMatrix* pmchol)
 //___________________________________________________________
 Bool_t AliSymMatrix::SolveChol(Double_t *b, Bool_t invert) 
 {
-  /* Adopted from Numerical Recipes in C, ch.2-9, http://www.nr.com
-     Solves the set of n linear equations A x = b, 
-     where a is a positive-definite symmetric matrix. 
-     a[1..n][1..n] is the output of the routine CholDecomposw. 
-     Only the lower triangle of a is accessed. b[1..n] is input as the 
-     right-hand side vector. The solution vector is returned in b[1..n].*/
+  // Adopted from Numerical Recipes in C, ch.2-9, http://www.nr.com
+  // Solves the set of n linear equations A x = b, 
+  // where a is a positive-definite symmetric matrix. 
+  // a[1..n][1..n] is the output of the routine CholDecomposw. 
+  // Only the lower triangle of a is accessed. b[1..n] is input as the 
+  // right-hand side vector. The solution vector is returned in b[1..n].
   //
   Int_t i,k;
   Double_t sum;
@@ -270,11 +285,15 @@ Bool_t AliSymMatrix::SolveChol(Double_t *b, Bool_t invert)
   AliSymMatrix& mchol = *pmchol;
   //
   for (i=0;i<fNrowIndex;i++) {
-    for (sum=b[i],k=i-1;k>=0;k--) sum -= mchol(i,k)*b[k];
-    b[i]=sum/mchol(i,i);
+    Double_t *rowi = mchol.GetRow(i);
+    for (sum=b[i],k=i-1;k>=0;k--) if (rowi[k]&&b[k]) sum -= rowi[k]*b[k];
+    b[i]=sum/rowi[i];
   }
+  //
   for (i=fNrowIndex-1;i>=0;i--) {
-    for (sum=b[i],k=i+1;k<fNrowIndex;k++) sum -= mchol(k,i)*b[k];
+    for (sum=b[i],k=i+1;k<fNrowIndex;k++) if (b[k]) {
+      double &mki=mchol(k,i); if (mki) sum -= mki*b[k];
+    }
     b[i]=sum/mchol(i,i);
   }
   //
@@ -339,6 +358,51 @@ void AliSymMatrix::Reset()
 }
 
 //___________________________________________________________
+/*
+void AliSymMatrix::AddToRow(Int_t r, Double_t *valc,Int_t *indc,Int_t n)
+{
+  //   for (int i=n;i--;) {
+  //     (*this)(indc[i],r) += valc[i];
+  //   }
+  //   return;
+
+  double *row;
+  if (r>=fNrowIndex) {
+    AddRows(r-fNrowIndex+1); 
+    row = &((fElemsAdd[r-fNcols])[0]);
+  }
+  else row = &fElems[GetIndex(r,0)];
+  //
+  int nadd = 0;
+  for (int i=n;i--;) {
+    if (indc[i]>r) continue;
+    row[indc[i]] += valc[i];
+    nadd++;
+  }
+  if (nadd == n) return;
+  //
+  // add to col>row
+  for (int i=n;i--;) {
+    if (indc[i]>r) (*this)(indc[i],r) += valc[i];
+  }
+  //
+}
+*/
+
+//___________________________________________________________
+Double_t* AliSymMatrix::GetRow(Int_t r)
+{
+  if (r>=fNrowIndex) {
+    int nn = fNrowIndex;
+    AddRows(r-fNrowIndex+1); 
+    printf("create %d of %d\n",r, nn);
+    return &((fElemsAdd[r-fNcols])[0]);
+  }
+  else return &fElems[GetIndex(r,0)];
+}
+
+
+//___________________________________________________________
 int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
 {
   //   Solution a la MP1: gaussian eliminations
@@ -359,7 +423,7 @@ int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
     colMax   = new double[nGlo];
     for (Int_t i=nGlo; i--;) rowMax[i] = colMax[i] = 0.0;
     for (Int_t i=nGlo; i--;) for (Int_t j=i+1;j--;) { 
-	double vl = TMath::Abs(Querry(i,j));
+	double vl = TMath::Abs(Query(i,j));
 	if (vl==0) continue;
 	if (vl > rowMax[i]) rowMax[i] = vl; // Max elemt of row i
 	if (vl > colMax[j]) colMax[j] = vl; // Max elemt of column j
@@ -391,16 +455,16 @@ int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
   //
   if (stabilize) for (int i=0;i<nGlo; i++) { // Small loop for matrix equilibration (gives a better conditioning) 
       for (int j=0;j<=i; j++) {
-	double vl = Querry(i,j);
+	double vl = Query(i,j);
 	if (vl!=0) SetEl(i,j, TMath::Sqrt(rowMax[i])*vl*TMath::Sqrt(colMax[j]) ); // Equilibrate the V matrix
       }
       for (int j=i+1;j<nGlo;j++) {
-	double vl = Querry(j,i);
+	double vl = Query(j,i);
 	if (vl!=0) fgBuffer->SetEl(j,i,TMath::Sqrt(rowMax[i])*vl*TMath::Sqrt(colMax[j]) ); // Equilibrate the V matrix
       }
     }
   //
-  for (Int_t j=nGlo; j--;) fgBuffer->DiagElem(j) = TMath::Abs(QuerryDiag(j)); // save diagonal elem absolute values 
+  for (Int_t j=nGlo; j--;) fgBuffer->DiagElem(j) = TMath::Abs(QueryDiag(j)); // save diagonal elem absolute values 
   //
   for (Int_t i=0; i<nGlo; i++) {
     vPivot = 0.0;
@@ -408,7 +472,7 @@ int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
     //
     for (Int_t j=0; j<nGlo; j++) { // First look for the pivot, ie max unused diagonal element       
       double vl;
-      if (bUnUsed[j] && (TMath::Abs(vl=QuerryDiag(j))>TMath::Max(TMath::Abs(vPivot),eps*fgBuffer->QuerryDiag(j)))) {    
+      if (bUnUsed[j] && (TMath::Abs(vl=QueryDiag(j))>TMath::Max(TMath::Abs(vPivot),eps*fgBuffer->QueryDiag(j)))) {    
 	vPivot = vl;
 	iPivot = j;
       }
@@ -424,8 +488,8 @@ int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
 	for (Int_t jj=0; jj<nGlo; jj++) {  
 	  if (j != iPivot && jj != iPivot) {// Other elements (!!! do them first as you use old matV[k][j]'s !!!)	  
 	    double &r = j>=jj ? (*this)(j,jj) : (*fgBuffer)(jj,j);
-	    r -= vPivot* ( j>iPivot  ? Querry(j,iPivot)  : fgBuffer->Querry(iPivot,j) )
-	      *          ( iPivot>jj ? Querry(iPivot,jj) : fgBuffer->Querry(jj,iPivot));
+	    r -= vPivot* ( j>iPivot  ? Query(j,iPivot)  : fgBuffer->Query(iPivot,j) )
+	      *          ( iPivot>jj ? Query(iPivot,jj) : fgBuffer->Query(jj,iPivot));
 	  }
 	}
       }
@@ -460,8 +524,8 @@ int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
     rowMax[j] = 0.0;
     for (Int_t jj=0; jj<nGlo; jj++) { // Reverse matrix elements
       double vl;
-      if (j>=jj) vl = (*this)(j,jj)     = -Querry(j,jj);
-      else       vl = (*fgBuffer)(j,jj) = -fgBuffer->Querry(j,jj);
+      if (j>=jj) vl = (*this)(j,jj)     = -Query(j,jj);
+      else       vl = (*fgBuffer)(j,jj) = -fgBuffer->Query(j,jj);
       rowMax[j] += vl*vecB[jj];
     }		
   }

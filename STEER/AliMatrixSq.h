@@ -15,13 +15,14 @@ class AliMatrixSq : public TMatrixDBase {
   //
   virtual void  Clear(Option_t* option="")                       = 0;//{Error("Clear","Dummy");}
   //
-  virtual       Double_t      Querry(Int_t rown, Int_t coln)     const {return operator()(rown,coln);}
+  virtual       Double_t      Query(Int_t rown, Int_t coln)     const {return operator()(rown,coln);}
   virtual       Double_t      operator()(Int_t rown, Int_t coln) const = 0;//{Error("(i,j)","Dummy");return 0;}
   virtual       Double_t&     operator()(Int_t rown, Int_t coln) = 0;//{Error("(i,j)","Dummy");return 0;}
   //
-  virtual       Double_t      QuerryDiag(Int_t rc)               const {return DiagElem(rc);}
+  virtual       Double_t      QueryDiag(Int_t rc)               const {return DiagElem(rc);}
   virtual       Double_t      DiagElem(Int_t r)                  const = 0;
   virtual       Double_t&     DiagElem(Int_t r)                  = 0;
+  virtual       void          AddToRow(Int_t r, Double_t *valc,Int_t *indc,Int_t n) = 0;
   //
   virtual void  Print(Option_t* option="")           const       = 0;//{Error("Print","Dummy");}
   virtual void  Reset()                                          = 0;

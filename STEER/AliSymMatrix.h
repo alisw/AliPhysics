@@ -28,12 +28,15 @@ class AliSymMatrix : public AliMatrixSq {
   Double_t      DiagElem(Int_t r)                                const {return (*(const AliSymMatrix*)this)(r,r);}
   Double_t&     DiagElem(Int_t r)                                      {return (*this)(r,r);}
   //
+  Double_t*     GetRow(Int_t r);
+  //
   void          Print(Option_t* option="")                       const;
   void          AddRows(int nrows=1);
   //
   void          Scale(Double_t coeff);
   void          MultiplyByVec(Double_t* vecIn, Double_t* vecOut) const;
   void          MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const;
+  void          AddToRow(Int_t r, Double_t *valc,Int_t *indc,Int_t n);
   //
   // ---------------------------------- Dummy methods of MatrixBase
   virtual       const Double_t   *GetMatrixArray  () const {return fElems;};
@@ -111,5 +114,10 @@ inline void AliSymMatrix::Scale(Double_t coeff)
   for (int i=fNrowIndex;i--;) for (int j=i;j--;) { double& el = operator()(i,j); if (el) el *= coeff;}
 }
 
+//___________________________________________________________
+inline void AliSymMatrix::AddToRow(Int_t r, Double_t *valc,Int_t *indc,Int_t n)
+{
+  for (int i=n;i--;) (*this)(indc[i],r) += valc[i];
+}
 
 #endif

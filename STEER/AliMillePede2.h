@@ -1,87 +1,34 @@
 #ifndef ALIMILLEPEDE2_H
 #define ALIMILLEPEDE2_H
 
+/**********************************************************************************************/
+/* General class for alignment with large number of degrees of freedom                        */
+/* Based on the original milliped2 by Volker Blobel                                           */
+/* http://www.desy.de/~blobel/mptalks.html                                                    */
+/*                                                                                            */ 
+/* Author: ruben.shahoyan@cern.ch                                                             */
+/*                                                                                            */ 
+/**********************************************************************************************/
+
 #include <TObject.h>
 #include <TTree.h>
-#include <TFile.h>
-#include <TMatrixD.h>
-#include "AliSymMatrix.h"
-#include "AliMatrixSparse.h"
 #include "AliMinResSolve.h"
+#include "AliMillePedeRecord.h"
+class TFile;
+class AliMatrixSq;
+class AliSymMatrix;
+class AliRectMatrix;
+class AliMatrixSparse;
 class AliLog;
 class TStopwatch;
 
-/**********************************************************************************************/
-/* AliMillePedeRecords: class to store the data of single track processing                    */
-/* Format: for each measured point the data is stored consequtively                           */
-/* INDEX                                                      VALUE                           */
-/* -1                                                         residual                        */
-/* Local_param_id                                             dResidual/dLocal_param          */
-/* ...                                                        ...                             */
-/* -2                                                         weight of the measurement       */
-/* Global_param_od                                            dResidual/dGlobal_param         */
-/* ...                                                        ...                             */
-/*                                                                                            */
-/* The records for all processed tracks are stored in the temporary tree in orgder to be      */
-/* reused for multiple iterations of MillePede                                                */
-/*                                                                                            */
-/**********************************************************************************************/
 
-class AliMillePedeRecord : public TObject
-{
- public:
-  AliMillePedeRecord();
-  AliMillePedeRecord(const AliMillePedeRecord& src);
-  AliMillePedeRecord& operator=(const AliMillePedeRecord& rhs);
-  //
-  virtual    ~AliMillePedeRecord();
-  void       Reset()                                             {fSize = 0;}
-  void       Print(const Option_t *opt="")                 const;
-  //
-  Int_t      GetSize()                                     const {return fSize;}
-  Int_t     *GetIndex()                                    const {return fIndex;}
-  Int_t      GetIndex(int i)                               const {return fIndex[i];}
-  //
-  void       GetIndexValue(int i,int &ind,double &val)     const {ind=fIndex[i]; val=fValue[i];}
-  void       AddIndexValue(int ind, double val);
-  void       AddResidual(double val)                             {AddIndexValue(-1,val);}
-  void       AddWeight(double val)                               {AddIndexValue(-2,val);}
-  Bool_t     IsResidual(int i)                             const {return fIndex[i]==-1;}
-  Bool_t     IsWeight(int i)                               const {return fIndex[i]==-2;}
-  //
-  Double_t  *GetValue()                                    const {return fValue;}
-  Double_t   GetValue(int i)                               const {return fValue[i];}
-  //
- protected:
-  Int_t      GetBufferSize()                               const {return GetUniqueID();}
-  void       SetBufferSize(int sz)                               {SetUniqueID(sz);}
-  void       Expand(int bfsize);
-  //
- protected:
-  Int_t      fSize;                             // size of the record
-  Int_t   *  fIndex;                            //[fSize] index of variables
-  Double_t*  fValue;                            //[fSize] array of values: derivs,residuals
-  //
-  ClassDef(AliMillePedeRecord,1)                // Record of track residuals and local/global deriavtives
-};
-
-inline void  AliMillePedeRecord::AddIndexValue(int ind, double val) 
-{
-  if (fSize>=GetBufferSize()) Expand(2*(fSize+1));
-  fIndex[fSize]=ind; 
-  fValue[fSize++]=val;
-}
-
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
 
 class AliMillePede2: public TObject
 {
  public:
   //
-  enum {gkFailed,gkInvert,gkMinRes};    // used global matrix solution methods
+  enum {gkFailed,gkInvert,gkNoInversion};    // used global matrix solution methods
   //
   AliMillePede2();
   AliMillePede2(const AliMillePede2& src);
@@ -97,6 +44,7 @@ class AliMillePede2: public TObject
   Int_t                GetNMaxIterations()              const {return fMaxIter;}
   Int_t                GetNStdDev()                     const {return fNStdDev;} 
   Int_t                GetNGlobalConstraints()          const {return fNGloConstraints;}
+  Int_t                GetNLagrangeConstraints()        const {return fNLagrangeConstraints;}
   Long_t               GetNLocalFits()                  const {return fNLocFits;}
   Long_t               GetNLocalFitsRejected()          const {return fNLocFitsRejected;}
   Int_t                GetNGlobalsFixed()               const {return fNGloFix;}
@@ -108,19 +56,26 @@ class AliMillePede2: public TObject
   Int_t                GetMinPntValid()                 const {return fMinPntValid;}
   Int_t                GetProcessedPoints(Int_t i)      const {return fProcPnt[i];}
   Int_t*               GetProcessedPoints()             const {return fProcPnt;}
+  Int_t                GetParamGrID(Int_t i)            const {return fParamGrID[i];}
   //
   AliMatrixSq*         GetGlobalMatrix()                const {return fMatCGlo;}
+  AliSymMatrix*        GetLocalMatrix()                 const {return fMatCLoc;}
   Double_t*            GetGlobals()                     const {return fVecBGlo;}
   Double_t*            GetDeltaPars()                   const {return fDeltaPar;}
   Double_t*            GetInitPars()                    const {return fInitPar;}
   Double_t*            GetSigmaPars()                   const {return fSigmaPar;}
-  Bool_t*              GetIsLinear()                    const {return fIsLinear;}        
+  Bool_t*              GetIsLinear()                    const {return fIsLinear;}
+  Double_t             GetFinalParam(int i)             const {return fDeltaPar[i]+fInitPar[i];}
+  Double_t             GetFinalError(int i)             const {return GetParError(i);}
+  //
   Double_t             GetGlobal(Int_t i)               const {return fVecBGlo[i];}
   Double_t             GetInitPar(Int_t i)              const {return fInitPar[i];}
   Double_t             GetSigmaPar(Int_t i)             const {return fSigmaPar[i];}
   Bool_t               GetIsLinear(Int_t i)             const {return fIsLinear[i];}
   static Bool_t        IsGlobalMatSparse()                    {return fgIsMatGloSparse;}
+  static Bool_t        IsWeightSigma()                        {return fgWeightSigma;}
   //
+  void                 SetParamGrID(Int_t grID,Int_t i)       {fParamGrID[i] = grID; if(fNGroupsSet<grID)fNGroupsSet=grID;}
   void                 SetNGloPar(Int_t n)                    {fNGloPar = n;}
   void                 SetNLocPar(Int_t n)                    {fNLocPar = n;}
   void                 SetNMaxIterations(Int_t n=10)          {fMaxIter = n;}
@@ -129,8 +84,9 @@ class AliMillePede2: public TObject
   void                 SetChi2CutRef(Float_t v)               {fChi2CutRef = v;}
   void                 SetResCurInit(Float_t v)               {fResCutInit = v;}
   void                 SetResCut(Float_t v)                   {fResCut = v;}
-  void                 SetMinPntValid(Int_t n)                {fMinPntValid = n;}
+  void                 SetMinPntValid(Int_t n)                {fMinPntValid = n>0 ? n:1;}
   static void          SetGlobalMatSparse(Bool_t v=kTRUE)     {fgIsMatGloSparse = v;}
+  static void          SetWeightSigma(Bool_t v=kTRUE)         {fgWeightSigma = v;}
   //
   void                 SetInitPars(const Double_t* par)       {memcpy(fInitPar,par,fNGloPar*sizeof(Double_t));}
   void                 SetSigmaPars(const Double_t* par)      {memcpy(fSigmaPar,par,fNGloPar*sizeof(Double_t));}
@@ -140,12 +96,14 @@ class AliMillePede2: public TObject
   Int_t                GlobalFit(Double_t *par=0, Double_t *error=0, Double_t *pull=0);
   Int_t                GlobalFitIteration();
   Int_t                SolveGlobalMatEq();
+  static void          SetInvChol(Bool_t v=kTRUE)             {fgInvChol = v;}
   static void          SetMinResPrecondType(Int_t tp=0)       {fgMinResCondType = tp;}
   static void          SetMinResTol(Double_t val=1e-12)       {fgMinResTol = val;}
   static void          SetMinResMaxIter(Int_t val=2000)       {fgMinResMaxIter = val;}
   static void          SetIterSolverType(Int_t val=AliMinResSolve::kSolMinRes) {fgIterSol = val;}
   static void          SetNKrylovV(Int_t val=60)              {fgNKrylovV = val;}
   //
+  static Bool_t        GetInvChol()                           {return fgInvChol;}
   static Int_t         GetMinResPrecondType()                 {return fgMinResCondType;}
   static Double_t      GetMinResTol()                         {return fgMinResTol;}
   static Int_t         GetMinResMaxIter()                     {return fgMinResMaxIter;}
@@ -160,8 +118,8 @@ class AliMillePede2: public TObject
 
   //
   // constraints
-  void                 SetGlobalConstraint(double *dergb, double val);
-  void                 SetGlobalConstraint(const int *indgb,double *dergb, int ngb, double val);
+  void                 SetGlobalConstraint(double *dergb, double val, double sigma=0);
+  void                 SetGlobalConstraint(const int *indgb,double *dergb, int ngb, double val, double sigma=0);
   //
   // processing of the local measurement
   void                 SetLocalEquation(double *dergb, double *derlc, double lMeas, double lSigma);
@@ -186,7 +144,6 @@ class AliMillePede2: public TObject
   Bool_t               ReadNextRecordConstraint();
   void                 SaveRecordData();
   void                 SaveRecordConstraint();
-  void                 ResetConstraints();
   AliMillePedeRecord*  GetRecord()                      const {return fRecord;}
   //
   Float_t              Chi2DoFLim(int nSig, int nDoF)   const;
@@ -210,6 +167,7 @@ class AliMillePede2: public TObject
   Int_t                 fMaxIter;                        // Maximum number of iterations
   Int_t                 fNStdDev;                        // Number of standard deviations for chi2 cut 
   Int_t                 fNGloConstraints;                // Number of constraint equations
+  Int_t                 fNLagrangeConstraints;           // Number of constraint equations requiring Lagrange multiplier
   Long_t                fNLocFits;                       // Number of local fits
   Long_t                fNLocFitsRejected;               // Number of local fits rejected
   Int_t                 fNGloFix;                        // Number of globals fixed by user
@@ -221,6 +179,8 @@ class AliMillePede2: public TObject
   Float_t               fResCut;                         // Cut in residual for other iterartiona
   Int_t                 fMinPntValid;                    // min number of points for global to vary
   //
+  Int_t                 fNGroupsSet;                     // number of groups set
+  Int_t                *fParamGrID;                      // group id for the every parameter
   Int_t                *fProcPnt;                        // N of processed points per global variable
   Double_t             *fVecBLoc;                        // Vector B local (parameters) 
   Double_t             *fDiagCGlo;                       // Initial diagonal elements of C global matrix
@@ -239,7 +199,9 @@ class AliMillePede2: public TObject
   // Matrices
   AliSymMatrix         *fMatCLoc;                        // Matrix C local
   AliMatrixSq          *fMatCGlo;                        // Matrix C global
-  TMatrixD             *fMatCGloLoc;                     // Rectangular matrix C g*l 
+  AliRectMatrix        *fMatCGloLoc;                     // Rectangular matrix C g*l 
+  Int_t                *fFillIndex;                      // auxilary index array for fast matrix fill
+  Double_t             *fFillValue;                      // auxilary value array for fast matrix fill
   //
   // processed data record bufferization   
   TString               fDataRecFName;                   // Name of File for data records               
@@ -252,7 +214,10 @@ class AliMillePede2: public TObject
   TFile                *fConsRecFile;                    // File of processed constraints records
   Long_t                fCurrRecDataID;                  // ID of the current data record
   Long_t                fCurrRecConstrID;                // ID of the current constraint record
+  Bool_t                fLocFitAdd;                      // Add contribution of carrent track (and not eliminate it)
   //
+  static Bool_t         fgInvChol;                       // Invert global matrix in Cholesky solver
+  static Bool_t         fgWeightSigma;                   // weight parameter constraint by statistics
   static Bool_t         fgIsMatGloSparse;                // Type of the global matrix (sparse ...)
   static Int_t          fgMinResCondType;                // Type of the preconditioner for MinRes method 
   static Double_t       fgMinResTol;                     // Tolerance for MinRes solution

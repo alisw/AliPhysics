@@ -2,61 +2,17 @@
 #define ALIMATRIXSPARSE_H
 
 #include "AliMatrixSq.h"
+#include "AliVectorSparse.h"
 
 
-///////////////////////////////////////////////////////////////////////////////////////
-class AliVectorSparse {
- public:
-  AliVectorSparse();
-  AliVectorSparse(const AliVectorSparse& src);
-  virtual ~AliVectorSparse() {Clear();}
-  virtual void Print(Option_t* option="")                 const;
-  //
-  Int_t     GetNElems()                                   const {return fNElems;}
-  UShort_t *GetIndices()                                  const {return fIndex;}
-  Double_t *GetElems()                                    const {return fElems;}
-  UShort_t& GetIndex(Int_t i)                                   {return fIndex[i];}
-  Double_t& GetElem(Int_t i)                              const {return fElems[i];}
-  void      Clear();
-  void      Reset()                                             {memset(fElems,0,fNElems*sizeof(Double_t));}
-  void      ReSize(Int_t sz,Bool_t copy=kFALSE);
-  void      SortIndices(Bool_t valuesToo=kFALSE);
-  //
-  AliVectorSparse& operator=(const AliVectorSparse& src);
-  //
-  virtual Double_t         operator()(Int_t ind)         const;
-  virtual Double_t&        operator()(Int_t ind);
-  virtual void             SetToZero(Int_t ind);
-  Double_t                 FindIndex(Int_t ind)          const;
-  Double_t&                FindIndexAdd(Int_t ind);
-  //
-  Int_t     GetLastIndex()                               const {return fIndex[fNElems-1];}
-  Double_t  GetLastElem()                                const {return fElems[fNElems-1];}
-  Double_t &GetLastElem()                                      {return fElems[fNElems-1];}
-  //
- protected:
-  Int_t            fNElems;   // 
-  UShort_t*        fIndex;    // Index of stored elems
-  Double_t*        fElems;    // pointer on elements
-};
+/**********************************************************************************************/
+/* Sparse matrix class, used as a global matrix for AliMillePede2                             */
+/*                                                                                            */ 
+/* Author: ruben.shahoyan@cern.ch                                                             */
+/*                                                                                            */ 
+/**********************************************************************************************/
 
 
-//___________________________________________________
-inline Double_t AliVectorSparse::operator()(Int_t ind) const
-{
-  return FindIndex(ind);
-}
-
-//___________________________________________________
-inline Double_t& AliVectorSparse::operator()(Int_t ind)
-{
-  return FindIndexAdd(ind);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-// Sparse matrix class
 //
 class AliMatrixSparse : public AliMatrixSq 
 {
@@ -82,8 +38,10 @@ class AliMatrixSparse : public AliMatrixSq
   Double_t&        DiagElem(Int_t r);
   void             SortIndices(Bool_t valuesToo=kFALSE);
   //
+  void MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const; 
   void MultiplyByVec(Double_t* vecIn, Double_t* vecOut) const;
-  void MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const {MultiplyByVec((Double_t*)vecIn.GetMatrixArray(),(Double_t*)vecOut.GetMatrixArray());}
+  //
+  void AddToRow(Int_t r, Double_t *valc,Int_t *indc,Int_t n);
   //
  protected:
   //
@@ -91,6 +49,12 @@ class AliMatrixSparse : public AliMatrixSq
   //
   ClassDef(AliMatrixSparse,0)
 };
+
+//___________________________________________________
+inline void AliMatrixSparse::MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const 
+{
+  MultiplyByVec((Double_t*)vecIn.GetMatrixArray(),(Double_t*)vecOut.GetMatrixArray());
+}
 
 //___________________________________________________
 inline void AliMatrixSparse::SetToZero(Int_t row,Int_t col)
@@ -139,6 +103,7 @@ inline Double_t &AliMatrixSparse::DiagElem(Int_t row)
   else return rowv->FindIndexAdd(row);
   //
 }
+
 
 #endif
 

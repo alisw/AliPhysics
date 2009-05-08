@@ -153,8 +153,9 @@
 #pragma link C++ class AliMillePedeRecord+;
 #pragma link C++ class AliMinResSolve+;
 #pragma link C++ class AliMatrixSparse+;
+#pragma link C++ class AliVectorSparse+;
 #pragma link C++ class AliMatrixSq+;
 #pragma link C++ class AliSymMatrix+;
-
+#pragma link C++ class AliRectMatrix+;
 
 #endif

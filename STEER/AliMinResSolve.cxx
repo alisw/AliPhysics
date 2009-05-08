@@ -70,12 +70,12 @@ Int_t AliMinResSolve::BuildPrecon(Int_t prec)
     fPrecAux  = new Double_t[ fSize ];
     //
     // copy inverse diagonal
-    for (int i=0;i<fSize;i++) fPrecDiag[i] = fMatrix->QuerryDiag(i);
+    for (int i=0;i<fSize;i++) fPrecDiag[i] = fMatrix->QueryDiag(i);
     //
     for (int i=0;i<fSize;i++) {
       fPrecDiag[i] = TMath::Abs(fPrecDiag[i])>kTiny  ? 1./fPrecDiag[i] : 1./TMath::Sign(kTiny,fPrecDiag[i]);
       for (int j=i+1;j<fSize;j++) {
-	double vl = fMatrix->Querry(j,i);
+	double vl = fMatrix->Query(j,i);
 	if (vl!=0) fPrecDiag[j] -= fPrecDiag[i]*vl*vl; 
       }
     }
@@ -311,7 +311,7 @@ Bool_t AliMinResSolve::SolveMinRes(double *VecSol,Int_t precon,int itnlim,double
   //   Set up y and v for the first Lanczos vector v1.
   //   y  =  beta1 P' v1,  where  P = C**(-1). v is really P' v1.
   //
-  for (int i=fSize;i--;) fPVecY[i] = fPVecR1[i] = fRHS[i];
+  for (int i=fSize;i--;) fPVecY[i]  = fPVecR1[i] = fRHS[i];
   //
   if ( precon>0 ) ApplyPrecon( fRHS, fPVecY);
   beta1 = 0; for (int i=fSize;i--;) beta1 += fRHS[i]*fPVecY[i]; //
@@ -508,7 +508,7 @@ void AliMinResSolve::ApplyPrecon(const double* vecRHS, double* vecOut) const
   const Double_t kTiny = 1E-12;
   if (fPrecon==kPreconDiag) {
     for (int i=fSize;i--;) {
-      double d = fMatrix->QuerryDiag(i);
+      double d = fMatrix->QueryDiag(i);
       vecOut[i] =  vecRHS[i]/(TMath::Abs(d)>kTiny ? d : kTiny);
     }
     //    return;
@@ -517,12 +517,12 @@ void AliMinResSolve::ApplyPrecon(const double* vecRHS, double* vecOut) const
   else if (fPrecon==kPreconDILU) {
     for (int i=0;i<fSize;i++) {
       double el = 0;
-      for (int j=i;j--;) {double vl = fMatrix->Querry(i,j);if (vl!=0) el += fPrecAux[j]*vl;}
+      for (int j=i;j--;) {double vl = fMatrix->Query(i,j);if (vl!=0) el += fPrecAux[j]*vl;}
       fPrecAux[i] = fPrecDiag[i]*(vecRHS[i]-el); 
     }
     for (int i=fSize;i--;) {
       double el = 0;
-      for (int j=i+1;j<fSize;j++) {double vl = fMatrix->Querry(i,j);if (vl!=0) el += vl*vecOut[j];}
+      for (int j=i+1;j<fSize;j++) {double vl = fMatrix->Query(i,j);if (vl!=0) el += vl*vecOut[j];}
       vecOut[i] = fPrecAux[i] - fPrecDiag[i]*el;
     }
     //    return;
@@ -646,6 +646,12 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
   for(int j=fSize;j--;) jw[j] = -1;     // set indicator array jw to -1 
   //
   for(int i=0; i<fSize; i++ ) {            // beginning of main loop
+    if ( (i%int(0.1*fSize)) == 0) {
+      printf("BuildPrecon: row %d of %d\n",i,fSize);
+      sw.Stop();
+      sw.Print();
+      sw.Start(kFALSE);
+    }
     /* setup array jw[], and initial i-th row */
     AliVectorSparse& rowLi = *fMatL->GetRow(i);
     AliVectorSparse& rowUi = *fMatU->GetRow(i);
@@ -673,7 +679,7 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
       else rowUi.GetElem(jw[col]) = rowM.GetElem(j);
     }
     if (fMatrix->IsSymmetric()) for (int col=i+1;col<fSize;col++) {      // part of the row I on the right of diagonal is stored as 
-	double vl = fMatrix->Querry(col,i);    // the lower part of the column I
+	double vl = fMatrix->Query(col,i);    // the lower part of the column I
 	if (vl==0) continue;                   
 	rowUi.GetElem(jw[col]) = vl;
       }
@@ -764,7 +770,7 @@ Int_t  AliMinResSolve::BuildPreconILUKDense(Int_t lofM)
     }
     // copy row from csmat into L,U D
     for(int j=fSize; j--;) {  // L and D part 
-      double vl = fMatrix->Querry(i,j);
+      double vl = fMatrix->Query(i,j);
       if (vl==0) continue;
       if( j < i )   rowLi.GetElem(jw[j]) = vl;
       else if(j==i) fPrecDiag[i] = vl;
@@ -818,6 +824,9 @@ Int_t  AliMinResSolve::PreconILUKsymb(Int_t lofM)
    * Adapted from iluk.c: lofC of ITSOL_1 package by Y.Saad: http://www-users.cs.umn.edu/~saad/software/
    *----------------------------------------------------------------------------*/
   //
+  TStopwatch sw;
+  printf("PreconILUKsymb>>\n");
+  sw.Start();
   AliMatrixSparse* Matrix = (AliMatrixSparse*)fMatrix;
   //
   UChar_t **ulvl=0,*levls=0;
@@ -862,7 +871,7 @@ Int_t  AliMinResSolve::PreconILUKsymb(Int_t lofM)
       }
     }
     if (Matrix->IsSymmetric()) for (int col=i+1;col<fSize;col++) { // U-part of symmetric matrix
-	if (fMatrix->Querry(col,i)==0) continue;    // Due to the symmetry  == matrix(i,col)
+	if (fMatrix->Query(col,i)==0) continue;    // Due to the symmetry  == matrix(i,col)
 	jbuf[incu] = col;
 	levls[incu] = 0;
 	iw[col] = incu++;
@@ -938,6 +947,9 @@ Int_t  AliMinResSolve::PreconILUKsymb(Int_t lofM)
   //
   fMatL->SortIndices();
   fMatU->SortIndices();
+  sw.Stop();
+  sw.Print();
+  printf("PreconILUKsymb<<\n");
   return 0;
 }
 
@@ -978,7 +990,7 @@ Int_t  AliMinResSolve::PreconILUKsymbDense(Int_t lofM)
     //
     // assign lof = 0 for matrix elements
     for(int j=0;j<fSize; j++) {
-      if (fMatrix->Querry(i,j)==0) continue;
+      if (fMatrix->Query(i,j)==0) continue;
       if (j<i) {                      // L-part
 	jbuf[incl] = j;
 	levls[incl] = 0;

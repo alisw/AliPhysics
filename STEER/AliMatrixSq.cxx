@@ -34,10 +34,10 @@ void AliMatrixSq::PrintCOO() const
   // get number of non-zero elements
   int nnz = 0;
   int sz = GetSize();
-  for (int ir=0;ir<sz;ir++) for (int ic=0;ic<sz;ic++) if (Querry(ir,ic)!=0) nnz++;
+  for (int ir=0;ir<sz;ir++) for (int ic=0;ic<sz;ic++) if (Query(ir,ic)!=0) nnz++;
   //
   printf("%d %d %d\n",sz,sz,nnz);
   double vl;
-  for (int ir=0;ir<sz;ir++) for (int ic=0;ic<sz;ic++) if ((vl=Querry(ir,ic))!=0) printf("%d %d %f\n",ir,ic,vl);
+  for (int ir=0;ir<sz;ir++) for (int ic=0;ic<sz;ic++) if ((vl=Query(ir,ic))!=0) printf("%d %d %f\n",ir,ic,vl);
   //
 }

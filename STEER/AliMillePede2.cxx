@@ -1,102 +1,36 @@
+/**********************************************************************************************/
+/* General class for alignment with large number of degrees of freedom                        */
+/* Based on the original milliped2 by Volker Blobel                                           */
+/* http://www.desy.de/~blobel/mptalks.html                                                    */
+/*                                                                                            */ 
+/* Author: ruben.shahoyan@cern.ch                                                             */
+/*                                                                                            */ 
+/**********************************************************************************************/
+
 #include "AliMillePede2.h"
 #include "AliLog.h"
 #include <TStopwatch.h>
+#include <TFile.h>
+#include <TMath.h>
+#include "AliMatrixSq.h"
+#include "AliSymMatrix.h"
+#include "AliRectMatrix.h"
+#include "AliMatrixSparse.h"
+
 
 using namespace std;
 
-ClassImp(AliMillePedeRecord)
 
-//_____________________________________________________________________________________________
-AliMillePedeRecord::AliMillePedeRecord() : 
-fSize(0),fIndex(0),fValue(0) {SetBufferSize(0);}
-
-//_____________________________________________________________________________________________
-AliMillePedeRecord::AliMillePedeRecord(const AliMillePedeRecord& src) : 
-  TObject(src),fSize(src.fSize),fIndex(0),fValue(0)
-{
-  fIndex = new int[GetBufferSize()];
-  memcpy(fIndex,src.fIndex,fSize*sizeof(int));
-  fValue = new double[GetBufferSize()];
-  memcpy(fValue,src.fValue,fSize*sizeof(double));
-}
-
-//_____________________________________________________________________________________________
-AliMillePedeRecord& AliMillePedeRecord::operator=(const AliMillePedeRecord& rhs)
-{
-  if (this!=&rhs) {
-    Reset();
-    for (int i=0;i<rhs.GetSize();i++) {
-      double val;
-      int    ind;
-      rhs.GetIndexValue(i,ind,val);
-      AddIndexValue(ind,val);
-    }
-  }
-  return *this;
-}
-
-//_____________________________________________________________________________________________
-AliMillePedeRecord::~AliMillePedeRecord() {delete[] fIndex; delete[] fValue;}
-
-//_____________________________________________________________________________________________
-void AliMillePedeRecord::Print(const Option_t *) const
-{
-  if (!fSize) {AliInfo("No data"); return;}
-  int cnt=0,point=0;
-  //  
-  while(cnt<fSize) {
-    //
-    double resid = fValue[cnt++];
-    double *derLoc = GetValue()+cnt;
-    int    *indLoc = GetIndex()+cnt;
-    int     nLoc = 0;
-    while(!IsWeight(cnt)) {nLoc++;cnt++;}
-    double weight = GetValue(cnt++);
-    double *derGlo = GetValue()+cnt;
-    int    *indGlo = GetIndex()+cnt;
-    int     nGlo = 0;
-    while(!IsResidual(cnt) && cnt<fSize) {nGlo++; cnt++;} 
-    //
-    printf("\n*** Point#%2d | Residual = %+.4e | Weight = %+.4e\n",point++,resid,weight);
-    printf("Locals : "); 
-    for (int i=0;i<nLoc;i++) printf("[%5d] %+.4e|",indLoc[i],derLoc[i]); printf("\n");
-    printf("Globals: "); 
-    for (int i=0;i<nGlo;i++) printf("[%5d] %+.4e|",indGlo[i],derGlo[i]); printf("\n");
-    //
-  }
-  //
-}
-
-//_____________________________________________________________________________________________
-void AliMillePedeRecord::Expand(int bfsize)
-{
-  // add extra space 
-  bfsize = TMath::Max(bfsize,GetBufferSize());
-  int *tmpI = new int[bfsize];
-  memcpy(tmpI,fIndex, fSize*sizeof(int));
-  delete fIndex;
-  fIndex = tmpI;
-  //
-  double *tmpD = new double[bfsize];
-  memcpy(tmpD,fValue, fSize*sizeof(double));
-  delete fValue;
-  fValue = tmpD;
-  //
-  SetBufferSize(bfsize);
-}
-
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
 ClassImp(AliMillePede2)
 
-Bool_t   AliMillePede2::fgIsMatGloSparse = kFALSE;   // use faster dense matrix by default
-Int_t    AliMillePede2::fgMinResCondType = kTRUE;        // No preconditioner by default
-Double_t AliMillePede2::fgMinResTol      = 1.e-8;   // default tolerance
-Int_t    AliMillePede2::fgMinResMaxIter  = 3000;     // default max number of iterations 
+Bool_t   AliMillePede2::fgInvChol        = kTRUE;     // Invert global matrix with Cholesky solver
+Bool_t   AliMillePede2::fgWeightSigma    = kTRUE;     // weight local constraint by module statistics
+Bool_t   AliMillePede2::fgIsMatGloSparse = kFALSE;    // use faster dense matrix by default
+Int_t    AliMillePede2::fgMinResCondType = 1;         // Jacoby preconditioner by default
+Double_t AliMillePede2::fgMinResTol      = 1.e-11;    // default tolerance
+Int_t    AliMillePede2::fgMinResMaxIter  = 10000;     // default max number of iterations 
 Int_t    AliMillePede2::fgIterSol        = AliMinResSolve::kSolMinRes; // default iterative solver
-Int_t    AliMillePede2::fgNKrylovV       = 30;       // default number of Krylov vectors to keep
+Int_t    AliMillePede2::fgNKrylovV       = 240;        // default number of Krylov vectors to keep
 
 //_____________________________________________________________________________________________
 AliMillePede2::AliMillePede2() 
@@ -109,6 +43,7 @@ AliMillePede2::AliMillePede2()
   fMaxIter(10),
   fNStdDev(3),
   fNGloConstraints(0),
+  fNLagrangeConstraints(0),
   fNLocFits(0),
   fNLocFitsRejected(0),
   fNGloFix(0),
@@ -118,8 +53,10 @@ AliMillePede2::AliMillePede2()
   fChi2CutRef(1.),
   fResCutInit(100.),
   fResCut(100.),
-  fMinPntValid(0),
+  fMinPntValid(1),
 //
+  fNGroupsSet(0),
+  fParamGrID(0),
   fProcPnt(0),
   fVecBLoc(0),
   fDiagCGlo(0),
@@ -136,7 +73,10 @@ AliMillePede2::AliMillePede2()
   fMatCLoc(0),
   fMatCGlo(0),
   fMatCGloLoc(0),
-//
+  //
+  fFillIndex(0),
+  fFillValue(0),
+  //
   fDataRecFName("/tmp/mp2_data_records.root"),
   fRecord(0),
   fDataRecFile(0),  
@@ -146,18 +86,22 @@ AliMillePede2::AliMillePede2()
   fTreeConstr(0),
   fConsRecFile(0),
   fCurrRecDataID(0),
-  fCurrRecConstrID(0)
+  fCurrRecConstrID(0),
+  fLocFitAdd(kTRUE)
 {}
 
 //_____________________________________________________________________________________________
 AliMillePede2::AliMillePede2(const AliMillePede2& src) : 
   TObject(src),fNLocPar(0),fNGloPar(0),fNGloSize(0),fNLocEquations(0),fIter(0),
-  fMaxIter(10),fNStdDev(3),fNGloConstraints(0),fNLocFits(0),fNLocFitsRejected(0),
+  fMaxIter(10),fNStdDev(3),fNGloConstraints(0),fNLagrangeConstraints(0),
+  fNLocFits(0),fNLocFitsRejected(0),
   fNGloFix(0),fGloSolveStatus(0),fChi2CutFactor(0),fChi2CutRef(0),fResCutInit(0),
-  fResCut(0),fMinPntValid(0),fProcPnt(0),fVecBLoc(0),fDiagCGlo(0),fVecBGlo(0),
+  fResCut(0),fMinPntValid(1),fNGroupsSet(0),fParamGrID(0),fProcPnt(0),fVecBLoc(0),fDiagCGlo(0),fVecBGlo(0),
   fInitPar(0),fDeltaPar(0),fSigmaPar(0),fIsLinear(0),fConstrUsed(0),fGlo2CGlo(0),fCGlo2Glo(0),
-  fMatCLoc(0),fMatCGlo(0),fMatCGloLoc(0),fDataRecFName(0),fRecord(0),fDataRecFile(0),
-  fTreeData(0),fConstrRecFName(0),fTreeConstr(0),fConsRecFile(0),fCurrRecDataID(0),fCurrRecConstrID(0)
+  fMatCLoc(0),fMatCGlo(0),fMatCGloLoc(0),fFillIndex(0),fFillValue(0),
+  fDataRecFName(0),fRecord(0),fDataRecFile(0),
+  fTreeData(0),fConstrRecFName(0),fTreeConstr(0),fConsRecFile(0),fCurrRecDataID(0),
+  fCurrRecConstrID(0),fLocFitAdd(kTRUE)
 {printf("Dummy\n");}
 
 //_____________________________________________________________________________________________
@@ -166,6 +110,7 @@ AliMillePede2::~AliMillePede2()
   CloseDataRecStorage();
   CloseConsRecStorage();
   //
+  delete[] fParamGrID;
   delete[] fProcPnt;
   delete[] fVecBLoc;
   delete[] fDiagCGlo;
@@ -177,6 +122,8 @@ AliMillePede2::~AliMillePede2()
   delete[] fCGlo2Glo;
   delete[] fIsLinear;
   delete[] fConstrUsed;
+  delete[] fFillIndex;
+  delete[] fFillValue;
   //
   delete fRecord;
   delete fMatCLoc;
@@ -201,9 +148,13 @@ Int_t AliMillePede2::InitMille(int nGlo, int nLoc, int lNStdDev,double lResCut, 
     if (fgIsMatGloSparse) {fMatCGlo = new AliMatrixSparse(fNGloPar); fMatCGlo->SetSymmetric(kTRUE);}
     else                   fMatCGlo = new AliSymMatrix(fNGloPar);
     //
-    fMatCLoc      = new AliSymMatrix(fNLocPar);
-    fMatCGloLoc   = new TMatrixD(fNGloPar,fNLocPar);
+    fFillIndex    = new Int_t[fNGloPar];
+    fFillValue    = new Double_t[fNGloPar];
     //
+    fMatCLoc      = new AliSymMatrix(fNLocPar);
+    fMatCGloLoc   = new AliRectMatrix(fNGloPar,fNLocPar);
+    //
+    fParamGrID    = new Int_t[fNGloPar];
     fProcPnt      = new Int_t[fNGloPar];
     fVecBLoc      = new Double_t[fNLocPar];
     fDiagCGlo     = new Double_t[fNGloPar];
@@ -229,21 +180,12 @@ Int_t AliMillePede2::InitMille(int nGlo, int nLoc, int lNStdDev,double lResCut, 
   memset(fProcPnt   ,0,fNGloPar*sizeof(Int_t));
   //
   for (int i=fNGloPar;i--;) {
-    fGlo2CGlo[i]=fCGlo2Glo[i] = -1;
+    fGlo2CGlo[i] = fCGlo2Glo[i] = -1;
     fIsLinear[i] = kTRUE;
+    fParamGrID[i] = -1;
   }
   //
   return 1;
-}
-
-//_____________________________________________________________________________________________
-void AliMillePede2::ResetConstraints()
-{
-  // reset constraints tree. Allows to redefine the constraints for preprocessed data 
-  CloseConsRecStorage();
-  InitConsRecStorage(kFALSE);
-  fNGloConstraints = 0;
-  AliInfo("Constraints are reset");
 }
 
 //_____________________________________________________________________________________________
@@ -392,7 +334,10 @@ void AliMillePede2::SetLocalEquation(double *dergb, double *derlc, double lMeas,
   fRecord->AddWeight( 1.0/lSigma/lSigma );
   //
   // Idem for global parameters
-  for (int i=0;i<fNGloPar;i++) if (dergb[i]!=0.0) {fRecord->AddIndexValue(i,dergb[i]); dergb[i] = 0.0;}
+  for (int i=0;i<fNGloPar;i++) if (dergb[i]!=0.0) {
+    fRecord->AddIndexValue(i,dergb[i]); dergb[i] = 0.0;
+    fRecord->MarkGroup(fParamGrID[i]);
+  }
   //
 }
 
@@ -421,31 +366,35 @@ void AliMillePede2::SetLocalEquation(int *indgb, double *dergb, int ngb, int *in
   //
 }
 
+
 //_____________________________________________________________________________________________
-void AliMillePede2::SetGlobalConstraint(double *dergb, double val)
+void AliMillePede2::SetGlobalConstraint(double *dergb, double val, double sigma)
 {	
   // Define a constraint equation.
   if (!fConsRecFile || !fConsRecFile->IsWritable()) InitConsRecStorage(); // create a buffer to store the data
   //
   fRecord->Reset();
   fRecord->AddResidual(val);
-  fRecord->AddWeight(val);   // dummy
+  fRecord->AddWeight(sigma);
   for (int i=0; i<fNGloPar; i++) if (dergb[i]!=0)  fRecord->AddIndexValue(i,dergb[i]);
   fNGloConstraints++;
+  if (sigma==0) fNLagrangeConstraints++;
+  //  printf("NewConstraint:\n"); fRecord->Print(); //RRR
   SaveRecordConstraint();
   //
 }
 
 //_____________________________________________________________________________________________
-void AliMillePede2::SetGlobalConstraint(const int *indgb, double *dergb, int ngb, double val)
+void AliMillePede2::SetGlobalConstraint(const int *indgb, double *dergb, int ngb, double val,double sigma)
 {	
   // Define a constraint equation.
   if (!fConsRecFile || !fConsRecFile->IsWritable()) InitConsRecStorage(); // create a buffer to store the data
   fRecord->Reset();
   fRecord->AddResidual(val);
-  fRecord->AddWeight(val);   // dummy
+  fRecord->AddWeight(sigma);   // dummy
   for (int i=0; i<ngb; i++) if (dergb[i]!=0)  fRecord->AddIndexValue(indgb[i],dergb[i]);
   fNGloConstraints++;
+  if (sigma==0) fNLagrangeConstraints++;
   SaveRecordConstraint();
   //
 }
@@ -459,16 +408,17 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     localParams = (if !=0) will contain the fitted track parameters and
     related errors
   */
-  static int     nRefSize = 0;
-  static TArrayI RefLoc,RefGlo,nRefLoc,nRefGlo;
+  static int     nrefSize = 0;
+  //  static TArrayI refLoc,refGlo,nrefLoc,nrefGlo;
+  static Int_t  *refLoc=0,*refGlo=0,*nrefLoc=0,*nrefGlo=0;
   int nPoints = 0;
   //
-  AliSymMatrix    &MatCLoc    = *fMatCLoc;
-  AliMatrixSq     &MatCGlo    = *fMatCGlo;
-  TMatrixD        &MatCGloLoc = *fMatCGloLoc;
+  AliSymMatrix    &matCLoc    = *fMatCLoc;
+  AliMatrixSq     &matCGlo    = *fMatCGlo;
+  AliRectMatrix   &matCGloLoc = *fMatCGloLoc;
   //
   memset(fVecBLoc,0,fNLocPar*sizeof(double));
-  MatCLoc.Reset();	
+  matCLoc.Reset();	
   //
   int cnt=0;
   int recSz = fRecord->GetSize();
@@ -476,86 +426,84 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   while(cnt<recSz) {  // Transfer the measurement records to matrices
     //
     // extract addresses of residual, weight and pointers on local and global derivatives for each point
-    if (nRefSize<=nPoints) {
-      nRefSize = 2*(nPoints+1); 
-      RefLoc.Set(nRefSize); 
-      RefGlo.Set(nRefSize);
-      nRefLoc.Set(nRefSize); 
-      nRefGlo.Set(nRefSize);
+    if (nrefSize<=nPoints) {
+      int *tmpA = 0;
+      nrefSize = 2*(nPoints+1); 
+      tmpA = refLoc;  refLoc  = new Int_t[nrefSize]; if (tmpA) memcpy(refLoc,tmpA,nPoints*sizeof(int));
+      tmpA = refGlo;  refGlo  = new Int_t[nrefSize]; if (tmpA) memcpy(refGlo,tmpA,nPoints*sizeof(int));
+      tmpA = nrefLoc; nrefLoc = new Int_t[nrefSize]; if (tmpA) memcpy(nrefLoc,tmpA,nPoints*sizeof(int));
+      tmpA = nrefGlo; nrefGlo = new Int_t[nrefSize]; if (tmpA) memcpy(nrefGlo,tmpA,nPoints*sizeof(int));
     }
     //
-    RefLoc[nPoints]  = ++cnt;
+    refLoc[nPoints]  = ++cnt;
     int nLoc = 0;
     while(!fRecord->IsWeight(cnt)) {nLoc++; cnt++;}
-    nRefLoc[nPoints] = nLoc;
+    nrefLoc[nPoints] = nLoc;
     //
-    RefGlo[nPoints]  = ++cnt;
+    refGlo[nPoints]  = ++cnt;
     int nGlo = 0;
     while(!fRecord->IsResidual(cnt) && cnt<recSz) {nGlo++; cnt++;} 
-    nRefGlo[nPoints] = nGlo;
+    nrefGlo[nPoints] = nGlo;
     //
     nPoints++;
   }
   double vl;
   //
   for (int ip=nPoints;ip--;) {  // Transfer the measurement records to matrices
-    double  resid  = fRecord->GetValue( RefLoc[ip]-1 );
-    double  weight = fRecord->GetValue( RefGlo[ip]-1 );    
-    double *derLoc = fRecord->GetValue()+RefLoc[ip];
-    double *derGlo = fRecord->GetValue()+RefGlo[ip];
-    int    *indLoc = fRecord->GetIndex()+RefLoc[ip];
-    int    *indGlo = fRecord->GetIndex()+RefGlo[ip];
+    double  resid  = fRecord->GetValue( refLoc[ip]-1 );
+    double  weight = fRecord->GetValue( refGlo[ip]-1 );    
+    double *derLoc = fRecord->GetValue()+refLoc[ip];
+    double *derGlo = fRecord->GetValue()+refGlo[ip];
+    int    *indLoc = fRecord->GetIndex()+refLoc[ip];
+    int    *indGlo = fRecord->GetIndex()+refGlo[ip];
     //
-    for (int i=nRefGlo[ip];i--;) {       // suppress the global part (only relevant with iterations)
+    for (int i=nrefGlo[ip];i--;) {       // suppress the global part (only relevant with iterations)
       int iID = indGlo[i];              // Global param indice
-      if ( fSigmaPar[iID] <= 0.) continue;                                    // fixed parameter RRRCheck
+      if (fSigmaPar[iID]<=0.) continue;                                    // fixed parameter RRRCheck
       if (fIsLinear[iID]) resid -= derGlo[i]*(fInitPar[iID]+fDeltaPar[iID]);  // linear parameter
       else                resid -= derGlo[i]*fDeltaPar[iID];                  // nonlinear parameter
     }
     //
-    for (int i=nRefLoc[ip];i--;) {         // Fill local matrix and vector
-      int iID = indLoc[i];              // Local param indice (the matrix line) 
-      if ( (vl=weight*resid*derLoc[i])!=0 ) fVecBLoc[iID] += vl;
-      //			
-      for (int j=i+1;j--;) {           // Symmetric matrix, don't bother j>i coeffs
-	int jID = indLoc[j];	
-	if ( (vl=weight*derLoc[i]*derLoc[j])!=0 ) MatCLoc(iID,jID) += vl;
-      }
+    // Symmetric matrix, don't bother j>i coeffs
+    for (int i=nrefLoc[ip];i--;) {         // Fill local matrix and vector
+      fVecBLoc[ indLoc[i] ] += weight*resid*derLoc[i];
+      for (int j=i+1;j--;) matCLoc(indLoc[i] ,indLoc[j]) += weight*derLoc[i]*derLoc[j];
     }   
     //
   } // end of the transfer of the measurement record to matrices
   //
   // first try to solve by faster Cholesky decomposition, then by Gaussian elimination
-  if (!MatCLoc.SolveChol(fVecBLoc,kTRUE)) {
+  if (!matCLoc.SolveChol(fVecBLoc,kTRUE)) {
     AliInfo("Failed to solve locals by Cholesky, traying Gaussian Elimination");
-    if (!MatCLoc.SolveSpmInv(fVecBLoc,kTRUE)) { 
+    if (!matCLoc.SolveSpmInv(fVecBLoc,kTRUE)) { 
       AliInfo("Failed to solve locals by Gaussian Elimination, skip...");
-      MatCLoc.Print("d");
+      matCLoc.Print("d");
       return 0; // failed to solve
     }
   }
   //
   // If requested, store the track params and errors
+  //  printf("locfit: "); for (int i=0;i<fNLocPar;i++) printf("%+e |",fVecBLoc[i]); printf("\n");
   if (localParams) for (int i=fNLocPar; i--;) {
       localParams[2*i]   = fVecBLoc[i];
-      localParams[2*i+1] = TMath::Sqrt(TMath::Abs(MatCLoc.QuerryDiag(i)));
+      localParams[2*i+1] = TMath::Sqrt(TMath::Abs(matCLoc.QueryDiag(i)));
     }
   //
   float lChi2 = 0;
   int   nEq   = 0;
   //
   for (int ip=nPoints;ip--;) {  // Calculate residuals
-    double  resid  = fRecord->GetValue( RefLoc[ip]-1 );
-    double  weight = fRecord->GetValue( RefGlo[ip]-1 );    
-    double *derLoc = fRecord->GetValue()+RefLoc[ip];
-    double *derGlo = fRecord->GetValue()+RefGlo[ip];
-    int    *indLoc = fRecord->GetIndex()+RefLoc[ip];
-    int    *indGlo = fRecord->GetIndex()+RefGlo[ip];
+    double  resid  = fRecord->GetValue( refLoc[ip]-1 );
+    double  weight = fRecord->GetValue( refGlo[ip]-1 );    
+    double *derLoc = fRecord->GetValue()+refLoc[ip];
+    double *derGlo = fRecord->GetValue()+refGlo[ip];
+    int    *indLoc = fRecord->GetIndex()+refLoc[ip];
+    int    *indGlo = fRecord->GetIndex()+refGlo[ip];
     //
     // Suppress local and global contribution in residuals;
-    for (int i=nRefLoc[ip];i--;) resid -= derLoc[i]*fVecBLoc[ indLoc[i] ];     // local part 
+    for (int i=nrefLoc[ip];i--;) resid -= derLoc[i]*fVecBLoc[ indLoc[i] ];     // local part 
     //
-    for (int i=nRefGlo[ip];i--;) {                                             // global part
+    for (int i=nrefGlo[ip];i--;) {                                             // global part
       int iID = indGlo[i];
       if ( fSigmaPar[iID] <= 0.) continue;                                     // fixed parameter RRRCheck
       if (fIsLinear[iID]) resid -= derGlo[i]*(fInitPar[iID]+fDeltaPar[iID]);   // linear parameter
@@ -563,9 +511,10 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     }
     //
     // reject the track if the residual is too large (outlier)
-    if ( (TMath::Abs(resid) >= fResCutInit && fIter ==1 ) ||
-	 (TMath::Abs(resid) >= fResCut     && fIter > 1)) {
-      fNLocFitsRejected++;      
+    double absres = TMath::Abs(resid);
+    if ( (absres >= fResCutInit && fIter ==1 ) ||
+	 (absres >= fResCut     && fIter > 1)) {
+      if (fLocFitAdd) fNLocFitsRejected++;      
       return 0;
     }
     // 
@@ -573,17 +522,22 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     nEq++;                        // number of equations			
   } // end of Calculate residuals
   //
-  //
   int nDoF = nEq-fNLocPar;
   lChi2 = (nDoF>0) ? lChi2/nDoF : 0;  // Chi^2/dof  
   //
   if (fNStdDev != 0 && nDoF>0 && lChi2 > Chi2DoFLim(fNStdDev,nDoF)*fChi2CutFactor) { // check final chi2
-    fNLocFitsRejected++;      
+    if (fLocFitAdd) fNLocFitsRejected++;      
     return 0;
   }
   //
-  fNLocFits++;
-  fNLocEquations += nEq;
+  if (fLocFitAdd) {
+    fNLocFits++;
+    fNLocEquations += nEq;
+  }
+  else {
+    fNLocFits--;
+    fNLocEquations -= nEq;
+  }
   //
   //  local operations are finished, track is accepted 
   //  We now update the global parameters (other matrices)
@@ -591,46 +545,50 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   int nGloInFit = 0;
   //
   for (int ip=nPoints;ip--;) {  // Update matrices
-    double  resid  = fRecord->GetValue( RefLoc[ip]-1 );
-    double  weight = fRecord->GetValue( RefGlo[ip]-1 );    
-    double *derLoc = fRecord->GetValue()+RefLoc[ip];
-    double *derGlo = fRecord->GetValue()+RefGlo[ip];
-    int    *indLoc = fRecord->GetIndex()+RefLoc[ip];
-    int    *indGlo = fRecord->GetIndex()+RefGlo[ip];
+    double  resid  = fRecord->GetValue( refLoc[ip]-1 );
+    double  weight = fRecord->GetValue( refGlo[ip]-1 );    
+    double *derLoc = fRecord->GetValue()+refLoc[ip];
+    double *derGlo = fRecord->GetValue()+refGlo[ip];
+    int    *indLoc = fRecord->GetIndex()+refLoc[ip];
+    int    *indGlo = fRecord->GetIndex()+refGlo[ip];
     //
-    for (int i=nRefGlo[ip];i--;) {    // suppress the global part
+    for (int i=nrefGlo[ip];i--;) {    // suppress the global part
       int iID = indGlo[i];           // Global param indice
       if ( fSigmaPar[iID] <= 0.) continue;                                         // fixed parameter RRRCheck
-      if (fIsLinear[iID] == 0)  resid -= derGlo[i]*(fInitPar[iID]+fDeltaPar[iID]); // linear parameter
-      else                      resid -= derGlo[i]*fDeltaPar[iID];                 // nonlinear parameter
+      if (fIsLinear[iID])  resid -= derGlo[i]*(fInitPar[iID]+fDeltaPar[iID]);      // linear parameter
+      else                 resid -= derGlo[i]*fDeltaPar[iID];                      // nonlinear parameter
     }
     //
-    for (int ig=nRefGlo[ip];ig--;) {
+    for (int ig=nrefGlo[ip];ig--;) {
       int iIDg = indGlo[ig];   // Global param indice (the matrix line)          
       if ( fSigmaPar[iIDg] <= 0.) continue;                                    // fixed parameter RRRCheck
-      if ( (vl = weight*resid*derGlo[ig])!=0 ) fVecBGlo[ iIDg ] += vl;
+      if (fLocFitAdd) fVecBGlo[ iIDg ] += weight*resid*derGlo[ig]; //!!!
+      else            fVecBGlo[ iIDg ] -= weight*resid*derGlo[ig]; //!!!
       //
       // First of all, the global/global terms (exactly like local matrix)
-      for (int jg=ig+1;jg--;) {	// MatCGlo is symmetric by construction  
+      int nfill = 0;
+      for (int jg=ig+1;jg--;) {	// matCGlo is symmetric by construction  
 	int jIDg = indGlo[jg];
 	if ( fSigmaPar[jIDg] <= 0.) continue;                                    // fixed parameter RRRCheck
-	if ( (vl = weight*derGlo[ig]*derGlo[jg])!=0 ) MatCGlo(iIDg,jIDg) += vl; 
-      } 
+	if ( (vl = weight*derGlo[ig]*derGlo[jg])!=0 ) {
+	  fFillIndex[nfill]   = jIDg;
+	  fFillValue[nfill++] = fLocFitAdd ? vl:-vl;
+	}
+      }
+      if (nfill) matCGlo.AddToRow(iIDg,fFillValue,fFillIndex,nfill);
       //
       // Now we have also rectangular matrices containing global/local terms.
       int iCIDg = fGlo2CGlo[iIDg];  // compressed Index of index          
       if (iCIDg == -1) {
-	for (int k=fNLocPar;k--;) MatCGloLoc(nGloInFit,k) = 0.0;  // reset the row
+	Double_t *rowGL = matCGloLoc(nGloInFit);
+	for (int k=fNLocPar;k--;) rowGL[k] = 0.0;  // reset the row
 	iCIDg = fGlo2CGlo[iIDg] = nGloInFit;
 	fCGlo2Glo[nGloInFit++] = iIDg;
       }
       //
-      for (int il=nRefLoc[ip];il--;) {
-	int iIDl = indLoc[il];
-	if ( (vl = weight*derGlo[ig]*derLoc[il])!=0) MatCGloLoc(iCIDg,iIDl) += vl;
-      }
-      // update counter
-      fProcPnt[iIDg]++;
+      Double_t *rowGLIDg = matCGloLoc(iCIDg);
+      for (int il=nrefLoc[ip];il--;) rowGLIDg[ indLoc[il] ] += weight*derGlo[ig]*derLoc[il];
+      fProcPnt[iIDg] += fLocFitAdd ? 1:-1;       // update counter
       //
     }
   } // end of Update matrices
@@ -638,37 +596,48 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   // calculate fMatCGlo -= fMatCGloLoc * fMatCLoc * fMatCGloLoc^T
   // and       fVecBGlo -= fMatCGloLoc * fVecBLoc
   //
+  //-------------------------------------------------------------- >>>
   double vll;
   for (int iCIDg=0; iCIDg<nGloInFit; iCIDg++) {
     int iIDg = fCGlo2Glo[iCIDg];
     //
     vl = 0;
-    for (int kl=0;kl<fNLocPar;kl++) if ( (vll = MatCGloLoc(iCIDg,kl))!=0) vl += vll*fVecBLoc[kl];
-    if  (vl!=0) fVecBGlo[iIDg] -= vl;
+    Double_t *rowGLIDg =  matCGloLoc(iCIDg);
+    for (int kl=0;kl<fNLocPar;kl++) if (rowGLIDg[kl]) vl += rowGLIDg[kl]*fVecBLoc[kl];
+    if  (vl!=0) fVecBGlo[iIDg] -= fLocFitAdd ? vl : -vl;
     //
+    int nfill = 0;
     for (int jCIDg=0;jCIDg<=iCIDg; jCIDg++) {  
       int jIDg = fCGlo2Glo[jCIDg];
       //
       vl = 0;
+      Double_t *rowGLJDg =  matCGloLoc(jCIDg);
       for (int kl=0;kl<fNLocPar;kl++) {
 	// diag terms
-	if ( (vll=MatCGloLoc(iCIDg,kl)*MatCGloLoc(jCIDg,kl))!=0 ) vl += MatCLoc.QuerryDiag(kl)*vll;
+	if ( (vll=rowGLIDg[kl]*rowGLJDg[kl])!=0 ) vl += matCLoc.QueryDiag(kl)*vll;
 	//
 	// off-diag terms
 	for (int ll=0;ll<kl;ll++) {
-	  if ( (vll=MatCGloLoc(iCIDg,kl)*MatCGloLoc(jCIDg,ll))!=0 ) vl += MatCLoc(kl,ll)*vll;
-	  if ( (vll=MatCGloLoc(iCIDg,ll)*MatCGloLoc(jCIDg,kl))!=0 ) vl += MatCLoc(kl,ll)*vll;
+	  if ( (vll=rowGLIDg[kl]*rowGLJDg[ll])!=0 ) vl += matCLoc(kl,ll)*vll;
+	  if ( (vll=rowGLIDg[ll]*rowGLJDg[kl])!=0 ) vl += matCLoc(kl,ll)*vll;
 	}
       }
-      if (vl!=0) MatCGlo(iIDg,jIDg) -= vl; 
-      //
+      if (vl!=0) {
+	fFillIndex[nfill]   = jIDg;
+	fFillValue[nfill++] = fLocFitAdd ? -vl : vl;
+      }
     }
+    if (nfill) 	matCGlo.AddToRow(iIDg,fFillValue,fFillIndex,nfill);
   }
   //
   // reset compressed index array
   //
-  for (int i=nGloInFit;i--;) { fGlo2CGlo[ fCGlo2Glo[i] ] = -1; fCGlo2Glo[i] = -1;}
+  for (int i=nGloInFit;i--;) { 
+    fGlo2CGlo[ fCGlo2Glo[i] ] = -1;
+    fCGlo2Glo[i] = -1;
+  }
   //
+  //---------------------------------------------------- <<<
   return 1;
 }
 
@@ -704,9 +673,9 @@ Int_t AliMillePede2::GlobalFit(Double_t *par, Double_t *error, Double_t *pull)
   if (par) for (int i=fNGloPar;i--;) par[i] = fInitPar[i]+fDeltaPar[i]; 
   //
   if (fGloSolveStatus==gkInvert) { // errors on params are available
-    if (error) for (int i=fNGloPar;i--;) error[i] = fProcPnt[i]>0 ? TMath::Sqrt(TMath::Abs(fMatCGlo->QuerryDiag(i))) : 0.;
-    if (pull)  for (int i=fNGloPar;i--;) pull[i]  = fProcPnt[i]>0 && (fSigmaPar[i]*fSigmaPar[i]-fMatCGlo->QuerryDiag(i))>0. && fSigmaPar[i]>0 
-					   ? fDeltaPar[i]/TMath::Sqrt(fSigmaPar[i]*fSigmaPar[i]-fMatCGlo->QuerryDiag(i)) : 0;
+    if (error) for (int i=fNGloPar;i--;) error[i] = fProcPnt[i]>0 ? TMath::Sqrt(TMath::Abs(fMatCGlo->QueryDiag(i))) : 0.;
+    if (pull)  for (int i=fNGloPar;i--;) pull[i]  = fProcPnt[i]>0 && (fSigmaPar[i]*fSigmaPar[i]-fMatCGlo->QueryDiag(i))>0. && fSigmaPar[i]>0 
+					   ? fDeltaPar[i]/TMath::Sqrt(fSigmaPar[i]*fSigmaPar[i]-fMatCGlo->QueryDiag(i)) : 0;
   }
   //
   return 1;
@@ -723,103 +692,186 @@ Int_t AliMillePede2::GlobalFitIteration()
     AliInfo("No data was stored, aborting iteration");
     return 0;
   }
-  TStopwatch sw; sw.Start();
+  TStopwatch sw,sws; 
+  sw.Start();
+  sws.Stop();
   //
   if (!fConstrUsed) {
     fConstrUsed = new Bool_t[fNGloConstraints];
     memset(fConstrUsed,0,fNGloConstraints*sizeof(Bool_t));
   }
   // Reset all info specific for this step
-  AliMatrixSq& MatCGlo = *fMatCGlo;
-  MatCGlo.Reset();
+  AliMatrixSq& matCGlo = *fMatCGlo;
+  matCGlo.Reset();
   memset(fProcPnt,0,fNGloPar*sizeof(Int_t));
   //
   fNGloConstraints = fTreeConstr ? fTreeConstr->GetEntries() : 0;
   //
+  // count number of Lagrange constraints: they need new row/cols to be added
+  fNLagrangeConstraints = 0;
+  for (int i=0; i<fNGloConstraints; i++) {
+    ReadRecordConstraint(i);
+    if ( fRecord->GetValue(1)==0 ) fNLagrangeConstraints++; // exact constraint (no error) -> Lagrange multiplier 
+  }
+  //
   // if needed, readjust the size of the global vector (for matrices this is done automatically)
-  if (!fVecBGlo || fNGloSize!=fNGloPar+fNGloConstraints) {
+  if (!fVecBGlo || fNGloSize!=fNGloPar+fNLagrangeConstraints) {
     delete[] fVecBGlo;   // in case some constraint was added between the two manual iterations
-    fNGloSize = fNGloPar+fNGloConstraints;
+    fNGloSize = fNGloPar+fNLagrangeConstraints;
     fVecBGlo = new Double_t[fNGloSize];
   }
   memset(fVecBGlo,0,fNGloSize*sizeof(double));
   //
   fNLocFits         = 0;
   fNLocFitsRejected = 0;
-  fNLocEquations      = 0;
+  fNLocEquations    = 0;
   //
   //  Process data records and build the matrices
   Long_t ndr = fTreeData->GetEntries();
   AliInfo(Form("Building the Global matrix from %d data records",ndr));
+  if (!ndr) return 0;
+  //
+  TStopwatch swt; swt.Start();
+  fLocFitAdd = kTRUE;  // add contributions of matching tracks
   for (Long_t i=0;i<ndr;i++) {
     ReadRecordData(i);
     LocalFit();
+    if ( (i%int(0.1*ndr)) == 0) printf("%.1f%% of local fits done\n", double(100.*i)/ndr);
   }
+  swt.Stop();
+  printf("%ld local fits done: ", ndr);
+  swt.Print();
+  sw.Start(kFALSE);
   //
+  //
+  // ---------------------- Reject parameters with low statistics ------------>>
   fNGloFix = 0;
-  for (int i=fNGloPar;i--;) fDiagCGlo[i] = MatCGlo.QuerryDiag(i); // save the diagonal elements  
-  //
-  //  Account for fixed parameters
-  for (int i=fNGloPar;i--;) { // // Reset row and column of fixed params and add 1/sig^2 to free ones
-    if ( fSigmaPar[i] <= 0. || fProcPnt[i]<fMinPntValid) {
-      fNGloFix++; 
-      fProcPnt[i] *= -1;
-      fVecBGlo[i] = 0.;
-      if (IsGlobalMatSparse()) {
-	AliVectorSparse& row = *((AliMatrixSparse*)fMatCGlo)->GetRow(i);
-	row.Clear();
-	row(i) = float(fNLocEquations);
-	for (int j=i+1;j<fNGloPar;j++) ((AliMatrixSparse*)fMatCGlo)->SetToZero(i,j);
-      }
-      else 
-	for (int j=fNGloPar;j--;) if (MatCGlo.Querry(i,j)) MatCGlo(i,j)=0;
-	MatCGlo.DiagElem(i) = float(fNLocEquations);
+  if (fMinPntValid>1 && fNGroupsSet) {
+    //
+    printf("Checking parameters with statistics < %d\n",fMinPntValid);
+    TStopwatch swsup;
+    swsup.Start();
+    // 1) build the list of parameters to fix
+    Int_t fixArrSize = 10;
+    Int_t nFixedGroups = 0;
+    TArrayI fixGroups(fixArrSize);
+    //
+    for (int i=fNGloPar;i--;) { // // Reset row and column of fixed params and add 1/sig^2 to free ones
+      int grID = fParamGrID[i];
+      if (grID<0) continue; // not in the group
+      if (fProcPnt[i]>=fMinPntValid) continue;
+      fProcPnt[i] = 0;
+      // check if the group is already accounted
+      Bool_t fnd = kFALSE;
+      for (int j=nFixedGroups;j--;) if (fixGroups[j]==grID) {fnd=kTRUE; break;}
+      if (fnd) continue;
+      if (nFixedGroups>=fixArrSize) {fixArrSize*=2; fixGroups.Set(fixArrSize);}
+      fixGroups[nFixedGroups++] = grID; // add group to fix
+      //
     }
-    else MatCGlo.DiagElem(i) += 1.0/(fSigmaPar[i]*fSigmaPar[i]);
+    // 2) loop over records and add contributions of fixed groups with negative sign
+    fLocFitAdd = kFALSE;
+    //
+    for (Long_t i=0;i<ndr;i++) {
+      ReadRecordData(i);
+      Bool_t suppr = kFALSE;
+      for (int ifx=nFixedGroups;ifx--;)if (fRecord->IsGroupPresent(fixGroups[ifx])) suppr = kTRUE;
+      if (suppr) LocalFit();
+    }
+    fLocFitAdd = kTRUE;
+    //
+    if (nFixedGroups) {
+      printf("Suppressed contributions of groups with NPoints<%d :\n",fMinPntValid);
+      for (int i=0;i<nFixedGroups;i++) printf("%d ",fixGroups[i]); printf("\n");
+    }
+    swsup.Stop();
+    swsup.Print();
   }
+  // ---------------------- Reject parameters with low statistics ------------<<
+  //
+  // add large number to diagonal of fixed params  
+  //
+  for (int i=fNGloPar;i--;) { // // Reset row and column of fixed params and add 1/sig^2 to free ones
+    if (fProcPnt[i]<1) {
+      fNGloFix++; 
+      fVecBGlo[i] = 0.;
+      matCGlo.DiagElem(i) = float(fNLocEquations*fNLocEquations);
+    }
+    else matCGlo.DiagElem(i) += (fgWeightSigma ? fProcPnt[i] : 1.)/(fSigmaPar[i]*fSigmaPar[i]);
+  }
+  //
+  for (int i=fNGloPar;i--;) fDiagCGlo[i] = matCGlo.QueryDiag(i); // save the diagonal elements  
   //
   // add constraint equations
   int nVar = fNGloPar;                    // Current size of global matrix	
   for (int i=0; i<fNGloConstraints; i++) {
     ReadRecordConstraint(i);
     double val   = fRecord->GetValue(0);  
+    double sig   = fRecord->GetValue(1);  
     int    *indV = fRecord->GetIndex()+2;
     double *der  = fRecord->GetValue()+2;
     int    csize = fRecord->GetSize()-2;
     //
-    // check if after suppression of fixed variables this there are non-0 derivatives
-    int NSuppressed = 0;
-    for (int j=csize;j--;)  if (fProcPnt[indV[j]]<1) NSuppressed++;
+    // check if after suppression of fixed variables there are non-0 derivatives
+    // and determine the max statistics of involved params
+    int nSuppressed = 0;
+    int maxStat = 1;
+    for (int j=csize;j--;) {
+      if (fProcPnt[indV[j]]<1) nSuppressed++; 
+      else {
+	maxStat = TMath::Max(maxStat,fProcPnt[indV[j]]);
+      }
+    }
     //
-    if (NSuppressed==csize) {
-      AliInfo(Form("Neglecting constraint %d of %d derivatives since no free parameters left",i,csize));
+    if (nSuppressed==csize) {
+      //      AliInfo(Form("Neglecting constraint %d of %d derivatives since no free parameters left",i,csize));
       //
       // was this constraint ever created ? 
-      if ( fConstrUsed[i] ) {
+      if ( sig==0 && fConstrUsed[i] ) { // this is needed only for constraints with Lagrange multiplier
 	// to avoid empty row impose dummy constraint on "Lagrange multiplier"
-	MatCGlo.DiagElem(nVar) = 1.;
+	matCGlo.DiagElem(nVar) = 1.;
 	fVecBGlo[nVar++] = 0;
       }
       continue;
     }
     //
-    for (int j=csize; j--;) {
-      int jID = indV[j];
-      val -= der[j]*(fInitPar[jID]+fDeltaPar[jID]);
-      if (fProcPnt[jID]<1) continue;                      // this parameter was fixed, don't put it into constraint
-      MatCGlo(nVar,jID) = float(fNLocEquations)*der[j];   // fMatCGlo is symmetric, only lower triangle is filled  
-    }
+    // account for already accumulated corrections
+    for (int j=csize; j--;) val -= der[j]*(fInitPar[ indV[j] ]+fDeltaPar[ indV[j] ]);
     //
-    if (MatCGlo.QuerryDiag(nVar)) MatCGlo.DiagElem(nVar) = 0.0;
-    fVecBGlo[nVar++] = float(fNLocEquations)*val; //RS ? should we use here fNLocFits ? 
-    fConstrUsed[i] = kTRUE;
+    if (sig > 0) {  // this is a gaussian constriant: no Lagrange multipliers are added
+      //
+      double sig2i = (fgWeightSigma ? TMath::Sqrt(maxStat) : 1.)/sig/sig;
+      for (int ir=0;ir<csize;ir++) {
+	int iID = indV[ir];
+	for (int ic=0;ic<=ir;ic++) { // matrix is symmetric
+	  int jID = indV[ic];
+	  double vl = der[ir]*der[ic]*sig2i;
+	  if (vl!=0) matCGlo(iID,jID) += vl;
+	}
+	fVecBGlo[iID] += val*der[ir]*sig2i;
+      }
+    }
+    else {   // this is exact constriant:  Lagrange multipliers must be added
+      for (int j=csize; j--;) {
+	int jID = indV[j];
+	if (fProcPnt[jID]<1) continue;                      // this parameter was fixed, don't put it into constraint
+	matCGlo(nVar,jID) = float(fNLocEquations)*der[j];   // fMatCGlo is symmetric, only lower triangle is filled  
+      }
+      //
+      if (matCGlo.QueryDiag(nVar)) matCGlo.DiagElem(nVar) = 0.0;
+      fVecBGlo[nVar++] = float(fNLocEquations)*val; //RS ? should we use here fNLocFits ? 
+      fConstrUsed[i] = kTRUE;
+    }
   }
   //
   AliInfo(Form("Obtained %-7ld equations from %-7ld records (%-7ld rejected). Fixed %-4d globals",
 	       fNLocEquations,fNLocFits,fNLocFitsRejected,fNGloFix));
 
   //
+  sws.Start();
   fGloSolveStatus = SolveGlobalMatEq();                     // obtain solution for this step
+  sws.Stop();
+  printf("Solve %d |",fIter); sws.Print();
   //
   sw.Stop();
   AliInfo(Form("Iteration#%2d %s. CPU time: %.1f",fIter,fGloSolveStatus==gkFailed ? "Failed":"Converged",sw.CpuTime()));
@@ -827,6 +879,7 @@ Int_t AliMillePede2::GlobalFitIteration()
   //
   for (int i=fNGloPar;i--;) fDeltaPar[i] += fVecBGlo[i];    // Update global parameters values (for iterations)
   //
+  //  PrintGlobalParameters();
   return 1;
 }
 
@@ -836,10 +889,17 @@ Int_t AliMillePede2::SolveGlobalMatEq()
   //
   // solve global matrix equation MatCGlob*X=VecBGlo and store the result in the VecBGlo
   //
+  /*
+  printf("GlobalMatrix\n");
+  fMatCGlo->Print();
+  printf("RHS\n");
+  for (int i=0;i<fNGloPar;i++) printf("%d %+e\n",i,fVecBGlo[i]);
+  */
+  //
   if (!fgIsMatGloSparse) {
     //
-    if (fNGloConstraints==0) { // pos-def systems are faster to solve by Cholesky
-      if ( ((AliSymMatrix*)fMatCGlo)->SolveChol(fVecBGlo, kTRUE) ) return gkInvert;
+    if (fNLagrangeConstraints==0) { // pos-def systems are faster to solve by Cholesky
+      if ( ((AliSymMatrix*)fMatCGlo)->SolveChol(fVecBGlo, fgInvChol) ) return fgInvChol ? gkInvert:gkNoInversion;
       else AliInfo("Solution of Global Dense System by Cholesky failed, trying Gaussian Elimiation");
     }
     //
@@ -847,22 +907,22 @@ Int_t AliMillePede2::SolveGlobalMatEq()
     else AliInfo("Solution of Global Dense System by Gaussian Elimiation failed, trying iterative methods");
   }
   // try to solve by minres
-  TVectorD SOL(fNGloSize);
+  TVectorD sol(fNGloSize);
   //
   AliMinResSolve *slv = new AliMinResSolve(fMatCGlo,fVecBGlo);
   if (!slv) return gkFailed;
   //
   Bool_t res = kFALSE;
   if      (fgIterSol == AliMinResSolve::kSolMinRes) 
-    res =  slv->SolveMinRes(SOL,fgMinResCondType,fgMinResMaxIter,fgMinResTol);
+    res =  slv->SolveMinRes(sol,fgMinResCondType,fgMinResMaxIter,fgMinResTol);
   else if (fgIterSol == AliMinResSolve::kSolFGMRes) 
-    res =  slv->SolveFGMRES(SOL,fgMinResCondType,fgMinResMaxIter,fgMinResTol,fgNKrylovV);
+    res =  slv->SolveFGMRES(sol,fgMinResCondType,fgMinResMaxIter,fgMinResTol,fgNKrylovV);
   else 
     AliInfo(Form("Undefined Iteritive Solver ID=%d, only %d are defined",fgIterSol,AliMinResSolve::kNSolvers));
   //
   if (!res) return gkFailed;
-  for (int i=fNGloSize;i--;) fVecBGlo[i] = SOL[i];
-  return gkMinRes;
+  for (int i=fNGloSize;i--;) fVecBGlo[i] = sol[i];
+  return gkNoInversion;
   //
 }
 
@@ -918,7 +978,7 @@ Double_t AliMillePede2::GetParError(int iPar) const
 {
   // return error for parameter iPar
   if (fGloSolveStatus==gkInvert) {
-    double res = fMatCGlo->QuerryDiag(iPar);
+    double res = fMatCGlo->QueryDiag(iPar);
     if (res>=0) return TMath::Sqrt(res);
   } 
   return -1.;
@@ -943,7 +1003,7 @@ Int_t AliMillePede2::PrintGlobalParameters() const
     lGlobalCor = 0.0;
     //		
     double dg;
-    if (fGloSolveStatus==gkInvert && TMath::Abs( (dg=fMatCGlo->QuerryDiag(i)) *fDiagCGlo[i]) > 0) {    
+    if (fGloSolveStatus==gkInvert && TMath::Abs( (dg=fMatCGlo->QueryDiag(i)) *fDiagCGlo[i]) > 0) {    
       lGlobalCor = TMath::Sqrt(TMath::Abs(1.0-1.0/(dg*fDiagCGlo[i])));
       AliInfo(Form("%d\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %6d",
 		   i,fInitPar[i],fInitPar[i]+fDeltaPar[i],fDeltaPar[i],fVecBGlo[i],lError,lGlobalCor,fProcPnt[i]));
