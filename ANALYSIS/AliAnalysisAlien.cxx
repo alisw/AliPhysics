@@ -1418,6 +1418,42 @@ void AliAnalysisAlien::WriteValidationScript()
       out << "ls -la ./"  << out_stream << endl;
       out << "echo \"* ----------------------------------------------------*\""  << out_stream << endl << endl;
       out << "##################################################" << endl;
+
+      out << "" << endl;
+      out << "parArch=`grep -Ei \"Cannot Build the PAR Archive\" stderr`" << endl;
+      out << "segViol=`grep -Ei \"Segmentation violation\" stderr`" << endl;
+      out << "segFault=`grep -Ei \"Segmentation fault\" stderr`" << endl;
+      out << "" << endl;
+
+      out << "if [ ! -f stderr ] ; then" << endl;
+      out << "   error=1" << endl;
+      out << "   echo \"* ########## Job not validated - no stderr  ###\" " << out_stream << endl;
+      out << "   echo \"Error = $error\" " << out_stream << endl;
+      out << "fi" << endl;
+
+      out << "if [ \"$parArch\" != \"\" ] ; then" << endl;
+      out << "   error=1" << endl;
+      out << "   echo \"* ########## Job not validated - PAR archive not built  ###\" " << out_stream << endl;
+      out << "   echo \"$parArch\" " << out_stream << endl;
+      out << "   echo \"Error = $error\" " << out_stream << endl;
+      out << "fi" << endl;
+
+      out << "if [ \"$segViol\" != \"\" ] ; then" << endl;
+      out << "   error=1" << endl;
+      out << "   echo \"* ########## Job not validated - Segment. violation  ###\" " << out_stream << endl;
+      out << "   echo \"$segViol\" " << out_stream << endl;
+      out << "   echo \"Error = $error\" " << out_stream << endl;
+      out << "fi" << endl;
+
+      out << "if [ \"$segFault\" != \"\" ] ; then" << endl;
+      out << "   error=1" << endl;
+      out << "   echo \"* ########## Job not validated - Segment. fault  ###\" " << out_stream << endl;
+      out << "   echo \"$segFault\" " << out_stream << endl;
+      out << "   echo \"Error = $error\" " << out_stream << endl;
+      out << "fi" << endl;
+
+      // Part dedicated to the specific analyses running into the train
+
       TObjArray *arr = fOutputFiles.Tokenize(" ");
       TIter next1(arr);
       TString output_file;
