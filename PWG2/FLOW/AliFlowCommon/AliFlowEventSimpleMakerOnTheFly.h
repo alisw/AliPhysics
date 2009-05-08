@@ -39,11 +39,20 @@ class AliFlowEventSimpleMakerOnTheFly {
   //                        *****************************
   //................................................................................................
   // setters and getters for global parameters:
+  void SetMultDistrOfRPsIsGauss(Bool_t const mdorig) {this->fMultDistrOfRPsIsGauss = mdorig;};
+  Bool_t GetMultDistrOfRPsIsGauss() const {return this->fMultDistrOfRPsIsGauss;};
+  
   void SetMultiplicityOfRP(Int_t multRP) {this->fMultiplicityOfRP = multRP;}
   Int_t GetMultiplicityOfRP() const {return this->fMultiplicityOfRP;} 
   
   void SetMultiplicitySpreadOfRP(Double_t multSpreadRP) {this->fMultiplicitySpreadOfRP = multSpreadRP;}
   Double_t GetMultiplicitySpreadOfRP() const {return this->fMultiplicitySpreadOfRP;} 
+  
+  void SetMinMultOfRP(Int_t minmr) {this->fMinMultOfRP = minmr;}
+  Int_t GetMinMultOfRP() const {return this->fMinMultOfRP;} 
+  
+  void SetMaxMultOfRP(Int_t maxmr) {this->fMaxMultOfRP = maxmr;}
+  Int_t GetMaxMultOfRP() const {return this->fMaxMultOfRP;} 
   
   void SetTemperatureOfRP(Double_t temperatureRP) {this->fTemperatureOfRP = temperatureRP;}
   Double_t GetTemperatureOfRP() const {return this->fTemperatureOfRP;} 
@@ -88,8 +97,14 @@ class AliFlowEventSimpleMakerOnTheFly {
   
   //................................................................................................
   // global parameters:
-  Int_t     fMultiplicityOfRP;       // multiplicity of RPs
-  Double_t  fMultiplicitySpreadOfRP; // multiplicity spread of RPs 
+  Bool_t    fMultDistrOfRPsIsGauss;  // 1.) if kTRUE  = multiplicitiy of RPs is sampled e-b-e from Gaussian distribution with
+                                     //                 mean = fMultiplicityOfRP and spread = fMultiplicitySpreadOfRP
+                                     // 2.) if kFALSE = multiplicitiy of RPs is sampled e-b-e uniformly from 
+                                     //                 interval [fMinMultOfRP,fMaxMultOfRP]
+  Int_t     fMultiplicityOfRP;       // mean multiplicity of RPs (if sampled from Gaussian)
+  Double_t  fMultiplicitySpreadOfRP; // multiplicity spread of RPs (if sampled from Gaussian)
+  Int_t     fMinMultOfRP;            // minimal multiplicity of RPs (if sampled uniformly)
+  Int_t     fMaxMultOfRP;            // maximum multiplicity of RPs (if sampled uniformly)
   Double_t  fTemperatureOfRP;        // "temperature" of RPs in GeV/c (increase this parameter to get more high pt RPs) 
   Bool_t    fUseConstantHarmonics;   // harmonics V1, V2, V4... are constant (kTRUE) or functions of pt and eta (kFALSE)     
   // constant harmonics: 
@@ -113,6 +128,7 @@ class AliFlowEventSimpleMakerOnTheFly {
   TRandom3* fMyTRandom3; // our TRandom3 generator
   Int_t     fCount;      // count number of events 
   Int_t     fNoOfLoops;  // number of times to use the same particle (nonflow)
+  
 
   ClassDef(AliFlowEventSimpleMakerOnTheFly,0) // macro for rootcint
 };

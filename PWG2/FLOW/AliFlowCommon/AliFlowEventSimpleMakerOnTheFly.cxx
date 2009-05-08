@@ -39,8 +39,11 @@ ClassImp(AliFlowEventSimpleMakerOnTheFly)
 
 
 AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
+  fMultDistrOfRPsIsGauss(kFALSE),
   fMultiplicityOfRP(0),
   fMultiplicitySpreadOfRP(0.),
+  fMinMultOfRP(0),
+  fMaxMultOfRP(0),  
   fTemperatureOfRP(0.),  
   fUseConstantHarmonics(kFALSE),
   fV1RP(0.), 
@@ -55,12 +58,12 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fPhiDistribution(NULL),
   fMyTRandom3(NULL),
   fCount(0),
-  fNoOfLoops(1)
- {
+  fNoOfLoops(1) 
+{
   // constructor
   fMyTRandom3 = new TRandom3(iseed);   
   gRandom->SetSeed(fMyTRandom3->Integer(65539));
- }
+}
 
 
 //========================================================================
@@ -72,7 +75,7 @@ AliFlowEventSimpleMakerOnTheFly::~AliFlowEventSimpleMakerOnTheFly()
  if (fPtSpectra) delete fPtSpectra;
  if (fPhiDistribution) delete fPhiDistribution;
  if (fMyTRandom3) delete fMyTRandom3;
-}
+}	
 
 
 //========================================================================
@@ -99,6 +102,7 @@ void AliFlowEventSimpleMakerOnTheFly::Init()
  fPhiDistribution->SetParName(1,"elliptic flow"); 
  fPhiDistribution->SetParName(2,"Reaction Plane");
  fPhiDistribution->SetParName(3,"harmonic 4"); // to be improved (name)
+ 
 }
 
 //========================================================================
@@ -111,9 +115,20 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
    
   // sampling the multiplicity:
   Int_t iNewMultiplicityOfRP = fMultiplicityOfRP;
-  if(fMultiplicitySpreadOfRP>0.0) iNewMultiplicityOfRP = (Int_t)fMyTRandom3->Gaus(fMultiplicityOfRP,fMultiplicitySpreadOfRP);
-  fPtSpectra->SetParameter(0,iNewMultiplicityOfRP);
   
+  if(fMultDistrOfRPsIsGauss) {
+    if (fMultiplicitySpreadOfRP>0.0) iNewMultiplicityOfRP = (Int_t)fMyTRandom3->Gaus(fMultiplicityOfRP,fMultiplicitySpreadOfRP);
+    fPtSpectra->SetParameter(0,iNewMultiplicityOfRP);
+  } else {
+    if (fMinMultOfRP != fMaxMultOfRP) {
+      iNewMultiplicityOfRP = (Int_t)fMyTRandom3->Uniform(fMinMultOfRP,fMaxMultOfRP);
+      fPtSpectra->SetParameter(0,iNewMultiplicityOfRP);
+    }
+    else {
+      fPtSpectra->SetParameter(0,fMinMultOfRP);
+    }
+  }
+    
   // set the 'temperature' of RPs
   fPtSpectra->SetParameter(1,fTemperatureOfRP);  
   
