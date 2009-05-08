@@ -1111,6 +1111,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "{" << endl;
       out << comment.Data() << endl;
       out << "// Automatically generated analysis steering macro executed in grid subjobs" << endl << endl;
+      out << "   TStopwatch timer;" << endl;
+      out << "   timer.Start();" << endl << endl;
       out << "// load base root libraries" << endl;
       out << "   gSystem->Load(\"libTree\");" << endl;
       out << "   gSystem->Load(\"libGeom\");" << endl;
@@ -1216,6 +1218,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "   }" << endl << endl;
       out << "   mgr->PrintStatus();" << endl;
       out << "   mgr->StartAnalysis(\"localfile\", chain);" << endl;
+      out << "   timer.Stop();" << endl;
+      out << "   timer.Print();" << endl;
       out << "}" << endl << endl;
       if (IsUsingTags()) {
          out << "TChain* CreateChainFromTags(const char *xmlfile, const char *type=\"ESD\")" << endl;
