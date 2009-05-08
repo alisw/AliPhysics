@@ -81,21 +81,24 @@ void AliEMCALQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
 void AliEMCALQADataMakerRec::InitESDs()
 {
   //Create histograms to controll ESD
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1F * h1 = new TH1F("hESDCaloClusterE",  "ESDs CaloCluster energy in EMCAL",    200, 0., 20.) ; 
   h1->Sumw2() ;
-  Add2ESDsList(h1, kESDCaloClusE)  ;                                                     
+  Add2ESDsList(h1, kESDCaloClusE, !expert, image)  ;                                                     
 
   TH1I * h2 = new TH1I("hESDCaloClusterM", "ESDs CaloCluster multiplicity in EMCAL", 100, 0,  100) ; 
   h2->Sumw2() ;
-  Add2ESDsList(h2, kESDCaloClusM)  ;
+  Add2ESDsList(h2, kESDCaloClusM, !expert, image)  ;
 
   TH1F * h3 = new TH1F("hESDCaloCellA",  "ESDs CaloCell amplitude in EMCAL",    500, 0., 250.) ; 
   h3->Sumw2() ;
-  Add2ESDsList(h3, kESDCaloCellA)  ;  
+  Add2ESDsList(h3, kESDCaloCellA, !expert, image)  ;  
  
   TH1I * h4 = new TH1I("hESDCaloCellM", "ESDs CaloCell multiplicity in EMCAL", 200, 0,  1000) ; 
   h4->Sumw2() ;
-  Add2ESDsList(h4, kESDCaloCellM) ;
+  Add2ESDsList(h4, kESDCaloCellM, !expert, image) ;
 	
 }
 
@@ -103,17 +106,20 @@ void AliEMCALQADataMakerRec::InitESDs()
 void AliEMCALQADataMakerRec::InitRecPoints()
 {
   // create Reconstructed Points histograms in RecPoints subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1F* h0 = new TH1F("hEMCALRpE","EMCAL RecPoint energies",200, 0.,20.); //GeV
   h0->Sumw2();
-  Add2RecPointsList(h0,kRecPE);
+  Add2RecPointsList(h0,kRecPE, !expert, image);
 
   TH1I* h1 = new TH1I("hEMCALRpM","EMCAL RecPoint multiplicities",100,0,100);
   h1->Sumw2();
-  Add2RecPointsList(h1,kRecPM);
+  Add2RecPointsList(h1,kRecPM, !expert, image);
 
   TH1I* h2 = new TH1I("hEMCALRpDigM","EMCAL RecPoint Digit Multiplicities",20,0,20);
   h2->Sumw2();
-  Add2RecPointsList(h2,kRecPDigM);
+  Add2RecPointsList(h2,kRecPDigM, !expert, image);
 
 }
 
@@ -123,40 +129,44 @@ void AliEMCALQADataMakerRec::InitRaws()
   // create Raws histograms in Raws subdir
   //these need more thought
   /*
+   const Bool_t expert   = kTRUE ; 
+   const Bool_t saveCorr = kTRUE ; 
+   const Bool_t image    = kTRUE ; 
+  
   TH1I * h0 = new TH1I("hLowEmcalSupermodules",    "Low Gain digits in EMCAL supermodules",       12, 0, 12) ;
   h0->Sumw2() ;
-  Add2RawsList(h0, kNsmodLG) ;
+  Add2RawsList(h0, kNsmodLG, !expert, image, !saveCorr) ;
   TH1I * h1 = new TH1I("hHighEmcalSupermodules",   "High Gain Digits in EMCAL supermodules",       12, 0, 12) ;
   h1->Sumw2() ;
-  Add2RawsList(h1, kNsmodHG) ;
+  Add2RawsList(h1, kNsmodHG, !expert, image, !saveCorr) ;
 
   TH1F * h2 = new TH1F("hLowEmcalRawtime", "Low Gain Time of raw digits in EMCAL", 500, -50., 200.) ;
   h2->Sumw2() ;
-  Add2RawsList(h2, kLGtime) ;
+  Add2RawsList(h2, kLGtime, !expert, image, !saveCorr) ;
   TH1F * h3 = new TH1F("hHighEmcalRawtime", "High Gain Time of raw digits in EMCAL", 500, -50., 200.) ;
   h3->Sumw2() ;
-  Add2RawsList(h3, kHGtime) ;
+  Add2RawsList(h3, kHGtime, !expert, image, !saveCorr) ;
 
   TH1F * h4 = new TH1F("hLowEmcalRawEnergy", "Low Gain Energy of raw digits in EMCAL", 500, 0., 1000.) ;
   h4->Sumw2() ;
-  Add2RawsList(h4, kSpecLG) ;
+  Add2RawsList(h4, kSpecLG, !expert, image, !saveCorr) ;
   TH1F * h5 = new TH1F("hHighEmcalRawEnergy", "High Gain Energy of raw digits in EMCAL",500,0., 1000.) ;
   h5->Sumw2() ;
-  Add2RawsList(h5, kSpecHG) ;
+  Add2RawsList(h5, kSpecHG, !expert, image, !saveCorr) ;
 
   TH1I * h6 = new TH1I("hLowNtot", "Low Gain Total Number of raw digits in EMCAL", 500, 0, 10000) ;
   h6->Sumw2() ;
-  Add2RawsList(h6, kNtotLG) ;
+  Add2RawsList(h6, kNtotLG, !expert, image, !saveCorr) ;
   TH1I * h7 = new TH1I("hHighNtot", "High Gain Total Number of raw digits in EMCAL",500,0, 10000) ;
   h7->Sumw2() ;
-  Add2RawsList(h7, kNtotHG) ;
+  Add2RawsList(h7, kNtotHG, !expert, image, !saveCorr) ;
 
   TH1F * h8 = new TH1F("hLowEtot", "Low Gain Total Energy of raw digits in EMCAL", 500, 0., 5000.) ;
   h8->Sumw2() ;
-  Add2RawsList(h8, kEtotLG) ;
+  Add2RawsList(h8, kEtotLG, !expert, image, !saveCorr) ;
   TH1F * h9 = new TH1F("hHighEtot", "High Gain Total Energy of raw digits in EMCAL",500,0., 100000.) ;
   h9->Sumw2() ;
-  Add2RawsList(h9, kEtotHG) ;
+  Add2RawsList(h9, kEtotHG, !expert, image, !saveCorr) ;
   */
   
 }

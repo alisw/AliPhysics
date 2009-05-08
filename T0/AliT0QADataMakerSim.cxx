@@ -110,26 +110,30 @@ void AliT0QADataMakerSim::InitHits()
 {
   // create Hits histograms in Hits subdir
   // create Hits histograms in Hits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+
   TString timename;
   
   TH2F *fhHitsTimeA = new TH2F("hHitsTimeA", "Hits Efficiency", 25, 0, 25, 100,12,15 );
-  Add2HitsList(fhHitsTimeA,0);
+  Add2HitsList(fhHitsTimeA,0, !expert, image);
   TH2F *fhHitsTimeC = new TH2F("hHitsTimeC", "Hits Efficiency", 25, 0, 25, 100,2,5 );
-  Add2HitsList(fhHitsTimeC,1);
+  Add2HitsList(fhHitsTimeC,1, !expert, image);
 }
 
 //____________________________________________________________________________ 
 void AliT0QADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
   
   TH2F * fhDigCFD = new TH2F("fhDigCFD", " CFD digits",25,-0.5,24.5,100,100,1000);
   Add2DigitsList( fhDigCFD,0);
   TH2F *fhDigLEDamp = new TH2F("fhDigLEDamp", " LED-CFD digits",25,-0.5,24.5,100,100,1000);
-  Add2DigitsList( fhDigLEDamp,1);
+  Add2DigitsList( fhDigLEDamp,1, !expert, image);
   TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits",25,-0.5,24.5,100,100,1000);
-  Add2DigitsList( fhDigQTC,2);
+  Add2DigitsList( fhDigQTC,2, !expert, image);
   
   
    

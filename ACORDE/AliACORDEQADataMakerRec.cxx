@@ -85,15 +85,17 @@ void AliACORDEQADataMakerRec::InitRaws()
 {
   // create Raw histograms in Raw subdir
 
-TH1D *fhACORDEBitPattern[4];
-fhACORDEBitPattern[0] = new TH1D("ACORDERawDataSM","ACORDE-SingleMuon",60,1,60);//AcordeSingleMuon BitPattern
-fhACORDEBitPattern[1] = new TH1D("ACORDERawDataMM","ACORDE-MultiMuon",60,1,60);//AcordeMultiMuon BitPattern
-fhACORDEBitPattern[2] = new TH1D("ACORDERawDataSMM","ACORDE-SingleMuonMultiplicity",60,1,60);//AcordeSingleMuon Multiplicity
-fhACORDEBitPattern[3] = new TH1D("ACORDERawDataMMM","ACORDE-MultiMuonMultiplicity",60,1,60);//AcordeMultiMuon Multiplicity
-for(Int_t i=0;i<4;i++)
-{
-	Add2RawsList(fhACORDEBitPattern[i],i,kFALSE);
-}
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t saveCorr = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1D *fhACORDEBitPattern[4];
+  fhACORDEBitPattern[0] = new TH1D("ACORDERawDataSM","ACORDE-SingleMuon",60,1,60);//AcordeSingleMuon BitPattern
+  fhACORDEBitPattern[1] = new TH1D("ACORDERawDataMM","ACORDE-MultiMuon",60,1,60);//AcordeMultiMuon BitPattern
+  fhACORDEBitPattern[2] = new TH1D("ACORDERawDataSMM","ACORDE-SingleMuonMultiplicity",60,1,60);//AcordeSingleMuon Multiplicity
+  fhACORDEBitPattern[3] = new TH1D("ACORDERawDataMMM","ACORDE-MultiMuonMultiplicity",60,1,60);//AcordeMultiMuon Multiplicity
+  for(Int_t i=0;i<4;i++) 
+    Add2RawsList(fhACORDEBitPattern[i],i,!expert, image, !saveCorr);
 }
 //____________________________________________________________________________ 
 
@@ -107,18 +109,21 @@ void AliACORDEQADataMakerRec::InitESDs()
 {
   //create ESDs histograms in ESDs subdir
 
-   TH1F *    fhESDsSingle;
-   TH1F *    fhESDsMulti;
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1F *    fhESDsSingle;
+  TH1F *    fhESDsMulti;
 
    TString   name;
 
    name = "hESDsSingle";
    fhESDsSingle = new TH1F(name.Data(),"hESDsSingle",60,0,60);
-   Add2ESDsList(fhESDsSingle,0,kFALSE);
+   Add2ESDsList(fhESDsSingle,0,!expert,image);
 
    name = "hESDsMulti";
    fhESDsMulti = new TH1F(name.Data(),"hESDsMulti",60,0,60);
-   Add2ESDsList(fhESDsMulti,1,kFALSE);
+   Add2ESDsList(fhESDsMulti,1,!expert,image);
 }
 //____________________________________________________________________________
 void AliACORDEQADataMakerRec::MakeRaws(AliRawReader* rawReader)

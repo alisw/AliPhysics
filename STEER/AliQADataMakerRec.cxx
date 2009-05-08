@@ -24,6 +24,7 @@
 //
 
 // --- ROOT system ---
+#include <TCanvas.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TNtupleD.h>
@@ -182,8 +183,87 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
     }
     fOutput->Save() ; 
 	}
+  MakeImage(task) ; 
 }
- 
+
+//____________________________________________________________________________ 
+void AliQADataMakerRec::MakeImage(AliQAv1::TASKINDEX_t task)
+{
+  // create a drawing of detetor defined histograms
+  TObjArray ** list = NULL ;  
+  switch (task) {
+    case AliQAv1::kRAWS:
+      list = fRawsQAList ; 
+      break;
+    case AliQAv1::kHITS:
+      break;
+    case AliQAv1::kSDIGITS:
+      break;  
+    case AliQAv1::kDIGITS:
+      break;  
+    case AliQAv1::kRECPOINTS:
+      list = fRecPointsQAList ; 
+      break;
+    case AliQAv1::kTRACKSEGMENTS:
+      break;
+    case AliQAv1::kRECPARTICLES:
+      break;
+    case AliQAv1::kESDS:
+      list = fESDsQAList ; 
+      break;
+    case AliQAv1::kNTASKINDEX:
+      break;
+    default:
+      break;
+  }
+  if ( !list) {
+    AliError("data not initialized, call AliQADataMaker::Init"); 
+    return ; 
+  }
+  TIter next(list[0]) ;  
+  TH1 * hdata = NULL ; 
+  Int_t nImages = 0 ;
+  while ( (hdata=dynamic_cast<TH1 *>(next())) ) {
+    if ( hdata->TestBit(AliQAv1::GetImageBit()) )
+      nImages++; 
+  }
+  if ( nImages == 0 ) {
+    AliInfo(Form("No histogram will be plotted for %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data())) ;  
+  } else {
+    AliInfo(Form("%d histograms will be plotted for %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data())) ;  
+    Double_t w  = 1000 ;
+    Double_t h  = 1000 ;
+    for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
+      TCanvas * canvasQA = new TCanvas(Form("QA_%s_%s_%s", 
+                                            GetName(), 
+                                            AliQAv1::GetTaskName(task).Data(), 
+                                            AliRecoParam::GetEventSpecieName(esIndex)), 
+                                       Form("QA control plots for det=%s task=%s eventspecie=%s", 
+                                            GetName(), 
+                                            AliQAv1::GetTaskName(task).Data(), 
+                                            AliRecoParam::GetEventSpecieName(esIndex)), 
+                                       w, h) ;
+      canvasQA->SetWindowSize(w + (w - canvasQA->GetWw()), h + (h - canvasQA->GetWh())) ;
+      Int_t nx = TMath::Sqrt(nImages) ; 
+      Int_t ny = nx  ; 
+      if ( nx < TMath::Sqrt(nImages)) 
+        ny++ ; 
+      canvasQA->Divide(nx, ny) ; 
+      TIter nexthist(list[esIndex]) ; 
+      TH1* hist = NULL ;
+      Int_t npad = 1 ; 
+      canvasQA->cd(npad) ; 
+      while ( (hist=dynamic_cast<TH1*>(nexthist())) ) {
+        if(hist->TestBit(AliQAv1::GetImageBit())) {
+          hist->Draw() ; 
+          canvasQA->cd(++npad) ; 
+        }
+      }
+      canvasQA->Print() ; 
+    }
+  }
+}
+
 //____________________________________________________________________________
 void AliQADataMakerRec::Exec(AliQAv1::TASKINDEX_t task, TObject * data) 
 { 

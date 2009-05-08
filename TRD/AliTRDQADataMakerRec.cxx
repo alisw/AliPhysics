@@ -237,7 +237,9 @@ void AliTRDQADataMakerRec::InitESDs()
   //
   // Create ESDs histograms in ESDs subdir
   //
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   const Int_t kNhist = 36+5+4;
 
   TH1 *hist[kNhist];
@@ -321,7 +323,7 @@ void AliTRDQADataMakerRec::InitESDs()
 
   for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
-    Add2ESDsList(hist[i], i);
+    Add2ESDsList(hist[i], i, !expert, image);
   }
 
 }
@@ -332,7 +334,9 @@ void AliTRDQADataMakerRec::InitRecPoints()
   //
   // Create Reconstructed Points histograms in RecPoints subdir
   //
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   const Int_t kNhist = 14 + 4 * 18 + 2;
   TH1 *hist[kNhist];
 
@@ -394,7 +398,7 @@ void AliTRDQADataMakerRec::InitRecPoints()
 
   for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
-    Add2RecPointsList(hist[i], i);
+    Add2RecPointsList(hist[i], i, !expert, image);
   }
 }
 
@@ -404,7 +408,10 @@ void AliTRDQADataMakerRec::InitRaws()
   //
   // create Raws histograms in Raws subdir
   //
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t saveCorr = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   const Int_t kSM = 18;
   //const Int_t kNCh = 540;
   const Int_t kNhist = 4+kSM;
@@ -425,7 +432,7 @@ void AliTRDQADataMakerRec::InitRaws()
   // register
   for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
-    Add2RawsList(hist[i], i);
+    Add2RawsList(hist[i], i, !expert, image, !saveCorr);
   }
 
 }

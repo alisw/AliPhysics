@@ -105,27 +105,30 @@ void AliITSQASDDDataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, 
 void AliITSQASDDDataMakerSim::InitDigits()
 { 
   // Initialization for DIGIT data - SDD -  
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ;
+  
   fGenOffsetD = (fAliITSQADataMakerSim->fDigitsQAList[AliRecoParam::kDefault])->GetEntries();
   //fSDDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
   TH1F* h0=new TH1F("SDD DIGITS Module Pattern","SDD DIGITS Module Pattern",260,239.5,499.5);       //hmod
   h0->GetXaxis()->SetTitle("SDD Module Number");
   h0->GetYaxis()->SetTitle("# DIGITS");
-  fAliITSQADataMakerSim->Add2DigitsList(h0,fGenOffsetD);
+  fAliITSQADataMakerSim->Add2DigitsList(h0,fGenOffsetD, !expert, image);
   fSDDhDTask ++;
   TH1F* h1=new TH1F("SDD Anode Distribution","DIGITS Anode Distribution",512,-0.5,511.5);      //hanocc
   h1->GetXaxis()->SetTitle("Anode Number");
   h1->GetYaxis()->SetTitle("# DIGITS");
-  fAliITSQADataMakerSim->Add2DigitsList(h1,1+fGenOffsetD);
+  fAliITSQADataMakerSim->Add2DigitsList(h1,1+fGenOffsetD, !expert, image);
   fSDDhDTask ++;
   TH1F* h2=new TH1F("SDD Tbin Distribution","DIGITS Tbin Distribution",256,-0.5,255.5);      //htbocc
   h2->GetXaxis()->SetTitle("Tbin Number");
   h2->GetYaxis()->SetTitle("# DIGITS");
-  fAliITSQADataMakerSim->Add2DigitsList(h2,2+fGenOffsetD);
+  fAliITSQADataMakerSim->Add2DigitsList(h2,2+fGenOffsetD, !expert, image);
   fSDDhDTask ++;
   TH1F* h3=new TH1F("SDD ADC Counts Distribution","DIGITS ADC Counts Distribution",200,0.,1024.);          //hsig
   h3->GetXaxis()->SetTitle("ADC Value");
   h3->GetYaxis()->SetTitle("# DIGITS");
-  fAliITSQADataMakerSim->Add2DigitsList(h3,3+fGenOffsetD);
+  fAliITSQADataMakerSim->Add2DigitsList(h3,3+fGenOffsetD, !expert, image);
   fSDDhDTask ++;
   AliDebug(1,Form("%d SDD Digits histograms booked\n",fSDDhDTask));
 }
@@ -159,17 +162,20 @@ void AliITSQASDDDataMakerSim::MakeDigits(TTree * digits)
 void AliITSQASDDDataMakerSim::InitSDigits()
 { 
   // Initialization for SDIGIT data - SDD -
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ;
+  
   fGenOffsetS = (fAliITSQADataMakerSim->fSDigitsQAList[AliRecoParam::kDefault])->GetEntries();
   //fSDDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
   TH1F* h0=new TH1F("SDD SDIGITS Module Pattern","SDIGITS SDD Module Pattern",260,239.5,499.5);       //hmod
   h0->GetXaxis()->SetTitle("SDD Module Number");
   h0->GetYaxis()->SetTitle("# SDIGITS");
-  fAliITSQADataMakerSim->Add2SDigitsList(h0,fGenOffsetS);
+  fAliITSQADataMakerSim->Add2SDigitsList(h0,fGenOffsetS, !expert, image);
   fSDDhSTask ++;
   TH1F* h1=new TH1F("SDD Anode Distribution","SDIGITS Anode Distribution",512,-0.5,511.5);      //hanocc
   h1->GetXaxis()->SetTitle("Anode Number");
   h1->GetYaxis()->SetTitle("# SDIGITS");
-  fAliITSQADataMakerSim->Add2SDigitsList(h1,1+fGenOffsetS);
+  fAliITSQADataMakerSim->Add2SDigitsList(h1,1+fGenOffsetS, !expert, image);
   fSDDhSTask ++;
   TH1F* h2=new TH1F("SDD Tbin Distribution","SDIGITS Tbin Distribution",256,-0.5,255.5);      //htbocc
   h2->GetXaxis()->SetTitle("Tbin Number");
@@ -179,7 +185,7 @@ void AliITSQASDDDataMakerSim::InitSDigits()
   TH1F* h3=new TH1F("SDD ADC Counts Distribution","SDIGITS ADC Counts Distribution",200,0.,1024.);          //hsig
   h3->GetXaxis()->SetTitle("ADC Value");
   h3->GetYaxis()->SetTitle("# SDIGITS");
-  fAliITSQADataMakerSim->Add2SDigitsList(h3,3+fGenOffsetS);
+  fAliITSQADataMakerSim->Add2SDigitsList(h3,3+fGenOffsetS, !expert, image);
   fSDDhSTask ++;
 
   AliDebug(1,Form("%d SDD SDigits histograms booked\n",fSDDhSTask));
@@ -231,28 +237,31 @@ void AliITSQASDDDataMakerSim::InitHits()
 { 
 
   // Initialization for HITS data - SDD -
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ;
+  
   fGenOffsetH = (fAliITSQADataMakerSim->fHitsQAList[AliRecoParam::kDefault])->GetEntries();
   //fSDDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
   //printf("AliITSQASDDDataMakerSim::InitHits called \n");
   TH1F *h0=new TH1F("SDD HITS Module Pattern","SDD HITS Module Pattern",260,239.5,499.5);  
   h0->GetXaxis()->SetTitle("SDD Module Number");
   h0->GetYaxis()->SetTitle("# HITS");
-  fAliITSQADataMakerSim->Add2HitsList(h0,fGenOffsetH);
+  fAliITSQADataMakerSim->Add2HitsList(h0,fGenOffsetH, !expert, image);
   fSDDhHTask ++;
   TH1F *h1=new TH1F("SDD HIT lenght along local Y Coord","HIT lenght along local Y Coord",200,0.,350.);
   h1->GetXaxis()->SetTitle("HIT lenght (um)");
   h1->GetYaxis()->SetTitle("# HITS");
-  fAliITSQADataMakerSim->Add2HitsList(h1,1+fGenOffsetH);
+  fAliITSQADataMakerSim->Add2HitsList(h1,1+fGenOffsetH, !expert, image);
   fSDDhHTask ++;
   TH1F *h2=new TH1F("SDD HIT lenght along local Y Coord - Zoom","SDD HIT lenght along local Y Coord - Zoom",200,250.,350.);
   h2->GetXaxis()->SetTitle("HIT lenght (um)");
   h2->GetYaxis()->SetTitle("# HITS");
-  fAliITSQADataMakerSim->Add2HitsList(h2,2+fGenOffsetH);
+  fAliITSQADataMakerSim->Add2HitsList(h2,2+fGenOffsetH, !expert, image);
   fSDDhHTask ++;
   TH1F *h3=new TH1F("SDD Deposited Energy Distribution (loc Y > 200um)","SDD HITS Deposited Energy Distribution (loc Y > 200um)",200,0.,350.);
   h3->GetXaxis()->SetTitle("ADC counts ");
   h3->GetYaxis()->SetTitle("# HITS");
-  fAliITSQADataMakerSim->Add2HitsList(h3,3+fGenOffsetH);
+  fAliITSQADataMakerSim->Add2HitsList(h3,3+fGenOffsetH, !expert, image);
   fSDDhHTask ++;
   AliDebug(1,Form("%d SDD Hits histograms booked\n",fSDDhHTask));
 }

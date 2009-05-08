@@ -134,66 +134,69 @@ void AliZDCQADataMakerRec::InitESDs()
 {
   //Booking ESDs histograms
   //
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH2F * hZNC  = new TH2F("hZNC", "Centroid in ZNC", 100, -5.,5.,100,-5.,5.);
   TH2F * hZNA  = new TH2F("hZNA", "Centroid in ZNA", 100, -5.,5.,100,-5.,5.);
-  Add2ESDsList(hZNC, 0);
-  Add2ESDsList(hZNA, 1);
+  Add2ESDsList(hZNC, 0, !expert, image);
+  Add2ESDsList(hZNA, 1, !expert, image);
   //
   // ------------------- HIGH GAIN CHAIN ---------------------------
   TH1F * hESDZNCTot = new TH1F("hESDZNCTot", "Energy in ZNC", 100, 0., 6000.);
   TH1F * hESDZNATot = new TH1F("hESDZNATot", "Energy in ZNA", 100, 0., 6000.);
   TH1F * hESDZPCTot = new TH1F("hESDZPCTot", "Energy in ZPC", 100, 0., 10000.);
   TH1F * hESDZPATot = new TH1F("hESDZPATot", "Energy in ZPA", 100, 0., 10000.);
-  Add2ESDsList(hESDZNCTot, 2);
-  Add2ESDsList(hESDZNATot, 3);
-  Add2ESDsList(hESDZPCTot, 4);
-  Add2ESDsList(hESDZPATot, 5);
+  Add2ESDsList(hESDZNCTot, 2, !expert, image);
+  Add2ESDsList(hESDZNATot, 3, !expert, image);
+  Add2ESDsList(hESDZPCTot, 4, !expert, image);
+  Add2ESDsList(hESDZPATot, 5, !expert, image);
   //
   TH1F * hESDSumQZNC = new TH1F("hESDSumQZNC", "Sum of 4 ZNC energy",100, 0., 4000.);
   TH1F * hESDSumQZNA = new TH1F("hESDSumQZNA", "Sum of 4 ZNA energy",100, 0., 4000.);
   TH1F * hESDSumQZPC = new TH1F("hESDSumQZPC", "Sum of 4 ZPC energy",100, 0., 4000.);
   TH1F * hESDSumQZPA = new TH1F("hESDSumQZPA", "Sum of 4 ZPA energy",100, 0., 4000.);
-  Add2ESDsList(hESDSumQZNC, 6, kTRUE);
-  Add2ESDsList(hESDSumQZNA, 7, kTRUE);
-  Add2ESDsList(hESDSumQZPC, 8, kTRUE);
-  Add2ESDsList(hESDSumQZPA, 9, kTRUE);
+  Add2ESDsList(hESDSumQZNC, 6, expert, !image);
+  Add2ESDsList(hESDSumQZNA, 7, expert, !image);
+  Add2ESDsList(hESDSumQZPC, 8, expert, !image);
+  Add2ESDsList(hESDSumQZPA, 9, expert, !image);
   //
   TH1F * hESDPMCZNC = new TH1F("hESDPMCZNC", "Energy in common ZNC PMT",100, 0., 4000.);
   TH1F * hESDPMCZNA = new TH1F("hESDPMCZNA", "Energy in common ZNA PMT",100, 0., 4000.);
   TH1F * hESDPMCZPC = new TH1F("hESDPMCZPC", "Energy in common ZPC PMT",100, 0., 4000.);
   TH1F * hESDPMCZPA = new TH1F("hESDPMCZPA", "Energy in common ZPA PMT",100, 0., 4000.);
-  Add2ESDsList(hESDPMCZNC, 10, kTRUE);
-  Add2ESDsList(hESDPMCZNA, 11, kTRUE);
-  Add2ESDsList(hESDPMCZPC, 12, kTRUE);
-  Add2ESDsList(hESDPMCZPA, 13, kTRUE);
+  Add2ESDsList(hESDPMCZNC, 10, expert, !image);
+  Add2ESDsList(hESDPMCZNA, 11, expert, !image);
+  Add2ESDsList(hESDPMCZPC, 12, expert, !image);
+  Add2ESDsList(hESDPMCZPA, 13, expert, !image);
   // 
 /*  // ------------------- LOW GAIN CHAIN ---------------------------
   TH1F * hESDZNCTotlg = new TH1F("hESDZNCTotlg", "ESD lg signal in ZNC", 100, 0., 6000.);
   TH1F * hESDZNATotlg = new TH1F("hESDZNATotlg", "ESD lg signal in ZNA", 100, 0., 6000.);
   TH1F * hESDZPCTotlg = new TH1F("hESDZPCTotlg", "ESD lg signal in ZPC", 100, 0., 10000.);
   TH1F * hESDZPATotlg = new TH1F("hESDZPATotlg", "ESD lg signal in ZPA", 100, 0., 10000.);
-  Add2ESDsList(hESDZNCTotlg, 14);
-  Add2ESDsList(hESDZNATotlg, 15);
-  Add2ESDsList(hESDZPCTotlg, 16);
-  Add2ESDsList(hESDZPATotlg, 17);
+  Add2ESDsList(hESDZNCTotlg, !expert, image);
+  Add2ESDsList(hESDZNATotlg, !expert, image);
+  Add2ESDsList(hESDZPCTotlg, !expert, image);
+  Add2ESDsList(hESDZPATotlg, !expert, image);
   //
   TH1F * hESDSumQZNClg = new TH1F("hESDSumQZNClg", "Sum of 4 lg ZNC sectors",100, 0., 4000.);
   TH1F * hESDSumQZNAlg = new TH1F("hESDSumQZNAlg", "Sum of 4 lg ZNA sectors",100, 0., 4000.);
   TH1F * hESDSumQZPClg = new TH1F("hESDSumQZPClg", "Sum of 4 lg ZPC sectors",100, 0., 4000.);
   TH1F * hESDSumQZPAlg = new TH1F("hESDSumQZPAlg", "Sum of 4 lg ZPA sectors",100, 0., 4000.);
-  Add2ESDsList(hESDSumQZNClg, 18, kTRUE);
-  Add2ESDsList(hESDSumQZNAlg, 19, kTRUE);
-  Add2ESDsList(hESDSumQZPClg, 20, kTRUE);
-  Add2ESDsList(hESDSumQZPAlg, 21, kTRUE);
+  Add2ESDsList(hESDSumQZNClg, 18, expert, !image);
+  Add2ESDsList(hESDSumQZNAlg, 19, expert, !image);
+  Add2ESDsList(hESDSumQZPClg, 20, expert, !image);
+  Add2ESDsList(hESDSumQZPAlg, 21, expert, !image);
   //
   TH1F * hESDPMCZNClg = new TH1F("hESDPMCZNClg", "Signal in common ZNC lg PMT",100, 0., 4000.);
   TH1F * hESDPMCZNAlg = new TH1F("hESDPMCZNAlg", "Signal in common ZNA lg PMT",100, 0., 4000.);
   TH1F * hESDPMCZPClg = new TH1F("hESDPMCZPClg", "Signal in common ZPC lg PMT",100, 0., 4000.);
   TH1F * hESDPMCZPAlg = new TH1F("hESDPMCZPAlg", "Signal in common ZPA lg PMT",100, 0., 4000.);
-  Add2ESDsList(hESDPMCZNClg, 22, kTRUE);
-  Add2ESDsList(hESDPMCZNAlg, 23, kTRUE);
-  Add2ESDsList(hESDPMCZPClg, 24, kTRUE);
-  Add2ESDsList(hESDPMCZPAlg, 25, kTRUE);*/
+  Add2ESDsList(hESDPMCZNClg, 22, expert, !image);
+  Add2ESDsList(hESDPMCZNAlg, 23, expert, !image);
+  Add2ESDsList(hESDPMCZPClg, 24, expert, !image);
+  Add2ESDsList(hESDPMCZPAlg, 25, expert, !image);*/
 }
   
 //____________________________________________________________________________

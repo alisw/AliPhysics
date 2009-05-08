@@ -70,68 +70,74 @@ AliPMDQADataMakerSim& AliPMDQADataMakerSim::operator = (const AliPMDQADataMakerS
 void AliPMDQADataMakerSim::InitHits()
 {
     // create Hits histograms in Hits subdir
-
-    TH1F *h0 = new TH1F("hPreHitsEdep","Hits energy distribution in (keV)PRE(PMD)", 500, 0., 500.); 
-    h0->Sumw2() ;
-    Add2HitsList(h0, 0) ;
-
-    TH1F *h1 = new TH1F("hCpvHitsEdep","Hits energy distribution in (keV)CPV(PMD)", 500, 0., 500.); 
-    h1->Sumw2() ;
-    Add2HitsList(h1, 1) ;
-
-    TH1I *h2 = new TH1I("hPreHitsMult","Hits multiplicity distribution in PRE(PMD)", 500, 0, 3000) ; 
-    h2->Sumw2() ;
-    Add2HitsList(h2, 2) ;
-
-    TH1I *h3 = new TH1I("hCpvHitsMult","Hits multiplicity distribution in PRE(PMD)", 500, 0, 3000) ; 
-    h2->Sumw2() ;
-    Add2HitsList(h3, 3) ;
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1F *h0 = new TH1F("hPreHitsEdep","Hits energy distribution in (keV)PRE(PMD)", 500, 0., 500.); 
+  h0->Sumw2() ;
+  Add2HitsList(h0, 0, !expert, image) ;
+  
+  TH1F *h1 = new TH1F("hCpvHitsEdep","Hits energy distribution in (keV)CPV(PMD)", 500, 0., 500.); 
+  h1->Sumw2() ;
+  Add2HitsList(h1, 1, !expert, image) ;
+  
+  TH1I *h2 = new TH1I("hPreHitsMult","Hits multiplicity distribution in PRE(PMD)", 500, 0, 3000) ; 
+  h2->Sumw2() ;
+  Add2HitsList(h2, 2, !expert, image) ;
+  
+  TH1I *h3 = new TH1I("hCpvHitsMult","Hits multiplicity distribution in PRE(PMD)", 500, 0, 3000) ; 
+  h2->Sumw2() ;
+  Add2HitsList(h3, 3, !expert, image) ;
 }
 
 //____________________________________________________________________________ 
 void AliPMDQADataMakerSim::InitSDigits()
 {
     // create SDigits histograms in SDigits subdir
-
-    TH1F *h0 = new TH1F("hPreSDigitsEdep","SDigits energy distribution in(keV) PRE(PMD)", 500, 0., 500.);
-    h0->Sumw2();
-    Add2SDigitsList(h0, 0);
-
-    TH1F *h1 = new TH1F("hCpvSDigitsEdep","SDigits energy distribution in (keV)CPV(PMD)", 500, 0., 500.);
-    h1->Sumw2();
-    Add2SDigitsList(h1, 1);
-
-    TH1I *h2 = new TH1I("hPreSDigitsMult","SDigits multiplicity distribution in PRE(PMD)", 500, 0., 1000.);
-    h2->Sumw2();
-    Add2SDigitsList(h2, 2);
-
-    TH1I *h3 = new TH1I("hCpvSDigitsMult","SDigits multiplicity distribution in CPV(PMD)", 500, 0., 1000.);
-    h3->Sumw2();
-    Add2SDigitsList(h3, 3);
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1F *h0 = new TH1F("hPreSDigitsEdep","SDigits energy distribution in(keV) PRE(PMD)", 500, 0., 500.);
+  h0->Sumw2();
+  Add2SDigitsList(h0, 0, !expert, image);
+  
+  TH1F *h1 = new TH1F("hCpvSDigitsEdep","SDigits energy distribution in (keV)CPV(PMD)", 500, 0., 500.);
+  h1->Sumw2();
+  Add2SDigitsList(h1, 1, !expert, image);
+  
+  TH1I *h2 = new TH1I("hPreSDigitsMult","SDigits multiplicity distribution in PRE(PMD)", 500, 0., 1000.);
+  h2->Sumw2();
+  Add2SDigitsList(h2, 2, !expert, image);
+  
+  TH1I *h3 = new TH1I("hCpvSDigitsMult","SDigits multiplicity distribution in CPV(PMD)", 500, 0., 1000.);
+  h3->Sumw2();
+  Add2SDigitsList(h3, 3, !expert, image);
+  
 }
 
 //____________________________________________________________________________
 void AliPMDQADataMakerSim::InitDigits()
 {
     // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1F *h0 = new TH1F("hPreDigitsEdep","Digits energy distribution in PRE(PMD)", 100, 0., 2000.);
+  h0->Sumw2();
+  Add2DigitsList(h0, 0, !expert, image);
+  
+  TH1F *h1 = new TH1F("hCpvDigitsEdep","Digits energy distribution in CPV(PMD)", 100, 0., 2000.); 
+  h1->Sumw2();
+  Add2DigitsList(h1, 1, !expert, image);
 
-    TH1F *h0 = new TH1F("hPreDigitsEdep","Digits energy distribution in PRE(PMD)", 100, 0., 2000.);
-    h0->Sumw2();
-    Add2DigitsList(h0, 0);
-
-    TH1F *h1 = new TH1F("hCpvDigitsEdep","Digits energy distribution in CPV(PMD)", 100, 0., 2000.); 
-    h1->Sumw2();
-    Add2DigitsList(h1, 1);
-
-    TH1I *h2 = new TH1I("hPreDigitsMult","Digits multiplicity distribution in PRE(PMD)", 500, 0, 1000) ; 
-    h2->Sumw2();
-    Add2DigitsList(h2, 2);
-
-    TH1I *h3 = new TH1I("hCpvDigitsMult","Digits multiplicity distribution in CPV(PMD)", 500, 0, 1000);
-    h3->Sumw2();
-    Add2DigitsList(h3, 3);
-
+  TH1I *h2 = new TH1I("hPreDigitsMult","Digits multiplicity distribution in PRE(PMD)", 500, 0, 1000) ; 
+  h2->Sumw2();
+  Add2DigitsList(h2, 2, !expert, image);
+  
+  TH1I *h3 = new TH1I("hCpvDigitsMult","Digits multiplicity distribution in CPV(PMD)", 500, 0, 1000);
+  h3->Sumw2();
+  Add2DigitsList(h3, 3, !expert, image);
+  
 }
 
 //____________________________________________________________________________ 

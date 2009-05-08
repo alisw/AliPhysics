@@ -74,49 +74,51 @@ AliHMPIDQADataMakerSim& AliHMPIDQADataMakerSim::operator = (const AliHMPIDQAData
 void AliHMPIDQADataMakerSim::InitHits()
 {
   // create Hits histograms in Hits subdir
-  Bool_t expert = kTRUE;
-
-     TH1F *hHitQdc=new TH1F("HitQdc","HMPID Hit Qdc all chamber;QDC",500,0,4000);
-     Add2HitsList(hHitQdc,0);
-     TH2F *hHitMap[7];
-     for(Int_t iCh=0;iCh<7;iCh++) {
-     hHitMap[iCh]=new TH2F(Form("HMPID HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),162,-1,161,146,-1,145);   
-    Add2HitsList(hHitMap[iCh],iCh+1,expert);
-    }
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1F *hHitQdc=new TH1F("HitQdc","HMPID Hit Qdc all chamber;QDC",500,0,4000);
+  Add2HitsList(hHitQdc,0, !expert, image);
+  TH2F *hHitMap[7];
+  for(Int_t iCh=0;iCh<7;iCh++) {
+    hHitMap[iCh]=new TH2F(Form("HMPID HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),162,-1,161,146,-1,145);   
+    Add2HitsList(hHitMap[iCh],iCh+1,expert,!image);
+  }
 }
 
 //____________________________________________________________________________ 
 void AliHMPIDQADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
-
-  Bool_t expert = kTRUE;
-
-      TH1F *hDigChEvt = new TH1F("hDigChEvt","Chamber occupancy per event",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
-      TH1F *hDigPcEvt = new TH1F("hDigPcEvt","PC occupancy",156,-1,77);
-      TH2F *hDigMap[7];
-      TH1F *hDigQ[42];
-      for(Int_t iCh =0; iCh < 7; iCh++){
-       hDigMap[iCh] = new TH2F(Form("MapCh%i",iCh),Form("Digit Map in Chamber %i",iCh),159,0,159,143,0,143);
-       for(Int_t iPc =0; iPc < 6; iPc++ ){
-        hDigQ[iCh*6+iPc] = new TH1F(Form("QCh%iPc%i        ",iCh,iPc),Form("Charge of digits (ADC) in Chamber %i and PC %i   ",iCh,iPc),4100,0,4100);
-      }
-     }
-
-   Add2DigitsList(hDigChEvt,0);
-   Add2DigitsList(hDigPcEvt,1,expert);
-   for(Int_t iMap=0; iMap < 7; iMap++) Add2DigitsList(hDigMap[iMap],2+iMap,expert);
-   for(Int_t iH =0; iH < 42 ; iH++) Add2DigitsList(hDigQ[iH]    ,9+iH,expert);
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1F *hDigChEvt = new TH1F("hDigChEvt","Chamber occupancy per event",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
+  TH1F *hDigPcEvt = new TH1F("hDigPcEvt","PC occupancy",156,-1,77);
+  TH2F *hDigMap[7];
+  TH1F *hDigQ[42];
+  for(Int_t iCh =0; iCh < 7; iCh++){
+    hDigMap[iCh] = new TH2F(Form("MapCh%i",iCh),Form("Digit Map in Chamber %i",iCh),159,0,159,143,0,143);
+    for(Int_t iPc =0; iPc < 6; iPc++ ){
+      hDigQ[iCh*6+iPc] = new TH1F(Form("QCh%iPc%i        ",iCh,iPc),Form("Charge of digits (ADC) in Chamber %i and PC %i   ",iCh,iPc),4100,0,4100);
+    }
+  }
+  
+  Add2DigitsList(hDigChEvt,0, !expert, image);
+  Add2DigitsList(hDigPcEvt,1,expert, !image);
+  for(Int_t iMap=0; iMap < 7; iMap++) Add2DigitsList(hDigMap[iMap],2+iMap,expert, !image);
+  for(Int_t iH =0; iH < 42 ; iH++) Add2DigitsList(hDigQ[iH]    ,9+iH,expert,!image);
 }
 
 //____________________________________________________________________________ 
 void AliHMPIDQADataMakerSim::InitSDigits()
 {
   // create SDigits histograms in SDigits subdir
-   TH1F   *hSDigits     = new TH1F("hHmpidSDigits",    "SDigits Q  distribution in HMPID",  500, 0., 5000.) ; 
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
 
-Add2SDigitsList(hSDigits,0);
+  TH1F   *hSDigits     = new TH1F("hHmpidSDigits",    "SDigits Q  distribution in HMPID",  500, 0., 5000.) ; 
+  Add2SDigitsList(hSDigits,0, !expert, image);
 }
 
 //____________________________________________________________________________ 

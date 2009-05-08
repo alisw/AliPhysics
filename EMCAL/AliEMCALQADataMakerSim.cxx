@@ -79,36 +79,45 @@ void AliEMCALQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
 void AliEMCALQADataMakerSim::InitHits()
 {
   // create Hits histograms in Hits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1F * h0 = new TH1F("hEmcalHits",    "Hits energy distribution in EMCAL",       200, 0., 2.) ; //GeV
   h0->Sumw2() ;
-  Add2HitsList(h0, 0) ;
+  Add2HitsList(h0, 0, !expert, image) ;
   TH1I * h1  = new TH1I("hEmcalHitsMul", "Hits multiplicity distribution in EMCAL", 1000, 0, 10000) ; 
   h1->Sumw2() ;
-  Add2HitsList(h1, 1) ;
+  Add2HitsList(h1, 1, !expert, image) ;
 }
 
 //____________________________________________________________________________ 
 void AliEMCALQADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1I * h0 = new TH1I("hEmcalDigits",    "Digits amplitude distribution in EMCAL",    500, 0, 500) ; 
   h0->Sumw2() ;
-  Add2DigitsList(h0, 0) ;
+  Add2DigitsList(h0, 0, !expert, image) ;
   TH1I * h1 = new TH1I("hEmcalDigitsMul", "Digits multiplicity distribution in EMCAL", 200, 0, 2000) ; 
   h1->Sumw2() ;
-  Add2DigitsList(h1, 1) ;
+  Add2DigitsList(h1, 1, !expert, image) ;
 }
 
 //____________________________________________________________________________ 
 void AliEMCALQADataMakerSim::InitSDigits()
 {
   // create SDigits histograms in SDigits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1F * h0 = new TH1F("hEmcalSDigits",    "SDigits energy distribution in EMCAL",       200, 0., 20.) ; 
   h0->Sumw2() ;
-  Add2SDigitsList(h0, 0) ;
+  Add2SDigitsList(h0, 0, !expert, image) ;
   TH1I * h1 = new TH1I("hEmcalSDigitsMul", "SDigits multiplicity distribution in EMCAL", 500, 0,  5000) ; 
   h1->Sumw2() ;
-  Add2SDigitsList(h1, 1) ;
+  Add2SDigitsList(h1, 1, !expert, image) ;
 }
 
 //____________________________________________________________________________

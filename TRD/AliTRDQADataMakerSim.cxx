@@ -108,7 +108,9 @@ void AliTRDQADataMakerSim::InitHits()
   //
   // Create Hits histograms in Hits subdir
   //
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   const Int_t kNhist = 4;
   TH1D *hist[kNhist];
 
@@ -120,7 +122,7 @@ void AliTRDQADataMakerSim::InitHits()
 
   for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
-    Add2HitsList(hist[i], i);
+    Add2HitsList(hist[i], i, !expert, image);
   }
 
 }
@@ -131,7 +133,9 @@ void AliTRDQADataMakerSim::InitDigits()
   //
   // Create Digits histograms in Digits subdir
   //
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   const Int_t kNhist = 3;
   TH1D *hist[kNhist];
 
@@ -141,7 +145,7 @@ void AliTRDQADataMakerSim::InitDigits()
 
   for(Int_t i=0; i<kNhist; i++) {
     hist[i]->Sumw2();
-    Add2DigitsList(hist[i], i);
+    Add2DigitsList(hist[i], i, !expert, image);
   }
 
 }
@@ -152,7 +156,9 @@ void AliTRDQADataMakerSim::InitSDigits()
   //
   // Create SDigits histograms in SDigits subdir
   //
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   const Int_t kNhist = 3;
   TH1D *hist[kNhist];
 
@@ -162,7 +168,7 @@ void AliTRDQADataMakerSim::InitSDigits()
 
   for(Int_t i=0; i<kNhist; i++) {
     hist[i]->Sumw2();
-    Add2SDigitsList(hist[i], i);
+    Add2SDigitsList(hist[i], i, !expert, image);
   }
 
 }

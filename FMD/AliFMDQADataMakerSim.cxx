@@ -101,28 +101,37 @@ void AliFMDQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task,
 void AliFMDQADataMakerSim::InitSDigits()
 {
   // create SDigits histograms in SDigits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts",1024,0,1024);
   hADCCounts->SetXTitle("ADC counts");
-  Add2SDigitsList(hADCCounts, 0);
+  Add2SDigitsList(hADCCounts, 0, !expert, image);
 }
 
 //____________________________________________________________________ 
 void AliFMDQADataMakerSim::InitHits()
 {
   // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1F* hEnergyOfHits = new TH1F("hEnergyOfHits","Energy distribution",100,0,3);
   hEnergyOfHits->SetXTitle("Edep");
   hEnergyOfHits->SetYTitle("Counts");
-  Add2HitsList(hEnergyOfHits, 0);
+  Add2HitsList(hEnergyOfHits, 0, !expert, image);
 }
 
 //_____________________________________________________________________
 void AliFMDQADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts",1024,0,1024);
   hADCCounts->SetXTitle("ADC counts");
-  Add2DigitsList(hADCCounts, 0);
+  Add2DigitsList(hADCCounts, 0, !expert, image);
 }
 
 //_____________________________________________________________________

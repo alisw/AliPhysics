@@ -41,12 +41,12 @@ public:
 	AliQADataMaker(const AliQADataMaker& qadm) ;   
 	virtual ~AliQADataMaker() {} // dtor
   
-	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)          = 0 ; 
-	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)            = 0 ; 
-	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)            = 0 ; 
-	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)       = 0 ; 
-	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t saveForCorr = kFALSE)            = 0 ; 
-	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)         = 0 ; 
+	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)          = 0 ; 
+	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)            = 0 ; 
+	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)            = 0 ; 
+	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)       = 0 ; 
+	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t saveForCorr = kFALSE, const Bool_t image = kFALSE)            = 0 ; 
+	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)         = 0 ; 
 	virtual void        Exec(AliQAv1::TASKINDEX_t, TObject * data)                                       = 0 ;
 	virtual void        EndOfCycle()                                           = 0 ;
 	virtual void        EndOfCycle(AliQAv1::TASKINDEX_t        )                 = 0 ;
@@ -63,6 +63,7 @@ public:
 	virtual TObjArray** Init(AliQAv1::TASKINDEX_t, Int_t cycles = -1)                               = 0 ;
 	virtual void        Init(AliQAv1::TASKINDEX_t, TObjArray ** list, Int_t run, Int_t cycles = -1) = 0 ;
 	Bool_t              IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
+  virtual void        MakeImage(AliQAv1::TASKINDEX_t task) = 0 ; 
 	void                Reset() { fCycleCounter = 0 ; }
 	void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
   void                SetWriteExpert() { fWriteExpert = kTRUE ; }
@@ -76,7 +77,7 @@ public:
 	  
 protected: 
 
-	Int_t          Add2List(TH1 * hist, const Int_t index, TObjArray ** list, const Bool_t expert = kFALSE, const Bool_t saveForCorr = kFALSE) ;
+	Int_t          Add2List(TH1 * hist, const Int_t index, TObjArray ** list, const Bool_t expert = kFALSE, const Bool_t image = kFALSE, const Bool_t saveForCorr = kFALSE) ;
   TH1 *          CloneMe(TH1 * hist, Int_t specie) const ; 
 	virtual void   DefaultEndOfDetectorCycle(AliQAv1::TASKINDEX_t task ) ; 
 	virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list ) = 0 ; 

@@ -104,6 +104,9 @@ void AliITSQASPDDataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, 
 void AliITSQASPDDataMakerSim::InitDigits()
 { 
   // Initialization for DIGIT data - SPD -
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ;
+  
   fGenOffsetD = (fAliITSQADataMakerSim->fDigitsQAList[AliRecoParam::kDefault])->GetEntries();
   //fSPDhDTask must be incremented by one unit every time a histogram is ADDED to the QA List
 
@@ -113,7 +116,7 @@ void AliITSQASPDDataMakerSim::InitDigits()
   TH1F *hlayer = new TH1F("SPDLayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerSim->Add2DigitsList(hlayer,fGenOffsetD,kTRUE);
+  fAliITSQADataMakerSim->Add2DigitsList(hlayer,fGenOffsetD, expert, !image);
   fSPDhDTask++;
   
   TH1F **hmod = new TH1F*[2];
@@ -123,20 +126,20 @@ void AliITSQASPDDataMakerSim::InitDigits()
     hmod[iLay]=new TH1F(name,title,240,0,240);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerSim->Add2DigitsList(hmod[iLay],1+iLay+fGenOffsetD);
+    fAliITSQADataMakerSim->Add2DigitsList(hmod[iLay],1+iLay+fGenOffsetD, !expert, image);
     fSPDhDTask++;
   }
   
   TH1F *hcolumns = new TH1F("SPDColumns_SPD","Columns - SPD",160,0.,160.);
   hcolumns->GetXaxis()->SetTitle("Column number");
   hcolumns->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerSim->Add2DigitsList(hcolumns,3+fGenOffsetD,kTRUE);
+  fAliITSQADataMakerSim->Add2DigitsList(hcolumns,3+fGenOffsetD, expert, !image);
   fSPDhDTask++;
 
   TH1F *hrows = new TH1F("SPDRows_SPD","Rows - SPD",256,0.,256.);
   hrows->GetXaxis()->SetTitle("Row number");
   hrows->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerSim->Add2DigitsList(hrows,4+fGenOffsetD,kTRUE);
+  fAliITSQADataMakerSim->Add2DigitsList(hrows,4+fGenOffsetD, expert, !image);
   fSPDhDTask++;
 
   TH1F** hMultSPDdigits = new TH1F*[2];
@@ -146,7 +149,7 @@ void AliITSQASPDDataMakerSim::InitDigits()
     hMultSPDdigits[iLay]=new TH1F(name,title,200,0.,200.);
     hMultSPDdigits[iLay]->GetXaxis()->SetTitle("Digit multiplicity");
     hMultSPDdigits[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerSim->Add2DigitsList(hMultSPDdigits[iLay], 5+iLay+fGenOffsetD);
+    fAliITSQADataMakerSim->Add2DigitsList(hMultSPDdigits[iLay], 5+iLay+fGenOffsetD, !expert, image);
     fSPDhDTask++;
   }
 
@@ -154,7 +157,7 @@ void AliITSQASPDDataMakerSim::InitDigits()
        = new TH2F("SPDDigitMultCorrelation_SPD","Digit multiplicity correlation - SPD",200,0.,200.,200,0.,200.);
   hMultSPDdig2MultSPDdig1->GetXaxis()->SetTitle("Digit multiplicity (Layer 1)");
   hMultSPDdig2MultSPDdig1->GetYaxis()->SetTitle("Digit multiplicity (Layer 2)");
-  fAliITSQADataMakerSim->Add2DigitsList(hMultSPDdig2MultSPDdig1,7+fGenOffsetD);
+  fAliITSQADataMakerSim->Add2DigitsList(hMultSPDdig2MultSPDdig1,7+fGenOffsetD, !expert, image);
   fSPDhDTask++;
 
   AliDebug(1,Form("%d SPD Digits histograms booked\n",fSPDhDTask));
@@ -202,6 +205,9 @@ void AliITSQASPDDataMakerSim::MakeDigits(TTree *digits)
 void AliITSQASPDDataMakerSim::InitSDigits()
 { 
   // Initialization for SDIGIT data - SPD -
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ;
+  
   fGenOffsetS = (fAliITSQADataMakerSim->fSDigitsQAList[AliRecoParam::kDefault])->GetEntries();
   //printf("--W-- AliITSQASPDDataMakerSim::InitSDigits()  fGenOffset= %d \n",fGenOffset);
   //fSPDhSTask must be incremented by one unit every time a histogram is ADDED to the QA List
@@ -212,7 +218,7 @@ void AliITSQASPDDataMakerSim::InitSDigits()
   TH1F *hlayer = new TH1F("SPDLayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerSim->Add2SDigitsList(hlayer,fGenOffsetS,kTRUE);
+  fAliITSQADataMakerSim->Add2SDigitsList(hlayer,fGenOffsetS, expert, !image);
   fSPDhSTask++;
 
   TH1F **hmod = new TH1F*[2];
@@ -222,7 +228,7 @@ void AliITSQASPDDataMakerSim::InitSDigits()
     hmod[iLay]=new TH1F(name,title,240,0,240);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerSim->Add2SDigitsList(hmod[iLay],1+iLay+fGenOffsetS);
+    fAliITSQADataMakerSim->Add2SDigitsList(hmod[iLay],1+iLay+fGenOffsetS, !expert, image);
     fSPDhSTask++;
   }
 
@@ -257,6 +263,9 @@ void AliITSQASPDDataMakerSim::MakeSDigits(TTree *sdigits)
 void AliITSQASPDDataMakerSim::InitHits()
 { 
   // Initialization for HITS data - SPD -
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ;
+  
   fGenOffsetH = (fAliITSQADataMakerSim->fHitsQAList[AliRecoParam::kDefault])->GetEntries();
   //printf("--W-- AliITSQASPDDataMakerSim::InitHits()  fGenOffset= %d \n",fGenOffset);
   //fSPDhHTask must be incremented by one unit every time a histogram is ADDED to the QA List
@@ -266,7 +275,7 @@ void AliITSQASPDDataMakerSim::InitHits()
   TH1F *hlayer = new TH1F("SPDLayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerSim->Add2HitsList(hlayer,fGenOffsetH,kTRUE);
+  fAliITSQADataMakerSim->Add2HitsList(hlayer,fGenOffsetH, expert, !image);
   fSPDhHTask++;
 
   TH1F **hmod = new TH1F*[2];
@@ -276,20 +285,20 @@ void AliITSQASPDDataMakerSim::InitHits()
     hmod[iLay]=new TH1F(name,title,240,0,240);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerSim->Add2HitsList(hmod[iLay],1+iLay+fGenOffsetH);
+    fAliITSQADataMakerSim->Add2HitsList(hmod[iLay],1+iLay+fGenOffsetH, !expert, image);
     fSPDhHTask++;
   }
 
   TH1F *hhitlenght = new TH1F("SPDLenght_SPD","Hit lenght along y_{loc} coord",210,0.,210.);
   hhitlenght->GetXaxis()->SetTitle("Hit lenght [#mum]");
   hhitlenght->GetYaxis()->SetTitle("# hits");
-  fAliITSQADataMakerSim->Add2HitsList(hhitlenght,3+fGenOffsetH);
+  fAliITSQADataMakerSim->Add2HitsList(hhitlenght,3+fGenOffsetH, !expert, image);
   fSPDhHTask++;
 
   TH1F *hEdepos = new TH1F("SPDEnergyDeposit_SPD","Deposited energy distribution (y_{loc}>180 #mum)",150,0.,300.); 
   hEdepos->GetXaxis()->SetTitle("Deposited energy [keV]"); 
   hEdepos->GetYaxis()->SetTitle("# hits");
-  fAliITSQADataMakerSim->Add2HitsList(hEdepos,4+fGenOffsetH);
+  fAliITSQADataMakerSim->Add2HitsList(hEdepos,4+fGenOffsetH, !expert, image);
   fSPDhHTask++;
 
   AliDebug(1,Form("%d SPD Hits histograms booked\n",fSPDhHTask));

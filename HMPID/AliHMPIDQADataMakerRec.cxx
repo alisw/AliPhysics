@@ -76,33 +76,32 @@ AliHMPIDQADataMakerRec& AliHMPIDQADataMakerRec::operator = (const AliHMPIDQAData
 void AliHMPIDQADataMakerRec::InitRecPoints()
 {
   // create cluster histograms in RecPoint subdir
-
-  Bool_t expert = kTRUE;
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
  
   TProfile *hCluMult          = new TProfile("CluMult"   ,"Cluster multiplicity per chamber"    , 16, -1 , 7  , 0, 500);
-  Add2RecPointsList(hCluMult    , 0,expert);
+  Add2RecPointsList(hCluMult    , 0,expert, !image);
   
   TH2F *hCluFlg          = new TH2F("CluFlg"      ,"Cluster flag  "                              ,  56  ,-1.5, 12.5, 70, -0.5, 6.5);
-  Add2RecPointsList(hCluFlg    , 1,expert);
+  Add2RecPointsList(hCluFlg    , 1,expert, !image);
   
   TH1F *hCluSizeMip[7], *hCluSizePho[7];
   
   TH1F *hCluQSect[42], *hCluQSectZoom[42];
   
   for(Int_t iCh =0; iCh <7; iCh++){
-   hCluSizeMip[iCh] = new TH1F(Form("CluSizeMipCh%i",iCh),Form("Cluster size  MIP  (cluster Q > 100 ADC) in Chamber %i",iCh),  50  , 0  , 50  );
-  Add2RecPointsList(hCluSizeMip[iCh], iCh+2,expert);
+    hCluSizeMip[iCh] = new TH1F(Form("CluSizeMipCh%i",iCh),Form("Cluster size  MIP  (cluster Q > 100 ADC) in Chamber %i",iCh),  50  , 0  , 50  );
+    Add2RecPointsList(hCluSizeMip[iCh], iCh+2,expert,!image);
 
-   hCluSizePho[iCh]  = new TH1F(Form("CluSizePho%i",iCh ),Form("Cluster size  Phots(cluster Q < 100 ADC) in Chamber %i",iCh),  50  , 0  , 50  );
-  Add2RecPointsList(hCluSizePho[iCh], iCh+7+2,expert);
-
+    hCluSizePho[iCh]  = new TH1F(Form("CluSizePho%i",iCh ),Form("Cluster size  Phots(cluster Q < 100 ADC) in Chamber %i",iCh),  50  , 0  , 50  );
+    Add2RecPointsList(hCluSizePho[iCh], iCh+7+2,expert,!image);
+    
     for(Int_t iSect =0; iSect < 6; iSect++){
       hCluQSectZoom[iCh*6+iSect] = new TH1F(Form("QClusCh%iSect%iZoom",iCh,iSect) ,Form("Zoom on Cluster charge (ADC) in Chamber %i and sector %i",iCh,iSect),100,0,100);
-      Add2RecPointsList(hCluQSectZoom[iCh*6+iSect],2+14+iCh*6+iSect,expert);
-
+      Add2RecPointsList(hCluQSectZoom[iCh*6+iSect],2+14+iCh*6+iSect,expert,!image);
+      
       hCluQSect[iCh*6+iSect] = new TH1F(Form("QClusCh%iSect%i",iCh,iSect) ,Form("Cluster charge (ADC) in Chamber %i and sector %i",iCh,iSect),250,0,5000);
-      Add2RecPointsList(hCluQSect[iCh*6+iSect],2+14+42+iCh*6+iSect);
-
+      Add2RecPointsList(hCluQSect[iCh*6+iSect],2+14+42+iCh*6+iSect, !expert, image);
     }  
   }
 }
@@ -115,7 +114,10 @@ void AliHMPIDQADataMakerRec::InitRaws()
 // All histograms implemented in InitRaws are used in AMORE. Any change here should be propagated to the amoreHMP-QA as well!!! (clm)
 //  
   
-  Bool_t expert = kTRUE;
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t saveCorr = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   const Int_t kNerr = (Int_t)AliHMPIDRawStream::kSumErr+1;
   TH1F *hSumErr[14];
   TH2F *hDilo[14];
@@ -127,49 +129,50 @@ void AliHMPIDQADataMakerRec::InitRaws()
     for(Int_t ilabel=0; ilabel< kNerr; ilabel++) {
       hSumErr[iddl]->GetXaxis()->CenterLabels(kTRUE);
       hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,AliHMPIDRawStream::GetErrName(ilabel)));
-      }
-      
-    Add2RawsList(hSumErr[iddl],iddl,expert);
+    }
+    
+    Add2RawsList(hSumErr[iddl],iddl,expert,!image, !saveCorr);
     
     hDilo[iddl] = new TH2F(Form("hDiloDDL%i",iddl),Form("Dilogic response at DDL;Row # ;Dilogic #",iddl),24,1,25,10,1,11);
-    Add2RawsList(hDilo[iddl],14+iddl,expert);
+    Add2RawsList(hDilo[iddl],14+iddl,expert,!image, !saveCorr);
   }//DDL loop
- for(Int_t iCh = AliHMPIDParam::kMinCh; iCh <=AliHMPIDParam::kMaxCh ;iCh++) {
-   for(Int_t iPc = AliHMPIDParam::kMinPc; iPc <= AliHMPIDParam::kMaxPc ;iPc++) {
+  for(Int_t iCh = AliHMPIDParam::kMinCh; iCh <=AliHMPIDParam::kMaxCh ;iCh++) {
+    for(Int_t iPc = AliHMPIDParam::kMinPc; iPc <= AliHMPIDParam::kMaxPc ;iPc++) {
       hPadMap[iPc+6*iCh] = new TH2I(Form("hPadMap_Ch_%i_Pc%i",iCh,iPc),Form("Pad Map of Ch: %i Pc: %i;Pad X;Pad Y;",iCh,iPc),80,0,80,48,0,48);
-      Add2RawsList(hPadMap[iPc+6*iCh],28+iPc+6*iCh,expert); 
+      Add2RawsList(hPadMap[iPc+6*iCh],28+iPc+6*iCh,expert,!image, !saveCorr); 
       hPadQ[iPc+6*iCh]   = new TH1I(Form("hPadQ_Ch_%i_Pc%i",iCh,iPc),Form("Pad Charge of Ch: %i Pc: %i;Pad Q;Entries;",iCh,iPc),4100,0,4100);
-      Add2RawsList(hPadQ[iPc+6*iCh],70+iPc+6*iCh,expert); 
+      Add2RawsList(hPadQ[iPc+6*iCh],70+iPc+6*iCh,expert,!image, !saveCorr); 
     }//PC loop
   }//Ch loop  
-
-    TH2I *hGeneralErrorSummary = new TH2I("GeneralErrorSummary"," DDL index vs Error type plot", 2*kNerr, 0, 2*kNerr, 2*AliHMPIDRawStream::kNDDL,0,2*AliHMPIDRawStream::kNDDL);
-  for(Int_t igenlabel =0 ; igenlabel< kNerr; igenlabel++) hGeneralErrorSummary->GetXaxis()->SetBinLabel((2*igenlabel+1),Form("%i  %s",igenlabel+1,AliHMPIDRawStream::GetErrName(igenlabel)));
-   Add2RawsList(hGeneralErrorSummary,14+14+42+42);
   
+  TH2I *hGeneralErrorSummary = new TH2I("GeneralErrorSummary"," DDL index vs Error type plot", 2*kNerr, 0, 2*kNerr, 2*AliHMPIDRawStream::kNDDL,0,2*AliHMPIDRawStream::kNDDL);
+  for(Int_t igenlabel =0 ; igenlabel< kNerr; igenlabel++) hGeneralErrorSummary->GetXaxis()->SetBinLabel((2*igenlabel+1),Form("%i  %s",igenlabel+1,AliHMPIDRawStream::GetErrName(igenlabel)));
+  Add2RawsList(hGeneralErrorSummary,14+14+42+42, !expert, image, !saveCorr);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::InitESDs()
 {
   //
   //Booking ESDs histograms
-   TH2F*  hCkovP  = new TH2F("CkovP" , "#theta_{c}, [rad];P, [GeV]"   , 150,      0,  7  ,100, 0, 1)   ;
-   TH2F*  hSigP   = new TH2F("SigP"  ,"#sigma_{#theta_c} [mrad];[GeV]", 150,      0,  7  ,100, 0, 1)   ;
-   TH2F*  hDifXY  = new TH2F("DifXY" ,"diff"                          , 200,    -10, 10  ,200,-10,10)  ;
-   TH2F*  hMvsP = new TH2F("MvsP","Reconstructed Mass vs P",60,0,6,1000,0,1) ;
-   TH1F*  hPid[5];
-   hPid[0] = new TH1F("PidE" ,"electron response"              , 101, -0.005,1.005)             ;
-   hPid[1] = new TH1F("PidMu","#mu response"                   , 101, -0.005,1.005)             ;
-   hPid[2] = new TH1F("PidPi","#pi response"                   , 101, -0.005,1.005)             ;
-   hPid[3] = new TH1F("PidK" ,"K response"                     , 101, -0.005,1.005)             ;
-   hPid[4] = new TH1F("PidP" ,"p response"                     , 101, -0.005,1.005)             ;
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
 
-   Add2ESDsList(hCkovP,0);
-   Add2ESDsList(hSigP ,1,kTRUE);
-   Add2ESDsList(hDifXY,2);
-   Add2ESDsList(hMvsP,3,kTRUE);
-   for(Int_t i=0; i< 5; i++) Add2ESDsList(hPid[i],i+4,kTRUE);
-
+  TH2F*  hCkovP  = new TH2F("CkovP" , "#theta_{c}, [rad];P, [GeV]"   , 150,      0,  7  ,100, 0, 1)   ;
+  TH2F*  hSigP   = new TH2F("SigP"  ,"#sigma_{#theta_c} [mrad];[GeV]", 150,      0,  7  ,100, 0, 1)   ;
+  TH2F*  hDifXY  = new TH2F("DifXY" ,"diff"                          , 200,    -10, 10  ,200,-10,10)  ;
+  TH2F*  hMvsP = new TH2F("MvsP","Reconstructed Mass vs P",60,0,6,1000,0,1) ;
+  TH1F*  hPid[5];
+  hPid[0] = new TH1F("PidE" ,"electron response"              , 101, -0.005,1.005)             ;
+  hPid[1] = new TH1F("PidMu","#mu response"                   , 101, -0.005,1.005)             ;
+  hPid[2] = new TH1F("PidPi","#pi response"                   , 101, -0.005,1.005)             ;
+  hPid[3] = new TH1F("PidK" ,"K response"                     , 101, -0.005,1.005)             ;
+  hPid[4] = new TH1F("PidP" ,"p response"                     , 101, -0.005,1.005)             ;
+  
+  Add2ESDsList(hCkovP,0, !expert, image);
+  Add2ESDsList(hSigP ,1, expert, !image);
+  Add2ESDsList(hDifXY,2, !expert, image);
+  Add2ESDsList(hMvsP,3, expert, !image);
+  for(Int_t i=0; i< 5; i++) Add2ESDsList(hPid[i],i+4, expert, !image);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)

@@ -28,12 +28,12 @@ public:
 	AliQADataMakerSim& operator = (const AliQADataMakerSim& qadm) ;
 	virtual ~AliQADataMakerSim() ; // dtor
   
-	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)    { return Add2List(hist, index, fDigitsQAList, expert) ; }
-	virtual Int_t Add2ESDsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/)      { return -1 ; } 
-	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)      { return Add2List(hist, index, fHitsQAList, expert) ; }
-	virtual Int_t Add2RecPointsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/) { return -1 ; } 
-	virtual Int_t Add2RawsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*saveForCorr = kFALSE*/)      { return -1 ; }  
-	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE)   { return Add2List(hist, index, fSDigitsQAList, expert) ; }
+	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)    { return Add2List(hist, index, fDigitsQAList, expert, image) ; }
+	virtual Int_t Add2ESDsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)      { return -1 ; } 
+	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)      { return Add2List(hist, index, fHitsQAList, expert, image) ; }
+	virtual Int_t Add2RecPointsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/) { return -1 ; } 
+	virtual Int_t Add2RawsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*saveForCorr = kFALSE*/, const Bool_t /*image = kFALSE*/)      { return -1 ; }  
+	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)   { return Add2List(hist, index, fSDigitsQAList, expert, image) ; }
 	virtual void        Exec(AliQAv1::TASKINDEX_t task, TObject * data) ;
 	virtual void        EndOfCycle() ;
 	virtual void        EndOfCycle(AliQAv1::TASKINDEX_t task) ;
@@ -46,6 +46,7 @@ public:
 	virtual TH1 *       GetSDigitsData(const Int_t index)   { return dynamic_cast<TH1 *>(GetData(fSDigitsQAList, index)) ; }
 	virtual TObjArray** Init(AliQAv1::TASKINDEX_t task, Int_t cycles = -1) ;
 	virtual void        Init(AliQAv1::TASKINDEX_t task, TObjArray ** list, Int_t run, Int_t cycles = -1) ;
+  virtual void        MakeImage(AliQAv1::TASKINDEX_t task) ; 
 	virtual void        StartOfCycle(Int_t run = -1) ;
 	virtual void        StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const Bool_t sameCycle = kFALSE) ;
 
@@ -70,7 +71,7 @@ protected:
 
 	TObjArray * *    fDigitsQAList ;    //! list of the digits QA data objects
 	TObjArray * *    fHitsQAList ;      //! list of the hits QA data objects
-	TObjArray * *   fSDigitsQAList ;   //! list of the sdigits QA data objects
+	TObjArray * *    fSDigitsQAList ;   //! list of the sdigits QA data objects
   
  ClassDef(AliQADataMakerSim,1)  // description 
 

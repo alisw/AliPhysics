@@ -49,6 +49,7 @@ public:
   Bool_t *               GetEventSpecies() { return fEventSpecies ; }
   static const TString   GetExpert() { return fgkExpert ; }
   static       UInt_t    GetExpertBit() { return fgkExpertBit ; }
+  static       UInt_t    GetImageBit()  { return fgkImageBit ; }
   static const TString   GetLabLocalFile() { return fgkLabLocalFile ; } 
   static const TString   GetLabLocalOCDB() { return fgkLabLocalOCDB ; } 
   static const TString   GetLabAliEnOCDB() { return fgkLabAliEnOCDB ; } 
@@ -136,6 +137,7 @@ private:
   static TString       fgTaskNames[]	        ; //! list of tasks names   
   static const TString fgkExpert              ; //! name for the expert directory
   static const UInt_t  fgkExpertBit           ; //! TObject bit identifing the object as "expert"
+  static const UInt_t  fgkImageBit            ; //! TObject bit identifing the object to be plotted on the QA image
   static const TString fgkLabLocalFile        ; //! label to identify a file as local 
   static const TString fgkLabLocalOCDB        ; //! label to identify a file as local OCDB 
   static const TString fgkLabAliEnOCDB        ; //! label to identify a file as AliEn OCDB 

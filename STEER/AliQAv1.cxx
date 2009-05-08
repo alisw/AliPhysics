@@ -46,7 +46,7 @@
 
 
 ClassImp(AliQAv1)
-AliQAv1    * AliQAv1::fgQA                   = 0x0 ;
+AliQAv1  * AliQAv1::fgQA                   = 0x0 ;
 TFile    * AliQAv1::fgQADataFile           = 0x0 ;   
 TString    AliQAv1::fgQADataFileName       = "QA" ;  // will transform into Det.QA.run.root  
 TFile    * AliQAv1::fgQARefFile            = 0x0 ;   
@@ -71,6 +71,7 @@ const TString AliQAv1::fgkQARefOCDBDefault = "alien://folder=/alice/QA/20"  ;
 const TString AliQAv1::fgkExpert           = "Expert" ; 
 const UInt_t  AliQAv1::fgkExpertBit        = 16 ; 
 const UInt_t  AliQAv1::fgkQABit            = 17 ; 
+const UInt_t  AliQAv1::fgkImageBit         = 18 ; 
 
 //____________________________________________________________________________
 AliQAv1::AliQAv1() : 

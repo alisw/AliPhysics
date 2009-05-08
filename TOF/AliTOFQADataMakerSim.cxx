@@ -79,23 +79,24 @@ void AliTOFQADataMakerSim::InitHits()
   // create Hits histograms in Hits subdir
   //
 
-  Bool_t expert = kFALSE;
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1F * h0 = new TH1F("hTOFHits",    "Number of TOF Hits ",301, -1.02, 5.) ; 
   h0->Sumw2() ;
-  Add2HitsList(h0, 0, expert) ;
+  Add2HitsList(h0, 0, !expert, image) ;
 
   TH1F * h1  = new TH1F("hTOFHitsTime", "Hits Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
   h1->Sumw2() ;
-  Add2HitsList(h1, 1, expert) ;
+  Add2HitsList(h1, 1, !expert, image) ;
 
   TH1F * h2  = new TH1F("hTOFHitsLength", "Length Spectrum in TOF (cm)", 500, 0., 500) ; 
   h2->Sumw2() ;
-  Add2HitsList(h2, 2, expert) ;
+  Add2HitsList(h2, 2, !expert, image) ;
 
   TH2F * h3  = new TH2F("hTOFHitsClusMap","Hits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
   h3->Sumw2() ;
-  Add2HitsList(h3, 3, expert) ;
+  Add2HitsList(h3, 3, !expert, image) ;
 }
 
 //____________________________________________________________________________ 
@@ -105,22 +106,23 @@ void AliTOFQADataMakerSim::InitDigits()
   // create Digits histograms in Digits subdir
   //
 
-  Bool_t expert = kFALSE;
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1F * h0 = new TH1F("hTOFDigits",    "Number of TOF Digits ",301, -1.02, 5.) ;   h0->Sumw2() ;
-  Add2DigitsList(h0, 0, expert) ;
+  Add2DigitsList(h0, 0, !expert, image) ;
 
   TH1F * h1  = new TH1F("hTOFDigitsTime", "Digits Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
   h1->Sumw2() ;
-  Add2DigitsList(h1, 1, expert) ;
+  Add2DigitsList(h1, 1, !expert, image) ;
 
   TH1F * h2  = new TH1F("hTOFDigitsToT", "Digits ToT Spectrum in TOF (ns)", 500, 0., 50) ; 
   h2->Sumw2() ;
-  Add2DigitsList(h2, 2, expert) ;
+  Add2DigitsList(h2, 2, !expert, image) ;
 
   TH2F * h3  = new TH2F("hTOFDigitsClusMap","Digits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
   h3->Sumw2() ;
-  Add2DigitsList(h3, 3, expert) ;
+  Add2DigitsList(h3, 3, !expert, image) ;
 
 }
 
@@ -131,18 +133,19 @@ void AliTOFQADataMakerSim::InitSDigits()
   // create SDigits histograms in SDigits subdir
   //
 
-  Bool_t expert = kFALSE;
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1F * h0 = new TH1F("hTOFSDigits",    "Number of TOF SDigits ",301, -1.02, 5.) ;   h0->Sumw2() ;
-  Add2SDigitsList(h0, 0, expert) ;
+  Add2SDigitsList(h0, 0, !expert, image) ;
 
   TH1F * h1  = new TH1F("hTOFSDigitsTime", "SDigits Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
   h1->Sumw2() ;
-  Add2SDigitsList(h1, 1, expert) ;
+  Add2SDigitsList(h1, 1, !expert, image) ;
 
   TH2F * h2  = new TH2F("hTOFSDigitsClusMap","SDigits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
   h2->Sumw2() ;
-  Add2SDigitsList(h2, 2, expert) ;
+  Add2SDigitsList(h2, 2, !expert, image) ;
 
 }
 

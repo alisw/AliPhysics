@@ -88,45 +88,49 @@ void AliTPCQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 //____________________________________________________________________________ 
 void AliTPCQADataMakerSim::InitDigits()
 {
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
   TH1F * histDigitsADC = 
     new TH1F("hDigitsADC", "Digit ADC distribution; ADC; Counts",
 	     1000, 0, 1000);
   histDigitsADC->Sumw2();
-  Add2DigitsList(histDigitsADC, kDigitsADC);
+  Add2DigitsList(histDigitsADC, kDigitsADC, !expert, image);
 }
 
 //____________________________________________________________________________ 
 void AliTPCQADataMakerSim::InitHits()
 {
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
   TH1F * histHitsNhits = 
     new TH1F("hHitsNhits", "Interactions per primary track in the TPC volume; Number of primary interactions; Counts",
 	     100, 0, 10000);
   histHitsNhits->Sumw2();
-  Add2HitsList(histHitsNhits, kNhits);
+  Add2HitsList(histHitsNhits, kNhits, !expert, image);
 
   TH1F * histHitsElectrons = 
     new TH1F("hHitsElectrons", "Electrons per interaction (primaries); Electrons; Counts",
 	     300, 0, 300);
   histHitsElectrons->Sumw2();
-  Add2HitsList(histHitsElectrons, kElectrons);  
+  Add2HitsList(histHitsElectrons, kElectrons, !expert, image);  
 
   TH1F * histHitsRadius = 
     new TH1F("hHitsRadius", "Position of interaction (Primary tracks only); Radius; Counts",
 	     300, 0., 300.);  
   histHitsRadius->Sumw2();
-  Add2HitsList(histHitsRadius, kRadius);  
+  Add2HitsList(histHitsRadius, kRadius, !expert, image);  
 
   TH1F * histHitsPrimPerCm = 
     new TH1F("hHitsPrimPerCm", "Primaries per cm (Primary tracks only); Primaries; Counts",
 	     100, 0., 100.);  
   histHitsPrimPerCm->Sumw2();
-  Add2HitsList(histHitsPrimPerCm, kPrimPerCm);  
+  Add2HitsList(histHitsPrimPerCm, kPrimPerCm, !expert, image);  
 
   TH1F * histHitsElectronsPerCm = 
     new TH1F("hHitsElectronsPerCm", "Electrons per cm (Primary tracks only); Electrons; Counts",
 	     300, 0., 300.);  
   histHitsElectronsPerCm->Sumw2();
-  Add2HitsList(histHitsElectronsPerCm, kElectronsPerCm);  
+  Add2HitsList(histHitsElectronsPerCm, kElectronsPerCm, !expert, image);  
 }
 
 //____________________________________________________________________________

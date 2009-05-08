@@ -83,13 +83,14 @@ void AliPHOSQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
 void AliPHOSQADataMakerSim::InitHits()
 {
   // create Hits histograms in Hits subdir
-  Bool_t expert   = kTRUE ; 
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
   TH1F * h0 = new TH1F("hPhosHits",    "Hits energy distribution in PHOS",       100, 0., 100.) ; 
   h0->Sumw2() ;
-  Add2HitsList(h0, kHits, !expert) ;
+  Add2HitsList(h0, kHits, !expert, image) ;
   TH1I * h1 = new TH1I("hPhosHitsMul", "Hits multiplicity distribution in PHOS", 500, 0., 10000) ; 
   h1->Sumw2() ;
-  Add2HitsList(h1, kHitsMul, !expert) ;
+  Add2HitsList(h1, kHitsMul, !expert, image) ;
   
 }
 
@@ -97,26 +98,28 @@ void AliPHOSQADataMakerSim::InitHits()
 void AliPHOSQADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
-  Bool_t expert   = kTRUE ; 
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
   TH1I * h0 = new TH1I("hPhosDigits",    "Digits amplitude distribution in PHOS",    500, 0, 1000) ; 
   h0->Sumw2() ;
-  Add2DigitsList(h0, kDigits, !expert) ;
+  Add2DigitsList(h0, kDigits, !expert, image) ;
   TH1I * h1 = new TH1I("hPhosDigitsMul", "Digits multiplicity distribution in PHOS", 2000, 0, 10000) ; 
   h1->Sumw2() ;
-  Add2DigitsList(h1, kDigitsMul, !expert) ;
+  Add2DigitsList(h1, kDigitsMul, !expert, image) ;
 }
 
 //____________________________________________________________________________ 
 void AliPHOSQADataMakerSim::InitSDigits()
 {
   // create SDigits histograms in SDigits subdir
-  Bool_t expert   = kTRUE ; 
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
   TH1F * h0 = new TH1F("hPhosSDigits",    "SDigits energy distribution in PHOS",       500, 0., 1000.) ; 
   h0->Sumw2() ;
-  Add2SDigitsList(h0, kSDigits, !expert) ;
+  Add2SDigitsList(h0, kSDigits, !expert, image) ;
   TH1I * h1 = new TH1I("hPhosSDigitsMul", "SDigits multiplicity distribution in PHOS", 500, 0,  1000) ; 
   h1->Sumw2() ;
-  Add2SDigitsList(h1, kSDigitsMul, !expert) ;
+  Add2SDigitsList(h1, kSDigitsMul, !expert, image) ;
 }
 
 //____________________________________________________________________________

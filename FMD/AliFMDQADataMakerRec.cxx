@@ -105,39 +105,38 @@ AliFMDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task,
 void AliFMDQADataMakerRec::InitESDs()
 {
   // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1F* hEnergyOfESD = new TH1F("hEnergyOfESD","Energy distribution",100,0,3);
   hEnergyOfESD->SetXTitle("Edep/Emip");
   hEnergyOfESD->SetYTitle("Counts");
-  Add2ESDsList(hEnergyOfESD, 0);
+  Add2ESDsList(hEnergyOfESD, 0, !expert, image);
     
 }
 
 //_____________________________________________________________________ 
-/*void AliFMDQADataMakerRec::InitDigits()
-{
-  // create Digits histograms in Digits subdir
-  TH1I* hADCCounts      = new TH1I("hADCCounts","Dist of ADC counts",
-				   1024,0,1024);
-  hADCCounts->SetXTitle("ADC counts");
-  hADCCounts->SetYTitle("");
-  Add2DigitsList(hADCCounts, 0);
-  
-}
-*/
-//_____________________________________________________________________ 
 void AliFMDQADataMakerRec::InitRecPoints()
 {
+  // create Reconstructed Points histograms in RecPoints subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+
   TH1F* hEnergyOfRecpoints = new TH1F("hEnergyOfRecpoints",
 				      "Energy Distribution",100,0,3);
   hEnergyOfRecpoints->SetXTitle("Edep/Emip");
   hEnergyOfRecpoints->SetYTitle("");
-  Add2RecPointsList(hEnergyOfRecpoints,0);
+  Add2RecPointsList(hEnergyOfRecpoints,0, !expert, image);
 }
 
 //_____________________________________________________________________ 
 void AliFMDQADataMakerRec::InitRaws()
 {
-  
+  // create Raws histograms in Raws subdir  
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t saveCorr = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+
   TH1I* hADCCounts;
   for(Int_t det = 1; det<=3; det++) {
     Int_t firstring = (det==1 ? 1 : 0);
@@ -148,7 +147,7 @@ void AliFMDQADataMakerRec::InitRaws()
 				 1024,0,1023);
       
       Int_t index1 = GetHalfringIndex(det, ring, 0,1);
-      Add2RawsList(hADCCounts, index1,kTRUE);
+      Add2RawsList(hADCCounts, index1, expert, !image, !saveCorr);
       
       for(Int_t b = 0; b<=1;b++) {
 	
@@ -163,7 +162,7 @@ void AliFMDQADataMakerRec::InitRaws()
 	hADCCounts->SetXTitle("ADC counts");
 	hADCCounts->SetYTitle("");
 	Int_t index2 = GetHalfringIndex(det, ring, board/16,0);
-	Add2RawsList(hADCCounts, index2);
+	Add2RawsList(hADCCounts, index2, !expert, image, !saveCorr);
 
       }
     }

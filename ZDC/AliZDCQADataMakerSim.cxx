@@ -17,7 +17,7 @@
 #include <Riostream.h>
 // --- ROOT system ---
 #include <TClonesArray.h>
-#include <TFile.h> 
+#include <TFile.h>     
 #include <TH1F.h> 
 #include <TH2F.h>
 #include <TBranch.h>
@@ -66,15 +66,18 @@ void AliZDCQADataMakerSim::InitHits()
 {
   // create Hits histograms in Hits subdir
   //
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH2F * hZNCh  = new TH2F("hZNCh", "Hits centroid in ZNC", 100, -5.,5.,100,-5.,5.);
   TH2F * hZNAh  = new TH2F("hZNAh", "Hits centroid in ZNA", 100, -5.,5.,100,-5.,5.);
   // NB -> For the moment no check is performesd on ZP centroids
 //  TH2F * hZPCh  = new TH2F("hZPCh", "Hits centroid in ZPC", 100,-12.,12.,100,-12.,12.); 
 //  TH2F * hZPAh  = new TH2F("hZPAh", "Hits centroid in ZPA", 100,-12.,12.,100,-12.,12.); 
-  Add2HitsList(hZNCh, 0);
-  Add2HitsList(hZNAh, 1);
-//  Add2HitsList(hZPCh, 2);
-//  Add2HitsList(hZPAh, 3);
+  Add2HitsList(hZNCh, 0, !expert, image);
+  Add2HitsList(hZNAh, 1, !expert, image);
+//  Add2HitsList(hZPCh, 2, !expert, image);
+//  Add2HitsList(hZPAh, 3, !expert, image);
 }
 
 
@@ -83,61 +86,64 @@ void AliZDCQADataMakerSim::InitDigits()
 {
   // create Digits histograms in Digits subdir
   //
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   // ------------------- HIGH GAIN CHAIN ---------------------------
   TH1F * hDigZNCTot = new TH1F("hDigZNCTot", "Signal in ZNC", 100, 0., 6000.);
   TH1F * hDigZNATot = new TH1F("hDigZNATot", "Signal in ZNA", 100, 0., 6000.);
   TH1F * hDigZPCTot = new TH1F("hDigZPCTot", "Signal in ZPC", 100, 0., 6000.);
   TH1F * hDigZPATot = new TH1F("hDigZPATot", "Signal in ZPA", 100, 0., 6000.);
-  Add2DigitsList(hDigZNCTot, 0);
-  Add2DigitsList(hDigZNATot, 1);
-  Add2DigitsList(hDigZPCTot, 2);
-  Add2DigitsList(hDigZPATot, 3);
+  Add2DigitsList(hDigZNCTot, 0, !expert, image);
+  Add2DigitsList(hDigZNATot, 1, !expert, image);
+  Add2DigitsList(hDigZPCTot, 2, !expert, image);
+  Add2DigitsList(hDigZPATot, 3, !expert, image);
   //
   TH1F * hDigSumQZNC = new TH1F("hDigSumQZNC", "Signal in 4 ZNC PMQ",100, 0., 4000.);
   TH1F * hDigSumQZNA = new TH1F("hDigSumQZNA", "Signal in 4 ZNA PMQ",100, 0., 4000.);
   TH1F * hDigSumQZPC = new TH1F("hDigSumQZPC", "Signal in 4 ZPC PMQ",100, 0., 4000.);
   TH1F * hDigSumQZPA = new TH1F("hDigSumQZPA", "Signal in 4 ZPA PMQ",100, 0., 4000.);
-  Add2DigitsList(hDigSumQZNC, 4, kTRUE);
-  Add2DigitsList(hDigSumQZNA, 5, kTRUE);
-  Add2DigitsList(hDigSumQZPC, 6, kTRUE);
-  Add2DigitsList(hDigSumQZPA, 7, kTRUE);
+  Add2DigitsList(hDigSumQZNC, 4, expert, !image);
+  Add2DigitsList(hDigSumQZNA, 5, expert, !image);
+  Add2DigitsList(hDigSumQZPC, 6, expert, !image);
+  Add2DigitsList(hDigSumQZPA, 7, expert, !image);
   //
   TH1F * hDigPMCZNC = new TH1F("hDigPMCZNC", "Signal in ZNC PMC",100, 0., 4000.);
   TH1F * hDigPMCZNA = new TH1F("hDigPMCZNA", "Signal in ZNA PMC",100, 0., 4000.);
   TH1F * hDigPMCZPC = new TH1F("hDigPMCZPC", "Signal in ZPC PMC",100, 0., 4000.);
   TH1F * hDigPMCZPA = new TH1F("hDigPMCZPA", "Signal in ZPA PMC",100, 0., 4000.);
-  Add2DigitsList(hDigPMCZNC, 8, kTRUE);
-  Add2DigitsList(hDigPMCZNA, 9, kTRUE);
-  Add2DigitsList(hDigPMCZPC, 10, kTRUE);
-  Add2DigitsList(hDigPMCZPA, 11, kTRUE);
+  Add2DigitsList(hDigPMCZNC, 8, expert, !image);
+  Add2DigitsList(hDigPMCZNA, 9, expert, !image);
+  Add2DigitsList(hDigPMCZPC, 10, expert, !image);
+  Add2DigitsList(hDigPMCZPA, 11, expert, !image);
   // 
   // ------------------- LOW GAIN CHAIN ---------------------------
 /*  TH1F * hDigZNCTotlg = new TH1F("hDigZNCTotlg", "Digit lg signal in ZNC", 100, 0., 6000.);
   TH1F * hDigZNATotlg = new TH1F("hDigZNATotlg", "Digit lg signal in ZNA", 100, 0., 6000.);
   TH1F * hDigZPCTotlg = new TH1F("hDigZPCTotlg", "Digit lg signal in ZPC", 100, 0., 6000.);
   TH1F * hDigZPATotlg = new TH1F("hDigZPATotlg", "Digit lg signal in ZPA", 100, 0., 6000.);
-  Add2DigitsList(hDigZNCTotlg, 12);
-  Add2DigitsList(hDigZNATotlg, 13);
-  Add2DigitsList(hDigZPCTotlg, 14);
-  Add2DigitsList(hDigZPATotlg, 15);
+  Add2DigitsList(hDigZNCTotlg, 12, !expert, image);
+  Add2DigitsList(hDigZNATotlg, 13, !expert, image);
+  Add2DigitsList(hDigZPCTotlg, 14, !expert, image);
+  Add2DigitsList(hDigZPATotlg, 15, !expert, image);
   //
   TH1F * hDigSumQZNClg = new TH1F("hDigSumQZNClg", "Signal in 4 ZNC PMQlg",100, 0., 4000.);
   TH1F * hDigSumQZNAlg = new TH1F("hDigSumQZNAlg", "Signal in 4 ZNA PMQlg",100, 0., 4000.);
   TH1F * hDigSumQZPClg = new TH1F("hDigSumQZPClg", "Signal in 4 ZPC PMQlg",100, 0., 4000.);
   TH1F * hDigSumQZPAlg = new TH1F("hDigSumQZPAlg", "Signal in 4 ZPA PMQlg",100, 0., 4000.);
-  Add2DigitsList(hDigSumQZNClg, 16, kTRUE);
-  Add2DigitsList(hDigSumQZNAlg, 17, kTRUE);
-  Add2DigitsList(hDigSumQZPClg, 18, kTRUE);
-  Add2DigitsList(hDigSumQZPAlg, 19, kTRUE);
+  Add2DigitsList(hDigSumQZNClg, 16, expert, !image);
+  Add2DigitsList(hDigSumQZNAlg, 17, expert, !image);
+  Add2DigitsList(hDigSumQZPClg, 18, expert, !image);
+  Add2DigitsList(hDigSumQZPAlg, 19, expert, !image);
   //
   TH1F * hDigPMCZNClg = new TH1F("hDigPMCZNClg", "Signal in ZNC PMClg",100, 0., 4000.);
   TH1F * hDigPMCZNAlg = new TH1F("hDigPMCZNAlg", "Signal in ZNA PMClg",100, 0., 4000.);
   TH1F * hDigPMCZPClg = new TH1F("hDigPMCZPClg", "Signal in ZPC PMClg",100, 0., 4000.);
   TH1F * hDigPMCZPAlg = new TH1F("hDigPMCZPAlg", "Signal in ZPA PMClg",100, 0., 4000.);
-  Add2DigitsList(hDigPMCZNClg, 20, kTRUE);
-  Add2DigitsList(hDigPMCZNAlg, 21, kTRUE);
-  Add2DigitsList(hDigPMCZPClg, 22, kTRUE);
-  Add2DigitsList(hDigPMCZPAlg, 23, kTRUE);
+  Add2DigitsList(hDigPMCZNClg, 20, expert, !image);
+  Add2DigitsList(hDigPMCZNAlg, 21, expert, !image);
+  Add2DigitsList(hDigPMCZPClg, 22, expert, !image);
+  Add2DigitsList(hDigPMCZPAlg, 23, expert, !image);
 */
 }
 

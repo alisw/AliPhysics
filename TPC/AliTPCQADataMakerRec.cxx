@@ -235,23 +235,26 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 void AliTPCQADataMakerRec::InitESDs()
 {
   //create ESDs histograms in ESDs subdir  
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1F * histESDclusters = 
     new TH1F("hESDclusters", "N TPC clusters per track; N clusters; Counts",
 	     160, 0, 160);
   histESDclusters->Sumw2();
-  Add2ESDsList(histESDclusters, KClusters);
+  Add2ESDsList(histESDclusters, KClusters, !expert, image);
 
   TH1F * histESDratio = 
     new TH1F("hESDratio", "Ratio: TPC clusters / findable; Ratio: cluster/findable; Counts",
 	     100, 0, 1);
   histESDratio->Sumw2();
-  Add2ESDsList(histESDratio, kRatio);
+  Add2ESDsList(histESDratio, kRatio, !expert, image);
   
   TH1F * histESDpt = 
     new TH1F("hESDpt", "P_{T} distribution; p_{T} [GeV/c]; Counts",
 	     50, 0, 5);
   histESDpt->Sumw2();
-  Add2ESDsList(histESDpt, kPt);
+  Add2ESDsList(histESDpt, kPt, !expert, image);
 }
 
 //____________________________________________________________________________ 
@@ -265,89 +268,96 @@ void AliTPCQADataMakerRec::InitRaws()
   // Laurent Aphecetche pointed out that the mapping was read from file
   // for each event, so now we read in the map here and set if for 
   // the raw data qa
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t saveCorr = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     fTPCdataQA[specie] = new AliTPCdataQA(AliRecoParam::Convert(specie));
     LoadMaps(); // Load Altro maps
     fTPCdataQA[specie]->SetAltroMapping(fMapping); // set Altro mapping
     fTPCdataQA[specie]->SetRangeTime(100, 920); // set time bin interval 
-//    Add2RawsList(fTPCdataQA, kTPCdataQA); // This is used by the AMORE monitoring <------- THIS WILL FAIL (YS)
+//    Add2RawsList(fTPCdataQA, kTPCdataQ, !expert, image, !saveCorrA); // This is used by the AMORE monitoring <------- THIS WILL FAIL (YS)
   }
 
   TH1F * histRawsOccupancy = 
     new TH1F("hRawsOccupancy", "Occupancy (all pads); Occupancy; Counts",
 	     100, 0, 1);
   histRawsOccupancy->Sumw2();
-  Add2RawsList(histRawsOccupancy, kOccupancy);
+  Add2RawsList(histRawsOccupancy, kOccupancy, !expert, image, !saveCorr);
   
   TH1F * histRawsOccupancyVsSector = 
     new TH1F("hRawsOccupancyVsSector", "Occupancy vs sector; Sector; Occupancy",
 	     72, 0, 72);
   histRawsOccupancyVsSector->Sumw2();
-  Add2RawsList(histRawsOccupancyVsSector, kOccupancyVsSector);
+  Add2RawsList(histRawsOccupancyVsSector, kOccupancyVsSector, !expert, image, !saveCorr);
 
   TH1F * histRawsNClustersPerEventVsSector = 
     new TH1F("hRawsNClustersPerEventVsSector", "Nclusters per event vs sector; Sector; Nclusters per event",
 	     72, 0, 72);
   histRawsNClustersPerEventVsSector->Sumw2();
-  Add2RawsList(histRawsNClustersPerEventVsSector, kNClustersPerEventVsSector);
+  Add2RawsList(histRawsNClustersPerEventVsSector, kNClustersPerEventVsSector, !expert, image, !saveCorr);
   
   TH1F * histRawsQVsSector = 
     new TH1F("hRawsQVsSector", "<Q> vs sector (OROC med: 36-71, long: 72-107); Sector; <Q>",
 	     108, 0, 108);
   histRawsQVsSector->Sumw2();
-  Add2RawsList(histRawsQVsSector, kQVsSector);
+  Add2RawsList(histRawsQVsSector, kQVsSector, !expert, image, !saveCorr);
 
   TH1F * histRawsQmaxVsSector = 
     new TH1F("hRawsQmaxVsSector", "<Qmax> vs sector (OROC med: 36-71, long: 72-107); Sector; <Qmax>",
 	     108, 0, 108);
   histRawsQmaxVsSector->Sumw2();
-  Add2RawsList(histRawsQmaxVsSector, kQmaxVsSector);
+  Add2RawsList(histRawsQmaxVsSector, kQmaxVsSector, !expert, image, !saveCorr);
 }
 
 //____________________________________________________________________________ 
 void AliTPCQADataMakerRec::InitRecPoints()
 {
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1F * histRecPointsQmaxShort = 
     new TH1F("hRecPointsQmaxShort", "Qmax distrbution (short pads); Qmax; Counts",
 	     100, 0, 300);
   histRecPointsQmaxShort->Sumw2();
-  Add2RecPointsList(histRecPointsQmaxShort, kQmaxShort);
+  Add2RecPointsList(histRecPointsQmaxShort, kQmaxShort, !expert, image);
 
   TH1F * histRecPointsQmaxMedium = 
     new TH1F("hRecPointsQmaxMedium", "Qmax distrbution (medium pads); Qmax; Counts",
 	     100, 0, 300);
   histRecPointsQmaxMedium->Sumw2();
-  Add2RecPointsList(histRecPointsQmaxMedium, kQmaxMedium);
+  Add2RecPointsList(histRecPointsQmaxMedium, kQmaxMedium, !expert, image);
 
   TH1F * histRecPointsQmaxLong = 
     new TH1F("hRecPointsQmaxLong", "Qmax distrbution (long pads); Qmax; Counts",
 	     100, 0, 300);
   histRecPointsQmaxLong->Sumw2();
-  Add2RecPointsList(histRecPointsQmaxLong, kQmaxLong);
+  Add2RecPointsList(histRecPointsQmaxLong, kQmaxLong, !expert, image);
 
   TH1F * histRecPointsQShort = 
     new TH1F("hRecPointsQShort", "Q distrbution (short pads); Q; Counts",
 	     100, 0, 2000);
   histRecPointsQShort->Sumw2();
-  Add2RecPointsList(histRecPointsQShort, kQShort);
+  Add2RecPointsList(histRecPointsQShort, kQShort, !expert, image);
 
   TH1F * histRecPointsQMedium = 
     new TH1F("hRecPointsQMedium", "Q distrbution (medium pads); Q; Counts",
 	     100, 0, 2000);
   histRecPointsQMedium->Sumw2();
-  Add2RecPointsList(histRecPointsQMedium, kQMedium);
+  Add2RecPointsList(histRecPointsQMedium, kQMedium, !expert, image);
 
   TH1F * histRecPointsQLong = 
     new TH1F("hRecPointsQLong", "Q distrbution (long pads); Q; Counts",
 	     100, 0, 2000);
   histRecPointsQLong->Sumw2();
-  Add2RecPointsList(histRecPointsQLong, kQLong);
+  Add2RecPointsList(histRecPointsQLong, kQLong, !expert, image);
 
   TH1F * histRecPointsRow = 
     new TH1F("hRecPointsRow", "Clusters per row; Row; Counts",
 	     159, 0, 159);
   histRecPointsRow->Sumw2();
-  Add2RecPointsList(histRecPointsRow, kRow);
+  Add2RecPointsList(histRecPointsRow, kRow, !expert, image);
 }
 
 //____________________________________________________________________________

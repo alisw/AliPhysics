@@ -91,7 +91,7 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
 }
 
 //____________________________________________________________________________
-Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list, const Bool_t expert, const Bool_t saveForCorr) 
+Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list, const Bool_t expert, const Bool_t image, const Bool_t saveForCorr) 
 { 
 	// Set histograms memory resident and add to the list
 	// Maximm allowed is 10000
@@ -105,8 +105,10 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list,
 		AliError("Max number of authorized QA objects is 10000") ; 
   } else {    
     if (expert) 
-      hist->SetBit(AliQAv1::GetExpertBit()) ; 
-		TH1 * histClone[AliRecoParam::kNSpecies] ; 
+      hist->SetBit(AliQAv1::GetExpertBit()) ;
+    if (image) 
+      hist->SetBit(AliQAv1::GetImageBit()) ;  
+    TH1 * histClone[AliRecoParam::kNSpecies] ; 
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       histClone[specie] = CloneMe(hist, specie) ; 
       histClone[specie]->SetDirectory(0) ; 
@@ -179,3 +181,4 @@ TObject * AliQADataMaker::GetData(TObjArray ** list, const Int_t index)
 		return NULL ; 		
 	}
 }
+

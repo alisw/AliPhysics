@@ -127,11 +127,15 @@ void AliT0QADataMakerRec::StartOfDetectorCycle()
 void AliT0QADataMakerRec::InitRaws()
 {
   // create Raw histograms in Raw subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t saveCorr = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TString timename, ampname, qtcname, ledname;
   TString timeCalname, ampCalname, ledCalname, qtcCalname;
 
   TH1F* fhRefPoint = new TH1F("hRefPoint","Ref Point", 10,1252170, 1252180);
-  Add2RawsList( fhRefPoint,0);
+  Add2RawsList( fhRefPoint,0, !expert, image, !saveCorr);
    
   TH1F *fhRawCFD[24]; TH1F * fhRawLEDamp[24];
   TH1F *fhRawQTC[24]; TH1F * fhRawLED[24];
@@ -149,27 +153,25 @@ void AliT0QADataMakerRec::InitRaws()
       qtcname += i;
       ledname += i;
       fhRawCFD[i] = new TH1F(timename.Data(), timename.Data(),500,-250,250);
-      Add2RawsList( fhRawCFD[i],i+1);
+      Add2RawsList( fhRawCFD[i],i+1, !expert, image, !saveCorr);
       fhRawLED[i] = new TH1F(ledname.Data(), ledname.Data(),2000,-1000,1000);
-      Add2RawsList( fhRawLED[i],i+24+1);
+      Add2RawsList( fhRawLED[i],i+24+1, !expert, image, !saveCorr);
       fhRawLEDamp[i] = new TH1F(ampname.Data(), ampname.Data(),100,300,600);
-      Add2RawsList( fhRawLEDamp[i],i+48+1);
+      Add2RawsList( fhRawLEDamp[i],i+48+1, !expert, image, !saveCorr);
       fhRawQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),1500,1000,7000);
-      Add2RawsList( fhRawQTC[i],i+72+1);
+      Add2RawsList( fhRawQTC[i],i+72+1, !expert, image, !saveCorr);
      }
-  //  const Bool_t saveForCorr = kTRUE;
-  const Bool_t saveForCorr = kFALSE;
   TH1F* fhRawTrigger = new TH1F("hRawTrigger"," phys triggers",5,0,5);
-  Add2RawsList(fhRawTrigger ,97);
+  Add2RawsList(fhRawTrigger ,97, !expert, image, !saveCorr);
   
   TH1F* fhRawMean = new TH1F("hRawMean","online mean signal", 100,2400,2500);
-  Add2RawsList( fhRawMean,98);
+  Add2RawsList( fhRawMean,98, !expert, image, !saveCorr);
   TH1F* fhRawVertex = new TH1F("hRawVertex","online vertex signal", 100,0,600);
-  Add2RawsList( fhRawVertex,99);
+  Add2RawsList( fhRawVertex,99, !expert, image, !saveCorr);
   TH1F* fhRawORA = new TH1F("hRawORA","online OR A", 100,2500,2800);
-  Add2RawsList( fhRawORA,100);
+  Add2RawsList( fhRawORA,100, !expert, image, !saveCorr);
   TH1F* fhRawORC = new TH1F("hRawORC","online OR C", 100,2000,2300);
-  Add2RawsList( fhRawORC,101);
+  Add2RawsList( fhRawORC,101, !expert, image, !saveCorr);
   
   for (Int_t i=0; i<24; i++)
     {
@@ -183,54 +185,54 @@ void AliT0QADataMakerRec::InitRaws()
       ampCalname += i;
       qtcCalname += i;
       fhRawCFDcal[i] = new TH1F(timeCalname.Data(), timeCalname.Data(),2000,-1000,1000);
-      Add2RawsList( fhRawCFDcal[i],101+i+1);
+      Add2RawsList( fhRawCFDcal[i],101+i+1, !expert, image, !saveCorr);
       fhRawLEDcal[i] = new TH1F(ledCalname.Data(), ledCalname.Data(),2000,-1000,1000);
-      Add2RawsList( fhRawLEDcal[i],101+i+24+1);
+      Add2RawsList( fhRawLEDcal[i],101+i+24+1, !expert, image, !saveCorr);
       fhRawLEDampcal[i] = new TH1F(ampCalname.Data(), ampCalname.Data(),300,300,600);
-      Add2RawsList( fhRawLEDampcal[i],101+i+48+1);
+      Add2RawsList( fhRawLEDampcal[i],101+i+48+1, !expert, image, !saveCorr);
       fhRawQTCcal[i] = new TH1F(qtcCalname.Data(), qtcCalname.Data(),1000,0,7000);
-      Add2RawsList( fhRawQTCcal[i],101+i+72+1);
+      Add2RawsList( fhRawQTCcal[i],101+i+72+1, !expert, image, !saveCorr);
     }
 
   TH1F* fhRawTriggerCal = new TH1F("hRawTriggerCal"," laser triggers",6,0,6);
-  Add2RawsList(fhRawTriggerCal ,197 ,saveForCorr);
+  Add2RawsList(fhRawTriggerCal ,197 , !expert, !image, saveCorr);
 
   TH1F* fhRawMeanCal = new TH1F("hRawMeanCal","online mean signal, calibration event",
 				10000,0,10000);
   Add2RawsList( fhRawMeanCal,198);
   TH1F* fhRawVertexCal = new TH1F("hRawVertexCal","online vertex signal, calibration even ",
 				  10000,0,10000);
-  Add2RawsList( fhRawVertexCal,199);
+  Add2RawsList( fhRawVertexCal,199, !expert, image, !saveCorr);
   TH1F* fhRawORAcal = new TH1F("hRawORAcal","online OR A", 10000,0,10000);
-  Add2RawsList( fhRawORAcal,200 );
+  Add2RawsList( fhRawORAcal,200, !expert, image, !saveCorr );
   TH1F* fhRawORCcal = new TH1F("hRawORCcal","online OR C", 10000,0,10000);
-  Add2RawsList( fhRawORCcal,201);
+  Add2RawsList( fhRawORCcal,201, !expert, image, !saveCorr);
   TH1F* fhMultcal = new TH1F("hMultcal","full mulltiplicity", 10000,0,10000);
-  Add2RawsList( fhMultcal,202 );
+  Add2RawsList( fhMultcal,202, !expert, image, !saveCorr );
   TH1F* fhMultScal = new TH1F("hMultScal","full multiplicity with semi-central trigger",
 			      10000,0,10000);
-  Add2RawsList( fhMultScal,203);
+  Add2RawsList( fhMultScal,203, !expert, image, !saveCorr);
   TH1F* fhMultCcal = new TH1F("hMultCcal","full multiplicity with central trigger", 
 			      1000,0,10000);
-  Add2RawsList( fhMultCcal,204);
+  Add2RawsList( fhMultCcal,204, !expert, image, !saveCorr);
 
   //  TH2F* fhEffCFD = new TH2F("hEffCFD"," CFD time",24, 0 ,24, 
   //		      100,-500,500);
   TH2F* fhEffCFD = new TH2F("hEffCFD"," CFD time",24, 0 ,24, 50, 0,5); 
 
-  Add2RawsList( fhEffCFD,205, saveForCorr);
+  Add2RawsList( fhEffCFD,205, !expert, !image, saveCorr);
   TH2F* fhEffLED = new TH2F("hEffLED","LED time",24, 0 ,24, 
 			    100, 0, 5);	
   //100,-500,500);
 
-  Add2RawsList( fhEffLED,206, saveForCorr);
+  Add2RawsList( fhEffLED,206, !expert, !image, saveCorr);
   TH2F* fhEffQTC = new TH2F("hEffQTC","QTC amplitude",24, 0 ,24, 
 			      100,0,7000);
-  Add2RawsList( fhEffQTC,207, saveForCorr);
+  Add2RawsList( fhEffQTC,207, !expert, !image, saveCorr);
   //yeys guide line
   //  TH2F* fhLineQTC = new TH2F("hLineQTC","QTC amplitude boeder",24, 0 ,24, 
   //			      100,0,7000);
-//  Add2RawsList( fhLineQTC,208, saveForCorr);
+//  Add2RawsList( fhLineQTC,208, !expert, !image, saveCorr);
 }
 
 //____________________________________________________________________________ 
@@ -238,30 +240,32 @@ void AliT0QADataMakerRec::InitRaws()
 void AliT0QADataMakerRec::InitRecPoints()
 {
   // create cluster histograms in RecPoint subdir
-
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
 
   TH2F* fhRecCFD = new TH2F("hRecCFD"," CFD time",24, 0 ,24, 
 			      100,-50,50);
-  Add2RecPointsList ( fhRecCFD,0);
+  Add2RecPointsList ( fhRecCFD,0, !expert, image);
 
   TH2F* fhRecAmpDiff = new TH2F("hRecAmpDiff"," LED-CFD  min QTC amplitude",
 				24, 0 ,24, 200,-10,10);
-  Add2RecPointsList (fhRecAmpDiff, 1);
+  Add2RecPointsList (fhRecAmpDiff, 1, !expert, image);
   
   TH1F *fhMean = new TH1F("hMean","online - rec mean",1000, -5000, 5000);
-  Add2RecPointsList ( fhMean,2);
+  Add2RecPointsList ( fhMean,2, !expert, image);
  }
 
 //____________________________________________________________________________
 void AliT0QADataMakerRec::InitESDs()
 {
   //create ESDs histograms in ESDs subdir
-
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
   TH1F *fhESDMean = new TH1F("hESDmean"," ESD mean",100,2400,2500);
-  Add2ESDsList(fhESDMean, 0) ;
+  Add2ESDsList(fhESDMean, 0, !expert, image) ;
   TH1F * fhESDVertex = new TH1F("hESDvertex","ESD vertex",100,-50,50);
-  Add2ESDsList(fhESDVertex, 1) ;
+  Add2ESDsList(fhESDVertex, 1, !expert, image) ;
   
 
 }
