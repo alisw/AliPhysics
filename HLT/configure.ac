@@ -314,6 +314,32 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_RESULT([$have_rawreadermemory_multbuffers])
 
   dnl
+  dnl Changes in the magnetic field implementation
+  dnl revision 30848 Feb 1 2009
+  dnl
+  CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/STEER"
+  have_alimagf30848=no
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliMagF.h>],
+				  [int test=AliMagF::k5kG;])],
+                 [have_alimagf30848=yes], 
+  		 [AC_DEFINE(HAVE_NOT_ALIMAGF30848)])
+  AC_MSG_CHECKING(AliMagF contains field definitions)
+  AC_MSG_RESULT([$have_alimagf30848])
+
+  dnl
+  dnl Cleanup of the RunLoader implementation
+  dnl revision 30859 Feb 2 2009
+  dnl
+  CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/STEER"
+  have_alirunloader30859=no
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliRunLoader.h>],
+				  [AliRunLoader* rl=AliRunLoader::Instance();])],
+                 [have_alirunloader30859=yes], 
+  		 [AC_DEFINE(HAVE_NOT_ALIRUNLOADER30859)])
+  AC_MSG_CHECKING(AliRunLoader::Instance)
+  AC_MSG_RESULT([$have_alirunloader30859])
+
+  dnl
   dnl required header files and libraries for modules
   dnl
 
@@ -608,6 +634,7 @@ if test "x$enable_tpc" = "xyes" ; then
 
   AC_CHECK_HEADER([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])
   AC_CHECK_HEADER([AliTPCCalibPedestal.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPEDESTAL)])
+  AC_CHECK_HEADER([AliAltroRawStreamV3.h], [], [AC_DEFINE(HAVE_NOT_ALTRORAWSTREAMV3)])
 
   have_tpc_mapping=no
   if test ! "x$have_aliroot" = "xno" ; then

@@ -75,14 +75,6 @@ class AliHLTTPCTransform {
 
  public:
   virtual ~AliHLTTPCTransform() {}
-#ifdef use_aliroot
-  static Bool_t Init(AliRunLoader *runLoader); //init transformer params using a run loader
-#endif
-  static Bool_t Init(Char_t* path,Bool_t UseAliTPCParam=kFALSE); //init transformer settings (versions)
-  static Bool_t MakeInitFile(Char_t *rootfilename,Char_t *filename); //create the init file from rootfile
-  static Bool_t ReadInit(Char_t *path);         //read init (possibly from root file)
-  static Bool_t ReadInitFile(Char_t *path);     //read init from text file 
-  static Bool_t SaveInitFile(Char_t *filename); //save parameters in init file
 
   //setters
   static void SetNPatches(Int_t i){fgNPatches = i;}

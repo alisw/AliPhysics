@@ -14,7 +14,6 @@
 */
 
 #include "AliHLTTPCDigitReader.h"
-#include "AliRawReader.h"
 
 class AliTPCRawStream;
 class AliRawReaderMemory;

@@ -31,7 +31,6 @@
 #include "AliRawReaderMemory.h"
 #include "AliTPCclustererMI.h"
 #include "AliTPCClustersRow.h"
-#include "AliMagF.h"
 #include "AliTracker.h"
 #include "AliDAQ.h"
 #include "TString.h"
