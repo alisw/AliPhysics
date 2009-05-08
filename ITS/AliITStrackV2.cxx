@@ -211,11 +211,13 @@ Bool_t AliITStrackV2::PropagateToTGeo(Double_t xToGo, Int_t nstep, Double_t &xOv
     if (!GetXYZAt(x, bz, end)) return kFALSE;
     if (!AliExternalTrackParam::PropagateTo(x, bz)) return kFALSE;
     AliTracker::MeanMaterialBudget(start, end, mparam);
+    xTimesRho = sign*mparam[4]*mparam[0];
+    xOverX0   = mparam[1];
     if (mparam[1]<900000) {
-      xTimesRho = sign*mparam[4]*mparam[0];
-      xOverX0   = mparam[1];
       if (!AliExternalTrackParam::CorrectForMeanMaterial(xOverX0,
-				      xTimesRho,GetMass())) return kFALSE;
+			   xTimesRho,GetMass())) return kFALSE;
+    } else { // this happens when MeanMaterialBudget cannot cross a boundary
+      return kFALSE;
     }
   }
 
