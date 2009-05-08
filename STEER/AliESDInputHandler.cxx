@@ -123,14 +123,12 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     
     TString fileName(path);
     if(fileName.Contains("#AliESDs.root")){
-	fileName.ReplaceAll("#AliESDs.root", "");
 	zip = kTRUE;
     } 
     else if (fileName.Contains("AliESDs.root")){
 	fileName.ReplaceAll("AliESDs.root", "");
     }
     else if(fileName.Contains("#AliAOD.root")){
-	fileName.ReplaceAll("#AliAOD.root", "");
 	zip = kTRUE;
     }
     else if(fileName.Contains("AliAOD.root")){
@@ -138,7 +136,6 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     }
     else if(fileName.Contains("#galice.root")){
 	// For running with galice and kinematics alone...
-	fileName.ReplaceAll("#galice.root", "");
 	zip = kTRUE;
     }
     else if(fileName.Contains("galice.root")){
@@ -177,7 +174,7 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     const char* name = 0x0;
     TString tagFilename;
     if (zip) {
-	TFile* file = TFile::Open(fileName.Data());
+	TFile* file = fTree->GetCurrentFile();
 	TArchiveFile* arch = file->GetArchive();
 	TObjArray* arr = arch->GetMembers();
 	TIter next(arr);
