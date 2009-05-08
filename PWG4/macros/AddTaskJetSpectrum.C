@@ -26,8 +26,8 @@ AliAnalysisTaskJetSpectrum *AddTaskJetSpectrum()
    pwg4spec->SetAnalysisType(AliAnalysisTaskJetSpectrum::kAnaMC);
    //      if(iAODanalysis)pwg4spec->SetAODInput(kTRUE);
    // pwg4spec->SetDebugLevel(11); 
-   //      pwg4spec->SetBranchRec("jetsMC"); 
-   //      pwg4spec->SetBranchGen("jetsMC"); 
+   pwg4spec->SetBranchGen("jetsMC"); 
+   pwg4spec->SetBranchRec("jetsMC2"); 
    mgr->AddTask(pwg4spec);
 
 

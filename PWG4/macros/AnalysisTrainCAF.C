@@ -12,7 +12,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   Bool_t readTR        = kFALSE;
   Bool_t bPROOF        = kFALSE;
   Bool_t bOLD          = kFALSE;  // a flag to be compatible with the older AF, to be removed ASA grid and proof are updated
-
+  Bool_t bLOCALPAR     = kTRUE;  // flag that swtiches on loading of local par files insead of loading libs, needed for grid and local testing
 
     
   Int_t iAODanalysis   = 0;
@@ -21,6 +21,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   Int_t iJETAN         = 1;
   Int_t iJETANESD      = 1;
   Int_t iJETANMC       = 1;
+  Int_t iJETANMC2       = 1;
   Int_t iDIJETAN       = 1;
   Int_t iPWG4SPECTRUM  = 1;
   Int_t iPWG4UE        = 1;
@@ -52,6 +53,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   if (iJETAN)       printf("=  Jet analysis from AOD                                         =\n");
   if (iJETANESD)    printf("=  Jet analysis from ESD                                         =\n");
   if (iJETANMC)     printf("=  Jet analysis from Kinematics                                  =\n");
+  if (iJETANMC2)     printf("=  Jet analysis 2 from Kinematics                                  =\n");
   if (iDIJETAN)     printf("=  DiJet analysis                                                =\n");
   if (iPWG4SPECTRUM)printf("=  PWG4 Jet spectrum analysis                                    =\n");
   if (iPWG4UE)      printf("=  PWG4 UE                                                       =\n");
@@ -74,7 +76,8 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   // TProof::Reset("alicecaf"); 
   // One may enable a different ROOT version on CAF
   
-  const char* proofNode = "localhost";
+  //  const char* proofNode = "localhost";
+  const char* proofNode = "alicecaf";
   
   // Connect to proof
   if(bPROOF){
@@ -90,30 +93,30 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     // root[0] TProof::Mgr("lxb6064")->GetSessionLogs()->Display("*",0,10000);
     // Common packages
     // --- Enable the STEERBase Package
-    gProof->UploadPackage("${ALICE_ROOT}/STEERBase.par");
-    gProof->EnablePackage("STEERBase");
-    // --- Enable the ESD Package
-    gProof->UploadPackage("${ALICE_ROOT}/ESD.par");
-    gProof->EnablePackage("ESD");
-    // --- Enable the AOD Package
-    gProof->UploadPackage("${ALICE_ROOT}/AOD.par");
-    gProof->EnablePackage("AOD");
-    // --- Enable the ANALYSIS Package
-    gProof->UploadPackage("${ALICE_ROOT}/ANALYSIS.par");
-    gProof->EnablePackage("ANALYSIS");
+    gProof->UploadPackage("STEERBase.par");
+    gProof->EnablePackage("STEERBase");	   
+    // --- Enable the ESD Package	   
+    gProof->UploadPackage("ESD.par");	   
+    gProof->EnablePackage("ESD");	   
+    // --- Enable the AOD Package	   
+    gProof->UploadPackage("AOD.par");	   
+    gProof->EnablePackage("AOD");	   
+    // --- Enable the ANALYSIS Package	   
+    gProof->UploadPackage("ANALYSIS.par"); 
+    gProof->EnablePackage("ANALYSIS");	   
     // --- Enable the ANALYSISalice Package
-    gProof->UploadPackage("${ALICE_ROOT}/ANALYSISalice.par");
+    gProof->UploadPackage("ANALYSISalice.par");
     gProof->EnablePackage("ANALYSISalice");
     
       
     // --- Enable the JETAN Package
-    if (iJETAN||iJETANESD||iJETANMC) {
-      gProof->UploadPackage("${ALICE_ROOT}/JETAN.par");
+    if (iJETAN||iJETANESD||iJETANMC||iJETANMC2) {
+      gProof->UploadPackage("JETAN.par");
       gProof->EnablePackage("JETAN");
     }   
     // --- Enable particle correlation analysis
     if (iPWG4UE||iPWG4SPECTRUM) {
-      gProof->UploadPackage("${ALICE_ROOT}/PWG4JetTasks.par");
+      gProof->UploadPackage("PWG4JetTasks.par");
       gProof->EnablePackage("PWG4JetTasks");
     }   
     
@@ -131,17 +134,27 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     chain = CreateChainFromCollection("wn.xml","esdTree",2); 
     */
 
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-    
-    
-    // --- Enable the JETAN Package
-    if (iJETAN||iJETANESD||iJETANMC) gSystem->Load("libJETAN");
-    // --- Enable particle correlation analysis
-    if (iPWG4UE||iPWG4SPECTRUM)gSystem->Load("libPWG4JetTasks"); 
+    if(bLOCALPAR){
+      SetupPar("STEERBase");
+      SetupPar("ESD");	 
+      SetupPar("AOD");	   
+      SetupPar("ANALYSIS"); 
+      SetupPar("ANALYSISalice");
+      if (iJETAN||iJETANESD||iJETANMC||iJETANMC2)SetupPar("JETAN");	   
+      if (iPWG4UE||iPWG4SPECTRUM)SetupPar("PWG4JetTasks");
+    }
+    else{
+      gSystem->Load("libSTEERBase");
+      gSystem->Load("libESD");
+      gSystem->Load("libAOD");
+      gSystem->Load("libANALYSIS");
+      gSystem->Load("libANALYSISalice");  
+      // --- Enable the JETAN Package
+      if (iJETAN||iJETANESD||iJETANMC||iJETANMC2) gSystem->Load("libJETAN");
+      // --- Enable particle correlation analysis
+      if (iPWG4UE||iPWG4SPECTRUM)gSystem->Load("libPWG4JetTasks"); 
+    }
+
   }
 
 
@@ -218,13 +231,21 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
       jetanaESD->SetNonStdBranch("jetsESD");    
     }   
     // Jet analysisMC
-    if (iJETANMC && useMC) {
+    if (iJETANMC && useMC){ 
       gROOT->LoadMacro("AddTaskJets.C");
       AliAnalysisTaskJets *jetanaMC = 0;
-      if(bOLD)jetanaMC = AddTaskJets("MC","UA1",mgr,cinput);
-      else jetanaMC = AddTaskJets("MC","UA1");
+      if(bOLD)jetanaMC = AddTaskJets("MC","UA1MC",mgr,cinput);
+      else jetanaMC = AddTaskJets("MC","UA1MC");
       jetanaMC->SetDebugLevel(10);
       jetanaMC->SetNonStdBranch("jetsMC");
+    }   
+    if (iJETANMC2 && useMC){ 
+      gROOT->LoadMacro("AddTaskJets.C");
+      AliAnalysisTaskJets *jetanaMC2 = 0;
+      if(bOLD)jetanaMC = AddTaskJets("MC2","UA1",mgr,cinput);
+      else jetanaMC = AddTaskJets("MC2","UA1");
+      jetanaMC->SetDebugLevel(10);
+      jetanaMC->SetNonStdBranch("jetsMC2");
     }   
     // Dijet analysis
     if(iDIJETAN){
@@ -281,4 +302,57 @@ TChain *CreateChainFromCollection(const char* xmlfile, const char *treeName="esd
   }
   chain->ls();
   return chain;
+}
+
+
+void SetupPar(char* pararchivename)
+{
+  //Load par files, create analysis libraries                                                         
+  //For testing, if par file already decompressed and modified                                        
+  //classes then do not decompress.                                                                   
+
+  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ;
+  TString parpar(Form("%s.par", pararchivename)) ;
+  /*
+  if ( gSystem->AccessPathName(parpar.Data()) ) {
+    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
+    TString processline(Form(".! make %s", parpar.Data())) ;
+    gROOT->ProcessLine(processline.Data()) ;
+    gSystem->ChangeDirectory(cdir) ;
+    processline = Form(".! mv /tmp/%s .", parpar.Data()) ;
+    gROOT->ProcessLine(processline.Data()) ;
+  }
+  */
+
+  if (!gSystem->AccessPathName(pararchivename) ) {
+    TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
+    gROOT->ProcessLine(processline.Data());
+  }
+
+  TString ocwd = gSystem->WorkingDirectory();
+  gSystem->ChangeDirectory(pararchivename);
+
+  // check for BUILD.sh and execute                                                                   
+  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
+    printf("*******************************\n");
+    printf("*** Building PAR archive    ***\n");
+    cout<<pararchivename<<endl;
+    printf("*******************************\n");
+
+    if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
+      Error("runProcess","Cannot Build the PAR Archive! - Abort!");
+      return -1;
+    }
+  }
+  // check for SETUP.C and execute                                                                    
+  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
+    printf("*******************************\n");
+    printf("*** Setup PAR archive       ***\n");
+    cout<<pararchivename<<endl;
+    printf("*******************************\n");
+    gROOT->Macro("PROOF-INF/SETUP.C");
+  }
+
+  gSystem->ChangeDirectory(ocwd.Data());
+  printf("Current dir: %s\n", ocwd.Data());
 }
