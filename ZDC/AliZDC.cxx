@@ -261,7 +261,7 @@ void AliZDC::Hits2SDigits()
   // Event loop
   for(Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
     Float_t pmZNC[5], pmZPC[5], pmZNA[5], pmZPA[5], pmZEM1=0., pmZEM2=0.;
-    for(Int_t i=0; i<4; i++) pmZNC[i] = pmZPC[i] =  pmZNA[i] = pmZPA[i] = 0;
+    for(Int_t i=0; i<5; i++) pmZNC[i] = pmZPC[i] =  pmZNA[i] = pmZPA[i] = 0;
 
     runLoader->GetEvent(iEvent);
     TTree* treeH = fLoader->TreeH();
