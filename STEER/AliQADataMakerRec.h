@@ -35,8 +35,8 @@ public:
 	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)  { return Add2List(hist, index, fESDsQAList, expert, image) ; }
 	virtual Int_t Add2HitsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)       { return -1 ; }  
 	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)  { return Add2List(hist, index, fRecPointsQAList, expert, image) ; }
-	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t saveForCorr = kFALSE, const Bool_t image = kFALSE)  { 
-    return Add2List(hist, index, fRawsQAList, expert, saveForCorr, image) ; }
+	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE, const Bool_t saveForCorr = kFALSE)  { 
+    return Add2List(hist, index, fRawsQAList, expert, image, saveForCorr) ; }
 	virtual Int_t Add2SDigitsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)   { return -1 ; } 
 	virtual void        Exec(AliQAv1::TASKINDEX_t task, TObject * data) ;
 	virtual void        EndOfCycle() ;
