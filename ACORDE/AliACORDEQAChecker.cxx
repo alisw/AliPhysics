@@ -62,7 +62,7 @@ Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** 
   Double_t * test = new Double_t[AliRecoParam::kNSpecies] ; 
   Int_t * count   = new Int_t[AliRecoParam::kNSpecies] ; 
   Double_t * acoTest = new Double_t[AliRecoParam::kNSpecies];
-  Double_t acoHitsNorm = 0;
+ // Double_t acoHitsNorm = 0;
  Double_t * acoRefTest = new Double_t[AliRecoParam::kNSpecies];
 
 	// Look at the QAref data for ACORDE
@@ -92,14 +92,11 @@ Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** 
           AliInfo(Form("%s -> %f", hdata->GetName(), rv)) ; 
           count[specie]++ ; 
           test[specie] += rv ; 
-	
 
 	// here we implement the second version for ACORDEQAChecker
 	// by the moment we only compare that the hits in every ACORDE's channel
 	// are close and > 0 
-	for (Int_t i=0;i<60;i++)
-	{
-		acoHitsNorm =  hdata->GetBinContent(i)/hdata->GetMaximum();
+		Double_t acoHitsNorm = hdata->GetMaximum();
 		if  (acoQARefDir)
 		{
 	//		AliWarning("Using the QA Reference data for ACORDE !!!");
@@ -115,7 +112,6 @@ Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** 
 		if ( (acoHitsNorm>0.0) && (acoHitsNorm<=0.0020) ) acoTest[specie] = 0.0010;
 		if ( (acoHitsNorm>-1.0) && (acoHitsNorm<=0.0) ) acoTest[specie] = -0.5;
 		}
-	}
         }
         else{
           AliError("Data type cannot be processed") ;
