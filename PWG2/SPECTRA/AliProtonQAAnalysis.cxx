@@ -3584,7 +3584,6 @@ Bool_t AliProtonQAAnalysis::IsLabelUsed(TArrayI labelArray,
 
 //____________________________________________________________________//
 void AliProtonQAAnalysis::RunVertexQA(AliGenEventHeader *header,
-				      AliStack *const stack, 
 				      AliESDEvent *const esd) {
   //Runs the vertex QA
   //MC vertex

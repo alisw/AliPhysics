@@ -42,7 +42,6 @@ class AliProtonQAAnalysis : public TObject {
 
   //Vertex QA
   void RunVertexQA(AliGenEventHeader *header,
-		   AliStack *stack,
 		   AliESDEvent *esd);
   TList *GetVertexQAList() const {return fQAVertexList;}
 
