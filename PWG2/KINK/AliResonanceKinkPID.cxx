@@ -207,7 +207,7 @@ void AliResonanceKinkPID::Exec(Option_t *)
        TParticle *daughterParticle2=stack->Particle(lastD);
        
        TParticle* kaonFirstDaughter;
-       Int_t mcProcessKaonFirstDaughter;
+       Int_t mcProcessKaonFirstDaughter = -999;
        
        for(Int_t ia=0; ia<daughterParticle1->GetNDaughters(); ia++){
         if ((daughterParticle1->GetFirstDaughter()+ia)!=-1) {
