@@ -760,7 +760,7 @@ AliMUONCheck::CheckOccupancy(Bool_t perDetEle) const
         ndigits = digitStore->GetSize(detele,1-cathode);
         
 	      dEchannelsNonBending[ichamber][idetele] = nchannels;
-        dEoccupancyBending[ichamber][idetele] = ndigits;
+        dEoccupancyNonBending[ichamber][idetele] = ndigits;
 	      cHchannelsNonBending[ichamber] += nchannels;
 	      cHoccupancyNonBending[ichamber] += ndigits;
 	      totalchannelsNonBending += nchannels;
