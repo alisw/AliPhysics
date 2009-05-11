@@ -146,6 +146,7 @@ void  AliMC::ConstructGeometry()
     }
   }else{
     // Create modules, materials, geometry
+    if (!gGeoManager) new TGeoManager("ALICE", "ALICE geometry");
     TStopwatch stw;
     TIter next(gAlice->Modules());
     AliModule *detector;
