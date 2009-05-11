@@ -158,25 +158,6 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
      return;
    }
    
-  /*
-  outrl->CdGAFile();
-  TFile *in=(TFile*)gFile;
-  TDirectory *savedir=gDirectory;
-
-   
-  //when fGeom was needed
-
-  if (!in->IsOpen()) {
-    AliWarning("Geometry file is not open default  TOF geometry will be used");
-    fGeom = new AliTOFGeometry();
-  }
-  else {
-    in->cd();
-    fGeom = (AliTOFGeometry*)in->Get("TOFgeometry");
-  }
-  
-  savedir->cd();
-  */
   AliLoader* outgime = outrl->GetLoader("TOFLoader");
   if (outgime == 0x0)
    {
@@ -215,9 +196,9 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
 
   treeD->Fill();
 
-  AliInfo("----------------------------------------");
+  AliDebug(2,"----------------------------------------");
   AliInfo(Form("%d digits have been created", fDigits->GetEntriesFast()));
-  AliInfo("----------------------------------------");
+  AliDebug(2,"----------------------------------------");
 
   outgime->WriteDigits("OVERWRITE");
   outgime->UnloadDigits();
@@ -265,16 +246,13 @@ void AliTOFDigitizer::CreateDigits()
     // in the while, I perform QA
     Bool_t isSDigitBad = (sector<0 || sector>17 || plate<0 || plate >4 || padz<0 || padz>1 || padx<0 || padx>47);
     
-    if (isSDigitBad) {
-      //AliFatal("strange sdigit found");
-      AliFatal(Form("strange sdigit found   %3i  %2i  %2i  %3i    %3i", sector, plate, padz, padx, strip));
-    }
+    if (isSDigitBad)
+      AliFatal(Form("strange sdigit found   %2d  %1d  %2d  %1d %2d", sector, plate, strip, padz, padx));
     //-------------------------------------------------------
     
     //------------------- Dump section ----------------------
-    if(k<ndump){
-      AliInfo(Form("%2i-th | Sector %2i | Plate %1i | Strip %2i | PadZ %1i | PadX %2i ", k, sector, plate, strip, padz, padx));
-      AliInfo(Form("%2i-th", k));
+    if (k<ndump) {
+      AliInfo(Form("%2d-th digit: Sector %2d | Plate %1d | Strip %2d | PadZ %1d | PadX %2d ", k, sector, plate, strip, padz, padx));
       AliInfo("----------------------------------------------------");
     }
     // ------------------------------------------------------
@@ -304,7 +282,7 @@ void AliTOFDigitizer::CreateDigits()
   } // end loop on sdigits - end digitizing all collected sdigits
 
   //Insert Decalibration 
-  AliInfo("in digitizer, create digits");
+  AliDebug(2,"in digitizer, create digits");
   DecalibrateTOFSignal();
 }
 
@@ -545,10 +523,10 @@ void AliTOFDigitizer::DecalibrateTOFSignal(){
       tToT*=1E3; //back to ps  
       Int_t tot=(Int_t)(tToT/AliTOFGeometry::ToTBinWidth());//(factor 1E3 as input ToT is in ns)
       dig->SetToT(tot); 
-      AliDebug(2,Form(" Final Time and ToT (counts): %i: , %i:",dig->GetTdc(),dig->GetToT()));
+      AliDebug(2,Form(" Final Time and ToT (counts): %d: , %d:",dig->GetTdc(),dig->GetToT()));
       if(tdcCorr<0){
-	AliWarning (Form(" The bad Slewed Time(TDC counts)= %i ", tdcCorr)); 
-	AliWarning(Form(" The bad ToT (TDC counts)= %i ", tot)); 
+	AliWarning (Form(" The bad Slewed Time(TDC counts)= %d ", tdcCorr)); 
+	AliWarning(Form(" The bad ToT (TDC counts)= %d ", tot)); 
       }
     }
     else{
@@ -557,16 +535,14 @@ void AliTOFDigitizer::DecalibrateTOFSignal(){
     }
   }
 
-  if(!isToTSimulated){
-    AliDebug(1,"Standard Production, no miscalibrated digits");   
-  }else{
-    if(!misCalibPars){
-    AliDebug(1,"Standard Production, no miscalibrated digits");   
-    }
-    else {
-      AliDebug(1,"Simulating miscalibrated digits");   
-    } 
-  }
+  if(!isToTSimulated)
+    AliDebug(1,"Standard Production, no miscalibrated digits");
+  else
+    if(!misCalibPars)
+      AliDebug(1,"Standard Production, no miscalibrated digits");
+    else
+      AliDebug(1,"Simulating miscalibrated digits");
+
   return;
 }
 

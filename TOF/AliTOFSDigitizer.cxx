@@ -459,6 +459,12 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 	}
 	
 	geantTime *= 1.e+09;  // conversion from [s] to [ns]
+	// TOF matching window (~200ns) control
+	if (geantTime>=AliTOFGeometry::MatchingWindow()*1E-3) {
+	  AliDebug(2,Form("Time measurement (%f) greater than the matching window (%f)",
+			  geantTime, AliTOFGeometry::MatchingWindow()*1E-3));
+	  continue;
+	}
 
 	// selection case for sdigitizing only hits in a given plate of a given sector
 	if(thereIsNotASelection || (vol[0]==fSelectedSector && vol[1]==fSelectedPlate)){
@@ -500,7 +506,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 
 		  // TOF matching window (~200ns) control
 		  if (tofAfterSimul[indexOfPad]>=AliTOFGeometry::MatchingWindow()*1E-3) {
-		    AliWarning(Form("Time measurement (%f) greater than the matching window (%f)",
+		    AliDebug(2,Form("Time measurement (%f) greater than the matching window (%f)",
 				    tofAfterSimul[indexOfPad], AliTOFGeometry::MatchingWindow()*1E-3));
 		    continue;
 		  }
@@ -557,15 +563,14 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
     
     if (tof->SDigits()) tof->ResetSDigits();
     
-    if (strstr(verboseOption,"all")) {
-      AliInfo("----------------------------------------");
-      AliInfo("       <AliTOFSDigitizer>    ");
-      AliInfo(Form("After sdigitizing %d hits in event %d", nselectedHitsinEv, iEvent));
+    if (strstr(verboseOption,"all") || strstr(verboseOption,"partial")) {
+      AliDebug(2,"----------------------------------------");
+      AliDebug(2,Form("After sdigitizing %d hits in event %d", nselectedHitsinEv, iEvent));
       //" (" << nHitsFromPrim << " from primaries and " << nHitsFromSec << " from secondaries) TOF hits, " 
       AliInfo(Form("%d sdigits have been created", ntotalsdigitsinEv));
-      AliInfo(Form("(%d due to signals and %d due to border effect)", nsignalsdigitsinEv, nnoisesdigitsinEv));
-      AliInfo(Form("%d total updates of the hit map have been performed in current event", ntotalupdatesinEv));
-      AliInfo("----------------------------------------");
+      AliDebug(2,Form("(%d due to signals and %d due to border effect)", nsignalsdigitsinEv, nnoisesdigitsinEv));
+      AliDebug(2,Form("%d total updates of the hit map have been performed in current event", ntotalupdatesinEv));
+      AliDebug(2,"----------------------------------------");
     }
 
   } //event loop on events
@@ -582,19 +587,15 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
   }
   
   nHitsFromSec=nselectedHits-nHitsFromPrim;
-  if(strstr(verboseOption,"all")){
-    AliInfo("----------------------------------------");
-    AliInfo("----------------------------------------");
-    AliInfo("-----------SDigitization Summary--------");
-    AliInfo("       <AliTOFSDigitizer>     ");
-    AliInfo(Form("After sdigitizing %d hits", nselectedHits));
-    AliInfo(Form("in %d events", fEvent2-fEvent1));
-//" (" << nHitsFromPrim << " from primaries and " << nHitsFromSec << " from secondaries) TOF hits, " 
-    AliInfo(Form("%d sdigits have been created", ntotalsdigits));
-    AliInfo(Form("(%d due to signals and " 
-		 "%d due to border effect)", nsignalsdigits, nnoisesdigits));
-    AliInfo(Form("%d total updates of the hit map have been performed", ntotalupdates));
-    AliInfo(Form("in %d cases the time of flight difference is greater than 200 ps", nlargeTofDiff));
+  if (strstr(verboseOption,"all") || strstr(verboseOption,"partial")) {
+    AliDebug(2,"----------------------------------------");
+    AliDebug(2,Form("After sdigitizing %d hits in %d events ", nselectedHits, fEvent2-fEvent1));
+    //" (" << nHitsFromPrim << " from primaries and " << nHitsFromSec << " from secondaries) TOF hits, " 
+    AliDebug(2,Form("%d sdigits have been created", ntotalsdigits));
+    AliDebug(2,Form("(%d due to signals and %d due to border effect)", nsignalsdigits, nnoisesdigits));
+    AliDebug(2,Form("%d total updates of the hit map have been performed", ntotalupdates));
+    AliDebug(2,Form("in %d cases the time of flight difference is greater than 200 ps", nlargeTofDiff));
+    AliDebug(2,"----------------------------------------");
   }
 
 
