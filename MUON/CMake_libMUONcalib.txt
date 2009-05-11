@@ -18,6 +18,9 @@ set(SRCS
         AliMUONVTrackerData.cxx 
         AliMUONSparseHisto.cxx 
         AliMUONTrackerData.cxx
+        AliMUONPedestal.cxx
+        AliMUONGain.cxx
+        AliMUONErrorCounter.cxx 
 )
 
 # fill list of header files from list of source files
