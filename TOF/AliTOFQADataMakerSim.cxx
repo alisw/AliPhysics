@@ -84,18 +84,24 @@ void AliTOFQADataMakerSim::InitHits()
   
   TH1F * h0 = new TH1F("hTOFHits",    "Number of TOF Hits ",301, -1.02, 5.) ; 
   h0->Sumw2() ;
+  h0->GetXaxis()->SetTitle("TOF hit number [10 power]");
   Add2HitsList(h0, 0, !expert, image) ;
 
   TH1F * h1  = new TH1F("hTOFHitsTime", "Hits Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
   h1->Sumw2() ;
+  h1->GetXaxis()->SetTitle("Simulated TOF time [ns]");
   Add2HitsList(h1, 1, !expert, image) ;
 
   TH1F * h2  = new TH1F("hTOFHitsLength", "Length Spectrum in TOF (cm)", 500, 0., 500) ; 
   h2->Sumw2() ;
+  h2->GetXaxis()->SetTitle("Track length from primary vertex till hit TOF pad [cm]");
   Add2HitsList(h2, 2, !expert, image) ;
 
   TH2F * h3  = new TH2F("hTOFHitsClusMap","Hits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
   h3->Sumw2() ;
+  h3->GetXaxis()->SetTitle("2*strip+padz (eta)");
+  h3->GetYaxis()->SetTitle("48*sector+padx (phi)");
+  h3->GetYaxis()->SetTitleOffset(1.15);
   Add2HitsList(h3, 3, !expert, image) ;
 }
 
@@ -109,19 +115,26 @@ void AliTOFQADataMakerSim::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F * h0 = new TH1F("hTOFDigits",    "Number of TOF Digits ",301, -1.02, 5.) ;   h0->Sumw2() ;
+  TH1F * h0 = new TH1F("hTOFDigits",    "Number of TOF Digits ",301, -1.02, 5.) ;
+  h0->Sumw2() ;
+  h0->GetXaxis()->SetTitle("TOF digit number [10 power]");
   Add2DigitsList(h0, 0, !expert, image) ;
 
   TH1F * h1  = new TH1F("hTOFDigitsTime", "Digits Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
   h1->Sumw2() ;
+  h1->GetXaxis()->SetTitle("Digitized TOF time [ns]");
   Add2DigitsList(h1, 1, !expert, image) ;
 
   TH1F * h2  = new TH1F("hTOFDigitsToT", "Digits ToT Spectrum in TOF (ns)", 500, 0., 50) ; 
   h2->Sumw2() ;
+  h2->GetYaxis()->SetTitle("Digitized TOF time [ns]");
   Add2DigitsList(h2, 2, !expert, image) ;
 
   TH2F * h3  = new TH2F("hTOFDigitsClusMap","Digits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
   h3->Sumw2() ;
+  h3->GetXaxis()->SetTitle("2*strip+padz (eta)");
+  h3->GetYaxis()->SetTitle("48*sector+padx (phi)");
+  h3->GetYaxis()->SetTitleOffset(1.15);
   Add2DigitsList(h3, 3, !expert, image) ;
 
 }
@@ -136,15 +149,21 @@ void AliTOFQADataMakerSim::InitSDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F * h0 = new TH1F("hTOFSDigits",    "Number of TOF SDigits ",301, -1.02, 5.) ;   h0->Sumw2() ;
+  TH1F * h0 = new TH1F("hTOFSDigits",    "Number of TOF SDigits ",301, -1.02, 5.) ;
+  h0->Sumw2() ;
+  h0->GetXaxis()->SetTitle("TOF sdigit number [10 power]");
   Add2SDigitsList(h0, 0, !expert, image) ;
 
   TH1F * h1  = new TH1F("hTOFSDigitsTime", "SDigits Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
   h1->Sumw2() ;
+  h1->GetXaxis()->SetTitle("SDigitized TOF time [ns]");
   Add2SDigitsList(h1, 1, !expert, image) ;
 
   TH2F * h2  = new TH2F("hTOFSDigitsClusMap","SDigits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
   h2->Sumw2() ;
+  h2->GetXaxis()->SetTitle("2*strip+padz (eta)");
+  h2->GetYaxis()->SetTitle("48*sector+padx (phi)");
+  h2->GetYaxis()->SetTitleOffset(1.15);
   Add2SDigitsList(h2, 2, !expert, image) ;
 
 }

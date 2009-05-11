@@ -81,20 +81,26 @@ void AliTOFQADataMaker::InitHits()
 
   Bool_t expert = kFALSE;
 
-  TH1F * h0 = new TH1F("hTOFHits",    "Number of TOF Hits ",301, -1.02, 5.) ; 
+  TH1F * h0 = new TH1F("hTOFHits",    "Number of TOF Hits ",301, -1.02, 5.) ;
   h0->Sumw2() ;
+  h0->GetXaxis()->SetTitle("TOF hit number [10 power]");
   Add2HitsList(h0, 0, expert) ;
 
-  TH1F * h1  = new TH1F("hTOFHitsTime", "Hits Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFHitsTime", "Hits Time Spectrum in TOF (ns)", 2000, 0., 200) ;
   h1->Sumw2() ;
+  h1->GetXaxis()->SetTitle("Simulated TOF time [ns]");
   Add2HitsList(h1, 1, expert) ;
 
-  TH1F * h2  = new TH1F("hTOFHitsLength", "Length Spectrum in TOF (cm)", 500, 0., 500) ; 
+  TH1F * h2  = new TH1F("hTOFHitsLength", "Length Spectrum in TOF (cm)", 500, 0., 500) ;
   h2->Sumw2() ;
+  h2->GetXaxis()->SetTitle("Track length from primary vertex till hit TOF pad [cm]");
   Add2HitsList(h2, 2, expert) ;
 
-  TH2F * h3  = new TH2F("hTOFHitsClusMap","Hits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
+  TH2F * h3  = new TH2F("hTOFHitsClusMap","Hits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ;
   h3->Sumw2() ;
+  h3->GetXaxis()->SetTitle("2*strip+padz (eta)");
+  h3->GetYaxis()->SetTitle("48*sector+padx (phi)");
+  h3->GetYaxis()->SetTitleOffset(1.15);
   Add2HitsList(h3, 3, expert) ;
 }
 
@@ -107,19 +113,27 @@ void AliTOFQADataMaker::InitDigits()
 
   Bool_t expert = kFALSE;
 
-  TH1F * h0 = new TH1F("hTOFDigits",    "Number of TOF Digits ",301, -1.02, 5.) ;   h0->Sumw2() ;
+  TH1F * h0 = new TH1F("hTOFDigits",    "Number of TOF Digits ",301, -1.02, 5.) ;
+  h0->Sumw2() ;
+  h0->GetXaxis()->SetTitle("TOF digit number [10 power]");
   Add2DigitsList(h0, 0, expert) ;
 
-  TH1F * h1  = new TH1F("hTOFDigitsTime", "Digits Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFDigitsTime", "Digits Time Spectrum in TOF (ns)", 2000, 0., 200) ;
   h1->Sumw2() ;
+  h1->GetXaxis()->SetTitle("Digitized TOF time [ns]");
   Add2DigitsList(h1, 1, expert) ;
 
-  TH1F * h2  = new TH1F("hTOFDigitsToT", "Digits ToT Spectrum in TOF (ns)", 500, 0., 50) ; 
+  TH1F * h2  = new TH1F("hTOFDigitsToT", "Digits ToT Spectrum in TOF (ns)", 500, 0., 50) ;
   h2->Sumw2() ;
+  h2->GetXaxis()->SetTitle("Digitized TOT [ns]");
+  h2->GetYaxis()->SetTitle("Digitized TOF time [ns]");
   Add2DigitsList(h2, 2, expert) ;
 
-  TH2F * h3  = new TH2F("hTOFDigitsClusMap","Digits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
+  TH2F * h3  = new TH2F("hTOFDigitsClusMap","Digits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ;
   h3->Sumw2() ;
+  h3->GetXaxis()->SetTitle("2*strip+padz (eta)");
+  h3->GetYaxis()->SetTitle("48*sector+padx (phi)");
+  h3->GetYaxis()->SetTitleOffset(1.15);
   Add2DigitsList(h3, 3, expert) ;
 
 }
@@ -133,15 +147,21 @@ void AliTOFQADataMaker::InitSDigits()
 
   Bool_t expert = kFALSE;
 
-  TH1F * h0 = new TH1F("hTOFSDigits",    "Number of TOF SDigits ",301, -1.02, 5.) ;   h0->Sumw2() ;
+  TH1F * h0 = new TH1F("hTOFSDigits",    "Number of TOF SDigits ",301, -1.02, 5.) ;
+  h0->Sumw2() ;
+  h0->GetXaxis()->SetTitle("TOF sdigit number [10 power]");
   Add2SDigitsList(h0, 0, expert) ;
 
-  TH1F * h1  = new TH1F("hTOFSDigitsTime", "SDigits Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFSDigitsTime", "SDigits Time Spectrum in TOF (ns)", 2000, 0., 200) ;
   h1->Sumw2() ;
+  h1->GetXaxis()->SetTitle("SDigitized TOF time [ns]");
   Add2SDigitsList(h1, 1, expert) ;
 
-  TH2F * h2  = new TH2F("hTOFSDigitsClusMap","SDigits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
+  TH2F * h2  = new TH2F("hTOFSDigitsClusMap","SDigits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ;
   h2->Sumw2() ;
+  h2->GetXaxis()->SetTitle("2*strip+padz (eta)");
+  h2->GetYaxis()->SetTitle("48*sector+padx (phi)");
+  h2->GetYaxis()->SetTitleOffset(1.15);
   Add2SDigitsList(h2, 2, expert) ;
 
 }
@@ -155,19 +175,27 @@ void AliTOFQADataMaker::InitRaws()
 
   Bool_t expert = kFALSE;
 
-  TH1F * h0 = new TH1F("hTOFRaws",    "Number of TOF Raws ",301, -1.02, 5.) ;   h0->Sumw2() ;
+  TH1F * h0 = new TH1F("hTOFRaws",    "Number of TOF Raws ",301, -1.02, 5.) ;
+  h0->Sumw2() ;
+  h0->GetXaxis()->SetTitle("TOF raw number [10 power]");
   Add2RawsList(h0, 0, expert) ;
 
-  TH1F * h1  = new TH1F("hTOFRawsTime", "Raws Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFRawsTime", "Raws Time Spectrum in TOF (ns)", 2000, 0., 200) ;
   h1->Sumw2() ;
+  h1->GetXaxis()->SetTitle("Measured TOF time [ns]");
   Add2RawsList(h1, 1, expert) ;
 
-  TH1F * h2  = new TH1F("hTOFRawsToT", "Raws ToT Spectrum in TOF (ns)", 500, 0., 50) ; 
+  TH1F * h2  = new TH1F("hTOFRawsToT", "Raws ToT Spectrum in TOF (ns)", 500, 0., 50) ;
   h2->Sumw2() ;
+  h2->GetXaxis()->SetTitle("Measured TOT [ns]");
+  h2->GetYaxis()->SetTitle("Measured TOF time [ns]");
   Add2RawsList(h2, 2, expert) ;
 
-  TH2F * h3  = new TH2F("hTOFRawsClusMap","Raws vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
+  TH2F * h3  = new TH2F("hTOFRawsClusMap","Raws vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ;
   h3->Sumw2() ;
+  h3->GetXaxis()->SetTitle("2*strip+padz (eta)");
+  h3->GetYaxis()->SetTitle("48*sector+padx (phi)");
+  h3->GetYaxis()->SetTitleOffset(1.15);
   Add2RawsList(h3, 3, expert) ;
 
 }
@@ -181,25 +209,32 @@ void AliTOFQADataMaker::InitRecPoints()
 
   Bool_t expert = kFALSE;
 
-  TH1F * h0 = new TH1F("hTOFRecPoints",    "Number of TOF RecPoints ",301, -1.02, 5.) ;   h0->Sumw2() ;
+  TH1F * h0 = new TH1F("hTOFRecPoints",    "Number of TOF RecPoints ",301, -1.02, 5.) ;
+  h0->Sumw2() ;
+  h0->GetXaxis()->SetTitle("TOF recPoint number [10 power]");
   Add2RecPointsList(h0, 0, expert) ;
 
-  TH1F * h1  = new TH1F("hTOFRecPointsTime", "RecPoints Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFRecPointsTime", "RecPoints Time Spectrum in TOF (ns)", 2000, 0., 200) ;
   h1->Sumw2() ;
+  h1->GetXaxis()->SetTitle("Calibrated TOF time [ns]");
   Add2RecPointsList(h1, 1, expert) ;
 
-  TH1F * h2  = new TH1F("hTOFRecPointsRawTime", "RecPoints raw Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
+  TH1F * h2  = new TH1F("hTOFRecPointsRawTime", "RecPoints raw Time Spectrum in TOF (ns)", 2000, 0., 200) ;
   h2->Sumw2() ;
+  h2->GetXaxis()->SetTitle("Measured TOT [ns]");
+  h2->GetYaxis()->SetTitle("Measured TOF time [ns]");
   Add2RecPointsList(h2, 2, expert) ;
 
-  TH1F * h3  = new TH1F("hTOFRecPointsToT", "RecPoints ToT Spectrum in TOF (ns)", 500, 0., 50) ; 
+  TH1F * h3  = new TH1F("hTOFRecPointsToT", "RecPoints ToT Spectrum in TOF (ns)", 500, 0., 50) ;
   h3->Sumw2() ;
+  h3->GetXaxis()->SetTitle("Measured TOT [ns]");
   Add2RecPointsList(h3, 3, expert) ;
 
-  TH2F * h4  = new TH2F("hTOFRecPointsClusMap","RecPoints vs TOF phi-eta",183, -0.5, 182.5,865,-0.5,864.5) ; 
+  TH2F * h4  = new TH2F("hTOFRecPointsClusMap","RecPoints vs TOF phi-eta",183, -0.5, 182.5,865,-0.5,864.5) ;
   h4->Sumw2() ;
   h4->GetXaxis()->SetTitle("2*strip+padz (eta)");
   h4->GetYaxis()->SetTitle("48*sector+padx (phi)");
+  h4->GetYaxis()->SetTitleOffset(1.15);
   Add2RecPointsList(h4, 4, expert) ;
 
 }
@@ -213,24 +248,29 @@ void AliTOFQADataMaker::InitESDs()
 
   Bool_t expert = kFALSE;
 
-  TH1F * h0 = new TH1F("hTOFESDs",    "Number of matched TOF tracks over ESDs",       250, -1., 4.) ;  
+  TH1F * h0 = new TH1F("hTOFESDs",    "Number of matched TOF tracks over ESDs",       250, -1., 4.) ;
   h0->Sumw2() ; 
+  h0->GetXaxis()->SetTitle("Number of TOF matched ESD tracks [10 power]");
   Add2ESDsList(h0, 0, expert) ;
 
-  TH1F * h1  = new TH1F("hTOFESDsTime", "Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFESDsTime", "Time Spectrum in TOF (ns)", 2000, 0., 200) ;
   h1->Sumw2() ;
+  h1->GetXaxis()->SetTitle("Calibrated TOF time [ns]");
   Add2ESDsList(h1, 1, expert) ;
 
-  TH1F * h2  = new TH1F("hTOFESDsRawTime", "raw Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
+  TH1F * h2  = new TH1F("hTOFESDsRawTime", "raw Time Spectrum in TOF (ns)", 2000, 0., 200) ;
   h2->Sumw2() ;
+  h2->GetXaxis()->SetTitle("Measured TOF time [ns]");
   Add2ESDsList(h2, 2, expert) ;
 
-  TH1F * h3  = new TH1F("hTOFESDsToT", "ToT Spectrum in TOF (ns)", 500, 0., 50) ; 
+  TH1F * h3  = new TH1F("hTOFESDsToT", "ToT Spectrum in TOF (ns)", 500, 0., 50) ;
   h3->Sumw2() ;
+  h3->GetXaxis()->SetTitle("Measured TOT [ns]");
   Add2ESDsList(h3, 3, expert) ;
 
-  TH1F * h4 = new TH1F("hTOFESDsPID",    "Fraction of matched TOF tracks with good PID flag", 101, 0., 101.) ;  
-  h4->Sumw2() ; 
+  TH1F * h4 = new TH1F("hTOFESDsPID",    "Fraction of matched TOF tracks with good PID flag", 101, 0., 101.) ;
+  h4->Sumw2() ;
+  h4->GetXaxis()->SetTitle("Fraction of TOF matched ESD tracks with good flag [%]");
   Add2ESDsList(h4, 4, expert) ;
 }
 
@@ -439,7 +479,8 @@ void AliTOFQADataMaker::MakeRaws(AliRawReader* rawReader)
     clonesRawData = (TClonesArray*)tofInput.GetRawData();
     for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
       AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
-      if (!tofRawDatum->GetTOT() || !tofRawDatum->GetTOF()) continue;
+      //if (!tofRawDatum->GetTOT() || !tofRawDatum->GetTOF()) continue;
+      if (!tofRawDatum->GetTOF()) continue;
       ntof++;
       GetRawsData(1)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;//in ns
       GetRawsData(2)->Fill( tofRawDatum->GetTOT()*tot2ns) ;//in ns
@@ -552,8 +593,9 @@ void AliTOFQADataMaker::MakeESDs(AliESDEvent * esd)
     GetESDsData(0)->Fill(TMath::Log10(nentries)) ;
   }
 
-  Float_t ratio = (Float_t)ntofpid/(Float_t)ntof*100.;
-  if(ntof>0)GetESDsData(4)->Fill(ratio) ;
+  Float_t ratio = 0.;
+  if(ntof>0) ratio=(Float_t)ntofpid/(Float_t)ntof*100.;
+  GetESDsData(4)->Fill(ratio) ;
 
 }
 
