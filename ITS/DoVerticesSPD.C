@@ -19,6 +19,7 @@
 #include "AliITSVertexer3D.h"
 #include "AliITSVertexerZ.h"
 #include "AliESDVertex.h"
+#include "AliESDEvent.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliGenEventHeader.h"
@@ -27,10 +28,10 @@
 
 /*  $Id$    */
 
-Bool_t DoVerticesSPD(Int_t optdebug=1){
+Bool_t DoVerticesSPD(Int_t pileupalgo=1, TString bfield="5kG", Int_t optdebug=0){
 
   TFile *fint = new TFile("VertexSPD.root","recreate");
-  TNtuple *nt = new TNtuple("ntvert","vertices","xtrue:ytrue:ztrue:zZ:zdiffZ:zerrZ:ntrksZ:x3D:xdiff3D:xerr3D:y3D:ydiff3D:yerr3D:z3D:zdiff3D:zerr3D:ntrks3D:dndy:ntrklets:nrp1:ptyp:is3D");
+  TNtuple *nt = new TNtuple("ntvert","vertices","xtrue:ytrue:ztrue:zZ:zdiffZ:zerrZ:ntrksZ:x3D:xdiff3D:xerr3D:y3D:ydiff3D:yerr3D:z3D:zdiff3D:zerr3D:ntrks3D:dndy:ntrklets:nrp1:ptyp:is3D:isTriggered");
 
   if (gClassTable->GetID("AliRun") < 0) {
     gInterpreter->ExecuteMacro("loadlibs.C");
@@ -68,18 +69,26 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
   AliITSLoader* ITSloader =  (AliITSLoader*) runLoader->GetLoader("ITSLoader");
   ITSloader->LoadRecPoints("read");
 
-  Int_t totev=runLoader->GetNumberOfEvents();
+ Int_t totev=runLoader->GetNumberOfEvents();
   if(optdebug)  printf("Number of events= %d\n",totev);
 
   AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec();
- 
+  if(bfield.Contains("5")){
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
+  }else if(bfield.Contains("2")){
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k2kG));
+  }else{
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 0., 1., 10., AliMagF::k5kG));
+  }
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  printf("Magnetic field set to %f\n",-fld->SolenoidField());
   Double_t xnom=0.,ynom=0.;
   AliITSVertexerZ *vertz = new AliITSVertexerZ(xnom,ynom);
   vertz->Init("default");
   AliITSVertexer3D *vert3d = new AliITSVertexer3D();
   vert3d->Init("default");
   vert3d->SetWideFiducialRegion(40.,1.);
-  vert3d->SetPileupAlgo(1);
+  vert3d->SetPileupAlgo(pileupalgo);
   vert3d->PrintStatus();
   vertz->SetDetTypeRec(detTypeRec);
   vert3d->SetDetTypeRec(detTypeRec);
@@ -93,6 +102,24 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
   /* end lines to be uncommented to use diamond constrain */
 
   Int_t goodz=0,good3d=0;
+  TFile* esdFile = TFile::Open("AliESDs.root");
+  if (!esdFile || !esdFile->IsOpen()) {
+    printf("Error in opening ESD file");
+    return kFALSE;
+  }
+
+  AliESDEvent * esd = new AliESDEvent;
+  TTree* tree = (TTree*) esdFile->Get("esdTree");
+  if (!tree) {
+    printf("Error: no ESD tree found");
+    return kFALSE;
+  }
+  esd->ReadFromTree(tree);
+
+  // Trigger mask
+  ULong64_t spdFO = (1 << 14);
+  ULong64_t v0left = (1 << 11);
+  ULong64_t v0right = (1 << 12);
 
   for (Int_t iEvent = 0; iEvent < totev; iEvent++) {
     TArrayF mcVertex(3); 
@@ -123,8 +150,12 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
     }
     if(optdebug) printf(" dNch/dy = %f\n",dNchdy);
  
-    TTree* cltree = ITSloader->TreeR();
+    tree->GetEvent(iEvent);
 
+    TTree* cltree = ITSloader->TreeR();
+    ULong64_t triggerMask=esd->GetTriggerMask();
+    // MB1: SPDFO || V0L || V0R
+    Bool_t eventTriggered = (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)));
     AliESDVertex* vtxz = vertz->FindVertexForCurrentEvent(cltree);
     AliESDVertex* vtx3d = vert3d->FindVertexForCurrentEvent(cltree);
     AliMultiplicity *alimult = vert3d->GetMultiplicity();
@@ -139,7 +170,7 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
 
     TDirectory *current = gDirectory;
     fint->cd();
-    Float_t xnt[22];
+    Float_t xnt[23];
 
     Double_t zz = 0.;
     Double_t zresz = 0.;
@@ -170,6 +201,7 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
     Int_t ntrk3d = 0;
     Bool_t is3d=kFALSE;
     if(vtx3d){
+
       if(vtx3d->IsFromVertexer3D()) is3d=kTRUE;
       ntrk3d = vtx3d->GetNContributors();
       if(is3d && ntrk3d>0)good3d++;
@@ -212,6 +244,7 @@ Bool_t DoVerticesSPD(Int_t optdebug=1){
     xnt[19]=float(nrecp1);
     xnt[20]=float(ptype);
     xnt[21]=float(is3d);
+    xnt[22]=float(eventTriggered);
     nt->Fill(xnt);
     current->cd();
     

@@ -36,24 +36,27 @@ ClassImp(AliITSVertexer3D)
 /* $Id$ */
 
 //______________________________________________________________________
-AliITSVertexer3D::AliITSVertexer3D():AliITSVertexer(),
-fLines("AliStrLine",1000),
-fVert3D(),
-fCoarseDiffPhiCut(0.),
-fFineDiffPhiCut(0.),
-fCutOnPairs(0.),
-fCoarseMaxRCut(0.),
-fMaxRCut(0.),
-fZCutDiamond(0.),
-fMaxZCut(0.),
-fDCAcut(0.),
-fDiffPhiMax(0.),
-fMeanPSelTrk(0.),
-fMeanPtSelTrk(0.),
-fUsedCluster(kMaxCluPerMod*kNSPDMod),
-fZHisto(0),
-fDCAforPileup(0.),
-fPileupAlgo(0)
+AliITSVertexer3D::AliITSVertexer3D():
+  AliITSVertexer(),
+  fLines("AliStrLine",1000),
+  fVert3D(),
+  fCoarseDiffPhiCut(0.),
+  fFineDiffPhiCut(0.),
+  fCutOnPairs(0.),
+  fCoarseMaxRCut(0.),
+  fMaxRCut(0.),
+  fZCutDiamond(0.),
+  fMaxZCut(0.),
+  fDCAcut(0.),
+  fDiffPhiMax(0.),
+  fMeanPSelTrk(0.),
+  fMeanPtSelTrk(0.),
+  fUsedCluster(kMaxCluPerMod*kNSPDMod),
+  fZHisto(0),
+  fDCAforPileup(0.),
+  fBinSizeR(0.),
+  fBinSizeZ(0.),
+  fPileupAlgo(0)
 {
   // Default constructor
   SetCoarseDiffPhiCut();
@@ -69,6 +72,8 @@ fPileupAlgo(0)
   SetMeanPtSelTracks();
   SetMinDCAforPileup();
   SetPileupAlgo();
+  SetBinSizeR();
+  SetBinSizeZ();
   Float_t binsize=0.02; // default 200 micron
   Int_t nbins=static_cast<Int_t>(1+2*fZCutDiamond/binsize);
   fZHisto=new TH1F("hz","",nbins,-fZCutDiamond,-fZCutDiamond+binsize*nbins);
@@ -478,16 +483,15 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     deltaR=fMaxRCut;
   }
 
-  Int_t nbr=50;
   Float_t rl=-fCoarseMaxRCut;
   Float_t rh=fCoarseMaxRCut;
-  Int_t nbz=100;
   Float_t zl=-fZCutDiamond;
   Float_t zh=fZCutDiamond;
-  Float_t binsizer=(rh-rl)/nbr;
-  Float_t binsizez=(zh-zl)/nbz;
-  Int_t nbrcs=25;
-  Int_t nbzcs=50;
+  Int_t nbr=(Int_t)((rh-rl)/fBinSizeR+0.0001);
+  Int_t nbz=(Int_t)((zh-zl)/fBinSizeZ+0.0001);
+  Int_t nbrcs=(Int_t)((rh-rl)/(fBinSizeR*2.)+0.0001);
+  Int_t nbzcs=(Int_t)((zh-zl)/(fBinSizeZ*2.)+0.0001);
+
   TH3F *h3d = NULL;
   TH3F *h3dcs = NULL;
   if(fPileupAlgo !=2){
@@ -554,8 +558,9 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   Int_t ntrkl,ntimes;
   FindPeaks(h3d,peak,ntrkl,ntimes);  
   delete h3d;
-
-  if(optCuts==0 && ntrkl<=2){
+  Float_t binsizer=(rh-rl)/nbr;
+  Float_t binsizez=(zh-zl)/nbz;
+  if(optCuts==0 && (ntrkl<=2 || ntimes>1)){
     ntrkl=0;
     ntimes=0;
     FindPeaks(h3dcs,peak,ntrkl,ntimes);  
@@ -627,6 +632,9 @@ void AliITSVertexer3D::FindPeaks(TH3F* histo, Double_t *peak, Int_t &nOfTracklet
   peak[2]=0.;
   nOfTracklets = 0;
   nOfTimes=0;
+  Int_t peakbin[3]={0,0,0};
+  Int_t peak2bin[3]={-1,-1,-1};
+  Int_t bc2=-1;
   for(Int_t i=xax->GetFirst();i<=xax->GetLast();i++){
     Float_t xval = xax->GetBinCenter(i);
     for(Int_t j=yax->GetFirst();j<=yax->GetLast();j++){
@@ -634,20 +642,42 @@ void AliITSVertexer3D::FindPeaks(TH3F* histo, Double_t *peak, Int_t &nOfTracklet
       for(Int_t k=zax->GetFirst();k<=zax->GetLast();k++){
 	Float_t zval = zax->GetBinCenter(k);
 	Int_t bc =(Int_t)histo->GetBinContent(i,j,k);
+	if(bc==0) continue;
 	if(bc>nOfTracklets){
-	  nOfTracklets = bc;
+	  nOfTracklets=bc;
 	  peak[2] = zval;
 	  peak[1] = yval;
 	  peak[0] = xval;
+	  peakbin[2] = k;
+	  peakbin[1] = j;
+	  peakbin[0] = i;
+	  peak2bin[2] = -1;
+	  peak2bin[1] = -1;
+	  peak2bin[0] = -1;
+	  bc2=-1;
 	  nOfTimes = 1;
 	}else if(bc==nOfTracklets){
-	  nOfTimes++;
+	  if(TMath::Abs(i-peakbin[0])<=1 && TMath::Abs(j-peakbin[1])<=1 && TMath::Abs(k-peakbin[2])<=1){
+	    peak2bin[2] = k;
+	    peak2bin[1] = j;
+	    peak2bin[0] = i;
+	    bc2=bc;
+	    nOfTimes = 1;
+	  }else{
+	    nOfTimes++;
+	  }
 	}
       }
     }
   }
+  if(peak2bin[0]>=-1 && bc2!=-1){ // two contiguous peak-cells with same contents
+    peak[0]=0.5*(xax->GetBinCenter(peakbin[0])+xax->GetBinCenter(peak2bin[0]));
+    peak[1]=0.5*(yax->GetBinCenter(peakbin[1])+yax->GetBinCenter(peak2bin[1]));
+    peak[2]=0.5*(zax->GetBinCenter(peakbin[2])+zax->GetBinCenter(peak2bin[2]));
+    nOfTracklets+=bc2;
+    nOfTimes=1;
+  }
 }
-
 //________________________________________________________
 void AliITSVertexer3D::MarkUsedClusters(){
   // Mark clusters of tracklets used in vertex claulation

@@ -54,6 +54,8 @@ class AliITSVertexer3D : public AliITSVertexer {
   void SetMeanPPtSelTracks(Float_t fieldTesla);
   void SetMinDCAforPileup(Float_t mindist=0.1) {fDCAforPileup=mindist;}
   void SetPileupAlgo(UShort_t optalgo=0){fPileupAlgo=optalgo;}
+  void SetBinSizeR(Float_t siz=0.1){fBinSizeR=siz;}
+  void SetBinSizeZ(Float_t siz=0.8){fBinSizeZ=siz;}
 
 protected:
   AliITSVertexer3D(const AliITSVertexer3D& vtxr);
@@ -85,11 +87,13 @@ protected:
   TBits   fUsedCluster;  // flag for used clusters in vertex calculation
   TH1F *fZHisto;           //! histogram with coarse z distribution
   Float_t  fDCAforPileup;  // Minimum DCA to 1st vertex for pileup tracklets 
+  Float_t  fBinSizeR;      // Histo3D bin size along radius
+  Float_t  fBinSizeZ;      // Histo3D bin size along z
   UShort_t fPileupAlgo;    // Algo for pileup identification
                            // 0->VertexerZ pileup algo
                            // 1->Unused RecPoints algo
 
-  ClassDef(AliITSVertexer3D,8);
+  ClassDef(AliITSVertexer3D,9);
 
 };
 
