@@ -17,7 +17,11 @@ SRCS:=  AliMUONTriggerLut.cxx \
         AliMUONTriggerDisplay.cxx \
         AliMUONVTrackerData.cxx \
         AliMUONSparseHisto.cxx \
-        AliMUONTrackerData.cxx
+        AliMUONTrackerData.cxx \
+        AliMUONPedestal.cxx \
+        AliMUONGain.cxx \
+        AliMUONErrorCounter.cxx 
+
 
 HDRS:= $(SRCS:.cxx=.h)
 
