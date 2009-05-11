@@ -120,7 +120,7 @@ AliMUONSDigitizerV2::Exec(Option_t*)
     AliFatal(Form("Could not create digitstore of class %s",classname.Data()));
   }
   
-  AliInfo(Form("Will use digitStore of type %s",sDigitStore->ClassName()));
+  AliDebug(1,Form("Will use digitStore of type %s",sDigitStore->ClassName()));
           
   for ( Int_t iEvent = 0; iEvent < nofEvents; ++iEvent ) 
   {    
