@@ -652,7 +652,6 @@ void AliDIPOv2::CreateCompensatorDipole()
 //  Mother volumes
     TGeoVolumeAssembly* asDCM0 = new TGeoVolumeAssembly("DCM0");
     asDCM0->SetName("DCM0");
-    gMC->Gsatt ("DCM0", "SEEN", 0);
     
 //
 //  Mother volume containing lower coil
