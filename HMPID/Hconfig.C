@@ -245,7 +245,7 @@ void HmpConfig::GuiGen(TGCompositeFrame *pMainF)
 //Chamber number  
   fGenF->AddFrame(fGenChamCO=new TGComboBox(fGenF,100)); //add chamber number combo to generator vertical frame
   fGenChamCO->AddEntry("not used",kNotUsed);
-  for(int i=1;i<=7;i++) fGenChamCO->AddEntry(Form("Chamber %i",i),i);  fGenChamCO->Resize(160,20); fGenChamCO->Select(kNotUsed);
+  for(int i=1;i<=7;i++) fGenChamCO->AddEntry(Form("Chamber %i",i-1),i);  fGenChamCO->Resize(160,20); fGenChamCO->Select(kNotUsed);
 }//GuiGen()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void HmpConfig::GenAddSlot(Int_t id)
