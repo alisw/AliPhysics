@@ -28,8 +28,10 @@ class AliGenPythiaEventHeader : public AliGenEventHeader
     void     TriggerJet(Int_t i, Float_t p[4]);
     void     UQJet(Int_t i, Float_t p[4]);
     Double_t GetXJet() {return fXJet;}
-    Double_t GetYJet() {return fYJet;}    
-    void     SetXYJet(Double_t x, Double_t y); 
+    Double_t GetYJet() {return fYJet;}
+    Double_t GetInMediumLength() {return fInMediumLength;}
+    void     SetXYJet(Double_t x, Double_t y);
+    void     SetInMediumLength(Double_t l) {fInMediumLength = l;}
     void     SetZQuench(Double_t z[4]);
     void     GetZQuench(Double_t z[4]);
     void     SetPtHard(Float_t pthard) {fPtHard = pthard;}
@@ -43,11 +45,12 @@ protected:
     Int_t    fNUQJets;                   // Number of unquenched
     Double_t fXJet;                      // Jet production point (x)
     Double_t fYJet;                      // Jet production point (y)
+    Double_t fInMediumLength;            // In medium length
     Float_t  fJets[4][10];               // Trigger jets
     Float_t  fUQJets[4][10];             // Unquenched trigger jets
     Double_t fZquench[4];                // Quenching fraction
     Float_t  fPtHard;                    // pT hard
-    ClassDef(AliGenPythiaEventHeader,4)  // Event header for Pythia event
+    ClassDef(AliGenPythiaEventHeader,5)  // Event header for Pythia event
 };
 	
 	
