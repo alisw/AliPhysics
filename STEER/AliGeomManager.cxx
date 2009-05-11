@@ -1580,7 +1580,7 @@ Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
   
   while((str = (TObjString*) iter.Next())){
     TString det(str->String());
-    AliInfoClass(Form("Loading alignment objs for %s",det.Data()));
+    AliDebugClass(5,Form("Loading alignment objs for %s",det.Data()));
     if(!LoadAlignObjsFromCDBSingleDet(det.Data(),alignObjArray)){
       alObjsNotLoaded += det.Data();
       alObjsNotLoaded += " ";
