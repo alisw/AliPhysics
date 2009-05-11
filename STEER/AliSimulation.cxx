@@ -343,16 +343,11 @@ void AliSimulation::InitRunNumber(){
   }
     
   if(fRun >= 0) {
-    	AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     	AliDebug(2, Form("Setting CDB run number to: %d",fRun));
-    	AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   } else {
     	fRun=0;
-    	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    	AliWarning("Run number not yet set !!!!");
-    	AliWarning(Form("Setting it now to: %d", fRun));
-    	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    	
+    	AliWarning(Form("Run number not yet set !!!! Setting it now to: %d",
+			fRun));
   }
   man->SetRun(fRun);
 
