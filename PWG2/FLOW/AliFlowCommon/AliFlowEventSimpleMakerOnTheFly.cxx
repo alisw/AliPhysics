@@ -48,8 +48,11 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fUseConstantHarmonics(kFALSE),
   fV1RP(0.), 
   fV1SpreadRP(0.), 
+  fV2DistrOfRPsIsGauss(kFALSE),
   fV2RP(0.), 
   fV2SpreadRP(0.), 
+  fMinV2RP(0.),
+  fMaxV2RP(0.),
   fV4RP(0.), 
   fV4SpreadRP(0.), 
   fV2RPMax(0.), 
@@ -58,7 +61,7 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fPhiDistribution(NULL),
   fMyTRandom3(NULL),
   fCount(0),
-  fNoOfLoops(1) 
+  fNoOfLoops(1)
 {
   // constructor
   fMyTRandom3 = new TRandom3(iseed);   
@@ -102,7 +105,7 @@ void AliFlowEventSimpleMakerOnTheFly::Init()
  fPhiDistribution->SetParName(1,"elliptic flow"); 
  fPhiDistribution->SetParName(2,"Reaction Plane");
  fPhiDistribution->SetParName(3,"harmonic 4"); // to be improved (name)
- 
+
 }
 
 //========================================================================
@@ -145,8 +148,22 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   if(fUseConstantHarmonics)
   {
    Double_t dNewV2RP = fV2RP;
-   if(fV2SpreadRP>0.0) dNewV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
-   fPhiDistribution->SetParameter(1,dNewV2RP);
+   if(fV2DistrOfRPsIsGauss)
+   {
+    if(fV2SpreadRP>0.0) dNewV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
+    fPhiDistribution->SetParameter(1,dNewV2RP);
+   } else 
+     {
+      if(fMinV2RP != fMaxV2RP) 
+      {
+       dNewV2RP = fMyTRandom3->Uniform(fMinV2RP,fMaxV2RP);    
+       fPhiDistribution->SetParameter(1,dNewV2RP);  
+      } else
+        {
+         dNewV2RP = fMinV2RP;
+         fPhiDistribution->SetParameter(1,dNewV2RP);          
+        }
+     } 
   }
   
   // sampling the V4:

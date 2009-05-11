@@ -67,11 +67,20 @@ class AliFlowEventSimpleMakerOnTheFly {
   void SetV1SpreadRP(Double_t dV1SpreadRP) {this->fV1SpreadRP = dV1SpreadRP;}
   Double_t GetV1SpreadRP() const {return this->fV1SpreadRP;} 
   
+  void SetV2DistrOfRPsIsGauss(Bool_t const v2dorig) {this->fV2DistrOfRPsIsGauss = v2dorig;};
+  Bool_t GetV2DistrOfRPsIsGauss() const {return this->fV2DistrOfRPsIsGauss;};
+  
   void SetV2RP(Double_t dV2RP) {this->fV2RP = dV2RP;}
   Double_t GetV2RP() const {return this->fV2RP;} 
   
   void SetV2SpreadRP(Double_t dV2SpreadRP) {this->fV2SpreadRP = dV2SpreadRP;}
   Double_t GetV2SpreadRP() const {return this->fV2SpreadRP;} 
+  
+  void SetMinV2RP(Double_t dMinV2RP) {this->fMinV2RP = dMinV2RP;}
+  Double_t GetMinV2RP() const {return this->fMinV2RP;} 
+  
+  void SetMaxV2RP(Double_t dMaxV2RP) {this->fMaxV2RP = dMaxV2RP;}
+  Double_t GetMaxV2RP() const {return this->fMaxV2RP;} 
   
   void SetV4RP(Double_t dV4RP) {this->fV4RP = dV4RP;}
   Double_t GetV4RP() const {return this->fV4RP;} 
@@ -110,8 +119,16 @@ class AliFlowEventSimpleMakerOnTheFly {
   // constant harmonics: 
   Double_t  fV1RP;                   // directed flow of RPs
   Double_t  fV1SpreadRP;             // directed flow spread of RPs
-  Double_t  fV2RP;                   // elliptic flow of RPs
-  Double_t  fV2SpreadRP;             // elliptic flow spread of RPs
+  
+  Bool_t    fV2DistrOfRPsIsGauss;    // 1.) if kTRUE  = elliptic flow of RPs is sampled e-b-e from Gaussian distribution with
+                                     //                 mean = fV2RP and spread = fV2SpreadRP
+                                     // 2.) if kFALSE = elliptic flow of RPs is sampled e-b-e uniformly from 
+                                     //                 interval [fMinV2RP,fMaxV2RP]
+  Double_t  fV2RP;                   // mean elliptic flow of RPs (if sampled from Gaussian)
+  Double_t  fV2SpreadRP;             // elliptic flow spread of RPs (if sampled from Gaussian)
+  Double_t  fMinV2RP;                // minimal elliptic flow of RPs (if sampled uniformly)
+  Double_t  fMaxV2RP;                // minimal elliptic flow of RPs (if sampled uniformly)
+  
   Double_t  fV4RP;                   // harmonic V4 of RPs
   Double_t  fV4SpreadRP;             // harmonic V4's spread of RPs
   // (pt,eta) dependent harmonics:
@@ -129,7 +146,6 @@ class AliFlowEventSimpleMakerOnTheFly {
   Int_t     fCount;      // count number of events 
   Int_t     fNoOfLoops;  // number of times to use the same particle (nonflow)
   
-
   ClassDef(AliFlowEventSimpleMakerOnTheFly,0) // macro for rootcint
 };
  
