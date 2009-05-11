@@ -16,7 +16,9 @@
 #endif
 
 class TH1;
+class TH2;
 class TF1;
+class TGraphErrors;
 class TObjArray;
 class AliTRDReconstructor;
 class AliTRDgeometry;
@@ -48,6 +50,7 @@ public:
   void    CreateOutputObjects();
   Bool_t  GetRefFigure(Int_t ifig);
   TObjArray*  Histos(); 
+  TObjArray*  Results(Int_t i=0) const {return i ? fGraphS : fGraphM;} 
   void    Exec(Option_t *);
   Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}
   Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
@@ -57,7 +60,6 @@ public:
   TH1*    PlotTracklet(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTrackTPC(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotMC(const AliTRDtrackV1 *t=0x0);
-  void    DumpAxTitle(Int_t plot, Int_t fig=-1);
 
   void    SetRecoParam(AliTRDrecoParam *r);
   void    SetVerbose(Bool_t v = kTRUE) {v ? SETBIT(fStatus ,kVerbose): CLRBIT(fStatus ,kVerbose);}
@@ -65,17 +67,22 @@ public:
 
   void    Terminate(Option_t *);
   Bool_t  GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t idx=-1);
+  Bool_t  GetGraphTrack(Float_t *bb, Int_t ily);
+  Bool_t  GetGraphTrackTPC(Float_t *bb, Int_t selector);
   
 private:
   AliTRDresolution(const AliTRDresolution&);
   AliTRDresolution& operator=(const AliTRDresolution&);
   void    AdjustF1(TH1 *h, TF1 *f);
-  Bool_t  Process(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
-  Bool_t  Process3D(ETRDresolutionPlot ip, TF1 *f=0x0,  Float_t scale=1.);
+  Bool_t  Process(TH2* h2, TF1 *f, Float_t k, TGraphErrors **g);
+  Bool_t  Process2D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
+  Bool_t  Process3D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
+  Bool_t  Process4D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
 
   UChar_t             fStatus;          // steer parameter of the task
+  UChar_t             fIdxPlot;         //! plot counter (internal)
   static UChar_t      fNElements[kNhistos]; // number of componets per task
-  static Char_t       *fAxTitle[32][3]; // axis title for all ref histos
+  static Char_t       *fAxTitle[44][3]; // axis title for all ref histos
   AliTRDReconstructor *fReconstructor;  //! local reconstructor
   AliTRDgeometry      *fGeo;            //! TRD geometry
   TObjArray           *fGraphS;         //! result holder - sigma values

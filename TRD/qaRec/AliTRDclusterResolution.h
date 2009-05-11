@@ -13,15 +13,16 @@ class AliTRDclusterResolution : public AliTRDrecoTask
 {
 public:
   enum EAxisBinning { // bins in z and x direction
-    kNTB = 25
-   ,kND = 5
-   ,kN  = kND*kNTB
+    kNTB = 24
+   ,kND  = 25
+   ,kN   = kND*kNTB
   };
   enum EResultContainer { // results container type
     kQRes   = 0
-   ,kCenter= 1
-   ,kSigm  = 2
-   ,kMean  = 3
+   ,kCenter = 1
+   ,kSigm   = 2
+   ,kMean   = 3
+   ,kNtasks = 4
   };
   enum ECheckBits { // force setting the ExB
     kSaveAs    = BIT(22)
@@ -41,6 +42,7 @@ public:
   Bool_t        HasExB() const { return TestBit(kExB);}
 
   TObjArray*    Histos(); 
+  TObjArray*    Results() const {return fResults;}; 
 
   Bool_t        IsVisual() const {return Bool_t(fCanvas);}
   Bool_t        IsSaveAs() const {return TestBit(kSaveAs);}
@@ -68,14 +70,20 @@ private:
   TObjArray  *fInfo;   //! list of cluster info
   TObjArray  *fResults;// list of result graphs/histos
   TAxis      *fAt;     //! binning in the x(radial) direction (time)
-  TAxis      *fAd;     //! binning in the z direction (drift cell)
   UChar_t    fStatus;  // steer parameter of the task
   Short_t    fDet;     // detector (-1 for all)
   Float_t    fExB;     // tg of the Lorentz angle
   Float_t    fVdrift;  // mean drift velocity
   static const Float_t fgkTimeBinLength;// time bin length (invers of sampling frequency)
 
-  ClassDef(AliTRDclusterResolution, 1)  // cluster resolution
+  // working named variables
+  UChar_t    fLy;      //! TRD plane 
+  Float_t    fX;       //! local drift length 
+  Float_t    fY;       //! local rphi offset 
+  Float_t    fZ;       //! local anode wire offset 
+  Float_t    fR[4];    //! val/error result list
+  
+  ClassDef(AliTRDclusterResolution, 2)  // cluster resolution
 };
 
 //___________________________________________________
