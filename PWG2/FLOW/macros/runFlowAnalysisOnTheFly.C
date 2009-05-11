@@ -32,12 +32,18 @@ Bool_t bConstantHarmonics = kTRUE; // harmonics V1, V2, V4... are constant (kTRU
 
 Int_t iLoops = 1; // number of times to use each track (to simulate nonflow)
 
-Bool_t bMultDistrOfRPsIsGauss = kTRUE; // 1.) if kTRUE  = multiplicitiy of RPs is sampled e-b-e from Gaussian distribution with
+Bool_t bMultDistrOfRPsIsGauss = kFALSE; // 1.) if kTRUE  = multiplicitiy of RPs is sampled e-b-e from Gaussian distribution with
                                         //                 mean = iMultiplicityOfRP and spread = dMultiplicitySpreadOfRP
                                         // 2.) if kFALSE = multiplicitiy of RPs is sampled e-b-e uniformly from 
                                         //                 interval [iMinMultOfRP,iMaxMultOfRP]
                                         // 3.) for a fixed multiplicity use Gaussian with zero spread or use uniform with iMinMult=iMaxMult
-                                         
+                                        
+Bool_t bV2DistrOfRPsIsGauss = kFALSE; // 1.) if kTRUE  = elliptic flow of RPs is sampled e-b-e from Gaussian distribution with
+                                      //                 mean = dV2RP and spread = dV2SpreadRP
+                                      // 2.) if kFALSE = elliptic flow of RPs is sampled e-b-e uniformly from 
+                                      //                 interval [dMinV2RP,dMaxV2RP]
+                                      // 3.) for a fixed elliptic flow use Gaussian with zero spread or use uniform with dMinV2RP=dMaxV2RP
+                                                                                   
 Int_t iMultiplicityOfRP = 500;        // mean multiplicity of RPs (if sampled from Gaussian)
 Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs (if sampled from Gaussian)
 Int_t iMinMultOfRP = 400;             // minimal multiplicity of RPs (if sampled uniformly)
@@ -52,9 +58,11 @@ Double_t dV2RPMax = 0.20; // maximum value of V2(pt) for pt >= 2GeV
 //...................................................................................... 
 
 //......................................................................................  
-// if you use constant harmonics (bConstantHarmonics = kTRUE):
-Double_t dV2RP = 0.05; // elliptic flow of RPs
-Double_t dV2SpreadRP = 0.; // elliptic flow spread of RPs
+// if you use constant harmonics (bConstantHarmonics = kTRUE) (i.e. no pt dependence):
+Double_t dV2RP = 0.05;       // elliptic flow of RPs (if sampled from Gaussian)
+Double_t dV2SpreadRP = 0.0;  // elliptic flow spread of RPs (if sampled from Gaussian)
+Double_t dMinV2RP = 0.04;    // minimal elliptic flow of RPs (if sampled uniformly)
+Double_t dMaxV2RP = 0.06;    // maximal elliptic flow of RPs (if sampled uniformly)
 
 Double_t dV1RP = 0.0; // directed flow of RPs
 Double_t dV1SpreadRP = 0.0; // directed flow spread of RPs
@@ -257,8 +265,17 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
  if(bConstantHarmonics)
  { 
   eventMakerOnTheFly->SetUseConstantHarmonics(bConstantHarmonics);
-  eventMakerOnTheFly->SetV2RP(dV2RP);
-  eventMakerOnTheFly->SetV2SpreadRP(dV2SpreadRP);  
+  if(bV2DistrOfRPsIsGauss)
+  {
+   eventMakerOnTheFly->SetV2DistrOfRPsIsGauss(bV2DistrOfRPsIsGauss);
+   eventMakerOnTheFly->SetV2RP(dV2RP);
+   eventMakerOnTheFly->SetV2SpreadRP(dV2SpreadRP);  
+  } else
+    {
+     eventMakerOnTheFly->SetV2DistrOfRPsIsGauss(bV2DistrOfRPsIsGauss);
+     eventMakerOnTheFly->SetMinV2RP(dMinV2RP);
+     eventMakerOnTheFly->SetMaxV2RP(dMaxV2RP);  
+    }
  }
  // (pt,eta) dependent harmonic V2:
  if(!bConstantHarmonics)
