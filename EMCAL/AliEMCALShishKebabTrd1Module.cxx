@@ -68,7 +68,7 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
     }
   } else Warning("AliEMCALShishKebabTrd1Module(theta)","You should call this constractor just once !!");
   DefineName(fTheta);
-  AliInfo(Form("AliEMCALShishKebabTrd1Module - first module:  theta %1.4f geometry %s",fTheta,g->GetName()));  
+  AliDebug(1,Form("First module:  theta %1.4f geometry %s",fTheta,g->GetName()));  
 }
 
 //_____________________________________________________________________________
