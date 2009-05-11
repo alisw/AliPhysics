@@ -11,7 +11,7 @@
 #include "TArrayI.h"
 #include "TH1I.h"
 #include "AliMCEvent.h"
-
+#include "AliFMDFloatMap.h"
 class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
 {
  public:
@@ -28,7 +28,8 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
       fNevents(o.fNevents),
       fNMCevents(o.fNMCevents),
       fStandalone(o.fStandalone),
-      fMCevent(o.fMCevent) {}
+      fMCevent(o.fMCevent),
+      fLastTrackByStrip(o.fLastTrackByStrip) {}
     AliFMDAnalysisTaskDndeta& operator=(const AliFMDAnalysisTaskDndeta&) { return *this; }
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option = "");
@@ -56,6 +57,7 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
     TH1I          fNMCevents;
     Bool_t        fStandalone;
     AliMCEvent*   fMCevent;
+    AliFMDFloatMap fLastTrackByStrip;
     ClassDef(AliFMDAnalysisTaskDndeta, 0); // Analysis task for FMD analysis
 };
  

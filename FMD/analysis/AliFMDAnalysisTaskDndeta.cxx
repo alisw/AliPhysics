@@ -22,8 +22,10 @@
 #include "AliFMDAnaParameters.h"
 #include "AliFMDGeometry.h"
 #include "AliGenEventHeader.h"
+#include "AliHeader.h"
 #include "TDatabasePDG.h"
 #include "TParticlePDG.h"
+#include "AliFMDStripIndex.h"
 ClassImp(AliFMDAnalysisTaskDndeta)
 
 
@@ -37,7 +39,8 @@ AliFMDAnalysisTaskDndeta::AliFMDAnalysisTaskDndeta()
   fNevents(),
   fNMCevents(),
   fStandalone(kTRUE),
-  fMCevent(0)
+  fMCevent(0),
+  fLastTrackByStrip()
 {
   // Default constructor
   DefineInput (0, TList::Class());
@@ -55,7 +58,8 @@ AliFMDAnalysisTaskDndeta::AliFMDAnalysisTaskDndeta(const char* name, Bool_t SE):
     fNevents(),
     fNMCevents(),
     fStandalone(kTRUE),
-    fMCevent(0)
+    fMCevent(0),
+    fLastTrackByStrip()
 {
   fStandalone = SE;
   if(fStandalone) {
@@ -79,6 +83,7 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
   
   
   TH2F* hMult = 0;
+  TH1F* hHits = 0;
   TH1F* hPrimVertexBin = 0;
   
   
@@ -113,8 +118,18 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
 			      hBg->GetXaxis()->GetXmin(),
 			      hBg->GetXaxis()->GetXmax(),
 			      nSec, 0, 2*TMath::Pi());
+	    
+	    hHits  = new TH1F(Form("hHits_FMD%d%c_vtxbin%d",det,ringChar,i),Form("hHits_FMD%d%c_vtxbin%d",det,ringChar,i),
+			      hBg->GetNbinsX(),
+			      hBg->GetXaxis()->GetXmin(),
+			      hBg->GetXaxis()->GetXmax());
+			    
+	    
+	    
 	    hMult->Sumw2();
+	    hHits->Sumw2();
 	    fOutputList->Add(hMult);
+	    fOutputList->Add(hHits);
 	    vtxArray->AddAtAndExpand(hMult,i);
 	    
 	  }
@@ -206,13 +221,25 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
-
+  
+  fLastTrackByStrip.Reset(-1);
+  
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
   AliMCParticle* particle = 0;
   AliStack* stack = fMCevent->Stack();
   
   TH1F* hPrimary = (TH1F*)fOutputList->FindObject("hMultvsEta");
+  AliHeader* header            = fMCevent->Header();
+  AliGenEventHeader* genHeader = header->GenEventHeader();
+  
+  TArrayF vertex;
+  genHeader->PrimaryVertex(vertex);
+  if(TMath::Abs(vertex.At(2)) > pars->GetVtxCutZ())
+    return;
+  Double_t delta           = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
+  Double_t vertexBinDouble = (vertex.At(2) + pars->GetVtxCutZ()) / delta;
+  Int_t    vertexBin       = (Int_t)vertexBinDouble;
   
   Bool_t firstTrack = kTRUE;
   Int_t nTracks = fMCevent->GetNumberOfTracks();
@@ -220,14 +247,10 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
     particle = fMCevent->GetTrack(i);
     if(!particle)
       continue;
-    if(TMath::Abs(particle->Zv()) > pars->GetVtxCutZ())
-      continue;
     
     if(stack->IsPhysicalPrimary(i) && particle->Charge() != 0) {
       hPrimary->Fill(particle->Eta());
-      Double_t delta           = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
-      Double_t vertexBinDouble = (particle->Zv() + pars->GetVtxCutZ()) / delta;
-      Int_t    vertexBin       = (Int_t)vertexBinDouble;
+      
 
       TH1F* hPrimVtxBin = (TH1F*)fOutputList->FindObject(Form("primmult_vtxbin%d",vertexBin));
       hPrimVtxBin->Fill(particle->Eta());
@@ -236,13 +259,46 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
 	firstTrack = kFALSE;
       }
     }
+     
+    for(Int_t j=0; j<particle->GetNumberOfTrackReferences();j++) {
       
+      AliTrackReference* ref = particle->GetTrackReference(j);
+      UShort_t det,sec,strip;
+      Char_t   ring;
+      if(ref->DetectorId() != AliTrackReference::kFMD)
+	continue;
+      AliFMDStripIndex::Unpack(ref->UserId(),det,ring,sec,strip);
+      Float_t thisStripTrack = fLastTrackByStrip.operator()(det,ring,sec,strip);
+      if(particle->Charge() != 0 && i != thisStripTrack ) {
+	Double_t x,y,z;
+	AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
+	fmdgeo->Detector2XYZ(det,ring,sec,strip,x,y,z);
+	
+	Float_t   phi   = TMath::ATan2(y,x);
+	if(phi<0) phi   = phi+2*TMath::Pi();
+	Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
+	Float_t   theta = TMath::ATan2(r,z-vertex.At(2));
+	Float_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
+	TH1F* hHits = (TH1F*)fOutputList->FindObject(Form("hHits_FMD%d%c_vtxbin%d",det,ring,vertexBin));
+	hHits->Fill(eta);
+	Float_t nstrips = (ring =='O' ? 256 : 512);
+	
+	//	if(det == 1 && ring == 'I')
+	//  std::cout<<"hit in FMD 1I "<<sec<<"   "<<strip<<"   "<<eta<<"  "<<phi<<std::endl;
+	fLastTrackByStrip.operator()(det,ring,sec,strip) = (Float_t)i;
+	
+	if(strip >0)
+	  fLastTrackByStrip.operator()(det,ring,sec,strip-1) = (Float_t)i;
+	if(strip < (nstrips - 1))
+	  fLastTrackByStrip.operator()(det,ring,sec,strip+1) = (Float_t)i;
+	
+	
+      }
+    }
+    
+    
   }
   
-  
-  
-  
-
 }
 //_____________________________________________________________________
 //

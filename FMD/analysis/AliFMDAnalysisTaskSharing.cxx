@@ -158,12 +158,12 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 	  
 	  if(mult == AliESDFMD::kInvalidMult || mult == 0) continue;
 	  
-	  Double_t eta  = fmd->Eta(det,ring,sec,strip);//EtaFromStrip(det,ring,sec,strip,vertex[2]);
+	  Double_t eta  = EtaFromStrip(det,ring,sec,strip,vertex[2]);//fmd->Eta(det,ring,sec,strip);
 	  //std::cout<<EtaFromStrip(det,ring,sec,strip,vertex[2]) <<"    "<<fmd->Eta(det,ring,sec,strip)<<std::endl;
 	  
 	  hEdist->Fill(mult);
 	  if(fmd->IsAngleCorrected())
-	    mult = mult/TMath::Cos(Eta2Theta(fmd->Eta(det,ring,sec,strip)));
+	    mult = mult/TMath::Cos(Eta2Theta(eta));
 	  Float_t Eprev = 0;
 	  Float_t Enext = 0;
 	  if(strip != 0)
@@ -205,63 +205,93 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
 							  Float_t Enext,
 							  UShort_t   det,
 							  Char_t  ring,
-							  UShort_t /*sec*/,
-							  UShort_t /*strip*/) {
+							  UShort_t sec,
+							  UShort_t strip) {
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
  
   Float_t merged_energy = 0;
-  Float_t nParticles = 0;
-  Float_t cutLow  = 0.2;
-  Float_t cutHigh = pars->GetMPV(det,ring,eta) -1*pars->GetSigma(det,ring,eta);
+  //Float_t nParticles = 0;
+  Float_t cutLow  = 0.15;
+  AliFMDParameters* recopars = AliFMDParameters::Instance();
+  cutLow = (4*recopars->GetPedestalWidth(det,ring,sec,strip))/(recopars->GetPulseGain(det,ring,sec,strip)*recopars->GetDACPerMIP());
+  
+  
+  
+  Float_t cutHigh = pars->GetMPV(det,ring,eta);// - pars->GetSigma(det,ring,eta);
   // Float_t cutPart = pars->GetMPV(det,ring,eta) - 5*pars->GetSigma(det,ring,eta);
   Float_t Etotal  = mult;
   
   //if(mult > 5)
   //  std::cout<<mult<<"    "<<det<<"    "<<ring<<"   "<<sec<<"    "<<strip<<std::endl;
+  //Float_t slow_particle_cut = 2*pars->GetMPV(det,ring,eta);
   
-  if(foutputESDFMD->GetUniqueID() == kTRUE) {
+  //if(recopars->IsDead(det,ring,sec,strip))
+  //  std::cout<<"dead channel"<<std::endl;
+  //if(foutputESDFMD->GetUniqueID() == kTRUE) {
+  // Float_t mpv = pars->GetMPV(det,ring,eta);
+  
+  /*
+  if(foutputESDFMD->GetUniqueID() == kFALSE) {
     
+    if(mult > 15)
+      return 0;
+
     if(mult > cutLow ) {
       fEnergy = fEnergy + mult;
       fNstrips++;
     }
-  if((Enext <0.01 && fEnergy >0) || fNstrips >2 ) {
     
-          
-    //if((fEnergy*TMath::Cos(Eta2Theta(eta))) > cutPart || fNstrips > 1) {
+    if( (Enext < cutLow && fEnergy > 0 )   || fNstrips >2 ){
+      
+      //if((fEnergy*TMath::Cos(Eta2Theta(eta))) > cutPart || fNstrips > 1) {
       nParticles = 1;
       merged_energy = fEnergy*TMath::Cos(Eta2Theta(eta));
       TH1F* hEdist = (TH1F*)fDiagList.FindObject(Form("Edist_after_sharing_FMD%d%c",det,ring));
       hEdist->Fill(fEnergy);
       TH1F* hNstrips = (TH1F*)fDiagList.FindObject(Form("N_strips_hit_FMD%d%c",det,ring));
       hNstrips->Fill(fNstrips);
-      //  std::cout<<Form("Merged signals %f %f %f into %f , %f in strip %d, sec %d, ring %c, det %d",Eprev, mult, Enext, fEnergy/TMath::Cos(Eta2Theta(eta)),fEnergy,strip,sec,ring,det )<<std::endl;
+      // std::cout<<Form("Merged signals %f %f %f into %f , %f in det %d, ring %c, sec %d, strip %d",Eprev, mult, Enext, fEnergy/TMath::Cos(Eta2Theta(eta)),fEnergy,det,ring,sec,strip )<<std::endl;
       
       // }
     // else
     //std::cout<<Form("NO HIT  for  %f %f %f into %f , %f in strip %d, sec %d, ring %c, det %d, cuts %f , %f",Eprev, mult, Enext, fEnergy/TMath::Cos(Eta2Theta(eta)),fEnergy,strip,sec,ring,det,cutPart,cutHigh )<<std::endl;
+      
+      fEnergy  = 0;
+      fNstrips = 0;
     
-    fEnergy  = 0;
-    fNstrips = 0;
     return merged_energy;
+    }
+    
+    
+    return 0;
+    
   }
-  
-  return 0;
-  
-  }
-  else {
-     
+  else {*/
+    //std::cout<<det<<ring<<"   "<<sec<<"    "<<strip<<"   "<<cutLow<<std::endl;
   if(fSharedThis) {
     fSharedThis      = kFALSE;
     fSharedPrev      = kTRUE;
     return 0.;
   }
   
-  if(mult < cutLow) {
+  /*  if(mult < 0.33*pars->GetMPV(det,ring,eta)) {
     fSharedThis      = kFALSE;
     fSharedPrev      = kFALSE;
     return 0;
-  }
+    }*/
+  if(mult<Enext && Enext>cutHigh && foutputESDFMD->GetUniqueID() == kTRUE)
+    {
+      fSharedThis      = kFALSE;
+      fSharedPrev      = kFALSE;
+      return 0;
+    }
+  if(mult > 15)
+    {
+      std::cout<<"rejecting hit in FMD "<<det<<" "<<ring<<std::endl;
+      fSharedThis      = kFALSE;
+      fSharedPrev      = kFALSE;
+      return 0;
+    }
   
   if(Eprev > cutLow && Eprev < cutHigh && !fSharedPrev ) {
     Etotal += Eprev;
@@ -276,10 +306,11 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
   
   Etotal = Etotal*TMath::Cos(Eta2Theta(eta));
   if(Etotal > 0) {
+    
     merged_energy = Etotal;
     fSharedPrev      = kTRUE;
-    //if(det == 3 && ring =='I')
-    //  std::cout<<Form("Merged signals %f %f %f into %f , %f in strip %d, sec %d, ring %c, det %d",Eprev, mult, Enext, Etotal/TMath::Cos(Eta2Theta(eta)),Etotal,strip,sec,ring,det )<<std::endl;
+    // if(det == 1 && ring =='I')
+    // std::cout<<Form("Merged signals %f %f %f into %f , %f in strip %d, sec %d, ring %c, det %d",Eprev, mult, Enext, Etotal/TMath::Cos(Eta2Theta(eta)),Etotal,strip,sec,ring,det )<<std::endl;
   }
     else{// if(Etotal > 0) {
       //if(det == 3 && ring =='I')
@@ -290,7 +321,7 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
   // merged_energy = mult;
   
   return merged_energy; 
-  }  
+  //}  
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::GetVertex(Double_t* vertexXYZ) 
@@ -327,7 +358,7 @@ Float_t AliFMDAnalysisTaskSharing::Eta2Theta(Float_t eta) {
   if(eta < 0)
     theta = theta-TMath::Pi();
   
-  std::cout<<"From eta2Theta: "<<theta<<"   "<<eta<<std::endl;
+  //  std::cout<<"From eta2Theta: "<<theta<<"   "<<eta<<std::endl;
   return theta;
   
 

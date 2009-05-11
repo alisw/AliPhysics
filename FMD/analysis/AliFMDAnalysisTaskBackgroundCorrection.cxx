@@ -28,6 +28,7 @@ AliFMDAnalysisTaskBackgroundCorrection::AliFMDAnalysisTaskBackgroundCorrection()
 : fDebug(0),
   fOutputList(0),
   fInputList(0),
+  fHitList(0),
   fArray(0),
   fInputArray(0),
   fVertexString(0x0),
@@ -46,6 +47,7 @@ AliFMDAnalysisTaskBackgroundCorrection::AliFMDAnalysisTaskBackgroundCorrection(c
     fDebug(0),
     fOutputList(0),
     fInputList(0),
+    fHitList(0),
     fArray(),
     fInputArray(0),
     fVertexString(0x0),
@@ -71,6 +73,9 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
   if(!fOutputList)
     fOutputList = new TList();
   fOutputList->SetName("BackgroundCorrectedPerEvent");
+  if(!fHitList)
+    fHitList = new TList();
+  fHitList->SetName("HitsList");
   
   
   TH2F* hMult = 0;
@@ -107,6 +112,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
 			      nSec, 0, 2*TMath::Pi());
 	    
 	    hHits->Sumw2();
+	    fHitList->Add(hHits);
 	    fOutputList->Add(hHits);
 	    vtxArray->AddAtAndExpand(hMult,i);
 	    

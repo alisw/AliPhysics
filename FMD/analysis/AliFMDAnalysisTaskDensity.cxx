@@ -19,6 +19,7 @@
 #include "AliESDVertex.h"
 #include "TMath.h"
 #include "AliFMDAnaParameters.h"
+#include "AliFMDParameters.h"
 #include "AliFMDGeometry.h"
 #include "AliFMDRing.h"
 
@@ -171,14 +172,35 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	for(UShort_t strip = 0; strip < nstr; strip++) {
 	  Float_t mult = fESD->Multiplicity(det,ring,sec,strip);
 	  Float_t eta = fESD->Eta(det,ring,sec,strip);
-	  Float_t mult_cut = 0.2;
+	  
 	  if(mult == 0 || mult == AliESDFMD::kInvalidMult) continue;
 	  //Particle number cut goes here...
+	  Double_t x,y,z;
+	  geo->Detector2XYZ(det,ring,sec,strip,x,y,z);
+	  Float_t phi = TMath::ATan2(y,x);
+	  if(phi<0)
+	    phi = phi+2*TMath::Pi();
+	  Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
+	  Float_t   theta = TMath::ATan2(r,z-vertex[2]);
+	  Float_t   etacalc   = -1*TMath::Log(TMath::Tan(0.5*theta));
+	  eta = etacalc;
+	  	  
+	  Float_t m   = pars->GetMPV(det,ring,eta);
+	  Float_t s   = pars->GetSigma(det,ring,eta);
+	  AliFMDParameters* recopars = AliFMDParameters::Instance();
+	  
+	  Float_t mult_cut = m-2*s; //0.15;//0.2;//m-3*s;// 0.2;//0.01;//m-2*s;//0.2;
+	  
+	  mult_cut = (4*recopars->GetPedestalWidth(det,ring,sec,strip))/(recopars->GetPulseGain(det,ring,sec,strip)*recopars->GetDACPerMIP());
+	  
 	  Float_t nParticles = 0;
 	  if(fESD->GetUniqueID() == kTRUE) {
 	    //proton + proton
-	    if(mult > mult_cut) 
+	    
+	    if(mult > mult_cut) {
 	      nParticles = 1; 
+	    
+	    }
 	  }
 	  else {
 	    
@@ -196,24 +218,26 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	      3*beta*TMath::Landau(mult,3*mpv+3*sigma*TMath::Log(3),3*sigma,kTRUE);
 	    
 	    
-	    if(mult > 0){//mult_cut) {
+	    if(mult > mult_cut) {
 	      if(sumCor) nParticles = weight / sumCor;
 	      else nParticles = 1;
+	      
 	    }
 	    //std::cout<<sumCor<<"    "<<weight<<"    "<<"    "<<mult<<"  "<<nParticles<<std::endl;
 	    
 	  }
 	  
 	  
-	  Double_t x,y,z;
-	  geo->Detector2XYZ(det,ring,sec,strip,x,y,z);
-	  Float_t phi = TMath::ATan2(y,x);
-	  if(phi<0)
-	    phi = phi+2*TMath::Pi();
+	  
+	  
+	  
 	  Float_t correction = GetAcceptanceCorrection(ring,strip);
 	  if(correction) nParticles = nParticles / correction;
-	  hMult->Fill(eta,phi,nParticles);
+	  if(nParticles > 0)
+	    hMult->Fill(eta,phi,nParticles);
 	  
+	  //if(det == 1 && ring =='I' && nParticles >0)
+	  //  std::cout<<mult<<"    "<<sec<<"    "<<strip<<"   "<<eta<<"  "<<phi<<"   "<<etacalc<<std::endl;
 	  
 	}
       }

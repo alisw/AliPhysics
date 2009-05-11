@@ -21,6 +21,7 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
       fDebug(o.fDebug),
       fOutputList(0),
       fInputList(0),
+      fHitList(0),
       fArray(o.fArray),
       fInputArray(o.fInputArray),
       fVertexString(o.fVertexString),
@@ -40,11 +41,12 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
     void SetOutputVertex(TObjString* vtxString) {fOutputVertexString = vtxString;}
     //void SetInputVtx(TObjString* vtxString) {fVertexString = vtxString;}
     void SetOutputList(TList* outputList) {fOutputList = outputList;}
-        
+    void SetHitList(TList* hitList) {fHitList = hitList;}
  private:
     Int_t         fDebug;        //  Debug flag
     TList*        fOutputList;
     TList*        fInputList;
+    TList*        fHitList;
     TObjArray     fArray;
     TObjArray*    fInputArray;
     TObjString*   fVertexString;

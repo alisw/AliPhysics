@@ -53,6 +53,7 @@ void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
   
   fBackground.SetInputList(densitylist);
   fBackground.SetOutputList(bgcorlist);
+  fBackground.SetHitList(fListOfHistos);
   fBackground.SetOutputVertex(vtxString1);
   
   fDndeta.SetInputVertex(vtxString1);
