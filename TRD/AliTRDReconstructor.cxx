@@ -336,10 +336,10 @@ void AliTRDReconstructor::SetStreamLevel(Int_t level, ETRDReconstructorTask task
 void AliTRDReconstructor::Options(UInt_t steer, UChar_t *stream)
 {
   for(Int_t iopt=0; iopt<kNsteer; iopt++){
-    AliInfoGeneral("AliTRDReconstructor", Form(" %s[%s]%s", fgSteerNames[iopt], fgSteerFlags[iopt], steer ?(((steer>>iopt)&1)?" : ON":" : OFF"):""));
+    AliDebugGeneral("AliTRDReconstructor", 1, Form(" %s[%s]%s", fgSteerNames[iopt], fgSteerFlags[iopt], steer ?(((steer>>iopt)&1)?" : ON":" : OFF"):""));
   }
-  AliInfoGeneral("AliTRDReconstructor", " Debug Streaming"); 
+  AliDebugGeneral("AliTRDReconstructor", 1, " Debug Streaming"); 
   for(Int_t it=0; it<kNtasks; it++) 
-    AliInfoGeneral("AliTRDReconstructor", Form(" %s [sl_%s] %d", fgTaskNames[it], fgTaskFlags[it], stream ? stream[it] : 0));
+    AliDebugGeneral("AliTRDReconstructor", 1, Form(" %s [sl_%s] %d", fgTaskNames[it], fgTaskFlags[it], stream ? stream[it] : 0));
 }
 
