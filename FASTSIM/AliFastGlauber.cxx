@@ -107,6 +107,7 @@ AliFastGlauber::AliFastGlauber():
   SetLengthDefinition();
   SetPbPbLHC();
   fXY[0] = fXY[1] = 0;
+  fI0I1[0] = fI0I1[1] = 0;
 }
 
 AliFastGlauber::AliFastGlauber(const AliFastGlauber & gl)
@@ -126,6 +127,7 @@ AliFastGlauber::AliFastGlauber(const AliFastGlauber & gl)
 // Copy constructor
     gl.Copy(*this);
     fXY[0] = fXY[1] = 0;
+    fI0I1[0] = fI0I1[1] = 0;
 }
 
 AliFastGlauber* AliFastGlauber::Instance()
@@ -1308,8 +1310,6 @@ void AliFastGlauber::GetRandomXY(Double_t& x,Double_t& y)
   // product of thickness functions
   //
   fgWAlmondCurrent->GetRandom2(x,y);
-  fXY[0] = x;
-  fXY[1] = y;
   return;
 }
 

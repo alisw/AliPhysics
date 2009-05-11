@@ -107,7 +107,11 @@ class AliFastGlauber : public TObject {
     void SetCentralityClass(Double_t xsecFrLow=0.0,Double_t xsecFrUp=0.1);    
     void GetRandomBHard(Double_t& b);
     void GetRandomXY(Double_t& x,Double_t& y);
-    void GetLastXY(Double_t xy[2]) {xy[0] = fXY[0]; xy[1] = fXY[1];}
+    void GetSavedXY(Double_t xy[2]) {xy[0] = fXY[0]; xy[1] = fXY[1];}
+    void GetSavedI0I1(Double_t i0i1[2]) {i0i1[0] = fI0I1[0]; i0i1[1] = fI0I1[1];}
+    void SaveXY(Double_t x, Double_t y) {fXY[0] = x; fXY[1] = y;}
+    void SaveI0I1(Double_t i0, Double_t i1) {fI0I1[0] = i0; fI0I1[1] = i1;}
+
     void GetRandomPhi(Double_t& phi);
     Double_t CalculateLength(Double_t b=0.,Double_t x0=0.,Double_t y0=0.,
                              Double_t phi0=0.);
@@ -217,7 +221,8 @@ class AliFastGlauber : public TObject {
 
     Float_t fBmin;      // Minimum b (set through centrality selection)
     Float_t fBmax;      // Coresponding maximum b
-    Double_t fXY[2];    // Last generated production point 
+    Double_t fXY[2];    // Current generated production point
+    Double_t fI0I1[2];  // Current integrals I0 and I1
     Int_t fEllDef;      // definition of length (see CalculateLength())
     TString fName;      // filename of stored distributions
     ClassDef(AliFastGlauber,2) // Event geometry simulation in the Glauber Model
