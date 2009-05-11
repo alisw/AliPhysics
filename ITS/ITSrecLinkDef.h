@@ -115,8 +115,10 @@
 #pragma link C++ class AliITSAlignMille+;
 #pragma link C++ class AliITSAlignMille2+;
 #pragma link C++ class AliITSAlignMilleModule+;
-#pragma link C++ class AliITSAlignMilleData+;
 #pragma link C++ class AliITSAlignMille2Module+;
+#pragma link C++ class AliITSAlignMille2Constraint+;
+#pragma link C++ class AliITSAlignMille2ConstrArray+;
+#pragma link C++ class AliITSAlignMilleData+;
 #pragma link C++ class AliITSResidualsAnalysis+;
 #pragma link C++ class AliITSRealignTracks+;
 // Classes for QA

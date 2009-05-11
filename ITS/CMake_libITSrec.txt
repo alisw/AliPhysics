@@ -85,6 +85,8 @@ set(SRCS
 		AliITSAlignMilleData.cxx 
 		AliITSAlignMille2.cxx 
 		AliITSAlignMille2Module.cxx 
+		AliITSAlignMille2Constraint.cxx
+		AliITSAlignMille2ConstrArray.cxx
 		AliITSQAChecker.cxx 
 		AliITSResidualsAnalysis.cxx 
 		AliITSQADataMakerRec.cxx 

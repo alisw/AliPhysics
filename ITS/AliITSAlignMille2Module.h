@@ -18,6 +18,7 @@
 #include <TNamed.h> 
 #include <TArrayI.h> 
 #include <TArrayS.h> 
+#include <TObjArray.h> 
 class AliITSAlignMille2;
 
 class AliAlignObjParams; 
@@ -26,6 +27,10 @@ class TGeoHMatrix;
 class AliITSAlignMille2Module : public TNamed 
 { 
 public: 
+  enum {kSPD,kSDD,kSSD};
+  enum {kMaxParGeom=6,kMaxParTot=8,kSensDefBit=0,kGlobalGeomBit=1};
+  enum {kDOFTX,kDOFTY,kDOFTZ,kDOFPS,kDOFTH,kDOFPH,kDOFT0,kDOFDV};
+  //
   AliITSAlignMille2Module(); 
   AliITSAlignMille2Module(UShort_t volid);
   AliITSAlignMille2Module(Int_t index, UShort_t volid, char* symname, TGeoHMatrix *m, Int_t nsv=0, UShort_t *volidsv=NULL);
@@ -48,15 +53,39 @@ public:
   Float_t      GetSigmaYFactor()                      const {return fSigmaFactor[1];}
   Float_t      GetSigmaZFactor()                      const {return fSigmaFactor[2];}
   Int_t        GetNProcessedPoints()                  const {return fNProcPoints;}
-  Bool_t       IsFreeDOF(Int_t dof)                   const {return TestBit(1<<dof);}
-  UInt_t       GetFreePattern()                       const {return TestBits(0x3f);}
-  Bool_t       AreSensorsProvided()                   const {return TestBit(1<<10);}
+  Bool_t       IsFreeDOF(Int_t dof)                   const {return fParCstr[dof]>0;}
+  Bool_t       AreSensorsProvided()                   const {return TestBit(1<<(kSensDefBit+1));}
+  Bool_t       GeomParamsGlobal()                     const {return TestBit(1<<(kGlobalGeomBit+1));}
   Bool_t       IsIn(UShort_t volid)                   const;
   Bool_t       IsAlignable()                          const;
   Bool_t       BelongsTo(AliITSAlignMille2Module* parent) const;
   AliITSAlignMille2Module* GetParent()                const {return fParent;}
+  AliITSAlignMille2Module* GetChild(Int_t i)          const {return (AliITSAlignMille2Module*)fChildren[i];}
+  Int_t        GetNChildren()                         const {return fChildren.GetLast()+1;}
+  //
   void         Print(Option_t* opt="")                const; 
   //
+  void         EvaluateDOF();
+  UShort_t     GetNParTot()                           const {return fNParTot;}
+  UShort_t     GetNParFree()                          const {return fNParFree;}
+  Float_t     *GetParVals()                           const {return fParVals;}
+  Double_t     GetParVal(int par)                     const {return fParVals[par];}
+  Double_t     GetParErr(int par)                     const {return fParErrs[par];}
+  Double_t     GetParConstraint(int par)              const {return fParCstr[par];}
+  Int_t        GetParOffset(Int_t par)                const {return fParOffs[par];}
+  Int_t        GetDetType()                           const {return fDetType;}
+  Bool_t       IsParConstrained(Int_t par)            const {return fParCstr[par]>0 && fParCstr[par]<fgkDummyConstraint;}
+  Bool_t       IsSPD()                                const {return fDetType == kSPD;}
+  Bool_t       IsSDD()                                const {return fDetType == kSDD;}
+  Bool_t       IsSSD()                                const {return fDetType == kSSD;}
+  Bool_t       IsSensor()                             const {return IsSensor(fVolumeID);}
+  void         SetDetType(Int_t tp)                         {fDetType = tp;}
+  void         SetParOffset(Int_t par,Int_t offs)           {fParOffs[par] = offs;}
+  //
+  void         SetParVals(Double_t *vl,Int_t npar);          
+  void         SetParVal(Int_t par,Double_t v=0)            {fParVals[par] = v;}
+  void         SetParErr(Int_t par,Double_t e=0)            {fParErrs[par] = e;}
+  void         SetParConstraint(Int_t par,Double_t s=1e6)   {fParCstr[par] = s>0. ? s:0.0;}
   void         SetSigmaFactor(Int_t i,Float_t v)            {fSigmaFactor[i]=v;}
   void         SetSigmaXFactor(Float_t v)                   {fSigmaFactor[0]=v;}
   void         SetSigmaYFactor(Float_t v)                   {fSigmaFactor[1]=v;}
@@ -64,12 +93,18 @@ public:
   void         IncNProcessedPoints(Int_t step=1)            {fNProcPoints += step;}
   void         SetNProcessedPoints(Int_t v)                 {fNProcPoints = v;}
   void         SetParent(AliITSAlignMille2Module* par)      {fParent = par;}
-  void         SetFreeDOF(Int_t dof,Bool_t free=kTRUE)      {SetBit(1<<dof,free);}
-  void         SetSensorsProvided(Bool_t v=kTRUE)            {SetBit(1<<10,v);}
+  void         AddChild(AliITSAlignMille2Module* cld)       {fChildren.Add(cld);}
+  void         SetFreeDOF(Int_t dof,Double_t cstr);
+  void         SetSensorsProvided(Bool_t v=kTRUE)           {SetBit(1<<(kSensDefBit+1),v);}
+  void         SetGeomParamsGlobal(Bool_t v=kTRUE)          {SetBit(1<<(kGlobalGeomBit+1),v);}
   Int_t        Set(Int_t index,UShort_t volid,char* symname,TGeoHMatrix *m,Int_t nsv=0,UShort_t *volidsv=0);
   //
   void         AddSensitiveVolume(UShort_t volid);
   void         DelSensitiveVolume(Int_t at);
+  void         DelSensitiveVolumes()                        {fNSensVol = 0;}
+  //
+  void         GetGeomParamsGlo(Double_t *pars);
+  void         GetGeomParamsLoc(Double_t *pars);
   //
   TGeoHMatrix *GetSensitiveVolumeMatrix(UShort_t voluid);
   TGeoHMatrix *GetSensitiveVolumeOrigGlobalMatrix(UShort_t voluid);
@@ -77,17 +112,33 @@ public:
   AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, AliAlignObjParams *a); 
   AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, Double_t *deltalocal); 
   //
+  void         GetGlobalParams(Double_t *t, Double_t *r);
+  void         GetGlobalParams(const Double_t *loct, const Double_t *locr,Double_t *t, Double_t *r);
+  void         GetLocalParams(const Double_t *loct, const Double_t *locr,Double_t *t, Double_t *r);
+  //
+  void         GetSensVolGlobalParams(UShort_t volid,Double_t *t, Double_t *r);
+  void         GetSensVolLocalParams(UShort_t volid,Double_t *t, Double_t *r);
+  void         GetSensVolGlobalParams(UShort_t volid,Double_t* loct,Double_t* locr,Double_t *t, Double_t *r);
+  void         GetSensVolLocalParams(UShort_t volid,Double_t* loct,Double_t* locr,Double_t *t, Double_t *r);
+  //
+  void         CalcDerivLocGlo(Double_t *deriv);
+  void         CalcDerivGloLoc(Int_t idx,Double_t *deriv);
+  void         CalcDerivGloLoc(Int_t sensVol,Int_t paridx,Double_t* derivative);
+  void         CalcDerivCurLoc(Int_t sensVol,Int_t paridx,Double_t* derivative);
+  //
   // forse non serve...
   AliAlignObjParams *GetSensitiveVolumeGlobalMisalignment(UShort_t voluid, Double_t *deltalocal); 
   // mo' proviamo questo
   AliAlignObjParams *GetSensitiveVolumeTotalMisalignment(UShort_t voluid, Double_t *deltalocal); 
   //
-  static Int_t GetIndexFromVolumeID(UShort_t volid);
+  static Int_t    GetIndexFromVolumeID(UShort_t volid);
   static UShort_t GetVolumeIDFromSymname(const Char_t *symname);
   static UShort_t GetVolumeIDFromIndex(Int_t index);
+  static Bool_t   IsSensor(UShort_t vid);
   //
 protected:
   //
+  void         AssignDetType();
   Int_t        SensVolMatrix(UShort_t volid, TGeoHMatrix *m); 
   Int_t        SensVolOrigGlobalMatrix(UShort_t volid, TGeoHMatrix *m); 
   //
@@ -95,9 +146,16 @@ protected:
   //
   Int_t          fNSensVol;                       // number of sensor it refers to
   Int_t          fIndex;                          // aliroot index
+  Int_t          fDetType;                        // Detector type
   UShort_t       fVolumeID;                       // aliroot volune ID
+  UShort_t       fNParTot;                        // total number of parameters
+  UShort_t       fNParFree;                       // number of free parameters
+  TArrayS        fParOffs;                        // offsets of free params in the fit results
   Int_t          fNProcPoints;                    // number of processed points
   Float_t        fSigmaFactor[3];                 // multiplicative factor for referred sensor X,Y,Z error
+  Float_t       *fParVals;                        // values of the fitted params
+  Float_t       *fParErrs;                        // errors of the fitted params
+  Float_t       *fParCstr;                        // Gaussian type constraint on parameter, 0 means fixed param
   //
   TArrayI        fSensVolIndex;                   // aliroot indices for sensors
   TArrayS        fSensVolVolumeID;                // aliroot indices for sensors volumes
@@ -106,8 +164,10 @@ protected:
   TGeoHMatrix   *fSensVolModifMatrix;             // sensor's modified matrices
   //
   AliITSAlignMille2Module* fParent;               // optional parent pointer
+  TObjArray      fChildren;                       // array of optional children
   //
-  static AliAlignObjParams fgTempAlignObj;         // temp.alignment object used as a buffer               
+  static AliAlignObjParams fgTempAlignObj;        // temp.alignment object used as a buffer               
+  static const Float_t fgkDummyConstraint;        // dummy (lose) contraint on parameter
   //
   ClassDef(AliITSAlignMille2Module, 0)
 }; 
