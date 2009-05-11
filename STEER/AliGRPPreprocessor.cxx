@@ -193,6 +193,11 @@ AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
 	AddRunType("COSMIC");
 	AddRunType("LASER");
 	AddRunType("PHYSICS");
+	AddRunType("CALIBRATION_BC");
+	AddRunType("CALIBRATION_CENTRAL");
+	AddRunType("CALIBRATION_EMD");
+	AddRunType("CALIBRATION_MB");
+	AddRunType("CALIBRATION_SEMICENTRAL");
 }
 
 //_______________________________________________________________
