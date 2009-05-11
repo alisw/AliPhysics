@@ -49,18 +49,17 @@ AliITSQASDDChecker& AliITSQASDDChecker::operator = (const AliITSQASDDChecker& qa
 Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list) 
 {  
   AliDebug(1,Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset));
-  char * detOCDBDir = Form("ITS/%s/%s", AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
+  /* char * detOCDBDir = Form("ITS/%s/%s", AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
   AliCDBEntry *QARefObj = AliQAManager::QAManager()->Get(detOCDBDir);
   if( !QARefObj){
     AliError("Calibration object retrieval failed! SDD will not be processed");
     return 1.;
   }
-
+  */
   Double_t test = 0.0;
   Int_t offset = 0;
 
   if(index==AliQAv1::kRAW){  //analizing RAWS
-    TH1F *ModPattern = (TH1F*)QARefObj->GetObject();
     if (list->GetEntries() == 0){
       test = 1. ; // nothing to check
     }
@@ -71,14 +70,14 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list)
         hdata = dynamic_cast<TH1 *>(next());  
       }
 
-      while ( (hdata = dynamic_cast<TH1 *>(next())) && offset >= fSubDetOffset){
+      while ( (hdata = dynamic_cast<TH1 *>(next())) ){
 	if (hdata) {
 	  if(offset == fSubDetOffset){ //ModPattern check
 	    if ( hdata->Integral() == 0 ) {
 	      AliWarning(Form("Spectrum %s is empty", hdata->GetName())) ; 
 	      return 0.5 ;
 	    }
-	    test = hdata->Chi2Test(ModPattern,"UU,p");
+	    test = hdata->Chi2Test(hdata,"UU,p");
 	  }  // ModPattern check
 	}
 	else{
@@ -108,19 +107,20 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list)
 	//printf("Skipping histo %s, offset %d \n",hdata->GetName(),fSubDetOffset);
       }
         
-      while ( (hdata = dynamic_cast<TH1 *>(next())) && offset >= fSubDetOffset ){
-	if (hdata) { // offset=9 ModPatternRP
+      while ( (hdata = dynamic_cast<TH1 *>(next())) ){
+	/*if (hdata) { // offset=9 ModPatternRP
 	  //printf("Treating histo %s, offset %d \n",hdata->GetName(),fSubDetOffset);
 	  if( offset == 9 && hdata->GetEntries()>0)test = 0.1;	  
 	}
 	else{
 	  AliError("Data type cannot be processed") ;
 	}
-	offset++;
+	offset++;*/
       }
     } // GetEntries loop
   AliInfo(Form("Test Result for RECP = %f", test)) ; 
-  } // if(index==2) loop
+
+  } // if(index==1) loop
 
   return test;	
 }
