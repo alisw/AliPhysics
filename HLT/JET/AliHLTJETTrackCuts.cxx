@@ -107,7 +107,7 @@ Bool_t AliHLTJETTrackCuts::IsSelected( TParticle *particle ) {
 }
 
 // #################################################################################
-Bool_t AliHLTJETTrackCuts::IsSelected( AliESDtrack *esdTrack ) {
+Bool_t AliHLTJETTrackCuts::IsSelected( AliESDtrack */*esdTrack*/ ) {
   // see header file for class documentation
 
   Bool_t bResult = kTRUE;

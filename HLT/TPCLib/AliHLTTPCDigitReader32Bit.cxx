@@ -34,7 +34,7 @@ using namespace std;
 #include "AliRawReaderMemory.h"
 #ifndef HAVE_NOT_ALTRORAWSTREAMV3
 #include "AliAltroRawStreamV3.h"
-#endif HAVE_NOT_ALTRORAWSTREAMV3
+#endif //HAVE_NOT_ALTRORAWSTREAMV3
 #include "AliHLTTPCTransform.h"
 
 ClassImp(AliHLTTPCDigitReader32Bit)
