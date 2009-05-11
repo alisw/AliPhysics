@@ -47,7 +47,7 @@ class AliAnalysisTaskSEBtoJPSItoEle : public AliAnalysisTaskSE
   AliAnalysisTaskSEBtoJPSItoEle& operator=(const AliAnalysisTaskSEBtoJPSItoEle& source); 
   //
   TList *fOutput;                            //! list send on output slot 0
-  AliAnalysisBtoJPSItoEle *fCdfFit;          //! Unbinned log-likelihood minimizer 
+  AliAnalysisBtoJPSItoEle *fCdfFit;          // Unbinned log-likelihood minimizer 
   TNtuple *fNtupleJPSI;                      //! Ntuple of pseudo-proper decay time & invariant mass values
   TH1F *fhDecayTimeMCjpsifromB;              //! Pseudo-proper decay time distribution used as template for JPSIs from B
   TH1F *fhDecayTime;                         //! Pseudo-proper decay time distribution

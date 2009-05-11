@@ -43,7 +43,7 @@ class AliAnalysisTaskSECompareHF : public AliAnalysisTaskSE
   TList   *fOutput; //! list send on output slot 0
   TNtuple *fNtupleD0Cmp; //! output ntuple
   TH1F    *fHistMass;    //! output histogram
-  AliAnalysisVertexingHF *fVHF;  //! Vertexer heavy flavour (used to pass the cuts)
+  AliAnalysisVertexingHF *fVHF;  // Vertexer heavy flavour (used to pass the cuts)
   
   ClassDef(AliAnalysisTaskSECompareHF,2); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };

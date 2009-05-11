@@ -41,7 +41,7 @@ class AliAnalysisTaskSESelectHF : public AliAnalysisTaskSE
   AliAnalysisTaskSESelectHF& operator=(const AliAnalysisTaskSESelectHF& source); 
   TClonesArray *fVerticesHFTClArr;     //! Array of heavy-flavour vertices
   TClonesArray *fD0toKpiTClArr;        //! Array of D0->Kpi
-  AliAnalysisVertexingHF *fVHF; //! analysis (used to pass the cuts)
+  AliAnalysisVertexingHF *fVHF; // analysis (used to pass the cuts)
   
   ClassDef(AliAnalysisTaskSESelectHF,2); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
 };

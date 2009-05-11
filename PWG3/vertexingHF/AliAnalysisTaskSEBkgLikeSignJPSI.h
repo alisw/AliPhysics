@@ -52,7 +52,7 @@ class AliAnalysisTaskSEBkgLikeSignJPSI : public AliAnalysisTaskSE
   TH1F    *fHistd0d0LS;            //!
   TH1F    *fHistDCAJPSI;           //! Distance of closest approach
   TH1F    *fHistDCALS;             //!
-  AliAnalysisVertexingHF *fVHF;    //! Vertexer heavy flavour (used to pass the cuts)
+  AliAnalysisVertexingHF *fVHF;    // Vertexer heavy flavour (used to pass the cuts)
 
   Int_t fTotPosPairs;              //
   Int_t fTotNegPairs;              // normalization
