@@ -92,7 +92,7 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
   //TStopwatch watch;
   //watch.Start();
   
-  AliInfo("End of TRD cycle");
+  AliDebug(AliQAv1::GetQADebugLevel(), "End of TRD cycle");
   
   if (task == AliQAv1::kRECPOINTS) {
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
@@ -110,7 +110,7 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
      }
       // Rec points full chambers
       for (Int_t i = 0 ; i < 540 ; i++) {
-        //AliInfo(Form("I = %d", i));
+        //AliDebug(AliQAv1::GetQADebugLevel(), Form("I = %d", i));
         //TH1D *h = ((TH2D*)list[specie]->At(1))->ProjectionY(Form("qaTRD_recPoints_amp_%d",i), i+1, i+1);
         hist->Reset();
         for(Int_t b = 1 ; b < hist->GetXaxis()->GetNbins()-1 ; b++) {
@@ -119,7 +119,7 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
           Double_t value =  ((TH2D*)list[specie]->At(1))->GetBinContent(bin);
           hist->SetBinContent(b, value);
         }
-        //AliInfo(Form("Sum = %d %f\n", i, hist->GetSum()));
+        //AliDebug(AliQAv1::GetQADebugLevel(), Form("Sum = %d %f\n", i, hist->GetSum()));
         if (hist->GetSum() < 100) 
             continue; // chamber not present
       
@@ -141,20 +141,20 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
               Double_t value =  ((TH3D*)list[specie]->At(10))->GetBinContent(bin);
               svalue += value;
             }
-            //AliInfo(Form("v = %f\n", value));
+            //AliDebug(AliQAv1::GetQADebugLevel(), Form("v = %f\n", value));
             hist->SetBinContent(b, svalue);
           }
 	
           if (hist->GetSum() < 100) 
             continue;
-          //AliInfo(Form("fitting %d %d %f\n", i, j, hist->GetSum()));
+          //AliDebug(AliQAv1::GetQADebugLevel(), Form("fitting %d %d %f\n", i, j, hist->GetSum()));
 	
           hist->Fit("landau", "q0", "goff", 10, 180);
           TF1 *fit = hist->GetFunction("landau");
 	
           TH1D *h1 = (TH1D*)list[specie]->At(14+18+i);
           Int_t bin = h1->FindBin(j);
-          // AliInfo(Form("%d %d %d\n", det, j, bin));
+          // AliDebug(AliQAv1::GetQADebugLevel(), Form("%d %d %d\n", det, j, bin));
           h1->SetBinContent(bin, TMath::Abs(fit->GetParameter(1)));
         }
       }
@@ -164,7 +164,7 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
         //TH1D *test = ((TH3D*)list[specie]->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, 0, 35);     
         //if (test->GetSum() < 100) continue;
       
-        //AliInfo(Form("fitting det = %d", i));
+        //AliDebug(AliQAv1::GetQADebugLevel(), Form("fitting det = %d", i));
       
         for(Int_t j = 0 ; j < 35 ; j++) {
           //TH1D *h =  ((TH3D*)list[specie]->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, j+1, j+1);     
@@ -173,12 +173,12 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
             Double_t xvalue = hist->GetBinCenter(b);
             Int_t bin = ((TH3D*)list[specie]->At(10))->FindBin(i,j,xvalue);
             Double_t value =  ((TH3D*)list[specie]->At(10))->GetBinContent(bin);
-            //AliInfo(Form("v = %f\n", value));
+            //AliDebug(AliQAv1::GetQADebugLevel(), Form("v = %f\n", value));
             hist->SetBinContent(b, value);
           }
 	
           if (hist->GetSum() < 100) continue;
-          //AliInfo(Form("fitting %d %d %f\n", i, j, hist->GetSum()));
+          //AliDebug(AliQAv1::GetQADebugLevel(), Form("fitting %d %d %f\n", i, j, hist->GetSum()));
 	
           hist->Fit("landau", "q0", "goff", 10, 180);
           TF1 *fit = hist->GetFunction("landau");
@@ -187,7 +187,7 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
           Int_t det = i%30;
           TH2D *h2 = (TH2D*)list[specie]->At(14+sm);
           Int_t bin = h2->FindBin(det,j);
-          // AliInfo(Form("%d %d %d\n", det, j, bin));
+          // AliDebug(AliQAv1::GetQADebugLevel(), Form("%d %d %d\n", det, j, bin));
           h2->SetBinContent(bin, TMath::Abs(fit->GetParameter(1)));
           h2->SetBinError(bin,fit->GetParError(1));
         }

@@ -1094,7 +1094,7 @@ void AliCDBManager::UnloadFromCache(const char* path){
 
 	if(!queryPath.IsWildcard()) { // path is not wildcard, get it directly from the cache and unload it!
 		if(fEntryCache.Contains(path)){
-		        AliDebug(1,Form("Unloading object \"%s\" from cache", path));
+			AliDebug(2, Form("Unloading object \"%s\" from cache", path));
 			TObjString pathStr(path);
 			AliCDBEntry *entry = dynamic_cast<AliCDBEntry*> (fEntryCache.GetValue(&pathStr));
 			if(entry) delete entry;
@@ -1102,7 +1102,7 @@ void AliCDBManager::UnloadFromCache(const char* path){
 		} else {
 			AliError(Form("Cache does not contain object \"%s\"!", path))
 		}
-		AliDebug(2,Form("Cache entries: %d",fEntryCache.GetEntries()));
+		AliDebug(2, Form("Cache entries: %d",fEntryCache.GetEntries()));
 		return;
 	}
 
@@ -1113,7 +1113,7 @@ void AliCDBManager::UnloadFromCache(const char* path){
 	while((pair = dynamic_cast<TPair*> (iter.Next()))){
 		AliCDBPath entryPath = pair->Key()->GetName();
 		if(queryPath.Comprises(entryPath)) {
-		        AliDebug(1,Form("Unloading object \"%s\" from cache", entryPath.GetPath().Data()));
+			AliDebug(2, Form("Unloading object \"%s\" from cache", entryPath.GetPath().Data()));
 			TObjString pathStr(entryPath.GetPath().Data());
 			AliCDBEntry *entry = dynamic_cast<AliCDBEntry*> (fEntryCache.GetValue(&pathStr));
 			if(entry) delete entry;

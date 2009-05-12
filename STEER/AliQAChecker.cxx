@@ -116,7 +116,7 @@ AliQAChecker::~AliQAChecker()
 	} else if (det == AliQAv1::kCORR) {
 		qac = new AliCorrQAChecker() ; 
 	} else {
-		AliDebug(1, Form("Retrieving QA checker for %s", detName.Data())) ; 
+		AliDebug(AliQAv1::GetQADebugLevel(), Form("Retrieving QA checker for %s", detName.Data())) ; 
 		TPluginManager* pluginManager = gROOT->GetPluginManager() ;
 		TString qacName = "Ali" + detName + "QAChecker" ;
 
@@ -124,7 +124,7 @@ AliQAChecker::~AliQAChecker()
 		TPluginHandler* pluginHandler = pluginManager->FindHandler("AliQAChecker", detName.Data());
 		// if not, add a plugin for it
 		if (!pluginHandler) {
-			//AliInfo(Form("defining plugin for %s", qacName.Data()));
+			//AliDebug(AliQAv1::GetQADebugLevel(), Form("defining plugin for %s", qacName.Data()));
 			TString libs = gSystem->GetLibraries();
 		
 			if (libs.Contains("lib" + detName + "base.so") || (gSystem->Load("lib" + detName + "base.so") >= 0))
@@ -226,14 +226,14 @@ void AliQAChecker::LoadRunInfoFromGRP()
 	  TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
 
 	  if (m) {
-	    AliInfo("It is a map");
+	    AliDebug(AliQAv1::GetQADebugLevel(), "It is a map");
 	    //m->Print();
 	    grpObject = new AliGRPObject();
 	         grpObject->ReadValuesFromMap(m);
     }
 
     else {
-	    AliInfo("It is a new GRP object");
+	    AliDebug(AliQAv1::GetQADebugLevel(), "It is a new GRP object");
         grpObject = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
     }
 
@@ -322,7 +322,7 @@ Bool_t AliQAChecker::Run(const char * fileName)
   TIter nextd(detKeyList) ; 
   TKey * detKey ; 
   while ( (detKey = dynamic_cast<TKey *>(nextd()) ) ) {
-    AliDebug(1, Form("Found %s", detKey->GetName())) ;
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("Found %s", detKey->GetName())) ;
     //Check which detector
     TString detName ; 
     TString detNameQA(detKey->GetName()) ; 
@@ -342,12 +342,12 @@ Bool_t AliQAChecker::Run(const char * fileName)
     // now search for the tasks dir
     while ( (taskKey = static_cast<TKey *>(nextt()) ) ) {
       TString taskName( taskKey->GetName() ) ; 
-      AliInfo(Form("Found %s", taskName.Data())) ;
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("Found %s", taskName.Data())) ;
       TDirectory * taskDir = detDir->GetDirectory(taskName.Data()) ; 
       taskDir->cd() ; 
       AliQACheckerBase * qac = GetDetQAChecker(det) ; 
       if (qac)
-        AliInfo(Form("QA checker found for %s", detName.Data())) ; 
+        AliDebug(AliQAv1::GetQADebugLevel(), Form("QA checker found for %s", detName.Data())) ; 
       if (!qac)
         AliFatal(Form("QA checker not found for %s", detName.Data())) ; 
       AliQAv1::ALITASK_t index = AliQAv1::kNULLTASK ; 
@@ -392,7 +392,7 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
 
 	AliQACheckerBase * qac = GetDetQAChecker(det) ; 
 	if (qac)
-		AliDebug(1, Form("QA checker found for %s", AliQAv1::GetDetName(det).Data())) ;
+		AliDebug(AliQAv1::GetQADebugLevel(), Form("QA checker found for %s", AliQAv1::GetDetName(det).Data())) ;
 	if (!qac)
 		AliError(Form("QA checker not found for %s", AliQAv1::GetDetName(det).Data())) ; 
   
@@ -430,7 +430,7 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
   
 	AliQACheckerBase * qac = GetDetQAChecker(det) ; 
 	if (qac)
-		AliDebug(1, Form("QA checker found for %s", AliQAv1::GetDetName(det).Data())) ;
+		AliDebug(AliQAv1::GetQADebugLevel(), Form("QA checker found for %s", AliQAv1::GetDetName(det).Data())) ;
 	if (!qac)
 		AliError(Form("QA checker not found for %s", AliQAv1::GetDetName(det).Data())) ; 
   

@@ -72,7 +72,7 @@ void AliACORDEQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-   AliInfo("ACORDE---->Detector specific actions at END of cycle\n................\n");
+  AliDebug(AliQAv1::GetQADebugLevel(), "ACORDE---->Detector specific actions at END of cycle\n................\n");
 
   AliQAChecker::Instance()->Run(AliQAv1::kACORDE, task, list) ;
 }
@@ -80,7 +80,7 @@ void AliACORDEQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 void AliACORDEQADataMakerSim::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
-  AliInfo("ACORDE---->Detector specific actions at START of cycle\n................\n");
+  AliDebug(AliQAv1::GetQADebugLevel(), "ACORDE---->Detector specific actions at START of cycle\n................\n");
 }
 //____________________________________________________________________________ 
 void AliACORDEQADataMakerSim::InitHits()

@@ -205,7 +205,7 @@ Bool_t AliQAManager::DoIt(const AliQAv1::TASKINDEX_t taskIndex)
 		fCurrentEvent++ ; 
 		// Get the event
 		if ( iEvent%10 == 0  ) 
-			AliInfo(Form("processing event %d", iEvent));
+			AliDebug(AliQAv1::GetQADebugLevel(), Form("processing event %d", iEvent));
 		if ( taskIndex == AliQAv1::kRAWS ) {
 			if ( !fRawReader->NextEvent() )
 				break ;
@@ -330,7 +330,7 @@ TObjArray * AliQAManager::GetFromOCDB(AliQAv1::DETECTORINDEX_t det, AliQAv1::TAS
 		Instance()->SetSpecificStorage(Form("%s/*", AliQAv1::GetQAName()), AliQAv1::GetQARefStorage()) ;
 	}
 	TString detOCDBDir(Form("%s/%s/%s", AliQAv1::GetQAName(), AliQAv1::GetDetName((Int_t)det), AliQAv1::GetRefOCDBDirName())) ; 
-	AliInfo(Form("Retrieving reference data from %s/%s for %s", AliQAv1::GetQARefStorage(), detOCDBDir.Data(), AliQAv1::GetTaskName(task).Data())) ; 
+     AliDebug(AliQAv1::GetQADebugLevel(), Form("Retrieving reference data from %s/%s for %s", AliQAv1::GetQARefStorage(), detOCDBDir.Data(), AliQAv1::GetTaskName(task).Data())) ; 
 	AliCDBEntry* entry = QAManager()->Get(detOCDBDir.Data(), 0) ; //FIXME 0 --> Run Number
 	TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
 	if ( listDetQAD ) 
@@ -360,7 +360,7 @@ AliLoader * AliQAManager::GetLoader(Int_t iDet)
 	TPluginHandler* pluginHandler = pluginManager->FindHandler("AliLoader", detName) ;
 	// if not, add a plugin for it
 	if (!pluginHandler) {
-		AliDebug(1, Form("defining plugin for %s", loaderName.Data())) ;
+		AliDebug(AliQAv1::GetQADebugLevel(), Form("defining plugin for %s", loaderName.Data())) ;
 		TString libs = gSystem->GetLibraries() ;
 		if (libs.Contains("lib" + detName + "base.so") || (gSystem->Load("lib" + detName + "base.so") >= 0)) {
 			pluginManager->AddHandler("AliQADataMaker", detName, loaderName, detName + "loader", loaderName + "()") ;
@@ -446,7 +446,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
 	TPluginHandler* pluginHandler = pluginManager->FindHandler("AliQADataMaker", detName) ;
 	// if not, add a plugin for it
 	if (!pluginHandler) {
-		AliDebug(1, Form("defining plugin for %s", qadmName.Data())) ;
+		AliDebug(AliQAv1::GetQADebugLevel(), Form("defining plugin for %s", qadmName.Data())) ;
 		TString libs = gSystem->GetLibraries() ;
 		if (libs.Contains("lib" + detName + fMode + ".so") || (gSystem->Load("lib" + detName + fMode + ".so") >= 0)) {
 			pluginManager->AddHandler("AliQADataMaker", detName, qadmName, detName + "qadm", qadmName + "()") ;
@@ -610,7 +610,7 @@ void  AliQAManager::InitQADataMaker(UInt_t run, TObjArray * detArray)
 			} else {
         if (fQAWriteExpert[iDet])
           qadm->SetWriteExpert() ; 
-				AliDebug(1, Form("Data Maker found for %s %d", qadm->GetName(), qadm->WriteExpert())) ; 
+				AliDebug(AliQAv1::GetQADebugLevel(), Form("Data Maker found for %s %d", qadm->GetName(), qadm->WriteExpert())) ; 
 				// skip non active detectors
 				if (detArray) {
 					AliModule* det = static_cast<AliModule*>(detArray->FindObject(AliQAv1::GetDetName(iDet))) ;
@@ -765,7 +765,7 @@ Bool_t AliQAManager::MergeXML(const char * collectionFile, const char * subFile,
     else 
       file = Form("%s", turl) ; 
     
-    AliInfo(Form("%s\n", file)) ; 
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("%s\n", file)) ; 
     merger.AddFile(file) ; 
     index++ ;  
   }
@@ -773,7 +773,7 @@ Bool_t AliQAManager::MergeXML(const char * collectionFile, const char * subFile,
   if (index) 
     merger.Merge() ; 
   
-  AliInfo(Form("Files merged into %s\n", outFile)) ;
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Files merged into %s\n", outFile)) ;
   
   rv = kFALSE;
   return rv ;
@@ -833,7 +833,7 @@ void AliQAManager::MergeCustom() const
   while ( (srun = dynamic_cast<TObjString *> (nextRun())) ) {
     runNumber = (srun->String()).Atoi() ; 
     hisRun->Fill(runNumber) ; 
-    AliInfo(Form("Merging run number %d", runNumber)) ; 
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("Merging run number %d", runNumber)) ; 
     // search all QA files for runNumber in the current directory
     char * fileList[AliQAv1::kNDET] ;
     index = 0 ; 
@@ -855,7 +855,7 @@ void AliQAManager::MergeCustom() const
       while ( (obj1 = nextkey()) ) {
         TDirectory * directoryDet = inFile->GetDirectory(obj1->GetName()) ; 
         if ( directoryDet ) {
-//          AliInfo(Form("%s dir = %s", inFile->GetName(), directoryDet->GetName())) ; 
+          AliDebug(AliQAv1::GetQADebugLevel(), Form("%s dir = %s", inFile->GetName(), directoryDet->GetName())) ; 
           dirName += Form("%s/", directoryDet->GetName() ) ; 
           directoryDet->cd() ;
           TList * listOfTasks = directoryDet->GetListOfKeys() ; 
@@ -865,7 +865,7 @@ void AliQAManager::MergeCustom() const
             TDirectory * directoryTask = directoryDet->GetDirectory(obj2->GetName()) ; 
             if ( directoryTask ) {
               dirName += Form("%s", obj2->GetName()) ; 
-              //AliInfo(Form("%s", dirName.Data())) ; 
+              AliDebug(AliQAv1::GetQADebugLevel(), Form("%s", dirName.Data())) ; 
               directoryTask->cd() ; 
               TList * listOfEventSpecie = directoryTask->GetListOfKeys() ; 
               TIter nextEventSpecie(listOfEventSpecie) ; 
@@ -874,7 +874,7 @@ void AliQAManager::MergeCustom() const
                 TDirectory * directoryEventSpecie = directoryTask->GetDirectory(obj3->GetName()) ; 
                 if ( directoryEventSpecie ) {
                   dirName += Form("/%s/", obj3->GetName()) ; 
-//                  AliInfo(Form("%s\n", dirName.Data())) ; 
+                  AliDebug(AliQAv1::GetQADebugLevel(), Form("%s\n", dirName.Data())) ; 
                   directoryEventSpecie->cd() ; 
                   // histograms are here
                   TDirectory * mergedDirectory = mergedFile.GetDirectory(dirName.Data()) ;
@@ -886,7 +886,7 @@ void AliQAManager::MergeCustom() const
                     if (  className.Contains("TH") || className.Contains("TProfile") ) {
                       TH1 * histIn = dynamic_cast<TH1*> (key->ReadObj()) ; 
                       TH1 * histOu = dynamic_cast<TH1*> (mergedDirectory->FindObjectAny(histIn->GetName())) ; 
-                      //AliInfo(Form("%s %x %x\n", key->GetName(), histIn, histOu)) ; 
+                      AliDebug(AliQAv1::GetQADebugLevel(), Form("%s %x %x\n", key->GetName(), histIn, histOu)) ; 
                       mergedDirectory->cd() ; 
                       if ( ! histOu ) {
                         histIn->Write() ; 
@@ -972,7 +972,7 @@ Bool_t AliQAManager::MergeResults(const Int_t runNumber) const
 		in >> fileList[index] ; 
 		if ( !in.good() ) 
 			break ; 
-		AliInfo(Form("index = %d file = %s", index, (fileList[index].Data()))) ; 
+		AliDebug(AliQAv1::GetQADebugLevel(), Form("index = %d file = %s", index, (fileList[index].Data()))) ; 
 		index++ ;
 	}
 	
@@ -1114,7 +1114,7 @@ TString AliQAManager::Run(const char * detectors, const AliQAv1::TASKINDEX_t tas
 			rl->CdGAFile() ; 
 			rl->LoadgAlice() ;
 			if ( ! rl->GetAliRun() ) {
-				AliInfo("AliRun not found in galice.root") ;
+				AliDebug(AliQAv1::GetQADebugLevel(), "AliRun not found in galice.root") ;
 			} else {
 				rl->LoadHeader() ;
 				man->SetRun(rl->GetHeader()->GetRun()) ;
@@ -1252,7 +1252,7 @@ Bool_t AliQAManager::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const
 {
 	// reads the TH1 from file and adds it to appropriate list before saving to OCDB
 	Bool_t rv = kTRUE ;
-	AliInfo(Form("Saving TH1s in %s to %s", inputFile->GetName(), AliQAv1::GetQARefStorage())) ; 
+	AliDebug(AliQAv1::GetQADebugLevel(), Form("Saving TH1s in %s to %s", inputFile->GetName(), AliQAv1::GetQARefStorage())) ; 
 	if ( ! IsDefaultStorageSet() ) {
 		TString tmp( AliQAv1::GetQARefStorage() ) ; 
 		if ( tmp.Contains(AliQAv1::GetLabLocalOCDB()) ) 
@@ -1274,7 +1274,7 @@ Bool_t AliQAManager::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const
 	for ( Int_t detIndex = 0 ; detIndex < AliQAv1::kNDET ; detIndex++) {
 		TDirectory * detDir = inputFile->GetDirectory(AliQAv1::GetDetName(detIndex)) ; 
 		if ( detDir ) {
-			AliInfo(Form("Entering %s", detDir->GetName())) ;
+			AliDebug(AliQAv1::GetQADebugLevel(), Form("Entering %s", detDir->GetName())) ;
       AliQAv1::SetQARefDataDirName(es) ;
 			TString detOCDBDir(Form("%s/%s/%s", AliQAv1::GetDetName(detIndex), AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName())) ; 
 			AliCDBId idr(detOCDBDir.Data(), runNumber, AliCDBRunRange::Infinity())  ;
@@ -1288,7 +1288,7 @@ Bool_t AliQAManager::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const
 			while ( (taskKey = dynamic_cast<TKey*>(nextTask())) ) {
 				TDirectory * taskDir = detDir->GetDirectory(taskKey->GetName()) ; 
         TDirectory * esDir   = taskDir->GetDirectory(AliRecoParam::GetEventSpecieName(es)) ; 
-				AliInfo(Form("Saving %s", esDir->GetName())) ; 
+				AliDebug(AliQAv1::GetQADebugLevel(), Form("Saving %s", esDir->GetName())) ; 
 				TObjArray * listTaskQAD = new TObjArray(100) ; 
 				listTaskQAD->SetName(Form("%s/%s", taskKey->GetName(), AliRecoParam::GetEventSpecieName(es))) ;
 				listDetQAD->Add(listTaskQAD) ; 
@@ -1310,18 +1310,18 @@ Bool_t AliQAManager::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const
                 if ( !expertOdata ) {
                   AliError(Form("%s in %s/%s/Expert returns a NULL pointer !!", expertHistKey->GetName(), detDir->GetName(), taskDir->GetName())) ;
                 } else {
-                  AliInfo(Form("Adding %s", expertHistKey->GetName())) ;
+                  AliDebug(AliQAv1::GetQADebugLevel(), Form("Adding %s", expertHistKey->GetName())) ;
                   if ( expertOdata->IsA()->InheritsFrom("TH1") ) {
-                    AliInfo(Form("Adding %s", expertHistKey->GetName())) ;
+                    AliDebug(AliQAv1::GetQADebugLevel(), Form("Adding %s", expertHistKey->GetName())) ;
                     TH1 * hExpertdata = static_cast<TH1*>(expertOdata) ; 
                     listTaskQAD->Add(hExpertdata) ; 
                   }                  
                 }                
               }
             }
-						AliInfo(Form("Adding %s", histKey->GetName())) ;
+						AliDebug(AliQAv1::GetQADebugLevel(), Form("Adding %s", histKey->GetName())) ;
 						if ( odata->IsA()->InheritsFrom("TH1") ) {
-							AliInfo(Form("Adding %s", histKey->GetName())) ;
+							AliDebug(AliQAv1::GetQADebugLevel(), Form("Adding %s", histKey->GetName())) ;
 							TH1 * hdata = static_cast<TH1*>(odata) ; 
 							listTaskQAD->Add(hdata) ; 
 						}

@@ -281,7 +281,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
   AliT0RawReader *start = new AliT0RawReader(rawReader);
   //  start->Next();
   if (! start->Next())
-    AliDebug(1,Form(" no raw data found!!"));
+    AliDebug(AliQAv1::GetQADebugLevel(),Form(" no raw data found!!"));
   else
     {  
       fnEvent++;

@@ -72,7 +72,7 @@ const TString AliQAv1::fgkExpert           = "Expert" ;
 const UInt_t  AliQAv1::fgkExpertBit        = 16 ; 
 const UInt_t  AliQAv1::fgkQABit            = 17 ; 
 const UInt_t  AliQAv1::fgkImageBit         = 18 ; 
-
+const Int_t  AliQAv1::fgkQADebugLevel      = 99 ; 
 //____________________________________________________________________________
 AliQAv1::AliQAv1() : 
   TNamed("", ""), 

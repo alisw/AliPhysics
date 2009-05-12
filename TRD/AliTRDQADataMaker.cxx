@@ -94,7 +94,7 @@ void AliTRDQADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX task, TObjArray * 
   //TStopwatch watch;
   //watch.Start();
 
-  //AliInfo(Form("EndOfCycle", "Fitting RecPoints %d", task))
+  //AliDebug(AliQAv1::GetQADebugLevel(), Form("EndOfCycle", "Fitting RecPoints %d", task))
   TH1D *hist = new TH1D("fitHist", "", 200, -0.5, 199.5);
  
   if (task == AliQAv1::kRECPOINTS) {
@@ -128,7 +128,7 @@ void AliTRDQADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX task, TObjArray * 
       //TH1D *test = ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, 0, 35);     
       //if (test->GetSum() < 100) continue;
       
-      //AliInfo(Form("fitting det = %d", i));
+      //AliDebug(AliQAv1::GetQADebugLevel(), Form("fitting det = %d", i));
       
       for(Int_t j=0; j<35; j++) {
 	

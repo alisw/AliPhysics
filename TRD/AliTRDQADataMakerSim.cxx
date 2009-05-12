@@ -94,7 +94,7 @@ void AliTRDQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
   // Detector specific actions at end of cycle
   //
 
-  //AliInfo(Form("EndOfCycle", "Fitting RecPoints %d", task));
+  //AliDebug(AliQAv1::GetQADebugLevel(), Form("EndOfCycle", "Fitting RecPoints %d", task));
 
   // call the checker
   AliQAChecker::Instance()->Run(AliQAv1::kTRD, task, list) ;    

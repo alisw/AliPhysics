@@ -90,13 +90,13 @@ AliITSQASSDDataMakerSim& AliITSQASSDDataMakerSim::operator = (const AliITSQASSDD
 //____________________________________________________________________________ 
 void AliITSQASSDDataMakerSim::StartOfDetectorCycle() {
   //Detector specific actions at start of cycle
-  AliDebug(1,"AliITSQADM::Start of SSD Cycle\n");
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of SSD Cycle\n");
 }
 
 //____________________________________________________________________________ 
 void AliITSQASSDDataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, TObjArray* /*list*/) {
   // launch the QA checking
-  AliDebug(1,"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
   
 //  AliQAChecker::Instance()->Run( AliQAv1::kITS , task, list);
 }
@@ -123,7 +123,7 @@ void AliITSQASSDDataMakerSim::InitDigits() {
 					fGenOffsetD + 1, !expert, image);
   fSSDhDTask += 1;
 
-  AliDebug(1,Form("%d SSD Digits histograms booked\n",fSSDhDTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SSD Digits histograms booked\n",fSSDhDTask));
 
 }
 
@@ -139,7 +139,7 @@ void AliITSQASSDDataMakerSim::MakeDigits(TTree *digits) {
     Int_t ndigits = iSSDdigits->GetEntries();
     fAliITSQADataMakerSim->GetDigitsData(fGenOffsetD + 0)->Fill(iModule,ndigits);
     if(ndigits != 0)
-      AliDebug(1,Form("Module: %d - Digits: %d",iModule,ndigits));
+      AliDebug(AliQAv1::GetQADebugLevel(),Form("Module: %d - Digits: %d",iModule,ndigits));
  
     for (Int_t iDigit = 0; iDigit < ndigits; iDigit++) {
       AliITSdigit *dig = (AliITSdigit*)iSSDdigits->UncheckedAt(iDigit);
@@ -165,7 +165,7 @@ void AliITSQASSDDataMakerSim::InitSDigits() {
 					 fGenOffsetS + 0, !expert, image);
   fSSDhSTask += 1;  
 
-  AliDebug(1,Form("%d SSD SDigits histograms booked\n",fSSDhSTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SSD SDigits histograms booked\n",fSSDhSTask));
 }
 
 //____________________________________________________________________________
@@ -175,7 +175,7 @@ void AliITSQASSDDataMakerSim::MakeSDigits(TTree *sdigits) {
   iSSDEmpty.Clear();
   TClonesArray *iSSDsdigits = &iSSDEmpty;
 
-  AliInfo(Form("Trying to access the sdigits histogram: %d\n",fGenOffsetS));
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Trying to access the sdigits histogram: %d\n",fGenOffsetS));
 
   TBranch *brchSDigits = sdigits->GetBranch("ITS");
   brchSDigits->SetAddress(&iSSDsdigits);
@@ -185,7 +185,7 @@ void AliITSQASSDDataMakerSim::MakeSDigits(TTree *sdigits) {
     Int_t ndigits = iSSDsdigits->GetEntries();
     fAliITSQADataMakerSim->GetSDigitsData(fGenOffsetS + 0)->Fill(iModule,ndigits);
     if(ndigits != 0)
-      AliDebug(1,Form("Module: %d - Digits: %d",iModule,ndigits));
+      AliDebug(AliQAv1::GetQADebugLevel(),Form("Module: %d - Digits: %d",iModule,ndigits));
 
     for (Int_t iDigit = 0; iDigit < ndigits; iDigit++) {
       AliITSpListItem *dig=(AliITSpListItem*)iSSDsdigits->At(iDigit);
@@ -259,7 +259,7 @@ void AliITSQASSDDataMakerSim::InitHits() {
 				      fGenOffsetH + 8, !expert, image);
   fSSDhHTask += 1;
  
-  AliDebug(1,Form("%d SSD Hits histograms booked\n",fSSDhHTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SSD Hits histograms booked\n",fSSDhHTask));
 }
 
 
@@ -276,7 +276,7 @@ void AliITSQASSDDataMakerSim::MakeHits(TTree *hits) {
     TObjArray *arrHits = module->GetHits();
     Int_t nhits = arrHits->GetEntriesFast();
     if(nhits != 0)
-      AliDebug(1,Form("Module: %d - Hits: %d",iModule,nhits));
+      AliDebug(AliQAv1::GetQADebugLevel(),Form("Module: %d - Hits: %d",iModule,nhits));
     for (Int_t iHit = 0; iHit < nhits; iHit++) {
       AliITShit *hit = (AliITShit*) arrHits->At(iHit);
       

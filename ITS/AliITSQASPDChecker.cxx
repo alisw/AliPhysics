@@ -43,7 +43,7 @@ AliITSQASPDChecker& AliITSQASPDChecker::operator = (const AliITSQASPDChecker& qa
 //__________________________________________________________________
 Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * list)
 {
-  AliDebug(1,Form("AliITSQASPDChecker called with offset: %d\n", fSubDetOffset));
+  AliDebug(2, Form("AliITSQASPDChecker called with offset: %d\n", fSubDetOffset));
 
   Double_t test = 0.0;
   Int_t count = 0;
@@ -64,10 +64,10 @@ Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
         if (histName.Contains("LayPattern")) {
          if (hdata->GetBinContent(1)) {
            Double_t ratio=hdata->GetBinContent(2)/hdata->GetBinContent(1);
-           AliInfo(Form("%s: ratio RecPoints lay2 / lay1 = %f", hdata->GetName(), ratio));
+           AliDebug(2, Form("%s: ratio RecPoints lay2 / lay1 = %f", hdata->GetName(), ratio));
          }
          else
-           AliInfo("No RecPoints in lay1");
+           AliDebug(AliQAv1::GetQADebugLevel(), "No RecPoints in lay1");
        }
         else if(histName.Contains("ModPattern")) {
            Int_t ndead=0;
@@ -75,7 +75,7 @@ Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
              if(histName.Contains("SPD1") && ibin<80 && hdata->GetBinContent(ibin+1)>0) ndead++;
              if(histName.Contains("SPD2") && ibin>79 && hdata->GetBinContent(ibin+1)>0) ndead++;
            }
-           AliInfo(Form("%s: Entries = %d  number of empty modules = %d", 
+           AliDebug(2, Form("%s: Entries = %d  number of empty modules = %d", 
                         hdata->GetName(),(Int_t)hdata->GetEntries(),ndead));
         }
         else if(histName.Contains("SizeYvsZ")) {
@@ -83,14 +83,14 @@ Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
            Double_t meany=hdata->GetMean(2);
            Double_t rmsz=hdata->GetRMS(1);
            Double_t rmsy=hdata->GetRMS(2);
-           AliInfo(Form("%s: Cluster sizeY mean = %f  rms = %f", hdata->GetName(),meany,rmsy));
-           AliInfo(Form("%s: Cluster sizeZ mean = %f  rms = %f", hdata->GetName(),meanz,rmsz));
+           AliDebug(AliQAv1::GetQADebugLevel(), Form("%s: Cluster sizeY mean = %f  rms = %f", hdata->GetName(),meany,rmsy));
+           AliDebug(AliQAv1::GetQADebugLevel(), Form("%s: Cluster sizeZ mean = %f  rms = %f", hdata->GetName(),meanz,rmsz));
         }
         else if(histName.Contains("Multiplicity")) {
-           AliInfo(Form("%s: Events = %d  mean = %f  rms = %f",
+           AliDebug(2, Form("%s: Events = %d  mean = %f  rms = %f",
                         hdata->GetName(),(Int_t)hdata->GetEntries(),hdata->GetMean(),hdata->GetRMS()));}
 
-        // else AliInfo(Form("%s -> %f", hdata->GetName(), rv));
+        // else AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv));
         count++;
         test += rv;
       }
@@ -110,7 +110,7 @@ Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
     }
   }
 
-  AliInfo(Form("Test Result = %f", test));
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Test Result = %f", test));
   return test ;
 
 }

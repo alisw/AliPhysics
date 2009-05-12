@@ -57,10 +57,10 @@ Double_t * AliVZEROQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
 // Main check function: Depending on the TASK, different checks will be applied
 // Check for empty histograms 
 
-//   AliDebug(1,Form("AliVZEROChecker"));
+//   AliDebug(AliQAv1::GetQADebugLevel(),Form("AliVZEROChecker"));
 //   AliCDBEntry *QARefRec = AliCDBManager::Instance()->Get("VZERO/QARef/RAW");
 //   if( !QARefRec){
-//     AliInfo("QA reference data NOT retrieved for QA check...");
+//     AliDebug(AliQAv1::GetQADebugLevel(), "QA reference data NOT retrieved for QA check...");
 //     return 1.;
 //   }
 
@@ -93,7 +93,7 @@ Double_t AliVZEROQAChecker::CheckEntries(TObjArray * list) const
 
   if (list->GetEntries() == 0){  
 	test = 1.0; 
-	AliInfo(Form("There are NO ENTRIES to be checked..."));
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("There are NO ENTRIES to be checked..."));
   } else {
 	TIter next(list) ; 
 	TH1 * hdata ;
@@ -102,7 +102,7 @@ Double_t AliVZEROQAChecker::CheckEntries(TObjArray * list) const
 		if (hdata) { 	   
 			Double_t rv = 0.0;
 			if(hdata->GetEntries()>0) rv=1.0;
-//	   AliInfo(Form("%s -> %f", hdata->GetName(), rv)); 
+//	   AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv)); 
 			count++ ;        // number of histos
 			test += rv ;     // number of histos filled
         }else{

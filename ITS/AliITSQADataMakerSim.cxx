@@ -56,16 +56,16 @@ fSSDDataMaker(NULL)
 
   // Initialization for RAW data 
   if(fSubDetector == 0 || fSubDetector == 1) {
-    AliDebug(1,"AliITSQADM::Create SPD DataMakerSim\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Create SPD DataMakerSim\n");
 	fSPDDataMaker = new AliITSQASPDDataMakerSim(this);
   }
   if(fSubDetector == 0 || fSubDetector == 2) {
-	AliDebug(1,"AliITSQADM::Create SDD DataMakerSim\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Create SDD DataMakerSim\n");
 	//printf("AliITSQADM::Create SDD DataMakerSim\n");		    
 	fSDDDataMaker = new AliITSQASDDDataMakerSim(this);
   }
   if(fSubDetector == 0 || fSubDetector == 3) {
-	AliDebug(1,"AliITSQADM::Create SSD DataMakerSim\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Create SSD DataMakerSim\n");
 	fSSDDataMaker = new AliITSQASSDDataMakerSim(this);
   }
 }
@@ -104,7 +104,7 @@ AliITSQADataMakerSim& AliITSQADataMakerSim::operator = (const AliITSQADataMakerS
 void AliITSQADataMakerSim::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
-  AliDebug(1,"AliITSQADM::Start of ITS Cycle\n");
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of ITS Cycle\n");
 
   if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->StartOfDetectorCycle();
   if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->StartOfDetectorCycle();
@@ -117,7 +117,7 @@ void AliITSQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
   // launch the QA checking
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     SetEventSpecie(specie) ; 
-    AliDebug(1,"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
     if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list[specie]);
     if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list[specie]);
     if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list[specie]);
@@ -145,15 +145,15 @@ void AliITSQADataMakerSim::InitDigits()
 {  
   // Initialization for RAW data 
 	if(fSubDetector == 0 || fSubDetector == 1) {
-	  AliDebug(1,"AliITSQADM:: SPD InitDigits\n");
+	  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitDigits\n");
 	  fSPDDataMaker->InitDigits();
 	}
 	if(fSubDetector == 0 || fSubDetector == 2) {
- 	  AliDebug(1,"AliITSQADM:: SDD InitDigits\n");
+ 	  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SDD InitDigits\n");
 	  fSDDDataMaker->InitDigits();
 	}
 	if(fSubDetector == 0 || fSubDetector == 3) {
-	  AliDebug(1,"AliITSQADM:: SSD InitDigits\n");
+	  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SSD InitDigits\n");
 	  fSSDDataMaker->InitDigits();
 	}
 }
@@ -181,15 +181,15 @@ void AliITSQADataMakerSim::InitSDigits()
 {
   // Initialization for RECPOINTS
   if(fSubDetector == 0 || fSubDetector == 1) {
-	AliDebug(1,"AliITSQADM:: SPD InitSDigits\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitSDigits\n");
     fSPDDataMaker->InitSDigits();
   }
   if(fSubDetector == 0 || fSubDetector == 2) {
-	AliDebug(1,"AliITSQADM:: SDD InitSDigits\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SDD InitSDigits\n");
 	fSDDDataMaker->InitSDigits();
   }
   if(fSubDetector == 0 || fSubDetector == 3) {
-	AliDebug(1,"AliITSQADM:: SSD InitSDigits\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SSD InitSDigits\n");
 	fSSDDataMaker->InitSDigits();
   }
 }
@@ -217,15 +217,15 @@ void AliITSQADataMakerSim::InitHits()
 {
   // Initialization for RECPOINTS
   if(fSubDetector == 0 || fSubDetector == 1) {
-	AliDebug(1,"AliITSQADM:: SPD InitHits\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitHits\n");
     fSPDDataMaker->InitHits();
   }
   if(fSubDetector == 0 || fSubDetector == 2) {
-	AliDebug(1,"AliITSQADM:: SDD InitHits\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SDD InitHits\n");
 	fSDDDataMaker->InitHits();
   }
   if(fSubDetector == 0 || fSubDetector == 3) {
-	AliDebug(1,"AliITSQADM:: SSD InitHits\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SSD InitHits\n");
 	fSSDDataMaker->InitHits();
   }
 }

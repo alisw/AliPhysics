@@ -64,6 +64,7 @@ public:
   static const char *    GetQADataFileName(const char * name, Int_t run) 
   {return Form("%s.%s.%d.root", name, fgQADataFileName.Data(), run)  ; }
   static const char *    GetQADataFileName() { return fgQADataFileName.Data() ; }
+  static Int_t           GetQADebugLevel() { return fgkQADebugLevel ; }
   static const char *    GetQAName() { return fgkQAName ; } 
   static const char *    GetQACorrName() { return fgkQACorrNtName ; }
   static TFile *         GetQAResultFile() ; 
@@ -87,6 +88,7 @@ public:
   void                   Set(QABIT_t bit, Int_t es) ;
   void                   SetEventSpecie(AliRecoParam::EventSpecie_t es) 
   {Int_t ibit=0; while(es!=1<<ibit) ++ibit; fEventSpecies[ibit] = kTRUE ; }
+  static void            SetQADebug() { AliLog::SetGlobalDebugLevel(GetQADebugLevel()); }
   static void            SetQAResultDirName(const char * name) ; 
   static void            SetQARefStorage(const char * name) ; 
   static void            SetQARefDataDirName(AliRecoParam::EventSpecie_t es) { fgRefDataDirName = AliRecoParam::GetEventSpecieName(es) ; }
@@ -110,12 +112,12 @@ private:
   void                  ShowASCIIStatus(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t det, ALITASK_t tsk, ULong_t status) const ; 
   void                  ResetStatus(DETECTORINDEX_t det) ; 
   void                  Set(DETECTORINDEX_t det) { fDet = det ;}
-  void                  Set(ALITASK_t tsk) { fTask = tsk ; AliDebug(1, Form("Ready to set QA status in %s", GetAliTaskName(tsk) )) ; }
+  void                  Set(ALITASK_t tsk) { fTask = tsk ; AliDebug(GetQADebugLevel(), Form("Ready to set QA status in %s", GetAliTaskName(tsk) )) ; }
   void                  SetStatus(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es, ULong_t status) { fQA[det*fNEventSpecies+(Int_t)TMath::Log2(es)] = status ; }
   void                  SetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit) ;
   void                  UnSetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit) ;
   
-  static AliQAv1 *       fgQA		                ; // pointer to the instance of the singleton
+  static AliQAv1 *     fgQA		                ; // pointer to the instance of the singleton
   Int_t                fNdet     	            ; // number of detectors
   Int_t                fNEventSpecies         ; // number of Event Species (see AliRecoParam)
   Int_t                fLengthQA              ; // Auxiliary length of fQA
@@ -143,6 +145,7 @@ private:
   static const TString fgkLabAliEnOCDB        ; //! label to identify a file as AliEn OCDB 
   static const TString fgkRefFileName         ; //! name of Reference File Name 
   static const UInt_t  fgkQABit               ; //! bit in the QA data object which is set when Checker does not return 0
+  static const Int_t   fgkQADebugLevel        ; //! debug level used for QA verbosity
   static const TString fgkQAName              ; //! name of QA object 
   static const TString fgkQACorrNtName        ; //! name of QA Correlation Ntuple
   static const TString fgkRefOCDBDirName      ; //! name of Reference directory name in OCDB  	
@@ -150,6 +153,6 @@ private:
   static const TString fgkQARefOCDBDefault    ; //! default storage for QA in OCDB 
   Bool_t *             fEventSpecies          ; //[fNEventSpecies] list of event species encountered in a run
 
- ClassDef(AliQAv1,2)  //ALICE Quality Assurance Object
+ ClassDef(AliQAv1,3)  //ALICE Quality Assurance Object
 };
 #endif

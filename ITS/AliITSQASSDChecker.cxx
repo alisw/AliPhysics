@@ -42,7 +42,7 @@ AliITSQASSDChecker& AliITSQASSDChecker::operator = (const AliITSQASSDChecker& qa
 
 //__________________________________________________________________
 Double_t AliITSQASSDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * list) {  
-  AliDebug(1,Form("AliITSQASSDChecker called with offset: %d\n", fSubDetOffset));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("AliITSQASSDChecker called with offset: %d\n", fSubDetOffset));
   
   Double_t test = 0.0  ;
   Int_t count = 0 ;
@@ -59,7 +59,7 @@ Double_t AliITSQASSDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
 	if(!histname.Contains("fHistSSD")) continue;
         Double_t rv = 0.;
         if(hdata->GetEntries()>0) rv = 1;
-        //AliInfo(Form("%s -> %f", hdata->GetName(), rv)) ;
+        //AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv)) ;
 	//cout<<hdata->GetName()<<" - "<<rv<<endl;
         count++ ;
         test += rv ;
@@ -79,7 +79,7 @@ Double_t AliITSQASSDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
     }
   }
   
-  //AliInfo(Form("Test Result = %f", test)) ;
+  //AliDebug(AliQAv1::GetQADebugLevel(), Form("Test Result = %f", test)) ;
   //cout<<"Test result: "<<test<<endl;
 
   return test ;

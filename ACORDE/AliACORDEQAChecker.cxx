@@ -89,7 +89,7 @@ Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** 
         if (hdata) { 
           Double_t rv = 0.0 ; 
           if(hdata->GetEntries()>0)rv=1; 
-          AliInfo(Form("%s -> %f", hdata->GetName(), rv)) ; 
+          AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv)) ; 
           count[specie]++ ; 
           test[specie] += rv ; 
 
@@ -130,7 +130,7 @@ Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** 
         }
       }
     }
-   // AliInfo(Form("Test Result = %f", test[specie])) ; 
+   // AliDebug(AliQAv1::GetQADebugLevel(), Form("Test Result = %f", test[specie])) ; 
   }
   return test ; 
 }

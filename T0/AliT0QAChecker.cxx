@@ -90,7 +90,7 @@ Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index,TObjArray ** list)
     TIter next(list[specie]) ;
     TH1 * hdata ;
     TH2 * h ;
-    //  AliInfo(Form(" data type %i %s nentries %i\n",
+    //  AliDebug(AliQAv1::GetQADebugLevel(), Form(" data type %i %s nentries %i\n",
     //	   index,dataType.Data(),list->GetEntries()));
     for (Int_t ir=0; ir<list[specie]->GetEntries(); ir++) {
       //raw
@@ -101,18 +101,18 @@ Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index,TObjArray ** list)
          if(hdata) {
          cname = hdata->GetName();
          hname[ir] = cname;
-         AliDebug(10,Form("count %i %s \n",ir, hname[ir].Data())) ;
+         AliDebug(AliQAv1::GetQADebugLevel(),Form("count %i %s \n",ir, hname[ir].Data())) ;
          fhRaw[ir] = hdata;
          }
          }*/
         if(ir > 204) {
           //	  else{
           h = (TH2*) list[specie]->UncheckedAt(ir);
-          AliInfo(Form(" index %i ir %i \n", index,ir));
+          AliDebug(AliQAv1::GetQADebugLevel(), Form(" index %i ir %i \n", index,ir));
           if(h) {
             cname = h->GetName();
             hname[ir] = cname;
-            AliDebug(1,Form("count %i %s \n",ir, hname[ir].Data())) ;
+            AliDebug(AliQAv1::GetQADebugLevel(),Form("count %i %s \n",ir, hname[ir].Data())) ;
             fhRawEff[ir] = h;
           }
         }
@@ -124,17 +124,17 @@ Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index,TObjArray ** list)
         if(h) {
           cname = h->GetName();
           hname[ir] = cname;
-          AliDebug(1,Form("count %i %s \n",ir, hname[ir].Data())) ;
+          AliDebug(AliQAv1::GetQADebugLevel(), Form("count %i %s \n",ir, hname[ir].Data())) ;
           fhRecDiff[ir] = h;
         }
       }
       //esd
       if(index==3){
-        cout<<" ir "<<ir<<endl;
+       // cout<<" ir "<<ir<<endl;
         hdata = (TH1*) list[specie]->UncheckedAt(ir);
         if(hdata){
           fhESD[ir] = hdata;
-          AliDebug(1,Form("count %i %s ",ir, hname[ir].Data()) );
+          AliDebug(AliQAv1::GetQADebugLevel(), Form("count %i %s ",ir, hname[ir].Data()) );
         }
       }
     }
@@ -149,20 +149,20 @@ Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index,TObjArray ** list)
             Double_t rms= fhRawEff[icase]->ProjectionY(Form("%s_py%i_%i", 
                                                             fhRawEff[icase]->GetName(), idet,icase),
                                                             idet,idet+1)->GetRMS();
-            AliInfo(Form("name %s icase %i idet %i mean %f, rms %f\n",
+            AliDebug(AliQAv1::GetQADebugLevel(), Form("name %s icase %i idet %i mean %f, rms %f\n",
                     fhRawEff[icase]->GetName(), icase, idet, mean,rms));
             if (mean<1.2 && mean> 0.8 ) {
               test[specie] = 1;
-              AliDebug(1,Form("All channels works meane efficieny %f with rms %f test %f",  mean, rms, test[specie])) ; 
+              AliDebug(AliQAv1::GetQADebugLevel(), Form("All channels works meane efficieny %f with rms %f test %f",  mean, rms, test[specie])) ; 
             }
             if (mean<=0.8 && mean>= 0.5 ){
               test[specie] = 0.5;
-              AliDebug(1,Form("%s problem in channel %i  efficieny %f test %f",
+              AliDebug(AliQAv1::GetQADebugLevel(), Form("%s problem in channel %i  efficieny %f test %f",
                               fhRawEff[icase]->GetName(), idet,  mean, test[specie])) ; 
             }
             if (mean<0.5 ) { 
               test[specie] = 0.25;
-              AliDebug(1,Form("%s big problem in channel %i  efficieny %f test %f",
+              AliDebug(AliQAv1::GetQADebugLevel(), Form("%s big problem in channel %i  efficieny %f test %f",
                               fhRawEff[icase]->GetName(), idet,  mean, test[specie])) ; 
             }
           }
@@ -178,16 +178,16 @@ Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index,TObjArray ** list)
             Double_t rms= fhRecDiff[icase]->
             ProjectionY(Form("%s_py", fhRecDiff[icase]->GetName()),
                         idet,idet+1)->GetRMS();
-            AliInfo(Form("name %s icase %i idet %i mean %f, rms %f\n",
+            AliDebug(AliQAv1::GetQADebugLevel(), Form("name %s icase %i idet %i mean %f, rms %f\n",
                          fhRecDiff[icase]->GetName(), icase, idet, mean,rms)); 
 	  	  
             if(TMath::Abs(mean) >1.5 || rms >1){
-              AliDebug(1,Form(" calibration is nor perfect; test=%f", test)) ;
+              AliDebug(AliQAv1::GetQADebugLevel(), Form(" calibration is nor perfect; test=%f", test)) ;
               test[specie]=0.25;
             }
             if(mean>3 || rms >5) {
               test[specie] = 0.1;
-              AliDebug(1,Form(" wrong calibration test=%f", test[specie])) ;
+              AliDebug(AliQAv1::GetQADebugLevel(), Form(" wrong calibration test=%f", test[specie])) ;
             } 
           }
         }	 
@@ -198,21 +198,21 @@ Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index,TObjArray ** list)
           Double_t rmsVertex = fhESD[icase]->GetRMS();
           Double_t meanVertex = fhESD[icase]->GetMean();
           test[specie]=1;
-          AliInfo(Form("numentries %d meanVertex %f rmsVertex %f", fhESD[icase]->GetEntries(), meanVertex, rmsVertex));
+          AliDebug(AliQAv1::GetQADebugLevel(), Form("numentries %d meanVertex %f rmsVertex %f", fhESD[icase]->GetEntries(), meanVertex, rmsVertex));
           if (TMath::Abs(rmsVertex)>3) {
             test[specie]=0.25;
-            AliDebug(1,Form("Vertex position resolution not good  , rms= %f test=%f",
+            AliDebug(AliQAv1::GetQADebugLevel(), Form("Vertex position resolution not good  , rms= %f test=%f",
                             rmsVertex, test[specie])) ; 
           }
           if (TMath::Abs(meanVertex)>3) {
             test[specie]=0.25;
-            AliDebug(1,Form("Vertex position bad calibrated  , Mean= %f test=%f",
+            AliDebug(AliQAv1::GetQADebugLevel(), Form("Vertex position bad calibrated  , Mean= %f test=%f",
                             meanVertex, test[specie])) ; 
           }
         }
       }
     } //  if (list->GetEntries() != 0
-    AliInfo(Form("Test Result = %f", test[specie])) ;
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("Test Result = %f", test[specie])) ;
   } 
   return test ;
 }

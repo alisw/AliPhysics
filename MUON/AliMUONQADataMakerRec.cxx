@@ -100,7 +100,7 @@ fTrackerDataMaker(0x0)
 {
     /// ctor
 	
-  AliDebug(1,"");
+  AliDebug(AliQAv1::GetQADebugLevel(),"");
 
 	Ctor();
 }
@@ -129,7 +129,7 @@ fTrackerDataMaker(0x0)
 {
     ///copy ctor 
 
-    AliDebug(1,"");
+  AliDebug(AliQAv1::GetQADebugLevel(),"");
 
 
     SetName((const char*)qadm.GetName()) ; 
@@ -146,7 +146,7 @@ AliMUONQADataMakerRec& AliMUONQADataMakerRec::operator = (const AliMUONQADataMak
 {
   /// Assignment operator
 
-  AliDebug(1,"");
+  AliDebug(AliQAv1::GetQADebugLevel(),"");
 
   // check assignment to self
   if (this == &qadm) return *this;
@@ -161,7 +161,7 @@ AliMUONQADataMakerRec::~AliMUONQADataMakerRec()
 {
     /// dtor
   
-  AliDebug(1,"");
+  AliDebug(AliQAv1::GetQADebugLevel(),"");
 
   AliCodeTimerAuto("");
   
@@ -196,7 +196,7 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
           }
         if (!alreadyThere && fTrackerDataMaker) 
           {
-            AliInfo("Adding fTrackerDataMaker to the list of qa objects");
+          AliDebug(AliQAv1::GetQADebugLevel(), "Adding fTrackerDataMaker to the list of qa objects");
             list[specie]->AddAt(fTrackerDataMaker->Data(),(Int_t)kTrackerData);
           }
           if ( fTrackerDataMaker ) 
@@ -1340,7 +1340,7 @@ AliMUONQADataMakerRec::FillTriggerDCSHistos()
       for(Int_t iMeas=0; iMeas<AliMpDCSNamer::kNDCSMeas; iMeas++){
 	TString currAlias = triggerDcsNamer.DCSChannelName(detElemId, 0, iMeas);
 
-	AliDebug(2, Form("\nDetElemId %i   dcsAlias %s", detElemId, currAlias.Data()));
+        AliDebug(AliQAv1::GetQADebugLevel(), Form("\nDetElemId %i   dcsAlias %s", detElemId, currAlias.Data()));
 
 	TPair* triggerDcsPair = static_cast<TPair*>(triggerDcsMap->FindObject(currAlias.Data()));
 
@@ -1367,7 +1367,7 @@ AliMUONQADataMakerRec::FillTriggerDCSHistos()
 	    {
 	      Float_t hvi = val->GetFloat();
 
-	      AliDebug(2, Form("Value %f", hvi));
+	      AliDebug(AliQAv1::GetQADebugLevel(), Form("Value %f", hvi));
 
 	      switch(iMeas){
 	      case AliMpDCSNamer::kDCSI:

@@ -52,7 +52,7 @@ AliMUONQADataMakerSim::AliMUONQADataMakerSim() :
 {
   /// Default constructor
 
-  AliDebug(1,"");
+      AliDebug(AliQAv1::GetQADebugLevel(),"");
 }
 
 //____________________________________________________________________________ 
@@ -63,7 +63,7 @@ AliMUONQADataMakerSim::AliMUONQADataMakerSim(const AliMUONQADataMakerSim& qadm) 
 {
   /// Copy constructor
 
-  AliDebug(1,"");
+    AliDebug(AliQAv1::GetQADebugLevel(),"");
 
     if ( qadm.fHitStore ) 
     {
@@ -82,7 +82,7 @@ AliMUONQADataMakerSim& AliMUONQADataMakerSim::operator = (const AliMUONQADataMak
 {
   /// Assignment operator
 
-    AliDebug(1,"");
+  AliDebug(AliQAv1::GetQADebugLevel(),"");
 
     this->~AliMUONQADataMakerSim();
     new(this) AliMUONQADataMakerSim(qadm);
@@ -94,7 +94,7 @@ AliMUONQADataMakerSim::~AliMUONQADataMakerSim()
 {
   /// Destructor
 
-  AliDebug(1,"");
+  AliDebug(AliQAv1::GetQADebugLevel(),"");
 
   delete fHitStore;
   delete fDigitStore;

@@ -88,14 +88,14 @@ AliITSQASPDDataMakerSim& AliITSQASPDDataMakerSim::operator = (const AliITSQASPDD
 void AliITSQASPDDataMakerSim::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
-  AliDebug(1,"AliITSQADM::Start of SPD Cycle\n");
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of SPD Cycle\n");
 }
 
 //____________________________________________________________________________ 
 void AliITSQASPDDataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, TObjArray* /*list*/)
 {
   // launch the QA checking
-  AliDebug(1,"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
   
   //AliQAChecker::Instance()->Run( AliQAv1::kITS , task, list);
 }
@@ -160,7 +160,7 @@ void AliITSQASPDDataMakerSim::InitDigits()
   fAliITSQADataMakerSim->Add2DigitsList(hMultSPDdig2MultSPDdig1,7+fGenOffsetD, !expert, image);
   fSPDhDTask++;
 
-  AliDebug(1,Form("%d SPD Digits histograms booked\n",fSPDhDTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD Digits histograms booked\n",fSPDhDTask));
 
 }
 
@@ -232,7 +232,7 @@ void AliITSQASPDDataMakerSim::InitSDigits()
     fSPDhSTask++;
   }
 
-  AliDebug(1,Form("%d SPD SDigits histograms booked\n",fSPDhSTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD SDigits histograms booked\n",fSPDhSTask));
 
 }
 
@@ -301,7 +301,7 @@ void AliITSQASPDDataMakerSim::InitHits()
   fAliITSQADataMakerSim->Add2HitsList(hEdepos,4+fGenOffsetH, !expert, image);
   fSPDhHTask++;
 
-  AliDebug(1,Form("%d SPD Hits histograms booked\n",fSPDhHTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD Hits histograms booked\n",fSPDhHTask));
 
 }
 

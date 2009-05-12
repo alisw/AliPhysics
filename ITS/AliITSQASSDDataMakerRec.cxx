@@ -71,11 +71,11 @@ fCDBManager(0) {
     fCDBManager->SetDefaultStorage(gSystem->Getenv("AMORE_CDB_URI"));
     Int_t runNumber = atoi(gSystem->Getenv("DATE_RUN_NUMBER"));
     if(!runNumber) 
-      AliInfo("DATE_RUN_NUMBER not defined!!!\n");
+      AliWarning("DATE_RUN_NUMBER not defined!!!\n");
     
     fCDBManager->SetRun(runNumber);
     AliCDBEntry *geomGRP = fCDBManager->Get("GRP/Geometry/Data");
-    if(!geomGRP) AliInfo("GRP geometry not found!!!\n");
+    if(!geomGRP) AliWarning("GRP geometry not found!!!\n");
     
     Int_t gLayer = 0,gLadder = 0, gModule = 0;
     Int_t gHistCounter = 0;
@@ -145,7 +145,7 @@ void AliITSQASSDDataMakerRec::StartOfDetectorCycle()
     return ; 
 
   //Detector specific actions at start of cycle
-  AliDebug(1,"AliITSQADM::Start of SSD Cycle\n");    
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of SSD Cycle\n");    
 
   //Data size per DDL
   ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset+4)))->Reset();
@@ -184,8 +184,8 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, 
   if (  fAliITSQADataMakerRec->GetRawsData(0) == NULL ) // Raws not defined
     return ; 
   // launch the QA checking
-  AliDebug(1,"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
-  AliInfo(Form("Offset: %d\n",fGenRawsOffset));
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Offset: %d\n",fGenRawsOffset));
   //Data size per DDL
   for(Int_t i = 0; i < fgkNumOfDDLs; i++) {
     Double_t gSizePerDDL = TMath::Power(10,(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset+5+i))->GetMean())/1e+06;
@@ -293,12 +293,12 @@ void AliITSQASSDDataMakerRec::InitRaws() {
   fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList[AliRecoParam::kDefault])->GetEntries();
 
   if(fkOnline) {
-    AliInfo("Book Online Histograms for SSD\n");
+    AliDebug(AliQAv1::GetQADebugLevel(), "Book Online Histograms for SSD\n");
   }
   else {
-    AliInfo("Book Offline Histograms for SSD\n ");
+    AliDebug(AliQAv1::GetQADebugLevel(), "Book Offline Histograms for SSD\n ");
   }
-  AliInfo(Form("Number of histograms (SPD+SDD): %d\n",fGenRawsOffset));
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Number of histograms (SPD+SDD): %d\n",fGenRawsOffset));
   TString gTitle = 0;
   //book online-offline QA histos
   TH1D *fHistSSDEventType = new TH1D("SSD/DataSize/fHistSSDEventType",
@@ -626,15 +626,15 @@ void AliITSQASSDDataMakerRec::InitRaws() {
   }//online flag
 
   fSSDhRawsTask = fSSDRawsOffset;
-  AliDebug(1,Form("%d SSD Raws histograms booked\n",fSSDhRawsTask));
-  AliInfo(Form("Number of histograms (SPD+SDD+SSD): %d\n",fGenRawsOffset+fSSDhRawsTask));  
-  AliDebug(1,Form("Number of histograms (SPD+SDD+SSD): %d\n",fGenRawsOffset+fSSDRawsOffset));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SSD Raws histograms booked\n",fSSDhRawsTask));
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Number of histograms (SPD+SDD+SSD): %d\n",fGenRawsOffset+fSSDhRawsTask));  
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("Number of histograms (SPD+SDD+SSD): %d\n",fGenRawsOffset+fSSDRawsOffset));
   
   /*
   fSSDhTask = fSSDRawsOffset;
-  AliDebug(1,Form("%d SSD Raws histograms booked\n",fSSDhTask));
-  AliInfo(Form("Number of histograms (SPD+SDD+SSD): %d\n",fGenRawsOffset+fSSDhTask));  
-  AliDebug(1,Form("Number of histograms (SPD+SDD+SSD): %d\n",fGenRawsOffset+fSSDRawsOffset));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SSD Raws histograms booked\n",fSSDhTask));
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Number of histograms (SPD+SDD+SSD): %d\n",fGenRawsOffset+fSSDhTask));  
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("Number of histograms (SPD+SDD+SSD): %d\n",fGenRawsOffset+fSSDRawsOffset));
   */
 }
 
@@ -683,7 +683,7 @@ void AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) {
     if(gSSDStream.GetStrip() < 0) continue;
     gStripNumber = (gSSDStream.GetSideFlag() == 0) ? gSSDStream.GetStrip() : -gSSDStream.GetStrip() + 2*fgkNumberOfPSideStrips;
     gHistPosition = (gLayer == 5) ? ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER5 + gModule - 1) : ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER6 + gModule + fgkSSDMODULESLAYER5 - 1);
-    //AliInfo(Form("ModulePosition: %d - Layer: %d - Ladder: %d - Module: %d\n",gHistPosition,gLayer,gLadder,gModule));
+    //AliDebug(AliQAv1::GetQADebugLevel(), Form("ModulePosition: %d - Layer: %d - Ladder: %d - Module: %d\n",gHistPosition,gLayer,gLadder,gModule));
     if(fkOnline)
       fHistSSDRawSignalModule[gHistPosition]->Fill(gStripNumber,gSSDStream.GetSignal());
     //fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset+gHistPosition+fSSDRawsCommonLevelOffset)->Fill(gStripNumber,gSSDStream.GetSignal());
@@ -804,7 +804,7 @@ Double_t AliITSQASSDDataMakerRec::GetOccupancyModule(TH1 *lHisto,
   /*if(histname.Contains("Layer5_Ladder507_Module3"))
     cout<<"Fired strips: "<<lNumFiredBins<<
     " - Occupancy: "<<lOccupancy<<endl;*/
-  //AliInfo(Form("Fired strips: %d - Total strips: %d - Occupancy :%lf\n",lNumFiredBins,lHisto->GetNbinsX(),lOccupancy));
+  //AliDebug(AliQAv1::GetQADebugLevel(), Form("Fired strips: %d - Total strips: %d - Occupancy :%lf\n",lNumFiredBins,lHisto->GetNbinsX(),lOccupancy));
   
   return lOccupancy;
 }
@@ -889,7 +889,7 @@ void AliITSQASSDDataMakerRec::InitRecPoints()
   const Bool_t image    = kTRUE ; 
   
   fGenRecPointsOffset = (fAliITSQADataMakerRec->fRecPointsQAList[AliRecoParam::kDefault])->GetEntries();
-  //AliInfo(Form("**-------*-*-*-*-*-*-***************AliITSQASSDataMakerRec::MakeRecpoints offset %d \t %d \n",fGenOffset,fGenRecPointsOffset));
+  //AliDebug(AliQAv1::GetQADebugLevel(), Form("**-------*-*-*-*-*-*-***************AliITSQASSDataMakerRec::MakeRecpoints offset %d \t %d \n",fGenOffset,fGenRecPointsOffset));
   Int_t nModuleOffset = 500;
   Int_t nITSTotalModules = AliITSgeomTGeo::GetNModules();
 
@@ -1154,7 +1154,7 @@ void AliITSQASSDDataMakerRec::InitRecPoints()
                                            fGenRecPointsOffset + 37, !expert, image);
   fSSDhRecPointsTask += 1;
   //printf ("%d SSD Recs histograms booked\n",fSSDhRecPointsTask);
-  AliDebug(1,Form("%d SSD Recs histograms booked\n",fSSDhRecPointsTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SSD Recs histograms booked\n",fSSDhRecPointsTask));
 }
 
 //____________________________________________________________________________ 
@@ -1261,7 +1261,7 @@ Int_t AliITSQASSDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task) {
     offset=fGenRecPointsOffset;   
   }
   else {
-    AliInfo("No task has been selected. Offset set to zero.\n");
+    AliWarning("No task has been selected. Offset set to zero.\n");
   }
 
   return offset;
@@ -1279,7 +1279,7 @@ Int_t AliITSQASSDDataMakerRec::GetTaskHisto(AliQAv1::TASKINDEX_t task) {
     histotot=fSSDhRecPointsTask;   
   }
   else { 
-    AliInfo("No task has been selected. TaskHisto set to zero.\n");
+    AliWarning("No task has been selected. TaskHisto set to zero.\n");
   }
 
   return histotot;

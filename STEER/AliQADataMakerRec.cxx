@@ -183,7 +183,8 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
     }
     fOutput->Save() ; 
 	}
-  MakeImage(task) ; 
+  if ( AliDebugLevel()  == AliQAv1::GetQADebugLevel() ) 
+    MakeImage(task) ; 
 }
 
 //____________________________________________________________________________ 
@@ -228,9 +229,9 @@ void AliQADataMakerRec::MakeImage(AliQAv1::TASKINDEX_t task)
       nImages++; 
   }
   if ( nImages == 0 ) {
-    AliInfo(Form("No histogram will be plotted for %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data())) ;  
+    AliWarning(Form("No histogram will be plotted for %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data())) ;  
   } else {
-    AliInfo(Form("%d histograms will be plotted for %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data())) ;  
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("%d histograms will be plotted for %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data())) ;  
     Double_t w  = 1000 ;
     Double_t h  = 1000 ;
     for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
@@ -270,14 +271,14 @@ void AliQADataMakerRec::Exec(AliQAv1::TASKINDEX_t task, TObject * data)
   // creates the quality assurance data for the various tasks (Hits, SDigits, Digits, ESDs)
 	
 	if ( task == AliQAv1::kRAWS ) {
-		AliDebug(1, "Processing Raws QA") ; 
+		AliDebug(AliQAv1::GetQADebugLevel(), "Processing Raws QA") ; 
 		AliRawReader * rawReader = dynamic_cast<AliRawReader *>(data) ; 
 		if (rawReader) 
 			MakeRaws(rawReader) ;
 		else
-		AliInfo("Raw data are not processed") ;     
+      AliDebug(AliQAv1::GetQADebugLevel(), "Raw data are not processed") ;     
 	} else if ( task == AliQAv1::kRECPOINTS ) {
-		AliDebug(1, "Processing RecPoints QA") ; 
+		AliDebug(AliQAv1::GetQADebugLevel(), "Processing RecPoints QA") ; 
 		TTree * tree = dynamic_cast<TTree *>(data) ; 
 		if (tree) {
 			MakeRecPoints(tree) ; 
@@ -285,7 +286,7 @@ void AliQADataMakerRec::Exec(AliQAv1::TASKINDEX_t task, TObject * data)
 			AliWarning("data are not a TTree") ; 
 		}
 	} else if ( task == AliQAv1::kESDS ) {
-		AliDebug(1, "Processing ESDs QA") ; 
+		AliDebug(AliQAv1::GetQADebugLevel(), "Processing ESDs QA") ; 
 		AliESDEvent * esd = dynamic_cast<AliESDEvent *>(data) ; 
 		if (esd) 
 			MakeESDs(esd) ;
@@ -361,7 +362,7 @@ void AliQADataMakerRec::Init(AliQAv1::TASKINDEX_t task, TObjArray ** list, Int_t
 void AliQADataMakerRec::InitRecoParams() 
 {
   if (!fRecoParam) {
-    AliInfo(Form("Loading reconstruction parameter objects for detector %s", GetName()));
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("Loading reconstruction parameter objects for detector %s", GetName()));
     AliCDBPath path(GetName(),"Calib","RecoParam");
     AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
     if(!entry) {
@@ -372,7 +373,7 @@ void AliQADataMakerRec::InitRecoParams()
       TObject * recoParamObj = entry->GetObject() ; 
       if (dynamic_cast<TObjArray*>(recoParamObj)) {
         // The detector has only one set of reco parameters
-        AliInfo(Form("Array of reconstruction parameters found for detector %s",GetName()));
+        AliDebug(AliQAv1::GetQADebugLevel(), Form("Array of reconstruction parameters found for detector %s",GetName()));
         TObjArray *recoParamArray = dynamic_cast<TObjArray*>(recoParamObj) ;
         for (Int_t iRP=0; iRP<recoParamArray->GetEntriesFast(); iRP++) {
           fRecoParam = dynamic_cast<AliDetectorRecoParam*>(recoParamArray->At(iRP)) ;
@@ -382,7 +383,7 @@ void AliQADataMakerRec::InitRecoParams()
       else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
         // The detector has only onse set of reco parameters
         // Registering it in AliRecoParam
-        AliInfo(Form("Single set of reconstruction parameters found for detector %s",GetName()));
+        AliDebug(AliQAv1::GetQADebugLevel(), Form("Single set of reconstruction parameters found for detector %s",GetName()));
         dynamic_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
         fRecoParam = dynamic_cast<AliDetectorRecoParam*>(recoParamObj) ;
       } else { 
@@ -416,7 +417,7 @@ void AliQADataMakerRec::StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const
 			fOutput->Close() ; 
 		fOutput = AliQAv1::GetQADataFile(GetName(), fRun) ; 	
 	}	
-	AliInfo(Form(" Run %d Cycle %d task %s file %s", 
+	AliDebug(AliQAv1::GetQADebugLevel(), Form(" Run %d Cycle %d task %s file %s", 
 				 fRun, fCurrentCycle, AliQAv1::GetTaskName(task).Data(), fOutput->GetName() )) ;
 
 	fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 

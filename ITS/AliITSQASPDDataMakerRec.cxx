@@ -94,14 +94,14 @@ AliITSQASPDDataMakerRec& AliITSQASPDDataMakerRec::operator = (const AliITSQASPDD
 void AliITSQASPDDataMakerRec::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
-  AliDebug(1,"AliITSQADM::Start of SPD Cycle\n");
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of SPD Cycle\n");
 }
 
 //____________________________________________________________________________ 
 void AliITSQASPDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, TObjArray* /*list*/)
 {
   // launch the QA checking
-  AliDebug(1,"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
   
   //AliQAChecker::Instance()->Run( AliQAv1::kITS , task, list);
 }
@@ -116,7 +116,7 @@ void AliITSQASPDDataMakerRec::InitRaws()
   
   fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList[AliRecoParam::kDefault])->GetEntries();
   fAdvLogger = new AliITSRawStreamSPDErrorLog();  
-  AliInfo("Book Offline Histograms for SPD\n ");
+  AliDebug(AliQAv1::GetQADebugLevel(), "Book Offline Histograms for SPD\n ");
 
   Char_t name[50];
   Char_t title[50];
@@ -174,7 +174,7 @@ void AliITSQASPDDataMakerRec::InitRaws()
   fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits2MultSPDhits1, 45+fGenRawsOffset, !expert, image, !saveCorr);
   fSPDhRawsTask++;
  
-  AliDebug(1,Form("%d SPD Raws histograms booked\n",fSPDhRawsTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD Raws histograms booked\n",fSPDhRawsTask));
 }
 
 
@@ -231,7 +231,7 @@ void AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   fAliITSQADataMakerRec->GetRawsData(45+fGenRawsOffset)->Fill(nDigitsL1,nDigitsL2);
   
   delete rawStreamSPD;  
-  AliDebug(1,Form("Event completed, %d raw digits read",nDigitsL1+nDigitsL2));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("Event completed, %d raw digits read",nDigitsL1+nDigitsL2));
 }
 
 //____________________________________________________________________________ 
@@ -377,7 +377,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
   fAliITSQADataMakerRec->Add2RecPointsList(hMultSPDcl2MultSPDcl1, 25+fGenRecPointsOffset, !expert, image);
   fSPDhRecPointsTask++;
 
-  AliDebug(1,Form("%d SPD Recs histograms booked\n",fSPDhRecPointsTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD Recs histograms booked\n",fSPDhRecPointsTask));
 
 
 }

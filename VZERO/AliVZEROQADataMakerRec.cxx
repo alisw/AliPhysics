@@ -56,7 +56,7 @@ ClassImp(AliVZEROQADataMakerRec)
 {
    // Constructor
    
-   AliInfo("Construct VZERO QA Object");
+      AliDebug(AliQAv1::GetQADebugLevel(), "Construct VZERO QA Object");
   
    for(Int_t i=0; i<64; i++){  
        fEven[i] = 0;   
@@ -425,7 +425,7 @@ void AliVZEROQADataMakerRec::InitESDs()
  	h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
  	Add2RawsList(h2d,kBGFlagVsClock, expert, !image, !saveCorr); iHisto++;
 	 
- 	AliInfo(Form("%d Histograms has been added to the Raws List",iHisto));
+ 	AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
  }
 
 //____________________________________________________________________________

@@ -49,13 +49,13 @@ fSSDChecker(0)  // SSD Checker
   // Standard constructor
   fkOnline = kMode; fDet = subDet; fLDC = ldc;
   if(fDet == 0 || fDet == 1) {
-    AliDebug(1,"AliITSQAChecker::Create SPD Checker\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQAChecker::Create SPD Checker\n");
   }
   if(fDet == 0 || fDet == 2) {
-    AliDebug(1,"AliITSQAChecker::Create SDD Checker\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQAChecker::Create SDD Checker\n");
   }
   if(fDet == 0 || fDet == 3) {
-    AliDebug(1,"AliITSQAChecker::Create SSD Checker\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQAChecker::Create SSD Checker\n");
   }
 
 }
@@ -104,7 +104,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
       rv[specie] = 0.0 ; 
       if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
         continue ; 
-      AliDebug(1,"Checker for ESD");
+      AliDebug(AliQAv1::GetQADebugLevel(),"Checker for ESD");
       Int_t tested = 0;
       Int_t empty = 0;
       // The following flags are set to kTRUE if the corresponding
@@ -141,10 +141,10 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
             Double_t entries = hdata->GetEntries();
             ++tested;
             if(!(entries>0.))++empty;
-            AliDebug(1,Form("ESD hist name %s - entries %12.1g",hname.Data(),entries));
+            AliDebug(AliQAv1::GetQADebugLevel(),Form("ESD hist name %s - entries %12.1g",hname.Data(),entries));
             if(hname.Contains("hESDClusterMapSA") && entries>0.){
               cluMapSA = kTRUE;
-              AliDebug(1,Form("Processing histogram %s",hname.Data()));
+              AliDebug(AliQAv1::GetQADebugLevel(),Form("Processing histogram %s",hname.Data()));
               // Check if there are layers with anomalously low 
               // contributing points to SA reconstructed tracks
               for(Int_t k=1;k<7;k++){
@@ -152,7 +152,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
                 if(skipped[k-1]) continue;
                 if(hdata->GetBinContent(k)<0.5*(entries/6.)){
                   cluMapSA = kFALSE;
-                  AliInfo(Form("SA tracks have few points on layer %d - look at histogram hESDClustersSA",k));
+                  AliDebug(AliQAv1::GetQADebugLevel(), Form("SA tracks have few points on layer %d - look at histogram hESDClustersSA",k));
                 }
               }  
             }
@@ -160,51 +160,51 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
             else if(hname.Contains("hESDClusterMapMI") && entries>0.){
               // Check if there are layers with anomalously low 
               // contributing points to MI reconstructed tracks
-              AliDebug(1,Form("Processing histogram %s",hname.Data()));
+              AliDebug(AliQAv1::GetQADebugLevel(),Form("Processing histogram %s",hname.Data()));
               cluMapMI = kTRUE;
               for(Int_t k=1;k<7;k++){
                 // check if the layer was skipped
                 if(skipped[k-1]) continue;
                 if(hdata->GetBinContent(k)<0.5*(entries/6.)){
                   cluMapMI = kFALSE;
-                  AliInfo(Form("MI tracks have few points on layer %d - look at histogram hESDClustersMI",k));
+                  AliDebug(AliQAv1::GetQADebugLevel(), Form("MI tracks have few points on layer %d - look at histogram hESDClustersMI",k));
                 }
               }  
             }
 
             else if(hname.Contains("hESDClustersMI") && entries>0.){
               // Check if 6 clusters MI tracks are the majority
-              AliDebug(1,Form("Processing histogram %s",hname.Data()));
+              AliDebug(AliQAv1::GetQADebugLevel(),Form("Processing histogram %s",hname.Data()));
               cluMI = kTRUE;
               Double_t maxlaytracks = hdata->GetBinContent(7-nskipped);
               for(Int_t k=2; k<7-nskipped; k++){
                 if(hdata->GetBinContent(k)>maxlaytracks){
                   cluMI = kFALSE;
-                  AliInfo(Form("MI Tracks with %d clusters are more than tracks with %d clusters. Look at histogram hESDClustersMI",k-1,6-nskipped));
+                  AliDebug(AliQAv1::GetQADebugLevel(), Form("MI Tracks with %d clusters are more than tracks with %d clusters. Look at histogram hESDClustersMI",k-1,6-nskipped));
                 }
               }
             }
 
             else if(hname.Contains("hESDClustersSA") && entries>0.){
               // Check if 6 clusters SA tracks are the majority
-              AliDebug(1,Form("Processing histogram %s",hname.Data()));
+              AliDebug(AliQAv1::GetQADebugLevel(),Form("Processing histogram %s",hname.Data()));
               cluSA = kTRUE;
               Double_t maxlaytracks = hdata->GetBinContent(7-nskipped);
               for(Int_t k=2; k<7-nskipped; k++){
                 if(hdata->GetBinContent(k)>maxlaytracks){
                   cluSA = kFALSE;
-                  AliInfo(Form("SA Tracks with %d clusters are more than tracks with %d clusters. Look at histogram hESDClustersSA",k-1,6-nskipped));
+                  AliDebug(AliQAv1::GetQADebugLevel(), Form("SA Tracks with %d clusters are more than tracks with %d clusters. Look at histogram hESDClustersSA",k-1,6-nskipped));
                 }
               }
             }
 
             else if(hname.Contains("hSPDVertexZ") && entries>0.){
               // Check if average Z vertex coordinate is -5 < z < 5 cm
-              AliDebug(1,Form("Processing histogram %s",hname.Data()));
+              AliDebug(AliQAv1::GetQADebugLevel(),Form("Processing histogram %s",hname.Data()));
               verSPDZ = kTRUE;
               if(hdata->GetMean()<-5. && hdata->GetMean()>5.){
                 verSPDZ = kFALSE;
-                AliInfo(Form("Average z vertex coordinate is at z= %10.4g cm",hdata->GetMean()));
+                AliDebug(AliQAv1::GetQADebugLevel(), Form("Average z vertex coordinate is at z= %10.4g cm",hdata->GetMean()));
               }
             }
           }
@@ -230,7 +230,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
           }
         }
       }  
-      AliInfo(Form("ESD - Tested %d histograms, Return value %f \n",tested,rv[specie]));
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("ESD - Tested %d histograms, Return value %f \n",tested,rv[specie]));
     }
     return rv ; 
   }  // end of ESD QA
@@ -241,7 +241,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
   Double_t spdCheck, sddCheck, ssdCheck;
   //pixel
   if(fDet == 0 || fDet == 1) {
-    AliDebug(1,"AliITSQAChecker::Create SPD Checker\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQAChecker::Create SPD Checker\n");
     if(!fSPDChecker) {
       fSPDChecker = new AliITSQASPDChecker();
     }
@@ -256,7 +256,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
   }
   //drift
   if(fDet == 0 || fDet == 2) {
-    AliDebug(1,"AliITSQAChecker::Create SDD Checker\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQAChecker::Create SDD Checker\n");
     if(!fSDDChecker) {
       fSDDChecker = new AliITSQASDDChecker();
     }
@@ -271,10 +271,10 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
   }
   //strip
   if(fDet == 0 || fDet == 3) {
-    AliDebug(1,"AliITSQAChecker::Create SSD Checker\n");
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQAChecker::Create SSD Checker\n");
     if(!fSSDChecker) {
       fSSDChecker = new AliITSQASSDChecker();
-      AliInfo(Form("Number of monitored objects SSD: %d", list[AliRecoParam::kDefault]->GetEntries()));
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("Number of monitored objects SSD: %d", list[AliRecoParam::kDefault]->GetEntries()));
     }
     fSSDChecker->SetTaskOffset(fSSDOffset);
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {

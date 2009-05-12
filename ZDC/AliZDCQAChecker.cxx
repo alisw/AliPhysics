@@ -52,7 +52,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
         AliWarning("\tAliZDCQAChecker->The list to be checked is empty!"); // nothing to check
         return test;
       }
-      //AliInfo(Form("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName));
+      //AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName));
       TIter next(list[specie]); 
       ntests[specie] = 0; 
       TH1 * hdata;	  
@@ -60,7 +60,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
         if(hdata){ 
           // -------------------------------------------------------------------
           if(index == AliQAv1::kSIM){
-            //AliInfo(Form("\tAliZDCQAChecker-> checking histo %s",hdata->GetName()));
+            //AliDebug(AliQAv1::GetQADebugLevel(), Form("\tAliZDCQAChecker-> checking histo %s",hdata->GetName()));
             // Check DIGITS histos
             if(!(strncmp(hdata->GetName(),"hDig",4))){
               if(hdata->GetEntries()>0){
@@ -115,13 +115,13 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
         AliWarning("\tAliZDCQAChecker->The list to be checked is empty!");
         return test;
       }
-      //AliInfo(Form("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName));
+      //AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName));
       
       TIter next(list[specie]); 
       TH1 * hdata;	  
       while((hdata = dynamic_cast<TH1 *>(next()))){
         if(hdata){ 
-          //AliInfo(Form("\tAliZDCQAChecker-> checking histo %s",hdata->GetName()));
+          //AliDebug(AliQAv1::GetQADebugLevel(), Form("\tAliZDCQAChecker-> checking histo %s",hdata->GetName()));
           ntests[specie] = 0; 
           Double_t meanX=0., meanY=0.;
           Double_t meanZNA=0., rmsZNA=0., meanZNC=0.;
@@ -159,7 +159,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
                     testgood=0;
                     test[specie] += res;
                     ntests[specie]++;
-                    //AliInfo(Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
+                    //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
                   }
                   else res=0.;
                 }
@@ -187,7 +187,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
                  test[specie] += res;
                  ntests[specie]++;
                  testgood=0;
-                 //AliInfo(Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]);
+                 //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]);
                }
                else res=0.;
                 }
@@ -206,7 +206,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
                     res=0.5;
                   test[specie] += res;
                   ntests[specie]++;
-                  //AliInfo(Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
+                  //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
                 }
                 else if(digInd==9){
                   pmCZNA = hdata->GetMean();
@@ -216,7 +216,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
                     res=0.5;
                   test[specie] += res;
                   ntests[specie]++;
-                  //AliInfo(Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
+                  //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
                 }
                 else if(digInd==10){
                   pmCZPC = hdata->GetMean();
@@ -226,7 +226,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
                     res=0.5;
                   test[specie] += res;
                   ntests[specie]++;
-                  //AliInfor(Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]);
+                  //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]);
                 }
                 else if(digInd==11){
                   pmCZPA = hdata->GetMean();
@@ -236,7 +236,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
                     res=0.5;
                   test[specie] += res;
                   ntests[specie]++;
-                  //AliInfor(Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
+                  //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
                 }
               }
               digInd++;
@@ -253,7 +253,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
                 res=0.5;
               test[specie] += res;
               ntests[specie]++;
-              //AliInfo(Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]);
+              //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]);
             }
           }
           // -------------------------------------------------------------------
@@ -482,7 +482,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
               }
               esdInd++;
             }
-            //AliInfor(Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
+            //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
           }
           else {
           AliWarning(Form("\n\t No ZDC QA for %s task\n",taskName)); 
@@ -500,7 +500,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
    
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     if(ntests[specie]!=0) test[specie] = test[specie]/ntests[specie];
-        printf("\n\tAliZDCQAChecker-> QA check result = %1.2f\n",test[specie]);
+        AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\tAliZDCQAChecker-> QA check result = %1.2f\n",test[specie]));
   }
   delete [] ntests ; 
   return test; 

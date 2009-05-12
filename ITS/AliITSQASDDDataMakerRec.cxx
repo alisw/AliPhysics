@@ -123,14 +123,14 @@ AliITSQASDDDataMakerRec& AliITSQASDDDataMakerRec::operator = (const AliITSQASDDD
 void AliITSQASDDDataMakerRec::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
-  AliDebug(1,"AliITSQADM::Start of SDD Cycle\n");
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of SDD Cycle\n");
 }
 
 //____________________________________________________________________________ 
 void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, TObjArray* /*list*/)
 {
   // launch the QA checking
-  AliDebug(1,"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
 }
 
 //____________________________________________________________________________ 
@@ -262,7 +262,7 @@ void AliITSQASDDDataMakerRec::InitRaws()
       
     }  // kONLINE
   
-  AliDebug(1,Form("%d SDD Raws histograms booked\n",fSDDhRawsTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SDD Raws histograms booked\n",fSDDhRawsTask));
 }
 
 
@@ -276,7 +276,7 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
     return;
   }
   if(rawReader->GetType() != 7) return;  // skips non physical triggers
-  AliDebug(1,"entering MakeRaws\n");                 
+  AliDebug(AliQAv1::GetQADebugLevel(),"entering MakeRaws\n");                 
   
   rawReader->Reset();       
   AliITSRawStream *stream;
@@ -333,15 +333,15 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
     
     isddmod = fDDLModuleMap->GetModuleNumber(iddl,stream->GetCarlosId());
     if(isddmod==-1){
-      AliDebug(1,Form("Found module with iddl: %d, stream->GetCarlosId: %d \n",iddl,stream->GetCarlosId()));
+      AliDebug(AliQAv1::GetQADebugLevel(),Form("Found module with iddl: %d, stream->GetCarlosId: %d \n",iddl,stream->GetCarlosId()));
       continue;
     }
     if(stream->IsCompletedModule()) {
-      AliDebug(1,Form("IsCompletedModule == KTRUE\n"));
+      AliDebug(AliQAv1::GetQADebugLevel(),Form("IsCompletedModule == KTRUE\n"));
       continue;
     } 
     if(stream->IsCompletedDDL()) {
-      AliDebug(1,Form("IsCompletedDDL == KTRUE\n"));
+      AliDebug(AliQAv1::GetQADebugLevel(),Form("IsCompletedDDL == KTRUE\n"));
       continue;
     } 
     
@@ -352,7 +352,7 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
     moduleSDD = isddmod - fgkmodoffset;
     
     if(isddmod <fgkmodoffset|| isddmod>fgknSDDmodules+fgkmodoffset-1) {
-      AliDebug(1,Form( "Module SDD = %d, resetting it to 1 \n",isddmod));
+      AliDebug(AliQAv1::GetQADebugLevel(),Form( "Module SDD = %d, resetting it to 1 \n",isddmod));
       isddmod = 1;
     }
     
@@ -376,7 +376,7 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
       index1 = activeModule * 2 + iside;
       
       if(index1<0){
-	AliDebug(1,Form("Wrong index number %d - patched to 0\n",index1));
+        AliDebug(AliQAv1::GetQADebugLevel(),Form("Wrong index number %d - patched to 0\n",index1));
 	index1 = 0;
       }      
       fAliITSQADataMakerRec->GetRawsData(3+fGenRawsOffset)->Fill(2*(stream->GetCarlosId())+iside,iddl);
@@ -386,9 +386,9 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
       }
     }
     cnt++;
-    if(!(cnt%10000)) AliDebug(1,Form(" %d raw digits read",cnt));
+    if(!(cnt%10000)) AliDebug(AliQAv1::GetQADebugLevel(),Form(" %d raw digits read",cnt));
   }
-  AliDebug(1,Form("Event completed, %d raw digits read",cnt)); 
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("Event completed, %d raw digits read",cnt)); 
   delete stream;
   stream = NULL; 
 }
@@ -532,7 +532,7 @@ void AliITSQASDDDataMakerRec::InitRecPoints()
   //printf("%d SDD Recs histograms booked\n",fSDDhRecPointsTask);
 
 
-  AliDebug(1,Form("%d SDD Recs histograms booked\n",fSDDhRecPointsTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SDD Recs histograms booked\n",fSDDhRecPointsTask));
 
 
 }

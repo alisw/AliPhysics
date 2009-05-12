@@ -161,7 +161,7 @@ void AliQADataMakerSim::Exec(AliQAv1::TASKINDEX_t task, TObject * data)
   // creates the quality assurance data for the various tasks (Hits, SDigits, Digits, ESDs)
     
 	if ( task == AliQAv1::kHITS ) {  
-		AliDebug(1, "Processing Hits QA") ; 
+		AliDebug(AliQAv1::GetQADebugLevel(), "Processing Hits QA") ; 
 		TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
 		if (arr) { 
 			MakeHits(arr) ;
@@ -174,7 +174,7 @@ void AliQADataMakerSim::Exec(AliQAv1::TASKINDEX_t task, TObject * data)
 			}
 		}
 	} else if ( task == AliQAv1::kSDIGITS ) {
-		AliDebug(1, "Processing SDigits QA") ; 
+		AliDebug(AliQAv1::GetQADebugLevel(), "Processing SDigits QA") ; 
 		TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
 		if (arr) { 
 			MakeSDigits(arr) ;
@@ -187,7 +187,7 @@ void AliQADataMakerSim::Exec(AliQAv1::TASKINDEX_t task, TObject * data)
 			}
 		}
 	} else if ( task == AliQAv1::kDIGITS ) {
-		AliDebug(1, "Processing Digits QA") ; 
+		AliDebug(AliQAv1::GetQADebugLevel(), "Processing Digits QA") ; 
 		TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
 		if (arr) { 
 			MakeDigits(arr) ;
@@ -244,9 +244,9 @@ void AliQADataMakerSim::MakeImage(AliQAv1::TASKINDEX_t task)
       nImages++; 
   }
   if ( nImages == 0 ) {
-    AliInfo(Form("No histogram will be plotted for %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data())) ;  
+    AliWarning(Form("No histogram will be plotted for %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data())) ;  
   } else {
-    AliInfo(Form("%d histograms will be plotted for %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data())) ;  
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("%d histograms will be plotted for %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data())) ;  
     Double_t w  = 1000 ;
     Double_t h  = 1000 ;
     for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
@@ -275,7 +275,8 @@ void AliQADataMakerSim::MakeImage(AliQAv1::TASKINDEX_t task)
           canvasQA->cd(++npad) ; 
         }
       }
-      canvasQA->Print() ; 
+      if ( AliDebugLevel()  == AliQAv1::GetQADebugLevel() )
+        canvasQA->Print() ; 
     }
   }
 }
@@ -365,7 +366,7 @@ void AliQADataMakerSim::StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const
 	fOutput = AliQAv1::GetQADataFile(GetName(), fRun) ; 	
 	}	
 
-	AliInfo(Form(" Run %d Cycle %d task %s file %s", 
+	AliDebug(AliQAv1::GetQADebugLevel(), Form(" Run %d Cycle %d task %s file %s", 
 				 fRun, fCurrentCycle, AliQAv1::GetTaskName(task).Data(), fOutput->GetName() )) ;
 
 	fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 

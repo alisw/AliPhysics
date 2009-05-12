@@ -90,14 +90,14 @@ AliITSQASDDDataMakerSim& AliITSQASDDDataMakerSim::operator = (const AliITSQASDDD
 void AliITSQASDDDataMakerSim::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
-  AliDebug(1,"AliITSQADM::Start of SDD Cycle\n");
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of SDD Cycle\n");
 }
 
 //____________________________________________________________________________ 
 void AliITSQASDDDataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, TObjArray* /*list*/)
 {
   // launch the QA checking
-  AliDebug(1,"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
   //AliQAChecker::Instance()->Run( AliQAv1::kITS , task, list);
 }
 
@@ -130,7 +130,7 @@ void AliITSQASDDDataMakerSim::InitDigits()
   h3->GetYaxis()->SetTitle("# DIGITS");
   fAliITSQADataMakerSim->Add2DigitsList(h3,3+fGenOffsetD, !expert, image);
   fSDDhDTask ++;
-  AliDebug(1,Form("%d SDD Digits histograms booked\n",fSDDhDTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SDD Digits histograms booked\n",fSDDhDTask));
 }
 
 //____________________________________________________________________________
@@ -188,7 +188,7 @@ void AliITSQASDDDataMakerSim::InitSDigits()
   fAliITSQADataMakerSim->Add2SDigitsList(h3,3+fGenOffsetS, !expert, image);
   fSDDhSTask ++;
 
-  AliDebug(1,Form("%d SDD SDigits histograms booked\n",fSDDhSTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SDD SDigits histograms booked\n",fSDDhSTask));
 }
 
 //____________________________________________________________________________
@@ -263,7 +263,7 @@ void AliITSQASDDDataMakerSim::InitHits()
   h3->GetYaxis()->SetTitle("# HITS");
   fAliITSQADataMakerSim->Add2HitsList(h3,3+fGenOffsetH, !expert, image);
   fSDDhHTask ++;
-  AliDebug(1,Form("%d SDD Hits histograms booked\n",fSDDhHTask));
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SDD Hits histograms booked\n",fSDDhHTask));
 }
 
 //____________________________________________________________________________

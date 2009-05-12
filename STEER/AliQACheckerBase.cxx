@@ -65,12 +65,13 @@ AliQACheckerBase::AliQACheckerBase(const char * name, const char * title) :
   fLowTestValue[AliQAv1::kFATAL]   = -1.0   ; 
   fUpTestValue[AliQAv1::kFATAL]    = 0.0 ; 
   
-  AliInfo("Default setting is:") ;
-  printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO]) ; 
-  printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING]) ; 
-  printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR]) ; 
-  printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
-  
+  AliDebug(AliQAv1::GetQADebugLevel(), "Default setting is:") ;
+  if ( AliDebugLevel()  == AliQAv1::GetQADebugLevel() ) {
+    printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO]) ; 
+    printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING]) ; 
+    printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR]) ; 
+    printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
+  }
 }
 
 //____________________________________________________________________________ 
@@ -143,7 +144,7 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/)
             test[specie] = -1 ; // no reference data ; 
           else {
             Double_t rv =  DiffK(hdata, href) ;
-            AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
+            AliDebug(AliQAv1::GetQADebugLevel(), Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
             test[specie] += rv ; 
             count[specie]++ ; 
           }
@@ -192,7 +193,7 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** li
               test[specie] = -1 ; // no reference data ; 
             else {
               Double_t rv =  DiffK(hdata, href) ;
-              AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
+              AliDebug(AliQAv1::GetQADebugLevel(), Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
               test[specie] += rv ; 
               count[specie]++ ; 
             }
@@ -214,7 +215,7 @@ Double_t AliQACheckerBase::DiffC(const TH1 * href, const TH1 * hin) const
 {
   // compares two histograms using the Chi2 test
   if ( hin->Integral() == 0 ) {
-    AliWarning(Form("Spectrum %s is empty", hin->GetName())) ; 
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("Spectrum %s is empty", hin->GetName())) ; 
     return 0. ;
   }
     
@@ -226,7 +227,7 @@ Double_t AliQACheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
 {
   // compares two histograms using the Kolmogorov test
   if ( hin->Integral() == 0 ) {
-    AliWarning(Form("Spectrum %s is empty", hin->GetName())) ; 
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("Spectrum %s is empty", hin->GetName())) ; 
     return 0. ;
   }
     
@@ -236,7 +237,7 @@ Double_t AliQACheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
 //____________________________________________________________________________
 void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, TObjArray ** list) 
 { 
-	AliDebug(1, Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
+	AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
   
 	Double_t * rv = NULL ;
   if ( !list) 
@@ -245,7 +246,7 @@ void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, TObjArray ** list)
     rv = Check(index, list) ;
 	SetQA(index, rv) ; 	
 	
-  AliDebug(1, Form("Test result of %s", AliQAv1::GetAliTaskName(index))) ;
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Test result of %s", AliQAv1::GetAliTaskName(index))) ;
 	
   if (rv) 
     delete [] rv ; 
@@ -266,21 +267,25 @@ void AliQACheckerBase::Finish() const
 //____________________________________________________________________________
 void AliQACheckerBase::SetHiLo(Float_t * hiValue, Float_t * lowValue) 
 {
-  AliInfo("Previous setting was:") ;
-  printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO]) ; 
-  printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING]) ; 
-  printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR]) ; 
-  printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
+  AliDebug(AliQAv1::GetQADebugLevel(), "Previous setting was:") ;
+  if ( AliDebugLevel() == AliQAv1::GetQADebugLevel() ) {
+    printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO]) ; 
+    printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING]) ; 
+    printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR]) ; 
+    printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
+  }
   
   for (Int_t index = 0 ; index < AliQAv1::kNBIT ; index++) {
     fLowTestValue[index]  = lowValue[index] ; 
     fUpTestValue[index] = hiValue[index] ; 
   }
-  AliInfo("Current setting is:") ;
-  printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO]) ; 
-  printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING]) ; 
-  printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR]) ; 
-  printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
+  AliDebug(AliQAv1::GetQADebugLevel(), "Current setting is:") ;
+  if ( AliDebugLevel()  == AliQAv1::GetQADebugLevel() ) {
+    printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO]) ; 
+    printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING]) ; 
+    printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR]) ; 
+    printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
+  }
 }
 
 //____________________________________________________________________________

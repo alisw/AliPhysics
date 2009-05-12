@@ -143,7 +143,7 @@ void AliPHOSESDQA::Exec(Option_t *)
   }
   
   if ( !((entry-1)%100) ) 
-    AliInfo(Form("%s ----> Processing event # %lld",  (dynamic_cast<TChain *>(fChain))->GetFile()->GetName(), entry)) ; 
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("%s ----> Processing event # %lld",  (dynamic_cast<TChain *>(fChain))->GetFile()->GetName(), entry)) ; 
   
   //************************  PHOS *************************************
       
@@ -216,14 +216,16 @@ void AliPHOSESDQA::Terminate(Option_t *)
   fhPHOSDigitsEvent    = (TH1I*)fOutputContainer->At(7);
 
   Bool_t problem = kFALSE ; 
-  AliInfo(Form(" *** %s Report:", GetName())) ; 
-  printf("        PHOSEnergy Mean         : %5.3f , RMS : %5.3f \n", fhPHOSEnergy->GetMean(),         fhPHOSEnergy->GetRMS()         ) ;
-  printf("        PHOSDigits Mean         : %5.3f , RMS : %5.3f \n", fhPHOSDigits->GetMean(),         fhPHOSDigits->GetRMS()         ) ;
-  printf("        PHOSRecParticles Mean   : %5.3f , RMS : %5.3f \n", fhPHOSRecParticles->GetMean(),   fhPHOSRecParticles->GetRMS()   ) ;
-  printf("        PHOSPhotons Mean        : %5.3f , RMS : %5.3f \n", fhPHOSPhotons->GetMean(),        fhPHOSPhotons->GetRMS()        ) ;
-  printf("        PHOSInvariantMass Mean  : %5.3f , RMS : %5.3f \n", fhPHOSInvariantMass->GetMean(),  fhPHOSInvariantMass->GetRMS()  ) ;
-  printf("        PHOSDigitsEvent Mean    : %5.3f , RMS : %5.3f \n", fhPHOSDigitsEvent->GetMean(),    fhPHOSDigitsEvent->GetRMS()    ) ;
-
+  AliDebug(AliQAv1::GetQADebugLevel(), Form(" *** %s Report:", GetName())) ; 
+  if ( AliDebugLevel()  == AliQAv1::GetQADebugLevel() ) {
+    printf("        PHOSEnergy Mean         : %5.3f , RMS : %5.3f \n", fhPHOSEnergy->GetMean(),         fhPHOSEnergy->GetRMS()         ) ;
+    printf("        PHOSDigits Mean         : %5.3f , RMS : %5.3f \n", fhPHOSDigits->GetMean(),         fhPHOSDigits->GetRMS()         ) ;
+    printf("        PHOSRecParticles Mean   : %5.3f , RMS : %5.3f \n", fhPHOSRecParticles->GetMean(),   fhPHOSRecParticles->GetRMS()   ) ;
+    printf("        PHOSPhotons Mean        : %5.3f , RMS : %5.3f \n", fhPHOSPhotons->GetMean(),        fhPHOSPhotons->GetRMS()        ) ;
+    printf("        PHOSInvariantMass Mean  : %5.3f , RMS : %5.3f \n", fhPHOSInvariantMass->GetMean(),  fhPHOSInvariantMass->GetRMS()  ) ;
+    printf("        PHOSDigitsEvent Mean    : %5.3f , RMS : %5.3f \n", fhPHOSDigitsEvent->GetMean(),    fhPHOSDigitsEvent->GetRMS()    ) ;
+  }
+  
   TCanvas  * cPHOS = new TCanvas("cPHOS", "PHOS ESD Test", 400, 10, 600, 700) ;
   cPHOS->Divide(3, 2);
 

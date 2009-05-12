@@ -153,7 +153,7 @@ Double_t AliHMPIDQAChecker::CheckRecPoints(TObjArray *listrec, TObjArray *listre
     if(h.Contains("size  MIP"))   if(TMath::Abs(histo->GetMean()-5) > 2) counter++;
     if(h.Contains("size  Phots")) if(TMath::Abs(histo->GetMean()-2) > 2) counter++;
     if(h.Contains("distribution")) if(histo->KolmogorovTest((TH1F *)listref->At(0))<0.8) counter++;
-    AliDebug(1,Form(" Kolm. test : %f ",histo->KolmogorovTest((TH1F *)listref->At(0))));  
+    AliDebug(AliQAv1::GetQADebugLevel(),Form(" Kolm. test : %f ",histo->KolmogorovTest((TH1F *)listref->At(0))));  
    }
   }
  Float_t response = counter/(7.+7.+42.+42.); // 7.+7.+42 +42 = N checked histograms (-> To be replaced by listrec->GetEntries())
