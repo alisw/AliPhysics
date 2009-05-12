@@ -264,7 +264,7 @@ void AliT0QADataMakerRec::InitESDs()
   
   TH1F *fhESDMean = new TH1F("hESDmean"," ESD mean",100,2400,2500);
   Add2ESDsList(fhESDMean, 0, !expert, image) ;
-  TH1F * fhESDVertex = new TH1F("hESDvertex","ESD vertex",100,-50,50);
+  TH1F * fhESDVertex = new TH1F("hESDvertex","ESD vertex",82,-30,30);
   Add2ESDsList(fhESDVertex, 1, !expert, image) ;
   
 
