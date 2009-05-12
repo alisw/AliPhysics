@@ -14,7 +14,7 @@
 
 using namespace std;
 
-AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl, int ibin=30, double vmin=0.0, double vmax=0.3):
+AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl, int ibin=30, double vmin=0.0, double vmax=0.3, int aUseLCMS=0):
   fnumsreal(0),
   fnumsimag(0),
   fdensreal(0),
@@ -35,7 +35,8 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl,
   factorials(0),
   fSout(0.0),
   fSside(0.0),
-  fSlong(0.0)
+  fSlong(0.0),
+  fUseLCMS(aUseLCMS)
 {
   // Main constructor
   fMaxL = maxl;
@@ -149,7 +150,8 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm():
   factorials(0),
   fSout(0.0),
   fSside(0.0),
-  fSlong(0.0)
+  fSlong(0.0),
+  fUseLCMS(0)
 {
   // Default constructor
   AliFemtoCorrFctnDirectYlm("AliFemtoCorrFctnDirectYlm",2);
@@ -177,7 +179,8 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const AliFemtoCorrFctnDirec
   factorials(0),
   fSout(0.0),
   fSside(0.0),
-  fSlong(0.0)
+  fSlong(0.0),
+  fUseLCMS(0)
 {
   // Copy constructor
   int ibin = aCorrFctn.fbinctn->GetNbinsX();
@@ -274,6 +277,8 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const AliFemtoCorrFctnDirec
 
   if (aCorrFctn.fPairCut)
     fPairCut = aCorrFctn.fPairCut;
+
+  fUseLCMS = aCorrFctn.fUseLCMS;
 }
 
 AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCorrFctnDirectYlm& aCorrFctn)
@@ -376,6 +381,8 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
 
   if (aCorrFctn.fPairCut)
     fPairCut = aCorrFctn.fPairCut;
+
+  fUseLCMS = aCorrFctn.fUseLCMS;
 
   return *this;
 }
@@ -932,16 +939,35 @@ AliFemtoString AliFemtoCorrFctnDirectYlm::Report()
 
 void AliFemtoCorrFctnDirectYlm::AddRealPair(AliFemtoPair* aPair)
 {
+  // Fill in the numerator
   if (fPairCut)
     if (!fPairCut->Pass(aPair)) return;
 
-  AddRealPair(aPair->QOutPf(), aPair->QSidePf(), aPair->QLongPf(), 1.0);
+  if (fUseLCMS)
+    AddRealPair(aPair->QOutCMS(), aPair->QSideCMS(), aPair->QLongCMS(), 1.0);
+  else
+    AddRealPair(aPair->KOut(), aPair->KSide(), aPair->KLong(), 1.0);
 }
+
 void AliFemtoCorrFctnDirectYlm::AddMixedPair(AliFemtoPair* aPair)
 {
+  // Fill in the denominator
   if (fPairCut)
     if (!fPairCut->Pass(aPair)) return;
   
-  AddMixedPair(aPair->QOutPf(), aPair->QSidePf(), aPair->QLongPf(), 1.0);
+  if (fUseLCMS)
+    AddMixedPair(aPair->QOutCMS(), aPair->QSideCMS(), aPair->QLongCMS(), 1.0);
+  else
+    AddMixedPair(aPair->KOut(), aPair->KSide(), aPair->KLong(), 1.0);
+}
+
+void AliFemtoCorrFctnDirectYlm::SetUseLCMS(int aUseLCMS)
+{
+  fUseLCMS = aUseLCMS;
+}
+
+int  AliFemtoCorrFctnDirectYlm::GetUseLCMS()
+{
+  return fUseLCMS;
 }
 

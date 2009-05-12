@@ -4,6 +4,7 @@
 // directly. Provides a way to store the numerator and denominator            //
 // in Ylms directly and correctly calculate the correlation                   //
 // function from them.                                                        //
+// Added the option to use q components in LCMS for identical particles       //
 //                                                                            //
 // Authors: Adam Kisiel kisiel@mps.ohio-state.edu                             //
 //                                                                            //
@@ -25,7 +26,7 @@ using namespace std;
 class AliFemtoCorrFctnDirectYlm: public AliFemtoCorrFctn {
  public:
   AliFemtoCorrFctnDirectYlm();
-  AliFemtoCorrFctnDirectYlm(const char *name, int maxl, int ibin, double vmin, double vmax);
+  AliFemtoCorrFctnDirectYlm(const char *name, int maxl, int ibin, double vmin, double vmax, int aUseLCMS);
   AliFemtoCorrFctnDirectYlm(const AliFemtoCorrFctnDirectYlm& aCorrFctn);
   ~AliFemtoCorrFctnDirectYlm();
 
@@ -54,6 +55,9 @@ class AliFemtoCorrFctnDirectYlm: public AliFemtoCorrFctn {
 
   TH1D *GetDenRealHist(int el, int em);
   TH1D *GetDenImagHist(int el, int em);
+
+  void SetUseLCMS(int aUseLCMS);
+  int  GetUseLCMS();
 
  private:
   double ClebschGordan(double aJot1, double aEm1, double aJot2, double aEm2, double aJot, double aEm);
@@ -104,6 +108,7 @@ class AliFemtoCorrFctnDirectYlm: public AliFemtoCorrFctn {
   double fSside;               // Save last calculated qside
   double fSlong;               // Save last calculated qlong
 
+  int    fUseLCMS;             // 0 - Use PRF, 1 - Use LCMS
 };
 
 #endif
