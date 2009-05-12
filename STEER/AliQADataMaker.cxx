@@ -134,7 +134,9 @@ TH1 *  AliQADataMaker::CloneMe(TH1 * hist, Int_t specie) const
   char * name = Form("%s_%s", AliRecoParam::GetEventSpecieName(specie), hist->GetName()) ;
   TH1 * hClone = dynamic_cast<TH1 *>(hist->Clone(name)) ; 
   if ( hist->TestBit(AliQAv1::GetExpertBit()) )
-       hClone->SetBit(AliQAv1::GetExpertBit()) ; 
+    hClone->SetBit(AliQAv1::GetExpertBit()) ; 
+  if ( hist->TestBit(AliQAv1::GetImageBit()) )
+    hClone->SetBit(AliQAv1::GetImageBit()) ; 
   return hClone ; 
 }
 
