@@ -19,13 +19,13 @@
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
   AliXRDPROOFtoolkit tool; 
-  TChain * chainEsd = tool.MakeChain("esd.txt","esdTree",0,5000);
+  TChain * chainEsd = tool.MakeChain("esd.txt","esdTree",0,5);
   chainEsd->Lookup();
   //
 
  
   //3. Make a analysis manager with attached task:
-  .L $ALICE_ROOT/PWG1/Macros/taskComp.C
+  .L $ALICE_ROOT/PWG1/macros/taskComp.C
   Init();
   AliAnalysisManager *mgr = MakeManager();
   
@@ -47,6 +47,12 @@
   gProof->Exec("gSystem->Load(\"libPWG0base.so\")",kTRUE);
   gProof->Exec("gSystem->Load(\"libPWG0dep.so\")",kTRUE);
   gProof->Exec("gSystem->Load(\"libPWG1.so\")",kTRUE);
+  
+  TString path=gSystem->pwd();
+  TString execCDB="gROOT->Macro(\"";
+  execCDB+=path+"/ConfigOCDB.C\"\)";
+  gProof->Exec(execCDB->Data(),kFALSE);
+
   mgr->StartAnalysis("proof",chainEsd);
   //5. Get debug stream - if speciefied  
   TFile f("mcTaskDebug.root");
@@ -67,6 +73,10 @@
   TChain * chainTPC = tool.MakeChain("tpc.txt","Crefit",0,50);
   chainTPC->Lookup();
   chainTr->SetProof(kTRUE);
+
+  TChain * chainTracking = tool.MakeChain("mctracking.txt","MCupdate",0,50);
+  chainTracking->Lookup();
+  chainTracking->SetProof(kTRUE);
 
 
 
@@ -111,7 +121,7 @@ AliAnalysisManager *  MakeManager(){
   AliGenInfoTask *genTask = new AliGenInfoTask("genTask");
   genTask->SetStreamLevel(10);
   genTask->SetDebugLevel(10); 
-  genTask->SetDebugOuputhPath(gSystem->pwd());
+  genTask->SetDebugOuputhPath(Form("%s/",gSystem->pwd()));
 
  //  //AddComparison(genTask);
 //   mgr->AddTask(genTask);
@@ -127,6 +137,7 @@ AliAnalysisManager *  MakeManager(){
 //   mgr->ConnectOutput(genTask,0,coutput1);
 
   
+
   //
   // TPC PID task
   //
@@ -154,6 +165,25 @@ AliAnalysisManager *  MakeManager(){
 			  AliAnalysisManager::kOutputContainer,
 			  "OutputQA.root");
   mgr->ConnectOutput(qaTask,0,coutput3);
+  //
+  //
+  //
+  AliMCTrackingTestTask *mcTracking = new  AliMCTrackingTestTask("mcTracking");
+  mcTracking->SetStreamLevel(10);
+  mcTracking->SetDebugLevel(10);
+  mgr->AddTask(mcTracking);
+  mcTracking->SetDebugOuputhPath(gSystem->pwd());
+  AliAnalysisDataContainer *cinput4 = mgr->GetCommonInputContainer();
+  mgr->ConnectInput(mcTracking,0,cinput4);
+  //
+  AliAnalysisDataContainer *coutput4
+    =mgr->CreateContainer("mcTask", TObjArray::Class(),
+			  AliAnalysisManager::kOutputContainer,
+			  "OutputMC.root");
+  mgr->ConnectOutput(mcTracking,0,coutput4);
+
+
+
   //
   if (!mgr->InitAnalysis()) return 0;
   return mgr;
