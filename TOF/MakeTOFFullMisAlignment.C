@@ -1,50 +1,56 @@
-void MakeTOFFullMisAlignment(){
+void MakeTOFFullMisAlignment() {
+  // 
   // Create TClonesArray of full misalignment objects for TOF
   // Expects to read objects for FRAME
   // 
-  TClonesArray *array = new TClonesArray("AliAlignObjParams",2000);
+
   const char* macroname = "MakeTOFFullMisAlignment.C";
+
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",2000);
   
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
-  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  if (!cdb->IsDefaultStorageSet())
+    cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
-  
+
   AliCDBStorage* storage;
   TString Storage;
-  
-  if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
+
+  if ( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ) {
     Storage = gSystem->Getenv("STORAGE");
-    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
+    if (!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
       Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
       return;
     }
     storage = cdb->GetStorage(Storage.Data());
-    if(!storage){
+    if (!storage) {
       Error(macroname,"Unable to open storage %s\n",Storage.Data());
       return;
     }
     AliCDBPath path("GRP","Geometry","Data");
     AliCDBEntry *entry = storage->Get(path.GetPath(),cdb->GetRun());
-    if(!entry) Fatal(macroname,"Could not get the specified CDB entry!");
+    if (!entry)
+      Fatal(macroname,"Could not get the specified CDB entry!");
     entry->SetOwner(0);
     TGeoManager* geom = (TGeoManager*) entry->GetObject();
     AliGeomManager::SetGeometry(geom);
-  }else{
+  } else
     AliGeomManager::LoadGeometry(); //load geom from default CDB storage
-  }    
-		  
+
   // load FRAME full misalignment objects (if needed, the macro
   // for FRAME has to be run in advance) and apply them to geometry
   AliCDBPath fpath("GRP","Align","Data");
-  if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
+  if ( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ) {
     Info(macroname,"Loading FRAME alignment objects from CDB storage %s",
-	Storage.Data());
+	 Storage.Data());
     AliCDBEntry *eFrame = storage->Get(fpath.GetPath(),cdb->GetRun());
-  }else{
+  } else
     AliCDBEntry *eFrame = cdb->Get(fpath.GetPath());
-  }
-  if(!eFrame) Fatal(macroname,"Could not get the specified CDB entry!");
+
+  if (!eFrame)
+    Fatal(macroname,"Could not get the specified CDB entry!");
+
   TClonesArray* arFrame = (TClonesArray*) eFrame->GetObject();
   arFrame->Sort();
   Int_t nvols = arFrame->GetEntriesFast();
@@ -54,7 +60,8 @@ void MakeTOFFullMisAlignment(){
     AliAlignObj* alobj = (AliAlignObj*) arFrame->UncheckedAt(j);
     if (alobj->ApplyToGeometry() == kFALSE) flag = kFALSE;
   }
-  if(!flag) Fatal(macroname,"Error in the application of FRAME alignment objects");
+  if (!flag)
+    Fatal(macroname,"Error in the application of FRAME alignment objects");
 
   //Produce objects for TOF supermodules
   Int_t iIndex=0; //let all modules have index=0 in a layer with no LUT
@@ -68,22 +75,23 @@ void MakeTOFFullMisAlignment(){
   Double_t sigmatr = 0.4; // max shift in cm w.r.t. local ideal RS
   Double_t sigmarot = 0.06; // max rot in deg w.r.t. local ideal RS (~ 1 mrad)
   
-  for(Int_t isect=0; isect<nSMTOF; isect++) {
+  for (Int_t isect=0; isect<nSMTOF; isect++) {
     TString symname(Form("TOF/sm%02d",isect));
     smdx = rnd->Gaus(0.,sigmatr);
     smdy = rnd->Gaus(0.,sigmatr);
     dtheta = rnd->Gaus(0.,sigmarot);
-    new((*array)[j++]) AliAlignObjParams(symname.Data(), dvoluid, smdx, smdy, smdz, dpsi, dtheta, dphi, kFALSE);
+    new((*array)[j++]) AliAlignObjParams(symname.Data(),
+					 dvoluid,
+					 smdx, smdy, smdz, dpsi, dtheta, dphi, kFALSE);
   }
   // Apply objects for TOF supermodules 
   Int_t smCounter=0;
-  for(Int_t isect=0; isect<nSMTOF; isect++){
+  for (Int_t isect=0; isect<nSMTOF; isect++) {
     AliAlignObjParams* smobj = (AliAlignObjParams*)array->UncheckedAt(smCounter++);
-    Info(macroname,Form("Applying object for sector %d ",isect));
-    if(!smobj->ApplyToGeometry()){
+    //Info(macroname,Form("Applying object for sector %d ",isect));
+    if ( !smobj->ApplyToGeometry() )
       Fatal(macroname,Form("application of full misalignment object for sector %d failed!",isect));
-      return;
-    }
+
   }
 
   //Produce objects for TOF strips (same sigmas as for residual misalignment)
@@ -137,11 +145,13 @@ void MakeTOFFullMisAlignment(){
     }
 
     if ((isect==13 || isect==14 || isect==15) && (istr >= 39 && istr <= 53)) continue;
-    new((*array)[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,strId),AliGeomManager::LayerToVolUID(idTOF,strId), sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
+    new((*array)[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,strId),
+					 AliGeomManager::LayerToVolUID(idTOF,strId),
+					 sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
     }
   }
 
-  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
+  if ( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ) {
     // save in file
     const char* filename = "TOFfullMisalignment.root";
     TFile f(filename,"RECREATE");
@@ -153,7 +163,7 @@ void MakeTOFFullMisAlignment(){
     f.cd();
     f.WriteObject(array,"TOFAlignObjs","kSingleKey");
     f.Close();
-  }else{
+  } else {
     // save in CDB storage
     Info(macroname,"Saving alignment objects in CDB storage %s",
 	 Storage.Data());
