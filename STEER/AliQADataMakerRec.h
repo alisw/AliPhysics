@@ -45,6 +45,8 @@ public:
 	virtual TH1 *       GetDigitsData(const Int_t /*index*/) { return NULL ; } 
 	virtual TH1 *       GetESDsData(const Int_t index)       { return dynamic_cast<TH1 *>(GetData(fESDsQAList, index)) ; }
 	virtual TH1 *       GetHitsData(const Int_t /*index*/)   { return NULL ; }
+  virtual const AliDetectorRecoParam * GetRecoParam() { return fRecoParam ; }
+
 	virtual TH1 *       GetRecPointsData(const Int_t index)  { return dynamic_cast<TH1 *>(GetData(fRecPointsQAList, index)) ; }
 	virtual TH1 *       GetRawsData(const Int_t index)       { return dynamic_cast<TH1 *>(GetData(fRawsQAList, index))  ; }
  	virtual TH1 *       GetSDigitsData(const Int_t /*index*/)   { return NULL ; }  

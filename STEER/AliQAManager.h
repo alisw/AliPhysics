@@ -109,7 +109,6 @@ private:
 	AliQADataMaker *        fQADataMaker[fgkNDetectors];    //! array of QA data maker objects
 	Int_t                   fQACycles[fgkNDetectors];       //! array of QA cycle length
 	Bool_t                  fQAWriteExpert[fgkNDetectors];  //! array of QA cycle length
-	AliRecoParam::EventSpecie_t fEventSpecie ;              //! event specie, see AliRecoParam::EventSpecie_t 
   ClassDef(AliQAManager, 0)      // class for running the QA makers
 };
 

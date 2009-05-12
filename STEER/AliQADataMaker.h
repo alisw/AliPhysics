@@ -47,9 +47,9 @@ public:
 	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)       = 0 ; 
 	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE, const Bool_t saveForCorr = kFALSE)            = 0 ; 
 	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)         = 0 ; 
-	virtual void        Exec(AliQAv1::TASKINDEX_t, TObject * data)                                       = 0 ;
+	virtual void        Exec(AliQAv1::TASKINDEX_t, TObject * data)             = 0 ;
 	virtual void        EndOfCycle()                                           = 0 ;
-	virtual void        EndOfCycle(AliQAv1::TASKINDEX_t        )                 = 0 ;
+	virtual void        EndOfCycle(AliQAv1::TASKINDEX_t )                      = 0 ;
 	void                Finish() const ; 
 	virtual TH1 *       GetDigitsData(const Int_t index)                       = 0 ; 
 	virtual TH1 *       GetESDsData(const Int_t index)                         = 0 ; 
@@ -59,6 +59,7 @@ public:
 	virtual TH1 *       GetSDigitsData(const Int_t index)                      = 0 ; 
 	const char *        GetDetectorDirName() const { return fDetectorDirName.Data() ; }
   TList *             GetParameterList() const { return fParameterList[AliRecoParam::AConvert(fEventSpecie)] ; }
+  virtual const AliDetectorRecoParam * GetRecoParam() { return NULL ; }
 	Int_t               Increment() { return ++fCycleCounter ; } 
 	virtual TObjArray** Init(AliQAv1::TASKINDEX_t, Int_t cycles = -1)                               = 0 ;
 	virtual void        Init(AliQAv1::TASKINDEX_t, TObjArray ** list, Int_t run, Int_t cycles = -1) = 0 ;
@@ -73,7 +74,8 @@ public:
   Bool_t              WriteExpert() { return fWriteExpert ; }
   void                SetEventSpecie(AliRecoParam::EventSpecie_t es) { fEventSpecie = es ; }
   void                SetEventSpecie(Int_t es) { fEventSpecie = AliRecoParam::Convert(es) ; }
-	virtual void        SetRecoParam(const AliDetectorRecoParam */*param*/) {AliInfo("To be implemented by AliQADataMakerRec, not needed yet in Sim") ; } 
+  virtual void        SetRecoParam(const AliDetectorRecoParam *) {;}
+
 	  
 protected: 
 

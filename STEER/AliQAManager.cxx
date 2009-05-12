@@ -85,8 +85,7 @@ AliQAManager::AliQAManager() :
   fRawReader(NULL), 
   fRawReaderDelete(kTRUE), 
   fRunLoader(NULL), 
-  fTasks(""), 
-  fEventSpecie(AliRecoParam::kDefault)
+  fTasks("") 
 {
 	// default ctor
 	fMaxEvents = fNumberOfEvents ; 
@@ -119,8 +118,7 @@ AliQAManager::AliQAManager(const Char_t * mode, const Char_t* gAliceFilename) :
 	fRawReader(NULL), 
 	fRawReaderDelete(kTRUE), 
 	fRunLoader(NULL), 
-  fTasks(""), 
-  fEventSpecie(AliRecoParam::kDefault)
+  fTasks("") 
 {
 	// default ctor
 	fMaxEvents = fNumberOfEvents ; 
@@ -153,8 +151,7 @@ AliQAManager::AliQAManager(const AliQAManager & qas) :
 	fRawReader(NULL), 
 	fRawReaderDelete(kTRUE), 
 	fRunLoader(NULL), 
-  fTasks(qas.fTasks),
-  fEventSpecie(qas.fEventSpecie)
+  fTasks(qas.fTasks)
 {
 	// cpy ctor
 	for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
@@ -407,7 +404,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
 	// get the quality assurance data maker for a detector
 	
 	if (fQADataMaker[iDet]) {
-    fQADataMaker[iDet]->SetEventSpecie(fEventSpecie) ; 
+    fQADataMaker[iDet]->SetEventSpecie(fQADataMaker[iDet]->GetRecoParam()->GetEventSpecie()) ; 
 		return fQADataMaker[iDet] ;
   }
 	
@@ -418,7 +415,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
 		qadm->SetName(AliQAv1::GetDetName(iDet));
 		qadm->SetUniqueID(iDet);
 		fQADataMaker[iDet] = qadm;
-    qadm->SetEventSpecie(fEventSpecie) ; 
+    qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 		return qadm;
 	}
 
@@ -427,7 +424,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
 		qadm->SetName(AliQAv1::GetDetName(iDet));
 		qadm->SetUniqueID(iDet);
 		fQADataMaker[iDet] = qadm;
-    qadm->SetEventSpecie(fEventSpecie) ; 
+    qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 		return qadm;
   }
 
@@ -462,7 +459,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
 		qadm->SetName(AliQAv1::GetDetName(iDet));
 		qadm->SetUniqueID(iDet);
 		fQADataMaker[iDet] = qadm ;
-    qadm->SetEventSpecie(fEventSpecie) ; 
+    qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 	}
 
   return qadm ;
@@ -1161,7 +1158,7 @@ void AliQAManager::RunOneEvent(AliRawReader * rawReader)
         qadm->EndOfCycle() ;
       }
       AliCodeTimerStart(Form("running RAW quality assurance data maker for %s", AliQAv1::GetDetName(iDet))); 
-      qadm->SetEventSpecie(fEventSpecie) ; 
+      qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 			qadm->Exec(AliQAv1::kRAWS, rawReader) ;
       AliCodeTimerStop(Form("running RAW quality assurance data maker for %s", AliQAv1::GetDetName(iDet)));
 		}
@@ -1338,7 +1335,6 @@ Bool_t AliQAManager::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const
 void AliQAManager::SetEventSpecie(AliRecoParam::EventSpecie_t es) 
 {
   // set the current event specie and inform AliQAv1 that this event specie has been encountered
-  fEventSpecie = es ;
   AliQAv1::Instance()->SetEventSpecie(es) ; 
 }
 
