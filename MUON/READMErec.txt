@@ -176,6 +176,7 @@ procedure to the ones sharing one cluster on more in any station, including stat
 
 We can use the method Print("FULL") to printout all the parameters and options set in the class AliMUONRecoParam.
 
+RecoParams can be put into OCDB using the MakeMUONSingleRecoParam.C or MakeMUONRecoParamArray.C macros.
 
 \section rec_s5 ESD content
 
