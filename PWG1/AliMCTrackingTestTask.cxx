@@ -1,12 +1,25 @@
 //
 // This class is the task to check the 
-// Propagation method used in the 
+// Propagation and Update method used in the 
 //               1. AliExternalTrackParam 
 //               2. AliTracker
 //
+// Pure Monte-Carlo data used, not influence of detectors
+
+// Input - TParticle + Array of track references - (Points alogn track trajectories)
+// Output - Trees with track references - no histograms
+//          MC tree -  test for material budget correction 
+//                     see function ProcessRefTracker
+//          MCupdate tree - test for correctness of propagation and update
+//                     see function AliMCTrackingTestTask::FitTrackRefs
+//
 // Principle - Creates AliExternalTrackParam form 1 Track Refernece - 
 //             Propagate it to other
-// Magnetic filed and the geomtry has to bec 
+// Magnetic field and the geometry has to be created before using it 
+
+//
+//  
+//
 
 //
 // ROOT includes
@@ -282,6 +295,7 @@ void  AliMCTrackingTestTask::ProcessMCInfo(){
     if (!trefs) continue;
     Int_t nref = trefs->GetEntries();
     if (nref<5) continue;
+    FitTrackRefs(particle,trefs);
     AliTrackReference * tpcIn=0;
     AliTrackReference * tpcOut=0;
     AliTrackReference * trdIn=0;
@@ -383,6 +397,94 @@ void AliMCTrackingTestTask::ProcessRefTracker(AliTrackReference* refIn,  AliTrac
       "\n";
   }
 }
+
+
+void  AliMCTrackingTestTask::FitTrackRefs(TParticle * part, TClonesArray * trefs){
+  //
+  //
+  //
+  //
+  const Int_t kMinRefs=6;
+  Int_t nrefs = trefs->GetEntries();
+  if (nrefs<kMinRefs) return; // we should have enough references
+  Int_t iref0 =-1;
+  Int_t iref1 =-1;
+  
+  for (Int_t iref=0; iref<nrefs; iref++){
+    AliTrackReference * ref = (AliTrackReference*)trefs->At(iref);
+    if (!ref) continue;    
+    Float_t dir = ref->X()*ref->Px()+ref->Y()*ref->Py();
+    if (dir<0) break;
+    if (ref->DetectorId()!=AliTrackReference::kTPC) continue;
+    if (iref0<0) iref0 = iref;
+    iref1 = iref;    
+  }
+  if (iref1-iref0<kMinRefs) return;
+  Double_t covar[14];
+  for (Int_t icov=0; icov<14; icov++) covar[icov]=0;
+  covar[0]=1; 
+  covar[2]=1; 
+  covar[5]=1;
+  covar[9]=1;
+  covar[14]=1;
+
+  AliTrackReference * refIn = (AliTrackReference*)trefs->At(iref0);
+  AliTrackReference * refOut = (AliTrackReference*)trefs->At(iref1);
+  AliExternalTrackParam *paramPropagate= MakeTrack(refIn,part);
+  AliExternalTrackParam *paramUpdate   = MakeTrack(refIn,part);
+  paramUpdate->AddCovariance(covar);
+  Double_t mass = part->GetMass();
+  Double_t charge = part->GetPDG()->Charge()/3.;
+  Float_t alphaIn= TMath::ATan2(refIn->Y(),refIn->X());
+  Float_t radiusIn= refIn->R();
+  Float_t alphaOut= TMath::ATan2(refOut->Y(),refOut->X());
+  Float_t radiusOut= refOut->R();
+  AliMagF * field = (AliMagF*) TGeoGlobalMagField::Instance()->GetField();
+  for (Int_t iref = iref0; iref<=iref1; iref++){
+    AliTrackReference * ref = (AliTrackReference*)trefs->At(iref);
+    Float_t alphaC= TMath::ATan2(ref->Y(),ref->X());
+    Double_t pos[3] = {ref->X(), ref->Y(), ref->Z()};
+    Double_t mag[3];
+    field->Field(pos,mag);
+    paramPropagate->Rotate(alphaC);
+    paramUpdate->Rotate(alphaC);
+    for (Float_t xref= paramPropagate->GetX(); xref<ref->R(); xref++){
+      paramPropagate->PropagateTo(xref, -mag[2]);
+      paramUpdate->PropagateTo(xref, -mag[2]);
+    }
+    paramPropagate->PropagateTo(ref->R(), -mag[2]);
+    paramUpdate->PropagateTo(ref->R(), -mag[2]);
+    Double_t clpos[2] = {0, ref->Z()};
+    Double_t clcov[3] = { 0.005,0,0.005};
+    paramUpdate->Update(clpos, clcov);  
+  }
+  TTreeSRedirector *pcstream = GetDebugStreamer();
+  if (pcstream){
+    TVectorD gposU(3);
+    TVectorD gmomU(3);
+    TVectorD gposP(3);
+    TVectorD gmomP(3);
+    paramUpdate->GetXYZ(gposU.GetMatrixArray());
+    paramUpdate->GetPxPyPz(gmomU.GetMatrixArray());
+    paramPropagate->GetXYZ(gposP.GetMatrixArray());
+    paramPropagate->GetPxPyPz(gmomP.GetMatrixArray());
+
+     (*pcstream)<<"MCupdate"<<
+       "m="<<mass<<
+       "q="<<charge<<
+       "part.="<<part<<
+       "refIn.="<<refIn<<
+       "refOut.="<<refOut<<
+       "pP.="<<paramPropagate<<
+       "pU.="<<paramUpdate<<
+       "gposU.="<<&gposU<<
+       "gmomU.="<<&gmomU<<
+       "gposP.="<<&gposP<<
+       "gmomP.="<<&gmomP<<
+       "\n";
+   }
+}
+
 
 
 
