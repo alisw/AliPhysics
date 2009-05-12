@@ -410,7 +410,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
     if ( fQADataMaker[iDet]->GetRecoParam() ) 
       fQADataMaker[iDet]->SetEventSpecie(fQADataMaker[iDet]->GetRecoParam()->GetEventSpecie()) ; 
     else 
-      fQADataMaker[iDet]->SetEventSpecie(AliRecoParam::kDefault) ;  
+      fQADataMaker[iDet]->SetEventSpecie(fEventSpecie) ;  
 		return fQADataMaker[iDet] ;
   }
 	
@@ -424,7 +424,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
     if ( qadm->GetRecoParam() ) 
       qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
     else 
-      qadm->SetEventSpecie(AliRecoParam::kDefault) ;  
+      qadm->SetEventSpecie(fEventSpecie) ;  
 		return qadm;
 	}
 
@@ -436,7 +436,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
     if ( qadm->GetRecoParam() ) 
       qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
     else 
-      qadm->SetEventSpecie(AliRecoParam::kDefault) ;  
+      qadm->SetEventSpecie(fEventSpecie) ;  
 		return qadm;
   }
 
@@ -474,7 +474,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
     if ( qadm->GetRecoParam() ) 
       qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
     else 
-      qadm->SetEventSpecie(AliRecoParam::kDefault) ;  
+      qadm->SetEventSpecie(fEventSpecie) ;  
 	}
 
   return qadm ;
@@ -1173,7 +1173,10 @@ void AliQAManager::RunOneEvent(AliRawReader * rawReader)
         qadm->EndOfCycle() ;
       }
       AliCodeTimerStart(Form("running RAW quality assurance data maker for %s", AliQAv1::GetDetName(iDet))); 
-      qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
+      if ( qadm->GetRecoParam() ) 
+        qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
+      else 
+        qadm->SetEventSpecie(fEventSpecie) ;  
 			qadm->Exec(AliQAv1::kRAWS, rawReader) ;
       AliCodeTimerStop(Form("running RAW quality assurance data maker for %s", AliQAv1::GetDetName(iDet)));
 		}
