@@ -40,6 +40,9 @@ class AliMCTrackingTestTask : public AliAnalysisTask {
   //
   void           ProcessMCInfo();
   void           ProcessRefTracker(AliTrackReference* refIn, AliTrackReference* refOut, TParticle*part, Int_t type);
+  
+  void           FitTrackRefs(TParticle * part, TClonesArray * trefs);
+
   //
   // debug streamer part
   //
