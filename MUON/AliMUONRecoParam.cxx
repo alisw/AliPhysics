@@ -270,7 +270,7 @@ void AliMUONRecoParam::SetCosmicParam()
   }
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   fBypassSt45 = 0;
-  fPadGoodnessMask = 0x400BE80;
+  fPadGoodnessMask = 0xC00BE80;
   fMaxTriggerTracks = 100;
   fMaxTrackCandidates = 10000;
   
@@ -480,7 +480,8 @@ AliMUONRecoParam::SetDefaultLimits()
 	fGainThresLimits[0] = 0;
 	fGainThresLimits[1] = 4095;
 	
-	fPadGoodnessMask = 0x8080;
+	fPadGoodnessMask = 0x8008080; // Ped is missing | HV is missing | killed
+
   
   fChargeSigmaCut = 4.0;
 }

@@ -73,6 +73,11 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
 		store = AliMUONCalibrationData::CreatePedestals(runNumber,&startOfValidity);
 		fData = CreateDataPedestals(startOfValidity);
 	}
+	else if ( stype == "KILLMAP" )
+	{
+		store = AliMUONCalibrationData::CreateKillMap(runNumber,&startOfValidity);
+		fData = CreateDataKillMap(startOfValidity);
+	}
 	else if ( stype == "GAINS" ) 
 	{
 		AliMUONVStore* gains = AliMUONCalibrationData::CreateGains(runNumber,&startOfValidity);
@@ -154,6 +159,17 @@ AliMUONTrackerOCDBDataMaker::CreateDataPedestals(Int_t runNumber)
   AliMUONVTrackerData* data  = new AliMUONTrackerData(Form("PED%d",runNumber),"Pedestals",2,kTRUE);
   data->SetDimensionName(0,"Mean");
   data->SetDimensionName(1,"Sigma");
+  return data;
+}
+
+//_____________________________________________________________________________
+AliMUONVTrackerData*
+AliMUONTrackerOCDBDataMaker::CreateDataKillMap(Int_t runNumber)
+{
+  /// Create data to hold pedestal values
+  
+  AliMUONVTrackerData* data  = new AliMUONTrackerData(Form("KILL%d",runNumber),"KillMap",1,kTRUE);
+  data->SetDimensionName(0,"Kill");
   return data;
 }
 

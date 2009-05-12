@@ -177,7 +177,8 @@ private:
   enum EOtherStatus
   {
     kManuOccupancyTooLow = (1<<1),
-    kManuOccupancyTooHigh = (1<<2)
+    kManuOccupancyTooHigh = (1<<2),
+    kKilled = (1<<3)
   };
   
   const AliMUONCalibrationData& fkCalibrationData; //!< helper class to get data access (not owner)
@@ -202,6 +203,8 @@ private:
   AliMUONVStore* fGains; //!< gain values
   
   AliMUONVTrackerData* fTrackerData; //!< to get occupancies...
+  
+  AliMUONVStore* fKillMap; //!< to selectively force killing of some channels
   
   ClassDef(AliMUONPadStatusMaker,0) // Creates pad statuses from ped,gain,hv
 };

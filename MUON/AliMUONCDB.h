@@ -41,6 +41,7 @@ public:
   Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues);
   Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, const char* file);
   Int_t MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues);
+  Int_t MakeKillMapStore(AliMUONVStore& killMapStore);
   
   Int_t MakeLocalTriggerMaskStore(AliMUONVStore& ltm) const;  
   Int_t MakeRegionalTriggerConfigStore(AliMUONRegionalTriggerConfig& rtm) const;
@@ -72,6 +73,7 @@ public:
   void WriteGains(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteCapacitances(Bool_t defaultValues, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteCapacitances(const char* file, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteKillMap(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   
   void WriteLocalTriggerMasks(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteRegionalTriggerConfig(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());

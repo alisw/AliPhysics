@@ -532,6 +532,60 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
 }
 
 //_____________________________________________________________________________
+Int_t 
+AliMUONCDB::MakeKillMapStore(AliMUONVStore& killMapStore)
+{
+  /// Create a kill map.
+  
+  AliCodeTimerAuto("");
+  
+  Int_t nchannels(0);
+  Int_t nmanus(0);
+  
+  const Int_t kChannels(AliMpConstants::ManuNofChannels());
+  
+  const Float_t kFractionOfDeadManu(0.1); // within [0.,1.]
+  
+  if ( kFractionOfDeadManu == 0.0 ) return 0.0;
+  
+  Int_t detElemId;
+  Int_t manuId;
+  
+  AliMpManuIterator it;
+  
+  while ( it.Next(detElemId,manuId) )
+  {
+    // skip a given fraction of manus
+    if ( gRandom->Uniform() > kFractionOfDeadManu) continue;
+    
+    ++nmanus;
+    
+    AliMUONVCalibParam* kill = new AliMUONCalibParamNI(1,kChannels,detElemId,manuId,0);
+    
+    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+    
+    for ( Int_t manuChannel = 0; manuChannel < kChannels; ++manuChannel )
+    {
+      if ( ! de->IsConnectedChannel(manuId,manuChannel) ) continue;
+      
+      ++nchannels;
+      
+      kill->SetValueAsInt(manuChannel,0,1);
+      
+    }
+    Bool_t ok = killMapStore.Add(kill);
+    if (!ok)
+    {
+      AliError(Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
+    }
+    if ( fMaxNofChannelsToGenerate > 0 && nchannels >= fMaxNofChannelsToGenerate ) break;
+  }
+  
+  AliInfo(Form("%d Manus and %d channels.",nmanus,nchannels));
+  return nchannels;
+}
+
+//_____________________________________________________________________________
 Int_t
 AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, const char* file)
 {
@@ -1063,6 +1117,26 @@ AliMUONCDB::WritePedestals(Bool_t defaultValues,
   delete pedestalStore;
 }
 
+//_____________________________________________________________________________
+void 
+AliMUONCDB::WriteKillMap(Bool_t defaultValues,
+                         Int_t startRun, Int_t endRun)
+{
+  /// generate kill map values (either empty one if defaultValues=true, or
+  /// random one, see MakeKillMapStore) and
+  /// store them into CDB located at cdbpath, with a validity period
+  /// ranging from startRun to endRun
+  
+  AliMUONVStore* killMapStore = Create2DMap();
+  if ( !defaultValues )
+  {
+    Int_t ngenerated = MakeKillMapStore(*killMapStore);
+    AliInfo(Form("Ngenerated = %d",ngenerated));
+  }
+  WriteToCDB("MUON/Calib/KillMap",killMapStore,startRun,endRun,defaultValues);
+  delete killMapStore;
+}
+
 
 //_____________________________________________________________________________
 void 
@@ -1140,5 +1214,6 @@ AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
   WriteGains(defaultValues,startRun,endRun);
   WriteCapacitances(defaultValues,startRun,endRun);
   WriteNeighbours(startRun,endRun);
+  WriteKillMap(startRun,endRun,defaultValues);
 }
 

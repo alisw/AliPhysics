@@ -66,6 +66,7 @@ public:
   static AliMUONVStore* SplitQuality(const AliMUONVStore& gains);
 
   static AliMUONVTrackerData* CreateDataPedestals(Int_t runNumber);
+  static AliMUONVTrackerData* CreateDataKillMap(Int_t runNumber);
   static AliMUONVTrackerData* CreateDataGains(Int_t runNumber);
   static AliMUONVTrackerData* CreateDataCapacitances(Int_t runNumber);
   

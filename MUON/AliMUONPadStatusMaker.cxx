@@ -80,7 +80,8 @@ fStatus(new AliMUON2DMap(true)),
 fHV(new TExMap),
 fPedestals(calibData.Pedestals()),
 fGains(calibData.Gains()),
-fTrackerData(0x0)
+fTrackerData(0x0),
+fKillMap(calibData.KillMap())
 {
   /// ctor
   AliDebug(1,Form("ped store %s gain store %s",
@@ -153,6 +154,7 @@ AliMUONPadStatusMaker::~AliMUONPadStatusMaker()
   /// dtor.
   delete fStatus;
   delete fHV;
+  delete fKillMap;
 }
 
 //_____________________________________________________________________________
@@ -194,6 +196,7 @@ AliMUONPadStatusMaker::AsString(Int_t status)
 
   if ( otherStatus & kManuOccupancyTooHigh ) s+="& manu occupancy too high ";
   if ( otherStatus & kManuOccupancyTooLow ) s+="& manu occupancy too low ";
+  if ( otherStatus & kKilled ) s+="& killed";
   
   if ( s[0] == '&' ) s[0] = ' ';
   
@@ -526,6 +529,13 @@ AliMUONPadStatusMaker::ComputeStatus(Int_t detElemId, Int_t manuId) const
 
   AliMUONVCalibParam* gains = static_cast<AliMUONVCalibParam*>(fGains->FindObject(detElemId,manuId));
   
+  AliMUONVCalibParam* kill(0x0);
+  
+  if ( fKillMap ) 
+  {
+    kill = static_cast<AliMUONVCalibParam*>(fKillMap->FindObject(detElemId,manuId));
+  }
+  
   Int_t hvStatus = HVStatus(detElemId,manuId);
 
   Int_t otherStatus = OtherStatus(detElemId,manuId);
@@ -567,6 +577,11 @@ AliMUONPadStatusMaker::ComputeStatus(Int_t detElemId, Int_t manuId) const
     else
     {
       gainStatus = kGainMissing;
+    }
+    
+    if ( kill && (kill->ValueAsInt(manuChannel,0) > 0) ) 
+    {
+      otherStatus |= kKilled;
     }
         
     Int_t status = BuildStatus(pedStatus,hvStatus,gainStatus,otherStatus);
