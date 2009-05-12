@@ -1271,7 +1271,14 @@ void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
   //      padZ   number, i.e. volume[4] (variable in [0, 1])
   //
 
+  for (Int_t ii=0; ii<5; ii++) volume[ii] = -1;
+
   Int_t iDDL = GetDDLnumberPerSector(nDDL);
+
+  if (iDDL%2==1 && nTRM==3 && nTDC/3>0) { // Signal not coming from a TOF pad but -probably- from a TOF OR signal
+    //printf("Info -> AliTOFRawStream::EquipmentId2VolumeId: Signal not coming from a TOF pad but -probably- from a TOF OR signal (%2d %2d %2d)\n", nDDL, nTRM, nTDC);
+    return;
+  }
 
   Int_t iSector = GetSectorNumber(nDDL);
 
@@ -1279,21 +1286,24 @@ void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
   if (iPlate==-1) {
     /*if (fRawReader)
       fRawReader->AddMajorErrorLog(kPlateError,"plate = -1");*/
-    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the plate number!\n");
+    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the plate number (%2d %2d %2d)!\n",
+	   nDDL, nTRM, nTDC);
   }
 
   Int_t iStrip = Equip2VolNstrip(iDDL, nTRM, nTDC);
   if (iStrip==-1) {
     /*if (fRawReader)
       fRawReader->AddMajorErrorLog(kStripError,"strip = -1");*/
-    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the strip number!\n");
+    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the strip number (%2d %2d %2d)!\n",
+	   nDDL, nTRM, nTDC);
   }
 
   Int_t iPadAlongTheStrip  = Equip2VolNpad(iDDL, iChain, nTDC, iCH);
   if (iPadAlongTheStrip==-1) {
     /*if (fRawReader)
       fRawReader->AddMajorErrorLog(kPadAlongStripError,"pad = -1");*/
-    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the pad number along the strip!\n");
+    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the pad number along the strip (%2d %1d %2d %1d)!\n",
+	   nDDL, iChain, nTDC, iCH);
   }
   
   Int_t iPadX  = (Int_t)(iPadAlongTheStrip/(Float_t(AliTOFGeometry::NpadZ())));
