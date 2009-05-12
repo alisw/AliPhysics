@@ -9,7 +9,7 @@
 //
 // Author: jgcn@mda.cinvestav.mx
 //---------------------------------------------------------------------
-  
+#include <Riostream.h>  
 #include <TNamed.h>
 #include <TString.h>
  
@@ -35,8 +35,9 @@ class AliJetReaderHeader : public TNamed
   Int_t   GetFirstEvent()  const {return fFirst;}
   Int_t   GetLastEvent()   const {return fLast;}
   Int_t   GetDetector()    const {return fOption;}
+  Int_t   GetCluster()     const {return fCluster;}
   Bool_t  GetDZ()          const {return fDZ;}
-  Int_t   GetDebug()       const {return fDebug;}
+  Int_t   GetDebug()       const {cout << "coucou" << endl; return fDebug;}
   Int_t   GetSignalPerBg() const {return fSignalPerBg;}
   	  
   // Setters
@@ -54,12 +55,14 @@ class AliJetReaderHeader : public TNamed
   virtual void SetPtCut(Float_t par = 2.0) {fPtCut = par;}
   virtual void SetDZ(Bool_t deadzone = 0) {fDZ = deadzone;}
   virtual void SetDetector(Int_t option = 0) {fOption = option;}
+  virtual void SetCluster(Int_t option = 0) {fCluster = option;}
   virtual void SetDebug(Int_t debug = 0) {fDebug = debug;}
 
  protected:
   Int_t   fFirst;          // First and last events analyzed
   Int_t   fLast;           // in current set of files
-  Int_t   fOption;         // detector used for jet reconstruction   
+  Int_t   fOption;         // detector used for jet reconstruction  
+  Int_t   fCluster;        // cluster type
   Int_t   fDebug;          // debug option
   Bool_t  fDZ;             // include dead zones or not 
   Int_t   fSignalPerBg;

@@ -20,8 +20,10 @@
 // Stores the output of a jet algorithm
 // Author: jgcn@mda.cinvestav.mx
 //---------------------------------------------------------------------
+
  
 #include <Riostream.h>
+//#include <vector.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 
@@ -39,7 +41,15 @@ AliJet::AliJet():
   fJets(0),
   fEtaIn(0),
   fPhiIn(0),
-  fPtIn(0)
+  fPtIn(0),
+  fPtChPtCutIn(0),
+  fEnTotChPtCutIn(0),
+  fVectorSizeIn(0),
+  fDetIn(0),
+  fVPx(0),
+  fVPy(0),
+  fVPz(0)
+	      //  fVectorIn(0)
 {
   // Default constructor
   fJets = new TClonesArray("TLorentzVector",1000);
@@ -50,6 +60,10 @@ AliJet::AliJet():
   fPtFromSignal = TArrayF();
   fMultiplicities = TArrayI();
   fNCells = TArrayI();
+  fPtChPtCutIn = TArrayF();
+  fEnTotChPtCutIn = TArrayF();
+  fVectorSizeIn = TArrayI();
+  fDetIn = TArrayI();
 } 
 
 ////////////////////////////////////////////////////////////////////////
@@ -244,6 +258,53 @@ void AliJet::SetPhiIn(Float_t* x)
 {
   if (fNInput>0) fPhiIn.Set(fNInput, x);
 }
+////////////////////////////////////////////////////////////////////////
+
+void AliJet::SetPtChargedPtCutIn(Float_t* x)
+{
+  if (fNInput>0) fPtChPtCutIn.Set(fNInput, x);
+}
+////////////////////////////////////////////////////////////////////////
+
+void AliJet::SetEnTotChargedPtCutIn(Float_t* x)
+{
+  if (fNInput>0) fEnTotChPtCutIn.Set(fNInput, x);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+void AliJet::SetDetectorFlagIn(Int_t* x)
+{
+  if (fNInput>0) fDetIn.Set(fNInput, x);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+void AliJet::SetVectorSizeIn(Int_t* x)
+{
+  if (fNInput>0) fVectorSizeIn.Set(fNInput, x);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+void AliJet::SetVectorPxIn(vector< vector<Float_t> > pxT)
+{
+  fVPx = pxT;;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+void AliJet::SetVectorPyIn(vector< vector<Float_t> > pyT)
+{
+  fVPy = pyT;;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+void AliJet::SetVectorPzIn(vector< vector<Float_t> > pzT)
+{
+  fVPz = pzT;;
+}
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -285,6 +346,10 @@ void AliJet::ClearJets(Option_t *option)
   fEtaIn.Set(0);
   fPtIn.Set(0);
   fNCells.Set(0);
+  fPtChPtCutIn.Set(0);
+  fEnTotChPtCutIn.Set(0);
+  fVectorSizeIn.Set(0);
+  fDetIn.Set(0);
 }
 
 ////////////////////////////////////////////////////////////////////////

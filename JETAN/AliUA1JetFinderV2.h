@@ -10,12 +10,14 @@
 // manages the search for jets
 // Author: Rafael.Diaz.Valdes@cern.ch
 // (version in c++)
-// Modified to include neutral particles (magali.estienne@ires.in2p3.fr)
 //---------------------------------------------------------------------
+
+#include <vector>
 
 #include "AliJetFinder.h"
 class AliUA1JetHeaderV1;
 class TH2F;
+class TChain;
 
 class AliUA1JetFinderV2 : public AliJetFinder
 {
@@ -25,35 +27,44 @@ class AliUA1JetFinderV2 : public AliJetFinder
   ~AliUA1JetFinderV2();
 
   // others
+  void FindJetsC();
   void FindJets();
+  void RunAlgoritmC(Float_t EtbgTotal, Double_t dEtTotal, Int_t& nJets,
+		   Float_t* etJet,Float_t* etaJet, Float_t* phiJet,
+		   Float_t* etallJet, Int_t* ncellsJet);
 
   void RunAlgoritm(Int_t nIn, Float_t* etCell, Float_t* etaCell, Float_t* phiCell, 
-		   Int_t* flagCell, Float_t etbgTotal, Double_t dEtTotal, 
+		   Int_t* flagCell, Float_t* etCell2, Float_t* etaCell2, Float_t* phiCell2, 
+		   Int_t* flagCell2, Float_t etbgTotal, Double_t dEtTotal, 
 		   Int_t& nJets, Float_t* etJet,Float_t* etaJet, Float_t* phiJet,
 		   Float_t* etallJet, Int_t* ncellsJet);
-    
-
-  void SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&EtbgTotalN,
+   
+  void SubtractBackgC(Int_t& nIn, Int_t&nJ, Float_t&EtbgTotalN,
                       Float_t* ptT, Float_t* etaT, Float_t* phiT,
                       Float_t* etJet,Float_t* etaJet, Float_t* phiJet,
                       Float_t* etsigJet,Int_t* multJet, Int_t* injet);
 
+  void SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&EtbgTotalN, Float_t* ptT, Int_t* vectT, 
+		     Float_t* etaT, Float_t* phiT, Float_t* cFlagT, Float_t* cFlag2T, 
+		     Float_t* sFlagT, Float_t* etJet,Float_t* etaJet, Float_t* phiJet, 
+		     Float_t* etsigJet, Int_t* multJet, Int_t* injet);
+
   void SubtractBackgCone(Int_t& nIn, Int_t&nJ,Float_t& EtbgTotalN,
-                      Float_t* ptT, Float_t* etaT, Float_t* phiT,
+                      Float_t* ptT, Float_t* etaT, Float_t* phiT, Float_t* cFlagT, Float_t* sFlagT,
                       Float_t* etJet,Float_t* etaJet, Float_t* phiJet,
                       Float_t* etsigJet, Int_t* multJet, Int_t* injet);
 
   void SubtractBackgRatio(Int_t& nIn, Int_t&nJ,Float_t& EtbgTotalN,
-                      Float_t* ptT, Float_t* etaT, Float_t* phiT,
+                      Float_t* ptT, Float_t* etaT, Float_t* phiT, Float_t* cFlagT, Float_t* sFlagT,
                       Float_t* etJet,Float_t* etaJet, Float_t* phiJet,
                       Float_t* etsigJet, Int_t* multJet, Int_t* injet);
 
   void SubtractBackgStat(Int_t& nIn, Int_t&nJ,Float_t&EtbgTotalN,
-                      Float_t* ptT, Float_t* etaT, Float_t* phiT,
+                      Float_t* ptT, Float_t* etaT, Float_t* phiT, Float_t* cFlagT, Float_t* sFlagT,
                       Float_t* etJet,Float_t* etaJet, Float_t* phiJet,
                       Float_t* etsigJet, Int_t* multJet, Int_t* injet);
   void Reset();
-  void Init();
+  void InitTask(TChain* tree);
   void WriteJHeaderToFile();
 
  protected:

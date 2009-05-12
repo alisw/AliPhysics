@@ -3,9 +3,11 @@
 /* Copyright(c) 2001-2002, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// Class description :
+// Class description : class used to generate grid for jet studies
+//                     and extract parameter indexes from a given grid
 //
-// Author : Magali Estienne, IPHC Strasbourg - e-mail: magali.estienne@ires.in2p3.fr
+// Author : Magali Estienne, SUBATECH Nantes 
+// E-mail:  magali.estienne@subatech.in2p3.fr
 //
 // --- Standard library ---
 #include <Riostream.h>
@@ -22,8 +24,6 @@ class AliJetGrid : public TNamed {
   
   AliJetGrid();
   AliJetGrid(Int_t nphi,Int_t neta,Double_t phiMin,Double_t etaMin,Double_t phiMax,Double_t etaMax);
-  AliJetGrid(const AliJetGrid& grid);
-  AliJetGrid& operator=(const AliJetGrid& other);
   virtual ~AliJetGrid();
 
   // Getter
@@ -51,12 +51,10 @@ class AliJetGrid : public TNamed {
   void      GetEtaPhiFromIndex2(Int_t index, Float_t &phi, Float_t &eta);
   Int_t     GetNEntries();
   Int_t     GetNEntries2();
-  Int_t     GetDeta() const {return static_cast<Int_t>((fEtaMax-fEtaMin)/fNeta); 
-    if(fDebug>21) cout << "static_cast<Int_t>((fEtaMax-fEtaMin)/fNeta) : " << 
-      static_cast<Int_t>((fEtaMax-fEtaMin)/fNeta);}
-  Int_t     GetDphi() const {return static_cast<Int_t>((fPhiMax-fPhiMin)/fNphi); 
-    if(fDebug>21) cout << "static_cast<Int_t>((fPhiMax-fPhiMin)/fNphi) : " << 
-      static_cast<Int_t>((fPhiMax-fPhiMin)/fNphi);}
+  Int_t     GetDeta() const {if(fNeta!=0) return static_cast<Int_t>((fEtaMax-fEtaMin)/fNeta);
+	                     else return static_cast<Int_t>(fEtaMax-fEtaMin);}
+  Int_t     GetDphi() const {if(fNphi!=0) return static_cast<Int_t>((fPhiMax-fPhiMin)/fNphi);
+	                     else return static_cast<Int_t>(fPhiMax-fPhiMin);} 
   Int_t     GetGridType() const {return fGrid;}
 
   // Setter
@@ -97,7 +95,12 @@ class AliJetGrid : public TNamed {
   Double_t  fMinEta;            // minimum eta
   Int_t     fDebug;             // debug flag
 
-  ClassDef(AliJetGrid,1) // Parameters used by AliTPCtrackerParam 
+ protected:
+  AliJetGrid(const AliJetGrid& grid);
+  AliJetGrid& operator=(const AliJetGrid& other);
+
+
+  ClassDef(AliJetGrid,1) 
 };
 
 

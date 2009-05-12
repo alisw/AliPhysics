@@ -30,7 +30,7 @@
 #include <cmath> 
 
 #include "AliJetFinder.h"
-#include "AliFastJetHeader.h"
+#include "AliFastJetHeaderV1.h"
 
 using namespace std;
 
@@ -42,12 +42,13 @@ class AliFastJetFinder : public AliJetFinder
   AliFastJetFinder();
   ~AliFastJetFinder();
 
-  void FindJets(); 
+  void    FindJets(); 
   // others
-  void RunTest(const char* datafile); // a simple test
-  
-  void WriteJHeaderToFile();
-  
+  void    RunTest(const char* datafile); // a simple test
+  void    WriteJHeaderToFile();
+  Float_t EtaToTheta(Float_t arg);
+  void    InitTask(TChain* tree);
+
   protected:
   AliFastJetFinder(const AliFastJetFinder& rfj);
   AliFastJetFinder& operator = (const AliFastJetFinder& rsfj);

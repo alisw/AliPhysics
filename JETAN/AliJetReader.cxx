@@ -37,24 +37,30 @@
 ClassImp(AliJetReader)
 
 ////////////////////////////////////////////////////////////////////////
+
 AliJetReader::AliJetReader():
   // Constructor
   fChain(0), 
-  fMomentumArray(new TClonesArray("TLorentzVector",2000)),
+  fTree(0), 
+  fMomentumArray(new TClonesArray("TLorentzVector",4000)),
   fArrayMC(0),
   fFillUnitArray(new TTask("fillUnitArray","Fill unit array jet finder")),
   fESD(0),
   fReaderHeader(0),
+  fAliHeader(0),
   fSignalFlag(0),
   fCutFlag(0),
   fUnitArray(new TClonesArray("AliJetUnitArray",60000)),
-  fRefArray(new TRefArray()),
   fUnitArrayNoCuts(new TClonesArray("AliJetUnitArray",60000)),
   fArrayInitialised(0),
   fFillUAFromTracks(new AliJetFillUnitArrayTracks()), 
   fFillUAFromEMCalDigits(new AliJetFillUnitArrayEMCalDigits()),
   fNumCandidate(0),
-  fNumCandidateCut(0)
+  fNumCandidateCut(0),
+  fHadronCorrector(0),
+  fHCorrection(0),
+  fECorrection(0),
+  fEFlag(kFALSE)
 {
   // Default constructor
   fSignalFlag = TArrayI();
@@ -66,36 +72,33 @@ AliJetReader::AliJetReader():
 AliJetReader::~AliJetReader()
 {
   // Destructor
-    if (fMomentumArray) {
-	fMomentumArray->Delete();
-	delete fMomentumArray;
-    }
-    
-    if (fUnitArray) {
-	fUnitArray->Delete();
-	delete fUnitArray;
-    }
-    
-    if (fUnitArrayNoCuts) {
-	fUnitArrayNoCuts->Delete();
-	delete fUnitArrayNoCuts;
-    }
-    
-    if (fFillUnitArray) {
-	delete fFillUnitArray;
-    }
-    
-    if (fArrayMC) {
-	fArrayMC->Delete();
-	delete fArrayMC;
-    }
+  if (fMomentumArray) {
+      fMomentumArray->Delete();
+      delete fMomentumArray;
+  }
+  
+  if (fUnitArray) {
+      fUnitArray->Delete();
+      delete fUnitArray;
+  }
+  
+  if (fUnitArrayNoCuts) {
+    fUnitArrayNoCuts->Delete();
+    delete fUnitArrayNoCuts;
+  }
+
+  if (fFillUnitArray) {
+    fFillUnitArray->Delete();
+    delete fFillUnitArray;
+  }
+  delete fArrayMC;
+  
 }
 
 
 ////////////////////////////////////////////////////////////////////////
 
 void AliJetReader::ClearArray()
-
 {
   if (fMomentumArray)  fMomentumArray->Clear();
   if (fFillUnitArray)  fFillUnitArray->Clear();

@@ -7,15 +7,15 @@
 // Jet reader base class
 // manages the reading of input for jet algorithms
 // Authors: jgcn@mda.cinvestav.mx
-//          Magali Estienne <magali.estienne@IReS.in2p3.fr>  
+//          Magali Estienne <magali.estienne@subatech.in2p3.fr>  
 
 #include <TObject.h>
 #include <TChain.h>
 #include <TArrayI.h>
 
 class TTree;
-class TTask;
 class TChain;
+class TTask;
 class TClonesArray;
 class TRefArray;
 class AliJetReaderHeader;
@@ -34,13 +34,13 @@ class AliJetReader : public TObject
   virtual ~AliJetReader();
 
   // Getters
-  virtual TClonesArray*        GetMomentumArray()    const {return fMomentumArray;}
-  virtual TRefArray*           GetReferences()       const {return 0;}   
-  virtual TClonesArray        *GetUnitArray()        const {return fUnitArray;}  
-  virtual TRefArray           *GetRefArray()         const {return fRefArray;}
+  virtual TClonesArray*       GetMomentumArray()     const {return fMomentumArray;}
+  virtual TRefArray*          GetReferences()        const {return 0;}   
+  virtual TClonesArray        *GetUnitArray() const {return fUnitArray;}  
   virtual TClonesArray        *GetUnitArrayNoCuts()  const {return fUnitArrayNoCuts;} 
 
   virtual AliJetReaderHeader* GetReaderHeader()      const {return fReaderHeader;}
+  virtual AliHeader           *GetAliHeader() const  {return fAliHeader;}
   virtual Int_t               GetSignalFlag(Int_t i) const {return fSignalFlag[i];}
   virtual Int_t               GetCutFlag(Int_t i)    const {return fCutFlag[i];}
   virtual Int_t               GetArrayInitialised()  const {return fArrayInitialised;}
@@ -49,24 +49,21 @@ class AliJetReader : public TObject
   
   // Setters
   virtual Bool_t FillMomentumArray() {return kTRUE;}
+  virtual Bool_t ReadEventLoader(Int_t) {return kTRUE;}
   virtual void   FillUnitArrayFromTPCTracks(Int_t) {}     // temporarily not used
   virtual void   FillUnitArrayFromEMCALHits() {}          // temporarily not used
   virtual void   FillUnitArrayFromEMCALDigits(Int_t) {}   // temporarily not used
-  virtual void   FillUnitArrayFromEMCALClusters(Int_t) {} // temporarily not used
   virtual void   InitUnitArray() {}
   virtual void   InitParameters() {}
-  virtual void   CreateTasks() {}
-  //  virtual void   ExecTasks(Int_t) {}
-  virtual Bool_t   ExecTasks(Int_t) {return kTRUE;}
-  /*   // Correction of hadronic energy 
-       virtual void SetHadronCorrector(AliEMCALHadronCorrectionv1* corr) {fHadronCorrector = corr;} 
-       virtual void SetHadronCorrection(Int_t flag = 1) {fHCorrection = flag;} */
+  virtual void   CreateTasks(TChain* /*tree*/) {}
+  virtual Bool_t ExecTasks(Bool_t /*procid*/, TRefArray* /*refArray*/) {return kFALSE;}
+  // Correction of hadronic energy 
+  virtual void   SetHadronCorrector(AliJetHadronCorrectionv1*) {;} 
+  virtual void   SetHadronCorrection(Int_t) {;} 
+  virtual void   SetElectronCorrection(Int_t) {;} 
   virtual void   SetReaderHeader(AliJetReaderHeader* header) 
-      {fReaderHeader = header;}
+  {fReaderHeader = header;}
   virtual void   SetESD(AliESDEvent* esd) { fESD = esd;}
-  //  virtual Int_t  SetNumCandidate(Int_t cand) {fNumCandidate = cand;} 
-  //  virtual Int_t  SetNumCandidateCut(Int_t candcut) {fNumCandidateCut = candcut;}
-  
 
   // Others
   virtual void   OpenInputFiles() {}
@@ -79,23 +76,32 @@ class AliJetReader : public TObject
  protected:
   AliJetReader(const AliJetReader& rJetReader);
   AliJetReader& operator = (const AliJetReader& rhsr);
-  TChain                  *fChain;            // chain for reconstructed tracks
-  TClonesArray            *fMomentumArray;    // array of particle momenta
-  TClonesArray            *fArrayMC;          //! array of mc particles
-  TTask                   *fFillUnitArray;    //! task list for filling the UnitArray
-  AliESDEvent             *fESD;              // pointer to esd
-  AliJetReaderHeader      *fReaderHeader;     // pointer to header
-  TArrayI                  fSignalFlag;       // to flag if a particle comes from pythia or
-                                              // from the underlying event
-  TArrayI                  fCutFlag;          // to flag if a particle passed the pt cut or not
-  TClonesArray            *fUnitArray;        // array of digit position and energy 
-  TRefArray               *fRefArray;         // ! array of digit position and energy 
-  TClonesArray            *fUnitArrayNoCuts;  // array of digit position and energy 
-  Bool_t                   fArrayInitialised; // To check that array of units is initialised  
-  AliJetFillUnitArrayTracks        *fFillUAFromTracks;
-  AliJetFillUnitArrayEMCalDigits   *fFillUAFromEMCalDigits;
-  Int_t                    fNumCandidate;
-  Int_t                    fNumCandidateCut;
+
+  TChain                          *fChain;                 // chain for reconstructed tracks
+  TChain                          *fTree;                  // tree for reconstructed tracks
+  TClonesArray                    *fMomentumArray;         // array of particle momenta
+  TClonesArray                    *fArrayMC;               //! array of mc particles
+  TTask                           *fFillUnitArray;         //! task list for filling the UnitArray
+  AliESDEvent                     *fESD;                   // pointer to esd
+  AliJetReaderHeader              *fReaderHeader;          // pointer to header
+  AliHeader                       *fAliHeader;             // AliHeader
+  TArrayI                          fSignalFlag;            // to flag if a particle comes from pythia or
+                                                           // from the underlying event
+  TArrayI                          fCutFlag;               // to flag if a particle passed the pt cut or not
+  TClonesArray                    *fUnitArray;             // array of digit position and energy 
+  TClonesArray                    *fUnitArrayNoCuts;       //|| array of digit position and energy 
+  Bool_t                           fArrayInitialised;      // To check that array of units is initialised  
+  AliJetFillUnitArrayTracks       *fFillUAFromTracks;      // For charged particle task
+  AliJetFillUnitArrayEMCalDigits  *fFillUAFromEMCalDigits; // For neutral particle task
+  Int_t                            fNumCandidate;          // Number of entries different from zero in unitarray
+  Int_t                            fNumCandidateCut;       // Number of entries different from zero in unitarray
+                                                           // which pass pt cut
+  AliJetHadronCorrectionv1        *fHadronCorrector;       //! Pointer to hadronic correction 
+  Int_t                            fHCorrection;           //  Hadron correction flag 
+  Int_t                            fECorrection;           //  Electron correction flag 
+  Bool_t                           fEFlag;                 //  Electron correction flag 
+
+
   ClassDef(AliJetReader,1)
 };
  

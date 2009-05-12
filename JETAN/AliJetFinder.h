@@ -9,6 +9,7 @@
 // manages the search for jets 
 // Authors: jgcn@mda.cinvestav.mx
 //          andreas.morsch@cern.ch
+//          magali.estienne@subatech.in2p3.fr
 //---------------------------------------------------------------------
 
 #include <TObject.h>
@@ -16,7 +17,7 @@
 #include "AliJetReader.h"
 
 class TFile;
-class TTree;
+class TChain;
 class AliJet;
 class AliJetHeader;
 class AliJetControlPlots;
@@ -33,35 +34,38 @@ class AliJetFinder : public TObject
   // getters
   virtual AliJetReader *GetReader() {return fReader;}
   virtual AliJetHeader *GetHeader() {return fHeader;}
-  virtual AliJet *GetJets() {return fJets;}
-  virtual Bool_t GetPlotMode() const {return fPlotMode;}
-  virtual TFile* GetOutputFile() {return fOut;}
+  virtual AliJet       *GetJets() {return fJets;}
+  virtual Bool_t        GetPlotMode() const {return fPlotMode;}
+  virtual TFile        *GetOutputFile() {return fOut;}
   // setters
-  virtual void SetPlotMode(Bool_t b);
-  virtual void SetOutputFile(const char *name="jets.root");
-  virtual void SetJetReader(AliJetReader* r) {fReader=r;}
-  virtual void SetJetHeader(AliJetHeader* h) {fHeader=h;}
+  virtual void          SetPlotMode(Bool_t b);
+  virtual void          SetOutputFile(const char *name="jets.root");
+  virtual void          SetJetReader(AliJetReader* r) {fReader=r;}
+  virtual void          SetJetHeader(AliJetHeader* h) {fHeader=h;}
   // others
-  virtual void   AddJet(AliAODJet jet);
-  virtual void   PrintJets();
-  virtual void   Run();
-  virtual void   WriteRHeaderToFile();  
+  virtual void          AddJet(AliAODJet jet);
+  virtual void          PrintJets();
+  virtual void          Run();
+  virtual void          WriteRHeaderToFile();  
   // the following have to be implemented for each specific finder
-  virtual void Init() {}
-  virtual void Reset() {fNAODjets = 0;}
-  virtual void FindJets() {}
-  virtual void FindJetsTPC(){}
-  virtual void WriteJHeaderToFile() { }
+  virtual void          Init() {}
+  virtual void          InitTask(TChain* /*tree*/) {}
+  virtual void          Reset() {fNAODjets = 0;}
+  virtual void          FindJets() {}
+  virtual void          FindJetsC(){}
+  virtual void          WriteJHeaderToFile() { }
   // some methods to allow steering from the outside
-  virtual Bool_t ProcessEvent();
-  virtual void   FinishRun();
-  virtual void   ConnectTree(TTree* tree, TObject* data);
-  virtual void   ConnectAOD(AliAODEvent* aod);
-  virtual void   ConnectAODNonStd(AliAODEvent* aod,const char* bname);
-  virtual TTree* MakeTreeJ(char* name);
-  virtual void   WriteHeaders();
-  virtual void   WriteJetsToFile() {;}
-  virtual void   TestJet() {;}
+  virtual Bool_t        ProcessEvent();
+  virtual Bool_t        ProcessEvent2();
+  virtual void          FinishRun();
+  virtual void          ConnectTree(TTree* tree, TObject* data);
+  virtual void          ConnectAOD(AliAODEvent* aod);
+  virtual void          ConnectAODNonStd(AliAODEvent* aod,const char* bname);
+  virtual TTree         *MakeTreeJ(char* name);
+  virtual void          WriteHeaders();
+  virtual void          WriteJetsToFile() {;}
+  virtual void          TestJet() {;}
+
  protected:
   AliJetFinder(const AliJetFinder& rJetFinder);
   AliJetFinder& operator = (const AliJetFinder& rhsf);
@@ -76,6 +80,7 @@ class AliJetFinder : public TObject
   Int_t         fNAODjets;       //! number of reconstructed jets
   AliJetControlPlots* fPlots;    //! pointer to control plots
   TFile* fOut;                   //! output file
+
   ClassDef(AliJetFinder,2)
 };
 

@@ -16,10 +16,13 @@
 
 //---------------------------------------------------------------------
 // FastJet v2.3.4 finder algorithm interface
+// Last modification: Neutral cell energy included in the jet reconstruction
 //
-// Author: Rafael.Diaz.Valdes@cern.ch
-//  
+// Authors: Rafael.Diaz.Valdes@cern.ch
+//          Magali.estienne@subatech.in2p3.fr (neutral part + bg subtraction option)
+//
 //---------------------------------------------------------------------
+
 
 #include <Riostream.h>
 #include <TLorentzVector.h>
@@ -31,11 +34,11 @@
 #include <TClonesArray.h>
 
 #include "AliFastJetFinder.h"
-#include "AliFastJetHeader.h"
+#include "AliFastJetHeaderV1.h"
 #include "AliJetReaderHeader.h"
 #include "AliJetReader.h"
 #include "AliJet.h"
-
+#include "AliJetUnitArray.h"
 
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequenceArea.hh"
@@ -56,6 +59,8 @@ using namespace std;
 
 
 ClassImp(AliFastJetFinder)
+
+
 //____________________________________________________________________________
 
 AliFastJetFinder::AliFastJetFinder():
@@ -75,10 +80,11 @@ AliFastJetFinder::~AliFastJetFinder()
 void AliFastJetFinder::FindJets()
 {
   
-  Bool_t debug = kFALSE;
-  
   //pick up fastjet header
-  AliFastJetHeader *header = (AliFastJetHeader*)fHeader;
+  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+  Bool_t debug  = header->GetDebug();     // debug option
+  Bool_t bgMode = header->GetBGMode();    // choose to subtract BG or not
+  Int_t fOpt    = fReader->GetReaderHeader()->GetDetector();
 
   // check if we are reading AOD jets
   TRefArray *refs = 0;
@@ -88,26 +94,62 @@ void AliFastJetFinder::FindJets()
   // RUN ALGORITHM  
   // read input particles -----------------------------
   vector<fastjet::PseudoJet> input_particles;
-  TClonesArray *lvArray = fReader->GetMomentumArray();
-  if(lvArray == 0) { cout << "Could not get the momentum array" << endl; return; }
-  Int_t nIn =  lvArray->GetEntries();
-  if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
-  //Int_t nJets = 0; // n jets in this event
-  fJets->SetNinput(nIn) ; // number of input objects
-  Float_t px,py,pz,en;
-  // load input vectors
-  for(Int_t i = 0; i < nIn; i++){ // loop for all input particles
-      TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
-      px = lv->Px();
-      py = lv->Py();
-      pz = lv->Pz();
-      en = lv->Energy();
-      
-      fastjet::PseudoJet input_part(px,py,pz,en); // create PseudoJet object
-      input_part.set_user_index(i); //label the particle into Fastjet algortihm
-      input_particles.push_back(input_part);  // back of the input_particles vector  
-  } // end loop 
-  
+  if(fOpt==0)
+    {
+      TClonesArray *lvArray = fReader->GetMomentumArray();
+      if(lvArray == 0) { cout << "Could not get the momentum array" << endl; return; }
+      Int_t nIn =  lvArray->GetEntries();
+      if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
+      fJets->SetNinput(nIn) ; // number of input objects
+      Float_t px,py,pz,en;
+      // load input vectors
+      for(Int_t i = 0; i < nIn; i++){ // loop for all input particles
+	TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
+	px = lv->Px();
+	py = lv->Py();
+	pz = lv->Pz();
+	en = lv->Energy();
+    
+	fastjet::PseudoJet input_part(px,py,pz,en); // create PseudoJet object
+	input_part.set_user_index(i); //label the particle into Fastjet algortihm
+	input_particles.push_back(input_part);  // back of the input_particles vector  
+      } // end loop 
+    }
+  else {
+    TClonesArray* fUnit = fReader->GetUnitArray();
+    if(fUnit == 0) { cout << "Could not get the momentum array" << endl; return; }
+    Int_t         nCandidate = fReader->GetNumCandidate();
+    Int_t         nIn = fUnit->GetEntries();
+    if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
+    fJets->SetNinput(nCandidate); // number of input objects // ME
+    // Information extracted from fUnitArray
+    // load input vectors and calculate total energy in array
+    Float_t pt,eta,phi,theta,px,py,pz,en;
+    Int_t ipart = 0;
+    for(Int_t i=0; i<nIn; i++) 
+      {
+	AliJetUnitArray *uArray = (AliJetUnitArray*)fUnit->At(i);
+	
+	if(uArray->GetUnitEnergy()>0.){
+	  
+	  // It is not necessary anymore to cut on particle pt
+	  pt    = uArray->GetUnitEnergy();
+	  eta   = uArray->GetUnitEta();
+	  phi   = uArray->GetUnitPhi();
+	  theta = EtaToTheta(eta);
+	  en    = (TMath::Abs(TMath::Sin(theta)) == 0) ? pt : pt/TMath::Abs(TMath::Sin(theta));
+	  px    = TMath::Cos(phi)*pt;
+	  py    = TMath::Sin(phi)*pt;
+	  pz    = en*TMath::TanH(eta);
+	  if(debug) cout << "pt: " << pt << ", eta: " << eta << ", phi: " << phi << ", en: " << en << ", px: " << px << ", py: " << py << ", pz: " << pz << endl;
+
+	  fastjet::PseudoJet input_part(px,py,pz,en); // create PseudoJet object
+	  input_part.set_user_index(ipart); //label the particle into Fastjet algortihm
+	  input_particles.push_back(input_part);  // back of the input_particles vector 
+	  ipart++;
+	}
+      } // End loop on UnitArray 
+  }
   
   // create an object that represents your choice of jet algorithm, and 
   // the associated parameters
@@ -116,8 +158,7 @@ void AliFastJetFinder::FindJets()
   fastjet::RecombinationScheme recomb_scheme = header->GetRecombScheme();
   fastjet::JetAlgorithm algorithm = header->GetAlgorithm(); 
   fastjet::JetDefinition jet_def(algorithm, Rparam, recomb_scheme, strategy);
-  
- 
+
   // create an object that specifies how we to define the area
   fastjet::AreaDefinition area_def;
   double ghost_etamax = header->GetGhostEtaMax(); 
@@ -130,71 +171,114 @@ void AliFastJetFinder::FindJets()
   fastjet::AreaType area_type = header->GetAreaType();
   area_def = fastjet::AreaDefinition(area_type,ghost_spec);
   
-  // run the jet clustering with the above jet definition
-  fastjet::ClusterSequenceArea clust_seq(input_particles, jet_def, area_def);
-  
-  
-  // save a comment in the header
- 
-  TString comment = "Running FastJet algorithm with the following setup. ";
-  comment+= "Jet definition: ";
-  comment+= TString(jet_def.description());
-  comment+= ". Area definition: ";
-  comment+= TString(area_def.description());
-  comment+= ". Strategy adopted by FastJet: ";
-  comment+= TString(clust_seq.strategy_string());
-  header->SetComment(comment);
-  if(debug){
-    cout << "--------------------------------------------------------" << endl;
-    cout << comment << endl;
-    cout << "--------------------------------------------------------" << endl;
-  }
-  //header->PrintParameters();
-  
-  
-  // extract the inclusive jets with pt > ptmin, sorted by pt
-  double ptmin = header->GetPtMin(); 
-  vector<fastjet::PseudoJet> inclusive_jets = clust_seq.inclusive_jets(ptmin);
-  
-  //cout << "Number of unclustered particles: " << clust_seq.unclustered_particles().size() << endl;
- 
- 
-  //subtract background // ===========================================
-  // set the rapididty , phi range within which to study the background 
-  double rap_max = header->GetRapMax(); 
-  double rap_min = header->GetRapMin();
-  double phi_max = header->GetPhiMax();
-  double phi_min = header->GetPhiMin();
-  fastjet::RangeDefinition range(rap_min, rap_max, phi_min, phi_max);
-  // subtract background
-  vector<fastjet::PseudoJet> sub_jets =  clust_seq.subtracted_jets(range,ptmin);  
-  
-  // print out
-  //cout << "Printing inclusive sub jets with pt > "<< ptmin<<" GeV\n";
-  //cout << "---------------------------------------\n";
-  //cout << endl;
-  //printf(" ijet   rap      phi        Pt         area  +-   err\n");
-   
-  // sort jets into increasing pt
-  vector<fastjet::PseudoJet> jets = sorted_by_pt(sub_jets);  
-  for (size_t j = 0; j < jets.size(); j++) { // loop for jets
+  if(bgMode) // BG subtraction
+    {
+      //***************************** JETS FINDING AND EXTRACTION
+      // run the jet clustering with the above jet definition
+      fastjet::ClusterSequenceArea clust_seq(input_particles, jet_def, area_def);
 
-//    double area     = clust_seq.area(jets[j]);
-//    double area_error = clust_seq.area_error(jets[j]);
-
-    //printf("%5u %9.5f %8.5f %10.3f %8.3f +- %6.3f\n",j,jets[j].rap(),jets[j].phi(),jets[j].perp(), area, area_error);
+      // save a comment in the header
+      
+      TString comment = "Running FastJet algorithm with the following setup. ";
+      comment+= "Jet definition: ";
+      comment+= TString(jet_def.description());
+      comment+= ". Area definition: ";
+      comment+= TString(area_def.description());
+      comment+= ". Strategy adopted by FastJet: ";
+      comment+= TString(clust_seq.strategy_string());
+      header->SetComment(comment);
+      if(debug){
+	cout << "--------------------------------------------------------" << endl;
+	cout << comment << endl;
+	cout << "--------------------------------------------------------" << endl;
+      }
+      //header->PrintParameters();
+      
+      
+      // extract the inclusive jets with pt > ptmin, sorted by pt
+      double ptmin = header->GetPtMin(); 
+      vector<fastjet::PseudoJet> inclusive_jets = clust_seq.inclusive_jets(ptmin);
+      
+      //cout << "Number of unclustered particles: " << clust_seq.unclustered_particles().size() << endl;
+      
+      
+      //subtract background // ===========================================
+      // set the rapididty , phi range within which to study the background 
+      double rap_max = header->GetRapMax(); 
+      double rap_min = header->GetRapMin();
+      double phi_max = header->GetPhiMax();
+      double phi_min = header->GetPhiMin();
+      fastjet::RangeDefinition range(rap_min, rap_max, phi_min, phi_max);
+      
+      // subtract background
+      vector<fastjet::PseudoJet> sub_jets =  clust_seq.subtracted_jets(range,ptmin);  
+      
+      // print out
+      //cout << "Printing inclusive sub jets with pt > "<< ptmin<<" GeV\n";
+      //cout << "---------------------------------------\n";
+      //cout << endl;
+      //printf(" ijet   rap      phi        Pt         area  +-   err\n");
+      
+      // sort jets into increasing pt
+      vector<fastjet::PseudoJet> jets = sorted_by_pt(sub_jets);  
+      for (size_t j = 0; j < jets.size(); j++) { // loop for jets
+	
+	double area     = clust_seq.area(jets[j]);
+	double area_error = clust_seq.area_error(jets[j]);
+	
+	printf("Jet found %5d %9.5f %8.5f %10.3f %8.3f +- %6.3f\n", (Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp(), area, area_error);
 	
 	// go to write AOD  info
-    AliAODJet aodjet (jets[j].px(), jets[j].py(), jets[j].pz(), jets[j].E());
-   //cout << "Printing jet " << endl;
-    if(debug) aodjet.Print("");
-   //cout << "Adding jet ... " ;
-    AddJet(aodjet);
-   //cout << "added \n" << endl;
-   
-  } // end loop for jets
+	AliAODJet aodjet (jets[j].px(), jets[j].py(), jets[j].pz(), jets[j].E());
+	//cout << "Printing jet " << endl;
+	if(debug) aodjet.Print("");
+	//cout << "Adding jet ... " ;
+	AddJet(aodjet);
+	//cout << "added \n" << endl;
+	
+      }
+    }
+  else { // No BG subtraction
 
+    fastjet::ClusterSequence clust_seq(input_particles, jet_def); 
+
+    // save a comment in the header
     
+    TString comment = "Running FastJet algorithm with the following setup. ";
+    comment+= "Jet definition: ";
+    comment+= TString(jet_def.description());
+    comment+= ". Strategy adopted by FastJet: ";
+    comment+= TString(clust_seq.strategy_string());
+    header->SetComment(comment);
+    if(debug){
+      cout << "--------------------------------------------------------" << endl;
+      cout << comment << endl;
+      cout << "--------------------------------------------------------" << endl;
+    }
+    //header->PrintParameters();
+  
+      // extract the inclusive jets with pt > ptmin, sorted by pt
+    double ptmin = header->GetPtMin(); 
+    vector<fastjet::PseudoJet> inclusive_jets = clust_seq.inclusive_jets(ptmin);
+    
+    //cout << "Number of unclustered particles: " << clust_seq.unclustered_particles().size() << endl;
+    
+    vector<fastjet::PseudoJet> jets = sorted_by_pt(inclusive_jets); // Added by me
+    for (size_t j = 0; j < jets.size(); j++) { // loop for jets     // Added by me
+      
+      printf("Jet found %5d %9.5f %8.5f %10.3f \n",(Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp());
+      
+      // go to write AOD  info
+      AliAODJet aodjet (jets[j].px(), jets[j].py(), jets[j].pz(), jets[j].E());
+      //cout << "Printing jet " << endl;
+      if(debug) aodjet.Print("");
+      //cout << "Adding jet ... " ;
+      AddJet(aodjet);
+      //cout << "added \n" << endl;
+      
+    } // end loop for jets
+  } 
+
 }
 
 //____________________________________________________________________________
@@ -282,7 +366,7 @@ void AliFastJetFinder::RunTest(const char* datafile)
     double area     = clust_seq.area(jets[j]);
     double area_error = clust_seq.area_error(jets[j]);
 
-    printf("%5d %9.5f %8.5f %10.3f %8.3f +- %6.3f\n",j,jets[j].rap(),
+    printf("%5d %9.5f %8.5f %10.3f %8.3f +- %6.3f\n",(Int_t)j,jets[j].rap(),
 	   jets[j].phi(),jets[j].perp(), area, area_error);
   }
   cout << endl;
@@ -300,3 +384,21 @@ void AliFastJetFinder::WriteJHeaderToFile()
 }
 
 //____________________________________________________________________________
+
+Float_t  AliFastJetFinder::EtaToTheta(Float_t arg)
+{
+  //  return (180./TMath::Pi())*2.*atan(exp(-arg));
+  return 2.*atan(exp(-arg));
+
+
+}
+
+//____________________________________________________________________________
+
+void AliFastJetFinder::InitTask(TChain *tree)
+{
+
+  printf("Fast jet finder initialization ******************");
+  fReader->CreateTasks(tree);
+
+}

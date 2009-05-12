@@ -11,13 +11,18 @@
 //=========================================================================
 // Modified in order to use a fUnitArray object instead of a fMomentumArray
 // Includes EMCal Geometry, fUnitArray, grid objects and tools for Hadron correction
-// Author : magali.estienne@ires.in2p3.fr
+// Author : magali.estienne@subatech.in2p3.fr
 //---------------------------------------------------------------------
+
+#include <vector>
 
 #include "AliJetReader.h"
 #include "AliJetUnitArray.h"
 #include "AliJetGrid.h"
+
+class TRefArray;
 class AliJetESDReaderHeader;
+class AliEMCALGeometry;
 class AliJetDummyGeo;
 class AliJetHadronCorrection;
 class AliJetUnitArray;
@@ -30,32 +35,29 @@ class AliJetESDReader : public AliJetReader
   AliJetESDReader();
   virtual ~AliJetESDReader();
 
-  // Getters
-  Float_t GetTrackMass() const {return fMass;}  // returns mass of the track
-  Int_t   GetTrackSign() const {return fSign;}  // returns sign of the track
+  Bool_t     FillMomentumArray(); 
+  void       OpenInputFiles();
+  void       InitUnitArray();
+  void       CreateTasks(TChain* tree);
+  Bool_t     ExecTasks(Bool_t procid, TRefArray* refArray);
 
+  // Getters
+  Float_t    GetTrackMass() const {return fMass;}  // returns mass of the track
+  Int_t      GetTrackSign() const {return fSign;}  // returns sign of the track
+ 
   // Setters
-  Bool_t FillMomentumArray(); 
-  void   OpenInputFiles();
-  void   InitUnitArray();
-  void   CreateTasks();
-  //  void   ExecTasks(Int_t event);
-  Bool_t   ExecTasks(Int_t event);
-  void   SetInputEvent(TObject* esd, TObject* aod, TObject* mc);
-  virtual void SetTPCGrid(AliJetGrid *grid)   {fTpcGrid = grid;}
-  virtual void SetEMCalGrid(AliJetGrid *grid) {fEmcalGrid = grid;}
+  void       SetInputEvent(TObject* esd, TObject* aod, TObject* mc);
+  void       SetTPCGrid(AliJetGrid *grid)   {fTpcGrid = grid;}
+  void       SetEMCalGrid(AliJetGrid *grid) {fEmcalGrid = grid;}
   // Correction of hadronic energy
-  virtual void SetHadronCorrection(Int_t flag = 1) {fHCorrection = flag;}
-  virtual void SetHadronCorrector(AliJetHadronCorrectionv1* corr) {fHadCorr = corr;}
- private:
-  void SetEMCALGeometry();
-  void InitParameters();
-  AliJetESDReader(const AliJetESDReader &det);
-  AliJetESDReader &operator=(const AliJetESDReader &det);
+  void       SetHadronCorrection(Int_t flag = 1) {fHCorrection = flag;}
+  void       SetHadronCorrector(AliJetHadronCorrectionv1* corr) {fHadCorr = corr;}
+  void       SetElectronCorrection(Int_t flag = 1) {fECorrection = flag; fEFlag=kTRUE;}
 
  protected:
   AliJetDummyGeo             *fGeom;             //! EMCAL Geometry 
   TChain                     *fChain;            //! chain for reconstructed tracks
+  TChain                     *fTree;             //! tree for reconstructed tracks
   AliESDEvent                *fESD;              //! pointer to esd
   AliJetHadronCorrectionv1   *fHadCorr;          //! Pointer to Hadron Correction Object 
   AliJetGrid                 *fTpcGrid;          //! Pointer to grid object
@@ -67,18 +69,30 @@ class AliJetESDReader : public AliJetReader
   AliJetGrid                 *fGrid4;            // Pointer to grid object
   Float_t                     fPtCut;            // Pt cut for tracks to minimise background contribution
   Int_t                       fHCorrection;      // Hadron correction flag
+  Int_t                       fECorrection;      // Electron correction flag
+  Bool_t                      fEFlag;            // if (fEFlag == kFALSE) => fECorrection automatically setted
   Int_t                       fNumUnits;         // Number of units in the unit object array
                                                  // (same as num towers in EMCAL)
-  Int_t                       fDebug;            // Debug option
-  Float_t                     fMass;    // Particle mass
-  Int_t                       fSign;    // Particle sign
+  Int_t                       fDebug;            //! Debug option
+  Float_t                     fMass;             // Particle mass
+  Int_t                       fSign;             // Particle sign
   Int_t                       fNIn;              // Number of Array filled in UnitArray
   Int_t                       fOpt;              // Detector to be used for jet reconstruction
   Bool_t                      fDZ;               // Use or not dead zones
   Int_t                       fNeta;             // Number of bins in eta of tpc grid
   Int_t                       fNphi;             // Number of bins in phi of tpc grid
   Bool_t                      fArrayInitialised; // To check that array of units is initialised
-  
+  TRefArray                  *fRefArray;         // array of digit position and energy 
+  Bool_t                      fProcId;           // Bool_t for TProcessID synchronization
+
+ private:
+  Bool_t SetEMCALGeometry();
+  void InitParameters();
+  AliJetESDReader(const AliJetESDReader &det);
+  AliJetESDReader &operator=(const AliJetESDReader &det);
+
+
+
   ClassDef(AliJetESDReader,1)
 };
  

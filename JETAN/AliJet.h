@@ -3,14 +3,16 @@
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
-/* $Id$ */ 
+ 
  
 //---------------------------------------------------------------------
 // Jet class 
 // Stores the output of a jet algorithm
 // Author: jgcn@mda.cinvestav.mx
 //---------------------------------------------------------------------
+
+#include <Riostream.h>
+#include <vector>
  
 #include <TObject.h>
 #include <TArrayI.h>
@@ -27,21 +29,28 @@ class AliJet : public TObject
   ~AliJet();
 
   // Getters
-  Int_t GetNinput() const {return fNInput;}
-  Int_t GetNJets() const {return fNJets;}
+  Int_t         GetNinput() const { return fNInput; }
+  Int_t         GetNJets() const {return fNJets;}
   TClonesArray* GetJets() const {return fJets;}
-  TArrayI GetInJet() const {return fInJet;}
-  TArrayI GetMultiplicities() const {return fMultiplicities;}
-  TArrayI GetNCells() const {return fNCells;}
-  TArrayF GetPtFromSignal() const {return fPtFromSignal;}
-  TArrayF GetEtaIn() const {return fEtaIn;}
-  TArrayF GetPhiIn() const {return fPhiIn;}
-  TArrayF GetPtIn() const {return fPtIn;}
-  Double_t GetEtAvg() const {return fEtAvg;}
+  TArrayI       GetInJet() const {return fInJet;}
+  TArrayI       GetMultiplicities() const {return fMultiplicities;}
+  TArrayI       GetNCells() const {return fNCells;}
+  TArrayF       GetPtFromSignal() const {return fPtFromSignal;}
+  TArrayF       GetEtaIn() const { return fEtaIn; }
+  TArrayF       GetPhiIn() const { return fPhiIn; }
+  TArrayF       GetPtIn() const { return fPtIn; }
+  TArrayF       GetPtChargedPtCutIn() const { return fPtChPtCutIn; }
+  TArrayF       GetEnTotChargedPtCutIn() const {return fEnTotChPtCutIn; }
+  TArrayI       GetVectorSizeIn() const { return fVectorSizeIn;  }
+  vector< vector<Float_t> > GetVectorPxIn() const { return fVPx; }
+  vector< vector<Float_t> > GetVectorPyIn() const { return fVPy; }
+  vector< vector<Float_t> > GetVectorPzIn() const { return fVPz; }
+  TArrayI       GetDetectorFlagIn() const { return fDetIn; } 
+  Double_t      GetEtAvg() const { return fEtAvg; }
 
   TLorentzVector* GetJet(Int_t i);
-  Int_t GetMultiplicity(Int_t i) const;
-  Int_t GetNCell(Int_t i) const;
+  Int_t    GetMultiplicity(Int_t i) const;
+  Int_t    GetNCell(Int_t i) const;
   Double_t GetPx(Int_t i);
   Double_t GetPy(Int_t i);
   Double_t GetPz(Int_t i);
@@ -63,8 +72,14 @@ class AliJet : public TObject
   void SetPhiIn(Float_t* phi);
   void SetPtIn(Float_t* pt);
   void SetInJet(Int_t* idx);
+  void SetPtChargedPtCutIn(Float_t* pt2T);
+  void SetEnTotChargedPtCutIn(Float_t* en2T);
+  void SetVectorSizeIn(Int_t* vectT);
+  void SetVectorPxIn(vector< vector<Float_t> > pxT);
+  void SetVectorPyIn(vector< vector<Float_t> > pyT);
+  void SetVectorPzIn(vector< vector<Float_t> > pzT);
+  void SetDetectorFlagIn(Int_t* detT);
   void SetEtAvg(Double_t et) { fEtAvg = et; }
-  
   // others
   Bool_t OutOfRange(Int_t i, const char *s) const;
   void ClearJets(Option_t *option="");
@@ -75,21 +90,28 @@ class AliJet : public TObject
   AliJet(const AliJet& rJet);
   AliJet& operator = (const AliJet& rhs);
 
-  Int_t fNInput;               // number of input objects
-  Int_t fNJets;                // number of jets found
-  Double_t fEtAvg;             // average background et per cell
+  Int_t    fNInput;               // number of input objects
+  Int_t    fNJets;                // number of jets found
+  Double_t fEtAvg;                // average background et per cell
 
-  TArrayI fInJet;              // i-input object belongs to k-jet 
-  TArrayI fMultiplicities;     // Multiplicity of each jet
-  TArrayI fNCells;             // Number of cells in jet
-  TArrayF fPtFromSignal;       // percentage of pt from signal
-  TClonesArray* fJets;         // 4-momenta of jets
+  TArrayI  fInJet;                // i-input object belongs to k-jet 
+  TArrayI  fMultiplicities;       // Multiplicity of each jet
+  TArrayI  fNCells;               // Number of cells in jet
+  TArrayF  fPtFromSignal;         // percentage of pt from signal
+  TClonesArray* fJets;            // 4-momenta of jets
 
-  TArrayF fEtaIn;              // Arrays of input particles kine:Eta
-  TArrayF fPhiIn;              // Arrays of input particles kine:Phi
-  TArrayF fPtIn;               // Arrays of input particles kine:Pt
-  
-  ClassDef(AliJet,1)
+  TArrayF  fEtaIn;                // Arrays of input particles kine:Eta
+  TArrayF  fPhiIn;                // Arrays of input particles kine:Phi
+  TArrayF  fPtIn;                 // Arrays of input particles kine:Pt
+  TArrayF  fPtChPtCutIn;          // Arrays of input particles kin:Pt Charged with pt cut
+  TArrayF  fEnTotChPtCutIn;       // Arrays of total energy with pt cut on charged + cut min on cell
+  TArrayI  fVectorSizeIn;         // Arrays of number of charged tracks in each unitArray
+  TArrayI  fDetIn;                // Arrays of detector type of each UnitArray
+  vector< vector<Float_t> > fVPx; //||
+  vector< vector<Float_t> > fVPy; //||
+  vector< vector<Float_t> > fVPz; //||
+
+  ClassDef(AliJet,2)
 };
  
 #endif

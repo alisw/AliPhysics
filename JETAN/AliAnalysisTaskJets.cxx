@@ -14,7 +14,7 @@
  **************************************************************************/
 
 /* $Id$ */
- 
+#include <Riostream.h> 
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
@@ -26,6 +26,8 @@
 #include "AliAnalysisManager.h"
 #include "AliJetFinder.h"
 #include "AliJetHeader.h"
+#include "AliJetReader.h"
+#include "AliJetReaderHeader.h"
 #include "AliJetHistos.h"
 #include "AliESDEvent.h"
 #include "AliESD.h"
@@ -42,113 +44,142 @@ ClassImp(AliAnalysisTaskJets)
 ////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskJets::AliAnalysisTaskJets():
-    AliAnalysisTaskSE(),
-  fConfigFile("ConfigJetAnalysis.C"),  
-  fNonStdBranch(""),  
+  AliAnalysisTaskSE(),
+  fConfigFile("ConfigJetAnalysis.C"),
+  fNonStdBranch(""), 
   fJetFinder(0x0),
   fHistos(0x0),
-  fListOfHistos(0x0)
+  fListOfHistos(0x0),
+  fChain(0x0),
+  fOpt(0)
 {
   // Default constructor
 }
 
 AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
-    AliAnalysisTaskSE(name),
-    fConfigFile("ConfigJetAnalysis.C"),  
-    fNonStdBranch(""),  
-    fJetFinder(0x0),
-    fHistos(0x0),
-    fListOfHistos(0x0)
+  AliAnalysisTaskSE(name),
+  fConfigFile("ConfigJetAnalysis.C"),
+  fNonStdBranch(""),
+  fJetFinder(0x0),
+  fHistos(0x0),
+  fListOfHistos(0x0),
+  fChain(0x0),
+  fOpt(0)
 {
   // Default constructor
-    DefineOutput(1, TList::Class());
+  DefineOutput(1, TList::Class());
 }
 
+AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name, TChain* chain):
+  AliAnalysisTaskSE(name),
+  fConfigFile("ConfigJetAnalysis.C"),
+  fNonStdBranch(""),
+  fJetFinder(0x0),
+  fHistos(0x0),
+  fListOfHistos(0x0),
+  fChain(chain),
+  fOpt(0)
+{
+  // Default constructor
+  DefineOutput(1, TList::Class());
+}
+
+//----------------------------------------------------------------
 void AliAnalysisTaskJets::UserCreateOutputObjects()
 {
-// Create the output container
-//
-    if (fDebug > 1) printf("AnalysisTaskJets::CreateOutPutData() \n");
-
-    
-
-    if(fNonStdBranch.Length()==0){
+  // Create the output container
+  //
+  if (fDebug > 1) printf("AnalysisTaskJets::CreateOutPutData() \n");
+  
+  if(fNonStdBranch.Length()==0)
+    {
       //  Connec default AOD to jet finder
       fJetFinder->ConnectAOD(AODEvent());
     }
-    else{
+  else
+    {
       // Create a new branch for jets...
-      // how is this is reset cleared in the UserExec....
+      // how is this reset? -> cleared in the UserExec....
       // Can this be handled by the framework?
       TClonesArray *tca = new TClonesArray("AliAODJet", 0);
       tca->SetName(fNonStdBranch);
       AddAODBranch("TClonesArray",&tca);
-      fJetFinder->ConnectAODNonStd(AODEvent(),fNonStdBranch.Data());
+      fJetFinder->ConnectAODNonStd(AODEvent(), fNonStdBranch.Data()); 
     }
-    //  Histograms
-    OpenFile(1);
-    fListOfHistos = new TList();
-    fHistos       = new AliJetHistos();
-    fHistos->AddHistosToList(fListOfHistos);
-    
-    // Add the JetFinderInforamtion to the Outputlist
-    AliJetHeader *fH = fJetFinder->GetHeader();
-    // Compose a characteristic output name
-    // with the name of the output branch
-    if(fH){
-      if(fNonStdBranch.Length()==0){
-	fH->SetName("AliJetHeader_jets");
-      }
-      else{
-	fH->SetName(Form("AliJetHeader_%s",fNonStdBranch.Data()));
-      }
+  
+  // Histograms
+  OpenFile(1);
+  fListOfHistos = new TList();
+  fHistos       = new AliJetHistos();
+  fHistos->AddHistosToList(fListOfHistos);
+  
+  // Add the JetFinderInformation to the Outputlist
+  AliJetHeader *fH = fJetFinder->GetHeader();
+  
+  // Compose a characteristic output name
+  // with the name of the output branch
+  if(fH) {
+    if(fNonStdBranch.Length()==0) {
+      fH->SetName("AliJetHeader_jets");
     }
-    OutputTree()->GetUserInfo()->Add(fH);
+    else {
+      fH->SetName(Form("AliJetHeader_%s",fNonStdBranch.Data()));
+    }
+  }
+  OutputTree()->GetUserInfo()->Add(fH);
 }
 
+//----------------------------------------------------------------
 void AliAnalysisTaskJets::Init()
 {
-    // Initialization
-    if (fDebug > 1) printf("AnalysisTaskJets::Init() \n");
+  // Initialization
+  if (fDebug > 1) printf("AnalysisTaskJets::Init() \n");
+  
+  // Call configuration file
+  if (fConfigFile.Length()) {
+    gROOT->LoadMacro(fConfigFile);
+    fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
+  }
+  AliJetReaderHeader *header = (AliJetReaderHeader*)fJetFinder->GetReader()->GetReaderHeader();
+  fOpt = header->GetDetector();
 
-    // Call configuration file
-    if (fConfigFile.Length()) {
-       gROOT->LoadMacro(fConfigFile);
-       fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
-    }   
-    // Initialise Jet Analysis
-    fJetFinder->Init();
-    // Write header information to local file
-    fJetFinder->WriteHeaders();
+  // Initialise Jet Analysis
+  if(fOpt == 0) fJetFinder->Init();
+  else fJetFinder->InitTask(fChain); // V2
+  
+  // Write header information to local file
+  fJetFinder->WriteHeaders();
 }
 
-    
-
-
-
+//----------------------------------------------------------------
 void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
   //
-
-
   // Fill control histos
   TClonesArray* jarray = 0;
-  if(fNonStdBranch.Length()==0){
+
+  if(fNonStdBranch.Length()==0) {
     jarray = AODEvent()->GetJets();
   }
-  else{
-    jarray =  dynamic_cast<TClonesArray*>(AODEvent()->FindListObject(fNonStdBranch.Data()));
+  else {
+    jarray = dynamic_cast<TClonesArray*>(AODEvent()->FindListObject(fNonStdBranch.Data()));
     jarray->Delete();    // this is our responsibility, clear before filling again
   }
 
   fJetFinder->GetReader()->SetInputEvent(InputEvent(), AODEvent(), MCEvent());
-  fJetFinder->ProcessEvent();
-
+  if(fOpt==0) fJetFinder->ProcessEvent();
+  else fJetFinder->ProcessEvent2();    // V2
+ 
+  // Fill control histos
   fHistos->FillHistos(jarray);
+
   // Post the data
   PostData(1, fListOfHistos);
 }
+
+
+//*************************************************************
 
 void AliAnalysisTaskJets::Terminate(Option_t */*option*/)
 {

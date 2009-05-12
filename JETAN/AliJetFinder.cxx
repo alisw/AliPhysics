@@ -20,11 +20,13 @@
 // manages the search for jets 
 // Authors: jgcn@mda.cinvestav.mx
 //          andreas.morsch@cern.ch
+//          magali.estienne@subatech.in2p3.fr
 //---------------------------------------------------------------------
 
 #include <Riostream.h>
 #include <TFile.h>
 #include <TClonesArray.h>
+#include <TProcessID.h>
 
 #include "AliJetFinder.h"
 #include "AliJet.h"
@@ -34,6 +36,7 @@
 #include "AliJetControlPlots.h"
 #include "AliLeading.h"
 #include "AliAODEvent.h"
+#include "AliJetUnitArray.h"
 
 ClassImp(AliJetFinder)
 
@@ -51,7 +54,10 @@ AliJetFinder::AliJetFinder():
     fOut(0x0)
     
 {
+  //
   // Constructor
+  //
+
   fJets    = new AliJet();
   fGenJets = new AliJet();
   fLeading = new AliLeading();
@@ -59,11 +65,13 @@ AliJetFinder::AliJetFinder():
 }
 
 ////////////////////////////////////////////////////////////////////////
-
 AliJetFinder::~AliJetFinder()
 {
-  // destructor
-  // here reset and delete jets
+  //
+  // Destructor
+  //
+
+  // Reset and delete jets
   fJets->ClearJets();
   delete fJets;
   fGenJets->ClearJets();
@@ -76,13 +84,9 @@ AliJetFinder::~AliJetFinder()
   delete fOut;
   // reset and delete control plots
   if (fPlots) delete fPlots;
-  if ( fLeading )
-      delete fLeading;
-  fLeading = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////
-
 void AliJetFinder::SetOutputFile(const char */*name*/)
 {
   //  opens output file 
@@ -90,7 +94,6 @@ void AliJetFinder::SetOutputFile(const char */*name*/)
 }
 
 ////////////////////////////////////////////////////////////////////////
-
 void AliJetFinder::PrintJets()
 {
   // Print jet information
@@ -101,7 +104,6 @@ void AliJetFinder::PrintJets()
 }
 
 ////////////////////////////////////////////////////////////////////////
-
 void AliJetFinder::SetPlotMode(Bool_t b)
 {
   // Sets the plotting mode
@@ -121,7 +123,6 @@ TTree* AliJetFinder::MakeTreeJ(char* name)
 }
 
 ////////////////////////////////////////////////////////////////////////
-
 void AliJetFinder::WriteRHeaderToFile()
 {
   // write reader header
@@ -130,8 +131,6 @@ void AliJetFinder::WriteRHeaderToFile()
 }
 
 ////////////////////////////////////////////////////////////////////////
-
-
 void AliJetFinder::Run()
 {
   // Do some initialization
@@ -158,11 +157,11 @@ void AliJetFinder::Run()
 
       if (option == 0) { // TPC with fMomentumArray
 	  if(debug > 1) 
-	      printf("In FindJetsTPC() routine: find jets with fMomentumArray !!!\n");
-	  FindJetsTPC();
+	      printf("In FindJetsC() routine: find jets with fMomentumArray !!!\n");
+	  FindJetsC();
       } else {
-	   if(debug > 1) printf("In FindJets() routine: find jets with fUnitArray !!!\n");
-	   FindJets();
+	if(debug > 1) printf("In FindJets() routine: find jets with fUnitArray !!!\n");
+	FindJets();
       }
       if (fOut) {
 	  fOut->cd();
@@ -191,12 +190,14 @@ void AliJetFinder::Run()
 // The following methods have been added to allow for event steering from the outside
 //
 
+////////////////////////////////////////////////////////////////////////
 void AliJetFinder::ConnectTree(TTree* tree, TObject* data)
 {
     // Connect the input file
     fReader->ConnectTree(tree, data);
 }
 
+////////////////////////////////////////////////////////////////////////
 void AliJetFinder::WriteHeaders()
 {
     // Write the Headers
@@ -206,27 +207,84 @@ void AliJetFinder::WriteHeaders()
     f->Close();
 }
 
-
+////////////////////////////////////////////////////////////////////////
 Bool_t AliJetFinder::ProcessEvent()
 {
-//
-// Process one event
-//
-    Bool_t ok = fReader->FillMomentumArray();
-    if (!ok) return kFALSE;
+  //
+  // Process one event
+  // Charged only jets
+  //
 
-    // Leading particles
-    fLeading->FindLeading(fReader);
-    // Jets
-    FindJets();
-
-    if (fPlots) fPlots->FillHistos(fJets);
-    fLeading->Reset();
-    fGenJets->ClearJets();
-    Reset();  
-    return kTRUE;
+  Bool_t ok = fReader->FillMomentumArray();
+  if (!ok) return kFALSE;
+  
+  // Leading particles
+  fLeading->FindLeading(fReader);
+  // Jets
+  FindJets(); // V1
+  //  FindJetsC(); // V2
+  
+  if (fPlots) fPlots->FillHistos(fJets);
+  fLeading->Reset();
+  fGenJets->ClearJets();
+  Reset();  
+  return kTRUE;
 }
 
+////////////////////////////////////////////////////////////////////////
+Bool_t AliJetFinder::ProcessEvent2()
+{
+  //
+  // Process one event
+  // Charged only or charged+neutral jets
+  //
+
+  TRefArray* ref = new TRefArray();
+  Bool_t procid = kFALSE;
+  Bool_t ok = fReader->ExecTasks(procid,ref);
+
+  // Delete reference pointer  
+  if (!ok) {delete ref; return kFALSE;}
+  
+  // Leading particles
+  fLeading->FindLeading(fReader);
+  // Jets
+  FindJets();
+  
+  Int_t         nEntRef    = ref->GetEntries();
+  vector<Float_t> vtmp;
+
+  for(Int_t i=0; i<nEntRef; i++)
+    { 
+      // Reset the UnitArray content which were referenced
+      ((AliJetUnitArray*)ref->At(i))->SetUnitTrackID(0);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitEnergy(0.);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitCutFlag(kPtSmaller);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitCutFlag2(kPtSmaller);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitPxPyPz(kTRUE,vtmp);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitSignalFlag(kBad);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitDetectorFlag(kTpc);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitFlag(kOutJet);
+
+      // Reset process ID
+      AliJetUnitArray* uA = (AliJetUnitArray*)ref->At(i);
+      uA->ResetBit(kIsReferenced);
+      uA->SetUniqueID(0);     
+    }
+
+  // Delete the reference pointer
+  ref->Delete();
+  delete ref;
+
+  if (fPlots) fPlots->FillHistos(fJets);
+  fLeading->Reset();
+  fGenJets->ClearJets();
+  Reset();
+
+  return kTRUE;
+}
+
+////////////////////////////////////////////////////////////////////////
 void AliJetFinder::FinishRun()
 {
     // Finish a run
@@ -244,21 +302,25 @@ void AliJetFinder::FinishRun()
     }
 }
 
+////////////////////////////////////////////////////////////////////////
 void AliJetFinder::AddJet(AliAODJet p)
 {
-  // Add new jet to the list
+// Add new jet to the list
   new ((*fAODjets)[fNAODjets++]) AliAODJet(p);
 }
 
+////////////////////////////////////////////////////////////////////////
 void AliJetFinder::ConnectAOD(AliAODEvent* aod)
 {
 // Connect to the AOD
     fAODjets = aod->GetJets();
 }
 
+////////////////////////////////////////////////////////////////////////
 void AliJetFinder::ConnectAODNonStd(AliAODEvent* aod,const char *bname)
 {
 
   fAODjets = dynamic_cast<TClonesArray*>(aod->FindListObject(bname));
   // how is this is reset? Cleared?
 }
+

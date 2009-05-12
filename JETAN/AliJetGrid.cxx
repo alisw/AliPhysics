@@ -30,7 +30,7 @@
 //  > grid->SetMatrixIndexes();
 //  > grid->SetIndexIJ();
 //
-//  Author : magali.estienne@ires.in2p3.fr
+//  Author : magali.estienne@subatech.in2p3.fr
 //=========================================================================
 
 // Standard headers 
@@ -45,70 +45,75 @@
 
 ClassImp(AliJetGrid)
 
-
 //__________________________________________________________
 AliJetGrid::AliJetGrid():
-    fGrid(0),
-    fNphi(0),        
-    fNeta(0),      
-    fPhi(0),       
-    fEta(0),       
-    fIndex(0),     
-    fIndexI(0),    
-    fIndexJ(0),    
-    fPhiMin(0),    
-    fPhiMax(0),    
-    fEtaMin(0),    
-    fEtaMax(0),    
-    fEtaBinInTPCAcc(0),   
-    fPhiBinInTPCAcc(0),   
-    fEtaBinInEMCalAcc(0), 
-    fPhiBinInEMCalAcc(0), 
-    fNbinEta(0),
-    fNbinPhi(0),
-    fMaxPhi(0),
-    fMinPhi(0),
-    fMaxEta(0),
-    fMinEta(0),
-    fDebug(1)
- {
+  fGrid(0),
+  fNphi(0),        
+  fNeta(0),      
+  fPhi(0),       
+  fEta(0),       
+  fIndex(0),     
+  fIndexI(0),    
+  fIndexJ(0),    
+  fPhiMin(0),    
+  fPhiMax(0),    
+  fEtaMin(0),    
+  fEtaMax(0),    
+  fEtaBinInTPCAcc(0),   
+  fPhiBinInTPCAcc(0),   
+  fEtaBinInEMCalAcc(0), 
+  fPhiBinInEMCalAcc(0), 
+  fNbinEta(0),
+  fNbinPhi(0),
+  fMaxPhi(0),
+  fMinPhi(0),
+  fMaxEta(0),
+  fMinEta(0),
+  fDebug(1)
+{
   // Default constructor
 }
 
 //__________________________________________________________
 AliJetGrid::AliJetGrid(Int_t nphi,Int_t neta,Double_t phiMin,Double_t phiMax,Double_t etaMin,Double_t etaMax):
-    fGrid(0),
-    fNphi(nphi),        
-    fNeta(neta),      
-    fPhi(0),       
-    fEta(0),       
-    fIndex(0),     
-    fIndexI(0),    
-    fIndexJ(0),    
-    fPhiMin(0),    
-    fPhiMax(0),    
-    fEtaMin(0),    
-    fEtaMax(0),    
-    fEtaBinInTPCAcc(0),   
-    fPhiBinInTPCAcc(0),   
-    fEtaBinInEMCalAcc(0), 
-    fPhiBinInEMCalAcc(0), 
-    fNbinEta(0),
-    fNbinPhi(0),
-    fMaxPhi(phiMax),
-    fMinPhi(phiMin),
-    fMaxEta(etaMax),
-    fMinEta(etaMin),
-    fDebug(1)
- {
+  fGrid(0),
+  fNphi(nphi),        
+  fNeta(neta),      
+  fPhi(0),       
+  fEta(0),       
+  fIndex(0),     
+  fIndexI(0),    
+  fIndexJ(0),    
+  fPhiMin(0),    
+  fPhiMax(0),    
+  fEtaMin(0),    
+  fEtaMax(0),    
+  fEtaBinInTPCAcc(0),   
+  fPhiBinInTPCAcc(0),   
+  fEtaBinInEMCalAcc(0), 
+  fPhiBinInEMCalAcc(0), 
+  fNbinEta(0),
+  fNbinPhi(0),
+  fMaxPhi(phiMax),
+  fMinPhi(phiMin),
+  fMaxEta(etaMax),
+  fMinEta(etaMin),
+  fDebug(1)
+{
   // Standard constructor
   fPhi    = new TArrayD(fNphi+1);
   fEta    = new TArrayD(fNeta+1);
   fIndexI = new TArrayI((fNeta+1)*(fNphi+1)+1);
   fIndexJ = new TArrayI((fNeta+1)*(fNphi+1)+1);
   
-  for(Int_t i=0; i<fNphi+1; i++) (*fPhi)[i] = (phiMax-phiMin)/fNphi*i+phiMin;
-  for(Int_t i=0; i<fNeta+1; i++) (*fEta)[i] = (etaMax-etaMin)/fNeta*i+etaMin;
+  for(Int_t i=0; i<fNphi+1; i++) {
+	  if(fNphi!=0) (*fPhi)[i] = (phiMax-phiMin)/fNphi*i+phiMin;
+	  else (*fPhi)[i] = phiMin+(phiMax-phiMin)/2;
+  }
+  for(Int_t i=0; i<fNeta+1; i++) {
+	  if(fNeta!=0) (*fEta)[i] = (etaMax-etaMin)/fNeta*i+etaMin;
+	  else (*fEta)[i] = etaMin+(etaMax-etaMin)/2;
+  }
   
   if(fDebug > 3){
       for(Int_t i=0; i<(fNphi+1); i++)  cout << (*fPhi)[i] << endl;
@@ -120,30 +125,31 @@ AliJetGrid::AliJetGrid(Int_t nphi,Int_t neta,Double_t phiMin,Double_t phiMax,Dou
 }
 
 //__________________________________________________________
-AliJetGrid::AliJetGrid(const AliJetGrid& grid) : TNamed(grid),
-    fGrid(grid.fGrid),
-    fNphi(grid.fNphi),        
-    fNeta(grid.fNeta),      
-    fPhi(0),       
-    fEta(0),       
-    fIndex(0),     
-    fIndexI(grid.fIndexI),    
-    fIndexJ(grid.fIndexJ),    
-    fPhiMin(grid.fPhiMin),    
-    fPhiMax(grid.fPhiMax),    
-    fEtaMin(grid.fEtaMin),    
-    fEtaMax(grid.fEtaMax),    
-    fEtaBinInTPCAcc(grid.fEtaBinInTPCAcc),   
-    fPhiBinInTPCAcc(grid.fPhiBinInTPCAcc),   
-    fEtaBinInEMCalAcc(grid.fEtaBinInEMCalAcc), 
-    fPhiBinInEMCalAcc(grid.fPhiBinInEMCalAcc), 
-    fNbinEta(grid.fNbinEta),
-    fNbinPhi(grid.fNbinPhi),
-    fMaxPhi(grid.fMaxPhi),
-    fMinPhi(grid.fMinPhi),
-    fMaxEta(grid.fMaxEta),
-    fMinEta(grid.fMinEta),
-    fDebug(grid.fDebug) 
+AliJetGrid::AliJetGrid(const AliJetGrid& grid) : 
+  TNamed(grid),
+  fGrid(grid.fGrid),
+  fNphi(grid.fNphi),        
+  fNeta(grid.fNeta),      
+  fPhi(0),       
+  fEta(0),       
+  fIndex(0),     
+  fIndexI(grid.fIndexI),    
+  fIndexJ(grid.fIndexJ),    
+  fPhiMin(grid.fPhiMin),    
+  fPhiMax(grid.fPhiMax),    
+  fEtaMin(grid.fEtaMin),    
+  fEtaMax(grid.fEtaMax),    
+  fEtaBinInTPCAcc(grid.fEtaBinInTPCAcc),   
+  fPhiBinInTPCAcc(grid.fPhiBinInTPCAcc),   
+  fEtaBinInEMCalAcc(grid.fEtaBinInEMCalAcc), 
+  fPhiBinInEMCalAcc(grid.fPhiBinInEMCalAcc), 
+  fNbinEta(grid.fNbinEta),
+  fNbinPhi(grid.fNbinPhi),
+  fMaxPhi(grid.fMaxPhi),
+  fMinPhi(grid.fMinPhi),
+  fMaxEta(grid.fMaxEta),
+  fMinEta(grid.fMinEta),
+  fDebug(grid.fDebug) 
 {
 
   // Copy constructor
@@ -162,40 +168,40 @@ AliJetGrid::AliJetGrid(const AliJetGrid& grid) : TNamed(grid),
 
 AliJetGrid& AliJetGrid::operator=(const AliJetGrid& other)
 {
-// Assignment
-    fGrid = other.fGrid;
-    fNphi = other.fNphi;        
-    fNeta = other.fNeta;      
-    fPhi    = 0;       
-    fEta    = 0;       
-    fIndex  = 0;     
-    fIndexI = other.fIndexI;    
-    fIndexJ = other.fIndexJ;    
-    fPhiMin = other.fPhiMin;    
-    fPhiMax = other.fPhiMax;    
-    fEtaMin = other.fEtaMin;    
-    fEtaMax = other.fEtaMax;    
-    fEtaBinInTPCAcc   = other.fEtaBinInTPCAcc;   
-    fPhiBinInTPCAcc   = other.fPhiBinInTPCAcc;   
-    fEtaBinInEMCalAcc = other.fEtaBinInEMCalAcc; 
-    fPhiBinInEMCalAcc = other.fPhiBinInEMCalAcc; 
-    fNbinEta = other.fNbinEta;
-    fNbinPhi = other.fNbinPhi;
-    fMaxPhi  = other.fMaxPhi;
-    fMinPhi  = other.fMinPhi;
-    fMaxEta  = other.fMaxEta;
-    fMinEta  = other.fMinEta;
-    fDebug   = other.fDebug;
-    fPhi = new TArrayD(fNphi+1);
-    for(Int_t i=0; i<fNphi+1; i++) (*fPhi)[i] = other.fPhi->At(i);
-    fEta = new TArrayD(fNeta+1);
-    for(Int_t i=0; i<fNeta+1; i++) (*fEta)[i] = other.fEta->At(i);
-    
-    fIndex = new TMatrixD(fNphi+1,fNeta+1);
-    for(Int_t i=0; i<fNphi+1; i++) {
-	for(Int_t j=0; j<fNeta+1; j++) (*fIndex)(i,j)=(*other.fIndex)(i,j);
-    }
-    return *this;
+  // Assignment
+  fGrid = other.fGrid;
+  fNphi = other.fNphi;        
+  fNeta = other.fNeta;      
+  fPhi    = 0;       
+  fEta    = 0;       
+  fIndex  = 0;     
+  fIndexI = other.fIndexI;    
+  fIndexJ = other.fIndexJ;    
+  fPhiMin = other.fPhiMin;    
+  fPhiMax = other.fPhiMax;    
+  fEtaMin = other.fEtaMin;    
+  fEtaMax = other.fEtaMax;    
+  fEtaBinInTPCAcc   = other.fEtaBinInTPCAcc;   
+  fPhiBinInTPCAcc   = other.fPhiBinInTPCAcc;   
+  fEtaBinInEMCalAcc = other.fEtaBinInEMCalAcc; 
+  fPhiBinInEMCalAcc = other.fPhiBinInEMCalAcc; 
+  fNbinEta = other.fNbinEta;
+  fNbinPhi = other.fNbinPhi;
+  fMaxPhi  = other.fMaxPhi;
+  fMinPhi  = other.fMinPhi;
+  fMaxEta  = other.fMaxEta;
+  fMinEta  = other.fMinEta;
+  fDebug   = other.fDebug;
+  fPhi = new TArrayD(fNphi+1);
+  for(Int_t i=0; i<fNphi+1; i++) (*fPhi)[i] = other.fPhi->At(i);
+  fEta = new TArrayD(fNeta+1);
+  for(Int_t i=0; i<fNeta+1; i++) (*fEta)[i] = other.fEta->At(i);
+  
+  fIndex = new TMatrixD(fNphi+1,fNeta+1);
+  for(Int_t i=0; i<fNphi+1; i++) {
+    for(Int_t j=0; j<fNeta+1; j++) (*fIndex)(i,j)=(*other.fIndex)(i,j);
+  }
+  return *this;
 }
 
 //__________________________________________________________

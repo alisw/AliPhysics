@@ -32,7 +32,6 @@
 #include "AliFastJetHeader.h"
 #include "AliJetFinder.h"
 
-
 using namespace std;
 
 class AliSISConeJetFinder : public AliJetFinder
@@ -42,12 +41,14 @@ class AliSISConeJetFinder : public AliJetFinder
   AliSISConeJetFinder();
   ~AliSISConeJetFinder();
 
-  void FindJets(); 
+  void    FindJets(); 
 
   // others
  
-  void WriteJHeaderToFile();
-  
+  void    WriteJHeaderToFile();
+  Float_t EtaToTheta(Float_t arg);
+  void    InitTask(TChain* tree);
+
   protected:
   AliSISConeJetFinder(const AliSISConeJetFinder& rfj);
   AliSISConeJetFinder& operator = (const AliSISConeJetFinder& rsfj);

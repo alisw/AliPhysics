@@ -17,7 +17,7 @@
 // Jet ESD Reader 
 // ESD reader for jet analysis
 // Authors: Mercedes Lopez Noriega (mercedes.lopez.noriega@cern.ch)
-//          Magali Estienne <magali.estienne@IReS.in2p3.fr>
+//          Magali Estienne <magali.estienne@subatech.in2p3.fr>
 //------------------------------------------------------------------------- 
 
 // --- Standard library ---
@@ -28,13 +28,15 @@
 #include <TStopwatch.h>
 #include <TLorentzVector.h>
 #include <TVector3.h>
-#include <TTask.h>
+#include "TTask.h"
+#include "TTree.h"
+#include "TFile.h"
 #include <TGeoManager.h>
 #include <assert.h>
 #include <TRefArray.h>
 #include <TMath.h>
-#include <TChain.h>
-
+#include <TProcessID.h>
+#include <TRandom3.h>
 
 // --- AliRoot header files ---
 #include "AliJetESDReader.h"
@@ -46,6 +48,7 @@
 #include "AliJetFillUnitArrayTracks.h"
 #include "AliJetFillUnitArrayEMCalDigits.h"
 #include "AliJetUnitArray.h"
+#include "AliAnalysisTask.h"
 
 ClassImp(AliJetESDReader)
 
@@ -53,6 +56,7 @@ AliJetESDReader::AliJetESDReader():
   AliJetReader(),  
   fGeom(0),
   fChain(0x0),
+  fTree(0x0),
   fESD(0x0),
   fHadCorr(0x0),
   fTpcGrid(0x0),
@@ -64,6 +68,8 @@ AliJetESDReader::AliJetESDReader():
   fGrid4(0),
   fPtCut(0),
   fHCorrection(0),
+  fECorrection(0),
+  fEFlag(kFALSE),
   fNumUnits(0),
   fDebug(0),
   fMass(0),
@@ -73,7 +79,9 @@ AliJetESDReader::AliJetESDReader():
   fDZ(0),
   fNeta(0),
   fNphi(0),
-  fArrayInitialised(0)
+  fArrayInitialised(0),
+  fRefArray(0x0),
+  fProcId(kFALSE)
 {
   // Constructor 
 }
@@ -83,6 +91,7 @@ AliJetESDReader::~AliJetESDReader()
 {
   // Destructor
     delete fChain;
+    delete fTree;
     delete fESD;
     delete fTpcGrid;
     delete fEmcalGrid;
@@ -117,7 +126,6 @@ void AliJetESDReader::OpenInputFiles()
        if (strstr(name,pattern)){
 	 printf("Adding %s\n",name);
 	 char path[256];
-	 //	   sprintf(path,"%s/%s/AliESDs.root",dirName,name);
 	 sprintf(path,"%s/%s/AliESDs.root",dirName,name);
 	 fChain->AddFile(path);
 	 a++;
@@ -132,7 +140,7 @@ void AliJetESDReader::OpenInputFiles()
   int nMax = fChain->GetEntries(); 
 
   printf("\n AliJetESDReader: Total number of events in chain= %d \n",nMax);
-  
+
   // set number of events in header
   if (fReaderHeader->GetLastEvent() == -1)
     fReaderHeader->SetLastEvent(nMax);
@@ -140,6 +148,7 @@ void AliJetESDReader::OpenInputFiles()
     Int_t nUsr = fReaderHeader->GetLastEvent();
     fReaderHeader->SetLastEvent(TMath::Min(nMax,nUsr));
   }
+
 }
 
 //____________________________________________________________________________
@@ -170,7 +179,7 @@ Bool_t AliJetESDReader::FillMomentumArray()
   // get number of tracks in event (for the loop)
   nt = fESD->GetNumberOfTracks();
   printf("Fill Momentum Array %5d  \n", nt);
-  
+ 
   // temporary storage of signal and pt cut flag
   Int_t* sflag  = new Int_t[nt];
   Int_t* cflag  = new Int_t[nt];
@@ -180,7 +189,7 @@ Bool_t AliJetESDReader::FillMomentumArray()
   Float_t etaMin = fReaderHeader->GetFiducialEtaMin();
   Float_t etaMax = fReaderHeader->GetFiducialEtaMax();  
   
-  //loop over tracks
+  //loop over tracks in ESD
   for (Int_t it = 0; it < nt; it++) {
       AliESDtrack *track = fESD->GetTrack(it);
       UInt_t status = track->GetStatus();
@@ -205,6 +214,7 @@ Bool_t AliJetESDReader::FillMomentumArray()
       if (pt > ptMin) cflag[goodTrack]=1;                           // pt cut
       goodTrack++;
   }
+
   // set the signal flags
   fSignalFlag.Set(goodTrack,sflag);
   fCutFlag.Set(goodTrack,cflag);
@@ -213,28 +223,37 @@ Bool_t AliJetESDReader::FillMomentumArray()
   delete[] cflag;
 
   return kTRUE;
+
 }
 
 //____________________________________________________________________________
-void AliJetESDReader::CreateTasks()
+void AliJetESDReader::CreateTasks(TChain* tree)
 {
+  //
+  // For reader task initialization
+  //
+
   fDebug = fReaderHeader->GetDebug();
   fDZ = fReaderHeader->GetDZ();
+  fTree = tree;
 
-  // Init EMCAL geometry and create UnitArray object
+  // Init EMCAL geometry 
   SetEMCALGeometry();
+  // Init parameters
   InitParameters();
+  // Create and init unit array
   InitUnitArray();
 
+  // Create global reader task for analysis 
   fFillUnitArray = new TTask("fFillUnitArray","Fill unit array jet finder");
+  // Create a task for to fill the charged particle information 
   fFillUAFromTracks = new AliJetFillUnitArrayTracks(); 
   fFillUAFromTracks->SetReaderHeader(fReaderHeader);
   fFillUAFromTracks->SetGeom(fGeom);
   fFillUAFromTracks->SetTPCGrid(fTpcGrid);
   fFillUAFromTracks->SetEMCalGrid(fEmcalGrid);
-
   if(fDZ)
-    {
+    { // Calo dead zones inclusion
       fFillUAFromTracks->SetGrid0(fGrid0);
       fFillUAFromTracks->SetGrid1(fGrid1);
       fFillUAFromTracks->SetGrid2(fGrid2);
@@ -243,12 +262,15 @@ void AliJetESDReader::CreateTasks()
     }
   fFillUAFromTracks->SetHadCorrection(fHCorrection);
   fFillUAFromTracks->SetHadCorrector(fHadCorr);
+  // Create a task for to fill the neutral particle information 
   fFillUAFromEMCalDigits = new AliJetFillUnitArrayEMCalDigits();
   fFillUAFromEMCalDigits->SetReaderHeader(fReaderHeader);
   fFillUAFromEMCalDigits->SetGeom(fGeom);
   fFillUAFromEMCalDigits->SetTPCGrid(fTpcGrid);
   fFillUAFromEMCalDigits->SetEMCalGrid(fEmcalGrid);
-  //      fFillUnitArray->Add(fFillUAFromTracks);
+  fFillUAFromEMCalDigits->SetEleCorrection(fECorrection);
+  // Add the task to global task
+  fFillUnitArray->Add(fFillUAFromTracks);
   fFillUnitArray->Add(fFillUAFromEMCalDigits);
   fFillUAFromTracks->SetActive(kFALSE);
   fFillUAFromEMCalDigits->SetActive(kFALSE);
@@ -259,49 +281,35 @@ void AliJetESDReader::CreateTasks()
 }
 
 //____________________________________________________________________________
-//void AliJetESDReader::ExecTasks(Int_t event)
-Bool_t AliJetESDReader::ExecTasks(Int_t /*event*/)
+Bool_t AliJetESDReader::ExecTasks(Bool_t procid, TRefArray* refArray)
 {
+  //
+  // Reader task execussion
+  //
+
+  fProcId = procid;
+  fRefArray = refArray;
+  vector<Float_t> vtmp(3);
+
   // clear momentum array
-  Int_t nEntRef = fRefArray->GetEntries();
-
-  for(Int_t i=0; i<nEntRef; i++)
-    {      
-      ((AliJetUnitArray*)fRefArray->At(i))->SetUnitTrackID(0);
-      ((AliJetUnitArray*)fRefArray->At(i))->SetUnitEnergy(0.);
-      ((AliJetUnitArray*)fRefArray->At(i))->SetUnitCutFlag(kPtSmaller);
-      ((AliJetUnitArray*)fRefArray->At(i))->SetUnitDetectorFlag(kTpc);
-      ((AliJetUnitArray*)fRefArray->At(i))->SetUnitFlag(kOutJet);
-    }
-
   ClearArray();
 
   fDebug = fReaderHeader->GetDebug();
   fOpt = fReaderHeader->GetDetector();
-  //  InitParameters();
 
   if(!fESD) {
     return kFALSE;
   }
   
-  /*
-  // get event from chain
-  // For TSelectors
-  //  fChain->GetTree()->GetEntry(event);
-  // For interactive process
-  //  fChain->GetEntry(event);
-  fChain->GetEvent(event);
-  */
-
   // TPC only or Digits+TPC or Clusters+TPC
   if(fOpt%2==!0 && fOpt!=0){ 
     fFillUAFromTracks->SetESD(fESD);
     fFillUAFromTracks->SetActive(kTRUE);
     fFillUAFromTracks->SetUnitArray(fUnitArray);
     fFillUAFromTracks->SetRefArray(fRefArray);
-    //    fFillUAFromTracks->ExecuteTask("tpc"); // => Temporarily changed  !!!
-                                                 // Incompatibility with Andrei's analysis framework
-    fFillUAFromTracks->Exec("tpc");
+    fFillUAFromTracks->SetProcId(fProcId);
+    //    fFillUAFromTracks->ExecuteTask("tpc"); // Temporarily changed
+    fFillUAFromTracks->Exec("tpc");              // Temporarily added
     if(fOpt==1){
       fNumCandidate = fFillUAFromTracks->GetMult();
       fNumCandidateCut = fFillUAFromTracks->GetMultCut();
@@ -314,48 +322,71 @@ Bool_t AliJetESDReader::ExecTasks(Int_t /*event*/)
     fFillUAFromEMCalDigits->SetActive(kTRUE);
     fFillUAFromEMCalDigits->SetUnitArray(fUnitArray);
     fFillUAFromEMCalDigits->SetRefArray(fRefArray);
+    fFillUAFromEMCalDigits->SetProcId(fFillUAFromTracks->GetProcId());
     fFillUAFromEMCalDigits->SetInitMult(fFillUAFromTracks->GetMult());
     fFillUAFromEMCalDigits->SetInitMultCut(fFillUAFromTracks->GetMultCut());
-    fFillUAFromEMCalDigits->Exec("digits"); // => Temporarily changed !!!
+    fFillUAFromEMCalDigits->Exec("digits");      // Temporarily added
     fNumCandidate = fFillUAFromEMCalDigits->GetMult();
     fNumCandidateCut = fFillUAFromEMCalDigits->GetMultCut();
   }
 
-  //  fFillUnitArray->ExecuteTask(); // => Temporarily commented
+  //  fFillUnitArray->ExecuteTask();             // Temporarily commented
 
   return kTRUE;
 }
 
 //____________________________________________________________________________
-void AliJetESDReader::SetEMCALGeometry()
+Bool_t AliJetESDReader::SetEMCALGeometry()
 {
+  // 
+  // Set the EMCal Geometry
+  //
+
+  if (!fTree->GetFile()) 
+    return kFALSE;
+
+  TString geomFile(fTree->GetFile()->GetName());
+  geomFile.ReplaceAll("AliESDs", "geometry");
+  
+  // temporary workaround for PROOF bug #18505
+  geomFile.ReplaceAll("#geometry.root#geometry.root", "#geometry.root");
+  if(fDebug>1) printf("Current geometry file %s \n", geomFile.Data());
+
   // Define EMCAL geometry to be able to read ESDs
-    fGeom = AliJetDummyGeo::GetInstance();
-    if (fGeom == 0)
-	fGeom = AliJetDummyGeo::GetInstance("SHISH_77_TRD1_2X2_FINAL_110DEG","EMCAL");
-
-    // To be setted to run some AliEMCALGeometry functions
-    TGeoManager::Import("geometry.root");
-    //    fGeom->GetTransformationForSM();  
-    printf("\n EMCal Geometry set ! \n");
-
+  fGeom = AliJetDummyGeo::GetInstance();
+  if (fGeom == 0)
+    fGeom = AliJetDummyGeo::GetInstance("EMCAL_COMPLETE","EMCAL");
+  
+  // To be setted to run some AliEMCALGeometry functions
+  TGeoManager::Import(geomFile);
+  fGeom->GetTransformationForSM();  
+  printf("\n EMCal Geometry set ! \n");
+  
+  return kTRUE;
 }
-
 
 //____________________________________________________________________________  
 void AliJetESDReader::InitParameters()
 {
-    // Initialise parameters
-    fHCorrection    = 0;                 // For hadron correction
-    fHadCorr        = 0;                 // For hadron correction
-    fNumUnits       = fGeom->GetNCells();      // Number of cells in EMCAL
-    if(fDebug>1) printf("\n EMCal parameters initiated ! \n");
+  // Initialise parameters
+  fOpt = fReaderHeader->GetDetector();
+  fHadCorr        = 0;          // For hadron correction
+  if(fEFlag==kFALSE){
+    if(fOpt==0 || fOpt==1)  
+      fECorrection    = 0;        // For electron correction
+    else fECorrection = 1;        // For electron correction
+  }
+  fNumUnits       = fGeom->GetNCells();      // Number of cells in EMCAL
+  if(fDebug>1) printf("\n EMCal parameters initiated ! \n");
 }
 
 //____________________________________________________________________________
 void AliJetESDReader::InitUnitArray()
 {
-  //Initialises unit arrays
+  //
+  // Create and Initialise unit arrays
+  //
+
   Int_t nElements = fTpcGrid->GetNEntries();
   Float_t eta = 0., phi = 0., Deta = 0., Dphi = 0.;
   if(fArrayInitialised) fUnitArray->Delete();
@@ -366,12 +397,11 @@ void AliJetESDReader::InitUnitArray()
       // detector flag, in/out jet, pt cut, mass, cluster ID)
       for(Int_t nBin = 1; nBin < nElements+1; nBin++)
 	{
-	  //	  fTpcGrid->GetEtaPhiFromIndex2(nBin,eta,phi);
 	  fTpcGrid->GetEtaPhiFromIndex2(nBin,phi,eta);
 	  phi = ((phi < 0) ? phi + 2. * TMath::Pi() : phi);
 	  Deta = fTpcGrid->GetDeta();
 	  Dphi = fTpcGrid->GetDphi();
-	  new ((*fUnitArray)[nBin-1]) AliJetUnitArray(nBin-1,0,eta,phi,0.,0.,0.,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,0.,-1);
+	  new ((*fUnitArray)[nBin-1]) AliJetUnitArray(nBin-1,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 	}
     }
 
@@ -438,7 +468,7 @@ void AliJetESDReader::InitUnitArray()
 	      phi = ((phi < 0) ? phi + 2. * TMath::Pi() : phi);
 	      Deta = fEmcalGrid->GetDeta(); // Modify with the exact detector values
 	      Dphi = fEmcalGrid->GetDphi(); // Modify with the exact detector values
-	      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,0.,0.,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,0.,-1);
+	      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 	    } 
 	  else {
 	    if(nBin>=fNumUnits && nBin<fNumUnits+nElements){
@@ -446,50 +476,50 @@ void AliJetESDReader::InitUnitArray()
 	      phi = ((phi < 0) ? phi + 2. * TMath::Pi() : phi);
 	      Deta = fTpcGrid->GetDeta();
 	      Dphi = fTpcGrid->GetDphi();
-	      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,0.,0.,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,0.,-1);
+	      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 	    }
 	    else {
 	      if(fDZ) {
 		if(nBin>=fNumUnits+nElements && nBin<fNumUnits+nElements+nGaps){
 		  if(nBin<fNumUnits+nElements+n0)
 		    {
-		      phi = eta = 0.;
+		      Float_t phi = eta = 0.;
 		      fGrid0->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements),phi,eta);
 		      Deta = fGrid0->GetDeta(); 
 		      Dphi = fGrid0->GetDphi(); 
-		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,0.,0.,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,0.,-1);
+		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0 && nBin<fNumUnits+nElements+n0+n1)
 		    {
-		      phi = eta = 0.;
+		      Float_t phi = eta = 0.;
 		      fGrid1->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0),phi,eta);
 		      Deta = fGrid1->GetDeta(); 
 		      Dphi = fGrid1->GetDphi(); 
-		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,0.,0.,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,0.,-1);
+		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0+n1 && nBin<fNumUnits+nElements+n0+n1+n2)
 		    {
-		      phi = eta = 0.;
+		      Float_t phi = eta = 0.;
 		      fGrid2->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0+n1),phi,eta);
 		      Deta = fGrid2->GetDeta(); 
 		      Dphi = fGrid2->GetDphi(); 
-		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,0.,0.,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,0.,-1);
+		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0+n1+n2 && nBin<fNumUnits+nElements+n0+n1+n2+n3)
 		    {
-		      phi = eta = 0.;
+		      Float_t phi = eta = 0.;
 		      fGrid3->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0+n1+n2),phi,eta);
 		      Deta = fGrid3->GetDeta(); 
 		      Dphi = fGrid3->GetDphi(); 
-		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,0.,0.,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,0.,-1);
+		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0+n1+n2+n3 && nBin<fNumUnits+nElements+nGaps)
 		    {
-		      phi = eta = 0.;
+		      Float_t phi = eta = 0.;
 		      fGrid4->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0+n1+n2+n3),phi,eta);
 		      Deta = fGrid4->GetDeta(); 
 		      Dphi = fGrid4->GetDphi(); 
-		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,0.,0.,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,0.,-1);
+		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 		    }
 		}
 	      } // end if(fDZ)

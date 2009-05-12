@@ -23,8 +23,8 @@
 #include <Riostream.h>
 #include <TMath.h>
 
-#include "fastjet/AreaDefinition.hh"
 #include "fastjet/ClusterSequenceArea.hh"
+#include "fastjet/AreaDefinition.hh"
 #include "fastjet/JetDefinition.hh"
 
 #include "AliSISConeJetHeader.h"
@@ -36,24 +36,30 @@ ClassImp(AliSISConeJetHeader)
 AliSISConeJetHeader::AliSISConeJetHeader():
     AliJetHeader("AliSISConeJetHeader"),
     fActiveAreaRepeats(1),
+    fAreaTypeNumber(4),
+    fBGAlgo(1),
+    fBGMode(1),
     fCaching(0),
-    fConeRadius(0.4),
+    fConeRadius(0.7),
+    fDebug(0),
     fEffectiveRFact(1),
+    fGhostEtaMax(4.0),
     fGhostArea(0.05),
-    fGhostEtaMax(2.0),
-    fMinJetPt(0),
+    fGridScatter(1),
+    fKtScatter(0.1),
+    fMeanGhostKt(1e-100),
+    fMinJetPt(2),
     fNPassMax(0),
-    fOverlapThreshold(0.5),
+    fOverlapThreshold(0.75),
     fPhiMax(TMath::TwoPi()),
     fPhiMin(0),
-    fRapMax(-0.9),
-    fRapMin(0.9),
     fPtProtoJetMin(2),
+    fRapMax(0.9),
+    fRapMin(-0.9),
     fSplitMergeScaleNumber(0),
-    fSplitMergeStoppingScale(0)
-
+    fSplitMergeStoppingScale(0)    
 {
-  // Constructor
+  // Constructor  
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -71,14 +77,23 @@ void AliSISConeJetHeader::PrintParameters() const
   cout<<"Do we record cones of these events ? (0 = no, 1 = yes) = "<<fCaching<<endl;
 
   cout << "Background subtraction parameters :" <<endl;
-  //cout<<"Kind of area used = "<<<<endl;
+  if (fAreaTypeNumber == 1) cout<<"Kind of area used = Active area"<<endl;
+  if (fAreaTypeNumber == 2) cout<<"Kind of area used = Active area explicit ghosts"<<endl;
+  if (fAreaTypeNumber == 3) cout<<"Kind of area used = One ghost passive area"<<endl;
+  if (fAreaTypeNumber == 4) cout<<"Kind of area used = Passive area"<<endl;
+  if (fAreaTypeNumber == 5) cout<<"Kind of area used = Voronoi"<<endl;
+  if (fBGAlgo == 0) cout<<"Algorithm for rho calculus = kT"<<endl;
+  if (fBGAlgo == 1) cout<<"Algorithm for rho calculus = Cambridge"<<endl;
   cout<<"Eta max in which ghosts wil be generated = "<<fGhostEtaMax<<endl;
   cout<<"Ghost area = "<<fGhostArea<<endl;
   cout<<"Background will be studied in ["<<fRapMin<<","<<fRapMax<<"] in eta and ["<<fPhiMin<<","<<fPhiMax<<"] in phi"<<endl;
-  //cout<<"Kind of recombination for split/merge procedure = "<<<<endl;
-  //cout<<"Stopping scale for split/merge procedure = "<<<<endl;
+  cout<<"Kind of recombination for split/merge procedure = SM_pttilde"<<endl;
+  cout<<"Stopping scale for split/merge procedure = "<<fSplitMergeStoppingScale<<endl;
   cout<<"Do we repeat active area calculus? (0 = no, 1 = yes) = "<<fActiveAreaRepeats<<endl;
+  cout<<"Fractional random fluctuations of the position of the ghosts on the y-phi grid = "<<fGridScatter<<endl;       
+  cout<<"Fractional random fluctuations of the tranverse momentum of the ghosts on the y-phi grid = "<<fKtScatter<<endl;         
+  cout<<"Average transverse momentum of the ghosts = "<<fMeanGhostKt<<endl;       
 
   cout<<"Jets PtMin  = "<<fMinJetPt<<endl;
-  
+
 }
