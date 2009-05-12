@@ -231,7 +231,7 @@ void  AliESDRecInfo::UpdatePoints(AliESDtrack*track)
   fTPCPoints[1] = -1;
   //
   if (fTPCPoints[0]<fTPCPoints[1]) return;
-  //  Int_t nclusters=track->GetTPCclusters(iclusters);
+    /*Int_t nclusters=*/track->GetTPCclusters(iclusters);
 
   Int_t ngood=0;
   Int_t undeff=0;
