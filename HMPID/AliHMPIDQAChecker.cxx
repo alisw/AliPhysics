@@ -143,7 +143,13 @@ Double_t AliHMPIDQAChecker::CheckRecPoints(TObjArray *listrec, TObjArray *listre
    TIter next(listrec) ;
    TH1* histo;
    while ( (histo = dynamic_cast<TH1 *>(next())) ) {
-   if( histo->GetEntries() < 3 ) counter++;
+     //PH The histogram should have at least 3 bins with entries
+     Int_t nbinsabove = 0;
+     for (Int_t ibin=1; ibin<=50; ibin++) { //1,50 is the fit region, see histo->Fit("expo","Q0","",1,50);
+       if (histo->GetBinContent(ibin)>0) nbinsabove++;
+     }
+
+   if( nbinsabove < 3 ) counter++;
    else {
     TString h = histo->GetTitle();
     if(h.Contains("Zoom")){
