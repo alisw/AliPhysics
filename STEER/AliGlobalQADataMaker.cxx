@@ -222,7 +222,8 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
         if (TMath::Abs(y)<0.9) {
 	   GetESDsData(kTrk2)->Fill(p);
 	   if (track->IsOn(AliESDtrack::kITSrefit)) GetESDsData(kTrk3)->Fill(p);
-	   if (track->IsOn(AliESDtrack::kTOFout)) GetESDsData(kTrk4)->Fill(p);
+	  //if (track->IsOn(AliESDtrack::kTOFout)) GetESDsData(kTrk4)->Fill(p);
+	   if (track->GetTOFsignal()>0) GetESDsData(kTrk4)->Fill(p);
 	}
       }
     }
