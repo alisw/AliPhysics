@@ -154,7 +154,6 @@ AliMUONPadStatusMaker::~AliMUONPadStatusMaker()
   /// dtor.
   delete fStatus;
   delete fHV;
-  delete fKillMap;
 }
 
 //_____________________________________________________________________________
