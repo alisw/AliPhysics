@@ -18,33 +18,39 @@
 AliFemtoModelCorrFctnDirectYlm::AliFemtoModelCorrFctnDirectYlm(): 
   AliFemtoModelCorrFctn(),
   fCYlmTrue(0),
-  fCYlmFake(0)
+  fCYlmFake(0),
+  fUseLCMS(0)
 {
   // default constructor
 
   fCYlmTrue = new AliFemtoCorrFctnDirectYlm();
   fCYlmFake = new AliFemtoCorrFctnDirectYlm();
+  fCYlmTrue->SetUseLCMS(fUseLCMS);
+  fCYlmFake->SetUseLCMS(fUseLCMS);
 }
 //_______________________
-AliFemtoModelCorrFctnDirectYlm::AliFemtoModelCorrFctnDirectYlm(const char *title, Int_t aMaxL, Int_t aNbins, Double_t aQinvLo, Double_t aQinvHi):
+AliFemtoModelCorrFctnDirectYlm::AliFemtoModelCorrFctnDirectYlm(const char *title, Int_t aMaxL, Int_t aNbins, Double_t aQinvLo, Double_t aQinvHi, int aUseLCMS=0):
   AliFemtoModelCorrFctn(title, aNbins, aQinvLo, aQinvHi),
   fCYlmTrue(0),
-  fCYlmFake(0)
+  fCYlmFake(0),
+  fUseLCMS(aUseLCMS)
 {
   // basic constructor
   char fname[1000];
   sprintf(fname, "%s%s", title, "True");
-  fCYlmTrue = new AliFemtoCorrFctnDirectYlm(fname, aMaxL, aNbins, aQinvLo, aQinvHi);
+  fCYlmTrue = new AliFemtoCorrFctnDirectYlm(fname, aMaxL, aNbins, aQinvLo, aQinvHi, fUseLCMS);
   sprintf(fname, "%s%s", title, "Fake");
-  fCYlmFake = new AliFemtoCorrFctnDirectYlm(fname, aMaxL, aNbins, aQinvLo, aQinvHi);
+  fCYlmFake = new AliFemtoCorrFctnDirectYlm(fname, aMaxL, aNbins, aQinvLo, aQinvHi, fUseLCMS);
 }
 //_______________________
 AliFemtoModelCorrFctnDirectYlm::AliFemtoModelCorrFctnDirectYlm(const AliFemtoModelCorrFctnDirectYlm& aCorrFctn):
   AliFemtoModelCorrFctn(aCorrFctn),
   fCYlmTrue(0),
-  fCYlmFake(0)
+  fCYlmFake(0),
+  fUseLCMS(0)
 {
   // copy constructor
+  fUseLCMS = aCorrFctn.fUseLCMS;
   fCYlmTrue = dynamic_cast<AliFemtoCorrFctnDirectYlm*>(aCorrFctn.fCYlmTrue->Clone());
   fCYlmFake = dynamic_cast<AliFemtoCorrFctnDirectYlm*>(aCorrFctn.fCYlmFake->Clone());
 }
@@ -65,6 +71,8 @@ AliFemtoModelCorrFctnDirectYlm& AliFemtoModelCorrFctnDirectYlm::operator=(const 
   // assignment operator
   if (this == &aCorrFctn) 
     return *this;
+
+  fUseLCMS = aCorrFctn.fUseLCMS;
 
   if (aCorrFctn.fCYlmTrue)
     fCYlmTrue = dynamic_cast<AliFemtoCorrFctnDirectYlm*>(aCorrFctn.fCYlmTrue->Clone());
@@ -94,7 +102,10 @@ void AliFemtoModelCorrFctnDirectYlm::AddRealPair(AliFemtoPair* aPair)
 
   Double_t weight = fManager->GetWeight(aPair);
   
-  fCYlmTrue->AddRealPair(aPair->QOutPf(), aPair->QSidePf(), aPair->QLongPf(), weight);
+  if (fUseLCMS)
+    fCYlmTrue->AddRealPair(aPair->QOutCMS(), aPair->QSideCMS(), aPair->QLongCMS(), weight);
+  else
+    fCYlmTrue->AddRealPair(aPair->KOut(), aPair->KSide(), aPair->KLong(), weight);
 }
 //_______________________
 void AliFemtoModelCorrFctnDirectYlm::AddMixedPair(AliFemtoPair* aPair)
@@ -105,9 +116,16 @@ void AliFemtoModelCorrFctnDirectYlm::AddMixedPair(AliFemtoPair* aPair)
 
   Double_t weight = fManager->GetWeight(aPair);
 
-  fCYlmTrue->AddMixedPair(aPair->QOutPf(), aPair->QSidePf(), aPair->QLongPf(), 1.0);
-  fCYlmFake->AddRealPair(aPair->QOutPf(), aPair->QSidePf(), aPair->QLongPf(), weight);
-  fCYlmFake->AddMixedPair(aPair->QOutPf(), aPair->QSidePf(), aPair->QLongPf(), 1.0);
+  if (fUseLCMS) {
+    fCYlmTrue->AddMixedPair(aPair->QOutCMS(), aPair->QSideCMS(), aPair->QLongCMS(), 1.0);
+    fCYlmFake->AddRealPair(aPair->QOutCMS(), aPair->QSideCMS(), aPair->QLongCMS(), weight);
+    fCYlmFake->AddMixedPair(aPair->QOutCMS(), aPair->QSideCMS(), aPair->QLongCMS(), 1.0);
+  }
+  else {
+    fCYlmTrue->AddMixedPair(aPair->KOut(), aPair->KSide(), aPair->KLong(), 1.0);
+    fCYlmFake->AddRealPair(aPair->KOut(), aPair->KSide(), aPair->KLong(), weight);
+    fCYlmFake->AddMixedPair(aPair->KOut(), aPair->KSide(), aPair->KLong(), 1.0);
+  }
 }
 //_______________________
 void AliFemtoModelCorrFctnDirectYlm::Write()
@@ -150,9 +168,22 @@ AliFemtoModelCorrFctn* AliFemtoModelCorrFctnDirectYlm::Clone()
   
   return tCopy;
 }
-
+//_______________________
 void AliFemtoModelCorrFctnDirectYlm::Finish()
 {
   fCYlmTrue->Finish();
   fCYlmFake->Finish();
 }
+//_______________________
+void AliFemtoModelCorrFctnDirectYlm::SetUseLCMS(int aUseLCMS)
+{
+  fUseLCMS = aUseLCMS;
+  fCYlmTrue->SetUseLCMS(fUseLCMS);
+  fCYlmFake->SetUseLCMS(fUseLCMS);
+}
+//_______________________
+int  AliFemtoModelCorrFctnDirectYlm::GetUseLCMS()
+{
+  return fUseLCMS;
+}
+

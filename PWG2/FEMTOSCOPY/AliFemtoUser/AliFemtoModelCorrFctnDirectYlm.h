@@ -19,7 +19,7 @@ class AliFemtoModelCorrFctnDirectYlm: public AliFemtoModelCorrFctn {
 
 public:
   AliFemtoModelCorrFctnDirectYlm();
-  AliFemtoModelCorrFctnDirectYlm(const char *title, Int_t aMaxL, Int_t aNbins, Double_t aQinvLo, Double_t aQinvHi);
+  AliFemtoModelCorrFctnDirectYlm(const char *title, Int_t aMaxL, Int_t aNbins, Double_t aQinvLo, Double_t aQinvHi, int aUseLCMS);
   AliFemtoModelCorrFctnDirectYlm(const AliFemtoModelCorrFctnDirectYlm& aCorrFctn);
   virtual ~AliFemtoModelCorrFctnDirectYlm();
   
@@ -36,11 +36,16 @@ public:
 
   virtual AliFemtoModelCorrFctn* Clone();
 
+  void SetUseLCMS(int aUseLCMS);
+  int  GetUseLCMS();
+
 protected:
 
   AliFemtoCorrFctnDirectYlm* fCYlmTrue;     // True Correlation function in spherical harmonics
   AliFemtoCorrFctnDirectYlm* fCYlmFake;     // Fake Correlation function in spherical harmonics
 
+  int fUseLCMS;                             // 0 - Use k* in PRF, 1 - use q in LCMS
+  
 private:
 
 #ifdef __ROOT__
