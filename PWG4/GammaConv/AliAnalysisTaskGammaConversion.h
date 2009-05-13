@@ -66,14 +66,14 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void GetPID(AliESDtrack *track, Stat_t &pid, Stat_t &weight);	
   double GetSigmaToVertex(AliESDtrack* t);
   void ElectronBackground(TString hBg, vector <TLorentzVector> e);
-  void FillAngle(TString histoName,vector <TLorentzVector> TLVeNeg, vector <TLorentzVector> TLVePos);
-  void FillElectronInvMass(TString histoName, vector <TLorentzVector> NegativeElectron, 
-	vector <TLorentzVector> PositiveElectron);
+  void FillAngle(TString histoName,vector <TLorentzVector> tlVeNeg, vector <TLorentzVector> tlVePos);
+  void FillElectronInvMass(TString histoName, vector <TLorentzVector> negativeElectron, 
+	vector <TLorentzVector> positiveElectron);
   void FillGammaElectronInvMass(TString histoMass,TString histoDiff,vector <AliKFParticle> fKFGammas,
-        vector <TLorentzVector> TLVeNeg,vector<TLorentzVector> TLVePos);
-  void CleanWithAngleCuts(vector <AliESDtrack*> NegativeElectrons,
-	vector <AliESDtrack*> PositiveElectrons, vector <AliKFParticle> Gammas);
-  vector <TLorentzVector> GetTLorentzVector(vector <AliESDtrack*> ESDtrack);	
+        vector <TLorentzVector> tlVeNeg,vector<TLorentzVector> tlVePos);
+  void CleanWithAngleCuts(vector <AliESDtrack*> negativeElectrons,
+	vector <AliESDtrack*> positiveElectrons, vector <AliKFParticle> gammas);
+  vector <TLorentzVector> GetTLorentzVector(vector <AliESDtrack*> esdTrack);	
   void ProcessGammaElectronsForChicAnalysis();
   ///////////////////////////////////////////////////////////////
 
