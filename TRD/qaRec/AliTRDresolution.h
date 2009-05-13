@@ -67,7 +67,7 @@ public:
 
   void    Terminate(Option_t *);
   Bool_t  GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t idx=-1);
-  Bool_t  GetGraphTrack(Float_t *bb, Int_t ily);
+  Bool_t  GetGraphTrack(Float_t *bb, Int_t idx, Int_t ily);
   Bool_t  GetGraphTrackTPC(Float_t *bb, Int_t selector);
   
 private:
