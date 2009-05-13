@@ -163,7 +163,10 @@ fTrackleterPhiOverlapCut(0.005),
 fTrackleterZetaOverlapCut(0.05),
 fUseCosmicRunShiftsSSD(kFALSE),
 fSPDRemoveNoisyFlag(kTRUE),
-fSPDRemoveDeadFlag(kTRUE)
+fSPDRemoveDeadFlag(kTRUE),
+fVertexerFastSmearX(0.005),
+fVertexerFastSmearY(0.005),
+fVertexerFastSmearZ(0.01)
 {
   //
   // constructor

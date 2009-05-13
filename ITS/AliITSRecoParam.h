@@ -77,10 +77,16 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void     SetVertexerZ() { SetVertexer(1); }
   void     SetVertexerCosmics() { SetVertexer(2); }
   void     SetVertexerIons() { SetVertexer(3); }
-  void     SetVertexerSmearMC() { SetVertexer(4); }
+  void     SetVertexerSmearMC(Float_t smearx=0.005, Float_t smeary=0.005, Float_t smearz=0.01) { 
+    fVertexerFastSmearX=smearx;  fVertexerFastSmearY=smeary; fVertexerFastSmearZ=smearz; SetVertexer(4); 
+  }
   void     SetVertexerFixedOnTDI() {SetVertexer(5);} // for injection tests
   void     SetVertexerFixedOnTED() {SetVertexer(6);} // for injection tests
   Int_t    GetVertexer() const { return fVertexer; }
+  Float_t  GetVertexerFastSmearX() const {return fVertexerFastSmearX;}
+  Float_t  GetVertexerFastSmearY() const {return fVertexerFastSmearY;}
+  Float_t  GetVertexerFastSmearZ() const {return fVertexerFastSmearZ;}
+
   void     SetClusterFinder(Int_t cf=0) { fClusterFinder=cf; }
   void     SetClusterFinderV2() { SetClusterFinder(0); }
   void     SetClusterFinderOrig() { SetClusterFinder(1); }
@@ -519,9 +525,14 @@ class AliITSRecoParam : public AliDetectorRecoParam
   // should be removed at the local reconstruction step (default and safe way is true for both)
   Bool_t  fSPDRemoveNoisyFlag;  // Flag saying whether noisy pixels should be removed
   Bool_t  fSPDRemoveDeadFlag;   // Flag saying whether dead pixels should be removed
+  
+  // VertexerFast configuration
+  Float_t fVertexerFastSmearX;  // gaussian sigma for x MC vertex smearing 
+  Float_t fVertexerFastSmearY;  // gaussian sigma for y MC vertex smearing
+  Float_t fVertexerFastSmearZ;  // gaussian sigma for z MC vertex smearing
 
   
-  ClassDef(AliITSRecoParam,19) // ITS reco parameters
+  ClassDef(AliITSRecoParam,20) // ITS reco parameters
 };
 
 #endif

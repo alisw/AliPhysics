@@ -202,7 +202,9 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
     vptr =  new AliITSVertexerIons();
   }
   else if(vtxOpt==4){
-    Double_t smear[3]={0.005,0.005,0.01};
+    Double_t smear[3]={GetRecoParam()->GetVertexerFastSmearX(),
+		       GetRecoParam()->GetVertexerFastSmearY(),
+		       GetRecoParam()->GetVertexerFastSmearZ()};
     Info("CreateVertexer","a AliITSVertexerFast object has been selected\n"); 
     vptr = new AliITSVertexerFast(smear);
   }
