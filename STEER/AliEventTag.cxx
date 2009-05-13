@@ -91,6 +91,8 @@ ClassImp(AliEventTag)
     fTotalP(-10.0),
     fMeanPt(-10.0),
     fMaxPt(-10.0),
+    fEtaMaxPt(-13.0),
+    fPhiMaxPt(+13.0),
     fTotalNeutralP(-10.0),
     fMeanNeutralPt(-10.0),
     fMaxNeutralPt(-10.0),
@@ -175,6 +177,8 @@ AliEventTag::AliEventTag(const AliEventTag & evTag) :
   fTotalP(evTag.fTotalP),
   fMeanPt(evTag.fMeanPt),
   fMaxPt(evTag.fMaxPt),
+  fEtaMaxPt(evTag.fEtaMaxPt),
+  fPhiMaxPt(evTag.fPhiMaxPt),
   fTotalNeutralP(evTag.fTotalNeutralP),
   fMeanNeutralPt(evTag.fMeanNeutralPt),
   fMaxNeutralPt(evTag.fMaxNeutralPt),
@@ -261,6 +265,8 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &evTag) {
     SetTotalMomentum(evTag.GetTotalMomentum());
     SetMeanPt(evTag.GetMeanPt());
     SetMaxPt(evTag.GetMaxPt());
+    SetEtaMaxPt(evTag.GetEtaMaxPt());
+    SetPhiMaxPt(evTag.GetPhiMaxPt());
     SetNeutralTotalMomentum(evTag.GetNeutralTotalMomentum());
     SetNeutralMeanPt(evTag.GetNeutralMeanPt());
     SetNeutralMaxPt(evTag.GetNeutralMaxPt());

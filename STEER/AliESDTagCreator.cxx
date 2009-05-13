@@ -228,7 +228,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
   Int_t nCh1GeV, nCh3GeV, nCh10GeV;
   Int_t nMu1GeV, nMu3GeV, nMu10GeV;
   Int_t nEl1GeV, nEl3GeV, nEl10GeV;
-  Float_t maxPt = .0, meanPt = .0, totalP = .0;
+  Float_t maxPt = .0, etamaxPt = -999., phimaxPt = -999., meanPt = .0, totalP = .0;
   Int_t fVertexflag;
   Int_t iRunNumber = 0;
   TString fVertexName;
@@ -292,7 +292,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     nCh1GeV = 0; nCh3GeV = 0; nCh10GeV = 0;
     nMu1GeV = 0; nMu3GeV = 0; nMu10GeV = 0;
     nEl1GeV = 0; nEl3GeV = 0; nEl10GeV = 0;
-    maxPt = .0; meanPt = .0; totalP = .0;
+    maxPt = .0; etamaxPt = -999.; phimaxPt = -999.; meanPt = .0; totalP = .0;
     fVertexflag = 1;
     
     chain->GetEntry(iEventNumber);    
@@ -336,7 +336,11 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
       Double_t fPt = TMath::Sqrt(pt2);
       totalP += momentum;
       meanPt += fPt;
-      if(fPt > maxPt) maxPt = fPt;
+      if(fPt > maxPt) {
+	  maxPt = fPt;
+	  phimaxPt = esdTrack->Phi();
+	  etamaxPt = esdTrack->Eta();
+      }
       
       if(esdTrack->GetSign() > 0) {
 	nPos++;
@@ -514,6 +518,8 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     evTag->SetTotalMomentum(totalP);
     evTag->SetMeanPt(meanPt);
     evTag->SetMaxPt(maxPt);
+    evTag->SetEtaMaxPt(etamaxPt);
+    evTag->SetPhiMaxPt(phimaxPt);
     
     tag->SetRunId(iInitRunNumber);
     if(fIsSim) tag->SetDataType(0);
@@ -595,7 +601,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
   Int_t nCh1GeV, nCh3GeV, nCh10GeV;
   Int_t nMu1GeV, nMu3GeV, nMu10GeV;
   Int_t nEl1GeV, nEl3GeV, nEl10GeV;
-  Float_t maxPt = .0, meanPt = .0, totalP = .0;
+  Float_t maxPt = .0, etamaxPt = -999., phimaxPt = -999., meanPt = .0, totalP = .0;
   Int_t fVertexflag;
   Int_t iRunNumber = 0;
   TString fVertexName;
@@ -650,6 +656,8 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
     nEl3GeV = 0;
     nEl10GeV = 0;
     maxPt = .0;
+    etamaxPt = -999.;
+    phimaxPt = -999.;
     meanPt = .0;
     totalP = .0;
     fVertexflag = 1;
@@ -681,8 +689,13 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
       Double_t fPt = TMath::Sqrt(pt2);
       totalP += momentum;
       meanPt += fPt;
-      if(fPt > maxPt) maxPt = fPt;
+      if(fPt > maxPt) {
+	  maxPt = fPt;
+	  etamaxPt = esdTrack->Eta();
+	  phimaxPt = esdTrack->Phi();
+      }
       
+	      
       if(esdTrack->GetSign() > 0) {
 	nPos++;
 	if(fPt > fLowPtCut) nCh1GeV++;
@@ -850,6 +863,8 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
     evTag->SetTotalMomentum(totalP);
     evTag->SetMeanPt(meanPt);
     evTag->SetMaxPt(maxPt);
+    evTag->SetEtaMaxPt(etamaxPt);
+    evTag->SetPhiMaxPt(phimaxPt);
     
     tag->SetRunId(iInitRunNumber);
     if(fIsSim) tag->SetDataType(0);
@@ -941,7 +956,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
   Int_t nCh1GeV, nCh3GeV, nCh10GeV;
   Int_t nMu1GeV, nMu3GeV, nMu10GeV;
   Int_t nEl1GeV, nEl3GeV, nEl10GeV;
-  Float_t maxPt = .0, meanPt = .0, totalP = .0;
+  Float_t maxPt = .0, etamaxPt = -999, phimaxPt = -999., meanPt = .0, totalP = .0;
   Int_t fVertexflag;
   Int_t iRunNumber = 0;
   TString fVertexName;
@@ -990,6 +1005,8 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
     nEl3GeV = 0;
     nEl10GeV = 0;
     maxPt = .0;
+    etamaxPt = -999.;
+    phimaxPt = -999.;
     meanPt = .0;
     totalP = .0;
     fVertexflag = 1;
@@ -1021,7 +1038,12 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
       Double_t fPt = TMath::Sqrt(pt2);
       totalP += momentum;
       meanPt += fPt;
-      if(fPt > maxPt) maxPt = fPt;
+      if(fPt > maxPt) {
+	  maxPt = fPt;
+	  etamaxPt = esdTrack->Eta();
+	  phimaxPt = esdTrack->Phi();
+      }
+      
       
       if(esdTrack->GetSign() > 0) {
 	nPos++;
@@ -1187,6 +1209,8 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
     evTag->SetTotalMomentum(totalP);
     evTag->SetMeanPt(meanPt);
     evTag->SetMaxPt(maxPt);
+    evTag->SetEtaMaxPt(etamaxPt);
+    evTag->SetPhiMaxPt(phimaxPt);
     
     tag->SetRunId(iInitRunNumber);
     if(fIsSim) tag->SetDataType(0);
@@ -1278,7 +1302,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   Int_t nCh1GeV, nCh3GeV, nCh10GeV;
   Int_t nMu1GeV, nMu3GeV, nMu10GeV;
   Int_t nEl1GeV, nEl3GeV, nEl10GeV;
-  Float_t maxPt = .0, meanPt = .0, totalP = .0;
+  Float_t maxPt = .0, etamaxPt = -999., phimaxPt = -999., meanPt = .0, totalP = .0;
   Int_t fVertexflag;
   Int_t iRunNumber = 0;
   TString fVertexName("default");
@@ -1344,6 +1368,8 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
     nEl3GeV = 0;
     nEl10GeV = 0;
     maxPt = .0;
+    etamaxPt = -999.;
+    phimaxPt = -999.;
     meanPt = .0;
     totalP = .0;
     fVertexflag = 0;
@@ -1373,7 +1399,11 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
       Double_t fPt = TMath::Sqrt(pt2);
       totalP += momentum;
       meanPt += fPt;
-      if(fPt > maxPt) maxPt = fPt;
+      if(fPt > maxPt) {
+	  maxPt = fPt;
+	  phimaxPt = esdTrack->Eta();
+	  etamaxPt = esdTrack->Phi();
+      }
       
       if(esdTrack->GetSign() > 0) {
 	nPos++;
@@ -1541,6 +1571,8 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
     evTag->SetTotalMomentum(totalP);
     evTag->SetMeanPt(meanPt);
     evTag->SetMaxPt(maxPt);
+    evTag->SetEtaMaxPt(etamaxPt);
+    evTag->SetPhiMaxPt(phimaxPt);
     
     tag->SetLHCTag(lhcLuminosity,lhcState);
     tag->SetDetectorTag(detectorMask);

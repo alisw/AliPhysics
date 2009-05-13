@@ -93,6 +93,8 @@ class AliEventTag : public TObject {
   void SetTotalMomentum(Float_t P) {fTotalP = P;}
   void SetMeanPt(Float_t Pt) {fMeanPt = Pt;}
   void SetMaxPt(Float_t Pt) {fMaxPt = Pt;}
+  void SetEtaMaxPt(Float_t eta) {fEtaMaxPt = eta;}
+  void SetPhiMaxPt(Float_t phi) {fPhiMaxPt = phi;}
   void SetNeutralTotalMomentum(Float_t f) {fTotalNeutralP = f;}
   void SetNeutralMeanPt(Float_t f) {fMeanNeutralPt = f;}
   void SetNeutralMaxPt(Float_t f) {fMaxNeutralPt = f;}
@@ -108,7 +110,7 @@ class AliEventTag : public TObject {
   void SetMTotV0C(Int_t mult) {fMTotV0C = mult;}
   void SetNbPMV0A(Short_t npmt) {fNbPMV0A = npmt;}
   void SetNbPMV0C(Short_t npmt) {fNbPMV0C = npmt;}
-
+  void SetEventId(Int_t /*id*/) {;}
   //____________________________________________________//
   UInt_t GetPeriodNumber() const {return fPeriodNumber;}
   UInt_t GetOrbitNumber() const {return fOrbitNumber;}
@@ -176,6 +178,8 @@ class AliEventTag : public TObject {
   Float_t     GetTotalMomentum() const {return fTotalP;}
   Float_t     GetMeanPt() const {return fMeanPt;}
   Float_t     GetMaxPt() const {return fMaxPt;}
+  Float_t     GetEtaMaxPt() const {return fEtaMaxPt;}
+  Float_t     GetPhiMaxPt() const {return fPhiMaxPt;}
   Float_t     GetNeutralTotalMomentum() const {return fTotalNeutralP;}
   Float_t     GetNeutralMeanPt() const {return fMeanNeutralPt;}
   Float_t     GetNeutralMaxPt() const {return fMaxNeutralPt;}
@@ -259,6 +263,8 @@ class AliEventTag : public TObject {
   Float_t   fTotalP;			    //Sum of the momentum per event
   Float_t   fMeanPt;			    //Mean Pt per event
   Float_t   fMaxPt;			    //Max Pt for each event
+  Float_t   fEtaMaxPt;			    //Eta of the particle with max pt (leading particle)
+  Float_t   fPhiMaxPt;			    //Phi of the particle with max pt (leading particle)  
   Float_t   fTotalNeutralP;		    //Sum of the momentum per event for neutral
   Float_t   fMeanNeutralPt;		    //Mean Pt per event for neutral
   Float_t   fMaxNeutralPt;		    //Max Pt for each event for neutral
@@ -275,8 +281,8 @@ class AliEventTag : public TObject {
   Short_t   fNbPMV0A;                       //Total number of fired channels in V0 A side
   Short_t   fNbPMV0C;                       //Total number of fired channels in V0 C side
 
-  ClassDef(AliEventTag,12)  //(ClassName, ClassVersion)
-    };
+  ClassDef(AliEventTag,13)  //(ClassName, ClassVersion)
+      };
 //___________________________________________________________________________
 
 

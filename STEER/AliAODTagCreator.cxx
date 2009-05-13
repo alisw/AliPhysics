@@ -355,6 +355,7 @@ void AliAODTagCreator::CreateTags(const char* type)
 	}
 	
 	// Add the event tag
+	printf("Got %13.3f \n", evTag->GetEtaMaxPt());
 	fRunTag->AddEventTag(*evTag);
 	delete evTag;
 	// Last event
@@ -390,11 +391,21 @@ void AliAODTagCreator::FillEventTag(AliAODEvent* aod, AliEventTag* evTag)
     Int_t   nCh1GeV = 0, nCh3GeV = 0, nCh10GeV = 0;
     Int_t   nMu1GeV = 0, nMu3GeV = 0, nMu10GeV = 0;
     Int_t   nEl1GeV = 0, nEl3GeV = 0, nEl10GeV = 0;
-    Float_t maxPt =  .0, meanPt = .0, totalP =  .0;
+    Float_t maxPt =  .0, etamaxPt = -999., phimaxPt = -999., meanPt = .0, totalP =  .0;
 
     TRefArray tmp;
 
-    Int_t nTracks = fAODEvent->GetNTracks();
+
+    // Primary Vertex
+    AliAODVertex *pVertex = fAODEvent->GetPrimaryVertex();
+    if (pVertex) {
+	evTag->SetVertexX(pVertex->GetX());
+	evTag->SetVertexY(pVertex->GetY());
+	evTag->SetVertexZ(pVertex->GetZ());
+	Double_t covmatrix[6];
+	pVertex->GetCovarianceMatrix(covmatrix);
+	evTag->SetVertexZError(sqrt(covmatrix[5]));
+    }
     // loop over vertices 
     Int_t nVtxs = fAODEvent->GetNumberOfVertices();
     for (Int_t nVtx = 0; nVtx < nVtxs; nVtx++) {
@@ -403,11 +414,17 @@ void AliAODTagCreator::FillEventTag(AliAODEvent* aod, AliEventTag* evTag)
 	if(vertex->GetType() == 2) nV0s      += 1;
 	if(vertex->GetType() == 3) nCascades += 1;
     }
+    Int_t nTracks = fAODEvent->GetNTracks();
     for (Int_t nTr = 0; nTr < nTracks; nTr++) {
 	AliAODTrack *track = fAODEvent->GetTrack(nTr);
 	
 	Double_t fPt = track->Pt();
-	if(fPt > maxPt) maxPt = fPt;
+	if(fPt > maxPt) {
+	    maxPt = fPt;
+	    etamaxPt = track->Eta();
+	    phimaxPt = track->Phi();
+	}
+	
 	if(track->Charge() > 0) {
 	    nPos++;
 	    if(fPt > fLowPtCut)      nCh1GeV++;
@@ -501,4 +518,6 @@ void AliAODTagCreator::FillEventTag(AliAODEvent* aod, AliEventTag* evTag)
     evTag->SetTotalMomentum(totalP);
     evTag->SetMeanPt(meanPt);
     evTag->SetMaxPt(maxPt);
+    evTag->SetEtaMaxPt(etamaxPt);
+    evTag->SetPhiMaxPt(phimaxPt);
 }
