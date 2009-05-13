@@ -13,33 +13,26 @@
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 
-/*************************************************************************
-* Class AliAnalysisTaskSPDdNdEta                                         *
-* Analysis task for dN/dEta reconstruction with the SPD                  *
-*                                                                        *
-* Author:  M. Nicassio (INFN Bari)                                       *
-* Contact: Maria.Nicassio@ba.infn.it, Domenico.Elia@ba.infn.it           *
-**************************************************************************/
+//////////////////////////////////////////////////////////////////////////
+// Class AliAnalysisTaskSPDdNdEta                                       //
+// Analysis task for dN/dEta reconstruction with the SPD                //
+//                                                                      //
+// Author:  M. Nicassio (INFN Bari)                                     //
+// Contact: Maria.Nicassio@ba.infn.it, Domenico.Elia@ba.infn.it         //
+//////////////////////////////////////////////////////////////////////////
 
 #include "TChain.h"
 #include "TTree.h"
-#include "TBranch.h"
-#include "TClonesArray.h"
 
 #include "TH1F.h"
 #include "TH2F.h" 
 #include "TH3F.h" 
-#include "TCanvas.h"
 
-#include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
 #include "AliMultiplicity.h"
-#include "AliESDVertex.h"
-#include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 
-#include "AliAnalysisTaskRL.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
@@ -656,8 +649,8 @@ void AliAnalysisTaskSPDdNdEta::Exec(Option_t *)
     // Tracks from MC
     Int_t  multMCCharged = 0;
     Int_t  nMCPart = stack->GetNprimary();
-    Float_t* eta_gen = new Float_t[nMCPart];  
-    Float_t* pt_gen = new Float_t[nMCPart];
+    Float_t* etagen = new Float_t[nMCPart];  
+    Float_t* ptgen = new Float_t[nMCPart];
     Int_t* stackIndexOfPrimaryParts = new Int_t[nMCPart];
     Int_t* reconstructedPrimaryPart = new Int_t[nMCPart];
     Int_t* detectedPrimaryPartLay1 = new Int_t[nMCPart];
@@ -678,16 +671,16 @@ void AliAnalysisTaskSPDdNdEta::Exec(Option_t *)
     // Loop over MC particles
     for (Int_t imc=0; imc<nMCPart; imc++) {
       TParticle* part = stack->Particle(imc);
-      Bool_t IsPrimary = stack->IsPhysicalPrimary(imc);
-      if (!IsPrimary)                        continue;
+      Bool_t isPrimary = stack->IsPhysicalPrimary(imc);
+      if (!isPrimary)                        continue;
       TParticlePDG* pdgPart = part->GetPDG();
       if (TMath::Abs(pdgPart->Charge())!=3)  continue;
       Float_t theta = part->Theta();
       if (theta==0 || theta==TMath::Pi())    continue;
       Float_t eta = part->Eta();
       Float_t pt = part->Pt();
-      eta_gen[multMCCharged] = eta; 
-      pt_gen[multMCCharged] = pt;
+      etagen[multMCCharged] = eta; 
+      ptgen[multMCCharged] = pt;
       stackIndexOfPrimaryParts[multMCCharged] = imc;
 
       reconstructedPrimaryPart[multMCCharged]=kFALSE;
@@ -695,7 +688,7 @@ void AliAnalysisTaskSPDdNdEta::Exec(Option_t *)
       detectedPrimaryPartLay2[multMCCharged]=kFALSE;
       detectablePrimaryPart[multMCCharged]=kFALSE;
 
-      fHistoPt->Fill(pt_gen[multMCCharged]);
+      fHistoPt->Fill(ptgen[multMCCharged]);
 
       AliMCParticle* mcpart = mcEvent->GetTrack(imc);
       Int_t nref = mcpart->GetNumberOfTrackReferences();
@@ -703,12 +696,12 @@ void AliAnalysisTaskSPDdNdEta::Exec(Option_t *)
       // Detectable primaries 
       if (nref==0) {
         detectablePrimaryPart[multMCCharged]=kTRUE;
-        fHistoDetectableNotr->Fill(eta_gen[multMCCharged],vtxMC[2],pt_gen[multMCCharged]);
+        fHistoDetectableNotr->Fill(etagen[multMCCharged],vtxMC[2],ptgen[multMCCharged]);
       } else if (nref>0) {
         tref = mcpart->GetTrackReference(nref-1);
         if (tref->DetectorId()!=-1) {
           detectablePrimaryPart[multMCCharged]=kTRUE;
-          fHistoNonStoppingTracks->Fill(eta_gen[multMCCharged],vtxMC[2]); 
+          fHistoNonStoppingTracks->Fill(etagen[multMCCharged],vtxMC[2]); 
         } else {
           for (Int_t iref=0;iref<nref;iref++) {
             tref = mcpart->GetTrackReference(iref);
@@ -721,22 +714,22 @@ void AliAnalysisTaskSPDdNdEta::Exec(Option_t *)
                 } 
               } else if (tref->R()>rmaxL2) {
                   detectablePrimaryPart[multMCCharged]=kTRUE;
-                  fHistoDetectabletr->Fill(eta_gen[multMCCharged],vtxMC[2]);
+                  fHistoDetectabletr->Fill(etagen[multMCCharged],vtxMC[2]);
                   if (tref->DetectorId()==-1) {
-                    fHistoDetectableTRm1->Fill(eta_gen[multMCCharged],vtxMC[2]);
+                    fHistoDetectableTRm1->Fill(etagen[multMCCharged],vtxMC[2]);
                     fHistoRTRm1->Fill(tref->R());
                   }
-                  else if (tref->DetectorId()==0) fHistoDetectableTrITS->Fill(eta_gen[multMCCharged],vtxMC[2]);
-                  else if (tref->DetectorId()==1) fHistoDetectableTrTPC->Fill(eta_gen[multMCCharged],vtxMC[2]);
-                  else if (tref->DetectorId()==2) fHistoDetectableTrFRAME->Fill(eta_gen[multMCCharged],vtxMC[2]);
-                  else if (tref->DetectorId()==3) fHistoDetectableTrTRD->Fill(eta_gen[multMCCharged],vtxMC[2]);
-                  else if (tref->DetectorId()==4) fHistoDetectableTrTOF->Fill(eta_gen[multMCCharged],vtxMC[2]);
-                  else if (tref->DetectorId()==5) fHistoDetectableTrMUON->Fill(eta_gen[multMCCharged],vtxMC[2]);
-                  else if (tref->DetectorId()==6) fHistoDetectableTrHMPID->Fill(eta_gen[multMCCharged],vtxMC[2]);
-                  else if (tref->DetectorId()==7) fHistoDetectableTrT0->Fill(eta_gen[multMCCharged],vtxMC[2]);
-                  else if (tref->DetectorId()==8) fHistoDetectableTrEMCAL->Fill(eta_gen[multMCCharged],vtxMC[2]);
-                  else if (tref->DetectorId()==12) fHistoDetectableTrFMD->Fill(eta_gen[multMCCharged],vtxMC[2]);
-                  else if (tref->DetectorId()==14) fHistoDetectableTrVZERO->Fill(eta_gen[multMCCharged],vtxMC[2]);
+                  else if (tref->DetectorId()==0) fHistoDetectableTrITS->Fill(etagen[multMCCharged],vtxMC[2]);
+                  else if (tref->DetectorId()==1) fHistoDetectableTrTPC->Fill(etagen[multMCCharged],vtxMC[2]);
+                  else if (tref->DetectorId()==2) fHistoDetectableTrFRAME->Fill(etagen[multMCCharged],vtxMC[2]);
+                  else if (tref->DetectorId()==3) fHistoDetectableTrTRD->Fill(etagen[multMCCharged],vtxMC[2]);
+                  else if (tref->DetectorId()==4) fHistoDetectableTrTOF->Fill(etagen[multMCCharged],vtxMC[2]);
+                  else if (tref->DetectorId()==5) fHistoDetectableTrMUON->Fill(etagen[multMCCharged],vtxMC[2]);
+                  else if (tref->DetectorId()==6) fHistoDetectableTrHMPID->Fill(etagen[multMCCharged],vtxMC[2]);
+                  else if (tref->DetectorId()==7) fHistoDetectableTrT0->Fill(etagen[multMCCharged],vtxMC[2]);
+                  else if (tref->DetectorId()==8) fHistoDetectableTrEMCAL->Fill(etagen[multMCCharged],vtxMC[2]);
+                  else if (tref->DetectorId()==12) fHistoDetectableTrFMD->Fill(etagen[multMCCharged],vtxMC[2]);
+                  else if (tref->DetectorId()==14) fHistoDetectableTrVZERO->Fill(etagen[multMCCharged],vtxMC[2]);
                   break;
               }
             }
@@ -747,11 +740,11 @@ void AliAnalysisTaskSPDdNdEta::Exec(Option_t *)
           tref = mcpart->GetTrackReference(iref);
           if (tref->R()>rminL1&&tref->R()<rmaxL1&&tref->DetectorId()==0) {
             detectedPrimaryPartLay1[multMCCharged] = kTRUE;
-            fHistoDetectedLay1->Fill(eta_gen[multMCCharged],vtxMC[2]);
+            fHistoDetectedLay1->Fill(etagen[multMCCharged],vtxMC[2]);
           }
           if (tref->R()>rminL2&&tref->R()<rmaxL2&&tref->DetectorId()==0) {
             detectedPrimaryPartLay2[multMCCharged] = kTRUE;
-            fHistoDetectedLay2->Fill(eta_gen[multMCCharged],vtxMC[2]);
+            fHistoDetectedLay2->Fill(etagen[multMCCharged],vtxMC[2]);
           }
         }
       } 
@@ -786,16 +779,16 @@ void AliAnalysisTaskSPDdNdEta::Exec(Option_t *)
 
       for (Int_t imc=0; imc<multMCCharged; imc++) {
         if (reconstructedPrimaryPart[imc]) {
-          fHistBkgCorrNum->Fill(eta_gen[imc],vtxMC[2]);
+          fHistBkgCorrNum->Fill(etagen[imc],vtxMC[2]);
         }
-        if (detectedPrimaryPartLay1[imc]&&detectedPrimaryPartLay2[imc]) fHistAlgEffNum->Fill(eta_gen[imc],vtxMC[2]);
+        if (detectedPrimaryPartLay1[imc]&&detectedPrimaryPartLay2[imc]) fHistAlgEffNum->Fill(etagen[imc],vtxMC[2]);
 
-        fHistNonDetectableCorrNum->Fill(eta_gen[imc],vtxMC[2]);
+        fHistNonDetectableCorrNum->Fill(etagen[imc],vtxMC[2]);
 
-        if (detectablePrimaryPart[imc]) fHistNonDetectableCorrDen->Fill(eta_gen[imc],vtxMC[2]);
+        if (detectablePrimaryPart[imc]) fHistNonDetectableCorrDen->Fill(etagen[imc],vtxMC[2]);
 
-        fHistMCEtavsZTriggESDvtxEvts->Fill(eta_gen[imc],esdvtx[2]);
-        fHistMCEtavsZTriggMCvtxEvts->Fill(eta_gen[imc],vtxMC[2]);
+        fHistMCEtavsZTriggESDvtxEvts->Fill(etagen[imc],esdvtx[2]);
+        fHistMCEtavsZTriggMCvtxEvts->Fill(etagen[imc],vtxMC[2]);
       }
 
       if (esdvtx[2]>=-10. && esdvtx[2]<10.) fHistTrigVtxCorrDen->Fill(multSPD,vtxMC[2]);
@@ -804,19 +797,19 @@ void AliAnalysisTaskSPDdNdEta::Exec(Option_t *)
     if (eventTriggered) {
       fHistTrigCorrDen->Fill(multSPD,vtxMC[2]);
       for (Int_t imc=0; imc<multMCCharged; imc++) {
-        fHistTrackTrigCorrDen->Fill(eta_gen[imc],vtxMC[2]); 
+        fHistTrackTrigCorrDen->Fill(etagen[imc],vtxMC[2]); 
       }
     }
 
     for (Int_t imc=0; imc<multMCCharged; imc++) {
-      fHistTrackTrigVtxCorrNum->Fill(eta_gen[imc],vtxMC[2]);
-      fHistMCEtavsZ->Fill(eta_gen[imc],vtxMC[2]);
+      fHistTrackTrigVtxCorrNum->Fill(etagen[imc],vtxMC[2]);
+      fHistMCEtavsZ->Fill(etagen[imc],vtxMC[2]);
     }
 
     fHistTrigVtxCorrNum->Fill(multSPD,vtxMC[2]);
 
-    delete[] eta_gen;
-    delete[] pt_gen;
+    delete[] etagen;
+    delete[] ptgen;
     delete[] stackIndexOfPrimaryParts;
     delete[] reconstructedPrimaryPart;
     delete[] detectedPrimaryPartLay1;
