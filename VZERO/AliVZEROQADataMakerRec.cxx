@@ -682,37 +682,37 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	
 	fEvent++; 
 	TParameter<double> * p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kMultiV0A)->GetName()))) ; 
-	p->SetVal((double)mulV0A) ; 
+	if (p) p->SetVal((double)mulV0A) ; 
 
 	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kMultiV0C)->GetName()))) ; 
-	p->SetVal((double)mulV0C) ;                     
+	if (p) p->SetVal((double)mulV0C) ;                     
 
 	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kChargeV0A)->GetName()))) ; 
-	p->SetVal((double)chargeV0A) ; 
+	if (p) p->SetVal((double)chargeV0A) ; 
 
 	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kChargeV0C)->GetName()))) ; 
-	p->SetVal((double)chargeV0C) ;                     
+	if (p) p->SetVal((double)chargeV0C) ;                     
 
 	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kChargeV0)->GetName()))) ; 
-	p->SetVal((double)(chargeV0A + chargeV0C)) ;                     
+	if (p) p->SetVal((double)(chargeV0A + chargeV0C)) ;                     
 	
 	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kRawMIPV0A)->GetName()))) ; 
-	p->SetVal((double)mipV0A) ; 
+	if (p) p->SetVal((double)mipV0A) ; 
 	
 	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kRawMIPV0C)->GetName()))) ; 
-	p->SetVal((double)mipV0C) ;                     
+	if (p) p->SetVal((double)mipV0C) ;                     
 	
 	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kRawMIPV0)->GetName()))) ; 
-	p->SetVal((double)(mipV0A + mipV0C)) ;                     
+	if (p) p->SetVal((double)(mipV0A + mipV0C)) ;                     
 	
 	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kV0ATime)->GetName()))) ; 
-	p->SetVal((double)timeV0A) ; 
+	if (p) p->SetVal((double)timeV0A) ; 
 	
 	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kV0CTime)->GetName()))) ; 
-	p->SetVal((double)timeV0C) ;                     
+	if (p) p->SetVal((double)timeV0C) ;                     
 	
 	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kDiffTime)->GetName()))) ; 
-	p->SetVal((double)diffTime) ;                     
+	if (p) p->SetVal((double)diffTime) ;                     
 	
   	delete rawStream; rawStream = 0x0;      
 

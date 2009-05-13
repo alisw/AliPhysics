@@ -449,16 +449,16 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   delete decoder;
   GetRawsData(kEtotLG)->Fill(lgEtot) ; 
   TParameter<double> * p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kEtotLG)->GetName()))) ; 
-  p->SetVal(lgEtot) ; 
+  if (p) p->SetVal(lgEtot) ; 
   GetRawsData(kEtotHG)->Fill(hgEtot) ;  
   p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kEtotHG)->GetName()))) ; 
-  p->SetVal(hgEtot) ; 
+  if (p) p->SetVal(hgEtot) ; 
   GetRawsData(kNtotLG)->Fill(lgNtot) ;
   p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kNtotLG)->GetName()))) ; 
-  p->SetVal(lgNtot) ; 
+  if (p) p->SetVal(lgNtot) ; 
   GetRawsData(kNtotHG)->Fill(hgNtot) ;
   p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kNtotHG)->GetName()))) ; 
-  p->SetVal(hgNtot) ; 
+  if (p) p->SetVal(hgNtot) ; 
 }
 //____________________________________________________________________________
 void AliPHOSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
