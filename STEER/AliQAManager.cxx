@@ -1196,6 +1196,10 @@ void AliQAManager::RunOneEvent(AliESDEvent *& esd)
       AliQADataMaker *qadm = GetQADataMaker(iDet);  
       if (!qadm) 
         continue;
+      if ( qadm->GetRecoParam() ) 
+        qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
+      else 
+        qadm->SetEventSpecie(fEventSpecie) ;  
       if ( qadm->IsCycleDone() ) {
         qadm->EndOfCycle() ;
       }
@@ -1215,6 +1219,10 @@ void AliQAManager::RunOneEventInOneDetector(Int_t det, TTree * tree)
     if (IsSelected(AliQAv1::GetDetName(det))) {
       AliQADataMaker *qadm = GetQADataMaker(det);  
       if (qadm) { 
+        if ( qadm->GetRecoParam() ) 
+          qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
+        else 
+          qadm->SetEventSpecie(fEventSpecie) ;  
         if ( qadm->IsCycleDone() ) {
           qadm->EndOfCycle() ;
         }
