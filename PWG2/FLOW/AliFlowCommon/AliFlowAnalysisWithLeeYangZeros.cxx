@@ -981,8 +981,8 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* const a
   
   TComplex cG = TComplex::One();
   Double_t dOrder =  2.;
-  Double_t dWgt = 1.;
-  
+  Double_t dWgt = 1./anEvent->GetEventNSelTracksRP(); //weight with the multiplicity
+    
   Int_t iNumberOfTracks = anEvent->NumberOfTracks();
   
   for (Int_t i=0;i<iNumberOfTracks;i++) //loop over tracks in event
