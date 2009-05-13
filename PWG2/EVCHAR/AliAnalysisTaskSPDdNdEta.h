@@ -1,13 +1,13 @@
-#ifndef AliAnalysisTaskSPDdNdEta_cxx
-#define AliAnalysisTaskSPDdNdEta_cxx
+#ifndef ALIANALYSISTASKSPDDNDETA_H
+#define ALIANALYSISTASKSPDDNDETA_H
 
-/*************************************************************************
-* Class AliAnalysisTaskSPDdNdEta                                         *
-* Analysis task for dN/dEta reconstruction with the SPD                  *
-*                                                                        *
-* Author:  M. Nicassio (INFN Bari)                                       *
-* Contact: Maria.Nicassio@ba.infn.it, Domenico.Elia@ba.infn.it           *
-**************************************************************************/
+///////////////////////////////////////////////////////////////////////////
+// Class AliAnalysisTaskSPDdNdEta                                        //
+// Analysis task for dN/dEta reconstruction with the SPD                 //
+//                                                                       //
+// Author:  M. Nicassio (INFN Bari)                                      //
+// Contact: Maria.Nicassio@ba.infn.it, Domenico.Elia@ba.infn.it          //
+///////////////////////////////////////////////////////////////////////////
 
 class TH1F;
 class TH2F;
@@ -33,91 +33,83 @@ class AliAnalysisTaskSPDdNdEta : public AliAnalysisTask {
   AliESDEvent *fESD;               //ESD object
   TList* fOutput;                  //! list send on output slot 0
   
-  Bool_t fCorr;
-  Int_t fTrigger;
-  Bool_t fppAna;
+  Bool_t fCorr;                    // flag to anable the correction histo calculation
+  Int_t fTrigger;                  // to set the MBtrigger selection
+  Bool_t fppAna;                   // flag to set the proper multiplicity binning (p-p or Pb-Pb)
  
-  //Data to be corrected 
-  TH2F        *fHistSPDRAWMultvsZ;
-  TH2F        *fHistSPDRAWMultvsZTriggEvts;
-  TH2F        *fHistSPDRAWEtavsZ;
+  TH2F        *fHistSPDRAWMultvsZ;          // data to be corrected 
+  TH2F        *fHistSPDRAWMultvsZTriggEvts; // data to be corrected
+  TH2F        *fHistSPDRAWEtavsZ;           // data to be corrected
 
-  //Clusters inner layer and tracklets
-  TH1F        *fHistSPDmultEtacut;
-  TH1F        *fHistSPDmult;
-  TH1F        *fHistSPDeta;
-  TH1F        *fHistSPDcl1multEtacutLay1;
-  TH1F        *fHistSPDcl1mult;
-  TH1F        *fHistSPDcl1eta;
-  TH1F        *fHistSPDphi;
-  TH1F        *fHistSPDcl1phi;
-  TH1F        *fHistSPDtheta;
-  TH1F        *fHistSPDcl1theta;
-  TH1F        *fHistSPDdePhi;
-  TH1F        *fHistSPDdePhiZ;
-  TH1F        *fHistSPDdePhi3D;
-  TH2F        *fHistSPDphivsSPDeta;
-  TH2F        *fHistSPDcl1phivsSPDcl1eta;
+  TH1F        *fHistSPDmultEtacut;          // cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDmult;                // cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDeta;                 // cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDcl1multEtacutLay1;   // cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDcl1mult;             // cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDcl1eta;              // cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDphi;                 // cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDcl1phi;              // cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDtheta;               // cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDcl1theta;            // cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDdePhi;               // cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDdePhiZ;              // cluster inner layer and tracklet check histos
+  TH1F        *fHistSPDdePhi3D;             // cluster inner layer and tracklet check histos
+  TH2F        *fHistSPDphivsSPDeta;         // cluster inner layer and tracklet check histos
+  TH2F        *fHistSPDcl1phivsSPDcl1eta;   // cluster inner layer and tracklet check histos
 
-  //SPD vertex distributions
-  TH1F        *fHistSPDvtx;    
-  TH3F        *fHistSPDvtx3D;
-  TH3F        *fHistSPDvtxZ;
-  TH2F        *fHistNcontribSPDvtxvsSPDvtx;
-  TH1F        *fHistNcontribSPDvtx3D;
-  TH1F        *fHistNcontribSPDvtxZ;
-  TH1F        *fHistNcontribSPDvtxall;
-  TH2F        *fHistSPDmultvsSPDvtx;
+  TH1F        *fHistSPDvtx;                 // SPD vertex distributions
+  TH3F        *fHistSPDvtx3D;               // SPD vertex distributions
+  TH3F        *fHistSPDvtxZ;                // SPD vertex distributions
+  TH2F        *fHistNcontribSPDvtxvsSPDvtx; // SPD vertex distributions
+  TH1F        *fHistNcontribSPDvtx3D;       // SPD vertex distributions
+  TH1F        *fHistNcontribSPDvtxZ;        // SPD vertex distributions
+  TH1F        *fHistNcontribSPDvtxall;      // SPD vertex distributions
+  TH2F        *fHistSPDmultvsSPDvtx;        // SPD vertex distributions
 
-  //SPD fired chips distributions            
-  TH2F        *fHistSPDcl1multvsnFiredChipsLay1;
-  TH2F        *fHistSPDmultvsnFiredChipsLay1;
-  TH2F        *fHistSPDmultvsnFiredChipsLay2;
-  TH2F        *fHistnFiredChipsLay2vsnFiredChipsLay1;
-  TH2F        *fHistnFiredChipsLay2vsnFiredChipsLay1novtxrec;
+  TH2F        *fHistSPDcl1multvsnFiredChipsLay1;              // SPD fired chips distributions
+  TH2F        *fHistSPDmultvsnFiredChipsLay1;                 // SPD fired chips distributions
+  TH2F        *fHistSPDmultvsnFiredChipsLay2;                 // SPD fired chips distributions
+  TH2F        *fHistnFiredChipsLay2vsnFiredChipsLay1;         // SPD fired chips distributions
+  TH2F        *fHistnFiredChipsLay2vsnFiredChipsLay1novtxrec; // SPD fired chips distributions
 
-  //Track level correction histograms
-  TH2F* fHistBkgCorrNum;
-  TH2F* fHistBkgCorrDen;
-  TH2F* fHistAlgEffNum;
-  TH2F* fHistNonDetectableCorrNum;
-  TH2F* fHistNonDetectableCorrDen;
-  TH2F* fHistTrackTrigVtxCorrNum;
-  TH2F* fHistTrackTrigCorrDen;
+  TH2F* fHistBkgCorrNum;           // track level correction histograms
+  TH2F* fHistBkgCorrDen;           // track level correction histograms
+  TH2F* fHistAlgEffNum;            // track level correction histograms
+  TH2F* fHistNonDetectableCorrNum; // track level correction histograms
+  TH2F* fHistNonDetectableCorrDen; // track level correction histograms
+  TH2F* fHistTrackTrigVtxCorrNum;  // track level correction histograms
+  TH2F* fHistTrackTrigCorrDen;     // track level correction histograms
    
-  //Event level correction histograms
-  TH2F* fHistTrigVtxCorrNum;
-  TH2F* fHistTrigVtxCorrDen;
+  TH2F* fHistTrigVtxCorrNum;       // event level correction histograms
+  TH2F* fHistTrigVtxCorrDen;       // event level correction histograms
 
-  TH2F* fHistTrigCorrDen;
+  TH2F* fHistTrigCorrDen;          // event level correction histograms
 
-  //MC distributions
-  TH2F* fHistMCEtavsZTriggMCvtxEvts;
-  TH2F* fHistMCEtavsZTriggESDvtxEvts;
-  TH2F* fHistMCEtavsZ;
+  TH2F* fHistMCEtavsZTriggMCvtxEvts;  // MC distributions
+  TH2F* fHistMCEtavsZTriggESDvtxEvts; // MC distributions
+  TH2F* fHistMCEtavsZ;                // MC distributions 
 
-  //Additional check histos
-  TH1F* fHistTRradius;
-  TH2F* fHistContributorsvsDeVtx;
-  TH3F* fHistoDetectableNotr;
-  TH2F* fHistoDetectabletr;
-  TH2F* fHistoNonStoppingTracks;
-  TH2F* fHistoDetectedLay1;
-  TH2F* fHistoDetectedLay2;
-  TH1F* fHistoPt;
-  TH2F* fHistoDetectableTRm1;
-  TH2F* fHistoDetectableTrITS;
-  TH2F* fHistoDetectableTrTPC;
-  TH2F* fHistoDetectableTrFRAME;
-  TH2F* fHistoDetectableTrTRD;
-  TH2F* fHistoDetectableTrTOF;
-  TH2F* fHistoDetectableTrMUON;
-  TH2F* fHistoDetectableTrHMPID;
-  TH2F* fHistoDetectableTrT0;
-  TH2F* fHistoDetectableTrEMCAL;
-  TH2F* fHistoDetectableTrFMD;
-  TH2F* fHistoDetectableTrVZERO;
-  TH1F* fHistoRTRm1;
+  TH1F* fHistTRradius;                // additional check histos
+  TH2F* fHistContributorsvsDeVtx;     // additional check histos
+  TH3F* fHistoDetectableNotr;         // additional check histos
+  TH2F* fHistoDetectabletr;           // additional check histos
+  TH2F* fHistoNonStoppingTracks;      // additional check histos
+  TH2F* fHistoDetectedLay1;           // additional check histos
+  TH2F* fHistoDetectedLay2;           // additional check histos
+  TH1F* fHistoPt;                     // additional check histos 
+  TH2F* fHistoDetectableTRm1;         // additional check histos
+  TH2F* fHistoDetectableTrITS;        // additional check histos
+  TH2F* fHistoDetectableTrTPC;        // additional check histos
+  TH2F* fHistoDetectableTrFRAME;      // additional check histos
+  TH2F* fHistoDetectableTrTRD;        // additional check histos
+  TH2F* fHistoDetectableTrTOF;        // additional check histos
+  TH2F* fHistoDetectableTrMUON;       // additional check histos
+  TH2F* fHistoDetectableTrHMPID;      // additional check histos
+  TH2F* fHistoDetectableTrT0;         // additional check histos
+  TH2F* fHistoDetectableTrEMCAL;      // additional check histos
+  TH2F* fHistoDetectableTrFMD;        // additional check histos
+  TH2F* fHistoDetectableTrVZERO;      // additional check histos
+  TH1F* fHistoRTRm1;                  // additional check histos
 
  private:    
   AliAnalysisTaskSPDdNdEta(const AliAnalysisTaskSPDdNdEta&); 
