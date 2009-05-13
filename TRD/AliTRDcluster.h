@@ -83,7 +83,7 @@ public:
   void     SetQ(Float_t inQ){ fQ = inQ;}
   void     SetClusterMasking(UChar_t inClusterMasking){ fClusterMasking = inClusterMasking;}
   void     SetShared(Bool_t sh  = kTRUE)   { SetBit(AliCluster::kShared,sh);    }
-  void     Use(Int_t = 0)                  { SetBit(AliCluster::kUsed, kTRUE);              }
+  void     Use(Int_t u = 1)                  { SetBit(AliCluster::kUsed, u ? kTRUE : kFALSE);              }
   void     SetFivePad(Bool_t b = kTRUE) { SetBit(kFivePad,b);}
 
 protected:
