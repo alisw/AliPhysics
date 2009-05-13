@@ -23,6 +23,7 @@
 // --- ROOT system ---
 #include "TH2F.h"
 #include "TClonesArray.h"
+#include "TClass.h"
 //#include "Riostream.h"
 
 //---- AliRoot system ----
@@ -139,18 +140,18 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
   fhDeltaEta->SetXTitle("p_{T trigger} (GeV/c)");
   outputContainer->Add(fhDeltaEta);
   
-  fhDeltaPt  = new TH2F("DeltaPt","#p_{T trigger} - #p_{T jet} vs p_{T trigger}",nptbins,ptmin,ptmax,200,-100,100); 
+  fhDeltaPt  = new TH2F("DeltaPt","p_{T trigger} - #p_{T jet} vs p_{T trigger}",nptbins,ptmin,ptmax,200,-100,100); 
   fhDeltaPt->SetYTitle("#Delta #p_{T}");
   fhDeltaPt->SetXTitle("p_{T trigger} (GeV/c)"); 
   outputContainer->Add(fhDeltaPt);
   
-  fhPtRatio  = new TH2F("PtRatio","#p_{T jet} / #p_{T trigger} vs p_{T trigger}",nptbins,ptmin,ptmax,200,0,2.); 
+  fhPtRatio  = new TH2F("PtRatio","p_{T jet} / #p_{T trigger} vs p_{T trigger}",nptbins,ptmin,ptmax,200,0,2.); 
   fhPtRatio->SetYTitle("ratio");
   fhPtRatio->SetXTitle("p_{T trigger} (GeV/c)");
   outputContainer->Add(fhPtRatio);
   
-  fhPt  = new TH2F("Pt","#p_{T jet} vs p_{T trigger}",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
-  fhPt->SetYTitle("#p_{T jet}(GeV/c)");
+  fhPt  = new TH2F("Pt","p_{T jet} vs p_{T trigger}",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
+  fhPt->SetYTitle("p_{T jet}(GeV/c)");
   fhPt->SetXTitle("p_{T trigger} (GeV/c)");
   outputContainer->Add(fhPt);
   
@@ -234,6 +235,11 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     abort();
   }
   
+  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation")){
+	printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
+	abort();
+  }
+	
   Int_t ntrig =  GetInputAODBranch()->GetEntriesFast() ;  
   if(GetDebug() > 3){
     printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - Begin jet finder  correlation analysis, fill AODs \n");

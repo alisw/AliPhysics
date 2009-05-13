@@ -128,6 +128,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   // ### Correlation with hadrons
   AliAnaParticleHadronCorrelation *anacorrhadron = new AliAnaParticleHadronCorrelation();
   anacorrhadron->SetInputAODName("DirectPhotons"+calorimeter);
+  anacorrhadron->SetOutputAODName("CorrelatedPi0s"+calorimeter);
+  anacorrhadron->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   anacorrhadron->SetDebug(-1);
   anacorrhadron->SwitchOffFidutialCut();
   anacorrhadron->SetPtCutRange(1,100);

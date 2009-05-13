@@ -206,8 +206,9 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
 	     particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());			
     fAODPHOS->Add(calo);//reference the selected object to the list
   }
+  
   //In EMCAL
-  else if(fFillEMCAL && fFidutialCut->IsInFidutialCut(momentum,"EMCAL") && momentum.Pt() > fEMCALPtMin){
+  if(fFillEMCAL && fFidutialCut->IsInFidutialCut(momentum,"EMCAL") && momentum.Pt() > fEMCALPtMin){
     Int_t index = iParticle ;
     Int_t pdg = TMath::Abs(particle->GetPdgCode());
     //Int_t pdgorg=pdg;

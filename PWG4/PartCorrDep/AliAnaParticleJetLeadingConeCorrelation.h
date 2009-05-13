@@ -189,7 +189,11 @@ public:
   TH2F * fhNeutralLeadingDeltaPhi  ;  //! Difference of neutral hadron and trigger phi as function of trigger pT
   TH2F * fhNeutralLeadingDeltaEta ;   //! Difference of charged particle and trigger eta as function of trigger pT
   TH2F * fhNeutralLeadingRatioPt   ;  //! Ratio of Pt leading neutral and trigger
+	
+  TH2F * fhChargedLeadingXi  ;   //! Ln (pt leading charge / pt trigger)
+  TH2F * fhNeutralLeadingXi  ;   //! Ln (pt leading neutral / pt trigger)
 
+	
   // Jet distributions
   // Fixed cone and pt threshold
   TH2F * fhJetPt  ; //! leading pt jet vs pt trigger
