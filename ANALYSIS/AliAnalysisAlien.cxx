@@ -1138,12 +1138,18 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          Bool_t hasCORRFW = kFALSE;
          while ((obj=next())) {
             pkgname = obj->GetName();
-            if (pkgname.Contains("STEERBase")) hasSTEERBase = kTRUE;
-            if (pkgname.Contains("ESD"))       hasESD = kTRUE;
-            if (pkgname.Contains("AOD"))       hasAOD = kTRUE;
-            if (pkgname.Contains("ANALYSIS") && !pkgname.Contains("ANALYSISalice")) hasANALYSIS = kTRUE;
-            if (pkgname.Contains("ANALYSISalice")) hasANALYSISalice = kTRUE;
-            if (pkgname.Contains("CORRFW"))    hasCORRFW = kTRUE;
+            if (pkgname == "STEERBase" ||
+                pkgname == "STEERBase.par") hasSTEERBase = kTRUE;
+            if (pkgname == "ESD" ||
+                pkgname == "ESD.par")       hasESD = kTRUE;
+            if (pkgname == "AOD" ||
+                pkgname == "AOD.par")       hasAOD = kTRUE;
+            if (pkgname == "ANALYSIS" ||
+                pkgname == "ANALYSIS.par")  hasANALYSIS = kTRUE;
+            if (pkgname == "ANALYSISalice" ||
+                pkgname == "ANALYSISalice.par") hasANALYSISalice = kTRUE;
+            if (pkgname == "CORRFW" ||
+                pkgname == "CORRFW.par")    hasCORRFW = kTRUE;
          }   
          if (!hasSTEERBase) out << "   gSystem->Load(\"libSTEERBase\");" << endl;
          else out << "   if (!SetupPar(\"STEERBase\")) return;" << endl;
@@ -1161,11 +1167,18 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          next.Reset();
          while ((obj=next())) {
             pkgname = obj->GetName();
-            if (pkgname.Contains("STEERBase") ||
-                pkgname.Contains("ESD") ||
-                pkgname.Contains("AOD") ||
-                pkgname.Contains("ANALYSIS") ||
-                pkgname.Contains("CORRFW")) continue;
+            if (pkgname == "STEERBase" ||
+                pkgname == "STEERBase.par" ||
+                pkgname == "ESD" ||
+                pkgname == "ESD.par" ||
+                pkgname == "AOD" ||
+                pkgname == "AOD.par" ||
+                pkgname == "ANALYSIS" ||
+                pkgname == "ANALYSIS.par" ||
+                pkgname == "ANALYSISalice" ||
+                pkgname == "ANALYSISalice.par" ||
+                pkgname == "CORRFW" ||
+                pkgname == "CORRFW.par") continue;
             out << "   if (!SetupPar(\"" << obj->GetName() << "\")) return;" << endl;
          }   
       }   
