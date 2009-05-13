@@ -412,7 +412,7 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
 
   // vertices
   const AliESDVertex *vtxSPD = esd->GetPrimaryVertexSPD();
-  const AliESDVertex *vtxTrk = esd->GetPrimaryVertex();
+  const AliESDVertex *vtxTrk = esd->GetPrimaryVertexTracks();
 
   Int_t mult = ((AliMultiplicity*)(esd->GetMultiplicity()))->GetNumberOfTracklets();
   if(mult>0)
