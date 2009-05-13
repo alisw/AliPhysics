@@ -24,6 +24,7 @@
 //#include "Riostream.h"
 #include "TH2F.h"
 #include "TParticle.h"
+#include "TClass.h"
 
 //---- ANALYSIS system ----
 #include "AliAnaParticlePartonCorrelation.h" 
@@ -184,6 +185,12 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
     printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
     abort();	
   }
+	
+  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation")){
+	printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
+	abort();
+  }	
+	
   if(GetDebug() > 1){
     printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - Begin fill AODs \n");
     printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());

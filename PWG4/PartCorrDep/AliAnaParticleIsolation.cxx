@@ -31,6 +31,7 @@
 #include <TObjString.h>
 #include <TH2F.h>
 //#include <Riostream.h>
+#include <TClass.h>
 
 // --- Analysis system --- 
 #include "AliAnaParticleIsolation.h" 
@@ -695,6 +696,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
     abort();
   }
   
+  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation")){
+	printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
+	abort();
+  }
+	
   Int_t n = 0, nfrac = 0;
   Bool_t isolated = kFALSE ; 
   Float_t coneptsum = 0 ;

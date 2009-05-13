@@ -536,8 +536,8 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     
     AliAODPWG4Particle* pi0 =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = pi0->GetPdg();
-    
-    if(pdg != AliCaloPID::kPi0) continue;              
+	  
+    if(IsCaloPIDOn() && pdg != AliCaloPID::kPi0) continue;              
     
     //Fill pi0 histograms 
     Float_t pt = pi0->Pt();

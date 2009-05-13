@@ -128,6 +128,8 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	//<<<Third analysis>>> Isolated Photon- hadron correlation
 	AliAnaParticleHadronCorrelation *anacorr = new AliAnaParticleHadronCorrelation();
 	anacorr->SetInputAODName("Photons");
+	anacorr->SetOutputAODName("CorrelatedPi0s"+calorimeter);
+	anacorr->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
 	anacorr->SetDebug(-1);
 	anacorr->SetCaloPID(pid);
 	anacorr->SwitchOnCaloPID();
