@@ -32,9 +32,8 @@ class AliTRDcheckPID : public AliTRDrecoTask
     ,kNClus          =  4     //  number of clusters per track
     ,kMomentum       =  5     // momentum distribution
     ,kMomentumBin    =  6     // momentum distribution
-    ,kThresh         =  7     // threshold in efficiency
-    ,kNTracklets     =  8     // Number of tracklets per track
-    ,kNPlots         =  9     // Number of plots for this tasks 
+    ,kNTracklets     =  7     // Number of tracklets per track
+    ,kNPlots         =  8     // Number of plots for this tasks 
   };
 public:
   AliTRDcheckPID();

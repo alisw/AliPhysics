@@ -735,6 +735,11 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
   TList *content = 0x0;
   switch(ifig){
   case kEfficiency:{
+    gPad->Divide(2, 1, 0.,0.);
+    TList *l=gPad->GetListOfPrimitives();
+    TVirtualPad *pad = ((TVirtualPad*)l->At(0));pad->cd();
+    pad->SetMargin(0.07, 0.07, 0.1, 0.001);
+
     TLegend *legEff = new TLegend(.7, .7, .98, .98);
     legEff->SetBorderSize(1);
     content = (TList *)fGraph->FindObject("Efficiencies");
@@ -758,6 +763,27 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     legEff->AddEntry(g, "ESD", "pl");
     legEff->Draw();
     gPad->SetLogy();
+    gPad->SetLogx();
+    gPad->SetGridy();
+    gPad->SetGridx();
+
+    pad = ((TVirtualPad*)l->At(1));pad->cd();
+    pad->SetMargin(0.07, 0.07, 0.1, 0.001);
+    content = (TList *)fGraph->FindObject("Thresholds");
+    if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kLQ))) break;
+    if(!g->GetN()) break;
+    g->Draw("apl");
+    ax = g->GetHistogram()->GetXaxis();
+    ax->SetTitle("p (GeV/c)");
+    ax->SetRangeUser(.5, 11.5);
+    ax->SetMoreLogLabels();
+    ax = g->GetHistogram()->GetYaxis();
+    ax->SetTitle("threshold (%)");
+    ax->SetRangeUser(5.e-2, 1.);
+    if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kNN))) break;
+    g->Draw("pl");
+    if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kESD))) break;
+    g->Draw("p");
     gPad->SetLogx();
     gPad->SetGridy();
     gPad->SetGridx();
@@ -856,34 +882,6 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
   case kMomentum:
   case kMomentumBin:
     break; 
-  case kThresh:{
-    TLegend *legThre = new TLegend(.7, .3, .98, .58);
-    legThre->SetBorderSize(1);
-    content = (TList *)fGraph->FindObject("Thresholds");
-    if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kLQ))) break;
-    if(!g->GetN()) break;
-    legThre->SetHeader("PID Method");
-    g->Draw("apl");
-    ax = g->GetHistogram()->GetXaxis();
-    ax->SetTitle("p (GeV/c)");
-    ax->SetRangeUser(.5, 11.5);
-    ax->SetMoreLogLabels();
-    ax = g->GetHistogram()->GetYaxis();
-    ax->SetTitle("threshold (%)");
-    ax->SetRangeUser(5.e-2, 1.);
-    legThre->AddEntry(g, "2D LQ", "pl");
-    if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kNN))) break;
-    g->Draw("pl");
-    legThre->AddEntry(g, "NN", "pl");
-    if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kESD))) break;
-    g->Draw("p");
-    legThre->AddEntry(g, "ESD", "pl");
-    legThre->Draw();
-    gPad->SetLogx();
-    gPad->SetGridy();
-    gPad->SetGridx();
-    return kTRUE;
-  }
   case kNTracklets:{
     TLegend *legNClus = new TLegend(.4, .7, .68, .98);
     legNClus->SetBorderSize(1);
