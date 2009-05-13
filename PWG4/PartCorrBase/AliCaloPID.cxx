@@ -225,8 +225,9 @@ Int_t AliCaloPID::GetPdg(const TString calo,const TLorentzVector mom, const AliA
 		       cluster->GetEmcCpvDistance(), cluster->GetDistToBadChannel(),cluster->GetNExMax());
   
   if(calo == "EMCAL") {
-    if(cluster->GetM02()< 0.25) return kPhoton ;
-    else return  kNeutralHadron ; 
+    if(cluster->GetM02() < 0.25) return kPhoton ;
+    //else return  kNeutralHadron ; 
+	else return  kPi0 ;
   }
   
   //   if(calo == "PHOS") {
