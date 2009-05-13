@@ -1962,17 +1962,15 @@ Bool_t AliSimulation::RunHLT()
   }
 
   // print compile info
-  typedef void (*CompileInfo)( char*& date, char*& time);
+  typedef void (*CompileInfo)( const char*& date, const char*& time);
   CompileInfo fctInfo=(CompileInfo)gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, "CompileInfo");
   if (fctInfo) {
-    Char_t* date=0;
-    Char_t* time=0;
-    (*fctInfo)(date,time);
-    if (!date) {date=new Char_t[8]; strcpy(date,"unknown");}
-    if (!time) {time=new Char_t[8]; strcpy(time,"unknown");}
+    const char* date="";
+    const char* time="";
+    (*fctInfo)(date, time);
+    if (!date) date="unknown";
+    if (!time) time="unknown";
     AliInfo(Form("%s build on %s (%s)", ALIHLTSIMULATION_LIBRARY, date, time));
-    delete date;
-    delete time;
   } else {
     AliInfo(Form("no build info available for %s", ALIHLTSIMULATION_LIBRARY));
   }
