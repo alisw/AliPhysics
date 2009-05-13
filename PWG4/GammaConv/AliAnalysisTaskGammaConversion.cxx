@@ -1100,6 +1100,7 @@ Double_t AliAnalysisTaskGammaConversion::GetMCOpeningAngle(TParticle* const daug
 }
 
 void AliAnalysisTaskGammaConversion::CheckV0Efficiency(){
+  // see header file for documentation
 
   vector<Int_t> indexOfGammaParticle;
 
@@ -1173,17 +1174,17 @@ void AliAnalysisTaskGammaConversion::CheckV0Efficiency(){
 
 
 void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
-
+  // see header file for documantation
 
   fESDEvent = fV0Reader->GetESDEvent();
 
 
-  vector <AliESDtrack*> ESDeNegTemp(0);
-  vector <AliESDtrack*> ESDePosTemp(0);
-  vector <AliESDtrack*> ESDxNegTemp(0);
-  vector <AliESDtrack*> ESDxPosTemp(0);
-  vector <AliESDtrack*> ESDeNegNoJPsi(0);
-  vector <AliESDtrack*> ESDePosNoJPsi(0); 
+  vector <AliESDtrack*> vESDeNegTemp(0);
+  vector <AliESDtrack*> vESDePosTemp(0);
+  vector <AliESDtrack*> vESDxNegTemp(0);
+  vector <AliESDtrack*> vESDxPosTemp(0);
+  vector <AliESDtrack*> vESDeNegNoJPsi(0);
+  vector <AliESDtrack*> vESDePosNoJPsi(0); 
 
 
 
@@ -1287,7 +1288,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 
     if(curTrack->GetSign() > 0){
 
-      ESDxPosTemp.push_back(curTrack);
+      vESDxPosTemp.push_back(curTrack);
 
       if( pid == 0){
 
@@ -1296,7 +1297,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 	fHistograms->FillHistogram("MC_ElectronPosNegPt",curParticle->Pt());
 	fHistograms->FillHistogram("ESD_ElectronPosNegEta",curElec.Eta());
 	fHistograms->FillHistogram("MC_ElectronPosNegEta",curParticle->Eta());
-	ESDePosTemp.push_back(curTrack);
+	vESDePosTemp.push_back(curTrack);
 
 
 
@@ -1304,7 +1305,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 
     }
     else {
-      ESDxNegTemp.push_back(curTrack);
+      vESDxNegTemp.push_back(curTrack);
 
       if( pid == 0){
 
@@ -1313,7 +1314,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 	fHistograms->FillHistogram("MC_ElectronPosNegPt",curParticle->Pt());
 	fHistograms->FillHistogram("ESD_ElectronPosNegEta",curElec.Eta());
 	fHistograms->FillHistogram("MC_ElectronPosNegEta",curParticle->Eta());
-	ESDeNegTemp.push_back(curTrack);
+	vESDeNegTemp.push_back(curTrack);
 
 
 
@@ -1331,10 +1332,10 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 	
   UInt_t iePosJPsi=0,ieNegJPsi=0,iePosPi0=0,ieNegPi0=0;
  
-  for(UInt_t iNeg=0; iNeg < ESDeNegTemp.size(); iNeg++){
-    if(fStack->Particle(TMath::Abs(ESDeNegTemp[iNeg]->GetLabel()))->GetPdgCode() == 11)
-      if(fStack->Particle(TMath::Abs(ESDeNegTemp[iNeg]->GetLabel()))->GetMother(0) > -1){
-	Int_t labelMother = fStack->Particle(TMath::Abs(ESDeNegTemp[iNeg]->GetLabel()))->GetMother(0);
+  for(UInt_t iNeg=0; iNeg < vESDeNegTemp.size(); iNeg++){
+    if(fStack->Particle(TMath::Abs(vESDeNegTemp[iNeg]->GetLabel()))->GetPdgCode() == 11)
+      if(fStack->Particle(TMath::Abs(vESDeNegTemp[iNeg]->GetLabel()))->GetMother(0) > -1){
+	Int_t labelMother = fStack->Particle(TMath::Abs(vESDeNegTemp[iNeg]->GetLabel()))->GetMother(0);
 	TParticle* partMother = fStack ->Particle(labelMother);
 	if (partMother->GetPdgCode() == 111){
 	  ieNegPi0 = iNeg;
@@ -1346,17 +1347,17 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 	  eNegJPsi = kTRUE;
 	}
 	else{	
-	  ESDeNegNoJPsi.push_back(ESDeNegTemp[iNeg]);
+	  vESDeNegNoJPsi.push_back(vESDeNegTemp[iNeg]);
 	  //		cout<<"ESD No Positivo JPsi "<<endl;
 	}
 
       }
   }	
 
-  for(UInt_t iPos=0; iPos < ESDePosTemp.size(); iPos++){
-    if(fStack->Particle(TMath::Abs(ESDePosTemp[iPos]->GetLabel()))->GetPdgCode() == -11)
-      if(fStack->Particle(TMath::Abs(ESDePosTemp[iPos]->GetLabel()))->GetMother(0) > -1){
-	Int_t labelMother = fStack->Particle(TMath::Abs(ESDePosTemp[iPos]->GetLabel()))->GetMother(0);
+  for(UInt_t iPos=0; iPos < vESDePosTemp.size(); iPos++){
+    if(fStack->Particle(TMath::Abs(vESDePosTemp[iPos]->GetLabel()))->GetPdgCode() == -11)
+      if(fStack->Particle(TMath::Abs(vESDePosTemp[iPos]->GetLabel()))->GetMother(0) > -1){
+	Int_t labelMother = fStack->Particle(TMath::Abs(vESDePosTemp[iPos]->GetLabel()))->GetMother(0);
 	TParticle* partMother = fStack ->Particle(labelMother);
 	if (partMother->GetPdgCode() == 111){
 	  iePosPi0 = iPos;
@@ -1368,7 +1369,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 	  ePosJPsi = kTRUE;
 	}
 	else{
-	  ESDePosNoJPsi.push_back(ESDePosTemp[iPos]);
+	  vESDePosNoJPsi.push_back(vESDePosTemp[iPos]);
 	  //		cout<<"ESD No Negativo JPsi "<<endl;
 	}
 
@@ -1377,33 +1378,33 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 	
   if( eNegJPsi && ePosJPsi ){
     TVector3 tempeNegV,tempePosV;
-    tempeNegV.SetXYZ(ESDeNegTemp[ieNegJPsi]->Px(),ESDeNegTemp[ieNegJPsi]->Py(),ESDeNegTemp[ieNegJPsi]->Pz());			
-    tempePosV.SetXYZ(ESDePosTemp[iePosJPsi]->Px(),ESDePosTemp[iePosJPsi]->Py(),ESDePosTemp[iePosJPsi]->Pz());
+    tempeNegV.SetXYZ(vESDeNegTemp[ieNegJPsi]->Px(),vESDeNegTemp[ieNegJPsi]->Py(),vESDeNegTemp[ieNegJPsi]->Pz());			
+    tempePosV.SetXYZ(vESDePosTemp[iePosJPsi]->Px(),vESDePosTemp[iePosJPsi]->Py(),vESDePosTemp[iePosJPsi]->Pz());
     fHistograms->FillTable("Table_Electrons",16);
     fHistograms->FillHistogram("ESD_ElectronPosNegJPsiAngle",tempeNegV.Angle(tempePosV));	
-    fHistograms->FillHistogram("MC_ElectronPosNegJPsiAngle",GetMCOpeningAngle(fStack->Particle(TMath::Abs(ESDeNegTemp[ieNegJPsi]->GetLabel())),
-									      fStack->Particle(TMath::Abs(ESDePosTemp[iePosJPsi]->GetLabel()))));	
+    fHistograms->FillHistogram("MC_ElectronPosNegJPsiAngle",GetMCOpeningAngle(fStack->Particle(TMath::Abs(vESDeNegTemp[ieNegJPsi]->GetLabel())),
+									      fStack->Particle(TMath::Abs(vESDePosTemp[iePosJPsi]->GetLabel()))));	
   }
 	
   if( eNegPi0 && ePosPi0 ){
     TVector3 tempeNegV,tempePosV;
-    tempeNegV.SetXYZ(ESDeNegTemp[ieNegPi0]->Px(),ESDeNegTemp[ieNegPi0]->Py(),ESDeNegTemp[ieNegPi0]->Pz());
-    tempePosV.SetXYZ(ESDePosTemp[iePosPi0]->Px(),ESDePosTemp[iePosPi0]->Py(),ESDePosTemp[iePosPi0]->Pz());
+    tempeNegV.SetXYZ(vESDeNegTemp[ieNegPi0]->Px(),vESDeNegTemp[ieNegPi0]->Py(),vESDeNegTemp[ieNegPi0]->Pz());
+    tempePosV.SetXYZ(vESDePosTemp[iePosPi0]->Px(),vESDePosTemp[iePosPi0]->Py(),vESDePosTemp[iePosPi0]->Pz());
     fHistograms->FillHistogram("ESD_ElectronPosNegPi0Angle",tempeNegV.Angle(tempePosV));
-    fHistograms->FillHistogram("MC_ElectronPosNegPi0Angle",GetMCOpeningAngle(fStack->Particle(TMath::Abs(ESDeNegTemp[ieNegPi0]->GetLabel())),
-									     fStack->Particle(TMath::Abs(ESDePosTemp[iePosPi0]->GetLabel()))));   
+    fHistograms->FillHistogram("MC_ElectronPosNegPi0Angle",GetMCOpeningAngle(fStack->Particle(TMath::Abs(vESDeNegTemp[ieNegPi0]->GetLabel())),
+									     fStack->Particle(TMath::Abs(vESDePosTemp[iePosPi0]->GetLabel()))));   
   }
   	 
 
-  FillAngle("ESD_eNegePosAngleBeforeCut",GetTLorentzVector(ESDeNegTemp),GetTLorentzVector(ESDePosTemp));
+  FillAngle("ESD_eNegePosAngleBeforeCut",GetTLorentzVector(vESDeNegTemp),GetTLorentzVector(vESDePosTemp));
 
-  CleanWithAngleCuts(ESDeNegTemp,ESDePosTemp,fKFReconstructedGammas);
+  CleanWithAngleCuts(vESDeNegTemp,vESDePosTemp,fKFReconstructedGammas);
 	
-  vector <TLorentzVector> CurrentTLVeNeg = GetTLorentzVector(fCurrentEventNegElectron);
-  vector <TLorentzVector> CurrentTLVePos = GetTLorentzVector(fCurrentEventPosElectron);
+  vector <TLorentzVector> vCurrentTLVeNeg = GetTLorentzVector(fCurrentEventNegElectron);
+  vector <TLorentzVector> vCurrentTLVePos = GetTLorentzVector(fCurrentEventPosElectron);
 
 
-  FillAngle("ESD_eNegePosAngleAfterCut",CurrentTLVeNeg,CurrentTLVePos);
+  FillAngle("ESD_eNegePosAngleAfterCut",vCurrentTLVeNeg,vCurrentTLVePos);
 
  
 
@@ -1411,36 +1412,36 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
   //FillAngle("ESD_eNegePosAngleAfterCut",CurrentTLVeNeg,CurrentTLVePos);
 
 
-  FillElectronInvMass("ESD_InvMass_ePluseMinus",CurrentTLVeNeg,CurrentTLVePos);
-  FillElectronInvMass("ESD_InvMass_xPlusxMinus",GetTLorentzVector(ESDxNegTemp),GetTLorentzVector(ESDxPosTemp));
+  FillElectronInvMass("ESD_InvMass_ePluseMinus",vCurrentTLVeNeg,vCurrentTLVePos);
+  FillElectronInvMass("ESD_InvMass_xPlusxMinus",GetTLorentzVector(vESDxNegTemp),GetTLorentzVector(vESDxPosTemp));
 
        
 
   FillGammaElectronInvMass("ESD_InvMass_GammaePluseMinusChiC","ESD_InvMass_GammaePluseMinusChiCDiff",
-			   fKFReconstructedGammasCut,CurrentTLVeNeg,CurrentTLVePos);
+			   fKFReconstructedGammasCut,vCurrentTLVeNeg,vCurrentTLVePos);
 
   FillGammaElectronInvMass("ESD_InvMass_GammaePluseMinusPi0","ESD_InvMass_GammaePluseMinusPi0Diff",
-			   fKFReconstructedGammasCut,CurrentTLVeNeg,CurrentTLVePos);
+			   fKFReconstructedGammasCut,vCurrentTLVeNeg,vCurrentTLVePos);
 
   //BackGround
 
   //Like Sign e+e-
-  ElectronBackground("ESD_ENegBackground",CurrentTLVeNeg);
-  ElectronBackground("ESD_EPosBackground",CurrentTLVePos);
-  ElectronBackground("ESD_EPosENegBackground",CurrentTLVeNeg);
-  ElectronBackground("ESD_EPosENegBackground",CurrentTLVePos);
+  ElectronBackground("ESD_ENegBackground",vCurrentTLVeNeg);
+  ElectronBackground("ESD_EPosBackground",vCurrentTLVePos);
+  ElectronBackground("ESD_EPosENegBackground",vCurrentTLVeNeg);
+  ElectronBackground("ESD_EPosENegBackground",vCurrentTLVePos);
 
   //        Like Sign e+e- no JPsi
-  ElectronBackground("ESD_EPosENegNoJPsiBG",GetTLorentzVector(ESDeNegNoJPsi));
-  ElectronBackground("ESD_EPosENegNoJPsiBG",GetTLorentzVector(ESDePosNoJPsi));
+  ElectronBackground("ESD_EPosENegNoJPsiBG",GetTLorentzVector(vESDeNegNoJPsi));
+  ElectronBackground("ESD_EPosENegNoJPsiBG",GetTLorentzVector(vESDePosNoJPsi));
 
   //Mixed Event
 
   if( fCurrentEventPosElectron.size() > 0 && fCurrentEventNegElectron.size() > 0 && fKFReconstructedGammasCut.size() > 0 ){
     FillGammaElectronInvMass("ESD_EPosENegGammaBackgroundMX","ESD_EPosENegGammaBackgroundMXDiff",
 			     fKFReconstructedGammasCut,fPreviousEventTLVNegElectron,fPreviousEventTLVPosElectron);
-    fPreviousEventTLVNegElectron = CurrentTLVeNeg;
-    fPreviousEventTLVPosElectron = CurrentTLVePos;
+    fPreviousEventTLVNegElectron = vCurrentTLVeNeg;
+    fPreviousEventTLVPosElectron = vCurrentTLVePos;
 
   }
 
@@ -1472,15 +1473,16 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 
 }
 
-void AliAnalysisTaskGammaConversion::FillAngle(TString histoName,vector <TLorentzVector> TLVeNeg, vector <TLorentzVector> TLVePos){
-  for( UInt_t iNeg=0; iNeg < TLVeNeg.size(); iNeg++){
-    for (UInt_t iPos=0; iPos < TLVePos.size(); iPos++){
-      fHistograms->FillHistogram(histoName.Data(),TLVeNeg[iNeg].Vect().Angle(TLVePos[iPos].Vect()));
+void AliAnalysisTaskGammaConversion::FillAngle(TString histoName,vector <TLorentzVector> tlVeNeg, vector <TLorentzVector> tlVePos){
+  //see header file for documentation
+  for( UInt_t iNeg=0; iNeg < tlVeNeg.size(); iNeg++){
+    for (UInt_t iPos=0; iPos < tlVePos.size(); iPos++){
+      fHistograms->FillHistogram(histoName.Data(),tlVeNeg[iNeg].Vect().Angle(tlVePos[iPos].Vect()));
     }
   }
 }
 void AliAnalysisTaskGammaConversion::FillElectronInvMass(TString histoName, vector <TLorentzVector> eNeg, vector <TLorentzVector> ePos){
-
+  //see header file for documentation
   for( UInt_t n=0; n < eNeg.size(); n++){
 
     TLorentzVector en = eNeg.at(n);
@@ -1494,22 +1496,22 @@ void AliAnalysisTaskGammaConversion::FillElectronInvMass(TString histoName, vect
 }
 
 void AliAnalysisTaskGammaConversion::FillGammaElectronInvMass(TString histoMass,TString histoDiff,vector <AliKFParticle> fKFGammas,
-							      vector <TLorentzVector> TLVeNeg,vector<TLorentzVector> TLVePos)
+							      vector <TLorentzVector> tlVeNeg,vector<TLorentzVector> tlVePos)
 {
+  //see header file for documentation
 
+  for( UInt_t iNeg=0; iNeg < tlVeNeg.size(); iNeg++ ){
 
-  for( UInt_t iNeg=0; iNeg < TLVeNeg.size(); iNeg++ ){
+    for (UInt_t iPos=0; iPos < tlVePos.size(); iPos++){
 
-    for (UInt_t iPos=0; iPos < TLVePos.size(); iPos++){
-
-      TLorentzVector xy = TLVePos[iPos] + TLVeNeg[iNeg];
+      TLorentzVector xy = tlVePos[iPos] + tlVeNeg[iNeg];
 
       for (UInt_t iGam=0; iGam < fKFGammas.size(); iGam++){
 
-	AliKFParticle * GammaCandidate = &fKFGammas[iGam];
+	AliKFParticle * gammaCandidate = &fKFGammas[iGam];
 	TLorentzVector g;
 
-	g.SetXYZM(GammaCandidate->GetPx(),GammaCandidate->GetPy(),GammaCandidate->GetPz(),fGammaMass);
+	g.SetXYZM(gammaCandidate->GetPx(),gammaCandidate->GetPy(),gammaCandidate->GetPz(),fGammaMass);
 	TLorentzVector xyg = xy + g;
 	fHistograms->FillHistogram(histoMass.Data(),xyg.M());
 	fHistograms->FillHistogram(histoDiff.Data(),(xyg.M()-xy.M()));
@@ -1520,6 +1522,7 @@ void AliAnalysisTaskGammaConversion::FillGammaElectronInvMass(TString histoMass,
 }
 void AliAnalysisTaskGammaConversion::ElectronBackground(TString hBg, vector <TLorentzVector> e)
 {
+  // see header file for documentation
   for(UInt_t i=0; i < e.size(); i++)
     {
       for (UInt_t j=i+1; j < e.size(); j++)
@@ -1532,45 +1535,46 @@ void AliAnalysisTaskGammaConversion::ElectronBackground(TString hBg, vector <TLo
 }
 
 
-void AliAnalysisTaskGammaConversion::CleanWithAngleCuts(vector <AliESDtrack*> NegativeElectrons,
-							vector <AliESDtrack*> PositiveElectrons, vector <AliKFParticle> Gammas){
+void AliAnalysisTaskGammaConversion::CleanWithAngleCuts(vector <AliESDtrack*> negativeElectrons,
+							vector <AliESDtrack*> positiveElectrons, vector <AliKFParticle> gammas){
+  // see header file for documentation
 
-  UInt_t  Nsize = NegativeElectrons.size();
-  UInt_t  Psize = PositiveElectrons.size();
-  UInt_t  Gsize = Gammas.size();
-
-
-
-  vector <Bool_t> xNegBand(Nsize);
-  vector <Bool_t> xPosBand(Psize);
-  vector <Bool_t> gammaBand(Gsize);
+  UInt_t  sizeN = negativeElectrons.size();
+  UInt_t  sizeP = positiveElectrons.size();
+  UInt_t  sizeG = gammas.size();
 
 
-  for(UInt_t iNeg=0; iNeg < Nsize; iNeg++) xNegBand[iNeg]=kTRUE;
-  for(UInt_t iPos=0; iPos < Psize; iPos++) xPosBand[iPos]=kTRUE;
-  for(UInt_t iGam=0; iGam < Gsize; iGam++) gammaBand[iGam]=kTRUE;
+
+  vector <Bool_t> xNegBand(sizeN);
+  vector <Bool_t> xPosBand(sizeP);
+  vector <Bool_t> gammaBand(sizeG);
 
 
-  for(UInt_t iPos=0; iPos < Psize; iPos++){
+  for(UInt_t iNeg=0; iNeg < sizeN; iNeg++) xNegBand[iNeg]=kTRUE;
+  for(UInt_t iPos=0; iPos < sizeP; iPos++) xPosBand[iPos]=kTRUE;
+  for(UInt_t iGam=0; iGam < sizeG; iGam++) gammaBand[iGam]=kTRUE;
+
+
+  for(UInt_t iPos=0; iPos < sizeP; iPos++){
 	
-    Double_t P[3]; PositiveElectrons[iPos]->GetConstrainedPxPyPz(P); 
+    Double_t aP[3]; positiveElectrons[iPos]->GetConstrainedPxPyPz(aP); 
 
-    TVector3 ePosV(P[0],P[1],P[2]);
+    TVector3 ePosV(aP[0],aP[1],aP[2]);
 
-    for(UInt_t iNeg=0; iNeg < Nsize; iNeg++){
+    for(UInt_t iNeg=0; iNeg < sizeN; iNeg++){
 	
-      Double_t N[3]; NegativeElectrons[iNeg]->GetConstrainedPxPyPz(N); 
-      TVector3 eNegV(N[0],N[1],N[2]);
+      Double_t aN[3]; negativeElectrons[iNeg]->GetConstrainedPxPyPz(aN); 
+      TVector3 eNegV(aN[0],aN[1],aN[2]);
 
       if(ePosV.Angle(eNegV) < 0.05){ //e+e- from gamma
 	xPosBand[iPos]=kFALSE;
 	xNegBand[iNeg]=kFALSE;
       }
 
-      for(UInt_t iGam=0; iGam < Gsize; iGam++){
-	AliKFParticle* GammaCandidate = &Gammas[iGam];
-	TVector3 GammaCandidateVector(GammaCandidate->Px(),GammaCandidate->Py(),GammaCandidate->Pz());
-	if(ePosV.Angle(GammaCandidateVector) < 0.05 || eNegV.Angle(GammaCandidateVector) < 0.05)
+      for(UInt_t iGam=0; iGam < sizeG; iGam++){
+	AliKFParticle* gammaCandidate = &gammas[iGam];
+	TVector3 gammaCandidateVector(gammaCandidate->Px(),gammaCandidate->Py(),gammaCandidate->Pz());
+	if(ePosV.Angle(gammaCandidateVector) < 0.05 || eNegV.Angle(gammaCandidateVector) < 0.05)
 	  gammaBand[iGam]=kFALSE;
       }
     }
@@ -1579,19 +1583,19 @@ void AliAnalysisTaskGammaConversion::CleanWithAngleCuts(vector <AliESDtrack*> Ne
 
 
 
-  for(UInt_t iPos=0; iPos < Psize; iPos++){
+  for(UInt_t iPos=0; iPos < sizeP; iPos++){
     if(xPosBand[iPos]){
-      fCurrentEventPosElectron.push_back(PositiveElectrons[iPos]);
+      fCurrentEventPosElectron.push_back(positiveElectrons[iPos]);
     }
   }
-  for(UInt_t iNeg=0;iNeg < Nsize; iNeg++){
+  for(UInt_t iNeg=0;iNeg < sizeN; iNeg++){
     if(xNegBand[iNeg]){
-      fCurrentEventNegElectron.push_back(NegativeElectrons[iNeg]);
+      fCurrentEventNegElectron.push_back(negativeElectrons[iNeg]);
     }
   }
-  for(UInt_t iGam=0; iGam < Gsize; iGam++){
+  for(UInt_t iGam=0; iGam < sizeG; iGam++){
     if(gammaBand[iGam]){
-      fKFReconstructedGammasCut.push_back(Gammas[iGam]);
+      fKFReconstructedGammasCut.push_back(gammas[iGam]);
     }
   }
 }
@@ -1599,6 +1603,7 @@ void AliAnalysisTaskGammaConversion::CleanWithAngleCuts(vector <AliESDtrack*> Ne
 
 void  AliAnalysisTaskGammaConversion::GetPID(AliESDtrack *track, Stat_t &pid, Stat_t &weight)
 {
+  // see header file for documentation
   pid = -1;
   weight = -1;
 
@@ -1684,17 +1689,17 @@ double AliAnalysisTaskGammaConversion::GetSigmaToVertex(AliESDtrack* t)
   d = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
   return d;
 }
-vector <TLorentzVector> AliAnalysisTaskGammaConversion::GetTLorentzVector(vector <AliESDtrack*> ESDtrack){
+vector <TLorentzVector> AliAnalysisTaskGammaConversion::GetTLorentzVector(vector <AliESDtrack*> esdTrack){
 
-  vector <TLorentzVector> TLVtrack(0);
+  vector <TLorentzVector> tlVtrack(0);
 
-  for(UInt_t itrack=0; itrack < ESDtrack.size(); itrack++){
-    double P[3]; ESDtrack[itrack]->GetConstrainedPxPyPz(P);
-    TLorentzVector CurrentTrack;
-    CurrentTrack.SetXYZM(P[0],P[1],P[2],fElectronMass);
-    TLVtrack.push_back(CurrentTrack);
+  for(UInt_t itrack=0; itrack < esdTrack.size(); itrack++){
+    double P[3]; esdTrack[itrack]->GetConstrainedPxPyPz(P);
+    TLorentzVector currentTrack;
+    currentTrack.SetXYZM(P[0],P[1],P[2],fElectronMass);
+    tlVtrack.push_back(currentTrack);
   }
 
-  return TLVtrack;
+  return tlVtrack;
 }
 
