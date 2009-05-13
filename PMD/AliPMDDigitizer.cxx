@@ -21,7 +21,10 @@
 //-----------------------------------------------------//
 
 #include <Riostream.h>
+#include <TBRIK.h>
+#include <TNode.h>
 #include <TTree.h>
+#include <TGeometry.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TFile.h>
@@ -298,7 +301,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 
   for (Int_t track=0; track<ntracks;track++)
     {
-      gAlice->GetMCApp()->ResetHits();
+      gAlice->ResetHits();
       treeH->GetEvent(track);
       if (fPMD)
 	{
@@ -323,8 +326,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		}
 	      Int_t igstatus = 0;
 	      //------------------modified by Mriganka ----------------------
-	      Int_t trnotemp = trackno;
-	      
 	      if(ks==1||(imo = mparticle->GetFirstMother())<0 ){
 		vx = mparticle->Vx();
 		vy = mparticle->Vy();
@@ -333,6 +334,8 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		if(trackpid==kGamma||trackpid==11||trackpid==-11||
 		   trackpid==kPi0)igstatus=1;
 	      }
+	      
+	      
 	      while(((imo = mparticle->GetFirstMother()) >= 0)&& 
 		    (ks = mparticle->GetStatusCode() <1) )
 		{
@@ -342,25 +345,19 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  vx = mparticle->Vx();
 		  vy = mparticle->Vy();
 		  vz = mparticle->Vz();
-		  trnotemp = trackno;
-                  if(trackpid == 111)
-		    {
-		      trackno = trnotemp;
+		  
+		  trackno=imo;
+		  		
 		    }
-                  if(trackpid != 111)
-		    {
-		      trackno = imo;
-		    }
-		}
-	      
+	 
 	      if(trackpid==kGamma||trackpid==11||trackpid==-11||
 		 trackpid==kPi0)igstatus=1;
 	      mtrackpid=trackpid;
 	      mtrackno=trackno;
 	      trackpid=trackpidOld;
 	      trackno=tracknoOld;
-	      //-----------------end of modification----------------
 	      
+	      //-----------------end of modification----------------
 	      xPos = fPMDHit->X();
 	      yPos = fPMDHit->Y();
 	      zPos = fPMDHit->Z();
@@ -368,8 +365,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      edep       = fPMDHit->GetEnergy();
 	      Int_t vol1 = fPMDHit->GetVolume(1); // Column
 	      Int_t vol2 = fPMDHit->GetVolume(2); // Row
-	      Int_t vol7 = fPMDHit->GetVolume(7); // UnitModule
-	      Int_t vol8 = fPMDHit->GetVolume(8); // SuperModule
+	      Int_t vol7 = fPMDHit->GetVolume(4); // Serial Module No
 
 
 	      // -----------------------------------------//
@@ -380,9 +376,15 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      //  nrow = 96, ncol = 48                    //
 	      // -----------------------------------------//
 
-
-	      
-	      smnumber = (vol8-1)*6 + vol7;
+	      if (vol7 < 24)
+		{
+		  smnumber = vol7;
+		}
+	      else
+		{
+		  smnumber = vol7 - 24;
+		}
+	      Int_t vol8 = smnumber/6 + 1;   // fake supermodule
 
 	      if (vol8 == 1 || vol8 == 2)
 		{
@@ -407,7 +409,8 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  // PMD
 		  fDetNo = 0;
 		}
-	      Int_t smn = smnumber - 1;
+	      //Int_t smn = smnumber - 1;
+	      Int_t smn = smnumber;
 	      Int_t ixx = xpad     - 1;
 	      Int_t iyy = ypad     - 1;
 	      if (fDetNo == 0)
@@ -528,7 +531,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 
   for (Int_t track=0; track<ntracks;track++)
     {
-      gAlice->GetMCApp()->ResetHits();
+      gAlice->ResetHits();
       treeH->GetEvent(track);
       
       if (fPMD)
@@ -555,7 +558,6 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 
 	      Int_t igstatus = 0;
 	      //-----------------------modified by Mriganka ------------------
-	      Int_t trnotemp = trackno;
 	      if(ks==1||(imo = mparticle->GetFirstMother())<0 ){
 		vx = mparticle->Vx();
 		vy = mparticle->Vy();
@@ -575,16 +577,10 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		  vx = mparticle->Vx();
 		  vy = mparticle->Vy();
 		  vz = mparticle->Vz();
-		  trnotemp = trackno;
-                  if(trackpid == 111)
-		    {
-		      trackno = trnotemp;
+		  
+		  trackno=imo;
+		  		
 		    }
-                  if(trackpid != 111)
-		    {
-		      trackno = imo;
-		    }
-		}
 	 
 	      if(trackpid==kGamma||trackpid==11||trackpid==-11||trackpid==kPi0)
 		igstatus=1;
@@ -600,9 +596,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      edep       = fPMDHit->GetEnergy();
 	      Int_t vol1 = fPMDHit->GetVolume(1); // Column
 	      Int_t vol2 = fPMDHit->GetVolume(2); // Row
-	      Int_t vol7 = fPMDHit->GetVolume(7); // UnitModule
-	      Int_t vol8 = fPMDHit->GetVolume(8); // SuperModule
-
+	      Int_t vol7 = fPMDHit->GetVolume(4); // Serial Module No
 
 	      // -----------------------------------------//
 	      // In new geometry after adding electronics //
@@ -612,7 +606,15 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      //  nrow = 96, ncol = 48                    //
 	      // -----------------------------------------//
 	      
-	      smnumber = (vol8-1)*6 + vol7;
+	      if (vol7 < 24)
+		{
+		  smnumber = vol7;
+		}
+	      else
+		{
+		  smnumber = vol7 - 24;
+		}
+	      Int_t vol8 = smnumber/6 + 1;    // fake supermodule
 
 	      if (vol8 == 1 || vol8 == 2)
 		{
@@ -639,7 +641,8 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		  fDetNo = 0;
 		}
 
-	      Int_t smn = smnumber - 1;
+	      //Int_t smn = smnumber - 1;
+	      Int_t smn = smnumber;
 	      Int_t ixx = xpad     - 1;
 	      Int_t iyy = ypad     - 1;
 	      if (fDetNo == 0)

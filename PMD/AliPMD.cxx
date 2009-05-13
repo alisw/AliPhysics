@@ -38,7 +38,10 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TBRIK.h>
 #include <TClonesArray.h>
+#include <TGeometry.h>
+#include <TNode.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
 
@@ -155,6 +158,27 @@ void AliPMD::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 }
  
 //_____________________________________________________________________________
+void AliPMD::BuildGeometry()
+{
+  //
+  // Build simple ROOT TNode geometry for event display
+  //
+
+  TNode *node, *top;
+  const int kColorPMD  = kRed;
+
+  //
+  top=gAlice->GetGeometry()->GetNode("alice");
+
+  // PMD
+  new TBRIK("S_PMD","PMD box","void",300,300,5);
+  top->cd();
+  node = new TNode("PMD","PMD","S_PMD",0,0,-600,"");
+  node->SetLineColor(kColorPMD);
+  fNodes->Add(node);
+}
+
+//_____________________________________________________________________________
 void AliPMD::SetPAR(Float_t p1, Float_t p2, Float_t p3,Float_t p4)
 {
   //
@@ -230,6 +254,21 @@ void AliPMD::SetTreeAddress()
       fHits   = new TClonesArray("AliPMDhit",  405);
       
     AliDetector::SetTreeAddress();
+}
+
+void AliPMD::SetCpvOff()
+{
+  // Set the CPV plane off
+}
+void AliPMD::SetPreOff()
+{
+  // Set the Preshower plane off
+
+}
+void AliPMD::SetModuleOff(Int_t /*imodule*/)
+{
+  // Set the desired module off
+
 }
 
 //____________________________________________________________________________

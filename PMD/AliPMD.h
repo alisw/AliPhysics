@@ -28,6 +28,7 @@ public:
 
   virtual      ~AliPMD();
   virtual void  AddHit(Int_t track, Int_t* vol, Float_t* hits);
+  virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials() {}
   virtual void  Init() {}
@@ -39,6 +40,10 @@ public:
   virtual void  StepManager();
   virtual void  MakeBranch(Option_t* option);
   virtual void  SetTreeAddress();
+
+  virtual void SetCpvOff();
+  virtual void SetPreOff();
+  virtual void SetModuleOff(Int_t /*imodule*/);
   
   virtual void  Hits2SDigits();
   virtual void  SDigits2Digits();
@@ -56,6 +61,6 @@ public:
   Float_t fPadSize[4];       // size of the pads
   Int_t   fNumPads[4];       // number of the pads
 
-  ClassDef(AliPMD,8)  // Base Class for Photon Multiplicity Detector
+  ClassDef(AliPMD,9)  // Base Class for Photon Multiplicity Detector
 };
 #endif

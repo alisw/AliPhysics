@@ -24,7 +24,7 @@ ClassImp(AliPMDhit)
 AliPMDhit::AliPMDhit():
   fEnergy(0.)
 {
-  for (Int_t i=0; i<10; i++)
+  for (Int_t i=0; i<6; i++)
     {
       fVolume[i] = 0;
     }
@@ -38,7 +38,7 @@ AliPMDhit::AliPMDhit(Int_t shunt,Int_t track, Int_t *vol, Float_t *hits):
   // Add a PMD hit
   //
   Int_t i;
-  for (i=0;i<10;i++) fVolume[i] = vol[i];
+  for (i=0; i<6; i++) fVolume[i] = vol[i];
   fX=hits[0];
   fY=hits[1];
   fZ=hits[2];
@@ -56,6 +56,6 @@ int AliPMDhit::operator == (AliPMDhit &cell) const
 {
   Int_t i;
   if(fTrack!=cell.GetTrack()) return 0;
-  for (i=0; i<10; i++) if(fVolume[i]!=cell.GetVolume(i)) return 0;
+  for (i=0; i<6; i++) if(fVolume[i]!=cell.GetVolume(i)) return 0;
   return 1;
 }
