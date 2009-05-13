@@ -114,7 +114,7 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list,
       histClone[specie]->SetDirectory(0) ; 
       list[specie]->AddAtAndExpand(histClone[specie], index) ; 
       if(saveForCorr) {  
-        char * name = Form("%s_%s", list[AliRecoParam::kDefault]->GetName(), hist->GetName()) ;  
+        char * name = Form("%s_%s", list[AliRecoParam::AConvert(AliRecoParam::kDefault)]->GetName(), hist->GetName()) ;  
         TParameter<double> * p = new TParameter<double>(name, 9999.9999) ;
         if ( fParameterList[specie] == NULL )
           fParameterList[specie] = new TList() ; 
