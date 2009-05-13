@@ -239,9 +239,19 @@ Bool_t AliTPCtrack::PropagateTo(Double_t xk,Double_t rho,Double_t x0) {
   //  rho - density of the crossed matrial (g/cm^3)
   //  x0  - radiation length of the crossed material (g/cm^2) 
   //-----------------------------------------------------------------
+  //
+  Double_t bz=GetBz();
+  Double_t zat=0;
+  if (!GetZAt(xk, bz,zat)) return kFALSE;
+  if (TMath::Abs(zat)>250.){
+    // Don't propagate track outside of the fiducial volume - material budget not proper one
+    //
+    //AliWarning("Propagate outside of fiducial volume");
+    return kFALSE;
+  }
+
   Double_t oldX=GetX(), oldY=GetY(), oldZ=GetZ();
 
-  Double_t bz=GetBz();
   if (!AliExternalTrackParam::PropagateTo(xk,bz)) return kFALSE;
 
   Double_t d = TMath::Sqrt((GetX()-oldX)*(GetX()-oldX) + 
