@@ -301,7 +301,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 
   for (Int_t track=0; track<ntracks;track++)
     {
-      gAlice->ResetHits();
+      gAlice->GetMCApp()->ResetHits();
       treeH->GetEvent(track);
       if (fPMD)
 	{
@@ -531,7 +531,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 
   for (Int_t track=0; track<ntracks;track++)
     {
-      gAlice->ResetHits();
+      gAlice->GetMCApp()->ResetHits();
       treeH->GetEvent(track);
       
       if (fPMD)
