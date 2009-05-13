@@ -611,7 +611,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
       if (index >= 0) sjdl.Insert(index, "\n# Additional requirements for the computing element\n");
       index = sjdl.Index("Packages");
       if (index >= 0) sjdl.Insert(index, "\n# Packages to be used\n");
-      index = sjdl.Index("User");
+      index = sjdl.Index("User =");
       if (index >= 0) sjdl.Insert(index, "\n# AliEn user\n");
       index = sjdl.Index("TTL");
       if (index >= 0) sjdl.Insert(index, "\n# Time to live for the job\n");
