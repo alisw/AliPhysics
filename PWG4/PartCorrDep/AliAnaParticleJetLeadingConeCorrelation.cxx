@@ -1629,7 +1629,7 @@ Bool_t  AliAnaParticleJetLeadingConeCorrelation::SelectCluster(AliAODCaloCluster
     
   //  if(GetDebug() > 3) printf("AliAnaParticleJetLeadingConeCorrelation::SelectCluster() - PDG of identified particle %d\n",pdg);
     //If it does not pass pid, skip
-    if(pdg != AliCaloPID::kPhoton || pdg != AliCaloPID::kPi0) 
+    if(pdg != AliCaloPID::kPhoton && pdg != AliCaloPID::kPi0) 
       return kFALSE ;
   }//CaloPID
   
