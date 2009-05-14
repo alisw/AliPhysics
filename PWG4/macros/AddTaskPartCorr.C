@@ -131,6 +131,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anacorrhadron->SetOutputAODName("CorrelatedPi0s"+calorimeter);
   anacorrhadron->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   anacorrhadron->SetDebug(-1);
+  anacorrhadron->SwitchOffCaloPID();
   anacorrhadron->SwitchOffFidutialCut();
   anacorrhadron->SetPtCutRange(1,100);
   anacorrhadron->SetDeltaPhiCutRange(1.5,4.5);

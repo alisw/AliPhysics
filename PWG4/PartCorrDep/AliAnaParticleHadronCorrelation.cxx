@@ -468,8 +468,8 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
     //Cluster selection, not charged, with photon or pi0 id and in fidutial cut
     Int_t pdg=0;
     if(!SelectCluster(calo, vertex, gammai, pdg)) continue ;
-    
-    if(GetDebug() > 2)
+
+	if(GetDebug() > 2)
       printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Neutral cluster in %s: pt %f, phi %f, phi trigger %f. Cuts:  delta phi min %2.2f,  max %2.2f, pT min %2.2f \n",
 	     detector.Data(), gammai.Pt(),gammai.Phi(),phiTrig,fDeltaPhiMinCut, fDeltaPhiMaxCut, GetMinPt());
     
@@ -633,18 +633,18 @@ Bool_t  AliAnaParticleHadronCorrelation::SelectCluster(AliAODCaloCluster * calo,
   //Select cluster depending on its pid and acceptance selections
   
   //Skip matched clusters with tracks
-  if(calo->GetNTracksMatched() > 0) {
-    return kFALSE;} 
+  if(calo->GetNTracksMatched() > 0) return kFALSE;
   
+  TString detector = "";
+  if(calo->IsPHOSCluster()) detector= "PHOS";
+  else if(calo->IsEMCALCluster()) detector= "EMCAL";
+		
   //Check PID
   calo->GetMomentum(mom,vertex);//Assume that come from vertex in straight line
   pdg = AliCaloPID::kPhoton;   
   if(IsCaloPIDOn()){
     //Get most probable PID, 2 options check PID weights (in MC this option is mandatory)
     //or redo PID, recommended option for EMCal.
-    TString detector = "";
-    if(calo->IsPHOSCluster()) detector= "PHOS";
-    else if(calo->IsEMCALCluster()) detector= "EMCAL";
     
     if(!IsCaloPIDRecalculationOn() || GetReader()->GetDataType() == AliCaloTrackReader::kMC )
       pdg = GetCaloPID()->GetPdg(detector,calo->PID(),mom.E());//PID with weights
@@ -654,19 +654,15 @@ Bool_t  AliAnaParticleHadronCorrelation::SelectCluster(AliAODCaloCluster * calo,
     if(GetDebug() > 5) printf("AliAnaParticleHadronCorrelation::SelectCluster() - PDG of identified particle %d\n",pdg);
     
     //If it does not pass pid, skip
-    if(pdg != AliCaloPID::kPhoton || pdg != AliCaloPID::kPi0) {
+    if(pdg != AliCaloPID::kPhoton && pdg != AliCaloPID::kPi0) {
       return kFALSE ;
     }
-  }
+  }//PID on
   
   //Check acceptance selection
   if(IsFidutialCutOn()){
-    Bool_t in = kFALSE;
-    if(calo->IsPHOSCluster())
-      in = GetFidutialCut()->IsInFidutialCut(mom,"PHOS") ;
-    else if(calo->IsEMCALCluster())
-      in = GetFidutialCut()->IsInFidutialCut(mom,"EMCAL") ;
-    if(! in ) { return kFALSE ;}
+    Bool_t in = GetFidutialCut()->IsInFidutialCut(mom,detector) ;
+    if(! in ) return kFALSE ;
   }
   
   if(GetDebug() > 5) printf("AliAnaParticleHadronCorrelation::SelectCluster() - Correlation photon selection cuts passed: pT %3.2f, pdg %d\n",mom.Pt(), pdg);
