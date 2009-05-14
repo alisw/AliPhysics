@@ -56,7 +56,7 @@ AliHLTComponentDataType AliHLTBlockFilterComponent::GetOutputDataType()
 {
   // see header file for class documentation
   if (fFilterRules.size()==1) return fFilterRules[0].fDataType;
-  if (fFilterRules.size()==0) return kAliHLTVoidDataType;
+  if (fFilterRules.size()==0) return kAliHLTAnyDataType;
   return kAliHLTMultipleDataType;
 }
 

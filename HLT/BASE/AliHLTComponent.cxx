@@ -588,7 +588,7 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, AliHLTCom
     AliHLTComponentDataTypeList itypes;
     AliHLTComponentDataTypeList otypes;
     otypes.push_back(GetOutputDataType());
-    if (otypes[0]==kAliHLTMultipleDataType) {
+    if (MatchExactly(otypes[0],kAliHLTMultipleDataType)) {
       otypes.clear();
       int count=0;
       if ((count=GetOutputDataTypes(otypes))>0) {
