@@ -44,4 +44,5 @@
 #pragma link C++ class AliHLTEventStatistics+;
 #pragma link C++ class AliHLTBlockDataCollection+;
 #pragma link C++ class AliHLTRunStatistics+;
+#pragma link C++ class AliHLTPluginBase+;
 #endif
