@@ -51,6 +51,8 @@
 #include "AliTRDtrackV1.h"
 #include "AliTrackReference.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDcluster.h"
+#include "AliTRDseedV1.h"
 #include "TTreeStream.h"
 
 #include <cstdio>
@@ -192,6 +194,8 @@ void AliTRDinfoGen::Exec(Option_t *){
   AliESDfriendTrack *esdFriendTrack = 0x0;
   TObject *calObject = 0x0;
   AliTRDtrackV1 *track = 0x0;
+  AliTRDseedV1 *tracklet = 0x0;
+  AliTRDcluster *cl = 0x0;
   for(Int_t itrk = 0; itrk < nTracksESD; itrk++){
     esdTrack = fESD->GetTrack(itrk);
     if(fDebugLevel>=2) printf("\n%3d ITS[%d] TPC[%d] TRD[%d]\n", itrk, esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2));
@@ -274,6 +278,12 @@ void AliTRDinfoGen::Exec(Option_t *){
         if(!(track = dynamic_cast<AliTRDtrackV1*>(calObject))) break;
         nTRD++;
         if(fDebugLevel>=3) printf("TRD track OK\n");
+        // Set the clusters to unused
+        for(Int_t ipl = 0; ipl < AliTRDgeometry::kNlayer; ipl++){
+          if(!(tracklet = track->GetTracklet(ipl))) continue;
+          tracklet->ResetClusterIter();
+          while((cl = tracklet->NextCluster())) cl->Use(0);
+        }
         fTrackInfo->SetTrack(track);
         break;
       }
