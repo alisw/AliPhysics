@@ -33,7 +33,8 @@ class AliCFEffGrid : public AliCFGridSparse
   virtual TH1D* Project( Int_t ivar) const;
   virtual TH2D* Project( Int_t ivar1, Int_t ivar2) const;
   virtual TH3D* Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const;
-  virtual AliCFEffGrid* Project(Int_t,Int_t*,Double_t*,Double_t*) const {return 0x0;} //not to be used.
+  virtual AliCFEffGrid* Project(Int_t,Int_t*,Double_t*,Double_t*) const {AliWarning("Function not to be used"); return 0x0;} //not to be used.
+  virtual AliCFEffGrid* MakeSlice(Int_t nVars,Int_t* vars, Double_t* varMin,Double_t* varMax, Int_t numStep, Int_t denStep) const;
 
   //Efficiency calculation
   virtual void  CalculateEfficiency(Int_t istep1, Int_t istep2, Option_t *option ="B");

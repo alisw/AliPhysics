@@ -217,11 +217,14 @@ TH1D *AliCFEffGrid::Project(Int_t ivar) const
   // Make a 1D projection along variable ivar 
   //
  
-  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid();
-  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid();
+  const Int_t nDim = 1 ;
+  Int_t dim[nDim] = {ivar} ;
+  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
+  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
   THnSparse* ratio = (THnSparse*)hNum->Clone();
   ratio->Divide(hNum,hDen,1.,1.,"B");
-  return ratio->Projection(ivar);
+  delete hNum; delete hDen;
+  return ratio->Projection(0);
 } 
 //___________________________________________________________________
 TH2D *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
@@ -229,11 +232,15 @@ TH2D *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
   //
   // Make a 2D projection along variable ivar1,ivar2 
   //
-  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid();
-  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid();
+  
+  const Int_t nDim = 2 ;
+  Int_t dim[nDim] = {ivar1,ivar2} ;
+  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
+  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
   THnSparse* ratio = (THnSparse*)hNum->Clone();
   ratio->Divide(hNum,hDen,1.,1.,"B");
-  return ratio->Projection(ivar1,ivar2);
+  delete hNum; delete hDen;
+  return ratio->Projection(0,1);
 } 
 //___________________________________________________________________
 TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
@@ -242,10 +249,24 @@ TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   // Make a 3D projection along variable ivar1,ivar2,ivar3 
   //
 
-  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid();
-  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid();
+  const Int_t nDim = 3 ;
+  Int_t dim[nDim] = {ivar1,ivar2,ivar3} ;
+  THnSparse* hNum = ((AliCFGridSparse*)GetNum())->GetGrid()->Projection(nDim,dim);
+  THnSparse* hDen = ((AliCFGridSparse*)GetDen())->GetGrid()->Projection(nDim,dim);
   THnSparse* ratio = (THnSparse*)hNum->Clone();
   ratio->Divide(hNum,hDen,1.,1.,"B");
-  return ratio->Projection(ivar1,ivar2,ivar3);
+  delete hNum; delete hDen;
+  return ratio->Projection(0,1,2);
 } 
-
+//___________________________________________________________________
+AliCFEffGrid* AliCFEffGrid::MakeSlice(Int_t nVars, Int_t* vars, Double_t* varMin, Double_t* varMax, Int_t numStep, Int_t denStep) const {
+  //
+  // Makes a slice along the "nVars" variables defined in the array "vars[nVars]" for all the container steps.
+  // The ranges of ALL the container variables must be defined in the array varMin[fNVar] and varMax[fNVar].
+  // This function returns the effiency relative to this new 'sliced' container, between steps defined in numStep and denStep
+  //
+  AliCFContainer* cont = fContainer->MakeSlice(nVars,vars,varMin,varMax);
+  AliCFEffGrid  * eff  = new AliCFEffGrid(Form("%s_sliced",GetName()), Form("%s_sliced",GetTitle()), *cont);
+  eff->CalculateEfficiency(numStep,denStep);
+  return eff;
+}
