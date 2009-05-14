@@ -145,7 +145,7 @@ Double_t AliHMPIDQAChecker::CheckRecPoints(TObjArray *listrec, TObjArray *listre
    while ( (histo = dynamic_cast<TH1 *>(next())) ) {
      //PH The histogram should have at least 3 bins with entries
      Int_t nbinsabove = 0;
-     for (Int_t ibin=1; ibin<=50; ibin++) { //1,50 is the fit region, see histo->Fit("expo","Q0","",1,50);
+     for (Int_t ibin=histo->FindBin(1); ibin<=histo->FindBin(50); ibin++) { //1,50 is the fit region, see histo->Fit("expo","Q0","",1,50);
        if (histo->GetBinContent(ibin)>0) nbinsabove++;
      }
 
@@ -153,7 +153,7 @@ Double_t AliHMPIDQAChecker::CheckRecPoints(TObjArray *listrec, TObjArray *listre
    else {
     TString h = histo->GetTitle();
     if(h.Contains("Zoom")){
-    histo->Fit("expo","Q0","",1,50);
+    histo->Fit("expo","LQ0","",1,50);
     if(histo->GetFunction("expo")->GetParameter(1) !=0 ) if(TMath::Abs((-1./(histo->GetFunction("expo"))->GetParameter(1)) - 35 ) > 5) counter++;
     }
     if(h.Contains("size  MIP"))   if(TMath::Abs(histo->GetMean()-5) > 2) counter++;
