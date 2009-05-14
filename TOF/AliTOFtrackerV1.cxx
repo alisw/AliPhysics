@@ -190,6 +190,11 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
       t->SetTOFLabel(tlab);
       AliTOFtrack *track = new AliTOFtrack(*seed); 
       t->UpdateTrackParams(track,AliESDtrack::kTOFout);   
+
+      Double_t time[10]; t->GetIntegratedTimes(time);
+      AliDebug(1, Form(" %d %f %f %f %f %f", i,
+		       time[0], time[1], time[2], time[3], time[4]));
+
       delete track;
     }
   }
@@ -265,9 +270,9 @@ void AliTOFtrackerV1::CollectESD() {
     }
   }
 
-  AliInfo(Form("Number of TOF seeds %i",fNseedsTOF));
-  AliInfo(Form("Number of TOF seeds Type 1 %i",seedsTOF1));
-  AliInfo(Form("Number of TOF seeds Type 2 %i",seedsTOF2));
+  AliInfo(Form("Number of TOF seeds %d",fNseedsTOF));
+  AliInfo(Form("Number of TOF seeds Type 1 %d",seedsTOF1));
+  AliInfo(Form("Number of TOF seeds Type 2 %d",seedsTOF2));
 
   // Sort according uncertainties on track position 
   fTracks->Sort();
@@ -283,6 +288,8 @@ void AliTOFtrackerV1::MatchTracks( ){
   // Parameters regulating the reconstruction
   Float_t dY=AliTOFGeometry::XPad(); 
   Float_t dZ=AliTOFGeometry::ZPad(); 
+
+  const Float_t kTimeOffset = 32.; // time offset for tracking algorithm [ps]
 
   const Int_t kncmax = 100;
   Float_t sensRadius = fRecoParam->GetSensRadius();
@@ -410,12 +417,12 @@ void AliTOFtrackerV1::MatchTracks( ){
 	(bestCluster->GetLabel(2)==TMath::Abs(trackTOFin->GetLabel()))
 	) {
       fngoodmatch++;
-       AliDebug(2,Form(" track label good %5i",trackTOFin->GetLabel()));
+       AliDebug(2,Form(" track label good %5d",trackTOFin->GetLabel()));
 
     }
     else{
       fnbadmatch++;
-      AliDebug(2,Form(" track label bad %5i",trackTOFin->GetLabel()));
+      AliDebug(2,Form(" track label bad %5d",trackTOFin->GetLabel()));
     }
 
     //Propagate the track to the best matched cluster
@@ -426,8 +433,10 @@ void AliTOFtrackerV1::MatchTracks( ){
 
     //now take the local distance in Z from the pad center for time walk correction
     Float_t tiltangle = AliTOFGeometry::GetAngles(bestCluster->GetDetInd(1),bestCluster->GetDetInd(2))*TMath::DegToRad();
-    Double_t dzTW=trackTOFin->GetZ()-bestCluster->GetZ(); // in cm
-    dzTW/=TMath::Cos(tiltangle);
+    Double_t dzTW=trackTOFin->GetZ()-bestCluster->GetZ(); // in cm - in the ALICE RF -
+    dzTW/=TMath::Cos(tiltangle); // from ALICE/tracking RF to pad RF (1)
+    dzTW=-dzTW; // from ALICE/tracking RF to pad RF (2)
+    if (tiltangle!=0.) AliDebug(2,Form(" rho_track = %f --- rho_cluster = %f ",trackTOFin->GetX(),bestCluster->GetX()));
 
     //update the ESD track and delete the TOFtrack
     t->UpdateTrackParams(trackTOFin,AliESDtrack::kTOFout);    
@@ -436,10 +445,10 @@ void AliTOFtrackerV1::MatchTracks( ){
     //  Store quantities to be used in the TOF Calibration
     Float_t tToT=AliTOFGeometry::ToTBinWidth()*bestCluster->GetToT()*1E-3; // in ns
     t->SetTOFsignalToT(tToT);
-    Float_t rawTime=AliTOFGeometry::TdcBinWidth()*bestCluster->GetTDCRAW()+32; // RAW time,in ps
+    Float_t rawTime=AliTOFGeometry::TdcBinWidth()*bestCluster->GetTDCRAW()+kTimeOffset; // RAW time,in ps
     t->SetTOFsignalRaw(rawTime);
     t->SetTOFsignalDz(dzTW);
-    AliDebug(2,Form(" Setting TOF raw time: %f  z distance: %f time: %f = ",rawTime,dzTW));    
+
     Int_t ind[5];
     ind[0]=bestCluster->GetDetInd(0);
     ind[1]=bestCluster->GetDetInd(1);
@@ -454,9 +463,9 @@ void AliTOFtrackerV1::MatchTracks( ){
     tlab[0]=bestCluster->GetLabel(0);
     tlab[1]=bestCluster->GetLabel(1);
     tlab[2]=bestCluster->GetLabel(2);
-    AliDebug(2,Form(" tdc time of the matched track %i = ",bestCluster->GetTDC()));    
-    Double_t tof=AliTOFGeometry::TdcBinWidth()*bestCluster->GetTDC()+32; // in ps
-    AliDebug(2,Form(" tof time of the matched track: %f = ",tof));    
+    AliDebug(2,Form(" tdc time of the matched track %6d = ",bestCluster->GetTDC()));    
+    Double_t tof=AliTOFGeometry::TdcBinWidth()*bestCluster->GetTDC()+kTimeOffset; // in ps
+    AliDebug(2,Form(" tof time of the matched track: %f = ",tof));
     Double_t tofcorr=tof;
     if(timeWalkCorr)tofcorr=CorrectTimeWalk(dzTW,tof);
     AliDebug(2,Form(" tof time of the matched track, after TW corr: %f = ",tofcorr));    
@@ -465,7 +474,10 @@ void AliTOFtrackerV1::MatchTracks( ){
     t->SetTOFcluster(idclus); // pointing to the recPoints tree
     t->SetTOFLabel(tlab);
 
+    AliDebug(2,Form(" Setting TOF raw time: %f  z distance: %f  corrected time: %f",rawTime,dzTW,tofcorr));
+
     Double_t mom=t->GetP();
+    AliDebug(1,Form(" Momentum for track %d -> %f", iseed,mom));
     // Fill Reco-QA histos for Reconstruction
     fHRecNClus->Fill(nc);
     fHRecChi2->Fill(bestChi2);

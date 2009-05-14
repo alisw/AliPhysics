@@ -112,6 +112,7 @@ class AliTOFGeometry: public TObject{
   UShort_t GetAliSensVolIndex(Int_t sec, Int_t pla, Int_t str) const; // Get the index of the TOF alignable volume in the AliGeomManager order
   static Int_t GetStripNumber(Int_t isector, Int_t iplate, Int_t istrip); // Get the serial number of the TOF alignable volume, i.e. the TOF strip
   static Int_t GetStripNumberPerSM(Int_t iplate, Int_t istrip); // Get the serial number of the TOF strip in a TOF SM
+  void PadRF2TrackingRF(Float_t *ctrackPos, Float_t *differenceT);
 
 
   private:
@@ -171,7 +172,7 @@ class AliTOFGeometry: public TObject{
   static const Float_t fgkTdcBin;   // time-of-flight bin width [ps]
   static const Float_t fgkToTBin;   // time-over-threshold bin width [ps]
 
-  ClassDef(AliTOFGeometry,7) // TOF Geometry base class
+  ClassDef(AliTOFGeometry,8) // TOF Geometry base class
 };
 
 #endif

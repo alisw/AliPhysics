@@ -414,37 +414,58 @@ Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, Float_t *pos) const
 //_____________________________________________________________________________
 Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix mat, Float_t *pos, Float_t *dist3d) const
 {
-//
-// Returns true if space point with coor pos (x,y,z) (cm) falls 
-// inside pad with Detector Indices idet (iSect,iPlate,iStrip,iPadX,iPadZ) 
-//
+  //
+  // Returns true if space point with coor pos (x,y,z) [cm] falls inside
+  // pad identified by the matrix mat. In case dist3d!=0, dist3d vector
+  // has been filled with the 3D distance between the impact point on
+  // the pad and the pad centre (in the reference frame of the TOF pad
+  // identified by the matrix mat).
+  //
 
   const Float_t kPadDepth = 0.5;      // heigth of Sensitive Layer
-  Double_t vecg[3];
-  vecg[0]=pos[0];
-  vecg[1]=pos[1];
-  vecg[2]=pos[2];
-  Double_t veclr[3]={-1.,-1.,-1.};
-  Double_t vecl[3]={-1.,-1.,-1.};
-  mat.MasterToLocal(vecg,veclr);  
-  vecl[0]=veclr[1];
-  vecl[1]=veclr[0];
-  //take into account reflections 
-  vecl[2]=-veclr[2];
 
-  Float_t xr = vecl[0];
-  Float_t yr = vecl[1];
-  Float_t zr = vecl[2];
+  Double_t posg[3];
+  posg[0] = pos[0];
+  posg[1] = pos[1];
+  posg[2] = pos[2];
 
-  if (dist3d){
-    dist3d[0] = vecl[0];
-    dist3d[1] = vecl[1];
-    dist3d[2] = vecl[2];
+  // from ALICE global reference system
+  // towards TOF pad reference system
+  Double_t posl[3] = {0., 0., 0.};
+  mat.MasterToLocal(posg,posl);
+
+  Float_t xr = posl[0];
+  Float_t yr = posl[1];
+  Float_t zr = posl[2];
+
+  Bool_t isInside = false;
+  if (TMath::Abs(yr)<= kPadDepth*0.5 &&
+      TMath::Abs(xr)<= fgkXPad*0.5 &&
+      TMath::Abs(zr)<= fgkZPad*0.5)
+    isInside = true;
+
+  if (dist3d) {
+    //Double_t padl[3] = {0., 0., 0.};
+    dist3d[0] = posl[0]/* - padl[0]*/;
+    dist3d[1] = posl[1]/* - padl[1]*/;
+    dist3d[2] = posl[2]/* - padl[2]*/;
+
+    /*
+    Double_t padg[3] = {0., 0., 0.};
+    // from TOF pad local reference system
+    // towards ALICE global reference system
+    TGeoHMatrix inverse = mat.Inverse();
+    inverse.MasterToLocal(padl,padg);
+
+    // returns the 3d distance
+    // between the impact point on the pad
+    // and the pad centre (in the ALICE global reference frame)
+    dist3d[0] = posg[0] - padg[0];
+    dist3d[1] = posg[1] - padg[1];
+    dist3d[2] = posg[2] - padg[2];
+    */
   }
  
-  Bool_t isInside=false; 
-  if(TMath::Abs(xr)<= kPadDepth*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
-    isInside=true; 
   return isInside;
 
 }
@@ -692,7 +713,9 @@ Int_t AliTOFGeometry::GetStrip(Float_t *pos) const
    
   Float_t posLocal[3];
   for (Int_t ii=0; ii<3; ii++) posLocal[ii] = pos[ii];
- 
+  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
+		  posLocal[0],posLocal[1],posLocal[2]));
+
   Int_t isector = GetSector(posLocal);
   if(isector == -1){
     //AliError("Detector Index could not be determined");
@@ -705,14 +728,10 @@ Int_t AliTOFGeometry::GetStrip(Float_t *pos) const
   Int_t nstrips=0;
   switch (iplate) {
   case 0:
-    nstrips=kNStripC;
-    break;
   case 4:
     nstrips=kNStripC;
     break;
   case 1:
-    nstrips=kNStripB;
-    break;
   case 3:
     nstrips=kNStripB;
     break;
@@ -728,9 +747,13 @@ Int_t AliTOFGeometry::GetStrip(Float_t *pos) const
      90., (isector+0.5)*fgkPhiSec
     };
   Rotation(posLocal,angles);
+  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
+		  posLocal[0],posLocal[1],posLocal[2]));
 
   Float_t step[3] = {0., 0., (fgkRmax+fgkRmin)*0.5};
   Translation(posLocal,step);
+  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
+		  posLocal[0],posLocal[1],posLocal[2]));
 
   // B071/B074/B075 = BTO1/2/3 reference frame -> FTOA = FLTA reference frame
   angles[0] = 90.;
@@ -741,6 +764,8 @@ Int_t AliTOFGeometry::GetStrip(Float_t *pos) const
   angles[5] =270.;
 
   Rotation(posLocal,angles);
+  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
+		  posLocal[0],posLocal[1],posLocal[2]));
 
   // FTOA/B/C = FLTA/B/C reference frame -> FSTR reference frame
   Int_t totStrip=0;
@@ -778,6 +803,8 @@ Int_t AliTOFGeometry::GetStrip(Float_t *pos) const
       angles[5] = 270.;
     }
     Rotation(posLoc2,angles);
+    AliDebug(1,Form(" strip %2d:  posLoc2[0] = %f, posLoc2[1] = %f, posLoc2[2] = %f ",
+		    istrip, posLoc2[0],posLoc2[1],posLoc2[2]));
 
     if ((TMath::Abs(posLoc2[0])<=klstripx*0.5) &&
 	(TMath::Abs(posLoc2[1])<=khstripy*0.5) &&
@@ -785,9 +812,11 @@ Int_t AliTOFGeometry::GetStrip(Float_t *pos) const
       iStrip = istrip;
       totStrip++;
       for (Int_t jj=0; jj<3; jj++) posLocal[jj]=posLoc2[jj];
-      //AliInfo(Form(" posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ", posLocal[0],posLocal[1],posLocal[2]));
+      AliDebug(2,Form(" posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
+		      posLocal[0],posLocal[1],posLocal[2]));
 
-      //AliInfo(Form(" GetAngles(%1i,%2i) = %f, pos[0] = %f, pos[1] = %f, pos[2] = %f", iplate, istrip, GetAngles(iplate,istrip), pos[0], pos[1], pos[2]));
+      AliDebug(2,Form(" GetAngles(%1i,%2i) = %f, pos[0] = %f, pos[1] = %f, pos[2] = %f",
+		      iplate, istrip, GetAngles(iplate,istrip), pos[0], pos[1], pos[2]));
       break;
     }
 
@@ -1920,7 +1949,8 @@ Int_t AliTOFGeometry::GetStripNumberPerSM(Int_t iplate, Int_t istrip)
       ||
       (iplate!=2 && (istrip<0 || istrip>=kNStripC))
       )
-    printf("E-AliTOFGeometry::GetStripNumberPerSM: Wrong strip number in TOF (strip=%2d in the plate=%1d)!\n",istrip,iplate);
+    printf("E-AliTOFGeometry::GetStripNumberPerSM: Wrong strip number in TOF "
+	   "(strip=%2d in the plate=%1d)!\n",istrip,iplate);
 
   Int_t stripOffset = 0;
   switch (iplate) {
@@ -1944,5 +1974,132 @@ Int_t AliTOFGeometry::GetStripNumberPerSM(Int_t iplate, Int_t istrip)
   if (!check) index = stripOffset + istrip;
 
   return index;
+
+}
+//-------------------------------------------------------------------------
+
+void AliTOFGeometry::PadRF2TrackingRF(Float_t *ctrackPos, Float_t *differenceT)
+{
+  //
+  // To convert the 3D distance ctrackPos, referred to the ALICE RF,
+  // into the 3D distance differenceT, referred to the tracking RF
+  // in case ctrakPos belongs to a TOF sensitive volume.
+  //
+
+  for (Int_t ii=0; ii<3; ii++) differenceT[ii] = 999.;
+
+  AliDebug(1,Form(" track position in ALICE global Ref. frame -> %f, %f, %f",
+		  ctrackPos[0],ctrackPos[1],ctrackPos[2]));
+
+  Int_t detId[5] = {-1,-1,-1,-1,-1};
+
+  detId[0] = GetSector(ctrackPos);
+  if (detId[0]==-1) {
+    AliWarning(Form("This point does not belong to any TOF sector"));
+    return;
+  }
+
+  detId[1] = GetPlate(ctrackPos);
+  if (detId[1]==-1) {
+    AliWarning(Form("This point does not belong to any TOF module"));
+    return;
+  }
+
+  detId[2] = GetStrip(ctrackPos);
+  if (detId[2]==-1) {
+    AliWarning(Form("This point does not belong to any TOF strip"));
+    return;
+  }
+
+  detId[3] = GetPadZ(ctrackPos);
+  if (detId[3]==-1) {
+    AliWarning(Form("This point does not belong to any TOF pad-row"));
+    return;
+  }
+
+  detId[4] = GetPadX(ctrackPos);
+  if (detId[4]==-1) {
+    AliWarning(Form("This point does not belong to any TOF pad"));
+    return;
+  }
+
+
+  UShort_t alignableStripIndex =
+    GetAliSensVolIndex(detId[0],detId[1],detId[2]);
+  AliDebug(1,Form(" sector = %2d, plate = %1d, strip = %2d (padZ = %1d, padX = %2d) "
+		  "---> stripIndex = %4d",
+		  detId[0], detId[1], detId[2], detId[3], detId[4], alignableStripIndex));
+
+  // pad centre coordinates in the strip ref. frame
+  Double_t padCentreL[3] = {(detId[4]-AliTOFGeometry::NpadX()/2)*AliTOFGeometry::XPad()
+			    +AliTOFGeometry::XPad()/2.,
+			    0.,
+			    (detId[3]-AliTOFGeometry::NpadZ()/2)*AliTOFGeometry::XPad()
+			    +AliTOFGeometry::XPad()/2.};
+  // pad centre coordinates in the strip tracking frame
+  Double_t padCentreT[3] = {0., 0., 0.};
+  TGeoHMatrix l2t = *AliGeomManager::GetTracking2LocalMatrix(alignableStripIndex);
+  l2t.MasterToLocal(padCentreL,padCentreT);
+
+
+  Char_t path[100];
+  // pad centre coordinates in its ref. frame
+  Double_t padCentreL2[3] = {0., 0., 0.};
+  // pad centre coordinates in the ALICE global ref. frame
+  Double_t padCentreG[3] = {0., 0., 0.};
+  GetVolumePath(detId,path);
+  gGeoManager->cd(path);
+  TGeoHMatrix g2l = *gGeoManager->GetCurrentMatrix();
+  TGeoHMatrix l2g = g2l.Inverse();
+  l2g.MasterToLocal(padCentreL2,padCentreG);
+
+
+  Char_t path2[100];
+  // strip centre coordinates in its ref. frame
+  Double_t stripCentreL[3] = {0., 0., 0.};
+  // strip centre coordinates in the ALICE global ref. frame
+  Double_t stripCentreG[3] = {0., 0., 0.};
+  GetVolumePath(detId[0],detId[1],detId[2],path2);
+  gGeoManager->cd(path2);
+  TGeoHMatrix g2lb = *gGeoManager->GetCurrentMatrix();
+  TGeoHMatrix l2gb = g2lb.Inverse();
+  l2gb.MasterToLocal(stripCentreL,stripCentreG);
+
+  TGeoHMatrix g2t = 0;
+  AliGeomManager::GetTrackingMatrix(alignableStripIndex, g2t);
+
+  // track position in the ALICE global ref. frame
+  Double_t posG[3];
+  for (Int_t ii=0; ii<3; ii++) posG[ii] = (Double_t)ctrackPos[ii];
+
+  // strip centre coordinates in the tracking ref. frame
+  Double_t stripCentreT[3] = {0., 0., 0.};
+  // track position in the tracking ref. frame
+  Double_t posT[3] = {0., 0., 0.};
+  g2t.MasterToLocal(posG,posT);
+  g2t.MasterToLocal(stripCentreG,stripCentreT);
+
+  for (Int_t ii=0; ii<3; ii++)
+    AliDebug(1,Form(" track position in ALICE global and tracking RFs -> posG[%d] = %f --- posT[%d] = %f",
+		    ii, posG[ii], ii, posT[ii]));
+  for (Int_t ii=0; ii<3; ii++)
+    AliDebug(1,Form(" pad centre coordinates in its, the ALICE global and tracking RFs -> "
+		    "padCentreL[%d] = %f --- padCentreG[%d] = %f --- padCentreT[%d] = %f",
+		    ii, padCentreL[ii],
+		    ii, padCentreG[ii],
+		    ii, padCentreT[ii]));
+  for (Int_t ii=0; ii<3; ii++)
+    AliDebug(1,Form(" strip centre coordinates in its, the ALICE global and tracking RFs -> "
+		    "stripCentreL[%d] = %f --- stripCentreG[%d] = %f --- stripCentreT[%d] = %f",
+		    ii, stripCentreL[ii],
+		    ii, stripCentreG[ii],
+		    ii, stripCentreT[ii]));
+  for (Int_t ii=0; ii<3; ii++)
+    AliDebug(1,Form(" difference between the track position and the pad centre in the tracking RF "
+		    "-> posT[%d]-padCentreT[%d] = %f",
+		    ii,ii,
+		    posT[ii]-padCentreT[ii]));
+
+  for (Int_t ii=0; ii<3; ii++) differenceT[ii] = (Float_t)(posT[ii]-padCentreT[ii]);
 
 }

@@ -67,8 +67,6 @@ private:
  Float_t GetTimeZerofromT0(AliESDEvent* event) const; // T0 from T0
  Float_t CorrectTimeWalk(Float_t dist,Float_t tof); // Time Walk correction
 
- void PadRS2TrackingRS(Float_t *ctrackPos, Float_t *differenceT);
-
  const AliTOFRecoParam* fRecoParam;     // Pointer to TOF Recon. Pars
  AliTOFGeometry*  fGeom;                // Pointer to TOF geometry
  AliTOFpidESD*    fPid;                 // Pointer to TOF PID
@@ -106,7 +104,7 @@ private:
  Float_t fExpTimeKa; // exp time, Kaons
  Float_t fExpTimePr; // exp time, Protons
 
- ClassDef(AliTOFtracker, 2) // TOF tracker 
+ ClassDef(AliTOFtracker, 3) // TOF tracker 
 };
 
 #endif
