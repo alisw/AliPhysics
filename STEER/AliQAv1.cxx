@@ -34,6 +34,7 @@
 
 #include <cstdlib>
 // --- ROOT system ---
+#include <TClass.h>
 #include <TFile.h>
 #include <TSystem.h>
 #include <TROOT.h>
@@ -398,8 +399,7 @@ TFile * AliQAv1::GetQADataFile(const char * fileName)
 	if  (!gSystem->AccessPathName(fileName)) {
 		fgQADataFile =  TFile::Open(fileName) ;
 	} else {
-		printf("File %s not found", fileName) ;
-		exit(1) ;  
+		AliFatalClass(Form("File %s not found", fileName)) ;
 	}
   return fgQADataFile ; 
 }
@@ -571,13 +571,13 @@ AliQAv1 * AliQAv1::Instance(const ALITASK_t tsk)
       fgQA = new AliQAv1(tsk) ;
       break ;
     case kREC:
-      printf("fgQA = gAlice->GetQA()") ;
+      AliInfoClass("fgQA = gAlice->GetQA()") ;
       break ;
     case kESD:
-      printf("fgQA = dynamic_cast<AliQAv1 *> (esdFile->Get(\"QA\")") ;
+      AliInfoClass("fgQA = dynamic_cast<AliQAv1 *> (esdFile->Get(\"QA\")") ;
       break ;
     case kANA:
-      printf("fgQA = dynamic_cast<AliQAv1 *> (esdFile->Get(\"QA\")") ;
+      AliInfoClass("fgQA = dynamic_cast<AliQAv1 *> (esdFile->Get(\"QA\")") ;
       break ;
     case kNTASK:
       break ;
@@ -698,12 +698,12 @@ void AliQAv1::SetQARefStorage(const char * name)
 		fgQARefFileName =  fgkQAName ; 
 
   else {
-	  printf("ERROR: %s is an invalid storage definition\n", name) ; 
+	  AliErrorClass(Form("ERROR: %s is an invalid storage definition\n", name)) ; 
 	  fgQARefDirName  = "" ; 
 	  fgQARefFileName = "" ; 
   }	
 	TString tmp(fgQARefDirName) ; // + fgQARefFileName) ;
-	printf("AliQAv1::SetQARefDir: QA references are in  %s\n", tmp.Data() ) ;
+	AliInfoClass(Form("AliQAv1::SetQARefDir: QA references are in  %s\n", tmp.Data() )) ;
 }
 
 //_____________________________________________________________________________
@@ -712,7 +712,7 @@ void AliQAv1::SetQAResultDirName(const char * name)
   // Set the root directory where to store the QA status object
 
   fgQAResultDirName.Prepend(name) ; 
-  printf("AliQAv1::SetQAResultDirName: QA results are in  %s\n", fgQAResultDirName.Data()) ;
+  AliInfoClass(Form("AliQAv1::SetQAResultDirName: QA results are in  %s\n", fgQAResultDirName.Data())) ;
   if ( fgQAResultDirName.Contains(fgkLabLocalFile)) 
     fgQAResultDirName.ReplaceAll(fgkLabLocalFile, "") ;
   fgQAResultFileName.Prepend(fgQAResultDirName) ;
@@ -801,7 +801,7 @@ void AliQAv1::ShowASCIIStatus(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t de
 		}
 	}
 	if (! text.IsNull())
-		printf("           %8s %8s %4s 0x%4lx, Problem signalled: %8s \n", AliRecoParam::GetEventSpecieName(es), GetDetName(det).Data(), GetAliTaskName(tsk), status, text.Data()) ; 
+		AliInfoClass(Form("           %8s %8s %4s 0x%4lx, Problem signalled: %8s \n", AliRecoParam::GetEventSpecieName(es), GetDetName(det).Data(), GetAliTaskName(tsk), status, text.Data())) ; 
 }
 
 //_______________________________________________________________

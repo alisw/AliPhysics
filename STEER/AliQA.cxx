@@ -34,6 +34,7 @@
 
 #include <cstdlib>
 // --- ROOT system ---
+#include <TClass.h>
 #include <TFile.h>
 #include <TSystem.h>
 #include <TROOT.h>
@@ -341,8 +342,7 @@ TFile * AliQA::GetQADataFile(const char * fileName)
 	if  (!gSystem->AccessPathName(fileName)) {
 		fgQADataFile =  TFile::Open(fileName) ;
 	} else {
-		printf("File %s not found", fileName) ;
-		exit(1) ;  
+		AliFatalClass(Form("File %s not found", fileName)) ;
 	}
   return fgQADataFile ; 
 }
@@ -383,7 +383,7 @@ const TString AliQA::GetRunTypeName(RUNTYPE_t rt)
 		for (Int_t index = 0 ; index < kNTYPE; index++) {
 			rv += Form("%2d -- %s\n", index, fgRTNames[index].Data()) ;  
 		}
-		printf("%s", rv.Data()) ; 
+		AliErrorClass(Form("%s", rv.Data())) ; 
 		return "" ; 
 	}
 	else {
@@ -506,13 +506,13 @@ AliQA * AliQA::Instance(const ALITASK_t tsk)
       fgQA = new AliQA(tsk) ;
       break ;
     case kREC:
-      printf("fgQA = gAlice->GetQA()") ;
+      AliInfoClass("fgQA = gAlice->GetQA()") ;
       break ;
     case kESD:
-      printf("fgQA = dynamic_cast<AliQA *> (esdFile->Get(\"QA\")") ;
+      AliInfoClass("fgQA = dynamic_cast<AliQA *> (esdFile->Get(\"QA\")") ;
       break ;
     case kANA:
-      printf("fgQA = dynamic_cast<AliQA *> (esdFile->Get(\"QA\")") ;
+      AliInfoClass("fgQA = dynamic_cast<AliQA *> (esdFile->Get(\"QA\")") ;
       break ;
     case kNTASK:
       break ;
@@ -616,12 +616,12 @@ void AliQA::SetQARefStorage(const char * name)
 		fgQARefFileName =  fgkQAName ; 
 
   else {
-	  printf("ERROR: %s is an invalid storage definition\n", name) ; 
+	  AliErrorClass(Form("%s is an invalid storage definition\n", name)) ; 
 	  fgQARefDirName  = "" ; 
 	  fgQARefFileName = "" ; 
   }	
 	TString tmp(fgQARefDirName) ; // + fgQARefFileName) ;
-	printf("AliQA::SetQARefDir: QA references are in  %s\n", tmp.Data() ) ;
+	AliInfoClass(Form("AliQA::SetQARefDir: QA references are in  %s\n", tmp.Data()) ) ;
 }
 
 //_____________________________________________________________________________
@@ -638,7 +638,7 @@ void AliQA::SetQARefDataDirName(const char * name)
 	}
 	
 	if (rt == kNULLTYPE) {
-      printf("AliQA::SetQARefDataDirName: %s is an unknown RUN TYPE name\n", name) ; 
+      AliWarningClass(Form("AliQA::SetQARefDataDirName: %s is an unknown RUN TYPE name\n", name)) ; 
       return ; 
 	}
  
@@ -651,7 +651,7 @@ void AliQA::SetQAResultDirName(const char * name)
   // Set the root directory where to store the QA status object
 
   fgQAResultDirName.Prepend(name) ; 
-  printf("AliQA::SetQAResultDirName: QA results are in  %s\n", fgQAResultDirName.Data()) ;
+  AliInfoClass(Form("AliQA::SetQAResultDirName: QA results are in  %s\n", fgQAResultDirName.Data())) ;
   if ( fgQAResultDirName.Contains(fgkLabLocalFile)) 
     fgQAResultDirName.ReplaceAll(fgkLabLocalFile, "") ;
   fgQAResultFileName.Prepend(fgQAResultDirName) ;
@@ -721,7 +721,7 @@ void AliQA::ShowASCIIStatus(DETECTORINDEX_t det, ALITASK_t tsk, const ULong_t st
 		}
 	}
 	if (! text.IsNull())
-		printf("           %8s %4s 0x%4lx, Problem signalled: %8s \n", GetDetName(det).Data(), GetAliTaskName(tsk), status, text.Data()) ; 
+		AliWarningClass(Form("           %8s %4s 0x%4lx, Problem signalled: %8s \n", GetDetName(det).Data(), GetAliTaskName(tsk), status, text.Data())) ; 
 }
 
 //_______________________________________________________________
