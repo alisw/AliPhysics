@@ -202,6 +202,21 @@ AliHLTModuleAgent* AliHLTModuleAgent::GetNextAgent()
   return fgCurrent;
 }
 
+string AliHLTModuleAgent::GetAgentIds()
+{
+  // see header file for function documentation
+  string ids;
+  ids.clear();
+  for (AliHLTModuleAgent* pCurrent=fgAnchor;
+       pCurrent;
+       pCurrent=pCurrent->fpNext) {
+    if (ids.size()>0) ids+=" ";
+    ids+=pCurrent->GetModuleId();
+  }
+
+  return ids;
+}
+
 int AliHLTModuleAgent::Register(AliHLTModuleAgent* pAgent)
 {
   // see header file for function documentation

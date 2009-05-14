@@ -20,6 +20,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
+#include <string>
 #include <TObject.h>
 #include <TList.h>
 #include <TString.h>
@@ -140,6 +141,11 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * @return  pointer to next agent in the list, NULL if end of list
    */
   static AliHLTModuleAgent* GetNextAgent();
+
+  /**
+   * Get string of blank separated Module Ids
+   */
+  static string GetAgentIds();
 
   /**
    * Activate a component handler for this agent.

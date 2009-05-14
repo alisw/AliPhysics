@@ -295,10 +295,15 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * each agent with this component handler. During activation, the
    * dynamic component registration is carried out by the agents version
    * of @ref AliHLTModuleAgent::RegisterComponents
-   * @param blackList     array of agents which should be excluded
-   * @param size          array size
+   *
+   * Agents are identified by an id which is a string containing the
+   * module name. Libraries follow the naming scheme libAliHLT<MOD>.so
+   * If the library name is provided and the specific agent found in the
+   * list, only that one is activated. All pending agents otherwize.
+   * @param library       library to activate the agent for
+   * @param blackList     blank separated list of module ids
    */
-  int ActivateAgents(const AliHLTModuleAgent** blackList=NULL, int size=0);
+  int ActivateAgents(const char* library=NULL, const char* blackList=NULL);
 
   /**
    * Compound descriptor for component libraries

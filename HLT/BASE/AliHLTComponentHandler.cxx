@@ -348,8 +348,12 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
   // see header file for class documentation
   int iResult=0;
   if (libraryPath) {
-    // first activate all agents which are already loaded
-    if (bActivateAgents) ActivateAgents();
+    TString libName=libraryPath;
+    int slash=-1;
+    while ((slash=libName.Index("/"))>=0) {
+      libName=libName.Remove(0, slash+1);
+    }
+    libName.ReplaceAll(".so","");
 
     // set the global component handler for static component registration
     AliHLTComponent::SetGlobalComponentHandler(this);
@@ -406,19 +410,18 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
       hLib.fMode=fLibraryMode;
       fLibraryList.insert(fLibraryList.begin(), hLib);
       if (!phSearch) {
-      HLTImportant("library %s loaded (%s%s)", libraryPath, hLib.fMode==kStatic?"persistent, ":"", loadtype);
       typedef void (*CompileInfo)(const char*& date, const char*& time);
       CompileInfo fctInfo=(CompileInfo)FindSymbol(libraryPath, "CompileInfo");
+      const char* date="";
+      const char* time="";
+      const char* buildOn="";
       if (fctInfo) {
-	const char* date="";
-	const char* time="";
+	buildOn=" build on ";
 	(*fctInfo)(date, time);
 	if (!date) date="unknown";
 	if (!time) time="unknown";
-	HLTImportant("build on %s (%s)", date, time);
-      } else {
-	HLTImportant("no build info available (possible AliRoot embedded build)");
       }
+      HLTImportant("using %s plugin%s%s %s (%s%s)", libraryPath, buildOn, date, time, hLib.fMode==kStatic?"persistent, ":"", loadtype);
       }
 
       // static registration of components when library is loaded
@@ -440,7 +443,7 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
     if (iResult>=0) {
       // alternative dynamic registration by library agents
       // !!! has to be done after UnsetGlobalComponentHandler
-      if (bActivateAgents) ActivateAgents();
+      if (bActivateAgents) ActivateAgents(libName.Data());
     }
 
   } else {
@@ -603,28 +606,43 @@ int AliHLTComponentHandler::RegisterScheduledComponents()
   return iResult;
 }
 
-int AliHLTComponentHandler::ActivateAgents(const AliHLTModuleAgent** blackList, int size)
+int AliHLTComponentHandler::ActivateAgents(const char* library, const char* blackList)
 {
   // see header file for class documentation
   int iResult=0;
-  AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
-  while (pAgent && iResult>=0) {
-    if (blackList) {
-      int i=0;
-      for (; i<size; i++) {
-	if (blackList[i]==pAgent) break;
-      }
-      if (i<size) {
-	// this agent was in the list
-	pAgent=AliHLTModuleAgent::GetNextAgent();
-	continue;
+  vector<AliHLTModuleAgent*> agents;
+  for (AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent(); 
+       pAgent && iResult>=0;
+       pAgent=AliHLTModuleAgent::GetNextAgent()) {
+
+    // check if we found the agent for the specified library
+    if (library) {
+      TString check="libAliHLT"; check+=pAgent->GetModuleId();
+      if (check.CompareTo(library)==0) {
+	agents.clear();
+	agents.push_back(pAgent);
+	break;
       }
     }
 
-    pAgent->ActivateComponentHandler(this);
-    pAgent=AliHLTModuleAgent::GetNextAgent();
+    // check if the current agent is in the black list
+    if (blackList) {
+      char* found=strstr(blackList, pAgent->GetModuleId());
+      if (found) {
+	found+=strlen(pAgent->GetModuleId());
+	// skip this agent as it is in the blacklist
+	if (*found==0 or *found==' ') continue;
+      }
+    }
+    agents.push_back(pAgent);
   }
-  return iResult;
+
+  for (vector<AliHLTModuleAgent*>::iterator element=agents.begin();
+       element!=agents.end(); element++) {
+    (*element)->ActivateComponentHandler(this);
+  }
+
+  return agents.size();
 }
 
 int AliHLTComponentHandler::DeleteOwnedComponents()
