@@ -1,0 +1,29 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+CLASS_HDRS:=  	AliHLTQADataMakerSim.h \
+		AliHLTQADataMakerRec.h
+
+MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
+
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+MODULE_DHDR:= 		
+
+EINCLUDE := HLT/QA HLT/BASE STEER
+
+LIBRARY_DEP := -lHLTbase -lCDB -lESD -lSTEERbase -lSTEER -lRAWDatarec -lRAWDatabase
+
+include $(MODDIR)/hlt.conf
+
+SRCS:=$(patsubst %,QA/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,QA/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,QA/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,QA/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+PACKSOFLAGS  := $(HLTSOFLAGS)

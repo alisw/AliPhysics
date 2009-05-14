@@ -1,0 +1,12 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+QA/AliHLTQADataMakerSim.cxx
+QA/AliHLTQADataMakerRec.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(HLTqadm "${SRCS}" "${HDRS}")

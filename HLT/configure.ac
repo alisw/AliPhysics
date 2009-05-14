@@ -1288,6 +1288,7 @@ if test "x$have_aliroot" != "xno"; then
 		   shuttle/Makefile
 		   pendolino/Makefile
 		   benchmark/Makefile
+		   QA/Makefile
 		   ])
 fi
 if test "x$prefix" != "xNONE" && test $ALICE_ROOT = $prefix ; then
