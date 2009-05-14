@@ -397,7 +397,7 @@ Float_t AliTRDgtuParam::GetRadius(Int_t a, Float_t b, Float_t x1, Float_t x2)
   Float_t d = (1 + b * b /2 ) * (x2 - x1);
   Float_t c1 = x1 * x2 / 2;
 //  Float_t c2 = (x1 + x2) / (x1 * x2);
-  printf("c1: %f\n", c1);
+//  printf("c1: %f\n", c1);
   Float_t r = 0;
   if ( (a >> 1) != 0)
     r = (375. / 10000.) * c1 * 256 / (a >> 1);

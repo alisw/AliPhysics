@@ -352,7 +352,7 @@ void AliTRDmcmSim::Print(Option_t* const option) const
   printf("MCM %i on ROB %i in detector %i\n", fMcmPos, fRobPos, fDetector);
 
   TString opt = option;
-  if (opt.Contains("U")) {
+  if (opt.Contains("R")) {
     printf("Raw ADC data (10 bit):\n");
     for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
       for (Int_t iChannel = 0; iChannel < fNADC; iChannel++) {
@@ -1612,8 +1612,12 @@ void AliTRDmcmSim::Tracklet()
     return;
   TrackletSelection();
   FitTracklet();
+}
+
+Bool_t AliTRDmcmSim::StoreTracklets() 
+{
   if (fTrackletArray->GetEntriesFast() == 0) 
-    return;
+    return kTRUE;
 
   AliRunLoader *rl = AliRunLoader::Instance();
   AliDataLoader *dl = 0x0;
@@ -1621,27 +1625,29 @@ void AliTRDmcmSim::Tracklet()
     dl = rl->GetLoader("TRDLoader")->GetDataLoader("tracklets");
   if (!dl) {
     AliError("Could not get the tracklets data loader!");
+    return kFALSE;
   }
-  else {
-    TTree *trackletTree = dl->Tree();
-    if (!trackletTree) {
-      dl->MakeTree();
-      trackletTree = dl->Tree();
-    }
 
-    AliTRDtrackletMCM *trkl = 0x0;
-    TBranch *trkbranch = trackletTree->GetBranch("mcmtrklbranch");
-    if (!trkbranch)
-      trkbranch = trackletTree->Branch("mcmtrklbranch", "AliTRDtrackletMCM", &trkl, 32000);
-
-    for (Int_t iTracklet = 0; iTracklet < fTrackletArray->GetEntriesFast(); iTracklet++) {
-      trkl = ((AliTRDtrackletMCM*) (*fTrackletArray)[iTracklet]);
-      trkbranch->SetAddress(&trkl);
+  TTree *trackletTree = dl->Tree();
+  if (!trackletTree) {
+    dl->MakeTree();
+    trackletTree = dl->Tree();
+  }
+  
+  AliTRDtrackletMCM *trkl = 0x0;
+  TBranch *trkbranch = trackletTree->GetBranch("mcmtrklbranch");
+  if (!trkbranch)
+    trkbranch = trackletTree->Branch("mcmtrklbranch", "AliTRDtrackletMCM", &trkl, 32000);
+  
+  for (Int_t iTracklet = 0; iTracklet < fTrackletArray->GetEntriesFast(); iTracklet++) {
+    trkl = ((AliTRDtrackletMCM*) (*fTrackletArray)[iTracklet]);
+    trkbranch->SetAddress(&trkl);
 //      printf("filling tracklet 0x%08x\n", trkl->GetTrackletWord());
-      trkbranch->Fill();
-    }
-    dl->WriteData("OVERWRITE");
+    trkbranch->Fill();
   }
+  dl->WriteData("OVERWRITE");
+
+  return kTRUE;
 }
 
 void AliTRDmcmSim::WriteData(AliTRDarrayADC *digits)

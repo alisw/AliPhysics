@@ -28,6 +28,7 @@
 
 #include "AliTRDtrackletGTU.h"
 #include "AliTRDtrackletWord.h"
+#include "AliTRDmcmTracklet.h"
 #include "AliTRDtrackletMCM.h"
 #include "AliLog.h"
 #include "AliTRDgtuParam.h"
@@ -74,7 +75,7 @@ AliTRDtrackletGTU::AliTRDtrackletGTU(AliTRDtrackletBase *tracklet) :
     fSubChannel[zch] = 0;
   fTracklet = tracklet;
   if ( fTracklet->IsA() == TClass::GetClass("AliTRDtrackletMCM")) {
-      AliInfo(Form("label from mcm tracklet: %i", ((AliTRDtrackletMCM*) fTracklet)->GetLabel()));
+      AliDebug(5,Form("label from mcm tracklet: %i", ((AliTRDtrackletMCM*) fTracklet)->GetLabel()));
   }
 }
 

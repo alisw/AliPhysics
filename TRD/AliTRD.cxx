@@ -608,6 +608,8 @@ AliLoader* AliTRD::MakeLoader(const char* topfoldername)
  AliInfo("Adding Tracklets-loader");
  AliDataLoader *dl = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
  fLoader->AddDataLoader(dl);
+ dl = new AliDataLoader("TRD.GtuTracks.root", "gtutracks", "gtutracks");
+ fLoader->AddDataLoader(dl);
 
  return fLoader;
 }

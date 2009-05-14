@@ -38,6 +38,8 @@ class AliTRDmcmSim : public TObject {
 	  Bool_t    LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob, Int_t mcm);
 	  void      NoiseTest(Int_t nsamples, Int_t mean, Int_t sigma, Int_t inputGain = 1, Int_t inputTail = 2);
 
+	  Int_t     GetDataRaw(Int_t iadc, Int_t timebin)      { return (fADCR[iadc][timebin] >> 2); } // Get unfiltered ADC data 
+	  Int_t     GetDataFiltered(Int_t iadc, Int_t timebin) { return (fADCF[iadc][timebin] >> 2); } // Get filtered ADC data
           void      SetData(Int_t iadc, Int_t *adc);           // Set ADC data with array 
           void      SetData(Int_t iadc, Int_t it, Int_t adc ); // Set ADC data
 	  void      SetData(AliTRDarrayADC *adcArray, 
@@ -54,6 +56,7 @@ class AliTRDmcmSim : public TObject {
   static  Bool_t    GetApplyCut() { return fgApplyCut; }
 
 	  void WriteData(AliTRDarrayADC *digits);
+	  Bool_t StoreTracklets();                             // Stores tracklets via runloader
 
 	  Int_t     ProduceRawStream( UInt_t *buf, Int_t bufsize, UInt_t iEv = 0 ); // Produce raw data stream - Read data format
 	  Int_t     ProduceTrackletStream( UInt_t *buf, Int_t bufsize ); // produce the tracklet stream for this MCM

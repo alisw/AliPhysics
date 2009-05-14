@@ -1796,8 +1796,10 @@ void AliTRDdigitizer::RunDigitalProcessing(AliTRDarrayADC *digits, Int_t det)
       mcmfast->Init(det, rob, mcm); 
       mcmfast->SetData(digits, fDigitsManager);
       mcmfast->Filter();
-      if (feeParam->GetTracklet())
+      if (feeParam->GetTracklet()) {
         mcmfast->Tracklet();
+        mcmfast->StoreTracklets();
+      }
       mcmfast->ZSMapping();
       mcmfast->WriteData(digits);
     }

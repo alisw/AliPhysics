@@ -13,10 +13,12 @@
 
 
 #include "AliDetector.h"
+#include "AliTRDTrigger.h"
 
 class AliRawReader;
 
 class AliTRDgeometry;
+class AliTriggerDetector;
 
 class AliTRD : public AliDetector {
 
@@ -60,6 +62,8 @@ class AliTRD : public AliDetector {
           AliTRDgeometry  *GetGeometry() const           { return fGeometry; };
   virtual AliDigitizer    *CreateDigitizer(AliRunDigitizer *manager) const; 
   virtual AliLoader       *MakeLoader(const char* topfoldername);
+
+  virtual AliTriggerDetector* CreateTriggerDetector() const { return new AliTRDTrigger(); }
 
  protected:
 
