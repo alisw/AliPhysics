@@ -321,8 +321,10 @@ void AliTOFQADataMakerRec::MakeESDs(AliESDEvent * esd)
     GetESDsData(0)->Fill(TMath::Log10(nentries)) ;
   }
 
-  Float_t ratio = (Float_t)ntofpid/(Float_t)ntof*100.;
-  if(ntof>0)GetESDsData(4)->Fill(ratio) ;
+  if(ntof>0) {
+    Float_t ratio = (Float_t)ntofpid/(Float_t)ntof*100.;
+    GetESDsData(4)->Fill(ratio) ;
+  }
 
 }
 
