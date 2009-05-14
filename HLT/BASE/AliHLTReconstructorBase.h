@@ -9,7 +9,7 @@
 /** @file   AliHLTReconstructorBase.h
     @author Matthias Richter
     @date   
-    @brief  Base class for HLT reconstruction classes.
+    @brief  AliHLTPluginBase child for backward compatibility.
 */
 
 // see below for class documentation
@@ -18,44 +18,23 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "TObject.h"
-
-class AliHLTSystem;
+#include "AliHLTPluginBase.h"
 
 /**
  * @class AliHLTReconstructorBase
- * Base class for HLT reconstruction classes. AliHLTReconstructor and
- * AliRawReaderHLT both use the global AliHLTSystem instance. This
- * base class hosts the global instance.
+ * This class was the former name of the base class for HLT
+ * reconstruction instances. It has evolved to a more general
+ * 'plugin' base class and the name has been changed to
+ * AliHLTPluginBase
  */
-class AliHLTReconstructorBase {
+class AliHLTReconstructorBase : public AliHLTPluginBase {
  public:
   AliHLTReconstructorBase();
-  /** destructor */
-  virtual ~AliHLTReconstructorBase();
-
-  /**
-   * Init the global AliHLTSystem instance.
-   */
-  static void InitInstance();
-
-  /**
-   * Get the global AliHLTSystem instance.
-   */
-  static AliHLTSystem* GetInstance();
+  ~AliHLTReconstructorBase();
 
  protected:
 
  private:
-  /** copy constructor prohibited */
-  AliHLTReconstructorBase(const AliHLTReconstructorBase& src);
-  /** assignment operator prohibited */
-  AliHLTReconstructorBase& operator=(const AliHLTReconstructorBase& src);
-
-  static AliHLTSystem* fpSystem; //! HLT steering object
-
-  static int fNofInstances;
-
-  ClassDef(AliHLTReconstructorBase, 0)   // base class for the HLT reconstruction
+  ClassDef(AliHLTReconstructorBase, 0)   // AliHLTPluginBase child for backward compatibility
 };
 #endif

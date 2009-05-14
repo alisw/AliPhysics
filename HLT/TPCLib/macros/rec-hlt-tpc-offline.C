@@ -39,8 +39,7 @@ void rec_hlt_tpc_offline(const char* input="./")
   //
   // init the HLT system in order to define the analysis chain below
   //
-  gSystem->Load("libHLTrec.so");
-  AliHLTSystem* gHLT=AliHLTReconstructorBase::GetInstance();
+  AliHLTSystem* gHLT=AliHLTPluginBase::GetInstance();
 
   //gHLT.SwitchAliLog(0);
 

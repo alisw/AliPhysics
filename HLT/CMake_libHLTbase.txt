@@ -5,6 +5,7 @@ BASE/AliHLTComponent.cxx
 BASE/AliHLTComponentHandler.cxx
 BASE/AliHLTSystem.cxx
 BASE/AliHLTReconstructorBase.cxx
+BASE/AliHLTPluginBase.cxx
 BASE/AliHLTProcessor.cxx
 BASE/AliHLTCalibrationProcessor.cxx
 BASE/AliHLTConfiguration.cxx

@@ -60,7 +60,7 @@
 #include "TObject.h"
 #include "TString.h"
 class AliRunLoader;
-class AliHLTSystem;
+class AliHLTPluginBase;
 class AliRawReader;
 
 /**
@@ -116,13 +116,13 @@ class AliHLTSimulation : public TObject {
   /* current options */
   TString fOptions;                                                   //!transient
 
-  /* HLT steering object */
-  AliHLTSystem* fpSystem;                                             //!transient
+  /** base class for AliRoot HLT plugins */
+  AliHLTPluginBase* fpPluginBase;                                     //!transient
 
-  /* RAW reader instance for chains which need RAW data as input */
-  AliRawReader* fpRawReader;                                            //!transient
+  /** RAW reader instance for chains which need RAW data as input */
+  AliRawReader* fpRawReader;                                          //!transient
 
-  ClassDef(AliHLTSimulation, 1)
+  ClassDef(AliHLTSimulation, 2)
 };
 
 #define ALIHLTSIMULATION_LIBRARY             "libHLTsim.so"

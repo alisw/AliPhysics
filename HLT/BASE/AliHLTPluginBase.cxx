@@ -16,27 +16,49 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTReconstructorBase.cxx
+/** @file   AliHLTPluginBase.cxx
     @author Matthias Richter
     @date   
-    @brief  AliHLTPluginBase child for backward compatibility.
+    @brief  Base class for AliRoot HLT plugins.
 */
 
-#include "AliHLTReconstructorBase.h"
+#include "AliHLTPluginBase.h"
+#include "AliHLTSystem.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTReconstructorBase)
+ClassImp(AliHLTPluginBase)
 
-AliHLTReconstructorBase::AliHLTReconstructorBase()
+AliHLTPluginBase::AliHLTPluginBase()
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  fNofInstances++;
 }
 
-AliHLTReconstructorBase::~AliHLTReconstructorBase()
+AliHLTPluginBase::~AliHLTPluginBase()
 {
   // see header file for class documentation
+  if (--fNofInstances<=0) delete fpSystem;
+  fpSystem=NULL;
 }
+
+void AliHLTPluginBase::InitInstance()
+{
+  // see header file for class documentation
+  if (!fpSystem) fpSystem=new AliHLTSystem;
+}
+
+AliHLTSystem* AliHLTPluginBase::GetInstance()
+{
+  // see header file for class documentation
+  if (!fpSystem) InitInstance();
+  return fpSystem;
+}
+
+
+AliHLTSystem* AliHLTPluginBase::fpSystem=NULL;
+
+int AliHLTPluginBase::fNofInstances=0;

@@ -45,7 +45,7 @@ ClassImp(AliRawReaderHLT)
 AliRawReaderHLT::AliRawReaderHLT(AliRawReader* pRawreader, const char* options)
   :
   AliRawReader(),
-  AliHLTReconstructorBase(),
+  AliHLTPluginBase(),
   fpParentReader(pRawreader),
   fOptions(),
   fSystemOptions(),

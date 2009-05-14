@@ -62,8 +62,7 @@ int compareDigitReaders(const char* input, int iMinEvent=-1, int iMaxEvent=-1)
   /////////////////////////////////////////////////////////////////////////
   //
   // setup of the HLT system
-  gSystem->Load("libHLTrec");
-  AliHLTSystem* pHLT=AliHLTReconstructorBase::GetInstance();
+  AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
   if (!pHLT) {
     cerr << "fatal error: can not get HLT instance" << endl;
   }

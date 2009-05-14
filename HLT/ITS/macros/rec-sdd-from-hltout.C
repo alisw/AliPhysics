@@ -25,8 +25,7 @@ void rec_sdd_from_hltout()
   /////////////////////////////////////////////////////////////////////////
   //
   // setup of the HLT system
-  gSystem->Load("libHLTrec");
-  AliHLTSystem* pHLT=AliHLTReconstructorBase::GetInstance();
+  AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
   if (!pHLT) {
     cerr << "fatal error: can not get HLT instance" << endl;
   }

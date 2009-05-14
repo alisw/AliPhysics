@@ -37,6 +37,7 @@
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
 #include "AliHLTSystem.h"
+#include "AliHLTPluginBase.h"
 #include "AliRawReaderFile.h"
 #include "AliRawReaderDate.h"
 #include "AliRawReaderRoot.h"
@@ -53,7 +54,7 @@ ClassImp(AliHLTSimulation);
 AliHLTSimulation::AliHLTSimulation()
   :
   fOptions(),
-  fpSystem(NULL),
+  fpPluginBase(new AliHLTPluginBase),
   fpRawReader(NULL)
 {
   // see header file for class documentation
@@ -66,10 +67,9 @@ AliHLTSimulation::AliHLTSimulation()
 AliHLTSimulation::~AliHLTSimulation()
 {
   // see header file for function documentation
-  if (fpSystem) {
-    delete fpSystem;
-  }
-  fpSystem=NULL;
+  if (fpPluginBase) delete fpPluginBase;
+  fpPluginBase=NULL;
+
   if (fpRawReader) {
     delete fpRawReader;
   }
@@ -96,12 +96,17 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
   fOptions=options;
   TString sysOp;
 
-  if (!fpSystem) fpSystem=new AliHLTSystem;
-  if (!fpSystem) {
-    AliError("can not create AliHLTSystem object");
+  if(!fpPluginBase) {
+    AliError("internal initialization failed");
+    return -EINVAL;
+  }
+
+  AliHLTSystem* pSystem=fpPluginBase->GetInstance();
+  if (!pSystem) {
+    AliError("can not get AliHLTSystem instance");
     return -ENOMEM;
   }
-  if (fpSystem->CheckStatus(AliHLTSystem::kError)) {
+  if (pSystem->CheckStatus(AliHLTSystem::kError)) {
     AliError("HLT system in error state");
     return -EFAULT;
   }
@@ -178,13 +183,13 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
   }
 
   // scan options
-  if (fpSystem->ScanOptions(sysOp.Data())<0) {
+  if (pSystem->ScanOptions(sysOp.Data())<0) {
     AliError("error setting options for HLT system");
     return -EINVAL;	
   }
 
-  if (!fpSystem->CheckStatus(AliHLTSystem::kReady)) {
-    if ((fpSystem->Configure(fpRawReader, pRunLoader))<0) {
+  if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
+    if ((pSystem->Configure(fpRawReader, pRunLoader))<0) {
       AliError("error during HLT system configuration");
       return -EFAULT;
     }
@@ -197,6 +202,11 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
 int AliHLTSimulation::Run(AliRunLoader* pRunLoader)
 {
   // HLT reconstruction for simulated data  
+  if(!fpPluginBase) {
+    AliError("internal initialization failed");
+    return -EINVAL;
+  }
+
   if(!pRunLoader) {
     AliError("Missing RunLoader! 0x0");
     return -EINVAL;
@@ -205,24 +215,30 @@ int AliHLTSimulation::Run(AliRunLoader* pRunLoader)
   int nEvents = pRunLoader->GetNumberOfEvents();
   int iResult=0;
 
-  if (fpSystem->CheckStatus(AliHLTSystem::kError)) {
+  AliHLTSystem* pSystem=fpPluginBase->GetInstance();
+  if (!pSystem) {
+    AliError("can not get AliHLTSystem instance");
+    return -ENOMEM;
+  }
+
+  if (pSystem->CheckStatus(AliHLTSystem::kError)) {
     AliError("HLT system in error state");
     return -EFAULT;
   }
 
   // Note: the rawreader is already placed at the first event
-  if ((iResult=fpSystem->Reconstruct(1, pRunLoader, fpRawReader))>=0) {
-    fpSystem->FillESD(0, pRunLoader, NULL);
+  if ((iResult=pSystem->Reconstruct(1, pRunLoader, fpRawReader))>=0) {
+    pSystem->FillESD(0, pRunLoader, NULL);
     for (int i=1; i<nEvents; i++) {
       if (fpRawReader && !fpRawReader->NextEvent()) {
 	AliError("mismatch in event count, rawreader corrupted");
 	break;
       }
-      fpSystem->Reconstruct(1, pRunLoader, fpRawReader);
-      fpSystem->FillESD(i, pRunLoader, NULL);
+      pSystem->Reconstruct(1, pRunLoader, fpRawReader);
+      pSystem->FillESD(i, pRunLoader, NULL);
     }
     // send specific 'event' to execute the stop sequence
-    fpSystem->Reconstruct(0, NULL, NULL);
+    pSystem->Reconstruct(0, NULL, NULL);
   }
   return iResult;
 }

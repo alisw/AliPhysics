@@ -39,7 +39,7 @@ ClassImp(AliHLTReconstructor)
 AliHLTReconstructor::AliHLTReconstructor()
   : 
   AliReconstructor(),
-  AliHLTReconstructorBase(),
+  AliHLTPluginBase(),
   fFctProcessHLTOUT(NULL),
   fpEsdManager(NULL)
 { 
@@ -49,7 +49,7 @@ AliHLTReconstructor::AliHLTReconstructor()
 AliHLTReconstructor::AliHLTReconstructor(const char* options)
   : 
   AliReconstructor(),
-  AliHLTReconstructorBase(),
+  AliHLTPluginBase(),
   fFctProcessHLTOUT(NULL),
   fpEsdManager(NULL)
 { 

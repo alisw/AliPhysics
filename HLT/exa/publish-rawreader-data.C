@@ -47,8 +47,7 @@ void publish_rawreader_data(const char* input, int iMinDDLno, int iMaxDDLno)
   /////////////////////////////////////////////////////////////////////////
   //
   // setup of the HLT system
-  gSystem->Load("libHLTrec");
-  AliHLTSystem* pHLT=AliHLTReconstructorBase::GetInstance();
+  AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
   if (!pHLT) {
     cerr << "fatal error: can not get HLT instance" << endl;
   }

@@ -43,8 +43,7 @@ void rec_hlt_global_merger(const char* input="./", bool bUseClusterFinderDecoder
   //
   // init the HLT system in order to define the analysis chain below
   //
-  gSystem->Load("libHLTrec.so");
-  AliHLTSystem* gHLT=AliHLTReconstructorBase::GetInstance();
+  AliHLTSystem* gHLT=AliHLTPluginBase::GetInstance();
   gHLT->SetGlobalLoggingLevel(0x4); 
   /*  enum AliHLTComponentLogSeverity {       
       kHLTLogNone      = 0,

@@ -17,7 +17,7 @@
 // $Id: $
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include "AliHLTReconstructorBase.h"
+#include "AliHLTPluginBase.h"
 #include "AliHLTConfiguration.h"
 #include "AliReconstruction.h"
 #include <iostream>
@@ -54,7 +54,7 @@ void HLToutputTodHLTRootObjects(const char* dataSource = "./", bool dumpBinary =
 {
 	// setup of the HLT system
 	gSystem->Load("libHLTrec.so");
-	AliHLTSystem* sys = AliHLTReconstructorBase::GetInstance();
+	AliHLTSystem* sys = AliHLTPluginBase::GetInstance();
 	if (sys == NULL)
 	{
 		cerr << "FATAL ERROR: Cannot get HLT system instance." << endl;

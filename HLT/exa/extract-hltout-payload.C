@@ -32,8 +32,7 @@ void extract_hltout_payload(const char* input, const char* selection="", int max
   /////////////////////////////////////////////////////////////////////////
   //
   // setup of the HLT system
-  gSystem->Load("libHLTrec");
-  AliHLTSystem* pHLT=AliHLTReconstructorBase::GetInstance();
+  AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
   if (!pHLT) {
     cerr << "fatal error: can not get HLT instance" << endl;
   }

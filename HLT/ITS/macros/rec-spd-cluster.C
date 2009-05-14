@@ -18,8 +18,7 @@ void rec_spd_cluster(const char* input="./", char* opt="")
   //
   // init the HLT system in order to define the analysis chain below
   //
-  gSystem->Load("libHLTrec.so");
-  AliHLTSystem* gHLT=AliHLTReconstructorBase::GetInstance();
+  AliHLTSystem* gHLT=AliHLTPluginBase::GetInstance();
  
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //

@@ -17,8 +17,7 @@ void bench_externaltrackparam_sequence(int events=100)
   //
   // init the HLT system in order to define the analysis chain below
   //
-  gSystem->Load("libHLTrec.so");
-  AliHLTSystem* gHLT=AliHLTReconstructorBase::GetInstance();
+  AliHLTSystem* gHLT=AliHLTPluginBase::GetInstance();
   gHLT->SetGlobalLoggingLevel(0x7c);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////

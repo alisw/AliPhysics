@@ -21,7 +21,7 @@
 
 #include "AliHLTDataTypes.h"
 #include "AliRawReader.h"      // RAW, base class
-#include "AliHLTReconstructorBase.h"
+#include "AliHLTPluginBase.h"
 #include "TString.h"
 #include <vector>
 
@@ -116,7 +116,7 @@ class AliHLTOUTHandler;
  *
  * @ingroup alihlt_aliroot_reconstruction
  */
-class AliRawReaderHLT : public AliRawReader, public AliHLTReconstructorBase {
+class AliRawReaderHLT : public AliRawReader, public AliHLTPluginBase {
  public:
   /** constructor */
   AliRawReaderHLT(AliRawReader* pParentReader, const char* options=NULL);

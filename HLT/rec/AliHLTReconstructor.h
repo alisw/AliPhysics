@@ -13,7 +13,7 @@
 */
 
 #include "AliReconstructor.h"
-#include "AliHLTReconstructorBase.h"
+#include "AliHLTPluginBase.h"
 
 class AliHLTSystem;
 class AliRawReader;
@@ -190,7 +190,7 @@ class AliHLTEsdManager;
  * @ingroup alihlt_aliroot_reconstruction
  * @section sec_alihltreconstructor_members Class members
  */
-class AliHLTReconstructor: public AliReconstructor, public AliHLTReconstructorBase {
+class AliHLTReconstructor: public AliReconstructor, public AliHLTPluginBase {
 public:
   /** standard constructor */
   AliHLTReconstructor();
