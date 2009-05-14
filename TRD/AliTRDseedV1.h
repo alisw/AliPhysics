@@ -95,7 +95,7 @@ public:
   inline Float_t   GetChi2Phi() const;
   void      GetCovAt(Double_t x, Double_t *cov) const;
   void      GetCovXY(Double_t *cov) const { memcpy(cov, &fCov[0], 3*sizeof(Double_t));}
-  void      GetCovRef(Double_t *cov) const { memcpy(cov, &fRefCov, 3*sizeof(Double_t));}
+  void      GetCovRef(Double_t *cov) const { memcpy(cov, &fRefCov, 7*sizeof(Double_t));}
   static Double_t GetCovSqrt(Double_t *c, Double_t *d);
   static Double_t GetCovInv(Double_t *c, Double_t *d);
   Float_t   GetdX() const            { return fdX;}
@@ -110,7 +110,7 @@ public:
   AliTRDcluster*  GetClusters(Int_t i) const               { return i<0 || i>=kNclusters ? 0x0 : fClusters[i];}
   Int_t     GetIndexes(Int_t i) const{ return i<0 || i>=kNclusters ? -1 : fIndexes[i];}
   Int_t     GetLabels(Int_t i) const { return fLabels[i];}  
-  Float_t   GetMomentum() const      { return fPt*TMath::Sqrt(1.+fZref[1]*fZref[1]);}
+  inline Float_t GetMomentum(Float_t *err = 0x0) const;
   Int_t     GetN() const             { return (Int_t)fN&0x1f;}
   Int_t     GetN2() const            { return GetN();}
   Int_t     GetNUsed() const         { return Int_t((fN>>5)&0x1f);}
@@ -152,7 +152,7 @@ public:
 
   void      SetC(Float_t c)         { fC = c;}
   void      SetChi2(Float_t chi2)   { fChi2 = chi2;}
-  void      SetCovRef(const Double_t *cov) { memcpy(&fRefCov[0], cov, 3*sizeof(Double_t));}
+  inline void SetCovRef(const Double_t *cov);
   void      SetIndexes(Int_t i, Int_t idx) { fIndexes[i]  = idx; }
   void      SetLabels(Int_t *lbls)   { memcpy(fLabels, lbls, 3*sizeof(Int_t)); }
   void      SetKink(Bool_t k)        { SetBit(kKink, k);}
@@ -170,7 +170,7 @@ public:
   void      SetYref(Int_t i, Float_t y) { fYref[i]     = y;}
   void      SetZref(Int_t i, Float_t z) { fZref[i]     = z;}
 //   void      SetUsabilityMap(Long_t um)  { fUsable = um; }
-  void      UpDate(const AliTRDtrackV1* trk);
+  void      Update(const AliTRDtrackV1* trk);
   void      UpdateUsed();
   void      UseClusters();
 
@@ -200,7 +200,7 @@ private:
   Float_t          fZref[2];                //  Reference z
   Float_t          fYfit[2];                //  Y fit position +derivation
   Float_t          fZfit[2];                //  Z fit position
-  Float_t          fPt;                     //  Momentum estimate @ tracklet [GeV/c]
+  Float_t          fPt;                     //  Pt estimate @ tracklet [GeV/c]
   Float_t          fdX;                     // length of time bin
   Float_t          fX0;                     // anode wire position
   Float_t          fX;                      // radial position of the tracklet
@@ -213,10 +213,10 @@ private:
   Float_t          fdEdx[kNslices];         // dE/dx measurements for tracklet
   Float_t          fProb[AliPID::kSPECIES]; //  PID probabilities
   Int_t            fLabels[3];              // most frequent MC labels and total number of different labels
-  Double_t         fRefCov[3];              // covariance matrix of the track in the yz plane
+  Double_t         fRefCov[7];              // covariance matrix of the track in the yz plane + the rest of the diagonal elements
   Double_t         fCov[3];                 // covariance matrix of the tracklet in the xy plane
 
-  ClassDef(AliTRDseedV1, 6)                 // The offline TRD tracklet 
+  ClassDef(AliTRDseedV1, 7)                 // The offline TRD tracklet 
 };
 
 //____________________________________________________________
@@ -245,6 +245,18 @@ inline Float_t AliTRDseedV1::GetChi2Phi() const
   Double_t s2 = fRefCov[2]+cov[2];
   return s2 > 0. ? dphi/s2 : 0.; 
 }
+
+//____________________________________________________________
+inline Float_t AliTRDseedV1::GetMomentum(Float_t *err) const      
+{ 
+  Double_t tgl2 = fZref[1]*fZref[1];
+  if(err){
+    Double_t s2 = tgl2*fRefCov[4]/fPt/(1.+tgl2)+2.*fZref[1]*fRefCov[5]/fPt+(1.+tgl2)*fRefCov[6];
+    (*err) = TMath::Sqrt(s2);
+  }
+  return fPt*TMath::Sqrt(1.+fZref[1]*fZref[1]);
+}
+
 
 //____________________________________________________________
 inline Double_t AliTRDseedV1::GetPID(Int_t is) const
@@ -316,6 +328,24 @@ inline void AliTRDseedV1::ResetClusterIter(Bool_t forward)
     fClusterIdx=kNclusters;
   }
 }
+
+//____________________________________________________________
+inline void AliTRDseedV1::SetCovRef(const Double_t *cov)
+{ 
+// Copy some "important" covariance matrix elements
+//  var(y)
+// cov(y,z)  var(z)
+//                  var(snp)
+//                           var(tgl)
+//                        cov(tgl, 1/pt)  var(1/pt)
+
+  memcpy(&fRefCov[0], cov, 3*sizeof(Double_t)); // yz full covariance
+  fRefCov[3] = cov[ 5];  // snp variance 
+  fRefCov[4] = cov[ 9];  // tgl variance
+  fRefCov[5] = cov[13];  // cov(tgl, 1/pt)
+  fRefCov[6] = cov[14];  // 1/pt variance
+}
+
 
 //____________________________________________________________
 inline void AliTRDseedV1::SetN(Int_t n)

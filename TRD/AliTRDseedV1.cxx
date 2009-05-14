@@ -102,7 +102,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec]  = -1.;
   fLabels[0]=-1; fLabels[1]=-1; // most freq MC labels
   fLabels[2]=0;  // number of different labels for tracklet
-  memset(fRefCov, 0, 3*sizeof(Double_t));
+  memset(fRefCov, 0, 7*sizeof(Double_t));
   // covariance matrix [diagonal]
   // default sy = 200um and sz = 2.3 cm 
   fCov[0] = 4.e-4; fCov[1] = 0.; fCov[2] = 5.3; 
@@ -221,7 +221,7 @@ void AliTRDseedV1::Copy(TObject &ref) const
   memcpy(target.fdEdx, fdEdx, kNslices*sizeof(Float_t)); 
   memcpy(target.fProb, fProb, AliPID::kSPECIES*sizeof(Float_t)); 
   memcpy(target.fLabels, fLabels, 3*sizeof(Int_t)); 
-  memcpy(target.fRefCov, fRefCov, 3*sizeof(Double_t)); 
+  memcpy(target.fRefCov, fRefCov, 7*sizeof(Double_t)); 
   memcpy(target.fCov, fCov, 3*sizeof(Double_t)); 
   
   TObject::Copy(ref);
@@ -247,7 +247,7 @@ Bool_t AliTRDseedV1::Init(AliTRDtrackV1 *track)
 
   Double_t y, z; 
   if(!track->GetProlongation(fX0, y, z)) return kFALSE;
-  UpDate(track);
+  Update(track);
   return kTRUE;
 }
 
@@ -279,17 +279,16 @@ void AliTRDseedV1::Reset()
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fProb[ispec]  = -1.;
   fLabels[0]=-1; fLabels[1]=-1; // most freq MC labels
   fLabels[2]=0;  // number of different labels for tracklet
-  memset(fRefCov, 0, 3*sizeof(Double_t));
+  memset(fRefCov, 0, 7*sizeof(Double_t));
   // covariance matrix [diagonal]
   // default sy = 200um and sz = 2.3 cm 
   fCov[0] = 4.e-4; fCov[1] = 0.; fCov[2] = 5.3; 
 }
 
 //____________________________________________________________________
-void AliTRDseedV1::UpDate(const AliTRDtrackV1 *trk)
+void AliTRDseedV1::Update(const AliTRDtrackV1 *trk)
 { 
   // update tracklet reference position from the TRD track
-  // Funny name to avoid the clash with the function AliTRDseed::Update() (has to be made obselete)
 
   Double_t fSnp = trk->GetSnp();
   Double_t fTgl = trk->GetTgl();
@@ -999,19 +998,22 @@ void AliTRDseedV1::Bootstrap(const AliTRDReconstructor *rec)
 //____________________________________________________________________
 Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
 {
-  //
-  // Linear fit of the tracklet
-  //
-  // Parameters :
-  //
-  // Output :
-  //  True if successful
-  //
-  // Detailed description
-  // 2. Check if tracklet crosses pad row boundary
-  // 1. Calculate residuals in the y (r-phi) direction
-  // 3. Do a Least Square Fit to the data
-  //
+//
+// Linear fit of the clusters attached to the tracklet
+//
+// Parameters :
+//   - tilt : switch for tilt pad correction of cluster y position based on 
+//            the z, dzdx info from outside [default false].
+//   - zcorr : switch for using z information to correct for anisochronity 
+//            and a finner error parametrization estimation [default false]  
+// Output :
+//  True if successful
+//
+// Detailed description
+//
+//            Fit in the xy plane
+// 
+//
 
   if(!IsCalibrated()) Calibrate();
 
@@ -1170,6 +1172,45 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
   }
   fS2Y = fCov[0] +2.*fX*fCov[1] + fX*fX*fCov[2];
   return kTRUE;
+//   // determine z offset of the fit
+//   Float_t zslope = 0.;
+//   Int_t nchanges = 0, nCross = 0;
+//   if(nz==2){ // tracklet is crossing pad row
+//     // Find the break time allowing one chage on pad-rows
+//     // with maximal number of accepted clusters
+//     Int_t padRef = zRow[0];
+//     for (Int_t ic=1; ic<fN; ic++) {
+//       if(zRow[ic] == padRef) continue;
+//       
+//       // debug
+//       if(zRow[ic-1] == zRow[ic]){
+//         printf("ERROR in pad row change!!!\n");
+//       }
+//     
+//       // evaluate parameters of the crossing point
+//       Float_t sx = (xc[ic-1] - xc[ic])*convert;
+//       fCross[0] = .5 * (xc[ic-1] + xc[ic]);
+//       fCross[2] = .5 * (zc[ic-1] + zc[ic]);
+//       fCross[3] = TMath::Max(dzdx * sx, .01);
+//       zslope    = zc[ic-1] > zc[ic] ? 1. : -1.;
+//       padRef    = zRow[ic];
+//       nCross    = ic;
+//       nchanges++;
+//     }
+//   }
+// 
+//   // condition on nCross and reset nchanges TODO
+// 
+//   if(nchanges==1){
+//     if(dzdx * zslope < 0.){
+//       AliInfo("Tracklet-Track mismatch in dzdx. TODO.");
+//     }
+// 
+// 
+//     //zc[nc] = fitterZ.GetFunctionParameter(0); 
+//     fCross[1] = fYfit[0] - fCross[0] * fYfit[1];
+//     fCross[0] = fX0 - fCross[0];
+//   }
 }
 
 
@@ -1440,7 +1481,7 @@ void AliTRDseedV1::Print(Option_t *o) const
   GetCovAt(x, cov);
   AliInfo("    |  x[cm]  |      y[cm]       |      z[cm]      |  dydx |  dzdx |");
   AliInfo(Form("Fit | %7.2f | %7.2f+-%7.2f | %7.2f+-%7.2f| %5.2f | ----- |", x, GetY(), TMath::Sqrt(cov[0]), GetZ(), TMath::Sqrt(cov[2]), fYfit[1]));
-  AliInfo(Form("Ref | %7.2f | %7.2f+-%7.2f | %7.2f+-%7.2f| %5.2f | %5.2f |", x, fYref[0]-fX*fYref[1], TMath::Sqrt(fRefCov[2]),  fZref[0]-fX*fYref[1], TMath::Sqrt(fRefCov[2]), fYref[1], fZref[1]))
+  AliInfo(Form("Ref | %7.2f | %7.2f+-%7.2f | %7.2f+-%7.2f| %5.2f | %5.2f |", x, fYref[0]-fX*fYref[1], TMath::Sqrt(fRefCov[0]), fZref[0]-fX*fYref[1], TMath::Sqrt(fRefCov[2]), fYref[1], fZref[1]))
 
 
   if(strcmp(o, "a")!=0) return;

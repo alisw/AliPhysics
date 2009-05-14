@@ -860,7 +860,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   
 
     // load tracklet to the tracker
-    ptrTracklet->UpDate(&t);
+    ptrTracklet->Update(&t);
     ptrTracklet = SetTracklet(ptrTracklet);
     t.SetTracklet(ptrTracklet, fTracklets->GetEntriesFast()-1);
     n += ptrTracklet->GetN();
