@@ -163,7 +163,7 @@ Bool_t AliMUONTrackReconstructorK::MakeTrackCandidates(AliMUONVClusterStore& clu
   
   // Keep only the best tracks if required
   if (!GetRecoParam()->TrackAllTracks()) RemoveDoubleTracks();
-  else if (AliMUONTrackExtrap::IsFieldON()) fRecTracksPtr->Compress();
+  else fRecTracksPtr->Compress();
   
   AliDebug(1,Form("Number of good candidates = %d",fNRecTracks));
   
