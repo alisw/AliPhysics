@@ -174,6 +174,11 @@ void AliMUONv1::UpdateInternalGeometry()
 {
 /// Update geometry after applying mis-alignment
 
+  // Load mapping
+  if ( ! AliMpCDB::LoadMpSegmentation() ) {
+    AliFatal("Could not access mapping from OCDB !");
+  }
+
   fGeometryBuilder->UpdateInternalGeometry();
 }
 
