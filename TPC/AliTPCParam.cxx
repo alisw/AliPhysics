@@ -656,7 +656,10 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
     const char *path = pne->GetTitle();
     if (!gGeoManager->cd(path)) return kFALSE;
     TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
- 
+    // Since GEANT4 does not allow reflections, in this case the reflection
+    // component if the matrix is embedded by TGeo inside TGeoScaledShape
+    if (gGeoManager->GetCurrentVolume()->GetShape()->IsReflected()) 
+       m->ReflectZ(kFALSE, kTRUE);
     //
     TGeoRotation mchange; 
     mchange.RotateY(90); mchange.RotateX(90);
