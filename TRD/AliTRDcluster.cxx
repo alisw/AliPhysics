@@ -513,7 +513,7 @@ Float_t AliTRDcluster::GetYloc(Double_t y0, Double_t s2, Double_t W, Double_t *c
   if(y1) (*y1)*=W;
   if(y2) (*y2)*=W;
 
-  return y0+fCenter*W +IsRPhiMethod(kLUT)?GetYcorr(AliTRDgeometry::GetLayer(fDetector), fCenter):0.;
+  return y0+fCenter*W+(IsRPhiMethod(kLUT)?GetYcorr(AliTRDgeometry::GetLayer(fDetector), fCenter):0.);
 }
 
 //_____________________________________________________________________________
