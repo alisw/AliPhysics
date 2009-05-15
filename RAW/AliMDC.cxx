@@ -51,7 +51,6 @@
 #include <TStopwatch.h>
 #include <TPluginManager.h>
 #include <TBufferFile.h>
-#include <TProcessID.h>
 
 #include <sys/uio.h>
 #ifdef USE_EB
@@ -246,8 +245,6 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 // The return value is the number of written bytes or an error code
   const Long64_t kFileSizeErrorLevel   = 19000000000LL;
 
-  Int_t objectNumber = TProcessID::GetObjectCount();
-
   Long64_t currentFileSize = GetTotalSize();
   //  AliDebug(1,Form("current file size is %lld bytes",currentFileSize));
   if(currentFileSize > kFileSizeErrorLevel) {
@@ -400,8 +397,6 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 
   // Store raw event in tree
   Int_t nBytes = fRawDB->Fill();
-
-  TProcessID::SetObjectCount(objectNumber);
 
   // Fill the event tag object
   fEventTag->SetHeader(header);
