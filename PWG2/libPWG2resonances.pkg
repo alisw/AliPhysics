@@ -1,29 +1,28 @@
 #-*- Mode: Makefile -*-
 
-SRCS= RESONANCES/AliRsnMCInfo.cxx \
-      RESONANCES/AliRsnDaughter.cxx \
+SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnPairParticle.cxx \
       RESONANCES/AliRsnCut.cxx \
+      RESONANCES/AliRsnCutStd.cxx \
+      RESONANCES/AliRsnCutBetheBloch.cxx \
       RESONANCES/AliRsnCutSet.cxx \
       RESONANCES/AliRsnCutMgr.cxx \
       RESONANCES/AliRsnExpression.cxx \
-      RESONANCES/AliRsnPID.cxx \
       RESONANCES/AliRsnPIDIndex.cxx \
       RESONANCES/AliRsnPIDDefESD.cxx \
       RESONANCES/AliRsnEvent.cxx \
-      RESONANCES/AliRsnEventBuffer.cxx \
-      RESONANCES/AliRsnReader.cxx \
-      RESONANCES/AliRsnReaderTask.cxx \
-      RESONANCES/AliRsnReaderTaskSE.cxx \
       RESONANCES/AliRsnPairDef.cxx \
       RESONANCES/AliRsnHistoDef.cxx \
       RESONANCES/AliRsnFunction.cxx \
       RESONANCES/AliRsnPair.cxx \
-      RESONANCES/AliRsnPairMgr.cxx \
-      RESONANCES/AliRsnAnalysisTaskSEBase.cxx \
-      RESONANCES/AliRsnAnalysisTaskBase.cxx \
+      RESONANCES/AliRsnVATProcessInfo.cxx \
+      RESONANCES/AliRsnVAnalysisTaskSE.cxx \
+      RESONANCES/AliRsnVAnalysisTaskME.cxx \
+      RESONANCES/AliRsnVManager.cxx \
+      RESONANCES/AliRsnPairManager.cxx \
+      RESONANCES/AliRsnAnalysisManager.cxx \
       RESONANCES/AliRsnAnalysisSE.cxx \
-
+      RESONANCES/AliRsnAnalysisME.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 
