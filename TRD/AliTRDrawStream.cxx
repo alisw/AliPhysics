@@ -89,7 +89,7 @@ q*                                                                        *
 #define HC_NTIMEBINS(w) GET_VALUE_AT(w,0x3f,26)
 #define HC_BUNCH_CROSS_COUNTER(w) GET_VALUE_AT(w,0xffff,10)
 #define HC_PRETRIGGER_COUNTER(w) GET_VALUE_AT(w,0xf,6)
-#define HC_PRETRIGGER_PHASE(w) GET_VALUE_AT(w,0xf,6)
+#define HC_PRETRIGGER_PHASE(w) GET_VALUE_AT(w,0xf,2)
 
 // MCM word and ADC mask
 #define MCM_HEADER_MASK_ERR(w) ( ((w) & (0xf)) == (0xc) ? 0 : 1) // 0 if OK!!!
