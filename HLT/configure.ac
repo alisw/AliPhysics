@@ -339,6 +339,10 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING(AliRunLoader::Instance)
   AC_MSG_RESULT([$have_alirunloader30859])
 
+  have_aliqav1=no
+  AC_CHECK_HEADER([AliQAv1.h], [have_aliqav1=yes], [])
+  AM_CONDITIONAL(EN_HLT_QA, test x$have_aliqav1 = xyes)
+
   dnl
   dnl required header files and libraries for modules
   dnl

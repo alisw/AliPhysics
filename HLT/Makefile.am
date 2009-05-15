@@ -6,8 +6,7 @@ if HAVE_ALIROOT
 ALIROOT_DEP=sim \
 	    rec \
 	    shuttle \
-	    pendolino \
-	    QA
+	    pendolino
 endif
 
 if EN_HLT_SAMPLE
@@ -62,6 +61,9 @@ if EN_HLT_JET
 JET_DIR=JET
 endif
 
+if EN_HLT_QA
+QA_DIR=QA
+endif
 
 SUBDIRS 		= BASE \
 			  $(ALIROOT_DEP) \
@@ -77,10 +79,9 @@ SUBDIRS 		= BASE \
                           $(ITS_DIR) \
                           $(EMCAL_DIR) \
                           $(GLOBAL_DIR) \
-			  $(JET_DIR)
+			  $(JET_DIR) \
+			  $(QA_DIR) \
 			  doc
-
-#$(JET_DIR) 
 
 EXTRA_DIST		= libHLTbase.pkg \
 			  libHLTinterface.pkg \
@@ -88,6 +89,7 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libHLTrec.pkg \
 			  libHLTshuttle.pkg \
 			  libHLTpendolino.pkg \
+			  libHLTqadm.pkg \
 			  libAliHLTHOMER.pkg \
 			  libAliHLTUtil.pkg \
 			  libAliHLTSample.pkg \
