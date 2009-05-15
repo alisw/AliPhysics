@@ -1067,7 +1067,7 @@ void AliEMCALTracker::UnloadClusters()
 //
 AliEMCALTracker::AliEMCALMatchCluster::AliEMCALMatchCluster(Int_t index, AliEMCALRecPoint *recPoint)
   : fIndex(index),
-    fLabel(recPoint->GetPrimaryIndex()),
+    fLabel(recPoint->GetPrimaryIndex()), //wrong!  fixed below
     fX(0.),
     fY(0.),
     fZ(0.)
@@ -1082,6 +1082,17 @@ AliEMCALTracker::AliEMCALMatchCluster::AliEMCALMatchCluster(Int_t index, AliEMCA
 	fX = clpos.X();
 	fY = clpos.Y();
 	fZ = clpos.Z();
+
+	//AliEMCALRecPoint stores the track labels in the parents
+	//list, sorted according to the fractional contribution to the
+	//RecPoint.  The zeroth parent gave the highest contribution
+	Int_t multparent = 0;
+        Int_t *parents = recPoint->GetParents(multparent);
+        if(multparent > 0)
+          fLabel = parents[0];
+        else
+          fLabel = -1;
+
 }
 //
 //------------------------------------------------------------------------------
