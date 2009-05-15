@@ -63,6 +63,7 @@
 #include <TBox.h>
 #include <TProfile.h>
 #include <TGraphErrors.h>
+#include <TGraphAsymmErrors.h>
 #include <TMath.h>
 #include <TMatrixT.h>
 #include <TVectorT.h>
@@ -93,12 +94,15 @@
 
 ClassImp(AliTRDresolution)
 UChar_t AliTRDresolution::fNElements[kNhistos] = {
-  2, 5, 5,
+  2, 2, 5, 5,
   2, 5, 12, 2, 11
 };
-Char_t *AliTRDresolution::fAxTitle[44][3] = {
-  // ESD
-  {"tg(#phi)", "#mu_{y}^{cl} [#mum]", "#sigma_{y}^{cl} [#mum]"}
+Char_t *AliTRDresolution::fAxTitle[46][3] = {
+  // Charge
+  {"x [cm]", "I_{mpv}", "x/x_{0}"}
+ ,{"x/x_{0}", "#delta I/I_{mpv}", "x[cm]"}
+  // Clusters to Kalman
+ ,{"tg(#phi)", "#mu_{y}^{cl} [#mum]", "#sigma_{y}^{cl} [#mum]"}
  ,{"tg(#phi)", "PULL: #mu_{y}^{cl}", "PULL: #sigma_{y}^{cl}"}
   // TRD tracklet to Kalman fit
  ,{"tg(#phi)", "#mu_{y}^{trklt} [#mum]", "#sigma_{y}^{trklt} [#mum]"}
@@ -225,6 +229,47 @@ void AliTRDresolution::Exec(Option_t *opt)
   PostData(3, fMCcl);
   PostData(4, fMCtrklt);
 }
+
+//________________________________________________________
+TH1* AliTRDresolution::PlotCharge(const AliTRDtrackV1 *track)
+{
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
+  }
+  TObjArray *arr = 0x0;
+  if(!(arr = ((TObjArray*)fContainer->At(kCharge)))){
+    AliWarning("No output container defined.");
+    return 0x0;
+  }
+  TH3S* h = 0x0;
+
+  AliTRDseedV1 *fTracklet = 0x0;  
+  AliTRDcluster *c = 0x0;
+  for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
+    if(!(fTracklet = fTrack->GetTracklet(ily))) continue;
+    if(!fTracklet->IsOK()) continue;
+    Float_t x0 = fTracklet->GetX0();
+    Float_t dq, dl;
+    for(Int_t itb=AliTRDseedV1::kNtb; itb--;){
+      if(!(c = fTracklet->GetClusters(itb))){ 
+        if(!(c = fTracklet->GetClusters(AliTRDseedV1::kNtb+itb))) continue;
+      }
+      dq = fTracklet->GetdQdl(itb, &dl);
+      dl /= 0.15; // dl/dl0, dl0 = 1.5 mm for nominal vd
+      (h = (TH3S*)arr->At(0))->Fill(dl, x0-c->GetX(), dq);
+    }
+
+//     if(!HasMCdata()) continue;
+//     UChar_t s;
+//     Float_t pt0, y0, z0, dydx0, dzdx0;
+//     if(!fMC->GetDirections(x0, y0, z0, dydx0, dzdx0, pt0, s)) continue;
+
+  }
+  return h;
+}
+
 
 //________________________________________________________
 TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
@@ -368,18 +413,7 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
 //  - the (y, z, snp, tgl, pt) of the MC track reference
 // 
 // Additionally the momentum resolution/pulls are calculated for usage in the 
-// PID calculation. The estimated variance of the momentum is given by:
-// BEGIN_LATEX
-// #sigma_{p}^{2} = (#frac{dp}{dp_{t}})^{2} #sigma_{p_{t}}^{2}+(#frac{dp}{dtgl})^{2} #sigma_{tgl}^{2}+#frac{dp}{dp_{t}}#frac{dp}{dtgl} cov(tgl,p_{t})
-// END_LATEX
-// since
-// BEGIN_LATEX
-// p=p_{t} #sqrt{1+tgl^{2}}
-// END_LATEX
-// BEGIN_LATEX
-// #sigma_{p}^{2} = #frac{p_{t}^{2}tgl^{2}}{1+tgl^{2}}#sigma_{tgl}^{2}+2p_{t}^{2}tgl^{2}cov(tgl,p_{t})+(1+tgl^{2})#sigma_{p_{t}}^{2}
-// END_LATEX
-//
+// PID calculation. 
 
   if(track) fTrack = track;
   if(!fTrack){
@@ -494,13 +528,11 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
     ((TH3S*)arr->At(8))->Fill(pt0, 1.-PARMC[4]/PAR[4], is);
     ((TH3S*)arr->At(9))->Fill(PARMC[4], (PARMC[4]-PAR[4])/TMath::Sqrt(COV(4,4)), is);
 
-    Double_t p0 = TMath::Sqrt(1.+ dzdx0*dzdx0)*pt0,
-              p = TMath::Sqrt(1.+ PAR[3]*PAR[3])/PAR[4];
+    Float_t p0 = TMath::Sqrt(1.+ dzdx0*dzdx0)*pt0, p, sp;
+    p = tracklet->GetMomentum(&sp);
     //printf("p[%f] dp[%f] s[%d]\n", p0, 1.-p/p0, is);
     ((TH3S*)arr->At(10))->Fill(p0, 1.-p/p0, is);
-    Double_t tgl2 = PAR[3]*PAR[3];
-    Double_t s2 = tgl2*COV(3,3)/PAR[4]/(1.+tgl2)+2.*PAR[3]*COV(3,4)/PAR[4]+(1.+tgl2)*COV(4,4);
-    ((TH3S*)arr->At(11))->Fill(p0, (p0-p)/TMath::Sqrt(s2), is);
+    ((TH3S*)arr->At(11))->Fill(p0, (p0-p)/sp, is);
     break;
   }
 
@@ -752,6 +784,13 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
   }
   TList *l = 0x0; TVirtualPad *pad=0x0;
   switch(ifig){
+  case kCharge:
+    gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
+    ((TVirtualPad*)l->At(0))->cd();
+    ((TGraphAsymmErrors*)((TObjArray*)fGraphM->At(kCharge))->At(0))->Draw("apl");
+    ((TVirtualPad*)l->At(1))->cd();
+    ((TGraphErrors*)((TObjArray*)fGraphS->At(kCharge))->At(0))->Draw("apl");
+    break;
   case kCluster:
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0] = -.3; xy[1] = -200.; xy[2] = .3; xy[3] = 1000.;
@@ -770,7 +809,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphPlot(&xy[0], kTracklet, 1)) break;
     return kTRUE;
-  case 2: // kTracklet z
+  case 3: // kTracklet z
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0] = -1.; xy[1] = -1000.; xy[2] = 1.; xy[3] = 4000.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -779,11 +818,11 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphPlot(&xy[0], kTracklet, 3)) break;
     return kTRUE;
-  case 3: // kTracklet phi
+  case 4: // kTracklet phi
     xy[0] = -.3; xy[1] = -5.; xy[2] = .3; xy[3] = 50.;
     if(GetGraphPlot(&xy[0], kTracklet, 4)) return kTRUE;
     break;
-  case 4: // kTrackTPC y
+  case 5: // kTrackTPC y
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0] = -.3; xy[1] = -500.; xy[2] = .3; xy[3] = 1500.;
     pad = ((TVirtualPad*)l->At(0)); pad->cd();
@@ -794,7 +833,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
     if(!GetGraphPlot(&xy[0], kTrackTPC, 1)) break;
     return kTRUE;
-  case 5: // kTrackTPC z
+  case 6: // kTrackTPC z
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0] = -1.; xy[1] = -1000.; xy[2] = 1.; xy[3] = 4000.;
     pad = ((TVirtualPad*)l->At(0)); pad->cd();
@@ -805,11 +844,11 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
     if(!GetGraphPlot(&xy[0], kTrackTPC, 3)) break;
     return kTRUE;
-  case 6: // kTrackTPC phi
+  case 7: // kTrackTPC phi
     xy[0] = -.3; xy[1] = -5.; xy[2] = .3; xy[3] = 50.;
     if(GetGraphPlot(&xy[0], kTrackTPC, 4)) return kTRUE;
     break;
-  case 7: // kMCcluster
+  case 8: // kMCcluster
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3]=650.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -818,7 +857,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphPlot(&xy[0], kMCcluster, 1)) break;
     return kTRUE;
-  case 8: //kMCtracklet [y]
+  case 9: //kMCtracklet [y]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =250.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -827,7 +866,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphPlot(&xy[0], kMCtracklet, 1)) break;
     return kTRUE;
-  case 9: //kMCtracklet [z]
+  case 10: //kMCtracklet [z]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-1.; xy[1]=-100.; xy[2]=1.; xy[3] =2500.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -836,11 +875,11 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphPlot(&xy[0], kMCtracklet, 3)) break;
     return kTRUE;
-  case 10: //kMCtracklet [phi]
+  case 11: //kMCtracklet [phi]
     xy[0]=-.3; xy[1]=-3.; xy[2]=.3; xy[3] =25.;
     if(!GetGraphPlot(&xy[0], kMCtracklet, 4)) break;
     return kTRUE;
-  case 11: //kMCtrack [y]
+  case 12: //kMCtrack [y]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =200.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -849,7 +888,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphPlot(&xy[0], kMCtrack, 1)) break;
     return kTRUE;
-  case 12: //kMCtrack [z]
+  case 13: //kMCtrack [z]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-1.; xy[1]=-500.; xy[2]=1.; xy[3] =2000.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -858,7 +897,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphPlot(&xy[0], kMCtrack, 3)) break;
     return kTRUE;
-  case 13: //kMCtrack [phi/snp]
+  case 14: //kMCtrack [phi/snp]
     //gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.2; xy[1]=-2.; xy[2]=.2; xy[3] =5.;
     //((TVirtualPad*)l->At(0))->cd();
@@ -867,7 +906,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
 //     ((TVirtualPad*)l->At(1))->cd();
 //     if(!GetGraphPlot(&xy[0], kMCtrack, 3)) break;
     return kTRUE;
-  case 14: //kMCtrack [theta/tgl]
+  case 15: //kMCtrack [theta/tgl]
     //gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-1.; xy[1]=-50.; xy[2]=1.; xy[3] =70.;
     //((TVirtualPad*)l->At(0))->cd();
@@ -876,7 +915,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
 //     ((TVirtualPad*)l->At(1))->cd();
 //     if(!GetGraphPlot(&xy[0], kMCtrack, 3)) break;
     return kTRUE;
-  case 15: //kMCtrack [pt]
+  case 16: //kMCtrack [pt]
     xy[0] = 0.; xy[1] = -5.; xy[2] = 12.; xy[3] = 7.;
     gPad->Divide(2, 3, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
@@ -885,7 +924,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
       if(!GetGraphTrack(&xy[0], 8, il)) break;
     }
     return kTRUE;
-  case 16: //kMCtrack [p]
+  case 17: //kMCtrack [p]
     xy[0] = 0.; xy[1] = -7.5; xy[2] = 12.; xy[3] = 10.5;
     gPad->Divide(2, 3, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
@@ -894,7 +933,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
       if(!GetGraphTrack(&xy[0], 10, il)) break;
     }
     return kTRUE;
-  case 17: // kMCtrackTPC [y]
+  case 18: // kMCtrackTPC [y]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.25; xy[1]=-50.; xy[2]=.25; xy[3] =800.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -903,7 +942,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphPlot(&xy[0], kMCtrackTPC, 1)) break;
     return kTRUE;
-  case 18: // kMCtrackTPC [z]
+  case 19: // kMCtrackTPC [z]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-1.; xy[1]=-500.; xy[2]=1.; xy[3] =800.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -912,7 +951,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphPlot(&xy[0], kMCtrackTPC, 3)) break;
     return kTRUE;
-  case 19: // kMCtrackTPC [phi|snp]
+  case 20: // kMCtrackTPC [phi|snp]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.25; xy[1]=-0.5; xy[2]=.25; xy[3] =2.5;
     ((TVirtualPad*)l->At(0))->cd();
@@ -921,7 +960,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphPlot(&xy[0], kMCtrackTPC, 5)) break;
     return kTRUE;
-  case 20: // kMCtrackTPC [theta|tgl]
+  case 21: // kMCtrackTPC [theta|tgl]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-1.; xy[1]=-10.5; xy[2]=1.; xy[3] =20.5;
     ((TVirtualPad*)l->At(0))->cd();
@@ -930,7 +969,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphPlot(&xy[0], kMCtrackTPC, 7)) break;
     return kTRUE;
-  case 21: // kMCtrackTPC [pt]
+  case 22: // kMCtrackTPC [pt]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0] = 0.; xy[1] = -.8; xy[2] = 12.; xy[3] = 2.3;
     ((TVirtualPad*)l->At(0))->cd();
@@ -939,7 +978,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphTrackTPC(xy, 9)) break;
     return kTRUE;
-  case 22: // kMCtrackTPC [p]
+  case 23: // kMCtrackTPC [p]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0] = 0.; xy[1] = -.8; xy[2] = 12.; xy[3] = 2.3;
     pad = ((TVirtualPad*)l->At(0));pad->cd();
@@ -950,7 +989,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     pad->SetMargin(0.12, 0.12, 0.1, 0.04);
     if(!GetGraphTrackTPC(xy, 11)) break;
     return kTRUE;
-  case 23:  // kMCtrackHMPID [z]
+  case 24:  // kMCtrackHMPID [z]
     return kTRUE;
   }
   AliInfo(Form("Reference plot [%d] missing result", ifig));
@@ -966,21 +1005,18 @@ Bool_t AliTRDresolution::PostProcess()
     Printf("ERROR: list not available");
     return kFALSE;
   }
-  TGraphErrors *gm= 0x0, *gs= 0x0;
+  TGraph *gm= 0x0, *gs= 0x0;
   if(!fGraphS && !fGraphM){ 
     TObjArray *aM(0x0), *aS(0x0), *a(0x0);
     Int_t n = fContainer->GetEntriesFast();
     fGraphS = new TObjArray(n); fGraphS->SetOwner();
     fGraphM = new TObjArray(n); fGraphM->SetOwner();
     for(Int_t ig=0; ig<n; ig++){
-      if(fNElements[ig]>1){
-        fGraphM->AddAt(aM = new TObjArray(fNElements[ig]), ig);
-        fGraphS->AddAt(aS = new TObjArray(fNElements[ig]), ig);
-      } else {
-        aM = fGraphM;aS = fGraphS;
-      }
+      fGraphM->AddAt(aM = new TObjArray(fNElements[ig]), ig);
+      fGraphS->AddAt(aS = new TObjArray(fNElements[ig]), ig);
+
       for(Int_t ic=0; ic<fNElements[ig]; ic++){
-        if(ig==5&&(ic>=8&&ic<=12)){ // TPC momentum plot
+        if(ig==kMCtrackTPC&&(ic>=8&&ic<=12)){ // TPC momentum plot
           aS->AddAt(a = new TObjArray(AliPID::kSPECIES), ic); 
           for(Int_t is=AliPID::kSPECIES; is--;){
             a->AddAt(gs = new TGraphErrors(), is);
@@ -1002,7 +1038,7 @@ Bool_t AliTRDresolution::PostProcess()
             gm->SetNameTitle(Form("m_%d%02d%d", ig, ic, is), "");
           }
           continue;
-        } else if(ig==7&&(ic==8||ic==10)){ // TRD momentum plot
+        } else if(ig==kMCtrack&&(ic==8||ic==10)){ // TRD momentum plot
           TObjArray *aaS, *aaM;
           aS->AddAt(aaS = new TObjArray(AliTRDgeometry::kNlayer), ic); 
           aM->AddAt(aaM = new TObjArray(AliTRDgeometry::kNlayer), ic);
@@ -1031,13 +1067,13 @@ Bool_t AliTRDresolution::PostProcess()
           continue;
         }
 
-        aS->AddAt(gs = new TGraphErrors(), fNElements[ig]>1?ic:ig);
+        aS->AddAt(gs = new TGraphErrors(), ic);
         gs->SetMarkerStyle(23);
         gs->SetMarkerColor(kRed);
         gs->SetLineColor(kRed);
         gs->SetNameTitle(Form("s_%d%02d", ig, ic), "");
 
-        aM->AddAt(gm = new TGraphErrors(), fNElements[ig]>1?ic:ig);
+        aM->AddAt(gm = ig ? (TGraph*)new TGraphErrors() : (TGraph*)new TGraphAsymmErrors(), ic);
         gm->SetLineColor(kBlack);
         gm->SetMarkerStyle(7);
         gm->SetMarkerColor(kBlack);
@@ -1052,30 +1088,30 @@ Bool_t AliTRDresolution::PostProcess()
 
   // DEFINE MODELS
   // simple gauss
-  TF1 f("f1", "gaus", -.5, .5);  
-  // gauss on a constant background
-  TF1 fb("fb", "[0]*exp(-0.5*((x-[1])/[2])**2)+[3]", -.5, .5);
-  // gauss on a gauss background
-  TF1 fc("fc", "[0]*exp(-0.5*((x-[1])/[2])**2)+[3]*exp(-0.5*((x-[4])/[5])**2)", -.5, .5);
+  TF1 fg("fGauss", "gaus", -.5, .5);  
+  // Landau for charge resolution
+  TF1 fl("fLandau", "landau", 0., 1000.);  
 
   //PROCESS EXPERIMENTAL DISTRIBUTIONS
+  // Charge resolution
+  Process3DL(kCharge, 0, &fl); 
   // Clusters residuals
-  Process2D(kCluster, 0, &f, 1.e4); 
-  Process2D(kCluster, 1, &f); 
+  Process2D(kCluster, 0, &fg, 1.e4); 
+  Process2D(kCluster, 1, &fg); 
   fNRefFigures = 1;
   // Tracklet residual/pulls
-  Process2D(kTracklet, 0, &f, 1.e4); 
-  Process2D(kTracklet, 1, &f); 
-  Process2D(kTracklet, 2, &f, 1.e4); 
-  Process2D(kTracklet, 3, &f); 
-  Process2D(kTracklet, 4, &f, 1.e3); 
+  Process2D(kTracklet, 0, &fg, 1.e4); 
+  Process2D(kTracklet, 1, &fg); 
+  Process2D(kTracklet, 2, &fg, 1.e4); 
+  Process2D(kTracklet, 3, &fg); 
+  Process2D(kTracklet, 4, &fg, 1.e3); 
   fNRefFigures = 4;
   // TPC track residual/pulls
-  Process2D(kTrackTPC, 0, &f, 1.e4); 
-  Process2D(kTrackTPC, 1, &f); 
-  Process2D(kTrackTPC, 2, &f, 1.e4); 
-  Process2D(kTrackTPC, 3, &f); 
-  Process2D(kTrackTPC, 4, &f, 1.e3); 
+  Process2D(kTrackTPC, 0, &fg, 1.e4); 
+  Process2D(kTrackTPC, 1, &fg); 
+  Process2D(kTrackTPC, 2, &fg, 1.e4); 
+  Process2D(kTrackTPC, 3, &fg); 
+  Process2D(kTrackTPC, 4, &fg, 1.e3); 
   fNRefFigures = 7;
 
   if(!HasMCdata()) return kTRUE;
@@ -1084,50 +1120,50 @@ Bool_t AliTRDresolution::PostProcess()
   //PROCESS MC RESIDUAL DISTRIBUTIONS
 
   // CLUSTER Y RESOLUTION/PULLS
-  Process2D(kMCcluster, 0, &f, 1.e4);
-  Process2D(kMCcluster, 1, &f);
+  Process2D(kMCcluster, 0, &fg, 1.e4);
+  Process2D(kMCcluster, 1, &fg);
   fNRefFigures = 8;
 
   // TRACKLET RESOLUTION/PULLS
-  Process2D(kMCtracklet, 0, &f, 1.e4); // y
-  Process2D(kMCtracklet, 1, &f);       // y pulls
-  Process2D(kMCtracklet, 2, &f, 1.e4); // z
-  Process2D(kMCtracklet, 3, &f);       // z pulls
-  Process2D(kMCtracklet, 4, &f, 1.e3); // phi
+  Process2D(kMCtracklet, 0, &fg, 1.e4); // y
+  Process2D(kMCtracklet, 1, &fg);       // y pulls
+  Process2D(kMCtracklet, 2, &fg, 1.e4); // z
+  Process2D(kMCtracklet, 3, &fg);       // z pulls
+  Process2D(kMCtracklet, 4, &fg, 1.e3); // phi
   fNRefFigures = 11;
 
   // TRACK RESOLUTION/PULLS
-  Process2D(kMCtrack, 0, &f, 1.e4);   // y
-  Process2D(kMCtrack, 1, &f);         // y PULL
-  Process2D(kMCtrack, 2, &f, 1.e4);   // z
-  Process2D(kMCtrack, 3, &f);         // z PULL
-  Process2D(kMCtrack, 4, &f, 1.e3);   // phi
-  //Process(kMCtrack, 5, &f);         // snp PULL
-  Process2D(kMCtrack, 6, &f, 1.e3);   // theta
-  //Process(kMCtrack, 7, &f);         // tgl PULL
-  Process4D(kMCtrack, 8, &f, 1.e2);   // pt resolution
-  //Process4D(kMCtrack, 9, &f);         // 1/pt pulls
-  Process4D(kMCtrack, 10, &f, 1.e2);  // p resolution
+  Process2D(kMCtrack, 0, &fg, 1.e4);   // y
+  Process2D(kMCtrack, 1, &fg);         // y PULL
+  Process2D(kMCtrack, 2, &fg, 1.e4);   // z
+  Process2D(kMCtrack, 3, &fg);         // z PULL
+  Process2D(kMCtrack, 4, &fg, 1.e3);   // phi
+  //Process(kMCtrack, 5, &fg);         // snp PULL
+  Process2D(kMCtrack, 6, &fg, 1.e3);   // theta
+  //Process(kMCtrack, 7, &fg);         // tgl PULL
+  Process4D(kMCtrack, 8, &fg, 1.e2);   // pt resolution
+  //Process4D(kMCtrack, 9, &fg);         // 1/pt pulls
+  Process4D(kMCtrack, 10, &fg, 1.e2);  // p resolution
   fNRefFigures = 17;
 
   // TRACK TPC RESOLUTION/PULLS
-  Process2D(kMCtrackTPC, 0, &f, 1.e4);// y resolution
-  Process2D(kMCtrackTPC, 1, &f);      // y pulls
-  Process2D(kMCtrackTPC, 2, &f, 1.e4);// z resolution
-  Process2D(kMCtrackTPC, 3, &f);      // z pulls
-  Process2D(kMCtrackTPC, 4, &f, 1.e3);// phi resolution
-  Process2D(kMCtrackTPC, 5, &f);      // snp pulls
-  Process2D(kMCtrackTPC, 6, &f, 1.e3);// theta resolution
-  Process2D(kMCtrackTPC, 7, &f);      // tgl pulls
-  Process3D(kMCtrackTPC, 8, &f, 1.e2);// pt resolution
-  Process3D(kMCtrackTPC, 9, &f);      // 1/pt pulls
-  Process3D(kMCtrackTPC, 10, &f, 1.e2);// p resolution
-  Process3D(kMCtrackTPC, 11, &f);      // p pulls
+  Process2D(kMCtrackTPC, 0, &fg, 1.e4);// y resolution
+  Process2D(kMCtrackTPC, 1, &fg);      // y pulls
+  Process2D(kMCtrackTPC, 2, &fg, 1.e4);// z resolution
+  Process2D(kMCtrackTPC, 3, &fg);      // z pulls
+  Process2D(kMCtrackTPC, 4, &fg, 1.e3);// phi resolution
+  Process2D(kMCtrackTPC, 5, &fg);      // snp pulls
+  Process2D(kMCtrackTPC, 6, &fg, 1.e3);// theta resolution
+  Process2D(kMCtrackTPC, 7, &fg);      // tgl pulls
+  Process3D(kMCtrackTPC, 8, &fg, 1.e2);// pt resolution
+  Process3D(kMCtrackTPC, 9, &fg);      // 1/pt pulls
+  Process3D(kMCtrackTPC, 10, &fg, 1.e2);// p resolution
+  Process3D(kMCtrackTPC, 11, &fg);      // p pulls
   fNRefFigures = 23;
 
   // TRACK HMPID RESOLUTION/PULLS
-  Process2D(kMCtrackHMPID, 0, &f, 1.e4); // z towards TOF
-  Process2D(kMCtrackHMPID, 1, &f);       // z towards TOF
+  Process2D(kMCtrackHMPID, 0, &fg, 1.e4); // z towards TOF
+  Process2D(kMCtrackHMPID, 1, &fg);       // z towards TOF
   fNRefFigures = 24;
 
   return kTRUE;
@@ -1184,6 +1220,17 @@ TObjArray* AliTRDresolution::Histos()
   //fContainer->SetOwner(kTRUE);
   TH1 *h = 0x0;
   TObjArray *arr = 0x0;
+
+  // cluster to track residuals/pulls
+  fContainer->AddAt(arr = new TObjArray(fNElements[kCharge]), kCharge);
+  arr->SetName("Charge");
+  if(!(h = (TH3S*)gROOT->FindObject("hCharge"))){
+    h = new TH3S("hCharge", "Charge Resolution", 20, 1., 2., 24, 0., 3.6, 100, 0., 500.);
+    h->GetXaxis()->SetTitle("dx/dx_{0}");
+    h->GetYaxis()->SetTitle("x_{d} [cm]");
+    h->GetZaxis()->SetTitle("dq/dx [ADC/cm]");
+  } else h->Reset();
+  arr->AddAt(h, 0);
 
   // cluster to track residuals/pulls
   fContainer->AddAt(arr = new TObjArray(fNElements[kCluster]), kCluster);
@@ -1657,6 +1704,45 @@ Bool_t AliTRDresolution::Process3D(ETRDresolutionPlot plot, Int_t idx, TF1 *f, F
 }
 
 //________________________________________________________
+Bool_t AliTRDresolution::Process3DL(ETRDresolutionPlot plot, Int_t idx, TF1 *f, Float_t k)
+{
+  if(!fContainer || !fGraphS || !fGraphM) return kFALSE;
+
+  // retrive containers
+  TH3S *h3 = (TH3S*)((TObjArray*)fContainer->At(plot))->At(idx);
+  if(!h3) return kFALSE;
+
+  TGraphAsymmErrors *gm; 
+  TGraphErrors *gs;
+  if(!(gm = (TGraphAsymmErrors*)((TObjArray*)fGraphM->At(plot))->At(0))) return kFALSE;
+  if(!(gs = (TGraphErrors*)((TObjArray*)fGraphS->At(plot)))) return kFALSE;
+
+  Float_t x, r, mpv, xM, xm;
+  TAxis *ay = h3->GetYaxis();
+  for(Int_t iy=1; iy<=h3->GetNbinsY(); iy++){
+    ay->SetRange(iy, iy);
+    x = ay->GetBinCenter(iy);
+    TH2F *h2=(TH2F*)h3->Project3D("zx");
+    TAxis *ax = h2->GetXaxis();
+    for(Int_t ix=1; ix<=h2->GetNbinsX(); ix++){
+      r = ax->GetBinCenter(ix);
+      TH1D *h1 = h2->ProjectionY("py", ix, ix);
+      if(h1->Integral()<50) continue;
+      h1->Fit(f, "QN");
+
+      GetLandauMpvFwhm(f, mpv, xm, xM);
+      Int_t ip = gm->GetN();
+      gm->SetPoint(ip, x, k*mpv);
+      gm->SetPointError(ip, 0., 0., k*xm, k*xM);
+      gs->SetPoint(ip, r, k*(xM-xm)/mpv);
+      gs->SetPointError(ip, 0., 0.);
+    }
+  }
+
+  return kTRUE;
+}
+
+//________________________________________________________
 Bool_t AliTRDresolution::Process4D(ETRDresolutionPlot plot, Int_t idx, TF1 *f, Float_t k)
 {
   if(!fContainer || !fGraphS || !fGraphM) return kFALSE;
@@ -1836,6 +1922,26 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t sel)
   }
 
   return kTRUE;
+}
+
+//________________________________________________________
+void AliTRDresolution::GetLandauMpvFwhm(TF1 *f, Float_t &mpv, Float_t &xm, Float_t &xM)
+{
+  const Float_t dx = 1.;
+  mpv = f->GetParameter(1);
+  Float_t fx, max = f->Eval(mpv);
+
+  xm = mpv - dx;
+  while((fx = f->Eval(xm))>.5*max){
+    if(fx>max){ 
+      max = fx;
+      mpv = xm;
+    }
+    xm -= dx;
+  }
+
+  xM += 2*(mpv - xm);
+  while((fx = f->Eval(xM))>.5*max) xM += dx;
 }
 
 

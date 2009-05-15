@@ -100,7 +100,7 @@ public:
   static Double_t GetCovInv(Double_t *c, Double_t *d);
   Float_t   GetdX() const            { return fdX;}
   Float_t*  GetdEdx()                { return &fdEdx[0];}
-  Float_t   GetdQdl(Int_t ic) const;
+  Float_t   GetdQdl(Int_t ic, Float_t *dx=0x0) const;
   Float_t   GetdYdX() const          { return fYfit[1]; } 
   Float_t   GetdZdX() const          { return fZref[1]; }
   Int_t     GetdY() const            { return Int_t(GetY()/0.014);}
@@ -110,7 +110,7 @@ public:
   AliTRDcluster*  GetClusters(Int_t i) const               { return i<0 || i>=kNclusters ? 0x0 : fClusters[i];}
   Int_t     GetIndexes(Int_t i) const{ return i<0 || i>=kNclusters ? -1 : fIndexes[i];}
   Int_t     GetLabels(Int_t i) const { return fLabels[i];}  
-  inline Float_t GetMomentum(Float_t *err = 0x0) const;
+  Float_t   GetMomentum(Float_t *err = 0x0) const;
   Int_t     GetN() const             { return (Int_t)fN&0x1f;}
   Int_t     GetN2() const            { return GetN();}
   Int_t     GetNUsed() const         { return Int_t((fN>>5)&0x1f);}
@@ -246,16 +246,6 @@ inline Float_t AliTRDseedV1::GetChi2Phi() const
   return s2 > 0. ? dphi/s2 : 0.; 
 }
 
-//____________________________________________________________
-inline Float_t AliTRDseedV1::GetMomentum(Float_t *err) const      
-{ 
-  Double_t tgl2 = fZref[1]*fZref[1];
-  if(err){
-    Double_t s2 = tgl2*fRefCov[4]/fPt/(1.+tgl2)+2.*fZref[1]*fRefCov[5]/fPt+(1.+tgl2)*fRefCov[6];
-    (*err) = TMath::Sqrt(s2);
-  }
-  return fPt*TMath::Sqrt(1.+fZref[1]*fZref[1]);
-}
 
 
 //____________________________________________________________

@@ -57,7 +57,6 @@ public:
   TH1 *PlotPHt(const AliTRDtrackV1 *t = 0x0);
   TH1 *PlotPHx(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotChi2(const AliTRDtrackV1 *t = 0x0);
-  TH1 *PlotChi2Norm(const AliTRDtrackV1 *t = 0x0);
   TH1 *PlotChargeCluster(const AliTRDtrackV1 *t = 0x0);
   TH1 *PlotChargeTracklet(const AliTRDtrackV1 *t = 0x0);
 
@@ -70,6 +69,7 @@ private:
   AliTRDcheckDET(const AliTRDcheckDET &);
   AliTRDcheckDET& operator=(const AliTRDcheckDET &);
   void GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tracklet, AliTRDcluster *c);
+  void MakePlotChi2();
   void MakePlotNTracklets();
   void MakePlotPulseHeight();
   Bool_t MakeBarPlot(TH1 *histo, Int_t Color);

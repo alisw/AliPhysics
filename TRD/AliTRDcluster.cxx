@@ -513,7 +513,7 @@ Float_t AliTRDcluster::GetYloc(Double_t y0, Double_t s2, Double_t W, Double_t *c
   if(y1) (*y1)*=W;
   if(y2) (*y2)*=W;
 
-  return y0+fCenter*W;
+  return y0+fCenter*W +IsRPhiMethod(kLUT)?GetYcorr(AliTRDgeometry::GetLayer(fDetector), fCenter):0.;
 }
 
 //_____________________________________________________________________________
@@ -596,7 +596,6 @@ Float_t AliTRDcluster::GetDYcog(Double_t *const, Double_t *const)
 // Get COG position
 // Used for clusters with more than 3 pads - where LUT not applicable
 //
-
   Double_t sum = fSignals[1]
                 +fSignals[2]
                 +fSignals[3] 
@@ -701,8 +700,15 @@ Float_t AliTRDcluster::GetDYgauss(Double_t s2w, Double_t *const y1, Double_t *co
 // Alex Bercuci <A.Bercuci@gsi.de>
 // Theodor Rascanu <trascanu@stud.uni-frankfurt.de>
 //
-  Double_t w1  = fSignals[2]*fSignals[2];
-  Double_t w2  = fSignals[4]*fSignals[4];
+  Double_t w1 = fSignals[2]*fSignals[2];
+  Double_t w2 = fSignals[4]*fSignals[4];
+  Double_t w = w1+w2;
+  if(w<1.){
+    AliError("Missing side signals for cluster.");
+    Print("a");
+    return 0.;
+  }  
+
   //Double_t s2w = s2/W/W;
   Float_t y1r  = fSignals[2]>0 ? (-0.5 + s2w*TMath::Log(fSignals[3]/(Float_t)fSignals[2])) : 0.;
   Float_t y2r  = fSignals[4]>0 ? (0.5 + s2w*TMath::Log(fSignals[4]/(Float_t)fSignals[3])) : 0.;
@@ -710,7 +716,7 @@ Float_t AliTRDcluster::GetDYgauss(Double_t s2w, Double_t *const y1, Double_t *co
   if(y1) (*y1) = y1r;
   if(y2) (*y2) = y2r;
 
-  return fCenter      = (w1*y1r+w2*y2r)/(w1+w2);
+  return fCenter      = (w1*y1r+w2*y2r)/w;
 }
 
 

@@ -29,15 +29,16 @@ class AliTRDresolution : public AliTRDrecoTask
 {
 public:
   enum ETRDresolutionPlot {
-    kCluster          =  0 // cluster - track
-    ,kTracklet        =  1 // tracklet - track residuals/pulls
-    ,kTrackTPC        =  2 // tracklet - track residuals/pulls at lower TRD entrance 
-    ,kMCcluster       =  3 // cluster-mc resolution/pulls
-    ,kMCtracklet      =  4 // tracklet-mc resolution/pulls
-    ,kMCtrackTPC      =  5 // TPC track monitor
-    ,kMCtrackHMPID    =  6 // TOF/HMPID track monitor
-    ,kMCtrack         =  7 // TRD track monitor
-    ,kNhistos         =  8
+     kCharge          =  0 // charge resolution
+    ,kCluster         =  1 // cluster - track
+    ,kTracklet        =  2 // tracklet - track residuals/pulls
+    ,kTrackTPC        =  3 // tracklet - track residuals/pulls at lower TRD entrance 
+    ,kMCcluster       =  4 // cluster-mc resolution/pulls
+    ,kMCtracklet      =  5 // tracklet-mc resolution/pulls
+    ,kMCtrackTPC      =  6 // TPC track monitor
+    ,kMCtrackHMPID    =  7 // TOF/HMPID track monitor
+    ,kMCtrack         =  8 // TRD track monitor
+    ,kNhistos         =  9
   };
   enum ETRDresolutionSteer {
     kVerbose  = 0
@@ -56,6 +57,7 @@ public:
   Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
   Bool_t  PostProcess();
 
+  TH1*    PlotCharge(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotCluster(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTracklet(const AliTRDtrackV1 *t=0x0);
   TH1*    PlotTrackTPC(const AliTRDtrackV1 *t=0x0);
@@ -74,15 +76,17 @@ private:
   AliTRDresolution(const AliTRDresolution&);
   AliTRDresolution& operator=(const AliTRDresolution&);
   void    AdjustF1(TH1 *h, TF1 *f);
+  void    GetLandauMpvFwhm(TF1 *f, Float_t &mpv, Float_t &xm, Float_t &xM);
   Bool_t  Process(TH2* h2, TF1 *f, Float_t k, TGraphErrors **g);
   Bool_t  Process2D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
   Bool_t  Process3D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
+  Bool_t  Process3DL(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
   Bool_t  Process4D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=0x0,  Float_t scale=1.);
 
   UChar_t             fStatus;          // steer parameter of the task
   UChar_t             fIdxPlot;         //! plot counter (internal)
   static UChar_t      fNElements[kNhistos]; // number of componets per task
-  static Char_t       *fAxTitle[44][3]; // axis title for all ref histos
+  static Char_t       *fAxTitle[46][3]; // axis title for all ref histos
   AliTRDReconstructor *fReconstructor;  //! local reconstructor
   AliTRDgeometry      *fGeo;            //! TRD geometry
   TObjArray           *fGraphS;         //! result holder - sigma values

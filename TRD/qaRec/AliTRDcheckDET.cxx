@@ -2,6 +2,7 @@
 #include <TCanvas.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <TF1.h>
 #include <TGaxis.h>
 #include <TGraph.h>
 #include <TLegend.h>
@@ -205,7 +206,7 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
     if(!MakeBarPlot((TH1F*)fContainer->FindObject("hNtrksSector"), kGreen)) break;
     return kTRUE;
   case kChi2:
-    ((TH1F*)((TObjArray*)fContainer->FindObject("Chi2"))->At(0))->Draw("");
+    MakePlotChi2();
     return kTRUE;
   case kPH:
     MakePlotPulseHeight();
@@ -324,18 +325,13 @@ TObjArray *AliTRDcheckDET::Histos(){
   arr->AddAt(h, 1);
 
   // Chi2 histos
-  arr = new TObjArray(2);
-  arr->SetOwner(kTRUE); arr->SetName("Chi2");
-  fContainer->AddAt(arr, kChi2);
-  if(!(h = (TH1F *)gROOT->FindObject("hChi2")))
-    h = new TH1F("hChi2", "#Chi2", 200, 0, 20);
-  else h->Reset();
-  arr->AddAt(h, 0);
-  if(!(h = (TH1F *)gROOT->FindObject("hChi2n")))
-    h = new TH1F("hChi2n", "Norm. Chi2 (tracklets)", 50, 0, 5);
-  else h->Reset();
-  arr->AddAt(h, 1);
-
+  if(!(h = (TH2S*)gROOT->FindObject("hChi2"))){
+    h = new TH2S("hChi2", "#chi^{2} per track", AliTRDgeometry::kNlayer, .5, AliTRDgeometry::kNlayer+.5, 100, 0, 50);
+    h->SetXTitle("ndf");
+    h->SetYTitle("#chi^{2}/ndf");
+    h->SetZTitle("entries");
+  } else h->Reset();
+  fContainer->AddAt(h, kChi2);
 
   if(!(h = (TH1F *)gROOT->FindObject("hQcl"))){
     h = new TH1F("hQcl", "Q_{cluster}", 200, 0, 1200);
@@ -658,37 +654,14 @@ TH1 *AliTRDcheckDET::PlotChi2(const AliTRDtrackV1 *track){
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH1F *>(((TObjArray*)(fContainer->At(kChi2)))->At(0)))){
+  if(!(h = dynamic_cast<TH2S*>(fContainer->At(kChi2)))) {
     AliWarning("No Histogram defined.");
     return 0x0;
   }
-  h->Fill(fTrack->GetChi2());
-  return h;
-}
+  Int_t n = fTrack->GetNumberOfTracklets();
+  if(!n) return 0x0;
 
-//_______________________________________________________
-TH1 *AliTRDcheckDET::PlotChi2Norm(const AliTRDtrackV1 *track){
-  //
-  // Plot the chi2 of the track
-  //
-  if(track) fTrack = track;
-  if(!fTrack){
-    AliWarning("No Track defined.");
-    return 0x0;
-  }
-  TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH1F *>(((TObjArray*)(fContainer->At(kChi2)))->At(1)))){
-    AliWarning("No Histogram defined.");
-    return 0x0;
-  }
-  Int_t nTracklets = 0;
-  AliTRDseedV1 *tracklet = 0x0;
-  for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
-    if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
-    nTracklets++;
-  }
-  if(!nTracklets) return 0x0;
-  h->Fill(fTrack->GetChi2()/nTracklets);
+  h->Fill(n, fTrack->GetChi2()/n);
   return h;
 }
 
@@ -919,6 +892,31 @@ void AliTRDcheckDET::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *trackle
   dist[0] = c->GetY() - tracklet->GetYat(x);
   dist[1] = c->GetZ() - tracklet->GetZat(x);
 }
+
+
+//_______________________________________________________
+void AliTRDcheckDET::MakePlotChi2()
+{
+// Plot chi2/track normalized to number of degree of freedom 
+// (tracklets) and compare with the theoretical distribution.
+// 
+// Alex Bercuci <A.Bercuci@gsi.de>
+
+  TH2S *h2 = (TH2S*)fContainer->At(kChi2);
+  TF1 f("fChi2", "[0]*pow(x, [1]-1)*exp(-0.5*x)", 0., 50.);
+
+  Bool_t kFIRST = kTRUE;
+  for(Int_t il=1; il<=h2->GetNbinsX(); il++){
+    TH1D *h1 = h2->ProjectionY(Form("py%d", il), il, il);
+    if(h1->Integral()<50) continue;
+    h1->Scale(1./h1->Integral());
+    h1->SetMarkerStyle(7);h1->SetMarkerColor(il);h1->SetLineColor(il);
+    f.SetParameter(1, .5*il);f.SetLineColor(il);
+    h1->Fit(&f, "Q+", kFIRST ? "e1": "e1 same");
+    kFIRST = kFALSE;
+  }
+}
+
 
 //________________________________________________________
 void AliTRDcheckDET::MakePlotNTracklets(){

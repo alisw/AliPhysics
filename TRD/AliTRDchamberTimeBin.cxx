@@ -318,13 +318,14 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
     
     // Debug Streaming
     if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 3){
+      AliTRDcluster dcl(*cl);
       TTreeSRedirector &cstream = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
       cstream << "BuildIndices"
       << "Plane="    << fPlane
       << "Stack="    << fStack
       << "Sector="   << fSector
       << "Iter="     << iter
-      << "C.="       << cl
+      << "C.="       << &dcl
       << "rowIndex=" << rowIndex
       << "\n";
     }

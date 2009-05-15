@@ -107,7 +107,8 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
 
   SetLabel(t.GetLabel());
   SetChi2(0.0);
-  SetMass(t.GetMass());
+
+  SetMass(t.GetMass()/*0.000510*/);
   AliKalmanTrack::SetNumberOfClusters(t.GetTRDncls()); 
   Int_t ti[kNplane]; t.GetTRDtracklets(&ti[0]);
   for(int ip=0; ip<kNplane; ip++){ 

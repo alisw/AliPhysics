@@ -450,7 +450,7 @@ void AliTRDseedV1::CookLabels()
 
 
 //____________________________________________________________________
-Float_t AliTRDseedV1::GetdQdl(Int_t ic) const
+Float_t AliTRDseedV1::GetdQdl(Int_t ic, Float_t *dl) const
 {
 // Using the linear approximation of the track inside one TRD chamber (TRD tracklet) 
 // the charge per unit length can be written as:
@@ -458,19 +458,62 @@ Float_t AliTRDseedV1::GetdQdl(Int_t ic) const
 // #frac{dq}{dl} = #frac{q_{c}}{dx * #sqrt{1 + #(){#frac{dy}{dx}}^{2}_{fit} + #(){#frac{dy}{dx}}^{2}_{ref}}}
 // END_LATEX
 // where qc is the total charge collected in the current time bin and dx is the length 
-// of the time bin. For the moment (Jan 20 2009) only pad row cross corrections are 
-// considered for the charge but none are applied for drift velocity variations along 
-// the drift region or assymetry of the TRF
+// of the time bin. 
+// The following correction are applied :
+//   - charge : pad row cross corrections
+//              [diffusion and TRF assymetry] TODO
+//   - dx     : anisochronity, track inclination - see Fit and AliTRDcluster::GetXloc() 
+//              and AliTRDcluster::GetYloc() for the effects taken into account
 // 
 // Author : Alex Bercuci <A.Bercuci@gsi.de>
 //
   Float_t dq = 0.;
   if(fClusters[ic]) dq += TMath::Abs(fClusters[ic]->GetQ());
   if(fClusters[ic+kNtb]) dq += TMath::Abs(fClusters[ic+kNtb]->GetQ());
-  if(dq<1.e-3 || fdX < 1.e-3) return 0.;
+  if(dq<1.e-3) return 0.;
 
-  return dq/fdX/TMath::Sqrt(1. + fYfit[1]*fYfit[1] + fZref[1]*fZref[1]);
+  Double_t dx = 0.;
+  if((ic-1>=0 && fClusters[ic-1]) &&
+     (ic+1<kNtb && fClusters[ic+1])) dx = .5*(fClusters[ic+1]->GetX() - fClusters[ic-1]->GetX());
+  else dx = fdX;
+  dx *= TMath::Sqrt(1. + fYfit[1]*fYfit[1] + fZref[1]*fZref[1]);
+
+  if(dl) (*dl) = dx;
+  return dq/dx;
 }
+
+//____________________________________________________________
+Float_t AliTRDseedV1::GetMomentum(Float_t *err) const
+{ 
+// Returns momentum of the track after update with the current tracklet as:
+// BEGIN_LATEX
+// p=#frac{1}{1/p_{t}} #sqrt{1+tgl^{2}}
+// END_LATEX
+// and optionally the momentum error (if err is not null). 
+// The estimated variance of the momentum is given by:
+// BEGIN_LATEX
+// #sigma_{p}^{2} = (#frac{dp}{dp_{t}})^{2} #sigma_{p_{t}}^{2}+(#frac{dp}{dtgl})^{2} #sigma_{tgl}^{2}+2#frac{dp}{dp_{t}}#frac{dp}{dtgl} cov(tgl,1/p_{t})
+// END_LATEX
+// which can be simplified to
+// BEGIN_LATEX
+// #sigma_{p}^{2} = p^{2}p_{t}^{4}tgl^{2}#sigma_{tgl}^{2}-2p^{2}p_{t}^{3}tgl cov(tgl,1/p_{t})+p^{2}p_{t}^{2}#sigma_{1/p_{t}}^{2}
+// END_LATEX
+//
+
+  Double_t p = fPt*TMath::Sqrt(1.+fZref[1]*fZref[1]);
+  Double_t p2 = p*p;
+  Double_t tgl2 = fZref[1]*fZref[1];
+  Double_t pt2 = fPt*fPt;
+  if(err){
+    Double_t s2 = 
+      p2*tgl2*pt2*pt2*fRefCov[4]
+     -2.*p2*fZref[1]*fPt*pt2*fRefCov[5]
+     +p2*pt2*fRefCov[6];
+    (*err) = TMath::Sqrt(s2);
+  }
+  return p;
+}
+
 
 //____________________________________________________________________
 Float_t* AliTRDseedV1::GetProbability(Bool_t force)
