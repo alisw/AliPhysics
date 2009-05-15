@@ -102,10 +102,13 @@ Int_t AliITSRawStreamSDD::DecompAmbra(Int_t value) const
   if ((value & 0x80) == 0) {
     return value & 0x7f;
   } else if ((value & 0x40) == 0) {
+    if(value&1) return 0x080 + ((value & 0x3f) << 1);
     return 0x081 + ((value & 0x3f) << 1);
   } else if ((value & 0x20) == 0) {
+    if(value&1) return 0x103 + ((value & 0x1f) << 3);
     return 0x104 + ((value & 0x1f) << 3);
   } else {
+    if(value&1) return 0x207 + ((value & 0x1f) << 4);
     return 0x208 + ((value & 0x1f) << 4);
   }
   
