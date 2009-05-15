@@ -119,8 +119,6 @@ public:
     fGlobalMasks   = new AliMUONGlobalCrateConfig();
   }
 
-  AliDAConfig (const AliDAConfig& cfg); // copy constructor
-  AliDAConfig& operator=(const AliDAConfig& cfg);  // assignment operator
   virtual ~AliDAConfig()
   {
     /// destructor
@@ -142,167 +140,249 @@ public:
     printf("Signature file name: %s (%d)\n",GetSignatureFileName(),GetSignatureFileVersion());
   }
 
+     /// name of the DA configuration file from detector DB
   const Char_t* GetDAConfigFileName()    { return fDAConfigFileName.Data(); }
+     /// file with current versions of the configuration files, usually MtgCurrent.dat
   const Char_t* GetCurrentFileName()     { return fCurrentFileName.Data(); }
+     /// last known versions of the configuration files, usually MtgLastCurrent.dat
   const Char_t* GetLastCurrentFileName() { return fLastCurrentFileName.Data(); }
 
+     /// name of the Start-of-data field in MtgCurrent.dat
   const Char_t* GetSodName() { return fSodName.Data(); }
+     /// flag value of the Start-of-data field in MtgCurrent.dat
   Int_t GetSodFlag() const { return fSodFlag; }
 
+     /// name of the Detector Algorithm field in MtgCurrent.dat
   const Char_t* GetDAName() { return fDAName.Data(); }
+     /// flag value of the Detector Algorithm field in MtgCurrent.dat
   Int_t GetDAFlag() const { return fDAFlag; }
 
+     /// global crate configuration file name
   const Char_t* GetGlobalFileName()    { return fGlobalFileName.Data(); }
+     /// regional crate configuration file name
   const Char_t* GetRegionalFileName()  { return fRegionalFileName.Data(); }
+     /// masks for the local cards, file name
   const Char_t* GetLocalMaskFileName() { return fLocalMaskFileName.Data(); }
+     /// transverse momentum Look-Up-Table, file name
   const Char_t* GetLocalLutFileName()  { return fLocalLutFileName.Data(); }
+     /// signature file name
   const Char_t* GetSignatureFileName() { return fSignatureFileName.Data(); }
 
+     /// version of the global crate configuration in the detector DB
   Int_t GetGlobalFileVersion()    const { return fGlobalFileVersion; }
+     /// version of the regional crate configuration in the detector DB
   Int_t GetRegionalFileVersion()  const { return fRegionalFileVersion; }
+     /// version of the masks for the local cards in the detector DB
   Int_t GetLocalMaskFileVersion() const { return fLocalMaskFileVersion; }
+     /// version of the transverse momentum Look-Up-Table in the detector DB
   Int_t GetLocalLutFileVersion()  const { return fLocalLutFileVersion; }
+     /// version of the signature file in the detector DB
   Int_t GetSignatureFileVersion() const { return fSignatureFileVersion; }
 
+     /// last known version of the global crate configuration
   Int_t GetGlobalFileLastVersion()    const { return fGlobalFileLastVersion; }
+     /// last known version of the regional crate configuration
   Int_t GetRegionalFileLastVersion()  const { return fRegionalFileLastVersion; }
+     /// last known version of the masks for the local cards
   Int_t GetLocalMaskFileLastVersion() const { return fLocalMaskFileLastVersion; }
+     /// last known version of the transverse momentum Look-Up-Table
   Int_t GetLocalLutFileLastVersion()  const { return fLocalLutFileLastVersion; }
 
+     /// store for the masks for the local cards (own)
   AliMUONVStore*                GetLocalMasks()    const { return fLocalMasks; }
+     /// configuration object for the regional crate (own)
   AliMUONRegionalTriggerConfig* GetRegionalMasks() const { return fRegionalMasks; }
+     /// configuration object for the global crate (own)
   AliMUONGlobalCrateConfig*     GetGlobalMasks()   const { return fGlobalMasks; }
 
+     /// read/write configurations, masks and LUT to/from online files (own)
   AliMUONTriggerIO* GetTriggerIO() const { return fTriggerIO; }
 
+     /// number of accumulated PHYSICS events for noisy channels analysis
   Int_t GetEventsN() const { return fEventsN; }
+     /// number of accumulated CALIBRATION events for dead channels analysis
   Int_t GetEventsD() const { return fEventsD; }
 
+     /// print verbosity of the DA
   Int_t GetPrintLevel() const { return fPrintLevel; }
 
+     /// select PHYSICS events for noisy channels analysis
   Bool_t GetAlgoNoisyInput() const { return fAlgoNoisyInput; }
+     /// select CALIBRATION events for dead channels analysis
   Bool_t GetAlgoDeadcInput() const { return fAlgoDeadcInput; }
 
+     /// threshold for noisy inputs (fraction of events)
   Float_t GetThrN() const { return fThrN; }
+     /// threshold for dead inputs (fraction of events)
   Float_t GetThrD() const { return fThrD; }
 
+     /// minumum nr of events for rate calculation
   Int_t GetMinEvents()  const { return fMinEvents; }
+     /// maximum number of events to analyze
   Int_t GetMaxEvents()  const { return fMaxEvents; }
+     /// number of events to skip from start
   Int_t GetSkipEvents() const { return fSkipEvents; }
 
+     /// show warnings from the raw data decoder
   Bool_t WithWarnings() const { return fWithWarnings; }
+     /// use the high-performance (HP) decoder
   Bool_t UseFastDecoder() const { return fUseFastDecoder; }
 
+     /// number of global input words
   Int_t GetGlobalInputs()      const { return kGlobalInputs; }
+    /// length in bits of a global input word
   Int_t GetGlobalInputLength() const { return kGlobalInputLength; }
 
+     /// get accumulated values for bit "ib" from global input word "ii", PHYSICS events
   Int_t GetAccGlobalInputN(Int_t ii, Int_t ib) const { return fAccGlobalInputN[ii][ib]; }
+     /// get accumulated values for bit "ib" from global input word "ii", CALIBRATION events
   Int_t GetAccGlobalInputD(Int_t ii, Int_t ib) const { return fAccGlobalInputD[ii][ib]; }
 
+     /// set the name of the Start-of-data field in MtgCurrent.dat
   void SetSodName(Char_t *name) { fSodName = TString(name); }
+     /// set the flag value of the Start-of-data field in MtgCurrent.dat
   void SetSodFlag(Int_t flag)   { fSodFlag = flag; }
 
+     /// set the name of the Detector Algorithm field in MtgCurrent.dat
   void SetDAName(Char_t *name) { fDAName = TString(name); }
+     /// set the flag value of the Detector Algorithm field in MtgCurrent.dat
   void SetDAFlag(Int_t flag)   { fDAFlag = flag; }
 
+     /// set the global crate configuration file name
   void SetGlobalFileName(const Char_t *name)    { fGlobalFileName = TString(name); }
+     /// set the regional crate configuration file name
   void SetRegionalFileName(const Char_t *name)  { fRegionalFileName = TString(name); }
+     /// set the masks for the local cards, file name
   void SetLocalMaskFileName(const Char_t *name) { fLocalMaskFileName = TString(name); }
+     /// set the transverse momentum Look-Up-Table, file name
   void SetLocalLutFileName(const Char_t *name)  { fLocalLutFileName = TString(name); }
+     /// set the signature file name
   void SetSignatureFileName(const Char_t *name) { fSignatureFileName = TString(name); }
 
+     /// set the version of the global crate configuration in the detector DB
   void SetGlobalFileVersion(Int_t ver)    { fGlobalFileVersion = ver; }
+     /// set the version of the regional crate configuration in the detector DB
   void SetRegionalFileVersion(Int_t ver)  { fRegionalFileVersion = ver; }
+     /// set the version of the masks for the local cards in the detector DB
   void SetLocalMaskFileVersion(Int_t ver) { fLocalMaskFileVersion = ver; }
+     /// set the version of the transverse momentum Look-Up-Table in the detector DB
   void SetLocalLutFileVersion(Int_t ver)  { fLocalLutFileVersion = ver; }
+     /// set the version of the signature file in the detector DB
   void SetSignatureFileVersion(Int_t ver) { fSignatureFileVersion = ver; }
 
+     /// set the last known version of the global crate configuration
   void SetGlobalFileLastVersion(Int_t ver)    { fGlobalFileLastVersion = ver; }
+     /// set the last known version of the regional crate configuration
   void SetRegionalFileLastVersion(Int_t ver)  { fRegionalFileLastVersion = ver; }
+     /// set the last known version of the masks for the local cards
   void SetLocalMaskFileLastVersion(Int_t ver) { fLocalMaskFileLastVersion = ver; }
+     /// set the last known version of the transverse momentum Look-Up-Table
   void SetLocalLutFileLastVersion(Int_t ver)  { fLocalLutFileLastVersion = ver; }
 
+     /// increment the number of selected PHYSICS events
   void IncNoiseEvent() { fEventsN++; }
+     /// increment the number of selected CALIBRATION events
   void IncDeadcEvent() { fEventsD++; }
 
+     /// count the value of the bit "ib" of global input word "ii" (PHYSICS events)
   void AddAccGlobalInputN(Int_t ii, Int_t ib, Int_t val) { fAccGlobalInputN[ii][ib] += val; }
+     /// count the value of the bit "ib" of global input word "ii" (CALIBRATION events)
   void AddAccGlobalInputD(Int_t ii, Int_t ib, Int_t val) { fAccGlobalInputD[ii][ib] += val; }
 
+     /// set the print verbosity level of the DA
   void SetPrintLevel(Int_t level) { fPrintLevel = level; }
 
+     /// select PHYSICS events for noisy channels analysis
   void SetAlgoNoisyInput(Bool_t val) { fAlgoNoisyInput = val; }
+     /// select CALIBRATION events for dead channels analysis
   void SetAlgoDeadcInput(Bool_t val) { fAlgoDeadcInput = val; }
 
+     /// set the threshold for noisy inputs (fraction of events)
   void SetThrN(Float_t val) { fThrN = val; }
+     /// set the threshold for dead inputs (fraction of events)
   void SetThrD(Float_t val) { fThrD = val; }
 
+     /// set the minumum nr of events for rate calculation
   void SetMinEvents(Int_t val)  { fMinEvents = val; }
+     /// set the maximum number of events to analyze
   void SetMaxEvents(Int_t val)  { fMaxEvents = val; }
+     /// set the number of events to skip from start
   void SetSkipEvents(Int_t val) { fSkipEvents = val; }
 
+     /// set/unset to show warnings from the raw data decoder
   void SetWithWarnings() { fWithWarnings = true; }
+     /// set/unset the use of the high-performance (HP) decoder
   void SetUseFastDecoder() { fUseFastDecoder = true; }
 
+    /// increment version of the global crate configuration file
   void IncGlobalFileVersion() { fGlobalFileVersion++; }
+    /// count skipped events
   void DecSkipEvents() { fSkipEvents--; }
 
 private:
 
-  const TString fDAConfigFileName;
-  const TString fCurrentFileName;
-  const TString fLastCurrentFileName;
+  /// copy constructor, not implemented
+  AliDAConfig (const AliDAConfig& cfg);
+  /// assignment operator, not implemented
+  AliDAConfig& operator=(const AliDAConfig& cfg);
 
-  TString fSodName;
-  Int_t   fSodFlag;
+  const TString fDAConfigFileName;    //!< name of the DA configuration file from detector DB
+  const TString fCurrentFileName;     //!< usually MtgCurrent.dat
+  const TString fLastCurrentFileName; //!< usually MtgLastCurrent.dat
 
-  TString fDAName;
-  Int_t   fDAFlag;
+  TString fSodName; //!< name of the Start-of-data field in MtgCurrent.dat
+  Int_t   fSodFlag; //!< flag value of the Start-of-data field in MtgCurrent.dat
 
-  TString fGlobalFileName;
-  TString fRegionalFileName;
-  TString fLocalMaskFileName;
-  TString fLocalLutFileName;
-  TString fSignatureFileName;
+  TString fDAName;  //!< name of the Detector Algorithm field in MtgCurrent.dat 
+  Int_t   fDAFlag;  //!< flag value of the Detector Algorithm field in MtgCurrent.dat (enabled/disabled)
 
-  Int_t   fGlobalFileVersion;
-  Int_t   fRegionalFileVersion;
-  Int_t   fLocalMaskFileVersion;
-  Int_t   fLocalLutFileVersion;
-  Int_t   fSignatureFileVersion;
+  TString fGlobalFileName;    //!< global crate configuration, file name
+  TString fRegionalFileName;  //!< regional crate configuration, file name
+  TString fLocalMaskFileName; //!< masks for the local cards, file name
+  TString fLocalLutFileName;  //!< transverse momentum Look-Up-Table, file name
+  TString fSignatureFileName; //!< signature file name
+
+  Int_t   fGlobalFileVersion;    //!< version of the global crate configuration in the detector DB
+  Int_t   fRegionalFileVersion;  //!< version of the regional crate configuration in the detector DB
+  Int_t   fLocalMaskFileVersion; //!< version of the masks for the local cards in the detector DB
+  Int_t   fLocalLutFileVersion;  //!< version of the transverse momentum Look-Up-Table in the detector DB
+  Int_t   fSignatureFileVersion; //!< version of the signature file in the detector DB
   
-  Int_t   fGlobalFileLastVersion;
-  Int_t   fRegionalFileLastVersion;
-  Int_t   fLocalMaskFileLastVersion;
-  Int_t   fLocalLutFileLastVersion;
+  Int_t   fGlobalFileLastVersion;    //!< last known version of the global crate configuration
+  Int_t   fRegionalFileLastVersion;  //!< last known version of the regional crate configuration
+  Int_t   fLocalMaskFileLastVersion; //!< last known version of the masks for the local cards
+  Int_t   fLocalLutFileLastVersion;  //!< last known version of the transverse momentum Look-Up-Table
 
-  Int_t   fEventsN;
-  Int_t   fEventsD;
+  Int_t   fEventsN; //!< number of accumulated PHYSICS events
+  Int_t   fEventsD; //!< number of accumulated CALIBRATION events
 
-  Int_t   fPrintLevel;
+  Int_t   fPrintLevel;  //!< print verbosity of the DA
 
-  AliMUONVStore*                fLocalMasks;
-  AliMUONRegionalTriggerConfig* fRegionalMasks;
-  AliMUONGlobalCrateConfig*     fGlobalMasks;    
+  AliMUONVStore*                fLocalMasks;    //!< store for the masks for the local cards
+  AliMUONRegionalTriggerConfig* fRegionalMasks; //!< configuration object for the regional crate
+  AliMUONGlobalCrateConfig*     fGlobalMasks;   //!< configuration object for the global crate
 
-  AliMUONTriggerIO *fTriggerIO;
+  AliMUONTriggerIO *fTriggerIO;  //!< read/write masks and LUT to/from online files
 
-  Bool_t fAlgoNoisyInput;
-  Bool_t fAlgoDeadcInput;
+  Bool_t fAlgoNoisyInput; //!< select PHYSICS events for noisy channels analysis
+  Bool_t fAlgoDeadcInput; //!< select CALIBRATION events for dead channels analysis
 
-  Float_t fThrN;
-  Float_t fThrD;
-  Int_t   fMinEvents;
-  Int_t   fSkipEvents;
-  Int_t   fMaxEvents;
-  Bool_t  fWithWarnings;
-  Bool_t  fUseFastDecoder;
+  Float_t fThrN;           //!< threshold for noisy inputs (fraction of events)
+  Float_t fThrD;           //!< threshold for dead inputs (fraction of events)
+  Int_t   fMinEvents;      //!< minumum nr of events for rate calculation
+  Int_t   fSkipEvents;     //!< number of events to skip from start
+  Int_t   fMaxEvents;      //!< maximum number of events to analyze
+  Bool_t  fWithWarnings;   //!< show warnings from the raw data decoder
+  Bool_t  fUseFastDecoder; //!< use the high-performance (HP) decoder
 
-  const Int_t fNLocalBoard;
+  const Int_t fNLocalBoard; //!< number of local boards
 
-  enum { kGlobalInputs = 4, kGlobalInputLength = 32 };
+  enum { kGlobalInputs = 4,         //!< number of global input words
+	 kGlobalInputLength = 32    //!< length in bits of a global input word
+  };
 
-  Int_t fAccGlobalInputN[kGlobalInputs][kGlobalInputLength];
-  Int_t fAccGlobalInputD[kGlobalInputs][kGlobalInputLength];
+  Int_t fAccGlobalInputN[kGlobalInputs][kGlobalInputLength]; //!< storage for global input (PHYSICS events)
+  Int_t fAccGlobalInputD[kGlobalInputs][kGlobalInputLength]; //!< storage for global input (CALIBRATION events)
 
 };
 
@@ -543,6 +623,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     Int_t status = 0;
 
     Bool_t modified = false;
+    Bool_t globalExported = false;
 
     ofstream out;
     TString fileExp("ExportedFiles.dat");
@@ -560,17 +641,6 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     if (gSystem->AccessPathName("MtgLastCurrent.dat"))
       initFES = true;
     if (initFES) printf("Copy all configuration files to the FES.\n");
-
-    file = cfg.GetGlobalFileName();
-    if ((cfg.GetGlobalFileLastVersion() != cfg.GetGlobalFileVersion()) || initFES) {
-      status = daqDA_FES_storeFile(file.Data(), "GLOBAL");
-      if (status) {
-	printf("Failed to export file: %s\n",cfg.GetGlobalFileName());
-	return false;
-      }
-      if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetGlobalFileName());
-      out << cfg.GetGlobalFileName() << endl;
-    }
 
     file = cfg.GetLocalMaskFileName();  
     if ((cfg.GetLocalMaskFileLastVersion() != cfg.GetLocalMaskFileVersion()) || initFES) {
@@ -597,8 +667,19 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 
     }
 
-    // exported regional file always (needed to initialise the PreProcessor)!
-    initFES = kTRUE;
+    file = cfg.GetGlobalFileName();
+    if ((cfg.GetGlobalFileLastVersion() != cfg.GetGlobalFileVersion()) || modified || initFES) {
+      modified = true;
+      globalExported = true;
+      status = daqDA_FES_storeFile(file.Data(), "GLOBAL");
+      if (status) {
+	printf("Failed to export file: %s\n",cfg.GetGlobalFileName());
+	return false;
+      }
+      if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetGlobalFileName());
+      out << cfg.GetGlobalFileName() << endl;
+    }
+
     file = cfg.GetRegionalFileName();
     if ( (cfg.GetRegionalFileLastVersion() != cfg.GetRegionalFileVersion()) || modified || initFES) {
       status = daqDA_FES_storeFile(file.Data(), "REGIONAL");
@@ -608,6 +689,19 @@ Bool_t ExportFiles(AliDAConfig& cfg)
       }
       if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetRegionalFileName());
       out << cfg.GetRegionalFileName() << endl;
+
+      // needed for the initialisation of the mapping
+      if (!globalExported) {
+	file = cfg.GetGlobalFileName();
+	status = daqDA_FES_storeFile(file.Data(), "GLOBAL");
+	if (status) {
+	  printf("Failed to export file: %s\n",cfg.GetGlobalFileName());
+	  return false;
+	}
+	if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetGlobalFileName());
+	out << cfg.GetGlobalFileName() << endl;
+      }
+
     }
 
     out.close();
@@ -879,7 +973,7 @@ int main(Int_t argc, Char_t **argv)
 
     // decoding the events
   
-    Int_t status;
+    Int_t status = 0;
     Int_t nDateEvents = 0;
 
     void* event;
@@ -916,6 +1010,17 @@ int main(Int_t argc, Char_t **argv)
     if(!ExportFiles(cfg)) {
       printf("ExportFiles failed\n");
       return -1;
+    }
+
+    if (!cfg.GetDAFlag()) {
+
+      cout << "MUONTRGda: DA enable: " << cfg.GetDAFlag() << endl;
+      cout << "MUONTRGda: Print level: " << cfg.GetPrintLevel() << endl;
+      
+      printf("MUONTRGda: Execution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
+
+      return status;
+
     }
 
     // FET is triggered by CTP
@@ -1058,7 +1163,7 @@ int main(Int_t argc, Char_t **argv)
     } // while (1)
 
     // update configuration files ifrequested event types were found
-    if (doUpdate && cfg.GetDAFlag()) 
+    if (doUpdate) 
       UpdateGlobalMasks(cfg);
 
     timers.Stop();
@@ -1079,7 +1184,6 @@ int main(Int_t argc, Char_t **argv)
     cout << "MUONTRGda: Use the fast decoder: " << cfg.UseFastDecoder() << endl;
 
     printf("MUONTRGda: Execution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
-
 
     return status;
 
