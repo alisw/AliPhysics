@@ -8,6 +8,7 @@
 
 #include "TObject.h"
 
+#include "AliTOFGeometry.h"
 #include "AliTOFRawStream.h"
 
 class TClonesArray;
@@ -47,20 +48,22 @@ class AliTOFClusterFinderV1 : public TObject
   void SetVerbose(Int_t Verbose){fVerbose=Verbose;} // To set the verbose level
   void SetDecoderVersion(Int_t version){fDecoderVersion=version;} // To set the decoder version
   Bool_t GetDecoderVersion() const {return fDecoderVersion;} // To get the decoder version
-  UShort_t GetClusterVolIndex(Int_t *ind) const; //Volume Id getter
+  //UShort_t GetClusterVolIndex(Int_t *ind) const; //Volume Id getter
   void GetClusterPars(Int_t *ind, Double_t *pos, Double_t *cov) const; //cluster par getter
-  void GetClusterPars(Bool_t check, Int_t counter, Int_t **ind, Double_t *weight,
+  void GetClusterPars(/*Bool_t check,*/ Int_t counter, Int_t **ind, Double_t *weight,
 		      Double_t *pos, Double_t *cov) const; //cluster par getter
 
   void FindOnePadClusterPerStrip(Int_t nSector, Int_t nPlate, Int_t nStrip);
+  void FindClustersWithoutTOT(Int_t nSector, Int_t nPlate, Int_t nStrip);
   void FindClustersPerStrip(Int_t nSector, Int_t nPlate, Int_t nStrip, Int_t group);
 
   void FindClusters34(Int_t nSector, Int_t nPlate, Int_t nStrip);
   void FindClusters23(Int_t nSector, Int_t nPlate, Int_t nStrip);
   void FindClusters24(Int_t nSector, Int_t nPlate, Int_t nStrip);
 
-  void SetMaxDeltaTime(Int_t a) {fMaxDeltaTime = a;};
-  Int_t GetMaxDeltaTime()       {return fMaxDeltaTime;};
+  void  SetMaxDeltaTime(Int_t a)   {fMaxDeltaTime = a;}; // to set deltaTime [bin number]
+  void  SetMaxDeltaTime(Float_t a) {fMaxDeltaTime = (Int_t)(a/AliTOFGeometry::TdcBinWidth());}; // to set deltaTime [ps]
+  Int_t GetMaxDeltaTime()          {return fMaxDeltaTime;};
 
  public:
   class AliTOFselectedDigit { 
@@ -131,14 +134,14 @@ class AliTOFClusterFinderV1 : public TObject
 
  private:
 
-  Int_t fMaxDeltaTime; // max time difference in between two tof measurements
-                       // for two neighbouring pads
+  Int_t fMaxDeltaTime; // max time difference in between two tof
+                       // measurements for two neighbouring pads
 
   Int_t InsertCluster(AliTOFcluster *tofCluster);    // Fills TofClusters Array
   Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
   Bool_t MakeSlewingCorrection(Int_t *detectorIndex, Int_t tofDigitToT, Int_t tofDigitTdc,
 			       Int_t &tdcCorr);
-  void TOFclusterError(Bool_t check, Int_t counter, Int_t **ind, Double_t *weight,
+  void TOFclusterError(/*Bool_t check,*/ Int_t counter, Int_t **ind, Double_t *weight,
 		       Double_t ppos[], Double_t cov[]) const;
 
   void AverageCalculations(Int_t number, Float_t *interestingX,
@@ -151,8 +154,10 @@ class AliTOFClusterFinderV1 : public TObject
   Bool_t fDecoderVersion;   // setting whether to use the new decoder version 
                             //  -true -> new version
                             //  -false ->old version  (default value!!)
-  AliTOFcalib *fTOFcalib;       // pointer to the TOF calibration info
-  AliTOFDigitMap* fTOFdigitMap; // TOF digit map pointer
+  AliTOFcalib *fTOFcalib;        // pointer to the TOF calibration info
+  AliTOFDigitMap* fTOFdigitMap;  // TOF digit map pointer
+  AliTOFGeometry *fTOFGeometry;  // pointer to the TOF geometry
+  TTree *fTOFdigits;             // pointer to the TOF digit tree
 
   AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable
 

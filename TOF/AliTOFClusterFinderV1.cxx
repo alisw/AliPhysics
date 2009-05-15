@@ -15,6 +15,12 @@
 
 /*
 $Log: AliTOFClusterFinderV1.cxx,v $
+Revision 2009/04/20 A. De Caro
+    - added two new global variables, called fTOFGeometry and fTOFdigits;
+    - added a new method, called FindClustersWithoutTOT,
+      to transform TOF digits with fTOT=0 in one pad clusters;
+    - update of the covariance matrix elements for the TOF clusters
+
 Revision 0.01  2008/05/10 A. De Caro
  */
 
@@ -48,25 +54,25 @@ Revision 0.01  2008/05/10 A. De Caro
 #include "AliTOFClusterFinderV1.h"
 #include "AliTOFcluster.h"
 #include "AliTOFdigit.h"
-//#include "AliTOFselectedDigit.h"
 #include "AliTOFDigitMap.h"
-#include "AliTOFGeometry.h"
 #include "AliTOFrawData.h"
-//#include "AliTOFRawStream.h"
 
 ClassImp(AliTOFClusterFinderV1)
 
+//_____________________________________________________________________________
 AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
   fRunLoader(0),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
   fNumberOfTofDigits(0),
-  fMaxDeltaTime(10),
+  fMaxDeltaTime(2),
   fVerbose(0),
   fDecoderVersion(0),
   fTOFcalib(calib),
   fTOFdigitMap(new AliTOFDigitMap()),
+  fTOFGeometry(new AliTOFGeometry()),
+  fTOFdigits(0),
   fTOFRawStream(AliTOFRawStream())
 {
 //
@@ -74,19 +80,21 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
 //
 
 }
-//_____________________________________________________________________________
 
+//_____________________________________________________________________________
 AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcalib *calib):
   fRunLoader(runLoader),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
   fNumberOfTofDigits(0),
-  fMaxDeltaTime(10),
+  fMaxDeltaTime(2),
   fVerbose(0),
   fDecoderVersion(0),
   fTOFcalib(calib),
   fTOFdigitMap(new AliTOFDigitMap()),
+  fTOFGeometry(new AliTOFGeometry()),
+  fTOFdigits(0),
   fTOFRawStream(AliTOFRawStream())
 {
 //
@@ -103,12 +111,15 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(const AliTOFClusterFinderV1 &source
    fRecPoints(source.fRecPoints),
    fNumberOfTofClusters(0),
    fNumberOfTofDigits(0),
-   fMaxDeltaTime(10),
+   fMaxDeltaTime(2),
    fVerbose(0),
    fDecoderVersion(source.fDecoderVersion),
    fTOFcalib(source.fTOFcalib),
    fTOFdigitMap(new AliTOFDigitMap()),
+   fTOFGeometry(new AliTOFGeometry()),
+   fTOFdigits(source.fTOFdigits),
    fTOFRawStream(source.fTOFRawStream)
+
 {
   // copy constructor
 }
@@ -128,6 +139,8 @@ AliTOFClusterFinderV1& AliTOFClusterFinderV1::operator=(const AliTOFClusterFinde
   fDecoderVersion=source.fDecoderVersion;
   fTOFcalib=source.fTOFcalib;
   fTOFdigitMap=source.fTOFdigitMap;
+  fTOFGeometry=source.fTOFGeometry;
+  fTOFdigits=source.fTOFdigits;
   fTOFRawStream=source.fTOFRawStream;
   return *this;
 
@@ -155,6 +168,10 @@ AliTOFClusterFinderV1::~AliTOFClusterFinderV1()
     }
 
   delete fTOFdigitMap;
+
+  delete fTOFGeometry;
+
+  delete fTOFdigits;
 
 }
 //_____________________________________________________________________________
@@ -244,7 +261,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
     new (aDigits[last]) AliTOFdigit(tracks, detectorIndex, info);
     if (status) fTOFdigitMap->AddDigit(detectorIndex, last);
 
-    AliDebug(2, Form(" Digits reading %2i -> %2i %1i %2i %1i %2i (%d, %d, %d)",
+    AliDebug(2, Form(" Digits reading %2d -> %2d %1d %2d %1d %2d (%d, %d, %d)",
 		     last,
 		     detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[3], detectorIndex[4],
 		     info[0], info[1], info[3]));
@@ -288,9 +305,10 @@ void AliTOFClusterFinderV1::Digits2RecPoints(AliRawReader *rawReader, TTree *clu
 
 
   AliDebug(2, "TreeD re-creation");
-  TTree *digitsTree = new TTree();
+  //TTree *digitsTree = new TTree();
+  //Raw2Digits(rawReader, digitsTree);
 
-  Raw2Digits(rawReader, digitsTree);
+  Raw2Digits(rawReader, fTOFdigits);
 
   AliDebug(2,Form("Number of TOF digits: %d", fNumberOfTofDigits));
   ResetRecpoint();
@@ -301,7 +319,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(AliRawReader *rawReader, TTree *clu
 
   clustersTree->Fill();
 
-  AliInfo(Form("Number of found clusters: %i", fNumberOfTofClusters));
+  AliInfo(Form("Number of found clusters: %d", fNumberOfTofClusters));
 
   ResetRecpoint();
 
@@ -333,7 +351,6 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
   digitsTree->Branch("TOF", &fDigits);
   TClonesArray &aDigits = *fDigits;
 
-  //AliTOFRawStream tofInput(rawReader);
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
@@ -377,7 +394,7 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
     else fTOFRawStream.LoadRawData(indexDDL);
 
     clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
-    if (clonesRawData->GetEntriesFast()!=0) AliInfo(Form(" TOF raw data number = %3i", clonesRawData->GetEntriesFast()));
+    if (clonesRawData->GetEntriesFast()!=0) AliInfo(Form(" TOF raw data number = %3d", clonesRawData->GetEntriesFast()));
     for (iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
       AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
@@ -397,7 +414,7 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
       digit[0] = tdcCorr;
       digit[1] = tofRawDatum->GetTOT();
       digit[2] = tofRawDatum->GetTOT();
-      digit[3] = tofRawDatum->GetTOF();
+      digit[3] = -1;//tofRawDatum->GetTOF(); //tofND
 
       dummy = detectorIndex[3];
       detectorIndex[3] = detectorIndex[4];//padx
@@ -443,7 +460,7 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
 	else ftxt << "   " << digit[3] << endl;
       }
 
-      AliDebug(2, Form(" Raw data reading %2i -> %2i %1i %2i %1i %2i (%d, %d, %d)",
+      AliDebug(2, Form(" Raw data reading %2d -> %2d %1d %2d %1d %2d (%d, %d, %d)",
 		       last,
 		       detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[4], detectorIndex[3],
 		       digit[0], digit[1], digit[3]));
@@ -476,73 +493,80 @@ void AliTOFClusterFinderV1::FillRecPoint()
   // i.e. fRecPoints
   //
 
-  //Int_t dummy4_1 = -1;
-  //Int_t dummy3_1 = -1;
-  //Int_t dummy2_1 = -1;
+  Int_t dummy4_1 = -1;
+  Int_t dummy3_1 = -1;
+  Int_t dummy2_1 = -1;
   Int_t dummy    = -1;
 
-  for(Int_t iPlate=0; iPlate<AliTOFGeometry::NPlates(); iPlate++) {
-    for(Int_t iStrip=0; iStrip<AliTOFGeometry::NStrip(iPlate); iStrip++) {
+  for(Int_t iPlate=AliTOFGeometry::NPlates()-1; iPlate>=0; iPlate--) {
+    for(Int_t iStrip=AliTOFGeometry::NStrip(iPlate)-1; iStrip>=0; iStrip--) {
+      //for (Int_t iSector=AliTOFGeometry::NSectors()-1; iSector>=0; iSector--) {
       for (Int_t iSector=0; iSector<AliTOFGeometry::NSectors(); iSector++) {
-	/*
+
+	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+	FindClustersWithoutTOT(iSector, iPlate, iStrip); // clusters coming from digits without TOT measurement
+
+
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 	FindClustersPerStrip(iSector, iPlate, iStrip, 4); // 4 pads clusters
-	dummy4_1 = fNumberOfTofClusters;
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+
+	dummy4_1 = fNumberOfTofClusters;
 	FindClustersPerStrip(iSector, iPlate, iStrip, 4); // 4 pads clusters
 	if (fNumberOfTofClusters!=dummy4_1)
-	  AliDebug(2, Form(" (4): n1= %5i, n2 = %5", dummy4_1, fNumberOfTofClusters));
-	*/
-	/*
+	  AliDebug(2, Form(" (4): n1= %5d, n2 = %5", dummy4_1, fNumberOfTofClusters));
+
+
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 	FindClustersPerStrip(iSector, iPlate, iStrip, 3); // 3 pads clusters
-	dummy3_1 = fNumberOfTofClusters;
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+
+	dummy3_1 = fNumberOfTofClusters;
 	FindClustersPerStrip(iSector, iPlate, iStrip, 3); // 3 pads clusters
 	if (fNumberOfTofClusters!=dummy3_1)
-	  AliDebug(2, Form(" (3): n1= %5i, n2 = %5", dummy3_1, fNumberOfTofClusters));
-	*/
-	/*
+	  AliDebug(2, Form(" (3): n1= %5d, n2 = %5", dummy3_1, fNumberOfTofClusters));
+
+
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 	FindClustersPerStrip(iSector, iPlate, iStrip, 2); // 2 pads clusters
-	dummy2_1 = fNumberOfTofClusters;
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+
+	dummy2_1 = fNumberOfTofClusters;
 	FindClustersPerStrip(iSector, iPlate, iStrip, 2); // 2 pads clusters
 	if (fNumberOfTofClusters!=dummy2_1)
-	  AliDebug(2, Form(" (2): n1= %5i, n2 =%5", dummy2_1, fNumberOfTofClusters));
-	*/
-	/*
+	  AliDebug(2, Form(" (2): n1= %5d, n2 =%5", dummy2_1, fNumberOfTofClusters));
+
+
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 	dummy = fNumberOfTofClusters;
 	FindClusters34(iSector, iPlate, iStrip); // 3 pads clusters between 4 hit pads
 	if (fNumberOfTofClusters!=dummy)
-	  AliDebug(2, Form(" (3 between 4): n1 = %5i, n2 = %5i", fNumberOfTofClusters, dummy));
-	*/
-	/*
+	  AliDebug(2, Form(" (3 between 4): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
+
+
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 	dummy = fNumberOfTofClusters;
 	FindClusters23(iSector, iPlate, iStrip); // 2 pads clusters between 3 hit pads
 	if (fNumberOfTofClusters!=dummy)
-	  AliDebug(2, Form(" (2 between 3): n1 = %5i, n2 = %5i", fNumberOfTofClusters, dummy));
+	  AliDebug(2, Form(" (2 between 3): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
 
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 	dummy = fNumberOfTofClusters;
 	FindClusters24(iSector, iPlate, iStrip); // 2 pads clusters between 4 hit pads
 	if (fNumberOfTofClusters!=dummy)
-	  AliDebug(2, Form(" (2 between 4): n1 = %5i, n2 = %5i", fNumberOfTofClusters, dummy));
-	*/
+	  AliDebug(2, Form(" (2 between 4): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
 
 
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 	dummy = fNumberOfTofClusters;
 	FindOnePadClusterPerStrip(iSector, iPlate, iStrip); // 1 pad clusters
 	if (fNumberOfTofClusters!=dummy)
-	  AliDebug(2,Form(" (1): n1 = %5i, n2 = %5i", fNumberOfTofClusters, dummy));
+	  AliDebug(2,Form(" (1): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
 
 	if (fTOFdigitMap->DigitInStrip(iSector,iPlate,iStrip)>0)
-	  AliDebug(2, Form(" (1): numero di clusters = %5i (remaining digit %2i), -%2i %1i %2i-",
-			fNumberOfTofClusters, fTOFdigitMap->DigitInStrip(iSector,iPlate,iStrip),
-			iSector, iPlate, iStrip));
+	  AliDebug(2, Form(" (1): number of clusters = %5d (remaining digit %2d), -%2d %1d %2d-",
+			   fNumberOfTofClusters, fTOFdigitMap->DigitInStrip(iSector,iPlate,iStrip),
+			   iSector, iPlate, iStrip));
 
       }
     }
@@ -554,8 +578,11 @@ void AliTOFClusterFinderV1::FillRecPoint()
   Int_t ii, jj;
 
   Int_t detectorIndex[5];
+  for (jj=0; jj<5; jj++) detectorIndex[jj] = -1;
   Int_t parTOF[5];
+  for (jj=0; jj<5; jj++) parTOF[jj] = -1;
   Int_t trackLabels[3];
+  for (jj=0; jj<3; jj++) trackLabels[jj] = -1;
   Int_t digitIndex = -1;
   Bool_t status = kTRUE;
   Float_t posClus[3];
@@ -568,7 +595,8 @@ void AliTOFClusterFinderV1::FillRecPoint()
 
     digitIndex = fTofClusters[ii]->GetIndex();
     for(jj=0; jj<5; jj++) detectorIndex[jj] = fTofClusters[ii]->GetDetInd(jj);
-    volIdClus = GetClusterVolIndex(detectorIndex);
+    volIdClus = fTOFGeometry->GetAliSensVolIndex(detectorIndex[0],detectorIndex[1],detectorIndex[2]);
+    //volIdClus = GetClusterVolIndex(detectorIndex);
     for(jj=0; jj<3; jj++) trackLabels[jj] = fTofClusters[ii]->GetLabel(jj);
     parTOF[0] = fTofClusters[ii]->GetTDC(); // TDC
     parTOF[1] = fTofClusters[ii]->GetToT(); // TOT
@@ -595,7 +623,7 @@ void AliTOFClusterFinderV1::FillRecPoint()
 				      //(Double_t)covClus[3], (Double_t)covClus[4], (Double_t)covClus[5],
 				      trackLabels, detectorIndex, parTOF, status, digitIndex);
 
-    AliDebug(2, Form(" %4i  %4i  %f %f %f  %f %f %f %f %f %f  %3i %3i %3i  %2i %1i %2i %1i %2i  %4i %3i %3i %4i %4i  %1i  %4i", 
+    AliDebug(2, Form(" %4d  %4d  %f %f %f  %f %f %f %f %f %f  %3d %3d %3d  %2d %1d %2d %1d %2d  %4d %3d %3d %4d %4d  %1d  %4d", 
 		     ii, volIdClus, posClus[0], posClus[1], posClus[2],
 		     fTofClusters[ii]->GetSigmaX2(),
 		     fTofClusters[ii]->GetSigmaXY(),
@@ -615,7 +643,7 @@ void AliTOFClusterFinderV1::FillRecPoint()
     for(Int_t iPlate=0; iPlate<AliTOFGeometry::NPlates(); iPlate++) {
       for(Int_t iStrip=0; iStrip<AliTOFGeometry::NStrip(iPlate); iStrip++) {
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
-	AliDebug(2, Form(" END %2i %1i %2i   %5i",
+	AliDebug(2, Form(" END %2d %1d %2d   %5d",
 			 iSector, iPlate, iStrip, fTOFdigitMap->DigitInStrip(iSector,iPlate,iStrip)));
       }
     }
@@ -639,8 +667,6 @@ void AliTOFClusterFinderV1::FindOnePadClusterPerStrip(Int_t nSector,
 
   Int_t jj = 0;
 
-  AliTOFGeometry *tofGeometry = new AliTOFGeometry();
-
   Int_t det[5] = {nSector,nPlate,nStrip,-1,-1};//sector,plate,strip,padZ,padX
   Int_t vol[5] = {nSector,nPlate,nStrip,-1,-1};//sector,plate,strip,padX,padZ
   UShort_t volIdClus = 0;
@@ -662,7 +688,6 @@ void AliTOFClusterFinderV1::FindOnePadClusterPerStrip(Int_t nSector,
   for (jj=0; jj<3; jj++) tracks[jj] = -1;
 
   Int_t dummyCounter=-1;
-  //Int_t dummyPad=-1;
 
   AliTOFdigit *digitInteresting;
 
@@ -672,7 +697,7 @@ void AliTOFClusterFinderV1::FindOnePadClusterPerStrip(Int_t nSector,
     for (iPadZ=0; iPadZ<AliTOFGeometry::NpadZ(); iPadZ++) {
       vol[4] = iPadZ  , vol[3]  = iPadX;
 
-      AliDebug(3, Form(" %1i %2i\n", iPadZ, iPadX));
+      AliDebug(3, Form(" %1d %2d\n", iPadZ, iPadX));
 
       if (fTOFdigitMap->GetNumberOfDigits(vol)==0) continue;
 
@@ -680,31 +705,30 @@ void AliTOFClusterFinderV1::FindOnePadClusterPerStrip(Int_t nSector,
 	if (fTOFdigitMap->GetDigitIndex(vol,digIndex)<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(fTOFdigitMap->GetDigitIndex(vol,digIndex));
 
-	AliDebug(2, Form(" %2i %1i %2i %1i %2i  %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(2, Form(" %3d  %5d    %2d %1d %2d %1d %2d  %d %d %d  %5d  %5d %5d %5d",
+			 fTOFdigitMap->GetNumberOfDigits(vol), digIndex,
 			 vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			 digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			 digitInteresting->GetToT(),
 			 fTOFdigitMap->GetDigitIndex(vol,digIndex),
 			 digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 	
-	//dummyPad = vol[3];
-	//vol[3] = vol[4];
-	//vol[4] = dummyPad;
-	det[3] = vol[4];
-	det[4] = vol[3];
-	tofGeometry->GetPosPar(det,pos);
+	det[3] = vol[4]; // padz
+	det[4] = vol[3]; // padx
+	fTOFGeometry->GetPosPar(det,pos);
 	AliDebug(1,Form(" %f %f %f", pos[0], pos[1], pos[2]));
 
 	//insert cluster
 	for (jj=0; jj<3; jj++) posClus[jj] = pos[jj];
 
 	parTOF[0] = Int_t(digitInteresting->GetTdc());
-	parTOF[1] = Int_t(digitInteresting->GetAdc());
-	parTOF[2] = Int_t(digitInteresting->GetToT());
-	parTOF[3] = Int_t(digitInteresting->GetTdc());
+	parTOF[1] = Int_t(digitInteresting->GetToT());
+	parTOF[2] = Int_t(digitInteresting->GetAdc());
+	parTOF[3] = Int_t(digitInteresting->GetTdcND());
 	parTOF[4] = Int_t(digitInteresting->GetTdc());
 
-	volIdClus = GetClusterVolIndex(det);
+	volIdClus = fTOFGeometry->GetAliSensVolIndex(det[0],det[1],det[2]);
+	//volIdClus = GetClusterVolIndex(det);
 
 	for (jj=0; jj<6; jj++) covClus[jj] = 0.;
 	GetClusterPars(det, posClus, covClus);
@@ -726,7 +750,7 @@ void AliTOFClusterFinderV1::FindOnePadClusterPerStrip(Int_t nSector,
 			    tracks, det, parTOF, status, fTOFdigitMap->GetDigitIndex(vol,digIndex));
 	InsertCluster(tofCluster);
 
-	AliDebug(2, Form("       %4i  %f %f %f  %f %f %f %f %f %f  %3i %3i %3i  %2i %1i %2i %1i %2i  %4i %3i %3i %4i %4i  %1i  %4i", 
+	AliDebug(2, Form("       %4d  %f %f %f  %f %f %f %f %f %f  %3d %3d %3d  %2d %1d %2d %1d %2d  %4d %3d %3d %4d %4d  %1d  %4d", 
 			 volIdClus, posClus[0], posClus[1], posClus[2],
 			 covClus[0], covClus[1], covClus[2], covClus[3], covClus[4], covClus[5],
 			 tracks[0], tracks[1], tracks[2],
@@ -735,11 +759,129 @@ void AliTOFClusterFinderV1::FindOnePadClusterPerStrip(Int_t nSector,
 			 status, fTOFdigitMap->GetDigitIndex(vol,digIndex)));
 
 	AliDebug(2, Form("        %f %f %f", pos[0], pos[1], pos[2]));
-	AliDebug(2, Form("           %f %f", parTOF[0], parTOF[2]));
+	AliDebug(2, Form("           %d %d", parTOF[0], parTOF[2]));
 
-	//dummyPad = vol[3];
-	//vol[3] = vol[4];
-	//vol[4] = dummyPad;
+	fTOFdigitMap->ResetDigit(vol, digIndex);
+
+      }
+
+    }
+  }
+
+}
+//_____________________________________________________________________________
+
+void AliTOFClusterFinderV1::FindClustersWithoutTOT(Int_t nSector,
+						   Int_t nPlate,
+						   Int_t nStrip)
+{
+  //
+  // This function searches the isolated digits without TOT
+  // measurement (stored in the fDigits object), to perform clusters
+  // (stored in the fTofClusters array). This research has been made
+  // by checking the fTOFdigitMap object, filled at digits/raw-data
+  // reading time.
+  //
+
+  const Int_t kMaxNumberOfTracksPerDigit = 3;
+  const Int_t kMaxNumberOfDigitsPerVolume = 3;
+
+  Int_t jj = 0;
+
+  Int_t det[5] = {nSector,nPlate,nStrip,-1,-1};//sector,plate,strip,padZ,padX
+  Int_t vol[5] = {nSector,nPlate,nStrip,-1,-1};//sector,plate,strip,padX,padZ
+  UShort_t volIdClus = 0;
+
+  Float_t pos[3];
+  for (jj=0; jj<3; jj++) pos[jj] = 0.;
+  Double_t posClus[3];
+  for (jj=0; jj<3; jj++) posClus[jj] = 0.;
+
+  Double_t covClus[6];
+  for (jj=0; jj<6; jj++) covClus[jj] = 0.;
+
+  Int_t parTOF[5];
+  for (jj=0; jj<5; jj++) parTOF[jj] = 0;
+
+  Bool_t status = kTRUE; //assume all sim channels ok in the beginning...
+  Int_t tracks[kMaxNumberOfTracksPerDigit];
+  for (jj=0; jj<3; jj++) tracks[jj] = -1;
+
+  Int_t dummyCounter=-1;
+
+  AliTOFdigit *digitInteresting;
+
+  Int_t iPadX = -1;
+  Int_t iPadZ = -1;
+  for (iPadX=0; iPadX<AliTOFGeometry::NpadX(); iPadX++) {
+    for (iPadZ=0; iPadZ<AliTOFGeometry::NpadZ(); iPadZ++) {
+      vol[4] = iPadZ  , vol[3]  = iPadX;
+
+      AliDebug(3, Form(" %1d %2d\n", iPadZ, iPadX));
+
+      if (fTOFdigitMap->GetNumberOfDigits(vol)==0) continue;
+
+      for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
+	if (fTOFdigitMap->GetDigitIndex(vol,digIndex)<0) continue;
+	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(fTOFdigitMap->GetDigitIndex(vol,digIndex));
+	if (digitInteresting->GetToT()>0) continue; // AdC
+
+	AliDebug(2, Form(" %3d  %5d    %2d %1d %2d %1d %2d  %d %d %d  %5d  %5d %5d %5d",
+			 fTOFdigitMap->GetNumberOfDigits(vol), digIndex,
+			 vol[0], vol[1], vol[2] ,vol[4], vol[3],
+			 digitInteresting->GetTdc(), digitInteresting->GetAdc(),
+			 digitInteresting->GetToT(),
+			 fTOFdigitMap->GetDigitIndex(vol,digIndex),
+			 digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
+	
+	det[3] = vol[4]; // padz
+	det[4] = vol[3]; // padx
+	fTOFGeometry->GetPosPar(det,pos);
+	AliDebug(1,Form(" %f %f %f", pos[0], pos[1], pos[2]));
+
+	//insert cluster
+	for (jj=0; jj<3; jj++) posClus[jj] = pos[jj];
+
+	parTOF[0] = Int_t(digitInteresting->GetTdc());
+	parTOF[1] = Int_t(digitInteresting->GetToT());
+	parTOF[2] = Int_t(digitInteresting->GetAdc());
+	parTOF[3] = Int_t(digitInteresting->GetTdcND());
+	parTOF[4] = Int_t(digitInteresting->GetTdc());
+
+	volIdClus = fTOFGeometry->GetAliSensVolIndex(det[0],det[1],det[2]);
+	//volIdClus = GetClusterVolIndex(det);
+
+	for (jj=0; jj<6; jj++) covClus[jj] = 0.;
+	GetClusterPars(det, posClus, covClus);
+
+	// To fill the track index array
+	dummyCounter=-1;
+	for (jj=0; jj<kMaxNumberOfTracksPerDigit; jj++) tracks[jj] = -1;
+	for (jj=0; jj<kMaxNumberOfTracksPerDigit; jj++) { // three is the max number of tracks associated to one digit
+	  if (digitInteresting->GetTrack(jj)==-1) continue;
+	  else {
+	    dummyCounter++;
+	    tracks[dummyCounter] = digitInteresting->GetTrack(jj);
+	  }
+	}
+
+	AliTOFcluster *tofCluster =
+	  new AliTOFcluster(volIdClus, posClus[0], posClus[1], posClus[2],
+			    covClus[0], covClus[1], covClus[2], covClus[3], covClus[4], covClus[5],
+			    tracks, det, parTOF, status, fTOFdigitMap->GetDigitIndex(vol,digIndex));
+	InsertCluster(tofCluster);
+
+	AliDebug(2, Form("       %4d  %f %f %f  %f %f %f %f %f %f  %3d %3d %3d  %2d %1d %2d %1d %2d  %4d %3d %3d %4d %4d  %1d  %4d", 
+			 volIdClus, posClus[0], posClus[1], posClus[2],
+			 covClus[0], covClus[1], covClus[2], covClus[3], covClus[4], covClus[5],
+			 tracks[0], tracks[1], tracks[2],
+			 det[0], det[1], det[2], det[3], det[4],
+			 parTOF[0], parTOF[1], parTOF[2], parTOF[3], parTOF[4],
+			 status, fTOFdigitMap->GetDigitIndex(vol,digIndex)));
+
+	AliDebug(2, Form("        %f %f %f", pos[0], pos[1], pos[2]));
+	AliDebug(2, Form("           %d %d", parTOF[0], parTOF[2]));
+
 	fTOFdigitMap->ResetDigit(vol, digIndex);
 
       }
@@ -772,7 +914,6 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
   for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
     digitsInVolumeIndices[ii] = -1;
 
-  AliTOFGeometry *tofGeometry = new AliTOFGeometry();
   Int_t vol[5] = {nSector,nPlate,nStrip,-1,-1};
 
   Float_t pos[3] = {0.,0.,0.};
@@ -808,6 +949,7 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
   for (jj=3; jj<11; jj++) padsCluster[jj] = -1;
 
   Int_t interestingCounter=-1;
+  Int_t  digitIndexLocal=-1; // AdC
   Int_t iPad  = -1;
   Int_t iPadX = -1;
   Int_t iPadZ = -1;
@@ -844,7 +986,7 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
     iPadZ = iPad%AliTOFGeometry::NpadZ(); //iPad%2;
     iPadX = iPad/AliTOFGeometry::NpadZ(); //iPad/2;
 
-    AliDebug(3, Form("%2i %1i %2i\n", iPad, iPadZ, iPadX));
+    AliDebug(3, Form("%2d %1d %2d\n", iPad, iPadZ, iPadX));
 
 
 
@@ -885,11 +1027,14 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -897,13 +1042,14 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 
 
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
 
@@ -914,11 +1060,14 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -926,13 +1075,14 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 
 
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
 
@@ -943,11 +1093,14 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -955,13 +1108,14 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 
 
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
 
@@ -972,28 +1126,31 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1;
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
-    AliDebug(1,Form(" e adesso %1i", interestingCounter+1));
+    AliDebug(1,Form(" e adesso %1d", interestingCounter+1));
 
     for (Int_t adesso1=0; adesso1<interestingCounter+1; adesso1++) {
       for (Int_t firstIndex=0; firstIndex<kMaxNumberOfDigitsPerVolume; firstIndex++) {
@@ -1019,11 +1176,11 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 		interestingADC[0] = selectedDigit[adesso1][firstIndex]->GetADC();
 		interestingWeight[0] = selectedDigit[adesso1][firstIndex]->GetWeight();
 		Int_t vol1[5]; for(jj=0; jj<5; jj++) vol1[jj] = selectedDigit[adesso1][firstIndex]->GetDetectorIndex(jj);
-		AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol1[0], vol1[1], vol1[2], vol1[4], vol1[3]));
+		AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol1[0], vol1[1], vol1[2], vol1[4], vol1[3]));
 		Int_t volDum = vol1[3];
 		vol1[3] = vol1[4];
 		vol1[4] = volDum;
-		tofGeometry->GetPosPar(vol1,pos);
+		fTOFGeometry->GetPosPar(vol1,pos);
 		interestingX[0] = pos[0];
 		interestingY[0] = pos[1];
 		interestingZ[0] = pos[2];
@@ -1033,11 +1190,11 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 		interestingADC[1] = selectedDigit[adesso2][secondIndex]->GetADC();
 		interestingWeight[1] = selectedDigit[adesso2][secondIndex]->GetWeight();
 		Int_t vol2[5]; for(jj=0; jj<5; jj++) vol2[jj] = selectedDigit[adesso2][secondIndex]->GetDetectorIndex(jj);
-		AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol2[0], vol2[1], vol2[2], vol2[4], vol2[3]));
+		AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol2[0], vol2[1], vol2[2], vol2[4], vol2[3]));
 		volDum = vol2[3];
 		vol2[3] = vol2[4];
 		vol2[4] = volDum;
-		tofGeometry->GetPosPar(vol2,pos);
+		fTOFGeometry->GetPosPar(vol2,pos);
 		interestingX[1] = pos[0];
 		interestingY[1] = pos[1];
 		interestingZ[1] = pos[2];
@@ -1047,11 +1204,11 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 		interestingADC[2] = selectedDigit[adesso3][thirdIndex]->GetADC();
 		interestingWeight[2] = selectedDigit[adesso3][thirdIndex]->GetWeight();
 		Int_t vol3[5]; for(jj=0; jj<5; jj++) vol3[jj] = selectedDigit[adesso3][thirdIndex]->GetDetectorIndex(jj);
-		AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol3[0], vol3[1], vol3[2], vol3[4], vol3[3]));
+		AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol3[0], vol3[1], vol3[2], vol3[4], vol3[3]));
 		volDum = vol3[3];
 		vol3[3] = vol3[4];
 		vol3[4] = volDum;
-		tofGeometry->GetPosPar(vol3,pos);
+		fTOFGeometry->GetPosPar(vol3,pos);
 		interestingX[2] = pos[0];
 		interestingY[2] = pos[1];
 		interestingZ[2] = pos[2];
@@ -1065,9 +1222,10 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 
 		for (jj=0; jj<5; jj++) det[jj] = -1;
 		for (jj=0; jj<3; jj++) posF[jj] = posClus[jj];
-		tofGeometry->GetDetID(posF, det);
+		fTOFGeometry->GetDetID(posF, det);
 
-		volIdClus = GetClusterVolIndex(det);
+		volIdClus = fTOFGeometry->GetAliSensVolIndex(det[0],det[1],det[2]);
+		//volIdClus = GetClusterVolIndex(det);
 
 		for (jj=3; jj<11; jj++) padsCluster[jj] = -1;
 		padsCluster[3] = selectedDigit[adesso1][firstIndex]->GetDetectorIndex(4);
@@ -1085,7 +1243,7 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 		for (jj=0; jj<3; jj++) indDet[jj][2] = nStrip;
 		for (jj=0; jj<3; jj++) indDet[jj][3] = padsCluster[2*jj+3];
 		for (jj=0; jj<3; jj++) indDet[jj][4] = padsCluster[2*jj+1+3];
-		GetClusterPars(check, 3, indDet, interestingWeight, posClus, covClus);
+		GetClusterPars(/*check,*/ 3, indDet, interestingWeight, posClus, covClus);
 		for (jj=0; jj<3; jj++) delete [] indDet[jj];
 
 		// To fill the track index array
@@ -1146,7 +1304,7 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 				    tracks, det, parTOF, status, selectedDigit[adesso1][firstIndex]->GetIndex()); // to be updated
 		InsertCluster(tofCluster);
 
-		AliDebug(2, Form("       %4i  %f %f %f  %f %f %f %f %f %f  %3i %3i %3i  %2i %1i %2i %1i %2i  %4i %3i %3i %4i %4i  %1i  %4i", 
+		AliDebug(2, Form("       %4d  %f %f %f  %f %f %f %f %f %f  %3d %3d %3d  %2d %1d %2d %1d %2d  %4d %3d %3d %4d %4d  %1d  %4d", 
 				 volIdClus, posClus[0], posClus[1], posClus[2],
 				 covClus[0], covClus[1], covClus[2], covClus[3], covClus[4], covClus[5],
 				 tracks[0], tracks[1], tracks[2],
@@ -1216,7 +1374,6 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
   for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
     digitsInVolumeIndices[ii] = -1;
 
-  AliTOFGeometry *tofGeometry = new AliTOFGeometry();
   Int_t vol[5] = {nSector,nPlate,nStrip,-1,-1};
 
   Float_t pos[3] = {0.,0.,0.};
@@ -1252,6 +1409,7 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
   for (jj=3; jj<11; jj++) padsCluster[jj] = -1;
 
   Int_t interestingCounter=-1;
+  Int_t digitIndexLocal = -1;
   Int_t iPad  = -1;
   Int_t iPadX = -1;
   Int_t iPadZ = -1;
@@ -1288,7 +1446,7 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
     iPadZ = iPad%AliTOFGeometry::NpadZ(); //iPad%2;
     iPadX = iPad/AliTOFGeometry::NpadZ(); //iPad/2;
 
-    AliDebug(3, Form("%2i %1i %2i\n", iPad, iPadZ, iPadX));
+    AliDebug(3, Form("%2d %1d %2d\n", iPad, iPadZ, iPadX));
 
 
 
@@ -1329,25 +1487,28 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1;
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
 
@@ -1358,25 +1519,28 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
 
@@ -1387,25 +1551,28 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
 
@@ -1416,28 +1583,31 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
-    AliDebug(1,Form(" e adesso %1i", interestingCounter+1));
+    AliDebug(1,Form(" e adesso %1d", interestingCounter+1));
 
     for (Int_t adesso1=0; adesso1<interestingCounter+1; adesso1++) {
       for (Int_t firstIndex=0; firstIndex<kMaxNumberOfDigitsPerVolume; firstIndex++) {
@@ -1454,11 +1624,11 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
 	    interestingADC[0] = selectedDigit[adesso1][firstIndex]->GetADC();
 	    interestingWeight[0] = selectedDigit[adesso1][firstIndex]->GetWeight();
 	    Int_t vol1[5]; for(jj=0; jj<5; jj++) vol1[jj] = selectedDigit[adesso1][firstIndex]->GetDetectorIndex(jj);
-	    AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol1[0], vol1[1], vol1[2], vol1[4], vol1[3]));
+	    AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol1[0], vol1[1], vol1[2], vol1[4], vol1[3]));
 	    Int_t volDum = vol1[3];
 	    vol1[3] = vol1[4];
 	    vol1[4] = volDum;
-	    tofGeometry->GetPosPar(vol1,pos);
+	    fTOFGeometry->GetPosPar(vol1,pos);
 	    interestingX[0] = pos[0];
 	    interestingY[0] = pos[1];
 	    interestingZ[0] = pos[2];
@@ -1468,11 +1638,11 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
 	    interestingADC[1] = selectedDigit[adesso2][secondIndex]->GetADC();
 	    interestingWeight[1] = selectedDigit[adesso2][secondIndex]->GetWeight();
 	    Int_t vol2[5]; for(jj=0; jj<5; jj++) vol2[jj] = selectedDigit[adesso2][secondIndex]->GetDetectorIndex(jj);
-	    AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol2[0], vol2[1], vol2[2], vol2[4], vol2[3]));
+	    AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol2[0], vol2[1], vol2[2], vol2[4], vol2[3]));
 	    volDum = vol2[3];
 	    vol2[3] = vol2[4];
 	    vol2[4] = volDum;
-	    tofGeometry->GetPosPar(vol2,pos);
+	    fTOFGeometry->GetPosPar(vol2,pos);
 	    interestingX[1] = pos[0];
 	    interestingY[1] = pos[1];
 	    interestingZ[1] = pos[2];
@@ -1484,9 +1654,10 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
 
 	    for (jj=0; jj<5; jj++) det[jj] = -1;
 	    for (jj=0; jj<3; jj++) posF[jj] = posClus[jj];
-	    tofGeometry->GetDetID(posF, det);
+	    fTOFGeometry->GetDetID(posF, det);
 
-	    volIdClus = GetClusterVolIndex(det);
+	    volIdClus = fTOFGeometry->GetAliSensVolIndex(det[0],det[1],det[2]);
+	    //volIdClus = GetClusterVolIndex(det);
 
 	    for (jj=3; jj<11; jj++) padsCluster[jj] = -1;
 	    padsCluster[3] = selectedDigit[adesso1][firstIndex]->GetDetectorIndex(4);
@@ -1502,7 +1673,7 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
 	    for (jj=0; jj<2; jj++) indDet[jj][2] = nStrip;
 	    for (jj=0; jj<2; jj++) indDet[jj][3] = padsCluster[2*jj+3];
 	    for (jj=0; jj<2; jj++) indDet[jj][4] = padsCluster[2*jj+1+3];
-	    GetClusterPars(check, 2, indDet, interestingWeight, posClus, covClus);
+	    GetClusterPars(/*check,*/ 2, indDet, interestingWeight, posClus, covClus);
 	    for (jj=0; jj<2; jj++) delete [] indDet[jj];
 
 	    // To fill the track index array
@@ -1543,7 +1714,7 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
 				tracks, det, parTOF, status, selectedDigit[adesso1][firstIndex]->GetIndex()); // to be updated
 	    InsertCluster(tofCluster);
 
-	    AliDebug(2, Form("       %4i  %f %f %f  %f %f %f %f %f %f  %3i %3i %3i  %2i %1i %2i %1i %2i  %4i %3i %3i %4i %4i  %1i  %4i", 
+	    AliDebug(2, Form("       %4d  %f %f %f  %f %f %f %f %f %f  %3d %3d %3d  %2d %1d %2d %1d %2d  %4d %3d %3d %4d %4d  %1d  %4d", 
 			     volIdClus, posClus[0], posClus[1], posClus[2],
 			     covClus[0], covClus[1], covClus[2], covClus[3], covClus[4], covClus[5],
 			     tracks[0], tracks[1], tracks[2],
@@ -1605,7 +1776,6 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
   for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
     digitsInVolumeIndices[ii] = -1;
 
-  AliTOFGeometry *tofGeometry = new AliTOFGeometry();
   Int_t vol[5] = {nSector,nPlate,nStrip,-1,-1};
 
   Float_t pos[3] = {0.,0.,0.};
@@ -1641,6 +1811,7 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
   for (jj=3; jj<11; jj++) padsCluster[jj] = -1;
 
   Int_t interestingCounter=-1;
+  Int_t digitIndexLocal = -1;
   Int_t iPad  = -1;
   Int_t iPadX = -1;
   Int_t iPadZ = -1;
@@ -1677,7 +1848,7 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
     iPadZ = iPad%AliTOFGeometry::NpadZ(); //iPad%2;
     iPadX = iPad/AliTOFGeometry::NpadZ(); //iPad/2;
 
-    AliDebug(3, Form("%2i %1i %2i\n", iPad, iPadZ, iPadX));
+    AliDebug(3, Form("%2d %1d %2d\n", iPad, iPadZ, iPadX));
 
 
 
@@ -1718,25 +1889,28 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
 
@@ -1747,25 +1921,28 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
 
@@ -1776,25 +1953,28 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
 
@@ -1805,28 +1985,31 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
-    AliDebug(1,Form(" e adesso %1i", interestingCounter+1));
+    AliDebug(1,Form(" e adesso %1d", interestingCounter+1));
 
     for (Int_t adesso1=0; adesso1<interestingCounter+1; adesso1++) {
       for (Int_t firstIndex=0; firstIndex<kMaxNumberOfDigitsPerVolume; firstIndex++) {
@@ -1843,11 +2026,11 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
 	    interestingADC[0] = selectedDigit[adesso1][firstIndex]->GetADC();
 	    interestingWeight[0] = selectedDigit[adesso1][firstIndex]->GetWeight();
 	    Int_t vol1[5]; for(jj=0; jj<5; jj++) vol1[jj] = selectedDigit[adesso1][firstIndex]->GetDetectorIndex(jj);
-	    AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol1[0], vol1[1], vol1[2], vol1[4], vol1[3]));
+	    AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol1[0], vol1[1], vol1[2], vol1[4], vol1[3]));
 	    Int_t volDum = vol1[3];
 	    vol1[3] = vol1[4];
 	    vol1[4] = volDum;
-	    tofGeometry->GetPosPar(vol1,pos);
+	    fTOFGeometry->GetPosPar(vol1,pos);
 	    interestingX[0] = pos[0];
 	    interestingY[0] = pos[1];
 	    interestingZ[0] = pos[2];
@@ -1857,11 +2040,11 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
 	    interestingADC[1] = selectedDigit[adesso2][secondIndex]->GetADC();
 	    interestingWeight[1] = selectedDigit[adesso2][secondIndex]->GetWeight();
 	    Int_t vol2[5]; for(jj=0; jj<5; jj++) vol2[jj] = selectedDigit[adesso2][secondIndex]->GetDetectorIndex(jj);
-	    AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol2[0], vol2[1], vol2[2], vol2[4], vol2[3]));
+	    AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol2[0], vol2[1], vol2[2], vol2[4], vol2[3]));
 	    volDum = vol2[3];
 	    vol2[3] = vol2[4];
 	    vol2[4] = volDum;
-	    tofGeometry->GetPosPar(vol2,pos);
+	    fTOFGeometry->GetPosPar(vol2,pos);
 	    interestingX[1] = pos[0];
 	    interestingY[1] = pos[1];
 	    interestingZ[1] = pos[2];
@@ -1874,9 +2057,10 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
 
 	    for (jj=0; jj<5; jj++) det[jj] = -1;
 	    for (jj=0; jj<3; jj++) posF[jj] = posClus[jj];
-	    tofGeometry->GetDetID(posF, det);
+	    fTOFGeometry->GetDetID(posF, det);
 
-	    volIdClus = GetClusterVolIndex(det);
+	    volIdClus = fTOFGeometry->GetAliSensVolIndex(det[0],det[1],det[2]);
+	    //volIdClus = GetClusterVolIndex(det);
 
 	    for (jj=3; jj<11; jj++) padsCluster[jj] = -1;
 	    padsCluster[3] = selectedDigit[adesso1][firstIndex]->GetDetectorIndex(4);
@@ -1892,7 +2076,7 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
 	    for (jj=0; jj<2; jj++) indDet[jj][2] = nStrip;
 	    for (jj=0; jj<2; jj++) indDet[jj][3] = padsCluster[2*jj+3];
 	    for (jj=0; jj<2; jj++) indDet[jj][4] = padsCluster[2*jj+1+3];
-	    GetClusterPars(check, 2, indDet, interestingWeight, posClus, covClus);
+	    GetClusterPars(/*check,*/ 2, indDet, interestingWeight, posClus, covClus);
 	    for (jj=0; jj<2; jj++) delete [] indDet[jj];
 
 	    // To fill the track index array
@@ -1933,7 +2117,7 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
 				tracks, det, parTOF, status, selectedDigit[adesso1][firstIndex]->GetIndex()); // to be updated
 	    InsertCluster(tofCluster);
 
-	    AliDebug(2, Form("       %4i  %f %f %f  %f %f %f %f %f %f  %3i %3i %3i  %2i %1i %2i %1i %2i  %4i %3i %3i %4i %4i  %1i  %4i", 
+	    AliDebug(2, Form("       %4d  %f %f %f  %f %f %f %f %f %f  %3d %3d %3d  %2d %1d %2d %1d %2d  %4d %3d %3d %4d %4d  %1d  %4d", 
 			     volIdClus, posClus[0], posClus[1], posClus[2],
 			     covClus[0], covClus[1], covClus[2], covClus[3], covClus[4], covClus[5],
 			     tracks[0], tracks[1], tracks[2],
@@ -2005,8 +2189,6 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
   for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
     digitsInVolumeIndices[ii] = -1;
 
-  AliTOFGeometry *tofGeometry = new AliTOFGeometry();
-
   Int_t vol[5] = {nSector,nPlate,nStrip,-1,-1};
 
   Float_t pos[3] = {0.,0.,0.};
@@ -2042,6 +2224,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
   for (jj=3; jj<11; jj++) padsCluster[jj] = -1;
 
   Int_t interestingCounter=-1;
+  Int_t digitIndexLocal = -1;
   Int_t iPad  = -1;
   Int_t iPadX = -1;
   Int_t iPadZ = -1;
@@ -2080,7 +2263,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
     iPadZ = iPad%AliTOFGeometry::NpadZ(); //iPad%2;
     iPadX = iPad/AliTOFGeometry::NpadZ(); //iPad/2;
 
-    AliDebug(3, Form("%2i %1i %2i\n", iPad, iPadZ, iPadX));
+    AliDebug(3, Form("%2d %1d %2d\n", iPad, iPadZ, iPadX));
 
 
 
@@ -2121,25 +2304,29 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
+	AliDebug(1,Form("   to try   %d %d ",digIndex, interestingCounter));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
 
@@ -2150,25 +2337,29 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
+	AliDebug(1,Form("   to try   %d %d ",digIndex, interestingCounter));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
 
@@ -2179,25 +2370,29 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
+	AliDebug(1,Form("   to try   %d %d ",digIndex, interestingCounter));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
 
@@ -2208,28 +2403,32 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
       for (ii=0; ii<kMaxNumberOfDigitsPerVolume; ii++)
 	digitsInVolumeIndices[ii] = -1;
       fTOFdigitMap->GetDigitIndex(vol, digitsInVolumeIndices);
+      digitIndexLocal=-1; // AdC
       for(Int_t digIndex=0; digIndex<kMaxNumberOfDigitsPerVolume; digIndex++) {
 	if (digitsInVolumeIndices[digIndex]<0) continue;
 	digitInteresting = (AliTOFdigit*)fDigits->UncheckedAt(digitsInVolumeIndices[digIndex]);
+	if (digitInteresting->GetToT()<=0) continue; // AdC
+	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2i %1i %2i %1i %2i  %f %f %f %f  %5i  %5i %5i %5i",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
 			digitsInVolumeIndices[digIndex],
 			digitInteresting->GetTrack(0), digitInteresting->GetTrack(1), digitInteresting->GetTrack(2)));
+	AliDebug(1,Form("   to try   %d %d ",digIndex, interestingCounter));
 
-
-	selectedDigit[interestingCounter][digIndex] = new
+	selectedDigit[interestingCounter][digitIndexLocal] = new // AdC
 	  AliTOFselectedDigit(vol, digitInteresting->GetTdc(),
 			      digitInteresting->GetAdc(), digitInteresting->GetToT(),
 			      digitInteresting->GetToT()*digitInteresting->GetToT(),
 			      digitsInVolumeIndices[digIndex],
 			      digitInteresting->GetTracks());
       }
+      if (digitIndexLocal==-1) interestingCounter--; // AdC
     }
 
-    AliDebug(1,Form(" e adesso %1i", interestingCounter+1));
+    AliDebug(1,Form(" e adesso %1d", interestingCounter+1));
 
     switch(interestingCounter+1) {
 
@@ -2245,7 +2444,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 
 	      if (TMath::Abs(selectedDigit[adesso1][firstIndex]->GetTDC()-selectedDigit[adesso2][secondIndex]->GetTDC())>fMaxDeltaTime) continue;
 
-	      AliDebug(1, Form(" %1i %1i (0x%x) %1i %1i (0x%x)", adesso1, firstIndex,selectedDigit[adesso1][firstIndex],
+	      AliDebug(1, Form(" %1d %1d (0x%x) %1d %1d (0x%x)", adesso1, firstIndex,selectedDigit[adesso1][firstIndex],
 			       adesso2, secondIndex,selectedDigit[adesso2][secondIndex]));
 
 	      interestingTOF[0] = selectedDigit[adesso1][firstIndex]->GetTDC();
@@ -2253,11 +2452,11 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 	      interestingADC[0] = selectedDigit[adesso1][firstIndex]->GetADC();
 	      interestingWeight[0] = selectedDigit[adesso1][firstIndex]->GetWeight();
 	      Int_t vol1[5]; for(jj=0; jj<5; jj++) vol1[jj] = selectedDigit[adesso1][firstIndex]->GetDetectorIndex(jj);
-	      AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol1[0], vol1[1], vol1[2], vol1[4], vol1[3]));
+	      AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol1[0], vol1[1], vol1[2], vol1[4], vol1[3]));
 	      Int_t volDum = vol1[3];
 	      vol1[3] = vol1[4];
 	      vol1[4] = volDum;
-	      tofGeometry->GetPosPar(vol1,pos);
+	      fTOFGeometry->GetPosPar(vol1,pos);
 	      AliDebug(1,Form(" %f %f %f", pos[0], pos[1], pos[2]));
 	      interestingX[0] = pos[0];
 	      interestingY[0] = pos[1];
@@ -2268,11 +2467,11 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 	      interestingADC[1] = selectedDigit[adesso2][secondIndex]->GetADC();
 	      interestingWeight[1] = selectedDigit[adesso2][secondIndex]->GetWeight();
 	      Int_t vol2[5]; for(jj=0; jj<5; jj++) vol2[jj] = selectedDigit[adesso2][secondIndex]->GetDetectorIndex(jj);
-	      AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol2[0], vol2[1], vol2[2], vol2[4], vol2[3]));
+	      AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol2[0], vol2[1], vol2[2], vol2[4], vol2[3]));
 	      volDum = vol2[3];
 	      vol2[3] = vol2[4];
 	      vol2[4] = volDum;
-	      tofGeometry->GetPosPar(vol2,pos);
+	      fTOFGeometry->GetPosPar(vol2,pos);
 	      AliDebug(1,Form(" %f %f %f", pos[0], pos[1], pos[2]));
 	      interestingX[1] = pos[0];
 	      interestingY[1] = pos[1];
@@ -2289,10 +2488,11 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 	      for (jj=0; jj<3; jj++) posF[jj] = posClus[jj];
 
 	      AliDebug(1,Form(" %f %f %f", posF[0], posF[1], posF[2]));
-	      tofGeometry->GetDetID(posF, det);
-	      AliDebug(1,Form(" %2i %1i %2i %1i %2i", det[0], det[1], det[2], det[3], det[4]));
+	      fTOFGeometry->GetDetID(posF, det);
+	      AliDebug(1,Form(" %2d %1d %2d %1d %2d", det[0], det[1], det[2], det[3], det[4]));
 
-	      volIdClus = GetClusterVolIndex(det);
+	      volIdClus = fTOFGeometry->GetAliSensVolIndex(det[0],det[1],det[2]);
+	      //volIdClus = GetClusterVolIndex(det);
 
 	      for (jj=3; jj<11; jj++) padsCluster[jj] = -1;
 	      padsCluster[3] = selectedDigit[adesso1][firstIndex]->GetDetectorIndex(4);
@@ -2308,7 +2508,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 	      for (jj=0; jj<interestingCounter+1; jj++) indDet[jj][2] = nStrip;
 	      for (jj=0; jj<interestingCounter+1; jj++) indDet[jj][3] = padsCluster[2*jj+3];
 	      for (jj=0; jj<interestingCounter+1; jj++) indDet[jj][4] = padsCluster[2*jj+1+3];
-	      GetClusterPars(check, interestingCounter+1, indDet, interestingWeight, posClus, covClus);
+	      GetClusterPars(/*check,*/ interestingCounter+1, indDet, interestingWeight, posClus, covClus);
 	      for (jj=0; jj<interestingCounter+1; jj++) delete [] indDet[jj];
 
 	      // To fill the track index array
@@ -2349,7 +2549,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 				  tracks, det, parTOF, status, selectedDigit[adesso1][firstIndex]->GetIndex()); //to updated
 	      InsertCluster(tofCluster);
 
-	      AliDebug(2, Form("       %4i  %f %f %f  %f %f %f %f %f %f  %3i %3i %3i  %2i %1i %2i %1i %2i  %4i %3i %3i %4i %4i  %1i  %4i", 
+	      AliDebug(2, Form("       %4d  %f %f %f  %f %f %f %f %f %f  %3d %3d %3d  %2d %1d %2d %1d %2d  %4d %3d %3d %4d %4d  %1d  %4d", 
 			       volIdClus, posClus[0], posClus[1], posClus[2],
 			       covClus[0], covClus[1], covClus[2], covClus[3], covClus[4], covClus[5],
 			       tracks[0], tracks[1], tracks[2],
@@ -2402,11 +2602,11 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 		  interestingADC[0] = selectedDigit[adesso1][firstIndex]->GetADC();
 		  interestingWeight[0] = selectedDigit[adesso1][firstIndex]->GetWeight();
 		  Int_t vol1[5]; for(jj=0; jj<5; jj++) vol1[jj] = selectedDigit[adesso1][firstIndex]->GetDetectorIndex(jj);
-		  AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol1[0], vol1[1], vol1[2], vol1[4], vol1[3]));
+		  AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol1[0], vol1[1], vol1[2], vol1[4], vol1[3]));
 		  Int_t volDum = vol1[3];
 		  vol1[3] = vol1[4];
 		  vol1[4] = volDum;
-		  tofGeometry->GetPosPar(vol1,pos);
+		  fTOFGeometry->GetPosPar(vol1,pos);
 		  interestingX[0] = pos[0];
 		  interestingY[0] = pos[1];
 		  interestingZ[0] = pos[2];
@@ -2416,11 +2616,11 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 		  interestingADC[1] = selectedDigit[adesso2][secondIndex]->GetADC();
 		  interestingWeight[1] = selectedDigit[adesso2][secondIndex]->GetWeight();
 		  Int_t vol2[5]; for(jj=0; jj<5; jj++) vol2[jj] = selectedDigit[adesso2][secondIndex]->GetDetectorIndex(jj);
-		  AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol2[0], vol2[1], vol2[2], vol2[4], vol2[3]));
+		  AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol2[0], vol2[1], vol2[2], vol2[4], vol2[3]));
 		  volDum = vol2[3];
 		  vol2[3] = vol2[4];
 		  vol2[4] = volDum;
-		  tofGeometry->GetPosPar(vol2,pos);
+		  fTOFGeometry->GetPosPar(vol2,pos);
 		  interestingX[1] = pos[0];
 		  interestingY[1] = pos[1];
 		  interestingZ[1] = pos[2];
@@ -2430,11 +2630,11 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 		  interestingADC[2] = selectedDigit[adesso3][thirdIndex]->GetADC();
 		  interestingWeight[2] = selectedDigit[adesso3][thirdIndex]->GetWeight();
 		  Int_t vol3[5]; for(jj=0; jj<5; jj++) vol3[jj] = selectedDigit[adesso3][thirdIndex]->GetDetectorIndex(jj);
-		  AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol3[0], vol3[1], vol3[2], vol3[4], vol3[3]));
+		  AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol3[0], vol3[1], vol3[2], vol3[4], vol3[3]));
 		  volDum = vol3[3];
 		  vol3[3] = vol3[4];
 		  vol3[4] = volDum;
-		  tofGeometry->GetPosPar(vol3,pos);
+		  fTOFGeometry->GetPosPar(vol3,pos);
 		  interestingX[2] = pos[0];
 		  interestingY[2] = pos[1];
 		  interestingZ[2] = pos[2];
@@ -2448,9 +2648,10 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 
 		  for (jj=0; jj<5; jj++) det[jj] = -1;
 		  for (jj=0; jj<3; jj++) posF[jj] = posClus[jj];
-		  tofGeometry->GetDetID(posF, det);
+		  fTOFGeometry->GetDetID(posF, det);
 
-		  volIdClus = GetClusterVolIndex(det);
+		  volIdClus = fTOFGeometry->GetAliSensVolIndex(det[0],det[1],det[2]);
+		  //volIdClus = GetClusterVolIndex(det);
 
 		  for (jj=3; jj<11; jj++) padsCluster[jj] = -1;
 		  padsCluster[3] = selectedDigit[adesso1][firstIndex]->GetDetectorIndex(4);
@@ -2468,7 +2669,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 		  for (jj=0; jj<interestingCounter+1; jj++) indDet[jj][2] = nStrip;
 		  for (jj=0; jj<interestingCounter+1; jj++) indDet[jj][3] = padsCluster[2*jj+3];
 		  for (jj=0; jj<interestingCounter+1; jj++) indDet[jj][4] = padsCluster[2*jj+1+3];
-		  GetClusterPars(check, interestingCounter+1, indDet, interestingWeight, posClus, covClus);
+		  GetClusterPars(/*check,*/ interestingCounter+1, indDet, interestingWeight, posClus, covClus);
 		  for (jj=0; jj<interestingCounter+1; jj++) delete [] indDet[jj];
 
 		  // To fill the track index array
@@ -2529,7 +2730,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 				      tracks, det, parTOF, status, selectedDigit[adesso1][firstIndex]->GetIndex()); // to be updated
 		  InsertCluster(tofCluster);
 
-		  AliDebug(2, Form("       %4i  %f %f %f  %f %f %f %f %f %f  %3i %3i %3i  %2i %1i %2i %1i %2i  %4i %3i %3i %4i %4i  %1i  %4i", 
+		  AliDebug(2, Form("       %4d  %f %f %f  %f %f %f %f %f %f  %3d %3d %3d  %2d %1d %2d %1d %2d  %4d %3d %3d %4d %4d  %1d  %4d", 
 				   volIdClus, posClus[0], posClus[1], posClus[2],
 				   covClus[0], covClus[1], covClus[2], covClus[3], covClus[4], covClus[5],
 				   tracks[0], tracks[1], tracks[2],
@@ -2599,11 +2800,11 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 	      interestingADC[0] = selectedDigit[adesso1][firstIndex]->GetADC();
 	      interestingWeight[0] = selectedDigit[adesso1][firstIndex]->GetWeight();
 	      Int_t vol1[5]; for(jj=0; jj<5; jj++) vol1[jj] = selectedDigit[adesso1][firstIndex]->GetDetectorIndex(jj);
-	      AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol1[0], vol1[1], vol1[2], vol1[4], vol1[3]));
+	      AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol1[0], vol1[1], vol1[2], vol1[4], vol1[3]));
 	      Int_t volDum = vol1[3];
 	      vol1[3] = vol1[4];
 	      vol1[4] = volDum;
-	      tofGeometry->GetPosPar(vol1,pos);
+	      fTOFGeometry->GetPosPar(vol1,pos);
 	      interestingX[0] = pos[0];
 	      interestingY[0] = pos[1];
 	      interestingZ[0] = pos[2];
@@ -2613,11 +2814,11 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 	      interestingADC[1] = selectedDigit[adesso2][secondIndex]->GetADC();
 	      interestingWeight[1] = selectedDigit[adesso2][secondIndex]->GetWeight();
 	      Int_t vol2[5]; for(jj=0; jj<5; jj++) vol2[jj] = selectedDigit[adesso2][secondIndex]->GetDetectorIndex(jj);
-	      AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol2[0], vol2[1], vol2[2], vol2[4], vol2[3]));
+	      AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol2[0], vol2[1], vol2[2], vol2[4], vol2[3]));
 	      volDum = vol2[3];
 	      vol2[3] = vol2[4];
 	      vol2[4] = volDum;
-	      tofGeometry->GetPosPar(vol2,pos);
+	      fTOFGeometry->GetPosPar(vol2,pos);
 	      interestingX[1] = pos[0];
 	      interestingY[1] = pos[1];
 	      interestingZ[1] = pos[2];
@@ -2627,11 +2828,11 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 	      interestingADC[2] = selectedDigit[adesso3][thirdIndex]->GetADC();
 	      interestingWeight[2] = selectedDigit[adesso3][thirdIndex]->GetWeight();
 	      Int_t vol3[5]; for(jj=0; jj<5; jj++) vol3[jj] = selectedDigit[adesso3][thirdIndex]->GetDetectorIndex(jj);
-	      AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol3[0], vol3[1], vol3[2], vol3[4], vol3[3]));
+	      AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol3[0], vol3[1], vol3[2], vol3[4], vol3[3]));
 	      volDum = vol3[3];
 	      vol3[3] = vol3[4];
 	      vol3[4] = volDum;
-	      tofGeometry->GetPosPar(vol3,pos);
+	      fTOFGeometry->GetPosPar(vol3,pos);
 	      interestingX[2] = pos[0];
 	      interestingY[2] = pos[1];
 	      interestingZ[2] = pos[2];
@@ -2641,11 +2842,11 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 	      interestingADC[3] = selectedDigit[adesso4][fourthIndex]->GetADC();
 	      interestingWeight[3] = selectedDigit[adesso4][fourthIndex]->GetWeight();
 	      Int_t vol4[5]; for(jj=0; jj<5; jj++) vol4[jj] = selectedDigit[adesso4][fourthIndex]->GetDetectorIndex(jj);
-	      AliDebug(1,Form(" %2i %1i %2i %1i %2i", vol4[0], vol4[1], vol4[2], vol4[4], vol4[3]));
+	      AliDebug(1,Form(" %2d %1d %2d %1d %2d", vol4[0], vol4[1], vol4[2], vol4[4], vol4[3]));
 	      volDum = vol4[3];
 	      vol4[3] = vol4[4];
 	      vol4[4] = volDum;
-	      tofGeometry->GetPosPar(vol4,pos);
+	      fTOFGeometry->GetPosPar(vol4,pos);
 	      interestingX[3] = pos[0];
 	      interestingY[3] = pos[1];
 	      interestingZ[3] = pos[2];
@@ -2659,9 +2860,10 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 
 	      for (jj=0; jj<5; jj++) det[jj] = -1;
 	      for (jj=0; jj<3; jj++) posF[jj] = posClus[jj];
-	      tofGeometry->GetDetID(posF, det);
+	      fTOFGeometry->GetDetID(posF, det);
 
-	      volIdClus = GetClusterVolIndex(det);
+	      volIdClus = fTOFGeometry->GetAliSensVolIndex(det[0],det[1],det[2]);
+	      //volIdClus = GetClusterVolIndex(det);
 
 	      for (jj=3; jj<11; jj++) padsCluster[jj] = -1;
 	      padsCluster[3] = selectedDigit[adesso1][firstIndex]->GetDetectorIndex(4);
@@ -2681,7 +2883,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 	      for (jj=0; jj<interestingCounter+1; jj++) indDet[jj][2] = nStrip;
 	      for (jj=0; jj<interestingCounter+1; jj++) indDet[jj][3] = padsCluster[2*jj+3];
 	      for (jj=0; jj<interestingCounter+1; jj++) indDet[jj][4] = padsCluster[2*jj+1+3];
-	      GetClusterPars(check, interestingCounter+1, indDet, interestingWeight, posClus, covClus);
+	      GetClusterPars(/*check,*/ interestingCounter+1, indDet, interestingWeight, posClus, covClus);
 	      for (jj=0; jj<interestingCounter+1; jj++) delete [] indDet[jj];
 
 	      // To fill the track index array
@@ -2762,7 +2964,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 				  tracks, det, parTOF, status, selectedDigit[adesso1][firstIndex]->GetIndex()); // to be updated
 	      InsertCluster(tofCluster);
 
-	      AliDebug(2, Form("       %4i  %f %f %f  %f %f %f %f %f %f  %3i %3i %3i  %2i %1i %2i %1i %2i  %4i %3i %3i %4i %4i  %1i  %4i", 
+	      AliDebug(2, Form("       %4d  %f %f %f  %f %f %f %f %f %f  %3d %3d %3d  %2d %1d %2d %1d %2d  %4d %3d %3d %4d %4d  %1d  %4d", 
 			       volIdClus, posClus[0], posClus[1], posClus[2],
 			       covClus[0], covClus[1], covClus[2], covClus[3], covClus[4], covClus[5],
 			       tracks[0], tracks[1], tracks[2],
@@ -2885,14 +3087,14 @@ void AliTOFClusterFinderV1::ResetDigits()
 
 }
 //_____________________________________________________________________________
-
-UShort_t AliTOFClusterFinderV1::GetClusterVolIndex(Int_t *ind) const
-{
+//UShort_t AliTOFClusterFinderV1::GetClusterVolIndex(Int_t *ind) const
+//{
   //
   // Get the volume ID to retrieve the l2t transformation
   //
 
   // Detector numbering scheme
+/*
   Int_t nSector = AliTOFGeometry::NSectors();
   Int_t nPlate  = AliTOFGeometry::NPlates();
   Int_t nStripA = AliTOFGeometry::NStripA();
@@ -2937,6 +3139,7 @@ UShort_t AliTOFClusterFinderV1::GetClusterVolIndex(Int_t *ind) const
   return volIndex;
 
 }
+*/
 //_____________________________________________________________________________
 
 void AliTOFClusterFinderV1::GetClusterPars(Int_t *ind, Double_t* pos, Double_t* cov) const
@@ -2967,7 +3170,8 @@ void AliTOFClusterFinderV1::GetClusterPars(Int_t *ind, Double_t* pos, Double_t* 
   AliDebug(1, Form(" %f %f %f", lpos[0], lpos[1], lpos[2]));
 
   // Volume ID
-  UShort_t volIndex = GetClusterVolIndex(ind);
+  UShort_t volIndex = fTOFGeometry->GetAliSensVolIndex(ind[0],ind[1],ind[2]);
+  //UShort_t volIndex = GetClusterVolIndex(ind);
   const TGeoHMatrix *l2t = AliGeomManager::GetTracking2LocalMatrix(volIndex);
 
   // Get the position in the track ref system
@@ -2992,6 +3196,7 @@ void AliTOFClusterFinderV1::GetClusterPars(Int_t *ind, Double_t* pos, Double_t* 
                        //   + 0.5*0.160 (internl PCB)
                        //   + 1*0.055 (external red glass))
   */
+
   lcov[0] = 0.499678;//AliTOFGeometry::XPad()*AliTOFGeometry::XPad()/12.;
   lcov[8] = 0.992429;//AliTOFGeometry::ZPad()*AliTOFGeometry::ZPad()/12.;
 
@@ -3009,7 +3214,7 @@ void AliTOFClusterFinderV1::GetClusterPars(Int_t *ind, Double_t* pos, Double_t* 
 }
 //_____________________________________________________________________________
 
-void AliTOFClusterFinderV1::GetClusterPars(Bool_t check, Int_t counter,
+void AliTOFClusterFinderV1::GetClusterPars(/*Bool_t check,*/ Int_t counter,
 					   Int_t **ind, Double_t *weight,
 					   Double_t *pos, Double_t *cov) const
 {
@@ -3038,18 +3243,19 @@ void AliTOFClusterFinderV1::GetClusterPars(Bool_t check, Int_t counter,
   // x <-----------------------------------------------------
 
   for (Int_t ii=0; ii<counter; ii++)
-    AliDebug(1, Form(" %2i  %2i %1i %2i %1i %2i ",
+    AliDebug(1, Form(" %2d  %2d %1d %2d %1d %2d ",
 		     ii, ind[ii][0], ind[ii][1], ind[ii][2], ind[ii][3], ind[ii][4]));
 
   Float_t posF[3]; for (Int_t ii=0; ii<3; ii++) posF[ii] = (Float_t)pos[ii];
   AliDebug(1, Form(" %f %f %f", pos[0], pos[1], pos[2]));
-  AliTOFGeometry tofGeom;
+
   Int_t detClus[5] = {-1, -1, -1, -1, -1};
-  tofGeom.GetDetID(posF, detClus);
+  fTOFGeometry->GetDetID(posF, detClus);
 
   // Volume ID
-  UShort_t volIndex = GetClusterVolIndex(detClus);
-  AliDebug(1, Form(" %2i %1i %2i %1i %2i  %7i",
+  UShort_t volIndex = fTOFGeometry->GetAliSensVolIndex(detClus[0],detClus[1],detClus[2]);
+  //UShort_t volIndex = GetClusterVolIndex(detClus);
+  AliDebug(1, Form(" %2d %1d %2d %1d %2d  %7i",
 		   detClus[0], detClus[1], detClus[2], detClus[3], detClus[4], volIndex));
 
   // Get the position in the TOF strip ref system
@@ -3076,7 +3282,7 @@ void AliTOFClusterFinderV1::GetClusterPars(Bool_t check, Int_t counter,
   // 0     0 sz2
 
   // Evaluation of the ovariance matrix elements
-  TOFclusterError(check, counter, ind, weight, ppos, lcov);
+  TOFclusterError(/*check,*/ counter, ind, weight, ppos, lcov);
 
   AliDebug(1, Form("lcov[0] = %f, lcov[8] = %f", lcov[0], lcov[8]));
 
@@ -3094,7 +3300,7 @@ void AliTOFClusterFinderV1::GetClusterPars(Bool_t check, Int_t counter,
 }
 //_____________________________________________________________________________
 
-void AliTOFClusterFinderV1::TOFclusterError(Bool_t check, Int_t counter,
+void AliTOFClusterFinderV1::TOFclusterError(/*Bool_t check,*/ Int_t counter,
 					    Int_t **ind, Double_t *weight,
 					    Double_t ppos[], Double_t lcov[]) const
 {
@@ -3102,7 +3308,7 @@ void AliTOFClusterFinderV1::TOFclusterError(Bool_t check, Int_t counter,
   //
   //
 
-  //lcov[4] = 0.42*0.42/3.;
+  //lcov[4] = 0.42*0.42/3.; // cm2
                        // = ( 5*0.025 (gas gaps thikness)
                        //   + 4*0.040 (internal glasses thickness)
                        //   + 0.5*0.160 (internl PCB)
@@ -3120,7 +3326,7 @@ void AliTOFClusterFinderV1::TOFclusterError(Bool_t check, Int_t counter,
       ((ind[ii][3]- 0.5)*AliTOFGeometry::ZPad() - ppos[2])*((ind[ii][3]- 0.5)*AliTOFGeometry::ZPad() - ppos[2]);
 
   for (Int_t ii=0; ii<counter; ii++)
-    AliDebug(1, Form("x[%i] = %f, z[%i] = %f, weight[%i] = %f",
+    AliDebug(1, Form("x[%d] = %f, z[%d] = %f, weight[%d] = %f",
 		     ii, (ind[ii][4]-23.5)*AliTOFGeometry::XPad(),
 		     ii, (ind[ii][3]- 0.5)*AliTOFGeometry::ZPad(),
 		     ii, weight[ii]
@@ -3135,77 +3341,90 @@ void AliTOFClusterFinderV1::TOFclusterError(Bool_t check, Int_t counter,
 
       if (ind[0][3]==ind[1][3] && TMath::Abs(ind[0][4]-ind[1][4])==1) { //
 
-	lcov[8] = 1.02039;
-
+	lcov[8] = 1.02039; // cm2
+	lcov[0] = 0.0379409; // cm2
+	/*
 	if (check)
-	  lcov[0] = 0.5*0.5;
+	  lcov[0] = 0.5*0.5; // cm2
 	else {
 	  if (weight[0]==weight[1])
-	    lcov[0] = 0.0379409;
+	    lcov[0] = 0.0379409; // cm2
 	  else
-	    lcov[0] = TMath::Mean(counter, delta2X, weight);
+	    lcov[0] = TMath::Mean(counter, delta2X, weight); // cm2
 	}
+	*/
 
       }
 
       else if (ind[0][4]==ind[1][4] && TMath::Abs(ind[0][3]-ind[1][3])==1) {//
 
-	lcov[0] = 0.505499;
-
+	lcov[0] = 0.505499; // cm2
+	lcov[8] = 0.0422046; // cm2
+	/*
 	if (check)
-	  lcov[8] = 0.5*0.5;
+	  lcov[8] = 0.5*0.5; // cm2
 	else {
 	  if (weight[0]==weight[1])
-	    lcov[8] = 0.0422046;
+	    lcov[8] = 0.0422046; // cm2
 	  else
-	    lcov[8] = TMath::Mean(counter, delta2Z, weight);
+	    lcov[8] = TMath::Mean(counter, delta2Z, weight); // cm2
 	}
+	*/
 
       }
 
       break;
 
     case 3:
-
+      lcov[0] = 0.0290677; // cm2
+      lcov[8] = 0.0569726; // cm2
+      /*
       if (check) {
-	lcov[0] = 0.5*0.5;
-	lcov[8] = 0.5*0.5;
+	lcov[0] = 0.5*0.5; // cm2
+	lcov[8] = 0.5*0.5; // cm2
       }
       else {
-	if (weight[0]==weight[1] && weight[0]==weight[2]) {
-	  lcov[0] = 0.0290677;
-	  lcov[8] = 0.0569726;
-	}
+      if (weight[0]==weight[1] && weight[0]==weight[2]) {
+	  lcov[0] = 0.0290677; // cm2
+	  lcov[8] = 0.0569726; // cm2
+	  }
 	else {
-	  lcov[0] = TMath::Mean(counter, delta2X, weight);
-	  lcov[8] = TMath::Mean(counter, delta2Z, weight);
-	}
+	  lcov[0] = TMath::Mean(counter, delta2X, weight); // cm2
+	  lcov[8] = TMath::Mean(counter, delta2Z, weight); // cm2
+	  }
 
-      }
+	}
+      */
 
       break;
 
     case 4:
-
+      lcov[0] = 0.0223807; // cm2
+      lcov[8] = 0.0438662; // cm2
+      /*
       if (check) {
-	lcov[0] = 0.5*0.5;
-	lcov[8] = 0.5*0.5;
+	lcov[0] = 0.5*0.5; // cm2
+	lcov[8] = 0.5*0.5; // cm2
       }
       else {
-	if (weight[0]==weight[1] && weight[0]==weight[2] && weight[0]==weight[3]) {
-	  lcov[0] = 0.0223807;
-	  lcov[8] = 0.0438662;
-	}
+      if (weight[0]==weight[1] && weight[0]==weight[2] && weight[0]==weight[3]) {
+	  lcov[0] = 0.0223807; // cm2
+	  lcov[8] = 0.0438662; // cm2
+	  }
 	else {
-	  lcov[0] = TMath::Mean(counter, delta2X, weight);
-	  lcov[8] = TMath::Mean(counter, delta2Z, weight);
-	}
+	  lcov[0] = TMath::Mean(counter, delta2X, weight); // cm2
+	  lcov[8] = TMath::Mean(counter, delta2Z, weight); // cm2
+	  }
 
-      }
+	}
+      */
 
       break;
 
     }
+
+  delete [] delta2Z;
+  delete [] delta2X;
 
 }
 //_____________________________________________________________________________
@@ -3237,8 +3456,8 @@ Bool_t AliTOFClusterFinderV1::MakeSlewingCorrection(Int_t *detectorIndex,
 
   //AliInfo(" Calibrating TOF Digits: ");
   
-  AliTOFChannelOnlineArray *calDelay = fTOFcalib->GetTOFOnlineDelay();  
-  AliTOFChannelOnlineStatusArray *calStatus = fTOFcalib->GetTOFOnlineStatus();  
+  AliTOFChannelOnlineArray *calDelay = fTOFcalib->GetTOFOnlineDelay();
+  AliTOFChannelOnlineStatusArray *calStatus = fTOFcalib->GetTOFOnlineStatus();
 
   TObjArray *calTOFArrayOffline = fTOFcalib->GetTOFCalArrayOffline();
 
@@ -3251,14 +3470,14 @@ Bool_t AliTOFClusterFinderV1::MakeSlewingCorrection(Int_t *detectorIndex,
 
   //check the status, also unknown is fine!!!!!!!
 
-  AliDebug(2, Form(" Status for channel %i = %i",index, (Int_t)status));
+  AliDebug(2, Form(" Status for channel %d = %d",index, (Int_t)status));
   if((statusPulser & AliTOFChannelOnlineStatusArray::kTOFPulserBad)==(AliTOFChannelOnlineStatusArray::kTOFPulserBad)||(statusNoise & AliTOFChannelOnlineStatusArray::kTOFNoiseBad)==(AliTOFChannelOnlineStatusArray::kTOFNoiseBad)||(statusHW & AliTOFChannelOnlineStatusArray::kTOFHWBad)==(AliTOFChannelOnlineStatusArray::kTOFHWBad)){
-    AliDebug(2, Form(" Bad Status for channel %i",index));
+    AliDebug(2, Form(" Bad Status for channel %d",index));
     //fTofClusters[ii]->SetStatus(kFALSE); //odd convention, to avoid conflict with calibration objects currently in the db (temporary solution).
     output = kFALSE;
   }
   else
-    AliDebug(2, Form(" Good Status for channel %i",index));
+    AliDebug(2, Form(" Good Status for channel %d",index));
 
   // Get Rough channel online equalization 
   Double_t roughDelay = (Double_t)calDelay->GetDelay(index);  // in ns
@@ -3272,7 +3491,7 @@ Bool_t AliTOFClusterFinderV1::MakeSlewingCorrection(Int_t *detectorIndex,
       par[jj] = (Double_t)calChannelOffline->GetSlewPar(jj);
 
     AliDebug(2,Form(" Calib Pars = %f, %f, %f, %f, %f, %f ",par[0],par[1],par[2],par[3],par[4],par[5]));
-    AliDebug(2,Form(" The ToT and Time, uncorr (counts) = %i , %i", tofDigitToT, tofDigitTdc));
+    AliDebug(2,Form(" The ToT and Time, uncorr (counts) = %d , %d", tofDigitToT, tofDigitTdc));
     Double_t tToT = (Double_t)(tofDigitToT*AliTOFGeometry::ToTBinWidth());    
     tToT*=1.E-3; //ToT in ns
     AliDebug(2,Form(" The ToT and Time, uncorr (ns)= %e, %e",tofDigitTdc*AliTOFGeometry::TdcBinWidth()*1.E-3,tToT));
@@ -3328,7 +3547,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(Int_t iEvent)
   //localTOFLoader = fRunLoader->GetLoader("TOFLoader");  
   localTOFLoader->WriteRecPoints("OVERWRITE");
 
-  AliDebug(1, Form("Execution time to read TOF digits and to write TOF clusters for the event number %i: R:%.4fs C:%.4fs",
+  AliDebug(1, Form("Execution time to read TOF digits and to write TOF clusters for the event number %d: R:%.4fs C:%.4fs",
 		   iEvent, stopwatch.RealTime(),stopwatch.CpuTime()));
 
 }
@@ -3345,7 +3564,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(Int_t iEvent, AliRawReader *rawRead
 
   fRunLoader->GetEvent(iEvent);
 
-  AliDebug(2,Form(" Event number %2i ", iEvent));
+  AliDebug(2,Form(" Event number %2d ", iEvent));
 
   AliLoader *localTOFLoader = (AliLoader*)fRunLoader->GetLoader("TOFLoader");
 
@@ -3358,7 +3577,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(Int_t iEvent, AliRawReader *rawRead
 
   Digits2RecPoints(rawReader, localTreeR);
 
-  AliDebug(1, Form("Execution time to read TOF raw data and to write TOF clusters for the event number %i: R:%.4fs C:%.4fs",
+  AliDebug(1, Form("Execution time to read TOF raw data and to write TOF clusters for the event number %d: R:%.4fs C:%.4fs",
 		   iEvent, stopwatch.RealTime(),stopwatch.CpuTime()));
 
 }
@@ -3376,7 +3595,7 @@ void AliTOFClusterFinderV1::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
 
   fRunLoader->GetEvent(iEvent);
 
-  AliDebug(2,Form(" Event number %2i ", iEvent));
+  AliDebug(2,Form(" Event number %2d ", iEvent));
 
   AliLoader *localTOFLoader = (AliLoader*)fRunLoader->GetLoader("TOFLoader");
 
@@ -3389,7 +3608,7 @@ void AliTOFClusterFinderV1::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
 
   Raw2Digits(rawReader, localTreeD);
 
-  AliDebug(1, Form("Execution time to read TOF raw data and to write TOF clusters for the event number %i: R:%.4fs C:%.4fs",
+  AliDebug(1, Form("Execution time to read TOF raw data and to write TOF clusters for the event number %d: R:%.4fs C:%.4fs",
 		   iEvent, stopwatch.RealTime(),stopwatch.CpuTime()));
 
 }
@@ -3411,7 +3630,7 @@ void AliTOFClusterFinderV1::AverageCalculations(Int_t number, Float_t *interesti
 
   check = kFALSE;
   Int_t ii=-1;
-  for (ii=number-1; ii>=0; ii--) check=check||(interestingWeight[ii]==0 ||interestingWeight[ii]==-1);
+  for (ii=number-1; ii>=0; ii--) check=check||(interestingWeight[ii]==0 || interestingWeight[ii]==-1);
 
   if (check) {
 		  
@@ -3435,9 +3654,9 @@ void AliTOFClusterFinderV1::AverageCalculations(Int_t number, Float_t *interesti
   }
 
   parTOF[0] = Int_t(tofAverage);
-  parTOF[1] = Int_t(adcAverage);
-  parTOF[2] = Int_t(totAverage);
-  parTOF[3] = Int_t(tofAverage);
-  parTOF[4] = Int_t(tofAverage);
+  parTOF[1] = Int_t(totAverage);
+  parTOF[2] = Int_t(adcAverage);
+  parTOF[3] = Int_t(tofAverage);//tofND
+  parTOF[4] = Int_t(tofAverage);//tofRAW
 
 }
