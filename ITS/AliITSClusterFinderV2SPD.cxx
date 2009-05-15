@@ -104,7 +104,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
     for(Int_t ipix = 0; ipix<cal->GetNrBad(); ipix++){
       Int_t row, col;
       cal->GetBadPixel(ipix,row,col);
-      printf(" module %d   row %d  col %d \n",iModule,row,col);
+      //PH      printf(" module %d   row %d  col %d \n",iModule,row,col);
       Int_t index = (row+1) * nzbins + (col+1);
       
       bins[index].SetQ(0);
@@ -157,7 +157,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
       zmin=dig->GetCoord1();
       zmax=zmin;
     }
-     if(iModule == 24 || iModule == 25)  printf("\n");
+    //PH     if(iModule == 24 || iModule == 25)  printf("\n");
     for (Int_t idx = 0; idx < nBins; idx++) {
       Int_t iy;
       Int_t iz; 
@@ -304,7 +304,7 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStreamSPD* input,
       memcpy(binsSPD,binsSPDInit,sizeof(AliBin)*kMaxBin);
     }
 
-    if (next) {
+    if (next && bins) {
       // fill the current digit into the bins array
       Int_t index = (input->GetCoord2()+1) * kNzBins + (input->GetCoord1()+1);
       bins[index].SetIndex(index);
