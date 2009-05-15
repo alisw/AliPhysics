@@ -31,8 +31,7 @@
 
 #include "AliLog.h"
 #include "AliESDtrack.h"
-
-#include "AliRsnPID.h"
+#include "AliRsnDaughter.h"
 #include "AliRsnPIDDefESD.h"
 
 ClassImp(AliRsnPIDDefESD)
@@ -170,7 +169,7 @@ void AliRsnPIDDefESD::ComputeWeights(AliESDtrack *track, Double_t *weights) {
   }
 
   Double_t pt = track->Pt();
-  Double_t w[kDetectors][AliRsnPID::kSpecies];
+  Double_t w[kDetectors][AliPID::kSPECIES];
   track->GetITSpid(w[kITS]);
   track->GetTPCpid(w[kTPC]);
   track->GetTRDpid(w[kTRD]);
@@ -181,13 +180,13 @@ void AliRsnPIDDefESD::ComputeWeights(AliESDtrack *track, Double_t *weights) {
   for (i = 0; i < kDetectors; i++) {
 //     if (!fUseDet[i] || pt < fDivValue[i])
     if (!fUseDet[i] || !CheckDivValue((EDetector)i,pt)) {
-      for (j = 0; j < AliRsnPID::kSpecies; j++) {
+      for (j = 0; j < AliPID::kSPECIES; j++) {
         w[i][j] = 1.0;
       }
     }
   }
 
-  for (i = 0; i < AliRsnPID::kSpecies; i++) {
+  for (i = 0; i < AliPID::kSPECIES; i++) {
     weights[i] = w[kITS][i] * w[kTPC][i] * w[kTRD][i] * w[kTOF][i] * w[kHMPID][i];
   }
 }

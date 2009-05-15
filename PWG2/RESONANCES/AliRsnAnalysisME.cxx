@@ -7,15 +7,14 @@
 //          Martin Vala (martin.vala@cern.ch)
 //
 
-#include "AliRsnAnalysisSE.h"
+#include "AliRsnAnalysisME.h"
 
-ClassImp(AliRsnAnalysisSE)
+ClassImp(AliRsnAnalysisME)
 
 //_____________________________________________________________________________
-AliRsnAnalysisSE::AliRsnAnalysisSE(const char *name) :
-    AliRsnVAnalysisTaskSE(name),
-    fRsnAnalysisManager(),
-    fESDCuts(0)
+AliRsnAnalysisME::AliRsnAnalysisME(const char *name) :
+    AliRsnVAnalysisTaskME(name),
+    fRsnAnalysisManager()
 {
 //
 // Default constructor
@@ -24,7 +23,7 @@ AliRsnAnalysisSE::AliRsnAnalysisSE(const char *name) :
   AliDebug(AliLog::kDebug+2,"->");
 }
 
-AliRsnAnalysisSE::AliRsnAnalysisSE(const AliRsnAnalysisSE& copy) : AliRsnVAnalysisTaskSE(copy),
+AliRsnAnalysisME::AliRsnAnalysisME(const AliRsnAnalysisME& copy) : AliRsnVAnalysisTaskME(copy),
     fRsnAnalysisManager(copy.fRsnAnalysisManager)
 {
   AliDebug(AliLog::kDebug+2,"<-");
@@ -32,16 +31,28 @@ AliRsnAnalysisSE::AliRsnAnalysisSE(const AliRsnAnalysisSE& copy) : AliRsnVAnalys
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisSE::RsnUserCreateOutputObjects()
+void AliRsnAnalysisME::RsnUserCreateOutputObjects()
 {
+  AliLog::SetClassDebugLevel(GetName(), fLogType);
   AliDebug(AliLog::kDebug+2,"<-");
+//     AliRsnVAnalysisTaskME::UserCreateOutputObjects();
+
+//       fRsnEvent = new AliRsnEvent();
+//       fRsnEvent->SetName("rsnEvents");
+//       fRsnEvent->Init();
+//       AddAODBranch("AliRsnEvent", &fRsnEvent);
+
+//     fOutList = new TList();
+//
+//     fOutList->Add(fTaskInfo.GenerateInfoList());
 
   fOutList->Add(fRsnAnalysisManager.InitAllPairMgrs());
+//     fRsnAnalysisManager.Print();
 
   AliDebug(AliLog::kDebug+2,"->");
 }
 
-void AliRsnAnalysisSE::RsnUserExec(Option_t* )
+void AliRsnAnalysisME::RsnUserExec(Option_t* )
 {
   AliDebug(AliLog::kDebug+2,"<-");
   if (fESDEvent) {
@@ -52,24 +63,19 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t* )
     AliDebug(AliLog::kDebug+1,Form("fMCEvent if %p",fMCEvent));
     AliDebug(AliLog::kDebug,Form("MC tracks %d",fMCEvent->GetNumberOfTracks()));
   }
-  if (fAODEventIn) {
-    AliDebug(AliLog::kDebug+1,Form("fAODEventIn if %p",fAODEventIn));
-    AliDebug(AliLog::kDebug,Form("AOD(in) tracks %d",fAODEventIn->GetNumberOfTracks()));
+  if (fAODEvent) {
+    AliDebug(AliLog::kDebug+1,Form("fAODEvent if %p",fAODEvent));
+    AliDebug(AliLog::kDebug,Form("AOD tracks %d",fAODEvent->GetNumberOfTracks()));
   }
 
-  if (fAODEventOut) {
-    AliDebug(AliLog::kDebug+1,Form("fAODEventOut if %p",fAODEventOut));
-    AliDebug(AliLog::kDebug,Form("AOD(out) tracks %d",fAODEventOut->GetNumberOfTracks()));
-  }
+  AliAODEvent* aod1 = (AliAODEvent*)GetEvent(0);
+  AliAODEvent* aod2 = (AliAODEvent*)GetEvent(1);
 
-  // assign event
-  if (fAODEventOut)
-    fEvent.SetRef(fAODEventOut);
-  else if (fESDEvent)
-    fEvent.SetRef(fESDEvent, fMCEvent);
-  else
-    return;
-  if (fEvent.GetMultiplicity()<2) return;
+  // assign events
+  fEvent.SetRef(aod1);
+  fEventMix.SetRef(aod2);
+  if (fEvent.GetMultiplicity() < 2) return;
+  if (fEventMix.GetMultiplicity() < 2) return;
 
   // sort tracks w.r. to PID
   fPIDIndex.ResetAll(fEvent.GetMultiplicity());
@@ -77,32 +83,36 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t* )
   fPIDIndex.FillFromEvent(&fEvent, fESDCuts);
   fPIDIndex.SetCorrectIndexSize();
 
-  fRsnAnalysisManager.ProcessAllPairMgrs(&fPIDIndex, &fEvent);
+  fPIDIndexMix.ResetAll(fEventMix.GetMultiplicity());
+  fPIDIndexMix.SetPriorProbability(fPrior);
+  fPIDIndexMix.FillFromEvent(&fEventMix, fESDCuts);
+  fPIDIndexMix.SetCorrectIndexSize();
 
+  fRsnAnalysisManager.ProcessAllPairMgrs(&fPIDIndex, &fEvent, &fPIDIndexMix, &fEventMix);
+
+  AliDebug(AliLog::kDebug,Form("AOD tracks %d",aod1->GetNumberOfTracks()));
+  AliDebug(AliLog::kDebug,Form("AOD tracks %d",aod2->GetNumberOfTracks()));
   AliDebug(AliLog::kDebug+2,"->");
 }
 
 
 //_____________________________________________________________________________
-void AliRsnAnalysisSE::RsnTerminate(Option_t* )
+void AliRsnAnalysisME::RsnTerminate(Option_t* )
 {
   AliDebug(AliLog::kDebug+2,"<-");
   AliDebug(AliLog::kDebug+2,"->");
 }
 
-//_____________________________________________________________________________
-AliRsnAnalysisManager* AliRsnAnalysisSE::GetAnalysisManager(TString name)
+AliRsnAnalysisManager* AliRsnAnalysisME::GetAnalysisManager(TString name)
 {
   if (!name.IsNull()) {
     SetAnalysisManagerName(name.Data());
   }
-
   return &fRsnAnalysisManager;
 }
 
-
 //_____________________________________________________________________________
-void AliRsnAnalysisSE::SetPriorProbability(AliPID::EParticleType type, Double_t p)
+void AliRsnAnalysisME::SetPriorProbability(AliPID::EParticleType type, Double_t p)
 {
   //
   // Sets the prior probability for Realistic PID, for a
@@ -116,7 +126,7 @@ void AliRsnAnalysisSE::SetPriorProbability(AliPID::EParticleType type, Double_t 
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisSE::DumpPriors()
+void AliRsnAnalysisME::DumpPriors()
 {
   //
   // Print all prior probabilities
@@ -129,7 +139,7 @@ void AliRsnAnalysisSE::DumpPriors()
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisSE::GetPriorProbability(Double_t *out)
+void AliRsnAnalysisME::GetPriorProbability(Double_t *out)
 {
 
   Int_t i;

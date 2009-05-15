@@ -41,11 +41,25 @@ AliRsnHistoDef::AliRsnHistoDef
 }
 
 //_____________________________________________________________________________
+AliRsnHistoDef::AliRsnHistoDef
+(Double_t min, Double_t max, Double_t step) :
+    fNBins(0),
+    fMin(0.0),
+    fMax(0.0)
+{
+//
+// 1D histo definition.
+//
+  SetBins(min, max, step);
+}
+
+//_____________________________________________________________________________
 void AliRsnHistoDef::SetBins(Int_t n, Double_t min, Double_t max)
 {
 //
 // Binning for histogram.
 //
+
   fNBins = n;
 
   if (min < max)
@@ -58,4 +72,25 @@ void AliRsnHistoDef::SetBins(Int_t n, Double_t min, Double_t max)
     fMin = max;
     fMax = min;
   }
+}
+
+//_____________________________________________________________________________
+void AliRsnHistoDef::SetBins(Double_t min, Double_t max, Double_t step)
+{
+//
+// Binning for histogram.
+//
+
+  if (min < max)
+  {
+    fMin = min;
+    fMax = max;
+  }
+  else
+  {
+    fMin = max;
+    fMax = min;
+  }
+
+  fNBins = (Int_t)((fMax - fMin) / (step)) + 1;
 }

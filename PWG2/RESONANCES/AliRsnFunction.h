@@ -19,86 +19,103 @@
 // author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //
 
-#ifndef ALIRSNFUNCTION_H
-#define ALIRSNFUNCTION_H
+#ifndef ALIRSNFunction_H
+#define ALIRSNFunction_H
 
-#include <TArrayD.h>
-#include <TString.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
+#include <TNamed.h>
 
 #include "AliRsnCut.h"
 #include "AliRsnHistoDef.h"
 #include "AliRsnPairParticle.h"
 
-class TH1D;
-class TH2D;
-class AliRsnEvent;
+class TH1;
+class AliRsnPairDef;
 
-class AliRsnFunction : public TObject
+class AliRsnFunction : public TNamed
 {
 
   public:
 
     enum EFcnType
     {
+      kTrackPt = 0,
+      kTrackEta,
       kInvMass,
       kInvMassMC,
-      kInvMassRotated,
       kResolution,
-      kPtSpectrum,
-      kEtaSpectrum,
+      kPairPt,
+      kPairEta,
+      kEventMult,
       kFcnTypes
     };
-    enum EFcnBinTypes
+
+    enum EBinType
     {
-      kFcnBinTypes=5
+      kNoBins = 0,
+      kBinPairPt,
+      kBinPairEta,
+      kBinEventMult,
+      kBinTypes
     };
 
     AliRsnFunction();
-    AliRsnFunction(EFcnType type, AliRsnHistoDef *hd, Bool_t skipOut = kTRUE);
+    AliRsnFunction(EFcnType fcnType, AliRsnHistoDef *hd);
+    AliRsnFunction(EFcnType fcnType, EBinType binType, AliRsnHistoDef *hdMain, AliRsnHistoDef *hdBin);
+    AliRsnFunction(EFcnType fcnType, EBinType binType1, EBinType binType2, AliRsnHistoDef *hdMain, AliRsnHistoDef *hdBin1, AliRsnHistoDef *hdBin2);
     AliRsnFunction(const AliRsnFunction &copy);
-    virtual ~AliRsnFunction() {Clear();}
-    virtual void Clear(Option_t *option = "");
-
-    Bool_t           UseBins() {return fUseBins;}
-    Bool_t           SkipOut() {return fSkipOutsideInterval;}
-    AliRsnHistoDef*  GetHistoDef() {return fHistoDef;}
-    TString          GetFcnName();
-    TString          GetFcnTitle();
-
-    void  SetBinningCut(AliRsnCut::EType type, Double_t min, Double_t max, Double_t step,Int_t index=0,Bool_t IsCopyConstructor=kFALSE);
-    void  SetBinningCut(AliRsnCut::EType type, Int_t nbins, Double_t *bins,Int_t index=0,Bool_t IsCopyConstructor=kFALSE);
-    void  SetHistoDef(AliRsnHistoDef *def) {fHistoDef = def;}
-    void  SetRotationAngle(Double_t rotAngle) {fRotAngle = rotAngle;}
-
-    // working routines
-    TList* Init(const char *histoName, const char *histoTitle);
-    void   Init(const char *histoName, const char *histoTitle, TList *tgt);
-    Bool_t Fill(AliRsnPairParticle *pair, AliRsnPairDef *ref);
-    Double_t FcnValue(AliRsnPairParticle *pair, AliRsnPairDef *ref);
-
-  private:
-
+    virtual ~AliRsnFunction() { delete fHistogram; }
     const AliRsnFunction& operator=(const AliRsnFunction &copy);
 
-    Double_t    FcnResolution(AliRsnPairParticle *pair, AliRsnPairDef *pd);
+    void                 DefineName();
 
-    EFcnType         fFcnType;                      // function type
+    void                 SetFcnType(EFcnType value) {fFcnType = value;}
+    void                 SetPairDef(AliRsnPairDef *def) {fPairDef = def;}
+    void                 SetTrack(AliRsnDaughter *track) {fTrack = track;}
+    void                 SetPair(AliRsnPairParticle *pair) {fPair = pair;}
+    void                 SetEvent(AliRsnEvent *event) {fEvent = event;}
+    void                 SetMainHistoDef(AliRsnHistoDef *hd) {fHistoDef[0] = hd;}
+    void                 SetPrimaryBinningHistoDef(AliRsnHistoDef *hd) {fHistoDef[1] = hd;}
+    void                 SetSecondaryBinningHistoDef(AliRsnHistoDef *hd) {fHistoDef[2] = hd;}
 
-    Double_t         fRotAngle;                     // rotation angle (for "rotated" invMass)
+    EFcnType             GetFcnType() {return fFcnType;}
+    AliRsnPairDef*       GetPairDef() {return fPairDef;}
+    AliRsnDaughter*      GetTrack() {return fTrack;}
+    AliRsnPairParticle*  GetPair() {return fPair;}
+    AliRsnEvent*         GetEvent() {return fEvent;}
+    AliRsnHistoDef*      GetMainHistoDef(AliRsnHistoDef *hd) {return fHistoDef[0];}
+    AliRsnHistoDef*      GetPrimaryBinningHistoDef(AliRsnHistoDef *hd) {return fHistoDef[1];}
+    AliRsnHistoDef*      GetSecondaryBinningHistoDef(AliRsnHistoDef *hd) { return fHistoDef[2];}
 
-    Bool_t           fUseBins;                      // flag to choose if binning is used
-    Bool_t           fSkipOutsideInterval;          // skip pairs which fall outside histogram interval
+    TH1*                 CreateHistogram(const char *histoName, const char *histoTitle);
 
-    Int_t	     fNumberOfBinTypes;             // number of binning types
-    TArrayD          fBins[kFcnBinTypes];           // low edge of each bin (upper is the low edge of next bin)
-    AliRsnCut        fBinningCut[kFcnBinTypes];     // binning cut
-    AliRsnCut::EType fBinningCutType[kFcnBinTypes]; // binning cut type
+    Double_t             Eval();
+    Bool_t               Fill();
 
-    AliRsnHistoDef  *fHistoDef;                     // definitions for histogram
-    TH1D            *fHisto[kFcnBinTypes][100];     // binned histograms
+  protected:
+
+    Int_t       CheckDim();
+    Bool_t      CheckInput(Option_t *option);
+    const char* BinName(EBinType binType);
+    const char* FcnName();
+    Double_t    BinValue(EBinType binType);
+
+    EFcnType            fFcnType;     // function type
+    EBinType            fBinType[2];  // binning type
+
+    AliRsnPairDef      *fPairDef;     // reference to used pair definition
+    AliRsnHistoDef     *fHistoDef[3]; // histogram definition for each axis
+
+    AliRsnDaughter     *fTrack;       // processed track
+    AliRsnPairParticle *fPair;        // processed pair
+    AliRsnEvent        *fEvent;       // processed event
+
+    TH1                *fHistogram;   // output histogram
 
     // ROOT dictionary
-    ClassDef(AliRsnFunction, 1)
+    ClassDef(AliRsnFunction, 2)
 };
 
 #endif

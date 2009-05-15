@@ -1,34 +1,32 @@
 //
-// Class AliRsnAnalysisSE
+// Class AliRsnAnalysisME
 //
-// Virtual Class derivated from AliRsnVAnalysisTaskSE which will be base class
+// Virtual Class derivated from AliRsnVAnalysisTaskME which will be base class
 // for all RSN SE tasks
 //
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
-#ifndef AliRsnAnalysisSE_H
-#define AliRsnAnalysisSE_H
+#ifndef AliRsnAnalysisME_H
+#define AliRsnAnalysisME_H
 
-#include "AliPID.h"
-#include "AliRsnVAnalysisTaskSE.h"
+#include "AliRsnVAnalysisTaskME.h"
 #include "AliRsnAnalysisManager.h"
-#include "AliRsnPIDIndex.h"
 
-class AliRsnAnalysisSE : public AliRsnVAnalysisTaskSE
+class AliRsnAnalysisME : public AliRsnVAnalysisTaskME
 {
 
-public:
-    AliRsnAnalysisSE(const char *name = "AliRsnAnalysisSE");
-    AliRsnAnalysisSE(const AliRsnAnalysisSE& copy);
+  public:
+    AliRsnAnalysisME(const char *name = "AliRsnAnalysisME");
+    AliRsnAnalysisME(const AliRsnAnalysisME& copy);
 
     // Implement this
     virtual void    RsnUserCreateOutputObjects();
     virtual void    RsnUserExec(Option_t*);
     virtual void    RsnTerminate(Option_t*);
 
-    AliRsnAnalysisManager *GetAnalysisManager(TString name = "");
-    void                   SetAnalysisManagerName(const char*name) {fRsnAnalysisManager.SetName(name);};
+    AliRsnAnalysisManager *GetAnalysisManager(TString name="");
+    void SetAnalysisManagerName(const char*name) { fRsnAnalysisManager.SetName(name);};
 
     // Prior probs
     void            SetPriorProbability(AliPID::EParticleType type, Double_t p);
@@ -38,16 +36,18 @@ public:
     // ESD cuts
     void            SetESDtrackCuts(AliESDtrackCuts *cuts) {fESDCuts = cuts;}
 
-private:
+  private:
 
     AliRsnAnalysisManager fRsnAnalysisManager;      // analysis main engine
     AliRsnPIDIndex        fPIDIndex;                // utility --> PID sorter
     AliRsnEvent           fEvent;                   // utility --> event interface
+    AliRsnPIDIndex        fPIDIndexMix;             // utility --> PID sorter (mixed event)
+    AliRsnEvent           fEventMix;                // utility --> event interface (mixed event)
 
     AliESDtrackCuts      *fESDCuts;                 // ESD track cuts
     Double_t              fPrior[AliPID::kSPECIES]; // prior probabilities
 
-    ClassDef(AliRsnAnalysisSE, 1)
+    ClassDef(AliRsnAnalysisME, 1)
 };
 
 #endif

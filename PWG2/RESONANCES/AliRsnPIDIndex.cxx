@@ -10,6 +10,8 @@
 #include <TObject.h>
 
 #include "AliLog.h"
+#include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
 
 #include "AliRsnPIDIndex.h"
 
@@ -21,14 +23,15 @@ AliRsnPIDIndex::AliRsnPIDIndex(Int_t num)
 //
 // Default constructor
 //
-  Int_t i, j, k;
-  for (i = 0; i < 2; i++)
-  {
-    for (j = 0; j < AliRsnPID::kSpecies+1; j++)
-    {
-      fNumOfIndex[i][j] = 0;
-      fIndex[i][j].Set(num);
-      for (k = 0; k < num; k++) fIndex[i][j].AddAt(-1, k);
+  Int_t i, j, k, l;
+
+  for (l = 0; l < AliRsnDaughter::kMethods; l++) {
+    for (i = 0; i < 2; i++) {
+      for (j = 0; j <= AliPID::kSPECIES; j++) {
+        fNumOfIndex[l][i][j] = 0;
+        fIndex[l][i][j].Set(num);
+        for (k = 0; k < num; k++) fIndex[l][i][j].AddAt(-1, k);
+      }
     }
   }
 }
@@ -43,17 +46,17 @@ AliRsnPIDIndex::AliRsnPIDIndex(const AliRsnPIDIndex & copy)
 // to store a copy of all objects.
 //
 
-  Int_t i, j, k, size;
-  for (i = 0; i < 2; i++)
-  {
-    for (j = 0; j < AliRsnPID::kSpecies+1; j++)
-    {
-      fNumOfIndex[i][j] = copy.fNumOfIndex[i][j];
-      size = copy.fIndex[i][j].GetSize();
-      fIndex[i][j].Set(size);
-      for (k = 0; k < size; k++)
-      {
-        fIndex[i][j].AddAt(copy.fIndex[i][j].At(k), k);
+  Int_t l, i, j, k, size;
+
+  for (l = 0; l < AliRsnDaughter::kMethods; l++) {
+    for (i = 0; i < 2; i++) {
+      for (j = 0; j <= AliPID::kSPECIES; j++) {
+        fNumOfIndex[l][i][j] = copy.fNumOfIndex[l][i][j];
+        size = copy.fIndex[l][i][j].GetSize();
+        fIndex[l][i][j].Set(size);
+        for (k = 0; k < size; k++) {
+          fIndex[l][i][j].AddAt(copy.fIndex[l][i][j].At(k), k);
+        }
       }
     }
   }
@@ -68,17 +71,17 @@ AliRsnPIDIndex& AliRsnPIDIndex::operator= (const AliRsnPIDIndex & copy)
 // to store a copy of all objects.
 //
 
-  Int_t i, j, k, size;
-  for (i = 0; i < 2; i++)
-  {
-    for (j = 0; j < AliRsnPID::kSpecies+1; j++)
-    {
-      fNumOfIndex[i][j] = copy.fNumOfIndex[i][j];
-      size = copy.fIndex[i][j].GetSize();
-      fIndex[i][j].Set(size);
-      for (k = 0; k < size; k++)
-      {
-        fIndex[i][j].AddAt(copy.fIndex[i][j].At(k), k);
+  Int_t l, i, j, k, size;
+
+  for (l = 0; l < AliRsnDaughter::kMethods; l++) {
+    for (i = 0; i < 2; i++) {
+      for (j = 0; j < AliPID::kSPECIES; j++) {
+        fNumOfIndex[l][i][j] = copy.fNumOfIndex[l][i][j];
+        size = copy.fIndex[l][i][j].GetSize();
+        fIndex[l][i][j].Set(size);
+        for (k = 0; k < size; k++) {
+          fIndex[l][i][j].AddAt(copy.fIndex[l][i][j].At(k), k);
+        }
       }
     }
   }
@@ -94,6 +97,25 @@ AliRsnPIDIndex::~AliRsnPIDIndex()
 // Does nothing.
 //
 }
+//_____________________________________________________________________________
+void AliRsnPIDIndex::ResetAll(Int_t num)
+{
+//
+// Resets All
+//
+
+  Int_t i, j, k, l;
+
+  for (l = 0; l < AliRsnDaughter::kMethods; l++) {
+    for (i = 0; i < 2; i++) {
+      for (j = 0; j <= AliPID::kSPECIES; j++) {
+        fNumOfIndex[l][i][j] = 0;
+        fIndex[l][i][j].Set(num);
+        for (k = 0; k < num; k++) fIndex[l][i][j].AddAt(-1, k);
+      }
+    }
+  }
+}
 
 //_____________________________________________________________________________
 void AliRsnPIDIndex::Print(Option_t* /*option*/) const
@@ -101,37 +123,33 @@ void AliRsnPIDIndex::Print(Option_t* /*option*/) const
 //
 // Prints AliRsnPIDIndex info
 //
-  Int_t i, j;
-  for (i = 0; i < 2; i++)
-  {
-    for (j = 0; j < AliRsnPID::kSpecies + 1; j++)
-    {
-      AliInfo(Form(" [%d][%d] %d %d", i, j, fIndex[i][j].GetSize(), fNumOfIndex[i][j]));
+  Int_t i, j, l;
+
+  for (l = 0; l < AliRsnDaughter::kMethods; l++) {
+    for (i = 0; i < 2; i++) {
+      for (j = 0; j <= AliPID::kSPECIES; j++) {
+        AliInfo(Form(" [%d][%d][%d] %d %d",l, i, j, fIndex[l][i][j].GetSize(), fNumOfIndex[i][j]));
+      }
     }
   }
 }
 
 //_____________________________________________________________________________
-void AliRsnPIDIndex::AddIndex(const Int_t index, Char_t sign, AliRsnPID::EType type)
+void AliRsnPIDIndex::AddIndex(const Int_t index, AliRsnDaughter::EPIDMethod meth, Char_t sign, AliPID::EParticleType  type)
 {
 //
 // Adds index to corresponding TArrayI
 //
+
+  Int_t iMethod = (Int_t)meth;
   Int_t iCharge = ChargeIndex(sign);
   Int_t iType = (Int_t)type;
-  fIndex[iCharge][iType].AddAt(index, fNumOfIndex[iCharge][iType]);
-  fNumOfIndex[iCharge][iType]++;
-}
+  // in AliPID kUnknown = 10 and kSPECIES = 5!
+  if (type == AliPID::kUnknown) iType = (Int_t)AliPID::kSPECIES;
+  AliDebug(AliLog::kDebug+1,Form("Adding index=%d method=%d sign='%c', pidType=%d",index,meth,sign,type));
+  fIndex[iMethod][iCharge][iType].AddAt(index, fNumOfIndex[iMethod][iCharge][iType]);
+  fNumOfIndex[iMethod][iCharge][iType]++;
 
-//_____________________________________________________________________________
-void AliRsnPIDIndex::AddIndex(const Int_t index, Short_t sign, Int_t type)
-{
-//
-// Adds index to corresponding TArrayI
-//
-
-  fIndex[sign][type].AddAt(index, fNumOfIndex[sign][type]);
-  fNumOfIndex[sign][type]++;
 }
 
 //_____________________________________________________________________________
@@ -141,18 +159,18 @@ void AliRsnPIDIndex::SetCorrectIndexSize()
 // Sets Correct sizes to all TArrayI
 //
 
-  Int_t i, j;
-  for (i = 0; i < 2; i++)
-  {
-    for (j = 0; j < AliRsnPID::kSpecies + 1; j++)
-    {
-      fIndex[i][j].Set(fNumOfIndex[i][j]);
+  Int_t i, j, l;
+  for (l = 0; l < AliRsnDaughter::kMethods; l++) {
+    for (i = 0; i < 2; i++) {
+      for (j = 0; j <= AliPID::kSPECIES; j++) {
+        fIndex[l][i][j].Set(fNumOfIndex[l][i][j]);
+      }
     }
   }
 }
 
 //_____________________________________________________________________________
-TArrayI* AliRsnPIDIndex::GetTracksArray(Char_t sign, AliRsnPID::EType type)
+TArrayI* AliRsnPIDIndex::GetTracksArray(AliRsnDaughter::EPIDMethod meth, Char_t sign, AliPID::EParticleType type)
 {
 //
 // Returns the array of indexes of tracks whose charge
@@ -162,15 +180,17 @@ TArrayI* AliRsnPIDIndex::GetTracksArray(Char_t sign, AliRsnPID::EType type)
 // Otherwise returns null pointer.
 //
 
+  Int_t iMethod = (Int_t)meth;
   Int_t icharge = ChargeIndex(sign);
+  Int_t itype   = 0;
   if (icharge < 0) return (TArrayI *) 0x0;
-  if (type < AliRsnPID::kElectron || type > AliRsnPID::kSpecies)
-  {
-    AliError(Form("Index %d out of range", type));
+  if (type == AliPID::kUnknown) itype = (Int_t)AliPID::kSPECIES; else itype = (Int_t)type;
+  if (itype < 0 || itype > (Int_t)AliPID::kSPECIES) {
+    AliError(Form("Index %d out of range", itype));
     return (TArrayI *) 0x0;
   }
 
-  return &fIndex[icharge][type];
+  return &fIndex[iMethod][icharge][itype];
 }
 
 //_____________________________________________________________________________
@@ -181,28 +201,8 @@ TArrayI* AliRsnPIDIndex::GetCharged(Char_t sign)
 // corresponds to the passed argument
 // Otherwise returns a null pointer.
 //
+  return GetTracksArray(AliRsnDaughter::kNoPID, sign, AliPID::kUnknown);
 
-  // check that argument is meaningful
-  Int_t icharge = ChargeIndex(sign);
-  if (icharge < 0) return (TArrayI *)0x0;
-
-  // count total number of tracks with that charge
-  // and create output object of appropriate size
-  Int_t i, total = 0;
-  for (i = 0; i <= AliRsnPID::kSpecies; i++) total += fIndex[icharge][i].GetSize();
-  TArrayI *output = new TArrayI(total);
-
-  // add all indexes
-  Int_t j, counter = 0;
-  for (i = 0; i <= AliRsnPID::kSpecies; i++)
-  {
-    for (j = 0; j < fIndex[icharge][i].GetSize(); j++)
-    {
-      output->AddAt(fIndex[icharge][i].At(j), counter++);
-    }
-  }
-
-  return output;
 }
 
 //_____________________________________________________________________________
@@ -214,9 +214,103 @@ Int_t AliRsnPIDIndex::ChargeIndex(Char_t sign) const
 
   if (sign == '+') return 0;
   else if (sign == '-') return 1;
-  else
-  {
+  else {
     AliError(Form("Character '%c' not recognized as charge sign", sign));
     return -1;
   }
 }
+
+//_____________________________________________________________________________
+Char_t AliRsnPIDIndex::IndexCharge(Short_t sign) const
+{
+  //
+  // Returns the array index corresponding to charge
+  //
+
+  if (sign == 1) return '+';
+  else if (sign == -1) return '-';
+  else {
+    AliError(Form("Charge is different the 0(+) and 1(-) value is '%d'...", sign));
+    return '+';
+  }
+}
+
+//_____________________________________________________________________________
+void AliRsnPIDIndex::FillFromEvent(AliRsnEvent* event, AliESDtrackCuts *cuts)
+{
+//
+// Fills indexes from event
+//
+
+  Int_t numOfTracks = event->GetMultiplicity();
+  AliRsnDaughter daughter;
+  Int_t i;
+  for (i=0;i<numOfTracks;i++) {
+    daughter = event->GetDaughter(i);
+    // if ESD track cuts are specified, 
+    // and if the reference is an ESD track
+    // skip all tracks not passing the cut
+    if (cuts) {
+      AliESDtrack *track = daughter.GetRefESD();
+      if (track) if (!cuts->IsSelected(track)) continue;
+    }
+    daughter.CombineWithPriors(fPrior);
+//     daughter.Print("ALL");
+
+    AddIndex(i,AliRsnDaughter::kNoPID,IndexCharge(daughter.Charge()),AliPID::kUnknown);
+    AddIndex(i,AliRsnDaughter::kRealistic,IndexCharge(daughter.Charge()),(AliPID::EParticleType)daughter.RealisticPID());
+    if (daughter.GetParticle())
+      AddIndex(i,AliRsnDaughter::kPerfect,IndexCharge(daughter.Charge()),(AliPID::EParticleType)daughter.PerfectPID());
+  }
+}
+
+
+//_____________________________________________________________________________
+void AliRsnPIDIndex::SetPriorProbability(AliPID::EParticleType type, Double_t p)
+{
+  //
+  // Sets the prior probability for Realistic PID, for a
+  // given particle species.
+  //
+
+  if (type >= 0 && type < (Int_t)AliPID::kSPECIES) {
+    fPrior[type] = p;
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliRsnPIDIndex::DumpPriors()
+{
+  //
+  // Print all prior probabilities
+  //
+
+  Int_t i;
+  for (i = 0; i < AliPID::kSPECIES; i++) {
+    AliInfo(Form("Prior probability for %10s = %3.5f", AliPID::ParticleName((AliPID::EParticleType)i), fPrior[i]));
+  }
+}
+
+//_____________________________________________________________________________
+void AliRsnPIDIndex::GetPriorProbability(Double_t *out)
+{
+
+  Int_t i;
+  for (i=0; i<AliPID::kSPECIES; i++) {
+    out[i] = fPrior[i];
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliRsnPIDIndex::SetPriorProbability(Double_t *out)
+{
+
+  Int_t i;
+  for (i=0;i<AliPID::kSPECIES;i++) {
+    fPrior[i] = out[i];
+  }
+
+}
+

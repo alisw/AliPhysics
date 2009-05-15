@@ -17,6 +17,7 @@ class AliRsnHistoDef : public TObject
 
     AliRsnHistoDef();
     AliRsnHistoDef(Int_t n, Double_t min, Double_t max);
+    AliRsnHistoDef(Double_t min, Double_t max, Double_t step);
     virtual ~AliRsnHistoDef() { }
 
     Int_t    GetNBins() const {return fNBins;}
@@ -24,6 +25,7 @@ class AliRsnHistoDef : public TObject
     Double_t GetMax() const {return fMax;}
 
     void     SetBins(Int_t n, Double_t min, Double_t max);
+    void     SetBins(Double_t min, Double_t max, Double_t step);
 
   private:
 

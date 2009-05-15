@@ -10,6 +10,8 @@
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
+#include <TParticle.h>
+
 #include "AliLog.h"
 
 #include "AliRsnPairParticle.h"
@@ -26,18 +28,15 @@ AliRsnPairParticle::AliRsnPairParticle()
 
   Int_t i, j;
 
-  for (i = 0; i < 3; i++)
-  {
+  for (i = 0; i < 3; i++) {
     fPTot[i] = 0.0;
     fPTotMC[i] = 0.0;
-    if (i < 2)
-    {
+    if (i < 2) {
       fMotherLabel[i] = -1;
       fMotherPDG[i] = 0;
       fDaughter[i] = 0x0;
     }
-    for (j = 0; j < 2; j++)
-    {
+    for (j = 0; j < 2; j++) {
       fPTrack[j][i] = 0.0;
       fPTrackMC[j][i] = 0.0;
     }
@@ -55,18 +54,15 @@ AliRsnPairParticle::AliRsnPairParticle(const AliRsnPairParticle &obj) :
 //
 
   Int_t i, j;
-  for (i = 0; i < 3; i++)
-  {
+  for (i = 0; i < 3; i++) {
     fPTot[i] = obj.fPTot[i];
     fPTotMC[i] = obj.fPTotMC[i];
-    if (i < 2)
-    {
+    if (i < 2) {
       fMotherLabel[i] = obj.fMotherLabel[i];
       fMotherPDG[i] = obj.fMotherPDG[i];
       fDaughter[i] = obj.fDaughter[i];
     }
-    for (j = 0; j < 2; j++)
-    {
+    for (j = 0; j < 2; j++) {
       fPTrack[j][i] = obj.fPTrack[j][i];
       fPTrackMC[j][i] = obj.fPTrackMC[j][i];
     }
@@ -83,18 +79,15 @@ AliRsnPairParticle& AliRsnPairParticle::operator=(const AliRsnPairParticle &obj)
 //
 
   Int_t i, j;
-  for (i = 0; i < 3; i++)
-  {
+  for (i = 0; i < 3; i++) {
     fPTot[i] = obj.fPTot[i];
     fPTotMC[i] = obj.fPTotMC[i];
-    if (i < 2)
-    {
+    if (i < 2) {
       fMotherLabel[i] = obj.fMotherLabel[i];
       fMotherPDG[i] = obj.fMotherPDG[i];
       fDaughter[i] = obj.fDaughter[i];
     }
-    for (j = 0; j < 2; j++)
-    {
+    for (j = 0; j < 2; j++) {
       fPTrack[j][i] = obj.fPTrack[j][i];
       fPTrackMC[j][i] = obj.fPTrackMC[j][i];
     }
@@ -118,13 +111,14 @@ Double_t AliRsnPairParticle::GetInvMass(Double_t mass0, Double_t mass1)
 //
 // Compute invariant mass using reconstructed values.
 // Mass in argument #1 is assigned to first track in the pair (fDaughter[0]),
-// mass in argument #2 is assigned to second track in the pair (fDaughter[1])
+// mass in argument #2 is assigned to second track in the pair (fDaughter[1]).
+// If the third argument is not zero, a rotation of that angle is applied to XY momentum of track #2
+// before computing invariant mass.
 // Then, the invariant mass of the pair is computed by using their total momentum
 // and the sum of their energies computed after assigned masses.
 //
 
-  if (!fDaughter[0] || !fDaughter[1])
-  {
+  if (!fDaughter[0] || !fDaughter[1]) {
     AliError("One of the two tracks is NULL in this pair!");
     return -1000.0;
   }
@@ -149,21 +143,19 @@ Double_t AliRsnPairParticle::GetInvMassMC(Double_t mass0, Double_t mass1)
 // and the sum of their energies.
 //
 
-  if (!fDaughter[0] || !fDaughter[1])
-  {
+  if (!fDaughter[0] || !fDaughter[1]) {
     AliError("One of the two tracks is NULL in this pair!");
     return -1000.0;
   }
-  if (!fDaughter[0]->GetMCInfo() || !fDaughter[1]->GetMCInfo())
-  {
+  if (!fDaughter[0]->GetParticle() || !fDaughter[1]->GetParticle()) {
     AliError("One of the two tracks has a NULL MCInfo in this pair!");
     return -1000.0;
   }
 
   // compute track energies using the shortcut method defined in AliRsnDaughter
   Double_t etot = 0.0;
-  etot += fDaughter[0]->GetMCInfo()->E(mass0);
-  etot += fDaughter[1]->GetMCInfo()->E(mass1);
+  etot += fDaughter[0]->GetMCEnergy(mass0);
+  etot += fDaughter[1]->GetMCEnergy(mass1);
 
   // compute & return invariant mass
   return  TMath::Sqrt(etot * etot - GetP2MC());
@@ -192,8 +184,8 @@ Double_t AliRsnPairParticle::GetEtotMC(Double_t mass0, Double_t mass1) const
 // with a necessary mass hypothesis (MC values).
 //
   Double_t etot = 0.0;
-  etot += fDaughter[0]->GetMCInfo()->E(mass0);
-  etot += fDaughter[1]->GetMCInfo()->E(mass1);
+  etot += fDaughter[0]->GetMCEnergy(mass0);
+  etot += fDaughter[1]->GetMCEnergy(mass1);
 
   return etot;
 }
@@ -229,23 +221,47 @@ Bool_t AliRsnPairParticle::IsTruePair(Int_t refPDG)
 //
 
   // if MC info is not available, the pairs is not true by default
-  if (!fDaughter[0]->GetMCInfo() || !fDaughter[1]->GetMCInfo())
-  {
+  if (!fDaughter[0]->GetParticle() || !fDaughter[1]->GetParticle()) {
     AliInfo("Cannot know if the pairs is true or not because MC Info is not present");
     return kFALSE;
   }
 
   // check that labels are the same
-  if (fDaughter[0]->GetMCInfo()->Mother() != fDaughter[1]->GetMCInfo()->Mother())
-  {
+  if (fDaughter[0]->GetParticle()->GetFirstMother() != fDaughter[1]->GetParticle()->GetFirstMother()) {
     return kFALSE;
   }
 
   // if we reach this point, the two tracks have the same mother
   // let's check now the PDG code of this common mother
-  Int_t motherPDG = TMath::Abs(fDaughter[0]->GetMCInfo()->MotherPDG());
+  Int_t motherPDG = TMath::Abs(fDaughter[0]->GetMotherPDG());
   if (refPDG == 0) return kTRUE;
   else return (motherPDG == refPDG);
+}
+
+//_____________________________________________________________________________
+Int_t AliRsnPairParticle::CommonMother()
+{
+//
+// Checks if the two tracks in the pair have the same mother.
+// This can be known if MC info is present.
+// If the mother label is the same, rhe PDG code of the mother is returned,
+// otherwise the method returns 0.
+//
+
+  // if MC info is not available, the pairs is not true by default
+  if (!fDaughter[0]->GetParticle() || !fDaughter[1]->GetParticle()) {
+    AliInfo("Cannot know if the pairs is true or not because MC Info is not present");
+    return 0;
+  }
+
+  // check that labels are the same
+  if (fDaughter[0]->GetParticle()->GetFirstMother() != fDaughter[1]->GetParticle()->GetFirstMother()) {
+    return 0;
+  }
+
+  // if we reach this point, the two tracks have the same mother
+  // let's check now the PDG code of this common mother
+  return TMath::Abs(fDaughter[0]->GetMotherPDG());
 }
 
 //_____________________________________________________________________________
@@ -263,21 +279,18 @@ void AliRsnPairParticle::SetPair(AliRsnDaughter *daughter1, AliRsnDaughter *daug
   fDaughter[1] = daughter2;
 
   // copy MC info (if available)
-  if (fDaughter[0]->GetMCInfo() && fDaughter[1]->GetMCInfo())
-  {
-    for (i = 0; i < 2; i++)
-    {
-      fPTrackMC[i][0] = fDaughter[i]->GetMCInfo()->Px();
-      fPTrackMC[i][1] = fDaughter[i]->GetMCInfo()->Py();
-      fPTrackMC[i][2] = fDaughter[i]->GetMCInfo()->Pz();
-      fMotherPDG[i] = fDaughter[i]->GetMCInfo()->MotherPDG();
+  if (fDaughter[0]->GetParticle() && fDaughter[1]->GetParticle()) {
+    for (i = 0; i < 2; i++) {
+      fPTrackMC[i][0] = fDaughter[i]->GetParticle()->Px();
+      fPTrackMC[i][1] = fDaughter[i]->GetParticle()->Py();
+      fPTrackMC[i][2] = fDaughter[i]->GetParticle()->Pz();
+      fMotherPDG[i] = fDaughter[i]->GetMotherPDG();
     }
     for (i = 0; i < 3; i++) fPTotMC[i] = fPTrackMC[0][i] + fPTrackMC[1][i];
   }
 
   // copy reconstructed info (always available)
-  for (i = 0; i < 2; i++)
-  {
+  for (i = 0; i < 2; i++) {
     fPTrack[i][0] = fDaughter[i]->Px();
     fPTrack[i][1] = fDaughter[i]->Py();
     fPTrack[i][2] = fDaughter[i]->Pz();
@@ -295,26 +308,61 @@ void AliRsnPairParticle::ResetPair()
   Int_t i;
 
   // copy MC info (if available)
-  if (fDaughter[0]->GetMCInfo() && fDaughter[1]->GetMCInfo())
-  {
-    for (i = 0; i < 2; i++)
-    {
-      fPTrackMC[i][0] = fDaughter[i]->GetMCInfo()->Px();
-      fPTrackMC[i][1] = fDaughter[i]->GetMCInfo()->Py();
-      fPTrackMC[i][2] = fDaughter[i]->GetMCInfo()->Pz();
-      fMotherPDG[i] = fDaughter[i]->GetMCInfo()->MotherPDG();
+  if (fDaughter[0]->GetParticle() && fDaughter[1]->GetParticle()) {
+    for (i = 0; i < 2; i++) {
+      fPTrackMC[i][0] = fDaughter[i]->GetParticle()->Px();
+      fPTrackMC[i][1] = fDaughter[i]->GetParticle()->Py();
+      fPTrackMC[i][2] = fDaughter[i]->GetParticle()->Pz();
+      fMotherPDG[i] = fDaughter[i]->GetMotherPDG();
     }
     for (i = 0; i < 3; i++) fPTotMC[i] = fPTrackMC[0][i] + fPTrackMC[1][i];
   }
 
   // copy reconstructed info (always available)
-  for (i = 0; i < 2; i++)
-  {
+  for (i = 0; i < 2; i++) {
     fPTrack[i][0] = fDaughter[i]->Px();
     fPTrack[i][1] = fDaughter[i]->Py();
     fPTrack[i][2] = fDaughter[i]->Pz();
   }
   for (i = 0; i < 3; i++) fPTot[i] = fPTrack[0][i] + fPTrack[1][i];
+}
+
+//_____________________________________________________________________________
+void AliRsnPairParticle::RotateTrack(Int_t idx, Double_t angle, Bool_t isDegrees)
+{
+//
+// Computes the total momentum for REC data and MC if available
+//
+
+  if (idx < 0 || idx > 1) return;
+
+  Int_t    i;
+
+  // copy MC info (if available)
+  if (fDaughter[0]->GetParticle() && fDaughter[1]->GetParticle()) {
+    for (i = 0; i < 2; i++) {
+      if (i == idx) {
+        fDaughter[i]->RotateP(angle, fPTrackMC[i][0], fPTrackMC[i][1], isDegrees);
+      } else {
+        fPTrackMC[i][0] = fDaughter[i]->GetParticle()->Px();
+        fPTrackMC[i][1] = fDaughter[i]->GetParticle()->Py();
+      }
+      fPTrackMC[i][2] = fDaughter[i]->GetParticle()->Pz();
+    }
+    for (i = 0; i < 3; i++) fPTotMC[i] = fPTrackMC[0][i] + fPTrackMC[1][i];
+  }
+
+  for (i = 0; i < 2; i++) {
+    if (i == idx) {
+      fDaughter[i]->RotateP(angle, fPTrack[i][0], fPTrack[i][1], isDegrees);
+    } else {
+      fPTrack[i][0] = fDaughter[i]->GetParticle()->Px();
+      fPTrack[i][1] = fDaughter[i]->GetParticle()->Py();
+    }
+    fPTrack[i][2] = fDaughter[i]->GetParticle()->Pz();
+  }
+  for (i = 0; i < 3; i++) fPTot[i] = fPTrack[0][i] + fPTrack[1][i];
+
 }
 
 //_____________________________________________________________________________
@@ -324,7 +372,7 @@ void AliRsnPairParticle::PrintInfo(const Option_t *option)
 // Print some info of the pair.
 // The options are passed to the AliRsnDaughter::Print() method
 //
-
+  option = "ALL";
   AliInfo("======== BEGIN PAIR INFO ===========");
   AliInfo("Track #1");
   fDaughter[0]->Print(option);

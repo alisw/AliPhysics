@@ -20,14 +20,10 @@
 //
 
 #include <Riostream.h>
-
-#include <TH1.h>
-#include <TList.h>
 #include <TString.h>
 
 #include "AliLog.h"
 
-#include "AliRsnMCInfo.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
 #include "AliRsnPairDef.h"
@@ -39,394 +35,296 @@ ClassImp(AliRsnFunction)
 
 //________________________________________________________________________________________
 AliRsnFunction::AliRsnFunction() :
-    fFcnType(kFcnTypes),
-    fRotAngle(0.0),
-    fUseBins(kFALSE),
-    fSkipOutsideInterval(kFALSE),
-    fNumberOfBinTypes(0),
-//     fBins(0),
-//     fBinningCut(),
-//     fBinningCutType(AliRsnCut::kLastCutType),
-    fHistoDef(0x0)
+  TNamed(),
+  fFcnType(kFcnTypes),
+  fPairDef(0x0),
+  fTrack(0x0),
+  fPair(0x0),
+  fEvent(0x0),
+  fHistogram(0x0)
 {
-  //
-  // Constructor.
-  // The histogram data member cannot be passed externally,
-  // its initialization MUST be defined inside the Init() method,
-  // which must be overridden in any derivate implementation.
-  //
+//
+// Constructor for 1D functions.
+// Requires only the binning of the output function,
+// which is stored as 'main' histoDef in fHistoDef[0]
+//
 
-  Int_t i, j;
-  for (j = 0 ; j < kFcnBinTypes; j++)
-    for (i = 0; i < 100; i++)
-      fHisto[j][i] = 0x0;
+  fBinType[0] = kNoBins;
+  fBinType[1] = kNoBins;
 
+  fHistoDef[0] = 0x0;
+  fHistoDef[1] = 0x0;
+  fHistoDef[2] = 0x0;
 }
 
 //________________________________________________________________________________________
 AliRsnFunction::AliRsnFunction
-(EFcnType type, AliRsnHistoDef *hd, Bool_t skipOut) :
-    fFcnType(type),
-    fRotAngle(0.0),
-    fUseBins(kFALSE),
-    fSkipOutsideInterval(skipOut),
-    fNumberOfBinTypes(0),
-//     fBins(0),
-//     fBinningCut(),
-//     fBinningCutType(AliRsnCut::kLastCutType),
-    fHistoDef(hd)
+(EFcnType fcnType, AliRsnHistoDef *hd) :
+  TNamed(),
+  fFcnType(fcnType),
+  fPairDef(0x0),
+  fTrack(0x0),
+  fPair(0x0),
+  fEvent(0x0),
+  fHistogram(0x0)
 {
-  //
-  // Constructor.
-  // The histogram data member cannot be passed externally,
-  // its initialization MUST be defined inside the Init() method,
-  // which must be overridden in any derivate implementation.
-  //
+//
+// Constructor for 1D functions.
+// Requires only the binning of the output function,
+// which is stored as 'main' histoDef in fHistoDef[0]
+//
 
-  Int_t i, j;
-  for (j = 0 ; j < kFcnBinTypes; j++)
-    for (i = 0; i < 100; i++)
-      fHisto[j][i] = 0x0;
+  fBinType[0] = kNoBins;
+  fBinType[1] = kNoBins;
+
+  fHistoDef[0] = hd;
+  fHistoDef[1] = 0x0;
+  fHistoDef[2] = 0x0;
+
+  DefineName();
 }
+
+//________________________________________________________________________________________
+AliRsnFunction::AliRsnFunction
+(EFcnType fcnType, EBinType binType, AliRsnHistoDef *hdMain, AliRsnHistoDef *hdBin) :
+  TNamed(),
+  fFcnType(fcnType),
+  fPairDef(0x0),
+  fTrack(0x0),
+  fPair(0x0),
+  fEvent(0x0),
+  fHistogram(0x0)
+{
+//
+// Constructor for 2D functions.
+// Requires the binning of the output function,
+// which is stored as 'main' histoDef in fHistoDef[0],
+// and a definition for a secondary binning, stored in fHistoDef[1]
+//
+
+  fBinType[0] = binType;
+  fBinType[1] = kNoBins;
+
+  fHistoDef[0] = hdMain;
+  fHistoDef[1] = hdBin;
+  fHistoDef[2] = 0x0;
+
+  DefineName();
+}
+
+//________________________________________________________________________________________
+AliRsnFunction::AliRsnFunction
+(EFcnType fcnType, EBinType binType1, EBinType binType2,
+ AliRsnHistoDef *hdMain, AliRsnHistoDef *hdBin1, AliRsnHistoDef *hdBin2) :
+  fFcnType(fcnType),
+  fPairDef(0x0),
+  fTrack(0x0),
+  fPair(0x0),
+  fEvent(0x0),
+  fHistogram(0x0)
+{
+//
+// Constructor for 3D functions.
+// Requires the binning of the output function,
+// which is stored as 'main' histoDef in fHistoDef[0],
+// and a definition for two secondary binnings, stored in fHistoDef[1,2]
+//
+
+  fBinType[0] = binType1;
+  fBinType[1] = binType2;
+
+  fHistoDef[0] = hdMain;
+  fHistoDef[1] = hdBin1;
+  fHistoDef[2] = hdBin2;
+
+  DefineName();
+}    
 
 //________________________________________________________________________________________
 AliRsnFunction::AliRsnFunction(const AliRsnFunction &copy) :
-    TObject(copy),
-    fFcnType(copy.fFcnType),
-    fRotAngle(copy.fRotAngle),
-    fUseBins(copy.fUseBins),
-    fSkipOutsideInterval(copy.fSkipOutsideInterval),
-    fNumberOfBinTypes(copy.fNumberOfBinTypes),
-//     fBins(0),
-//     fBinningCut(),
-//     fBinningCutType(AliRsnCut::kLastCutType),
-    fHistoDef(copy.fHistoDef)
+  TNamed(copy),
+  fFcnType(copy.fFcnType),
+  fPairDef(copy.fPairDef),
+  fTrack(copy.fTrack),
+  fPair(copy.fPair),
+  fEvent(copy.fEvent),
+  fHistogram(0x0)
 {
-  //
-  // Copy constructor.
-  // Calls the function to define binning.
-  //
+//
+// Copy constructor.
+//
 
-  Int_t i, j, n;
-  for (j = 0 ; j < kFcnBinTypes; j++)
-    for (i = 0; i < 100; i++)
-      fHisto[j][i] = 0x0;
-
-  if (fUseBins)
-  {
-    for (i = 0 ; i < kFcnBinTypes; i++){
-      if (fNumberOfBinTypes<=i) continue;
-      n = copy.fBins[i].GetSize();
-      Double_t *array = new Double_t[n];
-      for (j = 0; j < n; j++) array[j] = copy.fBins[i][j];
-      SetBinningCut(copy.fBinningCutType[i], copy.fBins[i].GetSize(), array,i,kTRUE);
-      delete [] array;
-    }
+  Int_t i;
+  for (i = 0; i < 3; i++) {
+    fHistoDef[i] = copy.fHistoDef[i];
+    if (i < 2) fBinType[i] = copy.fBinType[i];
   }
+
+  DefineName();
 }
+
 //________________________________________________________________________________________
-const AliRsnFunction& AliRsnFunction::operator=(const AliRsnFunction& /*copy*/)
+const AliRsnFunction& AliRsnFunction::operator=(const AliRsnFunction& copy)
 {
-  //
-  // Assignment operator.
-  // Behaves like copy constructor.
-  // Also in this case, the histogram is not copied, and,
-  // if it was present, it is destroyed and will need to be recreated.
-  //
+//
+// Assignment operator.
+//
+
+  SetName(copy.GetName());
+  SetTitle(copy.GetTitle());
+
+  fFcnType = copy.fFcnType;
+
+  fPairDef = copy.fPairDef;
+
+  Int_t i;
+  for (i = 0; i < 3; i++) {
+    fHistoDef[i] = copy.fHistoDef[i];
+    if (i < 2) fBinType[i] = copy.fBinType[i];
+  }
+
+  fTrack = copy.fTrack;
+  fPair = copy.fPair;
+  fEvent = copy.fEvent;
+
+  if (fHistogram) delete fHistogram;
+  fHistogram = 0x0;
+
+  DefineName();
 
   return (*this);
 }
-//________________________________________________________________________________________
-void AliRsnFunction::Clear(Option_t* /*option*/)
-{
-  //
-  // Clear arrays and histogram.
-  // For the sake of security, all pointers are also set explicitly to NULL.
-  //
-
-  Int_t i, j;
-  for (j = 0 ; j < kFcnBinTypes; j++)
-    for (i = 0; i < 100; i++)
-    {
-      delete fHisto[j][i];
-      fHisto[j][i] = 0x0;
-    }
-}
 
 //________________________________________________________________________________________
-TList* AliRsnFunction::Init(const char *histoName, const char *histoTitle)
+const char* AliRsnFunction::FcnName()
 {
-  //
-  // Initialization function.
-  // By default, it initializes the owned histogram using the method
-  // from AliRsnHistoDef class, giving the same name and title of this.
-  // A user can override this behaviour, if necessary.
-  // Before creating, the HistoDef is checked for proper initialization.
-  //
-
-  Clear();
-
-  Int_t i, ibin, nbins = fHistoDef->GetNBins();
-  Double_t min = fHistoDef->GetMin(), max = fHistoDef->GetMax();
-
-  // list is created and named after the general
-  // settings used for the contained histograms
-  TList *histos = new TList;
-  histos->SetName(Form("%s", GetFcnName().Data()));
-
-  // a general histogram is always added,
-  // which overrides the binning and collects everything
-
-  fHisto[0][0] = new TH1D(histoName, histoTitle, nbins, min, max);
-  fHisto[0][0]->Sumw2();
-  histos->AddLast(fHisto[0][0]);
-
-  // if requested a binning w.r. to some cut variable, histograms are added
-  // for that in this part of the method (one per each bin)
-  Char_t hName[255];
-  Char_t hTitle[255];
-  Int_t j;
-  if (fUseBins)
-  {
-    for (j = 0 ; j < kFcnBinTypes; j++){
-      if (fNumberOfBinTypes<=j) continue;
-      for (ibin = 0, i = 1; ibin < fBins[j].GetSize() - 1; ibin++, i++)
-      {
-	sprintf(hName, "%s_%d%02d_[%.2f-%.2f]", histoName, j,i,fBins[j][ibin], fBins[j][ibin+1]);
-	sprintf(hTitle, "%s [%.2f-%.2f]", histoTitle, fBins[j][ibin], fBins[j][ibin+1]);
-// 	AliInfo(Form("Adding %s",hName));
-	fHisto[j][i] = new TH1D(hName, hTitle, nbins, min, max);
-	fHisto[j][i]->Sumw2();
-	histos->AddLast(fHisto[j][i]);
-      }
-    }
-  }
-
-  // returns the full list at the end
-  return histos;
-}
-
-//________________________________________________________________________________________
-void AliRsnFunction::Init(const char *histoName, const char *histoTitle, TList *histos)
-{
-  //
-  // Initialization function.
-  // By default, it initializes the owned histogram using the method
-  // from AliRsnHistoDef class, giving the same name and title of this.
-  // A user can override this behaviour, if necessary.
-  // Before creating, the HistoDef is checked for proper initialization.
-  //
-
-  Clear();
-
-  Int_t i, ibin, nbins = fHistoDef->GetNBins();
-  Double_t min = fHistoDef->GetMin(), max = fHistoDef->GetMax();
-
-  // list is created and named after the general
-  // settings used for the contained histograms
-  if (!histos)
-  {
-    AliError("NULL target list!");
-    return;
-  }
-
-  // a general histogram is always added,
-  // which overrides the binning and collects everything
-  fHisto[0][0] = new TH1D(histoName, histoTitle, nbins, min, max);
-  histos->AddLast(fHisto[0][0]);
-
-  // if requested a binning w.r. to some cut variable, histograms are added
-  // for that in this part of the method (one per each bin)
-  Char_t hName[255];
-  Char_t hTitle[255];
-  Int_t j;
-  if (fUseBins)
-  {
-    for (j = 0 ; j < kFcnBinTypes; j++){
-      if (fNumberOfBinTypes<=j) continue;
-      for (ibin = 0, i = 1; ibin < fBins[j].GetSize() - 1; ibin++, i++)
-      {
-
-	sprintf(hName, "%s_%d_%02d[%.2f-%.2f]", histoName,j,i, fBins[j][ibin], fBins[j][ibin+1]);
-	sprintf(hTitle, "%s [%.2f-%.2f]", histoTitle, fBins[j][ibin], fBins[j][ibin+1]);
-// 	AliInfo(Form("Adding %s",hName));
-	fHisto[j][i] = new TH1D(hName, hTitle, nbins, min, max);
-	histos->AddLast(fHisto[j][i]);
-      }
-    }
-  }
-}
-
-//________________________________________________________________________________________
-void AliRsnFunction::SetBinningCut
-(AliRsnCut::EType type, Double_t min, Double_t max, Double_t step,Int_t index,Bool_t IsCopyConstructor)
-{
-  //
-  // Set fixed bins
-  //
-
-  if (index >= kFcnBinTypes) {
-    AliError(Form("We support only %d Binning cuts(0-%d). Skipping...",kFcnBinTypes,kFcnBinTypes-1));
-    return;
-  }
-  
-  if (!IsCopyConstructor){
-    // TODO if some one sets indexes 0,2,3 it is a bug here(i'll solve it)
-    if (index == fNumberOfBinTypes)
-      fNumberOfBinTypes++;
-    else {
-      AliError(Form("Wrong index %d. fUseBins is set to kFALSE",index));
-//       fUseBins = kFALSE;
-      return;
-    }
-  }
-
-  fUseBins = kTRUE;
-  Int_t i, nBins = (Int_t)((max - min) / step) + 1;
-  fBinningCutType[index] = type;
-  fBins[index].Set(nBins);
-  for (i = 0; i < nBins; i++)
-  {
-    fBins[index][i] = min + (Double_t)i * step;
-  }
-}
-
-//________________________________________________________________________________________
-void AliRsnFunction::SetBinningCut
-(AliRsnCut::EType type, Int_t nbins, Double_t *bins,Int_t index,Bool_t IsCopyConstructor)
-{
-  //
-  // Set variable bins
-  //
-
-  if (index >= kFcnBinTypes) {
-    AliError(Form("We support only %d Binning cuts(0-%d). Skipping...",kFcnBinTypes,kFcnBinTypes-1));
-    return;
-  }
-   if (!IsCopyConstructor){
-     // TODO if some one sets indexes 0,2,3 it is a bug here(i'll solve it)
-     if (index >= fNumberOfBinTypes)
-      fNumberOfBinTypes++;
-     else {
-        AliError(Form("Wrong index %d (%d). fUseBins is set to kFALSE",index,fNumberOfBinTypes));
- //        fUseBins = kFALSE;
-        return;
-      }
-   }
-
-  fUseBins = kTRUE;
-  Int_t i;
-  fBinningCutType[index] = type;
-  fBins[index].Set(nbins);
-  for (i = 0; i < nbins; i++)
-  {
-    fBins[index][i] = bins[i];
-  }
-}
-
-//________________________________________________________________________________________
-TString AliRsnFunction::GetFcnName()
-{
-  //
-  // Return a string which names the function type
-  //
-
-  TString text("Undef");
+//
+// Defines the name of this object according to
+// the function type and binning
+//
 
   switch (fFcnType)
   {
+    case kTrackPt:
+      return  "TRKPT";
+      break;
+    case kTrackEta:
+      return  "TRKETA";
+      break;
     case kInvMass:
-      text = "IM";
+      return  "IM";
       break;
     case kInvMassMC:
-      text = "IM_MC";
-      break;
-    case kInvMassRotated:
-      text = Form("IMR%.2f", fRotAngle);
+      return  "IMMC";
       break;
     case kResolution:
-      text = "RES";
+      return  "RES";
       break;
-    case kPtSpectrum:
-      text = "PT";
+    case kPairPt:
+      return  "PT";
       break;
-    case kEtaSpectrum:
-      text = "ETA";
+    case kPairEta:
+      return  "ETA";
+      break;
+    case kEventMult:
+      return  "MULT";
       break;
     default:
-      AliError("Type not defined");
+      return  "UNDEF";
   }
-
-  return text;
 }
 
 //________________________________________________________________________________________
-TString AliRsnFunction::GetFcnTitle()
+void AliRsnFunction::DefineName()
 {
-  //
-  // Return a string which names the function type
-  //
+//
+// Defines the name of this object according to
+// the function type and binning
+//
 
-  TString text("Undef");
+  Int_t  dim = CheckDim();
+
+  switch (dim)
+  {
+    case 1:
+      SetName(FcnName());
+      break;
+    case 2:
+      SetName(Form("%s_%s", FcnName(), BinName(fBinType[0])));
+      break;
+    case 3:
+      SetName(Form("%s_%s_%s", FcnName(), BinName(fBinType[0]), BinName(fBinType[1])));
+      break;
+    default:
+      SetName("UNDEF");
+  }
+}
+
+//________________________________________________________________________________________
+Double_t AliRsnFunction::Eval()
+{
+//
+// Compute value for functions with 'event' argument type
+//
+
+  Double_t value;
 
   switch (fFcnType)
   {
+    case kTrackPt:
+      return fTrack->Pt();
+    case kTrackEta:
+      return fTrack->Eta();
     case kInvMass:
-      text = "Invariant mass";
-      break;
+      return fPair->GetInvMass(fPairDef->GetMass(0), fPairDef->GetMass(1));
     case kInvMassMC:
-      text = "Invariant mass (MC)";
-      break;
+      return fPair->GetInvMassMC(fPairDef->GetMass(0), fPairDef->GetMass(1));
     case kResolution:
-      text = "Resolution";
-      break;
-    case kPtSpectrum:
-      text = "p_{#perp} distribution";
-      break;
-    case kEtaSpectrum:
-      text = "#eta distribution";
-      break;
+      value  = fPair->GetInvMass(fPairDef->GetMass(0), fPairDef->GetMass(1));
+      value -= fPair->GetInvMassMC(fPairDef->GetMass(0), fPairDef->GetMass(1));
+      value /= fPair->GetInvMassMC(fPairDef->GetMass(0), fPairDef->GetMass(1));
+      return value;
+    case kPairPt:
+      return fPair->GetPt();
+    case kPairEta:
+      return fPair->GetEta();
+    case kEventMult:
+      return fEvent->GetMultiplicity();
     default:
-      AliError("Type not defined");
+      AliWarning("Function type not supported");
+      return -999.0;
   }
-
-  return text;
 }
 
-//________________________________________________________________________________________
-Bool_t AliRsnFunction::Fill(AliRsnPairParticle *pair, AliRsnPairDef *ref)
+//_________________________________________________________________________________________________
+Bool_t AliRsnFunction::CheckInput(Option_t *option)
 {
-  //
-  // Fillse the histogram with data contained in a defined pair.
-  // This method must be overidden by an appropriate definition in each inheriting class.
-  //
+//
+// Checks if the argument type is coherent with
+// the function type required
+//
 
-  Double_t value = FcnValue(pair, ref);
-  if (fSkipOutsideInterval)
-  {
-    if (value < fHistoDef->GetMin()) return kFALSE;
-    if (value > fHistoDef->GetMax()) return kFALSE;
+  TString opt(option);
+  opt.ToUpper();
+
+  if (opt.Contains("TRACK")) {
+    if (!fTrack) {
+      AliError("Input track object is NULL");
+      return kFALSE;
+    }
   }
 
-  // fill global histogram
-  fHisto[0][0]->Fill(value);
+  if (opt.Contains("PAIR")) {
+    if (!fPair) {
+      AliError("Input pair object is NULL");
+      return kFALSE;
+    }
+  }
 
-  // if bins are allocated, find right one and fill it
-  if (fUseBins)
-  {
-    Int_t i, j, ibin;
-    for (j = 0 ; j < kFcnBinTypes; j++){
-      if (fNumberOfBinTypes<=j) continue;
-      for (ibin = 0, i = 1; ibin < fBins[j].GetSize() - 1; ibin++, i++)
-      {
-	if (!fHisto[j][i]) continue;
-	fBinningCut[j].SetCutValues(fBinningCutType[j], fBins[j][ibin], fBins[j][ibin+1]);
-	if (fBinningCut[j].IsSelected(AliRsnCut::kPair, pair))
-	{
-	  fHisto[j][i]->Fill(value);
-	  break;
-	}
-      }
+  if (opt.Contains("EVENT")) {
+    if (!fEvent) {
+      AliError("Input event object is NULL");
+      return kFALSE;
     }
   }
 
@@ -434,50 +332,183 @@ Bool_t AliRsnFunction::Fill(AliRsnPairParticle *pair, AliRsnPairDef *ref)
 }
 
 //________________________________________________________________________________________
-Double_t AliRsnFunction::FcnValue(AliRsnPairParticle *pair, AliRsnPairDef *ref)
+TH1* AliRsnFunction::CreateHistogram(const char *histoName, const char *histoTitle)
 {
-  //
-  // This method must be overridden in all inheritin functions.
-  // It computes the value which must be used to fill the histogram.
-  //
+//
+// Creates and returns the histogram defined using
+// arguments fo name and title, and the first histoDef for binning.
+// Variable-sized histogram binning is always called, due to use of histoDef,
+// even if the bins are equal, since they are defined in this class.
+// Eventually present histoDef's in other slots of array (1, 2) are ignored.
+//
 
-  switch (fFcnType)
+  // first binning is required
+  if (!fHistoDef[0]) return 0;
+
+  // retrieve binnings for main and secondary axes
+  Int_t    i, nbins[3] = {0, 0, 0};
+  Double_t min[3] = {0., 0., 0.}, max[3] = {0., 0., 0.};
+  for (i = 0; i < 3; i++)
   {
-    case kInvMass:
-      return pair->GetInvMass(ref->GetMass(0), ref->GetMass(1));
-    case kInvMassMC:
-      return pair->GetInvMassMC(ref->GetMass(0), ref->GetMass(1));
-    case kInvMassRotated:
-      //AliInfo(Form("*** ROTATION ANGLE = %f ***", fRotAngle));
-      //AliInfo(Form("UNROTATED INV MASS = %f", pair->GetInvMass(ref->GetMass(0), ref->GetMass(1))));
-      //pair->GetDaughter(1)->Print("P");
-      pair->GetDaughter(1)->RotateP(fRotAngle * TMath::DegToRad());
-      pair->ResetPair();
-      //AliInfo(Form("  ROTATED INV MASS = %f", pair->GetInvMass(ref->GetMass(0), ref->GetMass(1))));
-      //pair->GetDaughter(1)->Print("P");
-      return pair->GetInvMass(ref->GetMass(0), ref->GetMass(1));
-    case kResolution:
-      return FcnResolution(pair, ref);
-    case kPtSpectrum:
-      return pair->GetPt();
-    case kEtaSpectrum:
-      return pair->GetEta();
-    default:
-      AliError("Type not defined");
+    if (fHistoDef[i])
+    {
+      nbins[i] = fHistoDef[i]->GetNBins();
+      min[i] = fHistoDef[i]->GetMin();
+      max[i] = fHistoDef[i]->GetMax();
+    }
   }
+    
+  // define the kind of output according to the number of histoDefs
+  if (fHistogram) delete fHistogram;
+  if (!nbins[1] && !nbins[2]) {
+    fHistogram = new TH1D(histoName, histoTitle, nbins[0], min[0], max[0]);
+    fHistogram->SetXTitle(FcnName());
+  }
+  else if (nbins[1] > 0 && !nbins[2]) {
+    fHistogram = new TH2D(histoName, histoTitle, nbins[0], min[0], max[0], nbins[1], min[1], max[1]);
+    fHistogram->SetXTitle(FcnName());
+    fHistogram->SetYTitle(BinName(fBinType[0]));
+  }
+  else {
+    fHistogram = new TH3D(histoName, histoTitle, nbins[0], min[0], max[0], nbins[1], min[1], max[1], nbins[2], min[2], max[2]);
+    fHistogram->SetXTitle(FcnName());
+    fHistogram->SetYTitle(BinName(fBinType[0]));
+    fHistogram->SetZTitle(BinName(fBinType[1]));
+  }
+  
+  fHistogram->Sumw2();
 
-  return 0.0;
+  return fHistogram;
 }
 
 //________________________________________________________________________________________
-inline Double_t AliRsnFunction::FcnResolution(AliRsnPairParticle *pair, AliRsnPairDef *ref)
+Bool_t AliRsnFunction::Fill()
 {
-  //
-  // Invariant mass resolution (compared between reconstructed and montecarlo)
-  //
+//
+// Fill function histogram with values computed from given input object.
+//
+  AliDebug(AliLog::kDebug +2,"->");
 
-  Double_t recInvMass = pair->GetInvMass(ref->GetMass(0), ref->GetMass(1));
-  Double_t simInvMass = pair->GetInvMassMC(ref->GetMass(0), ref->GetMass(1));
+  // checks coherence between fcn type and passed argument
+  switch (fFcnType) {
+    case kTrackPt:
+    case kTrackEta:
+      if (!CheckInput("TRACK")) return kFALSE;
+      break;
+    case kInvMass:
+    case kInvMassMC:
+    case kResolution:
+    case kPairPt:
+    case kPairEta:
+      if (!CheckInput("PAIR")) return kFALSE;
+      break;
+    case kEventMult:
+      if (!CheckInput("EVENT")) return kFALSE;
+      break;
+    default:
+      AliError(Form("Input type %d not defined", (Int_t)fFcnType));
+      return kFALSE;
+  }
 
-  return (simInvMass - recInvMass) / simInvMass;
+  // check presence of output histogram
+  if (!fHistogram) {
+    AliError("Histogram is not yet initialized");
+    return kFALSE;
+  }
+
+  // compute value and stores into histogram
+  Int_t    dim = CheckDim();
+  Double_t mainValue, binValue[2];
+
+  TH1D *h1 = dynamic_cast<TH1D*>(fHistogram);
+  TH2D *h2 = dynamic_cast<TH2D*>(fHistogram);
+  TH3D *h3 = dynamic_cast<TH3D*>(fHistogram);
+  
+  mainValue = Eval();
+
+  switch (dim)
+  {
+    case 1:
+      if (h1) h1->Fill(mainValue);
+      break;
+    case 2:
+      binValue[0] = BinValue(fBinType[0]);
+      if (h2) h2->Fill(mainValue, binValue[0]);
+      break;
+    case 3:
+      binValue[0] = BinValue(fBinType[0]);
+      binValue[1] = BinValue(fBinType[1]);
+      if (h3) h3->Fill(mainValue, binValue[0], binValue[1]);
+      break;
+    default:
+      AliError("Wrong number of dimensions in the histogram. Check HD initialization");
+      return kFALSE;
+  }
+
+  AliDebug(AliLog::kDebug +2,"->");
+  return kTRUE;
+}
+
+//________________________________________________________________________________________
+Double_t AliRsnFunction::BinValue(EBinType binType)
+{
+//
+// Computes the value for binning from the argument.
+// For each kind of binning type, the object is expected
+// to be of a given type, otherwise an error is raised.
+//
+
+  // checks coherence between bin type and passed argument
+  switch (binType) {
+    case kBinPairPt:
+      if (!CheckInput("PAIR")) return 0.0;
+      return fPair->GetPt();
+    case kBinPairEta:
+      if (!CheckInput("PAIR")) return 0.0;
+      return fPair->GetEta();
+    case kBinEventMult:
+      if (!CheckInput("EVENT")) return 0.0;
+      return fEvent->GetMultiplicity();
+    default:
+      AliError(Form("%s: Binning type not defined", GetName()));
+      return 0.0;
+  }
+}
+
+//________________________________________________________________________________________
+Int_t AliRsnFunction::CheckDim()
+{
+//
+// Checks number of dimensions.
+// Makes sure that eventual binnings are coherent and well defined
+//
+
+  if (!fHistoDef[0]) return 0;
+  if (fHistoDef[0] && !fHistoDef[1] && !fHistoDef[2]) return 1;
+  if (fHistoDef[0] && fHistoDef[1] && !fHistoDef[2]) return 2;
+
+  return 3;
+}
+
+//________________________________________________________________________________________
+const char* AliRsnFunction::BinName(EBinType binType)
+{
+//
+// Defines the name of binning
+//
+
+  switch (binType)
+  {
+    case kBinPairPt:
+      return "PT";
+      break;
+    case kBinPairEta:
+      return "ETA";
+      break;
+    case kBinEventMult:
+      return "MULT";
+      break;
+    default:
+      return "UNDEF";
+  }
 }

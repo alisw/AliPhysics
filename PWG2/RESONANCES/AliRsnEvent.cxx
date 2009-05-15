@@ -27,81 +27,38 @@
 //
 
 #include <Riostream.h>
-#include <TH1.h>
 
 #include "AliLog.h"
+#include "AliVEvent.h"
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliMCEvent.h"
+#include "AliStack.h"
 
-#include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
-#include "AliRsnMCInfo.h"
 
 ClassImp(AliRsnEvent)
 
 //_____________________________________________________________________________
-AliRsnEvent::AliRsnEvent() :
-    TNamed("rsnEvent", ""),
-    fPVx(0.0),
-    fPVy(0.0),
-    fPVz(0.0),
-    fPhiMean(0.0),
-    fMult(0),
-    fPVxMC(0.0),
-    fPVyMC(0.0),
-    fPVzMC(0.0),
-    fTracks(0x0),
-    fTrueMult(0),
-    fNoPID(0x0),
-    fPerfectPID(0x0),
-    fRealisticPID(0x0),
-    fSelPIDType(AliRsnPID::kUnknown),
-    fSelCharge('0'),
-    fSelPIDMethod(AliRsnDaughter::kRealistic),
-    fSelCuts(0x0)
+AliRsnEvent::AliRsnEvent(AliVEvent *ref, AliMCEvent *refMC) :
+    fRef(ref),
+    fRefMC(refMC)
 {
 //
 // Default constructor
-// (implemented but not recommended for direct use)
 //
 }
 
 //_____________________________________________________________________________
 AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
-    TNamed(event),
-    fPVx(event.fPVx),
-    fPVy(event.fPVy),
-    fPVz(event.fPVz),
-    fPhiMean(event.fPhiMean),
-    fMult(event.fMult),
-    fPVxMC(event.fPVxMC),
-    fPVyMC(event.fPVyMC),
-    fPVzMC(event.fPVzMC),
-    fTracks(0x0),
-    fTrueMult(event.fTrueMult),
-    fNoPID(0x0),
-    fPerfectPID(0x0),
-    fRealisticPID(0x0),
-    fSelPIDType(AliRsnPID::kUnknown),
-    fSelCharge('0'),
-    fSelPIDMethod(AliRsnDaughter::kRealistic),
-    fSelCuts(0x0)
+    TObject(event),
+    fRef(event.fRef),
+    fRefMC(event.fRefMC)
+
 {
 //
 // Copy constructor.
-// Copies all the tracks from the argument's collection
-// to this' one, and then recreates the PID index arrays,
-// trusting on the PID informations in the copied tracks.
 //
-
-  // during track copy, counts how many faults happen
-  Int_t errors = Fill(event.fTracks);
-  if (errors) AliWarning(Form("%d errors occurred in copy", errors));
-
-  // fill PID index arrays
-  // FillPIDArrays();
-
-  if (event.fNoPID) fNoPID = new AliRsnPIDIndex(* (event.fNoPID));
-  if (event.fPerfectPID) fPerfectPID = new AliRsnPIDIndex(* (event.fPerfectPID));
-  if (event.fRealisticPID) fRealisticPID = new AliRsnPIDIndex(* (event.fRealisticPID));
 }
 
 //_____________________________________________________________________________
@@ -110,46 +67,11 @@ AliRsnEvent& AliRsnEvent::operator= (const AliRsnEvent &event)
 //
 // Works in the same way as the copy constructor.
 //
-  // copy name and title
-  SetName(event.GetName());
-  SetTitle(event.GetTitle());
 
-  // copy primary vertex and initialize track counter to 0
-  fPVx = event.fPVx;
-  fPVy = event.fPVy;
-  fPVz = event.fPVz;
-  fPVxMC = event.fPVxMC;
-  fPVyMC = event.fPVyMC;
-  fPVzMC = event.fPVzMC;
+  (TObject)(*this) = (TObject)event;
+  fRef = event.fRef;
+  fRefMC = event.fRefMC;
 
-  // other data
-  fPhiMean = event.fPhiMean;
-  fMult = event.fMult;
-  fTrueMult = event.fTrueMult;
-
-  // add tracks from array of argument
-  Int_t errors = Fill(event.fTracks);
-  if (errors) AliWarning(Form("%d errors occurred in copy", errors));
-
-  // fill PID arrays
-  // FillPIDArrays();
-  if (event.fNoPID)
-  {
-    if (!fNoPID) fNoPID = new AliRsnPIDIndex(* (event.fNoPID));
-    else (*fNoPID) = * (event.fNoPID);
-  }
-  if (event.fPerfectPID)
-  {
-    if (!fPerfectPID) fPerfectPID = new AliRsnPIDIndex(* (event.fPerfectPID));
-    else (*fPerfectPID) = * (event.fPerfectPID);
-  }
-  if (event.fRealisticPID)
-  {
-    if (!fRealisticPID) fRealisticPID = new AliRsnPIDIndex(* (event.fRealisticPID));
-    else (*fRealisticPID) = * (event.fRealisticPID);
-  }
-
-  // return this object
   return (*this);
 }
 
@@ -158,327 +80,103 @@ AliRsnEvent::~AliRsnEvent()
 {
 //
 // Destructor.
-// Deletes the TClonesArray, after clearing its content.
-// Other memory-allocating arrays are cleared by their
-// destructor, which is automatically called from here.
 //
-
-  Clear();
-  if (fTracks) delete fTracks;
 }
 
 //_____________________________________________________________________________
-void AliRsnEvent::Init()
+void AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t i)
 {
 //
-// Initialize TClonesArray data-member.
+// Return a track stored here in format of AliRsnDaughter.
+// and finds in the reference event the informations to set
+// the proprietary data members of AliRsnDaughter
 //
 
-  fTracks = new TClonesArray("AliRsnDaughter", 1);
-  //fTracks->BypassStreamer (kFALSE);
-}
+  // retrieve reference particle from reference event
+  AliVParticle *ref = (AliVParticle*)fRef->GetTrack(i);
 
-//_____________________________________________________________________________
-void AliRsnEvent::Clear(Option_t* /*option*/)
-{
-//
-// Empties the collections (does not delete the objects).
-// The track collection is emptied only at the end.
-// Since some objects could be uninitialized, some
-// "if" statement are used.
-//
+  if (!ref) return;
 
-  if (fTracks) fTracks->Delete();
-  delete fNoPID;
-  fNoPID = 0x0;
-  delete fPerfectPID;
-  fPerfectPID = 0x0;
-  delete fRealisticPID;
-  fRealisticPID = 0x0;
-}
-
-//_____________________________________________________________________________
-AliRsnDaughter* AliRsnEvent::AddTrack(AliRsnDaughter track)
-{
-//
-// Stores a new track into the array and returns
-// a reference pointer to it (which is NULL in case of errors).
-//
-
-  Int_t nextIndex = fTracks->GetEntriesFast();
-  TClonesArray &tracks = (*fTracks);
-  AliRsnDaughter *copy = new(tracks[nextIndex]) AliRsnDaughter(track);
-  return copy;
-}
-
-//_____________________________________________________________________________
-AliRsnDaughter* AliRsnEvent::GetTrack(Int_t index)
-{
-//
-// Returns one track in the collection
-// given the absolute index in the global TClonesArray
-//
-  return (AliRsnDaughter*) fTracks->UncheckedAt(index);
-}
-
-//_____________________________________________________________________________
-TArrayI* AliRsnEvent::GetCharged(Char_t sign)
-{
-//
-// Returns an array with the indexes of all tracks with a given charge
-// (arg can be '+' or '-'), irrespective of its PID.
-// When the argument is wrong, a NULL pointer is returned.
-//
-  if (fNoPID) return fNoPID->GetTracksArray(sign, AliRsnPID::kUnknown);
-  return 0x0;
-}
-
-//_____________________________________________________________________________
-TArrayI * AliRsnEvent::GetTracksArray
-(AliRsnDaughter::EPIDMethod pidtype, Char_t sign, AliRsnPID::EType type)
-{
-//
-// Returns an array of indexes of all tracks in this event
-// which match the charge sign and PID type in the arguments,
-// according to one of the allowed PID methods (perfect or realistic).
-// It retrieves this array from the AliRsnPIDIndex data members.
-// If the arguments are wrong a NULL pointer is returned.
-//
-
-  switch (pidtype)
-  {
-    case AliRsnDaughter::kRealistic:
-      if (fRealisticPID)
-      {
-        return fRealisticPID->GetTracksArray(sign, type);
-      }
-      break;
-    case AliRsnDaughter::kPerfect:
-      if (fPerfectPID)
-      {
-        return fPerfectPID->GetTracksArray(sign, type);
-      }
-      break;
-    case AliRsnDaughter::kNoPID:
-      if (fNoPID)
-      {
-        return fNoPID->GetTracksArray(sign, AliRsnPID::kUnknown);
-      }
-      break;
-    default:
-      AliError("Handled PID methods here are only fNoPID,kPerfect and kRealistic. Nothing done.");
-      return 0x0;
-  }
-  return 0x0;
-}
-
-//_____________________________________________________________________________
-void AliRsnEvent::FillPIDArrays(Int_t arraySizeInit)
-{
-//
-// Initializes and fills the AliRsnPIDIndex objects containing
-// arrays of indexes for each possible charge and PID type.
-// This method is the unique way to do this, for safety reasons.
-//
-
-  if (fNoPID) delete fNoPID;
-  if (fPerfectPID) delete fPerfectPID;
-  if (fRealisticPID) delete fRealisticPID;
-  fNoPID = new AliRsnPIDIndex(arraySizeInit);
-  fPerfectPID = new AliRsnPIDIndex(arraySizeInit);
-  fRealisticPID = new AliRsnPIDIndex(arraySizeInit);
-
-  // set the default type to Realistic
-  AliRsnDaughter::SetPIDMethod(AliRsnDaughter::kRealistic);
-
-  // loop on tracks and create references
-  Double_t prob;
-  Int_t i, icharge, type;
-  Short_t charge;
-  AliRsnMCInfo *mcinfo = 0;
-  AliRsnDaughter *track = 0;
-  TObjArrayIter iter(fTracks);
-  while ((track = (AliRsnDaughter*) iter.Next()))
-  {
-    charge = track->Charge();
-    type = (Int_t) track->PIDType(prob);
-    i = fTracks->IndexOf(track);
-    mcinfo = track->GetMCInfo();
-    if (charge > 0) icharge = 0;
-    else if (charge < 0) icharge = 1;
-    else
-    {
-      AliError("Found particle with ZERO charge!!!");
-      continue;
-    }
-    // add to charged array
-    fNoPID->AddIndex(i, icharge, (Int_t) AliRsnPID::kUnknown);
-    // add to realistic PID array
-    fRealisticPID->AddIndex(i, icharge, (Int_t) type);
-    // add to perfect PID array (needs MCInfo present)
-    if (mcinfo)
-    {
-      fPerfectPID->AddIndex(i, icharge, (Int_t) AliRsnPID::InternalType(mcinfo->PDG()));
-    }
+  // if MC info is present, retrieve from it
+  TParticle *refMC = 0;
+  if (fRefMC) {
+    Int_t label = TMath::Abs(ref->GetLabel());
+    refMC = fRefMC->Stack()->Particle(label);
   }
 
-  // adjusts the size of arrays
-  if (fNoPID) fNoPID->SetCorrectIndexSize();
-  if (fPerfectPID) fPerfectPID->SetCorrectIndexSize();
-  if (fRealisticPID) fRealisticPID->SetCorrectIndexSize();
-}
+  // create output object
+  out.SetRef(ref);
+  out.SetGood();
+  out.SetParticle(refMC);
+  if (fRefMC)
+    out.FindMotherPDG(fRefMC->Stack());
 
-//_____________________________________________________________________________
-void AliRsnEvent::Print(Option_t *option) const
-{
-//
-// Lists the details of the event, and the ones of each
-// contained track.
-// The options are passed to AliRsnDaughter::Print().
-// Look at that method to understand option values.
-//
-
-  cout << "...Multiplicity     : " << fTracks->GetEntries() << endl;
-  cout << "...Primary vertex   : " << fPVx << ' ' << fPVy << ' ' << fPVz << endl;
-
-  TObjArrayIter iter(fTracks);
-  AliRsnDaughter *d = 0;
-  while ((d = (AliRsnDaughter*) iter.Next()))
-  {
-    cout << "....Track #" << fTracks->IndexOf(d) << endl;
-    d->Print(option);
+  // retrieve primary vertex and set impact parameters
+  Double_t dx = out.Xv(), dy = out.Yv(), dz = out.Zv();
+  const AliVVertex *v = fRef->GetPrimaryVertex();
+  if (v) {
+    dx -= v->GetX();
+    dy -= v->GetY();
+    dz -= v->GetZ();
   }
-}
+  out.SetDr(TMath::Sqrt(dx*dx + dy*dy));
+  out.SetDz(dz);
 
-//_____________________________________________________________________________
-void AliRsnEvent::MakeComputations()
-{
-//
-// Computes all required overall variables:
-// - multiplicity
-// - mean phi of tracks
-//
+  // dynamic reference to true nature of referenced event
+  // to get kink index
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(fRef);
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fRef);
 
-  if (!fTracks)
-  {
-    fMult = 0;
-    fPhiMean = 1000.0;
-  }
-  else
-  {
-    fMult = fTracks->GetEntries();
-    if (fMult < 1) {
-      fPhiMean = 1000.0;
-    }
-    else
-    {
-      fPhiMean = 0.0;
-      AliRsnDaughter *d = 0;
-      TObjArrayIter next(fTracks);
-      while ( (d = (AliRsnDaughter*)next()) ) fPhiMean += d->Phi();
-      fPhiMean /= (Double_t)fMult;
-    }
-  }
-}
-
-//_____________________________________________________________________________
-void AliRsnEvent::CorrectTracks()
-{
-//
-// Corrects in all tracks the DCA vertex position using the primary vertex.
-// If present, also MC infos are corrected with primaryvertexMC.
-//
-
-  AliRsnDaughter *track = 0;
-  TObjArrayIter next(fTracks);
-
-  while ( (track = (AliRsnDaughter*)next()) ) {
-    track->ShiftZero(fPVx, fPVy, fPVz);
-    if (track->GetMCInfo()) {
-      track->GetMCInfo()->ShiftZero(fPVxMC, fPVyMC, fPVzMC);
-    }
-  }
-}
-
-//_____________________________________________________________________________
-Int_t AliRsnEvent::GetNCharged(Char_t sign)
-{
-//
-// Get number of charged tracks
-//
-
-  Int_t icharge;
-  icharge = ChargeIndex(sign);
-  if (icharge < 0) return 0;
-  TArrayI *charged = GetCharged(sign);
-  if (!charged) return 0;
-  return charged->GetSize();
-}
-
-//_____________________________________________________________________________
-Int_t AliRsnEvent::Fill(TObjArray *array)
-{
-//
-// Fills the data-member TClonesArray of tracks with
-// the ones stored in the array passed as argument.
-// If this data-member is already present, it is cleared.
-// Returns the number of tracks which raised problems
-// while attempting to add them. Zero is the best.
-//
-
-  // clear the array if it is already instantiated,
-  // create if otherwise
-  if (fTracks) fTracks->Delete();
-  else Init();
-
-  // copy argument entries into data-member
-  Int_t errors = 0;
-  AliRsnDaughter *track = 0;
-  TObjArrayIter iter(array);
-  while ((track = (AliRsnDaughter*) iter.Next()))
-  {
-    AliRsnDaughter *ref = AddTrack(*track);
-    if (!ref)
-    {
-      AliWarning(Form("Problem occurred when copying track #%d from passed array", array->IndexOf(track)));
-      errors++;
-    }
+  if (esd) {
+    AliESDtrack *esdTrack = esd->GetTrack(i);
+    out.FindKinkIndex(esdTrack);
+  } else if (aod) {
+    out.FindKinkIndex(aod);
   }
 
-  return errors;
+  out.SetGood();
 }
 
 //_____________________________________________________________________________
-Int_t AliRsnEvent::ChargeIndex(Char_t sign) const
-//
-// Returns the array index corresponding to charge
-// 0 for positive, 1 for negative
-//
-{
-  if (sign == '+') return 0;
-  else if (sign == '-') return 1;
-  else
-  {
-    AliError(Form("Character '%c' not recognized as charge sign", sign));
-    return -1;
-  }
-}
-//_____________________________________________________________________________
-inline void AliRsnEvent::SetSelection
-(AliRsnPID::EType pid, Char_t charge, AliRsnDaughter::EPIDMethod meth, AliRsnCutSet *cuts)
+AliRsnDaughter AliRsnEvent::GetDaughter(Int_t i)
 {
 //
-// Set all selection parameters at once
+// Return an AliRsnDaughter taken from this event,
+// with all additional data members well set.
 //
 
-  SetSelectionPIDType(pid);
-  SetSelectionCharge(charge);
-  SetSelectionPIDMethod(meth);
-  SetSelectionTrackCuts(cuts);
+  AliRsnDaughter out;
+  SetDaughter(out, i);
+
+  return out;
 }
 
 //_____________________________________________________________________________
-AliRsnDaughter* AliRsnEvent::GetLeadingParticle(Double_t ptMin)
+Int_t AliRsnEvent::GetMultiplicity()
+{
+//
+// Returns event multiplicity
+//
+  AliDebug(AliLog::kDebug+2,"<-");
+  if (!fRef) return 0;
+  AliDebug(AliLog::kDebug+2,"->");
+  return fRef->GetNumberOfTracks();
+}
+
+//_____________________________________________________________________________
+Double_t AliRsnEvent::GetVz()
+{
+//
+// Return Z coord of primary vertex
+//
+  AliDebug(AliLog::kDebug+2,"<-");
+  return fRef->GetPrimaryVertex()->GetZ();
+  AliDebug(AliLog::kDebug+2,"->");
+}
+
+//_____________________________________________________________________________
+AliRsnDaughter AliRsnEvent::GetLeadingParticle
+(Double_t ptMin, AliPID::EParticleType type)
 {
 //
 // Searches the collection of all particles with given PID type and charge,
@@ -489,91 +187,48 @@ AliRsnDaughter* AliRsnEvent::GetLeadingParticle(Double_t ptMin)
 // otherwise it is done irrespectively of the charge.
 //
 
-  Int_t i;
-  TArrayI *array = 0x0;
-  AliRsnDaughter *track1 = 0x0, *track2 = 0x0, *leading = 0x0;
+  Int_t i, nTracks = fRef->GetNumberOfTracks();
+  AliRsnDaughter output;
 
-  if (fSelCharge == '+' || fSelCharge == '-') {
-    // if the charge '+' or '-' does simply the search
-    array = GetTracksArray(fSelPIDMethod, fSelCharge, fSelPIDType);
-    for (i = 0; i < array->GetSize(); i++) {
-      track1 = (AliRsnDaughter *) fTracks->At(array->At(i));
-      if (!track1) continue;
-      if (track1->Pt() < ptMin) continue;
-      if (!CutPass(track1)) continue;
-      ptMin = track1->Pt();
-      leading = track1;
+  for (i = 0; i < nTracks; i++) {
+    AliRsnDaughter track = GetDaughter(i);
+    if (!AcceptTrackPID(&track, type)) continue;
+    if (track.Pt() < ptMin) continue;
+    if (!output.IsOK() || track.Pt() > output.Pt()) {
+      output = track;
+      output.SetGood();
     }
   }
-  else {
-    track1 = GetLeadingParticle(ptMin);
-    track2 = GetLeadingParticle(ptMin);
-    if (track1 && track2) {
-      if (track1->Pt() > track2->Pt()) leading = track1;
-      else leading = track2;
-    }
-    else if (track1) leading = track1;
-    else if (track2) leading = track2;
-    else leading = 0x0;
-  }
 
-  return leading;
+  return output;
 }
 
-//_____________________________________________________________________________
-Double_t AliRsnEvent::GetAverageMomentum(Int_t &count)
+//_________________________________________________________________________________________________
+Double_t AliRsnEvent::GetAverageMomentum(Int_t &count, AliPID::EParticleType type)
 {
 //
 // Loops on the list of tracks and computes average total momentum.
 //
 
-  Int_t i;
+  Int_t i, nTracks = fRef->GetNumberOfTracks();
   Double_t pmean = 0.0;
-  TArrayI *array = 0x0;
-  AliRsnDaughter *d = 0x0;
 
-  if (fSelCharge == '+' || fSelCharge == '-') {
-    // if the charge '+' or '-' does simply the search
-    count = 0;
-    array = GetTracksArray(fSelPIDMethod, fSelCharge, fSelPIDType);
-    for (i = 0; i < array->GetSize(); i++) {
-      d = (AliRsnDaughter *) fTracks->At(array->At(i));
-      if (!d) continue;
-      if (!CutPass(d)) continue;
-      pmean += d->P();
-      count++;
-    }
-    if (count > 0) pmean /= (Double_t)count;
-    else pmean = 0.0;
+  for (i = 0, count = 0; i < nTracks; i++) {
+    AliRsnDaughter track = GetDaughter(i);
+    if (!AcceptTrackPID(&track, type)) continue;
+    pmean += track.P();
+    count++;
   }
-  else {
-    Int_t countP, countM;
-    Double_t pmeanP = GetAverageMomentum(countP);
-    Double_t pmeanM = GetAverageMomentum(countM);
-    if (countP && countM) {
-      pmean = (pmeanP * (Double_t)countP + pmeanM * (Double_t)countM) / (countP + countM);
-      count = countP + countM;
-    }
-    else if (countP) {
-      pmean = pmeanP;
-      count = countP;
-    }
-    else if (countM) {
-      pmean = pmeanM;
-      count = countM;
-    }
-    else {
-      count = 0;
-      pmean = 0.0;
-    }
-  }
+
+  if (count > 0) pmean /= (Double_t)count;
+  else pmean = 0.0;
 
   return pmean;
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnEvent::GetAngleDistrWRLeading
-(Double_t &angleMean, Double_t &angleRMS, Double_t ptMin)
+Bool_t AliRsnEvent::GetAngleDistr
+(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter leading)
 {
 //
 // Takes the leading particle and computes the mean and RMS
@@ -581,21 +236,18 @@ Bool_t AliRsnEvent::GetAngleDistrWRLeading
 // with respect to the direction of leading particle.
 //
 
-  AliRsnDaughter *leading = GetLeadingParticle(ptMin);
-  if (!leading) return kFALSE;
+  if (!leading.IsOK()) return kFALSE;
 
-  Int_t count = 0;
-  Double_t angle, angle2Mean;
-  AliRsnDaughter *trk = 0x0;
-  TObjArrayIter next(fTracks);
+  Int_t i, count, nTracks = fRef->GetNumberOfTracks();
+  Double_t angle, angle2Mean = 0.0;
 
   angleMean = angle2Mean = 0.0;
 
-  while ( (trk = (AliRsnDaughter*)next()) )
-  {
-    if (trk == leading) continue;
+  for (i = 0, count = 0; i < nTracks; i++) {
+    AliRsnDaughter trk = GetDaughter(i);
+    if (trk.GetID() == leading.GetID()) continue;
 
-    angle = leading->AngleTo(trk);
+    angle = leading.AngleTo(trk);
 
     angleMean += angle;
     angle2Mean += angle * angle;
@@ -609,4 +261,20 @@ Bool_t AliRsnEvent::GetAngleDistrWRLeading
   angleRMS = TMath::Sqrt(angle2Mean - angleMean*angleMean);
 
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnEvent::AcceptTrackPID
+(AliRsnDaughter *d, AliPID::EParticleType type)
+{
+//
+// [PRIVATE]
+// Checks if the track PID (according to method in use) corresponds
+// to the required identification species.
+// If the second argument is "kUnknown", answer of this method is always YES.
+//
+
+  if (type == AliPID::kUnknown) return kTRUE;
+
+  return (d->AssignedPID() == type);
 }
