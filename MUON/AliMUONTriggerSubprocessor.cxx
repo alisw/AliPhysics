@@ -128,6 +128,11 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   WhichFilesToRead(GetFileName("EXPORTED").Data(),
                    globalFile,regionalFile,localFile,lutFile);
   
+  if ((globalFile+regionalFile+localFile+lutFile) == 0) {
+    Master()->Log("No file(s) to be processed for this run. Exiting.");
+    return;
+  }
+  
   delete fRegionalConfig; fRegionalConfig = 0x0;
   delete fLocalMasks; fLocalMasks = 0x0;
   delete fGlobalConfig; fGlobalConfig = 0x0;
