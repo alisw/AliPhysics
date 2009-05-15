@@ -18,7 +18,7 @@
 class AliRawRFIODB : public AliRawDB {
 
 public:
-   AliRawRFIODB(AliRawEvent *event,
+   AliRawRFIODB(AliRawEventV2 *event,
 		AliESDEvent *esd,
 		Int_t compress,
 		const char* fileName = NULL,

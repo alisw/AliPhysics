@@ -31,7 +31,7 @@ ClassImp(AliRawRootdDB)
 
 
 //______________________________________________________________________________
-AliRawRootdDB::AliRawRootdDB(AliRawEvent *event,
+AliRawRootdDB::AliRawRootdDB(AliRawEventV2 *event,
 			     AliESDEvent *esd,
 			     Int_t compress,
 			     const char* fileName,Int_t basketsize)
@@ -99,14 +99,17 @@ Long64_t AliRawRootdDB::Close()
 
    // Write the tree.
    Bool_t error = kFALSE;
-   if (fTree->Write() == 0)
-     error = kTRUE;
+   if (fTree)
+     if (fTree->Write() == 0)
+       error = kTRUE;
    if (fESDTree)
      if (fESDTree->Write() == 0)
        error = kTRUE;
 
    // Close DB, this also deletes the fTree
    fRawDB->Close();
+
+   fTree = NULL;
 
    Long64_t filesize = fRawDB->GetEND();
 

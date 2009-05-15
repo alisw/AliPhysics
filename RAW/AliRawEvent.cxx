@@ -65,53 +65,14 @@ fSubEvents(NULL)
 }
 
 //______________________________________________________________________________
-AliRawEventHeaderBase *AliRawEvent::GetHeader(char*& data)
-{
-  // Get event header part of AliRawEvent.
-  // First the DATE version is identified and then the
-  // corresponding event header version object is created
-  
-  if (!fEvtHdr) {
-    fEvtHdr = AliRawEventHeaderBase::Create(data);
-  }
-
-  return fEvtHdr;
-}
-
-//______________________________________________________________________________
 AliRawEventHeaderBase *AliRawEvent::GetHeader()
 {
   if (!fEvtHdr) {
-      AliFatal("Header version not yet initialized!");
-      return 0x0;
-    }
+    AliFatal("Event header does not exist!");
+    return 0x0;
+  }
 
   return fEvtHdr;
-}
-
-//______________________________________________________________________________
-AliRawEquipment *AliRawEvent::NextEquipment()
-{
-   // Returns next equipment object.
-
-   if (!fEquipments)
-      fEquipments = new TObjArray(100); // arbitrary, probably enough to prevent resizing
-
-   if (fEquipments->GetSize() <= fNEquipments) {
-      fEquipments->Expand(fNEquipments+10);
-      Warning("NextEquipment", "expanded fEquipments by 10 to %d",
-              fEquipments->GetSize());
-   }
-
-   AliRawEquipment *eq;
-   if (!(eq = (AliRawEquipment *)fEquipments->At(fNEquipments))) {
-      eq = new AliRawEquipment;
-      fEquipments->AddAt(eq, fNEquipments);
-   }
-
-   fNEquipments++;
-
-   return eq;
 }
 
 //______________________________________________________________________________
@@ -126,32 +87,7 @@ AliRawEquipment *AliRawEvent::GetEquipment(Int_t index) const
 }
 
 //______________________________________________________________________________
-AliRawEvent *AliRawEvent::NextSubEvent()
-{
-   // Returns next sub-event object.
-
-   if (!fSubEvents)
-      fSubEvents = new TObjArray(100); // arbitrary, probably enough to prevent resizing
-
-   if (fSubEvents->GetSize() <= fNSubEvents) {
-      fSubEvents->Expand(fNSubEvents+10);
-      Warning("NextSubEvent", "expanded fSubEvents by 10 to %d",
-              fSubEvents->GetSize());
-   }
-
-   AliRawEvent *ev;
-   if (!(ev = (AliRawEvent *)fSubEvents->At(fNSubEvents))) {
-      ev = new AliRawEvent;
-      fSubEvents->AddAt(ev, fNSubEvents);
-   }
-
-   fNSubEvents++;
-
-   return ev;
-}
-
-//______________________________________________________________________________
-AliRawEvent *AliRawEvent::GetSubEvent(Int_t index) const
+AliRawEvent *AliRawEvent::GetSubEvent(Int_t index)
 {
    // Get specified sub event. Returns 0 if sub event does not exist.
 
@@ -159,25 +95,6 @@ AliRawEvent *AliRawEvent::GetSubEvent(Int_t index) const
       return 0;
 
    return (AliRawEvent *) fSubEvents->At(index);
-}
-
-//______________________________________________________________________________
-void AliRawEvent::Reset()
-{
-   // Reset the event in case it needs to be re-used (avoiding costly
-   // new/delete cycle). We reset the size marker for the AliRawData
-   // objects and the sub event counter.
-
-   for (int i = 0; i < fNEquipments; i++) {
-      AliRawEquipment *eq = (AliRawEquipment *)fEquipments->At(i);
-      eq->Reset();
-   }
-   fNEquipments = 0;
-   for (int i = 0; i < fNSubEvents; i++) {
-      AliRawEvent *ev = (AliRawEvent *)fSubEvents->At(i);
-      ev->Reset();
-   }
-   fNSubEvents = 0;
 }
 
 //______________________________________________________________________________
@@ -192,4 +109,31 @@ AliRawEvent::~AliRawEvent()
    if (fSubEvents)
       fSubEvents->Delete();
    delete fSubEvents;
+}
+
+//______________________________________________________________________________
+void AliRawEvent::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliRawEvent.
+
+   UInt_t R__s, R__c;
+   if (R__b.IsReading()) {
+      Version_t R__v = R__b.ReadVersion(&R__s, &R__c); if (R__v) { }
+      TObject::Streamer(R__b);
+      R__b >> fNEquipments;
+      R__b >> fNSubEvents;
+      R__b >> fEvtHdr;
+      R__b >> fEquipments;
+      R__b >> fSubEvents;
+      R__b.CheckByteCount(R__s, R__c, AliRawEvent::IsA());
+   } else {
+      R__c = R__b.WriteVersion(AliRawEvent::IsA(), kTRUE);
+      TObject::Streamer(R__b);
+      R__b << fNEquipments;
+      R__b << fNSubEvents;
+      R__b << fEvtHdr;
+      R__b << fEquipments;
+      R__b << fSubEvents;
+      R__b.SetByteCount(R__c, kTRUE);
+   }
 }

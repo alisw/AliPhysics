@@ -23,12 +23,12 @@
 //                                                                      //
 // AliMDC                                                               //
 //                                                                      //
-// Set of classes defining the ALICE RAW event format. The AliRawEvent  //
+// Set of classes defining the ALICE RAW event format. The AliRawEventV2//
 // class defines a RAW event. It consists of an AliEventHeader object   //
 // an AliEquipmentHeader object, an AliRawData object and an array of   //
-// sub-events, themselves also being AliRawEvents. The number of        //
+// sub-events, themselves also being AliRawEventV2s. The number of      //
 // sub-events depends on the number of DATE LDC's.                      //
-// The AliRawEvent objects are written to a ROOT file using different   //
+// The AliRawEventV2 objects are written to a ROOT file using different //
 // technologies, i.e. to local disk via AliRawDB or via rfiod using     //
 // AliRawRFIODB or via rootd using AliRawRootdDB or to CASTOR via       //
 // rootd using AliRawCastorDB (and for performance testing there is     //
@@ -51,6 +51,7 @@
 #include <TStopwatch.h>
 #include <TPluginManager.h>
 #include <TBufferFile.h>
+#include <TProcessID.h>
 
 #include <sys/uio.h>
 #ifdef USE_EB
@@ -62,12 +63,12 @@
 #include <AliLog.h>
 #include <AliESDEvent.h>
 
-#include "AliRawEvent.h"
+#include "AliRawEventV2.h"
 #include "AliRawEventHeaderBase.h"
-#include "AliRawEquipment.h"
+#include "AliRawEquipmentV2.h"
 #include "AliRawEquipmentHeader.h"
+#include "AliRawDataArrayV2.h"
 #include "AliRawData.h"
-#include "AliStats.h"
 #include "AliRawDB.h"
 #include "AliRawRFIODB.h"
 #include "AliRawCastorDB.h"
@@ -90,9 +91,8 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
 	       Double_t maxSizeTagDB, const char* fileNameTagDB,
 	       const char *guidFileFolder,
 	       Int_t basketsize) :
-  fEvent(new AliRawEvent),
+  fEvent(new AliRawEventV2),
   fESD(NULL),
-  fStats(NULL),
   fRawDB(NULL),
   fTagDB(NULL),
   fEventTag(new AliRawEventTag),
@@ -126,6 +126,11 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
   // Set the maximum tree size to 19GB
   // in order to allow big raw data files
   TTree::SetMaxTreeSize(20000000000LL);
+
+  AliRawEquipmentHeader::Class()->IgnoreTObjectStreamer();
+  AliRawEquipmentV2::Class()->IgnoreTObjectStreamer();
+  AliRawEventV2::Class()->IgnoreTObjectStreamer();
+  AliRawDataArrayV2::Class()->IgnoreTObjectStreamer();
 
   TBufferFile::SetGlobalReadParam(5);
  
@@ -179,7 +184,6 @@ AliMDC::~AliMDC()
   fFilters.Delete();
   if(fTagDB) delete fTagDB;
   delete fRawDB;
-  delete fStats;
   delete fESD;
   delete fEvent;
   delete fEventTag;
@@ -228,16 +232,13 @@ Int_t AliMDC::Open(EWriteMode mode, const char* fileName,
 
   Info("Open", "Filling raw DB %s\n", fRawDB->GetDBName());
 
-  // Create AliStats object
-  fStats = new AliStats(fRawDB->GetDBName(), fCompress, 
-			fFilterMode != kFilterOff);
   return 0;
 }
 
 //______________________________________________________________________________
 Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 {
-// Convert the DATE event to an AliRawEvent object and store it in the raw DB,
+// Convert the DATE event to an AliRawEventV2 object and store it in the raw DB,
 // optionally also run the filter.
 // event is either a pointer to the streamlined event 
 // or, if isIovecArray is kTRUE, a pointer to an array of iovecs with one
@@ -245,8 +246,10 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 // The return value is the number of written bytes or an error code
   const Long64_t kFileSizeErrorLevel   = 19000000000LL;
 
+  Int_t objectNumber = TProcessID::GetObjectCount();
+
   Long64_t currentFileSize = GetTotalSize();
-  AliDebug(1,Form("current file size is %lld bytes",currentFileSize));
+  //  AliDebug(1,Form("current file size is %lld bytes",currentFileSize));
   if(currentFileSize > kFileSizeErrorLevel) {
     Error("ProcessEvent", "file size (%lu) exceeds the limit "
 	  , currentFileSize);
@@ -262,16 +265,19 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 
   // Read event header
   if ((status = header->ReadHeader(data)) != (Int_t)header->GetHeadSize()) {
+    Error("ProcessEvent","Wrong event header format (%d != %d)",
+	  status,(Int_t)header->GetHeadSize());
     return kErrHeader;
   }
 
-  if (AliDebugLevel() > 2) ToAliDebug(3, header->Dump(););
+  //  if (AliDebugLevel() > 2) ToAliDebug(3, header->Dump(););
 
   // Check event type and skip "Start of Run", "End of Run",
   // "Start of Run Files" and "End of Run Files"
   Int_t size = header->GetEventSize() - header->GetHeadSize();
-  
-  AliDebug(1, Form("Processing %s (%d bytes)", header->GetTypeName(), size));
+  UInt_t eventType = header->Get("Type");  
+
+  //  AliDebug(1, Form("Processing %s (%d bytes)", header->GetTypeName(), size));
 
   // Amount of data left to read for this event
   Int_t toRead = size;
@@ -294,9 +300,9 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
     while (toRead > 0) {
       if (isIovecArray) data = (char*) ((iovec*) event)[nsub].iov_base;
 
-      AliDebug(1, Form("reading LDC %d", nsub));
+      //      AliDebug(1, Form("reading LDC %d", nsub));
 
-      AliRawEvent *subEvent = fEvent->NextSubEvent();
+      AliRawEventV2 *subEvent = fEvent->NextSubEvent();
 
       // Read sub-event header
       AliRawEventHeaderBase *subHeader = subEvent->GetHeader(data);
@@ -304,7 +310,7 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 	return kErrSubHeader;
       }
 
-      if (AliDebugLevel() > 2) ToAliDebug(3, subHeader->Dump(););
+      //      if (AliDebugLevel() > 2) ToAliDebug(3, subHeader->Dump(););
 
       toRead -= subHeader->GetHeadSize();
 
@@ -319,14 +325,14 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
       }
 
       // Read Equipment Headers (in case of physics or calibration event)
-      if (header->Get("Type") == AliRawEventHeaderBase::kPhysicsEvent ||
-	  header->Get("Type") == AliRawEventHeaderBase::kCalibrationEvent ||
-	  header->Get("Type") == AliRawEventHeaderBase::kSystemSoftwareTriggerEvent ||
-	  header->Get("Type") == AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent ||
-	  header->Get("Type") == AliRawEventHeaderBase::kStartOfData ||
-	  header->Get("Type") == AliRawEventHeaderBase::kEndOfData) {
+      if (eventType == AliRawEventHeaderBase::kPhysicsEvent ||
+	  eventType == AliRawEventHeaderBase::kCalibrationEvent ||
+	  eventType == AliRawEventHeaderBase::kSystemSoftwareTriggerEvent ||
+	  eventType == AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent ||
+	  eventType == AliRawEventHeaderBase::kStartOfData ||
+	  eventType == AliRawEventHeaderBase::kEndOfData) {
 	while (rawSize > 0) {
-	  AliRawEquipment &equipment = *subEvent->NextEquipment();
+	  AliRawEquipmentV2 &equipment = *subEvent->NextEquipment();
 	  AliRawEquipmentHeader &equipmentHeader = 
 	    *equipment.GetEquipmentHeader();
 	  Int_t equipHeaderSize = equipmentHeader.HeaderSize();
@@ -335,13 +341,15 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 	    return kErrEquipmentHeader;
 	  }
 
-	  if (AliDebugLevel() > 2) ToAliDebug(3, equipmentHeader.Dump(););
+	  //	  if (AliDebugLevel() > 2) ToAliDebug(3, equipmentHeader.Dump(););
 
 	  toRead  -= equipHeaderSize;
 	  rawSize -= equipHeaderSize;
 
 	  // Read equipment raw data
-	  AliRawData &subRaw = *equipment.GetRawData();
+	  AliRawDataArrayV2 *arr = fRawDB->GetRawDataArray(equipmentHeader.GetEquipmentSize(),
+							   equipmentHeader.GetId());
+	  AliRawData &subRaw = *equipment.NextRawData(arr);
 
 	  Int_t eqSize = equipmentHeader.GetEquipmentSize() - equipHeaderSize;
 	  if ((status = ReadRawData(subRaw, eqSize, data)) != eqSize) {
@@ -354,8 +362,13 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 
       } else {  // Read only raw data but no equipment header
 	if (rawSize) {
-	  AliRawEquipment &equipment = *subEvent->NextEquipment();
-	  AliRawData &subRaw = *equipment.GetRawData();
+	  AliRawEquipmentV2 &equipment = *subEvent->NextEquipment();
+	  AliRawEquipmentHeader &equipmentHeader = 
+	    *equipment.GetEquipmentHeader();
+	  equipmentHeader.Reset();
+	  AliRawDataArrayV2 *arr = fRawDB->GetRawDataArray(equipmentHeader.GetEquipmentSize(),
+							   equipmentHeader.GetId());
+	  AliRawData &subRaw = *equipment.NextRawData(arr);
 	  if ((status = ReadRawData(subRaw, rawSize, data)) != rawSize) {
 	    return kErrEquipment;
 	  }
@@ -369,12 +382,12 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 
   // High Level Event Filter
   if (fFilterMode != kFilterOff) {
-    if (header->Get("Type") == AliRawEventHeaderBase::kPhysicsEvent ||
-	header->Get("Type") == AliRawEventHeaderBase::kCalibrationEvent ||
-	header->Get("Type") == AliRawEventHeaderBase::kSystemSoftwareTriggerEvent ||
-	header->Get("Type") == AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent ||
-	header->Get("Type") == AliRawEventHeaderBase::kStartOfData ||
-	header->Get("Type") == AliRawEventHeaderBase::kEndOfData) {
+    if (eventType == AliRawEventHeaderBase::kPhysicsEvent ||
+	eventType == AliRawEventHeaderBase::kCalibrationEvent ||
+	eventType == AliRawEventHeaderBase::kSystemSoftwareTriggerEvent ||
+	eventType == AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent ||
+	eventType == AliRawEventHeaderBase::kStartOfData ||
+	eventType == AliRawEventHeaderBase::kEndOfData) {
       Bool_t result = kFALSE;
       for (Int_t iFilter = 0; iFilter < fFilters.GetEntriesFast(); iFilter++) {
 	AliFilter* filter = (AliFilter*) fFilters[iFilter];
@@ -385,15 +398,13 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
     }
   }
 
-  // Set stat info for first event of this file
-  if (fRawDB->GetEvents() == 0)
-    fStats->SetFirstId(header->Get("RunNb"), header->GetP("Id")[0]);
-
   // Store raw event in tree
   Int_t nBytes = fRawDB->Fill();
 
+  TProcessID::SetObjectCount(objectNumber);
+
   // Fill the event tag object
-  fEventTag->SetHeader(fEvent->GetHeader());
+  fEventTag->SetHeader(header);
   fEventTag->SetGUID(fRawDB->GetDB()->GetUUID().AsString());
   fEventTag->SetEventNumber(fRawDB->GetEvents()-1);
 
@@ -419,6 +430,8 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 
   // Make top event object ready for next event data
   fEvent->Reset();
+  fRawDB->Reset();
+
   // Clean up HLT ESD for the next event
   if (fESD) fESD->Reset();
 
@@ -445,12 +458,9 @@ Long64_t AliMDC::Close()
 
   if (!fRawDB) return -1;
 
-  fRawDB->WriteStats(fStats);
   Long64_t filesize = fRawDB->Close();
   delete fRawDB;
   fRawDB = NULL;
-  delete fStats;
-  fStats = NULL;
   return filesize;
 }
 
@@ -499,7 +509,6 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
   // Used for statistics
   TStopwatch timer;
   timer.Start();
-  Double_t told = 0, tnew = 0;
   Float_t  chunkSize = maxFileSize/100, nextChunk = chunkSize;
 
   // Create new raw DB.
@@ -516,6 +525,7 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
   Int_t numEvents = 0;
 
   AliRawEventHeaderBase header;
+  AliRawEventHeaderBase *hdr = NULL;
 
   while (kTRUE) {
 
@@ -541,8 +551,6 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
       Error("Run", "AliMDC was compiled without event builder support");
       delete fRawDB;
       fRawDB = NULL;
-      delete fStats;
-      fStats = NULL;
       return 1;
 #endif
 
@@ -567,7 +575,12 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 	}
       }
       char *data = (char *)header.HeaderBaseBegin();
-      AliRawEventHeaderBase *hdr = AliRawEventHeaderBase::Create(data);
+      if (!hdr) {
+	hdr = AliRawEventHeaderBase::Create(data);
+      }
+      else {
+	memcpy(hdr->HeaderBaseBegin(), header.HeaderBaseBegin(), header.HeaderBaseSize());
+      }
       Int_t nrecv;
       if ((nrecv = Read(fd, hdr->HeaderBegin(), hdr->HeaderSize())) !=
 	  hdr->HeaderSize()) {
@@ -606,7 +619,6 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 	delete hdr;
 	return 1;
       }
-      delete hdr;
     }
 
     Int_t result = ProcessEvent(event, !inputFile);
@@ -615,17 +627,11 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 
     if (result >= 0) {
       numEvents++;
-      if (!(numEvents%10))
-	printf("Processed event %d (%d)\n", numEvents, fRawDB->GetEvents());
     }
 
     if (result > 0) {
       // Filling time statistics
       if (fRawDB->GetBytesWritten() > nextChunk) {
-	tnew = timer.RealTime();
-	fStats->Fill(tnew-told);
-	told = tnew;
-	timer.Continue();
 	nextChunk += chunkSize;
       }
 
@@ -636,24 +642,16 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 	printf("Written raw DB at a rate of %.1f MB/s\n",
 	       fRawDB->GetBytesWritten() / timer.RealTime() / 1000000.);
 
-	// Write stats object to raw db, run db, MySQL and AliEn
-	fRawDB->WriteStats(fStats);
-	delete fStats;
-	fStats = NULL;
-
 	if (!fRawDB->NextFile()) {
 	  Error("Run", "error opening next raw data file");
 	  Close();
 	  if (inputFile) delete[] event;
+	  delete hdr;
 	  return 1;
 	}
 
 	printf("Filling raw DB %s\n", fRawDB->GetDBName());
-	fStats = new AliStats(fRawDB->GetDBName(), fCompress, 
-			      fFilterMode != kFilterOff);
-
 	timer.Start();
-	told = 0, tnew = 0;
 	nextChunk = chunkSize;
       }
 
@@ -683,6 +681,8 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 #endif
     }
   }
+
+  delete hdr;
 
   printf("Written raw DB at a rate of %.1f MB/s\n",
 	 fRawDB->GetBytesWritten() / timer.RealTime() / 1000000.);

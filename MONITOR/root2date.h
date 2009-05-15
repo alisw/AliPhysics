@@ -7,16 +7,15 @@
 #ifndef ROOT2DATE_H
 #define ROOT2DATE_H
 
-#include "AliRawData.h"
-#include "AliRawEvent.h"
+#include "AliRawVEvent.h"
 #include "AliRawEventHeaderBase.h"
-#include "AliRawEquipment.h"
+#include "AliRawVEquipment.h"
 #include "AliRawEquipmentHeader.h"
 #include "AliRawData.h"
 #include "AliDAQ.h"
 
 #include <Riostream.h>
 
-int Root2Date(AliRawEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddlDir);
+int Root2Date(AliRawVEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddlDir);
 
 #endif

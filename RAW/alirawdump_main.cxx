@@ -21,9 +21,9 @@
 #include <TTree.h>
 #include <TGrid.h>
 
-#include "AliRawEvent.h"
+#include "AliRawVEvent.h"
 #include "AliRawEventHeaderBase.h"
-#include "AliRawEquipment.h"
+#include "AliRawVEquipment.h"
 #include "AliRawEquipmentHeader.h"
 #include "AliRawDataHeader.h"
 #include "AliRawData.h"
@@ -104,7 +104,7 @@ static bool CheckCDH(AliRawDataHeader *cdhRef,AliRawDataHeader *cdh)
 }
 
 //______________________________________________________________________________
-static bool DumpEvent(const char *progname, AliRawEvent *rawEvent)
+static bool DumpEvent(const char *progname, AliRawVEvent *rawEvent)
 {
   // Dumps and checks one
   // raw-data event
@@ -121,13 +121,13 @@ static bool DumpEvent(const char *progname, AliRawEvent *rawEvent)
   AliRawDataHeader *cdhRef = NULL;
 
   for(Int_t iSubEvent=0; iSubEvent < rawEvent->GetNSubEvents(); iSubEvent++) {
-    AliRawEvent *rawSubEvent = rawEvent->GetSubEvent(iSubEvent);
+    AliRawVEvent *rawSubEvent = rawEvent->GetSubEvent(iSubEvent);
     AliRawEventHeaderBase *rawSubEventHeader = rawSubEvent->GetHeader();
     cout << "    *********** Sub-event header ***********" << endl;
     rawSubEventHeader->Print("  ");
 
     for(Int_t iEquipment=0; iEquipment < rawSubEvent->GetNEquipments(); iEquipment++) {
-      AliRawEquipment *rawEquip = rawSubEvent->GetEquipment(iEquipment);
+      AliRawVEquipment *rawEquip = rawSubEvent->GetEquipment(iEquipment);
       AliRawEquipmentHeader *rawEquipHeader = rawEquip->GetEquipmentHeader();
       cout << "      *********** Equipment event header ***********" << endl;
       rawEquipHeader->Print("    ");
@@ -221,7 +221,7 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  AliRawEvent *rawEvent=NULL;
+  AliRawVEvent *rawEvent=NULL;
  
   rawTree->SetBranchAddress("rawevent", &rawEvent);
 
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
   cout << "*******************************************" << endl;
 
   for(Int_t iEvent=0; iEvent < nEvents; iEvent++) {
-    rawEvent=new AliRawEvent;
+    rawEvent=NULL;
     rawTree->GetEntry(iEvent);
     cout << "  *********** Event " << iEvent << " *******" << endl;
     DumpEvent(argv[0],rawEvent);

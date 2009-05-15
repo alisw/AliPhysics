@@ -1,4 +1,4 @@
-// @(#) $Id$
+// @(#) $Id: AliRawEquipment.cxx 23318 2008-01-14 12:43:28Z hristov $
 // Author: Fons Rademakers  26/11/99
 
 /**************************************************************************
@@ -18,14 +18,14 @@
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// AliRawEvent                                                          //
+// AliRawEquipmentV2                                                    //
 //                                                                      //
-// Set of classes defining the ALICE RAW event format. The AliRawEvent  //
+// Set of classes defining the ALICE RAW event format. The AliRawEventV2//
 // class defines a RAW event. It consists of an AliEventHeader object   //
 // an AliEquipmentHeader object, an AliRawData object and an array of   //
-// sub-events, themselves also being AliRawEvents. The number of        //
+// sub-events, themselves also being AliRawEventV2s. The number of      //
 // sub-events depends on the number of DATE LDC's.                      //
-// The AliRawEvent objects are written to a ROOT file using different   //
+// The AliRawEventV2 objects are written to a ROOT file using different //
 // technologies, i.e. to local disk via AliRawDB or via rfiod using     //
 // AliRawRFIODB or via rootd using AliRawRootdDB or to CASTOR via       //
 // rootd using AliRawCastorDB (and for performance testing there is     //
@@ -38,20 +38,16 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <AliRawDataArray.h>
-
-#include "AliRawEquipmentHeader.h"
+#include "AliRawEquipmentV2.h"
+#include "AliRawDataArrayV2.h"
 #include "AliRawData.h"
 
-#include "AliRawEquipment.h"
-
-
-ClassImp(AliRawEquipment)
-
+ClassImp(AliRawEquipmentV2)
 
 //______________________________________________________________________________
-AliRawEquipment::AliRawEquipment():
-fEqpHdr(NULL),
+AliRawEquipmentV2::AliRawEquipmentV2():
+AliRawVEquipment(),
+fEqpHdr(),
 fRawData(NULL),
 fRawDataRef(NULL)
 {
@@ -60,25 +56,20 @@ fRawDataRef(NULL)
 }
 
 //______________________________________________________________________________
-AliRawEquipmentHeader *AliRawEquipment::GetEquipmentHeader()
+AliRawEquipmentHeader *AliRawEquipmentV2::GetEquipmentHeader()
 {
-   // Get equipment header part of AliRawEquipment.
+   // Get equipment header part of AliRawEquipmentV2.
 
-   if (!fEqpHdr)
-      fEqpHdr = new AliRawEquipmentHeader;
-
-   return fEqpHdr;
+   return &fEqpHdr;
 }
 
 //______________________________________________________________________________
-AliRawData *AliRawEquipment::GetRawData()
+AliRawData *AliRawEquipmentV2::GetRawData()
 {
-   // Get raw data part of AliRawEquipment.
+   // Get raw data part of AliRawEquipmentV2.
 
   if (!fRawData) {
-    if (!fRawDataRef.IsValid())
-      fRawData = new AliRawData;
-    else {
+    if (fRawDataRef.IsValid()) {
       fRawData = (AliRawData*)fRawDataRef.GetObject();
     }
   }
@@ -86,33 +77,41 @@ AliRawData *AliRawEquipment::GetRawData()
 }
 
 //______________________________________________________________________________
-AliRawEquipment::~AliRawEquipment()
+void AliRawEquipmentV2::Reset()
 {
-   // Clean up event object. Delete also, possible, private raw data.
+   // Reset the equipment in case it needs to be re-used (avoiding costly
+   // new/delete cycle). We reset the size marker for the AliRawData
+   // object.
 
-   delete fEqpHdr;
-   delete fRawData;
+   fEqpHdr.Reset();
+   fRawDataRef = NULL;
 }
 
 //______________________________________________________________________________
-void AliRawEquipment::Streamer(TBuffer &R__b)
+AliRawEquipmentV2::~AliRawEquipmentV2()
 {
-   // Stream an object of class AliRawEquipment.
+   // Clean up event object. Delete also, possible, private raw data.
 
-   UInt_t R__s, R__c;
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(&R__s, &R__c); if (R__v) { }
-      TObject::Streamer(R__b);
-      R__b >> fEqpHdr;
-      R__b >> fRawData;
-      fRawDataRef.Streamer(R__b);
-      R__b.CheckByteCount(R__s, R__c, AliRawEquipment::IsA());
-   } else {
-      R__c = R__b.WriteVersion(AliRawEquipment::IsA(), kTRUE);
-      TObject::Streamer(R__b);
-      R__b << fEqpHdr;
-      R__b << fRawData;
-      fRawDataRef.Streamer(R__b);
-      R__b.SetByteCount(R__c, kTRUE);
-   }
+   if (!fRawDataRef.IsValid()) delete fRawData;
+}
+
+//______________________________________________________________________________
+AliRawData *AliRawEquipmentV2::NextRawData(AliRawDataArrayV2 *array)
+{
+  // Get a pointer to the raw-data object
+  // stored within an array in a separate
+  // branch of the tree.
+  // Set the reference to the raw-data object
+
+  AliRawData *raw = NULL;
+  if (array) {
+    raw = array->Add();
+    fRawDataRef = raw;
+  }
+  else {
+    Error("NextRawData", "Raw-data array does not exist! Can not set a reference to a raw-data object!");    
+    fRawDataRef = NULL;
+  }
+
+  return raw;
 }

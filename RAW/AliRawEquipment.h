@@ -41,17 +41,16 @@ class AliRawDataArray;
 class AliRawEquipmentHeader;
 class AliRawData;
 
+#include "AliRawVEquipment.h"
 
-class AliRawEquipment : public TObject {
+class AliRawEquipment : public AliRawVEquipment {
 
 public:
    AliRawEquipment();
    virtual ~AliRawEquipment();
 
-   AliRawEquipmentHeader *GetEquipmentHeader();
-   AliRawData            *GetRawData();
-   void                   Reset();
-   void                   SetRawDataRef(AliRawDataArray *array);
+   virtual AliRawEquipmentHeader *GetEquipmentHeader();
+   virtual AliRawData            *GetRawData();
 
 private:
    AliRawEquipmentHeader *fEqpHdr;      // equipment header
@@ -61,7 +60,7 @@ private:
    AliRawEquipment(const AliRawEquipment& rawEvent);
    AliRawEquipment& operator = (const AliRawEquipment& rawEvent);
 
-   ClassDef(AliRawEquipment,2)  // ALICE raw equipment object
+   ClassDef(AliRawEquipment,3)  // ALICE raw equipment object
 };
 
 #endif

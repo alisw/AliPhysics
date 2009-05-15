@@ -39,12 +39,10 @@
 #include <TBranch.h>
 
 #include "AliESDEvent.h"
-#include "AliRawEvent.h"
-#include "AliRawDataArray.h"
+#include "AliRawEventV2.h"
+#include "AliRawDataArrayV2.h"
 #include "AliRawEventHeaderBase.h"
-#include "AliRawEquipment.h"
 #include "AliRawEquipmentHeader.h"
-#include "AliStats.h"
 
 #include "AliRawDB.h"
 
@@ -53,12 +51,12 @@ ClassImp(AliRawDB)
 
 const char *AliRawDB::fgkAliRootTag = "$Rev$";
 
-// Split TPC into 9 branches in order to avoid problems with big memory
+// Split TPC into 18 branches in order to avoid problems with big memory
 // consumption in case of TPC events w/o zero-suppression
 Int_t AliRawDB::fgkDetBranches[AliDAQ::kNDetectors+1] = {1,1,1,18,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,10,1};
 
 //______________________________________________________________________________
-AliRawDB::AliRawDB(AliRawEvent *event,
+AliRawDB::AliRawDB(AliRawEventV2 *event,
 		   AliESDEvent *esd, 
 		   Int_t compress,
                    const char* fileName,
@@ -79,15 +77,15 @@ AliRawDB::AliRawDB(AliRawEvent *event,
    // Create a new raw DB
 
   for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++) {
-    fDetRawData[iDet] = new AliRawDataArray*[fgkDetBranches[iDet]];
+    fDetRawData[iDet] = new AliRawDataArrayV2*[fgkDetBranches[iDet]];
     Int_t nDDLsPerBranch = AliDAQ::NumberOfDdls(iDet)/fgkDetBranches[iDet];
     for (Int_t iBranch = 0; iBranch < fgkDetBranches[iDet]; iBranch++)
-      fDetRawData[iDet][iBranch] = new AliRawDataArray(nDDLsPerBranch);
+      fDetRawData[iDet][iBranch] = new AliRawDataArrayV2(nDDLsPerBranch);
   }
 
-  fDetRawData[AliDAQ::kNDetectors] = new AliRawDataArray*[fgkDetBranches[AliDAQ::kNDetectors]];
+  fDetRawData[AliDAQ::kNDetectors] = new AliRawDataArrayV2*[fgkDetBranches[AliDAQ::kNDetectors]];
   for (Int_t iBranch = 0; iBranch < fgkDetBranches[AliDAQ::kNDetectors]; iBranch++)
-    fDetRawData[AliDAQ::kNDetectors][iBranch] = new AliRawDataArray(100);
+    fDetRawData[AliDAQ::kNDetectors][iBranch] = new AliRawDataArrayV2(100);
 
    if (fileName) {
       if (!Create(fileName))
@@ -259,9 +257,6 @@ again:
       return kFALSE;
    }
 
-   // Create raw data TTree
-   MakeTree();
-
    return kTRUE;
 }
 
@@ -287,23 +282,21 @@ void AliRawDB::MakeTree()
 
    fTree->BranchRef();
 
-   // splitting 29.6 MB/s, no splitting 35.3 MB/s on P4 2GHz 15k SCSI
-   //Int_t split   = 1;
-   Int_t split   = 0;
-   TBranch *b = fTree->Branch("rawevent", "AliRawEvent", &fEvent, fBasketSize, split);
+   Int_t split   = 99;
+   TBranch *b = fTree->Branch("rawevent", "AliRawEventV2", &fEvent, fBasketSize, split);
    BranchResetBit(b);
 
    // Make brach for each sub-detector
    for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++) {
      for (Int_t iBranch = 0; iBranch < fgkDetBranches[iDet]; iBranch++) {
-       b = fTree->Branch(Form("%s%d",AliDAQ::DetectorName(iDet),iBranch),"AliRawDataArray",
+       b = fTree->Branch(Form("%s%d",AliDAQ::DetectorName(iDet),iBranch),"AliRawDataArrayV2",
 			 &fDetRawData[iDet][iBranch],fBasketSize,split);
        BranchResetBit(b);
      }
    }
    // Make special branch for unrecognized raw-data payloads
    for (Int_t iBranch = 0; iBranch < fgkDetBranches[AliDAQ::kNDetectors]; iBranch++) {
-     b = fTree->Branch(Form("Common%d",iBranch),"AliRawDataArray",
+     b = fTree->Branch(Form("Common%d",iBranch),"AliRawDataArrayV2",
 		       &fDetRawData[AliDAQ::kNDetectors][iBranch],fBasketSize,split);
      BranchResetBit(b);
    }
@@ -331,14 +324,17 @@ Long64_t AliRawDB::Close()
 
    // Write the tree.
    Bool_t error = kFALSE;
-   if (fTree->Write() == 0)
-     error = kTRUE;
+   if (fTree)
+     if (fTree->Write() == 0)
+       error = kTRUE;
    if (fESDTree)
      if (fESDTree->Write() == 0)
        error = kTRUE;
 
    // Close DB, this also deletes the fTree
    fRawDB->Close();
+
+   fTree = NULL;
 
    Long64_t filesize = fRawDB->GetEND();
 
@@ -363,31 +359,10 @@ Long64_t AliRawDB::Close()
 //______________________________________________________________________________
 Int_t AliRawDB::Fill()
 {
-   // Fill the trees and return the number of written bytes
+  // Fill the trees and return the number of written bytes
 
-  for (Int_t iDet = 0; iDet < (AliDAQ::kNDetectors + 1); iDet++)
-    for (Int_t iBranch = 0; iBranch < fgkDetBranches[iDet]; iBranch++)
-      fDetRawData[iDet][iBranch]->ClearData();
-
-   // Move the raw-data payloads to the corresponding branches
-  for(Int_t iSubEvent = 0; iSubEvent < fEvent->GetNSubEvents(); iSubEvent++) {
-    AliRawEvent *subEvent = fEvent->GetSubEvent(iSubEvent);
-    for(Int_t iEquipment = 0; iEquipment < subEvent->GetNEquipments(); iEquipment++) {
-      AliRawEquipment *equipment = subEvent->GetEquipment(iEquipment);
-      Int_t iDet = AliDAQ::kNDetectors;
-      Int_t iBranch = 0; // can we split somehow the unrecognized data??? For the moment - no
-      if(equipment->GetEquipmentHeader()->GetEquipmentSize()) {
-	UInt_t eqId = equipment->GetEquipmentHeader()->GetId();
-	Int_t ddlIndex = -1;
-	iDet = AliDAQ::DetectorIDFromDdlID(eqId,ddlIndex);
-	if (iDet < 0 || iDet >= AliDAQ::kNDetectors)
-	  iDet = AliDAQ::kNDetectors;
-	else
-	  iBranch = (ddlIndex * fgkDetBranches[iDet])/AliDAQ::NumberOfDdls(iDet);
-      }
-      equipment->SetRawDataRef(fDetRawData[iDet][iBranch]);
-    }
-  }
+  // Create raw data TTree if it not yet done
+  if (!fTree) MakeTree();
 
    Double_t bytes = fRawDB->GetBytesWritten();
    Bool_t error = kFALSE;
@@ -408,7 +383,7 @@ Long64_t AliRawDB::GetTotalSize()
    // Return the total size of the trees
   Long64_t total = 0;
 
-  {
+  if (fTree) {
     Int_t skey = 0;
     TDirectory *dir = fTree->GetDirectory();
     if (dir) {
@@ -443,25 +418,6 @@ Long64_t AliRawDB::AutoSave()
   if (fESDTree) nbytes += fESDTree->AutoSave();
 
   return nbytes;
-}
-
-//______________________________________________________________________________
-void AliRawDB::WriteStats(AliStats* stats)
-{
-   // Write stats to raw DB, local run DB and global MySQL DB.
-
-   AliRawEventHeaderBase &header = *GetEvent()->GetHeader();
-
-   // Write stats into RawDB
-   TDirectory *ds = gDirectory;
-   GetDB()->cd();
-   stats->SetEvents(GetEvents());
-   stats->SetLastId(header.GetP("Id")[0]);
-   stats->SetFileSize(GetBytesWritten());
-   stats->SetCompressionFactor(GetCompressionFactor());
-   stats->SetEndTime();
-   stats->Write("stats");
-   ds->cd();
 }
 
 //______________________________________________________________________________
@@ -536,3 +492,36 @@ Bool_t AliRawDB::WriteGuidFile(TString &guidFileFolder)
 
    return kTRUE;
 }
+
+
+//______________________________________________________________________________
+void AliRawDB::Reset()
+{
+  // Clear the raw-data arrays
+  // Should be done before processing the raw-data event
+
+  for (Int_t iDet = 0; iDet < (AliDAQ::kNDetectors + 1); iDet++)
+    for (Int_t iBranch = 0; iBranch < fgkDetBranches[iDet]; iBranch++)
+      fDetRawData[iDet][iBranch]->ClearData();
+}
+
+//______________________________________________________________________________
+AliRawDataArrayV2 *AliRawDB::GetRawDataArray(UInt_t eqSize, UInt_t eqId) const
+{
+  // Return the corresponding raw-datra array (branch)
+  // depending on the equipment ID
+
+  Int_t iDet = AliDAQ::kNDetectors;
+  Int_t iBranch = 0; // can we split somehow the unrecognized data??? For the moment - no
+  if(eqSize) {
+    Int_t ddlIndex = -1;
+    iDet = AliDAQ::DetectorIDFromDdlID(eqId,ddlIndex);
+    if (iDet < 0 || iDet >= AliDAQ::kNDetectors)
+      iDet = AliDAQ::kNDetectors;
+    else
+      iBranch = (ddlIndex * fgkDetBranches[iDet])/AliDAQ::NumberOfDdls(iDet);
+  }
+
+  return fDetRawData[iDet][iBranch];
+}
+

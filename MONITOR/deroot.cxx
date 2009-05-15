@@ -29,7 +29,7 @@ int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFi
   cerr << "Error getting RAW tree" << endl;
   return(1);
  }
- AliRawEvent *rootEvent=NULL;
+ AliRawVEvent *rootEvent=NULL;
  
  t->SetBranchAddress("rawevent", &rootEvent);
 
@@ -42,7 +42,7 @@ int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFi
  UInt_t eventSize = 10000000; // 10MB by default
  unsigned char *dateEvent = new unsigned char[eventSize];
  for(Long_t gdcCounter=0; gdcCounter<t->GetEntries(); gdcCounter++) {
-  rootEvent=new AliRawEvent;
+  rootEvent=NULL;
   t->GetEntry(gdcCounter);
   if (rootEvent->GetHeader()->GetEventSize() > eventSize) {
     delete [] dateEvent;

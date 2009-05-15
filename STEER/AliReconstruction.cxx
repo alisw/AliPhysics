@@ -165,7 +165,7 @@
 #include "AliQAv1.h"
 #include "AliQADataMakerRec.h" 
 #include "AliQAManager.h"
-#include "AliRawEvent.h"
+#include "AliRawVEvent.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliRawHLTManager.h"
 #include "AliRawReaderDate.h"
@@ -1515,7 +1515,7 @@ Bool_t AliReconstruction::Process(Long64_t entry)
   AliCodeTimerAuto("");
 
   TTree *currTree = fChain->GetTree();
-  AliRawEvent *event = new AliRawEvent;
+  AliRawVEvent *event = NULL;
   currTree->SetBranchAddress("rawevent",&event);
   currTree->GetEntry(entry);
   fRawReader = new AliRawReaderRoot(event);

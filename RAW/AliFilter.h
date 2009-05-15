@@ -13,13 +13,13 @@
 
 #include <TObject.h>
 
-class AliRawEvent;
+class AliRawVEvent;
 class AliESDEvent;
 
 
 class AliFilter: public TObject {
 public:
-  virtual Bool_t       Filter(AliRawEvent* event, AliESDEvent* esd) = 0;
+  virtual Bool_t       Filter(AliRawVEvent* event, AliESDEvent* esd) = 0;
 
 private:
   ClassDef(AliFilter, 0)   // base class for high level filter algorithms

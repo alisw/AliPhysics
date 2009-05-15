@@ -18,7 +18,7 @@
 class AliRawRootdDB : public AliRawDB {
 
 public:
-   AliRawRootdDB(AliRawEvent *event,
+   AliRawRootdDB(AliRawEventV2 *event,
 		 AliESDEvent *esd,
 		 Int_t compress,
 		 const char* fileName = NULL,

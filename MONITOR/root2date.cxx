@@ -7,14 +7,14 @@
 
 #include "root2date.h"
 
-int Root2Date(AliRawEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddlDir) {
+int Root2Date(AliRawVEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddlDir) {
 
  unsigned char *p=gdcDateEvent;
  int ldcCounter, equipmentCounter, chunkSize;
- AliRawEquipment *aliEquipment=NULL;
+ AliRawVEquipment *aliEquipment=NULL;
  AliRawEquipmentHeader *aliEquipmentHeader=NULL;
  AliRawEventHeaderBase *aliHeader=NULL;
- AliRawEvent *ldcRootEvent=NULL;
+ AliRawVEvent *ldcRootEvent=NULL;
  
  aliHeader=gdcRootEvent->GetHeader();
 

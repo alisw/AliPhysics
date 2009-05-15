@@ -1,5 +1,4 @@
-// @(#) $Id$
-// Author: Fons Rademakers  26/11/99
+// Author: Cvetan Cheshkov 27/03/2007
 
 /**************************************************************************
  * Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
@@ -18,66 +17,50 @@
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// AliRawNullDB                                                         //
+// AliRawDataArrayV2                                                    //
+// A container object which is used in order to write the sub-detector  //
+// raw-data payloads into a separate branches                           //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "AliRawNullDB.h"
+#include "AliRawDataArrayV2.h"
+#include "AliRawData.h"
 
 
-ClassImp(AliRawNullDB)
+ClassImp(AliRawDataArrayV2)
 
-
-//______________________________________________________________________________
-AliRawNullDB::AliRawNullDB(AliRawEventV2 *event,
-			   AliESDEvent *esd,
-			   Int_t compress,
-			   const char* fileName,Int_t basketsize)
-   : AliRawDB(event, esd, compress, fileName, basketsize)
+AliRawDataArrayV2::AliRawDataArrayV2():
+fRawDataArray("AliRawData",100),
+fNAlloc(0)
 {
-   // Create a new raw DB that will wrtie to /dev/null.
-
+  // Default constructor
 }
 
-//______________________________________________________________________________
-const char *AliRawNullDB::GetFileName() const
+AliRawDataArrayV2::AliRawDataArrayV2(Int_t n):
+fRawDataArray("AliRawData",n),
+fNAlloc(0)
 {
-   // Return /dev/null as filename.
-
-   return "/dev/null";
+  // Default constructor
 }
 
-//______________________________________________________________________________
-Long64_t AliRawNullDB::Close()
+AliRawDataArrayV2::~AliRawDataArrayV2()
 {
-   // Close raw RFIO DB.
+  fRawDataArray.Delete();
+}
 
-   if (!fRawDB) return 0;
+void AliRawDataArrayV2::ClearData()
+{
+  fRawDataArray.Clear();
+}
 
-   if (!fRawDB->IsOpen()) return 0;
-
-   fRawDB->cd();
-
-   // Write the tree.
-   Bool_t error = kFALSE;
-   if (fTree)
-     if (fTree->Write() == 0)
-       error = kTRUE;
-   if (fESDTree)
-     if (fESDTree->Write() == 0)
-       error = kTRUE;
-
-   // Close DB, this also deletes the fTree
-   fRawDB->Close();
-
-   fTree = NULL;
-
-   Long64_t filesize = fRawDB->GetEND();
-
-   delete fRawDB;
-   fRawDB = 0;
-   if(!error)
-     return filesize;
-   else
-     return -1;
+AliRawData *AliRawDataArrayV2::Add()
+{
+  Int_t nEntries = fRawDataArray.GetEntriesFast();
+  if (nEntries < fNAlloc) {
+    return (AliRawData *)fRawDataArray[nEntries];
+  }
+  else {
+    fNAlloc = nEntries + 1;
+    return new (fRawDataArray[nEntries]) AliRawData();
+  }
 }

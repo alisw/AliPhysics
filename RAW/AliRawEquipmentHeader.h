@@ -49,7 +49,7 @@ private:
    UInt_t fTypeAttribute[kAttributeWords];  // system (0,1) and user (2) attributes
    UInt_t fBasicElementSizeType;            // basic element size type
 
-   ClassDef(AliRawEquipmentHeader,1) //Alice equipment header
+   ClassDef(AliRawEquipmentHeader,2) //Alice equipment header
 };
 
 #endif

@@ -28,8 +28,8 @@
 ClassImp(AliRawData)
 
 AliRawData::AliRawData():
+TObject(),
 fSize(0),
-fBufSize(0),
 fRawData(NULL),
 fOwner(kTRUE)
 {

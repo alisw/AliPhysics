@@ -13,8 +13,8 @@
 
 #include "AliRawReader.h"
 
-class AliRawEvent;
-class AliRawEquipment;
+class AliRawVEvent;
+class AliRawVEquipment;
 class AliRawData;
 class TFile;
 class TBranch;
@@ -24,7 +24,7 @@ class AliRawReaderRoot: public AliRawReader {
   public :
     AliRawReaderRoot();
     AliRawReaderRoot(const char* fileName, Int_t eventNumber = -1);
-    AliRawReaderRoot(AliRawEvent* event);
+    AliRawReaderRoot(AliRawVEvent* event);
     AliRawReaderRoot(const AliRawReaderRoot& rawReader);
     AliRawReaderRoot& operator = (const AliRawReaderRoot& rawReader);
     virtual ~AliRawReaderRoot();
@@ -63,17 +63,18 @@ class AliRawReaderRoot: public AliRawReader {
 
     virtual Int_t    CheckData() const;
 
-    virtual const AliRawEvent* GetEvent() const {return fEvent;}
+    virtual const AliRawVEvent* GetEvent() const {return fEvent;}
 
   protected :
     TFile*           fFile;         // raw data root file
     TBranch*         fBranch;       // branch of raw events
     Int_t            fEventIndex;   // index of the event in the tree
-    AliRawEvent*     fEvent;        // (super) event
+    AliRawVEvent*    fEvent;        // (super) event
+    AliRawEventHeaderBase* fEventHeader; // (super) event header
     Int_t            fSubEventIndex; // index of current sub event
-    AliRawEvent*     fSubEvent;     // current sub event
+    AliRawVEvent*    fSubEvent;     // current sub event
     Int_t            fEquipmentIndex; // index of current equipment
-    AliRawEquipment* fEquipment;    // current equipment
+    AliRawVEquipment*fEquipment;    // current equipment
     AliRawData*      fRawData;      // current raw data
     UChar_t*         fPosition;     // current position in the raw data
     UChar_t*         fEnd;          // end position of the current subevent

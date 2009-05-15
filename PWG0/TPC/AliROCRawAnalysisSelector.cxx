@@ -20,7 +20,7 @@
 
 #include <AliLog.h>
 
-#include <AliRawEvent.h>
+#include <AliRawVEvent.h>
 #include <AliRawReaderRoot.h>
 #include <AliRawEventHeaderBase.h>
 #include <AliTPCRawStream.h>

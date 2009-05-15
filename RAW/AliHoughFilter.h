@@ -20,11 +20,11 @@ class AliHoughFilter: public AliFilter {
 public:
   AliHoughFilter();
 
-  virtual Bool_t       Filter(AliRawEvent* event, AliESDEvent* esd);
+  virtual Bool_t       Filter(AliRawVEvent* event, AliESDEvent* esd);
 
-  void                 RunITSclusterer(AliRawEvent* event, TTree *treeClusters);
+  void                 RunITSclusterer(AliRawVEvent* event, TTree *treeClusters);
   void                 RunITSvertexer(AliESDEvent* esd, TTree *treeClusters);
-  void                 RunTPCtracking(AliRawEvent* event, AliESDEvent* esd);
+  void                 RunTPCtracking(AliRawVEvent* event, AliESDEvent* esd);
   void                 RunITStracking(AliESDEvent* esd, TTree *treeClusters);
 private:
   AliHoughFilter(const AliHoughFilter&);

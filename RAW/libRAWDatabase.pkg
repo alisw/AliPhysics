@@ -1,8 +1,9 @@
 #-*- Mode: Makefile -*-
 
 SRCS:=  AliRawEventHeaderBase.cxx AliRawEquipmentHeader.cxx \
-	AliRawData.cxx AliRawEquipment.cxx AliRawEvent.cxx \
-	AliRawDataArray.cxx \
+	AliRawEquipment.cxx AliRawEvent.cxx \
+	AliRawData.cxx AliRawVEquipment.cxx AliRawEquipmentV2.cxx AliRawVEvent.cxx AliRawEventV2.cxx \
+	AliRawDataArrayV2.cxx AliRawDataArray.cxx \
 	AliStats.cxx AliRawEventTag.cxx \
 	AliAltroMapping.cxx AliCaloAltroMapping.cxx \
 	AliDAQ.cxx

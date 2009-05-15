@@ -1,22 +1,20 @@
-#ifndef ALIRAWEVENT_H
-#define ALIRAWEVENT_H
-// @(#) $Id$
-// Author: Fons Rademakers  26/11/99
-// Updated: Dario Favretto  15/04/2003
+#ifndef ALIRAWEVENTV2_H
+#define ALIRAWEVENTV2_H
+// Author: Cvetan Cheshkov  11/05/2009
 
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// AliRawEvent                                                          //
+// AliRawEventV2                                                          //
 //                                                                      //
-// Set of classes defining the ALICE RAW event format. The AliRawEvent  //
+// Set of classes defining the ALICE RAW event format. The AliRawEventV2  //
 // class defines a RAW event. It consists of an AliEventHeader object   //
 // an AliEquipmentHeader object, an AliRawData object and an array of   //
-// sub-events, themselves also being AliRawEvents. The number of        //
+// sub-events, themselves also being AliRawEventV2s. The number of        //
 // sub-events depends on the number of DATE LDC's.                      //
-// The AliRawEvent objects are written to a ROOT file using different   //
+// The AliRawEventV2 objects are written to a ROOT file using different   //
 // technologies, i.e. to local disk via AliRawDB or via rfiod using     //
 // AliRawRFIODB or via rootd using AliRawRootdDB or to CASTOR via       //
 // rootd using AliRawCastorDB (and for performance testing there is     //
@@ -35,40 +33,46 @@
 #include <TObject.h>
 #endif
 
-#ifndef ROOT_TObjArray
-#include <TObjArray.h>
+#ifndef ROOT_TClonesArray
+#include <TClonesArray.h>
 #endif
 
 
 // Forward class declarations
 class AliRawEventHeaderBase;
-class AliRawEquipment;
+class AliRawVEquipment;
+class AliRawEquipmentV2;
 
 #include "AliRawVEvent.h"
 
-class AliRawEvent : public AliRawVEvent {
+class AliRawEventV2 : public AliRawVEvent {
 
 public:
-   AliRawEvent();
-   virtual ~AliRawEvent();
+   AliRawEventV2();
+   virtual ~AliRawEventV2();
 
+   AliRawEventHeaderBase *GetHeader(char*& data);
    virtual AliRawEventHeaderBase *GetHeader();
-   virtual Int_t                  GetNEquipments() const { return fNEquipments; }
-   virtual AliRawEquipment       *GetEquipment(Int_t index) const;
-   virtual Int_t                  GetNSubEvents() const { return fNSubEvents; }
-   virtual AliRawEvent           *GetSubEvent(Int_t index);
+   virtual Int_t                  GetNEquipments() const;
+   AliRawEquipmentV2             *NextEquipment();
+   virtual AliRawVEquipment      *GetEquipment(Int_t index) const;
+   virtual Int_t                  GetNSubEvents() const { return (fEvtHdrs) ? (fEvtHdrs->GetEntriesFast()-1) : 0; }
+   AliRawEventV2                 *NextSubEvent();
+   virtual AliRawVEvent          *GetSubEvent(Int_t index);
+   void                           Reset();
 
 private:
-   Int_t                  fNEquipments; // number of valid equipments
-   Int_t                  fNSubEvents;  // number of valid sub-events
-   AliRawEventHeaderBase *fEvtHdr;      // event header object
-   TObjArray             *fEquipments;  // AliRawEquipment's
-   TObjArray             *fSubEvents;   // sub AliRawEvent's
+   TClonesArray           fEquipments;  // AliRawEquipmentV2's
+   TClonesArray          *fEvtHdrs;     //-> event and subevent headers
 
-   AliRawEvent(const AliRawEvent& rawEvent);
-   AliRawEvent& operator = (const AliRawEvent& rawEvent);
+   Int_t                  fIndex;       //!
+   Int_t                  fNAllocHdrs;  //!
+   Int_t                  fNAllocEqs;   //!
 
-   ClassDef(AliRawEvent,3)  // ALICE raw event object
+   AliRawEventV2(const AliRawEventV2& rawEvent);
+   AliRawEventV2& operator = (const AliRawEventV2& rawEvent);
+
+   ClassDef(AliRawEventV2,1)  // ALICE raw event object
 };
 
 #endif

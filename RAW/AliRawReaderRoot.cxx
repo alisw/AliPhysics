@@ -21,7 +21,7 @@
 ///
 /// The root file is expected to contain a tree of name "RAW" with
 /// a branch of name "rawevent" which contains objects of type
-/// AliRawEvent.
+/// AliRawVEvent.
 /// 
 /// The file name and the event number are arguments of the constructor
 /// of AliRawReaderRoot.
@@ -31,9 +31,9 @@
 #include <TFile.h>
 #include <TTree.h>
 #include "AliRawReaderRoot.h"
-#include "AliRawEvent.h"
+#include "AliRawVEvent.h"
 #include "AliRawEventHeaderBase.h"
-#include "AliRawEquipment.h"
+#include "AliRawVEquipment.h"
 #include "AliRawEquipmentHeader.h"
 #include "AliRawData.h"
 
@@ -45,6 +45,7 @@ AliRawReaderRoot::AliRawReaderRoot() :
   fBranch(NULL),
   fEventIndex(-1),
   fEvent(NULL),
+  fEventHeader(NULL),
   fSubEventIndex(0),
   fSubEvent(NULL),
   fEquipmentIndex(0),
@@ -62,6 +63,7 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber) :
   fBranch(NULL),
   fEventIndex(eventNumber),
   fEvent(NULL),
+  fEventHeader(NULL),
   fSubEventIndex(0),
   fSubEvent(NULL),
   fEquipmentIndex(0),
@@ -94,7 +96,6 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber) :
     return;
   }
 
-  fEvent = new AliRawEvent;
   fBranch->SetAddress(&fEvent);
   if (fEventIndex >= 0) {
     if (fBranch->GetEntry(fEventIndex) <= 0) {
@@ -102,14 +103,16 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber) :
       fIsValid = kFALSE;
       return;
     }
+    fEventHeader = fEvent->GetHeader();
   }
 }
 
-AliRawReaderRoot::AliRawReaderRoot(AliRawEvent* event) :
+AliRawReaderRoot::AliRawReaderRoot(AliRawVEvent* event) :
   fFile(NULL),
   fBranch(NULL),
   fEventIndex(-1),
   fEvent(event),
+  fEventHeader(event->GetHeader()),
   fSubEventIndex(0),
   fSubEvent(NULL),
   fEquipmentIndex(0),
@@ -128,6 +131,7 @@ AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
   fBranch(NULL),
   fEventIndex(rawReader.fEventIndex),
   fEvent(NULL),
+  fEventHeader(NULL),
   fSubEventIndex(rawReader.fSubEventIndex),
   fSubEvent(NULL),
   fEquipmentIndex(rawReader.fEquipmentIndex),
@@ -161,7 +165,6 @@ AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
       return;
     }
 
-    fEvent = new AliRawEvent;
     fBranch->SetAddress(&fEvent);
     if (fEventIndex >= 0) {
       if (fBranch->GetEntry(fEventIndex) <= 0) {
@@ -170,9 +173,11 @@ AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
 	fIsValid = kFALSE;
 	return;
       }
+      fEventHeader = fEvent->GetHeader();
     }
   } else {
     fEvent = rawReader.fEvent;
+    fEventHeader = rawReader.fEventHeader;
   }
 
   if (fSubEventIndex > 0) {
@@ -214,56 +219,55 @@ const AliRawEventHeaderBase* AliRawReaderRoot::GetEventHeader() const
 {
   // Get the even header
   // Return NULL in case of failure
-  if (!fEvent) return NULL;
-  return fEvent->GetHeader();
+  return fEventHeader;
 }
 
 UInt_t AliRawReaderRoot::GetType() const
 {
 // get the type from the event header
 
-  if (!fEvent) return 0;
-  return fEvent->GetHeader()->Get("Type");
+  if (!fEventHeader) return 0;
+  return fEventHeader->Get("Type");
 }
 
 UInt_t AliRawReaderRoot::GetRunNumber() const
 {
 // get the run number from the event header
 
-  if (!fEvent) return 0;
-  return fEvent->GetHeader()->Get("RunNb");
+  if (!fEventHeader) return 0;
+  return fEventHeader->Get("RunNb");
 }
 
 const UInt_t* AliRawReaderRoot::GetEventId() const
 {
 // get the event id from the event header
 
-  if (!fEvent) return NULL;
-  return fEvent->GetHeader()->GetP("Id");
+  if (!fEventHeader) return NULL;
+  return fEventHeader->GetP("Id");
 }
 
 const UInt_t* AliRawReaderRoot::GetTriggerPattern() const
 {
 // get the trigger pattern from the event header
 
-  if (!fEvent) return NULL;
-  return fEvent->GetHeader()->GetP("TriggerPattern");
+  if (!fEventHeader) return NULL;
+  return fEventHeader->GetP("TriggerPattern");
 }
 
 const UInt_t* AliRawReaderRoot::GetDetectorPattern() const
 {
 // get the detector pattern from the event header
 
-  if (!fEvent) return NULL;
-  return fEvent->GetHeader()->GetP("DetectorPattern");
+  if (!fEventHeader) return NULL;
+  return fEventHeader->GetP("DetectorPattern");
 }
 
 const UInt_t* AliRawReaderRoot::GetAttributes() const
 {
 // get the type attributes from the event header
 
-  if (!fEvent) return NULL;
-  return fEvent->GetHeader()->GetP("TypeAttribute");
+  if (!fEventHeader) return NULL;
+  return fEventHeader->GetP("TypeAttribute");
 }
 
 const UInt_t* AliRawReaderRoot::GetSubEventAttributes() const
@@ -286,14 +290,14 @@ UInt_t AliRawReaderRoot::GetGDCId() const
 {
 // get the GDC Id from the event header
 
-  if (!fEvent) return 0;
-  return fEvent->GetHeader()->Get("GdcId");
+  if (!fEventHeader) return 0;
+  return fEventHeader->Get("GdcId");
 }
 
 UInt_t AliRawReaderRoot::GetTimestamp() const
 {
-  if (!fEvent) return 0;
-  return fEvent->GetHeader()->Get("Timestamp");
+  if (!fEventHeader) return 0;
+  return fEventHeader->Get("Timestamp");
 }
 
 Int_t AliRawReaderRoot::GetEquipmentSize() const
@@ -526,10 +530,12 @@ Bool_t AliRawReaderRoot::NextEvent()
 
   do {
     delete fEvent;
-    fEvent = new AliRawEvent;
+    fEvent = NULL;
+    fEventHeader = NULL;
     fBranch->SetAddress(&fEvent);
     if (fBranch->GetEntry(fEventIndex+1) <= 0)
       return kFALSE;
+    fEventHeader = fEvent->GetHeader();
     fEventIndex++;
   } while (!IsEventSelected());
   fEventNumber++;
@@ -544,7 +550,8 @@ Bool_t AliRawReaderRoot::RewindEvents()
 
   fEventIndex = -1;
   delete fEvent;
-  fEvent = new AliRawEvent;
+  fEvent = NULL;
+  fEventHeader = NULL;
   fBranch->SetAddress(&fEvent);
   fEventNumber = -1;
   return Reset();
@@ -559,10 +566,12 @@ Bool_t  AliRawReaderRoot::GotoEvent(Int_t event)
   if (!fBranch) return kFALSE;
 
   delete fEvent;
-  fEvent = new AliRawEvent;
+  fEvent = NULL;
+  fEventHeader = NULL;
   fBranch->SetAddress(&fEvent);
   if (fBranch->GetEntry(event) <= 0)
     return kFALSE;
+  fEventHeader = fEvent->GetHeader();
   fEventIndex = event;
   fEventNumber++;
   return Reset();
@@ -584,9 +593,9 @@ Int_t AliRawReaderRoot::CheckData() const
 
   if (!fEvent) return 0;
 
-  AliRawEvent* subEvent = NULL;
+  AliRawVEvent* subEvent = NULL;
   Int_t subEventIndex = 0;
-  AliRawEquipment* equipment = NULL;
+  AliRawVEquipment* equipment = NULL;
   Int_t equipmentIndex = 0;
   UChar_t* position = 0;
   UChar_t* end = 0;

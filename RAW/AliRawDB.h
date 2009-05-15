@@ -31,16 +31,15 @@
 #include "AliDAQ.h"
 
 // Forward class declarations
-class AliRawEvent;
-class AliRawDataArray;
-class AliStats;
+class AliRawEventV2;
+class AliRawDataArrayV2;
 class TFile;
 class AliESDEvent;
 
 class AliRawDB : public TObject {
 
 public:
-   AliRawDB(AliRawEvent *event,
+   AliRawDB(AliRawEventV2 *event,
 	    AliESDEvent *esd,
 	    Int_t compress,
             const char* fileName = NULL,
@@ -55,8 +54,6 @@ public:
    Long64_t            GetTotalSize();
    Long64_t            AutoSave();
 
-   void         WriteStats(AliStats* stats);
-
    void         SetMaxSize(Double_t maxSize) { fMaxSize = maxSize; }
    void         SetFS(const char* fs1, const char* fs2 = NULL);
    void         SetDeleteFiles(Bool_t deleteFiles = kTRUE) { fDeleteFiles = deleteFiles; }
@@ -66,20 +63,22 @@ public:
    Double_t     GetBytesWritten() const { return fRawDB->GetBytesWritten(); }
    TFile       *GetDB() const { return fRawDB; }
    const char  *GetDBName() const { return fRawDB->GetName(); }
-   Int_t        GetEvents() const { return (Int_t) fTree->GetEntries(); }
-   AliRawEvent *GetEvent() const { return fEvent; }
+   Int_t        GetEvents() const { return (fTree) ? (Int_t) fTree->GetEntries() : 0; }
+   AliRawEventV2 *GetEvent() const { return fEvent; }
    Float_t      GetCompressionFactor() const;
    Int_t        GetCompressionMode() const { return fRawDB->GetCompressionLevel(); }
    Int_t        GetBasketSize() const { return fBasketSize; }
    void         Stop() { fStop = kTRUE; }
    static const char *GetAliRootTag();
    Bool_t       WriteGuidFile(TString &guidFileFolder);
+   void         Reset();
+   AliRawDataArrayV2 *GetRawDataArray(UInt_t eqSize, UInt_t eqId) const;
 
 protected:
    TFile         *fRawDB;         // DB to store raw data
    TTree         *fTree;          // tree used to store raw data
-   AliRawEvent   *fEvent;         // AliRawEvent via which data is stored
-   AliRawDataArray  **fDetRawData[AliDAQ::kNDetectors+1]; // Detectors raw-data payload
+   AliRawEventV2   *fEvent;         // AliRawEvent via which data is stored
+   AliRawDataArrayV2  **fDetRawData[AliDAQ::kNDetectors+1]; // Detectors raw-data payload
    TTree         *fESDTree;       // tree for storing HLT ESD information
    AliESDEvent        *fESD;           // pointer to HLT ESD object
    Int_t          fCompress;      // compression mode (1 default)
@@ -101,7 +100,7 @@ private:
    AliRawDB(const AliRawDB& rawDB);
    AliRawDB& operator = (const AliRawDB& rawDB);
 
-   ClassDef(AliRawDB,4)  // Raw DB
+   ClassDef(AliRawDB,5)  // Raw DB
 };
 
 #endif

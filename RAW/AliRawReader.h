@@ -20,7 +20,7 @@
 
 class TChain;
 class AliRawEventHeaderBase;
-class AliRawEvent;
+class AliRawVEvent;
 
 class AliRawReader: public TObject {
   public :
@@ -44,7 +44,7 @@ class AliRawReader: public TObject {
       {fRequireHeader = required;};
 
     virtual const AliRawEventHeaderBase* GetEventHeader() const {return NULL;};
-    virtual const AliRawEvent* GetEvent() const {return NULL;}
+    virtual const AliRawVEvent* GetEvent() const {return NULL;}
 
     virtual UInt_t   GetType() const = 0;
     virtual UInt_t   GetRunNumber() const = 0;

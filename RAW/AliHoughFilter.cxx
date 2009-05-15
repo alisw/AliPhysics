@@ -79,7 +79,7 @@ fITSgeom(NULL)
 }
 
 //_____________________________________________________________________________
-Bool_t AliHoughFilter::Filter(AliRawEvent* event, AliESDEvent* esd)
+Bool_t AliHoughFilter::Filter(AliRawVEvent* event, AliESDEvent* esd)
 {
   // Run fast online reconstruction
   // based on the HLT tracking algorithms
@@ -105,7 +105,7 @@ Bool_t AliHoughFilter::Filter(AliRawEvent* event, AliESDEvent* esd)
 }
 
 //_____________________________________________________________________________
-void AliHoughFilter::RunITSclusterer(AliRawEvent* event, TTree *treeClusters)
+void AliHoughFilter::RunITSclusterer(AliRawVEvent* event, TTree *treeClusters)
 {
   // Run ITS Clusterer
   // The clusters are stored in a tree
@@ -139,7 +139,7 @@ void AliHoughFilter::RunITSvertexer(AliESDEvent* esd, TTree *treeClusters)
 }
 
 //_____________________________________________________________________________
-void AliHoughFilter::RunTPCtracking(AliRawEvent* event, AliESDEvent* esd)
+void AliHoughFilter::RunTPCtracking(AliRawVEvent* event, AliESDEvent* esd)
 {
   // Run hough transform tracking in TPC
   // The z of the vertex is taken from the ESD

@@ -25,23 +25,19 @@
 #endif
 
 // Forward class declarations
-class AliRawEvent;
 class AliRawEventHeaderBase;
 class AliRawEquipmentHeader;
 class AliRawData;
 class AliRawDB;
 class AliTagDB;
 class AliRawEventTag;
-class AliStats;
 class AliESDEvent;
 
-#include "AliRawEvent.h"
+#include "AliRawEventV2.h"
 #include "AliESDEvent.h"
-#include "AliStats.h"
 #include "AliRawDB.h"
 #include "AliTagDB.h"
 #include "AliRawData.h"
-#include "AliRawDataArray.h"
 #include "AliRawEventTag.h"
 
 class AliMDC : public TObject {
@@ -97,9 +93,8 @@ private:
      AliMDCInterruptHandler& operator=(const AliMDCInterruptHandler& handler); // Not implemented
    };
 
-   AliRawEvent *fEvent;       // produced AliRawEvent
+   AliRawEventV2 *fEvent;       // produced AliRawEvent
    AliESDEvent      *fESD;         // pointer to HLT ESD object
-   AliStats    *fStats;       // statistics
    AliRawDB    *fRawDB;       // raw data DB
    AliTagDB    *fTagDB;       // tag DB
    AliRawEventTag *fEventTag; // raw-data event tag object

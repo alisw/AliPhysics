@@ -22,9 +22,9 @@ public:
    AliRawEventHeaderBase();
    virtual ~AliRawEventHeaderBase() { if (fExtendedData) delete [] fExtendedData; }
 
-   void         *HeaderBaseBegin() { return (void *) &fSize; }
+   void         *HeaderBaseBegin() const { return (void *) &fSize; }
    Int_t         HeaderBaseSize() const { return (Long_t) &fVersion - (Long_t) &fSize + sizeof(fVersion); }
-   void         *HeaderBegin();
+   void         *HeaderBegin() const;
    Int_t         HeaderSize() const;
    Bool_t        DataIsSwapped() const { return fIsSwapped; }
    Bool_t        IsSwapped() const { return (fMagic == fgkEventMagicNumberSwapped) ? kTRUE : kFALSE; }
@@ -53,6 +53,11 @@ public:
    const UInt_t* GetP(const char *datamember) const;
 
    void          Print( const Option_t* opt ="" ) const;
+
+   Int_t         GetFirstEqIndex() const { return fFirstEqIndex; }
+   Int_t         GetLastEqIndex() const { return fLastEqIndex; }
+   void          AddEqIndex(Int_t index);
+   void          Reset();
 
    // The following enumeration can be used once the kEventTypeMask has been
    // applied to the raw event type
@@ -87,11 +92,15 @@ private:
 
    Bool_t fIsSwapped;     // is data swapped
    Int_t  fHeaderSize;    //! cache for the header size estimate
+   void  *fHeaderBegin;   //! cache for the header begin pointer
+
+   Int_t  fFirstEqIndex;  // index of the first equipment
+   Int_t  fLastEqIndex;   // index of the last equipment
 
    static const UInt_t fgkEventMagicNumber        = 0xDA1E5AFE; // magic word
    static const UInt_t fgkEventMagicNumberSwapped = 0xFE5A1EDA; // swapped magic word
 
-   ClassDef(AliRawEventHeaderBase,3)  // Alice raw event header base class
+   ClassDef(AliRawEventHeaderBase,4)  // Alice raw event header base class
 };
 
 #define EVENT_HEADER_VERSION(AA,BB) AliRawEventHeaderV##AA##_##BB

@@ -50,16 +50,21 @@ fExtendedDataSize(0),
 fExtendedAllocSize(0),
 fExtendedData(NULL),
 fIsSwapped(kFALSE),
-fHeaderSize(0)
+fHeaderSize(0),
+fHeaderBegin(NULL),
+fFirstEqIndex(-1),
+fLastEqIndex(-1)
 {
   // Default constructor
 }
 
 //______________________________________________________________________________
-void *AliRawEventHeaderBase::HeaderBegin()
+void *AliRawEventHeaderBase::HeaderBegin() const
 {
   // Returns the pointer to the first data member
   // beyond the base class data members
+
+  if (fHeaderBegin) return fHeaderBegin;
 
   TList *datalist = IsA()->GetListOfDataMembers();
   TIter next(datalist);                           
@@ -68,7 +73,10 @@ void *AliRawEventHeaderBase::HeaderBegin()
   if(!strcmp(member->GetTypeName(),"TClass"))
     member = (TDataMember *)next();
 
-  return (void *)((char *)this+member->GetOffset());
+  void *ptr = (void *)((char *)this+member->GetOffset());
+  const_cast<AliRawEventHeaderBase*>(this)->fHeaderBegin = ptr;
+
+  return ptr;
 }
 
 //______________________________________________________________________________
@@ -434,4 +442,47 @@ void AliRawEventHeaderBase::Print( const Option_t* opt ) const
   cout << opt << "  Detector pattern: " << Get("DetectorPattern") << endl;
   cout << opt << "  Type attribute: " << GetP("TypeAttribute")[0] << "-" << GetP("TypeAttribute")[1] << "-" << GetP("TypeAttribute")[2] << endl;
   cout << opt << "  GDC: " << Get("GdcId") << " LDC: " << Get("LdcId") << endl;
+}
+
+//_____________________________________________________________________________
+void AliRawEventHeaderBase::AddEqIndex(Int_t index)
+{
+  // Adds an equipment by changing properly
+  // the first and last equipment indexes
+  if (fFirstEqIndex < 0) fFirstEqIndex = index; 
+  if (index > fLastEqIndex) fLastEqIndex = index;
+}
+
+//_____________________________________________________________________________
+void AliRawEventHeaderBase::Reset()
+{
+  fFirstEqIndex = fLastEqIndex = -1;
+}
+
+//______________________________________________________________________________
+void AliRawEventHeaderBase::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliRawEventHeaderBase.
+
+   if (R__b.IsReading()) {
+      UInt_t R__s, R__c;
+      Version_t R__v = R__b.ReadVersion(&R__s, &R__c);
+      if (R__v > 3) {
+	R__b.ReadClassBuffer(AliRawEventHeaderBase::Class(),this,R__v,R__s,R__c);
+	return;
+      }
+      TObject::Streamer(R__b);
+      R__b >> fSize;
+      R__b >> fMagic;
+      R__b >> fHeadSize;
+      R__b >> fVersion;
+      R__b >> fExtendedDataSize;
+      delete [] fExtendedData;
+      fExtendedData = new char[fExtendedDataSize];
+      R__b.ReadFastArray(fExtendedData,fExtendedDataSize);
+      R__b >> fIsSwapped;
+      R__b.CheckByteCount(R__s, R__c, AliRawEventHeaderBase::IsA());
+   } else {
+      R__b.WriteClassBuffer(AliRawEventHeaderBase::Class(),this);
+   }
 }
