@@ -218,7 +218,7 @@ AliTOFFEEReader::IsChannelEnabled(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iT
   AliTOFFEEConfig *feeConfig;
   AliTOFCrateConfig *crateConfig;
   AliTOFTRMConfig *trmConfig;
-  Int_t maskPB, maskTDC;
+  Int_t maskPB, maskTDC, activeChip;
   
   /* get and check fee config */
   if (!(feeConfig = GetFEEConfig()))
@@ -247,6 +247,8 @@ AliTOFFEEReader::IsChannelEnabled(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iT
     /* check chain enabled */
     if (trmConfig->GetChainAFlag() != 1)
       return kFALSE;
+    /* get active chip mask */
+    activeChip = trmConfig->GetActiveChipA();
     /* switch TDC */
     switch (iTDC) {
     case 0: case 1: case 2:
@@ -274,6 +276,8 @@ AliTOFFEEReader::IsChannelEnabled(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iT
     /* check chain enabled */
     if (trmConfig->GetChainBFlag() != 1)
       return kFALSE;
+    /* get active chip mask */
+    activeChip = trmConfig->GetActiveChipB();
     /* switch TDC */
     switch (iTDC) {
     case 0: case 1: case 2:
@@ -300,6 +304,10 @@ AliTOFFEEReader::IsChannelEnabled(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iT
     return kFALSE;
     break;
   } /* switch chain */
+
+  /* check chip enabled */
+  if (!(activeChip & (0x1 << iTDC)))
+    return kFALSE;
 
   /* check channel enabled */
   maskTDC = (maskPB & (0xFF << ((iTDC % 3) * 8))) >> ((iTDC % 3) * 8);
@@ -426,12 +434,12 @@ AliTOFFEEReader::DumpFEEConfig()
       
       /* check TRM chain A flag */
       if (trmConfig->GetChainAFlag() == 1) {
-	AliInfo(Form("TRM%02d chainA is enabled: PB0=%06X, PB1=%06X, PB2=%06X, PB3=%06X, PB4=%06X", iTRM + 3, trmConfig->GetMaskPB0(), trmConfig->GetMaskPB1(), trmConfig->GetMaskPB2(), trmConfig->GetMaskPB3(), trmConfig->GetMaskPB4()));
+	AliInfo(Form("TRM%02d chainA is enabled: activeChip=%04X, PB0=%06X, PB1=%06X, PB2=%06X, PB3=%06X, PB4=%06X", iTRM + 3, trmConfig->GetActiveChipA(), trmConfig->GetMaskPB0(), trmConfig->GetMaskPB1(), trmConfig->GetMaskPB2(), trmConfig->GetMaskPB3(), trmConfig->GetMaskPB4()));
       }
 
       /* check TRM chain B flag */
       if (trmConfig->GetChainBFlag() == 1) {
-	AliInfo(Form("TRM%02d chainB is enabled: PB5=%06X, PB6=%06X, PB7=%06X, PB8=%06X, PB9=%06X", iTRM + 3, trmConfig->GetMaskPB5(), trmConfig->GetMaskPB6(), trmConfig->GetMaskPB7(), trmConfig->GetMaskPB8(), trmConfig->GetMaskPB9()));
+	AliInfo(Form("TRM%02d chainB is enabled: activeChip=%04X, PB5=%06X, PB6=%06X, PB7=%06X, PB8=%06X, PB9=%06X", iTRM + 3, trmConfig->GetActiveChipB(), trmConfig->GetMaskPB5(), trmConfig->GetMaskPB6(), trmConfig->GetMaskPB7(), trmConfig->GetMaskPB8(), trmConfig->GetMaskPB9()));
       }
       
 

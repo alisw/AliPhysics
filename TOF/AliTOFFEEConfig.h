@@ -110,6 +110,8 @@ class AliTOFTRMConfig
   Int_t fPackingFlag; // packing flag
   Int_t fChainAFlag; // chain A flag
   Int_t fChainBFlag; // chain B flag
+  Int_t fActiveChipA; // active chip A
+  Int_t fActiveChipB; // active chip B
   Int_t fMaskPB0; // mask PB 0
   Int_t fMaskPB1; // mask PB 1
   Int_t fMaskPB2; // mask PB 2
@@ -135,6 +137,8 @@ class AliTOFTRMConfig
   Int_t GetPackingFlag() const {return fPackingFlag;}; // get packing flag
   Int_t GetChainAFlag() const {return fChainAFlag;}; // get chain A flag
   Int_t GetChainBFlag() const {return fChainBFlag;}; // get chain B flag
+  Int_t GetActiveChipA() const {return fActiveChipA;}; // get active chip A
+  Int_t GetActiveChipB() const {return fActiveChipB;}; // get active chip B
   Int_t GetMaskPB0() const {return fMaskPB0;}; // get mask PB 0
   Int_t GetMaskPB1() const {return fMaskPB1;}; // get mask PB 1
   Int_t GetMaskPB2() const {return fMaskPB2;}; // get mask PB 2
