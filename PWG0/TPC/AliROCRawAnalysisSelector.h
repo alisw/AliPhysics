@@ -9,7 +9,7 @@
 // TODO explain this
 //
 
-class AliRawEvent;
+class AliRawVEvent;
 class TTree;
 class AliTPCParamSR;
 class AliTPCRawHistograms;
@@ -29,7 +29,7 @@ class AliROCRawAnalysisSelector : public TSelector {
     virtual void    Terminate();
 
  protected:
-    AliRawEvent* fRawEvent;
+    AliRawVEvent* fRawEvent;
     TTree*       fTree;
 
     AliTPCParamSR* fParam;  // TPC hardware params
