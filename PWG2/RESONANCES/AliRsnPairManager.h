@@ -30,7 +30,8 @@ class AliRsnPairManager : public AliRsnVManager
 
     AliRsnPairManager(const char *name = "defaultPairMgr");
 
-    virtual void   Add(AliRsnPair *pair);
+    //virtual void   Add(AliRsnPair *pair);
+    virtual void   Add(TObject *pair);
     virtual void   AddPair(AliRsnPair *pair) {Add(pair);}
     virtual void   PrintArray() const;
     virtual void   Print(Option_t *option = "") const;

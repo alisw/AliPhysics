@@ -15,6 +15,8 @@ ClassImp(AliRsnAnalysisSE)
 AliRsnAnalysisSE::AliRsnAnalysisSE(const char *name) :
     AliRsnVAnalysisTaskSE(name),
     fRsnAnalysisManager(),
+    fPIDIndex(0),
+    fEvent(),
     fESDCuts(0)
 {
 //
@@ -25,7 +27,10 @@ AliRsnAnalysisSE::AliRsnAnalysisSE(const char *name) :
 }
 
 AliRsnAnalysisSE::AliRsnAnalysisSE(const AliRsnAnalysisSE& copy) : AliRsnVAnalysisTaskSE(copy),
-    fRsnAnalysisManager(copy.fRsnAnalysisManager)
+    fRsnAnalysisManager(copy.fRsnAnalysisManager),
+    fPIDIndex(copy.fPIDIndex),
+    fEvent(copy.fEvent),
+    fESDCuts(copy.fESDCuts)
 {
   AliDebug(AliLog::kDebug+2,"<-");
   AliDebug(AliLog::kDebug+2,"->");

@@ -40,6 +40,8 @@ public:
 
 private:
 
+    AliRsnAnalysisSE& operator=(const AliRsnAnalysisSE& /*copy*/) {return *this;}
+
     AliRsnAnalysisManager fRsnAnalysisManager;      // analysis main engine
     AliRsnPIDIndex        fPIDIndex;                // utility --> PID sorter
     AliRsnEvent           fEvent;                   // utility --> event interface

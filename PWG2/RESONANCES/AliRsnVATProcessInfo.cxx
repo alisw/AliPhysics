@@ -19,6 +19,7 @@ ClassImp(AliRsnVATProcessInfo)
 //_____________________________________________________________________________
 AliRsnVATProcessInfo::AliRsnVATProcessInfo(const char *name) : TNamed(name,name),
         fHistUsedEvents(0x0),
+        fNumOfTracks(0),
         fPrintInfoNumber(1000)
 {
     AliDebug(AliLog::kDebug+2,"<-");
@@ -28,6 +29,7 @@ AliRsnVATProcessInfo::AliRsnVATProcessInfo(const char *name) : TNamed(name,name)
 //_____________________________________________________________________________
 AliRsnVATProcessInfo::AliRsnVATProcessInfo(const AliRsnVATProcessInfo& copy) : TNamed(copy),
         fHistUsedEvents(copy.fHistUsedEvents),
+        fNumOfTracks(copy.fNumOfTracks),
         fPrintInfoNumber(copy.fPrintInfoNumber)
 
 {
@@ -69,6 +71,6 @@ void AliRsnVATProcessInfo::PrintInfo(const Long64_t &num) {
   if ((num+1)%fPrintInfoNumber == 0){
     AliInfo(Form("Events processed %d",num+1));
   }
-    
+
 }
 

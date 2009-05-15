@@ -121,7 +121,7 @@ AliRsnCut::AliRsnCut
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCut::IsSelected(ETarget tgt, AliRsnDaughter *track)
+Bool_t AliRsnCut::IsSelected(ETarget /*tgt*/, AliRsnDaughter* /*track*/)
 {
 //
 // Virtual cut-checking method.
@@ -133,7 +133,7 @@ Bool_t AliRsnCut::IsSelected(ETarget tgt, AliRsnDaughter *track)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCut::IsSelected(ETarget tgt, AliRsnPairParticle *pair)
+Bool_t AliRsnCut::IsSelected(ETarget /*tgt*/, AliRsnPairParticle* /*pair*/)
 {
 //
 // Virtual cut-checking method.
@@ -145,7 +145,7 @@ Bool_t AliRsnCut::IsSelected(ETarget tgt, AliRsnPairParticle *pair)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCut::IsSelected(ETarget tgt, AliRsnEvent *event)
+Bool_t AliRsnCut::IsSelected(ETarget /*tgt*/, AliRsnEvent* /*event*/)
 {
 //
 // Virtual cut-checking method.
@@ -157,7 +157,7 @@ Bool_t AliRsnCut::IsSelected(ETarget tgt, AliRsnEvent *event)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCut::IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2)
+Bool_t AliRsnCut::IsSelected(ETarget /*tgt*/, AliRsnEvent* /*ev1*/, AliRsnEvent* /*ev2*/)
 {
 //
 // Virtual cut-checking method.

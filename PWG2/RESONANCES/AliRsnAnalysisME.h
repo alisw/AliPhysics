@@ -38,10 +38,12 @@ class AliRsnAnalysisME : public AliRsnVAnalysisTaskME
 
   private:
 
+    AliRsnAnalysisME& operator=(const AliRsnAnalysisME& /*copy*/) {return *this;}
+
     AliRsnAnalysisManager fRsnAnalysisManager;      // analysis main engine
     AliRsnPIDIndex        fPIDIndex;                // utility --> PID sorter
-    AliRsnEvent           fEvent;                   // utility --> event interface
     AliRsnPIDIndex        fPIDIndexMix;             // utility --> PID sorter (mixed event)
+    AliRsnEvent           fEvent;                   // utility --> event interface
     AliRsnEvent           fEventMix;                // utility --> event interface (mixed event)
 
     AliESDtrackCuts      *fESDCuts;                 // ESD track cuts

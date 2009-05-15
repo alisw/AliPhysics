@@ -35,13 +35,15 @@ AliRsnAnalysisManager::AliRsnAnalysisManager(const char*name) :
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisManager::Add(AliRsnPairManager *pair)
+//void AliRsnAnalysisManager::Add(AliRsnPairManager *pair)
+void AliRsnAnalysisManager::Add(TObject *objPairMgr)
 {
 //
 // Adds a new pair manager to the list.
 //
 
   AliDebug(AliLog::kDebug+2,"<-");
+  AliRsnPairManager *pair = dynamic_cast<AliRsnPairManager*>(objPairMgr);
 
   if (!pair) {
     AliWarning(Form("AliRsnPairManager is %p. Skipping ...", pair));

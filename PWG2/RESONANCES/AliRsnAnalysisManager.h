@@ -30,7 +30,8 @@ class AliRsnAnalysisManager : public AliRsnVManager
 
     AliRsnAnalysisManager(const char*name = "defaultAnalysisMgr");
 
-    virtual void   Add(AliRsnPairManager *pair);
+    //virtual void   Add(AliRsnPairManager *pair);
+    virtual void   Add(TObject *pair);
     virtual void   AddConfig(TString config, TString prefix, TString functionName = "");
     virtual void   PrintArray() const;
     virtual void   Print(Option_t *option = "") const;
