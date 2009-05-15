@@ -21,106 +21,37 @@
 #ifndef ALIRSNEVENT_H
 #define ALIRSNEVENT_H
 
-#include <TNamed.h>
-#include <TArrayI.h>
-#include <TClonesArray.h>
-
-#include "AliRsnPID.h"
-#include "AliRsnPIDIndex.h"
 #include "AliRsnDaughter.h"
-#include "AliRsnCutSet.h"
 
-class TH1D;
+class AliVEvent;
+class AliMCEvent;
 
-class AliRsnEvent : public TNamed
+class AliRsnEvent : public TObject
 {
   public:
 
-    AliRsnEvent();
+    AliRsnEvent(AliVEvent *ref = 0, AliMCEvent *refMC = 0);
     AliRsnEvent(const AliRsnEvent& copy);
     AliRsnEvent& operator= (const AliRsnEvent& copy);
     virtual ~AliRsnEvent();
 
-    // Array management
-    void            Init();
-    void            Clear(Option_t *option = "");
-    AliRsnDaughter* AddTrack(AliRsnDaughter track);
-    AliRsnDaughter* GetTrack(Int_t index);
-    TClonesArray*   GetTracks() {return fTracks;}
-    TArrayI*        GetCharged(Char_t sign);
-    TArrayI*        GetTracksArray(AliRsnDaughter::EPIDMethod method, Char_t sign, AliRsnPID::EType type);
-    void            FillPIDArrays(Int_t arraySizeDefault = 1000);
-    void            SortTracks() {fTracks->Sort();}
-    void            Print(Option_t *option = "") const;
-    void            MakeComputations();
-    void            CorrectTracks();
+    void SetRef(AliVEvent *event, AliMCEvent *mc = 0) {fRef = event; fRefMC = mc;}
+    void SetRefMC(AliMCEvent *mc) {fRefMC = mc;}
 
-    // Primary vertex
-    Double_t GetPrimaryVertexX() const {return fPVx;}
-    Double_t GetPrimaryVertexY() const {return fPVy;}
-    Double_t GetPrimaryVertexZ() const {return fPVz;}
-    Double_t GetPrimaryVertexXMC() const {return fPVxMC;}
-    Double_t GetPrimaryVertexYMC() const {return fPVyMC;}
-    Double_t GetPrimaryVertexZMC() const {return fPVzMC;}
-    void     GetPrimaryVertex(Double_t &x, Double_t &y, Double_t &z) const {x=fPVx;y=fPVy;z=fPVz;}
-    Double_t GetVz() const {return GetPrimaryVertexZ();}
-    void     SetPrimaryVertexX(Double_t value) {fPVx = value;}
-    void     SetPrimaryVertexY(Double_t value) {fPVy = value;}
-    void     SetPrimaryVertexZ(Double_t value) {fPVz = value;}
-    void     SetPrimaryVertexXMC(Double_t value) {fPVxMC = value;}
-    void     SetPrimaryVertexYMC(Double_t value) {fPVyMC = value;}
-    void     SetPrimaryVertexZMC(Double_t value) {fPVzMC = value;}
-    void     SetPrimaryVertex(Double_t x, Double_t y, Double_t z) {fPVx=x;fPVy=y;fPVz=z;}
-    void     SetPrimaryVertexMC(Double_t x, Double_t y, Double_t z) {fPVxMC=x;fPVyMC=y;fPVzMC=z;}
-
-    // Multiplicity
-    void  SetTrueMultiplicity(Int_t value) {fTrueMult = value;}
-    Int_t GetTrueMultiplicity() {return fTrueMult;}
-    Int_t GetMultiplicity() const {return fMult;}
-    Int_t GetNCharged(Char_t sign);
-
-    // Mean phi
-    Double_t GetPhiMean() const {return fPhiMean;}
-
-    // functions for event selection and computation (require on-fly setting of sel parameters)
-    void SetSelectionPIDType(AliRsnPID::EType type) {fSelPIDType = type;}
-    void SetSelectionCharge(Char_t charge) {fSelCharge = charge;}
-    void SetSelectionPIDMethod(AliRsnDaughter::EPIDMethod method) {fSelPIDMethod = method;}
-    void SetSelectionTrackCuts(AliRsnCutSet *cuts) {fSelCuts = cuts;}
-    void SetSelection(AliRsnPID::EType pid, Char_t charge, AliRsnDaughter::EPIDMethod meth, AliRsnCutSet *cuts = 0x0);
-
-    Bool_t          CutPass(AliRsnDaughter *d)
-      {if (!fSelCuts) return kTRUE; else return fSelCuts->IsSelected(AliRsnCut::kParticle, d);}
-
-    AliRsnDaughter* GetLeadingParticle(Double_t ptMin = 0.0);
-    Double_t        GetAverageMomentum(Int_t &count);
-    Bool_t          GetAngleDistrWRLeading(Double_t &angleMean, Double_t &angleRMS, Double_t ptMin = 0.0);
+    void            SetDaughter(AliRsnDaughter &daughter, Int_t index);
+    AliRsnDaughter  GetDaughter(Int_t i);
+    Int_t           GetMultiplicity();
+    Double_t        GetVz();
+    AliRsnDaughter  GetLeadingParticle(Double_t ptMin = 0.0, AliPID::EParticleType type = AliPID::kUnknown);
+    Double_t        GetAverageMomentum(Int_t &count, AliPID::EParticleType type = AliPID::kUnknown);
+    Bool_t          GetAngleDistr(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter d);
 
   private:
 
-    Int_t ChargeIndex(Char_t sign) const;
-    Int_t Fill(TObjArray *array);
+    Bool_t AcceptTrackPID(AliRsnDaughter *d, AliPID::EParticleType type = AliPID::kUnknown);
 
-    Double_t        fPVx;                 // position of
-    Double_t        fPVy;                 // primary
-    Double_t        fPVz;                 // vertex
-    Double_t        fPhiMean;             // mean "phi" coord of all tracks
-    Int_t           fMult;                // track multiplicity
-    Double_t        fPVxMC;               // position of
-    Double_t        fPVyMC;               // primary
-    Double_t        fPVzMC;               // vertex in MC
-
-    TClonesArray   *fTracks;              // collection of particles
-    Int_t           fTrueMult;            // true multiplicity taken from source event
-
-    AliRsnPIDIndex *fNoPID;               // array index only for charged tracks
-    AliRsnPIDIndex *fPerfectPID;          // array index for perfect PID
-    AliRsnPIDIndex *fRealisticPID;        // array index for realistic PID (largest prob)
-
-    AliRsnPID::EType           fSelPIDType;    //! (for selection/cut functions) particle type
-    Char_t                     fSelCharge;     //! (for selection/cut functions) particle charge ('0' = both)
-    AliRsnDaughter::EPIDMethod fSelPIDMethod;  //! (for selection/cut functions) PID method used
-    AliRsnCutSet              *fSelCuts;       //! (for selection/cut functions) track cuts used
+    AliVEvent  *fRef;   // pointer to input event (if it is an AOD, this is NULL)
+    AliMCEvent *fRefMC; // pointer to reference MC event (if any)
 
     ClassDef(AliRsnEvent, 3);
 };

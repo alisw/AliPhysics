@@ -16,7 +16,6 @@
 #include <TMath.h>
 
 #include "AliRsnDaughter.h"
-#include "AliRsnMCInfo.h"
 
 class AliRsnPairParticle : public TObject
 {
@@ -62,13 +61,15 @@ class AliRsnPairParticle : public TObject
 
     AliRsnDaughter*   GetDaughter(const Int_t &index) const {return fDaughter[index];}
 
-    Bool_t            IsLabelEqual() {return abs(fDaughter[0]->Label()) == abs(fDaughter[1]->Label());}
-    Bool_t            IsIndexEqual() {return (fDaughter[0]->Index() == fDaughter[1]->Index());}
+    Bool_t            IsLabelEqual() {return abs(fDaughter[0]->GetLabel()) == abs(fDaughter[1]->GetLabel());}
+    Bool_t            IsIndexEqual() {return (fDaughter[0]->GetID() == fDaughter[1]->GetID());}
     Bool_t            IsTruePair(Int_t refPDG = 0);
+    Int_t             CommonMother();
 
     void              SetPair(AliRsnDaughter *daughter1, AliRsnDaughter *daughter2);
     void              ResetPair();
-    void              PrintInfo(const Option_t *option = "");
+    void              RotateTrack(Int_t i, Double_t angle, Bool_t isDegrees = kTRUE);
+    void              PrintInfo(const Option_t *option = "ALL");
 
   private:
 

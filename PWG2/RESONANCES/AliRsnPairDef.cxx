@@ -9,6 +9,8 @@
 // author: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
+#include <Riostream.h>
+
 #include "AliLog.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnPairDef.h"
@@ -32,13 +34,13 @@ AliRsnPairDef::AliRsnPairDef() : fMotherPDG(0)
   {
     fCharge[i] = '0';
     fMass[i] = 0.0;
-    fType[i] = AliRsnPID::kUnknown;
+    fType[i] = AliPID::kUnknown;
   }
 }
 
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef
-(Char_t sign1, AliRsnPID::EType type1, Char_t sign2, AliRsnPID::EType type2, Int_t motherPDG) :
+(Char_t sign1, AliPID::EParticleType type1, Char_t sign2, AliPID::EParticleType type2, Int_t motherPDG) :
     fMotherPDG(motherPDG)
 {
 //
@@ -51,7 +53,7 @@ AliRsnPairDef::AliRsnPairDef
 
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef
-(AliRsnPID::EType type1, Char_t sign1, AliRsnPID::EType type2, Char_t sign2, Int_t motherPDG) :
+(AliPID::EParticleType type1, Char_t sign1, AliPID::EParticleType type2, Char_t sign2, Int_t motherPDG) :
     fMotherPDG(motherPDG)
 {
 //
@@ -89,12 +91,15 @@ const AliRsnPairDef& AliRsnPairDef::operator=(const AliRsnPairDef &copy)
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnPairDef::SetPairElement(Int_t i, Char_t charge, AliRsnPID::EType type)
+Bool_t AliRsnPairDef::SetPairElement(Int_t i, Char_t charge, AliPID::EParticleType type)
 {
 //
 // Set one element of the pair
 // and returns warnings if the type is not valid.
 //
+
+  AliPID pid;
+
   if (i < 0 || i > 1)
   {
     AliError("Index out of range");
@@ -105,21 +110,21 @@ Bool_t AliRsnPairDef::SetPairElement(Int_t i, Char_t charge, AliRsnPID::EType ty
     AliError(Form("Character '%c' not recognized as charge sign"));
     return kFALSE;
   }
-  if (type < AliRsnPID::kElectron && type > AliRsnPID::kUnknown)
+  if (type < 0 && type > (Int_t)AliPID::kSPECIES)
   {
     AliError("Type index out of enumeration range");
     return kFALSE;
   }
   fCharge[i] = charge;
   fType[i] = type;
-  fMass[i] = AliRsnPID::ParticleMass(type);
+  fMass[i] = pid.ParticleMass(type);
 
   return kTRUE;
 }
 
 //_____________________________________________________________________________
 Bool_t AliRsnPairDef::SetPair
-(Char_t charge1, AliRsnPID::EType type1, Char_t charge2, AliRsnPID::EType type2)
+(Char_t charge1, AliPID::EParticleType type1, Char_t charge2, AliPID::EParticleType type2)
 {
 //
 // Set both elements of the pair,
@@ -132,22 +137,6 @@ Bool_t AliRsnPairDef::SetPair
 }
 
 //_____________________________________________________________________________
-Double_t AliRsnPairDef::ComputeWeight(AliRsnDaughter *d0, AliRsnDaughter *d1)
-{
-//
-// Compute a weight for filling the histograms:
-// probability of first track to be identified as 'type[0]' times
-// the probability of second track to be identified as 'type[1]',
-// according to the order of appearance in argument list.
-//
-
-  Double_t prob0 = d0->PIDProb()[fType[0]];
-  Double_t prob1 = d1->PIDProb()[fType[1]];
-
-  return prob0*prob1;
-}
-
-//_____________________________________________________________________________
 TString AliRsnPairDef::GetPairName()
 {
 //
@@ -156,9 +145,9 @@ TString AliRsnPairDef::GetPairName()
 //
 
   TString sName;
-  sName += AliRsnPID::ParticleName(fType[0]);
+  sName += AliPID::ParticleShortName(fType[0]);
   sName += fCharge[0];
-  sName += AliRsnPID::ParticleName(fType[1]);
+  sName += AliPID::ParticleShortName(fType[1]);
   sName += fCharge[1];
 
   return sName;

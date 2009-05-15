@@ -1,9 +1,13 @@
 //
 // Class AliRsnDaughter
 //
-// Light-weight AOD object which contains all required track details
-// which are used for resonance analysis.
-// Provides converters from all kinds of input track type: ESD, AOD and MC.
+// Interface to candidate daughters of a resonance (tracks).
+// Points to the source of information, which is generally an AliVParticle-derived object
+// and contains few internal data-members to store "on fly" some important information
+// for the computations required during resonance analysis.
+// ---
+// Since the package revision, this object is not supposed to be stacked in memory
+// but created "on fly" during analysis and used just for computations, as an interface.
 //
 // authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //          M. Vala (martin.vala@cern.ch)
@@ -15,12 +19,12 @@
 #include <TString.h>
 
 #include "AliLog.h"
+#include "AliStack.h"
 #include "AliESDtrack.h"
+#include "AliAODEvent.h"
+#include "AliAODVertex.h"
 #include "AliAODTrack.h"
-#include "AliMCParticle.h"
 
-#include "AliRsnPIDDefESD.h"
-#include "AliRsnMCInfo.h"
 #include "AliRsnDaughter.h"
 
 ClassImp(AliRsnDaughter)
@@ -28,76 +32,33 @@ ClassImp(AliRsnDaughter)
 AliRsnDaughter::EPIDMethod AliRsnDaughter::fgPIDMethod = AliRsnDaughter::kRealistic;
 
 //_____________________________________________________________________________
-AliRsnDaughter::AliRsnDaughter() :
-  AliVParticle(),
-  fIndex(-1),
-  fLabel(-1),
-  fCharge(0),
-  fFlags(0),
-  fKink(0),
-  fMass(0.0),
-  fChi2(0.0),
-  fNSigmaToVertex(-1.0),
-  fITSnum(0),
-  fTPCnum(0),
-  fAssignedPID(AliRsnPID::kUnknown),
-  fRealisticPID(AliRsnPID::kUnknown),
-  fMCInfo(0x0)
+AliRsnDaughter::AliRsnDaughter(AliVParticle *ref, TParticle *refMC) :
+  fOK((ref != 0)),
+  fKinkIndex(0),
+  fParticle(refMC),
+  fMotherPDG(0),
+  fStatus(0),
+  fRef(ref)
 {
 //
 // Default constructor.
-// Initializes all data-members with meaningless values.
 //
-
-  Int_t i;
-  for (i = 0; i < AliRsnPID::kSpecies; i++)
-  {
-    if (i < 3)
-    {
-      fP[i] = 0.0;
-      fV[i] = 0.0;
-    }
-    fPIDWeight[i] = 0.0;
-    fPIDProb[i] = 0.0;
-  }
 }
 
 //_____________________________________________________________________________
 AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
-  AliVParticle(copy),
-  fIndex(copy.fIndex),
-  fLabel(copy.fLabel),
-  fCharge(copy.fCharge),
-  fFlags(copy.fFlags),
-  fKink(copy.fKink),
-  fMass(copy.fMass),
-  fChi2(copy.fChi2),
-  fNSigmaToVertex(copy.fNSigmaToVertex),
-  fITSnum(copy.fITSnum),
-  fTPCnum(copy.fTPCnum),
-  fAssignedPID(copy.fAssignedPID),
-  fRealisticPID(copy.fRealisticPID),
-  fMCInfo(0x0)
+  TObject(copy),
+  fOK(copy.fOK),
+  fKinkIndex(copy.fKinkIndex),
+  fParticle(copy.fParticle),
+  fMotherPDG(copy.fMotherPDG),
+  fStatus(copy.fStatus),
+  fRef(copy.fRef)
 {
 //
 // Copy constructor.
+// Pointers are NOT duplicated.
 //
-
-  Int_t i;
-  for (i = 0; i < AliRsnPID::kSpecies; i++)
-  {
-    if (i < 3)
-    {
-      fP[i] = copy.fP[i];
-      fV[i] = copy.fV[i];
-    }
-    fPIDWeight[i] = copy.fPIDWeight[i];
-    fPIDProb[i] = copy.fPIDProb[i];
-  }
-
-  // initialize particle object
-  // only if it is present in the template object
-  if (copy.fMCInfo) fMCInfo = new AliRsnMCInfo(*(copy.fMCInfo));
 }
 
 //_____________________________________________________________________________
@@ -105,45 +66,17 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
 {
 //
 // Assignment operator.
-// Works like the copy constructor and returns a reference
-// to the initialized object for which it is called.
 //
 
-  fIndex  = copy.fIndex;
-  fLabel  = copy.fLabel;
-  fCharge = copy.fCharge;
-  fFlags  = copy.fFlags;
-  fKink   = copy.fKink;
-  fChi2   = copy.fChi2;
-  fNSigmaToVertex = copy.fNSigmaToVertex;
-  fITSnum = copy.fITSnum;
-  fTPCnum = copy.fTPCnum;
+  (TObject)(*this) = (TObject)copy;
 
-  Int_t i;
-  for (i = 0; i < AliRsnPID::kSpecies; i++)
-  {
-    if (i < 3)
-    {
-      fP[i] = copy.fP[i];
-      fV[i] = copy.fV[i];
-    }
-    fPIDWeight[i] = copy.fPIDWeight[i];
-    fPIDProb[i] = copy.fPIDProb[i];
-  }
+  fOK = copy.fOK;
+  fKinkIndex = copy.fKinkIndex;
+  fParticle  = copy.fParticle;
+  fMotherPDG = copy.fMotherPDG;
+  fStatus = copy.fStatus;
 
-  fMass = copy.fMass;
-  fAssignedPID = copy.fAssignedPID;
-  fRealisticPID = copy.fRealisticPID;
-
-  // initialize particle object
-  // only if it is present in the template object;
-  // otherwise, it is just cleared and not replaced with anything
-  if (fMCInfo)
-  {
-    delete fMCInfo;
-    fMCInfo = 0x0;
-  }
-  if (copy.fMCInfo) fMCInfo = new AliRsnMCInfo(*(copy.fMCInfo));
+  fRef = copy.fRef;
 
   return (*this);
 }
@@ -152,48 +85,44 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
 AliRsnDaughter::~AliRsnDaughter()
 {
 //
-// Destructor
+// Destructor.
+// Since pointers do not allocate new objects, nothing is done.
 //
-
-  if (fMCInfo)
-  {
-    delete fMCInfo;
-    fMCInfo = 0;
-  }
 }
 
 //_____________________________________________________________________________
-void AliRsnDaughter::RotateP(Double_t angle, Bool_t isDegrees)
+void AliRsnDaughter::RotateP
+(Double_t angle, Double_t &x, Double_t &y, Bool_t isDegrees)
 {
 //
 // Rotate the transverse momentum by an angle (in DEGREES)
-// around Z axis (does not change the Z component)
+// around Z axis (does not change the Z component).
+// Rotated values are stored in the two arguments passed by reference.
 //
 
   if (isDegrees) angle *= TMath::DegToRad();
 
   Double_t s = TMath::Sin(angle);
   Double_t c = TMath::Cos(angle);
-  Double_t xx = fP[0];
-  fP[0] = c*xx - s*fP[1];
-  fP[1] = s*xx + c*fP[1];
+
+  x = c*Px() - s*Py();
+  y = s*Px() + c*Py();
 }
 
 //_____________________________________________________________________________
-Double_t AliRsnDaughter::AngleTo(AliRsnDaughter *d, Bool_t outInDegrees)
+Double_t AliRsnDaughter::AngleTo(AliRsnDaughter d, Bool_t outInDegrees)
 {
 //
 // Compute angle between the vector momentum of this
 // and the one of argument.
 //
 
-  Double_t arg, dot, ptot2 = P2() * d->P2();
+  Double_t arg, dot, ptot2 = P2() * d.P2();
 
-  if(ptot2 <= 0) {
+  if (ptot2 <= 0) {
     return 0.0;
-  }
-  else {
-    dot = Px()*d->Px() + Py()*d->Py() + Pz()*d->Pz();
+  } else {
+    dot = Px()*d.Px() + Py()*d.Py() + Pz()*d.Pz();
     arg = dot / TMath::Sqrt(ptot2);
     if (arg >  1.0) arg =  1.0;
     if (arg < -1.0) arg = -1.0;
@@ -203,30 +132,74 @@ Double_t AliRsnDaughter::AngleTo(AliRsnDaughter *d, Bool_t outInDegrees)
 }
 
 //_____________________________________________________________________________
-void  AliRsnDaughter::RealisticPID()
+Int_t AliRsnDaughter::GetID() const
 {
 //
-// Assign realistic PID from largest probability
+// Return reference index, using the "GetID" method
+// of the possible source object.
 //
 
-  Int_t i, imax = 0;
-  Double_t pmax = fPIDProb[0];
+  AliESDtrack *esd = dynamic_cast<AliESDtrack*>(fRef);
+  if (esd) return esd->GetID();
 
-  // search for maximum
-  for (i = 1; i < AliRsnPID::kSpecies; i++)
-  {
-    if (fPIDProb[i] > pmax)
-    {
-      imax = i;
-      pmax = fPIDProb[i];
-    }
-  }
+  AliAODTrack *aod = dynamic_cast<AliAODTrack*>(fRef);
+  if (aod) return aod->GetID();
 
-  fRealisticPID = (AliRsnPID::EType)imax;
+  return GetLabel();
 }
 
 //_____________________________________________________________________________
-AliRsnPID::EType AliRsnDaughter::PIDType(Double_t &prob) const
+AliPID::EParticleType AliRsnDaughter::RealisticPID() const
+{
+//
+// Return the "realistic" PID of this track,
+// i.e. the particle species to which corresponds the largest PID probability.
+//
+
+  AliPID::EParticleType pid = AliPID::kElectron;
+  Double_t prob = fPID[0];
+
+  Int_t i;
+  for (i = 1; i < AliPID::kSPECIES; i++) {
+    if (fPID[i] > prob) {
+      prob = fPID[i];
+      pid = (AliPID::EParticleType)i;
+    }
+  }
+
+  return pid;
+}
+
+//_____________________________________________________________________________
+AliPID::EParticleType AliRsnDaughter::PerfectPID() const
+{
+//
+// Return the "perfect" PID of this track,
+// reading it from the MC information, if available.
+//
+
+  if (!fParticle) return AliPID::kUnknown;
+
+  Int_t absPDG = TMath::Abs(fParticle->GetPdgCode());
+  switch (absPDG) {
+    case   11:
+      return AliPID::kElectron;
+    case   13:
+      return AliPID::kMuon;
+    case  211:
+      return AliPID::kPion;
+    case  321:
+      return AliPID::kKaon;
+    case 2212:
+      return AliPID::kProton;
+    default:
+      AliDebug(2, Form("PDG code = %d not recognized. Return 'AliPID::kUnknown'", absPDG));
+      return AliPID::kUnknown;
+  }
+}
+
+//_____________________________________________________________________________
+AliPID::EParticleType AliRsnDaughter::PIDType(Double_t &prob) const
 {
 //
 // Return the PID type according to the selected method
@@ -234,28 +207,171 @@ AliRsnPID::EType AliRsnDaughter::PIDType(Double_t &prob) const
 // It will be realistic for realistic PID and 1 for perfect PID.
 //
 
-  switch (fgPIDMethod)
-  {
+  AliPID::EParticleType pid = AssignedPID();
+
+  prob = 1.0;
+  if (fgPIDMethod == kRealistic) prob = fPID[(Int_t)pid];
+
+  return pid;
+}
+
+//_____________________________________________________________________________
+AliPID::EParticleType AliRsnDaughter::AssignedPID() const
+{
+//
+// Return the PID type according to the selected method
+// in the argument passed by reference, the probability is stored.
+// It will be realistic for realistic PID and 1 for perfect PID.
+//
+
+  switch (fgPIDMethod) {
     case kNoPID:
-      AliWarning("Requested a PIDtype call in NoPID mode");
-      prob = 1.0;
-      return AliRsnPID::kUnknown;
+      return AliPID::kUnknown;
     case kPerfect:
-      prob = 1.0;
-      if (fMCInfo) return AliRsnPID::InternalType(fMCInfo->PDG());
-      else return AliRsnPID::kUnknown;
+      return PerfectPID();
+    case kRealistic:
+      return RealisticPID();
     default:
-      if (fRealisticPID >= 0 && fRealisticPID < AliRsnPID::kSpecies)
-      {
-        prob = fPIDProb[fRealisticPID];
-        return fRealisticPID;
-      }
-      else
-      {
-        prob = 1.0;
-        return AliRsnPID::kUnknown;
-      }
+      AliWarning("PID method not properly set. Returning realistic PID");
+      return RealisticPID();
   }
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnDaughter::CombineWithPriors(Double_t *priors)
+{
+//
+// Combine current PID weights (assumed to be them) with prior probs
+//
+
+  Int_t       i;
+  Double_t    sum = 0.0;
+
+  // multiply weights and priors
+  for (i = 0; i < AliPID::kSPECIES; i++) {
+    fPID[i] = priors[i] * fRef->PID()[i];
+    sum += fPID[i];
+  }
+  if (sum <= (Double_t) 0.) {
+    AliError(Form("Sum of weights = %f <= 0", sum));
+    return kFALSE;
+  }
+
+  // normalize
+  for (i = 0; i < AliPID::kSPECIES; i++) fPID[i] /= sum;
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+AliESDtrack* AliRsnDaughter::GetRefESD() 
+{
+//
+// Return a reference in format of ESD track
+//
+
+  return dynamic_cast<AliESDtrack *>(fRef);
+}
+
+//_____________________________________________________________________________
+void AliRsnDaughter::FindMotherPDG(AliStack *stack)
+{
+//
+// Searches the stack to find the mother and retrieve its PDG code.
+//
+
+  if (!stack || !fParticle) return;
+
+  Int_t mLabel = fParticle->GetFirstMother();
+  if (mLabel < 0) {
+    fMotherPDG = 0;
+  }
+  else {
+    TParticle *mum = stack->Particle(mLabel);
+    if (mum) fMotherPDG = mum->GetPdgCode();
+    else fMotherPDG = 0;
+  }
+}
+
+//_____________________________________________________________________________
+inline Double_t AliRsnDaughter::GetMCEnergy(Double_t mass)
+{
+//
+// Uses the argument to compute 4-momentum energy
+//
+
+  if (!fParticle) return 0.0;
+
+  Double_t p2 = fParticle->Px()*fParticle->Px();
+  p2 += fParticle->Py()*fParticle->Py();
+  p2 += fParticle->Pz()*fParticle->Pz();
+
+  return TMath::Sqrt(mass*mass + p2);
+}
+
+//_____________________________________________________________________________
+void AliRsnDaughter::FindKinkIndex(AliESDtrack *esdTrack)
+{
+//
+// Assign kink index from an ESD track
+//
+
+  Int_t i, ik[3];
+  for (i = 0; i < 3; i++) ik[i] = esdTrack->GetKinkIndex(i);
+  
+  if (ik[0] < 0 || ik[1] < 0 || ik[2] < 0) {
+    SetKinkMother();
+  }
+  else if (ik[0] > 0 || ik[1] > 0 || ik[2] > 0) {
+    SetKinkDaughter();
+  }
+  else SetNoKink();
+}
+
+//_____________________________________________________________________________
+void AliRsnDaughter::FindKinkIndex(AliAODEvent *event)
+{
+//
+// Assign kink index from an AOD event
+//
+
+  Int_t iv, id, nD, nV = event->GetNumberOfVertices();
+  for (iv = 0; iv < nV; iv++) {
+    AliAODVertex *v = event->GetVertex(iv);
+    AliAODVertex::AODVtx_t type = (AliAODVertex::AODVtx_t)v->GetType();
+    if (type != AliAODVertex::kKink) continue;
+    AliAODTrack *mother = (AliAODTrack*)v->GetParent();
+    if (mother == (AliAODTrack*)fRef) {
+      SetKinkMother();
+      return;
+    } else {
+      nD = v->GetNDaughters();
+      for (id = 0; id < nD; id++) {
+        AliAODTrack *son = (AliAODTrack*)v->GetDaughter(id);
+        if (son == (AliAODTrack*)fRef) {
+          SetKinkDaughter();
+          return;
+        }
+      }
+    }
+  }
+
+  SetNoKink();
+}
+
+//_____________________________________________________________________________
+void AliRsnDaughter::Reset()
+{
+//
+// Reset this track to meaningless values
+//
+
+  fOK = kFALSE;
+  fKinkIndex = 0;
+  fParticle = 0x0;
+  fMotherPDG = 0;
+  fStatus = 0;
+  fRef = 0x0;
 }
 
 //_____________________________________________________________________________
@@ -280,110 +396,77 @@ void AliRsnDaughter::Print(Option_t *option) const
   TString opt(option);
   opt.ToUpper();
 
-  if (opt.Contains("L") || opt.Contains("ALL"))
-  {
-    cout << ".......Index            : " << fIndex << endl;
-    cout << ".......Label            : " << fLabel << endl;
+  if (opt.Contains("L") || opt.Contains("ALL")) {
+    cout << ".......Index            : " << GetID() << endl;
+    cout << ".......Label            : " << GetLabel() << endl;
   }
-  if (opt.Contains("P") || opt.Contains("ALL"))
-  {
+  if (opt.Contains("P") || opt.Contains("ALL")) {
     cout << ".......Px, Py, Pz, Pt   : " << Px() << ' ' << Py() << ' ' << Pz() << ' ' << Pt() << endl;
   }
-  if (opt.Contains("A") || opt.Contains("ALL"))
-  {
+  if (opt.Contains("A") || opt.Contains("ALL")) {
     cout << ".......Phi, Theta       : " << Phi() << ' ' << Theta() << endl;
   }
-  if (opt.Contains("V") || opt.Contains("ALL"))
-  {
+  if (opt.Contains("V") || opt.Contains("ALL")) {
     cout << ".......Vx, Vy, Vz       : " << Xv() << ' ' << Yv() << ' ' << Zv() << endl;
   }
-  if (opt.Contains("I") || opt.Contains("ALL"))
-  {
-    AliRsnPID::EType type;
+  if (opt.Contains("I") || opt.Contains("ALL")) {
+    AliPID::EParticleType type;
     Double_t prob;
     type = PIDType(prob);
-    cout << ".......PID & prob       : " << AliRsnPID::ParticleName(type) << ' ' << prob << endl;
+    cout << ".......PID & prob       : " << AliPID::ParticleName(type) << ' ' << prob << endl;
   }
-  if (opt.Contains("C") || opt.Contains("ALL"))
-  {
-    cout << ".......Charge           : " << fCharge << endl;
+  if (opt.Contains("C") || opt.Contains("ALL")) {
+    cout << ".......Charge           : " << Charge() << endl;
   }
-  if (opt.Contains("F") || opt.Contains("ALL"))
-  {
-    cout << ".......Flags            : " << fFlags << endl;
+  if (opt.Contains("F") || opt.Contains("ALL")) {
+    cout << ".......Flags            : " << fStatus << endl;
   }
-  if (opt.Contains("W") || opt.Contains("ALL"))
-  {
+  if (opt.Contains("W") || opt.Contains("ALL")) {
     cout << ".......Weights          : ";
     Int_t i;
-    for (i = 0; i < AliRsnPID::kSpecies; i++) cout << fPIDWeight[i] << ' ';
+    for (i = 0; i < AliPID::kSPECIES; i++) cout << fPID[i] << ' ';
     cout << endl;
   }
-  if (opt.Contains("M") || opt.Contains("ALL"))
-  {
-    if (fMCInfo)
-    {
-      cout << ".......PDG code         : " << fMCInfo->PDG() << endl;
-      cout << ".......Mother (label)   : " << fMCInfo->Mother() << endl;
-      cout << ".......Mother (PDG code): " << fMCInfo->MotherPDG() << endl;
-    }
-    else
-    {
+  if (opt.Contains("M") || opt.Contains("ALL")) {
+    if (fParticle) {
+      cout << ".......PDG code         : " << fParticle->GetPdgCode() << endl;
+      cout << ".......Mother (label)   : " << fParticle->GetFirstMother() << endl;
+      cout << ".......Mother (PDG code): " << fMotherPDG << endl;
+    } else {
       cout << ".......MC info not present" << endl;
     }
   }
 }
 
 //_____________________________________________________________________________
-void AliRsnDaughter::InitMCInfo()
+AliPID::EParticleType AliRsnDaughter::InternalType(Int_t pdg)
+//
+// Return the internal enum value corresponding to the PDG
+// code passed as argument, if possible.
+// Otherwise, returns 'AliPID::kSPECIES' by default.
+//
 {
-//
-// Initializes the particle object with default constructor.
-//
+  AliPID::EParticleType value;
+  Int_t absPDG = TMath::Abs(pdg);
 
-  fMCInfo = new AliRsnMCInfo;
-}
-
-//_____________________________________________________________________________
-Bool_t AliRsnDaughter::InitMCInfo(TParticle *particle)
-{
-//
-// Copies data from an MC particle into the object which
-// contains all MC details taken from kinematics info.
-// If requested by second argument, momentum and vertex
-// of the Particle are copied into the 'fP' and 'fV'
-// data members, to simulate a perfect reconstruction.
-// If something goes wrong, returns kFALSE,
-// otherwise returns kTRUE.
-//
-
-  // retrieve the TParticle object pointed by this MC track
-  if (!particle)
-  {
-    AliError("Passed NULL particle object");
-    return kFALSE;
+  switch (absPDG) {
+    case 11:
+      value = AliPID::kElectron;
+      break;
+    case 13:
+      value = AliPID::kMuon;
+      break;
+    case 211:
+      value = AliPID::kPion;
+      break;
+    case 321:
+      value = AliPID::kKaon;
+      break;
+    case 2212:
+      value = AliPID::kProton;
+      break;
+    default:
+      value = AliPID::kUnknown;
   }
-
-  // initialize object if not initialized yet
-  if (fMCInfo) delete fMCInfo;
-  fMCInfo = new AliRsnMCInfo;
-  fMCInfo->Adopt(particle);
-
-  return kTRUE;
-}
-
-//_____________________________________________________________________________
-Int_t AliRsnDaughter::Compare(const TObject* obj) const
-{
-//
-// Compare two tracks with respect to their transverse momentum.
-// Citation from ROOT reference:
-// "Must return -1 if this is smaller than obj, 0 if objects are equal
-//  and 1 if this is larger than obj".
-//
-
-  AliRsnDaughter *that = (AliRsnDaughter*)obj;
-  if (Pt() < that->Pt()) return 1;
-  else if (Pt() > that->Pt()) return -1;
-  else return 0;
+  return value;
 }

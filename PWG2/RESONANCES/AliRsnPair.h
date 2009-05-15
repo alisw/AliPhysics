@@ -14,13 +14,15 @@
 #include "TH2.h"
 #include "TList.h"
 #include "TArrayI.h"
+#include "TClonesArray.h"
 
 #include "AliRsnDaughter.h"
 #include "AliRsnPairDef.h"
-#include "AliRsnEventBuffer.h"
+#include "AliRsnPairParticle.h"
 #include "AliRsnEvent.h"
 #include "AliRsnCutMgr.h"
 #include "AliRsnHistoDef.h"
+#include "AliRsnPIDIndex.h"
 
 class AliRsnFunction;
 
@@ -40,9 +42,11 @@ class AliRsnPair : public TObject
     ~AliRsnPair();
 
     void    Print(Option_t *option = "") const;
-    void    ProcessPair(AliRsnEvent *ev1, AliRsnEvent *ev2 = 0);
+    void    LoopPair(AliRsnPIDIndex *pidIndex1, AliRsnEvent *ev1, AliRsnPIDIndex *pidIndex2 = 0, AliRsnEvent *ev2 = 0);
+    void    LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEvent *ev2 = 0);
     void    SetCutMgr(AliRsnCutMgr* theValue) { fCutMgr = theValue; }
     void    AddFunction(AliRsnFunction *fcn);
+    //void    AddFunction(AliRsnFunctionDef *fcn);
     TList*  GenerateHistograms(TString prefix = "");
     void    GenerateHistograms(TString prefix, TList *tgt);
 
@@ -54,17 +58,18 @@ class AliRsnPair : public TObject
     TString GetPairName() const;
     TString GetPairHistName(AliRsnFunction *fcn, TString text = "") const;
     TString GetPairHistTitle(AliRsnFunction *fcn, TString text = "") const;
+    //TString GetPairHistName(AliRsnFunctionNew *fcn, TString text = "") const;
+    //TString GetPairHistTitle(AliRsnFunctionNew *fcn, TString text = "") const;
 
   private:
 
     AliRsnPair (const AliRsnPair &copy) : TObject(copy),
       fIsMixed(kFALSE),fPairType(kPairTypes),fPIDMethod(AliRsnDaughter::kRealistic),
-      fPairDef(0x0),fCutMgr(0x0),fFunctions("AliRsnFunction",0) {}
+      fPairDef(0x0),fCutMgr(0x0),fFunctions("AliRsnFunction",0),fTrack1(),fTrack2(),fPairParticle() {}
     AliRsnPair& operator=(const AliRsnPair&) {return *this;}
 
     void     SetUp(EPairType type);
     void     SetAllFlags(AliRsnDaughter::EPIDMethod pid, Bool_t mix) {fPIDMethod = pid; fIsMixed = mix;}
-    void     LoopPair(AliRsnEvent *ev1, TArrayI *a1, AliRsnEvent *ev2, TArrayI *a2);
 
     Bool_t   CutPass(AliRsnDaughter *d);
     Bool_t   CutPass(AliRsnPairParticle *p);
@@ -77,6 +82,9 @@ class AliRsnPair : public TObject
     AliRsnPairDef              *fPairDef;        // pair definition (particles, charges)
     AliRsnCutMgr               *fCutMgr;         // cut manager
     TClonesArray                fFunctions;      // functions
+    AliRsnDaughter              fTrack1;         // track #1 (external loop)
+    AliRsnDaughter              fTrack2;         // track #2 (internal loop)
+    AliRsnPairParticle          fPairParticle;   // track pair
 
     ClassDef (AliRsnPair, 2)
 };

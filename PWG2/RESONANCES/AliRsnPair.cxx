@@ -18,7 +18,6 @@
 #include "AliLog.h"
 
 #include "AliRsnFunction.h"
-#include "AliRsnPairParticle.h"
 
 #include "AliRsnPair.h"
 
@@ -26,18 +25,21 @@ ClassImp(AliRsnPair)
 
 //_____________________________________________________________________________
 AliRsnPair::AliRsnPair(EPairType type, AliRsnPairDef *def) :
-  TObject(),
-  fIsMixed(kFALSE),
-  fPairType(type),
-  fPIDMethod(AliRsnDaughter::kRealistic),
-  fPairDef(def),
-  fCutMgr(0),
-  fFunctions("AliRsnFunction", 0)
+    TObject(),
+    fIsMixed(kFALSE),
+    fPairType(type),
+    fPIDMethod(AliRsnDaughter::kRealistic),
+    fPairDef(def),
+    fCutMgr(0),
+    fFunctions("AliRsnFunction", 0),
+    fTrack1(),
+    fTrack2()
 {
 //
 // Default constructor
 //
-
+  AliDebug(AliLog::kDebug+2,"<-");
+  AliDebug(AliLog::kDebug+2,"->");
   SetUp(type);
 }
 //_____________________________________________________________________________
@@ -46,6 +48,8 @@ AliRsnPair::~AliRsnPair()
 //
 // Destructor
 //
+  AliDebug(AliLog::kDebug+2,"<-");
+  AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
@@ -54,9 +58,8 @@ void AliRsnPair::SetUp(EPairType type)
 //
 // Sets up flag values by the pair types
 //
-
-  switch (type)
-  {
+  AliDebug(AliLog::kDebug+2,"<-");
+  switch (type) {
     case kNoPID:
       SetAllFlags(AliRsnDaughter::kNoPID, kFALSE);
       break;
@@ -80,6 +83,7 @@ void AliRsnPair::SetUp(EPairType type)
       SetAllFlags(AliRsnDaughter::kRealistic, kFALSE);
       break;
   }
+  AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
@@ -88,15 +92,14 @@ void AliRsnPair::Print(Option_t* /*option*/) const
 //
 // Prints info about pair
 //
-
+  AliDebug(AliLog::kDebug+2,"<-");
   AliInfo(Form("%s", GetPairHistTitle(0x0).Data()));
-  AliInfo(Form("PDG %d %d", AliRsnPID::PDGCode(fPairDef->GetType(0)),
-               AliRsnPID::PDGCode(fPairDef->GetType(1))));
+  AliInfo(Form("PDG %d %d", AliPID::ParticleCode(fPairDef->GetType(0)),
+               AliPID::ParticleCode(fPairDef->GetType(1))));
   AliInfo(Form("Masses %f %f", fPairDef->GetMass(0), fPairDef->GetMass(1)));
   AliInfo(Form("Number of functions %d", fFunctions.GetEntries()));
 
-  switch(fPIDMethod)
-  {
+  switch (fPIDMethod) {
     case AliRsnDaughter::kNoPID:
       AliInfo("PID method: none");
       break;
@@ -109,97 +112,130 @@ void AliRsnPair::Print(Option_t* /*option*/) const
     default:
       AliInfo("PID method: undefined");
   }
-}
-
-//_____________________________________________________________________________
-void AliRsnPair::ProcessPair(AliRsnEvent *ev1, AliRsnEvent *ev2)
-{
-//
-// Fills the functions' histograms using tracks from passed events.
-// What tracks are taken in each event depend from the order of
-// track types defined in the AliRsnPairDef for this object:
-//  - tracks of type 0 are the ones stored as pairDef data members with index [0]
-//    ---> taken from first argument (ev1)
-//  - tracks of type 1 are the ones stored as pairDef data members with index [1]
-//    ---> taken from second argument (ev2)
-//
-// When doing single-event analysis (e.g. signal, like-sign), second argument
-// can be NULL, and it will be forced to point to the same object of first one.
-//
-
-  if (!ev2) ev2 = ev1;
-
-  TArrayI *array1 = ev1->GetTracksArray(fPIDMethod, fPairDef->GetCharge(0), fPairDef->GetType(0));
-  TArrayI *array2 = ev2->GetTracksArray(fPIDMethod, fPairDef->GetCharge(1), fPairDef->GetType(1));
-
-  LoopPair(ev1, array1, ev2, array2);
+  AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
 void AliRsnPair::LoopPair
-(AliRsnEvent * ev1, TArrayI * a1, AliRsnEvent * ev2, TArrayI * a2)
+(AliRsnPIDIndex *pidIndex1, AliRsnEvent *ev1, AliRsnPIDIndex *pidIndex2, AliRsnEvent *ev2)
+{
+//
+// Prepare the loop for computation of functions.
+// Each PIDIndex is used to retrieve the appropriate array of indexes
+// of the tracks to be used in each event.
+// In case of single-event analysis, only the first two arguments are used
+// and both arrays are taken from the same PIDIndex and will loop on the same event
+// In case of mixing, all arguments are used, and first set of tracks will be found
+// in the first event with the first PIDIndex, and the second set of tracks will
+// be found in second event with second PIDIndex.
+//
+
+  AliDebug(AliLog::kDebug+2,"<-");
+
+  TArrayI *a1 = 0;
+  TArrayI *a2 = 0;
+
+  if (fPIDMethod == AliRsnDaughter::kNoPID)
+  {
+    AliDebug(AliLog::kDebug+2, Form("Returning indexes of with NO PID (%d) ...", fPIDMethod));
+    a1 = pidIndex1->GetTracksArray(fPIDMethod, fPairDef->GetCharge(0), AliPID::kUnknown);
+    if (pidIndex2 && ev2)
+      a2 = pidIndex2->GetTracksArray(fPIDMethod, fPairDef->GetCharge(1), AliPID::kUnknown);
+    else
+      a2 = pidIndex1->GetTracksArray(fPIDMethod, fPairDef->GetCharge(1), AliPID::kUnknown);
+  }
+  else
+  {
+    AliDebug(AliLog::kDebug+2, Form("Returning indexes of with PID (%d) ...", fPIDMethod));
+    a1 = pidIndex1->GetTracksArray(fPIDMethod,fPairDef->GetCharge(0), (AliPID::EParticleType)fPairDef->GetType(0));
+    if (pidIndex2 && ev2)
+      a2 = pidIndex2->GetTracksArray(fPIDMethod, fPairDef->GetCharge(1), (AliPID::EParticleType)fPairDef->GetType(1));
+    else
+      a2 = pidIndex1->GetTracksArray(fPIDMethod, fPairDef->GetCharge(1), (AliPID::EParticleType)fPairDef->GetType(1));
+  }
+
+  LoopPair(a1, a2, ev1, ev2);
+
+  AliDebug(AliLog::kDebug+2,"->");
+}
+
+//_____________________________________________________________________________
+void AliRsnPair::LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEvent *ev2)
 {
 //
 // Loop on all pairs of tracks of the defined types/charges,
 // using the arrays of indexes and the events containing them.
 // This method is private, for safety reasons.
 //
+  AliDebug(AliLog::kDebug+2,"<-");
+  if (!ev1) {AliError(Form("ev1 is %p. skipping LoopPair() ...",ev1))return;}
+  AliDebug(AliLog::kDebug+1,"ev1 is OK ...");
 
-  if (!a1) {AliDebug(4, "No TArrayI 1 from currentEvent->GetTracksArray(...)"); return;}
-  if (!a2) {AliDebug(4, "No TArrayI 2 from currentEvent->GetTracksArray(...)"); return;}
+
+  if (!ev2) {
+    if (fIsMixed) {
+      AliDebug(AliLog::kDebug, "ev2 is null and fIsMixed is true. Skipping ...");
+      return;
+    }
+    ev2 = ev1;
+  }
+
+  if (!a1) {AliDebug(AliLog::kDebug, "No TArrayI 1 from currentEvent->GetTracksArray(...)"); return;}
+  if (!a2) {AliDebug(AliLog::kDebug, "No TArrayI 2 from currentEvent->GetTracksArray(...)"); return;}
+
+  AliDebug(AliLog::kDebug+1,Form("a1=%d a2=%d",a1->GetSize(),a2->GetSize()));
+  if (a1->GetSize()<=0) {AliDebug(AliLog::kDebug, "Size of TArrayI 1 is 0 or less ..."); return;}
+  if (a2->GetSize()<=0) {AliDebug(AliLog::kDebug, "Size of TArrayI 2 is 0 or less ..."); return;}
+
 
   // cuts on events
   if (!CutPass(ev1) || !CutPass(ev2)) return;
-
+  AliDebug(AliLog::kDebug+1,"Event cut passed...");
   AliRsnDaughter::SetPIDMethod(fPIDMethod);
-  AliRsnDaughter *daughter1 = 0;
-  AliRsnDaughter *daughter2 = 0;
   AliRsnFunction *fcn = 0;
 
   Bool_t isLikeSign = fPairDef->IsLikeSign();
   Int_t j, startj = 0;
 
-    for (Int_t i = 0; i < a1->GetSize(); i++)
-    {
-        // get track #1
-        daughter1 = (AliRsnDaughter *) ev1->GetTrack(a1->At(i));
-        if (!daughter1) continue;
-        // assign PID and mass of particle of type #1
-        daughter1->AssignPID(fPairDef->GetType(0));
-        // cuts on track #1
-        if (!CutPass(daughter1)) continue;
-        // get track #2
-        daughter2 = 0;
-        // check starting index for searching the event:
-        // for like-sign pairs we avoid duplicating the pairs
-        if (isLikeSign) startj = i+1; else startj = 0;
-        // AliInfo(Form("%d",startj));
-        // loop on event for all track #2 to be combined with the found track #1
-        for (j = startj; j < a2->GetSize(); j++)
-        {
-            daughter2 = (AliRsnDaughter *) ev2->GetTrack(a2->At(j));
-            if (!daughter2) continue;
-            // assign PID and mass of particle of type #2
-            daughter2->AssignPID(fPairDef->GetType(0));
-            // cuts on track #2
-            if (!CutPass(daughter2)) continue;
-            // make pair
-            AliRsnPairParticle pairParticle;
-            pairParticle.SetPair(daughter1, daughter2);
-            // cuts on pair
-            if (!CutPass(&pairParticle)) continue;
-            // fill all histograms
-            TObjArrayIter nextFcn(&fFunctions);
-            while ( (fcn = (AliRsnFunction*)nextFcn()) ) {
-                fcn->Fill(&pairParticle, fPairDef);
-            }
-            /*
-            while ( (fnew = (AliRsnFunction*)nextFcn()) ) {
-              fnew->Fill(&pairParticle, fPairDef);
-            }
-            */
-        }
+  for (Int_t i = 0; i < a1->GetSize(); i++) {
+    // get track #1
+    ev1->SetDaughter(fTrack1, a1->At(i));
+    if (!fTrack1.IsOK()) continue;
+    AliDebug(AliLog::kDebug+1,"daughter1 is OK ...");
+    // cuts on track #1
+    if (!CutPass(&fTrack1)) continue;
+    AliDebug(AliLog::kDebug+1,"daughter1 cut passed ...");
+    // check starting index for searching the event:
+    // for like-sign pairs we avoid duplicating the pairs
+    if (isLikeSign) startj = i+1; else startj = 0;
+    // loop on event for all track #2 to be combined with the found track #1
+    for (j = startj; j < a2->GetSize(); j++) {
+      ev2->SetDaughter(fTrack2, a2->At(j));
+      if (!fTrack2.IsOK()) continue;
+      AliDebug(AliLog::kDebug+1,"daughter2 is OK ...");
+      // cuts on track #2
+      if (!CutPass(&fTrack2)) continue;
+      AliDebug(AliLog::kDebug+1,"daughter2 cut passed ...");
+      // make pair
+      fPairParticle.SetPair(&fTrack1, &fTrack2);
+
+      // cuts on pair
+      if (!CutPass(&fPairParticle)) continue;
+      AliDebug(AliLog::kDebug+1, "pairParticle cut passed");
+
+//       pairParticle.PrintInfo();
+
+      // fill all histograms
+      TObjArrayIter nextFcn(&fFunctions);
+      while ( (fcn = (AliRsnFunction*)nextFcn()) ) {
+        fcn->SetPairDef(fPairDef);
+        fcn->SetPair(&fPairParticle);
+        fcn->SetEvent(ev1);
+        fcn->Fill();
+      }
     }
+  }
+  AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
@@ -212,51 +248,29 @@ TList * AliRsnPair::GenerateHistograms(TString prefix)
 //
 // All generated histograms are stored into the output TList.
 //
-
+  AliDebug(AliLog::kDebug+2,"<-");
   TList *list = new TList();
   list->SetName(GetPairHistName(0x0).Data());
 
   Char_t hName[255], hTitle[255];
+  //AliRsnFunction *fcn = 0;
   AliRsnFunction *fcn = 0;
-  for (Int_t i=0;i< fFunctions.GetEntries();i++)
-  {
+  for (Int_t i=0;i< fFunctions.GetEntries();i++) {
     fcn = (AliRsnFunction*)fFunctions.At(i);
     sprintf(hName, "%s_%s", prefix.Data(), GetPairHistName(fcn).Data());
     sprintf(hTitle, "%s", GetPairHistTitle(fcn).Data());
-    TList *histos = fcn->Init(hName, hTitle);
+    //TList *histos = fcn->Init(hName, hTitle);
+    list->Add(fcn->CreateHistogram(hName, hTitle));
     //histos->Print();
-    list->Add(histos);
+    //list->Add(histos);
   }
-
+  cout << "PRINTING LIST" << endl;
+  list->Print();
+  AliDebug(AliLog::kDebug+2,"->");
   return list;
 }
 
-//_____________________________________________________________________________
-void AliRsnPair::GenerateHistograms(TString prefix, TList *tgt)
-{
-//
-// Generates needed histograms, giving them a name based on
-// the flags defined here, on the pair definition, and attaches
-// a prefix to it, according to the argument.
-//
-// All generated histograms are stored into the TList passed as argument
-//
 
-  if (!tgt) {
-    AliError("NULL target list!");
-    return;
-  }
-
-  Char_t hName[255], hTitle[255];
-  AliRsnFunction *fcn = 0;
-  for (Int_t i=0;i< fFunctions.GetEntries();i++)
-  {
-    fcn = (AliRsnFunction*)fFunctions.At(i);
-    sprintf(hName, "%s_%s", prefix.Data(), GetPairHistName(fcn).Data());
-    sprintf(hTitle, "%s", GetPairHistTitle(fcn).Data());
-    fcn->Init(hName, hTitle, tgt);
-  }
-}
 
 //_____________________________________________________________________________
 TString AliRsnPair::GetPairTypeName(EPairType type) const
@@ -264,9 +278,9 @@ TString AliRsnPair::GetPairTypeName(EPairType type) const
 //
 // Returns type name, made with particle names ant chosen PID
 //
-
-  switch (type)
-  {
+  AliDebug(AliLog::kDebug+2,"<-");
+  AliDebug(AliLog::kDebug+2,"->");
+  switch (type) {
     case kNoPID : return ("NOPID_");break;
     case kNoPIDMix : return ("NOPIDMIX_");break;
     case kRealisticPID : return ("REALISTIC_");break;
@@ -287,11 +301,11 @@ TString AliRsnPair::GetPairName() const
 //
 // Retruns pair name
 //
-
+  AliDebug(AliLog::kDebug+2,"<-");
   TString sName;
   sName += GetPairTypeName(fPairType);
   sName += fPairDef->GetPairName();
-
+  AliDebug(AliLog::kDebug+2,"->");
   return sName;
 }
 
@@ -301,18 +315,17 @@ TString AliRsnPair::GetPairHistName(AliRsnFunction *fcn, TString text) const
 //
 // Returns definitive histogram name
 //
-
+  AliDebug(AliLog::kDebug+2,"<-");
   TString sName;
-  if (fcn)
-  {
-    sName = fcn->GetFcnName();
+  if (fcn) {
+    sName = fcn->GetName();
     sName += "_";
   }
   sName += GetPairName();
   sName += "_";
   if (fCutMgr) sName += fCutMgr->GetName();
   sName += text;
-
+  AliDebug(AliLog::kDebug+2,"->");
   return sName;
 }
 
@@ -322,18 +335,17 @@ TString AliRsnPair::GetPairHistTitle(AliRsnFunction *fcn, TString text) const
 //
 // Returns definitive histogram title
 //
-
+  AliDebug(AliLog::kDebug+2,"<-");
   TString sTitle;
-  if (fcn)
-  {
-    sTitle = fcn->GetFcnTitle();
+  if (fcn) {
+    sTitle = fcn->GetTitle();
     sTitle += " ";
   }
   sTitle += GetPairName();
   sTitle +=" ";
   if (fCutMgr) sTitle += fCutMgr->GetTitle();
   sTitle += text;
-
+  AliDebug(AliLog::kDebug+2,"->");
   return sTitle;
 }
 
@@ -343,11 +355,25 @@ void AliRsnPair::AddFunction(AliRsnFunction *fcn)
 //
 // Adds a new computing function
 //
-
+  AliDebug(AliLog::kDebug+2,"<-");
   Int_t size = fFunctions.GetEntries();
   new (fFunctions[size]) AliRsnFunction(*fcn);
+  AliDebug(AliLog::kDebug+2,"->");
 }
 
+/*
+//_____________________________________________________________________________
+void AliRsnPair::AddFunction(AliRsnFunctionDef *fcn)
+{
+//
+// Adds a new computing function
+//
+  AliDebug(AliLog::kDebug+2,"<-");
+  Int_t size = fFunctions.GetEntries();
+  new (fFunctions[size]) AliRsnFunctionNew(fcn);
+    AliDebug(AliLog::kDebug+2,"->");
+}
+*/
 
 //________________________________________________________________________________________
 Bool_t AliRsnPair::CutPass(AliRsnDaughter *d)
@@ -356,7 +382,8 @@ Bool_t AliRsnPair::CutPass(AliRsnDaughter *d)
 // Check if the AliRsnDaughter argument pass its cuts.
 // If the cut data member is not initialized for it, returns kTRUE.
 //
-
+  AliDebug(AliLog::kDebug+2,"<-AliRsnDaughter");
+  AliDebug(AliLog::kDebug+2,"->");
   if (!fCutMgr) return kTRUE;
   else return fCutMgr->IsSelected(AliRsnCut::kParticle, d);
 }
@@ -368,7 +395,8 @@ Bool_t AliRsnPair::CutPass(AliRsnPairParticle *p)
 // Check if the AliRsnPairParticle argument pass its cuts.
 // If the cut data member is not initialized for it, returns kTRUE.
 //
-
+  AliDebug(AliLog::kDebug+2,"<-AliRsnPairParticle");
+  AliDebug(AliLog::kDebug+2,"->");
   if (!fCutMgr) return kTRUE;
   else return fCutMgr->IsSelected(AliRsnCut::kPair, p);
 }
@@ -380,7 +408,9 @@ Bool_t AliRsnPair::CutPass(AliRsnEvent *e)
 // Check if the AliRsnEvent argument pass its cuts.
 // If the cut data member is not initialized for it, returns kTRUE.
 //
-
+  AliDebug(AliLog::kDebug+2,"<-AliRsnEvent");
+  AliDebug(AliLog::kDebug+2,"->");
   if (!fCutMgr) return kTRUE;
   else return fCutMgr->IsSelected(AliRsnCut::kEvent, e);
+
 }

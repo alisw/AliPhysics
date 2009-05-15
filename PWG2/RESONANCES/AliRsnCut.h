@@ -22,113 +22,67 @@
 
 class AliRsnDaughter;
 class AliRsnPairParticle;
-class AliRsnPairDef;
 class AliRsnEvent;
 
 class AliRsnCut : public TNamed
 {
- public:
+  public:
 
-  // available cut types
-  // some ones work both for pairs and single tracks
-  enum EType {
-    kMomentum = 0,
-    kTransMomentum,
-    kEta,
-    kRadialImpactParam,
-    kRadialImpactParamMC,
-    kMomentumMC,
-    kTransMomentumMC,
-    kEtaMC,
-    kNSigma,
-    kNSigmaCalculate,
-    kStatus,
-    kIsLabelEqual,
-    kIsTruePair,
-    kIsPrimary,
-    kIsKinkDaughter,
-    kIsKinkMother,
-    kMCTracked,
-    kChargePos,
-    kChargeNeg,
-    kPIDType,
-    kPIDProb,
-    kPIDProbForSpecies,
-    kAssignedPID,
-    kTruePID,
-    kVz,
-    kTrueMultiplicity,
-    kMultiplicity,
-    kMultiplicityDifference,
-    kMultiplicityRatio,
-    kPhiMeanDifference,
-    kVzDifference,
-    kLastCutType
-  };
+    // possible targets for a cut
+    enum ETarget {
+      kParticle = 0,
+      kPair,
+      kEvent,
+      kMixEvent,
+      kLastCutTarget
+    };
 
-  // types of cut variables
-  enum EVarType {
-    kDouble_t = 0,
-    kInt_t,
-    kUInt_t
-  };
+    // data type for check
+    enum EVarType {
+      kInt = 0,
+      kULong,
+      kDouble
+    };
 
-  // possible targets for a cut
-  enum ETarget {
-    kParticle = 0,
-    kPair,
-    kEvent,
-    kMixEvent,
-    kLastCutTarget
-  };
+    AliRsnCut();
+    AliRsnCut(const char *name, Int_t    min, Int_t    max = 0);
+    AliRsnCut(const char *name, ULong_t  min, ULong_t  max = 0);
+    AliRsnCut(const char *name, Double_t min, Double_t max = 0);
+    virtual ~AliRsnCut() { }
 
-  AliRsnCut();
-  AliRsnCut(const char *name, const char *title, EType type);
-  AliRsnCut(const char *name, const char *title, EType type, Double_t min, Double_t max = 1e-100);
-  AliRsnCut(const char *name, const char *title, EType type, Int_t min, Int_t max = 32767);
-  AliRsnCut(const char *name, const char *title, EType type, UInt_t min, UInt_t max = 65534);
-  AliRsnCut(const char *name, const char *title, EType type, ULong_t min, ULong_t max = 65534);
+    void             SetRange(Int_t    min, Int_t    max) {fMinI = min; fMaxI = max; fVarType = kInt;}
+    void             SetRange(ULong_t  min, ULong_t  max) {fMinU = min; fMaxU = max; fVarType = kULong;}
+    void             SetRange(Double_t min, Double_t max) {fMinD = min; fMaxD = max; fVarType = kDouble;}
 
-  ~AliRsnCut();
+    void             SetValue(Int_t value)    {fMinI = value; fVarType = kInt;}
+    void             SetValue(ULong_t value)  {fMinU = value; fVarType = kULong;}
+    void             SetValue(Double_t value) {fMinD = value; fVarType = kDouble;}
 
-  void      SetCutValues(EType type, const Double_t& theValue, const Double_t& theValue2);
-  void      SetCutValues(EType type, const Int_t& theValue, const Int_t& theValue2);
-  void      SetCutValues(EType type, const UInt_t& theValue, const UInt_t& theValue2);
-  void      SetCutValues(EType type, const ULong_t& theValue, const ULong_t& theValue2);
+    virtual Bool_t   IsSelected(ETarget tgt, AliRsnDaughter *daughter);
+    virtual Bool_t   IsSelected(ETarget tgt, AliRsnPairParticle *pair);
+    virtual Bool_t   IsSelected(ETarget tgt, AliRsnEvent *event);
+    virtual Bool_t   IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2);
 
-  Bool_t    IsSelected(ETarget tgt,  AliRsnDaughter *daughter);
-  Bool_t    IsSelected(ETarget tgt,  AliRsnPairParticle *pair);
-  Bool_t    IsSelected(ETarget tgt,  AliRsnEvent *event);
-  Bool_t    IsSelected(ETarget tgt,  AliRsnEvent *ev1, AliRsnEvent *ev2);
+protected:
 
-  void      PrintAllValues();
+    Bool_t  OkValue();
+    Bool_t  OkRange();
 
-  Bool_t    IsBetween(const Double_t &theValue);
-  Bool_t    IsBetween(const Int_t &theValue);
-  Bool_t    MatchesValue(const Int_t &theValue);
-  Bool_t    MatchesValue(const UInt_t &theValue);
-  Bool_t    MatchesValue(const ULong_t &theValue);
-  Bool_t    MatchesValue(const Double_t &theValue);
+    EVarType  fVarType;    // type of checked variable
 
- private:
+    Int_t     fMinI;       // lower edge of INT range or ref. value for INT CUT
+    Int_t     fMaxI;       // upper edge of INT range (not used for value cuts)
+    ULong_t   fMinU;       // lower edge of ULONG range or ref. value for INT CUT
+    ULong_t   fMaxU;       // upper edge of ULONG range (not used for value cuts)
+    Double_t  fMinD;       // lower edge of DOUBLE range or ref. value for INT CUT
+    Double_t  fMaxD;       // upper edge of DOUBLE range (not used for value cuts)
 
-  Double_t        fDMin;          // min. double value
-  Double_t        fDMax;          // max. double value
-  Int_t           fIMin;          // min. int value
-  Int_t           fIMax;          // max. int value
-  UInt_t          fUIMin;         // min. uint value
-  UInt_t          fUIMax;         // max. uint value
-  ULong_t         fULMin;         // min. ulong value
-  ULong_t         fULMax;         // max. ulong value
+    Int_t     fCutValueI;  // cut value
+    ULong_t   fCutValueU;  // cut value
+    Double_t  fCutValueD;  // cut value
+    Bool_t    fCutResult;  // tells if the cut is passed or not
 
-  EType           fType;          // cut type
-  EVarType        fVarType;       // variable type
-
-  static const Double_t fgkDSmallNumber;  // small double value
-  static const Double_t fgkDBigNumber;    // big double value
-  static const Int_t    fgkIBigNumber;    // big int value
-
-  ClassDef(AliRsnCut, 1)
+    ClassDef(AliRsnCut, 1)
 };
 
 #endif
