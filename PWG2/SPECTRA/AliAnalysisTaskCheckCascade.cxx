@@ -16,7 +16,7 @@
 //                 AliAnalysisTaskCheckCascade class
 //            This task is for QAing the Cascades from ESD and AOD 
 //            Origin : Antonin Maire Fev2008, antonin.maire@ires.in2p3.fr
-//	      Modified : A.M Juillet 2008
+//	      Modified : A.Maire March 2009
 //-----------------------------------------------------------------
 
 
@@ -753,32 +753,44 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		// ~ change mass hypotheses to cover all the possibilities :  Xi-/+, Omega -/+
 		//-------------
 
-	lV0quality = 0.;
-	xi->ChangeMassHypothesis(lV0quality , 3312); 	// Calculate the effective mass of the Xi- candidate. 
-							// pdg code 3312 = Xi-
-		if( bachTrackXi->Charge() < 0 )	
-			lInvMassXiMinus = xi->GetEffMassXi();
-			
-	lV0quality = 0.;
-	xi->ChangeMassHypothesis(lV0quality , -3312); 	// Calculate the effective mass of the Xi+ candidate. 
-							// pdg code -3312 = Xi+
-		if( bachTrackXi->Charge() >  0 )
-			lInvMassXiPlus = xi->GetEffMassXi();
-			
-	lV0quality = 0.;
-	xi->ChangeMassHypothesis(lV0quality , 3334); 	// Calculate the effective mass of the Xi- candidate. 
-							// pdg code 3334 = Omega-
-		if( bachTrackXi->Charge() < 0 )
-			lInvMassOmegaMinus = xi->GetEffMassXi();
+	
+	
+	if( bachTrackXi->Charge() < 0 )	{
+		lV0quality = 0.;
+		xi->ChangeMassHypothesis(lV0quality , 3312); 	
+			// Calculate the effective mass of the Xi- candidate. 
+			// pdg code 3312 = Xi-
+		lInvMassXiMinus = xi->GetEffMassXi();
 		
-	lV0quality = 0.;
-	xi->ChangeMassHypothesis(lV0quality , -3334); 	// Calculate the effective mass of the Xi+ candidate. 
-							// pdg code -3334  = Omega+
-		if( bachTrackXi->Charge() >  0 )
-			lInvMassOmegaPlus = xi->GetEffMassXi();
-
-	lV0quality = 0.;
-	xi->ChangeMassHypothesis(lV0quality , 3312); 	// Back to default hyp.
+		lV0quality = 0.;
+		xi->ChangeMassHypothesis(lV0quality , 3334); 	
+			// Calculate the effective mass of the Xi- candidate. 
+			// pdg code 3334 = Omega-
+		lInvMassOmegaMinus = xi->GetEffMassXi();
+					
+		lV0quality = 0.;
+		xi->ChangeMassHypothesis(lV0quality , 3312); 	// Back to default hyp.
+		
+	}
+	
+	if( bachTrackXi->Charge() >  0 ){
+		lV0quality = 0.;
+		xi->ChangeMassHypothesis(lV0quality , -3312); 	
+			// Calculate the effective mass of the Xi+ candidate. 
+			// pdg code -3312 = Xi+
+		lInvMassXiPlus = xi->GetEffMassXi();
+		
+		lV0quality = 0.;
+		xi->ChangeMassHypothesis(lV0quality , -3334); 	
+			// Calculate the effective mass of the Xi+ candidate. 
+			// pdg code -3334  = Omega+
+		lInvMassOmegaPlus = xi->GetEffMassXi();
+		
+		lV0quality = 0.;
+		xi->ChangeMassHypothesis(lV0quality , -3312); 	// Back to "default" hyp.
+	}
+		
+	
 							
 
 		// - II.Step 5 : extra info for QA (ESD)
