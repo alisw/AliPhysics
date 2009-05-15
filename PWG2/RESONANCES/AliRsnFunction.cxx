@@ -138,7 +138,7 @@ AliRsnFunction::AliRsnFunction
   fHistoDef[2] = hdBin2;
 
   DefineName();
-}    
+}
 
 //________________________________________________________________________________________
 AliRsnFunction::AliRsnFunction(const AliRsnFunction &copy) :
@@ -357,7 +357,7 @@ TH1* AliRsnFunction::CreateHistogram(const char *histoName, const char *histoTit
       max[i] = fHistoDef[i]->GetMax();
     }
   }
-    
+
   // define the kind of output according to the number of histoDefs
   if (fHistogram) delete fHistogram;
   if (!nbins[1] && !nbins[2]) {
@@ -375,7 +375,7 @@ TH1* AliRsnFunction::CreateHistogram(const char *histoName, const char *histoTit
     fHistogram->SetYTitle(BinName(fBinType[0]));
     fHistogram->SetZTitle(BinName(fBinType[1]));
   }
-  
+
   fHistogram->Sumw2();
 
   return fHistogram;
@@ -423,7 +423,7 @@ Bool_t AliRsnFunction::Fill()
   TH1D *h1 = dynamic_cast<TH1D*>(fHistogram);
   TH2D *h2 = dynamic_cast<TH2D*>(fHistogram);
   TH3D *h3 = dynamic_cast<TH3D*>(fHistogram);
-  
+
   mainValue = Eval();
 
   switch (dim)
