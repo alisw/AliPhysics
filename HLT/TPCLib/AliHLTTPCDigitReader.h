@@ -16,6 +16,7 @@
 
 #include "AliHLTLogging.h"
 #include "TObject.h"
+#include "AliHLTTPCDigitData.h"
 
 /**
  * @class AliHLTTPCDigitReader
@@ -149,6 +150,11 @@ public:
   virtual const UInt_t* GetSignals();
 
   /**
+   * Get pointer to the the current ADC value. In UShort_t, used by the 32BitFormat decoder
+   */
+  virtual const UShort_t* GetSignalsShort();
+
+  /**
    * Get the time bin of the current value.
    * If @ref NextBunch has been used the function returns the
    * first time bin of the bunch.
@@ -202,6 +208,12 @@ public:
    * Returns the trailer data.
    */
   virtual bool GetRCUTrailerData(UChar_t*& trData);
+
+  /**
+   * Returns the digits
+   */
+  virtual const AliHLTTPCDigitData* GetBunchDigits(){return 0;}
+
 
   /**
    * Access operator to the data of a specific time bin.

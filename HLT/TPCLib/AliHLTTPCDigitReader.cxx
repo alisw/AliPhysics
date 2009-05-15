@@ -131,6 +131,15 @@ const UInt_t* AliHLTTPCDigitReader::GetSignals()
   return 0;
 }
 
+const UShort_t* AliHLTTPCDigitReader::GetSignalsShort()
+{
+  // see header file for class documentation
+  PrintWarningOnce(kWarnMissFastAccess,"\n"
+		   "      !!! This digit reader does not implement the methods for       !!!\n"
+		   "      !!! fast data access on channel/bunch basis. Data is discarded !!!");
+  return 0;
+}
+
 void AliHLTTPCDigitReader::EnableCaching(bool bCache)
 {
   // see header file for class documentation

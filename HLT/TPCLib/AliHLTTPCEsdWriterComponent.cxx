@@ -42,13 +42,15 @@
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCTransform.h"
+#include "AliHLTTPCClusterFinder.h"
+#include <vector>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCEsdWriterComponent)
 
 AliHLTTPCEsdWriterComponent::AliHLTTPCEsdWriterComponent()
   :
-  fSolenoidBz(0)
+  fSolenoidBz(0),fDoMCLabels(0)
 {
   // see header file for class documentation
   // or
@@ -87,6 +89,7 @@ void AliHLTTPCEsdWriterComponent::AliWriter::GetInputDataTypes(AliHLTComponentDa
   // see header file for class documentation
   list.push_back(AliHLTTPCDefinitions::fgkTrackSegmentsDataType);
   list.push_back(AliHLTTPCDefinitions::fgkTracksDataType);
+  list.push_back(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo);
 }
 
 int AliHLTTPCEsdWriterComponent::AliWriter::InitWriter()
@@ -174,6 +177,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 
   int iResult=0;
   int iAddedDataBlocks=0;
+  fDoMCLabels = 0;
   if (pESD && blocks) {
       pESD->Reset(); 
       pESD->SetMagneticField(fSolenoidBz);
@@ -183,6 +187,14 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
  
       for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
 	iter = blocks+ndx;
+	if(iter->fDataType == AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo ) {
+	  if( !fDoMCLabels ) for( int i=0; i<36*6; i++ ) fClusterLabels[i] = 0;
+	  Int_t slice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
+	  Int_t patch=AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
+	  fClusterLabels[ slice*6 + patch] = (AliHLTTPCClusterFinder::ClusterMCInfo *)iter->fPtr;
+	  fDoMCLabels = 1;
+	  continue;
+	}
 	if ( (bIsTrackSegs=(iter->fDataType == AliHLTTPCDefinitions::fgkTrackSegmentsDataType))==1 ||
 	     iter->fDataType == AliHLTTPCDefinitions::fgkTracksDataType ) {
 	  Int_t minslice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
@@ -233,18 +245,22 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
   // see header file for class documentation
   int iResult=0;
   if (pTracks && pESD) {    
+ 
     for (int i=0; i<pTracks->GetNTracks() && iResult>=0; i++) {
       AliHLTTPCTrack* pTrack=(*pTracks)[i];
       if (pTrack) {
-	//HLTDebug("convert track %d", i);
-	//pTrack->Print();
-	int iLocal=pTrack->Convert2AliKalmanTrack();
-	if (iLocal>=0) {
+
+	HLTWarning("CA convert track %d", i);
+	pTrack->Print();
+	if( pTrack->Convert2AliKalmanTrack() ){	  
+	  HLTError("conversion to AliKalmanTrack failed for track %d of %d", i, pTracks->GetNTracks());	
+	  continue;
+	}
 
 	AliESDtrack iotrack;
 	iotrack.UpdateTrackParams(pTrack,AliESDtrack::kTPCin);
 
-        Float_t points[4] = {pTrack->GetFirstPointX(), pTrack->GetFirstPointY(), pTrack->GetLastPointX(), pTrack->GetLastPointY() };
+	Float_t points[4] = {pTrack->GetFirstPointX(), pTrack->GetFirstPointY(), pTrack->GetLastPointX(), pTrack->GetLastPointY() };
 
 	if(pTrack->GetSector() == -1){ // Set first and last points for global tracks
 	  Double_t s = TMath::Sin( pTrack->GetAlpha() );
@@ -254,11 +270,57 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	  points[2] =  pTrack->GetLastPointX() *c + pTrack->GetLastPointY() *s;
 	  points[3] = -pTrack->GetLastPointX() *s + pTrack->GetLastPointY() *c;	  
 	}
-        iotrack.SetTPCPoints(points);
-	pESD->AddTrack(&iotrack);
-	} else {
-	  HLTError("conversion to AliKalmanTrack failed for track %d of %d", i, pTracks->GetNTracks());
+	iotrack.SetTPCPoints(points);
+
+	Int_t mcLabel = -1;
+
+	if( fDoMCLabels ){
+	    
+	  // get MC label for the track
+	  
+	  vector<int> labels;
+	  
+	  UInt_t *hits = pTrack->GetHitNumbers();
+	  Int_t nHits = pTrack->GetNHits();
+	  for( Int_t ih=0; ih<nHits; ih++){
+	    UInt_t id = hits[ih];
+	    int iSlice = id>>25;
+	    int iPatch = (id>>22)&0x7; 
+	    int iCluster = id&0x3fffff;
+	    AliHLTTPCClusterFinder::ClusterMCInfo *patchLabels = fClusterLabels[iSlice*6 + iPatch];
+	    if( !patchLabels ) continue;
+	    AliHLTTPCClusterFinder::ClusterMCInfo &lab = patchLabels[iCluster];	    
+	    if ( lab.fClusterID[0].fMCID >= 0 ) labels.push_back( lab.fClusterID[0].fMCID );
+	    if ( lab.fClusterID[1].fMCID >= 0 ) labels.push_back( lab.fClusterID[1].fMCID );
+	    if ( lab.fClusterID[2].fMCID >= 0 ) labels.push_back( lab.fClusterID[2].fMCID );
+	  }
+	  
+	  std::sort( labels.begin(), labels.end() );
+	  
+	  labels.push_back( -1 ); // put -1 to the end
+	  
+	  int labelMax = -1, labelCur = -1, nLabelsMax = 0, nLabelsCurr = 0;
+	  for ( int iLab = 0; iLab < labels.size(); iLab++ ) {
+	    if ( labels[iLab] != labelCur ) {
+	      if ( labelCur >= 0 && nLabelsMax< nLabelsCurr ) {
+		nLabelsMax = nLabelsCurr;
+		labelMax = labelCur;
+	      }
+	      labelCur = labels[iLab];
+	      nLabelsCurr = 0;
+	    }
+	    nLabelsCurr++;
+	  }
+	  
+	  if( labelMax>=0 && nLabelsMax < 0.9 * nHits ) labelMax = -labelMax;
+
+	  mcLabel = labelMax;
 	}
+
+	iotrack.SetLabel( mcLabel );
+	
+	pESD->AddTrack(&iotrack);
+
       } else {
 	HLTError("internal mismatch in array");
 	iResult=-EFAULT;
@@ -365,6 +427,7 @@ void AliHLTTPCEsdWriterComponent::AliConverter::GetInputDataTypes(AliHLTComponen
   // see header file for class documentation
   list.push_back(AliHLTTPCDefinitions::fgkTrackSegmentsDataType);
   list.push_back(AliHLTTPCDefinitions::fgkTracksDataType);
+  list.push_back(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo);
 }
 
 AliHLTComponentDataType AliHLTTPCEsdWriterComponent::AliConverter::GetOutputDataType()

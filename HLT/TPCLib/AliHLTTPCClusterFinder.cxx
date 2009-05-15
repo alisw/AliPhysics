@@ -29,11 +29,11 @@
 #include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCClusterFinder.h"
-#include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCPad.h"
 #include <sys/time.h>
+#include <algorithm>
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -69,6 +69,8 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fUnsorted(0),
   fVectorInitialized(kFALSE),
   fClusters(),
+  fClustersMCInfo(),
+  fMCDigits(),
   fNumberOfPadsInRow(NULL),
   fNumberOfRows(0),
   fRowOfFirstCandidate(0),
@@ -76,7 +78,10 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fFirstTimeBin(0),
   fLastTimeBin(AliHLTTPCTransform::GetNTimeBins()),
   fTotalChargeOfPreviousClusterCandidate(0),
-  fChargeOfCandidatesFalling(kFALSE)
+  fChargeOfCandidatesFalling(kFALSE),
+  f32BitFormat(kFALSE),
+  fDoMC(kFALSE),
+  fClusterMCVector()
 {
   //constructor  
 }
@@ -192,26 +197,74 @@ void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size){
       if(fDigitReader->GetBunchSize()>1){//to remove single timebin values, this will have to change at some point
 	UInt_t time = fDigitReader->GetTime();
 	if((Int_t)time>=fFirstTimeBin && (Int_t)time+fDigitReader->GetBunchSize()<=fLastTimeBin){
-	  const UInt_t *bunchData= fDigitReader->GetSignals();
-	  AliHLTTPCClusters candidate;
-	  for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
-	    candidate.fTotalCharge+=bunchData[i];	
-	    candidate.fTime += time*bunchData[i];
-	    candidate.fTime2 += time*time*bunchData[i];
-	    if(bunchData[i]>candidate.fQMax){
-	      candidate.fQMax=bunchData[i];
+	  // Kenneth: 20-04-09. The following if have been added because of inconsistency in the 40 bit decoder and the 32 bit decoder.
+	  // GetSignals() in the 40 bit decoder returns an array of UInt_t while the 32 bit one returns UShort_t
+	  // The same is true for the function ReadDataUnsortedDeconvoluteTime() below.
+	  // In addition the signals are organized in the opposite direction
+	  if(f32BitFormat){
+	    const UShort_t *bunchData= fDigitReader->GetSignalsShort();
+	    AliHLTTPCClusters candidate;
+	    for(Int_t i=fDigitReader->GetBunchSize()-1;i>=0;i--){
+	      candidate.fTotalCharge+=bunchData[i];	
+	      candidate.fTime += time*bunchData[i];
+	      candidate.fTime2 += time*time*bunchData[i];
+	      if(bunchData[i]>candidate.fQMax){
+		candidate.fQMax=bunchData[i];
+	      }
+	      time++;
 	    }
-	    time++;
+	    if(candidate.fTotalCharge>0){
+	      candidate.fMean=candidate.fTime/candidate.fTotalCharge;
+	      candidate.fPad=candidate.fTotalCharge*pad;
+	      candidate.fPad2=candidate.fPad*pad;
+	      candidate.fLastMergedPad=pad;
+	      candidate.fRowNumber=row+fDigitReader->GetRowOffset();
+	    }
+	    if(fRowPadVector[row][pad] != NULL){
+	      fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	    }
 	  }
-	  if(candidate.fTotalCharge>0){
-	    candidate.fMean=candidate.fTime/candidate.fTotalCharge;
-	    candidate.fPad=candidate.fTotalCharge*pad;
-	    candidate.fPad2=candidate.fPad*pad;
-	    candidate.fLastMergedPad=pad;
-	    candidate.fRowNumber=row+fDigitReader->GetRowOffset();
-	  }
-	  if(fRowPadVector[row][pad] != NULL){
-	    fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	  else{
+	    const UInt_t *bunchData= fDigitReader->GetSignals();
+	    AliHLTTPCClusters candidate;
+	    if(fDoMC){
+	      const AliHLTTPCDigitData* digits = fDigitReader->GetBunchDigits();
+	      for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
+		candidate.fTotalCharge+=bunchData[i];	
+		candidate.fTime += time*bunchData[i];
+		candidate.fTime2 += time*time*bunchData[i];
+		if(bunchData[i]>candidate.fQMax){
+		  candidate.fQMax=bunchData[i];
+		}
+		fMCDigits.push_back(digits[i]);
+		time++;
+	      }
+	    }
+	    else{
+	      for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
+		candidate.fTotalCharge+=bunchData[i];	
+		candidate.fTime += time*bunchData[i];
+		candidate.fTime2 += time*time*bunchData[i];
+		if(bunchData[i]>candidate.fQMax){
+		  candidate.fQMax=bunchData[i];
+		}
+		time++;
+	      }
+	    }
+	    if(candidate.fTotalCharge>0){
+	      candidate.fMean=candidate.fTime/candidate.fTotalCharge;
+	      candidate.fPad=candidate.fTotalCharge*pad;
+	      candidate.fPad2=candidate.fPad*pad;
+	      candidate.fLastMergedPad=pad;
+	      candidate.fRowNumber=row+fDigitReader->GetRowOffset();
+	    }
+	    if(fRowPadVector[row][pad] != NULL){
+	      fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	      if(fDoMC){
+		fRowPadVector[row][pad]->AddCandidateDigits(fMCDigits);
+		fMCDigits.clear();
+	      }
+	    }
 	  }
 	}
       }
@@ -247,52 +300,110 @@ void AliHLTTPCClusterFinder::ReadDataUnsortedDeconvoluteTime(void* ptr,unsigned 
 	  Bool_t moreDataInBunch=kFALSE;
 	  UInt_t prevSignal=0;
 	  Bool_t signalFalling=kFALSE;
-	  const UInt_t *bunchData= fDigitReader->GetSignals();
-	  do{
-	    AliHLTTPCClusters candidate;
-	    for(Int_t i=indexInBunchData;i<fDigitReader->GetBunchSize();i++){
-	      // Checks if one need to deconvolute the signals
-	      if(bunchData[i]>prevSignal && signalFalling==kTRUE){
-		if(i<fDigitReader->GetBunchSize()-1){ // means there are more than one signal left in the bunch
+
+	  // Kenneth: 20-04-09. The following if have been added because of inconsistency in the 40 bit decoder and the 32 bit decoder.
+	  // GetSignals() in the 40 bit decoder returns an array of UInt_t while the 32 bit one returns UShort_t
+	  // The same is true for the function ReadDataUnsorted() above.
+	  // In addition the signals are organized in the opposite direction
+	  if(f32BitFormat){
+	    indexInBunchData = fDigitReader->GetBunchSize();
+	    const UShort_t *bunchData= fDigitReader->GetSignalsShort();
+	    do{
+	      AliHLTTPCClusters candidate;
+	      //for(Int_t i=indexInBunchData;i<fDigitReader->GetBunchSize();i++){
+	      for(Int_t i=indexInBunchData;i>=0;i--){
+		// Checks if one need to deconvolute the signals
+		if(bunchData[i]>prevSignal && signalFalling==kTRUE){
+		  if(i<fDigitReader->GetBunchSize()-1){ // means there are more than one signal left in the bunch
+		    moreDataInBunch=kTRUE;
+		    prevSignal=0;
+		  }
+		  break;
+		}
+		
+		// Checks if the signal is 0, then quit processing the data.
+		if(bunchData[i]==0 && i<fDigitReader->GetBunchSize()-1){//means we have 0 data fom the rcu, might happen depending on the configuration settings
 		  moreDataInBunch=kTRUE;
 		  prevSignal=0;
+		  break;
 		}
-		break;
+		
+		if(prevSignal>bunchData[i]){//means the peak of the signal has been reached and deconvolution will happen if the signal rise again.
+		  signalFalling=kTRUE;
+		}
+		candidate.fTotalCharge+=bunchData[i];	
+		candidate.fTime += time*bunchData[i];
+		candidate.fTime2 += time*time*bunchData[i];
+		if(bunchData[i]>candidate.fQMax){
+		  candidate.fQMax=bunchData[i];
+		}
+		
+		prevSignal=bunchData[i];
+		time++;
+		indexInBunchData--;
 	      }
-	      
-	      // Checks if the signal is 0, then quit processing the data.
-	      if(bunchData[i]==0 && i<fDigitReader->GetBunchSize()-1){//means we have 0 data fom the rcu, might happen depending on the configuration settings
-		moreDataInBunch=kTRUE;
-		prevSignal=0;
-		break;
+	      if(candidate.fTotalCharge>0){
+		candidate.fMean=candidate.fTime/candidate.fTotalCharge;
+		candidate.fPad=candidate.fTotalCharge*pad;
+		candidate.fPad2=candidate.fPad*pad;
+		candidate.fLastMergedPad=pad;
+		candidate.fRowNumber=row+fDigitReader->GetRowOffset();
 	      }
-
-	      if(prevSignal>bunchData[i]){//means the peak of the signal has been reached and deconvolution will happen if the signal rise again.
-		signalFalling=kTRUE;
+	      fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	      fRowPadVector[row][pad]->AddCandidateDigits(fMCDigits);
+	      if(indexInBunchData<fDigitReader->GetBunchSize()-1){
+		moreDataInBunch=kFALSE;
 	      }
-	      candidate.fTotalCharge+=bunchData[i];	
-	      candidate.fTime += time*bunchData[i];
-	      candidate.fTime2 += time*time*bunchData[i];
-	      if(bunchData[i]>candidate.fQMax){
-		candidate.fQMax=bunchData[i];
+	    }while(moreDataInBunch);
+	  }
+	  else{
+	    const UInt_t *bunchData= fDigitReader->GetSignals();
+	    do{
+	      AliHLTTPCClusters candidate;
+	      for(Int_t i=indexInBunchData;i<fDigitReader->GetBunchSize();i++){
+		// Checks if one need to deconvolute the signals
+		if(bunchData[i]>prevSignal && signalFalling==kTRUE){
+		  if(i<fDigitReader->GetBunchSize()-1){ // means there are more than one signal left in the bunch
+		    moreDataInBunch=kTRUE;
+		    prevSignal=0;
+		  }
+		  break;
+		}
+		
+		// Checks if the signal is 0, then quit processing the data.
+		if(bunchData[i]==0 && i<fDigitReader->GetBunchSize()-1){//means we have 0 data fom the rcu, might happen depending on the configuration settings
+		  moreDataInBunch=kTRUE;
+		  prevSignal=0;
+		  break;
+		}
+		
+		if(prevSignal>bunchData[i]){//means the peak of the signal has been reached and deconvolution will happen if the signal rise again.
+		  signalFalling=kTRUE;
+		}
+		candidate.fTotalCharge+=bunchData[i];	
+		candidate.fTime += time*bunchData[i];
+		candidate.fTime2 += time*time*bunchData[i];
+		if(bunchData[i]>candidate.fQMax){
+		  candidate.fQMax=bunchData[i];
+		}
+		
+		prevSignal=bunchData[i];
+		time++;
+		indexInBunchData++;
 	      }
-
-	      prevSignal=bunchData[i];
-	      time++;
-	      indexInBunchData++;
-	    }
-	    if(candidate.fTotalCharge>0){
-	      candidate.fMean=candidate.fTime/candidate.fTotalCharge;
-	      candidate.fPad=candidate.fTotalCharge*pad;
-	      candidate.fPad2=candidate.fPad*pad;
-	      candidate.fLastMergedPad=pad;
-	      candidate.fRowNumber=row+fDigitReader->GetRowOffset();
-	    }
-	    fRowPadVector[row][pad]->AddClusterCandidate(candidate);
-	    if(indexInBunchData<fDigitReader->GetBunchSize()-1){
-	      moreDataInBunch=kFALSE;
-	    }
-	  }while(moreDataInBunch);
+	      if(candidate.fTotalCharge>0){
+		candidate.fMean=candidate.fTime/candidate.fTotalCharge;
+		candidate.fPad=candidate.fTotalCharge*pad;
+		candidate.fPad2=candidate.fPad*pad;
+		candidate.fLastMergedPad=pad;
+		candidate.fRowNumber=row+fDigitReader->GetRowOffset();
+	      }
+	      fRowPadVector[row][pad]->AddClusterCandidate(candidate);
+	      if(indexInBunchData<fDigitReader->GetBunchSize()-1){
+		moreDataInBunch=kFALSE;
+	      }
+	    }while(moreDataInBunch);
+	  }
 	}
       }
     }
@@ -324,7 +435,10 @@ Bool_t AliHLTTPCClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCCluste
       if(candidate->fQMax>cluster->fQMax){
 	cluster->fQMax=candidate->fQMax;
       }
-      
+      if(fDoMC){
+	FillMCClusterVector(nextPad->GetCandidateDigits(candidateNumber));
+      }
+
       if(fDoPadSelection){
 	UInt_t rowNo = nextPad->GetRowNumber();
 	UInt_t padNo = nextPad->GetPadNumber();
@@ -376,6 +490,24 @@ Int_t AliHLTTPCClusterFinder::FillHWAddressList(AliHLTUInt16_t *hwaddlist, Int_t
   }  
   return counter;
 }
+ 
+
+Int_t AliHLTTPCClusterFinder::FillOutputMCInfo(AliHLTTPCClusterFinder::ClusterMCInfo * outputMCInfo, Int_t maxNumberOfClusterMCInfo){
+  // see header file for class documentation
+  
+  Int_t counter=0;
+ 
+  for(UInt_t mc=0;mc<fClustersMCInfo.size();mc++){
+    if(counter<maxNumberOfClusterMCInfo){
+      outputMCInfo[counter] = fClustersMCInfo[mc];
+      counter++;
+    }
+    else{
+      HLTWarning("To much MCInfo has been added (no more space), skip adding");
+    }
+  }
+  return counter;
+}
 
 void AliHLTTPCClusterFinder::FindClusters(){
   // see header file for function documentation
@@ -392,10 +524,48 @@ void AliHLTTPCClusterFinder::FindClusters(){
 	tmpCandidate=&tmpPad->fClusterCandidates[candidate];
 	UInt_t tmpTotalCharge=tmpCandidate->fTotalCharge;
 
+	if(fDoMC){
+	  fClusterMCVector.clear();
+	  FillMCClusterVector(tmpPad->GetCandidateDigits(candidate));
+	}
+
 	ComparePads(fRowPadVector[row][pad+1],tmpCandidate,pad+1);
 	if(tmpCandidate->fTotalCharge>tmpTotalCharge){
 	  //we have a cluster
 	  fClusters.push_back(*tmpCandidate);
+	  if(fDoMC){
+	    //sort the vector (large->small) according to weight and remove elements above 2 (keep 0 1 and 2) 
+	    //sort(fClusterMCVector,fClusterMCVector.size(), MCWeight::CompareWeights );
+	    ClusterMCInfo tmpClusterMCInfo;
+
+	    MCWeight zeroMC;
+	    zeroMC.fMCID=-1;
+	    zeroMC.fWeight=0;
+
+	    if(fClusterMCVector.size()>0){
+	      tmpClusterMCInfo.fClusterID[0]=fClusterMCVector.at(0);
+	    }
+	    else{
+	      tmpClusterMCInfo.fClusterID[0]=zeroMC;
+	    }
+
+	    if(fClusterMCVector.size()>1){
+	    tmpClusterMCInfo.fClusterID[1]=fClusterMCVector.at(1);
+	    }
+	    else{
+	      tmpClusterMCInfo.fClusterID[1]=zeroMC;
+	    }
+
+	    if(fClusterMCVector.size()>2){
+	    tmpClusterMCInfo.fClusterID[2]=fClusterMCVector.at(2);
+	    }
+	    else{
+	      tmpClusterMCInfo.fClusterID[2]=zeroMC;
+	    }
+
+	    fClustersMCInfo.push_back(tmpClusterMCInfo);
+	  }
+	  
 	}
       }
       tmpPad->ClearCandidates();
@@ -446,6 +616,31 @@ void AliHLTTPCClusterFinder::PrintClusters(){
     HLTInfo("EndOfCluster:");
   }
 }
+
+void AliHLTTPCClusterFinder::FillMCClusterVector(vector<AliHLTTPCDigitData> digitData){
+
+  for(UInt_t d=0;d<digitData.size();d++){
+    Int_t nIDsInDigit = (digitData.at(d).fTrackID[0]>=0) + (digitData.at(d).fTrackID[1]>=0) + (digitData.at(d).fTrackID[2]>=0);
+    for(Int_t id=0; id<3; id++){
+      if(digitData.at(d).fTrackID[id]>=0){
+	Bool_t matchFound = kFALSE;
+	MCWeight mc;
+	mc.fMCID = digitData.at(d).fTrackID[id];
+	mc.fWeight = ((Float_t)digitData.at(d).fCharge)/nIDsInDigit;
+	for(UInt_t i=0;i<fClusterMCVector.size();i++){
+	  if(mc.fMCID == fClusterMCVector.at(i).fMCID){
+	    fClusterMCVector.at(i).fWeight += mc.fWeight;
+	    matchFound = kTRUE;
+	  }
+	}
+	if(matchFound == kFALSE){
+	  fClusterMCVector.push_back(mc);
+	}
+      }
+    }
+  }
+}
+
 
 void AliHLTTPCClusterFinder::Read(void* ptr,unsigned long size){
   //set input pointer
@@ -817,9 +1012,18 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 
 
 
-      if(!list[j].fFlags) continue; //discard single pad clusters
-      if(list[j].fTotalCharge < fThreshold) continue; //noise cluster
-
+      if(!list[j].fFlags){
+	if(fDoMC){
+	  fClustersMCInfo.erase(fClustersMCInfo.begin()+j); // remove the mc ifo for this cluster since it is not taken into account 
+	}
+	continue; //discard single pad clusters
+      }
+      if(list[j].fTotalCharge < fThreshold){
+	if(fDoMC){
+	  fClustersMCInfo.erase(fClustersMCInfo.begin()+j); // remove the mc ifo for this cluster since it is not taken into account 
+	}
+	continue; //noise cluster
+      }
       Float_t xyz[3];      
       Float_t fpad =(Float_t)list[j].fPad / list[j].fTotalCharge;
       Float_t fpad2=fXYErr*fXYErr; //fixed given error

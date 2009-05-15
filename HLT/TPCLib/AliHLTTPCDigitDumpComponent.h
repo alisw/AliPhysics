@@ -95,7 +95,8 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
     kDigitReaderUnpacked,
     kDigitReaderPacked,
     kDigitReaderRaw, // deprecated but kept for backward compatiobility of macros
-    kDigitReaderDecoder
+    kDigitReaderDecoder,
+    kDigitReader32Bit
   };
 
   /** the digit reader to use */
@@ -113,7 +114,10 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
   /** the digit reader */
   AliHLTTPCDigitReader* fpReader; //!transient
 
-  ClassDef(AliHLTTPCDigitDumpComponent, 2);
+  /** flag if 32 bit format is used */
+  Bool_t f32BitFormat;
+
+  ClassDef(AliHLTTPCDigitDumpComponent, 3);
 };
 
 #endif

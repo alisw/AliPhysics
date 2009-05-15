@@ -54,6 +54,8 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibTracksDataTyp
 
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibTracksGainDataType = AliHLTComponentDataTypeInitializer("CALGAIN ", kAliHLTDataOriginTPC);
 
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo = AliHLTComponentDataTypeInitializer("CLMCINFO", kAliHLTDataOriginTPC);
+
 
 AliHLTTPCDefinitions::AliHLTTPCDefinitions()
 {

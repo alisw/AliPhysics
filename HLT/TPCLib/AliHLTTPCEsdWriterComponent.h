@@ -20,6 +20,7 @@
 class TTree;
 class AliESDEvent;
 class AliHLTTPCTrackArray;
+#include "AliHLTTPCClusterFinder.h"
 
 /**
  * @class AliHLTTPCEsdWriterComponent
@@ -257,6 +258,14 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
   /** solenoid b field */
   Double_t fSolenoidBz; //! transient
 
-  ClassDef(AliHLTTPCEsdWriterComponent, 2)
+  /** array of pointers to cluster MC labels **/
+
+  AliHLTTPCClusterFinder::ClusterMCInfo *fClusterLabels[36*6];
+  
+  /** flag for calculating MC labels for tracks **/
+
+  Bool_t fDoMCLabels;
+
+  ClassDef(AliHLTTPCEsdWriterComponent, 3)
 };
 #endif

@@ -16,7 +16,7 @@
 
 #include "AliHLTTPCDigitReader.h"
 #include "AliHLTTPCDigitData.h"
-
+class AliHLTTPCMapping;
 class AliHLTTPCDigitRowData;
 
 /**
@@ -71,6 +71,21 @@ public:
    */
   int GetTime();
   
+  bool NextChannel();
+  int NextBunch();
+  AliHLTUInt32_t GetAltroBlockHWaddr() const;
+  int GetBunchSize();
+  const UInt_t* GetSignals();
+  Int_t GetSortedTime();    
+  Int_t GetSortedSignal();
+  Int_t GetSortedPad() const;
+  Int_t GetSortedRow() const;
+  int GetRowOffset() const;
+
+  void SetUnsorted(bool unsorted){fUnsorted=unsorted;}
+
+  const AliHLTTPCDigitData* GetBunchDigits();
+
 protected:
 
 
@@ -109,7 +124,37 @@ private:
   /** last row */
   Int_t fLastRow;                                                  // see above
 
-  ClassDef(AliHLTTPCDigitReaderUnpacked, 0)
+  Bool_t fUnsorted; //!transient
+
+  /** array to hold bunch data */
+  vector<UInt_t> fDataBunch;                            //! transient
+
+  vector<Int_t> fTrackIDs;                              //! transient
+  vector<UInt_t> fTrackIDCounts;                        //! transient
+  
+  Bool_t fEndOfDataReached;                             //! transient
+
+  Bool_t fEndOfChannelReached;                          //! transient
+
+  Int_t fPrevTime;                                      //! transient
+
+  Int_t fEndTimeBinOfBunch;                             //! transient
+
+  Int_t fPrevSignal;                                    //! transient
+
+  Int_t fPrevPad;                                       //! transient
+
+  Int_t fPrevRow;                                       //! transient
+  
+  Bool_t fNextChannelIsAlreadyConfirmed;                //! transient 
+
+  AliHLTTPCMapping *fMapping;                           //! transient
+
+  vector<AliHLTTPCDigitData> fDigitsVector;             //! transient
+
+  Int_t fPatch;
+
+  ClassDef(AliHLTTPCDigitReaderUnpacked, 1)
 };
 #endif
 

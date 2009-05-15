@@ -16,10 +16,11 @@
 #include "AliHLTLogging.h"
 #include <vector>
 #include "AliHLTTPCTransform.h"
+#include "AliHLTTPCDigitData.h"
+#include "AliHLTTPCDigitReader.h"
 
 class AliHLTTPCPad;
 class AliHLTTPCSpacePointData;
-class AliHLTTPCDigitReader;
 class AliHLTTPCClusters;
 
 /**
@@ -120,6 +121,19 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   };
   typedef struct AliClusterData AliClusterData; //!
 
+  struct MCWeight{
+    Int_t fMCID;
+    Float_t fWeight;
+    static Bool_t CompareWeights( const MCWeight &mc1,  const MCWeight &mc2 ){ return mc1.fWeight > mc2.fWeight; }
+  };
+  typedef struct MCWeight MCWeight;
+
+  struct ClusterMCInfo{
+    MCWeight fClusterID[3];
+  };
+  typedef struct ClusterMCInfo ClusterMCInfo;
+
+
   /** standard constructor */
   AliHLTTPCClusterFinder();
 
@@ -149,6 +163,9 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   
   /**  Fills the hw address list */
   Int_t FillHWAddressList(AliHLTUInt16_t *hwaddlist, Int_t maxHWAddress);
+
+ /**  Fills the mc info */
+  Int_t FillOutputMCInfo(AliHLTTPCClusterFinder::ClusterMCInfo * outputMCInfo, Int_t maxNumberOfClusterMCInfo);
 
   /** Set the pointer to the outputbuffer */
   void SetOutputArray(AliHLTTPCSpacePointData *pt);
@@ -185,13 +202,21 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetCalcErr(Bool_t f=kTRUE) {fCalcerr=f;}
   void SetRawSP(Bool_t f=kFALSE) {fRawSP=f;}
   void SetReader(AliHLTTPCDigitReader* f){fDigitReader = f;}
+
+  void Set32BitFormat(Bool_t flag){f32BitFormat = flag;}
+
+  void SetDoMC(Bool_t flag){fDoMC = flag;}
   
   vector<AliHLTUInt16_t> fClustersHWAddressVector;  //! transient
   
   typedef vector<AliHLTTPCPad*> AliHLTTPCPadVector;
   
   vector<AliHLTTPCPadVector> fRowPadVector;	 //! transient
- 
+  
+  void FillMCClusterVector(vector<AliHLTTPCDigitData> digitData);
+
+  vector<AliHLTTPCClusterFinder::MCWeight> GetClusterMCInfo(){return fClusterMCVector;}
+
  protected: 
   /** copy constructor prohibited */
   AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder&);
@@ -228,6 +253,10 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   Bool_t fVectorInitialized;  //! flag to check if pad vector is initialized
  
   vector<AliHLTTPCClusters> fClusters;                             //! transient
+
+  vector<ClusterMCInfo> fClustersMCInfo;                           //! transient
+
+  vector<AliHLTTPCDigitData> fMCDigits;                            //! transient
   
   UInt_t* fNumberOfPadsInRow;                                      //! transient
   
@@ -245,11 +274,16 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   Bool_t fChargeOfCandidatesFalling;                               //! transient
 
+  Bool_t f32BitFormat;                                             //! transient
+
+  Bool_t fDoMC;                                                    //! transient
+
+  vector<MCWeight> fClusterMCVector;                               //! transient
 
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
 #endif
   
-  ClassDef(AliHLTTPCClusterFinder,6) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder,7) //Fast cluster finder
 };
 #endif

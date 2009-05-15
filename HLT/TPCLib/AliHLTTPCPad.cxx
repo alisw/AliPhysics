@@ -71,7 +71,8 @@ AliHLTTPCPad::AliHLTTPCPad()
   fDataSignals(NULL),
   fSignalPositionArray(NULL),
   fSizeOfSignalPositionArray(0),
-  fNGoodSignalsSent(0)
+  fNGoodSignalsSent(0),
+  fCandidateDigitsVector()
 {
   // see header file for class documentation
   // or
@@ -113,7 +114,8 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t dummy)
   fDataSignals(NULL),
   fSignalPositionArray(NULL),
   fSizeOfSignalPositionArray(0),
-  fNGoodSignalsSent(0)
+  fNGoodSignalsSent(0),
+  fCandidateDigitsVector()
 {
   // see header file for class documentation
   // or
@@ -148,7 +150,8 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
   fDataSignals(NULL),
   fSignalPositionArray(NULL),
   fSizeOfSignalPositionArray(0),
-  fNGoodSignalsSent(0)
+  fNGoodSignalsSent(0),
+  fCandidateDigitsVector()
 {
   // see header file for class documentation
 }
@@ -485,6 +488,7 @@ void AliHLTTPCPad::PrintRawData()
 void AliHLTTPCPad::ClearCandidates(){
   fClusterCandidates.clear();
   fUsedClusterCandidates.clear();
+  fCandidateDigitsVector.clear();
 }
 
 void AliHLTTPCPad::SetDataToDefault()
@@ -522,7 +526,7 @@ Bool_t AliHLTTPCPad::GetNextGoodSignal(Int_t &time,Int_t &bunchSize){
 	break;
       }
     }
-    fNGoodSignalsSent++;
+    //    fNGoodSignalsSent++;
    return kTRUE;
   }
   return kFALSE;
@@ -660,4 +664,12 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoin
 void AliHLTTPCPad::AddClusterCandidate(AliHLTTPCClusters candidate){
   fClusterCandidates.push_back(candidate);
   fUsedClusterCandidates.push_back(0);
+}
+
+void AliHLTTPCPad::AddCandidateDigits(vector<AliHLTTPCDigitData> candidateDigits){
+  fCandidateDigitsVector.push_back(candidateDigits); 
+}
+
+vector<AliHLTTPCDigitData> AliHLTTPCPad::GetCandidateDigits(Int_t candidateIndex){
+  return fCandidateDigitsVector.at(candidateIndex);
 }

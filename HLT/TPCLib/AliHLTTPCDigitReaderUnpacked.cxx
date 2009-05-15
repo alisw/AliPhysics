@@ -33,6 +33,7 @@ using namespace std;
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTStdIncludes.h"
+#include "AliHLTTPCMapping.h"
 
 ClassImp(AliHLTTPCDigitReaderUnpacked)
 
@@ -46,7 +47,22 @@ AliHLTTPCDigitReaderUnpacked::AliHLTTPCDigitReaderUnpacked()
   fBin(0),
   fRow(0),
   fFirstRow(0),
-  fLastRow(0)
+  fLastRow(0),
+  fUnsorted(kFALSE),
+  fDataBunch(),
+  fTrackIDs(),
+  fTrackIDCounts(),
+  fEndOfDataReached(kFALSE),
+  fEndOfChannelReached(kFALSE),
+  fPrevTime(0),
+  fEndTimeBinOfBunch(0),
+  fPrevSignal(0),
+  fPrevPad(0),
+  fPrevRow(-1),
+  fNextChannelIsAlreadyConfirmed(kFALSE),
+  fMapping(NULL),
+  fDigitsVector(),
+  fPatch(0)
 {
   // see header file for class documentation
   // or
@@ -66,9 +82,15 @@ int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t 
   fPtr = ptr;
   fSize = size;
 
+  fPatch=patch;
+
   tmpptr = reinterpret_cast<AliHLTTPCUnpackedRawData*>(fPtr);
   fDigitRowData = (AliHLTTPCDigitRowData*) tmpptr->fDigits;
   fActRowData = fDigitRowData;
+
+  if(!fMapping){
+    fMapping = new AliHLTTPCMapping(patch);
+  }
 
   while (fActRowData && ((iResult=GetNextRowData(fActRowData))>=0)) {/* empty body */};
 
@@ -165,11 +187,85 @@ bool AliHLTTPCDigitReaderUnpacked::NextSignal(){
 int AliHLTTPCDigitReaderUnpacked::GetRow(){
   // see header file for class documentation
   int rrow;
-  rrow = fRow;
+
+  if(fUnsorted == kFALSE){
+    rrow = fRow;
+  }
+  else{
+   rrow = fRow-AliHLTTPCTransform::GetFirstRow(fPatch);
+   if(fPatch>1){
+    rrow += AliHLTTPCTransform::GetFirstRow(2);
+   }
+  }
+
   return rrow;
 }
 
 int AliHLTTPCDigitReaderUnpacked::GetPad(){
+  // see header file for class documentation
+  int rpad;
+  if(fUnsorted == kFALSE){
+    rpad = GetSortedPad();
+  }
+  else{
+    rpad = fPrevPad;
+  }
+  return rpad   ;
+}
+
+int AliHLTTPCDigitReaderUnpacked::GetSignal(){ 
+  // see header file for class documentation
+  int rsignal;
+  if(fUnsorted == kFALSE){
+    rsignal = GetSortedSignal();
+  }
+  else{
+    rsignal = fPrevSignal;
+  }
+  return rsignal;
+}
+
+int AliHLTTPCDigitReaderUnpacked::GetTime(){
+  // see header file for class documentation
+  int rtime;
+  if(fUnsorted==kFALSE){
+    rtime = GetSortedTime();
+  }
+  else{
+    rtime = fPrevTime+1-fDataBunch.size();
+  }
+  return rtime;
+}
+
+AliHLTUInt32_t AliHLTTPCDigitReaderUnpacked::GetAltroBlockHWaddr() const
+{
+  // see header file for class documentation
+  return (AliHLTUInt32_t)(fMapping->GetHwAddress((UInt_t)GetSortedRow(),(UInt_t)GetSortedPad()));//fTPCRawStream->GetHWAddress();
+}
+
+Int_t AliHLTTPCDigitReaderUnpacked::GetSortedTime(){
+  // see header file for class documentation
+  assert(fData);
+  if (!fData) return -1;
+  int rtime;
+  rtime = (int)fData[fBin].fTime;
+  if(fDataBunch.size()>1){
+    fEndTimeBinOfBunch=rtime;
+  }
+  return rtime;
+}
+
+Int_t AliHLTTPCDigitReaderUnpacked::GetSortedSignal(){
+  // see header file for class documentation
+  assert(fData);
+  if (!fData) return -1;
+  int rsignal;
+  rsignal = (int)fData[fBin].fCharge;
+  return rsignal;
+
+}
+
+Int_t AliHLTTPCDigitReaderUnpacked::GetSortedPad() const{
   // see header file for class documentation
   assert(fData);
   if (!fData) return -1;
@@ -178,20 +274,112 @@ int AliHLTTPCDigitReaderUnpacked::GetPad(){
   return rpad   ;
 }
 
-int AliHLTTPCDigitReaderUnpacked::GetSignal(){ 
+int AliHLTTPCDigitReaderUnpacked::GetSortedRow() const {
   // see header file for class documentation
-  assert(fData);
-  if (!fData) return -1;
-  int rsignal;
-  rsignal = (int)fData[fBin].fCharge;
-  return rsignal;
+  int rrow;
+  rrow = fRow-AliHLTTPCTransform::GetFirstRow(fPatch);
+  if(fPatch>1){
+    rrow += AliHLTTPCTransform::GetFirstRow(2);
+  }
+  return rrow;
 }
 
-int AliHLTTPCDigitReaderUnpacked::GetTime(){
+bool AliHLTTPCDigitReaderUnpacked::NextChannel()
+{
   // see header file for class documentation
-  assert(fData);
-  if (!fData) return -1;
-  int rtime;
-  rtime = (int)fData[fBin].fTime;
-  return rtime;
+
+  // If the next channel is already confirmed by the next bunch function
+  // or there are more signals (this will only be for the first signal)
+  
+  if(fEndOfDataReached == kTRUE){
+    return false;
+  }
+  if(fNextChannelIsAlreadyConfirmed){
+    fNextChannelIsAlreadyConfirmed = kFALSE;
+    fPrevTime=GetSortedTime();
+    fPrevSignal=GetSortedSignal();
+    fPrevPad = GetSortedPad();
+    fPrevRow = GetSortedRow();
+    return true;
+  }
+  else if(NextSignal()) { // there is data
+    return true;
+  }
+  return false;
+}
+
+int AliHLTTPCDigitReaderUnpacked::NextBunch()
+{  
+  // see header file for class documentation
+
+  if(fEndOfDataReached == kTRUE || fEndOfChannelReached == kTRUE){
+    // sets fEndOfChannelReached back to false, for the next channel
+    // and returns 0 to tell stop the NextBunch calls for this channel.
+    fEndOfChannelReached=kFALSE;
+    return 0;
+  }
+
+
+  fDataBunch.clear();
+  fDigitsVector.clear();
+
+  //adding the first signal (will always be the leftover from either NextChannel call or previous bunch) 
+  fPrevTime=GetSortedTime();
+  fPrevSignal=GetSortedSignal();
+  fPrevPad = GetSortedPad();
+  fPrevRow = GetSortedRow();
+  fDataBunch.push_back(GetSortedSignal());
+  fDigitsVector.push_back(fData[fBin]);
+
+  do{
+    if(NextSignal()){
+	if((fPrevPad == GetSortedPad()) && (fPrevRow == GetSortedRow())){//check if there is a change in channel(new pad or row)
+	  if(fPrevTime+1 == GetSortedTime()){//if true means that we have consecutive signals
+	    fPrevTime = GetSortedTime();
+	    //fDataBunch.insert(fDataBunch.begin(), GetSortedSignal());// add the signal to the beginning of the buffer	    
+	    fDataBunch.push_back(GetSortedSignal());// add the signal to the beginning of the buffer
+	    fDigitsVector.push_back(fData[fBin]);
+	  }
+	  else{//end of bunch but not of channel
+	    break;
+	  }
+	}
+	else{
+	  // end of channel, last bunch will be completed
+	  fEndOfChannelReached = kTRUE;
+	  // the next channel is already confirmed since the next channel returned true
+	  fNextChannelIsAlreadyConfirmed = kTRUE;
+	  break;
+	}
+    }
+    else{
+      // end of data, but there is one bunch to be completed.
+      fEndOfDataReached = kTRUE;
+      break;
+    }
+  }while(1);
+
+  return fDataBunch.size();
+}
+
+int AliHLTTPCDigitReaderUnpacked::GetBunchSize(){
+  // see header file for class documentation
+  return fDataBunch.size();
+}
+
+const UInt_t* AliHLTTPCDigitReaderUnpacked::GetSignals()
+{
+  // see header file for class documentation
+  return &fDataBunch[0];
+}
+
+const AliHLTTPCDigitData* AliHLTTPCDigitReaderUnpacked::GetBunchDigits()
+{
+  // see header file for class documentation
+  return &fDigitsVector[0];
+}
+int AliHLTTPCDigitReaderUnpacked::GetRowOffset() const
+{
+  // see header file for class documentation
+  return AliHLTTPCTransform::GetFirstRow(fPatch);
 }

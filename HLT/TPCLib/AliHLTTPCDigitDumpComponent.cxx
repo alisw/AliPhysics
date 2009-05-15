@@ -34,6 +34,7 @@
 #include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCDigitReaderPacked.h"
 #include "AliHLTTPCDigitReaderDecoder.h"
+#include "AliHLTTPCDigitReader32Bit.h"
 #include "AliHLTTPCDefinitions.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -46,7 +47,8 @@ AliHLTTPCDigitDumpComponent::AliHLTTPCDigitDumpComponent()
   fRcuTrailerSize(2),
   fUnsorted(true),
   fbBulkMode(true),
-  fpReader(NULL)
+  fpReader(NULL),
+  f32BitFormat(kFALSE)
 {
   // see header file for class documentation
   // or
@@ -101,6 +103,11 @@ int AliHLTTPCDigitDumpComponent::InitWriter()
     HLTInfo("create DigitReaderDecoder");
     fpReader=new AliHLTTPCDigitReaderDecoder();
     break;
+  case kDigitReader32Bit:
+    HLTInfo("create DigitReader32Bit");
+    fpReader=new AliHLTTPCDigitReader32Bit();
+    f32BitFormat = kTRUE;
+    break;
   }
   if (!fpReader) {
     HLTError("can not create digit reader of type %d", fDigitReaderType);
@@ -140,6 +147,8 @@ int AliHLTTPCDigitDumpComponent::ScanArgument(int argc, const char** argv)
 	fDigitReaderType=kDigitReaderRaw;
       } else if (param.CompareTo("decoder", TString::kIgnoreCase)==0) {
 	fDigitReaderType=kDigitReaderDecoder;
+      } else if (param.CompareTo("32bit", TString::kIgnoreCase)==0) {
+	fDigitReaderType=kDigitReader32Bit;
       } else {
 	HLTError("unknown digit reader type %s", param.Data());
 	iResult=-EINVAL;
@@ -251,15 +260,31 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	    }
 	    while (pReader->NextBunch()) {
 	      int bunchLength=pReader->GetBunchSize();
-	      const  UInt_t* bunchData=pReader->GetSignals();
-
-	      // bunch data is printed in 'reverse' order in order to produce
-	      // the same output as in stream reading mode
-	      dump << "                     Time " << pReader->GetTime()+bunchLength-1 << ":  ";
-	      for (int bin=bunchLength-1; bin>=0; bin--) {
-		dump << "  " << bunchData[bin];
+	      
+	      // Kenneth: 20-04-09. The following if have been added because of inconsistency in the 40 bit decoder and the 32 bit decoder.
+	      // GetSignals() in the 40 bit decoder returns an array of UInt_t while the 32 bit one returns UShort_t
+	      if(f32BitFormat == kTRUE){
+		const  UShort_t* bunchData=pReader->GetSignalsShort();
+		
+		// bunch data is printed in 'reverse' order in order to produce
+		// the same output as in stream reading mode
+		dump << "                     Time " << pReader->GetTime()+bunchLength-1 << ":  ";
+		for (int bin=bunchLength-1; bin>=0; bin--) {
+		  dump << "  " << bunchData[bin];
+		}
+		dump << "    -> Time: " << pReader->GetTime() << endl;
 	      }
-	      dump << "    -> Time: " << pReader->GetTime() << endl;
+	      else{
+		const  UInt_t* bunchData=pReader->GetSignals();
+		
+		// bunch data is printed in 'reverse' order in order to produce
+		// the same output as in stream reading mode
+		dump << "                     Time " << pReader->GetTime()+bunchLength-1 << ":  ";
+		for (int bin=bunchLength-1; bin>=0; bin--) {
+		  dump << "  " << bunchData[bin];
+		}
+		dump << "    -> Time: " << pReader->GetTime() << endl;
+	      }
 	    }
 	  }
 	  dump << endl;

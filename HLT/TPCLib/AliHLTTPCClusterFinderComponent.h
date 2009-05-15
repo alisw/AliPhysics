@@ -84,7 +84,9 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	/** Unpacked data of format AliHLTTPCUnpackedRawData */
 	kClusterFinderUnpacked,
 	/** real data, fast AliAltroDecoder used for data decoding */
-	kClusterFinderDecoder
+	kClusterFinderDecoder,
+	/** real data, offline altro decoder 32 bit format*/
+	kClusterFinder32Bit
       };
 
         /**
@@ -155,6 +157,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	 * use fModeSwitch = 0 for packed inputtype "gkDDLPackedRawDataType"
 	 * use fModeSwitch = 1 for unpacked inputtype "gkUnpackedRawDataType"
 	 * use fModeSwitch = 2 for packed inputtype "gkDDLPackedRawDataType" with new digit reader
+	 * use fModeSwitch = 3 for packed inputtype "gkDDLPackedRawDataType" with 32bit digit reader
 	 */
 	Int_t fModeSwitch;                                                            // see above
       
@@ -181,7 +184,9 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	/** Last timebin taken in to account when reading the data */
 	Int_t fLastTimeBin;                                                            //!transient
 
-	ClassDef(AliHLTTPCClusterFinderComponent, 5)
+	Bool_t fDoMC;
+
+	ClassDef(AliHLTTPCClusterFinderComponent, 6)
 
 };
 #endif

@@ -15,8 +15,11 @@
 
 #include "AliHLTLogging.h"
 #include "AliHLTTPCClusters.h"
+#include "AliHLTTPCDigitReader.h"
 #include "TH1F.h"
 #include <vector>
+
+class AliHLTTPCDigitData;
 
 typedef Int_t AliHLTTPCSignal_t;
 
@@ -327,6 +330,19 @@ public:
   void AddClusterCandidate(AliHLTTPCClusters candidate);
 
   /**
+   * Adds the digits belonging to the candidate.
+   */
+  void AddCandidateDigits(vector<AliHLTTPCDigitData> candidateDigits);
+
+  
+  /**
+   * Returns the digit vector belonging to the candidate
+   */
+  vector<AliHLTTPCDigitData> GetCandidateDigits(Int_t candidateIndex);
+
+  void ClearCandidateDigits(){fCandidateDigitsVector.clear();}
+
+  /**
    * Prints the raw data og this pad.
    */
   void PrintRawData();
@@ -409,6 +425,8 @@ public:
   /** Number of good signals sent (good signals is signals surviving ZeroSuppression) */
   Int_t fNGoodSignalsSent;
   
-  ClassDef(AliHLTTPCPad, 6)
+  vector<vector<AliHLTTPCDigitData> > fCandidateDigitsVector;
+
+  ClassDef(AliHLTTPCPad, 7)
 };
 #endif // ALIHLTTPCPAD_H

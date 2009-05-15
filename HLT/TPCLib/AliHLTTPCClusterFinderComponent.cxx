@@ -30,6 +30,7 @@ using namespace std;
 #include "AliHLTTPCDigitReaderPacked.h"
 #include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCDigitReaderDecoder.h"
+#include "AliHLTTPCDigitReader32Bit.h"
 #include "AliHLTTPCClusterFinder.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
@@ -67,7 +68,8 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(int mode)
   fPatch(0),
   fGetActivePads(0),
   fFirstTimeBin(-1),
-  fLastTimeBin(-1)
+  fLastTimeBin(-1),
+  fDoMC(kFALSE)
 {
   // see header file for class documentation
   // or
@@ -76,7 +78,8 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(int mode)
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
   if (fModeSwitch!=kClusterFinderPacked &&
       fModeSwitch!=kClusterFinderUnpacked &&
-      fModeSwitch!=kClusterFinderDecoder) {
+      fModeSwitch!=kClusterFinderDecoder &&
+      fModeSwitch!=kClusterFinder32Bit) {
     HLTFatal("unknown digit reader type");
   }
 }
@@ -102,6 +105,9 @@ const char* AliHLTTPCClusterFinderComponent::GetComponentID()
   case kClusterFinderDecoder:
     return "TPCClusterFinderDecoder";
     break;
+  case kClusterFinder32Bit:
+    return "TPCClusterFinder32Bit";
+    break;
   }
   return "";
 }
@@ -118,6 +124,9 @@ void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentD
     list.push_back( AliHLTTPCDefinitions::fgkUnpackedRawDataType ); 	 
     break;
   case kClusterFinderDecoder:
+    list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
+    break;
+  case kClusterFinder32Bit:
     list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
     break;
   }
@@ -145,13 +154,16 @@ void AliHLTTPCClusterFinderComponent::GetOutputDataSize( unsigned long& constBas
   // XXX TODO: Find more realistic values.  
   constBase = 0;
   switch(fModeSwitch){
-  case 0:
+  case kClusterFinderPacked:
     inputMultiplier = (6 * 0.4);
     break;
-  case 1:
+  case kClusterFinderUnpacked:
     inputMultiplier = 0.4;
     break;
-  case 2:
+  case kClusterFinderDecoder:
+    inputMultiplier = (6 * 0.4);
+    break;
+  case kClusterFinder32Bit:
     inputMultiplier = (6 * 0.4);
     break;
   }
@@ -210,12 +222,19 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   else if(fModeSwitch==kClusterFinderUnpacked){ 	 
     HLTDebug("using AliHLTTPCDigitReaderUnpacked"); 	 
     fReader = new AliHLTTPCDigitReaderUnpacked(); 	 
+    if(fUnsorted==1){	fReader->SetUnsorted(kTRUE); }
     fClusterFinder->SetReader(fReader);
-  }
+  } 
   else if(fModeSwitch==kClusterFinderDecoder){
     HLTDebug("using AliHLTTPCDigitReaderDecoder");
     fReader = new AliHLTTPCDigitReaderDecoder();
     fClusterFinder->SetReader(fReader);
+  }
+  else if(fModeSwitch==kClusterFinder32Bit){
+    HLTDebug("using AliHLTTPCDigitReader32Bit");
+    fReader = new AliHLTTPCDigitReader32Bit();
+    fClusterFinder->SetReader(fReader);
+    fClusterFinder->Set32BitFormat(kTRUE);
   }
   else{
     HLTFatal("No mode set for clusterfindercomponent");
@@ -301,7 +320,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       offset = tSize;
 
 
-      if (fModeSwitch==0 || fModeSwitch==2) {
+      if (fModeSwitch==0 || fModeSwitch==2 || fModeSwitch==3) {
 	HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
 		 evtData.fEventID, evtData.fEventID, 
 		 DataType2Text( iter->fDataType).c_str(), 
@@ -406,6 +425,24 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
        
        tSize+=nHWAdd*sizeof(AliHLTUInt16_t);
       }
+
+      if(fDoMC){
+	Int_t maxNumberOfClusterMCInfo = (Int_t)((size-tSize)/sizeof(AliHLTTPCClusterFinder::ClusterMCInfo)-1);
+	AliHLTTPCClusterFinder::ClusterMCInfo* outputMCInfo= (AliHLTTPCClusterFinder::ClusterMCInfo*)(outputPtr+tSize);
+	Int_t nMCInfo = fClusterFinder->FillOutputMCInfo(outputMCInfo, maxNumberOfClusterMCInfo);
+	
+	AliHLTComponentBlockData bdMCInfo;
+	FillBlockData( bdMCInfo );
+	bdMCInfo.fOffset = tSize ;
+	bdMCInfo.fSize = nMCInfo*sizeof(AliHLTTPCClusterFinder::ClusterMCInfo);
+	bdMCInfo.fSpecification = iter->fSpecification;
+	bdMCInfo.fDataType = AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo;
+	outputBlocks.push_back( bdMCInfo );
+	
+	tSize+=nMCInfo*sizeof(AliHLTTPCClusterFinder::ClusterMCInfo);
+
+      }
+
       fReader->Reset();
     }
     
@@ -431,7 +468,6 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
 
       if (argument.IsNull()) continue;
       
-
       // -- deconvolute-time option
       if (argument.CompareTo("-deconvolute-time")==0){
 	HLTDebug("Switching on deconvolution in time direction.");
@@ -477,6 +513,11 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
 	fUnsorted=0;
 	HLTDebug("Swithching unsorted off.");
 	fClusterFinder->SetUnsorted(0);
+      }
+      else if (argument.CompareTo("-do-mc")==0) {
+	fDoMC=kTRUE;
+	fClusterFinder->SetDoMC(fDoMC);
+	HLTInfo("Setting fDoMC to true.");
       }
       else if (argument.CompareTo("-active-pads")==0 || argument.CompareTo("activepads")==0){
 	if(argument.CompareTo("activepads" )==0){

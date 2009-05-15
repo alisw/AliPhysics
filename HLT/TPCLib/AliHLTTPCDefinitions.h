@@ -106,8 +106,10 @@ public:
   static const AliHLTComponentDataType fgkOfflineCalibTracksDataType;        // see above
   /** gain calibration data */
   static const AliHLTComponentDataType fgkOfflineCalibTracksGainDataType;    // see above
+  /** cluster monte carlo information */
+  static const AliHLTComponentDataType fgkAliHLTDataTypeClusterMCInfo;    // see above
 
-  ClassDef(AliHLTTPCDefinitions, 2)
+  ClassDef(AliHLTTPCDefinitions, 3)
 };
 
 #endif
