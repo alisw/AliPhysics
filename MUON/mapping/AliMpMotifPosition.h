@@ -73,17 +73,19 @@ inline Int_t  AliMpMotifPosition::GetID() const
 inline AliMpVMotif*  AliMpMotifPosition::GetMotif() const
 { return fMotif; }
  
-/// Return position
+/// Return x position
 inline Double_t AliMpMotifPosition::GetPositionX() const
 { return fPositionX; }
 
+/// Return y position
 inline Double_t AliMpMotifPosition::GetPositionY() const
 { return fPositionY; }
 
-/// Return position
+/// Return x dimension
 inline Double_t AliMpMotifPosition::GetDimensionX() const
 { return fMotif->DimensionX(); }
 
+/// Return y dimension
 inline Double_t AliMpMotifPosition::GetDimensionY() const
 { return fMotif->DimensionY(); }
 

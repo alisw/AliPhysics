@@ -71,9 +71,9 @@ public:
 
   AliMp::PlaneType PlaneType() const;
   
-  // Return the x dimension (half-sizes) of that slat (cm)
+  /// Return the x dimension (half-sizes) of that slat (cm)
   Double_t  GetDimensionX() const { return DX(); }
-  // Return the y dimension (half-sizes) of that slat (cm)
+  /// Return the y dimension (half-sizes) of that slat (cm)
   Double_t  GetDimensionY() const { return DY(); }
   
 private:

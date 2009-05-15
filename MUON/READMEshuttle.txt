@@ -134,7 +134,7 @@ per LDC, as will be used in real life), the latter ones being roughly 100 MB eac
 //
 
 The raw.date.LDC* files are then processed using the DA online program (which is not built by default, but must be made
- explicitely using make daqDA-MCH from $ALICE_ROOT, and requires some DATE setup..., see \ref READMEmchda.txt )
+ explicitely using make daqDA-MCH from $ALICE_ROOT, and requires some DATE setup..., see \ref README_mchda )
  
 <pre>
  MUONTRKda.exe -f raw.date.LCDi -a LDCi.ped (i=0,1,2,3)

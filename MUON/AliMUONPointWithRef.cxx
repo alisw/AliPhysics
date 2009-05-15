@@ -36,22 +36,22 @@ ClassImp(AliMUONPointWithRef)
 //_____________________________________________________________________________
 AliMUONPointWithRef::AliMUONPointWithRef() : fX(), fY(), fRef(-1)
 {
-  /// ctor
+  /// default ctor
 }
 
 //_____________________________________________________________________________
 AliMUONPointWithRef::AliMUONPointWithRef(Double_t x, Double_t y, Int_t ref)
 : fX(x), fY(y), fRef(ref)
 {
-  /// dtor
+  /// ctor
 }
 
 //_____________________________________________________________________________
 Int_t	
 AliMUONPointWithRef::Compare(const TObject* obj) const
 {
-  // Should serve to sort the vertical edges in ascending order, first on absissa, 
-  // then on ordinate
+  /// Should serve to sort the vertical edges in ascending order, first on absissa, 
+  /// then on ordinate
   
   if ( this == obj ) return 0;
   

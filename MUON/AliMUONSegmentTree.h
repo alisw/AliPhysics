@@ -51,8 +51,8 @@ private:
   /// not implemented
   AliMUONSegmentTree& operator=(const AliMUONSegmentTree& rhs);
   
-  AliMUONNode* fRoot; /// root of the tree
-  TObjArray fStack; /// array of AliMUONSegment objects
+  AliMUONNode* fRoot; ///< root of the tree
+  TObjArray fStack; ///< array of AliMUONSegment objects
   
   ClassDef(AliMUONSegmentTree,1) // Implementation of a segment tree
 };

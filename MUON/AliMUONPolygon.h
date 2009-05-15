@@ -51,7 +51,7 @@ public:
   void Close();
   
 private:
-  Int_t fN; /// Number of vertices 
+  Int_t fN; ///< Number of vertices 
   Double_t* fX; //[fN]
   Double_t* fY; //[fN]
   

@@ -102,7 +102,8 @@ class AliMpPad : public TObject
                                           /// in the collection
   // data members
   UInt_t          fNofLocations;   ///<  number of locations in fLocations
-  MpPair_t*       fLLocations;     //[fNofLocations]  collection of pad locations - encoded pair (localBoardId, localBoardChannel) 
+  /// Collection of pad locations - encoded pair (localBoardId, localBoardChannel) 
+  MpPair_t*       fLLocations;     //[fNofLocations]
   MpPair_t        fLLocation;      ///<  pad location as encoded pair (manuId, manuChannel) 
   MpPair_t        fLIndices;       ///<  pad indices as encoded pair (ix, iy)  
   Double_t        fPositionX;      ///<  the pad x position (in cm)

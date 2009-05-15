@@ -37,6 +37,7 @@ class AliMUONGlobalTrigger : public TObject {
   void  SetFromGlobalResponse(UShort_t globalResponse);
   void  SetFromGlobalInput(const UInt_t *globalInput);
   UChar_t GetGlobalResponse() const;
+          /// Return global input to the global trigger board
   UInt_t *GetGlobalInput() { return fInput; }
 
   virtual void Print(Option_t* opt="") const;

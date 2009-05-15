@@ -63,6 +63,7 @@ fIsRunning(kFALSE),
 fIsOwnerOfRawReader(kFALSE),
 fIsEventByEvent(kFALSE)
 {
+/// Root IO ctor
 }
 
 //_____________________________________________________________________________
@@ -236,6 +237,8 @@ AliMUONTrackerDataMaker::Ctor(const AliMUONRecoParam* recoParam,
 //_____________________________________________________________________________
 AliMUONTrackerDataMaker::~AliMUONTrackerDataMaker()
 {
+/// dtor
+
   delete fOneEventData;
   delete fAccumulatedData;
   if ( fIsOwnerOfRawReader ) delete fRawReader;

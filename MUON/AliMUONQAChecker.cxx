@@ -241,7 +241,7 @@ AliMUONQAChecker::CheckRaws(TObjArray ** list)
 //______________________________________________________________________________
 void AliMUONQAChecker::Init(const AliQAv1::DETECTORINDEX_t det) 
 {
-  // intialises QA and QA checker settings
+  /// intialises QA and QA checker settings
   AliQAv1::Instance(det) ; 
   Float_t hiValue[AliQAv1::kNBIT] ; 
   Float_t lowValue[AliQAv1::kNBIT] ;

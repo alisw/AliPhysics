@@ -47,10 +47,10 @@ private:
   TString NameIt(const AliMpMotifPosition& motifPosition) const;
 
 private:
-  AliMpExMap* fDETransformations; //< map<int,TGeoHMatrix> of detElemId to matrix
-  mutable TMap fLocalManuContours; //< map of local manu contours
+  AliMpExMap* fDETransformations;  ///< map<int,TGeoHMatrix> of detElemId to matrix
+  mutable TMap fLocalManuContours; ///< map of local manu contours
   
-  ClassDef(AliMUONManuContourMaker,1) // 
+  ClassDef(AliMUONManuContourMaker,1) // Maker of AliMUONContour objects for all the tracker manus
 };
 
 #endif

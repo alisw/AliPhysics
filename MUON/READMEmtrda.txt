@@ -19,10 +19,10 @@ In the current version, the DA will modify only the global crate configuration.
 
 The configuration files stored in the online DB are the following:
 
-- MtgGlobalCrate-<version>.dat:   contains the global crate information
-- MtgRegionalCrate-<version>.dat: contains the regional crate information
-- MtgLocalMask-<version>.dat:     contains the local mask
-- MtgLocalLut-<version>.dat:      contains the local LUT 
+- MtgGlobalCrate-[version].dat:   contains the global crate information
+- MtgRegionalCrate-[version].dat: contains the regional crate information
+- MtgLocalMask-[version].dat:     contains the local mask
+- MtgLocalLut-[version].dat:      contains the local LUT 
 - MtgCurrent.dat:                 contains the name list of the above files with 
                                   their version and the flag for master/slave
                                   status of the DA

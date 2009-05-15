@@ -32,6 +32,7 @@ public:
   AliMpUID(AliMp::CathodType cathodeType, const char* pathname);
   AliMpUID(const char* pathname);
   
+  /// dtor
   virtual ~AliMpUID() {}
   
   TString Name() const;
@@ -48,11 +49,17 @@ public:
   Bool_t IsValid() const;
   
   AliMp::CathodType CathodeId() const;
+  /// Return station Id
   Int_t StationId() const { return fStationId; }
+  /// Return chamber Id
   Int_t ChamberId() const { return fChamberId; }
+  /// Return detection element Id
   Int_t DetElemId() const { return fDetElemId; }
+  /// Return bus patch Id
   Int_t BusPatchId() const { return fBusPatchId; }
+  /// Return manu Id
   Int_t ManuId() const { return fManuId; }
+  /// Return PCB Id
   Int_t PCBId() const { return fPCBId; }
   
   virtual void Print(Option_t* opt="") const;
@@ -66,13 +73,13 @@ private:
   TString StripCathode(const char* name) const;
   
 private:
-  Int_t fCathodeId; // Cathode number
-  Int_t fStationId; // Station id
-  Int_t fChamberId; // Chamber id
-  Int_t fDetElemId; // Detection element id
-  Int_t fBusPatchId; // Bus patch id
-  Int_t fManuId; // Manu id
-  Int_t fPCBId; // PCB id
+  Int_t fCathodeId; ///< Cathode number
+  Int_t fStationId; ///< Station id
+  Int_t fChamberId; ///< Chamber id
+  Int_t fDetElemId; ///< Detection element id
+  Int_t fBusPatchId;///< Bus patch id
+  Int_t fManuId;    ///< Manu id
+  Int_t fPCBId;     ///< PCB id
   
   ClassDef(AliMpUID,1) // UID of a tracker channel 
 };

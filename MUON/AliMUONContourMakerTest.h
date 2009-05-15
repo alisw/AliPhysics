@@ -56,8 +56,6 @@ private:
   
   void GenerateTransformations(AliMpExMap*& real, AliMpExMap*& exploded);
 
-  TString NameIt(const AliMpMotifPosition& motifPosition) const;
-
   ClassDef(AliMUONContourMakerTest,1) // Test of AliMUONContourMaker
 };
 

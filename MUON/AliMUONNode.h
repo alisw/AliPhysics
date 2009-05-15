@@ -61,17 +61,17 @@ private:
   AliMUONNode(const AliMUONNode& node); 
   /// not implemented
   AliMUONNode& operator=(const AliMUONNode& node);  
-  AliMUONNode* fLeftNode; //< left node
-  AliMUONNode* fRightNode; //< right node
+  AliMUONNode* fLeftNode; ///< left node
+  AliMUONNode* fRightNode; ///< right node
   
-  Double_t fMin; //< Min
-  Double_t fMax; //< Max
-  Double_t fMidPoint; //< (Min+Max)/2
+  Double_t fMin; ///< Min
+  Double_t fMax; ///< Max
+  Double_t fMidPoint; ///< (Min+Max)/2
   
-  Int_t fC; //< cardinality
-  Int_t fP; //< potent state
+  Int_t fC; ///< cardinality
+  Int_t fP; ///< potent state
   
-  ClassDef(AliMUONNode,0); // A node of a segment tree
+  ClassDef(AliMUONNode,0) // A node of a segment tree
 };
 
 #endif

@@ -21,6 +21,7 @@ class AliMUONSegment : public TObject
 public:
   AliMUONSegment();
   AliMUONSegment(Double_t xstart, Double_t ystart, Double_t xend, Double_t yend);
+  /// dtor
   virtual ~AliMUONSegment() {}
   
   virtual Int_t	Compare(const TObject* obj) const;
@@ -71,18 +72,18 @@ public:
   void Set(Double_t xstart, Double_t ystart, Double_t xend, Double_t yend);
   
 private:
-  Double_t fStartX; /// x of start point
-  Double_t fStartY; /// y of start point
-  Double_t fEndX; /// x of end point
-  Double_t fEndY; /// y of end point
-  Double_t fSmallerY; /// Either StartY or EndY
-  Bool_t fIsHorizontal; /// Whether the segment is horizontal
-  Bool_t fIsVertical; /// Whether the segment is vertical
-  Bool_t fIsLeftEdge; /// Whether the segment is a left edge 
-  Bool_t fIsRightEdge; /// Whether the segment is a right edge
-  Bool_t fIsAPoint; /// Whether start==end
+  Double_t fStartX; ///< x of start point
+  Double_t fStartY; ///< y of start point
+  Double_t fEndX; ///< x of end point
+  Double_t fEndY; ///< y of end point
+  Double_t fSmallerY; ///< Either StartY or EndY
+  Bool_t fIsHorizontal; ///< Whether the segment is horizontal
+  Bool_t fIsVertical; ///< Whether the segment is vertical
+  Bool_t fIsLeftEdge; ///< Whether the segment is a left edge 
+  Bool_t fIsRightEdge; ///< Whether the segment is a right edge
+  Bool_t fIsAPoint; ///< Whether start==end
   
-  static const Double_t fgkPrecision; /// Floating point precision used in comparisons
+  static const Double_t fgkPrecision; ///< Floating point precision used in comparisons
   
   ClassDef(AliMUONSegment,1) // A basic line segment
 };

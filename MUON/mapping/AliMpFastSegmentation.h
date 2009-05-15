@@ -79,7 +79,9 @@ public:
   AliMp::StationType StationType() const { return fHelper->StationType(); }
   
 private:
+  /// Not implemented
   AliMpFastSegmentation(const AliMpFastSegmentation& rhs);
+  /// Not implemented
   AliMpFastSegmentation& operator=(const AliMpFastSegmentation& rhs);
 
   virtual AliMpMotifPosition* InternalMotifPosition(Int_t index) const;

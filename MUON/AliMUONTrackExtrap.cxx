@@ -51,8 +51,8 @@ const Double_t AliMUONTrackExtrap::fgkRungeKuttaMaxResidue = 0.002;
 //__________________________________________________________________________
 void AliMUONTrackExtrap::SetField()
 {
-  // set field on/off flag  
-  // set field at the centre of the dipole
+  /// set field on/off flag;  
+  /// set field at the centre of the dipole
   const Double_t x[3] = {50.,50.,fgkSimpleBPosition};
   Double_t b[3] = {0.,0.,0.};
   TGeoGlobalMagField::Instance()->Field(x,b);

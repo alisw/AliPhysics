@@ -66,7 +66,7 @@ class AliMpMotifType : public TObject
     Int_t    GetNofPadsX() const  {return fNofPadsX;}
     /// Return number of pads in y direction
     Int_t    GetNofPadsY() const  {return fNofPadsY;}
-    
+    /// Return the total number of pads
     Int_t    GetNofPads() const   {return fNofPads;}
     
     // Other methods
@@ -83,6 +83,7 @@ class AliMpMotifType : public TObject
 
     Bool_t HasPadByManuChannel(Int_t manuChannel) const;
 
+    /// Return whether the pad with given manu channel exists
     Bool_t HasPadByGassiNum(Int_t gassiNum) const { return HasPadByManuChannel(gassiNum); }
     
     Bool_t IsFull() const;

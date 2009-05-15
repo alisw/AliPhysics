@@ -62,12 +62,15 @@ ClassImp(AliMUONManuContourMaker)
 AliMUONManuContourMaker::AliMUONManuContourMaker(AliMpExMap* deTransformations)
 : TObject(), fDETransformations(deTransformations), fLocalManuContours(222,1)
 {
+/// Standard constructor
+
   fLocalManuContours.SetOwnerKeyValue(kTRUE,kTRUE);  
 }
 
 //_____________________________________________________________________________
 AliMUONManuContourMaker::~AliMUONManuContourMaker()
 {
+/// Destructor
 }
 
 //_____________________________________________________________________________

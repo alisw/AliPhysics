@@ -1394,6 +1394,7 @@ AliMUONQADataMakerRec::FillTriggerDCSHistos()
 //____________________________________________________________________________ 
 AliMUONVTrackerData* AliMUONQADataMakerRec::GetTrackerData() const
 { 
+/// Return tracker data
   
   return fTrackerDataMaker->Data(); 
   

@@ -21,6 +21,7 @@ class AliMUONPointWithRef : public TObject
 public:
   AliMUONPointWithRef(Double_t x, Double_t y, Int_t ref);
   AliMUONPointWithRef();
+  /// Destructor
   virtual ~AliMUONPointWithRef() {}
   
   /// We are sortable
@@ -28,18 +29,21 @@ public:
 
   virtual Int_t	Compare(const TObject* obj) const;
 
+  /// Return x value
   Double_t X() const { return fX; }
   
+  /// Return y value
   Double_t Y() const { return fY; }
   
+  /// Return the index of the original point in some array
   Int_t Ref() const { return fRef; }
   
   void Print(Option_t* opt="") const;
   
 private:
-  Double_t fX; //< x value
-  Double_t fY; //< y value
-  Int_t fRef; //< index of the original point in some array
+  Double_t fX; ///< x value
+  Double_t fY; ///< y value
+  Int_t fRef; ///< index of the original point in some array
   
   ClassDef(AliMUONPointWithRef,1) // A point with an external integer reference
 };

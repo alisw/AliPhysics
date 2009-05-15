@@ -544,7 +544,8 @@ private:
         /// Not implemented
 	AliMUONRawStreamTrackerHP& operator = (const AliMUONRawStreamTrackerHP& stream);
 	
-  Int_t GetMaxDDL() const { return fgkMaxDDL; }
+	/// Return max number of tracker DDLs
+	Int_t GetMaxDDL() const { return fgkMaxDDL; }
   
 	/// This is the custom event handler (callback interface) class which
 	/// unpacks raw data words and fills an internal buffer with decoded digits

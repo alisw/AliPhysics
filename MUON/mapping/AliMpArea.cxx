@@ -271,7 +271,9 @@ AliMpArea::Print(Option_t* opt) const
 void      
 AliMpArea::GetParameters(Double_t& x, Double_t& y,
                          Double_t& dx, Double_t& dy) const
-{                         
+{
+/// Fill the parameters: x, y position and dimensions
+                         
   x = fPositionX;
   y = fPositionY;
   dx = fDimensionX;

@@ -69,13 +69,13 @@ ostream& operator << (ostream &stream,const AliMpArea& area);
 
 // inline functions
 
-                 /// Return position
+                 /// Return x position
 inline Double_t  AliMpArea::GetPositionX() const   { return fPositionX; }
-                 /// Return position
+                 /// Return y position
 inline Double_t  AliMpArea::GetPositionY() const   { return fPositionY; }
-                 /// Return dimensions
+                 /// Return x dimensions
 inline Double_t  AliMpArea::GetDimensionX() const { return fDimensionX; }    
-                 /// Return dimensions
+                 /// Return y dimensions
 inline Double_t  AliMpArea::GetDimensionY() const { return fDimensionY; }    
                  /// Return validity
 inline Bool_t    AliMpArea::IsValid() const    { return fValidity; }
