@@ -76,7 +76,7 @@ AliRawEventHeaderBase *AliRawEvent::GetHeader()
 }
 
 //______________________________________________________________________________
-AliRawEquipment *AliRawEvent::GetEquipment(Int_t index) const
+AliRawVEquipment *AliRawEvent::GetEquipment(Int_t index) const
 {
    // Get specified equipment. Returns 0 if equipment does not exist.
 
@@ -87,7 +87,7 @@ AliRawEquipment *AliRawEvent::GetEquipment(Int_t index) const
 }
 
 //______________________________________________________________________________
-AliRawEvent *AliRawEvent::GetSubEvent(Int_t index)
+AliRawVEvent *AliRawEvent::GetSubEvent(Int_t index)
 {
    // Get specified sub event. Returns 0 if sub event does not exist.
 

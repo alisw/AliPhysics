@@ -42,7 +42,6 @@
 
 // Forward class declarations
 class AliRawEventHeaderBase;
-class AliRawEquipment;
 
 #include "AliRawVEvent.h"
 
@@ -54,9 +53,9 @@ public:
 
    virtual AliRawEventHeaderBase *GetHeader();
    virtual Int_t                  GetNEquipments() const { return fNEquipments; }
-   virtual AliRawEquipment       *GetEquipment(Int_t index) const;
+   virtual AliRawVEquipment       *GetEquipment(Int_t index) const;
    virtual Int_t                  GetNSubEvents() const { return fNSubEvents; }
-   virtual AliRawEvent           *GetSubEvent(Int_t index);
+   virtual AliRawVEvent           *GetSubEvent(Int_t index);
 
 private:
    Int_t                  fNEquipments; // number of valid equipments
