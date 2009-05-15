@@ -1,32 +1,28 @@
 # -*- mode: cmake -*-
 
-set(SRCS
-      RESONANCES/AliRsnMCInfo.cxx
-      RESONANCES/AliRsnDaughter.cxx
-      RESONANCES/AliRsnPairParticle.cxx
-      RESONANCES/AliRsnCut.cxx
-      RESONANCES/AliRsnCutSet.cxx
-      RESONANCES/AliRsnCutMgr.cxx
-      RESONANCES/AliRsnExpression.cxx
-      RESONANCES/AliRsnPID.cxx
-      RESONANCES/AliRsnPIDIndex.cxx
-      RESONANCES/AliRsnPIDWeightsMgr.cxx
-      RESONANCES/AliRsnEvent.cxx
-      RESONANCES/AliRsnEventBuffer.cxx
-      RESONANCES/AliRsnReader.cxx
-      RESONANCES/AliRsnReaderTask.cxx
-      RESONANCES/AliRsnReaderTaskSE.cxx
-      RESONANCES/AliRsnPairDef.cxx
-      RESONANCES/AliRsnHistoDef.cxx
-      RESONANCES/AliRsnFunction.cxx
-      RESONANCES/AliRsnPair.cxx
-      RESONANCES/AliRsnPairMgr.cxx
-      RESONANCES/AliRsnAnalysisTaskSEBase.cxx
-      RESONANCES/AliRsnBaseAT.cxx
-      RESONANCES/AliRsnAnalysisSE.cxx
-      RESONANCES/AliRsnAnalysisTask2ndStep.cxx
-      RESONANCES/AliRsnComparisonObj.cxx
-      RESONANCES/AliRsnComparisonAT.cxx
+set(SRCS  RESONANCES/AliRsnDaughter.cxx
+    RESONANCES/AliRsnPairParticle.cxx
+    RESONANCES/AliRsnCut.cxx
+    RESONANCES/AliRsnCutStd.cxx
+    RESONANCES/AliRsnCutSet.cxx
+    RESONANCES/AliRsnCutMgr.cxx
+    RESONANCES/AliRsnExpression.cxx
+    RESONANCES/AliRsnPIDIndex.cxx
+    RESONANCES/AliRsnPIDDefESD.cxx
+    RESONANCES/AliRsnEvent.cxx
+    RESONANCES/AliRsnPairDef.cxx
+    RESONANCES/AliRsnHistoDef.cxx
+    RESONANCES/AliRsnFunction.cxx
+    RESONANCES/AliRsnPair.cxx
+    RESONANCES/AliRsnVATProcessInfo.cxx
+    RESONANCES/AliRsnVAnalysisTaskSE.cxx
+    RESONANCES/AliRsnVAnalysisTaskME.cxx
+    RESONANCES/AliRsnVManager.cxx
+    RESONANCES/AliRsnPairManager.cxx
+    RESONANCES/AliRsnAnalysisManager.cxx
+    RESONANCES/AliRsnAnalysisSE.cxx
+    RESONANCES/AliRsnAnalysisME.cxx
+
 )
 
 # fill list of header files from list of source files
@@ -34,4 +30,3 @@ set(SRCS
 String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 AddLibrary(PWG2resonances "${SRCS}" "${HDRS}")
-
