@@ -14,7 +14,12 @@ ClassImp(AliRsnAnalysisME)
 //_____________________________________________________________________________
 AliRsnAnalysisME::AliRsnAnalysisME(const char *name) :
     AliRsnVAnalysisTaskME(name),
-    fRsnAnalysisManager()
+    fRsnAnalysisManager(),
+    fPIDIndex(0),
+    fPIDIndexMix(0),
+    fEvent(),
+    fEventMix(),
+    fESDCuts(0)
 {
 //
 // Default constructor
@@ -24,7 +29,12 @@ AliRsnAnalysisME::AliRsnAnalysisME(const char *name) :
 }
 
 AliRsnAnalysisME::AliRsnAnalysisME(const AliRsnAnalysisME& copy) : AliRsnVAnalysisTaskME(copy),
-    fRsnAnalysisManager(copy.fRsnAnalysisManager)
+    fRsnAnalysisManager(copy.fRsnAnalysisManager),
+    fPIDIndex(copy.fPIDIndex),
+    fPIDIndexMix(copy.fPIDIndexMix),
+    fEvent(copy.fEvent),
+    fEventMix(copy.fEvent),
+    fESDCuts(copy.fESDCuts)
 {
   AliDebug(AliLog::kDebug+2,"<-");
   AliDebug(AliLog::kDebug+2,"->");

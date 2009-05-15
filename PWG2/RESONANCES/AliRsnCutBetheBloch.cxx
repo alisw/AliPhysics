@@ -148,7 +148,7 @@ Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnDaughter *track)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnPairParticle *pair)
+Bool_t AliRsnCutBetheBloch::IsSelected(ETarget /*tgt*/, AliRsnPairParticle* /*pair*/)
 {
 //
 // Cut checker
@@ -159,7 +159,7 @@ Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnPairParticle *pair)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnEvent *event)
+Bool_t AliRsnCutBetheBloch::IsSelected(ETarget /*tgt*/, AliRsnEvent* /*event*/)
 {
 //
 // Cut checker
@@ -170,7 +170,7 @@ Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnEvent *event)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2)
+Bool_t AliRsnCutBetheBloch::IsSelected(ETarget /*tgt*/, AliRsnEvent* /*ev1*/, AliRsnEvent* /*ev2*/)
 {
 //
 // Cut checker

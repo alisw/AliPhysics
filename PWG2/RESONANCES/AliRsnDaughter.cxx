@@ -38,6 +38,8 @@ AliRsnDaughter::AliRsnDaughter(AliVParticle *ref, TParticle *refMC) :
   fParticle(refMC),
   fMotherPDG(0),
   fStatus(0),
+  fDr(0.0),
+  fDz(0.0),
   fRef(ref)
 {
 //
@@ -53,6 +55,8 @@ AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
   fParticle(copy.fParticle),
   fMotherPDG(copy.fMotherPDG),
   fStatus(copy.fStatus),
+  fDr(copy.fDr),
+  fDz(copy.fDz),
   fRef(copy.fRef)
 {
 //
@@ -75,6 +79,8 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
   fParticle  = copy.fParticle;
   fMotherPDG = copy.fMotherPDG;
   fStatus = copy.fStatus;
+  fDr = copy.fDr;
+  fDz = copy.fDz;
 
   fRef = copy.fRef;
 
@@ -264,7 +270,7 @@ Bool_t AliRsnDaughter::CombineWithPriors(Double_t *priors)
 }
 
 //_____________________________________________________________________________
-AliESDtrack* AliRsnDaughter::GetRefESD() 
+AliESDtrack* AliRsnDaughter::GetRefESD()
 {
 //
 // Return a reference in format of ESD track
@@ -318,7 +324,7 @@ void AliRsnDaughter::FindKinkIndex(AliESDtrack *esdTrack)
 
   Int_t i, ik[3];
   for (i = 0; i < 3; i++) ik[i] = esdTrack->GetKinkIndex(i);
-  
+
   if (ik[0] < 0 || ik[1] < 0 || ik[2] < 0) {
     SetKinkMother();
   }
@@ -385,7 +391,7 @@ void AliRsnDaughter::Print(Option_t *option) const
 // - F --> flags
 // - I --> identification (PID, probability and mass)
 // - W --> PID weights
-// - M --> Montecarlo (from AliRsnMCInfo)
+// - M --> Montecarlo
 // - L --> index & label
 // - A --> angles
 // - ALL --> All oprions switched on

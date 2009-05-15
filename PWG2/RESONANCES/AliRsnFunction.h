@@ -85,9 +85,9 @@ class AliRsnFunction : public TNamed
     AliRsnDaughter*      GetTrack() {return fTrack;}
     AliRsnPairParticle*  GetPair() {return fPair;}
     AliRsnEvent*         GetEvent() {return fEvent;}
-    AliRsnHistoDef*      GetMainHistoDef(AliRsnHistoDef *hd) {return fHistoDef[0];}
-    AliRsnHistoDef*      GetPrimaryBinningHistoDef(AliRsnHistoDef *hd) {return fHistoDef[1];}
-    AliRsnHistoDef*      GetSecondaryBinningHistoDef(AliRsnHistoDef *hd) { return fHistoDef[2];}
+    AliRsnHistoDef*      GetMainHistoDef() {return fHistoDef[0];}
+    AliRsnHistoDef*      GetPrimaryBinningHistoDef() {return fHistoDef[1];}
+    AliRsnHistoDef*      GetSecondaryBinningHistoDef() { return fHistoDef[2];}
 
     TH1*                 CreateHistogram(const char *histoName, const char *histoTitle);
 

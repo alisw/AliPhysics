@@ -31,13 +31,15 @@ AliRsnPairManager::AliRsnPairManager(const char*name) :
 }
 
 //_____________________________________________________________________________
-void AliRsnPairManager::Add(AliRsnPair *pair)
+//void AliRsnPairManager::Add(AliRsnPair *pair)
+void AliRsnPairManager::Add(TObject *objPair)
 {
 //
 // Adds a new AliRsnPair to the list owned by this object.
 //
 
   AliDebug(AliLog::kDebug+2, "<-");
+  AliRsnPair *pair = dynamic_cast<AliRsnPair*>(objPair);
 
   if (!pair) {
     AliWarning(Form("Pair is %p. Skipping ...", pair));

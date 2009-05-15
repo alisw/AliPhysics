@@ -33,7 +33,8 @@ AliRsnPair::AliRsnPair(EPairType type, AliRsnPairDef *def) :
     fCutMgr(0),
     fFunctions("AliRsnFunction", 0),
     fTrack1(),
-    fTrack2()
+    fTrack2(),
+    fPairParticle()
 {
 //
 // Default constructor
