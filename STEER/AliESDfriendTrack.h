@@ -8,6 +8,7 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+#include <AliExternalTrackParam.h>
 
 class AliTrackPointArray;
 class AliKalmanTrack;
@@ -40,6 +41,15 @@ public:
   AliKalmanTrack *GetITStrack() {return fITStrack;}
   void AddCalibObject(TObject * calibObject); 
   TObject * GetCalibObject(Int_t index);
+  //
+  // parameters backup
+  void SetTPCOut(const AliExternalTrackParam &param);
+  void SetITSOut(const AliExternalTrackParam &param);
+  void SetTRDIn(const AliExternalTrackParam  &param);
+  //
+  const AliExternalTrackParam * GetTPCOut(){return  fTPCOut;} 
+  const AliExternalTrackParam * GetITSOut() { return fITSOut;} 
+  const AliExternalTrackParam * GetTRDIn() { return fTRDIn;} 
 
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))
@@ -50,11 +60,16 @@ protected:
   TObjArray      *fCalibContainer; //Array of objects for calibration    
   AliKalmanTrack *fITStrack; //! pointer to the ITS track (debug purposes) 
   AliKalmanTrack *fTRDtrack; //! pointer to the TRD track (debug purposes) 
-  
+  //
+  //
+  AliExternalTrackParam * fTPCOut; // tpc outer parameters
+  AliExternalTrackParam * fITSOut; // its outer parameters
+  AliExternalTrackParam * fTRDIn;  // trd inner parameters
+
 private:
   AliESDfriendTrack &operator=(const AliESDfriendTrack & /* t */) {return *this;}
 
-  ClassDef(AliESDfriendTrack,2) //ESD friend track
+  ClassDef(AliESDfriendTrack,3) //ESD friend track
 };
 
 #endif

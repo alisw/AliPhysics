@@ -31,7 +31,10 @@ f1P(0),
 fPoints(0),
 fCalibContainer(0),
 fITStrack(0),
-fTRDtrack(0)
+fTRDtrack(0),
+fTPCOut(0),
+fITSOut(0),
+fTRDIn(0)
 {
   //
   // Default constructor
@@ -48,7 +51,10 @@ f1P(t.f1P),
 fPoints(0),
 fCalibContainer(0),
 fITStrack(0),
-fTRDtrack(0)
+fTRDtrack(0),
+fTPCOut(0),
+fITSOut(0),
+fTRDIn(0)
 {
   //
   // Copy constructor
@@ -66,6 +72,10 @@ fTRDtrack(0)
        fCalibContainer->AddLast(o->Clone());
      }  
   }
+
+  if (t.fTPCOut) fTPCOut = new AliExternalTrackParam(*(t.fTPCOut));
+  if (t.fITSOut) fITSOut = new AliExternalTrackParam(*(t.fITSOut));
+  if (t.fTRDIn)  fTRDIn = new AliExternalTrackParam(*(t.fTRDIn));
 }
 
 AliESDfriendTrack::~AliESDfriendTrack() {
@@ -77,6 +87,9 @@ AliESDfriendTrack::~AliESDfriendTrack() {
    delete fCalibContainer;
    delete fITStrack;
    delete fTRDtrack;
+   delete fTPCOut;
+   delete fITSOut;
+   delete fTRDIn;
 }
 
 
@@ -97,3 +110,27 @@ TObject * AliESDfriendTrack::GetCalibObject(Int_t index){
   if (index>=fCalibContainer->GetEntriesFast()) return 0;
   return fCalibContainer->At(index);
 }
+
+
+void AliESDfriendTrack::SetTPCOut(const AliExternalTrackParam &param) {
+  // 
+  // backup TPC out track
+  //
+  delete fTPCOut;
+  fTPCOut=new AliExternalTrackParam(param);
+} 
+void AliESDfriendTrack::SetITSOut(const AliExternalTrackParam &param) {
+  //
+  // backup ITS out track
+  //
+  delete fITSOut;
+  fITSOut=new AliExternalTrackParam(param);
+} 
+void AliESDfriendTrack::SetTRDIn(const AliExternalTrackParam  &param)  {
+  //
+  // backup TRD in track
+  //
+  delete fTRDIn;
+  fTRDIn=new AliExternalTrackParam(param);
+} 
+

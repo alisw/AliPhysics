@@ -1106,6 +1106,9 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   }
 
   Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
+  if (flags==kITSout) fFriendTrack->SetITSOut(*t);
+  if (flags==kTPCout) fFriendTrack->SetTPCOut(*t);
+  if (flags==kTRDin || flags==kTRDrefit) fFriendTrack->SetTRDIn(*t);
   
   switch (flags) {
     
@@ -1128,7 +1131,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
       if (!fOp) fOp=new AliExternalTrackParam(*t);
       else 
         fOp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
-    }      
+    }   
     break;
     
   case kTPCin: case kTPCrefit:
