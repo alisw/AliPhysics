@@ -465,7 +465,10 @@ GetPhiZat(Double_t r, Double_t &phi, Double_t &z) const {
   // The track curvature is neglected.
   //------------------------------------------------------------------
   Double_t d=GetD(0.,0.);
-  if (TMath::Abs(d) > r) return kFALSE; 
+  if (TMath::Abs(d) > r) {
+    if (r>1e-1) return kFALSE;
+    r = TMath::Abs(d);
+  }
 
   Double_t rcurr=TMath::Sqrt(GetX()*GetX() + GetY()*GetY());
   if (TMath::Abs(d) > rcurr) return kFALSE; 
