@@ -618,7 +618,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 						 		 	 esd->GetPrimaryVertex()->GetY(),
 								 	 esd->GetMagneticField())        );
 
-	esdCascade->GetBPxPyPz(momBachAtCascadeVtx[0], momBachAtCascadeVtx[1], momBachAtCascadeVtx[3]);
+	esdCascade->GetBPxPyPz(momBachAtCascadeVtx[0], momBachAtCascadeVtx[1], momBachAtCascadeVtx[2]);
 
 	aodCascade = new(cascades[jCascades++]) AliAODcascade(  vCascade,
 								esdCascade->Charge(),
