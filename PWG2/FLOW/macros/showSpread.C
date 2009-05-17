@@ -6,7 +6,7 @@ enum libModes {mLocal,mLocalSource};
 //mLocalSource: Analyze data on your computer using root + source files
 
 //void compareFlowResults(TString type="",Int_t mode=mLocalSource)
-void estimateSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
+void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
 { 
  // load needed libraries:                       
  LoadPlotLibraries(mode);  
