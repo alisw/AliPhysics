@@ -484,7 +484,10 @@ GetLocalXat(Double_t r,Double_t &xloc) const {
   // The track curvature is neglected.
   //------------------------------------------------------------------
   Double_t d=GetD(0.,0.);
-  if (TMath::Abs(d) > r) return kFALSE; 
+  if (TMath::Abs(d) > r) { 
+    if (r>1e-1) return kFALSE; 
+    r = TMath::Abs(d); 
+  } 
 
   Double_t rcurr=TMath::Sqrt(GetX()*GetX() + GetY()*GetY());
   Double_t phicurr=GetAlpha()+TMath::ASin(GetSnp());
