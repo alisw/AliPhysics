@@ -407,10 +407,10 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
 	// get the quality assurance data maker for a detector
 	
 	if (fQADataMaker[iDet]) {
+    fQADataMaker[iDet]->SetEventSpecie(fEventSpecie) ;  
     if ( fQADataMaker[iDet]->GetRecoParam() ) 
-      fQADataMaker[iDet]->SetEventSpecie(fQADataMaker[iDet]->GetRecoParam()->GetEventSpecie()) ; 
-    else 
-      fQADataMaker[iDet]->SetEventSpecie(fEventSpecie) ;  
+      if ( AliRecoParam::Convert(fQADataMaker[iDet]->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)
+        fQADataMaker[iDet]->SetEventSpecie(fQADataMaker[iDet]->GetRecoParam()->GetEventSpecie()) ; 
 		return fQADataMaker[iDet] ;
   }
 	
@@ -421,10 +421,10 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
 		qadm->SetName(AliQAv1::GetDetName(iDet));
 		qadm->SetUniqueID(iDet);
 		fQADataMaker[iDet] = qadm;
+    qadm->SetEventSpecie(fEventSpecie) ;  
     if ( qadm->GetRecoParam() ) 
-      qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
-    else 
-      qadm->SetEventSpecie(fEventSpecie) ;  
+      if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
+        qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 		return qadm;
 	}
 
@@ -433,10 +433,10 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
 		qadm->SetName(AliQAv1::GetDetName(iDet));
 		qadm->SetUniqueID(iDet);
 		fQADataMaker[iDet] = qadm;
+    qadm->SetEventSpecie(fEventSpecie) ;  
     if ( qadm->GetRecoParam() ) 
-      qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
-    else 
-      qadm->SetEventSpecie(fEventSpecie) ;  
+      if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
+        qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 		return qadm;
   }
 
@@ -471,10 +471,10 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
 		qadm->SetName(AliQAv1::GetDetName(iDet));
 		qadm->SetUniqueID(iDet);
 		fQADataMaker[iDet] = qadm ;
+    qadm->SetEventSpecie(fEventSpecie) ;  
     if ( qadm->GetRecoParam() ) 
-      qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
-    else 
-      qadm->SetEventSpecie(fEventSpecie) ;  
+      if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
+        qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 	}
 
   return qadm ;
@@ -750,9 +750,7 @@ Bool_t AliQAManager::MergeXML(const char * collectionFile, const char * subFile,
    return kFALSE ; 
  
   // Open the file collection 
-  printf("*** Create Collection       ***\n");
-  printf("***  Wk-Dir = |%s|             \n",gSystem->WorkingDirectory());
-  printf("***  Coll   = |%s|             \n",collectionFile);              	
+  AliInfoClass(Form("*** Create Collection       ***\n***  Wk-Dir = |%s|             \n***  Coll   = |%s|             \n",gSystem->WorkingDirectory(), collectionFile));              	
   
   TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\")",collectionFile));
   TGridResult* result = collection->GetGridResult("", 0, 0);
@@ -1173,10 +1171,10 @@ void AliQAManager::RunOneEvent(AliRawReader * rawReader)
         qadm->EndOfCycle() ;
       }
       AliCodeTimerStart(Form("running RAW quality assurance data maker for %s", AliQAv1::GetDetName(iDet))); 
+      qadm->SetEventSpecie(fEventSpecie) ;  
       if ( qadm->GetRecoParam() ) 
-        qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
-      else 
-        qadm->SetEventSpecie(fEventSpecie) ;  
+        if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
+          qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 			qadm->Exec(AliQAv1::kRAWS, rawReader) ;
       AliCodeTimerStop(Form("running RAW quality assurance data maker for %s", AliQAv1::GetDetName(iDet)));
 		}
@@ -1196,10 +1194,10 @@ void AliQAManager::RunOneEvent(AliESDEvent *& esd)
       AliQADataMaker *qadm = GetQADataMaker(iDet);  
       if (!qadm) 
         continue;
+      qadm->SetEventSpecie(fEventSpecie) ;  
       if ( qadm->GetRecoParam() ) 
-        qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
-      else 
-        qadm->SetEventSpecie(fEventSpecie) ;  
+        if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
+          qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
       if ( qadm->IsCycleDone() ) {
         qadm->EndOfCycle() ;
       }
@@ -1219,10 +1217,10 @@ void AliQAManager::RunOneEventInOneDetector(Int_t det, TTree * tree)
     if (IsSelected(AliQAv1::GetDetName(det))) {
       AliQADataMaker *qadm = GetQADataMaker(det);  
       if (qadm) { 
+        qadm->SetEventSpecie(fEventSpecie) ;  
         if ( qadm->GetRecoParam() ) 
-          qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
-        else 
-          qadm->SetEventSpecie(fEventSpecie) ;  
+          if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
+            qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ;         
         if ( qadm->IsCycleDone() ) {
           qadm->EndOfCycle() ;
         }

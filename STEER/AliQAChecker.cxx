@@ -377,7 +377,7 @@ Bool_t AliQAChecker::Run(const char * fileName)
   AliInfo("QA performed for following detectors:") ; 
   for ( Int_t det = 0; det < AliQAv1::kNDET; det++) {
     if (fFoundDetectors.Contains(AliQAv1::GetDetName(det))) {
-      printf("%s, ",AliQAv1::GetDetName(det)) ; 
+      AliInfoClass(Form("%s, ",AliQAv1::GetDetName(det))) ; 
       fFoundDetectors.ReplaceAll(AliQAv1::GetDetName(det), "") ; 
     }	
   }

@@ -87,7 +87,7 @@ void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQAv1::kT0, task, list) ;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    SetEventSpecie(specie) ; 
+    SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
     if ( task == AliQAv1::kRAWS ) {
       const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
       for (Int_t itr=0; itr<6; itr++) {

@@ -141,7 +141,7 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
       fTPCdataQA[specie]->Analyse(); // 31/1-08 Analyse is now protected against
                            //         RAW data files with no TPC data
 
-      SetEventSpecie(specie) ; 
+      SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
       TH1F * histRawsOccupancy                 = (TH1F*)GetRawsData(kOccupancy) ;
       TH1F * histRawsOccupancyVsSector         = (TH1F*)GetRawsData(kOccupancyVsSector) ;
       TH1F * histRawsNClustersPerEventVsSector = (TH1F*)GetRawsData(kNClustersPerEventVsSector) ;
@@ -273,7 +273,7 @@ void AliTPCQADataMakerRec::InitRaws()
   const Bool_t image    = kTRUE ; 
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    fTPCdataQA[specie] = new AliTPCdataQA(AliRecoParam::Convert(specie));
+    fTPCdataQA[specie] = new AliTPCdataQA(AliRecoParam::ConvertIndex(specie));
     LoadMaps(); // Load Altro maps
     fTPCdataQA[specie]->SetAltroMapping(fMapping); // set Altro mapping
     fTPCdataQA[specie]->SetRangeTime(100, 920); // set time bin interval 

@@ -37,7 +37,7 @@ ClassImp(AliDetectorRecoParam)
 
 AliDetectorRecoParam::AliDetectorRecoParam():
   TNamed(),
-  fEventSpecie(0)
+fEventSpecie(AliRecoParam::kDefault)
 {
   //
   // default constructor

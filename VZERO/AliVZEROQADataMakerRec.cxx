@@ -126,7 +126,7 @@ void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
   AliQAChecker::Instance()->Run(AliQAv1::kVZERO, task, list) ;
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    SetEventSpecie(specie) ; 
+    SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
     if(task == AliQAv1::kRAWS){
   	  int nMaxBin = GetRawsData(kPedestalTimeInt0)->GetNbinsY();
       if(fCurrentCycle%nMaxBin==0) {

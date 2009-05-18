@@ -23,7 +23,7 @@ class AliDetectorRecoParam : public TNamed
   void  Print(Option_t */*option*/) const {Dump();}
 
   Int_t          GetEventSpecie() const { return fEventSpecie; }
-  void           SetEventSpecie(Int_t specie) { fEventSpecie = specie; }
+  void           SetEventSpecie(AliRecoParam::EventSpecie_t specie) { fEventSpecie = specie; }
   void           SetAsDefault() { fEventSpecie |= AliRecoParam::kDefault; }
   Bool_t         IsDefault() const { return (fEventSpecie & AliRecoParam::kDefault); }
 

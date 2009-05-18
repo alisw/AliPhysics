@@ -25,6 +25,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "TClass.h"
 #include "TObjArray.h"
 #include "TMath.h"
 #include "AliDetectorRecoParam.h"
@@ -33,6 +34,7 @@
 #include "AliRecoParam.h"
 #include "AliRunInfo.h"
 #include "AliEventInfo.h"
+#include "AliLog.h"
 
 ClassImp(AliRecoParam)
 
@@ -98,27 +100,72 @@ AliRecoParam::~AliRecoParam(){
 Int_t AliRecoParam::AConvert(EventSpecie_t es)
 {
   //Converts EventSpecie_t  into int
-  return static_cast<Int_t>(TMath::Log2(es)) ; 
-  
+  Int_t rv = -1 ; 
+  switch (es) {
+    case kDefault:
+      rv = 0 ; 
+      break;
+    case kLowMult:
+      rv = 1 ; 
+      break;
+    case kHighMult:
+      rv = 2 ; 
+      break;
+    case kCosmic:
+      rv = 3 ; 
+      break;
+    case kCalib:
+      rv = 4 ; 
+      break;
+    default:
+      break;
+  }
+  if (rv >= 0) 
+    return rv ;
+  else 
+    AliFatalClass(Form("Wrong event specie conversion %d", es)) ; 
 }
 
 AliRecoParam::EventSpecie_t AliRecoParam::Convert(Int_t ies)
 {
   //Converts int into EventSpecie_t
-  AliRecoParam::EventSpecie_t es = AliRecoParam::kDefault ; 
-  
-  Int_t i = (Int_t)TMath::Power(2, ies) ; 
-  
-  if ( i == AliRecoParam::kLowMult) 
+  AliRecoParam::EventSpecie_t es = kDefault ; 
+  if ( ies >> 1) 
     es = kLowMult ; 
-  else if ( i == AliRecoParam::kHighMult) 
+  if ( ies >> 2) 
     es = kHighMult ;   
-  else if ( i == AliRecoParam::kCosmic) 
+  if ( ies >> 3) 
     es = kCosmic ;   
-  else if ( i == AliRecoParam::kCalib) 
-    es = kCalib ;   
-  
+  if ( ies >> 4) 
+    es = kCalib ;
+
   return es ;   
+}
+
+AliRecoParam::EventSpecie_t AliRecoParam::ConvertIndex(Int_t index)
+{
+  //Converts index of lists into eventspecie
+  EventSpecie_t es = kDefault ; 
+  switch (index) {
+    case 0:
+      es = kDefault ; 
+      break;
+    case 1:
+      es = kLowMult ; 
+      break;
+    case 2:
+      es = kHighMult ;   
+      break;
+    case 3:
+      es = kCosmic ;   
+      break;
+    case 4:
+      es = kCalib ;
+      break;
+    default:
+      break;
+  }
+  return es ;
 }
 
 void  AliRecoParam::Print(Option_t *option) const {

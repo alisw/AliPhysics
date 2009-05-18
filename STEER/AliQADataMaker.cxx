@@ -49,6 +49,8 @@
 #include "AliQAChecker.h"
 #include "AliESDEvent.h"
 #include "AliRawReader.h"
+#include "AliDetectorRecoParam.h"
+
 
 ClassImp(AliQADataMaker)
              
@@ -170,6 +172,15 @@ TObject * AliQADataMaker::GetData(TObjArray ** list, const Int_t index)
 		AliError("Data list is NULL !!") ; 
 		return NULL ; 		
 	}
+
+  SetEventSpecie(fEventSpecie) ;  
+  if ( GetRecoParam() ) {
+    if ( AliRecoParam::Convert(GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault) {
+      SetEventSpecie(GetRecoParam()->GetEventSpecie()) ; 
+    } else { 
+      AliError(Form("Event Specie from RecoParam of %s is = %d\n", GetName(), fEventSpecie));
+    }
+  }
 	if (list[AliRecoParam::AConvert(fEventSpecie)]) {
 		if ( index > 10000 ) {
 			AliError("Max number of authorized QA objects is 10000") ; 

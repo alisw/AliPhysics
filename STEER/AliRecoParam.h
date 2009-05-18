@@ -37,7 +37,9 @@ class AliRecoParam : public TObject
 		      kCalib = 16};
 
   static Int_t                  AConvert(EventSpecie_t es) ; 
-  static EventSpecie_t          Convert(Int_t es) ; 
+  static EventSpecie_t          Convert(Int_t ies) ; 
+  static EventSpecie_t          ConvertIndex(Int_t index) ;
+
   virtual void                  Print(Option_t *option="") const;
   const TObjArray              *GetDetRecoParamArray(Int_t iDet) const { return fDetRecoParams[iDet]; }
   void                          SetEventSpecie(const AliRunInfo*runInfo, const AliEventInfo &evInfo);
