@@ -1,4 +1,4 @@
-//===================== ANALYSIS TRAIN ==========================================
+//===================== ANALYSIS TRAIN =========================================
 // To use: copy this macro to your work directory, modify the global part to match
 // your needs, then run root.
 //    root[0] .L AnalysisTrain.C
@@ -9,70 +9,93 @@
 // Local mode requires AliESds.root or AliAOD.root in ./data directory
 //    root[3] AnalysisTrainNew("local")
 // In proof and grid modes, a token is needed and sourcing the produced environment file.
+//
+// If 'saveTrain' flag is set, the train will generate a directory name and run
+// in this directory. A configuration file 'ConfigTrain.C' will be generated. 
+// One can replay at any time the train via:
+//    root[1] AnalysisTrainNew(ana_mode, plugin_mode, "train_default_<date>/ConfigTrain.C")
 
-const char *root_version    = "v5-23-02";
-const char *aliroot_version = "v4-17-00";
-const char *cluster         = "alicecaf.cern.ch";
-//const char *AFversion       = "AF-v4-16";
-const char *AFversion       = "";
-// Dataset name. If empty assumes local ESD/AOD. In CAF it is a dataset name.
-//               In grid has to point to an xml file or be empty if using the plugin
-// === PROOF
+//==================   TRAIN NAME   ============================================
+TString     train_name         = "default"; // enters file names, so no blancs or special characters
+//==============================================================================
+
+// ### Settings that make sense in PROOF only
+//==============================================================================
+TString     proof_cluster      = "alicecaf.cern.ch";
+Bool_t      useAFPAR           = kFALSE;  // use AF special par file
+TString     AFversion          = "AF-v4-16";
 // Change CAF dataset here
-const char *proof_dataset = "/COMMON/COMMON/LHC09a4_run8100X#/esdTree";
+TString     proof_dataset      = "/COMMON/COMMON/LHC09a4_run8100X#/esdTree";
 
-// === ALIEN
-const char *dataset   = "";
-// Change production base directory here
-const char *alien_datadir = "/alice/sim/PDC_09/LHC09a4/";
-// Use up to 10 non-zero run numbers
-Int_t run_numbers[10] = {81272,     0,     0,     0,     0,
-                             0,     0,     0,     0,     0};
-// Activate the following flags ONLY in grid mode and ONLY if the code is not available
+// ### Settings that make sense when using the Alien plugin
+//==============================================================================
+Bool_t      usePLUGIN          = kTRUE;   // do not change
+// Usage of par files ONLY in grid mode and ONLY if the code is not available
 // in the deployed AliRoot versions. Par file search path: local dir, if not there $ALICE_ROOT.
 // To refresh par files, remove the ones in the workdir, then do "make <target.par>" in 
 // AliRoot.
-Bool_t usePAR        = kFALSE;  // use par files for extra libs
-Bool_t useCPAR       = kFALSE;  // use par files for common libs
-// Other flags to steer the analysis
-Bool_t useDBG        = kTRUE;  // activate debugging
-Bool_t useMC         = kTRUE;  // use MC info
-Bool_t useTAGS       = kFALSE; // use ESD tags for selection
-Bool_t useKFILTER    = kTRUE;  // use Kinematics filter
-Bool_t useTR         = kFALSE; // use track references
-Bool_t usePLUGIN     = kTRUE;  // use AliEn plugin
-Bool_t useCORRFW     = kFALSE; // do not change
-Bool_t useAODTAGS    = kFALSE; // use AOD tags
-    
-Int_t iAODanalysis   = 0;      // Analysis on input AOD's
-Int_t iAODhandler    = 1;      // Analysis produces an AOD or dAOD's
-Int_t iESDfilter     = 1;      // ESD to AOD filter (barrel + muon tracks)
-Int_t iMUONcopyAOD   = 0;      // Task that copies only muon events in a separate AOD (PWG3)
-Int_t iJETAN         = 1;      // Jet analysis (PWG4) - needs ESD filter
-Int_t iPWG4partcorr  = 1;      // Gamma-hadron correlations task (PWG4)
-Int_t iPWG3vertexing = 1;      // Vertexing HF task (PWG2)
-Int_t iPWG2femto     = 1;      // Femtoscopy task (PWG2)
-Int_t iPWG2spectra   = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
-Int_t iPWG2flow      = 0;      // Flow analysis task (PWG2)
-Int_t iPWG2res       = 1;      // Resonances task (PWG2)
-Int_t iPWG2kink      = 1;      // Kink analysis task (PWG2)
+Bool_t      usePAR             = kFALSE;  // use par files for extra libs
+Bool_t      useCPAR            = kFALSE;  // use par files for common libs
+TString     root_version       = "v5-23-02";
+TString     aliroot_version    = "v4-17-00";
+// Change production base directory here
+TString     alien_datadir      = "/alice/sim/PDC_09/LHC09a4/";
+// Use up to 10 non-zero run numbers
+Int_t       run_numbers[10]    = {81272,    81273 ,     81274,     0,     0,
+                                      0,     0,     0,     0,     0};
+// ### Settings that make sense only for local analysis
+//==============================================================================
+// Change local xml dataset for local interactive analysis
+TString     local_xmldataset   = "";
 
+// ### Other flags to steer the analysis
+//==============================================================================
+Bool_t      useDBG             = kTRUE;  // activate debugging
+Bool_t      useMC              = kTRUE;  // use MC info
+Bool_t      useTAGS            = kFALSE; // use ESD tags for selection
+Bool_t      useKFILTER         = kTRUE;  // use Kinematics filter
+Bool_t      useTR              = kFALSE; // use track references
+Bool_t      useCORRFW          = kFALSE; // do not change
+Bool_t      useAODTAGS         = kFALSE; // use AOD tags
+Bool_t      saveTrain          = kTRUE;  // save train configuration as: 
+                                         // train_[trainName]_ddMonthyyyy_time.C
+// ### Analysis modules to be included. Some may not be yet fully implemented.
+//==============================================================================
+Int_t       iAODanalysis       = 0;      // Analysis on input AOD's
+Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
+Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tracks)
+Int_t       iMUONcopyAOD       = 0;      // Task that copies only muon events in a separate AOD (PWG3)
+Int_t       iJETAN             = 1;      // Jet analysis (PWG4) - needs ESD filter
+Int_t       iPWG4partcorr      = 1;      // Gamma-hadron correlations task (PWG4)
+Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
+Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
+Int_t       iPWG2spectra       = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
+Int_t       iPWG2flow          = 0;      // Flow analysis task (PWG2)
+Int_t       iPWG2res           = 1;      // Resonances task (PWG2)
+Int_t       iPWG2kink          = 1;      // Kink analysis task (PWG2)
+
+// Temporaries.
 TString anaPars = "";
 TString anaLibs = "";
 // Function signatures
 class AliAnalysisGrid;
 
 //______________________________________________________________________________
-void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode="full")
+void AnalysisTrainNew(const char *analysis_mode="grid", 
+                      const char *plugin_mode="full",
+                      const char *config_file="")
 {
-// Example of running analysis train
+// Main analysis train macro. If a configuration file is provided, all parameters
+// are taken from there but may be altered by CheckModuleFlags.
+   if (strlen(config_file) && !LoadConfig(config_file)) return;
    TString smode(analysis_mode);
-   smode.ToUpper();    
+   smode.ToUpper();
+   if (saveTrain)              WriteConfig();
    // Check compatibility of selected modules
    CheckModuleFlags(smode);
 
    printf("==================================================================\n");
-   printf("===========    RUNNING ANALYSIS TRAIN IN %s MODE   ==========\n", smode.Data());
+   printf("===========    RUNNING ANALYSIS TRAIN %s IN %s MODE   ==========\n", train_name.Data(),smode.Data());
    printf("==================================================================\n");
    printf("=  Configuring analysis train for:                               =\n");
    if (iAODanalysis) printf("=  AOD analysis                                                  =\n");
@@ -248,6 +271,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid", const char *plugin_mode=
    //    
    if (mgr->InitAnalysis()) {
       mgr->PrintStatus();
+      if (saveTrain) gSystem->ChangeDirectory(train_name);
       StartAnalysis(smode, chain);
    }   
 }
@@ -263,14 +287,14 @@ void StartAnalysis(const char *mode, TChain *chain) {
    switch (imode) {
       case 0:
          if (!chain) {
-            ::Error("StartAnalysis", "Cannot create the chain");
+            ::Error("AnalysisTrainNew.C::StartAnalysis", "Cannot create the chain");
             return;
          }   
          mgr->StartAnalysis(mode, chain);
          return;
       case 1:
-         if (!strlen(proof_dataset)) {
-            ::Error("StartAnalysis", "proof_dataset is empty");
+         if (!proof_dataset.Length()) {
+            ::Error("AnalysisTrainNew.C::StartAnalysis", "proof_dataset is empty");
             return;
          }   
          mgr->StartAnalysis(mode, proof_dataset, 100000);
@@ -278,13 +302,13 @@ void StartAnalysis(const char *mode, TChain *chain) {
       case 2:
          if (usePLUGIN) {
             if (!mgr->GetGridHandler()) {
-               ::Error("StartAnalysis", "Grid plugin not initialized");
+               ::Error("AnalysisTrainNew.C::StartAnalysis", "Grid plugin not initialized");
                return;
             }   
             mgr->StartAnalysis("grid");
          } else {
             if (!chain) {
-               ::Error("StartAnalysis", "Cannot create the chain");
+               ::Error("AnalysisTrainNew.C::StartAnalysis", "Cannot create the chain");
                return;
             }   
             mgr->StartAnalysis(mode, chain);
@@ -302,31 +326,31 @@ void CheckModuleFlags(const char *mode) {
    if (!strcmp(mode, "GRID"))  imode = 2;
    if (imode==1) {
       if (!usePAR) {
-         ::Info("CheckModuleFlags", "PAR files enabled due to PROOF analysis");
+         ::Info("AnalysisTrainNew.C::CheckModuleFlags", "PAR files enabled due to PROOF analysis");
          usePAR = kTRUE;
       }   
    }  
    if (imode != 2) {
-      ::Info("CheckModuleFlags", "AliEn plugin disabled since not in GRID mode");
+      ::Info("AnalysisTrainNew.C::CheckModuleFlags", "AliEn plugin disabled since not in GRID mode");
       usePLUGIN = kFALSE; 
    }   
    if (iAODanalysis) {
    // AOD analysis
       if (useMC)
-         ::Info("CheckModuleFlags", "MC usage disabled in analysis on AOD's");
+         ::Info("AnalysisTrainNew.C::CheckModuleFlags", "MC usage disabled in analysis on AOD's");
       useMC = kFALSE;
       useTR = kFALSE;
       if (iESDfilter)
-         ::Info("CheckModuleFlags", "ESD filter disabled in analysis on AOD's");
+         ::Info("AnalysisTrainNew.C::CheckModuleFlags", "ESD filter disabled in analysis on AOD's");
       iESDfilter   = 0;
       if (!iAODhandler) {
          if (iJETAN) 
-            ::Info("CheckModuleFlags", "JETAN disabled in analysis on AOD's without AOD handler");
+            ::Info("AnalysisTrainNew.C::CheckModuleFlags", "JETAN disabled in analysis on AOD's without AOD handler");
          iJETAN = 0;
       }
       // Disable tasks that do not work yet on AOD data
       if (iPWG2kink)         
-         ::Info("CheckModuleFlags", "PWG2kink disabled in analysis on AOD's");
+         ::Info("AnalysisTrainNew.C::CheckModuleFlags", "PWG2kink disabled in analysis on AOD's");
       iPWG2kink = 0;
    } else {   
    // ESD analysis
@@ -352,43 +376,43 @@ Bool_t Connect(const char *mode) {
          break;
       case 1:
          if  (!username.Length()) {
-            ::Error(Form("Connect <%s>", mode), "Make sure you:\n \
+            ::Error(Form("AnalysisTrainNew.C::Connect <%s>", mode), "Make sure you:\n \
                            1. Have called: alien-token-init <username>\n \
                            2. Have called: >source /tmp/gclient_env_$UID");
             return kFALSE;
          }
-         ::Info("Connect", "Connecting user <%s> to PROOF cluster <%s>", 
-                username.Data(), cluster);
-         TProof::Open(Form("%s@%s", username.Data(), cluster));       
+         ::Info("AnalysisTrainNew.C::Connect", "Connecting user <%s> to PROOF cluster <%s>", 
+                username.Data(), proof_cluster.Data());
+         TProof::Open(Form("%s@%s", username.Data(), proof_cluster.Data()));       
          if (!gProof) {
             if (strcmp(gSystem->Getenv("XrdSecGSISRVNAMES"), "lxfsrd0506.cern.ch"))
-               ::Error(Form("Connect <%s>", mode), "Environment XrdSecGSISRVNAMES different from lxfsrd0506.cern.ch");
+               ::Error(Form("AnalysisTrainNew.C::Connect <%s>", mode), "Environment XrdSecGSISRVNAMES different from lxfsrd0506.cern.ch");
             return kFALSE;
          }
          break;
       case 2:      
          if  (!username.Length()) {
-            ::Error(Form("Connect <%s>", mode), "Make sure you:\n \
+            ::Error(Form("AnalysisTrainNew.C::Connect <%s>", mode), "Make sure you:\n \
                            1. Have called: alien-token-init <username>\n \
                            2. Have called: >source /tmp/gclient_env_$UID");
             return kFALSE;
          }
          if (usePLUGIN && !gSystem->Getenv("alien_CLOSE_SE")) {
-            ::Error(Form("Connect <%s>", mode), 
+            ::Error(Form("AnalysisTrainNew.C::Connect <%s>", mode), 
                            "When using the AliEn plugin it is preferable to define the \
                            variable alien_CLOSE_SE in your environment.");
             return kFALSE;
          }
-         ::Info("Connect", "Connecting user <%s> to AliEn ...", 
+         ::Info("AnalysisTrainNew.C::Connect", "Connecting user <%s> to AliEn ...", 
                 username.Data());
          TGrid::Connect("alien://");
          if (!gGrid || !gGrid->IsConnected()) return kFALSE;
          break;
       default:
-         ::Error("Connect", "Unknown run mode: %s", mode);
+         ::Error("AnalysisTrainNew.C::Connect", "Unknown run mode: %s", mode);
          return kFALSE;
    }
-   ::Info("Connect","Connected in %s mode", mode);
+   ::Info("AnalysisTrainNew.C::Connect","Connected in %s mode", mode);
    return kTRUE;
 }
 
@@ -401,7 +425,7 @@ Bool_t LoadCommonLibraries(const char *mode)
    if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    if (!gSystem->Getenv("ALICE_ROOT")) {
-      ::Error("LoadCommonLibraries", "Analysis train requires that analysis libraries are compiled with a local AliRoot"); 
+      ::Error("AnalysisTrainNew.C::LoadCommonLibraries", "Analysis train requires that analysis libraries are compiled with a local AliRoot"); 
       return kFALSE;
    }   
    Bool_t success = kTRUE;
@@ -434,7 +458,7 @@ Bool_t LoadCommonLibraries(const char *mode)
          break;
       case 1:
          Int_t ires = -1;
-         if (!gSystem->AccessPathName(AFversion)) ires = gProof->UploadPackage(AFversion);
+         if (useAFPAR && !gSystem->AccessPathName(AFversion)) ires = gProof->UploadPackage(AFversion);
          if (ires < 0) {
             success &= LoadLibrary("STEERBase", mode);
             success &= LoadLibrary("ESD", mode);
@@ -449,15 +473,15 @@ Bool_t LoadCommonLibraries(const char *mode)
          }
          break;         
       default:
-         ::Error("LoadCommonLibraries", "Unknown run mode: %s", mode);
+         ::Error("AnalysisTrainNew.C::LoadCommonLibraries", "Unknown run mode: %s", mode);
          return kFALSE;
    }
    if (success) {
-      ::Info("LoadCommodLibraries", "Load common libraries:    SUCCESS");
-      ::Info("LoadCommodLibraries", "Include path for Aclic compilation:\n%s",
+      ::Info("AnalysisTrainNew.C::LoadCommodLibraries", "Load common libraries:    SUCCESS");
+      ::Info("AnalysisTrainNew.C::LoadCommodLibraries", "Include path for Aclic compilation:\n%s",
               gSystem->GetIncludePath());
    } else {           
-      ::Info("LoadCommodLibraries", "Load common libraries:    FAILED");
+      ::Info("AnalysisTrainNew.C::LoadCommodLibraries", "Load common libraries:    FAILED");
    }   
       
    return success;
@@ -481,8 +505,6 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    if (iPWG4partcorr) {   
       if (!LoadLibrary("PWG4PartCorrBase", mode, kTRUE) ||
           !LoadLibrary("PWG4PartCorrDep", mode, kTRUE)) return kFALSE;
-//      TFile::Cp(gSystem->ExpandPathName("$(ALICE_ROOT)/PWG4/macros/ConfigAnalysisGammaHadronCorrelation.C"), "ConfigAnalysisGammaHadronCorrelation.C");
-//      TFile::Cp(gSystem->ExpandPathName("$(ALICE_ROOT)/PWG4/macros/ConfigAnalysisPi0.C"), "ConfigAnalysisPi0.C");
    }
    // PWG2 task protons 
    if (iPWG2spectra) {
@@ -506,14 +528,15 @@ Bool_t LoadAnalysisLibraries(const char *mode)
       if (!LoadLibrary("PWG2AOD", mode, kTRUE) ||
           !LoadLibrary("PWG2femtoscopy", mode, kTRUE) ||
           !LoadLibrary("PWG2femtoscopyUser", mode, kTRUE)) return kFALSE;
-      TFile::Cp(gSystem->ExpandPathName("$(ALICE_ROOT)/PWG2/FEMTOSCOPY/macros/ConfigFemtoAnalysis.C"), "ConfigFemtoAnalysis.C");
+      TFile::Cp(gSystem->ExpandPathName("$(ALICE_ROOT)/PWG2/FEMTOSCOPY/macros/ConfigFemtoAnalysis.C"), Form("%s/ConfigFemtoAnalysis.C", train_name.Data()));
+      anaLibs += "ConfigFemtoAnalysis.C ";
    }   
    // Vertexing HF
    if (iPWG3vertexing) {
       if (!LoadLibrary("PWG3base", mode, kTRUE) ||
           !LoadLibrary("PWG3vertexingHF", mode, kTRUE)) return kFALSE;
    }   
-   ::Info("LoadAnalysisLibraries", "Load other libraries:   SUCCESS");
+   ::Info("AnalysisTrainNew.C::LoadAnalysisLibraries", "Load other libraries:   SUCCESS");
    return kTRUE;
 }
 
@@ -529,7 +552,7 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
    if (!strcmp(mode, "GRID"))  imode = 2;
    TString mod(module);
    if (!mod.Length()) {
-      ::Error("LoadLibrary", "Empty module name");
+      ::Error("AnalysisTrainNew.C::LoadLibrary", "Empty module name");
       return kFALSE;
    }   
    // If a library is specified, just load it
@@ -537,7 +560,7 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
       mod.Remove(mod.Index(".so"));
       result = gSystem->Load(mod);
       if (result < 0) {
-         ::Error("LoadLibrary", "Could not load library %s", module);
+         ::Error("AnalysisTrainNew.C::LoadLibrary", "Could not load library %s", module);
          return kFALSE;
       }
       if (rec) anaLibs += Form("%s.so ",mod.Data()); 
@@ -562,7 +585,7 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
          if (result<0) {
             result = gProof->UploadPackage(gSystem->ExpandPathName(Form("$ALICE_ROOT/%s.par", module)));
             if (result<0) {
-               ::Error("LoadLibrary", "Could not find module %s.par in current directory nor in $ALICE_ROOT", module);
+               ::Error("AnalysisTrainNew.C::LoadLibrary", "Could not find module %s.par in current directory nor in $ALICE_ROOT", module);
                return kFALSE;
             }
          }   
@@ -572,7 +595,7 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
          return kFALSE;
    }         
    if (result < 0) {
-      ::Error("LoadLibrary", "Could not load module %s", module);
+      ::Error("AnalysisTrainNew.C::LoadLibrary", "Could not load module %s", module);
       return kFALSE;
    }
    return kTRUE;
@@ -592,26 +615,26 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
    switch (imode) {
       case 0:
          if (iAODanalysis) {
-            if (!strlen(dataset)) {
+            if (!local_xmldataset.Length()) {
                // Local AOD
                chain = new TChain("aodTree");
                if (gSystem->AccessPathName("data/AliAOD.root")) 
-                  ::Error("CreateChain", "File: AliAOD.root not in ./data dir");
+                  ::Error("AnalysisTrainNew.C::CreateChain", "File: AliAOD.root not in ./data dir");
                else chain->Add("data/AliAOD.root");
             } else {
                // Interactive AOD
-               chain = CreateChainSingle(dataset, "aodTree");
+               chain = CreateChainSingle(local_xmldataset, "aodTree");
             }
          } else {      
-            if (!strlen(dataset)) {
+            if (!local_xmldataset.Length()) {
                // Local ESD
                chain = new TChain("esdTree");
                if (gSystem->AccessPathName("data/AliESDs.root")) 
-                  ::Error("CreateChain", "File: AliESDs.root not in ./data dir");
+                  ::Error("AnalysisTrainNew.C::CreateChain", "File: AliESDs.root not in ./data dir");
                else chain->Add("data/AliESDs.root");
             } else {
                // Interactive ESD
-               chain = CreateChainSingle(dataset, "esdTree");
+               chain = CreateChainSingle(local_xmldataset, "esdTree");
             }   
          }
          break;
@@ -642,7 +665,7 @@ TChain* CreateChainSingle(const char* xmlfile, const char *treeName)
    TAlienCollection * myCollection  = TAlienCollection::Open(xmlfile);
 
    if (!myCollection) {
-      ::Error("CreateChainSingle", "Cannot create an AliEn collection from %s", xmlfile) ;
+      ::Error("AnalysisTrainNew.C::CreateChainSingle", "Cannot create an AliEn collection from %s", xmlfile) ;
       return NULL ;
    }
 
@@ -660,14 +683,15 @@ Int_t SetupPar(char* pararchivename)
    char processline[1024];
    if (gSystem->AccessPathName(Form("%s.par", pararchivename))) {
       if (!gSystem->AccessPathName(Form("%s/%s.par", gSystem->Getenv("ALICE_ROOT"),pararchivename))) {
-         ::Info("SetupPar", "Getting %s.par from $ALICE_ROOT", pararchivename);
+         ::Info("AnalysisTrainNew.C::SetupPar", "Getting %s.par from $ALICE_ROOT", pararchivename);
          TFile::Cp(gSystem->ExpandPathName(Form("$ALICE_ROOT/%s.par", pararchivename)), 
                    Form("%s.par",pararchivename));
       } else {
-         ::Error("SetupPar", "Cannot find %s.par", pararchivename);
+         ::Error("AnalysisTrainNew.C::SetupPar", "Cannot find %s.par", pararchivename);
          return -1;
       }   
    }
+   if (usePLUGIN && saveTrain) gSystem->Exec(Form("ln -s ../%s.par %s",pararchivename, train_name.Data()));
    gSystem->Exec(Form("tar xvzf %s.par", pararchivename));
 
    TString ocwd = gSystem->WorkingDirectory();
@@ -706,7 +730,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
 // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode(plugin_mode);
    plugin->SetNtestFiles(1);
-//   plugin->SetPreferedSE("ALICE::NIHAM::FILE");
+   plugin->SetPreferedSE("ALICE::NIHAM::FILE");
 // Set versions of used packages
    plugin->SetAPIVersion("V2.4");
    plugin->SetROOTVersion(root_version);
@@ -733,7 +757,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
    if (iAODanalysis) plugin->SetGridWorkingDir("analysisAOD");
    else              plugin->SetGridWorkingDir("analysisESD");
 // Declare alien output directory. Relative to working directory.
-   plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
+   plugin->SetGridOutputDir(Form("output_%s",train_name.Data())); // In this case will be $HOME/work/output
 
    TString ana_sources = "";
    TString ana_add = "";
@@ -760,14 +784,13 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
 // (can be like: file.root or file.root@ALICE::Niham::File)
    plugin->SetDefaultOutputs();
    plugin->SetMergeExcludes("AliAOD.root");
-//   plugin->SetOutputFiles("AliAOD.root");
 // Optionally define the files to be archived.
 //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:*.root@ALICE::NIHAM::File");
    plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
-   plugin->SetAnalysisMacro("AnalysisTrainGrid.C");
+   plugin->SetAnalysisMacro(Form("%s.C", train_name.Data()));
 // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-   plugin->SetSplitMaxInputFileNumber(50);
+   plugin->SetSplitMaxInputFileNumber(100);
 // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
 //   plugin->SetMaxInitFailed(5);
 // Optionally resubmit threshold.
@@ -777,12 +800,92 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
 // Optionally set input format (default xml-single)
    plugin->SetInputFormat("xml-single");
 // Optionally modify the name of the generated JDL (default analysis.jdl)
-   plugin->SetJDLName("AnalysisTrain.jdl");
+   plugin->SetJDLName(Form("%s.jdl", train_name.Data()));
 // Optionally modify the executable name (default analysis.sh)
-   plugin->SetExecutable("AnalysisTrain.sh");
+   plugin->SetExecutable(Form("%s.sh", train_name.Data()));
 // Optionally modify job price (default 1)
    plugin->SetPrice(1);      
 // Optionally modify split mode (default 'se')    
    plugin->SetSplitMode("se");
    return plugin;
+}
+
+//______________________________________________________________________________
+void WriteConfig()
+{
+// Write train configuration in a file. The file name has the format:
+// train_[trainName]_ddMonthyyyy_time.C
+   gSystem->Exec("date +%d%b%Y_%Hh%M > date.tmp");
+   ifstream fdate("date.tmp");
+   if (!fdate.is_open()) {
+      ::Error("AnalysisTrainNew.C::Export","Could not generate file name");
+      return;
+   }
+   const char date[64];
+   fdate.getline(date,64);
+   fdate.close();
+   gSystem->Exec("rm date.tmp");
+   train_name = Form("train_%s_%s", train_name.Data(), date);
+   TString cdir = gSystem->WorkingDirectory();
+   gSystem->MakeDirectory(train_name);
+   gSystem->ChangeDirectory(train_name);
+   ofstream out;
+   out.open("ConfigTrain.C", ios::out); 
+   if (out.bad()) {
+      ::Error("AnalysisTrainNew.C::Export", "Cannot open ConfigTrain.C for writing");
+      return;
+   }
+   out << "{" << endl;
+   out << "   train_name      = " << "\"" << train_name.Data() << "\";" << endl;
+   out << "   proof_cluster   = " << "\"" << proof_cluster.Data() << "\";" << endl;
+   out << "   useAFPAR        = " << useAFPAR << ";" << endl;
+   if (useAFPAR) 
+      out << "   AFversion       = " << AFversion.Data() << ";" << endl;
+   out << "   proof_dataset   = " << "\"" << proof_dataset.Data() << "\";" << endl;
+   out << "   usePLUGIN       = " << usePLUGIN << ";" << endl;
+   out << "   usePAR          = " << usePAR << ";" << endl;
+   out << "   useCPAR         = " << useCPAR << ";" << endl;
+   out << "   root_version    = " << "\"" << root_version.Data() << "\";" << endl;
+   out << "   aliroot_version = " << "\"" << aliroot_version.Data() << "\";" << endl;
+   out << "   alien_datadir   = " << "\"" << alien_datadir.Data() << "\";" << endl;
+   for (Int_t i=0; i<10; i++) {
+      if (run_numbers[i]) 
+         out << "   run_numbers[" << i << "]  = " << run_numbers[i] << ";" << endl;
+   }
+   out << "   useDBG          = " << useDBG << ";" << endl;
+   out << "   useMC           = " << useMC << ";" << endl;
+   out << "   useTAGS         = " << useTAGS << ";" << endl;
+   out << "   useKFILTER      = " << useKFILTER << ";" << endl;
+   out << "   useTR           = " << useTR << ";" << endl;
+   out << "   useCORRFW       = " << useCORRFW << ";" << endl;
+   out << "   useAODTAGS      = " << useAODTAGS << ";" << endl;
+   out << "   saveTrain       = " << "kFALSE;" << endl << endl;
+   out << "   // Analysis modules" << endl;
+   out << "   iAODanalysis    = " << iAODanalysis << ";" << endl;
+   out << "   iAODhandler     = " << iAODhandler << ";" << endl;
+   out << "   iESDfilter      = " << iESDfilter << ";" << endl;
+   out << "   iMUONcopyAOD    = " << iMUONcopyAOD << ";" << endl;
+   out << "   iJETAN          = " << iJETAN << ";" << endl;
+   out << "   iPWG4partcorr   = " << iPWG4partcorr << ";" << endl;
+   out << "   iPWG2femto      = " << iPWG2femto << ";" << endl;
+   out << "   iPWG2spectra    = " << iPWG2spectra << ";" << endl;
+   out << "   iPWG2flow       = " << iPWG2flow << ";" << endl;
+   out << "   iPWG2res        = " << iPWG2res << ";" << endl;
+   out << "   iPWG2kink       = " << iPWG2kink << ";" << endl;
+   out << "}" << endl;
+   ::Info("AnalysisTrainNew.C::WriteConfig", "Train configuration wrote to file %s", Form("config_%s.C", train_name.Data()));
+   gSystem->ChangeDirectory(cdir);
+}   
+
+//______________________________________________________________________________
+Bool_t LoadConfig(const char *filename)
+{
+// Read train configuration from file
+   if (gSystem->AccessPathName(filename)) {
+      ::Error("AnalysisTrainNew.C::LoadConfig", "Config file name not found");
+      return kFALSE;
+   }   
+   gROOT->ProcessLine(Form(".x %s", filename));
+   ::Info("AnalysisTrainNew.C::LoadConfig", "Train configuration loaded from file %s", filename);
+   return kTRUE;
 }
