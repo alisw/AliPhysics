@@ -77,8 +77,6 @@ class AliTPCseed : public AliTPCtrack {
      Float_t  CookShape(Int_t type);
      //  Float_t CookShape2(Int_t type,Bool_t withQ);
      void CookPID();
-     Double_t Bethe(Double_t bg);     // return bethe-bloch
-     Double_t BetheMass(Double_t mass=0.1057);     // return bethe-bloch
      Bool_t IsActive() const { return !(fRemoval);}
      void Desactivate(Int_t reason){ fRemoval = reason;} 
      AliTPCclusterMI* GetClusterPointer(Int_t i) const {return fClusterPointer[i];}

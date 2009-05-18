@@ -29,6 +29,7 @@
 #include "AliTPCCalROC.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
+#include "AliMathBase.h"
 
 
 
@@ -833,18 +834,6 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
 //   SetdEdx(dedx);
 //   return dedx;
 }
-Double_t AliTPCseed::Bethe(Double_t bg){
-  //
-  // This is the Bethe-Bloch function normalised to 1 at the minimum
-  //
-  Double_t bg2=bg*bg;
-  Double_t bethe;
-  if (bg<3.5e1) 
-    bethe=(1.+ bg2)/bg2*(log(5940*bg2) - bg2/(1.+ bg2));
-  else // Density effect ( approximately :) 
-    bethe=1.15*(1.+ bg2)/bg2*(log(3.5*5940*bg) - bg2/(1.+ bg2));
-  return bethe/11.091;
-}
 
 void AliTPCseed::CookPID()
 {
@@ -861,7 +850,7 @@ void AliTPCseed::CookPID()
     Double_t mass=AliPID::ParticleMass(j);
     Double_t mom=GetP();
     Double_t dedx=fdEdx/fMIP;
-    Double_t bethe=Bethe(mom/mass); 
+    Double_t bethe=AliMathBase::BetheBlochAleph(mom/mass); 
     Double_t sigma=fRes*bethe;
     if (sigma>0.001){
       if (TMath::Abs(dedx-bethe) > fRange*sigma) {
@@ -1220,28 +1209,6 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
 }
 
 
-Double_t AliTPCseed::BetheMass(Double_t mass){
-  //
-  // return bethe-bloch
-  //
-  Float_t bg= P()/mass; 
-  const Double_t kp1=0.76176e-1;
-  const Double_t kp2=10.632;
-  const Double_t kp3=0.13279e-4;
-  const Double_t kp4=1.8631;
-  const Double_t kp5=1.9479;
-
-  Double_t dbg = (Double_t) bg;
-
-  Double_t beta = dbg/TMath::Sqrt(1.+dbg*dbg);
-
-  Double_t aa = TMath::Power(beta,kp4);
-  Double_t bb = TMath::Power(1./dbg,kp5);
-
-  bb=TMath::Log(kp3+bb);
-  
-  return ((Float_t)((kp2-aa-bb)*kp1/aa));
-}
 
 
 Float_t  AliTPCseed::CookShape(Int_t type){
