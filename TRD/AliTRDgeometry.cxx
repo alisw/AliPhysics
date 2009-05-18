@@ -2381,8 +2381,8 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   parDCS[2] = kDCScuTh/2.0;
   gMC->Gsvolu("UDC2","BOX",idtmed[1318-1],parDCS,kNparDCS);
   // The aluminum of the cooling plates
-  parDCS[0] = kDCSx   /2.0;
-  parDCS[1] = kDCSy   /2.0;
+  parDCS[0] = 5.0     /2.0;
+  parDCS[1] = 5.0     /2.0;
   parDCS[2] = kDCScoTh/2.0;
   gMC->Gsvolu("UDC3","BOX",idtmed[1324-1],parDCS,kNparDCS);
 
@@ -2403,7 +2403,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
       Int_t   iCopy   = iDet + 1;
       xpos =  fCwidth[ilayer]/2.0 - 1.9 * (GetChamberLength(ilayer,istack) - 2.0*fgkRpadW) 
                                         / ((Float_t) GetRowMax(ilayer,istack,0));
-      ypos =  0.0;
+      ypos =  0.05 * fClength[ilayer][istack];
       zpos =  kDCSz/2.0 - fgkCsvH/2.0;
       sprintf(cTagV,"UU%02d",iDet);
       gMC->Gspos("UDCS",iCopy,cTagV,xpos,ypos,zpos,0,"ONLY");
