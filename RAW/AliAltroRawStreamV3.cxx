@@ -55,7 +55,6 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(AliRawReader* rawReader) :
   fFECERRB(0),
   fERRREG2(0),
   fERRREG3(0),
-  fERRREG4(0),
   fActiveFECsA(0),
   fActiveFECsB(0),
   fAltroCFG1(0),
@@ -97,7 +96,6 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(const AliAltroRawStreamV3& stream) :
   fFECERRB(stream.fFECERRB),
   fERRREG2(stream.fERRREG2),
   fERRREG3(stream.fERRREG3),
-  fERRREG4(stream.fERRREG4),
   fActiveFECsA(stream.fActiveFECsA),
   fActiveFECsB(stream.fActiveFECsB),
   fAltroCFG1(stream.fAltroCFG1),
@@ -135,7 +133,6 @@ AliAltroRawStreamV3& AliAltroRawStreamV3::operator = (const AliAltroRawStreamV3&
   fFECERRB           = stream.fFECERRB;
   fERRREG2           = stream.fERRREG2;
   fERRREG3           = stream.fERRREG3;
-  fERRREG4           = stream.fERRREG4;
   fActiveFECsA       = stream.fActiveFECsA;
   fActiveFECsB       = stream.fActiveFECsB;
   fAltroCFG1         = stream.fAltroCFG1;
@@ -163,7 +160,7 @@ void AliAltroRawStreamV3::Reset()
   fRCUTrailerData = NULL;
   fRCUTrailerSize = 0;
 
-  fFECERRA = fFECERRB = fERRREG2 = fERRREG3 = fERRREG4 = fActiveFECsA = fActiveFECsB = fAltroCFG1 = fAltroCFG2 = 0;
+  fFECERRA = fFECERRB = fERRREG2 = fERRREG3 = fActiveFECsA = fActiveFECsB = fAltroCFG1 = fAltroCFG2 = 0;
 
   if (fRawReader) fRawReader->Reset();
 
@@ -371,25 +368,21 @@ Bool_t AliAltroRawStreamV3::ReadRCUTrailer(UChar_t rcuVer)
       break;
     case 3:
       // ERR_REG3
-      fERRREG3 = parData & 0xFFF;
+      fERRREG3 = parData & 0x1FFFFFF;
       break;
     case 4:
-      // ERR_REG4
-      fERRREG4 = parData & 0xFFF;
-      break;
-    case 5:
       // FEC_RO_A
       fActiveFECsA = parData & 0xFFFF;
       break;
-    case 6:
+    case 5:
       // FEC_RO_B
       fActiveFECsB = parData & 0xFFFF;
       break;
-    case 7:
+    case 6:
       // RDO_CFG1
       fAltroCFG1 = parData & 0xFFFFF;
       break;
-    case 8:
+    case 7:
       // RDO_CFG2
       fAltroCFG2 = parData & 0x1FFFFFF;
      break;
