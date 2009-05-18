@@ -86,18 +86,35 @@ void Tower2FEEMap(const int icol, const int irow,
 //__________________________________________________________
 void DCSGenerateAPD(const char *inputFileName,
 		    const char *outputDir,
-		    const int readBack=0) 
+		    const int readBack=0,
+		    const int RCUFWVersion=1, // default as of May 2009 is RCU FWv2
+		    const int FEEBCVersion=1) // default as of May 2009 is PCM4
 {
 
   // set up which bias voltage should be applicable for which CSP..
   Tower2FEEBiasInfo(inputFileName);
 
-  // general setup block: note - for old RCU firmware (DS: hope this doesn't change with new firmware)
+  // general setup block: try to keep magic numbers/registers collected here
   const char *branch_str[] = { "A", "B"};
-  const int trailer_offset = 0x48;
-  const int read_header = 0x520000; 
-  const int write_header = 0x620000; 
-  
+  const int nRCUFW = 2;
+  const char *rcufw_str[] = { "v1", "v2"};
+  const int rcu_addr_start[nRCUFW] = {0x7000, 0x0000}; 
+  const int read_header[nRCUFW] = {0x520000, 0x020000}; 
+  const int write_header[nRCUFW] = {0x620000, 0x220000}; 
+  const int voltage_value_start[nRCUFW] = {0x700000, 0x200000}; 
+  const int rcu_endmem[nRCUFW] = {0x390000, 0x3F0000}; 
+  const int rcu_exeseq[nRCUFW] = {0x0, 0x5304}; 
+  const int rcu_result_reg[nRCUFW] = {0x6000, 0x2000}; 
+
+  const int nFEEBC = 2;
+  const char *feebc_str[] = { "PCM3", "PCM4"};
+  const int trailer_offset[nFEEBC] = {0x48, 0x68};
+  const int update_voltage_register = 0x1E;
+  const int max_dac_value = 0x3FF;
+
+  printf("DCSGenerateAPD: RCU FW %s, FEE BC %s\n", 
+	 rcufw_str[RCUFWVersion], feebc_str[FEEBCVersion]);
+
   // resulting voltage settings should be good within a few volts 
   cout << " HV-DAC prop. constant = " << prop << endl;
   char iv_dac_setting[100]; 
@@ -109,12 +126,12 @@ void DCSGenerateAPD(const char *inputFileName,
   
   // end of setup, let's go..
   
-  int rcu_addr_card = 0x7000;
-  int csp_addr = trailer_offset;
+  int rcu_addr_card = rcu_addr_start[RCUFWVersion];
+  int csp_addr = trailer_offset[RCUFWVersion];
   int word = 0;
   char comment[400];
   
-  int rcu_addr_read = 0x7000; // we'll also write the readbias file in the same loop, so
+  int rcu_addr_read = rcu_addr_start[RCUFWVersion]; // we'll also write the readbias file in the same loop, so
   // need a separate index also
 
   for (int rcu=0; rcu<NRCU; rcu++) {
@@ -133,8 +150,8 @@ void DCSGenerateAPD(const char *inputFileName,
 		branch_str[branch], icard);
 	fout_readbias_card[rcu][branch][card] = fopen(cfile, "w");
 
-	rcu_addr_card = 0x7000;
-	rcu_addr_read = 0x7000;
+	rcu_addr_card = rcu_addr_start[RCUFWVersion];
+	rcu_addr_read = rcu_addr_start[RCUFWVersion];
 
 	for (int icsp = 0; icsp<NCSP; icsp++) {
 	  
@@ -143,18 +160,17 @@ void DCSGenerateAPD(const char *inputFileName,
 	     DS verified this with section 16.1 "Bias voltage programming", table 8
 	     of H. Muller's PHOS manual (version from Jan 2007) 
 	  */ 
-	  if (icsp<16) { csp_addr = trailer_offset + icsp; }
-	  else { csp_addr = trailer_offset - 1 - (icsp%16); }
+	  if (icsp<16) { csp_addr = trailer_offset[RCUFWVersion] + icsp; }
+	  else { csp_addr = trailer_offset[RCUFWVersion] - 1 - (icsp%16); }
 	  if (icsp >= 24) csp_addr += 0x20;
 
 	  // what does the desired voltage (in V) correspond to in DAC?
 	  int iv_dac = (int)( (biasVoltage[rcu][branch][card][icsp] - hvmin)/prop + 0.5); // round-off
-	  if (iv_dac > 0x3FF) iv_dac = 0x3FF;
-	  sprintf(iv_dac_setting,"700%03X",iv_dac);
-
+	  if (iv_dac > max_dac_value) iv_dac = max_dac_value;
+	  sprintf(iv_dac_setting,"%06X", voltage_value_start[RCUFWVersion] + iv_dac);
 
 	  // set up instructions that should be written
-	  word = write_header | (branch << 16) | (icard << 12) | (csp_addr);
+	  word = write_header[RCUFWVersion] | (branch << 16) | (icard << 12) | (csp_addr);
 
 	  // write a long comment with all info for this CSP
 	  sprintf(comment, "# RCU %d, Branch %s, FEC %d, CSP %02d - Tower Col %02d, Row %02d ", 
@@ -163,11 +179,11 @@ void DCSGenerateAPD(const char *inputFileName,
 		  towerRow[rcu][branch][card][icsp]
 		  );  
 	
-	  fprintf(fout_setbias_card[rcu][branch][card], "w 0x%4X 0x%6X   %s\n",
+	  fprintf(fout_setbias_card[rcu][branch][card], "w 0x%04X 0x%6X   %s\n",
 		  rcu_addr_card, word, comment);
 	  rcu_addr_card++;
 
-	  fprintf(fout_setbias_card[rcu][branch][card], "w 0x%4X 0x%s   # Set Voltage: %4.1f V, DAC %d (hex: %03X)\n", 
+	  fprintf(fout_setbias_card[rcu][branch][card], "w 0x%04X 0x%s   # Set Voltage: %4.1f V, DAC %d (hex: %03X)\n", 
 		  rcu_addr_card, iv_dac_setting, 
 		  biasVoltage[rcu][branch][card][icsp], 
 		  iv_dac, iv_dac
@@ -183,61 +199,67 @@ void DCSGenerateAPD(const char *inputFileName,
 		  iv_dac, iv_dac
 		  );  
 
-	  word = read_header | (branch << 16) | (icard << 12) | (csp_addr);
-	  fprintf(fout_readbias_card[rcu][branch][card], "w 0x%4X 0x%06X  %s\n", rcu_addr_read, word, comment);
+	  word = read_header[RCUFWVersion] | (branch << 16) | (icard << 12) | (csp_addr);
+	  fprintf(fout_readbias_card[rcu][branch][card], "w 0x%04X 0x%06X  %s\n", rcu_addr_read, word, comment);
 	  rcu_addr_read++;
 	} // csp loop
 	
 	// after CSP per card; send update command
-	word = write_header | (branch << 16) | (icard << 12) | 0x1e;
-	fprintf(fout_setbias_card[rcu][branch][card],"w 0x%4X 0x%06X   # Update Voltages\n", 
+	word = write_header[RCUFWVersion] | (branch << 16) | (icard << 12) | update_voltage_register;
+	fprintf(fout_setbias_card[rcu][branch][card],"w 0x%04X 0x%06X   # Update Voltages\n", 
 		rcu_addr_card, word); 
+	rcu_addr_card++;
+	fprintf(fout_setbias_card[rcu][branch][card],"w 0x%04X 0x%06X   \n", 
+		rcu_addr_card, voltage_value_start[RCUFWVersion]);
 	rcu_addr_card++;
 
 	// also put ending for the individual card files:
-	fprintf(fout_setbias_card[rcu][branch][card],"w 0x%4X 0x%06X \n", 
-		rcu_addr_card, 0x700000);
-	rcu_addr_card++;
-	fprintf(fout_setbias_card[rcu][branch][card],"w 0x%4X 0x%06X \n", 
-		rcu_addr_card, 0x390000);
+	fprintf(fout_setbias_card[rcu][branch][card],"w 0x%04X 0x%06X   # End of the instruction memory\n", 
+		rcu_addr_card, rcu_endmem[RCUFWVersion]);
 	rcu_addr_card++;
       
-	fprintf(fout_setbias_card[rcu][branch][card],"wait 1 us\n");
-	fprintf(fout_setbias_card[rcu][branch][card],"w 0x0 0x0           # execute and update registers\n");
-	fprintf(fout_setbias_card[rcu][branch][card],"wait 1 us\n");
-	fprintf(fout_setbias_card[rcu][branch][card],"w 0x0 0x0           # execute and update registers again\n");
-	fprintf(fout_setbias_card[rcu][branch][card],"wait 1 us\n");
-	fprintf(fout_setbias_card[rcu][branch][card],"r 0x7800            # error checking\n");
-	fprintf(fout_setbias_card[rcu][branch][card],"w 0x6c01 0x 0       # clear registers\n");
-	
+	fprintf(fout_setbias_card[rcu][branch][card],"wait 100 us\n");
+	fprintf(fout_setbias_card[rcu][branch][card],"w 0x%X 0x0           # execute and update registers\n",
+		rcu_exeseq[RCUFWVersion]);
+	if (RCUFWVersion == 0) { // specialty for old FW version
+	  fprintf(fout_setbias_card[rcu][branch][card],"wait 100 us\n");
+	  fprintf(fout_setbias_card[rcu][branch][card],"r 0x7800            # error checking\n");
+	  fprintf(fout_setbias_card[rcu][branch][card],"w 0x6c01 0x 0       # clear registers\n");
+	}
 
 	// in case we want to check what was written
 	if (readBack) {
-	  fprintf(fout_setbias_card[rcu][branch][card],"wait 1 us\n");
+	  fprintf(fout_setbias_card[rcu][branch][card],"wait 100 us\n");
 	  fprintf(fout_setbias_card[rcu][branch][card],"b %s      # read-back the values also\n", cfile);
-	  fprintf(fout_setbias_card[rcu][branch][card],"wait 1 us\n");
+	  fprintf(fout_setbias_card[rcu][branch][card],"wait 100 us\n");
 	}
-
 
 	// close down output files (set)
 	fclose(fout_setbias_card[rcu][branch][card]);
 	
 	// readbias ending
-	fprintf(fout_readbias_card[rcu][branch][card],"w 0x%4X 0x%06X \n", 
-		rcu_addr_read, 0x390000);
+	fprintf(fout_readbias_card[rcu][branch][card],"w 0x%04X 0x%06X \n", 
+		rcu_addr_read, rcu_endmem[RCUFWVersion]);
 	rcu_addr_read++;
 
 	fprintf(fout_readbias_card[rcu][branch][card],"wait 1 us\n");
-	fprintf(fout_readbias_card[rcu][branch][card],"w 0x0 0x0           # execute and update registers\n");
+	fprintf(fout_readbias_card[rcu][branch][card],"w 0x%X 0x0           # execute and update registers\n",
+		rcu_exeseq[RCUFWVersion]);
 
 	fprintf(fout_readbias_card[rcu][branch][card],"wait 1 us\n");
-	fprintf(fout_readbias_card[rcu][branch][card],"r 0x7800            # error checking\n");
-	fprintf(fout_readbias_card[rcu][branch][card],"wait 1 us\n");
-	fprintf(fout_readbias_card[rcu][branch][card],"r 0x6000 %d( \n", NCSP);
-	fprintf(fout_readbias_card[rcu][branch][card],"wait 1 us\n");
-	fprintf(fout_readbias_card[rcu][branch][card],"r 0x7800            # error checking\n");
-	fprintf(fout_readbias_card[rcu][branch][card],"w 0x6c01 0x 0       # clear registers\n");
-	
+	int nRead = NCSP*2; // new FW reads back i/o 
+	if (RCUFWVersion == 0) { // specialty for old FW version
+	  fprintf(fout_readbias_card[rcu][branch][card],"r 0x7800            # error checking\n");
+	  fprintf(fout_readbias_card[rcu][branch][card],"wait 1 us\n");
+	  nRead = NCSP;
+	}
+	fprintf(fout_readbias_card[rcu][branch][card],"r 0x%04X %d( \n", rcu_result_reg[RCUFWVersion], nRead);
+	if (RCUFWVersion == 0) { // specialty for old FW version
+	  fprintf(fout_readbias_card[rcu][branch][card],"wait 1 us\n");
+	  fprintf(fout_readbias_card[rcu][branch][card],"r 0x7800            # error checking\n");
+	  fprintf(fout_readbias_card[rcu][branch][card],"w 0x6c01 0x 0       # clear registers\n");
+	}
+
 	// close down output files (read)
 	fclose(fout_readbias_card[rcu][branch][card]);
 
