@@ -69,8 +69,8 @@ public:
   virtual AliCaloTrackReader * GetReader() const {return fReader ; }
   virtual void SetReader(AliCaloTrackReader * reader) { fReader = reader ; }
   
-  virtual void Terminate() {;}
-  
+  virtual void Terminate(TList * /*outputList*/) {;}
+	
   //analysis AOD branch
   virtual TClonesArray * GetCreateOutputAODBranch() ;
   virtual TString GetInputAODName() const {return fInputAODName ; }

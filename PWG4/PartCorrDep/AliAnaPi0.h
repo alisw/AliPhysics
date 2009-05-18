@@ -61,8 +61,9 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TString GetCalorimeter()   const {return fCalorimeter ; }
   void SetCalorimeter(TString det)    {fCalorimeter = det ; }
   
-  void Terminate();
-  
+  void Terminate(TList* outputList);
+  void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
+	
   private:
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
   

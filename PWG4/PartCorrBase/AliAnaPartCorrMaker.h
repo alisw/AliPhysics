@@ -46,7 +46,7 @@ class AliAnaPartCorrMaker : public TObject {
   void SwitchOnAODsMaker()   { fMakeAOD = kTRUE ; }
   void SwitchOffAODsMaker()   { fMakeAOD = kFALSE ; }
   
-  void Terminate();
+  void Terminate(TList * outputList);
 
   void AddAnalysis(TObject* ana, Int_t n) {
     if ( fAnalysisContainer) fAnalysisContainer->AddAt(ana,n); 
