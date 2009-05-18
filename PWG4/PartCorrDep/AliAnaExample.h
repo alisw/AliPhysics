@@ -46,8 +46,9 @@ class AliAnaExample : public AliAnaPartCorrBaseClass {
   TString GetDetector() const {return fDetector ;}
   void SetDetector( TString calo ) {fDetector = calo; }
   
-  void Terminate();
-  
+  void Terminate(TList * outputList);
+  void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
+
  private:
   
   Int_t  fPdg ; //identified particle id

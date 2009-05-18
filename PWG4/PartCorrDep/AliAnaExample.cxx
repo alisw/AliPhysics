@@ -375,12 +375,43 @@ void  AliAnaExample::MakeAnalysisFillHistograms()
   }
 }
 
+//________________________________________________________________________
+void AliAnaExample::ReadHistograms(TList* outputList)
+{
+	// Needed when Terminate is executed in distributed environment
+	// Refill analysis histograms of this class with corresponding histograms in output list. 
+	
+	// Histograms of this analsys are kept in the same list as other analysis, recover the position of
+	// the first one and then add the next 
+	Int_t index = outputList->IndexOf(outputList->FindObject(GetAddedHistogramsStringToName()+"hPt"));
+	
+	//Read histograms, must be in the same order as in GetCreateOutputObject.
+	fhPt   = (TH1F *) outputList->At(index++); 
+	fhPhi  = (TH1F *) outputList->At(index++); 
+	fhEta  = (TH1F *) outputList->At(index++);
+	
+	if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) {
+	 fhNCells     = (TH1F *) outputList->At(index++); 
+	 fhAmplitude  = (TH1F *) outputList->At(index++); 
+	}
+	
+	if(IsDataMC()){
+	  fh2Pt  = (TH2F *) outputList->At(index++); 
+	  fh2Phi = (TH2F *) outputList->At(index++); 
+	  fh2Eta = (TH2F *) outputList->At(index); 
+	}
+	
+}
+
 //__________________________________________________________________
-void  AliAnaExample::Terminate() 
+void  AliAnaExample::Terminate(TList* outputList) 
 {
   
   //Do some plots to end
   
+  //Recover histograms from output histograms list, needed for distributed analysis.	
+  ReadHistograms(outputList);
+	
   printf(" AliAnaExample::Terminate()  *** %s Report:", GetName()) ; 
   printf(" AliAnaExample::Terminate()        pt         : %5.3f , RMS : %5.3f \n", fhPt->GetMean(),   fhPt->GetRMS() ) ;
  

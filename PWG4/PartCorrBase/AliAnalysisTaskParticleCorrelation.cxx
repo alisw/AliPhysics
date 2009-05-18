@@ -155,9 +155,11 @@ void AliAnalysisTaskParticleCorrelation::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
   // Do some plots
-  //
-  
-  fAna->Terminate();
 
+  // Get merged histograms from the output container
+  TList *outputList = (TList*)GetOutputData(1);
+  // Propagate histagrams to maker
+  fAna->Terminate(outputList);
+	
 }
 

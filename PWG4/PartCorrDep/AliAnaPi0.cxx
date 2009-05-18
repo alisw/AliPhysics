@@ -42,7 +42,6 @@
 #include "TParticle.h"
 #include "AliAODCaloCluster.h"
 #include "AliVEvent.h"
-#include "AliLog.h"
 
 #ifdef __PHOSGEO__
 	#include "AliPHOSGeoUtils.h"
@@ -482,18 +481,58 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   
 }	
 
+//________________________________________________________________________
+void AliAnaPi0::ReadHistograms(TList* outputList)
+{
+	// Needed when Terminate is executed in distributed environment
+	// Refill analysis histograms of this class with corresponding histograms in output list. 
+	
+	// Histograms of this analsys are kept in the same list as other analysis, recover the position of
+	// the first one and then add the next 
+	Int_t index = outputList->IndexOf(outputList->FindObject(GetAddedHistogramsStringToName()+"hRe_cen0_pid0_dist1"));
+	
+
+    for(Int_t ic=0; ic<fNCentrBin; ic++){
+        for(Int_t ipid=0; ipid<fNPID; ipid++){
+			fhRe1[ic*fNPID+ipid] = (TH3D*) outputList->At(index++);
+			fhMi1[ic*fNPID+ipid] = (TH3D*) outputList->At(index++);
+			fhRe2[ic*fNPID+ipid] = (TH3D*) outputList->At(index++);
+			fhMi2[ic*fNPID+ipid] = (TH3D*) outputList->At(index++);
+			fhRe3[ic*fNPID+ipid] = (TH3D*) outputList->At(index++);
+			fhMi3[ic*fNPID+ipid] = (TH3D*) outputList->At(index++);
+		}
+	}
+	
+	fhEvents = (TH3D *) outputList->At(index++); 
+	
+	//Histograms filled only if MC data is requested 	
+	if(IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC) ){
+		 fhPrimPt     = (TH1D*)  outputList->At(index++);
+		 fhPrimAccPt  = (TH1D*)  outputList->At(index++);
+		 fhPrimY      = (TH1D*)  outputList->At(index++);
+		 fhPrimAccY   = (TH1D*)  outputList->At(index++);
+		 fhPrimPhi    = (TH1D*)  outputList->At(index++);
+		 fhPrimAccPhi = (TH1D*)  outputList->At(index);
+	}
+	
+}
+
+
 //____________________________________________________________________________________________________________________________________________________
-void AliAnaPi0::Terminate() 
+void AliAnaPi0::Terminate(TList* outputList) 
 {
   //Do some calculations and plots from the final histograms.
   
   printf(" *** %s Terminate:\n", GetName()) ; 
-  
+ 
+  //Recover histograms from output histograms list, needed for distributed analysis.    
+  ReadHistograms(outputList);
+	
   if (!fhRe1) {
      printf("AliAnaPi0::Terminate() - Error: Remote output histograms not imported in AliAnaPi0 object");
      return;
   }
-      
+	
   printf("AliAnaPi0::Terminate()         Mgg Real        : %5.3f , RMS : %5.3f \n", fhRe1[0]->GetMean(),   fhRe1[0]->GetRMS() ) ;
  
   char nameIM[128];

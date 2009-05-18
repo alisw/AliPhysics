@@ -254,15 +254,20 @@ Bool_t AliAnaPartCorrMaker::ProcessEvent(Int_t iEntry){
 }
 
 //________________________________________________________________________
-void AliAnaPartCorrMaker::Terminate()
+void AliAnaPartCorrMaker::Terminate(TList * outputList)
 {  
   //Execute Terminate of analysis
   //Do some final plots.
   
+  if (!outputList) {
+	  Error("Terminate", "No output list");
+	  return;
+  }
+	
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
     
     AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-    ana->Terminate();
+    ana->Terminate(outputList);
     
   }//Loop on analysis defined
 }
