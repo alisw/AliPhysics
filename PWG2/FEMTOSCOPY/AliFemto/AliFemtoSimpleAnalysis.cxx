@@ -414,7 +414,8 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn, AliFemtoParticleColle
 
   string type = typeIn;
 
-  int swpart = ((long int) partCollection1) % 2;
+  //  int swpart = ((long int) partCollection1) % 2;
+  int swpart = fNeventsProcessed % 2;
 
   AliFemtoPair* tPair = new AliFemtoPair;
 
