@@ -74,9 +74,8 @@ TEveTrackList* esd_hlt_tracks()
 
   TEveTrackList* cont = new TEveTrackList("HLT ESD Tracks");
   cont->SetMainColor(7);
-  TEveTrackPropagator* trkProp = cont->GetPropagator();
-  trkProp->SetMagField(0.1*esd->GetMagneticField());
-  trkProp->SetMaxR    (520);
+  esd_track_propagator_setup(cont->GetPropagator(),
+			     0.1*esd->GetMagneticField(), 520);
 
   eveManager->AddElement(cont);
 

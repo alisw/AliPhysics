@@ -8,8 +8,12 @@
  *
  * Usage: aliroot -b -q sim-hlt-tpc.C | tee sim-hlt-tpc.log
  *
- * The chain to be run is defined by the macro given to the parameter
- * 'config='
+ * The chain to be run is defined within the macro.
+ *
+ * The following options can be specified comma separated in a string:
+ *   aliroot -b -q sim-hlt-tpc.C'("options")'
+ *       CA    use the cellular automaton  tracker and track merger
+ *       CM    use the conformal mapping tracker and track merger
  *
  * The macro asumes the data to be already simulated. If it should run
  * within the initial simulation, comment the corresponding functions
@@ -18,11 +22,38 @@
  * @author Matthias.Richter@ift.uib.no
  * @ingroup alihlt_tpc
  */
+sim_hlt_tpc(const char* options="CA")
 {
   // this is just a tool to switch the logging systems
   AliHLTLogging log;
   //log.SwitchAliLog(0);
 
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // scanning the options
+  //
+  bool bUseCA=false; // use the CA tracker and merger
+  TString tsOptions=options;
+  TObjArray* pTokens=tsOptions.Tokenize(",");
+  if (pTokens) {
+    for (int n=0; n<pTokens->GetEntries(); n++) {
+      TString arg=((TObjString*)pTokens->At(n))->GetString();
+      if (arg.CompareTo("ca", TString::kIgnoreCase)==0) {
+	bUseCA=true;
+      } else if (arg.CompareTo("cm", TString::kIgnoreCase)==0) {
+	bUseCA=false;
+      } else {
+	cout << "unknown argument: " << arg << endl;
+	return 0;
+      }
+    }
+    delete pTokens;
+  }
+  // summary
+  cout << "using " << bUseCA?"CA":"CM" << " tracker" << endl;
+  
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,10 +116,15 @@
       if (sinkClusterInput.Length()>0) sinkClusterInput+=" ";
       sinkClusterInput+=cf;
     }
+
     TString tracker;
     // tracker finder components
     tracker.Form("TR_%02d", slice);
-    AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run");
+    if (bUseCA) {
+      AliHLTConfiguration trackerconf(tracker.Data(), "TPCCATracker", trackerInput.Data(), "");
+    } else {
+      AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run");
+    }
 
     //add all trackers to writer input. Include if you would like all slice tracks written.
     //if (writerInput.Length()>0) writerInput+=" ";
@@ -104,7 +140,11 @@
   }
 
   // GlobalMerger component
-  AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
+  if (bUseCA) {
+    AliHLTConfiguration mergerconf("globalmerger","TPCCAGlobalMerger",mergerInput.Data(),"");
+  } else {
+    AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
+  }
 
   if (writerInput.Length()>0) writerInput+=" ";
   writerInput+="globalmerger";
