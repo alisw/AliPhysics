@@ -602,9 +602,11 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 
  
   AliCodeTimerAuto("")
+  AliSysInfo::AddStamp("Start_Run");
   
   // Load run number and seed from environmental vars
   ProcessEnvironmentVars();
+  AliSysInfo::AddStamp("ProcessEnvironmentVars");
 
   gRandom->SetSeed(fSeed);
    
@@ -615,11 +617,13 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   if (fRunGeneration) {
     if (!RunSimulation()) if (fStopOnError) return kFALSE;
   }
+  AliSysInfo::AddStamp("RunSimulation");
            
   // initialize CDB storage from external environment
   // (either CDB manager or AliSimulation setters),
   // if not already done in RunSimulation()
   InitCDB();
+  AliSysInfo::AddStamp("InitCDB");
   
   // Set run number in CDBManager from data 
   // From this point on the run number must be always loaded from data!
@@ -633,6 +637,8 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   if (!AliGeomManager::GetGeometry()) {
     // Initialize the geometry manager
     AliGeomManager::LoadGeometry("geometry.root");
+  AliSysInfo::AddStamp("GetGeometry");
+
     
 //    // Check that the consistency of symbolic names for the activated subdetectors
 //    // in the geometry loaded by AliGeomManager
@@ -655,6 +661,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     // Misalign geometry
     if(!MisalignGeometry()) if (fStopOnError) return kFALSE;
   }
+  AliSysInfo::AddStamp("MissalignGeometry");
 
 
   // hits -> summable digits
@@ -689,6 +696,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     }
   }
 
+  AliSysInfo::AddStamp("Hits2Digits");
   
   
   // digits -> trigger
@@ -696,6 +704,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     if (fStopOnError) return kFALSE;
   }
 
+  AliSysInfo::AddStamp("RunTrigger");
   
   
   // digits -> raw data
@@ -706,6 +715,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     }
   }
 
+  AliSysInfo::AddStamp("WriteRaw");
   
   // run HLT simulation on simulated digit data if raw data is not
   // simulated, otherwise its called as part of WriteRawData
@@ -714,6 +724,8 @@ Bool_t AliSimulation::Run(Int_t nEvents)
       if (fStopOnError) return kFALSE;
     }
   }
+
+  AliSysInfo::AddStamp("RunHLT");
   
   //QA
 	if (fRunQA) {
@@ -722,6 +734,8 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 			if (fStopOnError) 
 				return kFALSE ;   	
 	}
+
+  AliSysInfo::AddStamp("RunQA");
 
   // Cleanup of CDB manager: cache and active storages!
   AliCDBManager::Instance()->ClearCache();
@@ -939,9 +953,12 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   // initialize CDB storage and run number from external environment
   // (either CDB manager or AliSimulation setters)
+  AliSysInfo::AddStamp("RunSimulation_Begin");
   InitCDB();
+  AliSysInfo::AddStamp("RunSimulation_InitCDB");
   InitRunNumber();
   SetCDBLock();
+  AliSysInfo::AddStamp("RunSimulation_SetCDBLock");
   
   if (!gAlice) {
     AliError("no gAlice object. Restart aliroot and try again.");
@@ -963,6 +980,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   gROOT->LoadMacro(fConfigFileName.Data());
   gInterpreter->ProcessLine(gAlice->GetConfigFunction());
+  AliSysInfo::AddStamp("RunSimulation_Config");
 
   if(AliCDBManager::Instance()->GetRun() >= 0) { 
     AliRunLoader::Instance()->SetRunNumber(AliCDBManager::Instance()->GetRun());
@@ -976,8 +994,10 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
    AliPDG::AddParticlesToPdgDataBase();  
 
    gAlice->GetMCApp()->Init();
+   AliSysInfo::AddStamp("RunSimulation_InitMCApp");
 
    gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
+   AliSysInfo::AddStamp("RunSimulation_GetField");
    
    //Must be here because some MCs (G4) adds detectors here and not in Config.C
    gAlice->InitLoaders();
@@ -990,6 +1010,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
    AliRunLoader::Instance()->CdGAFile();
    gAlice->Write();
    gAlice->SetEventNrInRun(-1); //important - we start Begin event from increasing current number in run
+   AliSysInfo::AddStamp("RunSimulation_InitLoaders");
   //___________________________________________________________________________________________
   
   // Get the trigger descriptor string
@@ -1001,6 +1022,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   }
   else
     gAlice->SetTriggerDescriptor(fMakeTrigger.Data());
+  AliSysInfo::AddStamp("RunSimulation_TriggerDescriptor");
 
   // Set run number in CDBManager
   AliInfo(Form("Run number: %d",AliCDBManager::Instance()->GetRun()));
@@ -1030,6 +1052,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   if(!AliGeomManager::CheckSymNamesLUT(detsToBeChecked.Data()))
     AliFatalClass("Current loaded geometry differs in the definition of symbolic names!");
   MisalignGeometry(runLoader);
+  AliSysInfo::AddStamp("RunSimulation_MisalignGeometry");
 #endif
 
 //   AliRunLoader* runLoader = AliRunLoader::Instance();
@@ -1049,6 +1072,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   // Write GRP entry corresponding to the setting found in Cofig.C
   if (fWriteGRPEntry)
     WriteGRPEntry();
+  AliSysInfo::AddStamp("RunSimulation_WriteGRP");
 
   if (nEvents <= 0) nEvents = fNEvents;
 
@@ -1097,7 +1121,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   }
 
   AliInfo("running gAlice");
-  AliSysInfo::AddStamp("Start_simulation");
+  AliSysInfo::AddStamp("Start_ProcessRun");
 
   // Create the Root Tree with one branch per detector
   //Hits moved to begin event -> now we are crating separate tree for each event
@@ -1107,7 +1131,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   // End of this run, close files
   if(nEvents>0) FinishRun();
 
-  AliSysInfo::AddStamp("Stop_simulation");
+  AliSysInfo::AddStamp("Stop_ProcessRun");
   delete runLoader;
 
   return kTRUE;
@@ -1273,11 +1297,13 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
 // accoring to the trigger cluster.
 
   AliCodeTimerAuto("")
+  AliSysInfo::AddStamp("WriteRawData_Start");
   
   TString detStr = detectors;
   if (!WriteRawFiles(detStr.Data())) {
     if (fStopOnError) return kFALSE;
   }
+  AliSysInfo::AddStamp("WriteRawFiles");
 
   // run HLT simulation on simulated DDL raw files
   // and produce HLT ddl raw files to be included in date/root file
@@ -1286,6 +1312,7 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
       if (fStopOnError) return kFALSE;
     }
   }
+  AliSysInfo::AddStamp("WriteRawData_RunHLT");
 
   TString dateFileName(fileName);
   if (!dateFileName.IsNull()) {
@@ -1299,6 +1326,7 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
     if (!ConvertRawFilesToDate(dateFileName,selDateFileName)) {
       if (fStopOnError) return kFALSE;
     }
+    AliSysInfo::AddStamp("ConvertRawFilesToDate");
     if (deleteIntermediateFiles) {
       AliRunLoader* runLoader = LoadRun("READ");
       if (runLoader) for (Int_t iEvent = 0; 
@@ -1313,6 +1341,7 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
       if (!ConvertDateToRoot(dateFileName, fileName)) {
 	if (fStopOnError) return kFALSE;
       }
+      AliSysInfo::AddStamp("ConvertDateToRoot");
       if (deleteIntermediateFiles) {
 	gSystem->Unlink(dateFileName);
       }
