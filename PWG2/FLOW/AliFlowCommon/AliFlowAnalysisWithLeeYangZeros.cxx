@@ -326,13 +326,16 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 	dR0 = fHist1[theta]->GetR0();
 		    	   	   
 	//calculate integrated flow
-	if (dR0!=0) { dVtheta = dJ01/dR0; }
+	if (dR0!=0.) { dVtheta = dJ01/dR0; }
 	else { cout<<"r0 is not found! Leaving LYZ analysis."<<endl; return kFALSE; }
 
 	//for estimating systematic error resulting from d0
 	Double_t dBinsize = (AliFlowLYZConstants::fgMax)/(AliFlowLYZConstants::kNbins);
-	Double_t dVplus = dJ01/(dR0+dBinsize);
-	Double_t dVmin = dJ01/(dR0-dBinsize);
+	Double_t dVplus = -1.;
+	Double_t dVmin  = -1.;
+	if (dR0+dBinsize!=0.) {dVplus = dJ01/(dR0+dBinsize);}
+	if (dR0-dBinsize!=0.) {dVmin = dJ01/(dR0-dBinsize);}
+	//convert V to v (normally v = V/M, but here V=v because the Q-vector is scaled by 1/M)
 	dv = dVtheta;
 	Double_t dvplus = dVplus;
 	Double_t dvmin = dVmin;
