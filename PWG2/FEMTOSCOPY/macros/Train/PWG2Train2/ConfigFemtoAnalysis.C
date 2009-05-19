@@ -119,15 +119,15 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoKTPairCut *ktpairkT2pip = new AliFemtoKTPairCut(0.27,0.37);
   AliFemtoKTPairCut *ktpairkT3pip = new AliFemtoKTPairCut(0.37,0.52);
 
-  AliFemtoCorrFctnDirectYlm *cylmkT1pip = new AliFemtoCorrFctnDirectYlm("cylmkT1pip",3,60,0.0,0.3);
+  AliFemtoCorrFctnDirectYlm *cylmkT1pip = new AliFemtoCorrFctnDirectYlm("cylmkT1pip",3,60,0.0,0.3,1);
   cylmkT1pip->SetPairSelectionCut(ktpairkT1pip);
   anpip->AddCorrFctn(cylmkT1pip);
     
-  AliFemtoCorrFctnDirectYlm *cylmkT2pip = new AliFemtoCorrFctnDirectYlm("cylmkT2pip",3,60,0.0,0.3);
+  AliFemtoCorrFctnDirectYlm *cylmkT2pip = new AliFemtoCorrFctnDirectYlm("cylmkT2pip",3,60,0.0,0.3,1);
   cylmkT2pip->SetPairSelectionCut(ktpairkT2pip);
   anpip->AddCorrFctn(cylmkT2pip);
     
-  AliFemtoCorrFctnDirectYlm *cylmkT3pip = new AliFemtoCorrFctnDirectYlm("cylmkT3pip",3,60,0.0,0.3);
+  AliFemtoCorrFctnDirectYlm *cylmkT3pip = new AliFemtoCorrFctnDirectYlm("cylmkT3pip",3,60,0.0,0.3,1);
   cylmkT3pip->SetPairSelectionCut(ktpairkT3pip);
   anpip->AddCorrFctn(cylmkT3pip);
 
@@ -187,17 +187,17 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   c3dmsphpip = new AliFemtoModelCorrFctn3DSpherical("c3dmsphpip",60, 0.0, 0.3, 12,12);
   c3dmsphpip->ConnectToManager(tModelManagerpip);
 
-  AliFemtoModelCorrFctnDirectYlm *cmylmkt1pip = new AliFemtoModelCorrFctnDirectYlm("mcylmkt1pip",3,60,0.0,0.3);
+  AliFemtoModelCorrFctnDirectYlm *cmylmkt1pip = new AliFemtoModelCorrFctnDirectYlm("mcylmkt1pip",3,60,0.0,0.3,1);
   cmylmkt1pip->SetPairSelectionCut(ktpairkT1pip);
   cmylmkt1pip->ConnectToManager(tModelManagerpip);
   anpip->AddCorrFctn(cmylmkt1pip);
 
-  AliFemtoModelCorrFctnDirectYlm *cmylmkt2pip = new AliFemtoModelCorrFctnDirectYlm("mcylmkt2pip",3,60,0.0,0.3);
+  AliFemtoModelCorrFctnDirectYlm *cmylmkt2pip = new AliFemtoModelCorrFctnDirectYlm("mcylmkt2pip",3,60,0.0,0.3,1);
   cmylmkt2pip->SetPairSelectionCut(ktpairkT2pip);
   cmylmkt2pip->ConnectToManager(tModelManagerpip);
   anpip->AddCorrFctn(cmylmkt2pip);
 
-  AliFemtoModelCorrFctnDirectYlm *cmylmkt3pip = new AliFemtoModelCorrFctnDirectYlm("mcylmkt3pip",3,60,0.0,0.3);
+  AliFemtoModelCorrFctnDirectYlm *cmylmkt3pip = new AliFemtoModelCorrFctnDirectYlm("mcylmkt3pip",3,60,0.0,0.3,1);
   cmylmkt3pip->SetPairSelectionCut(ktpairkT3pip);
   cmylmkt3pip->ConnectToManager(tModelManagerpip);
   anpip->AddCorrFctn(cmylmkt3pip);
@@ -233,7 +233,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   dtcpim->SetPidProbMuon(0.0,1.0);
   dtcpim->SetPidProbKaon(0.0,1.0);
   dtcpim->SetPidProbProton(0.0,1.0);
-  dtcpim->SetCharge(1.0);
+  dtcpim->SetCharge(-1.0);
   dtcpim->SetPt(0.15,0.5);
   dtcpim->SetMass(PionMass);
   // Track quality cuts
@@ -279,15 +279,15 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoKTPairCut *ktpairkT2pim = new AliFemtoKTPairCut(0.27,0.37);
   AliFemtoKTPairCut *ktpairkT3pim = new AliFemtoKTPairCut(0.37,0.52);
 
-  AliFemtoCorrFctnDirectYlm *cylmkT1pim = new AliFemtoCorrFctnDirectYlm("cylmkT1pim",3,60,0.0,0.3);
+  AliFemtoCorrFctnDirectYlm *cylmkT1pim = new AliFemtoCorrFctnDirectYlm("cylmkT1pim",3,60,0.0,0.3,1);
   cylmkT1pim->SetPairSelectionCut(ktpairkT1pim);
   anpim->AddCorrFctn(cylmkT1pim);
     
-  AliFemtoCorrFctnDirectYlm *cylmkT2pim = new AliFemtoCorrFctnDirectYlm("cylmkT2pim",3,60,0.0,0.3);
+  AliFemtoCorrFctnDirectYlm *cylmkT2pim = new AliFemtoCorrFctnDirectYlm("cylmkT2pim",3,60,0.0,0.3,1);
   cylmkT2pim->SetPairSelectionCut(ktpairkT2pim);
   anpim->AddCorrFctn(cylmkT2pim);
     
-  AliFemtoCorrFctnDirectYlm *cylmkT3pim = new AliFemtoCorrFctnDirectYlm("cylmkT3pim",3,60,0.0,0.3);
+  AliFemtoCorrFctnDirectYlm *cylmkT3pim = new AliFemtoCorrFctnDirectYlm("cylmkT3pim",3,60,0.0,0.3,1);
   cylmkT3pim->SetPairSelectionCut(ktpairkT3pim);
   anpim->AddCorrFctn(cylmkT3pim);
 
@@ -347,17 +347,17 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   c3dmsphpim = new AliFemtoModelCorrFctn3DSpherical("c3dmsphpim",60, 0.0, 0.3, 12,12);
   c3dmsphpim->ConnectToManager(tModelManagerpim);
 
-  AliFemtoModelCorrFctnDirectYlm *cmylmkt1pim = new AliFemtoModelCorrFctnDirectYlm("mcylmkt1pim",3,60,0.0,0.3);
+  AliFemtoModelCorrFctnDirectYlm *cmylmkt1pim = new AliFemtoModelCorrFctnDirectYlm("mcylmkt1pim",3,60,0.0,0.3,1);
   cmylmkt1pim->SetPairSelectionCut(ktpairkT1pim);
   cmylmkt1pim->ConnectToManager(tModelManagerpim);
   anpim->AddCorrFctn(cmylmkt1pim);
 
-  AliFemtoModelCorrFctnDirectYlm *cmylmkt2pim = new AliFemtoModelCorrFctnDirectYlm("mcylmkt2pim",3,60,0.0,0.3);
+  AliFemtoModelCorrFctnDirectYlm *cmylmkt2pim = new AliFemtoModelCorrFctnDirectYlm("mcylmkt2pim",3,60,0.0,0.3,1);
   cmylmkt2pim->SetPairSelectionCut(ktpairkT2pim);
   cmylmkt2pim->ConnectToManager(tModelManagerpim);
   anpim->AddCorrFctn(cmylmkt2pim);
 
-  AliFemtoModelCorrFctnDirectYlm *cmylmkt3pim = new AliFemtoModelCorrFctnDirectYlm("mcylmkt3pim",3,60,0.0,0.3);
+  AliFemtoModelCorrFctnDirectYlm *cmylmkt3pim = new AliFemtoModelCorrFctnDirectYlm("mcylmkt3pim",3,60,0.0,0.3,1);
   cmylmkt3pim->SetPairSelectionCut(ktpairkT3pim);
   cmylmkt3pim->ConnectToManager(tModelManagerpim);
   anpim->AddCorrFctn(cmylmkt3pim);
