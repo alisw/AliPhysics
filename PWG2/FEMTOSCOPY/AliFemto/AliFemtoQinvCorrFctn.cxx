@@ -114,6 +114,9 @@ AliFemtoString AliFemtoQinvCorrFctn::Report(){
 //____________________________
 void AliFemtoQinvCorrFctn::AddRealPair(AliFemtoPair* pair){
   // add true pair
+  if (fPairCut)
+    if (!fPairCut->Pass(pair)) return;
+  
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   fNumerator->Fill(tQinv);
   //  cout << "AliFemtoQinvCorrFctn::AddRealPair : " << pair->qInv() << " " << tQinv <<
@@ -122,6 +125,9 @@ void AliFemtoQinvCorrFctn::AddRealPair(AliFemtoPair* pair){
 //____________________________
 void AliFemtoQinvCorrFctn::AddMixedPair(AliFemtoPair* pair){
   // add mixed (background) pair
+  if (fPairCut)
+    if (!fPairCut->Pass(pair)) return;
+  
   double weight = 1.0;
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   fDenominator->Fill(tQinv,weight);
