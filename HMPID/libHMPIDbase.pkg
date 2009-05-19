@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 SRCS:=  AliHMPIDHit.cxx AliHMPIDDigit.cxx  AliHMPIDCluster.cxx AliHMPIDParam.cxx AliHMPIDPreprocessor.cxx \
-		AliHMPIDQAChecker.cxx AliHMPIDCalib.cxx AliHMPIDRawStream.cxx
+		AliHMPIDQAChecker.cxx AliHMPIDCalib.cxx AliHMPIDRawStream.cxx AliHMPIDMisAligner.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 DHDR:= HMPIDbaseLinkDef.h

@@ -12,5 +12,6 @@
 #pragma link C++ class  AliHMPIDQAChecker+;
 #pragma link C++ class  AliHMPIDCalib+;
 #pragma link C++ class  AliHMPIDRawStream+;
+#pragma link C++ class  AliHMPIDMisAligner+;
 
 #endif
