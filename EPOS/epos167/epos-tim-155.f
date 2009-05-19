@@ -550,18 +550,22 @@ c          endif
         pprt(1,ij(2))=-cos(alpha)*pt
         pprt(2,ij(2))=-sin(alpha)*pt
       endif
-      if(ij(1).ne.j1.and.(pprt(1,io).ne.0..or.pprt(2,io).ne.0.))then
+      if(ij(1).ne.j1)then
+      if(pprt(1,io).ne.0..or.pprt(2,io).ne.0.)then
         do ii=1,2
           call utrota(-1,pprt(1,io),pprt(2,io),pprt(3,io)
      &    ,pprt(1,ij(ii)),pprt(2,ij(ii)),pprt(3,ij(ii)))
         enddo
       endif
-      if(ij(1).ne.j1.and.pprt(3,io).lt.0.)then
+      endif
+      if(ij(1).ne.j1)then
+      if(pprt(3,io).lt.0.)then
         do k=1,3
           do ii=1,2
             pprt(k,ij(ii)) = -pprt(k,ij(ii))
           enddo
         enddo
+      endif
       endif
       do ii=1,ii2
         if(id(1,ii).ne.0)then

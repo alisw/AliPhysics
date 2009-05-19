@@ -2746,7 +2746,8 @@ c-------------------------------------------------------------------
       i=0
 
     1 i=i+1
-      if(i.gt.160.or.line(i:i).eq.'!')goto5
+      if(i.gt.160)goto5
+      if(line(i:i).eq.'!')goto5
       do ne=1,mempty
       if(line(i:i).eq.empty(ne))goto1
       enddo
