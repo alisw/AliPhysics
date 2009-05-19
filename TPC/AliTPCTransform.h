@@ -29,6 +29,7 @@ public:
   void RotatedGlobal2Global(Int_t sector,Double_t *x) const;
   void Global2RotatedGlobal(Int_t sector,Double_t *x) const;
   void GetCosAndSin(Int_t sector,Double_t &cos,Double_t &sin) const;
+  UInt_t GetCurrentTimeStamp() const { return fCurrentTimeStamp;}
   //
   // set current values
   //
