@@ -86,7 +86,7 @@ Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
            AliDebug(AliQAv1::GetQADebugLevel(), Form("%s: Cluster sizeY mean = %f  rms = %f", hdata->GetName(),meany,rmsy));
            AliDebug(AliQAv1::GetQADebugLevel(), Form("%s: Cluster sizeZ mean = %f  rms = %f", hdata->GetName(),meanz,rmsz));
         }
-        else if(histName.Contains("Multiplicity")) {
+        else if(histName.Contains("SPDMultiplicity")) {
            AliDebug(2, Form("%s: Events = %d  mean = %f  rms = %f",
                         hdata->GetName(),(Int_t)hdata->GetEntries(),hdata->GetMean(),hdata->GetRMS()));}
 
