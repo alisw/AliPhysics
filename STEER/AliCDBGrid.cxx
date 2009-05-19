@@ -322,9 +322,13 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 	}
 	delete res;
 
-	if (!id.HasVersion()){
-		id.SetVersion(lastVersion + 1);
+	// in case of GRP-like objects, do not put them if it would update a per-run entry already in place
+	if ( id.GetVersion()==1 && (id.GetLastRun()-id.GetFirstRun()==0) && lastVersion!=0 && (lastRunRange.GetLastRun()-lastRunRange.GetFirstRun()==0)){
+	        AliWarning(Form("Not overwriting entry with %s", id.ToString().Data()));
+	        return kFALSE;
 	}
+
+	id.SetVersion(lastVersion + 1);
 	id.SetSubVersion(0);
 
 	TString lastStorage = id.GetLastStorage();
