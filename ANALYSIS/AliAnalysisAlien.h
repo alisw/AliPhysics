@@ -49,6 +49,7 @@ public:
    virtual void        SetGridWorkingDir(const char *name="workdir")     {fGridWorkingDir = name;}
    virtual void        SetGridDataDir(const char *name)                  {fGridDataDir = name;}
    virtual void        SetDataPattern(const char *pattern="*AliESDs.root") {fDataPattern = pattern;}
+   virtual void        SetFriendChainName(const char *name="")           {fFriendChainName = name;}
    virtual void        SetDefaultOutputs(Bool_t flag);
    virtual void        SetGridOutputDir(const char *name="output")       {fGridOutputDir = name;}
    virtual void        SetOutputArchive(const char *list="log_archive.zip:stdout,stderr root_archive.zip:*.root") {fOutputArchive = list;}
@@ -115,9 +116,10 @@ private:
    TString          fMergeExcludes;   // List of output files excluded from merging
    TString          fIncludePath;     // Include path
    TString          fCloseSE;         // Preffered storage element. Taken from alien_CLOSE_SE environment.
+   TString          fFriendChainName; // File name to construct friend chain (for AOD)
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 2)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 3)   // Class providing some AliEn utilities
 };
 #endif

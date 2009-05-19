@@ -71,6 +71,7 @@ AliAnalysisAlien::AliAnalysisAlien()
 		            fMergeExcludes(),
                   fIncludePath(),
                   fCloseSE(),
+                  fFriendChainName(),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -111,6 +112,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fMergeExcludes(),
                   fIncludePath(),
                   fCloseSE(),
+                  fFriendChainName(),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -151,6 +153,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fMergeExcludes(other.fMergeExcludes),
                   fIncludePath(other.fIncludePath),
                   fCloseSE(other.fCloseSE),
+                  fFriendChainName(other.fFriendChainName),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -217,6 +220,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fMergeExcludes           = other.fMergeExcludes;
       fIncludePath             = other.fIncludePath;
       fCloseSE                 = other.fCloseSE;
+      fFriendChainName         = other.fFriendChainName;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
          TIter next(other.fInputFiles);
@@ -843,6 +847,7 @@ void AliAnalysisAlien::SetDefaults()
    fGridWorkingDir             = "";
    fGridDataDir                = "";  // Can be like: /alice/sim/PDC_08a/LHC08c9/
    fDataPattern                = "*AliESDs.root";  // Can be like: *AliESDs.root, */pass1/*AliESDs.root, ...
+   fFriendChainName            = "";
    fGridOutputDir              = "output";
    fOutputArchive              = "log_archive.zip:stdout,stderr root_archive.zip:*.root";
    fOutputFiles                = "";  // Like "AliAODs.root histos.root"
@@ -1023,6 +1028,7 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
    // Submit AliEn job
    CdWork();
    TGridResult *res = gGrid->Command(Form("submit %s", fJDLName.Data()));
+   printf("*************************** %s\n",Form("submit %s", fJDLName.Data()));
    TString jobID = "";
    if (res) {
       const char *cjobId = res->GetKey(0,"jobId");
@@ -1103,6 +1109,10 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          type = "AOD";
          comment += "AOD";
       }   
+      if (type!="AOD" && fFriendChainName!="") {
+         Error("WriteAnalysisMacro", "Friend chain can be attached only to AOD");
+         return;
+      }
       if (TObject::TestBit(AliAnalysisGrid::kUseMC)) comment += "/MC";
       else comment += " data";
       out << "const char *anatype = \"" << type.Data() << "\";" << endl << endl;
@@ -1255,7 +1265,13 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "      gROOT->LoadMacro(\"ConfigureCuts.C\");" << endl;
          out << "      ConfigureCuts(runCuts, lhcCuts, detCuts, evCuts);" << endl;
          out << "   }" << endl;
-         out << "   TChain *chain = tagAna->QueryTags(runCuts, lhcCuts, detCuts, evCuts);" << endl;
+         if (fFriendChainName=="") {
+            out << "   TChain *chain = tagAna->QueryTags(runCuts, lhcCuts, detCuts, evCuts);" << endl;
+         } else {
+            out << "   TString tmpColl=\"tmpCollection.xml\";" << endl;
+            out << "   tagAna->CreateXMLCollection(tmpColl.Data(),runCuts, lhcCuts, detCuts, evCuts);" << endl;
+            out << "   TChain *chain = CreateChain(tmpColl.Data(),type);" << endl;
+         }
          out << "   if (!chain || !chain->GetNtrees()) return NULL;" << endl;
          out << "   chain->ls();" << endl;
          out << "   return chain;" << endl;
@@ -1268,7 +1284,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             msg += "                      AliEventTagCuts *evCuts)";
             Info("WriteAnalysisMacro", msg.Data());
          }
-      } else {
+      } 
+      if (!IsUsingTags() || fFriendChainName!="") {
          out <<"//________________________________________________________________________________" << endl;
          out << "TChain* CreateChain(const char *xmlfile, const char *type=\"ESD\")" << endl;
          out << "{" << endl;
@@ -1285,12 +1302,26 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "      return NULL;" << endl;
          out << "   }" << endl;
          out << "   TChain *chain = new TChain(treename);" << endl;
+         if(fFriendChainName!="") {
+            out << "   TChain *chainFriend = new TChain(treename);" << endl;
+         }
          out << "   coll->Reset();" << endl;
-         out << "   while (coll->Next()) chain->Add(coll->GetTURL(\"\"));" << endl;
+         out << "   while (coll->Next()) {" << endl;
+         out << "      chain->Add(coll->GetTURL(\"\"));" << endl;
+         if(fFriendChainName!="") {
+            out << "      TString fileFriend=coll->GetTURL(\"\");" << endl;
+            out << "      fileFriend.ReplaceAll(\"AliAOD.root\",\""<<fFriendChainName.Data()<<"\");" << endl;
+            out << "      fileFriend.ReplaceAll(\"AliAODs.root\",\""<<fFriendChainName.Data()<<"\");" << endl;
+            out << "      chainFriend->Add(fileFriend.Data());" << endl;
+         }
+         out << "   }" << endl;
          out << "   if (!chain->GetNtrees()) {" << endl;
          out << "      ::Error(\"CreateChain\", \"No tree found from collection %s\", xmlfile);" << endl;
          out << "      return NULL;" << endl;
          out << "   }" << endl;
+         if(fFriendChainName!="") {
+            out << "   chain->AddFriend(chainFriend);" << endl;
+         }
          out << "   return chain;" << endl;
          out << "}" << endl << endl;
       }   
