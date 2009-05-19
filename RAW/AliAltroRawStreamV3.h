@@ -19,6 +19,7 @@
 #include <TObject.h>
 
 class AliRawReader;
+class AliAltroRawStream;
 
 class AliAltroRawStreamV3: public TObject {
   public :
@@ -143,6 +144,8 @@ class AliAltroRawStreamV3: public TObject {
     UShort_t         fActiveFECsB;  // bit pattern of active FECs in branch B
     UInt_t           fAltroCFG1;    // ALTROCFG1 register
     UInt_t           fAltroCFG2;    // ALTROCFG2 and ALTROIF registers
+
+    AliAltroRawStream* fOldStream;  // streamer for old altro format
 
     ClassDef(AliAltroRawStreamV3, 0)  // base class for reading Altro raw digits
 };

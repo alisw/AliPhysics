@@ -27,6 +27,12 @@ class AliAltroRawStream: public TObject {
     virtual void             Reset();
     virtual Bool_t           Next();
 
+    virtual Bool_t NextDDL(UChar_t* data = NULL);              // Iterate over DDLs/RCUs
+    virtual Bool_t NextChannel();                              // Iterate over altro channels
+    virtual Bool_t NextBunch(UShort_t *bunchData,
+			     Int_t &bunchLength,
+			     Int_t &startTimeBin);             // Iterate over altro bunches
+
     Int_t GetDDLNumber()  const { return fDDLNumber; }  // Provide current DDL number
     Int_t GetPrevDDLNumber() const { return fPrevDDLNumber; }// Provide previous DDL number
     Bool_t  IsNewDDLNumber() const {return (fDDLNumber != fPrevDDLNumber);};
@@ -83,7 +89,6 @@ class AliAltroRawStream: public TObject {
     void SelectRawData(Int_t detId);                           // Select raw data for specific detector id
     void SelectRawData(const char *detName);                   // Select raw data for specific detector name
 
-    void  SetNoAltroMapping(Bool_t flag) { fNoAltroMapping = flag; }  // Specify whenever to use or not the altro mapping
     void  SetShortDataHeader(Bool_t flag) { fIsShortDataHeader = flag; } // Specify whenever to assume or not a short CDH format
 
     void PrintDebug() const; // Print debug information in case of decoding errors
@@ -105,16 +110,12 @@ class AliAltroRawStream: public TObject {
 
   protected:
 
-    Bool_t           fNoAltroMapping;  // temporary flag in case of no altro mapping is provided
-    Short_t          fSegmentation[3]; // temporary container for the dummy trailer, to be removed
-
     Bool_t           fIsShortDataHeader; // flag used to select between normal and short CDH format
 
   private :
 
     UShort_t         GetNextWord();
     Bool_t           ReadTrailer();
-    Bool_t           ReadDummyTrailer();
     void             ReadBunch();
     void             ReadAmplitude();
     Int_t            GetPosition();

@@ -94,8 +94,6 @@ AliCaloRawStream::AliCaloRawStream(AliRawReader* rawReader, TString calo, AliAlt
       fMapping[i] = mapping[i];
     
   }
-  
-  SetNoAltroMapping(kFALSE);
 }
 
 //_____________________________________________________________________________

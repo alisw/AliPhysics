@@ -35,7 +35,6 @@ ClassImp(AliAltroRawStream)
 
 //_____________________________________________________________________________
 AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
-  fNoAltroMapping(kTRUE),
   fIsShortDataHeader(kFALSE),
   fDDLNumber(-1),
   fPrevDDLNumber(-1),
@@ -65,13 +64,11 @@ AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
   fAltroCFG2(0)
 {
 // create an object to read Altro raw digits
-  fSegmentation[0] = fSegmentation[1] = fSegmentation[2] = -1;
 }
 
 //_____________________________________________________________________________
 AliAltroRawStream::AliAltroRawStream(const AliAltroRawStream& stream) :
   TObject(stream),
-  fNoAltroMapping(stream.fNoAltroMapping),
   fIsShortDataHeader(stream.fIsShortDataHeader),
   fDDLNumber(stream.fDDLNumber),
   fPrevDDLNumber(stream.fPrevDDLNumber),
@@ -100,9 +97,6 @@ AliAltroRawStream::AliAltroRawStream(const AliAltroRawStream& stream) :
   fAltroCFG1(stream.fAltroCFG1),
   fAltroCFG2(stream.fAltroCFG2)
 {
-  fSegmentation[0]   = stream.fSegmentation[0];
-  fSegmentation[1]   = stream.fSegmentation[1];
-  fSegmentation[2]   = stream.fSegmentation[2];
 }
 
 //_____________________________________________________________________________
@@ -110,7 +104,6 @@ AliAltroRawStream& AliAltroRawStream::operator = (const AliAltroRawStream& strea
 {
   if(&stream == this) return *this;
 
-  fNoAltroMapping    = stream.fNoAltroMapping;
   fIsShortDataHeader = stream.fIsShortDataHeader;
   fDDLNumber         = stream.fDDLNumber;
   fPrevDDLNumber     = stream.fPrevDDLNumber;
@@ -139,10 +132,6 @@ AliAltroRawStream& AliAltroRawStream::operator = (const AliAltroRawStream& strea
   fAltroCFG1         = stream.fAltroCFG1;
   fAltroCFG2         = stream.fAltroCFG2;
 
-  fSegmentation[0]   = stream.fSegmentation[0];
-  fSegmentation[1]   = stream.fSegmentation[1];
-  fSegmentation[2]   = stream.fSegmentation[2];
-
   return *this;
 }
 
@@ -168,8 +157,6 @@ void AliAltroRawStream::Reset()
   fDDLNumber = fPrevDDLNumber = fRCUId = fPrevRCUId = fHWAddress = fPrevHWAddress = fTime = fPrevTime = fSignal = fTimeBunch = -1;
 
   if (fRawReader) fRawReader->Reset();
-
-  fSegmentation[0] = fSegmentation[1] = fSegmentation[2] = -1;
 }
 
 //_____________________________________________________________________________
@@ -203,6 +190,53 @@ Bool_t AliAltroRawStream::Next()
   else fTime--;
 
   ReadAmplitude();
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAltroRawStream::NextDDL(UChar_t *data)
+{
+  if (!data) {
+    do {
+      if (!fRawReader->ReadNextData(fData)) return kFALSE;
+    } while (fRawReader->GetDataSize() == 0);
+  }
+  else {
+    fData = data;
+  }
+
+  fDDLNumber = fRawReader->GetDDLID();
+  fPosition = GetPosition();
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAltroRawStream::NextChannel()
+{
+  if (fPosition <= 0) return kFALSE;
+
+  ReadTrailer();
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAltroRawStream::NextBunch(UShort_t *bunchData,
+				    Int_t &bunchLength,
+				    Int_t &startTimeBin)
+{
+  if (fCount == 0) return kFALSE;
+
+  ReadBunch();
+  bunchLength = fTimeBunch;
+  startTimeBin = fTime;
+
+  while (fBunchLength > 0) {
+    ReadAmplitude();
+    bunchData[bunchLength-fBunchLength-1] = fSignal;
+  }
 
   return kTRUE;
 }
@@ -249,12 +283,6 @@ UShort_t AliAltroRawStream::GetNextWord()
 Bool_t AliAltroRawStream::ReadTrailer()
 {
   //Read a trailer of 40 bits in the backward reading mode
-  //In case of no mapping is provided, read a dummy trailer
-  if (fNoAltroMapping) {
-    AliError("No ALTRO mapping information is loaded! Reading a dummy trailer!");
-    return ReadDummyTrailer();
-  }
-
   //First reading filling words
   UShort_t temp;
   Int_t nFillWords = 0;
@@ -312,26 +340,6 @@ Bool_t AliAltroRawStream::ReadTrailer()
   }
   temp = GetNextWord();
   fHWAddress |= temp;
-
-  fPosition -= (4 - (fCount % 4)) % 4;  // skip fill words
-
-  return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t AliAltroRawStream::ReadDummyTrailer()
-{
-  //Read a trailer of 40 bits in the backward reading mode
-  //In case of no mapping is provided, read a dummy trailer
-  UShort_t temp;
-  while ((temp = GetNextWord()) == 0x2AA) { };
-
-  fSegmentation[0] = temp;
-  fSegmentation[1] = GetNextWord();
-  fSegmentation[2] = GetNextWord();
-  fCount = GetNextWord();
-  if (fCount == 0) return kFALSE;
-  fHWAddress = -1;
 
   fPosition -= (4 - (fCount % 4)) % 4;  // skip fill words
 

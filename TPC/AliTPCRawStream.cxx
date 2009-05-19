@@ -67,7 +67,6 @@ AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader, AliAltroMapping **mapp
       fMapping[i] = mapping[i];
   }
     
-  fNoAltroMapping = kFALSE;
 }
 
 //_____________________________________________________________________________

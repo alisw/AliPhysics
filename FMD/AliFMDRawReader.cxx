@@ -148,7 +148,6 @@ AliFMDRawReader::NextSample(UShort_t& det, Char_t&   rng, UShort_t& sec,
     AliFMDDebug(5, ("Setting %d word headers", 
 		    pars->HasCompleteHeader() ? 8 : 7));
     stream.SetShortDataHeader(!pars->HasCompleteHeader());
-    stream.SetNoAltroMapping(kFALSE);
 
     // Reset variables
     ddl    = -1;  

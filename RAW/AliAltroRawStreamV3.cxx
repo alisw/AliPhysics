@@ -29,6 +29,7 @@
 #include "AliAltroRawStreamV3.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
+#include "AliAltroRawStream.h"
 
 ClassImp(AliAltroRawStreamV3)
 
@@ -58,7 +59,8 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(AliRawReader* rawReader) :
   fActiveFECsA(0),
   fActiveFECsB(0),
   fAltroCFG1(0),
-  fAltroCFG2(0)
+  fAltroCFG2(0),
+  fOldStream(NULL)
 {
   // Constructor
   // Create an object to read Altro raw digits in
@@ -70,7 +72,8 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(AliRawReader* rawReader) :
 AliAltroRawStreamV3::~AliAltroRawStreamV3()
 {
 // destructor
-// nothing to do
+// delete old stream object if one exists
+  if (fOldStream) delete fOldStream;
 }
 
 //_____________________________________________________________________________
@@ -99,11 +102,15 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(const AliAltroRawStreamV3& stream) :
   fActiveFECsA(stream.fActiveFECsA),
   fActiveFECsB(stream.fActiveFECsB),
   fAltroCFG1(stream.fAltroCFG1),
-  fAltroCFG2(stream.fAltroCFG2)
+  fAltroCFG2(stream.fAltroCFG2),
+  fOldStream(NULL)
 {
   // Copy constructor
   // Copy the bunch data array
   for(Int_t i = 0; i < kMaxNTimeBins; i++) fBunchData[i] = stream.fBunchData[i];
+
+  if (stream.fOldStream)
+    fOldStream = new AliAltroRawStream(*stream.fOldStream);
 }
 
 //_____________________________________________________________________________
@@ -140,6 +147,12 @@ AliAltroRawStreamV3& AliAltroRawStreamV3::operator = (const AliAltroRawStreamV3&
 
   for(Int_t i = 0; i < kMaxNTimeBins; i++) fBunchData[i] = stream.fBunchData[i];
 
+  if (stream.fOldStream) {
+    if (fOldStream) delete fOldStream;
+    fOldStream = new AliAltroRawStream(stream.fRawReader);
+    *fOldStream = *stream.fOldStream;
+  }
+
   return *this;
 }
 
@@ -164,6 +177,7 @@ void AliAltroRawStreamV3::Reset()
 
   if (fRawReader) fRawReader->Reset();
 
+  if (fOldStream) fOldStream->Reset();
 }
 
 //_____________________________________________________________________________
@@ -185,9 +199,32 @@ Bool_t AliAltroRawStreamV3::NextDDL()
 
   UChar_t rcuVer = fRawReader->GetBlockAttributes();
 
-  if (!ReadRCUTrailer(rcuVer)) return kFALSE;
+  if (rcuVer < 2) {
+    // old altro format data
+    if (!fOldStream) {
+      fOldStream = new AliAltroRawStream(fRawReader);
+      AliInfo(Form("RCU firmware verion %d detected. Using AliAltroRawStream to decode the data.",
+		   rcuVer));
+    }
+    Bool_t status = fOldStream->NextDDL(fData);
+    if (status) {
+      fRCUId = fOldStream->GetRCUId();
+      fRCUTrailerSize = fOldStream->GetRCUTrailerSize();
+      fOldStream->GetRCUTrailerData(fRCUTrailerData);
+      fFECERRA = fOldStream->GetFECERRA();
+      fFECERRB = fOldStream->GetFECERRB();
+      fERRREG2 = fOldStream->GetERRREG2();
+      fERRREG3 = ((UInt_t)fOldStream->GetNChAddrMismatch()) |
+	(((UInt_t)fOldStream->GetNChLengthMismatch()) << 12);
+      fActiveFECsA = fOldStream->GetActiveFECsA();
+      fActiveFECsB = fOldStream->GetActiveFECsB();
+      fAltroCFG1 = fOldStream->GetAltroCFG1();
+      fAltroCFG2 = fOldStream->GetAltroCFG2();
+    }
+    return status;
+  }
 
-  return kTRUE;
+  return ReadRCUTrailer(rcuVer);
 }
 
 //_____________________________________________________________________________
@@ -198,6 +235,12 @@ Bool_t AliAltroRawStreamV3::NextChannel()
   // Updates the channel hardware address member and
   // channel data size. Sets the error flag in case
   // RCU signals readout error in this channel
+  if (fOldStream) {
+    Bool_t status = fOldStream->NextChannel();
+    if (status) fHWAddress = fOldStream->GetHWAddress();
+    return status;
+  }
+
   fCount = -1;
   fBadChannel = kFALSE;
   fBunchDataIndex = 0;
@@ -249,6 +292,13 @@ Bool_t AliAltroRawStreamV3::NextBunch()
   // raw-data stream.
   // Updates the start/end time-bins
   // and the array with altro samples
+  if (fOldStream) {
+    Bool_t status = fOldStream->NextBunch(fBunchData,fBunchLength,fStartTimeBin);
+    if (status) fBunchDataPointer = &fBunchData[0];
+    else fBunchDataPointer = NULL;
+    return status;
+  }
+
   fBunchLength = fStartTimeBin = -1;
   fBunchDataPointer = NULL;
 

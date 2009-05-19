@@ -47,7 +47,6 @@ AliFMDRawStream::AliFMDRawStream(AliRawReader* reader)
 {
   // CTOR 
   reader->Reset();
-  fNoAltroMapping = kFALSE;
   // Select FMD DDL's 
   SelectRawData("FMD");
 }
