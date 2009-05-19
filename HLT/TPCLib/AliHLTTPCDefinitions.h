@@ -73,6 +73,8 @@ public:
   static const AliHLTComponentDataType fgkUnpackedRawDataType;          // see above
   /** cluster data */
   static const AliHLTComponentDataType fgkClustersDataType;             // see above
+  /** HW cluster data */
+  static const AliHLTComponentDataType fgkHWClustersDataType;           // see above
   /** track segments in local coordinates */
   static const AliHLTComponentDataType fgkTrackSegmentsDataType;        // see above
   /** tracks in global koordinates */
@@ -109,7 +111,7 @@ public:
   /** cluster monte carlo information */
   static const AliHLTComponentDataType fgkAliHLTDataTypeClusterMCInfo;    // see above
 
-  ClassDef(AliHLTTPCDefinitions, 3)
+  ClassDef(AliHLTTPCDefinitions, 4)
 };
 
 #endif

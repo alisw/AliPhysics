@@ -68,6 +68,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCTrackHistoComponent.h"
 #include "AliHLTTPCTrackDumpComponent.h"
 #include "AliHLTTPCHWCFDataReverterComponent.h"
+#include "AliHLTTPCHWClusterTransformComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCAgent)
@@ -267,6 +268,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCTrackHistoComponent);
   pHandler->AddComponent(new AliHLTTPCTrackDumpComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFDataReverterComponent);
+  pHandler->AddComponent(new AliHLTTPCHWClusterTransformComponent);
 
   return 0;
 }
