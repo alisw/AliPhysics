@@ -420,25 +420,19 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	    sigmasq[2]=cov[5]*factor*factor;
 
 	    // Multiple scattering
- 	    Float_t beta=1.;
- 	    Float_t beta2=beta*beta;
+	    Float_t pOverMass=fMeanPSelTrk/0.140;
+ 	    Float_t beta2=pOverMass*pOverMass/(1+pOverMass*pOverMass);
  	    Float_t p2=fMeanPSelTrk*fMeanPSelTrk;
  	    Float_t rBP=GetPipeRadius();
  	    Float_t dBP=0.08/35.3; // 800 um of Be
  	    Float_t dL1=0.01; //approx. 1% of radiation length  
- 	    Float_t theta2BP=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(dBP);
- 	    Float_t theta2L1=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(dL1);
- 	    Float_t thetaBP=TMath::Sqrt(theta2BP);
- 	    Float_t thetaL1=TMath::Sqrt(theta2L1);
+ 	    Float_t theta2BP=14.1*14.1/(beta2*p2*1e6)*dBP;
+ 	    Float_t theta2L1=14.1*14.1/(beta2*p2*1e6)*dL1;
+	    Float_t rtantheta1=(rad2-rad1)*TMath::Tan(TMath::Sqrt(theta2L1));
+	    Float_t rtanthetaBP=(rad1-rBP)*TMath::Tan(TMath::Sqrt(theta2BP));
  	    for(Int_t ico=0; ico<3;ico++){    
-// 	      printf("Error on coord. %d due to cov matrix+curvErr=%f\n",ico,sigmasq[ico]);
-// 	      //	      sigmasq[ico]+=rad1*rad1*geomfac[ico]*theta2L1/2; // multiple scattering in layer 1
-// 	      //  sigmasq[ico]+=rBP*rBP*geomfac[ico]*theta2BP/2; // multiple scattering in beam pipe
- 	      sigmasq[ico]+=TMath::Power(rad1*TMath::Tan(thetaL1),2)/3.;
- 	      sigmasq[ico]+=TMath::Power(rBP*TMath::Tan(thetaBP),2)/3.;
-
-// 	      printf("Multipl. scatt. contr %d = %f (LAY1), %f (BP)\n",ico,rad1*rad1*geomfac[ico]*theta2L1/2,rBP*rBP*geomfac[ico]*theta2BP/2);
-// 	      printf("Total error on coord %d = %f\n",ico,sigmasq[ico]);
+ 	      sigmasq[ico]+=rtantheta1*rtantheta1*factor*factor/3.;
+ 	      sigmasq[ico]+=rtanthetaBP*rtanthetaBP*factor*factor/3.;
  	    }
 	    Float_t wmat[9]={1.,0.,0.,0.,1.,0.,0.,0.,1.};
 	    if(sigmasq[0]!=0.) wmat[0]=1./sigmasq[0];
@@ -602,19 +596,20 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
 
 //________________________________________________________
 void AliITSVertexer3D::SetMeanPPtSelTracks(Float_t fieldTesla){
-  // Sets mean values of P and Pt based on the field
+  // Sets mean values of Pt based on the field
+  // for P (used in multiple scattering) the most probable value is used
   if(TMath::Abs(fieldTesla-0.5)<0.01){
-    SetMeanPSelTracks(0.885);
+    SetMeanPSelTracks(0.375);
     SetMeanPtSelTracks(0.630);
   }else if(TMath::Abs(fieldTesla-0.4)<0.01){
-    SetMeanPSelTracks(0.805);
+    SetMeanPSelTracks(0.375);
     SetMeanPtSelTracks(0.580);
   }else if(TMath::Abs(fieldTesla-0.2)<0.01){
-    SetMeanPSelTracks(0.740);
+    SetMeanPSelTracks(0.375);
     SetMeanPtSelTracks(0.530);
   }else if(fieldTesla<0.00001){
-    SetMeanPSelTracks(0.730);
-    SetMeanPtSelTracks(0.510);
+    SetMeanPSelTracks(0.375);
+    SetMeanPtSelTracks(0.230);
   }else{
     SetMeanPSelTracks();
     SetMeanPtSelTracks();

@@ -28,7 +28,7 @@
 
 /*  $Id$    */
 
-Bool_t DoVerticesSPD(Int_t pileupalgo=1, TString bfield="5kG", Int_t optdebug=0){
+Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
 
   TFile *fint = new TFile("VertexSPD.root","recreate");
   TNtuple *nt = new TNtuple("ntvert","vertices","xtrue:ytrue:ztrue:zZ:zdiffZ:zerrZ:ntrksZ:x3D:xdiff3D:xerr3D:y3D:ydiff3D:yerr3D:z3D:zdiff3D:zerr3D:ntrks3D:dndy:ntrklets:nrp1:ptyp:is3D:isTriggered");
@@ -72,16 +72,33 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, TString bfield="5kG", Int_t optdebug=0)
  Int_t totev=runLoader->GetNumberOfEvents();
   if(optdebug)  printf("Number of events= %d\n",totev);
 
-  AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec();
-  if(bfield.Contains("5")){
+  TFile* esdFile = TFile::Open("AliESDs.root");
+  if (!esdFile || !esdFile->IsOpen()) {
+    printf("Error in opening ESD file");
+    return kFALSE;
+  }
+
+  AliESDEvent * esd = new AliESDEvent;
+  TTree* tree = (TTree*) esdFile->Get("esdTree");
+  if (!tree) {
+    printf("Error: no ESD tree found");
+    return kFALSE;
+  }
+  esd->ReadFromTree(tree);
+  tree->GetEvent(0);
+  Int_t fieldkG=(Int_t)(esd->GetMagneticField()+0.001);
+  
+  if(fieldkG==5){
     TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
-  }else if(bfield.Contains("2")){
+  }else if(fieldkG==2){
     TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k2kG));
   }else{
     TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 0., 1., 10., AliMagF::k5kG));
   }
   AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   printf("Magnetic field set to %f\n",-fld->SolenoidField());
+
+  AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec();
   Double_t xnom=0.,ynom=0.;
   AliITSVertexerZ *vertz = new AliITSVertexerZ(xnom,ynom);
   vertz->Init("default");
@@ -102,20 +119,6 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, TString bfield="5kG", Int_t optdebug=0)
   /* end lines to be uncommented to use diamond constrain */
 
   Int_t goodz=0,good3d=0;
-  TFile* esdFile = TFile::Open("AliESDs.root");
-  if (!esdFile || !esdFile->IsOpen()) {
-    printf("Error in opening ESD file");
-    return kFALSE;
-  }
-
-  AliESDEvent * esd = new AliESDEvent;
-  TTree* tree = (TTree*) esdFile->Get("esdTree");
-  if (!tree) {
-    printf("Error: no ESD tree found");
-    return kFALSE;
-  }
-  esd->ReadFromTree(tree);
-
   // Trigger mask
   ULong64_t spdFO = (1 << 14);
   ULong64_t v0left = (1 << 11);
