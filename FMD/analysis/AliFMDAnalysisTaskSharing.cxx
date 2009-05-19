@@ -158,7 +158,8 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 	  
 	  if(mult == AliESDFMD::kInvalidMult || mult == 0) continue;
 	  
-	  Double_t eta  = EtaFromStrip(det,ring,sec,strip,vertex[2]);//fmd->Eta(det,ring,sec,strip);
+	  //Double_t eta  = EtaFromStrip(det,ring,sec,strip,vertex[2]);//fmd->Eta(det,ring,sec,strip);
+	  Double_t eta = fmd->Eta(det,ring,sec,strip);
 	  //std::cout<<EtaFromStrip(det,ring,sec,strip,vertex[2]) <<"    "<<fmd->Eta(det,ring,sec,strip)<<std::endl;
 	  
 	  hEdist->Fill(mult);
@@ -212,12 +213,16 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
   Float_t merged_energy = 0;
   //Float_t nParticles = 0;
   Float_t cutLow  = 0.15;
-  AliFMDParameters* recopars = AliFMDParameters::Instance();
-  cutLow = (4*recopars->GetPedestalWidth(det,ring,sec,strip))/(recopars->GetPulseGain(det,ring,sec,strip)*recopars->GetDACPerMIP());
+  if(ring == 'I')
+    cutLow = 0.1;
+  
+  //cutLow = 0;
+  //AliFMDParameters* recopars = AliFMDParameters::Instance();
+  //cutLow = (5*recopars->GetPedestalWidth(det,ring,sec,strip))/(recopars->GetPulseGain(det,ring,sec,strip)*recopars->GetDACPerMIP());
   
   
   
-  Float_t cutHigh = pars->GetMPV(det,ring,eta);// - pars->GetSigma(det,ring,eta);
+  Float_t cutHigh = pars->GetMPV(det,ring,eta) - 3*pars->GetSigma(det,ring,eta);
   // Float_t cutPart = pars->GetMPV(det,ring,eta) - 5*pars->GetSigma(det,ring,eta);
   Float_t Etotal  = mult;
   

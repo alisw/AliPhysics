@@ -8,6 +8,7 @@
 #include <iostream>
 #include "TAxis.h"
 #include "TH2F.h"
+#include "TF1.h"
 #include "AliFMDAnalysisTaskDensity.h"
 #include "AliAnalysisManager.h"
 #include "AliESDFMD.h"
@@ -59,6 +60,13 @@ AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity(const char* name, Bool_t SE
     DefineInput (1, AliESDVertex::Class());
     DefineOutput(0, TList::Class());
   }
+  
+  fFuncPos = new TF1("funcPos","pol1",0,6);
+  fFuncPos->SetParameters(0.99925,0.00298301);
+  fFuncNeg = new TF1("funcNeg","pol1",-6,0);
+  fFuncNeg->SetParameters(0.987583,-0.0101022);
+
+  
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskDensity::CreateOutputObjects()
@@ -118,6 +126,10 @@ void AliFMDAnalysisTaskDensity::ConnectInputData(Option_t */*option*/)
     fVertex = (AliESDVertex*)GetInputData(1);
   }
 }
+
+
+
+
 //_____________________________________________________________________
 void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 {
@@ -140,7 +152,9 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
   Double_t vertexBinDouble = (vertex[2] + pars->GetVtxCutZ()) / delta;
   
   Int_t vtxbin = (Int_t)vertexBinDouble;
+  
 
+  
   fVertexString.SetString(Form("%d",vtxbin));
   //Reset everything
   for(UShort_t det=1;det<=3;det++) {
@@ -171,27 +185,34 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
       for(UShort_t sec =0; sec < nsec;  sec++)  {
 	for(UShort_t strip = 0; strip < nstr; strip++) {
 	  Float_t mult = fESD->Multiplicity(det,ring,sec,strip);
-	  Float_t eta = fESD->Eta(det,ring,sec,strip);
+	  //Float_t eta = fESD->Eta(det,ring,sec,strip);
 	  
 	  if(mult == 0 || mult == AliESDFMD::kInvalidMult) continue;
 	  //Particle number cut goes here...
-	  Double_t x,y,z;
-	  geo->Detector2XYZ(det,ring,sec,strip,x,y,z);
-	  Float_t phi = TMath::ATan2(y,x);
-	  if(phi<0)
-	    phi = phi+2*TMath::Pi();
-	  Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
-	  Float_t   theta = TMath::ATan2(r,z-vertex[2]);
-	  Float_t   etacalc   = -1*TMath::Log(TMath::Tan(0.5*theta));
-	  eta = etacalc;
-	  	  
+	  //Double_t x,y,z;
+	  //geo->Detector2XYZ(det,ring,sec,strip,x,y,z);
+	  // Float_t phi = TMath::ATan2(y,x);
+	  // if(phi<0)
+	  //  phi = phi+2*TMath::Pi();
+	  
+	  Float_t phi = pars->GetPhiFromSector(det,ring,sec);
+	  Float_t eta = pars->GetEtaFromStrip(det,ring,sec,strip,vertex[2]);
+	  //std::cout<<phi<<"     "<<phicalc<<std::endl;
+	  //  Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
+	 // Float_t   theta = TMath::ATan2(r,z-vertex[2]);
+	  // Float_t   etacalc   = -1*TMath::Log(TMath::Tan(0.5*theta));
+	   
+	   //  std::cout<<eta<<"    "<<etacalc<<std::endl;
+	   //eta = etacalc;
+	     
 	  Float_t m   = pars->GetMPV(det,ring,eta);
 	  Float_t s   = pars->GetSigma(det,ring,eta);
-	  AliFMDParameters* recopars = AliFMDParameters::Instance();
+	  //AliFMDParameters* recopars = AliFMDParameters::Instance();
 	  
-	  Float_t mult_cut = m-2*s; //0.15;//0.2;//m-3*s;// 0.2;//0.01;//m-2*s;//0.2;
-	  
-	  mult_cut = (4*recopars->GetPedestalWidth(det,ring,sec,strip))/(recopars->GetPulseGain(det,ring,sec,strip)*recopars->GetDACPerMIP());
+	  Float_t mult_cut = 0.15;//m-2*s;//0.15;//0.2;//m-3*s;// 0.2;//0.01;//m-2*s;//0.2;
+	  if(ring == 'I')
+	    mult_cut = 0.10;
+	  //mult_cut = (5*recopars->GetPedestalWidth(det,ring,sec,strip))/(recopars->GetPulseGain(det,ring,sec,strip)*recopars->GetDACPerMIP());
 	  
 	  Float_t nParticles = 0;
 	  if(fESD->GetUniqueID() == kTRUE) {
@@ -232,12 +253,21 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	  
 	  
 	  Float_t correction = GetAcceptanceCorrection(ring,strip);
+	  
+	  //std::cout<<"before "<<correction<<std::endl;
+	  if(det == 3) 
+	    correction = correction / fFuncNeg->Eval(eta);
+	  else
+	    correction = correction / fFuncPos->Eval(eta);
+	  
+	  // std::cout<<correction<<std::endl;
 	  if(correction) nParticles = nParticles / correction;
 	  if(nParticles > 0)
 	    hMult->Fill(eta,phi,nParticles);
 	  
 	  //if(det == 1 && ring =='I' && nParticles >0)
-	  //  std::cout<<mult<<"    "<<sec<<"    "<<strip<<"   "<<eta<<"  "<<phi<<"   "<<etacalc<<std::endl;
+	  //if(nParticles > 0)
+	  //  std::cout<<det<<"    "<<ring<<"    "<<sec<<"    "<<strip<<"   "<<mult<<std::endl;
 	  
 	}
       }
@@ -273,6 +303,37 @@ Float_t AliFMDAnalysisTaskDensity::GetAcceptanceCorrection(Char_t ring, UShort_t
   
   return correction;
 }
+//_____________________________________________________________________
+Float_t AliFMDAnalysisTaskDensity::GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec)
+{
+  Int_t nsec = (ring == 'I' ? 20 : 40);
+  Float_t basephi = 0;
+  if(det == 1) 
+    basephi = 1.72787594; 
+  if(det == 2 && ring == 'I')
+    basephi = 0.15707963;
+  if(det == 2 && ring == 'O')
+    basephi = 0.078539818;
+  if(det == 3 && ring == 'I')
+    basephi = 2.984513044;
+  if(det == 3 && ring == 'O')
+    basephi = 3.06305289;
+  
+  Float_t step = 2*TMath::Pi() / nsec;
+  Float_t phi = 0;
+  if(det == 3)
+    phi = basephi - sec*step;
+  else
+    phi = basephi + sec*step;
+  
+  if(phi < 0) 
+    phi = phi +2*TMath::Pi();
+  if(phi > 2*TMath::Pi() )
+    phi = phi - 2*TMath::Pi();
+  
+  return phi;
+}
+
 
 //
 //EOF

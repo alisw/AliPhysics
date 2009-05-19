@@ -39,6 +39,8 @@
 #pragma link C++ class AliFMDAnalysisTaskDensity+;
 #pragma link C++ class AliFMDAnalysisTaskBackgroundCorrection+;
 #pragma link C++ class AliFMDAnalysisTaskCollector+;
+#pragma link C++ class AliFMDAnalysisTaskGenerateBackground+;
+
 #else
 # error Not for compilation 
 #endif

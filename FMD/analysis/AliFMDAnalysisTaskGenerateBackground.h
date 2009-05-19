@@ -44,6 +44,7 @@ class AliFMDAnalysisTaskGenerateBackground : public AliAnalysisTaskSE
     TList fListOfCorrection;
     TH1F  fVertexBins;
     AliFMDFloatMap fLastTrackByStrip;
+    AliFMDFloatMap fHitsByStrip;
     Float_t fZvtxCut;
     Int_t fNvtxBins;
     Int_t fNbinsEta;

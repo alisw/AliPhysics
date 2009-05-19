@@ -15,7 +15,7 @@
 class AliESDEvent;
 class TChain;
 class AliAODEvent;
-
+class TF1;
 
 
 class AliFMDAnalysisTaskDensity : public AliAnalysisTask
@@ -48,6 +48,7 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     void SetInputESDFMD(AliESDFMD* esdfmd) {fESD = esdfmd;}
     void SetInputVertex(AliESDVertex* vertex) {fVertex = vertex;}
     Bool_t GetEventStatus() { return fStatus; }
+    Float_t GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec);
  private:
     
     Int_t         fDebug;        //  Debug flag
@@ -58,6 +59,8 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     AliESDVertex* fVertex;
     Bool_t        fStandalone;
     Bool_t        fStatus;
+    TF1*          fFuncPos;
+    TF1*          fFuncNeg;
     
     ClassDef(AliFMDAnalysisTaskDensity, 0); // Analysis task for FMD analysis
 };

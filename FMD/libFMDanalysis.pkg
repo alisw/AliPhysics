@@ -10,7 +10,8 @@ SRCS		=  analysis/AliFMDAnaParameters.cxx	\
 		   analysis/AliFMDAnalysisTaskBackgroundCorrection.cxx \
 		   analysis/AliFMDAnalysisTaskCollector.cxx   \
 		   analysis/AliFMDAnalysisTaskDndeta.cxx         \
-		   analysis/AliFMDAnalysisTaskSE.cxx  
+		   analysis/AliFMDAnalysisTaskSE.cxx       \
+		   analysis/AliFMDAnalysisTaskGenerateBackground.cxx
 
 
 HDRS		=  $(SRCS:.cxx=.h) 

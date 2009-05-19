@@ -24,12 +24,14 @@
 #include "AliFMDAnaParameters.h"	   // ALIFMDPARAMETERS_H
 #include <AliCDBManager.h>         // ALICDBMANAGER_H
 #include <AliCDBEntry.h>           // ALICDBMANAGER_H
+#include "AliFMDRing.h"
 #include <AliLog.h>
 #include <Riostream.h>
 #include <sstream>
 #include <TSystem.h>
 #include <TH2D.h>
 #include <TF1.h>
+#include <TMath.h>
 
 //====================================================================
 ClassImp(AliFMDAnaParameters)
@@ -238,7 +240,71 @@ TH2F* AliFMDAnaParameters::GetBackgroundCorrection(Int_t det,
   
   return fBackground->GetBgCorrection(det,ring,vtxbin);
 }
-
+//_____________________________________________________________________
+Float_t AliFMDAnaParameters::GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec)
+{
+  Int_t nsec = (ring == 'I' ? 20 : 40);
+  Float_t basephi = 0;
+  if(det == 1) 
+    basephi = 1.72787594; 
+  if(det == 2 && ring == 'I')
+    basephi = 0.15707963;
+  if(det == 2 && ring == 'O')
+    basephi = 0.078539818;
+  if(det == 3 && ring == 'I')
+    basephi = 2.984513044;
+  if(det == 3 && ring == 'O')
+    basephi = 3.06305289;
+  
+  Float_t step = 2*TMath::Pi() / nsec;
+  Float_t phi = 0;
+  if(det == 3)
+    phi = basephi - sec*step;
+  else
+    phi = basephi + sec*step;
+  
+  if(phi < 0) 
+    phi = phi +2*TMath::Pi();
+  if(phi > 2*TMath::Pi() )
+    phi = phi - 2*TMath::Pi();
+  
+  return phi;
+}
+//_____________________________________________________________________
+Float_t AliFMDAnaParameters::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx)
+{
+  AliFMDRing fmdring(ring);
+  fmdring.Init();
+  Float_t   rad       = fmdring.GetMaxR()-fmdring.GetMinR();
+  Float_t   segment   = rad / fmdring.GetNStrips();
+  Float_t   r         = fmdring.GetMinR() + segment*strip;
+  Float_t   z         = 0;
+  Int_t hybrid = sec / 2;
+  
+  if(det == 1) {
+    if(!(hybrid%2)) z = 320.266; else z = 319.766;
+  }
+  if(det == 2 && ring == 'I' ) {
+    if(!(hybrid%2)) z = 83.666; else z = 83.166;
+  }
+  if(det == 2 && ring == 'O' ) {
+    if(!(hybrid%2)) z = 74.966; else z = 75.466;
+  }
+  if(det == 3 && ring == 'I' ) {
+    if(!(hybrid%2)) z = -63.066; else z = -62.566;
+  }
+  if(det == 3 && ring == 'O' ) {
+    if(!(hybrid%2)) z = -74.966; else z = -75.466;
+  }
+  
+  //std::cout<<det<<"   "<<ring<<"   "<<sec<<"   "<<hybrid<<"    "<<z<<std::endl;
+  
+  // Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
+  Float_t   theta = TMath::ATan2(r,z-zvtx);
+  Float_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
+  
+  return eta;
+}
 //____________________________________________________________________
 AliCDBEntry* AliFMDAnaParameters::GetEntry(const char* path, Bool_t fatal) const
 {

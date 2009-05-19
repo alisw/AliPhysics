@@ -271,20 +271,20 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
       Float_t thisStripTrack = fLastTrackByStrip.operator()(det,ring,sec,strip);
       if(particle->Charge() != 0 && i != thisStripTrack ) {
 	Double_t x,y,z;
-	AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
+	/*AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
 	fmdgeo->Detector2XYZ(det,ring,sec,strip,x,y,z);
 	
 	Float_t   phi   = TMath::ATan2(y,x);
 	if(phi<0) phi   = phi+2*TMath::Pi();
 	Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
-	Float_t   theta = TMath::ATan2(r,z-vertex.At(2));
-	Float_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
+	Float_t   theta = TMath::ATan2(r,z-vertex.At(2));*/
+	Float_t   eta   = pars->GetEtaFromStrip(det,ring,sec,strip,vertex.At(2));//-1*TMath::Log(TMath::Tan(0.5*theta));
 	TH1F* hHits = (TH1F*)fOutputList->FindObject(Form("hHits_FMD%d%c_vtxbin%d",det,ring,vertexBin));
 	hHits->Fill(eta);
 	Float_t nstrips = (ring =='O' ? 256 : 512);
 	
-	//	if(det == 1 && ring == 'I')
-	//  std::cout<<"hit in FMD 1I "<<sec<<"   "<<strip<<"   "<<eta<<"  "<<phi<<std::endl;
+	//if(det == 1 && ring == 'I')
+	//	std::cout<<"hit in "<<det<<"   "<<ring<<"   "<<sec<<"   "<<strip<<"   "<<std::endl;
 	fLastTrackByStrip.operator()(det,ring,sec,strip) = (Float_t)i;
 	
 	if(strip >0)

@@ -59,8 +59,13 @@ void RunLocalFMDAnalysisSE(const Char_t* filename= "AliESDs.root", const Char_t*
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   pars->Init();
+  //if (AliGeomManager::GetGeometry() == NULL)
+  //  AliGeomManager::LoadGeometry("geometry.root");
+  
   if (AliGeomManager::GetGeometry() == NULL)
     AliGeomManager::LoadGeometry();
+  AliFMDParameters* recopars = AliFMDParameters::Instance();
+  recopars->Init();
   
   AliFMDGeometry* geo = AliFMDGeometry::Instance();
   geo->Init();

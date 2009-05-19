@@ -25,32 +25,18 @@ ClassImp(AliFMDAnalysisTaskGenerateBackground)
 
 //_____________________________________________________________________
 AliFMDAnalysisTaskGenerateBackground::AliFMDAnalysisTaskGenerateBackground():
-AliAnalysisTaskSE(),
-  fListOfHits(), 
-  fListOfPrimaries(),
-  fListOfCorrection(),
-  fVertexBins(),
-  fLastTrackByStrip(),
-  fZvtxCut(10),
-  fNvtxBins(10),
-  fNbinsEta(100),
-  fBackground(0)
+AliAnalysisTaskSE()
 {
   // Default constructor
 }
 //_____________________________________________________________________
 AliFMDAnalysisTaskGenerateBackground::AliFMDAnalysisTaskGenerateBackground(const char* name):
   AliAnalysisTaskSE(name),
-  fListOfHits(), 
-  fListOfPrimaries(),
-  fListOfCorrection(),
-  fVertexBins(),
-  fLastTrackByStrip(),
   fZvtxCut(10),
   fNvtxBins(10),
-  fNbinsEta(100),
-  fBackground(0)
+  fNbinsEta(100)
 {
+ 
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TH1F::Class());
@@ -92,8 +78,14 @@ void AliFMDAnalysisTaskGenerateBackground::UserCreateOutputObjects()
       } 
     }
   }
+  TH1F* doubleHits = new TH1F("DoubleHits",  "DoubleHits",
+			 fNbinsEta, -6,6);
+  TH1F* allHits = new TH1F("allHits",  "allHits",
+			 fNbinsEta, -6,6);
   fVertexBins.SetName("VertexBins");
   fVertexBins.GetXaxis()->Set(fNvtxBins,-1*fZvtxCut,fZvtxCut);
+  fListOfHits.Add(allHits);
+  fListOfHits.Add(doubleHits);
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskGenerateBackground::Init()
@@ -110,8 +102,9 @@ void AliFMDAnalysisTaskGenerateBackground::UserExec(Option_t */*option*/)
 {
   
   fLastTrackByStrip.Reset(-1);
+  fHitsByStrip.Reset(0);
   AliMCEvent* mcevent = MCEvent();
-  //AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
   AliMCParticle* particle = 0;
   AliStack* stack = mcevent->Stack();
@@ -168,6 +161,22 @@ void AliFMDAnalysisTaskGenerateBackground::UserExec(Option_t */*option*/)
 	TH2F* hHits = (TH2F*)fListOfHits.FindObject(Form("hHits_FMD%d%c_vtx%d", det,ring,vertexBin));
 	hHits->Fill(eta,phi);
 	Float_t nstrips = (ring =='O' ? 256 : 512);
+	fHitsByStrip.operator()(det,ring,sec,strip) +=1;
+	TH1F* allHits = (TH1F*)fListOfHits.FindObject("allHits");
+	TH1F* doubleHits = (TH1F*)fListOfHits.FindObject("DoubleHits");
+	
+	if(fHitsByStrip.operator()(det,ring,sec,strip) == 1)
+	  allHits->Fill(eta);
+	
+	doubleHits->Fill(eta);
+	/*if(fHitsByStrip.operator()(det,ring,sec,strip) == 2){
+	  TH1F* doubleHits = (TH1F*)fListOfHits.FindObject("DoubleHits");
+	  doubleHits->Fill(eta,2);
+	  }*/
+	//if(fHitsByStrip.operator()(det,ring,sec,strip) > 1){
+	//  doubleHits->Fill(eta);
+	//	}
+	
 	
 	fLastTrackByStrip.operator()(det,ring,sec,strip) = (Float_t)i;
 	if(strip >0)
@@ -179,9 +188,7 @@ void AliFMDAnalysisTaskGenerateBackground::UserExec(Option_t */*option*/)
 
   }
     
-  
-
-  
+  	
   PostData(1, &fListOfHits);
   PostData(2, &fListOfPrimaries);
   PostData(3, &fVertexBins);
@@ -189,8 +196,14 @@ void AliFMDAnalysisTaskGenerateBackground::UserExec(Option_t */*option*/)
 //_____________________________________________________________________
 void AliFMDAnalysisTaskGenerateBackground::Terminate(Option_t */*option*/)
 {
+  TH1F* allHits = (TH1F*)fListOfHits.FindObject("allHits");
+  TH1F* doubleHits = (TH1F*)fListOfHits.FindObject("DoubleHits");
+  
+  doubleHits->Divide(allHits);
   GenerateCorrection();
+  PostData(1, &fListOfHits);
   PostData(4, &fListOfCorrection);
+  
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskGenerateBackground::GenerateCorrection() {
