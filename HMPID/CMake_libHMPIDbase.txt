@@ -3,6 +3,7 @@
 set(SRCS
   AliHMPIDHit.cxx AliHMPIDDigit.cxx  AliHMPIDCluster.cxx AliHMPIDParam.cxx AliHMPIDPreprocessor.cxx 
 		AliHMPIDQAChecker.cxx AliHMPIDCalib.cxx AliHMPIDRawStream.cxx
+AliHMPIDMisAligner.cxx
 )
 
 # fill list of header files from list of source files
