@@ -494,10 +494,18 @@ void AliAnalysisManager::PackOutput(TList *target)
             wrap->SetDeleteData(kFALSE);
             target->Add(wrap);
          } else {
-         // Special outputs
+         // Special outputs. The file must be opened and connected to the container.
             TDirectory *opwd = gDirectory;
             TFile *file = output->GetFile();
-            if (fDebug > 1 && file) printf("PackOutput %s: file merge, special output\n", output->GetName());
+            if (!file) {
+               AliAnalysisTask *producer = output->GetProducer();
+               Error("PackOutput", 
+                     "File %s for special container %s was NOT opened in %s::CreateOutputObjects !!!",
+                     output->GetFileName(), output->GetName(), producer->ClassName());
+               continue;
+            }   
+            TString outFilename = file->GetName();
+            if (fDebug > 1) printf("PackOutput %s: special output\n", output->GetName());
             if (isManagedByHandler) {
                // Terminate IO for files managed by the output handler
                if (file) file->Write();
@@ -506,40 +514,31 @@ void AliAnalysisManager::PackOutput(TList *target)
                   file->ls();
                }   
                fOutputEventHandler->TerminateIO();
-               continue;
-            }   
-            
-            if (!file) {
-               AliAnalysisTask *producer = output->GetProducer();
-               Error("PackOutput", 
-                     "File %s for special container %s was NOT opened in %s::CreateOutputObjects !!!",
-                     output->GetFileName(), output->GetName(), producer->ClassName());
-               continue;
-            }   
-            file->cd();
-            // Release object ownership to users after writing data to file
-            if (output->GetData()->InheritsFrom(TCollection::Class())) {
-               // If data is a collection, we set the name of the collection 
-               // as the one of the container and we save as a single key.
-               TCollection *coll = (TCollection*)output->GetData();
-               coll->SetName(output->GetName());
-               coll->Write(output->GetName(), TObject::kSingleKey);
-            } else {
-               if (output->GetData()->InheritsFrom(TTree::Class())) {
-                  TTree *tree = (TTree*)output->GetData();
-                  tree->SetDirectory(file);
-                  tree->AutoSave();
+            } else {               
+               file->cd();
+               // Release object ownership to users after writing data to file
+               if (output->GetData()->InheritsFrom(TCollection::Class())) {
+                  // If data is a collection, we set the name of the collection 
+                  // as the one of the container and we save as a single key.
+                  TCollection *coll = (TCollection*)output->GetData();
+                  coll->SetName(output->GetName());
+                  coll->Write(output->GetName(), TObject::kSingleKey);
                } else {
-                  output->GetData()->Write();
-               }   
-            }      
-            file->Clear();
-            if (fDebug > 2) {
-               printf("   file %s listing content:\n", output->GetFileName());
-               file->ls();
+                  if (output->GetData()->InheritsFrom(TTree::Class())) {
+                     TTree *tree = (TTree*)output->GetData();
+                     tree->SetDirectory(file);
+                     tree->AutoSave();
+                  } else {
+                     output->GetData()->Write();
+                  }   
+               }      
+               file->Clear();
+               if (fDebug > 2) {
+                  printf("   file %s listing content:\n", output->GetFileName());
+                  file->ls();
+               }
+               file->Close();
             }
-            TString outFilename = file->GetName();
-            file->Close();
             // Restore current directory
             if (opwd) opwd->cd();
             // Check if a special output location was provided or the output files have to be merged
@@ -547,13 +546,22 @@ void AliAnalysisManager::PackOutput(TList *target)
                TString remote = fSpecialOutputLocation;
                remote += "/";
                Int_t gid = gROOT->ProcessLine("gProofServ->GetGroupId();");
-               remote += Form("%s_%d_", gSystem->HostName(), gid);
-               remote += output->GetFileName();
+               if (remote.BeginsWith("alien://")) {
+                  gROOT->ProcessLine("TGrid::Connect(\"alien://pcapiserv01.cern.ch:10000\", gProofServ->GetUser());");
+                  remote += outFilename;
+                  remote.ReplaceAll(".root", Form("_%d.root", gid));
+               } else {   
+                  remote += Form("%s_%d_", gSystem->HostName(), gid);
+                  remote += outFilename;
+               }   
+               if (fDebug > 1) 
+                  Info("PackOutput", "Output file for container %s to be copied \n   at: %s. No merging.",
+                       output->GetName(), remote.Data());
                TFile::Cp ( outFilename.Data(), remote.Data() );
             } else {
             // No special location specified-> use TProofOutputFile as merging utility
             // The file at this output slot must be opened in CreateOutputObjects
-               if (fDebug > 1) printf("   File %s to be merged...\n", output->GetFileName());
+               if (fDebug > 1) printf("   File %s to be merged...\n", file->GetName());
             }
          }      
       }
@@ -581,7 +589,7 @@ void AliAnalysisManager::ImportWrappers(TList *source)
          filename = fOutputEventHandler->GetOutputFileName();
       }
       if (cont->IsSpecialOutput() || inGrid) {
-         if (strlen(fSpecialOutputLocation.Data()) && !isManagedByHandler) continue;
+         if (strlen(fSpecialOutputLocation.Data())) continue;
          // Copy merged file from PROOF scratch space. 
          // In case of grid the files are already in the current directory.
          if (!inGrid) {
@@ -734,7 +742,16 @@ void AliAnalysisManager::Terminate()
    while ((output=(AliAnalysisDataContainer*)next1())) {
       // Close all files at output
       TDirectory *opwd = gDirectory;
-      if (output->GetFile()) output->GetFile()->Close();
+      if (output->GetFile()) {
+         output->GetFile()->Close();
+         // Copy merged outputs in alien if requested
+         if (fSpecialOutputLocation.Length() && 
+             fSpecialOutputLocation.BeginsWith("alien://")) {
+            Info("Terminate", "Copy file %s to %s", output->GetFile()->GetName(),fSpecialOutputLocation.Data()); 
+            TFile::Cp(output->GetFile()->GetName(), 
+                      Form("%s/%s", fSpecialOutputLocation.Data(), output->GetFile()->GetName()));
+         }             
+      }   
       if (opwd) opwd->cd();
    }   
 
@@ -1175,6 +1192,11 @@ TFile *AliAnalysisManager::OpenProofFile(const char *filename, const char *optio
    if (fMode!=kProofAnalysis || !fSelector) {
       Error("OpenProofFile","Cannot open PROOF file %s",filename);
       return NULL;
+   } 
+   if (fSpecialOutputLocation.Length()) {
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
+      if (!f) f = new TFile(filename, option);
+      return f;
    }   
    sprintf(line, "TProofOutputFile *pf = new TProofOutputFile(\"%s\");", filename);
    if (fDebug > 1) printf("=== %s\n", line);
