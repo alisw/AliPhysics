@@ -919,7 +919,7 @@ Int_t AliITS::Hits2Clusters(TTree *hTree, TTree *cTree) {
     points->Clear();
   }
 
-  Info("Hits2Clusters","Number of found fast clusters : %d",ncl);
+  AliDebug(1,Form("Number of found fast clusters : %d",ncl));
 
   //cTree->Write();
 
@@ -1140,16 +1140,16 @@ void AliITS::Digits2Raw(){
   rawWriter.SetVerbose(0);
     
   //SILICON PIXEL DETECTOR
-  Info("Digits2Raw", "Formatting raw data for SPD");
+  AliDebug(1,"Formatting raw data for SPD");
   rawWriter.RawDataSPD(digits->GetBranch("ITSDigitsSPD"),foSignals);
   if(deleteFOsignalsLater) delete foSignals;
     
   //SILICON DRIFT DETECTOR
-  Info("Digits2Raw", "Formatting raw data for SDD");
+  AliDebug(1,"Formatting raw data for SDD");
   rawWriter.RawDataSDD(digits->GetBranch("ITSDigitsSDD"),ddlsdd);
     
   //SILICON STRIP DETECTOR
-  Info("Digits2Raw", "Formatting raw data for SSD");
+  AliDebug(1,"Formatting raw data for SSD");
   rawWriter.RawDataSSD(digits->GetBranch("ITSDigitsSSD"));
 
   fLoader->UnloadDigits();

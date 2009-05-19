@@ -606,7 +606,7 @@ if(!deadSPD || !noisySPD || !foEffSPD || !foNoiSPD
   fNMod[0] = calDeadSPD->GetEntries();
   fNMod[1] = calSDD->GetEntries();
   //  fNMod[2] = noiseSSD->GetEntries();
-  AliInfo(Form("%i SPD, %i SDD and %i SSD in calibration database",
+  AliDebug(1,Form("%i SPD, %i SDD and %i SSD in calibration database",
 	       fNMod[0], fNMod[1], fNMod[2]));
   AliITSCalibration* cal;
   for (Int_t i=0; i<fNMod[0]; i++) {

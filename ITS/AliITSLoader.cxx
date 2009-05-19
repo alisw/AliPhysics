@@ -338,7 +338,7 @@ AliITSgeom* AliITSLoader::GetITSgeom(Bool_t force) {
   AliITSInitGeometry initgeom;
   fGeom = initgeom.CreateAliITSgeom();
   AliDebug(1,"AliITSgeom object has been initialized from TGeo\n");
-  AliInfo(Form("Geometry name: %s",(initgeom.GetGeometryName()).Data()));
+  AliDebug(1,Form("Geometry name: %s",(initgeom.GetGeometryName()).Data()));
   return fGeom;
 }
 //______________________________________________________________________
