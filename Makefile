@@ -178,8 +178,7 @@ LIBS := $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS)
 ARVERSIONFILE := $(EXPORTDIR)/ARVersion.h
 SVNREV        := $(strip $(shell svn info | grep "Last Changed Rev:" | \
 			         cut -d: -f2 ))
-SVNBRANCH     := w$(subst //alisoft.cern.ch/AliRoot/,,\
-		    $(shell svn info | grep "URL:" | cut -d: -f3 ))
+SVNBRANCH     := $(subst //alisoft.cern.ch/AliRoot/,,$(shell svn info | grep "URL:" | cut -d: -f3 ))
 
 #-------------------------------------------------------------------------------
 # default target
@@ -187,12 +186,10 @@ SVNBRANCH     := w$(subst //alisoft.cern.ch/AliRoot/,,\
 default: $(ARVERSIONFILE)
 	$(MUTE)$(MAKE) aliroot
 
-FORCE:
-
 #-------------------------------------------------------------------------------
 # Write header file with aliroot svn version and url
 
-$(ARVERSIONFILE): FORCE $(EXPORTDIR)
+$(ARVERSIONFILE): $(ALICE_ROOT)/.svn/entries $(EXPORTDIR)
 	$(MUTE)rm -f $(ARVERSIONFILE)
 	@echo "***** Making $(ARVERSIONFILE) *****"
 	@echo "#ifndef ALIROOT_ARVersion" >> $@

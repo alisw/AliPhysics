@@ -37,6 +37,7 @@
 
 #include "AliDCSGenDB.h"
 #include "AliLog.h"
+#include "ARVersion.h"
 
 const Int_t kBeamPeriod=2;
 
@@ -170,7 +171,7 @@ AliCDBMetaData* AliDCSGenDB::CreateMetaObject(const char* objectClassName)
   md1->SetObjectClassName(objectClassName);
   md1->SetResponsible("Haavard Helstrup");
   md1->SetBeamPeriod(kBeamPeriod);
-  md1->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
+  md1->SetAliRootVersion(ALIROOT_SVN_BRANCH);
 
   return md1;
 }
