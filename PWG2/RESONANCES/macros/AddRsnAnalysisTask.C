@@ -8,29 +8,21 @@
 //
 //=============================================================================
 
-
-
-static AliRsnAnalysisTaskSEBase::EInputType inputType      = AliRsnAnalysisTaskSEBase::kESDMC;
-static const char*                          outputFileName = "rsn.root";
-
-static Bool_t    useAutoHandler = kFALSE;
-static Int_t     bufferSize     = 3000;
-static Int_t     pidArraySize   = 2000;
-static Int_t     nMixedEvents   = 10;
-
-static Bool_t    useESDTrackCuts = kTRUE;
-static Double_t  cov11 = 2000000.0;              // disabled (was 2.0)
-static Double_t  cov22 = 2000000.0;              // disabled (was 2.0)
+static Double_t  cov11 = 2.0;
+static Double_t  cov22 = 2.0;
 static Double_t  cov33 = 0.5;
 static Double_t  cov44 = 0.5;
 static Double_t  cov55 = 2;
+
+static Bool_t    requireSigmaToVertex = kTRUE;
 static Double_t  nSigmaToVertex = 4;
 static Double_t  dcaToVertex = 3.0;
+
 static Double_t  maxChi2PerClusterTPC = 3.5;
-static Bool_t    requireTPCRefit = kFALSE;      // disabled (was kTRUE)
-static Bool_t    requireSigmaToVertex = kTRUE;
-static Bool_t    acceptKinkDaughters = kFALSE;
+static Bool_t    requireTPCRefit = kFALSE;
 static Int_t     minNClustersTPC = 50;
+
+static Bool_t    acceptKinkDaughters = kFALSE;
 
 Int_t AddRsnAnalysisTask()
 {

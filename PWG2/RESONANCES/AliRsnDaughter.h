@@ -79,6 +79,8 @@ class AliRsnDaughter : public TObject
     Double_t               PIDProb(AliPID::EParticleType type) const {return PID()[(Int_t)type];}
     AliPID::EParticleType  PIDType(Double_t &prob) const;
     AliPID::EParticleType  AssignedPID() const;
+    AliPID::EParticleType  RequiredPID() const {return fReqPID;}
+    void                   SetRequiredPID(AliPID::EParticleType type) {fReqPID = type;}
 
     // integer parameters
     Short_t Charge() const {return fRef->Charge();}
@@ -133,6 +135,7 @@ class AliRsnDaughter : public TObject
     Double_t       fDr;                     // transverse impact parameter
     Double_t       fDz;                     // longitudinal impact parameter
     Double_t       fPID[AliPID::kSPECIES];  // PID probabilities
+    AliPID::EParticleType fReqPID;          // PID assigned by pairdef
 
     AliVParticle  *fRef;                    // reference to read object
 

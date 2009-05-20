@@ -202,6 +202,8 @@ void AliRsnPair::LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEven
     // get track #1
     ev1->SetDaughter(fTrack1, a1->At(i));
     if (!fTrack1.IsOK()) continue;
+    // assign the required PID type to track #1
+    fTrack1.SetRequiredPID(fPairDef->GetType(0));
     AliDebug(AliLog::kDebug+1,"daughter1 is OK ...");
     // cuts on track #1
     if (!CutPass(&fTrack1)) continue;
@@ -214,6 +216,8 @@ void AliRsnPair::LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEven
       ev2->SetDaughter(fTrack2, a2->At(j));
       if (!fTrack2.IsOK()) continue;
       AliDebug(AliLog::kDebug+1,"daughter2 is OK ...");
+      // assign the required PID type to track #2
+      fTrack2.SetRequiredPID(fPairDef->GetType(1));
       // cuts on track #2
       if (!CutPass(&fTrack2)) continue;
       AliDebug(AliLog::kDebug+1,"daughter2 cut passed ...");
