@@ -365,14 +365,16 @@ public:
 				const AliMUONLocalScalarsStruct* scalars = NULL
 			) :
 			fRegional(regionalHeader), fNext(NULL),
-			fLocalStruct(localStruct), fScalars(scalars)
+			fLocalStruct(localStruct), fScalars(scalars),
+			fCalculatedId(0)
 		{
 		}
 		
 		/// Implement shallow copying in the copy constructor.
 		AliLocalStruct(const AliLocalStruct& o) :
 			fRegional(o.fRegional), fNext(o.fNext),
-			fLocalStruct(o.fLocalStruct), fScalars(o.fScalars)
+			fLocalStruct(o.fLocalStruct), fScalars(o.fScalars),
+			fCalculatedId(o.fCalculatedId)
 		{
 		}
 		
@@ -426,7 +428,7 @@ public:
 		}
 	
 		/// Return Id
-		UChar_t GetId() const {return AliMUONTriggerDDLDecoderEventHandler::GetLocalId(fLocalStruct);}
+		UChar_t GetId() const {return fgOverrideId ? fCalculatedId : AliMUONTriggerDDLDecoderEventHandler::GetLocalId(fLocalStruct);}
 		/// Return Dec
 		UChar_t GetDec() const {return AliMUONTriggerDDLDecoderEventHandler::GetLocalDec(fLocalStruct);}
 		/// Return TrigY
@@ -513,9 +515,18 @@ public:
 		
 		/// Sets the next local trigger structure.
 		void SetNext(const AliLocalStruct* next) { fNext = next; }
+	
+		/// Sets the calculated ID value to be returned by GetId if fgOverrideId is true.
+		void SetCalculatedId(UChar_t id) { fCalculatedId = id; }
 		
 		/// Print the contents of the local trigger structure and contents to screen.
 		void Print() const;
+		
+		/// Returns the override flag indicating if the GetId method should return the calculated Id value or not.
+		static bool GetOverrideIdFlag() { return fgOverrideId; }
+		
+		/// Sets the override flag to control what value the GetId method returns.
+		static void SetOverrideIdFlag(bool value) { fgOverrideId = value; }
 	
 	private:
 	
@@ -523,6 +534,8 @@ public:
 		const AliLocalStruct* fNext;  ///< Next local structure object in the regional structure.
 		const AliMUONLocalInfoStruct* fLocalStruct;  ///< Pointer to the local trigger structure data in the DDL payload.
 		const AliMUONLocalScalarsStruct* fScalars;  ///< Pointer to the local trigger scalars data in the DDL payload.
+		UChar_t fCalculatedId;  ///< Calculated ID value returned by GetId() if fgOverrideId == true.
+		static bool fgOverrideId; //!< Flag indicating if we should return a calculated number in the GetId method.
 	};
 	
 	/// Returns the DARC and global headers plus scalars if they exist.
@@ -675,8 +688,9 @@ private:
 		                           const void* data);
 		
 		/// Handler for new local card structures.
-		void OnLocalStruct(const AliMUONLocalInfoStruct* localStruct,
-		                   const AliMUONLocalScalarsStruct* scalars);
+		void OnLocalStructV2(UInt_t iLoc,
+		                     const AliMUONLocalInfoStruct* localStruct,
+		                     const AliMUONLocalScalarsStruct* scalars);
 		
 		/// Error handler.
 		void OnError(ErrorCode error, const void* location);
@@ -763,7 +777,8 @@ inline void AliMUONRawStreamTriggerHP::AliDecoderEventHandler::OnNewRegionalStru
 }
 
 
-inline void AliMUONRawStreamTriggerHP::AliDecoderEventHandler::OnLocalStruct(
+inline void AliMUONRawStreamTriggerHP::AliDecoderEventHandler::OnLocalStructV2(
+		UInt_t iLoc,
 		const AliMUONLocalInfoStruct* localStruct,
 		const AliMUONLocalScalarsStruct* scalars
 	)
@@ -787,6 +802,7 @@ inline void AliMUONRawStreamTriggerHP::AliDecoderEventHandler::OnLocalStruct(
 	
 	fCurrentLocal++;
 	*fCurrentLocal = AliLocalStruct(fCurrentRegional, localStruct, scalars);
+	fCurrentLocal->SetCalculatedId(iLoc);
 	fCurrentRegional->IncLocalStructCount();
 }
 

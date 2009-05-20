@@ -57,6 +57,7 @@ ClassImp(AliMUONRawStreamTriggerHP)
 /// \endcond
 
 const Int_t AliMUONRawStreamTriggerHP::fgkMaxDDL = 2;
+bool AliMUONRawStreamTriggerHP::AliLocalStruct::fgOverrideId = true;
 
 const AliMUONRegionalHeaderStruct
 AliMUONRawStreamTriggerHP::AliDecoderEventHandler::fgkEmptyHeader = {
@@ -347,6 +348,15 @@ AliMUONDDLTrigger* AliMUONRawStreamTriggerHP::GetDDLTrigger() const
 			if (lstruct->GetScalars() != NULL)
 			{
 				memcpy(localStruct.GetScalers(), lstruct->GetScalars(), sizeof(AliMUONLocalScalarsStruct));
+			}
+			if (AliMUONRawStreamTriggerHP::AliLocalStruct::GetOverrideIdFlag() == true)
+			{
+				// Since the override ID flag is set, we need to replace the
+				// ID in the structure with the calculated one returned by GetId().
+				AliMUONLocalInfoStruct* strptr = reinterpret_cast<AliMUONLocalInfoStruct*>( localStruct.GetData() );
+				UInt_t word = strptr->fTriggerBits;
+				word &= (0xF << 19);
+				strptr->fTriggerBits = word | (lstruct->GetId() << 19);
 			}
 			fDDLObject->AddLocStruct(localStruct, iReg);
 			lstruct = lstruct->Next();
