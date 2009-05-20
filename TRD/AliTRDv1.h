@@ -41,10 +41,6 @@ class AliTRDv1 : public AliTRD {
   virtual void     CreateTRhit(Int_t det);
 
   virtual void     StepManager();
-          void     StepManagerErmilova();
-          void     StepManagerGeant();
-          void     StepManagerFixedStep();
-          void     SelectStepManager(Int_t t);
 
           void     SetStepSize(Double_t s)    { fStepSize = s; }
           void     SetTR(Bool_t)              { fTRon = kTRUE; }
@@ -54,31 +50,18 @@ class AliTRDv1 : public AliTRD {
 
  protected:
 
-          void    *StepManagerEntity();
-
           Bool_t   fTRon;               //  Switch for TR simulation
   AliTRDsimTR     *fTR;                 //  TR simulator
 
-          Int_t    fTypeOfStepManager;  //  Type of Step Manager.
           Double_t fStepSize;           //  Used for the fixed step size
+          Float_t  fWion;               //  Ionization potential
 
  private:
 
   AliTRDv1(const AliTRDv1 &trd);
   AliTRDv1 &operator=(const AliTRDv1 &trd);
 
-          Double_t BetheBloch(Double_t bg);
-          Double_t BetheBlochGeant(Double_t bg);
-  
-          Float_t  fWion;               //  Ionization potential
-
-          TF1     *fDeltaE;             //  Energy distribution of the delta-electrons (Ermilova)
-          TF1     *fDeltaG;             //  Energy distribution of the
-
-          Float_t  fTrackLength0;       //  Save the track length at chamber entrance  
-          Int_t	   fPrimaryTrackPid;    //  Save the id of the primary track  
-
-  ClassDef(AliTRDv1,7)                  //  Transition Radiation Detector version 1 (slow simulator)
+  ClassDef(AliTRDv1,8)                  //  Transition Radiation Detector version 1 (slow simulator)
 
 };
 
