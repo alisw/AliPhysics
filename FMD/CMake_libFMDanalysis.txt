@@ -11,6 +11,7 @@ set(SRCS
 		   analysis/AliFMDAnalysisTaskCollector.cxx
 		   analysis/AliFMDAnalysisTaskDndeta.cxx
 		   analysis/AliFMDAnalysisTaskSE.cxx
+		   analysis/AliFMDAnalysisTaskGenerateBackground.cxx
 )
 
 # fill list of header files from list of source files

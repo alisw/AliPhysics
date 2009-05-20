@@ -21,6 +21,7 @@ set(SRCS
   AliTPCcalibUnlinearity.cxx
   AliTPCcalibPID.cxx
   AliTPCcalibTimeGain.cxx
+  AliTPCMisAligner.cxx
 )
 
 # fill list of header files from list of source files
