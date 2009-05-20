@@ -25,7 +25,8 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
     virtual void Init();
     virtual void LocalInit() {Init();}
     virtual void UserExec(Option_t *option);
-    virtual void SetConfigFile(const char *c){fConfigFile = c;}
+    virtual void SetConfigFile(const char *c) {fConfigFile = c;}
+    virtual void SetJetFinder(AliJetFinder *finder) {fJetFinder = finder;}
     virtual void SetNonStdBranch(const char *c){fNonStdBranch = c;}
     virtual void Terminate(Option_t *option);
 
