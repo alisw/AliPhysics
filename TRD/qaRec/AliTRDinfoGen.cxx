@@ -62,6 +62,7 @@
 #include "AliTRDinfoGen.h"
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDeventInfo.h"
+#include "info/AliTRDv0Info.h"
 
 ClassImp(AliTRDinfoGen)
 
@@ -76,6 +77,8 @@ AliTRDinfoGen::AliTRDinfoGen():
   ,fESDfriend(0x0)
   ,fTrackInfo(0x0)
   ,fEventInfo(0x0)
+  ,fV0container(0x0)
+  ,fV0Info(0x0)
 {
   //
   // Default constructor
@@ -84,7 +87,7 @@ AliTRDinfoGen::AliTRDinfoGen():
   DefineInput(0, TChain::Class());
   DefineOutput(0, TObjArray::Class());
   DefineOutput(1, AliTRDeventInfo::Class());
-  //DefineOutput(1, TTree::Class());
+  DefineOutput(2, TObjArray::Class());
 }
 
 //____________________________________________________________________
@@ -92,9 +95,14 @@ AliTRDinfoGen::~AliTRDinfoGen()
 {
   if(fTrackInfo) delete fTrackInfo; fTrackInfo = 0x0;
   if(fEventInfo) delete fEventInfo; fEventInfo = 0x0;
+  if(fV0Info) delete fV0Info; fV0Info = 0x0;
   if(fContainer){ 
     fContainer->Delete(); delete fContainer;
     fContainer = 0x0;
+  }
+  if(fV0container){ 
+    fV0container->Delete(); delete fV0container;
+    fV0container = 0x0;
   }
 }
 
@@ -142,13 +150,12 @@ void AliTRDinfoGen::CreateOutputObjects()
   //
   fTrackInfo = new AliTRDtrackInfo();
   fEventInfo = new AliTRDeventInfo();
+  fV0Info    = new AliTRDv0Info();
   fContainer = new TObjArray(1000);
   fContainer->SetOwner(kTRUE);
+  fV0container = new TObjArray(50);
+  fV0container->SetOwner(kTRUE);
 
-/*  OpenFile(1, "RECREATE");
-  fTree = new TTree("trd", "extract of the TRD detector");
-  fTree->Branch("info",  &fTrackInfo);
-  printf("output tree build in %s\n", fTree->GetDirectory()->GetName());*/
 }
 
 //____________________________________________________________________
@@ -169,6 +176,7 @@ void AliTRDinfoGen::Exec(Option_t *){
     return;
   }
   fContainer->Delete();
+  fV0container->Delete();
   fEventInfo->Delete("");
   fESD->SetESDfriend(fESDfriend);
   new(fEventInfo)AliTRDeventInfo(fESD->GetHeader(), const_cast<AliESDRun *>(fESD->GetESDRun()));
@@ -304,6 +312,12 @@ void AliTRDinfoGen::Exec(Option_t *){
   }
   if(fDebugLevel>=2) printf("%3d Tracks: TPC[%d] TRD[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTPC, nTRD);
 
+  AliESDv0 *v0 = 0x0;
+  for(Int_t iv0=0; iv0<fESD->GetNumberOfV0s(); iv0++){
+    if(!(v0 = fESD->GetV0(iv0))) continue;
+    fV0container->Add(new AliTRDv0Info(v0));
+  }
+
   // Insert also MC tracks which are passing TRD where the track is not reconstructed
   if(HasMCdata()){
     if(fDebugLevel > 10){
@@ -356,6 +370,7 @@ void AliTRDinfoGen::Exec(Option_t *){
   }
   PostData(0, fContainer);
   PostData(1, fEventInfo);
+  PostData(2, fV0container);
 }
 
 

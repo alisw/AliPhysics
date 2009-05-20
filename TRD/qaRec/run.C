@@ -158,7 +158,7 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   // TRD specific library
   if(gSystem->Load("libTRDqaRec.so")<0) return;
   // TRD data containers
-  AliAnalysisDataContainer *ci[] = {0x0, 0x0};
+  AliAnalysisDataContainer *ci[] = {0x0, 0x0, 0x0};
 
 
   // initialize TRD settings

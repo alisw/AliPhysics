@@ -20,6 +20,7 @@ class AliMCEvent;
 class AliESDfriend;
 class AliTRDtrackInfo;
 class AliTRDeventInfo;
+class AliTRDv0Info;
 class TObjArray;
 class TTreeSRedirector;
 class AliTRDinfoGen : public AliTRDrecoTask{
@@ -40,12 +41,14 @@ private:
   AliTRDinfoGen(const AliTRDinfoGen&);
   AliTRDinfoGen& operator=(const AliTRDinfoGen&);
 
-  AliESDEvent      *fESD;                  // ESD event
-  AliMCEvent       *fMC;                   // MC event
-  AliESDfriend     *fESDfriend;            // ESD friends
-  AliTRDtrackInfo  *fTrackInfo;            // Track info
-  AliTRDeventInfo  *fEventInfo;		   // Event info
+  AliESDEvent      *fESD;            //! ESD event
+  AliMCEvent       *fMC;             //! MC event
+  AliESDfriend     *fESDfriend;      //! ESD friends
+  AliTRDtrackInfo  *fTrackInfo;      //! Track info
+  AliTRDeventInfo  *fEventInfo;		   //! Event info
+  TObjArray        *fV0container;    //! V0 container
+  AliTRDv0Info     *fV0Info;		     //! V0 info
 
-  ClassDef(AliTRDinfoGen, 1)          // entry to TRD analysis
+  ClassDef(AliTRDinfoGen, 2)         // entry to TRD analysis train
 };
 #endif

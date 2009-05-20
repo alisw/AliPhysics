@@ -18,7 +18,9 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   mgr->ConnectInput( info, 0, mgr->GetCommonInputContainer());
   co[0] = mgr->CreateContainer("trackInfo", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   co[1] = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
+  co[2] = mgr->CreateContainer("v0Info", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   mgr->ConnectOutput(info, 0, co[0]);
   mgr->ConnectOutput(info, 1, co[1]);
+  mgr->ConnectOutput(info, 2, co[2]);
 }
 

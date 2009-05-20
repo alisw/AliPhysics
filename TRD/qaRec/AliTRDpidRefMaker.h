@@ -28,6 +28,7 @@
 #endif
 
 class TTree;
+class TObjArray;
 class TEventList;
 class TMultiLayerPerceptron;
 class AliPID;
@@ -65,6 +66,7 @@ public:
 
   virtual ~AliTRDpidRefMaker();
   
+  void    ConnectInputData(Option_t *opt);
   void    CreateOutputObjects();
   void    Exec(Option_t *option);
   Int_t   GetEpochs() {return fEpochs;};
@@ -98,6 +100,7 @@ private:
   void BuildLQRefs(Int_t mombin);                           // build the 2dim histos for a given momentum bin
 
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
+  TObjArray     *fV0s;                     //! v0 array
   TTree         *fNN;                      // NN data
   TTree         *fLQ;                      // LQ data
   TEventList *fTrain[AliTRDCalPID::kNMom][AliTRDgeometry::kNlayer];          // Training list for each momentum 

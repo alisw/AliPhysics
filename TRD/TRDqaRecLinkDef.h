@@ -7,6 +7,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class  AliTRDclusterInfo+;
+#pragma link C++ class  AliTRDv0Info+;
 #pragma link C++ class  AliTRDtrackInfo+;
 #pragma link C++ class  AliTRDeventInfo+;
 #pragma link C++ class  AliTRDtrackInfo::AliESDinfo+;

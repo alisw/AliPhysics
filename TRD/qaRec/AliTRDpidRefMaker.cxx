@@ -25,6 +25,7 @@
 
 #include "AliTRDpidRefMaker.h"
 #include "info/AliTRDtrackInfo.h"
+#include "info/AliTRDv0Info.h"
 
 // builds the reference tree for the training of neural networks
 
@@ -35,6 +36,7 @@ ClassImp(AliTRDpidRefMaker)
 AliTRDpidRefMaker::AliTRDpidRefMaker() 
   :AliTRDrecoTask("PidRefMaker", "PID(NN) Reference Maker")
   ,fReconstructor(0x0)
+  ,fV0s(0x0)
   ,fNN(0x0)
   ,fLQ(0x0)
   ,fLayer(0xff)
@@ -64,6 +66,7 @@ AliTRDpidRefMaker::AliTRDpidRefMaker()
   TDatime datime;
   fDate = datime.GetDate();
 
+  DefineInput(1, TObjArray::Class());
   DefineOutput(1, TTree::Class());
   DefineOutput(2, TTree::Class());
 }
@@ -77,6 +80,13 @@ AliTRDpidRefMaker::~AliTRDpidRefMaker()
   //if(fLQ) delete fLQ;
 }
 
+
+//________________________________________________________________________
+void AliTRDpidRefMaker::ConnectInputData(Option_t *opt)
+{
+  AliTRDrecoTask::ConnectInputData(opt);
+  fV0s = dynamic_cast<TObjArray*>(GetInputData(1));
+}
 
 //________________________________________________________________________
 void AliTRDpidRefMaker::CreateOutputObjects()
@@ -135,14 +145,17 @@ void AliTRDpidRefMaker::Exec(Option_t *)
   Int_t nTRD = 0;
 
   AliTRDtrackInfo     *track = 0x0;
+  AliTRDv0Info           *v0 = 0x0;
   AliTRDtrackV1    *TRDtrack = 0x0;
   AliTrackReference     *ref = 0x0;
   AliExternalTrackParam *esd = 0x0;
-
   AliTRDseedV1 *TRDtracklet = 0x0;
 
-  //AliTRDcluster *TRDcluster = 0x0;
-
+  for(Int_t iv0=0; iv0<fV0s->GetEntriesFast(); iv0++){
+    v0 = dynamic_cast<AliTRDv0Info*>(fV0s->At(iv0));
+    v0->Print();
+  }
+  
   for(Int_t itrk=0; itrk<fTracks->GetEntriesFast(); itrk++){
 
     // reset the pid information

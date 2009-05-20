@@ -29,6 +29,7 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   
   // Create containers for input/output
   mgr->ConnectInput( ref, 0, ci[0]);
+  mgr->ConnectInput( ref, 1, ci[2]);
   mgr->ConnectOutput(ref, 0, mgr->CreateContainer(ref->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", ref->GetName())));
   
   // network container
