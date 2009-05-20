@@ -48,7 +48,6 @@
 #include "AliHLTConfiguration.h"
 #include "AliLog.h"
 #include "TString.h"
-#include "TClassTable.h"
 #include <iostream>
 using std::cerr;
 using std::endl;
@@ -299,14 +298,8 @@ void RunChain(
 		));
 	}
 	
-	if (gClassTable->GetID("AliHLTAgentUtil") < 0)
-	{
-		sys.LoadComponentLibraries("libAliHLTUtil.so");
-	}
-	if (gClassTable->GetID("AliHLTMUONAgent") < 0)
-	{
-		sys.LoadComponentLibraries("libAliHLTMUON.so");
-	}
+	sys.LoadComponentLibraries("libAliHLTUtil.so");
+	sys.LoadComponentLibraries("libAliHLTMUON.so");
 
 	// The DDL file publishers are only needed if we create the ddlreco or
 	// full chains. The filename lists are built assuming the aliroot rawXX/
