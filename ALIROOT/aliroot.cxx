@@ -37,6 +37,8 @@
 #include <TRint.h>
 #include <TFile.h>
 #include <AliRun.h>
+#include "Riostream.h"
+#include "ARVersion.h"
 
 #if defined __linux
 //On linux Fortran wants this, so we give to it!
@@ -69,6 +71,17 @@ int main(int argc, char **argv)
   // in the run is stored in the same file in the tree TreeE, containing the
   // run and event number, the number of vertices, tracks and primary tracks
   // in the event.
+  
+  for ( int i = 1; i < argc; ++i ) 
+  {
+    TString argument(argv[i]);
+    
+    if (argument=="--version")
+    {      
+      cout << "aliroot " << ALIROOT_SVN_REVISION << " " << ALIROOT_SVN_BRANCH << endl;
+      return 0;
+    }    
+  }
   
   // Create new configuration 
   
