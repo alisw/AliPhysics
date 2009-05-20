@@ -1,15 +1,11 @@
-//type of analysis can be: ESD, AOD, MC, ESDMC0, ESDMC1
-//const TString type = "ESD"; 
-
 enum libModes {mLocal,mLocalSource};
 //mLocal: Analyze data on your computer using aliroot
 //mLocalSource: Analyze data on your computer using root + source files
 
-//void compareFlowResults(TString type="",Int_t mode=mLocalSource)
 void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
 { 
  // load needed libraries:                       
- LoadPlotLibraries(mode);  
+ LoadSpreadLibraries(mode);  
  
  // standard magic:
  TString execDir(gSystem->pwd());  
@@ -18,8 +14,7 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  Int_t nDirs = dirList->GetEntries();
  gSystem->cd(execDir);
  
- // array to store estimates of each method from different runs:
- 
+ // arrays to store estimates of each method from different runs:
  // MCEP:
  Double_t mcepValueNONAME[nRuns] = {0.}; 
  Double_t mcepMaxValueNONAME = 0.;       
@@ -364,8 +359,8 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
 
  
  
- //removing the title and stat. box from all histograms:
- //gStyle->SetOptTitle(0);
+ // removing the title and stat. box from all histograms:
+ // gStyle->SetOptTitle(0);
  gStyle->SetOptStat(0);  
  
  // box width:
@@ -398,6 +393,7 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  //intFlowAll->SetLabelSize(0.036,"Y");
  //intFlowAll->SetMarkerStyle(markerStyle);
  //intFlowAll->SetMarkerColor(markerColor);
+ (intFlowAll->GetYaxis())->SetTickLength(0.01);
  (intFlowAll->GetXaxis())->SetBinLabel(binMCEP,"v_{2}{MC}");
  (intFlowAll->GetXaxis())->SetBinLabel(binSP,"v_{2}{SP}");
  (intFlowAll->GetXaxis())->SetBinLabel(binGFC2,"v_{2}{2,GFC}");
@@ -453,8 +449,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // MCEP:
  TGraph* mcepTGraphNONAME = new TGraph(nPoints, mcepNONAME, mcepValueNONAME);
- mcepTGraphNONAME->SetMarkerStyle(21);
+ mcepTGraphNONAME->SetMarkerStyle(25);
  mcepTGraphNONAME->SetMarkerColor(kBlack); 
+ mcepTGraphNONAME->SetMarkerSize(0.25); 
  
  TGraph *mcepBoxNONAME = new TGraph(5);
  mcepBoxNONAME->SetPoint(1,(binMCEP-0.5)-boxWidth,mcepMinValueNONAME);
@@ -464,11 +461,12 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  mcepBoxNONAME->SetPoint(5,(binMCEP-0.5)-boxWidth,mcepMinValueNONAME);    
  mcepBoxNONAME->SetFillStyle(1001);
  mcepBoxNONAME->SetFillColor(kGray);
- 
+  
  // SP:
  TGraph* spTGraphNONAME = new TGraph(nPoints, spNONAME, spValueNONAME);
- spTGraphNONAME->SetMarkerStyle(21);
+ spTGraphNONAME->SetMarkerStyle(25);
  spTGraphNONAME->SetMarkerColor(kViolet+3); 
+ spTGraphNONAME->SetMarkerSize(0.25); 
  
  TGraph *spBoxNONAME = new TGraph(5);
  spBoxNONAME->SetPoint(1,(binSP-0.5)-boxWidth,spMinValueNONAME);
@@ -481,8 +479,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // GFC{2}:
  TGraph* gfc2TGraphNONAME = new TGraph(nPoints, gfc2NONAME, gfc2ValueNONAME);
- gfc2TGraphNONAME->SetMarkerStyle(21);
- gfc2TGraphNONAME->SetMarkerColor(kBlue); 
+ gfc2TGraphNONAME->SetMarkerStyle(25);
+ gfc2TGraphNONAME->SetMarkerColor(kBlue);
+ gfc2TGraphNONAME->SetMarkerSize(0.25); 
  
  TGraph *gfc2BoxNONAME = new TGraph(5);
  gfc2BoxNONAME->SetPoint(1,(binGFC2-0.5)-boxWidth,gfc2MinValueNONAME);
@@ -495,8 +494,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // GFC{4}:
  TGraph* gfc4TGraphNONAME = new TGraph(nPoints, gfc4NONAME, gfc4ValueNONAME);
- gfc4TGraphNONAME->SetMarkerStyle(21);
+ gfc4TGraphNONAME->SetMarkerStyle(25);
  gfc4TGraphNONAME->SetMarkerColor(kBlue); 
+ gfc4TGraphNONAME->SetMarkerSize(0.25); 
  
  TGraph *gfc4BoxNONAME = new TGraph(5);
  gfc4BoxNONAME->SetPoint(1,(binGFC4-0.5)-boxWidth,gfc4MinValueNONAME);
@@ -509,8 +509,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
 
  // GFC{6}:
  TGraph* gfc6TGraphNONAME = new TGraph(nPoints, gfc6NONAME, gfc6ValueNONAME);
- gfc6TGraphNONAME->SetMarkerStyle(21);
+ gfc6TGraphNONAME->SetMarkerStyle(25);
  gfc6TGraphNONAME->SetMarkerColor(kBlue); 
+ gfc6TGraphNONAME->SetMarkerSize(0.25); 
  
  TGraph *gfc6BoxNONAME = new TGraph(5);
  gfc6BoxNONAME->SetPoint(1,(binGFC6-0.5)-boxWidth,gfc6MinValueNONAME);
@@ -523,8 +524,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
 
  // GFC{8}:
  TGraph* gfc8TGraphNONAME = new TGraph(nPoints, gfc8NONAME, gfc8ValueNONAME);
- gfc8TGraphNONAME->SetMarkerStyle(21);
+ gfc8TGraphNONAME->SetMarkerStyle(25);
  gfc8TGraphNONAME->SetMarkerColor(kBlue); 
+ gfc8TGraphNONAME->SetMarkerSize(0.25); 
  
  TGraph *gfc8BoxNONAME = new TGraph(5);
  gfc8BoxNONAME->SetPoint(1,(binGFC8-0.5)-boxWidth,gfc8MinValueNONAME);
@@ -537,8 +539,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // QC{2}:
  TGraph* qc2TGraphNONAME = new TGraph(nPoints, qc2NONAME, qc2ValueNONAME);
- qc2TGraphNONAME->SetMarkerStyle(21);
+ qc2TGraphNONAME->SetMarkerStyle(25);
  qc2TGraphNONAME->SetMarkerColor(kRed); 
+ qc2TGraphNONAME->SetMarkerSize(0.25); 
  
  TGraph *qc2BoxNONAME = new TGraph(5);
  qc2BoxNONAME->SetPoint(1,(binQC2-0.5)-boxWidth,qc2MinValueNONAME);
@@ -551,8 +554,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // QC{4}:
  TGraph* qc4TGraphNONAME = new TGraph(nPoints, qc4NONAME, qc4ValueNONAME);
- qc4TGraphNONAME->SetMarkerStyle(21);
+ qc4TGraphNONAME->SetMarkerStyle(25);
  qc4TGraphNONAME->SetMarkerColor(kRed); 
+ qc4TGraphNONAME->SetMarkerSize(0.25); 
  
  TGraph *qc4BoxNONAME = new TGraph(5);
  qc4BoxNONAME->SetPoint(1,(binQC4-0.5)-boxWidth,qc4MinValueNONAME);
@@ -565,8 +569,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
 
  // QC{6}:
  TGraph* qc6TGraphNONAME = new TGraph(nPoints, qc6NONAME, qc6ValueNONAME);
- qc6TGraphNONAME->SetMarkerStyle(21);
+ qc6TGraphNONAME->SetMarkerStyle(25);
  qc6TGraphNONAME->SetMarkerColor(kRed); 
+ qc6TGraphNONAME->SetMarkerSize(0.25); 
  
  TGraph *qc6BoxNONAME = new TGraph(5);
  qc6BoxNONAME->SetPoint(1,(binQC6-0.5)-boxWidth,qc6MinValueNONAME);
@@ -579,8 +584,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
 
  // QC{8}:
  TGraph* qc8TGraphNONAME = new TGraph(nPoints, qc8NONAME, qc8ValueNONAME);
- qc8TGraphNONAME->SetMarkerStyle(21);
+ qc8TGraphNONAME->SetMarkerStyle(25);
  qc8TGraphNONAME->SetMarkerColor(kRed); 
+ qc8TGraphNONAME->SetMarkerSize(0.25); 
  
  TGraph *qc8BoxNONAME = new TGraph(5);
  qc8BoxNONAME->SetPoint(1,(binQC8-0.5)-boxWidth,qc8MinValueNONAME);
@@ -593,8 +599,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // FQD:
  TGraph* fqdTGraphNONAME = new TGraph(nPoints, fqdNONAME, fqdValueNONAME);
- fqdTGraphNONAME->SetMarkerStyle(21);
+ fqdTGraphNONAME->SetMarkerStyle(25);
  fqdTGraphNONAME->SetMarkerColor(kOrange+7); 
+ fqdTGraphNONAME->SetMarkerSize(0.25); 
  
  TGraph *fqdBoxNONAME = new TGraph(5);
  fqdBoxNONAME->SetPoint(1,(binFQD-0.5)-boxWidth,fqdMinValueNONAME);
@@ -607,9 +614,10 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // LYZ1:
  TGraph* lyz1TGraphNONAME = new TGraph(nPoints, lyz1NONAME, lyz1ValueNONAME);
- lyz1TGraphNONAME->SetMarkerStyle(21);
+ lyz1TGraphNONAME->SetMarkerStyle(25);
  lyz1TGraphNONAME->SetMarkerColor(kYellow+3); 
- 
+ lyz1TGraphNONAME->SetMarkerSize(0.25); 
+  
  TGraph *lyz1BoxNONAME = new TGraph(5);
  lyz1BoxNONAME->SetPoint(1,(binLYZ1-0.5)-boxWidth,lyz1MinValueNONAME);
  lyz1BoxNONAME->SetPoint(2,(binLYZ1-0.5)+boxWidth,lyz1MinValueNONAME);
@@ -621,8 +629,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
    
  // LYZEP:
  TGraph* lyzepTGraphNONAME = new TGraph(nPoints, lyzepNONAME, lyzepValueNONAME);
- lyzepTGraphNONAME->SetMarkerStyle(21);
+ lyzepTGraphNONAME->SetMarkerStyle(25);
  lyzepTGraphNONAME->SetMarkerColor(kGreen+3); 
+ lyzepTGraphNONAME->SetMarkerSize(0.25); 
  
  TGraph *lyzepBoxNONAME = new TGraph(5);
  lyzepBoxNONAME->SetPoint(1,(binLYZEP-0.5)-boxWidth,lyzepMinValueNONAME);
@@ -633,7 +642,6 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  lyzepBoxNONAME->SetFillStyle(1001);
  lyzepBoxNONAME->SetFillColor(kGreen-9);
    
-   
  TCanvas* intFlowCanvasNONAME = new TCanvas("Integrated Flow NONAME","Integrated Flow NONAME",1000,600);
  
  intFlowCanvasNONAME->Divide(2,1);
@@ -643,69 +651,247 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  if(intFlowNONAME) 
  {
-  intFlowNONAME->SetTitle("Integrated Flow NONAME");
+  TString intFlowNameNONAME("Superimposing ");
+  intFlowNameNONAME+=nRuns;
+  intFlowNameNONAME+=" independent runs";
+  intFlowNONAME->SetTitle(intFlowNameNONAME.Data());
   (intFlowNONAME->GetYaxis())->SetRangeUser(0,0.20);
   intFlowNONAME->Draw();
  }
  
  // MCEP 
- if(mcepBoxNONAME) mcepBoxNONAME->Draw("LFSAME");
+ if(mcepBoxNONAME && mcepMinValueNONAME < 1000.) mcepBoxNONAME->Draw("LFSAME");
  if(mcepTGraphNONAME) mcepTGraphNONAME->Draw("PSAME");
  
  // SP 
- if(spBoxNONAME) spBoxNONAME->Draw("LFSAME");
+ if(spBoxNONAME && spMinValueNONAME < 1000.) spBoxNONAME->Draw("LFSAME");
  if(spTGraphNONAME) spTGraphNONAME->Draw("PSAME");
  
  // GFC{2} 
- if(gfc2BoxNONAME) gfc2BoxNONAME->Draw("LFSAME");
+ if(gfc2BoxNONAME && gfc2MinValueNONAME < 1000.) gfc2BoxNONAME->Draw("LFSAME");
  if(gfc2TGraphNONAME) gfc2TGraphNONAME->Draw("PSAME");
   
  // GFC{4} 
- if(gfc4BoxNONAME) gfc4BoxNONAME->Draw("LFSAME");
+ if(gfc4BoxNONAME && gfc4MinValueNONAME < 1000.) gfc4BoxNONAME->Draw("LFSAME");
  if(gfc4TGraphNONAME) gfc4TGraphNONAME->Draw("PSAME");
 
  // GFC{6} 
- if(gfc6BoxNONAME) gfc6BoxNONAME->Draw("LFSAME");
+ if(gfc6BoxNONAME && gfc6MinValueNONAME < 1000.) gfc6BoxNONAME->Draw("LFSAME");
  if(gfc6TGraphNONAME) gfc6TGraphNONAME->Draw("PSAME");
 
  // GFC{8} 
- if(gfc8BoxNONAME) gfc8BoxNONAME->Draw("LFSAME");
+ if(gfc8BoxNONAME && gfc8MinValueNONAME < 1000.) gfc8BoxNONAME->Draw("LFSAME");
  if(gfc8TGraphNONAME) gfc8TGraphNONAME->Draw("PSAME");
  
  // QC{2} 
- if(qc2BoxNONAME) qc2BoxNONAME->Draw("LFSAME");
+ if(qc2BoxNONAME && qc2MinValueNONAME < 1000.) qc2BoxNONAME->Draw("LFSAME");
  if(qc2TGraphNONAME) qc2TGraphNONAME->Draw("PSAME");
   
  // QC{4} 
- if(qc4BoxNONAME) qc4BoxNONAME->Draw("LFSAME");
+ if(qc4BoxNONAME && qc4MinValueNONAME < 1000.) qc4BoxNONAME->Draw("LFSAME");
  if(qc4TGraphNONAME) qc4TGraphNONAME->Draw("PSAME");
 
  // QC{6} 
- if(qc6BoxNONAME) qc6BoxNONAME->Draw("LFSAME");
+ if(qc6BoxNONAME && qc6MinValueNONAME < 1000.) qc6BoxNONAME->Draw("LFSAME");
  if(qc6TGraphNONAME) qc6TGraphNONAME->Draw("PSAME");
 
  // QC{8} 
- if(qc8BoxNONAME) qc8BoxNONAME->Draw("LFSAME");
+ if(qc8BoxNONAME && qc8MinValueNONAME < 1000.) qc8BoxNONAME->Draw("LFSAME");
  if(qc8TGraphNONAME) qc8TGraphNONAME->Draw("PSAME");
  
  // FQD 
- if(fqdBoxNONAME) fqdBoxNONAME->Draw("LFSAME");
+ if(fqdBoxNONAME && fqdMinValueNONAME < 1000.) fqdBoxNONAME->Draw("LFSAME");
  if(fqdTGraphNONAME) fqdTGraphNONAME->Draw("PSAME");
  
  // LYZ1 
- if(lyz1BoxNONAME) lyz1BoxNONAME->Draw("LFSAME");
+ if(lyz1BoxNONAME && lyz1MinValueNONAME < 1000.) lyz1BoxNONAME->Draw("LFSAME");
  if(lyz1TGraphNONAME) lyz1TGraphNONAME->Draw("PSAME");
  
  // LYZEP 
- //if(lyzepBoxNONAME) lyzepBoxNONAME->Draw("LFSAME");
- //if(lyzepTGraphNONAME) lyzepTGraphNONAME->Draw("PSAME");
-  
+ if(lyzepBoxNONAME && lyzepMinValueNONAME < 1000.) lyzepBoxNONAME->Draw("LFSAME");
+ if(lyzepTGraphNONAME) lyzepTGraphNONAME->Draw("PSAME");
+ 
+ // 2nd pad is for legend:   
  (intFlowCanvasNONAME->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+ 
+ // count real estimates:
+ Int_t mcepCountRealNONAME = 0;
+ Int_t spCountRealNONAME = 0;
+ Int_t gfc2CountRealNONAME = 0;
+ Int_t gfc4CountRealNONAME = 0;
+ Int_t gfc6CountRealNONAME = 0;
+ Int_t gfc8CountRealNONAME = 0;
+ Int_t qc2CountRealNONAME = 0;
+ Int_t qc4CountRealNONAME = 0;
+ Int_t qc6CountRealNONAME = 0;
+ Int_t qc8CountRealNONAME = 0;
+ Int_t fqdCountRealNONAME = 0;
+ Int_t lyz1CountRealNONAME = 0;
+ Int_t lyzepCountRealNONAME = 0;
+ for(Int_t i=0;i<nRuns;i++)
+ {
+  if(mcepValueNONAME[i]>0.) mcepCountRealNONAME++; 
+  if(spValueNONAME[i]>0.) spCountRealNONAME++; 
+  if(gfc2ValueNONAME[i]>0.) gfc2CountRealNONAME++; 
+  if(gfc4ValueNONAME[i]>0.) gfc4CountRealNONAME++; 
+  if(gfc6ValueNONAME[i]>0.) gfc6CountRealNONAME++; 
+  if(gfc8ValueNONAME[i]>0.) gfc8CountRealNONAME++; 
+  if(qc2ValueNONAME[i]>0.) qc2CountRealNONAME++; 
+  if(qc4ValueNONAME[i]>0.) qc4CountRealNONAME++; 
+  if(qc6ValueNONAME[i]>0.) qc6CountRealNONAME++; 
+  if(qc8ValueNONAME[i]>0.) qc8CountRealNONAME++;
+  if(fqdValueNONAME[i]>0.) fqdCountRealNONAME++; 
+  if(lyz1ValueNONAME[i]>0.) lyz1CountRealNONAME++; 
+  if(lyzepValueNONAME[i]>0.) lyzepCountRealNONAME++; 
+ }
 
+ TPaveText *textDefaultNONAME = new TPaveText(0.05,0.67,0.95,0.90,"NDC");
+ textDefaultNONAME->SetTextFont(72);
+ textDefaultNONAME->SetTextSize(0.08);
+  
+ TString *entryDefaultRealNONAME = new TString("Real estimates");
+ //TString *entryDefaultOutOfNONAME = new TString("out of"); 
+ TString *entryDefaultTotalNumberNONAME = new TString(" out of total number of ");
+ TString *entryDefaultTotalIndNONAME = new TString("independent");
+ TString *entryDefaultTotalSimNONAME = new TString("simulations:");
+  
+ textDefaultNONAME->AddText(entryDefaultRealNONAME->Data());
+ //textDefaultNONAME->AddText(entryDefaultOutOfNONAME->Data());
+ textDefaultNONAME->AddText(entryDefaultTotalNumberNONAME->Data());
+ textDefaultNONAME->AddText(entryDefaultTotalIndNONAME->Data());
+ textDefaultNONAME->AddText(entryDefaultTotalSimNONAME->Data());
+ 
+ // results:
+ TPaveText *textResultsNONAME = new TPaveText(0.05,0.12,0.95,0.60,"NDC");
+ textResultsNONAME->SetTextFont(72);
+ textResultsNONAME->SetTextSize(0.06);
+ 
+ // entries:
+ TString *entryIntFlowMCNONAME    = new TString("MC ................ ");
+ TString *entryIntFlowSPNONAME    = new TString("SP ................ ");  
+ TString *entryIntFlowGFC2NONAME  = new TString("GFC{2} ........ ");
+ TString *entryIntFlowGFC4NONAME  = new TString("GFC{4} ........ ");
+ TString *entryIntFlowGFC6NONAME  = new TString("GFC{6} ........ ");
+ TString *entryIntFlowGFC8NONAME  = new TString("GFC{8} ........ "); 
+ TString *entryIntFlowQC2NONAME   = new TString("QC{2} .......... ");
+ TString *entryIntFlowQC4NONAME   = new TString("QC{4} .......... ");
+ TString *entryIntFlowQC6NONAME   = new TString("QC{6} .......... ");
+ TString *entryIntFlowQC8NONAME   = new TString("QC{8} .......... ");
+ TString *entryIntFlowFQDNONAME   = new TString("FQD ............. ");
+ TString *entryIntFlowLYZ1NONAME  = new TString("LYZ ............. ");
+ TString *entryIntFlowLYZEPNONAME = new TString("LYZEP ........ ");
+
+ if(entryIntFlowMCNONAME)
+ { 
+  (*entryIntFlowMCNONAME)+=(Long_t)mcepCountRealNONAME;
+  entryIntFlowMCNONAME->Append(" out of ");
+  (*entryIntFlowMCNONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowMCNONAME->Data());
+ }
+ 
+ if(entryIntFlowSPNONAME)
+ { 
+  (*entryIntFlowSPNONAME)+=(Long_t)spCountRealNONAME;
+  entryIntFlowSPNONAME->Append(" out of ");
+  (*entryIntFlowSPNONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowSPNONAME->Data());
+ }
+ 
+ if(entryIntFlowGFC2NONAME)
+ { 
+  (*entryIntFlowGFC2NONAME)+=(Long_t)gfc2CountRealNONAME;
+  entryIntFlowGFC2NONAME->Append(" out of ");
+  (*entryIntFlowGFC2NONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowGFC2NONAME->Data());
+ }
+ 
+ if(entryIntFlowGFC4NONAME)
+ { 
+  (*entryIntFlowGFC4NONAME)+=(Long_t)gfc4CountRealNONAME;
+  entryIntFlowGFC4NONAME->Append(" out of ");
+  (*entryIntFlowGFC4NONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowGFC4NONAME->Data());
+ }
+
+ if(entryIntFlowGFC6NONAME)
+ { 
+  (*entryIntFlowGFC6NONAME)+=(Long_t)gfc6CountRealNONAME;
+  entryIntFlowGFC6NONAME->Append(" out of ");
+  (*entryIntFlowGFC6NONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowGFC6NONAME->Data());
+ }
+
+ if(entryIntFlowGFC8NONAME)
+ { 
+  (*entryIntFlowGFC8NONAME)+=(Long_t)gfc8CountRealNONAME;
+  entryIntFlowGFC8NONAME->Append(" out of ");
+  (*entryIntFlowGFC8NONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowGFC8NONAME->Data());
+ }
+ 
+ if(entryIntFlowQC2NONAME)
+ { 
+  (*entryIntFlowQC2NONAME)+=(Long_t)qc2CountRealNONAME;
+  entryIntFlowQC2NONAME->Append(" out of ");
+  (*entryIntFlowQC2NONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowQC2NONAME->Data());
+ }
+ 
+ if(entryIntFlowQC4NONAME)
+ { 
+  (*entryIntFlowQC4NONAME)+=(Long_t)qc4CountRealNONAME;
+  entryIntFlowQC4NONAME->Append(" out of ");
+  (*entryIntFlowQC4NONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowQC4NONAME->Data());
+ }
+
+ if(entryIntFlowQC2NONAME)
+ { 
+  (*entryIntFlowQC6NONAME)+=(Long_t)qc6CountRealNONAME;
+  entryIntFlowQC6NONAME->Append(" out of ");
+  (*entryIntFlowQC6NONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowQC6NONAME->Data());
+ }
+
+ if(entryIntFlowQC8NONAME)
+ { 
+  (*entryIntFlowQC8NONAME)+=(Long_t)qc8CountRealNONAME;
+  entryIntFlowQC8NONAME->Append(" out of ");
+  (*entryIntFlowQC8NONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowQC8NONAME->Data());
+ }
+ 
+ if(entryIntFlowFQDNONAME)
+ { 
+  (*entryIntFlowFQDNONAME)+=(Long_t)fqdCountRealNONAME;
+  entryIntFlowFQDNONAME->Append(" out of ");
+  (*entryIntFlowFQDNONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowFQDNONAME->Data());
+ }
+ 
+ if(entryIntFlowLYZ1NONAME)
+ { 
+  (*entryIntFlowLYZ1NONAME)+=(Long_t)lyz1CountRealNONAME;
+  entryIntFlowLYZ1NONAME->Append(" out of ");
+  (*entryIntFlowLYZ1NONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowLYZ1NONAME->Data());
+ }
+ 
+ if(entryIntFlowLYZEPNONAME)
+ { 
+  (*entryIntFlowLYZEPNONAME)+=(Long_t)lyzepCountRealNONAME;
+  entryIntFlowLYZEPNONAME->Append(" out of ");
+  (*entryIntFlowLYZEPNONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowLYZEPNONAME->Data());
+ }
+ 
+ if(textDefaultNONAME) textDefaultNONAME->Draw();
+ if(textResultsNONAME) textResultsNONAME->Draw();
+ 
 }
 
 
-void LoadPlotLibraries(const libModes mode) {
+void LoadSpreadLibraries(const libModes mode) {
   
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
