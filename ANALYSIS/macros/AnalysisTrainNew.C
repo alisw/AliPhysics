@@ -69,12 +69,12 @@ Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tra
 Int_t       iMUONcopyAOD       = 0;      // Task that copies only muon events in a separate AOD (PWG3)
 Int_t       iJETAN             = 0;      // Jet analysis (PWG4) - needs ESD filter
 Int_t       iPWG4partcorr      = 1;      // Gamma-hadron correlations task (PWG4)
-Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
-Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
-Int_t       iPWG2spectra       = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
+Int_t       iPWG3vertexing     = 0;      // Vertexing HF task (PWG2)
+Int_t       iPWG2femto         = 0;      // Femtoscopy task (PWG2)
+Int_t       iPWG2spectra       = 0;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
 Int_t       iPWG2flow          = 0;      // Flow analysis task (PWG2)
-Int_t       iPWG2res           = 1;      // Resonances task (PWG2)
-Int_t       iPWG2kink          = 1;      // Kink analysis task (PWG2)
+Int_t       iPWG2res           = 0;      // Resonances task (PWG2)
+Int_t       iPWG2kink          = 0;      // Kink analysis task (PWG2)
 
 // Temporaries.
 TString anaPars = "";
@@ -354,7 +354,7 @@ void CheckModuleFlags(const char *mode) {
       // Disable tasks that do not work yet on AOD data
       if (iPWG2kink)         
          ::Info("AnalysisTrainNew.C::CheckModuleFlags", "PWG2kink disabled in analysis on AOD's");
-      iPWG2kink = 0;proof_out
+         iPWG2kink = 0;
    } else {   
    // ESD analysis
       iMUONcopyAOD = 0;
@@ -387,7 +387,8 @@ Bool_t Connect(const char *mode) {
          ::Info("AnalysisTrainNew.C::Connect", "Connecting user <%s> to PROOF cluster <%s>", 
                 username.Data(), proof_cluster.Data());
          gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-         TProof::Open(Form("%s@%s:31093", username.Data(), proof_cluster.Data()));       
+//         TProof::Open(Form("%s@%s:31093", username.Data(), proof_cluster.Data()));       
+         TProof::Open(Form("%s@%s", username.Data(), proof_cluster.Data()));       
          if (!gProof) {
             if (strcmp(gSystem->Getenv("XrdSecGSISRVNAMES"), "lxfsrd0506.cern.ch"))
                ::Error(Form("AnalysisTrainNew.C::Connect <%s>", mode), "Environment XrdSecGSISRVNAMES different from lxfsrd0506.cern.ch");
