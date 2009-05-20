@@ -6,46 +6,95 @@ void mergeOutput(const Int_t nRuns=-1, TString type="",Int_t mode=mLocal)
 { 
  // load needed libraries:                       
  LoadSpreadLibraries(mode);  
-  
+
+ TString pwd(gSystem->pwd());
+         
  // file mergers for the output file of each method separately: 
  // MCEP:                       
  TFileMerger *mcepFileMerger = new TFileMerger();
  TString mergedFileNameMCEP("outputMCEPanalysis.root");
+ if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameMCEP).Data(),kFileExists)))
+ {
+  cout<<"WARNING: You already have a merged output for MCEP !!!!"<<endl;
+  break;
+ }
  mcepFileMerger->OutputFile(mergedFileNameMCEP);
  
  // SP:                       
  TFileMerger *spFileMerger = new TFileMerger();
  TString mergedFileNameSP("outputSPanalysis.root");
+ pwd=gSystem->pwd();
+ if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameSP).Data(),kFileExists)))
+ {
+  cout<<"WARNING: You already have a merged output for SP !!!!"<<endl;
+  break;
+ }
  spFileMerger->OutputFile(mergedFileNameSP);
 
  // GFC:                       
  TFileMerger *gfcFileMerger = new TFileMerger();
  TString mergedFileNameGFC("outputGFCanalysis.root");
+ pwd=gSystem->pwd();
+ if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameGFC).Data(),kFileExists)))
+ {
+  cout<<"WARNING: You already have a merged output for GFC !!!!"<<endl;
+  break;
+ }
  gfcFileMerger->OutputFile(mergedFileNameGFC);
  
  // QC:                       
  TFileMerger *qcFileMerger = new TFileMerger();
  TString mergedFileNameQC("outputQCanalysis.root");
+ pwd=gSystem->pwd();
+ if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameQC).Data(),kFileExists)))
+ {
+  cout<<"WARNING: You already have a merged output for QC !!!!"<<endl;
+  break;
+ } 
  qcFileMerger->OutputFile(mergedFileNameQC);
  
  // FQD:                       
  TFileMerger *fqdFileMerger = new TFileMerger();
  TString mergedFileNameFQD("outputFQDanalysis.root");
+ pwd=gSystem->pwd();
+ if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameFQD).Data(),kFileExists)))
+ {
+  cout<<"WARNING: You already have a merged output for FQD !!!!"<<endl;
+  break;
+ } 
  fqdFileMerger->OutputFile(mergedFileNameFQD);
  
  // LYZ1:                       
  TFileMerger *lyz1FileMerger = new TFileMerger();
  TString mergedFileNameLYZ1("outputLYZ1analysis.root");
+ pwd=gSystem->pwd();
+ if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameLYZ1).Data(),kFileExists)))
+ {
+  cout<<"WARNING: You already have a merged output for LYZ1 !!!!"<<endl;
+  break;
+ } 
  lyz1FileMerger->OutputFile(mergedFileNameLYZ1);
  
  // LYZ2:                       
  TFileMerger *lyz2FileMerger = new TFileMerger();
  TString mergedFileNameLYZ2("outputLYZ2analysis.root");
+ pwd=gSystem->pwd();
+ if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameLYZ2).Data(),kFileExists)))
+ {
+  cout<<"WARNING: You already have a merged output for LYZ2 !!!!"<<endl;
+  break;
+ }
  lyz2FileMerger->OutputFile(mergedFileNameLYZ2);
  
  // LYZEP:                       
  TFileMerger *lyzepFileMerger = new TFileMerger();
  TString mergedFileNameLYZEP("outputLYZEPanalysis.root");
+ pwd=gSystem->pwd();
+ if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameLYZEP).Data(),kFileExists)))
+ {
+  cout<<"WARNING: You already have a merged output for LYZEP !!!!"<<endl;
+  break;
+ } 
  lyzepFileMerger->OutputFile(mergedFileNameLYZEP);
  
  // standard magic:
@@ -53,7 +102,7 @@ void mergeOutput(const Int_t nRuns=-1, TString type="",Int_t mode=mLocal)
  TSystemDirectory* baseDir = new TSystemDirectory(".",execDir.Data());          
  TList* dirList = baseDir->GetListOfFiles();
  Int_t nDirs = dirList->GetEntries();
- gSystem->cd(execDir);        
+ gSystem->cd(execDir);          
 
  Int_t counter = 0;
   
@@ -77,36 +126,60 @@ void mergeOutput(const Int_t nRuns=-1, TString type="",Int_t mode=mLocal)
   // MCEP:     
   TString fileNameMCEP = presentDirName;   
   fileNameMCEP+="outputMCEPanalysis.root";
-  mcepFileMerger->AddFile(fileNameMCEP.Data());
+  if(!(gSystem->AccessPathName(fileNameMCEP.Data(),kFileExists)))
+  {
+   mcepFileMerger->AddFile(fileNameMCEP.Data());
+  }  
   // SP:     
   TString fileNameSP = presentDirName;   
   fileNameSP+="outputSPanalysis.root";
-  spFileMerger->AddFile(fileNameSP.Data());
+  if(!(gSystem->AccessPathName(fileNameSP.Data(),kFileExists)))
+  {
+   spFileMerger->AddFile(fileNameSP.Data());
+  } 
   // GFC:     
   TString fileNameGFC = presentDirName;   
   fileNameGFC+="outputGFCanalysis.root";
-  gfcFileMerger->AddFile(fileNameGFC.Data());
+  if(!(gSystem->AccessPathName(fileNameGFC.Data(),kFileExists)))
+  { 
+   gfcFileMerger->AddFile(fileNameGFC.Data());
+  } 
   // QC:     
   TString fileNameQC = presentDirName;   
   fileNameQC+="outputQCanalysis.root";
-  qcFileMerger->AddFile(fileNameQC.Data());
+  if(!(gSystem->AccessPathName(fileNameQC.Data(),kFileExists)))
+  { 
+   qcFileMerger->AddFile(fileNameQC.Data());
+  } 
   // FQD:     
   TString fileNameFQD = presentDirName;   
   fileNameFQD+="outputFQDanalysis.root";
-  fqdFileMerger->AddFile(fileNameFQD.Data());
+  if(!(gSystem->AccessPathName(fileNameFQD.Data(),kFileExists)))
+  { 
+   fqdFileMerger->AddFile(fileNameFQD.Data());
+  } 
   // LYZ1:     
   TString fileNameLYZ1 = presentDirName;   
   fileNameLYZ1+="outputLYZ1analysis.root";
-  lyz1FileMerger->AddFile(fileNameLYZ1.Data());
+  if(!(gSystem->AccessPathName(fileNameLYZ1.Data(),kFileExists)))
+  { 
+   lyz1FileMerger->AddFile(fileNameLYZ1.Data());
+  } 
   // LYZ2:     
   TString fileNameLYZ2 = presentDirName;   
   fileNameLYZ2+="outputLYZ2analysis.root";
-  lyz2FileMerger->AddFile(fileNameLYZ2.Data());
+  if(!(gSystem->AccessPathName(fileNameLYZ2.Data(),kFileExists)))
+  {  
+   lyz2FileMerger->AddFile(fileNameLYZ2.Data());
+  } 
   // LYZEP:     
   TString fileNameLYZEP = presentDirName;   
   fileNameLYZEP+="outputLYZEPanalysis.root";
-  lyzepFileMerger->AddFile(fileNameLYZEP.Data());
- 
+  if(!(gSystem->AccessPathName(fileNameLYZEP.Data(),kFileExists)))
+  {  
+   lyzepFileMerger->AddFile(fileNameLYZEP.Data());
+  }
+   
   counter++;
   
  } // end of for(Int_t iDir=0;iDir<nDirs;++iDir)
