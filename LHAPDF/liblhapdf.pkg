@@ -28,7 +28,6 @@ lhapdf5.5.1/src/wrapa02m.f \
 lhapdf5.5.1/src/wrapabfkwpi.f \
 lhapdf5.5.1/src/wrapacfgpg.f \
 lhapdf5.5.1/src/wrapcteq5.f \
-lhapdf5.5.1/src/wrapcteq65.f \
 lhapdf5.5.1/src/wrapcteq6.f \
 lhapdf5.5.1/src/wrapcteq6lg.f \
 lhapdf5.5.1/src/wrapdgg.f \
@@ -42,10 +41,6 @@ lhapdf5.5.1/src/wrapgsg96.f \
 lhapdf5.5.1/src/wrapgsg.f \
 lhapdf5.5.1/src/wraph1.f \
 lhapdf5.5.1/src/wraplacg.f \
-lhapdf5.5.1/src/wrapmrst2006.f \
-lhapdf5.5.1/src/wrapmrst98.f \
-lhapdf5.5.1/src/wrapmrst.f \
-lhapdf5.5.1/src/wrapmrstqed.f \
 lhapdf5.5.1/src/wrapowpi.f \
 lhapdf5.5.1/src/wrapQCDNUM3.f \
 lhapdf5.5.1/src/wrapQCDNUM4.f \

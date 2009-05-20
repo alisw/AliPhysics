@@ -17,7 +17,7 @@ typedef enum
     kCTEQ4M,  // cteq4m.LHgrid   
     kCTEQ5L,  // cteq5l.LHgrid
     kCTEQ5M,  // cteq5m.LHgrid
-    kGRVLO98, // GRV98lo.LHgris   
+    kGRVLO98, // GRV98lo.LHgrid   
     kCTEQ6,   // cteq6.LHpdf
     kCTEQ61,  // cteq61.LHpdf
     kCTEQ6m,  // cteq6m.LHpdf
