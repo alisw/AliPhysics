@@ -377,8 +377,15 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
   // space for payload from the writer
   if (pWriter) bufferSize+=pWriter->GetTotalMemorySize();
 
+  // payload data must be aligned to 32bit
+  bufferSize=(bufferSize+3)/4;
+  bufferSize*=4;
+
   if (bufferSize>fBuffer.size())
     fBuffer.resize(bufferSize);
+
+  // reset the last 32bit word, rest will be overwritten
+  memset(&fBuffer[bufferSize-4], 0, 4);
 
   if (bufferSize<=fBuffer.size()) {
     AliRawDataHeader* pCDH=reinterpret_cast<AliRawDataHeader*>(&fBuffer[0]);

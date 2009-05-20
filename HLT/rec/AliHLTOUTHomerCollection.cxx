@@ -151,7 +151,8 @@ AliHLTHOMERReader* AliHLTOUTHomerCollection::OpenReader(UChar_t* pSrc, unsigned 
   if (pHLTHeader->fLength>size) {
     HLTError("can not treat HLT data block %d: size mismatch, header %d, but buffer is %d", id, pHLTHeader->fLength, size);
     return NULL;
-  } else if (pHLTHeader->fLength<size) {
+  } else if (pHLTHeader->fLength<size-3) {
+    // data payload is aligned to 32bit, so there can be a difference by at most 3 bytes
     HLTWarning("size mismatch in HLT data block %d: header %d, but buffer is %d", id, pHLTHeader->fLength, size);
   }
 
@@ -177,7 +178,7 @@ AliHLTHOMERReader* AliHLTOUTHomerCollection::OpenReader(UChar_t* pSrc, unsigned 
   if (!(statusFlags&(0x1<<kCDHFlagsHLTPayload))) return NULL;
 
   // continue if there is no data left in the buffer
-  if (offset>=size) {
+  if (offset>=pHLTHeader->fLength) {
     HLTWarning("no HLT payload available, but bit is set, skipping ...");
     return NULL;
   }
@@ -190,7 +191,7 @@ AliHLTHOMERReader* AliHLTOUTHomerCollection::OpenReader(UChar_t* pSrc, unsigned 
     return NULL;
   }
 
-  return fpManager->OpenReaderBuffer(pSrc+offset, size-offset);
+  return fpManager->OpenReaderBuffer(pSrc+offset, pHLTHeader->fLength-offset);
 }
 
 int AliHLTOUTHomerCollection::WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size, AliHLTComponentDataType dt, AliESDEvent* tgtesd) const
