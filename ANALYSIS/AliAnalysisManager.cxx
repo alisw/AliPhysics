@@ -432,6 +432,7 @@ void AliAnalysisManager::PackOutput(TList *target)
          const char *filename = output->GetFileName();
          if (!(strcmp(filename, "default")) && fOutputEventHandler) {
             isManagedByHandler = kTRUE;
+            printf("#### Handler output. Extra: %s\n", fExtraFiles.Data());
             filename = fOutputEventHandler->GetOutputFileName();
          }
          // Check if data was posted to this container. If not, issue an error.
@@ -558,10 +559,33 @@ void AliAnalysisManager::PackOutput(TList *target)
                   Info("PackOutput", "Output file for container %s to be copied \n   at: %s. No merging.",
                        output->GetName(), remote.Data());
                TFile::Cp ( outFilename.Data(), remote.Data() );
+               // Copy extra outputs
+               if (fExtraFiles.Length() && isManagedByHandler) {
+                  TObjArray *arr = fExtraFiles.Tokenize(" ");
+                  TObjString *os;
+                  TIter nextfilename(arr);
+                  while ((os=(TObjString*)nextfilename())) {
+                     outFilename = os->GetString();
+                     remote = fSpecialOutputLocation;
+                     remote += "/";
+                     if (remote.BeginsWith("alien://")) {
+                        remote += outFilename;
+                        remote.ReplaceAll(".root", Form("_%d.root", gid));
+                     } else {   
+                        remote += Form("%s_%d_", gSystem->HostName(), gid);
+                        remote += outFilename;
+                     }   
+                     if (fDebug > 1) 
+                        Info("PackOutput", "Extra AOD file %s to be copied \n   at: %s. No merging.",
+                             outFilename.Data(), remote.Data());
+                     TFile::Cp ( outFilename.Data(), remote.Data() );
+                  }   
+                  delete arr;
+               }   
             } else {
             // No special location specified-> use TProofOutputFile as merging utility
             // The file at this output slot must be opened in CreateOutputObjects
-               if (fDebug > 1) printf("   File %s to be merged...\n", file->GetName());
+               if (fDebug > 1) printf("   File for container %s to be merged via file merger...\n", output->GetName());
             }
          }      
       }

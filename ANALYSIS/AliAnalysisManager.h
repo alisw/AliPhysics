@@ -164,9 +164,9 @@ private:
    AliAnalysisDataContainer *fCommonOutput;      // Common output container
    AliAnalysisSelector    *fSelector;            //! Current selector
    AliAnalysisGrid        *fGridHandler;         //! Grid handler plugin
-   TString                 fExtraFiles;          //! List of extra files to be merged
+   TString                 fExtraFiles;          // List of extra files to be merged
 
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,4)  // Analysis manager class
+   ClassDef(AliAnalysisManager,5)  // Analysis manager class
 };   
 #endif
