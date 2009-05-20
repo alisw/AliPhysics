@@ -115,10 +115,14 @@ void AliFlowAnalysisWithLeeYangZeros::WriteHistograms(TString* outputFileName)
 
   TFile *output = new TFile(outputFileName->Data(),"RECREATE");
   if (GetFirstRun()) {
-    output->WriteObject(fHistList, "cobjLYZ1","SingleKey");
+    //output->WriteObject(fHistList, "cobjLYZ1","SingleKey");
+    fHistList->SetName("cobjLYZ1");
+    fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   }
   else {
-    output->WriteObject(fHistList, "cobjLYZ2","SingleKey");
+    //output->WriteObject(fHistList, "cobjLYZ2","SingleKey");
+    fHistList->SetName("cobjLYZ2");
+    fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   }
   delete output;
 }
@@ -131,10 +135,14 @@ void AliFlowAnalysisWithLeeYangZeros::WriteHistograms(TString outputFileName)
 
   TFile *output = new TFile(outputFileName.Data(),"RECREATE");
   if (GetFirstRun()) {
-    output->WriteObject(fHistList, "cobjLYZ1","SingleKey");
+    //output->WriteObject(fHistList, "cobjLYZ1","SingleKey");
+    fHistList->SetName("cobjLYZ1");
+    fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   }
   else {
-    output->WriteObject(fHistList, "cobjLYZ2","SingleKey");
+    //output->WriteObject(fHistList, "cobjLYZ2","SingleKey");
+    fHistList->SetName("cobjLYZ2");
+    fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   }
   delete output;
 }

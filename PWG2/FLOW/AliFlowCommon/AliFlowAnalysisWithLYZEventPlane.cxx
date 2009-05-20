@@ -105,7 +105,9 @@ void AliFlowAnalysisWithLYZEventPlane::WriteHistograms(TString* outputFileName)
  //store the final results in output .root file
 
   TFile *output = new TFile(outputFileName->Data(),"RECREATE");
-  output->WriteObject(fHistList, "cobjLYZEP","SingleKey");
+  //output->WriteObject(fHistList, "cobjLYZEP","SingleKey");
+  fHistList->SetName("cobjLYZEP");
+  fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   delete output;
 }
 
@@ -116,7 +118,9 @@ void AliFlowAnalysisWithLYZEventPlane::WriteHistograms(TString outputFileName)
  //store the final results in output .root file
 
   TFile *output = new TFile(outputFileName.Data(),"RECREATE");
-  output->WriteObject(fHistList, "cobjLYZEP","SingleKey");
+  //output->WriteObject(fHistList, "cobjLYZEP","SingleKey");
+  fHistList->SetName("cobjLYZEP");
+  fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   delete output;
 }
 
