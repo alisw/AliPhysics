@@ -1,11 +1,9 @@
-# T00 config;
 dn: det=T00,o=shuttle,dc=cern,dc=ch
 objectClass: top
 objectClass: detectorConfig
 det: T00
 strictRunOrder: 0
 responsible: tomatkie@cc.jyu.fi
-responsible: moledzki@gmail.com
 
 dn: dcsHost=aldcs052.cern.ch,det=T00,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
@@ -25,5 +23,8 @@ dcsAlias: t00_a_cfd_walk_[00..11]
 dcsAlias: t00_c_cfd_thre_[00..11]
 dcsAlias: t00_c_cfd_walk_[00..11]
 dcsAlias: t00_ac_scaler_[00..31]
-dcsAlias: t00_ac_trm_[00..19]
-dcsAlias: t00_ac_drm
+dcsAlias: t00_ac_trm_[00..09]
+dcsAlias: t00_ac_drm_[00..04]
+dcsAlias: t00_ac_scaler_sec[0..31]
+dcsAlias: t00_ac_atten
+

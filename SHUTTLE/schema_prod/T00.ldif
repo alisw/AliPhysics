@@ -4,7 +4,6 @@ objectClass: detectorConfig
 det: T00
 strictRunOrder: 0
 responsible: tomatkie@cc.jyu.fi
-responsible: moledzki@gmail.com
 responsible: alla@mail.cern.ch
 
 dn: dcsHost=alidcsamanda.cern.ch,det=T00,o=shuttle_prod,dc=cern,dc=ch
