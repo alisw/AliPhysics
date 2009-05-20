@@ -1,0 +1,21 @@
+#
+# Arguments are the ones which must be passed to script:
+# -- $1 = root path containing all sub-paths with files to merge
+# -- $2 = name of the files to be merged
+# -- $3 = name of output file
+#
+
+Executable="rsn-merge.sh";
+Arguments="$1 $2 $3";
+
+Packages={
+  "APISCONFIG::V2.4",
+  "VO_ALICE@ROOT::v5-23-02"
+};
+
+TTL="40000";
+
+InputFile="LF:/alice/cern.ch/user/p/pulvir/pdc09/RsnMergeAlien.C";
+
+OutputDir="/alice/cern.ch/user/p/pulvir/$1/merge";
+OutputArchive={"$3.zip:$3.*@ALICE::Catania::dpm"};
