@@ -76,7 +76,9 @@ void AliFlowAnalysisWithScalarProduct::WriteHistograms(TString* outputFileName)
  //store the final results in output .root file
 
   TFile *output = new TFile(outputFileName->Data(),"RECREATE");
-  output->WriteObject(fHistList, "cobjSP","SingleKey");
+  //output->WriteObject(fHistList, "cobjSP","SingleKey");
+  fHistList->SetName("cobjSP");
+  fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   delete output;
 }
 
@@ -87,7 +89,9 @@ void AliFlowAnalysisWithScalarProduct::WriteHistograms(TString outputFileName)
  //store the final results in output .root file
 
   TFile *output = new TFile(outputFileName.Data(),"RECREATE");
-  output->WriteObject(fHistList, "cobjSP","SingleKey");
+  //output->WriteObject(fHistList, "cobjSP","SingleKey");
+  fHistList->SetName("cobjSP");
+  fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   delete output;
 }
 

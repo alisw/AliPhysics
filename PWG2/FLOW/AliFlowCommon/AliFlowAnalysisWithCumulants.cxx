@@ -927,7 +927,9 @@ void AliFlowAnalysisWithCumulants::WriteHistograms(TString* outputFileName)
 {
  //store the final results in output .root file
  TFile *output = new TFile(outputFileName->Data(),"RECREATE");
- output->WriteObject(fHistList, "cobjGFC","SingleKey");
+ //output->WriteObject(fHistList, "cobjGFC","SingleKey");
+ fHistList->SetName("cobjGFC");
+ fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
  delete output;
 }
 
@@ -939,7 +941,9 @@ void AliFlowAnalysisWithCumulants::WriteHistograms(TString outputFileName)
 {
  //store the final results in output .root file
  TFile *output = new TFile(outputFileName.Data(),"RECREATE");
- output->WriteObject(fHistList, "cobjGFC","SingleKey");
+ //output->WriteObject(fHistList, "cobjGFC","SingleKey");
+ fHistList->SetName("cobjGFC");
+ fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
  delete output;
 }
 
