@@ -1,43 +1,43 @@
 /*
-  Contact: Jean-Luc Charvet <jean-luc.charvet@cea.fr>
-  Link: http://aliceinfo.cern.ch/static/Offline/dimuon/muon_html/README_Mchda
-  Run Type: CALIBRATION
-  DA Type: LDC
-  Number of events needed: 400 events for each calibration run
-  Input Files: Rawdata file (DATE format)
-  Output Files: local dir (not persistent) -> MUONTRKGAINda_<run#>.par
-  FXS -> run<#>_MCH_<ldc>_GAINS
-  Trigger types used:
+ Contact: Jean-Luc Charvet <jean-luc.charvet@cea.fr>
+ Link: http://aliceinfo.cern.ch/static/Offline/dimuon/muon_html/README_Mchda
+ Run Type: CALIBRATION
+ DA Type: LDC
+ Number of events needed: 400 events for each calibration run
+ Input Files: Rawdata file (DATE format)
+ Output Files: local dir (not persistent) -> MUONTRKGAINda_<run#>.par
+ FXS -> run<#>_MCH_<ldc>_GAINS
+ Trigger types used:
 */
 
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 
 /* $Id$ */
 
 /*
-  -------------------------------------------------------------------------
-  2009-05-11 New version: MUONTRKGAINda.cxx,v 1.0
-  -------------------------------------------------------------------------
+ -------------------------------------------------------------------------
+ 2009-05-18 New version: MUONTRKGAINda.cxx,v 1.0
+ -------------------------------------------------------------------------
 
-  Version for MUONTRKGAINda MUON tracking
-  (A. Baldisseri, J.-L. Charvet)
+ Version for MUONTRKGAINda MUON tracking
+ (A. Baldisseri, J.-L. Charvet)
 
 
-  Rem:  AliMUON2DMap stores all channels, even those which are not connected
-  if pedMean == -1, channel not connected to a pad  
+ Rem:  AliMUON2DMap stores all channels, even those which are not connected
+ if pedMean == -1, channel not connected to a pad  
 
 
 */
@@ -97,66 +97,66 @@ extern "C" {
 int main(Int_t argc, Char_t **argv) 
 {
 
-  Int_t status=0;
-  TStopwatch timers;
-  timers.Start(kTRUE); 
+ Int_t status=0;
+ TStopwatch timers;
+ timers.Start(kTRUE); 
 
-  // needed for streamer application
-  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+ // needed for streamer application
+ gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
 					"*",
 					"TStreamerInfo",
 					"RIO",
 					"TStreamerInfo()"); 
 
-  // needed for Minuit plugin
-  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer",
+ // needed for Minuit plugin
+ gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer",
 					"Minuit",
 					"TMinuitMinimizer",
 					"Minuit",
 					"TMinuitMinimizer(const char*)");
 
-  Char_t prefixDA[256]="MUONTRKGAINda"; // program prefix 
+ Char_t prefixDA[256]="MUONTRKGAINda"; // program prefix 
 
-  Int_t skipEvents = 0;
-  Int_t maxEvents  = 1000000;
-  Int_t maxDateEvents  = 1000000;
-  Char_t inputFile[256]="";
+ Int_t skipEvents = 0;
+ Int_t maxEvents  = 1000000;
+ Int_t maxDateEvents  = 1000000;
+ Char_t inputFile[256]="";
 
-  Int_t  nDateEvents = 0;
-  Int_t nGlitchErrors= 0;
-  Int_t nParityErrors= 0;
-  Int_t nPaddingErrors= 0;
-  Int_t recoverParityErrors = 1;
+ Int_t  nDateEvents = 0;
+ Int_t nGlitchErrors= 0;
+ Int_t nParityErrors= 0;
+ Int_t nPaddingErrors= 0;
+ Int_t recoverParityErrors = 1;
 
-  TString logOutputFile;
+ TString logOutputFile;
 
-  Char_t flatFile[256]="";
-  TString shuttleFile;
+ Char_t flatFile[256]="";
+ TString shuttleFile;
 
-  Int_t nEventsRecovered = 0;
-  Int_t nEvents = 0;
-  UInt_t runNumber   = 0;
-  Int_t  nChannel    = 0;
-  ofstream filcout;
-  Int_t nIndex = -1; 
+ Int_t nEventsRecovered = 0;
+ Int_t nEvents = 0;
+ UInt_t runNumber   = 0;
+ Int_t  nChannel    = 0;
+ ofstream filcout;
+ Int_t nIndex = -1; 
 
-  // For DA Gain
-  Int_t printLevel  = 0;  // printout (up to 2)
-  Int_t plotLevel  = 2;  // plotout (up to 2)
-  Int_t injCharge; 
+ // For DA Gain
+ Int_t printLevel  = 0;  // printout (up to 2)
+ Int_t plotLevel  = 2;  // plotout (up to 2)
+ Int_t injCharge; 
 
-  Int_t nEntries = daqDA_ECS_getTotalIteration(); // usually = 11 = Nb of calibration runs
-  Int_t nInit=1;  // = 0 all DAC values ; = 1 DAC=0 excluded (default=1)
-  Int_t nbpf1=6;  // nb of points for linear fit (default=6) 
+ Int_t nEntries = daqDA_ECS_getTotalIteration(); // usually = 11 = Nb of calibration runs
+ Int_t nInit=1;  // = 0 all DAC values ; = 1 DAC=0 excluded (default=1)
+ Int_t nbpf1=6;  // nb of points for linear fit (default=6) 
 
 
-  // decode the input line
-  for (Int_t i = 1; i < argc; i++) // argument 0 is the executable name
-    {
-      Char_t* arg;
+ // decode the input line
+ for (Int_t i = 1; i < argc; i++) // argument 0 is the executable name
+   {
+     Char_t* arg;
 
-      arg = argv[i];
-      if (arg[0] != '-') 
+     arg = argv[i];
+     if (arg[0] != '-') 
 	{
 	  // If only one argument and no "-" => DA calling from ECS
 	  if (argc == 2)
@@ -165,7 +165,7 @@ int main(Int_t argc, Char_t **argv)
 	    }
 	  continue;
 	}
-      switch (arg[1])
+     switch (arg[1])
 	{
 	case 'f' : 
 	  i++;
@@ -236,68 +236,68 @@ int main(Int_t argc, Char_t **argv)
 	  printf("%s : bad argument %s (please check %s -h)\n",argv[0],argv[i],argv[0]);
 	  argc = 2; exit(-1); // exit if error
 	} // end of switch  
-    } // end of for i  
+   } // end of for i  
 
 
-  //Gain object
-  AliMUONGain* muonGain = new AliMUONGain();
-  muonGain->SetprefixDA(prefixDA);
-  muonGain->SetAliRootDataFileName(); // MUONTRKGAINda_data.root  
-  muonGain->SetAliPrintLevel(printLevel);
-  muonGain->SetAliPlotLevel(plotLevel);
+ //Gain object
+ AliMUONGain* muonGain = new AliMUONGain();
+ muonGain->SetprefixDA(prefixDA);
+ muonGain->SetAliRootDataFileName(); // MUONTRKGAINda_data.root  
+ muonGain->SetAliPrintLevel(printLevel);
+ muonGain->SetAliPlotLevel(plotLevel);
 
-  // Reading current iteration
-  nIndex = daqDA_ECS_getCurrentIteration();
-  if(nIndex<0)nIndex=0; // compute gain directly from existing root data file
-
-
-
-
-  if(nIndex==0) // compute gain from existing root data file: MUONTRKGAINda_data.root
-    {
-      sprintf(flatFile,"%s_data.log",prefixDA);
-      logOutputFile=flatFile;
-      filcout.open(logOutputFile.Data());
-      muonGain->SetAlifilcout(&filcout);
-
-      sprintf(flatFile,"%s_data.par",prefixDA);
-      if(shuttleFile.IsNull())shuttleFile=flatFile;
-
-      muonGain->SetAliIndex(nIndex); // fIndex 
-      muonGain->SetAliInit(nInit); // fnInit
-      muonGain->SetAliNbpf1(nbpf1); // fnbpf1
-      muonGain->MakeGainStore(shuttleFile);
-    }
+ // Reading current iteration
+ nIndex = daqDA_ECS_getCurrentIteration();
+ if(nIndex<0)nIndex=0; // compute gain directly from existing root data file
 
 
 
-  if(nIndex>0) // normal case: reading calibration runs before computing gains
-    {
-      UShort_t manuId;  
-      UChar_t channelId;
-      UShort_t charge;
+
+ if(nIndex==0) // compute gain from existing root data file: MUONTRKGAINda_data.root
+   {
+     sprintf(flatFile,"%s_data.log",prefixDA);
+     logOutputFile=flatFile;
+     filcout.open(logOutputFile.Data());
+     muonGain->SetAlifilcout(&filcout);
+
+     sprintf(flatFile,"%s_data.par",prefixDA);
+     if(shuttleFile.IsNull())shuttleFile=flatFile;
+
+     muonGain->SetAliIndex(nIndex); // fIndex 
+     muonGain->SetAliInit(nInit); // fnInit
+     muonGain->SetAliNbpf1(nbpf1); // fnbpf1
+     muonGain->MakeGainStore(shuttleFile);
+   }
+
+
+
+ if(nIndex>0) // normal case: reading calibration runs before computing gains
+   {
+     UShort_t manuId;  
+     UChar_t channelId;
+     UShort_t charge;
 	  
-      // DAC values stored in array vDAC (reading dbfile in DETDB)
-      //   Int_t vDAC[11] = {0,200,400,800,1200,1600,2000,2500,3000,3500,4000}; // DAC values
-      Int_t vDAC[11]; // DAC values
-      Char_t *dbfile;
-      dbfile="muontrkcalibvalues.dat";
-      cout << "\n *** Copy: " << dbfile << " from DetDB to working directory  *** \n" << endl;
-      status=daqDA_DB_getFile(dbfile,dbfile);
-      ifstream filein(dbfile,ios::in); Int_t k=0, kk;
-      while (k<nEntries ) { filein >> kk >> vDAC[k] ; k++; }
+     // DAC values stored in array vDAC (reading dbfile in DETDB)
+     //   Int_t vDAC[11] = {0,200,400,800,1200,1600,2000,2500,3000,3500,4000}; // DAC values
+     Int_t vDAC[11]; // DAC values
+     Char_t *dbfile;
+     dbfile="mutrkcalibvalues";
+     cout << "\n *** Copy: " << dbfile << " from DetDB to working directory  *** \n" << endl;
+     status=daqDA_DB_getFile(dbfile,dbfile);
+     ifstream filein(dbfile,ios::in); Int_t k=0, kk;
+     while (k<nEntries ) { filein >> kk >> vDAC[k] ; k++; }
 		
-      injCharge=vDAC[nIndex-1];
+     injCharge=vDAC[nIndex-1];
 
-      // Rawdeader, RawStreamHP
-      AliRawReader* rawReader = AliRawReader::Create(inputFile);
-      AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);    
-      rawStream->DisableWarnings();
-      rawStream->EnabbleErrorLogger();
+     // Rawdeader, RawStreamHP
+     AliRawReader* rawReader = AliRawReader::Create(inputFile);
+     AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);    
+     rawStream->DisableWarnings();
+     rawStream->EnabbleErrorLogger();
 
-      cout << "\n" << prefixDA << " : Reading data from file " << inputFile  << endl;
+     cout << "\n" << prefixDA << " : Reading data from file " << inputFile  << endl;
 
-      while (rawReader->NextEvent())
+     while (rawReader->NextEvent())
 	{
 	  if (nDateEvents >= maxDateEvents) break;
 	  if (nEvents >= maxEvents) break;
@@ -466,54 +466,60 @@ int main(Int_t argc, Char_t **argv)
 	  if (eventPaddingErrors) nPaddingErrors++;
 
 	} // while (rawReader->NextEvent())
-      delete rawReader;
-      delete rawStream;
+     delete rawReader;
+     delete rawStream;
 
-      // process and store mean peak values in .root file
-     sprintf(flatFile,"%s_%d.par",prefixDA,runNumber);
-      if(shuttleFile.IsNull())shuttleFile=flatFile;
-      injCharge=vDAC[nIndex-1];
-      muonGain->SetAliIndex(nIndex); // fIndex 
-      muonGain->SetAliInjCharge(injCharge);
-      muonGain->SetAliNEvents(nEvents);
-      muonGain->SetAliRunNumber(runNumber);
-      muonGain->SetAliNChannel(nChannel);
-      muonGain->MakePedStoreForGain(shuttleFile);
+     // process and store mean peak values in .root file
+    sprintf(flatFile,"%s_%d.par",prefixDA,runNumber);
+     if(shuttleFile.IsNull())shuttleFile=flatFile;
+     injCharge=vDAC[nIndex-1];
+     muonGain->SetAliIndex(nIndex); // fIndex 
+     muonGain->SetAliInjCharge(injCharge);
+     muonGain->SetAliNEvents(nEvents);
+     muonGain->SetAliRunNumber(runNumber);
+     muonGain->SetAliNChannel(nChannel);
+     muonGain->MakePedStoreForGain(shuttleFile);
 
-      // writing some counters
-      cout << endl;
-      cout << prefixDA << " : Nb of DATE events           = " << nDateEvents    << endl;
-      cout << prefixDA << " : Nb of Glitch errors         = "   << nGlitchErrors  << endl;
-      cout << prefixDA << " : Nb of Parity errors         = "   << nParityErrors  << endl;
-      cout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;		
-      cout << prefixDA << " : Nb of events recovered      = "   << nEventsRecovered<< endl;
-      cout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
-      cout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
+     // writing some counters
+     cout << endl;
+     cout << prefixDA << " : Nb of DATE events           = " << nDateEvents    << endl;
+     cout << prefixDA << " : Nb of Glitch errors         = "   << nGlitchErrors  << endl;
+     cout << prefixDA << " : Nb of Parity errors         = "   << nParityErrors  << endl;
+     cout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;		
+     cout << prefixDA << " : Nb of events recovered      = "   << nEventsRecovered<< endl;
+     cout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
+     cout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
 
-      filcout << endl;
-      filcout << prefixDA << " : Nb of DATE events           = " << nDateEvents    << endl;
-      filcout << prefixDA << " : Nb of Glitch errors         = "   << nGlitchErrors << endl;
-      filcout << prefixDA << " : Nb of Parity errors         = "   << nParityErrors << endl;
-      filcout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;
-      filcout << prefixDA << " : Nb of events recovered      = "   << nEventsRecovered<< endl;	
-      filcout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
-      filcout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
+     filcout << endl;
+     filcout << prefixDA << " : Nb of DATE events           = " << nDateEvents    << endl;
+     filcout << prefixDA << " : Nb of Glitch errors         = "   << nGlitchErrors << endl;
+     filcout << prefixDA << " : Nb of Parity errors         = "   << nParityErrors << endl;
+     filcout << prefixDA << " : Nb of Padding errors        = "   << nPaddingErrors << endl;
+     filcout << prefixDA << " : Nb of events recovered      = "   << nEventsRecovered<< endl;	
+     filcout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
+     filcout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
 
-      // Computing gain 
-      if(nIndex==nEntries)
+     // Computing gain 
+     if(nIndex==nEntries)
 	{
 	  muonGain->SetAliInit(nInit); // fnInit
 	  muonGain->SetAliEntries(nEntries); // fnEntries
 	  muonGain->SetAliNbpf1(nbpf1); // fnbpf1
-      	  muonGain->MakeGainStore(shuttleFile);
+     	  muonGain->MakeGainStore(shuttleFile);
 	}
 
-      // Copying files to local DB folder defined by DAQ_DETDB_LOCAL
-      Char_t *dir;
+//       Copying files to local DB folder defined by DAQ_DETDB_LOCAL
+	Char_t *dir;
       dir= getenv("DAQ_DETDB_LOCAL");
       unsigned int nLastVersions = 2;
       cout << "\n *** Output files stored locally in " << dir << " (nb of previous versions = " << nLastVersions << ") ***" << endl;
-  filcout << "\n *** Output files stored locally in " << dir << " (nb of previous versions = " << nLastVersions << ") ***" << endl;
+      filcout << "\n *** Output files stored locally in " << dir << " (nb of previous versions = " << nLastVersions << ") ***" << endl;
+
+      filcout << endl;
+      filcout << prefixDA << " : Root data file         : " << muonGain->GetRootDataFileName() << endl;
+      filcout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
+      filcout << prefixDA << " : Gain Histo file        : " << muonGain->GetHistoFileName() << endl;
+      filcout << prefixDA << " : Gain file (to SHUTTLE) : " << shuttleFile << endl;
 
       status = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
       if(nIndex==nEntries)status = daqDA_localDB_storeFile(muonGain->GetRootDataFileName(),nLastVersions);
@@ -522,20 +528,13 @@ int main(Int_t argc, Char_t **argv)
 
     }
 
-
 // ouput files
   cout << endl;
   cout << prefixDA << " : Root data file         : " << muonGain->GetRootDataFileName() << endl;
   cout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
   cout << prefixDA << " : Gain Histo file        : " << muonGain->GetHistoFileName() << endl;
   cout << prefixDA << " : Gain file (to SHUTTLE) : " << shuttleFile << endl;   
-
-  cout << endl;
-  filcout << prefixDA << " : Root data file         : " << muonGain->GetRootDataFileName() << endl;
-  filcout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
-  filcout << prefixDA << " : Gain Histo file        : " << muonGain->GetHistoFileName() << endl;
-  filcout << prefixDA << " : Gain file (to SHUTTLE) : " << shuttleFile << endl;   
-
+ 
 
   // Transferring to OCDB via the SHUTTLE
   printf("\n *****  STORE FILE in FES ****** \n");
@@ -549,6 +548,7 @@ int main(Int_t argc, Char_t **argv)
       printf(" Failed to export file : %d\n",status);
     }
   else printf(" %s successfully exported to FES  \n",shuttleFile.Data());
+
 
   filcout.close();
   timers.Stop();

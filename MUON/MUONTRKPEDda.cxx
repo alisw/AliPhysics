@@ -29,7 +29,7 @@ Run Type: PEDESTAL
 
 /*
 	-------------------------------------------------------------------------
-	2009-05-11 New version: MUONTRKPEDda.cxx,v 1.0
+	2009-05-12 New version: MUONTRKPEDda.cxx,v 1.0
 	-------------------------------------------------------------------------
 
 	Version for MUONTRKPEDda MUON tracking
@@ -433,21 +433,20 @@ int main(Int_t argc, Char_t **argv)
   cout << "\n *** Output files stored locally in " << dir << " (nb of previous versions = " << nLastVersions << ") ***" << endl;
   filcout << "\n *** Output files stored locally in " << dir << " (nb of previous versions = " << nLastVersions << ") ***" << endl;
 
-  status = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
-  status = daqDA_localDB_storeFile(muonPedestal->GetHistoFileName(),nLastVersions);
-  status = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);
-
   // ouput files
   cout << endl;
   cout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
   cout << prefixDA << " : Gain Histo file        : " << muonPedestal->GetHistoFileName() << endl;
   cout << prefixDA << " : Gain file (to SHUTTLE) : " << shuttleFile << endl;   
 
-  cout << endl;
+  filcout << endl;
   filcout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
   filcout << prefixDA << " : Gain Histo file        : " << muonPedestal->GetHistoFileName() << endl;
   filcout << prefixDA << " : Gain file (to SHUTTLE) : " << shuttleFile << endl;   
 
+  status = daqDA_localDB_storeFile(muonPedestal->GetHistoFileName(),nLastVersions);
+  status = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);
+  status = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
 
   // Transferring to OCDB via the SHUTTLE
   printf("\n *****  STORE FILE in FES ****** \n");
