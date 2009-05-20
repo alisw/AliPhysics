@@ -227,8 +227,8 @@ void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size){
 	  else{
 	    const UInt_t *bunchData= fDigitReader->GetSignals();
 	    AliHLTTPCClusters candidate;
-	    if(fDoMC){
-	      const AliHLTTPCDigitData* digits = fDigitReader->GetBunchDigits();
+	    const AliHLTTPCDigitData* digits = NULL;
+	    if(fDoMC && (digits = fDigitReader->GetBunchDigits())!=NULL){
 	      for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
 		candidate.fTotalCharge+=bunchData[i];	
 		candidate.fTime += time*bunchData[i];

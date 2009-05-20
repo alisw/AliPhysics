@@ -184,7 +184,8 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
       const AliHLTComponentBlockData* iter = NULL;
       AliHLTTPCTrackletData* inPtr=NULL;
       int bIsTrackSegs=0;
- 
+
+      // first read all the MC information
       for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
 	iter = blocks+ndx;
 	if(iter->fDataType == AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo ) {
@@ -193,8 +194,12 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	  Int_t patch=AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
 	  fClusterLabels[ slice*6 + patch] = (AliHLTTPCClusterFinder::ClusterMCInfo *)iter->fPtr;
 	  fDoMCLabels = 1;
-	  continue;
 	}
+      }
+
+      // do the conversion of tracks
+      for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
+	iter = blocks+ndx;
 	if ( (bIsTrackSegs=(iter->fDataType == AliHLTTPCDefinitions::fgkTrackSegmentsDataType))==1 ||
 	     iter->fDataType == AliHLTTPCDefinitions::fgkTracksDataType ) {
 	  Int_t minslice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
@@ -250,8 +255,6 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
       AliHLTTPCTrack* pTrack=(*pTracks)[i];
       if (pTrack) {
 
-	HLTWarning("CA convert track %d", i);
-	pTrack->Print();
 	if( pTrack->Convert2AliKalmanTrack() ){	  
 	  HLTError("conversion to AliKalmanTrack failed for track %d of %d", i, pTracks->GetNTracks());	
 	  continue;

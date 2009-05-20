@@ -8,12 +8,21 @@
  *
  * Usage: aliroot -b -q sim-hlt-tpc.C | tee sim-hlt-tpc.log
  *
- * The chain to be run is defined within the macro.
+ * The chain to be run is defined within the macro. The input data is
+ * read from the TPC.Digits.
  *
  * The following options can be specified comma separated in a string:
+ * <pre>
  *   aliroot -b -q sim-hlt-tpc.C'("options")'
- *       CA    use the cellular automaton  tracker and track merger
- *       CM    use the conformal mapping tracker and track merger
+ *       CA      use the cellular automaton  tracker and track merger
+ *       CM      use the conformal mapping tracker and track merger
+ *       SORTED  use CF pre-sorting and corresponding sequential CF
+ *               algorithm, by default the algorithm capable of reading
+ *               unsorted data is used
+ *       RAW     write raw data for all detectors
+ *       RAWHLT  write raw data only for HLT
+ *       MC      propagate the MC information
+ * </pre>
  *
  * The macro asumes the data to be already simulated. If it should run
  * within the initial simulation, comment the corresponding functions
@@ -34,7 +43,11 @@ sim_hlt_tpc(const char* options="CA")
   //
   // scanning the options
   //
-  bool bUseCA=false; // use the CA tracker and merger
+  bool bUseCA=true;   // use the CA tracker and merger
+  bool bCFSort=false; // CF pre-sorting and sequential CF algorithm
+  bool bRawData=false;// raw data for all detectors
+  bool bRawHLTData=false; // raw data only for HLT
+  bool bPropagateMC=false;
   TString tsOptions=options;
   TObjArray* pTokens=tsOptions.Tokenize(",");
   if (pTokens) {
@@ -44,6 +57,16 @@ sim_hlt_tpc(const char* options="CA")
 	bUseCA=true;
       } else if (arg.CompareTo("cm", TString::kIgnoreCase)==0) {
 	bUseCA=false;
+      } else if (arg.CompareTo("sorted", TString::kIgnoreCase)==0) {
+	bCFSort=true;
+      } else if (arg.CompareTo("unsorted", TString::kIgnoreCase)==0) {
+	bCFSort=false;
+      } else if (arg.CompareTo("raw", TString::kIgnoreCase)==0) {
+	bRawData=true;
+      } else if (arg.CompareTo("rawhlt", TString::kIgnoreCase)==0) {
+	bRawHLTData=true;
+      } else if (arg.CompareTo("mc", TString::kIgnoreCase)==0) {
+	bPropagateMC=true;
       } else {
 	cout << "unknown argument: " << arg << endl;
 	return 0;
@@ -108,7 +131,8 @@ sim_hlt_tpc(const char* options="CA")
       arg="-timebins ";
       if (pTPCParam) arg+=pTPCParam->GetMaxTBin()+1;
       else arg+=446; // old simulated data
-      arg+=" -sorted ";
+      if (bCFSort) arg+=" -sorted ";
+      if (bPropagateMC) arg+=" -do-mc ";
       cf.Form("CF_%02d_%d", slice, part);
       AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), arg.Data());
       if (trackerInput.Length()>0) trackerInput+=" ";
@@ -121,7 +145,7 @@ sim_hlt_tpc(const char* options="CA")
     // tracker finder components
     tracker.Form("TR_%02d", slice);
     if (bUseCA) {
-      AliHLTConfiguration trackerconf(tracker.Data(), "TPCCATracker", trackerInput.Data(), "");
+      AliHLTConfiguration trackerconf(tracker.Data(), "TPCCATracker", trackerInput.Data(), "-newOutputType");
     } else {
       AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run");
     }
@@ -146,8 +170,14 @@ sim_hlt_tpc(const char* options="CA")
     AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
   }
 
+  // collector for the MC information to be propagated from CFs to ESDConverter
+  AliHLTConfiguration mcinfo("mcinfo", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLMCINFO' 'TPC '");
+
   if (writerInput.Length()>0) writerInput+=" ";
   writerInput+="globalmerger";
+
+  TString converterInput="globalmerger";
+  if (bPropagateMC) converterInput+=" mcinfo";
 
   //////////////////////////////////////////////////////////////////////////////////////////
   //
@@ -161,16 +191,14 @@ sim_hlt_tpc(const char* options="CA")
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // sink2: id=sink-esd-file write ESD using the TPCEsdWriter
-  AliHLTConfiguration sink2("sink-esd-file", "TPCEsdWriter"   , "globalmerger", "-datafile AliHLTESDs.root");
+  AliHLTConfiguration sink2("sink-esd-file", "TPCEsdWriter"   , converterInput.Data(), "-datafile AliHLTESDs.root");
 
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // sink3: id=sink-esd add ESD to HLTOUT using the TPCEsdConverter
 
   // the esd converter configuration
-  //AliHLTConfiguration sink3("sink-esd", "TPCEsdConverter"   , "globalmerger", "");
-  AliHLTConfiguration sink3("sink-esd", "TPCEsdConverter"   , mergerInput.Data(), "");
-
+  AliHLTConfiguration sink3("sink-esd", "TPCEsdConverter"   , converterInput.Data(), "");
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // sink4: id=sink-clusters add cluster data blocks to HLTOUT
@@ -193,7 +221,9 @@ sim_hlt_tpc(const char* options="CA")
   sim.SetMakeDigitsFromHits("");
   sim.SetMakeTrigger("");
   sim.SetRunQA(":");
-  //sim.SetWriteRawData("HLT TPC", "raw.root", kTRUE);
+  TString rawDataSelection="HLT";
+  if (bRawData) rawDataSelection="ALL";
+  if (bRawHLTData || bRawData) sim.SetWriteRawData(rawDataSelection, "raw.root", kTRUE);
 
   // set the options for the HLT simulation
   sim.SetRunHLT("libAliHLTUtil.so libAliHLTTPC.so loglevel=0x7c "
