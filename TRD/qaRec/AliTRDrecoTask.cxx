@@ -16,7 +16,7 @@
 #include "AliTRDrecoTask.h"
 
 ClassImp(AliTRDrecoTask)
-
+FILE* AliTRDrecoTask::fgFile = 0x0;
 //_______________________________________________________
 AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   : AliAnalysisTask(name, title)
@@ -53,6 +53,11 @@ AliTRDrecoTask::~AliTRDrecoTask()
     if(fContainer->IsOwner()) fContainer->Delete();
     delete fContainer;
     fContainer = 0x0;
+  }
+
+  if(fgFile){
+    fflush(fgFile);
+    fclose(fgFile);
   }
 }
 
@@ -98,6 +103,16 @@ Bool_t AliTRDrecoTask::GetRefFigure(Int_t /*ifig*/)
 {
   AliWarning("Retrieving reference figures not implemented.");
   return kFALSE;
+}
+
+//_______________________________________________________
+Bool_t AliTRDrecoTask::PutTrendValue(Char_t *name, Double_t val, Double_t err)
+{
+  if(!fgFile){
+    fgFile = fopen("TRD.Performance.txt", "wt");
+  }
+  fprintf(fgFile, "%s_%s %f %f\n", GetName(), name, val, err);
+  return kTRUE;
 }
 
 //_______________________________________________________

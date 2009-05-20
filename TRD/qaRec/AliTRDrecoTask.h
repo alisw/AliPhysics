@@ -48,6 +48,7 @@ public:
   virtual Bool_t Load(const Char_t *filename);
   virtual Bool_t Save(TObjArray *res);
   virtual Bool_t PostProcess();
+  virtual Bool_t PutTrendValue(Char_t *name, Double_t val, Double_t err);
   virtual void   SetDebugLevel(Int_t level);
   virtual void   SetFriends(Bool_t fr = kTRUE) {SetBit(kFriends, fr);}
   virtual void   SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
@@ -73,8 +74,9 @@ protected:
   const AliTRDtrackInfo::AliMCinfo  *fMC; //! MC info
   const AliTRDtrackInfo::AliESDinfo *fESD;//! ESD info
   TTreeSRedirector *fDebugStream;   //! Debug stream 
+  static FILE *fgFile;         //! trend file streamer
 
-  ClassDef(AliTRDrecoTask, 0) // base TRD reconstruction task
+  ClassDef(AliTRDrecoTask, 1) // base TRD reconstruction task
 };
 
 #endif

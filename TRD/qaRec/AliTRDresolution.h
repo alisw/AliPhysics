@@ -29,16 +29,16 @@ class AliTRDresolution : public AliTRDrecoTask
 {
 public:
   enum ETRDresolutionPlot {
-     kCharge          =  0 // charge resolution
-    ,kCluster         =  1 // cluster - track
-    ,kTracklet        =  2 // tracklet - track residuals/pulls
-    ,kTrackTPC        =  3 // tracklet - track residuals/pulls at lower TRD entrance 
-    ,kMCcluster       =  4 // cluster-mc resolution/pulls
-    ,kMCtracklet      =  5 // tracklet-mc resolution/pulls
-    ,kMCtrackTPC      =  6 // TPC track monitor
-    ,kMCtrackHMPID    =  7 // TOF/HMPID track monitor
-    ,kMCtrack         =  8 // TRD track monitor
-    ,kNhistos         =  9
+     kCharge     =  0 // charge resolution
+    ,kCluster    =  1 // cluster - track
+    ,kTrackTRD   =  2 // tracklet - track residuals/pulls
+    ,kTrackTPC   =  3 // tracklet - track residuals/pulls at lower TRD entrance 
+    ,kMCcluster  =  4 // cluster-mc resolution/pulls
+    ,kMCtracklet =  5 // tracklet-mc resolution/pulls
+    ,kMCtrackTPC =  6 // TPC track monitor
+    ,kMCtrackTOF =  7 // TOF/HMPID track monitor
+    ,kMCtrackTRD =  8 // TRD track monitor
+    ,kNhistos    =  9
   };
   enum ETRDresolutionSteer {
     kVerbose  = 0
