@@ -26,6 +26,7 @@ Bool_t      useAFPAR           = kFALSE;  // use AF special par file
 TString     AFversion          = "AF-v4-16";
 // Change CAF dataset here
 TString     proof_dataset      = "/COMMON/COMMON/LHC09a4_run8100X#/esdTree";
+TString     proof_outdir       = "";
 
 // ### Settings that make sense when using the Alien plugin
 //==============================================================================
@@ -36,8 +37,8 @@ Bool_t      usePLUGIN          = kTRUE;   // do not change
 // AliRoot.
 Bool_t      usePAR             = kFALSE;  // use par files for extra libs
 Bool_t      useCPAR            = kFALSE;  // use par files for common libs
-TString     root_version       = "v5-23-02";
-TString     aliroot_version    = "v4-17-00";
+TString     root_version       = "v5-23-04";
+TString     aliroot_version    = "v4-17-01";
 // Change production base directory here
 TString     alien_datadir      = "/alice/sim/PDC_09/LHC09a4/";
 // Use up to 10 non-zero run numbers
@@ -56,8 +57,9 @@ Bool_t      useTAGS            = kFALSE; // use ESD tags for selection
 Bool_t      useKFILTER         = kTRUE;  // use Kinematics filter
 Bool_t      useTR              = kFALSE; // use track references
 Bool_t      useCORRFW          = kFALSE; // do not change
-Bool_t      useAODTAGS         = kFALSE; // use AOD tags
+Bool_t      useAODTAGS         = kTRUE;  // use AOD tags
 Bool_t      saveTrain          = kTRUE;  // save train configuration as: 
+Bool_t      saveProofToAlien   = kFALSE; // save proof outputs in AliEn
                                          // train_[trainName]_ddMonthyyyy_time.C
 // ### Analysis modules to be included. Some may not be yet fully implemented.
 //==============================================================================
@@ -65,7 +67,7 @@ Int_t       iAODanalysis       = 0;      // Analysis on input AOD's
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tracks)
 Int_t       iMUONcopyAOD       = 0;      // Task that copies only muon events in a separate AOD (PWG3)
-Int_t       iJETAN             = 1;      // Jet analysis (PWG4) - needs ESD filter
+Int_t       iJETAN             = 0;      // Jet analysis (PWG4) - needs ESD filter
 Int_t       iPWG4partcorr      = 1;      // Gamma-hadron correlations task (PWG4)
 Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
 Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
@@ -120,6 +122,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    printf(":: use PAR files     %d\n", (UInt_t)usePAR);
    printf(":: use AliEn plugin  %d\n", (UInt_t)usePLUGIN);
 
+   //==========================================================================
    // Connect to back-end system
    if (!Connect(smode)) {
       ::Error("AnalysisTrain", "Could not connect to %s back-end", analysis_mode);
@@ -130,19 +133,17 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    if (!LoadCommonLibraries(smode)) {
       ::Error("AnalysisTrain", "Could not load common libraries");
       return;
-   }   Int_t iPWG2res       = 0;      // Resonances task (PWG2)
-
+   }
     
+   // Make the analysis manager and connect event handlers
+   AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", "Production train");
+   if (saveProofToAlien) mgr->SetSpecialOutputLocation(proof_outdir);
+
    // Load analysis specific libraries
    if (!LoadAnalysisLibraries(smode)) {
       ::Error("AnalysisTrain", "Could not load analysis libraries");
       return;
    }   
-
-    
-   //==========================================================================
-   // Make the analysis manager and connect event handlers
-   AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", "Production train");
 
    // Create input handler (input container created automatically)
    if (iAODanalysis) {
@@ -165,10 +166,12 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    if (iAODhandler) {
       // AOD output handler
       AliAODHandler* aodHandler   = new AliAODHandler();
+      aodHandler->SetOutputFileName("AliAOD.root");
       mgr->SetOutputEventHandler(aodHandler);
-      if (iAODanalysis) aodHandler->SetCreateNonStandardAOD();
-      if (iPWG3vertexing) aodHandler->SetOutputFileName("AliAOD.VertexingHF.root");
-      else aodHandler->SetOutputFileName("AliAOD.root");
+      if (iAODanalysis) {
+         aodHandler->SetCreateNonStandardAOD();
+         if (iPWG3vertexing) aodHandler->SetOutputFileName("AliAOD.VertexingHF.root");
+      } 
    }
    // Debugging if needed
    if (useDBG) mgr->SetDebugLevel(3);
@@ -297,7 +300,7 @@ void StartAnalysis(const char *mode, TChain *chain) {
             ::Error("AnalysisTrainNew.C::StartAnalysis", "proof_dataset is empty");
             return;
          }   
-         mgr->StartAnalysis(mode, proof_dataset, 100000);
+         mgr->StartAnalysis(mode, proof_dataset, 1000);
          return;
       case 2:
          if (usePLUGIN) {
@@ -351,7 +354,7 @@ void CheckModuleFlags(const char *mode) {
       // Disable tasks that do not work yet on AOD data
       if (iPWG2kink)         
          ::Info("AnalysisTrainNew.C::CheckModuleFlags", "PWG2kink disabled in analysis on AOD's");
-      iPWG2kink = 0;
+      iPWG2kink = 0;proof_out
    } else {   
    // ESD analysis
       iMUONcopyAOD = 0;
@@ -383,12 +386,28 @@ Bool_t Connect(const char *mode) {
          }
          ::Info("AnalysisTrainNew.C::Connect", "Connecting user <%s> to PROOF cluster <%s>", 
                 username.Data(), proof_cluster.Data());
-         TProof::Open(Form("%s@%s", username.Data(), proof_cluster.Data()));       
+         gEnv->SetValue("XSec.GSI.DelegProxy", "2");
+         TProof::Open(Form("%s@%s:31093", username.Data(), proof_cluster.Data()));       
          if (!gProof) {
             if (strcmp(gSystem->Getenv("XrdSecGSISRVNAMES"), "lxfsrd0506.cern.ch"))
                ::Error(Form("AnalysisTrainNew.C::Connect <%s>", mode), "Environment XrdSecGSISRVNAMES different from lxfsrd0506.cern.ch");
             return kFALSE;
          }
+         TGrid::Connect("alien://");
+         if (gGrid) {
+            TString homedir = gGrid->GetHomeDirectory();
+            TString workdir = homedir + train_name;
+            if (!gGrid->Cd(workdir)) {
+               gGrid->Cd(homedir);
+               if (gGrid->Mkdir(workdir)) {
+                  gGrid->Cd(train_name);
+                  ::Info("AnalysisTrainNew::Connect()", "Directory %s created", gGrid->Pwd());
+               }
+            }
+            gGrid->Mkdir("proof_output");
+            gGrid->Cd("proof_output");
+            proof_outdir = Form("alien://%s", gGrid->Pwd());
+         }   
          break;
       case 2:      
          if  (!username.Length()) {
@@ -620,7 +639,10 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
                chain = new TChain("aodTree");
                if (gSystem->AccessPathName("data/AliAOD.root")) 
                   ::Error("AnalysisTrainNew.C::CreateChain", "File: AliAOD.root not in ./data dir");
-               else chain->Add("data/AliAOD.root");
+               else {
+                  if (!saveTrain) chain->Add("data/AliAOD.root");
+                  else            chain->Add("../data/AliAOD.root");
+               }   
             } else {
                // Interactive AOD
                chain = CreateChainSingle(local_xmldataset, "aodTree");
@@ -631,7 +653,10 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
                chain = new TChain("esdTree");
                if (gSystem->AccessPathName("data/AliESDs.root")) 
                   ::Error("AnalysisTrainNew.C::CreateChain", "File: AliESDs.root not in ./data dir");
-               else chain->Add("data/AliESDs.root");
+               else {
+                  if (!saveTrain) chain->Add("data/AliESDs.root");
+                  else            chain->Add("../data/AliESDs.root");
+               }   
             } else {
                // Interactive ESD
                chain = CreateChainSingle(local_xmldataset, "esdTree");
