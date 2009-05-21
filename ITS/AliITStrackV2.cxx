@@ -475,7 +475,12 @@ GetPhiZat(Double_t r, Double_t &phi, Double_t &z) const {
   Double_t globXYZcurr[3]; GetXYZ(globXYZcurr); 
   Double_t phicurr=TMath::ATan2(globXYZcurr[1],globXYZcurr[0]);
 
-  phi=phicurr+TMath::ASin(d/r)-TMath::ASin(d/rcurr);
+  if (GetX()>=0.) {
+    phi=phicurr+TMath::ASin(d/r)-TMath::ASin(d/rcurr);
+  } else {
+    phi=phicurr+TMath::ASin(d/r)+TMath::ASin(d/rcurr)-TMath::Pi();
+  }
+
   // return a phi in [0,2pi[ 
   if (phi<0.) phi+=2.*TMath::Pi();
   else if (phi>=2.*TMath::Pi()) phi-=2.*TMath::Pi();
@@ -499,7 +504,12 @@ GetLocalXat(Double_t r,Double_t &xloc) const {
   Double_t rcurr=TMath::Sqrt(GetX()*GetX() + GetY()*GetY());
   Double_t globXYZcurr[3]; GetXYZ(globXYZcurr); 
   Double_t phicurr=TMath::ATan2(globXYZcurr[1],globXYZcurr[0]);
-  Double_t phi=phicurr+TMath::ASin(d/r)-TMath::ASin(d/rcurr);
+  Double_t phi;
+  if (GetX()>=0.) {
+    phi=phicurr+TMath::ASin(d/r)-TMath::ASin(d/rcurr);
+  } else {
+    phi=phicurr+TMath::ASin(d/r)+TMath::ASin(d/rcurr)-TMath::Pi();
+  }
 
   xloc=r*(TMath::Cos(phi)*TMath::Cos(GetAlpha())
          +TMath::Sin(phi)*TMath::Sin(GetAlpha())); 
