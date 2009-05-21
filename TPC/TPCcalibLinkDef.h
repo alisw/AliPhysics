@@ -31,6 +31,7 @@
 #pragma link C++ class AliTPCcalibTimeGain+;
 #pragma link C++ class AliTPCcalibUnlinearity+;
 #pragma link C++ class AliTPCcalibPID+;
+#pragma link C++ class AliTPCMisAligner+;
 
 #endif
 
