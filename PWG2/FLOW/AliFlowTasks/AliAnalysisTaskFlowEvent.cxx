@@ -61,8 +61,6 @@ class AliAnalysisTask;
 
 ClassImp(AliAnalysisTaskFlowEvent)
   
-extern void ConfigFlowAnalysis(AliAnalysisTaskFlowEvent*); 
-
 //________________________________________________________________________
 AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on) : 
   AliAnalysisTask(name, ""), 
@@ -165,8 +163,6 @@ void AliAnalysisTaskFlowEvent::CreateOutputObjects()
     cout<<"WRONG ANALYSIS TYPE! only ESD, ESDMC0, ESDMC1, AOD and MC are allowed."<<endl;
     exit(1);
   }
-
-  ConfigFlowAnalysis(this); 
 
   // Flow Event maker
   fEventMaker = new AliFlowEventSimpleMaker();
