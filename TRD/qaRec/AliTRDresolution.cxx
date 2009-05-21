@@ -528,7 +528,8 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
     ((TH3S*)arr->At(8))->Fill(pt0, 1.-PARMC[4]/PAR[4], is);
     ((TH3S*)arr->At(9))->Fill(PARMC[4], (PARMC[4]-PAR[4])/TMath::Sqrt(COV(4,4)), is);
 
-    Double_t p0 = TMath::Sqrt(1.+ dzdx0*dzdx0)*pt0, p, sp;
+    Double_t p0 = TMath::Sqrt(1.+ dzdx0*dzdx0)*pt0, p;
+    Float_t sp;
     p = tracklet->GetMomentum(&sp);
     //printf("p[%f] dp[%f] s[%d]\n", p0, 1.-p/p0, is);
     ((TH3S*)arr->At(10))->Fill(p0, 1.-p/p0, is);
