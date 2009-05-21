@@ -186,6 +186,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   if (eventHandler) {
     mcEvent = eventHandler->MCEvent();
     if (mcEvent) {
+      //COCKTAIL with HIJING
       if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Cocktail Header")) { //returns 0 if matches
 	AliGenCocktailEventHeader *headerC = dynamic_cast<AliGenCocktailEventHeader *> (mcEvent-> GenEventHeader()); 
 	if (headerC) {
@@ -200,6 +201,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 	}
 	//else { cout<<"headerC is NULL"<<endl; }
       }
+      //GEVSIM
       else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"GeVSim header")) { //returns 0 if matches
 	AliGenGeVSimEventHeader* headerG = (AliGenGeVSimEventHeader*)(mcEvent->GenEventHeader());
 	if (headerG) {
@@ -208,14 +210,24 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 	}
 	//else { cout<<"headerG is NULL"<<endl; }
       }
+      //HIJING
+      else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Hijing")) { //returns 0 if matches
+	AliGenHijingEventHeader* headerH = (AliGenHijingEventHeader*)(mcEvent->GenEventHeader());
+	if (headerH) {
+	  fRP = headerH->ReactionPlaneAngle();
+	  //cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
+	}
+	//else { cout<<"headerH is NULL"<<endl; }
+      }
     }
     //else {cout<<"No MC event!"<<endl; }
+    
   }
   //else {cout<<"No eventHandler!"<<endl; }
-
+  
   // set the value of the monte carlo event plane for the flow event
   fEventMaker->SetMCReactionPlaneAngle(fRP);
-
+  
   // Fill the FlowEventSimple for MC input          
   if (fAnalysisType == "MC") {
     if (!fCFManager1) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
