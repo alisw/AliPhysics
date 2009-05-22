@@ -654,6 +654,18 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
     mysize = pArray->WriteTracks( ntracks0, outPtr->fTracklets );
     outPtr->fTrackletCnt = ntracks0;
 
+    // Matthias 2009-05-22
+    // Somehow the ConfMapFit uses a different sign convention for the magnetic field.
+    // In order to avoid conversions further upstream we change the sign here.
+    // The CM tracker is not the first priority any more as the CA tracker is
+    // going to be used for online TPC reconstruction. But CM tracker has to
+    // remain functional.
+    // Further investigation is ongoing
+    AliHLTTPCTrackSegmentData* segment=outPtr->fTracklets;
+    for (int trackno=0; trackno<ntracks0; trackno++, segment++) {
+      segment->fCharge*=-1;
+    }
+
     Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracks",
 	     "Input: Number of tracks: %lu Slice/MinPatch/MaxPatch/RowMin/RowMax: %lu/%lu/%lu/%lu/%lu.", 
 	     ntracks0, slice, minPatch, maxPatch, row[0], row[1] );
@@ -734,18 +746,18 @@ int AliHLTTPCSliceTrackerComponent::Configure(const char* arguments)
 	fMultiplicity=((TObjString*)pTokens->At(i))->GetString().Atoi();
 	continue;
       } 
-      else if (argument.CompareTo("-solenoidBz")==0 || argument.CompareTo("-bfield")==0) {
+      else if (argument.CompareTo("-solenoidBz")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	fBField=((TObjString*)pTokens->At(i))->GetString().Atof();
 	fBField=fBField/10.0;
+	HLTInfo("Magnetic field set to: %.1f", fBField);
 	continue;
       } 
       else if (argument.CompareTo("-bfield")==0) {
-	HLTWarning("-bfield is the old way. The field is set, but please use -solenoidBz.");
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTInfo("Magnetic field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-	fBField=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	fBField=((TObjString*)pTokens->At(i))->GetString().Atof();
+	HLTWarning("'-bfield' is deprecated, use -solenoidBz %.1f. Please note the different convention.", 10*fBField);
+	HLTInfo("Magnetic field set to: %.1f", fBField);
 	continue;
       } 
       else if (argument.CompareTo("-etarange")==0) {

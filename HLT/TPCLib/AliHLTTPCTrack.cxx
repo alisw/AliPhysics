@@ -624,7 +624,7 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
   // median of sector 00 is at 10 degrees, median of sector A04 at 90
   //
   Double_t xhit;
-  Double_t charge=-1.0 * (double) GetCharge();
+  Double_t charge=(double) GetCharge();
   Double_t xx[5];
   xx[1] = GetFirstPointZ();
   xx[3] = GetTgl();
