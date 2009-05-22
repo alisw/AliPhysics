@@ -13,6 +13,7 @@ TPCLib/AliHLTTPCDigitReader.cxx
 TPCLib/AliHLTTPCDigitReaderPacked.cxx
 TPCLib/AliHLTTPCDigitReaderUnpacked.cxx
 TPCLib/AliHLTTPCDigitReaderDecoder.cxx
+TPCLib/AliHLTTPCDigitReader32Bit.cxx
 TPCLib/AliHLTTPCDigitDumpComponent.cxx
 TPCLib/AliHLTTPCZeroSuppressionComponent.cxx
 TPCLib/AliHLTTPCNoiseMap.cxx
@@ -42,6 +43,7 @@ TPCLib/AliHLTTPCPad.cxx
 TPCLib/AliHLTTPCDefinitions.cxx
 TPCLib/AliHLTTPCRawDataUnpackerComponent.cxx
 TPCLib/AliHLTTPCClusterFinderComponent.cxx
+TPCLib/AliHLTTPCHWClusterTransformComponent.cxx
 TPCLib/AliHLTTPCVertexFinderComponent.cxx
 TPCLib/AliHLTTPCSliceTrackerComponent.cxx
 TPCLib/AliHLTTPCGlobalMergerComponent.cxx

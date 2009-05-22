@@ -15,6 +15,7 @@
 #pragma link C++ class  AliHLTTPCDigitReaderPacked+;
 #pragma link C++ class  AliHLTTPCDigitReaderUnpacked+;
 #pragma link C++ class  AliHLTTPCDigitReaderDecoder+;
+#pragma link C++ class  AliHLTTPCDigitReader32Bit+;
 #pragma link C++ class  AliHLTTPCDigitDumpComponent+;
 #pragma link C++ class  AliHLTTPCZeroSuppressionComponent+;
 #pragma link C++ class  AliHLTTPCNoiseMap+;
@@ -44,6 +45,7 @@
 #pragma link C++ class  AliHLTTPCDefinitions+;
 #pragma link C++ class  AliHLTTPCRawDataUnpackerComponent+;
 #pragma link C++ class  AliHLTTPCClusterFinderComponent+;
+#pragma link C++ class  AliHLTTPCHWClusterTransformComponent+;
 #pragma link C++ class  AliHLTTPCVertexFinderComponent+;
 #pragma link C++ class  AliHLTTPCSliceTrackerComponent+;
 #pragma link C++ class  AliHLTTPCGlobalMergerComponent+;
