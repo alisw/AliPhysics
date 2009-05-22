@@ -1,7 +1,7 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-AliPMDLoader.cxx AliPMDdigit.cxx AliPMDBlockHeader.cxx AliPMDDspHeader.cxx AliPMDPatchBusHeader.cxx AliPMDddldata.cxx AliPMDRawStream.cxx AliPMDCalibData.cxx AliPMDCalibrator.cxx AliPMDPreprocessor.cxx AliPMDRawToSDigits.cxx AliPMDPedestal.cxx AliPMDsdigit.cxx AliPMDQAChecker.cxx
+AliPMDLoader.cxx AliPMDdigit.cxx AliPMDBlockHeader.cxx AliPMDDspHeader.cxx AliPMDPatchBusHeader.cxx AliPMDddldata.cxx AliPMDRawStream.cxx AliPMDCalibData.cxx AliPMDCalibrator.cxx AliPMDPreprocessor.cxx AliPMDRawToSDigits.cxx AliPMDPedestal.cxx AliPMDsdigit.cxx AliPMDQAChecker.cxx AliPMDMisAligner.cxx
 )
 
 # fill list of header files from list of source files

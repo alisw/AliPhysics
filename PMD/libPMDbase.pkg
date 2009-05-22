@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS:= AliPMDLoader.cxx AliPMDdigit.cxx AliPMDBlockHeader.cxx AliPMDDspHeader.cxx AliPMDPatchBusHeader.cxx AliPMDddldata.cxx AliPMDRawStream.cxx AliPMDCalibData.cxx AliPMDCalibrator.cxx AliPMDPreprocessor.cxx AliPMDRawToSDigits.cxx AliPMDPedestal.cxx AliPMDsdigit.cxx AliPMDQAChecker.cxx
+SRCS:= AliPMDLoader.cxx AliPMDdigit.cxx AliPMDBlockHeader.cxx AliPMDDspHeader.cxx AliPMDPatchBusHeader.cxx AliPMDddldata.cxx AliPMDRawStream.cxx AliPMDCalibData.cxx AliPMDCalibrator.cxx AliPMDPreprocessor.cxx AliPMDRawToSDigits.cxx AliPMDPedestal.cxx AliPMDsdigit.cxx AliPMDQAChecker.cxx AliPMDMisAligner.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
