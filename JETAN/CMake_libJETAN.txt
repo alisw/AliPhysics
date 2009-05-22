@@ -33,7 +33,8 @@ Set(FASTJET $ENV{FASTJET})
 
 If(FASTJET)
   set(SRCS ${SRCS}
-  AliFastJetFinder.cxx AliFastJetHeader.cxx 
+  AliFastJetFinder.cxx AliFastJetHeaderV1.cxx 
+  AliSISConeJetFinder.cxx AliSISConeJetHeader.cxx
 )
   include_directories( ${INCLUDE_DIRECTORIES} ${FASTJET}/include )
   set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS -DWITHFASTJET)
