@@ -12,7 +12,7 @@ void AnaPi0Select(const char* dataset="minbias_LHC09a4_81040_81050.xml")
 
     //Set local DB for PHOS
     gROOT->ProcessLine(".! tar xzvf PHOS.tgz") ;
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     AliCDBManager::Instance()->SetSpecificStorage("PHOS/*","local://./");
 
     // A task can be compiled dynamically with AClic
@@ -56,7 +56,7 @@ void AnaPi0Select(const char* dataset="minbias_LHC09a4_81040_81050.xml")
     mgr->AddTask(task);
 
     // Create containers for input/output
-    AliAnalysisDataContainer *cinput = mgr->CreateContainer("cchain", TChain::Class(), AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutput = mgr->CreateContainer("histos",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
 
     // Connect input/output
