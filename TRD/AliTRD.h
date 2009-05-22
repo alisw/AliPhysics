@@ -48,10 +48,6 @@ class AliTRD : public AliDetector {
   virtual void     SetTreeAddress();
 
   virtual void     StepManager()              = 0; 
-  virtual void     StepManagerErmilova()      = 0;
-  virtual void     StepManagerGeant()         = 0;
-  virtual void     StepManagerFixedStep()     = 0;
-  virtual void     SelectStepManager(Int_t t) = 0;
 
   virtual void     SetStepSize(Double_t s)    = 0;
   virtual void     SetHits()                             { };
