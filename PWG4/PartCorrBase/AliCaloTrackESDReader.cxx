@@ -215,7 +215,7 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
 //____________________________________________________________________________
 void AliCaloTrackESDReader::FillInputPHOS() {
   //Return array with PHOS clusters in aod format
-  
+  Int_t nEMCAL = (fOutputEvent->GetCaloClusters())->GetEntriesFast();
   //Get vertex for momentum calculation  
   Double_t v[3] ; //vertex ;
   GetVertex(v);
@@ -290,7 +290,7 @@ void AliCaloTrackESDReader::FillInputPHOS() {
   }//esd cluster loop
   
   //Put references to selected clusters in array
-  for(Int_t iclus = 0; iclus < (fOutputEvent->GetCaloClusters())->GetEntriesFast(); iclus++){
+  for(Int_t iclus = nEMCAL; iclus < (fOutputEvent->GetCaloClusters())->GetEntriesFast(); iclus++){
     AliAODCaloCluster * clus =  (AliAODCaloCluster*) (fOutputEvent->GetCaloClusters())->At(iclus);	
     fAODPHOS->Add(clus);				
   }	
