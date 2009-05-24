@@ -59,7 +59,7 @@ TString    AliQAv1::fgQAResultFileName     = "QA.root" ;
 TString    AliQAv1::fgDetNames[]           = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
                                             "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global", "CORR"} ;   
 TString    AliQAv1::fgGRPPath              = "GRP/GRP/Data" ; 
-TString       AliQAv1::fgTaskNames[]       = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
+TString       AliQAv1::fgTaskNames[]       = {"Raws", "Hits", "SDigits", "Digits", "DigitsR", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
 const TString AliQAv1::fgkLabLocalFile     = "file://"  ; 
 const TString AliQAv1::fgkLabLocalOCDB     = "local://" ;  
 const TString AliQAv1::fgkLabAliEnOCDB     = "alien://" ;  

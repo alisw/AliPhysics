@@ -38,6 +38,7 @@
 #include "AliLog.h"
 #include "AliPHOSQADataMakerRec.h"
 #include "AliQAChecker.h"
+#include "AliPHOSDigit.h" 
 #include "AliPHOSCpvRecPoint.h" 
 #include "AliPHOSEmcRecPoint.h" 
 #include "AliPHOSRecParticle.h" 
@@ -116,6 +117,20 @@ void AliPHOSQADataMakerRec::InitESDs()
   h4->Sumw2() ;
   Add2ESDsList(h4, kESDpid, !expert, image) ; //Expert histo
 	
+}
+
+//____________________________________________________________________________ 
+void AliPHOSQADataMakerRec::InitDigits()
+{
+  // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  TH1I * h0 = new TH1I("hPhosDigits",    "Digits amplitude distribution in PHOS",    500, 0, 1000) ; 
+  h0->Sumw2() ;
+  Add2DigitsList(h0, kDigits, !expert, image) ;
+  TH1I * h1 = new TH1I("hPhosDigitsMul", "Digits multiplicity distribution in PHOS", 2000, 0, 10000) ; 
+  h1->Sumw2() ;
+  Add2DigitsList(h1, kDigitsMul, !expert, image) ;
 }
 
 //____________________________________________________________________________ 
@@ -460,6 +475,36 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kNtotHG)->GetName()))) ; 
   if (p) p->SetVal(hgNtot) ; 
 }
+
+//____________________________________________________________________________
+void AliPHOSQADataMakerRec::MakeDigits(TClonesArray * digits)
+{
+  // makes data from Digits
+  
+  GetDigitsData(1)->Fill(digits->GetEntriesFast()) ; 
+  TIter next(digits) ; 
+  AliPHOSDigit * digit ; 
+  while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
+    GetDigitsData(kDigits)->Fill( digit->GetEnergy()) ;
+  }  
+}
+
+//____________________________________________________________________________
+void AliPHOSQADataMakerRec::MakeDigits(TTree * digitTree)
+{
+	// makes data from Digit Tree
+	TClonesArray * digits = new TClonesArray("AliPHOSDigit", 1000) ; 
+  
+	TBranch * branch = digitTree->GetBranch("PHOS") ;
+	if ( ! branch ) {
+		AliWarning("PHOS branch in Digit Tree not found") ; 
+	} else {
+		branch->SetAddress(&digits) ;
+		branch->GetEntry(0) ; 
+		MakeDigits(digits) ; 
+	}
+}
+
 //____________________________________________________________________________
 void AliPHOSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {

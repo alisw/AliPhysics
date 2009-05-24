@@ -1212,6 +1212,8 @@ void AliQAManager::RunOneEvent(AliESDEvent *& esd)
 void AliQAManager::RunOneEventInOneDetector(Int_t det, TTree * tree) 
 {
 	// Runs all the QA data Maker for ESDs only and on one event only (event loop done by calling method)
+  
+  TString test(tree->GetName()) ; 
 	AliCodeTimerAuto("") ;
   if (fTasks.Contains(Form("%d", AliQAv1::kRECPOINTS))) {
     if (IsSelected(AliQAv1::GetDetName(det))) {
@@ -1225,8 +1227,13 @@ void AliQAManager::RunOneEventInOneDetector(Int_t det, TTree * tree)
           qadm->EndOfCycle() ;
         }
         AliCodeTimerStart(Form("running RecPoints quality assurance data maker for %s", AliQAv1::GetDetName(det)));
-        qadm->Exec(AliQAv1::kRECPOINTS, tree) ;
-        AliCodeTimerStop(Form("running RecPoints quality assurance data maker for %s", AliQAv1::GetDetName(det)));
+        if (test.Contains("TreeD")) {
+          qadm->Exec(AliQAv1::kDIGITSR, tree) ;
+          AliCodeTimerStop(Form("running Digits quality assurance data maker for %s", AliQAv1::GetDetName(det)));
+        } else  if (test.Contains("TreeR")) {
+          qadm->Exec(AliQAv1::kRECPOINTS, tree) ;
+          AliCodeTimerStop(Form("running RecPoints quality assurance data maker for %s", AliQAv1::GetDetName(det)));
+        }
       }
     }
   }

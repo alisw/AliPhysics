@@ -38,6 +38,7 @@
 #include "AliTOFRawStream.h"
 #include "AliTOFrawData.h"
 #include "AliTOFGeometry.h"
+#include "AliTOFDigit.h"
 
 ClassImp(AliTOFQADataMakerRec)
            
@@ -106,6 +107,40 @@ void AliTOFQADataMakerRec::InitRaws()
   h3->GetYaxis()->SetTitleOffset(1.15);
   Add2RawsList(h3, 3, !expert, image, !saveCorr) ;
 
+}
+
+//____________________________________________________________________________ 
+void AliTOFQADataMakerRec::InitDigits()
+{
+  //
+  // create Digits histograms in Digits subdir
+  //
+  
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1F * h0 = new TH1F("hTOFDigits",    "Number of TOF Digits ",301, -1.02, 5.) ;
+  h0->Sumw2() ;
+  h0->GetXaxis()->SetTitle("TOF digit number [10 power]");
+  Add2DigitsList(h0, 0, !expert, image) ;
+  
+  TH1F * h1  = new TH1F("hTOFDigitsTime", "Digits Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
+  h1->Sumw2() ;
+  h1->GetXaxis()->SetTitle("Digitized TOF time [ns]");
+  Add2DigitsList(h1, 1, !expert, image) ;
+  
+  TH1F * h2  = new TH1F("hTOFDigitsToT", "Digits ToT Spectrum in TOF (ns)", 500, 0., 50) ; 
+  h2->Sumw2() ;
+  h2->GetYaxis()->SetTitle("Digitized TOF time [ns]");
+  Add2DigitsList(h2, 2, !expert, image) ;
+  
+  TH2F * h3  = new TH2F("hTOFDigitsClusMap","Digits vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
+  h3->Sumw2() ;
+  h3->GetXaxis()->SetTitle("2*strip+padz (eta)");
+  h3->GetYaxis()->SetTitle("48*sector+padx (phi)");
+  h3->GetYaxis()->SetTitleOffset(1.15);
+  Add2DigitsList(h3, 3, !expert, image) ;
+  
 }
 
 //____________________________________________________________________________ 
@@ -233,6 +268,60 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   }else{
     GetRawsData(0)->Fill(TMath::Log10(nentries)) ; 
   }
+}
+
+//____________________________________________________________________________
+void AliTOFQADataMakerRec::MakeDigits(TClonesArray * digits)
+{
+  //
+  // makes data from Digits
+  //
+  Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;
+  Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
+  Int_t in[5];
+  Int_t out[5];
+  
+  Int_t nentries=digits->GetEntriesFast();
+  if(nentries<=0){
+    GetDigitsData(0)->Fill(-1.) ; 
+  }else{
+    GetDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
+  } 
+  
+  TIter next(digits) ; 
+  AliTOFdigit * digit ; 
+  while ( (digit = dynamic_cast<AliTOFdigit *>(next())) ) {
+    
+    GetDigitsData(1)->Fill( digit->GetTdc()*tdc2ns) ;//in ns
+    GetDigitsData(2)->Fill( digit->GetToT()*tot2ns) ;//in ns
+      
+      in[0] = digit->GetSector();
+      in[1] = digit->GetPlate();
+      in[2] = digit->GetStrip();
+      in[3] = digit->GetPadx();
+      in[4]= digit->GetPadz();
+      GetMapIndeces(in,out);
+      GetDigitsData(3)->Fill( out[0],out[1]) ;//digit map
+  }
+  
+}
+
+//____________________________________________________________________________
+void AliTOFQADataMakerRec::MakeDigits(TTree * digitTree)
+{
+  //
+  // makes data from Digit Tree
+  //
+  TClonesArray * digits = new TClonesArray("AliTOFdigit", 1000) ; 
+  
+  TBranch * branch = digitTree->GetBranch("TOF") ;
+  if ( ! branch ) {
+    AliError("TOF branch in Digit Tree not found") ; 
+    return;
+  }
+  branch->SetAddress(&digits) ;
+  branch->GetEntry(0) ; 
+  MakeDigits(digits) ; 
 }
 
 //____________________________________________________________________________

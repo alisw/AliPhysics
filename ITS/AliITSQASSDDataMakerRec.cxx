@@ -42,6 +42,7 @@
 #include "AliITSgeomTGeo.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliITSRecPoint.h"
+#include "AliITSDigit.h"
 #include "AliITSBadChannelsSSDv2.h"
 
 #include "AliCDBManager.h"
@@ -59,8 +60,10 @@ fLDC(ldc),
 fSSDRawsOffset(0), fSSDRawsDAOffset(0),
 fSSDRawsCommonLevelOffset(0),
 fSSDhRawsTask(0),
+fSSDhDigitsTask(0),
 fSSDhRecPointsTask(0),
 fGenRawsOffset(0),
+fGenDigitsOffset(0),
 fGenRecPointsOffset(0),
 fCDBManager(0) {
   // Default constructor   
@@ -112,8 +115,10 @@ fLDC(qadm.fLDC),
 fSSDRawsOffset(qadm.fSSDRawsOffset), fSSDRawsDAOffset(qadm.fSSDRawsDAOffset),
 fSSDRawsCommonLevelOffset(qadm.fSSDRawsCommonLevelOffset),
 fSSDhRawsTask(qadm.fSSDhRawsTask),
+fSSDhDigitsTask(qadm.fSSDhDigitsTask),
 fSSDhRecPointsTask(qadm.fSSDhRecPointsTask),
 fGenRawsOffset(qadm.fGenRawsOffset),
+fGenDigitsOffset(qadm.fGenDigitsOffset),
 fGenRecPointsOffset(qadm.fGenRecPointsOffset),
 fCDBManager(qadm.fCDBManager) {
   //copy ctor 
@@ -878,6 +883,62 @@ void AliITSQASSDDataMakerRec::MonitorOCDBObjects() {
 									    100.*nNSideChannelsLayer6/fgkNumberOfPSideStrips);
       else ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset+fSSDRawsOffset-fSSDRawsDAOffset+3))->Fill(module,599+ladder,0.0001);
     }//layer 6                                                                                                                      
+  }//module loop
+}
+
+//____________________________________________________________________________ 
+void AliITSQASSDDataMakerRec::InitDigits() { 
+  // Initialization for DIGIT data - SSD -
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  fGenDigitsOffset = (fAliITSQADataMakerRec->fDigitsQAList[AliRecoParam::kDefault])->GetEntries();
+  
+  // custom code here
+  TH1F *fHistSSDModule = new TH1F("fHistSSDDigitsModule",
+                                  ";SSD Module Number;N_{DIGITS}",
+                                  1698,499.5,2197.5);  
+  fAliITSQADataMakerRec->Add2DigitsList(fHistSSDModule,
+                                        fGenDigitsOffset + 0, !expert, image);
+  fSSDhDigitsTask += 1;
+  TH2F *fHistSSDModuleStrip = new TH2F("fHistSSDDigitsModuleStrip",
+                                       ";N_{Strip};N_{Module}",
+                                       1540,0,1540,1698,499.5,2197.5);  
+  fAliITSQADataMakerRec->Add2DigitsList(fHistSSDModuleStrip,
+                                        fGenDigitsOffset + 1, !expert, image);
+  fSSDhDigitsTask += 1;
+  
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SSD Digits histograms booked\n",fSSDhDigitsTask));
+  
+}
+
+//____________________________________________________________________________
+void AliITSQASSDDataMakerRec::MakeDigits(TTree *digits) { 
+  // Fill QA for DIGIT - SSD -
+//  AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
+//  fITS->SetTreeAddress();
+//  TClonesArray *iSSDdigits  = fITS->DigitsAddress(2);
+  TBranch *branchD = digits->GetBranch("ITS");
+  if (!branchD) { 
+    AliError("can't get the branch with the ITS digits !");
+    return;
+  }
+  static TClonesArray statDigits("AliITSDigit");
+  TClonesArray *iSSDdigits = &statDigits;
+  branchD->SetAddress(&iSSDdigits);  
+  for(Int_t iModule = 500; iModule < 2198; iModule++) {
+    iSSDdigits->Clear();
+    digits->GetEvent(iModule);    
+    Int_t ndigits = iSSDdigits->GetEntries();
+    fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset + 0)->Fill(iModule,ndigits);
+    if(ndigits != 0)
+      AliDebug(AliQAv1::GetQADebugLevel(),Form("Module: %d - Digits: %d",iModule,ndigits));
+    
+    for (Int_t iDigit = 0; iDigit < ndigits; iDigit++) {
+      AliITSdigit *dig = (AliITSdigit*)iSSDdigits->UncheckedAt(iDigit);
+      Int_t fStripNumber = (dig->GetCoord1() == 0) ? dig->GetCoord2() : dig->GetCoord2() + fgkNumberOfPSideStrips;
+      ((TH2F *)fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset + 1))->Fill(fStripNumber,iModule,dig->GetSignal());
+    }//digit loop
   }//module loop
 }
 

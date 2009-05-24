@@ -30,9 +30,12 @@ public:
   virtual ~AliHMPIDQADataMakerRec() {;} // dtor
 
 private:
+  virtual void   InitDigits();  //book cluster QA histo
   virtual void   InitRecPoints();  //book cluster QA histo
   virtual void   InitRaws();     //book raw QA histo
   virtual void   InitESDs() ;      //book ESD QA histo 
+  virtual void   MakeDigits(TClonesArray* digits) ;
+  virtual void   MakeDigits(TTree * digits)    ;  //Fill cluster QA histo
   virtual void   MakeRecPoints(TTree * clusters)    ;  //Fill cluster QA histo
   virtual void   MakeRaws(AliRawReader* rawReader);
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo

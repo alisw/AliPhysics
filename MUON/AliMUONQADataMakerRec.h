@@ -36,10 +36,13 @@ protected:
   virtual void StartOfDetectorCycle(); 
 
   virtual void InitRaws(); 
+  virtual void InitDigits(); 
   virtual void InitRecPoints(); 
   virtual void InitESDs(); 
   
   virtual void MakeRaws(AliRawReader* rawReader); 
+  virtual void MakeDigits(TTree* dig); 
+  virtual void MakeDigits(TClonesArray* /*digits*/)  {return;}
   virtual void MakeRecPoints(TTree* recpo); 
   virtual void MakeESDs(AliESDEvent* esd) ;
   

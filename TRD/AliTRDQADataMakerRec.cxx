@@ -44,7 +44,9 @@
 #include "AliTRDgeometry.h"
 //#include "AliTRDdataArrayI.h"
 #include "AliTRDrawStream.h"
-
+#include "AliTRDdigitsManager.h"
+#include "AliTRDdigit.h"
+#include "AliTRDarrayADC.h"
 #include "AliQAChecker.h"
 
 ClassImp(AliTRDQADataMakerRec)
@@ -326,6 +328,29 @@ void AliTRDQADataMakerRec::InitESDs()
     Add2ESDsList(hist[i], i, !expert, image);
   }
 
+}
+
+//____________________________________________________________________________ 
+void AliTRDQADataMakerRec::InitDigits()
+{
+  //
+  // Create Digits histograms in Digits subdir
+  //
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  const Int_t kNhist = 3;
+  TH1D *hist[kNhist];
+  
+  hist[0] = new TH1D("qaTRD_digits_det", ";Detector Id of the digit", 540, -0.5, 539.5);
+  hist[1] = new TH1D("qaTRD_digits_time", ";Time bin", 40, -0.5, 39.5);
+  hist[2] = new TH1D("qaTRD_digits_amp", ";Amplitude", 100, -5.5, 94.5);
+  
+  for(Int_t i=0; i<kNhist; i++) {
+    hist[i]->Sumw2();
+    Add2DigitsList(hist[i], i, !expert, image);
+  }
+  
 }
 
 //____________________________________________________________________________ 
@@ -683,6 +708,76 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   }
 
   delete raw;
+}
+
+//____________________________________________________________________________
+void AliTRDQADataMakerRec::MakeDigits(TClonesArray * digits)
+{
+  //
+  // Makes data from Digits
+  //
+  
+  TIter next(digits) ; 
+  AliTRDdigit * digit ; 
+  
+  // Info("Make digits", "From the arrya");
+  
+  while ( (digit = dynamic_cast<AliTRDdigit *>(next())) ) {
+    if (digit->GetAmp() < 1) continue;
+    GetDigitsData(0)->Fill(digit->GetDetector());
+    GetDigitsData(1)->Fill(digit->GetTime());
+    GetDigitsData(2)->Fill(digit->GetAmp());
+  }
+  
+}
+
+//____________________________________________________________________________
+void AliTRDQADataMakerRec::MakeDigits(TTree * digits)
+{
+  //
+  // Makes data from digits tree
+  //
+  
+  // Info("Make digits", "From a tree");
+  
+  AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
+  digitsManager->CreateArrays();
+  digitsManager->ReadDigits(digits);
+  
+  TH1D *histDet = (TH1D*)GetDigitsData(0);
+  TH1D *histTime = (TH1D*)GetDigitsData(1);
+  TH1D *histSignal = (TH1D*)GetDigitsData(2);
+  
+  for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) 
+    {
+    AliTRDarrayADC *digitsIn = (AliTRDarrayADC *) digitsManager->GetDigits(i);      
+    
+    // This is to take care of switched off super modules
+    if (digitsIn->GetNtime() == 0) continue;
+    
+    digitsIn->Expand();
+    
+    //AliTRDSignalIndex* indexes = digitsManager->GetIndexes(i);
+    //if (indexes->IsAllocated() == kFALSE) digitsManager->BuildIndexes(i);
+    
+    Int_t nRows = digitsIn->GetNrow();
+    Int_t nCols = digitsIn->GetNcol();
+    Int_t nTbins = digitsIn->GetNtime();
+    
+    for(Int_t row = 0; row < nRows; row++) 
+      for(Int_t col = 0; col < nCols; col++) 
+        for(Int_t time = 0; time < nTbins; time++) 
+          {   
+          Float_t signal = digitsIn->GetData(row,col,time);
+          if (signal < 1) continue;
+          histDet->Fill(i);
+          histTime->Fill(time);
+          histSignal->Fill(signal);
+          }
+          
+          //delete digitsIn;
+    }
+    delete digitsManager;
 }
 
 //____________________________________________________________________________

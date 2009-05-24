@@ -24,9 +24,12 @@ public:
 private:
   virtual void   InitESDs() ; 
   virtual void   InitRecPoints() ; 
+  virtual void   InitDigits() ; 
   virtual void   InitRaws() ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;
   virtual void   MakeRecPoints(TTree * recTree) ; 
+  virtual void   MakeDigits(TTree * recTree) ; 
+  virtual void   MakeDigits(TClonesArray * digits) ;
   virtual void   MakeRaws(AliRawReader* rawReader) ; 
   virtual void   StartOfDetectorCycle() ; 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list) ;

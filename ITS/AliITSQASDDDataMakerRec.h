@@ -27,8 +27,11 @@ public:
   AliITSQASDDDataMakerRec(const AliITSQASDDDataMakerRec& qadm);
   AliITSQASDDDataMakerRec& operator = (const AliITSQASDDDataMakerRec& qac);
   virtual void InitRaws();
+  virtual void InitDigits();
   virtual void InitRecPoints();
   virtual void MakeRaws(AliRawReader *rawReader);
+  virtual void MakeDigits(TClonesArray* /*digits*/)  {return;}
+  virtual void MakeDigits(TTree *clustersTree);
   virtual void MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
@@ -56,8 +59,10 @@ private:
   Bool_t  fkOnline;                           // online (1) or offline (0) use
   Int_t   fLDC;                               // LDC number (0 for offline, 1 to 4 for online) 
   Int_t   fSDDhRawsTask;                      // number of histo booked for each the Raws Task SDD
+  Int_t   fSDDhDigitsTask;                    // number of histo booked for each the RecPoints Task SDD
   Int_t   fSDDhRecPointsTask;                 // number of histo booked for each the RecPoints Task SDD
   Int_t   fGenRawsOffset;                     // QAchecking Raws offset       
+  Int_t   fGenDigitsOffset;                   // QAchecking RecPoints offset       
   Int_t   fGenRecPointsOffset;                // QAchecking RecPoints offset       
   Int_t   fTimeBinSize;			      // time bin width in number of clocks
   AliITSDDLModuleMapSDD  *fDDLModuleMap;      // SDD Detector configuration for the decoding

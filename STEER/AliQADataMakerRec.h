@@ -31,10 +31,14 @@ public:
 	AliQADataMakerRec& operator = (const AliQADataMakerRec& qadm) ;
 	virtual ~AliQADataMakerRec() ; // dtor
   
- 	virtual Int_t Add2DigitsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)    { return -1 ; } 
-	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)  { return Add2List(hist, index, fESDsQAList, expert, image) ; }
-	virtual Int_t Add2HitsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)       { return -1 ; }  
-	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)  { return Add2List(hist, index, fRecPointsQAList, expert, image) ; }
+ 	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)    
+    { return Add2List(hist, index, fDigitsQAList, expert, image) ; }
+	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)                      
+    { return Add2List(hist, index, fESDsQAList, expert, image) ; }
+	virtual Int_t Add2HitsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)      
+    { return -1 ; }  
+	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)                 
+    { return Add2List(hist, index, fRecPointsQAList, expert, image) ; }
 	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE, const Bool_t saveForCorr = kFALSE)  { 
     return Add2List(hist, index, fRawsQAList, expert, image, saveForCorr) ; }
 	virtual Int_t Add2SDigitsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)   { return -1 ; } 
@@ -42,7 +46,7 @@ public:
 	virtual void        EndOfCycle() ;
 	virtual void        EndOfCycle(AliQAv1::TASKINDEX_t task) ;
 	virtual void        EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** ) {AliInfo("To be implemented by detectors");} 
-	virtual TH1 *       GetDigitsData(const Int_t /*index*/) { return NULL ; } 
+	virtual TH1 *       GetDigitsData(const Int_t index   )  { return dynamic_cast<TH1 *>(GetData(fDigitsQAList, index)) ; } 
 	virtual TH1 *       GetESDsData(const Int_t index)       { return dynamic_cast<TH1 *>(GetData(fESDsQAList, index)) ; }
 	virtual TH1 *       GetHitsData(const Int_t /*index*/)   { return NULL ; }
   virtual const AliDetectorRecoParam * GetRecoParam() { return fRecoParam ; }
@@ -59,7 +63,7 @@ public:
 
 protected: 
 
-	virtual void   InitDigits()                        {AliWarning("Call not valid") ; }
+	virtual void   InitDigits()                        {AliInfo("To be implemented by detectors");}
 	virtual void   InitESDs()                          {AliInfo("To be implemented by detectors");}
   virtual void   InitRecoParams() ; 
 	virtual void   InitHits()                          {AliWarning("Call not valid") ; }
@@ -71,8 +75,8 @@ protected:
 	virtual void   MakeESDs(AliESDEvent * )            {AliInfo("To be implemented by detectors");} 
 	virtual void   MakeHits(TClonesArray * )           {AliWarning("Call not valid") ; }
 	virtual void   MakeHits(TTree * )                  {AliWarning("Call not valid") ; }  
-	virtual void   MakeDigits(TClonesArray * )         {AliWarning("Call not valid") ; }    
-	virtual void   MakeDigits(TTree * )                {AliWarning("Call not valid") ; }   
+	virtual void   MakeDigits(TClonesArray * )         {AliInfo("To be implemented by detectors");}   
+	virtual void   MakeDigits(TTree * )                {AliInfo("To be implemented by detectors");}   
  	//virtual void   MakeRecParticles(TClonesArray * ) {AliInfo("To be implemented by detectors");} 
 	virtual void   MakeRaws(AliRawReader *)            {AliInfo("To be implemented by detectors");} 
 	virtual void   MakeRecPoints(TTree * )             {AliInfo("To be implemented by detectors");} 
@@ -80,13 +84,14 @@ protected:
 	virtual void   MakeSDigits(TTree * )               {AliWarning("Call not valid") ; }    
 	virtual void   StartOfDetectorCycle()              {AliInfo("To be implemented by detectors");} 
 
+	TObjArray * *               fDigitsQAList ;    //! list of the digits QA data objects
 	TObjArray * *               fESDsQAList ;      //! list of the ESDs QA data objects
 	TObjArray * *               fRawsQAList ;      //! list of the raws QA data objects
 	TObjArray * *               fRecPointsQAList ; //! list of the RecPoints QA data objects
   TNtupleD  * *               fCorrNt ;          //! This is used by Corr only to hold its Ntuple. 
   const AliDetectorRecoParam *fRecoParam;        //! const pointer to the reco parameters to be used in the reco QA
   
- ClassDef(AliQADataMakerRec,2)  // description 
+ ClassDef(AliQADataMakerRec,3)  // description 
 
 };
 

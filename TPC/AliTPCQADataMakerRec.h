@@ -30,6 +30,7 @@ class AliTPCQADataMakerRec: public AliQADataMakerRec {
 
 public:
   enum HRawsType_t         {kTPCdataQA=0, kOccupancy, kOccupancyVsSector, kNClustersPerEventVsSector, kQVsSector, kQmaxVsSector} ; 
+  enum HDigitType_t        {kDigitsADC=0} ; 
   enum HRECPOINTsType_t    {KClusters=0, kRatio, kPt} ; 
   enum HESDsType_t         {kQmaxShort=0, kQmaxMedium, kQmaxLong, kQShort, kQMedium, kQLong, kRow} ; 
 
@@ -50,10 +51,15 @@ private:
   virtual void   InitRaws();
   virtual void   MakeRaws(AliRawReader* rawReader);
 
+  // Digits QA
+  virtual void   InitDigits();
+  virtual void   MakeDigits(TClonesArray* /*digits*/)  {return;}
+  virtual void   MakeDigits(TTree *digTree);
+  
   // RecPoints QA
   virtual void   InitRecPoints();
   virtual void   MakeRecPoints(TTree *recTree);
-
+  
   virtual void LoadMaps();
 
   

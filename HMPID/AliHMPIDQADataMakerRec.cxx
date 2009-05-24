@@ -32,6 +32,7 @@
 #include "AliLog.h"
 #include "AliHMPIDDigit.h"
 #include "AliHMPIDHit.h"
+#include "AliHMPIDDigit.h"
 #include "AliHMPIDCluster.h"
 #include "AliHMPIDQADataMakerRec.h"
 #include "AliHMPIDQAChecker.h"
@@ -72,6 +73,30 @@ AliHMPIDQADataMakerRec& AliHMPIDQADataMakerRec::operator = (const AliHMPIDQAData
   return *this;
 }
  
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDQADataMakerRec::InitDigits()
+{
+  // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1F *hDigChEvt = new TH1F("hDigChEvt","Chamber occupancy per event",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
+  TH1F *hDigPcEvt = new TH1F("hDigPcEvt","PC occupancy",156,-1,77);
+  TH2F *hDigMap[7];
+  TH1F *hDigQ[42];
+  for(Int_t iCh =0; iCh < 7; iCh++){
+    hDigMap[iCh] = new TH2F(Form("MapCh%i",iCh),Form("Digit Map in Chamber %i",iCh),159,0,159,143,0,143);
+    for(Int_t iPc =0; iPc < 6; iPc++ ){
+      hDigQ[iCh*6+iPc] = new TH1F(Form("QCh%iPc%i        ",iCh,iPc),Form("Charge of digits (ADC) in Chamber %i and PC %i   ",iCh,iPc),4100,0,4100);
+    }
+  }
+  
+  Add2DigitsList(hDigChEvt,0, !expert, image);
+  Add2DigitsList(hDigPcEvt,1,expert, !image);
+  for(Int_t iMap=0; iMap < 7; iMap++) Add2DigitsList(hDigMap[iMap],2+iMap,expert, !image);
+  for(Int_t iH =0; iH < 42 ; iH++) Add2DigitsList(hDigQ[iH]    ,9+iH,expert,!image);
+}
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::InitRecPoints()
 {
@@ -207,6 +232,55 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
    stream.Delete();
    
 }
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDQADataMakerRec::MakeDigits(TClonesArray * data)
+{
+  //
+  //filling QA histos for Digits
+  //
+  
+  TObjArray *chamber = dynamic_cast<TObjArray*>(data);
+  if ( !chamber) {
+    AliError("Wrong type of digits container") ; 
+  } else {
+    for(Int_t i =0; i< chamber->GetEntries(); i++)
+      {
+      TClonesArray * digits = dynamic_cast<TClonesArray*>(chamber->At(i)); 
+      GetDigitsData(0)->Fill(i,digits->GetEntriesFast()/(48.*80.*6.));
+      TIter next(digits); 
+      AliHMPIDDigit * digit; 
+      while ( (digit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
+        GetDigitsData(1)->Fill(10.*i+digit->Pc(),1./(48.*80.));
+        GetDigitsData(2+i)->Fill(digit->PadChX(),digit->PadChY());
+        GetDigitsData(9+i*6+digit->Pc())->Fill(digit->Q());
+      }  
+      }
+  }
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDQADataMakerRec::MakeDigits(TTree * data)
+{
+  //
+  //Opening the Digit Tree
+  //
+  TObjArray *pObjDig=new TObjArray(AliHMPIDParam::kMaxCh+1);
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
+    TClonesArray *pCA=new TClonesArray("AliHMPIDDigit");
+    pObjDig->AddAt(pCA,iCh);
+  }
+  
+  pObjDig->SetOwner(kTRUE);
+  
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
+    data->SetBranchAddress(Form("HMPID%i",iCh),&(*pObjDig)[iCh]);
+  }
+  data->GetEntry(0);
+  
+  MakeDigits((TClonesArray *)pObjDig);
+}
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {

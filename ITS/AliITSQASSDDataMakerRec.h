@@ -31,8 +31,11 @@ public:
   AliITSQASSDDataMakerRec(const AliITSQASSDDataMakerRec& qadm);
   AliITSQASSDDataMakerRec& operator = (const AliITSQASSDDataMakerRec& qac);
   virtual void InitRaws();
+  virtual void InitDigits();
   virtual void InitRecPoints();
   virtual void MakeRaws(AliRawReader *rawReader);
+  virtual void MakeDigits(TClonesArray* /*digits*/)  {return;}
+  virtual void MakeDigits(TTree *digitsTree);
   virtual void MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
@@ -70,8 +73,10 @@ public:
   Int_t   fSSDRawsDAOffset;                     //SSD DA plot offset
   Int_t   fSSDRawsCommonLevelOffset;            //Raw data QA - top level offset - histos used both online and offline 
   Int_t   fSSDhRawsTask;                        //number of histo booked for the raws SSD task 
+  Int_t   fSSDhDigitsTask;                      //number of histo booked for the recpoints SSD task
   Int_t   fSSDhRecPointsTask;                   //number of histo booked for the recpoints SSD task
   Int_t   fGenRawsOffset;                       //qachecking raws       offset
+  Int_t   fGenDigitsOffset;                     //qachecking recpoints  offset
   Int_t   fGenRecPointsOffset;                  //qachecking recpoints  offset
   TH1D   *fHistSSDRawSignalModule[fgkSSDMODULES]; //raw signal vs strip number - SSD                   
   Int_t   fOccupancyMatrix[fgkSSDMODULES][2*fgkNumberOfPSideStrips]; //occupancy values per strip

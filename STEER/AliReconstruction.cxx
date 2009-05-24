@@ -1970,10 +1970,10 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     // although the HLT loader is missing
     if (strcmp(fgkDetectorName[iDet], "HLT")==0) {
       if (fRawReader) {
-	reconstructor->Reconstruct(fRawReader, NULL);
+        reconstructor->Reconstruct(fRawReader, NULL);
       } else {
-	TTree* dummy=NULL;
-	reconstructor->Reconstruct(dummy, NULL);
+        TTree* dummy=NULL;
+        reconstructor->Reconstruct(dummy, NULL);
       }
       continue;
     }
@@ -2008,10 +2008,14 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
       loader->LoadDigits("read");
       TTree* digitsTree = loader->TreeD();
       if (!digitsTree) {
-	AliError(Form("Can't get the %s digits tree", fgkDetectorName[iDet]));
-	if (fStopOnError) return kFALSE;
+        AliError(Form("Can't get the %s digits tree", fgkDetectorName[iDet]));
+        if (fStopOnError) return kFALSE;
       } else {
-	reconstructor->Reconstruct(digitsTree, clustersTree);
+        reconstructor->Reconstruct(digitsTree, clustersTree);
+        if (fRunQA) {
+          fQAManager->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
+          fQAManager->RunOneEventInOneDetector(iDet, digitsTree) ; 
+        }
       }
       loader->UnloadDigits();
     }
@@ -3045,7 +3049,7 @@ void AliReconstruction::RunAliEVE()
 Bool_t AliReconstruction::SetRunQA(TString detAndAction) 
 {
 	// Allows to run QA for a selected set of detectors
-	// and a selected set of tasks among RAWS, RECPOINTS and ESDS
+	// and a selected set of tasks among RAWS, DIGITSR, RECPOINTS and ESDS
 	// all selected detectors run the same selected tasks
 	
 	if (!detAndAction.Contains(":")) {
@@ -3059,12 +3063,14 @@ Bool_t AliReconstruction::SetRunQA(TString detAndAction)
 		fQADetectors = fFillESD ; 
 		fQATasks   = detAndAction(colon+1, detAndAction.Sizeof() ) ; 
 	if (fQATasks.Contains("ALL") ) {
-		fQATasks = Form("%d %d %d", AliQAv1::kRAWS, AliQAv1::kRECPOINTS, AliQAv1::kESDS) ; 
+		fQATasks = Form("%d %d %d %d", AliQAv1::kRAWS, AliQAv1::kDIGITSR, AliQAv1::kRECPOINTS, AliQAv1::kESDS) ; 
 	} else {
 		fQATasks.ToUpper() ; 
 		TString tempo("") ; 
 		if ( fQATasks.Contains("RAW") ) 
 			tempo = Form("%d ", AliQAv1::kRAWS) ; 
+		if ( fQATasks.Contains("DIGIT") ) 
+			tempo += Form("%d ", AliQAv1::kDIGITSR) ; 
 		if ( fQATasks.Contains("RECPOINT") ) 
 			tempo += Form("%d ", AliQAv1::kRECPOINTS) ; 
 		if ( fQATasks.Contains("ESD") ) 
@@ -3078,6 +3084,7 @@ Bool_t AliReconstruction::SetRunQA(TString detAndAction)
 	}	
 	TString tempo(fQATasks) ; 
 	tempo.ReplaceAll(Form("%d", AliQAv1::kRAWS), AliQAv1::GetTaskName(AliQAv1::kRAWS)) 	;
+	tempo.ReplaceAll(Form("%d", AliQAv1::kDIGITSR), AliQAv1::GetTaskName(AliQAv1::kDIGITSR)) ;	
 	tempo.ReplaceAll(Form("%d", AliQAv1::kRECPOINTS), AliQAv1::GetTaskName(AliQAv1::kRECPOINTS)) ;	
 	tempo.ReplaceAll(Form("%d", AliQAv1::kESDS), AliQAv1::GetTaskName(AliQAv1::kESDS)) ; 	
 	AliInfo( Form("QA will be done on \"%s\" for \"%s\"\n", fQADetectors.Data(), tempo.Data()) ) ;  

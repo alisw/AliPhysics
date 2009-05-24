@@ -35,6 +35,7 @@
 #include "AliT0digit.h" 
 #include "AliT0hit.h"
 #include "AliT0RecPoint.h"
+#include "AliT0Digit.h"
 #include "AliT0QADataMakerRec.h"
 #include "AliQAChecker.h"
 #include "AliT0RawReader.h"
@@ -236,6 +237,24 @@ void AliT0QADataMakerRec::InitRaws()
 }
 
 //____________________________________________________________________________ 
+void AliT0QADataMakerRec::InitDigits()
+{
+  // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH2F * fhDigCFD = new TH2F("fhDigCFD", " CFD digits",25,-0.5,24.5,100,100,1000);
+  Add2DigitsList( fhDigCFD,0);
+  TH2F *fhDigLEDamp = new TH2F("fhDigLEDamp", " LED-CFD digits",25,-0.5,24.5,100,100,1000);
+  Add2DigitsList( fhDigLEDamp,1, !expert, image);
+  TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits",25,-0.5,24.5,100,100,1000);
+  Add2DigitsList( fhDigQTC,2, !expert, image);
+  
+  
+  
+}
+
+//____________________________________________________________________________ 
 
 void AliT0QADataMakerRec::InitRecPoints()
 {
@@ -401,6 +420,50 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
     }
   
 
+
+//____________________________________________________________________________
+void AliT0QADataMakerRec::MakeDigits( TTree *digitsTree)
+{
+  //fills QA histos for Digits
+  
+  TArrayI *digCFD = new TArrayI(24);
+  TArrayI *digLED = new TArrayI(24);
+  TArrayI *digQT0 = new TArrayI(24);
+  TArrayI *digQT1 = new TArrayI(24);
+  Int_t refpoint=0;
+  
+  TBranch *brDigits=digitsTree->GetBranch("T0");
+  AliT0digit *fDigits = new AliT0digit() ;
+  if (brDigits) {
+    brDigits->SetAddress(&fDigits);
+  }else{
+    AliError(Form("EXEC Branch T0 digits not found"));
+    return;
+  }
+  digitsTree->GetEvent(0);
+  digitsTree->GetEntry(0);
+  brDigits->GetEntry(0);
+  fDigits->GetTimeCFD(*digCFD);
+  fDigits->GetTimeLED(*digLED);
+  fDigits->GetQT0(*digQT0);
+  fDigits->GetQT1(*digQT1);
+  refpoint = fDigits->RefPoint();
+  for (Int_t i=0; i<24; i++)
+    {
+    if (digCFD->At(i)>0) {
+      Int_t cfd=digCFD->At(i)- refpoint;
+      GetDigitsData(0) ->Fill(i,cfd);
+      GetDigitsData(1) -> Fill(i,(digLED->At(i) - digCFD->At(i)));
+      GetDigitsData(2) -> Fill(i, (digQT1->At(i) - digQT0->At(i)));
+    }
+    }  
+  
+  delete digCFD;
+  delete digLED;
+  delete digQT0;
+  delete digQT1;
+  
+}
 
 //____________________________________________________________________________
 void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)

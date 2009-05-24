@@ -312,7 +312,7 @@ void AliQAChecker::LoadRunInfoFromGRP()
 //_____________________________________________________________________________
 Bool_t AliQAChecker::Run(const char * fileName)
 {
-  // run the Quality Assurance Checker for all tasks Hits, SDigits, Digits, recpoints, tracksegments, recparticles and ESDs
+  // run the Quality Assurance Checker for all tasks Hits, SDigits, Digits, DigitsR, RecPoints, TrackSegments, RecParticles and ESDs
   // starting from data in file  
   TStopwatch stopwatch;
   stopwatch.Start();
@@ -357,6 +357,8 @@ Bool_t AliQAChecker::Run(const char * fileName)
         index = AliQAv1::kSIM ; 
       if ( taskName == AliQAv1::GetTaskName(AliQAv1::kDIGITS) ) 
         index = AliQAv1::kSIM ; 
+      if ( taskName == AliQAv1::GetTaskName(AliQAv1::kDIGITSR) ) 
+        index = AliQAv1::kREC ; 
       if ( taskName == AliQAv1::GetTaskName(AliQAv1::kRECPOINTS) ) 
         index = AliQAv1::kREC ; 
       if ( taskName == AliQAv1::GetTaskName(AliQAv1::kTRACKSEGMENTS) ) 
@@ -405,6 +407,8 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
 		index = AliQAv1::kSIM ; 
 	else if ( task == AliQAv1::kDIGITS ) 
 		index = AliQAv1::kSIM ; 
+	else if ( task == AliQAv1::kDIGITSR ) 
+		index = AliQAv1::kREC ; 
 	else if ( task == AliQAv1::kRECPOINTS ) 
 		index = AliQAv1::kREC ; 
 	else if ( task == AliQAv1::kTRACKSEGMENTS ) 
@@ -443,6 +447,8 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
 		index = AliQAv1::kSIM ; 
 	else if ( task == AliQAv1::kDIGITS ) 
 		index = AliQAv1::kSIM ; 
+	else if ( task == AliQAv1::kDIGITSR ) 
+		index = AliQAv1::kREC ; 
 	else if ( task == AliQAv1::kRECPOINTS ) 
 		index = AliQAv1::kREC ; 
 	else if ( task == AliQAv1::kTRACKSEGMENTS ) 

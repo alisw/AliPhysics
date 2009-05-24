@@ -46,6 +46,7 @@
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSDDCompressed.h"
 #include "AliITSDetTypeRec.h"
+#include "AliITSDigit.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSHLTforSDD.h"
@@ -63,8 +64,10 @@ fAliITSQADataMakerRec(aliITSQADataMakerRec),
 fkOnline(kMode),
 fLDC(ldc),
 fSDDhRawsTask(0),
+fSDDhDigitsTask(0),
 fSDDhRecPointsTask(0),
 fGenRawsOffset(0),
+fGenDigitsOffset(0),
 fGenRecPointsOffset(0),
 fTimeBinSize(1),
 fDDLModuleMap(0),
@@ -91,8 +94,10 @@ fAliITSQADataMakerRec(qadm.fAliITSQADataMakerRec),
 fkOnline(qadm.fkOnline),
 fLDC(qadm.fLDC),
 fSDDhRawsTask(qadm.fSDDhRawsTask),
+fSDDhDigitsTask(qadm.fSDDhDigitsTask),
 fSDDhRecPointsTask(qadm.fSDDhRecPointsTask),
 fGenRawsOffset(qadm.fGenRawsOffset),
+fGenDigitsOffset(qadm.fGenDigitsOffset),
 fGenRecPointsOffset(qadm.fGenRecPointsOffset),
 fTimeBinSize(1),
 fDDLModuleMap(0),
@@ -391,6 +396,71 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   AliDebug(AliQAv1::GetQADebugLevel(),Form("Event completed, %d raw digits read",cnt)); 
   delete stream;
   stream = NULL; 
+}
+
+//____________________________________________________________________________ 
+void AliITSQASDDDataMakerRec::InitDigits()
+{ 
+  // Initialization for DIGIT data - SDD -  
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ;
+  
+  fGenDigitsOffset = (fAliITSQADataMakerRec->fDigitsQAList[AliRecoParam::kDefault])->GetEntries();
+  //fSDDhTask must be incremented by one unit every time a histogram is ADDED to the QA List
+  TH1F* h0=new TH1F("SDD DIGITS Module Pattern","SDD DIGITS Module Pattern",260,239.5,499.5);       //hmod
+  h0->GetXaxis()->SetTitle("SDD Module Number");
+  h0->GetYaxis()->SetTitle("# DIGITS");
+  fAliITSQADataMakerRec->Add2DigitsList(h0,fGenDigitsOffset, !expert, image);
+  fSDDhDigitsTask ++;
+  TH1F* h1=new TH1F("SDD Anode Distribution","DIGITS Anode Distribution",512,-0.5,511.5);      //hanocc
+  h1->GetXaxis()->SetTitle("Anode Number");
+  h1->GetYaxis()->SetTitle("# DIGITS");
+  fAliITSQADataMakerRec->Add2DigitsList(h1,1+fGenDigitsOffset, !expert, image);
+  fSDDhDigitsTask ++;
+  TH1F* h2=new TH1F("SDD Tbin Distribution","DIGITS Tbin Distribution",256,-0.5,255.5);      //htbocc
+  h2->GetXaxis()->SetTitle("Tbin Number");
+  h2->GetYaxis()->SetTitle("# DIGITS");
+  fAliITSQADataMakerRec->Add2DigitsList(h2,2+fGenDigitsOffset, !expert, image);
+  fSDDhDigitsTask ++;
+  TH1F* h3=new TH1F("SDD ADC Counts Distribution","DIGITS ADC Counts Distribution",200,0.,1024.);          //hsig
+  h3->GetXaxis()->SetTitle("ADC Value");
+  h3->GetYaxis()->SetTitle("# DIGITS");
+  fAliITSQADataMakerRec->Add2DigitsList(h3,3+fGenDigitsOffset, !expert, image);
+  fSDDhDigitsTask ++;
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SDD Digits histograms booked\n",fSDDhDigitsTask));
+}
+
+//____________________________________________________________________________
+void AliITSQASDDDataMakerRec::MakeDigits(TTree * digits)
+{ 
+  
+  // Fill QA for DIGIT - SDD -
+//  AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
+//  fITS->SetTreeAddress();
+//  TClonesArray *iITSdigits  = fITS->DigitsAddress(1);
+  TBranch *branchD = digits->GetBranch("ITS");
+  if (!branchD) { 
+    AliError("can't get the branch with the ITS digits !");
+    return;
+  }
+  static TClonesArray statDigits("AliITSDigit");
+  TClonesArray *iITSdigits = &statDigits;
+  branchD->SetAddress(&iITSdigits);
+  for(Int_t i=0; i<260; i++){
+    Int_t nmod=i+240;
+    digits->GetEvent(nmod);
+    Int_t ndigits = iITSdigits->GetEntries();
+    fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset)->Fill(nmod,ndigits);
+    for (Int_t idig=0; idig<ndigits; idig++) {
+      AliITSdigit *dig=(AliITSdigit*)iITSdigits->UncheckedAt(idig);
+      Int_t iz=dig->GetCoord1();  // cell number z
+      Int_t ix=dig->GetCoord2();  // cell number x
+      Int_t sig=dig->GetSignal();
+      fAliITSQADataMakerRec->GetDigitsData(1+fGenDigitsOffset)->Fill(iz);
+      fAliITSQADataMakerRec->GetDigitsData(2+fGenDigitsOffset)->Fill(ix);
+      fAliITSQADataMakerRec->GetDigitsData(3+fGenDigitsOffset)->Fill(sig);
+    }
+  }
 }
 
 //____________________________________________________________________________ 

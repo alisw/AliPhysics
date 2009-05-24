@@ -28,12 +28,18 @@ public:
 	AliQADataMakerSim& operator = (const AliQADataMakerSim& qadm) ;
 	virtual ~AliQADataMakerSim() ; // dtor
   
-	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)    { return Add2List(hist, index, fDigitsQAList, expert, image) ; }
-	virtual Int_t Add2ESDsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)      { return -1 ; } 
-	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)      { return Add2List(hist, index, fHitsQAList, expert, image) ; }
-	virtual Int_t Add2RecPointsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/) { return -1 ; } 
-	virtual Int_t Add2RawsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*saveForCorr = kFALSE*/, const Bool_t /*image = kFALSE*/)      { return -1 ; }  
-	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)   { return Add2List(hist, index, fSDigitsQAList, expert, image) ; }
+	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)                    
+    { return Add2List(hist, index, fDigitsQAList, expert, image) ; }
+	virtual Int_t Add2ESDsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)    
+    { return -1 ; } 
+	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)                      
+    { return Add2List(hist, index, fHitsQAList, expert, image) ; }
+	virtual Int_t Add2RecPointsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/) 
+    { return -1 ; } 
+	virtual Int_t Add2RawsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*saveForCorr = kFALSE*/, const Bool_t /*image = kFALSE*/)      
+    { return -1 ; }  
+	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)   
+    { return Add2List(hist, index, fSDigitsQAList, expert, image) ; }
 	virtual void        Exec(AliQAv1::TASKINDEX_t task, TObject * data) ;
 	virtual void        EndOfCycle() ;
 	virtual void        EndOfCycle(AliQAv1::TASKINDEX_t task) ;

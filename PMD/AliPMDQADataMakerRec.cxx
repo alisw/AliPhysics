@@ -35,6 +35,7 @@
 #include "AliLog.h"
 #include "AliPMDQADataMakerRec.h"
 #include "AliQAChecker.h"
+#include "AliPMDDigit.h" 
 #include "AliPMDrecpoint1.h" 
 #include "AliPMDRawStream.h"
 #include "AliPMDddldata.h"
@@ -285,6 +286,32 @@ void AliPMDQADataMakerRec::InitRaws()
     //Add2RawsList(h49, 49);//Ajay
 
 }
+
+//____________________________________________________________________________
+void AliPMDQADataMakerRec::InitDigits()
+{
+  // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1F *h0 = new TH1F("hPreDigitsEdep","Digits energy distribution in PRE(PMD)", 100, 0., 2000.);
+  h0->Sumw2();
+  Add2DigitsList(h0, 0, !expert, image);
+  
+  TH1F *h1 = new TH1F("hCpvDigitsEdep","Digits energy distribution in CPV(PMD)", 100, 0., 2000.); 
+  h1->Sumw2();
+  Add2DigitsList(h1, 1, !expert, image);
+  
+  TH1I *h2 = new TH1I("hPreDigitsMult","Digits multiplicity distribution in PRE(PMD)", 500, 0, 1000) ; 
+  h2->Sumw2();
+  Add2DigitsList(h2, 2, !expert, image);
+  
+  TH1I *h3 = new TH1I("hCpvDigitsMult","Digits multiplicity distribution in CPV(PMD)", 500, 0, 1000);
+  h3->Sumw2();
+  Add2DigitsList(h3, 3, !expert, image);
+  
+}
+
 //____________________________________________________________________________ 
 void AliPMDQADataMakerRec::InitRecPoints()
 {
@@ -460,6 +487,60 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     pmdddlcont = 0x0;
 
 }
+//____________________________________________________________________________
+void AliPMDQADataMakerRec::MakeDigits(TClonesArray * digits)
+{
+  // makes data from Digits
+  
+  Int_t cpvmul = 0, premul = 0;
+  
+  TIter next(digits) ; 
+  AliPMDdigit * digit ; 
+  while ( (digit = dynamic_cast<AliPMDdigit *>(next())) )
+    {
+    if(digit->GetDetector() == 0)
+      {
+	    GetDigitsData(0)->Fill( digit->GetADC()) ;
+	    premul++;
+      }
+    if(digit->GetDetector() == 1)
+      {
+	    GetDigitsData(1)->Fill( digit->GetADC());
+	    cpvmul++;
+      }
+    }  
+  
+  if (premul > 0) GetDigitsData(2)->Fill(premul);
+  if (cpvmul > 0) GetDigitsData(3)->Fill(cpvmul);
+  
+  
+}
+
+//____________________________________________________________________________
+void AliPMDQADataMakerRec::MakeDigits(TTree * digitTree)
+{
+  // makes data from Digit Tree
+  
+  TClonesArray * digits = new TClonesArray("AliPMDdigit", 1000) ; 
+  
+  TBranch * branch = digitTree->GetBranch("PMDDigit") ;
+  branch->SetAddress(&digits) ;
+  
+  if ( ! branch )
+    {
+    AliWarning("PMD branch in Digit Tree not found") ; 
+    }
+  else
+    {
+    for (Int_t ient = 0; ient < branch->GetEntries(); ient++)
+      {
+	    branch->GetEntry(ient) ; 
+	    MakeDigits(digits) ; 
+      }
+    
+    }
+}
+
 //____________________________________________________________________________
 void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {

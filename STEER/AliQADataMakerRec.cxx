@@ -50,6 +50,7 @@ AliQADataMakerRec::AliQADataMakerRec(const char * name, const char * title) :
   AliQADataMaker(name, title), 
   fESDsQAList(NULL), 
   fRawsQAList(NULL), 
+  fDigitsQAList(NULL),
   fRecPointsQAList(NULL),
   fCorrNt(NULL), 
   fRecoParam(NULL) 
@@ -63,6 +64,7 @@ AliQADataMakerRec::AliQADataMakerRec(const AliQADataMakerRec& qadm) :
   AliQADataMaker(qadm.GetName(), qadm.GetTitle()), 
   fESDsQAList(qadm.fESDsQAList),
   fRawsQAList(qadm.fRawsQAList),
+  fDigitsQAList(qadm.fDigitsQAList),
   fRecPointsQAList(qadm.fRecPointsQAList),
   fCorrNt(qadm.fCorrNt),  
   fRecoParam(qadm.fRecoParam) 
@@ -95,6 +97,15 @@ AliQADataMakerRec::~AliQADataMakerRec()
     }
     delete[] fRawsQAList ;
   }
+	if ( fDigitsQAList ) {
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      if ( fDigitsQAList[specie] ) {
+        if ( fDigitsQAList[specie]->IsOwner() ) 
+          fDigitsQAList[specie]->Delete() ;
+      }
+    }
+		delete[] fDigitsQAList ; 
+  }
 	if ( fRecPointsQAList ) {
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       if ( fRecPointsQAList[specie] ) {
@@ -120,6 +131,7 @@ void AliQADataMakerRec::EndOfCycle()
 {
   // Finishes a cycle of QA for all the tasks
   EndOfCycle(AliQAv1::kRAWS) ; 
+  EndOfCycle(AliQAv1::kDIGITSR) ; 
   EndOfCycle(AliQAv1::kRECPOINTS) ; 
   EndOfCycle(AliQAv1::kESDS) ; 
   ResetCycle() ; 
@@ -134,6 +146,8 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
 	
 	if ( task == AliQAv1::kRAWS )     
 		list = fRawsQAList ; 
+	else if ( task == AliQAv1::kDIGITSR ) 
+		list = fDigitsQAList ; 
 	else if ( task == AliQAv1::kRECPOINTS ) 
 		list = fRecPointsQAList ; 
 	else if ( task == AliQAv1::kESDS )
@@ -201,6 +215,9 @@ void AliQADataMakerRec::MakeImage(AliQAv1::TASKINDEX_t task)
     case AliQAv1::kSDIGITS:
       break;  
     case AliQAv1::kDIGITS:
+      break;  
+    case AliQAv1::kDIGITSR:
+      list = fDigitsQAList ; 
       break;  
     case AliQAv1::kRECPOINTS:
       list = fRecPointsQAList ; 
@@ -277,6 +294,14 @@ void AliQADataMakerRec::Exec(AliQAv1::TASKINDEX_t task, TObject * data)
 			MakeRaws(rawReader) ;
 		else
       AliDebug(AliQAv1::GetQADebugLevel(), "Raw data are not processed") ;     
+	} else if ( task == AliQAv1::kDIGITSR ) {
+		AliDebug(AliQAv1::GetQADebugLevel(), "Processing Digits QA") ; 
+		TTree * tree = dynamic_cast<TTree *>(data) ; 
+		if (tree) {
+			MakeDigits(tree) ; 
+		} else {
+			AliWarning("data are not a TTree") ; 
+		}
 	} else if ( task == AliQAv1::kRECPOINTS ) {
 		AliDebug(AliQAv1::GetQADebugLevel(), "Processing RecPoints QA") ; 
 		TTree * tree = dynamic_cast<TTree *>(data) ; 
@@ -315,6 +340,16 @@ TObjArray **  AliQADataMakerRec::Init(AliQAv1::TASKINDEX_t task, Int_t cycles)
 			InitRaws() ;
 		}
 		rv = fRawsQAList ;
+	} else if ( task == AliQAv1::kDIGITSR ) {
+		if ( ! fDigitsQAList ) {
+      fDigitsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
+      for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+        fDigitsQAList[specie] = new TObjArray(100) ; 
+        fDigitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
+      }
+      InitDigits() ;
+		}
+		rv = fDigitsQAList ;
 	} else if ( task == AliQAv1::kRECPOINTS ) {
 		if ( ! fRecPointsQAList ) {
       fRecPointsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
@@ -351,6 +386,8 @@ void AliQADataMakerRec::Init(AliQAv1::TASKINDEX_t task, TObjArray ** list, Int_t
 	
 	if ( task == AliQAv1::kRAWS ) {
 		fRawsQAList = list ;	 
+	} else if ( task == AliQAv1::kDIGITSR ) {
+		fDigitsQAList = list ; 
 	} else if ( task == AliQAv1::kRECPOINTS ) {
 		fRecPointsQAList = list ; 
 	} else if ( task == AliQAv1::kESDS ) {
@@ -401,6 +438,7 @@ void AliQADataMakerRec::StartOfCycle(Int_t run)
   Bool_t samecycle = kFALSE ; 
   StartOfCycle(AliQAv1::kRAWS,      run, samecycle) ;
   samecycle = kTRUE ; 
+  StartOfCycle(AliQAv1::kDIGITSR,   run, samecycle) ; 
   StartOfCycle(AliQAv1::kRECPOINTS, run, samecycle) ; 
   StartOfCycle(AliQAv1::kESDS,      run, samecycle) ; 
 }

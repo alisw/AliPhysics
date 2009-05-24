@@ -39,9 +39,11 @@ public:
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list);
   virtual void EndOfDetectorCycle(const char *fgDataName);
   virtual void InitRaws();
+  virtual void InitDigits();
   virtual void InitRecPoints();
   virtual void InitESDs();
   virtual void MakeRaws(AliRawReader *rawReader);
+  virtual void MakeDigits(TTree *digitsTree);
   virtual void MakeRecPoints(TTree *clustersTree);
   virtual void MakeESDs(AliESDEvent *esd);
 

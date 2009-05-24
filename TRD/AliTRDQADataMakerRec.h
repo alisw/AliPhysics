@@ -37,10 +37,13 @@ class AliTRDQADataMakerRec: public AliQADataMakerRec {
 
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list) ;
   virtual void InitESDs() ; 
+  virtual void InitDigits() ; 
   virtual void InitRecPoints() ; 
   virtual void InitRaws() ; 
 
   virtual void MakeRaws(AliRawReader* rawReader); 
+  virtual void MakeDigits(TTree * dig); 
+  virtual void MakeDigits(TClonesArray * digits); 
   virtual void MakeRecPoints(TTree * recpo); 
   virtual void MakeESDs(AliESDEvent * esd);
 

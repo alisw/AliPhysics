@@ -40,6 +40,7 @@
 #include "AliLog.h"
 #include "AliACORDEdigit.h" 
 #include "AliACORDEhit.h"
+#include "AliACORDEDigit.h"
 #include "AliACORDEQADataMakerRec.h"
 #include "AliQAChecker.h"
 #include "AliACORDERawReader.h"
@@ -97,6 +98,22 @@ void AliACORDEQADataMakerRec::InitRaws()
   for(Int_t i=0;i<4;i++) 
     Add2RawsList(fhACORDEBitPattern[i],i,!expert, image, !saveCorr);
 }
+//____________________________________________________________________________ 
+void AliACORDEQADataMakerRec::InitDigits()
+{
+  // create Digits histograms in Digits subdir
+  
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1F *    fhDigitsModule;
+  TString   modulename;
+  modulename = "hDigitsModule";
+  fhDigitsModule = new TH1F(modulename.Data(),"hDigitsModuleSingle",60,0,60);
+  Add2DigitsList(fhDigitsModule,0,!expert,image);
+  
+}
+
 //____________________________________________________________________________ 
 
 void AliACORDEQADataMakerRec::InitRecPoints()
@@ -188,6 +205,30 @@ if(rawStream.Next())
         }GetRawsData(2)->Fill(contSingle);GetRawsData(3)->Fill(contMulti);
 }
 }
+//____________________________________________________________________________
+void AliACORDEQADataMakerRec::MakeDigits( TTree *digitsTree)
+{
+  //fills QA histos for Digits
+  TClonesArray * digits = new TClonesArray("AliACORDEdigit",1000);
+  TBranch * branch = digitsTree->GetBranch("ACORDEdigit");
+  if (!branch) {
+    AliWarning("ACORDE branch in Digits Tree not found");
+  } else {
+    branch->SetAddress(&digits);
+    for(Int_t track = 0 ; track < branch->GetEntries() ; track++) {
+      branch->GetEntry(track);
+      for(Int_t idigit = 0 ; idigit < digits->GetEntriesFast() ; idigit++) {
+        AliACORDEdigit *AcoDigit = (AliACORDEdigit*) digits->UncheckedAt(idigit);
+        if (!AcoDigit) {
+          AliError("The unchecked digit doesn't exist");
+          continue ;
+        }
+        GetDigitsData(0)->Fill(AcoDigit->GetModule()-1);
+      }
+    }
+  }
+}
+
 //____________________________________________________________________________
 void AliACORDEQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {

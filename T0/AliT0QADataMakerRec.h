@@ -33,9 +33,12 @@ public:
 private:
   virtual void   InitRaws() ;    //book Digit QA histo
   virtual void   InitRecPoints();  //book cluster QA histo
+  virtual void   InitDigits() ; 
   virtual void   InitESDs() ;      //book ESD QA histo 
   virtual void   MakeRaws(AliRawReader* rawReader) ;
   virtual void   MakeRecPoints(TTree * clusters)    ;  //Fill cluster QA histo
+  virtual void   MakeDigits(TClonesArray * /*digits*/) {;} 
+  virtual void   MakeDigits(TTree * digTree);
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
   virtual void   StartOfDetectorCycle() ;

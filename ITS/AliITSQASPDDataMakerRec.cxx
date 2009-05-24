@@ -39,6 +39,7 @@
 #include "AliRawReader.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSPDErrorLog.h"
+#include "AliITSDigit.h"
 #include "AliITSRecPoint.h"
 
 ClassImp(AliITSQASPDDataMakerRec)
@@ -50,8 +51,10 @@ fAliITSQADataMakerRec(aliITSQADataMakerRec),
 fkOnline(kMode),
 fLDC(ldc),
 fSPDhRawsTask(0),
+fSPDhDigitsTask(0),
 fSPDhRecPointsTask(0),
 fGenRawsOffset(0),
+fGenDigitsOffset(0),
 fGenRecPointsOffset(0),
 fAdvLogger(aliITSRawStreamSPDErrorLog) 
 {
@@ -65,8 +68,10 @@ fAliITSQADataMakerRec(qadm.fAliITSQADataMakerRec),
 fkOnline(qadm.fkOnline),
 fLDC(qadm.fLDC),
 fSPDhRawsTask(qadm.fSPDhRawsTask),
+fSPDhDigitsTask(qadm.fSPDhDigitsTask),
 fSPDhRecPointsTask(qadm.fSPDhRecPointsTask),
 fGenRawsOffset(qadm.fGenRawsOffset),
+fGenDigitsOffset(qadm.fGenDigitsOffset),
 fGenRecPointsOffset(qadm.fGenRecPointsOffset),
 fAdvLogger(qadm.fAdvLogger)
 {
@@ -232,6 +237,114 @@ void AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   
   delete rawStreamSPD;  
   AliDebug(AliQAv1::GetQADebugLevel(),Form("Event completed, %d raw digits read",nDigitsL1+nDigitsL2));
+}
+
+//____________________________________________________________________________ 
+void AliITSQASPDDataMakerRec::InitDigits()
+{ 
+  // Initialization for DIGIT data - SPD -
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ;
+  
+  fGenDigitsOffset = (fAliITSQADataMakerRec->fDigitsQAList[AliRecoParam::kDefault])->GetEntries();
+  //fSPDhDigitsTask must be incremented by one unit every time a histogram is ADDED to the QA List
+  
+  Char_t name[50];
+  Char_t title[50];
+  
+  TH1F *hlayer = new TH1F("SPDLayPattern_SPD","Layer map - SPD",6,0.,6.);
+  hlayer->GetXaxis()->SetTitle("Layer number");
+  hlayer->GetYaxis()->SetTitle("Entries");
+  fAliITSQADataMakerRec->Add2DigitsList(hlayer,fGenDigitsOffset, expert, !image);
+  fSPDhDigitsTask++;
+  
+  TH1F **hmod = new TH1F*[2];
+  for (Int_t iLay=0; iLay<2; iLay++) {
+    sprintf(name,"SPDModPattern_SPD%d",iLay+1);
+    sprintf(title,"Module map - SPD Layer %d",iLay+1);
+    hmod[iLay]=new TH1F(name,title,240,0,240);
+    hmod[iLay]->GetXaxis()->SetTitle("Module number");
+    hmod[iLay]->GetYaxis()->SetTitle("Entries");
+    fAliITSQADataMakerRec->Add2DigitsList(hmod[iLay],1+iLay+fGenDigitsOffset, !expert, image);
+    fSPDhDigitsTask++;
+  }
+  
+  TH1F *hcolumns = new TH1F("SPDColumns_SPD","Columns - SPD",160,0.,160.);
+  hcolumns->GetXaxis()->SetTitle("Column number");
+  hcolumns->GetYaxis()->SetTitle("Entries");
+  fAliITSQADataMakerRec->Add2DigitsList(hcolumns,3+fGenDigitsOffset, expert, !image);
+  fSPDhDigitsTask++;
+  
+  TH1F *hrows = new TH1F("SPDRows_SPD","Rows - SPD",256,0.,256.);
+  hrows->GetXaxis()->SetTitle("Row number");
+  hrows->GetYaxis()->SetTitle("Entries");
+  fAliITSQADataMakerRec->Add2DigitsList(hrows,4+fGenDigitsOffset, expert, !image);
+  fSPDhDigitsTask++;
+  
+  TH1F** hMultSPDdigits = new TH1F*[2];
+  for (Int_t iLay=0; iLay<2; ++iLay) {
+    sprintf(name,"SPDDigitMultiplicity_SPD%d",iLay+1);
+    sprintf(title,"Digit multiplicity - SPD Layer %d",iLay+1);
+    hMultSPDdigits[iLay]=new TH1F(name,title,200,0.,200.);
+    hMultSPDdigits[iLay]->GetXaxis()->SetTitle("Digit multiplicity");
+    hMultSPDdigits[iLay]->GetYaxis()->SetTitle("Entries");
+    fAliITSQADataMakerRec->Add2DigitsList(hMultSPDdigits[iLay], 5+iLay+fGenDigitsOffset, !expert, image);
+    fSPDhDigitsTask++;
+  }
+  
+  TH2F *hMultSPDdig2MultSPDdig1 
+    = new TH2F("SPDDigitMultCorrelation_SPD","Digit multiplicity correlation - SPD",200,0.,200.,200,0.,200.);
+  hMultSPDdig2MultSPDdig1->GetXaxis()->SetTitle("Digit multiplicity (Layer 1)");
+  hMultSPDdig2MultSPDdig1->GetYaxis()->SetTitle("Digit multiplicity (Layer 2)");
+  fAliITSQADataMakerRec->Add2DigitsList(hMultSPDdig2MultSPDdig1,7+fGenDigitsOffset, !expert, image);
+  fSPDhDigitsTask++;
+  
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD Digits histograms booked\n",fSPDhDigitsTask));
+  
+}
+
+//____________________________________________________________________________
+void AliITSQASPDDataMakerRec::MakeDigits(TTree *digits)
+{ 
+  // Fill QA for DIGIT - SPD -
+//  AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
+//  fITS->SetTreeAddress();
+//  TClonesArray *iITSdigits  = fITS->DigitsAddress(0);  // 0->SPD
+  TBranch *branchD = digits->GetBranch("ITS");
+  if (!branchD) { 
+    AliError("can't get the branch with the ITS digits !");
+    return;
+  }
+  static TClonesArray statDigits("AliITSDigit");
+  TClonesArray *iITSdigits = &statDigits;
+  branchD->SetAddress(&iITSdigits);  
+  Int_t nDigitsL1=0;
+  Int_t nDigitsL2=0;
+  
+  for (Int_t imod=0; imod<240; ++imod){
+    digits->GetEvent(imod);
+    Int_t ndigits = iITSdigits->GetEntries();
+    if (imod<80) {
+      fAliITSQADataMakerRec->GetDigitsData(0+fGenDigitsOffset)->Fill(0.5,ndigits);
+      fAliITSQADataMakerRec->GetDigitsData(1+fGenDigitsOffset)->Fill(imod,ndigits);
+      nDigitsL1+=ndigits;
+    }
+    else {
+      fAliITSQADataMakerRec->GetDigitsData(0+fGenDigitsOffset)->Fill(1,ndigits);
+      fAliITSQADataMakerRec->GetDigitsData(2+fGenDigitsOffset)->Fill(imod,ndigits);
+      nDigitsL2+=ndigits;
+    }
+    for (Int_t idig=0; idig<ndigits; ++idig) {
+      AliITSdigit *dig=(AliITSdigit*)iITSdigits->UncheckedAt(idig);
+      Int_t col=dig->GetCoord1();  // cell number z
+      Int_t row=dig->GetCoord2();  // cell number x
+      fAliITSQADataMakerRec->GetDigitsData(3+fGenDigitsOffset)->Fill(col);
+      fAliITSQADataMakerRec->GetDigitsData(4+fGenDigitsOffset)->Fill(row);
+    }
+  }
+  fAliITSQADataMakerRec->GetDigitsData(5+fGenDigitsOffset)->Fill(nDigitsL1);
+  fAliITSQADataMakerRec->GetDigitsData(6+fGenDigitsOffset)->Fill(nDigitsL2);
+  fAliITSQADataMakerRec->GetDigitsData(7+fGenDigitsOffset)->Fill(nDigitsL1,nDigitsL2);
 }
 
 //____________________________________________________________________________ 

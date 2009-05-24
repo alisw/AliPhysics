@@ -64,6 +64,7 @@
 #include "AliQAChecker.h"
 #include "AliCodeTimer.h"
 #include "AliDCSValue.h"
+#include "AliMUONVDigit.h"
 
 // --- ROOT system ---
 #include <TClonesArray.h>
@@ -546,6 +547,21 @@ void AliMUONQADataMakerRec::InitRaws()
 	fIsInitRaws = kTRUE;
 }
 
+//__________________________________________________________________
+void AliMUONQADataMakerRec::InitDigits() 
+{
+  /// Initialized Digits spectra 
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1I* h0 = new TH1I("hDigitsDetElem", "Detection element distribution in Digits",  1400, 100, 1500); 
+  Add2DigitsList(h0, 0, !expert, image);
+  
+  TH1I* h1 = new TH1I("hDigitsADC", "ADC distribution in Digits", 4096, 0, 4095); 
+  Add2DigitsList(h1, 1, !expert, image);  
+  
+} 
+
 //____________________________________________________________________________ 
 void AliMUONQADataMakerRec::InitRecPoints()
 {
@@ -1023,6 +1039,26 @@ void AliMUONQADataMakerRec::MakeRawsTrigger(AliRawReader* rawReader)
 	} // iLocal
       } // iReg
     } // NextDDL
+}
+
+//__________________________________________________________________
+void AliMUONQADataMakerRec::MakeDigits(TTree* digitsTree)         
+{
+  /// makes data from Digits
+  if (!fDigitStore)
+    fDigitStore = AliMUONVDigitStore::Create(*digitsTree);
+  fDigitStore->Connect(*digitsTree, false);
+  digitsTree->GetEvent(0);
+  
+  TIter next(fDigitStore->CreateIterator());
+  
+  AliMUONVDigit* dig = 0x0;
+  
+  while ( ( dig = static_cast<AliMUONVDigit*>(next()) ) )
+    {
+    GetDigitsData(0)->Fill(dig->DetElemId());
+    GetDigitsData(1)->Fill(dig->ADC());
+    }
 }
 
 //____________________________________________________________________________

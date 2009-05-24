@@ -63,6 +63,7 @@
 #include "AliTPCCalROC.h"
 #include "AliTPCClustersRow.h"
 #include "AliTPCclusterMI.h"
+#include "AliSimDigits.h"
 
 ClassImp(AliTPCQADataMakerRec)
 
@@ -312,6 +313,18 @@ void AliTPCQADataMakerRec::InitRaws()
 }
 
 //____________________________________________________________________________ 
+void AliTPCQADataMakerRec::InitDigits()
+{
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  TH1F * histDigitsADC = 
+    new TH1F("hDigitsADC", "Digit ADC distribution; ADC; Counts",
+             1000, 0, 1000);
+  histDigitsADC->Sumw2();
+  Add2DigitsList(histDigitsADC, kDigitsADC, !expert, image);
+}
+
+//____________________________________________________________________________ 
 void AliTPCQADataMakerRec::InitRecPoints()
 {
   const Bool_t expert   = kTRUE ; 
@@ -395,6 +408,28 @@ void AliTPCQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	rawReader->Reset() ; 
   fTPCdataQA[AliRecoParam::AConvert(fEventSpecie)]->ProcessEvent(rawReader);  
  }
+
+//____________________________________________________________________________
+void AliTPCQADataMakerRec::MakeDigits(TTree* digitTree)
+{
+  TBranch* branch = digitTree->GetBranch("Segment");
+  AliSimDigits* digArray = 0;
+  branch->SetAddress(&digArray);
+  
+  Int_t nEntries = Int_t(digitTree->GetEntries());
+  
+  for (Int_t n = 0; n < nEntries; n++) {
+    
+    digitTree->GetEvent(n);
+    
+    if (digArray->First())
+      do {
+        Float_t dig = digArray->CurrentDigit();
+        
+        GetDigitsData(kDigitsADC)->Fill(dig);
+      } while (digArray->Next());    
+  }
+}
 
 //____________________________________________________________________________
 void AliTPCQADataMakerRec::MakeRecPoints(TTree* recTree)

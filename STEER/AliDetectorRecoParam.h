@@ -29,7 +29,7 @@ class AliDetectorRecoParam : public TNamed
 
 private:
 
-  Int_t  fEventSpecie; // Event specie for which the reco-param object is valid
+  Int_t fEventSpecie; // Event specie for which the reco-param object is valid
   
   ClassDef(AliDetectorRecoParam, 3)
 };

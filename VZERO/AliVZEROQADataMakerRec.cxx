@@ -41,6 +41,7 @@
 #include "AliQAChecker.h"
 #include "AliRawReader.h"
 #include "AliVZERORawStream.h"
+#include "AliVZERODigit.h"
 #include "AliVZEROReconstructor.h"
 #include "event.h"
 
@@ -427,6 +428,73 @@ void AliVZEROQADataMakerRec::InitESDs()
 	 
  	AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
  }
+
+//____________________________________________________________________________ 
+void AliVZEROQADataMakerRec::InitDigits()
+{
+  // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  char TDCname[100];
+  char ADCname[100];
+  TH1I *fhDigTDC[64]; 
+  TH1I *fhDigADC[64]; 
+  char texte[100];
+  
+  // create Digits histograms in Digits subdir
+  TH1I * h0 = new TH1I("hDigitMultiplicity", "Digits multiplicity distribution in VZERO", 100, 0, 99) ; 
+  h0->Sumw2() ;
+  Add2DigitsList(h0, 0, !expert, image) ;
+  
+  for (Int_t i=0; i<64; i++)
+    {
+    sprintf(TDCname, "hDigitTDC%d", i);
+    sprintf(texte,"Digit TDC in cell %d",i);    
+    fhDigTDC[i] = new TH1I(TDCname,texte,300,0.,149.);
+    
+    sprintf(ADCname,"hDigitADC%d",i);
+    sprintf(texte,"Digit ADC in cell %d",i);
+    fhDigADC[i]= new TH1I(ADCname,texte,1024,0.,1023.);
+    
+    Add2DigitsList(fhDigTDC[i],i+1, !expert, image);
+    Add2DigitsList(fhDigADC[i],i+1+64, !expert, image);  
+    }  
+}
+
+//____________________________________________________________________________
+void AliVZEROQADataMakerRec::MakeDigits(TClonesArray * digits)
+{
+  // makes data from Digits
+  
+  GetDigitsData(0)->Fill(digits->GetEntriesFast()) ; 
+  TIter next(digits) ; 
+  AliVZEROdigit *VZERODigit ; 
+  while ( (VZERODigit = dynamic_cast<AliVZEROdigit *>(next())) ) {
+    Int_t   PMNumber  = VZERODigit->PMNumber();         
+    GetDigitsData(PMNumber +1)->Fill( VZERODigit->Time()) ;    // in 100 of picoseconds
+    GetDigitsData(PMNumber +1+64)->Fill( VZERODigit->ADC()) ;
+  }  
+}
+
+
+//____________________________________________________________________________
+void AliVZEROQADataMakerRec::MakeDigits(TTree *digitTree)
+{
+  // makes data from Digit Tree
+	
+  TClonesArray * digits = new TClonesArray("AliVZEROdigit", 1000) ; 
+  
+  TBranch * branch = digitTree->GetBranch("VZERODigit") ;
+  if ( ! branch ) {
+    AliWarning("VZERO branch in Digit Tree not found") ; 
+  } else {
+    branch->SetAddress(&digits) ;
+    branch->GetEntry(0) ; 
+    MakeDigits(digits) ; 
+  }  
+}
+
 
 //____________________________________________________________________________
 void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)

@@ -27,7 +27,7 @@ public:
   enum QABIT_t {
     kNULLBit=-1, kINFO, kWARNING, kERROR, kFATAL, kNBIT };
   enum TASKINDEX_t {
-    kNULLTASKINDEX=-1, kRAWS, kHITS, kSDIGITS, kDIGITS, kRECPOINTS, kTRACKSEGMENTS, kRECPARTICLES, kESDS, kNTASKINDEX };
+    kNULLTASKINDEX=-1, kRAWS, kHITS, kSDIGITS, kDIGITS, kDIGITSR, kRECPOINTS, kTRACKSEGMENTS, kRECPARTICLES, kESDS, kNTASKINDEX };
   
   // Creators - destructors
   AliQAv1(); // beware singleton, not to be used

@@ -32,9 +32,12 @@ class AliPMDQADataMakerRec: public AliQADataMakerRec {
  private:
     
     virtual void   InitRaws() ; 
+    virtual void   InitDigits() ; 
     virtual void   InitRecPoints() ; 
     virtual void   InitESDs() ; 
     virtual void   MakeRaws(AliRawReader* rawReader) ; 
+    virtual void   MakeDigits(TClonesArray* digits)  ; 
+    virtual void   MakeDigits(TTree * recpoTree) ; 
     virtual void   MakeRecPoints(TTree * recpoTree) ; 
     virtual void   MakeESDs(AliESDEvent * esd) ;
     virtual void   StartOfDetectorCycle() ; 

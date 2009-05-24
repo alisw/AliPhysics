@@ -219,6 +219,8 @@ void AliQADataMakerSim::MakeImage(AliQAv1::TASKINDEX_t task)
     case AliQAv1::kDIGITS:
       list = fDigitsQAList ;
       break;  
+    case AliQAv1::kDIGITSR:
+      break;
     case AliQAv1::kRECPOINTS:
       break;
     case AliQAv1::kTRACKSEGMENTS:

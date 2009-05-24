@@ -38,6 +38,7 @@ Authors:  J.Klay (Cal Poly) May 2008
 #include "AliLog.h"
 #include "AliEMCALQADataMakerRec.h"
 #include "AliQAChecker.h"
+#include "AliEMCALDigit.h" 
 #include "AliEMCALRecPoint.h" 
 #include "AliEMCALRawUtils.h"
 #include "AliEMCALReconstructor.h"
@@ -105,6 +106,21 @@ void AliEMCALQADataMakerRec::InitESDs()
   h4->Sumw2() ;
   Add2ESDsList(h4, kESDCaloCellM, !expert, image) ;
 	
+}
+
+//____________________________________________________________________________ 
+void AliEMCALQADataMakerRec::InitDigits()
+{
+  // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1I * h0 = new TH1I("hEmcalDigits",    "Digits amplitude distribution in EMCAL",    500, 0, 500) ; 
+  h0->Sumw2() ;
+  Add2DigitsList(h0, 0, !expert, image) ;
+  TH1I * h1 = new TH1I("hEmcalDigitsMul", "Digits multiplicity distribution in EMCAL", 200, 0, 2000) ; 
+  h1->Sumw2() ;
+  Add2DigitsList(h1, 1, !expert, image) ;
 }
 
 //____________________________________________________________________________ 
@@ -364,6 +380,37 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   rawReader->Reset() ;
 
   return;
+}
+
+//____________________________________________________________________________
+void AliEMCALQADataMakerRec::MakeDigits(TClonesArray * digits)
+{
+  // makes data from Digits
+  
+  GetDigitsData(1)->Fill(digits->GetEntriesFast()) ; 
+  TIter next(digits) ; 
+  AliEMCALDigit * digit ; 
+  while ( (digit = dynamic_cast<AliEMCALDigit *>(next())) ) {
+    GetDigitsData(0)->Fill( digit->GetAmp()) ;
+  }  
+  
+}
+
+//____________________________________________________________________________
+void AliEMCALQADataMakerRec::MakeDigits(TTree * digitTree)
+{
+  // makes data from Digit Tree
+  TClonesArray * digits = new TClonesArray("AliEMCALDigit", 1000) ; 
+  
+  TBranch * branch = digitTree->GetBranch("EMCAL") ;
+  if ( ! branch ) {
+    AliWarning("EMCAL branch in Digit Tree not found") ; 
+  } else {
+    branch->SetAddress(&digits) ;
+    branch->GetEntry(0) ; 
+    MakeDigits(digits) ; 
+  }
+  
 }
 
 //____________________________________________________________________________

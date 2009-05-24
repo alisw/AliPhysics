@@ -115,6 +115,19 @@ void AliFMDQADataMakerRec::InitESDs()
     
 }
 
+//_____________________________________________________________________
+void AliFMDQADataMakerRec::InitDigits()
+{
+  // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts",1024,0,1024);
+  hADCCounts->SetXTitle("ADC counts");
+  Add2DigitsList(hADCCounts, 0, !expert, image);
+}
+
+
 //_____________________________________________________________________ 
 void AliFMDQADataMakerRec::InitRecPoints()
 {
@@ -196,7 +209,7 @@ void AliFMDQADataMakerRec::MakeESDs(AliESDEvent * esd)
   }
 }
 
-/*
+
 //_____________________________________________________________________
 void AliFMDQADataMakerRec::MakeDigits(TClonesArray * digits)
 {
@@ -227,7 +240,7 @@ void AliFMDQADataMakerRec::MakeDigits(TTree * digitTree)
   branch->GetEntry(0); 
   MakeDigits(digitsAddress);
 }
-*/
+
 //_____________________________________________________________________
 void AliFMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {

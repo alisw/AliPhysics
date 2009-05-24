@@ -186,6 +186,33 @@ void AliITSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 }
 
 //____________________________________________________________________________ 
+void AliITSQADataMakerRec::InitDigits()
+{
+  // Initialization for DIGITS
+  if(fSubDetector == 0 || fSubDetector == 1) {
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitDigitss\n");
+    fSPDDataMaker->InitDigits();
+  }
+  if(fSubDetector == 0 || fSubDetector == 2) {
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SDD InitDigits\n");
+    fSDDDataMaker->InitDigits();
+  }
+  if(fSubDetector == 0 || fSubDetector == 3) {
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SSD InitDigits\n");
+    fSSDDataMaker->InitDigits();
+  }
+}
+
+//____________________________________________________________________________ 
+void AliITSQADataMakerRec::MakeDigits(TTree * digitsTree)
+{
+  // Fill QA for recpoints
+  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeDigits(digitsTree);
+  if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeDigits(digitsTree);
+  if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeDigits(digitsTree);
+}
+
+//____________________________________________________________________________ 
 void AliITSQADataMakerRec::InitRecPoints()
 {
   // Initialization for RECPOINTS
