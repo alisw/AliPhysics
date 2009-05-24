@@ -355,7 +355,6 @@ void AliAODTagCreator::CreateTags(const char* type)
 	}
 	
 	// Add the event tag
-	printf("Got %13.3f \n", evTag->GetEtaMaxPt());
 	fRunTag->AddEventTag(*evTag);
 	delete evTag;
 	// Last event
