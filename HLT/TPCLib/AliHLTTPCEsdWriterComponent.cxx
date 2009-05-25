@@ -260,9 +260,6 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	  continue;
 	}
 
-	AliESDtrack iotrack;
-	iotrack.UpdateTrackParams(pTrack,AliESDtrack::kTPCin);
-
 	Float_t points[4] = {pTrack->GetFirstPointX(), pTrack->GetFirstPointY(), pTrack->GetLastPointX(), pTrack->GetLastPointY() };
 
 	if(pTrack->GetSector() == -1){ // Set first and last points for global tracks
@@ -273,7 +270,6 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	  points[2] =  pTrack->GetLastPointX() *c + pTrack->GetLastPointY() *s;
 	  points[3] = -pTrack->GetLastPointX() *s + pTrack->GetLastPointY() *c;	  
 	}
-	iotrack.SetTPCPoints(points);
 
 	Int_t mcLabel = -1;
 
@@ -320,7 +316,11 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	  mcLabel = labelMax;
 	}
 
-	iotrack.SetLabel( mcLabel );
+	pTrack->SetLabel( mcLabel );
+
+	AliESDtrack iotrack;
+	iotrack.UpdateTrackParams(pTrack,AliESDtrack::kTPCin);
+	iotrack.SetTPCPoints(points);
 	
 	pESD->AddTrack(&iotrack);
 
