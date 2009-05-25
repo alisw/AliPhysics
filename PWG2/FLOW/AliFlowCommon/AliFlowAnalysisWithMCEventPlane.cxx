@@ -237,6 +237,58 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
     //    cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
   }
 }
+  //--------------------------------------------------------------------    
+
+void AliFlowAnalysisWithMCEventPlane::GetOutputHistograms(TList *outputListHistos) {
+ // get the pointers to all output histograms before calling Finish()
+ if (outputListHistos) {
+    //Get the common histograms from the output list
+    AliFlowCommonHist *pCommonHists = dynamic_cast<AliFlowCommonHist*> 
+      (outputListHistos->FindObject("AliFlowCommonHistMCEP"));
+    AliFlowCommonHistResults *pCommonHistResults = 
+      dynamic_cast<AliFlowCommonHistResults*> 
+      (outputListHistos->FindObject("AliFlowCommonHistResultsMCEP"));
+
+    TProfile *pHistProIntFlow = dynamic_cast<TProfile*> 
+      (outputListHistos->FindObject("FlowPro_V_MCEP")); 
+      
+    TProfile2D *pHistProDiffFlowPtEtaRP = dynamic_cast<TProfile2D*> 
+      (outputListHistos->FindObject("FlowPro_VPtEtaRP_MCEP")); 
+                               
+    TProfile *pHistProDiffFlowPtRP = dynamic_cast<TProfile*> 
+      (outputListHistos->FindObject("FlowPro_VPtRP_MCEP")); 
+     
+    TProfile *pHistProDiffFlowEtaRP = dynamic_cast<TProfile*> 
+      (outputListHistos->FindObject("FlowPro_VetaRP_MCEP"));
+ 
+    TProfile2D *pHistProDiffFlowPtEtaPOI = dynamic_cast<TProfile2D*> 
+      (outputListHistos->FindObject("FlowPro_VPtEtaPOI_MCEP")); 
+          
+    TProfile *pHistProDiffFlowPtPOI = dynamic_cast<TProfile*> 
+      (outputListHistos->FindObject("FlowPro_VPtPOI_MCEP")); 
+     
+    TProfile *pHistProDiffFlowEtaPOI = dynamic_cast<TProfile*> 
+      (outputListHistos->FindObject("FlowPro_VetaPOI_MCEP"));                             
+
+    if (pCommonHists && pCommonHistResults && pHistProIntFlow && 
+	pHistProDiffFlowPtRP && pHistProDiffFlowEtaRP && 
+	pHistProDiffFlowPtPOI && pHistProDiffFlowEtaPOI) {
+      this->SetCommonHists(pCommonHists);
+      this->SetCommonHistsRes(pCommonHistResults);
+      this->SetHistProIntFlow(pHistProIntFlow);
+      this->SetHistProDiffFlowPtEtaRP(pHistProDiffFlowPtEtaRP);
+      this->SetHistProDiffFlowPtRP(pHistProDiffFlowPtRP);      
+      this->SetHistProDiffFlowEtaRP(pHistProDiffFlowEtaRP);  
+      this->SetHistProDiffFlowPtEtaPOI(pHistProDiffFlowPtEtaPOI);
+      this->SetHistProDiffFlowPtPOI(pHistProDiffFlowPtPOI);      
+      this->SetHistProDiffFlowEtaPOI(pHistProDiffFlowEtaPOI);          
+    } else {
+      cout<<"WARNING: Histograms needed to run Finish() are not accessible!"<<endl;  }
+    
+    //fListHistos->Print();
+  } else { cout << "histogram list pointer is empty" << endl;}
+
+}
 
   //--------------------------------------------------------------------    
 void AliFlowAnalysisWithMCEventPlane::Finish() {
