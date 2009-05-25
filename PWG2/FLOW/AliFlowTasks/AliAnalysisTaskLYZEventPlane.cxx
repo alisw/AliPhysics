@@ -143,46 +143,11 @@ void AliAnalysisTaskLYZEventPlane::Terminate(Option_t *)
   AliFlowAnalysisWithLYZEventPlane* fLyzTerm = new AliFlowAnalysisWithLYZEventPlane() ;
   fListHistos = (TList*)GetOutputData(0);
   //cout << "histogram list in Terminate" << endl;
-  if (fListHistos) {
-    //Get the common histograms from the output list
-    AliFlowCommonHist *pCommonHist = dynamic_cast<AliFlowCommonHist*> 
-      (fListHistos->FindObject("AliFlowCommonHistLYZEP"));
-    AliFlowCommonHistResults *pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
-      (fListHistos->FindObject("AliFlowCommonHistResultsLYZEP"));
-
-    TProfile* pHistProR0theta = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("First_FlowPro_r0theta_LYZ"));
-
-    TProfile* pHistProVetaRP = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("FlowPro_VetaRP_LYZEP"));
-    TProfile* pHistProVetaPOI = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("FlowPro_VetaPOI_LYZEP"));
-    TProfile* pHistProVPtRP = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("FlowPro_VPtRP_LYZEP"));
-    TProfile* pHistProVPtPOI = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("FlowPro_VPtPOI_LYZEP"));
-
-    TH1F* pHistQsumforChi = dynamic_cast<TH1F*> 
-      (fListHistos->FindObject("Flow_QsumforChi_LYZEP"));
-
-    if (pCommonHist && pCommonHistResults && pHistProR0theta &&
-	pHistProVetaRP && pHistProVetaPOI && pHistProVPtRP && 
-	pHistProVPtPOI && pHistQsumforChi ) {
-      fLyzTerm -> SetCommonHists(pCommonHist);
-      fLyzTerm -> SetCommonHistsRes(pCommonHistResults);
-      fLyzTerm -> SetFirstr0theta(pHistProR0theta);
-      fLyzTerm -> SetHistProVetaRP(pHistProVetaRP);
-      fLyzTerm -> SetHistProVetaPOI(pHistProVetaPOI);
-      fLyzTerm -> SetHistProVPtRP(pHistProVPtRP);
-      fLyzTerm -> SetHistProVPtPOI(pHistProVPtPOI);
-      fLyzTerm -> SetHistQsumforChi(pHistQsumforChi);
+   if (fListHistos) {
+      fLyzTerm -> GetOutputHistograms(fListHistos);
       fLyzTerm -> Finish();
       PostData(0,fListHistos);
-    } else { 
-      cout<<"WARNING: Histograms needed to run Finish() are not accessable!"<<endl; 
-    }
-
-    //fListHistos->Print(); 
+      //fListHistos->Print(); 
   } else { cout << "histogram list pointer is empty" << endl;}
 
   //cout<<".....finished LYZ EventPlane"<<endl;  

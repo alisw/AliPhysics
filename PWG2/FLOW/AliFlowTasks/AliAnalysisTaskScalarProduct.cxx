@@ -135,31 +135,11 @@ void AliAnalysisTaskScalarProduct::Terminate(Option_t *)
   AliFlowAnalysisWithScalarProduct* fSPTerm = new AliFlowAnalysisWithScalarProduct() ;
   fListHistos = (TList*)GetOutputData(0);
   if (fListHistos) {
-    //Get the common histograms from the output list
-    AliFlowCommonHist *pCommonHist = dynamic_cast<AliFlowCommonHist*> 
-      (fListHistos->FindObject("AliFlowCommonHistSP"));
-    AliFlowCommonHistResults *pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
-      (fListHistos->FindObject("AliFlowCommonHistResultsSP"));
-    TProfile* pHistProQaQb     = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_QaQb_SP"));
-    TProfile* pHistProM        = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_M_SP"));
-    TProfile* pHistProUQetaRP  = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_UQetaRP_SP"));
-    TProfile* pHistProUQetaPOI = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_UQetaPOI_SP"));
-    TProfile* pHistProUQPtRP   = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_UQPtRP_SP"));
-    TProfile* pHistProUQPtPOI  = dynamic_cast<TProfile*>(fListHistos->FindObject("Flow_UQPtPOI_SP"));
-    if (pCommonHist && pCommonHistResults && pHistProQaQb && pHistProM &&
-	pHistProUQetaRP	&& pHistProUQetaPOI && pHistProUQPtRP && pHistProUQPtPOI) {
-      fSPTerm -> SetCommonHists(pCommonHist);
-      fSPTerm -> SetCommonHistsRes(pCommonHistResults);
-      fSPTerm -> SetHistProQaQb(pHistProQaQb);
-      fSPTerm -> SetHistProM(pHistProM);
-      fSPTerm -> SetHistProUQetaRP(pHistProUQetaRP);
-      fSPTerm -> SetHistProUQetaPOI(pHistProUQetaPOI);
-      fSPTerm -> SetHistProUQPtRP(pHistProUQPtRP);
-      fSPTerm -> SetHistProUQPtPOI(pHistProUQPtPOI);
+      fSPTerm -> GetOutputHistograms(fListHistos);
       fSPTerm -> Finish();
       PostData(0,fListHistos);
     }
-  }
+    
   else { cout << "histgram list pointer is empty in Scalar Product" << endl; }
 
 }

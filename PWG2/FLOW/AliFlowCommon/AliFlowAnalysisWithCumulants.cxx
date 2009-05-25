@@ -911,6 +911,157 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
 
 //================================================================================================================
 
+void AliFlowAnalysisWithCumulants::GetOutputHistograms(TList *outputListHistos) 
+{
+ // get the pointers to all output histograms before calling Finish()
+ if (outputListHistos) 
+ {
+  //Get the common histograms from the output list
+  //histograms to store the final results
+  TH1D *intFlowResults   = dynamic_cast<TH1D*>(outputListHistos->FindObject("fIntFlowResultsGFC"));
+  TH1D *diffFlowResults2 = dynamic_cast<TH1D*>(outputListHistos->FindObject("fDiffFlowResults2ndOrderGFC"));
+  TH1D *diffFlowResults4 = dynamic_cast<TH1D*>(outputListHistos->FindObject("fDiffFlowResults4thOrderGFC"));
+  TH1D *diffFlowResults6 = dynamic_cast<TH1D*>(outputListHistos->FindObject("fDiffFlowResults6thOrderGFC"));
+  TH1D *diffFlowResults8 = dynamic_cast<TH1D*>(outputListHistos->FindObject("fDiffFlowResults8thOrderGFC"));
+ 	    	    
+  //common histograms to store the final results  the integrated and differential flow
+  AliFlowCommonHistResults *commonHistRes2nd = dynamic_cast<AliFlowCommonHistResults*>(outputListHistos->FindObject("AliFlowCommonHistResults2ndOrderGFC"));
+  AliFlowCommonHistResults *commonHistRes4th = dynamic_cast<AliFlowCommonHistResults*>(outputListHistos->FindObject("AliFlowCommonHistResults4thOrderGFC"));
+  AliFlowCommonHistResults *commonHistRes6th = dynamic_cast<AliFlowCommonHistResults*>(outputListHistos->FindObject("AliFlowCommonHistResults6thOrderGFC"));
+  AliFlowCommonHistResults *commonHistRes8th = dynamic_cast<AliFlowCommonHistResults*>(outputListHistos->FindObject("AliFlowCommonHistResults8thOrderGFC"));
+  
+  //common control histogram
+  AliFlowCommonHist *commonHists = dynamic_cast<AliFlowCommonHist*>(outputListHistos->FindObject("AliFlowCommonHistGFC"));
+  
+  //profiles with average values of generating functions for int. and diff. flow
+  TProfile2D *intFlowGenFun    = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fIntFlowGenFun")); 
+  
+  TProfile2D *intFlowGenFun4   = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fIntFlowGenFun4"));  //only for other system of Eq.
+  TProfile2D *intFlowGenFun6   = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fIntFlowGenFun6"));  //only for other system of Eq. 
+  TProfile2D *intFlowGenFun8   = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fIntFlowGenFun8"));  //only for other system of Eq.
+  TProfile2D *intFlowGenFun16  = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fIntFlowGenFun16")); //only for other system of Eq.  
+  
+  //RP, Pt:
+  TProfile3D *diffFlowPtRPGenFunRe = dynamic_cast<TProfile3D*>(outputListHistos->FindObject("fDiffFlowPtRPGenFunRe"));
+  TProfile3D *diffFlowPtRPGenFunIm = dynamic_cast<TProfile3D*>(outputListHistos->FindObject("fDiffFlowPtRPGenFunIm"));
+  TProfile *ptBinRPNoOfParticles = dynamic_cast<TProfile*>(outputListHistos->FindObject("fPtBinRPNoOfParticles"));
+  
+  //RP, Eta:
+  TProfile3D *diffFlowEtaRPGenFunRe = dynamic_cast<TProfile3D*>(outputListHistos->FindObject("fDiffFlowEtaRPGenFunRe"));
+  TProfile3D *diffFlowEtaRPGenFunIm = dynamic_cast<TProfile3D*>(outputListHistos->FindObject("fDiffFlowEtaRPGenFunIm"));
+  TProfile *etaBinRPNoOfParticles = dynamic_cast<TProfile*>(outputListHistos->FindObject("fEtaBinRPNoOfParticles"));
+  
+  //POI, Pt:
+  TProfile3D *diffFlowPtPOIGenFunRe = dynamic_cast<TProfile3D*>(outputListHistos->FindObject("fDiffFlowPtPOIGenFunRe"));
+  TProfile3D *diffFlowPtPOIGenFunIm = dynamic_cast<TProfile3D*>(outputListHistos->FindObject("fDiffFlowPtPOIGenFunIm"));
+  TProfile *ptBinPOINoOfParticles = dynamic_cast<TProfile*>(outputListHistos->FindObject("fPtBinPOINoOfParticles"));
+  
+  //POI, Eta:
+  TProfile3D *diffFlowEtaPOIGenFunRe = dynamic_cast<TProfile3D*>(outputListHistos->FindObject("fDiffFlowEtaPOIGenFunRe"));
+  TProfile3D *diffFlowEtaPOIGenFunIm = dynamic_cast<TProfile3D*>(outputListHistos->FindObject("fDiffFlowEtaPOIGenFunIm"));
+  TProfile *etaBinPOINoOfParticles = dynamic_cast<TProfile*>(outputListHistos->FindObject("fEtaBinPOINoOfParticles"));
+  
+  //average selected multiplicity (for int. flow) 
+  TProfile *avMult = dynamic_cast<TProfile*>(outputListHistos->FindObject("fAvMultIntFlowGFC"));
+  
+  TProfile *avMult4  = dynamic_cast<TProfile*>(outputListHistos->FindObject("fAvMultIntFlow4GFCA"));  //only for other system of Eq.
+  TProfile *avMult6  = dynamic_cast<TProfile*>(outputListHistos->FindObject("fAvMultIntFlow6GFCA"));  //only for other system of Eq.
+  TProfile *avMult8  = dynamic_cast<TProfile*>(outputListHistos->FindObject("fAvMultIntFlow8GFCA"));  //only for other system of Eq.
+  TProfile *avMult16 = dynamic_cast<TProfile*>(outputListHistos->FindObject("fAvMultIntFlow16GFCA")); //only for other system of Eq.
+  
+  //average values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
+  TProfile *qVectorComponents = dynamic_cast<TProfile*>(outputListHistos->FindObject("fQVectorComponentsGFC"));
+  
+  //<w^2> 
+  TProfile *averageOfSquaredWeight = dynamic_cast<TProfile*>(outputListHistos->FindObject("fAverageOfSquaredWeight"));
+      
+  /*
+  TProfile2D *diffFlowPtGenFunRe0 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunRe0"));
+  TProfile2D *diffFlowPtGenFunRe1 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunRe1")); 
+  TProfile2D *diffFlowPtGenFunRe2 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunRe2")); 
+  TProfile2D *diffFlowPtGenFunRe3 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunRe3")); 
+  TProfile2D *diffFlowPtGenFunRe4 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunRe4")); 
+  TProfile2D *diffFlowPtGenFunRe5 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunRe5")); 
+  TProfile2D *diffFlowPtGenFunRe6 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunRe6")); 
+  TProfile2D *diffFlowPtGenFunRe7 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunRe7")); 
+  TProfile2D *diffFlowPtGenFunIm0 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunIm0")); 
+  TProfile2D *diffFlowPtGenFunIm1 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunIm1")); 
+  TProfile2D *diffFlowPtGenFunIm2 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunIm2")); 
+  TProfile2D *diffFlowPtGenFunIm3 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunIm3")); 
+  TProfile2D *diffFlowPtGenFunIm4 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunIm4")); 
+  TProfile2D *diffFlowPtGenFunIm5 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunIm5")); 
+  TProfile2D *diffFlowPtGenFunIm6 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunIm6")); 
+  TProfile2D *diffFlowPtGenFunIm7 = dynamic_cast<TProfile2D*>(outputListHistos->FindObject("fdiffFlowPtGenFunIm7")); 
+  */
+
+  //profile with avarage selected multiplicity for int. flow 
+  //TProfile *avMult = dynamic_cast<TProfile*>(outputListHistos->FindObject("fAvMultIntFlow"));
+  
+  //profile with avarage values of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) 
+  //TProfile *QVectorComponents = dynamic_cast<TProfile*>(outputListHistos->FindObject("fQVectorComponents"));
+  
+  //q-distribution
+  //TH1D *qDist = dynamic_cast<TH1D*>(outputListHistos->FindObject("fQDist"));
+  
+  //AliCumulantsFunctions finalResults(intFlowGenFun,NULL,NULL, intFlowResults,diffFlowResults2,diffFlowResults4,diffFlowResults6,diffFlowResults8,avMult,QVectorComponents,qDist,diffFlowPtGenFunRe0,diffFlowPtGenFunRe1,diffFlowPtGenFunRe2, diffFlowPtGenFunRe3,diffFlowPtGenFunRe4,diffFlowPtGenFunRe5,diffFlowPtGenFunRe6,diffFlowPtGenFunRe7,diffFlowPtGenFunIm0,diffFlowPtGenFunIm1, diffFlowPtGenFunIm2,diffFlowPtGenFunIm3,diffFlowPtGenFunIm4,diffFlowPtGenFunIm5,diffFlowPtGenFunIm6,diffFlowPtGenFunIm7);
+  
+  //AliCumulantsFunctions finalResults(intFlowGenFun,diffFlowPtGenFunRe,diffFlowPtGenFunIm, intFlowResults,diffFlowResults2,diffFlowResults4,diffFlowResults6,diffFlowResults8,avMult,QVectorComponents,qDist);
+         
+  //finalResults.Calculate();  
+  
+  //---------------------------------------------------
+  
+  this->SetIntFlowResults(intFlowResults); 
+  this->SetDiffFlowResults2nd(diffFlowResults2);
+  this->SetDiffFlowResults4th(diffFlowResults4);
+  this->SetDiffFlowResults6th(diffFlowResults6);
+  this->SetDiffFlowResults8th(diffFlowResults8); 
+  
+  this->SetCommonHistsResults2nd(commonHistRes2nd); 
+  this->SetCommonHistsResults4th(commonHistRes4th);
+  this->SetCommonHistsResults6th(commonHistRes6th);
+  this->SetCommonHistsResults8th(commonHistRes8th);
+  
+  this->SetCommonHists(commonHists);
+  
+  this->SetIntFlowGenFun(intFlowGenFun);
+  
+  this->SetIntFlowGenFun4(intFlowGenFun4);   //only for other system of Eq.
+  this->SetIntFlowGenFun6(intFlowGenFun6);   //only for other system of Eq.
+  this->SetIntFlowGenFun8(intFlowGenFun8);   //only for other system of Eq.
+  this->SetIntFlowGenFun16(intFlowGenFun16); //only for other system of Eq. 
+  
+  this->SetDiffFlowPtRPGenFunRe(diffFlowPtRPGenFunRe);
+  this->SetDiffFlowPtRPGenFunIm(diffFlowPtRPGenFunIm);
+  this->SetNumberOfParticlesPerPtBinRP(ptBinRPNoOfParticles);
+  
+  this->SetDiffFlowEtaRPGenFunRe(diffFlowEtaRPGenFunRe);
+  this->SetDiffFlowEtaRPGenFunIm(diffFlowEtaRPGenFunIm);
+  this->SetNumberOfParticlesPerEtaBinRP(etaBinRPNoOfParticles);     
+  
+  this->SetDiffFlowPtPOIGenFunRe(diffFlowPtPOIGenFunRe);
+  this->SetDiffFlowPtPOIGenFunIm(diffFlowPtPOIGenFunIm);
+  this->SetNumberOfParticlesPerPtBinPOI(ptBinPOINoOfParticles);
+  
+  this->SetDiffFlowEtaPOIGenFunRe(diffFlowEtaPOIGenFunRe);
+  this->SetDiffFlowEtaPOIGenFunIm(diffFlowEtaPOIGenFunIm);
+  this->SetNumberOfParticlesPerEtaBinPOI(etaBinPOINoOfParticles);
+  
+  this->SetAverageMultiplicity(avMult);
+  
+  this->SetAverageMultiplicity4(avMult4);   //only for other system of Eq.
+  this->SetAverageMultiplicity6(avMult6);   //only for other system of Eq.
+  this->SetAverageMultiplicity8(avMult8);   //only for other system of Eq.
+  this->SetAverageMultiplicity16(avMult16); //only for other system of Eq.
+  
+  this->SetQVectorComponents(qVectorComponents);
+  
+  this->SetAverageOfSquaredWeight(averageOfSquaredWeight);
+ } 
+}
+
+//================================================================================================================
+
 void AliFlowAnalysisWithCumulants::Finish()
 {
  //calculate the final results

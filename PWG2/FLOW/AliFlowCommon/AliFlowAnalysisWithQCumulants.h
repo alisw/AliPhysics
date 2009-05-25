@@ -53,6 +53,7 @@ class AliFlowAnalysisWithQCumulants{
   virtual void EvaluateNestedLoopsForIntegratedFlow(AliFlowEventSimple* anEvent); 
   virtual void EvaluateNestedLoopsForDifferentialFlow(AliFlowEventSimple* anEvent); 
   
+  virtual void GetOutputHistograms(TList *outputListHistos); // get pointers to all output histograms (called before Finish()) 
   virtual void Finish();
   
   TProfile* MakePtProjection(TProfile2D *profilePtEta) const;
