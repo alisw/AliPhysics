@@ -41,6 +41,7 @@ class AliFlowAnalysisWithCumulants{
   
   virtual void Init();
   virtual void Make(AliFlowEventSimple* anEvent);
+  virtual void GetOutputHistograms(TList *outputListHistos); //get pointers to all output histograms (called before Finish()) 
   virtual void Finish();
   virtual void WriteHistograms(TString* outputFileName);
   virtual void WriteHistograms(TString outputFileName);

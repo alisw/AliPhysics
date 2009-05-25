@@ -163,6 +163,39 @@ void AliFittingQDistribution::Make(AliFlowEventSimple* anEvent)
 
 //================================================================================================================
 
+void AliFittingQDistribution::GetOutputHistograms(TList *outputListHistos) 
+{
+ // get pointers to all output histograms (called before Finish()) 
+ if(outputListHistos)   
+ {   
+  //final results (integrated flow)
+  TH1D *intFlowResults = dynamic_cast<TH1D*>(outputListHistos->FindObject("fIntFlowResultsFQD")); 
+    
+  //sigma^2
+  TH1D *sigma2 = dynamic_cast<TH1D*>(outputListHistos->FindObject("fSigma2")); 
+    
+  //common histograms to store the final results for the integrated flow
+  AliFlowCommonHistResults *commonHistRes = dynamic_cast<AliFlowCommonHistResults*>(outputListHistos->FindObject("AliFlowCommonHistResultsFQD"));
+    
+  //average selected multiplicity (for int. flow)    
+  TProfile *AvMult = dynamic_cast<TProfile*>(outputListHistos->FindObject("fAvMultIntFlowFQD"));
+    
+  //q-distribution
+  TH1D *qDist = dynamic_cast<TH1D*>(outputListHistos->FindObject("fQDistributionFQD"));
+    
+  //----------------------------------------------------
+    
+  this->SetIntFlowResults(intFlowResults);
+  this->SetSigma2(sigma2); 
+  this->SetCommonHistsResults(commonHistRes); 
+    
+  this->SetAverageMultiplicity(AvMult);
+  this->SetQDistribution(qDist); 
+ }   
+}
+
+//================================================================================================================
+
 void AliFittingQDistribution::Finish()
 {
  //calculate the final results

@@ -449,9 +449,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // MCEP:
  TGraph* mcepTGraphNONAME = new TGraph(nPoints, mcepNONAME, mcepValueNONAME);
- mcepTGraphNONAME->SetMarkerStyle(25);
+ mcepTGraphNONAME->SetMarkerStyle(21);
  mcepTGraphNONAME->SetMarkerColor(kBlack); 
- mcepTGraphNONAME->SetMarkerSize(0.25); 
+ mcepTGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *mcepBoxNONAME = new TGraph(5);
  mcepBoxNONAME->SetPoint(1,(binMCEP-0.5)-boxWidth,mcepMinValueNONAME);
@@ -464,9 +464,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
   
  // SP:
  TGraph* spTGraphNONAME = new TGraph(nPoints, spNONAME, spValueNONAME);
- spTGraphNONAME->SetMarkerStyle(25);
+ spTGraphNONAME->SetMarkerStyle(21);
  spTGraphNONAME->SetMarkerColor(kViolet+3); 
- spTGraphNONAME->SetMarkerSize(0.25); 
+ spTGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *spBoxNONAME = new TGraph(5);
  spBoxNONAME->SetPoint(1,(binSP-0.5)-boxWidth,spMinValueNONAME);
@@ -479,9 +479,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // GFC{2}:
  TGraph* gfc2TGraphNONAME = new TGraph(nPoints, gfc2NONAME, gfc2ValueNONAME);
- gfc2TGraphNONAME->SetMarkerStyle(25);
+ gfc2TGraphNONAME->SetMarkerStyle(21);
  gfc2TGraphNONAME->SetMarkerColor(kBlue);
- gfc2TGraphNONAME->SetMarkerSize(0.25); 
+ gfc2TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *gfc2BoxNONAME = new TGraph(5);
  gfc2BoxNONAME->SetPoint(1,(binGFC2-0.5)-boxWidth,gfc2MinValueNONAME);
@@ -494,9 +494,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // GFC{4}:
  TGraph* gfc4TGraphNONAME = new TGraph(nPoints, gfc4NONAME, gfc4ValueNONAME);
- gfc4TGraphNONAME->SetMarkerStyle(25);
+ gfc4TGraphNONAME->SetMarkerStyle(21);
  gfc4TGraphNONAME->SetMarkerColor(kBlue); 
- gfc4TGraphNONAME->SetMarkerSize(0.25); 
+ gfc4TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *gfc4BoxNONAME = new TGraph(5);
  gfc4BoxNONAME->SetPoint(1,(binGFC4-0.5)-boxWidth,gfc4MinValueNONAME);
@@ -509,9 +509,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
 
  // GFC{6}:
  TGraph* gfc6TGraphNONAME = new TGraph(nPoints, gfc6NONAME, gfc6ValueNONAME);
- gfc6TGraphNONAME->SetMarkerStyle(25);
+ gfc6TGraphNONAME->SetMarkerStyle(21);
  gfc6TGraphNONAME->SetMarkerColor(kBlue); 
- gfc6TGraphNONAME->SetMarkerSize(0.25); 
+ gfc6TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *gfc6BoxNONAME = new TGraph(5);
  gfc6BoxNONAME->SetPoint(1,(binGFC6-0.5)-boxWidth,gfc6MinValueNONAME);
@@ -524,9 +524,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
 
  // GFC{8}:
  TGraph* gfc8TGraphNONAME = new TGraph(nPoints, gfc8NONAME, gfc8ValueNONAME);
- gfc8TGraphNONAME->SetMarkerStyle(25);
+ gfc8TGraphNONAME->SetMarkerStyle(21);
  gfc8TGraphNONAME->SetMarkerColor(kBlue); 
- gfc8TGraphNONAME->SetMarkerSize(0.25); 
+ gfc8TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *gfc8BoxNONAME = new TGraph(5);
  gfc8BoxNONAME->SetPoint(1,(binGFC8-0.5)-boxWidth,gfc8MinValueNONAME);
@@ -539,9 +539,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // QC{2}:
  TGraph* qc2TGraphNONAME = new TGraph(nPoints, qc2NONAME, qc2ValueNONAME);
- qc2TGraphNONAME->SetMarkerStyle(25);
+ qc2TGraphNONAME->SetMarkerStyle(21);
  qc2TGraphNONAME->SetMarkerColor(kRed); 
- qc2TGraphNONAME->SetMarkerSize(0.25); 
+ qc2TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *qc2BoxNONAME = new TGraph(5);
  qc2BoxNONAME->SetPoint(1,(binQC2-0.5)-boxWidth,qc2MinValueNONAME);
@@ -554,9 +554,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // QC{4}:
  TGraph* qc4TGraphNONAME = new TGraph(nPoints, qc4NONAME, qc4ValueNONAME);
- qc4TGraphNONAME->SetMarkerStyle(25);
+ qc4TGraphNONAME->SetMarkerStyle(21);
  qc4TGraphNONAME->SetMarkerColor(kRed); 
- qc4TGraphNONAME->SetMarkerSize(0.25); 
+ qc4TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *qc4BoxNONAME = new TGraph(5);
  qc4BoxNONAME->SetPoint(1,(binQC4-0.5)-boxWidth,qc4MinValueNONAME);
@@ -569,9 +569,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
 
  // QC{6}:
  TGraph* qc6TGraphNONAME = new TGraph(nPoints, qc6NONAME, qc6ValueNONAME);
- qc6TGraphNONAME->SetMarkerStyle(25);
+ qc6TGraphNONAME->SetMarkerStyle(21);
  qc6TGraphNONAME->SetMarkerColor(kRed); 
- qc6TGraphNONAME->SetMarkerSize(0.25); 
+ qc6TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *qc6BoxNONAME = new TGraph(5);
  qc6BoxNONAME->SetPoint(1,(binQC6-0.5)-boxWidth,qc6MinValueNONAME);
@@ -584,9 +584,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
 
  // QC{8}:
  TGraph* qc8TGraphNONAME = new TGraph(nPoints, qc8NONAME, qc8ValueNONAME);
- qc8TGraphNONAME->SetMarkerStyle(25);
+ qc8TGraphNONAME->SetMarkerStyle(21);
  qc8TGraphNONAME->SetMarkerColor(kRed); 
- qc8TGraphNONAME->SetMarkerSize(0.25); 
+ qc8TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *qc8BoxNONAME = new TGraph(5);
  qc8BoxNONAME->SetPoint(1,(binQC8-0.5)-boxWidth,qc8MinValueNONAME);
@@ -599,9 +599,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // FQD:
  TGraph* fqdTGraphNONAME = new TGraph(nPoints, fqdNONAME, fqdValueNONAME);
- fqdTGraphNONAME->SetMarkerStyle(25);
+ fqdTGraphNONAME->SetMarkerStyle(21);
  fqdTGraphNONAME->SetMarkerColor(kOrange+7); 
- fqdTGraphNONAME->SetMarkerSize(0.25); 
+ fqdTGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *fqdBoxNONAME = new TGraph(5);
  fqdBoxNONAME->SetPoint(1,(binFQD-0.5)-boxWidth,fqdMinValueNONAME);
@@ -614,9 +614,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  
  // LYZ1:
  TGraph* lyz1TGraphNONAME = new TGraph(nPoints, lyz1NONAME, lyz1ValueNONAME);
- lyz1TGraphNONAME->SetMarkerStyle(25);
+ lyz1TGraphNONAME->SetMarkerStyle(21);
  lyz1TGraphNONAME->SetMarkerColor(kYellow+3); 
- lyz1TGraphNONAME->SetMarkerSize(0.25); 
+ lyz1TGraphNONAME->SetMarkerSize(0.75); 
   
  TGraph *lyz1BoxNONAME = new TGraph(5);
  lyz1BoxNONAME->SetPoint(1,(binLYZ1-0.5)-boxWidth,lyz1MinValueNONAME);
@@ -629,9 +629,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
    
  // LYZEP:
  TGraph* lyzepTGraphNONAME = new TGraph(nPoints, lyzepNONAME, lyzepValueNONAME);
- lyzepTGraphNONAME->SetMarkerStyle(25);
+ lyzepTGraphNONAME->SetMarkerStyle(21);
  lyzepTGraphNONAME->SetMarkerColor(kGreen+3); 
- lyzepTGraphNONAME->SetMarkerSize(0.25); 
+ lyzepTGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *lyzepBoxNONAME = new TGraph(5);
  lyzepBoxNONAME->SetPoint(1,(binLYZEP-0.5)-boxWidth,lyzepMinValueNONAME);
@@ -888,7 +888,295 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  if(textDefaultNONAME) textDefaultNONAME->Draw();
  if(textResultsNONAME) textResultsNONAME->Draw();
  
+
+
+
+
+
+
+
+
+// ===============================================================================================
+//                  calculate results from the merged ouput for each method
+// ===============================================================================================
+
+ TString pwd;
+ 
+ (intFlowCanvasNONAME->cd(1))->SetPad(0.0,0.0,0.75,1.0); // to be improved
+
+ // MCEP:
+ TString mergedFileNameMCEP("outputMCEPanalysis.root");
+ TFile* fileMCEP = NULL;
+ TList *listHistosMCEP = NULL;
+ AliFlowAnalysisWithMCEventPlane* mcep = new AliFlowAnalysisWithMCEventPlane();
+ AliFlowCommonHistResults *mcepCommonHistRes = NULL; 
+ TGraph *meanValueMCEP = new TGraph(1);
+ pwd = gSystem->pwd();
+ 
+ if(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameMCEP).Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file for MCEP !!!!"<<endl;
+ } else
+   { 
+    fileMCEP = TFile::Open(mergedFileNameMCEP.Data(),"UPDATE");
+    if(fileMCEP) fileMCEP->GetObject("cobjMCEP",listHistosMCEP);
+    if(listHistosMCEP) mcep->GetOutputHistograms(listHistosMCEP);
+    mcep->Finish(); 
+    mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listHistosMCEP->FindObject("AliFlowCommonHistResultsMCEP")); 
+    if(mcepCommonHistRes) 
+    {
+     meanValueMCEP->SetPoint(1,binMCEP-0.5,(mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1));
+     meanValueMCEP->SetMarkerStyle(25);
+     meanValueMCEP->SetMarkerColor(kBlack); 
+     meanValueMCEP->SetMarkerSize(1.25); 
+     meanValueMCEP->Draw("PSAME");
+    } 
+    fileMCEP->Close();
+    fileMCEP = TFile::Open(mergedFileNameMCEP.Data(),"RECREATE");
+    listHistosMCEP->SetName("cobjMCEP");
+    listHistosMCEP->Write(listHistosMCEP->GetName(), TObject::kSingleKey);
+   }
+   
+ // SP:
+ TString mergedFileNameSP("outputSPanalysis.root");
+ TFile* fileSP = NULL;
+ TList *listHistosSP = NULL;
+ AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
+ AliFlowCommonHistResults *spCommonHistRes = NULL; 
+ TGraph *meanValueSP = new TGraph(1);
+ pwd = gSystem->pwd();
+ 
+ if(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameSP).Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file for SP !!!!"<<endl;
+ } else
+   { 
+    fileSP = TFile::Open(mergedFileNameSP.Data(),"UPDATE");
+    if(fileSP) fileSP->GetObject("cobjSP",listHistosSP);
+    if(listHistosSP) sp->GetOutputHistograms(listHistosSP);
+    sp->Finish(); 
+    spCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listHistosSP->FindObject("AliFlowCommonHistResultsSP")); 
+    if(spCommonHistRes) 
+    {
+     meanValueSP->SetPoint(1,binSP-0.5,(spCommonHistRes->GetHistIntFlow())->GetBinContent(1));
+     meanValueSP->SetMarkerStyle(25);
+     meanValueSP->SetMarkerColor(kViolet+3); 
+     meanValueSP->SetMarkerSize(1.25); 
+     meanValueSP->Draw("PSAME");
+    } 
+    fileSP->Close();
+    fileSP = TFile::Open(mergedFileNameSP.Data(),"RECREATE");
+    listHistosSP->SetName("cobjSP");
+    listHistosSP->Write(listHistosSP->GetName(), TObject::kSingleKey);
+   }
+ 
+ // GFC:
+ TString mergedFileNameGFC("outputGFCanalysis.root");
+ TFile* fileGFC = NULL;
+ TList *listHistosGFC = NULL;
+ AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants(); 
+ AliFlowCommonHistResults *gfc2CommonHistRes = NULL; 
+ AliFlowCommonHistResults *gfc4CommonHistRes = NULL; 
+ AliFlowCommonHistResults *gfc6CommonHistRes = NULL; 
+ AliFlowCommonHistResults *gfc8CommonHistRes = NULL; 
+ TGraph *meanValueGFC2 = new TGraph(1);
+ TGraph *meanValueGFC4 = new TGraph(1);
+ TGraph *meanValueGFC6 = new TGraph(1);
+ TGraph *meanValueGFC8 = new TGraph(1);
+ pwd = gSystem->pwd();
+ 
+ if(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameGFC).Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file for GFC !!!!"<<endl;
+ } else
+   { 
+    fileGFC = TFile::Open(mergedFileNameGFC.Data(),"UPDATE");
+    if(fileGFC) fileGFC->GetObject("cobjGFC",listHistosGFC);
+    if(listHistosGFC) gfc->GetOutputHistograms(listHistosGFC);
+    gfc->Finish(); 
+    gfc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC")); 
+    gfc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults4thOrderGFC")); 
+    gfc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults6thOrderGFC")); 
+    gfc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults8thOrderGFC")); 
+    if(gfc2CommonHistRes) 
+    {
+     meanValueGFC2->SetPoint(1,binGFC2-0.5,(gfc2CommonHistRes->GetHistIntFlow())->GetBinContent(1));
+     meanValueGFC2->SetMarkerStyle(25);
+     meanValueGFC2->SetMarkerColor(kBlue); 
+     meanValueGFC2->SetMarkerSize(1.25); 
+     meanValueGFC2->Draw("PSAME");
+    } 
+    if(gfc4CommonHistRes) 
+    {
+     meanValueGFC4->SetPoint(1,binGFC4-0.5,(gfc4CommonHistRes->GetHistIntFlow())->GetBinContent(1));
+     meanValueGFC4->SetMarkerStyle(25);
+     meanValueGFC4->SetMarkerColor(kBlue); 
+     meanValueGFC4->SetMarkerSize(1.25); 
+     meanValueGFC4->Draw("PSAME");
+    } 
+    if(gfc6CommonHistRes) 
+    {
+     meanValueGFC6->SetPoint(1,binGFC6-0.5,(gfc6CommonHistRes->GetHistIntFlow())->GetBinContent(1));
+     meanValueGFC6->SetMarkerStyle(25);
+     meanValueGFC6->SetMarkerColor(kBlue); 
+     meanValueGFC6->SetMarkerSize(1.25); 
+     meanValueGFC6->Draw("PSAME");
+    } 
+    if(gfc8CommonHistRes) 
+    {
+     meanValueGFC8->SetPoint(1,binGFC8-0.5,(gfc8CommonHistRes->GetHistIntFlow())->GetBinContent(1));
+     meanValueGFC8->SetMarkerStyle(25);
+     meanValueGFC8->SetMarkerColor(kBlue); 
+     meanValueGFC8->SetMarkerSize(1.25); 
+     meanValueGFC8->Draw("PSAME");
+    } 
+    fileGFC->Close();
+    fileGFC = TFile::Open(mergedFileNameGFC.Data(),"RECREATE");
+    listHistosGFC->SetName("cobjGFC");
+    listHistosGFC->Write(listHistosGFC->GetName(), TObject::kSingleKey);
+   }
+  
+ // QC:
+ TString mergedFileNameQC("outputQCanalysis.root");
+ TFile* fileQC = NULL;
+ TList *listHistosQC = NULL;
+ AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants(); 
+ AliFlowCommonHistResults *qc2CommonHistRes = NULL; 
+ AliFlowCommonHistResults *qc4CommonHistRes = NULL; 
+ AliFlowCommonHistResults *qc6CommonHistRes = NULL; 
+ AliFlowCommonHistResults *qc8CommonHistRes = NULL; 
+ TGraph *meanValueQC2 = new TGraph(1);
+ TGraph *meanValueQC4 = new TGraph(1);
+ TGraph *meanValueQC6 = new TGraph(1);
+ TGraph *meanValueQC8 = new TGraph(1);
+ pwd = gSystem->pwd();
+ 
+ if(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameQC).Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file for QC !!!!"<<endl;
+ } else
+   { 
+    fileQC = TFile::Open(mergedFileNameQC.Data(),"UPDATE");
+    if(fileQC) fileQC->GetObject("cobjQC",listHistosQC);
+    if(listHistosQC) qc->GetOutputHistograms(listHistosQC);
+    qc->Finish(); 
+    qc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults2ndOrderQC")); 
+    qc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults4thOrderQC")); 
+    qc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults6thOrderQC")); 
+    qc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults8thOrderQC")); 
+    if(qc2CommonHistRes) 
+    {
+     meanValueQC2->SetPoint(1,binQC2-0.5,(qc2CommonHistRes->GetHistIntFlow())->GetBinContent(1));
+     meanValueQC2->SetMarkerStyle(25);
+     meanValueQC2->SetMarkerColor(kRed); 
+     meanValueQC2->SetMarkerSize(1.25); 
+     meanValueQC2->Draw("PSAME");
+    } 
+    if(qc4CommonHistRes) 
+    {
+     meanValueQC4->SetPoint(1,binQC4-0.5,(qc4CommonHistRes->GetHistIntFlow())->GetBinContent(1));
+     meanValueQC4->SetMarkerStyle(25);
+     meanValueQC4->SetMarkerColor(kRed); 
+     meanValueQC4->SetMarkerSize(1.25); 
+     meanValueQC4->Draw("PSAME");
+    } 
+    if(qc6CommonHistRes) 
+    {
+     meanValueQC6->SetPoint(1,binQC6-0.5,(qc6CommonHistRes->GetHistIntFlow())->GetBinContent(1));
+     meanValueQC6->SetMarkerStyle(25);
+     meanValueQC6->SetMarkerColor(kRed); 
+     meanValueQC6->SetMarkerSize(1.25); 
+     meanValueQC6->Draw("PSAME");
+    } 
+    if(qc8CommonHistRes) 
+    {
+     meanValueQC8->SetPoint(1,binQC8-0.5,(qc8CommonHistRes->GetHistIntFlow())->GetBinContent(1));
+     meanValueQC8->SetMarkerStyle(25);
+     meanValueQC8->SetMarkerColor(kRed); 
+     meanValueQC8->SetMarkerSize(1.25); 
+     meanValueQC8->Draw("PSAME");
+    } 
+    fileQC->Close();
+    fileQC = TFile::Open(mergedFileNameQC.Data(),"RECREATE");
+    listHistosQC->SetName("cobjQC");
+    listHistosQC->Write(listHistosGFC->GetName(), TObject::kSingleKey);
+   }
+  
+ // FQD:
+ TString mergedFileNameFQD("outputFQDanalysis.root");
+ TFile* fileFQD = NULL;
+ TList *listHistosFQD = NULL;
+ AliFittingQDistribution* fqd = new AliFittingQDistribution();
+ AliFlowCommonHistResults *fqdCommonHistRes = NULL; 
+ TGraph *meanValueFQD = new TGraph(1);
+ pwd = gSystem->pwd();
+ 
+ if(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameFQD).Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file for FQD !!!!"<<endl;
+ } else
+   { 
+    fileFQD = TFile::Open(mergedFileNameFQD.Data(),"UPDATE");
+    if(fileFQD) fileFQD->GetObject("cobjFQD",listHistosFQD);
+    if(listHistosFQD) fqd->GetOutputHistograms(listHistosFQD);
+    fqd->Finish(); 
+    fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listHistosFQD->FindObject("AliFlowCommonHistResultsFQD")); 
+    if(fqdCommonHistRes) 
+    {
+     meanValueFQD->SetPoint(1,binFQD-0.5,(fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1));
+     meanValueFQD->SetMarkerStyle(25);
+     meanValueFQD->SetMarkerColor(kOrange+7); 
+     meanValueFQD->SetMarkerSize(1.25); 
+     meanValueFQD->Draw("PSAME");
+    } 
+    fileFQD->Close();
+    fileFQD = TFile::Open(mergedFileNameFQD.Data(),"RECREATE");
+    listHistosFQD->SetName("cobjFQD");
+    listHistosFQD->Write(listHistosFQD->GetName(), TObject::kSingleKey);
+   }
+  
+ /*   
+ // LYZEP:
+ TString mergedFileNameLYZEP("outputLYZEPanalysis.root");
+ TFile* fileLYZEP = NULL;
+ TList *listHistosLYZEP = NULL;
+ AliFlowAnalysisWithLYZEventPlane* LYZEP = new AliFlowAnalysisWithLYZEventPlane();
+ pwd = gSystem->pwd();
+ 
+ if(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameLYZEP).Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file for LYZEP !!!!"<<endl;
+ } else
+   { 
+    fileLYZEP = TFile::Open(mergedFileNameLYZEP.Data(),"UPDATE");
+    if(fileLYZEP) fileLYZEP->GetObject("cobjLYZEP",listHistosLYZEP);
+    if(listHistosLYZEP) LYZEP->GetOutputHistograms(listHistosLYZEP);
+    LYZEP->Finish(); 
+    fileLYZEP->Close();
+    fileLYZEP = TFile::Open(mergedFileNameLYZEP.Data(),"RECREATE");
+    listHistosLYZEP->SetName("cobjLYZEP");
+    listHistosLYZEP->Write(listHistosLYZEP->GetName(), TObject::kSingleKey);
+   }
+ */  
+  
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void LoadSpreadLibraries(const libModes mode) {

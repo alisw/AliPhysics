@@ -33,11 +33,12 @@ class AliFlowAnalysisWithScalarProduct {
  
    virtual  ~AliFlowAnalysisWithScalarProduct();  //destructor
  
-   void    Init();                                   //defines variables and histograms
-   void    Make(AliFlowEventSimple* anEvent);        //calculates variables and fills histograms
-   void    Finish();                                 //saves histograms
-   void    WriteHistograms(TString* outputFileName); //writes histograms locally
-   void    WriteHistograms(TString outputFileName);  //writes histograms locally
+   void    Init();                                       //defines variables and histograms
+   void    Make(AliFlowEventSimple* anEvent);            //calculates variables and fills histograms
+   void    GetOutputHistograms(TList *outputListHistos); //get pointers to all output histograms (called before Finish()) 
+   void    Finish();                                     //saves histograms
+   void    WriteHistograms(TString* outputFileName);     //writes histograms locally
+   void    WriteHistograms(TString outputFileName);      //writes histograms locally
 
    void      SetDebug(Bool_t kt)   { this->fDebug = kt ; }
    Bool_t    GetDebug() const      { return this->fDebug ; }

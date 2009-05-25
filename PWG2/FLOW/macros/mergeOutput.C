@@ -190,9 +190,9 @@ void mergeOutput(const Int_t nRuns=-1, TString type="",Int_t mode=mLocal)
  gfcFileMerger->Merge();
  qcFileMerger->Merge();
  fqdFileMerger->Merge();
- lyz1FileMerger->Merge();
- lyz2FileMerger->Merge();
- lyzepFileMerger->Merge();
+ //lyz1FileMerger->Merge();
+ //lyz2FileMerger->Merge();
+ //lyzepFileMerger->Merge();
 }
 
 

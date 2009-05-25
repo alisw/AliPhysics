@@ -211,7 +211,37 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
   }
 }
 
-  //--------------------------------------------------------------------    
+  //--------------------------------------------------------------------  
+void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHistos){
+  
+  //get pointers to all output histograms (called before Finish())
+  if (outputListHistos) {
+  //Get the common histograms from the output list
+    AliFlowCommonHist *pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+      (outputListHistos->FindObject("AliFlowCommonHistSP"));
+    AliFlowCommonHistResults *pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+      (outputListHistos->FindObject("AliFlowCommonHistResultsSP"));
+    TProfile* pHistProQaQb     = dynamic_cast<TProfile*>(outputListHistos->FindObject("Flow_QaQb_SP"));
+    TProfile* pHistProM        = dynamic_cast<TProfile*>(outputListHistos->FindObject("Flow_M_SP"));
+    TProfile* pHistProUQetaRP  = dynamic_cast<TProfile*>(outputListHistos->FindObject("Flow_UQetaRP_SP"));
+    TProfile* pHistProUQetaPOI = dynamic_cast<TProfile*>(outputListHistos->FindObject("Flow_UQetaPOI_SP"));
+    TProfile* pHistProUQPtRP   = dynamic_cast<TProfile*>(outputListHistos->FindObject("Flow_UQPtRP_SP"));
+    TProfile* pHistProUQPtPOI  = dynamic_cast<TProfile*>(outputListHistos->FindObject("Flow_UQPtPOI_SP"));
+    if (pCommonHist && pCommonHistResults && pHistProQaQb && pHistProM &&
+	pHistProUQetaRP	&& pHistProUQetaPOI && pHistProUQPtRP && pHistProUQPtPOI) {
+      this -> SetCommonHists(pCommonHist);
+      this -> SetCommonHistsRes(pCommonHistResults);
+      this -> SetHistProQaQb(pHistProQaQb);
+      this -> SetHistProM(pHistProM);
+      this -> SetHistProUQetaRP(pHistProUQetaRP);
+      this -> SetHistProUQetaPOI(pHistProUQetaPOI);
+      this -> SetHistProUQPtRP(pHistProUQPtRP);
+      this -> SetHistProUQPtPOI(pHistProUQPtPOI);
+      }  
+   }
+}            
+
+//--------------------------------------------------------------------            
 void AliFlowAnalysisWithScalarProduct::Finish() {
    
   //calculate flow and fill the AliFlowCommonHistResults

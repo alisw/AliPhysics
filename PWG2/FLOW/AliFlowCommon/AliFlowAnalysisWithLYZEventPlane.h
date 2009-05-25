@@ -34,6 +34,7 @@ class AliFlowAnalysisWithLYZEventPlane {
   
   virtual void   Init();
   virtual void   Make(AliFlowEventSimple* fEvent, AliFlowLYZEventPlane* fLYZEP);
+  virtual void   GetOutputHistograms(TList *outputListHistos); //get pointers to all output histograms (called before Finish()) 
   virtual void   Finish();
   void           WriteHistograms(TString* outputFileName);
   void           WriteHistograms(TString outputFileName);

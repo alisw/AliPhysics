@@ -154,40 +154,16 @@ void AliAnalysisTaskFittingQDistribution::Terminate(Option_t *)
   fListHistos = (TList*)GetOutputData(0);
   //fListHistos->Print();
   
-  if(fListHistos) {	    
-    //final results (integrated flow)
-    TH1D *intFlowResults = dynamic_cast<TH1D*>(fListHistos->FindObject("fIntFlowResultsFQD")); 
-    
-    //sigma^2
-    TH1D *sigma2 = dynamic_cast<TH1D*>(fListHistos->FindObject("fSigma2")); 
-    
-    //common histograms to store the final results for the integrated flow
-    AliFlowCommonHistResults *commonHistRes = dynamic_cast<AliFlowCommonHistResults*>(fListHistos->FindObject("AliFlowCommonHistResultsFQD"));
-    
-    //average selected multiplicity (for int. flow) 
-    TProfile *AvMult = dynamic_cast<TProfile*>(fListHistos->FindObject("fAvMultIntFlowFQD"));
-    
-    //q-distribution
-    TH1D *qDist = dynamic_cast<TH1D*>(fListHistos->FindObject("fQDistributionFQD"));
-    
-    //----------------------------------------------------
-    
-    fFQDA = new AliFittingQDistribution();
-    
-    fFQDA->SetIntFlowResults(intFlowResults);
-    fFQDA->SetSigma2(sigma2); 
-    fFQDA->SetCommonHistsResults(commonHistRes); 
-    
-    fFQDA->SetAverageMultiplicity(AvMult);
-    fFQDA->SetQDistribution(qDist); 
-    
-    fFQDA->Finish();  
-    
-    //----------------------------------------------------      
-  }
-  else {
-    cout<<"histogram list pointer is empty"<<endl;
-  }
+  fFQDA = new AliFittingQDistribution();
+  
+  if(fListHistos) 
+  {	     
+   fFQDA->GetOutputHistograms(fListHistos);
+   fFQDA->Finish();  
+  } else 
+    {
+     cout<<"histogram list pointer is empty"<<endl;
+    }
 }
 
 //================================================================================================================

@@ -303,6 +303,48 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlow
 }
 
   //--------------------------------------------------------------------    
+void AliFlowAnalysisWithLYZEventPlane::GetOutputHistograms(TList *outputListHistos){
+ //get pointers to all output histograms (called before Finish()) 
+ if (outputListHistos) {
+    //Get the common histograms from the output list
+    AliFlowCommonHist *pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+      (outputListHistos->FindObject("AliFlowCommonHistLYZEP"));
+    AliFlowCommonHistResults *pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+      (outputListHistos->FindObject("AliFlowCommonHistResultsLYZEP"));
+
+    TProfile* pHistProR0theta = dynamic_cast<TProfile*> 
+      (outputListHistos->FindObject("First_FlowPro_r0theta_LYZ"));
+
+    TProfile* pHistProVetaRP = dynamic_cast<TProfile*> 
+      (outputListHistos->FindObject("FlowPro_VetaRP_LYZEP"));
+    TProfile* pHistProVetaPOI = dynamic_cast<TProfile*> 
+      (outputListHistos->FindObject("FlowPro_VetaPOI_LYZEP"));
+    TProfile* pHistProVPtRP = dynamic_cast<TProfile*> 
+      (outputListHistos->FindObject("FlowPro_VPtRP_LYZEP"));
+    TProfile* pHistProVPtPOI = dynamic_cast<TProfile*> 
+      (outputListHistos->FindObject("FlowPro_VPtPOI_LYZEP"));
+
+    TH1F* pHistQsumforChi = dynamic_cast<TH1F*> 
+      (outputListHistos->FindObject("Flow_QsumforChi_LYZEP"));
+
+    if (pCommonHist && pCommonHistResults && pHistProR0theta &&
+	pHistProVetaRP && pHistProVetaPOI && pHistProVPtRP && 
+	pHistProVPtPOI && pHistQsumforChi ) {
+      this -> SetCommonHists(pCommonHist);
+      this -> SetCommonHistsRes(pCommonHistResults);
+      this -> SetFirstr0theta(pHistProR0theta);
+      this -> SetHistProVetaRP(pHistProVetaRP);
+      this -> SetHistProVetaPOI(pHistProVetaPOI);
+      this -> SetHistProVPtRP(pHistProVPtRP);
+      this -> SetHistProVPtPOI(pHistProVPtPOI);
+      this -> SetHistQsumforChi(pHistQsumforChi);
+     }  
+  } else { 
+      cout<<"WARNING: Histograms needed to run Finish() are not accessable!"<<endl; 
+    }    
+}
+
+  //--------------------------------------------------------------------    
 void AliFlowAnalysisWithLYZEventPlane::Finish() {
    
   //plot histograms etc. 
