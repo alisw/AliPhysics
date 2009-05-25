@@ -38,7 +38,7 @@
 #include "AliTOFRawStream.h"
 #include "AliTOFrawData.h"
 #include "AliTOFGeometry.h"
-#include "AliTOFDigit.h"
+#include "AliTOFdigit.h"
 
 ClassImp(AliTOFQADataMakerRec)
            

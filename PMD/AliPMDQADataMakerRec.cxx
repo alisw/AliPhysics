@@ -35,7 +35,7 @@
 #include "AliLog.h"
 #include "AliPMDQADataMakerRec.h"
 #include "AliQAChecker.h"
-#include "AliPMDDigit.h" 
+#include "AliPMDdigit.h" 
 #include "AliPMDrecpoint1.h" 
 #include "AliPMDRawStream.h"
 #include "AliPMDddldata.h"

@@ -40,7 +40,6 @@
 #include "AliLog.h"
 #include "AliACORDEdigit.h" 
 #include "AliACORDEhit.h"
-#include "AliACORDEDigit.h"
 #include "AliACORDEQADataMakerRec.h"
 #include "AliQAChecker.h"
 #include "AliACORDERawReader.h"

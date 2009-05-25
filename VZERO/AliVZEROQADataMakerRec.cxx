@@ -41,7 +41,7 @@
 #include "AliQAChecker.h"
 #include "AliRawReader.h"
 #include "AliVZERORawStream.h"
-#include "AliVZERODigit.h"
+#include "AliVZEROdigit.h"
 #include "AliVZEROReconstructor.h"
 #include "event.h"
 

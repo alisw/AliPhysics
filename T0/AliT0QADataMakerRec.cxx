@@ -35,7 +35,6 @@
 #include "AliT0digit.h" 
 #include "AliT0hit.h"
 #include "AliT0RecPoint.h"
-#include "AliT0Digit.h"
 #include "AliT0QADataMakerRec.h"
 #include "AliQAChecker.h"
 #include "AliT0RawReader.h"

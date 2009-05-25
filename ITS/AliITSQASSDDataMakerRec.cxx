@@ -42,7 +42,7 @@
 #include "AliITSgeomTGeo.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliITSRecPoint.h"
-#include "AliITSDigit.h"
+#include "AliITSdigit.h"
 #include "AliITSBadChannelsSSDv2.h"
 
 #include "AliCDBManager.h"

@@ -46,7 +46,7 @@
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSDDCompressed.h"
 #include "AliITSDetTypeRec.h"
-#include "AliITSDigit.h"
+#include "AliITSdigit.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSHLTforSDD.h"

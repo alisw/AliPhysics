@@ -39,7 +39,7 @@
 #include "AliRawReader.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSPDErrorLog.h"
-#include "AliITSDigit.h"
+#include "AliITSdigit.h"
 #include "AliITSRecPoint.h"
 
 ClassImp(AliITSQASPDDataMakerRec)
