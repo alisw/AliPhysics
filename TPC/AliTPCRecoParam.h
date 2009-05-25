@@ -56,7 +56,25 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   // Correction setup
   //
+  void  SetUseFieldCorrection(Int_t flag){fUseFieldCorrection=flag;}
+  void  SetUseRPHICorrection(Int_t flag){fUseRPHICorrection=flag;}
+  void  SetUseRadialCorrection(Int_t flag){fUseRadialCorrection=flag;}
+  void  SetUseQuadrantAlignment(Int_t flag){fUseQuadrantAlignment=flag;}
+  void  SetUseSectorAlignment(Int_t flag){fUseSectorAlignment=flag;}
+  void  SetUseDriftCorrectionTime(Int_t flag){fUseDriftCorrectionTime=flag;}
+  void  SetUseDriftCorrectionGY(Int_t flag){fUseDriftCorrectionGY=flag;}
+  void  SetUseGainCorrectionTime(Int_t flag){fUseGainCorrectionTime=flag;}
+  //
+  Int_t GetUseFieldCorrection() const {return fUseFieldCorrection;}
+  Int_t GetUseRPHICorrection() const {return fUseRPHICorrection;}
+  Int_t GetUseRadialCorrection() const {return fUseRadialCorrection;}
+  Int_t GetUseQuadrantAlignment() const {return fUseQuadrantAlignment;}
+  Int_t GetUseSectorAlignment() const {return fUseSectorAlignment;}
+  Int_t GetUseDriftCorrectionTime() const {return fUseDriftCorrectionTime;}
+  Int_t GetUseDriftCorrectionGY() const {return fUseDriftCorrectionGY;}
+  Int_t GetUseGainCorrectionTime() const {return fUseGainCorrectionTime;}
   Bool_t   GetUseTOFCorrection() {return fUseTOFCorrection;}
+  //
   //
   void     SetSystematicError(Double_t *systematic){ for (Int_t i=0; i<5;i++) fSystematicErrors[i]=systematic[i];}
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
@@ -97,12 +115,22 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   // Correction switches
   //
+  Int_t fUseFieldCorrection;      // use rphi correction
+  Int_t fUseRPHICorrection;      // use rphi correction
+  Int_t fUseRadialCorrection;    // use radial correction
+  Int_t fUseQuadrantAlignment;   // use quadrant alignment
+  Int_t fUseSectorAlignment;     // use sector alignment
+  Int_t fUseDriftCorrectionTime; // use drift correction time
+  Int_t fUseDriftCorrectionGY;   // use drif correction global y
+  Int_t fUseGainCorrectionTime;  // use gain correction time
+  //
+
   Bool_t fUseTOFCorrection;  // switch - kTRUE use TOF correction kFALSE - do not use
   //
   //  misscalibration
   //
   Double_t fSystematicErrors[5];  //systematic errors in the track parameters - to be added to TPC covariance matrix    
-  ClassDef(AliTPCRecoParam, 4)
+  ClassDef(AliTPCRecoParam, 5)
 };
 
 
