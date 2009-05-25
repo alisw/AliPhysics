@@ -41,9 +41,10 @@ class AliFlowAnalysisWithMCEventPlane {
  
    void      WriteHistograms(TString* outputFileName);
    void      WriteHistograms(TString outputFileName);
-   void      Init();                             //defines variables and histograms
-   void      Make(AliFlowEventSimple* anEvent);  //calculates variables and fills histograms
-   void      Finish();                           //saves histograms
+   void      Init();                                       //defines variables and histograms
+   void      Make(AliFlowEventSimple* anEvent);            //calculates variables and fills histograms
+   void      GetOutputHistograms(TList *outputListHistos); //get pointers to all output histograms (called before Finish()) 
+   void      Finish();                                     //saves histograms
    
    void      SetDebug(Bool_t kt)          { this->fDebug = kt ; }
    Bool_t    GetDebug() const             { return this->fDebug ; }

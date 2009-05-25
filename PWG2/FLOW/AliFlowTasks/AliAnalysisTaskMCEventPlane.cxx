@@ -130,52 +130,13 @@ void AliAnalysisTaskMCEventPlane::Terminate(Option_t *)
   fListHistos = (TList*)GetOutputData(0);
   // cout << "histogram list in Terminate" << endl;
   if (fListHistos) {
-    //Get the common histograms from the output list
-    AliFlowCommonHist *pCommonHists = dynamic_cast<AliFlowCommonHist*> 
-      (fListHistos->FindObject("AliFlowCommonHistMCEP"));
-    AliFlowCommonHistResults *pCommonHistResults = 
-      dynamic_cast<AliFlowCommonHistResults*> 
-      (fListHistos->FindObject("AliFlowCommonHistResultsMCEP"));
-
-    TProfile *pHistProIntFlow = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("FlowPro_V_MCEP")); 
-      
-    TProfile2D *pHistProDiffFlowPtEtaRP = dynamic_cast<TProfile2D*> 
-      (fListHistos->FindObject("FlowPro_VPtEtaRP_MCEP")); 
-                               
-    TProfile *pHistProDiffFlowPtRP = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("FlowPro_VPtRP_MCEP")); 
-     
-    TProfile *pHistProDiffFlowEtaRP = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("FlowPro_VetaRP_MCEP"));
- 
-    TProfile2D *pHistProDiffFlowPtEtaPOI = dynamic_cast<TProfile2D*> 
-      (fListHistos->FindObject("FlowPro_VPtEtaPOI_MCEP")); 
-          
-    TProfile *pHistProDiffFlowPtPOI = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("FlowPro_VPtPOI_MCEP")); 
-     
-    TProfile *pHistProDiffFlowEtaPOI = dynamic_cast<TProfile*> 
-      (fListHistos->FindObject("FlowPro_VetaPOI_MCEP"));                             
-
-    if (pCommonHists && pCommonHistResults && pHistProIntFlow && 
-	pHistProDiffFlowPtRP && pHistProDiffFlowEtaRP && 
-	pHistProDiffFlowPtPOI && pHistProDiffFlowEtaPOI) {
-      fMcTerm->SetCommonHists(pCommonHists);
-      fMcTerm->SetCommonHistsRes(pCommonHistResults);
-      fMcTerm->SetHistProIntFlow(pHistProIntFlow);
-      fMcTerm->SetHistProDiffFlowPtEtaRP(pHistProDiffFlowPtEtaRP);
-      fMcTerm->SetHistProDiffFlowPtRP(pHistProDiffFlowPtRP);      
-      fMcTerm->SetHistProDiffFlowEtaRP(pHistProDiffFlowEtaRP);  
-      fMcTerm->SetHistProDiffFlowPtEtaPOI(pHistProDiffFlowPtEtaPOI);
-      fMcTerm->SetHistProDiffFlowPtPOI(pHistProDiffFlowPtPOI);      
-      fMcTerm->SetHistProDiffFlowEtaPOI(pHistProDiffFlowEtaPOI);          
-      fMcTerm->Finish();
-      PostData(0,fListHistos);
-    } else {
-      cout<<"WARNING: Histograms needed to run Finish() are not accessable!"<<endl;  }
-    
-    //fListHistos->Print();
-  } else { cout << "histogram list pointer is empty" << endl;}
+     fMcTerm->GetOutputHistograms(fListHistos);
+     fMcTerm->Finish();
+     PostData(0,fListHistos);
+     //fListHistos->Print();
+    } else 
+      { 
+       cout << "histogram list pointer is empty" << endl;
+      }
 }
 
