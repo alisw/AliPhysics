@@ -26,13 +26,13 @@ class AliTRDarrayADC: public TObject
   void    Allocate(Int_t nrow, Int_t ncol, Int_t ntime);
   void    SetNdet(Int_t ndet) {fNdet=ndet;};  
   Int_t   GetNdet()  const {return fNdet;};
-  void    SetData(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value)
-                        {fADC[(nrow*fNcol+ncol)*fNtime+ntime]=value;};
+  void    SetDataByAdcCol(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value)
+                        {fADC[(nrow*fNumberOfChannels+ncol)*fNtime+ntime]=value;};
   Bool_t  HasData() const {return fNtime ? 1 : 0;};
-  Short_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const
-                       {return fADC[(nrow*fNcol+ncol)*fNtime+ntime];};
-  inline void GetData(Int_t r, Int_t c, Int_t t, Int_t n, Short_t *vals) const;
-  Short_t GetDataB(Int_t nrow, Int_t ncol, Int_t ntime) const;
+  Short_t GetDataByAdcCol(Int_t nrow, Int_t ncol, Int_t ntime) const
+                         {return fADC[(nrow*fNumberOfChannels+ncol)*fNtime+ntime];};
+  inline  void GetData(Int_t r, Int_t c, Int_t t, Int_t n, Short_t *vals) const;
+  Short_t GetDataBits(Int_t nrow, Int_t ncol, Int_t ntime) const;
   UChar_t GetPadStatus(Int_t nrow, Int_t ncol, Int_t ntime) const;
   void    SetPadStatus(Int_t nrow, Int_t ncol, Int_t ntime, UChar_t status);
   Bool_t  IsPadCorrupted(Int_t nrow, Int_t ncol, Int_t ntime);
@@ -44,23 +44,30 @@ class AliTRDarrayADC: public TObject
   Int_t   GetDim() const {return fNAdim;};
   void    DeleteNegatives();
   void    Reset();
+  Short_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const;
+  void    SetData(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value);
+  void    CreateLut(); 
 
  protected:
 
   Int_t fNdet;    //ID number of the chamber
   Int_t fNrow;    //Number of rows
-  Int_t fNcol;    //Number of columns
+  Int_t fNcol;    //Number of columns(pads)
+  Int_t fNumberOfChannels;  //  Number of MCM channels per row
   Int_t fNtime;   //Number of time bins
   Int_t fNAdim;   //Dimension of the ADC array
   Short_t* fADC;  //[fNAdim]   //Pointer to adc values
+  Short_t *fLutPadNumbering;   //  [fNcol] Look Up Table
 
-  ClassDef(AliTRDarrayADC,1) //ADC container class
+  ClassDef(AliTRDarrayADC,2) //ADC container class
     
 };
 
 inline void AliTRDarrayADC::GetData(Int_t r, Int_t c, Int_t t, Int_t n, Short_t *vals) const
 {
-  for(Int_t ic=n, idx = (r*fNcol+c)*fNtime+t; ic--; idx+=fNtime) vals[ic] = fADC[idx];
-}
+  Int_t ColNum = fLutPadNumbering[c];
+  for(Int_t ic=n, idx = (r*fNumberOfChannels+ColNum)*fNtime+t; ic--; idx+=fNtime) vals[ic] = fADC[idx];
+ }
 
 #endif 
+

@@ -309,7 +309,7 @@ Short_t AliTRDdigitsManager::GetDigitAmp(Int_t row, Int_t col,Int_t time, Int_t 
 
   if (!GetDigits(det)) return 0;
   
-  return ((Short_t) ((AliTRDarrayADC *) GetDigits(det))->GetDataB(row,col,time));
+  return ((Short_t) ((AliTRDarrayADC *) GetDigits(det))->GetDataBits(row,col,time));
 
 }
 
@@ -780,7 +780,7 @@ Bool_t AliTRDdigitsManager::BuildIndexes(Int_t det)
 	    {
 	      for (Int_t it = 0; it < nTbins; it++)
 		{	  
-		  Int_t isig = digits->GetDataB(ir,ic,it);
+		  Int_t isig = digits->GetDataBits(ir,ic,it);
 		  if (isig > 0) 
 		    {
 		      indexes->AddIndexRC(ir,ic);	    
