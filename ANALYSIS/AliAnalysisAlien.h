@@ -39,6 +39,8 @@ public:
    virtual void        SetAnalysisSource(const char *name="myAnalysisClass.cxx") {fAnalysisSource = name;}
    virtual void        SetAdditionalLibs(const char *list)               {fAdditionalLibs = list;}
    virtual void        SetPrice(Int_t price=1)                           {fPrice = price;}
+   virtual void        SetRunRange(Int_t min, Int_t max)                 {fRunRange[0] = min; fRunRange[1] = max;}
+   virtual void        SetNMasterJobs(Int_t njobs)                       {fNMasterJobs = njobs;}
    virtual void        SetSplitMode(const char *type="se")               {fSplitMode = type;}
    virtual void        SetSplitMaxInputFileNumber(Int_t nfiles=100)      {fSplitMaxInputFileNumber = nfiles;}
    virtual void        SetAPIVersion(const char *version="V2.4") {fAPIVersion = version;}
@@ -72,6 +74,7 @@ public:
    virtual void        WriteAnalysisFile();
    virtual void        WriteAnalysisMacro();
    virtual void        WriteExecutable();
+   Bool_t              WriteJDL(Int_t index, Bool_t copy);
    virtual void        WriteValidationScript();
 
 protected:
@@ -93,6 +96,8 @@ private:
    Int_t            fMaxInitFailed;   // Maximum initial consecutive subjobs accepted to fail
    Int_t            fMasterResubmitThreshold; // Failed jobs will be resubmitted until this DONE ratio
    Int_t            fNtestFiles;      // Number of files used in the testing case
+   Int_t            fRunRange[2];     // Run range
+   Int_t            fNMasterJobs;     // Number of masterjobs to be launched
    TString          fRunNumbers;      // List of runs to be processed
    TString          fExecutable;      // Executable script for AliEn job
    TString          fArguments;       // Arguments for the executable script
@@ -120,6 +125,6 @@ private:
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 3)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 4)   // Class providing some AliEn utilities
 };
 #endif

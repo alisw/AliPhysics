@@ -48,6 +48,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fMaxInitFailed(0),
                   fMasterResubmitThreshold(0),
                   fNtestFiles(0),
+                  fNMasterJobs(0),
                   fRunNumbers(),
                   fExecutable(),
                   fArguments(),
@@ -89,6 +90,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fMaxInitFailed(0),
                   fMasterResubmitThreshold(0),
                   fNtestFiles(0),
+                  fNMasterJobs(0),
                   fRunNumbers(),
                   fExecutable(),
                   fArguments(),
@@ -130,6 +132,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fMaxInitFailed(other.fMaxInitFailed),
                   fMasterResubmitThreshold(other.fMasterResubmitThreshold),
                   fNtestFiles(other.fNtestFiles),
+                  fNMasterJobs(other.fNMasterJobs),
                   fRunNumbers(other.fRunNumbers),
                   fExecutable(other.fExecutable),
                   fArguments(other.fArguments),
@@ -159,6 +162,8 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
 {
 // Copy ctor.
    fGridJDL = (TGridJDL*)gROOT->ProcessLine("new TAlienJDL()");
+   fRunRange[0] = other.fRunRange[0];
+   fRunRange[1] = other.fRunRange[1];
    if (other.fInputFiles) {
       fInputFiles = new TObjArray();
       TIter next(other.fInputFiles);
@@ -315,8 +320,8 @@ void AliAnalysisAlien::CdWork()
 Bool_t AliAnalysisAlien::CheckInputData()
 {
 // Check validity of input data. If necessary, create xml files.
-   if (!fInputFiles && !fRunNumbers.Length()) {
-       Error("CheckInputData", "You have to specify either a set of run numbers or some existing grid files. Use AddRunNumber()/AddDataFile().");
+   if (!fInputFiles && !fRunNumbers.Length() && !fRunRange[0]) {
+       Error("CheckInputData", "You have to specify either a set of run numbers or some existing grid files. Use AddRunNumber()/AddDataFile()/SetRunRange().");
       return kFALSE;
    }
    // Process declared files
@@ -362,7 +367,7 @@ Bool_t AliAnalysisAlien::CheckInputData()
       }
    }
    // Process requested run numbers
-   if (!fRunNumbers.Length()) return kTRUE;
+   if (!fRunNumbers.Length() && !fRunRange[0]) return kTRUE;
    // Check validity of alien data directory
    if (!fGridDataDir.Length()) {
       Error("CkeckInputData", "AliEn path to base data directory must be set.\n = Use: SetGridDataDir()");
@@ -395,13 +400,14 @@ Bool_t AliAnalysisAlien::CheckInputData()
       return kFALSE;
    }
    if (fRunNumbers.Length()) {
+      Info("CheckDataType", "Using supplied run numbers (run ranges are ignored)");
       arr = fRunNumbers.Tokenize(" ");
       TIter next(arr);
       while ((os=(TObjString*)next())) {
          path = Form("%s/%s ", fGridDataDir.Data(), os->GetString().Data());
          if (!gGrid->Cd(path)) {
-            Error("CheckInputData", "Run number %s not found in path: %s", os->GetString().Data(), path.Data());
-            return kFALSE;
+            Warning("CheckInputData", "Run number %s not found in path: %s", os->GetString().Data(), path.Data());
+            continue;
          }
          path = Form("%s/%s.xml", workdir.Data(),os->GetString().Data());
          TString msg = "\n#####   file: ";
@@ -413,6 +419,23 @@ Bool_t AliAnalysisAlien::CheckInputData()
          AddDataFile(path);
       }
       delete arr;   
+   } else {
+      Info("CheckDataType", "Using run range [%d, %d]", fRunRange[0], fRunRange[1]);
+      for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
+         path = Form("%s/%d ", fGridDataDir.Data(), irun);
+         if (!gGrid->Cd(path)) {
+            Warning("CheckInputData", "Run number %d not found in path: %s", irun, path.Data());
+            continue;
+         }
+         path = Form("%s/%d.xml", workdir.Data(),irun);
+         TString msg = "\n#####   file: ";
+         msg += path;
+         msg += " type: xml_collection;";
+         if (use_tags) msg += " using_tags: Yes";
+         else          msg += " using_tags: No";
+         Info("CheckDataType", msg.Data());
+         AddDataFile(path);
+      }
    }
    return kTRUE;      
 }   
@@ -440,39 +463,71 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    
    TString file;
    TString path;
-   if (!fRunNumbers.Length()) return kTRUE;   
+   if (!fRunNumbers.Length() && !fRunRange[0]) return kTRUE;
    // Several runs
-   TObjArray *arr = fRunNumbers.Tokenize(" ");
-   TObjString *os;
-   TIter next(arr);
-   while ((os=(TObjString*)next())) {
-      path = Form("%s/%s ", fGridDataDir.Data(), os->GetString().Data());
-      if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
-      else file = Form("%s.xml", os->GetString().Data());
-      if (FileExists(file) && !TestBit(AliAnalysisGrid::kTest)) {
-         Info("CreateDataset", "\n#####   Removing previous dataset %s", file.Data());
-         gGrid->Rm(file); 
+   if (fRunNumbers.Length()) {
+      TObjArray *arr = fRunNumbers.Tokenize(" ");
+      TObjString *os;
+      TIter next(arr);
+      while ((os=(TObjString*)next())) {
+         path = Form("%s/%s ", fGridDataDir.Data(), os->GetString().Data());
+         if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
+         else file = Form("%s.xml", os->GetString().Data());
+         if (FileExists(file) && !TestBit(AliAnalysisGrid::kTest)) {
+            Info("CreateDataset", "\n#####   Dataset %s exist. Skipping creation...", file.Data());
+//            gGrid->Rm(file); 
+            continue;
+         }
+         command = "find ";
+         command += options;
+         command += path;
+         command += pattern;
+//         conditions = Form(" > %s", file.Data());
+         command += conditions;
+         TGridResult *res = gGrid->Command(command);
+         if (res) delete res;
+         // Write standard output to file
+         gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", file.Data()));
+         if (TestBit(AliAnalysisGrid::kTest)) break;
+         // Copy xml file to alien space
+         TFile::Cp(Form("file:%s",file.Data()), Form("alien://%s/%s",workdir.Data(), file.Data()));
+         if (!FileExists(file)) {
+            Error("CreateDataset", "Command %s did NOT succeed", command.Data());
+            delete arr;
+            return kFALSE;
+         }
+      }   
+      delete arr;
+   } else {
+      // Process a full run range.
+      for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
+         path = Form("%s/%d ", fGridDataDir.Data(), irun);
+         if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
+         else file = Form("%d.xml", irun);
+         if (FileExists(file) && !TestBit(AliAnalysisGrid::kTest)) {
+            Info("CreateDataset", "\n#####   Dataset %s exist. Skipping creation...", file.Data());
+//            gGrid->Rm(file); 
+            continue;
+         }
+         command = "find ";
+         command += options;
+         command += path;
+         command += pattern;
+//         conditions = Form(" > %s", file.Data());
+         command += conditions;
+         TGridResult *res = gGrid->Command(command);
+         if (res) delete res;
+         // Write standard output to file
+         gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", file.Data()));
+         if (TestBit(AliAnalysisGrid::kTest)) break;
+         // Copy xml file to alien space
+         TFile::Cp(Form("file:%s",file.Data()), Form("alien://%s/%s",workdir.Data(), file.Data()));
+         if (!FileExists(file)) {
+            Error("CreateDataset", "Command %s did NOT succeed", command.Data());
+            return kFALSE;
+         }
       }
-      command = "find ";
-      command += options;
-      command += path;
-      command += pattern;
-//      conditions = Form(" > %s", file.Data());
-      command += conditions;
-      TGridResult *res = gGrid->Command(command);
-      if (res) delete res;
-      // Write standard output to file
-      gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", file.Data()));
-      if (TestBit(AliAnalysisGrid::kTest)) break;
-      // Copy xml file to alien space
-      TFile::Cp(Form("file:%s",file.Data()), Form("alien://%s/%s",workdir.Data(), file.Data()));
-      if (!FileExists(file)) {
-         Error("CreateDataset", "Command %s did NOT succeed", command.Data());
-         delete arr;
-         return kFALSE;
-      }
-   }   
-   delete arr;
+   }      
    return kTRUE;
 }
 
@@ -544,11 +599,6 @@ Bool_t AliAnalysisAlien::CreateJDL()
          fGridJDL->AddToPackages("APISCONFIG", fAPIVersion);
       fGridJDL->SetInputDataListFormat(fInputFormat);
       fGridJDL->SetInputDataList("wn.xml");
-      if (fInputFiles) {
-         TIter next(fInputFiles);
-         while ((os=(TObjString*)next()))
-            fGridJDL->AddToInputDataCollection(Form("LF:%s,nodownload", os->GetString().Data()));
-      }      
       fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(), fAnalysisMacro.Data()));
       fGridJDL->AddToInputSandbox(Form("LF:%s/analysis.root", workdir.Data()));
       if (IsUsingTags() && !gSystem->AccessPathName("ConfigureCuts.C"))
@@ -578,7 +628,6 @@ Bool_t AliAnalysisAlien::CreateJDL()
             fGridJDL->AddToOutputArchive(os->GetString());
          delete arr;
       }      
-      fGridJDL->SetOutputDirectory(Form("%s/%s/#alien_counter_03i#", workdir.Data(), fGridOutputDir.Data()));
       arr = fOutputFiles.Tokenize(" ");
       TIter next(arr);
       while ((os=(TObjString*)next())) {
@@ -592,74 +641,15 @@ Bool_t AliAnalysisAlien::CreateJDL()
       fGridJDL->SetValue("Price", Form("\"%d\"", fPrice));
       fGridJDL->SetValidationCommand(Form("%s/validate.sh", workdir.Data()));
       if (fMasterResubmitThreshold) fGridJDL->SetValue("MasterResubmitThreshold", Form("\"%d%%\"", fMasterResubmitThreshold));
-      // Generate the JDL as a string
-      TString sjdl = fGridJDL->Generate();
-      Int_t index;
-      index = sjdl.Index("Executable");
-      if (index >= 0) sjdl.Insert(index, "\n# This is the startup script\n");
-      index = sjdl.Index("Split ");
-      if (index >= 0) sjdl.Insert(index, "\n# We split per storage element\n");
-      index = sjdl.Index("SplitMaxInputFileNumber");
-      if (index >= 0) sjdl.Insert(index, "\n# We want each subjob to get maximum this number of input files\n");
-      index = sjdl.Index("InputDataCollection");
-      if (index >= 0) sjdl.Insert(index, "# Input xml collections\n");
-      index = sjdl.Index("InputFile");
-      if (index >= 0) sjdl.Insert(index, "\n# List of input files to be uploaded to wn's\n");
-      index = sjdl.Index("InputDataList ");
-      if (index >= 0) sjdl.Insert(index, "\n# Collection to be processed on wn\n");
-      index = sjdl.Index("InputDataListFormat");
-      if (index >= 0) sjdl.Insert(index, "\n# Format of input data\n");
-      index = sjdl.Index("Price");
-      if (index >= 0) sjdl.Insert(index, "\n# AliEn price for this job\n");
-      index = sjdl.Index("Requirements");
-      if (index >= 0) sjdl.Insert(index, "\n# Additional requirements for the computing element\n");
-      index = sjdl.Index("Packages");
-      if (index >= 0) sjdl.Insert(index, "\n# Packages to be used\n");
-      index = sjdl.Index("User =");
-      if (index >= 0) sjdl.Insert(index, "\n# AliEn user\n");
-      index = sjdl.Index("TTL");
-      if (index >= 0) sjdl.Insert(index, "\n# Time to live for the job\n");
-      index = sjdl.Index("OutputFile");
-      if (index >= 0) sjdl.Insert(index, "\n# List of output files to be registered\n");
-      index = sjdl.Index("OutputDir");
-      if (index >= 0) sjdl.Insert(index, "\n# Output directory\n");
-      index = sjdl.Index("OutputArchive");
-      if (index >= 0) sjdl.Insert(index, "\n# Files to be archived\n");
-      index = sjdl.Index("MaxInitFailed");
-      if (index >= 0) sjdl.Insert(index, "\n# Maximum number of first failing jobs to abort the master job\n");
-      index = sjdl.Index("MasterResubmitThreshold");
-      if (index >= 0) sjdl.Insert(index, "\n# Resubmit failed jobs until DONE rate reaches this percentage\n");
-      sjdl.ReplaceAll("ValidationCommand", "Validationcommand");
-      index = sjdl.Index("Validationcommand");
-      if (index >= 0) sjdl.Insert(index, "\n# Validation script to be run for each subjob\n");
-      sjdl.ReplaceAll("\"LF:", "\n   \"LF:");
-      sjdl.ReplaceAll("(member", "\n   (member");
-      sjdl.ReplaceAll("\",\"VO_", "\",\n   \"VO_");
-      sjdl.ReplaceAll("{", "{\n   ");
-      sjdl.ReplaceAll("};", "\n};");
-      sjdl.ReplaceAll("{\n   \n", "{\n");
-      sjdl.ReplaceAll("\n\n", "\n");
-      sjdl.ReplaceAll("OutputDirectory", "OutputDir");
-      sjdl += "JDLVariables = \n{\n   \"Packages\",\n   \"OutputDir\"\n};\n";
-      sjdl.Prepend("JobTag = \"Automatically generated analysis JDL\";\n");
-      index = sjdl.Index("JDLVariables");
-      if (index >= 0) sjdl.Insert(index, "\n# JDL variables\n");
-      // Write jdl to file
-      ofstream out;
-      out.open(fJDLName.Data(), ios::out);
-      if (out.bad()) {
-         Error("CreateJDL", "Bad file name: %s", fJDLName.Data());
-         return kFALSE;
+      // Depending if going through a run range or not, generate one or mode jdl's
+      if (!fRunRange[0]) WriteJDL(-1,copy);
+      else {
+         for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++)
+            WriteJDL(irun-fRunRange[0],copy);
       }
-      out << sjdl << endl;
    }
    // Copy jdl to grid workspace   
-   if (!copy) {
-      Info("CreateJDL", "\n#####   You may want to review jdl:%s and analysis macro:%s before running in <submit> mode", fJDLName.Data(), fAnalysisMacro.Data());
-   } else {
-      Info("CreateJDL", "\n#####   Copying JDL file <%s> to your AliEn working space", fJDLName.Data());
-      if (FileExists(fJDLName)) gGrid->Rm(fJDLName);
-      TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s/%s", workdir.Data(), fJDLName.Data()));
+   if (copy) {
       if (fAdditionalLibs.Length()) {
          arr = fAdditionalLibs.Tokenize(" ");
          TObjString *os;
@@ -680,6 +670,111 @@ Bool_t AliAnalysisAlien::CreateJDL()
             TFile::Cp(Form("file:%s",obj->GetName()), Form("alien://%s/%s", workdir.Data(), obj->GetName()));
          }   
       }      
+   } 
+   return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliAnalysisAlien::WriteJDL(Int_t findex, Bool_t copy)
+{
+// Writes one or more JDL's corresponding to findex. If findex is negative,
+// all run numbers are considered in one go (jdl). For non-negative indices
+// they correspond to the indices in the array fInputFiles.
+   if (!fInputFiles) return kFALSE;
+   TObjString *os;
+   TString line;
+   TString workdir = gGrid->GetHomeDirectory();
+   workdir += fGridWorkingDir;
+   CdWork();
+   if (findex < 0) {
+      TIter next(fInputFiles);
+      while ((os=(TObjString*)next()))
+         fGridJDL->AddToInputDataCollection(Form("LF:%s,nodownload", os->GetString().Data()));
+      fGridJDL->SetOutputDirectory(Form("%s/%s/#alien_counter_03i#", workdir.Data(), fGridOutputDir.Data()));
+   } else {
+      os = (TObjString*)fInputFiles->At(findex);
+      line = "#Input xml collection\n";
+      line += "InputDataCollection = {";
+      line += Form("   \"LF:%s,nodownload\"", os->GetString().Data());
+      line += "\n};\n";
+      fGridJDL->SetOutputDirectory(Form("%s/%s/%03d#alien_counter_03i#", workdir.Data(), fGridOutputDir.Data(),findex));
+   }
+      
+
+   // Generate the JDL as a string
+   TString sjdl = fGridJDL->Generate();
+   Int_t index;
+   index = sjdl.Index("Executable");
+   if (index >= 0) sjdl.Insert(index, "\n# This is the startup script\n");
+   index = sjdl.Index("Split ");
+   if (index >= 0) sjdl.Insert(index, "\n# We split per storage element\n");
+   index = sjdl.Index("SplitMaxInputFileNumber");
+   if (index >= 0) sjdl.Insert(index, "\n# We want each subjob to get maximum this number of input files\n");
+   index = sjdl.Index("InputDataCollection");
+   if (index >= 0) sjdl.Insert(index, "# Input xml collections\n");
+   else {
+      index = sjdl.Index("OutputDir");
+      sjdl.Insert(index, line.Data());
+   }   
+   index = sjdl.Index("InputFile");
+   if (index >= 0) sjdl.Insert(index, "\n# List of input files to be uploaded to wn's\n");
+   index = sjdl.Index("InputDataList ");
+   if (index >= 0) sjdl.Insert(index, "\n# Collection to be processed on wn\n");
+   index = sjdl.Index("InputDataListFormat");
+   if (index >= 0) sjdl.Insert(index, "\n# Format of input data\n");
+   index = sjdl.Index("Price");
+   if (index >= 0) sjdl.Insert(index, "\n# AliEn price for this job\n");
+   index = sjdl.Index("Requirements");
+   if (index >= 0) sjdl.Insert(index, "\n# Additional requirements for the computing element\n");
+   index = sjdl.Index("Packages");
+   if (index >= 0) sjdl.Insert(index, "\n# Packages to be used\n");
+   index = sjdl.Index("User =");
+   if (index >= 0) sjdl.Insert(index, "\n# AliEn user\n");
+   index = sjdl.Index("TTL");
+   if (index >= 0) sjdl.Insert(index, "\n# Time to live for the job\n");
+   index = sjdl.Index("OutputFile");
+   if (index >= 0) sjdl.Insert(index, "\n# List of output files to be registered\n");
+   index = sjdl.Index("OutputDir");
+   if (index >= 0) sjdl.Insert(index, "\n# Output directory\n");
+   index = sjdl.Index("OutputArchive");
+   if (index >= 0) sjdl.Insert(index, "\n# Files to be archived\n");
+   index = sjdl.Index("MaxInitFailed");
+   if (index >= 0) sjdl.Insert(index, "\n# Maximum number of first failing jobs to abort the master job\n");
+   index = sjdl.Index("MasterResubmitThreshold");
+   if (index >= 0) sjdl.Insert(index, "\n# Resubmit failed jobs until DONE rate reaches this percentage\n");
+   sjdl.ReplaceAll("ValidationCommand", "Validationcommand");
+   index = sjdl.Index("Validationcommand");
+   if (index >= 0) sjdl.Insert(index, "\n# Validation script to be run for each subjob\n");
+   sjdl.ReplaceAll("\"LF:", "\n   \"LF:");
+   sjdl.ReplaceAll("(member", "\n   (member");
+   sjdl.ReplaceAll("\",\"VO_", "\",\n   \"VO_");
+   sjdl.ReplaceAll("{", "{\n   ");
+   sjdl.ReplaceAll("};", "\n};");
+   sjdl.ReplaceAll("{\n   \n", "{\n");
+   sjdl.ReplaceAll("\n\n", "\n");
+   sjdl.ReplaceAll("OutputDirectory", "OutputDir");
+   sjdl += "JDLVariables = \n{\n   \"Packages\",\n   \"OutputDir\"\n};\n";
+   sjdl.Prepend("JobTag = \"Automatically generated analysis JDL\";\n");
+   index = sjdl.Index("JDLVariables");
+   if (index >= 0) sjdl.Insert(index, "\n# JDL variables\n");
+   // Write jdl to file
+   TString snjdl = fJDLName;
+   if (findex >=0) snjdl.ReplaceAll(".jdl", Form("_%03d.jdl", findex));
+   ofstream out;
+   out.open(snjdl.Data(), ios::out);
+   if (out.bad()) {
+      Error("CreateJDL", "Bad file name: %s", snjdl.Data());
+      return kFALSE;
+   }
+   out << sjdl << endl;
+
+   // Copy jdl to grid workspace   
+   if (!copy) {
+      Info("CreateJDL", "\n#####   You may want to review jdl:%s and analysis macro:%s before running in <submit> mode", fJDLName.Data(), fAnalysisMacro.Data());
+   } else {
+      Info("CreateJDL", "\n#####   Copying JDL file <%s> to your AliEn working space", snjdl.Data());
+      if (FileExists(snjdl)) gGrid->Rm(snjdl);
+      TFile::Cp(Form("file:%s",snjdl.Data()), Form("alien://%s/%s", workdir.Data(), snjdl.Data()));
    } 
    return kTRUE;
 }
@@ -833,6 +928,9 @@ void AliAnalysisAlien::SetDefaults()
    fMaxInitFailed              = 0;
    fMasterResubmitThreshold    = 0;
    fNtestFiles                 = 10;
+   fRunRange[0]                = 0;
+   fRunRange[1]                = 0;
+   fNMasterJobs                = 0;
    fRunNumbers                 = "";
    fExecutable                 = "analysis.sh";
    fArguments                  = "";
@@ -1025,25 +1123,56 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
 //      gSystem->Exec("cat stdout");
       return;
    }
-   // Submit AliEn job
+   // Submit AliEn job(s)
    CdWork();
-   TGridResult *res = gGrid->Command(Form("submit %s", fJDLName.Data()));
-   printf("*************************** %s\n",Form("submit %s", fJDLName.Data()));
+   TGridResult *res;
    TString jobID = "";
-   if (res) {
-      const char *cjobId = res->GetKey(0,"jobId");
-      if (!cjobId) {
-         Error("StartAnalysis", "Your JDL %s could not be submitted", fJDLName.Data());
+   if (fRunNumbers.Length()) {
+      res = gGrid->Command(Form("submit %s", fJDLName.Data()));
+      printf("*************************** %s\n",Form("submit %s", fJDLName.Data()));
+      if (res) {
+         const char *cjobId = res->GetKey(0,"jobId");
+         if (!cjobId) {
+            Error("StartAnalysis", "Your JDL %s could not be submitted", fJDLName.Data());
+            return;
+         } else {
+            Info("StartAnalysis", "\n_______________________________________________________________________ \
+            \n#####   Your JDL %s was successfully submitted. \nTHE JOB ID IS: %s \
+            \n_______________________________________________________________________",
+                   fJDLName.Data(), cjobId);
+            jobID = cjobId;      
+         }          
+         delete res;
+      }   
+   } else {
+      if (!fRunRange[0]) {
+         Error("StartAnalysis", "No runs defined. Exiting.");
          return;
-      } else {
-         Info("StartAnalysis", "\n_______________________________________________________________________ \
-         \n#####   Your JDL %s was successfully submitted. \nTHE JOB ID IS: %s \
-      \n_______________________________________________________________________",
-                fJDLName.Data(), cjobId);
-         jobID = cjobId;      
-      }          
-      delete res;
+      }
+      TString sjdl;
+      for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
+         sjdl = fJDLName;
+         sjdl.ReplaceAll(".jdl", Form("_%03d.jdl", irun-fRunRange[0]));
+         res = gGrid->Command(Form("submit %s", sjdl.Data()));
+         printf("*************************** %s\n",Form("submit %s", sjdl.Data()));
+         if (res) {
+            const char *cjobId1 = res->GetKey(0,"jobId");
+            if (!cjobId1) {
+               Error("StartAnalysis", "Your JDL %s could not be submitted", sjdl.Data());
+               return;
+            } else {
+               Info("StartAnalysis", "\n_______________________________________________________________________ \
+               \n#####   Your JDL %s was successfully submitted. \nTHE JOB ID IS: %s \
+               \n_______________________________________________________________________",
+                   sjdl.Data(), cjobId1);
+               jobID += cjobId1;
+               jobID += " ";
+            }          
+            delete res;
+         }   
+      }
    }   
+         
    Info("StartAnalysis", "\n#### STARTING AN ALIEN SHELL FOR YOU. EXIT WHEN YOUR JOB %s HAS FINISHED. #### \
    \n You may exit at any time and terminate the job later using the option <terminate> \
    \n ##################################################################################", jobID.Data());
