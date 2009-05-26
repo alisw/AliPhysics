@@ -327,12 +327,41 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t GetTrackleterZetaOverlapCut() const {return fTrackleterZetaOverlapCut;}
 
   //
-
   void   SetSPDRemoveNoisyFlag(Bool_t value) {fSPDRemoveNoisyFlag = value;}
-  Bool_t GetSPDRemoveNoisyFlag() {return fSPDRemoveNoisyFlag;}
+  Bool_t GetSPDRemoveNoisyFlag() const {return fSPDRemoveNoisyFlag;}
   void   SetSPDRemoveDeadFlag(Bool_t value) {fSPDRemoveDeadFlag = value;}
-  Bool_t GetSPDRemoveDeadFlag() {return fSPDRemoveDeadFlag;}
+  Bool_t GetSPDRemoveDeadFlag() const {return fSPDRemoveDeadFlag;}
   
+  //
+  void    SetAlignFilterCosmics(Bool_t b=kTRUE) {fAlignFilterCosmics=b;}
+  void    SetAlignFilterCosmicMergeTracks(Bool_t b=kTRUE) {fAlignFilterCosmicMergeTracks=b;} 
+  void    SetAlignFilterMinITSPoints(Int_t n=4) {fAlignFilterMinITSPoints=n;}
+  void    SetAlignFilterMinITSPointsMerged(Int_t n=4) {fAlignFilterMinITSPointsMerged=n;}
+  void    SetAlignFilterOnlyITSSATracks(Bool_t b=kTRUE) {fAlignFilterOnlyITSSATracks=b;}
+  void    SetAlignFilterOnlyITSTPCTracks(Bool_t b=kFALSE) {fAlignFilterOnlyITSTPCTracks=b;}
+  void    SetAlignFilterUseLayer(Int_t ilay,Bool_t use) {fAlignFilterUseLayer[ilay]=use;}
+  void    SetAlignFilterSkipExtra(Bool_t b=kFALSE) {fAlignFilterSkipExtra=b;}
+  void    SetAlignFilterMaxMatchingAngle(Float_t max=0.085/*5deg*/) {fAlignFilterMaxMatchingAngle=max;}
+  void    SetAlignFilterMinAngleWrtModulePlanes(Float_t min=0.52/*30deg*/) {fAlignFilterMinAngleWrtModulePlanes=min;}
+  void    SetAlignFilterMinPt(Float_t min=0.) {fAlignFilterMinPt=min;}          
+  void    SetAlignFilterMaxPt(Float_t max=1.e10) {fAlignFilterMaxPt=max;}          
+  void    SetAlignFilterFillQANtuples(Bool_t b=kTRUE) {fAlignFilterFillQANtuples=b;}     
+  Bool_t  GetAlignFilterCosmics() const {return fAlignFilterCosmics;}
+  Bool_t  GetAlignFilterCosmicMergeTracks() const {return fAlignFilterCosmicMergeTracks;} 
+  Int_t   GetAlignFilterMinITSPoints() const {return fAlignFilterMinITSPoints;}
+  Int_t   GetAlignFilterMinITSPointsMerged() const {return fAlignFilterMinITSPointsMerged;}
+  Bool_t  GetAlignFilterOnlyITSSATracks() const {return fAlignFilterOnlyITSSATracks;}
+  Bool_t  GetAlignFilterOnlyITSTPCTracks() const {return fAlignFilterOnlyITSTPCTracks;}
+  Bool_t  GetAlignFilterUseLayer(Int_t i) const {return fAlignFilterUseLayer[i];}
+  Bool_t  GetAlignFilterSkipExtra() const {return fAlignFilterSkipExtra;}
+  Float_t GetAlignFilterMaxMatchingAngle() const {return fAlignFilterMaxMatchingAngle;}
+  Float_t GetAlignFilterMinAngleWrtModulePlanes() const {return fAlignFilterMinAngleWrtModulePlanes;}
+  Float_t GetAlignFilterMinPt() const {return fAlignFilterMinPt;}          
+  Float_t GetAlignFilterMaxPt() const {return fAlignFilterMaxPt;}          
+  Bool_t  GetAlignFilterFillQANtuples() const {return fAlignFilterFillQANtuples;}     
+
+
+
   enum {fgkMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
   enum {fgkMaxClusterPerLayer5=28000};//7000*10*2/5;  // max clusters per layer
   enum {fgkMaxClusterPerLayer10=14000};//7000*10*2/10; // max clusters per layer
@@ -531,8 +560,23 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fVertexerFastSmearY;  // gaussian sigma for y MC vertex smearing
   Float_t fVertexerFastSmearZ;  // gaussian sigma for z MC vertex smearing
 
-  
-  ClassDef(AliITSRecoParam,20) // ITS reco parameters
+  // PWG1/AliAlignmentDataFilterITS configuration
+  Bool_t  fAlignFilterCosmics;            // flag for cosmics case
+  Bool_t  fAlignFilterCosmicMergeTracks;  // merge cosmic tracks
+  Int_t   fAlignFilterMinITSPoints;       // min points per track
+  Int_t   fAlignFilterMinITSPointsMerged; // min points for merged tracks
+  Bool_t  fAlignFilterOnlyITSSATracks;    // only ITS SA tracks
+  Bool_t  fAlignFilterOnlyITSTPCTracks;   // only ITS+TPC tracks
+  Bool_t  fAlignFilterUseLayer[AliITSgeomTGeo::kNLayers]; // layers to use 
+  Bool_t  fAlignFilterSkipExtra;          // no extra cls in array
+  Float_t fAlignFilterMaxMatchingAngle;   // matching for cosmics
+  Float_t fAlignFilterMinAngleWrtModulePlanes; // min angle track-to-sensor
+  Float_t fAlignFilterMinPt;              // min pt
+  Float_t fAlignFilterMaxPt;              // max pt
+  Bool_t  fAlignFilterFillQANtuples;      // fill QA ntuples  
+
+
+  ClassDef(AliITSRecoParam,21) // ITS reco parameters
 };
 
 #endif

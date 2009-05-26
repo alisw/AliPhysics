@@ -166,7 +166,19 @@ fSPDRemoveNoisyFlag(kTRUE),
 fSPDRemoveDeadFlag(kTRUE),
 fVertexerFastSmearX(0.005),
 fVertexerFastSmearY(0.005),
-fVertexerFastSmearZ(0.01)
+fVertexerFastSmearZ(0.01),
+fAlignFilterCosmics(kFALSE),
+fAlignFilterCosmicMergeTracks(kTRUE),
+fAlignFilterMinITSPoints(4),
+fAlignFilterMinITSPointsMerged(4),
+fAlignFilterOnlyITSSATracks(kTRUE),
+fAlignFilterOnlyITSTPCTracks(kFALSE),
+fAlignFilterSkipExtra(kFALSE),
+fAlignFilterMaxMatchingAngle(0.085),
+fAlignFilterMinAngleWrtModulePlanes(0.52),
+fAlignFilterMinPt(0.),
+fAlignFilterMaxPt(1.e10),
+fAlignFilterFillQANtuples(kTRUE)
 {
   //
   // constructor
@@ -185,6 +197,8 @@ fVertexerFastSmearZ(0.01)
   SetClusterErrorsParam(1);
   SetClusterMisalError(0.);
   SetVertexer3DDefaults();
+
+  for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) fAlignFilterUseLayer[i]=kTRUE;
 }
 //_____________________________________________________________________________
 AliITSRecoParam::~AliITSRecoParam() 
@@ -412,6 +426,19 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
 
   // larger seach windows for SA (in case of large misalignments)
   param->SetFactorSAWindowSizes(3.); 
+
+  // alignment data filter
+  param->SetAlignFilterCosmics(kTRUE);
+  param->SetAlignFilterCosmicMergeTracks(kTRUE); 
+  param->SetAlignFilterMinITSPoints(1);
+  param->SetAlignFilterMinITSPointsMerged(3);
+  param->SetAlignFilterOnlyITSSATracks(kTRUE);
+  param->SetAlignFilterOnlyITSTPCTracks(kFALSE);
+  param->SetAlignFilterSkipExtra(kFALSE);
+  param->SetAlignFilterMaxMatchingAngle(0.085/*5deg*/);
+  param->SetAlignFilterMinPt(0.2);          
+  param->SetAlignFilterMaxPt(1.e10);          
+  param->SetAlignFilterFillQANtuples(kTRUE);    
 
   param->fMaxSnp = 0.95;
 
