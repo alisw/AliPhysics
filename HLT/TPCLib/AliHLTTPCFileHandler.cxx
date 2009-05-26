@@ -525,15 +525,18 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
       }
 
       ndigits[lrow] = 0;
-      fDigits->First();
-      do {
+      for (bool bHaveData=fDigits->First();
+	   bHaveData;
+	   bHaveData=fDigits->Next()) {
 	time=fDigits->CurrentRow();
 	pad=fDigits->CurrentColumn();
 	dig = fDigits->GetDigit(time,pad);
 	if(dig <= fParam->GetZeroSup()) continue;
 	if(dig >= AliHLTTPCTransform::GetADCSat())
 	  dig = AliHLTTPCTransform::GetADCSat();
-      
+
+	// if we switch to AliTPCTransform, this maybe needs to be 
+	// adjusted as well
 	AliHLTTPCTransform::Raw2Local(xyz,sector,row,pad,time);
 	//	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
 	//	  continue; // why 230???
@@ -541,7 +544,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
 	ndigits[lrow]++; //for this row only
 	ndigitcount++;   //total number of digits to be published
 
-      } while (fDigits->Next());
+      }
       //cout << lrow << " " << ndigits[lrow] << " - " << ndigitcount << endl;
     }
     //see comment below//nrows++;
@@ -601,8 +604,9 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
       tempPt->fNDigit = ndigits[lrow];
 
       Int_t localcount=0;
-      fDigits->First();
-      do {
+      for (bool bHaveData=fDigits->First();
+	   bHaveData;
+	   bHaveData=fDigits->Next()) {
 	time=fDigits->CurrentRow();
 	pad=fDigits->CurrentColumn();
 	dig = fDigits->GetDigit(time,pad);
@@ -627,7 +631,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
 	tempPt->fDigitData[localcount].fTrackID[1] = fDigits->GetTrackID(time,pad,1);
 	tempPt->fDigitData[localcount].fTrackID[2] = fDigits->GetTrackID(time,pad,2);
 	localcount++;
-      } while (fDigits->Next());
+      }
     }
 
     Byte_t *tmp = (Byte_t*)tempPt;
