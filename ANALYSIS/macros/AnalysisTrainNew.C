@@ -42,8 +42,9 @@ TString     aliroot_version    = "v4-17-02";
 // Change production base directory here
 TString     alien_datadir      = "/alice/sim/PDC_09/LHC09a4/";
 // Use up to 10 non-zero run numbers
-Int_t       run_numbers[10]    = {81272,    81273 ,     81274,     0,     0,
-                                      0,     0,     0,     0,     0};
+//Int_t       run_numbers[10]    = {81272,    81273 ,     81274,     0,     0,
+//                                      0,     0,     0,     0,     0};
+Int_t       run_range[2]       =  {81270, 81275};
 // ### Settings that make sense only for local analysis
 //==============================================================================
 // Change local xml dataset for local interactive analysis
@@ -280,6 +281,12 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
       AliAnalysisTaskFlowEvent* taskFE = AddTaskFlow(type,METHODS,QA,WEIGHTS);
       if (!taskFE) ::Warning("AnalysisTrainNew", "AliAnalysisTaskFlowEvent cannot run for this train conditions - EXCLUDED");
+   }   
+
+   // PWG2 resonances
+   if (iPWG2res) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/RESONANCES/macros/AddAnalysisTaskRsn.C");
+      AddAnalysisTaskRsn("rsn.root", useMC);
    }   
            
    // PWG3 vertexing
@@ -798,10 +805,11 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
    if (iAODanalysis) plugin->SetDataPattern("*AliAOD.root");
    else              plugin->SetDataPattern("*AliESDs.root");
 // ...then add run numbers to be considered
-   for (Int_t i=0; i<10; i++) {
-      if (run_numbers[i]==0) break;
-      plugin->AddRunNumber(run_numbers[i]);
-   }   
+   plugin->SetRunRange(run_range[0], run_range[1]);
+//   for (Int_t i=0; i<10; i++) {
+//      if (run_numbers[i]==0) break;
+//      plugin->AddRunNumber(run_numbers[i]);
+//   }   
 // Method 2: Declare existing data files (raw collections, xml collections, root file)
 // If no path mentioned data is supposed to be in the work directory (see SetGridWorkingDir())
 // XML collections added via this method can be combined with the first method if
@@ -903,10 +911,12 @@ void WriteConfig()
    out << "   root_version    = " << "\"" << root_version.Data() << "\";" << endl;
    out << "   aliroot_version = " << "\"" << aliroot_version.Data() << "\";" << endl;
    out << "   alien_datadir   = " << "\"" << alien_datadir.Data() << "\";" << endl;
-   for (Int_t i=0; i<10; i++) {
-      if (run_numbers[i]) 
-         out << "   run_numbers[" << i << "]  = " << run_numbers[i] << ";" << endl;
-   }
+//   for (Int_t i=0; i<10; i++) {
+//      if (run_numbers[i]) 
+//         out << "   run_numbers[" << i << "]  = " << run_numbers[i] << ";" << endl;
+//   }
+   out << "   run_range[0]    = " << run_range[0] << ";" << endl;
+   out << "   run_range[1]    = " << run_range[1] << ";" << endl;
    out << "   useDBG          = " << useDBG << ";" << endl;
    out << "   useMC           = " << useMC << ";" << endl;
    out << "   useTAGS         = " << useTAGS << ";" << endl;
