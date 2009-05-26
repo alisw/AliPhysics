@@ -22,13 +22,14 @@ Bool_t AddAnalysisTaskRsn(const char *outFile = "rsn.root", Bool_t useKine = kTR
   // then we don't ever need to initialize a new one
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  // create handlers for input and MonteCarlo
-  AliMCEventHandler  *mcHandler  = new AliMCEventHandler();
-  AliESDInputHandler *esdHandler = new AliESDInputHandler();
+  // no need to  create handlers for input and MonteCarlo
+  // Done in the general steering macro
+  //  AliMCEventHandler  *mcHandler  = new AliMCEventHandler();
+  //  AliESDInputHandler *esdHandler = new AliESDInputHandler();
   //AliAODHandler      *aodHandler = new AliAODHandler();
   //aodHandler->SetOutputFileName("AliAOD.root");
-  if (useKine) mgr->SetMCtruthEventHandler(mcHandler);
-  mgr->SetInputEventHandler(esdHandler);
+  //  if (useKine) mgr->SetMCtruthEventHandler(mcHandler);
+  //  mgr->SetInputEventHandler(esdHandler);
   //mgr->SetOutputEventHandler(aodHandler);
 
   // initialize task
