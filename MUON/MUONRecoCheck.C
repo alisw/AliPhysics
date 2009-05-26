@@ -49,7 +49,7 @@
 
 Int_t TrackCheck( Bool_t *compTrack);
 
-void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root", 
+void MUONRecoCheck (Int_t nEvent = -1, char* geoFilename = "geometry.root", 
                     char * pathSim="./generated/", char * esdFileName="AliESDs.root")
 {
   
@@ -101,7 +101,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
   
   Int_t nevents = rc.NumberOfEvents();
   
-  if (nevents < nEvent) nEvent = nevents;
+  if (nevents < nEvent || nEvent < 0) nEvent = nevents;
   
   Int_t ievent;
   Int_t nReconstructibleTracks = 0;
@@ -180,7 +180,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
       }
       
       hTestTrack->Fill(testTrack);
-      trackID = trackRef->GetTrackID();
+      trackID = trackRef->GetMCLabel();
       hTrackRefID->Fill(trackID);
       
       if (testTrack == 4 || maxChi2 < 5.*sigmaCut*sigmaCut) {     // tracking requirements verified, track is found
