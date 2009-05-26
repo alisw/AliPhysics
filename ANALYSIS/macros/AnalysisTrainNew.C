@@ -38,7 +38,7 @@ Bool_t      usePLUGIN          = kTRUE;   // do not change
 Bool_t      usePAR             = kFALSE;  // use par files for extra libs
 Bool_t      useCPAR            = kFALSE;  // use par files for common libs
 TString     root_version       = "v5-23-04";
-TString     aliroot_version    = "v4-17-01";
+TString     aliroot_version    = "v4-17-02";
 // Change production base directory here
 TString     alien_datadir      = "/alice/sim/PDC_09/LHC09a4/";
 // Use up to 10 non-zero run numbers
@@ -67,14 +67,14 @@ Int_t       iAODanalysis       = 0;      // Analysis on input AOD's
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tracks)
 Int_t       iMUONcopyAOD       = 0;      // Task that copies only muon events in a separate AOD (PWG3)
-Int_t       iJETAN             = 0;      // Jet analysis (PWG4) - needs ESD filter
+Int_t       iJETAN             = 1;      // Jet analysis (PWG4) - needs ESD filter
 Int_t       iPWG4partcorr      = 1;      // Gamma-hadron correlations task (PWG4)
-Int_t       iPWG3vertexing     = 0;      // Vertexing HF task (PWG2)
-Int_t       iPWG2femto         = 0;      // Femtoscopy task (PWG2)
-Int_t       iPWG2spectra       = 0;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
-Int_t       iPWG2flow          = 0;      // Flow analysis task (PWG2)
+Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
+Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
+Int_t       iPWG2spectra       = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
+Int_t       iPWG2flow          = 1;      // Flow analysis task (PWG2)
 Int_t       iPWG2res           = 0;      // Resonances task (PWG2)
-Int_t       iPWG2kink          = 0;      // Kink analysis task (PWG2)
+Int_t       iPWG2kink          = 1;      // Kink analysis task (PWG2)
 
 // Temporaries.
 TString anaPars = "";
@@ -252,8 +252,37 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       AliResonanceKinkLikeSign *taskkinklikesign = AddTaskKinkResonanceLikeSign();
       if (!taskkinklikesign) ::Warning("AnalysisTrainNew", "AliResonanceKinkLikeSign cannot run for this train conditions - EXCLUDED");
    }   
-      
-  // PWG3 vertexing
+
+   // Flow analysis
+   if (iPWG2flow) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/macros/AddTaskFlow.C");
+      Bool_t SP     = kTRUE;
+      Bool_t LYZ1   = kTRUE;
+      Bool_t LYZ2   = kFALSE;
+      Bool_t LYZEP  = kFALSE;
+      Bool_t GFC    = kTRUE;
+      Bool_t QC     = kTRUE;
+      Bool_t FQD    = kTRUE;
+      Bool_t MCEP   = kFALSE; //not for pp 
+      Bool_t kineFromESD = kTRUE;
+      Bool_t METHODS[] = {SP,LYZ1,LYZ2,LYZEP,GFC,QC,FQD,MCEP};
+      // Analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
+      TString type = "AOD";
+      if (!iAODanalysis) type = "ESD";
+      if (useMC) {
+         type += "MC";
+         if (!kineFromESD) type += "1";
+         else type += "0";
+      }   
+      // Boolean to fill/not fill the QA histograms
+      Bool_t QA = kTRUE;   
+      // Boolean to use/not use weights for the Q vector
+      Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
+      AliAnalysisTaskFlowEvent* taskFE = AddTaskFlow(type,METHODS,QA,WEIGHTS);
+      if (!taskFE) ::Warning("AnalysisTrainNew", "AliAnalysisTaskFlowEvent cannot run for this train conditions - EXCLUDED");
+   }   
+           
+   // PWG3 vertexing
    if (iPWG3vertexing) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskVertexingHF.C");
       AliAnalysisTaskSEVertexingHF *taskvertexingHF = AddTaskVertexingHF();
@@ -532,8 +561,8 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    }
    // PWG2 flow
    if (iPWG2flow) {
-      if (!LoadLibrary("PWG2AOD", mode, kTRUE) ||
-          !LoadLibrary("PWG2flow", mode, kTRUE)) return kFALSE;
+      if (!LoadLibrary("PWG2flowCommon", mode, kTRUE) ||
+          !LoadLibrary("PWG2flowTasks", mode, kTRUE)) return kFALSE;
    }
    // PWG2 resonances
    if (iPWG2res) {
