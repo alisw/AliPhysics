@@ -73,6 +73,10 @@ AliHLTTPCDigitReaderUnpacked::AliHLTTPCDigitReaderUnpacked()
 
 AliHLTTPCDigitReaderUnpacked::~AliHLTTPCDigitReaderUnpacked(){
   // see header file for class documentation
+  if(fMapping){
+    delete fMapping;
+  }
+  fMapping=NULL;
 }
 
 int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice){
@@ -83,6 +87,15 @@ int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t 
   fSize = size;
 
   fPatch=patch;
+  fEndOfDataReached=kFALSE;
+  fEndOfChannelReached=kFALSE;
+  fPrevTime=0;
+  fEndTimeBinOfBunch=0;
+  fPrevSignal=0;
+  fPrevPad=0;
+  fPrevRow=-1;
+  fNextChannelIsAlreadyConfirmed=kFALSE;
+  fDigitsVector.clear();
 
   tmpptr = reinterpret_cast<AliHLTTPCUnpackedRawData*>(fPtr);
   fDigitRowData = (AliHLTTPCDigitRowData*) tmpptr->fDigits;

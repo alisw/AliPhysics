@@ -109,6 +109,11 @@ void AliHLTTPCClusterFinder::InitSlice(Int_t slice,Int_t patch,Int_t nmaxpoints)
   fCurrentPatch = patch;
   fFirstRow=AliHLTTPCTransform::GetFirstRow(patch);
   fLastRow=AliHLTTPCTransform::GetLastRow(patch);
+
+  fClusters.clear();
+  fClustersMCInfo.clear();
+  fMCDigits.clear();
+  fClusterMCVector.clear();   
 }
 
 void AliHLTTPCClusterFinder::InitializePadArray(){
@@ -535,7 +540,7 @@ void AliHLTTPCClusterFinder::FindClusters(){
 	  fClusters.push_back(*tmpCandidate);
 	  if(fDoMC){
 	    //sort the vector (large->small) according to weight and remove elements above 2 (keep 0 1 and 2) 
-	    //sort(fClusterMCVector,fClusterMCVector.size(), MCWeight::CompareWeights );
+	    sort(fClusterMCVector.begin(),fClusterMCVector.end(), MCWeight::CompareWeights );
 	    ClusterMCInfo tmpClusterMCInfo;
 
 	    MCWeight zeroMC;
