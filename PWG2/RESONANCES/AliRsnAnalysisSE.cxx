@@ -67,11 +67,19 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t* )
     AliDebug(AliLog::kDebug,Form("AOD(out) tracks %d",fAODEventOut->GetNumberOfTracks()));
   }
 
+  /*
   // assign event
   if (fAODEventOut)
     fEvent.SetRef(fAODEventOut);
   else if (fESDEvent)
     fEvent.SetRef(fESDEvent, fMCEvent);
+  else
+    return;
+  */
+  if (fESDEvent)
+    fEvent.SetRef(fESDEvent, fMCEvent);
+  else if (fAODEventOut)
+    fEvent.SetRef(fAODEventOut);
   else
     return;
   if (fEvent.GetMultiplicity()<2) return;
