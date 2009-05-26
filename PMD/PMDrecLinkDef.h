@@ -26,4 +26,5 @@
 #pragma link C++ class  AliPMDCalibPedestal+;
 #pragma link C++ class  AliPMDCalibGain+;
 #pragma link C++ class  AliPMDQADataMakerRec+;
+#pragma link C++ class  AliPMDisocell+;
 #endif

@@ -92,7 +92,10 @@ AliPMDClusteringV2::~AliPMDClusteringV2()
 // ------------------------------------------------------------------------ //
 
 void AliPMDClusteringV2::DoClust(Int_t idet, Int_t ismn, 
-				 Double_t celladc[48][96], TObjArray *pmdcont)
+				 Int_t celltrack[48][96],
+				 Int_t cellpid[48][96],
+				 Double_t celladc[48][96],
+				 TObjArray *pmdisocell, TObjArray *pmdcont)
 {
   // main function to call other necessary functions to do clustering
   //
@@ -104,6 +107,7 @@ void AliPMDClusteringV2::DoClust(Int_t idet, Int_t ismn,
   Int_t    ndimXr = 0;
   Int_t    ndimYr = 0;
   Int_t    celldataX[kNmaxCell], celldataY[kNmaxCell];
+  Int_t    celldataTr[kNmaxCell], celldataPid[kNmaxCell];
   Float_t  clusdata[6];  
   Double_t cutoff, ave;
   Double_t edepcell[kNMX];
@@ -234,9 +238,12 @@ void AliPMDClusteringV2::DoClust(Int_t idet, Int_t ismn,
 	      celldataX[ihit] = (Int_t) ((cellX - (48-1) + cellY/2.) + 0.5 );
 	    }	  
 	  celldataY[ihit] = (Int_t) (cellY + 0.5);
+	  celldataTr[ihit] = -1;
+	  celldataPid[ihit] = -1;
 	}
 
-      pmdcl = new AliPMDcluster(idet, ismn, clusdata, celldataX, celldataY);
+      pmdcl = new AliPMDcluster(idet, ismn, clusdata, celldataX, celldataY,
+				celldataTr, celldataPid);
       pmdcont->Add(pmdcl);
     }
   fPMDclucont->Delete();

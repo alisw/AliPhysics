@@ -38,7 +38,8 @@ class AliPMDClusterFinder : public TObject
   void Digits2RecPoints(Int_t ievt, AliRawReader *rawReader);
   void SetCellEdepCut(Float_t ecut);
   void AddRecPoint(Int_t idet, Int_t ismn, Float_t * clusdata);
-  void AddRecHit(Int_t celldataX, Int_t celldataY);
+  void AddRecHit(Int_t celldataX, Int_t celldataY, Int_t celldataTr,
+		 Int_t celldataPid);
   void ResetCellADC();
   void ResetRecpoint();
   void ResetRechit();
@@ -72,8 +73,10 @@ class AliPMDClusterFinder : public TObject
   static const Int_t fgkRow = 48; // Total number of rows in one unitmodule
   static const Int_t fgkCol = 96; // Total number of cols in one unitmodule
   Double_t fCellADC[fgkRow][fgkCol]; // Array containing individual cell ADC
+  Int_t    fCellTrack[fgkRow][fgkCol]; // Array containing individual cell tr
+  Int_t    fCellPid[fgkRow][fgkCol]; // Array containing individual cell pid
 
-  ClassDef(AliPMDClusterFinder,12) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,13) // To run PMD clustering
 };
 #endif
 

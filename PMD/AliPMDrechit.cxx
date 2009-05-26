@@ -28,21 +28,27 @@ ClassImp(AliPMDrechit)
 
 AliPMDrechit::AliPMDrechit():
   fXcell(0),
-  fYcell(0)
+  fYcell(0),
+  fTrcell(0),
+  fPidcell(0)
 {
   // Standard constructor
 }
 
-AliPMDrechit::AliPMDrechit(Int_t cellx, Int_t celly):
+AliPMDrechit::AliPMDrechit(Int_t cellx, Int_t celly, Int_t celltr, Int_t cellpid):
   fXcell(cellx),
-  fYcell(celly)
+  fYcell(celly),
+  fTrcell(celltr),
+  fPidcell(cellpid)
 
 {
   // Constructor
 }
 AliPMDrechit::AliPMDrechit(AliPMDrechit *pmdrechit):
   fXcell(0),
-  fYcell(0)
+  fYcell(0),
+  fTrcell(0),
+  fPidcell(0)
 {
   *this = *pmdrechit;
 }
@@ -50,7 +56,10 @@ AliPMDrechit::AliPMDrechit(AliPMDrechit *pmdrechit):
 AliPMDrechit::AliPMDrechit(const AliPMDrechit& source):
   TObject(source),
   fXcell(source.fXcell),
-  fYcell(source.fYcell)
+  fYcell(source.fYcell),
+  fTrcell(source.fTrcell),
+  fPidcell(source.fPidcell)
+
 {
   //Copy Constructor 
 
@@ -63,6 +72,8 @@ AliPMDrechit& AliPMDrechit::operator=(const AliPMDrechit& source)
     {
       fXcell = source.fXcell;
       fYcell = source.fYcell;
+      fTrcell = source.fTrcell;
+      fPidcell = source.fPidcell;
     }
   return *this;
 }
@@ -78,4 +89,12 @@ Int_t AliPMDrechit::GetCellX() const
 Int_t AliPMDrechit::GetCellY() const
 {
   return fYcell;
+}
+Int_t AliPMDrechit::GetCellTrack() const
+{
+  return fTrcell;
+}
+Int_t AliPMDrechit::GetCellPid() const
+{
+  return fPidcell;
 }

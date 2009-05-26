@@ -39,12 +39,15 @@ AliPMDcluster::AliPMDcluster():
     {
       fClusCellDataX[i] = 0;
       fClusCellDataY[i] = 0;
+      fClusCellTrack[i] = -1;
+      fClusCellPid[i]   = -1;
     }
 
 }
 // --------------------------------------------------------------------- //
 AliPMDcluster::AliPMDcluster(Int_t idet, Int_t ismn, Float_t *clusdata,
-			     Int_t *celldataX, Int_t *celldataY):
+			     Int_t *celldataX, Int_t *celldataY,
+			     Int_t *celltrack, Int_t *cellpid):
   fDet(idet),
   fSMN(ismn)
 {
@@ -57,6 +60,8 @@ AliPMDcluster::AliPMDcluster(Int_t idet, Int_t ismn, Float_t *clusdata,
     {
       fClusCellDataX[i] = celldataX[i];
       fClusCellDataY[i] = celldataY[i];
+      fClusCellTrack[i] = celltrack[i];
+      fClusCellPid[i]   = cellpid[i];
     }
 
 }
@@ -83,6 +88,8 @@ AliPMDcluster::AliPMDcluster(const AliPMDcluster &pmdcluster):
     {
       this->fClusCellDataX[i] = pmdcluster.fClusCellDataX[i];
       this->fClusCellDataY[i] = pmdcluster.fClusCellDataY[i];
+      this->fClusCellTrack[i] = pmdcluster.fClusCellTrack[i];
+      this->fClusCellPid[i]   = pmdcluster.fClusCellPid[i];
     }
 }
 // --------------------------------------------------------------------- //
@@ -102,6 +109,8 @@ AliPMDcluster & AliPMDcluster::operator=(const AliPMDcluster &pmdcluster)
 	{
 	  this->fClusCellDataX[i] = pmdcluster.fClusCellDataX[i];
 	  this->fClusCellDataY[i] = pmdcluster.fClusCellDataY[i];
+	  this->fClusCellTrack[i] = pmdcluster.fClusCellTrack[i];
+	  this->fClusCellPid[i]   = pmdcluster.fClusCellPid[i];
 	}
     }
   return *this;
@@ -162,5 +171,15 @@ Int_t AliPMDcluster::GetClusCellX(Int_t i) const
 Int_t AliPMDcluster::GetClusCellY(Int_t i) const
 {
   return fClusCellDataY[i];
+}
+// --------------------------------------------------------------------- //
+Int_t AliPMDcluster::GetClusCellTrack(Int_t i) const
+{
+  return fClusCellTrack[i];
+}
+// --------------------------------------------------------------------- //
+Int_t AliPMDcluster::GetClusCellPid(Int_t i) const
+{
+  return fClusCellPid[i];
 }
 // --------------------------------------------------------------------- //

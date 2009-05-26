@@ -23,11 +23,12 @@ class AliPMDClustering: public TObject
   AliPMDClustering(){};
   virtual ~AliPMDClustering(){};
 
-  virtual void DoClust(Int_t idet, Int_t ismn, Double_t celladc[][96],
-		       TObjArray *pmdcont) = 0;
+  virtual void DoClust(Int_t idet, Int_t ismn, Int_t celltrack[][96],
+		       Int_t cellpid[][96], Double_t celladc[][96],
+		       TObjArray *pmdisocell, TObjArray *pmdcont) = 0;
 
   virtual void SetEdepCut(Float_t decut) = 0;
 
-  ClassDef(AliPMDClustering,6) // Does clustering for PMD
+  ClassDef(AliPMDClustering,7) // Does clustering for PMD
 };
 #endif

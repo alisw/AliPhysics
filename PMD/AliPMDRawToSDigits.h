@@ -31,9 +31,9 @@ class AliPMDRawToSDigits : public TObject
   void Raw2SDigits(AliRunLoader *runLoader, AliRawReader *rawReader);
   void Raw2Digits(AliRunLoader *runLoader, AliRawReader *rawReader);
   void AdcToMeV(Int_t adc, Float_t &edep);
-  void AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
+  void AddSDigit(Int_t trnumber, Int_t trpid, Int_t det, Int_t smnumber, 
 		 Int_t irow, Int_t icol, Float_t adc);
-  void AddDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
+  void AddDigit(Int_t trnumber, Int_t trpid, Int_t det, Int_t smnumber, 
 		Int_t irow, Int_t icol, Float_t adc);
 
   void ResetSDigit();
@@ -47,7 +47,7 @@ class AliPMDRawToSDigits : public TObject
   Int_t   fNsdigit;          // Digits counter
   Int_t   fNdigit;           // Digits counter
 
-  ClassDef(AliPMDRawToSDigits,0)    // Coverts Raw to SDigits
+  ClassDef(AliPMDRawToSDigits,1)    // Coverts Raw to SDigits
 };
 #endif
 

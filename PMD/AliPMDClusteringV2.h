@@ -28,8 +28,9 @@ class AliPMDClusteringV2 : public AliPMDClustering
   AliPMDClusteringV2 &operator=(const AliPMDClusteringV2 &pmdclv2);
   virtual ~AliPMDClusteringV2();
   
-  void     DoClust(Int_t idet, Int_t ismn, Double_t celladc[][96],
-		   TObjArray *pmdcont);
+  void     DoClust(Int_t idet, Int_t ismn, Int_t celltrack[][96],
+		   Int_t cellpid[][96], Double_t celladc[][96],
+		   TObjArray *pmdisocell, TObjArray *pmdcont);
   Int_t    CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
 		   Int_t iord1[], Double_t edepcell[]);
   void     RefClust(Int_t incr, Double_t edepcell[]);
@@ -60,7 +61,7 @@ class AliPMDClusteringV2 : public AliPMDClustering
 
   Float_t fCutoff; // Energy(ADC) cutoff per cell before clustering
   
-  ClassDef(AliPMDClusteringV2,3) // Does clustering for PMD
+  ClassDef(AliPMDClusteringV2,4) // Does clustering for PMD
 };
 #endif
     

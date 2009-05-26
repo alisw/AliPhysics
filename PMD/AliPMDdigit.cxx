@@ -28,6 +28,7 @@ ClassImp(AliPMDdigit)
 
 AliPMDdigit::AliPMDdigit():
   fTrNumber(0),
+  fTrPid(0),
   fDet(0),
   fSMNumber(0),
   fRow(0),
@@ -37,9 +38,11 @@ AliPMDdigit::AliPMDdigit():
   // Default Constructor
 }
 
-AliPMDdigit::AliPMDdigit(Int_t trnumber, Int_t det, Int_t smnumber, 
+AliPMDdigit::AliPMDdigit(Int_t trnumber, Int_t trpid, Int_t det,
+			 Int_t smnumber, 
 			 Int_t irow, Int_t icol, Float_t adc):
   fTrNumber(trnumber),
+  fTrPid(trpid),
   fDet(det),
   fSMNumber(smnumber),
   fRow(irow),
@@ -50,6 +53,7 @@ AliPMDdigit::AliPMDdigit(Int_t trnumber, Int_t det, Int_t smnumber,
 }
 AliPMDdigit::AliPMDdigit(AliPMDdigit *pmddigit):
   fTrNumber(0),
+  fTrPid(0),
   fDet(0),
   fSMNumber(0),
   fRow(0),
@@ -62,6 +66,7 @@ AliPMDdigit::AliPMDdigit(AliPMDdigit *pmddigit):
 AliPMDdigit::AliPMDdigit(const AliPMDdigit& pmddigit):
   TObject(pmddigit),
   fTrNumber(pmddigit.fTrNumber),
+  fTrPid(pmddigit.fTrPid),
   fDet(pmddigit.fDet),
   fSMNumber(pmddigit.fSMNumber),
   fRow(pmddigit.fRow),
@@ -75,6 +80,7 @@ AliPMDdigit & AliPMDdigit::operator=(const AliPMDdigit& pmddigit) {
   if(this != &pmddigit)
     {
       fTrNumber   = pmddigit.fTrNumber;
+      fTrPid      = pmddigit.fTrPid;
       fDet        = pmddigit.fDet;
       fSMNumber   = pmddigit.fSMNumber;
       fRow        = pmddigit.fRow;
@@ -90,6 +96,10 @@ AliPMDdigit::~AliPMDdigit()
 Int_t AliPMDdigit::GetTrackNumber() const
 {
   return fTrNumber;
+}
+Int_t AliPMDdigit::GetTrackPid() const
+{
+  return fTrPid;
 }
 Int_t AliPMDdigit::GetDetector() const
 {

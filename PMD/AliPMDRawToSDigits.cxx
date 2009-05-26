@@ -196,15 +196,16 @@ void AliPMDRawToSDigits::Raw2SDigits(AliRunLoader *runLoader, AliRawReader *rawR
 	  for (Int_t icol = 0; icol < kCol; icol++)
 	    {
 
-	      Int_t trno = -99999;
-	      Int_t sig1 = precpvADC[indexsmn][irow][icol];
+	      Int_t trno  = -99999;   // when extracted from raw data
+	      Int_t trpid = -99999;   // when extracted from raw data
+	      Int_t sig1  = precpvADC[indexsmn][irow][icol];
 	      
 	      // plug in a function to convert to adc to MeV
 	      Float_t edep = 0.;
 	      if (sig1 > 0)
 		{
 		  AdcToMeV(sig1,edep);
-		  AddSDigit(trno,idet,ismn,irow,icol,edep);
+		  AddSDigit(trno,trpid,idet,ismn,irow,icol,edep);
 		}
 	    } // row
 	}     // col
@@ -332,13 +333,14 @@ void AliPMDRawToSDigits::Raw2Digits(AliRunLoader *runLoader, AliRawReader *rawRe
 	{
 	  for (Int_t icol = 0; icol < kCol; icol++)
 	    {
-	      Int_t trno = -99999;
-	      Int_t sig1 = precpvADC[indexsmn][irow][icol];
+	      Int_t trno  = -99999;    // when extracted from raw
+	      Int_t trpid = -99999;    // when extracted from raw
+	      Int_t sig1  = precpvADC[indexsmn][irow][icol];
 	      
 	      // plug in a function to convert to adc to MeV
 	      if (sig1 > 0)
 		{
-		  AddDigit(trno,idet,ismn,irow,icol,sig1);
+		  AddDigit(trno,trpid,idet,ismn,irow,icol,sig1);
 		}
 	    } // row
 	}     // col
@@ -382,25 +384,27 @@ void AliPMDRawToSDigits::AdcToMeV(Int_t adc, Float_t &edep)
 
 // ------------------------------------------------------------------------- //
 
-void AliPMDRawToSDigits::AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
+void AliPMDRawToSDigits::AddSDigit(Int_t trnumber, Int_t trpid, Int_t det,
+				   Int_t smnumber, 
 				   Int_t irow, Int_t icol, Float_t adc)
 {
   // Add SDigit
   //
   if (!fSDigits) fSDigits = new TClonesArray("AliPMDsdigit", 1000);
   TClonesArray &lsdigits = *fSDigits;
-  new(lsdigits[fNsdigit++]) AliPMDsdigit(trnumber,det,smnumber,irow,icol,adc);
+  new(lsdigits[fNsdigit++]) AliPMDsdigit(trnumber,trpid,det,smnumber,irow,icol,adc);
 }
 
 // ------------------------------------------------------------------------- //
-void AliPMDRawToSDigits::AddDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
+void AliPMDRawToSDigits::AddDigit(Int_t trnumber, Int_t trpid, Int_t det,
+				  Int_t smnumber, 
 				  Int_t irow, Int_t icol, Float_t adc)
 {
   // Add Digit
   //
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);
   TClonesArray &ldigits = *fDigits;
-  new(ldigits[fNdigit++]) AliPMDdigit(trnumber,det,smnumber,irow,icol,adc);
+  new(ldigits[fNdigit++]) AliPMDdigit(trnumber,trpid,det,smnumber,irow,icol,adc);
 }
 
 // ------------------------------------------------------------------------- //

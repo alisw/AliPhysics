@@ -84,12 +84,14 @@ AliPMDDigitizer::AliPMDDigitizer() :
 	{
 	  for (Int_t k = 0; k < fgkCol; k++)
 	    {
-	      fCPV[i][j][k] = 0.;
-	      fPRE[i][j][k] = 0.;
-	      fCPVCounter[i][j][k] =  0; 
-	      fPRECounter[i][j][k] =  0;
-	      fCPVTrackNo[i][j][k] = -1;
-	      fPRETrackNo[i][j][k] = -1;
+	      fCPV[i][j][k]         = 0.;
+	      fPRE[i][j][k]         = 0.;
+	      fCPVCounter[i][j][k]  =  0; 
+	      fPRECounter[i][j][k]  =  0;
+	      fCPVTrackNo[i][j][k]  = -1;
+	      fPRETrackNo[i][j][k]  = -1;
+	      fCPVTrackPid[i][j][k] = -1;
+	      fPRETrackPid[i][j][k] = -1;
 	    }
 	}
     }
@@ -152,12 +154,14 @@ AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager):
 	{
 	  for (Int_t k = 0; k < fgkCol; k++)
 	    {
-	      fCPV[i][j][k] = 0.;
-	      fPRE[i][j][k] = 0.;
-	      fCPVCounter[i][j][k] =  0; 
-	      fPRECounter[i][j][k] =  0;
-	      fCPVTrackNo[i][j][k] = -1;
-	      fPRETrackNo[i][j][k] = -1;
+	      fCPV[i][j][k]         = 0.;
+	      fPRE[i][j][k]         = 0.;
+	      fCPVCounter[i][j][k]  =  0; 
+	      fPRECounter[i][j][k]  =  0;
+	      fCPVTrackNo[i][j][k]  = -1;
+	      fPRETrackNo[i][j][k]  = -1;
+	      fCPVTrackPid[i][j][k] = -1;
+	      fPRETrackPid[i][j][k] = -1;
 	    }
 	}
     }
@@ -276,6 +280,17 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   AliDebug(1,Form("Event Number = %d",ievt));
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   AliDebug(1,Form("Number of Particles = %d",nparticles));
+  //
+  // Ajay on 24th May 2009
+  //No of primary
+  Int_t nprimary   = fRunLoader->GetHeader()->GetNprimary();
+  Int_t  * mtraPid  = new Int_t [nprimary]; 
+  for(Int_t i = 0; i < nprimary; i++)
+    {
+      mtraPid[i] = -1; 
+    }
+  //
+
   fRunLoader->GetEvent(ievt);
   // ------------------------------------------------------- //
   // Pointer to specific detector hits.
@@ -356,6 +371,8 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      mtrackno=trackno;
 	      trackpid=trackpidOld;
 	      trackno=tracknoOld;
+	      
+	      mtraPid[trackno] = mtrackpid;
 	      
 	      //-----------------end of modification----------------
 	      xPos = fPMDHit->X();
@@ -438,6 +455,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   Float_t deltaE      = 0.;
   Int_t   detno       = 0;
   Int_t   trno        = -1;
+  Int_t   trpid       = -99;
 
   for (Int_t idet = 0; idet < 2; idet++)
     {
@@ -451,17 +469,19 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		    {
 		      deltaE = fPRE[ism][jrow][kcol];
 		      trno   = fPRETrackNo[ism][jrow][kcol];
+		      trpid  = mtraPid[trno]; // added
 		      detno = 0;
 		    }
 		  else if (idet == 1)
 		    {
 		      deltaE = fCPV[ism][jrow][kcol];
 		      trno   = fCPVTrackNo[ism][jrow][kcol];
+		      trpid  = mtraPid[trno]; // added
 		      detno = 1;
 		    }
 		  if (deltaE > 0.)
 		    {
-		      AddSDigit(trno,detno,ism,jrow,kcol,deltaE);
+		      AddSDigit(trno,trpid,detno,ism,jrow,kcol,deltaE);
 		    }
 		}
 	    }
@@ -471,6 +491,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
     }
   fPMDLoader->WriteSDigits("OVERWRITE");
   ResetCellADC();
+  delete [] mtraPid;
 }
 //____________________________________________________________________________
 
@@ -499,6 +520,18 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   AliDebug(1,Form("Event Number =  %d",ievt));
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   AliDebug(1,Form("Number of Particles = %d", nparticles));
+
+  //
+  // Ajay on 24th May 2009
+  //No of primary
+  Int_t nprimary   = fRunLoader->GetHeader()->GetNprimary();
+  Int_t  * mtraPid  = new Int_t [nprimary]; 
+  for(Int_t i = 0; i < nprimary; i++)
+    {
+      mtraPid[i] = -1; 
+    }
+  //
+
   fRunLoader->GetEvent(ievt);
   // ------------------------------------------------------- //
   // Pointer to specific detector hits.
@@ -589,6 +622,8 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      trackpid=trackpidOld;
 	      trackno=tracknoOld;
 	      
+	      mtraPid[mtrackno] = mtrackpid;  // added by Ajay
+	      
 	      //-----------------end of modification----------------
 	      xPos = fPMDHit->X();
 	      yPos = fPMDHit->Y();
@@ -673,6 +708,8 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   Float_t deltaE = 0.;
   Int_t detno = 0;
   Int_t trno = 1;
+  Int_t trpid = -99;
+
   for (Int_t idet = 0; idet < 2; idet++)
   {
       for (Int_t ism = 0; ism < fgkTotUM; ism++)
@@ -685,13 +722,15 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		  {
 		      deltaE = fPRE[ism][jrow][kcol];
 		      trno   = fPRETrackNo[ism][jrow][kcol];
-		      detno = 0;
+		      trpid  = mtraPid[trno];   // added
+		      detno  = 0;
 		  }
 		  else if (idet == 1)
 		  {
 		      deltaE = fCPV[ism][jrow][kcol];
 		      trno   = fCPVTrackNo[ism][jrow][kcol];
-		      detno = 1;
+		      trpid  = mtraPid[trno];   // added
+		      detno  = 1;
 		  }
 		  if (deltaE > 0.)
 		  {
@@ -720,7 +759,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		      if (adc > 0.)
 		      {
 			  adc += (pedmean + 3.0*pedrms);
-			  AddDigit(trno,detno,ism,jrow,kcol,adc);
+			  AddDigit(trno,trpid,detno,ism,jrow,kcol,adc);
 		      }
 		  }
 	      } // column loop
@@ -732,7 +771,8 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   
   fPMDLoader->WriteDigits("OVERWRITE");
   ResetCellADC();
-  
+
+  delete [] mtraPid;
 }
 //____________________________________________________________________________
 
@@ -766,7 +806,7 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);
   treeD->Branch("PMDDigit", &fDigits, bufsize);
 
-  Int_t   trno, det, smn;
+  Int_t   trno, trpid, det, smn;
   Int_t   irow, icol;
   Float_t edep, adc;
 
@@ -782,6 +822,7 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 	{
 	  pmdsdigit = (AliPMDsdigit*)fSDigits->UncheckedAt(ient);
 	  trno   = pmdsdigit->GetTrackNumber();
+	  trpid  = pmdsdigit->GetTrackPid();
 	  det    = pmdsdigit->GetDetector();
 	  smn    = pmdsdigit->GetSMNumber();
 	  irow   = pmdsdigit->GetRow();
@@ -810,7 +851,7 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 	  if(adc > 0.)
 	  {
 	      adc += (pedmean + 3.0*pedrms);
-	      AddDigit(trno,det,smn,irow,icol,adc);
+	      AddDigit(trno,trpid,det,smn,irow,icol,adc);
 	  }
 
 	}
@@ -860,8 +901,9 @@ void AliPMDDigitizer::Exec(Option_t *option)
 
   Float_t adc;
   Float_t deltaE = 0.;
-  Int_t detno = 0;
-  Int_t trno = 1;
+  Int_t detno    = 0;
+  Int_t trno     = 1;
+  Int_t trpid    = -99;
 
   for (Int_t idet = 0; idet < 2; idet++)
     {
@@ -875,13 +917,15 @@ void AliPMDDigitizer::Exec(Option_t *option)
 		    {
 		      deltaE = fPRE[ism][jrow][kcol];
 		      trno   = fPRETrackNo[ism][jrow][kcol];
-		      detno = 0;
+		      trpid  = fPRETrackPid[ism][jrow][kcol];
+		      detno  = 0;
 		    }
 		  else if (idet == 1)
 		    {
 		      deltaE = fCPV[ism][jrow][kcol];
 		      trno   = fCPVTrackNo[ism][jrow][kcol];
-		      detno = 1;
+		      trpid  = fCPVTrackPid[ism][jrow][kcol];
+		      detno  = 1;
 		    }
 		  if (deltaE > 0.)
 		    {
@@ -911,7 +955,7 @@ void AliPMDDigitizer::Exec(Option_t *option)
 		      if (adc > 0.)
 		      {
 			  adc += (pedmean + 3.0*pedrms);
-			  AddDigit(trno,detno,ism,jrow,kcol,adc);
+			  AddDigit(trno,trpid,detno,ism,jrow,kcol,adc);
 		      }
 
 		    }
@@ -1139,7 +1183,7 @@ void AliPMDDigitizer::MergeSDigits(Int_t filenumber, Int_t troffset)
   if (!fSDigits) fSDigits = new TClonesArray("AliPMDsdigit", 1000);
   branch->SetAddress(&fSDigits);
 
-  Int_t   itrackno, idet, ism;
+  Int_t   itrackno, itrackpid, idet, ism;
   Int_t   ixp, iyp;
   Float_t edep;
   Int_t nmodules = (Int_t) treeS->GetEntries();
@@ -1154,6 +1198,7 @@ void AliPMDDigitizer::MergeSDigits(Int_t filenumber, Int_t troffset)
 	{
 	  pmdsdigit = (AliPMDsdigit*)fSDigits->UncheckedAt(ient);
 	  itrackno  = pmdsdigit->GetTrackNumber();
+	  itrackpid = pmdsdigit->GetTrackPid();
 	  idet      = pmdsdigit->GetDetector();
 	  ism       = pmdsdigit->GetSMNumber();
 	  ixp       = pmdsdigit->GetRow();
@@ -1164,6 +1209,7 @@ void AliPMDDigitizer::MergeSDigits(Int_t filenumber, Int_t troffset)
 	      if (fPRE[ism][ixp][iyp] < edep)
 		{
 		  fPRETrackNo[ism][ixp][iyp] = troffset + itrackno;
+		  fPRETrackPid[ism][ixp][iyp] = itrackpid;
 		}
 	      fPRE[ism][ixp][iyp] += edep;
 	    }
@@ -1172,6 +1218,7 @@ void AliPMDDigitizer::MergeSDigits(Int_t filenumber, Int_t troffset)
 	      if (fCPV[ism][ixp][iyp] < edep)
 		{
 		  fCPVTrackNo[ism][ixp][iyp] = troffset + itrackno;
+		  fCPVTrackPid[ism][ixp][iyp] = itrackpid;
 		}
 	      fCPV[ism][ixp][iyp] += edep;
 	    }
@@ -1412,25 +1459,27 @@ void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
     }
 }
 //____________________________________________________________________________
-void AliPMDDigitizer::AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber,
-				Int_t irow, Int_t icol, Float_t adc)
+void AliPMDDigitizer::AddSDigit(Int_t trnumber, Int_t trpid, Int_t det,
+				Int_t smnumber, Int_t irow, Int_t icol,
+				Float_t adc)
 {
   // Add SDigit
   //
   if (!fSDigits) fSDigits = new TClonesArray("AliPMDsdigit", 1000);
   TClonesArray &lsdigits = *fSDigits;
-  new(lsdigits[fNsdigit++])  AliPMDsdigit(trnumber,det,smnumber,irow,icol,adc);
+  new(lsdigits[fNsdigit++])  AliPMDsdigit(trnumber,trpid,det,smnumber,irow,icol,adc);
 }
 //____________________________________________________________________________
 
-void AliPMDDigitizer::AddDigit(Int_t trnumber, Int_t det, Int_t smnumber,
-			       Int_t irow, Int_t icol, Float_t adc)
+void AliPMDDigitizer::AddDigit(Int_t trnumber, Int_t trpid, Int_t det,
+			       Int_t smnumber, Int_t irow, Int_t icol,
+			       Float_t adc)
 {
   // Add Digit
   //
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);
   TClonesArray &ldigits = *fDigits;
-  new(ldigits[fNdigit++]) AliPMDdigit(trnumber,det,smnumber,irow,icol,adc);
+  new(ldigits[fNdigit++]) AliPMDdigit(trnumber,trpid, det,smnumber,irow,icol,adc);
 }
 //____________________________________________________________________________
 
@@ -1489,10 +1538,12 @@ void AliPMDDigitizer::ResetCellADC()
 	{
 	  for (Int_t k = 0; k < fgkCol; k++)
 	    {
-	      fCPV[i][j][k] = 0.;
-	      fPRE[i][j][k] = 0.;
-	      fCPVTrackNo[i][j][k] = 0;
-	      fPRETrackNo[i][j][k] = 0;
+	      fCPV[i][j][k]         = 0.;
+	      fPRE[i][j][k]         = 0.;
+	      fCPVTrackNo[i][j][k]  = 0;
+	      fPRETrackNo[i][j][k]  = 0;
+	      fCPVTrackPid[i][j][k] = -1;
+	      fPRETrackPid[i][j][k] = -1;
 	    }
 	}
     }

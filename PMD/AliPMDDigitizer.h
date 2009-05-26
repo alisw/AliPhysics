@@ -58,9 +58,9 @@ class AliPMDDigitizer:public AliDigitizer
   void TrackAssignment2CPVCell();
   void TrackAssignment2Cell();
   void MeV2ADC(Float_t mev, Float_t & adc) const;
-  void AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
+  void AddSDigit(Int_t trnumber, Int_t trpid, Int_t det, Int_t smnumber, 
 		 Int_t irow, Int_t icol, Float_t adc);
-  void AddDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
+  void AddDigit(Int_t trnumber, Int_t trpid, Int_t det, Int_t smnumber, 
 		Int_t irow, Int_t icol, Float_t adc);
   void  SetZPosition(Float_t zpos);
   Float_t GetZPosition() const;
@@ -113,8 +113,13 @@ class AliPMDDigitizer:public AliDigitizer
   Int_t   fPRETrackNo[fgkTotUM][fgkRow][fgkCol]; //! PRE Array containing 
                                                  //  track number
 
+  Int_t   fCPVTrackPid[fgkTotUM][fgkRow][fgkCol]; //! CPV Array containing 
+                                                 //  track number
+  Int_t   fPRETrackPid[fgkTotUM][fgkRow][fgkCol]; //! PRE Array containing 
+                                                 //  track number
+
   
-  ClassDef(AliPMDDigitizer,8)    // To digitize PMD Hits
+  ClassDef(AliPMDDigitizer,9)    // To digitize PMD Hits
 };
 #endif
 

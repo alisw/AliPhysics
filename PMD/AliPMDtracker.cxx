@@ -165,9 +165,12 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 	  clusdata[3] = fPMDrecpoint->GetClusCells();
 	  clusdata[4] = fPMDrecpoint->GetClusSigmaX();
 	  clusdata[5] = fPMDrecpoint->GetClusSigmaY();
-
-	  fPMDclin = new AliPMDrecpoint1(idet,ismn,clusdata);
-	  fPMDcontin->Add(fPMDclin);
+	  
+	  if (clusdata[4] != -99. && clusdata[5] != -99.)
+	    { 
+	      fPMDclin = new AliPMDrecpoint1(idet,ismn,clusdata);
+	      fPMDcontin->Add(fPMDclin);
+	    }
 	}
     }
 
