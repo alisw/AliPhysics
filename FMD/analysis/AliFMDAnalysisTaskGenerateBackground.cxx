@@ -10,14 +10,14 @@
 #include "AliStack.h"
 #include "AliMCParticle.h"
 #include "AliMCEvent.h"
-#include "AliFMDGeometry.h"
+//#include "AliFMDGeometry.h"
 #include "TArray.h"
 #include "AliGenEventHeader.h"
 #include "AliHeader.h"
 #include "AliFMDAnaCalibBackgroundCorrection.h"
-#include "AliCDBManager.h"
-#include "AliCDBId.h"
-#include "AliCDBMetaData.h"
+//#include "AliCDBManager.h"
+//#include "AliCDBId.h"
+//#include "AliCDBMetaData.h"
 #include "TSystem.h"
 #include "TROOT.h"
 #include "TAxis.h"
@@ -34,7 +34,7 @@ AliFMDAnalysisTaskGenerateBackground::AliFMDAnalysisTaskGenerateBackground(const
   AliAnalysisTaskSE(name),
   fZvtxCut(10),
   fNvtxBins(10),
-  fNbinsEta(100)
+  fNbinsEta(200)
 {
  
   DefineOutput(1, TList::Class());
@@ -149,15 +149,16 @@ void AliFMDAnalysisTaskGenerateBackground::UserExec(Option_t */*option*/)
       AliFMDStripIndex::Unpack(ref->UserId(),det,ring,sec,strip);
       Float_t thisStripTrack = fLastTrackByStrip.operator()(det,ring,sec,strip);
       if(particle->Charge() != 0 && i != thisStripTrack ) {
-	Double_t x,y,z;
-	AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
-	fmdgeo->Detector2XYZ(det,ring,sec,strip,x,y,z);
-	
-	Float_t   phi   = TMath::ATan2(y,x);
-	if(phi<0) phi   = phi+2*TMath::Pi();
-	Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
-	Float_t   theta = TMath::ATan2(r,z-vertex.At(2));
-	Float_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
+	//Double_t x,y,z;
+	//AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
+	//fmdgeo->Detector2XYZ(det,ring,sec,strip,x,y,z);
+	Float_t phi = pars->GetPhiFromSector(det,ring,sec);
+	Float_t eta = pars->GetEtaFromStrip(det,ring,sec,strip,vertex.At(2));
+	//Float_t   phi   = TMath::ATan2(y,x);
+	//if(phi<0) phi   = phi+2*TMath::Pi();
+	//	Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
+	//Float_t   theta = TMath::ATan2(r,z-vertex.At(2));
+	//Float_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
 	TH2F* hHits = (TH2F*)fListOfHits.FindObject(Form("hHits_FMD%d%c_vtx%d", det,ring,vertexBin));
 	hHits->Fill(eta,phi);
 	Float_t nstrips = (ring =='O' ? 256 : 512);
@@ -196,13 +197,13 @@ void AliFMDAnalysisTaskGenerateBackground::UserExec(Option_t */*option*/)
 //_____________________________________________________________________
 void AliFMDAnalysisTaskGenerateBackground::Terminate(Option_t */*option*/)
 {
-  TH1F* allHits = (TH1F*)fListOfHits.FindObject("allHits");
+  /*  TH1F* allHits = (TH1F*)fListOfHits.FindObject("allHits");
   TH1F* doubleHits = (TH1F*)fListOfHits.FindObject("DoubleHits");
   
   doubleHits->Divide(allHits);
   GenerateCorrection();
   PostData(1, &fListOfHits);
-  PostData(4, &fListOfCorrection);
+  PostData(4, &fListOfCorrection);*/
   
 }
 //_____________________________________________________________________
@@ -277,7 +278,10 @@ void AliFMDAnalysisTaskGenerateBackground::ReadFromFile(const Char_t* filename, 
   fout.Close();
   
   if(storeInOCDB) {
-    AliCDBManager* cdb = AliCDBManager::Instance();
+    TFile fcalib("$ALICE_ROOT/FMD/Correction/Background/background.root","RECREATE");
+    fBackground->Write(AliFMDAnaParameters::fkBackgroundID);
+    fcalib.Close();
+    /*  AliCDBManager* cdb = AliCDBManager::Instance();
     cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     AliCDBId      id(AliFMDAnaParameters::GetBackgroundPath(),runNo,999999999);
     
@@ -288,7 +292,7 @@ void AliFMDAnalysisTaskGenerateBackground::ReadFromFile(const Char_t* filename, 
     meta->SetComment("Background Correction for FMD");
     meta->SetProperty("key1", fBackground );
     cdb->Put(fBackground, id, meta);
-    
+    */
   }
   
 }

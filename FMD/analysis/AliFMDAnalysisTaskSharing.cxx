@@ -7,17 +7,17 @@
 #include <TList.h>
 #include <iostream>
 #include <TMath.h>
-#include "AliFMDDebug.h"
+//#include "AliFMDDebug.h"
 #include "AliFMDAnalysisTaskSharing.h"
 #include "AliAnalysisManager.h"
 #include "AliESDFMD.h"
-#include "AliFMDGeometry.h"
+//#include "AliFMDGeometry.h"
 #include "AliMCEventHandler.h"
 #include "AliStack.h"
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
 #include "AliFMDAnaParameters.h"
-#include "AliFMDParameters.h"
+//#include "AliFMDParameters.h"
 
 ClassImp(AliFMDAnalysisTaskSharing)
 
@@ -135,7 +135,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   else foutputESDFMD->SetUniqueID(kFALSE);
   
   AliESDFMD* fmd = fESD->GetFMDData();
-  
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   if (!fmd) return;
   Int_t nHits = 0;
   for(UShort_t det=1;det<=3;det++) {
@@ -159,7 +159,8 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 	  if(mult == AliESDFMD::kInvalidMult || mult == 0) continue;
 	  
 	  //Double_t eta  = EtaFromStrip(det,ring,sec,strip,vertex[2]);//fmd->Eta(det,ring,sec,strip);
-	  Double_t eta = fmd->Eta(det,ring,sec,strip);
+	  //Double_t eta = fmd->Eta(det,ring,sec,strip);
+	  Float_t eta = pars->GetEtaFromStrip(det,ring,sec,strip,vertex[2]);
 	  //std::cout<<EtaFromStrip(det,ring,sec,strip,vertex[2]) <<"    "<<fmd->Eta(det,ring,sec,strip)<<std::endl;
 	  
 	  hEdist->Fill(mult);
@@ -370,7 +371,7 @@ Float_t AliFMDAnalysisTaskSharing::Eta2Theta(Float_t eta) {
 
 }
 //_____________________________________________________________________
-Double_t AliFMDAnalysisTaskSharing::EtaFromStrip(UShort_t det, 
+/*Double_t AliFMDAnalysisTaskSharing::EtaFromStrip(UShort_t det, 
 						Char_t ring, 
 						UShort_t sector, 
 						UShort_t strip, 
@@ -392,7 +393,7 @@ Double_t AliFMDAnalysisTaskSharing::EtaFromStrip(UShort_t det,
   // std::cout<<det<<"   "<<ring<<"   "<<sector<<"   "<<strip<<"   "<<r<<"    "<<z_real<<"   "<<theta<<"    "<<eta<<std::endl;
   
   return eta;
-}
+  }*/
 //_____________________________________________________________________
 //
 // EOF

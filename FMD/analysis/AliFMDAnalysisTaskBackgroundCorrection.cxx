@@ -19,7 +19,7 @@
 #include "AliESDVertex.h"
 #include "TMath.h"
 #include "AliFMDAnaParameters.h"
-#include "AliFMDGeometry.h"
+//#include "AliFMDGeometry.h"
 
 ClassImp(AliFMDAnalysisTaskBackgroundCorrection)
 
@@ -180,9 +180,10 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       hHits->Add(hMultInput);
       TH2F* hBg        = pars->GetBackgroundCorrection(det, ringChar, vtxbin);
       
-      TH2F* hTmp       = (TH2F*)hMultInput->Clone("hMult_from_event");
+      //TH2F* hTmp       = (TH2F*)hMultInput->Clone("hMult_from_event");
+      hMultTotal->Add(hMultInput);
       
-      hTmp->Divide(hTmp,hBg,1,1);//,"B");
+      hMultTotal->Divide(hBg);//,"B");
       /*for(Int_t i = 1; i<=hTmp->GetNbinsX();i++) {
 	for(Int_t j = 1; j<=hTmp->GetNbinsY();j++) {
 	  Float_t mult = hTmp->GetBinContent(i,j);
@@ -198,8 +199,10 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
 	  hTmp->SetBinContent(i,j,multcor);
 	}
 	}*/
-      hMultTotal->Add(hTmp);
-      delete hTmp;
+      
+      
+      
+      // delete hTmp;
       
     }
   }

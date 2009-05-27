@@ -22,9 +22,9 @@
 
 #include "AliFMDDebug.h"		   // ALILOG_H
 #include "AliFMDAnaParameters.h"	   // ALIFMDPARAMETERS_H
-#include <AliCDBManager.h>         // ALICDBMANAGER_H
-#include <AliCDBEntry.h>           // ALICDBMANAGER_H
-#include "AliFMDRing.h"
+//#include <AliCDBManager.h>         // ALICDBMANAGER_H
+//#include <AliCDBEntry.h>           // ALICDBMANAGER_H
+//#include "AliFMDRing.h"
 #include <AliLog.h>
 #include <Riostream.h>
 #include <sstream>
@@ -40,7 +40,9 @@ ClassImp(AliFMDAnaParameters)
 #endif
 
 const char* AliFMDAnaParameters::fgkBackgroundCorrection  = "FMD/Correction/Background";
-const char* AliFMDAnaParameters::fgkEnergyDists  = "FMD/Correction/EnergyDistribution";
+const char* AliFMDAnaParameters::fgkEnergyDists = "FMD/Correction/EnergyDistribution";
+const char* AliFMDAnaParameters::fkBackgroundID = "background";
+const char* AliFMDAnaParameters::fkEnergyDistributionID = "energydistributions";
 //____________________________________________________________________
 AliFMDAnaParameters* AliFMDAnaParameters::fgInstance = 0;
 
@@ -58,9 +60,16 @@ AliFMDAnaParameters::Instance()
 AliFMDAnaParameters::AliFMDAnaParameters() :
   fIsInit(kFALSE),
   fBackground(0),
-  fEnergyDistribution(0)
+  fEnergyDistribution(0),
+  fCorner1(4.2231, 26.6638),
+  fCorner2(1.8357, 27.9500),
+  fEnergyPath("$ALICE_ROOT/FMD/Correction/EnergyDistribution/energydistributions.root"),
+  fBackgroundPath("$ALICE_ROOT/FMD/Correction/Background/background.root")
 {
   
+  
+  //fVerticies.Add(new TVector2(4.2231, 26.6638));
+  // fVerticies.Add(new TVector2(1.8357, 27.9500));
   // Default constructor 
 }
 //____________________________________________________________________
@@ -73,16 +82,19 @@ void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
   if (what & kBackgroundCorrection)       InitBackground();
   if (what & kEnergyDistributions)        InitEnergyDists();
   
+  
   fIsInit = kTRUE;
 }
 //____________________________________________________________________
 
 void AliFMDAnaParameters::InitBackground() {
   
-  AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
-  if (!background) return;
+  //AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
+  TFile* fin = TFile::Open(fBackgroundPath.Data());
   
-  fBackground = dynamic_cast<AliFMDAnaCalibBackgroundCorrection*>(background->GetObject());
+  if (!fin) return;
+  
+  fBackground = dynamic_cast<AliFMDAnaCalibBackgroundCorrection*>(fin->Get(fkBackgroundID));
   if (!fBackground) AliFatal("Invalid background object from CDB");
   
 }
@@ -90,10 +102,11 @@ void AliFMDAnaParameters::InitBackground() {
 
 void AliFMDAnaParameters::InitEnergyDists() {
   
-  AliCDBEntry*   edist = GetEntry(fgkEnergyDists);
-  if (!edist) return;
+  TFile* fin = TFile::Open(fEnergyPath.Data());
+  //AliCDBEntry*   edist = GetEntry(fgkEnergyDists);
+  if (!fin) return;
   
-  fEnergyDistribution = dynamic_cast<AliFMDAnaCalibEnergyDistribution*>(edist->GetObject());
+  fEnergyDistribution = dynamic_cast<AliFMDAnaCalibEnergyDistribution*>(fin->Get(fkEnergyDistributionID));
   
   if (!fEnergyDistribution) AliFatal("Invalid background object from CDB");
   
@@ -241,6 +254,44 @@ TH2F* AliFMDAnaParameters::GetBackgroundCorrection(Int_t det,
   return fBackground->GetBgCorrection(det,ring,vtxbin);
 }
 //_____________________________________________________________________
+Float_t AliFMDAnaParameters::GetMaxR(Char_t ring) {
+  Float_t radius = 0;
+  if(ring == 'I')
+    radius = 17.2;
+  else if(ring == 'O')
+    radius = 28.0;
+  else
+    AliWarning("Unknown ring - must be I or O!");
+  
+  return radius;
+}
+//_____________________________________________________________________
+Float_t AliFMDAnaParameters::GetMinR(Char_t ring) {
+  Float_t radius = 0;
+  if(ring == 'I')
+    radius = 4.5213;
+  else if(ring == 'O')
+    radius = 15.4;
+  else
+    AliWarning("Unknown ring - must be I or O!");
+  
+  return radius;
+
+}
+//_____________________________________________________________________
+void AliFMDAnaParameters::SetCorners(Char_t ring) {
+  
+  if(ring == 'I') {
+    fCorner1.Set(4.9895, 15.3560);
+    fCorner2.Set(1.8007, 17.2000);
+  }
+  else {
+    fCorner1.Set(4.2231, 26.6638);
+    fCorner2.Set(1.8357, 27.9500);
+  }
+  
+}
+//_____________________________________________________________________
 Float_t AliFMDAnaParameters::GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec)
 {
   Int_t nsec = (ring == 'I' ? 20 : 40);
@@ -273,11 +324,12 @@ Float_t AliFMDAnaParameters::GetPhiFromSector(UShort_t det, Char_t ring, UShort_
 //_____________________________________________________________________
 Float_t AliFMDAnaParameters::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx)
 {
-  AliFMDRing fmdring(ring);
-  fmdring.Init();
-  Float_t   rad       = fmdring.GetMaxR()-fmdring.GetMinR();
-  Float_t   segment   = rad / fmdring.GetNStrips();
-  Float_t   r         = fmdring.GetMinR() + segment*strip;
+  // AliFMDRing fmdring(ring);
+  // fmdring.Init();
+  Float_t   rad       = GetMaxR(ring)-GetMinR(ring);
+  Float_t   Nstrips   = (ring == 'I' ? 512 : 256);
+  Float_t   segment   = rad / Nstrips;
+  Float_t   r         = GetMinR(ring) + segment*strip;
   Float_t   z         = 0;
   Int_t hybrid = sec / 2;
   
@@ -304,7 +356,7 @@ Float_t AliFMDAnaParameters::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t
   Float_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
   
   return eta;
-}
+}/*
 //____________________________________________________________________
 AliCDBEntry* AliFMDAnaParameters::GetEntry(const char* path, Bool_t fatal) const
 {
@@ -324,8 +376,69 @@ AliCDBEntry* AliFMDAnaParameters::GetEntry(const char* path, Bool_t fatal) const
   }
   return entry;
 }
-
-
+ */
+//____________________________________________________________________
+Float_t 
+AliFMDAnaParameters::GetStripLength(Char_t ring, UShort_t strip)  
+{
+  //AliFMDRing fmdring(ring);
+  // fmdring.Init();
+  
+  Float_t rad        = GetMaxR(ring)-GetMinR(ring);
+  Float_t   Nstrips   = (ring == 'I' ? 512 : 256);
+  Float_t segment    = rad / Nstrips;
+  
+  //TVector2* corner1  = fmdring.GetVertex(2);  
+  // TVector2* corner2  = fmdring.GetVertex(3);
+  
+  SetCorners(ring);
+  /*
+  std::cout<<GetMaxR(ring)<<"   "<<fmdring.GetMaxR()<<std::endl;
+  std::cout<<GetMinR(ring)<<"   "<<fmdring.GetMinR()<<std::endl;
+  std::cout<<corner1->X()<<"   "<<fCorner1.X()<<std::endl;
+  std::cout<<corner2->X()<<"   "<<fCorner2.X()<<std::endl;
+  std::cout<<corner1->Y()<<"   "<<fCorner1.Y()<<std::endl;
+  std::cout<<corner2->Y()<<"   "<<fCorner2.Y()<<std::endl;*/
+  Float_t slope      = (fCorner1.Y() - fCorner2.Y()) / (fCorner1.X() - fCorner2.X());
+  Float_t constant   = (fCorner2.Y()*fCorner1.X()-(fCorner2.X()*fCorner1.Y())) / (fCorner1.X() - fCorner2.X());
+  Float_t radius     = GetMinR(ring) + strip*segment;
+  
+  Float_t d          = TMath::Power(TMath::Abs(radius*slope),2) + TMath::Power(radius,2) - TMath::Power(constant,2);
+  
+  Float_t arclength  = GetBaseStripLength(ring,strip);
+  if(d>0) {
+    
+    Float_t x        = (-1*TMath::Sqrt(d) -slope*constant) / (1+TMath::Power(slope,2));
+    Float_t y        = slope*x + constant;
+    Float_t theta    = TMath::ATan2(x,y);
+    
+    if(x < fCorner1.X() && y > fCorner1.Y()) {
+      arclength = radius*theta;                        //One sector since theta is by definition half-hybrid
+      
+    }
+    
+  }
+  
+  return arclength;
+  
+  
+}
+//____________________________________________________________________
+Float_t 
+AliFMDAnaParameters::GetBaseStripLength(Char_t ring, UShort_t strip)  
+{  
+  // AliFMDRing fmdring(ring);
+  // fmdring.Init();
+  Float_t rad             = GetMaxR(ring)-GetMinR(ring);
+  Float_t Nstrips         = (ring == 'I' ? 512 : 256);
+  Float_t Nsec            = (ring == 'I' ? 20 : 40);
+  Float_t segment         = rad / Nstrips;
+  Float_t basearc         = 2*TMath::Pi() / (0.5*Nsec); // One hybrid: 36 degrees inner, 18 outer
+  Float_t radius          = GetMinR(ring) + strip*segment;
+  Float_t basearclength   = 0.5*basearc * radius;                // One sector   
+  
+  return basearclength;
+}
 //____________________________________________________________________
 //
 // EOF

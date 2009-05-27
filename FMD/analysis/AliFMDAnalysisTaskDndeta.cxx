@@ -20,11 +20,11 @@
 #include "AliESDVertex.h"
 #include "TMath.h"
 #include "AliFMDAnaParameters.h"
-#include "AliFMDGeometry.h"
+//#include "AliFMDGeometry.h"
 #include "AliGenEventHeader.h"
 #include "AliHeader.h"
-#include "TDatabasePDG.h"
-#include "TParticlePDG.h"
+//#include "TDatabasePDG.h"
+//#include "TParticlePDG.h"
 #include "AliFMDStripIndex.h"
 ClassImp(AliFMDAnalysisTaskDndeta)
 
@@ -270,7 +270,7 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
       AliFMDStripIndex::Unpack(ref->UserId(),det,ring,sec,strip);
       Float_t thisStripTrack = fLastTrackByStrip.operator()(det,ring,sec,strip);
       if(particle->Charge() != 0 && i != thisStripTrack ) {
-	Double_t x,y,z;
+	//Double_t x,y,z;
 	/*AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
 	fmdgeo->Detector2XYZ(det,ring,sec,strip,x,y,z);
 	

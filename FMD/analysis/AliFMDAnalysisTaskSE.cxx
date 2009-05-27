@@ -89,6 +89,7 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
       AliMCEvent* mcevent = MCEvent();
       fDndeta.SetMCEvent(mcevent);
       fDndeta.Exec("");
+      
     }
   }
   else

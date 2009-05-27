@@ -20,9 +20,9 @@
 #include "AliESDVertex.h"
 #include "TMath.h"
 #include "AliFMDAnaParameters.h"
-#include "AliFMDParameters.h"
-#include "AliFMDGeometry.h"
-#include "AliFMDRing.h"
+//#include "AliFMDParameters.h"
+//#include "AliFMDGeometry.h"
+//#include "AliFMDRing.h"
 
 ClassImp(AliFMDAnalysisTaskDensity)
 
@@ -65,7 +65,7 @@ AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity(const char* name, Bool_t SE
   fFuncPos->SetParameters(0.99925,0.00298301);
   fFuncNeg = new TF1("funcNeg","pol1",-6,0);
   fFuncNeg->SetParameters(0.987583,-0.0101022);
-
+  
   
 }
 //_____________________________________________________________________
@@ -134,7 +134,7 @@ void AliFMDAnalysisTaskDensity::ConnectInputData(Option_t */*option*/)
 void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 {
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  AliFMDGeometry* geo       = AliFMDGeometry::Instance();
+  // AliFMDGeometry* geo       = AliFMDGeometry::Instance();
   
   //AliESDFMD*   fmd = fESD->GetFMDData();
   
@@ -255,10 +255,12 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	  Float_t correction = GetAcceptanceCorrection(ring,strip);
 	  
 	  //std::cout<<"before "<<correction<<std::endl;
-	  if(det == 3) 
-	    correction = correction / fFuncNeg->Eval(eta);
-	  else
-	    correction = correction / fFuncPos->Eval(eta);
+	  if(fESD->GetUniqueID() == kTRUE) {
+	    if(det == 3) 
+	      correction = correction / fFuncNeg->Eval(eta);
+	    else
+	      correction = correction / fFuncPos->Eval(eta);
+	  }
 	  
 	  // std::cout<<correction<<std::endl;
 	  if(correction) nParticles = nParticles / correction;
@@ -277,6 +279,8 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	
   
   }
+  
+
   if(fStandalone) {
     PostData(0, fOutputList); 
   }
@@ -285,18 +289,21 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 //_____________________________________________________________________
 Float_t AliFMDAnalysisTaskDensity::GetAcceptanceCorrection(Char_t ring, UShort_t strip)
 {
-  AliFMDRing fmdring(ring);
-  fmdring.Init();
-  Float_t   rad       = fmdring.GetMaxR()-fmdring.GetMinR();
-  Float_t   segment   = rad / fmdring.GetNStrips();
-  Float_t   radius    = fmdring.GetMinR() + segment*strip;
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
-  Float_t   basearea1 = 0.5*fmdring.GetBaseStripLength(strip)*TMath::Power(radius,2);
-  Float_t   basearea2 = 0.5*fmdring.GetBaseStripLength(strip)*TMath::Power((radius-segment),2);
+  //AliFMDRing fmdring(ring);
+  //fmdring.Init();
+  Float_t   rad       = pars->GetMaxR(ring)-pars->GetMinR(ring);
+  Float_t   nstrips   = (ring == 'I' ? 512 : 256);
+  Float_t   segment   = rad / nstrips;
+  Float_t   radius    = pars->GetMinR(ring) + segment*strip;
+  
+  Float_t   basearea1 = 0.5*pars->GetBaseStripLength(ring,strip)*TMath::Power(radius,2);
+  Float_t   basearea2 = 0.5*pars->GetBaseStripLength(ring,strip)*TMath::Power((radius-segment),2);
   Float_t   basearea  = basearea1 - basearea2;
   
-  Float_t   area1     = 0.5*fmdring.GetStripLength(strip)*TMath::Power(radius,2);
-  Float_t   area2     = 0.5*fmdring.GetStripLength(strip)*TMath::Power((radius-segment),2);
+  Float_t   area1     = 0.5*pars->GetStripLength(ring,strip)*TMath::Power(radius,2);
+  Float_t   area2     = 0.5*pars->GetStripLength(ring,strip)*TMath::Power((radius-segment),2);
   Float_t   area      = area1 - area2;
   
   Float_t correction = area/basearea;
@@ -304,7 +311,7 @@ Float_t AliFMDAnalysisTaskDensity::GetAcceptanceCorrection(Char_t ring, UShort_t
   return correction;
 }
 //_____________________________________________________________________
-Float_t AliFMDAnalysisTaskDensity::GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec)
+/*Float_t AliFMDAnalysisTaskDensity::GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec)
 {
   Int_t nsec = (ring == 'I' ? 20 : 40);
   Float_t basephi = 0;
@@ -334,7 +341,7 @@ Float_t AliFMDAnalysisTaskDensity::GetPhiFromSector(UShort_t det, Char_t ring, U
   return phi;
 }
 
-
+*/
 //
 //EOF
 //

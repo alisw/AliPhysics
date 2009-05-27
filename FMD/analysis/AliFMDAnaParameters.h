@@ -37,6 +37,8 @@
 #include "TH1F.h"
 #include "AliFMDAnaCalibBackgroundCorrection.h"
 #include "AliFMDAnaCalibEnergyDistribution.h"
+#include <TVector2.h>
+#include <TString.h>
 //____________________________________________________________________
 //
 //  Singleton class to handle various parameters (not geometry) of the
@@ -73,6 +75,15 @@ public:
   TH2F* GetBackgroundCorrection(Int_t det, Char_t ring, Int_t vtxbin);
   Float_t GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec);
   Float_t GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx);
+  Float_t  GetStripLength(Char_t ring, UShort_t strip)  ;
+  Float_t  GetBaseStripLength(Char_t ring, UShort_t strip)  ;
+  Float_t  GetMaxR(Char_t ring) ;
+  Float_t  GetMinR(Char_t ring) ;
+  void     SetBackgroundPath(const Char_t* bgpath) {fBackgroundPath.Form(bgpath);}
+  void     SetEnergyPath(const Char_t* epath) {fEnergyPath.Form(epath);}
+  
+  static const char* fkBackgroundID;
+  static const char* fkEnergyDistributionID ;
 protected:
   
   AliFMDAnaParameters();
@@ -90,14 +101,14 @@ protected:
   
   static AliFMDAnaParameters* fgInstance;   // Static singleton instance
   
-  AliCDBEntry* GetEntry(const char* path, Bool_t fatal=kTRUE) const ;
+  //  AliCDBEntry* GetEntry(const char* path, Bool_t fatal=kTRUE) const ;
   void InitBackground();
   void InitEnergyDists();
   TH1F* GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta);
   TObjArray* GetBackgroundArray();
   
   TAxis* GetRefAxis();
-  
+  void SetCorners(Char_t ring) ;
   
   Bool_t fIsInit;
   //TObjArray*  fBackgroundArray;
@@ -106,6 +117,12 @@ protected:
   AliFMDAnaCalibEnergyDistribution* fEnergyDistribution;
   static const char* fgkBackgroundCorrection;
   static const char* fgkEnergyDists;
+  
+  TVector2 fCorner1;
+  TVector2 fCorner2;
+  TString fEnergyPath;
+  TString fBackgroundPath;
+
   ClassDef(AliFMDAnaParameters,0) // Manager of parameters
 };
 

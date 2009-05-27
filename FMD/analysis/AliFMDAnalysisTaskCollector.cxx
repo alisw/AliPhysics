@@ -17,7 +17,7 @@
 #include "AliStack.h"
 #include "AliESDVertex.h"
 #include "AliFMDAnaParameters.h"
-#include "AliFMDGeometry.h"
+//#include "AliFMDGeometry.h"
 ClassImp(AliFMDAnalysisTaskCollector)
 
 
@@ -146,17 +146,18 @@ void AliFMDAnalysisTaskCollector::Exec(Option_t */*option*/)
 	  
 	  Float_t mult = fmd->Multiplicity(det,ring,sec,strip);
 	  if(mult == AliESDFMD::kInvalidMult || mult == 0) continue;
-	  AliFMDGeometry* geo = AliFMDGeometry::Instance();
+	  //AliFMDGeometry* geo = AliFMDGeometry::Instance();
   
-	  Double_t x,y,z;
-	  geo->Detector2XYZ(det,ring,sec,strip,x,y,z);
+	  //  Double_t x,y,z;
+	  //geo->Detector2XYZ(det,ring,sec,strip,x,y,z);
 	  
-	  Double_t r = TMath::Sqrt(x*x+y*y);
+	  // Double_t r = TMath::Sqrt(x*x+y*y);
 	  
-	  Double_t z_real      = z-vertex[2];
-	  Double_t theta       = TMath::ATan2(r,z_real);
+	  // Double_t z_real      = z-vertex[2];
+	  // Double_t theta       = TMath::ATan2(r,z_real);
 	  // std::cout<<"From EtaFromStrip "<<theta<<std::endl;
-	  Double_t eta         =  -1*TMath::Log(TMath::Tan(0.5*theta));
+	  //Double_t eta         =  -1*TMath::Log(TMath::Tan(0.5*theta));
+	  Float_t eta = pars->GetEtaFromStrip(det,ring,sec,strip,vertex[2]);
 	  //Float_t eta = fmd->Eta(det,ring,sec,strip);
 	  Int_t nEta = hBg->GetXaxis()->FindBin(eta);
 	  
