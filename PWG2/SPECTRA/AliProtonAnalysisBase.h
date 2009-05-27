@@ -217,6 +217,8 @@ class AliProtonAnalysisBase : public TObject {
   Bool_t  IsUsedESDpid() const {return fESDpidFlag;}
   void    SetTPCpid() {fTPCpidFlag = kTRUE;}
   Bool_t  IsUsedTPCpid() const {return fTPCpidFlag;}
+  void    SetTOFpid() {fTOFpidFlag = kTRUE;}
+  Bool_t  IsUsedTOFpid() const {return fTOFpidFlag;}
 
   TCanvas *GetListOfCuts();
 
@@ -281,7 +283,7 @@ class AliProtonAnalysisBase : public TObject {
   Bool_t fMaxDCA3DFlag, fMaxDCA3DTPCFlag; //shows if this cut is used or not
   Bool_t fMaxConstrainChi2Flag; //shows if this cut is used or not
   Bool_t fITSRefitFlag, fTPCRefitFlag; //shows if this cut is used or not
-  Bool_t fESDpidFlag, fTPCpidFlag; //shows if this cut is used or not
+  Bool_t fESDpidFlag, fTPCpidFlag, fTOFpidFlag; //shows if this cut is used or not
   Bool_t fPointOnITSLayer1Flag, fPointOnITSLayer2Flag; //shows if this cut is used or not
   Bool_t fPointOnITSLayer3Flag, fPointOnITSLayer4Flag; //shows if this cut is used or not
   Bool_t fPointOnITSLayer5Flag, fPointOnITSLayer6Flag; //shows if this cut is used or not

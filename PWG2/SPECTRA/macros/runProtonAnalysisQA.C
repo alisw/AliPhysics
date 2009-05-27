@@ -103,9 +103,10 @@ void runLocal(const char* mode = "ESD",
   mgr->AddTask(taskProtonsQA);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+  /*AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
 							   TChain::Class(),
-							   AliAnalysisManager::kInputContainer);
+							   AliAnalysisManager::kInputContainer);*/
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("globalQAList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
@@ -229,9 +230,10 @@ void runInteractive(const char* mode = "ESD",
   mgr->AddTask(taskProtonsQA);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+  /*AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
                                                            TChain::Class(),
-                                                           AliAnalysisManager::kInputContainer);
+                                                           AliAnalysisManager::kInputContainer);*/
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("globalQAList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
@@ -347,9 +349,10 @@ void runBatch(const char* mode = "ESD",
   mgr->AddTask(taskProtonsQA);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+  /*AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
 							   TChain::Class(),
-							   AliAnalysisManager::kInputContainer);
+							   AliAnalysisManager::kInputContainer);*/
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("globalQAList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
@@ -420,6 +423,7 @@ void runProof(const char* mode = "ESD",
   outputFilename4 += ".root"; //Reco and PID efficiency
   TString outputFilename5 = "Vertex.QA.root"; //vertex QA
 
+  gEnv->SetValue("XSec.GSI.DelegProxy","2");
   printf("****** Connect to PROOF *******\n");
   TProof::Open("alicecaf.cern.ch"); 
   gProof->SetParallel();
@@ -461,9 +465,10 @@ void runProof(const char* mode = "ESD",
   mgr->AddTask(taskProtonsQA);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+  /*AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
                                                            TChain::Class(),
-                                                           AliAnalysisManager::kInputContainer);
+                                                           AliAnalysisManager::kInputContainer);*/
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("globalQAList", 
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
