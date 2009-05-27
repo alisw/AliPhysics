@@ -26,6 +26,7 @@
 // --- ROOT system ---
 #include <TMath.h>
 #include <TTree.h>
+#include <TMap.h>
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
 #include <AliGeomManager.h>
@@ -38,6 +39,7 @@
 #include "AliVZEROhit.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
+#include "AliGRPObject.h"
 #include "AliRunDigitizer.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
@@ -50,13 +52,15 @@
 ClassImp(AliVZERODigitizer)
 
  AliVZERODigitizer::AliVZERODigitizer()
-   :AliDigitizer(),
-    fCalibData(GetCalibData()),
-    fPhotoCathodeEfficiency(0.18),
-    fPMVoltage(768.0),
-    fPMGain(TMath::Power((fPMVoltage / 112.5) ,7.04277)),
-    fNdigits(0),
-    fDigits(0)
+                   :AliDigitizer(),
+                    fCalibData(GetCalibData()),
+                    fPhotoCathodeEfficiency(0.18),
+                    fPMVoltage(768.0),
+                    fPMGain(TMath::Power((fPMVoltage / 112.5) ,7.04277)),
+                    fNdigits(0),
+                    fDigits(0),
+                    fCollisionMode(0),
+                    fBeamEnergy(0.)
    
 {
   // default constructor
@@ -79,7 +83,9 @@ ClassImp(AliVZERODigitizer)
                      fPMVoltage(768.0),
                      fPMGain(TMath::Power((fPMVoltage / 112.5) ,7.04277)),
 		     fNdigits(0),
-                     fDigits(0)
+                     fDigits(0),
+		     fCollisionMode(0),
+                     fBeamEnergy(0.)
 		                        
 {
   // constructor
@@ -117,7 +123,8 @@ Bool_t AliVZERODigitizer::Init()
   
   //  TGeoHMatrix *im = AliGeomManager::GetMatrix("VZERO/V0C");
   //  im->Print();
-  
+
+  GetCollisionMode();
   return kTRUE;
 }
 
@@ -210,11 +217,11 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
        continue; }
        
      for(Int_t i=0; i<80; i++) {map[i] = 0; time[i] = 0.0;}
-	      
+     
      TClonesArray* hits = vzero->Hits();
              
 //  Now makes Digits from hits
-         
+     
      Int_t nTracks = (Int_t) treeH->GetEntries();
      for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
          for (Int_t i=0; i<80; i++) {time_ref[i] = 999999.0;}   
@@ -224,7 +231,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
          for (Int_t iHit = 0; iHit < nHits; iHit++) {
 	     AliVZEROhit* hit = (AliVZEROhit *)hits->UncheckedAt(iHit);
 	     Int_t nPhot = hit->Nphot();
-	     Int_t cell  = hit->Cell();                                    
+	     Int_t cell  = hit->Cell();                          
 	     map[cell] += nPhot;
 	     Float_t dt_scintillator = gRandom->Gaus(0,0.7);
 	     Float_t t = dt_scintillator + 1e9*hit->Tof();
@@ -245,10 +252,13 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
         Float_t noise = gRandom->Gaus(10.5,3.22);
         Float_t pmResponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
         + noise*1e-3; 	
+	if(fCollisionMode >0) adc_gain[i] = adc_gain[i]/70.0; // reduce dynamics in Ion Collision Mode
         map[i] = Int_t( pmResponse * adc_gain[i]);
-//	printf("cell=%d,  pmNumber=%d,  mip=%f \n",i,GetPMNumber(i), (1.0/fCalibData->GetMIPperADC(GetPMNumber(i))));
-        if(map[i] > (int(( 1.0/fCalibData->GetMIPperADC(GetPMNumber(i))/2 ) + 0.5)) )
-	          {map[i] = Int_t(gRandom->Gaus(map[i], (int(( 1.0/fCalibData->GetMIPperADC(GetPMNumber(i))/6 ) + 0.5)) ));}
+        Float_t MIP = 1.0/fCalibData->GetMIPperADC(GetPMNumber(i));
+	if(fCollisionMode >0) MIP=2.0;
+//	printf("cell = %d,  ADC = %d, TDC = %f \n",i,map[i], time[i]*10.0 );
+        if(map[i] > (int(( MIP/2 ) + 0.5)) )
+	          {map[i] = Int_t(gRandom->Gaus(map[i], (int(( MIP/6 ) + 0.5)) ));}
    }
       
 // Now transforms 80 cell responses into 64 photomultiplier responses
@@ -279,7 +289,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 //           printf(" Event, cell, adc, tof = %d %d %d %f\n", 
 //                    outRunLoader->GetEventNumber(),i, map[i], time2[i]*10.0);
 //           multiply by 10 to have 100 ps per channel :
-             AddDigit(i, adc[i], Int_t(time2[i]*10.0)) ;}      
+             AddDigit(i, adc[i], Int_t((time2[i]*10.0) +0.5)) ;}      
    }
     
   treeD->Fill();
@@ -300,11 +310,67 @@ void AliVZERODigitizer::AddDigit(Int_t PMnumber, Int_t adc, Int_t time)
 //____________________________________________________________________________
 void AliVZERODigitizer::ResetDigit()
 {
-//
+
 // Clears Digits
-//
+
   fNdigits = 0;
   if (fDigits) fDigits->Delete();
+}
+
+//____________________________________________________________________________
+void AliVZERODigitizer::GetCollisionMode()
+{
+// Retrieves the collision mode from GRP data
+
+// Initialization of the GRP entry 
+
+   Int_t run = AliCDBManager::Instance()->GetRun();
+  
+//   printf("\n ++++++ Run Number retrieved as %d \n",run); 
+ 
+  AliCDBEntry*  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data",run);
+  AliGRPObject* grpData = 0x0;
+   
+  if(entry){
+    TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
+    if(m){
+       m->Print();
+       grpData = new AliGRPObject();
+       grpData->ReadValuesFromMap(m);
+    }
+    else{
+       grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
+       entry->SetOwner(0);
+    }
+    AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
+  }
+
+  if(!grpData) AliError("No GRP entry found in OCDB!");
+
+// Retrieval of collision mode
+
+  TString beamType = grpData->GetBeamType();
+  if(beamType==AliGRPObject::GetInvalidString()){
+     AliError("GRP/GRP/Data entry:  missing value for the beam type !");
+     AliError("\t VZERO cannot retrieve beam type\n");
+     return;
+  }
+
+   if( (beamType.CompareTo("P-P") ==0)  || (beamType.CompareTo("p-p") ==0) ){
+       fCollisionMode=0;
+  }
+   else if( (beamType.CompareTo("Pb-Pb") ==0)  || (beamType.CompareTo("A-A") ==0) ){
+       fCollisionMode=1;
+   }
+    
+  fBeamEnergy = grpData->GetBeamEnergy();
+  if(fBeamEnergy==AliGRPObject::GetInvalidFloat()) {
+     AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
+     fBeamEnergy = 0.;
+  }
+  
+//     printf("\n ++++++ Beam type and collision mode retrieved as %s %d @ %1.3f GeV ++++++\n\n",beamType.Data(), fCollisionMode, fBeamEnergy);
+
 }
 
 //____________________________________________________________________________

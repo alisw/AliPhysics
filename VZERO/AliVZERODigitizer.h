@@ -34,7 +34,10 @@ class AliVZERODigitizer: public AliDigitizer {
 
    void AddDigit(Int_t PMnumber, Int_t adc, Int_t time);
    void ResetDigit();
-  
+   void GetCollisionMode();
+   void GetCollisionMode(Int_t collisionMode, Float_t beamEnergy) 
+                        {fCollisionMode=collisionMode; fBeamEnergy=beamEnergy;}
+						
    AliVZEROCalibData *GetCalibData() const;
    Int_t GetPMNumber(Int_t cell) const;
 
@@ -48,14 +51,17 @@ class AliVZERODigitizer: public AliDigitizer {
       
    AliVZERODigitizer& operator = (const AliVZERODigitizer& /*digitizer*/); 
   
-   Float_t fPhotoCathodeEfficiency; // Photocathode efficiency
-   Float_t fPMVoltage ;             // Photomultiplier voltage
-   Float_t fPMGain;                 // Photomultiplier gain
+   Float_t  fPhotoCathodeEfficiency; // Photocathode efficiency
+   Float_t  fPMVoltage ;             // Photomultiplier voltage
+   Float_t  fPMGain;                 // Photomultiplier gain
 
-   Int_t   fNdigits;                //! Number of digits
-   TClonesArray *fDigits;           //! List of digits
-
-   ClassDef(AliVZERODigitizer,2)    // digitizer for VZERO
+   Int_t    fNdigits;                //! Number of digits
+   TClonesArray *fDigits;            //! List of digits
+   
+   Int_t    fCollisionMode;          // =0->p-p, =1->A-A
+   Float_t  fBeamEnergy;	     // beam energy
+   
+   ClassDef(AliVZERODigitizer,2)     // digitizer for VZERO
 
 };
 

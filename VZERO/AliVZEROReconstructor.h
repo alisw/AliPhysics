@@ -45,11 +45,13 @@ public:
 			       TTree* digitsTree) const;
                  		 
   AliCDBStorage     *SetStorage(const char* uri);
+  void GetCollisionMode();
+  
   AliVZEROCalibData *GetCalibData() const; 
 
 protected:
-  AliESDVZERO*        fESDVZERO;      // ESD output object  
-  AliESDEvent*             fESD;      // ESD object
+  AliESDVZERO*        fESDVZERO;       // ESD output object  
+  AliESDEvent*             fESD;       // ESD object
   AliESDVZEROfriend*  fESDVZEROfriend; // ESD friend object (complete raw data)
   
 private:
@@ -57,6 +59,9 @@ private:
   AliVZEROReconstructor& operator = (const AliVZEROReconstructor& reconstructor);
   
   AliVZEROCalibData* fCalibData;      //! calibration data
+
+  Int_t              fCollisionMode;  // =0->p-p, =1->A-A
+  Float_t            fBeamEnergy;     // beam energy
   
   ClassDef(AliVZEROReconstructor, 0)  // class for the VZERO reconstruction
 };

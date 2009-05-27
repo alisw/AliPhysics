@@ -23,6 +23,10 @@
 
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
+#include "AliGRPObject.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
 #include "AliVZEROReconstructor.h"
 #include "AliVZERORawStream.h"
 #include "AliESDEvent.h"
@@ -34,10 +38,12 @@ ClassImp(AliVZEROReconstructor)
 
 //_____________________________________________________________________________
 AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
-   fESDVZERO(0x0),
-   fESD(0x0),
-   fESDVZEROfriend(0x0),
-   fCalibData(GetCalibData())
+                        fESDVZERO(0x0),
+                        fESD(0x0),
+                        fESDVZEROfriend(0x0),
+                        fCalibData(GetCalibData()),
+                        fCollisionMode(0),
+                        fBeamEnergy(0.)
 {
   // Default constructor  
   // Get calibration data
@@ -73,6 +79,8 @@ void AliVZEROReconstructor::Init()
 
   fESDVZERO  = new AliESDVZERO;
   fESDVZEROfriend = new AliESDVZEROfriend;
+  
+  GetCollisionMode();  // fCollisionMode =1 for Pb-Pb simulated data
 }
 
 //______________________________________________________________________
@@ -158,10 +166,10 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
 				    AliESDEvent* esd) const
 {
 // fills multiplicities to the ESD
-
+    
   if (!digitsTree) {
-    AliError("No digits tree!");
-    return;
+      AliError("No digits tree!");
+      return;
   }
 
   TClonesArray* digitsArray = NULL;
@@ -199,13 +207,19 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
         Int_t  pedestal      = int(fCalibData->GetPedestal(d));
         adc[pmNumber]   = (Short_t) digit->ADC() - pedestal; 
         time[pmNumber]  = (Short_t) digit->Time();
-		width[pmNumber] = (Short_t) digit->Width();
-		BBFlag[pmNumber]= digit->BBFlag();
-		BGFlag[pmNumber]= digit->BGFlag();
+	width[pmNumber] = (Short_t) digit->Width();
+	BBFlag[pmNumber]= digit->BBFlag();
+	BGFlag[pmNumber]= digit->BGFlag();
         // printf("PM = %d,  MIP per ADC channel = %f \n",pmNumber, fCalibData->GetMIPperADC(pmNumber));
         // cut of ADC at 1MIP/2 
-        if (adc[pmNumber] > (int(1.0/fCalibData->GetMIPperADC(pmNumber)) /2) ) 
-	    mult[pmNumber] += float(adc[pmNumber])*fCalibData->GetMIPperADC(pmNumber);
+	if(fCollisionMode >0) { 
+	   Float_t MIP = 2.0;  
+           if (adc[pmNumber] > (int(MIP) /2) ) mult[pmNumber] += float(adc[pmNumber])*(1.0/MIP) ;
+	   }
+           else{    
+           if (adc[pmNumber] > (int(1.0/fCalibData->GetMIPperADC(pmNumber)) /2) ) 
+	       mult[pmNumber] += float(adc[pmNumber])*fCalibData->GetMIPperADC(pmNumber);
+        } 	    
     } // end of loop over digits
   } // end of loop over events in digits tree
   
@@ -221,7 +235,7 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   // now get the trigger mask
 
   AliVZEROTriggerMask *TriggerMask = new AliVZEROTriggerMask();
-  TriggerMask->SetAdcThreshold(20.0/2.0);
+  TriggerMask->SetAdcThreshold(10.0/2.0);
   TriggerMask->SetTimeWindowWidthBBA(50);
   TriggerMask->SetTimeWindowWidthBGA(20);
   TriggerMask->SetTimeWindowWidthBBC(50);
@@ -239,10 +253,10 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   }
 
   if (esd) {
-    AliESDfriend *fr = (AliESDfriend*)esd->FindListObject("AliESDfriend");
-    if (fr) {
-      AliDebug(1, Form("Writing VZERO friend data to ESD tree"));
-      fr->SetVZEROfriend(fESDVZEROfriend);
+     AliESDfriend *fr = (AliESDfriend*)esd->FindListObject("AliESDfriend");
+     if (fr) {
+        AliDebug(1, Form("Writing VZERO friend data to ESD tree"));
+        fr->SetVZEROfriend(fESDVZEROfriend);
     }
   }
 }
@@ -271,6 +285,63 @@ AliCDBStorage* AliVZEROReconstructor::SetStorage(const char *uri)
   }
 
   return storage; 
+}
+
+//____________________________________________________________________________
+void AliVZEROReconstructor::GetCollisionMode()
+{
+// Retrieves the collision mode from GRP data
+
+// Initialization of the GRP entry 
+  
+   Int_t run = AliCDBManager::Instance()->GetRun();
+  
+//   printf("\n ++++++ Run Number retrieved as %d \n",run);
+  
+   AliCDBEntry*  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data",run);
+   AliGRPObject* grpData = 0x0;
+   
+  if(entry){
+    TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
+    if(m){
+       m->Print();
+       grpData = new AliGRPObject();
+       grpData->ReadValuesFromMap(m);
+    }
+    else{
+       grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
+       entry->SetOwner(0);
+    }
+    AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
+  }
+
+   if(!grpData) { AliError("No GRP entry found in OCDB!");
+                  return; }
+
+// Retrieval of simulated collision mode 
+
+  TString beamType = grpData->GetBeamType();
+  if(beamType==AliGRPObject::GetInvalidString()){
+     AliError("GRP/GRP/Data entry:  missing value for the beam type !");
+     AliError("\t VZERO cannot retrieve beam type\n");
+     return;
+  }
+
+   if( (beamType.CompareTo("P-P") ==0)  || (beamType.CompareTo("p-p") ==0) ){
+       fCollisionMode=0;
+  }
+   else if( (beamType.CompareTo("Pb-Pb") ==0)  || (beamType.CompareTo("A-A") ==0) ){
+       fCollisionMode=1;
+   }
+    
+  fBeamEnergy = grpData->GetBeamEnergy();
+  if(fBeamEnergy==AliGRPObject::GetInvalidFloat()) {
+     AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
+     fBeamEnergy = 0.;
+  }
+  
+//    printf("\n ++++++ Beam type and collision mode retrieved as %s %d @ %1.3f GeV ++++++\n\n",beamType.Data(), fCollisionMode, fBeamEnergy);
+
 }
 
 //_____________________________________________________________________________
