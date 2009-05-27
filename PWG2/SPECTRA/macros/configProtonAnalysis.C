@@ -99,6 +99,7 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
       baseAnalysis->SetMinITSClusters(5);
       baseAnalysis->SetITSRefit();
       baseAnalysis->SetESDpid();
+      baseAnalysis->SetTOFpid();
       break;
     default:
       break;
@@ -143,7 +144,7 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
     }//PID mode
   }//ESD
   if(analysisLevel == "MC") 
-    baseAnalysis->SetPhaseSpace(56, -1.0, 1.0, 16, 0.1, 1.5);
+    baseAnalysis->SetPhaseSpace(10, -0.5, 0.5, 16, 0.5, 0.9);
 
   return baseAnalysis;
 }

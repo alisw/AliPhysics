@@ -22,14 +22,14 @@ void runProtonAnalysis(const char* esdAnalysisType = "Hybrid",
   TStopwatch timer;
   timer.Start();
   
-  runLocal("ESD",
+  /*runLocal("ESD",
 	   esdAnalysisType,
 	   pidMode,
-	   "/home/pchrist/ALICE/Baryons/QA/Local");
+	   "/home/pchrist/ALICE/Baryons/QA/Local");*/
   //runInteractive("ESD",esdAnalysisType,pidMode,"tag.xml");
   //runBatch("ESD",esdAnalysisType,pidMode,"wn.xml");  
-  /*runProof("ESD",esdAnalysisType,pidMode
-    200000,"/COMMON/COMMON/LHC08c11_10TeV_0.5T",);*/
+  runProof("ESD",esdAnalysisType,pidMode,
+	   500000,0,"/COMMON/COMMON/LHC09a4_run8100X#esdTree");
   
   timer.Stop();
   timer.Print();
@@ -294,7 +294,7 @@ void runBatch(const char* mode = "ESD",
 void runProof(const char* mode = "ESD",
 	      const char* analysisType = 0x0,
 	      const char* pidMode = 0x0,
-	      Int_t stats = 0, 
+	      Int_t stats = 0, Int_t startingPoint = 0,
 	      const char* dataset = 0x0) {  
   TString smode = mode;
   TString outputFilename = "Protons."; outputFilename += mode;
@@ -303,6 +303,7 @@ void runProof(const char* mode = "ESD",
   }
   outputFilename += ".root";
 
+  gEnv->SetValue("XSec.GSI.DelegProxy","2");
   printf("****** Connect to PROOF *******\n");
   TProof::Open("alicecaf.cern.ch"); 
   gProof->SetParallel();
@@ -346,9 +347,10 @@ void runProof(const char* mode = "ESD",
   mgr->AddTask(taskProtons);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
+  /*AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("dataChain",
 							   TChain::Class(),
-							   AliAnalysisManager::kInputContainer);
+							   AliAnalysisManager::kInputContainer);*/
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
@@ -361,7 +363,7 @@ void runProof(const char* mode = "ESD",
   mgr->PrintStatus();
 
   if(dataset)
-    mgr->StartAnalysis("proof",dataset,stats);
+    mgr->StartAnalysis("proof",dataset,stats,startingPoint);
   else {
     // You should get this macro and the txt file from:
     // http://aliceinfo.cern.ch/Offline/Analysis/CAF/

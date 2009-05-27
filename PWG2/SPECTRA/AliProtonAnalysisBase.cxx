@@ -61,7 +61,7 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
   fMaxDCA3DFlag(kFALSE), fMaxDCA3DTPCFlag(kFALSE),
   fMaxConstrainChi2Flag(kFALSE),
   fITSRefitFlag(kFALSE), fTPCRefitFlag(kFALSE),
-  fESDpidFlag(kFALSE), fTPCpidFlag(kFALSE),
+  fESDpidFlag(kFALSE), fTPCpidFlag(kFALSE), fTOFpidFlag(kFALSE),
   fPointOnITSLayer1Flag(0), fPointOnITSLayer2Flag(0),
   fPointOnITSLayer3Flag(0), fPointOnITSLayer4Flag(0),
   fPointOnITSLayer5Flag(0), fPointOnITSLayer6Flag(0),
@@ -425,6 +425,13 @@ Bool_t AliProtonAnalysisBase::IsAccepted(AliESDEvent *esd,
     if ((track->GetStatus() & AliESDtrack::kTPCpid) == 0) {
       if(fDebugMode)
 	Printf("IsAccepted: Track rejected because it has no TPC pid flag");
+      return kFALSE;
+    }
+  }
+  if(fTOFpidFlag) {
+    if ((track->GetStatus() & AliESDtrack::kTOFpid) == 0) {
+      if(fDebugMode)
+	Printf("IsAccepted: Track rejected because it has no TOF pid flag");
       return kFALSE;
     }
   }
