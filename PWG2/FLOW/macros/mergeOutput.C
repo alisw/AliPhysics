@@ -1,19 +1,28 @@
 enum libModes {mLocal,mLocalSource};
-//mLocal: Analyze data on your computer using aliroot
-//mLocalSource: Analyze data on your computer using root + source files
 
-void mergeOutput(const Int_t nRuns=-1, TString type="",Int_t mode=mLocal)
-{ 
+void mergeOutput(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
+{
+ // type:  type of analysis can be ESD, AOD, MC, ESDMC0, ESDMC1
+ //        (if type="" output files are from MC simulation (default))
+ // nRuns: specify here how many output .root files will be merged 
+ //        (if nRuns = -1 all of them will be merged)
+ // mode:  if mode=mLocal analyze data on your computer using aliroot
+ //        if mode=mLocalSource analyze data on your computer using root + source files
+ 
  // load needed libraries:                       
  LoadSpreadLibraries(mode);  
-
+ 
+ // access the path of current diretory:
  TString pwd(gSystem->pwd());
-         
+ pwd+="/";
+    
  // file mergers for the output file of each method separately: 
  // MCEP:                       
  TFileMerger *mcepFileMerger = new TFileMerger();
- TString mergedFileNameMCEP("outputMCEPanalysis.root");
- if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameMCEP).Data(),kFileExists)))
+ TString mergedFileNameMCEP("mergedMCEPanalysis");
+ (mergedFileNameMCEP+=(type.Data()))+=(".root");
+ TString pwdMCEP=pwd.Data();
+ if(!(gSystem->AccessPathName((pwdMCEP+=mergedFileNameMCEP).Data(),kFileExists)))
  {
   cout<<"WARNING: You already have a merged output for MCEP !!!!"<<endl;
   break;
@@ -22,20 +31,22 @@ void mergeOutput(const Int_t nRuns=-1, TString type="",Int_t mode=mLocal)
  
  // SP:                       
  TFileMerger *spFileMerger = new TFileMerger();
- TString mergedFileNameSP("outputSPanalysis.root");
- pwd=gSystem->pwd();
- if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameSP).Data(),kFileExists)))
+ TString mergedFileNameSP("mergedSPanalysis");
+ (mergedFileNameSP+=(type.Data()))+=(".root");
+ TString pwdSP=pwd.Data(); 
+ if(!(gSystem->AccessPathName((pwdSP+=mergedFileNameSP).Data(),kFileExists)))
  {
   cout<<"WARNING: You already have a merged output for SP !!!!"<<endl;
   break;
  }
  spFileMerger->OutputFile(mergedFileNameSP);
-
+ 
  // GFC:                       
  TFileMerger *gfcFileMerger = new TFileMerger();
- TString mergedFileNameGFC("outputGFCanalysis.root");
- pwd=gSystem->pwd();
- if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameGFC).Data(),kFileExists)))
+ TString mergedFileNameGFC("mergedGFCanalysis");
+ (mergedFileNameGFC+=(type.Data()))+=(".root");
+ TString pwdGFC=pwd.Data(); 
+ if(!(gSystem->AccessPathName((pwdGFC+=mergedFileNameGFC).Data(),kFileExists)))
  {
   cout<<"WARNING: You already have a merged output for GFC !!!!"<<endl;
   break;
@@ -44,42 +55,46 @@ void mergeOutput(const Int_t nRuns=-1, TString type="",Int_t mode=mLocal)
  
  // QC:                       
  TFileMerger *qcFileMerger = new TFileMerger();
- TString mergedFileNameQC("outputQCanalysis.root");
- pwd=gSystem->pwd();
- if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameQC).Data(),kFileExists)))
+ TString mergedFileNameQC("mergedQCanalysis");
+ (mergedFileNameQC+=(type.Data()))+=(".root");
+ TString pwdQC=pwd.Data(); 
+ if(!(gSystem->AccessPathName((pwdQC+=mergedFileNameQC).Data(),kFileExists)))
  {
   cout<<"WARNING: You already have a merged output for QC !!!!"<<endl;
   break;
- } 
+ }
  qcFileMerger->OutputFile(mergedFileNameQC);
  
  // FQD:                       
  TFileMerger *fqdFileMerger = new TFileMerger();
- TString mergedFileNameFQD("outputFQDanalysis.root");
- pwd=gSystem->pwd();
- if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameFQD).Data(),kFileExists)))
+ TString mergedFileNameFQD("mergedFQDanalysis");
+ (mergedFileNameFQD+=(type.Data()))+=(".root");
+ TString pwdFQD=pwd.Data(); 
+ if(!(gSystem->AccessPathName((pwdFQD+=mergedFileNameFQD).Data(),kFileExists)))
  {
   cout<<"WARNING: You already have a merged output for FQD !!!!"<<endl;
   break;
- } 
+ }
  fqdFileMerger->OutputFile(mergedFileNameFQD);
  
  // LYZ1:                       
  TFileMerger *lyz1FileMerger = new TFileMerger();
- TString mergedFileNameLYZ1("outputLYZ1analysis.root");
- pwd=gSystem->pwd();
- if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameLYZ1).Data(),kFileExists)))
+ TString mergedFileNameLYZ1("mergedLYZ1analysis");
+ (mergedFileNameLYZ1+=(type.Data()))+=(".root");
+ TString pwdLYZ1=pwd.Data(); 
+ if(!(gSystem->AccessPathName((pwdLYZ1+=mergedFileNameLYZ1).Data(),kFileExists)))
  {
   cout<<"WARNING: You already have a merged output for LYZ1 !!!!"<<endl;
   break;
- } 
+ }
  lyz1FileMerger->OutputFile(mergedFileNameLYZ1);
  
  // LYZ2:                       
  TFileMerger *lyz2FileMerger = new TFileMerger();
- TString mergedFileNameLYZ2("outputLYZ2analysis.root");
- pwd=gSystem->pwd();
- if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameLYZ2).Data(),kFileExists)))
+ TString mergedFileNameLYZ2("mergedLYZ2analysis");
+ (mergedFileNameLYZ2+=(type.Data()))+=(".root");
+ TString pwdLYZ2=pwd.Data(); 
+ if(!(gSystem->AccessPathName((pwdLYZ2+=mergedFileNameLYZ2).Data(),kFileExists)))
  {
   cout<<"WARNING: You already have a merged output for LYZ2 !!!!"<<endl;
   break;
@@ -88,13 +103,14 @@ void mergeOutput(const Int_t nRuns=-1, TString type="",Int_t mode=mLocal)
  
  // LYZEP:                       
  TFileMerger *lyzepFileMerger = new TFileMerger();
- TString mergedFileNameLYZEP("outputLYZEPanalysis.root");
- pwd=gSystem->pwd();
- if(!(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameLYZEP).Data(),kFileExists)))
+ TString mergedFileNameLYZEP("mergedLYZEPanalysis");
+ (mergedFileNameLYZEP+=(type.Data()))+=(".root");
+ TString pwdLYZEP=pwd.Data(); 
+ if(!(gSystem->AccessPathName((pwdLYZEP+=mergedFileNameLYZEP).Data(),kFileExists)))
  {
   cout<<"WARNING: You already have a merged output for LYZEP !!!!"<<endl;
   break;
- } 
+ }
  lyzepFileMerger->OutputFile(mergedFileNameLYZEP);
  
  // standard magic:
@@ -125,76 +141,147 @@ void mergeOutput(const Int_t nRuns=-1, TString type="",Int_t mode=mLocal)
   // accessing the output .root files from independent analysis for each method:
   // MCEP:     
   TString fileNameMCEP = presentDirName;   
-  fileNameMCEP+="outputMCEPanalysis.root";
+  ((fileNameMCEP+="outputMCEPanalysis")+=type.Data())+=".root";
   if(!(gSystem->AccessPathName(fileNameMCEP.Data(),kFileExists)))
   {
    mcepFileMerger->AddFile(fileNameMCEP.Data());
-  }  
+  } else 
+    {
+     cout<<"WARNING: Couldn't find a file "<<fileNameMCEP.Data()<<". Merging will continue without this file."<<endl;
+    }  
+    
   // SP:     
   TString fileNameSP = presentDirName;   
-  fileNameSP+="outputSPanalysis.root";
+  ((fileNameSP+="outputSPanalysis")+=type.Data())+=".root";
   if(!(gSystem->AccessPathName(fileNameSP.Data(),kFileExists)))
   {
    spFileMerger->AddFile(fileNameSP.Data());
-  } 
+  } else 
+    {
+     cout<<"WARNING: Couldn't find a file "<<fileNameSP.Data()<<". Merging will continue without this file."<<endl;
+    }  
+    
   // GFC:     
   TString fileNameGFC = presentDirName;   
-  fileNameGFC+="outputGFCanalysis.root";
+  ((fileNameGFC+="outputGFCanalysis")+=type.Data())+=".root";
   if(!(gSystem->AccessPathName(fileNameGFC.Data(),kFileExists)))
-  { 
+  {
    gfcFileMerger->AddFile(fileNameGFC.Data());
-  } 
+  } else 
+    {
+     cout<<"WARNING: Couldn't find a file "<<fileNameGFC.Data()<<". Merging will continue without this file."<<endl;
+    }    
+        
   // QC:     
   TString fileNameQC = presentDirName;   
-  fileNameQC+="outputQCanalysis.root";
+  ((fileNameQC+="outputQCanalysis")+=type.Data())+=".root";
   if(!(gSystem->AccessPathName(fileNameQC.Data(),kFileExists)))
-  { 
+  {
    qcFileMerger->AddFile(fileNameQC.Data());
-  } 
+  } else 
+    {
+     cout<<"WARNING: Couldn't find a file "<<fileNameQC.Data()<<". Merging will continue without this file."<<endl;
+    }   
+    
   // FQD:     
   TString fileNameFQD = presentDirName;   
-  fileNameFQD+="outputFQDanalysis.root";
+  ((fileNameFQD+="outputFQDanalysis")+=type.Data())+=".root";
   if(!(gSystem->AccessPathName(fileNameFQD.Data(),kFileExists)))
-  { 
+  {
    fqdFileMerger->AddFile(fileNameFQD.Data());
-  } 
+  } else 
+    {
+     cout<<"WARNING: Couldn't find a file "<<fileNameFQD.Data()<<". Merging will continue without this file."<<endl;
+    }   
+  
   // LYZ1:     
   TString fileNameLYZ1 = presentDirName;   
-  fileNameLYZ1+="outputLYZ1analysis.root";
+  ((fileNameLYZ1+="outputLYZ1analysis")+=type.Data())+=".root";
   if(!(gSystem->AccessPathName(fileNameLYZ1.Data(),kFileExists)))
-  { 
+  {
    lyz1FileMerger->AddFile(fileNameLYZ1.Data());
-  } 
+  } else 
+    {
+     cout<<"WARNING: Couldn't find a file "<<fileNameLYZ1.Data()<<". Merging will continue without this file."<<endl;
+    }   
+    
   // LYZ2:     
   TString fileNameLYZ2 = presentDirName;   
-  fileNameLYZ2+="outputLYZ2analysis.root";
+  ((fileNameLYZ2+="outputLYZ2analysis")+=type.Data())+=".root";
   if(!(gSystem->AccessPathName(fileNameLYZ2.Data(),kFileExists)))
-  {  
+  {
    lyz2FileMerger->AddFile(fileNameLYZ2.Data());
-  } 
+  } else 
+    {
+     cout<<"WARNING: Couldn't find a file "<<fileNameLYZ2.Data()<<". Merging will continue without this file."<<endl;
+    }     
+    
   // LYZEP:     
   TString fileNameLYZEP = presentDirName;   
-  fileNameLYZEP+="outputLYZEPanalysis.root";
+  ((fileNameLYZEP+="outputLYZEPanalysis")+=type.Data())+=".root";
   if(!(gSystem->AccessPathName(fileNameLYZEP.Data(),kFileExists)))
-  {  
+  {
    lyzepFileMerger->AddFile(fileNameLYZEP.Data());
-  }
+  } else 
+    {
+     cout<<"WARNING: Couldn't find a file "<<fileNameLYZEP.Data()<<". Merging will continue without this file."<<endl;
+    }       
    
   counter++;
   
  } // end of for(Int_t iDir=0;iDir<nDirs;++iDir)
  
  // merge everything:
- mcepFileMerger->Merge();
- spFileMerger->Merge();
- gfcFileMerger->Merge();
- qcFileMerger->Merge();
- fqdFileMerger->Merge();
- //lyz1FileMerger->Merge();
- //lyz2FileMerger->Merge();
- //lyzepFileMerger->Merge();
-}
-
+ if(mcepFileMerger)
+ {
+  cout<<endl;
+  cout<<" ---- Starting to merge MCEP files ----"<<endl;
+  mcepFileMerger->Merge();
+ } 
+ if(spFileMerger)
+ {
+  cout<<endl;
+  cout<<" ---- Starting to merge SP files ----"<<endl;
+  spFileMerger->Merge();
+ }
+ if(gfcFileMerger)
+ {
+  cout<<endl;
+  cout<<" ---- Starting to merge GFC files ----"<<endl;
+  gfcFileMerger->Merge();
+ }
+ if(qcFileMerger)
+ {
+  cout<<endl;
+  cout<<" ---- Starting to merge QC files ----"<<endl;
+  qcFileMerger->Merge();
+ }
+ if(fqdFileMerger)
+ {
+  cout<<endl;
+  cout<<" ---- Starting to merge FQD files ----"<<endl;
+  fqdFileMerger->Merge();
+ }
+ if(lyz1FileMerger)
+ {
+  cout<<endl;
+  cout<<" ---- Starting to merge LYZ1 files ----"<<endl;
+  lyz1FileMerger->Merge();
+ }
+ if(lyz2FileMerger)
+ {
+  cout<<endl;
+  cout<<" ---- Starting to merge LYZ2 files ----"<<endl;
+  lyz2FileMerger->Merge();
+ }
+ if(lyzepFileMerger)
+ {
+  cout<<endl;
+  cout<<" ---- Starting to merge LYZEP files ----"<<endl;
+  lyzepFileMerger->Merge();
+ }
+ 
+} // end of void mergeOutput(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
 
 void LoadSpreadLibraries(const libModes mode) {
   
@@ -254,8 +341,8 @@ void LoadSpreadLibraries(const libModes mode) {
        
     cout << "finished loading macros!" << endl;  
     
-  }  
+  } // end of else if (mode==mLocalSource) 
   
-}
+} // end of void LoadSpreadLibraries(const libModes mode)
 
 
