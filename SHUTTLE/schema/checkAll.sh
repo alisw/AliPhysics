@@ -10,12 +10,7 @@ fi
 for I in $DETS
 do
         echo $I
-if [ $I == "GRP" ]
-then
-	aliroot -b -q TestDPs.C\(\"$I\",1213515934,1213627134\) > $I.out 2>&1
-else
-	aliroot -b -q TestDPs.C\(\"$I\",1210083077,1210083078\) > $I.out 2>&1
-fi
+	aliroot -b -q TestDPs.C\(\"$I\",1243418400,1243428400\) > $I.out 2>&1
 	echo -n "OK: "
 	grep Retrieved $I.out | wc -l
 	echo -n "Failed: "
