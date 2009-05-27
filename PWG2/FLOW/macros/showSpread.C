@@ -1,11 +1,20 @@
 enum libModes {mLocal,mLocalSource};
-//mLocal: Analyze data on your computer using aliroot
-//mLocalSource: Analyze data on your computer using root + source files
 
-void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
-{ 
+void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
+{
+ // type:  type of analysis can be ESD, AOD, MC, ESDMC0, ESDMC1
+ //        (if type="" output files are from MC simulation (default))
+ // nRuns: specify here from how many small statistics output .root files          
+ //        flow estimates will be shown (if nRuns = -1 all of them will be shown)
+ // mode:  if mode=mLocal analyze data on your computer using aliroot
+ //        if mode=mLocalSource analyze data on your computer using root + source files
+ 
  // load needed libraries:                       
  LoadSpreadLibraries(mode);  
+ 
+ // access the path of current directory:
+ TString pwd(gSystem->pwd());
+ pwd+="/"; 
  
  // standard magic:
  TString execDir(gSystem->pwd());  
@@ -14,365 +23,20 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  Int_t nDirs = dirList->GetEntries();
  gSystem->cd(execDir);
  
- // arrays to store estimates of each method from different runs:
- // MCEP:
- Double_t mcepValueNONAME[nRuns] = {0.}; 
- Double_t mcepMaxValueNONAME = 0.;       
- Double_t mcepMinValueNONAME = 1000.;   
- 
- // SP:
- Double_t spValueNONAME[nRuns] = {0.}; 
- Double_t spMaxValueNONAME = 0.;       
- Double_t spMinValueNONAME = 1000.;   
- 
- // GFC{2}
- Double_t gfc2ValueNONAME[nRuns] = {0.}; 
- Double_t gfc2MaxValueNONAME = 0.;       
- Double_t gfc2MinValueNONAME = 1000.;       
-
- // GFC{4}
- Double_t gfc4ValueNONAME[nRuns] = {0.}; 
- Double_t gfc4MaxValueNONAME = 0.;       
- Double_t gfc4MinValueNONAME = 1000.;       
-
- // GFC{6}
- Double_t gfc6ValueNONAME[nRuns] = {0.}; 
- Double_t gfc6MaxValueNONAME = 0.;       
- Double_t gfc6MinValueNONAME = 1000.;       
-
- // GFC{8}
- Double_t gfc8ValueNONAME[nRuns] = {0.}; 
- Double_t gfc8MaxValueNONAME = 0.;       
- Double_t gfc8MinValueNONAME = 1000.;       
- 
- // QC{2}
- Double_t qc2ValueNONAME[nRuns] = {0.}; 
- Double_t qc2MaxValueNONAME = 0.;       
- Double_t qc2MinValueNONAME = 1000.;       
-
- // QC{4}
- Double_t qc4ValueNONAME[nRuns] = {0.}; 
- Double_t qc4MaxValueNONAME = 0.;       
- Double_t qc4MinValueNONAME = 1000.;       
-
- // QC{6}
- Double_t qc6ValueNONAME[nRuns] = {0.}; 
- Double_t qc6MaxValueNONAME = 0.;       
- Double_t qc6MinValueNONAME = 1000.;       
-
- // QC{8}
- Double_t qc8ValueNONAME[nRuns] = {0.}; 
- Double_t qc8MaxValueNONAME = 0.;       
- Double_t qc8MinValueNONAME = 1000.; 
- 
- // FQD:
- Double_t fqdValueNONAME[nRuns] = {0.}; 
- Double_t fqdMaxValueNONAME = 0.;       
- Double_t fqdMinValueNONAME = 1000.;   
- 
- // LYZ1:
- Double_t lyz1ValueNONAME[nRuns] = {0.}; 
- Double_t lyz1MaxValueNONAME = 0.;       
- Double_t lyz1MinValueNONAME = 1000.;
- 
- // LYZEP:
- Double_t lyzepValueNONAME[nRuns] = {0.}; 
- Double_t lyzepMaxValueNONAME = 0.;       
- Double_t lyzepMinValueNONAME = 1000.;            
-             
- Int_t counter = 0;
-  
- for(Int_t iDir=0;iDir<nDirs;++iDir)
+ Int_t countDirectories = 0;
+ if(dirList)
  {
-  TSystemFile* presentDir = (TSystemFile*)dirList->At(iDir);
-  if(!presentDir || !presentDir->IsDirectory() || strcmp(presentDir->GetName(), ".") == 0 || 
-     strcmp(presentDir->GetName(), "..") == 0) continue; 
-          
-  if (counter >= nRuns) break;       
-                       
-  TString presentDirName(gSystem->pwd()); 
-  presentDirName += "/";
-  presentDirName += presentDir->GetName();
-  presentDirName += "/";
-   
-  // accessing the output .root files for each method:
-  // MCEP:     
-  TString fileNameMCEP = presentDirName;   
-  fileNameMCEP+="outputMCEPanalysis.root";
-  TFile *fileMCEP = TFile::Open(fileNameMCEP.Data(), "READ");      
-  TList *listMCEP = NULL;
-  AliFlowCommonHistResults *mcepCommonHistRes = NULL; 
-  
-  if(fileMCEP) 
+  for(Int_t i=0;i<nDirs;i++)
   {
-   fileMCEP->GetObject("cobjMCEP",listMCEP); 
-   if(listMCEP) 
+   if((dirList->At(i))->InheritsFrom("TSystemDirectory") &&  
+      !(strcmp((dirList->At(i))->GetName(),".") == 0 ) &&  
+      !(strcmp((dirList->At(i))->GetName(),"..") == 0 )) 
    {
-    mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listMCEP->FindObject("AliFlowCommonHistResultsMCEP")); 
-   }  
-  }
-  
-  if(mcepCommonHistRes && mcepCommonHistRes->GetHistIntFlow())
-  {
-   mcepValueNONAME[counter] = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(mcepValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(mcepMaxValueNONAME < mcepValueNONAME[counter]) mcepMaxValueNONAME = mcepValueNONAME[counter]; 
-    if(mcepMinValueNONAME > mcepValueNONAME[counter]) mcepMinValueNONAME = mcepValueNONAME[counter]; 
+    countDirectories++;
    } 
   }
-  
-  // SP:     
-  TString fileNameSP = presentDirName;   
-  fileNameSP+="outputSPanalysis.root";
-  TFile *fileSP = TFile::Open(fileNameSP.Data(), "READ");      
-  TList *listSP = NULL;
-  AliFlowCommonHistResults *spCommonHistRes = NULL; 
-  
-  if(fileSP) 
-  {
-   fileSP->GetObject("cobjSP",listSP); 
-   if(listSP) 
-   {
-    spCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listSP->FindObject("AliFlowCommonHistResultsSP")); 
-   }  
-  }
-  
-  if(spCommonHistRes && spCommonHistRes->GetHistIntFlow())
-  {
-   spValueNONAME[counter] = (spCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(spValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(spMaxValueNONAME < spValueNONAME[counter]) spMaxValueNONAME = spValueNONAME[counter]; 
-    if(spMinValueNONAME > spValueNONAME[counter]) spMinValueNONAME = spValueNONAME[counter]; 
-   } 
-  }
-  
-  // GFC:     
-  TString fileNameGFC = presentDirName;   
-  fileNameGFC+="outputGFCanalysis.root";
-  TFile *fileGFC = TFile::Open(fileNameGFC.Data(), "READ");      
-  TList *listGFC = NULL;
-  AliFlowCommonHistResults *gfc2CommonHistRes = NULL; 
-  AliFlowCommonHistResults *gfc4CommonHistRes = NULL; 
-  AliFlowCommonHistResults *gfc6CommonHistRes = NULL; 
-  AliFlowCommonHistResults *gfc8CommonHistRes = NULL; 
+ }   
  
-  if(fileGFC) 
-  {
-   fileGFC->GetObject("cobjGFC",listGFC); 
-   if(listGFC) 
-   {
-    gfc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC")); 
-    gfc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults4thOrderGFC")); 
-    gfc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults6thOrderGFC")); 
-    gfc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults8thOrderGFC")); 
-   }  
-  }
-    
-  if(gfc2CommonHistRes && gfc2CommonHistRes->GetHistIntFlow())
-  {
-   gfc2ValueNONAME[counter] = (gfc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(gfc2ValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(gfc2MaxValueNONAME < gfc2ValueNONAME[counter]) gfc2MaxValueNONAME = gfc2ValueNONAME[counter]; 
-    if(gfc2MinValueNONAME > gfc2ValueNONAME[counter]) gfc2MinValueNONAME = gfc2ValueNONAME[counter]; 
-   } 
-  }
-  
-  if(gfc4CommonHistRes && gfc4CommonHistRes->GetHistIntFlow())
-  {
-   gfc4ValueNONAME[counter] = (gfc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(gfc4ValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(gfc4MaxValueNONAME < gfc4ValueNONAME[counter]) gfc4MaxValueNONAME = gfc4ValueNONAME[counter]; 
-    if(gfc4MinValueNONAME > gfc4ValueNONAME[counter]) gfc4MinValueNONAME = gfc4ValueNONAME[counter]; 
-   } 
-  }
-   
-  if(gfc6CommonHistRes && gfc6CommonHistRes->GetHistIntFlow())
-  {
-   gfc6ValueNONAME[counter] = (gfc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(gfc6ValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(gfc6MaxValueNONAME < gfc6ValueNONAME[counter]) gfc6MaxValueNONAME = gfc6ValueNONAME[counter]; 
-    if(gfc6MinValueNONAME > gfc6ValueNONAME[counter]) gfc6MinValueNONAME = gfc6ValueNONAME[counter]; 
-   } 
-  }
-  
-  if(gfc8CommonHistRes && gfc8CommonHistRes->GetHistIntFlow())
-  {
-   gfc8ValueNONAME[counter] = (gfc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(gfc8ValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(gfc8MaxValueNONAME < gfc8ValueNONAME[counter]) gfc8MaxValueNONAME = gfc8ValueNONAME[counter]; 
-    if(gfc8MinValueNONAME > gfc8ValueNONAME[counter]) gfc8MinValueNONAME = gfc8ValueNONAME[counter]; 
-   } 
-  } 
-                             
-  // QC:     
-  TString fileNameQC = presentDirName;   
-  fileNameQC+="outputQCanalysis.root";
-  TFile *fileQC = TFile::Open(fileNameQC.Data(), "READ");      
-  TList *listQC = NULL;
-  AliFlowCommonHistResults *qc2CommonHistRes = NULL; 
-  AliFlowCommonHistResults *qc4CommonHistRes = NULL; 
-  AliFlowCommonHistResults *qc6CommonHistRes = NULL; 
-  AliFlowCommonHistResults *qc8CommonHistRes = NULL; 
- 
-  if(fileQC) 
-  {
-   fileQC->GetObject("cobjQC",listQC); 
-   if(listQC) 
-   {
-    qc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults2ndOrderQC")); 
-    qc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults4thOrderQC")); 
-    qc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults6thOrderQC")); 
-    qc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults8thOrderQC")); 
-   }  
-  }
-    
-  if(qc2CommonHistRes && qc2CommonHistRes->GetHistIntFlow())
-  {
-   qc2ValueNONAME[counter] = (qc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(qc2ValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(qc2MaxValueNONAME < qc2ValueNONAME[counter]) qc2MaxValueNONAME = qc2ValueNONAME[counter]; 
-    if(qc2MinValueNONAME > qc2ValueNONAME[counter]) qc2MinValueNONAME = qc2ValueNONAME[counter]; 
-   } 
-  }
-  
-  if(qc4CommonHistRes && qc4CommonHistRes->GetHistIntFlow())
-  {
-   qc4ValueNONAME[counter] = (qc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(qc4ValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(qc4MaxValueNONAME < qc4ValueNONAME[counter]) qc4MaxValueNONAME = qc4ValueNONAME[counter]; 
-    if(qc4MinValueNONAME > qc4ValueNONAME[counter]) qc4MinValueNONAME = qc4ValueNONAME[counter]; 
-   } 
-  }
-   
-  if(qc6CommonHistRes && qc6CommonHistRes->GetHistIntFlow())
-  {
-   qc6ValueNONAME[counter] = (qc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(qc6ValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(qc6MaxValueNONAME < qc6ValueNONAME[counter]) qc6MaxValueNONAME = qc6ValueNONAME[counter]; 
-    if(qc6MinValueNONAME > qc6ValueNONAME[counter]) qc6MinValueNONAME = qc6ValueNONAME[counter]; 
-   } 
-  }
-  
-  if(qc8CommonHistRes && qc8CommonHistRes->GetHistIntFlow())
-  {
-   qc8ValueNONAME[counter] = (qc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(qc8ValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(qc8MaxValueNONAME < qc8ValueNONAME[counter]) qc8MaxValueNONAME = qc8ValueNONAME[counter]; 
-    if(qc8MinValueNONAME > qc8ValueNONAME[counter]) qc8MinValueNONAME = qc8ValueNONAME[counter]; 
-   } 
-  } 
-  
-  // FQD:     
-  TString fileNameFQD = presentDirName;   
-  fileNameFQD+="outputFQDanalysis.root";
-  TFile *fileFQD = TFile::Open(fileNameFQD.Data(), "READ");      
-  TList *listFQD = NULL;
-  AliFlowCommonHistResults *fqdCommonHistRes = NULL; 
-  
-  if(fileFQD) 
-  {
-   fileFQD->GetObject("cobjFQD",listFQD); 
-   if(listFQD) 
-   {
-    fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listFQD->FindObject("AliFlowCommonHistResultsFQD")); 
-   }  
-  }
-  
-  if(fqdCommonHistRes && fqdCommonHistRes->GetHistIntFlow())
-  {
-   fqdValueNONAME[counter] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(fqdValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(fqdMaxValueNONAME < fqdValueNONAME[counter]) fqdMaxValueNONAME = fqdValueNONAME[counter]; 
-    if(fqdMinValueNONAME > fqdValueNONAME[counter]) fqdMinValueNONAME = fqdValueNONAME[counter]; 
-   } 
-  }
-  
-  // LYZ1:     
-  TString fileNameLYZ1 = presentDirName;   
-  fileNameLYZ1+="outputLYZ1analysis.root";
-  TFile *fileLYZ1 = TFile::Open(fileNameLYZ1.Data(), "READ");      
-  TList *listLYZ1 = NULL;
-  AliFlowCommonHistResults *lyz1CommonHistRes = NULL; 
-  
-  if(fileLYZ1) 
-  {
-   fileLYZ1->GetObject("cobjLYZ1",listLYZ1); 
-   if(listLYZ1) 
-   {
-    lyz1CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1->FindObject("AliFlowCommonHistResultsLYZ1")); 
-   }  
-  }
-  
-  if(lyz1CommonHistRes && lyz1CommonHistRes->GetHistIntFlow())
-  {
-   lyz1ValueNONAME[counter] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(lyz1ValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(lyz1MaxValueNONAME < lyz1ValueNONAME[counter]) lyz1MaxValueNONAME = lyz1ValueNONAME[counter]; 
-    if(lyz1MinValueNONAME > lyz1ValueNONAME[counter]) lyz1MinValueNONAME = lyz1ValueNONAME[counter]; 
-   } 
-  }
-  
-  // LYZEP:     
-  TString fileNameLYZEP = presentDirName;   
-  fileNameLYZEP+="outputLYZEPanalysis.root";
-  TFile *fileLYZEP = TFile::Open(fileNameLYZEP.Data(), "READ");      
-  TList *listLYZEP = NULL;
-  AliFlowCommonHistResults *lyzepCommonHistRes = NULL; 
-  
-  if(fileLYZEP) 
-  {
-   fileLYZEP->GetObject("cobjLYZEP",listLYZEP); 
-   if(listLYZEP) 
-   {
-    lyzepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZEP->FindObject("AliFlowCommonHistResultsLYZEP")); 
-   }  
-  }
-  
-  if(lyzepCommonHistRes && lyzepCommonHistRes->GetHistIntFlow())
-  {
-   lyzepValueNONAME[counter] = (lyzepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-   if(lyzepValueNONAME[counter]>0.) // modify this condition for RPs and POIs !!!
-   {
-    if(lyzepMaxValueNONAME < lyzepValueNONAME[counter]) lyzepMaxValueNONAME = lyzepValueNONAME[counter]; 
-    if(lyzepMinValueNONAME > lyzepValueNONAME[counter]) lyzepMinValueNONAME = lyzepValueNONAME[counter]; 
-   } 
-  }
-  
-  counter++;
-  
- } // end of for(Int_t iDir=0;iDir<nDirs;++iDir)
- 
- 
- 
-
- 
- 
- // removing the title and stat. box from all histograms:
- // gStyle->SetOptTitle(0);
- gStyle->SetOptStat(0);  
- 
- // box width:
- const Double_t boxWidth = 0.25;
-  
- // the number of different methods:
- const Int_t nMethods = 13;
- 
- // the number of runs:
- const Int_t nPoints = counter;
-   
- // booking the style histogram for the integrated flow results from all methods for NONAME, RPs and POIs:
  // assigning bin numbers to methods:
  Int_t binMCEP = 1; 
  Int_t binSP = 2;
@@ -386,8 +50,543 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  Int_t binQC8 = 10; 
  Int_t binFQD = 11; 
  Int_t binLYZ1 = 12; 
- Int_t binLYZEP = 13; 
+ Int_t binLYZEP = 13;
  
+ // one subdirectory gives one estimate for each method: 
+ const Int_t nEstimates = countDirectories;
+ 
+ // arrays to store estimates and errors of each method from different small statistics runs:
+ // MCEP:
+ Double_t mcepValueNONAME[nEstimates] = {0.}; 
+ Double_t mcepErrorNONAME[nEstimates] = {0.}; 
+ Double_t mcepMaxValueNONAME = 0.; // to be improved      
+ Double_t mcepMinValueNONAME = 1000.; // to be improved
+ 
+ // SP:
+ Double_t spValueNONAME[nEstimates] = {0.}; 
+ Double_t spErrorNONAME[nEstimates] = {0.}; 
+ Double_t spMaxValueNONAME = 0.; // to be improved      
+ Double_t spMinValueNONAME = 1000.; // to be improved
+ 
+ // GFC{2}:
+ Double_t gfc2ValueNONAME[nEstimates] = {0.}; 
+ Double_t gfc2ErrorNONAME[nEstimates] = {0.}; 
+ Double_t gfc2MaxValueNONAME = 0.; // to be improved      
+ Double_t gfc2MinValueNONAME = 1000.; // to be improved
+ 
+ // GFC{4}:
+ Double_t gfc4ValueNONAME[nEstimates] = {0.}; 
+ Double_t gfc4ErrorNONAME[nEstimates] = {0.}; 
+ Double_t gfc4MaxValueNONAME = 0.; // to be improved      
+ Double_t gfc4MinValueNONAME = 1000.; // to be improved
+    
+ // GFC{6}:
+ Double_t gfc6ValueNONAME[nEstimates] = {0.}; 
+ Double_t gfc6ErrorNONAME[nEstimates] = {0.}; 
+ Double_t gfc6MaxValueNONAME = 0.; // to be improved      
+ Double_t gfc6MinValueNONAME = 1000.; // to be improved
+
+ // GFC{8}:
+ Double_t gfc8ValueNONAME[nEstimates] = {0.}; 
+ Double_t gfc8ErrorNONAME[nEstimates] = {0.}; 
+ Double_t gfc8MaxValueNONAME = 0.; // to be improved      
+ Double_t gfc8MinValueNONAME = 1000.; // to be improved
+ 
+ // QC{2}:
+ Double_t qc2ValueNONAME[nEstimates] = {0.}; 
+ Double_t qc2ErrorNONAME[nEstimates] = {0.}; 
+ Double_t qc2MaxValueNONAME = 0.; // to be improved      
+ Double_t qc2MinValueNONAME = 1000.; // to be improved
+ 
+ // QC{4}:
+ Double_t qc4ValueNONAME[nEstimates] = {0.}; 
+ Double_t qc4ErrorNONAME[nEstimates] = {0.}; 
+ Double_t qc4MaxValueNONAME = 0.; // to be improved      
+ Double_t qc4MinValueNONAME = 1000.; // to be improved
+    
+ // QC{6}:
+ Double_t qc6ValueNONAME[nEstimates] = {0.}; 
+ Double_t qc6ErrorNONAME[nEstimates] = {0.}; 
+ Double_t qc6MaxValueNONAME = 0.; // to be improved      
+ Double_t qc6MinValueNONAME = 1000.; // to be improved
+
+ // QC{8}:
+ Double_t qc8ValueNONAME[nEstimates] = {0.}; 
+ Double_t qc8ErrorNONAME[nEstimates] = {0.}; 
+ Double_t qc8MaxValueNONAME = 0.; // to be improved      
+ Double_t qc8MinValueNONAME = 1000.; // to be improved
+ 
+ // FQD:
+ Double_t fqdValueNONAME[nEstimates] = {0.}; 
+ Double_t fqdErrorNONAME[nEstimates] = {0.}; 
+ Double_t fqdMaxValueNONAME = 0.; // to be improved      
+ Double_t fqdMinValueNONAME = 1000.; // to be improved
+       
+ // LYZ1:
+ Double_t lyz1ValueNONAME[nEstimates] = {0.}; 
+ Double_t lyz1ErrorNONAME[nEstimates] = {0.}; 
+ Double_t lyz1MaxValueNONAME = 0.; // to be improved      
+ Double_t lyz1MinValueNONAME = 1000.; // to be improved
+             
+ // LYZEP:
+ Double_t lyzepValueNONAME[nEstimates] = {0.}; 
+ Double_t lyzepErrorNONAME[nEstimates] = {0.}; 
+ Double_t lyzepMaxValueNONAME = 0.; // to be improved      
+ Double_t lyzepMinValueNONAME = 1000.; // to be improved        
+             
+ Int_t counter = 0;
+  
+ for(Int_t iDir=0;iDir<nDirs;++iDir)
+ {
+  TSystemFile* presentDir = (TSystemFile*)dirList->At(iDir);
+  if(!presentDir || !presentDir->IsDirectory() || strcmp(presentDir->GetName(), ".") == 0 || 
+     strcmp(presentDir->GetName(), "..") == 0) continue; 
+  
+  if(!(nRuns == -1))
+  {                
+   if (counter >= nRuns) break;       
+  }
+                                            
+  TString presentDirName(gSystem->pwd()); 
+  presentDirName += "/";
+  presentDirName += presentDir->GetName();
+  presentDirName += "/";
+   
+  // accessing the small statistics output .root files for each method:
+  // MCEP:     
+  TString fileNameMCEP = presentDirName;   
+  fileNameMCEP+="outputMCEPanalysis";
+  (fileNameMCEP+=type.Data())+=".root";
+  TFile *fileMCEP = TFile::Open(fileNameMCEP.Data(), "READ");      
+  if(fileMCEP) 
+  {
+   TList *listMCEP = NULL;
+   AliFlowCommonHistResults *mcepCommonHistRes = NULL; 
+   fileMCEP->GetObject("cobjMCEP",listMCEP); 
+   fileMCEP->Close();
+   if(listMCEP) 
+   {
+    mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listMCEP->FindObject("AliFlowCommonHistResultsMCEP")); 
+    if(mcepCommonHistRes && mcepCommonHistRes->GetHistIntFlow())
+    {
+     mcepValueNONAME[counter] = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     mcepErrorNONAME[counter] = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(mcepValueNONAME[counter]>0.) // to be improved 
+     {
+      if(mcepMaxValueNONAME < mcepValueNONAME[counter]) mcepMaxValueNONAME = mcepValueNONAME[counter]; 
+      if(mcepMinValueNONAME > mcepValueNONAME[counter]) mcepMinValueNONAME = mcepValueNONAME[counter]; 
+     } 
+    }
+   } // end of if(listMCEP)
+  } // end of if(fileMCEP) 
+  
+  // SP:     
+  TString fileNameSP = presentDirName;   
+  fileNameSP+="outputSPanalysis";
+  (fileNameSP+=type.Data())+=".root";
+  TFile *fileSP = TFile::Open(fileNameSP.Data(), "READ");      
+  if(fileSP) 
+  {
+   TList *listSP = NULL;
+   AliFlowCommonHistResults *spCommonHistRes = NULL; 
+   fileSP->GetObject("cobjSP",listSP); 
+   fileSP->Close();
+   if(listSP) 
+   {
+    spCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listSP->FindObject("AliFlowCommonHistResultsSP")); 
+    if(spCommonHistRes && spCommonHistRes->GetHistIntFlow())
+    {
+     spValueNONAME[counter] = (spCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     spErrorNONAME[counter] = (spCommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(spValueNONAME[counter]>0.) // to be improved 
+     {
+      if(spMaxValueNONAME < spValueNONAME[counter]) spMaxValueNONAME = spValueNONAME[counter]; 
+      if(spMinValueNONAME > spValueNONAME[counter]) spMinValueNONAME = spValueNONAME[counter]; 
+     } 
+    }
+   } // end of if(listSP)
+  } // end of if(fileSP) 
+  
+  // GFC:     
+  TString fileNameGFC = presentDirName;   
+  fileNameGFC+="outputGFCanalysis";
+  (fileNameGFC+=type.Data())+=".root";
+  TFile *fileGFC = TFile::Open(fileNameGFC.Data(), "READ");      
+  if(fileGFC) 
+  {
+   TList *listGFC = NULL;
+   AliFlowCommonHistResults *gfc2CommonHistRes = NULL; 
+   AliFlowCommonHistResults *gfc4CommonHistRes = NULL; 
+   AliFlowCommonHistResults *gfc6CommonHistRes = NULL; 
+   AliFlowCommonHistResults *gfc8CommonHistRes = NULL; 
+   fileGFC->GetObject("cobjGFC",listGFC); 
+   fileGFC->Close();
+   if(listGFC) 
+   {
+    gfc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC"));
+    gfc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults4thOrderGFC"));
+    gfc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults6thOrderGFC"));
+    gfc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults8thOrderGFC")); 
+    if(gfc2CommonHistRes && gfc2CommonHistRes->GetHistIntFlow())
+    {
+     gfc2ValueNONAME[counter] = (gfc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     gfc2ErrorNONAME[counter] = (gfc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(gfc2ValueNONAME[counter]>0.) // to be improved 
+     {
+      if(gfc2MaxValueNONAME < gfc2ValueNONAME[counter]) gfc2MaxValueNONAME = gfc2ValueNONAME[counter]; 
+      if(gfc2MinValueNONAME > gfc2ValueNONAME[counter]) gfc2MinValueNONAME = gfc2ValueNONAME[counter]; 
+     } 
+    }
+    if(gfc4CommonHistRes && gfc4CommonHistRes->GetHistIntFlow())
+    {
+     gfc4ValueNONAME[counter] = (gfc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     gfc4ErrorNONAME[counter] = (gfc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(gfc4ValueNONAME[counter]>0.) // to be improved 
+     {
+      if(gfc4MaxValueNONAME < gfc4ValueNONAME[counter]) gfc4MaxValueNONAME = gfc4ValueNONAME[counter]; 
+      if(gfc4MinValueNONAME > gfc4ValueNONAME[counter]) gfc4MinValueNONAME = gfc4ValueNONAME[counter]; 
+     } 
+    }
+    if(gfc6CommonHistRes && gfc6CommonHistRes->GetHistIntFlow())
+    {
+     gfc6ValueNONAME[counter] = (gfc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     gfc6ErrorNONAME[counter] = (gfc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(gfc6ValueNONAME[counter]>0.) // to be improved 
+     {
+      if(gfc6MaxValueNONAME < gfc6ValueNONAME[counter]) gfc6MaxValueNONAME = gfc6ValueNONAME[counter]; 
+      if(gfc6MinValueNONAME > gfc6ValueNONAME[counter]) gfc6MinValueNONAME = gfc6ValueNONAME[counter]; 
+     } 
+    }
+    if(gfc8CommonHistRes && gfc8CommonHistRes->GetHistIntFlow())
+    {
+     gfc8ValueNONAME[counter] = (gfc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     gfc8ErrorNONAME[counter] = (gfc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(gfc8ValueNONAME[counter]>0.) // to be improved 
+     {
+      if(gfc8MaxValueNONAME < gfc8ValueNONAME[counter]) gfc8MaxValueNONAME = gfc8ValueNONAME[counter]; 
+      if(gfc8MinValueNONAME > gfc8ValueNONAME[counter]) gfc8MinValueNONAME = gfc8ValueNONAME[counter]; 
+     } 
+    }
+   } // end of if(listGFC)
+  } // end of if(fileGFC) 
+  
+  // QC:     
+  TString fileNameQC = presentDirName;   
+  fileNameQC+="outputQCanalysis";
+  (fileNameQC+=type.Data())+=".root";
+  TFile *fileQC = TFile::Open(fileNameQC.Data(), "READ");      
+  if(fileQC) 
+  {
+   TList *listQC = NULL;
+   AliFlowCommonHistResults *qc2CommonHistRes = NULL; 
+   AliFlowCommonHistResults *qc4CommonHistRes = NULL; 
+   AliFlowCommonHistResults *qc6CommonHistRes = NULL; 
+   AliFlowCommonHistResults *qc8CommonHistRes = NULL; 
+   fileQC->GetObject("cobjQC",listQC); 
+   fileQC->Close();
+   if(listQC) 
+   {
+    qc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults2ndOrderQC"));
+    qc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults4thOrderQC"));
+    qc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults6thOrderQC"));
+    qc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults8thOrderQC")); 
+    if(qc2CommonHistRes && qc2CommonHistRes->GetHistIntFlow())
+    {
+     qc2ValueNONAME[counter] = (qc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     qc2ErrorNONAME[counter] = (qc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(qc2ValueNONAME[counter]>0.) // to be improved 
+     {
+      if(qc2MaxValueNONAME < qc2ValueNONAME[counter]) qc2MaxValueNONAME = qc2ValueNONAME[counter]; 
+      if(qc2MinValueNONAME > qc2ValueNONAME[counter]) qc2MinValueNONAME = qc2ValueNONAME[counter]; 
+     } 
+    }
+    if(qc4CommonHistRes && qc4CommonHistRes->GetHistIntFlow())
+    {
+     qc4ValueNONAME[counter] = (qc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     qc4ErrorNONAME[counter] = (qc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(qc4ValueNONAME[counter]>0.) // to be improved 
+     {
+      if(qc4MaxValueNONAME < qc4ValueNONAME[counter]) qc4MaxValueNONAME = qc4ValueNONAME[counter]; 
+      if(qc4MinValueNONAME > qc4ValueNONAME[counter]) qc4MinValueNONAME = qc4ValueNONAME[counter]; 
+     } 
+    }
+    if(qc6CommonHistRes && qc6CommonHistRes->GetHistIntFlow())
+    {
+     qc6ValueNONAME[counter] = (qc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     qc6ErrorNONAME[counter] = (qc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(qc6ValueNONAME[counter]>0.) // to be improved 
+     {
+      if(qc6MaxValueNONAME < qc6ValueNONAME[counter]) qc6MaxValueNONAME = qc6ValueNONAME[counter]; 
+      if(qc6MinValueNONAME > qc6ValueNONAME[counter]) qc6MinValueNONAME = qc6ValueNONAME[counter]; 
+     } 
+    }
+    if(qc8CommonHistRes && qc8CommonHistRes->GetHistIntFlow())
+    {
+     qc8ValueNONAME[counter] = (qc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     qc8ErrorNONAME[counter] = (qc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(qc8ValueNONAME[counter]>0.) // to be improved 
+     {
+      if(qc8MaxValueNONAME < qc8ValueNONAME[counter]) qc8MaxValueNONAME = qc8ValueNONAME[counter]; 
+      if(qc8MinValueNONAME > qc8ValueNONAME[counter]) qc8MinValueNONAME = qc8ValueNONAME[counter]; 
+     } 
+    }
+   } // end of if(listQC)
+  } // end of if(fileQC) 
+ 
+  // FQD:     
+  TString fileNameFQD = presentDirName;   
+  fileNameFQD+="outputFQDanalysis";
+  (fileNameFQD+=type.Data())+=".root";
+  TFile *fileFQD = TFile::Open(fileNameFQD.Data(), "READ");      
+  if(fileFQD) 
+  {
+   TList *listFQD = NULL;
+   AliFlowCommonHistResults *fqdCommonHistRes = NULL; 
+   fileFQD->GetObject("cobjFQD",listFQD); 
+   fileFQD->Close();
+   if(listFQD) 
+   {
+    fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listFQD->FindObject("AliFlowCommonHistResultsFQD")); 
+    if(fqdCommonHistRes && fqdCommonHistRes->GetHistIntFlow())
+    {
+     fqdValueNONAME[counter] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     fqdErrorNONAME[counter] = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(fqdValueNONAME[counter]>0.) // to be improved 
+     {
+      if(fqdMaxValueNONAME < fqdValueNONAME[counter]) fqdMaxValueNONAME = fqdValueNONAME[counter]; 
+      if(fqdMinValueNONAME > fqdValueNONAME[counter]) fqdMinValueNONAME = fqdValueNONAME[counter]; 
+     } 
+    }
+   } // end of if(listFQD)
+  } // end of if(fileFQD)   
+  
+ // ... LYZ* to be added ... 
+ 
+  counter++;
+  
+ } // end of for(Int_t iDir=0;iDir<nDirs;++iDir)
+ 
+ // accessing the large statistics merged output .root files for each method:
+ // MCEP:
+ TString mergedOutputFileNameMCEP(pwd.Data());
+ ((mergedOutputFileNameMCEP+="outputMCEPanalysis")+=type.Data())+=".root";
+ TFile *mergedOutputFileMCEP = NULL;
+ TList *mergedOutputListMCEP = NULL;
+ Double_t mergedValueMCEP = 0.;
+ Double_t mergedErrorMCEP = 0.; 
+ if(gSystem->AccessPathName(mergedOutputFileNameMCEP.Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameMCEP.Data()<<endl;
+ } else 
+   {     
+    mergedOutputFileMCEP = TFile::Open(mergedOutputFileNameMCEP.Data(),"READ");      
+    if(mergedOutputFileMCEP) 
+    { 
+     mergedOutputFileMCEP->GetObject("cobjMCEP",mergedOutputListMCEP); 
+     mergedOutputFileMCEP->Close();
+     if(mergedOutputListMCEP) 
+     {
+      AliFlowCommonHistResults *mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListMCEP->FindObject("AliFlowCommonHistResultsMCEP")); 
+      if(mcepCommonHistRes && mcepCommonHistRes->GetHistIntFlow())
+      {
+       mergedValueMCEP = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorMCEP = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      } 
+     }
+    } // end of if(mergedOutputFileMCEP)
+   } // end of else 
+   
+ // SP:
+ TString mergedOutputFileNameSP(pwd.Data());
+ ((mergedOutputFileNameSP+="outputSPanalysis")+=type.Data())+=".root";
+ TFile *mergedOutputFileSP = NULL;
+ TList *mergedOutputListSP = NULL;
+ Double_t mergedValueSP = 0.;
+ Double_t mergedErrorSP = 0.; 
+ if(gSystem->AccessPathName(mergedOutputFileNameSP.Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameSP.Data()<<endl;
+ } else 
+   {     
+    mergedOutputFileSP = TFile::Open(mergedOutputFileNameSP.Data(),"READ");      
+    if(mergedOutputFileSP) 
+    { 
+     mergedOutputFileSP->GetObject("cobjSP",mergedOutputListSP); 
+     mergedOutputFileSP->Close();
+     if(mergedOutputListSP) 
+     {
+      AliFlowCommonHistResults *spCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListSP->FindObject("AliFlowCommonHistResultsSP")); 
+      if(spCommonHistRes && spCommonHistRes->GetHistIntFlow())
+      {
+       mergedValueSP = (spCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorSP = (spCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      } 
+     }
+    } // end of if(mergedOutputFileSP)
+   } // end of else 
+ 
+ // GFC:
+ TString mergedOutputFileNameGFC(pwd.Data());
+ ((mergedOutputFileNameGFC+="outputGFCanalysis")+=type.Data())+=".root";
+ TFile *mergedOutputFileGFC = NULL;
+ TList *mergedOutputListGFC = NULL;
+ Double_t mergedValueGFC2 = 0.;
+ Double_t mergedErrorGFC2 = 0.; 
+ Double_t mergedValueGFC4 = 0.;
+ Double_t mergedErrorGFC4 = 0.; 
+ Double_t mergedValueGFC6 = 0.;
+ Double_t mergedErrorGFC6 = 0.; 
+ Double_t mergedValueGFC8 = 0.;
+ Double_t mergedErrorGFC8 = 0.; 
+ if(gSystem->AccessPathName(mergedOutputFileNameGFC.Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameGFC.Data()<<endl;
+ } else 
+   {     
+    mergedOutputFileGFC = TFile::Open(mergedOutputFileNameGFC.Data(),"READ");      
+    if(mergedOutputFileGFC) 
+    { 
+     mergedOutputFileGFC->GetObject("cobjGFC",mergedOutputListGFC); 
+     mergedOutputFileGFC->Close();
+     if(mergedOutputListGFC) 
+     {
+      AliFlowCommonHistResults *gfc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC")); 
+      AliFlowCommonHistResults *gfc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListGFC->FindObject("AliFlowCommonHistResults4thOrderGFC")); 
+      AliFlowCommonHistResults *gfc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListGFC->FindObject("AliFlowCommonHistResults6thOrderGFC")); 
+      AliFlowCommonHistResults *gfc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListGFC->FindObject("AliFlowCommonHistResults8thOrderGFC")); 
+      if(gfc2CommonHistRes && gfc2CommonHistRes->GetHistIntFlow())
+      {
+       mergedValueGFC2 = (gfc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorGFC2 = (gfc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      } 
+      if(gfc4CommonHistRes && gfc4CommonHistRes->GetHistIntFlow())
+      {
+       mergedValueGFC4 = (gfc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorGFC4 = (gfc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      }
+      if(gfc6CommonHistRes && gfc6CommonHistRes->GetHistIntFlow())
+      {
+       mergedValueGFC6 = (gfc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorGFC6 = (gfc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      } 
+      if(gfc8CommonHistRes && gfc8CommonHistRes->GetHistIntFlow())
+      {
+       mergedValueGFC8 = (gfc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorGFC8 = (gfc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      }  
+     }
+    } // end of if(mergedOutputFileGFC)
+   } // end of else  
+
+ // QC:
+ TString mergedOutputFileNameQC(pwd.Data());
+ ((mergedOutputFileNameQC+="outputQCanalysis")+=type.Data())+=".root";
+ TFile *mergedOutputFileQC = NULL;
+ TList *mergedOutputListQC = NULL;
+ Double_t mergedValueQC2 = 0.;
+ Double_t mergedErrorQC2 = 0.; 
+ Double_t mergedValueQC4 = 0.;
+ Double_t mergedErrorQC4 = 0.; 
+ Double_t mergedValueQC6 = 0.;
+ Double_t mergedErrorQC6 = 0.; 
+ Double_t mergedValueQC8 = 0.;
+ Double_t mergedErrorQC8 = 0.; 
+ if(gSystem->AccessPathName(mergedOutputFileNameQC.Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameQC.Data()<<endl;
+ } else 
+   {     
+    mergedOutputFileQC = TFile::Open(mergedOutputFileNameQC.Data(),"READ");      
+    if(mergedOutputFileQC) 
+    { 
+     mergedOutputFileQC->GetObject("cobjQC",mergedOutputListQC); 
+     mergedOutputFileQC->Close();
+     if(mergedOutputListQC) 
+     {
+      AliFlowCommonHistResults *qc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListQC->FindObject("AliFlowCommonHistResults2ndOrderQC")); 
+      AliFlowCommonHistResults *qc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListQC->FindObject("AliFlowCommonHistResults4thOrderQC")); 
+      AliFlowCommonHistResults *qc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListQC->FindObject("AliFlowCommonHistResults6thOrderQC")); 
+      AliFlowCommonHistResults *qc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListQC->FindObject("AliFlowCommonHistResults8thOrderQC")); 
+      if(qc2CommonHistRes && qc2CommonHistRes->GetHistIntFlow())
+      {
+       mergedValueQC2 = (qc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorQC2 = (qc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      } 
+      if(qc4CommonHistRes && qc4CommonHistRes->GetHistIntFlow())
+      {
+       mergedValueQC4 = (qc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorQC4 = (qc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      }
+      if(qc6CommonHistRes && qc6CommonHistRes->GetHistIntFlow())
+      {
+       mergedValueQC6 = (qc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorQC6 = (qc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      } 
+      if(qc8CommonHistRes && qc8CommonHistRes->GetHistIntFlow())
+      {
+       mergedValueQC8 = (qc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorQC8 = (qc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      }  
+     }
+    } // end of if(mergedOutputFileGFC)
+   } // end of else  
+
+ // FQD:
+ TString mergedOutputFileNameFQD(pwd.Data());
+ ((mergedOutputFileNameFQD+="outputFQDanalysis")+=type.Data())+=".root";
+ TFile *mergedOutputFileFQD = NULL;
+ TList *mergedOutputListFQD = NULL;
+ Double_t mergedValueFQD = 0.;
+ Double_t mergedErrorFQD = 0.; 
+ if(gSystem->AccessPathName(mergedOutputFileNameFQD.Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameFQD.Data()<<endl;
+ } else 
+   {     
+    mergedOutputFileFQD = TFile::Open(mergedOutputFileNameFQD.Data(),"READ");      
+    if(mergedOutputFileFQD) 
+    { 
+     mergedOutputFileFQD->GetObject("cobjFQD",mergedOutputListFQD); 
+     mergedOutputFileFQD->Close();
+     if(mergedOutputListFQD) 
+     {
+      AliFlowCommonHistResults *fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListFQD->FindObject("AliFlowCommonHistResultsFQD")); 
+      if(fqdCommonHistRes && fqdCommonHistRes->GetHistIntFlow())
+      {
+       mergedValueFQD = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorFQD = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      } 
+     }
+    } // end of if(mergedOutputFileFQD)
+   } // end of else  
+   
+ // ... LYZ* to be added ... 
+                   
+ // removing the title and stat. box from all histograms:
+ // gStyle->SetOptTitle(0);
+ gStyle->SetOptStat(0);  
+ 
+ // box width:
+ const Double_t boxWidth = 0.25;
+  
+ // the number of different methods:
+ const Int_t nMethods = 13;
+ 
+ // the number of small statistics runs:
+ const Int_t nPoints = counter;
+   
+ // booking the style histogram for the integrated flow results from all methods for NONAME, RPs and POIs:
  TH1D* intFlowAll = new TH1D("intFlowAll","Integrated Flow",nMethods,0,nMethods);      
  //intFlowAll->SetLabelSize(0.036,"X");
  //intFlowAll->SetLabelSize(0.036,"Y");
@@ -407,11 +606,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  (intFlowAll->GetXaxis())->SetBinLabel(binFQD,"v_{2}{FQD}");
  (intFlowAll->GetXaxis())->SetBinLabel(binLYZ1,"v_{2}{LYZ}");
  (intFlowAll->GetXaxis())->SetBinLabel(binLYZEP,"v_{2}{LYZEP}");
-  
- 
  
  //=============================================================================
- //                             NONAME 
+ //                             NONAME histogram
  //=============================================================================
    
  TH1D *intFlowNONAME = new TH1D(*intFlowAll); 
@@ -448,199 +645,237 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  }
  
  // MCEP:
+ TGraph *mcepMeanNONAME = new TGraph(1);    
+ mcepMeanNONAME->SetPoint(0,binMCEP-0.5,mergedValueMCEP);  
+ mcepMeanNONAME->SetMarkerStyle(25);
+ mcepMeanNONAME->SetMarkerColor(kBlack); 
+ mcepMeanNONAME->SetMarkerSize(1.25); 
+ 
  TGraph* mcepTGraphNONAME = new TGraph(nPoints, mcepNONAME, mcepValueNONAME);
  mcepTGraphNONAME->SetMarkerStyle(21);
  mcepTGraphNONAME->SetMarkerColor(kBlack); 
  mcepTGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *mcepBoxNONAME = new TGraph(5);
- mcepBoxNONAME->SetPoint(1,(binMCEP-0.5)-boxWidth,mcepMinValueNONAME);
- mcepBoxNONAME->SetPoint(2,(binMCEP-0.5)+boxWidth,mcepMinValueNONAME);
- mcepBoxNONAME->SetPoint(3,(binMCEP-0.5)+boxWidth,mcepMaxValueNONAME);
- mcepBoxNONAME->SetPoint(4,(binMCEP-0.5)-boxWidth,mcepMaxValueNONAME);
- mcepBoxNONAME->SetPoint(5,(binMCEP-0.5)-boxWidth,mcepMinValueNONAME);    
+ mcepBoxNONAME->SetPoint(0,(binMCEP-0.5)-boxWidth,mcepMinValueNONAME);
+ mcepBoxNONAME->SetPoint(1,(binMCEP-0.5)+boxWidth,mcepMinValueNONAME);
+ mcepBoxNONAME->SetPoint(2,(binMCEP-0.5)+boxWidth,mcepMaxValueNONAME);
+ mcepBoxNONAME->SetPoint(3,(binMCEP-0.5)-boxWidth,mcepMaxValueNONAME);
+ mcepBoxNONAME->SetPoint(4,(binMCEP-0.5)-boxWidth,mcepMinValueNONAME);    
  mcepBoxNONAME->SetFillStyle(1001);
  mcepBoxNONAME->SetFillColor(kGray);
-  
+ 
  // SP:
+ TGraph *spMeanNONAME = new TGraph(1);    
+ spMeanNONAME->SetPoint(0,binSP-0.5,mergedValueSP);  
+ spMeanNONAME->SetMarkerStyle(25);
+ spMeanNONAME->SetMarkerColor(kViolet+3); 
+ spMeanNONAME->SetMarkerSize(1.25); 
+ 
  TGraph* spTGraphNONAME = new TGraph(nPoints, spNONAME, spValueNONAME);
  spTGraphNONAME->SetMarkerStyle(21);
  spTGraphNONAME->SetMarkerColor(kViolet+3); 
  spTGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *spBoxNONAME = new TGraph(5);
- spBoxNONAME->SetPoint(1,(binSP-0.5)-boxWidth,spMinValueNONAME);
- spBoxNONAME->SetPoint(2,(binSP-0.5)+boxWidth,spMinValueNONAME);
- spBoxNONAME->SetPoint(3,(binSP-0.5)+boxWidth,spMaxValueNONAME);
- spBoxNONAME->SetPoint(4,(binSP-0.5)-boxWidth,spMaxValueNONAME);
- spBoxNONAME->SetPoint(5,(binSP-0.5)-boxWidth,spMinValueNONAME);    
+ spBoxNONAME->SetPoint(0,(binSP-0.5)-boxWidth,spMinValueNONAME);
+ spBoxNONAME->SetPoint(1,(binSP-0.5)+boxWidth,spMinValueNONAME);
+ spBoxNONAME->SetPoint(2,(binSP-0.5)+boxWidth,spMaxValueNONAME);
+ spBoxNONAME->SetPoint(3,(binSP-0.5)-boxWidth,spMaxValueNONAME);
+ spBoxNONAME->SetPoint(4,(binSP-0.5)-boxWidth,spMinValueNONAME);    
  spBoxNONAME->SetFillStyle(1001);
  spBoxNONAME->SetFillColor(kViolet-9);
  
  // GFC{2}:
+ TGraph *gfc2MeanNONAME = new TGraph(1);    
+ gfc2MeanNONAME->SetPoint(0,binGFC2-0.5,mergedValueGFC2);  
+ gfc2MeanNONAME->SetMarkerStyle(25);
+ gfc2MeanNONAME->SetMarkerColor(kBlue); 
+ gfc2MeanNONAME->SetMarkerSize(1.25); 
+ 
  TGraph* gfc2TGraphNONAME = new TGraph(nPoints, gfc2NONAME, gfc2ValueNONAME);
  gfc2TGraphNONAME->SetMarkerStyle(21);
- gfc2TGraphNONAME->SetMarkerColor(kBlue);
+ gfc2TGraphNONAME->SetMarkerColor(kBlue); 
  gfc2TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *gfc2BoxNONAME = new TGraph(5);
- gfc2BoxNONAME->SetPoint(1,(binGFC2-0.5)-boxWidth,gfc2MinValueNONAME);
- gfc2BoxNONAME->SetPoint(2,(binGFC2-0.5)+boxWidth,gfc2MinValueNONAME);
- gfc2BoxNONAME->SetPoint(3,(binGFC2-0.5)+boxWidth,gfc2MaxValueNONAME);
- gfc2BoxNONAME->SetPoint(4,(binGFC2-0.5)-boxWidth,gfc2MaxValueNONAME);
- gfc2BoxNONAME->SetPoint(5,(binGFC2-0.5)-boxWidth,gfc2MinValueNONAME);    
+ gfc2BoxNONAME->SetPoint(0,(binGFC2-0.5)-boxWidth,gfc2MinValueNONAME);
+ gfc2BoxNONAME->SetPoint(1,(binGFC2-0.5)+boxWidth,gfc2MinValueNONAME);
+ gfc2BoxNONAME->SetPoint(2,(binGFC2-0.5)+boxWidth,gfc2MaxValueNONAME);
+ gfc2BoxNONAME->SetPoint(3,(binGFC2-0.5)-boxWidth,gfc2MaxValueNONAME);
+ gfc2BoxNONAME->SetPoint(4,(binGFC2-0.5)-boxWidth,gfc2MinValueNONAME);    
  gfc2BoxNONAME->SetFillStyle(1001);
  gfc2BoxNONAME->SetFillColor(kBlue-10);
  
  // GFC{4}:
+ TGraph *gfc4MeanNONAME = new TGraph(1);    
+ gfc4MeanNONAME->SetPoint(0,binGFC4-0.5,mergedValueGFC4);  
+ gfc4MeanNONAME->SetMarkerStyle(25);
+ gfc4MeanNONAME->SetMarkerColor(kBlue); 
+ gfc4MeanNONAME->SetMarkerSize(1.25); 
+ 
  TGraph* gfc4TGraphNONAME = new TGraph(nPoints, gfc4NONAME, gfc4ValueNONAME);
  gfc4TGraphNONAME->SetMarkerStyle(21);
  gfc4TGraphNONAME->SetMarkerColor(kBlue); 
  gfc4TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *gfc4BoxNONAME = new TGraph(5);
- gfc4BoxNONAME->SetPoint(1,(binGFC4-0.5)-boxWidth,gfc4MinValueNONAME);
- gfc4BoxNONAME->SetPoint(2,(binGFC4-0.5)+boxWidth,gfc4MinValueNONAME);
- gfc4BoxNONAME->SetPoint(3,(binGFC4-0.5)+boxWidth,gfc4MaxValueNONAME);
- gfc4BoxNONAME->SetPoint(4,(binGFC4-0.5)-boxWidth,gfc4MaxValueNONAME);
- gfc4BoxNONAME->SetPoint(5,(binGFC4-0.5)-boxWidth,gfc4MinValueNONAME);    
+ gfc4BoxNONAME->SetPoint(0,(binGFC4-0.5)-boxWidth,gfc4MinValueNONAME);
+ gfc4BoxNONAME->SetPoint(1,(binGFC4-0.5)+boxWidth,gfc4MinValueNONAME);
+ gfc4BoxNONAME->SetPoint(2,(binGFC4-0.5)+boxWidth,gfc4MaxValueNONAME);
+ gfc4BoxNONAME->SetPoint(3,(binGFC4-0.5)-boxWidth,gfc4MaxValueNONAME);
+ gfc4BoxNONAME->SetPoint(4,(binGFC4-0.5)-boxWidth,gfc4MinValueNONAME);    
  gfc4BoxNONAME->SetFillStyle(1001);
  gfc4BoxNONAME->SetFillColor(kBlue-10);
-
+ 
  // GFC{6}:
+ TGraph *gfc6MeanNONAME = new TGraph(1);    
+ gfc6MeanNONAME->SetPoint(0,binGFC6-0.5,mergedValueGFC6);  
+ gfc6MeanNONAME->SetMarkerStyle(25);
+ gfc6MeanNONAME->SetMarkerColor(kBlue); 
+ gfc6MeanNONAME->SetMarkerSize(1.25); 
+ 
  TGraph* gfc6TGraphNONAME = new TGraph(nPoints, gfc6NONAME, gfc6ValueNONAME);
  gfc6TGraphNONAME->SetMarkerStyle(21);
  gfc6TGraphNONAME->SetMarkerColor(kBlue); 
  gfc6TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *gfc6BoxNONAME = new TGraph(5);
- gfc6BoxNONAME->SetPoint(1,(binGFC6-0.5)-boxWidth,gfc6MinValueNONAME);
- gfc6BoxNONAME->SetPoint(2,(binGFC6-0.5)+boxWidth,gfc6MinValueNONAME);
- gfc6BoxNONAME->SetPoint(3,(binGFC6-0.5)+boxWidth,gfc6MaxValueNONAME);
- gfc6BoxNONAME->SetPoint(4,(binGFC6-0.5)-boxWidth,gfc6MaxValueNONAME);
- gfc6BoxNONAME->SetPoint(5,(binGFC6-0.5)-boxWidth,gfc6MinValueNONAME);    
+ gfc6BoxNONAME->SetPoint(0,(binGFC6-0.5)-boxWidth,gfc6MinValueNONAME);
+ gfc6BoxNONAME->SetPoint(1,(binGFC6-0.5)+boxWidth,gfc6MinValueNONAME);
+ gfc6BoxNONAME->SetPoint(2,(binGFC6-0.5)+boxWidth,gfc6MaxValueNONAME);
+ gfc6BoxNONAME->SetPoint(3,(binGFC6-0.5)-boxWidth,gfc6MaxValueNONAME);
+ gfc6BoxNONAME->SetPoint(4,(binGFC6-0.5)-boxWidth,gfc6MinValueNONAME);    
  gfc6BoxNONAME->SetFillStyle(1001);
  gfc6BoxNONAME->SetFillColor(kBlue-10);
-
+ 
  // GFC{8}:
+ TGraph *gfc8MeanNONAME = new TGraph(1);    
+ gfc8MeanNONAME->SetPoint(0,binGFC8-0.5,mergedValueGFC8);  
+ gfc8MeanNONAME->SetMarkerStyle(25);
+ gfc8MeanNONAME->SetMarkerColor(kBlue); 
+ gfc8MeanNONAME->SetMarkerSize(1.25); 
+ 
  TGraph* gfc8TGraphNONAME = new TGraph(nPoints, gfc8NONAME, gfc8ValueNONAME);
  gfc8TGraphNONAME->SetMarkerStyle(21);
  gfc8TGraphNONAME->SetMarkerColor(kBlue); 
  gfc8TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *gfc8BoxNONAME = new TGraph(5);
- gfc8BoxNONAME->SetPoint(1,(binGFC8-0.5)-boxWidth,gfc8MinValueNONAME);
- gfc8BoxNONAME->SetPoint(2,(binGFC8-0.5)+boxWidth,gfc8MinValueNONAME);
- gfc8BoxNONAME->SetPoint(3,(binGFC8-0.5)+boxWidth,gfc8MaxValueNONAME);
- gfc8BoxNONAME->SetPoint(4,(binGFC8-0.5)-boxWidth,gfc8MaxValueNONAME);
- gfc8BoxNONAME->SetPoint(5,(binGFC8-0.5)-boxWidth,gfc8MinValueNONAME);    
+ gfc8BoxNONAME->SetPoint(0,(binGFC8-0.5)-boxWidth,gfc8MinValueNONAME);
+ gfc8BoxNONAME->SetPoint(1,(binGFC8-0.5)+boxWidth,gfc8MinValueNONAME);
+ gfc8BoxNONAME->SetPoint(2,(binGFC8-0.5)+boxWidth,gfc8MaxValueNONAME);
+ gfc8BoxNONAME->SetPoint(3,(binGFC8-0.5)-boxWidth,gfc8MaxValueNONAME);
+ gfc8BoxNONAME->SetPoint(4,(binGFC8-0.5)-boxWidth,gfc8MinValueNONAME);    
  gfc8BoxNONAME->SetFillStyle(1001);
  gfc8BoxNONAME->SetFillColor(kBlue-10);
  
  // QC{2}:
+ TGraph *qc2MeanNONAME = new TGraph(1);    
+ qc2MeanNONAME->SetPoint(0,binQC2-0.5,mergedValueQC2);  
+ qc2MeanNONAME->SetMarkerStyle(25);
+ qc2MeanNONAME->SetMarkerColor(kRed); 
+ qc2MeanNONAME->SetMarkerSize(1.25); 
+ 
  TGraph* qc2TGraphNONAME = new TGraph(nPoints, qc2NONAME, qc2ValueNONAME);
  qc2TGraphNONAME->SetMarkerStyle(21);
  qc2TGraphNONAME->SetMarkerColor(kRed); 
  qc2TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *qc2BoxNONAME = new TGraph(5);
- qc2BoxNONAME->SetPoint(1,(binQC2-0.5)-boxWidth,qc2MinValueNONAME);
- qc2BoxNONAME->SetPoint(2,(binQC2-0.5)+boxWidth,qc2MinValueNONAME);
- qc2BoxNONAME->SetPoint(3,(binQC2-0.5)+boxWidth,qc2MaxValueNONAME);
- qc2BoxNONAME->SetPoint(4,(binQC2-0.5)-boxWidth,qc2MaxValueNONAME);
- qc2BoxNONAME->SetPoint(5,(binQC2-0.5)-boxWidth,qc2MinValueNONAME);    
+ qc2BoxNONAME->SetPoint(0,(binQC2-0.5)-boxWidth,qc2MinValueNONAME);
+ qc2BoxNONAME->SetPoint(1,(binQC2-0.5)+boxWidth,qc2MinValueNONAME);
+ qc2BoxNONAME->SetPoint(2,(binQC2-0.5)+boxWidth,qc2MaxValueNONAME);
+ qc2BoxNONAME->SetPoint(3,(binQC2-0.5)-boxWidth,qc2MaxValueNONAME);
+ qc2BoxNONAME->SetPoint(4,(binQC2-0.5)-boxWidth,qc2MinValueNONAME);    
  qc2BoxNONAME->SetFillStyle(1001);
  qc2BoxNONAME->SetFillColor(kRed-10);
  
  // QC{4}:
+ TGraph *qc4MeanNONAME = new TGraph(1);    
+ qc4MeanNONAME->SetPoint(0,binQC4-0.5,mergedValueQC4);  
+ qc4MeanNONAME->SetMarkerStyle(25);
+ qc4MeanNONAME->SetMarkerColor(kRed); 
+ qc4MeanNONAME->SetMarkerSize(1.25); 
+ 
  TGraph* qc4TGraphNONAME = new TGraph(nPoints, qc4NONAME, qc4ValueNONAME);
  qc4TGraphNONAME->SetMarkerStyle(21);
  qc4TGraphNONAME->SetMarkerColor(kRed); 
  qc4TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *qc4BoxNONAME = new TGraph(5);
- qc4BoxNONAME->SetPoint(1,(binQC4-0.5)-boxWidth,qc4MinValueNONAME);
- qc4BoxNONAME->SetPoint(2,(binQC4-0.5)+boxWidth,qc4MinValueNONAME);
- qc4BoxNONAME->SetPoint(3,(binQC4-0.5)+boxWidth,qc4MaxValueNONAME);
- qc4BoxNONAME->SetPoint(4,(binQC4-0.5)-boxWidth,qc4MaxValueNONAME);
- qc4BoxNONAME->SetPoint(5,(binQC4-0.5)-boxWidth,qc4MinValueNONAME);    
+ qc4BoxNONAME->SetPoint(0,(binQC4-0.5)-boxWidth,qc4MinValueNONAME);
+ qc4BoxNONAME->SetPoint(1,(binQC4-0.5)+boxWidth,qc4MinValueNONAME);
+ qc4BoxNONAME->SetPoint(2,(binQC4-0.5)+boxWidth,qc4MaxValueNONAME);
+ qc4BoxNONAME->SetPoint(3,(binQC4-0.5)-boxWidth,qc4MaxValueNONAME);
+ qc4BoxNONAME->SetPoint(4,(binQC4-0.5)-boxWidth,qc4MinValueNONAME);    
  qc4BoxNONAME->SetFillStyle(1001);
  qc4BoxNONAME->SetFillColor(kRed-10);
-
+ 
  // QC{6}:
+ TGraph *qc6MeanNONAME = new TGraph(1);    
+ qc6MeanNONAME->SetPoint(0,binQC6-0.5,mergedValueQC6);  
+ qc6MeanNONAME->SetMarkerStyle(25);
+ qc6MeanNONAME->SetMarkerColor(kRed); 
+ qc6MeanNONAME->SetMarkerSize(1.25); 
+ 
  TGraph* qc6TGraphNONAME = new TGraph(nPoints, qc6NONAME, qc6ValueNONAME);
  qc6TGraphNONAME->SetMarkerStyle(21);
  qc6TGraphNONAME->SetMarkerColor(kRed); 
  qc6TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *qc6BoxNONAME = new TGraph(5);
- qc6BoxNONAME->SetPoint(1,(binQC6-0.5)-boxWidth,qc6MinValueNONAME);
- qc6BoxNONAME->SetPoint(2,(binQC6-0.5)+boxWidth,qc6MinValueNONAME);
- qc6BoxNONAME->SetPoint(3,(binQC6-0.5)+boxWidth,qc6MaxValueNONAME);
- qc6BoxNONAME->SetPoint(4,(binQC6-0.5)-boxWidth,qc6MaxValueNONAME);
- qc6BoxNONAME->SetPoint(5,(binQC6-0.5)-boxWidth,qc6MinValueNONAME);    
+ qc6BoxNONAME->SetPoint(0,(binQC6-0.5)-boxWidth,qc6MinValueNONAME);
+ qc6BoxNONAME->SetPoint(1,(binQC6-0.5)+boxWidth,qc6MinValueNONAME);
+ qc6BoxNONAME->SetPoint(2,(binQC6-0.5)+boxWidth,qc6MaxValueNONAME);
+ qc6BoxNONAME->SetPoint(3,(binQC6-0.5)-boxWidth,qc6MaxValueNONAME);
+ qc6BoxNONAME->SetPoint(4,(binQC6-0.5)-boxWidth,qc6MinValueNONAME);    
  qc6BoxNONAME->SetFillStyle(1001);
  qc6BoxNONAME->SetFillColor(kRed-10);
-
+ 
  // QC{8}:
+ TGraph *qc8MeanNONAME = new TGraph(1);    
+ qc8MeanNONAME->SetPoint(0,binQC8-0.5,mergedValueQC8);  
+ qc8MeanNONAME->SetMarkerStyle(25);
+ qc8MeanNONAME->SetMarkerColor(kRed); 
+ qc8MeanNONAME->SetMarkerSize(1.25); 
+ 
  TGraph* qc8TGraphNONAME = new TGraph(nPoints, qc8NONAME, qc8ValueNONAME);
  qc8TGraphNONAME->SetMarkerStyle(21);
  qc8TGraphNONAME->SetMarkerColor(kRed); 
  qc8TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *qc8BoxNONAME = new TGraph(5);
- qc8BoxNONAME->SetPoint(1,(binQC8-0.5)-boxWidth,qc8MinValueNONAME);
- qc8BoxNONAME->SetPoint(2,(binQC8-0.5)+boxWidth,qc8MinValueNONAME);
- qc8BoxNONAME->SetPoint(3,(binQC8-0.5)+boxWidth,qc8MaxValueNONAME);
- qc8BoxNONAME->SetPoint(4,(binQC8-0.5)-boxWidth,qc8MaxValueNONAME);
- qc8BoxNONAME->SetPoint(5,(binQC8-0.5)-boxWidth,qc8MinValueNONAME);    
+ qc8BoxNONAME->SetPoint(0,(binQC8-0.5)-boxWidth,qc8MinValueNONAME);
+ qc8BoxNONAME->SetPoint(1,(binQC8-0.5)+boxWidth,qc8MinValueNONAME);
+ qc8BoxNONAME->SetPoint(2,(binQC8-0.5)+boxWidth,qc8MaxValueNONAME);
+ qc8BoxNONAME->SetPoint(3,(binQC8-0.5)-boxWidth,qc8MaxValueNONAME);
+ qc8BoxNONAME->SetPoint(4,(binQC8-0.5)-boxWidth,qc8MinValueNONAME);    
  qc8BoxNONAME->SetFillStyle(1001);
  qc8BoxNONAME->SetFillColor(kRed-10);
  
  // FQD:
+ TGraph *fqdMeanNONAME = new TGraph(1);    
+ fqdMeanNONAME->SetPoint(0,binFQD-0.5,mergedValueFQD);  
+ fqdMeanNONAME->SetMarkerStyle(25);
+ fqdMeanNONAME->SetMarkerColor(kViolet+3); 
+ fqdMeanNONAME->SetMarkerSize(1.25); 
+ 
  TGraph* fqdTGraphNONAME = new TGraph(nPoints, fqdNONAME, fqdValueNONAME);
  fqdTGraphNONAME->SetMarkerStyle(21);
  fqdTGraphNONAME->SetMarkerColor(kOrange+7); 
  fqdTGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *fqdBoxNONAME = new TGraph(5);
- fqdBoxNONAME->SetPoint(1,(binFQD-0.5)-boxWidth,fqdMinValueNONAME);
- fqdBoxNONAME->SetPoint(2,(binFQD-0.5)+boxWidth,fqdMinValueNONAME);
- fqdBoxNONAME->SetPoint(3,(binFQD-0.5)+boxWidth,fqdMaxValueNONAME);
- fqdBoxNONAME->SetPoint(4,(binFQD-0.5)-boxWidth,fqdMaxValueNONAME);
- fqdBoxNONAME->SetPoint(5,(binFQD-0.5)-boxWidth,fqdMinValueNONAME);    
+ fqdBoxNONAME->SetPoint(0,(binFQD-0.5)-boxWidth,fqdMinValueNONAME);
+ fqdBoxNONAME->SetPoint(1,(binFQD-0.5)+boxWidth,fqdMinValueNONAME);
+ fqdBoxNONAME->SetPoint(2,(binFQD-0.5)+boxWidth,fqdMaxValueNONAME);
+ fqdBoxNONAME->SetPoint(3,(binFQD-0.5)-boxWidth,fqdMaxValueNONAME);
+ fqdBoxNONAME->SetPoint(4,(binFQD-0.5)-boxWidth,fqdMinValueNONAME);    
  fqdBoxNONAME->SetFillStyle(1001);
  fqdBoxNONAME->SetFillColor(kOrange-9);
  
- // LYZ1:
- TGraph* lyz1TGraphNONAME = new TGraph(nPoints, lyz1NONAME, lyz1ValueNONAME);
- lyz1TGraphNONAME->SetMarkerStyle(21);
- lyz1TGraphNONAME->SetMarkerColor(kYellow+3); 
- lyz1TGraphNONAME->SetMarkerSize(0.75); 
-  
- TGraph *lyz1BoxNONAME = new TGraph(5);
- lyz1BoxNONAME->SetPoint(1,(binLYZ1-0.5)-boxWidth,lyz1MinValueNONAME);
- lyz1BoxNONAME->SetPoint(2,(binLYZ1-0.5)+boxWidth,lyz1MinValueNONAME);
- lyz1BoxNONAME->SetPoint(3,(binLYZ1-0.5)+boxWidth,lyz1MaxValueNONAME);
- lyz1BoxNONAME->SetPoint(4,(binLYZ1-0.5)-boxWidth,lyz1MaxValueNONAME);
- lyz1BoxNONAME->SetPoint(5,(binLYZ1-0.5)-boxWidth,lyz1MinValueNONAME);    
- lyz1BoxNONAME->SetFillStyle(1001);
- lyz1BoxNONAME->SetFillColor(kYellow-8);
-   
- // LYZEP:
- TGraph* lyzepTGraphNONAME = new TGraph(nPoints, lyzepNONAME, lyzepValueNONAME);
- lyzepTGraphNONAME->SetMarkerStyle(21);
- lyzepTGraphNONAME->SetMarkerColor(kGreen+3); 
- lyzepTGraphNONAME->SetMarkerSize(0.75); 
- 
- TGraph *lyzepBoxNONAME = new TGraph(5);
- lyzepBoxNONAME->SetPoint(1,(binLYZEP-0.5)-boxWidth,lyzepMinValueNONAME);
- lyzepBoxNONAME->SetPoint(2,(binLYZEP-0.5)+boxWidth,lyzepMinValueNONAME);
- lyzepBoxNONAME->SetPoint(3,(binLYZEP-0.5)+boxWidth,lyzepMaxValueNONAME);
- lyzepBoxNONAME->SetPoint(4,(binLYZEP-0.5)-boxWidth,lyzepMaxValueNONAME);
- lyzepBoxNONAME->SetPoint(5,(binLYZEP-0.5)-boxWidth,lyzepMinValueNONAME);    
- lyzepBoxNONAME->SetFillStyle(1001);
- lyzepBoxNONAME->SetFillColor(kGreen-9);
+ // ... LYZ* to be added ...
    
  TCanvas* intFlowCanvasNONAME = new TCanvas("Integrated Flow NONAME","Integrated Flow NONAME",1000,600);
  
@@ -649,71 +884,77 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  // 1st pad is for plot:
  (intFlowCanvasNONAME->cd(1))->SetPad(0.0,0.0,0.75,1.0);
  
+ 
  if(intFlowNONAME) 
  {
   TString intFlowNameNONAME("Superimposing ");
-  intFlowNameNONAME+=nRuns;
+  intFlowNameNONAME+=counter;
   intFlowNameNONAME+=" independent runs";
   intFlowNONAME->SetTitle(intFlowNameNONAME.Data());
   (intFlowNONAME->GetYaxis())->SetRangeUser(0,0.20);
   intFlowNONAME->Draw();
  }
  
- // MCEP 
+ // MCEP: 
  if(mcepBoxNONAME && mcepMinValueNONAME < 1000.) mcepBoxNONAME->Draw("LFSAME");
  if(mcepTGraphNONAME) mcepTGraphNONAME->Draw("PSAME");
+ if(mcepMeanNONAME) mcepMeanNONAME->Draw("PSAME");
  
- // SP 
+ // SP: 
  if(spBoxNONAME && spMinValueNONAME < 1000.) spBoxNONAME->Draw("LFSAME");
  if(spTGraphNONAME) spTGraphNONAME->Draw("PSAME");
+ if(spMeanNONAME) spMeanNONAME->Draw("PSAME");
  
- // GFC{2} 
+ // GFC{2}: 
  if(gfc2BoxNONAME && gfc2MinValueNONAME < 1000.) gfc2BoxNONAME->Draw("LFSAME");
  if(gfc2TGraphNONAME) gfc2TGraphNONAME->Draw("PSAME");
-  
- // GFC{4} 
+ if(gfc2MeanNONAME) gfc2MeanNONAME->Draw("PSAME");
+ 
+ // GFC{4}: 
  if(gfc4BoxNONAME && gfc4MinValueNONAME < 1000.) gfc4BoxNONAME->Draw("LFSAME");
  if(gfc4TGraphNONAME) gfc4TGraphNONAME->Draw("PSAME");
-
- // GFC{6} 
+ if(gfc4MeanNONAME) gfc4MeanNONAME->Draw("PSAME");
+ 
+ // GFC{6}: 
  if(gfc6BoxNONAME && gfc6MinValueNONAME < 1000.) gfc6BoxNONAME->Draw("LFSAME");
  if(gfc6TGraphNONAME) gfc6TGraphNONAME->Draw("PSAME");
-
- // GFC{8} 
+ if(gfc6MeanNONAME) gfc6MeanNONAME->Draw("PSAME");
+ 
+ // GFC{8}: 
  if(gfc8BoxNONAME && gfc8MinValueNONAME < 1000.) gfc8BoxNONAME->Draw("LFSAME");
  if(gfc8TGraphNONAME) gfc8TGraphNONAME->Draw("PSAME");
+ if(gfc8MeanNONAME) gfc8MeanNONAME->Draw("PSAME");
  
- // QC{2} 
+ // QC{2}: 
  if(qc2BoxNONAME && qc2MinValueNONAME < 1000.) qc2BoxNONAME->Draw("LFSAME");
  if(qc2TGraphNONAME) qc2TGraphNONAME->Draw("PSAME");
-  
- // QC{4} 
+ if(qc2MeanNONAME) qc2MeanNONAME->Draw("PSAME");
+ 
+ // QC{4}: 
  if(qc4BoxNONAME && qc4MinValueNONAME < 1000.) qc4BoxNONAME->Draw("LFSAME");
  if(qc4TGraphNONAME) qc4TGraphNONAME->Draw("PSAME");
-
- // QC{6} 
+ if(qc4MeanNONAME) qc4MeanNONAME->Draw("PSAME");
+ 
+ // QC{6}: 
  if(qc6BoxNONAME && qc6MinValueNONAME < 1000.) qc6BoxNONAME->Draw("LFSAME");
  if(qc6TGraphNONAME) qc6TGraphNONAME->Draw("PSAME");
-
- // QC{8} 
+ if(qc6MeanNONAME) qc6MeanNONAME->Draw("PSAME");
+ 
+ // QC{8}: 
  if(qc8BoxNONAME && qc8MinValueNONAME < 1000.) qc8BoxNONAME->Draw("LFSAME");
  if(qc8TGraphNONAME) qc8TGraphNONAME->Draw("PSAME");
+ if(qc8MeanNONAME) qc8MeanNONAME->Draw("PSAME");
  
- // FQD 
+ // FQD: 
  if(fqdBoxNONAME && fqdMinValueNONAME < 1000.) fqdBoxNONAME->Draw("LFSAME");
  if(fqdTGraphNONAME) fqdTGraphNONAME->Draw("PSAME");
- 
- // LYZ1 
- if(lyz1BoxNONAME && lyz1MinValueNONAME < 1000.) lyz1BoxNONAME->Draw("LFSAME");
- if(lyz1TGraphNONAME) lyz1TGraphNONAME->Draw("PSAME");
- 
- // LYZEP 
- if(lyzepBoxNONAME && lyzepMinValueNONAME < 1000.) lyzepBoxNONAME->Draw("LFSAME");
- if(lyzepTGraphNONAME) lyzepTGraphNONAME->Draw("PSAME");
+ if(fqdMeanNONAME) fqdMeanNONAME->Draw("PSAME");
+
+ // ... LYZ* to be added ...
  
  // 2nd pad is for legend:   
  (intFlowCanvasNONAME->cd(2))->SetPad(0.75,0.0,1.0,1.0);
- 
+
  // count real estimates:
  Int_t mcepCountRealNONAME = 0;
  Int_t spCountRealNONAME = 0;
@@ -726,9 +967,9 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
  Int_t qc6CountRealNONAME = 0;
  Int_t qc8CountRealNONAME = 0;
  Int_t fqdCountRealNONAME = 0;
- Int_t lyz1CountRealNONAME = 0;
- Int_t lyzepCountRealNONAME = 0;
- for(Int_t i=0;i<nRuns;i++)
+ // ... LYZ* to be added ...
+ 
+ for(Int_t i=0;i<nEstimates;i++)
  {
   if(mcepValueNONAME[i]>0.) mcepCountRealNONAME++; 
   if(spValueNONAME[i]>0.) spCountRealNONAME++; 
@@ -741,8 +982,7 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
   if(qc6ValueNONAME[i]>0.) qc6CountRealNONAME++; 
   if(qc8ValueNONAME[i]>0.) qc8CountRealNONAME++;
   if(fqdValueNONAME[i]>0.) fqdCountRealNONAME++; 
-  if(lyz1ValueNONAME[i]>0.) lyz1CountRealNONAME++; 
-  if(lyzepValueNONAME[i]>0.) lyzepCountRealNONAME++; 
+  // ... LYZ* to be added ... 
  }
 
  TPaveText *textDefaultNONAME = new TPaveText(0.05,0.67,0.95,0.90,"NDC");
@@ -869,6 +1109,7 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowFQDNONAME->Data());
  }
  
+ /*
  if(entryIntFlowLYZ1NONAME)
  { 
   (*entryIntFlowLYZ1NONAME)+=(Long_t)lyz1CountRealNONAME;
@@ -884,300 +1125,12 @@ void showSpread(const Int_t nRuns=10, TString type="",Int_t mode=mLocal)
   (*entryIntFlowLYZEPNONAME)+=(Long_t)counter;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowLYZEPNONAME->Data());
  }
+ */
  
  if(textDefaultNONAME) textDefaultNONAME->Draw();
  if(textResultsNONAME) textResultsNONAME->Draw();
  
-
-
-
-
-
-
-
-
-// ===============================================================================================
-//                  calculate results from the merged ouput for each method
-// ===============================================================================================
-
- TString pwd;
- 
- (intFlowCanvasNONAME->cd(1))->SetPad(0.0,0.0,0.75,1.0); // to be improved
-
- // MCEP:
- TString mergedFileNameMCEP("outputMCEPanalysis.root");
- TFile* fileMCEP = NULL;
- TList *listHistosMCEP = NULL;
- AliFlowAnalysisWithMCEventPlane* mcep = new AliFlowAnalysisWithMCEventPlane();
- AliFlowCommonHistResults *mcepCommonHistRes = NULL; 
- TGraph *meanValueMCEP = new TGraph(1);
- pwd = gSystem->pwd();
- 
- if(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameMCEP).Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file for MCEP !!!!"<<endl;
- } else
-   { 
-    fileMCEP = TFile::Open(mergedFileNameMCEP.Data(),"UPDATE");
-    if(fileMCEP) fileMCEP->GetObject("cobjMCEP",listHistosMCEP);
-    if(listHistosMCEP) mcep->GetOutputHistograms(listHistosMCEP);
-    mcep->Finish(); 
-    mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listHistosMCEP->FindObject("AliFlowCommonHistResultsMCEP")); 
-    if(mcepCommonHistRes) 
-    {
-     meanValueMCEP->SetPoint(1,binMCEP-0.5,(mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1));
-     meanValueMCEP->SetMarkerStyle(25);
-     meanValueMCEP->SetMarkerColor(kBlack); 
-     meanValueMCEP->SetMarkerSize(1.25); 
-     meanValueMCEP->Draw("PSAME");
-    } 
-    fileMCEP->Close();
-    fileMCEP = TFile::Open(mergedFileNameMCEP.Data(),"RECREATE");
-    listHistosMCEP->SetName("cobjMCEP");
-    listHistosMCEP->Write(listHistosMCEP->GetName(), TObject::kSingleKey);
-   }
-   
- // SP:
- TString mergedFileNameSP("outputSPanalysis.root");
- TFile* fileSP = NULL;
- TList *listHistosSP = NULL;
- AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
- AliFlowCommonHistResults *spCommonHistRes = NULL; 
- TGraph *meanValueSP = new TGraph(1);
- pwd = gSystem->pwd();
- 
- if(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameSP).Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file for SP !!!!"<<endl;
- } else
-   { 
-    fileSP = TFile::Open(mergedFileNameSP.Data(),"UPDATE");
-    if(fileSP) fileSP->GetObject("cobjSP",listHistosSP);
-    if(listHistosSP) sp->GetOutputHistograms(listHistosSP);
-    sp->Finish(); 
-    spCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listHistosSP->FindObject("AliFlowCommonHistResultsSP")); 
-    if(spCommonHistRes) 
-    {
-     meanValueSP->SetPoint(1,binSP-0.5,(spCommonHistRes->GetHistIntFlow())->GetBinContent(1));
-     meanValueSP->SetMarkerStyle(25);
-     meanValueSP->SetMarkerColor(kViolet+3); 
-     meanValueSP->SetMarkerSize(1.25); 
-     meanValueSP->Draw("PSAME");
-    } 
-    fileSP->Close();
-    fileSP = TFile::Open(mergedFileNameSP.Data(),"RECREATE");
-    listHistosSP->SetName("cobjSP");
-    listHistosSP->Write(listHistosSP->GetName(), TObject::kSingleKey);
-   }
- 
- // GFC:
- TString mergedFileNameGFC("outputGFCanalysis.root");
- TFile* fileGFC = NULL;
- TList *listHistosGFC = NULL;
- AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants(); 
- AliFlowCommonHistResults *gfc2CommonHistRes = NULL; 
- AliFlowCommonHistResults *gfc4CommonHistRes = NULL; 
- AliFlowCommonHistResults *gfc6CommonHistRes = NULL; 
- AliFlowCommonHistResults *gfc8CommonHistRes = NULL; 
- TGraph *meanValueGFC2 = new TGraph(1);
- TGraph *meanValueGFC4 = new TGraph(1);
- TGraph *meanValueGFC6 = new TGraph(1);
- TGraph *meanValueGFC8 = new TGraph(1);
- pwd = gSystem->pwd();
- 
- if(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameGFC).Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file for GFC !!!!"<<endl;
- } else
-   { 
-    fileGFC = TFile::Open(mergedFileNameGFC.Data(),"UPDATE");
-    if(fileGFC) fileGFC->GetObject("cobjGFC",listHistosGFC);
-    if(listHistosGFC) gfc->GetOutputHistograms(listHistosGFC);
-    gfc->Finish(); 
-    gfc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC")); 
-    gfc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults4thOrderGFC")); 
-    gfc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults6thOrderGFC")); 
-    gfc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults8thOrderGFC")); 
-    if(gfc2CommonHistRes) 
-    {
-     meanValueGFC2->SetPoint(1,binGFC2-0.5,(gfc2CommonHistRes->GetHistIntFlow())->GetBinContent(1));
-     meanValueGFC2->SetMarkerStyle(25);
-     meanValueGFC2->SetMarkerColor(kBlue); 
-     meanValueGFC2->SetMarkerSize(1.25); 
-     meanValueGFC2->Draw("PSAME");
-    } 
-    if(gfc4CommonHistRes) 
-    {
-     meanValueGFC4->SetPoint(1,binGFC4-0.5,(gfc4CommonHistRes->GetHistIntFlow())->GetBinContent(1));
-     meanValueGFC4->SetMarkerStyle(25);
-     meanValueGFC4->SetMarkerColor(kBlue); 
-     meanValueGFC4->SetMarkerSize(1.25); 
-     meanValueGFC4->Draw("PSAME");
-    } 
-    if(gfc6CommonHistRes) 
-    {
-     meanValueGFC6->SetPoint(1,binGFC6-0.5,(gfc6CommonHistRes->GetHistIntFlow())->GetBinContent(1));
-     meanValueGFC6->SetMarkerStyle(25);
-     meanValueGFC6->SetMarkerColor(kBlue); 
-     meanValueGFC6->SetMarkerSize(1.25); 
-     meanValueGFC6->Draw("PSAME");
-    } 
-    if(gfc8CommonHistRes) 
-    {
-     meanValueGFC8->SetPoint(1,binGFC8-0.5,(gfc8CommonHistRes->GetHistIntFlow())->GetBinContent(1));
-     meanValueGFC8->SetMarkerStyle(25);
-     meanValueGFC8->SetMarkerColor(kBlue); 
-     meanValueGFC8->SetMarkerSize(1.25); 
-     meanValueGFC8->Draw("PSAME");
-    } 
-    fileGFC->Close();
-    fileGFC = TFile::Open(mergedFileNameGFC.Data(),"RECREATE");
-    listHistosGFC->SetName("cobjGFC");
-    listHistosGFC->Write(listHistosGFC->GetName(), TObject::kSingleKey);
-   }
-  
- // QC:
- TString mergedFileNameQC("outputQCanalysis.root");
- TFile* fileQC = NULL;
- TList *listHistosQC = NULL;
- AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants(); 
- AliFlowCommonHistResults *qc2CommonHistRes = NULL; 
- AliFlowCommonHistResults *qc4CommonHistRes = NULL; 
- AliFlowCommonHistResults *qc6CommonHistRes = NULL; 
- AliFlowCommonHistResults *qc8CommonHistRes = NULL; 
- TGraph *meanValueQC2 = new TGraph(1);
- TGraph *meanValueQC4 = new TGraph(1);
- TGraph *meanValueQC6 = new TGraph(1);
- TGraph *meanValueQC8 = new TGraph(1);
- pwd = gSystem->pwd();
- 
- if(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameQC).Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file for QC !!!!"<<endl;
- } else
-   { 
-    fileQC = TFile::Open(mergedFileNameQC.Data(),"UPDATE");
-    if(fileQC) fileQC->GetObject("cobjQC",listHistosQC);
-    if(listHistosQC) qc->GetOutputHistograms(listHistosQC);
-    qc->Finish(); 
-    qc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults2ndOrderQC")); 
-    qc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults4thOrderQC")); 
-    qc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults6thOrderQC")); 
-    qc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults8thOrderQC")); 
-    if(qc2CommonHistRes) 
-    {
-     meanValueQC2->SetPoint(1,binQC2-0.5,(qc2CommonHistRes->GetHistIntFlow())->GetBinContent(1));
-     meanValueQC2->SetMarkerStyle(25);
-     meanValueQC2->SetMarkerColor(kRed); 
-     meanValueQC2->SetMarkerSize(1.25); 
-     meanValueQC2->Draw("PSAME");
-    } 
-    if(qc4CommonHistRes) 
-    {
-     meanValueQC4->SetPoint(1,binQC4-0.5,(qc4CommonHistRes->GetHistIntFlow())->GetBinContent(1));
-     meanValueQC4->SetMarkerStyle(25);
-     meanValueQC4->SetMarkerColor(kRed); 
-     meanValueQC4->SetMarkerSize(1.25); 
-     meanValueQC4->Draw("PSAME");
-    } 
-    if(qc6CommonHistRes) 
-    {
-     meanValueQC6->SetPoint(1,binQC6-0.5,(qc6CommonHistRes->GetHistIntFlow())->GetBinContent(1));
-     meanValueQC6->SetMarkerStyle(25);
-     meanValueQC6->SetMarkerColor(kRed); 
-     meanValueQC6->SetMarkerSize(1.25); 
-     meanValueQC6->Draw("PSAME");
-    } 
-    if(qc8CommonHistRes) 
-    {
-     meanValueQC8->SetPoint(1,binQC8-0.5,(qc8CommonHistRes->GetHistIntFlow())->GetBinContent(1));
-     meanValueQC8->SetMarkerStyle(25);
-     meanValueQC8->SetMarkerColor(kRed); 
-     meanValueQC8->SetMarkerSize(1.25); 
-     meanValueQC8->Draw("PSAME");
-    } 
-    fileQC->Close();
-    fileQC = TFile::Open(mergedFileNameQC.Data(),"RECREATE");
-    listHistosQC->SetName("cobjQC");
-    listHistosQC->Write(listHistosGFC->GetName(), TObject::kSingleKey);
-   }
-  
- // FQD:
- TString mergedFileNameFQD("outputFQDanalysis.root");
- TFile* fileFQD = NULL;
- TList *listHistosFQD = NULL;
- AliFittingQDistribution* fqd = new AliFittingQDistribution();
- AliFlowCommonHistResults *fqdCommonHistRes = NULL; 
- TGraph *meanValueFQD = new TGraph(1);
- pwd = gSystem->pwd();
- 
- if(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameFQD).Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file for FQD !!!!"<<endl;
- } else
-   { 
-    fileFQD = TFile::Open(mergedFileNameFQD.Data(),"UPDATE");
-    if(fileFQD) fileFQD->GetObject("cobjFQD",listHistosFQD);
-    if(listHistosFQD) fqd->GetOutputHistograms(listHistosFQD);
-    fqd->Finish(); 
-    fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listHistosFQD->FindObject("AliFlowCommonHistResultsFQD")); 
-    if(fqdCommonHistRes) 
-    {
-     meanValueFQD->SetPoint(1,binFQD-0.5,(fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1));
-     meanValueFQD->SetMarkerStyle(25);
-     meanValueFQD->SetMarkerColor(kOrange+7); 
-     meanValueFQD->SetMarkerSize(1.25); 
-     meanValueFQD->Draw("PSAME");
-    } 
-    fileFQD->Close();
-    fileFQD = TFile::Open(mergedFileNameFQD.Data(),"RECREATE");
-    listHistosFQD->SetName("cobjFQD");
-    listHistosFQD->Write(listHistosFQD->GetName(), TObject::kSingleKey);
-   }
-  
- /*   
- // LYZEP:
- TString mergedFileNameLYZEP("outputLYZEPanalysis.root");
- TFile* fileLYZEP = NULL;
- TList *listHistosLYZEP = NULL;
- AliFlowAnalysisWithLYZEventPlane* LYZEP = new AliFlowAnalysisWithLYZEventPlane();
- pwd = gSystem->pwd();
- 
- if(gSystem->AccessPathName(((pwd+="/")+=mergedFileNameLYZEP).Data(),kFileExists))
- {
-  cout<<"WARNING: You do not have a merged output file for LYZEP !!!!"<<endl;
- } else
-   { 
-    fileLYZEP = TFile::Open(mergedFileNameLYZEP.Data(),"UPDATE");
-    if(fileLYZEP) fileLYZEP->GetObject("cobjLYZEP",listHistosLYZEP);
-    if(listHistosLYZEP) LYZEP->GetOutputHistograms(listHistosLYZEP);
-    LYZEP->Finish(); 
-    fileLYZEP->Close();
-    fileLYZEP = TFile::Open(mergedFileNameLYZEP.Data(),"RECREATE");
-    listHistosLYZEP->SetName("cobjLYZEP");
-    listHistosLYZEP->Write(listHistosLYZEP->GetName(), TObject::kSingleKey);
-   }
- */  
-  
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void LoadSpreadLibraries(const libModes mode) {
   

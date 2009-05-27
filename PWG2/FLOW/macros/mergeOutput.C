@@ -1,6 +1,6 @@
 enum libModes {mLocal,mLocalSource};
 
-void mergeOutput(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
+void mergeOutput(TString type="", Int_t nRuns=-1, Int_t mode=mLocal)
 {
  // type:  type of analysis can be ESD, AOD, MC, ESDMC0, ESDMC1
  //        (if type="" output files are from MC simulation (default))
@@ -10,9 +10,9 @@ void mergeOutput(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  //        if mode=mLocalSource analyze data on your computer using root + source files
  
  // load needed libraries:                       
- LoadSpreadLibraries(mode);  
+ LoadSpreadLibrariesMO(mode);  
  
- // access the path of current diretory:
+ // access the path of current directory:
  TString pwd(gSystem->pwd());
  pwd+="/";
     
@@ -283,7 +283,7 @@ void mergeOutput(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  
 } // end of void mergeOutput(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
 
-void LoadSpreadLibraries(const libModes mode) {
+void LoadSpreadLibrariesMO(const libModes mode) {
   
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
@@ -343,6 +343,6 @@ void LoadSpreadLibraries(const libModes mode) {
     
   } // end of else if (mode==mLocalSource) 
   
-} // end of void LoadSpreadLibraries(const libModes mode)
+} // end of void LoadSpreadLibrariesMO(const libModes mode)
 
 
