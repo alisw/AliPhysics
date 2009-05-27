@@ -189,10 +189,16 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
       for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
 	iter = blocks+ndx;
 	if(iter->fDataType == AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo ) {
-	  if( !fDoMCLabels ) for( int i=0; i<36*6; i++ ) fClusterLabels[i] = 0;
+	  if( !fDoMCLabels ){
+	    for( int i=0; i<36*6; i++ ){
+	      fClusterLabels[i] = 0;
+	      fNClusterLabels[i] = 0;
+	    }
+	  }
 	  Int_t slice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
 	  Int_t patch=AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
 	  fClusterLabels[ slice*6 + patch] = (AliHLTTPCClusterFinder::ClusterMCInfo *)iter->fPtr;
+	  fNClusterLabels[ slice*6 + patch] = iter->fSize/sizeof(AliHLTTPCClusterFinder::ClusterMCInfo);
 	  fDoMCLabels = 1;
 	}
       }
@@ -254,7 +260,7 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
     for (int i=0; i<pTracks->GetNTracks() && iResult>=0; i++) {
       AliHLTTPCTrack* pTrack=(*pTracks)[i];
       if (pTrack) {
-
+	
 	if( pTrack->Convert2AliKalmanTrack() ){	  
 	  HLTError("conversion to AliKalmanTrack failed for track %d of %d", i, pTracks->GetNTracks());	
 	  continue;
@@ -288,6 +294,10 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	    int iCluster = id&0x3fffff;
 	    AliHLTTPCClusterFinder::ClusterMCInfo *patchLabels = fClusterLabels[iSlice*6 + iPatch];
 	    if( !patchLabels ) continue;
+	    if( iCluster >= fNClusterLabels[iSlice*6 + iPatch] ){
+	      HLTError("Merger TPC slice %d, patch %d: ClusterID==%d >= N MC labels==%d ",
+		       iSlice, iPatch,iCluster, fNClusterLabels[iSlice*6 + iPatch] );
+	    }
 	    AliHLTTPCClusterFinder::ClusterMCInfo &lab = patchLabels[iCluster];	    
 	    if ( lab.fClusterID[0].fMCID >= 0 ) labels.push_back( lab.fClusterID[0].fMCID );
 	    if ( lab.fClusterID[1].fMCID >= 0 ) labels.push_back( lab.fClusterID[1].fMCID );
@@ -300,7 +310,7 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	  
 	  int labelMax = -1, labelCur = -1, nLabelsMax = 0, nLabelsCurr = 0;
 	  for ( int iLab = 0; iLab < labels.size(); iLab++ ) {
-	    if ( labels[iLab] != labelCur ) {
+	    if ( labels[iLab] != labelCur ) {	      
 	      if ( labelCur >= 0 && nLabelsMax< nLabelsCurr ) {
 		nLabelsMax = nLabelsCurr;
 		labelMax = labelCur;
@@ -315,15 +325,15 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 
 	  mcLabel = labelMax;
 	}
-
+	
 	pTrack->SetLabel( mcLabel );
-
+	
 	AliESDtrack iotrack;
 	iotrack.UpdateTrackParams(pTrack,AliESDtrack::kTPCin);
 	iotrack.SetTPCPoints(points);
-	
-	pESD->AddTrack(&iotrack);
 
+	pESD->AddTrack(&iotrack);
+	
       } else {
 	HLTError("internal mismatch in array");
 	iResult=-EFAULT;

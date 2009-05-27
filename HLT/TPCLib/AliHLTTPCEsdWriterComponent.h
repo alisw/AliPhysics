@@ -260,7 +260,8 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
 
   /** array of pointers to cluster MC labels **/
 
-  AliHLTTPCClusterFinder::ClusterMCInfo *fClusterLabels[36*6];
+  AliHLTTPCClusterFinder::ClusterMCInfo *fClusterLabels[36*6]; //! cluster MC labels for each TPC patch
+  Int_t fNClusterLabels[36*6]; //! Number of MC labels, for check of consistensy
   
   /** flag for calculating MC labels for tracks **/
 
