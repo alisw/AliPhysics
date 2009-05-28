@@ -292,11 +292,17 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	    int iSlice = id>>25;
 	    int iPatch = (id>>22)&0x7; 
 	    int iCluster = id&0x3fffff;
+	    if( iSlice<0 || iSlice>36 || iPatch<0 || iPatch>5 ){
+	      HLTError("Corrupted TPC cluster Id: slice %d, patch %d, cluster %d",
+		       iSlice, iPatch,iCluster );
+	      continue;
+	    }
 	    AliHLTTPCClusterFinder::ClusterMCInfo *patchLabels = fClusterLabels[iSlice*6 + iPatch];
 	    if( !patchLabels ) continue;
 	    if( iCluster >= fNClusterLabels[iSlice*6 + iPatch] ){
-	      HLTError("Merger TPC slice %d, patch %d: ClusterID==%d >= N MC labels==%d ",
+	      HLTError("TPC slice %d, patch %d: ClusterID==%d >= N MC labels==%d ",
 		       iSlice, iPatch,iCluster, fNClusterLabels[iSlice*6 + iPatch] );
+	      continue;
 	    }
 	    AliHLTTPCClusterFinder::ClusterMCInfo &lab = patchLabels[iCluster];	    
 	    if ( lab.fClusterID[0].fMCID >= 0 ) labels.push_back( lab.fClusterID[0].fMCID );
