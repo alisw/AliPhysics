@@ -44,6 +44,7 @@
 
 #include "AliPMDcludata.h"
 #include "AliPMDcluster.h"
+#include "AliPMDisocell.h"
 #include "AliPMDClustering.h"
 #include "AliPMDClusteringV2.h"
 #include "AliLog.h"
@@ -112,6 +113,12 @@ void AliPMDClusteringV2::DoClust(Int_t idet, Int_t ismn,
   Float_t  clusdata[6];  
   Double_t cutoff, ave;
   Double_t edepcell[kNMX];
+
+
+  // call the isolated cell search method
+
+  CalculateIsoCell(idet, ismn, celladc, pmdisocell);
+
 
 
   if (ismn < 12)
@@ -239,9 +246,23 @@ void AliPMDClusteringV2::DoClust(Int_t idet, Int_t ismn,
 	      celldataX[ihit] = (Int_t) ((cellX - (48-1) + cellY/2.) + 0.5 );
 	    }	  
 	  celldataY[ihit]   = (Int_t) (cellY + 0.5);
-	  celldataTr[ihit]  = -1;
-	  celldataPid[ihit] = -1;
-	  celldataAdc[ihit] = -1;
+
+	  Int_t irow = celldataX[ihit];
+	  Int_t icol = celldataY[ihit];
+
+	  if ((irow >= 0 && irow < 48) && (icol >= 0 && icol < 96))
+	    {
+	      celldataTr[ihit]  = celltrack[irow][icol];
+	      celldataPid[ihit] = cellpid[irow][icol];
+	      celldataAdc[ihit] = (Float_t) celladc[irow][icol];
+	    }
+	  else
+	    {
+	      celldataTr[ihit]  = -1;
+	      celldataPid[ihit] = -1;
+	      celldataAdc[ihit] = -1;
+	    }
+
 	}
 
       pmdcl = new AliPMDcluster(idet, ismn, clusdata, celldataX, celldataY,
@@ -1046,6 +1067,54 @@ Double_t AliPMDClusteringV2::Distance(Double_t x1, Double_t y1,
 				      Double_t x2, Double_t y2)
 {
   return TMath::Sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+}
+// ------------------------------------------------------------------------ //
+void AliPMDClusteringV2::CalculateIsoCell(Int_t idet, Int_t ismn, Double_t celladc[][96], TObjArray *pmdisocell)
+{
+  // Does isolated cell search for offline calibration
+
+  AliPMDisocell *isocell = 0;
+
+  const Int_t kMaxRow = 48;
+  const Int_t kMaxCol = 96;
+  const Int_t kCellNeighbour = 6;
+
+  Int_t id1, jd1;
+
+  Int_t neibx[6] = {1,0,-1,-1,0,1};
+  Int_t neiby[6] = {0,1,1,0,-1,-1};
+
+
+  for(Int_t irow = 0; irow < kMaxRow; irow++)
+    {
+      for(Int_t icol = 0; icol < kMaxCol; icol++)
+	{
+	  if(celladc[irow][icol] > 0)
+	    {
+	      Int_t isocount = 0;
+	      for(Int_t ii = 0; ii < kCellNeighbour; ii++)
+		{
+		  id1 = irow + neibx[ii];
+		  jd1 = icol + neiby[ii];
+		  Float_t adc = (Float_t) celladc[id1][jd1];
+		  if(adc == 0.)
+		    {
+		      isocount++;
+		      if(isocount == kCellNeighbour)
+			{
+			  Float_t cadc = (Float_t) celladc[irow][icol];
+
+			  isocell = new AliPMDisocell(idet,ismn,irow,icol,cadc);
+			  pmdisocell->Add(isocell);
+			  
+			}
+		    }
+		}  // neigh cell cond.
+	    }
+	}
+    }
+
+
 }
 // ------------------------------------------------------------------------ //
 void AliPMDClusteringV2::SetEdepCut(Float_t decut)
