@@ -205,7 +205,46 @@ void redoFinish(TString type="", Int_t mode=mLocal)
     cout<<"WARNING: mergedListFQD is NULL !!!!"<<endl;
    }                               
 
-   // ... LYZ* to be added ...
+ // LYZ1:
+ TString mergedFileNameLYZ1("mergedLYZ1analysis");
+ (mergedFileNameLYZ1+=(type.Data()))+=(".root");
+ TFile *mergedFileLYZ1 = NULL;
+ TList *mergedListLYZ1 = NULL;
+ TString pwdLYZ1=pwd.Data();
+ pwdLYZ1+=mergedFileNameLYZ1;
+ if(gSystem->AccessPathName(pwdLYZ1.Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file "<<pwdLYZ1.Data()<<endl;
+ } else 
+   {
+    mergedFileLYZ1 = TFile::Open(pwdLYZ1.Data(),"READ");
+    if(mergedFileLYZ1) 
+    {
+     mergedFileLYZ1->GetObject("cobjLYZ1",mergedListLYZ1);
+     mergedFileLYZ1->Close();
+    } 
+   }
+ if(mergedListLYZ1)
+ {
+  AliFlowAnalysisWithLeeYangZeros* lyz1 = new AliFlowAnalysisWithLeeYangZeros();
+  lyz1->SetFirstRun(kTRUE);   
+  lyz1->SetUseSum(kTRUE);       
+  lyz1->GetOutputHistograms(mergedListLYZ1);
+  lyz1->Finish();
+  // save the final results for LYZ1 in final output file: 
+  TString finalOutputFileNameLYZ1("outputLYZ1analysis");
+  (finalOutputFileNameLYZ1+=(type.Data()))+=(".root");
+  TString pwdFinalLYZ1=pwd.Data();
+  pwdFinalLYZ1+=finalOutputFileNameLYZ1;
+  TFile *finalOutputLYZ1 = new TFile(pwdFinalLYZ1.Data(),"NEW");
+  mergedListLYZ1->SetName("cobjLYZ1");
+  mergedListLYZ1->Write(mergedListLYZ1->GetName(),TObject::kSingleKey);
+  finalOutputLYZ1->Close();
+ } else 
+   {
+    cout<<"WARNING: mergedListLYZ1 is NULL !!!!"<<endl;
+   }                               
+
  
 } // end of void reCallFinish(TString type="", Int_t mode=mLocal)
  

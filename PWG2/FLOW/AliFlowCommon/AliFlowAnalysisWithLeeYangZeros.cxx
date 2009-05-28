@@ -304,7 +304,136 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
   return kTRUE; 
 }
 
+   //-----------------------------------------------------------------------     
+void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHistos) {
+ // get the pointers to all output histograms before calling Finish()
+ 
+  const Int_t iNtheta = AliFlowLYZConstants::kTheta;
+  
+  if (outputListHistos) {
 
+    //define histograms for first and second run
+    AliFlowCommonHist *pCommonHist = NULL;
+    AliFlowCommonHistResults *pCommonHistResults = NULL;
+    TProfile* pHistProVtheta = NULL;
+    TProfile* pHistProReDenom = NULL;
+    TProfile* pHistProImDenom = NULL;
+    TProfile* pHistProReDtheta = NULL;
+    TProfile* pHistProImDtheta = NULL;
+    TProfile* pHistProVetaRP = NULL;
+    TProfile* pHistProVetaPOI = NULL;
+    TProfile* pHistProVPtRP  = NULL;
+    TProfile* pHistProVPtPOI  = NULL;
+    AliFlowLYZHist1 *pLYZHist1[iNtheta] = {NULL};      //array of pointers to AliFlowLYZHist1
+    AliFlowLYZHist2 *pLYZHist2RP[iNtheta] = {NULL};    //array of pointers to AliFlowLYZHist2
+    AliFlowLYZHist2 *pLYZHist2POI[iNtheta] = {NULL};   //array of pointers to AliFlowLYZHist2
+
+    if (GetFirstRun()) { //first run
+      //Get the common histograms from the output list
+      pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+	(outputListHistos->FindObject("AliFlowCommonHistLYZ1"));
+      pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+	(outputListHistos->FindObject("AliFlowCommonHistResultsLYZ1"));
+    }
+    else { //second run
+      //Get the common histograms from the output list
+      pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+	(outputListHistos->FindObject("AliFlowCommonHistLYZ2"));
+      pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+	(outputListHistos->FindObject("AliFlowCommonHistResultsLYZ2"));
+    }
+
+    TProfile* pHistProR0theta = dynamic_cast<TProfile*> 
+      (outputListHistos->FindObject("First_FlowPro_r0theta_LYZ"));
+
+    TH1F* pHistQsumforChi = dynamic_cast<TH1F*> 
+      (outputListHistos->FindObject("Flow_QsumforChi_LYZ"));
+
+    
+    if (GetFirstRun()) { //for firstrun
+      //Get the histograms from the output list
+      for(Int_t theta = 0;theta<iNtheta;theta++){
+	TString name = "AliFlowLYZHist1_"; 
+	name += theta;
+	pLYZHist1[theta] = dynamic_cast<AliFlowLYZHist1*> 
+	  (outputListHistos->FindObject(name));
+      }
+      pHistProVtheta = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("First_FlowPro_Vtheta_LYZ"));
+
+      //Set the histogram pointers and call Finish()
+      if (pCommonHist && pCommonHistResults && pLYZHist1[0] && 
+	  pHistProVtheta && pHistProR0theta && pHistQsumforChi ) {
+	this->SetCommonHists(pCommonHist);
+	this->SetCommonHistsRes(pCommonHistResults);
+	this->SetHist1(pLYZHist1);
+	this->SetHistProVtheta(pHistProVtheta);
+	this->SetHistProR0theta(pHistProR0theta);
+	this->SetHistQsumforChi(pHistQsumforChi);
+   } else { 
+	cout<<"WARNING: Histograms needed to run Finish() firstrun are not accessable!"<<endl; 
+      }
+    } else { //for second run
+      //Get the histograms from the output list
+      for(Int_t theta = 0;theta<iNtheta;theta++){
+	TString nameRP = "AliFlowLYZHist2RP_"; 
+	nameRP += theta;
+	pLYZHist2RP[theta] = dynamic_cast<AliFlowLYZHist2*> 
+	  (outputListHistos->FindObject(nameRP));
+	TString namePOI = "AliFlowLYZHist2POI_"; 
+	namePOI += theta;
+	pLYZHist2POI[theta] = dynamic_cast<AliFlowLYZHist2*> 
+	  (outputListHistos->FindObject(namePOI));
+
+      }
+      
+      pHistProReDenom = dynamic_cast<TProfile*> 
+	(outputListHistos->FindObject("Second_FlowPro_ReDenom_LYZ"));
+      pHistProImDenom = dynamic_cast<TProfile*> 
+	(outputListHistos->FindObject("Second_FlowPro_ImDenom_LYZ"));
+
+      pHistProReDtheta = dynamic_cast<TProfile*> 
+	(outputListHistos->FindObject("Second_FlowPro_ReDtheta_LYZ"));
+      pHistProImDtheta = dynamic_cast<TProfile*> 
+	(outputListHistos->FindObject("Second_FlowPro_ImDtheta_LYZ"));
+
+      pHistProVetaRP = dynamic_cast<TProfile*> 
+	(outputListHistos->FindObject("Second_FlowPro_VetaRP_LYZ"));
+      pHistProVetaPOI = dynamic_cast<TProfile*> 
+	(outputListHistos->FindObject("Second_FlowPro_VetaPOI_LYZ"));
+      pHistProVPtRP = dynamic_cast<TProfile*> 
+	(outputListHistos->FindObject("Second_FlowPro_VPtRP_LYZ"));
+      pHistProVPtPOI = dynamic_cast<TProfile*> 
+	(outputListHistos->FindObject("Second_FlowPro_VPtPOI_LYZ"));
+
+
+      //Set the histogram pointers and call Finish()
+      if (pCommonHist && pCommonHistResults && pLYZHist2RP[0] && pLYZHist2POI[0] && 
+	  pHistProR0theta && pHistProReDenom && pHistProImDenom && pHistProVetaRP && 
+	  pHistProVetaPOI && pHistProVPtRP && pHistProVPtPOI) {
+	this->SetCommonHists(pCommonHist);
+	this->SetCommonHistsRes(pCommonHistResults);
+	this->SetHist2RP(pLYZHist2RP);
+	this->SetHist2POI(pLYZHist2POI);
+	this->SetHistProR0theta(pHistProR0theta);
+	this->SetHistProReDenom(pHistProReDenom);
+	this->SetHistProImDenom(pHistProImDenom);
+	this->SetHistProReDtheta(pHistProReDtheta);
+	this->SetHistProImDtheta(pHistProImDtheta);
+	this->SetHistProVetaRP(pHistProVetaRP);
+	this->SetHistProVetaPOI(pHistProVetaPOI);
+	this->SetHistProVPtRP(pHistProVPtRP);
+	this->SetHistProVPtPOI(pHistProVPtPOI);
+	this->SetHistQsumforChi(pHistQsumforChi);
+	} else { 
+	cout<<"WARNING: Histograms needed to run Finish() secondrun are not accessable!"<<endl; 
+      }
+    }
+          
+    //    outputListHistos->Print(); 
+  } else { cout << "histogram list pointer in Lee-Yang Zeros is empty in method AFAWLYZ::GetOutputHistograms() " << endl;}
+  
+}
   //-----------------------------------------------------------------------     
  Bool_t AliFlowAnalysisWithLeeYangZeros::Finish() 
 {
