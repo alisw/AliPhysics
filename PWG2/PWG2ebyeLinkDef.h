@@ -6,6 +6,7 @@
 
 #pragma link C++ class AliBalance+;
 
+#pragma link C++ class AliAnalysisTaskLRC+;
 #pragma link C++ class AliLRCAnalysis+;
 #pragma link C++ class AliLRCFit+;
 #pragma link C++ class AliLRCNN+;

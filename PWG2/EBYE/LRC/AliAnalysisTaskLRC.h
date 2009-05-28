@@ -14,6 +14,7 @@
 
 
 class TH1F;
+class TH1D;
 class AliESDEvent;
 class TH2D;
 class TProfile;

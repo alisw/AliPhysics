@@ -31,7 +31,7 @@ ClassImp(AliAnalysisTaskLRC)
 
 //________________________________________________________________________
 AliAnalysisTaskLRC::AliAnalysisTaskLRC(const char *name) 
-  : AliAnalysisTask(name, ""), fESD(0), fHistPt(0),fHistEta(0),fOutList(0),fHistNN(0),fHistPtN(0),fHistPtPt(0),fHistNberr(0),fProfdPtB(0),fProfTestLRC(0),fHistPtForward(0),fHistEtaForward(0),fHistNchForward(0),fHistPtBakward(0),fHistEtaBakward(0),fHistNchBakward(0)
+  : AliAnalysisTask(name, ""), fESD(0), fHistPt(0),fHistEta(0), fStartForwardETA(0.0), fEndForwardETA(0.0), fStartBakwardETA(0.0), fEndBakwardETA(0.0), fOutList(0),fHistNN(0),fHistPtN(0),fHistPtPt(0),fHistNberr(0),fProfdPtB(0),fProfTestLRC(0),fHistPtForward(0),fHistEtaForward(0),fHistNchForward(0),fHistPtBakward(0),fHistEtaBakward(0),fHistNchBakward(0)
 {
   //Init
   
