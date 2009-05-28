@@ -37,7 +37,7 @@ protected:
   Double_t * CheckRaws(TObjArray** list);
   Double_t * CheckRecPoints(TObjArray** list);
   Double_t * CheckESD(TObjArray** list);
-  TH1* GetHisto(TObjArray* list, const char* hname) const;
+  TH1* GetHisto(TObjArray* list, const char* hname, Int_t specie) const;
   Double_t MarkHisto(TH1& histo, Double_t value) const;
   
 private:

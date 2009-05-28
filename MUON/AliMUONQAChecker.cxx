@@ -98,10 +98,10 @@ AliMUONQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
 
 //______________________________________________________________________________
 TH1* 
-AliMUONQAChecker::GetHisto(TObjArray* list, const char* hname) const
+AliMUONQAChecker::GetHisto(TObjArray* list, const char* hname, Int_t specie) const
 {
   /// Get a given histo from the list
-  TH1* h = static_cast<TH1*>(list->FindObject(hname));
+  TH1* h = static_cast<TH1*>(list->FindObject(Form("%s_%s",AliRecoParam::GetEventSpecieName(specie),hname)));
   if (!h)
   {
     AliError(Form("Did not find expected histo %s",hname));
@@ -121,7 +121,7 @@ AliMUONQAChecker::CheckRecPoints(TObjArray ** list)
     rv[specie] = 1.0 ; 
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    TH1* h = GetHisto(list[specie],"hTrackerNumberOfClustersPerDE");
+    TH1* h = GetHisto(list[specie],"hTrackerNumberOfClustersPerDE",specie);
   
     if ( !h ) rv[specie] =  0.75; // only a warning if histo not found, in order not to kill anything because QA failed...
   
@@ -156,13 +156,13 @@ AliMUONQAChecker::CheckESD(TObjArray ** list)
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     
-    TH1* h = GetHisto(list[specie],"hESDnTracks");
+    TH1* h = GetHisto(list[specie],"hESDnTracks",specie);
   
     if (!h) rv[specie] = 0.75;
   
     else if ( h->GetMean() == 0.0 ) rv[specie] =  MarkHisto(*h,0.0); // no track -> fatal
   
-    h = GetHisto(list[specie],"hESDMatchTrig");
+    h = GetHisto(list[specie],"hESDMatchTrig",specie);
   
     if (!h) rv[specie] =  0.75;
   
