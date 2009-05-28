@@ -1495,8 +1495,8 @@ int DumpTrigRecsDebugBlock(
 	const AliHLTMUONTrigRecInfoStruct* entry = block.GetArray();
 	for(AliHLTUInt32_t i = 0; i < nentries; i++)
 	{
-		cout << "============================== Trigger Record debug data " << i+1
-			<< " of " << nentries << " ==============================" << endl;
+		cout << "======================= Trigger Record debug data " << i+1
+			<< " of " << nentries << " =======================" << endl;
 		int subResult = DumpTrigRecInfoStruct(buffer, bufferSize, entry++, continueParse);
 		if (subResult != EXIT_SUCCESS) return subResult;
 	}
@@ -1557,8 +1557,8 @@ int DumpClustersBlock(
 	const AliHLTMUONClusterStruct* entry = block.GetArray();
 	for(AliHLTUInt32_t i = 0; i < nentries; i++)
 	{
-		cout << "===================================================== Cluster Number "
-			<< i+1 << " ==================================================" << endl;
+		cout << "======================= Cluster Number "
+			<< i+1 << " =======================" << endl;
 		int subResult = DumpClusterStruct(buffer, bufferSize, entry++, continueParse);
 		if (subResult != EXIT_SUCCESS) return subResult;
 	}	
