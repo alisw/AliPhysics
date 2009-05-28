@@ -43,7 +43,8 @@ private:
   TArrayI *fADC;         //! array of QTC signals (main amplitude)
   TArrayI *fADC0;        //! array of QTC signals (main amplitude)
   Int_t fSumMult;        // multiplicity
-  TObjArray fAmpLED;     // amplitude time (CFD-LED) dependence
+  TObjArray fAmpLED;     // amplitude  CFD-LED dependence #channel -> #MIPs
+  TObjArray fAmpQTC;     // amplitude  QTC dependence #channel -> #MIPs
   Double_t fMaxValue[24];  //max amplitue-time LED
 
   AliT0Parameters  *fParam;           //pointer to T0 parameters class     
@@ -52,7 +53,6 @@ private:
   AliT0Digitizer(const AliT0Digitizer&);
   AliT0Digitizer& operator=(const AliT0Digitizer);
 
-  
     ClassDef(AliT0Digitizer,3)
 };    
 
