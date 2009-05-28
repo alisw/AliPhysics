@@ -645,7 +645,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
       if (!fRunRange[0]) WriteJDL(-1,copy);
       else {
          for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++)
-            WriteJDL(irun-fRunRange[0],copy);
+            if (!WriteJDL(irun-fRunRange[0],copy)) break;
       }
    }
    // Copy jdl to grid workspace   
@@ -685,7 +685,6 @@ Bool_t AliAnalysisAlien::WriteJDL(Int_t findex, Bool_t copy)
    TString line;
    TString workdir = gGrid->GetHomeDirectory();
    workdir += fGridWorkingDir;
-   CdWork();
    if (findex < 0) {
       TIter next(fInputFiles);
       while ((os=(TObjString*)next()))
@@ -693,6 +692,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Int_t findex, Bool_t copy)
       fGridJDL->SetOutputDirectory(Form("%s/%s/#alien_counter_03i#", workdir.Data(), fGridOutputDir.Data()));
    } else {
       os = (TObjString*)fInputFiles->At(findex);
+      if (!os) return kFALSE;
       line = "#Input xml collection\n";
       line += "InputDataCollection = {";
       line += Form("   \"LF:%s,nodownload\"", os->GetString().Data());
@@ -1151,6 +1151,7 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
       }
       TString sjdl;
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
+         if (!fInputFiles->At(irun-fRunRange[0])) break;
          sjdl = fJDLName;
          sjdl.ReplaceAll(".jdl", Form("_%03d.jdl", irun-fRunRange[0]));
          res = gGrid->Command(Form("submit %s", sjdl.Data()));
