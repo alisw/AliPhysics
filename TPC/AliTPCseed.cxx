@@ -30,6 +30,9 @@
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
 #include "AliMathBase.h"
+#include "AliTPCTransform.h"
+#include "AliSplineFit.h"
+#include "AliCDBManager.h"
 
 
 
@@ -1066,6 +1069,29 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   }
   Float_t mean =suma/sumn;
   Float_t rms  =TMath::Sqrt(TMath::Abs(suma2/sumn-mean*mean));
+  //
+  // do time-dependent correction for pressure and temperature variations
+  UInt_t runNumber = 1;
+  Float_t corrTimeGain = 1;
+  AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
+  if (trans) {
+    runNumber = trans->GetCurrentRunNumber();
+    AliTPCcalibDB::Instance()->SetRun(runNumber);
+    TObjArray * timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplines();
+    if (timeGainSplines) {
+      UInt_t time = trans->GetCurrentTimeStamp();
+      AliSplineFit * fitMIP = (AliSplineFit *) timeGainSplines->At(0);
+      AliSplineFit * fitFPcosmic = (AliSplineFit *) timeGainSplines->At(1);
+      if (fitMIP) {
+	corrTimeGain = fitMIP->Eval(time);
+      } else {
+	if (fitFPcosmic) corrTimeGain = fitFPcosmic->Eval(time); // This value describes the ratio FP-to-MIP, hardwired for the moment
+      }
+    }
+  }
+  mean /= corrTimeGain;
+  rms /= corrTimeGain;
+  //
   if (returnVal==1) return rms;
   if (returnVal==2) return ncl;
   return mean;
@@ -1203,6 +1229,29 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   }
   Float_t mean =suma/sumn;
   Float_t rms  =TMath::Sqrt(TMath::Abs(suma2/sumn-mean*mean));
+  //
+  // do time-dependent correction for pressure and temperature variations
+  UInt_t runNumber = 1;
+  Float_t corrTimeGain = 1;
+  AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
+  if (trans) {
+    runNumber = trans->GetCurrentRunNumber();
+    AliTPCcalibDB::Instance()->SetRun(runNumber);
+    TObjArray * timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplines();
+    if (timeGainSplines) {
+      UInt_t time = trans->GetCurrentTimeStamp();
+      AliSplineFit * fitMIP = (AliSplineFit *) timeGainSplines->At(0);
+      AliSplineFit * fitFPcosmic = (AliSplineFit *) timeGainSplines->At(1);
+      if (fitMIP) {
+	corrTimeGain = fitMIP->Eval(time);
+      } else {
+	if (fitFPcosmic) corrTimeGain = fitFPcosmic->Eval(time); // This value describes the ratio FP-to-MIP, hardwired for the moment
+      }
+    }
+  }
+  mean /= corrTimeGain;
+  rms /= corrTimeGain;
+  //
   if (returnVal==1) return rms;
   if (returnVal==2) return ncl;
   return mean;

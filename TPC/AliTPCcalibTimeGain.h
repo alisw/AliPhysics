@@ -47,6 +47,7 @@ public:
   //
   TGraphErrors *         GetGraphGainVsTime(Int_t runNumber = 0, Int_t minEntries = 2000);
   static AliSplineFit *  MakeSplineFit(TGraphErrors * graph);
+  TGraphErrors *         GetGraphAttachment(Int_t minEntries, Int_t nmaxBin, Float_t fracLow=0.1, Float_t fracUp=0.9);
   //
   void SetMIP(Float_t MIP){fMIP = MIP;};
   void SetUseMax(Bool_t UseMax){fUseMax = UseMax;};

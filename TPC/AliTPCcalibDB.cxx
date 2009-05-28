@@ -290,6 +290,13 @@ void AliTPCcalibDB::Update(){
     fPadGainFactor = (AliTPCCalPad*)entry->GetObject();
   }
   //
+  entry          = GetCDBEntry("TPC/Calib/TimeGain");
+  if (entry){
+    //if (fTimeGainSplines) delete fTimeGainSplines;
+    entry->SetOwner(kTRUE);
+    fTimeGainSplines = (TObjArray*)entry->GetObject();
+  }
+  //
   entry          = GetCDBEntry("TPC/Calib/GainFactorDedx");
   if (entry){
     entry->SetOwner(kTRUE);

@@ -53,6 +53,7 @@ class AliTPCcalibDB : public TObject
   AliTPCParam*  GetParameters(){return fParam;}
   AliTPCAltroMapping ** GetMapping(){ return fMapping;}
   AliTPCClusterParam *GetClusterParam(){ return fClusterParam;}
+  TObjArray *GetTimeGainSplines(){ return fTimeGainSplines;}  
   //
   //
   static AliGRPObject * GetGRP(Int_t run);
@@ -104,6 +105,7 @@ protected:
   //
   AliTPCParam * fParam;           // TPC parameters
   AliTPCClusterParam * fClusterParam;  // TPC cluster error, shape and Q parameterization
+  TObjArray * fTimeGainSplines; // Array of AliSplineFits: at 0 MIP position in time ; at 1 Fermi Plateau from cosmics
   //
   // Get the corssrun information
   //

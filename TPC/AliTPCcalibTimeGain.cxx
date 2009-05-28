@@ -34,8 +34,9 @@ gSystem->Load("libTPCcalib");
 TFile fcalib("CalibObjects.root");
 TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
 AliTPCcalibTimeGain * gain = ( AliTPCcalibTimeGain *)array->FindObject("calibTimeGain");
-TGraphErrors * gr = gain->GetGraphGainVsTime(0,500)
+TGraphErrors * gr = gain->GetGraphGainVsTime(0,1000)
 
+// gain->GetHistGainTime()->GetAxis(1)->SetRangeUser(1213.8e6,1214.3e6)
 TH2D * GainTime = gain->GetHistGainTime()->Projection(0,1)
 GainTime->GetXaxis()->SetTimeDisplay(kTRUE)
 GainTime->GetXaxis()->SetTimeFormat("#splitline{%d/%m}{%H:%M}")
@@ -52,6 +53,84 @@ gr->SetMarkerStyle(25);
 gr->Draw("lp");
 grfit->SetLineColor(2);
 grfit->Draw("lu");
+
+//
+// QA - dE/dx resoultion as a function of time
+//TCa
+
+TGraph * grSigma = AliTPCcalibBase::FitSlicesSigma(gain->GetHistGainTime(),0,1,1800,5)
+
+TCanvas *c1 = new TCanvas("c1","transparent pad",200,10,700,500);
+   TPad *pad1 = new TPad("pad1","",0,0,1,1);
+   TPad *pad2 = new TPad("pad2","",0,0,1,1);
+   pad2->SetFillStyle(4000); //will be transparent
+   pad1->Draw();
+   pad1->cd();
+
+GainTime->Draw("colz")
+gr->Draw("lp")
+
+
+
+  c1->cd();
+ Double_t ymin = -0.04;
+ Double_t ymax = 0.12;
+Double_t dy = (ymax-ymin)/0.8;
+Double_t xmin = GainTime->GetXaxis()->GetXmin()
+Double_t xmax = GainTime->GetXaxis()->GetXmax()
+Double_t dx = (xmax-xmin)/0.8; //10 per cent margins left and right
+pad2->Range(xmin-0.1*dx,ymin-0.1*dy,xmax+0.1*dx,ymax+0.1*dy);
+   pad2->Draw();
+   pad2->cd();
+grSigma->SetLineColor(2);
+grSigma->SetLineWidth(2);
+grSigma->Draw("lp")
+TGaxis *axis = new TGaxis(xmax,ymin,xmax,ymax,ymin,ymax,50510,"+L");
+   axis->SetLabelColor(kRed);
+   axis->SetTitle("dE/dx resolution #sigma_{dE/dx}");
+   axis->Draw();
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ ----> make Attachment study
+
+TFile fcalib("CalibObjects40366b.root");
+TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
+AliTPCcalibTimeGain * gain = ( AliTPCcalibTimeGain *)array->FindObject("calibTimeGain");
+TGraphErrors * grAttach = gain->GetGraphAttachment(2000,4)
+
+TCanvas *c1 = new TCanvas("c1","transparent pad",200,10,700,500);
+   TPad *pad1 = new TPad("pad1","",0,0,1,1);
+   TPad *pad2 = new TPad("pad2","",0,0,1,1);
+   pad2->SetFillStyle(4000); //will be transparent
+   pad1->Draw();
+   pad1->cd();
+
+gain->GetHistGainTime()->GetAxis(1)->SetRangeUser(1213.8e6,1214.3e6)
+TH2D * GainTime = gain->GetHistGainTime()->Projection(0,1)
+GainTime->GetXaxis()->SetTimeDisplay(kTRUE)
+GainTime->GetXaxis()->SetTimeFormat("#splitline{%d/%m}{%H:%M}")
+GainTime->Draw("colz")
+//gr->Draw("lp")
+
+  c1->cd();
+ Double_t ymin = -0.001;
+ Double_t ymax = 0.001;
+Double_t dy = (ymax-ymin)/0.8;
+Double_t xmin = GainTime->GetXaxis()->GetXmin()
+Double_t xmax = GainTime->GetXaxis()->GetXmax()
+Double_t dx = (xmax-xmin)/0.8; //10 per cent margins left and right
+pad2->Range(xmin-0.1*dx,ymin-0.1*dy,xmax+0.1*dx,ymax+0.1*dy);
+   pad2->Draw();
+   pad2->cd();
+grAttach->SetLineColor(2);
+grAttach->SetLineWidth(2);
+grAttach->Draw("lp")
+TGaxis *axis = new TGaxis(xmax,ymin,xmax,ymax,ymin,ymax,50510,"+L");
+   axis->SetLabelColor(kRed);
+   axis->SetTitle("attachment coefficient b");
+   axis->Draw();
+
 
 */
 
@@ -138,27 +217,27 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
    fUseCookAnalytical(0),
    fIsCosmic(0),
    fLowMemoryConsumption(0)
- {
+{
   
   SetName(name);
   SetTitle(title);
-
+  
   AliInfo("Non Default Constructor");
-
+  
   fIntegrationTimeDeDx = deltaIntegrationTimeGain;
- 
+  
   Double_t deltaTime = EndTime - StartTime;
   
-
+  
   // main histogram for time dependence: dE/dx, time, type (1-muon cosmic,2-pion beam data), meanDriftlength, momenta (only filled if enough space is available), run number
   Int_t timeBins = TMath::Nint(deltaTime/deltaIntegrationTimeGain);
-  Int_t binsGainTime[6]    = {100,  timeBins,    2,  25, 200, 10000000};
+  Int_t binsGainTime[6]    = {150,  timeBins,    2,  25, 200, 10000000};
   Double_t xminGainTime[6] = {0.5, StartTime,  0.5,   0, 0.1,    -0.5};
-  Double_t xmaxGainTime[6] = {  4,   EndTime,  2.5, 250,  50, 9999999.5};
+  Double_t xmaxGainTime[6] = {  8,   EndTime,  2.5, 250,  50, 9999999.5};
   fHistGainTime = new THnSparseF("HistGainTime","dEdx time dep.;dEdx,time,type,driftlength,momenta,run number;dEdx",6,binsGainTime,xminGainTime,xmaxGainTime);
   BinLogX(fHistGainTime, 4);
   //
-  fHistDeDxTotal = new TH2F("DeDx","dEdx; momentum p (GeV); TPC signal (a.u.)",250,0.01,100.,1000,0.,1000);
+  fHistDeDxTotal = new TH2F("DeDx","dEdx; momentum p (GeV); TPC signal (a.u.)",250,0.01,100.,1000,0.,8);
   BinLogX(fHistDeDxTotal);
   
   // default values for dE/dx
@@ -172,10 +251,10 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
   fUseCookAnalytical = kFALSE;
   //
   fIsCosmic = kTRUE;
-  fLowMemoryConsumption = kFALSE;
+  fLowMemoryConsumption = kTRUE;
   //
   
- }
+}
 
 
 
@@ -252,7 +331,7 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
 
     if (seed) { 
       Double_t TPCsignal = GetTPCdEdx(seed);
-      fHistDeDxTotal->Fill(meanP, TPCsignal);
+      if (NclsDeDx > 100) fHistDeDxTotal->Fill(meanP, TPCsignal);
       //
       if (fLowMemoryConsumption) {
 	if (meanP < 20) continue;
@@ -413,6 +492,62 @@ AliSplineFit * AliTPCcalibTimeGain::MakeSplineFit(TGraphErrors * graph) {
   return fit;
   
 }
+
+
+
+TGraphErrors * AliTPCcalibTimeGain::GetGraphAttachment(Int_t minEntries, Int_t nmaxBin, Float_t fracLow, Float_t fracUp) {
+  //
+  // For each time bin the driftlength-dependence of the signal is fitted.
+  //
+  TH3D * hist = fHistGainTime->Projection(1, 0, 3);
+  Double_t *xvec = new Double_t[hist->GetNbinsX()];
+  Double_t *yvec = new Double_t[hist->GetNbinsX()];
+  Double_t *xerr = new Double_t[hist->GetNbinsX()];
+  Double_t *yerr = new Double_t[hist->GetNbinsX()];
+  Int_t counter  = 0;
+  TH2D * projectionHist = 0x0;
+  //
+  for(Int_t i=1; i < hist->GetNbinsX(); i++) {
+    Int_t nsum=0;
+    Int_t imin   =  i;
+    Int_t imax   =  i;    
+    for (Int_t idelta=0; idelta<nmaxBin; idelta++){
+      //
+      imin   =  TMath::Max(i-idelta,1);
+      imax   =  TMath::Min(i+idelta,hist->GetNbinsX());
+      nsum = TMath::Nint(hist->Integral(imin,imax,1,hist->GetNbinsY()-1,1,hist->GetNbinsZ()-1));
+      if (nsum==0) break;
+      if (nsum>minEntries) break;
+    }
+    if (nsum<minEntries) continue;
+    //
+    hist->GetXaxis()->SetRange(imin,imax);
+    projectionHist = (TH2D*)hist->Project3D("yzNUFNOF");
+    //
+    TObjArray arr;
+    projectionHist->FitSlicesY(0,2, projectionHist->GetNbinsX()-2,0,"QNR",&arr);
+    TH1D * histAttach = (TH1D*)arr.At(1);
+    TF1 pol1("polynom1","pol1",10,240);
+    histAttach->Fit(&pol1,"QNR");
+    xvec[counter] = 0.5*(hist->GetXaxis()->GetBinCenter(imin)+hist->GetXaxis()->GetBinCenter(imax));
+    yvec[counter] = pol1.GetParameter(1)/pol1.GetParameter(0);
+    xerr[counter] = 0;
+    yerr[counter] = pol1.GetParError(1)/pol1.GetParameter(0);
+    counter++;
+    //
+    delete projectionHist;
+  }
+  
+  TGraphErrors * graphErrors = new TGraphErrors(counter, xvec, yvec, xerr, yerr);
+  delete [] xvec;
+  delete [] yvec;
+  delete [] xerr;
+  delete [] yerr;
+  delete hist;
+  return graphErrors;
+  
+}
+
 
 
 void AliTPCcalibTimeGain::BinLogX(THnSparse *h, Int_t axisDim) {
