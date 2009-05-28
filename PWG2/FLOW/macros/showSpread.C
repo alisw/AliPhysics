@@ -360,7 +360,32 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
    } // end of if(listFQD)
   } // end of if(fileFQD)   
   
- // ... LYZ* to be added ... 
+  // LYZ1:     
+  TString fileNameLYZ1 = presentDirName;   
+  fileNameLYZ1+="outputLYZ1analysis";
+  (fileNameLYZ1+=type.Data())+=".root";
+  TFile *fileLYZ1 = TFile::Open(fileNameLYZ1.Data(), "READ");      
+  if(fileLYZ1) 
+  {
+   TList *listLYZ1 = NULL;
+   AliFlowCommonHistResults *lyz1CommonHistRes = NULL; 
+   fileLYZ1->GetObject("cobjLYZ1",listLYZ1); 
+   fileLYZ1->Close();
+   if(listLYZ1) 
+   {
+    lyz1CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1->FindObject("AliFlowCommonHistResultsLYZ1")); 
+    if(lyz1CommonHistRes && lyz1CommonHistRes->GetHistIntFlow())
+    {
+     lyz1ValueNONAME[counter] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     lyz1ErrorNONAME[counter] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(lyz1ValueNONAME[counter]>0.) // to be improved 
+     {
+      if(lyz1MaxValueNONAME < lyz1ValueNONAME[counter]) lyz1MaxValueNONAME = lyz1ValueNONAME[counter]; 
+      if(lyz1MinValueNONAME > lyz1ValueNONAME[counter]) lyz1MinValueNONAME = lyz1ValueNONAME[counter]; 
+     } 
+    }
+   } // end of if(listLYZ1)
+  } // end of if(fileLYZ1)   
  
   counter++;
   
@@ -571,7 +596,35 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     } // end of if(mergedOutputFileFQD)
    } // end of else  
    
- // ... LYZ* to be added ... 
+ // LYZ1:
+ TString mergedOutputFileNameLYZ1(pwd.Data());
+ ((mergedOutputFileNameLYZ1+="outputLYZ1analysis")+=type.Data())+=".root";
+ TFile *mergedOutputFileLYZ1 = NULL;
+ TList *mergedOutputListLYZ1 = NULL;
+ Double_t mergedValueLYZ1 = 0.;
+ Double_t mergedErrorLYZ1 = 0.; 
+ if(gSystem->AccessPathName(mergedOutputFileNameLYZ1.Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameLYZ1.Data()<<endl;
+ } else 
+   {     
+    mergedOutputFileLYZ1 = TFile::Open(mergedOutputFileNameLYZ1.Data(),"READ");      
+    if(mergedOutputFileLYZ1) 
+    { 
+     mergedOutputFileLYZ1->GetObject("cobjLYZ1",mergedOutputListLYZ1); 
+     mergedOutputFileLYZ1->Close();
+     if(mergedOutputListLYZ1) 
+     {
+      AliFlowCommonHistResults *lyz1CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListLYZ1->FindObject("AliFlowCommonHistResultsLYZ1")); 
+      if(lyz1CommonHistRes && lyz1CommonHistRes->GetHistIntFlow())
+      {
+       mergedValueLYZ1 = (lyz1CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorLYZ1 = (lyz1CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      } 
+     }
+    } // end of if(mergedOutputFileLYZ1)
+   } // end of else  
                    
  // removing the title and stat. box from all histograms:
  // gStyle->SetOptTitle(0);
@@ -645,15 +698,17 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  }
  
  // MCEP:
- TGraph *mcepMeanNONAME = new TGraph(1);    
- mcepMeanNONAME->SetPoint(0,binMCEP-0.5,mergedValueMCEP);  
+ TGraphErrors *mcepMeanNONAME = new TGraphErrors(1);    
+ mcepMeanNONAME->SetPoint(0,binMCEP-0.5,mergedValueMCEP);
+ mcepMeanNONAME->SetPointError(0,0,mergedErrorMCEP);   
  mcepMeanNONAME->SetMarkerStyle(25);
  mcepMeanNONAME->SetMarkerColor(kBlack); 
+ mcepMeanNONAME->SetLineColor(kBlack);
  mcepMeanNONAME->SetMarkerSize(1.25); 
  
  TGraph* mcepTGraphNONAME = new TGraph(nPoints, mcepNONAME, mcepValueNONAME);
  mcepTGraphNONAME->SetMarkerStyle(21);
- mcepTGraphNONAME->SetMarkerColor(kBlack); 
+ mcepTGraphNONAME->SetMarkerColor(kGray+1); 
  mcepTGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *mcepBoxNONAME = new TGraph(5);
@@ -666,15 +721,17 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  mcepBoxNONAME->SetFillColor(kGray);
  
  // SP:
- TGraph *spMeanNONAME = new TGraph(1);    
+ TGraphErrors *spMeanNONAME = new TGraphErrors(1);    
  spMeanNONAME->SetPoint(0,binSP-0.5,mergedValueSP);  
+ spMeanNONAME->SetPointError(0,0,mergedErrorSP);  
  spMeanNONAME->SetMarkerStyle(25);
- spMeanNONAME->SetMarkerColor(kViolet+3); 
+ spMeanNONAME->SetMarkerColor(kBlack); 
+ spMeanNONAME->SetLineColor(kBlack);
  spMeanNONAME->SetMarkerSize(1.25); 
  
  TGraph* spTGraphNONAME = new TGraph(nPoints, spNONAME, spValueNONAME);
  spTGraphNONAME->SetMarkerStyle(21);
- spTGraphNONAME->SetMarkerColor(kViolet+3); 
+ spTGraphNONAME->SetMarkerColor(kViolet-8); 
  spTGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *spBoxNONAME = new TGraph(5);
@@ -687,15 +744,17 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  spBoxNONAME->SetFillColor(kViolet-9);
  
  // GFC{2}:
- TGraph *gfc2MeanNONAME = new TGraph(1);    
+ TGraphErrors *gfc2MeanNONAME = new TGraphErrors(1);    
  gfc2MeanNONAME->SetPoint(0,binGFC2-0.5,mergedValueGFC2);  
+ gfc2MeanNONAME->SetPointError(0,0,mergedErrorGFC2);  
  gfc2MeanNONAME->SetMarkerStyle(25);
- gfc2MeanNONAME->SetMarkerColor(kBlue); 
+ gfc2MeanNONAME->SetMarkerColor(kBlack); 
+ gfc2MeanNONAME->SetLineColor(kBlack);
  gfc2MeanNONAME->SetMarkerSize(1.25); 
  
  TGraph* gfc2TGraphNONAME = new TGraph(nPoints, gfc2NONAME, gfc2ValueNONAME);
  gfc2TGraphNONAME->SetMarkerStyle(21);
- gfc2TGraphNONAME->SetMarkerColor(kBlue); 
+ gfc2TGraphNONAME->SetMarkerColor(kBlue-9); 
  gfc2TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *gfc2BoxNONAME = new TGraph(5);
@@ -708,15 +767,17 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  gfc2BoxNONAME->SetFillColor(kBlue-10);
  
  // GFC{4}:
- TGraph *gfc4MeanNONAME = new TGraph(1);    
+ TGraphErrors *gfc4MeanNONAME = new TGraphErrors(1);    
  gfc4MeanNONAME->SetPoint(0,binGFC4-0.5,mergedValueGFC4);  
+ gfc4MeanNONAME->SetPointError(0,0,mergedErrorGFC4);  
  gfc4MeanNONAME->SetMarkerStyle(25);
- gfc4MeanNONAME->SetMarkerColor(kBlue); 
+ gfc4MeanNONAME->SetMarkerColor(kBlack); 
+ gfc4MeanNONAME->SetLineColor(kBlack);
  gfc4MeanNONAME->SetMarkerSize(1.25); 
  
  TGraph* gfc4TGraphNONAME = new TGraph(nPoints, gfc4NONAME, gfc4ValueNONAME);
  gfc4TGraphNONAME->SetMarkerStyle(21);
- gfc4TGraphNONAME->SetMarkerColor(kBlue); 
+ gfc4TGraphNONAME->SetMarkerColor(kBlue-9); 
  gfc4TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *gfc4BoxNONAME = new TGraph(5);
@@ -729,15 +790,17 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  gfc4BoxNONAME->SetFillColor(kBlue-10);
  
  // GFC{6}:
- TGraph *gfc6MeanNONAME = new TGraph(1);    
+ TGraphErrors *gfc6MeanNONAME = new TGraphErrors(1);    
  gfc6MeanNONAME->SetPoint(0,binGFC6-0.5,mergedValueGFC6);  
+ gfc6MeanNONAME->SetPointError(0,0,mergedErrorGFC6);  
  gfc6MeanNONAME->SetMarkerStyle(25);
- gfc6MeanNONAME->SetMarkerColor(kBlue); 
+ gfc6MeanNONAME->SetMarkerColor(kBlack); 
+ gfc6MeanNONAME->SetLineColor(kBlack);
  gfc6MeanNONAME->SetMarkerSize(1.25); 
  
  TGraph* gfc6TGraphNONAME = new TGraph(nPoints, gfc6NONAME, gfc6ValueNONAME);
  gfc6TGraphNONAME->SetMarkerStyle(21);
- gfc6TGraphNONAME->SetMarkerColor(kBlue); 
+ gfc6TGraphNONAME->SetMarkerColor(kBlue-9); 
  gfc6TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *gfc6BoxNONAME = new TGraph(5);
@@ -750,15 +813,17 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  gfc6BoxNONAME->SetFillColor(kBlue-10);
  
  // GFC{8}:
- TGraph *gfc8MeanNONAME = new TGraph(1);    
+ TGraphErrors *gfc8MeanNONAME = new TGraphErrors(1);    
  gfc8MeanNONAME->SetPoint(0,binGFC8-0.5,mergedValueGFC8);  
+ gfc8MeanNONAME->SetPointError(0,0,mergedErrorGFC8);  
  gfc8MeanNONAME->SetMarkerStyle(25);
- gfc8MeanNONAME->SetMarkerColor(kBlue); 
+ gfc8MeanNONAME->SetMarkerColor(kBlack); 
+ gfc8MeanNONAME->SetLineColor(kBlack);
  gfc8MeanNONAME->SetMarkerSize(1.25); 
  
  TGraph* gfc8TGraphNONAME = new TGraph(nPoints, gfc8NONAME, gfc8ValueNONAME);
  gfc8TGraphNONAME->SetMarkerStyle(21);
- gfc8TGraphNONAME->SetMarkerColor(kBlue); 
+ gfc8TGraphNONAME->SetMarkerColor(kBlue-9); 
  gfc8TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *gfc8BoxNONAME = new TGraph(5);
@@ -771,15 +836,17 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  gfc8BoxNONAME->SetFillColor(kBlue-10);
  
  // QC{2}:
- TGraph *qc2MeanNONAME = new TGraph(1);    
+ TGraphErrors *qc2MeanNONAME = new TGraphErrors(1);    
  qc2MeanNONAME->SetPoint(0,binQC2-0.5,mergedValueQC2);  
+ qc2MeanNONAME->SetPointError(0,0,mergedErrorQC2);  
  qc2MeanNONAME->SetMarkerStyle(25);
- qc2MeanNONAME->SetMarkerColor(kRed); 
+ qc2MeanNONAME->SetMarkerColor(kBlack); 
+ qc2MeanNONAME->SetLineColor(kBlack);
  qc2MeanNONAME->SetMarkerSize(1.25); 
  
  TGraph* qc2TGraphNONAME = new TGraph(nPoints, qc2NONAME, qc2ValueNONAME);
  qc2TGraphNONAME->SetMarkerStyle(21);
- qc2TGraphNONAME->SetMarkerColor(kRed); 
+ qc2TGraphNONAME->SetMarkerColor(kRed-7); 
  qc2TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *qc2BoxNONAME = new TGraph(5);
@@ -792,15 +859,17 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  qc2BoxNONAME->SetFillColor(kRed-10);
  
  // QC{4}:
- TGraph *qc4MeanNONAME = new TGraph(1);    
+ TGraphErrors *qc4MeanNONAME = new TGraphErrors(1);    
  qc4MeanNONAME->SetPoint(0,binQC4-0.5,mergedValueQC4);  
+ qc4MeanNONAME->SetPointError(0,0,mergedErrorQC4);  
  qc4MeanNONAME->SetMarkerStyle(25);
- qc4MeanNONAME->SetMarkerColor(kRed); 
+ qc4MeanNONAME->SetMarkerColor(kBlack); 
+ qc4MeanNONAME->SetLineColor(kBlack);
  qc4MeanNONAME->SetMarkerSize(1.25); 
  
  TGraph* qc4TGraphNONAME = new TGraph(nPoints, qc4NONAME, qc4ValueNONAME);
  qc4TGraphNONAME->SetMarkerStyle(21);
- qc4TGraphNONAME->SetMarkerColor(kRed); 
+ qc4TGraphNONAME->SetMarkerColor(kRed-7); 
  qc4TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *qc4BoxNONAME = new TGraph(5);
@@ -813,15 +882,17 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  qc4BoxNONAME->SetFillColor(kRed-10);
  
  // QC{6}:
- TGraph *qc6MeanNONAME = new TGraph(1);    
+ TGraphErrors *qc6MeanNONAME = new TGraphErrors(1);    
  qc6MeanNONAME->SetPoint(0,binQC6-0.5,mergedValueQC6);  
+ qc6MeanNONAME->SetPointError(0,0,mergedErrorQC6);  
  qc6MeanNONAME->SetMarkerStyle(25);
- qc6MeanNONAME->SetMarkerColor(kRed); 
+ qc6MeanNONAME->SetMarkerColor(kBlack); 
+ qc6MeanNONAME->SetLineColor(kBlack);
  qc6MeanNONAME->SetMarkerSize(1.25); 
  
  TGraph* qc6TGraphNONAME = new TGraph(nPoints, qc6NONAME, qc6ValueNONAME);
  qc6TGraphNONAME->SetMarkerStyle(21);
- qc6TGraphNONAME->SetMarkerColor(kRed); 
+ qc6TGraphNONAME->SetMarkerColor(kRed-7);
  qc6TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *qc6BoxNONAME = new TGraph(5);
@@ -834,15 +905,17 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  qc6BoxNONAME->SetFillColor(kRed-10);
  
  // QC{8}:
- TGraph *qc8MeanNONAME = new TGraph(1);    
+ TGraphErrors *qc8MeanNONAME = new TGraphErrors(1);    
  qc8MeanNONAME->SetPoint(0,binQC8-0.5,mergedValueQC8);  
+ qc8MeanNONAME->SetPointError(0,0,mergedErrorQC8);  
  qc8MeanNONAME->SetMarkerStyle(25);
- qc8MeanNONAME->SetMarkerColor(kRed); 
+ qc8MeanNONAME->SetMarkerColor(kBlack);
+ qc8MeanNONAME->SetLineColor(kBlack); 
  qc8MeanNONAME->SetMarkerSize(1.25); 
  
  TGraph* qc8TGraphNONAME = new TGraph(nPoints, qc8NONAME, qc8ValueNONAME);
  qc8TGraphNONAME->SetMarkerStyle(21);
- qc8TGraphNONAME->SetMarkerColor(kRed); 
+ qc8TGraphNONAME->SetMarkerColor(kRed-7); 
  qc8TGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *qc8BoxNONAME = new TGraph(5);
@@ -855,15 +928,17 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  qc8BoxNONAME->SetFillColor(kRed-10);
  
  // FQD:
- TGraph *fqdMeanNONAME = new TGraph(1);    
+ TGraphErrors *fqdMeanNONAME = new TGraphErrors(1);    
  fqdMeanNONAME->SetPoint(0,binFQD-0.5,mergedValueFQD);  
+ fqdMeanNONAME->SetPointError(0,0,mergedErrorFQD);  
  fqdMeanNONAME->SetMarkerStyle(25);
- fqdMeanNONAME->SetMarkerColor(kViolet+3); 
+ fqdMeanNONAME->SetMarkerColor(kBlack); 
+ fqdMeanNONAME->SetLineColor(kBlack);
  fqdMeanNONAME->SetMarkerSize(1.25); 
  
  TGraph* fqdTGraphNONAME = new TGraph(nPoints, fqdNONAME, fqdValueNONAME);
  fqdTGraphNONAME->SetMarkerStyle(21);
- fqdTGraphNONAME->SetMarkerColor(kOrange+7); 
+ fqdTGraphNONAME->SetMarkerColor(kOrange-8); 
  fqdTGraphNONAME->SetMarkerSize(0.75); 
  
  TGraph *fqdBoxNONAME = new TGraph(5);
@@ -875,8 +950,29 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  fqdBoxNONAME->SetFillStyle(1001);
  fqdBoxNONAME->SetFillColor(kOrange-9);
  
- // ... LYZ* to be added ...
-   
+ // LYZ1:
+ TGraphErrors *lyz1MeanNONAME = new TGraphErrors(1);    
+ lyz1MeanNONAME->SetPoint(0,binLYZ1-0.5,mergedValueLYZ1);  
+ lyz1MeanNONAME->SetPointError(0,0,mergedErrorLYZ1);  
+ lyz1MeanNONAME->SetMarkerStyle(25);
+ lyz1MeanNONAME->SetMarkerColor(kBlack); 
+ lyz1MeanNONAME->SetLineColor(kBlack);
+ lyz1MeanNONAME->SetMarkerSize(1.25); 
+ 
+ TGraph* lyz1TGraphNONAME = new TGraph(nPoints, lyz1NONAME, lyz1ValueNONAME);
+ lyz1TGraphNONAME->SetMarkerStyle(21);
+ lyz1TGraphNONAME->SetMarkerColor(kYellow-5); 
+ lyz1TGraphNONAME->SetMarkerSize(0.75); 
+ 
+ TGraph *lyz1BoxNONAME = new TGraph(5);
+ lyz1BoxNONAME->SetPoint(0,(binLYZ1-0.5)-boxWidth,lyz1MinValueNONAME);
+ lyz1BoxNONAME->SetPoint(1,(binLYZ1-0.5)+boxWidth,lyz1MinValueNONAME);
+ lyz1BoxNONAME->SetPoint(2,(binLYZ1-0.5)+boxWidth,lyz1MaxValueNONAME);
+ lyz1BoxNONAME->SetPoint(3,(binLYZ1-0.5)-boxWidth,lyz1MaxValueNONAME);
+ lyz1BoxNONAME->SetPoint(4,(binLYZ1-0.5)-boxWidth,lyz1MinValueNONAME);    
+ lyz1BoxNONAME->SetFillStyle(1001);
+ lyz1BoxNONAME->SetFillColor(kYellow-8);   
+ 
  TCanvas* intFlowCanvasNONAME = new TCanvas("Integrated Flow NONAME","Integrated Flow NONAME",1000,600);
  
  intFlowCanvasNONAME->Divide(2,1);
@@ -950,7 +1046,10 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  if(fqdTGraphNONAME) fqdTGraphNONAME->Draw("PSAME");
  if(fqdMeanNONAME) fqdMeanNONAME->Draw("PSAME");
 
- // ... LYZ* to be added ...
+ // LYZ1: 
+ if(lyz1BoxNONAME && lyz1MinValueNONAME < 1000.) lyz1BoxNONAME->Draw("LFSAME");
+ if(lyz1TGraphNONAME) lyz1TGraphNONAME->Draw("PSAME");
+ if(lyz1MeanNONAME) lyz1MeanNONAME->Draw("PSAME"); 
  
  // 2nd pad is for legend:   
  (intFlowCanvasNONAME->cd(2))->SetPad(0.75,0.0,1.0,1.0);
@@ -967,7 +1066,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  Int_t qc6CountRealNONAME = 0;
  Int_t qc8CountRealNONAME = 0;
  Int_t fqdCountRealNONAME = 0;
- // ... LYZ* to be added ...
+ Int_t lyz1CountRealNONAME = 0;
  
  for(Int_t i=0;i<nEstimates;i++)
  {
@@ -982,7 +1081,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
   if(qc6ValueNONAME[i]>0.) qc6CountRealNONAME++; 
   if(qc8ValueNONAME[i]>0.) qc8CountRealNONAME++;
   if(fqdValueNONAME[i]>0.) fqdCountRealNONAME++; 
-  // ... LYZ* to be added ... 
+  if(lyz1ValueNONAME[i]>0.) lyz1CountRealNONAME++; 
  }
 
  TPaveText *textDefaultNONAME = new TPaveText(0.05,0.67,0.95,0.90,"NDC");
@@ -1109,7 +1208,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowFQDNONAME->Data());
  }
  
- /*
+ 
  if(entryIntFlowLYZ1NONAME)
  { 
   (*entryIntFlowLYZ1NONAME)+=(Long_t)lyz1CountRealNONAME;
@@ -1118,6 +1217,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowLYZ1NONAME->Data());
  }
  
+ /*
  if(entryIntFlowLYZEPNONAME)
  { 
   (*entryIntFlowLYZEPNONAME)+=(Long_t)lyzepCountRealNONAME;
