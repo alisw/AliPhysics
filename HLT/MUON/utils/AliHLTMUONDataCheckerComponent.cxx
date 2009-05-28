@@ -254,6 +254,8 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 	/// Here we go through the list of input data blocks and apply extensive
 	/// data integrity checking on the data found.
 	
+	if (not IsDataEvent()) return 0;
+	
 	HLTDebug("Processing event %llu with %u input data blocks.",
 		evtData.fEventID, evtData.fBlockCnt
 	);
@@ -311,6 +313,10 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 		return -ENOMEM;
 	}
 	
+	AliHLTComponentDataType anyPrivateType = AliHLTComponentDataTypeInitializer(
+			kAliHLTAnyDataType, kAliHLTDataOriginPrivate
+		);
+	
 	try
 	{
 		// Clear all the flags indicating if the blocks are ok.
@@ -329,7 +335,7 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 			
 			if (fIgnoreType)
 			{
-				// Decode the block type of we must ignore the block type
+				// Decode the block type if we must ignore the block type
 				// as given by the HLT framework.
 				if (blocks[n].fSize >= sizeof(AliHLTMUONDataBlockHeader))
 				{
@@ -340,7 +346,13 @@ int AliHLTMUONDataCheckerComponent::DoEvent(
 			}
 			else
 			{
-				if (blocks[n].fDataType == AliHLTMUONConstants::DDLRawDataType())
+				if (blocks[n].fDataType == anyPrivateType)
+				{
+					// Completely ignore any private HLT internal block types.
+					blockOk[n] = true;
+					continue;
+				}
+				else if (blocks[n].fDataType == AliHLTMUONConstants::DDLRawDataType())
 				{
 					blockOk[n] = CheckRawDataBlock(blocks[n], n);
 					continue;
@@ -2032,7 +2044,7 @@ bool AliHLTMUONDataCheckerComponent::CheckTrigRecsDebugBlock(
 			}
 			
 			if (fIgnoreSpec) continue;
-			if (0 <= de->GetDdlId() and de->GetDdlId() < 22 and ddl[de->GetDdlId()])
+			if (0 <= de->GetDdlId() and de->GetDdlId() < 22 and not ddl[de->GetDdlId()])
 			{
 				HLTError("Problem found with data block %d, fDataType = '%s',"
 					 " fPtr = %p and fSize = %u bytes."
@@ -2228,7 +2240,7 @@ bool AliHLTMUONDataCheckerComponent::CheckClustersBlock(
 			// Make sure the corresponding DDL bit is set in the data
 			// block specification.
 			if (fIgnoreSpec) continue;
-			if (0 <= de->GetDdlId() and de->GetDdlId() < 22 and ddl[de->GetDdlId()])
+			if (0 <= de->GetDdlId() and de->GetDdlId() < 22 and not ddl[de->GetDdlId()])
 			{
 				HLTError("Problem found with data block %d, fDataType = '%s',"
 					 " fPtr = %p and fSize = %u bytes."
@@ -2248,6 +2260,26 @@ bool AliHLTMUONDataCheckerComponent::CheckClustersBlock(
 					block.fSpecification
 				);
 				result = false;
+			}
+			
+			// Check that the total cluster charge is a reasonable value.
+			if (cluster.fCharge < 0 and 1e4 < cluster.fCharge)
+			{
+				HLTError("Problem found with data block %d, fDataType = '%s',"
+					 " fPtr = %p and fSize = %u bytes."
+					 " Assuming this is a %s data block."
+					 " Problem: The total charge %f for the cluster"
+					 " %d is not in a reasonable range [0..1e4].",
+					blockNumber,
+					DataType2Text(block.fDataType).c_str(),
+					block.fPtr,
+					block.fSize,
+					name,
+					cluster.fCharge,
+					i
+				);
+				result = false;
+				continue;
 			}
 		}
 	}
@@ -3227,7 +3259,7 @@ void AliHLTMUONDataCheckerComponent::MakeGlobalChecks(
 			
 			if (inblocki[i].fNchannels != count)
 			{
-				HLTError("Problem found with cluster data block %d,"
+				HLTWarning("Problem found with cluster data block %d,"
 					" fDataType = '%s', fPtr = %p and fSize = %u bytes."
 					" Problem with entry %d in block: The number of"
 					" channels in the cluster is reported as %d, but"

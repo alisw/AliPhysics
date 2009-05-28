@@ -57,7 +57,7 @@ AliHLTMUONConstants::fgkNilRecHitStruct = {0, 0, 0, 0};
 
 const AliHLTMUONClusterStruct
 AliHLTMUONConstants::fgkNilClusterStruct = {
-	0, AliHLTMUONConstants::fgkNilRecHitStruct, 0, 0
+	0, AliHLTMUONConstants::fgkNilRecHitStruct, 0, 0, 0
 };
 
 const AliHLTMUONChannelStruct

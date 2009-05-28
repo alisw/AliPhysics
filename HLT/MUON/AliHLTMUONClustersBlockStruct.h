@@ -8,11 +8,14 @@
 /**
  * @file   AliHLTMUONClustersBlockStruct.h
  * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Definition of internal dimuon HLT block structure containing
- *         debugging information about clusters and their corresponding
- *         reconstructed hits.
- * 
+ * @date   18 May 2007
+ * @brief  Definition of internal dimuon HLT block structure.
+ *
+ * The structure contains extra information about a cluster and its corresponding
+ * reconstructed hit, such as total charge and number of channels.
+ * The individual channel information is contained in AliHLTMUONChannelStruct structures.
+ * The extra information is useful for debugging purposes.
+ *
  * The structures are defined with C linkage since C generally gives us more
  * binary compatibility between compilers.
  */
@@ -25,7 +28,7 @@ extern "C"
 {
 
 /**
- * Debugging information about a cluster and its reconstructed hit.
+ * Extra debugging information about a cluster and its reconstructed hit.
  */
 struct AliHLTMUONClusterStruct
 {
@@ -38,6 +41,8 @@ struct AliHLTMUONClusterStruct
 	                           // on which the cluster was found.
 
 	AliHLTUInt32_t fNchannels; // Number of channels/pads in the cluster.
+	
+	AliHLTFloat32_t fCharge; // Total cluster charge. Can be -1 if invalid or uncomputed.
 };
 
 /**
@@ -80,7 +85,8 @@ inline bool operator == (
 	)
 {
 	return	a.fId == b.fId and a.fHit == b.fHit and
-		a.fDetElemId == b.fDetElemId and a.fNchannels == b.fNchannels;
+		a.fDetElemId == b.fDetElemId and a.fNchannels == b.fNchannels and
+		a.fCharge == b.fCharge;
 }
 
 inline bool operator != (

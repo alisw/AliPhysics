@@ -105,6 +105,12 @@ extern "C" struct AliHLTMUONHitRecoLutRow;
  * \li -useidealgain <br>
  *      When this option is used then the gain correction parameters are not loaded
  *      from the CDB but ideal linear gain is assumed. <br>
+ * \li -makeclusters <br>
+ *      This option will cause the component to generate extra cluster information
+ *      in the form of CLUSTERS data blocks. <br>
+ * \li -makechannels <br>
+ *      This option will cause the component to generate extra channel information
+ *      for each cluster found in the form of CHANNELS data blocks. <br>
  *
  * <h2>Standard configuration:</h2>
  * This component should normally be configured with either of the two sets of
@@ -199,6 +205,7 @@ private:
 	AliHLTUInt32_t fLutSize;  ///< The number of rows / entries in the LUT.
 	AliHLTMUONHitRecoLutRow* fLut;  ///< The lookup table used by the hit reconstruction algorithm (Owned by this component however).
 	IdManuChannelToEntry fIdToEntry; ///< id to line mapping.
+	MaxEntryPerBusPatch fMaxEntryPerBusPatch ;///< map to load maximum allowed buspatch entries for each buspatch
 	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
 	bool fUseIdealGain;  ///< Flag to indicate that ideal gain should be used and not loaded from the CDB.
 	

@@ -50,19 +50,22 @@ std::ostream& operator << (std::ostream& stream, const AliHLTMUONRecHit& hit)
 
 
 void AliHLTMUONRecHit::SetDebugInfo(
-		Int_t detElemId, Int_t clusterId, UInt_t nChExp, Int_t sourceDDL
+		Int_t detElemId, Int_t clusterId, UInt_t nChExp,
+		Float_t charge, Int_t sourceDDL
 	)
 {
 /// Sets the debugging information.
 /// @param detElemId  The detector element ID.
 /// @param clusterId  Cluster ID of the hit's cluster.
 /// @param nChExp     Number of expected channels forming the cluster.
+/// @param charge  The total charge of the cluster.
 /// @param sourceDDL  The source DDL of this hit.
 
 	fSourceDDL = sourceDDL;
 	fDetElemId = detElemId;
 	fClusterId = clusterId;
 	fNchExp = nChExp;
+	fCharge = charge;
 }
 	
 
@@ -123,6 +126,7 @@ void AliHLTMUONRecHit::Print(Option_t* option) const
 			<< " cm); source DDL = " << fSourceDDL
 			<< "; DetElemID = " << fDetElemId
 			<< "; cluster ID = " << fClusterId
+			<< "; total charge = " << fCharge
 			<< "; expected #ch = " << fNchExp << endl;
 	}
 	else if (strcmp(option, "all") == 0)
@@ -132,6 +136,7 @@ void AliHLTMUONRecHit::Print(Option_t* option) const
 			<< " cm); source DDL = " << fSourceDDL
 			<< "; DetElemID = " << fDetElemId
 			<< "; cluster ID = " << fClusterId
+			<< "; total charge = " << fCharge
 			<< "; expected #ch = " << fNchExp << endl;
 		if (fChannels.GetEntriesFast() == 0)
 		{

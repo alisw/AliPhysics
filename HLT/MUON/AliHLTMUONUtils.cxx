@@ -522,6 +522,7 @@ const char* AliHLTMUONUtils::FailureReasonToString(WhyNotValid reason)
 	case kInvalidChamberNumber: return "kInvalidChamberNumber";
 	case kHitIsNil: return "kHitIsNil";
 	case kInvalidChannelCount: return "kInvalidChannelCount";
+	case kInvalidTotalCharge: return "kInvalidTotalCharge";
 	case kInvalidBusPatchId: return "kInvalidBusPatchId";
 	case kInvalidManuId: return "kInvalidManuId";
 	case kInvalidChannelAddress: return "kInvalidChannelAddress";
@@ -583,6 +584,8 @@ const char* AliHLTMUONUtils::FailureReasonToMessage(WhyNotValid reason)
 	case kInvalidChannelCount:
 		return "The number of channels indicated is zero or outside"
 			" the valid range.";
+	case kInvalidTotalCharge:
+		return "The total charge does not have a valid value.";
 	case kInvalidBusPatchId:
 		return "The bus patch identifier is outside the valid range.";
 	case kInvalidManuId:
@@ -1618,6 +1621,17 @@ bool AliHLTMUONUtils::IntegrityOk(
 		if (reason != NULL and reasonCount < maxCount)
 		{
 			reason[reasonCount] = kInvalidChannelCount;
+			reasonCount++;
+		}
+		result = false;
+	}
+	
+	// The charge must be a positive value of -1.
+	if (not (cluster.fCharge >= 0 or cluster.fCharge == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidTotalCharge;
 			reasonCount++;
 		}
 		result = false;

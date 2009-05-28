@@ -18,7 +18,7 @@
 /**
  * @file   AliHLTMUONClustersBlockStruct.cxx
  * @author Artur Szostak <artursz@iafrica.com>
- * @date   
+ * @date   18 May 2007
  * @brief  Implementation of the stream and comparison operators.
  */
 
@@ -34,7 +34,8 @@ std::ostream& operator << (
 	stream	<< "{fId = " << cluster.fId
 		<< ", fHit = " << cluster.fHit
 		<< ", fDetElemId = " << cluster.fDetElemId
-		<< ", fNchannels = " << cluster.fNchannels << "}";
+		<< ", fNchannels = " << cluster.fNchannels
+		<< ", fCharge = " << cluster.fCharge << "}";
 	return stream;
 }
 

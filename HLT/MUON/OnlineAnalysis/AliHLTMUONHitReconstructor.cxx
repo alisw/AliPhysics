@@ -35,6 +35,8 @@
 
 #include "AliHLTMUONHitReconstructor.h"
 #include "AliHLTMUONRecHitsBlockStruct.h"
+#include "AliHLTMUONClustersBlockStruct.h"
+#include "AliHLTMUONChannelsBlockStruct.h"
 #include "AliHLTMUONUtils.h"
 #include <cstring>
 #include <strings.h>
@@ -59,6 +61,17 @@ AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor() :
 	fRecPoints(NULL),
 	fRecPointsCount(NULL),
 	fMaxRecPointsCount(0),
+	fClusters(NULL),
+	fClusterCount(0),
+	fMaxClusters(0),
+	fGenerateClusterInfo(false),
+	fNewClusterId(0),
+	fDDL(0),
+	fChannels(NULL),
+	fChannelCount(0),
+	fMaxChannels(0),
+	fGenerateChannelInfo(false),
+	fMaxChannelMult(6),
 	fCentralCountB(0),
 	fCentralCountNB(0),
 	fDigitPerDDL(0),
@@ -68,10 +81,13 @@ AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor() :
 	fRecY(NULL),
 	fAvgChargeX(NULL),
 	fAvgChargeY(NULL),
+	fTotChargeX(NULL),
+	fTotChargeY(NULL),
 	fNofBChannel(NULL),
 	fNofNBChannel(NULL),
 	fNofFiredDetElem(0),
 	fIdToEntry(),
+	fMaxEntryPerBusPatch(0),
 	fRecoveryMode(kDontTryRecover)
 {
 	/// Default constructor
@@ -113,12 +129,22 @@ AliHLTMUONHitReconstructor::~AliHLTMUONHitReconstructor()
 		delete [] fPadData;
 		fPadData = NULL;
 	}
+	
+	if (fClusters != NULL)
+	{
+		delete [] fClusters;
+	}
+	if (fChannels != NULL)
+	{
+		delete [] fChannels;
+	}
 }
 
 
 void AliHLTMUONHitReconstructor::SetLookUpTable(
 		const AliHLTMUONHitRecoLutRow* lookupTable,
-		const IdManuChannelToEntry* idToEntry
+		const IdManuChannelToEntry* idToEntry,
+		const MaxEntryPerBusPatch* maxEntryPerBP
 	)
 {
 	/// Sets the Lookup table (LUT) containing the position of each pad with
@@ -127,9 +153,11 @@ void AliHLTMUONHitReconstructor::SetLookUpTable(
 
 	assert( lookupTable != NULL );
 	assert( idToEntry != NULL );
+	assert( maxEntryPerBP != NULL );
 	
-	fIdToEntry = idToEntry;
 	fLookUpTableData = lookupTable;
+	fIdToEntry = idToEntry;
+	fMaxEntryPerBusPatch = maxEntryPerBP;
 }
 
 
@@ -185,6 +213,8 @@ bool AliHLTMUONHitReconstructor::Run(
   fRecPointsCount = &nofHit;
   *fRecPointsCount = 0;
   fDigitPerDDL = 0;
+  fClusterCount = 0;
+  fChannelCount = 0;
 
   if (not DecodeDDL(rawData, rawDataSize)) {
     // Dont need to log any message again. Already done so in DecodeDDL.
@@ -196,6 +226,37 @@ bool AliHLTMUONHitReconstructor::Run(
     // There are no digits to process so stop here.
     return true;
   }
+  
+  // Allocate fClusters and fChannels if required to do so and only if the allocated
+  // size of the arrays is too small.
+  try
+  {
+    if (fGenerateClusterInfo and fMaxClusters < fMaxRecPointsCount)
+    {
+      if (fClusters != NULL)
+      {
+        delete [] fClusters;
+        fMaxClusters = 0;
+      }
+      fClusters = new AliHLTMUONClusterStruct[fMaxRecPointsCount];
+      fMaxClusters = fMaxRecPointsCount;
+    }
+    if (fGenerateChannelInfo and fMaxChannels < fMaxRecPointsCount*fMaxChannelMult)
+    {
+      if (fChannels != NULL)
+      {
+        delete [] fChannels;
+        fMaxChannels = 0;
+      }
+      fChannels = new AliHLTMUONChannelStruct[fMaxRecPointsCount*fMaxChannelMult];
+      fMaxChannels = fMaxRecPointsCount*fMaxChannelMult;
+    }
+  }
+  catch(const std::bad_alloc&)
+  {
+    HLTError("Could not allocate memory for the extra cluster and channel information.");
+    return false;
+  }
 
   if (not FindRecHits()) {
     HLTError("Failed to generate RecHits");
@@ -203,6 +264,34 @@ bool AliHLTMUONHitReconstructor::Run(
   }
 
   return true;
+}
+
+
+bool AliHLTMUONHitReconstructor::FillClusterData(
+		AliHLTMUONClusterStruct* clusters, AliHLTUInt32_t& nofClusters
+	)
+{
+	/// Fills the output clusters array with extra cluster information.
+	
+	bool sizeOk = fClusterCount <= nofClusters;
+	AliHLTUInt32_t n = sizeOk ? fClusterCount : nofClusters;
+	memcpy(clusters, fClusters, sizeof(AliHLTMUONClusterStruct)*n);
+	nofClusters = n;
+	return sizeOk;
+}
+
+
+bool AliHLTMUONHitReconstructor::FillChannelData(
+		AliHLTMUONChannelStruct* channels, AliHLTUInt32_t& nofChannels
+	)
+{
+	/// Fills the output channels array with extra channel information for each cluster.
+	
+	bool sizeOk = fChannelCount <= nofChannels;
+	AliHLTUInt32_t n = sizeOk ? fChannelCount : nofChannels;
+	memcpy(channels, fChannels, sizeof(AliHLTMUONChannelStruct)*n);
+	nofChannels = n;
+	return sizeOk;
 }
 
 
@@ -219,6 +308,7 @@ bool AliHLTMUONHitReconstructor::DecodeDDL(const AliHLTUInt32_t* rawData,AliHLTU
   handler.SetIdManuChannelToEntry(fIdToEntry);
   handler.SetNofFiredDetElemId(fNofFiredDetElem);
   handler.SetMaxFiredPerDetElem(fMaxFiredPerDetElem);
+  handler.SetMaxEntryPerBusPatch(fMaxEntryPerBusPatch);
  
   if(!fHLTMUONDecoder.Decode(rawData,bufferSize))
   {
@@ -284,6 +374,8 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
   assert( fRecY == NULL );
   assert( fAvgChargeX == NULL );
   assert( fAvgChargeY == NULL );
+  assert( fTotChargeX == NULL );
+  assert( fTotChargeY == NULL );
   assert( fNofBChannel == NULL );
   assert( fNofNBChannel == NULL );
   
@@ -363,6 +455,10 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
         HLTDebug("Allocated fAvgChargeY with %d elements.", fCentralCountB);
         fAvgChargeX = new float[fCentralCountNB];
         HLTDebug("Allocated fAvgChargeX with %d elements.", fCentralCountNB);
+        fTotChargeY = new float[fCentralCountB];
+        HLTDebug("Allocated fTotChargeY with %d elements.", fCentralCountB);
+        fTotChargeX = new float[fCentralCountNB];
+        HLTDebug("Allocated fTotChargeX with %d elements.", fCentralCountNB);
         fNofBChannel = new int[fCentralCountB];
         HLTDebug("Allocated fNofBChannel with %d elements.", fCentralCountB);
         fNofNBChannel = new int[fCentralCountNB];
@@ -431,6 +527,18 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
       HLTDebug("Released fAvgChargeY array.");
       fAvgChargeY = NULL;
     }
+    if (fTotChargeX != NULL)
+    {
+      delete [] fTotChargeX;
+      HLTDebug("Released fTotChargeX array.");
+      fTotChargeX = NULL;
+    }
+    if (fTotChargeY != NULL)
+    {
+      delete [] fTotChargeY;
+      HLTDebug("Released fTotChargeY array.");
+      fTotChargeY = NULL;
+    }
     if (fNofBChannel != NULL)
     {
       delete [] fNofBChannel;
@@ -467,6 +575,8 @@ void AliHLTMUONHitReconstructor::FindCentralHits(int minPadId, int maxPadId)
     fGetIdTotalData[fPadData[iPad].fIX]
       [fPadData[iPad].fIY]
       [fPadData[iPad].fPlane] = iPad ;
+
+    if(fPadData[iPad].fCharge <= fDCCut ) continue;
     
     if(fPadData[iPad].fPlane == 0 ){//&& fPadData[iPad].fIY > (0+1) && fPadData[iPad].fIY < (79 - 1)){
       //if(fPadData[iPad].fIY > 0){
@@ -548,7 +658,6 @@ void AliHLTMUONHitReconstructor::FindCentralHits(int minPadId, int maxPadId)
 
 }
 
-
 void AliHLTMUONHitReconstructor::RecXRecY()
 {
   // find reconstructed X and Y for each plane separately
@@ -557,6 +666,8 @@ void AliHLTMUONHitReconstructor::RecXRecY()
   assert( fRecY != NULL );
   assert( fAvgChargeX != NULL );
   assert( fAvgChargeY != NULL );
+  assert( fTotChargeX != NULL );
+  assert( fTotChargeY != NULL );
   assert( fNofBChannel != NULL );
   assert( fNofNBChannel != NULL );
 
@@ -564,8 +675,13 @@ void AliHLTMUONHitReconstructor::RecXRecY()
   int idCentral;
   int idLower = 0;
   int idUpper = 0;
+  int idLower1 = 0;
+  int idUpper1 = 0;
+
   int idRight = 0;
   int idLeft = 0;
+  int idRight1 = 0;
+  int idLeft1 = 0;
   
   for(b=0;b<fCentralCountB;b++){
     idCentral = fCentralChargeB[b];
@@ -574,12 +690,22 @@ void AliHLTMUONHitReconstructor::RecXRecY()
       idLower = 0;
     else
       idLower = fGetIdTotalData[fPadData[idCentral].fIX][fPadData[idCentral].fIY-1][0];
-
-    if(fPadData[idCentral].fIX==236)
+    
+    if(fPadData[idCentral].fIY==236)
       idUpper = 0;
     else
       idUpper = fGetIdTotalData[fPadData[idCentral].fIX][fPadData[idCentral].fIY+1][0];
 
+    if(fPadData[idCentral].fIY==1)
+      idLower1 = 0;
+    else
+      idLower1 = fGetIdTotalData[fPadData[idCentral].fIX][fPadData[idCentral].fIY-2][0];
+    
+    if(fPadData[idCentral].fIY==235)
+      idUpper1 = 0;
+    else
+      idUpper1 = fGetIdTotalData[fPadData[idCentral].fIX][fPadData[idCentral].fIY+2][0];
+    
 
     fRecY[b] = (fPadData[idCentral].fRealY*fPadData[idCentral].fCharge
 	       +
@@ -589,7 +715,9 @@ void AliHLTMUONHitReconstructor::RecXRecY()
 		)/(fPadData[idCentral].fCharge + fPadData[idUpper].fCharge + fPadData[idLower].fCharge) ;
     
     fAvgChargeY[b] = (fPadData[idCentral].fCharge + fPadData[idUpper].fCharge + fPadData[idLower].fCharge)/3.0 ;
-    
+    fTotChargeY[b] = (fPadData[idCentral].fCharge + fPadData[idUpper].fCharge + fPadData[idLower].fCharge);
+// 		      + fPadData[idUpper1].fCharge + fPadData[idLower1].fCharge) ;
+ 
     fNofBChannel[b] = 0;
     if(fPadData[idLower].fCharge>0)
       fNofBChannel[b]++ ;
@@ -597,14 +725,86 @@ void AliHLTMUONHitReconstructor::RecXRecY()
       fNofBChannel[b]++ ;
     if(fPadData[idUpper].fCharge>0)
       fNofBChannel[b]++ ;
+   
+    //collect left coloumn
+    if((fPadData[idCentral].fIX-1)>=0){
+      
+      idLeft = fGetIdTotalData[fPadData[idCentral].fIX-1][fPadData[idCentral].fIY][0];
+      
+      if(fPadData[idLeft].fIY==0)
+	idLower = 0;
+      else
+	idLower = fGetIdTotalData[fPadData[idLeft].fIX][fPadData[idLeft].fIY-1][0];
+      
+      if(fPadData[idLeft].fIY==236)
+	idUpper = 0;
+      else
+	idUpper = fGetIdTotalData[fPadData[idLeft].fIX][fPadData[idLeft].fIY+1][0];
 
-    HLTDebug("detelem : %d :--(charge,pos) lower[%d]  : (%d,%f), middle[%d]  : (%d,%f), upper[%d] : (%d,%f), nofChannel : %d",
-            fPadData[idCentral].fDetElemId,
-            idLower, fPadData[idLower].fCharge, fPadData[idLower].fRealY,
-            idCentral, fPadData[idCentral].fCharge,fPadData[idCentral].fRealY,
-            idUpper, fPadData[idUpper].fCharge, fPadData[idUpper].fRealY,
-            fNofBChannel[b]
-    );
+//       if(fPadData[idLeft].fIY==1)
+// 	idLower1 = 0;
+//       else
+// 	idLower1 = fGetIdTotalData[fPadData[idLeft].fIX][fPadData[idLeft].fIY-2][0];
+    
+//       if(fPadData[idLeft].fIY==235)
+// 	idUpper1 = 0;
+//       else
+// 	idUpper1 = fGetIdTotalData[fPadData[idLeft].fIX][fPadData[idLeft].fIY+2][0];
+
+      fTotChargeY[b] += (fPadData[idLeft].fCharge + fPadData[idUpper].fCharge + fPadData[idLower].fCharge);
+// 			 + fPadData[idUpper1].fCharge + fPadData[idLower1].fCharge) ;
+
+      if(fPadData[idLower].fCharge>0)
+	fNofBChannel[b]++ ;
+      if(fPadData[idLeft].fCharge>0)
+	fNofBChannel[b]++ ;
+      if(fPadData[idUpper].fCharge>0)
+	fNofBChannel[b]++ ;
+
+    }
+    ////////////////////////////////////////////////////
+
+    //collect right coloumn
+    if((fPadData[idCentral].fIX+1)<=335){
+
+      idRight = fGetIdTotalData[fPadData[idCentral].fIX+1][fPadData[idCentral].fIY][0];
+    
+      if(fPadData[idRight].fIY==0)
+	idLower = 0;
+      else
+	idLower = fGetIdTotalData[fPadData[idRight].fIX][fPadData[idRight].fIY-1][0];
+      
+      if(fPadData[idRight].fIY==236)
+	idUpper = 0;
+      else
+	idUpper = fGetIdTotalData[fPadData[idRight].fIX][fPadData[idRight].fIY+1][0];
+  
+//       if(fPadData[idRight].fIY==1)
+// 	idLower1 = 0;
+//       else
+// 	idLower1 = fGetIdTotalData[fPadData[idRight].fIX][fPadData[idRight].fIY-2][0];
+      
+//       if(fPadData[idRight].fIY==235)
+// 	idUpper1 = 0;
+//       else
+// 	idUpper1 = fGetIdTotalData[fPadData[idRight].fIX][fPadData[idRight].fIY+2][0];
+
+      fTotChargeY[b] += (fPadData[idRight].fCharge + fPadData[idUpper].fCharge + fPadData[idLower].fCharge);
+// 			 + fPadData[idUpper1].fCharge + fPadData[idLower1].fCharge) ;
+
+      if(fPadData[idLower].fCharge>0)
+	fNofBChannel[b]++ ;
+      if(fPadData[idRight].fCharge>0)
+	fNofBChannel[b]++ ;
+      if(fPadData[idUpper].fCharge>0)
+	fNofBChannel[b]++ ;
+
+    }
+    //////////////////////////////////////////////////////////////////////////////////
+
+
+    HLTDebug("lower : %d, middle : %d, upper : %d, nofChannel : %d",fPadData[idLower].fCharge,
+	    fPadData[idCentral].fCharge,fPadData[idUpper].fCharge,fNofBChannel[b]);
 
     HLTDebug("RecY[%d] : %f",b,fRecY[b]);
   }
@@ -622,6 +822,17 @@ void AliHLTMUONHitReconstructor::RecXRecY()
     else
       idRight = fGetIdTotalData[fPadData[idCentral].fIX+1][fPadData[idCentral].fIY][1];
 
+    if(fPadData[idCentral].fIX==1)
+      idLeft1 = 0;
+    else
+      idLeft1 = fGetIdTotalData[fPadData[idCentral].fIX-2][fPadData[idCentral].fIY][1];
+    
+    if(fPadData[idCentral].fIX==334)
+      idRight1 = 0 ;
+    else
+      idRight1 = fGetIdTotalData[fPadData[idCentral].fIX+2][fPadData[idCentral].fIY][1];
+    
+
     fRecX[nb] = (fPadData[idCentral].fRealX*fPadData[idCentral].fCharge
 		 +
 		 fPadData[idRight].fRealX*fPadData[idRight].fCharge
@@ -631,8 +842,8 @@ void AliHLTMUONHitReconstructor::RecXRecY()
     
 
     fAvgChargeX[nb] = (fPadData[idCentral].fCharge + fPadData[idRight].fCharge + fPadData[idLeft].fCharge)/3.0 ;
-    
-    
+    fTotChargeX[nb] = (fPadData[idCentral].fCharge + fPadData[idRight].fCharge + fPadData[idLeft].fCharge);
+// 		       + fPadData[idRight1].fCharge + fPadData[idLeft1].fCharge) ;
     fNofNBChannel[nb] = 0;
     if(fPadData[idLeft].fCharge>0)
       fNofNBChannel[nb]++ ;
@@ -641,13 +852,85 @@ void AliHLTMUONHitReconstructor::RecXRecY()
     if(fPadData[idRight].fCharge>0)
       fNofNBChannel[nb]++ ;
 
-    HLTDebug("detelem : %d:--(charge,pos) left[%d] : (%d,%f), middle[%d] : (%d,%f), right[%d] : (%d,%f), nofChannel : %d",
-            fPadData[idLeft].fDetElemId,
-            idLeft, fPadData[idLeft].fCharge, fPadData[idLeft].fRealX,
-            idCentral, fPadData[idCentral].fCharge, fPadData[idCentral].fRealX,
-            idRight, fPadData[idRight].fCharge, fPadData[idRight].fRealX,
-            fNofNBChannel[nb]
-    );
+    // lower row 
+    if((fPadData[idCentral].fIY-1)>=0){
+
+      idLower = fGetIdTotalData[fPadData[idCentral].fIX][fPadData[idCentral].fIY-1][1];
+      
+      if(fPadData[idLower].fIX==0)
+	idLeft = 0;
+      else
+	idLeft = fGetIdTotalData[fPadData[idLower].fIX-1][fPadData[idLower].fIY][1];
+    
+      if(fPadData[idLower].fIX==335)
+	idRight = 0 ;
+      else
+	idRight = fGetIdTotalData[fPadData[idLower].fIX+1][fPadData[idLower].fIY][1];
+
+//       if(fPadData[idLower].fIX==1)
+// 	idLeft1 = 0;
+//       else
+// 	idLeft1 = fGetIdTotalData[fPadData[idLower].fIX-2][fPadData[idLower].fIY][1];
+      
+//       if(fPadData[idLower].fIX==334)
+// 	idRight1 = 0 ;
+//       else
+// 	idRight1 = fGetIdTotalData[fPadData[idLower].fIX+2][fPadData[idLower].fIY][1];
+      
+      fTotChargeX[nb] += (fPadData[idLower].fCharge + fPadData[idRight].fCharge + fPadData[idLeft].fCharge);
+// 			  + fPadData[idRight1].fCharge + fPadData[idLeft1].fCharge) ;
+
+      if(fPadData[idLeft].fCharge>0)
+	fNofNBChannel[nb]++ ;
+      if(fPadData[idLower].fCharge>0)
+	fNofNBChannel[nb]++ ;
+      if(fPadData[idRight].fCharge>0)
+	fNofNBChannel[nb]++ ;
+
+    }
+    ////////////////////////////////////////////////////////////
+
+    // Upper row
+    if((fPadData[idCentral].fIY+1)<=236){
+
+      idUpper = fGetIdTotalData[fPadData[idCentral].fIX][fPadData[idCentral].fIY+1][1];
+
+      if(fPadData[idUpper].fIX==0)
+	idLeft = 0;
+      else
+	idLeft = fGetIdTotalData[fPadData[idUpper].fIX-1][fPadData[idUpper].fIY][1];
+      
+      if(fPadData[idUpper].fIX==335)
+	idRight = 0 ;
+      else
+	idRight = fGetIdTotalData[fPadData[idUpper].fIX+1][fPadData[idUpper].fIY][1];
+      
+//       if(fPadData[idUpper].fIX==1)
+// 	idLeft1 = 0;
+//       else
+// 	idLeft1 = fGetIdTotalData[fPadData[idUpper].fIX-2][fPadData[idUpper].fIY][1];
+      
+//       if(fPadData[idUpper].fIX==334)
+// 	idRight1 = 0 ;
+//       else
+// 	idRight1 = fGetIdTotalData[fPadData[idUpper].fIX+2][fPadData[idUpper].fIY][1];
+
+      fTotChargeX[nb] += (fPadData[idUpper].fCharge + fPadData[idRight].fCharge + fPadData[idLeft].fCharge);
+// 			  + fPadData[idRight1].fCharge + fPadData[idLeft1].fCharge) ;
+
+      if(fPadData[idLeft].fCharge>0)
+	fNofNBChannel[nb]++ ;
+      if(fPadData[idRight].fCharge>0)
+	fNofNBChannel[nb]++ ;
+      if(fPadData[idRight].fCharge>0)
+	fNofNBChannel[nb]++ ;
+
+    }
+    ////////////////////////////////////////////////////////////
+
+
+    HLTDebug("left : %d, middle : %d, right : %d, nofChannel : %d",fPadData[idLeft].fCharge,
+	    fPadData[idCentral].fCharge,fPadData[idRight].fCharge,fNofNBChannel[nb]);
 
     HLTDebug("RecX[%d] : %f",nb,fRecX[nb]);
 
@@ -663,6 +946,8 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
   assert( fRecY != NULL );
   assert( fAvgChargeX != NULL );
   assert( fAvgChargeY != NULL );
+  assert( fTotChargeX != NULL );
+  assert( fTotChargeY != NULL );
   assert( fNofBChannel != NULL );
   assert( fNofNBChannel != NULL );
 
@@ -803,16 +1088,46 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
 	    fRecPoints[(*fRecPointsCount)].fX = fRecX[nb];
 	    fRecPoints[(*fRecPointsCount)].fY = fRecY[b];
 	    fRecPoints[(*fRecPointsCount)].fZ = fPadData[idCentralB].fRealZ;
+	    
+ 	    if (fGenerateClusterInfo)
+ 	    {
+ 	      if (fClusterCount >= fMaxClusters)
+ 	      {
+	        HLTError("Ran out of space in internal cluster array of size %d.", fMaxClusters);
+	        return false;
+	      }
+	      
+	      fClusters[fClusterCount].fId = (fNewClusterId << 5) | fDDL;
+	      
+	      // Increment the cluster ID and warp it around at 0x03FFFFFF since
+	      // the bottom 5 bits are filled with the source DDL number and the
+	      // sign bit in fClusters[fClusterCount].fId must be positive.
+	      fNewClusterId = (fNewClusterId + 1) & 0x03FFFFFF;
+	      
+	      fClusters[fClusterCount].fHit = fRecPoints[(*fRecPointsCount)];
+	      fClusters[fClusterCount].fDetElemId = fPadData[idCentralB].fDetElemId;
+ 	      fClusters[fClusterCount].fNchannels = (fNofBChannel[b] + fNofNBChannel[nb]);
+ 	      fClusters[fClusterCount].fCharge = (fTotChargeX[nb] + fTotChargeY[b]);
+ 	      fClusterCount++;
+ 	    }
+ 	    
+ 	    if (fGenerateChannelInfo)
+ 	    {
+ 	      //TODO: need to complete the code to generate channels data
+ 	      //fChannels[fChannelCount].fClusterId = fGenerateClusterInfo ? fClusters[fClusterCount].fId : -1;
+ 	      //fChannels[fChannelCount].fBusPatch = ;
+ 	      //fChannels[fChannelCount].fManu = ;
+ 	      //fChannels[fChannelCount].fChannelAddress = ;
+ 	      //fChannels[fChannelCount].fSignal = ;
+ 	      //fChannels[fChannelCount].fRawDataWord = ;
+ 	      //fChannelCount++;
+ 	    }
+
 	    HLTDebug("Reconstructed hit (X,Y,Z) : (%f,%f,%f)",
                      fRecPoints[(*fRecPointsCount)].fX,
                      fRecPoints[(*fRecPointsCount)].fY,
                      fRecPoints[(*fRecPointsCount)].fZ
             );
-// 	    fRecPoints[(*fRecPointsCount)].fXCenter = fPadData[idCentralNB].fRealX;
-// 	    fRecPoints[(*fRecPointsCount)].fYCenter = fPadData[idCentralB].fRealY;
-// 	    fRecPoints[(*fRecPointsCount)].fNofBChannel = fNofBChannel[b];
-// 	    fRecPoints[(*fRecPointsCount)].fNofNBChannel = fNofNBChannel[nb];
-// 	    fRecPoints[(*fRecPointsCount)].fDetElemId = (AliHLTUInt32_t)fPadData[idCentralB].fDetElemId;
 	    (*fRecPointsCount)++;
 	  }//if lies wihtin 5.0 mm
 	}// condn over fRecX ! = 0.0
@@ -857,6 +1172,7 @@ AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::AliHLTMUONRawDecoder() :
 	fNofFiredDetElem(NULL),
 	fMaxFiredPerDetElem(NULL),
 	fIdToEntry(),
+	fMaxEntryPerBusPatch(),
 	fDataCount(1),
 	fPrevDetElemId(0),
 	fPadCharge(0),
@@ -867,7 +1183,8 @@ AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::AliHLTMUONRawDecoder() :
 	fSkipParityErrors(false),
 	fDontPrintParityErrors(false),
 	fPrintParityErrorAsWarning(false),
-	fNonParityErrorFound(false)
+	fNonParityErrorFound(false),
+	fIsMuchNoisy(false)
 {
 	// ctor
 }
@@ -929,6 +1246,8 @@ void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnData(UInt_t dataWord, b
 
   if (fSkipParityErrors and parityError) return;
 
+  if(fIsMuchNoisy) return;
+
   fIdManuChannel = 0x0;
   fIdManuChannel = (fIdManuChannel|fBusPatchId)<<17;
   fIdManuChannel |= (dataWord >> 12) & 0x1FFFF;
@@ -943,7 +1262,7 @@ void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnData(UInt_t dataWord, b
   fPadCharge = int(((unsigned short)(dataWord & 0xFFF)) - fLookUpTableData[fLutEntry].fPed);
   
   fCharge = 0;	  
-  if(fPadCharge > fDCCut && fPadCharge > 5.0*fLookUpTableData[fLutEntry].fSigma){  // (charge > 4) is due cut out the noise level  			
+  if(fPadCharge > 5.0*fLookUpTableData[fLutEntry].fSigma){  // (charge > 4) is due cut out the noise level  			
       
     fPadData[fDataCount].fDetElemId = fLookUpTableData[fLutEntry].fDetElemId;
     fPadData[fDataCount].fIX = fLookUpTableData[fLutEntry].fIX;
@@ -978,15 +1297,12 @@ void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnData(UInt_t dataWord, b
       fPrevDetElemId =  fLookUpTableData[fLutEntry].fDetElemId ;
     }
     
-    HLTDebug("LUT address: %p, lutEntry : %d, buspatch : %d, detElem : %d, id : %d, manu : %d,"
-              " channel : %d, iX : %d, iY: %d, (X,Y) : (%f, %f), charge : %d, padsize : %f, plane : %d",
-             fLookUpTableData, fLutEntry, fBusPatchId, fPadData[fDataCount].fDetElemId,
-             fIdManuChannel, ((dataWord >> 18) & 0x7FF), ((dataWord >> 12) & 0x3F),
-             fPadData[fDataCount].fIX, fPadData[fDataCount].fIY,
-             fPadData[fDataCount].fRealX, fPadData[fDataCount].fRealY,
-             fPadData[fDataCount].fCharge, fPadData[fDataCount].fHalfPadSize,
-             fPadData[fDataCount].fPlane
-    );
+    HLTDebug("%x, fLutEntry : %d, buspatch : %d, detele : %d, id : %d, manu : %d, channel : %d, iX : %d, iY: %d, (X,Y) : (%f, %f, %f), charge : %f, padsize : %f, plane : %d, ped : %f, sigma : %f",
+	     fLookUpTableData,fLutEntry,fBusPatchId,fPadData[fDataCount].fDetElemId,
+	     fIdManuChannel,((dataWord >> 18) & 0x7FF),((dataWord >> 12) & 0x3F),
+	     fPadData[fDataCount].fIX,fPadData[fDataCount].fIY,
+	     fPadData[fDataCount].fRealX,fPadData[fDataCount].fRealY,fPadData[fDataCount].fRealZ,
+	     fPadData[fDataCount].fCharge,fLookUpTableData[fLutEntry].fHalfPadSize,fPadData[fDataCount].fPlane,fLookUpTableData[fLutEntry].fPed,fLookUpTableData[fLutEntry].fSigma);
     
     fDataCount++;
   }// if charge is more than DC Cut limit condition

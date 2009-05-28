@@ -186,6 +186,8 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	/// Inherited from AliHLTProcessor. Processes the new event data.
 	///
 	
+	if (not IsDataEvent()) return 0;
+	
 	AliHLTMUONEvent event(evtData.fEventID);
 	const AliHLTComponentBlockData* block = NULL;
 	AliHLTUInt32_t specification = 0;  // Contains the output data block spec bits.
@@ -244,7 +246,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 				AliHLTUInt8_t chamber;
 				AliHLTUInt16_t detElemId;
 				AliHLTMUONUtils::UnpackRecHitFlags(h.fFlags, chamber, detElemId);
-				event.Add(new AliHLTMUONRecHit(h.fX, h.fY, h.fZ, sourceDDL, detElemId, chamber));
+				event.Add(new AliHLTMUONRecHit(h.fX, h.fY, h.fZ, sourceDDL, detElemId));
 			}
 		}
 		else if (block->fDataType == AliHLTMUONConstants::TriggerRecordsBlockDataType())
@@ -322,6 +324,99 @@ int AliHLTMUONRootifierComponent::DoEvent(
 						DataType2Text(block->fDataType).c_str(), block->fSpecification
 					);
 #endif
+			}
+		}
+	}
+	
+	// We need to check if there are any cluster data blocks and add their
+	// information to the AliHLTMUONRecHit objects.
+	for (block = GetFirstInputBlock(AliHLTMUONConstants::ClusterBlockDataType());
+	     block != NULL;
+	     block = GetNextInputBlock()
+	    )
+	{
+		specification |= block->fSpecification;
+		AliHLTMUONClustersBlockReader inblock(block->fPtr, block->fSize);
+		if (not BlockStructureOk(inblock))
+		{
+			if (DumpDataOnError()) DumpEvent(evtData, trigData);
+			continue;
+		}
+		
+		for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
+		{
+			const AliHLTMUONClusterStruct& clust = inblock[n];
+			
+			AliHLTUInt8_t chamber;
+			AliHLTUInt16_t detElemId;
+			AliHLTMUONUtils::UnpackRecHitFlags(clust.fHit.fFlags, chamber, detElemId);
+			if (clust.fDetElemId != detElemId)
+			{
+				HLTWarning("Found a cluster with a different detector element ID (%d)"
+					" from its corresponding hit (x,y,z = %f,%f,%f and detElemId = %d).",
+					clust.fDetElemId,
+					clust.fHit.fX, clust.fHit.fY, clust.fHit.fZ,
+					detElemId
+				);
+			}
+			
+			// Try find the corresponding reconstructed hit in 'event'.
+			AliHLTMUONRecHit* hit = NULL;
+			for (Int_t k = 0; k < event.Array().GetEntriesFast(); k++)
+			{
+				if (event.Array()[k]->IsA() != AliHLTMUONRecHit::Class())
+					continue;
+				AliHLTMUONRecHit* h = static_cast<AliHLTMUONRecHit*>(event.Array()[k]);
+				if (h->DetElemId() == detElemId and h->X() == clust.fHit.fX
+				    and h->Y() == clust.fHit.fY and h->Z() == clust.fHit.fZ)
+				{
+					hit = h;
+					break;
+				}
+			}
+			
+			// If we could not find the corresponding hit then we need to create
+			// a new hit object, otherwise we can just append the information.
+			if (hit == NULL)
+			{
+				// Decode the source DDL from the specification bits.
+				Int_t sourceDDL = -1;
+				bool ddl[22];
+				AliHLTMUONUtils::UnpackSpecBits(block->fSpecification, ddl);
+				for (int k = 0; k < 22; k++)
+				{
+					if (ddl[k])
+					{
+						if (sourceDDL == -1)
+						{
+							sourceDDL = k+1;
+						}
+						else
+						{
+							HLTWarning("An input block of cluster data contains"
+								" data from multiple DDL sources."
+							);
+						}
+					}
+				}
+				if (sourceDDL > 20)
+				{
+					HLTWarning("The source DDL of a cluster data input block is %d."
+						" The expected range for the DDL is [1..20].",
+						sourceDDL
+					);
+				}
+				event.Add(new AliHLTMUONRecHit(
+						clust.fHit.fX, clust.fHit.fY, clust.fHit.fZ,
+						sourceDDL, detElemId
+					));
+			}
+			else
+			{
+				hit->SetDebugInfo(
+					detElemId, clust.fId, clust.fNchannels,
+					clust.fCharge, hit->SourceDDL()
+				);
 			}
 		}
 	}

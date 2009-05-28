@@ -133,6 +133,7 @@ public:
 	 *                    which this hit resides.
 	 * @param clusterId   The cluster ID number assigned to the hit's cluster.
 	 * @param nChExp      The expected number of channels that form the cluster.
+	 * @param charge      The total charge of the cluster.
 	 */
 	AliHLTMUONRecHit(
 			Float_t x = 0,
@@ -141,11 +142,12 @@ public:
 			Int_t sourceDDL = -1,
 			Int_t detElemId = -1,
 			Int_t clusterId = -1,
-			Int_t nChExp = 0
+			Int_t nChExp = 0,
+			Float_t charge = 0
 		) :
 		TObject(), fCoordinate(x, y, z), fSourceDDL(sourceDDL),
 		fDetElemId(detElemId), fClusterId(clusterId), fNchExp(nChExp),
-		fChannels("AliHLTMUONRecHit::AliChannel", 6)
+		fChannels("AliHLTMUONRecHit::AliChannel", 6), fCharge(charge)
 	{}
 	
 	/**
@@ -206,15 +208,21 @@ public:
 	UInt_t ExpectedNchannels() const { return fNchExp; }
 	
 	/**
-	 * Sets the debugging information for this hit.
+	 * Returns the total charge of the cluster.
+	 */
+	Float_t TotalCharge() const { return fCharge; }
+	
+	/**
+	 * Sets the extra debugging information for this hit.
 	 * @param detElemId  The detector element ID.
 	 * @param clusterId  Cluster ID of the hit's cluster.
 	 * @param nChExp     Number of expected channels forming the cluster.
+	 * @param charge     The total charge of the cluster
 	 * @param sourceDDL  The source DDL of this hit.
 	 */
 	void SetDebugInfo(
 			Int_t detElemId, Int_t clusterId, UInt_t nChExp,
-			Int_t sourceDDL = -1
+			Float_t charge, Int_t sourceDDL = -1
 		);
 	
 	/**
@@ -290,8 +298,9 @@ private:
 	Int_t fClusterId;  ///< The cluster ID number used to relate all the channels to each other.
 	UInt_t fNchExp;    ///< The number of channels that were supposed to be found.
 	TClonesArray fChannels; ///< The channels forming part of the cluster from which this hit was reconstructed.
+	Float_t fCharge;   ///< The total charge of the cluster.
 
-	ClassDef(AliHLTMUONRecHit, 3); // A reconstructed hit translated from dHLT raw data into ROOT format.
+	ClassDef(AliHLTMUONRecHit, 4); // A reconstructed hit translated from dHLT raw data into ROOT format.
 };
 
 #endif // ALIHLTMUONRECHIT_H

@@ -36,10 +36,10 @@
 
 
 extern "C" struct AliHLTMUONRecHitStruct;
-
-//TODO: Change code to not use std::map to avoid too many AliRoot coding rule violations.
+extern "C" struct AliHLTMUONClusterStruct;
+extern "C" struct AliHLTMUONChannelStruct;
 typedef std::map<AliHLTInt32_t, AliHLTInt32_t> IdManuChannelToEntry;
-
+typedef IdManuChannelToEntry MaxEntryPerBusPatch;
 
 class AliHLTMUONHitReconstructor : public AliHLTLogging
 {
@@ -50,7 +50,8 @@ public:
 	
 	void SetLookUpTable(
 			const AliHLTMUONHitRecoLutRow* lookupTable,
-			const IdManuChannelToEntry* idToEntry
+			const IdManuChannelToEntry* idToEntry,
+			const MaxEntryPerBusPatch* maxEntryPerBP
 		);
 	
 	void SetDCCut(AliHLTInt32_t dcCut) { fDCCut = dcCut; }
@@ -62,6 +63,32 @@ public:
 			AliHLTMUONRecHitStruct* recHit,
 			AliHLTUInt32_t& nofHit
 		);
+	
+	/**
+	 * Fills the output clusters array with the extra cluster information generated.
+	 * If the method GenerateClusterInfo(true) was not called, then no cluster information
+	 * is generated and this method will not do anything.
+	 * [out] \param clusters  This is the output array that will be filled.
+	 * [in/out] \param nofClusters Initially this contains the maximum number of elements
+	 *     that can be stored in the clusters array. The method will fill this with
+	 *     the actual number of elements stored.
+	 * \returns true if all elements were copied and false if there is not enough space in
+	 *     the output array.
+	 */
+	bool FillClusterData(AliHLTMUONClusterStruct* clusters, AliHLTUInt32_t& nofClusters);
+	
+	/**
+	 * Fills the output channels array with the extra channel information generated.
+	 * If the method GenerateChannelInfo(true) was not called, then no extra channel
+	 * information is generated and this method will not do anything.
+	 * [out] \param channels  This is the output array that will be filled.
+	 * [in/out] \param nofChannels Initially this contains the maximum number of elements
+	 *     that can be stored in the channels array. The method will fill this with
+	 *     the actual number of elements stored.
+	 * \returns true if all elements were copied and false if there is not enough space in
+	 *     the output array.
+	 */
+	bool FillChannelData(AliHLTMUONChannelStruct* channels, AliHLTUInt32_t& nofChannels);
 	
 	static AliHLTInt32_t GetkDetectorId() { return fgkDetectorId; }
 	static AliHLTInt32_t GetkDDLOffSet() { return fgkDDLOffSet; }
@@ -96,6 +123,33 @@ public:
 	
 	/// Sets the flag indicating if messages about parity errors are not printed.
 	void DontPrintParityErrors(bool value) { fHLTMUONDecoder.GetHandler().DontPrintParityErrors(value); }
+	
+	/// Returns true if the extra cluster information should be generated.
+	bool GenerateClusterInfo() const { return fGenerateClusterInfo; }
+	
+	/// Sets the flag to indicate if the extra cluster information should be generated.
+	void GenerateClusterInfo(bool value) { fGenerateClusterInfo = value; }
+	
+	/// Returns true if the extra channel information should be generated.
+	bool GenerateChannelInfo() const { return fGenerateChannelInfo; }
+	
+	/// Sets the flag to indicate if the extra channel information should be generated.
+	void GenerateChannelInfo(bool value) { fGenerateChannelInfo = value; }
+	
+	/// Returns the maximum channel multiplicity allowed per cluster.
+	bool MaxChannelMultiplicity() const { return fMaxChannelMult; }
+	
+	/// Sets the maximum channel multiplicity allowed per cluster.
+	/// \note This effects the memory allocation required. Generally M*N number of
+	///   channel structures will be allocated, where M = fMaxChannelMult and
+	///   N = the maximum number of hits that can be filled into the output buffers.
+	void MaxChannelMultiplicity(bool value) { fMaxChannelMult = value; }
+	
+	/// Returns the DDL number the component expects data to be received from.
+	AliHLTInt32_t DDLNumber() const { return fDDL; }
+	
+	/// Sets the DDL number the component expects data to be received from.
+	void DDLNumber(AliHLTInt32_t value) { fDDL = (value & 0x1F); }  // 0x1F forces value into our required range.
 
 private:
 
@@ -133,7 +187,13 @@ private:
 		void OnData(UInt_t dataWord, bool /*parityError*/);
 		void OnNewBusPatch(const AliMUONBusPatchHeaderStruct* header, const void* /*data*/) 
 		{
-			fBusPatchId = int(header->fBusPatchId);
+		  fBusPatchId = int(header->fBusPatchId);
+		  MaxEntryPerBusPatch& maxEntryPerBusPatch 
+		    = * const_cast<MaxEntryPerBusPatch*>(fMaxEntryPerBusPatch);
+		  fIsMuchNoisy = false;
+		  if(AliHLTInt32_t(header->fLength)> maxEntryPerBusPatch[fBusPatchId])
+		    fIsMuchNoisy = true;
+		  
 		};
 		
 		void OnNewBuffer(const void* buffer, UInt_t bufferSize);
@@ -144,6 +204,7 @@ private:
 		void SetLookUpTable(const AliHLTMUONHitRecoLutRow* lookUpTableData) {fLookUpTableData = lookUpTableData;}
 		void SetNofFiredDetElemId(AliHLTInt32_t& nofFiredDetElem) {fNofFiredDetElem = &nofFiredDetElem;}
 		void SetIdManuChannelToEntry(const IdManuChannelToEntry* idToEntry) {fIdToEntry = idToEntry;}
+		void SetMaxEntryPerBusPatch(const MaxEntryPerBusPatch* maxEntryPerBP) {fMaxEntryPerBusPatch = maxEntryPerBP;}
 		void SetMaxFiredPerDetElem(AliHLTInt32_t* maxFiredPerDetElem) {fMaxFiredPerDetElem = maxFiredPerDetElem;}
 		
 		AliHLTInt32_t GetDataCount() {return fDataCount;}
@@ -210,6 +271,7 @@ private:
 		AliHLTInt32_t* fNofFiredDetElem;         // counter for detector elements that are fired 
 		AliHLTInt32_t* fMaxFiredPerDetElem;      // array for detector elements that are fired 
 		const IdManuChannelToEntry* fIdToEntry;  // Mapping between Linenumber to IdManuChannel;
+		const MaxEntryPerBusPatch* fMaxEntryPerBusPatch;   // Maximum allowed entry per Buspatch.
 		
 		AliHLTInt32_t fDataCount;           // Data Counter
 		AliHLTInt32_t fPrevDetElemId;       // previous detection elementId
@@ -223,6 +285,8 @@ private:
 		bool fDontPrintParityErrors;  ///< Flag for controlling if messages about parity errors should be printed.
 		bool fPrintParityErrorAsWarning;  ///< Flag for controlling if parity error messages are printed as warnings.
 		bool fNonParityErrorFound;  ///< Flag which indicates if a non parity error code was found after a decoding pass.
+
+	       bool fIsMuchNoisy;  ///< tag for noisy buspatch.
 	};
 
 	AliMUONTrackerDDLDecoder<AliHLTMUONRawDecoder> fHLTMUONDecoder; // robust HLTMUON Decoder
@@ -240,16 +304,31 @@ private:
 	AliHLTUInt32_t *fRecPointsCount;         // nof reconstructed hit.
 	AliHLTUInt32_t fMaxRecPointsCount;       // max nof reconstructed hit.
 	
+	AliHLTMUONClusterStruct* fClusters;  // Array of output cluster infromation.
+	AliHLTUInt32_t fClusterCount;       // Number of elemenets in fClusters.
+	AliHLTUInt32_t fMaxClusters;        // Maximum number of clusters in fClusters.
+	bool fGenerateClusterInfo;   // Flag indicating if extra cluster information should be generated.
+	AliHLTInt32_t fNewClusterId;  // The ID to use for a new cluster structure.
+	AliHLTInt32_t fDDL;   // The source DDL number of the raw data.
+	
+	AliHLTMUONChannelStruct* fChannels;  // Array of output channel infromation.
+	AliHLTUInt32_t fChannelCount;       // Number of elemenets in fChannels.
+	AliHLTUInt32_t fMaxChannels;        // Maximum number of channels in fChannels.
+	bool fGenerateChannelInfo;   // Flag indicating if extra channel information should be generated.
+	AliHLTUInt32_t fMaxChannelMult;  // Indicates the maximum channel multiplicity per cluster allowed.
+	
 	AliHLTInt32_t fCentralCountB, fCentralCountNB;   // centeral hits.
 	AliHLTInt32_t fDigitPerDDL;                      // Total nof Digits perDDL.
 	
 	AliHLTInt32_t *fCentralChargeB, *fCentralChargeNB;       // pointer to an array of central hit
 	AliHLTFloat32_t *fRecX, *fRecY;                          // pointer to an array of reconstructed hit
 	AliHLTFloat32_t *fAvgChargeX, *fAvgChargeY;              // average charge on central pad found using CG method
+	AliHLTFloat32_t *fTotChargeX, *fTotChargeY;              // Total charge in bending and nonbending direction
 	AliHLTInt32_t *fNofBChannel, *fNofNBChannel;             // number of channels bending and non-bending.
 	AliHLTInt32_t fGetIdTotalData[336][237][2];              // an array of idManuChannel with argument of centralX, centralY and planeType.
 	AliHLTInt32_t fNofFiredDetElem,fMaxFiredPerDetElem[130];  // counter for detector elements that are fired
 	const IdManuChannelToEntry* fIdToEntry;   // Mapping between Linenumber to IdManuChannel (The object is not owned by this component).
+	const MaxEntryPerBusPatch* fMaxEntryPerBusPatch;   // Maximum allowed entry per Buspatch.
 	
 	ERecoveryMode fRecoveryMode;  ///< The recovery mode for the decoder.
 	

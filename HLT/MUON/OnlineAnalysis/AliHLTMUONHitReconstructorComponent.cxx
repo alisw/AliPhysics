@@ -76,6 +76,7 @@ AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent() :
 	fLutSize(0),
 	fLut(NULL),
 	fIdToEntry(),
+	fMaxEntryPerBusPatch(),
 	fWarnForUnexpecedBlock(false),
 	fUseIdealGain(false)
 {
@@ -173,6 +174,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	// Initialise fields with default values then parse the command line.
 	fDDL = -1;
 	fIdToEntry.clear();
+	fMaxEntryPerBusPatch.clear();
 	fWarnForUnexpecedBlock = false;
 	fUseIdealGain = false;
 	const char* lutFileName = NULL;
@@ -182,6 +184,8 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	AliHLTInt32_t dccut = -1;
 	bool skipParityErrors = false;
 	bool dontPrintParityErrors = false;
+	bool makeClusters = false;
+	bool makeChannels = false;
 	
 	for (int i = 0; i < argc; i++)
 	{
@@ -371,6 +375,18 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			fUseIdealGain = true;
 			continue;
 		}
+		
+		if (strcmp( argv[i], "-makeclusters" ) == 0)
+		{
+			makeClusters = true;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-makechannels" ) == 0)
+		{
+			makeChannels = true;
+			continue;
+		}
 	
 		HLTError("Unknown option '%s'", argv[i]);
 		return -EINVAL;
@@ -425,7 +441,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 				FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 				return result;
 			}
-			fHitRec->SetLookUpTable(fLut, &fIdToEntry);
+			fHitRec->SetLookUpTable(fLut, &fIdToEntry, &fMaxEntryPerBusPatch);
 		}
 	}
 	else
@@ -438,7 +454,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 			FreeMemory(); // Make sure we cleanup to avoid partial initialisation.
 			return result;
 		}
-		fHitRec->SetLookUpTable(fLut, &fIdToEntry);
+		fHitRec->SetLookUpTable(fLut, &fIdToEntry, &fMaxEntryPerBusPatch);
 	}
 	
 	if (dccut == -1)
@@ -472,6 +488,9 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	fHitRec->TryRecover(recoveryMode);
 	fHitRec->SkipParityErrors(skipParityErrors);
 	fHitRec->DontPrintParityErrors(dontPrintParityErrors);
+	fHitRec->GenerateClusterInfo(makeClusters);
+	fHitRec->GenerateChannelInfo(makeChannels);
+	fHitRec->DDLNumber(fDDL);
 	HLTDebug("dHLT hit reconstruction component is initialized.");
 	return 0;
 }
@@ -520,10 +539,10 @@ int AliHLTMUONHitReconstructorComponent::Reconfigure(
 		}
 		
 		fIdToEntry.clear();
-	
+		fMaxEntryPerBusPatch.clear();	
 		int result = ReadLutFromCDB();
 		if (result != 0) return result;
-		fHitRec->SetLookUpTable(fLut, &fIdToEntry);
+		fHitRec->SetLookUpTable(fLut, &fIdToEntry, &fMaxEntryPerBusPatch);
 	}
 	
 	if (cdbEntry == NULL or not startsWithMUON)
@@ -618,7 +637,7 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 			int result = ReadLutFromCDB();
 			if (result != 0) return result;
 			
-			fHitRec->SetLookUpTable(fLut, &fIdToEntry);
+			fHitRec->SetLookUpTable(fLut, &fIdToEntry, &fMaxEntryPerBusPatch);
 		}
 		
 		// Check that the DC cut was not already loaded in DoInit.
@@ -740,6 +759,88 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 
 		// Increase the total amount of data written so far to our output memory
 		totalSize += block.BytesUsed();
+		
+		if (fHitRec->GenerateClusterInfo())
+		{
+			// Create a new output clusters data block and initialise the header.
+			AliHLTMUONClustersBlockWriter clustblock(outputPtr+totalSize, size-totalSize);
+			if (not clustblock.InitCommonHeader())
+			{
+				HLTError("There is not enough space in the output buffer for the new clusters data block."
+					" We require at least %u bytes, but have %u bytes left.",
+					sizeof(AliHLTMUONClustersBlockWriter::HeaderType),
+					clustblock.BufferSize()
+				);
+				break;
+			}
+			
+			AliHLTUInt32_t nofClusters = clustblock.MaxNumberOfEntries();
+			bool filledOk = fHitRec->FillClusterData(clustblock.GetArray(), nofClusters);
+			// nofClusters should now contain the number of clusters filled.
+			assert( nofClusters <= clustblock.MaxNumberOfEntries() );
+			clustblock.SetNumberOfEntries(nofClusters);
+			
+			// Fill a block data structure for our output block.
+			AliHLTComponentBlockData bdc;
+			FillBlockData(bdc);
+			bdc.fPtr = outputPtr;
+			// This block's start (offset) is after all other blocks written so far.
+			bdc.fOffset = totalSize;
+			bdc.fSize = clustblock.BytesUsed();
+			bdc.fDataType = AliHLTMUONConstants::ClusterBlockDataType();
+			bdc.fSpecification = blocks[n].fSpecification;
+			outputBlocks.push_back(bdc);
+	
+			// Increase the total amount of data written so far to our output memory
+			totalSize += clustblock.BytesUsed();
+			
+			if (not filledOk)
+			{
+				HLTError("We have overflowed the output buffer space for the new clusters data block.");
+				break;
+			}
+		}
+		
+		if (fHitRec->GenerateChannelInfo())
+		{
+			// Create a new output channels data block and initialise the header.
+			AliHLTMUONChannelsBlockWriter channelblock(outputPtr+totalSize, size-totalSize);
+			if (not channelblock.InitCommonHeader())
+			{
+				HLTError("There is not enough space in the output buffer for the new channels data block."
+					" We require at least %u bytes, but have %u bytes left.",
+					sizeof(AliHLTMUONChannelsBlockWriter::HeaderType),
+					channelblock.BufferSize()
+				);
+				break;
+			}
+			
+			AliHLTUInt32_t nofChannels = channelblock.MaxNumberOfEntries();
+			bool filledOk = fHitRec->FillChannelData(channelblock.GetArray(), nofChannels);
+			// nofChannels should now contain the number of channels filled.
+			assert( nofChannels <= channelblock.MaxNumberOfEntries() );
+			channelblock.SetNumberOfEntries(nofChannels);
+			
+			// Fill a block data structure for our output block.
+			AliHLTComponentBlockData bdc;
+			FillBlockData(bdc);
+			bdc.fPtr = outputPtr;
+			// This block's start (offset) is after all other blocks written so far.
+			bdc.fOffset = totalSize;
+			bdc.fSize = channelblock.BytesUsed();
+			bdc.fDataType = AliHLTMUONConstants::ChannelBlockDataType();
+			bdc.fSpecification = blocks[n].fSpecification;
+			outputBlocks.push_back(bdc);
+	
+			// Increase the total amount of data written so far to our output memory
+			totalSize += channelblock.BytesUsed();
+			
+			if (not filledOk)
+			{
+				HLTError("We have overflowed the output buffer space for the new channels data block.");
+				break;
+			}
+		}
 	}
 	// Finally we set the total size of output memory we consumed.
 	size = totalSize;
@@ -768,6 +869,7 @@ void AliHLTMUONHitReconstructorComponent::FreeMemory()
 	}
 	
 	fIdToEntry.clear();
+	fMaxEntryPerBusPatch.clear();
 }
 
 
@@ -780,6 +882,7 @@ int AliHLTMUONHitReconstructorComponent::ReadLookUpTable(const char* lutFileName
 	assert( fLut == NULL );
 	assert( fLutSize == 0 );
 	assert( fIdToEntry.empty() );
+	assert( fMaxEntryPerBusPatch.empty() );
 	
 	std::ifstream file(lutFileName);
 	if (not file.good())
@@ -844,7 +947,7 @@ int AliHLTMUONHitReconstructorComponent::ReadLookUpTable(const char* lutFileName
 		return -EIO;
 	}
 	
-	AliHLTInt32_t idManuChannel;
+	AliHLTInt32_t idManuChannel,buspatchId;
 	for (AliHLTUInt32_t i = 1; i < fLutSize; i++)
 	{
 		if (std::getline(file, str).fail())
@@ -868,8 +971,18 @@ int AliHLTMUONHitReconstructorComponent::ReadLookUpTable(const char* lutFileName
 			HLTError("Line %d in LUT file %s does not contain 15 elements.", i, lutFileName);
 			return -EIO;
 		}
-		
+		buspatchId = (idManuChannel>>17) & 0x7FF;
 		fIdToEntry[idManuChannel] = i;
+		fMaxEntryPerBusPatch[buspatchId] = fMaxEntryPerBusPatch[buspatchId] + 1;  
+		
+	}
+
+	MaxEntryPerBusPatch::iterator it;
+	for(it=fMaxEntryPerBusPatch.begin();it!=fMaxEntryPerBusPatch.end();it++){
+	  HLTDebug("fMaxEntryPerBusPatch[%d] : %d",it->first,it->second);
+	  fMaxEntryPerBusPatch[it->first] = AliHLTInt32_t(0.05*(it->second));///< for 10% occupancy 
+	  HLTDebug("fMaxEntryPerBusPatch[%d] : %d",it->first,it->second);
+	  
 	}
 	
 	return 0;
@@ -886,6 +999,7 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 	assert( fLut == NULL );
 	assert( fLutSize == 0 );
 	assert( fIdToEntry.empty() );
+	assert( fMaxEntryPerBusPatch.empty() );
 	
 	if (fDDL == -1)
 	{
@@ -1043,7 +1157,8 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 						halfPadSize = padSizeY;
 					
 					fIdToEntry[idManuChannel] = iEntry+1;
-			
+					fMaxEntryPerBusPatch[buspatchId] = fMaxEntryPerBusPatch[buspatchId] + 1;  
+					
 					lut.fDetElemId = detElemId;
 					lut.fIX = iX;
 					lut.fIY = iY;
@@ -1103,7 +1218,15 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 	
 	for (AliHLTUInt32_t i = 0; i < iEntry; i++)
 		fLut[i+1] = lutList[i];
-	
+	lutList.clear();
+
+	MaxEntryPerBusPatch::iterator it;
+	for(it=fMaxEntryPerBusPatch.begin();it!=fMaxEntryPerBusPatch.end();it++){
+	  HLTDebug("fMaxEntryPerBusPatch[%d] : %d",it->first,it->second);
+	  fMaxEntryPerBusPatch[it->first] = AliHLTInt32_t(0.05*(it->second));///< for 10% occupancy 
+	  HLTDebug("fMaxEntryPerBusPatch[%d] : %d",it->first,it->second);
+	}
+
 	return 0;
 }
 

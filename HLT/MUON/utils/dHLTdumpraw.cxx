@@ -1524,8 +1524,12 @@ int DumpClusterStruct(
 	cout << "Detector Element ID: " << cluster->fDetElemId << endl;
 
 	result = CheckField(cluster->fNchannels, buffer, bufferSize, continueParse);
-	if(result != EXIT_SUCCESS) return result;
+	if (result != EXIT_SUCCESS) return result;
 	cout << " Number of channels: " << cluster->fNchannels << endl;
+	
+	result = CheckField(cluster->fCharge, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "       Total charge: " << cluster->fCharge << endl;
 
 	cout << "Corresponding Hit: "<< endl;
 	cout << "Chamber | DetElemID | X (cm)     | Y (cm)     | Z (cm)" << endl;
@@ -1553,8 +1557,8 @@ int DumpClustersBlock(
 	const AliHLTMUONClusterStruct* entry = block.GetArray();
 	for(AliHLTUInt32_t i = 0; i < nentries; i++)
 	{
-		cout << " ===================================================== Cluster Number "
-			<< i+1 << "==================================================" << endl; 
+		cout << "===================================================== Cluster Number "
+			<< i+1 << " ==================================================" << endl;
 		int subResult = DumpClusterStruct(buffer, bufferSize, entry++, continueParse);
 		if (subResult != EXIT_SUCCESS) return subResult;
 	}	

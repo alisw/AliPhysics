@@ -19,7 +19,7 @@
  * @file   AliHLTMUONRecHitsBlockStruct.h
  * @author Indranil Das <indra.das@saha.ac.in>,
  *         Artur Szostak <artursz@iafrica.com>
- * @date   
+ * @date   17 May 2007
  * @brief  Implementation of useful stream and comparison operators.
  */
 

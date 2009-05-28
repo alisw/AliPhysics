@@ -9,7 +9,7 @@
  * @file   AliHLTMUONRecHitsBlockStruct.h
  * @author Indranil Das <indra.das@saha.ac.in>,
  *         Artur Szostak <artursz@iafrica.com>
- * @date   
+ * @date   17 May 2007
  * @brief  Definition of internal dimuon HLT reconstructed hit data block structure.
  * 
  * The structures are defined with C linkage since C generally gives us more
