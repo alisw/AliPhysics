@@ -20,6 +20,7 @@ class TList ;
 
 // --- ANALYSIS system ---
 #include "AliAnaPartCorrBaseClass.h"
+class AliAODPWG4Particle;
 class AliAODPWG4ParticleCorrelation ;
 
 
