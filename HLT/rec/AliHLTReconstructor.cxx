@@ -33,15 +33,16 @@
 #include "AliHLTOUTRawReader.h"
 #include "AliHLTOUTDigitReader.h"
 #include "AliHLTEsdManager.h"
+#include "AliHLTPluginBase.h"
 
 ClassImp(AliHLTReconstructor)
 
 AliHLTReconstructor::AliHLTReconstructor()
   : 
   AliReconstructor(),
-  AliHLTPluginBase(),
   fFctProcessHLTOUT(NULL),
-  fpEsdManager(NULL)
+  fpEsdManager(NULL),
+  fpPluginBase(new AliHLTPluginBase)
 { 
   //constructor
 }
@@ -49,9 +50,9 @@ AliHLTReconstructor::AliHLTReconstructor()
 AliHLTReconstructor::AliHLTReconstructor(const char* options)
   : 
   AliReconstructor(),
-  AliHLTPluginBase(),
   fFctProcessHLTOUT(NULL),
-  fpEsdManager(NULL)
+  fpEsdManager(NULL),
+  fpPluginBase(new AliHLTPluginBase)
 { 
   //constructor
   if (options) Init(options);
@@ -61,14 +62,18 @@ AliHLTReconstructor::~AliHLTReconstructor()
 { 
   //destructor
 
-  AliHLTSystem* pSystem=GetInstance();
+  if (fpPluginBase) {
+  AliHLTSystem* pSystem=fpPluginBase->GetInstance();
   if (pSystem) {
-    AliDebug(0, Form("delete HLT system: status %#x", pSystem->GetStatusFlags()));
+    AliDebug(0, Form("terminate HLT system: status %#x", pSystem->GetStatusFlags()));
     if (pSystem->CheckStatus(AliHLTSystem::kStarted)) {
       // send specific 'event' to execute the stop sequence
       pSystem->Reconstruct(0, NULL, NULL);
     }
   }
+  delete fpPluginBase;
+  }
+  fpPluginBase=NULL;
 
   if (fpEsdManager) AliHLTEsdManager::Delete(fpEsdManager);
   fpEsdManager=NULL;
@@ -84,7 +89,12 @@ void AliHLTReconstructor::Init(const char* options)
 void AliHLTReconstructor::Init()
 {
   // init the reconstructor
-  AliHLTSystem* pSystem=GetInstance();
+  if (!fpPluginBase) {
+    AliError("internal memory error: can not get AliHLTSystem instance from plugin");
+    return;
+  }
+
+  AliHLTSystem* pSystem=fpPluginBase->GetInstance();
   if (!pSystem) {
     AliError("can not create AliHLTSystem object");
     return;
@@ -168,8 +178,13 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
   // For each event, HLT reconstruction chains can be executed and
   // added to the existing HLTOUT data
   // The HLTOUT data is finally processed in FillESD
+  if (!fpPluginBase) {
+    AliError("internal memory error: can not get AliHLTSystem instance from plugin");
+    return;
+  }
+
   int iResult=0;
-  AliHLTSystem* pSystem=GetInstance();
+  AliHLTSystem* pSystem=fpPluginBase->GetInstance();
 
   if (pSystem) {
     if (pSystem->CheckStatus(AliHLTSystem::kError)) {
@@ -194,7 +209,12 @@ void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree
     return;
   }
 
-  AliHLTSystem* pSystem=GetInstance();
+  if (!fpPluginBase) {
+    AliError("internal memory error: can not get AliHLTSystem instance from plugin");
+    return;
+  }
+
+  AliHLTSystem* pSystem=fpPluginBase->GetInstance();
 
   if (pSystem) {
     if (pSystem->CheckStatus(AliHLTSystem::kError)) {
@@ -250,7 +270,12 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
 		    "        sim.Run();\n"
 		    "        /*********************************************************/", option.Data()));
   }
-  AliHLTSystem* pSystem=GetInstance();
+  if (!fpPluginBase) {
+    AliError("internal memory error: can not get AliHLTSystem instance from plugin");
+    return;
+  }
+
+  AliHLTSystem* pSystem=fpPluginBase->GetInstance();
   if (pSystem) {
     if (pSystem->CheckStatus(AliHLTSystem::kError)) {
       AliError("HLT system in error state");
@@ -275,7 +300,12 @@ void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd, bo
 {
   // treatment of simulated or real HLTOUT data
   if (!pHLTOUT) return;
-  AliHLTSystem* pSystem=GetInstance();
+  if (!fpPluginBase) {
+    AliError("internal memory error: can not get AliHLTSystem instance from plugin");
+    return;
+  }
+
+  AliHLTSystem* pSystem=fpPluginBase->GetInstance();
   if (!pSystem) {
     AliError("error getting HLT system instance");
     return;

@@ -13,13 +13,13 @@
 */
 
 #include "AliReconstructor.h"
-#include "AliHLTPluginBase.h"
 
 class AliHLTSystem;
 class AliRawReader;
 class AliESDEvent;
 class AliHLTOUT;
 class AliHLTEsdManager;
+class AliHLTPluginBase;
 /**
  * @defgroup alihlt_aliroot_reconstruction AliRoot reconstruction.
  *
@@ -190,7 +190,7 @@ class AliHLTEsdManager;
  * @ingroup alihlt_aliroot_reconstruction
  * @section sec_alihltreconstructor_members Class members
  */
-class AliHLTReconstructor: public AliReconstructor, public AliHLTPluginBase {
+class AliHLTReconstructor: public AliReconstructor {
 public:
   /** standard constructor */
   AliHLTReconstructor();
@@ -288,7 +288,10 @@ private:
   /** ESD manger instance for this reconstruction */
   AliHLTEsdManager* fpEsdManager; //!transient
 
-  ClassDef(AliHLTReconstructor, 5)   // class for the HLT reconstruction
+  /** base class for AliRoot HLT plugins */
+  AliHLTPluginBase* fpPluginBase;                                     //!transient
+
+  ClassDef(AliHLTReconstructor, 6)   // class for the HLT reconstruction
 
 };
 

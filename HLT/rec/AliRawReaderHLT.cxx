@@ -34,6 +34,7 @@
 #include "AliHLTOUTHandler.h"
 #include "AliHLTOUTHandlerEquId.h"
 #include "AliHLTSystem.h"
+#include "AliHLTPluginBase.h"
 #include "AliLog.h"
 #include "AliDAQ.h"            // RAW, for detector names and equipment ids
 #include "TObjString.h"
@@ -45,7 +46,6 @@ ClassImp(AliRawReaderHLT)
 AliRawReaderHLT::AliRawReaderHLT(AliRawReader* pRawreader, const char* options)
   :
   AliRawReader(),
-  AliHLTPluginBase(),
   fpParentReader(pRawreader),
   fOptions(),
   fSystemOptions(),
@@ -58,7 +58,8 @@ AliRawReaderHLT::AliRawReaderHLT(AliRawReader* pRawreader, const char* options)
   fDetectors(),
   fpHLTOUT(NULL),
   fbReadFirst(true),
-  fpDataHandler(NULL)
+  fpDataHandler(NULL),
+  fpPluginBase(new AliHLTPluginBase)
 {
   // see header file for class documentation
   // or
@@ -73,6 +74,8 @@ AliRawReaderHLT::~AliRawReaderHLT()
 {
   // see header file for class documentation
   ReleaseHLTData();
+  if (fpPluginBase) delete fpPluginBase;
+  fpPluginBase=NULL;
 }
 
 UInt_t AliRawReaderHLT::GetType() const
@@ -462,7 +465,11 @@ Bool_t   AliRawReaderHLT::ReadNextHLTData()
     if (!fpHLTOUT) {
     fpHLTOUT=new AliHLTOUTRawReader(fpParentReader);
     if ((result=(fpHLTOUT!=NULL))) {
-      AliHLTSystem* pSystem=GetInstance();
+      if (!fpPluginBase) {
+	AliFatal("internal data error: can not get AliHLTSystem instance from plugin");
+	return false;
+      }
+      AliHLTSystem* pSystem=fpPluginBase->GetInstance();
       if (pSystem) {
 	pSystem->ScanOptions(fSystemOptions.Data());
       }
