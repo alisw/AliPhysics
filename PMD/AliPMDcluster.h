@@ -21,7 +21,7 @@ class AliPMDcluster : public TObject
   AliPMDcluster();
   AliPMDcluster(Int_t idet, Int_t ismn, Float_t *clusdata,
 		Int_t *celldataX, Int_t *celldataY,
-		Int_t *celltrack, Int_t *cellpid);
+		Int_t *celltrack, Int_t *cellpid, Float_t *celladc);
   AliPMDcluster(AliPMDcluster *pmdcluster);
   AliPMDcluster (const AliPMDcluster &pmdcluster);  // copy constructor
   AliPMDcluster &operator=(const AliPMDcluster &pmdcluster); // assignment op
@@ -40,6 +40,7 @@ class AliPMDcluster : public TObject
   Int_t   GetClusCellY(Int_t i) const;
   Int_t   GetClusCellTrack(Int_t i) const;
   Int_t   GetClusCellPid(Int_t i) const;
+  Float_t GetClusCellAdc(Int_t i) const;
 
  protected:
 
@@ -49,7 +50,7 @@ class AliPMDcluster : public TObject
   Int_t   fClusCellDataY[19]; // Array containing cell Y
   Int_t   fClusCellTrack[19]; // Array containing cell track no
   Int_t   fClusCellPid[19];   // Array containing cell pid
-
+  Float_t fClusCellAdc[19];   // Array containing cell adc
   Float_t fClusData[6];       // Array containing cluster information
 
   /*
@@ -59,7 +60,7 @@ class AliPMDcluster : public TObject
     fClusData[4] : Cluster SigmaX    , fClusData[5] : Cluster SigmaY
   */
   
-  ClassDef(AliPMDcluster,5) // Keep Cluster information
+  ClassDef(AliPMDcluster,6) // Keep Cluster information
 };
 
 #endif

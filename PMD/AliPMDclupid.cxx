@@ -29,21 +29,28 @@ ClassImp(AliPMDclupid)
 
 AliPMDclupid::AliPMDclupid():
   fDet(0),
-  fSMN(0)
+  fSMN(0),
+  fTrNo(0),
+  fTrPid(0),
+  fMstatus(0)
 {
   // Default constructor
-  for (Int_t i = 0; i < 6; i++)
+  for (Int_t i = 0; i < 7; i++)
     {
       fClusData[i] = 0.;
     }
 }
 // ------------------------------------------------------------------ //
-AliPMDclupid::AliPMDclupid(Int_t idet, Int_t ismn, Float_t *clusdata):
+AliPMDclupid::AliPMDclupid(Int_t idet, Int_t ismn, Int_t trno, Int_t trpid,
+			   Int_t mstat, Float_t *clusdata):
   fDet(idet),
-  fSMN(ismn)
+  fSMN(ismn),
+  fTrNo(trno),
+  fTrPid(trpid),
+  fMstatus(mstat)
 {
   // Constructor
-  for (Int_t i = 0; i < 6; i++)
+  for (Int_t i = 0; i < 7; i++)
     {
       fClusData[i] = clusdata[i];
     }
@@ -51,7 +58,10 @@ AliPMDclupid::AliPMDclupid(Int_t idet, Int_t ismn, Float_t *clusdata):
 // ------------------------------------------------------------------ //
 AliPMDclupid::AliPMDclupid(AliPMDclupid *pmdclupid):
   fDet(0),
-  fSMN(0)
+  fSMN(0),
+  fTrNo(0),
+  fTrPid(0),
+  fMstatus(0)
 {
   *this = *pmdclupid;
 }
@@ -60,10 +70,13 @@ AliPMDclupid::AliPMDclupid(AliPMDclupid *pmdclupid):
 AliPMDclupid::AliPMDclupid(const AliPMDclupid &pmdclupid):
   TObject(pmdclupid),
   fDet(pmdclupid.fDet),
-  fSMN(pmdclupid.fSMN)
+  fSMN(pmdclupid.fSMN),
+  fTrNo(pmdclupid.fTrNo),
+  fTrPid(pmdclupid.fTrPid),
+  fMstatus(pmdclupid.fMstatus)
 {
   //Copy Constructor 
-  for(Int_t i=0; i<6; i++)
+  for(Int_t i=0; i<7; i++)
     {
       fClusData[i] = pmdclupid.fClusData[i];
     }
@@ -74,9 +87,12 @@ AliPMDclupid & AliPMDclupid::operator=(const AliPMDclupid &pmdclupid)
   // Assignment operator 
   if(this != &pmdclupid)
     {
-      fDet = pmdclupid.fDet;
-      fSMN = pmdclupid.fSMN;
-      for(Int_t i=0; i<6; i++)
+      fDet     = pmdclupid.fDet;
+      fSMN     = pmdclupid.fSMN;
+      fTrNo    = pmdclupid.fTrNo;
+      fTrPid   = pmdclupid.fTrPid;
+      fMstatus = pmdclupid.fMstatus;
+      for(Int_t i=0; i<7; i++)
 	{
 	  fClusData[i] = pmdclupid.fClusData[i];
 	}
@@ -99,6 +115,21 @@ Int_t AliPMDclupid::GetSMN() const
   return fSMN;
 }
 // ------------------------------------------------------------------ //
+Int_t AliPMDclupid::GetClusTrackNo() const
+{
+  return fTrNo;
+}
+// ------------------------------------------------------------------ //
+Int_t AliPMDclupid::GetClusTrackPid() const
+{
+  return fTrPid;
+}
+// ------------------------------------------------------------------ //
+Int_t AliPMDclupid::GetClusMatching() const
+{
+  return fMstatus;
+}
+// ------------------------------------------------------------------ //
 Float_t AliPMDclupid::GetClusX() const
 {
   return fClusData[0];
@@ -119,14 +150,19 @@ Float_t AliPMDclupid::GetClusCells() const
   return fClusData[3];
 }
 // ------------------------------------------------------------------ //
-Float_t AliPMDclupid::GetClusRadius() const
+Float_t AliPMDclupid::GetClusSigmaX() const
 {
   return fClusData[4];
 }
 // ------------------------------------------------------------------ //
-Float_t AliPMDclupid::GetClusPID() const
+Float_t AliPMDclupid::GetClusSigmaY() const
 {
   return fClusData[5];
+}
+// ------------------------------------------------------------------ //
+Float_t AliPMDclupid::GetClusPID() const
+{
+  return fClusData[6];
 }
 
 

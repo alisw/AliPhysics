@@ -39,7 +39,7 @@ class AliPMDClusterFinder : public TObject
   void SetCellEdepCut(Float_t ecut);
   void AddRecPoint(Int_t idet, Int_t ismn, Float_t * clusdata);
   void AddRecHit(Int_t celldataX, Int_t celldataY, Int_t celldataTr,
-		 Int_t celldataPid);
+		 Int_t celldataPid, Float_t celldataAdc);
   void ResetCellADC();
   void ResetRecpoint();
   void ResetRechit();
@@ -76,7 +76,7 @@ class AliPMDClusterFinder : public TObject
   Int_t    fCellTrack[fgkRow][fgkCol]; // Array containing individual cell tr
   Int_t    fCellPid[fgkRow][fgkCol]; // Array containing individual cell pid
 
-  ClassDef(AliPMDClusterFinder,13) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,14) // To run PMD clustering
 };
 #endif
 

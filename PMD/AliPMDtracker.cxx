@@ -35,6 +35,8 @@
 #include "AliPMDcluster.h"
 #include "AliPMDclupid.h"
 #include "AliPMDrecpoint1.h"
+#include "AliPMDrecdata.h"
+#include "AliPMDrechit.h"
 #include "AliPMDUtility.h"
 #include "AliPMDDiscriminator.h"
 #include "AliPMDEmpDiscriminator.h"
@@ -49,6 +51,7 @@ ClassImp(AliPMDtracker)
 AliPMDtracker::AliPMDtracker():
   fTreeR(0),
   fRecpoints(new TClonesArray("AliPMDrecpoint1", 10)),
+  fRechits(new TClonesArray("AliPMDrechit", 10)),
   fPMDcontin(new TObjArray()),
   fPMDcontout(new TObjArray()),
   fPMDutil(new AliPMDUtility()),
@@ -71,6 +74,7 @@ AliPMDtracker:: AliPMDtracker(const AliPMDtracker & /* tracker */):
   TObject(/* tracker */),
   fTreeR(0),
   fRecpoints(NULL),
+  fRechits(NULL),
   fPMDcontin(NULL),
   fPMDcontout(NULL),
   fPMDutil(NULL),
@@ -104,6 +108,11 @@ AliPMDtracker::~AliPMDtracker()
     {
       fRecpoints->Clear();
     }
+  if (fRechits)
+    {
+      fRechits->Clear();
+    }
+
   if (fPMDcontin)
     {
       fPMDcontin->Delete();
@@ -135,7 +144,16 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 
   Int_t   idet;
   Int_t   ismn;
+  Int_t   trackno, trackpid;
   Float_t clusdata[6];
+  
+  Int_t *irow;
+  Int_t *icol;
+  Int_t *itra;
+  Int_t *ipid;
+  Float_t *cadc;
+
+  AliPMDrechit *rechit = 0x0;
 
   TBranch *branch = fTreeR->GetBranch("PMDRecpoint");
   if (!branch)
@@ -144,6 +162,14 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
       return;
     }
   branch->SetAddress(&fRecpoints);  
+
+  TBranch *branch1 = fTreeR->GetBranch("PMDRechit");
+  if (!branch1)
+    {
+      AliError("PMDRechit branch not found");
+      return;
+    }
+  branch1->SetAddress(&fRechits);  
   
   Int_t   nmodules = (Int_t) branch->GetEntries();
   
@@ -154,6 +180,9 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
       Int_t nentries = fRecpoints->GetLast();
       AliDebug(2,Form("Number of clusters per modules filled in treeR = %d"
 		      ,nentries));
+
+      Int_t ncrhit = 0;
+
       for(Int_t ient = 0; ient < nentries+1; ient++)
 	{
 	  fPMDrecpoint = (AliPMDrecpoint1*)fRecpoints->UncheckedAt(ient);
@@ -168,8 +197,38 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 	  
 	  if (clusdata[4] != -99. && clusdata[5] != -99.)
 	    { 
-	      fPMDclin = new AliPMDrecpoint1(idet,ismn,clusdata);
+	      // extract the associated cell information
+	      branch1->GetEntry(ncrhit); 
+	      Int_t nenbr1 = fRechits->GetLast() + 1;
+
+	      irow = new Int_t[nenbr1];
+	      icol = new Int_t[nenbr1];
+	      itra = new Int_t[nenbr1];
+	      ipid = new Int_t[nenbr1];
+	      cadc = new Float_t[nenbr1];
+
+	      for (Int_t ient1 = 0; ient1 < nenbr1; ient1++)
+		{
+		  rechit = (AliPMDrechit*)fRechits->UncheckedAt(ient1);
+		  //irow[ient1] = rechit->GetCellX();
+		  //icol[ient1] = rechit->GetCellY();
+		  itra[ient1] = rechit->GetCellTrack();
+		  ipid[ient1] = rechit->GetCellPid();
+		  cadc[ient1] = rechit->GetCellAdc();
+		}
+	      AssignTrPidToCluster(nenbr1, itra, ipid, cadc,
+				   trackno, trackpid);
+
+	      delete [] irow;
+	      delete [] icol;
+	      delete [] itra;
+	      delete [] ipid;
+	      delete [] cadc;
+
+	      fPMDclin = new AliPMDrecdata(idet,ismn,trackno,trackpid,clusdata);
 	      fPMDcontin->Add(fPMDclin);
+
+	      ncrhit++;
 	    }
 	}
     }
@@ -179,9 +238,9 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 
   const Float_t kzpos = 361.5;    // middle of the PMD
 
-  Int_t   det,smn;
+  Int_t   det,smn,trno,trpid,mstat;
   Float_t xpos,ypos;
-  Float_t adc, ncell, rad;
+  Float_t adc, ncell, radx, rady;
   Float_t xglobal = 0., yglobal = 0., zglobal = 0;
   Float_t pid;
 
@@ -195,11 +254,15 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
       
       det   = fPMDclout->GetDetector();
       smn   = fPMDclout->GetSMN();
+      trno  = fPMDclout->GetClusTrackNo();
+      trpid = fPMDclout->GetClusTrackPid();
+      mstat = fPMDclout->GetClusMatching();
       xpos  = fPMDclout->GetClusX();
       ypos  = fPMDclout->GetClusY();
       adc   = fPMDclout->GetClusADC();
       ncell = fPMDclout->GetClusCells();
-      rad   = fPMDclout->GetClusRadius();
+      radx  = fPMDclout->GetClusSigmaX();
+      rady  = fPMDclout->GetClusSigmaY();
       pid   = fPMDclout->GetClusPID();
       
       //
@@ -244,6 +307,76 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 
   fPMDcontin->Delete();
   fPMDcontout->Delete();
+
+}
+//--------------------------------------------------------------------//
+void AliPMDtracker::AssignTrPidToCluster(Int_t nentry, Int_t *itra,
+					 Int_t *ipid, Float_t *cadc,
+					 Int_t &trackno, Int_t &trackpid)
+{
+  // assign the track number and the corresponding pid to a cluster
+  // split cluster part will be done at the time of calculating eff/pur
+
+  Int_t *phentry = new Int_t [nentry];
+  Int_t *trenergy = 0x0;
+  Int_t *sortcoord = 0x0;
+
+  Int_t ngtrack = 0;
+  for (Int_t i = 0; i < nentry; i++)
+    {
+      phentry[i] = -1;
+      if (ipid[i] == 22)
+	{
+	  phentry[ngtrack] = i;
+	  ngtrack++;
+	}
+    }
+
+  if (ngtrack == 0)
+    {
+      // hadron track
+      // no need of track number, set to -1
+      trackpid = 8;
+      trackno  = -1;
+    }
+  else if (ngtrack == 1)
+    {
+      // only one photon track
+      // track number set to photon track
+      trackpid = 1;
+      trackno  = itra[phentry[0]];
+    }
+  else if (ngtrack > 1)
+    {
+      // more than one photon track
+
+      trenergy  = new Int_t [ngtrack];
+      sortcoord = new Int_t [ngtrack];
+      for (Int_t i = 0; i < ngtrack; i++)
+	{
+	  trenergy[i] = 0.;
+	  for (Int_t j = 0; j < nentry; j++)
+	    {
+	      if (ipid[j] == 22 && itra[j] == itra[phentry[i]])
+		{
+		  trenergy[i] += cadc[j];
+		}
+	    }
+	}
+
+      Bool_t jsort = true;
+      TMath::Sort(ngtrack,trenergy,sortcoord,jsort);
+
+      Int_t gtr = sortcoord[0];   
+      trackno  = itra[phentry[gtr]];   // highest adc track
+      trackpid = 1;
+
+      delete [] trenergy;
+      delete [] sortcoord;
+
+    }   // end of ngtrack > 1
+
+
 
 }
 //--------------------------------------------------------------------//

@@ -113,6 +113,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
   Int_t    i,  j, nmx1, incr, id, jd;
   Int_t    celldataX[kNmaxCell], celldataY[kNmaxCell];
   Int_t    celldataTr[kNmaxCell], celldataPid[kNmaxCell];
+  Float_t  celldataAdc[kNmaxCell];
   Float_t  clusdata[6];
   Double_t cutoff, ave;
   Double_t edepcell[kNMX];
@@ -273,16 +274,18 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
 	    {
 	      celldataTr[ihit]  = celltrack[irow][icol];
 	      celldataPid[ihit] = cellpid[irow][icol];
+	      celldataAdc[ihit] = (Float_t) celladc[irow][icol];
 	    }
 	  else
 	    {
-	      celldataTr[ihit] = -1;
+	      celldataTr[ihit]  = -1;
 	      celldataPid[ihit] = -1;
+	      celldataAdc[ihit] = -1;
 	    }
 	}
 
       pmdcl = new AliPMDcluster(idet, ismn, clusdata, celldataX, celldataY,
-				celldataTr, celldataPid);
+				celldataTr, celldataPid, celldataAdc);
       pmdcont->Add(pmdcl);
     }
   

@@ -18,6 +18,8 @@ class TTree;
 class AliPMDcluster;
 class AliPMDclupid;
 class AliPMDrecpoint1;
+class AliPMDrecdata;
+class AliPMDrechit;
 class AliPMDUtility;
 class AliPMDDiscriminator;
 
@@ -36,6 +38,9 @@ class AliPMDtracker:public TObject
 
   void LoadClusters(TTree *treein);
   void Clusters2Tracks(AliESDEvent *event);
+  void AssignTrPidToCluster(Int_t nentry, Int_t *itra, Int_t *ipid,
+			    Float_t *cadc, Int_t &trackno, Int_t &trackpid);
+
   void SetVertex(Double_t vtx[3], Double_t evtx[3]);
   void ResetClusters();
 
@@ -43,12 +48,13 @@ class AliPMDtracker:public TObject
 
   TTree        *fTreeR;     // Reconstructed points
   TClonesArray *fRecpoints; // List of reconstructed points
+  TClonesArray *fRechits;   // List of cells associated with a cluster
   TObjArray    *fPMDcontin;
   TObjArray    *fPMDcontout;
 
   AliPMDUtility       *fPMDutil;
   AliPMDrecpoint1     *fPMDrecpoint;
-  AliPMDrecpoint1     *fPMDclin;
+  AliPMDrecdata       *fPMDclin;
   AliPMDclupid        *fPMDclout;
 
   Double_t fXvertex;        // X-vertex position
@@ -58,7 +64,7 @@ class AliPMDtracker:public TObject
   Double_t fSigmaY;         // Y-vertex error
   Double_t fSigmaZ;         // Z-vertex error
 
-  ClassDef(AliPMDtracker,4) // To run PMD clustering
+  ClassDef(AliPMDtracker,5) // To run PMD clustering
 };
 #endif
 

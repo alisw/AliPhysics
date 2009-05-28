@@ -41,13 +41,15 @@ AliPMDcluster::AliPMDcluster():
       fClusCellDataY[i] = 0;
       fClusCellTrack[i] = -1;
       fClusCellPid[i]   = -1;
+      fClusCellAdc[i]   = 0;
     }
 
 }
 // --------------------------------------------------------------------- //
 AliPMDcluster::AliPMDcluster(Int_t idet, Int_t ismn, Float_t *clusdata,
 			     Int_t *celldataX, Int_t *celldataY,
-			     Int_t *celltrack, Int_t *cellpid):
+			     Int_t *celltrack, Int_t *cellpid,
+			     Float_t *celladc):
   fDet(idet),
   fSMN(ismn)
 {
@@ -62,6 +64,7 @@ AliPMDcluster::AliPMDcluster(Int_t idet, Int_t ismn, Float_t *clusdata,
       fClusCellDataY[i] = celldataY[i];
       fClusCellTrack[i] = celltrack[i];
       fClusCellPid[i]   = cellpid[i];
+      fClusCellAdc[i]   = celladc[i];
     }
 
 }
@@ -90,6 +93,7 @@ AliPMDcluster::AliPMDcluster(const AliPMDcluster &pmdcluster):
       this->fClusCellDataY[i] = pmdcluster.fClusCellDataY[i];
       this->fClusCellTrack[i] = pmdcluster.fClusCellTrack[i];
       this->fClusCellPid[i]   = pmdcluster.fClusCellPid[i];
+      this->fClusCellAdc[i]   = pmdcluster.fClusCellAdc[i];
     }
 }
 // --------------------------------------------------------------------- //
@@ -111,6 +115,7 @@ AliPMDcluster & AliPMDcluster::operator=(const AliPMDcluster &pmdcluster)
 	  this->fClusCellDataY[i] = pmdcluster.fClusCellDataY[i];
 	  this->fClusCellTrack[i] = pmdcluster.fClusCellTrack[i];
 	  this->fClusCellPid[i]   = pmdcluster.fClusCellPid[i];
+	  this->fClusCellAdc[i]   = pmdcluster.fClusCellAdc[i];
 	}
     }
   return *this;
@@ -181,5 +186,10 @@ Int_t AliPMDcluster::GetClusCellTrack(Int_t i) const
 Int_t AliPMDcluster::GetClusCellPid(Int_t i) const
 {
   return fClusCellPid[i];
+}
+// --------------------------------------------------------------------- //
+Float_t AliPMDcluster::GetClusCellAdc(Int_t i) const
+{
+  return fClusCellAdc[i];
 }
 // --------------------------------------------------------------------- //

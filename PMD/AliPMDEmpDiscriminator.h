@@ -17,7 +17,7 @@ class TObjArray;
 class TTree;
 class TNtuple;
 
-class AliPMDrecpoint1;
+class AliPMDrecdata;
 class AliPMDclupid;
 
 class AliPMDEmpDiscriminator : public AliPMDDiscriminator
@@ -31,7 +31,7 @@ class AliPMDEmpDiscriminator : public AliPMDDiscriminator
   void Discrimination(TObjArray *pmdcontin, TObjArray *pmdcontout);
 
 
-  ClassDef(AliPMDEmpDiscriminator,1) // To run PMD discrimination
+  ClassDef(AliPMDEmpDiscriminator,2) // To run PMD discrimination
 };
 #endif
 
