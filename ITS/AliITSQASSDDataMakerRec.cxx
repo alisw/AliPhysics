@@ -909,7 +909,7 @@ void AliITSQASSDDataMakerRec::MakeDigits(TTree *digits) {
     AliError("can't get the branch with the SSD ITS digits !");
     return;
   }
-  static TClonesArray statDigits("AliITSDigitSSD");
+  static TClonesArray statDigits("AliITSdigitSSD");
   TClonesArray *iSSDdigits = &statDigits;
   branchD->SetAddress(&iSSDdigits);  
   for(Int_t iModule = 500; iModule < 2198; iModule++) {
