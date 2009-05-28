@@ -7,5 +7,3 @@ void CreateRecPars_CDB(){
   AliTOFRecoParam *param = new AliTOFRecoParam();
   tofcalib->WriteRecParOnCDB("TOF/Calib",0,999999999,param);
 }
-
-

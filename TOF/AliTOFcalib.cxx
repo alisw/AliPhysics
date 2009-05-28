@@ -850,7 +850,7 @@ void AliTOFcalib::WriteRecParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Silvia Arcelli");
-  const Char_t *sel1 = "RecPar" ;
+  const Char_t *sel1 = "RecoParam" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBId id(out,minrun,maxrun);
@@ -862,16 +862,16 @@ AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(const Char_t *sel, Int_t nrun)
 {
   //Read reconstruction parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  const Char_t *sel1 = "RecPar" ;
+  const Char_t *sel1 = "RecoParam" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
   if (!entry) { 
-    AliFatal("Exiting, no CDB object (RecPar) found!!!");
+    AliFatal("Exiting, no CDB object (RecoParam) found!!!");
     exit(0);  
   }  
   if(!entry->GetObject()){
-    AliFatal("Exiting, no CDB object (RecPar) found!!!");
+    AliFatal("Exiting, no CDB object (RecoParam) found!!!");
     exit(0);  
   }  
 
