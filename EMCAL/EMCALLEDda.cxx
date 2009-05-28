@@ -191,6 +191,18 @@ TString side[] = {"A","C"};//+ and - pseudorapidity supermodules
     } //until EOF
   } // loop over files
 
+  // calculate average values also, for the LED info
+  calibSignal->SetUseAverage(kTRUE);
+  calibSignal->Analyze();
+
+  // by default, we only save the full info in debug mode  
+#ifdef LOCAL_DEBUG
+#else
+  // reset the full trees, when we are not in debug mode
+  calibSignal->GetTreeAmpVsTime()->Reset();
+  calibSignal->GetTreeLEDAmpVsTime()->Reset();
+#endif
+
   //
   // write class to rootfile
   //
