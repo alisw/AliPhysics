@@ -18,6 +18,7 @@
 #include <TH1.h>
 #include <TObjArray.h>
 #include <TNamed.h>  
+class TCanvas ; 
 class TClonesArray;
 class TDirectory;
 class TFile;  
@@ -39,7 +40,7 @@ public:
 	
 	AliQADataMaker(const char * name="", const char * title="") ;          // ctor
 	AliQADataMaker(const AliQADataMaker& qadm) ;   
-	virtual ~AliQADataMaker() {} // dtor
+	virtual ~AliQADataMaker() ; // dtor
   
 	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)          = 0 ; 
 	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)            = 0 ; 
@@ -54,6 +55,8 @@ public:
 	virtual TH1 *       GetDigitsData(const Int_t index)                       = 0 ; 
 	virtual TH1 *       GetESDsData(const Int_t index)                         = 0 ; 
 	virtual TH1 *       GetHitsData(const Int_t index)                         = 0 ; 
+  TCanvas **          GetImage() { return fImage ; }
+  TCanvas *           GetImage(AliRecoParam::EventSpecie_t es) { return fImage[AliRecoParam::AConvert(es)] ; }
 	virtual TH1 *       GetRecPointsData(const Int_t index)                    = 0 ; 
 	virtual TH1 *       GetRawsData(const Int_t index)                         = 0 ; 
 	virtual TH1 *       GetSDigitsData(const Int_t index)                      = 0 ; 
@@ -74,6 +77,7 @@ public:
   Bool_t              WriteExpert() { return fWriteExpert ; }
   void                SetEventSpecie(AliRecoParam::EventSpecie_t es) { fEventSpecie = es ; }
   void                SetEventSpecie(Int_t es) { fEventSpecie = AliRecoParam::Convert(es) ; }
+  void                SetPrintImage(Bool_t opt = kTRUE) { fPrintImage = opt ; }
   virtual void        SetRecoParam(const AliDetectorRecoParam *) {;}
 
 	  
@@ -116,11 +120,13 @@ protected:
   TList **       fParameterList ;   //! list of QA data parameters
 	Int_t          fRun ;             //! run number
   AliRecoParam::EventSpecie_t fEventSpecie ; //! event specie, see AliRecoParam
+  TCanvas **     fImage ;           //[AliRecoParam::kNSpecies] 
+  Bool_t         fPrintImage ;      //! flag to print the images or not
 private:
 	AliQADataMaker& operator = (const AliQADataMaker& /*qadm*/); // Not implemented
 
   
- ClassDef(AliQADataMaker,1)  // description 
+ ClassDef(AliQADataMaker,2)  // description 
 
 };
 

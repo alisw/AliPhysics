@@ -5,7 +5,6 @@
 
 
 /* $Id$ */
-
 //
 //  Base Class:
 //  Produces the data needed to calculate the quality assurance. 

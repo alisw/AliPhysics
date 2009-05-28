@@ -24,6 +24,7 @@
 //
 
 // --- ROOT system ---
+#include <TCanvas.h> 
 #include <TSystem.h> 
 #include <TFile.h>
 #include <TList.h> 
@@ -66,12 +67,16 @@ AliQADataMaker::AliQADataMaker(const char * name, const char * title) :
   fWriteExpert(kFALSE),
   fParameterList(new TList*[AliRecoParam::kNSpecies]), 
   fRun(0), 
-  fEventSpecie(AliRecoParam::kDefault)
+  fEventSpecie(AliRecoParam::kDefault), 
+  fImage(new TCanvas*[AliRecoParam::kNSpecies]), 
+  fPrintImage(kFALSE) 
 {
   // ctor
   fDetectorDirName = GetName() ; 
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    fParameterList[specie] = NULL ; 
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      fParameterList[specie] = NULL ; 
+      fImage[specie] = NULL ; 
+    }
 }
 
 //____________________________________________________________________________ 
@@ -86,10 +91,26 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   fWriteExpert(qadm.fWriteExpert),
   fParameterList(qadm.fParameterList),  
   fRun(qadm.fRun), 
-  fEventSpecie(qadm.fEventSpecie)
+  fEventSpecie(qadm.fEventSpecie), 
+  fImage(qadm.fImage),  
+  fPrintImage(kFALSE)
+
 {
   //copy ctor
   fDetectorDirName = GetName() ; 
+}
+
+//____________________________________________________________________________ 
+AliQADataMaker::~AliQADataMaker()
+{
+  for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
+    if ( fImage[esIndex] ) 
+      delete fImage[esIndex] ;
+    if (fParameterList[esIndex] )
+      delete fParameterList[esIndex] ; 
+  }
+  delete[] fImage ; 
+  delete[] fParameterList ; 
 }
 
 //____________________________________________________________________________

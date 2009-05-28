@@ -252,33 +252,36 @@ void AliQADataMakerSim::MakeImage(AliQAv1::TASKINDEX_t task)
     Double_t w  = 1000 ;
     Double_t h  = 1000 ;
     for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
-      TCanvas * canvasQA = new TCanvas(Form("QA_%s_%s_%s", 
-                                            GetName(), 
-                                            AliQAv1::GetTaskName(task).Data(), 
-                                            AliRecoParam::GetEventSpecieName(esIndex)), 
-                                       Form("QA control plots for det=%s task=%s eventspecie=%s", 
-                                            GetName(), 
-                                            AliQAv1::GetTaskName(task).Data(), 
-                                            AliRecoParam::GetEventSpecieName(esIndex)), 
-                                       w, h) ;
-      canvasQA->SetWindowSize(w + (w - canvasQA->GetWw()), h + (h - canvasQA->GetWh())) ;
-      Int_t nx = TMath::Sqrt(nImages) ; 
-      Int_t ny = nx  ; 
-      if ( nx < TMath::Sqrt(nImages)) 
-        ny++ ; 
-      canvasQA->Divide(nx, ny) ; 
+      if ( !fImage[esIndex] ) {
+        fImage[esIndex] = new TCanvas(Form("QA_%s_%s_%s", 
+                                           GetName(), 
+                                           AliQAv1::GetTaskName(task).Data(), 
+                                           AliRecoParam::GetEventSpecieName(esIndex)), 
+                                      Form("QA control plots for det=%s task=%s eventspecie=%s", 
+                                           GetName(), 
+                                           AliQAv1::GetTaskName(task).Data(), 
+                                           AliRecoParam::GetEventSpecieName(esIndex)), 
+                                      w, h) ;
+        fImage[esIndex]->SetWindowSize(w + (w - fImage[esIndex]->GetWw()), h + (h - fImage[esIndex]->GetWh())) ;
+        Int_t nx = TMath::Sqrt(nImages) ; 
+        Int_t ny = nx  ; 
+        if ( nx < TMath::Sqrt(nImages)) 
+          ny++ ; 
+        fImage[esIndex]->Divide(nx, ny) ; 
+      }
+      fImage[esIndex]->Clear() ; 
       TIter nexthist(list[esIndex]) ; 
       TH1* hist = NULL ;
       Int_t npad = 1 ; 
-      canvasQA->cd(npad) ; 
+      fImage[esIndex]->cd(npad) ; 
       while ( (hist=dynamic_cast<TH1*>(nexthist())) ) {
         if(hist->TestBit(AliQAv1::GetImageBit())) {
           hist->Draw() ; 
-          canvasQA->cd(++npad) ; 
+          fImage[esIndex]->cd(++npad) ; 
         }
       }
-      if ( AliDebugLevel()  == AliQAv1::GetQADebugLevel() )
-        canvasQA->Print() ; 
+      if (fPrintImage) 
+        fImage[esIndex]->Print() ; 
     }
   }
 }
