@@ -8,20 +8,19 @@
 // Version line : 3.0
 // Version: 3.0.8  may 08
 
-
+class TCanvas;
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
-#include "TCanvas.h"
 #include "TH2D.h"
 #include "TProfile.h"
 #include "TList.h"
 
-#include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-
-#include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
+
+class AliAnalysisTask;
+class AliESDEvent;
 
 #include "AliAnalysisTaskLRC.h"
 
@@ -52,16 +51,19 @@ AliAnalysisTaskLRC::AliAnalysisTaskLRC(const char *name)
 
   void AliAnalysisTaskLRC::SetForwardWindow(double StartETA,double EndETA)
   {
+    //setter for the forward eta window
   fStartForwardETA=StartETA;
   fEndForwardETA=EndETA;
   }
   void AliAnalysisTaskLRC::SetBackwardWindow(double StartETA,double EndETA)
   {
+    //setter for the backward eta window
   fStartBakwardETA=StartETA;
   fEndBakwardETA=EndETA;
   }
   void AliAnalysisTaskLRC::SetETAWindows(double _StartForwardETA,double _EndForwardETA,double _StartBakwardETA,double _EndBakwardETA)
   {
+    //setter for the eta windows
   fStartForwardETA=_StartForwardETA;
   fEndForwardETA=_EndForwardETA;
   fStartBakwardETA=_StartBakwardETA;
