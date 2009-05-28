@@ -1019,13 +1019,17 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 
       if(!list[j].fFlags){
 	if(fDoMC){
-	  fClustersMCInfo.erase(fClustersMCInfo.begin()+j); // remove the mc ifo for this cluster since it is not taken into account 
+	  if(j+fClustersMCInfo.size()-nclusters >=0 && j+fClustersMCInfo.size()-nclusters < fClustersMCInfo.size()){
+	    fClustersMCInfo.erase(fClustersMCInfo.begin()+j+fClustersMCInfo.size()-nclusters); // remove the mc info for this cluster since it is not taken into account 
+	  }
 	}
 	continue; //discard single pad clusters
       }
       if(list[j].fTotalCharge < fThreshold){
 	if(fDoMC){
-	  fClustersMCInfo.erase(fClustersMCInfo.begin()+j); // remove the mc ifo for this cluster since it is not taken into account 
+	  if(j+fClustersMCInfo.size()-nclusters >=0 && j+fClustersMCInfo.size()-nclusters < fClustersMCInfo.size()){
+	    fClustersMCInfo.erase(fClustersMCInfo.begin()+j+fClustersMCInfo.size()-nclusters); // remove the mc info for this cluster since it is not taken into account 
+	  }
 	}
 	continue; //noise cluster
       }
