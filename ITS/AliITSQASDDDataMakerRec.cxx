@@ -54,6 +54,13 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "Riostream.h"
+#include "AliITSdigitSDD.h"
+#include "AliITS.h"
+#include "AliRunLoader.h"
+#include "AliITSLoader.h"
+#include "AliITSDetTypeRec.h"
+
+
 
 ClassImp(AliITSQASDDDataMakerRec)
 
@@ -237,7 +244,7 @@ void AliITSQASDDDataMakerRec::InitRaws()
 	  AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
 	  sprintf(hname[0],"SDDchargeMapFSE_L%d_%d_%d_%d",lay,lad,det,iside);
 	  sprintf(hname[1],"SDDChargeMapForSingleEvent_L%d_%d_%d_%d",lay,lad,det,iside);
-	  sprintf(hname[2],"SDDhmonoDMap_L%d_%d_%d_%d",lay,lad,det,iside);
+	  //	  sprintf(hname[2],"SDDhmonoDMap_L%d_%d_%d_%d",lay,lad,det,iside);
 	  TProfile2D *fModuleChargeMapFSE = new TProfile2D(hname[0],hname[1],256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
 	  fModuleChargeMapFSE->GetXaxis()->SetTitle("Time Bin");
 	  fModuleChargeMapFSE->GetYaxis()->SetTitle("Anode");
@@ -372,10 +379,12 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
     
     Short_t iside = stream->GetChannel();
     
-    fAliITSQADataMakerRec->GetRawsData(3+fGenRawsOffset)->Fill(2*(stream->GetCarlosId())+iside,iddl);
+
     
 
     if(fkOnline) {
+
+      fAliITSQADataMakerRec->GetRawsData(3+fGenRawsOffset)->Fill(2*(stream->GetCarlosId())+iside,iddl);
 
       activeModule = moduleSDD;
       index1 = activeModule * 2 + iside;
@@ -401,6 +410,8 @@ void AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 //____________________________________________________________________________ 
 void AliITSQASDDDataMakerRec::InitDigits()
 { 
+
+  //printf(" ======================================================> Init digits\n " );
   // Initialization for DIGIT data - SDD -  
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ;
@@ -433,24 +444,30 @@ void AliITSQASDDDataMakerRec::InitDigits()
 //____________________________________________________________________________
 void AliITSQASDDDataMakerRec::MakeDigits(TTree * digits)
 { 
-  
+  //printf(" ======================================================> make digits\n " );
   // Fill QA for DIGIT - SDD -
-//  AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
-//  fITS->SetTreeAddress();
-//  TClonesArray *iITSdigits  = fITS->DigitsAddress(1);
-  TBranch *branchD = digits->GetBranch("ITS");
-  if (!branchD) { 
-    AliError("can't get the branch with the ITS digits !");
+  //AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
+  //fITS->SetTreeAddress();
+  //TClonesArray *iITSdigits  = fITS->DigitsAddress(1);
+
+
+  TBranch *branchD = digits->GetBranch("ITSDigitsSDD");
+
+  if (!branchD) {
+    AliError("can't get the branch with the ITS SDD digits !");
     return;
   }
-  static TClonesArray statDigits("AliITSDigit");
+
+  static TClonesArray statDigits("AliITSdigitSDD");
   TClonesArray *iITSdigits = &statDigits;
   branchD->SetAddress(&iITSdigits);
+
   for(Int_t i=0; i<260; i++){
     Int_t nmod=i+240;
     digits->GetEvent(nmod);
     Int_t ndigits = iITSdigits->GetEntries();
     fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset)->Fill(nmod,ndigits);
+    //printf(" Filled:  =======================================> %s \t %i \t %i \n",fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset)->GetName(), nmod, ndigits );
     for (Int_t idig=0; idig<ndigits; idig++) {
       AliITSdigit *dig=(AliITSdigit*)iITSdigits->UncheckedAt(idig);
       Int_t iz=dig->GetCoord1();  // cell number z
@@ -461,6 +478,7 @@ void AliITSQASDDDataMakerRec::MakeDigits(TTree * digits)
       fAliITSQADataMakerRec->GetDigitsData(3+fGenDigitsOffset)->Fill(sig);
     }
   }
+
 }
 
 //____________________________________________________________________________ 
@@ -706,6 +724,11 @@ Int_t AliITSQASDDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task)
       {
 	offset=fGenRecPointsOffset;   
       }
+    else
+      if(task == AliQAv1::kDIGITSR )
+	{
+	  offset=fGenDigitsOffset;
+	}
     else AliInfo("No task has been selected. Offset set to zero.\n");
   return offset;
 }
@@ -726,6 +749,11 @@ Int_t AliITSQASDDDataMakerRec::GetTaskHisto(AliQAv1::TASKINDEX_t task)
       {
 	histotot=fSDDhRecPointsTask;   
       }
+    else
+      if(task == AliQAv1::kDIGITSR)
+	{
+	  histotot=fSDDhDigitsTask;
+	}
     else AliInfo("No task has been selected. TaskHisto set to zero.\n");
   return histotot;
 }
