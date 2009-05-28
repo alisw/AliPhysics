@@ -632,20 +632,27 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
 
   Double_t alpha = 0;
   if(GetSector() == -1){
-    alpha = TMath::ATan(fabs(GetFirstPointY())/fabs(GetFirstPointX()));
 
-    if(GetFirstPointX()<0 && GetFirstPointY()>=0){
-      alpha = alpha + TMath::PiOver2();
-    }
-    else if(GetFirstPointX()<0 && GetFirstPointY()<0){
-      alpha = -TMath::Pi() + alpha;
-    }
-    else if(GetFirstPointX()>=0 && GetFirstPointY()<0){
-      alpha = -alpha;
-    }
+    const double kMaxPhi = TMath::Pi()/2 - 10./180.*TMath::Pi();
+    alpha = TMath::ATan2(GetFirstPointY(),GetFirstPointX());
+    double phi = GetPsi() - alpha;
+
+    // normalize phi to [-Pi,+Pi]
+
+    phi = phi - TMath::TwoPi() * TMath::Floor( phi /TMath::TwoPi()+.5);
+
+    // extra rotation to keep phi in the range (-Pi/2,+Pi/2)
+
+    double rotation = 0;
+    if( phi>=kMaxPhi ) rotation = -TMath::Pi()/2;
+    else if( phi<=-kMaxPhi ) rotation = TMath::Pi()/2;
+
+    phi   += rotation;
+    alpha -= rotation;
+    
     xhit = GetFirstPointX()*TMath::Cos(alpha) + GetFirstPointY()*TMath::Sin(alpha);
     xx[0] = -(GetFirstPointX()*TMath::Sin(alpha)) + GetFirstPointY()*TMath::Cos(alpha);
-    xx[2] = TMath::Sin(GetPsi()-alpha);
+    xx[2] = TMath::Sin(phi);
   }
   else{
     alpha = fmod((2*GetSector()+1)*(TMath::Pi()/18),2*TMath::Pi());
