@@ -66,6 +66,7 @@ class AliCluster : public TObject {
   void     SetZ(Float_t z) {fZ = z;}
   void     SetSigmaY2(Float_t sigy2) {fSigmaY2 = sigy2;}
   void     SetSigmaZ2(Float_t sigz2) {fSigmaZ2 = sigz2;}
+  void     SetSigmaYZ(Float_t sigyz) {fSigmaYZ = sigyz;};
   void     SetVolumeId(UShort_t id)  {fVolumeId = id;}
 
  protected:
