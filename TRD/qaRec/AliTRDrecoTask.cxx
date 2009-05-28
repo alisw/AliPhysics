@@ -58,6 +58,7 @@ AliTRDrecoTask::~AliTRDrecoTask()
   if(fgFile){
     fflush(fgFile);
     fclose(fgFile);
+    fgFile = 0x0;
   }
 }
 
@@ -109,7 +110,7 @@ Bool_t AliTRDrecoTask::GetRefFigure(Int_t /*ifig*/)
 Bool_t AliTRDrecoTask::PutTrendValue(Char_t *name, Double_t val, Double_t err)
 {
   if(!fgFile){
-    fgFile = fopen("TRD.Performance.txt", "wt");
+    fgFile = fopen("TRD.Performance.txt", "at");
   }
   fprintf(fgFile, "%s_%s %f %f\n", GetName(), name, val, err);
   return kTRUE;

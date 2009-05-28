@@ -64,11 +64,17 @@
 #endif
 
 #include "AliTRDperformanceTrain.h"
-//#include "../../../PWG1/macros/AddPerformanceTask.h"
+//#include "../../PWG1/macros/AddPerformanceTask.h"
 
 Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so"};
-
+// define setup
+gStyle->SetOptStat(0);
+Bool_t mc      = kTRUE;
+Bool_t friends = kTRUE;
+TCanvas *c = 0x0;
 void mergeProd(const Char_t *mark="TRD.Performance.root", const Char_t *files=0);
+void processTRD(TNamed* task);
+void processAliTask(TNamed* task);
 void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFALSE)
 {
   if(kGRID){
@@ -87,44 +93,21 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
     return;
   }
 
-  // define setup 
-  gStyle->SetOptStat(0);
-  Bool_t mc      = kTRUE;
-  Bool_t friends = kTRUE;
-
-
   if(files) mergeProd("TRD.Performance.root", files);
   Int_t fSteerTask = ParseOptions(opt);
-  TCanvas *c=new TCanvas("c", "TRD Performance", 10, 10, 800, 500);
+
+  if(!c) c=new TCanvas("c", "Performance", 10, 10, 800, 500);
 
   TClass *ctask = new TClass;
-  AliTRDrecoTask *task = 0x0;
+  AliAnalysisTask *task = 0x0;
+  AliTRDrecoTask  *trd  = 0x0;
   for(Int_t itask = NTRDQATASKS; itask--;){
     if(!TSTBIT(fSteerTask, itask)) continue;
-
     new(ctask) TClass(fgkTRDtaskClassName[itask]);
-    task = (AliTRDrecoTask*)ctask->New();
-    task->SetDebugLevel(0);
-    task->SetMCdata(mc);
-    task->SetFriends(friends);
+    task = (AliAnalysisTask*)ctask->New();
 
-    if(!task->Load(Form("%s/TRD.Performance.root", gSystem->ExpandPathName("$PWD")))){
-      Error("makeResults.C", Form("Load data container for task %s failed.", task->GetName()));
-      delete task;
-      break;
-    }
-
-    if(!task->PostProcess()){
-      Error("makeResults.C", Form("Processing data container for task %s failed.", task->GetName()));
-      delete task;
-      break;
-    }
-    for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
-      c->Clear();
-      if(!task->GetRefFigure(ipic)) continue;
-      c->SaveAs(Form("%s_Fig%02d.gif", task->GetName(), ipic));
-    }
-    delete task;
+    if(task->IsA()->InheritsFrom("AliTRDrecoTask")) processTRD(task);
+    else processAliTask(task);
   }
   delete ctask;
   delete c;
@@ -172,3 +155,37 @@ void mergeProd(const Char_t *mark, const Char_t *files)
   delete fFM;
 }
 
+//______________________________________________________
+void processTRD(TNamed *otask)
+{
+  AliTRDrecoTask *task = dynamic_cast<AliTRDrecoTask*>(otask);
+  task->SetDebugLevel(0);
+  task->SetMCdata(mc);
+  task->SetFriends(friends);
+
+  if(!task->Load(Form("%s/TRD.Performance.root", gSystem->ExpandPathName("$PWD")))){
+    Error("makeResults.C", Form("Load data container for task %s failed.", task->GetName()));
+    delete task;
+    return;
+  }
+
+  if(!task->PostProcess()){
+    Error("makeResults.C", Form("Processing data container for task %s failed.", task->GetName()));
+    delete task;
+    return;
+  }
+  for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
+    c->Clear();
+    if(!task->GetRefFigure(ipic)) continue;
+    c->SaveAs(Form("%s_Fig%02d.gif", task->GetName(), ipic));
+  }
+  delete task;
+}
+
+//______________________________________________________
+void processAliTask(TNamed *otask)
+{
+  AliAnalysisTask *task = dynamic_cast<AliAnalysisTask*>(otask);
+  Info("makeResults.C", Form("Processing of task %s not implemented yet.", task->GetName()));
+  delete task;
+}
