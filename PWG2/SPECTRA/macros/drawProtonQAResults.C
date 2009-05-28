@@ -2996,22 +2996,28 @@ void draw2DEfficiency(const char *analysisMode = "TPC",
   switch(projection) {
     case "yx":
       gId->GetZaxis()->SetRangeUser(90,100);
-      h->GetXaxis()->SetRangeUser(-0.6,0.6);
-      h->GetYaxis()->SetRangeUser(0.4,1.0);
+      h->GetXaxis()->SetRangeUser(gHistESDInitYPtProtons->GetXaxis()->GetXmin(),
+				  gHistESDInitYPtProtons->GetXaxis()->GetXmax());
+      h->GetYaxis()->SetRangeUser(gHistESDInitYPtProtons->GetYaxis()->GetXmin(),
+				  gHistESDInitYPtProtons->GetYaxis()->GetXmax());
       h->GetXaxis()->SetTitle(gId->GetXaxis()->GetTitle());
       h->GetYaxis()->SetTitle(gId->GetYaxis()->GetTitle());
       break;
     case "zx":
       gId->GetZaxis()->SetRangeUser(0,100);
-      h->GetXaxis()->SetRangeUser(-0.6,0.6);
-      h->GetYaxis()->SetRangeUser(0.,210.0);
+      h->GetXaxis()->SetRangeUser(gHistESDInitYPtProtons->GetXaxis()->GetXmin(),
+				  gHistESDInitYPtProtons->GetXaxis()->GetXmax());
+      h->GetYaxis()->SetRangeUser(gHistESDInitYPtProtons->GetZaxis()->GetXmin(),
+				  gHistESDInitYPtProtons->GetZaxis()->GetXmax());
       h->GetXaxis()->SetTitle(gId->GetXaxis()->GetTitle());
       h->GetYaxis()->SetTitle(gId->GetYaxis()->GetTitle());
       break;
     case "zy":
       gId->GetZaxis()->SetRangeUser(0,100);
-      h->GetXaxis()->SetRangeUser(0.4,1.0);
-      h->GetYaxis()->SetRangeUser(0.,210.);
+      h->GetXaxis()->SetRangeUser(gHistESDInitYPtProtons->GetYaxis()->GetXmin(),
+				  gHistESDInitYPtProtons->GetYaxis()->GetXmax());
+      h->GetYaxis()->SetRangeUser(gHistESDInitYPtProtons->GetZaxis()->GetXmin(),
+				  gHistESDInitYPtProtons->GetZaxis()->GetXmax());
       h->GetXaxis()->SetTitle(gId->GetXaxis()->GetTitle());
       h->GetYaxis()->SetTitle(gId->GetYaxis()->GetTitle());
       break;
