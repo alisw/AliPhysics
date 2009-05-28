@@ -49,7 +49,7 @@ void runLRCLocal(const char* inputName= "ESDs.lst") {
  
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   cout<<"  # Compiling analysis task\n";
-  gROOT->LoadMacro("AliAnalysisTaskLRC.cxx+g");
+  //gROOT->LoadMacro("AliAnalysisTaskLRC.cxx+g");
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
 
   TChain* chain = CreateESDChain(inputName);
@@ -106,7 +106,7 @@ void runLRCProof(const char* inputName= "/COMMON/COMMON/tutorial_small")
   cout<<"  # Compiling analysis task\n";
   
   
-  gProof->Load("AliAnalysisTaskLRC.cxx++g");   
+  //gProof->Load("AliAnalysisTaskLRC.cxx++g");   
   task = new AliAnalysisTaskLRC("TestLRC");
   
   task->SetETAWindows(-0.7,0.0,0.3,1.0);
@@ -170,7 +170,7 @@ void runLRCInteractive(const char* inputName= "wn.xml") {
   
  //___________Compile analysis task using AClic____________//
  cout<<"  # Compiling analysis task\n";
-  gROOT->LoadMacro("AliAnalysisTaskLRC.cxx+g");
+ //gROOT->LoadMacro("AliAnalysisTaskLRC.cxx+g");
   
   
    

@@ -2,6 +2,7 @@
 
 set(SRCS
        EBYE/AliBalance.cxx 
+       EBYE/LRC/AliAnalysisTaskLRC.cxx 
        EBYE/LRC/AliLRCAnalysis.cxx 
        EBYE/LRC/AliLRCFit.cxx 
        EBYE/LRC/AliLRCNN.cxx 
