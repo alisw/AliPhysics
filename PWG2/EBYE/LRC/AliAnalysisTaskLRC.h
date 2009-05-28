@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskLRC_cxx
-#define AliAnalysisTaskLRC_cxx
+#ifndef ALIANALYSISTASKLRC_H
+#define ALIANALYSISTASKLRC_H
 
 
 // Analysis task for Long Range Correlation (LRC) analysis using TPC data
