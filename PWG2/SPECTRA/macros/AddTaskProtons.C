@@ -33,7 +33,7 @@ AliAnalysisTaskProtons *AddTaskProtons(const char *analysisType="Hybrid",
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  AliAnalysisDataContainer *cout_proton = mgr->CreateContainer("protonhist", TList::Class(),AliAnalysisManager::kOutputContainer,"protonhist.root");                              
+  AliAnalysisDataContainer *cout_proton = mgr->CreateContainer("protonhist", TList::Class(),AliAnalysisManager::kOutputContainer,"outputProtonRatioAnalysis.root");                              
   mgr->ConnectInput(taskproton, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskproton, 0, cout_proton);
   
