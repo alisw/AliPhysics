@@ -17,9 +17,12 @@ Trigger types used: PHYSICS_EVENT
 #define FILE_RUN "TOFdaRun.root"
 
 // DATE
-#include <daqDA.h>
-#include <event.h>
-#include <monitor.h>
+#include "event.h"
+#include "monitor.h"
+#include "daqDA.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 //AliRoot
 #include <AliTOFRawStream.h>
@@ -30,6 +33,7 @@ Trigger types used: PHYSICS_EVENT
 #include <AliDAQ.h>
 #include <AliTOFHitData.h>
 #include <AliTOFHitDataBuffer.h>
+#include <AliTOFNoiseConfigHandler.h>
 
 //ROOT
 #include <TFile.h>
@@ -40,15 +44,14 @@ Trigger types used: PHYSICS_EVENT
 #include <TSystem.h>
 #include "TROOT.h"
 #include "TPluginManager.h"
-
+#include "TSAXParser.h"
 
 /* Main routine
       Arguments: 
       1- monitoring data source
 */
-
 int main(int argc, char **argv) {
-  
+
   /* magic line from Rene */
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
                     "*",
@@ -61,17 +64,61 @@ int main(int argc, char **argv) {
   static const Int_t size = AliTOFGeometry::NPadXSector()*AliTOFGeometry::NSectors();
   static const Int_t nbins = 500;
   static const Int_t binmin = -20;
-  const Float_t c = 2.99792458E10; //speed of light
+  const Float_t c = 2.99792458E10; //speed of light [cm/s]
   TH1F::AddDirectory(0);
-  TH2S * htofPartial = new TH2S("htof","histo with delays", size,-0.5,size*1.-0.5,nbins,binmin-0.5,nbins*1.+binmin-0.5);
-  
-  // decoding the events
+  TH2S * htofPartial = new TH2S("htof","histo with delays",
+				size,-0.5,size*1.-0.5,
+				nbins,binmin-0.5,nbins*1.+binmin-0.5);
   
   int status;
+
+  /* log start of process */
+  printf("TOF DA started\n");  
+
+  /* check that we got some arguments = list of files */
   if (argc!=2) {
     printf("Wrong number of arguments\n");
     return -1;
   }
+
+  /* retrieve config file */
+  int getConfigFile = daqDA_DB_getFile("TOFNoiseConfig.xml","TOFNoiseConfig.xml");
+  if (getConfigFile != 0){
+    printf("Failed to retrieve config file from DB! returning...\n");
+    return -1;
+  }
+
+  AliTOFNoiseConfigHandler* tofHandler = new AliTOFNoiseConfigHandler();
+  TSAXParser *parser = new TSAXParser();
+  parser->ConnectToHandler("AliTOFNoiseConfigHandler", tofHandler);  
+  if (parser->ParseFile("./TOFNoiseConfig.xml") != 0) {
+    printf("Failed parsing config file! retunring... \n");
+    return -1;
+  }
+
+  Int_t debugFlag = tofHandler->GetDebugFlag();
+  printf("the debug flag is %i\n",debugFlag);
+
+  /* init some counters */
+  int nevents_physics=0;
+  int nevents_total=0;
+
+  Int_t iev=0;
+
+  Int_t nPDBEntriesToT = 0;
+  Int_t nDBEntriesToT = 0;
+  AliTOFHitData *HitData;
+  Int_t dummy = -1;
+  Int_t Volume[5];
+  for (Int_t i=0;i<5;i++) Volume[i]=-1;
+  AliTOFRawStream *rawStreamTOF = new AliTOFRawStream();
+  AliTOFHitDataBuffer DataBuffer;
+  AliTOFHitDataBuffer PackedDataBuffer;
+  Int_t nDBEntries = 0;
+  Int_t nPDBEntries = 0;
+  
+  struct eventHeaderStruct *event;
+  eventTypeType eventT;
 
   /* define data source : this is argument 1 */  
   status=monitorSetDataSource( argv[1] );
@@ -91,22 +138,11 @@ int main(int argc, char **argv) {
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
   
-  /* log start of process */
-  printf("TOF DA started\n");  
-
-  /* init some counters */
-  int nevents_physics=0;
-  int nevents_total=0;
-
-  struct eventHeaderStruct *event;
-  eventTypeType eventT;
-  Int_t iev=0;
-
   /* main loop (infinite) */
   for(;;) {
     
     /* check shutdown condition */
-    if (daqDA_checkShutdown()) {break;}
+    if (daqDA_checkShutdown()) break;
     
     /* get next event (blocking call until timeout) */
     status=monitorGetEventDynamic((void **)&event);
@@ -121,25 +157,24 @@ int main(int argc, char **argv) {
     }
     
     /* retry if got no event */
-    if (event==NULL) {
-      continue;
-    }
+    if (event==NULL) continue;
 
     iev++; 
 
    /* use event - here, just write event id to result file */
     nevents_total++;
     eventT=event->eventType;
-    switch (event->eventType){
+    switch (event->eventType) {
       
       /* START OF RUN */
     case START_OF_RUN:
       break;
       /* END START OF RUN */
       
-    /* END OF RUN */
+      /* END OF RUN */
     case END_OF_RUN:
       break;
+      /* END END OF RUN */
       
     case PHYSICS_EVENT:
       nevents_physics++;
@@ -161,7 +196,7 @@ int main(int argc, char **argv) {
         meantime = allData[49][0];
 	*/
         //meantime = rawReaderT0->GetData(49,0); //OLD
-        meantime = (rawReaderT0->GetData(51,0)+rawReaderT0->GetData(52,0))/2.; //Alla
+        meantime = (Int_t)((rawReaderT0->GetData(51,0)+rawReaderT0->GetData(52,0))/2.); //Alla
 	//        printf("time zero (ns) = %i (%f) \n", meantime, (meantime*24.4-200)*1E-3);   // debugging purpose
       }
       
@@ -170,39 +205,36 @@ int main(int argc, char **argv) {
       rawReader->Reset();
       
       //TOF event
-      Int_t dummy = -1;
-      Int_t Volume[5];
-      AliTOFHitData *HitData;
-      AliTOFHitDataBuffer DataBuffer;
-      AliTOFHitDataBuffer PackedDataBuffer;
-      AliTOFRawStream *rawStreamTOF = new AliTOFRawStream(rawReader);
-      //      rawReader->ReadHeader();
+      dummy = -1;
+      for (Int_t ii=0; ii<5; ii++) Volume[ii]=-1;
+      rawStreamTOF->SetRawReader(rawReader);
+      //rawReader->ReadHeader();
       rawStreamTOF->ResetBuffers();
       rawStreamTOF->DecodeDDL(0, AliDAQ::NumberOfDdls("TOF") - 1,0);
-      Int_t nPDBEntriesToT = 0;
-      Int_t nDBEntriesToT = 0;
-      for (Int_t iDDL = 0; iDDL < AliDAQ::NumberOfDdls("TOF"); iDDL++){
-	
+      nPDBEntriesToT = 0;
+      nDBEntriesToT = 0;
+      for (Int_t iDDL = 0; iDDL < AliDAQ::NumberOfDdls("TOF"); iDDL++) {
+
 	/* read decoded data */
 	DataBuffer = rawStreamTOF->GetDataBuffer(iDDL);
 	PackedDataBuffer = rawStreamTOF->GetPackedDataBuffer(iDDL);
 	
 	/* get buffer entries */
-	Int_t nDBEntries = DataBuffer.GetEntries();
-	Int_t nPDBEntries = PackedDataBuffer.GetEntries();
+	nDBEntries = DataBuffer.GetEntries();
+	nPDBEntries = PackedDataBuffer.GetEntries();
 	nPDBEntriesToT+=nPDBEntries;
 	nDBEntriesToT+=nDBEntries;
-	
-	//for (Int_t iHit = 0; iHit < nDBEntries; iHit++){
+
+	//for (Int_t iHit = 0; iHit < nDBEntries; iHit++) {
 	// HitData = DataBuffer->GetHit(iHit);
 	  /* store volume information */
-	//  rawStreamTOF->EquipmentId2VolumeId(HitData, Volume);
+	// rawStreamTOF->EquipmentId2VolumeId(HitData, Volume);
 	//}
 	/* reset buffer */
 	DataBuffer.Reset();
-	
+
 	/* read data buffer hits */
-	for (Int_t iHit = 0; iHit < nPDBEntries; iHit++){
+	for (Int_t iHit = 0; iHit < nPDBEntries; iHit++) {
 	  HitData = PackedDataBuffer.GetHit(iHit);
 	  /* add volume information */
 	  HitData->SetDDLID(iDDL);
@@ -220,29 +252,30 @@ int main(int argc, char **argv) {
 	    Int_t index = geom->GetIndex(Volume);
 	    Float_t pos[3];
 	    geom->GetPosPar(Volume,pos);
-	    Float_t texp=TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2])/c*1E9; //expected time in ns
-	    Float_t texpBin=(texp*1E3-32)/AliTOFGeometry::TdcBinWidth(); //expected time in number of TDC bin
+	    Float_t texp = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2])/c*1E9; //expected time in ns
+	    Float_t texpBin = texp*1E3/AliTOFGeometry::TdcBinWidth(); //expected time in number of TDC bin
 	    Int_t deltabin = tof-TMath::Nint(texpBin);   //to be used with real data; rounding expected time to Int_t
 	    htofPartial->Fill(index,deltabin); //channel index start from 0, bin index from 1
 	    //debugging printings
-	    //printf("sector %i, plate %i, strip %i, padz %i, padx %i \n",Volume[0],Volume[1],Volume[2],Volume[3],Volume[4]);
-	    //printf("pos x = %f, pos y = %f, pos z = %f \n",pos[0],pos[1],pos[2]);
-	    //printf ("expected time = %f (ns)\n",texp);
-	    //printf ("expected time bin = %f (TDC bin)\n",texpBin);
-	    //printf ("measured time bin = %i (TDC bin) with %f (ns) and ACQ bit = %i \n",tof, HitData->GetTime(), HitData->GetACQ());
-	    //	  printf("index = %i, deltabin = %i , filling index = %i, and bin = % i\n",index, deltabin, index, deltabin);
-	    
+	    //if (debugFlag) {
+ 	    //  printf("sector %2d, plate %1d, strip %2d, padz %1d, padx %2d \n",Volume[0],Volume[1],Volume[2],Volume[3],Volume[4]); // too verbose
+	    //  printf("pos x = %f, pos y = %f, pos z = %f \n",pos[0],pos[1],pos[2]); // too verbose
+	    //  printf("expected time = %f (ns)\n",texp); // too verbose
+	    //  printf("expected time bin = %f (TDC bin)\n",texpBin); // too verbose
+	    //  printf("measured time bin = %i (TDC bin) with %f (ns) and ACQ bit = %i \n",tof, HitData->GetTime(), HitData->GetACQ()); // too verbose
+	    //  printf("index = %6d, deltabin = %d , filling index = %6d, and bin = %d\n",index, deltabin, index, deltabin); // too verbose
+	    //}
+
 	  }
 	  /* reset buffer */
 	  PackedDataBuffer.Reset();
 	}
       }
-      //printf(" Packed Hit Buffer Entries = %i \n",nPDBEntriesToT);
-      //printf(" Hit Buffer Entries = %i \n",nDBEntriesToT);
-   
-      delete rawStreamTOF;
-      rawStreamTOF = 0x0;
-      
+      //if (debugFlag) {
+      //  printf(" Packed Hit Buffer Entries = %i \n",nPDBEntriesToT); // too verbose
+      //  printf(" Hit Buffer Entries = %i \n",nDBEntriesToT); // too verbose
+      //}
+
       delete rawReader;
       rawReader = 0x0;
     }
@@ -255,8 +288,12 @@ int main(int argc, char **argv) {
       printf("EOR event detected\n");
       break;
     }
+
   }
-  
+
+  delete rawStreamTOF;
+  rawStreamTOF = 0x0;
+
   delete geom;
   geom = 0x0;
 
@@ -275,7 +312,7 @@ int main(int argc, char **argv) {
     isThere=kTRUE;
     printf("%s found \n",FILE_TOTAL);
   }
-  if(isThere){
+  if (isThere) {
 
     TFile * filetot1 = new TFile (FILE_TOTAL,"READ"); 
     //look for the file
@@ -286,7 +323,7 @@ int main(int argc, char **argv) {
       //look for the histogram
       while ((key=(TKey*)next())){
 	const char * namekey = key->GetName();
-	if (strcmp(namekey,"htoftot")==0){
+	if (strcmp(namekey,"htoftot")==0) {
 	  printf(" histo found \n");
 	  htoftot = (TH2S*) filetot1->Get("htoftot");
 	  htoftot->AddDirectory(0);
@@ -322,19 +359,16 @@ int main(int argc, char **argv) {
   htoftot = 0x0;
 
   /* write report */
-  printf("Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
+  printf("Run #%s, received %d physics events out of %d\n",
+	 getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
 
-  status=0;
+  status = 0;
 
   /* export file to FXS */
-  if (daqDA_FES_storeFile(FILE_RUN, "RUNLevel")) {
+  if (daqDA_FES_storeFile(FILE_RUN, "RUNLevel"))
     status=-2;
-  }
-  if (daqDA_FES_storeFile(FILE_TOTAL, "DELAYS")) {
+  if (daqDA_FES_storeFile(FILE_TOTAL, "DELAYS"))
     status=-2;
-  }
 
-  
   return status;
 }
-
