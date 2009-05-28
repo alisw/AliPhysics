@@ -113,22 +113,20 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   // T0 digits reconstruction
   // T0RecPoint writing 
   
-   
+  
   TArrayI * timeCFD = new TArrayI(24); 
   TArrayI * timeLED = new TArrayI(24); 
   TArrayI * chargeQT0 = new TArrayI(24); 
   TArrayI * chargeQT1 = new TArrayI(24); 
 
-
-  //  Int_t mV2Mip = param->GetmV2Mip();     
-  //mV2Mip = param->GetmV2Mip();     
+ 
   Float_t channelWidth = fParam->GetChannelWidth() ;  
   Float_t meanVertex = fParam->GetMeanVertex();
   
   AliDebug(1,Form("Start DIGITS reconstruction "));
   
 
- TBranch *brDigits=digitsTree->GetBranch("T0");
+  TBranch *brDigits=digitsTree->GetBranch("T0");
   AliT0digit *fDigits = new AliT0digit() ;
   if (brDigits) {
     brDigits->SetAddress(&fDigits);
@@ -153,7 +151,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   Int_t pmtBestC=99999;
   Float_t timeDiff=999999, meanTime=0;
   
-  Int_t mv2MIP = fParam-> GetmV2Mip();     
+  //  Int_t mv2MIP = fParam-> GetmV2Mip();     
 
 
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
@@ -162,28 +160,25 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   Float_t time[24], adc[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
     if(timeCFD->At(ipmt)>0 ){
-      Double_t qt0 = Double_t(chargeQT0->At(ipmt));
-      Double_t qt1 = Double_t(chargeQT1->At(ipmt));
-      if((qt1-qt0)>0)  adc[ipmt] = Int_t (TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000)));
-
-      time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(qt1) , timeCFD->At(ipmt), "pdc" ) ;
-     
-      //LED
-      Float_t ampLED;    //LED
-      Double_t sl = (timeLED->At(ipmt) - time[ipmt])*channelWidth;
-      if( adc[ipmt]/Float_t(mv2MIP) < 20) 
-	{
-	  Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
-	  ampLED = qt/Float_t(mv2MIP);
-	  AliDebug(1,Form(" ipmt %i QTC %f ch QTC in MIP %f, time in chann %f (led-cfd) %f in MIPs %f",
-			  ipmt, adc[ipmt], adc[ipmt]/Float_t(mv2MIP), time[ipmt],sl,ampLED ));
-	}
+     if(( chargeQT1->At(ipmt) - chargeQT0->At(ipmt))>0)  
+	adc[ipmt] = chargeQT1->At(ipmt) - chargeQT0->At(ipmt);
       else
-	{ AliDebug(1,Form(" amplitude %f MIPs on PMT %i, write QTC in both ", (adc[ipmt]/Float_t(mv2MIP)), ipmt));
-	  ampLED=adc[ipmt]/Float_t(mv2MIP);}
-      frecpoints->SetTime(ipmt,time[ipmt]);
-      frecpoints->SetAmp(ipmt,adc[ipmt]/Float_t(mv2MIP));
-      frecpoints->SetAmpLED(ipmt,ampLED);
+	adc[ipmt] = 0;
+      
+      time[ipmt] = fCalib-> WalkCorrection( ipmt, adc[ipmt], Float_t( timeCFD->At(ipmt))) ;
+	     
+      Double_t sl = Double_t(timeLED->At(ipmt) - timeCFD->At(ipmt));
+      //    time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt],"cosmic" ) ;
+      AliDebug(10,Form(" ipmt %i QTC %i , time in chann %i (led-cfd) %i ",
+		       ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
+      Double_t ampMip =((TGraph*)fAmpLED.At(ipmt))->Eval(sl);
+      Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
+      AliDebug(10,Form("  Amlitude in MIPS LED %f ,  QTC %f in channels %i\n ",ampMip,qtMip, adc[ipmt]));
+      
+      frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
+      frecpoints->SetAmp(ipmt, Float_t( ampMip)); //for cosmic &pp beam 
+      frecpoints->SetAmpLED(ipmt, Float_t(qtMip));
+      
     }
     else {
       time[ipmt] = 0;
@@ -208,19 +203,19 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   }
   if(besttimeA !=999999)  frecpoints->SetTimeBestA(Int_t(besttimeA));
   if( besttimeC != 999999 ) frecpoints->SetTimeBestC(Int_t(besttimeC));
-  AliDebug(1,Form(" besttimeA %f ch,  besttimeC %f ch",besttimeA, besttimeC));
+  AliDebug(10,Form(" besttimeA %f ch,  besttimeC %f ch",besttimeA, besttimeC));
   Float_t c = 0.0299792; // cm/ps
   Float_t vertex = 0;
   if(besttimeA !=999999 && besttimeC != 999999 ){
     timeDiff = (besttimeC - besttimeA)*channelWidth;
-    meanTime = (Float_t((besttimeA + besttimeC -4000)/2) * channelWidth); 
+    meanTime = Float_t((besttimeA + besttimeC)/2);// * channelWidth); 
     //    meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;
-    vertex = meanVertex - c*(timeDiff)/2. + (fdZonA - fdZonC)/2; 
+    vertex = meanVertex - c*(timeDiff)/2.;// + (fdZonA - fdZonC)/2; 
     frecpoints->SetVertex(vertex);
     frecpoints->SetMeanTime(Int_t(meanTime));
     //online mean
-    frecpoints->SetOnlineMean(Int_t(onlineMean * channelWidth));
-    AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm online mean %i ps",timeDiff, meanTime,vertex, Int_t(onlineMean * channelWidth )));
+    frecpoints->SetOnlineMean(Int_t(onlineMean));
+    AliDebug(10,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm online mean %i ps",timeDiff, meanTime,vertex, Int_t(onlineMean)));
     
   }
   
@@ -245,7 +240,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   
   Int_t timeCFD[24], timeLED[24], chargeQT0[24], chargeQT1[24];
   TString option = GetOption(); 
-  AliDebug(10,Form("Option: %s\n", option.Data()));
+  AliDebug(1,Form("Option: %s\n", option.Data()));
    
    
   for (Int_t i0=0; i0<105; i0++)
@@ -259,9 +254,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Int_t pmtBestC=99999;
   Float_t timeDiff=9999999, meanTime=0;
   Double_t qt=0;
-  Int_t mv2MIP = fParam-> GetmV2Mip();     
+  //  Int_t mv2MIP = fParam-> GetmV2Mip();     
   Float_t meanVertex = fParam->GetMeanVertex();
-
+  printf("meanVertex %f \n",meanVertex);
   //  UInt_t type =rawReader->GetType();	 
   
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
@@ -285,19 +280,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       Float_t channelWidth = fParam->GetChannelWidth() ;  
       
       //       Int_t meanT0 = fParam->GetMeanT0();
-      if(option == "pdc"){
-	for (Int_t in=0; in<24; in++)  
-	  {
-	    
-	    timeLED[in] = allData[in+1][0] ;
-	    timeCFD[in] = allData[in+25][0] ;
-	    chargeQT1[in] = allData[in+57][0] ;
-	     chargeQT0[in] = allData[in+81][0] ;
-	  }
-       }
-      
-      if(option == "cosmic"  ) //&& type == 7 )
-	{
+       
 	  
 	  for (Int_t in=0; in<12; in++)  
 	    {
@@ -305,21 +288,24 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	      timeCFD[in+12] = allData[in+56+1][0] ;
 	      timeLED[in] = allData[in+12+1][0] ;
 	      timeLED[in+12] = allData[in+68+1][0] ;
+	      AliDebug(10, Form(" readed i %i cfdC %i cfdA %i ledC %i ledA%i ",
+				in, timeCFD[in],timeCFD[in+12],timeLED[in], 
+				timeLED[in+12]));   
 	    }
 	  
 	  for (Int_t in=0; in<12;  in++)
 	    {
-	      chargeQT1[in]=allData[2*in+25][0];
-	      chargeQT0[in]=allData[2*in+26][0];
+	      chargeQT0[in]=allData[2*in+25][0];
+	      chargeQT1[in]=allData[2*in+26][0];
 	    }
 	  
 	   for (Int_t in=12; in<24;  in++)
 	     {
-	       chargeQT1[in]=allData[2*in+57][0];
-	       chargeQT0[in]=allData[2*in+58][0];
+	       chargeQT0[in]=allData[2*in+57][0];
+	       chargeQT1[in]=allData[2*in+58][0];
 	     }
 	   
-	 } //cosmic with physics event
+	   //	 } //cosmic with physics event
        for (Int_t in=0; in<24; in++)  
 	 AliDebug(10, Form(" readed Raw %i %i %i %i %i",
 			   in, timeLED[in],timeCFD[in],chargeQT0[in],chargeQT1[in]));
@@ -329,52 +315,26 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        for (Int_t ipmt=0; ipmt<24; ipmt++) {
 	 if(timeCFD[ipmt]>0 && timeLED[ipmt]>0){
 	   //for simulated data
-	   if(option == "pdc"){
-	     Double_t qt0 = Double_t(chargeQT0[ipmt]);
-	     Double_t qt1 = Double_t(chargeQT1[ipmt]);
-	     if((qt1-qt0)>0)  adc[ipmt] = Int_t(TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000.)));
-	     time[ipmt] = fCalib-> WalkCorrection( ipmt,Int_t(qt1) , timeCFD[ipmt], "pdc" ) ;
-	     Double_t sl = (timeLED[ipmt] - time[ipmt])*channelWidth;
-	     //pp collison
-	     if( adc[ipmt]/Float_t(mv2MIP) < 20) 
-	       {
-		 if(fAmpLEDrec.At(ipmt)) 
-		   qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
-	       }
-	     else //PbPb
-	       { AliDebug(1,Form(" amplitude %f MIPs on PMT %i, write QTC in both ", (adc[ipmt]/Float_t(mv2MIP)), ipmt));
-		 qt=adc[ipmt]/Float_t(mv2MIP);}
-	     
-	     frecpoints->SetTime(ipmt,time[ipmt]);
-	     frecpoints->SetAmp(ipmt,adc[ipmt]/Float_t(mv2MIP));
-	     frecpoints->SetAmpLED(ipmt,qt/Float_t(mv2MIP));
-	     AliDebug(10,Form(" QTC %f mv,  time in chann %f ampLED %f",adc[ipmt] ,time[ipmt], qt));
-	     AliDebug(10,Form("  Amlitude in MIPS LED %f ,  QTC %f \n ", adc[ipmt]/Float_t(mv2MIP),qt/Float_t(mv2MIP)));
-	   }
-	   
-	   
 	     //for physics  data
-	   if(option == "cosmic") // && type == 7)
-	     {
-	     if(( chargeQT1[ipmt] - chargeQT0[ipmt])>0)  
-	       adc[ipmt] = chargeQT1[ipmt] - chargeQT0[ipmt];
-	     else
-	       adc[ipmt] = 0;
-	     //      time[ipmt] = fCalib-> WalkCorrection( ipmt, adc[ipmt], timeCFD[ipmt],"cosmic" ) ;
-	     
-	     Double_t sl = timeLED[ipmt] - timeCFD[ipmt];
-	     time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt],"cosmic" ) ;
-	     AliDebug(10,Form(" ipmt %i QTC %i , time in chann %i (led-cfd) %i ",
-			      ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
-	     Double_t ampMip =( (TGraph*)fAmpLED.At(ipmt))->Eval(sl);
-	     Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
-	     AliDebug(10,Form("  Amlitude in MIPS LED %f ,  QTC %f \n ",ampMip,qtMip));
-	     
-	     frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
-	     frecpoints->SetAmp(ipmt, Float_t( ampMip)); //for cosmic &pp beam 
-	     frecpoints->SetAmpLED(ipmt, Float_t(qtMip));
-	   } //if physic data end
+	   if(( chargeQT1[ipmt] - chargeQT0[ipmt])>0)  
+	     adc[ipmt] = chargeQT1[ipmt] - chargeQT0[ipmt];
+	   else
+	     adc[ipmt] = 0;
 	   
+	   time[ipmt] = fCalib-> WalkCorrection( ipmt, adc[ipmt], timeCFD[ipmt],"cosmic" ) ;
+	   
+      	   Double_t sl = timeLED[ipmt] - timeCFD[ipmt];
+	     //    time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt],"cosmic" ) ;
+	   AliDebug(10,Form(" ipmt %i QTC %i , time in chann %i (led-cfd) %i ",
+			    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
+	   Double_t ampMip =( (TGraph*)fAmpLED.At(ipmt))->Eval(sl);
+	   Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
+	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %i\n ",ampMip,qtMip, adc[ipmt]));
+	     
+	   frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
+	   frecpoints->SetAmp(ipmt, Float_t( ampMip)); //for cosmic &pp beam 
+	   frecpoints->SetAmpLED(ipmt, Float_t(qtMip));
+	     
 	 }
 	 else {
 	   time[ipmt] = 0;
@@ -399,25 +359,19 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        if(besttimeA !=9999999)  frecpoints->SetTimeBestA(Int_t(besttimeA));
        if( besttimeC != 9999999 ) frecpoints->SetTimeBestC(Int_t(besttimeC));
-       AliDebug(1,Form(" besttimeA %f ps,  besttimeC %f ps",besttimeA, besttimeC));
-       Float_t c = 0.0299792; // cm/ps
+       AliDebug(5,Form(" pmtA %i besttimeA %f ps, pmtC %i besttimeC %f ps",
+		       pmtBestA,besttimeA, pmtBestC,  besttimeC));
+       Float_t c = 0.0299792458; // cm/ps
        Float_t vertex = 99999;
        if(besttimeA <9999999 && besttimeC < 9999999 ){
 	 timeDiff = ( besttimeC - besttimeA) *channelWidth;
-	 if(option == "pdc"){ 
-	   //	   meanTime = (besttimeA + besttimeC)/2 * channelWidth; 
-	   meanTime = (besttimeA + besttimeC-4000.)/2 * channelWidth; 
-	   onlineMean = Int_t (onlineMean * channelWidth);
-	 }
-	 if(option == "cosmic") {
-	   meanTime =  Float_t((besttimeA + besttimeC)/2);  
-	   onlineMean = onlineMean ;
-	 }
-	 vertex =  meanVertex -c*(timeDiff)/2.; //+ (fdZonA - fdZonC)/2; 
+	 meanTime =  Float_t((besttimeA + besttimeC)/2.);  
+	 onlineMean = onlineMean ;
+	 vertex =  meanVertex - c*(timeDiff)/2.; //+ (fdZonA - fdZonC)/2; 
 	 frecpoints->SetVertex(vertex);
 	 frecpoints->SetMeanTime(Int_t(meanTime));
 	 frecpoints->SetOnlineMean(Int_t(onlineMean));
-	 AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm online mean %i ",timeDiff, meanTime,vertex, onlineMean));
+	 AliDebug(5,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm meanVertex %f online mean %i ",timeDiff, meanTime,vertex,meanVertex, onlineMean));
 	 
        }
     } // if (else )raw data

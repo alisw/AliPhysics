@@ -49,35 +49,15 @@ ClassImp(AliT0Calibrator)
    param->Init();
   
   fChannelWidth = param->GetChannelWidth() ;  
-  Double_t *grY ; //= new grY[2500] ;
-  // Double_t *grX ;
-  Int_t index[25000];
-  Bool_t down=true;
   for (Int_t i=0; i<24; i++){
     fMaxValue[i]=0;
     fTimeDelayCFD[i] = Int_t (param->GetTimeDelayCFD(i));
-     
+    
     TGraph* fu = param ->GetWalk(i);
-     //    TGraph* fu  = param ->GetAmpLEDRec(i);
- 	fWalk.AddAtAndExpand(fu,i);
-	
-  if(fu) {
-      Int_t np=fu->GetN();
-      if(np>0) {
-	grY = fu->GetY();
-	//	grX[i] = fu->GetX();
-	TMath::Sort(np, grY, index,down);
-	fMaxValue[i]=Int_t(grY[index[0]]);
-
-      }
-    }
-	
+    //    TGraph* fu  = param ->GetAmpLEDRec(i);
+    fWalk.AddAtAndExpand(fu,i);	
   }
-
-  //  delete [] grY;
-  //  delete [] grX;
   
-  //
 }
 //_____________________________________________________________________________
 
@@ -107,7 +87,6 @@ AliT0Calibrator &AliT0Calibrator::operator=(const AliT0Calibrator &r)
 }
 
 
-
 //____________________________________________________________________
 Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time, TString option) 
 {
@@ -116,27 +95,15 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time, TString
   Int_t walk=0;
 
   Int_t timeEq=0, timeWalk=0;  
-  //  TGraph* fu1 = param ->GetWalk(ipmt);
-  //   TGraph* fu1  = param ->GetAmpLEDRec(ipmt);
-   TGraph *fu1=(TGraph*) fWalk.At(ipmt);
-  if(fu1 && fu1->GetN()>0) {
+  TGraph *fu1=(TGraph*) fWalk.At(ipmt);
+  if(fu1 && fu1->GetN()>0) 
     walk=Int_t(fu1->Eval(Double_t(qt)));
-  }
-  if (option == "pdc") {
-    timeWalk = time + Int_t(fMaxValue[ipmt]-walk) ;
-    //    timeEq= timeWalk - fTimeDelayCFD[ipmt];
-    timeEq= timeWalk - fTimeDelayCFD[ipmt]; //for the same as cosmic
-     AliDebug(10,Form(" ipmt %i time before %i timeWalk %i ,  qt %i timeEq %i \n ",
-		 ipmt, time,timeWalk, qt, timeEq ));
-  }
-  if (option == "cosmic") {
-    timeWalk = time + Int_t((fMaxValue[ipmt]-walk)) ;
-    if(walk <1  )  timeWalk = time  ;
-     timeEq= timeWalk - fTimeDelayCFD[ipmt];
-     AliDebug(10,Form(" ipmt %i time before %i timeWalk %i ,  qt %i timeEq %i \n ",
-		 ipmt, time,timeWalk, qt, timeEq ));
-  }
- 
+  
+  timeWalk = time + walk   ;
+  timeEq= timeWalk - fTimeDelayCFD[ipmt];
+  AliDebug(10,Form(" ipmt %i time before %i timeWalk %i , walk %i  qt %i timeEq %i \n ",
+		   ipmt, time,timeWalk, walk, qt, timeEq ));
+  
   return timeEq;
 }
 

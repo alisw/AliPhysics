@@ -184,26 +184,37 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   Int_t timeC = fDigits->BestTimeA();
   
   
-  TArrayI  *allData = new TArrayI(110);
-  Int_t i=0;
-  allData->AddAt(0,0);
-  for (i=1; i<25; i++) {
-    allData->AddAt(fTimeLED->At(i-1),i);
-    allData->AddAt(fTimeCFD->At(i-1),i+24);
-    allData->AddAt(fADC0->At(i-1),i+56);
-    allData->AddAt(fADC1->At(i-1),i+80);
+  //  TArrayI  *allData = new TArrayI(110);
+  Int_t allData[110][1];
+  for (Int_t i=0; i<110; i++) allData[i][0] = 0;
 
+  allData[0][0]=0;
+  for (Int_t i=1; i<13; i++) {
+    allData[i][0]    = fTimeCFD->At(i-1);
+    allData[i+12][0] = fTimeLED->At(i-1);
+    allData[i+56][0] = fTimeCFD->At(i-1+12);
+    allData[i+68][0] = fTimeLED->At(i-1+12);
   }
-  allData->AddAt(meantime,49);
-  allData->AddAt(timediff,50);
-  allData->AddAt(timeA,51);
-  allData->AddAt(timeC,52);
-  allData->AddAt(mult0,53);
-  allData->AddAt(mult1,54);
-  allData->AddAt(mult0,55);
-  allData->AddAt(mult1,56);
+  
+  for (Int_t iii=0; iii<12; iii++) {
+    allData[2*iii+25][0] = fADC1->At(iii);
+    allData[2*iii+26][0] = fADC0->At(iii);
+  }
+  for (Int_t ii=12; ii<24; ii++) {
+    allData[2*ii+57][0] = fADC1->At(ii);
+    allData[2*ii+58][0] = fADC0->At(ii);
+  }
+  
+  allData[49][0] = meantime;
+  allData[50][0] = timediff;
+  allData[51][0] = timeA;
+  allData[52][0] = timeC;
+  allData[53][0] = mult0;
+  allData[54][0] = mult1;
+  allData[55][0] = mult0;
+  allData[56][0] = mult1;
 
-    cout.setf( ios_base::hex, ios_base::basefield );
+  //    cout.setf( ios_base::hex, ios_base::basefield );
   //space for DRM header
   fIndex += 6;
 
@@ -228,7 +239,7 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   AliT0LookUpKey * lookkey  = new AliT0LookUpKey();
   AliT0LookUpValue * lookvalue ;//= new AliT0LookUpValue(trm,tdc,chain,channel);
   for (Int_t det = 0; det < 105; det++) {
-    time = allData->At(det);
+    time = allData[det][0];
     if (time >0 && time !=99999) {
       lookkey->SetKey(det);
       lookvalue = (AliT0LookUpValue*) fLookUp.GetValue((TObject*)lookkey);     
@@ -236,7 +247,7 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
 	{
 	  isData++;
 	  itrm= lookvalue->GetTRM();
-	  if (det >56 &&inside ==0)  {
+	  if (det >56 &&inside == 0)  {
 	    WriteChainDataTrailer(1); // 1st chain trailer
 	    fIndex++;
 	    WriteChainDataHeader(2, 1);
@@ -247,7 +258,7 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
 	  iTDC = lookvalue->GetTDC();
 	  channel = lookvalue->GetChannel();
 	  FillTime(channel,  iTDC,  time);
-	  AliDebug(1,Form("  itrm %i ,  chain %i , iTDC %i, channel %i",itrm,chain,iTDC,channel));
+	  AliDebug(1,Form("look %i  itrm %i ,  chain %i , iTDC %i, channel %i time %i", det,itrm,chain,iTDC,channel, time));
 	}
       else
 	{
@@ -276,8 +287,6 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   WriteTrailer(1,0,fEventNumber,5);
     
     WriteDRMDataHeader();
-    
-    delete allData;
     
 }
 

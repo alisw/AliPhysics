@@ -61,6 +61,7 @@ ClassImp(AliT0Digitizer)
 				     fADC0 (new TArrayI(24)),
 				     fSumMult(0),
 				     fAmpLED(0),
+                                     fAmpQTC(0),
 				     fParam(0)
 
 
@@ -81,6 +82,7 @@ AliT0Digitizer::AliT0Digitizer(AliRunDigitizer* manager)
    fADC0 (new TArrayI(24)),
    fSumMult(0),
    fAmpLED(0),
+   fAmpQTC(0),
    fParam(0)
 {
 // ctor which should be used
@@ -88,33 +90,37 @@ AliT0Digitizer::AliT0Digitizer(AliRunDigitizer* manager)
   AliDebug(1,"processed");
   fParam = AliT0Parameters::Instance();
   fParam->Init();
-  Int_t index[25000];
-  Bool_t down=true;
 
   for (Int_t i=0; i<24; i++){
-    TGraph* gr = fParam ->GetAmpLEDRec(i);
+    TGraph* gr = fParam ->GetAmpLED(i);
     Int_t np = gr->GetN();
     Double_t *x = gr->GetX();
     Double_t *y = gr->GetY();
-
+    
     Double_t *x1 = new Double_t[np];
     Double_t *y1 = new Double_t[np];
     for (Int_t ii=0; ii<np; ii++) {
-      y1[ii]=y[np-ii-1]; x1[ii]=x[np-ii-1];
+      y1[ii]=y[np-ii-1]; 
+      x1[ii]=x[np-ii-1];
     }
     
     TGraph *grInverse = new TGraph(np,y1,x1);
     fAmpLED.AddAtAndExpand(grInverse,i);
-
-     TGraph* grw = fParam ->GetWalk(i);
-      Int_t npw = grw->GetN();
-     Double_t *yw = grw->GetY();
-    TMath::Sort(npw, yw, index,down);
-    fMaxValue[i]=Int_t(yw[index[0]]);
   }
-
-    //    delete [] x1;
-    //   delete [] y1;
+  for (Int_t i=0; i<24; i++){
+    TGraph* grq = fParam ->GetQTC(i);
+    Int_t npq = grq->GetN();
+    Double_t *xq = grq->GetX();
+    Double_t *yq = grq->GetY();
+    Double_t *x1q = new Double_t[npq];
+    Double_t *y1q = new Double_t[npq];
+    for (Int_t ii=1; ii<npq; ii++) {
+      y1q[ii]=yq[ii-1]; 
+      x1q[ii]=xq[ii-1];
+    }
+  TGraph *grInverseQTC = new TGraph(npq,y1q,x1q);
+  fAmpQTC.AddAtAndExpand(grInverseQTC,i);
+  }
 }
 
 //------------------------------------------------------------------------
@@ -168,7 +174,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
   Float_t sl, qt;
   Int_t  bestATDC=0;
   Int_t  bestCTDC=0;
-  Int_t qtCh=0;
+  Float_t qtCh=0;
   Float_t time[24], besttime[24], timeGaus[24] ;
   //Q->T-> coefficients !!!! should be asked!!!
   Float_t timeDelayCFD[24];
@@ -181,9 +187,11 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
   Float_t channelWidth = fParam->GetChannelWidth() ;  
   Float_t delayVertex = fParam->GetTimeDelayTVD();
    
+
   zdetC = TMath::Abs(fParam->GetZPosition("T0/C/PMT1"));
   zdetA  = TMath::Abs(fParam->GetZPosition("T0/A/PMT15"));
   
+  //  printf(" !!!!!Z det A = %f C = % f",zdetA,zdetC);
   AliT0hit  *startHit;
   TBranch *brHits=0;
   
@@ -249,7 +257,6 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  Double_t e=startHit->Etot();
 	  volume = startHit->Volume();
 	  
-	  //	  if(e>0 && RegisterPhotoE(numpmt,e)) {
 	  if(e>0 ) {
 	    countE[numpmt]++;
 	    besttime[numpmt] = startHit->Time();
@@ -293,31 +300,32 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  // phe -> mV 0.3; 1MIP ->500phe -> ln (amp (mV)) = 5;
 	  // max 200ns, HIJING  mean 50000phe -> 15000mv -> ln = 15 (s zapasom)
 	  // channel 25ps
-	  qt= 50.*al/ph2Mip;  // 50mv/Mip amp in mV 
+	  qt= al/ph2Mip;  // 50mv/Mip amp in mV 
 	  //  fill TDC
 	  timeDelayCFD[i] = fParam->GetTimeDelayCFD(i);
  	  trCFD = Int_t (timeGaus[i]/channelWidth + timeDelayCFD[i]); 
+
 	  TGraph* gr = ((TGraph*)fAmpLED.At(i));
 	  sl = gr->Eval(qt);
 
-	  trLED = Int_t(( timeGaus[i] + 1000*sl )/channelWidth);
-	  qtCh=Int_t (1000.*TMath::Log(qt) / channelWidth);
+	  TGraph* gr1 = ((TGraph*)fAmpQTC.At(i));
+	  qtCh = gr1->Eval(qt);
 	  fADC0->AddAt(0,i);
 	  fADC->AddAt(qtCh,i);
-	  ftimeLED->AddAt(trLED,i); 
 	  //	  sumMult += Int_t ((al*gain[i]/ph2Mip)*50) ;
-	  sumMult += Int_t (qt/sumMultCoeff)  ;
+	  sumMult += Int_t (qtCh/sumMultCoeff)  ;
 	 
 	  // put slewing 
 	  TGraph *fu=(TGraph*) fParam ->GetWalk(i) ;
 	  Float_t slew=fu->Eval(Float_t(qtCh));
 
 	  //	  trCFD=trCFD-Int_t(fMaxValue[i]-slew);
-	  trCFD = trCFD-Int_t(fMaxValue[i]-slew) + 2000; //for the same channel as cosmic
+	  trCFD = trCFD - slew; //for the same channel as cosmic
 	  ftimeCFD->AddAt(Int_t (trCFD),i);
+	  trLED = Int_t(trCFD  + sl );
+	  ftimeLED->AddAt(trLED,i); 
 	  AliDebug(10,Form("  pmt %i : time in ns %f time in channels %i  LEd %i  ",  i, timeGaus[i],trCFD, trLED ));
-	  AliDebug(10,Form(" qt in mV %f qt in ns %f qt in channels %i   ",qt, 
-			   TMath::Log(qt), qtCh));
+	  AliDebug(10,Form(" qt in MIP %f led-cfd in  %f qt in channels %f   ",qt, sl, qtCh));
 
 	}
       } //pmt loop
@@ -337,7 +345,6 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 			/channelWidth);
 	meanTime=Int_t (((besttimeC+besttimeA)/2. )/channelWidth);
       }
-	AliDebug(10,Form(" time A& C %i %i  time diff && mean time in channels %i %i",bestATDC,bestCTDC, timeDiff, meanTime));
 
     if (sumMult > threshold){
       fSumMult =  Int_t (1000.* TMath::Log(Double_t(sumMult) / Double_t(sumMultCoeff))
