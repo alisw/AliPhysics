@@ -623,46 +623,67 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
   // sector A00 starts at 3 o'clock, sectors are counted counterclockwise
   // median of sector 00 is at 10 degrees, median of sector A04 at 90
   //
-  Double_t xhit;
+
   Double_t charge=(double) GetCharge();
-  Double_t xx[5];
-  xx[1] = GetFirstPointZ();
-  xx[3] = GetTgl();
-  xx[4] = charge*(1.0/GetPt());
+  Double_t param[5];
+  param[1] = GetFirstPointZ();
+  param[3] = GetTgl();
+  param[4] = charge*(1.0/GetPt());
 
-  Double_t alpha = 0;
-  if(GetSector() == -1){
+  Double_t alpha, phi, xl, yl;
 
-    const double kMaxPhi = TMath::Pi()/2 - 10./180.*TMath::Pi();
+  // rotate to local coordinates if necessary
+
+  if(GetSector() == -1){ // track in global coordinates
+
     alpha = TMath::ATan2(GetFirstPointY(),GetFirstPointX());
-    double phi = GetPsi() - alpha;
+    double sinAlpha = TMath::Sin(alpha);
+    double cosAlpha = TMath::Cos(alpha);   
 
+    phi = GetPsi() - alpha;
+    xl =  GetFirstPointX()*cosAlpha + GetFirstPointY()*sinAlpha;    
+    yl = -GetFirstPointX()*sinAlpha + GetFirstPointY()*cosAlpha;
+
+  } else{ // track in local coordinates
+
+    alpha = (GetSector()+0.5)*(TMath::TwoPi()/18);
+    phi = GetPsi();    
+    xl = GetFirstPointX();
+    yl = GetFirstPointY();
+
+    // normalize alpha to [-Pi,+Pi]
+
+    alpha = alpha - TMath::TwoPi() * TMath::Floor( alpha /TMath::TwoPi()+.5);
+  }
+  
+  // extra rotation to keep phi in the range (-Pi/2,+Pi/2)
+  {  
+    const Double_t kMaxPhi = TMath::PiOver2() - 10./180.*TMath::Pi(); 
+    
     // normalize phi to [-Pi,+Pi]
-
+    
     phi = phi - TMath::TwoPi() * TMath::Floor( phi /TMath::TwoPi()+.5);
-
-    // extra rotation to keep phi in the range (-Pi/2,+Pi/2)
-
-    double rotation = 0;
-    if( phi>=kMaxPhi ) rotation = -TMath::Pi()/2;
-    else if( phi<=-kMaxPhi ) rotation = TMath::Pi()/2;
-
-    phi   += rotation;
-    alpha -= rotation;
     
-    xhit = GetFirstPointX()*TMath::Cos(alpha) + GetFirstPointY()*TMath::Sin(alpha);
-    xx[0] = -(GetFirstPointX()*TMath::Sin(alpha)) + GetFirstPointY()*TMath::Cos(alpha);
-    xx[2] = TMath::Sin(phi);
+    if( phi >= kMaxPhi )
+      {      
+	alpha += TMath::PiOver2();
+	phi   -= TMath::PiOver2();
+	Double_t xtmp = xl;
+	xl =  yl;
+	yl = -xtmp;
+      } 
+    else if( phi <= -kMaxPhi )
+      {      
+	alpha += -TMath::PiOver2();
+	phi   -= -TMath::PiOver2();
+	Double_t xtmp = xl;
+	xl = -yl;
+	yl =  xtmp;
+      }
   }
-  else{
-    alpha = fmod((2*GetSector()+1)*(TMath::Pi()/18),2*TMath::Pi());
-    if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
-    else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
-    
-    xhit = GetFirstPointX();
-    xx[0] = GetFirstPointY();
-    xx[2] = TMath::Sin(GetPsi());
-  }
+
+  param[0] = yl;
+  param[2] = TMath::Sin(phi);
   
   //covariance matrix
   Double_t cov[15]={
@@ -683,7 +704,7 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
   //TODO (Feb 07): make this a real warning when logging system is adapted
   //HLTWarning("track conversion to ESD format needs AliRoot version > v4-05-04");
 #else
-  Set(xhit,alpha,xx,cov);
+  Set(xl,alpha,param,cov);
   SetNumberOfClusters(nCluster);
   SetChi2(0.);
   SetFakeRatio(0.);
