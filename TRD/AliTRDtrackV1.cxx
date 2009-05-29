@@ -805,14 +805,14 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   // allocate space to store raw PID signals dEdx & momentum
   track->SetNumberOfTRDslices((nslices+2)*nPID);
   // store raw signals
-  Double_t p, sp;
+  Float_t p, sp; Double_t spd;
   for (Int_t ip = 0; ip < kNplane; ip++) {
     if(fTrackletIndex[ip] == 0xffff) continue;
     if(!fTracklet[ip]->HasPID()) continue;
     Float_t *dedx = fTracklet[ip]->GetdEdx();
     for (Int_t js = 0; js < nslices; js++, dedx++) track->SetTRDslice(*dedx, ip, js);
-    p = fTracklet[ip]->GetMomentum(&sp);
-    track->SetTRDmomentum(p, ip, &sp);
+    p = fTracklet[ip]->GetMomentum(&sp); spd = sp;
+    track->SetTRDmomentum(p, ip, &spd);
   }
   // store PID probabilities
   track->SetTRDpid(fPID);
