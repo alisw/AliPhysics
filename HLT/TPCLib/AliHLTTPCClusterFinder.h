@@ -22,6 +22,7 @@
 class AliHLTTPCPad;
 class AliHLTTPCSpacePointData;
 class AliHLTTPCClusters;
+class AliTPCTransform;
 
 /**
  * @class AliHLTTPCClusterFinder
@@ -280,10 +281,12 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   vector<MCWeight> fClusterMCVector;                               //! transient
 
+  AliTPCTransform * fOfflineTransform;
+
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
 #endif
   
-  ClassDef(AliHLTTPCClusterFinder,7) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder,8) //Fast cluster finder
 };
 #endif

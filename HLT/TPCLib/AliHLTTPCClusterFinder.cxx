@@ -34,6 +34,8 @@
 #include "AliHLTTPCPad.h"
 #include <sys/time.h>
 #include <algorithm>
+#include "AliTPCcalibDB.h"
+#include "AliTPCTransform.h"
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -81,9 +83,14 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fChargeOfCandidatesFalling(kFALSE),
   f32BitFormat(kFALSE),
   fDoMC(kFALSE),
-  fClusterMCVector()
+  fClusterMCVector(),
+  fOfflineTransform(NULL)
 {
   //constructor  
+  fOfflineTransform = AliTPCcalibDB::Instance()->GetTransform(); 
+  if(!fOfflineTransform){
+    HLTError("AliHLTTPCClusterFinder():  Offline transform not in AliTPCcalibDB.");
+  }
 }
 
 AliHLTTPCClusterFinder::~AliHLTTPCClusterFinder(){
@@ -313,6 +320,7 @@ void AliHLTTPCClusterFinder::ReadDataUnsortedDeconvoluteTime(void* ptr,unsigned 
 	  if(f32BitFormat){
 	    indexInBunchData = fDigitReader->GetBunchSize();
 	    const UShort_t *bunchData= fDigitReader->GetSignalsShort();
+	    
 	    do{
 	      AliHLTTPCClusters candidate;
 	      //for(Int_t i=indexInBunchData;i<fDigitReader->GetBunchSize();i++){
@@ -385,6 +393,7 @@ void AliHLTTPCClusterFinder::ReadDataUnsortedDeconvoluteTime(void* ptr,unsigned 
 		if(prevSignal>bunchData[i]){//means the peak of the signal has been reached and deconvolution will happen if the signal rise again.
 		  signalFalling=kTRUE;
 		}
+
 		candidate.fTotalCharge+=bunchData[i];	
 		candidate.fTime += time*bunchData[i];
 		candidate.fTime2 += time*time*bunchData[i];
@@ -1019,7 +1028,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 
       if(!list[j].fFlags){
 	if(fDoMC){
-	  if(j+fClustersMCInfo.size()-nclusters >=0 && j+fClustersMCInfo.size()-nclusters < fClustersMCInfo.size()){
+	  if(j+(Int_t)fClustersMCInfo.size()-nclusters >=0 && j+fClustersMCInfo.size()-nclusters < fClustersMCInfo.size()){
 	    fClustersMCInfo.erase(fClustersMCInfo.begin()+j+fClustersMCInfo.size()-nclusters); // remove the mc info for this cluster since it is not taken into account 
 	  }
 	}
@@ -1027,7 +1036,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
       }
       if(list[j].fTotalCharge < fThreshold){
 	if(fDoMC){
-	  if(j+fClustersMCInfo.size()-nclusters >=0 && j+fClustersMCInfo.size()-nclusters < fClustersMCInfo.size()){
+	  if(j+(Int_t)fClustersMCInfo.size()-nclusters >=0 && j+fClustersMCInfo.size()-nclusters < fClustersMCInfo.size()){
 	    fClustersMCInfo.erase(fClustersMCInfo.begin()+j+fClustersMCInfo.size()-nclusters); // remove the mc info for this cluster since it is not taken into account 
 	  }
 	}
@@ -1089,28 +1098,40 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
       
       if(!fRawSP){
 	AliHLTTPCTransform::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
-	AliHLTTPCTransform::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
+
+	if(fOfflineTransform == NULL){
+	  AliHLTTPCTransform::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
+	  
+	  if(xyz[0]==0) LOG(AliHLTTPCLog::kError,"AliHLTTPCClustFinder","Cluster Finder")
+			  <<AliHLTTPCLog::kDec<<"Zero cluster"<<ENDLOG;
+	  if(fNClusters >= fMaxNClusters)
+	    {
+	      LOG(AliHLTTPCLog::kError,"AliHLTTPCClustFinder::WriteClusters","Cluster Finder")
+		<<AliHLTTPCLog::kDec<<"Too many clusters "<<fNClusters<<ENDLOG;
+	      return;
+	    }  
 	
-	if(xyz[0]==0) LOG(AliHLTTPCLog::kError,"AliHLTTPCClustFinder","Cluster Finder")
-	  <<AliHLTTPCLog::kDec<<"Zero cluster"<<ENDLOG;
-	if(fNClusters >= fMaxNClusters)
-	  {
-	    LOG(AliHLTTPCLog::kError,"AliHLTTPCClustFinder::WriteClusters","Cluster Finder")
-	      <<AliHLTTPCLog::kDec<<"Too many clusters "<<fNClusters<<ENDLOG;
-	    return;
-	  }  
-	
-	fSpacePointData[counter].fX = xyz[0];
-	//	fSpacePointData[counter].fY = xyz[1];
-	if(fCurrentSlice<18){
-	  fSpacePointData[counter].fY = xyz[1];
+	  fSpacePointData[counter].fX = xyz[0];
+	  //	fSpacePointData[counter].fY = xyz[1];
+	  if(fCurrentSlice<18){
+	    fSpacePointData[counter].fY = xyz[1];
+	  }
+	  else{
+	    fSpacePointData[counter].fY = -1*xyz[1];
+	  }
+	  fSpacePointData[counter].fZ = xyz[2];
 	}
 	else{
-	  fSpacePointData[counter].fY = -1*xyz[1];
+	  Double_t x[3]={thisrow,fpad+.5,ftime}; 
+	  Int_t iSector[1]={thissector};
+	  fOfflineTransform->Transform(x,iSector,0,1);
+	  fSpacePointData[counter].fX = x[0];
+	  fSpacePointData[counter].fY = x[1];
+	  fSpacePointData[counter].fZ = x[2];
 	}
-	fSpacePointData[counter].fZ = xyz[2];
 
-      } else {
+      } 
+      else {
 	fSpacePointData[counter].fX = fCurrentRow;
 	fSpacePointData[counter].fY = fpad;
 	fSpacePointData[counter].fZ = ftime;
