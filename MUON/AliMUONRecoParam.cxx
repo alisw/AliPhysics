@@ -447,7 +447,7 @@ void AliMUONRecoParam::Print(Option_t *option) const
   for (Int_t iCh = 0; iCh < 10; iCh++) cout << Form(" %6.3f |",fDefaultBendingReso[iCh]);
   cout << endl;
   cout<<Form("maximum number of trigger tracks above which the tracking is cancelled = %d",fMaxTriggerTracks)<<endl;
-  cout<<Form("maximum number of track candidates above which the tracking abort = %d",fMaxTrackCandidates)<<endl;
+  cout<<Form("maximum number of track candidates above which the tracking is abandonned = %d",fMaxTrackCandidates)<<endl;
   
   cout<<"\t-----------------------------------------------------"<<endl<<endl;
   
