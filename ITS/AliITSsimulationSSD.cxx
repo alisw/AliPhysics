@@ -34,6 +34,8 @@
 #include "AliITSgeom.h"
 #include "AliITSsimulationSSD.h"
 #include "AliITSTableSSD.h"
+#include <TF1.h>
+
 
 ClassImp(AliITSsimulationSSD)
 ////////////////////////////////////////////////////////////////////////
@@ -67,7 +69,8 @@ AliITSsimulation(dettyp),
 fMapA2(0),
 fIonE(0.0),
 fDifConst(),
-fDriftVel(){
+fDriftVel(),
+fTimeResponse(0){
     // Constructor 
     // Input:
     //   AliITSDetTypeSim    Pointer to the SSD dettype to be used
@@ -76,6 +79,7 @@ fDriftVel(){
     // Return
     //   A standard constructed AliITSsimulationSSD class
 
+  fTimeResponse = new TF1("ftimeresponse",".5*x*exp(1.-.5*x)");
     Init();
 }
 //----------------------------------------------------------------------
@@ -110,6 +114,7 @@ AliITSsimulationSSD& AliITSsimulationSSD::operator=(
   this->fDifConst[1] = s.fDifConst[1];
   this->fDriftVel[0] = s.fDriftVel[0];
   this->fDriftVel[1] = s.fDriftVel[1];
+  this->fTimeResponse = s.fTimeResponse;
   return *this;
 }
 /*
@@ -131,7 +136,8 @@ AliITSsimulationSSD::AliITSsimulationSSD(const AliITSsimulationSSD &source):
 fMapA2(source.fMapA2),
 fIonE(source.fIonE),
 fDifConst(),
-fDriftVel(){
+fDriftVel(),
+fTimeResponse(source.fTimeResponse){
   // copy constructor
   fDifConst[0] = source.fDifConst[0];
   fDifConst[1] = source.fDifConst[1];
@@ -142,6 +148,7 @@ fDriftVel(){
 AliITSsimulationSSD::~AliITSsimulationSSD() {
   // destructor
   delete fMapA2;
+  delete fTimeResponse;
   //delete fDCS;
 }
 //______________________________________________________________________
@@ -218,6 +225,8 @@ void AliITSsimulationSSD::HitsToAnalogDigits(AliITSmodule *mod,
   Double_t x1=0.0, y1=0.0, z1=0.0;
   Double_t de=0.0;
   Int_t module = mod->GetIndex();
+  Double_t tof = 0.;
+  
   
   AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);
   
@@ -239,6 +248,15 @@ void AliITSsimulationSSD::HitsToAnalogDigits(AliITSmodule *mod,
       cout << endl;
     } // end if
     if (mod->LineSegmentL(i, x0, x1, y0, y1, z0, z1, de, idtrack)) {
+
+      // Scale down dE/dx according to the hit's TOF wrt to the trigger
+      // Necessary for pileup simulation
+      // EF - 21/04/09
+      tof = mod->GetHit(i)->GetTOF();
+      tof *= 1.E+6; // convert time in microsecond
+      de = de * fTimeResponse->Eval(-1.*tof+2.);
+      //
+
       HitToDigit(module, x0, y0, z0, x1, y1, z1, de,tav);
       if (lasttrack != idtrack || i==(nhits-1)) {
 	GetList(idtrack,i,module,pList,tav);

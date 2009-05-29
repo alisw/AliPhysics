@@ -18,6 +18,7 @@ class AliITSTableSSD;
 //class AliITSdcsSSD;
 class AliITSsegmentationSSD;
 class AliITSCalibrationSSD;
+class TF1;
 
 class AliITSsimulationSSD: public AliITSsimulation {
 
@@ -124,6 +125,8 @@ class AliITSsimulationSSD: public AliITSsimulation {
     Double_t    fIonE;        // ionization energy of Si in GeV
     Double_t    fDifConst[2]; // Diffusion constants [h,e] in cm**2/sec
     Double_t    fDriftVel[2]; // Drift velocities [P,N sides] cm/sec
+
+    TF1         *fTimeResponse; // signal time response function
 
     ClassDef(AliITSsimulationSSD,2) // SSD signal simulation class
 
