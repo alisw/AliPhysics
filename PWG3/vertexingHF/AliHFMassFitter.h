@@ -19,6 +19,7 @@
 #include <TNtuple.h>
 #include <TFile.h>
 #include <TString.h>
+#include <TList.h>
 
 
 class AliHFMassFitter : public TNamed {
@@ -32,7 +33,7 @@ class AliHFMassFitter : public TNamed {
   AliHFMassFitter& operator=(const AliHFMassFitter &mfit);
 
   //setters
-  void     SetHisto(TH1F *histoToFit) {fhistoInvMass=histoToFit;}
+  void     SetHisto(TH1F *histoToFit);
   void     SetRangeFit(Double_t minvalue, Double_t maxvalue){fminMass=minvalue; fmaxMass=maxvalue;}
   void     SetMinRangeFit(Double_t minvalue){fminMass=minvalue;}
   void     SetMaxRangeFit(Double_t maxvalue){fmaxMass=maxvalue;}
@@ -44,18 +45,22 @@ class AliHFMassFitter : public TNamed {
   void     SetSideBands(Bool_t onlysidebands=kTRUE) {fSideBands=onlysidebands;}
 
   //getters
-  TH1F*    GetHisto()      const {return fhistoInvMass;}
+  TH1F*    GetHistoClone() const;
   Double_t GetMinRangeFit()const {return fminMass;}
   Double_t GetMaxRangeFit()const {return fmaxMass;}
   Int_t    GetBinN()       const {return fNbin;}
   void     GetFitPars(Float_t*) const;
-  void     GetTypeOfFit(Bool_t background, Int_t typeb) const {background = fWithBkg; typeb = ftypeOfFit4Bkg;}
+  void     GetTypeOfFit(Bool_t &background, Int_t &typeb) const {background = fWithBkg; typeb = ftypeOfFit4Bkg;}
   Int_t    GetReflectionSigmaFactor() const {return ffactor;} 
 
   void     InitNtuParam(char *ntuname="ntupar");
   void     FillNtuParam();
   TNtuple* GetNtuParam() const {return fntuParam;}
   TNtuple* NtuParamOneShot(char *ntuname="ntupar");
+
+  void     WriteHisto(TString path="./");
+  void     WriteNtuple(TString path="./") const;
+  void     Reset();
 
   void     Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const; 
   void     Background(Double_t nOfSigma,Double_t &background,Double_t &errbackground) const; 
@@ -86,6 +91,7 @@ class AliHFMassFitter : public TNamed {
   Double_t fMass;          // signal gaussian mean value
   Double_t fSigmaSgn;      // signal gaussian sigma
   Bool_t   fSideBands;     // kTRUE = only side bands considered
+  Int_t    fcounter;       // internal counter
 
   ClassDef(AliHFMassFitter,1); // class for invariant mass fit
 };
