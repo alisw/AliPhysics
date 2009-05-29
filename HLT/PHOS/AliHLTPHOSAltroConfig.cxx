@@ -35,42 +35,6 @@ AliHLTPHOSAltroConfig::AliHLTPHOSAltroConfig() : fNPresamples(900),
 
 
 {
-  //  fNTotalSamples =  fNPresamples + fNSamples ; 
-  int tmpNSamples = 0;
-  int tmpNPreSamples = 0;
-
-  char *tmpBaseDir = getenv("ALIHLT_BASEDIR");
-  char tmpFileName[256];
-
-  sprintf(tmpFileName, "%s/PHOS/hltAltroConfig.txt", tmpBaseDir);
-
-  int res = 0; //OD to get rid of warnings
-
-  if(tmpBaseDir != 0)
-    {
-      FILE *fp = fopen(tmpFileName, "r");
-
-      if(fp == 0)
-	{
- 	  printf("\nNSamples scanned from file is, ERROR \n");
-	  printf("\nNPreSamples scanned from file is. ERROR\n"); 
-	  PrintAltroDefaultValues(); 
-	}
-      else
-	{
-	  res = fscanf(fp, "N_SAMPLES %d\n", &tmpNSamples); 
-	  res = fscanf(fp, "N_PRE_SAMPLES %d\n", &tmpNPreSamples);
-	  fNSamples = tmpNSamples;
-	  fNPresamples = tmpNPreSamples;
- 	  fNTotalSamples = fNSamples + fNPresamples;
-	  fclose(fp);
-	}
-
-    }
-  else
-    {
-      printf( "\nERROR: could not find ALIHLT_BASEDIR\n" );
-    }
 
 }
 

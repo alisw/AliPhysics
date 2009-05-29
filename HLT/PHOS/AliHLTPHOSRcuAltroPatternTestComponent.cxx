@@ -32,7 +32,8 @@ AliHLTPHOSRcuAltroPatternTestComponent:: AliHLTPHOSRcuAltroPatternTestComponent(
 										    fNTotalPatterns(0),
 										    fNWrongPatterns(0),
 										    fNTotalSamples(0), 
-										    fNWrongSamples(0)
+										    fNWrongSamples(0),
+										    fNSamples(0)
 {
   fShmPtr = new AliHLTPHOSSharedMemoryInterface();
 } 
@@ -264,6 +265,10 @@ AliHLTPHOSRcuAltroPatternTestComponent::DoInit(int argc, const char** argv )
 	      sprintf(patternFilename, "%s", argv[i+1]);
 	      isSetPartternArg = true;
 	    }
+	}
+      if(!strcmp("-nsamples", argv[i]))
+	{
+	  fNSamples = atoi(argv[i+1]);
 	}
     }
 

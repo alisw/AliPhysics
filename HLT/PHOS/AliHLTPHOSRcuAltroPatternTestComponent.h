@@ -52,6 +52,7 @@ class AliHLTPHOSRcuAltroPatternTestComponent:public AliHLTPHOSRcuProcessor
   unsigned long fNWrongPatterns;   /**<The total number of incorrect patterns found*/
   unsigned long fNTotalSamples;    /**<The total number of samples analyzed*/
   unsigned long fNWrongSamples;    /**<The total number of incorrect samples found*/
+  unsigned long fNSamples;
 };
 
 #endif
