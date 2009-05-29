@@ -31,14 +31,14 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   trkFilterSoftPi->AddCuts(esdTrackCutsSoftPi);
   vHF->SetTrackFilterSoftPi(trkFilterSoftPi);
   //--- set cuts for candidates selection
-  vHF->SetD0toKpiCuts(0.7,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
+  vHF->SetD0toKpiCuts(0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
   vHF->SetBtoJPSICuts(0.350);
   vHF->SetDplusCuts(0.2,0.,0.,0.,0.,0.01,0.06,0.,0.,0.8);
   vHF->SetDsCuts(0.2,0.,0.,0.,0.,0.005,0.06,0.,0.,0.8,0.,0.1,0.1);
   vHF->SetLcCuts(0.2,0.,0.,0.,0.,0.01,0.06,0.,0.,0.8);
   vHF->SetD0to4ProngsCuts(0.3,0.05,0.01,0.01,0.02,0.5,0.,0.2,0.);
-  vHF->SetDstarCuts(999999., 999999., 0.1, 1.0, 0.5);
-  vHF->SetD0fromDstarCuts(0.7,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
+  vHF->SetDstarCuts(0.3, 0.1, 0.05, 100000000000.0, 0.5);
+  vHF->SetD0fromDstarCuts(0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
   //--- set this if you want to reconstruct primary vertex candidate by
   //    candidate using other tracks in the event (for pp, broad 
   //    interaction region)
