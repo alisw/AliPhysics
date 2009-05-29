@@ -45,8 +45,9 @@ public:
   static Short_t* fgPairs;       //array used to build positive-negative pairs
   static Int_t    fgPairsSize;    //actual size of pairs array
   static const Float_t fgkCosmic2008StripShifts[16][9]; // Shifts for 2007/2008 Cosmic data (timing problem)
+  static const Float_t fgkThreshold; // threshold for the seed
 
-  ClassDef(AliITSClusterFinderV2SSD,3)  // ITS cluster finder V2 for SDD
+  ClassDef(AliITSClusterFinderV2SSD,4)  // ITS cluster finder V2 for SDD
 };
 
 #endif

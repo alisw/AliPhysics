@@ -89,8 +89,12 @@ fDriftTime(0.)
       fdEdX=fQ*1e-6;
       break;
     case 4:
+      fdEdX=fQ*2.16;
+      SetSigmaYZ(hit[5]);
     case 5:
       fdEdX=fQ*2.16;
+      hit[5]=-hit[5];
+      SetSigmaYZ(hit[5]);
       break;
     default:
       AliError(Form("Wrong ITS layer %d (0 -> 5)",fLayer));
