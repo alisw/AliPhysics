@@ -7,7 +7,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-class AliAODRecoDecayHF; 
+class AliAODRecoDecayHF;
 
 void aod_hf_init_rectrack(TEveRecTrack& rt, AliExternalTrackParam* tp)
 {
@@ -22,26 +22,27 @@ void aod_hf_init_rectrack(TEveRecTrack& rt, AliExternalTrackParam* tp)
 
 AliEveHF* aod_make_HF(TEveTrackPropagator* rnrStyle, AliAODVertex* primAODVtx,
 		      AliESDtrack* neg, AliESDtrack* pos, AliAODRecoDecayHF* rd, Int_t i)
-{ 
+{
   TEveRecTrack  rcPos;
   TEveRecTrack  rcNeg;
   //TEveRecV0     rcV0;
 
-  /*Double_t p[3];
-  p[0]=rd->PxProng(0);  p[1]=rd->PyProng(0);  p[2]=rd->PzProng(0);
-  rcV0.fPPos.Set(p);
-  p[0]=rd->PxProng(1);  p[1]=rd->PyProng(1);  p[2]=rd->PzProng(1);
-  rcV0.fPNeg.Set(p);
+  /*
+    Double_t p[3];
+    p[0]=rd->PxProng(0);  p[1]=rd->PyProng(0);  p[2]=rd->PzProng(0);
+    rcV0.fPPos.Set(p);
+    p[0]=rd->PxProng(1);  p[1]=rd->PyProng(1);  p[2]=rd->PzProng(1);
+    rcV0.fPNeg.Set(p);
 
-  p[0]=rd->Px();  p[1]=rd->Py();  p[2]=rd->Pz();
+    p[0]=rd->Px();  p[1]=rd->Py();  p[2]=rd->Pz();
   */
- 
-  Double_t primVtx[3]={primAODVtx->GetX(), primAODVtx->GetY(), primAODVtx->GetZ(),};
-  
+
+  Double_t primVtx[3]={primAODVtx->GetX(), primAODVtx->GetY(), primAODVtx->GetZ()};
+
 
   Double_t v[3] = {rd->Xv(),rd->Yv(),rd->Zv()};
   printf("vertex %f %f %f\n",v[0],v[1],v[2]);
-  
+
   aod_hf_init_rectrack(rcNeg, neg);
   //rcNeg.fIndex = v0->GetNindex();
   aod_hf_init_rectrack(rcPos, pos);
@@ -49,42 +50,39 @@ AliEveHF* aod_make_HF(TEveTrackPropagator* rnrStyle, AliAODVertex* primAODVtx,
 
   AliEveHF* myHF = new AliEveHF(&rcNeg, &rcPos, primVtx ,rd, v, rnrStyle);
   myHF->SetElementName(Form("D0->Kpi %d", i));
-  myHF->SetElementTitle(Form("CosPointingAngle %f",
-                             rd->CosPointingAngle()));
+  myHF->SetElementTitle(Form("CosPointingAngle %f", rd->CosPointingAngle()));
   myHF->SetAODIndex(i);
   return myHF;
 }
 
 
 AliEveHFList* aod_HF()
-{ Bool_t useParFiles=kFALSE;
+{
+  Bool_t useParFiles=kFALSE;
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
   LoadLibraries(useParFiles);
-  
-  
+
   AliAODEvent* aod = AliEveEventManager::AssertAOD();
   AliESDEvent* esd = AliEveEventManager::AssertESD();
 
- 
-  /*gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libCORRFW");
-  gSystem->Load("libPWG3base");
-  gSystem->Load("libPWG3vertexingHF");
+  /*
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libCORRFW");
+    gSystem->Load("libPWG3base");
+    gSystem->Load("libPWG3vertexingHF");
   */
 
   // load MC particles
-  TClonesArray *mcArray = 
-    (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-  if(!mcArray) {
+  TClonesArray *mcArray =
+    (TClonesArray*) aod->FindListObject(AliAODMCParticle::StdBranchName());
+  if (!mcArray) {
     printf("MC particles branch not found!\n");
     return;
   }
 
-
   AliAODVertex* primVtx_aod = (AliAODVertex*) aod->GetPrimaryVertex();
   // AliESDVertex *primVtx_esd = (AliESDVertex*) esd->GetPrimaryVertex();
-
 
   AliEveHFList* cont = new AliEveHFList("AOD HF vertices");
   cont->SetMainColor(2);
@@ -96,28 +94,29 @@ AliEveHFList* aod_HF()
   TEvePointSet* pointsD0toKpi = new TEvePointSet("D0->Kpi vertex locations");
 
   // load D0->Kpi candidates
-  TClonesArray *arrayD0toKpi = (TClonesArray*)aod->GetList()->FindObject("D0toKpi"); 
-     
+  TClonesArray *arrayD0toKpi = (TClonesArray*) aod->FindListObject("D0toKpi");
+
   // load 3prong candidates
-  // TClonesArray *array3Prong = 
-  // (TClonesArray*)aod->GetList()->FindObject("Charm3Prong"); 
+  // TClonesArray *array3Prong =
+  // (TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
 
   Int_t countD0 = 0;
-  for (Int_t iD0toKpi=0; iD0toKpi<(arrayD0toKpi->GetEntriesFast()); iD0toKpi++) {
+  for (Int_t iD0toKpi=0; iD0toKpi<arrayD0toKpi->GetEntriesFast(); iD0toKpi++)
+  {
     AliAODRecoDecayHF2Prong *rd = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->UncheckedAt(iD0toKpi);
     Bool_t unsetvtx=kFALSE;
-    if(!rd->GetOwnPrimaryVtx()) {
+    if (!rd->GetOwnPrimaryVtx()) {
       rd->SetOwnPrimaryVtx(primVtx_aod);
       unsetvtx=kTRUE;
-    }    
+    }
     // REAL D0 particle. If you want to draw only real D0 un-comment these lines
     //Int_t labD0 = rd->MatchToMC(421,mcArray);
     //if(labD0<0) continue;
 
-    AliAODTrack* negAODTr = rd->GetDaughter(0);
-    AliAODTrack* posAODTr = rd->GetDaughter(1);
-    
-    AliVVertex *secv = rd->GetSecondaryVtx();
+    AliAODTrack *negAODTr = rd->GetDaughter(0);
+    AliAODTrack *posAODTr = rd->GetDaughter(1);
+
+    AliVVertex  *secv = rd->GetSecondaryVtx();
 
     AliESDtrack *negTr = new AliESDtrack(negAODTr);
     AliESDtrack *posTr = new AliESDtrack(posAODTr);
@@ -136,8 +135,7 @@ AliEveHFList* aod_HF()
 
     if(unsetvtx) {
       rd->UnsetOwnPrimaryVtx();
-    }    
-
+    }
   }
 
   //cont->SetTitle("test");
@@ -145,7 +143,7 @@ AliEveHFList* aod_HF()
   cont->MakeHFs();
   gEve->Redraw3D();
 
-  pointsD0toKpi->SetTitle(Form("N=%d",pointsD0toKpi->Size()));
+  pointsD0toKpi->SetTitle(Form("N=%d", pointsD0toKpi->Size()));
   pointsD0toKpi->SetMarkerStyle(4);
   pointsD0toKpi->SetMarkerSize(1.5);
   pointsD0toKpi->SetMarkerColor(kViolet);
@@ -155,19 +153,3 @@ AliEveHFList* aod_HF()
 
   return cont;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

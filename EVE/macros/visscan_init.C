@@ -45,6 +45,8 @@ void visscan_init(Bool_t show_extra_geo=kFALSE)
     gShowTRD = gShowMUON = gShowMUONRPhi = gShowMUONRhoZ = kFALSE;
   }
 
+  AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
+
   TEveUtil::LoadMacro("alieve_init.C");
   alieve_init(".", -1);
 
@@ -210,6 +212,7 @@ void visscan_init(Bool_t show_extra_geo=kFALSE)
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TPC", "vplot_tpc.C+",    "vplot_tpc", "", kFALSE));
 
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kAOD, "ANA HF",   "aod_HF.C",   "aod_HF",   "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kAOD, "ANA Jets", "jetplane.C", "jetplane", "", kFALSE));
 
   //==============================================================================

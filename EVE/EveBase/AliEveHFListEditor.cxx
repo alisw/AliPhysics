@@ -68,7 +68,7 @@ AliEveHFListEditor::AliEveHFListEditor(const TGWindow *p, Int_t width, Int_t hei
    fMinMaxCosPointingAngle->Connect("ValueSet()", "AliEveHFListEditor", this, "DoMinMaxCosPointingAngle()");
    AddFrame(fMinMaxCosPointingAngle, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
-   
+
    fValueInvMass = new TEveGDoubleValuator(this, "Invariant Mass:", 80, 0);
    fValueInvMass->SetNELength(5);
    fValueInvMass->SetLabelWidth(120);
@@ -76,8 +76,8 @@ AliEveHFListEditor::AliEveHFListEditor(const TGWindow *p, Int_t width, Int_t hei
    fValueInvMass->GetSlider()->SetWidth(200);
    fValueInvMass->SetLimits(0,1, TGNumberFormat::kNESRealTwo);
    fValueInvMass->Connect("ValueSet()", "AliEveHFListEditor", this, "DoMinMaxInvMass()");
-   AddFrame(fValueInvMass, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1)); 
-	    
+   AddFrame(fValueInvMass, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
+
 
 }
 

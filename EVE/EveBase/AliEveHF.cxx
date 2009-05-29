@@ -39,7 +39,7 @@ AliEveHF::AliEveHF():
 
   fAODobj(0x0),
   fRecBirthHF(0,0,0),
-  fRecDecayHF(0,0,0),  
+  fRecDecayHF(0,0,0),
   fRecDecayP_HF(0,0,0),
   fPointingAngleHF(0),
 
@@ -47,11 +47,11 @@ AliEveHF::AliEveHF():
   fPosTrack(0),
   fRnrStyle(0),
   fPointingLine(0),
- 
+
   fnProng(0),
   fAODIndex(-1),
   fChi2SecondVtx(-1),
-  
+
   fProngDCA(0x0),
   fProngd0(0x0),
   fProngMaxProbPdg(0x0),
@@ -70,7 +70,7 @@ AliEveHF::AliEveHF():
 
 //______________________________________________________________________________
 AliEveHF::AliEveHF(TEveRecTrack* tNeg, TEveRecTrack* tPos, Double_t primVtx[3], AliAODRecoDecay* aodObj, Double_t /*firstPointTrack*/[3], TEveTrackPropagator* rs) :
-  
+
   TEvePointSet(),
 
   fAODobj(aodObj),
@@ -83,11 +83,11 @@ AliEveHF::AliEveHF(TEveRecTrack* tNeg, TEveRecTrack* tPos, Double_t primVtx[3], 
   fPosTrack(new TEveTrack(tPos, rs)),
   fRnrStyle(rs),
   fPointingLine(new TEveLine("Pointing line")),
- 
+
   fnProng(aodObj->GetNProngs()),
   fAODIndex(-1),
   fChi2SecondVtx(aodObj->GetReducedChi2()),
-    
+
   fProngDCA(0),
   fProngd0(0),
   fProngMaxProbPdg(0),
@@ -96,7 +96,7 @@ AliEveHF::AliEveHF(TEveRecTrack* tNeg, TEveRecTrack* tPos, Double_t primVtx[3], 
   fInvariantMassAntiPart(0),
   fDecay(0)
 {
-  
+
   // Constructor with full HF specification.
   // Override from TEveElement.
   fPickable = kTRUE;
@@ -134,14 +134,14 @@ AliEveHF::~AliEveHF()
 
 //_____________________________________________________________________________
 void AliEveHF::SetProngDCA() const
-{ 
+{
   for(Int_t ip=0; ip<fnProng; ip++)
     fProngDCA[ip] = fAODobj->GetDCA(ip);
 }
 
 //______________________________________________________________________________
 void AliEveHF::Setd0Prong() const
-{ 
+{
   for(Int_t ip=0; ip<fnProng; ip++)
     fProngd0[ip] = fAODobj->Getd0Prong(ip);
 }
@@ -154,30 +154,30 @@ void AliEveHF::SetMaxProbPdgPid()
   // Should be moved to TEveTrack property eventually (or AliEveTrack creation)
   Double_t pid[5];
   Int_t    pos = -1;
-  
-  for (Int_t ip=0; ip<fnProng; ip++){
-    fAODobj->GetPIDProng(ip, pid); 
 
-    fProngMaxProbPid[ip]=pid[0]; //lascio cosi perchè mi da errore se lo uso come puntatore 
+  for (Int_t ip=0; ip<fnProng; ip++){
+    fAODobj->GetPIDProng(ip, pid);
+
+    fProngMaxProbPid[ip]=pid[0]; //lascio cosi perchè mi da errore se lo uso come puntatore
     for (Int_t pp=1; pp<5; pp++)
-      if (pid[pp]>pid[pp-1]) { 
+      if (pid[pp]>pid[pp-1]) {
 	fProngMaxProbPid[ip]=pid[pp];
 	pos = pp;}
     switch (pos)
-      {    
-      case 0: 
+      {
+      case 0:
 	fProngMaxProbPdg[ip] = -11;
-      case 1: 
+      case 1:
 	fProngMaxProbPdg[ip] = -13;
-      case 2: 
+      case 2:
 	fProngMaxProbPdg[ip] = 211;
-      case 3: 
+      case 3:
 	fProngMaxProbPdg[ip] = 321;
-      case 4: 
+      case 4:
 	fProngMaxProbPdg[ip] = 2212;
       }
   }
-  
+
 }
 
 //________________________________________________________________________________________
@@ -185,21 +185,21 @@ void AliEveHF::CalculateInvMass(Int_t decay)
 {
   UInt_t   pdg2[2];
   Double_t mPDG,minv;
-  
-  switch (decay) 
-    { 
+
+  switch (decay)
+    {
     case 0:                  // D0->Kpi
       pdg2[0]=211; pdg2[1]=321;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = fAODobj->InvMass(fnProng,pdg2);
       fInvariantMassPart=minv;
-  
+
       pdg2[0]=321; pdg2[1]=211;
       minv = fAODobj->InvMass(fnProng,pdg2);
       fInvariantMassAntiPart=minv;
       break;
     }
- 
+
 }
 
 //______________________________________________________________________________
@@ -207,10 +207,10 @@ Bool_t AliEveHF::SelectInvMass(Int_t decay, Float_t decayCuts)
 {
   UInt_t   pdg2[2];
   Double_t mPDG,minv;
-  
+
   Bool_t retval=kFALSE;
-  switch (decay) 
-    { 
+  switch (decay)
+    {
     case 0:                  // D0->Kpi
       pdg2[0]=211; pdg2[1]=321;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -369,7 +369,7 @@ void AliEveHFList::MakeHFs()
 //______________________________________________________________________________
 void AliEveHFList::FilterByPt(Float_t minPt, Float_t maxPt)
 {
- 
+
 
   fMinPt = minPt;
   fMaxPt = maxPt;
@@ -421,7 +421,7 @@ void AliEveHFList::FilterByCosPointingAngle(Float_t minCosPointingAngle, Float_t
       Float_t  cosPointingAngle = hf->GetCosPointingAngle();
       Bool_t  show = cosPointingAngle >= fMinCosPointingAngle && cosPointingAngle <= fMaxCosPointingAngle;
       hf->SetRnrState(show);
-      
+
       ElementChanged();
       gEve->Redraw3D();
     }
@@ -438,7 +438,7 @@ void AliEveHFList::FilterByd0(Float_t mind0, Float_t maxd0)
     {
       AliEveHF *hf = (AliEveHF*) *i;
       Int_t nProng=(Int_t)hf->GetAODobj()->GetNProngs();
-      for(Int_t ip = 1; ip < nProng; ++ip) { 
+      for(Int_t ip = 1; ip < nProng; ++ip) {
 	Double_t  d0 = hf->Getd0Prong(ip);
 	Bool_t  show = d0 >= fMind0 && d0 <= fMaxd0;
 	hf->SetRnrState(show);
@@ -459,22 +459,22 @@ void AliEveHFList::FilterByDCA(Float_t minDaughterDCA, Float_t maxDaughterDCA)
 
   Double_t dca;
   AliEveHF *hf();
-  
+
 
   for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)
   {
     AliEveHF* hf = (AliEveHF*) *i;
     Int_t nProng=(Int_t)hf->GetAODobj()->GetNProngs();
-    for(Int_t ip = 1; ip < nProng; ++ip) { 
+    for(Int_t ip = 1; ip < nProng; ++ip) {
       dca = hf->GetProngDCA(ip);
       Bool_t  show = dca >= fMinDaughterDCA && dca <= fMaxDaughterDCA;
       hf->SetRnrState(show);
-    }  
+    }
   }
   ElementChanged();
   gEve->Redraw3D();
 }
- 
+
 /******************************************************************************/
 //______________________________________________________________________________
 /*void AliEveHFList::FilterByCheckedPidMinProb(Int_t rFlag,Int_t rDaughter, Int_t rPid, Float_t rProb)
@@ -499,12 +499,12 @@ void AliEveHFList::FilterByDCA(Float_t minDaughterDCA, Float_t maxDaughterDCA)
     if     (!rDaughter) {// Negative daughter checked
       pid  = hf->GetNegMaxProbPdg();
       prob = hf->GetNegMaxProbPid();
-      show = (pid == fNegCheckedPid && prob > fNegCheckedProb) || !rFlag ; 
+      show = (pid == fNegCheckedPid && prob > fNegCheckedProb) || !rFlag ;
     }
     else if (rDaughter) {// Positive daughter checked
       pid = hf->GetPosMaxProbPdg();
       prob = hf->GetPosMaxProbPid();
-      show = (pid == fPosCheckedPid && prob > fPosCheckedProb) || !rFlag ; 
+      show = (pid == fPosCheckedPid && prob > fPosCheckedProb) || !rFlag ;
     }
     hf->SetRnrState(show);
 exit  }
@@ -531,5 +531,3 @@ void AliEveHFList::FilterByInvariantMass(Int_t decay, Float_t deltaInvariantMass
   ElementChanged();
   gEve->Redraw3D();
 }
-
-

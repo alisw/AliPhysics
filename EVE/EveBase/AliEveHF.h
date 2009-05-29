@@ -59,13 +59,13 @@ public:
   Float_t GetCosPointingAngle() {return fPointingAngleHF; }
 
   AliAODRecoDecay *GetAODobj() {return fAODobj; }
-  
+
   Int_t GetAODIndex() const { return fAODIndex; }
   void  SetAODIndex(Int_t ind) { fAODIndex = ind;}
 
   virtual const Text_t* GetName() const    { return Form("AOD_HF_%i",fAODIndex); }
   virtual const Text_t* GetTitle() const   { return Form("AOD_HF_%i",fAODIndex); }
-  
+
   //Prongs Property
 
   Double_t GetProngDCA(Int_t iProng) { return fProngDCA[iProng]; }
@@ -73,15 +73,15 @@ public:
 
   Double_t Getd0Prong(Int_t iProng)  { return fProngd0[iProng]; }
   void Setd0Prong() const ;
-  
+
   void CalculateInvMass(Int_t decay);
 
   Bool_t SelectInvMass(Int_t decay, Float_t decayCuts);
-  
+
   void      SetMaxProbPdgPid();
   Int_t     GetPdgProngMaxProb(Int_t iProng) { return fProngMaxProbPdg[iProng]; }
   Double_t  GetPidProngMaxProb(Int_t iProng) { return fProngMaxProbPid[iProng]; }
- 
+
   TEveTrackPropagator* GetPropagator() const  { return fRnrStyle; }
 
   TEveTrack* GetNegTrack() { return fNegTrack; }
@@ -91,12 +91,12 @@ public:
 
 protected:
 
-  AliAODRecoDecay  *fAODobj; 
+  AliAODRecoDecay  *fAODobj;
 
   TEveVector  fRecBirthHF;    // Reconstucted birth point of neutral particle
   TEveVector  fRecDecayHF;    // Point of closest approach
   TEveVector  fRecDecayP_HF;
-  Double_t    fPointingAngleHF; // Track Pointing Angle 
+  Double_t    fPointingAngleHF; // Track Pointing Angle
 
   TEveTrack        *fNegTrack;
   TEveTrack        *fPosTrack;
@@ -109,20 +109,20 @@ protected:
   Int_t             fAODIndex;    // Index in HF loop array.
   Double_t          fChi2SecondVtx;      //Secondary Vertex Chi-square.
 
-  Double_t          *fProngDCA;//[fnProng] Distance at the point of closest approach. 
-  Double_t          *fProngd0;//[fnProng] Impact Paramter if each prong. 
+  Double_t          *fProngDCA;//[fnProng] Distance at the point of closest approach.
+  Double_t          *fProngd0;//[fnProng] Impact Paramter if each prong.
   Int_t             *fProngMaxProbPdg;//[fnProng] Maximum PDG probability for the negative daughter
   Double_t          *fProngMaxProbPid;//[fnProng] Maximum PID probability for the negative daughter
-  
+
   Double_t           fInvariantMassPart;
   Double_t           fInvariantMassAntiPart;
 
   Int_t              fDecay;
-  
+
  private:
   AliEveHF(const AliEveHF&);            // Not implemented
   AliEveHF& operator=(const AliEveHF&); // Not implemented
-  
+
   ClassDef(AliEveHF,0); // Visual representation of a AliEveHF.
 };
 
@@ -143,7 +143,7 @@ public:
 
   virtual const Text_t* GetTitle() const { return fTitle; }
   virtual void SetTitle(const Text_t* t) { fTitle = t; }
-  virtual void SetTracksColor(Color_t cNeg, Color_t cPos, Int_t ip) 
+  virtual void SetTracksColor(Color_t cNeg, Color_t cPos, Int_t ip)
   {fProngColor[ip] = cNeg; fProngColor[ip++] = cPos;}
 
   virtual Bool_t CanEditMainColor() const { return kTRUE; }
@@ -163,7 +163,7 @@ public:
   void   FilterByDCA(Float_t minDaughterDCA, Float_t maxDaughterDCA);
   void   FilterByd0(Float_t mind0, Float_t maxd0);
   //void   FilterByCheckedPidMinProb(Int_t rFlag, Int_t rDaughter, Int_t rPid, Float_t rProb);
-  
+
   // void   SetProngCheckedPid(Int_t rProngCheckedPid) const;
   Int_t  GetProngCheckedPid(Int_t iProng) {return fProngCheckedPid[iProng];}
   // void   SetProngCheckedProb(Float_t rProngCheckedProb) const;
@@ -193,14 +193,14 @@ protected:
 
   Float_t              fMinCosPointingAngle;
   Float_t              fMaxCosPointingAngle;
-  
+
   Float_t              fMind0;
   Float_t              fMaxd0;
 
   Int_t*               fProngCheckedPid;//[fnProng]
 
   Float_t*             fProngCheckedProb;//[fnProng]
- 
+
   Float_t              fDeltaInvariantMass;
   Int_t                fDecay;
 
@@ -215,4 +215,3 @@ private:
 
 
 #endif
-

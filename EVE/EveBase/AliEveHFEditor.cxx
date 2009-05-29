@@ -77,9 +77,9 @@ void AliEveHFEditor::SetModel(TObject* obj)
   // Set values of widgets
   fInfoLabel0->SetText(Form("CosPointingAngle = %f",  fM->GetCosPointingAngle()));
   fInfoLabel1->SetText(Form("Pt = %f", fM->GetPt()));
-  
+
   fInfoLabel2->SetText(Form("PDG Invariant Mass = %f", TDatabasePDG::Instance()->GetParticle(421)->Mass()));
-  
+
 }
 
 /******************************************************************************/
@@ -155,15 +155,15 @@ void AliEveHFEditor::DisplayDetailed()
   Int_t daughterIndex = 0;
   TEvePointSet *negDaughterCluster = 0;
   TEvePointSet *posDaughterCluster = 0;
-  
+
   daughterIndex = negTrack->GetIndex();
   sprintf(macroWithIndex,"clusters_from_index(%d)",daughterIndex);
   Long_t negResult = gInterpreter->ProcessLine(macroWithIndex);
   if (negResult) {
     negDaughterCluster = reinterpret_cast<TEvePointSet*>(negResult);
     if (negDaughterCluster){
-      negDaughterCluster->SetMarkerStyle(4);	
-      negDaughterCluster->SetMarkerSize(1.5);	
+      negDaughterCluster->SetMarkerStyle(4);
+      negDaughterCluster->SetMarkerSize(1.5);
       negDaughterCluster->SetMarkerColor(kBlue+3);
     }
   }
@@ -178,8 +178,8 @@ void AliEveHFEditor::DisplayDetailed()
   if (posResult) {
     posDaughterCluster = reinterpret_cast<TEvePointSet*>(posResult);
     if (posDaughterCluster){
-      posDaughterCluster->SetMarkerStyle(4);	
-      posDaughterCluster->SetMarkerSize(1.5);	
+      posDaughterCluster->SetMarkerStyle(4);
+      posDaughterCluster->SetMarkerSize(1.5);
       posDaughterCluster->SetMarkerColor(kRed+3);
     }
   }
@@ -219,7 +219,7 @@ void AliEveHFEditor::DisplayDetailed()
   if (posDaughterCluster) bpScene->AddElement(posDaughterCluster);
 
   // This is the to-do list for the bending plane:
-  // 1. fix the view to orthographic XOY (no rotation allowed but moving the center ok) ->done! 
+  // 1. fix the view to orthographic XOY (no rotation allowed but moving the center ok) ->done!
   // 2. show axis and tickles along X and Y ->done!
   //       -> note for the projection the cartesian scales are not very useful
   //       -> propose a phi and R scale which rotates with a reset at 0;
@@ -296,7 +296,7 @@ void AliEveHFEditor::DisplayDetailed()
   // This part is for displaying the information
   //
   slot = pack->NewSlot();
-  
+
   TEveWindowFrame *frame = slot->MakeFrame(new TRootEmbeddedCanvas());
   frame->SetElementName("Details");
 
@@ -309,7 +309,7 @@ void AliEveHFEditor::DisplayDetailed()
   TLatex* ltx = new TLatex(0.05, 0.9, info);
   ltx->SetTextSize(0.08);
   ltx->DrawLatex(0.05, 0.8, info);
-  
+
   sprintf(info,"p_{T} = %.3f [GeV/c]",fM->GetPt());
   ltx->DrawLatex(0.05, 0.7, info);
 
@@ -317,10 +317,10 @@ void AliEveHFEditor::DisplayDetailed()
   ltx->DrawLatex(0.05, 0.6, info);
 
   sprintf(info, "D^{0} inv. mass = %.3f", fM->GetInvariantMassPart());
-  ltx->DrawLatex(0.05, 0.5, info); 
+  ltx->DrawLatex(0.05, 0.5, info);
 
  sprintf(info, "D^{0}bar inv. mass = %.3f", fM->GetInvariantMassAntiPart());
-  ltx->DrawLatex(0.05, 0.4, info); 
+  ltx->DrawLatex(0.05, 0.4, info);
 
   gEve->Redraw3D();
 }

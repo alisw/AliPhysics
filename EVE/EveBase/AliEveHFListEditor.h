@@ -39,13 +39,13 @@ public:
   void DoMinMaxPt();
   void DoMinMaxCosPointingAngle();
   void DoMinMaxInvMass();
- 
+
 
 protected:
   AliEveHFList            *fM; // Model object.
 
   // Declare widgets
-  
+
   TEveGDoubleValuator* fMinMaxPt;
   TEveGDoubleValuator* fMinMaxCosPointingAngle;
   TEveGDoubleValuator* fValueInvMass;

@@ -43,7 +43,7 @@ protected:
 
   TGLabel   *fInfoLabel0; // label
   TGLabel   *fInfoLabel1; // label
-  TGLabel   *fInfoLabel2; // label 
+  TGLabel   *fInfoLabel2; // label
 
   TGButton  *fXButton;
 

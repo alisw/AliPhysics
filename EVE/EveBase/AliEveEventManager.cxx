@@ -216,7 +216,10 @@ void AliEveEventManager::AddAODfriend(const TString& friendFileName)
     fgAODfriends = new TList;
     fgAODfriends->SetOwner(kTRUE);
   }
-  fgAODfriends->Add(new TObjString(friendFileName));
+  if (fgAODfriends->FindObject(friendFileName) == 0)
+  {
+    fgAODfriends->Add(new TObjString(friendFileName));
+  }
 }
 
 void AliEveEventManager::SetRawFileName(const TString& raw)
