@@ -22,116 +22,17 @@
     @brief  Test program for the external wrapper interface
  */
 
-#include "AliHLTProcessor.h"
-#include "AliHLTModuleAgent.h"
+#include "AliHLTDataTypes.h"
 #include "AliHLTExternalInterface.h"
 #include <cstring>
 #include <dlfcn.h>
+#include <iostream>
 
 const char* gDummy="dummy";
 AliHLTUInt32_t gRunNo=kAliHLTVoidRunNo;
 const char* gChainId="<void>";
 AliHLTComponentDataType gInputDt=kAliHLTVoidDataType;
 const char* gBasePath="../.libs";
-
-class TestProcessor : public AliHLTProcessor
-{
-public:
-  TestProcessor();
-  ~TestProcessor();
-
-  const char* GetComponentID() {return "TestProcessor";}
-
-  void GetInputDataTypes( vector<AliHLTComponentDataType>& list)
-  {list.push_back(kAliHLTAnyDataType);}
-
-  AliHLTComponentDataType GetOutputDataType() {return kAliHLTAnyDataType;}
-
-  void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
-  {constBase=100; inputMultiplier=2.0;}
-  
-  AliHLTComponent* Spawn() {return new TestProcessor;}
-private:
-  int DoInit( int argc, const char** argv ) {
-    if (fState!=kCreated) {
-      HLTError("wrong state (%d): component already initialized", fState);
-      return -EBUSY;
-    }
-
-    if (argc>0 && argv) {
-    }
-    gRunNo=GetRunNo();
-    gChainId=GetChainId();
-
-    fState=kInitialized;
-    return 0;
-  }
-  int DoDeinit() {
-    if (fState!=kInitialized) {
-      HLTError("wrong state (%d): required %d kInitialized", fState, kInitialized);
-      return -ENODEV;
-    }
-
-    return 0;
-  }
-
-  int DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/) {
-    int iResult=0;
-    if (fState!=kInitialized) {
-      HLTError("wrong state (%d): component not initialized", fState);
-      return -ENODEV;
-    }
-
-    HLTInfo("processing event");
-    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock();
-	 pBlock!=NULL; 
-	 pBlock=GetNextInputBlock()) {
-      gInputDt=pBlock->fDataType;
-      AliHLTComponentDataType dt;
-      SetDataType(dt, "-OUTPUT-", "MYCO");
-      iResult=PushBack(pBlock->fPtr, pBlock->fSize/2, dt, ~pBlock->fSpecification);
-      Forward();
-    }
-
-    return iResult;
-  }
-
-  enum {
-    kCreated =0,
-    kInitialized,
-    kProcessing,
-  };
-
-  int fState; //!transient
-};
-
-TestProcessor::TestProcessor()
-  : 
-  AliHLTProcessor(),
-  fState(kCreated)
- 
-{
-}
-
-TestProcessor::~TestProcessor()
-{
-}
-
-class TestAgent : public AliHLTModuleAgent
-{
-public:
-  TestAgent() : AliHLTModuleAgent("TEST") {}
-  ~TestAgent() {}
-
-  int RegisterComponents(AliHLTComponentHandler* pHandler) const
-  {
-    pHandler->AddComponent(new TestProcessor);
-    return 0;
-  }
-  
-};
-
-TestAgent gAgent;
 
 int Logging( void* /*param*/, 
 	     AliHLTComponentLogSeverity severity,
@@ -298,6 +199,11 @@ int main(int /*argc*/, const char** /*argv*/)
   }
 #endif //HLT_RCU
 
+  libraryPath=".libs/libAliHLTTest.so";
+  if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
+    return iResult;
+  }
+
   AliHLTExtFctCreateComponent fctCreateComponent=(AliHLTExtFctCreateComponent)fctGetSystemCall("int AliHLTAnalysisCreateComponent(const char*,void*,int,const char**,AliHLTComponentHandle*,const char*)");
   if (!fctCreateComponent) {
     cerr << "error: missing CreateComponent call" << endl;
@@ -310,16 +216,18 @@ int main(int /*argc*/, const char** /*argv*/)
     return iResult;
   }
 
-  if (gRunNo!=0xbeef) {
-    cerr << "error: propagation of run number failed " << hex << gRunNo << " vs. 0xbeef" << endl;
-    return -1;
-  }
+  // Matthias 2009-05-29: here the check whether the setup is really
+  // working needs to be implemented, postponing it for the moment
+//   if (!pCheck->CheckRunNo(0xbeef)) {
+//     cerr << "error: propagation of run number failed " << hex << gRunNo << " vs. 0xbeef" << endl;
+//     return -1;
+//   }
 
-  // can be used in the new interface again
-  if (strcmp(gChainId, "test")) {
-    cerr << "propagation of chain id failed: '" << gChainId << "' vs. test" << endl;
-    return -1;
-  }
+//   // can be used in the new interface again
+//   if (!pCheck->CheckChainId("test")) {
+//     cerr << "propagation of chain id failed: '" << gChainId << "' vs. test" << endl;
+//     return -1;
+//   }
 
   AliHLTExtFctProcessEvent fctProcessEvent=(AliHLTExtFctProcessEvent)fctGetSystemCall("int AliHLTAnalysisProcessEvent(AliHLTComponentHandle,const AliHLTComponentEventData*,const AliHLTComponentBlockData*,AliHLTComponentTriggerData*,AliHLTUInt8_t*,AliHLTUInt32_t*,AliHLTUInt32_t*,AliHLTComponentBlockData**,AliHLTComponentEventDoneData**)");
   if (!fctProcessEvent) {
@@ -368,8 +276,8 @@ int main(int /*argc*/, const char** /*argv*/)
     return -1;
   }
 
-  AliHLTComponentDataType outdt;
-  AliHLTComponent::SetDataType(outdt, "-OUTPUT-", "MYCO");
+  const char id[kAliHLTComponentDataTypefIDsize]={'-','O','U','T','P','U','T','-'};
+  AliHLTComponentDataType outdt=AliHLTComponentDataTypeInitializer(id, "MYCO");
   bool bHaveForwarded=false;
   bool bHaveCopied=false;
   for (unsigned int i=0; i<outputBlockCnt; i++) {
