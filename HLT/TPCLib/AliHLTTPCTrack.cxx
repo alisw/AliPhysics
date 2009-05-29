@@ -82,7 +82,7 @@ AliHLTTPCTrack::AliHLTTPCTrack()
 
   SetFirstPoint(0,0,0);
   SetLastPoint(0,0,0);
-  memset(fHitNumbers,0,159*sizeof(UInt_t));
+  memset(fHitNumbers,0,fgkHitArraySize*sizeof(UInt_t));
 }
 
 void AliHLTTPCTrack::Copy(AliHLTTPCTrack *tpt)
@@ -104,9 +104,7 @@ void AliHLTTPCTrack::Copy(AliHLTTPCTrack *tpt)
   SetY0err(tpt->GetY0err());
   SetCharge(tpt->GetCharge());
   SetHits(tpt->GetNHits(),(UInt_t *)tpt->GetHitNumbers());
-#ifdef do_mc
   SetMCid(tpt->GetMCid());
-#endif
   SetPID(tpt->GetPID());
   SetSector(tpt->GetSector());
 }
@@ -134,13 +132,6 @@ Double_t AliHLTTPCTrack::GetPseudoRapidity() const
 { //get pseudo rap
   return 0.5 * log((GetP() + GetPz()) / (GetP() - GetPz()));
 }
-
-/*
-Double_t AliHLTTPCTrack::GetEta() const
-{
-  return GetPseudoRapidity();
-}
-*/
 
 Double_t AliHLTTPCTrack::GetRapidity() const
 { 
@@ -721,8 +712,11 @@ void AliHLTTPCTrack::SetHits(Int_t nhits,UInt_t *hits)
   if (nhits>fgkHitArraySize) {
     LOG(AliHLTTPCLog::kWarning,"AliHLTTPCTrack::SetHits","too many hits")
       << "too many hits (" << nhits << ") for hit array of size " << fgkHitArraySize << ENDLOG; 
+    SetNHits(fgkHitArraySize);
+  } else {
+    SetNHits(nhits);
   }
-  memcpy(fHitNumbers,hits,(nhits<=fgkHitArraySize?nhits:fgkHitArraySize)*sizeof(UInt_t));
+  memcpy(fHitNumbers,hits,fNHits*sizeof(UInt_t));
 }
 
 Double_t AliHLTTPCTrack::GetLengthXY() const
