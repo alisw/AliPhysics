@@ -1633,9 +1633,7 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
     x = xpos + step;
 
     // Get local Y and Z at the X-position of the next step
-    if (!t.GetProlongation(x,y,z)) {
-      return 0; // No prolongation possible
-    }
+    if(t.GetProlongation(x,y,z)<0) return 0; // No prolongation possible
 
     // The global position of the end point of this prolongation step
     xyz1[0] =  x * TMath::Cos(t.GetAlpha()) - y * TMath::Sin(t.GetAlpha()); 
