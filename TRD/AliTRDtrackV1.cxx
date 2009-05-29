@@ -508,12 +508,12 @@ Int_t AliTRDtrackV1::GetProlongation(Double_t xk, Double_t &y, Double_t &z)
 {
   //
   // Find a prolongation at given x
-  // Return 0 if it does not exist
+  // Return -1 if it does not exist
   //  
 
   Double_t bz = GetBz();
-  if (!AliExternalTrackParam::GetYAt(xk,bz,y)) return 0;
-  if (!AliExternalTrackParam::GetZAt(xk,bz,z)) return 0;
+  if (!AliExternalTrackParam::GetYAt(xk,bz,y)) return -1;
+  if (!AliExternalTrackParam::GetZAt(xk,bz,z)) return -1;
 
   return 1;  
 
@@ -629,7 +629,7 @@ Int_t   AliTRDtrackV1::PropagateToR(Double_t r,Double_t step)
     Double_t alpha = TMath::ATan2(xyz0[1],xyz0[0]);
     Rotate(alpha,kTRUE);
     GetXYZ(xyz0);	
-    GetProlongation(x,y,z);
+    if(GetProlongation(r,y,z)<0) return -1;
     xyz1[0] = x * TMath::Cos(alpha) + y * TMath::Sin(alpha); 
     xyz1[1] = x * TMath::Sin(alpha) - y * TMath::Cos(alpha);
     xyz1[2] = z;
@@ -646,7 +646,7 @@ Int_t   AliTRDtrackV1::PropagateToR(Double_t r,Double_t step)
   Double_t alpha = TMath::ATan2(xyz0[1],xyz0[0]);
   Rotate(alpha,kTRUE);
   GetXYZ(xyz0);	
-  GetProlongation(r,y,z);
+  if(GetProlongation(r,y,z)<0) return -1;
   xyz1[0] = r * TMath::Cos(alpha) + y * TMath::Sin(alpha); 
   xyz1[1] = r * TMath::Sin(alpha) - y * TMath::Cos(alpha);
   xyz1[2] = z;
