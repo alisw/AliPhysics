@@ -212,9 +212,9 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	  h2->SetBinError(bin, error);
 	}
       }
-      if (hist) 
-	delete hist;
     }
+    if (hist) 
+      delete hist;
   }
   //////////////////////////
   // const Int_t knbits = 6;
