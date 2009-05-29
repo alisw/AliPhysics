@@ -29,6 +29,9 @@ EveBase/AliEveV0.cxx
 EveBase/AliEveV0Editor.cxx
 EveBase/AliEveV0ListEditor.cxx
 EveBase/AliEveVSDCreator.cxx
+EveBase/AliEveHF.cxx
+EveBase/AliEveHFListEditor.cxx
+EveBase/AliEveHFEditor.cxx
 )
 
 # fill list of header files from list of source files
