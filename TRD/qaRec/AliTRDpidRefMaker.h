@@ -19,12 +19,12 @@
 #include "AliPID.h"
 #endif
 
-#ifndef ALIPIDCALPID_H
-#include "Cal/AliTRDCalPID.h"
+#ifndef ALITRDCALPID_H
+#include "../Cal/AliTRDCalPID.h"
 #endif
 
 #ifndef ALITRDGEOMETRY_H
-#include "AliTRDgeometry.h"
+#include "../AliTRDgeometry.h"
 #endif
 
 class TTree;
