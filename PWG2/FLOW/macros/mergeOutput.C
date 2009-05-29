@@ -9,6 +9,8 @@ void mergeOutput(TString type="", Int_t nRuns=-1, Int_t mode=mLocal)
  // mode:  if mode=mLocal analyze data on your computer using aliroot
  //        if mode=mLocalSource analyze data on your computer using root + source files
  
+ Int_t cycle = 50; // if you cannot have >= 50 open files in memory, simply decrease this number 
+ 
  // load needed libraries:                       
  LoadSpreadLibrariesMO(mode);  
  
@@ -27,7 +29,7 @@ void mergeOutput(TString type="", Int_t nRuns=-1, Int_t mode=mLocal)
   cout<<"WARNING: You already have a merged output for MCEP !!!!"<<endl;
   break;
  }
- mcepFileMerger->OutputFile(mergedFileNameMCEP);
+ //mcepFileMerger->OutputFile(mergedFileNameMCEP);
  
  // SP:                       
  TFileMerger *spFileMerger = new TFileMerger();
@@ -121,7 +123,26 @@ void mergeOutput(TString type="", Int_t nRuns=-1, Int_t mode=mLocal)
  gSystem->cd(execDir);          
 
  Int_t counter = 0;
+ 
+ Int_t counterMCEP = 0;
+ Int_t maxCycleMCEP = 0;
+ Int_t counterSP = 0;
+ Int_t maxCycleSP = 0;
+ Int_t counterGFC = 0;
+ Int_t maxCycleGFC = 0;
+ Int_t counterQC = 0;
+ Int_t maxCycleQC = 0;
+ Int_t counterFQD = 0;
+ Int_t maxCycleFQD = 0;
+ Int_t counterLYZ1 = 0;
+ Int_t maxCycleLYZ1 = 0;
   
+ if(cycle>nDirs) // to be improved (temporary workaroud)
+ {
+  cout<<"WARNING: Cycle "<<cycle<<" is too big. Decrease it's value in the declaration Int_t cycle in the macro !!!!"<<endl;
+  break;
+ }
+   
  for(Int_t iDir=0;iDir<nDirs;++iDir)
  {
   TSystemFile* presentDir = (TSystemFile*)dirList->At(iDir);
@@ -145,54 +166,204 @@ void mergeOutput(TString type="", Int_t nRuns=-1, Int_t mode=mLocal)
   if(!(gSystem->AccessPathName(fileNameMCEP.Data(),kFileExists)))
   {
    mcepFileMerger->AddFile(fileNameMCEP.Data());
+   counterMCEP++;
   } else 
     {
      cout<<"WARNING: Couldn't find a file "<<fileNameMCEP.Data()<<". Merging will continue without this file."<<endl;
     }  
     
+  if(counterMCEP % cycle == 0)
+  {
+   maxCycleMCEP = counterMCEP/cycle; 
+   TString mergedFileNameCurrentCycleMCEP("mergedMCEPanalysis");   
+   ((mergedFileNameCurrentCycleMCEP+=(type.Data()))+=counterMCEP/cycle)+=(".root");    
+   mcepFileMerger->OutputFile(mergedFileNameCurrentCycleMCEP);
+   
+   TString mergedFileNamePreviousCycleMCEP("mergedMCEPanalysis");   
+   ((mergedFileNamePreviousCycleMCEP+=(type.Data()))+=(counterMCEP/cycle-1))+=(".root");
+   if(!(gSystem->AccessPathName(mergedFileNamePreviousCycleMCEP.Data(),kFileExists)))
+   {
+    mcepFileMerger->AddFile(mergedFileNamePreviousCycleMCEP.Data());
+   }
+   
+   Bool_t mcepMerged = kFALSE;
+   if(mcepFileMerger)
+   {  
+    mcepMerged = mcepFileMerger->Merge();
+    mcepFileMerger->Reset();
+   }
+   
+   if(mcepMerged)
+   {   
+    TSystemFile *previousCycle = new TSystemFile(mergedFileNamePreviousCycleMCEP.Data(),gSystem->pwd());
+    if(previousCycle) previousCycle->Delete();
+    delete previousCycle;
+   }
+  } // end of if(counterMCEP % cycle == 0)
+
   // SP:     
   TString fileNameSP = presentDirName;   
   ((fileNameSP+="outputSPanalysis")+=type.Data())+=".root";
   if(!(gSystem->AccessPathName(fileNameSP.Data(),kFileExists)))
   {
    spFileMerger->AddFile(fileNameSP.Data());
+   counterSP++;
   } else 
     {
      cout<<"WARNING: Couldn't find a file "<<fileNameSP.Data()<<". Merging will continue without this file."<<endl;
     }  
     
+  if(counterSP % cycle == 0)
+  {
+   maxCycleSP = counterSP/cycle; 
+   TString mergedFileNameCurrentCycleSP("mergedSPanalysis");   
+   ((mergedFileNameCurrentCycleSP+=(type.Data()))+=counterSP/cycle)+=(".root");    
+   spFileMerger->OutputFile(mergedFileNameCurrentCycleSP);
+   
+   TString mergedFileNamePreviousCycleSP("mergedSPanalysis");   
+   ((mergedFileNamePreviousCycleSP+=(type.Data()))+=(counterSP/cycle-1))+=(".root");
+   if(!(gSystem->AccessPathName(mergedFileNamePreviousCycleSP.Data(),kFileExists)))
+   {
+    spFileMerger->AddFile(mergedFileNamePreviousCycleSP.Data());
+   }
+   
+   Bool_t spMerged = kFALSE;
+   if(spFileMerger)
+   {  
+    spMerged = spFileMerger->Merge();
+    spFileMerger->Reset();
+   }
+   
+   if(spMerged)
+   {   
+    TSystemFile *previousCycle = new TSystemFile(mergedFileNamePreviousCycleSP.Data(),gSystem->pwd());
+    if(previousCycle) previousCycle->Delete();
+    delete previousCycle;
+   }
+  } // end of if(counterSP % cycle == 0)
+  
   // GFC:     
   TString fileNameGFC = presentDirName;   
   ((fileNameGFC+="outputGFCanalysis")+=type.Data())+=".root";
   if(!(gSystem->AccessPathName(fileNameGFC.Data(),kFileExists)))
   {
    gfcFileMerger->AddFile(fileNameGFC.Data());
+   counterGFC++;
   } else 
     {
      cout<<"WARNING: Couldn't find a file "<<fileNameGFC.Data()<<". Merging will continue without this file."<<endl;
-    }    
-        
+    }  
+    
+  if(counterGFC % cycle == 0)
+  {
+   maxCycleGFC = counterGFC/cycle; 
+   TString mergedFileNameCurrentCycleGFC("mergedGFCanalysis");   
+   ((mergedFileNameCurrentCycleGFC+=(type.Data()))+=counterGFC/cycle)+=(".root");    
+   gfcFileMerger->OutputFile(mergedFileNameCurrentCycleGFC);
+   
+   TString mergedFileNamePreviousCycleGFC("mergedGFCanalysis");   
+   ((mergedFileNamePreviousCycleGFC+=(type.Data()))+=(counterGFC/cycle-1))+=(".root");
+   if(!(gSystem->AccessPathName(mergedFileNamePreviousCycleGFC.Data(),kFileExists)))
+   {
+    gfcFileMerger->AddFile(mergedFileNamePreviousCycleGFC.Data());
+   }
+   
+   Bool_t gfcMerged = kFALSE;
+   if(gfcFileMerger)
+   {  
+    gfcMerged = gfcFileMerger->Merge();
+    gfcFileMerger->Reset();
+   }
+   
+   if(gfcMerged)
+   {   
+    TSystemFile *previousCycle = new TSystemFile(mergedFileNamePreviousCycleGFC.Data(),gSystem->pwd());
+    if(previousCycle) previousCycle->Delete();
+    delete previousCycle;
+   }
+  } // end of if(counterGFC % cycle == 0)
+  
   // QC:     
   TString fileNameQC = presentDirName;   
   ((fileNameQC+="outputQCanalysis")+=type.Data())+=".root";
   if(!(gSystem->AccessPathName(fileNameQC.Data(),kFileExists)))
   {
    qcFileMerger->AddFile(fileNameQC.Data());
+   counterQC++;
   } else 
     {
      cout<<"WARNING: Couldn't find a file "<<fileNameQC.Data()<<". Merging will continue without this file."<<endl;
-    }   
+    }  
     
+  if(counterQC % cycle == 0)
+  {
+   maxCycleQC = counterQC/cycle; 
+   TString mergedFileNameCurrentCycleQC("mergedQCanalysis");   
+   ((mergedFileNameCurrentCycleQC+=(type.Data()))+=counterQC/cycle)+=(".root");    
+   qcFileMerger->OutputFile(mergedFileNameCurrentCycleQC);
+   
+   TString mergedFileNamePreviousCycleQC("mergedQCanalysis");   
+   ((mergedFileNamePreviousCycleQC+=(type.Data()))+=(counterQC/cycle-1))+=(".root");
+   if(!(gSystem->AccessPathName(mergedFileNamePreviousCycleQC.Data(),kFileExists)))
+   {
+    qcFileMerger->AddFile(mergedFileNamePreviousCycleQC.Data());
+   }
+   
+   Bool_t qcMerged = kFALSE;
+   if(qcFileMerger)
+   {  
+    qcMerged = qcFileMerger->Merge();
+    qcFileMerger->Reset();
+   }
+   
+   if(qcMerged)
+   {   
+    TSystemFile *previousCycle = new TSystemFile(mergedFileNamePreviousCycleQC.Data(),gSystem->pwd());
+    if(previousCycle) previousCycle->Delete();
+    delete previousCycle;
+   }
+  } // end of if(counterQC % cycle == 0)
+  
   // FQD:     
   TString fileNameFQD = presentDirName;   
   ((fileNameFQD+="outputFQDanalysis")+=type.Data())+=".root";
   if(!(gSystem->AccessPathName(fileNameFQD.Data(),kFileExists)))
   {
    fqdFileMerger->AddFile(fileNameFQD.Data());
+   counterFQD++;
   } else 
     {
      cout<<"WARNING: Couldn't find a file "<<fileNameFQD.Data()<<". Merging will continue without this file."<<endl;
-    }   
+    }  
+    
+  if(counterFQD % cycle == 0)
+  {
+   maxCycleFQD = counterFQD/cycle; 
+   TString mergedFileNameCurrentCycleFQD("mergedFQDanalysis");   
+   ((mergedFileNameCurrentCycleFQD+=(type.Data()))+=counterFQD/cycle)+=(".root");    
+   fqdFileMerger->OutputFile(mergedFileNameCurrentCycleFQD);
+   
+   TString mergedFileNamePreviousCycleFQD("mergedFQDanalysis");   
+   ((mergedFileNamePreviousCycleFQD+=(type.Data()))+=(counterFQD/cycle-1))+=(".root");
+   if(!(gSystem->AccessPathName(mergedFileNamePreviousCycleFQD.Data(),kFileExists)))
+   {
+    fqdFileMerger->AddFile(mergedFileNamePreviousCycleFQD.Data());
+   }
+   
+   Bool_t fqdMerged = kFALSE;
+   if(fqdFileMerger)
+   {  
+    fqdMerged = fqdFileMerger->Merge();
+    fqdFileMerger->Reset();
+   }
+   
+   if(fqdMerged)
+   {   
+    TSystemFile *previousCycle = new TSystemFile(mergedFileNamePreviousCycleFQD.Data(),gSystem->pwd());
+    if(previousCycle) previousCycle->Delete();
+    delete previousCycle;
+   }
+  } // end of if(counterFQD % cycle == 0)
   
   // LYZ1:     
   TString fileNameLYZ1 = presentDirName;   
@@ -200,86 +371,272 @@ void mergeOutput(TString type="", Int_t nRuns=-1, Int_t mode=mLocal)
   if(!(gSystem->AccessPathName(fileNameLYZ1.Data(),kFileExists)))
   {
    lyz1FileMerger->AddFile(fileNameLYZ1.Data());
+   counterLYZ1++;
   } else 
     {
      cout<<"WARNING: Couldn't find a file "<<fileNameLYZ1.Data()<<". Merging will continue without this file."<<endl;
-    }   
+    }  
     
-  // LYZ2:     
-  TString fileNameLYZ2 = presentDirName;   
-  ((fileNameLYZ2+="outputLYZ2analysis")+=type.Data())+=".root";
-  if(!(gSystem->AccessPathName(fileNameLYZ2.Data(),kFileExists)))
+  if(counterLYZ1 % cycle == 0)
   {
-   lyz2FileMerger->AddFile(fileNameLYZ2.Data());
-  } else 
-    {
-     cout<<"WARNING: Couldn't find a file "<<fileNameLYZ2.Data()<<". Merging will continue without this file."<<endl;
-    }     
-    
-  // LYZEP:     
-  TString fileNameLYZEP = presentDirName;   
-  ((fileNameLYZEP+="outputLYZEPanalysis")+=type.Data())+=".root";
-  if(!(gSystem->AccessPathName(fileNameLYZEP.Data(),kFileExists)))
-  {
-   lyzepFileMerger->AddFile(fileNameLYZEP.Data());
-  } else 
-    {
-     cout<<"WARNING: Couldn't find a file "<<fileNameLYZEP.Data()<<". Merging will continue without this file."<<endl;
-    }       
+   maxCycleLYZ1 = counterLYZ1/cycle; 
+   TString mergedFileNameCurrentCycleLYZ1("mergedLYZ1analysis");   
+   ((mergedFileNameCurrentCycleLYZ1+=(type.Data()))+=counterLYZ1/cycle)+=(".root");    
+   lyz1FileMerger->OutputFile(mergedFileNameCurrentCycleLYZ1);
    
+   TString mergedFileNamePreviousCycleLYZ1("mergedLYZ1analysis");   
+   ((mergedFileNamePreviousCycleLYZ1+=(type.Data()))+=(counterLYZ1/cycle-1))+=(".root");
+   if(!(gSystem->AccessPathName(mergedFileNamePreviousCycleLYZ1.Data(),kFileExists)))
+   {
+    lyz1FileMerger->AddFile(mergedFileNamePreviousCycleLYZ1.Data());
+   }
+   
+   Bool_t lyz1Merged = kFALSE;
+   if(lyz1FileMerger)
+   {  
+    lyz1Merged = lyz1FileMerger->Merge();
+    lyz1FileMerger->Reset();
+   }
+   
+   if(lyz1Merged)
+   {   
+    TSystemFile *previousCycle = new TSystemFile(mergedFileNamePreviousCycleLYZ1.Data(),gSystem->pwd());
+    if(previousCycle) previousCycle->Delete();
+    delete previousCycle;
+   }
+  } // end of if(counterLYZ1 % cycle == 0)
+
   counter++;
   
  } // end of for(Int_t iDir=0;iDir<nDirs;++iDir)
  
- // merge everything:
- if(mcepFileMerger)
- {
-  cout<<endl;
-  cout<<" ---- Starting to merge MCEP files ----"<<endl;
-  mcepFileMerger->Merge();
- } 
- if(spFileMerger)
- {
-  cout<<endl;
-  cout<<" ---- Starting to merge SP files ----"<<endl;
-  spFileMerger->Merge();
- }
- if(gfcFileMerger)
- {
-  cout<<endl;
-  cout<<" ---- Starting to merge GFC files ----"<<endl;
-  gfcFileMerger->Merge();
- }
- if(qcFileMerger)
- {
-  cout<<endl;
-  cout<<" ---- Starting to merge QC files ----"<<endl;
-  qcFileMerger->Merge();
- }
- if(fqdFileMerger)
- {
-  cout<<endl;
-  cout<<" ---- Starting to merge FQD files ----"<<endl;
-  fqdFileMerger->Merge();
- }
- if(lyz1FileMerger)
- {
-  cout<<endl;
-  cout<<" ---- Starting to merge LYZ1 files ----"<<endl;
-  lyz1FileMerger->Merge();
- }
- if(lyz2FileMerger)
- {
-  cout<<endl;
-  cout<<" ---- Starting to merge LYZ2 files ----"<<endl;
-  lyz2FileMerger->Merge();
- }
- if(lyzepFileMerger)
- {
-  cout<<endl;
-  cout<<" ---- Starting to merge LYZEP files ----"<<endl;
-  lyzepFileMerger->Merge();
- }
+ // last cycle MCEP:
+ if(counterMCEP % cycle != 0)
+ { 
+  TString mergedFileNameCurrentCycleMCEP("mergedMCEPanalysis");   
+  ((mergedFileNameCurrentCycleMCEP+=(type.Data()))+=(maxCycleMCEP+1))+=(".root");    
+  mcepFileMerger->OutputFile(mergedFileNameCurrentCycleMCEP);
+   
+  TString mergedFileNamePreviousCycleMCEP("mergedMCEPanalysis");   
+  ((mergedFileNamePreviousCycleMCEP+=(type.Data()))+=(maxCycleMCEP))+=(".root");
+  if(!(gSystem->AccessPathName(mergedFileNamePreviousCycleMCEP.Data(),kFileExists)))
+  {
+   mcepFileMerger->AddFile(mergedFileNamePreviousCycleMCEP.Data());
+  }
+   
+  Bool_t mcepMerged = kFALSE;
+  if(mcepFileMerger)
+  {  
+   mcepMerged = mcepFileMerger->Merge();
+   mcepFileMerger->Reset();
+  }
+   
+  if(mcepMerged)
+  {   
+   TSystemFile *previousCycle = new TSystemFile(mergedFileNamePreviousCycleMCEP.Data(),gSystem->pwd());
+   if(previousCycle) previousCycle->Delete();
+   delete previousCycle;
+  }
+  maxCycleMCEP++;
+ } // end of if(counterMCEP % cycle != 0)
+  
+ // renaming the final merged output for MCEP: 
+ TString finalMergedFileNameMCEP("mergedMCEPanalysis");   
+ ((finalMergedFileNameMCEP+=(type.Data()))+=maxCycleMCEP)+=(".root"); 
+ TSystemFile *finalMergedFileMCEP = new TSystemFile(finalMergedFileNameMCEP.Data(),gSystem->pwd());
+ TString defaultMergedFileNameMCEP("mergedMCEPanalysis");   
+ (defaultMergedFileNameMCEP+=(type.Data()))+=(".root"); 
+ if(finalMergedFileMCEP) finalMergedFileMCEP->Rename(defaultMergedFileNameMCEP.Data());
+ 
+ // last cycle SP:
+ if(counterSP % cycle != 0)
+ { 
+  TString mergedFileNameCurrentCycleSP("mergedSPanalysis");   
+  ((mergedFileNameCurrentCycleSP+=(type.Data()))+=(maxCycleSP+1))+=(".root");    
+  spFileMerger->OutputFile(mergedFileNameCurrentCycleSP);
+   
+  TString mergedFileNamePreviousCycleSP("mergedSPanalysis");   
+  ((mergedFileNamePreviousCycleSP+=(type.Data()))+=(maxCycleSP))+=(".root");
+  if(!(gSystem->AccessPathName(mergedFileNamePreviousCycleSP.Data(),kFileExists)))
+  {
+   spFileMerger->AddFile(mergedFileNamePreviousCycleSP.Data());
+  }
+   
+  Bool_t spMerged = kFALSE;
+  if(spFileMerger)
+  {  
+   spMerged = spFileMerger->Merge();
+   spFileMerger->Reset();
+  }
+   
+  if(spMerged)
+  {   
+   TSystemFile *previousCycle = new TSystemFile(mergedFileNamePreviousCycleSP.Data(),gSystem->pwd());
+   if(previousCycle) previousCycle->Delete();
+   delete previousCycle;
+  }
+  maxCycleSP++;
+ } // end of if(counterSP % cycle != 0)
+ 
+ // renaming the final merged output for SP: 
+ TString finalMergedFileNameSP("mergedSPanalysis");   
+ ((finalMergedFileNameSP+=(type.Data()))+=maxCycleSP)+=(".root"); 
+ TSystemFile *finalMergedFileSP = new TSystemFile(finalMergedFileNameSP.Data(),gSystem->pwd());
+ TString defaultMergedFileNameSP("mergedSPanalysis");   
+ (defaultMergedFileNameSP+=(type.Data()))+=(".root"); 
+ if(finalMergedFileSP) finalMergedFileSP->Rename(defaultMergedFileNameSP.Data());
+ 
+ // last cycle GFC:
+ if(counterGFC % cycle != 0)
+ { 
+  TString mergedFileNameCurrentCycleGFC("mergedGFCanalysis");   
+  ((mergedFileNameCurrentCycleGFC+=(type.Data()))+=(maxCycleGFC+1))+=(".root");    
+  gfcFileMerger->OutputFile(mergedFileNameCurrentCycleGFC);
+   
+  TString mergedFileNamePreviousCycleGFC("mergedGFCanalysis");   
+  ((mergedFileNamePreviousCycleGFC+=(type.Data()))+=(maxCycleGFC))+=(".root");
+  if(!(gSystem->AccessPathName(mergedFileNamePreviousCycleGFC.Data(),kFileExists)))
+  {
+   gfcFileMerger->AddFile(mergedFileNamePreviousCycleGFC.Data());
+  }
+   
+  Bool_t gfcMerged = kFALSE;
+  if(gfcFileMerger)
+  {  
+   gfcMerged = gfcFileMerger->Merge();
+   gfcFileMerger->Reset();
+  }
+   
+  if(gfcMerged)
+  {   
+   TSystemFile *previousCycle = new TSystemFile(mergedFileNamePreviousCycleGFC.Data(),gSystem->pwd());
+   if(previousCycle) previousCycle->Delete();
+   delete previousCycle;
+  }
+  maxCycleGFC++;
+ } // end of if(counterGFC % cycle != 0)
+ 
+ // renaming the final merged output for GFC: 
+ TString finalMergedFileNameGFC("mergedGFCanalysis");   
+ ((finalMergedFileNameGFC+=(type.Data()))+=maxCycleGFC)+=(".root"); 
+ TSystemFile *finalMergedFileGFC = new TSystemFile(finalMergedFileNameGFC.Data(),gSystem->pwd());
+ TString defaultMergedFileNameGFC("mergedGFCanalysis");   
+ (defaultMergedFileNameGFC+=(type.Data()))+=(".root"); 
+ if(finalMergedFileGFC) finalMergedFileGFC->Rename(defaultMergedFileNameGFC.Data());
+ 
+ // last cycle QC:
+ if(counterQC % cycle != 0)
+ { 
+  TString mergedFileNameCurrentCycleQC("mergedQCanalysis");   
+  ((mergedFileNameCurrentCycleQC+=(type.Data()))+=(maxCycleQC+1))+=(".root");    
+  qcFileMerger->OutputFile(mergedFileNameCurrentCycleQC);
+   
+  TString mergedFileNamePreviousCycleQC("mergedQCanalysis");   
+  ((mergedFileNamePreviousCycleQC+=(type.Data()))+=(maxCycleQC))+=(".root");
+  if(!(gSystem->AccessPathName(mergedFileNamePreviousCycleQC.Data(),kFileExists)))
+  {
+   qcFileMerger->AddFile(mergedFileNamePreviousCycleQC.Data());
+  }
+   
+  Bool_t qcMerged = kFALSE;
+  if(qcFileMerger)
+  {  
+   qcMerged = qcFileMerger->Merge();
+   qcFileMerger->Reset();
+  }
+   
+  if(qcMerged)
+  {   
+   TSystemFile *previousCycle = new TSystemFile(mergedFileNamePreviousCycleQC.Data(),gSystem->pwd());
+   if(previousCycle) previousCycle->Delete();
+   delete previousCycle;
+  }
+  maxCycleQC++;
+ } // end of if(counterQC % cycle != 0)
+ 
+ // renaming the final merged output for QC: 
+ TString finalMergedFileNameQC("mergedQCanalysis");   
+ ((finalMergedFileNameQC+=(type.Data()))+=maxCycleQC)+=(".root"); 
+ TSystemFile *finalMergedFileQC = new TSystemFile(finalMergedFileNameQC.Data(),gSystem->pwd());
+ TString defaultMergedFileNameQC("mergedQCanalysis");   
+ (defaultMergedFileNameQC+=(type.Data()))+=(".root"); 
+ if(finalMergedFileQC) finalMergedFileQC->Rename(defaultMergedFileNameQC.Data());
+ 
+ // last cycle FQD:
+ if(counterFQD % cycle != 0)
+ { 
+  TString mergedFileNameCurrentCycleFQD("mergedFQDanalysis");   
+  ((mergedFileNameCurrentCycleFQD+=(type.Data()))+=(maxCycleFQD+1))+=(".root");    
+  fqdFileMerger->OutputFile(mergedFileNameCurrentCycleFQD);
+   
+  TString mergedFileNamePreviousCycleFQD("mergedFQDanalysis");   
+  ((mergedFileNamePreviousCycleFQD+=(type.Data()))+=(maxCycleFQD))+=(".root");
+  if(!(gSystem->AccessPathName(mergedFileNamePreviousCycleFQD.Data(),kFileExists)))
+  {
+   fqdFileMerger->AddFile(mergedFileNamePreviousCycleFQD.Data());
+  }
+   
+  Bool_t fqdMerged = kFALSE;
+  if(fqdFileMerger)
+  {  
+   fqdMerged = fqdFileMerger->Merge();
+   fqdFileMerger->Reset();
+  }
+   
+  if(fqdMerged)
+  {   
+   TSystemFile *previousCycle = new TSystemFile(mergedFileNamePreviousCycleFQD.Data(),gSystem->pwd());
+   if(previousCycle) previousCycle->Delete();
+   delete previousCycle;
+  }
+  maxCycleFQD++;
+ } // end of if(counterFQD % cycle != 0)
+ 
+ // renaming the final merged output for FQD: 
+ TString finalMergedFileNameFQD("mergedFQDanalysis");   
+ ((finalMergedFileNameFQD+=(type.Data()))+=maxCycleFQD)+=(".root"); 
+ TSystemFile *finalMergedFileFQD = new TSystemFile(finalMergedFileNameFQD.Data(),gSystem->pwd());
+ TString defaultMergedFileNameFQD("mergedFQDanalysis");   
+ (defaultMergedFileNameFQD+=(type.Data()))+=(".root"); 
+ if(finalMergedFileFQD) finalMergedFileFQD->Rename(defaultMergedFileNameFQD.Data());
+ 
+ // last cycle LYZ1:
+ if(counterLYZ1 % cycle != 0)
+ { 
+  TString mergedFileNameCurrentCycleLYZ1("mergedLYZ1analysis");   
+  ((mergedFileNameCurrentCycleLYZ1+=(type.Data()))+=(maxCycleLYZ1+1))+=(".root");    
+  lyz1FileMerger->OutputFile(mergedFileNameCurrentCycleLYZ1);
+   
+  TString mergedFileNamePreviousCycleLYZ1("mergedLYZ1analysis");   
+  ((mergedFileNamePreviousCycleLYZ1+=(type.Data()))+=(maxCycleLYZ1))+=(".root");
+  if(!(gSystem->AccessPathName(mergedFileNamePreviousCycleLYZ1.Data(),kFileExists)))
+  {
+   lyz1FileMerger->AddFile(mergedFileNamePreviousCycleLYZ1.Data());
+  }
+   
+  Bool_t lyz1Merged = kFALSE;
+  if(lyz1FileMerger)
+  {  
+   lyz1Merged = lyz1FileMerger->Merge();
+   lyz1FileMerger->Reset();
+  }
+   
+  if(lyz1Merged)
+  {   
+   TSystemFile *previousCycle = new TSystemFile(mergedFileNamePreviousCycleLYZ1.Data(),gSystem->pwd());
+   if(previousCycle) previousCycle->Delete();
+   delete previousCycle;
+  }
+  maxCycleLYZ1++;
+ } // end of if(counterLYZ1 % cycle != 0)
+ 
+ // renaming the final merged output for LYZ1: 
+ TString finalMergedFileNameLYZ1("mergedLYZ1analysis");   
+ ((finalMergedFileNameLYZ1+=(type.Data()))+=maxCycleLYZ1)+=(".root"); 
+ TSystemFile *finalMergedFileLYZ1 = new TSystemFile(finalMergedFileNameLYZ1.Data(),gSystem->pwd());
+ TString defaultMergedFileNameLYZ1("mergedLYZ1analysis");   
+ (defaultMergedFileNameLYZ1+=(type.Data()))+=(".root"); 
+ if(finalMergedFileLYZ1) finalMergedFileLYZ1->Rename(defaultMergedFileNameLYZ1.Data());
  
 } // end of void mergeOutput(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
 
@@ -312,7 +669,7 @@ void LoadSpreadLibrariesMO(const libModes mode) {
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libPWG2flowCommon.so");
-  cerr<<"libPWG2flowCommon.so loaded ..."<<endl;
+  //cerr<<"libPWG2flowCommon.so loaded ..."<<endl;
   
   }
   
