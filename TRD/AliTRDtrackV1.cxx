@@ -312,12 +312,12 @@ UChar_t AliTRDtrackV1::GetNumberOfTrackletsPID() const
 {
 // Retrieve number of tracklets used for PID calculation. 
 
-  UChar_t fPIDquality = 0;
+  UChar_t nPID = 0;
   Float_t *prob = 0x0;
   for(int ip=0; ip<kNplane; ip++){
     if(fTrackletIndex[ip] == 0xffff) continue;
     if(!fTracklet[ip]->IsOK()) continue;
-    if(!(prob = fTracklet[ip]->GetProbability(kFALSE))) return 0;
+    if(!(prob = fTracklet[ip]->GetProbability(kFALSE))) continue;
     
     Int_t nspec = 0; // quality check of tracklet dEdx
     for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
@@ -326,9 +326,10 @@ UChar_t AliTRDtrackV1::GetNumberOfTrackletsPID() const
     }
     if(!nspec) continue;
     
-    fPIDquality++;
+    fTracklet[ip]->SetPID();
+    nPID++;
   }
-  return fPIDquality;
+  return nPID;
 }
 
 //___________________________________________________________
@@ -629,7 +630,7 @@ Int_t   AliTRDtrackV1::PropagateToR(Double_t r,Double_t step)
     Double_t alpha = TMath::ATan2(xyz0[1],xyz0[0]);
     Rotate(alpha,kTRUE);
     GetXYZ(xyz0);	
-    if(GetProlongation(r,y,z)<0) return -1;
+    if(GetProlongation(x,y,z)<0) return -1;
     xyz1[0] = x * TMath::Cos(alpha) + y * TMath::Sin(alpha); 
     xyz1[1] = x * TMath::Sin(alpha) - y * TMath::Cos(alpha);
     xyz1[2] = z;
@@ -795,23 +796,24 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   //
 
   Int_t nslices = fReconstructor->IsEightSlices() ? (Int_t)AliTRDpidUtil::kNNslices : (Int_t)AliTRDpidUtil::kLQslices;
-  track->SetNumberOfTRDslices(nslices);
-
-  Int_t n = 0;
+  // number of tracklets used for PID calculation
+  UChar_t nPID = GetNumberOfTrackletsPID();
+  // number of tracklets attached to the track
+  UChar_t nTrk = GetNumberOfTracklets();
+  // pack the two numbers together and store them in the ESD
+  track->SetTRDntracklets(nPID | (nTrk<<3));
+  // allocate space to store raw PID signals dEdx & momentum
+  track->SetNumberOfTRDslices((nslices+2)*nPID);
+  // store raw signals
+  Double_t p, sp;
   for (Int_t ip = 0; ip < kNplane; ip++) {
     if(fTrackletIndex[ip] == 0xffff) continue;
-    n++;
-    if(!fTracklet[ip]->IsOK()) continue;
-    fTracklet[ip]->CookdEdx(nslices);
+    if(!fTracklet[ip]->HasPID()) continue;
     Float_t *dedx = fTracklet[ip]->GetdEdx();
     for (Int_t js = 0; js < nslices; js++, dedx++) track->SetTRDslice(*dedx, ip, js);
+    p = fTracklet[ip]->GetMomentum(&sp);
+    track->SetTRDmomentum(p, ip, &sp);
   }
-
-  UChar_t nPID = GetNumberOfTrackletsPID();
-  if(!nPID) track->SetTRDntracklets(n);
-  else {
-    track->SetTRDpid(fPID);
-    nPID |= (n<<3);
-    track->SetTRDntracklets(nPID);
-  }
+  // store PID probabilities
+  track->SetTRDpid(fPID);
 }

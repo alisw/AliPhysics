@@ -56,9 +56,10 @@ public:
   enum ETRDtrackletStatus {
     kOwner      = BIT(14) // owner of its clusters
    ,kRowCross   = BIT(15) // pad row cross tracklet
-   ,kCalib      = BIT(16) // calibrated tracklet
-   ,kKink       = BIT(17) // kink prolongation tracklet
-   ,kStandAlone = BIT(18)
+   ,kPID        = BIT(16) // PID contributor
+   ,kCalib      = BIT(17) // calibrated tracklet
+   ,kKink       = BIT(18) // kink prolongation tracklet
+   ,kStandAlone = BIT(19) // stand alone build tracklet
   };
 
   AliTRDseedV1(Int_t det = -1);
@@ -83,6 +84,7 @@ public:
   Bool_t    IsCalibrated() const     { return TestBit(kCalib);}
   Bool_t    IsOwner() const          { return TestBit(kOwner);}
   Bool_t    IsKink() const           { return TestBit(kKink);}
+  Bool_t    HasPID() const           { return TestBit(kPID);}
   Bool_t    IsOK() const             { return GetN() > 4 && GetNUsed() < 4;}
   Bool_t    IsRowCross() const       { return TestBit(kRowCross);}
   Bool_t    IsUsable(Int_t i) const  { return fClusters[i] && !fClusters[i]->IsUsed();}
@@ -155,7 +157,8 @@ public:
   inline void SetCovRef(const Double_t *cov);
   void      SetIndexes(Int_t i, Int_t idx) { fIndexes[i]  = idx; }
   void      SetLabels(Int_t *lbls)   { memcpy(fLabels, lbls, 3*sizeof(Int_t)); }
-  void      SetKink(Bool_t k)        { SetBit(kKink, k);}
+  void      SetKink(Bool_t k = kTRUE){ SetBit(kKink, k);}
+  void      SetPID(Bool_t k = kTRUE) { SetBit(kPID, k);}
   void      SetStandAlone(Bool_t st) { SetBit(kStandAlone, st); }
   void      SetPt(Double_t pt)       { fPt = pt;}
   void      SetOwner();
