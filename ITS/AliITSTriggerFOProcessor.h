@@ -20,6 +20,8 @@
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
+/* $Id$ */
+
 #include "AliITSFOSignalsSPD.h"
 
 class AliITSTriggerConditions;
@@ -50,7 +52,7 @@ class AliITSTriggerFOProcessor {
   virtual Bool_t        ProcessFOSignalsTHRInnerAndTHROuter(Short_t index, AliITSFOSignalsSPD* /*signals*/);
   virtual Bool_t        ProcessFOSignalsInnerGTOuterPlusOffset(Short_t index, AliITSFOSignalsSPD* /*signals*/);
   virtual Bool_t        ProcessFOSignalsOuterGTInnerPlusOffset(Short_t index, AliITSFOSignalsSPD* /*signals*/);
-
+  virtual Bool_t        ProcessFOSignalsCosmic(Short_t index, AliITSFOSignalsSPD* /*signals*/);
   
  protected:
   Int_t fFOInner;

@@ -21,6 +21,8 @@
 #include "AliITSTriggerConditions.h"
 #include <TError.h>
 
+/* $Id$ */
+
 AliITSTriggerFOProcessor::AliITSTriggerFOProcessor() :
   fFOInner(0), fFOOuter(0), fTriggerCond(NULL)
 {
@@ -115,18 +117,17 @@ Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsLabel(const Char_t* label, AliI
     Error("AliITSTriggerFOProcessor::ProcessFOSignalsLabel", "No conditions for label '%s'.",label);
     return kFALSE;
   }
-
+  
   if      (strcmp(label, "0SMB") == 0) return ProcessFOSignalsTHRTotalAndTHRInnerAndTHROuter(index, signals);
-  else if (strcmp(label, "0SH1") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);
-  else if (strcmp(label, "0SH2") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);
-  else if (strcmp(label, "0SH3") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);
-  else if (strcmp(label, "0SH4") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);
-  else if (strcmp(label, "0SPF") == 0) return ProcessFOSignalsTHRTotalAndTHRInnerAndTHROuter(index, signals);
+  else if (strcmp(label, "0SH1") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);//ok
+  else if (strcmp(label, "0SH2") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);//ok
+  else if (strcmp(label, "0SH3") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);//ok
+  else if (strcmp(label, "0SH4") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);//
+  else if (strcmp(label, "0SPF") == 0) return ProcessFOSignalsTHRTotalAndTHRInnerAndTHROuter(index, signals);//ok
   else if (strcmp(label, "0SBK") == 0) return ProcessFOSignalsInnerGTOuterPlusOffset(index, signals);
-  else if (strcmp(label, "0SBK") == 0) return ProcessFOSignalsOuterGTInnerPlusOffset(index, signals);
-  else if (strcmp(label, "0SBK") == 0) return ProcessFOSignalsTHRTotal(index, signals);
-  else if (strcmp(label, "SPD_GFO_L0") == 0) return ProcessFOSignalsTHRTotal(index, signals);
-  else if (strcmp(label, "SPD_HMULT_L0") == 0) return ProcessFOSignalsTHRTotal(index, signals);
+  else if (strcmp(label, "0SX1") == 0) return ProcessFOSignalsOuterGTInnerPlusOffset(index, signals);
+  else if (strcmp(label, "0SX2") == 0) return ProcessFOSignalsTHRTotal(index, signals);
+  else if (strcmp(label, "0SCO") == 0) return ProcessFOSignalsCosmic(index, signals);
 
   else {
     Error("AliITSTriggerFOProcessor::ProcessFOSignalsLabel", "Algorithm not yet implemented for label '%s'.",label);
@@ -196,7 +197,8 @@ Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsTHRTotal(Short_t index, AliITSF
   }
   
   // Get parameter values:
-  Int_t thIO = fTriggerCond->GetAlgoParamValueIN(index, "total_threshold");
+  //Int_t thIO = fTriggerCond->GetAlgoParamValueIN(index, "total_threshold");
+  Int_t thIO = fTriggerCond->GetAlgoParamValueIN(index, "offset");
   if (thIO<0) {
     Error("AliITSTriggerFOProcessor::ProcessFOSignalsTHRTotal","Parameter 'total_threshold' not defined");
     return kFALSE;
@@ -215,7 +217,7 @@ Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsInnerGTOuterPlusOffset(Short_t 
   }
   
   // Get parameter values:
-  Int_t offset = fTriggerCond->GetAlgoParamValueIN(index, "offset");
+  Int_t offset = fTriggerCond->GetAlgoParamValueIN(index, "total_threshold");
   if (offset<0) {
     Error("AliITSTriggerFOProcessor::ProcessFOSignalsInnerGTOuterPlusOffset","Parameter 'offset' not defined");
     return kFALSE;
@@ -242,5 +244,67 @@ Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsOuterGTInnerPlusOffset(Short_t 
 
   // Evaluate:
   return (fFOOuter >=  fFOInner + offset);
+}
+//______________________________________________________________________
+Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsCosmic(Short_t index, AliITSFOSignalsSPD* signals) {
+  // NB: For every event - Always call PreprocessFOSignals before calling this method
+  // Process algorithm 'cosmic' (index is needed to get the correct parameters from the ocdb object)
+  if (fTriggerCond==NULL) {
+    Error("AliITSTriggerFOProcessor::ProcessFOSignalsCosmic","Trigger conditions entry not yet given.");
+    return kFALSE;
+  }
+
+  // Get parameter values:
+  Int_t cosmicParam = fTriggerCond->GetAlgoParamValueIN(index, "cosmic_mode");
+  if (cosmicParam<0) {
+    Error("AliITSTriggerFOProcessor::ProcessFOSignalsCosmic","Parameter 'cosmic_mode' not defined");
+    return kFALSE;
+  }
+
+  // Evaluate:
+
+  UShort_t topOuter = 0;
+  UShort_t topInner = 0;
+  UShort_t bottomOuter = 0;
+  UShort_t bottomInner = 0;
+
+  Int_t eq   = -1;
+  Int_t hs   = -1;
+  Int_t chip = -1;
+  while (signals->GetNextSignal(eq,hs,chip)) {
+    if (fTriggerCond->IsChipActive( (UInt_t)eq, (UInt_t)hs, (UInt_t)chip) ) {
+      if (hs<=1) {
+        if (eq%10 < 5) topInner++;
+        else        bottomInner++;
+      }
+      else {
+        if (eq%10 < 5) topOuter++;
+        else        bottomOuter++;
+      }
+    }
+  }
+
+  // top outer & bottom outer
+  if (cosmicParam == 0) return (topOuter>0 && bottomOuter>0);
+  // inner & outer
+  if (cosmicParam == 1) return (fFOInner>0 && fFOOuter>0);
+  // double layer ( >=2 of top inner, top outer, bottom inner, bottom outer )
+  if (cosmicParam == 2) {
+    UShort_t nHalfLayers = 0;
+    if (topOuter>0)    nHalfLayers++;
+    if (topInner>0)    nHalfLayers++;
+    if (bottomOuter>0) nHalfLayers++;
+    if (bottomInner>0) nHalfLayers++;
+    return (nHalfLayers>=2);
+  }
+  // top outer & top inner & bottom outer & bottom inner
+  if (cosmicParam == 3) return (topOuter>0 && topInner>0 && bottomOuter>0 && bottomInner>0);
+  // top outer & bottom outer & inner
+  if (cosmicParam == 4) return (topOuter>0 && bottomOuter>0 && fFOInner>0);
+  // global or
+  if (cosmicParam == 5) return (fFOOuter>0 || fFOInner>0);
+
+  Error("AliITSTriggerFOProcessor::ProcessFOSignalsCosmic",Form("'cosmic_algorithm_parameter' = %d not defined",cosmicParam));
+  return kFALSE;
 }
 
