@@ -145,7 +145,7 @@ sim_hlt_tpc(const char* options="CA")
     // tracker finder components
     tracker.Form("TR_%02d", slice);
     if (bUseCA) {
-      AliHLTConfiguration trackerconf(tracker.Data(), "TPCCATracker", trackerInput.Data(), "-newOutputType");
+      AliHLTConfiguration trackerconf(tracker.Data(), "TPCCATracker", trackerInput.Data(), "");
     } else {
       AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run");
     }
