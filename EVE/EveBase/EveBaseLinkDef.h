@@ -64,3 +64,9 @@
 #pragma link C++ class AliEveKinkList+;
 #pragma link C++ class AliEveKinkEditor+;
 #pragma link C++ class AliEveKinkListEditor+;
+
+// AliEveHF
+#pragma link C++ class AliEveHF+;
+#pragma link C++ class AliEveHFList+;
+#pragma link C++ class AliEveHFEditor+;
+#pragma link C++ class AliEveHFListEditor+;
