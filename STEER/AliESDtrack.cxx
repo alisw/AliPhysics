@@ -1108,7 +1108,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
   if (flags==kITSout) fFriendTrack->SetITSOut(*t);
   if (flags==kTPCout) fFriendTrack->SetTPCOut(*t);
-  if (flags==kTRDin || flags==kTRDrefit) fFriendTrack->SetTRDIn(*t);
+  if (flags==kTRDrefit) fFriendTrack->SetTRDIn(*t);
   
   switch (flags) {
     
@@ -1600,26 +1600,88 @@ Double_t AliESDtrack::GetTRDpid(Int_t iSpecies) const
   return fTRDr[iSpecies];
 }
 
-void  AliESDtrack::SetNumberOfTRDslices(Int_t n) {
-  //Sets the number of slices used for PID 
-  if (fTRDnSlices != 0) return;
-  fTRDnSlices=kTRDnPlanes*n;
-  fTRDslices=new Double32_t[fTRDnSlices];
-  for (Int_t i=0; i<fTRDnSlices; i++) fTRDslices[i]=-1.;
+//____________________________________________________
+Int_t AliESDtrack::GetNumberOfTRDslices() const 
+{
+  // built in backward compatibility
+  Int_t idx = fTRDnSlices - (kTRDnPlanes<<1);
+  return idx<18 ? fTRDnSlices/kTRDnPlanes : idx/kTRDnPlanes;
 }
 
+//____________________________________________________
+Double_t AliESDtrack::GetTRDmomentum(Int_t plane, Double_t *sp) const
+{
+//Returns momentum estimation and optional its error (sp)
+// in TRD layer "plane".
+
+  if (!fTRDnSlices) {
+    AliError("No TRD info allocated for this track !");
+    return -1.;
+  }
+  if ((plane<0) || (plane>=kTRDnPlanes)) {
+    AliError("Info for TRD plane not available!");
+    return -1.;
+  }
+
+  Int_t idx = fTRDnSlices-(kTRDnPlanes<<1)+plane;
+  // Protection for backward compatibility
+  if(idx<(GetNumberOfTRDslices()*kTRDnPlanes)) return -1.;
+
+  if(sp) (*sp) = fTRDslices[idx+kTRDnPlanes];
+  return fTRDslices[idx];
+}
+
+//____________________________________________________
+Double_t  AliESDtrack::GetTRDslice(Int_t plane, Int_t slice) const {
+  //Gets the charge from the slice of the plane
+
+  if(!fTRDslices) {
+    //AliError("No TRD slices allocated for this track !");
+    return -1.;
+  }
+  if ((plane<0) || (plane>=kTRDnPlanes)) {
+    AliError("Info for TRD plane not available !");
+    return -1.;
+  }
+  Int_t ns=GetNumberOfTRDslices();
+  if ((slice<-1) || (slice>=ns)) {
+    //AliError("Wrong TRD slice !");  
+    return -1.;
+  }
+
+  if(slice>=0) return fTRDslices[plane*ns + slice];
+
+  // return average of the dEdx measurements
+  Double_t q=0.; Double32_t *s = &fTRDslices[plane*ns];
+  for (Int_t i=0; i<ns; i++, s++) if((*s)>0.) q+=(*s);
+  return q/ns;
+}
+
+//____________________________________________________
+void  AliESDtrack::SetNumberOfTRDslices(Int_t n) {
+  //Sets the number of slices used for PID 
+  if (fTRDnSlices) return;
+
+  fTRDnSlices=n;
+  fTRDslices=new Double32_t[fTRDnSlices];
+  
+  // set-up correctly the allocated memory
+  memset(fTRDslices, 0, n*sizeof(Double32_t));
+  for (Int_t i=GetNumberOfTRDslices(); i--;) fTRDslices[i]=-1.;
+}
+
+//____________________________________________________
 void  AliESDtrack::SetTRDslice(Double_t q, Int_t plane, Int_t slice) {
   //Sets the charge q in the slice of the plane
-  Int_t ns=GetNumberOfTRDslices();
-  if (ns==0) {
+  if(!fTRDslices) {
     AliError("No TRD slices allocated for this track !");
     return;
   }
-
   if ((plane<0) || (plane>=kTRDnPlanes)) {
-    AliError("Wrong TRD plane !");
+    AliError("Info for TRD plane not allocated !");
     return;
   }
+  Int_t ns=GetNumberOfTRDslices();
   if ((slice<0) || (slice>=ns)) {
     AliError("Wrong TRD slice !");
     return;
@@ -1628,30 +1690,25 @@ void  AliESDtrack::SetTRDslice(Double_t q, Int_t plane, Int_t slice) {
   fTRDslices[n]=q;
 }
 
-Double_t  AliESDtrack::GetTRDslice(Int_t plane, Int_t slice) const {
-  //Gets the charge from the slice of the plane
-  Int_t ns=GetNumberOfTRDslices();
-  if (ns==0) {
-    //AliError("No TRD slices allocated for this track !");
-    return -1.;
-  }
 
+//____________________________________________________
+void AliESDtrack::SetTRDmomentum(Double_t p, Int_t plane, Double_t *sp)
+{
+  if(!fTRDslices) {
+    AliError("No TRD slices allocated for this track !");
+    return;
+  }
   if ((plane<0) || (plane>=kTRDnPlanes)) {
-    AliError("Wrong TRD plane !");
-    return -1.;
-  }
-  if ((slice<-1) || (slice>=ns)) {
-    //AliError("Wrong TRD slice !");  
-    return -1.;
+    AliError("Info for TRD plane not allocated !");
+    return;
   }
 
-  if (slice==-1) {
-    Double_t q=0.;
-    for (Int_t i=0; i<ns; i++) q+=fTRDslices[plane*ns + i];
-    return q/ns;
-  }
+  Int_t idx = fTRDnSlices-(kTRDnPlanes<<1)+plane;
+  // Protection for backward compatibility
+  if(idx<GetNumberOfTRDslices()*kTRDnPlanes) return;
 
-  return fTRDslices[plane*ns + slice];
+  if(sp) fTRDslices[idx+kTRDnPlanes] = (*sp);
+  fTRDslices[idx] = p;
 }
 
 

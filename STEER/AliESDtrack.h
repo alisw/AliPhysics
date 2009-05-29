@@ -216,9 +216,11 @@ public:
 // end A.Bercuci
 
   void     SetNumberOfTRDslices(Int_t n);
-  Int_t    GetNumberOfTRDslices() const {return fTRDnSlices/kTRDnPlanes;}
+  Int_t    GetNumberOfTRDslices() const;
   void     SetTRDslice(Double_t q, Int_t plane, Int_t slice);
+  void     SetTRDmomentum(Double_t p, Int_t plane, Double_t *sp=0x0);
   Double_t GetTRDslice(Int_t plane, Int_t slice=-1) const;
+  Double_t GetTRDmomentum(Int_t plane, Double_t *sp=0x0) const;
 	
   void    SetTRDQuality(Float_t quality){fTRDQuality=quality;}
   Double_t GetTRDQuality()const {return fTRDQuality;}
@@ -424,8 +426,10 @@ protected:
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,49)  //ESDtrack 
+  ClassDef(AliESDtrack,50)  //ESDtrack 
 };
+
+
 
 #endif 
 
