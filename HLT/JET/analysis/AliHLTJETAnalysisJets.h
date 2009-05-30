@@ -21,9 +21,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-//#include "TH1.h"
-//#include "TClonesArray.h"
-
 class TH1; 
 class TClonesArray; 
 
@@ -32,9 +29,9 @@ class AliMCEvent;
 
 #include "AliHLTLogging.h"
 #include "AliHLTMCEvent.h"
+#include "AliHLTJets.h"
 
 #include "AliHLTJETBase.h"
-#include "AliHLTJETJets.h"
 
 #include "AliHLTJETAnalysisBase.h"
 
@@ -44,7 +41,7 @@ class AliMCEvent;
  * histograms needed for the Jet Analysis.
  *
  * It need a ptr to MC information (pythia jets) and 
- * reconstructed jets in the form of AliHLTJETJets.
+ * reconstructed jets in the form of AliHLTJets.
  *
  * @ingroup alihlt_jet
  * @ingroup alihlt_jet_analysis
@@ -96,9 +93,9 @@ public:
   void SetMC( AliMCEvent* mcEvent );
 
   /** Set reconstructed jets
-   *  @param jets       Ptr to AliHLTJETJets
+   *  @param jets       Ptr to AliHLTJets
    */
-  void SetJets( AliHLTJETJets* jets );
+  void SetJets( AliHLTJets* jets );
 
   /*
    * ---------------------------------------------------------------------------------
@@ -236,10 +233,10 @@ public:
   // ---------------------------------------------------
 
   /** jets */
-  AliHLTJETJets *fJets;                          //! transient      
+  AliHLTJets    *fJets;                          //! transient      
 
   /** MC jets */
-  AliHLTJETJets *fJetsMC;                        //! transient      
+  AliHLTJets    *fJetsMC;                        //! transient      
 
   /** Array of indices of the matched reconstructed jets */
   TArrayI       *fMatchedJets;                   //! transient      

@@ -35,8 +35,6 @@
 #include "TCanvas.h"
 #include "TH2F.h"
 
-#include "AliHLTJETJets.h"
-
 #include "AliHLTJETAnalysisMerge.h"
 #include "AliHLTJETAnalysisJets.h"
 

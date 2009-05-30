@@ -201,7 +201,7 @@ void AliHLTJETAnalysisJets::SetHLTMC( AliHLTMCEvent* mcEvent ) {
   // -- New MC jets 
   if ( fJetsMC )
     delete fJetsMC;
-  fJetsMC = new AliHLTJETJets();
+  fJetsMC = new AliHLTJets();
   
   AliAODJet* jet = NULL;
 
@@ -224,7 +224,7 @@ void AliHLTJETAnalysisJets::SetMC( AliMCEvent* /*mcEvent*/ ) {
 }
 
 //##################################################################################
-void AliHLTJETAnalysisJets::SetJets( AliHLTJETJets* jets ) {
+void AliHLTJETAnalysisJets::SetJets( AliHLTJets* jets ) {
   // see header file for class documentation
 
   fJets = jets;

@@ -31,9 +31,6 @@ class TH1;
 class TCanvas;
 class TObjArray;
 
-class AliHLTJETJets;
-
-
 /**
  * @class AliHLTJETAnalysisMerge
  * This class merges analysis objects oft the type

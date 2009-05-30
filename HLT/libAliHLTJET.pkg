@@ -2,12 +2,26 @@
 # $Id: libAliHLTJET.pkg 28356 2008-08-30 08:52:32Z hristov $
 
 CLASS_HDRS   		    :=	AliHLTJETAgent.h \
+				AliHLTJETBase.h \
 				AliHLTJETTrackCuts.h \
 				AliHLTJETReader.h \
 				AliHLTJETReaderHeader.h \
-				AliHLTJETConeJetComponent.h
+				cone/AliHLTJETConeJetComponent.h \
+	                        analysis/AliHLTJETAnalysisBase.h \
+				analysis/AliHLTJETAnalysisJets.h \
+				analysis/AliHLTJETAnalysisMerge.h \
+				analysis/AliHLTJETAnalysisComponent.h
 
 CLASS_HDRS_FJ 	            := 	AliHLTJETFastJetComponent.h	
+
+#				AliHLTJETJets.h 
+#				AliHLTJETJetCuts.h 
+#				cone/AliHLTJETConeGrid.h 
+#			 	cone/AliHLTJETConeEtaPhiCell.h 
+#				cone/AliHLTJETConeSeedCuts.h 
+#				cone/AliHLTJETConeHeader.h 
+#				cone/AliHLTJETConeFinder.h
+#				cone/AliHLTJETConeJetCandidate.h 
 
 ###############################################################################
 
@@ -24,6 +38,8 @@ MODULE_DHDR  		    :=
 EINCLUDE                    :=	HLT/BASE \
 				HLT/BASE/util \
 				HLT/JET \
+				HLT/JET/cone \
+				HLT/JET/analysis \
 				ANALYSIS \
 				JETAN \
 				STEER

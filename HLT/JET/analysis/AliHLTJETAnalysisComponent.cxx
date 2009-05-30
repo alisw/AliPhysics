@@ -204,7 +204,7 @@ Int_t AliHLTJETAnalysisComponent::DoEvent( const AliHLTComponentEventData& /*evt
     for ( iter=GetFirstInputObject(kAliHLTDataTypeJet|kAliHLTDataOriginHLT); 
 	  iter != NULL && !iResult; iter=GetNextInputObject() ) {
       
-      fAnalysisJets->SetJets(reinterpret_cast<AliHLTJETJets*>(const_cast<TObject*>(iter)));
+      fAnalysisJets->SetJets(reinterpret_cast<AliHLTJets*>(const_cast<TObject*>(iter)));
     }
     
     // -- ADD MC Object -- On-line
