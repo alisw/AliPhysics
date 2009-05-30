@@ -8,7 +8,8 @@
 //            (AliAnalysisTaskCheckCascade)
 //            This task is for QAing the Cascades from ESD and AOD
 //              Origin:  AliAnalysisTaskESDCheckV0 by B.H. Nov2007, hippolyt@in2p3.fr
-//            Adapted to Cascade : A.M Mar2008, antonin.maire@ires.in2p3.fr
+//            Adapted to Cascade : A.Maire Mar2008, antonin.maire@ires.in2p3.fr
+//	      Modified :           A.Maire Jun2009, antonin.maire@ires.in2p3.fr
 //-----------------------------------------------------------------
 
 class TList;
@@ -32,7 +33,7 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
   
   void SetCollidingSystems(Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
   void SetAnalysisType    (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
-  
+    
  private:
   	TString fAnalysisType;				// "ESD" or "AOD" analysis type	
 	Short_t fCollidingSystems;			// 0 = pp collisions or 1 = AA collisions
@@ -116,6 +117,13 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 	
 	TH2F	*f2dHistXiRadiusVsEffMassXiMinus;	//! transv. casc. decay radius Vs Xi- Eff mass, under Xi- hyp.
 	TH2F	*f2dHistXiRadiusVsEffMassXiPlus;	//! transv. casc. decay radius Vs Xi+ Eff mass, under Xi+ hyp.
+	TH2F	*f2dHistXiRadiusVsEffMassOmegaMinus;	//! transv. casc. decay radius Vs Omega- Eff mass, under Omega- hyp.
+	TH2F	*f2dHistXiRadiusVsEffMassOmegaPlus;	//! transv. casc. decay radius Vs Omega+ Eff mass, under Omega+ hyp.
+	
+	TH2F	*f2dHistXiPtVsEffMassXiMinus;		//! casc. transv. momemtum Vs Xi- Eff mass
+	TH2F	*f2dHistXiPtVsEffMassXiPlus;		//! casc. transv. momemtum Vs Xi+ Eff mass
+	TH2F	*f2dHistXiPtVsEffMassOmegaMinus;	//! casc. transv. momemtum Vs Omega- Eff mass
+	TH2F	*f2dHistXiPtVsEffMassOmegaPlus;		//! casc. transv. momemtum Vs Omega+ Eff mass
 
   AliAnalysisTaskCheckCascade(const AliAnalysisTaskCheckCascade&);            // not implemented
   AliAnalysisTaskCheckCascade& operator=(const AliAnalysisTaskCheckCascade&); // not implemented
