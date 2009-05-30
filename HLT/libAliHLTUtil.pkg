@@ -4,7 +4,9 @@
 CLASS_HDRS:=  	AliHLTFilePublisher.h \
 		AliHLTFileWriter.h \
 		AliHLTMCEvent.h \
+		AliHLTJets.h \
 		AliHLTRootFilePublisherComponent.h \
+		AliHLTMCGeneratorComponent.h \
 		AliHLTESDMCEventPublisherComponent.h \
 		AliHLTRootFileWriterComponent.h \
 		AliHLTRootFileStreamerComponent.h \
@@ -23,9 +25,9 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 
 MODULE_DHDR:= 		
 
-EINCLUDE := HLT/BASE HLT/BASE/util STEER RAW
+EINCLUDE := HLT/BASE HLT/BASE/util STEER RAW PYTHIA6
 
-LIBRARY_DEP := -lHLTbase -lSTEER -lSTEERBase -lRAWDatabase
+LIBRARY_DEP := -lHLTbase -lSTEER -lSTEERBase -lRAWDatabase -llhapdf -lEGPythia6 -lpythia6 -lAliPythia6
 
 include $(MODDIR)/hlt.conf
 

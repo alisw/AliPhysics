@@ -216,7 +216,7 @@ Int_t AliHLTESDMCEventPublisherComponent::DoInit(int argc, const char** argv) {
   if ( fPublishHLTESD )
     fMaxSize += sizeof(AliESDEvent);
   if ( fPublishMC )
-    fMaxSize += sizeof(AliMCEvent) + 15000;
+    fMaxSize += sizeof(AliMCEvent) + 20000;
   
   if ( fEvents.GetSize() == 0) {
     HLTError("No Files have been added.");
@@ -471,9 +471,9 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
       if ( iResult>=0 && fpMC ) {
 	PushBack( fpMC, kAliHLTDataTypeMCObject|kAliHLTDataOriginOffline , fSpecification ); 
 
-	fpHLTMC = new AliHLTMCEvent(fpMC);
+	fpHLTMC = new AliHLTMCEvent();
 	
-	if ( fpHLTMC )
+	if ( !(iResult=fpHLTMC->FillMCEvent(fpMC)) )
 	  PushBack( fpHLTMC, kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT , fSpecification ); 
       }
 
