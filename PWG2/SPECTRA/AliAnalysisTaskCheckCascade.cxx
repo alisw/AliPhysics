@@ -15,8 +15,8 @@
 //-----------------------------------------------------------------
 //                 AliAnalysisTaskCheckCascade class
 //            This task is for QAing the Cascades from ESD and AOD 
-//            Origin : Antonin Maire Fev2008, antonin.maire@ires.in2p3.fr
-//	      Modified : A.Maire March 2009
+//            Origin   : Antonin Maire Fev2008, antonin.maire@ires.in2p3.fr
+//	      Modified : A.Maire June 2009
 //-----------------------------------------------------------------
 
 
@@ -97,7 +97,11 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade()
     f2dHistArmenteros(0),			
     f2dHistEffMassLambdaVsEffMassXiMinus(0), f2dHistEffMassXiVsEffMassOmegaMinus(0),
     f2dHistEffMassLambdaVsEffMassXiPlus(0), f2dHistEffMassXiVsEffMassOmegaPlus(0),
-    f2dHistXiRadiusVsEffMassXiMinus(0), f2dHistXiRadiusVsEffMassXiPlus(0)
+    f2dHistXiRadiusVsEffMassXiMinus(0), f2dHistXiRadiusVsEffMassXiPlus(0),
+    f2dHistXiRadiusVsEffMassOmegaMinus(0), f2dHistXiRadiusVsEffMassOmegaPlus(0),
+    
+    f2dHistXiPtVsEffMassXiMinus(0), f2dHistXiPtVsEffMassXiPlus(0),
+    f2dHistXiPtVsEffMassOmegaMinus(0), f2dHistXiPtVsEffMassOmegaPlus(0)
 
 {
   // Dummy Constructor
@@ -149,9 +153,11 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade(const char *name)
     f2dHistArmenteros(0),			
     f2dHistEffMassLambdaVsEffMassXiMinus(0), f2dHistEffMassXiVsEffMassOmegaMinus(0),
     f2dHistEffMassLambdaVsEffMassXiPlus(0), f2dHistEffMassXiVsEffMassOmegaPlus(0),
-    f2dHistXiRadiusVsEffMassXiMinus(0), f2dHistXiRadiusVsEffMassXiPlus(0)
-
-
+    f2dHistXiRadiusVsEffMassXiMinus(0), f2dHistXiRadiusVsEffMassXiPlus(0),
+    f2dHistXiRadiusVsEffMassOmegaMinus(0), f2dHistXiRadiusVsEffMassOmegaPlus(0),
+    
+    f2dHistXiPtVsEffMassXiMinus(0), f2dHistXiPtVsEffMassXiPlus(0),
+    f2dHistXiPtVsEffMassOmegaMinus(0), f2dHistXiPtVsEffMassOmegaPlus(0)
 
 {
   // Constructor
@@ -443,6 +449,8 @@ if(! f2dHistArmenteros) {
 	fListHistCascade->Add(f2dHistArmenteros);
 }
 
+//-------
+
 if(! f2dHistEffMassLambdaVsEffMassXiMinus) {
 	f2dHistEffMassLambdaVsEffMassXiMinus = new TH2F( "f2dHistEffMassLambdaVsEffMassXiMinus", "M_{#Lambda} Vs M_{#Xi^{-} candidates} ; Inv. M_{#Lambda^{0}} (GeV/c^{2}) ; M( #Lambda , #pi^{-} ) (GeV/c^{2})", 300, 1.1,1.13, 200, 1.2, 2.0);
 	fListHistCascade->Add(f2dHistEffMassLambdaVsEffMassXiMinus);
@@ -463,17 +471,50 @@ if(! f2dHistEffMassXiVsEffMassOmegaPlus) {
 	fListHistCascade->Add(f2dHistEffMassXiVsEffMassOmegaPlus);
 }
 
+//-------
+
 if(! f2dHistXiRadiusVsEffMassXiMinus) {
-	f2dHistXiRadiusVsEffMassXiMinus = new TH2F( "f2dHistXiRadiusVsEffMassXiMinus", "Transv. R_{Xi Decay} Vs M_{#Xi^{-} candidates}; r_{Xi} (cm); M( #Lambda , #pi^{-} ) (GeV/c^{2}) ", 450, 0., 45.0, 200, 1.2, 2.0);
+	f2dHistXiRadiusVsEffMassXiMinus = new TH2F( "f2dHistXiRadiusVsEffMassXiMinus", "Transv. R_{Xi Decay} Vs M_{#Xi^{-} candidates}; r_{cascade} (cm); M( #Lambda , #pi^{-} ) (GeV/c^{2}) ", 450, 0., 45.0, 200, 1.2, 2.0);
 	fListHistCascade->Add(f2dHistXiRadiusVsEffMassXiMinus);
 }
 
 if(! f2dHistXiRadiusVsEffMassXiPlus) {
-	f2dHistXiRadiusVsEffMassXiPlus = new TH2F( "f2dHistXiRadiusVsEffMassXiPlus", "Transv. R_{Xi Decay} Vs M_{#Xi^{+} candidates}; r_{Xi} (cm); M( #Lambda , #pi^{+} ) (GeV/c^{2}) ", 450, 0., 45.0, 200, 1.2, 2.0);
+	f2dHistXiRadiusVsEffMassXiPlus = new TH2F( "f2dHistXiRadiusVsEffMassXiPlus", "Transv. R_{Xi Decay} Vs M_{#Xi^{+} candidates}; r_{cascade} (cm); M( #Lambda , #pi^{+} ) (GeV/c^{2}) ", 450, 0., 45.0, 200, 1.2, 2.0);
 	fListHistCascade->Add(f2dHistXiRadiusVsEffMassXiPlus);
 }
 
+if(! f2dHistXiRadiusVsEffMassOmegaMinus) {
+	f2dHistXiRadiusVsEffMassOmegaMinus = new TH2F( "f2dHistXiRadiusVsEffMassOmegaMinus", "Transv. R_{Xi Decay} Vs M_{#Omega^{-} candidates}; r_{cascade} (cm); M( #Lambda , K^{-} ) (GeV/c^{2}) ", 450, 0., 45.0, 250, 1.5, 2.5);
+	fListHistCascade->Add(f2dHistXiRadiusVsEffMassOmegaMinus);
+}
 
+if(! f2dHistXiRadiusVsEffMassOmegaPlus) {
+	f2dHistXiRadiusVsEffMassOmegaPlus = new TH2F( "f2dHistXiRadiusVsEffMassOmegaPlus", "Transv. R_{Xi Decay} Vs M_{#Omega^{+} candidates}; r_{cascade} (cm); M( #Lambda , K^{+} ) (GeV/c^{2}) ", 450, 0., 45.0, 250, 1.5, 2.5);
+	fListHistCascade->Add(f2dHistXiRadiusVsEffMassOmegaPlus);
+}
+
+
+//-------
+
+if(! f2dHistXiPtVsEffMassXiMinus) {
+	f2dHistXiPtVsEffMassXiMinus = new TH2F( "f2dHistXiPtVsEffMassXiMinus", "Pt_{cascade} Vs M_{#Xi^{-} candidates}; Pt_{cascade} (GeV/c); M( #Lambda , #pi^{-} ) (GeV/c^{2}) ", 100, 0., 10.0, 200, 1.2, 2.0);
+	fListHistCascade->Add(f2dHistXiPtVsEffMassXiMinus);
+}
+
+if(! f2dHistXiPtVsEffMassXiPlus) {
+	f2dHistXiPtVsEffMassXiPlus = new TH2F( "f2dHistXiPtVsEffMassXiPlus", "Pt_{cascade} Vs M_{#Xi^{+} candidates}; Pt_{cascade} (GeV/c); M( #Lambda , #pi^{+} ) (GeV/c^{2}) ", 100, 0., 10.0, 200, 1.2, 2.0);
+	fListHistCascade->Add(f2dHistXiPtVsEffMassXiPlus);
+}
+
+if(! f2dHistXiPtVsEffMassOmegaMinus) {
+	f2dHistXiPtVsEffMassOmegaMinus = new TH2F( "f2dHistXiPtVsEffMassOmegaMinus", "Pt_{cascade} Vs M_{#Omega^{-} candidates}; Pt_{cascade} (GeV/c); M( #Lambda , K^{-} ) (GeV/c^{2}) ", 100, 0., 10.0, 250, 1.5, 2.5);
+	fListHistCascade->Add(f2dHistXiPtVsEffMassOmegaMinus);
+}
+
+if(! f2dHistXiPtVsEffMassOmegaPlus) {
+	f2dHistXiPtVsEffMassOmegaPlus = new TH2F( "f2dHistXiPtVsEffMassOmegaPlus", "Pt_{cascade} Vs M_{#Omega^{+} candidates}; Pt_{cascade} (GeV/c); M( #Lambda , K^{+} ) (GeV/c^{2}) ", 100, 0., 10.0, 250, 1.5, 2.5);
+	fListHistCascade->Add(f2dHistXiPtVsEffMassOmegaPlus);
+}
 
 
 }// end UserCreateOutputObjects
@@ -1020,11 +1061,17 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		f2dHistEffMassLambdaVsEffMassXiMinus->Fill( lInvMassLambdaAsCascDghter, lInvMassXiMinus ); 
 		f2dHistEffMassXiVsEffMassOmegaMinus ->Fill( lInvMassXiMinus, lInvMassOmegaMinus );
 		f2dHistXiRadiusVsEffMassXiMinus     ->Fill( lXiRadius, lInvMassXiMinus );
+		f2dHistXiRadiusVsEffMassOmegaMinus  ->Fill( lXiRadius, lInvMassOmegaMinus );
+		f2dHistXiPtVsEffMassXiMinus         ->Fill( lXiTransvMom, lInvMassXiMinus );
+		f2dHistXiPtVsEffMassOmegaMinus      ->Fill( lXiTransvMom, lInvMassOmegaMinus );
 	}
 	else{
 		f2dHistEffMassLambdaVsEffMassXiPlus ->Fill( lInvMassLambdaAsCascDghter, lInvMassXiPlus );
 		f2dHistEffMassXiVsEffMassOmegaPlus  ->Fill( lInvMassXiPlus, lInvMassOmegaPlus );
-		f2dHistXiRadiusVsEffMassXiPlus->Fill( lXiRadius, lInvMassXiPlus);
+		f2dHistXiRadiusVsEffMassXiPlus      ->Fill( lXiRadius, lInvMassXiPlus);
+		f2dHistXiRadiusVsEffMassOmegaPlus   ->Fill( lXiRadius, lInvMassOmegaPlus );
+		f2dHistXiPtVsEffMassXiPlus          ->Fill( lXiTransvMom, lInvMassXiPlus );
+		f2dHistXiPtVsEffMassOmegaPlus       ->Fill( lXiTransvMom, lInvMassOmegaPlus );
 	}
 		
    
