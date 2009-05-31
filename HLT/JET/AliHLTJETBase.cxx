@@ -56,6 +56,17 @@ ClassImp(AliHLTJETBase)
 AliHLTJETBase::~AliHLTJETBase() {
   // see header file for class documentation
 }
+/*
+//################################################################################## 
+Float_t AliHLTJETBase::GetDistance2( const Float_t eta1, const Float_t phi1, 
+				     const Float_t eta2, const Float_t phi2) {
+  // see header file for class documentation
+  
+  return ( (eta1-eta2)*(eta1-eta2) ) + ( (phi1-phi2)*(phi1-phi2) );
+}
+*/
+
+
 
 #if 0
 
@@ -199,13 +210,6 @@ Double_t AliHLTJETBase::GetEtaFromXYZ( const Float_t *xyz ) {
   return 0.5 * TMath::Log( (r+z)/(r-z) );
 }
 
-//################################################################################## 
-Double_t AliHLTJETBase::GetDistance2( const Double_t eta1, const Double_t phi1, 
-					     const Double_t eta2, const Double_t phi2) {
-  // see header file for class documentation
-  
-  return ( (eta1-eta2)*(eta1-eta2) ) + ( (phi1-phi2)*(phi1-phi2) );
-}
 
 
 #endif

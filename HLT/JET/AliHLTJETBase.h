@@ -53,6 +53,9 @@ class AliHLTJETBase : public TObject, public AliHLTLogging {
   /** Destructor */
   ~AliHLTJETBase();  
 
+  // static Float_t GetDistance2( const Float_t eta1, const Float_t phi1, 
+  //		       const Float_t eta2, const Float_t phi2);
+
   ///////////////////////////////////////////////////////////////////////////////////
   
  private:
@@ -96,8 +99,6 @@ class AliHLTJETBase : public TObject, public AliHLTLogging {
   static Double_t GetEtaFromXYZ( const Double_t *xyz );
   static Double_t GetEtaFromXYZ( const Float_t *xyz );
 
-  static Double_t GetDistance2( const Double_t eta1, const Double_t phi1, 
-				const Double_t eta2, const Double_t phi2);
 
 
 #endif

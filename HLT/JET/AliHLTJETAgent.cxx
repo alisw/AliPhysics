@@ -31,6 +31,7 @@
 
 // component header file
 #include "AliHLTJETConeJetComponent.h"
+#include "AliHLTJETAnalysisComponent.h"
 
 #ifdef HAVE_FASTJET
 #include "AliHLTJETFastJetComponent.h"
@@ -103,6 +104,7 @@ Int_t AliHLTJETAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   if (!pHandler) return -EINVAL;
 
   pHandler->AddComponent(new AliHLTJETConeJetComponent);
+  pHandler->AddComponent(new AliHLTJETAnalysisComponent);
 #ifdef HAVE_FASTJET
   pHandler->AddComponent(new AliHLTJETFastJetComponent);
 #endif
