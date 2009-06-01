@@ -16,13 +16,17 @@ class AliTPCTransformation: public TNamed{
 public:
   typedef Double_t (*GenFuncG)(const Double_t*,const Double_t*);
   AliTPCTransformation();
-  AliTPCTransformation(const char *name,TBits *mask, const char *fx, const char *fy, const char  *fz, Int_t coord, Double_t param, Double_t sigma, TVectorD *fixedParams);
+  AliTPCTransformation(const char *name,TBits *mask, const char *fx, const char *fy, const char  *fz, Int_t coord);
+  AliTPCTransformation(const AliTPCTransformation&trafo);
+  ~AliTPCTransformation();
+  //
+  void SetParams(Double_t param, Double_t sigma, Double_t sigma2Time, TVectorD* fixedParams);
   Bool_t Init();
   //
   virtual Double_t GetDeltaXYZ(Int_t coord, Int_t volID, Double_t param, Double_t x, Double_t y, Double_t z);
+  //
   static TBits * BitsSide(Bool_t aside);
   static TBits * BitsAll();
-
   static void RegisterFormula(const char * name, GenFuncG formula);
   static AliTPCTransformation::GenFuncG FindFormula(const char * name);
   static Double_t Eval(const char * name, const Double_t*x,const Double_t*par);
@@ -36,7 +40,8 @@ public:
   Int_t      fCoordSystem;   // coord system of  output deltas 
   Double_t   fParam;         // free parameter of transformation
   Double_t   fSigma;         // error of the parameter
-  TVectorD  *fFixedParam;   // fixed parameters of tranformation
+  Double_t   fSigma2Time;    // change of the error in time (per hour) - (For kalman filter) 
+  TVectorD  *fFixedParam;    // fixed parameters of tranformation
   
   //
   // predefined formulas
@@ -45,6 +50,8 @@ public:
   static  Double_t       TPCscalingRPol(Double_t *xyz, Double_t * param);
   static  Double_t       TPCscalingZDr(Double_t *xyz, Double_t * param);
   static  Double_t       TPCscalingPhiLocal(Double_t *xyz, Double_t * param);
+  static  Double_t       TPCscalingRIFC(Double_t *xyz, Double_t * param); // inner field cage r distorion
+  static  Double_t       TPCscalingROFC(Double_t *xyz, Double_t * param); // outer field cage r distorion
   //
   Bool_t    fInit;          // initialization flag
   GenFuncG  fFormulaX;      //! x formula

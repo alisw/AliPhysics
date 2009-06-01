@@ -54,9 +54,14 @@ void AliTPCTransformation::RegisterFormula(const char * name, GenFuncG formula){
 
 Int_t  AliTPCTransformation::BuildBasicFormulas(){
   //
-  //build list of basic formulas
+
+  //
+  //build list of basic TPC formulas - corrections
   //
   RegisterFormula("TPCscalingRPol",(GenFuncG)(AliTPCTransformation::TPCscalingRPol));
+  RegisterFormula("TPCscalingRIFC",(GenFuncG)(AliTPCTransformation::TPCscalingRIFC));
+  RegisterFormula("TPCscalingROFC",(GenFuncG)(AliTPCTransformation::TPCscalingROFC));
+  //
   RegisterFormula("TPCscalingZDr",(GenFuncG)(AliTPCTransformation::TPCscalingZDr));
   RegisterFormula("TPCscalingPhiLocal",(GenFuncG)(AliTPCTransformation::TPCscalingPhiLocal));
   return 0;
@@ -96,6 +101,7 @@ AliTPCTransformation::AliTPCTransformation():
   fCoordSystem(0),    // coord system of  output deltas 
   fParam(0),          // free parameter of transformation 
   fSigma(0),          // uncertainty of the parameter
+  fSigma2Time(0),     // change of the error in time - (For kalman filter) 
   fFixedParam(0),     // fixed parameters of tranformation  
   //
   fInit(kFALSE),      // initialization flag - set to kTRUE if corresponding formulas found
@@ -111,15 +117,16 @@ AliTPCTransformation::AliTPCTransformation():
 
 
 
-AliTPCTransformation::AliTPCTransformation(const char *name, TBits *mask, const char *fx, const char *fy, const char *fz, Int_t coordSystem,Double_t param, Double_t sigma, TVectorD *fixedParams):
+AliTPCTransformation::AliTPCTransformation(const char *name, TBits *mask, const char *fx, const char *fy, const char *fz, Int_t coordSystem):
   TNamed(name,name),
   fNameX(0),       // x formula name
   fNameY(0),       // y formula name
   fNameZ(0),       // z formula name
   fBitMask(mask),   // bitmaps - transformation only for specified volID
   fCoordSystem(coordSystem), // coordinate system of output deltas
-  fParam(param),          // free parameter of transformation 
-  fSigma(sigma),
+  fParam(0),          // free parameter of transformation 
+  fSigma(0),
+  fSigma2Time(0),     // change of sigma in time
   fFixedParam(0),     // fixed parameters of tranformation  
   //
   fInit(kFALSE),      // initialization flag - set to kTRUE if corresponding formulas found
@@ -133,11 +140,54 @@ AliTPCTransformation::AliTPCTransformation(const char *name, TBits *mask, const 
   if (fx) fNameX= new TString(fx);
   if (fy) fNameY= new TString(fy);
   if (fz) fNameZ= new TString(fz);
-  if (fixedParams) fFixedParam = new TVectorD(*fixedParams);
-  if (!fFixedParam) fFixedParam = new TVectorD(1);
   Init();
 }
 
+AliTPCTransformation::AliTPCTransformation(const AliTPCTransformation&trafo):
+  TNamed(trafo),
+  fNameX(0),          // x formula name
+  fNameY(0),          // y formula name
+  fNameZ(0),          // z formula name 
+		     //
+  fBitMask(0),        // bitmaps - transformation only for specified volID
+  fCoordSystem(0),    // coord system of  output deltas 
+  fParam(trafo.fParam),          // free parameter of transformation 
+  fSigma(trafo.fSigma),          // uncertainty of the parameter
+  fSigma2Time(trafo.fSigma2Time),     // change of the error in time - (For kalman filter) 
+  fFixedParam(0),     // fixed parameters of tranformation  
+  //
+  fInit(kFALSE),      // initialization flag - set to kTRUE if corresponding formulas found
+  fFormulaX(0),       // x formula - pointer to the function
+  fFormulaY(0),       // y formula - pointer to the function
+  fFormulaZ(0)       // z formula - pointer to the function
+{
+  if (trafo.fNameX) fNameX = new TString(*(trafo.fNameX)); 
+  if (trafo.fNameY) fNameY = new TString(*(trafo.fNameY)); 
+  if (trafo.fNameZ) fNameZ = new TString(*(trafo.fNameZ)); 
+  if (trafo.fBitMask)  fBitMask = new TBits(*(trafo.fBitMask)); 
+}
+
+AliTPCTransformation::~AliTPCTransformation(){
+  //
+  // destructor
+  //
+  delete fNameX;
+  delete fNameY;
+  delete fNameZ;
+  delete fBitMask;
+  delete fFixedParam;
+}
+void AliTPCTransformation::SetParams(Double_t param, Double_t sigma, Double_t sigma2Time, TVectorD* fixedParams){
+  //
+  // Set parameters of transformation
+  //
+  fParam = param;
+  fSigma = sigma;
+  fSigma2Time = sigma2Time;
+  if (fFixedParam) delete fFixedParam;
+  fFixedParam = new TVectorD(*fixedParams);
+  Init();
+}
 
 
 Bool_t AliTPCTransformation::Init(){
@@ -218,10 +268,18 @@ Double_t  AliTPCTransformation::TPCscalingRPol(Double_t *xyz, Double_t * param){
   // Scaling and shift of TPC radius
   // xyz[0..2] - global xyz of point 
   // xyz[3]    - scale parameter
-  Double_t radius  = 0.5 - TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1])/250.;
-  Double_t driftM  = 0.5 - TMath::Abs(xyz[2]/250.);
-  Double_t deltaR  = TMath::Power(radius,param[0])*TMath::Power(driftM,param[1]);
-  return deltaR*xyz[3];
+  // param[0]  - radial scaling power
+  // param[1]  - drift  scaling power
+  // radius  from -1(at rInner)   to 1 (rOuter)
+  // driftM  from -1(at 0 drift)  to 1 (250 cm drift)
+
+  Double_t rInner=78.8;
+  Double_t rOuter=258.0; 
+  Double_t deltaR  = rOuter-rInner;  
+  Double_t radius  = (TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1])-rInner)*2./deltaR; 
+  Double_t driftM  = (0.5 - TMath::Abs(xyz[2]/250.))*2.0;
+  Double_t delta   = TMath::Power(radius,param[0])*TMath::Power(driftM,param[1]);
+  return delta*xyz[3];
 }
 
 
@@ -242,12 +300,42 @@ Double_t  AliTPCTransformation::TPCscalingPhiLocal(Double_t *xyz, Double_t * par
   // Scaling if the local y -phi
   // xyz[0..2] - global xyz of point 
   // xyz[3]    - scale parameter
+  // value = 1 for ful drift length and parameter 1
   Double_t alpha       = TMath::ATan2(xyz[1],xyz[0]);
   Double_t sector      = TMath::Nint(9*alpha/TMath::Pi()-0.5);
   Double_t localAlpha  = (alpha-(sector+0.5)*TMath::Pi()/9.);
   Double_t radius      = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1])/250.;
-  Double_t deltaAlpha  = TMath::Power(9*localAlpha*radius/TMath::Pi(),param[0]);
+  //
+  Double_t deltaAlpha  = radius*TMath::Power(2.*9.*localAlpha/TMath::Pi(),param[0]);
   return deltaAlpha*xyz[3];
 }
 
 
+Double_t       AliTPCTransformation::TPCscalingRIFC(Double_t *xyz, Double_t * param){
+  //
+  // inner field cage r distorion - proportinal to 1 over distance to the IFC
+  // param[0] - drift polynom order
+  // distortion at first pad row - is normalized to 
+  Double_t rInner=78.8;
+  Double_t rFirst=85.2; 
+  Double_t deltaR  = rFirst-rInner;
+  Double_t ndistR  = (TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1])-rInner)/deltaR;
+  Double_t driftM  = (0.5 - TMath::Abs(xyz[2]/250.))*2.;
+  Double_t value   = TMath::Power(driftM,param[0])/ndistR;
+  return xyz[3]*value;
+}
+
+Double_t       AliTPCTransformation::TPCscalingROFC(Double_t *xyz, Double_t * param){
+  //
+  // outer field cage r distorion - proportinal to 1 over distance to the OFC
+  // param[0] - drift polynom order
+  // driftM   - from -1 to 1 
+  //
+  Double_t rLast=245.8;
+  Double_t rOuter=258.0;  
+  Double_t deltaR  = rOuter-rLast;
+  Double_t ndistR  = (rOuter-TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]))/deltaR;
+  Double_t driftM  = (0.5 - TMath::Abs(xyz[2]/250.))*2.;
+  Double_t value   = TMath::Power(driftM,param[0])/ndistR;
+  return xyz[3]*value;
+}
