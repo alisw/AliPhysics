@@ -122,7 +122,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
 	  }//Outgoing partons
 	  else if(pStatus == 11){//Decay
 	    if(pPdg == 111) return kMCPi0Decay ;
-	    else if (pPdg == 321)  return kMCEtaDecay ;
+	    else if (pPdg == 221)  return kMCEtaDecay ;
 	    else  return kMCOtherDecay ;
 	  }//Decay
 	  else return kMCISR; //Initial state radiation
@@ -146,7 +146,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
 	  }//Not decay
 	  else{//Decay
 	    if(pPdg == 111) return kMCPi0Decay ;
-	    else if (pPdg == 321)  return kMCEtaDecay ;
+	    else if (pPdg == 221)  return kMCEtaDecay ;
 	    else  return kMCOtherDecay ;
 	  }//Decay
 	}//HERWIG
