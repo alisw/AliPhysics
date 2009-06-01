@@ -52,9 +52,12 @@ void HLTJetReconstruction(Int_t nEvents=1, Int_t idx=0, Bool_t generate=kFALSE, 
   // -------------------
   AliHLTSystem gHLT;
   gHLT.SetGlobalLoggingLevel(0x7D);
-
-  gHLT.LoadComponentLibraries("libCGAL.so");
-  gHLT.LoadComponentLibraries("libfastjet.so");
+  
+  if ( getenv("FASTJET") ) {
+    gHLT.LoadComponentLibraries("libCGAL.so");
+    gHLT.LoadComponentLibraries("libfastjet.so");
+    gHLT.LoadComponentLibraries("libSISConePlugin.so");
+  }
 
   gHLT.LoadComponentLibraries("libESD.so");  
   gHLT.LoadComponentLibraries("libSTEER.so");  
