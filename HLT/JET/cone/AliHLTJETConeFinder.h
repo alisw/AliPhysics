@@ -23,10 +23,10 @@
 
 #include "AliJetFinder.h"
 
+#include "AliHLTJets.h"
 #include "AliHLTLogging.h"
-#include "AliHLTJETBase.h"
 
-#include "AliHLTJETJets.h"
+#include "AliHLTJETBase.h"
 #include "AliHLTJETConeGrid.h"
 
 /**
@@ -99,7 +99,7 @@ public:
    */
   
   /** Set ptr to output container */
-  void SetOutputJets( AliHLTJETJets* jets ) { fJets = jets; }
+  void SetOutputJets( AliHLTJets* jets ) { fJets = jets; }
   
   /*
    * ---------------------------------------------------------------------------------
@@ -164,7 +164,7 @@ private:
   /** Grid for cone finder */
   AliHLTJETConeGrid           *fGrid;           //! transient
 
-  AliHLTJETJets               *fJets;           //! transient
+  AliHLTJets                  *fJets;           //! transient
 
   ClassDef(AliHLTJETConeFinder, 1)
 

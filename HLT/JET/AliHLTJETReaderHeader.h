@@ -15,7 +15,8 @@
     @brief  ReaderHeader for jet finder
 */
 
-#include "AliAnalysisCuts.h"
+#include "AliHLTJETTrackCuts.h"
+#include "AliHLTJETConeSeedCuts.h"
 
 #include "AliJetReaderHeader.h"
 #include "AliHLTLogging.h"
@@ -45,26 +46,70 @@ public:
 
   /*
    * ---------------------------------------------------------------------------------
+   *                                   Initialize
+   * ---------------------------------------------------------------------------------
+   */
+  
+  /** Initialize reader haeder for cone jet finder
+   *  @return 0 on success, otherwise <0
+   */
+  Int_t Initialize();
+
+  /*
+   * ---------------------------------------------------------------------------------
    *                                     Setter
    * ---------------------------------------------------------------------------------
    */
   
   /** Set Analysis Cuts
-   *  @param cuts ptr to AnalysisCuts
+   *  @param cuts ptr to AliHLTJETTrackCuts 
    */
-  void SetAnalysisCuts( AliAnalysisCuts* cuts ) { fCuts = cuts; }
+  void SetTrackCuts( AliHLTJETTrackCuts* cuts )  { fTrackCuts = cuts; }
+ 
+  /** Get Analysis Cuts
+   *  @param cuts ptr to AliHLTJETConeSeedCuts 
+   */
+  void SetSeedCuts( AliHLTJETConeSeedCuts* cuts ){ fSeedCuts = cuts; }
+
+  /** Set the cone radius */
+  void SetConeRadius( Float_t f ) { fConeRadius = f; }
+
+  /** Set grid binning in eta */
+  void SetGridEtaBinning( Float_t f ) { fGridEtaBinning = f; }
+
+  /** Set grid binning in phi */
+  void SetGridPhiBinning( Float_t f ) { fGridPhiBinning = f; }
 
   /*
    * ---------------------------------------------------------------------------------
    *                                     Getter
    * ---------------------------------------------------------------------------------
    */
-  
-  /** Get Analysis Cuts
-   *  @return ptr to AnalysisCuts
-   */
-   AliAnalysisCuts* GetAnalysisCuts() { return fCuts; }
 
+  /** Get Analysis Cuts
+   *  @return ptr to AliHLTJETTrackCuts 
+   */
+  AliHLTJETTrackCuts* GetTrackCuts()     { return fTrackCuts; }
+ 
+  /** Get Analysis Cuts
+   *  @return ptr to AliHLTJETConeSeedCuts
+   */
+  AliHLTJETConeSeedCuts* GetSeedCuts()   { return fSeedCuts; }
+  
+  /** Get grid eta range */
+  Float_t GetGridEtaRange()              { return fGridEtaRange; }
+
+  /** Get grid phi range */
+  Float_t GetGridPhiRange()              { return fGridPhiRange; }
+
+  /** Get grid eta binning */
+  Float_t GetGridEtaBinning()            { return fGridEtaBinning; }
+  
+  /** Get grid phi binning */
+  Float_t GetGridPhiBinning()            { return fGridPhiBinning; }
+
+  /** Get cone radius */
+  Float_t GetConeRadius()                { return fConeRadius; }
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -82,8 +127,34 @@ private:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Minimum pt  */
-  AliAnalysisCuts           *fCuts;                   // see above
+  /** Cuts on track selection */
+  AliHLTJETTrackCuts        *fTrackCuts;            //! transient
+
+  /** Cuts on seed selection */
+  AliHLTJETConeSeedCuts     *fSeedCuts;             //! transient
+
+  // -- Grid members
+
+  /** Grid binning in eta */
+  Float_t                    fGridEtaBinning;       // see above
+
+  /** Grid binning in phi */
+  Float_t                    fGridPhiBinning;       // see above
+
+  // -- Grid binning 
+
+  /** Grid eta range */
+  Float_t                    fGridEtaRange;         // see above
+
+  /** Grid phi range 
+   *  abs(phimin)+phiMax + 2*coneRadius;
+   */
+  Float_t                    fGridPhiRange;         // see above
+
+  // -- cone members
+
+  /** Cone radius */
+  Float_t                    fConeRadius;           // see above
 
   ClassDef(AliHLTJETReaderHeader, 1)
 

@@ -306,8 +306,8 @@ Int_t AliHLTJETConeFinder::FillConeJets() {
       continue;
 
     // -- Add jet as AliAODJet
-    fJets->AddJet(jet);
-
+    fJets->AddJet(jet->GetEta(), jet->GetPhi(), jet->GetPt(), jet->GetEt());
+    
   } // for ( Int_t iter = 0; iter < reader->GetNJetCandidates(); iter++ ) {
   
   HLTDebug( "Added %d jets", fJets->GetNAODJets());

@@ -1,7 +1,7 @@
 void readJets( Char_t* fileName = "./analysis/EOR_analyze_100000_kPythia6Jets104_125.root" ) {
 
-  gSystem->Load("libCGAL.so");
-  gSystem->Load("${FASTJET}/lib/libfastjet.so");
+  //  gSystem->Load("libCGAL.so");
+  //  gSystem->Load("${FASTJET}/lib/libfastjet.so");
   
   gSystem->Load("libTree.so");
   gSystem->Load("libPhysics.so");

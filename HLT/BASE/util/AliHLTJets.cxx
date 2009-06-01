@@ -164,3 +164,19 @@ void AliHLTJets::AddJet( AliAODJet* jet ) {
 
   return;
 }
+
+/*
+ * ---------------------------------------------------------------------------------
+ *                                     Helper
+ * ---------------------------------------------------------------------------------
+ */
+
+/** Sort Jets with decreasing Et */
+void AliHLTJets::Sort() {
+  // see header file for class documentation
+
+  fAODJets->Sort();
+  ResetEvent();
+
+  return;
+}

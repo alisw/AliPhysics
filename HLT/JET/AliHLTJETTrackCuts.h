@@ -1,6 +1,6 @@
 //-*- Mode: C++ -*-
 
-// $Id:  $
+// $Id: AliHLTJETTrackCuts.h $
 
 #ifndef ALIHLTJETTRACKCUTS_H
 #define ALIHLTJETTRACKCUTS_H
@@ -80,6 +80,17 @@ public:
    * ---------------------------------------------------------------------------------
    */
   
+  /** Set selction of charged particles only */
+  void SetChargedOnly( Bool_t b ) { fChargedOnly = b; }
+
+  /** Set cut on min pt */
+  void SetMinPt( Float_t f )      { fPtMin = f; }
+
+  /** Set cut on eta acceptance */
+  void SetEtaRange( Float_t etaMin, Float_t etaMax ) { fEtaMin = etaMin; fEtaMax = etaMax; }
+
+  /** Set cut on phi acceptance */
+  void SetPhiRange( Float_t phiMin, Float_t phiMax ) { fPhiMin = phiMin; fPhiMax = phiMax; }
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -97,8 +108,23 @@ private:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Minimum pt  */
-  Double_t           fPtMin;                   // see above
+  /** Only charged tracks */
+  Bool_t             fChargedOnly;              // see above
+
+  /** Minimum pt */
+  Float_t            fPtMin;                    // see above
+
+  /** Minimum eta */
+  Float_t            fEtaMin;                   // see above
+
+  /** Maximum eta */
+  Float_t            fEtaMax;                   // see above
+
+  /** Minimum phi */
+  Float_t            fPhiMin;                   // see above
+
+  /** Maximum phi */
+  Float_t            fPhiMax;                   // see above
 
   ClassDef(AliHLTJETTrackCuts, 1)
 

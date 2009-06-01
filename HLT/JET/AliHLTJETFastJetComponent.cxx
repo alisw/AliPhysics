@@ -120,6 +120,8 @@ AliHLTComponent* AliHLTJETFastJetComponent::Spawn() {
 Int_t AliHLTJETFastJetComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
   // see header file for class documentation
 
+#if 0
+
   if ( fJetFinder || fJetHeader || fJetReader || fJetReader || fJetTrackCuts)
     return -EINPROGRESS;
 
@@ -173,7 +175,7 @@ Int_t AliHLTJETFastJetComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/
   // -- Initialize Jet Finder
   // -------------------------------------------
   fJetFinder->Init();
-
+#endif 
   return 0;
 }
 
@@ -212,7 +214,7 @@ Int_t AliHLTJETFastJetComponent::DoEvent( const AliHLTComponentEventData& /*evtD
   // see header file for class documentation
 
   Int_t iResult = 0;
-
+#if 0
   const TObject* iter = NULL;
 
   // -- Start-Of-Run
@@ -262,6 +264,6 @@ Int_t AliHLTJETFastJetComponent::DoEvent( const AliHLTComponentEventData& /*evtD
   
   // -- PushBack
   // -------------
-
-  return 0;
+#endif
+  return iResult;
 }

@@ -4,12 +4,15 @@
 CLASS_HDRS   		    :=	AliHLTJETAgent.h \
 				AliHLTJETBase.h \
 				AliHLTJETTrackCuts.h \
+				AliHLTJETJetCuts.h \
 				AliHLTJETReader.h \
 				AliHLTJETReaderHeader.h \
 				cone/AliHLTJETConeGrid.h \
 			 	cone/AliHLTJETConeEtaPhiCell.h \
 				cone/AliHLTJETConeSeedCuts.h \
 				cone/AliHLTJETConeJetCandidate.h \
+				cone/AliHLTJETConeHeader.h \
+				cone/AliHLTJETConeFinder.h \
 				cone/AliHLTJETConeJetComponent.h \
 	                        analysis/AliHLTJETAnalysisBase.h \
 				analysis/AliHLTJETAnalysisJets.h \
@@ -17,10 +20,6 @@ CLASS_HDRS   		    :=	AliHLTJETAgent.h \
 				analysis/AliHLTJETAnalysisComponent.h
 
 CLASS_HDRS_FJ 	            := 	AliHLTJETFastJetComponent.h	
-
-#				AliHLTJETJetCuts.h 
-				#cone/AliHLTJETConeHeader.h
-				#cone/AliHLTJETConeFinder.h
 
 ###############################################################################
 

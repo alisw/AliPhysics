@@ -15,18 +15,26 @@
     @brief  Reader for jet finder
 */
 
-#include "AliHLTLogging.h"
+#ifdef HAVE_FASTJET
+#include "fastjet/PseudoJet.hh"
+#endif
 
 #include "AliJetReader.h"
 #include "AliJetReaderHeader.h"
 
-#include "AliHLTJETReaderHeader.h"
-
-#include "AliHLTMCEvent.h"
-
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 
+
+#include "AliHLTLogging.h"
+#include "AliHLTMCEvent.h"
+
+#include "AliHLTJETBase.h"
+#include "AliHLTJETTrackCuts.h"
+#include "AliHLTJETReaderHeader.h"
+
+#include "AliHLTJETConeSeedCuts.h"
+#include "AliHLTJETConeGrid.h"
 
 /**
  * @class  AliHLTJETReader
@@ -53,29 +61,75 @@ public:
 
   /*
    * ---------------------------------------------------------------------------------
-   *                               Reader functionality
+   *                                Initialize / Reset
    * ---------------------------------------------------------------------------------
    */
 
+
+  void SetTrackCuts( AliHLTJETTrackCuts * cuts) {fTrackCuts = cuts; }
+
+  /** Initialize reader for cone jet finder
+   *  Calls AliHLTJETReaderHeader::Initialize
+   *  @return 0 on success, otherwise <0
+   */
+  Int_t Initialize();
+ 
+  /** Reset the event */
+  void ResetEvent();
+
+  /*
+   * ---------------------------------------------------------------------------------
+   *                            Fastjet Reader functionality
+   * ---------------------------------------------------------------------------------
+   */
+
+#ifdef HAVE_FASTJET
+  /** Fill tracks in fastjet momemtum vector
+   *  @return kTRUE on success, otherwise kFALSE
+   */
+  Bool_t FillMomentumArrayFast();
+
+  /** Fill MC tracks in fastjet momemtum vector
+   *  @return kTRUE on success, otherwise kFALSE
+   */
+  Bool_t FillMomentumArrayFastMC();
+
+  /** Fill ESD tracks in fastjet momemtum vector
+   *  @return kTRUE on success, otherwise kFALSE
+   */
+  Bool_t FillMomentumArrayFastESD();
+
+  /** Fill AOD tracks in fastjet momemtum vector
+   *  @return kTRUE on success, otherwise kFALSE
+   */
+  Bool_t FillMomentumArrayFastAOD();
+#endif
+
+  /*
+   * ---------------------------------------------------------------------------------
+   *                               Grid functionality
+   * ---------------------------------------------------------------------------------
+   */
+  
   /** Fill tracks in momentum array 
    *  @return kTRUE on success, otherwise kFALSE
    */
-  Bool_t FillMomentumArray();
+  Bool_t FillGrid();
 
   /** Fill MC tracks in momentum array 
    *  @return kTRUE on success, otherwise kFALSE
    */
-  Bool_t FillMomentumArrayMC();
+  Bool_t FillGridMC();
 
   /** Fill ESD tracks in momentum array 
    *  @return kTRUE on success, otherwise kFALSE
    */
-  Bool_t FillMomentumArrayESD();
+  Bool_t FillGridESD();
 
   /** Fill AOD tracks in momentum array 
    *  @return kTRUE on success, otherwise kFALSE
    */
-  Bool_t FillMomentumArrayAOD();
+  Bool_t FillGridAOD();
 
   /*
    * ---------------------------------------------------------------------------------
@@ -90,6 +144,9 @@ public:
    */
   void SetInputEvent(TObject* esd, TObject* aod, TObject* mc);
 
+  /** Set number of jet candates = seeds */
+  void SetNJetCandidates( Int_t i ) { fNJetCandidates = i; }
+
   /*
    * ---------------------------------------------------------------------------------
    *                                     Getter
@@ -99,7 +156,39 @@ public:
   /** Get Ptr to AliHLTJETReaderHeader
    *  @return ptr to AliHLTJETReaderHeader
    */
-  AliHLTJETReaderHeader* GetReaderHeader() {return dynamic_cast<AliHLTJETReaderHeader*>(fReaderHeader);}
+  AliHLTJETReaderHeader* GetReaderHeader() { return dynamic_cast<AliHLTJETReaderHeader*>(fReaderHeader);}
+
+#ifdef HAVE_FASTJET
+  /** Get Ptr to input vector of Fastjet
+   *  @return ptr to input vector of Fastjet
+   */
+  vector<fastjet::PseudoJet>* GetMomentumVectorFast() { return fMomentumVector; }
+#endif
+
+  /** Get Ptr to grid of cone finder
+   *  @return ptr to grid of cone finder
+   */
+  AliHLTJETConeGrid* GetGrid() { return fGrid; }
+  
+  /** Get number of jet candates = seeds */
+  Int_t         GetNJetCandidates() { return fNJetCandidates; }
+
+  /** Get ptr to jet candiates = seeds for cone finder */
+  TClonesArray* GetJetCandidates()  { return fJetCandidates; }
+
+  /*
+   * ---------------------------------------------------------------------------------
+   *                                     Seeds
+   * ---------------------------------------------------------------------------------
+   */
+
+  /** Add new seed
+   *  @param aEtaPhi     eta and phi of the seed
+   *  @param aGridIdx    indeces in the grid
+   *  @param coneRadius  coneRadius
+   */
+  void AddSeed( const Float_t* aEtaPhi, const Int_t* aGridIdx, 
+		const Float_t coneRadius );
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -118,13 +207,33 @@ private:
    */
 
   /** ESD event */
-  AliESDEvent*       fESD;                     //! transient
+  AliESDEvent                 *fESD;            //! transient
 
   /** MC event */
-  AliHLTMCEvent*     fMC;                      //! transient
+  AliHLTMCEvent               *fMC;             //! transient
 
   /** AOD event */
-  AliAODEvent*       fAOD;                     //! transient
+  AliAODEvent                 *fAOD;            //! transient
+
+#ifdef HAVE_FASTJET
+  /** Vector of fastjet momemtum entries */
+  vector<fastjet::PseudoJet>  *fMomentumVector; //! transient
+#endif
+
+  /** Grid for cone finder */
+  AliHLTJETConeGrid           *fGrid;           //! transient
+
+  /** Number of jet candates = seeds */
+  Int_t                        fNJetCandidates; // see above
+
+  /** Jet candiates = seeds for cone finder */
+  TClonesArray                *fJetCandidates;  //! transient
+
+  /** Ptr to seed cuts */
+  AliHLTJETConeSeedCuts       *fSeedCuts;       //! transient
+
+  /** Ptr to track cuts */
+  AliHLTJETTrackCuts          *fTrackCuts;      //! transient
 
   ClassDef(AliHLTJETReader, 1)
 

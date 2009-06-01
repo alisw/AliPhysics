@@ -150,7 +150,7 @@ void HLTJetReconstruction(Int_t nEvents=1, Int_t idx=0, Bool_t generate=kFALSE, 
   
   if (!analysisInput.IsNull()) analysisInput+=" ";
   analysisInput += jetId;
-  
+
 #else
   // ------------------------------------------
   // -- FastJetFinder
@@ -181,7 +181,7 @@ void HLTJetReconstruction(Int_t nEvents=1, Int_t idx=0, Bool_t generate=kFALSE, 
 
   if (!writerInput.IsNull()) writerInput+=" ";
   writerInput += analysisId;
-  
+
   // ----------------------------//
   // -                         - //
   // --    Sink Components    -- //

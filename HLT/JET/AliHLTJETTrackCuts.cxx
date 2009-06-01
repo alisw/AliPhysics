@@ -47,7 +47,12 @@ ClassImp(AliHLTJETTrackCuts)
 AliHLTJETTrackCuts::AliHLTJETTrackCuts(const Char_t* name, const Char_t* title )
   : 
   AliAnalysisCuts(name, title),
-  fPtMin(0.) {
+  fChargedOnly(kFALSE),
+  fPtMin(0.0),
+  fEtaMin(-0.9),
+  fEtaMax(0.9),
+  fPhiMin(0.0),
+  fPhiMax(6.3) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -92,31 +97,61 @@ Bool_t AliHLTJETTrackCuts::IsSelected( TObject *obj ) {
 Bool_t AliHLTJETTrackCuts::IsSelected( TParticle *particle ) {
   // see header file for class documentation
 
+  // ----------------------------------
+  //  Applied before in AliHLTMCEvent:
+  //  - Is Physical Primary  
+  //   stack->IsPhysicalPrimary(iter)
+  //  - final state
+  //   particle->GetNDaughters() == 0
+  // ----------------------------------
+
   Bool_t bResult = kTRUE;
 
   Int_t   status  = particle->GetStatusCode();
-  Int_t   pdg     = TMath::Abs( particle->GetPdgCode() );
+  Int_t   pdgCode = TMath::Abs( particle->GetPdgCode() );
   
   // -- Skip non-final state particles (status != 1), neutrinos (12,14,16)
-  if ( (status != 1) || (pdg == 12 || pdg == 14 || pdg == 16) )
+  if ( (status != 1) || (pdgCode == 12 || pdgCode == 14 || pdgCode == 16) )
     bResult = kFALSE;
-  else
-    HLTInfo("Is selected !");
+
+  // -- Charged particles only
+  if ( fChargedOnly && !particle->GetPDG()->Charge() )
+    bResult = kFALSE;
+
+  // -- cut on min Pt
+  if ( particle->Pt() < fPtMin )
+    bResult = kFALSE;
+
+  // -- cut on eta acceptance
+  if ( ( particle->Eta() < fEtaMin ) || ( particle->Eta() > fEtaMax ) )
+    bResult = kFALSE;
+
+  // -- cut on phi acceptance
+  if ( ( particle->Phi() < fPhiMin ) || ( particle->Phi() > fPhiMax ) )
+    bResult = kFALSE;
 
   return bResult;
 }
 
 // #################################################################################
-Bool_t AliHLTJETTrackCuts::IsSelected( AliESDtrack */*esdTrack*/ ) {
+Bool_t AliHLTJETTrackCuts::IsSelected( AliESDtrack *esdTrack ) {
   // see header file for class documentation
 
   Bool_t bResult = kTRUE;
 
+  // -- cut on min Pt
+  if ( esdTrack->Pt() < fPtMin )
+    bResult = kFALSE;
+
+  // -- cut on eta acceptance
+  if ( ( esdTrack->Eta() < fEtaMin ) || ( esdTrack->Eta() > fEtaMax ) )
+    bResult = kFALSE;
+
+  cout << esdTrack->Phi() << endl;
+
+  // -- cut on phi acceptance
+  if ( ( esdTrack->Phi() < fPhiMin ) || ( esdTrack->Phi() > fPhiMax ) )
+    bResult = kFALSE;
+
   return bResult;
 }
-
-/*
- * ---------------------------------------------------------------------------------
- *                                     Setter
- * ---------------------------------------------------------------------------------
- */

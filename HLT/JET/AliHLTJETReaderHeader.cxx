@@ -33,6 +33,7 @@ using namespace std;
 #endif
 
 #include "AliHLTJETReaderHeader.h"
+#include "AliHLTJETTrackCuts.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTJETReaderHeader)
@@ -47,7 +48,13 @@ ClassImp(AliHLTJETReaderHeader)
 AliHLTJETReaderHeader::AliHLTJETReaderHeader()
   : 
   AliJetReaderHeader("AliHLTJETReaderHeader"),
-  fCuts(NULL) {
+  fTrackCuts(NULL),
+  fSeedCuts(NULL),
+  fGridEtaBinning(0.0),
+  fGridPhiBinning(0.0),
+  fGridEtaRange(0.0),
+  fGridPhiRange(0.0),
+  fConeRadius(0.0) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -61,3 +68,42 @@ AliHLTJETReaderHeader::~AliHLTJETReaderHeader() {
   // see header file for class documentation
 
 }
+
+/*
+ * ---------------------------------------------------------------------------------
+ *                                   Initialize
+ * ---------------------------------------------------------------------------------
+ */
+
+// #################################################################################
+Int_t AliHLTJETReaderHeader::Initialize() {
+  // see header file for class documentation
+
+  Int_t iResult = 0;
+
+  // -- Set eta and phi range for grid
+  fGridPhiRange = fFiducialPhiMin + 
+    fFiducialPhiMax + ( 2.0 * fConeRadius );
+
+  fGridEtaRange = TMath::Abs( fFiducialEtaMin ) + fFiducialEtaMax;
+
+  HLTInfo(" -= ReaderHeader =- ");
+  HLTInfo(" Cone radius      %f", fConeRadius );
+  HLTInfo(" Grid eta binning %f", fGridEtaBinning );
+  HLTInfo(" Grid phi binning %f", fGridPhiBinning );
+  HLTInfo(" Grid eta range   %f", fGridEtaRange );
+  HLTInfo(" Grid phi range   %f", fGridPhiRange );
+
+  if ( ! fTrackCuts ) {
+    HLTError("No track cuts set in reader header");
+    iResult = -EINPROGRESS;
+  }
+  else {
+    fTrackCuts->SetEtaRange( fFiducialEtaMin, fFiducialEtaMax );
+    fTrackCuts->SetPhiRange( fFiducialPhiMin, fFiducialPhiMax );
+    HLTInfo(" -= TrackCuts =- " );
+  }
+
+  return iResult;
+}
+
