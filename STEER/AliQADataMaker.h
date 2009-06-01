@@ -38,7 +38,7 @@ class AliQADataMaker: public TNamed {
   
 public:
 	
-	AliQADataMaker(const char * name="", const char * title="") ;          // ctor
+	AliQADataMaker(const Char_t * name="", const Char_t * title="") ;          // ctor
 	AliQADataMaker(const AliQADataMaker& qadm) ;   
 	virtual ~AliQADataMaker() ; // dtor
   
@@ -60,7 +60,7 @@ public:
 	virtual TH1 *       GetRecPointsData(const Int_t index)                    = 0 ; 
 	virtual TH1 *       GetRawsData(const Int_t index)                         = 0 ; 
 	virtual TH1 *       GetSDigitsData(const Int_t index)                      = 0 ; 
-	const char *        GetDetectorDirName() const { return fDetectorDirName.Data() ; }
+	const Char_t *        GetDetectorDirName() const { return fDetectorDirName.Data() ; }
   TList *             GetParameterList() const { return fParameterList[AliRecoParam::AConvert(fEventSpecie)] ; }
   virtual const AliDetectorRecoParam * GetRecoParam() { return NULL ; }
 	Int_t               Increment() { return ++fCycleCounter ; } 
@@ -107,6 +107,7 @@ protected:
 	virtual void   MakeSDigits(TClonesArray * )      = 0 ;  
 	virtual void   MakeSDigits(TTree * )             = 0 ;  
   //virtual void   MakeTrackSegments(TTree * )		 = 0 ;  
+  virtual void   MakeTheImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Char_t * mode) ; 
 	void           ResetCycle() { fCurrentCycle++ ; fCycleCounter = 0 ; } 
 	virtual void   StartOfDetectorCycle()            = 0 ;
 	

@@ -237,52 +237,7 @@ void AliQADataMakerRec::MakeImage(AliQAv1::TASKINDEX_t task)
     AliError("data not initialized, call AliQADataMaker::Init"); 
     return ; 
   }
-  TIter next(list[0]) ;  
-  TH1 * hdata = NULL ; 
-  Int_t nImages = 0 ;
-  while ( (hdata=dynamic_cast<TH1 *>(next())) ) {
-    if ( hdata->TestBit(AliQAv1::GetImageBit()) )
-      nImages++; 
-  }
-  if ( nImages == 0 ) {
-    AliWarning(Form("No histogram will be plotted for %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data())) ;  
-  } else {
-    AliDebug(AliQAv1::GetQADebugLevel(), Form("%d histograms will be plotted for %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data())) ;  
-    Double_t w  = 1000 ;
-    Double_t h  = 1000 ;
-    for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
-      if ( !fImage[esIndex] ) {
-        fImage[esIndex] = new TCanvas(Form("QA_%s_%s_%s", 
-                                           GetName(), 
-                                           AliQAv1::GetTaskName(task).Data(), 
-                                           AliRecoParam::GetEventSpecieName(esIndex)), 
-                                      Form("QA control plots for det=%s task=%s eventspecie=%s", 
-                                           GetName(), 
-                                           AliQAv1::GetTaskName(task).Data(), 
-                                           AliRecoParam::GetEventSpecieName(esIndex)), 
-                                      w, h) ;
-      }
-      fImage[esIndex]->Clear() ; 
-      fImage[esIndex]->SetWindowSize(w + (w - fImage[esIndex]->GetWw()), h + (h - fImage[esIndex]->GetWh())) ;
-      Int_t nx = TMath::Sqrt(nImages) ; 
-      Int_t ny = nx  ; 
-      if ( nx < TMath::Sqrt(nImages)) 
-        ny++ ; 
-      fImage[esIndex]->Divide(nx, ny) ; 
-      TIter nexthist(list[esIndex]) ; 
-      TH1* hist = NULL ;
-      Int_t npad = 1 ; 
-      fImage[esIndex]->cd(npad) ; 
-      while ( (hist=dynamic_cast<TH1*>(nexthist())) ) {
-        if(hist->TestBit(AliQAv1::GetImageBit())) {
-          hist->Draw() ; 
-          fImage[esIndex]->cd(++npad) ; 
-        }
-      }
-      if (fPrintImage) 
-        fImage[esIndex]->Print() ; 
-    }
-  }
+  MakeTheImage(list, task, "Rec") ; 
 }
 
 //____________________________________________________________________________

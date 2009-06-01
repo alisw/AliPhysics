@@ -25,6 +25,7 @@
 #include "AliCDBManager.h"
 #include "AliRecoParam.h"
  
+class TCanvas ; 
 class AliESDEvent ; 
 class AliDetectorRecoParam ; 
 class AliESDEvent ; 
@@ -36,82 +37,87 @@ class AliCorrQADataMakerRec ;
 class AliQAManager : public AliCDBManager {
 private:
   AliQAManager() ; 
-	AliQAManager(const Char_t * mode, const Char_t * gAliceFilename = "galice.root") ; 
+	AliQAManager(Char_t * mode, const Char_t * gAliceFilename = "galice.root") ; 
 	AliQAManager(const AliQAManager & qas) ; 
 	AliQAManager & operator = (const AliQAManager & qas) ; 
 
 public:
 	virtual ~AliQAManager() ; 
-	void        EndOfCycle(TObjArray * detArray=0x0) ; 
-  void        EndOfCycle(TString detectors) ; 
-	UInt_t      GetCurrentEvent() const { return fCurrentEvent ; }
-	TObjArray * GetFromOCDB(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, const char * year) const ; 
-  AliQAv1     * GetQA(UInt_t run, UInt_t evt) ; 
+	void             EndOfCycle(TObjArray * detArray=0x0) ; 
+  void             EndOfCycle(TString detectors) ; 
+	UInt_t           GetCurrentEvent() const { return fCurrentEvent ; }
+	TObjArray *      GetFromOCDB(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, const Char_t * year) const ; 
+  TCanvas **       GetImage(Char_t * detName) ;
+  const Char_t *   GetMode(){ return fMode.Data() ; }
+  AliQAv1     *    GetQA(UInt_t run, UInt_t evt) ; 
 	AliQADataMaker * GetQADataMaker(const Int_t iDet) ; 
-	void        Increment() ;
-	void        InitQADataMaker(UInt_t run, TObjArray * detArray=0x0) ;
-	Bool_t      Merge(Int_t runNumber = -1) const ;  
-  void        MergeCustom() const ;
-  Bool_t      MergeXML(const char * collection, const char * subFile = 0, const char * outFile = 0) ; 
-  static      AliQAManager * QAManager(const Char_t * mode="", TMap *entryCache = NULL, Int_t run = -1) ;
-	void        Reset(const Bool_t sameCycle = kFALSE) ;  
-	TString     Run(const char * detectors, const AliQAv1::TASKINDEX_t taskIndex=AliQAv1::kNULLTASKINDEX, Bool_t const sameCycle = kFALSE, const char * fileName = NULL) ; 
-	TString     Run(const char * detectors, AliRawReader * rawReader, Bool_t const sameCycle = kFALSE) ; 
-	TString     Run(const char * detectors, const char * filename, Bool_t const sameCycle = kFALSE) ;
-	void        RunOneEvent(AliRawReader * rawReader) ; 
-	void        RunOneEventInOneDetector(Int_t det, TTree * tree) ; 
-	void        RunOneEvent(AliESDEvent *& esd)  ;
-	Bool_t      Save2OCDB(const Int_t runNumber, AliRecoParam::EventSpecie_t es, const char * year = "08", const char * detectors = "ALL") const ; 
-	void        SetActiveDetectors(TString aDet) { fDetectors = aDet ;  }
-	void        SetCycleLength(const AliQAv1::DETECTORINDEX_t det, const Int_t cycle) { fQACycles[det] = cycle ; }
-	void        SetWriteExpert(const AliQAv1::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
-	void        SetEventRange(UInt_t first, UInt_t last) { fFirstEvent = first ; fMaxEvents = last - first + 1 ; }    
-  void        SetEventSpecie(AliRecoParam::EventSpecie_t es) ; 
-	void        SetFirsEvent(UInt_t first) { fFirstEvent = first ; }      
-	void        SetMaxEvents(UInt_t max) { fMaxEvents = max ; }      
-	void        SetNewCycle() { fCycleSame = kTRUE ; }
-	void        SetRecoParam(const Int_t det, const AliDetectorRecoParam *par) ;
-	void        SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
-	void        SetTasks(TString tasks) { fTasks = tasks ; }
-  void        SetWriteExpert() ; 
-private: 
-	Bool_t			  DoIt(const AliQAv1::TASKINDEX_t taskIndex) ;
-	AliLoader   * GetLoader(Int_t iDet) ; 
-	Int_t         GetQACycles(const Int_t iDet) const { return fQACycles[iDet] ; }
-	Bool_t			  InitQA(const AliQAv1::TASKINDEX_t taskIndex, const  char * fileName = NULL) ;
-	Bool_t        InitRunLoader() ; 
-	Bool_t        IsSelected(const char * detName)  ;
-	Bool_t        Finish(const AliQAv1::TASKINDEX_t taskIndex) ;
-	Bool_t        MergeData(const Int_t runNumber) const ;  
-	Bool_t        MergeResults(const Int_t runNumber) const ;  
-	Bool_t        SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const char * year, AliRecoParam::EventSpecie_t es) const ;  
+	void             Increment() ;
+	void             InitQADataMaker(UInt_t run, TObjArray * detArray=0x0) ;
+	Bool_t           Merge(Int_t runNumber = -1) const ;  
+  void             MergeCustom() const ;
+  Bool_t           MergeXML(const Char_t * collection, const Char_t * subFile = 0, const Char_t * outFile = 0) ; 
+  static           AliQAManager * QAManager(Char_t * mode = "", TMap *entryCache = NULL, Int_t run = -1) ;
+	void             Reset(const Bool_t sameCycle = kFALSE) ;  
+	TString          Run(const Char_t * detectors, const AliQAv1::TASKINDEX_t taskIndex=AliQAv1::kNULLTASKINDEX, Bool_t const sameCycle = kFALSE, const Char_t * fileName = NULL) ; 
+	TString          Run(const Char_t * detectors, AliRawReader * rawReader, Bool_t const sameCycle = kFALSE) ; 
+	TString          Run(const Char_t * detectors, const Char_t * filename, Bool_t const sameCycle = kFALSE) ;
+	void             RunOneEvent(AliRawReader * rawReader) ; 
+	void             RunOneEventInOneDetector(Int_t det, TTree * tree) ; 
+	void             RunOneEvent(AliESDEvent *& esd)  ;
+	Bool_t           Save2OCDB(const Int_t runNumber, AliRecoParam::EventSpecie_t es, const Char_t * year = "08", const Char_t * detectors = "ALL") const ; 
+	void             SetActiveDetectors(TString aDet) { fDetectors = aDet ;  }
+	void             SetCycleLength(const AliQAv1::DETECTORINDEX_t det, const Int_t cycle) { fQACycles[det] = cycle ; }
+	void             SetWriteExpert(const AliQAv1::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
+	void             SetEventRange(UInt_t first, UInt_t last) { fFirstEvent = first ; fMaxEvents = last - first + 1 ; }    
+  void             SetEventSpecie(AliRecoParam::EventSpecie_t es) ; 
+	void             SetFirsEvent(UInt_t first) { fFirstEvent = first ; }      
+	void             SetMaxEvents(UInt_t max) { fMaxEvents = max ; }      
+	void             SetNewCycle() { fCycleSame = kTRUE ; }
+  void             SetPrintImage(Bool_t opt = kTRUE) { fPrintImage = opt ; }
+	void             SetRecoParam(const Int_t det, const AliDetectorRecoParam *par) ;
+	void             SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
+	void             SetTasks(TString tasks) { fTasks = tasks ; }
+  void             SetWriteExpert() ; 
 
- 	static AliQAManager* fgQAInstance; // AliQAManager instance
-	UInt_t                  fCurrentEvent ;                 //! event counter
-	Bool_t                  fCycleSame ;                    //! true if 2 consecutive data making for a same detector   
-	TString                 fDetectors ;                    //! list of active detectors 
-	TString                 fDetectorsW ;                   //! list of active detectors with QA implemented 
-	AliESDEvent *           fESD ;                          //! current ESD
-	TTree *                 fESDTree ;                      //! current ESD Tree
-	TString                 fGAliceFileName ;               //! name of the galice file
-	UInt_t                  fFirstEvent ;                   //! first event to process
-	Long64_t                fMaxEvents ;                    //! number of events to process
-	const Char_t *          fMode ;                         //! sim or rec
-	Long64_t                fNumberOfEvents ;               //! number of events in the run 
-  AliRecoParam            fRecoParam;                     //! container for the reco-param objects for detectors
-	UInt_t                  fRunNumber ;                    //! current run number
-	AliRawReader *          fRawReader ;                    //! current raw reader object 
-	Bool_t                  fRawReaderDelete ;              //! tells if the rawReader has been created by this
-	AliRunLoader *          fRunLoader ;                    //! current run loader object
-	TString                 fTasks ;                        //! list of QA tasks to be performed
-	static const UInt_t     fgkNDetectors = AliQAv1::kNDET ;  //! number of detectors    
-	AliLoader      *        fLoader[fgkNDetectors];         //! array of detectors loader
-	AliQADataMaker *        fQADataMaker[fgkNDetectors];    //! array of QA data maker objects
-	Int_t                   fQACycles[fgkNDetectors];       //! array of QA cycle length
-	Bool_t                  fQAWriteExpert[fgkNDetectors];  //! array of QA cycle length
-  AliRecoParam::EventSpecie_t fEventSpecie ;              //! type of event 
+private: 
+	Bool_t			DoIt(const AliQAv1::TASKINDEX_t taskIndex) ;
+	AliLoader * GetLoader(Int_t iDet) ; 
+	Int_t       GetQACycles(const Int_t iDet) const { return fQACycles[iDet] ; }
+	Bool_t 		  InitQA(const AliQAv1::TASKINDEX_t taskIndex, const  Char_t * fileName = NULL) ;
+	Bool_t      InitRunLoader() ; 
+	Bool_t      IsSelected(const Char_t * detName)  ;
+	Bool_t      Finish(const AliQAv1::TASKINDEX_t taskIndex) ;
+	Bool_t      MergeData(const Int_t runNumber) const ;  
+	Bool_t      MergeResults(const Int_t runNumber) const ;  
+	Bool_t      SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const Char_t * year, AliRecoParam::EventSpecie_t es) const ;  
+
+ 	static AliQAManager*        fgQAInstance;                   // AliQAManager instance
+	UInt_t                      fCurrentEvent ;                 //! event counter
+	Bool_t                      fCycleSame ;                    //! true if 2 consecutive data making for a same detector   
+	TString                     fDetectors ;                    //! list of active detectors 
+	TString                     fDetectorsW ;                   //! list of active detectors with QA implemented 
+	AliESDEvent *               fESD ;                          //! current ESD
+	TTree *                     fESDTree ;                      //! current ESD Tree
+	TString                     fGAliceFileName ;               //! name of the galice file
+	UInt_t                      fFirstEvent ;                   //! first event to process
+	Long64_t                    fMaxEvents ;                    //! number of events to process
+	TString                     fMode ;                         //! sim or rec
+	Long64_t                    fNumberOfEvents ;               //! number of events in the run 
+  AliRecoParam                fRecoParam;                     //! container for the reco-param objects for detectors
+	UInt_t                      fRunNumber ;                    //! current run number
+	AliRawReader *              fRawReader ;                    //! current raw reader object 
+	Bool_t                      fRawReaderDelete ;              //! tells if the rawReader has been created by this
+	AliRunLoader *              fRunLoader ;                    //! current run loader object
+	TString                     fTasks ;                        //! list of QA tasks to be performed
+	static const UInt_t         fgkNDetectors = AliQAv1::kNDET ;  //! number of detectors    
+	AliLoader      *            fLoader[fgkNDetectors];         //! array of detectors loader
+	AliQADataMaker *            fQADataMaker[fgkNDetectors];    //! array of QA data maker objects
+	Int_t                       fQACycles[fgkNDetectors];       //! array of QA cycle length
+	Bool_t                      fQAWriteExpert[fgkNDetectors];  //! array of QA cycle length
+  AliRecoParam::EventSpecie_t fEventSpecie ;                  //! type of event 
+  Bool_t                      fPrintImage ;                    //! flag to print the images or not
     
-  ClassDef(AliQAManager, 0)      // class for running the QA makers
+  ClassDef(AliQAManager, 1)      // class for running the QA makers
 };
 
 #endif

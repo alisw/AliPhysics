@@ -73,7 +73,10 @@ const TString AliQAv1::fgkExpert           = "Expert" ;
 const UInt_t  AliQAv1::fgkExpertBit        = 0x40000 ; 
 const UInt_t  AliQAv1::fgkQABit            = 0x80000 ; 
 const UInt_t  AliQAv1::fgkImageBit         = 0x100000 ; 
-const Int_t  AliQAv1::fgkQADebugLevel      = 99 ; 
+const Int_t   AliQAv1::fgkQADebugLevel     = 99 ; 
+const TString AliQAv1::fImageFileName      = "QAImage" ; 
+const TString AliQAv1::fImageFileFormat    = "eps" ; 
+
 //____________________________________________________________________________
 AliQAv1::AliQAv1() : 
   TNamed("", ""), 

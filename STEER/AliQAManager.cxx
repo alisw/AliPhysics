@@ -28,6 +28,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TCanvas.h>
 #include <TKey.h>
 #include <TFile.h>
 #include <TFileMerger.h>
@@ -86,7 +87,8 @@ AliQAManager::AliQAManager() :
   fRawReaderDelete(kTRUE), 
   fRunLoader(NULL), 
   fTasks(""),  
-  fEventSpecie(AliRecoParam::kDefault)
+  fEventSpecie(AliRecoParam::kDefault), 
+  fPrintImage(kTRUE) 
 {
 	// default ctor
 	fMaxEvents = fNumberOfEvents ; 
@@ -101,7 +103,7 @@ AliQAManager::AliQAManager() :
 }
 
 //_____________________________________________________________________________
-AliQAManager::AliQAManager(const Char_t * mode, const Char_t* gAliceFilename) :
+AliQAManager::AliQAManager(Char_t * mode, const Char_t* gAliceFilename) :
   AliCDBManager(), 
   fCurrentEvent(0),  
 	fCycleSame(kFALSE),
@@ -120,7 +122,8 @@ AliQAManager::AliQAManager(const Char_t * mode, const Char_t* gAliceFilename) :
 	fRawReaderDelete(kTRUE), 
 	fRunLoader(NULL), 
   fTasks(""), 
-  fEventSpecie(AliRecoParam::kDefault)
+  fEventSpecie(AliRecoParam::kDefault), 
+  fPrintImage(kTRUE) 
 {
 	// default ctor
 	fMaxEvents = fNumberOfEvents ; 
@@ -132,6 +135,10 @@ AliQAManager::AliQAManager(const Char_t * mode, const Char_t* gAliceFilename) :
     }
   }
   SetWriteExpert() ; 
+  if (fMode.Contains("sim")) 
+		fMode.ReplaceAll("s", "S") ; 
+  else if (fMode.Contains("rec")) 
+    fMode.ReplaceAll("r", "R") ; 
 }
 
 //_____________________________________________________________________________
@@ -154,7 +161,9 @@ AliQAManager::AliQAManager(const AliQAManager & qas) :
 	fRawReaderDelete(kTRUE), 
 	fRunLoader(NULL), 
   fTasks(qas.fTasks), 
-  fEventSpecie(qas.fEventSpecie)
+  fEventSpecie(qas.fEventSpecie), 
+  fPrintImage(qas.fPrintImage) 
+
 {
 	// cpy ctor
 	for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
@@ -192,6 +201,9 @@ AliQAManager::~AliQAManager()
 		delete fRawReader ;
 		fRawReader = NULL ;
 	}
+  TCanvas fakeCanvas ; 
+  if (fPrintImage) 
+    fakeCanvas.Print(Form("%s%s%d.%s]", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat())); 
 }
 
 //_____________________________________________________________________________
@@ -255,14 +267,23 @@ Bool_t AliQAManager::DoIt(const AliQAv1::TASKINDEX_t taskIndex)
             qadm->Exec(taskIndex, data) ; 
 						break; 
 						case AliQAv1::kDIGITS :
-            if( loader ) {      
-              loader->LoadDigits() ; 
-              data = loader->TreeD() ; 
-              if ( ! data ) {
-                AliWarning(Form(" Digit Tree not found for  %s", AliQAv1::GetDetName(iDet))) ; 
-                break ; 
-              } 
-            }
+              if( loader ) {      
+                loader->LoadDigits() ; 
+                data = loader->TreeD() ; 
+                if ( ! data ) {
+                  AliWarning(Form(" Digit Tree not found for  %s", AliQAv1::GetDetName(iDet))) ; 
+                  break ; 
+                } 
+              }
+            case AliQAv1::kDIGITSR :
+              if( loader ) {      
+                loader->LoadDigits() ; 
+                data = loader->TreeD() ; 
+                if ( ! data ) {
+                  AliWarning(Form(" Digit Tree not found for  %s", AliQAv1::GetDetName(iDet))) ; 
+                  break ; 
+                } 
+              }
             qadm->Exec(taskIndex, data) ;
 						break; 
 						case AliQAv1::kRECPOINTS :
@@ -314,7 +335,7 @@ Bool_t AliQAManager::Finish(const AliQAv1::TASKINDEX_t taskIndex)
 }
 
 //_____________________________________________________________________________
-TObjArray * AliQAManager::GetFromOCDB(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, const char * year) const 
+TObjArray * AliQAManager::GetFromOCDB(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, const Char_t * year) const 
 {
 	// Retrieve the list of QA data for a given detector and a given task 
 	TObjArray * rv = NULL ;
@@ -336,6 +357,17 @@ TObjArray * AliQAManager::GetFromOCDB(AliQAv1::DETECTORINDEX_t det, AliQAv1::TAS
 	if ( listDetQAD ) 
 		rv = dynamic_cast<TObjArray *>(listDetQAD->FindObject(AliQAv1::GetTaskName(task))) ; 
 	return rv ; 
+}
+
+//_____________________________________________________________________________
+TCanvas ** AliQAManager::GetImage(Char_t * detName)
+{
+  // retrieves QA Image for the given detector
+  TCanvas ** rv = NULL ; 
+  Int_t detIndex = AliQAv1::GetDetIndex(detName) ; 
+  AliQADataMaker * qadm = GetQADataMaker(detIndex) ; 
+  rv = qadm->GetImage() ;
+  return rv ; 
 }
 
 //_____________________________________________________________________________
@@ -381,7 +413,7 @@ AliLoader * AliQAManager::GetLoader(Int_t iDet)
 AliQAv1 * AliQAManager::GetQA(UInt_t run, UInt_t evt) 
 {
 // retrieves the QA object stored in a file named "Run{run}.Event{evt}_1.ESD.tag.root"  
-  char * fileName = Form("Run%d.Event%d_1.ESD.tag.root", run, evt) ; 
+  Char_t * fileName = Form("Run%d.Event%d_1.ESD.tag.root", run, evt) ; 
   TFile * tagFile = TFile::Open(fileName) ;
   if ( !tagFile ) {
     AliError(Form("File %s not found", fileName)) ;
@@ -443,13 +475,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
 	// load the QA data maker object
 	TPluginManager* pluginManager = gROOT->GetPluginManager() ;
 	TString detName = AliQAv1::GetDetName(iDet) ;
-	TString tmp(fMode) ; 
-	if (tmp.Contains("sim")) 
-		tmp.ReplaceAll("s", "S") ; 
-	else if (tmp.Contains("rec")) 
-		tmp.ReplaceAll("r", "R") ; 
-
-	TString qadmName = "Ali" + detName + "QADataMaker" + tmp ;
+	TString qadmName = "Ali" + detName + "QADataMaker" + fMode ;
 
 	// first check if a plugin is defined for the quality assurance data maker
 	TPluginHandler* pluginHandler = pluginManager->FindHandler("AliQADataMaker", detName) ;
@@ -485,6 +511,10 @@ void  AliQAManager::EndOfCycle(TObjArray * detArray)
 {
 	// End of cycle QADataMakers 
 	
+  if (fPrintImage) {
+    TCanvas fakeCanvas ; 
+    fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat())) ; 
+  }
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQAv1::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
@@ -496,6 +526,7 @@ void  AliQAManager::EndOfCycle(TObjArray * detArray)
 				if (!det || !det->IsActive())  
 					continue ;
 			}
+      qadm->SetPrintImage(fPrintImage) ;
 			for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
 				if ( fTasks.Contains(Form("%d", taskIndex)) ) 
 					qadm->EndOfCycle(AliQAv1::GetTaskIndex(AliQAv1::GetTaskName(taskIndex))) ;
@@ -510,7 +541,11 @@ void  AliQAManager::EndOfCycle(TString detectors)
 {
 	// End of cycle QADataMakers 
 	
-	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
+  if (fPrintImage) {
+    TCanvas fakeCanvas ; 
+    fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat())) ; 
+  }
+  for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQAv1::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
 			if (!qadm) 
@@ -518,6 +553,7 @@ void  AliQAManager::EndOfCycle(TString detectors)
 			// skip non active detectors
       if (!detectors.Contains(AliQAv1::GetDetName(iDet))) 
         continue ;
+      qadm->SetPrintImage(fPrintImage) ;
    		for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
 				if ( fTasks.Contains(Form("%d", taskIndex)) ) 
 					qadm->EndOfCycle(AliQAv1::GetTaskIndex(AliQAv1::GetTaskName(taskIndex))) ;
@@ -541,7 +577,7 @@ void AliQAManager::Increment()
 }
   
 //_____________________________________________________________________________
-Bool_t AliQAManager::InitQA(const AliQAv1::TASKINDEX_t taskIndex, const  char * input )
+Bool_t AliQAManager::InitQA(const AliQAv1::TASKINDEX_t taskIndex, const  Char_t * input )
 {
 	// Initialize the event source and QA data makers
 	
@@ -606,6 +642,10 @@ Bool_t AliQAManager::InitQA(const AliQAv1::TASKINDEX_t taskIndex, const  char * 
 		AliGeomManager::LoadGeometry() ; 
 	
 	InitQADataMaker(fRunNumber, detArray) ; //, fCycleSame, kTRUE, detArray) ; 
+  if (fPrintImage) {
+    TCanvas fakeCanvas ; 
+    fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat())) ;    
+  }    
 	return kTRUE ; 
 }
 
@@ -613,6 +653,7 @@ Bool_t AliQAManager::InitQA(const AliQAv1::TASKINDEX_t taskIndex, const  char * 
 void  AliQAManager::InitQADataMaker(UInt_t run, TObjArray * detArray) 
 {
 	// Initializes The QADataMaker for all active detectors and for all active tasks 
+  fRunNumber = run ; 
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQAv1::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
@@ -693,7 +734,7 @@ Bool_t AliQAManager::InitRunLoader()
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAManager::IsSelected(const char * det) 
+Bool_t AliQAManager::IsSelected(const Char_t * det) 
 {
   // check whether detName is contained in detectors
 	// if yes, it is removed from detectors
@@ -731,7 +772,7 @@ Bool_t AliQAManager::Merge(Int_t runNumber) const
 }
 	
 //______________________________________________________________________
-Bool_t AliQAManager::MergeXML(const char * collectionFile, const char * subFile, const char * outFile) 
+Bool_t AliQAManager::MergeXML(const Char_t * collectionFile, const Char_t * subFile, const Char_t * outFile) 
 {
   // merges files listed in a xml collection 
   // usage Merge(collection, outputFile))
@@ -756,7 +797,7 @@ Bool_t AliQAManager::MergeXML(const char * collectionFile, const char * subFile,
   TGridResult* result = collection->GetGridResult("", 0, 0);
   
   Int_t index = 0  ;
-  const char * turl ;
+  const Char_t * turl ;
   TFileMerger merger(kFALSE) ; 
   if (!outFile) {
     TString tempo(collectionFile) ; 
@@ -769,7 +810,7 @@ Bool_t AliQAManager::MergeXML(const char * collectionFile, const char * subFile,
   merger.OutputFile(outFile) ; 
   
   while ( (turl = result->GetKey(index, "turl")) ) {
-    char * file ;
+    Char_t * file ;
     if ( subFile )
       file = Form("%s#%s", turl, subFile) ; 
     else 
@@ -845,10 +886,10 @@ void AliQAManager::MergeCustom() const
     hisRun->Fill(runNumber) ; 
     AliDebug(AliQAv1::GetQADebugLevel(), Form("Merging run number %d", runNumber)) ; 
     // search all QA files for runNumber in the current directory
-    char * fileList[AliQAv1::kNDET] ;
+    Char_t * fileList[AliQAv1::kNDET] ;
     index = 0 ; 
     for (Int_t iDet = 0; iDet < AliQAv1::kNDET ; iDet++) {
-      char * file = gSystem->Which(gSystem->WorkingDirectory(), Form("%s.%s.%d.root", AliQAv1::GetDetName(iDet), AliQAv1::GetQADataFileName(), runNumber)); 
+      Char_t * file = gSystem->Which(gSystem->WorkingDirectory(), Form("%s.%s.%d.root", AliQAv1::GetDetName(iDet), AliQAv1::GetQADataFileName(), runNumber)); 
       if (file) 
         fileList[index++] = file ;
     }
@@ -956,7 +997,7 @@ Bool_t AliQAManager::MergeData(const Int_t runNumber) const
   TString outFileName = Form("Merged.%s.Data.root",AliQAv1::GetQADataFileName()) ;
   merger.OutputFile(outFileName.Data()) ; 
   for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
-    char * file = gSystem->Which(gSystem->WorkingDirectory(), Form("%s.%s.%d.root", AliQAv1::GetDetName(iDet), AliQAv1::GetQADataFileName(), runNumber)); 
+    Char_t * file = gSystem->Which(gSystem->WorkingDirectory(), Form("%s.%s.%d.root", AliQAv1::GetDetName(iDet), AliQAv1::GetQADataFileName(), runNumber)); 
     if (file) 
       merger.AddFile(file) ; 
   }
@@ -1031,11 +1072,13 @@ void AliQAManager::Reset(const Bool_t sameCycle)
 }
 
 //_____________________________________________________________________________
-AliQAManager * AliQAManager::QAManager(const Char_t * mode, TMap *entryCache, Int_t run) 
+AliQAManager * AliQAManager::QAManager(Char_t * mode, TMap *entryCache, Int_t run) 
 {
   // returns AliQAManager instance (singleton)
   
 	if (!fgQAInstance) {
+    if ( (strcmp(mode, "sim") != 0) && (strcmp(mode, "rec") != 0) )
+      AliFatalClass("You must specify sim or rec") ; 
     fgQAInstance = new AliQAManager(mode) ;  
     if (!entryCache)
 		  fgQAInstance->Init();
@@ -1046,7 +1089,7 @@ AliQAManager * AliQAManager::QAManager(const Char_t * mode, TMap *entryCache, In
 }
 
 //_____________________________________________________________________________
-TString AliQAManager::Run(const char * detectors, AliRawReader * rawReader, const Bool_t sameCycle) 
+TString AliQAManager::Run(const Char_t * detectors, AliRawReader * rawReader, const Bool_t sameCycle) 
 {
 	//Runs all the QA data Maker for Raws only
 	
@@ -1073,7 +1116,7 @@ TString AliQAManager::Run(const char * detectors, AliRawReader * rawReader, cons
 }
 
 //_____________________________________________________________________________
-TString AliQAManager::Run(const char * detectors, const char * fileName, const Bool_t sameCycle) 
+TString AliQAManager::Run(const Char_t * detectors, const Char_t * fileName, const Bool_t sameCycle) 
 {
 	//Runs all the QA data Maker for Raws only
 
@@ -1107,7 +1150,7 @@ TString AliQAManager::Run(const char * detectors, const char * fileName, const B
 }
 
 //_____________________________________________________________________________
-TString AliQAManager::Run(const char * detectors, const AliQAv1::TASKINDEX_t taskIndex, Bool_t const sameCycle, const  char * fileName ) 
+TString AliQAManager::Run(const Char_t * detectors, const AliQAv1::TASKINDEX_t taskIndex, Bool_t const sameCycle, const  Char_t * fileName ) 
 {
 	// Runs all the QA data Maker for every detector
 	
@@ -1131,9 +1174,7 @@ TString AliQAManager::Run(const char * detectors, const AliQAv1::TASKINDEX_t tas
 			}
 		}
 	}
-	
-
-	if ( taskIndex == AliQAv1::kNULLTASKINDEX) { 
+  if ( taskIndex == AliQAv1::kNULLTASKINDEX) { 
 		for (UInt_t task = 0; task < AliQAv1::kNTASKINDEX; task++) {
 			if ( fTasks.Contains(Form("%d", task)) ) {
         if (!fCycleSame)
@@ -1148,9 +1189,7 @@ TString AliQAManager::Run(const char * detectors, const AliQAv1::TASKINDEX_t tas
         return kFALSE ; 
       DoIt(taskIndex) ; 
   } 		
-	
 	return fDetectorsW ;
-
 }
 
 //_____________________________________________________________________________
@@ -1240,7 +1279,7 @@ void AliQAManager::RunOneEventInOneDetector(Int_t det, TTree * tree)
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAManager::Save2OCDB(const Int_t runNumber, AliRecoParam::EventSpecie_t es, const char * year, const char * detectors) const
+Bool_t AliQAManager::Save2OCDB(const Int_t runNumber, AliRecoParam::EventSpecie_t es, const Char_t * year, const Char_t * detectors) const
 {
 	// take the locasl QA data merge into a single file and save in OCDB 
 	Bool_t rv = kTRUE ; 
@@ -1276,7 +1315,7 @@ Bool_t AliQAManager::Save2OCDB(const Int_t runNumber, AliRecoParam::EventSpecie_
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAManager::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const char * year, AliRecoParam::EventSpecie_t es) const
+Bool_t AliQAManager::SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const Char_t * year, AliRecoParam::EventSpecie_t es) const
 {
 	// reads the TH1 from file and adds it to appropriate list before saving to OCDB
 	Bool_t rv = kTRUE ;

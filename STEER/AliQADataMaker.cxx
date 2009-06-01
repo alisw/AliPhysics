@@ -25,6 +25,7 @@
 
 // --- ROOT system ---
 #include <TCanvas.h> 
+#include <TPaveText.h>
 #include <TSystem.h> 
 #include <TFile.h>
 #include <TList.h> 
@@ -56,7 +57,7 @@
 ClassImp(AliQADataMaker)
              
 //____________________________________________________________________________ 
-AliQADataMaker::AliQADataMaker(const char * name, const char * title) : 
+AliQADataMaker::AliQADataMaker(const Char_t * name, const Char_t * title) : 
   TNamed(name, title), 
   fOutput(0x0),
   fDetectorDir(0x0),
@@ -69,7 +70,7 @@ AliQADataMaker::AliQADataMaker(const char * name, const char * title) :
   fRun(0), 
   fEventSpecie(AliRecoParam::kDefault), 
   fImage(new TCanvas*[AliRecoParam::kNSpecies]), 
-  fPrintImage(kFALSE) 
+  fPrintImage(kTRUE) 
 {
   // ctor
   fDetectorDirName = GetName() ; 
@@ -93,7 +94,7 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   fRun(qadm.fRun), 
   fEventSpecie(qadm.fEventSpecie), 
   fImage(qadm.fImage),  
-  fPrintImage(kFALSE)
+  fPrintImage(kTRUE)
 
 {
   //copy ctor
@@ -137,7 +138,7 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list,
       histClone[specie]->SetDirectory(0) ; 
       list[specie]->AddAtAndExpand(histClone[specie], index) ; 
       if(saveForCorr) {  
-        char * name = Form("%s_%s", list[AliRecoParam::AConvert(AliRecoParam::kDefault)]->GetName(), hist->GetName()) ;  
+        const Char_t * name = Form("%s_%s", list[AliRecoParam::AConvert(AliRecoParam::kDefault)]->GetName(), hist->GetName()) ;  
         TParameter<double> * p = new TParameter<double>(name, 9999.9999) ;
         if ( fParameterList[specie] == NULL )
           fParameterList[specie] = new TList() ; 
@@ -154,7 +155,7 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list,
 TH1 *  AliQADataMaker::CloneMe(TH1 * hist, Int_t specie) const  
 {
   // clones a histogram 
-  char * name = Form("%s_%s", AliRecoParam::GetEventSpecieName(specie), hist->GetName()) ;
+  const Char_t * name = Form("%s_%s", AliRecoParam::GetEventSpecieName(specie), hist->GetName()) ;
   TH1 * hClone = dynamic_cast<TH1 *>(hist->Clone(name)) ; 
   if ( hist->TestBit(AliQAv1::GetExpertBit()) )
     hClone->SetBit(AliQAv1::GetExpertBit()) ; 
@@ -216,3 +217,52 @@ TObject * AliQADataMaker::GetData(TObjArray ** list, const Int_t index)
 	}
 }
 
+//____________________________________________________________________________ 
+void AliQADataMaker::MakeTheImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Char_t * mode) 
+{
+  // makes the QA image for sim and rec
+  TIter next(list[0]) ;  
+  TH1 * hdata = NULL ; 
+  Int_t nImages = 0 ;
+  while ( (hdata=dynamic_cast<TH1 *>(next())) ) {
+    if ( hdata->TestBit(AliQAv1::GetImageBit()) )
+      nImages++; 
+  }
+  if ( nImages == 0 ) {
+    AliWarning(Form("No histogram will be plotted for %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data())) ;  
+  } else {
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("%d histograms will be plotted for %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data())) ;  
+    for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
+      if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) ) 
+        continue ;
+      const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)) ; 
+      if ( !fImage[esIndex] ) {
+        fImage[esIndex] = new TCanvas(title, title) ;
+      }
+      fImage[esIndex]->Clear() ; 
+      fImage[esIndex]->SetTitle(title) ; 
+      fImage[esIndex]->cd() ; 
+      TPaveText someText(0.015, 0.015, 0.98, 0.98) ;
+      someText.AddText(title) ;
+      someText.Draw() ; 
+      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), mode, fRun, AliQAv1::GetImageFileFormat())) ; 
+      fImage[esIndex]->Clear() ; 
+      Int_t nx = TMath::Sqrt(nImages) ; 
+      Int_t ny = nx  ; 
+      if ( nx < TMath::Sqrt(nImages)) 
+        ny++ ; 
+      fImage[esIndex]->Divide(nx, ny) ; 
+      TIter nexthist(list[esIndex]) ; 
+      TH1* hist = NULL ;
+      Int_t npad = 1 ; 
+      fImage[esIndex]->cd(npad) ; 
+      while ( (hist=dynamic_cast<TH1*>(nexthist())) ) {
+        if(hist->TestBit(AliQAv1::GetImageBit())) {
+          hist->Draw() ; 
+          fImage[esIndex]->cd(++npad) ; 
+        }
+      }
+      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), mode, fRun, AliQAv1::GetImageFileFormat())) ; 
+    }
+  }  
+}

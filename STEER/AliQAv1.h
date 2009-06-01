@@ -38,11 +38,11 @@ public:
   AliQAv1& operator = (const AliQAv1& qa) ;
   virtual ~AliQAv1();
   
-  static  AliQAv1 *        Instance() ;
-  static  AliQAv1 *        Instance(const Int_t qalength, ULong_t * qa, const Int_t eslength, Bool_t * es) ;
-  static  AliQAv1 *        Instance(const DETECTORINDEX_t det) ;
-  static  AliQAv1 *        Instance(const ALITASK_t tsk) ;
-  static  AliQAv1 *        Instance(const TASKINDEX_t tsk) ;
+  static  AliQAv1 *      Instance() ;
+  static  AliQAv1 *      Instance(const Int_t qalength, ULong_t * qa, const Int_t eslength, Bool_t * es) ;
+  static  AliQAv1 *      Instance(const DETECTORINDEX_t det) ;
+  static  AliQAv1 *      Instance(const ALITASK_t tsk) ;
+  static  AliQAv1 *      Instance(const TASKINDEX_t tsk) ;
   Bool_t                 CheckFatal() const ;
   static void            Close() ; 
   static const char *    GetAliTaskName(ALITASK_t tsk) ;
@@ -50,6 +50,8 @@ public:
   static const TString   GetExpert() { return fgkExpert ; }
   static       UInt_t    GetExpertBit() { return fgkExpertBit ; }
   static       UInt_t    GetImageBit()  { return fgkImageBit ; }
+  static const char *    GetImageFileName() { return fImageFileName.Data() ; }
+  static const char *    GetImageFileFormat() { return fImageFileFormat.Data() ; }
   static const TString   GetLabLocalFile() { return fgkLabLocalFile ; } 
   static const TString   GetLabLocalOCDB() { return fgkLabLocalOCDB ; } 
   static const TString   GetLabAliEnOCDB() { return fgkLabAliEnOCDB ; } 
@@ -152,6 +154,8 @@ private:
   static       TString fgRefDataDirName       ; //! name of Reference directory name in OCDB for data  	
   static const TString fgkQARefOCDBDefault    ; //! default storage for QA in OCDB 
   Bool_t *             fEventSpecies          ; //[fNEventSpecies] list of event species encountered in a run
+  static const TString fImageFileName         ; //! name of the file that contains all the QA images
+  static const TString fImageFileFormat       ; //! format of the file that contains all the QA images
 
  ClassDef(AliQAv1,3)  //ALICE Quality Assurance Object
 };
