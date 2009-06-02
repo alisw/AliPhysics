@@ -6,14 +6,14 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 // RUN SETTINGS
 
 // Flow analysis method can be:(set to kTRUE or kFALSE)
-Bool_t SP       = kFALSE;
-Bool_t LYZ1SUM  = kFALSE;
-Bool_t LYZ1PROD = kFALSE;
+Bool_t SP       = kTRUE;
+Bool_t LYZ1SUM  = kTRUE;
+Bool_t LYZ1PROD = kTRUE;
 Bool_t LYZ2SUM  = kFALSE;
-Bool_t LYZ2PROD = kTRUE;
+Bool_t LYZ2PROD = kFALSE;
 Bool_t LYZEP    = kFALSE;
-Bool_t GFC      = kFALSE;
-Bool_t QC       = kFALSE;
+Bool_t GFC      = kTRUE;
+Bool_t QC       = kTRUE;
 Bool_t FQD      = kFALSE;
 Bool_t MCEP     = kFALSE; //not for pp 
 
