@@ -315,7 +315,7 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	  labels.push_back( -1 ); // put -1 to the end
 	  
 	  int labelMax = -1, labelCur = -1, nLabelsMax = 0, nLabelsCurr = 0;
-	  for ( int iLab = 0; iLab < labels.size(); iLab++ ) {
+	  for ( unsigned int iLab = 0; iLab < labels.size(); iLab++ ) {
 	    if ( labels[iLab] != labelCur ) {	      
 	      if ( labelCur >= 0 && nLabelsMax< nLabelsCurr ) {
 		nLabelsMax = nLabelsCurr;
