@@ -295,12 +295,19 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
       AliESDPmdTrack *esdpmdtr = new  AliESDPmdTrack();
 
       esdpmdtr->SetDetector(det);
+      esdpmdtr->SetSmn(smn);
+      esdpmdtr->SetClusterTrackNo(trno);
+      esdpmdtr->SetClusterTrackPid(trpid);
+      esdpmdtr->SetClusterMatching(mstat);
+      
       esdpmdtr->SetClusterX(xglobal);
       esdpmdtr->SetClusterY(yglobal);
       esdpmdtr->SetClusterZ(zglobal);
       esdpmdtr->SetClusterADC(adc);
       esdpmdtr->SetClusterCells(ncell);
       esdpmdtr->SetClusterPID(pid);
+      esdpmdtr->SetClusterSigmaX(radx);
+      esdpmdtr->SetClusterSigmaY(rady);
 
       event->AddPmdTrack(esdpmdtr);
     }
