@@ -24,9 +24,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDtrackletWord.h"
+#include "AliTRDgeometry.h"
 #include "AliLog.h"
 
 ClassImp(AliTRDtrackletWord)
+
+AliTRDgeometry* AliTRDtrackletWord::fgGeo = new AliTRDgeometry;
 
 AliTRDtrackletWord::AliTRDtrackletWord(UInt_t trackletWord) :
   AliTRDtrackletBase(),

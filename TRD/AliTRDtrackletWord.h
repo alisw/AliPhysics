@@ -13,6 +13,8 @@
 //----------------------------------
 
 #include "AliTRDtrackletBase.h"
+#include "AliTRDgeometry.h"
+#include "AliTRDpadPlane.h"
 
 class AliTRDtrackletWord : public AliTRDtrackletBase {
  public:
@@ -33,9 +35,9 @@ class AliTRDtrackletWord : public AliTRDtrackletBase {
   Int_t GetDetector() const { return fHCId / 2; }
   Int_t GetHCId() const { return fHCId; }
   Float_t GetdYdX() const { return (GetdY() * 140e-4 / 3.); }
-  Float_t GetX() const { return 0; }
+  Float_t GetX() const { return fgGeo->GetTime0((fHCId%12)/2); }
   Float_t GetY() const { return (GetYbin() * 160e-4); }
-  Float_t GetZ() const { return 0; }
+  Float_t GetZ() const { return fgGeo->GetPadPlane((fHCId % 12) / 2, (fHCId/12) % 5)->GetRowPos(GetZbin()); }
 
   UInt_t GetTrackletWord() const { return fTrackletWord; }
   void SetTrackletWord(UInt_t trackletWord) { fTrackletWord = trackletWord; }
@@ -47,6 +49,7 @@ class AliTRDtrackletWord : public AliTRDtrackletBase {
   Int_t fHCId;                  //! half-chamber ID (only transient)
   UInt_t fTrackletWord;		// tracklet word: PID | Z | deflection length | Y 
 				//          bits:  12   4            7          13
+  static AliTRDgeometry *fgGeo;  // pointer to TRD geometry for coordinate calculations
 
  private:
   AliTRDtrackletWord& operator=(const AliTRDtrackletWord &rhs);   // not implemented
