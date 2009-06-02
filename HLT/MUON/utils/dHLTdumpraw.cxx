@@ -1517,19 +1517,27 @@ int DumpClusterStruct(
 	// bytes assumed to be corrupted rubbish.
 	int result = CheckField(cluster->fId, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
-	cout << "         Cluster ID: " << cluster->fId << endl;
+	cout << "                             Cluster ID: " << cluster->fId << endl;
 
 	result = CheckField(cluster->fDetElemId, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
-	cout << "Detector Element ID: " << cluster->fDetElemId << endl;
+	cout << "                    Detector Element ID: " << cluster->fDetElemId << endl;
 
-	result = CheckField(cluster->fNchannels, buffer, bufferSize, continueParse);
+	result = CheckField(cluster->fNchannelsB, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
-	cout << " Number of channels: " << cluster->fNchannels << endl;
+	cout << "    Number of channels in bending plane: " << cluster->fNchannelsB << endl;
+
+	result = CheckField(cluster->fNchannelsNB, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "Number of channels in non-bending plane: " << cluster->fNchannelsNB << endl;
 	
-	result = CheckField(cluster->fCharge, buffer, bufferSize, continueParse);
+	result = CheckField(cluster->fChargeB, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
-	cout << "       Total charge: " << cluster->fCharge << endl;
+	cout << "                Charge on bending plane: " << cluster->fChargeB << endl;
+
+	result = CheckField(cluster->fChargeNB, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "            Charge on non bending plane: " << cluster->fChargeNB << endl;
 
 	cout << "Corresponding Hit: "<< endl;
 	cout << "Chamber | DetElemID | X (cm)     | Y (cm)     | Z (cm)" << endl;

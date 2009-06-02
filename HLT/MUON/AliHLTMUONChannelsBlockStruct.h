@@ -30,10 +30,10 @@ struct AliHLTMUONChannelStruct
 	AliHLTInt32_t fClusterId;   // ID corresponding to the cluster this
 	                            // channel is part of. -1 == invalid.
 
-	AliHLTUInt32_t fBusPatch;    // Bus patch to which this is connected.
+	AliHLTUInt16_t fBusPatch;    // Bus patch to which this is connected.
 	AliHLTUInt16_t fManu;        // The MANU address on electronics.
 	AliHLTUInt16_t fChannelAddress; // The channel address on electronics.
-	AliHLTUInt32_t fSignal;      // ADC value of signal.
+	AliHLTUInt16_t fSignal;      // ADC value of signal.
 	AliHLTUInt32_t fRawDataWord; // The raw data word as found in the DDL stream.
 };
 

@@ -414,8 +414,10 @@ int AliHLTMUONRootifierComponent::DoEvent(
 			else
 			{
 				hit->SetDebugInfo(
-					detElemId, clust.fId, clust.fNchannels,
-					clust.fCharge, hit->SourceDDL()
+						  detElemId, clust.fId,
+						  clust.fNchannelsB, clust.fNchannelsNB,
+						  clust.fChargeB, clust.fChargeNB,
+						  hit->SourceDDL()
 				);
 			}
 		}

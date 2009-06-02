@@ -2263,7 +2263,7 @@ bool AliHLTMUONDataCheckerComponent::CheckClustersBlock(
 			}
 			
 			// Check that the total cluster charge is a reasonable value.
-			if (cluster.fCharge < 0 and 1e4 < cluster.fCharge)
+			if ((cluster.fChargeB + cluster.fChargeNB)< 0 and 1e4 < (cluster.fChargeB + cluster.fChargeNB))
 			{
 				HLTError("Problem found with data block %d, fDataType = '%s',"
 					 " fPtr = %p and fSize = %u bytes."
@@ -2275,7 +2275,7 @@ bool AliHLTMUONDataCheckerComponent::CheckClustersBlock(
 					block.fPtr,
 					block.fSize,
 					name,
-					cluster.fCharge,
+					(cluster.fChargeB + cluster.fChargeNB),
 					i
 				);
 				result = false;
@@ -3241,8 +3241,11 @@ void AliHLTMUONDataCheckerComponent::MakeGlobalChecks(
 				MarkBlock(blocks, blockOk, blockCount, clusterBlocks[bi]);
 			}
 			
-			// Check that the fNchannels value is correct.
-			AliHLTUInt32_t count = 0;
+			// Check that the fNchannelsB value is correct.
+			// First count the number of channels found in the channels block that
+			// correspond to the cluster. Do this for the bending and non-bending planes.
+			AliHLTUInt32_t countB = 0;
+			AliHLTUInt32_t countNB = 0;
 			for (AliHLTUInt32_t bj = 0; bj < channelBlocksCount and not found; bj++)
 			{
 				AliHLTMUONChannelsBlockReader inblockj(channelBlocks[bj]->fPtr, channelBlocks[bj]->fSize);
@@ -3250,27 +3253,46 @@ void AliHLTMUONDataCheckerComponent::MakeGlobalChecks(
 				
 				for (AliHLTUInt32_t j = 0; j < inblockj.Nentries(); j++)
 				{
-					if (inblocki[i].fId == inblockj[j].fClusterId)
-					{
-						count++;
-					}
+					if (inblocki[i].fId != inblockj[j].fClusterId) continue;
+					if ((inblockj[j].fRawDataWord & (1 << 28)) == 0)
+						countB++;
+					else
+						countNB++;
 				}
 			}
 			
-			if (inblocki[i].fNchannels != count)
+			if (inblocki[i].fNchannelsB != countB)
 			{
 				HLTWarning("Problem found with cluster data block %d,"
 					" fDataType = '%s', fPtr = %p and fSize = %u bytes."
-					" Problem with entry %d in block: The number of"
-					" channels in the cluster is reported as %d, but"
-					" only %d channel structures were found.",
+					" Problem with entry %d in block: The number of bending plane"
+					" channels in the cluster is reported as %d,"
+					" but %d channel structures were found.",
 					bi,
 					DataType2Text(clusterBlocks[bi]->fDataType).c_str(),
 					clusterBlocks[bi]->fPtr,
 					clusterBlocks[bi]->fSize,
 					i,
-					inblocki[i].fNchannels,
-					count
+					inblocki[i].fNchannelsB,
+					countB
+				);
+				MarkBlock(blocks, blockOk, blockCount, clusterBlocks[bi]);
+			}
+			
+			if (inblocki[i].fNchannelsNB != countNB)
+			{
+				HLTWarning("Problem found with cluster data block %d,"
+					" fDataType = '%s', fPtr = %p and fSize = %u bytes."
+					" Problem with entry %d in block: The number of"
+					" channels in the cluster of non-bending plane is reported as %d,"
+					" but %d channel structures were found.",
+					bi,
+					DataType2Text(clusterBlocks[bi]->fDataType).c_str(),
+					clusterBlocks[bi]->fPtr,
+					clusterBlocks[bi]->fSize,
+					i,
+					inblocki[i].fNchannelsNB,
+					countNB
 				);
 				MarkBlock(blocks, blockOk, blockCount, clusterBlocks[bi]);
 			}

@@ -174,6 +174,8 @@ private:
 		AliHLTFloat32_t fHalfPadSize; // half padsize in X and Y
 		AliHLTInt32_t fPlane;   // The plane and PCB zone ID numbers.
 		AliHLTFloat32_t fCharge;  // The charge measured on the pad.
+		AliHLTInt32_t fBusPatch;  // The bus patch of the raw data word from the DDL stream.
+		AliHLTUInt32_t fRawData;  // The raw data word from the DDL stream.
 	};
 	
 

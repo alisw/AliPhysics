@@ -361,8 +361,10 @@ public:
 		kInvalidDetElementNumber,  ///< An invalid detector element ID was found.
 		kInvalidChamberNumber,  ///< An invalid chamber number was found.
 		kHitIsNil,  ///< The hit cannot be set to a nil value.
-		kInvalidChannelCount,  ///< The number of channels indicated is zero or outside the valid range.
-		kInvalidTotalCharge, ///< The total charge does not have a valid value.
+		kInvalidChannelCountB,  ///< The number of channels in the bending plane indicated is zero or outside the valid range.
+		kInvalidChannelCountNB,  ///< The number of channels in the non-bending plane indicated is zero or outside the valid range.
+		kInvalidChargeB, ///< The charge for the bending plane does not have a valid value.
+		kInvalidChargeNB, ///< The charge for the non-bending plane does not have a valid value.
 		kInvalidBusPatchId,  ///< The bus patch ID is outside the valid range.
 		kInvalidManuId,  ///< The MANU ID is outside the valid range.
 		kInvalidChannelAddress,  ///< The MANU channel address is outside the valid range.

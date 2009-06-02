@@ -521,8 +521,10 @@ const char* AliHLTMUONUtils::FailureReasonToString(WhyNotValid reason)
 	case kInvalidDetElementNumber: return "kInvalidDetElementNumber";
 	case kInvalidChamberNumber: return "kInvalidChamberNumber";
 	case kHitIsNil: return "kHitIsNil";
-	case kInvalidChannelCount: return "kInvalidChannelCount";
-	case kInvalidTotalCharge: return "kInvalidTotalCharge";
+	case kInvalidChannelCountB: return "kInvalidChannelCountB";
+	case kInvalidChannelCountNB: return "kInvalidChannelCountNB";
+	case kInvalidChargeB: return "kInvalidChargeB";
+	case kInvalidChargeNB: return "kInvalidChargeNB";
 	case kInvalidBusPatchId: return "kInvalidBusPatchId";
 	case kInvalidManuId: return "kInvalidManuId";
 	case kInvalidChannelAddress: return "kInvalidChannelAddress";
@@ -581,11 +583,16 @@ const char* AliHLTMUONUtils::FailureReasonToMessage(WhyNotValid reason)
 		return "An invalid chamber number was found.";
 	case kHitIsNil:
 		return "The hit cannot be set to a nil value.";
-	case kInvalidChannelCount:
-		return "The number of channels indicated is zero or outside"
-			" the valid range.";
-	case kInvalidTotalCharge:
-		return "The total charge does not have a valid value.";
+	case kInvalidChannelCountB:
+		return "The number of channels in the bending plane indicated"
+			" is zero or outside the valid range.";
+	case kInvalidChannelCountNB:
+		return "The number of channels in the non-bending plane indicated"
+			" is zero or outside the valid range.";
+	case kInvalidChargeB:
+		return "The charge in the bending plane does not have a valid value.";
+	case kInvalidChargeNB:
+		return "The charge in the non-bending plane does not have a valid value.";
 	case kInvalidBusPatchId:
 		return "The bus patch identifier is outside the valid range.";
 	case kInvalidManuId:
@@ -656,7 +663,10 @@ bool AliHLTMUONUtils::RecordNumberWasSet(WhyNotValid reason)
 	case kInvalidDetElementNumber:
 	case kInvalidChamberNumber:
 	case kHitIsNil:
-	case kInvalidChannelCount:
+	case kInvalidChannelCountB:
+	case kInvalidChannelCountNB:
+	case kInvalidChargeB:
+	case kInvalidChargeNB:
 	case kInvalidBusPatchId:
 	case kInvalidManuId:
 	case kInvalidChannelAddress:
@@ -1614,24 +1624,45 @@ bool AliHLTMUONUtils::IntegrityOk(
 	}
 	
 	// The number of channels should be in a reasonable range.
-	// between 1 and the maximum number of channels per DDL.
-	// 1<<17 taken from the 11 bits MANU ID + 6 bits channel address.
-	if (cluster.fNchannels < 1 or (1<<17) < cluster.fNchannels)
+	// between 1 and the maximum number of channels per DDL / 2.
+	// 1<<16 taken from the 11 bits MANU ID + 6 bits channel address
+	// divided by 2 since we are counting bending and non bending
+	// planes separately.
+	if (cluster.fNchannelsB < 1 or (1<<16) < cluster.fNchannelsB)
 	{
 		if (reason != NULL and reasonCount < maxCount)
 		{
-			reason[reasonCount] = kInvalidChannelCount;
+			reason[reasonCount] = kInvalidChannelCountB;
 			reasonCount++;
 		}
 		result = false;
 	}
-	
-	// The charge must be a positive value of -1.
-	if (not (cluster.fCharge >= 0 or cluster.fCharge == -1))
+	if (cluster.fNchannelsNB < 1 or (1<<16) < cluster.fNchannelsNB)
 	{
 		if (reason != NULL and reasonCount < maxCount)
 		{
-			reason[reasonCount] = kInvalidTotalCharge;
+			reason[reasonCount] = kInvalidChannelCountNB;
+			reasonCount++;
+		}
+		result = false;
+	}
+
+	
+	// The charge values must be a positive value or -1.
+	if (not (cluster.fChargeB >= 0 or cluster.fChargeB == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidChargeB;
+			reasonCount++;
+		}
+		result = false;
+	}
+	if (not (cluster.fChargeNB >= 0 or cluster.fChargeNB == -1))
+	{
+		if (reason != NULL and reasonCount < maxCount)
+		{
+			reason[reasonCount] = kInvalidChargeNB;
 			reasonCount++;
 		}
 		result = false;
@@ -1663,7 +1694,10 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kInvalidIdValue
 	///        - kHitIsNil
 	///        - kInvalidDetElementNumber
-	///        - kInvalidChannelCount
+	///        - kInvalidChannelCountB
+	///        - kInvalidChannelCountNB
+	///        - kInvalidChargeB
+	///        - kInvalidChargeNB
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
 	/// [in/out] \param reasonCount  This should initially specify the size of
@@ -1874,24 +1908,6 @@ bool AliHLTMUONUtils::IntegrityOk(
 	
 	const AliHLTMUONChannelStruct* channel =
 		reinterpret_cast<const AliHLTMUONChannelStruct*>(&block + 1);
-	
-	// Check if any cluster ID is duplicated.
-	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
-	{
-		AliHLTInt32_t id = channel[i].fClusterId;
-		for (AliHLTUInt32_t j = i+1; j < block.fHeader.fNrecords; j++)
-		{
-			if (id == channel[j].fClusterId)
-			{
-				if (reason != NULL and reasonCount < maxCount)
-				{
-					reason[reasonCount] = kFoundDuplicateIDs;
-					reasonCount++;
-				}
-				result = false;
-			}
-		}
-	}
 
 	// Check integrity of individual channel structures.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)

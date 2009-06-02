@@ -34,8 +34,10 @@ std::ostream& operator << (
 	stream	<< "{fId = " << cluster.fId
 		<< ", fHit = " << cluster.fHit
 		<< ", fDetElemId = " << cluster.fDetElemId
-		<< ", fNchannels = " << cluster.fNchannels
-		<< ", fCharge = " << cluster.fCharge << "}";
+		<< ", fNchannelsB = " << cluster.fNchannelsB
+		<< ", fNchannelsNB = " << cluster.fNchannelsNB
+		<< ", fChargeB = " << cluster.fChargeB 
+		<< ", fChargeNB = " << cluster.fChargeNB << "}";
 	return stream;
 }
 

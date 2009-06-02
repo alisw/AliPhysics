@@ -50,22 +50,28 @@ std::ostream& operator << (std::ostream& stream, const AliHLTMUONRecHit& hit)
 
 
 void AliHLTMUONRecHit::SetDebugInfo(
-		Int_t detElemId, Int_t clusterId, UInt_t nChExp,
-		Float_t charge, Int_t sourceDDL
+		Int_t detElemId, Int_t clusterId,
+		UShort_t nChExpB, UShort_t nChExpNB,
+		Float_t chargeB, Float_t chargeNB,
+		Int_t sourceDDL
 	)
 {
-/// Sets the debugging information.
+/// Sets the extra debugging information.
 /// @param detElemId  The detector element ID.
 /// @param clusterId  Cluster ID of the hit's cluster.
-/// @param nChExp     Number of expected channels forming the cluster.
-/// @param charge  The total charge of the cluster.
+/// @param nChExpB    Number of expected channels in the bending plane forming the cluster.
+/// @param nChExpNB   Number of expected channels in the non-bending plane forming the cluster.
+/// @param chargeB    The charge of the cluster in the bending plane.
+/// @param chargeNB   The charge of the cluster in the non-bending plane.
 /// @param sourceDDL  The source DDL of this hit.
 
 	fSourceDDL = sourceDDL;
 	fDetElemId = detElemId;
 	fClusterId = clusterId;
-	fNchExp = nChExp;
-	fCharge = charge;
+	fNchExpB = nChExpB;
+	fNchExpNB = nChExpNB;
+	fChargeB = chargeB;
+	fChargeNB = chargeNB;
 }
 	
 
@@ -126,8 +132,8 @@ void AliHLTMUONRecHit::Print(Option_t* option) const
 			<< " cm); source DDL = " << fSourceDDL
 			<< "; DetElemID = " << fDetElemId
 			<< "; cluster ID = " << fClusterId
-			<< "; total charge = " << fCharge
-			<< "; expected #ch = " << fNchExp << endl;
+			<< "; total charge = " << fChargeB + fChargeNB
+			<< "; expected #ch = " << fNchExpB + fNchExpNB << endl;
 	}
 	else if (strcmp(option, "all") == 0)
 	{
@@ -136,8 +142,10 @@ void AliHLTMUONRecHit::Print(Option_t* option) const
 			<< " cm); source DDL = " << fSourceDDL
 			<< "; DetElemID = " << fDetElemId
 			<< "; cluster ID = " << fClusterId
-			<< "; total charge = " << fCharge
-			<< "; expected #ch = " << fNchExp << endl;
+			<< "; charge (Bending, Non-bending) = (" << fChargeB
+			<< ", " << fChargeNB
+			<< "); expected #ch (Bending, Non-bending) = ("
+			<< fNchExpB << ", " << fNchExpNB << ")" << endl;
 		if (fChannels.GetEntriesFast() == 0)
 		{
 			cout << "No channels found for this hit." << endl;

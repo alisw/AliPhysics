@@ -40,9 +40,11 @@ struct AliHLTMUONClusterStruct
 	AliHLTInt32_t fDetElemId;  // Detector ID number from AliRoot geometry
 	                           // on which the cluster was found.
 
-	AliHLTUInt32_t fNchannels; // Number of channels/pads in the cluster.
+	AliHLTUInt16_t fNchannelsB; // Number of channels/pads in the cluster in bending plane.
+	AliHLTUInt16_t fNchannelsNB; // Number of channels/pads in the cluster in non-bending plane.
 	
-	AliHLTFloat32_t fCharge; // Total cluster charge. Can be -1 if invalid or uncomputed.
+	AliHLTFloat32_t fChargeB; // Cluster charge in bending plane. Can be -1 if invalid or uncomputed.
+	AliHLTFloat32_t fChargeNB; // Cluster charge in non-bending plane. Can be -1 if invalid or uncomputed.
 };
 
 /**
@@ -85,8 +87,9 @@ inline bool operator == (
 	)
 {
 	return	a.fId == b.fId and a.fHit == b.fHit and
-		a.fDetElemId == b.fDetElemId and a.fNchannels == b.fNchannels and
-		a.fCharge == b.fCharge;
+		a.fDetElemId == b.fDetElemId and a.fNchannelsB == b.fNchannelsB and 
+	        a.fNchannelsNB == b.fNchannelsNB and a.fChargeB == b.fChargeB and
+		a.fChargeNB == b.fChargeNB;
 }
 
 inline bool operator != (

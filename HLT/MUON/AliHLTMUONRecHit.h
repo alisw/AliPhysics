@@ -53,18 +53,20 @@ public:
 		
 		/**
 		 * Constructor.
+		 * \param busPatch  The bus patch ID of the channel as found in the DDL raw data.
 		 * \param manu  The MANU ID of the channel as found in the raw data word.
 		 * \param channel  The MANU channel ID as found in the raw data word.
 		 * \param signal  The ADC signal value as found in the raw data word.
 		 * \param rawDataWord  The actual raw data word.
 		 */
 		AliChannel(
+				Short_t busPatch = -1,
 				Short_t manu = -1,
 				Short_t channel = -1,
 				Short_t signal = -1,
 				UInt_t rawDataWord = 0
 			) :
-			TObject(),
+			TObject(), fBusPatch(busPatch),
 			fManu(manu), fAddress(channel), fSignal(signal),
 			fRawDataWord(rawDataWord)
 		{}
@@ -73,6 +75,11 @@ public:
 		 * Default destructor.
 		 */
 		virtual ~AliChannel() {}
+		
+		/**
+		 * Returns the bus patch ID of the channel.
+		 */
+		Short_t BusPatch() const { return fBusPatch; }
 		
 		/**
 		 * Returns the MANU address.
@@ -93,6 +100,16 @@ public:
 		 * Returns the raw data word as found in the tracking DDL payload.
 		 */
 		UInt_t RawDataWord() const { return fRawDataWord; }
+		
+		/**
+		 * Returns true if the channel is for the bending plane.
+		 */
+		Bool_t InBendingPlane() const { return (fRawDataWord & (1<<28)) == 0; }
+		
+		/**
+		 * Returns true if the channel is for the non-bending plane.
+		 */
+		Bool_t InNonBendingPlane() const { return (fRawDataWord & (1<<28)) != 0; }
 		
 		virtual void Print(Option_t* option = NULL) const;
 	
@@ -115,12 +132,13 @@ public:
 	
 	private:
 	
+		Short_t fBusPatch;   ///< The bus patch ID for the channel.
 		Short_t fManu;       ///< The MANU address on the electronics.
 		Short_t fAddress;    ///< The channel address on the electronics.
 		Short_t fSignal;     ///< ADC value of signal.
 		UInt_t fRawDataWord; ///< The raw data word as found in the DDL stream.
 		
-		ClassDef(AliHLTMUONRecHit::AliChannel, 3); // A MANU channel forming part of a cluster that was considered during hit reconstruction in dHLT.
+		ClassDef(AliHLTMUONRecHit::AliChannel, 5); // A MANU channel forming part of a cluster that was considered during hit reconstruction in dHLT.
 	};
 
 	/**
@@ -132,8 +150,10 @@ public:
 	 * @param detectorId  The ID number for the AliRoot detector element on
 	 *                    which this hit resides.
 	 * @param clusterId   The cluster ID number assigned to the hit's cluster.
-	 * @param nChExp      The expected number of channels that form the cluster.
-	 * @param charge      The total charge of the cluster.
+	 * @param nChExpB     The expected number of channels in the bending plane that form the cluster.
+	 * @param nChExpNB    The expected number of channels in the non-bending plane that form the cluster.
+	 * @param chargeB     The charge of the cluster in the bending plane.
+	 * @param chargeNB    The charge of the cluster in the non-bending plane.
 	 */
 	AliHLTMUONRecHit(
 			Float_t x = 0,
@@ -142,12 +162,15 @@ public:
 			Int_t sourceDDL = -1,
 			Int_t detElemId = -1,
 			Int_t clusterId = -1,
-			Int_t nChExp = 0,
-			Float_t charge = 0
+			UShort_t nChExpB = 0,
+			UShort_t nChExpNB = 0,
+			Float_t chargeB = -1,
+			Float_t chargeNB = -1
 		) :
 		TObject(), fCoordinate(x, y, z), fSourceDDL(sourceDDL),
-		fDetElemId(detElemId), fClusterId(clusterId), fNchExp(nChExp),
-		fChannels("AliHLTMUONRecHit::AliChannel", 6), fCharge(charge)
+		fDetElemId(detElemId), fClusterId(clusterId), fNchExpB(nChExpB),
+		fNchExpNB(nChExpNB), fChannels("AliHLTMUONRecHit::AliChannel", 6),
+		fChargeB(chargeB), fChargeNB(chargeNB)
 	{}
 	
 	/**
@@ -201,28 +224,54 @@ public:
 	Int_t ClusterId() const { return fClusterId; }
 	
 	/**
-	 * Returns the expected number of channels that are to be added to this hit.
+	 * Returns the expected total number of channels that are to be added to this hit.
 	 * If the number of calls to AddChannel does not correspond to this value
 	 * then we lost some debugging information along the way.
 	 */
-	UInt_t ExpectedNchannels() const { return fNchExp; }
+	UInt_t ExpectedNchannels() const { return ExpectedNchannelsB() + ExpectedNchannelsNB(); }
+	
+	/**
+	 * Returns the expected number of channels in the bending plane that are to
+	 * be added to this hit.
+	 */
+	UInt_t ExpectedNchannelsB() const { return fNchExpB; }
+	
+	/**
+	 * Returns the expected number of channels in the non-bending plane that
+	 * are to be added to this hit.
+	 */
+	UInt_t ExpectedNchannelsNB() const { return fNchExpNB; }
 	
 	/**
 	 * Returns the total charge of the cluster.
 	 */
-	Float_t TotalCharge() const { return fCharge; }
+	Float_t TotalCharge() const { return fChargeB + fChargeNB; }
+	
+	/**
+	 * Returns the charge of the cluster in the bending plane.
+	 */
+	Float_t ChargeB() const { return fChargeB; }
+	
+	/**
+	 * Returns the charge of the cluster in the non-bending plane.
+	 */
+	Float_t ChargeNB() const { return fChargeNB; }
 	
 	/**
 	 * Sets the extra debugging information for this hit.
 	 * @param detElemId  The detector element ID.
 	 * @param clusterId  Cluster ID of the hit's cluster.
-	 * @param nChExp     Number of expected channels forming the cluster.
-	 * @param charge     The total charge of the cluster
+	 * @param nChExpB    Number of expected channels in the bending plane forming the cluster.
+	 * @param nChExpNB   Number of expected channels in the non-bending plane forming the cluster.
+	 * @param chargeB    The charge of the cluster in the bending plane.
+	 * @param chargeNB   The charge of the cluster in the non-bending plane.
 	 * @param sourceDDL  The source DDL of this hit.
 	 */
 	void SetDebugInfo(
-			Int_t detElemId, Int_t clusterId, UInt_t nChExp,
-			Float_t charge, Int_t sourceDDL = -1
+			Int_t detElemId, Int_t clusterId,
+			UShort_t nChExpB, UShort_t nChExpNB,
+			Float_t chargeB, Float_t chargeNB,
+			Int_t sourceDDL = -1
 		);
 	
 	/**
@@ -234,7 +283,7 @@ public:
 	}
 	
 	/**
-	 * Returns the number of channels associated with this hit.
+	 * Returns the total number of channels associated with this hit.
 	 */
 	Int_t Nchannels() const { return fChannels.GetEntriesFast(); }
 	
@@ -296,11 +345,13 @@ private:
 	Int_t fSourceDDL;  ///< The DDL from which this hit originates.
 	Int_t fDetElemId;  ///< Detector element ID number.
 	Int_t fClusterId;  ///< The cluster ID number used to relate all the channels to each other.
-	UInt_t fNchExp;    ///< The number of channels that were supposed to be found.
+	UShort_t fNchExpB;  ///< The number of channels in the bending plane that were supposed to be found.
+	UShort_t fNchExpNB; ///< The number of channels in the non-bending plane that were supposed to be found.
 	TClonesArray fChannels; ///< The channels forming part of the cluster from which this hit was reconstructed.
-	Float_t fCharge;   ///< The total charge of the cluster.
+	Float_t fChargeB;   ///< The charge of the cluster in the bending plane.
+	Float_t fChargeNB;  ///< The charge of the cluster in the non-bending plane.
 
-	ClassDef(AliHLTMUONRecHit, 4); // A reconstructed hit translated from dHLT raw data into ROOT format.
+	ClassDef(AliHLTMUONRecHit, 5); // A reconstructed hit translated from dHLT raw data into ROOT format.
 };
 
 #endif // ALIHLTMUONRECHIT_H
