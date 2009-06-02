@@ -2783,14 +2783,6 @@ void AliReconstruction::CleanUp()
   delete ftVertexer;
   ftVertexer = NULL;
   
-  if(!(AliCDBManager::Instance()->GetCacheFlag())) {
-    delete fDiamondProfileSPD;
-    fDiamondProfileSPD = NULL;
-    delete fDiamondProfile;
-    fDiamondProfile = NULL;
-    delete fDiamondProfileTPC;
-    fDiamondProfileTPC = NULL;
-  }
   delete fRunLoader;
   fRunLoader = NULL;
   delete fRawReader;
