@@ -792,7 +792,7 @@ void AliHFMassFitter::WriteHisto(TString path) {
   TH1F* hget=(TH1F*)fhistoInvMass->Clone();
 
   TString bkgname = "funcbkg";
-  Int_t np;
+  Int_t np=-99;
   switch (ftypeOfFit4Bkg){
   case 0:
     np=2;
