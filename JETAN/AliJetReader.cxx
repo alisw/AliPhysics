@@ -88,10 +88,12 @@ AliJetReader::~AliJetReader()
   }
 
   if (fFillUnitArray) {
-    fFillUnitArray->Delete();
     delete fFillUnitArray;
   }
-  delete fArrayMC;
+  if (fArrayMC) {
+      fArrayMC->Delete();
+      delete fArrayMC;
+  }
   
 }
 
