@@ -235,6 +235,7 @@ AliESDtrack::AliESDtrack() :
   for (i=0;i<kTRDnPlanes;i++) {
     fTRDTimBin[i]=0;
   }
+  for (i=0;i<4;i++) {fITSdEdxSamples[i]=0.;}
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
   for (i=0;i<3;i++) {fTOFLabel[i]=0;}
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
@@ -313,6 +314,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=track.fITSr[i]; 
   //
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTPCr[i]=track.fTPCr[i]; 
+  for (Int_t i=0;i<4;i++) {fITSdEdxSamples[i]=track.fITSdEdxSamples[i];}
   for (Int_t i=0;i<4;i++) {fTPCPoints[i]=track.fTPCPoints[i];}
   for (Int_t i=0; i<3;i++)   { fKinkIndexes[i]=track.fKinkIndexes[i];}
   for (Int_t i=0; i<3;i++)   { fV0Indexes[i]=track.fV0Indexes[i];}
@@ -433,6 +435,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   for (i=0;i<kTRDnPlanes;i++) {
     fTRDTimBin[i]=0;
   }
+  for (i=0;i<4;i++) {fITSdEdxSamples[i]=0.;}
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
   for (i=0;i<3;i++) {fTOFLabel[i]=0;}
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
@@ -544,6 +547,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   for (i=0;i<kTRDnPlanes;i++) {
     fTRDTimBin[i]=0;
   }
+  for (i=0;i<4;i++) {fITSdEdxSamples[i]=0.;}
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
   for (i=0;i<3;i++) {fTOFLabel[i]=0;}
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
@@ -782,6 +786,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fGlobalChi2 = source.fGlobalChi2;      
 
   fITSsignal  = source.fITSsignal;     
+  for (Int_t i=0;i<4;i++) {fITSdEdxSamples[i]=source.fITSdEdxSamples[i];}
   fTPCsignal  = source.fTPCsignal;     
   fTPCsignalS = source.fTPCsignalS;    
   for(int i = 0; i< 4;++i){
@@ -969,6 +974,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fITSncls = 0;       
   fITSClusterMap=0;
   fITSsignal = 0;     
+  for (Int_t i=0;i<4;i++) fITSdEdxSamples[i] = 0.;
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=0; 
   fITSLabel = 0;       
 
@@ -1979,4 +1985,22 @@ void AliESDtrack::FillPolymarker(TPolyMarker3D *pol, Float_t magF, Float_t minR,
       counter++;
     }
   }
+}
+
+//_______________________________________________________________________
+void AliESDtrack::SetITSdEdxSamples(const Double_t s[4]) {
+  //
+  // Store the dE/dx samples measured by the two SSD and two SDD layers.
+  // These samples are corrected for the track segment length. 
+  //
+  for (Int_t i=0; i<4; i++) fITSdEdxSamples[i]=s[i];
+}
+
+//_______________________________________________________________________
+void AliESDtrack::GetITSdEdxSamples(Double_t *s) const {
+  //
+  // Get the dE/dx samples measured by the two SSD and two SDD layers.  
+  // These samples are corrected for the track segment length.
+  //
+  for (Int_t i=0; i<4; i++) s[i]=fITSdEdxSamples[i];
 }

@@ -155,7 +155,11 @@ public:
  
   void    SetITSpid(const Double_t *p);
   void    GetITSpid(Double_t *p) const;
+
   Double_t GetITSsignal() const {return fITSsignal;}
+  void    SetITSdEdxSamples(const Double_t s[4]);
+  void    GetITSdEdxSamples(Double_t *s) const;
+
   Double_t GetITSchi2() const {return fITSchi2;}
   Char_t   GetITSclusters(Int_t *idx) const;
   UChar_t GetITSClusterMap() const {return fITSClusterMap;}
@@ -387,6 +391,8 @@ protected:
   Double32_t fGlobalChi2;       // [0.,0.,8] chi2 of the global track
 
   Double32_t  fITSsignal;     // [0.,0.,10] detector's PID signal
+  Double32_t  fITSdEdxSamples[4]; // [0.,0.,10] ITS dE/dx samples
+
   Double32_t  fTPCsignal;     // [0.,0.,10] detector's PID signal
   Double32_t  fTPCsignalS;    // [0.,0.,10] RMS of dEdx measurement
   Double32_t  fTPCPoints[4];  // [0.,0.,10] TPC points -first, max. dens, last and max density
@@ -426,7 +432,7 @@ protected:
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,50)  //ESDtrack 
+  ClassDef(AliESDtrack,51)  //ESDtrack 
 };
 
 
