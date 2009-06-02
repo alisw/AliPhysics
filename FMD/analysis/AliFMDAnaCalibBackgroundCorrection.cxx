@@ -1,6 +1,7 @@
 
 #include "AliFMDAnaCalibBackgroundCorrection.h"
 #include <TH2F.h>
+#include <TH1F.h>
 #include <TBrowser.h>
 
 ClassImp(AliFMDAnaCalibBackgroundCorrection)
@@ -12,7 +13,8 @@ ClassImp(AliFMDAnaCalibBackgroundCorrection)
 AliFMDAnaCalibBackgroundCorrection::AliFMDAnaCalibBackgroundCorrection() : TObject(),
 									   fArray(),
 									   fAxis(),
-									   fIsInit(kFALSE)
+									   fIsInit(kFALSE),
+									   fListOfDoubleHitCorrection()
 {
   
   
@@ -22,7 +24,7 @@ AliFMDAnaCalibBackgroundCorrection::AliFMDAnaCalibBackgroundCorrection() : TObje
 
 //____________________________________________________________________
 AliFMDAnaCalibBackgroundCorrection::AliFMDAnaCalibBackgroundCorrection(const AliFMDAnaCalibBackgroundCorrection& o)
-  : TObject(o), fArray(o.fArray), fAxis(o.fAxis), fIsInit(o.fIsInit)
+  : TObject(o), fArray(o.fArray), fAxis(o.fAxis), fIsInit(o.fIsInit), fListOfDoubleHitCorrection()
 {
   // Copy ctor 
 }
@@ -57,6 +59,22 @@ void AliFMDAnaCalibBackgroundCorrection::SetBgCorrection(Int_t det,
   TObjArray* ringArray = GetRingArray(det,ring);
   ringArray->AddAtAndExpand(hCorrection,vtxbin);
   
+}
+//____________________________________________________________________
+TH1F* AliFMDAnaCalibBackgroundCorrection::GetDoubleHitCorrection(Int_t det, 
+								 Char_t ring) {
+  
+  
+  TH1F* hCorrection    = (TH1F*)fListOfDoubleHitCorrection.FindObject(Form("hDoubleHitCorrection_FMD%d%c"));
+  return hCorrection;
+}
+
+//____________________________________________________________________
+void AliFMDAnaCalibBackgroundCorrection::SetDoubleHitCorrection(Int_t det, 
+								Char_t ring, 
+								TH1F* hCorrection) {
+  hCorrection->SetName(Form("hDoubleHitCorrection_FMD%d%c"));
+  fListOfDoubleHitCorrection.Add(hCorrection);    
 }
 //____________________________________________________________________
 void AliFMDAnaCalibBackgroundCorrection::SetRefAxis(TAxis* axis) {

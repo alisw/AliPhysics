@@ -68,6 +68,16 @@ void AliFMDAnalysisTaskGenerateBackground::UserCreateOutputObjects()
     for(Int_t ring = 0;ring<nRings;ring++) {
       Int_t nSec = (ring == 1 ? 40 : 20);
       Char_t ringChar = (ring == 0 ? 'I' : 'O');
+      TH1F* doubleHits = new TH1F(Form("DoubleHits_FMD%d%c",det,ringChar),
+				  Form("DoubleHits_FMD%d%c",det,ringChar),fNbinsEta, -6,6);
+      TH1F* allHits = new TH1F(Form("allHits_FMD%d%c",det,ringChar),
+			       Form("allHits_FMD%d%c",det,ringChar), fNbinsEta, -6,6);
+      
+      doubleHits->Sumw2();
+      allHits->Sumw2();
+      fListOfHits.Add(allHits);
+      fListOfHits.Add(doubleHits);
+	
       for(Int_t v=0; v<fNvtxBins;v++) {
 	TH2F* hHits = new TH2F(Form("hHits_FMD%d%c_vtx%d", det,ringChar,v),
 			       Form("hHits_FMD%d%c_vtx%d", det,ringChar,v),
@@ -78,21 +88,14 @@ void AliFMDAnalysisTaskGenerateBackground::UserCreateOutputObjects()
       } 
     }
   }
-  TH1F* doubleHits = new TH1F("DoubleHits",  "DoubleHits",
-			 fNbinsEta, -6,6);
-  TH1F* allHits = new TH1F("allHits",  "allHits",
-			 fNbinsEta, -6,6);
+  
   fVertexBins.SetName("VertexBins");
   fVertexBins.GetXaxis()->Set(fNvtxBins,-1*fZvtxCut,fZvtxCut);
-  fListOfHits.Add(allHits);
-  fListOfHits.Add(doubleHits);
+  
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskGenerateBackground::Init()
 {
-  std::cout<<"Init"<<std::endl;
-  
-  
   fLastTrackByStrip.Reset(-1);
   
   
@@ -163,8 +166,8 @@ void AliFMDAnalysisTaskGenerateBackground::UserExec(Option_t */*option*/)
 	hHits->Fill(eta,phi);
 	Float_t nstrips = (ring =='O' ? 256 : 512);
 	fHitsByStrip.operator()(det,ring,sec,strip) +=1;
-	TH1F* allHits = (TH1F*)fListOfHits.FindObject("allHits");
-	TH1F* doubleHits = (TH1F*)fListOfHits.FindObject("DoubleHits");
+	TH1F* allHits = (TH1F*)fListOfHits.FindObject(Form("allHits_FMD%d%c",det,ring));
+	TH1F* doubleHits = (TH1F*)fListOfHits.FindObject(Form("DoubleHits_FMD%d%c",det,ring));
 	
 	if(fHitsByStrip.operator()(det,ring,sec,strip) == 1)
 	  allHits->Fill(eta);
@@ -216,6 +219,10 @@ void AliFMDAnalysisTaskGenerateBackground::GenerateCorrection() {
     
     for(Int_t iring = 0; iring<nRings; iring++) {
       Char_t ring = (iring == 0 ? 'I' : 'O');
+      TH1F* allHits = (TH1F*)fListOfHits.FindObject(Form("allHits_FMD%d%c",det,ring));
+      TH1F* doubleHits = (TH1F*)fListOfHits.FindObject(Form("DoubleHits_FMD%d%c",det,ring));
+      fBackground->SetDoubleHitCorrection(det,ring,doubleHits);
+      doubleHits->Divide(allHits);
       for(Int_t vertexBin=0;vertexBin<fNvtxBins  ;vertexBin++) {
 	TH2F* hHits          = (TH2F*)fListOfHits.FindObject(Form("hHits_FMD%d%c_vtx%d", det,ring,vertexBin));
 	TH2F* hPrimary  = (TH2F*)fListOfPrimaries.FindObject( Form("hPrimary_FMD_%c_vtx%d",ring,vertexBin));
@@ -224,6 +231,8 @@ void AliFMDAnalysisTaskGenerateBackground::GenerateCorrection() {
 	hCorrection->SetTitle(hCorrection->GetName());
 	fListOfCorrection.Add(hCorrection);
 	fBackground->SetBgCorrection(det,ring,vertexBin,hCorrection);
+	
+	
       }
       
     }
@@ -251,6 +260,10 @@ void AliFMDAnalysisTaskGenerateBackground::ReadFromFile(const Char_t* filename, 
 	for(Int_t ring = 0;ring<nRings;ring++)
 	  {
 	    Char_t ringChar = (ring == 0 ? 'I' : 'O');
+	    TH1F* allHits = (TH1F*)listOfHits->FindObject(Form("allHits_FMD%d%c",det,ringChar));
+	    TH1F* doubleHits = (TH1F*)listOfHits->FindObject(Form("DoubleHits_FMD%d%c",det,ringChar));
+	    fListOfHits.Add(allHits);
+	    fListOfHits.Add(doubleHits);
 	    for(Int_t v=0; v<fNvtxBins;v++)
 	      {
 		
@@ -275,6 +288,7 @@ void AliFMDAnalysisTaskGenerateBackground::ReadFromFile(const Char_t* filename, 
   fListOfPrimaries.Write();
   fListOfCorrection.Write();
   fVertexBins.Write();
+  
   fout.Close();
   
   if(storeInOCDB) {

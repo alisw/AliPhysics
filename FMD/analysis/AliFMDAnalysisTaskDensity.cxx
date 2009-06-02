@@ -256,10 +256,12 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	  
 	  //std::cout<<"before "<<correction<<std::endl;
 	  if(fESD->GetUniqueID() == kTRUE) {
-	    if(det == 3) 
-	      correction = correction / fFuncNeg->Eval(eta);
-	    else
-	      correction = correction / fFuncPos->Eval(eta);
+	    TH1F* hDoubleHitCorrection = pars->GetDoubleHitCorrection(det,ring);
+	    //if(det == 3) 
+	    if(hDoubleHitCorrection->GetBinContent(hDoubleHitCorrection->FindBin(eta)) != 0)
+	      correction = correction / hDoubleHitCorrection->GetBinContent(hDoubleHitCorrection->FindBin(eta));
+	    //else
+	    //  correction = correction / pars->GetDoubleHitCorrection()->GetBinContent(pars->GetDoubleHitCorrection()->FindBin(eta));
 	  }
 	  
 	  // std::cout<<correction<<std::endl;

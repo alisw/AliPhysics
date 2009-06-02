@@ -253,6 +253,18 @@ TH2F* AliFMDAnaParameters::GetBackgroundCorrection(Int_t det,
   
   return fBackground->GetBgCorrection(det,ring,vtxbin);
 }
+//____________________________________________________________________
+
+TH1F* AliFMDAnaParameters::GetDoubleHitCorrection(Int_t det, 
+						  Char_t ring) {
+  
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
+  
+  return fBackground->GetDoubleHitCorrection(det,ring);
+}
 //_____________________________________________________________________
 Float_t AliFMDAnaParameters::GetMaxR(Char_t ring) {
   Float_t radius = 0;

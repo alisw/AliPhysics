@@ -5,7 +5,9 @@
 #include <TObjArray.h>
 // #include <TH2F.h>
 #include <TAxis.h>
+#include <TList.h>
 class TH2F;
+class TH1F;
 class TBrowser;
 
 class AliFMDAnaCalibBackgroundCorrection : public TObject
@@ -19,6 +21,8 @@ class AliFMDAnaCalibBackgroundCorrection : public TObject
   
   TH2F*   GetBgCorrection(Int_t det, Char_t ring, Int_t vtxbin);
   void    SetBgCorrection(Int_t det, Char_t ring, Int_t vtxbin, TH2F* hCorrection);
+  TH1F*   GetDoubleHitCorrection(Int_t det, Char_t ring);
+  void    SetDoubleHitCorrection(Int_t det, Char_t ring, TH1F* hCorrection);
   void    SetRefAxis(TAxis* axis);
   Int_t   GetNvtxBins();
   Float_t GetVtxCutZ();
@@ -31,7 +35,7 @@ class AliFMDAnaCalibBackgroundCorrection : public TObject
   TObjArray  fArray;
   TAxis      fAxis;
   Bool_t     fIsInit;
-  
+  TList      fListOfDoubleHitCorrection;
   ClassDef(AliFMDAnaCalibBackgroundCorrection,1);
 };
 
