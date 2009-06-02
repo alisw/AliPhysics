@@ -429,8 +429,10 @@ void AliTRDclusterResolution::Exec(Option_t *)
     x = (t+.5)*fgkTimeBinLength; // conservative approach !!
 
     // resolution as a function of y displacement from pad center
-    // only for phi equal exB
-    if(TMath::Abs(dydx-fExB) < kDtgPhi){
+    // only for phi equal exB and clusters close to cathode wire plane
+    // for ideal simulations time bins 4,5 and 6.
+    if(TMath::Abs(dydx-fExB) < kDtgPhi &&
+       TMath::Abs(x-0.675)<0.225){
       h3 = (TH3S*)arr0->At(AliTRDgeometry::GetLayer(det));
       h3->Fill(x, cli->GetYDisplacement(), dy);
     }
@@ -739,9 +741,9 @@ void AliTRDclusterResolution::ProcessSigma()
         gs.AddPoint(&tgg2, s2, s2e);
 
         if(!ggs) continue;
-        Int_t ip = ggs->GetN();
-        ggs->SetPoint(ip, tgg2, s2);
-        ggs->SetPointError(ip, 0., s2e);
+        Int_t jp = ggs->GetN();
+        ggs->SetPoint(jp, tgg2, s2);
+        ggs->SetPointError(jp, 0., s2e);
       }
       if(gs.Eval()) continue;
 
@@ -829,10 +831,9 @@ void AliTRDclusterResolution::ProcessMean()
         h1->Fit(&f, "QN");
 
         // Fill <Dy> = f(dydx - h*dzdx)
-        Int_t ip = gm->GetN();
-        gm->SetPoint(ip, tgl, f.GetParameter(1));
-        gm->SetPointError(ip, 0., f.GetParError(1));
-        ip++;
+        Int_t jp = gm->GetN();
+        gm->SetPoint(jp, tgl, f.GetParameter(1));
+        gm->SetPointError(jp, 0., f.GetParError(1));
       }
       if(gm->GetN()<4) continue;
 
