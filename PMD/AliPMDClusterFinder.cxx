@@ -44,6 +44,8 @@
 #include "AliPMDCalibData.h"
 #include "AliPMDPedestal.h"
 #include "AliPMDddldata.h"
+#include "AliPMDRecoParam.h"
+#include "AliPMDReconstructor.h"
 
 #include "AliDAQ.h"
 #include "AliCDBManager.h"
@@ -58,6 +60,7 @@ AliPMDClusterFinder::AliPMDClusterFinder():
   fPMDLoader(0),
   fCalibGain(GetCalibGain()),
   fCalibPed(GetCalibPed()),
+  fRecoParam(0x0),
   fTreeD(0),
   fTreeR(0),
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
@@ -78,6 +81,7 @@ AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
   fPMDLoader(runLoader->GetLoader("PMDLoader")),
   fCalibGain(GetCalibGain()),
   fCalibPed(GetCalibPed()),
+  fRecoParam(0x0),
   fTreeD(0),
   fTreeR(0),
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
@@ -99,6 +103,7 @@ AliPMDClusterFinder::AliPMDClusterFinder(const AliPMDClusterFinder & finder):
   fPMDLoader(0),
   fCalibGain(GetCalibGain()),
   fCalibPed(GetCalibPed()),
+  fRecoParam(0x0),
   fTreeD(0),
   fTreeR(0),
   fDigits(NULL),
@@ -125,7 +130,7 @@ AliPMDClusterFinder::~AliPMDClusterFinder()
   // Destructor
   if (fDigits)
     {
-	fDigits->Clear();
+      fDigits->Clear();
     }
   if (fRecpoints)
     {
@@ -159,7 +164,14 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
-  pmdclust->SetEdepCut(fEcut);
+  // fetch the recoparam object from database
+  fRecoParam = AliPMDReconstructor::GetRecoParam();
+
+  if(fRecoParam == 0x0)
+    {
+       AliFatal("No Reco Param found for PMD!!!");
+    }
+
 
   fRunLoader->GetEvent(ievt);
 
@@ -223,6 +235,18 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 
       idet = det;
       ismn = smn;
+
+      // Set the minimum noise cut per module before clustering
+
+      Int_t imod = idet*24 + ismn;
+      fEcut = fRecoParam->GetNoiseCut(imod);   // default
+      // fEcut = fRecoParam->GetPbPbParam()->GetNoiseCut(imod);
+      // fEcut = fRecoParam->GetPPParam()->GetNoiseCut(imod);
+      // fEcut = fRecoParam->GetCosmicParam()->GetNoiseCut(imod);
+
+      pmdclust->SetEdepCut(fEcut);
+
+
       pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,
 			pmdisocell,pmdcont);
 
@@ -318,7 +342,14 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
   TObjArray *pmdisocell = new TObjArray();
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
-  pmdclust->SetEdepCut(fEcut);
+  // Fetch the reco param object
+
+  fRecoParam = AliPMDReconstructor::GetRecoParam();
+  if(fRecoParam == 0x0)
+    {
+       AliFatal("No Reco Param found for PMD!!!");
+    }
+
 
   AliPMDdigit  *pmddigit;
   TBranch *branch = digitsTree->GetBranch("PMDDigit");
@@ -382,6 +413,17 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
       ismn = smn;
 
       if (totADCMod <= 0) continue;
+
+      // Set the minimum noise cut per module before clustering
+
+      Int_t imod = idet*24 + ismn;
+      fEcut = fRecoParam->GetNoiseCut(imod);       // default
+      // fEcut = fRecoParam->GetPbPbParam()->GetNoiseCut(imod);
+      // fEcut = fRecoParam->GetPPParam()->GetNoiseCut(imod);
+      // fEcut = fRecoParam->GetCosmicParam()->GetNoiseCut(imod);
+
+
+      pmdclust->SetEdepCut(fEcut);
 
       pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,
 			pmdisocell,pmdcont);
@@ -476,7 +518,15 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
-  pmdclust->SetEdepCut(fEcut);
+  // Set the minimum noise cut per module before clustering
+
+  fRecoParam = AliPMDReconstructor::GetRecoParam();
+
+  if(fRecoParam == 0x0)
+    {
+       AliFatal("No Reco Param found for PMD!!!");
+    }
+
 
   ResetRecpoint();
 
@@ -657,6 +707,15 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
 	  if (totAdcMod <= 0) continue;
 
+	  Int_t imod = idet*24 + ismn;
+
+	  fEcut = fRecoParam->GetNoiseCut(imod);       // default
+	  // fEcut = fRecoParam->GetPbPbParam()->GetNoiseCut(imod);
+	  // fEcut = fRecoParam->GetPPParam()->GetNoiseCut(imod);
+	  // fEcut = fRecoParam->GetCosmicParam()->GetNoiseCut(imod);
+
+
+	  pmdclust->SetEdepCut(fEcut);
 
 	  pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,
 			    pmdisocell,pmdcont);
@@ -761,7 +820,15 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
-  pmdclust->SetEdepCut(fEcut);
+  // Set the minimum noise cut per module before clustering
+
+  fRecoParam = AliPMDReconstructor::GetRecoParam();
+
+  if(fRecoParam == 0x0)
+    {
+       AliFatal("No Reco Param found for PMD!!!");
+    }
+
 
   fRunLoader->GetEvent(ievt);
 
@@ -938,6 +1005,14 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 		}
 	      idet = 1;
 	    }
+
+	  Int_t imod = idet*24 + ismn;
+	  fEcut = fRecoParam->GetNoiseCut(imod);       // default
+	  // fEcut = fRecoParam->GetPbPbParam()->GetNoiseCut(imod);
+	  // fEcut = fRecoParam->GetPPParam()->GetNoiseCut(imod);
+	  // fEcut = fRecoParam->GetCosmicParam()->GetNoiseCut(imod);
+
+	  pmdclust->SetEdepCut(fEcut);
 
 	  pmdclust->DoClust(idet,ismn,fCellTrack,fCellPid,fCellADC,
 			    pmdisocell,pmdcont);

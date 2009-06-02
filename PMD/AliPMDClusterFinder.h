@@ -20,6 +20,7 @@ class AliRunLoader;
 class AliRawReader;
 class AliPMDCalibData;
 class AliPMDPedestal;
+class AliPMDRecoParam;
 
 class AliPMDClusterFinder : public TObject
 {
@@ -58,6 +59,8 @@ class AliPMDClusterFinder : public TObject
   AliPMDCalibData *fCalibGain;  //! Gain calibration data
   AliPMDPedestal  *fCalibPed;   //! Pedestal calibration data
 
+  const AliPMDRecoParam *fRecoParam; // reconstruction parameter
+
   TTree        *fTreeD;     // Digits tree
   TTree        *fTreeR;     // Reconstructed points
 
@@ -76,7 +79,7 @@ class AliPMDClusterFinder : public TObject
   Int_t    fCellTrack[fgkRow][fgkCol]; // Array containing individual cell tr
   Int_t    fCellPid[fgkRow][fgkCol]; // Array containing individual cell pid
 
-  ClassDef(AliPMDClusterFinder,14) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,15) // To run PMD clustering
 };
 #endif
 
