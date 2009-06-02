@@ -116,12 +116,14 @@ void AliFlowAnalysisWithLeeYangZeros::WriteHistograms(TString* outputFileName)
   TFile *output = new TFile(outputFileName->Data(),"RECREATE");
   if (GetFirstRun()) {
     //output->WriteObject(fHistList, "cobjLYZ1","SingleKey");
-    fHistList->SetName("cobjLYZ1");
+    if (fUseSum) { fHistList->SetName("cobjLYZ1SUM");}
+    else {fHistList->SetName("cobjLYZ1PROD");}
     fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   }
   else {
     //output->WriteObject(fHistList, "cobjLYZ2","SingleKey");
-    fHistList->SetName("cobjLYZ2");
+    if (fUseSum) { fHistList->SetName("cobjLYZ2SUM"); }
+    else { fHistList->SetName("cobjLYZ2PROD"); }
     fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   }
   delete output;
@@ -136,12 +138,14 @@ void AliFlowAnalysisWithLeeYangZeros::WriteHistograms(TString outputFileName)
   TFile *output = new TFile(outputFileName.Data(),"RECREATE");
   if (GetFirstRun()) {
     //output->WriteObject(fHistList, "cobjLYZ1","SingleKey");
-    fHistList->SetName("cobjLYZ1");
+    if (fUseSum) { fHistList->SetName("cobjLYZ1SUM");}
+    else {fHistList->SetName("cobjLYZ1PROD");}
     fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   }
   else {
     //output->WriteObject(fHistList, "cobjLYZ2","SingleKey");
-    fHistList->SetName("cobjLYZ2");
+    if (fUseSum) { fHistList->SetName("cobjLYZ2SUM"); }
+    else { fHistList->SetName("cobjLYZ2PROD"); }
     fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   }
   delete output;
@@ -431,7 +435,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
     }
           
     //    outputListHistos->Print(); 
-  } else { cout << "histogram list pointer in Lee-Yang Zeros is empty in method AFAWLYZ::GetOutputHistograms() " << endl;}
+  } else { cout << "histogram list pointer is empty in method AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms() " << endl;}
   
 }
   //-----------------------------------------------------------------------     
@@ -502,7 +506,10 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
       cout<<"*************************************"<<endl;
       cout<<"*************************************"<<endl;
       cout<<"      Integrated flow from           "<<endl;
-      cout<<"        Lee-Yang Zeroes              "<<endl;
+      if (fUseSum) {
+	cout<<"       Lee-Yang Zeroes SUM          "<<endl;}
+      else {
+	cout<<"     Lee-Yang Zeroes PRODUCT      "<<endl;}
       cout<<endl;
       cout<<"Chi = "<<dChi<<endl;
       cout<<endl;
@@ -717,7 +724,10 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
       cout<<"*************************************"<<endl;
       cout<<"*************************************"<<endl;
       cout<<"      Integrated flow from           "<<endl;
-      cout<<"        Lee-Yang Zeroes              "<<endl;
+      if (fUseSum) {
+	cout<<"       Lee-Yang Zeroes SUM          "<<endl;}
+      else {
+	cout<<"     Lee-Yang Zeroes PRODUCT      "<<endl;}
       cout<<endl;
       cout<<"Chi = "<<dChi<<endl;
       cout<<"dV = "<<dV<<" +- "<<dVErr<<endl;

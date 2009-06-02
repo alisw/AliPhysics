@@ -6,16 +6,18 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 // RUN SETTINGS
 
 // Flow analysis method can be:(set to kTRUE or kFALSE)
-Bool_t SP     = kTRUE;
-Bool_t LYZ1   = kTRUE;
-Bool_t LYZ2   = kFALSE;
-Bool_t LYZEP  = kFALSE;
-Bool_t GFC    = kTRUE;
-Bool_t QC     = kTRUE;
-Bool_t FQD    = kTRUE;
-Bool_t MCEP   = kTRUE; //not for pp 
+Bool_t SP       = kFALSE;
+Bool_t LYZ1SUM  = kFALSE;
+Bool_t LYZ1PROD = kFALSE;
+Bool_t LYZ2SUM  = kFALSE;
+Bool_t LYZ2PROD = kTRUE;
+Bool_t LYZEP    = kFALSE;
+Bool_t GFC      = kFALSE;
+Bool_t QC       = kFALSE;
+Bool_t FQD      = kFALSE;
+Bool_t MCEP     = kFALSE; //not for pp 
 
-Bool_t METHODS[] = {SP,LYZ1,LYZ2,LYZEP,GFC,QC,FQD,MCEP};
+Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP};
 
 // Analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
 const TString type = "ESD";
@@ -27,11 +29,12 @@ Bool_t QA = kTRUE;
 Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 
-//void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1, 
-//	     const Char_t* dataDir="/data/alice2/kolk/PP/LHC09a4/81119", Int_t offset = 0)
-void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 10000, 
+void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 40, 
+		 //const Char_t* dataDir="/data/alice2/kolk/PP/LHC09a4/81119", Int_t offset = 0)
+		 const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0)
+//void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 10000, 
 		 //	 const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8158X", Int_t offset = 0)
-		 const Char_t* dataDir="/PWG2/akisiel/Therminator_c2030", Int_t offset=0)
+		 //const Char_t* dataDir="/PWG2/akisiel/Therminator_c2030", Int_t offset=0)
 {
   TStopwatch timer;
   timer.Start();
