@@ -1,5 +1,4 @@
-
-
+// $Id$
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -45,26 +44,25 @@ ClassImp(AliHLTITSClusterFinderSPDComponent);
 
 AliHLTITSClusterFinderSPDComponent::AliHLTITSClusterFinderSPDComponent()
   :
-  fNModules(240),
+  fNModules(240/*AliITSDetTypeRec::fgkDefaultNModulesSPD*/),
   fClusterFinder(NULL),
   fRawReader(NULL),
   fDettype(NULL),
   fClusters(NULL),
-  fcal(NULL),
   fgeom(NULL),
-  fgeomInit(NULL){
-  //fRawReaderOff(NULL),
-  //fRawStream(NULL),
-  //fNModules(AliITSgeomTGeo::GetNModules()),
-  //fNModules(AliITSDetTupeRec::fgkDefaultNModulesSPD),
-  
-  
-
+  fgeomInit(NULL),
+  fSeg(NULL)
+{ 
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
+  // AliITSDetTypeRec::fgkDefaultNModulesSPD private for the moment
+//   if (AliITSDetTypeRec::fgkDefaultNModulesSPD!=240) {
+//     HLTWarning("Number of modules has changed (AliITSDetTypeRec::fgkDefaultNModulesSPD)");
+//   }
 }
 
 AliHLTITSClusterFinderSPDComponent::~AliHLTITSClusterFinderSPDComponent() {
@@ -116,7 +114,6 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoInit( int /*argc*/, const char** /*a
     fClusters[iModule] = NULL;
   }
 
-  fcal = new AliITSCalibrationSPD();
   //fgeomInit = new AliITSInitGeometry(kvSPD02,2);
   fgeomInit = new AliITSInitGeometry(kvPPRasymmFMD,2);
   fgeom = fgeomInit->CreateAliITSgeom();
@@ -124,11 +121,14 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoInit( int /*argc*/, const char** /*a
   //set dettype
   fDettype = new AliITSDetTypeRec();
   fDettype->SetITSgeom(fgeom);
-  for (Int_t iModule = 0; iModule < fNModules; iModule++) {
-    fDettype->SetCalibrationModel(iModule,fcal);
-  }
+  fDettype->SetReconstructionModel(0,fClusterFinder);
+  fDettype->SetDefaultClusterFindersV2(kTRUE);
+  fDettype->GetCalibration();
+  fSeg = new AliITSsegmentationSSD();
+  fDettype->SetSegmentationModel(0,fSeg);
   
   fClusterFinder = new AliITSClusterFinderV2SPD(fDettype); 
+  fClusterFinder->InitGeometry();
 
   if ( fRawReader )
     return EINPROGRESS;
@@ -148,6 +148,19 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoDeinit() {
   if ( fClusterFinder )
     delete fClusterFinder;
   fClusterFinder = NULL;
+
+  if ( fDettype )
+    delete fDettype;
+  fDettype = NULL;
+
+  for (Int_t iModule = 0; iModule < fNModules; iModule++) {
+    if (fClusters[iModule]) delete fClusters[iModule];
+    fClusters[iModule] = NULL;
+  }
+  
+  if ( fgeomInit )
+    delete fgeomInit;
+  fgeomInit = NULL;
 
   return 0;
 }
@@ -180,11 +193,8 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoEvent( const AliHLTComponentEventDat
 	       DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSPD).c_str());
     
     // -- Check for the correct data type
-    if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSPD) )   //Add SPD to data origin????????
+    if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSPD) )  
       continue;
-    
-    // -- Set RawReader
-    //fRawReader->SetMemory( (UChar_t*) iter->fPtr, iter->fSize );
     
     // -- Get equipment ID out of specification
     AliHLTUInt32_t spec = iter->fSpecification;
@@ -194,7 +204,7 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoEvent( const AliHLTComponentEventDat
     }
 
     Int_t id = 0;
-    for ( Int_t ii = 1; ii < 20 ; ii++ ) {   //number of ddl's
+    for ( Int_t ii = 0; ii < 20 ; ii++ ) {   //number of ddl's
       if ( spec & 0x00000001 ) {
 	id += ii;
 	break;
@@ -203,7 +213,7 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoEvent( const AliHLTComponentEventDat
     }
     
     // -- Set equipment ID to the raw reader
-    
+
     if(!fRawReader->AddBuffer((UChar_t*) iter->fPtr, iter->fSize, id)){
       HLTWarning("Could not add buffer");
     }
@@ -211,31 +221,55 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoEvent( const AliHLTComponentEventDat
     fClusterFinder->RawdataToClusters(fRawReader,fClusters);
     
     /*
+    Float_t xyz[3];
+    filebuf fb;
+    fb.open ("test.txt",ios::out | ios::app);
+    ostream os(&fb);
     for(int i=0;i<fNModules;i++){
       if(fClusters[i] != NULL){
-      for(int j=0;j<fClusters[i]->GetEntries();j++){
+	for(int j=0;j<fClusters[i]->GetEntries();j++){
 	  AliITSRecPoint *recpoint = (AliITSRecPoint*) fClusters[i]->At(j);
-	  cout<<"Cluster: X: "<<recpoint->GetX()<<" Y: "<<recpoint->GetY()<<" Z: "<<recpoint->GetZ()<<endl;
+	  recpoint->GetGlobalXYZ(xyz);
+	  os<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
 	}
       }
     }
     */
 
     PushBack(*fClusters,kAliHLTDataTypeTObjArray|kAliHLTDataOriginITSSPD,iter->fSpecification);
-    
-    /*  
-    for(int i=0;i<fNModules;i++){
-      if(fClusters[i] != NULL){
-	PushBack(fClusters[i],kAliHLTDataTypeTObjArray|kAliHLTDataOriginITSSPD,iter->fSpecification);
-	}
-    }
-    */
 
     /*
-    for (Int_t iModule = 0; iModule < fNModules; iModule++) {           
+    TClonesArray *clustersOut = new TClonesArray();
+          
+    for(int i=0;i<fNModules;i++){
+      if(fClusters[i] != NULL){
+	for(int j=0;j<fClusters[i]->GetEntriesFast();j++) {
+	  clustersOut->Add(&fClusters[i][j]);
+	  //PushBack(fClusters[i],kAliHLTDataTypeTObjArray|kAliHLTDataOriginITSSPD,iter->fSpecification);
+	}
+      }
+    }
+    
+    PushBack(clustersOut,kAliHLTDataTypeTObjArray|kAliHLTDataOriginITSSPD,iter->fSpecification);
+
+    Float_t xyz2[3];
+    filebuf fb2;
+    fb2.open ("test2.txt",ios::out | ios::app);
+    ostream os2(&fb2);
+    for(int j=0;j<clustersOut->GetEntriesFast();j++){
+      AliITSRecPoint *recpoint = (AliITSRecPoint*) clustersOut->At(j);
+      recpoint->GetGlobalXYZ(xyz2);
+      os2<<xyz2[0]<<" "<<xyz2[1]<<" "<<xyz2[2]<<endl;
+    }
+
+    clustersOut->Clear();
+    delete clustersOut;
+    */
+    for (Int_t iModule = 0; iModule < fNModules; iModule++) {  
+      if(fClusters[iModule]){delete fClusters[iModule];}
       fClusters[iModule] = NULL;
     }
-    */
+    
     fRawReader->ClearBuffers();
     
   } //  for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ ) {    

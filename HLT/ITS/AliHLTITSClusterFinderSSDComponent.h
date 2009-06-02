@@ -1,4 +1,5 @@
-
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTITSCLUSTERFINDERSSDCOMPONENT_H
 #define ALIHLTITSCLUSTERFINDERSSDCOMPONENT_H
 
@@ -20,6 +21,7 @@
 #include "AliITSCalibrationSSD.h"
 #include "AliITSgeom.h"
 #include "AliITSInitGeometry.h"
+#include "AliITSsegmentationSSD.h"
 
 /**
  * @class AliHLTITSClusterFinderSSDComponent
@@ -118,13 +120,13 @@ class AliHLTITSClusterFinderSSDComponent : public AliHLTProcessor
 
   TClonesArray** fClusters;                                   //!transient
 
-  AliITSCalibrationSSD* fcal;                                 //!transient
-
   AliITSgeom* fgeom;                                          //!transient
 
   AliITSInitGeometry* fgeomInit;                              //!transient
+
+  AliITSsegmentationSSD* fSeg;                                //!transient
   
-  ClassDef(AliHLTITSClusterFinderSSDComponent, 0)
+  ClassDef(AliHLTITSClusterFinderSSDComponent, 1)
     
     };
 #endif

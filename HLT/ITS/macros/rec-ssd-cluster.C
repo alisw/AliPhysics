@@ -1,4 +1,4 @@
-
+// $Id$
 //aliroot -b -q rec-spd-cluster.C | tee rec-spd-cluster.log
 
 void rec_ssd_cluster(const char* input="./", char* opt="")
@@ -31,32 +31,26 @@ void rec_ssd_cluster(const char* input="./", char* opt="")
   // define the analysis chain to be run
   //
   
-  int minddl=0x00000000;
-  int maxddl=0x00004000;
-
-  int ddl=0;
+  int minddl=512;
+  int maxddl=527;
+  int spec=0x1;
   int ddlno=0;
 
   TString dummyInput="";
-  for(int ddl=minddl;ddl<=maxddl;){
+  for(ddlno=minddl;ddlno<=maxddl;ddlno++){  
     TString arg, publisher, cf;
-    //arg.Form("-minid %d -datatype 'DDL_RAW ' 'ITS '  -dataspec 0x%02x%02x%02x%02x -verbose", ddl, 00, 00, 00, 00);   
-    //arg.Form("-detector ITSSPD -skipempty -datatype 'DDL_RAW ' 'ITS ' -verbose");
-    //arg.Form("-minid %d -datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x -verbose", ddlno, slice, slice, part, part);
-    //arg.Form("-minid %d -datatype 'DDL_RAW ' 'ISPD ' -dataspec 0x%08x -verbose",ddlno, ddl);
-    //arg.Form("-detector ITSSPD -datatype 'DDL_RAW ' 'ISPD ' -skipempty -dataspec 0x%08x -verbose",ddl);
-    arg.Form("-minid %d -datatype 'DDL_RAW ' 'ISSD ' -dataspec 0x%08x -verbose",ddlno, ddl);
-    publisher.Form("DP_%d", ddl);
+    
+    arg.Form("-minid %d -datatype 'DDL_RAW ' 'ISSD ' -dataspec 0x%08x -verbose",ddlno, spec);
+    publisher.Form("DP_%d", ddlno);
     AliHLTConfiguration pubconf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
     
-    cf.Form("CF_%d",ddl);
+    cf.Form("CF_%d",ddlno);
     AliHLTConfiguration cfconf(cf.Data(), "ITSClusterFinderSSD", publisher.Data(), "");
 
     if (dummyInput.Length()>0) dummyInput+=" ";
     dummyInput+=cf;
 
-    ddlno++;
-    if(ddl==0x0000000){ddl++;}else{ddl = ddl << 1;}
+    spec=spec<<1;
   }
 
   //add dummy

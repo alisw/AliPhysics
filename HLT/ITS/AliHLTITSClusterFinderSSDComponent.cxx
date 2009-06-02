@@ -1,5 +1,4 @@
-
-
+// $Id$
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -45,26 +44,26 @@ ClassImp(AliHLTITSClusterFinderSSDComponent);
 
 AliHLTITSClusterFinderSSDComponent::AliHLTITSClusterFinderSSDComponent()
   :
-  fNModules(1698),
+  fNModules(1698/*AliITSDetTypeRec::fgkDefaultNModulesSSD*/),
   fClusterFinder(NULL),
   fRawReader(NULL),
   fDettype(NULL),
   fClusters(NULL),
-  fcal(NULL),
   fgeom(NULL),
-  fgeomInit(NULL){
-  //fRawReaderOff(NULL),
-  //fRawStream(NULL),
-  //fNModules(AliITSgeomTGeo::GetNModules()),
-  //fNModules(AliITSDetTupeRec::fgkDefaultNModulesSSD),
-  
-  
-
+  fgeomInit(NULL),
+  fSeg(NULL)
+{
+ 
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
+  // AliITSDetTypeRec::fgkDefaultNModulesSPD private for the moment
+//   if (AliITSDetTypeRec::fgkDefaultNModulesSSD!=1698) {
+//     HLTWarning("Number of modules has changed (AliITSDetTypeRec::fgkDefaultNModulesSSD)");
+//   }
 }
 
 AliHLTITSClusterFinderSSDComponent::~AliHLTITSClusterFinderSSDComponent() {
@@ -116,7 +115,6 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoInit( int /*argc*/, const char** /*a
     fClusters[iModule] = NULL;
   }
 
-  fcal = new AliITSCalibrationSSD();
   //fgeomInit = new AliITSInitGeometry(kvSSD02,2);
   fgeomInit = new AliITSInitGeometry(kvPPRasymmFMD,2);
   fgeom = fgeomInit->CreateAliITSgeom();
@@ -124,12 +122,16 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoInit( int /*argc*/, const char** /*a
   //set dettype
   fDettype = new AliITSDetTypeRec();
   fDettype->SetITSgeom(fgeom);
-  for (Int_t iModule = 0; iModule < fNModules; iModule++) {
-    fDettype->SetCalibrationModel(iModule,fcal);
-  }
-  
+  fDettype->SetReconstructionModel(2,fClusterFinder);
+  fDettype->SetDefaultClusterFindersV2(kTRUE);
+  fSeg = new AliITSsegmentationSSD();
+  fSeg->Init();
+  fDettype->SetSegmentationModel(2,fSeg);
+  fDettype->GetCalibration();
+    
   fClusterFinder = new AliITSClusterFinderV2SSD(fDettype); 
-
+  fClusterFinder->InitGeometry();
+  
   if ( fRawReader )
     return EINPROGRESS;
 
@@ -140,14 +142,27 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoInit( int /*argc*/, const char** /*a
 
 Int_t AliHLTITSClusterFinderSSDComponent::DoDeinit() {
   // see header file for class documentation
-
+    
   if ( fRawReader )
     delete fRawReader;
   fRawReader = NULL;
-
+  
+  if ( fDettype )
+    delete fDettype;
+  fDettype = NULL;
+  
   if ( fClusterFinder )
     delete fClusterFinder;
   fClusterFinder = NULL;
+  
+  for (Int_t iModule = 0; iModule < fNModules; iModule++) {
+    delete fClusters[iModule];
+    fClusters[iModule] = NULL;
+  }
+  
+  if ( fgeomInit )
+    delete fgeomInit;
+  fgeomInit = NULL;
 
   return 0;
 }
@@ -180,11 +195,8 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoEvent( const AliHLTComponentEventDat
 	       DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSSD).c_str());
     
     // -- Check for the correct data type
-    if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSSD) )   //Add SSD to data origin????????
+    if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSSD) )  
       continue;
-    
-    // -- Set RawReader
-    //fRawReader->SetMemory( (UChar_t*) iter->fPtr, iter->fSize );
     
     // -- Get equipment ID out of specification
     AliHLTUInt32_t spec = iter->fSpecification;
@@ -193,15 +205,15 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoEvent( const AliHLTComponentEventDat
       HLTDebug("The Spec is to high for ITS SSD");
     }
 
-    Int_t id = 0;                  //what should be here, 512???
-    for ( Int_t ii = 1; ii < 16 ; ii++ ) {   //number of ddl's
+    Int_t id = 512;                  
+    for ( Int_t ii = 0; ii < 16 ; ii++ ) {
       if ( spec & 0x00000001 ) {
 	id += ii;
 	break;
       }
       spec = spec >> 1 ;
     }
-    
+
     // -- Set equipment ID to the raw reader
     
     if(!fRawReader->AddBuffer((UChar_t*) iter->fPtr, iter->fSize, id)){
@@ -210,17 +222,20 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoEvent( const AliHLTComponentEventDat
     
     fClusterFinder->RawdataToClusters(fRawReader,fClusters);
     
-    /*
+    Float_t xyz[3];
+    filebuf fb;
+    fb.open ("test.txt",ios::out | ios::app);
+    ostream os(&fb);
     for(int i=0;i<fNModules;i++){
       if(fClusters[i] != NULL){
-      for(int j=0;j<fClusters[i]->GetEntries();j++){
+	for(int j=0;j<fClusters[i]->GetEntries();j++){
 	  AliITSRecPoint *recpoint = (AliITSRecPoint*) fClusters[i]->At(j);
-	  cout<<"Cluster: X: "<<recpoint->GetX()<<" Y: "<<recpoint->GetY()<<" Z: "<<recpoint->GetZ()<<endl;
+	  recpoint->GetGlobalXYZ(xyz);
+	  os<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
 	}
       }
     }
-    */
-
+   
     PushBack(*fClusters,kAliHLTDataTypeTObjArray|kAliHLTDataOriginITSSSD,iter->fSpecification);
     
     /*  
@@ -230,12 +245,12 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoEvent( const AliHLTComponentEventDat
 	}
     }
     */
-
-    /*
-    for (Int_t iModule = 0; iModule < fNModules; iModule++) {           
+    
+    for (Int_t iModule = 0; iModule < fNModules; iModule++) {       
+      if(fClusters[iModule]){delete fClusters[iModule];}
       fClusters[iModule] = NULL;
     }
-    */
+    
     fRawReader->ClearBuffers();
     
   } //  for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ ) {    
