@@ -40,14 +40,16 @@ const Int_t maxnsigmatovertex2 = 3;
 AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, Bool_t* WEIGHTS)
 {
   //boleans for the methods
-  Bool_t SP     = METHODS[0];
-  Bool_t LYZ1   = METHODS[1];
-  Bool_t LYZ2   = METHODS[2];
-  Bool_t LYZEP  = METHODS[3];
-  Bool_t GFC    = METHODS[4];
-  Bool_t QC     = METHODS[5];
-  Bool_t FQD    = METHODS[6];
-  Bool_t MCEP   = METHODS[7];   
+  Bool_t SP       = METHODS[0];
+  Bool_t LYZ1SUM  = METHODS[1];
+  Bool_t LYZ1PROD = METHODS[2];
+  Bool_t LYZ2SUM  = METHODS[3];
+  Bool_t LYZ2PROD = METHODS[4];
+  Bool_t LYZEP    = METHODS[5];
+  Bool_t GFC      = METHODS[6];
+  Bool_t QC       = METHODS[7];
+  Bool_t FQD      = METHODS[8];
+  Bool_t MCEP     = METHODS[9];   
  
   //for using weights
   Bool_t useWeights  = WEIGHTS[0] || WEIGHTS[1] || WEIGHTS[2];
@@ -90,37 +92,54 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     } 
   }
     
-  if (LYZ2){  
-    // read the output file from LYZ1 
-    TString inputFileNameLYZ2 = "outputLYZ1analysis" ;
-    inputFileNameLYZ2 += type;
-    inputFileNameLYZ2 += ".root";
-    cout<<"The input file is "<<inputFileNameLYZ2.Data()<<endl;
-    TFile* fInputFileLYZ2 = new TFile(inputFileNameLYZ2.Data(),"READ");
-    if(!fInputFileLYZ2 || fInputFileLYZ2->IsZombie()) { 
-      cerr << " ERROR: NO First Run file... " << endl ; 
+  if (LYZ2SUM){  
+    // read the output file from LYZ1SUM 
+    TString inputFileNameLYZ2SUM = "outputLYZ1SUManalysis" ;
+    inputFileNameLYZ2SUM += type;
+    inputFileNameLYZ2SUM += ".root";
+    cout<<"The input file is "<<inputFileNameLYZ2SUM.Data()<<endl;
+    TFile* fInputFileLYZ2SUM = new TFile(inputFileNameLYZ2SUM.Data(),"READ");
+    if(!fInputFileLYZ2SUM || fInputFileLYZ2SUM->IsZombie()) { 
+      cerr << " ERROR: NO First Run SUM file... " << endl ; 
       break;
     }
     else {
-      TList* fInputListLYZ2 = (TList*)fInputFileLYZ2->Get("cobjLYZ1");
-      if (!fInputListLYZ2) {cout<<"list is NULL pointer!"<<endl;}
+      TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get("cobjLYZ1SUM");
+      if (!fInputListLYZ2SUM) {cout<<"list is NULL pointer!"<<endl;}
     }
-    cout<<"LYZ2 input file/list read..."<<endl;
+    cout<<"LYZ2SUM input file/list read..."<<endl;
+  }
+if (LYZ2PROD){  
+    // read the output file from LYZ1PROD 
+    TString inputFileNameLYZ2PROD = "outputLYZ1PRODanalysis" ;
+    inputFileNameLYZ2PROD += type;
+    inputFileNameLYZ2PROD += ".root";
+    cout<<"The input file is "<<inputFileNameLYZ2PROD.Data()<<endl;
+    TFile* fInputFileLYZ2PROD = new TFile(inputFileNameLYZ2PROD.Data(),"READ");
+    if(!fInputFileLYZ2PROD || fInputFileLYZ2PROD->IsZombie()) { 
+      cerr << " ERROR: NO First Run PROD file... " << endl ; 
+      break;
+    }
+    else {
+      TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get("cobjLYZ1PROD");
+      if (!fInputListLYZ2PROD) {cout<<"list is NULL pointer!"<<endl;}
+    }
+    cout<<"LYZ2PROD input file/list read..."<<endl;
   }
   
   if (LYZEP) {
-    // read the output file from LYZ2
-    TString inputFileNameLYZEP = "outputLYZ2analysis" ;
+    // read the output file from LYZ2SUM
+    TString inputFileNameLYZEP = "outputLYZ2SUManalysis" ;
     inputFileNameLYZEP += type;
     inputFileNameLYZEP += ".root";
     cout<<"The input file is "<<inputFileNameLYZEP.Data()<<endl;
     TFile* fInputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
     if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { 
-      cerr << " ERROR: NO First Run file... " << endl ; 
+      cerr << " ERROR: NO Second Run file... " << endl ; 
       break;
     }
     else {
-      TList* fInputListLYZEP = (TList*)fInputFileLYZEP->Get("cobjLYZ2");
+      TList* fInputListLYZEP = (TList*)fInputFileLYZEP->Get("cobjLYZ2SUM");
       if (!fInputListLYZEP) {cout<<"list is NULL pointer!"<<endl;}
     }
     cout<<"LYZEP input file/list read..."<<endl;
@@ -348,17 +367,29 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct");
     mgr->AddTask(taskSP);
   }
-  if (LYZ1){
-    AliAnalysisTaskLeeYangZeros *taskLYZ1 = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZeros",kTRUE);
-    taskLYZ1->SetFirstRunLYZ(kTRUE);
-    taskLYZ1->SetUseSumLYZ(kTRUE);
-    mgr->AddTask(taskLYZ1);
+  if (LYZ1SUM){
+    AliAnalysisTaskLeeYangZeros *taskLYZ1SUM = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZerosSUM",kTRUE);
+    taskLYZ1SUM->SetFirstRunLYZ(kTRUE);
+    taskLYZ1SUM->SetUseSumLYZ(kTRUE);
+    mgr->AddTask(taskLYZ1SUM);
   }
-  if (LYZ2){
-    AliAnalysisTaskLeeYangZeros *taskLYZ2 = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZeros",kFALSE);
-    taskLYZ2->SetFirstRunLYZ(kFALSE);
-    taskLYZ2->SetUseSumLYZ(kTRUE);
-    mgr->AddTask(taskLYZ2);
+  if (LYZ1PROD){
+    AliAnalysisTaskLeeYangZeros *taskLYZ1PROD = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZerosPROD",kTRUE);
+    taskLYZ1PROD->SetFirstRunLYZ(kTRUE);
+    taskLYZ1PROD->SetUseSumLYZ(kFALSE);
+    mgr->AddTask(taskLYZ1PROD);
+  }
+  if (LYZ2SUM){
+    AliAnalysisTaskLeeYangZeros *taskLYZ2SUM = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZerosSUM",kFALSE);
+    taskLYZ2SUM->SetFirstRunLYZ(kFALSE);
+    taskLYZ2SUM->SetUseSumLYZ(kTRUE);
+    mgr->AddTask(taskLYZ2SUM);
+  }
+  if (LYZ2PROD){
+    AliAnalysisTaskLeeYangZeros *taskLYZ2PROD = new AliAnalysisTaskLeeYangZeros("TaskLeeYangZerosPROD",kFALSE);
+    taskLYZ2PROD->SetFirstRunLYZ(kFALSE);
+    taskLYZ2PROD->SetUseSumLYZ(kFALSE);
+    mgr->AddTask(taskLYZ2PROD);
   }
   if (LYZEP){
     AliAnalysisTaskLYZEventPlane *taskLYZEP = new AliAnalysisTaskLYZEventPlane("TaskLYZEventPlane");
@@ -428,24 +459,43 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     mgr->ConnectInput(taskSP,0,coutputFE); 
     mgr->ConnectOutput(taskSP,0,coutputSP);
   }
-  if(LYZ1) {
-    TString outputLYZ1 = "outputLYZ1analysis";
-    outputLYZ1+= type;
-    outputLYZ1+= ".root";
-    AliAnalysisDataContainer *coutputLYZ1 = mgr->CreateContainer("cobjLYZ1", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1);
-    mgr->ConnectInput(taskLYZ1,0,coutputFE); 
-    mgr->ConnectOutput(taskLYZ1,0,coutputLYZ1);
+  if(LYZ1SUM) {
+    TString outputLYZ1SUM = "outputLYZ1SUManalysis";
+    outputLYZ1SUM+= type;
+    outputLYZ1SUM+= ".root";
+    AliAnalysisDataContainer *coutputLYZ1SUM = mgr->CreateContainer("cobjLYZ1SUM", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1SUM);
+    mgr->ConnectInput(taskLYZ1SUM,0,coutputFE); 
+    mgr->ConnectOutput(taskLYZ1SUM,0,coutputLYZ1SUM);
   }
-  if(LYZ2) {
-    AliAnalysisDataContainer *cinputLYZ2 = mgr->CreateContainer("cobjLYZ2in",TList::Class(),AliAnalysisManager::kInputContainer);
-    TString outputLYZ2 = "outputLYZ2analysis";
-    outputLYZ2+= type;
-    outputLYZ2+= ".root";
-    AliAnalysisDataContainer *coutputLYZ2 = mgr->CreateContainer("cobjLYZ2", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2);
-    mgr->ConnectInput(taskLYZ2,0,coutputFE); 
-    mgr->ConnectInput(taskLYZ2,1,cinputLYZ2);
-    mgr->ConnectOutput(taskLYZ2,0,coutputLYZ2);
-    cinputLYZ2->SetData(fInputListLYZ2);
+  if(LYZ1PROD) {
+    TString outputLYZ1PROD = "outputLYZ1PRODanalysis";
+    outputLYZ1PROD+= type;
+    outputLYZ1PROD+= ".root";
+    AliAnalysisDataContainer *coutputLYZ1PROD = mgr->CreateContainer("cobjLYZ1PROD", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1PROD);
+    mgr->ConnectInput(taskLYZ1PROD,0,coutputFE); 
+    mgr->ConnectOutput(taskLYZ1PROD,0,coutputLYZ1PROD);
+  }
+  if(LYZ2SUM) {
+    AliAnalysisDataContainer *cinputLYZ2SUM = mgr->CreateContainer("cobjLYZ2SUMin",TList::Class(),AliAnalysisManager::kInputContainer);
+    TString outputLYZ2SUM = "outputLYZ2SUManalysis";
+    outputLYZ2SUM+= type;
+    outputLYZ2SUM+= ".root";
+    AliAnalysisDataContainer *coutputLYZ2SUM = mgr->CreateContainer("cobjLYZ2SUM", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2SUM);
+    mgr->ConnectInput(taskLYZ2SUM,0,coutputFE); 
+    mgr->ConnectInput(taskLYZ2SUM,1,cinputLYZ2SUM);
+    mgr->ConnectOutput(taskLYZ2SUM,0,coutputLYZ2SUM);
+    cinputLYZ2SUM->SetData(fInputListLYZ2SUM);
+  }
+  if(LYZ2PROD) {
+    AliAnalysisDataContainer *cinputLYZ2PROD = mgr->CreateContainer("cobjLYZ2PRODin",TList::Class(),AliAnalysisManager::kInputContainer);
+    TString outputLYZ2PROD = "outputLYZ2PRODanalysis";
+    outputLYZ2PROD+= type;
+    outputLYZ2PROD+= ".root";
+    AliAnalysisDataContainer *coutputLYZ2PROD = mgr->CreateContainer("cobjLYZ2PROD", TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2PROD);
+    mgr->ConnectInput(taskLYZ2PROD,0,coutputFE); 
+    mgr->ConnectInput(taskLYZ2PROD,1,cinputLYZ2PROD);
+    mgr->ConnectOutput(taskLYZ2PROD,0,coutputLYZ2PROD);
+    cinputLYZ2PROD->SetData(fInputListLYZ2PROD);
   }
   if(LYZEP) {
     AliAnalysisDataContainer *cinputLYZEP = mgr->CreateContainer("cobjLYZEPin",TList::Class(),AliAnalysisManager::kInputContainer);

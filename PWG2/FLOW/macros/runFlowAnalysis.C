@@ -6,14 +6,16 @@
 //--------------------------------------------------------------------------------------
 // RUN SETTINGS
 //flow analysis method can be: (set to kTRUE or kFALSE)
-Bool_t SP    = kTRUE;
-Bool_t LYZ1  = kTRUE;
-Bool_t LYZ2  = kFALSE;  
-Bool_t LYZEP = kFALSE; 
-Bool_t GFC   = kTRUE;
-Bool_t QC    = kTRUE;
-Bool_t FQD   = kTRUE;
-Bool_t MCEP  = kTRUE; //does not work yet 24/12/08
+Bool_t SP       = kTRUE;
+Bool_t LYZ1SUM  = kFALSE;
+Bool_t LYZ1PROD = kFALSE;
+Bool_t LYZ2SUM  = kFALSE; 
+Bool_t LYZ2PROD = kFALSE;
+Bool_t LYZEP    = kTRUE; 
+Bool_t GFC      = kTRUE;
+Bool_t QC       = kTRUE;
+Bool_t FQD      = kTRUE;
+Bool_t MCEP     = kTRUE; //does not work yet 24/12/08
 //--------------------------------------------------------------------------------------
 
 // Weights 
@@ -41,14 +43,16 @@ Double_t etaMinDiff = -1.;
 Double_t phiMaxDiff = 7.5;
 Double_t phiMinDiff = 0.;
 Int_t PIDDiff       = 211;
+/*
 //--------------------------------------------------------------------------------------
 // FLOW SETTINGS (R.Rietkerk)
 Int_t nLoops=1; 		// Number of times to use the same particle (nonflow).
-Double_t xEllipticFlowValue=0.1;	// Add Elliptic Flow. Must be in range [0,1].
-Int_t nMultiplicityOfEvent=500;// Set Average Multiplicity.
+Double_t xEllipticFlowValue=0.1;// Add Elliptic Flow. Must be in range [0,1].
+Int_t nMultiplicityOfEvent=500; // Set Average Multiplicity.
 Double_t xSigmaFlow=0.00;	// Add Elliptic Flow. Must be in range [0,1].
-Int_t nSigmaMult=50;// Set Average Multiplicity.
+Int_t nSigmaMult=50;            // Set Average Multiplicity.
 //--------------------------------------------------------------------------------------
+*/
 
 enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 //mLocal: Analyze data on your computer using aliroot
@@ -57,17 +61,18 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 
 Int_t offset = 0;
                                           
-int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 1000, const char* 
-		    //			  dir="/data/alice1/kolk/KineOnly3/")
-		    		    dir="/Users/snelling/alice_data/KineOnly3/")
+int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 10, const char* 
+		    dir="/data/alice1/kolk/KineOnly3/")
+		    //		    dir="/Users/snelling/alice_data/KineOnly3/")
 		    //		    dir="/Users/snelling/alice_data/stoomboot/5b/")
 {
   TStopwatch timer;
   timer.Start();
   
-  if (LYZ1 && LYZ2) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(); }
-  if (LYZ2 && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
-  if (LYZ1 && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
+  if (LYZ1SUM && LYZ2SUM) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(); }
+  if (LYZ1PROD && LYZ2PROD) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(); }
+  if (LYZ2SUM && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
+  if (LYZ1SUM && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
 
 
   cout<<endl;
@@ -131,14 +136,16 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 1000, const char*
   }
 
   //flow methods:  
-  AliFlowAnalysisWithQCumulants    *qc    = NULL;
-  AliFlowAnalysisWithCumulants     *gfc   = NULL;
-  AliFittingQDistribution          *fqd   = NULL;
-  AliFlowAnalysisWithLeeYangZeros  *lyz1  = NULL;
-  AliFlowAnalysisWithLeeYangZeros  *lyz2  = NULL;
-  AliFlowAnalysisWithLYZEventPlane *lyzep = NULL;
-  AliFlowAnalysisWithScalarProduct *sp    = NULL;
-  AliFlowAnalysisWithMCEventPlane  *mcep  = NULL;   
+  AliFlowAnalysisWithQCumulants    *qc       = NULL;
+  AliFlowAnalysisWithCumulants     *gfc      = NULL;
+  AliFittingQDistribution          *fqd      = NULL;
+  AliFlowAnalysisWithLeeYangZeros  *lyz1sum  = NULL;
+  AliFlowAnalysisWithLeeYangZeros  *lyz1prod = NULL;
+  AliFlowAnalysisWithLeeYangZeros  *lyz2sum  = NULL;
+  AliFlowAnalysisWithLeeYangZeros  *lyz2prod = NULL;
+  AliFlowAnalysisWithLYZEventPlane *lyzep    = NULL;
+  AliFlowAnalysisWithScalarProduct *sp       = NULL;
+  AliFlowAnalysisWithMCEventPlane  *mcep     = NULL;   
 
   //MCEP = monte carlo event plane
   if (MCEP) {
@@ -181,49 +188,74 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 1000, const char*
   }
 
   //LYZ1 = Lee-Yang Zeroes first run
-  if(LYZ1) {
-    AliFlowAnalysisWithLeeYangZeros* lyz1 = new AliFlowAnalysisWithLeeYangZeros();
-    lyz1->SetFirstRun(kTRUE);
-    lyz1->SetUseSum(kTRUE);
-    lyz1->Init();
+  if(LYZ1SUM) {
+    AliFlowAnalysisWithLeeYangZeros* lyz1sum = new AliFlowAnalysisWithLeeYangZeros();
+    lyz1sum->SetFirstRun(kTRUE);
+    lyz1sum->SetUseSum(kTRUE);
+    lyz1sum->Init();
   }
-
+  if(LYZ1PROD) {
+    AliFlowAnalysisWithLeeYangZeros* lyz1prod = new AliFlowAnalysisWithLeeYangZeros();
+    lyz1prod->SetFirstRun(kTRUE);
+    lyz1prod->SetUseSum(kFALSE);
+    lyz1prod->Init();
+  }
   //LYZ2 = Lee-Yang Zeroes second run
-  if(LYZ2) {
-    AliFlowAnalysisWithLeeYangZeros* lyz2 = new AliFlowAnalysisWithLeeYangZeros();
+  if(LYZ2SUM) {
+    AliFlowAnalysisWithLeeYangZeros* lyz2sum = new AliFlowAnalysisWithLeeYangZeros();
     // read the input file from the first run 
-    TString inputFileNameLYZ2 = "outputLYZ1analysis.root" ;
-    TFile* inputFileLYZ2 = new TFile(inputFileNameLYZ2.Data(),"READ");
-    if(!inputFileLYZ2 || inputFileLYZ2->IsZombie()) { 
-      cerr << " ERROR: NO First Run file... " << endl ;
+    TString inputFileNameLYZ2SUM = "outputLYZ1SUManalysis.root" ;
+    TFile* inputFileLYZ2SUM = new TFile(inputFileNameLYZ2SUM.Data(),"READ");
+    if(!inputFileLYZ2SUM || inputFileLYZ2SUM->IsZombie()) { 
+      cerr << " ERROR: NO First Run SUM file... " << endl ;
       break; 
     }
     else { 
-      TList* inputListLYZ2 = (TList*)inputFileLYZ2->Get("cobjLYZ1");  
-      if (!inputListLYZ2) {cout<<"Input list is NULL pointer!"<<endl; break;}
+      TList* inputListLYZ2SUM = (TList*)inputFileLYZ2SUM->Get("cobjLYZ1SUM");  
+      if (!inputListLYZ2SUM) {cout<<"SUM Input list is NULL pointer!"<<endl; break;}
       else {
-	cout<<"LYZ2 input file/list read..."<<endl;
-	lyz2->SetFirstRunList(inputListLYZ2);
-	lyz2->SetFirstRun(kFALSE);
-	lyz2->SetUseSum(kTRUE);
-	lyz2->Init();
+	cout<<"LYZ2SUM input file/list read..."<<endl;
+	lyz2sum->SetFirstRunList(inputListLYZ2SUM);
+	lyz2sum->SetFirstRun(kFALSE);
+	lyz2sum->SetUseSum(kTRUE);
+	lyz2sum->Init();
       }
     }
   }
-  
+  if(LYZ2PROD) {
+    AliFlowAnalysisWithLeeYangZeros* lyz2prod = new AliFlowAnalysisWithLeeYangZeros();
+    // read the input file from the first run 
+    TString inputFileNameLYZ2PROD = "outputLYZ1PRODanalysis.root" ;
+    TFile* inputFileLYZ2PROD = new TFile(inputFileNameLYZ2PROD.Data(),"READ");
+    if(!inputFileLYZ2PROD || inputFileLYZ2PROD->IsZombie()) { 
+      cerr << " ERROR: NO First Run PROD file... " << endl ;
+      break; 
+    }
+    else { 
+      TList* inputListLYZ2PROD = (TList*)inputFileLYZ2PROD->Get("cobjLYZ1PROD");  
+      if (!inputListLYZ2PROD) {cout<<"PROD Input list is NULL pointer!"<<endl; break;}
+      else {
+	cout<<"LYZ2PROD input file/list read..."<<endl;
+	lyz2prod->SetFirstRunList(inputListLYZ2PROD);
+	lyz2prod->SetFirstRun(kFALSE);
+	lyz2prod->SetUseSum(kTRUE);
+	lyz2prod->Init();
+      }
+    }
+  }
  //LYZEP = Lee-Yang Zeroes event plane
   if(LYZEP) {
     AliFlowLYZEventPlane* ep = new AliFlowLYZEventPlane() ;
     AliFlowAnalysisWithLYZEventPlane* lyzep = new AliFlowAnalysisWithLYZEventPlane();
     // read the input file from the second lyz run 
-    TString inputFileNameLYZEP = "outputLYZ2analysis.root" ;
+    TString inputFileNameLYZEP = "outputLYZ2SUManalysis.root" ;
     TFile* inputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
     if(!inputFileLYZEP || inputFileLYZEP->IsZombie()) { 
       cerr << " ERROR: NO Second Run file... " << endl ; 
       break;
     }
     else { 
-      TList* inputListLYZEP = (TList*)inputFileLYZEP->Get("cobjLYZ2");  
+      TList* inputListLYZEP = (TList*)inputFileLYZEP->Get("cobjLYZ2SUM");  
       if (!inputListLYZEP) {cout<<"Input list is NULL pointer!"<<endl; break;}
       else {
 	cout<<"LYZEP input file/list read..."<<endl;
@@ -330,6 +362,7 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 1000, const char*
 	      //-----------------------------------------------------------
 	      //fill and save the flow event	      
 
+	      /*
 	      Int_t nNewMultOfEvent = random3Temp.Gaus(nMultiplicityOfEvent,nSigmaMult);
 	      cout << "new multiplicity: " << nNewMultOfEvent << endl;
   	      Double_t xNewFlowValue = random3Temp.Gaus(xEllipticFlowValue,xSigmaFlow);
@@ -339,18 +372,21 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 1000, const char*
 	      fEventMaker->SetMultiplicityOfEvent(nNewMultOfEvent);
 	      xRPAngle=TMath::TwoPi()*random3Temp.Rndm();
 	      fEventMaker->SetMCReactionPlaneAngle(xRPAngle);
+	      */
 
 	      AliFlowEventSimple *fEvent = fEventMaker->FillTracks(kTree, cutsInt, cutsDiff); 
 	                    
 	      // do flow analysis for various methods
-	      if(MCEP) mcep->Make(fEvent);
-	      if(QC) qc->Make(fEvent);
-	      if(GFC) gfc->Make(fEvent);
-	      if(FQD) fqd->Make(fEvent);
-	      if(LYZ1) lyz1->Make(fEvent);
-	      if(LYZ2) lyz2->Make(fEvent);
-	      if(LYZEP) lyzep->Make(fEvent,ep);
-	      if(SP) sp->Make(fEvent);
+	      if(MCEP)    mcep->Make(fEvent);
+	      if(QC)      qc->Make(fEvent);
+	      if(GFC)     gfc->Make(fEvent);
+	      if(FQD)     fqd->Make(fEvent);
+	      if(LYZ1SUM) lyz1sum->Make(fEvent);
+	      if(LYZ1PROD)lyz1prod->Make(fEvent);
+	      if(LYZ2SUM) lyz2sum->Make(fEvent);
+	      if(LYZ2PROD)lyz2prod->Make(fEvent);
+	      if(LYZEP)   lyzep->Make(fEvent,ep);
+	      if(SP)      sp->Make(fEvent);
 	      //-----------------------------------------------------------
 	      fCount++;
 	      //cout << "# " << fCount << " events processed" << endl;
@@ -364,14 +400,16 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 1000, const char*
 
   //--------------------------------------------------------------
   //calculating and storing the final results of flow analysis
-  if(MCEP) {mcep->Finish(); mcep->WriteHistograms("outputMCEPanalysis.root");}
-  if(SP) {sp->Finish(); sp->WriteHistograms("outputSPanalysis.root");}
-  if(QC) {qc->Finish(); qc->WriteHistograms("outputQCanalysis.root");}
-  if(GFC) {gfc->Finish(); gfc->WriteHistograms("outputGFCanalysis.root");}
-  if(FQD) {fqd->Finish(); fqd->WriteHistograms("outputFQDanalysis.root");}
-  if(LYZ1) {lyz1->Finish(); lyz1->WriteHistograms("outputLYZ1analysis.root");}
-  if(LYZ2) {lyz2->Finish(); lyz2->WriteHistograms("outputLYZ2analysis.root");}
-  if(LYZEP) {lyzep->Finish(); lyzep->WriteHistograms("outputLYZEPanalysis.root");}
+  if(MCEP)    {mcep->Finish();    mcep->WriteHistograms("outputMCEPanalysis.root");}
+  if(SP)      {sp->Finish();      sp->WriteHistograms("outputSPanalysis.root");}
+  if(QC)      {qc->Finish();      qc->WriteHistograms("outputQCanalysis.root");}
+  if(GFC)     {gfc->Finish();     gfc->WriteHistograms("outputGFCanalysis.root");}
+  if(FQD)     {fqd->Finish();     fqd->WriteHistograms("outputFQDanalysis.root");}
+  if(LYZ1SUM) {lyz1sum->Finish(); lyz1sum->WriteHistograms("outputLYZ1SUManalysis.root");}
+  if(LYZ1PROD){lyz1prod->Finish();lyz1prod->WriteHistograms("outputLYZ1PRODanalysis.root");}
+  if(LYZ2SUM) {lyz2sum->Finish(); lyz2sum->WriteHistograms("outputLYZ2SUManalysis.root");}
+  if(LYZ2PROD){lyz2prod->Finish();lyz2prod->WriteHistograms("outputLYZ2PRODanalysis.root");}
+  if(LYZEP)   {lyzep->Finish();   lyzep->WriteHistograms("outputLYZEPanalysis.root");}
 
   //--------------------------------------------------------------
   
