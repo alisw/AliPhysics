@@ -28,4 +28,5 @@
 #pragma link C++ class  AliPMDQADataMakerRec+;
 #pragma link C++ class  AliPMDisocell+;
 #pragma link C++ class  AliPMDrecdata+;
+#pragma link C++ class  AliPMDRecoParam+;
 #endif

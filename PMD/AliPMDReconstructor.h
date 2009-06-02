@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliReconstructor.h"
+#include "AliPMDRecoParam.h"
 
 class AliPMDReconstructor: public AliReconstructor {
 public:
@@ -17,9 +18,11 @@ public:
   virtual void   FillESD(TTree* /*digitsTree*/, TTree* clustersTree, 
 			 AliESDEvent* esd) const;
 
+  static const AliPMDRecoParam* GetRecoParam() { return dynamic_cast<const AliPMDRecoParam*>(AliReconstructor::GetRecoParam(10)); } // getting RecoParam obj
+
 private:
 
-  ClassDef(AliPMDReconstructor, 5)   // class for the PMD reconstruction
+  ClassDef(AliPMDReconstructor, 6)   // class for the PMD reconstruction
 };
 
 #endif
