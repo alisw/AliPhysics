@@ -54,7 +54,7 @@ public:
   virtual ~AliPHOSQADataMakerRec() {;} // dtor
   
 private:
-  const AliPHOSRecoParam* GetRecoParam() const { return dynamic_cast<const AliPHOSRecoParam *>(fRecoParam); }
+  const AliPHOSRecoParam* GetRecoParam() { return dynamic_cast<const AliPHOSRecoParam *>(fRecoParam); }
 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
   virtual void   InitESDs() ; 
