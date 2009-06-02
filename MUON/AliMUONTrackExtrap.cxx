@@ -27,11 +27,13 @@
 #include "AliMUONConstants.h"
 #include "AliMUONReconstructor.h"
 
-#include "AliMagF.h" 
+#include "AliMagF.h"
+#include "AliExternalTrackParam.h"
 
 #include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
 #include <TMath.h>
+#include <TDatabasePDG.h>
 
 #include <Riostream.h>
 
@@ -471,15 +473,20 @@ void AliMUONTrackExtrap::CorrectELossEffectInAbsorber(AliMUONTrackParam* param, 
   TMatrixD newParamCov(param->GetCovariances());
   Cov2CovP(param->GetParameters(),newParamCov);
   
-  // Add effects of energy loss fluctuation to covariances
-  newParamCov(4,4) += sigmaELoss2;
-  
   // Compute new parameters corrected for energy loss
+  Double_t muMass = TDatabasePDG::Instance()->GetParticle("mu-")->Mass(); // GeV
+  Double_t p = param->P();
+  Double_t e = TMath::Sqrt(p*p + muMass*muMass);
+  Double_t eCorr = e + eLoss;
+  Double_t pCorr = TMath::Sqrt(eCorr*eCorr - muMass*muMass);
   Double_t nonBendingSlope = param->GetNonBendingSlope();
   Double_t bendingSlope = param->GetBendingSlope();
-  param->SetInverseBendingMomentum(param->GetCharge() / (param->P() + eLoss) *
+  param->SetInverseBendingMomentum(param->GetCharge() / pCorr *
 				   TMath::Sqrt(1.0 + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope) /
 				   TMath::Sqrt(1.0 + bendingSlope*bendingSlope));
+  
+  // Add effects of energy loss fluctuation to covariances
+  newParamCov(4,4) += eCorr * eCorr / pCorr / pCorr * sigmaELoss2;
   
   // Get new parameter covariances in (X, SlopeX, Y, SlopeY, q/Pyz) coordinate system
   CovP2Cov(param->GetParameters(),newParamCov);
@@ -644,7 +651,7 @@ void AliMUONTrackExtrap::AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Dou
   Double_t varSlop 	= theta02;
   Double_t covCorrSlope = pathLength * theta02 / 2.;
   
-  // compute derivative d(q/Pxy) / dSlopeX and d(q/Pxy) / dSlopeX
+  // compute derivative d(q/Pxy) / dSlopeX and d(q/Pxy) / dSlopeY
   Double_t dqPxydSlopeX = inverseBendingMomentum * nonBendingSlope / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
   Double_t dqPxydSlopeY = - inverseBendingMomentum * nonBendingSlope*nonBendingSlope * bendingSlope /
 			    (1. + bendingSlope*bendingSlope) / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
@@ -735,8 +742,8 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam,
     trackXYZIn[2] = trackParamIn.GetZ();
   }
   Double_t pTot = trackParam->P();
-  Double_t pathLength, f0, f1, f2, meanRho, deltaP, sigmaDeltaP2;
-  if (!GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pTot,pathLength,f0,f1,f2,meanRho,deltaP,sigmaDeltaP2)) {
+  Double_t pathLength, f0, f1, f2, meanRho, totalELoss, sigmaELoss2;
+  if (!GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pTot,pathLength,f0,f1,f2,meanRho,totalELoss,sigmaELoss2)) {
     cout<<"E-AliMUONTrackExtrap::ExtrapToVertex: Unable to take into account the absorber effects"<<endl;
     if (trackParam->CovariancesExist()) ExtrapToZCov(trackParam,zVtx);
     else ExtrapToZ(trackParam,zVtx);
@@ -749,10 +756,10 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam,
     if (correctForEnergyLoss) {
       
       // Correct for multiple scattering and energy loss
-      CorrectELossEffectInAbsorber(trackParam, 0.5*deltaP, 0.5*sigmaDeltaP2);
+      CorrectELossEffectInAbsorber(trackParam, 0.5*totalELoss, 0.5*sigmaELoss2);
       CorrectMCSEffectInAbsorber(trackParam, xVtx, yVtx, zVtx, errXVtx, errYVtx,
 				 trackXYZIn[2], pathLength, f0, f1, f2);
-      CorrectELossEffectInAbsorber(trackParam, 0.5*deltaP, 0.5*sigmaDeltaP2);
+      CorrectELossEffectInAbsorber(trackParam, 0.5*totalELoss, 0.5*sigmaELoss2);
       
     } else {
       
@@ -766,10 +773,10 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam,
     if (correctForEnergyLoss) {
       
       // Correct for energy loss add multiple scattering dispersion in covariance matrix
-      CorrectELossEffectInAbsorber(trackParam, 0.5*deltaP, 0.5*sigmaDeltaP2);
+      CorrectELossEffectInAbsorber(trackParam, 0.5*totalELoss, 0.5*sigmaELoss2);
       AddMCSEffectInAbsorber(trackParam, pathLength, f0, f1, f2);
       ExtrapToZCov(trackParam, trackXYZIn[2]);
-      CorrectELossEffectInAbsorber(trackParam, 0.5*deltaP, 0.5*sigmaDeltaP2);
+      CorrectELossEffectInAbsorber(trackParam, 0.5*totalELoss, 0.5*sigmaELoss2);
       ExtrapToZCov(trackParam, zVtx);
       
     } else {
@@ -846,7 +853,13 @@ Double_t AliMUONTrackExtrap::TotalMomentumEnergyLoss(AliMUONTrackParam* trackPar
   Double_t pathLength, f0, f1, f2, meanRho, totalELoss, sigmaELoss2;
   GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pTot,pathLength,f0,f1,f2,meanRho,totalELoss,sigmaELoss2);
   
-  return totalELoss;
+  // total momentum corrected for energy loss
+  Double_t muMass = TDatabasePDG::Instance()->GetParticle("mu-")->Mass(); // GeV
+  Double_t e = TMath::Sqrt(pTot*pTot + muMass*muMass);
+  Double_t eCorr = e + totalELoss;
+  Double_t pTotCorr = TMath::Sqrt(eCorr*eCorr - muMass*muMass);
+  
+  return pTotCorr - pTot;
 }
 
 //__________________________________________________________________________
@@ -854,19 +867,14 @@ Double_t AliMUONTrackExtrap::BetheBloch(Double_t pTotal, Double_t pathLength, Do
 {
   /// Returns the mean total momentum energy loss of muon with total momentum='pTotal'
   /// in the absorber layer of lenght='pathLength', density='rho', A='atomicA' and Z='atomicZ'
-  Double_t muMass = 0.105658369; // GeV
-  Double_t eMass = 0.510998918e-3; // GeV
-  Double_t k = 0.307075e-3; // GeV.g^-1.cm^2
-  Double_t i = 9.5e-9; // mean exitation energy per atomic Z (GeV)
-  Double_t p2=pTotal*pTotal;
-  Double_t beta2=p2/(p2 + muMass*muMass);
+  Double_t muMass = TDatabasePDG::Instance()->GetParticle("mu-")->Mass(); // GeV
   
-  Double_t w = k * rho * pathLength * atomicZ / atomicA / beta2;
+  // mean exitation energy (GeV)
+  Double_t i;
+  if (atomicZ < 13) i = (12. * atomicZ + 7.) * 1.e-9;
+  else i = (9.76 * atomicZ + 58.8 * TMath::Power(atomicZ,-0.19)) * 1.e-9;
   
-  if (beta2/(1-beta2)>3.5*3.5)
-    return w * (log(2.*eMass*3.5/(i*atomicZ)) + 0.5*log(beta2/(1-beta2)) - beta2);
-  
-  return w * (log(2.*eMass*beta2/(1-beta2)/(i*atomicZ)) - beta2);
+  return pathLength * rho * AliExternalTrackParam::BetheBlochGeant(pTotal/muMass, rho, 0.20, 3.00, i, atomicZ/atomicA);
 }
 
 //__________________________________________________________________________
@@ -874,7 +882,7 @@ Double_t AliMUONTrackExtrap::EnergyLossFluctuation2(Double_t pTotal, Double_t pa
 {
   /// Returns the total momentum energy loss fluctuation of muon with total momentum='pTotal'
   /// in the absorber layer of lenght='pathLength', density='rho', A='atomicA' and Z='atomicZ'
-  Double_t muMass = 0.105658369; // GeV
+  Double_t muMass = TDatabasePDG::Instance()->GetParticle("mu-")->Mass(); // GeV
   //Double_t eMass = 0.510998918e-3; // GeV
   Double_t k = 0.307075e-3; // GeV.g^-1.cm^2
   Double_t p2=pTotal*pTotal;
