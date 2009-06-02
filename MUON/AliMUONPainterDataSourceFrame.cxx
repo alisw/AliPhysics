@@ -336,10 +336,7 @@ AliMUONPainterDataSourceFrame::CreateOCDBDataSource()
   TGTextLBEntry* t = static_cast<TGTextLBEntry*>(fOCDBTypes->GetSelectedEntry());
   TString type = t->GetText()->GetString();
   
-  CreateOCDBDataSource(cdbPath,runNumber,type);
-  
-  fOCDBPath->SetText("");
-  fRunSelector->SetNumber(0);  
+  CreateOCDBDataSource(cdbPath,runNumber,type);  
 }
 
 //_____________________________________________________________________________
