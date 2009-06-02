@@ -1127,7 +1127,8 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
    CdWork();
    TGridResult *res;
    TString jobID = "";
-   if (fRunNumbers.Length()) {
+   if (!fRunRange[0]) {
+      // Submit a given xml or a set of runs
       res = gGrid->Command(Form("submit %s", fJDLName.Data()));
       printf("*************************** %s\n",Form("submit %s", fJDLName.Data()));
       if (res) {
@@ -1145,10 +1146,7 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
          delete res;
       }   
    } else {
-      if (!fRunRange[0]) {
-         Error("StartAnalysis", "No runs defined. Exiting.");
-         return;
-      }
+      // Submit for a range of runs.
       TString sjdl;
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
          if (!fInputFiles->At(irun-fRunRange[0])) break;
@@ -1177,7 +1175,6 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
    Info("StartAnalysis", "\n#### STARTING AN ALIEN SHELL FOR YOU. EXIT WHEN YOUR JOB %s HAS FINISHED. #### \
    \n You may exit at any time and terminate the job later using the option <terminate> \
    \n ##################################################################################", jobID.Data());
-   //gGrid->Shell();
    gSystem->Exec("aliensh");
 }
 
