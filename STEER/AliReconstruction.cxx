@@ -219,6 +219,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fUseTrackingErrorsForAlignment(""),
   fGAliceFileName(gAliceFilename),
   fRawInput(""),
+  fESDOutput(""),
   fEquipIdMap(""),
   fFirstEvent(0),
   fLastEvent(-1),
@@ -315,6 +316,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fUseTrackingErrorsForAlignment(rec.fUseTrackingErrorsForAlignment),
   fGAliceFileName(rec.fGAliceFileName),
   fRawInput(rec.fRawInput),
+  fESDOutput(rec.fESDOutput),
   fEquipIdMap(rec.fEquipIdMap),
   fFirstEvent(rec.fFirstEvent),
   fLastEvent(rec.fLastEvent),
@@ -425,6 +427,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fUseTrackingErrorsForAlignment = rec.fUseTrackingErrorsForAlignment;
   fGAliceFileName                = rec.fGAliceFileName;
   fRawInput                      = rec.fRawInput;
+  fESDOutput                     = rec.fESDOutput;
   fEquipIdMap                    = rec.fEquipIdMap;
   fFirstEvent                    = rec.fFirstEvent;
   fLastEvent                     = rec.fLastEvent;
@@ -853,6 +856,15 @@ void AliReconstruction::SetInput(const char* input)
 }
 
 //_____________________________________________________________________________
+void AliReconstruction::SetOutput(const char* output) 
+{
+  // Set the output ESD filename
+  // 'output' is a normalt ROOT url
+  // The method is used in case of raw-data reco with PROOF
+  if (output) fESDOutput.SetUrl(output);
+}
+
+//_____________________________________________________________________________
 void AliReconstruction::SetOption(const char* detector, const char* option)
 {
 // set options for the reconstruction of a detector
@@ -1195,12 +1207,14 @@ Bool_t AliReconstruction::Run(const char* input)
     // Proof mode
     if (gProof) {
       gProof->AddInput(this);
-      TUrl outputFile;
-      outputFile.SetProtocol("root",kTRUE);
-      outputFile.SetHost(gSystem->HostName());
-      outputFile.SetFile(Form("%s/AliESDs.root",gSystem->pwd()));
-      AliInfo(Form("Output file with ESDs is %s",outputFile.GetUrl()));
-      gProof->AddInput(new TNamed("PROOF_OUTPUTFILE",outputFile.GetUrl()));
+      if (!fESDOutput.IsValid()) {
+	fESDOutput.SetProtocol("root",kTRUE);
+	fESDOutput.SetHost(gSystem->HostName());
+	fESDOutput.SetFile(Form("%s/AliESDs.root",gSystem->pwd()));
+      }
+      AliInfo(Form("Output file with ESDs is %s",fESDOutput.GetUrl()));
+      gProof->AddInput(new TNamed("PROOF_OUTPUTFILE",fESDOutput.GetUrl()));
+      gProof->SetParameter("PROOF_MaxSlavesPerNode", 9999);
       chain->SetProof();
       chain->Process("AliReconstruction");
     }
