@@ -49,8 +49,9 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  Int_t binQC6 = 8; 
  Int_t binQC8 = 10; 
  Int_t binFQD = 11; 
- Int_t binLYZ1 = 12; 
- Int_t binLYZEP = 13;
+ Int_t binLYZ1SUM = 12; 
+ Int_t binLYZ1PROD = 13;
+ Int_t binLYZEP = 14;
  
  // one subdirectory gives one estimate for each method: 
  const Int_t nEstimates = countDirectories;
@@ -122,11 +123,17 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  Double_t fqdMaxValueNONAME = 0.; // to be improved      
  Double_t fqdMinValueNONAME = 1000.; // to be improved
        
- // LYZ1:
- Double_t lyz1ValueNONAME[nEstimates] = {0.}; 
- Double_t lyz1ErrorNONAME[nEstimates] = {0.}; 
- Double_t lyz1MaxValueNONAME = 0.; // to be improved      
- Double_t lyz1MinValueNONAME = 1000.; // to be improved
+ // LYZ1SUM:
+ Double_t lyz1sumValueNONAME[nEstimates] = {0.}; 
+ Double_t lyz1sumErrorNONAME[nEstimates] = {0.}; 
+ Double_t lyz1sumMaxValueNONAME = 0.; // to be improved      
+ Double_t lyz1sumMinValueNONAME = 1000.; // to be improved
+ 
+ // LYZ1PROD:
+ Double_t lyz1prodValueNONAME[nEstimates] = {0.}; 
+ Double_t lyz1prodErrorNONAME[nEstimates] = {0.}; 
+ Double_t lyz1prodMaxValueNONAME = 0.; // to be improved      
+ Double_t lyz1prodMinValueNONAME = 1000.; // to be improved
              
  // LYZEP:
  Double_t lyzepValueNONAME[nEstimates] = {0.}; 
@@ -360,32 +367,59 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
    } // end of if(listFQD)
   } // end of if(fileFQD)   
   
-  // LYZ1:     
-  TString fileNameLYZ1 = presentDirName;   
-  fileNameLYZ1+="outputLYZ1analysis";
-  (fileNameLYZ1+=type.Data())+=".root";
-  TFile *fileLYZ1 = TFile::Open(fileNameLYZ1.Data(), "READ");      
-  if(fileLYZ1) 
+  // LYZ1SUM:     
+  TString fileNameLYZ1SUM = presentDirName;   
+  fileNameLYZ1SUM+="outputLYZ1SUManalysis";
+  (fileNameLYZ1SUM+=type.Data())+=".root";
+  TFile *fileLYZ1SUM = TFile::Open(fileNameLYZ1SUM.Data(), "READ");      
+  if(fileLYZ1SUM) 
   {
-   TList *listLYZ1 = NULL;
-   AliFlowCommonHistResults *lyz1CommonHistRes = NULL; 
-   fileLYZ1->GetObject("cobjLYZ1",listLYZ1); 
-   fileLYZ1->Close();
-   if(listLYZ1) 
+   TList *listLYZ1SUM = NULL;
+   AliFlowCommonHistResults *lyz1sumCommonHistRes = NULL; 
+   fileLYZ1SUM->GetObject("cobjLYZ1SUM",listLYZ1SUM); 
+   fileLYZ1SUM->Close();
+   if(listLYZ1SUM) 
    {
-    lyz1CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1->FindObject("AliFlowCommonHistResultsLYZ1")); 
-    if(lyz1CommonHistRes && lyz1CommonHistRes->GetHistIntFlow())
+    lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1")); 
+    if(lyz1sumCommonHistRes && lyz1sumCommonHistRes->GetHistIntFlow())
     {
-     lyz1ValueNONAME[counter] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     lyz1ErrorNONAME[counter] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(lyz1ValueNONAME[counter]>0.) // to be improved 
+     lyz1sumValueNONAME[counter] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     lyz1sumErrorNONAME[counter] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(lyz1sumValueNONAME[counter]>0.) // to be improved 
      {
-      if(lyz1MaxValueNONAME < lyz1ValueNONAME[counter]) lyz1MaxValueNONAME = lyz1ValueNONAME[counter]; 
-      if(lyz1MinValueNONAME > lyz1ValueNONAME[counter]) lyz1MinValueNONAME = lyz1ValueNONAME[counter]; 
+      if(lyz1sumMaxValueNONAME < lyz1sumValueNONAME[counter]) lyz1sumMaxValueNONAME = lyz1sumValueNONAME[counter]; 
+      if(lyz1sumMinValueNONAME > lyz1sumValueNONAME[counter]) lyz1sumMinValueNONAME = lyz1sumValueNONAME[counter]; 
      } 
     }
-   } // end of if(listLYZ1)
-  } // end of if(fileLYZ1)   
+   } // end of if(listLYZ1SUM)
+  } // end of if(fileLYZ1SUM)   
+  
+  // LYZ1PROD:     
+  TString fileNameLYZ1PROD = presentDirName;   
+  fileNameLYZ1PROD+="outputLYZ1PRODanalysis";
+  (fileNameLYZ1PROD+=type.Data())+=".root";
+  TFile *fileLYZ1PROD = TFile::Open(fileNameLYZ1PROD.Data(), "READ");      
+  if(fileLYZ1PROD) 
+  {
+   TList *listLYZ1PROD = NULL;
+   AliFlowCommonHistResults *lyz1prodCommonHistRes = NULL; 
+   fileLYZ1PROD->GetObject("cobjLYZ1PROD",listLYZ1PROD); 
+   fileLYZ1PROD->Close();
+   if(listLYZ1PROD) 
+   {
+    lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1")); 
+    if(lyz1prodCommonHistRes && lyz1prodCommonHistRes->GetHistIntFlow())
+    {
+     lyz1prodValueNONAME[counter] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+     lyz1prodErrorNONAME[counter] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinError(1);
+     if(lyz1prodValueNONAME[counter]>0.) // to be improved 
+     {
+      if(lyz1prodMaxValueNONAME < lyz1prodValueNONAME[counter]) lyz1prodMaxValueNONAME = lyz1prodValueNONAME[counter]; 
+      if(lyz1prodMinValueNONAME > lyz1prodValueNONAME[counter]) lyz1prodMinValueNONAME = lyz1prodValueNONAME[counter]; 
+     } 
+    }
+   } // end of if(listLYZ1PROD)
+  } // end of if(fileLYZ1PROD)   
  
   counter++;
   
@@ -596,35 +630,65 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     } // end of if(mergedOutputFileFQD)
    } // end of else  
    
- // LYZ1:
- TString mergedOutputFileNameLYZ1(pwd.Data());
- ((mergedOutputFileNameLYZ1+="outputLYZ1analysis")+=type.Data())+=".root";
- TFile *mergedOutputFileLYZ1 = NULL;
- TList *mergedOutputListLYZ1 = NULL;
- Double_t mergedValueLYZ1 = 0.;
- Double_t mergedErrorLYZ1 = 0.; 
- if(gSystem->AccessPathName(mergedOutputFileNameLYZ1.Data(),kFileExists))
+ // LYZ1SUM:
+ TString mergedOutputFileNameLYZ1SUM(pwd.Data());
+ ((mergedOutputFileNameLYZ1SUM+="outputLYZ1SUManalysis")+=type.Data())+=".root";
+ TFile *mergedOutputFileLYZ1SUM = NULL;
+ TList *mergedOutputListLYZ1SUM = NULL;
+ Double_t mergedValueLYZ1SUM = 0.;
+ Double_t mergedErrorLYZ1SUM = 0.; 
+ if(gSystem->AccessPathName(mergedOutputFileNameLYZ1SUM.Data(),kFileExists))
  {
-  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameLYZ1.Data()<<endl;
+  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameLYZ1SUM.Data()<<endl;
  } else 
    {     
-    mergedOutputFileLYZ1 = TFile::Open(mergedOutputFileNameLYZ1.Data(),"READ");      
-    if(mergedOutputFileLYZ1) 
+    mergedOutputFileLYZ1SUM = TFile::Open(mergedOutputFileNameLYZ1SUM.Data(),"READ");      
+    if(mergedOutputFileLYZ1SUM) 
     { 
-     mergedOutputFileLYZ1->GetObject("cobjLYZ1",mergedOutputListLYZ1); 
-     mergedOutputFileLYZ1->Close();
-     if(mergedOutputListLYZ1) 
+     mergedOutputFileLYZ1SUM->GetObject("cobjLYZ1SUM",mergedOutputListLYZ1SUM); 
+     mergedOutputFileLYZ1SUM->Close();
+     if(mergedOutputListLYZ1SUM) 
      {
-      AliFlowCommonHistResults *lyz1CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
-                                                    (mergedOutputListLYZ1->FindObject("AliFlowCommonHistResultsLYZ1")); 
-      if(lyz1CommonHistRes && lyz1CommonHistRes->GetHistIntFlow())
+      AliFlowCommonHistResults *lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1")); 
+      if(lyz1sumCommonHistRes && lyz1sumCommonHistRes->GetHistIntFlow())
       {
-       mergedValueLYZ1 = (lyz1CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-       mergedErrorLYZ1 = (lyz1CommonHistRes->GetHistIntFlow())->GetBinError(1);
+       mergedValueLYZ1SUM = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorLYZ1SUM = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinError(1);
       } 
      }
-    } // end of if(mergedOutputFileLYZ1)
+    } // end of if(mergedOutputFileLYZ1SUM)
    } // end of else  
+   
+ // LYZ1PROD:
+ TString mergedOutputFileNameLYZ1PROD(pwd.Data());
+ ((mergedOutputFileNameLYZ1PROD+="outputLYZ1PRODanalysis")+=type.Data())+=".root";
+ TFile *mergedOutputFileLYZ1PROD = NULL;
+ TList *mergedOutputListLYZ1PROD = NULL;
+ Double_t mergedValueLYZ1PROD = 0.;
+ Double_t mergedErrorLYZ1PROD = 0.; 
+ if(gSystem->AccessPathName(mergedOutputFileNameLYZ1PROD.Data(),kFileExists))
+ {
+  cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameLYZ1PROD.Data()<<endl;
+ } else 
+   {     
+    mergedOutputFileLYZ1PROD = TFile::Open(mergedOutputFileNameLYZ1PROD.Data(),"READ");      
+    if(mergedOutputFileLYZ1PROD) 
+    { 
+     mergedOutputFileLYZ1PROD->GetObject("cobjLYZ1PROD",mergedOutputListLYZ1PROD); 
+     mergedOutputFileLYZ1PROD->Close();
+     if(mergedOutputListLYZ1PROD) 
+     {
+      AliFlowCommonHistResults *lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
+                                                    (mergedOutputListLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1")); 
+      if(lyz1prodCommonHistRes && lyz1prodCommonHistRes->GetHistIntFlow())
+      {
+       mergedValueLYZ1PROD = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+       mergedErrorLYZ1PROD = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      } 
+     }
+    } // end of if(mergedOutputFileLYZ1PROD)
+   } // end of else    
                    
  // removing the title and stat. box from all histograms:
  // gStyle->SetOptTitle(0);
@@ -634,7 +698,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  const Double_t boxWidth = 0.25;
   
  // the number of different methods:
- const Int_t nMethods = 13;
+ const Int_t nMethods = 14;
  
  // the number of small statistics runs:
  const Int_t nPoints = counter;
@@ -657,7 +721,8 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  (intFlowAll->GetXaxis())->SetBinLabel(binGFC8,"v_{2}{8,GFC}");
  (intFlowAll->GetXaxis())->SetBinLabel(binQC8,"v_{2}{8,QC}");
  (intFlowAll->GetXaxis())->SetBinLabel(binFQD,"v_{2}{FQD}");
- (intFlowAll->GetXaxis())->SetBinLabel(binLYZ1,"v_{2}{LYZ}");
+ (intFlowAll->GetXaxis())->SetBinLabel(binLYZ1SUM,"v_{2}{LYZ,sum}");
+ (intFlowAll->GetXaxis())->SetBinLabel(binLYZ1PROD,"v_{2}{LYZ,prod}");
  (intFlowAll->GetXaxis())->SetBinLabel(binLYZEP,"v_{2}{LYZEP}");
  
  //=============================================================================
@@ -677,7 +742,8 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  Double_t qc6NONAME[nPoints] = {0.};
  Double_t qc8NONAME[nPoints] = {0.};
  Double_t fqdNONAME[nPoints] = {0.}; 
- Double_t lyz1NONAME[nPoints] = {0.}; 
+ Double_t lyz1sumNONAME[nPoints] = {0.}; 
+ Double_t lyz1prodNONAME[nPoints] = {0.}; 
  Double_t lyzepNONAME[nPoints] = {0.}; 
  
  for(Int_t i=0;i<nPoints;i++)
@@ -693,7 +759,8 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
   qc6NONAME[i]=binQC6-0.5;
   qc8NONAME[i]=binQC8-0.5;
   fqdNONAME[i]=binFQD-0.5;
-  lyz1NONAME[i]=binLYZ1-0.5;
+  lyz1sumNONAME[i]=binLYZ1SUM-0.5;
+  lyz1prodNONAME[i]=binLYZ1PROD-0.5;
   lyzepNONAME[i]=binLYZEP-0.5;
  }
  
@@ -950,28 +1017,51 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  fqdBoxNONAME->SetFillStyle(1001);
  fqdBoxNONAME->SetFillColor(kOrange-9);
  
- // LYZ1:
- TGraphErrors *lyz1MeanNONAME = new TGraphErrors(1);    
- lyz1MeanNONAME->SetPoint(0,binLYZ1-0.5,mergedValueLYZ1);  
- lyz1MeanNONAME->SetPointError(0,0,mergedErrorLYZ1);  
- lyz1MeanNONAME->SetMarkerStyle(25);
- lyz1MeanNONAME->SetMarkerColor(kBlack); 
- lyz1MeanNONAME->SetLineColor(kBlack);
- lyz1MeanNONAME->SetMarkerSize(1.25); 
+ // LYZ1SUM:
+ TGraphErrors *lyz1sumMeanNONAME = new TGraphErrors(1);    
+ lyz1sumMeanNONAME->SetPoint(0,binLYZ1SUM-0.5,mergedValueLYZ1SUM);  
+ lyz1sumMeanNONAME->SetPointError(0,0,mergedErrorLYZ1SUM);  
+ lyz1sumMeanNONAME->SetMarkerStyle(25);
+ lyz1sumMeanNONAME->SetMarkerColor(kBlack); 
+ lyz1sumMeanNONAME->SetLineColor(kBlack);
+ lyz1sumMeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* lyz1TGraphNONAME = new TGraph(nPoints, lyz1NONAME, lyz1ValueNONAME);
- lyz1TGraphNONAME->SetMarkerStyle(21);
- lyz1TGraphNONAME->SetMarkerColor(kYellow-5); 
- lyz1TGraphNONAME->SetMarkerSize(0.75); 
+ TGraph* lyz1sumTGraphNONAME = new TGraph(nPoints, lyz1sumNONAME, lyz1sumValueNONAME);
+ lyz1sumTGraphNONAME->SetMarkerStyle(21);
+ lyz1sumTGraphNONAME->SetMarkerColor(kYellow-5); 
+ lyz1sumTGraphNONAME->SetMarkerSize(0.75); 
  
- TGraph *lyz1BoxNONAME = new TGraph(5);
- lyz1BoxNONAME->SetPoint(0,(binLYZ1-0.5)-boxWidth,lyz1MinValueNONAME);
- lyz1BoxNONAME->SetPoint(1,(binLYZ1-0.5)+boxWidth,lyz1MinValueNONAME);
- lyz1BoxNONAME->SetPoint(2,(binLYZ1-0.5)+boxWidth,lyz1MaxValueNONAME);
- lyz1BoxNONAME->SetPoint(3,(binLYZ1-0.5)-boxWidth,lyz1MaxValueNONAME);
- lyz1BoxNONAME->SetPoint(4,(binLYZ1-0.5)-boxWidth,lyz1MinValueNONAME);    
- lyz1BoxNONAME->SetFillStyle(1001);
- lyz1BoxNONAME->SetFillColor(kYellow-8);   
+ TGraph *lyz1sumBoxNONAME = new TGraph(5);
+ lyz1sumBoxNONAME->SetPoint(0,(binLYZ1SUM-0.5)-boxWidth,lyz1sumMinValueNONAME);
+ lyz1sumBoxNONAME->SetPoint(1,(binLYZ1SUM-0.5)+boxWidth,lyz1sumMinValueNONAME);
+ lyz1sumBoxNONAME->SetPoint(2,(binLYZ1SUM-0.5)+boxWidth,lyz1sumMaxValueNONAME);
+ lyz1sumBoxNONAME->SetPoint(3,(binLYZ1SUM-0.5)-boxWidth,lyz1sumMaxValueNONAME);
+ lyz1sumBoxNONAME->SetPoint(4,(binLYZ1SUM-0.5)-boxWidth,lyz1sumMinValueNONAME);    
+ lyz1sumBoxNONAME->SetFillStyle(1001);
+ lyz1sumBoxNONAME->SetFillColor(kYellow-8);   
+ 
+ // LYZ1PROD:
+ TGraphErrors *lyz1prodMeanNONAME = new TGraphErrors(1);    
+ lyz1prodMeanNONAME->SetPoint(0,binLYZ1PROD-0.5,mergedValueLYZ1PROD);  
+ lyz1prodMeanNONAME->SetPointError(0,0,mergedErrorLYZ1PROD);  
+ lyz1prodMeanNONAME->SetMarkerStyle(25);
+ lyz1prodMeanNONAME->SetMarkerColor(kBlack); 
+ lyz1prodMeanNONAME->SetLineColor(kBlack);
+ lyz1prodMeanNONAME->SetMarkerSize(1.25); 
+ 
+ TGraph* lyz1prodTGraphNONAME = new TGraph(nPoints, lyz1prodNONAME, lyz1prodValueNONAME);
+ lyz1prodTGraphNONAME->SetMarkerStyle(21);
+ lyz1prodTGraphNONAME->SetMarkerColor(kYellow-2); 
+ lyz1prodTGraphNONAME->SetMarkerSize(0.75); 
+ 
+ TGraph *lyz1prodBoxNONAME = new TGraph(5);
+ lyz1prodBoxNONAME->SetPoint(0,(binLYZ1PROD-0.5)-boxWidth,lyz1prodMinValueNONAME);
+ lyz1prodBoxNONAME->SetPoint(1,(binLYZ1PROD-0.5)+boxWidth,lyz1prodMinValueNONAME);
+ lyz1prodBoxNONAME->SetPoint(2,(binLYZ1PROD-0.5)+boxWidth,lyz1prodMaxValueNONAME);
+ lyz1prodBoxNONAME->SetPoint(3,(binLYZ1PROD-0.5)-boxWidth,lyz1prodMaxValueNONAME);
+ lyz1prodBoxNONAME->SetPoint(4,(binLYZ1PROD-0.5)-boxWidth,lyz1prodMinValueNONAME);    
+ lyz1prodBoxNONAME->SetFillStyle(1001);
+ lyz1prodBoxNONAME->SetFillColor(kYellow-6);
  
  TCanvas* intFlowCanvasNONAME = new TCanvas("Integrated Flow NONAME","Integrated Flow NONAME",1000,600);
  
@@ -1046,10 +1136,15 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  if(fqdTGraphNONAME) fqdTGraphNONAME->Draw("PSAME");
  if(fqdMeanNONAME) fqdMeanNONAME->Draw("PSAME");
 
- // LYZ1: 
- if(lyz1BoxNONAME && lyz1MinValueNONAME < 1000.) lyz1BoxNONAME->Draw("LFSAME");
- if(lyz1TGraphNONAME) lyz1TGraphNONAME->Draw("PSAME");
- if(lyz1MeanNONAME) lyz1MeanNONAME->Draw("PSAME"); 
+ // LYZ1SUM: 
+ if(lyz1sumBoxNONAME && lyz1sumMinValueNONAME < 1000.) lyz1sumBoxNONAME->Draw("LFSAME");
+ if(lyz1sumTGraphNONAME) lyz1sumTGraphNONAME->Draw("PSAME");
+ if(lyz1sumMeanNONAME) lyz1sumMeanNONAME->Draw("PSAME"); 
+ 
+ // LYZ1PROD: 
+ if(lyz1prodBoxNONAME && lyz1prodMinValueNONAME < 1000.) lyz1prodBoxNONAME->Draw("LFSAME");
+ if(lyz1prodTGraphNONAME) lyz1prodTGraphNONAME->Draw("PSAME");
+ if(lyz1prodMeanNONAME) lyz1prodMeanNONAME->Draw("PSAME"); 
  
  // 2nd pad is for legend:   
  (intFlowCanvasNONAME->cd(2))->SetPad(0.75,0.0,1.0,1.0);
@@ -1066,7 +1161,9 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  Int_t qc6CountRealNONAME = 0;
  Int_t qc8CountRealNONAME = 0;
  Int_t fqdCountRealNONAME = 0;
- Int_t lyz1CountRealNONAME = 0;
+ Int_t lyz1sumCountRealNONAME = 0;
+ Int_t lyz1prodCountRealNONAME = 0;
+ Int_t lyzepCountRealNONAME = 0;
  
  for(Int_t i=0;i<nEstimates;i++)
  {
@@ -1081,7 +1178,9 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
   if(qc6ValueNONAME[i]>0.) qc6CountRealNONAME++; 
   if(qc8ValueNONAME[i]>0.) qc8CountRealNONAME++;
   if(fqdValueNONAME[i]>0.) fqdCountRealNONAME++; 
-  if(lyz1ValueNONAME[i]>0.) lyz1CountRealNONAME++; 
+  if(lyz1sumValueNONAME[i]>0.) lyz1sumCountRealNONAME++; 
+  if(lyz1prodValueNONAME[i]>0.) lyz1prodCountRealNONAME++;
+  if(lyzepValueNONAME[i]>0.) lyzepCountRealNONAME++;
  }
 
  TPaveText *textDefaultNONAME = new TPaveText(0.05,0.67,0.95,0.90,"NDC");
@@ -1106,19 +1205,20 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  textResultsNONAME->SetTextSize(0.06);
  
  // entries:
- TString *entryIntFlowMCNONAME    = new TString("MC ................ ");
- TString *entryIntFlowSPNONAME    = new TString("SP ................ ");  
- TString *entryIntFlowGFC2NONAME  = new TString("GFC{2} ........ ");
- TString *entryIntFlowGFC4NONAME  = new TString("GFC{4} ........ ");
- TString *entryIntFlowGFC6NONAME  = new TString("GFC{6} ........ ");
- TString *entryIntFlowGFC8NONAME  = new TString("GFC{8} ........ "); 
- TString *entryIntFlowQC2NONAME   = new TString("QC{2} .......... ");
- TString *entryIntFlowQC4NONAME   = new TString("QC{4} .......... ");
- TString *entryIntFlowQC6NONAME   = new TString("QC{6} .......... ");
- TString *entryIntFlowQC8NONAME   = new TString("QC{8} .......... ");
- TString *entryIntFlowFQDNONAME   = new TString("FQD ............. ");
- TString *entryIntFlowLYZ1NONAME  = new TString("LYZ ............. ");
- TString *entryIntFlowLYZEPNONAME = new TString("LYZEP ........ ");
+ TString *entryIntFlowMCNONAME       = new TString("MC ................ ");
+ TString *entryIntFlowSPNONAME       = new TString("SP ................ ");  
+ TString *entryIntFlowGFC2NONAME     = new TString("GFC{2} ........ ");
+ TString *entryIntFlowGFC4NONAME     = new TString("GFC{4} ........ ");
+ TString *entryIntFlowGFC6NONAME     = new TString("GFC{6} ........ ");
+ TString *entryIntFlowGFC8NONAME     = new TString("GFC{8} ........ "); 
+ TString *entryIntFlowQC2NONAME      = new TString("QC{2} .......... ");
+ TString *entryIntFlowQC4NONAME      = new TString("QC{4} .......... ");
+ TString *entryIntFlowQC6NONAME      = new TString("QC{6} .......... ");
+ TString *entryIntFlowQC8NONAME      = new TString("QC{8} .......... ");
+ TString *entryIntFlowFQDNONAME      = new TString("FQD ............. ");
+ TString *entryIntFlowLYZ1SUMNONAME  = new TString("LYZ{sum} ......... ");
+ TString *entryIntFlowLYZ1PRODNONAME = new TString("LYZ{prod} ........ ");
+ TString *entryIntFlowLYZEPNONAME    = new TString("LYZEP ........ ");
 
  if(entryIntFlowMCNONAME)
  { 
@@ -1208,16 +1308,22 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowFQDNONAME->Data());
  }
  
- 
- if(entryIntFlowLYZ1NONAME)
+ if(entryIntFlowLYZ1SUMNONAME)
  { 
-  (*entryIntFlowLYZ1NONAME)+=(Long_t)lyz1CountRealNONAME;
-  entryIntFlowLYZ1NONAME->Append(" out of ");
-  (*entryIntFlowLYZ1NONAME)+=(Long_t)counter;
-  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowLYZ1NONAME->Data());
+  (*entryIntFlowLYZ1SUMNONAME)+=(Long_t)lyz1sumCountRealNONAME;
+  entryIntFlowLYZ1SUMNONAME->Append(" out of ");
+  (*entryIntFlowLYZ1SUMNONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowLYZ1SUMNONAME->Data());
  }
  
- /*
+ if(entryIntFlowLYZ1PRODNONAME)
+ { 
+  (*entryIntFlowLYZ1PRODNONAME)+=(Long_t)lyz1prodCountRealNONAME;
+  entryIntFlowLYZ1PRODNONAME->Append(" out of ");
+  (*entryIntFlowLYZ1PRODNONAME)+=(Long_t)counter;
+  if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowLYZ1PRODNONAME->Data());
+ }
+ 
  if(entryIntFlowLYZEPNONAME)
  { 
   (*entryIntFlowLYZEPNONAME)+=(Long_t)lyzepCountRealNONAME;
@@ -1225,7 +1331,6 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
   (*entryIntFlowLYZEPNONAME)+=(Long_t)counter;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowLYZEPNONAME->Data());
  }
- */
  
  if(textDefaultNONAME) textDefaultNONAME->Draw();
  if(textResultsNONAME) textResultsNONAME->Draw();
