@@ -662,7 +662,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
     // remain functional.
     // Further investigation is ongoing
     AliHLTTPCTrackSegmentData* segment=outPtr->fTracklets;
-    for (int trackno=0; trackno<ntracks0; trackno++, segment++) {
+    for (unsigned int trackno=0; trackno<ntracks0; trackno++, segment++) {
       segment->fCharge*=-1;
     }
 
