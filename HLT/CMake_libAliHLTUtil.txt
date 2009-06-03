@@ -6,7 +6,6 @@ set(SRCS
   BASE/util/AliHLTMCEvent.cxx
   BASE/util/AliHLTJets.cxx
   BASE/util/AliHLTRootFilePublisherComponent.cxx
-  BASE/util/AliHLTMCGeneratorComponent.cxx
   BASE/util/AliHLTESDMCEventPublisherComponent.cxx
   BASE/util/AliHLTRootFileWriterComponent.cxx
   BASE/util/AliHLTRootFileStreamerComponent.cxx
@@ -19,6 +18,8 @@ set(SRCS
   BASE/util/AliHLTCompStatCollector.cxx
   BASE/util/AliHLTAgentUtil.cxx
 )
+
+#  BASE/util/AliHLTMCGeneratorComponent.cxx
 
 # fill list of header files from list of source files
 # by exchanging the file extension
