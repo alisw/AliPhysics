@@ -322,7 +322,7 @@ void AliJetFillUnitArrayEMCalDigits::Exec(Option_t* /*option*/)
     
     for(Int_t j = beg; j < nclus; j++) { // loop over clusters
       // Retrieve cluster from esd
-      AliESDCaloCluster *fClus = (AliESDCaloCluster *) caloClusters->At(j) ;
+      fClus = (AliESDCaloCluster *) caloClusters->At(j) ;
 
       // Get the cluster info
       Float_t energy       = fClus->E() ;
