@@ -196,12 +196,12 @@ void AliFittingQDistribution::GetOutputHistograms(TList *outputListHistos)
 
 //================================================================================================================
 
-void AliFittingQDistribution::Finish()
+void AliFittingQDistribution::Finish(Bool_t doFit)
 {
  //calculate the final results
  AliFittingFunctionsForQDistribution finalFitting(fAvMultIntFlowFQD,fQDistributionFQD,fIntFlowResultsFQD,fSigma2,fCommonHistsResults);
          
- finalFitting.Calculate();            
+ if(doFit) finalFitting.Calculate();            
 }
 
 //================================================================================================================
