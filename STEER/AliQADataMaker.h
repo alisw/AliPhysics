@@ -60,18 +60,19 @@ public:
 	virtual TH1 *       GetRecPointsData(const Int_t index)                    = 0 ; 
 	virtual TH1 *       GetRawsData(const Int_t index)                         = 0 ; 
 	virtual TH1 *       GetSDigitsData(const Int_t index)                      = 0 ; 
-	const Char_t *        GetDetectorDirName() const { return fDetectorDirName.Data() ; }
+	const Char_t *      GetDetectorDirName() const { return fDetectorDirName.Data() ; }
   TList *             GetParameterList() const { return fParameterList[AliRecoParam::AConvert(fEventSpecie)] ; }
   virtual const AliDetectorRecoParam * GetRecoParam() { return NULL ; }
 	Int_t               Increment() { return ++fCycleCounter ; } 
-	virtual TObjArray** Init(AliQAv1::TASKINDEX_t, Int_t cycles = -1)                               = 0 ;
-	virtual void        Init(AliQAv1::TASKINDEX_t, TObjArray ** list, Int_t run, Int_t cycles = -1) = 0 ;
+	virtual TObjArray** Init(AliQAv1::TASKINDEX_t, Int_t cycles = -1)                                 = 0 ;
+  TObjArray*          Init(AliQAv1::TASKINDEX_t, AliRecoParam::EventSpecie_t es, Int_t cycles = -1) ;
+	virtual void        Init(AliQAv1::TASKINDEX_t, TObjArray ** list, Int_t run, Int_t cycles = -1)   = 0 ;
 	Bool_t              IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
   virtual void        MakeImage(AliQAv1::TASKINDEX_t task) = 0 ; 
 	void                Reset() { fCycleCounter = 0 ; }
 	void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
   void                SetWriteExpert() { fWriteExpert = kTRUE ; }
-	virtual void        StartOfCycle(Int_t run = -1)                                                 = 0 ;
+	virtual void        StartOfCycle(Int_t run = -1)                                                   = 0 ;
 	virtual void        StartOfCycle(AliQAv1::TASKINDEX_t, Int_t run, const Bool_t sameCycle = kFALSE) = 0 ;
   void                UnSetWriteExpert() { fWriteExpert = kFALSE ; }
   Bool_t              WriteExpert() { return fWriteExpert ; }

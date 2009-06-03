@@ -218,6 +218,14 @@ TObject * AliQADataMaker::GetData(TObjArray ** list, const Int_t index)
 }
 
 //____________________________________________________________________________ 
+TObjArray*  AliQADataMaker::Init(AliQAv1::TASKINDEX_t task, AliRecoParam::EventSpecie_t es, Int_t cycles)
+{
+  // Initialializes and  returns the QAData list for a given event specie
+  TObjArray ** ar = Init(task, cycles) ; 
+  return ar[AliRecoParam::AConvert(es)] ;  
+}
+
+//____________________________________________________________________________ 
 void AliQADataMaker::MakeTheImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Char_t * mode) 
 {
   // makes the QA image for sim and rec
