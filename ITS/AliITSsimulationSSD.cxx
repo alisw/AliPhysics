@@ -53,7 +53,8 @@ AliITSsimulationSSD::AliITSsimulationSSD():AliITSsimulation(),
 fMapA2(0),
 fIonE(0.0),
 fDifConst(),
-fDriftVel(){
+fDriftVel(),
+fTimeResponse(NULL){
     //default Constructor
     //Inputs:
     // none.
@@ -70,7 +71,7 @@ fMapA2(0),
 fIonE(0.0),
 fDifConst(),
 fDriftVel(),
-fTimeResponse(0){
+fTimeResponse(NULL){
     // Constructor 
     // Input:
     //   AliITSDetTypeSim    Pointer to the SSD dettype to be used

@@ -128,7 +128,7 @@ class AliITSsimulationSSD: public AliITSsimulation {
 
     TF1         *fTimeResponse; // signal time response function
 
-    ClassDef(AliITSsimulationSSD,2) // SSD signal simulation class
+    ClassDef(AliITSsimulationSSD,3) // SSD signal simulation class
 
 };
 // Input and output functions for standard C++ input/output.
