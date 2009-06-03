@@ -43,6 +43,7 @@ public:
   virtual void InitRecPoints();
   virtual void InitESDs();
   virtual void MakeRaws(AliRawReader *rawReader);
+  virtual void MakeDigits(TClonesArray * ){AliWarning("Signature not implemented. A TTree* of digits should be passed as input argument");} 
   virtual void MakeDigits(TTree *digitsTree);
   virtual void MakeRecPoints(TTree *clustersTree);
   virtual void MakeESDs(AliESDEvent *esd);
