@@ -23,6 +23,7 @@ Trigger Types Used: Standalone Trigger
 */
 #define PEDDATA_FILE  "ZDCPedestal.dat"
 #define MAPDATA_FILE  "ZDCChMapping.dat"
+#define LASHISTO_FILE "ZDCLaserHisto.root"
 #define LASDATA_FILE  "ZDCLaserCalib.dat"
 
 #include <stdio.h>
@@ -35,11 +36,13 @@ Trigger Types Used: Standalone Trigger
 #include <daqDA.h>
 
 //ROOT
-#include <TRandom.h>
+#include <TROOT.h>
+#include <TPluginManager.h>
 #include <TH1F.h>
 #include <TF1.h>
 #include <TFile.h>
 #include <TFitter.h>
+#include "TMinuitMinimizer.h"
 
 //AliRoot
 #include <AliRawReaderDate.h>
@@ -52,7 +55,16 @@ Trigger Types Used: Standalone Trigger
 */
 int main(int argc, char **argv) {
   
-//  TVirtualFitter::SetDefaultFitter("Minuit2");
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+					"*",
+					"TStreamerInfo",
+					"RIO",
+					"TStreamerInfo()"); 
+
+  TMinuitMinimizer m; 
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", "Minuit","TMinuitMinimizer",
+      "Minuit", "TMinuitMinimizer(const char *)");
+  TVirtualFitter::SetDefaultFitter("Minuit");
 
   int status = 0;
   int const kNChannels = 24;
@@ -398,6 +410,12 @@ int main(int argc, char **argv) {
     if(nBin[k]!=0) maxXval[k] = maxBin[k]*xMax[k]/nBin[k];
     if(maxXval[k]-150.<0.) xlow[k]=0.;
     else xlow[k] = maxXval[k]-150.;
+    // checking if histos are empty
+    if(hZNChg[k]->GetEntries() == 0){
+      printf("\n WARNING! Empty LASER histos -> ending DA\n\n");
+      return -1;
+    } 
+    //
     hZNChg[k]->Fit("gaus","Q","",xlow[k],maxXval[k]+150.);
     fun[k] = hZNChg[k]->GetFunction("gaus");
     mean[k]  = (Float_t) (fun[k]->GetParameter(1));
@@ -589,6 +607,31 @@ int main(int argc, char **argv) {
   }
   //						       
   fclose(fileShuttle);
+  /* report progress */
+  daqDA_progressReport(80);
+  //
+  TFile *histofile = new TFile(LASHISTO_FILE,"RECREATE");
+  histofile->cd();
+  for(int j=0; j<5; j++){
+     hZNChg[j]->Write();
+     hZPChg[j]->Write();
+     hZNAhg[j]->Write();
+     hZPAhg[j]->Write();
+     hZNClg[j]->Write();
+     hZPClg[j]->Write();
+     hZNAlg[j]->Write();
+     hZPAlg[j]->Write();  
+     if(j<2){
+       hZEMhg[j]->Write();
+       hZEMlg[j]->Write();
+    }
+  }
+  hPMRefChg->Write();
+  hPMRefAhg->Write();
+  hPMRefClg->Write();
+  hPMRefAlg->Write();  
+  //
+  histofile->Close();
   //
   for(Int_t j=0; j<5; j++){
     delete hZNChg[j];
@@ -619,15 +662,23 @@ int main(int argc, char **argv) {
   daqDA_progressReport(90);
   
   /* store the result file on FES */
+  // [1] File with mapping
   status = daqDA_FES_storeFile(MAPDATA_FILE,MAPDATA_FILE);
   if(status){
     printf("Failed to export file : %d\n",status);
     return -1;
   }
   //
+  // [2] File with laser data
   status = daqDA_FES_storeFile(LASDATA_FILE,LASDATA_FILE);
   if(status){
     printf("Failed to export file : %d\n",status);
+    return -1;
+  }
+  // [3] File with laser histos
+  status = daqDA_FES_storeFile(LASHISTO_FILE,LASHISTO_FILE);
+  if(status){
+    printf("Failed to export pedestal histos file to DAQ FES\n");
     return -1;
   }
 

@@ -20,6 +20,7 @@ Trigger Types Used: Standalone Trigger
 
 */
 #define PEDDATA_FILE  "ZDCPedestal.dat"
+#define PEDHISTO_FILE "ZDCPedHisto.root"
 #define MAPDATA_FILE  "ZDCChMapping.dat"
 
 #include <stdio.h>
@@ -32,13 +33,15 @@ Trigger Types Used: Standalone Trigger
 #include <daqDA.h>
 
 //ROOT
-#include <TRandom.h>
+#include <TROOT.h>
+#include <TPluginManager.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TProfile.h>
 #include <TF1.h>
 #include <TFile.h>
 #include <TFitter.h>
+#include "TMinuitMinimizer.h"
 
 //AliRoot
 #include <AliRawReaderDate.h>
@@ -51,7 +54,17 @@ Trigger Types Used: Standalone Trigger
 */
 int main(int argc, char **argv) {
   
-//  TVirtualFitter::SetDefaultFitter("Minuit2");
+
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+					"*",
+					"TStreamerInfo",
+					"RIO",
+					"TStreamerInfo()"); 
+
+  TMinuitMinimizer m; 
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", "Minuit","TMinuitMinimizer",
+      "Minuit", "TMinuitMinimizer(const char *)");
+  TVirtualFitter::SetDefaultFitter("Minuit");
 
   int status = 0;
   int const kNChannels = 24;
@@ -60,7 +73,7 @@ int main(int argc, char **argv) {
   printf("\n ZDC PEDESTAL program started\n");  
 
   /* check that we got some arguments = list of files */
-  if (argc<2) {
+  if (argc<2){
     printf("Wrong number of arguments\n");
     return -1;
   }
@@ -405,7 +418,7 @@ int main(int argc, char **argv) {
   
   // --- Correlations
 
-  Float_t CorrCoeff0[2*kNChannels], CorrCoeff1[2*kNChannels];
+/*  Float_t CorrCoeff0[2*kNChannels], CorrCoeff1[2*kNChannels];
   TProfile *hPedCorrProfhg[kNChannels], *hPedCorrProflg[kNChannels];
   TF1 *ffunchg[kNChannels], *ffunclg[kNChannels];
   char namhist4[50];
@@ -432,9 +445,25 @@ int main(int argc, char **argv) {
      //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",
      //		i+kNChannels, CorrCoeff0[i+kNChannels], i+kNChannels, CorrCoeff1[i+kNChannels]);
   }    
-
+*/
   //						       
   fclose(fileShuttle);
+  //
+  /* report progress */
+  daqDA_progressReport(80);
+  //
+  TFile *histofile = new TFile(PEDHISTO_FILE,"RECREATE");
+  histofile->cd();
+  for(int k=0; k<kNChannels; k++){
+     hPedhg[k]->Write();
+     hPedOutOfTimehg[k]->Write();
+     hPedCorrhg[k]->Write();
+     hPedlg[k]->Write();
+     hPedOutOfTimelg[k]->Write();
+     hPedCorrlg[k]->Write();
+  }
+  //						       
+  histofile->Close();
   //
   for(Int_t j=0; j<kNChannels; j++){
      delete hPedhg[j];
@@ -458,20 +487,26 @@ int main(int argc, char **argv) {
   // [1] File with mapping
   status = daqDA_FES_storeFile(MAPDATA_FILE,MAPDATA_FILE);
   if(status){
-    printf("Failed to export file %d to DAQ FES\n",status);
+    printf("Failed to export mapping data file to DAQ FES\n");
     return -1;
   }
   // [2] File with pedestal data
   status = daqDA_FES_storeFile(PEDDATA_FILE,PEDDATA_FILE);
   if(status){
-    printf("Failed to export file %d to DAQ FES\n",status);
+    printf("Failed to export pedestal data file to DAQ FES\n");
+    return -1;
+  }
+  // [3] File with pedestal histos
+  status = daqDA_FES_storeFile(PEDHISTO_FILE,PEDHISTO_FILE);
+  if(status){
+    printf("Failed to export pedestal histos file to DAQ FES\n");
     return -1;
   }
   
   /* store the result files on DB */
   status = daqDA_DB_storeFile(PEDDATA_FILE,PEDDATA_FILE);  
   if(status){
-    printf("Failed to export file %d to DAQ DB\n",status);
+    printf("Failed to store pedestal data file to DAQ DB\n");
     return -1;
   }
 

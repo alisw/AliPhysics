@@ -179,13 +179,13 @@ void AliZDCRawStream::ReadCDHHeader()
     //printf("\t AliZDCRawStream::ReadCDHHeader -> Attributes %x\n",message);
     
     if(message & 0x10){ // COSMIC RUN
-       printf("\t STANDALONE_COSMIC RUN raw data found\n");
+       //printf("\t STANDALONE_COSMIC RUN raw data found\n");
     }
     else if(message & 0x20){ // PEDESTAL RUN
-       printf("\t STANDALONE_PEDESTAL RUN raw data found\n");
+       //printf("\t STANDALONE_PEDESTAL RUN raw data found\n");
     }
     else if(message & 0x30){ // LASER RUN
-       printf("\t STANDALONE_LASER RUN raw data found\n");
+       //printf("\t STANDALONE_LASER RUN raw data found\n");
     }
     
     if(header->GetL1TriggerMessage() & 0x1){ // Calibration bit set in CDH
