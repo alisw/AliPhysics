@@ -300,7 +300,7 @@ void AliRsnDaughter::FindMotherPDG(AliStack *stack)
 }
 
 //_____________________________________________________________________________
-inline Double_t AliRsnDaughter::GetMCEnergy(Double_t mass)
+Double_t AliRsnDaughter::GetMCEnergy(Double_t mass)
 {
 //
 // Uses the argument to compute 4-momentum energy
