@@ -100,13 +100,13 @@ class AliITSRecoParam : public AliDetectorRecoParam
     SetVertexer3DWideFiducialRegion(dzwid,drwid);
     SetVertexer3DNarrowFiducialRegion(dznar,drnar);
   }
-  void     SetVertexer3DWideFiducialRegion(Float_t dz=20.0, Float_t dr=2.5){
+  void     SetVertexer3DWideFiducialRegion(Float_t dz=40.0, Float_t dr=2.5){
     fVtxr3DZCutWide=dz; fVtxr3DRCutWide=dr;
   }
   void     SetVertexer3DNarrowFiducialRegion(Float_t dz=0.5, Float_t dr=0.5){
     fVtxr3DZCutNarrow=dz; fVtxr3DRCutNarrow=dr;
   }
-  void     SetVertexer3DDeltaPhiCuts(Float_t dphiloose=0.5, Float_t dphitight=0.01){
+  void     SetVertexer3DDeltaPhiCuts(Float_t dphiloose=0.5, Float_t dphitight=0.025){
     fVtxr3DPhiCutLoose=dphiloose;
     fVtxr3DPhiCutTight=dphitight;
   }

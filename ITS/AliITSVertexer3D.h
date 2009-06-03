@@ -28,7 +28,7 @@ class AliITSVertexer3D : public AliITSVertexer {
   AliESDVertex GetVertex3D() const {return fVert3D;}
   virtual void PrintStatus() const;
   static Bool_t DistBetweenVertices(AliESDVertex &a, AliESDVertex &b, Double_t test, Double_t &dist);
-  void SetWideFiducialRegion(Float_t dz = 20.0, Float_t dr=2.5){
+  void SetWideFiducialRegion(Float_t dz = 40.0, Float_t dr=2.5){
     SetCoarseMaxRCut(dr);
     SetZCutDiamond(dz);
   }
