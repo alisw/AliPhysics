@@ -50,7 +50,7 @@ class AliITSAlignMille2Constraint : public TNamed
   //
   virtual Bool_t IncludesModule(Int_t id)            const {return fModuleID==id;}
   virtual Bool_t IncludesModPar(Int_t id,Int_t par)  const {return IncludesModule(id) && IncludesParam(par);}
-  virtual Bool_t IncludesModPar(AliITSAlignMille2Module* mod, Int_t par) const;
+  virtual Bool_t IncludesModPar(const AliITSAlignMille2Module* mod, Int_t par) const;
   //
  protected:
   AliITSAlignMille2Constraint(const AliITSAlignMille2Constraint& src);

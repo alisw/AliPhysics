@@ -45,7 +45,7 @@ fApplied(src.fApplied)
 {/* DUMMY */} 
 
 //________________________________________________________________________________________________________
-Bool_t AliITSAlignMille2Constraint::IncludesModPar(AliITSAlignMille2Module* mod, Int_t par) const
+Bool_t AliITSAlignMille2Constraint::IncludesModPar(const AliITSAlignMille2Module* mod, Int_t par) const
 {
   // is this module/parameter mentioned in the list?
   if (!IncludesParam(par)) return kFALSE;

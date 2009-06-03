@@ -27,16 +27,13 @@
 //  author M. Lunardon (thanks to J. Castillo), ruben.shahoyan@cern.ch
 //-----------------------------------------------------------------------------
 
-#include <TF1.h>
 #include <TFile.h>
 #include <TClonesArray.h>
-#include <TGraph.h>
-#include <TGeoMatrix.h>
 #include <TMath.h>
-#include <TGraphErrors.h>
 #include <TVirtualFitter.h>
 #include <TGeoManager.h>
-
+#include <TArrayI.h>
+#include <TSystem.h>
 #include "AliITSAlignMille2.h"
 #include "AliITSgeomTGeo.h"
 #include "AliGeomManager.h"
@@ -44,9 +41,10 @@
 #include "AliTrackPointArray.h"
 #include "AliAlignObjParams.h"
 #include "AliLog.h"
-#include "TSystem.h"  // come si fa?
 #include "AliTrackFitterRieman.h"
-
+#include "AliITSAlignMille2Constraint.h"
+#include "AliITSAlignMille2ConstrArray.h"
+#include "AliITSresponseSDD.h"
 
 ClassImp(AliITSAlignMille2)
 
@@ -155,6 +153,7 @@ AliITSAlignMille2::~AliITSAlignMille2()
 ///////////////////////////////////////////////////////////////////////
 TObjArray* AliITSAlignMille2::GetConfigRecord(FILE* stream, TString& recTitle, TString& recOpt, Bool_t rew)
 {
+  // read new record from config file
   TString record;
   static TObjArray* recElems = 0;
   if (recElems) {delete recElems; recElems = 0;}
@@ -185,8 +184,9 @@ TObjArray* AliITSAlignMille2::GetConfigRecord(FILE* stream, TString& recTitle, T
 
 //________________________________________________________________________________________________________
 Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
-{  /// return 0 if success
-  ///        1 if error in module index or voluid
+{  
+  // return 0 if success
+  //        1 if error in module index or voluid
   //
   FILE *pfc=fopen(cfile,"r");
   if (!pfc) return -1;
@@ -720,7 +720,7 @@ void AliITSAlignMille2::BuildHierarchy()
 //________________________________________________________________________________________________________
 void AliITSAlignMille2::SetCurrentModule(Int_t id)
 {
-  /// set the current supermodule
+  // set the current supermodule
   // new meaning
   if (fMilleVersion>=2) {
     fCurrentModule = GetMilleModule(id);
@@ -914,6 +914,7 @@ Int_t AliITSAlignMille2::SetConstraintWrtRef(const char* reffname)
 //________________________________________________________________________________________________________
 void AliITSAlignMille2::Init()
 {
+  // perform global initialization
   //
   if (fIsMilleInit) {
     AliInfo("Millepede has been already initialized!");
@@ -959,7 +960,7 @@ void AliITSAlignMille2::Init()
 	AliITSAlignMille2Module* parent = mod;
 	Bool_t cstMeanMed=kFALSE,cstGauss=kFALSE;
 	//
-	Bool_t AddToFit = kFALSE;	
+	Bool_t addToFit = kFALSE;	
 	// the parameter may be ommitted from explicit fit (if PseudoParentsAllowed is true) if
 	// 1) it is not explicitly constrained or its does not participate in Gaussian constraint
 	// 2) the same applies to all of its parents
@@ -968,7 +969,7 @@ void AliITSAlignMille2::Init()
 	  if (!parent->IsFreeDOF(ipar)) {parent = parent->GetParent(); continue;}
 	  nFreeInstances++;
 	  if (IsParModConstrained(parent,ipar, cstMeanMed, cstGauss)) nFreeInstances--;
-	  if (cstGauss) AddToFit = kTRUE;
+	  if (cstGauss) addToFit = kTRUE;
 	  parent = parent->GetParent();
 	}
 	if (nFreeInstances>1) {
@@ -978,14 +979,14 @@ void AliITSAlignMille2::Init()
 	}
 	//
 	// i) Are PseudoParents allowed?
-	if (!PseudoParentsAllowed()) AddToFit = kTRUE;
+	if (!PseudoParentsAllowed()) addToFit = kTRUE;
 	// ii) check if this module has no child with such a free parameter. Since the order of this check 
 	// goes from child to parent, by this moment such a parameter must have been already added
-	else if (!IsParModFamilyVaried(mod,ipar))  AddToFit = kTRUE;  // no varied children at all
-	else if (!IsParFamilyFree(mod,ipar,1))     AddToFit = kTRUE;  // no unconstrained direct children
+	else if (!IsParModFamilyVaried(mod,ipar))  addToFit = kTRUE;  // no varied children at all
+	else if (!IsParFamilyFree(mod,ipar,1))     addToFit = kTRUE;  // no unconstrained direct children
 	// otherwise the value of this parameter can be extracted from simple contraint and the values of 
 	// the relevant parameters of its children the fit is done. Hence it is not included
-	if (!AddToFit) continue;
+	if (!addToFit) continue;
 	//
 	// shall add this parameter to explicit fit
 	//	printf("Adding %s %d -> %d\n",mod->GetName(), ipar, fNGlobal);
@@ -1094,6 +1095,7 @@ Int_t AliITSAlignMille2::ApplyToGeometry()
 //________________________________________________________________________________________________________
 Int_t AliITSAlignMille2::GetPreAlignmentQualityFactor(Int_t index) const
 {
+  // quality factors from prealignment
   if (!fUsePreAlignment || index<0 || index>=fPreAlignQF.GetSize()) return -1;
   return fPreAlignQF[index]-1;
 }
@@ -1352,6 +1354,7 @@ AliTrackPointArray *AliITSAlignMille2::SortTrack(const AliTrackPointArray *atp)
 //________________________________________________________________________________________________________
 Int_t AliITSAlignMille2::GetCurrentLayer() const 
 {
+  // get current layer id
   if (!fGeoManager) {
     AliInfo("ITS geometry not initialized!");
     return -1;
@@ -1453,7 +1456,7 @@ Int_t AliITSAlignMille2::InitModuleParams()
 //________________________________________________________________________________________________________
 void AliITSAlignMille2::Print(Option_t*) const 
 {
-  ///
+  // print current status 
   printf("*** AliMillepede for ITS ***\n");
   printf("    Number of defined super modules: %d\n",fNModules);
   printf("    Obtained parameters refer to %s Deltas\n",fUseGlobalDelta ? "GLOBAL":"LOCAL");
@@ -1537,6 +1540,7 @@ AliITSAlignMille2Module  *AliITSAlignMille2::GetMilleModuleIfContained(const Cha
 //________________________________________________________________________________________________________
 AliAlignObjParams* AliITSAlignMille2::GetPrealignedObject(const Char_t* symname) const
 {
+  // get delta from prealignment for given volume
   if (!fPrealignment) return 0;
   for (int ipre=fPrealignment->GetEntriesFast();ipre--;) { // was the corresponding object prealigned?
     AliAlignObjParams* preob = (AliAlignObjParams*)fPrealignment->At(ipre);
@@ -1548,6 +1552,7 @@ AliAlignObjParams* AliITSAlignMille2::GetPrealignedObject(const Char_t* symname)
 //________________________________________________________________________________________________________
 AliAlignObjParams* AliITSAlignMille2::GetConstrRefObject(const Char_t* symname) const
 {
+  // get delta with respect to which the constraint is declared
   if (!fConstrRef) return 0;
   for (int ipre=fConstrRef->GetEntriesFast();ipre--;) { // was the corresponding object prealigned?
     AliAlignObjParams* preob = (AliAlignObjParams*)fConstrRef->At(ipre);
@@ -1590,14 +1595,15 @@ Bool_t AliITSAlignMille2::InitRiemanFit()
 }
 
 //________________________________________________________________________________________________________
-Bool_t fullErr2D = kTRUE;
-
-void trackFit2D(Int_t &, Double_t *, double &chi2, double *par, int)
+void trackFit2D(Int_t &, Double_t *, double &chi2, double *par, int flag)
 {
+  // local function for minuit
   const double kTiny = 1.e-14;
   chi2 = 0;
   static AliTrackPoint pnt;
+  static Bool_t fullErr2D;
   //
+  if (flag==1) fullErr2D = kFALSE;//kTRUE;
   enum {kAX,kAZ,kBX,kBZ};
   enum {kXX=0,kXY=1,kXZ=2,kYX=kXY,kYY=3,kYZ=4,kZX=kXZ,kZY=kYZ,kZZ=5};
   //
@@ -1701,7 +1707,6 @@ void AliITSAlignMille2::InitTrackParams(int meth)
   //
   arglist[0] = 1000; // number of function calls 
   arglist[1] = 0.001; // tolerance 
-  fullErr2D = kFALSE;//kTRUE;
   minuit->ExecuteCommand("MIGRAD",arglist,2);
   //
   for (int i=0;i<4;i++) fLocalInitParam[i] = minuit->GetParameter(i);
@@ -2066,7 +2071,7 @@ Int_t AliITSAlignMille2::AddLocalEquation(Mille2Data &m)
   ///         0 if no free global parameters were found but local eq is built
   ///         1 if both local and global eqs are built
   //
-  // store first interaction point
+  // store first intersection point
   if (CalcIntersectionPoint(fLocalInitParam, fModuleInitParam)) return -1;  
   for (Int_t i=0; i<3; i++) fPintLoc0[i]=fPintLoc[i];
   AliDebug(2,Form("Intesect. point: L( %f , %f , %f )",fPintLoc[0],fPintLoc[1],fPintLoc[2]));
@@ -2077,15 +2082,15 @@ Int_t AliITSAlignMille2::AddLocalEquation(Mille2Data &m)
   //
   for (Int_t i=0; i<fNLocal; i++) {
     if (CalcDerivatives(i,kTRUE)) return -1;
-    m.derlocX[i] = fDerivativeLoc[i][0];
-    m.derlocZ[i] = fDerivativeLoc[i][2];
+    m.fDerLocX[i] = fDerivativeLoc[i][0];
+    m.fDerLocZ[i] = fDerivativeLoc[i][2];
     if (zeroX) zeroX = fDerivativeLoc[i][0]==0;
     if (zeroZ) zeroZ = fDerivativeLoc[i][2]==0;
   }
   //  for (Int_t i=0; i<fNLocal; i++) AliDebug(2,Form("Local parameter %d - dXdpar = %g  - dZdpar = %g\n",i,dXdL[i],dZdL[i]));
   //
-  if (zeroX) {AliInfo("Aborting: zero local X derivatives!"); return -1;}
-  if (zeroZ) {AliInfo("Aborting: zero local Z derivatives!"); return -1;}
+  if (zeroX) {AliInfo("Skipping: zero local X derivatives!"); return -1;}
+  if (zeroZ) {AliInfo("Skipping: zero local Z derivatives!"); return -1;}
   //
   int ifill = 0;
   //
@@ -2094,7 +2099,7 @@ Int_t AliITSAlignMille2::AddLocalEquation(Mille2Data &m)
   zeroX = zeroZ = kTRUE;
   Bool_t dfDone[kNParCh];
   for (int i=kNParCh;i--;) dfDone[i] = kFALSE;
-  m.nModFilled = 0;
+  m.fNModFilled = 0;
   // 
   // special block for SDD derivatives
   Double_t jacobian[kNParChGeom];
@@ -2116,9 +2121,9 @@ Int_t AliITSAlignMille2::AddLocalEquation(Mille2Data &m)
 	}
       }
       //
-      m.dergloX[ifill] = fDerivativeGlo[i][0];
-      m.dergloZ[ifill] = fDerivativeGlo[i][2];
-      m.parMilleID[ifill++] = fCurrentModule->GetParOffset(i);
+      m.fDerGloX[ifill] = fDerivativeGlo[i][0];
+      m.fDerGloZ[ifill] = fDerivativeGlo[i][2];
+      m.fParMilleID[ifill++] = fCurrentModule->GetParOffset(i);
     }
     //
     // specific for special sensors
@@ -2183,34 +2188,34 @@ Int_t AliITSAlignMille2::AddLocalEquation(Mille2Data &m)
       }
       //
       if (fCurrentModule->GetParOffset(AliITSAlignMille2Module::kDOFT0)>=0) {
-	m.dergloX[ifill] = fDerivativeGlo[AliITSAlignMille2Module::kDOFT0][0];
-	m.dergloZ[ifill] = fDerivativeGlo[AliITSAlignMille2Module::kDOFT0][2];
-	m.parMilleID[ifill++] = fCurrentModule->GetParOffset(AliITSAlignMille2Module::kDOFT0);      
+	m.fDerGloX[ifill] = fDerivativeGlo[AliITSAlignMille2Module::kDOFT0][0];
+	m.fDerGloZ[ifill] = fDerivativeGlo[AliITSAlignMille2Module::kDOFT0][2];
+	m.fParMilleID[ifill++] = fCurrentModule->GetParOffset(AliITSAlignMille2Module::kDOFT0);      
       }
       //
       if (fCurrentModule->GetParOffset(AliITSAlignMille2Module::kDOFDV)>=0) {
-	m.dergloX[ifill] = fDerivativeGlo[AliITSAlignMille2Module::kDOFDV][0];
-	m.dergloZ[ifill] = fDerivativeGlo[AliITSAlignMille2Module::kDOFDV][2];
-	m.parMilleID[ifill++] = fCurrentModule->GetParOffset(AliITSAlignMille2Module::kDOFDV);      
+	m.fDerGloX[ifill] = fDerivativeGlo[AliITSAlignMille2Module::kDOFDV][0];
+	m.fDerGloZ[ifill] = fDerivativeGlo[AliITSAlignMille2Module::kDOFDV][2];
+	m.fParMilleID[ifill++] = fCurrentModule->GetParOffset(AliITSAlignMille2Module::kDOFDV);      
       }
     }
     //
-    m.moduleID[m.nModFilled++] = fCurrentModule->GetUniqueID();
+    m.fModuleID[m.fNModFilled++] = fCurrentModule->GetUniqueID();
   } while( (fCurrentModule=fCurrentModule->GetParent()) );
   //
-  if (nmodTested>0 && zeroX) {AliInfo("Aborting: zero global X derivatives!");return -1;}
-  if (nmodTested>0 && zeroZ) {AliInfo("Aborting: zero global Z derivatives!");return -1;}
+  if (nmodTested>0 && zeroX) {AliInfo("Skipping: zero global X derivatives!");return -1;}
+  if (nmodTested>0 && zeroZ) {AliInfo("Skipping: zero global Z derivatives!");return -1;}
   //
   // ok, can copy to m
   AliDebug(2,Form("Adding local equation X with fMeas=%.6f  and fSigma=%.6f",(fMeasLoc[0]-fPintLoc0[0]), fSigmaLoc[0]));
-  m.measX = fMeasLoc[0]-fPintLoc0[0];
-  m.sigmaX = fSigmaLoc[0];
+  m.fMeasX = fMeasLoc[0]-fPintLoc0[0];
+  m.fSigmaX = fSigmaLoc[0];
   //
   AliDebug(2,Form("Adding local equation Z with fMeas=%.6f  and fSigma=%.6f",(fMeasLoc[2]-fPintLoc0[2]), fSigmaLoc[2]));
-  m.measZ = fMeasLoc[2]-fPintLoc0[2];
-  m.sigmaZ = fSigmaLoc[2];
+  m.fMeasZ = fMeasLoc[2]-fPintLoc0[2];
+  m.fSigmaZ = fSigmaLoc[2];
   //
-  m.nGlobFilled = ifill;
+  m.fNGlobFilled = ifill;
   fCurrentModule = endModule;
   //
   return Int_t(!zeroX && !zeroZ);
@@ -2227,18 +2232,18 @@ void AliITSAlignMille2::SetLocalEquations(const Mille2Data *marr, Int_t neq)
     const Mille2Data &m = marr[j];
     //
     // set equation for Xloc coordinate
-    AliDebug(2,Form("setting local equation X with fMeas=%.6f  and fSigma=%.6f",m.measX, m.sigmaX));
-    for (int i=fNLocal; i--;) SetLocalDerivative( i, m.derlocX[i] );
-    for (int i=m.nGlobFilled;i--;) SetGlobalDerivative( m.parMilleID[i] , m.dergloX[i] );
-    fMillepede->SetLocalEquation(fGlobalDerivatives, fLocalDerivatives, m.measX, m.sigmaX);  
+    AliDebug(2,Form("setting local equation X with fMeas=%.6f  and fSigma=%.6f",m.fMeasX, m.fSigmaX));
+    for (int i=fNLocal; i--;) SetLocalDerivative( i, m.fDerLocX[i] );
+    for (int i=m.fNGlobFilled;i--;) SetGlobalDerivative( m.fParMilleID[i] , m.fDerGloX[i] );
+    fMillepede->SetLocalEquation(fGlobalDerivatives, fLocalDerivatives, m.fMeasX, m.fSigmaX);  
     //
     // set equation for Zloc coordinate
-    AliDebug(2,Form("setting local equation Z with fMeas=%.6f  and fSigma=%.6f",m.measZ, m.sigmaZ));
-    for (int i=fNLocal; i--;) SetLocalDerivative( i, m.derlocZ[i] );
-    for (int i=m.nGlobFilled;i--;) SetGlobalDerivative( m.parMilleID[i] , m.dergloZ[i] );
-    fMillepede->SetLocalEquation(fGlobalDerivatives, fLocalDerivatives, m.measZ, m.sigmaZ);  
+    AliDebug(2,Form("setting local equation Z with fMeas=%.6f  and fSigma=%.6f",m.fMeasZ, m.fSigmaZ));
+    for (int i=fNLocal; i--;) SetLocalDerivative( i, m.fDerLocZ[i] );
+    for (int i=m.fNGlobFilled;i--;) SetGlobalDerivative( m.fParMilleID[i] , m.fDerGloZ[i] );
+    fMillepede->SetLocalEquation(fGlobalDerivatives, fLocalDerivatives, m.fMeasZ, m.fSigmaZ);  
     //
-    for (int i=m.nModFilled;i--;) GetMilleModule(m.moduleID[i])->IncNProcessedPoints();
+    for (int i=m.fNModFilled;i--;) GetMilleModule(m.fModuleID[i])->IncNProcessedPoints();
     //
   }
 }
@@ -2458,6 +2463,7 @@ void AliITSAlignMille2::ConstrainOrphansMedian(Double_t val, UInt_t pattern)
 //________________________________________________________________________________________________________
 void AliITSAlignMille2::ConstrainLocal(const Char_t* name,Double_t *parcf,Int_t npar,Double_t val,Double_t err)
 {
+  // apply constraint on parameters in the local frame
   if (fIsMilleInit) {
     AliInfo("Millepede has been already initialized: no constrain may be added!");
     return;
@@ -2468,7 +2474,7 @@ void AliITSAlignMille2::ConstrainLocal(const Char_t* name,Double_t *parcf,Int_t 
 }
 
 //________________________________________________________________________________________________________
-void AliITSAlignMille2::ApplyGaussianConstraint(AliITSAlignMille2ConstrArray* cstr)
+void AliITSAlignMille2::ApplyGaussianConstraint(const AliITSAlignMille2ConstrArray* cstr)
 {
   // apply the constraint on the local corrections of a list of modules
   int nmod = cstr->GetNModules();
@@ -2545,6 +2551,7 @@ void AliITSAlignMille2::ApplyGaussianConstraint(AliITSAlignMille2ConstrArray* cs
 //________________________________________________________________________________________________________
 void AliITSAlignMille2::ApplyPreConstraints()
 {
+  // apply constriants which cannot be imposed after the fit
   int nconstr = GetNConstraints();
   for (int i=0;i<nconstr;i++) {
     AliITSAlignMille2Constraint* cstr = GetConstraint(i);
@@ -2581,6 +2588,7 @@ void AliITSAlignMille2::ApplyPreConstraints()
 //________________________________________________________________________________________________________
 void AliITSAlignMille2::ApplyPostConstraints()
 {
+  // apply constraints which can be imposed after the fit
   int nconstr = GetNConstraints();
   Bool_t convGlo      = kFALSE;
   // check if there is something to do
@@ -2795,7 +2803,7 @@ void AliITSAlignMille2::PostConstrainOrphans(Int_t type,Double_t val, UInt_t pat
 }
 
 //________________________________________________________________________________________________________
-Bool_t AliITSAlignMille2::IsParModConstrained(AliITSAlignMille2Module* mod,Int_t par, Bool_t &meanmed, Bool_t &gaussian) const
+Bool_t AliITSAlignMille2::IsParModConstrained(const AliITSAlignMille2Module* mod,Int_t par, Bool_t &meanmed, Bool_t &gaussian) const
 {
   // check if par of the module participates in some constraint, and set the flag for their types
   meanmed = gaussian = kFALSE;
@@ -2816,7 +2824,7 @@ Bool_t AliITSAlignMille2::IsParModConstrained(AliITSAlignMille2Module* mod,Int_t
 }
 
 //________________________________________________________________________________________________________
-Bool_t AliITSAlignMille2::IsParModFamilyVaried(AliITSAlignMille2Module* mod,Int_t par,Int_t depth) const
+Bool_t AliITSAlignMille2::IsParModFamilyVaried(const AliITSAlignMille2Module* mod,Int_t par,Int_t depth) const
 {
   // check if parameter par is varied for this module or its children up to the level depth
   if (depth<0) return kFALSE;
@@ -2850,7 +2858,7 @@ Bool_t AliITSAlignMille2::IsParFamilyFree(AliITSAlignMille2Module* mod,Int_t par
 */
 
 //________________________________________________________________________________________________________
-Bool_t AliITSAlignMille2::IsParFamilyFree(AliITSAlignMille2Module* mod,Int_t par,Int_t depth) const
+Bool_t AliITSAlignMille2::IsParFamilyFree(const AliITSAlignMille2Module* mod,Int_t par,Int_t depth) const
 {
   // check if parameter par is varied and is not subjected to gaussian constraint for the children up to the level depth
   if (depth<0) return kFALSE;
@@ -2870,6 +2878,7 @@ Bool_t AliITSAlignMille2::IsParFamilyFree(AliITSAlignMille2Module* mod,Int_t par
 //________________________________________________________________________________________________________
 Double_t AliITSAlignMille2::GetTDriftSDD() const 
 {
+  // obtain drift time corrected for t0
   double t = fCluster.GetDriftTime();
   return t - fDriftTime0[ fCluster.GetUniqueID() ];
 }
@@ -2877,6 +2886,7 @@ Double_t AliITSAlignMille2::GetTDriftSDD() const
 //________________________________________________________________________________________________________
 Double_t AliITSAlignMille2::GetVDriftSDD() const 
 {
+  // obtain corrected drift speed
   return fDriftSpeed[ fCluster.GetUniqueID() ];
 }
 
@@ -2899,6 +2909,7 @@ Bool_t AliITSAlignMille2::FixedOrphans() const
 //________________________________________________________________________________________________________
 void AliITSAlignMille2::ConvertParamsToGlobal()
 {
+  // convert params in local frame to global one
   double pars[AliITSAlignMille2Module::kMaxParGeom];
   for (int imd=fNModules;imd--;) {
     AliITSAlignMille2Module* mod = GetMilleModule(imd);
@@ -2912,6 +2923,7 @@ void AliITSAlignMille2::ConvertParamsToGlobal()
 //________________________________________________________________________________________________________
 void AliITSAlignMille2::ConvertParamsToLocal()
 {
+  // convert params in global frame to local one
   double pars[AliITSAlignMille2Module::kMaxParGeom];
   for (int imd=fNModules;imd--;) {
     AliITSAlignMille2Module* mod = GetMilleModule(imd);

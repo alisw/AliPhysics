@@ -17,26 +17,22 @@
 //  author M. Lunardon (thanks to J. Castillo), ruben.shahoyan@cern.ch
 //-----------------------------------------------------------------------------
 
-#include <TArrayI.h>
-#include <TArrayD.h>
 #include <TString.h>
 #include <TObject.h>
 #include <TGeoMatrix.h>
-#include "AliITSresponseSDD.h"
 #include "AliTrackPointArray.h"
 #include "AliITSAlignMille2Module.h"
-#include "AliITSAlignMille2Constraint.h"
-#include "AliITSAlignMille2ConstrArray.h"
 
+class TArrayI;
+class TSystem;
+class TGeoManager;
+class TVirtualFitter;
 class AliMillePede2;
 class AliAlignObjParams;
-class TGeoManager;
-//class AliITSAlignMille2Module;
 class AliTrackFitterRieman;
-class TVirtualFitter;
-// number of used objects
-
-
+class AliITSAlignMille2Constraint;
+class AliITSAlignMille2ConstrArray;
+class AliITSresponseSDD;
 
 class AliITSAlignMille2: public TObject
 {
@@ -49,12 +45,12 @@ class AliITSAlignMille2: public TObject
  protected:
  struct Mille2Data { // structure to store data for 2 LocalEquations (X and Z)
    enum {kMaxLev = 7};
-   Double_t measX, measZ, sigmaX, sigmaZ;
-   Double_t derlocX[kNLocal], derlocZ[kNLocal];
-   Int_t    nModFilled, nGlobFilled, moduleID[kMaxLev];
-   Int_t    parMilleID[AliITSAlignMille2Module::kMaxParTot*kMaxLev];
-   Double_t dergloX[AliITSAlignMille2Module::kMaxParTot*kMaxLev];
-   Double_t dergloZ[AliITSAlignMille2Module::kMaxParTot*kMaxLev];
+   Double_t fMeasX, fMeasZ, fSigmaX, fSigmaZ;        // measured coordinates/errors
+   Double_t fDerLocX[kNLocal], fDerLocZ[kNLocal];    // calculated local derivatives
+   Int_t    fNModFilled, fNGlobFilled, fModuleID[kMaxLev]; // used module info
+   Int_t    fParMilleID[AliITSAlignMille2Module::kMaxParTot*kMaxLev]; // param id's
+   Double_t fDerGloX[AliITSAlignMille2Module::kMaxParTot*kMaxLev]; // global derivatives in X
+   Double_t fDerGloZ[AliITSAlignMille2Module::kMaxParTot*kMaxLev]; // and Z
  };
  //
  public:
@@ -111,12 +107,12 @@ class AliITSAlignMille2: public TObject
   Int_t     InitModuleParams();
   //
   // fitting methods
-  AliTrackFitterRieman *GetRiemanFitter()                         const {return fRieman;}
+  AliTrackFitterRieman *GetRiemanFitter()   const                       {return fRieman;}
   AliTrackPointArray   *PrepareTrack(const AliTrackPointArray *track); 
-  AliTrackPointArray *GetCurrentTrack()                                 {return fTrack;}
-  AliTrackPoint      *GetCurrentCluster()                               {return &fCluster;}
-  void      SetCurrentTrack(AliTrackPointArray *atp)                    {fTrack=atp;}
-  void      SetCurrentCluster(AliTrackPoint &atp)                       {fCluster=atp;}
+  AliTrackPointArray *GetCurrentTrack()     const                       {return (AliTrackPointArray*)fTrack;}
+  AliTrackPoint      *GetCurrentCluster()   const                       {return (AliTrackPoint*)&fCluster;}
+  void      SetCurrentTrack(const AliTrackPointArray *atp)              {fTrack = (AliTrackPointArray*)atp;}
+  void      SetCurrentCluster(const AliTrackPoint &atp)                 {fCluster = atp;}
   void      InitTrackParams(int meth=1);
   Int_t     ProcessTrack(const AliTrackPointArray *track);
   Int_t     CheckCurrentTrack();
@@ -140,13 +136,13 @@ class AliITSAlignMille2: public TObject
   void      ConstrainOrphansMedian(Double_t val=0, UInt_t pattern=0xff);
   void      ConstrainLocal(const Char_t* name,Double_t *parcf,Int_t npar,Double_t val,Double_t err);
   //
-  void      ApplyGaussianConstraint(AliITSAlignMille2ConstrArray* cstr);
+  void      ApplyGaussianConstraint(const AliITSAlignMille2ConstrArray* cstr);
   void      ApplyPreConstraints();
   void      ApplyPostConstraints();
   //
-  Bool_t    IsParModConstrained(AliITSAlignMille2Module* mod,Int_t par, Bool_t &meanmed, Bool_t &gaussian) const;
-  Bool_t    IsParModFamilyVaried(AliITSAlignMille2Module* mod,Int_t par,Int_t depth=999)                   const;
-  Bool_t    IsParFamilyFree(AliITSAlignMille2Module* mod,Int_t par,Int_t depth=999)                        const;
+  Bool_t    IsParModConstrained(const AliITSAlignMille2Module* mod,Int_t par, Bool_t &meanmed, Bool_t &gaussian) const;
+  Bool_t    IsParModFamilyVaried(const AliITSAlignMille2Module* mod,Int_t par,Int_t depth=999)             const;
+  Bool_t    IsParFamilyFree(const AliITSAlignMille2Module* mod,Int_t par,Int_t depth=999)                  const;
   //
   // millepede methods
   Int_t     GlobalFit();
@@ -165,7 +161,7 @@ class AliITSAlignMille2: public TObject
   //
   // debug stuffs
   void       FetchCluster(const AliTrackPointArray *trc,int ip)        {trc->GetPoint(fCluster,ip);}
-  void       SetLocalInitParams(Double_t *par)                         {for (int i=kNLocal;i--;) fLocalInitParam[i]=par[i];}
+  void       SetLocalInitParams(const Double_t *par)                   {for (int i=kNLocal;i--;) fLocalInitParam[i]=par[i];}
   Double_t  *GetMeasLoc()                                        const {return (Double_t*)fMeasLoc;}
   Double_t  *GetSigmaLoc()                                       const {return (Double_t*)fSigmaLoc;}
   Double_t   GetBField()                                         const {return fBField;}
@@ -250,9 +246,9 @@ class AliITSAlignMille2: public TObject
   Double_t      fLocalInitParam[kNLocal];       // Array with inital values for local parameters for current track
   Double_t      fLocalInitParEr[kNLocal][kNLocal];// Array with inital values for local parameters for current track
   Double_t      fModuleInitParam[kNParCh];      // Array with inital values for current module parameters (init geometry)
-  Double_t      fPintLoc[3]; 
-  Double_t      fPintLoc0[3];
-  Double_t      fPintGlo[3]; 
+  Double_t      fPintLoc[3];                    // track/module intersection point in local coordinates
+  Double_t      fPintLoc0[3];                   // track/module intersection point in local coordinates (before variation)
+  Double_t      fPintGlo[3];                    // track/module intersection point in global coordinates
   Double_t      fMeasLoc[3];                    // current point local coordinates (the original ones)
   Double_t      fMeasGlo[3];                    // current point glob. coord (AliTrackPoint)
   Double_t      fSigmaLoc[3];                   // stdev current point
@@ -282,9 +278,9 @@ class AliITSAlignMille2: public TObject
   TString       fGeometryFileName;              // Geometry file name
   TString       fPreAlignmentFileName;          // file with prealigned objects
   TString       fConstrRefFileName;             // file with prealigned objects wrt which constraints are defined
-  TGeoManager  *fGeoManager;
-  Bool_t        fIsConfigured;
-  TArrayS       fPreAlignQF;
+  TGeoManager  *fGeoManager;                    // pointer to Alice geomanager
+  Bool_t        fIsConfigured;                  // flag for loaded config file
+  TArrayS       fPreAlignQF;                    // prealignment flags (not used?)
   //
   AliITSresponseSDD* fCorrectSDD;   // array of SDD t0/vdrift calib params
   AliITSresponseSDD* fInitialRecSDD;   // array of SDD t0/vdrift calib params used to create the track points

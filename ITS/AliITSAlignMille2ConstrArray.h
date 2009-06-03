@@ -31,7 +31,7 @@ class AliITSAlignMille2ConstrArray : public AliITSAlignMille2Constraint
   //
   virtual Bool_t IncludesModule(Int_t id)            const;
   virtual Bool_t IncludesModPar(Int_t id,Int_t par)  const;
-  virtual Bool_t IncludesModPar(AliITSAlignMille2Module* mod, Int_t par) const;
+  virtual Bool_t IncludesModPar(const AliITSAlignMille2Module* mod, Int_t par) const;
   //
  protected:
   AliITSAlignMille2ConstrArray(const AliITSAlignMille2ConstrArray& src);

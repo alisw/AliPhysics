@@ -80,7 +80,7 @@ Bool_t AliITSAlignMille2ConstrArray::IncludesModPar(Int_t id,Int_t par) const
 }
 
 //________________________________________________________________________________________________________
-Bool_t AliITSAlignMille2ConstrArray::IncludesModPar(AliITSAlignMille2Module* mod, Int_t par) const
+Bool_t AliITSAlignMille2ConstrArray::IncludesModPar(const AliITSAlignMille2Module* mod, Int_t par) const
 {
   // is this module/parameter mentioned in the list?
   return IncludesModPar(mod->GetUniqueID(), par);
