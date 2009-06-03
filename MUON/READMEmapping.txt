@@ -19,16 +19,16 @@ in OCDB has to be regenerated in this way:
 
 For changes in mapping/data:
 <pre>
+$> rm $ALICE_ROOT/OCDB/MUON/Calib/MappingData/Run0_999999999_v0_s0.root
 $> cd $ALICE_ROOT/MUON
-$> rm Calib/MappingData/Run0_999999999_v0_s0.root
 $> aliroot
 root [0] AliMpCDB::WriteMpData(); 
 </pre>
 
 For changes in mapping/data_run:
 <pre>
+$> rm $ALICE_ROOT/OCDB/MUON/Calib/MappingRunData/Run0_999999999_v0_s0.root
 $> cd $ALICE_ROOT/MUON
-$> rm Calib/MappingRunData/Run0_999999999_v0_s0.root
 $> aliroot
 root [0] AliMpCDB::WriteMpRunData(); 
 </pre>
