@@ -29,6 +29,8 @@ class AliXRDPROOFtoolkit : public TObject
   //
   // Interface for low priority users - NO ssh ACCESS to PROOF machines 
   //
+  //  TChain * CountEntries(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1, Int_t startFile=0);
+
   TChain * MakeChain(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1, Int_t startFile=0);
   TChain * MakeChainRandom(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1, Int_t startFile=0);
   TDSet  * MakeSet(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1);

@@ -199,14 +199,17 @@ TChain* AliXRDPROOFtoolkit::MakeChainRandom(const char*fileIn, const char * tree
   }
   in.close();
   Int_t entries = array.GetEntries();
-  printf("Number of entries\t%d",entries);
-  if (maxFiles<0) maxFiles=entries;
-  if (maxFiles>entries) maxFiles=entries;
+  printf("Number of entries\t%d\n",entries);
   //
   //
   //
-  for (Int_t i=0; i<maxFiles; i++){
-    Int_t ifile = TMath::Nint(gRandom->Rndm()*Float_t(entries));
+  Double_t *randomI = new Double_t[entries];
+  Int_t *indexes = new Int_t[entries];
+  for (Int_t i=0;i<entries; i++) randomI[i]=gRandom->Rndm();
+  TMath::Sort(entries,randomI,indexes); 
+  
+  for (Int_t i=startFile; (i<startFile+maxFiles) && (i<entries); i++){
+    Int_t ifile = indexes[i];
     if (ifile<entries && (array.At(ifile)) &&  array.At(ifile)->TestBit(TObject::kCannotPick)==kFALSE){ 
       printf("%d\t%d\t%s\n",i, ifile, array.At(ifile)->GetName());
       chain->Add(array.At(ifile)->GetName());
