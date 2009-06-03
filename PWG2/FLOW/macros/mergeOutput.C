@@ -77,29 +77,53 @@ void mergeOutput(TString type="", Int_t nRuns=-1, Int_t mode=mLocal)
  }
  fqdFileMerger->OutputFile(mergedFileNameFQD);
  
- // LYZ1:                       
- TFileMerger *lyz1FileMerger = new TFileMerger();
- TString mergedFileNameLYZ1("mergedLYZ1analysis");
- (mergedFileNameLYZ1+=(type.Data()))+=(".root");
- TString pwdLYZ1=pwd.Data(); 
- if(!(gSystem->AccessPathName((pwdLYZ1+=mergedFileNameLYZ1).Data(),kFileExists)))
+ // LYZ1SUM:                       
+ TFileMerger *lyz1sumFileMerger = new TFileMerger();
+ TString mergedFileNameLYZ1SUM("mergedLYZ1SUManalysis");
+ (mergedFileNameLYZ1SUM+=(type.Data()))+=(".root");
+ TString pwdLYZ1SUM=pwd.Data(); 
+ if(!(gSystem->AccessPathName((pwdLYZ1SUM+=mergedFileNameLYZ1SUM).Data(),kFileExists)))
  {
-  cout<<"WARNING: You already have a merged output for LYZ1 !!!!"<<endl;
+  cout<<"WARNING: You already have a merged output for LYZ1SUM !!!!"<<endl;
   break;
  }
- lyz1FileMerger->OutputFile(mergedFileNameLYZ1);
+ lyz1sumFileMerger->OutputFile(mergedFileNameLYZ1SUM);
  
- // LYZ2:                       
- TFileMerger *lyz2FileMerger = new TFileMerger();
- TString mergedFileNameLYZ2("mergedLYZ2analysis");
- (mergedFileNameLYZ2+=(type.Data()))+=(".root");
- TString pwdLYZ2=pwd.Data(); 
- if(!(gSystem->AccessPathName((pwdLYZ2+=mergedFileNameLYZ2).Data(),kFileExists)))
+ // LYZ2SUM:                       
+ TFileMerger *lyz2sumFileMerger = new TFileMerger();
+ TString mergedFileNameLYZ2SUM("mergedLYZ2SUManalysis");
+ (mergedFileNameLYZ2SUM+=(type.Data()))+=(".root");
+ TString pwdLYZ2SUM=pwd.Data(); 
+ if(!(gSystem->AccessPathName((pwdLYZ2SUM+=mergedFileNameLYZ2SUM).Data(),kFileExists)))
  {
-  cout<<"WARNING: You already have a merged output for LYZ2 !!!!"<<endl;
+  cout<<"WARNING: You already have a merged output for LYZ2SUM !!!!"<<endl;
   break;
  }
- lyz2FileMerger->OutputFile(mergedFileNameLYZ2);
+ lyz2sumFileMerger->OutputFile(mergedFileNameLYZ2SUM);
+ 
+ // LYZ1PROD:                       
+ TFileMerger *lyz1prodFileMerger = new TFileMerger();
+ TString mergedFileNameLYZ1PROD("mergedLYZ1PRODanalysis");
+ (mergedFileNameLYZ1PROD+=(type.Data()))+=(".root");
+ TString pwdLYZ1PROD=pwd.Data(); 
+ if(!(gSystem->AccessPathName((pwdLYZ1PROD+=mergedFileNameLYZ1PROD).Data(),kFileExists)))
+ {
+  cout<<"WARNING: You already have a merged output for LYZ1PROD !!!!"<<endl;
+  break;
+ }
+ lyz1prodFileMerger->OutputFile(mergedFileNameLYZ1PROD);
+ 
+ // LYZ2PROD:                       
+ TFileMerger *lyz2prodFileMerger = new TFileMerger();
+ TString mergedFileNameLYZ2PROD("mergedLYZ2PRODanalysis");
+ (mergedFileNameLYZ2PROD+=(type.Data()))+=(".root");
+ TString pwdLYZ2PROD=pwd.Data(); 
+ if(!(gSystem->AccessPathName((pwdLYZ2PROD+=mergedFileNameLYZ2PROD).Data(),kFileExists)))
+ {
+  cout<<"WARNING: You already have a merged output for LYZ2PROD !!!!"<<endl;
+  break;
+ }
+ lyz2prodFileMerger->OutputFile(mergedFileNameLYZ2SUM);
  
  // LYZEP:                       
  TFileMerger *lyzepFileMerger = new TFileMerger();
@@ -194,27 +218,49 @@ void mergeOutput(TString type="", Int_t nRuns=-1, Int_t mode=mLocal)
      cout<<"WARNING: Couldn't find a file "<<fileNameFQD.Data()<<". Merging will continue without this file."<<endl;
     }   
   
-  // LYZ1:     
-  TString fileNameLYZ1 = presentDirName;   
-  ((fileNameLYZ1+="outputLYZ1analysis")+=type.Data())+=".root";
-  if(!(gSystem->AccessPathName(fileNameLYZ1.Data(),kFileExists)))
+  // LYZ1SUM:     
+  TString fileNameLYZ1SUM = presentDirName;   
+  ((fileNameLYZ1SUM+="outputLYZ1SUManalysis")+=type.Data())+=".root";
+  if(!(gSystem->AccessPathName(fileNameLYZ1SUM.Data(),kFileExists)))
   {
-   lyz1FileMerger->AddFile(fileNameLYZ1.Data());
+   lyz1sumFileMerger->AddFile(fileNameLYZ1SUM.Data());
   } else 
     {
-     cout<<"WARNING: Couldn't find a file "<<fileNameLYZ1.Data()<<". Merging will continue without this file."<<endl;
+     cout<<"WARNING: Couldn't find a file "<<fileNameLYZ1SUM.Data()<<". Merging will continue without this file."<<endl;
     }   
     
-  // LYZ2:     
-  TString fileNameLYZ2 = presentDirName;   
-  ((fileNameLYZ2+="outputLYZ2analysis")+=type.Data())+=".root";
-  if(!(gSystem->AccessPathName(fileNameLYZ2.Data(),kFileExists)))
+  // LYZ2SUM:     
+  TString fileNameLYZ2SUM = presentDirName;   
+  ((fileNameLYZ2SUM+="outputLYZ2SUManalysis")+=type.Data())+=".root";
+  if(!(gSystem->AccessPathName(fileNameLYZ2SUM.Data(),kFileExists)))
   {
-   lyz2FileMerger->AddFile(fileNameLYZ2.Data());
+   lyz2sumFileMerger->AddFile(fileNameLYZ2SUM.Data());
   } else 
     {
-     cout<<"WARNING: Couldn't find a file "<<fileNameLYZ2.Data()<<". Merging will continue without this file."<<endl;
+     cout<<"WARNING: Couldn't find a file "<<fileNameLYZ2SUM.Data()<<". Merging will continue without this file."<<endl;
     }     
+    
+  // LYZ1PROD:     
+  TString fileNameLYZ1PROD = presentDirName;   
+  ((fileNameLYZ1PROD+="outputLYZ1PRODanalysis")+=type.Data())+=".root";
+  if(!(gSystem->AccessPathName(fileNameLYZ1PROD.Data(),kFileExists)))
+  {
+   lyz1prodFileMerger->AddFile(fileNameLYZ1PROD.Data());
+  } else 
+    {
+     cout<<"WARNING: Couldn't find a file "<<fileNameLYZ1PROD.Data()<<". Merging will continue without this file."<<endl;
+    }   
+    
+  // LYZ2PROD:     
+  TString fileNameLYZ2PROD = presentDirName;   
+  ((fileNameLYZ2PROD+="outputLYZ2PRODanalysis")+=type.Data())+=".root";
+  if(!(gSystem->AccessPathName(fileNameLYZ2PROD.Data(),kFileExists)))
+  {
+   lyz2prodFileMerger->AddFile(fileNameLYZ2PROD.Data());
+  } else 
+    {
+     cout<<"WARNING: Couldn't find a file "<<fileNameLYZ2PROD.Data()<<". Merging will continue without this file."<<endl;
+    }      
     
   // LYZEP:     
   TString fileNameLYZEP = presentDirName;   
@@ -236,48 +282,70 @@ void mergeOutput(TString type="", Int_t nRuns=-1, Int_t mode=mLocal)
  {
   cout<<endl;
   cout<<" ---- Starting to merge MCEP files ----"<<endl;
+  cout<<endl;
   mcepFileMerger->Merge();
  } 
  if(spFileMerger)
  {
   cout<<endl;
   cout<<" ---- Starting to merge SP files ----"<<endl;
+  cout<<endl;
   spFileMerger->Merge();
  }
  if(gfcFileMerger)
  {
   cout<<endl;
   cout<<" ---- Starting to merge GFC files ----"<<endl;
+  cout<<endl;
   gfcFileMerger->Merge();
  }
  if(qcFileMerger)
  {
   cout<<endl;
   cout<<" ---- Starting to merge QC files ----"<<endl;
+  cout<<endl;
   qcFileMerger->Merge();
  }
  if(fqdFileMerger)
  {
   cout<<endl;
   cout<<" ---- Starting to merge FQD files ----"<<endl;
+  cout<<endl;
   fqdFileMerger->Merge();
  }
- if(lyz1FileMerger)
+ if(lyz1sumFileMerger)
  {
   cout<<endl;
-  cout<<" ---- Starting to merge LYZ1 files ----"<<endl;
-  lyz1FileMerger->Merge();
+  cout<<" ---- Starting to merge LYZ1SUM files ----"<<endl;
+  cout<<endl;
+  lyz1sumFileMerger->Merge();
  }
- if(lyz2FileMerger)
+ if(lyz2sumFileMerger)
  {
   cout<<endl;
-  cout<<" ---- Starting to merge LYZ2 files ----"<<endl;
-  lyz2FileMerger->Merge();
+  cout<<" ---- Starting to merge LYZ2SUM files ----"<<endl;
+  cout<<endl;
+  lyz2sumFileMerger->Merge();
+ }
+ if(lyz1prodFileMerger)
+ {
+  cout<<endl;
+  cout<<" ---- Starting to merge LYZ1PROD files ----"<<endl;
+  cout<<endl;
+  lyz1prodFileMerger->Merge();
+ }
+ if(lyz2prodFileMerger)
+ {
+  cout<<endl;
+  cout<<" ---- Starting to merge LYZ2PROD files ----"<<endl;
+  cout<<endl;
+  lyz2prodFileMerger->Merge();
  }
  if(lyzepFileMerger)
  {
   cout<<endl;
   cout<<" ---- Starting to merge LYZEP files ----"<<endl;
+  cout<<endl;
   lyzepFileMerger->Merge();
  }
  
