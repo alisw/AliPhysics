@@ -676,7 +676,7 @@ Double_t AliMUONVTrackReconstructor::TryTwoClustersFast(const AliMUONTrackParam 
   
   // extrapolate linearly track parameters and covariances at the z position of the second cluster
   trackParamAtCluster2 = trackParamAtCluster1;
-  AliMUONTrackExtrap::LinearExtrapToZ(&trackParamAtCluster2, cluster2->GetZ());
+  AliMUONTrackExtrap::LinearExtrapToZCov(&trackParamAtCluster2, cluster2->GetZ());
   
   // set pointer to cluster2 into trackParamAtCluster2
   trackParamAtCluster2.SetClusterPtr(cluster2);
@@ -762,7 +762,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInChamber(AliMUONTrack &trac
     
     // try to add the current cluster accuratly
     extrapTrackParamAtCluster = trackParam;
-    AliMUONTrackExtrap::LinearExtrapToZ(&extrapTrackParamAtCluster, cluster->GetZ());
+    AliMUONTrackExtrap::LinearExtrapToZCov(&extrapTrackParamAtCluster, cluster->GetZ());
     chi2WithOneCluster = TryOneCluster(extrapTrackParamAtCluster, cluster, extrapTrackParamAtCluster);
     
     // if good chi2 then consider to add cluster
@@ -910,7 +910,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
     
     // try to add the current cluster accuratly
     extrapTrackParamAtCluster2 = trackParam;
-    AliMUONTrackExtrap::LinearExtrapToZ(&extrapTrackParamAtCluster2, clusterCh2->GetZ());
+    AliMUONTrackExtrap::LinearExtrapToZCov(&extrapTrackParamAtCluster2, clusterCh2->GetZ());
     chi2WithOneCluster = TryOneCluster(extrapTrackParamAtCluster2, clusterCh2, extrapTrackParamAtCluster2);
     
     // if good chi2 then try to attach a cluster in the other chamber too
@@ -1026,7 +1026,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
     }
     
     //Extrapolate trackCandidate to chamber "ch2"
-    AliMUONTrackExtrap::LinearExtrapToZ(&trackParam, AliMUONConstants::DefaultChamberZ(ch2));
+    AliMUONTrackExtrap::LinearExtrapToZCov(&trackParam, AliMUONConstants::DefaultChamberZ(ch2));
     
     // add MCS effect for next step
     AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
@@ -1046,7 +1046,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
       
       // try to add the current cluster accuratly
       extrapTrackParamAtCluster1 = trackParam;
-      AliMUONTrackExtrap::LinearExtrapToZ(&extrapTrackParamAtCluster1, clusterCh1->GetZ());
+      AliMUONTrackExtrap::LinearExtrapToZCov(&extrapTrackParamAtCluster1, clusterCh1->GetZ());
       chi2WithOneCluster = TryOneCluster(extrapTrackParamAtCluster1, clusterCh1, extrapTrackParamAtCluster1);
       
       // if good chi2 then consider to add clusterCh1

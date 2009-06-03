@@ -36,8 +36,11 @@ class AliMUONTrackExtrap : public TObject
   static Double_t GetImpactParamFromBendingMomentum(Double_t bendingMomentum);
   static Double_t GetBendingMomentumFromImpactParam(Double_t impactParam);
   
+  // Linearly extrapolate track parameters
+  static void LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd);
+  
   // Linearly extrapolate track parameters and covariances
-  static void LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator = kFALSE);
+  static void LinearExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator = kFALSE);
   
   // Extrapolate track parameters in magnetic field
   static void ExtrapToZ(AliMUONTrackParam *trackParam, Double_t zEnd);

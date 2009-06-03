@@ -102,9 +102,9 @@ AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactParam)
 }
 
 //__________________________________________________________________________
-void AliMUONTrackExtrap::LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator)
+void AliMUONTrackExtrap::LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
 {
-  /// Track parameters (and their covariances if any) linearly extrapolated to the plane at "zEnd".
+  /// Track parameters linearly extrapolated to the plane at "zEnd".
   /// On return, results from the extrapolation are updated in trackParam.
   
   if (trackParam->GetZ() == zEnd) return; // nothing to be done if same z
@@ -114,29 +114,43 @@ void AliMUONTrackExtrap::LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t
   trackParam->SetNonBendingCoor(trackParam->GetNonBendingCoor() + trackParam->GetNonBendingSlope() * dZ);
   trackParam->SetBendingCoor(trackParam->GetBendingCoor() + trackParam->GetBendingSlope() * dZ);
   trackParam->SetZ(zEnd);
+}
+
+//__________________________________________________________________________
+void AliMUONTrackExtrap::LinearExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator)
+{
+  /// Track parameters and their covariances linearly extrapolated to the plane at "zEnd".
+  /// On return, results from the extrapolation are updated in trackParam.
   
-  // Update track parameters covariances if any
-  if (trackParam->CovariancesExist()) {
-    TMatrixD paramCov(trackParam->GetCovariances());
-    paramCov(0,0) += dZ * dZ * paramCov(1,1) + 2. * dZ * paramCov(0,1);
-    paramCov(0,1) += dZ * paramCov(1,1);
-    paramCov(1,0) = paramCov(0,1);
-    paramCov(2,2) += dZ * dZ * paramCov(3,3) + 2. * dZ * paramCov(2,3);
-    paramCov(2,3) += dZ * paramCov(3,3);
-    paramCov(3,2) = paramCov(2,3);
-    trackParam->SetCovariances(paramCov);
-    
-    // Update the propagator if required
-    if (updatePropagator) {
-      TMatrixD jacob(5,5);
-      jacob.UnitMatrix();
-      jacob(0,1) = dZ;
-      jacob(2,3) = dZ;
-      trackParam->UpdatePropagator(jacob);
-    }
-    
+  if (trackParam->GetZ() == zEnd) return; // nothing to be done if same z
+  
+  // No need to propagate the covariance matrix if it does not exist
+  if (!trackParam->CovariancesExist()) {
+    cout<<"W-AliMUONTrackExtrap::LinearExtrapToZCov: Covariance matrix does not exist"<<endl;
+    // Extrapolate linearly track parameters to "zEnd"
+    LinearExtrapToZ(trackParam,zEnd);
+    return;
   }
   
+  // Compute track parameters
+  Double_t dZ = zEnd - trackParam->GetZ();
+  trackParam->SetNonBendingCoor(trackParam->GetNonBendingCoor() + trackParam->GetNonBendingSlope() * dZ);
+  trackParam->SetBendingCoor(trackParam->GetBendingCoor() + trackParam->GetBendingSlope() * dZ);
+  trackParam->SetZ(zEnd);
+  
+  // Calculate the jacobian related to the track parameters linear extrapolation to "zEnd"
+  TMatrixD jacob(5,5);
+  jacob.UnitMatrix();
+  jacob(0,1) = dZ;
+  jacob(2,3) = dZ;
+  
+  // Extrapolate track parameter covariances to "zEnd"
+  TMatrixD tmp(trackParam->GetCovariances(),TMatrixD::kMultTranspose,jacob);
+  TMatrixD tmp2(jacob,TMatrixD::kMult,tmp);
+  trackParam->SetCovariances(tmp2);
+  
+  // Update the propagator if required
+  if (updatePropagator) trackParam->UpdatePropagator(jacob);
 }
 
 //__________________________________________________________________________
@@ -287,7 +301,7 @@ void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zE
   if (trackParam->GetZ() == zEnd) return; // nothing to be done if same z
   
   if (!fgFieldON) { // linear extrapolation if no magnetic field
-    AliMUONTrackExtrap::LinearExtrapToZ(trackParam,zEnd,updatePropagator);
+    AliMUONTrackExtrap::LinearExtrapToZCov(trackParam,zEnd,updatePropagator);
     return;
   }
   
@@ -412,7 +426,7 @@ void AliMUONTrackExtrap::CorrectMCSEffectInAbsorber(AliMUONTrackParam* param,
   
   // Get track parameters and covariances in the Branson plane corrected for magnetic field effect
   ExtrapToZCov(param,zVtx);
-  LinearExtrapToZ(param,zB);
+  LinearExtrapToZCov(param,zB);
   
   // compute track parameters at vertex
   TMatrixD newParam(5,1);
