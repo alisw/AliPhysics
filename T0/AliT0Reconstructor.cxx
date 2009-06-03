@@ -239,9 +239,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Int_t allData[110][5];
   
   Int_t timeCFD[24], timeLED[24], chargeQT0[24], chargeQT1[24];
-  TString option = GetOption(); 
-  AliDebug(1,Form("Option: %s\n", option.Data()));
-   
    
   for (Int_t i0=0; i0<105; i0++)
     {
@@ -253,12 +250,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Int_t pmtBestA=99999;
   Int_t pmtBestC=99999;
   Float_t timeDiff=9999999, meanTime=0;
-  Double_t qt=0;
-  //  Int_t mv2MIP = fParam-> GetmV2Mip();     
   Float_t meanVertex = fParam->GetMeanVertex();
   printf("meanVertex %f \n",meanVertex);
-  //  UInt_t type =rawReader->GetType();	 
-  
+   
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
   
   recTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints, 405,1);
@@ -321,7 +315,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   else
 	     adc[ipmt] = 0;
 	   
-	   time[ipmt] = fCalib-> WalkCorrection( ipmt, adc[ipmt], timeCFD[ipmt],"cosmic" ) ;
+	   time[ipmt] = fCalib-> WalkCorrection( ipmt, adc[ipmt], timeCFD[ipmt]) ;
 	   
       	   Double_t sl = timeLED[ipmt] - timeCFD[ipmt];
 	     //    time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt],"cosmic" ) ;

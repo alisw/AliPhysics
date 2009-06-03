@@ -88,7 +88,7 @@ AliT0Calibrator &AliT0Calibrator::operator=(const AliT0Calibrator &r)
 
 
 //____________________________________________________________________
-Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time, TString option) 
+Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time) 
 {
   //slewing correcion and equalizing channels
 
