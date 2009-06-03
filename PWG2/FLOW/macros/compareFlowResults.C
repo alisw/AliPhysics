@@ -18,10 +18,10 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   //==================================================================================
   Bool_t plotIntFlow = kTRUE;                  // integrated flow (no-name) // to be improved
   // RP = particles used to determine the reaction plane
-  Bool_t plotIntFlowRP = kTRUE;               // integrated flow RP
+  Bool_t plotIntFlowRP = kTRUE;              // integrated flow RP
   Bool_t plotDiffFlowPtRP = kTRUE;             // differential flow (Pt,RP)
-  Bool_t plotDiffFlowEtaRP = kTRUE;            // differential flow (Eta,RP)
-  Bool_t plotDiffFlowPtRelativeToMCRP = kTRUE; // plot |v{MC}-v{method}/v{MC}| as a function of pt for RPs   
+  Bool_t plotDiffFlowEtaRP = kTRUE;             // differential flow (Eta,RP)
+  Bool_t plotDiffFlowPtRelativeToMCRP = kTRUE;  // plot |v{MC}-v{method}/v{MC}| as a function of pt for RPs   
   // POI = particle of interest
   Bool_t plotIntFlowPOI = kTRUE;              //integrated flow POI
   Bool_t plotDiffFlowPtPOI = kTRUE;           //differential flow (Pt,POI)
@@ -31,73 +31,78 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   
   //==================================================================================
   // set here which methods will be plotted by default for differential flow (Pt,RP):
-  Bool_t plotMCPtRP    = kFALSE;
-  Bool_t plotSPPtRP    = kTRUE;
-  Bool_t plotGFC2PtRP  = kTRUE;
-  Bool_t plotGFC4PtRP  = kTRUE;
-  Bool_t plotGFC6PtRP  = kTRUE;
-  Bool_t plotGFC8PtRP  = kTRUE;
-  Bool_t plotQC2PtRP   = kTRUE;
-  Bool_t plotQC4PtRP   = kTRUE;
-  Bool_t plotQC6PtRP   = kFALSE; // not calculated yet
-  Bool_t plotQC8PtRP   = kFALSE; // not calculated yet
-  Bool_t plotLYZ2PtRP  = kTRUE;
-  Bool_t plotLYZEPPtRP = kTRUE;  
+  Bool_t plotMCPtRP       = kFALSE;
+  Bool_t plotSPPtRP       = kTRUE;
+  Bool_t plotGFC2PtRP     = kTRUE;
+  Bool_t plotGFC4PtRP     = kTRUE;
+  Bool_t plotGFC6PtRP     = kTRUE;
+  Bool_t plotGFC8PtRP     = kTRUE;
+  Bool_t plotQC2PtRP      = kTRUE;
+  Bool_t plotQC4PtRP      = kTRUE;
+  Bool_t plotQC6PtRP      = kFALSE; // not calculated yet
+  Bool_t plotQC8PtRP      = kFALSE; // not calculated yet
+  Bool_t plotLYZ2SUMPtRP  = kTRUE;
+  Bool_t plotLYZ2PRODPtRP = kTRUE;
+  Bool_t plotLYZEPPtRP    = kTRUE; 
   
   // set here which methods will be plotted by default for differential flow (Eta,RP):
-  Bool_t plotMCEtaRP    = kFALSE;
-  Bool_t plotSPEtaRP    = kTRUE;
-  Bool_t plotGFC2EtaRP  = kTRUE;
-  Bool_t plotGFC4EtaRP  = kTRUE;
-  Bool_t plotGFC6EtaRP  = kTRUE;
-  Bool_t plotGFC8EtaRP  = kTRUE;
-  Bool_t plotQC2EtaRP   = kTRUE;
-  Bool_t plotQC4EtaRP   = kTRUE;
-  Bool_t plotQC6EtaRP   = kFALSE; // not calculated yet
-  Bool_t plotQC8EtaRP   = kFALSE; // not calculated yet
-  Bool_t plotLYZ2EtaRP  = kTRUE;
-  Bool_t plotLYZEPEtaRP = kTRUE;
+  Bool_t plotMCEtaRP       = kFALSE;
+  Bool_t plotSPEtaRP       = kTRUE;
+  Bool_t plotGFC2EtaRP     = kTRUE;
+  Bool_t plotGFC4EtaRP     = kTRUE;
+  Bool_t plotGFC6EtaRP     = kTRUE;
+  Bool_t plotGFC8EtaRP     = kTRUE;
+  Bool_t plotQC2EtaRP      = kTRUE;
+  Bool_t plotQC4EtaRP      = kTRUE;
+  Bool_t plotQC6EtaRP      = kFALSE; // not calculated yet
+  Bool_t plotQC8EtaRP      = kFALSE; // not calculated yet
+  Bool_t plotLYZ2SUMEtaRP  = kTRUE;
+  Bool_t plotLYZ2PRODEtaRP = kTRUE;
+  Bool_t plotLYZEPEtaRP    = kTRUE;
   
   // set here which methods will be plotted by default for |v{MC}-v{method}/v{MC}| as a function of pt for RPs 
-  Bool_t plotSPRelativeToMCRP    = kTRUE;
-  Bool_t plotGFC2RelativeToMCRP  = kTRUE;
-  Bool_t plotGFC4RelativeToMCRP  = kTRUE;
-  Bool_t plotGFC6RelativeToMCRP  = kTRUE;
-  Bool_t plotGFC8RelativeToMCRP  = kTRUE;
-  Bool_t plotQC2RelativeToMCRP   = kTRUE;
-  Bool_t plotQC4RelativeToMCRP   = kTRUE;
-  Bool_t plotQC6RelativeToMCRP   = kFALSE; // not calculated yet
-  Bool_t plotQC8RelativeToMCRP   = kFALSE; // not calculated yet
-  Bool_t plotLYZ2RelativeToMCRP  = kTRUE;
-  Bool_t plotLYZEPRelativeToMCRP = kTRUE;  
+  Bool_t plotSPRelativeToMCRP       = kTRUE;
+  Bool_t plotGFC2RelativeToMCRP     = kTRUE;
+  Bool_t plotGFC4RelativeToMCRP     = kTRUE;
+  Bool_t plotGFC6RelativeToMCRP     = kTRUE;
+  Bool_t plotGFC8RelativeToMCRP     = kTRUE;
+  Bool_t plotQC2RelativeToMCRP      = kTRUE;
+  Bool_t plotQC4RelativeToMCRP      = kTRUE;
+  Bool_t plotQC6RelativeToMCRP      = kFALSE; // not calculated yet
+  Bool_t plotQC8RelativeToMCRP      = kFALSE; // not calculated yet
+  Bool_t plotLYZ2SUMRelativeToMCRP  = kTRUE;
+  Bool_t plotLYZ2PRODRelativeToMCRP = kTRUE;
+  Bool_t plotLYZEPRelativeToMCRP    = kTRUE;  
   
   // set here which methods will be plotted by default for differential flow (Pt,POI):
-  Bool_t plotMCPtPOI    = kFALSE;
-  Bool_t plotSPPtPOI    = kTRUE;
-  Bool_t plotGFC2PtPOI  = kTRUE;
-  Bool_t plotGFC4PtPOI  = kTRUE;
-  Bool_t plotGFC6PtPOI  = kTRUE;
-  Bool_t plotGFC8PtPOI  = kTRUE;
-  Bool_t plotQC2PtPOI   = kTRUE;
-  Bool_t plotQC4PtPOI   = kTRUE;
-  Bool_t plotQC6PtPOI   = kFALSE; // not calculated yet
-  Bool_t plotQC8PtPOI   = kFALSE; // not calculated yet
-  Bool_t plotLYZ2PtPOI  = kTRUE;
-  Bool_t plotLYZEPPtPOI = kTRUE; 
+  Bool_t plotMCPtPOI       = kFALSE;
+  Bool_t plotSPPtPOI       = kTRUE;
+  Bool_t plotGFC2PtPOI     = kTRUE;
+  Bool_t plotGFC4PtPOI     = kTRUE;
+  Bool_t plotGFC6PtPOI     = kTRUE;
+  Bool_t plotGFC8PtPOI     = kTRUE;
+  Bool_t plotQC2PtPOI      = kTRUE;
+  Bool_t plotQC4PtPOI      = kTRUE;
+  Bool_t plotQC6PtPOI      = kFALSE; // not calculated yet
+  Bool_t plotQC8PtPOI      = kFALSE; // not calculated yet
+  Bool_t plotLYZ2SUMPtPOI  = kTRUE;
+  Bool_t plotLYZ2PRODPtPOI = kTRUE;
+  Bool_t plotLYZEPPtPOI    = kTRUE; 
   
   // set here which methods will be plotted by default for differential flow (Eta,POI):
-  Bool_t plotMCEtaPOI    = kFALSE;
-  Bool_t plotSPEtaPOI    = kTRUE;
-  Bool_t plotGFC2EtaPOI  = kTRUE;
-  Bool_t plotGFC4EtaPOI  = kTRUE;
-  Bool_t plotGFC6EtaPOI  = kTRUE;
-  Bool_t plotGFC8EtaPOI  = kTRUE;
-  Bool_t plotQC2EtaPOI   = kTRUE;
-  Bool_t plotQC4EtaPOI   = kTRUE;
-  Bool_t plotQC6EtaPOI   = kFALSE; // not calculated yet
-  Bool_t plotQC8EtaPOI   = kFALSE; // not calculated yet
-  Bool_t plotLYZ2EtaPOI  = kTRUE;
-  Bool_t plotLYZEPEtaPOI = kTRUE;
+  Bool_t plotMCEtaPOI       = kFALSE;
+  Bool_t plotSPEtaPOI       = kTRUE;
+  Bool_t plotGFC2EtaPOI     = kTRUE;
+  Bool_t plotGFC4EtaPOI     = kTRUE;
+  Bool_t plotGFC6EtaPOI     = kTRUE;
+  Bool_t plotGFC8EtaPOI     = kTRUE;
+  Bool_t plotQC2EtaPOI      = kTRUE;
+  Bool_t plotQC4EtaPOI      = kTRUE;
+  Bool_t plotQC6EtaPOI      = kFALSE; // not calculated yet
+  Bool_t plotQC8EtaPOI      = kFALSE; // not calculated yet
+  Bool_t plotLYZ2SUMEtaPOI  = kTRUE;
+  Bool_t plotLYZ2PRODEtaPOI = kTRUE;
+  Bool_t plotLYZEPEtaPOI    = kTRUE;
   //==================================================================================
  
   
@@ -133,9 +138,12 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   // QC{8}
   Int_t markerStyleQC8 = 24; // open circle
   Int_t markerColorQC8 = kOrange+3;
-  // LYZ2
-  Int_t markerStyleLYZ2 = 22; // full triangle
-  Int_t markerColorLYZ2 = kYellow+3;
+  // LYZ2SUM
+  Int_t markerStyleLYZ2SUM = 22; // full triangle
+  Int_t markerColorLYZ2SUM = kYellow+3;
+  // LYZ2PROD
+  Int_t markerStyleLYZ2PROD = 22; // full triangle
+  Int_t markerColorLYZ2PROD = kGreen+3;
   // LYZEP
   Int_t markerStyleLYZEP = 26; // open triangle
   Int_t markerColorLYZEP = kYellow+3; 
@@ -166,10 +174,12 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Int_t binQC8 = 10; 
   // FQD 
   Int_t binFQD = 11; 
-  // LYZ1
-  Int_t binLYZ1 = 12; 
+  // LYZ1SUM
+  Int_t binLYZ1SUM = 12; 
+  // LYZ1PROD
+  Int_t binLYZ1PROD = 13; 
   // LYZEP
-  Int_t binLYZEP = 13; 
+  Int_t binLYZEP = 14; 
   //==================================================================================
 
 
@@ -197,10 +207,12 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Int_t binQC8RP = 10; 
   // FQD 
   Int_t binFQDRP = 11; 
-  // LYZ2
-  Int_t binLYZ2RP = 12; 
+  // LYZ2SUM
+  Int_t binLYZ2SUMRP = 12; 
+  // LYZ2PROD
+  Int_t binLYZ2PRODRP = 13; 
   // LYZEP
-  Int_t binLYZEPRP = 13; 
+  Int_t binLYZEPRP = 14; 
   //==================================================================================
 
 
@@ -228,10 +240,12 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Int_t binQC8POI = 10; 
   // FQD 
   Int_t binFQDPOI = 11; 
-  // LYZ2
-  Int_t binLYZ2POI = 12;  
+  // LYZ2SUM
+  Int_t binLYZ2SUMPOI = 12;  
+  // LYZ2PROD
+  Int_t binLYZ2PRODPOI = 13;    
   // LYZEP
-  Int_t binLYZEPPOI = 13; 
+  Int_t binLYZEPPOI = 14; 
   //==================================================================================
  
                                         
@@ -247,13 +261,21 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   TFile* fileSP = NULL;
   fileSP = TFile::Open(((inputFileNameSP.Append(type)).Append(".root")).Data(), "READ"); 
   
-  TString inputFileNameLYZ1 = "outputLYZ1analysis";
-  TFile* fileLYZ1 = NULL;
-  fileLYZ1 = TFile::Open(((inputFileNameLYZ1.Append(type)).Append(".root")).Data(), "READ"); 
+  TString inputFileNameLYZ1SUM = "outputLYZ1SUManalysis";
+  TFile* fileLYZ1SUM = NULL;
+  fileLYZ1SUM = TFile::Open(((inputFileNameLYZ1SUM.Append(type)).Append(".root")).Data(), "READ"); 
   
-  TString inputFileNameLYZ2 = "outputLYZ2analysis";
-  TFile* fileLYZ2 = NULL;
-  fileLYZ2 = TFile::Open(((inputFileNameLYZ2.Append(type)).Append(".root")).Data(), "READ"); 
+  TString inputFileNameLYZ2SUM = "outputLYZ2SUManalysis";
+  TFile* fileLYZ2SUM = NULL;
+  fileLYZ2SUM = TFile::Open(((inputFileNameLYZ2SUM.Append(type)).Append(".root")).Data(), "READ"); 
+  
+  TString inputFileNameLYZ1PROD = "outputLYZ1PRODanalysis";
+  TFile* fileLYZ1PROD = NULL;
+  fileLYZ1PROD = TFile::Open(((inputFileNameLYZ1PROD.Append(type)).Append(".root")).Data(), "READ"); 
+  
+  TString inputFileNameLYZ2PROD = "outputLYZ2PRODanalysis";
+  TFile* fileLYZ2PROD = NULL;
+  fileLYZ2PROD = TFile::Open(((inputFileNameLYZ2PROD.Append(type)).Append(".root")).Data(), "READ"); 
   
   TString inputFileNameLYZEP = "outputLYZEPanalysis";
   TFile* fileLYZEP = NULL;
@@ -334,7 +356,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   //                             INTEGRATED FLOW (no-name, RP and POI)
   //==================================================================================
   // the number of different methods:
-  const Int_t nMethods=13;
+  const Int_t nMethods=14;
   
   // booking the histogram for the integrated flow results from all methods:
   TH1D* intFlowAll = new TH1D("intFlowAll","Integrated Flow",nMethods,0,nMethods);      
@@ -353,7 +375,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   (intFlowAll->GetXaxis())->SetBinLabel(binGFC8,"v_{2}{8,GFC}");
   (intFlowAll->GetXaxis())->SetBinLabel(binQC8,"v_{2}{8,QC}");
   (intFlowAll->GetXaxis())->SetBinLabel(binFQD,"v_{2}{FQD}");
-  (intFlowAll->GetXaxis())->SetBinLabel(binLYZ1,"v_{2}{LYZ}");
+  (intFlowAll->GetXaxis())->SetBinLabel(binLYZ1SUM,"v_{2}{LYZ,sum}");
+  (intFlowAll->GetXaxis())->SetBinLabel(binLYZ1PROD,"v_{2}{LYZ,prod}");
   (intFlowAll->GetXaxis())->SetBinLabel(binLYZEP,"v_{2}{LYZEP}");
   
   // booking the graph to store flow values and errors from all methods:    
@@ -411,36 +434,70 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
     }
   }
   
-  // LYZ1 = Lee-Yang Zeros (1st run) is used to get only 'no-name' integrated flow
-  TList *pListLYZ1 = NULL;
-  AliFlowCommonHist *lyz1CommonHist = NULL;
-  AliFlowCommonHistResults *lyz1CommonHistRes = NULL; 
-  if(fileLYZ1) {
-    fileLYZ1->GetObject("cobjLYZ1",pListLYZ1); 
-    if(pListLYZ1) {
-      lyz1CommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ1->FindObject("AliFlowCommonHistLYZ1"));
-      lyz1CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ1->FindObject("AliFlowCommonHistResultsLYZ1"));
-      if(lyz1CommonHistRes) {
-	flowValue[binLYZ1-1] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-	flowError[binLYZ1-1] = (lyz1CommonHistRes->GetHistIntFlow())->GetBinError(1);
+  // LYZ1SUM = Lee-Yang Zeros (1st run, sum) is used to get only 'no-name' integrated flow
+  TList *pListLYZ1SUM = NULL;
+  AliFlowCommonHist *lyz1sumCommonHist = NULL;
+  AliFlowCommonHistResults *lyz1sumCommonHistRes = NULL; 
+  if(fileLYZ1SUM) {
+    fileLYZ1SUM->GetObject("cobjLYZ1SUM",pListLYZ1SUM); 
+    if(pListLYZ1SUM) {
+      lyz1sumCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ1SUM->FindObject("AliFlowCommonHistLYZ1"));
+      lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1"));
+      if(lyz1sumCommonHistRes) {
+	flowValue[binLYZ1SUM-1] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+	flowError[binLYZ1SUM-1] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinError(1);
       }
     }
   }
   
-  // LYZ2 = Lee-Yang Zeros (2nd run) is used to get RP's and POI's integrated flow
-  TList *pListLYZ2 = NULL;
-  AliFlowCommonHist *lyz2CommonHist = NULL;
-  AliFlowCommonHistResults *lyz2CommonHistRes = NULL; 
-  if(fileLYZ2) {
-    fileLYZ2->GetObject("cobjLYZ2",pListLYZ2); 
-    if(pListLYZ2) {
-      lyz2CommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ2->FindObject("AliFlowCommonHistLYZ2"));
-      lyz2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ2->FindObject("AliFlowCommonHistResultsLYZ2"));
-      if(lyz2CommonHistRes) {
-	flowValueRP[binLYZ2RP-1] = (lyz2CommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
-	flowErrorRP[binLYZ2RP-1] = (lyz2CommonHistRes->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[binLYZ2POI-1] = (lyz2CommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
-	flowErrorPOI[binLYZ2POI-1] = (lyz2CommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+  // LYZ2SUM = Lee-Yang Zeros (2nd run, sum) is used to get RP's and POI's integrated flow
+  TList *pListLYZ2SUM = NULL;
+  AliFlowCommonHist *lyz2sumCommonHist = NULL;
+  AliFlowCommonHistResults *lyz2sumCommonHistRes = NULL; 
+  if(fileLYZ2SUM) {
+    fileLYZ2SUM->GetObject("cobjLYZ2SUM",pListLYZ2SUM); 
+    if(pListLYZ2SUM) {
+      lyz2sumCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ2SUM->FindObject("AliFlowCommonHistLYZ2"));
+      lyz2sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ2SUM->FindObject("AliFlowCommonHistResultsLYZ2"));
+      if(lyz2sumCommonHistRes) {
+	flowValueRP[binLYZ2SUMRP-1] = (lyz2sumCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[binLYZ2SUMRP-1] = (lyz2sumCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[binLYZ2SUMPOI-1] = (lyz2sumCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[binLYZ2SUMPOI-1] = (lyz2sumCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+      }
+    }
+  }
+ 
+  // LYZ1PROD = Lee-Yang Zeros (1st run, product) is used to get only 'no-name' integrated flow
+  TList *pListLYZ1PROD = NULL;
+  AliFlowCommonHist *lyz1prodCommonHist = NULL;
+  AliFlowCommonHistResults *lyz1prodCommonHistRes = NULL; 
+  if(fileLYZ1PROD) {
+    fileLYZ1PROD->GetObject("cobjLYZ1PROD",pListLYZ1PROD); 
+    if(pListLYZ1PROD) {
+      lyz1prodCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ1PROD->FindObject("AliFlowCommonHistLYZ1"));
+      lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1"));
+      if(lyz1prodCommonHistRes) {
+	flowValue[binLYZ1PROD-1] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+	flowError[binLYZ1PROD-1] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      }
+    }
+  }
+  
+  // LYZ2PROD = Lee-Yang Zeros (2nd run, product) is used to get RP's and POI's integrated flow
+  TList *pListLYZ2PROD = NULL;
+  AliFlowCommonHist *lyz2prodCommonHist = NULL;
+  AliFlowCommonHistResults *lyz2prodCommonHistRes = NULL; 
+  if(fileLYZ2PROD) {
+    fileLYZ2PROD->GetObject("cobjLYZ2PROD",pListLYZ2PROD); 
+    if(pListLYZ2PROD) {
+      lyz2prodCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ2PROD->FindObject("AliFlowCommonHistLYZ2"));
+      lyz2prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ2PROD->FindObject("AliFlowCommonHistResultsLYZ2"));
+      if(lyz2prodCommonHistRes) {
+	flowValueRP[binLYZ2PRODRP-1] = (lyz2prodCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	flowErrorRP[binLYZ2PRODRP-1] = (lyz2prodCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	flowValuePOI[binLYZ2PRODPOI-1] = (lyz2prodCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	flowErrorPOI[binLYZ2PRODPOI-1] = (lyz2prodCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
       }
     }
   }
@@ -477,10 +534,10 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
       if(fqdCommonHistRes) {
 	flowValue[binFQD-1] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
 	flowError[binFQD-1] = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);
-	flowValueRP[binFQDRP-1] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
-	flowErrorRP[binFQDRP-1] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
-	flowValuePOI[binFQDPOI-1] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
-	flowErrorPOI[binFQDPOI-1] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
+	//flowValueRP[binFQDRP-1] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
+	//flowErrorRP[binFQDRP-1] = (fqdCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
+	//flowValuePOI[binFQDPOI-1] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinContent(1);
+	//flowErrorPOI[binFQDPOI-1] = (fqdCommonHistRes->GetHistIntFlowPOI())->GetBinError(1);
       }
     }
   }
@@ -639,7 +696,6 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   TGraph* flowResultsPOI = new TGraphErrors(nMethods, x, flowValuePOI, xError, flowErrorPOI);
   flowResultsPOI->SetMarkerStyle(markerStylePOI);
   flowResultsPOI->SetMarkerColor(markerColorPOI);
-  
   //-----------------------------------------------------------------------------------
   
   //----------------------------------------------------------------------------------
@@ -722,40 +778,43 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   textResultsPOI->SetTextSize(0.06);
   
   // no-name:              
-  TString *entryMC    = new TString("MC ...... ");
-  TString *entrySP    = new TString("SP ...... "); 
-  TString *entryGFC   = new TString("GFC ..... "); 
-  TString *entryQC2   = new TString("QC{2} ... ");
-  TString *entryQC4   = new TString("QC{4} ... ");
-  TString *entryQC6   = new TString("QC{6} ... ");
-  TString *entryQC8   = new TString("QC{8} ... ");
-  TString *entryFQD   = new TString("FQD ..... "); 
-  TString *entryLYZ1  = new TString("LYZ ..... "); 
-  TString *entryLYZEP = new TString("LYZEP ... "); 
+  TString *entryMC       = new TString("MC ........ ");
+  TString *entrySP       = new TString("SP ........ "); 
+  TString *entryGFC      = new TString("GFC ....... "); 
+  TString *entryQC2      = new TString("QC{2} ..... ");
+  TString *entryQC4      = new TString("QC{4} ..... ");
+  TString *entryQC6      = new TString("QC{6} ..... ");
+  TString *entryQC8      = new TString("QC{8} ..... ");
+  TString *entryFQD      = new TString("FQD ....... "); 
+  TString *entryLYZ1SUM  = new TString("LYZ{sum} .. "); 
+  TString *entryLYZ1PROD = new TString("LYZ{prod} . "); 
+  TString *entryLYZEP    = new TString("LYZEP ..... "); 
   
   // RP: 
-  TString *entryMCRP    = new TString("MC ...... ");
-  TString *entrySPRP    = new TString("SP ...... ");
-  TString *entryGFCRP   = new TString("GFC ..... "); 
-  TString *entryQC2RP   = new TString("QC{2} ... ");
-  TString *entryQC4RP   = new TString("QC{4} ... ");
-  TString *entryQC6RP   = new TString("QC{6} ... ");
-  TString *entryQC8RP   = new TString("QC{8} ... ");
-  TString *entryFQDRP   = new TString("FQD ..... "); 
-  TString *entryLYZ1RP  = new TString("LYZ ..... "); 
-  TString *entryLYZEPRP = new TString("LYZEP ... "); 
-
+  TString *entryMCRP       = new TString("MC ........ ");
+  TString *entrySPRP       = new TString("SP ........ ");
+  TString *entryGFCRP      = new TString("GFC ....... "); 
+  TString *entryQC2RP      = new TString("QC{2} ..... ");
+  TString *entryQC4RP      = new TString("QC{4} ..... ");
+  TString *entryQC6RP      = new TString("QC{6} ..... ");
+  TString *entryQC8RP      = new TString("QC{8} ..... ");
+  TString *entryFQDRP      = new TString("FQD ....... "); 
+  TString *entryLYZ1SUMRP  = new TString("LYZ{sum} .. "); 
+  TString *entryLYZ1PRODRP = new TString("LYZ{prod} . ");
+  TString *entryLYZEPRP    = new TString("LYZEP ..... "); 
+  
   // POI: 
-  TString *entryMCPOI    = new TString("MC ...... ");
-  TString *entrySPPOI    = new TString("SP ...... ");
-  TString *entryGFCPOI   = new TString("GFC ..... "); 
-  TString *entryQC2POI   = new TString("QC{2} ... ");
-  TString *entryQC4POI   = new TString("QC{4} ... ");
-  TString *entryQC6POI   = new TString("QC{6} ... ");
-  TString *entryQC8POI   = new TString("QC{8} ... ");
-  TString *entryFQDPOI   = new TString("FQD ..... "); 
-  TString *entryLYZ1POI  = new TString("LYZ ..... "); 
-  TString *entryLYZEPPOI = new TString("LYZEP ... "); 
+  TString *entryMCPOI       = new TString("MC ........ ");
+  TString *entrySPPOI       = new TString("SP ........ ");
+  TString *entryGFCPOI      = new TString("GFC ....... "); 
+  TString *entryQC2POI      = new TString("QC{2} ..... ");
+  TString *entryQC4POI      = new TString("QC{4} ..... ");
+  TString *entryQC6POI      = new TString("QC{6} ..... ");
+  TString *entryQC8POI      = new TString("QC{8} ..... ");
+  TString *entryFQDPOI      = new TString("FQD ....... "); 
+  TString *entryLYZ1SUMPOI  = new TString("LYZ{sum} .. "); 
+  TString *entryLYZ1PRODPOI = new TString("LYZ{prod} . "); 
+  TString *entryLYZEPPOI    = new TString("LYZEP ..... "); 
   
   // no-name:
   Double_t avMultMC=0.;
@@ -768,8 +827,10 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Long_t nEvtsQC2=0, nEvtsQC4=0, nEvtsQC6=0, nEvtsQC8=0;
   Double_t avMultFQD=0.;
   Long_t nEvtsFQD=0;
-  Double_t avMultLYZ1=0.;
-  Long_t nEvtsLYZ1=0;
+  Double_t avMultLYZ1SUM=0.;
+  Long_t nEvtsLYZ1SUM=0;
+  Double_t avMultLYZ1PROD=0.;
+  Long_t nEvtsLYZ1PROD=0;
   Double_t avMultLYZEP=0.;
   Long_t nEvtsLYZEP=0;
   
@@ -784,8 +845,10 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Long_t nEvtsQC2RP=0, nEvtsQC4RP=0, nEvtsQC6RP=0, nEvtsQC8RP=0;
   Double_t avMultFQDRP=0.;
   Long_t nEvtsFQDRP=0;
-  Double_t avMultLYZ1RP=0.;
-  Long_t nEvtsLYZ1RP=0;
+  Double_t avMultLYZ1SUMRP=0.;
+  Long_t nEvtsLYZ1SUMRP=0;
+  Double_t avMultLYZ1PRODRP=0.;
+  Long_t nEvtsLYZ1PRODRP=0;
   Double_t avMultLYZEPRP=0.;
   Long_t nEvtsLYZEPRP=0;
   
@@ -800,8 +863,10 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   Long_t nEvtsQC2POI=0, nEvtsQC4POI=0, nEvtsQC6POI=0, nEvtsQC8POI=0;
   Double_t avMultFQDPOI=0.;
   Long_t nEvtsFQDPOI=0;
-  Double_t avMultLYZ1POI=0.;
-  Long_t nEvtsLYZ1POI=0;
+  Double_t avMultLYZ1SUMPOI=0.;
+  Long_t nEvtsLYZ1SUMPOI=0;
+  Double_t avMultLYZ1PRODPOI=0.;
+  Long_t nEvtsLYZ1PRODPOI=0;
   Double_t avMultLYZEPPOI=0.;
   Long_t nEvtsLYZEPPOI=0;
   
@@ -1068,40 +1133,75 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   (*entryFQDPOI)+=(Long_t)nEvtsFQDPOI;
  }  
   
- // LYZ1:
- if(lyz1CommonHist)
+ // LYZ1SUM:
+ if(lyz1sumCommonHist)
  {
-  avMultLYZ1 = (lyz1CommonHist->GetHistMultRP())->GetMean();
-  nEvtsLYZ1  = (lyz1CommonHist->GetHistMultRP())->GetEntries();
-  avMultLYZ1RP = (lyz1CommonHist->GetHistMultRP())->GetMean();
-  nEvtsLYZ1RP  = (lyz1CommonHist->GetHistMultRP())->GetEntries();
-  avMultLYZ1POI = (lyz1CommonHist->GetHistMultPOI())->GetMean();
-  nEvtsLYZ1POI  = (lyz1CommonHist->GetHistMultPOI())->GetEntries();
+  avMultLYZ1SUM = (lyz1sumCommonHist->GetHistMultRP())->GetMean();
+  nEvtsLYZ1SUM  = (lyz1sumCommonHist->GetHistMultRP())->GetEntries();
+  avMultLYZ1SUMRP = (lyz1sumCommonHist->GetHistMultRP())->GetMean();
+  nEvtsLYZ1SUMRP  = (lyz1sumCommonHist->GetHistMultRP())->GetEntries();
+  avMultLYZ1SUMPOI = (lyz1sumCommonHist->GetHistMultPOI())->GetMean();
+  nEvtsLYZ1SUMPOI  = (lyz1sumCommonHist->GetHistMultPOI())->GetEntries();
  }
  
- if(entryLYZ1) 
+ if(entryLYZ1SUM) 
  {
-  entryLYZ1->Append("M = ");
-  (*entryLYZ1)+=(Long_t)avMultLYZ1;
-  entryLYZ1->Append(", N = ");
-  (*entryLYZ1)+=(Long_t)nEvtsLYZ1;
+  entryLYZ1SUM->Append("M = ");
+  (*entryLYZ1SUM)+=(Long_t)avMultLYZ1SUM;
+  entryLYZ1SUM->Append(", N = ");
+  (*entryLYZ1SUM)+=(Long_t)nEvtsLYZ1SUM;
  }
  
- if(entryLYZ1RP) 
+ if(entryLYZ1SUMRP) 
  {
-  entryLYZ1RP->Append("M = ");
-  (*entryLYZ1RP)+=(Long_t)avMultLYZ1RP;
-  entryLYZ1RP->Append(", N = ");
-  (*entryLYZ1RP)+=(Long_t)nEvtsLYZ1RP;
+  entryLYZ1SUMRP->Append("M = ");
+  (*entryLYZ1SUMRP)+=(Long_t)avMultLYZ1SUMRP;
+  entryLYZ1SUMRP->Append(", N = ");
+  (*entryLYZ1SUMRP)+=(Long_t)nEvtsLYZ1SUMRP;
  }
  
- if(entryLYZ1POI) 
+ if(entryLYZ1SUMPOI) 
  {
-  entryLYZ1POI->Append("M = ");
-  (*entryLYZ1POI)+=(Long_t)avMultLYZ1POI;
-  entryLYZ1POI->Append(", N = ");
-  (*entryLYZ1POI)+=(Long_t)nEvtsLYZ1POI;
+  entryLYZ1SUMPOI->Append("M = ");
+  (*entryLYZ1SUMPOI)+=(Long_t)avMultLYZ1SUMPOI;
+  entryLYZ1SUMPOI->Append(", N = ");
+  (*entryLYZ1SUMPOI)+=(Long_t)nEvtsLYZ1SUMPOI;
  }
+ 
+ // LYZ1PROD:
+ if(lyz1prodCommonHist)
+ {
+  avMultLYZ1PROD = (lyz1prodCommonHist->GetHistMultRP())->GetMean();
+  nEvtsLYZ1PROD  = (lyz1prodCommonHist->GetHistMultRP())->GetEntries();
+  avMultLYZ1PRODRP = (lyz1prodCommonHist->GetHistMultRP())->GetMean();
+  nEvtsLYZ1PRODRP  = (lyz1prodCommonHist->GetHistMultRP())->GetEntries();
+  avMultLYZ1PRODPOI = (lyz1prodCommonHist->GetHistMultPOI())->GetMean();
+  nEvtsLYZ1PRODPOI  = (lyz1prodCommonHist->GetHistMultPOI())->GetEntries();
+ }
+  
+ if(entryLYZ1PROD) 
+ {
+  entryLYZ1PROD->Append("M = ");
+  (*entryLYZ1PROD)+=(Long_t)avMultLYZ1PROD;
+  entryLYZ1PROD->Append(", N = ");
+  (*entryLYZ1PROD)+=(Long_t)nEvtsLYZ1PROD;
+ }
+ 
+ if(entryLYZ1PRODRP) 
+ {
+  entryLYZ1PRODRP->Append("M = ");
+  (*entryLYZ1PRODRP)+=(Long_t)avMultLYZ1PRODRP;
+  entryLYZ1PRODRP->Append(", N = ");
+  (*entryLYZ1PRODRP)+=(Long_t)nEvtsLYZ1PRODRP;
+ }
+ 
+ if(entryLYZ1PRODPOI) 
+ {
+  entryLYZ1PRODPOI->Append("M = ");
+  (*entryLYZ1PRODPOI)+=(Long_t)avMultLYZ1PRODPOI;
+  entryLYZ1PRODPOI->Append(", N = ");
+  (*entryLYZ1PRODPOI)+=(Long_t)nEvtsLYZ1PRODPOI;
+ } 
  
  // LYZEP:
  if(lyzepCommonHist)
@@ -1113,6 +1213,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   avMultLYZEPPOI = (lyzepCommonHist->GetHistMultPOI())->GetMean();
   nEvtsLYZEPPOI  = (lyzepCommonHist->GetHistMultPOI())->GetEntries();    
  }
+ 
  
  if(entryLYZEP)
  {
@@ -1149,7 +1250,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   textResults->AddText(entryQC6->Data());
   textResults->AddText(entryQC8->Data());
   textResults->AddText(entryFQD->Data());
-  textResults->AddText(entryLYZ1->Data());
+  textResults->AddText(entryLYZ1SUM->Data());
+  textResults->AddText(entryLYZ1PROD->Data());
   textResults->AddText(entryLYZEP->Data());
  }
  
@@ -1164,7 +1266,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   textResultsRP->AddText(entryQC6RP->Data());
   textResultsRP->AddText(entryQC8RP->Data());
   textResultsRP->AddText(entryFQDRP->Data());
-  textResultsRP->AddText(entryLYZ1RP->Data());
+  textResultsRP->AddText(entryLYZ1SUMRP->Data());
+  textResultsRP->AddText(entryLYZ1PRODRP->Data());
   textResultsRP->AddText(entryLYZEPRP->Data());
  }
  
@@ -1179,12 +1282,11 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   textResultsPOI->AddText(entryQC6POI->Data());
   textResultsPOI->AddText(entryQC8POI->Data());
   textResultsPOI->AddText(entryFQDPOI->Data());
-  textResultsPOI->AddText(entryLYZ1POI->Data());
+  textResultsPOI->AddText(entryLYZ1SUMPOI->Data());
+  textResultsPOI->AddText(entryLYZ1PRODPOI->Data());
   textResultsPOI->AddText(entryLYZEPPOI->Data());
  }
  //----------------------------------------------------------------------------------
- 
- 
  
  
  //----------------------------------------------------------------------------------
@@ -1229,9 +1331,6 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
  
  }// end of if(plotIntFlow) 
  //----------------------------------------------------------------------------------
-
- 
- 
  
  //----------------------------------------------------------------------------------
  //final drawing for integrated flow of RP (i.e. of particles used to determine the reaction plane):
@@ -1258,7 +1357,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   (intFlowAllRP->GetXaxis())->SetBinLabel(binGFC8RP,"v_{2}{8,GFC}");
   (intFlowAllRP->GetXaxis())->SetBinLabel(binQC8RP,"v_{2}{8,QC}");
   (intFlowAllRP->GetXaxis())->SetBinLabel(binFQDRP,"v_{2}{FQD}");
-  (intFlowAllRP->GetXaxis())->SetBinLabel(binLYZ2RP,"v_{2}{LYZ}");
+  (intFlowAllRP->GetXaxis())->SetBinLabel(binLYZ2SUMRP,"v_{2}{LYZ,sum}");
+  (intFlowAllRP->GetXaxis())->SetBinLabel(binLYZ2PRODRP,"v_{2}{LYZ,prod}");
   (intFlowAllRP->GetXaxis())->SetBinLabel(binLYZEPRP,"v_{2}{LYZEP}");
 
   if(intFlowAllRP)
@@ -1292,9 +1392,6 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
  }//end of if(plotIntFlowRP} 
  //----------------------------------------------------------------------------------
  
- 
- 
- 
  //----------------------------------------------------------------------------------
  //final drawing for integrated flow of POI (i.e. of particles of interest):
  if(plotIntFlowPOI)
@@ -1320,7 +1417,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   (intFlowAllPOI->GetXaxis())->SetBinLabel(binGFC8POI,"v_{2}{8,GFC}");
   (intFlowAllPOI->GetXaxis())->SetBinLabel(binQC8POI,"v_{2}{8,QC}");
   (intFlowAllPOI->GetXaxis())->SetBinLabel(binFQDPOI,"v_{2}{FQD}");
-  (intFlowAllPOI->GetXaxis())->SetBinLabel(binLYZ2POI,"v_{2}{LYZ}");
+  (intFlowAllPOI->GetXaxis())->SetBinLabel(binLYZ2SUMPOI,"v_{2}{LYZ,sum}");
+  (intFlowAllPOI->GetXaxis())->SetBinLabel(binLYZ2PRODPOI,"v_{2}{LYZ,prod}");
   (intFlowAllPOI->GetXaxis())->SetBinLabel(binLYZEPPOI,"v_{2}{LYZEP}");
   
   if(intFlowAllPOI)
@@ -1352,8 +1450,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
 
   if(textResultsPOI) textResultsPOI->Draw();
  }// end of if(plotIntFlowPOI) 
- //----------------------------------------------------------------------------------
- 
+ //----------------------------------------------------------------------------------         
  //==================================================================================   
 
 
@@ -1829,30 +1926,57 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   }
  } 
 
- //LYZ2 = Lee-Yang Zeros (2nd run)
- Double_t avMultDiffFlowLYZ2RP=0.;
- Double_t nEvtsDiffFlowLYZ2RP=0;
- Double_t avMultDiffFlowLYZ2POI=0.;
- Double_t nEvtsDiffFlowLYZ2POI=0;
- if(fileLYZ2)
+ //LYZ2SUM = Lee-Yang Zeros (2nd run, sum)
+ Double_t avMultDiffFlowLYZ2SUMRP=0.;
+ Double_t nEvtsDiffFlowLYZ2SUMRP=0;
+ Double_t avMultDiffFlowLYZ2SUMPOI=0.;
+ Double_t nEvtsDiffFlowLYZ2SUMPOI=0;
+ if(fileLYZ2SUM)
  {
-  if(lyz2CommonHistRes)
+  if(lyz2sumCommonHistRes)
   {
-   (lyz2CommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorLYZ2);
-   (lyz2CommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleLYZ2);
-   (lyz2CommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorLYZ2);
-   (lyz2CommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleLYZ2);
-   (lyz2CommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorLYZ2);
-   (lyz2CommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleLYZ2);
-   (lyz2CommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorLYZ2);
-   (lyz2CommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleLYZ2);
+   (lyz2sumCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorLYZ2SUM);
+   (lyz2sumCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleLYZ2SUM);
+   (lyz2sumCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorLYZ2SUM);
+   (lyz2sumCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleLYZ2SUM);
+   (lyz2sumCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorLYZ2SUM);
+   (lyz2sumCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleLYZ2SUM);
+   (lyz2sumCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorLYZ2SUM);
+   (lyz2sumCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleLYZ2SUM);
   } 
-  if(lyz2CommonHist)
+  if(lyz2sumCommonHist)
   {
-   avMultDiffFlowLYZ2RP = (lyz2CommonHist->GetHistMultRP())->GetMean();
-   nEvtsDiffFlowLYZ2RP  = (lyz2CommonHist->GetHistMultRP())->GetEntries();
-   avMultDiffFlowLYZ2POI = (lyz2CommonHist->GetHistMultPOI())->GetMean();
-   nEvtsDiffFlowLYZ2POI  = (lyz2CommonHist->GetHistMultPOI())->GetEntries();
+   avMultDiffFlowLYZ2SUMRP = (lyz2sumCommonHist->GetHistMultRP())->GetMean();
+   nEvtsDiffFlowLYZ2SUMRP  = (lyz2sumCommonHist->GetHistMultRP())->GetEntries();
+   avMultDiffFlowLYZ2SUMPOI = (lyz2sumCommonHist->GetHistMultPOI())->GetMean();
+   nEvtsDiffFlowLYZ2SUMPOI  = (lyz2sumCommonHist->GetHistMultPOI())->GetEntries();
+  } 
+ } 
+ 
+ //LYZ2PROD = Lee-Yang Zeros (2nd run, product)
+ Double_t avMultDiffFlowLYZ2PRODRP=0.;
+ Double_t nEvtsDiffFlowLYZ2PRODRP=0;
+ Double_t avMultDiffFlowLYZ2PRODPOI=0.;
+ Double_t nEvtsDiffFlowLYZ2PRODPOI=0;
+ if(fileLYZ2PROD)
+ {
+  if(lyz2prodCommonHistRes)
+  {
+   (lyz2prodCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerColor(markerColorLYZ2PROD);
+   (lyz2prodCommonHistRes->GetHistDiffFlowPtRP())->SetMarkerStyle(markerStyleLYZ2PROD);
+   (lyz2prodCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerColor(markerColorLYZ2PROD);
+   (lyz2prodCommonHistRes->GetHistDiffFlowEtaRP())->SetMarkerStyle(markerStyleLYZ2PROD);
+   (lyz2prodCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerColor(markerColorLYZ2PROD);
+   (lyz2prodCommonHistRes->GetHistDiffFlowPtPOI())->SetMarkerStyle(markerStyleLYZ2PROD);
+   (lyz2prodCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerColor(markerColorLYZ2PROD);
+   (lyz2prodCommonHistRes->GetHistDiffFlowEtaPOI())->SetMarkerStyle(markerStyleLYZ2PROD);
+  } 
+  if(lyz2prodCommonHist)
+  {
+   avMultDiffFlowLYZ2PRODRP = (lyz2prodCommonHist->GetHistMultRP())->GetMean();
+   nEvtsDiffFlowLYZ2PRODRP  = (lyz2prodCommonHist->GetHistMultRP())->GetEntries();
+   avMultDiffFlowLYZ2PRODPOI = (lyz2prodCommonHist->GetHistMultPOI())->GetMean();
+   nEvtsDiffFlowLYZ2PRODPOI  = (lyz2prodCommonHist->GetHistMultPOI())->GetEntries();
   } 
  } 
 
@@ -1949,10 +2073,15 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   { 
    //(qcCommonHistRes8->GetHistDiffFlowPtRP())->Draw("E1PSAME");
   }
-  //LYZ2
-  if(plotLYZ2PtRP && lyz2CommonHistRes)
+  //LYZ2SUM
+  if(plotLYZ2SUMPtRP && lyz2sumCommonHistRes)
   { 
-   (lyz2CommonHistRes->GetHistDiffFlowPtRP())->Draw("E1PSAME");
+   (lyz2sumCommonHistRes->GetHistDiffFlowPtRP())->Draw("E1PSAME");
+  }
+  //LYZ2PROD
+  if(plotLYZ2PRODPtRP && lyz2prodCommonHistRes)
+  { 
+   (lyz2prodCommonHistRes->GetHistDiffFlowPtRP())->Draw("E1PSAME");
   }
   //LYZEP
   if(plotLYZEPPtRP && lyzepCommonHistRes)
@@ -1968,18 +2097,19 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   legendDiffFlowPtRP->SetTextSize(0.06);
  
   //legend's entries:Pt
-  TString *entryDiffMCPtRP    = new TString("MC ....... ");
-  TString *entryDiffSPPtRP    = new TString("SP ....... ");
-  TString *entryDiffGFC2PtRP  = new TString("GFC{2} ... ");
-  TString *entryDiffGFC4PtRP  = new TString("GFC{4} ... ");
-  TString *entryDiffGFC6PtRP  = new TString("GFC{6} ... ");
-  TString *entryDiffGFC8PtRP  = new TString("GFC{8} ... "); 
-  TString *entryDiffQC2PtRP   = new TString("QC{2} .... ");
-  TString *entryDiffQC4PtRP   = new TString("QC{4} .... ");
-  TString *entryDiffQC6PtRP   = new TString("QC{6} .... ");
-  TString *entryDiffQC8PtRP   = new TString("QC{8} .... ");
-  TString *entryDiffLYZ2PtRP  = new TString("LYZ ...... ");
-  TString *entryDiffLYZEPPtRP = new TString("LYZEP ... ");
+  TString *entryDiffMCPtRP       = new TString("MC ........ ");
+  TString *entryDiffSPPtRP       = new TString("SP ........ ");
+  TString *entryDiffGFC2PtRP     = new TString("GFC{2} .... ");
+  TString *entryDiffGFC4PtRP     = new TString("GFC{4} .... ");
+  TString *entryDiffGFC6PtRP     = new TString("GFC{6} .... ");
+  TString *entryDiffGFC8PtRP     = new TString("GFC{8} .... "); 
+  TString *entryDiffQC2PtRP      = new TString("QC{2} ..... ");
+  TString *entryDiffQC4PtRP      = new TString("QC{4} ..... ");
+  TString *entryDiffQC6PtRP      = new TString("QC{6} ..... ");
+  TString *entryDiffQC8PtRP      = new TString("QC{8} ..... ");
+  TString *entryDiffLYZ2SUMPtRP  = new TString("LYZ{sum} .. ");
+  TString *entryDiffLYZ2PRODPtRP = new TString("LYZ{prod} . ");
+  TString *entryDiffLYZEPPtRP    = new TString("LYZEP ..... ");
   
   //MC
   if(mcepCommonHistRes)
@@ -1994,7 +2124,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   }
   
   //SP
-  if(spCommonHistRes)
+  if(plotSPPtRP && spCommonHistRes)
   {
    entryDiffSPPtRP->Append("M = ");
    (*entryDiffSPPtRP)+=(Long_t)avMultDiffFlowSPRP;
@@ -2071,14 +2201,24 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
    legendDiffFlowPtRP->AddEntry(qcCommonHistRes8->GetHistDiffFlowPtRP(),entryDiffQC8PtRP->Data(),"p");
   }
   
-  //LYZ2
-  if(plotLYZ2PtRP && lyz2CommonHistRes)
+  //LYZ2SUM
+  if(plotLYZ2SUMPtRP && lyz2sumCommonHistRes)
   {
-   entryDiffLYZ2PtRP->Append("M = ");
-   (*entryDiffLYZ2PtRP)+=(Long_t)avMultDiffFlowLYZ2RP;
-   entryDiffLYZ2PtRP->Append(", N = ");
-   (*entryDiffLYZ2PtRP)+=(Long_t)nEvtsDiffFlowLYZ2RP; 
-   legendDiffFlowPtRP->AddEntry(lyz2CommonHistRes->GetHistDiffFlowPtRP(),entryDiffLYZ2PtRP->Data(),"p");
+   entryDiffLYZ2SUMPtRP->Append("M = ");
+   (*entryDiffLYZ2SUMPtRP)+=(Long_t)avMultDiffFlowLYZ2SUMRP;
+   entryDiffLYZ2SUMPtRP->Append(", N = ");
+   (*entryDiffLYZ2SUMPtRP)+=(Long_t)nEvtsDiffFlowLYZ2SUMRP; 
+   legendDiffFlowPtRP->AddEntry(lyz2sumCommonHistRes->GetHistDiffFlowPtRP(),entryDiffLYZ2SUMPtRP->Data(),"p");
+  }
+  
+  //LYZ2PROD
+  if(plotLYZ2PRODPtRP && lyz2prodCommonHistRes)
+  {
+   entryDiffLYZ2PRODPtRP->Append("M = ");
+   (*entryDiffLYZ2PRODPtRP)+=(Long_t)avMultDiffFlowLYZ2PRODRP;
+   entryDiffLYZ2PRODPtRP->Append(", N = ");
+   (*entryDiffLYZ2PRODPtRP)+=(Long_t)nEvtsDiffFlowLYZ2PRODRP; 
+   legendDiffFlowPtRP->AddEntry(lyz2prodCommonHistRes->GetHistDiffFlowPtRP(),entryDiffLYZ2PRODPtRP->Data(),"p");
   }
   
   //LYZEP
@@ -2168,10 +2308,15 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   { 
    //(qcCommonHistRes8->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
   }
-  //LYZ2
-  if(plotLYZ2EtaRP && lyz2CommonHistRes)
+  //LYZ2SUM
+  if(plotLYZ2SUMEtaRP && lyz2sumCommonHistRes)
   { 
-   (lyz2CommonHistRes->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
+   (lyz2sumCommonHistRes->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
+  }
+  //LYZ2PROD
+  if(plotLYZ2PRODEtaRP && lyz2prodCommonHistRes)
+  { 
+   (lyz2prodCommonHistRes->GetHistDiffFlowEtaRP())->Draw("E1PSAME");
   }
   //LYZEP
   if(plotLYZEPEtaRP && lyzepCommonHistRes)
@@ -2187,18 +2332,19 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   legendDiffFlowEtaRP->SetTextSize(0.06);
   
   //legend's entries:
-  TString *entryDiffMCEtaRP   = new TString("MC ....... ");
-  TString *entryDiffSPEtaRP   = new TString("SP ....... ");
-  TString *entryDiffGFC2EtaRP = new TString("GFC{2} ... ");
-  TString *entryDiffGFC4EtaRP = new TString("GFC{4} ... ");
-  TString *entryDiffGFC6EtaRP = new TString("GFC{6} ... ");
-  TString *entryDiffGFC8EtaRP = new TString("GFC{8} ... "); 
-  TString *entryDiffQC2EtaRP  = new TString("QC{2} .... ");
-  TString *entryDiffQC4EtaRP  = new TString("QC{4} .... ");
-  TString *entryDiffQC6EtaRP  = new TString("QC{6} .... ");
-  TString *entryDiffQC8EtaRP  = new TString("QC{8} .... ");
-  TString *entryDiffLYZ2EtaRP = new TString("LYZ ...... ");
-  TString *entryDiffLYZEPEtaRP = new TString("LYZEP ... ");
+  TString *entryDiffMCEtaRP       = new TString("MC ........ ");
+  TString *entryDiffSPEtaRP       = new TString("SP ........ ");
+  TString *entryDiffGFC2EtaRP     = new TString("GFC{2} .... ");
+  TString *entryDiffGFC4EtaRP     = new TString("GFC{4} .... ");
+  TString *entryDiffGFC6EtaRP     = new TString("GFC{6} .... ");
+  TString *entryDiffGFC8EtaRP     = new TString("GFC{8} .... "); 
+  TString *entryDiffQC2EtaRP      = new TString("QC{2} ..... ");
+  TString *entryDiffQC4EtaRP      = new TString("QC{4} ..... ");
+  TString *entryDiffQC6EtaRP      = new TString("QC{6} ..... ");
+  TString *entryDiffQC8EtaRP      = new TString("QC{8} ..... ");
+  TString *entryDiffLYZ2SUMEtaRP  = new TString("LYZ{sum} .. ");
+  TString *entryDiffLYZ2PRODEtaRP = new TString("LYZ{prod} . ");
+  TString *entryDiffLYZEPEtaRP    = new TString("LYZEP ..... ");
  
   //MC
   if(mcepCommonHistRes)
@@ -2213,7 +2359,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   }
   
   //SP
-  if(spCommonHistRes)
+  if(plotSPEtaRP && spCommonHistRes)
   {
    entryDiffSPEtaRP->Append("M = ");
    (*entryDiffSPEtaRP)+=(Long_t)avMultDiffFlowSPRP;
@@ -2290,14 +2436,24 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
    legendDiffFlowEtaRP->AddEntry(qcCommonHistRes8->GetHistDiffFlowEtaRP(),entryDiffQC8EtaRP->Data(),"p");
   }
  
-  //LYZ2
-  if(plotLYZ2EtaRP && lyz2CommonHistRes)
+  //LYZ2SUM
+  if(plotLYZ2SUMEtaRP && lyz2sumCommonHistRes)
   {
-   entryDiffLYZ2EtaRP->Append("M = ");
-   (*entryDiffLYZ2EtaRP)+=(Long_t)avMultDiffFlowLYZ2RP;
-   entryDiffLYZ2EtaRP->Append(", N = ");
-   (*entryDiffLYZ2EtaRP)+=(Long_t)nEvtsDiffFlowLYZ2RP; 
-   legendDiffFlowEtaRP->AddEntry(lyz2CommonHistRes->GetHistDiffFlowEtaRP(),entryDiffLYZ2EtaRP->Data(),"p");
+   entryDiffLYZ2SUMEtaRP->Append("M = ");
+   (*entryDiffLYZ2SUMEtaRP)+=(Long_t)avMultDiffFlowLYZ2SUMRP;
+   entryDiffLYZ2SUMEtaRP->Append(", N = ");
+   (*entryDiffLYZ2SUMEtaRP)+=(Long_t)nEvtsDiffFlowLYZ2SUMRP; 
+   legendDiffFlowEtaRP->AddEntry(lyz2sumCommonHistRes->GetHistDiffFlowEtaRP(),entryDiffLYZ2SUMEtaRP->Data(),"p");
+  }
+  
+  //LYZ2PROD
+  if(plotLYZ2PRODEtaRP && lyz2prodCommonHistRes)
+  {
+   entryDiffLYZ2PRODEtaRP->Append("M = ");
+   (*entryDiffLYZ2PRODEtaRP)+=(Long_t)avMultDiffFlowLYZ2PRODRP;
+   entryDiffLYZ2PRODEtaRP->Append(", N = ");
+   (*entryDiffLYZ2PRODEtaRP)+=(Long_t)nEvtsDiffFlowLYZ2PRODRP; 
+   legendDiffFlowEtaRP->AddEntry(lyz2prodCommonHistRes->GetHistDiffFlowEtaRP(),entryDiffLYZ2PRODEtaRP->Data(),"p");
   }
   
   //LYZEP
@@ -2350,7 +2506,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   TH1D *qc4DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
   TH1D *qc6DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
   TH1D *qc8DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
-  TH1D *lyz2DiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+  TH1D *lyz2sumDiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
+  TH1D *lyz2prodDiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
   TH1D *lyzepDiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
     
   if(mcepCommonHistRes->GetHistDiffFlowPtRP())
@@ -2485,18 +2642,32 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
      qc8DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorQC8/dvnMC);
     }
     
-    // LYZ2:
-    Double_t dvnLYZ2 = 0.;
-    Double_t dvnErrorLYZ2 = 0.;
-    if(lyz2CommonHistRes && lyz2CommonHistRes->GetHistDiffFlowPtRP())
+    // LYZ2SUM:
+    Double_t dvnLYZ2SUM = 0.;
+    Double_t dvnErrorLYZ2SUM = 0.;
+    if(lyz2sumCommonHistRes && lyz2sumCommonHistRes->GetHistDiffFlowPtRP())
     {
-     dvnLYZ2 = (lyz2CommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(p);
-     dvnErrorLYZ2 = (lyz2CommonHistRes->GetHistDiffFlowPtRP())->GetBinError(p);
+     dvnLYZ2SUM = (lyz2sumCommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorLYZ2SUM = (lyz2sumCommonHistRes->GetHistDiffFlowPtRP())->GetBinError(p);
     }
-    if(dvnMC!=0. && dvnLYZ2!=0.) 
+    if(dvnMC!=0. && dvnLYZ2SUM!=0.) 
     {
-     lyz2DiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnLYZ2-dvnMC)/dvnMC);
-     lyz2DiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorLYZ2/dvnMC);
+     lyz2sumDiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnLYZ2SUM-dvnMC)/dvnMC);
+     lyz2sumDiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorLYZ2SUM/dvnMC);
+    }
+    
+    // LYZ2PROD:
+    Double_t dvnLYZ2PROD = 0.;
+    Double_t dvnErrorLYZ2PROD = 0.;
+    if(lyz2prodCommonHistRes && lyz2prodCommonHistRes->GetHistDiffFlowPtRP())
+    {
+     dvnLYZ2PROD = (lyz2prodCommonHistRes->GetHistDiffFlowPtRP())->GetBinContent(p);
+     dvnErrorLYZ2PROD = (lyz2prodCommonHistRes->GetHistDiffFlowPtRP())->GetBinError(p);
+    }
+    if(dvnMC!=0. && dvnLYZ2PROD!=0.) 
+    {
+     lyz2prodDiffFlowPtRelativeToMCRP->SetBinContent(p,(dvnLYZ2PROD-dvnMC)/dvnMC);
+     lyz2prodDiffFlowPtRelativeToMCRP->SetBinError(p,dvnErrorLYZ2PROD/dvnMC);
     }
       
     // LYZEP:
@@ -2554,9 +2725,13 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   qc8DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleQC8);
   if(plotQC8RelativeToMCRP && qcCommonHistRes8) qc8DiffFlowPtRelativeToMCRP->Draw("PSAME");
   
-  lyz2DiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorLYZ2);
-  lyz2DiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleLYZ2);
-  if(plotLYZ2RelativeToMCRP && lyz2CommonHistRes) lyz2DiffFlowPtRelativeToMCRP->Draw("E1PSAME");
+  lyz2sumDiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorLYZ2SUM);
+  lyz2sumDiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleLYZ2SUM);
+  if(plotLYZ2SUMRelativeToMCRP && lyz2sumCommonHistRes) lyz2sumDiffFlowPtRelativeToMCRP->Draw("E1PSAME");
+  
+  lyz2prodDiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorLYZ2SUM);
+  lyz2prodDiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleLYZ2SUM);
+  if(plotLYZ2SUMRelativeToMCRP && lyz2prodCommonHistRes) lyz2prodDiffFlowPtRelativeToMCRP->Draw("E1PSAME");
   
   lyzepDiffFlowPtRelativeToMCRP->SetMarkerColor(markerColorLYZEP);
   lyzepDiffFlowPtRelativeToMCRP->SetMarkerStyle(markerStyleLYZEP);
@@ -2569,19 +2744,20 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   legendDiffFlowPtRP->SetTextFont(72);
   legendDiffFlowPtRP->SetTextSize(0.06);
  
-  //legend's entries:Pt
-  TString *entryDiffMCPtRP    = new TString("MC ....... ");
-  TString *entryDiffSPPtRP    = new TString("SP ....... ");
-  TString *entryDiffGFC2PtRP  = new TString("GFC{2} ... ");
-  TString *entryDiffGFC4PtRP  = new TString("GFC{4} ... ");
-  TString *entryDiffGFC6PtRP  = new TString("GFC{6} ... ");
-  TString *entryDiffGFC8PtRP  = new TString("GFC{8} ... "); 
-  TString *entryDiffQC2PtRP   = new TString("QC{2} .... ");
-  TString *entryDiffQC4PtRP   = new TString("QC{4} .... ");
-  TString *entryDiffQC6PtRP   = new TString("QC{6} .... ");
-  TString *entryDiffQC8PtRP   = new TString("QC{8} .... ");
-  TString *entryDiffLYZ2PtRP  = new TString("LYZ ...... ");
-  TString *entryDiffLYZEPPtRP = new TString("LYZEP ... ");
+  //legend's entries:Pt 
+  TString *entryDiffMCPtRP       = new TString("MC ........ ");
+  TString *entryDiffSPPtRP       = new TString("SP ........ ");
+  TString *entryDiffGFC2PtRP     = new TString("GFC{2} .... ");
+  TString *entryDiffGFC4PtRP     = new TString("GFC{4} .... ");
+  TString *entryDiffGFC6PtRP     = new TString("GFC{6} .... ");
+  TString *entryDiffGFC8PtRP     = new TString("GFC{8} .... "); 
+  TString *entryDiffQC2PtRP      = new TString("QC{2} ..... ");
+  TString *entryDiffQC4PtRP      = new TString("QC{4} ..... ");
+  TString *entryDiffQC6PtRP      = new TString("QC{6} ..... ");
+  TString *entryDiffQC8PtRP      = new TString("QC{8} ..... ");
+  TString *entryDiffLYZ2SUMPtRP  = new TString("LYZ{sum} .. ");
+  TString *entryDiffLYZ2PRODPtRP = new TString("LYZ{prod} . ");
+  TString *entryDiffLYZEPPtRP    = new TString("LYZEP ..... ");
   
   //MC
   if(mcepCommonHistRes)
@@ -2596,7 +2772,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   }
   
   //SP
-  if(spCommonHistRes)
+  if(plotSPPtRP && spCommonHistRes)
   {
    entryDiffSPPtRP->Append("M = ");
    (*entryDiffSPPtRP)+=(Long_t)avMultDiffFlowSPRP;
@@ -2673,14 +2849,24 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
    if(plotQC8RelativeToMCRP) legendDiffFlowPtRP->AddEntry(qcCommonHistRes8->GetHistDiffFlowPtRP(),entryDiffQC8PtRP->Data(),"p");
   }
   
-  //LYZ2
-  if(plotLYZ2PtRP && lyz2CommonHistRes)
+  //LYZ2SUM
+  if(plotLYZ2SUMPtRP && lyz2sumCommonHistRes)
   {
-   entryDiffLYZ2PtRP->Append("M = ");
-   (*entryDiffLYZ2PtRP)+=(Long_t)avMultDiffFlowLYZ2RP;
-   entryDiffLYZ2PtRP->Append(", N = ");
-   (*entryDiffLYZ2PtRP)+=(Long_t)nEvtsDiffFlowLYZ2RP; 
-   if(plotLYZ2RelativeToMCRP) legendDiffFlowPtRP->AddEntry(lyz2CommonHistRes->GetHistDiffFlowPtRP(),entryDiffLYZ2PtRP->Data(),"p");
+   entryDiffLYZ2SUMPtRP->Append("M = ");
+   (*entryDiffLYZ2SUMPtRP)+=(Long_t)avMultDiffFlowLYZ2SUMRP;
+   entryDiffLYZ2SUMPtRP->Append(", N = ");
+   (*entryDiffLYZ2SUMPtRP)+=(Long_t)nEvtsDiffFlowLYZ2SUMRP; 
+   if(plotLYZ2SUMRelativeToMCRP) legendDiffFlowPtRP->AddEntry(lyz2sumCommonHistRes->GetHistDiffFlowPtRP(),entryDiffLYZ2SUMPtRP->Data(),"p");
+  }
+  
+  //LYZ2PROD
+  if(plotLYZ2PRODPtRP && lyz2prodCommonHistRes)
+  {
+   entryDiffLYZ2PRODPtRP->Append("M = ");
+   (*entryDiffLYZ2PRODPtRP)+=(Long_t)avMultDiffFlowLYZ2PRODRP;
+   entryDiffLYZ2PRODPtRP->Append(", N = ");
+   (*entryDiffLYZ2PRODPtRP)+=(Long_t)nEvtsDiffFlowLYZ2PRODRP; 
+   if(plotLYZ2PRODRelativeToMCRP) legendDiffFlowPtRP->AddEntry(lyz2prodCommonHistRes->GetHistDiffFlowPtRP(),entryDiffLYZ2PRODPtRP->Data(),"p");
   }
   
   //LYZEP
@@ -2762,17 +2948,22 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
    (qcCommonHistRes4->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
   }
   if(plotQC6PtPOI && qcCommonHistRes6)
-  { kTRUE;
+  { 
    //(qcCommonHistRes6->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
   }
   if(plotQC8PtPOI && qcCommonHistRes8)
   { 
    //(qcCommonHistRes8->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
   }
-  //LYZ2
-  if(plotLYZ2PtPOI && lyz2CommonHistRes)
+  //LYZ2SUM
+  if(plotLYZ2SUMPtPOI && lyz2sumCommonHistRes)
   { 
-   (lyz2CommonHistRes->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
+   (lyz2sumCommonHistRes->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
+  }
+  //LYZ2PROD
+  if(plotLYZ2PRODPtPOI && lyz2prodCommonHistRes)
+  { 
+   (lyz2prodCommonHistRes->GetHistDiffFlowPtPOI())->Draw("E1PSAME");
   }
   //LYZEP
   if(plotLYZEPPtPOI && lyzepCommonHistRes)
@@ -2788,18 +2979,19 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   legendDiffFlowPtPOI->SetTextSize(0.06);
  
   //legend's entries:
-  TString *entryDiffMCPtPOI   = new TString("MC ....... ");
-  TString *entryDiffSPPtPOI   = new TString("SP ....... ");
-  TString *entryDiffGFC2PtPOI = new TString("GFC{2} ... ");
-  TString *entryDiffGFC4PtPOI = new TString("GFC{4} ... ");
-  TString *entryDiffGFC6PtPOI = new TString("GFC{6} ... ");
-  TString *entryDiffGFC8PtPOI = new TString("GFC{8} ... "); 
-  TString *entryDiffQC2PtPOI  = new TString("QC{2} .... ");
-  TString *entryDiffQC4PtPOI  = new TString("QC{4} .... ");
-  TString *entryDiffQC6PtPOI  = new TString("QC{6} .... ");
-  TString *entryDiffQC8PtPOI  = new TString("QC{8} .... ");
-  TString *entryDiffLYZ2PtPOI = new TString("LYZ ...... ");
-  TString *entryDiffLYZEPPtPOI = new TString("LYZEP ... "); 
+  TString *entryDiffMCPtPOI       = new TString("MC ........ ");
+  TString *entryDiffSPPtPOI       = new TString("SP ........ ");
+  TString *entryDiffGFC2PtPOI     = new TString("GFC{2} .... ");
+  TString *entryDiffGFC4PtPOI     = new TString("GFC{4} .... ");
+  TString *entryDiffGFC6PtPOI     = new TString("GFC{6} .... ");
+  TString *entryDiffGFC8PtPOI     = new TString("GFC{8} .... "); 
+  TString *entryDiffQC2PtPOI      = new TString("QC{2} ..... ");
+  TString *entryDiffQC4PtPOI      = new TString("QC{4} ..... ");
+  TString *entryDiffQC6PtPOI      = new TString("QC{6} ..... ");
+  TString *entryDiffQC8PtPOI      = new TString("QC{8} ..... ");
+  TString *entryDiffLYZ2SUMPtPOI  = new TString("LYZ{sum} .. ");
+  TString *entryDiffLYZ2PRODPtPOI = new TString("LYZ{prod} . ");
+  TString *entryDiffLYZEPPtPOI    = new TString("LYZEP ..... "); 
  
   //MC
   if(mcepCommonHistRes)
@@ -2814,7 +3006,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   }
   
   //SP
-  if(spCommonHistRes)
+  if(plotSPPtPOI && spCommonHistRes)
   {
    entryDiffSPPtPOI->Append("M = ");
    (*entryDiffSPPtPOI)+=(Long_t)avMultDiffFlowSPPOI;
@@ -2891,14 +3083,24 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
    legendDiffFlowPtPOI->AddEntry(qcCommonHistRes8->GetHistDiffFlowPtPOI(),entryDiffQC8PtPOI->Data(),"p");
   }
  
-  //LYZ2
-  if(plotLYZ2PtPOI && lyz2CommonHistRes)
+  //LYZ2SUM
+  if(plotLYZ2SUMPtPOI && lyz2sumCommonHistRes)
   {
-   entryDiffLYZ2PtPOI->Append("M = ");
-   (*entryDiffLYZ2PtPOI)+=(Long_t)avMultDiffFlowLYZ2POI;
-   entryDiffLYZ2PtPOI->Append(", N = ");
-   (*entryDiffLYZ2PtPOI)+=(Long_t)nEvtsDiffFlowLYZ2POI; 
-   legendDiffFlowPtPOI->AddEntry(lyz2CommonHistRes->GetHistDiffFlowPtPOI(),entryDiffLYZ2PtPOI->Data(),"p");
+   entryDiffLYZ2SUMPtPOI->Append("M = ");
+   (*entryDiffLYZ2SUMPtPOI)+=(Long_t)avMultDiffFlowLYZ2SUMPOI;
+   entryDiffLYZ2SUMPtPOI->Append(", N = ");
+   (*entryDiffLYZ2SUMPtPOI)+=(Long_t)nEvtsDiffFlowLYZ2SUMPOI; 
+   legendDiffFlowPtPOI->AddEntry(lyz2sumCommonHistRes->GetHistDiffFlowPtPOI(),entryDiffLYZ2SUMPtPOI->Data(),"p");
+  }
+  
+  //LYZ2PROD
+  if(plotLYZ2PRODPtPOI && lyz2prodCommonHistRes)
+  {
+   entryDiffLYZ2PRODPtPOI->Append("M = ");
+   (*entryDiffLYZ2PRODPtPOI)+=(Long_t)avMultDiffFlowLYZ2PRODPOI;
+   entryDiffLYZ2PRODPtPOI->Append(", N = ");
+   (*entryDiffLYZ2PRODPtPOI)+=(Long_t)nEvtsDiffFlowLYZ2PRODPOI; 
+   legendDiffFlowPtPOI->AddEntry(lyz2prodCommonHistRes->GetHistDiffFlowPtPOI(),entryDiffLYZ2PRODPtPOI->Data(),"p");
   }
   
   //LYZEP
@@ -2988,10 +3190,15 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   { 
    //(qcCommonHistRes8->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
   }
-  //LYZ2
-  if(plotLYZ2EtaPOI && lyz2CommonHistRes)
+  //LYZ2SUM
+  if(plotLYZ2SUMEtaPOI && lyz2sumCommonHistRes)
   { 
-   (lyz2CommonHistRes->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
+   (lyz2sumCommonHistRes->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
+  }
+  //LYZ2PROD
+  if(plotLYZ2PRODEtaPOI && lyz2prodCommonHistRes)
+  { 
+   (lyz2prodCommonHistRes->GetHistDiffFlowEtaPOI())->Draw("E1PSAME");
   }
   //LYZEP
   if(plotLYZEPEtaPOI && lyzepCommonHistRes)
@@ -3007,18 +3214,19 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   legendDiffFlowEtaPOI->SetTextSize(0.06);
  
   //legend's entries:
-  TString *entryDiffMCEtaPOI    = new TString("MC ....... ");
-  TString *entryDiffSPEtaPOI    = new TString("SP ....... ");
-  TString *entryDiffGFC2EtaPOI  = new TString("GFC{2} ... ");
-  TString *entryDiffGFC4EtaPOI  = new TString("GFC{4} ... ");
-  TString *entryDiffGFC6EtaPOI  = new TString("GFC{6} ... ");
-  TString *entryDiffGFC8EtaPOI  = new TString("GFC{8} ... "); 
-  TString *entryDiffQC2EtaPOI   = new TString("QC{2} .... ");
-  TString *entryDiffQC4EtaPOI   = new TString("QC{4} .... ");
-  TString *entryDiffQC6EtaPOI   = new TString("QC{6} .... ");
-  TString *entryDiffQC8EtaPOI   = new TString("QC{8} .... ");
-  TString *entryDiffLYZ2EtaPOI  = new TString("LYZ ...... ");
-  TString *entryDiffLYZEPEtaPOI = new TString("LYZEP ... ");
+  TString *entryDiffMCEtaPOI       = new TString("MC ........ ");
+  TString *entryDiffSPEtaPOI       = new TString("SP ........ ");
+  TString *entryDiffGFC2EtaPOI     = new TString("GFC{2} .... ");
+  TString *entryDiffGFC4EtaPOI     = new TString("GFC{4} .... ");
+  TString *entryDiffGFC6EtaPOI     = new TString("GFC{6} .... ");
+  TString *entryDiffGFC8EtaPOI     = new TString("GFC{8} .... "); 
+  TString *entryDiffQC2EtaPOI      = new TString("QC{2} ..... ");
+  TString *entryDiffQC4EtaPOI      = new TString("QC{4} ..... ");
+  TString *entryDiffQC6EtaPOI      = new TString("QC{6} ..... ");
+  TString *entryDiffQC8EtaPOI      = new TString("QC{8} ..... ");
+  TString *entryDiffLYZ2SUMEtaPOI  = new TString("LYZ{sum} .. ");
+  TString *entryDiffLYZ2PRODEtaPOI = new TString("LYZ{prod} . ");
+  TString *entryDiffLYZEPEtaPOI    = new TString("LYZEP ..... ");
  
   //MC
   if(mcepCommonHistRes)
@@ -3033,7 +3241,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   }
   
   //SP
-  if(spCommonHistRes)
+  if(plotSPEtaPOI && spCommonHistRes)
   {
    entryDiffSPEtaPOI->Append("M = ");
    (*entryDiffSPEtaPOI)+=(Long_t)avMultDiffFlowSPPOI;
@@ -3110,14 +3318,24 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
    legendDiffFlowEtaPOI->AddEntry(qcCommonHistRes8->GetHistDiffFlowEtaPOI(),entryDiffQC8EtaPOI->Data(),"p");
   }
  
-  //LYZ2
-  if(plotLYZ2EtaPOI && lyz2CommonHistRes)
+  //LYZ2SUM
+  if(plotLYZ2SUMEtaPOI && lyz2sumCommonHistRes)
   {
-   entryDiffLYZ2EtaPOI->Append("M = ");
-   (*entryDiffLYZ2EtaPOI)+=(Long_t)avMultDiffFlowLYZ2POI;
-   entryDiffLYZ2EtaPOI->Append(", N = ");
-   (*entryDiffLYZ2EtaPOI)+=(Long_t)nEvtsDiffFlowLYZ2POI; 
-   legendDiffFlowEtaPOI->AddEntry(lyz2CommonHistRes->GetHistDiffFlowEtaPOI(),entryDiffLYZ2EtaPOI->Data(),"p");
+   entryDiffLYZ2SUMEtaPOI->Append("M = ");
+   (*entryDiffLYZ2SUMEtaPOI)+=(Long_t)avMultDiffFlowLYZ2SUMPOI;
+   entryDiffLYZ2SUMEtaPOI->Append(", N = ");
+   (*entryDiffLYZ2SUMEtaPOI)+=(Long_t)nEvtsDiffFlowLYZ2SUMPOI; 
+   legendDiffFlowEtaPOI->AddEntry(lyz2sumCommonHistRes->GetHistDiffFlowEtaPOI(),entryDiffLYZ2SUMEtaPOI->Data(),"p");
+  }
+  
+  //LYZ2PROD
+  if(plotLYZ2PRODEtaPOI && lyz2prodCommonHistRes)
+  {
+   entryDiffLYZ2PRODEtaPOI->Append("M = ");
+   (*entryDiffLYZ2PRODEtaPOI)+=(Long_t)avMultDiffFlowLYZ2PRODPOI;
+   entryDiffLYZ2PRODEtaPOI->Append(", N = ");
+   (*entryDiffLYZ2PRODEtaPOI)+=(Long_t)nEvtsDiffFlowLYZ2PRODPOI; 
+   legendDiffFlowEtaPOI->AddEntry(lyz2prodCommonHistRes->GetHistDiffFlowEtaPOI(),entryDiffLYZ2PRODEtaPOI->Data(),"p");
   }
   
   //LYZEP
@@ -3143,7 +3361,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
 
 
  //=====================================================================================
-
+ 
+ 
 }
 
 void LoadPlotLibraries(const libModes mode) {
