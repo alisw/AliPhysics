@@ -7,15 +7,15 @@
 // RUN SETTINGS
 //flow analysis method can be: (set to kTRUE or kFALSE)
 Bool_t SP       = kTRUE;
-Bool_t LYZ1SUM  = kFALSE;
-Bool_t LYZ1PROD = kFALSE;
+Bool_t LYZ1SUM  = kTRUE;
+Bool_t LYZ1PROD = kTRUE;
 Bool_t LYZ2SUM  = kFALSE; 
 Bool_t LYZ2PROD = kFALSE;
-Bool_t LYZEP    = kTRUE; 
+Bool_t LYZEP    = kFALSE; 
 Bool_t GFC      = kTRUE;
 Bool_t QC       = kTRUE;
-Bool_t FQD      = kTRUE;
-Bool_t MCEP     = kTRUE; //does not work yet 24/12/08
+Bool_t FQD      = kFALSE;
+Bool_t MCEP     = kFALSE; //does not work yet 24/12/08
 //--------------------------------------------------------------------------------------
 
 // Weights 
@@ -207,7 +207,7 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 10, const char*
     TString inputFileNameLYZ2SUM = "outputLYZ1SUManalysis.root" ;
     TFile* inputFileLYZ2SUM = new TFile(inputFileNameLYZ2SUM.Data(),"READ");
     if(!inputFileLYZ2SUM || inputFileLYZ2SUM->IsZombie()) { 
-      cerr << " ERROR: NO First Run SUM file... " << endl ;
+      cerr << " ERROR: To run LYZ2SUM you need the output file from LYZ1SUM. This file is not there! Please run LYZ1SUM first." << endl ;
       break; 
     }
     else { 
@@ -228,7 +228,7 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 10, const char*
     TString inputFileNameLYZ2PROD = "outputLYZ1PRODanalysis.root" ;
     TFile* inputFileLYZ2PROD = new TFile(inputFileNameLYZ2PROD.Data(),"READ");
     if(!inputFileLYZ2PROD || inputFileLYZ2PROD->IsZombie()) { 
-      cerr << " ERROR: NO First Run PROD file... " << endl ;
+      cerr << " ERROR: To run LYZ2PROD you need the output file from LYZ1PROD. This file is not there! Please run LYZ1PROD first." << endl ;
       break; 
     }
     else { 
@@ -251,7 +251,7 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 10, const char*
     TString inputFileNameLYZEP = "outputLYZ2SUManalysis.root" ;
     TFile* inputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
     if(!inputFileLYZEP || inputFileLYZEP->IsZombie()) { 
-      cerr << " ERROR: NO Second Run file... " << endl ; 
+      cerr << " ERROR: To run LYZEP you need the output file from LYZ2SUM. This file is not there! Please run LYZ2SUM first." << endl ; 
       break;
     }
     else { 

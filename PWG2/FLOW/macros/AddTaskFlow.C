@@ -100,7 +100,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     cout<<"The input file is "<<inputFileNameLYZ2SUM.Data()<<endl;
     TFile* fInputFileLYZ2SUM = new TFile(inputFileNameLYZ2SUM.Data(),"READ");
     if(!fInputFileLYZ2SUM || fInputFileLYZ2SUM->IsZombie()) { 
-      cerr << " ERROR: NO First Run SUM file... " << endl ; 
+      cerr << " ERROR: To run LYZ2SUM you need the output file from LYZ1SUM. This file is not there! Please run LYZ1SUM first." << endl ; 
       break;
     }
     else {
@@ -117,7 +117,7 @@ if (LYZ2PROD){
     cout<<"The input file is "<<inputFileNameLYZ2PROD.Data()<<endl;
     TFile* fInputFileLYZ2PROD = new TFile(inputFileNameLYZ2PROD.Data(),"READ");
     if(!fInputFileLYZ2PROD || fInputFileLYZ2PROD->IsZombie()) { 
-      cerr << " ERROR: NO First Run PROD file... " << endl ; 
+      cerr << " ERROR: To run LYZ2PROD you need the output file from LYZ1PROD. This file is not there! Please run LYZ1PROD first." << endl ; 
       break;
     }
     else {
@@ -135,7 +135,7 @@ if (LYZ2PROD){
     cout<<"The input file is "<<inputFileNameLYZEP.Data()<<endl;
     TFile* fInputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
     if(!fInputFileLYZEP || fInputFileLYZEP->IsZombie()) { 
-      cerr << " ERROR: NO Second Run file... " << endl ; 
+      cerr << " ERROR: To run LYZEP you need the output file from LYZ2SUM. This file is not there! Please run LYZ2SUM first." << endl ; 
       break;
     }
     else {
@@ -173,7 +173,7 @@ if (LYZ2PROD){
   AliCFTrackKineCuts* mcKineCuts1 = new AliCFTrackKineCuts("mcKineCuts1","MC-level kinematic cuts");
   mcKineCuts1->SetPtRange(ptmin1,ptmax1);
   mcKineCuts1->SetRapidityRange(ymin1,ymax1);
-  mcKineCuts1->SetChargeMC(charge1);
+  //mcKineCuts1->SetChargeMC(charge1);
   if (QA) { 
     mcKineCuts1->SetQAOn(qaRP);
   }
@@ -181,7 +181,7 @@ if (LYZ2PROD){
   AliCFTrackKineCuts* mcKineCuts2 = new AliCFTrackKineCuts("mcKineCuts2","MC-level kinematic cuts");
   mcKineCuts2->SetPtRange(ptmin2,ptmax2);
   mcKineCuts2->SetRapidityRange(ymin2,ymax2);
-  mcKineCuts2->SetChargeMC(charge2);
+  //mcKineCuts2->SetChargeMC(charge2);
   if (QA) { 
     mcKineCuts2->SetQAOn(qaPOI);
   }
@@ -218,7 +218,7 @@ if (LYZ2PROD){
   AliCFTrackKineCuts *recKineCuts1 = new AliCFTrackKineCuts("recKineCuts1","rec-level kine cuts");
   recKineCuts1->SetPtRange(ptmin1,ptmax1);
   recKineCuts1->SetRapidityRange(ymin1,ymax1);
-  recKineCuts1->SetChargeRec(charge1);
+  //recKineCuts1->SetChargeRec(charge1);
   if (QA) { 
     recKineCuts1->SetQAOn(qaRP);
   }
@@ -226,7 +226,7 @@ if (LYZ2PROD){
   AliCFTrackKineCuts *recKineCuts2 = new AliCFTrackKineCuts("recKineCuts2","rec-level kine cuts");
   recKineCuts2->SetPtRange(ptmin2,ptmax2);
   recKineCuts2->SetRapidityRange(ymin2,ymax2);
-  recKineCuts2->SetChargeRec(charge2);
+  //recKineCuts2->SetChargeRec(charge2);
   if (QA) { 
     recKineCuts2->SetQAOn(qaPOI);
   }
