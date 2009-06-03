@@ -66,6 +66,7 @@
 
 #include "AliCDBManager.h"
 #include "AliTPCcalibDB.h"
+#include "TProfile.h"
 
 //_______________________________________________________________________________________
 
@@ -94,6 +95,10 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
    ::Info("AliHLTTPCTrackerEvaluation.C","Calculating reconstruction efficiency...");
 
    gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
+
+   gStyle->SetTitleOffset(1.2,"X");
+   gStyle->SetTitleOffset(1.1,"Y");
+
    
    // --------------- Efficiency histograms ------------------------
 
@@ -136,60 +141,62 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
    TH2F *hPhi    = new TH2F("hPhi",    "", 30, 0, 6, 50, -16, 16); 
    TH2F *hLambda = new TH2F("hLambda", "", 30, 0, 6, 50, -10, 10);
    TH2F *hY	 = new TH2F("hY",      "", 30, 0, 6, 30,  -5,  5); 
-   TH2F *hZ	 = new TH2F("hZ",      "", 30, 0, 6, 30,  -5,  5); // fix the x axis, if this is z dependent 
+   TH2F *hZ	 = new TH2F("hZ",      "", 30, 0, 250, 30,  -5,  5); // fix the x axis, if this is z dependent 
    
-   TH1F *hResPt     = new TH1F("hResPt",     "P_{t} resolution",  30, 0, 6);
-   TH1F *hResPhi    = new TH1F("hResPhi",    "#phi resolution",   30, 0, 6);    
-   TH1F *hResLambda = new TH1F("hResLambda", "#lambda resolution",30, 0, 6);
-   TH1F *hResY      = new TH1F("hResY",      "Y resolution",      30, 0, 6); 
-   //TH1F *hResZ      = new TH1F("hResZ",      "Z resolution",      30, 0, 6); // select appropriate x axis, KKK
+   TProfile *hResPt     = new TProfile("hResPt",     "P_{t} resolution (%)",  30, 0, 6);
+   TProfile *hResPhi    = new TProfile("hResPhi",    "#phi resolution (mrad)",   30, 0, 6);    
+   TProfile *hResLambda = new TProfile("hResLambda", "#lambda resolution (mrad)",30, 0, 6);
+   TProfile *hResY      = new TProfile("hResY",      "Y resolution (mm)",      30, 0, 6); 
+   TProfile *hResZ      = new TProfile("hResZ",      "Z resolution (mm)",      30, 0, 250); // select appropriate x axis, KKK
 
    hResPt->SetXTitle("P_{t} (GeV/c)");
-   hResPt->SetYTitle("#sigma_{(P_{t}-P_{MC})/P_{MC}} (%)");
+   hResPt->SetYTitle("#sigma_{(P_{t}-P_{t_{MC}})/P_{t_{MC}}} (%)");
+   hResPt->GetYaxis()->CenterTitle(true);
    hResPt->GetYaxis()->CenterTitle(true);
   
    hResPhi->SetXTitle("P_{t} (GeV/c)");
-   hResPhi->SetYTitle("#sigma_{(#phi_{rec}-#phi_{MC})/#phi_{MC}} (%)");
+   hResPhi->SetYTitle("#sigma_{(#phi_{rec}-#phi_{MC})} (mrad)");
    hResPhi->GetYaxis()->CenterTitle(true);
 
    hResLambda->SetXTitle("P_{t} (GeV/c)");
-   hResLambda->SetYTitle("#sigma_{(#lambda_{rec}-#lambda_{MC})/#lambda_{MC}} (%)"); // KKK perhaps we should add the definition on the histo pad
+   hResLambda->SetYTitle("#sigma_{(#lambda_{rec}-#lambda_{MC})} (mrad)"); // KKK perhaps we should add the definition on the histo pad
    hResLambda->GetYaxis()->CenterTitle(true);
   
    hResY->SetXTitle("P_{t} (GeV/c)");
-   hResY->SetYTitle("#sigma_{(Y_{rec}-Y_{MC})/Y_{MC}} (%)");
+   hResY->SetYTitle("#sigma_{(Y_{rec}-Y_{MC})} (mm)");
    hResY->GetYaxis()->CenterTitle(true);
    
-//    hResZ->SetXTitle("Z (mm)");
-//    hResZ->SetYTitle("#sigma_{(Z_{rec}-Z_{MC})/Z_{MC}} (%)");
-//    hResZ->GetYaxis()->CenterTitle(true);
+   hResZ->SetXTitle("Z (mm)");
+   hResZ->SetYTitle("#sigma_{(Z_{rec}-Z_{MC})} (mm)");
+   hResZ->GetYaxis()->CenterTitle(true);
 
    // KKK I leave the Z coordinate up to you. You can make the hResZ Z dependent.
    
-         
-   TH1D *hProjPt[6], *hProjPhi[6], *hProjLambda[6], *hProjY[6], *hProjZ[6]; // I am not sure we need these histos to be pointers
+   /* 
+     
+   TH1D *hProjPt[15], *hProjPhi[15], *hProjLambda[15], *hProjY[15], *hProjZ[15]; // I am not sure we need these histos to be pointers
    Char_t name[15];  Char_t title[100];
-    
-   for(Int_t i=0; i<6; i++){
+   
+   for(Int_t i=0; i<15; i++){
        sprintf(name,"hProjPt%i",i+1);
        sprintf(title,"(Pt_{MC}-Pt_{Rec})/Pt_{MC} @ Pt#in[%f, %f] GeV/c", i-0.5, i+0.5);
        hProjPt[i] = new TH1D(name, title, 50, -3, -3); 
        
        sprintf(name,"hProjPhi%i",i+1);
-       sprintf(title,"(#phi_{MC}-#phi_{Rec})/#phi_{MC} @ #phi#in[%f, %f] GeV/c", i-0.5, i+0.5);
+       sprintf(title,"(#phi_{MC}-#phi_{Rec}) @ #phi#in[%f, %f] GeV/c", i-0.5, i+0.5);
        hProjPhi[i] = new TH1D(name, title, 50, -16, -16);        
       
        sprintf(name,"hProjLambda%i",i+1);
-       sprintf(title,"(#lambda_{MC}-#lambda_{Rec})/#lambda_{MC} @ #lambda#in[%f, %f] GeV/c", i-0.5, i+0.5);
+       sprintf(title,"(#lambda_{MC}-#lambda_{Rec}) @ #lambda#in[%f, %f] GeV/c", i-0.5, i+0.5);
        hProjLambda[i] = new TH1D(name, title, 50, -16, -16);        
        
        sprintf(name,"hProjY%i",i+1);
-       sprintf(title,"(Y_{MC}-Y_{Rec})/Y_{MC} @ Y#in[%f, %f] GeV/c", i-0.5, i+0.5);
+       sprintf(title,"(Y_{MC}-Y_{Rec}) @ Y#in[%f, %f] GeV/c", i-0.5, i+0.5);
        hProjY[i] = new TH1D(name, title, 50, -16, -16);   
        
        // here you add the hProjZ[] histograms    KKK 
    }
- 
+   */ 
    
      
    // --------------- Pull variable histograms ------------------------
@@ -274,7 +281,7 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
    while(esdTree->GetEvent(iEvent)){
      
       Int_t nEntries = event->GetNumberOfTracks();      
-      //cout << "********* Processing event number: " << iEvent << ", " << nEntries << " reconstructed tracks *******\n" << endl;
+      cout << "********* Processing event number: " << iEvent << ", " << nEntries << " reconstructed tracks *******\n" << endl;
 
       allfound += nEntries;
 
@@ -284,7 +291,7 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
       }
 
       Int_t ngood = refs->GetEntriesFast(); // access the track references
-      //cout << ngood << " good MC tracks" << endl;
+      cout << ngood << " good MC tracks" << endl;
       allgood += ngood;
 
       const Int_t MAX = 15000;
@@ -296,7 +303,7 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
       for(Int_t i=0; i<nEntries; i++){
 	  
 	  hClus->Fill(event->GetTrack(i)->GetTPCNcls()); // filled but not displayed
-	  //cout << "TPC label for track " << i << " = " << event->GetTrack(i)->GetTPCLabel() << ", # clusters " << event->GetTrack(i)->GetTPCNcls() << endl;
+	  cout << "TPC label for track " << i << " = " << event->GetTrack(i)->GetTPCLabel() << ", # clusters " << event->GetTrack(i)->GetTPCNcls() << endl;
       }
       
       Int_t i;
@@ -310,6 +317,7 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
 	  Float_t pMC  = TMath::Sqrt(ref->Px()*ref->Px() + ref->Py()*ref->Py()+ref->Pz()*ref->Pz());
 	
           if (ptMC<1e-33 || ptMC<ptLowerCut || ptMC>ptUpperCut) continue; // first condition is for tracks not crossing padrow 0
+
           allselected++;
 
           hGood->Fill(ptMC);
@@ -324,15 +332,15 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
 	
           AliESDtrack *esdtrack = 0;
           for(i=0; i<nEntries; i++){            
-	      esdtrack = event->GetTrack(i);
-              tlabel   = esdtrack->GetTPCLabel();
-              if(label==tlabel) break;
+	    esdtrack = event->GetTrack(i);
+	    tlabel   = esdtrack->GetTPCLabel();
+	    if(label==tlabel) break;
           }
         
 	  if(i==nEntries){
- 	     track_notfound[itrack_notfound++] = label;
-	     //cout << "MC track " << label << " not reconstructed" << endl;
-	     continue;
+	    track_notfound[itrack_notfound++] = label;
+	    cout << "MC track " << label << " not reconstructed" << endl;
+	    continue;
           }
       
           Int_t micount = 0;
@@ -353,7 +361,8 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
         
 	//if((mitrack->GetStatus()&AliESDtrack::kTPCrefit)==0) continue;
         //if((mitrack->GetStatus()&AliESDtrack::kTPCin)==0)    continue;
-       
+	  cout << "MC track " << label << " reconstructed "<<micount<<" times" << endl;
+	  
         if(label==tlabel){
 	   hFound->Fill(ptMC);
 	   //if( micount<1 ) cout<<"ERROR!!!!"<<endl;
@@ -431,7 +440,7 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
         hLambda->Fill(ptMC, (lambdaRec - lambdaMC)/lambdaMC*1000.);    
 	
 	hY->Fill(ptMC, (local[1]-mclocal[1])*10.);
-	/*if(mclocal[2]>0 )*/ //hZ->Fill( (local[2]-mclocal[2] ) *10.); // Please check hY and hZ! KKK
+	hZ->Fill( fabs(mclocal[2]), (local[2]-mclocal[2] ) *10.); // Please check hY and hZ! KKK
 	
 	if( tpctrack.GetSigmaY2()>0   && finite(tpctrack.GetSigmaY2())   )  hpullY   ->Fill( (local[1]-mclocal[1])/TMath::Sqrt(TMath::Abs(tpctrack.GetSigmaY2()))  );
 	if( tpctrack.GetSigmaZ2()>0   && finite(tpctrack.GetSigmaZ2())   )  hpullZ   ->Fill( (local[2]-mclocal[2])/TMath::Sqrt(TMath::Abs(tpctrack.GetSigmaZ2()))  );
@@ -512,10 +521,11 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
    // perhaps fakes and clones should be displayed in another histogram??
 
    gROOT->SetStyle("Plain");
-   gStyle->SetOptStat(0); //gStyle->SetOptStat(111110);
+   gStyle->SetOptStat(""); //gStyle->SetOptStat(111110);
    gStyle->SetOptFit(0);  //gStyle->SetOptFit(1);
    gStyle->SetPalette(1);
-   
+ 
+
    //--------------- canvas 0 for EFFICIENCY -------------------
    
    TCanvas *c0 = new TCanvas("c0","reconstruction efficiency",500,450);
@@ -563,62 +573,91 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
    //--------------- canvas 1 for RESOLUTIONS ----------------
 
    
+   gStyle->SetOptStat(0);
    TCanvas *c1 = new TCanvas("c1","resolutions",1100,900); // please add the Y and Z projections
-     
+
    TF1 *fGauss = new TF1("gauss","gaus");   
-   for(Int_t i=0; i<6; i++){              
-       Float_t pMin = i - 0.5;
-       Float_t pMax = i + 0.5;
-       Int_t binx1 = hPt->GetXaxis()->FindBin(pMin);
-       Int_t binx2 = hPt->GetXaxis()->FindBin(pMax);
-       if(i>0) binx1++;
+   for(Int_t i=0; i<15; i++){              
+     Float_t pMin = i*6/15.;// -.5;
+     Float_t pMax = (i+1)*6/15.;// +.5;
+     Int_t binx1 = hPt->GetXaxis()->FindBin(pMin);
+     Int_t binx2 = hPt->GetXaxis()->FindBin(pMax);
+     Float_t zMin = i*250./15.;
+     Float_t zMax = (i+1)*250./15.;
+     Int_t binz1 = hZ->GetXaxis()->FindBin(zMin);
+     Int_t binz2 = hZ->GetXaxis()->FindBin(zMax);
+     //if(i>0) binx1++;
             
-       *hProjPt[i]     = *(hPt    ->ProjectionY("", binx1, binx2));  
-       *hProjPhi[i]    = *(hPhi   ->ProjectionY("", binx1, binx2));  
-       *hProjLambda[i] = *(hLambda->ProjectionY("", binx1, binx2));  
-       *hProjY[i]      = *(hY     ->ProjectionY("", binx1, binx2));  
-//        *hProjZ[i]      = *(hZ     ->ProjectionY("", binx1, binx2));  
-
-       if(hProjPt[i]->GetEntries()>30) hProjPt[i]->Fit("gauss","Q"); 
-       hResPt->Fill(i+0.5, fGauss->GetParameter(2));fGauss->GetParError(2);
-       fGauss->SetParameter(2,0); fGauss->SetParError(2,0);
-       //KKK I am resetting only the sigma and its error, perhaps we should do this with all the fit parameters ???
-       
-       if(hProjPhi[i]->GetEntries()>30) hProjPhi[i]->Fit("gauss","Q"); 
-       hResPhi->Fill(i+0.5, fGauss->GetParameter(2)); fGauss->GetParError(2);
-       fGauss->SetParameter(2,0); fGauss->SetParError(2,0);
-      
-       if(hProjLambda[i]->GetEntries()>30) hProjLambda[i]->Fit("gauss","Q"); 
-       hResLambda->Fill(i+0.5, fGauss->GetParameter(2)); fGauss->GetParError(2);
+     TH1D *p;
+     p = (hPt    ->ProjectionY("", binx1, binx2));  
+     //cout<<i<<" "<<pMin<<" "<<pMax<<" "<<binx1<<" "<<binx2<<": "<<p->GetEntries()<<endl;
+     if(p->GetEntries()>50){
        fGauss->SetParameter(2,0);
-       
-       if(hProjY[i]->GetEntries()>30) hProjY[i]->Fit("gauss","Q"); 
-       hResY->Fill(i+0.5, fGauss->GetParameter(2)); fGauss->GetParError(2);
-       fGauss->SetParameter(2,0); fGauss->SetParError(2,0);
-       
-//        if(hProjZ[i]->GetEntries()>30) hProjZ[i]->Fit("gauss","Q"); 
-//        hResZ->Fill(i+0.5, fGauss->GetParameter(2)); fGaus->GetParError(2);
-//        fGauss->SetParameter(2,0); KKK
-       
-   }   
-  
-   c1->Clear(); c1->Divide(3,2);  
-   
-   c1->cd(1);
-   hResPt->Draw(); // KKK I haven't filled the errors for the sigma, perhaps a TGraph would make them easier to plot
-  
-   c1->cd(2);
-   hResPhi->Draw();
-   
-   c1->cd(3);
-   hResLambda->Draw();
-   
-   c1->cd(4);
-   hResY->Draw();
-   
-//    c1->cd(4);
-//    hResZ->Draw(); // KKK
+       p->Fit("gauss","Q"); 
+       hResPt->Fill(pMin, fGauss->GetParameter(2));fGauss->GetParError(2);
+     }
 
+     //KKK I am resetting only the sigma and its error, perhaps we should do this with all the fit parameters ???
+     // SG I don't know;
+
+     p    = (hPhi   ->ProjectionY("", binx1, binx2));  
+     if(p->GetEntries()>50){
+       fGauss->SetParameter(2,0);
+       p->Fit("gauss","Q"); 
+       hResPhi->Fill(pMin, fGauss->GetParameter(2)); fGauss->GetParError(2);
+     }
+     
+     p = (hLambda->ProjectionY("", binx1, binx2));  
+     if(p->GetEntries()>50){
+       fGauss->SetParameter(2,0);
+       p->Fit("gauss","Q"); 
+       hResLambda->Fill(pMin, fGauss->GetParameter(2)); fGauss->GetParError(2);
+     }
+     
+     p     = (hY     ->ProjectionY("", binx1, binx2));  
+     if(p->GetEntries()>50){
+       fGauss->SetParameter(2,0);
+       p->Fit("gauss","Q"); 
+       hResY->Fill(pMin, fGauss->GetParameter(2)); fGauss->GetParError(2);
+     }
+       
+     p      = (hZ     ->ProjectionY("", binz1, binz2));  
+     //cout<<i<<" "<<zMin<<" "<<zMax<<" "<<binz1<<" "<<binz2<<endl;
+     //cout<<p->GetEntries()<<endl;
+     if(p->GetEntries()>50){
+       fGauss->SetParameter(2,0);
+       p->Fit("gauss","Q"); 
+       hResZ->Fill(zMin, fGauss->GetParameter(2)); fGauss->GetParError(2);
+     }
+   }   
+   
+   c1->Clear(); c1->Divide(3,2);  
+  
+   TVirtualPad *p = c1->cd(1);
+   p->SetGridy();
+   hResPt->SetMarkerStyle(20);
+   hResPt->Draw("P"); // KKK I haven't filled the errors for the sigma, perhaps a TGraph would make them easier to plot
+  
+   p = c1->cd(2);
+   p->SetGridy();
+   hResPhi->SetMarkerStyle(20);
+   hResPhi->Draw("P");
+   
+   p=c1->cd(3);
+   p->SetGridy();
+   hResLambda->SetMarkerStyle(20);
+   hResLambda->Draw("P");
+   
+   p=c1->cd(4);
+   p->SetGridy();
+   hResY->SetMarkerStyle(20);
+   hResY->Draw("P");
+   
+   p=c1->cd(5);
+   p->SetGridy();
+   hResZ->SetMarkerStyle(20);
+   hResZ->Draw("P");
+   c1->Update();
 // pad 6 stays empty
   
 
@@ -640,6 +679,10 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
    //----------------- canvas 3 for PULL VARIABLES --------------------
 
    TCanvas *c4 = new TCanvas("c4","pull variables",1100,900);
+ 
+   gStyle->SetOptFit(2);
+   gStyle->SetOptStat("e");
+
    c4->Divide(3,2);
    
    c4->cd(1);
