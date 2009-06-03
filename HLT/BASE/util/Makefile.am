@@ -43,6 +43,7 @@ libAliHLTUtil_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@ \
+				  @ALIUTIL_LIBS@ \
 				  -version-info $(LIBRARY_VERSION)
 
 # automatic generation of data and time of library build

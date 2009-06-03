@@ -32,7 +32,7 @@ dnl ------------------------------------------------------------------
 AC_CANONICAL_SYSTEM
 AC_PREFIX_DEFAULT(${PWD})
 AC_CONFIG_SRCDIR(BASE/AliHLTComponent.cxx)
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([-Wno-portability])
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_LIBTOOL
@@ -571,24 +571,31 @@ AM_CONDITIONAL(EN_HLT_SAMPLE, test x$enable_sample = xyes)
 AC_MSG_RESULT([$enable_sample])
 
 dnl ------------------------------------------------------------------
-AC_MSG_CHECKING([whether to compile util library])
 AH_TEMPLATE([HLT_UTIL],[HLT utility library])
-AC_ARG_ENABLE(util,
-  [AC_HELP_STRING([--disable-util],
-      [compile the util library ])],
-  [],
-  [if test "x$have_aliroot" = "xno" ; then
-     enable_util="no...requires.AliRoot"
-   else
-     enable_util=yes
-   fi
-  ])
+ALIUTIL_LIBS=
+CHECK_HLTMODULE([util],
+		[], 
+		[$ALIROOT_CPPFLAGS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/RAW -I$ALICE_ROOT/PYTHIA6],
+		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], [$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS],
+		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...missing.headers"
+  enable_util=$enable_module
+elif test "x$enable_module" = "xforce"; then
+  enable_util="yes"
+else
+  enable_util=$enable_module
+fi
 if test "x$enable_util" = "xyes" ; then 
   AC_DEFINE(HLT_UTIL)
+  ALIUTIL_LIBS=$ALIHLTMODULE_LIBS
 fi
 AM_CONDITIONAL(EN_HLT_UTIL, test x$enable_util = xyes)
-AC_MSG_RESULT([$enable_util])
+AC_MSG_CHECKING([whether to compile Util library])
+AC_MSG_RESULT([$enable_module])
+AC_SUBST([ALIUTIL_LIBS])
 
 dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_TPC],[hlt tpc library])
