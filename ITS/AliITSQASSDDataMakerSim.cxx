@@ -111,13 +111,13 @@ void AliITSQASSDDataMakerSim::InitDigits() {
 
   // custom code here
   TH1F *fHistSSDModule = new TH1F("fHistSSDDigitsModule",
-				  ";SSD Module Number;N_{DIGITS}",
+				  "SSD Digits Module;SSD Module Number;N_{DIGITS}",
 				  1698,499.5,2197.5);  
   fAliITSQADataMakerSim->Add2DigitsList(fHistSSDModule,
 					fGenOffsetD + 0, !expert, image);
   fSSDhDTask += 1;
   TH2F *fHistSSDModuleStrip = new TH2F("fHistSSDDigitsModuleStrip",
-				       ";N_{Strip};N_{Module}",
+				       "SSD Digits Module Strip;N_{Strip};N_{Module}",
 				       1540,0,1540,1698,499.5,2197.5);  
   fAliITSQADataMakerSim->Add2DigitsList(fHistSSDModuleStrip,
 					fGenOffsetD + 1, !expert, image);
@@ -159,7 +159,7 @@ void AliITSQASSDDataMakerSim::InitSDigits() {
 
   // custom code here
   TH1F *fHistSSDModule = new TH1F("fHistSSDSDigitsModule",
-				  ";SSD Module Number;N_{SDIGITS}",
+				  "SSD SDigits Module;SSD Module Number;N_{SDIGITS}",
 				  1698,499.5,2197.5);  
   fAliITSQADataMakerSim->Add2SDigitsList(fHistSSDModule,
 					 fGenOffsetS + 0, !expert, image);
@@ -204,55 +204,55 @@ void AliITSQASSDDataMakerSim::InitHits() {
 
   // custom code here
   TH1F *fHistSSDModule = new TH1F("fHistSSDHitsModule",
-				  ";SDD Module Number;N_{HITS}",
+				  "SSD Hits Module;SDD Module Number;N_{HITS}",
 				  1698,499.5,2197.5); 
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDModule,
 				      fGenOffsetH + 0, !expert, image);
   fSSDhHTask += 1;
   TH1F *fHistSSDGlobalX = new TH1F("fHistSSDHitsGlobalX",
-				   ";x [cm];Entries",
+				   "SSD Hits Global X;x [cm];Entries",
 				   1000,-50.,50.);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDGlobalX,
 				      fGenOffsetH + 1, !expert, image);
   fSSDhHTask += 1;
   TH1F *fHistSSDGlobalY = new TH1F("fHistSSDHitsGlobalY",
-				   ";y [cm];Entries",
+				   "SSD Hits Global Y;y [cm];Entries",
 				   1000,-50.,50.);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDGlobalY,
 				      fGenOffsetH + 2, !expert, image);
   fSSDhHTask += 1;
   TH1F *fHistSSDGlobalZ = new TH1F("fHistSSDHitsGlobalZ",
-				   ";z [cm];Entries",
+				   "SSD Hits Global Z ;z [cm];Entries",
 				   1000,-60.,60.);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDGlobalZ,
 				      fGenOffsetH + 3, !expert, image);
   fSSDhHTask += 1;
   TH1F *fHistSSDLocalX = new TH1F("fHistSSDHitsLocalX",
-				  ";x [cm];Entries",
+				  "SSD Hits Local X;x [cm];Entries",
 				  1000,-4.,4.);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDLocalX,
 				      fGenOffsetH + 4, !expert, image);
   fSSDhHTask += 1;
   TH1F *fHistSSDLocalY = new TH1F("fHistSSDHitsLocalY",
-				  ";y [cm];Entries",
+				  "SSD Hits Local Y;y [cm];Entries",
 				  1000,-0.1,0.1);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDLocalY,
 				      fGenOffsetH + 5, !expert, image);
   fSSDhHTask += 1;
   TH1F *fHistSSDLocalZ = new TH1F("fHistSSDHitsLocalZ",
-				  ";z [cm];Entries",
+				  "SSD Hits Local Z;z [cm];Entries",
 				  1000,-4.,4.);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDLocalZ,
 				      fGenOffsetH + 6, !expert, image);
   fSSDhHTask += 1;
   TH1F *fHistSSDIonization = new TH1F("fHistSSDHitsIonization",
-				      ";log(dE/dx) [KeV];N_{Hits}",
+				      "SSD Hits Ionization;log(dE/dx) [KeV];N_{Hits}",
 				      100,-7,-2);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDIonization,
 				      fGenOffsetH + 7, !expert, image);
   fSSDhHTask += 1;
   TH2F *fHistSSDGlobalXY = new TH2F("fHistSSDHitsGlobalXY",
-				    ";x [cm];y [cm]",
+				    "SSD Hits Global XY;x [cm];y [cm]",
 				    1000,-50.,50.,
 				    1000,-50.,50.);
   fAliITSQADataMakerSim->Add2HitsList(fHistSSDGlobalXY,

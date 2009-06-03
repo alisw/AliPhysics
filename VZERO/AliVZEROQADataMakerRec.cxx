@@ -168,55 +168,40 @@ void AliVZEROQADataMakerRec::InitESDs()
   TH1I * h1i;
   TH1D * h1d;
 		
-  h1i = new TH1I("H1I_Cell_Multiplicity_V0A", "Cell Multiplicity in V0A", 35, 0, 35) ;  
-  h1i->GetXaxis()->SetTitle("Multiplicity (Nb of Cell)");
+  h1i = new TH1I("H1I_Cell_Multiplicity_V0A", "Cell Multiplicity in V0A;Multiplicity (Nb of Cell);Counts", 35, 0, 35) ;  
   Add2ESDsList(h1i, kCellMultiV0A, !expert, image)  ;  
                                                                                                         
-  h1i = new TH1I("H1I_Cell_Multiplicity_V0C", "Cell Multiplicity in V0C", 35, 0, 35) ;  
-  h1i->GetXaxis()->SetTitle("Multiplicity (Nb of Cell)");
+  h1i = new TH1I("H1I_Cell_Multiplicity_V0C", "Cell Multiplicity in V0;Multiplicity (Nb of Cell);Counts", 35, 0, 35) ;  
   Add2ESDsList(h1i, kCellMultiV0C, !expert, image)  ;  
    
-  h1d = new TH1D("H1D_MIP_Multiplicity_V0A", "MIP Multiplicity in V0A", 1000, 0, 1000) ;  
-  h1d->GetXaxis()->SetTitle("Multiplicity (Nb of MIP)");
+  h1d = new TH1D("H1D_MIP_Multiplicity_V0A", "MIP Multiplicity in V0A;Multiplicity (Nb of MIP);Counts", 1000, 0, 1000) ;  
   Add2ESDsList(h1d, kMIPMultiV0A, !expert, image)  ;  
   
-  h1d = new TH1D("H1D_MIP_Multiplicity_V0C", "MIP Multiplicity in V0C", 1000, 0, 1000) ;  
-  h1d->GetXaxis()->SetTitle("Multiplicity (Nb of MIP)");
+  h1d = new TH1D("H1D_MIP_Multiplicity_V0C", "MIP Multiplicity in V0C;Multiplicity (Nb of MIP);Counts", 1000, 0, 1000) ;  
   Add2ESDsList(h1d, kMIPMultiV0C, !expert, image)  ;  
 
-  h2d = new TH2D("H2D_MIP_Multiplicity_Channel", "MIP Multiplicity per Channel",64, 0, 64, 100, 0, 100) ;  
-  h2d->GetXaxis()->SetTitle("Channel");
-  h2d->GetYaxis()->SetTitle("Multiplicity (Nb of MIP)");
+  h2d = new TH2D("H2D_MIP_Multiplicity_Channel", "MIP Multiplicity per Channel;Channel;Multiplicity (Nb of MIP)",64, 0, 64, 100, 0, 100) ;  
   Add2ESDsList(h2d, kMIPMultiChannel, !expert, image)  ;  
   
-  h1d = new TH1D("H1D_BBFlag_Counters", "BB Flag Counters",64, 0, 64) ;  
-  h1d->GetXaxis()->SetTitle("Channel");
+  h1d = new TH1D("H1D_BBFlag_Counters", "BB Flag Counters;Channel;Counts",64, 0, 64) ;  
   Add2ESDsList(h1d, kBBFlag, !expert, image)  ;  
   
-  h1d = new TH1D("H1D_BGFlag_Counters", "BG Flag Counters",64, 0, 64) ;  
-  h1d->GetXaxis()->SetTitle("Channel");
+  h1d = new TH1D("H1D_BGFlag_Counters", "BG Flag Counters;Channel;Counts",64, 0, 64) ;  
   Add2ESDsList(h1d, kBGFlag, !expert, image)  ;  
   
-  h2d = new TH2D("H2D_Charge_Channel", "ADC Charge per channel",64, 0, 64, 1024, 0, 1024) ;  
-  h2d->GetXaxis()->SetTitle("Channel");
-  h2d->GetYaxis()->SetTitle("Charge (ADC counts)");
+  h2d = new TH2D("H2D_Charge_Channel", "ADC Charge per channel;Channel;Charge (ADC counts)",64, 0, 64, 1024, 0, 1024) ;  
   Add2ESDsList(h2d, kChargeChannel, !expert, image)  ;  
   
-  h2d = new TH2D("H2D_Time_Channel", "Time per channel",64, 0, 64, 820, 0, 410) ;  
-  h2d->GetXaxis()->SetTitle("Channel");
-  h2d->GetYaxis()->SetTitle("Time (ns)");
+  h2d = new TH2D("H2D_Time_Channel", "Time per channel;Channel;Time (ns)",64, 0, 64, 820, 0, 410) ;  
   Add2ESDsList(h2d, kTimeChannel, !expert, image)  ;  
   
-  h1d = new TH1D("H1D_V0A_Time", "Mean V0A Time",2048, 0., 409.6);
-  h1d->GetXaxis()->SetTitle("Time (ns)");
+  h1d = new TH1D("H1D_V0A_Time", "Mean V0A Time;Time (ns);Counts",2048, 0., 409.6);
   Add2ESDsList(h1d,kESDV0ATime, !expert, image); 
   
-  h1d = new TH1D("H1D_V0C_Time", "Mean V0C Time",2048, 0., 409.6);
-  h1d->GetXaxis()->SetTitle("Time (ns)");
+  h1d = new TH1D("H1D_V0C_Time", "Mean V0C Time;Time (ns);Counts",2048, 0., 409.6);
   Add2ESDsList(h1d,kESDV0CTime, !expert, image); 
   
-  h1d = new TH1D("H1D_Diff_Time", "Diff Time V0A - V0C",2*2048, -409.6, 409.6);
-  h1d->GetXaxis()->SetTitle("Diff Time V0A - V0C (ns)");
+  h1d = new TH1D("H1D_Diff_Time", "Diff Time V0A - V0C;Diff Time V0A - V0C (ns);Counts",2*2048, -409.6, 409.6);
   Add2ESDsList(h1d,kESDDiffTime, !expert, image); 
 	
 }
@@ -262,80 +247,80 @@ void AliVZEROQADataMakerRec::InitESDs()
   int iHisto =0;
  
    // Creation of Cell Multiplicity Histograms
-  h1i = new TH1I("H1I_Multiplicity_V0A", "Cell Multiplicity in V0A", 35, 0, 35) ;  
+  h1i = new TH1I("H1I_Multiplicity_V0A", "Cell Multiplicity in V0A;# of Cells;Entries", 35, 0, 35) ;  
   Add2RawsList(h1i,kMultiV0A, !expert, image, saveCorr);   iHisto++;
-  h1i = new TH1I("H1I_Multiplicity_V0C", "Cell Multiplicity in V0C", 35, 0, 35) ;  
+  h1i = new TH1I("H1I_Multiplicity_V0C", "Cell Multiplicity in V0C;# of Cells;Entries", 35, 0, 35) ;  
   Add2RawsList(h1i,kMultiV0C, !expert, image, saveCorr);   iHisto++;
  
   // Creation of Total Charge Histograms
-  h1d = new TH1D("H1D_Charge_V0A", "Total Charge in V0A", 2048, 0, 32768) ;  
+  h1d = new TH1D("H1D_Charge_V0A", "Total Charge in V0A;Charge [ADC counts];Counts", 2048, 0, 32768) ;  
   Add2RawsList(h1d,kChargeV0A, !expert, image, saveCorr);   iHisto++;
-  h1d = new TH1D("H1D_Charge_V0C", "Total Charge in V0C", 2048, 0, 32768) ;  
+  h1d = new TH1D("H1D_Charge_V0C", "Total Charge in V0C;Charge [ADC counts];Counts", 2048, 0, 32768) ;  
   Add2RawsList(h1d,kChargeV0C, !expert, image, saveCorr);   iHisto++;
-  h1d = new TH1D("H1D_Charge_V0", "Total Charge in V0", 2048, 0, 65536) ;  
+  h1d = new TH1D("H1D_Charge_V0", "Total Charge in V0;Charge [ADC counts];Counts", 2048, 0, 65536) ;  
   Add2RawsList(h1d,kChargeV0, !expert, image, saveCorr);   iHisto++;
   
   // Creation of MIP Histograms
-  h1d = new TH1D("H1D_MIP_V0A", "Total MIP in V0A", 2*kNMIPBins,kMIPMin ,32*kMIPMax) ;  
+  h1d = new TH1D("H1D_MIP_V0A", "Total MIP in V0A;Charge [MIP];Counts", 2*kNMIPBins,kMIPMin ,32*kMIPMax) ;  
   Add2RawsList(h1d,kRawMIPV0A, !expert, image, saveCorr);   iHisto++;
-  h1d = new TH1D("H1D_MIP_V0C", "Total MIP in V0C", 2*kNMIPBins,kMIPMin ,32*kMIPMax) ;  
+  h1d = new TH1D("H1D_MIP_V0C", "Total MIP in V0C;Charge [MIP];Counts", 2*kNMIPBins,kMIPMin ,32*kMIPMax) ;  
   Add2RawsList(h1d,kRawMIPV0C, !expert, image, saveCorr);   iHisto++;
-  h1d = new TH1D("H1D_MIP_V0", "Total MIP in V0", 2*kNMIPBins,kMIPMin ,32*kMIPMax) ;  
+  h1d = new TH1D("H1D_MIP_V0", "Total MIP in V0;Charge [MIP];Counts", 2*kNMIPBins,kMIPMin ,32*kMIPMax) ;  
   Add2RawsList(h1d,kRawMIPV0, !expert, image, saveCorr);   iHisto++;
-  h2d = new TH2D("H2D_MIP_Channel", "Nb of MIP per channel", kNChannelBins, kChannelMin, kChannelMax,kNMIPBins,kMIPMin ,kMIPMax) ;  
+  h2d = new TH2D("H2D_MIP_Channel", "Nb of MIP per channel;Channel;# of Mips", kNChannelBins, kChannelMin, kChannelMax,kNMIPBins,kMIPMin ,kMIPMax) ;  
   Add2RawsList(h2d,kRawMIPChannel, expert, !image, !saveCorr);   iHisto++;
   
  
  for(Int_t iInt=0;iInt<kNintegrator;iInt++){
     // Creation of Pedestal histograms 
     sprintf(name,"H2I_Pedestal_Int%d",iInt);
-    sprintf(title,"Pedestal (Int%d)",iInt);
+    sprintf(title,"Pedestal (Int%d);Pedestal [ADC counts];Counts",iInt);
     h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax,kNPedestalBins,kPedestalMin ,kPedestalMax );
     Add2RawsList(h2i,(iInt == 0 ? kPedestalInt0 : kPedestalInt1), expert, !image, !saveCorr); iHisto++;
 	
     // Creation of temporary Pedestal histo used for the mean versus time histogram. This histogram will be reset at the end of each cycle
     sprintf(name,"H2I_Pedestal_CycleInt%d",iInt);
-    sprintf(title,"One Cycle Pedestal (Int%d)",iInt);
+    sprintf(title,"One Cycle Pedestal (Int%d);Pedestal [ADC counts];Counts",iInt);
     h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax,kNPedestalBins,kPedestalMin ,kPedestalMax );
     Add2RawsList(h2i,(iInt == 0 ? kPedestalCycleInt0 : kPedestalCycleInt1), expert, !image, !saveCorr); iHisto++;
 		
     // Creation of Pedestal versus time graph.
     sprintf(name,"H2D_Pedestal_Time_Int%d",iInt);
-    sprintf(title,"Pedestal Versus Time (Int%d)",iInt);
+    sprintf(title,"Pedestal Versus Time (Int%d);Time [ns];Pedestal [ADC counts]",iInt);
     h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,kTimeMax,kTimeMin ,kTimeMax );
     Add2RawsList(h2d,(iInt == 0 ? kPedestalTimeInt0 : kPedestalTimeInt1), expert, !image, !saveCorr); iHisto++;
 
    // Creation of Charge EoI histograms 
     sprintf(name,"H2I_ChargeEoI_Int%d",iInt);
-    sprintf(title,"Charge EoI (Int%d)",iInt);
+    sprintf(title,"Charge EoI (Int%d);Charge [ADC counts];Counts",iInt);
     h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
     Add2RawsList(h2i,(iInt == 0 ? kChargeEoIInt0 : kChargeEoIInt1), !expert, image, !saveCorr); iHisto++;
 
    // Creation of temporary Charge EoI histograms used for the mean versus time histogram. This histogram will be reset at the end of each cycle
     sprintf(name,"H2I_ChargeEoI_CycleInt%d",iInt);
-    sprintf(title,"One Cycle Charge EoI (Int%d)",iInt);
+    sprintf(title,"One Cycle Charge EoI (Int%d);Charge [ADC counts];Counts",iInt);
     h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
     Add2RawsList(h2i,(iInt == 0 ? kChargeEoICycleInt0 : kChargeEoICycleInt1), expert, !image, !saveCorr); iHisto++;
 		
     // Creation of Charge EoI versus time graphs
     sprintf(name,"H2D_ChargeEoI_Time_Int%d",iInt);
-    sprintf(title,"Charge EoI Versus Time (Int%d)",iInt);
+    sprintf(title,"Charge EoI Versus Time (Int%d);Time [ns];Charge [ADC counts]",iInt);
     h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,kTimeMax,kTimeMin ,kTimeMax );
     Add2RawsList(h2d,(iInt == 0 ? kChargeEoITimeInt0 : kChargeEoITimeInt1), expert, !image, !saveCorr); iHisto++;
     
     sprintf(name,"H2I_ChargeEoI_BB_Int%d",iInt);
-    sprintf(title,"Charge EoI w/ BB Flag (Int%d)",iInt);
+    sprintf(title,"Charge EoI w/ BB Flag (Int%d);??;Charge [ADC counts]",iInt);
     h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
     Add2RawsList(h2i,(iInt == 0 ? kChargeEoIBBInt0 : kChargeEoIBBInt1), expert, !image, !saveCorr); iHisto++;
     
     sprintf(name,"H2I_ChargeEoI_BG_Int%d",iInt);
-    sprintf(title,"Charge EoI w/ BG Flag (Int%d)",iInt);
+    sprintf(title,"Charge EoI w/ BG Flag (Int%d);??;Charge [ADC counts]",iInt);
     h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
     Add2RawsList(h2i,(iInt == 0 ?  kChargeEoIBGInt0: kChargeEoIBGInt1), expert, !image, !saveCorr); iHisto++;
 
     // Creation of Charge versus LHC Clock histograms 
     sprintf(name,"H2D_ChargeVsClock_Int%d",iInt);
-    sprintf(title,"Charge Versus LHC-Clock (Int%d)",iInt);
+    sprintf(title,"Charge Versus LHC-Clock (Int%d);Tine [ns];Charge [ADC counts]",iInt);
     h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
     Add2RawsList(h2d,(iInt == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), expert, !image, !saveCorr); iHisto++;
 	
@@ -343,7 +328,7 @@ void AliVZEROQADataMakerRec::InitESDs()
     for(Int_t iBB=0;iBB<2;iBB++){
 		for(Int_t iBG=0;iBG<2;iBG++){
 			sprintf(name,"H2I_ChargeMB_BB%d_BG%d_Int%d",iBB,iBG,iInt);
-			sprintf(title,"MB Charge (BB=%d, BG=%d, Int=%d)",iBB,iBG,iInt);
+			sprintf(title,"MB Charge (BB=%d, BG=%d, Int=%d);Charge [ADC counts];Counts",iBB,iBG,iInt);
 			h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax,kNChargeBins, kChargeMin, kChargeMax);
 			int idx;
 			if(iInt==0){
@@ -371,58 +356,58 @@ void AliVZEROQADataMakerRec::InitESDs()
  
      // Creation of Time histograms 
 	sprintf(name,"H2I_Width");
-	sprintf(title,"HPTDC Width");
+	sprintf(title,"HPTDC Width;Width [ns];Counts");
 	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
  	Add2RawsList(h2i,kWidth, expert, !image, !saveCorr); iHisto++;
 
  	sprintf(name,"H2I_Width_BB");
- 	sprintf(title,"HPTDC Width w/ BB Flag condition");
+ 	sprintf(title,"HPTDC Width w/ BB Flag condition;??;Width [ns]");
  	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
  	Add2RawsList(h2i,kWidthBB, expert, !image, !saveCorr); iHisto++;
 
  	sprintf(name,"H2I_Width_BG");
- 	sprintf(title,"HPTDC Width w/ BG Flag condition");
+ 	sprintf(title,"HPTDC Width w/ BG Flag condition??;Width [ns]");
  	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
  	Add2RawsList(h2i,kWidthBG, expert, !image, !saveCorr); iHisto++;
 
  	sprintf(name,"H2I_HPTDCTime");
- 	sprintf(title,"HPTDC Time");
+ 	sprintf(title,"HPTDC Time;??;Width [ns]");
  	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
  	Add2RawsList(h2i,kHPTDCTime, !expert, image, !saveCorr); iHisto++;
 
  	sprintf(name,"H2I_HPTDCTime_BB");
- 	sprintf(title,"HPTDC Time w/ BB Flag condition");
+ 	sprintf(title,"HPTDC Time w/ BB Flag condition;??;Width [ns]");
  	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
  	Add2RawsList(h2i,kHPTDCTimeBB, expert, !image, !saveCorr); iHisto++;
 
  	sprintf(name,"H2I_HPTDCTime_BG");
- 	sprintf(title,"HPTDC Time w/ BG Flag condition");
+ 	sprintf(title,"HPTDC Time w/ BG Flag condition;??;Width [ns]");
  	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
  	Add2RawsList(h2i,kHPTDCTimeBG, expert, !image, !saveCorr); iHisto++;
 	
  	sprintf(name,"H1D_V0A_Time");
- 	sprintf(title,"V0A Time");
+ 	sprintf(title,"V0A Time;Time [ns];Counts");
  	h1d = new TH1D(name, title,kNTdcTimeBins, kTdcTimeMin/10, kTdcTimeMax/10);
  	Add2RawsList(h1d,kV0ATime, !expert, !image, saveCorr); iHisto++;
 	
  	sprintf(name,"H1D_V0C_Time");
- 	sprintf(title,"V0C Time");
+ 	sprintf(title,"V0C Time;Time [ns];Counts");
  	h1d = new TH1D(name, title,kNTdcTimeBins, kTdcTimeMin/10, kTdcTimeMax/10);
  	Add2RawsList(h1d,kV0CTime, !expert, !image, saveCorr); iHisto++;
 	
  	sprintf(name,"H1D_Diff_Time");
- 	sprintf(title,"Diff V0A-V0C Time");
+ 	sprintf(title,"Diff V0A-V0C Time;Time [ns];Counts");
  	h1d = new TH1D(name, title,2*kNTdcTimeBins, -kTdcTimeMax/10, kTdcTimeMax/10);
  	Add2RawsList(h1d,kDiffTime, !expert, !image, saveCorr); iHisto++;
 	
  	// Creation of Flag versus LHC Clock histograms 
  	sprintf(name,"H2D_BBFlagVsClock");
- 	sprintf(title,"BB-Flags Versus LHC-Clock");
+ 	sprintf(title,"BB-Flags Versus LHC-Clock;Time [ns];??");
  	h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
  	Add2RawsList(h2d,kBBFlagVsClock, expert, !image, !saveCorr); iHisto++;
 	
  	sprintf(name,"H2D_BGFlagVsClock");
- 	sprintf(title,"BG-Flags Versus LHC-Clock");
+ 	sprintf(title,"BG-Flags Versus LHC-Clock;Time [ns];??");
  	h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
  	Add2RawsList(h2d,kBGFlagVsClock, expert, !image, !saveCorr); iHisto++;
 	 
@@ -443,18 +428,18 @@ void AliVZEROQADataMakerRec::InitDigits()
   char texte[100];
   
   // create Digits histograms in Digits subdir
-  TH1I * h0 = new TH1I("hDigitMultiplicity", "Digits multiplicity distribution in VZERO", 100, 0, 99) ; 
+  TH1I * h0 = new TH1I("hDigitMultiplicity", "Digits multiplicity distribution in VZERO;# of Digits;Entries", 100, 0, 99) ; 
   h0->Sumw2() ;
   Add2DigitsList(h0, 0, !expert, image) ;
   
   for (Int_t i=0; i<64; i++)
     {
     sprintf(TDCname, "hDigitTDC%d", i);
-    sprintf(texte,"Digit TDC in cell %d",i);    
+    sprintf(texte,"Digit TDC in cell %d; TDC value;Entries",i);    
     fhDigTDC[i] = new TH1I(TDCname,texte,300,0.,149.);
     
     sprintf(ADCname,"hDigitADC%d",i);
-    sprintf(texte,"Digit ADC in cell %d",i);
+    sprintf(texte,"Digit ADC in cell %d;ADC value;Entries",i);
     fhDigADC[i]= new TH1I(ADCname,texte,1024,0.,1023.);
     
     Add2DigitsList(fhDigTDC[i],i+1, !expert, image);

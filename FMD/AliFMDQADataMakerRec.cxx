@@ -122,8 +122,7 @@ void AliFMDQADataMakerRec::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts",1024,0,1024);
-  hADCCounts->SetXTitle("ADC counts");
+  TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts;ADC counts;Counts",1024,0,1024);
   Add2DigitsList(hADCCounts, 0, !expert, image);
 }
 
@@ -138,7 +137,7 @@ void AliFMDQADataMakerRec::InitRecPoints()
   TH1F* hEnergyOfRecpoints = new TH1F("hEnergyOfRecpoints",
 				      "Energy Distribution",100,0,3);
   hEnergyOfRecpoints->SetXTitle("Edep/Emip");
-  hEnergyOfRecpoints->SetYTitle("");
+  hEnergyOfRecpoints->SetYTitle("Counts");
   Add2RecPointsList(hEnergyOfRecpoints,0, !expert, image);
 }
 
@@ -156,7 +155,7 @@ void AliFMDQADataMakerRec::InitRaws()
     for(Int_t iring = firstring;iring<=1;iring++) {
       Char_t ring = (iring == 1 ? 'I' : 'O');
       hADCCounts      = new TH1I(Form("hADCCounts_FMD%d%c",
-				      det, ring), "ADC counts",
+				      det, ring), "ADC counts;Amplitude [ADC counts];Counts",
 				 1024,0,1023);
       
       Int_t index1 = GetHalfringIndex(det, ring, 0,1);
@@ -170,7 +169,7 @@ void AliFMDQADataMakerRec::InitRaws()
 	
 	
 	hADCCounts      = new TH1I(Form("hADCCounts_FMD%d%c_board%d",
-					det, ring, board), "ADC counts",
+					det, ring, board), "ADC counts;Amplitude [ADC counts];Counts",
 				   1024,0,1023);
 	hADCCounts->SetXTitle("ADC counts");
 	hADCCounts->SetYTitle("");

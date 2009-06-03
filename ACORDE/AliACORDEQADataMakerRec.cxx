@@ -90,10 +90,10 @@ void AliACORDEQADataMakerRec::InitRaws()
   const Bool_t image    = kTRUE ; 
   
   TH1D *fhACORDEBitPattern[4];
-  fhACORDEBitPattern[0] = new TH1D("ACORDERawDataSM","ACORDE-SingleMuon",60,1,60);//AcordeSingleMuon BitPattern
-  fhACORDEBitPattern[1] = new TH1D("ACORDERawDataMM","ACORDE-MultiMuon",60,1,60);//AcordeMultiMuon BitPattern
-  fhACORDEBitPattern[2] = new TH1D("ACORDERawDataSMM","ACORDE-SingleMuonMultiplicity",60,1,60);//AcordeSingleMuon Multiplicity
-  fhACORDEBitPattern[3] = new TH1D("ACORDERawDataMMM","ACORDE-MultiMuonMultiplicity",60,1,60);//AcordeMultiMuon Multiplicity
+  fhACORDEBitPattern[0] = new TH1D("ACORDERawDataSM","ACORDE-SingleMuon;Bit Pattern;Counts",60,1,60);//AcordeSingleMuon BitPattern
+  fhACORDEBitPattern[1] = new TH1D("ACORDERawDataMM","ACORDE-MultiMuon;Bit Pattern;Counts",60,1,60);//AcordeMultiMuon BitPattern
+  fhACORDEBitPattern[2] = new TH1D("ACORDERawDataSMM","ACORDE-SingleMuonMultiplicity;Multiplicity;Counts",60,1,60);//AcordeSingleMuon Multiplicity
+  fhACORDEBitPattern[3] = new TH1D("ACORDERawDataMMM","ACORDE-MultiMuonMultiplicity;Multiplicity;Counts",60,1,60);//AcordeMultiMuon Multiplicity
   for(Int_t i=0;i<4;i++) 
     Add2RawsList(fhACORDEBitPattern[i],i,!expert, image, !saveCorr);
 }
@@ -104,13 +104,12 @@ void AliACORDEQADataMakerRec::InitDigits()
   
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-  
   TH1F *    fhDigitsModule;
   TString   modulename;
   modulename = "hDigitsModule";
-  fhDigitsModule = new TH1F(modulename.Data(),"hDigitsModuleSingle",60,0,60);
+  fhDigitsModule = new TH1F(modulename.Data(),"hDigitsModuleSingle;# of modules;Counts",60,0,60);
   Add2DigitsList(fhDigitsModule,0,!expert,image);
-  
+    
 }
 
 //____________________________________________________________________________ 
@@ -120,6 +119,7 @@ void AliACORDEQADataMakerRec::InitRecPoints()
   // create cluster histograms in RecPoint subdir
   // Not needed for ACORDE by now !!!
 }
+
 //____________________________________________________________________________
 void AliACORDEQADataMakerRec::InitESDs()
 {
@@ -134,11 +134,11 @@ void AliACORDEQADataMakerRec::InitESDs()
    TString   name;
 
    name = "hESDsSingle";
-   fhESDsSingle = new TH1F(name.Data(),"hESDsSingle",60,0,60);
+   fhESDsSingle = new TH1F(name.Data(),"hESDsSingle;??;??",60,0,60);
    Add2ESDsList(fhESDsSingle,0,!expert,image);
 
    name = "hESDsMulti";
-   fhESDsMulti = new TH1F(name.Data(),"hESDsMulti",60,0,60);
+   fhESDsMulti = new TH1F(name.Data(),"hESDsMulti;??;??",60,0,60);
    Add2ESDsList(fhESDsMulti,1,!expert,image);
 }
 //____________________________________________________________________________

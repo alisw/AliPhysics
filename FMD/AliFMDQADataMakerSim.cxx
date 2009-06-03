@@ -104,7 +104,7 @@ void AliFMDQADataMakerSim::InitSDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts",1024,0,1024);
+  TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts;ADC counts;Entries",1024,0,1024);
   hADCCounts->SetXTitle("ADC counts");
   Add2SDigitsList(hADCCounts, 0, !expert, image);
 }
@@ -116,7 +116,7 @@ void AliFMDQADataMakerSim::InitHits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F* hEnergyOfHits = new TH1F("hEnergyOfHits","Energy distribution",100,0,3);
+  TH1F* hEnergyOfHits = new TH1F("hEnergyOfHits","Energy distribution;Energy [MeV];Counts",100,0,3);
   hEnergyOfHits->SetXTitle("Edep");
   hEnergyOfHits->SetYTitle("Counts");
   Add2HitsList(hEnergyOfHits, 0, !expert, image);
@@ -129,7 +129,7 @@ void AliFMDQADataMakerSim::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts",1024,0,1024);
+  TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts; ADC counts;Entries",1024,0,1024);
   hADCCounts->SetXTitle("ADC counts");
   Add2DigitsList(hADCCounts, 0, !expert, image);
 }

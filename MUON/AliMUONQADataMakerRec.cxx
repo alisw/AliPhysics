@@ -554,12 +554,11 @@ void AliMUONQADataMakerRec::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1I* h0 = new TH1I("hDigitsDetElem", "Detection element distribution in Digits",  1400, 100, 1500); 
+  TH1I* h0 = new TH1I("hDigitsDetElem", "Detection element distribution in Digits;Detection element Id;Counts",  1400, 100, 1500); 
   Add2DigitsList(h0, 0, !expert, image);
   
-  TH1I* h1 = new TH1I("hDigitsADC", "ADC distribution in Digits", 4096, 0, 4095); 
-  Add2DigitsList(h1, 1, !expert, image);  
-  
+  TH1I* h1 = new TH1I("hDigitsADC", "ADC distribution in Digits;ACD value;Counts", 4096, 0, 4095); 
+  Add2DigitsList(h1, 1, !expert, image);    
 } 
 
 //____________________________________________________________________________ 
@@ -591,10 +590,10 @@ void AliMUONQADataMakerRec::InitRecPointsTracker()
   Int_t nCh = AliMpConstants::NofTrackingChambers();
   for ( Int_t i = 0; i < nCh; ++i ) 
   {
-    h1I = new TH1I(Form("hTrackerClusterMultiplicityForChamber%d",i+1), Form("cluster size distribution in chamber %d;size (n_{pads})",i+1), 100,0,100);
+    h1I = new TH1I(Form("hTrackerClusterMultiplicityForChamber%d",i+1), Form("cluster size distribution in chamber %d;size (n_{pads};Counts)",i+1), 100,0,100);
     Add2RecPointsList(h1I,kTrackerClusterMultiplicityPerChamber+i, expert, !image);
     
-    h1I = new TH1I(Form("hTrackerClusterChargeForChamber%d",i+1), Form("cluster charge distribution in chamber %d;charge (ADC counts)",i+1), 500,0,5000);
+    h1I = new TH1I(Form("hTrackerClusterChargeForChamber%d",i+1), Form("cluster charge distribution in chamber %d;charge (ADC counts);Counts",i+1), 500,0,5000);
     Add2RecPointsList(h1I,kTrackerClusterChargePerChamber+i, expert, !image);
     
     Float_t rMax = AliMUONConstants::Rmax(i/2);

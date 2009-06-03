@@ -115,17 +115,17 @@ void AliITSQASDDDataMakerSim::InitDigits()
   h0->GetYaxis()->SetTitle("# DIGITS");
   fAliITSQADataMakerSim->Add2DigitsList(h0,fGenOffsetD, !expert, image);
   fSDDhDTask ++;
-  TH1F* h1=new TH1F("SDD Anode Distribution","DIGITS Anode Distribution",512,-0.5,511.5);      //hanocc
+  TH1F* h1=new TH1F("SDD Anode Distribution","SDD DIGITS Anode Distribution",512,-0.5,511.5);      //hanocc
   h1->GetXaxis()->SetTitle("Anode Number");
   h1->GetYaxis()->SetTitle("# DIGITS");
   fAliITSQADataMakerSim->Add2DigitsList(h1,1+fGenOffsetD, !expert, image);
   fSDDhDTask ++;
-  TH1F* h2=new TH1F("SDD Tbin Distribution","DIGITS Tbin Distribution",256,-0.5,255.5);      //htbocc
+  TH1F* h2=new TH1F("SDD Tbin Distribution","SDD DIGITS Tbin Distribution",256,-0.5,255.5);      //htbocc
   h2->GetXaxis()->SetTitle("Tbin Number");
   h2->GetYaxis()->SetTitle("# DIGITS");
   fAliITSQADataMakerSim->Add2DigitsList(h2,2+fGenOffsetD, !expert, image);
   fSDDhDTask ++;
-  TH1F* h3=new TH1F("SDD ADC Counts Distribution","DIGITS ADC Counts Distribution",200,0.,1024.);          //hsig
+  TH1F* h3=new TH1F("SDD ADC Counts Distribution","SDD DIGITS ADC Counts Distribution",200,0.,1024.);          //hsig
   h3->GetXaxis()->SetTitle("ADC Value");
   h3->GetYaxis()->SetTitle("# DIGITS");
   fAliITSQADataMakerSim->Add2DigitsList(h3,3+fGenOffsetD, !expert, image);
@@ -172,17 +172,17 @@ void AliITSQASDDDataMakerSim::InitSDigits()
   h0->GetYaxis()->SetTitle("# SDIGITS");
   fAliITSQADataMakerSim->Add2SDigitsList(h0,fGenOffsetS, !expert, image);
   fSDDhSTask ++;
-  TH1F* h1=new TH1F("SDD Anode Distribution","SDIGITS Anode Distribution",512,-0.5,511.5);      //hanocc
+  TH1F* h1=new TH1F("SDD Anode Distribution","SDIGITS SDD Anode Distribution",512,-0.5,511.5);      //hanocc
   h1->GetXaxis()->SetTitle("Anode Number");
   h1->GetYaxis()->SetTitle("# SDIGITS");
   fAliITSQADataMakerSim->Add2SDigitsList(h1,1+fGenOffsetS, !expert, image);
   fSDDhSTask ++;
-  TH1F* h2=new TH1F("SDD Tbin Distribution","SDIGITS Tbin Distribution",256,-0.5,255.5);      //htbocc
+  TH1F* h2=new TH1F("SDD Tbin Distribution","SDIGITS SDD Tbin Distribution",256,-0.5,255.5);      //htbocc
   h2->GetXaxis()->SetTitle("Tbin Number");
   h2->GetYaxis()->SetTitle("# SDIGITS");
   fAliITSQADataMakerSim->Add2SDigitsList(h2,2+fGenOffsetS);
   fSDDhSTask ++;
-  TH1F* h3=new TH1F("SDD ADC Counts Distribution","SDIGITS ADC Counts Distribution",200,0.,1024.);          //hsig
+  TH1F* h3=new TH1F("SDD ADC Counts Distribution","SDIGITS SDD ADC Counts Distribution",200,0.,1024.);          //hsig
   h3->GetXaxis()->SetTitle("ADC Value");
   h3->GetYaxis()->SetTitle("# SDIGITS");
   fAliITSQADataMakerSim->Add2SDigitsList(h3,3+fGenOffsetS, !expert, image);
@@ -248,7 +248,7 @@ void AliITSQASDDDataMakerSim::InitHits()
   h0->GetYaxis()->SetTitle("# HITS");
   fAliITSQADataMakerSim->Add2HitsList(h0,fGenOffsetH, !expert, image);
   fSDDhHTask ++;
-  TH1F *h1=new TH1F("SDD HIT lenght along local Y Coord","HIT lenght along local Y Coord",200,0.,350.);
+  TH1F *h1=new TH1F("SDD HIT lenght along local Y Coord","SDD HIT lenght along local Y Coord",200,0.,350.);
   h1->GetXaxis()->SetTitle("HIT lenght (um)");
   h1->GetYaxis()->SetTitle("# HITS");
   fAliITSQADataMakerSim->Add2HitsList(h1,1+fGenOffsetH, !expert, image);

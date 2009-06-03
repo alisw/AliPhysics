@@ -289,13 +289,13 @@ void AliITSQASPDDataMakerSim::InitHits()
     fSPDhHTask++;
   }
 
-  TH1F *hhitlenght = new TH1F("SPDLenght_SPD","Hit lenght along y_{loc} coord",210,0.,210.);
+  TH1F *hhitlenght = new TH1F("SPDLenght_SPD","SPD Hit lenght along y_{loc} coord",210,0.,210.);
   hhitlenght->GetXaxis()->SetTitle("Hit lenght [#mum]");
   hhitlenght->GetYaxis()->SetTitle("# hits");
   fAliITSQADataMakerSim->Add2HitsList(hhitlenght,3+fGenOffsetH, !expert, image);
   fSPDhHTask++;
 
-  TH1F *hEdepos = new TH1F("SPDEnergyDeposit_SPD","Deposited energy distribution (y_{loc}>180 #mum)",150,0.,300.); 
+  TH1F *hEdepos = new TH1F("SPDEnergyDeposit_SPD","SPD Deposited energy distribution (y_{loc}>180 #mum)",150,0.,300.); 
   hEdepos->GetXaxis()->SetTitle("Deposited energy [keV]"); 
   hEdepos->GetYaxis()->SetTitle("# hits");
   fAliITSQADataMakerSim->Add2HitsList(hEdepos,4+fGenOffsetH, !expert, image);

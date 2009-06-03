@@ -90,19 +90,19 @@ void AliEMCALQADataMakerRec::InitESDs()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F * h1 = new TH1F("hESDCaloClusterE",  "ESDs CaloCluster energy in EMCAL",    200, 0., 20.) ; 
+  TH1F * h1 = new TH1F("hESDCaloClusterE",  "ESDs CaloCluster energy in EMCAL;Energy [MeV];Counts",    200, 0., 20.) ; 
   h1->Sumw2() ;
   Add2ESDsList(h1, kESDCaloClusE, !expert, image)  ;                                                     
 
-  TH1I * h2 = new TH1I("hESDCaloClusterM", "ESDs CaloCluster multiplicity in EMCAL", 100, 0,  100) ; 
+  TH1I * h2 = new TH1I("hESDCaloClusterM", "ESDs CaloCluster multiplicity in EMCAL;# of Clusters;Entries", 100, 0,  100) ; 
   h2->Sumw2() ;
   Add2ESDsList(h2, kESDCaloClusM, !expert, image)  ;
 
-  TH1F * h3 = new TH1F("hESDCaloCellA",  "ESDs CaloCell amplitude in EMCAL",    500, 0., 250.) ; 
+  TH1F * h3 = new TH1F("hESDCaloCellA",  "ESDs CaloCell amplitude in EMCAL;Energy [MeV];Counts",    500, 0., 250.) ; 
   h3->Sumw2() ;
   Add2ESDsList(h3, kESDCaloCellA, !expert, image)  ;  
  
-  TH1I * h4 = new TH1I("hESDCaloCellM", "ESDs CaloCell multiplicity in EMCAL", 200, 0,  1000) ; 
+  TH1I * h4 = new TH1I("hESDCaloCellM", "ESDs CaloCell multiplicity in EMCAL;# of Clusters;Entries", 200, 0,  1000) ; 
   h4->Sumw2() ;
   Add2ESDsList(h4, kESDCaloCellM, !expert, image) ;
 	
@@ -115,10 +115,10 @@ void AliEMCALQADataMakerRec::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1I * h0 = new TH1I("hEmcalDigits",    "Digits amplitude distribution in EMCAL",    500, 0, 500) ; 
+  TH1I * h0 = new TH1I("hEmcalDigits",    "Digits amplitude distribution in EMCAL;Amplitude [ADC counts];Counts",    500, 0, 500) ; 
   h0->Sumw2() ;
   Add2DigitsList(h0, 0, !expert, image) ;
-  TH1I * h1 = new TH1I("hEmcalDigitsMul", "Digits multiplicity distribution in EMCAL", 200, 0, 2000) ; 
+  TH1I * h1 = new TH1I("hEmcalDigitsMul", "Digits multiplicity distribution in EMCAL;# of Digits;Entries", 200, 0, 2000) ; 
   h1->Sumw2() ;
   Add2DigitsList(h1, 1, !expert, image) ;
 }
@@ -130,15 +130,15 @@ void AliEMCALQADataMakerRec::InitRecPoints()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F* h0 = new TH1F("hEMCALRpE","EMCAL RecPoint energies",200, 0.,20.); //GeV
+  TH1F* h0 = new TH1F("hEMCALRpE","EMCAL RecPoint energies;Energy [MeV];Counts",200, 0.,20.); //GeV
   h0->Sumw2();
   Add2RecPointsList(h0,kRecPE, !expert, image);
 
-  TH1I* h1 = new TH1I("hEMCALRpM","EMCAL RecPoint multiplicities",100,0,100);
+  TH1I* h1 = new TH1I("hEMCALRpM","EMCAL RecPoint multiplicities;# of Clusters;Entries",100,0,100);
   h1->Sumw2();
   Add2RecPointsList(h1,kRecPM, !expert, image);
 
-  TH1I* h2 = new TH1I("hEMCALRpDigM","EMCAL RecPoint Digit Multiplicities",20,0,20);
+  TH1I* h2 = new TH1I("hEMCALRpDigM","EMCAL RecPoint Digit Multiplicities;# of Digits;Entries",20,0,20);
   h2->Sumw2();
   Add2RecPointsList(h2,kRecPDigM, !expert, image);
 
@@ -156,50 +156,50 @@ void AliEMCALQADataMakerRec::InitRaws()
   int nTot = fSuperModules * nTowersPerSM; // max number of towers in all SuperModules
 
   // counter info: number of channels per event (bins are SM index)
-  TProfile * h0 = new TProfile("hLowEmcalSupermodules", "Low Gain EMC: # of towers vs SuperMod",
+  TProfile * h0 = new TProfile("hLowEmcalSupermodules", "Low Gain EMC: # of towers vs SuperMod;SM Id;# of towers",
 			       fSuperModules, -0.5, fSuperModules-0.5) ;
   Add2RawsList(h0, kNsmodLG, !expert, image, !saveCorr) ;
-  TProfile * h1 = new TProfile("hHighEmcalSupermodules", "High Gain EMC: # of towers vs SuperMod",  
+  TProfile * h1 = new TProfile("hHighEmcalSupermodules", "High Gain EMC: # of towers vs SuperMod;SM Id;# of towers",  
 			       fSuperModules, -0.5, fSuperModules-0.5) ; 
   Add2RawsList(h1, kNsmodHG, !expert, image, !saveCorr) ;
 
   // where did max sample occur? (bins are towers)
-  TProfile * h2 = new TProfile("hLowEmcalRawtime", "Low Gain EMC: Time at Max vs towerId", 
+  TProfile * h2 = new TProfile("hLowEmcalRawtime", "Low Gain EMC: Time at Max vs towerId;Tower Id;Time [ns]", 
 			       nTot, -0.5, nTot-0.5) ;
   Add2RawsList(h2, kTimeLG, !expert, image, !saveCorr) ;
-  TProfile * h3 = new TProfile("hHighEmcalRawtime", "High Gain EMC: Time at Max vs towerId", 
+  TProfile * h3 = new TProfile("hHighEmcalRawtime", "High Gain EMC: Time at Max vs towerId;Tower Id;Time [ns]", 
 			       nTot, -0.5, nTot-0.5) ;
   Add2RawsList(h3, kTimeHG, !expert, image, !saveCorr) ;
 
   // how much above pedestal was the max sample?  (bins are towers)
-  TProfile * h4 = new TProfile("hLowEmcalRawMaxMinusMin", "Low Gain EMC: Max - Min vs towerId", 
+  TProfile * h4 = new TProfile("hLowEmcalRawMaxMinusMin", "Low Gain EMC: Max - Min vs towerId;Tower Id;??", 
 			       nTot, -0.5, nTot-0.5) ;
   Add2RawsList(h4, kSigLG, !expert, image, !saveCorr) ;
-  TProfile * h5 = new TProfile("hHighEmcalRawMaxMinusMin", "High Gain EMC: Max - Min vs towerId",
+  TProfile * h5 = new TProfile("hHighEmcalRawMaxMinusMin", "High Gain EMC: Max - Min vs towerId;Tower Id;??",
 			       nTot, -0.5, nTot-0.5) ;
   Add2RawsList(h5, kSigHG, !expert, image, !saveCorr) ;
 
   // total counter: channels per event
-  TH1I * h6 = new TH1I("hLowNtot", "Low Gain EMC: Total Number of found towers", 200, 0, nTot) ;
+  TH1I * h6 = new TH1I("hLowNtot", "Low Gain EMC: Total Number of found towers;# of Towers;Counts", 200, 0, nTot) ;
   h6->Sumw2() ;
   Add2RawsList(h6, kNtotLG, !expert, image, !saveCorr) ;
-  TH1I * h7 = new TH1I("hHighNtot", "High Gain EMC: Total Number of found towers", 200,0, nTot) ;
+  TH1I * h7 = new TH1I("hHighNtot", "High Gain EMC: Total Number of found towers;# of Towers;Counts", 200,0, nTot) ;
   h7->Sumw2() ;
   Add2RawsList(h7, kNtotHG, !expert, image, !saveCorr) ;
 
   // pedestal (bins are towers)
-  TProfile * h8 = new TProfile("hLowEmcalRawPed", "Low Gain EMC: Pedestal vs towerId", 
+  TProfile * h8 = new TProfile("hLowEmcalRawPed", "Low Gain EMC: Pedestal vs towerId;Tower Id;Pedestal [ADC counts]", 
 			       nTot, -0.5, nTot-0.5) ;
   Add2RawsList(h8, kPedLG, !expert, image, !saveCorr) ;
-  TProfile * h9 = new TProfile("hHighEmcalRawPed", "High Gain EMC: Pedestal vs towerId",
+  TProfile * h9 = new TProfile("hHighEmcalRawPed", "High Gain EMC: Pedestal vs towerId;Tower Id;Pedestal [ADC counts]",
 			       nTot, -0.5, nTot-0.5) ;
   Add2RawsList(h9, kPedHG, !expert, image, !saveCorr) ;
 
   // pedestal rms (standard dev = sqrt of variance estimator for pedestal) (bins are towers)
-  TProfile * h10 = new TProfile("hLowEmcalRawPedRMS", "Low Gain EMC: Pedestal RMS vs towerId", 
+  TProfile * h10 = new TProfile("hLowEmcalRawPedRMS", "Low Gain EMC: Pedestal RMS vs towerId;Tower Id;Width [ADC counts]", 
 				nTot, -0.5, nTot-0.5) ;
   Add2RawsList(h10, kPedRMSLG, !expert, image, !saveCorr) ;
-  TProfile * h11 = new TProfile("hHighEmcalRawPedRMS", "High Gain EMC: Pedestal RMS vs towerId",
+  TProfile * h11 = new TProfile("hHighEmcalRawPedRMS", "High Gain EMC: Pedestal RMS vs towerId;Tower Id;Width [ADC counts]",
 				nTot, -0.5, nTot-0.5) ;
   Add2RawsList(h11, kPedRMSHG, !expert, image, !saveCorr) ;
   

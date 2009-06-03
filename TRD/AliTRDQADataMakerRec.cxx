@@ -266,25 +266,25 @@ void AliTRDQADataMakerRec::InitESDs()
   TH1 *hist[kNhist];
   Int_t histoCounter = -1 ;
 
-  hist[++histoCounter] = new TH1D("qaTRD_esd_ntracks", ";Number of tracks", 300, -0.5, 299.5);
-  hist[++histoCounter] = new TH1D("qaTRD_esd_sector", ";Sector", 18, -0.5, 17.7);
-  hist[++histoCounter] = new TH1D("qaTRD_esd_bits", ";Bits", 64, -0.5, 63.5);
+  hist[++histoCounter] = new TH1D("qaTRD_esd_ntracks", "TRD esd ntracks;Number of tracks;Counts", 300, -0.5, 299.5);
+  hist[++histoCounter] = new TH1D("qaTRD_esd_sector", "TRD esd sector;Sector;Counts", 18, -0.5, 17.7);
+  hist[++histoCounter] = new TH1D("qaTRD_esd_bits", "TRD esd bits;Bits;Counts", 64, -0.5, 63.5);
 
   const Int_t knbits = 6;
   const char *suf[knbits] = {"TPCi", "TPCo", "TPCz", "TRDo", "TRDr", "TRDz"};
 
   // histo = 3
   for(Int_t i=0; i<knbits; i++) { 
-    hist[++histoCounter] = new TH1D(Form("qaTRD_esd_pt%s",suf[i]), ";p_{T} (GeV/c);", 100, 0, 10);
+    hist[++histoCounter] = new TH1D(Form("qaTRD_esd_pt%s",suf[i]), Form("qaTRD_esd_pt%s;p_{T} (GeV/c);Counts",suf[i]), 100, 0, 10);
     hist[++histoCounter] = new TH1D(Form("qaTRD_esd_trdz%s", suf[i]), ";z (cm)", 200, -400, 400); 
   }
 
-  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDo", "TRDo;number of clusters", 180, -0.5, 179.5);;
-  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDr", "TRDr;number of clusters", 180, -0.5, 179.5);;
-  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDz", "TRDz;number of clusters", 180, -0.5, 179.5);;
+  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDo", "TRDo;number of clusters;Counts", 180, -0.5, 179.5);;
+  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDr", "TRDr;number of clusters;Counts", 180, -0.5, 179.5);;
+  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDz", "TRDz;number of clusters;Counts", 180, -0.5, 179.5);;
   //hist[++histoCounter] = new TH1D("qaTRD_esd_clsRatio", ";cluster ratio", 100, 0., 1.3);;
 
-  hist[++histoCounter] = new TH2D("qaTRD_esd_sigMom", ";momentum (GeV/c);signal", 100, 0, 5, 200, 0, 1e3);
+  hist[++histoCounter] = new TH2D("qaTRD_esd_sigMom", "TRD esd sig Mom;momentum (GeV/c);signal", 100, 0, 5, 200, 0, 1e3);
 
   // end of cycle plots (hist 19)
   const char *sufRatio[4] = {"TRDrTRDo", "TRDoTPCo", "TRDrTPCo", "TRDzTPCo"};
@@ -300,23 +300,23 @@ void AliTRDQADataMakerRec::InitESDs()
   }
 
   // 27 - 31
-  hist[27] = new TH1D("qaTRD_esd_quality", ";quality", 120, 0, 12);
-  hist[28] = new TH1D("qaTRD_esd_budget", ";NN", 110, -1000, 100);
-  hist[29] = new TH1D("qaTRD_esd_chi2", ";chi2", 200, 0, 100);
-  hist[30] = new TH1D("qaTRD_esd_timeBin", ";time bin", 7, -0.5, 6.5);
-  hist[31] = new TH1D("qaTRD_esd_pidQuality", "pid Quality", 7, -0.5, 6.5);
+  hist[27] = new TH1D("qaTRD_esd_quality", "TRD esd quality;quality;Counts", 120, 0, 12);
+  hist[28] = new TH1D("qaTRD_esd_budget", "TRD esd budget;NN;Counts", 110, -1000, 100);
+  hist[29] = new TH1D("qaTRD_esd_chi2", "TRD esd chi2;chi2;Counts", 200, 0, 100);
+  hist[30] = new TH1D("qaTRD_esd_timeBin", "TRD esd timeBin;time bin;Counts", 7, -0.5, 6.5);
+  hist[31] = new TH1D("qaTRD_esd_pidQuality", "pid Quality;quality;;Counts", 7, -0.5, 6.5);
 
   // stack by stack electron identyfication
-  hist[32] = new TH1D("qaTRD_esd_tracksStack", "number of all tracks;stack", 90, -0.5, 89.5);
-  hist[33] = new TH1D("qaTRD_esd_electronStack", "number of electron tracks;stack", 90, -0.5, 89.5);
-  hist[34] = new TH1D("qaTRD_esd_elRatioStack", "fraction of electron tracks;stack", 90, -0.5, 89.5);
+  hist[32] = new TH1D("qaTRD_esd_tracksStack", "number of all tracks;stack;Counts", 90, -0.5, 89.5);
+  hist[33] = new TH1D("qaTRD_esd_electronStack", "number of electron tracks;stack;Counts", 90, -0.5, 89.5);
+  hist[34] = new TH1D("qaTRD_esd_elRatioStack", "fraction of electron tracks;stack;Counts", 90, -0.5, 89.5);
   hist[35] = new TH1D("qaTRD_esd_thetaOut", ";tan(theta);", 100, -1, 1);
   
   const char *partType[5] = {"Electron", "Muon", "Pion", "Kaon", "Proton"}; 
 
   for(Int_t i=0; i<AliPID::kSPECIES; i++)
     hist[36+i] = new TH1D(Form("qaTRD_esd_pid%d",i),
-			  Form("%s;probability",partType[i]), 100, 0, 1);
+			  Form("%s;probability;Counts",partType[i]), 100, 0, 1);
  
   // dE/dX vs momentum in three regions
   const char *zoneName[4] = {"total charge", "ampilification range", "plateau", "TR range"};
@@ -338,7 +338,7 @@ void AliTRDQADataMakerRec::InitESDs()
 
   for(Int_t i=0; i<4; i++) {
     hist[41+i] = new TH2D(Form("qaTRD_esd_signalPzone_%d",i), 
-			  Form("%s;momentum (GeV/c);singal (a.u.)", zoneName[i]),
+			  Form("%s;momentum (GeV/c);signal (a.u.)", zoneName[i]),
 			  nscalex, scalex, nscaley, scaley);
   }
 
@@ -363,26 +363,26 @@ void AliTRDQADataMakerRec::InitRecPoints()
   const Int_t kNhist = 14 + 4 * 18 + 2 + 9;// + 540;
   TH1 *hist[kNhist];
 
-  hist[0] = new TH1D("qaTRD_recPoints_det", ";Detector ID of the cluster", 540, -0.5, 539.5);
-  hist[1] = new TH2D("qaTRD_recPoints_amp", ";Amplitude", 540, -0.5, 539, 200, -0.5, 199.5);
-  hist[2] = new TH1D("qaTRD_recPoints_npad", ";Number of Pads", 12, -0.5, 11.5);
+  hist[0] = new TH1D("qaTRD_recPoints_det", "RRD recPoints det;Detector ID of the cluster;Counts", 540, -0.5, 539.5);
+  hist[1] = new TH2D("qaTRD_recPoints_amp", "TRD recPoints amp;Amplitude;??", 540, -0.5, 539, 200, -0.5, 199.5);
+  hist[2] = new TH1D("qaTRD_recPoints_npad", "TRD recPoints npad;Number of Pads;Counts", 12, -0.5, 11.5);
 
-  hist[3] = new TH1D("qaTRD_recPoints_dist2", ";residuals [2pad]", 100, -1, 1);
-  hist[4] = new TH1D("qaTRD_recPoints_dist3", ";residuals [3pad]", 100, -1, 1);
-  hist[5] = new TH1D("qaTRD_recPoints_dist4", ";residuals [4pad]", 100, -1, 1);
-  hist[6] = new TH1D("qaTRD_recPoints_dist5", ";residuals [5pad]", 100, -1, 1);
+  hist[3] = new TH1D("qaTRD_recPoints_dist2", "TRD recPoints dist2;residuals [2pad];Counts", 100, -1, 1);
+  hist[4] = new TH1D("qaTRD_recPoints_dist3", "TRD recPoints dist3;residuals [3pad];Counts", 100, -1, 1);
+  hist[5] = new TH1D("qaTRD_recPoints_dist4", "TRD recPoints dist4;residuals [4pad];Counts", 100, -1, 1);
+  hist[6] = new TH1D("qaTRD_recPoints_dist5", "TRD recPoints dist5;residuals [5pad];Counts", 100, -1, 1);
 
-  hist[7] = new TH2D("qaTRD_recPoints_rowCol", ";row;col", 16, -0.5, 15.5, 145, -0.5, 144.5);
-  hist[8] = new TH1D("qaTRD_recPoints_time", ";time bin", kTimeBin, -0.5, kTimeBin-0.5);
-  hist[9] = new TH1D("qaTRD_recPoints_nCls", ";number of clusters", 500, -0.5, 499.5);
+  hist[7] = new TH2D("qaTRD_recPoints_rowCol", "TRDrecPointsrowCol;row;col", 16, -0.5, 15.5, 145, -0.5, 144.5);
+  hist[8] = new TH1D("qaTRD_recPoints_time", "TRDrecPoints time;time bin;Counts", kTimeBin, -0.5, kTimeBin-0.5);
+  hist[9] = new TH1D("qaTRD_recPoints_nCls", "TRD recPoints nCls;number of clusters;Counts", 500, -0.5, 499.5);
 
-  hist[10] = new TH3D("qaTRD_recPoints_sigTime", ";chamber;time bin;signal", 
+  hist[10] = new TH3D("qaTRD_recPoints_sigTime", "TRD recPoints sigTime;chamber;time bin;signal", 
 		      540, -0.5, 539.5, kTimeBin, -0.5, kTimeBin-0.5, 200, -0.5, 199.5);
-  hist[11] = new TProfile("qaTRD_recPoints_prf", ";distance;center of gravity"
+  hist[11] = new TProfile("qaTRD_recPoints_prf", "TRD recPoints prf;distance;center of gravity;Counts"
                          , 120, -0.6, 0.6, -1.2, 1.2, "");
 
-  hist[12] = new TH1D("qaTRD_recPoints_ampMPV", ";amplitude MPV", 150, 0, 150);
-  hist[13] = new TH1D("qaTRD_recPoints_ampSigma", ";amplitude Sigma", 200, 0, 200); 
+  hist[12] = new TH1D("qaTRD_recPoints_ampMPV", "TRD recPoints ampMPV;amplitude MPV;Counts", 150, 0, 150);
+  hist[13] = new TH1D("qaTRD_recPoints_ampSigma", "TRD recPoints ampSigma;amplitude Sigma;Counts", 200, 0, 200); 
   
   // chamber by chamber
   for(Int_t i=0; i<18; i++) {
@@ -415,13 +415,13 @@ void AliTRDQADataMakerRec::InitRecPoints()
 			  kTimeBin, -0.5, kTimeBin-0.5);
   }
 
-  hist[86] = new TH1D("qaTRD_recPoints_signal", ";amplitude", 400, -0.5, 399.5);
-  hist[87] = new TH2D("qaTRD_recPoints_detMap", ";sm;chamber", 18, -0.5, 17.5, 30, -0.5, 29.5);
+  hist[86] = new TH1D("qaTRD_recPoints_signal", "TRD recPoints signal;amplitude;Counts", 400, -0.5, 399.5);
+  hist[87] = new TH2D("qaTRD_recPoints_detMap", "TRD recPoints detMap;sm;chamber;Counts", 18, -0.5, 17.5, 30, -0.5, 29.5);
 
   
   // amplitude as a function of the pad size
   for(Int_t i=0; i<9; i++) {
-    hist[88+i] = new TH1D(Form("qaTRD_recPoints_signalNpad_%d", i+2), ";amplitude, ADC", 400, -0.5, 399.5); 
+    hist[88+i] = new TH1D(Form("qaTRD_recPoints_signalNpad_%d", i+2), Form("qaTRD_recPoints_signalNpad_%d;amplitude, ADC", i+2), 400, -0.5, 399.5); 
   }
   
   // one 2D histogram per chamber
@@ -461,9 +461,9 @@ void AliTRDQADataMakerRec::InitRaws()
 		       18, -0.5, 17.5, 60, -0.5, 59.5);
   }
 
-  hist[3] = new TH1D("qaTRD_raws_errorHC", ";error ID;", 18, -3.5, 14.5);
-  hist[4] = new TH1D("qaTRD_raws_errorMCM", ";error ID;", 18, -3.5, 14.5);
-  hist[5] = new TH1D("qaTRD_raws_errorADC", ";error ID;", 18, -3.5, 14.5);
+  hist[3] = new TH1D("qaTRD_raws_errorHC", "TRD raws error HC;error ID;Counts", 18, -3.5, 14.5);
+  hist[4] = new TH1D("qaTRD_raws_errorMCM", "TRD raws error MCM;error ID;Counts", 18, -3.5, 14.5);
+  hist[5] = new TH1D("qaTRD_raws_errorADC", "TRD raws errorADC;error ID;Counts", 18, -3.5, 14.5);
 
   /*
   // four histograms to be published

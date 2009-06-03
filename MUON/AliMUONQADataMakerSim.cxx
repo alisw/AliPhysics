@@ -107,10 +107,10 @@ void AliMUONQADataMakerSim::InitHits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F* h0 = new TH1F("hHitDetElem", "DetElemId distribution in Hits", 1400, 100., 1500.); 
+  TH1F* h0 = new TH1F("hHitDetElem", "DetElemId distribution in Hits;Detection element Id;Counts", 1400, 100., 1500.); 
   Add2HitsList(h0, 0, !expert, image);
 
-  TH1F* h1 = new TH1F("hHitPtot", "P distribution in Hits ", 300, 0., 300.); 
+  TH1F* h1 = new TH1F("hHitPtot", "P distribution in Hits;P [erg];Counts ", 300, 0., 300.); 
   Add2HitsList(h1, 1, !expert, image);
   return;
 } 
@@ -122,10 +122,10 @@ void AliMUONQADataMakerSim::InitSDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1I* h0 = new TH1I("hSDigitsDetElem", "Detection element distribution in SDigits",  1400, 100, 1500); 
+  TH1I* h0 = new TH1I("hSDigitsDetElem", "Detection element distribution in SDigits;Detection element Id;Counts",  1400, 100, 1500); 
   Add2SDigitsList(h0, 0, !expert, image);
 
-  TH1F* h1 = new TH1F("hSDigitsCharge", "Charge distribution in SDigits", 4096, 0, 4095); 
+  TH1F* h1 = new TH1F("hSDigitsCharge", "Charge distribution in SDigits;Charge [??];Counts", 4096, 0, 4095); 
   Add2SDigitsList(h1, 1, !expert, image);
 
 }  
@@ -137,10 +137,10 @@ void AliMUONQADataMakerSim::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1I* h0 = new TH1I("hDigitsDetElem", "Detection element distribution in Digits",  1400, 100, 1500); 
+  TH1I* h0 = new TH1I("hDigitsDetElem", "Detection element distribution in Digits;Detection element Id;Counts",  1400, 100, 1500); 
   Add2DigitsList(h0, 0, !expert, image);
 
-  TH1I* h1 = new TH1I("hDigitsADC", "ADC distribution in Digits", 4096, 0, 4095); 
+  TH1I* h1 = new TH1I("hDigitsADC", "ADC distribution in Digits;ACD value;Counts", 4096, 0, 4095); 
   Add2DigitsList(h1, 1, !expert, image);  
 
 } 

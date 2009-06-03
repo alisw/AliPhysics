@@ -77,11 +77,11 @@ void AliHMPIDQADataMakerSim::InitHits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F *hHitQdc=new TH1F("HitQdc","HMPID Hit Qdc all chamber;QDC",500,0,4000);
+  TH1F *hHitQdc=new TH1F("HitQdc","HMPID Hit Qdc all chamber;QDC;Entries",500,0,4000);
   Add2HitsList(hHitQdc,0, !expert, image);
   TH2F *hHitMap[7];
   for(Int_t iCh=0;iCh<7;iCh++) {
-    hHitMap[iCh]=new TH2F(Form("HMPID HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),162,-1,161,146,-1,145);   
+    hHitMap[iCh]=new TH2F(Form("HMPID HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit};Entries",iCh),162,-1,161,146,-1,145);   
     Add2HitsList(hHitMap[iCh],iCh+1,expert,!image);
   }
 }
@@ -93,14 +93,14 @@ void AliHMPIDQADataMakerSim::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F *hDigChEvt = new TH1F("hDigChEvt","Chamber occupancy per event",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
+  TH1F *hDigChEvt = new TH1F("hDigChEvt","Chamber occupancy per event;Occupanc [%];Entries",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
   TH1F *hDigPcEvt = new TH1F("hDigPcEvt","PC occupancy",156,-1,77);
   TH2F *hDigMap[7];
   TH1F *hDigQ[42];
   for(Int_t iCh =0; iCh < 7; iCh++){
-    hDigMap[iCh] = new TH2F(Form("MapCh%i",iCh),Form("Digit Map in Chamber %i",iCh),159,0,159,143,0,143);
+    hDigMap[iCh] = new TH2F(Form("MapCh%i",iCh),Form("Digit Map in Chamber %i;Digit #;Entries",iCh),159,0,159,143,0,143);
     for(Int_t iPc =0; iPc < 6; iPc++ ){
-      hDigQ[iCh*6+iPc] = new TH1F(Form("QCh%iPc%i        ",iCh,iPc),Form("Charge of digits (ADC) in Chamber %i and PC %i   ",iCh,iPc),4100,0,4100);
+      hDigQ[iCh*6+iPc] = new TH1F(Form("QCh%iPc%i        ",iCh,iPc),Form("Charge of digits (ADC) in Chamber %i and PC %i;Charge;Entries",iCh,iPc),4100,0,4100);
     }
   }
   
@@ -117,7 +117,7 @@ void AliHMPIDQADataMakerSim::InitSDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
 
-  TH1F   *hSDigits     = new TH1F("hHmpidSDigits",    "SDigits Q  distribution in HMPID",  500, 0., 5000.) ; 
+  TH1F   *hSDigits     = new TH1F("hHmpidSDigits",    "SDigits Q  distribution in HMPID;QDC;Entries",  500, 0., 5000.) ; 
   Add2SDigitsList(hSDigits,0, !expert, image);
 }
 

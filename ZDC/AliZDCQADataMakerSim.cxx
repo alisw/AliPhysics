@@ -69,8 +69,8 @@ void AliZDCQADataMakerSim::InitHits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH2F * hZNCh  = new TH2F("hZNCh", "Hits centroid in ZNC", 100, -5.,5.,100,-5.,5.);
-  TH2F * hZNAh  = new TH2F("hZNAh", "Hits centroid in ZNA", 100, -5.,5.,100,-5.,5.);
+  TH2F * hZNCh  = new TH2F("hZNCh", "Hits centroid in ZNC;Centroid position [cm];Counts", 100, -5.,5.,100,-5.,5.);
+  TH2F * hZNAh  = new TH2F("hZNAh", "Hits centroid in ZNA;Centroid position [cm];Counts", 100, -5.,5.,100,-5.,5.);
   // NB -> For the moment no check is performesd on ZP centroids
 //  TH2F * hZPCh  = new TH2F("hZPCh", "Hits centroid in ZPC", 100,-12.,12.,100,-12.,12.); 
 //  TH2F * hZPAh  = new TH2F("hZPAh", "Hits centroid in ZPA", 100,-12.,12.,100,-12.,12.); 
@@ -90,28 +90,28 @@ void AliZDCQADataMakerSim::InitDigits()
   const Bool_t image    = kTRUE ; 
   
   // ------------------- HIGH GAIN CHAIN ---------------------------
-  TH1F * hDigZNCTot = new TH1F("hDigZNCTot", "Signal in ZNC", 100, 0., 6000.);
-  TH1F * hDigZNATot = new TH1F("hDigZNATot", "Signal in ZNA", 100, 0., 6000.);
-  TH1F * hDigZPCTot = new TH1F("hDigZPCTot", "Signal in ZPC", 100, 0., 6000.);
-  TH1F * hDigZPATot = new TH1F("hDigZPATot", "Signal in ZPA", 100, 0., 6000.);
+  TH1F * hDigZNCTot = new TH1F("hDigZNCTot", "Signal in ZNC;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hDigZNATot = new TH1F("hDigZNATot", "Signal in ZNA;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hDigZPCTot = new TH1F("hDigZPCTot", "Signal in ZPC;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hDigZPATot = new TH1F("hDigZPATot", "Signal in ZPA;Amplitude [ADC counts];Counts", 100, 0., 6000.);
   Add2DigitsList(hDigZNCTot, 0, !expert, image);
   Add2DigitsList(hDigZNATot, 1, !expert, image);
   Add2DigitsList(hDigZPCTot, 2, !expert, image);
   Add2DigitsList(hDigZPATot, 3, !expert, image);
   //
-  TH1F * hDigSumQZNC = new TH1F("hDigSumQZNC", "Signal in 4 ZNC PMQ",100, 0., 4000.);
-  TH1F * hDigSumQZNA = new TH1F("hDigSumQZNA", "Signal in 4 ZNA PMQ",100, 0., 4000.);
-  TH1F * hDigSumQZPC = new TH1F("hDigSumQZPC", "Signal in 4 ZPC PMQ",100, 0., 4000.);
-  TH1F * hDigSumQZPA = new TH1F("hDigSumQZPA", "Signal in 4 ZPA PMQ",100, 0., 4000.);
+  TH1F * hDigSumQZNC = new TH1F("hDigSumQZNC", "Signal in 4 ZNC PMQ;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigSumQZNA = new TH1F("hDigSumQZNA", "Signal in 4 ZNA PMQ;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigSumQZPC = new TH1F("hDigSumQZPC", "Signal in 4 ZPC PMQ;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigSumQZPA = new TH1F("hDigSumQZPA", "Signal in 4 ZPA PMQ;Amplitude [ADC counts];Counts",100, 0., 4000.);
   Add2DigitsList(hDigSumQZNC, 4, expert, !image);
   Add2DigitsList(hDigSumQZNA, 5, expert, !image);
   Add2DigitsList(hDigSumQZPC, 6, expert, !image);
   Add2DigitsList(hDigSumQZPA, 7, expert, !image);
   //
-  TH1F * hDigPMCZNC = new TH1F("hDigPMCZNC", "Signal in ZNC PMC",100, 0., 4000.);
-  TH1F * hDigPMCZNA = new TH1F("hDigPMCZNA", "Signal in ZNA PMC",100, 0., 4000.);
-  TH1F * hDigPMCZPC = new TH1F("hDigPMCZPC", "Signal in ZPC PMC",100, 0., 4000.);
-  TH1F * hDigPMCZPA = new TH1F("hDigPMCZPA", "Signal in ZPA PMC",100, 0., 4000.);
+  TH1F * hDigPMCZNC = new TH1F("hDigPMCZNC", "Signal in ZNC PMC;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigPMCZNA = new TH1F("hDigPMCZNA", "Signal in ZNA PMC;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigPMCZPC = new TH1F("hDigPMCZPC", "Signal in ZPC PMC;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigPMCZPA = new TH1F("hDigPMCZPA", "Signal in ZPA PMC;Amplitude [ADC counts];Counts",100, 0., 4000.);
   Add2DigitsList(hDigPMCZNC, 8, expert, !image);
   Add2DigitsList(hDigPMCZNA, 9, expert, !image);
   Add2DigitsList(hDigPMCZPC, 10, expert, !image);

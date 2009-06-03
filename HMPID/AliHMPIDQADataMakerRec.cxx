@@ -80,14 +80,14 @@ void AliHMPIDQADataMakerRec::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F *hDigChEvt = new TH1F("hDigChEvt","Chamber occupancy per event",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
+  TH1F *hDigChEvt = new TH1F("hDigChEvt","Chamber occupancy per event;Occupancy [%];Counts",AliHMPIDParam::kMaxCh+1,AliHMPIDParam::kMinCh,AliHMPIDParam::kMaxCh+1);
   TH1F *hDigPcEvt = new TH1F("hDigPcEvt","PC occupancy",156,-1,77);
   TH2F *hDigMap[7];
   TH1F *hDigQ[42];
   for(Int_t iCh =0; iCh < 7; iCh++){
     hDigMap[iCh] = new TH2F(Form("MapCh%i",iCh),Form("Digit Map in Chamber %i",iCh),159,0,159,143,0,143);
     for(Int_t iPc =0; iPc < 6; iPc++ ){
-      hDigQ[iCh*6+iPc] = new TH1F(Form("QCh%iPc%i        ",iCh,iPc),Form("Charge of digits (ADC) in Chamber %i and PC %i   ",iCh,iPc),4100,0,4100);
+      hDigQ[iCh*6+iPc] = new TH1F(Form("QCh%iPc%i        ",iCh,iPc),Form("Charge of digits (ADC) in Chamber %i and PC %i;Charge [ADC counts];Counts",iCh,iPc),4100,0,4100);
     }
   }
   
@@ -104,10 +104,10 @@ void AliHMPIDQADataMakerRec::InitRecPoints()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
  
-  TProfile *hCluMult          = new TProfile("CluMult"   ,"Cluster multiplicity per chamber"    , 16, -1 , 7  , 0, 500);
+  TProfile *hCluMult          = new TProfile("CluMult"   ,"Cluster multiplicity per chamber;Chamber Id;# of clusters"    , 16, -1 , 7  , 0, 500);
   Add2RecPointsList(hCluMult    , 0,expert, !image);
   
-  TH2F *hCluFlg          = new TH2F("CluFlg"      ,"Cluster flag  "                              ,  56  ,-1.5, 12.5, 70, -0.5, 6.5);
+  TH2F *hCluFlg          = new TH2F("CluFlg"      ,"Cluster flag;??;??"                              ,  56  ,-1.5, 12.5, 70, -0.5, 6.5);
   Add2RecPointsList(hCluFlg    , 1,expert, !image);
   
   TH1F *hCluSizeMip[7], *hCluSizePho[7];
@@ -115,17 +115,17 @@ void AliHMPIDQADataMakerRec::InitRecPoints()
   TH1F *hCluQSect[42], *hCluQSectZoom[42];
   
   for(Int_t iCh =0; iCh <7; iCh++){
-    hCluSizeMip[iCh] = new TH1F(Form("CluSizeMipCh%i",iCh),Form("Cluster size  MIP  (cluster Q > 100 ADC) in Chamber %i",iCh),  50  , 0  , 50  );
+    hCluSizeMip[iCh] = new TH1F(Form("CluSizeMipCh%i",iCh),Form("Cluster size  MIP  (cluster Q > 100 ADC) in Chamber %i;Size [MIP];Counts",iCh),  50  , 0  , 50  );
     Add2RecPointsList(hCluSizeMip[iCh], iCh+2,expert,!image);
 
-    hCluSizePho[iCh]  = new TH1F(Form("CluSizePho%i",iCh ),Form("Cluster size  Phots(cluster Q < 100 ADC) in Chamber %i",iCh),  50  , 0  , 50  );
+    hCluSizePho[iCh]  = new TH1F(Form("CluSizePho%i",iCh ),Form("Cluster size  Phots(cluster Q < 100 ADC) in Chamber %i;Size [MIP];Counts",iCh),  50  , 0  , 50  );
     Add2RecPointsList(hCluSizePho[iCh], iCh+7+2,expert,!image);
     
     for(Int_t iSect =0; iSect < 6; iSect++){
-      hCluQSectZoom[iCh*6+iSect] = new TH1F(Form("QClusCh%iSect%iZoom",iCh,iSect) ,Form("Zoom on Cluster charge (ADC) in Chamber %i and sector %i",iCh,iSect),100,0,100);
+      hCluQSectZoom[iCh*6+iSect] = new TH1F(Form("QClusCh%iSect%iZoom",iCh,iSect) ,Form("Zoom on Cluster charge (ADC) in Chamber %i and sector %i;Charge [ADC counts];Counts",iCh,iSect),100,0,100);
       Add2RecPointsList(hCluQSectZoom[iCh*6+iSect],2+14+iCh*6+iSect,expert,!image);
       
-      hCluQSect[iCh*6+iSect] = new TH1F(Form("QClusCh%iSect%i",iCh,iSect) ,Form("Cluster charge (ADC) in Chamber %i and sector %i",iCh,iSect),250,0,5000);
+      hCluQSect[iCh*6+iSect] = new TH1F(Form("QClusCh%iSect%i",iCh,iSect) ,Form("Cluster charge (ADC) in Chamber %i and sector %i;Charge [ADC counts];Counts",iCh,iSect),250,0,5000);
       Add2RecPointsList(hCluQSect[iCh*6+iSect],2+14+42+iCh*6+iSect, !expert, image);
     }  
   }
@@ -150,7 +150,7 @@ void AliHMPIDQADataMakerRec::InitRaws()
   TH1I *hPadQ[42]; //AMORE monitoring
   for(Int_t iddl =0; iddl<AliHMPIDRawStream::kNDDL; iddl++) {
     
-    hSumErr[iddl] = new TH1F(Form("hSumErrDDL%i",iddl), Form("Error summary for DDL %i",iddl), 2*kNerr,0,2*kNerr);
+    hSumErr[iddl] = new TH1F(Form("hSumErrDDL%i",iddl), Form("Error summary for DDL %i;??;??",iddl), 2*kNerr,0,2*kNerr);
     for(Int_t ilabel=0; ilabel< kNerr; ilabel++) {
       hSumErr[iddl]->GetXaxis()->CenterLabels(kTRUE);
       hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,AliHMPIDRawStream::GetErrName(ilabel)));

@@ -85,10 +85,10 @@ void AliPHOSQADataMakerSim::InitHits()
   // create Hits histograms in Hits subdir
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-  TH1F * h0 = new TH1F("hPhosHits",    "Hits energy distribution in PHOS",       100, 0., 100.) ; 
+  TH1F * h0 = new TH1F("hPhosHits",    "Hits energy distribution in PHOS;Energy [MeV];Counts",       100, 0., 100.) ; 
   h0->Sumw2() ;
   Add2HitsList(h0, kHits, !expert, image) ;
-  TH1I * h1 = new TH1I("hPhosHitsMul", "Hits multiplicity distribution in PHOS", 500, 0., 10000) ; 
+  TH1I * h1 = new TH1I("hPhosHitsMul", "Hits multiplicity distribution in PHOS;# of Hits;Entries", 500, 0., 10000) ; 
   h1->Sumw2() ;
   Add2HitsList(h1, kHitsMul, !expert, image) ;
   
@@ -100,10 +100,10 @@ void AliPHOSQADataMakerSim::InitDigits()
   // create Digits histograms in Digits subdir
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-  TH1I * h0 = new TH1I("hPhosDigits",    "Digits amplitude distribution in PHOS",    500, 0, 1000) ; 
+  TH1I * h0 = new TH1I("hPhosDigits",    "Digits amplitude distribution in PHOS;Amplitude [ADC counts];Counts",    500, 0, 1000) ; 
   h0->Sumw2() ;
   Add2DigitsList(h0, kDigits, !expert, image) ;
-  TH1I * h1 = new TH1I("hPhosDigitsMul", "Digits multiplicity distribution in PHOS", 2000, 0, 10000) ; 
+  TH1I * h1 = new TH1I("hPhosDigitsMul", "Digits multiplicity distribution in PHOS;# of Digits;Entries", 2000, 0, 10000) ; 
   h1->Sumw2() ;
   Add2DigitsList(h1, kDigitsMul, !expert, image) ;
 }
@@ -114,10 +114,10 @@ void AliPHOSQADataMakerSim::InitSDigits()
   // create SDigits histograms in SDigits subdir
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-  TH1F * h0 = new TH1F("hPhosSDigits",    "SDigits energy distribution in PHOS",       500, 0., 1000.) ; 
+  TH1F * h0 = new TH1F("hPhosSDigits",    "SDigits energy distribution in PHOS; Energy [MeV];Counts",       500, 0., 1000.) ; 
   h0->Sumw2() ;
   Add2SDigitsList(h0, kSDigits, !expert, image) ;
-  TH1I * h1 = new TH1I("hPhosSDigitsMul", "SDigits multiplicity distribution in PHOS", 500, 0,  1000) ; 
+  TH1I * h1 = new TH1I("hPhosSDigitsMul", "SDigits multiplicity distribution in PHOS;# of SDigits;Entries", 500, 0,  1000) ; 
   h1->Sumw2() ;
   Add2SDigitsList(h1, kSDigitsMul, !expert, image) ;
 }

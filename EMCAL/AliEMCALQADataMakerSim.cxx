@@ -82,10 +82,10 @@ void AliEMCALQADataMakerSim::InitHits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F * h0 = new TH1F("hEmcalHits",    "Hits energy distribution in EMCAL",       200, 0., 2.) ; //GeV
+  TH1F * h0 = new TH1F("hEmcalHits",    "Hits energy distribution in EMCAL;Energy [MeV];Counts",       200, 0., 2.) ; //GeV
   h0->Sumw2() ;
   Add2HitsList(h0, 0, !expert, image) ;
-  TH1I * h1  = new TH1I("hEmcalHitsMul", "Hits multiplicity distribution in EMCAL", 1000, 0, 10000) ; 
+  TH1I * h1  = new TH1I("hEmcalHitsMul", "Hits multiplicity distribution in EMCAL;# of Hits;Entries", 1000, 0, 10000) ; 
   h1->Sumw2() ;
   Add2HitsList(h1, 1, !expert, image) ;
 }
@@ -97,10 +97,10 @@ void AliEMCALQADataMakerSim::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1I * h0 = new TH1I("hEmcalDigits",    "Digits amplitude distribution in EMCAL",    500, 0, 500) ; 
+  TH1I * h0 = new TH1I("hEmcalDigits",    "Digits amplitude distribution in EMCAL;Amplitude [ADC counts];Counts",    500, 0, 500) ; 
   h0->Sumw2() ;
   Add2DigitsList(h0, 0, !expert, image) ;
-  TH1I * h1 = new TH1I("hEmcalDigitsMul", "Digits multiplicity distribution in EMCAL", 200, 0, 2000) ; 
+  TH1I * h1 = new TH1I("hEmcalDigitsMul", "Digits multiplicity distribution in EMCAL;# of Digits;Entries", 200, 0, 2000) ; 
   h1->Sumw2() ;
   Add2DigitsList(h1, 1, !expert, image) ;
 }
@@ -112,10 +112,10 @@ void AliEMCALQADataMakerSim::InitSDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F * h0 = new TH1F("hEmcalSDigits",    "SDigits energy distribution in EMCAL",       200, 0., 20.) ; 
+  TH1F * h0 = new TH1F("hEmcalSDigits",    "SDigits energy distribution in EMCAL;Energy [MeV];Counts",       200, 0., 20.) ; 
   h0->Sumw2() ;
   Add2SDigitsList(h0, 0, !expert, image) ;
-  TH1I * h1 = new TH1I("hEmcalSDigitsMul", "SDigits multiplicity distribution in EMCAL", 500, 0,  5000) ; 
+  TH1I * h1 = new TH1I("hEmcalSDigitsMul", "SDigits multiplicity distribution in EMCAL;# of SDigits;Entries", 500, 0,  5000) ; 
   h1->Sumw2() ;
   Add2SDigitsList(h1, 1, !expert, image) ;
 }

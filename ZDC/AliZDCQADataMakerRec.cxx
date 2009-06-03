@@ -74,28 +74,28 @@ void AliZDCQADataMakerRec::InitRaws()
   // create Digits histograms in Digits subdir
   //
   // ------------------- HIGH GAIN CHAIN ---------------------------
-  TH1F * hRawZNCTot = new TH1F("hRawZNCTot", "Raw signal in ZNC", 100, 0., 6000.);
-  TH1F * hRawZNATot = new TH1F("hRawZNATot", "Raw signal in ZNA", 100, 0., 6000.);
-  TH1F * hRawZPCTot = new TH1F("hRawZPCTot", "Raw signal in ZPC", 100, 0., 10000.);
-  TH1F * hRawZPATot = new TH1F("hRawZPATot", "Raw signal in ZPA", 100, 0., 10000.);
+  TH1F * hRawZNCTot = new TH1F("hRawZNCTot", "Raw signal in ZNC;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hRawZNATot = new TH1F("hRawZNATot", "Raw signal in ZNA;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hRawZPCTot = new TH1F("hRawZPCTot", "Raw signal in ZPC;Amplitude [ADC counts];Counts", 100, 0., 10000.);
+  TH1F * hRawZPATot = new TH1F("hRawZPATot", "Raw signal in ZPA;Amplitude [ADC counts];Counts", 100, 0., 10000.);
   Add2RawsList(hRawZNCTot, 0);
   Add2RawsList(hRawZNATot, 1);
   Add2RawsList(hRawZPCTot, 2);
   Add2RawsList(hRawZPATot, 3);
   //
-  TH1F * hRawSumQZNC = new TH1F("hRawSumQZNC", "Raw summed 4 ZNC quadrants",100, 0., 4000.);
-  TH1F * hRawSumQZNA = new TH1F("hRawSumQZNA", "Raw summed 4 ZNA quadrants",100, 0., 4000.);
-  TH1F * hRawSumQZPC = new TH1F("hRawSumQZPC", "Raw summed 4 ZPC quadrants",100, 0., 4000.);
-  TH1F * hRawSumQZPA = new TH1F("hRawSumQZPA", "Raw summed 4 ZPA quadrants",100, 0., 4000.);
+  TH1F * hRawSumQZNC = new TH1F("hRawSumQZNC", "Raw summed 4 ZNC quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawSumQZNA = new TH1F("hRawSumQZNA", "Raw summed 4 ZNA quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawSumQZPC = new TH1F("hRawSumQZPC", "Raw summed 4 ZPC quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawSumQZPA = new TH1F("hRawSumQZPA", "Raw summed 4 ZPA quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
   Add2RawsList(hRawSumQZNC, 4, kTRUE);
   Add2RawsList(hRawSumQZNA, 5, kTRUE);
   Add2RawsList(hRawSumQZPC, 6, kTRUE);
   Add2RawsList(hRawSumQZPA, 7, kTRUE);
   //
-  TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw common ZNC PMT",100, 0., 4000.);
-  TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw common ZNA PMT",100, 0., 4000.);
-  TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw common ZPC PMT",100, 0., 4000.);
-  TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw common ZPA PMT",100, 0., 4000.);
+  TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw common ZNC PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw common ZNA PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw common ZPC PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw common ZPA PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
   Add2RawsList(hRawPMCZNC, 8 , kTRUE);
   Add2RawsList(hRawPMCZNA, 9 , kTRUE);
   Add2RawsList(hRawPMCZPC, 10, kTRUE);
@@ -139,28 +139,28 @@ void AliZDCQADataMakerRec::InitDigits()
   const Bool_t image    = kTRUE ; 
   
   // ------------------- HIGH GAIN CHAIN ---------------------------
-  TH1F * hDigZNCTot = new TH1F("hDigZNCTot", "Signal in ZNC", 100, 0., 6000.);
-  TH1F * hDigZNATot = new TH1F("hDigZNATot", "Signal in ZNA", 100, 0., 6000.);
-  TH1F * hDigZPCTot = new TH1F("hDigZPCTot", "Signal in ZPC", 100, 0., 6000.);
-  TH1F * hDigZPATot = new TH1F("hDigZPATot", "Signal in ZPA", 100, 0., 6000.);
+  TH1F * hDigZNCTot = new TH1F("hDigZNCTot", "Signal in ZNC;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hDigZNATot = new TH1F("hDigZNATot", "Signal in ZNA;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hDigZPCTot = new TH1F("hDigZPCTot", "Signal in ZPC;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hDigZPATot = new TH1F("hDigZPATot", "Signal in ZPA;Amplitude [ADC counts];Counts", 100, 0., 6000.);
   Add2DigitsList(hDigZNCTot, 0, !expert, image);
   Add2DigitsList(hDigZNATot, 1, !expert, image);
   Add2DigitsList(hDigZPCTot, 2, !expert, image);
   Add2DigitsList(hDigZPATot, 3, !expert, image);
   //
-  TH1F * hDigSumQZNC = new TH1F("hDigSumQZNC", "Signal in 4 ZNC PMQ",100, 0., 4000.);
-  TH1F * hDigSumQZNA = new TH1F("hDigSumQZNA", "Signal in 4 ZNA PMQ",100, 0., 4000.);
-  TH1F * hDigSumQZPC = new TH1F("hDigSumQZPC", "Signal in 4 ZPC PMQ",100, 0., 4000.);
-  TH1F * hDigSumQZPA = new TH1F("hDigSumQZPA", "Signal in 4 ZPA PMQ",100, 0., 4000.);
+  TH1F * hDigSumQZNC = new TH1F("hDigSumQZNC", "Signal in 4 ZNC PMQ;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigSumQZNA = new TH1F("hDigSumQZNA", "Signal in 4 ZNA PMQ;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigSumQZPC = new TH1F("hDigSumQZPC", "Signal in 4 ZPC PMQ;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigSumQZPA = new TH1F("hDigSumQZPA", "Signal in 4 ZPA PMQ;Amplitude [ADC counts];Counts",100, 0., 4000.);
   Add2DigitsList(hDigSumQZNC, 4, expert, !image);
   Add2DigitsList(hDigSumQZNA, 5, expert, !image);
   Add2DigitsList(hDigSumQZPC, 6, expert, !image);
   Add2DigitsList(hDigSumQZPA, 7, expert, !image);
   //
-  TH1F * hDigPMCZNC = new TH1F("hDigPMCZNC", "Signal in ZNC PMC",100, 0., 4000.);
-  TH1F * hDigPMCZNA = new TH1F("hDigPMCZNA", "Signal in ZNA PMC",100, 0., 4000.);
-  TH1F * hDigPMCZPC = new TH1F("hDigPMCZPC", "Signal in ZPC PMC",100, 0., 4000.);
-  TH1F * hDigPMCZPA = new TH1F("hDigPMCZPA", "Signal in ZPA PMC",100, 0., 4000.);
+  TH1F * hDigPMCZNC = new TH1F("hDigPMCZNC", "Signal in ZNC PMC;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigPMCZNA = new TH1F("hDigPMCZNA", "Signal in ZNA PMC;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigPMCZPC = new TH1F("hDigPMCZPC", "Signal in ZPC PMC;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigPMCZPA = new TH1F("hDigPMCZPA", "Signal in ZPA PMC;Amplitude [ADC counts];Counts",100, 0., 4000.);
   Add2DigitsList(hDigPMCZNC, 8, expert, !image);
   Add2DigitsList(hDigPMCZNA, 9, expert, !image);
   Add2DigitsList(hDigPMCZPC, 10, expert, !image);

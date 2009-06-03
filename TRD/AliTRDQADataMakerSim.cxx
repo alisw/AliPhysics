@@ -114,11 +114,11 @@ void AliTRDQADataMakerSim::InitHits()
   const Int_t kNhist = 4;
   TH1D *hist[kNhist];
 
-  hist[0] = new TH1D("qaTRD_hits_det", ";Detector Id of the hit", 540, -0.5, 539.5) ; 
+  hist[0] = new TH1D("qaTRD_hits_det", "TRD hits det;Detector Id of the hit;Counts", 540, -0.5, 539.5) ; 
 
-  hist[1] = new TH1D("qaTRD_hist_Qdrift", ";Charge from tracks", 100, 0, 100);
-  hist[2] = new TH1D("qaTRD_hist_Qamp", ";Charge from TRD photon", 100, 0, 100);
-  hist[3] = new TH1D("qaTRD_hist_Qphoton", ";Charge from TRD photon", 100, 0, 100);
+  hist[1] = new TH1D("qaTRD_hist_Qdrift", "TRD hits Qdrift;Charge from tracks;Counts", 100, 0, 100);
+  hist[2] = new TH1D("qaTRD_hist_Qamp", "TRD hits Qamp;Charge from TRD photon;Counts", 100, 0, 100);
+  hist[3] = new TH1D("qaTRD_hist_Qphoton", "TRD hits Qphoton;Charge from TRD photon;Counts", 100, 0, 100);
 
   for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
@@ -139,9 +139,9 @@ void AliTRDQADataMakerSim::InitDigits()
   const Int_t kNhist = 3;
   TH1D *hist[kNhist];
 
-  hist[0] = new TH1D("qaTRD_digits_det", ";Detector Id of the digit", 540, -0.5, 539.5);
-  hist[1] = new TH1D("qaTRD_digits_time", ";Time bin", 40, -0.5, 39.5);
-  hist[2] = new TH1D("qaTRD_digits_amp", ";Amplitude", 100, -5.5, 94.5);
+  hist[0] = new TH1D("qaTRD_digits_det", "TRD digits det;Detector Id of the digit;Counts", 540, -0.5, 539.5);
+  hist[1] = new TH1D("qaTRD_digits_time", "TRDdigits time;Time bin;Counts", 40, -0.5, 39.5);
+  hist[2] = new TH1D("qaTRD_digits_amp", "TRD digits amp;Amplitude;Counts", 100, -5.5, 94.5);
 
   for(Int_t i=0; i<kNhist; i++) {
     hist[i]->Sumw2();
@@ -162,9 +162,9 @@ void AliTRDQADataMakerSim::InitSDigits()
   const Int_t kNhist = 3;
   TH1D *hist[kNhist];
 
-  hist[0] = new TH1D("qaTRD_sdigits_det", ";Detector Id of the digit", 540, -0.5, 539.5);
-  hist[1] = new TH1D("qaTRD_sdigits_time", ";Time bin", 40, -0.5, 39.5);
-  hist[2] = new TH1D("qaTRD_sdigits_amp", ";Amplitude", 100, 0, 1e7);
+  hist[0] = new TH1D("qaTRD_sdigits_det", "TRD sdigits det;Detector Id of the digit;Counts", 540, -0.5, 539.5);
+  hist[1] = new TH1D("qaTRD_sdigits_time", "TRD sdigits time;Time bin;Counts", 40, -0.5, 39.5);
+  hist[2] = new TH1D("qaTRD_sdigits_amp", "TRD sdigits amp;Amplitude;Counts", 100, 0, 1e7);
 
   for(Int_t i=0; i<kNhist; i++) {
     hist[i]->Sumw2();

@@ -115,9 +115,9 @@ void AliT0QADataMakerSim::InitHits()
 
   TString timename;
   
-  TH2F *fhHitsTimeA = new TH2F("hHitsTimeA", "Hits Efficiency", 25, 0, 25, 100,12,15 );
+  TH2F *fhHitsTimeA = new TH2F("hHitsTimeA", "Hits Efficiency;Time [ns];Efficiency [%]", 25, 0, 25, 100,12,15 );
   Add2HitsList(fhHitsTimeA,0, !expert, image);
-  TH2F *fhHitsTimeC = new TH2F("hHitsTimeC", "Hits Efficiency", 25, 0, 25, 100,2,5 );
+  TH2F *fhHitsTimeC = new TH2F("hHitsTimeC", "Hits Efficiency;Time [ns];Efficiency [%]", 25, 0, 25, 100,2,5 );
   Add2HitsList(fhHitsTimeC,1, !expert, image);
 }
 
@@ -128,11 +128,11 @@ void AliT0QADataMakerSim::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH2F * fhDigCFD = new TH2F("fhDigCFD", " CFD digits",25,-0.5,24.5,100,100,1000);
+  TH2F * fhDigCFD = new TH2F("fhDigCFD", " CFD digits;something;something else",25,-0.5,24.5,100,100,1000);
   Add2DigitsList( fhDigCFD,0);
-  TH2F *fhDigLEDamp = new TH2F("fhDigLEDamp", " LED-CFD digits",25,-0.5,24.5,100,100,1000);
+  TH2F *fhDigLEDamp = new TH2F("fhDigLEDamp", " LED-CFD digits;something;something else",25,-0.5,24.5,100,100,1000);
   Add2DigitsList( fhDigLEDamp,1, !expert, image);
-  TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits",25,-0.5,24.5,100,100,1000);
+  TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits;something;something else",25,-0.5,24.5,100,100,1000);
   Add2DigitsList( fhDigQTC,2, !expert, image);
   
   
