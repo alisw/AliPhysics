@@ -25,7 +25,7 @@ class AliFlowLYZHist2: public TNamed  {
  public:
 
   AliFlowLYZHist2();                                //default constructor
-  AliFlowLYZHist2(Int_t theta, const char *selection = "POI", const char *name = "AliFlowLYZHist2" ,const char *title = "AliFlowLYZHist2");                     //constructor
+  AliFlowLYZHist2(Int_t theta, const char *selection = "POI", const char *name = "AliFlowLYZHist2" ,  Bool_t useSum = kTRUE);                     //constructor
   virtual  ~AliFlowLYZHist2();                      //destructor
   
   Bool_t  IsFolder() const {return kTRUE;};
@@ -51,8 +51,8 @@ class AliFlowLYZHist2: public TNamed  {
   TProfile2D* GetHistProImNumer2D() {return this->fHistProImNumer2D;}
   TList*      GetHistList()         {return this->fHistList;}   
   
-  virtual Double_t Merge(TCollection *aList);  //merge function
-  void Print(Option_t* option = "") const;     //method to print stats
+  virtual Double_t Merge(TCollection *aList);          //merge function
+  void             Print(Option_t* option = "") const; //method to print stats
 
  private:
  

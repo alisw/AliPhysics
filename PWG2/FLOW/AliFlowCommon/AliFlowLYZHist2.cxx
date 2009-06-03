@@ -54,8 +54,8 @@ ClassImp(AliFlowLYZHist2)
  
 //-----------------------------------------------------------------------
 
-  AliFlowLYZHist2::AliFlowLYZHist2(Int_t theta, const char* aSelection, const char *anInput,const char *aTitle):
-    TNamed(anInput,aTitle),
+  AliFlowLYZHist2::AliFlowLYZHist2(Int_t theta, const char* aSelection, const char *anInput, Bool_t useSum):
+    TNamed(anInput,anInput),
     fHistProReNumer(0),
     fHistProImNumer(0),
     fHistProReNumerPt(0),
@@ -66,7 +66,11 @@ ClassImp(AliFlowLYZHist2)
 {
 
   //constructor creating histograms 
-  TString title, name;
+  TString title, name, addlast;
+
+  if (useSum) { addlast = "LYZSUM"; }
+  else { addlast = "LYZPROD"; }
+
   Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
   Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
 
@@ -79,7 +83,7 @@ ClassImp(AliFlowLYZHist2)
   name = "Second_FlowPro_ReNumer";
   name +=theta;
   name +=aSelection;
-  name +="_LYZ";
+  name +=addlast;
   title = name;
   fHistProReNumer = new TProfile(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax); 
   fHistProReNumer->SetXTitle("eta");
@@ -89,7 +93,7 @@ ClassImp(AliFlowLYZHist2)
   name = "Second_FlowPro_ImNumer";
   name +=theta;
   name +=aSelection;
-  name +="_LYZ";
+  name +=addlast;
   title = name;
   fHistProImNumer = new TProfile(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax);  
   fHistProImNumer->SetXTitle("eta");
@@ -99,7 +103,7 @@ ClassImp(AliFlowLYZHist2)
   name = "Second_FlowPro_ReNumerPt";
   name +=theta;
   name +=aSelection;
-  name +="_LYZ";
+  name +=addlast;
   title = name;
   fHistProReNumerPt = new TProfile(name.Data(),title.Data(),iNbinsPt,dPtMin,dPtMax); 
   fHistProReNumerPt->SetXTitle("Pt");
@@ -109,7 +113,7 @@ ClassImp(AliFlowLYZHist2)
   name = "Second_FlowPro_ImNumerPt";
   name +=theta;
   name +=aSelection;
-  name +="_LYZ";
+  name +=addlast;
   title = name;
   fHistProImNumerPt = new TProfile(name.Data(),title.Data(),iNbinsPt,dPtMin,dPtMax);  
   fHistProImNumerPt->SetXTitle("Pt");
@@ -119,7 +123,7 @@ ClassImp(AliFlowLYZHist2)
   name = "Second_FlowPro_ReNumer2D";
   name +=theta;
   name +=aSelection;
-  name +="_LYZ";
+  name +=addlast;
   title = name;
   fHistProReNumer2D = new TProfile2D(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax,iNbinsPt,dPtMin,dPtMax);  
   fHistProReNumer2D->SetXTitle("eta");
@@ -129,7 +133,7 @@ ClassImp(AliFlowLYZHist2)
   name = "Second_FlowPro_ImNumer2D";
   name +=theta;
   name +=aSelection;
-  name +="_LYZ";
+  name +=addlast;
   title = name;
   fHistProImNumer2D = new TProfile2D(name.Data(),title.Data(),iNbinsEta,dEtaMin,dEtaMax,iNbinsPt,dPtMin,dPtMax);  
   fHistProImNumer2D->SetXTitle("eta");

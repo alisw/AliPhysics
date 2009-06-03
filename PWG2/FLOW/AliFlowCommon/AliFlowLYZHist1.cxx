@@ -47,8 +47,8 @@ ClassImp(AliFlowLYZHist1)
 
 //-----------------------------------------------------------------------
 
-  AliFlowLYZHist1::AliFlowLYZHist1(Int_t theta, const char *anInput,const char *aTitle):
-    TNamed(anInput,aTitle),
+  AliFlowLYZHist1::AliFlowLYZHist1(Int_t theta, const char *anInput,Bool_t useSum):
+    TNamed(anInput,anInput),
     fHistGtheta(0),
     fHistProReGtheta(0),
     fHistProImGtheta(0),
@@ -59,39 +59,32 @@ ClassImp(AliFlowLYZHist1)
   Int_t iNbins = AliFlowLYZConstants::kNbins;
   Double_t dMin = AliFlowLYZConstants::fgMin;
   Double_t dMax = AliFlowLYZConstants::fgMax;
-  TString title, name;
+  TString name, addlast;
  
+  if (useSum) { addlast = "LYZSUM"; }
+  else { addlast = "LYZPROD"; }
   
   //fHistGtheta
   name = "First_Flow_Gtheta";
   name +=theta;
-  name +="_LYZ";
-  title = "First_Flow_Gtheta";
-  title +=theta;
-  title +="_LYZ";
-  fHistGtheta = new TH1D(name.Data(),title.Data(),iNbins,dMin,dMax);  
+  name +=addlast;
+  fHistGtheta = new TH1D(name.Data(),name.Data(),iNbins,dMin,dMax);  
   fHistGtheta->SetXTitle("r");
   fHistGtheta->SetYTitle("|G^{#theta}(ir)|^{2}");
   
   //fHistProReGtheta
   name = "First_FlowPro_ReGtheta";
   name +=theta;
-  name +="_LYZ";
-  title = "First_FlowPro_ReGtheta";
-  title +=theta;
-  title +="_LYZ";
-  fHistProReGtheta = new TProfile(name.Data(),title.Data(),iNbins,dMin,dMax);
+  name +=addlast;
+  fHistProReGtheta = new TProfile(name.Data(),name.Data(),iNbins,dMin,dMax);
   fHistProReGtheta->SetXTitle("r");
   fHistProReGtheta->SetYTitle("Re G^{#theta}(ir)");
   
   //fHistProImGtheta
   name = "First_FlowPro_ImGtheta";
   name +=theta;
-  name +="_LYZ";
-  title = "First_FlowPro_ImGtheta";
-  title +=theta;
-  title +="_LYZ";
-  fHistProImGtheta = new TProfile(name.Data(),title.Data(),iNbins,dMin,dMax);
+  name +=addlast;
+  fHistProImGtheta = new TProfile(name.Data(),name.Data(),iNbins,dMin,dMax);
   fHistProImGtheta->SetXTitle("r");
   fHistProImGtheta->SetYTitle("Im G^{#theta}(ir)");
 
