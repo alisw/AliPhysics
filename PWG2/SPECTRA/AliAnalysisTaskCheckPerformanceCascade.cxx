@@ -1061,10 +1061,10 @@ void AliAnalysisTaskCheckPerformanceCascade::UserExec(Option_t *)
 	TH1F *lHistPtMesDghter        = 0;
 
 
-for(Int_t CascType = 1; CascType < 5; CascType++)
+for(Int_t iCascType = 1; iCascType < 5; iCascType++)
 {
        
-switch (CascType)
+switch (iCascType)
   {
     case 1: // Xi-
          lPdgCodeCasc       =   3312;  //Xi-
@@ -1179,8 +1179,8 @@ switch (CascType)
         break;
 
   }// end switch cascade
-    
-  
+
+
    for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < iNumberOfPrimaries; iCurrentLabelStack++) 
     {// This is the begining of the loop on primaries
       
@@ -1191,7 +1191,7 @@ switch (CascType)
 		continue;
 		
 	}
-	
+	 
     	if( lCurrentParticle->GetPdgCode() == lPdgCodeCasc ){  // Here !
    		//cout << "Xi- ds boucle " << iCurrentLabelStack << "/ " << iNumberOfPrimaries << endl;
 		
@@ -1320,29 +1320,28 @@ switch (CascType)
 			lHistPtBach		->Fill(      lBach->Pt() );
 			lHistPtBarDghter	->Fill( lDghtBarV0->Pt() );
 			lHistPtMesDghter	->Fill( lDghtMesV0->Pt() );
-			
-			// - Re-initialisation of the local TH1F pointers
-			lHistEtaGenCasc         = 0x0;
-			
-			lHistYGenCascMidRap     = 0x0;
-			lHistEtaGenCascMidRap   = 0x0;
-			lHistThetaGenCascMidRap = 0x0;
-			lHistPtGenCascMidRap	= 0x0;
-			
-			lHistThetaGenCasc       = 0x0;
-			lHistPtFdblGenCasc      = 0x0;
-			lHistThetaLambda        = 0x0;
-			lHistThetaBach          = 0x0;
-			lHistThetaBarDghter     = 0x0;
-			lHistThetaMesDghter     = 0x0;
-			lHistPtBach	        = 0x0;
-			lHistPtBarDghter        = 0x0;
-			lHistPtMesDghter        = 0x0;	
-			
-			
+						
 		}// end if current particle = Xi-
 	     
      }// This is the end of the loop on primaries
+     
+// - Re-initialisation of the local TH1F pointers
+lHistEtaGenCasc         = 0x0;
+
+lHistYGenCascMidRap     = 0x0;
+lHistEtaGenCascMidRap   = 0x0;
+lHistThetaGenCascMidRap = 0x0;
+lHistPtGenCascMidRap    = 0x0;
+
+lHistThetaGenCasc       = 0x0;
+lHistPtFdblGenCasc      = 0x0;
+lHistThetaLambda        = 0x0;
+lHistThetaBach          = 0x0;
+lHistThetaBarDghter     = 0x0;
+lHistThetaMesDghter     = 0x0;
+lHistPtBach             = 0x0;
+lHistPtBarDghter        = 0x0;
+lHistPtMesDghter        = 0x0;	
 
 } // end of loop over the different types of cascades (Xi-+, Omega-+)
  	
