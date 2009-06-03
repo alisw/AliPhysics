@@ -34,7 +34,7 @@
 #include "AliHLTRootFileStreamerComponent.h"
 #include "AliHLTRootFileWriterComponent.h"
 #include "AliHLTRootFilePublisherComponent.h"
-#include "AliHLTMCGeneratorComponent.h"
+//#include "AliHLTMCGeneratorComponent.h"
 #include "AliHLTESDMCEventPublisherComponent.h"
 #include "AliHLTFileWriter.h"
 #include "AliHLTFilePublisher.h"
@@ -114,7 +114,7 @@ int AliHLTAgentUtil::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTRootFileStreamerComponent);
   pHandler->AddComponent(new AliHLTRootFileWriterComponent);
   pHandler->AddComponent(new AliHLTRootFilePublisherComponent);
-  pHandler->AddComponent(new AliHLTMCGeneratorComponent);
+  //  pHandler->AddComponent(new AliHLTMCGeneratorComponent);
   pHandler->AddComponent(new AliHLTESDMCEventPublisherComponent);
   pHandler->AddComponent(new AliHLTFileWriter);
   pHandler->AddComponent(new AliHLTFilePublisher);
