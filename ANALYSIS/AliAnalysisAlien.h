@@ -41,6 +41,7 @@ public:
    virtual void        SetPrice(Int_t price=1)                           {fPrice = price;}
    virtual void        SetRunRange(Int_t min, Int_t max)                 {fRunRange[0] = min; fRunRange[1] = max;}
    virtual void        SetNMasterJobs(Int_t njobs)                       {fNMasterJobs = njobs;}
+   virtual void        SetMaxMergeFiles(Int_t nfiles)                    {fMaxMergeFiles = nfiles;}
    virtual void        SetSplitMode(const char *type="se")               {fSplitMode = type;}
    virtual void        SetSplitMaxInputFileNumber(Int_t nfiles=100)      {fSplitMaxInputFileNumber = nfiles;}
    virtual void        SetAPIVersion(const char *version="V2.4") {fAPIVersion = version;}
@@ -70,6 +71,7 @@ public:
    virtual Bool_t      CreateJDL();
    virtual void        EnablePackage(const char *package);
    virtual Bool_t      MergeOutputs();
+   virtual void        Print(Option_t *option="") const;
    virtual void        StartAnalysis(Long64_t nentries=123456789, Long64_t firstentry=0);
    virtual void        WriteAnalysisFile();
    virtual void        WriteAnalysisMacro();
@@ -98,6 +100,7 @@ private:
    Int_t            fNtestFiles;      // Number of files used in the testing case
    Int_t            fRunRange[2];     // Run range
    Int_t            fNMasterJobs;     // Number of masterjobs to be launched
+   Int_t            fMaxMergeFiles;   // Maximum number of files to be merged in one chunk
    TString          fRunNumbers;      // List of runs to be processed
    TString          fExecutable;      // Executable script for AliEn job
    TString          fArguments;       // Arguments for the executable script
