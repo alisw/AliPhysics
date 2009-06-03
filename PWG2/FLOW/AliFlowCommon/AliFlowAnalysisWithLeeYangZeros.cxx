@@ -589,6 +589,10 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
   SetEventNumber((int)fCommonHists->GetHistMultOrig()->GetEntries());
   //cout<<"number of events processed is "<<fEventNumber<<endl; 
 
+  //Get multiplicity for RP selection
+  Double_t dMultRP = fCommonHists->GetHistMultRP()->GetMean();
+  if (fDebug) cout<<"The average multiplicity is "<<dMultRP<<endl;  
+
   //set the sum of Q vectors
   fQsum->Set(fHistQsumforChi->GetBinContent(1),fHistQsumforChi->GetBinContent(2));
   SetQ2sum(fHistQsumforChi->GetBinContent(3));  
@@ -614,10 +618,21 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	Double_t dVmin  = -1.;
 	if (dR0+dBinsize!=0.) {dVplus = dJ01/(dR0+dBinsize);}
 	if (dR0-dBinsize!=0.) {dVmin = dJ01/(dR0-dBinsize);}
-	//convert V to v (normally v = V/M, but here V=v because the Q-vector is scaled by 1/M)
-	dv = dVtheta;
-	Double_t dvplus = dVplus;
-	Double_t dvmin = dVmin;
+	//convert V to v 
+	Double_t dvplus = -1.;
+	Double_t dvmin= -1.;
+	if (fUseSum){
+	  //for SUM: V=v because the Q-vector is scaled by 1/M
+	  dv = dVtheta;
+	  dvplus = dVplus;
+	  dvmin = dVmin; }
+	else {
+	  //for PRODUCT: v=V/M
+	  if (dMultRP!=0.){
+	    dv = dVtheta/dMultRP;
+	    dvplus = dVplus/dMultRP;
+	    dvmin = dVmin/dMultRP; }}
+
 	if (fDebug) cout<<"dv = "<<dv<<" and dvplus = "<<dvplus<< " and dvmin = "<<dvmin<<endl;
 	     
 	//fill the histograms
@@ -629,7 +644,8 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 
     //get average value of fVtheta = fV
     dV /=iNtheta;
-           
+    if (!fUseSum) { if (dMultRP!=0.){dV /=dMultRP;}} //scale with multiplicity for PRODUCT
+
     //sigma2 and chi 
     Double_t  dSigma2 = 0;
     Double_t  dChi= 0;
@@ -650,7 +666,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	cout<<"     Lee-Yang Zeroes PRODUCT      "<<endl;}
       cout<<endl;
       cout<<"Chi = "<<dChi<<endl;
-      cout<<endl;
+      //cout<<endl;
     }
 	   
     // recalculate statistical errors on integrated flow
@@ -821,6 +837,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 
     //calculate the average of fVtheta = fV
     dV /= iNtheta;
+    if (!fUseSum) { if (dMultRP!=0.) { dV /=dMultRP; }} //scale by the multiplicity for PRODUCT
     if (dV==0.) { cout<<"dV = 0! Leaving LYZ analysis."<<endl; return kFALSE; }
 
     //sigma2 and chi (for statistical error calculations)
@@ -869,7 +886,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
       cout<<endl;
       cout<<"Chi = "<<dChi<<endl;
       cout<<"dV = "<<dV<<" +- "<<dVErr<<endl;
-      cout<<endl;
+      //cout<<endl;
     }
 	     
     //copy content of profile into TH1D and add error and fill the AliFlowCommonHistResults
@@ -1269,7 +1286,8 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetGrtheta(AliFlowEventSimple* const a
   
   TComplex cG = TComplex::One();
   Double_t dOrder =  2.;
-  Double_t dWgt = 1./anEvent->GetEventNSelTracksRP(); //weight with the multiplicity
+  Double_t dWgt = 1.;
+  //Double_t dWgt = 1./anEvent->GetEventNSelTracksRP(); //weight with the multiplicity
     
   Int_t iNumberOfTracks = anEvent->NumberOfTracks();
   
@@ -1306,7 +1324,8 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* const 
   TComplex cdGr0(0.,0.);
   Double_t dOrder =  2.;
   Double_t dWgt = 1.;
-  
+  //Double_t dWgt = 1./anEvent->GetEventNSelTracksRP(); //weight with the multiplicity
+
   Int_t iNumberOfTracks = anEvent->NumberOfTracks();
   
   Int_t iNtheta = AliFlowLYZConstants::kTheta;
