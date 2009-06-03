@@ -169,101 +169,138 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
   Double_t  dEtaMax = AliFlowCommonConstants::GetEtaMax();
     
   //for control histograms
-  if (fFirstRun){ fCommonHists = new AliFlowCommonHist("AliFlowCommonHistLYZ1");
-  fHistList->Add(fCommonHists);
-  fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsLYZ1");
-  fHistList->Add(fCommonHistsRes);
+  if (fFirstRun){ 
+    if (fUseSum) {fCommonHists = new AliFlowCommonHist("AliFlowCommonHistLYZ1SUM");}
+    else {fCommonHists = new AliFlowCommonHist("AliFlowCommonHistLYZ1PROD");}
+    fHistList->Add(fCommonHists);
+    if (fUseSum) {fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsLYZ1SUM");}
+    else {fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsLYZ1PROD");}
+    fHistList->Add(fCommonHistsRes);
   }
-  else { fCommonHists = new AliFlowCommonHist("AliFlowCommonHistLYZ2");
-  fHistList->Add(fCommonHists);
-  fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsLYZ2");
-  fHistList->Add(fCommonHistsRes); 
+  else { 
+    if (fUseSum) {fCommonHists = new AliFlowCommonHist("AliFlowCommonHistLYZ2SUM");}
+    else {fCommonHists = new AliFlowCommonHist("AliFlowCommonHistLYZ2PROD");}
+    fHistList->Add(fCommonHists);
+    if (fUseSum) {fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsLYZ2SUM");}
+    else {fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsLYZ2PROD");}
+    fHistList->Add(fCommonHistsRes); 
   }
-    
-  fHistQsumforChi = new TH1F("Flow_QsumforChi_LYZ","Flow_QsumforChi_LYZ",3,-1.,2.);
+  
+  TString nameChiHist;
+  if (fUseSum) {nameChiHist = "Flow_QsumforChi_LYZSUM";}
+  else {nameChiHist = "Flow_QsumforChi_LYZPROD";}
+  fHistQsumforChi = new TH1F(nameChiHist.Data(),nameChiHist.Data(),3,-1.,2.);
   fHistQsumforChi->SetXTitle("Qsum.X , Qsum.Y, Q2sum");
   fHistQsumforChi->SetYTitle("value");
   fHistList->Add(fHistQsumforChi);
 
   //for first loop over events 
   if (fFirstRun){
-    fHistProR0theta  = new TProfile("First_FlowPro_r0theta_LYZ","First_FlowPro_r0theta_LYZ",iNtheta,-0.5,iNtheta-0.5);
+    TString nameR0Hist;
+    if (fUseSum) {nameR0Hist = "First_FlowPro_r0theta_LYZSUM";}
+    else {nameR0Hist = "First_FlowPro_r0theta_LYZPROD";}
+    fHistProR0theta  = new TProfile(nameR0Hist.Data(),nameR0Hist.Data(),iNtheta,-0.5,iNtheta-0.5);
     fHistProR0theta->SetXTitle("#theta");
     fHistProR0theta->SetYTitle("r_{0}^{#theta}");
     fHistList->Add(fHistProR0theta);
 
-    fHistProVtheta  = new TProfile("First_FlowPro_Vtheta_LYZ","First_FlowPro_Vtheta_LYZ",iNtheta,-0.5,iNtheta-0.5);
+    TString nameVHist;
+    if (fUseSum) {nameVHist = "First_FlowPro_Vtheta_LYZSUM";}
+    else {nameVHist = "First_FlowPro_Vtheta_LYZPROD";}
+    fHistProVtheta  = new TProfile(nameVHist.Data(),nameVHist.Data(),iNtheta,-0.5,iNtheta-0.5);
     fHistProVtheta->SetXTitle("#theta");
     fHistProVtheta->SetYTitle("V_{n}^{#theta}");        
     fHistList->Add(fHistProVtheta);
 
     //class AliFlowLYZHist1 defines the histograms: fHistProGtheta, fHistProReGtheta, fHistProImGtheta, fHistProR0theta
     for (Int_t theta=0;theta<iNtheta;theta++) {  
-      TString name = "AliFlowLYZHist1_";
-      name += theta;
-      fHist1[theta]=new AliFlowLYZHist1(theta, name);
+      TString nameHist1;
+      if (fUseSum) {nameHist1 = "AliFlowLYZHist1_";}
+      else {nameHist1 = "AliFlowLYZHist1_";}
+      nameHist1 += theta;
+      fHist1[theta]=new AliFlowLYZHist1(theta, nameHist1, fUseSum);
       fHistList->Add(fHist1[theta]);
     }
          
   }
   //for second loop over events 
   else {
-    fHistProReDenom = new TProfile("Second_FlowPro_ReDenom_LYZ","Second_FlowPro_ReDenom_LYZ" , iNtheta, -0.5, iNtheta-0.5);
+    TString nameReDenomHist;
+    if (fUseSum) {nameReDenomHist = "Second_FlowPro_ReDenom_LYZSUM";}
+    else {nameReDenomHist = "Second_FlowPro_ReDenom_LYZPROD";}
+    fHistProReDenom = new TProfile(nameReDenomHist.Data(),nameReDenomHist.Data(), iNtheta, -0.5, iNtheta-0.5);
     fHistProReDenom->SetXTitle("#theta");
     fHistProReDenom->SetYTitle("Re(Q^{#theta}e^{ir_{0}^{#theta}Q^{#theta}})");
     fHistList->Add(fHistProReDenom);
 
-    fHistProImDenom = new TProfile("Second_FlowPro_ImDenom_LYZ","Second_FlowPro_ImDenom_LYZ" , iNtheta, -0.5, iNtheta-0.5);
+    TString nameImDenomHist;
+    if (fUseSum) {nameImDenomHist = "Second_FlowPro_ImDenom_LYZSUM";}
+    else {nameImDenomHist = "Second_FlowPro_ImDenom_LYZPROD";}
+    fHistProImDenom = new TProfile(nameImDenomHist.Data(),nameImDenomHist.Data(), iNtheta, -0.5, iNtheta-0.5);
     fHistProImDenom->SetXTitle("#theta");
     fHistProImDenom->SetYTitle("Im(Q^{#theta}e^{ir_{0}^{#theta}Q^{#theta}})");
     fHistList->Add(fHistProImDenom);
 
-    fHistProVetaRP = new TProfile("Second_FlowPro_VetaRP_LYZ","Second_FlowPro_VetaRP_LYZ",iNbinsEta,dEtaMin,dEtaMax);
+    TString nameVetaRPHist;
+    if (fUseSum) {nameVetaRPHist = "Second_FlowPro_VetaRP_LYZSUM";}
+    else {nameVetaRPHist = "Second_FlowPro_VetaRP_LYZPROD";}
+    fHistProVetaRP = new TProfile(nameVetaRPHist.Data(),nameVetaRPHist.Data(),iNbinsEta,dEtaMin,dEtaMax);
     fHistProVetaRP->SetXTitle("rapidity");
     fHistProVetaRP->SetYTitle("v_{2}(#eta) for RP selection");
     fHistList->Add(fHistProVetaRP);
 
-    fHistProVetaPOI = new TProfile("Second_FlowPro_VetaPOI_LYZ","Second_FlowPro_VetaPOI_LYZ",iNbinsEta,dEtaMin,dEtaMax);
+    TString nameVetaPOIHist;
+    if (fUseSum) {nameVetaPOIHist = "Second_FlowPro_VetaPOI_LYZSUM";}
+    else {nameVetaPOIHist = "Second_FlowPro_VetaPOI_LYZPROD";}
+    fHistProVetaPOI = new TProfile(nameVetaPOIHist.Data(),nameVetaPOIHist.Data(),iNbinsEta,dEtaMin,dEtaMax);
     fHistProVetaPOI->SetXTitle("rapidity");
     fHistProVetaPOI->SetYTitle("v_{2}(#eta) for POI selection");
     fHistList->Add(fHistProVetaPOI);
 
-    fHistProVPtRP = new TProfile("Second_FlowPro_VPtRP_LYZ","Second_FlowPro_VPtRP_LYZ",iNbinsPt,dPtMin,dPtMax);
+    TString nameVPtRPHist;
+    if (fUseSum) {nameVPtRPHist = "Second_FlowPro_VPtRP_LYZSUM";}
+    else {nameVPtRPHist = "Second_FlowPro_VPtRP_LYZPROD";}
+    fHistProVPtRP = new TProfile(nameVPtRPHist.Data(),nameVPtRPHist.Data(),iNbinsPt,dPtMin,dPtMax);
     fHistProVPtRP->SetXTitle("Pt");
     fHistProVPtRP->SetYTitle("v_{2}(p_{T}) for RP selection");
     fHistList->Add(fHistProVPtRP);
 
-    fHistProVPtPOI = new TProfile("Second_FlowPro_VPtPOI_LYZ","Second_FlowPro_VPtPOI_LYZ",iNbinsPt,dPtMin,dPtMax);
+    TString nameVPtPOIHist;
+    if (fUseSum) {nameVPtPOIHist = "Second_FlowPro_VPtPOI_LYZSUM";}
+    else {nameVPtPOIHist = "Second_FlowPro_VPtPOI_LYZPROD";}
+    fHistProVPtPOI = new TProfile(nameVPtPOIHist.Data(),nameVPtPOIHist.Data(),iNbinsPt,dPtMin,dPtMax);
     fHistProVPtPOI->SetXTitle("p_{T}");
     fHistProVPtPOI->SetYTitle("v_{2}(p_{T}) for POI selection");
     fHistList->Add(fHistProVPtPOI);
+    if (fUseSum){
+      fHistProReDtheta = new TProfile("Second_FlowPro_ReDtheta_LYZSUM","Second_FlowPro_ReDtheta_LYZSUM",iNtheta, -0.5, iNtheta-0.5);
+      fHistProReDtheta->SetXTitle("#theta");
+      fHistProReDtheta->SetYTitle("Re(D^{#theta})");
+      fHistList->Add(fHistProReDtheta);
 
-    fHistProReDtheta = new TProfile("Second_FlowPro_ReDtheta_LYZ","Second_FlowPro_ReDtheta_LYZ",iNtheta, -0.5, iNtheta-0.5);
-    fHistProReDtheta->SetXTitle("#theta");
-    fHistProReDtheta->SetYTitle("Re(D^{#theta})");
-    fHistList->Add(fHistProReDtheta);
-
-    fHistProImDtheta = new TProfile("Second_FlowPro_ImDtheta_LYZ","Second_FlowPro_ImDtheta_LYZ",iNtheta, -0.5, iNtheta-0.5);
-    fHistProImDtheta->SetXTitle("#theta");
-    fHistProImDtheta->SetYTitle("Im(D^{#theta})");
-    fHistList->Add(fHistProImDtheta);
+      fHistProImDtheta = new TProfile("Second_FlowPro_ImDtheta_LYZSUM","Second_FlowPro_ImDtheta_LYZSUM",iNtheta, -0.5, iNtheta-0.5);
+      fHistProImDtheta->SetXTitle("#theta");
+      fHistProImDtheta->SetYTitle("Im(D^{#theta})");
+      fHistList->Add(fHistProImDtheta);
+    }
 
     //class AliFlowLYZHist2 defines the histograms: 
     for (Int_t theta=0;theta<iNtheta;theta++)  {  
       TString nameRP = "AliFlowLYZHist2RP_";
       nameRP += theta;
-      fHist2RP[theta]=new AliFlowLYZHist2(theta, "RP", nameRP);
+      fHist2RP[theta]=new AliFlowLYZHist2(theta, "RP", nameRP, fUseSum);
       fHistList->Add(fHist2RP[theta]);
 
       TString namePOI = "AliFlowLYZHist2POI_";
       namePOI += theta;
-      fHist2POI[theta]=new AliFlowLYZHist2(theta, "POI", namePOI);
+      fHist2POI[theta]=new AliFlowLYZHist2(theta, "POI", namePOI, fUseSum);
       fHistList->Add(fHist2POI[theta]);
     }
      
     //read histogram fHistProR0theta from the first run list
     if (fFirstRunList) {
-      fHistProR0theta  = (TProfile*)fFirstRunList->FindObject("First_FlowPro_r0theta_LYZ");
+      if (fUseSum) { fHistProR0theta  = (TProfile*)fFirstRunList->FindObject("First_FlowPro_r0theta_LYZSUM");}
+      else{ fHistProR0theta  = (TProfile*)fFirstRunList->FindObject("First_FlowPro_r0theta_LYZPROD");}
       if (!fHistProR0theta) {cout<<"fHistProR0theta has a NULL pointer!"<<endl;}
       fHistList->Add(fHistProR0theta);
     } else { cout<<"list is NULL pointer!"<<endl; }
@@ -319,125 +356,226 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
     //define histograms for first and second run
     AliFlowCommonHist *pCommonHist = NULL;
     AliFlowCommonHistResults *pCommonHistResults = NULL;
-    TProfile* pHistProVtheta = NULL;
+    TProfile* pHistProR0theta = NULL;
+    TProfile* pHistProVtheta  = NULL;
     TProfile* pHistProReDenom = NULL;
     TProfile* pHistProImDenom = NULL;
-    TProfile* pHistProReDtheta = NULL;
-    TProfile* pHistProImDtheta = NULL;
-    TProfile* pHistProVetaRP = NULL;
+    TProfile* pHistProVetaRP  = NULL;
     TProfile* pHistProVetaPOI = NULL;
-    TProfile* pHistProVPtRP  = NULL;
+    TProfile* pHistProVPtRP   = NULL;
     TProfile* pHistProVPtPOI  = NULL;
+    TH1F* pHistQsumforChi = NULL;
     AliFlowLYZHist1 *pLYZHist1[iNtheta] = {NULL};      //array of pointers to AliFlowLYZHist1
     AliFlowLYZHist2 *pLYZHist2RP[iNtheta] = {NULL};    //array of pointers to AliFlowLYZHist2
     AliFlowLYZHist2 *pLYZHist2POI[iNtheta] = {NULL};   //array of pointers to AliFlowLYZHist2
 
     if (GetFirstRun()) { //first run
       //Get the common histograms from the output list
-      pCommonHist = dynamic_cast<AliFlowCommonHist*> 
-	(outputListHistos->FindObject("AliFlowCommonHistLYZ1"));
-      pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
-	(outputListHistos->FindObject("AliFlowCommonHistResultsLYZ1"));
+      if (GetUseSum()){
+	pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+	  (outputListHistos->FindObject("AliFlowCommonHistLYZ1SUM")); 
+	pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+	  (outputListHistos->FindObject("AliFlowCommonHistResultsLYZ1SUM"));
+	//Get the histograms from the output list
+	for(Int_t theta = 0;theta<iNtheta;theta++){
+	  TString name = "AliFlowLYZHist1_"; 
+	  name += theta;
+	  pLYZHist1[theta] = dynamic_cast<AliFlowLYZHist1*> 
+	    (outputListHistos->FindObject(name));
+	}
+	pHistProVtheta = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("First_FlowPro_Vtheta_LYZSUM"));
+
+	pHistProR0theta = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("First_FlowPro_r0theta_LYZSUM"));
+
+	pHistQsumforChi = dynamic_cast<TH1F*> 
+	  (outputListHistos->FindObject("Flow_QsumforChi_LYZSUM"));
+
+	//Set the histogram pointers and call Finish()
+	if (pCommonHist && pCommonHistResults && pLYZHist1[0] && 
+	    pHistProVtheta && pHistProR0theta && pHistQsumforChi ) {
+	  this->SetCommonHists(pCommonHist);
+	  this->SetCommonHistsRes(pCommonHistResults);
+	  this->SetHist1(pLYZHist1);
+	  this->SetHistProVtheta(pHistProVtheta);
+	  this->SetHistProR0theta(pHistProR0theta);
+	  this->SetHistQsumforChi(pHistQsumforChi);
+	} 
+	else { 
+	  cout<<"WARNING: Histograms needed to run Finish() firstrun (SUM) are not accessable!"<<endl; 
+	}
+      }
+      else {
+	pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+	  (outputListHistos->FindObject("AliFlowCommonHistLYZ1PROD"));
+	pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+	  (outputListHistos->FindObject("AliFlowCommonHistResultsLYZ1PROD"));
+	//Get the histograms from the output list
+	for(Int_t theta = 0;theta<iNtheta;theta++){
+	  TString name = "AliFlowLYZHist1_"; 
+	  name += theta;
+	  pLYZHist1[theta] = dynamic_cast<AliFlowLYZHist1*> 
+	    (outputListHistos->FindObject(name));
+	}
+	pHistProVtheta = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("First_FlowPro_Vtheta_LYZPROD"));
+
+	pHistProR0theta = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("First_FlowPro_r0theta_LYZPROD"));
+
+	pHistQsumforChi = dynamic_cast<TH1F*> 
+	  (outputListHistos->FindObject("Flow_QsumforChi_LYZPROD"));
+
+	//Set the histogram pointers and call Finish()
+	if (pCommonHist && pCommonHistResults && pLYZHist1[0] && 
+	    pHistProVtheta && pHistProR0theta && pHistQsumforChi ) {
+	  this->SetCommonHists(pCommonHist);
+	  this->SetCommonHistsRes(pCommonHistResults);
+	  this->SetHist1(pLYZHist1);
+	  this->SetHistProVtheta(pHistProVtheta);
+	  this->SetHistProR0theta(pHistProR0theta);
+	  this->SetHistQsumforChi(pHistQsumforChi);
+	} else { 
+	  cout<<"WARNING: Histograms needed to run Finish() firstrun (PROD) are not accessable!"<<endl; 
+	}
+      }
     }
     else { //second run
       //Get the common histograms from the output list
-      pCommonHist = dynamic_cast<AliFlowCommonHist*> 
-	(outputListHistos->FindObject("AliFlowCommonHistLYZ2"));
-      pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
-	(outputListHistos->FindObject("AliFlowCommonHistResultsLYZ2"));
-    }
+      if (GetUseSum()){
+	pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+	  (outputListHistos->FindObject("AliFlowCommonHistLYZ2SUM"));
+	pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+	  (outputListHistos->FindObject("AliFlowCommonHistResultsLYZ2SUM"));
 
-    TProfile* pHistProR0theta = dynamic_cast<TProfile*> 
-      (outputListHistos->FindObject("First_FlowPro_r0theta_LYZ"));
+	pHistProR0theta = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("First_FlowPro_r0theta_LYZSUM"));
 
-    TH1F* pHistQsumforChi = dynamic_cast<TH1F*> 
-      (outputListHistos->FindObject("Flow_QsumforChi_LYZ"));
+	pHistQsumforChi = dynamic_cast<TH1F*> 
+	  (outputListHistos->FindObject("Flow_QsumforChi_LYZSUM"));
 
-    
-    if (GetFirstRun()) { //for firstrun
-      //Get the histograms from the output list
-      for(Int_t theta = 0;theta<iNtheta;theta++){
-	TString name = "AliFlowLYZHist1_"; 
-	name += theta;
-	pLYZHist1[theta] = dynamic_cast<AliFlowLYZHist1*> 
-	  (outputListHistos->FindObject(name));
+	//Get the histograms from the output list
+	for(Int_t theta = 0;theta<iNtheta;theta++){
+	  TString nameRP = "AliFlowLYZHist2RP_"; 
+	  nameRP += theta;
+	  pLYZHist2RP[theta] = dynamic_cast<AliFlowLYZHist2*> 
+	    (outputListHistos->FindObject(nameRP));
+	  TString namePOI = "AliFlowLYZHist2POI_"; 
+	  namePOI += theta;
+	  pLYZHist2POI[theta] = dynamic_cast<AliFlowLYZHist2*> 
+	    (outputListHistos->FindObject(namePOI));
+	}
+	pHistProReDenom = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_ReDenom_LYZSUM"));
+	pHistProImDenom = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_ImDenom_LYZSUM"));
+	
+	TProfile* pHistProReDtheta = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_ReDtheta_LYZSUM"));
+	TProfile* pHistProImDtheta = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_ImDtheta_LYZSUM"));
+	
+	pHistProVetaRP = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_VetaRP_LYZSUM"));
+	pHistProVetaPOI = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_VetaPOI_LYZSUM"));
+	pHistProVPtRP = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_VPtRP_LYZSUM"));
+	pHistProVPtPOI = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_VPtPOI_LYZSUM"));
+
+
+	//Set the histogram pointers and call Finish()
+	if (pCommonHist && pCommonHistResults && pLYZHist2RP[0] && pLYZHist2POI[0] && 
+	    pHistProR0theta && pHistProReDenom && pHistProImDenom && pHistProReDtheta &&
+	    pHistProImDtheta && pHistProVetaRP && pHistProVetaPOI && pHistProVPtRP && 
+	    pHistProVPtPOI && pHistQsumforChi) {
+	  this->SetCommonHists(pCommonHist);
+	  this->SetCommonHistsRes(pCommonHistResults);
+	  this->SetHist2RP(pLYZHist2RP);
+	  this->SetHist2POI(pLYZHist2POI);
+	  this->SetHistProR0theta(pHistProR0theta);
+	  this->SetHistProReDenom(pHistProReDenom);
+	  this->SetHistProImDenom(pHistProImDenom);
+	  this->SetHistProReDtheta(pHistProReDtheta);
+	  this->SetHistProImDtheta(pHistProImDtheta);
+	  this->SetHistProVetaRP(pHistProVetaRP);
+	  this->SetHistProVetaPOI(pHistProVetaPOI);
+	  this->SetHistProVPtRP(pHistProVPtRP);
+	  this->SetHistProVPtPOI(pHistProVPtPOI);
+	  this->SetHistQsumforChi(pHistQsumforChi);
+	} 
+	else { 
+	  cout<<"WARNING: Histograms needed to run Finish() secondrun (SUM) are not accessable!"<<endl; 
+	}
       }
-      pHistProVtheta = dynamic_cast<TProfile*> 
-	  (outputListHistos->FindObject("First_FlowPro_Vtheta_LYZ"));
-
-      //Set the histogram pointers and call Finish()
-      if (pCommonHist && pCommonHistResults && pLYZHist1[0] && 
-	  pHistProVtheta && pHistProR0theta && pHistQsumforChi ) {
-	this->SetCommonHists(pCommonHist);
-	this->SetCommonHistsRes(pCommonHistResults);
-	this->SetHist1(pLYZHist1);
-	this->SetHistProVtheta(pHistProVtheta);
-	this->SetHistProR0theta(pHistProR0theta);
-	this->SetHistQsumforChi(pHistQsumforChi);
-   } else { 
-	cout<<"WARNING: Histograms needed to run Finish() firstrun are not accessable!"<<endl; 
-      }
-    } else { //for second run
-      //Get the histograms from the output list
-      for(Int_t theta = 0;theta<iNtheta;theta++){
-	TString nameRP = "AliFlowLYZHist2RP_"; 
-	nameRP += theta;
-	pLYZHist2RP[theta] = dynamic_cast<AliFlowLYZHist2*> 
-	  (outputListHistos->FindObject(nameRP));
-	TString namePOI = "AliFlowLYZHist2POI_"; 
-	namePOI += theta;
-	pLYZHist2POI[theta] = dynamic_cast<AliFlowLYZHist2*> 
-	  (outputListHistos->FindObject(namePOI));
-
-      }
+      else {
+	pCommonHist = dynamic_cast<AliFlowCommonHist*> 
+	  (outputListHistos->FindObject("AliFlowCommonHistLYZ2PROD"));
+	pCommonHistResults = dynamic_cast<AliFlowCommonHistResults*> 
+	  (outputListHistos->FindObject("AliFlowCommonHistResultsLYZ2PROD"));
       
-      pHistProReDenom = dynamic_cast<TProfile*> 
-	(outputListHistos->FindObject("Second_FlowPro_ReDenom_LYZ"));
-      pHistProImDenom = dynamic_cast<TProfile*> 
-	(outputListHistos->FindObject("Second_FlowPro_ImDenom_LYZ"));
 
-      pHistProReDtheta = dynamic_cast<TProfile*> 
-	(outputListHistos->FindObject("Second_FlowPro_ReDtheta_LYZ"));
-      pHistProImDtheta = dynamic_cast<TProfile*> 
-	(outputListHistos->FindObject("Second_FlowPro_ImDtheta_LYZ"));
+	pHistProR0theta = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("First_FlowPro_r0theta_LYZPROD"));
 
-      pHistProVetaRP = dynamic_cast<TProfile*> 
-	(outputListHistos->FindObject("Second_FlowPro_VetaRP_LYZ"));
-      pHistProVetaPOI = dynamic_cast<TProfile*> 
-	(outputListHistos->FindObject("Second_FlowPro_VetaPOI_LYZ"));
-      pHistProVPtRP = dynamic_cast<TProfile*> 
-	(outputListHistos->FindObject("Second_FlowPro_VPtRP_LYZ"));
-      pHistProVPtPOI = dynamic_cast<TProfile*> 
-	(outputListHistos->FindObject("Second_FlowPro_VPtPOI_LYZ"));
+	pHistQsumforChi = dynamic_cast<TH1F*> 
+	  (outputListHistos->FindObject("Flow_QsumforChi_LYZPROD"));
 
+	//Get the histograms from the output list
+	for(Int_t theta = 0;theta<iNtheta;theta++){
+	  TString nameRP = "AliFlowLYZHist2RP_"; 
+	  nameRP += theta;
+	  pLYZHist2RP[theta] = dynamic_cast<AliFlowLYZHist2*> 
+	    (outputListHistos->FindObject(nameRP));
+	  TString namePOI = "AliFlowLYZHist2POI_"; 
+	  namePOI += theta;
+	  pLYZHist2POI[theta] = dynamic_cast<AliFlowLYZHist2*> 
+	    (outputListHistos->FindObject(namePOI));
+	}
+	pHistProReDenom = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_ReDenom_LYZPROD"));
+	pHistProImDenom = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_ImDenom_LYZPROD"));
+	
+	pHistProVetaRP = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_VetaRP_LYZPROD"));
+	pHistProVetaPOI = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_VetaPOI_LYZPROD"));
+	pHistProVPtRP = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_VPtRP_LYZPROD"));
+	pHistProVPtPOI = dynamic_cast<TProfile*> 
+	  (outputListHistos->FindObject("Second_FlowPro_VPtPOI_LYZPROD"));
 
-      //Set the histogram pointers and call Finish()
-      if (pCommonHist && pCommonHistResults && pLYZHist2RP[0] && pLYZHist2POI[0] && 
-	  pHistProR0theta && pHistProReDenom && pHistProImDenom && pHistProVetaRP && 
-	  pHistProVetaPOI && pHistProVPtRP && pHistProVPtPOI) {
-	this->SetCommonHists(pCommonHist);
-	this->SetCommonHistsRes(pCommonHistResults);
-	this->SetHist2RP(pLYZHist2RP);
-	this->SetHist2POI(pLYZHist2POI);
-	this->SetHistProR0theta(pHistProR0theta);
-	this->SetHistProReDenom(pHistProReDenom);
-	this->SetHistProImDenom(pHistProImDenom);
-	this->SetHistProReDtheta(pHistProReDtheta);
-	this->SetHistProImDtheta(pHistProImDtheta);
-	this->SetHistProVetaRP(pHistProVetaRP);
-	this->SetHistProVetaPOI(pHistProVetaPOI);
-	this->SetHistProVPtRP(pHistProVPtRP);
-	this->SetHistProVPtPOI(pHistProVPtPOI);
-	this->SetHistQsumforChi(pHistQsumforChi);
-	} else { 
-	cout<<"WARNING: Histograms needed to run Finish() secondrun are not accessable!"<<endl; 
+	//Set the histogram pointers and call Finish()
+	if (pCommonHist && pCommonHistResults && pLYZHist2RP[0] && pLYZHist2POI[0] && 
+	    pHistProR0theta && pHistProReDenom && pHistProImDenom && pHistProVetaRP && 
+	    pHistProVetaPOI && pHistProVPtRP && pHistProVPtPOI && pHistQsumforChi) {
+	  this->SetCommonHists(pCommonHist);
+	  this->SetCommonHistsRes(pCommonHistResults);
+	  this->SetHist2RP(pLYZHist2RP);
+	  this->SetHist2POI(pLYZHist2POI);
+	  this->SetHistProR0theta(pHistProR0theta);
+	  this->SetHistProReDenom(pHistProReDenom);
+	  this->SetHistProImDenom(pHistProImDenom);
+	  this->SetHistProVetaRP(pHistProVetaRP);
+	  this->SetHistProVetaPOI(pHistProVetaPOI);
+	  this->SetHistProVPtRP(pHistProVPtRP);
+	  this->SetHistProVPtPOI(pHistProVPtPOI);
+	  this->SetHistQsumforChi(pHistQsumforChi);
+	} 
+	else { 
+	  cout<<"WARNING: Histograms needed to run Finish() secondrun (PROD) are not accessable!"<<endl; 
+	}
       }
-    }
-          
-    //    outputListHistos->Print(); 
-  } else { cout << "histogram list pointer is empty in method AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms() " << endl;}
-  
+    } //secondrun
+    //outputListHistos->Print(); 
+  } //listhistos
+  else { 
+    cout << "histogram list pointer is empty in method AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms() " << endl;}
 }
+
   //-----------------------------------------------------------------------     
  Bool_t AliFlowAnalysisWithLeeYangZeros::Finish() 
 {
