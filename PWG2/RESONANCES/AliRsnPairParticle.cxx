@@ -13,7 +13,7 @@
 #include <TParticle.h>
 
 #include "AliLog.h"
-
+#include "AliRsnDaughter.h"
 #include "AliRsnPairParticle.h"
 
 ClassImp(AliRsnPairParticle)
