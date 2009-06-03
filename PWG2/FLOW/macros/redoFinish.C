@@ -190,7 +190,7 @@ void redoFinish(TString type="", Int_t mode=mLocal)
  {
   AliFittingQDistribution* fqd = new AliFittingQDistribution();
   fqd->GetOutputHistograms(mergedListFQD);
-  fqd->Finish();
+  fqd->Finish(kTRUE);
   // save the final results for FQD in final output file: 
   TString finalOutputFileNameFQD("outputFQDanalysis");
   (finalOutputFileNameFQD+=(type.Data()))+=(".root");
