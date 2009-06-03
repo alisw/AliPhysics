@@ -58,7 +58,7 @@ ClassImp(AliEMCALQADataMakerRec)
 
 //____________________________________________________________________________ 
 AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qadm) :
-  AliQADataMakerRec()
+  AliQADataMakerRec(), fSuperModules()
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
