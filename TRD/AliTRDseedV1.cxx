@@ -472,10 +472,22 @@ Float_t AliTRDseedV1::GetdQdl(Int_t ic, Float_t *dl) const
   if(fClusters[ic+kNtb]) dq += TMath::Abs(fClusters[ic+kNtb]->GetQ());
   if(dq<1.e-3) return 0.;
 
-  Double_t dx = 0.;
-  if((ic-1>=0 && fClusters[ic-1]) &&
-     (ic+1<kNtb && fClusters[ic+1])) dx = .5*(fClusters[ic+1]->GetX() - fClusters[ic-1]->GetX());
-  else dx = fdX;
+  Double_t dx = fdX;
+  if(ic-1>=0 && ic+1<kNtb){
+    Float_t x2(0.), x1(0.);
+    // try to estimate upper radial position
+    if(fClusters[ic-1]) x2 = fClusters[ic-1]->GetX(); 
+    else if(fClusters[ic-1+kNtb]) x2 = fClusters[ic-1+kNtb]->GetX(); 
+    else if(fClusters[ic]) x2 = fClusters[ic]->GetX()+fdX;
+    else x2 = fClusters[ic+kNtb]->GetX()+fdX;
+    // try to estimate lower radial position
+    if(fClusters[ic+1]) x1 = fClusters[ic+1]->GetX();
+    else if(fClusters[ic+1+kNtb]) x1 = fClusters[ic+1+kNtb]->GetX();
+    else if(fClusters[ic]) x1 = fClusters[ic]->GetX()-fdX;
+    else x1 = fClusters[ic+kNtb]->GetX()-fdX;
+
+    dx = .5*(x2 - x1);
+  }
   dx *= TMath::Sqrt(1. + fYfit[1]*fYfit[1] + fZref[1]*fZref[1]);
 
   if(dl) (*dl) = dx;
@@ -837,7 +849,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
   }
   // Initialize reco params for this tracklet
   // 1. first time bin in the drift region
-  Int_t t0 = 4;
+  Int_t t0 = 14;
   Int_t kClmin = Int_t(fReconstructor->GetRecoParam() ->GetFindableClusters()*AliTRDtrackerV1::GetNTimeBins());
 
   Double_t syRef  = TMath::Sqrt(fRefCov[0]);
@@ -987,13 +999,13 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
   Calibrate();
 
   // calculate dx for time bins in the drift region (calibration aware)
-  Int_t irp = 0; Float_t x[2] = {0.,0.}; Int_t tb[2]={0,0};
-  for (Int_t it = t0; it < AliTRDtrackerV1::GetNTimeBins(); it++) {
+  Float_t x[2] = {0.,0.}; Int_t tb[2]={0,0};
+  for (Int_t it = t0, irp=0; irp<2 && it < AliTRDtrackerV1::GetNTimeBins(); it++) {
     if(!fClusters[it]) continue;
     x[irp]  = fClusters[it]->GetX();
-    tb[irp] = it;
+    tb[irp] = fClusters[it]->GetLocalTimeBin();
+    printf("  x[%d]=%f t[%d]=%d\n", irp, x[irp], irp, tb[irp]);
     irp++;
-    if(irp==2) break;
   }  
   Int_t dtb = tb[1] - tb[0];
   fdX = dtb ? (x[0] - x[1]) / dtb : 0.15;
