@@ -13,11 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  Checks the quality assurance. 
-  By comparing with reference data
-  S.Radomski Uni-Heidelberg October 2007
-*/
+/* $Id$ */
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Checks the quality assurance.                                         //
+//  By comparing with reference data                                      //
+//  S.Radomski Uni-Heidelberg October 2007                                //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
 #include <TClass.h>
@@ -38,3 +42,32 @@
 ClassImp(AliTRDQAChecker)
 
 //__________________________________________________________________
+
+Double_t * AliTRDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list) 
+{
+
+  // Super-basic check on the QA histograms on the input list: 
+
+  Double_t * test  = new Double_t[AliRecoParam::kNSpecies];
+  for(Int_t i=0; i<AliRecoParam::kNSpecies; i++) test[i] = 0.5; 
+
+  //Int_t count[AliRecoParam::kNSpecies] = { 0 }; 
+
+  if (index != AliQAv1::kRECPOINTS) return test;
+
+  const Double_t lowAmp = 30;
+  const Double_t highAmp = 50;
+
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    
+    TH1D *hist = (TH1D*) list[specie]->At(12);
+    if (!hist) continue;
+    
+    Double_t value = hist->Integral(hist->FindBin(lowAmp), hist->FindBin(highAmp));
+    test[specie] = value / hist->GetSum();
+
+  }
+  return test ; 
+}  
+
+//____________________________________________________________________________

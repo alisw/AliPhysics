@@ -3,14 +3,15 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//////////////////////////////////////////////////////
-//
-//  Checks the quality assurance. 
-//  By comparing with reference data
-//  S. Radomski Uni-Heidelberg October 2007
-//
-///////////////////////////////////////////////////////
+/* $Id$ */
 
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Checks the quality assurance.                                         //
+//  By comparing with reference data                                      //
+//  S.Radomski Uni-Heidelberg October 2007                                //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
 class TFile ; 
@@ -35,7 +36,7 @@ public:
 
   virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/) {return NULL;}
   virtual Double_t * Check(TList * /*list*/) {return NULL;}
-  virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** /*list*/) {return NULL;}
+  virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** /*list*/);
   virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/, TNtupleD** /*nt*/)     {return NULL;}
 
 private:
