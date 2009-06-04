@@ -221,12 +221,17 @@ void AliCumulantsFunctions::Calculate()
  }
  
  //<w^2>
- Double_t dAvw2 = fAverageOfSquaredWeight->GetBinContent(1); // <w^2>
- if(dAvw2 ==0) 
- {
-  cout<<" WARNING: Average squared weight is 0."<<endl;
-  exit(0);
- } 
+ Double_t dAvw2 = 1.;
+ if(nEvents>0)
+ { 
+  dAvw2 = fAverageOfSquaredWeight->GetBinContent(1); 
+  if(dAvw2 == 0) 
+  {
+   cout<<endl;
+   cout<<"WARNING: Average squared weight is 0 in GFC. Most probably one of the histograms in <weights.root> is empty. Nothing will be calculated !!!!"<<endl;
+   cout<<endl;
+  }
+ }  
  
  //<G[p][q]>
  Double_t dAvG[fgkPmax][fgkQmax]={{0.}}; 
@@ -336,7 +341,7 @@ void AliCumulantsFunctions::Calculate()
  Double_t chiQ[4]={0.};
                             
  //v_2{2}
- if(nEvents>0 && dAvM>0 && dAvw2 && cumulant[0]>=0.)
+ if(nEvents>0 && dAvM>0 && dAvw2>0 && cumulant[0]>=0.)
  { 
   if((dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(cumulant[0],(1./2.))*(dAvM/dAvw2),2.)>0.))       
   {
@@ -367,7 +372,7 @@ void AliCumulantsFunctions::Calculate()
  }
    
  //v_2{4}   
- if(nEvents>0 && dAvM>0 && dAvw2 && cumulant[1]<=0.)
+ if(nEvents>0 && dAvM>0 && dAvw2>0 && cumulant[1]<=0.)
  {
   if((dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(-cumulant[1],(1./4.))*(dAvM/dAvw2),2.)>0.))
   {
@@ -398,7 +403,7 @@ void AliCumulantsFunctions::Calculate()
  } 
   
  //v_2{6}
- if(nEvents>0 && dAvM>0 && dAvw2 && cumulant[2]>=0.)
+ if(nEvents>0 && dAvM>0 && dAvw2>0 && cumulant[2]>=0.)
  {
   if((dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow((1./4.)*cumulant[2],(1./6.))*(dAvM/dAvw2),2.)>0.))
   {
@@ -430,7 +435,7 @@ void AliCumulantsFunctions::Calculate()
  }
   
  //v_2{8}
- if(nEvents>0 && dAvM>0 && dAvw2 && cumulant[3]<=0.)
+ if(nEvents>0 && dAvM>0 && dAvw2>0 && cumulant[3]<=0.)
  { 
   if((dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(-(1./33.)*cumulant[3],(1./8.))*(dAvM/dAvw2),2.)>0.))
   { 
