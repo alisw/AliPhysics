@@ -67,6 +67,10 @@ const AliHLTComponentDataType kAliHLTDataTypeRunType = AliHLTComponentDataTypeIn
 const char kAliHLTEventDataTypeIDstring[8] = kAliHLTEventDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeEvent = AliHLTComponentDataTypeInitializer(kAliHLTEventDataTypeIDstring, kAliHLTDataOriginPrivate);
 
+/** ECS parameter string */
+const char kAliHLTECSParamDataTypeIDstring[8] = kAliHLTECSParamDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeECSParam = AliHLTComponentDataTypeInitializer(kAliHLTECSParamDataTypeIDstring, kAliHLTDataOriginPrivate);
+
 /** Configuration event data type */
 const char kAliHLTComConfDataTypeIDstring[8] = kAliHLTComConfDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeComConf = AliHLTComponentDataTypeInitializer(kAliHLTComConfDataTypeIDstring, kAliHLTDataOriginPrivate);
@@ -78,6 +82,10 @@ const AliHLTComponentDataType kAliHLTDataTypeUpdtDCS = AliHLTComponentDataTypeIn
 /** RAW DDL data specification, data publisher will set type id and origin correctly */
 const char kAliHLTDDLRawDataTypeIDstring[8] = kAliHLTDDLRawDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeDDLRaw = AliHLTComponentDataTypeInitializer(kAliHLTDDLRawDataTypeIDstring, kAliHLTDataOriginAny);
+
+/** CLUSTERS data type */
+const char kAliHLTClustersDataTypeIDstring[8] = kAliHLTClustersDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeClusters = AliHLTComponentDataTypeInitializer(kAliHLTClustersDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** MC data specification */
 const char kAliHLTMCObjectDataTypeIDstring[8] = kAliHLTMCObjectDataTypeID;

@@ -51,8 +51,11 @@
  *           kAliHLTDataOriginHLT added
  *  11       extended AliHLTComponentStatistics: one more member to store the
  *           cycle time between events per component.
+ *  12       added common data type id 'CLUSTERS'
+ *           added data type 'ECSPARAM' for the full ECS parameter string to
+ *           be sebt during SOR
  */
-#define ALIHLT_DATA_TYPES_VERSION 11
+#define ALIHLT_DATA_TYPES_VERSION 12
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -194,6 +197,13 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTDDLRawDataTypeID   {'D','D','L','_','R','A','W',' '}
 
+/** CLUSTERS data
+ * Common data type for the output of cluster finders, the exact
+ * format depends on the origin (detector)
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTClustersDataTypeID {'C','L','U','S','T','E','R','S'}
+
 /** calibration data for file exchange subscriber 
  * @ingroup alihlt_component_datatypes
  */
@@ -228,6 +238,13 @@ const int kAliHLTComponentDataTypefIDsize=8;
  * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTEventDataTypeID    {'E','V','E','N','T','T','Y','P'}
+
+/** ECS parameter event 
+ * - sent during the SOR event by the framework
+ * - contains the full ECS parameter string
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTECSParamDataTypeID {'E','C','S','P','A','R','A','M'}
 
 /** ComponentConfiguration event
  * - payload contains the CDB path as string
@@ -780,6 +797,13 @@ extern "C" {
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeDDL;
 
+  /** CLUSTERS data
+   * Common data type for the output of cluster finders, the exact
+   * format depends on the origin (detector)
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeClusters;
+
   /** SOR data type 
    * @ingroup alihlt_component_datatypes
    */
@@ -799,6 +823,13 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeEvent;
+
+  /** ECS parameter event 
+   * - sent during the SOR event by the framework
+   * - contains the full ECS parameter string
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeECSParam; // {ECSPARAM:PRIV}
 
   /** Configuration event data type 
    * @ingroup alihlt_component_datatypes
