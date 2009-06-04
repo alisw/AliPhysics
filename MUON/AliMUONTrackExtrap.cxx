@@ -383,11 +383,6 @@ void AliMUONTrackExtrap::AddMCSEffectInAbsorber(AliMUONTrackParam* param, Double
   Double_t covCorrSlope = alpha2 * (pathLength * f0 - f1);
   Double_t varSlop = alpha2 * f0;
   
-  // compute derivative d(q/Pxy) / dSlopeX and d(q/Pxy) / dSlopeX
-  Double_t dqPxydSlopeX = inverseBendingMomentum * nonBendingSlope / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
-  Double_t dqPxydSlopeY = - inverseBendingMomentum * nonBendingSlope*nonBendingSlope * bendingSlope /
-                            (1. + bendingSlope*bendingSlope) / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
-  
   // Set MCS covariance matrix
   TMatrixD newParamCov(param->GetCovariances());
   // Non bending plane
@@ -396,12 +391,20 @@ void AliMUONTrackExtrap::AddMCSEffectInAbsorber(AliMUONTrackParam* param, Double
   // Bending plane
   newParamCov(2,2) += varCoor;       newParamCov(2,3) += covCorrSlope;
   newParamCov(3,2) += covCorrSlope;  newParamCov(3,3) += varSlop;
-  // Inverse bending momentum (due to dependences with bending and non bending slopes)
-  newParamCov(4,0) += dqPxydSlopeX * covCorrSlope; newParamCov(0,4) += dqPxydSlopeX * covCorrSlope;
-  newParamCov(4,1) += dqPxydSlopeX * varSlop;      newParamCov(1,4) += dqPxydSlopeX * varSlop;
-  newParamCov(4,2) += dqPxydSlopeY * covCorrSlope; newParamCov(2,4) += dqPxydSlopeY * covCorrSlope;
-  newParamCov(4,3) += dqPxydSlopeY * varSlop;      newParamCov(3,4) += dqPxydSlopeY * varSlop;
-  newParamCov(4,4) += (dqPxydSlopeX*dqPxydSlopeX + dqPxydSlopeY*dqPxydSlopeY) * varSlop;
+  
+  // Set momentum related covariances if B!=0
+  if (fgFieldON) {
+    // compute derivative d(q/Pxy) / dSlopeX and d(q/Pxy) / dSlopeY
+    Double_t dqPxydSlopeX = inverseBendingMomentum * nonBendingSlope / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
+    Double_t dqPxydSlopeY = - inverseBendingMomentum * nonBendingSlope*nonBendingSlope * bendingSlope /
+                              (1. + bendingSlope*bendingSlope) / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
+    // Inverse bending momentum (due to dependences with bending and non bending slopes)
+    newParamCov(4,0) += dqPxydSlopeX * covCorrSlope; newParamCov(0,4) += dqPxydSlopeX * covCorrSlope;
+    newParamCov(4,1) += dqPxydSlopeX * varSlop;      newParamCov(1,4) += dqPxydSlopeX * varSlop;
+    newParamCov(4,2) += dqPxydSlopeY * covCorrSlope; newParamCov(2,4) += dqPxydSlopeY * covCorrSlope;
+    newParamCov(4,3) += dqPxydSlopeY * varSlop;      newParamCov(3,4) += dqPxydSlopeY * varSlop;
+    newParamCov(4,4) += (dqPxydSlopeX*dqPxydSlopeX + dqPxydSlopeY*dqPxydSlopeY) * varSlop;
+  }
   
   // Set new covariances
   param->SetCovariances(newParamCov);
@@ -665,11 +668,6 @@ void AliMUONTrackExtrap::AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Dou
   Double_t varSlop 	= theta02;
   Double_t covCorrSlope = pathLength * theta02 / 2.;
   
-  // compute derivative d(q/Pxy) / dSlopeX and d(q/Pxy) / dSlopeY
-  Double_t dqPxydSlopeX = inverseBendingMomentum * nonBendingSlope / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
-  Double_t dqPxydSlopeY = - inverseBendingMomentum * nonBendingSlope*nonBendingSlope * bendingSlope /
-			    (1. + bendingSlope*bendingSlope) / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
-  
   // Set MCS covariance matrix
   TMatrixD newParamCov(param->GetCovariances());
   // Non bending plane
@@ -678,12 +676,20 @@ void AliMUONTrackExtrap::AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Dou
   // Bending plane
   newParamCov(2,2) += varCoor;       newParamCov(2,3) += covCorrSlope;
   newParamCov(3,2) += covCorrSlope;  newParamCov(3,3) += varSlop;
-  // Inverse bending momentum (due to dependences with bending and non bending slopes)
-  newParamCov(4,0) += dqPxydSlopeX * covCorrSlope; newParamCov(0,4) += dqPxydSlopeX * covCorrSlope;
-  newParamCov(4,1) += dqPxydSlopeX * varSlop;      newParamCov(1,4) += dqPxydSlopeX * varSlop;
-  newParamCov(4,2) += dqPxydSlopeY * covCorrSlope; newParamCov(2,4) += dqPxydSlopeY * covCorrSlope;
-  newParamCov(4,3) += dqPxydSlopeY * varSlop;      newParamCov(3,4) += dqPxydSlopeY * varSlop;
-  newParamCov(4,4) += (dqPxydSlopeX*dqPxydSlopeX + dqPxydSlopeY*dqPxydSlopeY) * varSlop;
+  
+  // Set momentum related covariances if B!=0
+  if (fgFieldON) {
+    // compute derivative d(q/Pxy) / dSlopeX and d(q/Pxy) / dSlopeY
+    Double_t dqPxydSlopeX = inverseBendingMomentum * nonBendingSlope / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
+    Double_t dqPxydSlopeY = - inverseBendingMomentum * nonBendingSlope*nonBendingSlope * bendingSlope /
+                              (1. + bendingSlope*bendingSlope) / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
+    // Inverse bending momentum (due to dependences with bending and non bending slopes)
+    newParamCov(4,0) += dqPxydSlopeX * covCorrSlope; newParamCov(0,4) += dqPxydSlopeX * covCorrSlope;
+    newParamCov(4,1) += dqPxydSlopeX * varSlop;      newParamCov(1,4) += dqPxydSlopeX * varSlop;
+    newParamCov(4,2) += dqPxydSlopeY * covCorrSlope; newParamCov(2,4) += dqPxydSlopeY * covCorrSlope;
+    newParamCov(4,3) += dqPxydSlopeY * varSlop;      newParamCov(3,4) += dqPxydSlopeY * varSlop;
+    newParamCov(4,4) += (dqPxydSlopeX*dqPxydSlopeX + dqPxydSlopeY*dqPxydSlopeY) * varSlop;
+  }
   
   // Set new covariances
   param->SetCovariances(newParamCov);
