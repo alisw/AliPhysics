@@ -64,6 +64,19 @@ Int_t  AliTPCTransformation::BuildBasicFormulas(){
   //
   RegisterFormula("TPCscalingZDr",(GenFuncG)(AliTPCTransformation::TPCscalingZDr));
   RegisterFormula("TPCscalingPhiLocal",(GenFuncG)(AliTPCTransformation::TPCscalingPhiLocal));
+  //
+  // TPC Local X and Y misalignment 
+  //
+  RegisterFormula("TPClocaldLxdGX",(GenFuncG)(AliTPCTransformation::TPClocaldLxdGX));
+  RegisterFormula("TPClocaldLxdGY",(GenFuncG)(AliTPCTransformation::TPClocaldLxdGY));
+  RegisterFormula("TPClocaldLydGX",(GenFuncG)(AliTPCTransformation::TPClocaldLydGX));
+  RegisterFormula("TPClocaldLydGY",(GenFuncG)(AliTPCTransformation::TPClocaldLydGY));
+  //
+  // Z offset
+  //
+  RegisterFormula("TPCDeltaZ",(GenFuncG)(AliTPCTransformation::TPCDeltaZ));
+  RegisterFormula("TPCDeltaZMediumLong",(GenFuncG)(AliTPCTransformation::TPCDeltaZMediumLong));
+  RegisterFormula("TPCTiltingZ",(GenFuncG)(AliTPCTransformation::TPCTiltingZ));
   return 0;
 }
 
@@ -103,6 +116,7 @@ AliTPCTransformation::AliTPCTransformation():
   fSigma(0),          // uncertainty of the parameter
   fSigma2Time(0),     // change of the error in time - (For kalman filter) 
   fFixedParam(0),     // fixed parameters of tranformation  
+  fIsActive(kTRUE),   // swith - On/Off
   //
   fInit(kFALSE),      // initialization flag - set to kTRUE if corresponding formulas found
   fFormulaX(0),       // x formula - pointer to the function
@@ -128,6 +142,7 @@ AliTPCTransformation::AliTPCTransformation(const char *name, TBits *mask, const 
   fSigma(0),
   fSigma2Time(0),     // change of sigma in time
   fFixedParam(0),     // fixed parameters of tranformation  
+  fIsActive(kTRUE),   // swith - On/Off
   //
   fInit(kFALSE),      // initialization flag - set to kTRUE if corresponding formulas found
   fFormulaX(0),       // x formula - pointer to the function
@@ -210,6 +225,8 @@ Bool_t AliTPCTransformation::Init(){
   return isOK;
 }
 
+
+
 TBits * AliTPCTransformation::BitsSide(Bool_t aside){
   //
   TBits * bits = new TBits(72);
@@ -237,13 +254,14 @@ Double_t AliTPCTransformation::GetDeltaXYZ(Int_t coord, Int_t volID, Double_t pa
   //
   //
   //
+  if (!fIsActive) return 0;
   if (fBitMask && (!(*fBitMask)[volID])) return 0;
-  Double_t xyz[4]={x,y,z, param};
+  Double_t xyz[5]={x,y,z, param,volID};
   if (fCoordSystem==0){
     // cartezian system
     if (coord==0 && fFormulaX) return fFormulaX(xyz,fFixedParam->GetMatrixArray()); 
     if (coord==1 && fFormulaY) return fFormulaY(xyz,fFixedParam->GetMatrixArray()); 
-    if (coord==2 && fFormulaY) return fFormulaY(xyz,fFixedParam->GetMatrixArray());
+    if (coord==2 && fFormulaZ) return fFormulaZ(xyz,fFixedParam->GetMatrixArray());
   }
   if (fCoordSystem==1){  
     // cylindrical system
@@ -339,3 +357,113 @@ Double_t       AliTPCTransformation::TPCscalingROFC(Double_t *xyz, Double_t * pa
   Double_t value   = TMath::Power(driftM,param[0])/ndistR;
   return xyz[3]*value;
 }
+
+
+//
+// TPC sector local misalignment 
+//
+Double_t AliTPCTransformation:: TPClocaldLxdGX(Double_t *xyz, Double_t * /*param*/){
+  //
+  // xyz - [0..2] - position 
+  //       [3]    - scale parameter
+  //       [4]    - volID
+  // return delta in global coordiante system
+  //
+  Int_t    sector = TMath::Nint(xyz[4]);
+  Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
+  Double_t ca     = TMath::Cos(alpha);
+  //  Double_t sa     = TMath::Sin(alpha);
+  return ca*xyz[3];    
+}
+
+Double_t AliTPCTransformation::TPClocaldLxdGY(Double_t *xyz, Double_t * /*param*/){
+  //
+  // xyz - [0..2] - position 
+  //       [3]    - scale parameter
+  //       [4]    - volID
+  // return delta in global coordiante system
+  //
+  Int_t    sector = TMath::Nint(xyz[4]);
+  Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
+  //Double_t ca     = TMath::Cos(alpha);
+  Double_t sa     = TMath::Sin(alpha);
+  return   sa*xyz[3];  
+}
+
+Double_t AliTPCTransformation:: TPClocaldLydGX(Double_t *xyz, Double_t * /*param*/){
+  //
+  // xyz - [0..2] - position 
+  //       [3]    - scale parameter
+  //       [4]    - volID
+  // return delta in global coordiante system
+  //
+  Int_t    sector = TMath::Nint(xyz[4]);
+  Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
+  //Double_t ca     = TMath::Cos(alpha);
+  Double_t sa     = TMath::Sin(alpha);
+  return            -sa*xyz[3];  
+}
+
+Double_t AliTPCTransformation::TPClocaldLydGY(Double_t *xyz, Double_t * /*param*/){
+  //
+  // xyz - [0..2] - position 
+  //       [3]    - scale parameter
+  //       [4]    - volID
+  // return delta in global coordiante system
+  //
+  Int_t    sector = TMath::Nint(xyz[4]);
+  Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
+  Double_t ca     = TMath::Cos(alpha);
+  //Double_t sa     = TMath::Sin(alpha);
+  return   ca*xyz[3];  
+}
+
+
+Double_t        AliTPCTransformation::TPCDeltaZ(Double_t *xyz, Double_t * /*param*/){
+  //
+  // xyz - [0..2] - position 
+  //        [3]    - scale parameter
+  //        [4]    - volID
+  // return delta in global coordiante system
+  //
+  Int_t    sector = TMath::Nint(xyz[4]);
+  Double_t signZ  = (sector%36<18) ? 1: -1;  // drift direction
+  return signZ*xyz[3];     // IROC shift
+}
+
+Double_t        AliTPCTransformation::TPCDeltaZMediumLong(Double_t *xyz, Double_t * /*param*/){
+  //
+  // xyz - [0..2] - position 
+  //        [3]    - scale parameter
+  //        [4]    - volID
+  // return delta in global coordinate system 
+  //
+  Int_t    sector = TMath::Nint(xyz[4]);
+  Double_t signZ  = (sector%36<18) ? 1: -1;  // drift direction
+  if    (sector<36) return 0;     
+  //
+  Double_t radius  = (TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1])); 
+  const Double_t radiusLong = 198.1;
+  Double_t sign   = (radius<radiusLong) ? 1:-1;
+  return xyz[3]*sign*signZ;
+}
+
+Double_t       AliTPCTransformation::TPCTiltingZ(Double_t *xyz, Double_t * param){
+  // xyz - [0..2] - position 
+  //        [3]    - scale parameter
+  //        [4]    - volID
+  // param[0]      - n for cos
+  // param[1]      - n for sin
+  // return delta in global coordinate system 
+  Double_t radius = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+  const Double_t rFirst=85.2; 
+  const Double_t rLast =245.8;
+  Double_t radiusC  = (rFirst+rLast)*0.5;
+  Double_t deltaR = 2.0*(radius-radiusC)/(rLast-rFirst);
+  Double_t alpha       = TMath::ATan2(xyz[1],xyz[0]);
+  
+  if (param[0]>0) deltaR *= TMath::Cos(param[0]*alpha);
+  if (param[1]>0) deltaR *= TMath::Sin(param[1]*alpha);
+  return deltaR*xyz[3];
+}
+

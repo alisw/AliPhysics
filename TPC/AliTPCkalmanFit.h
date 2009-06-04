@@ -20,8 +20,12 @@ public:
   AliTPCkalmanFit();
   void Init();
   void InitTransformation();
+  void Add(const AliTPCkalmanFit * kalman);
+
   void  AddCalibration(AliTPCTransformation * calib);
-  AliTPCTransformation * GetTransformation(Int_t i){return (fCalibration)? (AliTPCTransformation *)fCalibration->At(i):0;}
+  AliTPCTransformation * GetTransformation(Int_t i){return (fCalibration)? (AliTPCTransformation *)fCalibration->At(i):0;}  
+  //
+  void SetStatus(const char * name, Bool_t setOn, Bool_t isOr=kTRUE);
   //
   void FitTrackLinear(AliTrackPointArray& points, Int_t step=1,  TTreeSRedirector *debug=0);
   void DumpTrackLinear(AliTrackPointArray& points, TTreeSRedirector *debug);
@@ -29,12 +33,14 @@ public:
 
   void Propagate(TTreeSRedirector *debug=0);
   void PropagateTime(Int_t time);
+  void Update(const AliTPCkalmanFit * kalman);
 
   static AliTrackPointArray * MakePointArrayLinear(Double_t alpha, Double_t y0, Double_t z0, Double_t ky, Double_t kz, Double_t err=0.02); 
   void  ApplyCalibration(AliTrackPointArray *array, Double_t csign);
   Bool_t  CheckCovariance(TMatrixD &covar, Float_t maxEl);
-  Bool_t DumpCorelation(Double_t threshold);
-  Bool_t DumpCalib();
+  
+  Bool_t DumpCorelation(Double_t threshold, const char *mask=0);
+  Bool_t DumpCalib(const char *mask=0);
   //
   Double_t GetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z);
   static Double_t SGetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z);

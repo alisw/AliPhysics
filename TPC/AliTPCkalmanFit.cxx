@@ -32,7 +32,7 @@
   e.g:
   kalmanFit0->SetInstance(kalmanFit0);   // 
   kalmanFit0->InitTransformation();      //
-  TF2 fxRZdz("fxRZdz","AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,x,0,y)-AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,x,0,y-1)",85,245,-250,250);
+  TF2 fxRZdz("fxRZdz","sign(y)*1000*(AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,x,0,y)-AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,x,0,y-1))",85,245,-250,250);
   fxRZdz->Draw("");
 
 
@@ -92,6 +92,23 @@ void AliTPCkalmanFit::InitTransformation(){
     transform->Init();
   }
 }
+
+void AliTPCkalmanFit::Add(const AliTPCkalmanFit * kalman){
+  //
+  //
+  //
+  Update(kalman);
+  for (Int_t i=0;i<8;i++){
+    if (fLinearTrackDelta[i] && kalman->fLinearTrackDelta[i]){
+      fLinearTrackDelta[i]->Add(kalman->fLinearTrackDelta[i]);
+    }
+    if (fLinearTrackPull[i] && kalman->fLinearTrackPull[i]){
+      fLinearTrackPull[i]->Add(kalman->fLinearTrackPull[i]);
+    }
+  }
+  
+}
+
 
 void AliTPCkalmanFit::Init(){
   //
@@ -163,6 +180,69 @@ void AliTPCkalmanFit::Init(){
 
   
 }
+
+void AliTPCkalmanFit::SetStatus(const char * mask, Bool_t setOn, Bool_t isOr){
+  //
+  // 0. To activate all transforamtion call SetStatus(0,kTRUE)
+  // 1. To disable everything               SetStatus(0,kFALSE)
+  // 2. To activate/desactivate             SetStatus("xxx",kTRUE/kFALSE,kFALSE)
+  Int_t ncalibs = fCalibration->GetEntries();
+  if (mask==0) {
+    for (Int_t i=0; i<ncalibs;i++){
+      AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(i);
+      transform->SetActive(setOn); 
+    }
+  }
+  else{
+    for (Int_t i=0; i<ncalibs;i++){
+      AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(i);
+      TString  strName(transform->GetName());
+      if (strName.Contains(mask)){
+	if (!isOr) transform->SetActive( transform->IsActive() && setOn); 
+	if (isOr)  transform->SetActive( transform->IsActive() || setOn); 
+      }
+    }
+  }
+}
+
+
+void AliTPCkalmanFit::Update(const AliTPCkalmanFit * kalman){
+  //
+  // Update Kalman filter
+  //
+  Int_t ncalibs = fCalibration->GetEntries();
+  TMatrixD vecXk=*fCalibParam;       // X vector
+  TMatrixD covXk=*fCalibCovar;       // X covariance
+  TMatrixD &vecZk = *(kalman->fCalibParam);
+  TMatrixD &measR = *(kalman->fCalibCovar);
+
+  TMatrixD matHk(ncalibs,ncalibs);   // vector to mesurement
+  TMatrixD vecYk(ncalibs,1);         // Innovation or measurement residual
+  TMatrixD matHkT(ncalibs,ncalibs);  // helper matrix Hk transpose
+  TMatrixD matSk(ncalibs,ncalibs);   // Innovation (or residual) covariance
+  TMatrixD matKk(ncalibs,ncalibs);   // Optimal Kalman gain
+  TMatrixD covXk2(ncalibs,ncalibs);  // helper matrix
+  TMatrixD covXk3(ncalibs,ncalibs);  // helper matrix
+  //
+  for (Int_t i=0;i<ncalibs;i++){
+    for (Int_t j=0;j<ncalibs;j++) matHk(i,j)=0;
+    matHk(i,i)=1;
+  }
+   vecYk = vecZk-matHk*vecXk;               // Innovation or measurement residual
+   matHkT=matHk.T(); matHk.T();
+   matSk = (matHk*(covXk*matHkT))+measR;    // Innovation (or residual) covariance
+   matSk.Invert();
+   matKk = (covXk*matHkT)*matSk;            //  Optimal Kalman gain
+   vecXk += matKk*vecYk;                    //  updated vector
+   covXk2= (matHk-(matKk*matHk));
+   covXk3 =  covXk2*covXk;
+   covXk = covXk3;
+   (*fCalibParam) = vecXk;
+   (*fCalibCovar) = covXk;
+}
+
+
+
 
 
 void AliTPCkalmanFit::FitTrackLinear(AliTrackPointArray &points, Int_t step, TTreeSRedirector *debug){
@@ -686,7 +766,7 @@ void AliTPCkalmanFit::ApplyCalibration(AliTrackPointArray *array, Double_t csign
   }
 }
 
-Bool_t AliTPCkalmanFit::DumpCorelation(Double_t threshold){
+Bool_t AliTPCkalmanFit::DumpCorelation(Double_t threshold,  const char *mask){
   //
   //
   //
@@ -703,6 +783,14 @@ Bool_t AliTPCkalmanFit::DumpCorelation(Double_t threshold){
       if (TMath::Abs(corr0)>threshold){
 	AliTPCTransformation * trans0 = GetTransformation(irow);
 	AliTPCTransformation * trans1 = GetTransformation(icol);
+	TString  strName0(trans0->GetName());
+	if (mask){
+	  if (!strName0.Contains(mask)) continue;
+	}
+	TString  strName1(trans1->GetName());
+	if (mask){
+	  if (!strName1.Contains(mask)) continue;
+	}	
 	printf("%d\t%d\t%s\t%s\t%f\t%f\t%f\n", irow,icol, trans0->GetName(), trans1->GetName(),
 	       TMath::Sqrt(mat(irow,irow)), TMath::Sqrt(mat(icol,icol)), corr0);
       }
@@ -711,14 +799,19 @@ Bool_t AliTPCkalmanFit::DumpCorelation(Double_t threshold){
   return (nrow>0);
 }
 
-Bool_t AliTPCkalmanFit::DumpCalib(){
+Bool_t AliTPCkalmanFit::DumpCalib(const char *mask){
   //
   // Print calibration entries - name, value, error
   //
   TMatrixD &mat = *fCalibCovar;
   Int_t nrow= mat.GetNrows();
+  TString  strMask(mask);
   for (Int_t irow=0; irow<nrow; irow++){
     AliTPCTransformation * trans0 = GetTransformation(irow);
+    TString  strName(trans0->GetName());
+    if (mask){
+      if (!strName.Contains(mask)) continue;
+    }
     printf("%d\t%s\t%f\t%f\n", 
 	   irow, 
 	   trans0->GetName(),

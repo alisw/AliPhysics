@@ -22,6 +22,8 @@ public:
   //
   void SetParams(Double_t param, Double_t sigma, Double_t sigma2Time, TVectorD* fixedParams);
   Bool_t Init();
+  void   SetActive(Bool_t flag){ fIsActive = flag;}
+  Bool_t IsActive(){return fIsActive;}
   //
   virtual Double_t GetDeltaXYZ(Int_t coord, Int_t volID, Double_t param, Double_t x, Double_t y, Double_t z);
   //
@@ -42,7 +44,7 @@ public:
   Double_t   fSigma;         // error of the parameter
   Double_t   fSigma2Time;    // change of the error in time (per hour) - (For kalman filter) 
   TVectorD  *fFixedParam;    // fixed parameters of tranformation
-  
+  Bool_t     fIsActive;      // switch - is transformation active
   //
   // predefined formulas
   //
@@ -50,8 +52,29 @@ public:
   static  Double_t       TPCscalingRPol(Double_t *xyz, Double_t * param);
   static  Double_t       TPCscalingZDr(Double_t *xyz, Double_t * param);
   static  Double_t       TPCscalingPhiLocal(Double_t *xyz, Double_t * param);
+  //
+  // TPC Field cage + ROC misalingment induced distortion
+  //
   static  Double_t       TPCscalingRIFC(Double_t *xyz, Double_t * param); // inner field cage r distorion
   static  Double_t       TPCscalingROFC(Double_t *xyz, Double_t * param); // outer field cage r distorion
+  //
+  // TPC local misalignment
+  //
+  static  Double_t       TPClocaldLxdGX(Double_t *xyz, Double_t * param);
+  static  Double_t       TPClocaldLxdGY(Double_t *xyz, Double_t * param);
+  static  Double_t       TPClocaldLydGX(Double_t *xyz, Double_t * param);
+  static  Double_t       TPClocaldLydGY(Double_t *xyz, Double_t * param);
+  //
+  // TPC  quadrant misalignment
+  //
+  //  static  Double_t       TPCQuadrantDr(Double_t *xyz, Double_t * param){return 0;}
+  //static  Double_t       TPCQuadrantDrphi(Double_t *xyz, Double_t * param){return 0;}
+  //
+  // Z shift -
+  //
+  static  Double_t       TPCDeltaZ(Double_t *xyz, Double_t * param);
+  static  Double_t       TPCDeltaZMediumLong(Double_t *xyz, Double_t * param);
+  static  Double_t       TPCTiltingZ(Double_t *xyz, Double_t * param);
   //
   Bool_t    fInit;          // initialization flag
   GenFuncG  fFormulaX;      //! x formula
