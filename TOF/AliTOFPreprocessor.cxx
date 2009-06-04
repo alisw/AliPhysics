@@ -200,6 +200,7 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 {
   // Processing data from DAQ for online calibration 
 
+  Bool_t updateOCDB = kFALSE;
   Log("Processing DAQ delays");
 
   // reading configuration map 
@@ -270,7 +271,25 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 
   Log(Form("ComputingDelays = %s, StartingRun = %i",compDelays.Data(),startingRun));
 
-  fCal = new AliTOFChannelOnlineArray(fNChannels);
+  /* init array with current calibration, if any */
+  fCal = new AliTOFChannelOnlineArray(fNChannels);  
+  AliTOFChannelOnlineArray *curCal = NULL;
+
+  AliCDBEntry *cdbEntry2 = GetFromOCDB("Calib","ParOnlineDelay");
+  if (!cdbEntry2 || !cdbEntry2->GetObject()) {
+    /* no CDB entry found. set update flag */
+    Log("     ************ WARNING ************");
+    Log("No CDB ParOnlineDelay entry found, creating a new one!");
+    Log("     *********************************");
+    updateOCDB = kTRUE;
+  }
+  else {
+    Log("Found previous ParOnlineDelay entry. Using it to init calibration");
+    curCal = (AliTOFChannelOnlineArray *)cdbEntry2->GetObject();
+    for (Int_t i = 0; i < fNChannels; i++)
+      fCal->SetDelay(i, curCal->GetDelay(i));
+  }
+ 
 
   TH1::AddDirectory(0);
 
@@ -381,10 +400,25 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 
 					    Log(" Not computing delays according to flag set in Config entry in OCDB!");
 					    FillWithCosmicCalibration(fCal);
-					    
+
+					    /* check whether the new calibration is different from the previous one */
+					    if (curCal) { /* well, check also whether we have a previous calibration */
+					      for (Int_t i = 0; i < fNChannels; i++) {
+						if (fCal->GetDelay(i) != curCal->GetDelay(i)) {
+						  updateOCDB = kTRUE;
+						  break;
+						}
+					      }
+					    }
+					    else /* otherwise update OCDB */
+					      updateOCDB = kTRUE;
+
 					  }
 
 					  else {  // computing delays if not in FDR runs
+
+					    updateOCDB = kTRUE; /* always update OCDB when computing delays */
+
 						  for (Int_t ich=0;ich<kSize;ich++){
 							  /* check whether channel has been read out during current run.
 							   * if the status is bad it means it has not been read out.
@@ -466,6 +500,14 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
     return 6; //return error code for problems in retrieving DAQ data 
   }
 
+  /* check whether we don't need to update OCDB.
+   * in this case we can return without errors and
+   * the current FEE is stored in the fStatus object. */
+  if (!updateOCDB) {
+    AliInfo("update OCDB flag not set. Do not overwrite stored file.");
+    return 0; /* return ok */
+  }
+  
   daqFile=0;
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
