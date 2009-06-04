@@ -146,7 +146,7 @@ public:
   void    SetRunGlobalQA(Bool_t flag=kTRUE){fRunGlobalQA = flag;}
   void    SetQARefDefaultStorage(const char* uri);
   void    InitQA();
-  void    MergeQA(); 
+  void    MergeQA(const char *fileName = NULL); 
   void    SetWriteQAExpert() { fWriteQAExpertData = kTRUE ; }
 
   // Plane Efficiency Evaluation

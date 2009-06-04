@@ -53,7 +53,7 @@ public:
 	AliQADataMaker * GetQADataMaker(const Int_t iDet) ; 
 	void             Increment() ;
 	void             InitQADataMaker(UInt_t run, TObjArray * detArray=0x0) ;
-	Bool_t           Merge(Int_t runNumber = -1) const ;  
+	Bool_t           Merge(Int_t runNumber = -1, const char *fileName = NULL) const ;  
   void             MergeCustom() const ;
   Bool_t           MergeXML(const Char_t * collection, const Char_t * subFile = 0, const Char_t * outFile = 0) ; 
   static           AliQAManager * QAManager(Char_t * mode = "", TMap *entryCache = NULL, Int_t run = -1) ;
@@ -87,7 +87,7 @@ private:
 	Bool_t      InitRunLoader() ; 
 	Bool_t      IsSelected(const Char_t * detName)  ;
 	Bool_t      Finish(const AliQAv1::TASKINDEX_t taskIndex) ;
-	Bool_t      MergeData(const Int_t runNumber) const ;  
+	Bool_t      MergeData(const Int_t runNumber, const char *fileName = NULL) const ;  
 	Bool_t      MergeResults(const Int_t runNumber) const ;  
 	Bool_t      SaveIt2OCDB(const Int_t runNumber, TFile * inputFile, const Char_t * year, AliRecoParam::EventSpecie_t es) const ;  
 

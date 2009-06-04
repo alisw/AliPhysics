@@ -760,13 +760,14 @@ Bool_t AliQAManager::IsSelected(const Char_t * det)
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAManager::Merge(Int_t runNumber) const
+Bool_t AliQAManager::Merge(Int_t runNumber, const char *fileName) const
 {
 	// Merge data from all detectors from a given run in one single file 
-	// Merge the QA results from all the data chunks in one run 
+	// Merge the QA results from all the data chunks in one run
+  // The 'fileName' is name of the output file with merged QA data  
  if ( runNumber == -1)
    runNumber = fRunNumber ; 
- Bool_t rv = MergeData(runNumber) ; 
+ Bool_t rv = MergeData(runNumber,fileName) ; 
  //rv *= MergeResults(runNumber) ; // not needed for the time being
  return rv ; 
 }
@@ -989,12 +990,13 @@ void AliQAManager::MergeCustom() const
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAManager::MergeData(const Int_t runNumber) const
+Bool_t AliQAManager::MergeData(const Int_t runNumber, const char *fileName) const
 {
 	// Merge QA data from all detectors for a given run in one single file 
   
-  TFileMerger merger ; 
-  TString outFileName = Form("Merged.%s.Data.root",AliQAv1::GetQADataFileName()) ;
+  TFileMerger merger(kFALSE) ; 
+  TString outFileName = fileName;
+  if (outFileName.IsNull()) outFileName.Form("Merged.%s.Data.root",AliQAv1::GetQADataFileName());
   merger.OutputFile(outFileName.Data()) ; 
   for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
     Char_t * file = gSystem->Which(gSystem->WorkingDirectory(), Form("%s.%s.%d.root", AliQAv1::GetDetName(iDet), AliQAv1::GetQADataFileName(), runNumber)); 

@@ -565,7 +565,7 @@ void AliReconstruction::InitQA()
     fQAManager->SetCycleLength(AliQAv1::DETECTORINDEX_t(det), fQACycles[det]) ;  
     fQAManager->SetWriteExpert(AliQAv1::DETECTORINDEX_t(det)) ;
   }
-  if (!fRawReader && fQATasks.Contains(AliQAv1::kRAWS))
+  if (!fRawReader && !fInput && fQATasks.Contains(AliQAv1::kRAWS))
     fQATasks.ReplaceAll(Form("%d",AliQAv1::kRAWS), "") ;
   fQAManager->SetTasks(fQATasks) ; 
   fQAManager->InitQADataMaker(AliCDBManager::Instance()->GetRun()) ; 
@@ -589,14 +589,14 @@ void AliReconstruction::InitQA()
 }
 
 //_____________________________________________________________________________
-void AliReconstruction::MergeQA()
+void AliReconstruction::MergeQA(const char *fileName)
 {
   //Initialize the QA and start of cycle 
   AliCodeTimerAuto("") ;
   if ( ! fQAManager ) {
     AliFatal("Hum... this should not happen") ; 
   } else { 
-   fQAManager->Merge(AliCDBManager::Instance()->GetRun()) ; 
+   fQAManager->Merge(AliCDBManager::Instance()->GetRun(),fileName) ; 
   }
   AliSysInfo::AddStamp("MergeQA") ; 
 }
@@ -1948,6 +1948,24 @@ void AliReconstruction::SlaveTerminate()
       qadm->Finish();
     }
   }
+
+  if (fRunQA || fRunGlobalQA) {
+    if (fInput) { 
+      if (TNamed *outputFileName = (TNamed *) fInput->FindObject("PROOF_OUTPUTFILE")) {
+	TString qaOutputFile = outputFileName->GetTitle();
+	qaOutputFile.ReplaceAll(gSystem->BaseName(TUrl(outputFileName->GetTitle()).GetFile()),
+				Form("Merged.%s.Data.root",AliQAv1::GetQADataFileName()));
+	TProofOutputFile *qaProofFile = new TProofOutputFile(Form("Merged.%s.Data.root",AliQAv1::GetQADataFileName()));
+	qaProofFile->SetOutputFileName(qaOutputFile.Data());
+	fOutput->Add(qaProofFile);
+	MergeQA(qaProofFile->GetFileName());
+      }
+    }
+    else {
+      MergeQA();
+    }
+  }
+
   gROOT->cd();
   CleanUp();
 }
@@ -2809,6 +2827,8 @@ void AliReconstruction::CleanUp()
     delete ffile;
     ffile = NULL;
   }
+
+  TGeoGlobalMagField::Instance()->SetField(NULL);
 }
 
 void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
