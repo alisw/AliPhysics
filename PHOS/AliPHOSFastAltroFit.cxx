@@ -233,7 +233,8 @@ Double_t &amp, Double_t &eamp, Double_t &t0, Double_t &et0, Double_t &chi2)
   static Double_t f02, f12, f22;    // functions
   static Double_t f02d, f12d, f22d; // functions derivations
 
-  chi2 = -1;
+  chi2 = -1.;
+
   if(n<=0) {
     printf("<I> FastFit : n<=0 \n"); 
     return;
@@ -287,7 +288,7 @@ Double_t &amp, Double_t &eamp, Double_t &t0, Double_t &et0, Double_t &chi2)
     //    DrawFastFunction(amp_1, t0_1, fUtils->GetPedestalValue(), "1");
     // DrawFastFunction(amp_2, t0_2, fUtils->GetPedestalValue(), "2");
   } else {
-    chi2 = -1.; // bad fit - negative chi2
+    chi2 = t0_1; // no roots, bad fit - negative chi2
   }
 }
 
@@ -295,11 +296,13 @@ Bool_t AliPHOSFastAltroFit::QuadraticRoots(Double_t a, Double_t b, Double_t c, D
 {
   // Resolve quadratic equations a*x**2 + b*x + c
   //printf(" a %12.5e b %12.5e c %12.5e \n", a, b, c);
-  static Double_t dtmp = 0.0;
+  static Double_t dtmp = 0.0, dtmpCut = -1.e-6;
+  static Int_t ierr=0;
   dtmp = b*b - 4.*a*c;
 
-  if(dtmp>=-1.0e-7 && dtmp<0.0) {
-    printf("QuadraticRoots : small negative square : dtmp %f \n", dtmp);
+  if(dtmp>=dtmpCut && dtmp<0.0) {
+    if(ierr<5 || ierr%1000==0)
+      printf("QuadraticRoots : %i small negative square : dtmp %12.5e \n", ierr++, dtmp);
     dtmp = 0.0;
   }
   if(dtmp>=0.0) {
@@ -310,7 +313,8 @@ Bool_t AliPHOSFastAltroFit::QuadraticRoots(Double_t a, Double_t b, Double_t c, D
     //    printf(" x1 %f : x2 %f \n", x1, x2);
     return kTRUE;
   } else {
-    printf("QuadraticRoots : negative square : dtmp %f \n", dtmp);
+    x1 = dtmp;
+    printf("QuadraticRoots : negative square : dtmp %12.5e \n", dtmp);
     return kFALSE;
   }
 }
@@ -350,6 +354,7 @@ void AliPHOSFastAltroFit::CalculateParsErrors(Double_t* t, Double_t* /*y*/, Int_
 					      Double_t tau, Double_t &amp, Double_t &t0, 
 					      Double_t &eamp, Double_t &et0)
 {
+  // Remember that fmax = exp(-n);
   // fmax_nk = (n/k)**n*exp(-n) => n=k=2 => exp(-n) = exp(-2.)
   static Double_t cc = exp(-2.);
   //   static Double_t cc = exp(-fN); // mean(N)~1.5 ??
@@ -358,7 +363,7 @@ void AliPHOSFastAltroFit::CalculateParsErrors(Double_t* t, Double_t* /*y*/, Int_
 
   for(Int_t i=0; i<n; i++){
     x    = (t[i] - t0)/tau;
-    f02  = amp*exp(-2.*x);
+    f02  = exp(-2.*x);
     f12  = x*f02;
     f22  = x*f12;
     sumf2 += f22 * f22;
@@ -366,10 +371,11 @@ void AliPHOSFastAltroFit::CalculateParsErrors(Double_t* t, Double_t* /*y*/, Int_
     f22d = 2.*(f12 - f22); 
     sumfd2 += f22d * f22d;
   }
+  et0  = (sig/amp)/sqrt(sumfd2);
+  eamp = sig/sqrt(sumf2);
 
-  et0  = sig/amp/sqrt(sumfd2);
-  amp *= cc;
-  eamp = sig*cc/sqrt(sumf2); 
+  amp  *= cc;
+  eamp *= cc;
 }
 
 //
