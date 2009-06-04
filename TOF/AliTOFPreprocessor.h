@@ -41,6 +41,9 @@ class AliTOFPreprocessor : public AliPreprocessor
     UInt_t ProcessNoiseData();
     UInt_t ProcessFEEData(); // dummy, for the time being
 
+    void FillWithCosmicCalibration(AliTOFChannelOnlineArray *cal); // fill with cosmic calibration
+    void FillWithCableLengthMap(AliTOFChannelOnlineArray *cal); // fill with cable-lenght map
+
     static const Int_t fgkBinRangeAve;       // number of bins where to 
                                              // calculate the mean
     static const Double_t fgkIntegralThr;    // min number of entries per channel 

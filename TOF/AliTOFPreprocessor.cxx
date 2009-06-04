@@ -37,6 +37,7 @@
 #include "AliTOFFEEReader.h"
 #include "AliTOFRawStream.h"
 #include "AliTOFCableLengthMap.h"
+#include "AliTOFcalibHisto.h"
 
 
 // TOF preprocessor class.
@@ -375,59 +376,11 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 					  }
 					  Int_t nNotStatistics = 0; // number of channel with not enough statistics
 
- /* FDR flag set. do not compute delays, use nominal cable delays */
+					  /* FDR flag set. do not compute delays, use nominal cable delays */
 					  if (fFDRFlag) {
 
 					    Log(" Not computing delays according to flag set in Config entry in OCDB!");
-					    Log(" Using nominal cable delays.");
-					    
-					    AliTOFRawStream tofrs;
-					    Int_t det[5], dummy, index;
-					    Float_t cableTimeShift;
-					    
-					    /* temporarly disable warnings */
-					    AliLog::EType_t logLevel = (AliLog::EType_t)AliLog::GetGlobalLogLevel();
-					    AliLog::SetGlobalLogLevel(AliLog::kError);
-
-					    /* loop over EO indeces */
-					    for (Int_t iddl = 0; iddl < 72; iddl++)
-					      for (Int_t islot = 3; islot <= 12; islot++)
-						for (Int_t ichain = 0; ichain < 2; ichain++)
-						  for (Int_t itdc = 0; itdc < 15; itdc++)
-						    for (Int_t ichannel = 0; ichannel < 8; ichannel++) {
-						      
-						      /* get DO index */
-						      tofrs.EquipmentId2VolumeId(iddl, islot, ichain, itdc, ichannel, det);
-						      
-						      /* swap det[3] and det[4] indeces (needed to obtain correct channel index) */
-						      dummy = det[3];
-						      det[3] = det[4];
-						      det[4] = dummy;
-						      
-						      /* check DO index */
-						      if (det[0] < 0 || det[0] > 17 ||
-							  det[1] < 0 || det[1] > 4 ||
-							  det[2] < 0 || det[2] > 18 ||
-							  det[3] < 0 || det[3] > 1 ||
-							  det[4] < 0 || det[4] > 47)
-							continue;
-						      
-						      /* get channel index */
-						      index = AliTOFGeometry::GetIndex(det);
-						      
-						      /* get cable time shift */
-						      cableTimeShift = AliTOFCableLengthMap::GetCableTimeShift(iddl, islot, ichain, itdc);
-						      
-						      /* set delay */
-						      if (index<fNChannels) {
-							fCal->SetDelay(index,cableTimeShift);  // delay in ns
-							AliDebug(2,Form("Setting delay %f (ns) for channel %i",cableTimeShift,index));
-						      }
-						      
-						    } /* loop over EO indeces */
-
-					    /* re-enable warnings */
-					    AliLog::SetGlobalLogLevel(logLevel);
+					    FillWithCosmicCalibration(fCal);
 					    
 					  }
 
@@ -1155,6 +1108,91 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 
   // storing
   return 0;
+}
+
+
+//_____________________________________________________________________________
+
+void
+AliTOFPreprocessor::FillWithCosmicCalibration(AliTOFChannelOnlineArray *cal)
+{
+  /*
+   * fill with cosmic calibration 
+   */
+
+  Log(" Using cosmic-ray calibration.");
+  
+  AliTOFcalibHisto calibHisto;
+    Log(Form(" loading calibration histograms from %s", calibHisto.GetCalibHistoFileName()));
+  Log(Form(" loading calibration parameters from %s", calibHisto.GetCalibParFileName()));
+  calibHisto.LoadCalibPar();
+  
+  /* loop over channel index */
+  for (Int_t iIndex = 0; iIndex < fNChannels; iIndex++) {
+    cal->SetDelay(iIndex, calibHisto.GetNominalCorrection(iIndex));
+  }
+  
+}
+
+
+//_____________________________________________________________________________
+
+void
+AliTOFPreprocessor::FillWithCableLengthMap(AliTOFChannelOnlineArray *cal)
+{
+  /*
+   * fill with cosmic calibration 
+   */
+  
+  Log(" Using cable-length map.");
+  AliTOFRawStream tofrs;
+  Int_t det[5], dummy, index;
+  Float_t cableTimeShift;
+  
+  /* temporarly disable warnings */
+  AliLog::EType_t logLevel = (AliLog::EType_t)AliLog::GetGlobalLogLevel();
+  AliLog::SetGlobalLogLevel(AliLog::kError);
+  
+  /* loop over EO indeces */
+  for (Int_t iddl = 0; iddl < 72; iddl++)
+    for (Int_t islot = 3; islot <= 12; islot++)
+      for (Int_t ichain = 0; ichain < 2; ichain++)
+	for (Int_t itdc = 0; itdc < 15; itdc++)
+	  for (Int_t ichannel = 0; ichannel < 8; ichannel++) {
+	    
+	    /* get DO index */
+	    tofrs.EquipmentId2VolumeId(iddl, islot, ichain, itdc, ichannel, det);
+	    
+	    /* swap det[3] and det[4] indeces (needed to obtain correct channel index) */
+	    dummy = det[3];
+	    det[3] = det[4];
+	    det[4] = dummy;
+	    
+	    /* check DO index */
+	    if (det[0] < 0 || det[0] > 17 ||
+		det[1] < 0 || det[1] > 4 ||
+		det[2] < 0 || det[2] > 18 ||
+		det[3] < 0 || det[3] > 1 ||
+		det[4] < 0 || det[4] > 47)
+	      continue;
+	    
+	    /* get channel index */
+	    index = AliTOFGeometry::GetIndex(det);
+	    
+	    /* get cable time shift */
+	    cableTimeShift = AliTOFCableLengthMap::GetCableTimeShift(iddl, islot, ichain, itdc);
+	    
+	    /* set delay */
+	    if (index<fNChannels) {
+	      cal->SetDelay(index,cableTimeShift);  // delay in ns
+	      AliDebug(2,Form("Setting delay %f (ns) for channel %i",cableTimeShift,index));
+	    }
+	    
+	  } /* loop over EO indeces */
+  
+  /* re-enable warnings */
+  AliLog::SetGlobalLogLevel(logLevel);
+  
 }
 
 
