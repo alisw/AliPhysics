@@ -1130,7 +1130,7 @@ inline std::ostream& operator << (std::ostream& stream, AliHLTMUONUtils::WhyNotV
 // information into the dimuon HLT code. Its usage is meant to be for generating
 // traces of the program which are only useful during full scale debugging.
 // Log messages should use the standard HLT logging mechanisms.
-// The output is only generated in programs compiled with the DEBUG directive
+// The output is only generated in programs compiled with the DEBUGTRACE directive
 // defined. Here is a usage example:
 //
 //  // statements...
@@ -1144,7 +1144,7 @@ inline std::ostream& operator << (std::ostream& stream, AliHLTMUONUtils::WhyNotV
 //  DebugTrace("x = " << x << " and y = 0x" << std::hex << y );
 //  // statements...
 //
-#ifdef DEBUG
+#ifdef DEBUGTRACE
 #	include <iostream>
 #	define DebugTrace(message) {std::cout << message << std::endl;}
 #else // DEBUG
