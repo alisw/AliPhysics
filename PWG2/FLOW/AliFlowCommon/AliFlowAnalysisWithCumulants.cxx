@@ -539,7 +539,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  {
   if(!fWeightsList)
   {
-   cout<<" WARNING: fWeightsList is NULL pointer. "<<endl;
+   cout<<" WARNING: fWeightsList is NULL pointer in GFC::Make() !!!!"<<endl;
    exit(0);
   }
   if(fUsePhiWeights) 
@@ -547,7 +547,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
    phiWeights = dynamic_cast<TH1F *>(fWeightsList->FindObject("phi_weights"));
    if(!phiWeights)
    {
-    cout<<" WARNING: couldn't access the histogram with phi weights. "<<endl;
+    cout<<" WARNING: couldn't access the histogram with phi weights in GFC::Make() !!!!"<<endl;
     exit(0);
    } 
   } 
@@ -556,7 +556,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
    ptWeights = dynamic_cast<TH1D *>(fWeightsList->FindObject("pt_weights"));
    if(!ptWeights) 
    {
-    cout<<" WARNING: couldn't access the histogram with pt weights. "<<endl;
+    cout<<" WARNING: couldn't access the histogram with pt weights in GFC::Make() !!!!"<<endl;
     exit(0);
    } 
   } 
@@ -565,7 +565,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
    etaWeights = dynamic_cast<TH1D *>(fWeightsList->FindObject("eta_weights"));
    if(!etaWeights) 
    {
-    cout<<" WARNING: couldn't access the histogram with eta weights. "<<endl;
+    cout<<" WARNING: couldn't access the histogram with eta weights in GFC::Make() !!!!"<<endl;
     exit(0);
    }
   } 
@@ -581,12 +581,12 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t genfunG[fgkPmax][fgkQmax];
  
  for(Int_t p=0;p<fgkPmax;p++)
+ {
+  for(Int_t q=0;q<fgkQmax;q++)
   {
-   for(Int_t q=0;q<fgkQmax;q++)
-   {
-    genfunG[p][q]=1.;
-   }   
-  }
+   genfunG[p][q]=1.;
+  }   
+ }
 
  Int_t nSelTracksRP = 0; //cross-checking the selected multiplicity
   
@@ -640,7 +640,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
    }
    // calculate <w^2> 
    fAverageOfSquaredWeight->Fill(0.,pow(wPhi*wPt*wEta,2.),1); 
-  }
+  } // end of if(fTrack && fTrack->InRPSelection())
  } // end of for(Int_t i=0;i<nPrim;i++) 
  
  //storing the value of G[p][q] in 2D profile in order to get automatically the avarage <G[p][q]>
@@ -656,7 +656,10 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  if(nSelTracksRP==nEventNSelTracksRP)
  {
   fAvMultIntFlowGFC->Fill(0.,nSelTracksRP,1);
- }
+ } else 
+   {
+    cout<<"WARNING: nSelTracksRP != nEventNSelTracksRP in GFC::Make(). Something is wrong with RP flagging !!!!"<<endl;
+   }
  
  // calculating Q-vector of event (needed for errors)
  AliFlowVector fQVector;
