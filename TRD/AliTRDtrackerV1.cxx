@@ -440,11 +440,10 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
   }
   if(index) delete [] index;
   if(quality) delete [] quality;
-  
 
-  AliInfo(Form("Number of TPC seeds: %d (%d)", nTRDseeds, nTPCseeds));
-  AliInfo(Form("Number of propagated TRD tracks: %d", nFound));
-      
+  AliInfo(Form("Number of seeds: TPCout[%d] TRDin[%d]", nTPCseeds, nTRDseeds));
+  AliInfo(Form("Number of tracks: TRDout[%d]", nFound));
+
   // run stand alone tracking
   if (fReconstructor->IsSeeding()) Clusters2Tracks(event);
   
@@ -1795,14 +1794,21 @@ Int_t AliTRDtrackerV1::BuildTrackingContainers()
 
 
 //____________________________________________________________________
-void AliTRDtrackerV1::UnloadClusters() 
+void AliTRDtrackerV1::UnloadClusters(Bool_t force) 
 { 
-  //
-  // Clears the arrays of clusters and tracks. Resets sectors and timebins 
-  //
+//
+// Clears the arrays of clusters and tracks. Resets sectors and timebins 
+// If option "force" is also set the containers are also deleted. This is useful 
+// in case of HLT
 
-  if(fTracks) fTracks->Delete(); 
-  if(fTracklets) fTracklets->Delete();
+  if(fTracks){ 
+    fTracks->Delete(); 
+    if(force){delete fTracks; fTracks = 0x0;}
+  }
+  if(fTracklets){ 
+    fTracklets->Delete();
+    if(force){delete fTracklets; fTracklets = 0x0;}
+  }
   if(fClusters){ 
     if(IsClustersOwner()) fClusters->Delete();
     

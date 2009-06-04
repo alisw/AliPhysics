@@ -103,8 +103,7 @@ public:
   Int_t           RefitInward(AliESDEvent *event);
   static void     SetNTimeBins(Int_t nTimeBins){fgNTimeBins = nTimeBins; }
   void            SetReconstructor(const AliTRDReconstructor *rec){ fReconstructor = rec; }
-  void            UnloadClusters();
-//   void            UseClusters(const AliKalmanTrack *t, Int_t from = 0) const;
+  void            UnloadClusters(Bool_t force=kFALSE);
 
   class AliTRDLeastSquare{
   public:
