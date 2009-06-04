@@ -613,7 +613,9 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	else { cout<<"r0 is not found! Leaving LYZ analysis."<<endl; return kFALSE; }
 
 	//for estimating systematic error resulting from d0
-	Double_t dBinsize = (AliFlowLYZConstants::fgMax)/(AliFlowLYZConstants::kNbins);
+	Double_t dBinsize =0.;
+	if (fUseSum){ dBinsize = (AliFlowLYZConstants::fgMaxSUM)/(AliFlowLYZConstants::kNbins);}
+	else { dBinsize = (AliFlowLYZConstants::fgMaxPROD)/(AliFlowLYZConstants::kNbins);}
 	Double_t dVplus = -1.;
 	Double_t dVmin  = -1.;
 	if (dR0+dBinsize!=0.) {dVplus = dJ01/(dR0+dBinsize);}
@@ -645,14 +647,17 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
     //get average value of fVtheta = fV
     dV /=iNtheta;
     if (!fUseSum) { if (dMultRP!=0.){dV /=dMultRP;}} //scale with multiplicity for PRODUCT
-
+    
     //sigma2 and chi 
     Double_t  dSigma2 = 0;
     Double_t  dChi= 0;
     if (fEventNumber!=0) {
       *fQsum /= fEventNumber;
+      //cout<<"fQsum is "<<fQsum->X()<<" "<<fQsum->Y()<<endl; 
       fQ2sum /= fEventNumber;
+      //cout<<"fQ2sum is "<<fQ2sum<<endl; 
       dSigma2 = fQ2sum - TMath::Power(fQsum->X(),2.) - TMath::Power(fQsum->Y(),2.) - TMath::Power(dV,2.);  //BP eq. 62
+      //cout<<"dSigma2 is "<<dSigma2<<endl; 
       if (dSigma2>0) dChi = dV/TMath::Sqrt(dSigma2);
       else dChi = -1.;
       fCommonHistsRes->FillChiRP(dChi);

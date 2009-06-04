@@ -56,9 +56,11 @@ ClassImp(AliFlowLYZHist1)
 {
 
   //constructor creating histograms 
-  Int_t iNbins = AliFlowLYZConstants::kNbins;
-  Double_t dMin = AliFlowLYZConstants::fgMin;
-  Double_t dMax = AliFlowLYZConstants::fgMax;
+  Int_t iNbins      = AliFlowLYZConstants::kNbins;
+  Double_t dMaxSUM  = AliFlowLYZConstants::fgMaxSUM;
+  Double_t dMaxPROD = AliFlowLYZConstants::fgMaxPROD;
+  Double_t dMin     = 0.;
+
   TString name, addlast;
  
   if (useSum) { addlast = "LYZSUM"; }
@@ -68,7 +70,8 @@ ClassImp(AliFlowLYZHist1)
   name = "First_Flow_Gtheta";
   name +=theta;
   name +=addlast;
-  fHistGtheta = new TH1D(name.Data(),name.Data(),iNbins,dMin,dMax);  
+  if (useSum) { fHistGtheta = new TH1D(name.Data(),name.Data(),iNbins,dMin,dMaxSUM); }
+  else { fHistGtheta = new TH1D(name.Data(),name.Data(),iNbins,dMin,dMaxPROD); } 
   fHistGtheta->SetXTitle("r");
   fHistGtheta->SetYTitle("|G^{#theta}(ir)|^{2}");
   
@@ -76,7 +79,8 @@ ClassImp(AliFlowLYZHist1)
   name = "First_FlowPro_ReGtheta";
   name +=theta;
   name +=addlast;
-  fHistProReGtheta = new TProfile(name.Data(),name.Data(),iNbins,dMin,dMax);
+  if (useSum) { fHistProReGtheta = new TProfile(name.Data(),name.Data(),iNbins,dMin,dMaxSUM); }
+  else { fHistProReGtheta = new TProfile(name.Data(),name.Data(),iNbins,dMin,dMaxPROD); }
   fHistProReGtheta->SetXTitle("r");
   fHistProReGtheta->SetYTitle("Re G^{#theta}(ir)");
   
@@ -84,7 +88,8 @@ ClassImp(AliFlowLYZHist1)
   name = "First_FlowPro_ImGtheta";
   name +=theta;
   name +=addlast;
-  fHistProImGtheta = new TProfile(name.Data(),name.Data(),iNbins,dMin,dMax);
+  if (useSum) { fHistProImGtheta = new TProfile(name.Data(),name.Data(),iNbins,dMin,dMaxSUM); }
+  else { fHistProImGtheta = new TProfile(name.Data(),name.Data(),iNbins,dMin,dMaxPROD); }
   fHistProImGtheta->SetXTitle("r");
   fHistProImGtheta->SetYTitle("Im G^{#theta}(ir)");
 
