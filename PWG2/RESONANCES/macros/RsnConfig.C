@@ -161,19 +161,17 @@ AliRsnPairManager* CreatePairs
   // === FUNCTIONS ================================================================================
 
   // define histogram templates
-  AliRsnHistoDef *hdIM  = new AliRsnHistoDef(1600, 0.0, 4.0);
-  AliRsnFunction *fcnIM = new AliRsnFunction(AliRsnFunction::kInvMass, hdIM);
+  AliRsnFunctionAxis *axisIM   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairInvMass,    1000,  0.0,   2.0);
+  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,           10,  0.0,  10.0);
+  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          20, -1.0,   1.0);
+  AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,         8,  0.0, 200.0);
 
-  // binning in pt
-  //Double_t mom[36];
-  //mom[0] = 0.2;
-  //for (Int_t i = 1; i < 25; i++) mom[i] = mom[i-1] + 0.2;
-  //for (Int_t i = 25; i <= 35; i++) mom[i] = mom[i-1] + 0.5;
-  //fcnIM->SetBinningCut(AliRsnCut::kTransMomentum, 36, mom, 0);
-  fcnIM->SetBinningCut(AliRsnCut::kTransMomentum, 0.0, 10.0, 0.5, 0);
-
-  // binning in eta
-  //fcnIM->SetBinningCut(AliRsnCut::kEta, -1.0, 1.0, 0.2, 1);
+  // define functions axes
+  AliRsnFunction *fcnIM = new AliRsnFunction;
+  fcnIM->AddAxis(axisIM);
+  fcnIM->AddAxis(axisPt);
+  fcnIM->AddAxis(axisEta);
+  fcnIM->AddAxis(axisMult);
 
   for (i = 0; i < nArray; i++) {
     for (j = 0; j < 5; j++) {

@@ -22,16 +22,14 @@
 #ifndef ALIRSNFunction_H
 #define ALIRSNFunction_H
 
-#include <TH1.h>
-#include <TH2.h>
-#include <TH3.h>
+#include <TClonesArray.h>
+#include <THnSparse.h>
 #include <TNamed.h>
 
 #include "AliRsnCut.h"
-#include "AliRsnHistoDef.h"
+#include "AliRsnFunctionAxis.h"
 #include "AliRsnPairParticle.h"
 
-class TH1;
 class AliRsnPairDef;
 
 class AliRsnFunction : public TNamed
@@ -39,83 +37,41 @@ class AliRsnFunction : public TNamed
 
   public:
 
-    enum EFcnType
-    {
-      kTrackPt = 0,
-      kTrackEta,
-      kInvMass,
-      kInvMassMC,
-      kResolution,
-      kPairPt,
-      kPairEta,
-      kEventMult,
-      kFcnTypes
-    };
-
-    enum EBinType
-    {
-      kNoBins = 0,
-      kBinPairPt,
-      kBinPairEta,
-      kBinEventMult,
-      kBinTypes
-    };
-
     AliRsnFunction();
-    AliRsnFunction(EFcnType fcnType, AliRsnHistoDef *hd);
-    AliRsnFunction(EFcnType fcnType, EBinType binType, AliRsnHistoDef *hdMain, AliRsnHistoDef *hdBin);
-    AliRsnFunction(EFcnType fcnType, EBinType binType1, EBinType binType2, AliRsnHistoDef *hdMain, AliRsnHistoDef *hdBin1, AliRsnHistoDef *hdBin2);
     AliRsnFunction(const AliRsnFunction &copy);
     virtual ~AliRsnFunction() { delete fHistogram; }
     const AliRsnFunction& operator=(const AliRsnFunction &copy);
 
-    void                 DefineName();
-
-    void                 SetFcnType(EFcnType value) {fFcnType = value;}
     void                 SetPairDef(AliRsnPairDef *def) {fPairDef = def;}
     void                 SetTrack(AliRsnDaughter *track) {fTrack = track;}
     void                 SetPair(AliRsnPairParticle *pair) {fPair = pair;}
     void                 SetEvent(AliRsnEvent *event) {fEvent = event;}
-    void                 SetMainHistoDef(AliRsnHistoDef *hd) {fHistoDef[0] = hd;}
-    void                 SetPrimaryBinningHistoDef(AliRsnHistoDef *hd) {fHistoDef[1] = hd;}
-    void                 SetSecondaryBinningHistoDef(AliRsnHistoDef *hd) {fHistoDef[2] = hd;}
 
-    EFcnType             GetFcnType() {return fFcnType;}
     AliRsnPairDef*       GetPairDef() {return fPairDef;}
     AliRsnDaughter*      GetTrack() {return fTrack;}
     AliRsnPairParticle*  GetPair() {return fPair;}
     AliRsnEvent*         GetEvent() {return fEvent;}
-    AliRsnHistoDef*      GetMainHistoDef() {return fHistoDef[0];}
-    AliRsnHistoDef*      GetPrimaryBinningHistoDef() {return fHistoDef[1];}
-    AliRsnHistoDef*      GetSecondaryBinningHistoDef() { return fHistoDef[2];}
+    virtual const char*  GetName() const;
 
-    TH1*                 CreateHistogram(const char *histoName, const char *histoTitle);
+    void                 AddAxis(AliRsnFunctionAxis *axis);
+    Int_t                GetNumberOfAxes() {return fAxisList.GetEntries();}
+    THnSparseD*          CreateHistogram(const char *histoName, const char *histoTitle);
 
-    Double_t             Eval();
     Bool_t               Fill();
 
   protected:
 
-    Int_t       CheckDim();
-    Bool_t      CheckInput(Option_t *option);
-    const char* BinName(EBinType binType);
-    const char* FcnName();
-    Double_t    BinValue(EBinType binType);
-
-    EFcnType            fFcnType;     // function type
-    EBinType            fBinType[2];  // binning type
-
     AliRsnPairDef      *fPairDef;     // reference to used pair definition
-    AliRsnHistoDef     *fHistoDef[3]; // histogram definition for each axis
+    TClonesArray        fAxisList;    // list of axis
 
     AliRsnDaughter     *fTrack;       // processed track
     AliRsnPairParticle *fPair;        // processed pair
     AliRsnEvent        *fEvent;       // processed event
 
-    TH1                *fHistogram;   // output histogram
+    THnSparseD         *fHistogram;   // output histogram
 
     // ROOT dictionary
-    ClassDef(AliRsnFunction, 2)
+    ClassDef(AliRsnFunction, 3)
 };
 
 #endif

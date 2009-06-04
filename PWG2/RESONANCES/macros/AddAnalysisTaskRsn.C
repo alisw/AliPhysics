@@ -15,25 +15,20 @@ static Bool_t    requireSigmaToVertex = kTRUE;
 static Bool_t    acceptKinkDaughters = kFALSE;
 static Int_t     minNClustersTPC = 50;
 
-Bool_t AddAnalysisTaskRsn(const char *outFile = "rsn.root", Bool_t useKine = kTRUE)
+Bool_t AddAnalysisTaskRsn
+(
+  AliLog::EType_t  debugType = AliLog::kInfo, // debug depth for some classes
+  const char      *outFile   = "rsn.root",    // output file name
+  Bool_t           sourceESD = kTRUE          // if true, the source of data is ESD, otherwise is AOD
+                                              // (coming from filter task)
+)
 {
-  // Retrieve analysis manager.
-  // Since it is usually created in the steering macro,
-  // then we don't ever need to initialize a new one
+  // retrieve analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
-  // no need to  create handlers for input and MonteCarlo
-  // Done in the general steering macro
-  //  AliMCEventHandler  *mcHandler  = new AliMCEventHandler();
-  //  AliESDInputHandler *esdHandler = new AliESDInputHandler();
-  //AliAODHandler      *aodHandler = new AliAODHandler();
-  //aodHandler->SetOutputFileName("AliAOD.root");
-  //  if (useKine) mgr->SetMCtruthEventHandler(mcHandler);
-  //  mgr->SetInputEventHandler(esdHandler);
-  //mgr->SetOutputEventHandler(aodHandler);
 
   // initialize task
   AliRsnAnalysisSE *task = new AliRsnAnalysisSE("AliRsnAnalysisSE");
+  task->SetLogType(debugType, "AliRsnAnalysisManager:AliRsnPairManager:AliRsnPairManager:AliRsnPair");
 
   // set prior probabilities for PID
   task->SetPriorProbability(AliPID::kElectron, 0.02);
@@ -45,6 +40,10 @@ Bool_t AddAnalysisTaskRsn(const char *outFile = "rsn.root", Bool_t useKine = kTR
 
   // initialize analysis manager with pairs from config
   AliRsnAnalysisManager *anaMgr = task->GetAnalysisManager("MyAnalysisSE");
+  anaMgr->Add(CreatePairsNoPID("RHO_NoPID_0"   , 113, AliPID::kPion, AliPID::kPion, 10000.0));
+  anaMgr->Add(CreatePairsNoPID("RHO_NoPID_10"  , 113, AliPID::kPion, AliPID::kPion,     0.1));
+  anaMgr->Add(CreatePairsNoPID("RHO_NoPID_20"  , 113, AliPID::kPion, AliPID::kPion,     0.2));
+  anaMgr->Add(CreatePairsPID  ("RHO_PID"       , 113, AliPID::kPion, AliPID::kPion));
   anaMgr->Add(CreatePairsNoPID("PHI_NoPID_0"   , 333, AliPID::kKaon, AliPID::kKaon, 10000.0));
   anaMgr->Add(CreatePairsNoPID("PHI_NoPID_10"  , 333, AliPID::kKaon, AliPID::kKaon,     0.1));
   anaMgr->Add(CreatePairsNoPID("PHI_NoPID_20"  , 333, AliPID::kKaon, AliPID::kKaon,     0.2));
@@ -55,52 +54,57 @@ Bool_t AddAnalysisTaskRsn(const char *outFile = "rsn.root", Bool_t useKine = kTR
   anaMgr->Add(CreatePairsPID  ("KSTAR_PID"     , 313, AliPID::kKaon, AliPID::kPion));
 
   // setup cuts
-  AliESDtrackCuts *esdCuts = new AliESDtrackCuts;
-  esdCuts->SetMaxCovDiagonalElements(cov11, cov22, cov33, cov44, cov55);
-  esdCuts->SetRequireSigmaToVertex(requireSigmaToVertex);
-  if (requireSigmaToVertex) esdCuts->SetMaxNsigmaToVertex(nSigmaToVertex);
-  else
+  if (sourceESD)
   {
-    esdCuts->SetDCAToVertexZ(dcaToVertex);
-    esdCuts->SetDCAToVertexXY(dcaToVertex);
+    AliESDtrackCuts *esdCuts = new AliESDtrackCuts;
+    esdCuts->SetMaxCovDiagonalElements(cov11, cov22, cov33, cov44, cov55);
+    esdCuts->SetRequireSigmaToVertex(requireSigmaToVertex);
+    if (requireSigmaToVertex) esdCuts->SetMaxNsigmaToVertex(nSigmaToVertex);
+    else
+    {
+      esdCuts->SetDCAToVertexZ(dcaToVertex);
+      esdCuts->SetDCAToVertexXY(dcaToVertex);
+    }
+    esdCuts->SetRequireTPCRefit(requireTPCRefit);
+    esdCuts->SetAcceptKinkDaughters(acceptKinkDaughters);
+    esdCuts->SetMinNClustersTPC(minNClustersTPC);
+    esdCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
+    task->SetESDtrackCuts(esdCuts);
   }
-  esdCuts->SetRequireTPCRefit(requireTPCRefit);
-  esdCuts->SetAcceptKinkDaughters(acceptKinkDaughters);
-  esdCuts->SetMinNClustersTPC(minNClustersTPC);
-  esdCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
-  task->SetESDtrackCuts(esdCuts);
 
   // add the task to manager
   mgr->AddTask(task);
 
-  // initialize container for the output
-  // (input container is common)
-  AliAnalysisDataContainer *out = mgr->CreateContainer("RSN", TList::Class(), AliAnalysisManager::kOutputContainer, outFile);
+  // connect input container according to source choice
+  if (sourceESD) mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  else mgr->ConnectInput(task, mgr->GetCommonOutputContainer());
 
-  // connect input and output slots for this task
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  // initialize and connect container for the output
+  AliAnalysisDataContainer *out = mgr->CreateContainer("RSN", TList::Class(), AliAnalysisManager::kOutputContainer, outFile);
   mgr->ConnectOutput(task, 1, out);
 }
 
-void AddRsnFunctionsToPair(AliRsnPair *pair)
+AliRsnFunction* DefineFunction()
 {
 //
 // In general, for all processed pairs in one analysis the same functions are computed.
 // Then, they are defined separately here and added in the same way to all pairs.
 //
 
-  // define histogram templates
-  AliRsnHistoDef *hdIM   = new AliRsnHistoDef(1000,  0.0,   2.0);
-  AliRsnHistoDef *hdPt   = new AliRsnHistoDef(  10,  0.0,  10.0);
-  AliRsnHistoDef *hdMult = new AliRsnHistoDef(   8,  0.0, 200.0);
+  // define all binnings
+  AliRsnFunctionAxis *axisIM   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairInvMass,    1000,  0.0,   2.0);
+  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,           20,  0.0,  10.0);
+  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          20, -1.0,   1.0);
+  AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,        10,  0.0, 250.0);
 
-  // define functions:
-  // -- one computed w.r. to Pt and Mult
-  // -- one computed w.r. to Eta and Mult
-  AliRsnFunction *fcnIM1 = new AliRsnFunction(AliRsnFunction::kInvMass, AliRsnFunction::kBinPairPt, AliRsnFunction::kBinEventMult, hdIM, hdPt, hdMult);
+  // define function
+  AliRsnFunction *fcn = new AliRsnFunction;
+  fcn->AddAxis(axisIM);
+  fcn->AddAxis(axisPt);
+  fcn->AddAxis(axisEta);
+  fcn->AddAxis(axisMult);
 
-  // add to pair
-  pair->AddFunction(fcnIM1);
+  return fcn;
 }
 
 AliRsnPairManager* CreatePairsNoPID
@@ -168,7 +172,6 @@ AliRsnPairManager* CreatePairsNoPID
 
   // cuts for tracks:
   // -- Bethe-Bloch & required kaon PID
-  AliRsnCutStd *cutReqKaon = new AliRsnCutStd("cutReqKaon", AliRsnCutStd::kRequiredPID, (Int_t)AliPID::kKaon);
   AliRsnCutBetheBloch *cutKaonBB = new AliRsnCutBetheBloch("cutKaon", bbCut, AliPID::kKaon);
   cutKaonBB->SetCalibConstant(0, 0.76176e-1);
   cutKaonBB->SetCalibConstant(1, 10.632);
@@ -183,8 +186,7 @@ AliRsnPairManager* CreatePairsNoPID
   // cut set definition for all pairs
   AliRsnCutSet *cutSetParticle = new AliRsnCutSet("trackCuts");
   cutSetParticle->AddCut(cutKaonBB);
-  cutSetParticle->AddCut(cutReqKaon);
-  cutSetParticle->SetCutScheme("(cutReqKaon&cutKaonBB)|(!cutReqKaon)");
+  cutSetParticle->SetCutScheme("cutKaonBB");
 
   // cut set definition for true pairs
   AliRsnCutSet *cutSetPairTrue = new AliRsnCutSet("truePairs");
@@ -209,9 +211,11 @@ AliRsnPairManager* CreatePairsNoPID
 
   // === FUNCTIONS ================================================================================
 
+  AliRsnFunction *fcn = DefineFunction();
+
   for (i = 0; i < nArray; i++) {
     for (j = 0; j < 4; j++) {
-      AddRsnFunctionsToPair(noPID[i][j]);
+      noPID[i][j]->AddFunction(fcn);
     }
   }
 
@@ -324,10 +328,12 @@ AliRsnPairManager* CreatePairsPID
 
   // === FUNCTIONS ================================================================================
 
+  AliRsnFunction *fcn = DefineFunction();
+
   for (i = 0; i < nArray; i++) {
     for (j = 0; j < 4; j++) {
-      AddRsnFunctionsToPair(perfectPID[i][j]);
-      AddRsnFunctionsToPair(realisticPID[i][j]);
+      perfectPID[i][j]->AddFunction(fcn);
+      realisticPID[i][j]->AddFunction(fcn);
     }
   }
 
