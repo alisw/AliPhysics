@@ -39,7 +39,7 @@
 #include "AliRawReader.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSPDErrorLog.h"
-#include "AliITSdigit.h"
+#include "AliITSdigitSPD.h"
 #include "AliITSRecPoint.h"
 
 ClassImp(AliITSQASPDDataMakerRec)
@@ -310,12 +310,12 @@ void AliITSQASPDDataMakerRec::MakeDigits(TTree *digits)
 //  AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
 //  fITS->SetTreeAddress();
 //  TClonesArray *iITSdigits  = fITS->DigitsAddress(0);  // 0->SPD
-  TBranch *branchD = digits->GetBranch("ITS");
+  TBranch *branchD = digits->GetBranch("ITSDigitsSPD");
   if (!branchD) { 
-    AliError("can't get the branch with the ITS digits !");
+    AliError("can't get the branch with the SPD ITS digits !");
     return;
   }
-  static TClonesArray statDigits("AliITSDigit");
+  static TClonesArray statDigits("AliITSdigitSPD");
   TClonesArray *iITSdigits = &statDigits;
   branchD->SetAddress(&iITSdigits);  
   Int_t nDigitsL1=0;
@@ -577,6 +577,9 @@ Int_t AliITSQASPDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task) {
   else if( task == AliQAv1::kRECPOINTS ) {
     offset=fGenRecPointsOffset;
   }
+  else if( task == AliQAv1::kDIGITS ) {
+    offset=fGenDigitsOffset;
+  }
   else {
     AliInfo("No task has been selected. Offset set to zero.\n");
   }
@@ -595,6 +598,9 @@ Int_t AliITSQASPDDataMakerRec::GetTaskHisto(AliQAv1::TASKINDEX_t task) {
   }
   else if( task == AliQAv1::kRECPOINTS ){
     histotot=fSPDhRecPointsTask;
+  }
+  else if( task == AliQAv1::kDIGITS ){
+    histotot=fSPDhDigitsTask;
   }
   else {
     AliInfo("No task has been selected. TaskHisto set to zero.\n");
