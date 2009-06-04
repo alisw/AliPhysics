@@ -1,0 +1,19 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+      hfe/AliHFEcollection.cxx 
+      hfe/AliHFEpid.cxx 
+      hfe/AliHFEpidBase.cxx 
+      hfe/AliHFEpidTPC.cxx 
+      hfe/AliHFEpidTRD.cxx 
+      hfe/AliHFEpidTOF.cxx 
+      hfe/AliHFEpidMC.cxx 
+      hfe/AliHFEextraCuts.cxx 
+      hfe/AliHFEcuts.cxx 
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+AddLibrary(PWG3hfe "${SRCS}" "${HDRS}")

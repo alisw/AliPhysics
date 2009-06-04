@@ -1,0 +1,22 @@
+#-*- Mode: Makefile -*-
+
+SRCS= hfe/AliHFEcollection.cxx \
+      hfe/AliHFEpid.cxx \
+      hfe/AliHFEpidBase.cxx \
+      hfe/AliHFEpidTPC.cxx \
+      hfe/AliHFEpidTRD.cxx \
+      hfe/AliHFEpidTOF.cxx \
+      hfe/AliHFEpidMC.cxx \
+      hfe/AliHFEextraCuts.cxx \
+      hfe/AliHFEcuts.cxx 
+HDRS= $(SRCS:.cxx=.h)
+
+DHDR= PWG3hfeLinkDef.h
+
+EINCLUDE:= PWG3/base  STEER TPC CORRFW 
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lSTEER -lTPCbase \
+                         -lANALYSISalice -lANALYSIS -lCORRFW
+endif
