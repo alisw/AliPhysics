@@ -1,0 +1,177 @@
+/**************************************************************************
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
+
+#include <TH2F.h>
+#include <TList.h>
+#include <TMath.h>
+
+#include "AliESDtrack.h"
+#include "AliVParticle.h"
+#include "AliPID.h"
+
+#include "AliHFEpidTOF.h"
+#include "AliHFEpidBase.h"
+
+
+ClassImp(AliHFEpidTOF)
+  
+//___________________________________________________________________
+AliHFEpidTOF::AliHFEpidTOF(const Char_t *name):
+  AliHFEpidBase(name)
+  , fPID(0x0)
+  , fQAList(0x0)
+{
+  //
+  // Constructor
+  //
+}
+//___________________________________________________________________
+AliHFEpidTOF::AliHFEpidTOF(const AliHFEpidTOF &c):
+  AliHFEpidBase("")
+  , fPID(0x0)
+  , fQAList(0x0)
+{  
+  // 
+  // Copy operator
+  //
+
+  c.Copy(*this);
+}
+//___________________________________________________________________
+AliHFEpidTOF &AliHFEpidTOF::operator=(const AliHFEpidTOF &ref){
+  //
+  // Assignment operator
+  //
+
+  if(this != &ref){
+    ref.Copy(*this);
+  }
+
+  return *this;
+}
+//___________________________________________________________________
+AliHFEpidTOF::~AliHFEpidTOF(){
+  //
+  // Destructor
+  //
+  if(fPID) delete fPID;
+  if(fQAList){
+    fQAList->Delete();
+    delete fQAList;
+  }
+}
+//___________________________________________________________________
+void AliHFEpidTOF::Copy(TObject &ref) const {
+  //
+  // Performs the copying of the object
+  //
+  AliHFEpidTOF &target = dynamic_cast<AliHFEpidTOF &>(ref);
+
+  target.fPID = fPID;          
+  target.fQAList = fQAList;
+
+  AliHFEpidBase::Copy(ref);
+}
+//___________________________________________________________________
+Bool_t AliHFEpidTOF::InitializePID(){
+  //
+  // InitializePID: TOF experts have to implement code here
+  //
+  return kTRUE;
+}
+
+//___________________________________________________________________
+Int_t AliHFEpidTOF::IsSelected(AliVParticle *_track)
+{
+
+  //
+  // as of 22/05/2006 :
+  // returns AliPID based on the ESD TOF PID decision
+  // the ESD PID will be checked and if necessary improved 
+  // in the mean time. Best of luck
+  //
+  // returns 10 (== kUnknown)if PID can not be assigned
+  //
+
+  AliESDtrack *track = dynamic_cast<AliESDtrack*>(_track);
+  
+  if(!AliESDtrack::kTOFout) return AliPID::kUnknown;
+  
+  (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(0.);
+
+  Double_t ItrackL = track->GetIntegratedLength();
+  Double_t TOFsignal = track->GetTOFsignal();
+  Double_t TOF = TOFsignal;
+
+  if(ItrackL > 0)
+    (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(1.);
+
+  if(TOFsignal > 0)
+    (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(2.);
+  
+
+  if(ItrackL <=0 || TOFsignal <=0) return AliPID::kUnknown;
+
+  (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(3.);
+  (dynamic_cast<TH1F *>(fQAList->At(kHistTOFsignal)))->Fill(TOFsignal/1000.);
+  (dynamic_cast<TH1F *>(fQAList->At(kHistTOFlength)))->Fill(ItrackL);
+  // get the TOF pid probabilities
+  Double_t ESDpid[5] = {0., 0., 0., 0., 0.};
+  Float_t TOFpid_sum = 0.;
+  // find the largest PID probability
+  track->GetTOFpid(ESDpid);
+  Double_t MAXpid = 0.;
+  Int_t MAXindex = -1;
+  for(Int_t i=0; i<5; ++i){
+    TOFpid_sum += ESDpid[i];
+    if(ESDpid[i] > MAXpid){
+      MAXpid = ESDpid[i];
+      MAXindex = i;
+    }
+  }
+  
+  Double_t P = track->GetOuterParam()->P();
+  Double_t beta = (ItrackL/100.)/(TMath::C()*(TOFsignal/1e12));
+  
+  if(TMath::Abs(TOFpid_sum - 1) > 0.01) return AliPID::kUnknown;
+  else{
+    // should be the same as AliPID flags
+    
+    (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpid_0+MAXindex)))->Fill(beta, P);
+    (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpid_beta_v_P)))->Fill(beta, P);
+    return MAXindex;
+  }
+}
+
+//___________________________________________________________________
+void AliHFEpidTOF::AddQAhistograms(TList *qaList){
+  //
+  // Create QA histograms for TOF PID
+  //
+
+  fQAList = new TList;
+  fQAList->SetName("fTOFqaHistos");
+  fQAList->AddAt(new TH1F("hTOF_flags", "TOF flags;flags (see code for info);counts", 10, -0.25, 4.75), kHistTOFpidFlags);
+  fQAList->AddAt(new TH2F("fTOFbeta_v_P_no","beta -v- P; beta;momentum [GeV/c]", 120, 0, 1.2, 200, 0, 20), kHistTOFpid_beta_v_P);
+  fQAList->AddAt(new TH1F("hTOF_signal", "TOF signal; TOF signal [ns];counts", 1000, 12, 50), kHistTOFsignal);
+  fQAList->AddAt(new TH1F("hTOF_length", "TOF track length; length [cm];counts", 400, 300, 700), kHistTOFlength);
+  fQAList->AddAt(new TH2F("hTOFpid_electron", "TOF reco electron; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid_0);
+  fQAList->AddAt(new TH2F("hTOFpid_muon", "TOF reco muon; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid_1);
+  fQAList->AddAt(new TH2F("hTOFpid_pion", "TOF reco pion; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid_2);
+  fQAList->AddAt(new TH2F("hTOFpid_kaon", "TOF reco kaon; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid_3);
+  fQAList->AddAt(new TH2F("hTOFpid_proton", "TOF reco proton; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid_4);
+
+  qaList->AddLast(fQAList);
+}
