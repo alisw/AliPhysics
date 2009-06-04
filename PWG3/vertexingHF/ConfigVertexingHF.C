@@ -33,9 +33,9 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--- set cuts for candidates selection
   vHF->SetD0toKpiCuts(0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
   vHF->SetBtoJPSICuts(0.350);
-  vHF->SetDplusCuts(0.2,0.,0.,0.,0.,0.01,0.06,0.,0.,0.8);
-  vHF->SetDsCuts(0.2,0.,0.,0.,0.,0.005,0.06,0.,0.,0.8,0.,0.1,0.1);
-  vHF->SetLcCuts(0.2,0.,0.,0.,0.,0.01,0.06,0.,0.,0.8);
+  vHF->SetDplusCuts(0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85);
+  vHF->SetDsCuts(0.2,0.4,0.4,0.,0.,0.005,0.06,0.,0.,0.85,0.,0.1,0.1);
+  vHF->SetLcCuts(0.2,0.4,0.4,0.,0.,0.01,0.06,0.,0.,0.85);
   vHF->SetD0to4ProngsCuts(0.2,0.04,0.00,0.01,0.02,0.8,0.,0.1,0.);
   vHF->SetDstarCuts(0.3, 0.1, 0.05, 100000000000.0, 0.5);
   vHF->SetD0fromDstarCuts(0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
