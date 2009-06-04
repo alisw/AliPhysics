@@ -42,17 +42,6 @@ class AliITSAlignMille2: public TObject
        kNParCh     = AliITSAlignMille2Module::kMaxParTot,
        kMaxITSSensID=2197,kMaxITSSensVID=14300,kMinITSSupeModuleID=14336,kSDDoffsID=240};
   //
- protected:
- struct Mille2Data { // structure to store data for 2 LocalEquations (X and Z)
-   enum {kMaxLev = 7};
-   Double_t fMeasX, fMeasZ, fSigmaX, fSigmaZ;        // measured coordinates/errors
-   Double_t fDerLocX[kNLocal], fDerLocZ[kNLocal];    // calculated local derivatives
-   Int_t    fNModFilled, fNGlobFilled, fModuleID[kMaxLev]; // used module info
-   Int_t    fParMilleID[AliITSAlignMille2Module::kMaxParTot*kMaxLev]; // param id's
-   Double_t fDerGloX[AliITSAlignMille2Module::kMaxParTot*kMaxLev]; // global derivatives in X
-   Double_t fDerGloZ[AliITSAlignMille2Module::kMaxParTot*kMaxLev]; // and Z
- };
- //
  public:
   //
   AliITSAlignMille2(const Char_t *configFilename="AliITSAlignMille.conf");
@@ -148,8 +137,6 @@ class AliITSAlignMille2: public TObject
   Int_t     GlobalFit();
   void      FixParameter(Int_t param, Double_t value);
   void      PrintGlobalParameters();
-  Int_t     AddLocalEquation(Mille2Data &m);
-  void      SetLocalEquations(const Mille2Data *marr, Int_t neq);
   //
   // module specific 
   //
@@ -187,8 +174,18 @@ class AliITSAlignMille2: public TObject
   Bool_t    InitRiemanFit();
   void      SetMinNPtsPerTrack(Int_t pts=3)  {fMinNPtsPerTrack=pts;}
   //
- private:
+ protected:
   //
+  struct Mille2Data { // structure to store data for 2 LocalEquations (X and Z)
+    enum {kMaxLev = 7};
+    Double_t fMeasX, fMeasZ, fSigmaX, fSigmaZ;        // measured coordinates/errors
+    Double_t fDerLocX[kNLocal], fDerLocZ[kNLocal];    // calculated local derivatives
+    Int_t    fNModFilled, fNGlobFilled, fModuleID[kMaxLev]; // used module info
+    Int_t    fParMilleID[AliITSAlignMille2Module::kMaxParTot*kMaxLev]; // param id's
+    Double_t fDerGloX[AliITSAlignMille2Module::kMaxParTot*kMaxLev]; // global derivatives in X
+    Double_t fDerGloZ[AliITSAlignMille2Module::kMaxParTot*kMaxLev]; // and Z
+  };
+
   // configuration methods
   void      Init();
   Int_t     LoadConfig(const Char_t *cfile="AliITSAlignMille.conf");
@@ -216,6 +213,8 @@ class AliITSAlignMille2: public TObject
   //
   // millepede methods
   //
+  Int_t     AddLocalEquation(Mille2Data &m);
+  void      SetLocalEquations(const Mille2Data *marr, Int_t neq);
   void      SetUseGlobalDelta(Bool_t v=kTRUE)                           {fUseGlobalDelta = v;}
   void      SetAllowPseudoParents(Bool_t v=kTRUE)                       {fAllowPseudoParents = v;} 
   Int_t     SetConstraintWrtRef(const char* reffname);
