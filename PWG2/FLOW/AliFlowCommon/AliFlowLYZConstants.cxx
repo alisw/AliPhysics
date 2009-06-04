@@ -25,8 +25,8 @@ $Log$
 // Author: Naomi van der Kolk (kolk@nikhef.nl)
 
   
-Double_t AliFlowLYZConstants::fgMin       =  0. ;
-Double_t AliFlowLYZConstants::fgMax       =  120.;
+Double_t AliFlowLYZConstants::fgMaxSUM       =  120.; 
+Double_t AliFlowLYZConstants::fgMaxPROD      =  1.; 
 
   
 
