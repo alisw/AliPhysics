@@ -162,25 +162,30 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=event->GetTrack(i);
     AliESDtrack *seed =(AliESDtrack*)fSeeds->UncheckedAt(i);
-    if(seed->GetTOFsignal()>0){
-      t->SetTOFsignal(seed->GetTOFsignal());
-      t->SetTOFcluster(seed->GetTOFcluster());
-      Int_t tlab[3];
-      seed->GetTOFLabel(tlab);    
-      t->SetTOFLabel(tlab);
-      AliTOFtrack *track = new AliTOFtrack(*seed);
-      Float_t info[10];
-      Double_t times[10];
-      seed->GetTOFInfo(info);
-      seed->GetIntegratedTimes(times);
-      t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
-      t->SetIntegratedLength(seed->GetIntegratedLength());
-      t->SetIntegratedTimes(times);
-      t->SetTOFsignalToT(seed->GetTOFsignalToT());
-      t->SetTOFCalChannel(seed->GetTOFCalChannel());
-      //
-      t->SetTOFInfo(info);
-      delete track;
+
+    if ( (seed->GetStatus()&AliESDtrack::kTOFin)!=0 ) {
+      t->SetStatus(AliESDtrack::kTOFin);
+      //if(seed->GetTOFsignal()>0){
+      if ( (seed->GetStatus()&AliESDtrack::kTOFout)!=0 ) {
+	t->SetTOFsignal(seed->GetTOFsignal());
+	t->SetTOFcluster(seed->GetTOFcluster());
+	Int_t tlab[3];
+	seed->GetTOFLabel(tlab);    
+	t->SetTOFLabel(tlab);
+	AliTOFtrack *track = new AliTOFtrack(*seed);
+	Float_t info[10];
+	Double_t times[10];
+	seed->GetTOFInfo(info);
+	seed->GetIntegratedTimes(times);
+	t->UpdateTrackParams(track,AliESDtrack::kTOFout);
+	t->SetIntegratedLength(seed->GetIntegratedLength());
+	t->SetIntegratedTimes(times);
+	t->SetTOFsignalToT(seed->GetTOFsignalToT());
+	t->SetTOFCalChannel(seed->GetTOFCalChannel());
+	//
+	t->SetTOFInfo(info);
+	delete track;
+      }
     }
   }
 
@@ -205,27 +210,27 @@ void AliTOFtrackerMI::CollectESD() {
     AliESDtrack *t =(AliESDtrack*)fSeeds->UncheckedAt(i);
     if ((t->GetStatus()&AliESDtrack::kTPCout)==0)continue;
 
-    // TRD good tracks, already propagated at 372 cm
-
     AliTOFtrack *track = new AliTOFtrack(*t); // New
-    Double_t x = track->GetX(); //New
+    Float_t x = (Float_t)track->GetX(); //New
 
-    if (((t->GetStatus()&AliESDtrack::kTRDout)!=0 ) && 
-	 ( x >= AliTOFGeometry::RinTOF()) ){
-      track->SetSeedIndex(i);
-      t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
-      new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
-      fNseedsTOF++;
-      c0++;
-      delete track;
+    // TRD good tracks, already propagated at 371 cm
+    if ( ( (t->GetStatus()&AliESDtrack::kTRDout)!=0 ) &&
+	 ( x >= AliTOFGeometry::Rmin() ) ) {
+      if  ( track->PropagateToInnerTOF() ) {
+	track->SetSeedIndex(i);
+	t->UpdateTrackParams(track,AliESDtrack::kTOFin);
+	new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
+	fNseedsTOF++;
+	c0++;
+	delete track;
+      }
     }
 
-    // Propagate the rest of TPCbp  
-
+    // Propagate the rest of TPCbp
     else {
-      if(track->PropagateToInnerTOF()){ // temporary solution
+      if ( track->PropagateToInnerTOF() ) { // temporary solution
       	track->SetSeedIndex(i);
-	t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
+	t->UpdateTrackParams(track,AliESDtrack::kTOFin);
  	new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
 	fNseedsTOF++;
 	c1++;
