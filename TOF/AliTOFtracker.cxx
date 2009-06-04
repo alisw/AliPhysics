@@ -195,28 +195,38 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=event->GetTrack(i);
     AliESDtrack *seed =(AliESDtrack*)fSeeds->UncheckedAt(i);
-    if(seed->GetTOFsignal()>0){
-      t->SetTOFsignal(seed->GetTOFsignal());
-      t->SetTOFcluster(seed->GetTOFcluster());
-      t->SetTOFsignalToT(seed->GetTOFsignalToT());
-      t->SetTOFsignalRaw(seed->GetTOFsignalRaw());
-      t->SetTOFsignalDz(seed->GetTOFsignalDz());
-      t->SetTOFCalChannel(seed->GetTOFCalChannel());
-      Int_t tlab[3]; seed->GetTOFLabel(tlab);    
-      t->SetTOFLabel(tlab);
-      AliTOFtrack *track = new AliTOFtrack(*seed); 
-      t->UpdateTrackParams(track,AliESDtrack::kTOFout);   
 
-      Double_t time[10]; t->GetIntegratedTimes(time);
-      AliDebug(1,Form("%d %f %f %f %f %f",i,
-		      time[0],
-		      time[1],
-		      time[2],
-		      time[3],
-		      time[4]
-		      ));
+    if ( (seed->GetStatus()&AliESDtrack::kTOFin)!=0 ) {
+      t->SetStatus(AliESDtrack::kTOFin);
+      //if(seed->GetTOFsignal()>0){
+      if ( (seed->GetStatus()&AliESDtrack::kTOFout)!=0 ) {
+	t->SetStatus(AliESDtrack::kTOFout);
+	t->SetTOFsignal(seed->GetTOFsignal());
+	t->SetTOFcluster(seed->GetTOFcluster());
+	t->SetTOFsignalToT(seed->GetTOFsignalToT());
+	t->SetTOFsignalRaw(seed->GetTOFsignalRaw());
+	t->SetTOFsignalDz(seed->GetTOFsignalDz());
+	t->SetTOFCalChannel(seed->GetTOFCalChannel());
+	Int_t tlab[3]; seed->GetTOFLabel(tlab);    
+	t->SetTOFLabel(tlab);
 
-      delete track;
+	AliTOFtrack *track = new AliTOFtrack(*seed);
+	t->UpdateTrackParams(track,AliESDtrack::kTOFout); // to be checked - AdC
+	delete track;
+	Double_t time[10]; t->GetIntegratedTimes(time);
+	AliDebug(1,Form(" %6d  %f %f %f %f %6d %3d %f  %f %f %f %f %f",
+			i,
+			t->GetTOFsignalRaw(),
+			t->GetTOFsignal(),
+			t->GetTOFsignalToT(),
+			t->GetTOFsignalDz(),
+			t->GetTOFCalChannel(),
+			t->GetTOFcluster(),
+			t->GetIntegratedLength(),
+			time[0], time[1], time[2], time[3], time[4]
+			)
+		 );
+      }
     }
   }
 
@@ -262,26 +272,37 @@ void AliTOFtracker::CollectESD() {
     AliESDtrack *t =(AliESDtrack*)fSeeds->UncheckedAt(i);
     if ((t->GetStatus()&AliESDtrack::kTPCout)==0)continue;
 
-    // TRD 'good' tracks, already propagated at 372 cm
-
     AliTOFtrack *track = new AliTOFtrack(*t); // New
-    Double_t x = track->GetX(); //New
-    if ( ( (t->GetStatus()&AliESDtrack::kTRDout)!=0 ) && 
-	 ( x >= AliTOFGeometry::RinTOF() ) ) {
-      track->SetSeedIndex(i);
-      t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
-      new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
-      fNseedsTOF++;
-      seedsTOF1++;
+    Float_t x = (Float_t)track->GetX(); //New
+
+    // TRD 'good' tracks, already propagated at 371 cm
+    if ( ( (t->GetStatus()&AliESDtrack::kTRDout)!=0 ) &&
+	 ( x >= AliTOFGeometry::Rmin() ) ) {
+      if  ( track->PropagateToInnerTOF() ) {
+
+	AliDebug(1,Form(" TRD propagated track till rho = %fcm."
+			" And then the track has been propagated till rho = %fcm.",
+			x, (Float_t)track->GetX()));
+
+	track->SetSeedIndex(i);
+	t->UpdateTrackParams(track,AliESDtrack::kTOFin);
+	new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
+	fNseedsTOF++;
+	seedsTOF1++;
+      }
       delete track;
     }
 
     // Propagate the rest of TPCbp  
-
     else {
-      if(track->PropagateToInnerTOF()){ 
+      if ( track->PropagateToInnerTOF() ) { 
+
+	AliDebug(1,Form(" TPC propagated track till rho = %fcm."
+			" And then the track has been propagated till rho = %fcm.",
+			x, (Float_t)track->GetX()));
+
       	track->SetSeedIndex(i);
-	t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
+	t->UpdateTrackParams(track,AliESDtrack::kTOFin);
  	new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
 	fNseedsTOF++;
 	seedsTOF2++;
@@ -346,11 +367,13 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   for (Int_t ii=0; ii<4; ii++) trackPos[ii] = new Float_t[nSteps];
   Int_t * clind = new Int_t[fN];
   
+  //The matching loop
   for (Int_t iseed=0; iseed<fNseedsTOF; iseed++) {
 
     AliTOFtrack *track =(AliTOFtrack*)fTracks->UncheckedAt(iseed);
     AliESDtrack *t =(AliESDtrack*)fSeeds->UncheckedAt(track->GetSeedIndex());
-    if(t->GetTOFsignal()>0. ) continue;
+    //if ( t->GetTOFsignal()>0. ) continue;
+    if ( (t->GetStatus()&AliESDtrack::kTOFout)!=0 ) continue;
     AliTOFtrack *trackTOFin =new AliTOFtrack(*track);
 
     // Some init
@@ -643,7 +666,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     // Fill the track residual histograms.
     FillResiduals(trackTOFout,c,kFALSE);
 
-    t->UpdateTrackParams(trackTOFout,AliESDtrack::kTOFout);    
+    t->UpdateTrackParams(trackTOFout,AliESDtrack::kTOFout);
     t->SetIntegratedLength(recL);
     t->SetIntegratedTimes(time);
     t->SetTOFLabel(tlab);
