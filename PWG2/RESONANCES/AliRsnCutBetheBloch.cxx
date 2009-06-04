@@ -29,8 +29,8 @@ ClassImp(AliRsnCutBetheBloch)
 AliRsnCutBetheBloch::AliRsnCutBetheBloch() :
   AliRsnCut(),
   fCorrect(kTRUE),
-  fMass(1.0),
-  fMIP(50.0)
+  fMIP(50.0),
+  fType(AliPID::kUnknown)
 {
 //
 // Default constructor.
@@ -41,30 +41,11 @@ AliRsnCutBetheBloch::AliRsnCutBetheBloch() :
 
 //_________________________________________________________________________________________________
 AliRsnCutBetheBloch::AliRsnCutBetheBloch
-(const char *name, Double_t fractionRange, Double_t mass, Double_t mip, Bool_t correct) :
-  AliRsnCut(name, -fractionRange, fractionRange),
-  fCorrect(correct),
-  fMass(mass),
-  fMIP(mip)
-{
-//
-// Main constructor.
-// the cut range is the relative fraction of the value:
-// BB*(1-fraction) < TPC < BB*(1+fraction)
-// which means:
-// -fraction < (TPC - BB)/BB < fraction
-//
-
-  fConst[0] = fConst[1] = fConst[2] = fConst[3] = fConst[4] = 0.0;
-}
-
-//_________________________________________________________________________________________________
-AliRsnCutBetheBloch::AliRsnCutBetheBloch
 (const char *name, Double_t fractionRange, AliPID::EParticleType type, Double_t mip, Bool_t correct) :
   AliRsnCut(name, -fractionRange, fractionRange),
   fCorrect(correct),
-  fMass(0.0),
-  fMIP(mip)
+  fMIP(mip),
+  fType(type)
 {
 //
 // Main constructor.
@@ -74,7 +55,6 @@ AliRsnCutBetheBloch::AliRsnCutBetheBloch
 // -fraction < (TPC - BB)/BB < fraction
 //
 
-  SetMass(type);
   fConst[0] = fConst[1] = fConst[2] = fConst[3] = fConst[4] = 0.0;
 }
 
@@ -92,7 +72,10 @@ Double_t AliRsnCutBetheBloch::BetheBloch(AliRsnDaughter *track)
 // The value is computed in MIP units, multiplied by 50 to have it in energy.
 //
 
-  Double_t betaGamma = track->P() / fMass;
+  AliPID pid;
+  Double_t mass = pid.ParticleMass(fType);
+
+  Double_t betaGamma = track->P() / mass;
   Double_t beta = betaGamma / TMath::Sqrt(1.0 + betaGamma * betaGamma);
   Double_t aa = TMath::Power(beta, fConst[3]);
   Double_t bb = TMath::Power(1.0 / betaGamma, fConst[4]);
@@ -124,6 +107,10 @@ Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnDaughter *track)
     AliError(Form("Wrong target. Skipping cut", GetName()));
     return kTRUE;
   }
+
+  // if the required PID of the track is not the same as the
+  // reference of the cut, the cut is automatically skipped
+  if (track->RequiredPID() != fType) return kTRUE;
 
   // retrieve the TPC signal
   AliVParticle *vpart = track->GetRef();

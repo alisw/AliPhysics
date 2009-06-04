@@ -20,11 +20,9 @@ class AliRsnCutBetheBloch : public AliRsnCut
  public:
 
   AliRsnCutBetheBloch();
-  AliRsnCutBetheBloch(const char *name, Double_t fractionRange, Double_t mass, Double_t mip = 50.0, Bool_t correct = kTRUE);
   AliRsnCutBetheBloch(const char *name, Double_t fractionRange, AliPID::EParticleType type, Double_t mip = 50.0, Bool_t correct = kTRUE);
 
-  void           SetMass(Double_t mass) {fMass = mass;}
-  void           SetMass(AliPID::EParticleType type) {AliPID pid; fMass = pid.ParticleMass(type);}
+  void           SetType(AliPID::EParticleType type) {fType = type;}
   void           SetMIP(Double_t mip) {fMIP = mip;}
   void           SetCalibConstant(Int_t i, Double_t value) {if (i>=0&&i<5) fConst[i] = value;}
   Double_t       BetheBloch(AliRsnDaughter *track);
@@ -36,10 +34,10 @@ class AliRsnCutBetheBloch : public AliRsnCut
 
 protected:
 
-  Bool_t   fCorrect;   // apply or not the saturation corrections
-  Double_t fMass;      // mass hypothesis
-  Double_t fMIP;       // MIP normalization
-  Double_t fConst[5];  // calibration constants
+  Bool_t                fCorrect;   // apply or not the saturation corrections
+  Double_t              fMIP;       // MIP normalization
+  Double_t              fConst[5];  // calibration constants
+  AliPID::EParticleType fType;      // reference particle type
 
   ClassDef(AliRsnCutBetheBloch, 1)
 };
