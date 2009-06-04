@@ -1794,7 +1794,7 @@ Int_t AliTRDtrackerV1::BuildTrackingContainers()
 
 
 //____________________________________________________________________
-void AliTRDtrackerV1::UnloadClusters(Bool_t force) 
+void AliTRDtrackerV1::UnloadClusters() 
 { 
 //
 // Clears the arrays of clusters and tracks. Resets sectors and timebins 
@@ -1803,11 +1803,11 @@ void AliTRDtrackerV1::UnloadClusters(Bool_t force)
 
   if(fTracks){ 
     fTracks->Delete(); 
-    if(force){delete fTracks; fTracks = 0x0;}
+    if(HasRemoveContainers()){delete fTracks; fTracks = 0x0;}
   }
   if(fTracklets){ 
     fTracklets->Delete();
-    if(force){delete fTracklets; fTracklets = 0x0;}
+    if(HasRemoveContainers()){delete fTracklets; fTracklets = 0x0;}
   }
   if(fClusters){ 
     if(IsClustersOwner()) fClusters->Delete();

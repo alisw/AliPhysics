@@ -50,7 +50,8 @@ class AliTRDtrackerV1 : public AliTracker
 {
 public:
   enum{
-    kOwner = BIT(14)
+    kOwner            = BIT(14) // owner of clusters
+   ,kRemoveContainers = BIT(15) // delete containers after usage
   };
   enum{
     kMaxLayersPerSector   = 1000
@@ -91,7 +92,9 @@ public:
   static Double_t FitKalman(AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t up=0, Int_t np = 0, AliTrackPoint *points = 0x0);
 
   Bool_t          IsClustersOwner() const    { return TestBit(kOwner);}
+  Bool_t          HasRemoveContainers() const    { return TestBit(kRemoveContainers);}
   void            SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) fClusters = 0x0;}
+  void            SetRemoveContainers(Bool_t rm=kTRUE) {SetBit(kRemoveContainers, rm);}
 
   Int_t           FollowBackProlongation(AliTRDtrackV1 &t);
   Int_t           FollowProlongation(AliTRDtrackV1 &t);
@@ -103,7 +106,7 @@ public:
   Int_t           RefitInward(AliESDEvent *event);
   static void     SetNTimeBins(Int_t nTimeBins){fgNTimeBins = nTimeBins; }
   void            SetReconstructor(const AliTRDReconstructor *rec){ fReconstructor = rec; }
-  void            UnloadClusters(Bool_t force=kFALSE);
+  void            UnloadClusters();
 
   class AliTRDLeastSquare{
   public:
