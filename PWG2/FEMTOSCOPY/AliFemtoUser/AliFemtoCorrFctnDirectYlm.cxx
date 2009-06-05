@@ -42,7 +42,7 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl,
   fMaxL = maxl;
   fMaxJM = (maxl+1)*(maxl+1);
 
-  cout <<  "Size is " << sizeof(double) << " " << sizeof(complex<double>) << endl;
+  // *DEB*  cout <<  "Size is " << sizeof(double) << " " << sizeof(complex<double>) << endl;
 
   // Fill in factorials table
   factorials = (double *) malloc(sizeof(double) * (4 * (maxl + 1)));
@@ -68,7 +68,7 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl,
     felsi[il] = (int) el;
     femsi[il] = (int) em;
 
-    cout << "il el em " << il << " " << felsi[il] << " " << femsi[il] << endl;
+    // *DEB*    cout << "il el em " << il << " " << felsi[il] << " " << femsi[il] << endl;
     em++;
     il++;
     if (em > el) {
@@ -78,8 +78,8 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl,
   }
   while (el <= maxl);
   
-  for (il=0; il<fMaxJM; il++)
-    cout << "il el em " << il << " " << felsi[il] << " " << femsi[il] << endl;
+  // *DEB*  for (il=0; il<fMaxJM; il++)
+  // *DEB*    cout << "il el em " << il << " " << felsi[il] << " " << femsi[il] << endl;
 
   // Create numerator and denominator historgrams
   //  int sthp = sizeof(TH1D *);
