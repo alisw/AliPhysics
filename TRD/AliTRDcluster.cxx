@@ -460,14 +460,16 @@ Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const /*q*/, 
   AliTRDCommonParam *cp = AliTRDCommonParam::Instance(); 
   Double_t fFreq = cp->GetSamplingFrequency();
 
-  // calculate t0 corrected time bin
-  Double_t td = fPadTime - t0;
-  fLocalTimeBin = TMath::Nint(td);
   //drift time corresponding to the center of the time bin
-  td = (td + .5)/fFreq; // [us] 
+  Double_t td = (fPadTime + .5)/fFreq; // [us] 
   // correction for t0
   td -= t0;
-  // calculate radial posion of clusters in the drift region
+  // time bin corrected for t0
+  // BUG in TMath::Nint().root-5.23.02
+  // TMath::Nint(3.5) = 4 and TMath::Nint(4.5) = 4
+  Double_t tmp = td*fFreq;
+  fLocalTimeBin = Char_t(TMath::Floor(tmp));
+  if(tmp-fLocalTimeBin > .5) fLocalTimeBin++;
   if(td < .2) return 0.;
   // TRF rising time (fitted)
   // It should be absorbed by the t0. For the moment t0 is 0 for simulations.
