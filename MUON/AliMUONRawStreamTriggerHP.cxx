@@ -354,9 +354,9 @@ AliMUONDDLTrigger* AliMUONRawStreamTriggerHP::GetDDLTrigger() const
 				// Since the override ID flag is set, we need to replace the
 				// ID in the structure with the calculated one returned by GetId().
 				AliMUONLocalInfoStruct* strptr = reinterpret_cast<AliMUONLocalInfoStruct*>( localStruct.GetData() );
-				UInt_t word = strptr->fTriggerBits;
-				word &= (0xF << 19);
-				strptr->fTriggerBits = word | (lstruct->GetId() << 19);
+				UInt_t triggerBits = strptr->fTriggerBits;
+				triggerBits &= (0xF << 19);
+				strptr->fTriggerBits = triggerBits | (lstruct->GetId() << 19);
 			}
 			fDDLObject->AddLocStruct(localStruct, iReg);
 			lstruct = lstruct->Next();
