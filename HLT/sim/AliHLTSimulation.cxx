@@ -47,6 +47,7 @@
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"
 #include "TSystem.h"
+#include "TMath.h"
 
 #if ALIHLTSIMULATION_LIBRARY_VERSION != LIBHLTSIM_VERSION
 #error library version in header file and lib*.pkg do not match
@@ -171,7 +172,11 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
     Double_t solenoidBz=0;
     AliMagF *field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
     if (field) {
-      solenoidBz=field->SolenoidField()*field->Factor();
+      // this field definition is rather awkward: AliMagF::SolenoidField returns
+      // a signed value, the amazing thing is that the sign is opposite to that
+      // one in the factor. So the abs value has to be used. Lets assume, there
+      // is a reason for that confusing implementation ...
+      solenoidBz=TMath::Abs(field->SolenoidField())*field->Factor();
       AliDebug(0,Form("magnetic field: %f %f", field->SolenoidField(),field->Factor()));
     } else {
       // workaround for bug #51285
