@@ -183,6 +183,7 @@
 #include "TObjArray.h"
 #include "TAxis.h"
 #include "TF1.h"
+#include "TLegend.h"
 #include "TGraphErrors.h"
 #include "TLine.h"
 #include "TH2I.h"
@@ -215,6 +216,7 @@ AliTRDclusterResolution::AliTRDclusterResolution(const char *name, const char *t
   ,fZ(0.)
 {
   memset(fR, 0, 4*sizeof(Float_t));
+  memset(fP, 0, 4*sizeof(Float_t));
   // time drift axis
   fAt = new TAxis(kNTB, 0., kNTB*fgkTimeBinLength);
 
@@ -254,7 +256,7 @@ void AliTRDclusterResolution::CreateOutputObjects()
 Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
 {
   if(!fResults) return kFALSE;
-  
+  TLegend *leg = 0x0;
   TList *l = 0x0;
   TObjArray *arr = 0x0;
   TH2 *h2 = 0x0;TH1 *h1 = 0x0;
@@ -266,20 +268,31 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
     if(!(gs = (TGraphErrors*)arr->At(1))) break;
     if(!(gp = (TGraphErrors*)arr->At(2))) break;
     gs->Draw("apl");
-    gs->GetHistogram()->GetYaxis()->SetRangeUser(-.01, .6);
+    gs->GetHistogram()->GetYaxis()->SetRangeUser(-50., 700.);
     gs->GetHistogram()->SetXTitle("Q [a.u.]");
-    gs->GetHistogram()->SetYTitle("#sigma_{y} / #mu_{y} [mm] / freq");
+    gs->GetHistogram()->SetYTitle("#sigma_{y} / #mu_{y} [#mum] / freq");
     gm->Draw("pl");
     gp->Draw("pl");
     return kTRUE;
   case kCenter:
     if(!(arr = (TObjArray*)fResults->At(kCenter))) break;
-    gPad->Divide(3, 1); l = gPad->GetListOfPrimitives();
-    for(Int_t ipad = 3; ipad--;){
-      if(!(h2 = (TH2F*)arr->At(ipad))) return kFALSE;
-      ((TVirtualPad*)l->At(ipad))->cd();
-      h2->Draw("lego2fb");
+    gPad->Divide(2, 1); l = gPad->GetListOfPrimitives();
+    ((TVirtualPad*)l->At(0))->cd();
+    ((TTree*)arr->At(0))->Draw("y:x>>h(23, 0.1, 2.4, 51, -.51, .51)",
+            "m[0]*(ly==0&&abs(m[0])<1.e-1)", "colz");
+    ((TVirtualPad*)l->At(1))->cd();
+    leg= new TLegend(.7, .7, .9, .95);
+    leg->SetBorderSize(0); leg->SetFillColor(0); leg->SetFillStyle(0);
+    leg->SetHeader("TRD Plane"); 
+    for(Int_t il = 1; il<=AliTRDgeometry::kNlayer; il++){
+      if(!(gm = (TGraphErrors*)arr->At(il))) return kFALSE;
+      gm->Draw(il>1?"pc":"apc"); leg->AddEntry(gm, Form("%d", il-1), "pl");
+      if(il>1) continue;
+      gm->GetHistogram()->SetXTitle("t_{drift} [#mus]");
+      gm->GetHistogram()->SetYTitle("#sigma_{y}(x|cen=0) [#mum]");
+      gm->GetHistogram()->GetYaxis()->SetRangeUser(150., 500.);
     }
+    leg->Draw();
     return kTRUE;
   case kSigm:
     if(!(arr = (TObjArray*)fResults->At(kSigm))) break;
@@ -326,21 +339,16 @@ TObjArray* AliTRDclusterResolution::Histos()
   fContainer = new TObjArray(kNtasks);
   //fContainer->SetOwner(kTRUE);
 
-  TH2I *h2 = 0x0;
   TH3S *h3 = 0x0;
   TObjArray *arr = 0x0;
 
-  fContainer->AddAt(h2 = new TH2I("Charge", "dy=f(q)", 50, 2.2, 7.5, 60, -.3, .3), kQRes);
-  h2->SetXTitle("log(q) [a.u.]");
-  h2->SetYTitle("#Delta y[cm]");
-  h2->SetZTitle("entries");
-
-  fContainer->AddAt(arr = new TObjArray(AliTRDgeometry::kNlayer), kCenter);
+  fContainer->AddAt(arr = new TObjArray(2*AliTRDgeometry::kNlayer), kCenter);
   arr->SetName("Center");
   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-    if(!(h3=(TH3S*)gROOT->FindObject(Form("hc_l%1d", il)))){ 
+    // add resolution plot for each layer
+    if(!(h3=(TH3S*)gROOT->FindObject(Form("hCenResLy%d", il)))){ 
       h3 = new TH3S(
-        Form("hc_l%1d", il), 
+        Form("hCenResLy%d", il), 
         Form(" ly [%d]", il), 
         kNTB, fAt->GetBinLowEdge(1), fAt->GetBinUpEdge(kNTB),   // x
         51, -.51, .51, // y 
@@ -350,7 +358,28 @@ TObjArray* AliTRDclusterResolution::Histos()
       h3->SetZTitle("#Delta y[cm]");
     } h3->Reset();
     arr->AddAt(h3, il);
+    // add Pull plot for each layer
+    if(!(h3=(TH3S*)gROOT->FindObject(Form("hCenPullLy%d", il)))){ 
+      h3 = new TH3S(
+        Form("hCenPullLy%d", il), 
+        Form(" ly [%d]", il), 
+        kNTB, fAt->GetBinLowEdge(1), fAt->GetBinUpEdge(kNTB),   // x
+        51, -.51, .51, // y 
+        60, -4., 4.); // dy
+      h3->SetXTitle("x [#mus]");
+      h3->SetYTitle("y [pw]");
+      h3->SetZTitle("#Delta y/#sigma_{y}");
+    } h3->Reset();
+    arr->AddAt(h3, AliTRDgeometry::kNlayer+il);
   }
+
+  if(!(h3 = (TH3S*)gROOT->FindObject("Charge"))){
+    h3 = new TH3S("Charge", "dy=f(q)", 50, 2.2, 7.5, 60, -.3, .3, 60, -4., 4.);
+    h3->SetXTitle("log(q) [a.u.]");
+    h3->SetYTitle("#Delta y[cm]");
+    h3->SetZTitle("#Delta y/#sigma_{y}");
+  }
+  fContainer->AddAt(h3, kQRes);
 
   fContainer->AddAt(arr = new TObjArray(kNTB), kSigm);
   arr->SetName("Resolution");
@@ -396,7 +425,6 @@ void AliTRDclusterResolution::Exec(Option_t *)
 
   Int_t det, t;
   Float_t x, y, z, q, dy, dydx, dzdx, cov[3], covcl[3];
-  TH2I *h2 = 0x0;
   TH3S *h3 = 0x0;
 
   // define limits around ExB for which x contribution is negligible
@@ -418,8 +446,8 @@ void AliTRDclusterResolution::Exec(Option_t *)
     // resolution as a function of cluster charge
     // only for phi equal exB 
     if(TMath::Abs(dydx-fExB) < kDtgPhi){
-      h2 = (TH2I*)fContainer->At(kQRes);
-      h2->Fill(TMath::Log(q), dy);
+      h3 = (TH3S*)fContainer->At(kQRes);
+      h3->Fill(TMath::Log(q), dy, dy/TMath::Sqrt(covcl[0]));
     }
 
     // do not use problematic clusters in resolution analysis
@@ -429,12 +457,14 @@ void AliTRDclusterResolution::Exec(Option_t *)
     x = (t+.5)*fgkTimeBinLength; // conservative approach !!
 
     // resolution as a function of y displacement from pad center
-    // only for phi equal exB and clusters close to cathode wire plane
-    // for ideal simulations time bins 4,5 and 6.
-    if(TMath::Abs(dydx-fExB) < kDtgPhi &&
-       TMath::Abs(x-0.675)<0.225){
-      h3 = (TH3S*)arr0->At(AliTRDgeometry::GetLayer(det));
+    // only for phi equal exB
+    if(TMath::Abs(dydx-fExB) < kDtgPhi/* &&
+       TMath::Abs(x-0.675)<0.225*/){
+      Int_t ly(AliTRDgeometry::GetLayer(det));
+      h3 = (TH3S*)arr0->At(ly);
       h3->Fill(x, cli->GetYDisplacement(), dy);
+      h3 = (TH3S*)arr0->At(AliTRDgeometry::kNlayer+ly);
+      h3->Fill(x, cli->GetYDisplacement(), dy/TMath::Sqrt(covcl[0]));
     }
 
     Int_t ix = fAt->FindBin(x);
@@ -478,12 +508,22 @@ Bool_t AliTRDclusterResolution::PostProcess()
     g->SetMarkerStyle(7); 
 
     // pad center dependence
-    fResults->AddAt(t = new TTree("cent", "dy=f(y,x,ly)"), kCenter);
+    fResults->AddAt(arr = new TObjArray(AliTRDgeometry::kNlayer+1), kCenter);
+    arr->SetOwner();
+    arr->AddAt(
+    t = new TTree("cent", "dy=f(y,x,ly)"), 0);
     t->Branch("ly", &fLy, "ly/B");
     t->Branch("x", &fX, "x/F");
     t->Branch("y", &fY, "y/F");
     t->Branch("m", &fR[0], "m[2]/F");
     t->Branch("s", &fR[2], "s[2]/F");
+    t->Branch("pm", &fP[0], "pm[2]/F");
+    t->Branch("ps", &fP[2], "ps[2]/F");
+    for(Int_t il=1; il<=AliTRDgeometry::kNlayer; il++){
+      arr->AddAt(g = new TGraphErrors(), il);
+      g->SetLineColor(il); g->SetLineStyle(il);
+      g->SetMarkerColor(il);g->SetMarkerStyle(4); 
+    }
 
 
     fResults->AddAt(t = new TTree("sigm", "dy=f(dw,x,dydx)"), kSigm);
@@ -567,7 +607,7 @@ void AliTRDclusterResolution::SetVisual()
 void AliTRDclusterResolution::ProcessCharge()
 {
   TH2I *h2 = 0x0;
-  if((h2 = (TH2I*)fContainer->At(kQRes))) {
+  if(!(h2 = (TH2I*)fContainer->At(kQRes))) {
     AliWarning("Missing dy=f(Q) histo");
     return;
   }
@@ -593,12 +633,12 @@ void AliTRDclusterResolution::ProcessCharge()
 
     // Fill sy^2 = f(q)
     Int_t ip = gqm->GetN();
-    gqm->SetPoint(ip, q, 10.*f.GetParameter(1));
-    gqm->SetPointError(ip, 0., 10.*f.GetParError(1));
+    gqm->SetPoint(ip, q, 1.e4*f.GetParameter(1));
+    gqm->SetPointError(ip, 0., 1.e4*f.GetParError(1));
 
     // correct sigma for ExB effect
-    gqs->SetPoint(ip, q, 1.e1*f.GetParameter(2)/**f.GetParameter(2)-exb2*sxd2*/);
-    gqs->SetPointError(ip, 0., 1.e1*f.GetParError(2)/**f.GetParameter(2)*/);
+    gqs->SetPoint(ip, q, 1.e4*f.GetParameter(2)/**f.GetParameter(2)-exb2*sxd2*/);
+    gqs->SetPointError(ip, 0., 1.e4*f.GetParError(2)/**f.GetParameter(2)*/);
 
     // save probability
     n += entries;
@@ -611,7 +651,7 @@ void AliTRDclusterResolution::ProcessCharge()
   for(Int_t ip=gqp->GetN(); ip--;){
     gqp->GetPoint(ip, q, entries);
     entries/=n;
-    gqp->SetPoint(ip, q, entries);
+    gqp->SetPoint(ip, q, 1.e3*entries);
     gqs->GetPoint(ip, q, sy);
     sm += entries*sy;
   }
@@ -619,61 +659,108 @@ void AliTRDclusterResolution::ProcessCharge()
   // error parametrization s(q) = <sy> + b(1/q-1/q0)
   TF1 fq("fq", "[0] + [1]/x", 20., 250.);
   gqs->Fit(&fq);
-  printf("sy(Q) :: sm[%f] b[%f] 1/q0[%f]\n", sm, fq.GetParameter(1), (sm-fq.GetParameter(0))/fq.GetParameter(1));
+  //printf("sm=%f [0]=%f [1]=%f\n", 1.e-4*sm, fq.GetParameter(0), fq.GetParameter(1));
+  printf("  const Float_t sq0inv = %f; // [1/q0]\n", (sm-fq.GetParameter(0))/fq.GetParameter(1));
+  printf("  const Float_t sqb    = %f; // [cm]\n", 1.e-4*fq.GetParameter(1));
 }
 
 //_______________________________________________________
 void AliTRDclusterResolution::ProcessCenterPad()
 {
+// Resolution as a function of y displacement from pad center
+// only for phi equal exB and clusters close to cathode wire plane
+// for ideal simulations time bins 4,5 and 6.
+
   TObjArray *arr = (TObjArray*)fContainer->At(kCenter);
   if(!arr) {
     AliWarning("Missing dy=f(y | x, ly) container");
     return;
   }
+  Float_t s[AliTRDgeometry::kNlayer];
   TF1 f("f", "gaus", -.5, .5);
-  TH1D *h1 = 0x0; TH3S *h3=0x0;
-  TTree *t = (TTree*)fResults->At(kCenter);
-  TAxis *ax = 0x0;
-  for(Int_t il=0; il<arr->GetEntriesFast(); il++){
-    if(!(h3 = (TH3S*)arr->At(il))) continue;
+  TF1 fp("fp", "gaus", -3.5, 3.5);
 
+  TH1D *h1 = 0x0; TH2F *h2 = 0x0; TH3S *h3r=0x0, *h3p=0x0;
+  TObjArray *arrRes = (TObjArray*)fResults->At(kCenter);
+  TTree *t = (TTree*)arrRes->At(0);
+  TGraphErrors *gs = 0x0;
+  TAxis *ax = 0x0;
+
+  printf("  const Float_t lSy[6][24] = {\n      {");
+  const Int_t nl = AliTRDgeometry::kNlayer;
+  for(Int_t il=0; il<nl; il++){
+    if(!(h3r = (TH3S*)arr->At(il))) continue;
+    if(!(h3p = (TH3S*)arr->At(nl+il))) continue;
+    gs = (TGraphErrors*)arrRes->At(il+1);
     fLy = il;
-    for(Int_t ix=1; ix<=h3->GetXaxis()->GetNbins(); ix++){
-      ax = h3->GetXaxis();
-      ax->SetRange(ix, ix);     
+    for(Int_t ix=1; ix<=h3r->GetXaxis()->GetNbins(); ix++){
+      ax = h3r->GetXaxis(); ax->SetRange(ix, ix);
+      ax = h3p->GetXaxis(); ax->SetRange(ix, ix);
       fX  = ax->GetBinCenter(ix);
       //printf("  x[%2d]=%4.2f\n", ix, fX);
-      for(Int_t iy=1; iy<=h3->GetYaxis()->GetNbins(); iy++){
-        ax = h3->GetYaxis();
-        ax->SetRange(iy, iy);
+      for(Int_t iy=1; iy<=h3r->GetYaxis()->GetNbins(); iy++){
+        ax = h3r->GetYaxis(); ax->SetRange(iy, iy);
+        ax = h3p->GetYaxis(); ax->SetRange(iy, iy);
         fY  = ax->GetBinCenter(iy);
         //printf("    y[%2d]=%5.2f\n", iy, fY);
         // finish navigation in the HnSparse
 
-        h1 = (TH1D*)h3->Project3D("z");
+        h1 = (TH1D*)h3r->Project3D("z");
         Int_t entries = (Int_t)h1->Integral();
         if(entries < 50) continue;
         //Adjust(&f, h1);
         h1->Fit(&f, "QN");
-
     
         // Fill sy,my=f(y_w,x,ly)
         fR[0] = f.GetParameter(1); fR[1] = f.GetParError(1);
         fR[2] = f.GetParameter(2); fR[3] = f.GetParError(2);
 
+        h1 = (TH1D*)h3p->Project3D("z");
+        h1->Fit(&fp, "QN");
+        fP[0] = fp.GetParameter(1); fP[1] = fp.GetParError(1);
+        fP[2] = fp.GetParameter(2); fP[3] = fp.GetParError(2);
+
         //printf("ly[%d] x[%3.1f] y[%+5.2f] m[%5.3f] s[%5.3f] \n", fLy, fX, fY, fR[0], fR[2]);
         t->Fill();
+
+
       }
     }
-    if(!fCanvas) continue;
+    t->Draw("y:x>>h(24, 0., 2.4, 51, -.51, .51)",
+            Form("s[0]*(ly==%d&&abs(m[0])<1.e-1)", fLy),
+            "goff");
+    h2=(TH2F*)gROOT->FindObject("h");
+    f.FixParameter(1, 0.);
+    Int_t n = h2->GetXaxis()->GetNbins(); s[il]=0.;
+    printf("    {");
+    for(Int_t ix=1; ix<=n; ix++){
+      ax = h2->GetXaxis();
+      fX  = ax->GetBinCenter(ix);
+      h1 = h2->ProjectionY("hCenPy", ix, ix);
+      //if((Int_t)h1->Integral() < 1.e-10) continue; 
+      h1->Fit(&f, "QN");
+      s[il]+=f.GetParameter(2);
+      printf("%6.4f,%s", f.GetParameter(0), ix%6?" ":"\n     ");
+      Int_t jx = gs->GetN();
+      gs->SetPoint(jx, fX, 1.e4*f.GetParameter(0));
+      gs->SetPointError(jx, 0., 0./*f.GetParError(0)*/);
+    }
+    printf("\b},\n");
+    s[il]/=n;
 
-    t->Draw("y:x>>h(23, 0.1, 2.4, 51, -.51, .51)",
-            Form("m[0]*(ly==%d&&abs(m[0])<1.e-1)", fLy),
-            "lego2fb");
+    f.ReleaseParameter(2);
+
+
+    if(!fCanvas) continue;
+    h2->Draw("lego2fb");
     fCanvas->Modified(); fCanvas->Update();
     if(IsSaveAs()) fCanvas->SaveAs(Form("Figures/ProcessCenter_ly[%d].gif", fLy));
     else gSystem->Sleep(100);
   }
+  printf("  };\n");
+  printf("  const Float_t lPRF[] = {"
+    "%5.3f, %5.3f, %5.3f, %5.3f, %5.3f, %5.3f};\n",
+    s[0], s[1], s[2], s[3], s[4], s[5]);
 }
 
 //_______________________________________________________

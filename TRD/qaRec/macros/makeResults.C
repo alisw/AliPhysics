@@ -68,7 +68,6 @@
 
 Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so"};
 // define setup
-gStyle->SetOptStat(0);
 Bool_t mc      = kTRUE;
 Bool_t friends = kTRUE;
 TCanvas *c = 0x0;
@@ -93,6 +92,8 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
     return;
   }
 
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
   if(files) mergeProd("TRD.Performance.root", files);
   Int_t fSteerTask = ParseOptions(opt);
 

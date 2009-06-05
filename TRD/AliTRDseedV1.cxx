@@ -293,8 +293,9 @@ void AliTRDseedV1::Update(const AliTRDtrackV1 *trk)
   Double_t fSnp = trk->GetSnp();
   Double_t fTgl = trk->GetTgl();
   fPt = trk->Pt();
-  fYref[1] = fSnp/TMath::Sqrt(1. - fSnp*fSnp);
-  fZref[1] = fTgl;
+  Double_t norm =1./TMath::Sqrt(1. - fSnp*fSnp); 
+  fYref[1] = fSnp*norm;
+  fZref[1] = fTgl*norm;
   SetCovRef(trk->GetCovariance());
 
   Double_t dx = trk->GetX() - fX0;
@@ -474,6 +475,7 @@ Float_t AliTRDseedV1::GetdQdl(Int_t ic, Float_t *dl) const
   }
   if(fClusters[ic+kNtb]) dq += TMath::Abs(fClusters[ic+kNtb]->GetQ());
   if(dq<1.e-3) return 0.;
+  
 
   Double_t dx = fdX;
   if(ic-1>=0 && ic+1<kNtb){
@@ -830,21 +832,28 @@ void AliTRDseedV1::SetPadPlane(AliTRDpadPlane *p)
 //____________________________________________________________________
 Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
 {
-  //
-  // Projective algorithm to attach clusters to seeding tracklets
-  //
-  // Parameters
-  //
-  // Output
-  //
-  // Detailed description
-  // 1. Collapse x coordinate for the full detector plane
-  // 2. truncated mean on y (r-phi) direction
-  // 3. purge clusters
-  // 4. truncated mean on z direction
-  // 5. purge clusters
-  // 6. fit tracklet
-  //	
+//
+// Projective algorithm to attach clusters to seeding tracklets. The following steps are performed :
+// 1. Collapse x coordinate for the full detector plane
+// 2. truncated mean on y (r-phi) direction
+// 3. purge clusters
+// 4. truncated mean on z direction
+// 5. purge clusters
+//
+// Parameters
+//  - chamber : pointer to tracking chamber container used to search the tracklet
+//  - tilt    : switch for tilt correction during road building [default true]
+// Output
+//  - true    : if tracklet found successfully. Failure can happend because of the following:
+//      -
+// Detailed description
+//	
+// We start up by defining the track direction in the xy plane and roads. The roads are calculated based
+// on tracking information (variance in the r-phi direction) and estimated variance of clusters. For 
+// estimating the last contribution the following expression is considered :  
+// 
+// Author Alexandru Bercuci <A.Bercuci@gsi.de>
+
   Bool_t kPRINT = kFALSE;
   if(!fReconstructor->GetRecoParam() ){
     AliError("Seed can not be used without a valid RecoParam.");
@@ -1007,12 +1016,10 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
     if(!fClusters[it]) continue;
     x[irp]  = fClusters[it]->GetX();
     tb[irp] = fClusters[it]->GetLocalTimeBin();
-    printf("  x[%d]=%f t[%d]=%d\n", irp, x[irp], irp, tb[irp]);
     irp++;
   }  
   Int_t dtb = tb[1] - tb[0];
   fdX = dtb ? (x[0] - x[1]) / dtb : 0.15;
-
   return kTRUE;
 }
 
@@ -1063,7 +1070,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
 //   - tilt : switch for tilt pad correction of cluster y position based on 
 //            the z, dzdx info from outside [default false].
 //   - zcorr : switch for using z information to correct for anisochronity 
-//            and a finner error parametrization estimation [default false]  
+//            and a finner error parameterization estimation [default false]  
 // Output :
 //  True if successful
 //
@@ -1071,26 +1078,86 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
 //
 //            Fit in the xy plane
 // 
+// The fit is performed to estimate the y position of the tracklet and the track 
+// angle in the bending plane. The clusters are represented in the chamber coordinate 
+// system (with respect to the anode wire - see AliTRDtrackerV1::FollowBackProlongation() 
+// on how this is set). The x and y position of the cluster and also their variances 
+// are known from clusterizer level (see AliTRDcluster::GetXloc(), AliTRDcluster::GetYloc(), 
+// AliTRDcluster::GetSX() and AliTRDcluster::GetSY()). 
+// If gaussian approximation is used to calculate y coordinate of the cluster the position 
+// is recalculated taking into account the track angle. The general formula to calculate the 
+// error of cluster position in the gaussian approximation taking into account diffusion and track
+// inclination is given for TRD by:
+// BEGIN_LATEX
+// #sigma^{2}_{y} = #sigma^{2}_{PRF} + #frac{x#delta_{t}^{2}}{(1+tg(#alpha_{L}))^{2}} + #frac{x^{2}tg^{2}(#phi-#alpha_{L})tg^{2}(#alpha_{L})}{12}
+// END_LATEX
 //
+// Since errors are calculated only in the y directions, radial errors (x direction) are mapped to y
+// by projection i.e.
+// BEGIN_LATEX
+// #sigma_{x|y} = tg(#phi) #sigma_{x}
+// END_LATEX
+// and also by the lorentz angle correction
+//
+//            Fit in the xz plane
+//
+// The "fit" is performed to estimate the radial position (x direction) where pad row cross happens. 
+// If no pad row crossing the z position is taken from geometry and radial position is taken from the xy 
+// fit (see below).
+// 
+// There are two methods to estimate the radial position of the pad row cross:
+//   1. leading cluster radial position : Here the lower part of the tracklet is considered and the last 
+// cluster registered (at radial x0) on this segment is chosen to mark the pad row crossing. The error 
+// of the z estimate is given by :
+// BEGIN_LATEX
+// #sigma_{z} = tg(#theta) #Delta x_{x_{0}}/12
+// END_LATEX
+// The systematic errors for this estimation are generated by the following sources:
+//   - no charge sharing between pad rows is considered (sharp cross)
+//   - missing cluster at row cross (noise peak-up, under-threshold signal etc.).
+// 
+//   2. charge fit over the crossing point : Here the full energy deposit along the tracklet is considered 
+// to estimate the position of the crossing by a fit in the qx plane. The errors in the q directions are 
+// parameterized as s_q = q^2. The systematic errors for this estimation are generated by the following sources:
+//   - no general model for the qx dependence
+//   - physical fluctuations of the charge deposit 
+//   - gain calibration dependence
+//
+//            Estimation of the radial position of the tracklet
+//
+// For pad row cross the radial position is taken from the xz fit (see above). Otherwise it is taken as the 
+// interpolation point of the tracklet i.e. the point where the error in y of the fit is minimum. The error
+// in the y direction of the tracklet is (see AliTRDseedV1::GetCovAt()):
+// BEGIN_LATEX
+// #sigma_{y} = #sigma^{2}_{y_{0}} + 2xcov(y_{0}, dy/dx) + #sigma^{2}_{dy/dx}
+// END_LATEX
+// and thus the radial position is:
+// BEGIN_LATEX
+// x = - cov(y_{0}, dy/dx)/#sigma^{2}_{dy/dx}
+// END_LATEX
+//
+//            Estimation of tracklet position error 
+//
+// The error in y direction is the error of the linear fit at the radial position of the tracklet while in the z 
+// direction is given by the cluster error or pad row cross error. In case of no pad row cross this is given by:
+// BEGIN_LATEX
+// #sigma_{y} = #sigma^{2}_{y_{0}} - 2cov^{2}(y_{0}, dy/dx)/#sigma^{2}_{dy/dx} + #sigma^{2}_{dy/dx}
+// #sigma_{z} = Pad_{length}/12
+// END_LATEX
+// For pad row cross the full error is calculated at the radial position of the crossing (see above) and the error 
+// in z by the width of the crossing region - being a matter of parameterization. 
+// BEGIN_LATEX
+// #sigma_{z} = tg(#theta) #Delta x_{x_{0}}/12
+// END_LATEX
+// In case of no tilt correction (default in the barrel tracking) the tilt is taken into account by the rotation of
+// the covariance matrix. See AliTRDseedV1::GetCovAt() for details.
+//
+// Author 
+// A.Bercuci <A.Bercuci@gsi.de>
 
   if(!IsCalibrated()) Calibrate();
 
   const Int_t kClmin = 8;
-
-
-  // cluster error parametrization parameters 
-  // 1. sy total charge
-  const Float_t sq0inv = 0.019962; // [1/q0]
-  const Float_t sqb    = 1.0281564;    //[cm]
-  // 2. sy for the PRF
-  const Float_t scy[AliTRDgeometry::kNlayer][4] = {
-    {2.827e-02, 9.600e-04, 4.296e-01, 2.271e-02},
-    {2.952e-02,-2.198e-04, 4.146e-01, 2.339e-02},
-    {3.090e-02, 1.514e-03, 4.020e-01, 2.402e-02},
-    {3.260e-02,-2.037e-03, 3.946e-01, 2.509e-02},
-    {3.439e-02,-3.601e-04, 3.883e-01, 2.623e-02},
-    {3.510e-02, 2.066e-03, 3.651e-01, 2.588e-02},
-  };
 
   // get track direction
   Double_t y0   = fYref[0];
@@ -1099,10 +1166,6 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
   Double_t dzdx = fZref[1];
   Double_t yt, zt;
 
-  // calculation of tg^2(phi - a_L) and tg^2(a_L)
-  Double_t tgg = (dydx-fExB)/(1.+dydx*fExB); tgg *= tgg;
-  //Double_t exb2= fExB*fExB;
-
   //AliTRDtrackerV1::AliTRDLeastSquare fitterZ;
   TLinearFitter  fitterY(1, "pol1");
   TLinearFitter  fitterZ(1, "pol1");
@@ -1110,11 +1173,9 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
   // book cluster information
   Double_t qc[kNclusters], xc[kNclusters], yc[kNclusters], zc[kNclusters], sy[kNclusters];
 
-  Int_t ily = AliTRDgeometry::GetLayer(fDet);
   Int_t n = 0;
   AliTRDcluster *c=0x0, **jc = &fClusters[0];
   for (Int_t ic=0; ic<kNtb; ic++, ++jc) {
-    //zRow[ic] = -1;
     xc[ic]  = -1.;
     yc[ic]  = 999.;
     zc[ic]  = 999.;
@@ -1125,59 +1186,31 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     Float_t w = 1.;
     if(c->GetNPads()>4) w = .5;
     if(c->GetNPads()>5) w = .2;
-    Int_t tb = c->GetLocalTimeBin();
 
+    // cluster charge
     qc[n]   = TMath::Abs(c->GetQ());
+    // pad row of leading 
+
     // Radial cluster position
     //Int_t jc = TMath::Max(fN-3, 0);
     //xc[fN]   = c->GetXloc(fT0, fVD, &qc[jc], &xc[jc]/*, z0 - c->GetX()*dzdx*/);
     xc[n]   = fX0 - c->GetX();
 
-    //Double_t s2 = fS2PRF + fDiffL*fDiffL*xc[n]/(1.+2.*exb2)+tgg*xc[n]*xc[n]*exb2/12.;
-    //yc[fN]   = c->GetYloc(s2, GetPadWidth(), xc[fN], fExB);
-    yc[n]   = c->GetY()-AliTRDcluster::GetYcorr(ily, c->GetCenter());
-    zc[n]   = c->GetZ();
-
-    // extrapolated y value for the track
+    // extrapolated track to cluster position
     yt = y0 - xc[n]*dydx; 
-    // extrapolated z value for the track
     zt = z0 - xc[n]*dzdx; 
-    // tilt correction
-    if(tilt) yc[n] -= GetTilt()*(zc[n] - zt); 
 
-    // ELABORATE CLUSTER ERROR
-    // basic y error (|| to track).
-    sy[n]  = AliTRDcluster::GetSY(tb, zcorr?zt:-1.);
-    //printf("cluster[%d]\n\tsy[0] = %5.3e [um]\n", fN,  sy[fN]*1.e4);
-    // y error due to total charge
-    sy[n] += sqb*(1./qc[n] - sq0inv);
-    //printf("\tsy[1] = %5.3e [um]\n", sy[fN]*1.e4);
-    // y error due to PRF
-    sy[n] += scy[ily][0]*TMath::Gaus(c->GetCenter(), scy[ily][1], scy[ily][2]) - scy[ily][3];
-    //printf("\tsy[2] = %5.3e [um]\n", sy[fN]*1.e4);
+    // Recalculate cluster error based on tracking information
+    c->SetSigmaY2(fS2PRF, fDiffT, fExB, xc[n], zcorr?zt:-1., dydx);
+    sy[n]  = TMath::Sqrt(c->GetSigmaY2());
 
-    sy[n] *= sy[n];
+    yc[n]   = fReconstructor->UseGAUS() ? 
+      c->GetYloc(y0, sy[n], GetPadWidth()): c->GetY();
+    zc[n]   = c->GetZ();
+    //optional tilt correction
+    if(tilt) yc[n] -= (GetTilt()*(zc[n] - zt)); 
 
-    // ADD ERROR ON x
-    // error of drift length parallel to the track
-    Double_t sx = AliTRDcluster::GetSX(tb, zcorr?zt:-1.); // [cm]
-    //printf("\tsx[0] = %5.3e [um]\n", sx*1.e4);
-    sx *= sx; // square sx
-
-    // add error from ExB 
-    sy[n] += fExB*fExB*sx;
-    //printf("\tsy[3] = %5.3e [um^2]\n", sy[fN]*1.e8);
-
-    // global radial error due to misalignment/miscalibration
-    Double_t sx0  = 0.; sx0 *= sx0;
-    // add sx contribution to sy due to track angle
-    sy[n] += tgg*(sx+sx0);
-    // TODO we should add tilt pad correction here
-    //printf("\tsy[4] = %5.3e [um^2]\n", sy[fN]*1.e8);
-    c->SetSigmaY2(sy[n]);
-
-    sy[n]  = TMath::Sqrt(sy[n]);
-    fitterY.AddPoint(&xc[n], yc[n], sy[n]);
+    fitterY.AddPoint(&xc[n], yc[n], TMath::Sqrt(sy[n]));
     fitterZ.AddPoint(&xc[n], qc[n], 1.);
     n++;
   }
@@ -1199,7 +1232,24 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
 
   // fit XZ
   if(IsRowCross()){
+    // THE LEADING CLUSTER METHOD
+    Float_t xMin = fX0;
     Int_t ic=n=kNclusters-1; jc = &fClusters[ic];
+    AliTRDcluster *c0 =0x0, **kc = &fClusters[kNtb-1];
+    for(; ic>kNtb; ic--, --jc, --kc){
+      if((c0 = (*kc)) && c0->IsInChamber() && (xMin>c0->GetX())) xMin = c0->GetX();
+      if(!(c = (*jc))) continue;
+      if(!c->IsInChamber()) continue;
+      zc[kNclusters-1] = c->GetZ(); 
+      fX = fX0 - c->GetX();
+    }
+    fZfit[0] = .5*(zc[0]+zc[kNclusters-1]); fZfit[1] = 0.;
+    // Error parameterization
+    fS2Z     = fdX*fZref[1];
+    fS2Z    *= fS2Z; fS2Z    *= 0.2887; //  1/sqrt(12)
+/*
+    // THE FIT X-Q PLANE METHOD 
+    ic=n=kNclusters-1; jc = &fClusters[ic];
     for(; ic>kNtb; ic--, --jc){
       if(!(c = (*jc))) continue;
       if(!c->IsInChamber()) continue;
@@ -1224,51 +1274,13 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     fS2Z     = 0.05+0.4*TMath::Abs(fZref[1]); fS2Z *= fS2Z;
     // TODO correct formula
     //fS2Z     = sigma_x*TMath::Abs(fZref[1]);
+*/
   } else {
     fZfit[0] = zc[0]; fZfit[1] = 0.;
     fS2Z     = GetPadLength()*GetPadLength()/12.;
   }
   fS2Y = fCov[0] +2.*fX*fCov[1] + fX*fX*fCov[2];
   return kTRUE;
-//   // determine z offset of the fit
-//   Float_t zslope = 0.;
-//   Int_t nchanges = 0, nCross = 0;
-//   if(nz==2){ // tracklet is crossing pad row
-//     // Find the break time allowing one chage on pad-rows
-//     // with maximal number of accepted clusters
-//     Int_t padRef = zRow[0];
-//     for (Int_t ic=1; ic<fN; ic++) {
-//       if(zRow[ic] == padRef) continue;
-//       
-//       // debug
-//       if(zRow[ic-1] == zRow[ic]){
-//         printf("ERROR in pad row change!!!\n");
-//       }
-//     
-//       // evaluate parameters of the crossing point
-//       Float_t sx = (xc[ic-1] - xc[ic])*convert;
-//       fCross[0] = .5 * (xc[ic-1] + xc[ic]);
-//       fCross[2] = .5 * (zc[ic-1] + zc[ic]);
-//       fCross[3] = TMath::Max(dzdx * sx, .01);
-//       zslope    = zc[ic-1] > zc[ic] ? 1. : -1.;
-//       padRef    = zRow[ic];
-//       nCross    = ic;
-//       nchanges++;
-//     }
-//   }
-// 
-//   // condition on nCross and reset nchanges TODO
-// 
-//   if(nchanges==1){
-//     if(dzdx * zslope < 0.){
-//       AliInfo("Tracklet-Track mismatch in dzdx. TODO.");
-//     }
-// 
-// 
-//     //zc[nc] = fitterZ.GetFunctionParameter(0); 
-//     fCross[1] = fYfit[0] - fCross[0] * fYfit[1];
-//     fCross[0] = fX0 - fCross[0];
-//   }
 }
 
 

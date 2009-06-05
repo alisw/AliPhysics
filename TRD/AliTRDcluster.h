@@ -62,7 +62,9 @@ public:
   Short_t *GetSignals()                    { return fSignals;       }
   Float_t  GetSumS() const;
   static Double_t  GetSX(Int_t tb, Double_t z=-1);
-  static Double_t  GetSY(Int_t tb, Double_t z=-1);
+  static Double_t  GetSYdrift(Int_t tb, Int_t ly=0, Double_t z=-1);
+  static Double_t  GetSYcharge(Float_t q);
+  static Double_t  GetSYprf(Int_t ly, Double_t center, Double_t s2);
   static Double_t  GetXcorr(Int_t tb, Double_t z=-1);
   static Double_t  GetYcorr(Int_t ly, Float_t y);
   Float_t  GetXloc(Double_t t0, Double_t vd, Double_t *const q=0x0, Double_t *const xq=0x0, Double_t z = 0.2);
@@ -83,6 +85,7 @@ public:
   void     SetQ(Float_t inQ){ fQ = inQ;}
   void     SetClusterMasking(UChar_t inClusterMasking){ fClusterMasking = inClusterMasking;}
   void     SetShared(Bool_t sh  = kTRUE)   { SetBit(AliCluster::kShared,sh);    }
+  void     SetSigmaY2(Float_t s2, Float_t dt, Float_t exb, Float_t x0, Float_t z=-1., Float_t tgp=0.);
   void     Use(Int_t u = 1)                  { SetBit(AliCluster::kUsed, u ? kTRUE : kFALSE);              }
   void     SetFivePad(Bool_t b = kTRUE) { SetBit(kFivePad,b);}
 

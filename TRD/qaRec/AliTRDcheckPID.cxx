@@ -735,10 +735,10 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
   TList *content = 0x0;
   switch(ifig){
   case kEfficiency:{
-    gPad->Divide(2, 1, 0.,0.);
+    gPad->Divide(2, 1, 1.e-5, 1.e-5);
     TList *l=gPad->GetListOfPrimitives();
     TVirtualPad *pad = ((TVirtualPad*)l->At(0));pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.001);
+    pad->SetMargin(0.1, 0.01, 0.1, 0.01);
 
     TLegend *legEff = new TLegend(.7, .7, .98, .98);
     legEff->SetBorderSize(1);
@@ -768,7 +768,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     gPad->SetGridx();
 
     pad = ((TVirtualPad*)l->At(1));pad->cd();
-    pad->SetMargin(0.07, 0.07, 0.1, 0.001);
+    pad->SetMargin(0.1, 0.01, 0.1, 0.01);
     content = (TList *)fGraph->FindObject("Thresholds");
     if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kLQ))) break;
     if(!g->GetN()) break;
@@ -796,6 +796,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     FIRST = kTRUE;
     if(!(h2 = (TH2F*)(fContainer->At(kdEdx)))) break;
     legdEdx->SetHeader("Particle Species");
+    gPad->SetMargin(0.1, 0.01, 0.1, 0.01);
     for(Int_t is = AliPID::kSPECIES-1; is>=0; is--){
       Int_t bin = FindBin(is, 2.);
       h1 = h2->ProjectionY("px", bin, bin);
@@ -827,6 +828,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     FIRST = kTRUE;
     if(!(h2 = (TH2F*)(fContainer->At(kPH)))) break;;
     legPH->SetHeader("Particle Species");
+    gPad->SetMargin(0.1, 0.01, 0.1, 0.01);
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
       h1 = h2->ProjectionY("py", bin, bin);
@@ -835,8 +837,8 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
       h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
       if(FIRST){
-        h1->GetXaxis()->SetTitle("tb(1/100 ns^{-1})");
-        h1->GetYaxis()->SetTitle("<PH> (a.u.)");
+        h1->GetXaxis()->SetTitle("t_{drift} [100*ns]");
+        h1->GetYaxis()->SetTitle("<dQ/dl> [a.u./cm]");
       }
       h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
       legPH->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
@@ -859,21 +861,21 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     legNClus->SetHeader("Particle Species");
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
-      h1 = h2->ProjectionY("py", bin, bin);
+      h1 = h2->ProjectionY("pyNClus", bin, bin);
       if(!h1->GetEntries()) continue;
-      h1->Scale(1./h1->Integral());
+      h1->Scale(100./h1->Integral());
       //h1->SetMarkerStyle(24);
       //h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
       if(FIRST) h1->GetXaxis()->SetTitle("N^{cl}/tracklet");
-      if(FIRST) h1->GetYaxis()->SetTitle("<Entries>");
+      if(FIRST) h1->GetYaxis()->SetTitle("Prob. [%]");
       h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
       legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
       FIRST = kFALSE;
     }
     if(FIRST) break;
     legNClus->Draw();
-    gPad->SetLogy();
+    gPad->SetLogy(0);
     gPad->SetLogx(0);
     gPad->SetGridy();
     gPad->SetGridx();
@@ -890,21 +892,24 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     legNClus->SetHeader("Particle Species");
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
-      h1 = h2->ProjectionY("py", bin, bin);
+      h1 = h2->ProjectionY("pyNTracklets", bin, bin);
       if(!h1->GetEntries()) continue;
-      h1->Scale(1./h1->Integral());
+      h1->Scale(100./h1->Integral());
       //h1->SetMarkerStyle(24);
       //h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
-      if(FIRST) h1->GetXaxis()->SetTitle("N^{tl}/track");
-      if(FIRST) h1->GetYaxis()->SetTitle("<Entries>");
+      if(FIRST){ 
+        h1->GetXaxis()->SetTitle("N^{trklt}/track");
+        h1->GetXaxis()->SetRangeUser(1.,6.);
+        h1->GetYaxis()->SetTitle("Prob. [%]");
+      }
       h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
       legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
       FIRST = kFALSE;
     }
     if(FIRST) break;
     legNClus->Draw();
-    gPad->SetLogy();
+    gPad->SetLogy(0);
     gPad->SetLogx(0);
     gPad->SetGridy();
     gPad->SetGridx();

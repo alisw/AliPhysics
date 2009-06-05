@@ -183,6 +183,8 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
   //
   // Setting Reference Figures
   //
+  gPad->SetLogy(0);
+  gPad->SetLogx(0);
   switch(ifig){
   case kNclustersTrack:
     ((TH1F*)fContainer->FindObject("hNcls"))->Draw("pl");
@@ -213,6 +215,7 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
     return kTRUE;
   case kChargeCluster:
     ((TH1F*)fContainer->FindObject("hQcl"))->Draw("c");
+    gPad->SetLogy(1);
     return kTRUE;
   case kChargeTracklet:
     ((TH1F*)fContainer->FindObject("hQtrklt"))->Draw("c");
@@ -904,17 +907,25 @@ void AliTRDcheckDET::MakePlotChi2()
 
   TH2S *h2 = (TH2S*)fContainer->At(kChi2);
   TF1 f("fChi2", "[0]*pow(x, [1]-1)*exp(-0.5*x)", 0., 50.);
-
+  TLegend *leg = new TLegend(.7,.7,.95,.95);
+  leg->SetBorderSize(1); leg->SetHeader("Tracklets per Track");
   Bool_t kFIRST = kTRUE;
   for(Int_t il=1; il<=h2->GetNbinsX(); il++){
-    TH1D *h1 = h2->ProjectionY(Form("py%d", il), il, il);
+    TH1D *h1 = h2->ProjectionY(Form("pyChi2%d", il), il, il);
     if(h1->Integral()<50) continue;
     h1->Scale(1./h1->Integral());
-    h1->SetMarkerStyle(7);h1->SetMarkerColor(il);h1->SetLineColor(il);
+    h1->SetMarkerStyle(7);h1->SetMarkerColor(il);
+    h1->SetLineColor(il);h1->SetLineStyle(2);
     f.SetParameter(1, .5*il);f.SetLineColor(il);
-    h1->Fit(&f, "Q+", kFIRST ? "e1": "e1 same");
+    h1->Fit(&f, "QW+", kFIRST ? "pc": "pcsame");
+    leg->AddEntry(h1, Form("%d", il), "l");
+    if(kFIRST){
+      h1->GetXaxis()->SetRangeUser(0., 25.);
+    }
     kFIRST = kFALSE;
   }
+  leg->Draw();
+  gPad->SetLogy();
 }
 
 
@@ -926,41 +937,37 @@ void AliTRDcheckDET::MakePlotNTracklets(){
   TH1F *hBAR = (TH1F *)fContainer->FindObject("hNtlsBAR");
   TH1F *hSTA = (TH1F *)fContainer->FindObject("hNtlsSTA");
   TH1F *hCON = (TH1F *)fContainer->FindObject("hNtls");
+  TLegend *leg = new TLegend(0.6, 0.75, 0.89, 0.89);
 
-  hBAR->Scale(100./hCON->Integral());
-  hBAR->SetFillColor(kRed);
+  Float_t scale = hCON->Integral();
+  hCON->Scale(100./scale);
+  hCON->SetFillColor(kRed);hCON->SetLineColor(kRed);
+  hCON->SetBarWidth(0.2);
+  hCON->SetBarOffset(0.6);
+  hCON->SetStats(kFALSE);
+  hCON->GetYaxis()->SetRangeUser(0.,40.);
+  hCON->GetYaxis()->SetTitleOffset(1.2);
+  hCON->Draw("bar1"); leg->AddEntry(hCON, "Total", "f");
+
+  hBAR->Scale(100./scale);
+  hBAR->SetFillColor(kGreen);hBAR->SetLineColor(kGreen);
   hBAR->SetBarWidth(0.2);
   hBAR->SetBarOffset(0.2);
   hBAR->SetTitle("");
   hBAR->SetStats(kFALSE);
   hBAR->GetYaxis()->SetRangeUser(0.,40.);
   hBAR->GetYaxis()->SetTitleOffset(1.2);
-  hBAR->Draw("bar1");
+  hBAR->Draw("bar1same"); leg->AddEntry(hBAR, "Barrel", "f");
 
-  hSTA->Scale(100./hCON->Integral());
-  hSTA->SetFillColor(kBlue);
+  hSTA->Scale(100./scale);
+  hSTA->SetFillColor(kBlue);hSTA->SetLineColor(kBlue);
   hSTA->SetBarWidth(0.2);
   hSTA->SetBarOffset(0.4);
   hSTA->SetTitle("");
   hSTA->SetStats(kFALSE);
   hSTA->GetYaxis()->SetRangeUser(0.,40.);
   hSTA->GetYaxis()->SetTitleOffset(1.2);
-  hSTA->Draw("bar1same");
-
-  hCON->Scale(100./hCON->Integral());
-  hCON->SetFillColor(kGreen);
-  hCON->SetBarWidth(0.2);
-  hCON->SetBarOffset(0.6);
-  hCON->SetStats(kFALSE);
-  hCON->GetYaxis()->SetRangeUser(0.,40.);
-  hCON->GetYaxis()->SetTitleOffset(1.2);
-  hCON->Draw("bar1same");
-
-  TLegend *leg = new TLegend(0.6, 0.75, 0.89, 0.89);
-  leg->AddEntry(hBAR, "Barrel", "f");
-  leg->AddEntry(hSTA, "Stand Alone", "f");
-  leg->AddEntry(hCON, "Convoluted", "f");
-
+  hSTA->Draw("bar1same"); leg->AddEntry(hSTA, "Stand Alone", "f");
   leg->Draw();
   gPad->Update();
 }

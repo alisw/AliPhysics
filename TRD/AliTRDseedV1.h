@@ -59,7 +59,7 @@ public:
    ,kPID        = BIT(16) // PID contributor
    ,kCalib      = BIT(17) // calibrated tracklet
    ,kKink       = BIT(18) // kink prolongation tracklet
-   ,kStandAlone = BIT(19) // stand alone build tracklet
+   ,kStandAlone = BIT(19) // tracklet build during stand alone track finding
   };
 
   AliTRDseedV1(Int_t det = -1);
@@ -67,11 +67,7 @@ public:
   AliTRDseedV1(const AliTRDseedV1 &ref);
   AliTRDseedV1& operator=(const AliTRDseedV1 &ref);
 
-/*  Bool_t	  AttachClustersIter(
-              AliTRDtrackingChamber *chamber, Float_t quality, 
-              Bool_t kZcorr = kFALSE, AliTRDcluster *c=0x0);*/
-  Bool_t	  AttachClusters(
-              AliTRDtrackingChamber *chamber, Bool_t tilt = kFALSE);
+  Bool_t    AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt = kFALSE);
   void      Bootstrap(const AliTRDReconstructor *rec);
   void      Calibrate();
   void      CookdEdx(Int_t nslices);
@@ -129,7 +125,7 @@ public:
   Float_t   GetS2Z() const           { return fS2Z;}
   Float_t   GetSigmaY() const        { return fS2Y > 0. ? TMath::Sqrt(fS2Y) : 0.2;}
   Float_t   GetSnp() const           { return fYref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);}
-  Float_t   GetTgl() const           { return fZref[1];}
+  Float_t   GetTgl() const           { return fZref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);}
   Float_t   GetTilt() const          { return fPad[2];}
   UInt_t    GetTrackletWord() const  { return 0;}
   UShort_t  GetVolumeId() const;
@@ -137,14 +133,14 @@ public:
   Float_t   GetX() const             { return fX0 - fX;}
   Float_t   GetY() const             { return fYfit[0] - fYfit[1] * fX;}
   Double_t  GetYat(Double_t x) const { return fYfit[0] - fYfit[1] * (fX0-x);}
-  Float_t   GetYfit(Int_t id) const { return fYfit[id];}
-  Float_t   GetYref(Int_t id) const { return fYref[id];}
-  Float_t   GetZ() const            { return fZfit[0] - fZfit[1] * fX;}
+  Float_t   GetYfit(Int_t id) const  { return fYfit[id];}
+  Float_t   GetYref(Int_t id) const  { return fYref[id];}
+  Float_t   GetZ() const             { return fZfit[0] - fZfit[1] * fX;}
   Double_t  GetZat(Double_t x) const { return fZfit[0] - fZfit[1] * (fX0-x);}
-  Float_t   GetZfit(Int_t id) const { return fZfit[id];}
-  Float_t   GetZref(Int_t id) const { return fZref[id];}
-  Int_t     GetYbin() const         { return Int_t(GetY()/0.016);}
-  Int_t     GetZbin() const         { return Int_t(GetZ()/fPad[0]);}
+  Float_t   GetZfit(Int_t id) const  { return fZfit[id];}
+  Float_t   GetZref(Int_t id) const  { return fZref[id];}
+  Int_t     GetYbin() const          { return Int_t(GetY()/0.016);}
+  Int_t     GetZbin() const          { return Int_t(GetZ()/fPad[0]);}
 
   inline AliTRDcluster* NextCluster();
   inline AliTRDcluster* PrevCluster();
@@ -152,8 +148,8 @@ public:
   inline void ResetClusterIter(Bool_t forward = kTRUE);
   void      Reset();
 
-  void      SetC(Float_t c)         { fC = c;}
-  void      SetChi2(Float_t chi2)   { fChi2 = chi2;}
+  void      SetC(Float_t c)          { fC = c;}
+  void      SetChi2(Float_t chi2)    { fChi2 = chi2;}
   inline void SetCovRef(const Double_t *cov);
   void      SetIndexes(Int_t i, Int_t idx) { fIndexes[i]  = idx; }
   void      SetLabels(Int_t *lbls)   { memcpy(fLabels, lbls, 3*sizeof(Int_t)); }
@@ -199,10 +195,10 @@ private:
   Short_t          fDet;                    // TRD detector
   AliTRDcluster   *fClusters[kNclusters];   // Clusters
   Float_t          fPad[3];                 // local pad definition : length/width/tilt 
-  Float_t          fYref[2];                //  Reference y
-  Float_t          fZref[2];                //  Reference z
-  Float_t          fYfit[2];                //  Y fit position +derivation
-  Float_t          fZfit[2];                //  Z fit position
+  Float_t          fYref[2];                //  Reference y, dydx
+  Float_t          fZref[2];                //  Reference z, dz/dx
+  Float_t          fYfit[2];                //  Fit y, dy/dx
+  Float_t          fZfit[2];                //  Fit z
   Float_t          fPt;                     //  Pt estimate @ tracklet [GeV/c]
   Float_t          fdX;                     // length of time bin
   Float_t          fX0;                     // anode wire position
@@ -214,7 +210,7 @@ private:
   Float_t          fC;                      // Curvature
   Float_t          fChi2;                   // Global chi2  
   Float_t          fdEdx[kNslices];         // dE/dx measurements for tracklet
-  Float_t          fProb[AliPID::kSPECIES]; //  PID probabilities
+  Float_t          fProb[AliPID::kSPECIES]; // PID probabilities
   Int_t            fLabels[3];              // most frequent MC labels and total number of different labels
   Double_t         fRefCov[7];              // covariance matrix of the track in the yz plane + the rest of the diagonal elements
   Double_t         fCov[3];                 // covariance matrix of the tracklet in the xy plane

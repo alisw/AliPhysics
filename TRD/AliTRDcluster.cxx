@@ -136,7 +136,7 @@ AliTRDcluster::AliTRDcluster(const AliTRDcluster &c)
 
   SetY(c.GetY());
   SetZ(c.GetZ());
-  SetSigmaY2(c.GetSigmaY2());
+  AliCluster::SetSigmaY2(c.GetSigmaY2());
   SetSigmaZ2(c.GetSigmaZ2());  
 
   for (Int_t i = 0; i < 7; i++) {
@@ -241,11 +241,11 @@ void AliTRDcluster::Clear(Option_t *)
   fQ = 0;
   fCenter = 0;
   for (Int_t i = 0; i < 3; i++) SetLabel(0,i);
-  SetX(0);
-  SetY(0);
-  SetZ(0);
-  SetSigmaY2(0);
-  SetSigmaZ2(0);
+  SetX(0.);
+  SetY(0.);
+  SetZ(0.);
+  AliCluster::SetSigmaY2(0.);
+  SetSigmaZ2(0.);
   SetVolumeId(0);
 }
 
@@ -268,6 +268,19 @@ Float_t AliTRDcluster::GetSumS() const
 //___________________________________________________________________________
 Double_t AliTRDcluster::GetSX(Int_t tb, Double_t z)
 {
+// Returns the error parameterization in the radial direction for TRD clusters as function of 
+// the calibrated time bin (tb) and optionally distance to anode wire (z). By default (no z information) 
+// the largest value over all cluster to wire values is chosen.
+// 
+// The result is displayed in the figure below as a 2D plot and also as the projection on the drift axis. 
+//
+//Begin_Html
+//<img src="TRD/clusterXerrorDiff2D.gif">
+//End_Html
+//
+// Author
+// A.Bercuci <A.Bercuci@gsi.de>
+
   if(tb<1 || tb>=24) return 10.; // return huge [10cm]
   const Double_t sx[24][10]={
     {0.000e+00, 9.352e-01, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 2.309e+00},
@@ -302,10 +315,68 @@ Double_t AliTRDcluster::GetSX(Int_t tb, Double_t z)
 }
 
 //___________________________________________________________________________
-Double_t AliTRDcluster::GetSY(Int_t tb, Double_t z)
+Double_t AliTRDcluster::GetSYdrift(Int_t tb, Int_t ly, Double_t/* z*/)
 {
+// Returns the error parameterization for TRD clusters as function of the drift length (here calibrated time bin tb)
+// and optionally distance to anode wire (z) for the LUT r-phi cluster shape. By default (no z information) the largest 
+// value over all cluster to wire values is chosen.
+// 
+// For the LUT method the dependence of s_y with x and d is obtained via a fit to the cluster to MC 
+// resolution. (see class AliTRDclusterResolution for more details). A normalization to the reference radial position
+// x0 = 0.675 (tb=5 for ideal vd) is also applied (see GetSYprf()). The function is *NOT* calibration aware ! 
+// The result is displayed in the figure below as a 2D plot and also as the projection on the drift axis. A comparison 
+// with the GAUS parameterization is also given
+//
+// For the GAUS method the dependence of s_y with x is *analytic* and it is expressed by the relation.
+// BEGIN_LATEX
+// #sigma^{2}_{y} = #sigma^{2}_{PRF} + #frac{x#delta_{t}^{2}}{(1+tg(#alpha_{L}))^{2}}
+// END_LATEX
+// The result is displayed in the figure below as function of the drift time and compared with the LUT parameterization.
+//Begin_Html
+//<img src="TRD/clusterYerrorDiff2D.gif">
+//<img src="TRD/clusterYerrorDiff1D.gif">
+//End_Html
+//
+// Author
+// A.Bercuci <A.Bercuci@gsi.de>
+
+
   if(tb<1 || tb>=24) return 10.; // return huge [10cm]
-  const Double_t sy[24][10]={
+  const Float_t lSy[6][24] = {
+    {75.7561, 0.0325, 0.0175, 0.0174, 0.0206, 0.0232,
+     0.0253, 0.0262, 0.0265, 0.0264, 0.0266, 0.0257,
+     0.0258, 0.0261, 0.0259, 0.0253, 0.0257, 0.0261,
+     0.0255, 0.0250, 0.0259, 0.0266, 0.0278, 0.0319
+    },
+    {49.2252, 0.0371, 0.0204, 0.0189, 0.0230, 0.0261,
+     0.0281, 0.0290, 0.0292, 0.0286, 0.0277, 0.0279,
+     0.0285, 0.0281, 0.0291, 0.0281, 0.0281, 0.0282,
+     0.0272, 0.0282, 0.0282, 0.0284, 0.0310, 0.0334
+    },
+    {55.1674, 0.0388, 0.0212, 0.0200, 0.0239, 0.0271,
+     0.0288, 0.0299, 0.0306, 0.0300, 0.0296, 0.0303,
+     0.0293, 0.0290, 0.0291, 0.0294, 0.0295, 0.0290,
+     0.0293, 0.0292, 0.0292, 0.0293, 0.0316, 0.0358
+    },
+    {45.1004, 0.0411, 0.0225, 0.0215, 0.0249, 0.0281,
+     0.0301, 0.0315, 0.0320, 0.0308, 0.0318, 0.0321,
+     0.0312, 0.0311, 0.0316, 0.0315, 0.0310, 0.0308,
+     0.0313, 0.0303, 0.0314, 0.0314, 0.0324, 0.0369
+    },
+    {43.8614, 0.0420, 0.0239, 0.0224, 0.0268, 0.0296,
+     0.0322, 0.0336, 0.0333, 0.0326, 0.0321, 0.0325,
+     0.0329, 0.0326, 0.0323, 0.0322, 0.0326, 0.0320,
+     0.0329, 0.0319, 0.0314, 0.0329, 0.0341, 0.0373
+    },
+    {40.5440, 0.0434, 0.0246, 0.0236, 0.0275, 0.0311,
+     0.0332, 0.0345, 0.0347, 0.0347, 0.0340, 0.0336,
+     0.0339, 0.0344, 0.0339, 0.0341, 0.0341, 0.0342,
+     0.0345, 0.0328, 0.0341, 0.0332, 0.0356, 0.0398
+    },
+  };
+  return lSy[ly][tb];
+
+/*  const Double_t sy[24][10]={
     {0.000e+00, 2.610e-01, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 4.680e-01},
     {3.019e-02, 3.036e-02, 3.131e-02, 3.203e-02, 3.294e-02, 3.407e-02, 3.555e-02, 3.682e-02, 3.766e-02, 3.824e-02},
     {1.773e-02, 1.778e-02, 1.772e-02, 1.790e-02, 1.807e-02, 1.833e-02, 1.873e-02, 1.905e-02, 1.958e-02, 2.029e-02},
@@ -331,19 +402,83 @@ Double_t AliTRDcluster::GetSY(Int_t tb, Double_t z)
     {2.812e-02, 2.786e-02, 2.776e-02, 2.723e-02, 2.695e-02, 2.650e-02, 2.642e-02, 2.617e-02, 2.612e-02, 2.610e-02},
     {3.251e-02, 3.267e-02, 3.223e-02, 3.183e-02, 3.125e-02, 3.106e-02, 3.067e-02, 3.010e-02, 2.936e-02, 2.927e-02}
   };
-  if(z>=0. && z<.25) return sy[tb][Int_t(z/.025)];
+  if(z>=0. && z<.25) return sy[tb][Int_t(z/.025)] -  sy[5][Int_t(z/.025)];
 
-  Double_t m = 1.e-8; for(Int_t id=10; id--;) if(sy[tb][id]>m) m=sy[tb][id];
+  Double_t m = -1.e8; for(Int_t id=10; id--;) if((sy[tb][id] - sy[5][id])>m) m=sy[tb][id]-sy[5][id];
 
-  return m;
+  return m;*/
 }
+
+//___________________________________________________________________________
+Double_t AliTRDcluster::GetSYcharge(Float_t q)
+{
+// Parameterization of the r-phi resolution component due to cluster charge.
+// The value is the offset from the nominal cluster resolution defined as the
+// cluster resolution at average cluster charge (q0).
+// 
+// BEGIN_LATEX
+// #Delta #sigma_{y}(q) = a*(#frac{1}{q} - #frac{1}{q_{0}})
+// q_{0} #approx 50
+// END_LATEX
+// The definition is *NOT* robust against gain fluctuations and thus two approaches are possible
+// when residual miscalibration are available:
+//   - determine parameterization with a resolution matching those of the gain
+//   - define an analytic model which scales with the gain.
+// 
+// For more details please see AliTRDclusterResolution::ProcessCharge()
+//
+//Begin_Html
+//<img src="TRD/clusterQerror.gif">
+//End_Html
+//
+// Author
+// A.Bercuci <A.Bercuci@gsi.de>
+
+  const Float_t sq0inv = 0.019962; // [1/q0]
+  const Float_t sqb    = 1.0281564;// [cm]
+
+  return sqb*(1./q - sq0inv);
+}
+
+//___________________________________________________________________________
+Double_t AliTRDcluster::GetSYprf(Int_t ly, Double_t center, Double_t s2)
+{
+// Parameterization of the cluster error in the r-phi direction due to charge sharing between 
+// adiacent pads. Should be identical to what is provided in the OCDB as PRF [TODO]
+//
+// The parameterization is obtained from fitting cluster resolution at phi=exb and |x-0.675|<0.225. 
+// For more details see AliTRDclusterResolution::ProcessCenter().
+//
+//Begin_Html
+//<img src="TRD/clusterPRFerror.gif">
+//End_Html
+//
+// Author
+// A.Bercuci <A.Bercuci@gsi.de>
+
+/*  const Float_t scy[AliTRDgeometry::kNlayer][4] = {
+    {2.827e-02, 9.600e-04, 4.296e-01, 2.271e-02},
+    {2.952e-02,-2.198e-04, 4.146e-01, 2.339e-02},
+    {3.090e-02, 1.514e-03, 4.020e-01, 2.402e-02},
+    {3.260e-02,-2.037e-03, 3.946e-01, 2.509e-02},
+    {3.439e-02,-3.601e-04, 3.883e-01, 2.623e-02},
+    {3.510e-02, 2.066e-03, 3.651e-01, 2.588e-02},
+  };*/
+  const Float_t lPRF[] = {0.438, 0.403, 0.393, 0.382, 0.376, 0.345};
+
+  return s2*TMath::Gaus(center, 0., lPRF[ly]);
+}
+
 
 //___________________________________________________________________________
 Double_t AliTRDcluster::GetXcorr(Int_t tb, Double_t z)
 {
-  // drift length correction [cm]
-  // TODO to be parametrized in term of drift velocity
-  // A.Bercuci (Mar 28 2009)
+// Drift length correction [cm]. Due to variation of mean drift velocity along the drift region
+// from nominal vd at xd->infinity. For drift velocity determination based on tracking information 
+// the correction should be negligible.
+//
+// TODO to be parametrized in term of drift velocity at infinite drift length
+// A.Bercuci (Mar 28 2009)
 
   if(tb<0 || tb>=24) return 0.;
   const Int_t nd = 5;
@@ -408,8 +543,8 @@ Double_t AliTRDcluster::GetXcorr(Int_t tb, Double_t z)
 //___________________________________________________________________________
 Double_t AliTRDcluster::GetYcorr(Int_t ly, Float_t y)
 {
-// PRF correction TODO to be replaced by the gaussian 
-// approximation with full error parametrization
+// PRF correction for the LUT r-phi cluster shape.
+
   const Float_t cy[AliTRDgeometry::kNlayer][3] = {
     { 4.014e-04, 8.605e-03, -6.880e+00},
     {-3.061e-04, 9.663e-03, -6.789e+00},
@@ -465,7 +600,7 @@ Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const /*q*/, 
   // correction for t0
   td -= t0;
   // time bin corrected for t0
-  // BUG in TMath::Nint().root-5.23.02
+  // Bug in TMath::Nint().root-5.23.02
   // TMath::Nint(3.5) = 4 and TMath::Nint(4.5) = 4
   Double_t tmp = td*fFreq;
   fLocalTimeBin = Char_t(TMath::Floor(tmp));
@@ -483,6 +618,8 @@ Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const /*q*/, 
   return x;
 
 /*
+  // calculate radial posion of clusters in the drift region
+
   // invert drift time function
   Double_t xM= AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght(),
            x = vd*td + .5*AliTRDgeometry::CamHght(), 
@@ -510,12 +647,77 @@ Float_t AliTRDcluster::GetYloc(Double_t y0, Double_t s2, Double_t W, Double_t *c
   //printf("  s[%3d %3d %3d] w[%f %f] yr[%f %f]\n", fSignals[2], fSignals[3], fSignals[4], w1/(w1+w2), w2/(w1+w2), y1r*W, y2r*W);
   if(IsRPhiMethod(kCOG)) GetDYcog();
   else if(IsRPhiMethod(kLUT)) GetDYlut();
-  if(IsRPhiMethod(kGAUS)) GetDYgauss(s2/W/W, y1, y2);
+  else if(IsRPhiMethod(kGAUS)) GetDYgauss(s2/W/W, y1, y2);
+  else return 0.;
 
   if(y1) (*y1)*=W;
   if(y2) (*y2)*=W;
 
   return y0+fCenter*W+(IsRPhiMethod(kLUT)?GetYcorr(AliTRDgeometry::GetLayer(fDetector), fCenter):0.);
+}
+
+//___________________________________________________________________________
+void AliTRDcluster::SetSigmaY2(Float_t s2, Float_t dt, Float_t exb, Float_t x, Float_t z, Float_t tgp)
+{
+// Set variance of TRD cluster in the r-phi direction for each method.
+// Parameters :
+//   - s2  - variance due to PRF width for the case of Gauss model. Replaced by parameterization in case of LUT.
+//   - dt  - transversal diffusion coeficient 
+//   - exb - tg of lorentz angle
+//   - x   - drift length - with respect to the anode wire
+//   - z   - offset from the anode wire
+//   - tgp - local tangent of the track momentum azimuthal angle
+//
+// The ingredients from which the error is computed are:
+//   - PRF (charge sharing on adjacent pads)  - see AliTRDcluster::GetSYprf()
+//   - diffusion (dependence with drift length and [2nd order] distance to anode wire) - see AliTRDcluster::GetSYdrift()
+//   - charge of the cluster (complex dependence on gain and tail cancellation) - see AliTRDcluster::GetSYcharge()
+//   - lorentz angle (dependence on the drift length and [2nd order] distance to anode wire) - see AliTRDcluster::GetSX()
+//   - track angle (superposition of charges on the anode wire) - see AliTRDseedV1::Fit()
+//   - projection of radial(x) error on r-phi due to fixed value assumed in tracking for x - see AliTRDseedV1::Fit()
+//
+// The last 2 contributions to cluster error can be estimated only during tracking when the track angle 
+// is known (tgp). For this reason the errors (and optional position) of TRD clusters are recalculated during 
+// tracking and thus clusters attached to tracks might differ from bare clusters.
+// 
+// Author:
+// A.Bercuci <A.Bercuci@gsi.de>
+
+  Float_t sigmaY2 = 0.;
+  Int_t ly = AliTRDgeometry::GetLayer(fDetector);
+  if(IsRPhiMethod(kCOG)) sigmaY2 = 4.e-4;
+  else if(IsRPhiMethod(kLUT)){ 
+    Float_t sd = GetSYdrift(fLocalTimeBin, ly, z);//printf("drift[%6.2f] ", 1.e4*sd);
+    sigmaY2 = GetSYprf(ly, fCenter, sd);//printf("PRF[%6.2f] ", 1.e4*sigmaY2);
+    // add charge contribution TODO scale with respect to s2
+    sigmaY2+= GetSYcharge(TMath::Abs(fQ));//printf("Q[%6.2f] ", 1.e4*sigmaY2);
+    sigmaY2 = TMath::Max(sigmaY2, Float_t(0.)); //!! protection 
+    sigmaY2*= sigmaY2;
+  } else if(IsRPhiMethod(kGAUS)){
+    // PRF contribution
+    sigmaY2 = s2;
+    // Diffusion contribution
+    Double_t sD2 = dt/(1.+exb); sD2 *= sD2; sD2 *= x;
+    sigmaY2+= sD2; 
+    // add charge contribution TODO scale with respect to s2
+    //sigmaY2+= GetSYcharge(TMath::Abs(fQ));
+  }
+
+  // store tg^2(phi-a_L) and tg^2(a_L)
+  Double_t tgg = (tgp-exb)/(1.+tgp*exb); tgg *= tgg;
+  Double_t exb2= exb*exb;
+
+  // Lorentz angle shift contribution 
+  Float_t sx = GetSX(fLocalTimeBin, z); sx*=sx;
+  sigmaY2+= exb2*sx;//printf("Al[%6.2f] ", 1.e4*TMath::Sqrt(sigmaY2));
+
+  // Radial contribution due to not measuring x in Kalman model 
+  sigmaY2+= tgg*sx;//printf("x[%6.2f] ", 1.e4*TMath::Sqrt(sigmaY2));
+
+  // Track angle contribution
+  sigmaY2+= tgg*x*x*exb2/12.;//printf("angle[%6.2f]\n", 1.e4*TMath::Sqrt(sigmaY2));
+
+  AliCluster::SetSigmaY2(sigmaY2);
 }
 
 //_____________________________________________________________________________

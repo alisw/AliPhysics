@@ -3555,7 +3555,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
     }
 
     // Set cluster error
-    cl[best[bestiter][it]][it]->SetSigmaY2(expectederr); 
+    ((AliCluster*)cl[best[bestiter][it]][it])->SetSigmaY2(expectederr); 
     if (!cl[best[bestiter][it]][it]->IsUsed()) {
       cl[best[bestiter][it]][it]->SetY(cl[best[bestiter][it]][it]->GetY()); 
     }

@@ -34,7 +34,7 @@ public:
   void      Print(Option_t *opt="") const;
 
   void      SetAnisochronity(Float_t d) {fD = d;}
-  void      SetCluster(const AliTRDcluster *c, Float_t *cov=0x0);
+  void      SetCluster(const AliTRDcluster *c);
   void      SetMC(Int_t pdg, Int_t label){
       fPdg  = pdg;
       fLbl  = label;}

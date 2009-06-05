@@ -18,11 +18,11 @@ public:
    ,kN   = kND*kNTB
   };
   enum EResultContainer { // results container type
-    kQRes   = 0
-   ,kCenter = 1
-   ,kSigm   = 2
-   ,kMean   = 3
-   ,kNtasks = 4
+    kCenter = 0   // cluster2center pad calibration
+   ,kQRes   = 1   // resolution on charge dependence
+   ,kSigm   = 2   // sigma cluster as func of x and z
+   ,kMean   = 3   // shift cluster as func of x and z
+   ,kNtasks = 4   // total number os sub tasks
   };
   enum ECheckBits { // force setting the ExB
     kSaveAs    = BIT(22)
@@ -81,9 +81,10 @@ private:
   Float_t    fX;       //! local drift length 
   Float_t    fY;       //! local rphi offset 
   Float_t    fZ;       //! local anode wire offset 
-  Float_t    fR[4];    //! val/error result list
+  Float_t    fR[4];    //! mean/sgm resolution
+  Float_t    fP[4];    //! mean/sgm pulls
   
-  ClassDef(AliTRDclusterResolution, 2)  // cluster resolution
+  ClassDef(AliTRDclusterResolution, 3)  // cluster resolution
 };
 
 //___________________________________________________

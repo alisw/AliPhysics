@@ -234,16 +234,16 @@ Bool_t AliTRDtransform::Transform(AliTRDcluster *c)
 
   Float_t x = c->GetXloc(t0, vd);
 
-  // pad response width with diffusion corrections
-  Double_t s2  = fCalPRFROC->GetValue(col, row); s2 *= s2; 
-  Float_t dl, dt;
-  AliTRDCommonParam::Instance()->GetDiffCoeff(dl, dt, vd);
-  s2 += dl*dl*x/(1.+2.*exb*exb);
-  s2 -= - 1.5e-1;
-
   // Pad dimensions
   Double_t rs = fPadPlane->GetRowSize(row);
   Double_t cs = fPadPlane->GetColSize(col);
+
+  // cluster error with diffusion corrections
+  Double_t s2  = cs*fCalPRFROC->GetValue(col, row); 
+  s2 *= s2; 
+  Float_t dl, dt;
+  AliTRDCommonParam::Instance()->GetDiffCoeff(dl, dt, vd);
+
   Double_t y0 = fPadPlane->GetColPos(col) + .5*cs;
   Double_t loc[] = {
     kX0shift-x,                    // Invert the X-position,
@@ -257,7 +257,7 @@ Bool_t AliTRDtransform::Transform(AliTRDcluster *c)
 
   // store tracking values
   c->SetX(trk[0]);c->SetY(trk[1]);c->SetZ(trk[2]);
-  c->SetSigmaY2(s2);
+  c->SetSigmaY2(s2, dt, exb, x);
   c->SetSigmaZ2(fPadPlane->GetRowSize(row)*fPadPlane->GetRowSize(row)/12.);
   
   return kTRUE;
