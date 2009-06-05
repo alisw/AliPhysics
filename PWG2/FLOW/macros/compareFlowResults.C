@@ -441,8 +441,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   if(fileLYZ1SUM) {
     fileLYZ1SUM->GetObject("cobjLYZ1SUM",pListLYZ1SUM); 
     if(pListLYZ1SUM) {
-      lyz1sumCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ1SUM->FindObject("AliFlowCommonHistLYZ1"));
-      lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1"));
+      lyz1sumCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ1SUM->FindObject("AliFlowCommonHistLYZ1SUM"));
+      lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1SUM"));
       if(lyz1sumCommonHistRes) {
 	flowValue[binLYZ1SUM-1] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinContent(1);
 	flowError[binLYZ1SUM-1] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinError(1);
@@ -457,8 +457,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   if(fileLYZ2SUM) {
     fileLYZ2SUM->GetObject("cobjLYZ2SUM",pListLYZ2SUM); 
     if(pListLYZ2SUM) {
-      lyz2sumCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ2SUM->FindObject("AliFlowCommonHistLYZ2"));
-      lyz2sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ2SUM->FindObject("AliFlowCommonHistResultsLYZ2"));
+      lyz2sumCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ2SUM->FindObject("AliFlowCommonHistLYZ2SUM"));
+      lyz2sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ2SUM->FindObject("AliFlowCommonHistResultsLYZ2SUM"));
       if(lyz2sumCommonHistRes) {
 	flowValueRP[binLYZ2SUMRP-1] = (lyz2sumCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
 	flowErrorRP[binLYZ2SUMRP-1] = (lyz2sumCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
@@ -475,8 +475,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   if(fileLYZ1PROD) {
     fileLYZ1PROD->GetObject("cobjLYZ1PROD",pListLYZ1PROD); 
     if(pListLYZ1PROD) {
-      lyz1prodCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ1PROD->FindObject("AliFlowCommonHistLYZ1"));
-      lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1"));
+      lyz1prodCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ1PROD->FindObject("AliFlowCommonHistLYZ1PROD"));
+      lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1PROD"));
       if(lyz1prodCommonHistRes) {
 	flowValue[binLYZ1PROD-1] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinContent(1);
 	flowError[binLYZ1PROD-1] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinError(1);
@@ -491,8 +491,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   if(fileLYZ2PROD) {
     fileLYZ2PROD->GetObject("cobjLYZ2PROD",pListLYZ2PROD); 
     if(pListLYZ2PROD) {
-      lyz2prodCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ2PROD->FindObject("AliFlowCommonHistLYZ2"));
-      lyz2prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ2PROD->FindObject("AliFlowCommonHistResultsLYZ2"));
+      lyz2prodCommonHist = dynamic_cast<AliFlowCommonHist*> (pListLYZ2PROD->FindObject("AliFlowCommonHistLYZ2PROD"));
+      lyz2prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (pListLYZ2PROD->FindObject("AliFlowCommonHistResultsLYZ2PROD"));
       if(lyz2prodCommonHistRes) {
 	flowValueRP[binLYZ2PRODRP-1] = (lyz2prodCommonHistRes->GetHistIntFlowRP())->GetBinContent(1);
 	flowErrorRP[binLYZ2PRODRP-1] = (lyz2prodCommonHistRes->GetHistIntFlowRP())->GetBinError(1);
@@ -2510,7 +2510,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   TH1D *lyz2prodDiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
   TH1D *lyzepDiffFlowPtRelativeToMCRP = new TH1D("","",iNbinsPt,dPtMin,dPtMax);
     
-  if(mcepCommonHistRes->GetHistDiffFlowPtRP())
+  if(mcepCommonHistRes && mcepCommonHistRes->GetHistDiffFlowPtRP())
   {
    for(Int_t p=1;p<iNbinsPt+1;p++)
    {
