@@ -172,7 +172,9 @@ AliTPCcalibDB::AliTPCcalibDB():
   fTemperature(0),
   fMapping(0),
   fParam(0),
-  fClusterParam(0),  
+  fClusterParam(0),
+  fTimeGainSplines(0),
+  fTimeGainSplinesArray(100000),
   fGRPArray(100000),            //! array of GRPs  -  per run  - JUST for calibration studies
   fGRPMaps(100000),            //! array of GRPs  -  per run  - JUST for calibration studies
   fGoofieArray(100000),         //! array of GOOFIE values -per run - Just for calibration studies
@@ -203,6 +205,8 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fMapping(0),
   fParam(0),
   fClusterParam(0),
+  fTimeGainSplines(0),
+  fTimeGainSplinesArray(100000),
   fGRPArray(0),          //! array of GRPs  -  per run  - JUST for calibration studies
   fGRPMaps(0),          //! array of GRPs  -  per run  - JUST for calibration studies
   fGoofieArray(0),        //! array of GOOFIE values -per run - Just for calibration studies
@@ -269,15 +273,15 @@ void AliTPCcalibDB::SetRun(Long64_t run)
   //  
   if (fRun == run)
     return;  
-  fRun = run;
+	fRun = run;
   Update();
 }
   
 
 
 void AliTPCcalibDB::Update(){
-  //
-  AliCDBEntry * entry=0;
+	//
+	AliCDBEntry * entry=0;
   
   Bool_t cdbCache = AliCDBManager::Instance()->GetCacheFlag(); // save cache status
   AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
@@ -745,6 +749,7 @@ void AliTPCcalibDB::GetRunInformations( Int_t run){
     fVoltageArray.Expand(run*2+1); 
     fTemperatureArray.Expand(run*2+1);
     fVdriftArray.Expand(run*2+1);
+    fTimeGainSplinesArray.Expand(run*2+1);
   }
   if (fRunList[run]>0) return;
   entry = AliCDBManager::Instance()->Get("GRP/GRP/Data",run);
@@ -767,6 +772,9 @@ void AliTPCcalibDB::GetRunInformations( Int_t run){
   //
   entry = AliCDBManager::Instance()->Get("TPC/Calib/HighVoltage",run);
   if (entry)  fVoltageArray.AddAt(entry->GetObject(),run);
+  //
+  entry = AliCDBManager::Instance()->Get("TPC/Calib/TimeGain",run);
+  if (entry)  fTimeGainSplinesArray.AddAt(entry->GetObject(),run);
   //
   entry = AliCDBManager::Instance()->Get("TPC/Calib/Temperature",run);
   if (entry)  fTemperatureArray.AddAt(entry->GetObject(),run);
@@ -862,16 +870,17 @@ AliTPCSensorTempArray * AliTPCcalibDB::GetTemperatureSensor(Int_t run){
   return tempArray;
 }
 
-AliDCSSensorArray * AliTPCcalibDB::GetGoofieSensors(Int_t run){
+
+TObjArray * AliTPCcalibDB::GetTimeGainSplinesRun(Int_t run){
   //
   // Get temperature sensor array
   //
-  AliDCSSensorArray * goofieArray = (AliDCSSensorArray *)fGoofieArray.At(run);
-  if (!goofieArray) {
+  TObjArray * gainSplines = (TObjArray *)fTimeGainSplinesArray.At(run);
+  if (!gainSplines) {
     GetRunInformations(run);
-    goofieArray = (AliDCSSensorArray *)fGoofieArray.At(run);
+    gainSplines = (TObjArray *)fTimeGainSplinesArray.At(run);
   }
-  return goofieArray;
+  return gainSplines;
 }
 
 AliDCSSensorArray * AliTPCcalibDB::GetVoltageSensors(Int_t run){

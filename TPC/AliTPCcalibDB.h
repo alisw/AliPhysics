@@ -70,6 +70,7 @@ class AliTPCcalibDB : public TObject
   AliDCSSensorArray *     GetGoofieSensors(Int_t run);
   AliDCSSensorArray *     GetVoltageSensors(Int_t run);
   AliTPCCalibVdrift *     GetVdrift(Int_t run);
+	TObjArray *							GetTimeGainSplinesRun(Int_t run);
   static Float_t GetGain(Int_t sector, Int_t row, Int_t pad);
   //
   static void     CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
@@ -109,13 +110,14 @@ protected:
   //
   // Get the corssrun information
   //
-  TObjArray      fGRPArray;           //! array of GRPs  -  per run
-  TObjArray      fGRPMaps;            //! array of GRPs maps  -  per run - old data  
-  TObjArray      fGoofieArray;        //! array of GOOFIE values -per run
-  TObjArray      fVoltageArray;       //! array of Chamber HV values -per run
-  TObjArray      fTemperatureArray;   //! array of temperature sensors - per run
-  TObjArray      fVdriftArray;        //! array of v drift interfaces
-  TArrayI        fRunList;            //! run list - indicates try to get the run param
+  TObjArray      fTimeGainSplinesArray; //! array Array of AliSplineFits: at 0 MIP position in time ; at 1 Fermi Plateau from cosmics
+  TObjArray      fGRPArray;							//! array of GRPs  -  per run
+  TObjArray      fGRPMaps;							//! array of GRPs maps  -  per run - old data  
+  TObjArray      fGoofieArray;					//! array of GOOFIE values -per run
+  TObjArray      fVoltageArray;					//! array of Chamber HV values -per run
+  TObjArray      fTemperatureArray;			//! array of temperature sensors - per run
+  TObjArray      fVdriftArray;					//! array of v drift interfaces
+  TArrayI        fRunList;							//! run list - indicates try to get the run param
   //
   static AliTPCcalibDB* fgInstance;  // singleton control
   static Bool_t       fgTerminated;  // termination control 

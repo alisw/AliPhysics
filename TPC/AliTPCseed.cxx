@@ -1076,8 +1076,8 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
   if (trans) {
     runNumber = trans->GetCurrentRunNumber();
-    AliTPCcalibDB::Instance()->SetRun(runNumber);
-    TObjArray * timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplines();
+		//AliTPCcalibDB::Instance()->SetRun(runNumber);
+    TObjArray * timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(runNumber);
     if (timeGainSplines) {
       UInt_t time = trans->GetCurrentTimeStamp();
       AliSplineFit * fitMIP = (AliSplineFit *) timeGainSplines->At(0);
@@ -1236,8 +1236,8 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
   if (trans) {
     runNumber = trans->GetCurrentRunNumber();
-    AliTPCcalibDB::Instance()->SetRun(runNumber);
-    TObjArray * timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplines();
+    //AliTPCcalibDB::Instance()->SetRun(runNumber);
+    TObjArray * timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(runNumber);
     if (timeGainSplines) {
       UInt_t time = trans->GetCurrentTimeStamp();
       AliSplineFit * fitMIP = (AliSplineFit *) timeGainSplines->At(0);
