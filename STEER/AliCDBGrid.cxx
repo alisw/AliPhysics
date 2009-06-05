@@ -322,10 +322,11 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 	}
 	delete res;
 
-	// in case of GRP-like objects, do not put them if it would update a per-run entry already in place
-	if ( id.GetVersion()==1 && (id.GetLastRun()-id.GetFirstRun()==0) && lastVersion!=0 && (lastRunRange.GetLastRun()-lastRunRange.GetFirstRun()==0)){
-	        AliWarning(Form("Not overwriting entry with %s", id.ToString().Data()));
-	        return kFALSE;
+	// GRP entries with explicitly set version escape default incremental versioning
+	if(id.GetPath().Contains("GRP") && id.HasVersion() && lastVersion!=0)
+	{
+		AliDebug(5,Form("Entry %s won't be put in the destination OCDB", id.ToString().Data()));
+		return kFALSE;
 	}
 
 	id.SetVersion(lastVersion + 1);
