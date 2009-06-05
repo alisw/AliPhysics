@@ -13,6 +13,8 @@
 #pragma link C++ class  AliTRDv1+;
 #pragma link C++ class  AliTRDdigitizer+;
 #pragma link C++ class  AliTRDTrigger+;
+#pragma link C++ class  AliTRDTriggerL0+;
+#pragma link C++ class  AliTRDTriggerL1+;
 #pragma link C++ class  AliTRDQADataMakerSim+;
 
 #endif
