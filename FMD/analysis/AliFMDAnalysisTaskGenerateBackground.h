@@ -20,6 +20,7 @@ class AliFMDAnalysisTaskGenerateBackground : public AliAnalysisTaskSE
       fListOfCorrection(),
       fVertexBins(o.fVertexBins),
       fLastTrackByStrip(o.fLastTrackByStrip),
+      fHitsByStrip(o.fHitsByStrip),
       fZvtxCut(o.fZvtxCut),
       fNvtxBins(o.fNvtxBins),
       fNbinsEta(o.fNbinsEta),

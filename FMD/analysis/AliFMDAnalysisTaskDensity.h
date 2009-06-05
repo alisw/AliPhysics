@@ -59,8 +59,8 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     AliESDVertex* fVertex;
     Bool_t        fStandalone;
     Bool_t        fStatus;
-    TF1*          fFuncPos;
-    TF1*          fFuncNeg;
+    // TF1*          fFuncPos;
+    // TF1*          fFuncNeg;
     
     ClassDef(AliFMDAnalysisTaskDensity, 0); // Analysis task for FMD analysis
 };

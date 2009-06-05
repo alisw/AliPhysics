@@ -207,8 +207,8 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
 							  Float_t Enext,
 							  UShort_t   det,
 							  Char_t  ring,
-							  UShort_t sec,
-							  UShort_t strip) {
+							  UShort_t /*sec*/,
+							  UShort_t /*strip*/) {
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
  
   Float_t merged_energy = 0;

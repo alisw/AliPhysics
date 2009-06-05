@@ -61,10 +61,10 @@ AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity(const char* name, Bool_t SE
     DefineOutput(0, TList::Class());
   }
   
-  fFuncPos = new TF1("funcPos","pol1",0,6);
+  /*  fFuncPos = new TF1("funcPos","pol1",0,6);
   fFuncPos->SetParameters(0.99925,0.00298301);
   fFuncNeg = new TF1("funcNeg","pol1",-6,0);
-  fFuncNeg->SetParameters(0.987583,-0.0101022);
+  fFuncNeg->SetParameters(0.987583,-0.0101022);*/
   
   
 }
@@ -205,13 +205,14 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	   //  std::cout<<eta<<"    "<<etacalc<<std::endl;
 	   //eta = etacalc;
 	     
-	  Float_t m   = pars->GetMPV(det,ring,eta);
-	  Float_t s   = pars->GetSigma(det,ring,eta);
+	  //  Float_t m   = pars->GetMPV(det,ring,eta);
+	  //  Float_t s   = pars->GetSigma(det,ring,eta);
 	  //AliFMDParameters* recopars = AliFMDParameters::Instance();
 	  
 	  Float_t mult_cut = 0.15;//m-2*s;//0.15;//0.2;//m-3*s;// 0.2;//0.01;//m-2*s;//0.2;
 	  if(ring == 'I')
 	    mult_cut = 0.10;
+	  
 	  //mult_cut = (5*recopars->GetPedestalWidth(det,ring,sec,strip))/(recopars->GetPulseGain(det,ring,sec,strip)*recopars->GetDACPerMIP());
 	  
 	  Float_t nParticles = 0;
@@ -258,8 +259,10 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	  if(fESD->GetUniqueID() == kTRUE) {
 	    TH1F* hDoubleHitCorrection = pars->GetDoubleHitCorrection(det,ring);
 	    //if(det == 3) 
+	    
 	    if(hDoubleHitCorrection->GetBinContent(hDoubleHitCorrection->FindBin(eta)) != 0)
 	      correction = correction / hDoubleHitCorrection->GetBinContent(hDoubleHitCorrection->FindBin(eta));
+	    
 	    //else
 	    //  correction = correction / pars->GetDoubleHitCorrection()->GetBinContent(pars->GetDoubleHitCorrection()->FindBin(eta));
 	  }

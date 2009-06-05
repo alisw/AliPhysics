@@ -25,16 +25,33 @@ ClassImp(AliFMDAnalysisTaskGenerateBackground)
 
 //_____________________________________________________________________
 AliFMDAnalysisTaskGenerateBackground::AliFMDAnalysisTaskGenerateBackground():
-AliAnalysisTaskSE()
+AliAnalysisTaskSE(),
+  fListOfHits(), 
+  fListOfPrimaries(),
+  fListOfCorrection(),
+  fVertexBins(),
+  fLastTrackByStrip(),
+  fHitsByStrip(),
+  fZvtxCut(10),
+  fNvtxBins(10),
+  fNbinsEta(200),
+  fBackground(0)
 {
   // Default constructor
 }
 //_____________________________________________________________________
 AliFMDAnalysisTaskGenerateBackground::AliFMDAnalysisTaskGenerateBackground(const char* name):
   AliAnalysisTaskSE(name),
+  fListOfHits(), 
+  fListOfPrimaries(),
+  fListOfCorrection(),
+  fVertexBins(),
+  fLastTrackByStrip(),
+  fHitsByStrip(),
   fZvtxCut(10),
   fNvtxBins(10),
-  fNbinsEta(200)
+  fNbinsEta(200),
+  fBackground(0)
 {
  
   DefineOutput(1, TList::Class());
@@ -242,7 +259,7 @@ void AliFMDAnalysisTaskGenerateBackground::GenerateCorrection() {
 
 }
 //_____________________________________________________________________
-void AliFMDAnalysisTaskGenerateBackground::ReadFromFile(const Char_t* filename, Bool_t storeInOCDB, Int_t runNo) {
+void AliFMDAnalysisTaskGenerateBackground::ReadFromFile(const Char_t* filename, Bool_t storeInOCDB, Int_t /*runNo*/) {
 
   TFile infile(filename);
   TH1F* hVertex = (TH1F*)infile.Get("VertexBins");

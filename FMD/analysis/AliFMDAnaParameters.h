@@ -93,9 +93,11 @@ protected:
     : TNamed(o),
       fIsInit(o.fIsInit),
       fBackground(o.fBackground),
-      fEnergyDistribution(o.fEnergyDistribution)
-      //  fBackgroundArray(o.fBackgroundArray), 
-      //fEdistArray(o.fEdistArray)
+      fEnergyDistribution(o.fEnergyDistribution),
+      fCorner1(o.fCorner1),
+      fCorner2(o.fCorner2),
+      fEnergyPath(o.fEnergyPath),
+      fBackgroundPath(o.fBackgroundPath)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}

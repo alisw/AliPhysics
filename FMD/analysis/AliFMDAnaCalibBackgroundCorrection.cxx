@@ -61,11 +61,11 @@ void AliFMDAnaCalibBackgroundCorrection::SetBgCorrection(Int_t det,
   
 }
 //____________________________________________________________________
-TH1F* AliFMDAnaCalibBackgroundCorrection::GetDoubleHitCorrection(Int_t det, 
+TH1F* AliFMDAnaCalibBackgroundCorrection::GetDoubleHitCorrection(Int_t  det, 
 								 Char_t ring) {
   
   
-  TH1F* hCorrection    = (TH1F*)fListOfDoubleHitCorrection.FindObject(Form("hDoubleHitCorrection_FMD%d%c"));
+  TH1F* hCorrection    = (TH1F*)fListOfDoubleHitCorrection.FindObject(Form("hDoubleHitCorrection_FMD%d%c",det,ring));
   return hCorrection;
 }
 
@@ -73,7 +73,7 @@ TH1F* AliFMDAnaCalibBackgroundCorrection::GetDoubleHitCorrection(Int_t det,
 void AliFMDAnaCalibBackgroundCorrection::SetDoubleHitCorrection(Int_t det, 
 								Char_t ring, 
 								TH1F* hCorrection) {
-  hCorrection->SetName(Form("hDoubleHitCorrection_FMD%d%c"));
+  hCorrection->SetName(Form("hDoubleHitCorrection_FMD%d%c",det,ring));
   fListOfDoubleHitCorrection.Add(hCorrection);    
 }
 //____________________________________________________________________
