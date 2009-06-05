@@ -150,6 +150,14 @@ fListHistCascade(0),
     fHistMassXiPlus(0),
     fHistMassOmegaMinus(0),
     fHistMassOmegaPlus(0),
+    
+	// - Effective mass histos with combined PID
+    fHistMassWithCombPIDXiMinus(0), fHistMassWithCombPIDXiPlus(0),
+    fHistMassWithCombPIDOmegaMinus(0), fHistMassWithCombPIDOmegaPlus(0),
+    
+    	// - Effective mass histos with perfect MC PID on the bachelor
+    fHistMassWithMcPIDXiMinus(0), fHistMassWithMcPIDXiPlus(0),
+    fHistMassWithMcPIDOmegaMinus(0), fHistMassWithMcPIDOmegaPlus(0),
 	
 	// - Effective mass histos for the cascade candidates associated with MC
     fHistAsMCMassXiMinus(0),		
@@ -308,6 +316,14 @@ fListHistCascade(0),
     fHistMassOmegaMinus(0),
     fHistMassOmegaPlus(0),
 	
+	// - Effective mass histos with combined PID
+    fHistMassWithCombPIDXiMinus(0), fHistMassWithCombPIDXiPlus(0),
+    fHistMassWithCombPIDOmegaMinus(0), fHistMassWithCombPIDOmegaPlus(0),
+    
+    	// - Effective mass histos with perfect MC PID on the bachelor
+    fHistMassWithMcPIDXiMinus(0), fHistMassWithMcPIDXiPlus(0),
+    fHistMassWithMcPIDOmegaMinus(0), fHistMassWithMcPIDOmegaPlus(0),
+    
 	// - Effective mass histos for the cascade candidates associated with MC
     fHistAsMCMassXiMinus(0),		
     fHistAsMCMassXiPlus(0),		
@@ -766,6 +782,53 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
 	  fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus","#Omega^{+} candidates;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 250,1.5,2.5);
 	  fListHistCascade->Add(fHistMassOmegaPlus);
   }
+  
+  
+  
+  		// - Effective mass histos with combined PID
+  
+  if (! fHistMassWithCombPIDXiMinus) {
+    fHistMassWithCombPIDXiMinus = new TH1F("fHistMassWithCombPIDXiMinus","#Xi^{-} candidates, with Bach. comb. PID;M( #Lambda , #pi^{-} ) (GeV/c^{2});Counts", 200,1.2,2.0);
+    fListHistCascade->Add(fHistMassWithCombPIDXiMinus);
+  }
+  
+  if (! fHistMassWithCombPIDXiPlus) {
+    fHistMassWithCombPIDXiPlus = new TH1F("fHistMassWithCombPIDXiPlus","#Xi^{+} candidates, with Bach. comb. PID;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",200,1.2,2.0);
+    fListHistCascade->Add(fHistMassWithCombPIDXiPlus);
+  }
+
+  if (! fHistMassWithCombPIDOmegaMinus) {
+	fHistMassWithCombPIDOmegaMinus = new TH1F("fHistMassWithCombPIDOmegaMinus","#Omega^{-} candidates, with Bach. comb. PID;M( #Lambda , K^{-} ) (GeV/c^{2});Counts", 250,1.5,2.5);
+    fListHistCascade->Add(fHistMassWithCombPIDOmegaMinus);
+  }
+ 
+  if (! fHistMassWithCombPIDOmegaPlus) {
+	fHistMassWithCombPIDOmegaPlus = new TH1F("fHistMassWithCombPIDOmegaPlus","#Omega^{+} candidates, with Bach. comb. PID;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 250,1.5,2.5);
+    fListHistCascade->Add(fHistMassWithCombPIDOmegaPlus);
+  }
+  
+  		// - Effective mass histos with perfect MC PID on the bachelor
+  
+  if (! fHistMassWithMcPIDXiMinus) {
+    fHistMassWithMcPIDXiMinus = new TH1F("fHistMassWithMcPIDXiMinus","#Xi^{-} candidates, with Bach. MC PID;M( #Lambda , #pi^{-} ) (GeV/c^{2});Counts", 200,1.2,2.0);
+    fListHistCascade->Add(fHistMassWithMcPIDXiMinus);
+  }
+  
+  if (! fHistMassWithMcPIDXiPlus) {
+    fHistMassWithMcPIDXiPlus = new TH1F("fHistMassWithMcPIDXiPlus","#Xi^{+} candidates, with Bach. MC PID;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",200,1.2,2.0);
+    fListHistCascade->Add(fHistMassWithMcPIDXiPlus);
+  }
+
+  if (! fHistMassWithMcPIDOmegaMinus) {
+	fHistMassWithMcPIDOmegaMinus = new TH1F("fHistMassWithMcPIDOmegaMinus","#Omega^{-} candidates, with Bach. MC PID;M( #Lambda , K^{-} ) (GeV/c^{2});Counts", 250,1.5,2.5);
+    fListHistCascade->Add(fHistMassWithMcPIDOmegaMinus);
+  }
+ 
+  if (! fHistMassWithMcPIDOmegaPlus) {
+	fHistMassWithMcPIDOmegaPlus = new TH1F("fHistMassWithMcPIDOmegaPlus","#Omega^{+} candidates, with Bach. MC PID;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 250,1.5,2.5);
+    fListHistCascade->Add(fHistMassWithMcPIDOmegaPlus);
+  }
+  
   
 		// - Effective mass histos for cascades candidates ASSOCIATED with MC.
   
@@ -1441,6 +1504,63 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	if( lChargeXi > 0 )	fHistMassOmegaPlus	->Fill( lInvMassOmegaPlus );
 	
 	
+	// - Step 4 : PID info
+	//-------------
+	
+	Bool_t   lIsBachelorKaon    = kFALSE;
+	Bool_t   lIsBachelorPion    = kFALSE;
+	
+	// Reasonable guess for the priors for the cascade track sample
+	Double_t lPriorsGuessXi[5]    = {0.0, 0.0, 2, 0, 1};
+	Double_t lPriorsGuessOmega[5] = {0.0, 0.0, 1, 1, 1};
+	AliPID pidXi;		pidXi.SetPriors(    lPriorsGuessXi    );
+	AliPID pidOmega;	pidOmega.SetPriors( lPriorsGuessOmega );
+	
+	if( bachTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
+		Double_t r[10]; bachTrackXi->GetESDpid(r);
+		pidXi.SetProbabilities(r);
+		pidOmega.SetProbabilities(r);
+		// Check if the bachelor track is a pion
+		Double_t ppion = pidXi.GetProbability(AliPID::kPion);
+		if (ppion > pidXi.GetProbability(AliPID::kElectron) &&
+		    ppion > pidXi.GetProbability(AliPID::kMuon)     &&
+		    ppion > pidXi.GetProbability(AliPID::kKaon)     &&
+		    ppion > pidXi.GetProbability(AliPID::kProton)   )     lIsBachelorPion = kTRUE;
+		// Check if the bachelor track is a kaon
+		Double_t pkaon = pidOmega.GetProbability(AliPID::kKaon);
+		if (pkaon > pidOmega.GetProbability(AliPID::kElectron) &&
+		    pkaon > pidOmega.GetProbability(AliPID::kMuon)     &&
+		    pkaon > pidOmega.GetProbability(AliPID::kPion)     &&
+		    pkaon > pidOmega.GetProbability(AliPID::kProton)   )  lIsBachelorKaon = kTRUE;
+		
+	}// end if bachelor track with existing combined PID
+	
+	           
+	if( lChargeXi < 0 && lIsBachelorPion )    fHistMassWithCombPIDXiMinus     ->Fill( lInvMassXiMinus );
+	if( lChargeXi > 0 && lIsBachelorPion )    fHistMassWithCombPIDXiPlus      ->Fill( lInvMassXiPlus );
+	if( lChargeXi < 0 && lIsBachelorKaon )    fHistMassWithCombPIDOmegaMinus  ->Fill( lInvMassOmegaMinus );
+	if( lChargeXi > 0 && lIsBachelorKaon )    fHistMassWithCombPIDOmegaPlus   ->Fill( lInvMassOmegaPlus );
+         
+	
+	Bool_t   lIsBachelorMCPiMinus  = kFALSE;
+	Bool_t   lIsBachelorMCPiPlus   = kFALSE;
+	Bool_t   lIsBachelorMCKMinus   = kFALSE;
+	Bool_t   lIsBachelorMCKPlus    = kFALSE;	
+	
+	Int_t      lblBachForPID  = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
+	TParticle* mcBachForPID   = lMCstack->Particle( lblBachForPID );
+	
+	if( mcBachForPID->GetPdgCode() == -211) lIsBachelorMCPiMinus = kTRUE;
+	if( mcBachForPID->GetPdgCode() ==  211) lIsBachelorMCPiPlus  = kTRUE;
+	if( mcBachForPID->GetPdgCode() == -321) lIsBachelorMCKMinus  = kTRUE;
+	if( mcBachForPID->GetPdgCode() ==  321) lIsBachelorMCKPlus   = kTRUE;
+	
+	if( lChargeXi < 0 && lIsBachelorMCPiMinus )    fHistMassWithMcPIDXiMinus     ->Fill( lInvMassXiMinus );
+	if( lChargeXi > 0 && lIsBachelorMCPiPlus  )    fHistMassWithMcPIDXiPlus      ->Fill( lInvMassXiPlus );
+	if( lChargeXi < 0 && lIsBachelorMCKMinus  )    fHistMassWithMcPIDOmegaMinus  ->Fill( lInvMassOmegaMinus );
+	if( lChargeXi > 0 && lIsBachelorMCKPlus   )    fHistMassWithMcPIDOmegaPlus   ->Fill( lInvMassOmegaPlus );
+	
+
 	
 	
 	// - Step 4 : MC association
@@ -1471,7 +1591,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother() ; 
 	Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
 	
-		if(lblMotherPosV0Dghter != lblMotherNegV0Dghter) continue; // same mother
+		if( lblMotherPosV0Dghter != lblMotherNegV0Dghter) continue; // same mother
 		if( lblMotherPosV0Dghter < 0 ) continue; // mother != primary (!= -1)
 		if( lblMotherNegV0Dghter < 0 ) continue;
 					
