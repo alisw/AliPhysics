@@ -351,6 +351,8 @@ int AliHLTSimulationInitOCDB(AliHLTSimulation* /*pSim*/)
     man->SetSpecificStorage("HLT/ConfigHLT/SolenoidBz", Form("local://%s",gSystem->pwd()));
     man->SetSpecificStorage("HLT/ConfigHLT/esdLayout", Form("local://%s",gSystem->pwd()));
   }
+
+  return 0;
 }
 
 extern "C" void AliHLTSimulationCompileInfo(const char*& date, const char*& time)
