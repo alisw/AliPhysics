@@ -148,7 +148,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	  arg+=" -timebins "; arg+=pTPCParam->GetMaxTBin()+1;
 	}
 	if (!rawReader) {
-	  arg+=" -sorted";
+	  arg+=" -do-mc";
 	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), arg.Data());
 	} else {
 	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderDecoder", publisher.Data(), arg.Data());
@@ -161,7 +161,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
       TString tracker;
       // tracker finder components
       tracker.Form("TPC-TR_%02d", slice);
-      handler->CreateConfiguration(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run");
+      handler->CreateConfiguration(tracker.Data(), "TPCCATracker", trackerInput.Data(), "");
 
       if (mergerInput.Length()>0) mergerInput+=" ";
       mergerInput+=tracker;
@@ -169,7 +169,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     }
 
     // GlobalMerger component
-    handler->CreateConfiguration("TPC-globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
+    handler->CreateConfiguration("TPC-globalmerger","TPCCAGlobalMerger",mergerInput.Data(),"");
 
     // the esd converter configuration
     handler->CreateConfiguration("TPC-esd-converter", "TPCEsdConverter"   , "TPC-globalmerger", "");
