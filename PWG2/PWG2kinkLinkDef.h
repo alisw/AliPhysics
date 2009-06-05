@@ -6,6 +6,7 @@
 
 #pragma link C++ class AliAnalysisKinkESDMC+;
 #pragma link C++ class AliResonanceKinkLikeSign+;
-#pragma link C++ class AliResonanceKinkPID+;
+#pragma link C++ class AliResonanceKink+;
+#pragma link C++ class AliAnalysisTaskKinkResonance+;
 
 #endif

@@ -2,7 +2,8 @@
 
 SRCS= KINK/AliAnalysisKinkESDMC.cxx \
       KINK/AliResonanceKinkLikeSign.cxx \
-      KINK/AliResonanceKinkPID.cxx
+      KINK/AliResonanceKink.cxx \
+      KINK/AliAnalysisTaskKinkResonance.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
