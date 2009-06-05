@@ -23,6 +23,8 @@
 #include "AliHLTProcessor.h"
 #include <vector>
 
+class AliTPCTransform;
+
 /**
  * @class AliHLTTPCHWClusterTransformComponent
  *
@@ -131,6 +133,7 @@ protected:
   //int Reconfigure(const char* cdbEntry, const char* chainId);
 
   using AliHLTProcessor::DoEvent;
+  AliTPCTransform *fOfflineTransform;
 
 private:
    
@@ -142,7 +145,7 @@ private:
   /** assignment operator prohibited */
   AliHLTTPCHWClusterTransformComponent& operator=(const AliHLTTPCHWClusterTransformComponent&);
              
-  ClassDef(AliHLTTPCHWClusterTransformComponent, 0)
+  ClassDef(AliHLTTPCHWClusterTransformComponent, 1)
 };
 
 #endif

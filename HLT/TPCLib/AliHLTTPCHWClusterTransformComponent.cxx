@@ -1,3 +1,4 @@
+// $Id$
 
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        *
@@ -30,6 +31,9 @@ using namespace std;
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
 
+#include "AliTPCcalibDB.h"
+#include "AliTPCTransform.h"
+
 #include <cstdlib>
 #include <cerrno>
 #include <sys/time.h>
@@ -37,12 +41,19 @@ using namespace std;
 ClassImp(AliHLTTPCHWClusterTransformComponent) //ROOT macro for the implementation of ROOT specific class methods
 
 AliHLTTPCHWClusterTransformComponent::AliHLTTPCHWClusterTransformComponent()
+:
+fOfflineTransform(NULL)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt  
+  
+  fOfflineTransform = AliTPCcalibDB::Instance()->GetTransform(); 
+  if(!fOfflineTransform){
+    HLTError("AliHLTTPCHWClusterTransformComponent():  Offline transform not in AliTPCcalibDB.");
+  }
 }
 
 AliHLTTPCHWClusterTransformComponent::~AliHLTTPCHWClusterTransformComponent() { 
@@ -233,14 +244,28 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
     	   cluster.fSigmaZ2 = (Float_t)buffer[nWords+4];
 	       	   
     	   Float_t xyz[3]; xyz[0] = xyz[1] = xyz[2] = -99.;
-	   	   
-	   cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);             	   
-	   AliHLTTPCTransform::Slice2Sector(minSlice, cluster.fPadRow, sector, thisrow);	      
-    	   AliHLTTPCTransform::Raw2Local(xyz, sector, thisrow, (Float_t)buffer[nWords+1], (Float_t)buffer[nWords+2]);    	   
-    	   
-	   cluster.fX = xyz[0];
-    	   cluster.fY = xyz[1];
-    	   cluster.fZ = xyz[2]; 
+	   
+	   if(fOfflineTransform == NULL){	   	   
+	      cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);             	   
+	      AliHLTTPCTransform::Slice2Sector(minSlice, cluster.fPadRow, sector, thisrow);	      
+    	      AliHLTTPCTransform::Raw2Local(xyz, sector, thisrow, (Float_t)buffer[nWords+1], (Float_t)buffer[nWords+2]); 
+	      if(minSlice>17) xyz[1]=(-1)*xyz[1];	   
+	      cluster.fX = xyz[0];
+    	      cluster.fY = xyz[1];
+    	      cluster.fZ = xyz[2]; 
+
+    	   } else {
+	      Double_t x[3] = {thisrow, (Float_t)buffer[nWords+1]+.5, (Float_t)buffer[nWords+2]}; 
+	      Int_t iSector[1]= {sector};
+	      fOfflineTransform->Transform(x,iSector,0,1);
+	      cluster.fX = x[0];
+	      cluster.fY = x[1];
+	      cluster.fZ = x[2];
+	      
+	   }
+// 	   cluster.fX = xyz[0];
+//     	   cluster.fY = xyz[1];
+//     	   cluster.fZ = xyz[2]; 
 	   
 	   HLTDebug("X: %f, Y: %f, Z: %f, Charge: %d", cluster.fX,cluster.fY,cluster.fZ, cluster.fCharge);           
 	   
