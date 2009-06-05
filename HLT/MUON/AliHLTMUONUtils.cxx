@@ -1624,11 +1624,8 @@ bool AliHLTMUONUtils::IntegrityOk(
 	}
 	
 	// The number of channels should be in a reasonable range.
-	// between 1 and the maximum number of channels per DDL / 2.
-	// 1<<16 taken from the 11 bits MANU ID + 6 bits channel address
-	// divided by 2 since we are counting bending and non bending
-	// planes separately.
-	if (cluster.fNchannelsB < 1 or (1<<16) < cluster.fNchannelsB)
+	// Using a value of 5*5*2, 5 pads by 5 pads by 2 cathode planes.
+	if (int(cluster.fNchannelsB) < 1 or (5*5*2) < int(cluster.fNchannelsB))
 	{
 		if (reason != NULL and reasonCount < maxCount)
 		{
@@ -1637,7 +1634,7 @@ bool AliHLTMUONUtils::IntegrityOk(
 		}
 		result = false;
 	}
-	if (cluster.fNchannelsNB < 1 or (1<<16) < cluster.fNchannelsNB)
+	if (int(cluster.fNchannelsNB) < 1 or (5*5*2) < int(cluster.fNchannelsNB))
 	{
 		if (reason != NULL and reasonCount < maxCount)
 		{
