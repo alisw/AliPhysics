@@ -37,7 +37,7 @@ extern "C" struct AliHLTMUONHitRecoLutRow;
  * Component ID: \b MUONHitReconstructor <br>
  * Library: \b libAliHLTMUON.so  <br>
  * Input Data Types: ('DDL_RAW ', 'MUON') <br>
- * Output Data Types: ('RECHITS ', 'MUON') <br>
+ * Output Data Types: ('RECHITS ', 'MUON'); ('CLUSTERS', 'MUON'); ('CHANNELS', 'MUON') <br>
  *
  * <h2>Mandatory arguments:</h2>
  * \li -ddl <i>number</i> <br>
@@ -148,6 +148,7 @@ public:
 	virtual const char* GetComponentID();
 	virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual AliHLTComponentDataType GetOutputDataType();
+	virtual int GetOutputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 	virtual AliHLTComponent* Spawn();
 	

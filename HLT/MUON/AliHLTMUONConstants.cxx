@@ -21,7 +21,7 @@
  * @file   AliHLTMUONConstants.cxx
  * @author Indranil Das <indra.das@saha.ac.in>,
  *         Artur Szostak <artursz@iafrica.com>
- * @date   
+ * @date   17 May 2007
  * @brief  Definitions of the various dimuon HLT constants.
  */
 

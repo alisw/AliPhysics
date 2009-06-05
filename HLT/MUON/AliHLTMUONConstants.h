@@ -23,7 +23,7 @@
  * @file   AliHLTMUONConstants.h
  * @author Indranil Das <indra.das@saha.ac.in>,
  *         Artur Szostak <artursz@iafrica.com>
- * @date   
+ * @date   17 May 2007
  * @brief  Class containing various dimuon HLT constants used in the system.
  */
 

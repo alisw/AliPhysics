@@ -129,7 +129,19 @@ AliHLTComponentDataType AliHLTMUONHitReconstructorComponent::GetOutputDataType()
 	/// Inherited from AliHLTComponent. Returns the output data type.
 	///
 	
-	return AliHLTMUONConstants::RecHitsBlockDataType();
+	return kAliHLTMultipleDataType;
+}
+
+
+int AliHLTMUONHitReconstructorComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& list)
+{
+	/// Inherited from AliHLTComponent. Returns the output data types.
+	
+	assert( list.empty() );
+	list.push_back( AliHLTMUONConstants::RecHitsBlockDataType() );
+	list.push_back( AliHLTMUONConstants::ClusterBlockDataType() );
+	list.push_back( AliHLTMUONConstants::ChannelBlockDataType() );
+	return list.size();
 }
 
 

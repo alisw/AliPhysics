@@ -111,7 +111,18 @@ AliHLTComponentDataType AliHLTMUONMansoTrackerFSMComponent::GetOutputDataType()
 	/// Inherited from AliHLTComponent. Returns the output data type.
 	///
 	
-	return AliHLTMUONConstants::MansoTracksBlockDataType();
+	return kAliHLTMultipleDataType;
+}
+
+
+int AliHLTMUONMansoTrackerFSMComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& list)
+{
+	/// Inherited from AliHLTComponent. Returns the output data types.
+	
+	assert( list.empty() );
+	list.push_back( AliHLTMUONConstants::MansoTracksBlockDataType() );
+	list.push_back( AliHLTMUONConstants::MansoCandidatesBlockDataType() );
+	return list.size();
 }
 
 

@@ -24,8 +24,10 @@
 ///  @author Artur Szostak <artursz@iafrica.com>,
 ///          Indranil Das <indra.das@saha.ac.in>
 ///  @date   18 Sep 2007
-///  @brief  Tracker component for the dimuon HLT using the Manso algorithm
-///          implemented as a finite state machine.
+///  @brief  Tracker component for the dimuon HLT using the Manso algorithm.
+///
+/// The tracker component performs minimal track reconstruction in stations 4 & 5.
+/// It uses the Manso algorithm implemented as a finite state machine.
 ///
 
 #include "AliHLTMUONProcessor.h"
@@ -45,8 +47,98 @@ struct AliHLTMUONRecHitStruct;
 
 /**
  * @class AliHLTMUONMansoTrackerFSMComponent
- * @brief Dimuon HLT tracker component using the Manso tracking algorithm
- *        implemented as a finite state machine.
+ * @brief Dimuon HLT tracker using the Manso tracking algorithm implemented as a FSM.
+ *
+ * This is a tracker component for the muon spectrometer. It performs minimal track
+ * reconstruction in stations 4 & 5.
+ * The Manso algorithm is used, implemented as a finite state machine (FSM).
+ * This makes the component fast, insensitive to residual missalignment and gives
+ * reasonable pT resolution for improved event selectivity.
+ * However, because of its minimalism and simplicity, it does suffer from an increased
+ * fake track rate, in particular for higher multiplicity events.
+ * This should not pose a problem at all for p+p or peripheral A+A events, while
+ * central events should and will be triggered anyway.
+ *
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b MUONMansoTrackerFSM <br>
+ * Library: \b libAliHLTMUON.so  <br>
+ * Input Data Types: ('RECHITS ', 'MUON'); ('TRIGRECS', 'MUON') <br>
+ * Output Data Types: ('MANTRACK', 'MUON'); ('MNCANDID', 'MUON') <br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * None. <br>
+ *
+ * <h2>Optional arguments:</h2>
+ * \li -zmiddle <i>number</i> <br>
+ *      Sets the value for the Z coordinate for the middle of the magnetic field.
+ *      The <i>number</i> should be a floating point number representing the Z
+ *      coordinate in centimeters (cm).
+ *      A reasponable value is around -975cm (the default). <br>
+ * \li -bfieldintegral <i>number</i> <br>
+ *      Sets the value for the dipole's magnetic field integral.
+ *      The <i>number</i> should be a floating point number representing the integral
+ *      in units of Tesla meters (T.m).
+ *      The value can be negative or possitive to indicate the dipole's polarity. <br>
+ * \li -a7 <i>number</i> <br>
+ * \li -a8 <i>number</i> <br>
+ * \li -a9 <i>number</i> <br>
+ * \li -a10 <i>number</i> <br>
+ * \li -b7 <i>number</i> <br>
+ * \li -b8 <i>number</i> <br>
+ * \li -b9 <i>number</i> <br>
+ * \li -b10 <i>number</i> <br>
+ *      These allow one to set the A and B region of interest parameters used by the
+ *      tracker to search for correlated hits on subsequent chambers.
+ *      The number indicated after -a* or -b* indicates the chamber to set the parameter for.
+ *      i.e. "-a7 123" will set the A parameter for chamber 7 to the value of 123.
+ *      The region of interest parameters are defined as follows: Rs = a*Rp + b,
+ *      where Rs is the region of interest radius and Rp is the distance from the beam line
+ *      to the centre of the region of interest (in cm).
+ *      The <i>number</i> should be a floating point number in each case and the values
+ *      for the B parameters should always be positive. <br>
+ * \li -z7 <i>number</i> <br>
+ * \li -z8 <i>number</i> <br>
+ * \li -z9 <i>number</i> <br>
+ * \li -z10 <i>number</i> <br>
+ * \li -z11 <i>number</i> <br>
+ * \li -z13 <i>number</i> <br>
+ *      These allow one to set the Z coordinate used for the chamber position in the
+ *      trackers internal calculations.
+ *      The number after -z* indicates the chamber number to set the value for.
+ *      Thus, "-z11 -123" sets chamber 11's Z coordinate position to -123 cm.
+ *      The <i>number</i> should be a floating point number in each case and negative,
+ *      since the spectrometer is located in the negative Z direction.
+ *      The units are in centimeters (cm).
+ *      The default values are the nominal chamber Z coordinates. <br>
+ * \li -warn_on_unexpected_block <br>
+ *      This will cause the component to generate warnings when it receives data block
+ *      types it does not know how to handle. Without this option the component only
+ *      generates debug messages when they are compiled in. <br>
+ *
+ * <h2>Standard configuration:</h2>
+ * This component should normally be configured with no extra options.
+ * It will automatically load the required reconstruction parameters from the CDB. <br>
+ *
+ * <h2>Default CDB entries:</h2>
+ * The component loads the reconstruction parameters from the MUON subdirectory
+ * in the CDB.
+ * The magnetic field integral, A and B region of interest parameters,
+ * and nominal Z coordinates are stored in a TMap under HLT/ConfigMUON/MansoTrackerFSM.
+ *
+ * <h2>Performance:</h2>
+ * Can achieve about 3kHz processing rate for nominal event sizes containing
+ * 150 tracks per event.
+ *
+ * <h2>Memory consumption:</h2>
+ * Minimal memory consumption on the order of megabytes.
+ * 5 Mbytes should be more than enough.
+ *
+ * <h2>Output size:</h2>
+ * Output size is about equivalent to the incoming reconstructed hit and trigger
+ * record input data.
+ *
+ * @ingroup alihlt_dimuon_component
  */
 class AliHLTMUONMansoTrackerFSMComponent
 	: public AliHLTMUONProcessor, public AliHLTMUONMansoTrackerFSMCallback
@@ -60,6 +152,7 @@ public:
 	virtual const char* GetComponentID();
 	virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual AliHLTComponentDataType GetOutputDataType();
+	virtual int GetOutputDataTypes(AliHLTComponentDataTypeList& list);
 	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 	virtual AliHLTComponent* Spawn();
 	
