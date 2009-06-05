@@ -468,7 +468,10 @@ Float_t AliTRDseedV1::GetdQdl(Int_t ic, Float_t *dl) const
 // Author : Alex Bercuci <A.Bercuci@gsi.de>
 //
   Float_t dq = 0.;
-  if(fClusters[ic]) dq += TMath::Abs(fClusters[ic]->GetQ());
+  if(fClusters[ic]){ 
+    if(!fClusters[ic]->IsInChamber()) return 0.;
+    dq += TMath::Abs(fClusters[ic]->GetQ());
+  }
   if(fClusters[ic+kNtb]) dq += TMath::Abs(fClusters[ic+kNtb]->GetQ());
   if(dq<1.e-3) return 0.;
 

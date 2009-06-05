@@ -1016,6 +1016,7 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
     for(Int_t itb = 0; itb < AliTRDseedV1::kNclusters; itb++){
       if(!tracklets[ilr].IsUsable(itb)) continue;
       cl = tracklets[ilr].GetClusters(itb);
+      if(!cl->IsInChamber()) continue;
       x = cl->GetX();
       y = cl->GetY();
       z = cl->GetZ();
@@ -1110,6 +1111,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
     tilt = tracklets[ipl].GetTilt();
     for(Int_t itb = 0; itb < AliTRDseedV1::kNclusters; itb++){
       if(!(cl = tracklets[ipl].GetClusters(itb))) continue;
+      if(!cl->IsInChamber()) continue;
       if (!tracklets[ipl].IsUsable(itb)) continue;
       x = cl->GetX();
       y = cl->GetY();
