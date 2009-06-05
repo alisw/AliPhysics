@@ -35,7 +35,7 @@ class AliAODVertex;
 class AliESDv0;
 class AliAODv0;
 
-#include <iostream>
+#include <Riostream.h>
 
 #include "TList.h"
 #include "TH1.h"
@@ -84,6 +84,8 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade()
 
     fHistMassXiMinus(0), fHistMassXiPlus(0),
     fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
+    fHistMassWithCombPIDXiMinus(0), fHistMassWithCombPIDXiPlus(0),
+    fHistMassWithCombPIDOmegaMinus(0), fHistMassWithCombPIDOmegaPlus(0),
 
     fHistXiTransvMom(0),    fHistXiTotMom(0),
     fHistBachTransvMom(0),   fHistBachTotMom(0),
@@ -140,6 +142,8 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade(const char *name)
 
     fHistMassXiMinus(0), fHistMassXiPlus(0),
     fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
+    fHistMassWithCombPIDXiMinus(0), fHistMassWithCombPIDXiPlus(0),
+    fHistMassWithCombPIDOmegaMinus(0), fHistMassWithCombPIDOmegaPlus(0),
 
     fHistXiTransvMom(0),    fHistXiTotMom(0),
     fHistBachTransvMom(0),   fHistBachTotMom(0),
@@ -359,7 +363,7 @@ if (! fHistDcaNegToPrimVertexXi) {
 
 
 	// - Effective mass histos for cascades.
-  
+// By cascade hyp  
 if (! fHistMassXiMinus) {
     fHistMassXiMinus = new TH1F("fHistMassXiMinus","#Xi^{-} candidates;M( #Lambda , #pi^{-} ) (GeV/c^{2});Counts", 200,1.2,2.0);
     fListHistCascade->Add(fHistMassXiMinus);
@@ -378,6 +382,27 @@ if (! fHistMassOmegaMinus) {
 if (! fHistMassOmegaPlus) {
 	fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus","#Omega^{+} candidates;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 250,1.5,2.5);
     fListHistCascade->Add(fHistMassOmegaPlus);
+}
+
+// By cascade hyp + bachelor PID
+if (! fHistMassWithCombPIDXiMinus) {
+    fHistMassWithCombPIDXiMinus = new TH1F("fHistMassWithCombPIDXiMinus","#Xi^{-} candidates, with Bach. comb. PID;M( #Lambda , #pi^{-} ) (GeV/c^{2});Counts", 200,1.2,2.0);
+    fListHistCascade->Add(fHistMassWithCombPIDXiMinus);
+}
+  
+if (! fHistMassWithCombPIDXiPlus) {
+    fHistMassWithCombPIDXiPlus = new TH1F("fHistMassWithCombPIDXiPlus","#Xi^{+} candidates, with Bach. comb. PID;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",200,1.2,2.0);
+    fListHistCascade->Add(fHistMassWithCombPIDXiPlus);
+}
+
+if (! fHistMassWithCombPIDOmegaMinus) {
+	fHistMassWithCombPIDOmegaMinus = new TH1F("fHistMassWithCombPIDOmegaMinus","#Omega^{-} candidates, with Bach. comb. PID;M( #Lambda , K^{-} ) (GeV/c^{2});Counts", 250,1.5,2.5);
+    fListHistCascade->Add(fHistMassWithCombPIDOmegaMinus);
+}
+ 
+if (! fHistMassWithCombPIDOmegaPlus) {
+	fHistMassWithCombPIDOmegaPlus = new TH1F("fHistMassWithCombPIDOmegaPlus","#Omega^{+} candidates, with Bach. comb. PID;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 250,1.5,2.5);
+    fListHistCascade->Add(fHistMassWithCombPIDOmegaPlus);
 }
 
 
@@ -598,9 +623,13 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
   Double_t lInvMassXiPlus     = 0.;
   Double_t lInvMassOmegaMinus = 0.;
   Double_t lInvMassOmegaPlus  = 0.;
+  
+  	// - 4th part of initialisation : PID treatment of the bachelor track
+  Bool_t   lIsBachelorKaon    = kFALSE;
+  Bool_t   lIsBachelorPion    = kFALSE;
 
 
-	// - 4th part of initialisation : extra info for QA
+	// - 5th part of initialisation : extra info for QA
   
   Double_t lXiMomX       = 0., lXiMomY = 0., lXiMomZ = 0.;
   Double_t lXiTransvMom  = 0. ;
@@ -795,7 +824,6 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		//-------------
 
 	
-	
 	if( bachTrackXi->Charge() < 0 )	{
 		lV0quality = 0.;
 		xi->ChangeMassHypothesis(lV0quality , 3312); 	
@@ -811,8 +839,8 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 					
 		lV0quality = 0.;
 		xi->ChangeMassHypothesis(lV0quality , 3312); 	// Back to default hyp.
-		
-	}
+	}// end if negative bachelor
+	
 	
 	if( bachTrackXi->Charge() >  0 ){
 		lV0quality = 0.;
@@ -829,12 +857,41 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		
 		lV0quality = 0.;
 		xi->ChangeMassHypothesis(lV0quality , -3312); 	// Back to "default" hyp.
-	}
-		
+	}// end if positive bachelor
 	
-							
-
-		// - II.Step 5 : extra info for QA (ESD)
+	
+	
+		// - II.Step 5 : PID on the bachelor
+		//-------------
+	
+	// Reasonable guess for the priors for the cascade track sample
+	Double_t lPriorsGuessXi[5]    = {0.0, 0.0, 2, 0, 1};
+	Double_t lPriorsGuessOmega[5] = {0.0, 0.0, 1, 1, 1};
+	AliPID pidXi;		pidXi.SetPriors(    lPriorsGuessXi    );
+	AliPID pidOmega;	pidOmega.SetPriors( lPriorsGuessOmega );
+	
+	if( bachTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
+		Double_t r[10]; bachTrackXi->GetESDpid(r);
+		pidXi.SetProbabilities(r);
+		pidOmega.SetProbabilities(r);
+		// Check if the bachelor track is a pion
+		Double_t ppion = pidXi.GetProbability(AliPID::kPion);
+		if (ppion > pidXi.GetProbability(AliPID::kElectron) &&
+		    ppion > pidXi.GetProbability(AliPID::kMuon)     &&
+		    ppion > pidXi.GetProbability(AliPID::kKaon)     &&
+		    ppion > pidXi.GetProbability(AliPID::kProton)   )     lIsBachelorPion = kTRUE;
+		// Check if the bachelor track is a kaon
+		Double_t pkaon = pidOmega.GetProbability(AliPID::kKaon);
+		if (pkaon > pidOmega.GetProbability(AliPID::kElectron) &&
+		    pkaon > pidOmega.GetProbability(AliPID::kMuon)     &&
+		    pkaon > pidOmega.GetProbability(AliPID::kPion)     &&
+		    pkaon > pidOmega.GetProbability(AliPID::kProton)   )  lIsBachelorKaon = kTRUE;
+		
+	}// end if bachelor track with existing combined PID
+	
+		
+		
+		// - II.Step 6 : extra info for QA (ESD)
 		// miscellaneous pieces onf info that may help regarding data quality assessment.
 		//-------------
 
@@ -952,7 +1009,13 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	if( lChargeXi > 0 )		lInvMassOmegaPlus 	= xi->MassOmega();
 
 	
-		// - II.Step 5 : extra info for QA (AOD)
+		// - II.Step 5 : PID on the bachelor
+		//-------------
+	
+	
+	// To be developed
+	
+		// - II.Step 6 : extra info for QA (AOD)
 		// miscellaneous pieces onf info that may help regarding data quality assessment.
 		//-------------
 
@@ -1027,11 +1090,21 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	fHistDcaNegToPrimVertexXi	->Fill( lDcaNegToPrimVertexXi      );
 		
 	
-	// - III.Step 4
-	if( lChargeXi < 0 )	fHistMassXiMinus	->Fill( lInvMassXiMinus );
-	if( lChargeXi > 0 )	fHistMassXiPlus		->Fill( lInvMassXiPlus );
-	if( lChargeXi < 0 )	fHistMassOmegaMinus	->Fill( lInvMassOmegaMinus );
-	if( lChargeXi > 0 )	fHistMassOmegaPlus	->Fill( lInvMassOmegaPlus );
+	// - III.Step 4+5
+	if( lChargeXi < 0 ){
+					fHistMassXiMinus	       ->Fill( lInvMassXiMinus    );
+					fHistMassOmegaMinus	       ->Fill( lInvMassOmegaMinus );
+		if(lIsBachelorPion)	fHistMassWithCombPIDXiMinus    ->Fill( lInvMassXiMinus    );
+		if(lIsBachelorKaon)	fHistMassWithCombPIDOmegaMinus ->Fill( lInvMassOmegaMinus );
+	}
+	
+	if( lChargeXi > 0 ){
+					fHistMassXiPlus		       ->Fill( lInvMassXiPlus     );
+					fHistMassOmegaPlus	       ->Fill( lInvMassOmegaPlus  );
+		if(lIsBachelorPion)	fHistMassWithCombPIDXiPlus     ->Fill( lInvMassXiPlus     );
+		if(lIsBachelorKaon)	fHistMassWithCombPIDOmegaPlus  ->Fill( lInvMassOmegaPlus  );
+	}
+	
 
 //	if( bachTrackXi->Charge() < 0 )	fHistMassXiMinus	->Fill( lInvMassXiMinus    );
 // 	if( bachTrackXi->Charge() > 0 )	fHistMassXiPlus		->Fill( lInvMassXiPlus     );

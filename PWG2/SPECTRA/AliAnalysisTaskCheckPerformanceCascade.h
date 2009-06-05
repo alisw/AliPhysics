@@ -161,6 +161,19 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
 	TH1F	*fHistMassOmegaMinus;			//! reconstructed cascade effective mass, under Omega- hyp.
 	TH1F	*fHistMassOmegaPlus;			//! reconstructed cascade effective mass, under Omega+ hyp.
 	
+	// - Effective mass histos with reconstruction combined PID
+	TH1F	*fHistMassWithCombPIDXiMinus;		//! reconstructed Xi- effective mass, with bach. comb PID
+	TH1F	*fHistMassWithCombPIDXiPlus;		//! reconstructed Xi+ effective mass, with bach. comb PID
+	TH1F	*fHistMassWithCombPIDOmegaMinus;	//! reconstructed Omega- effective mass, with bach. comb PID
+	TH1F	*fHistMassWithCombPIDOmegaPlus;		//! reconstructed Omega+ effective mass, with bach. comb PID
+
+	// - Effective mass histos with perfect MC PID
+	TH1F	*fHistMassWithMcPIDXiMinus;		//! reconstructed Xi- effective mass, with MC bach. PID
+	TH1F	*fHistMassWithMcPIDXiPlus;		//! reconstructed Xi+ effective mass, with MC bach. PID
+	TH1F	*fHistMassWithMcPIDOmegaMinus;		//! reconstructed Omega- effective mass, with MC bach. PID
+	TH1F	*fHistMassWithMcPIDOmegaPlus;		//! reconstructed Omega+ effective mass, with MC bach. PID
+
+	
 	// - Effective mass histos for the cascade candidates associated with MC
 	TH1F	*fHistAsMCMassXiMinus;			//! reconstr. cascade effective mass, under Xi- hyp. for Associated cand.
 	TH1F	*fHistAsMCMassXiPlus;			//! reconstr. cascade effective mass, under Xi+ hyp. for Associated cand.
