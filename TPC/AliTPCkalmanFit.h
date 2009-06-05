@@ -70,7 +70,7 @@ public:
   Double_t   fCurrentAlpha; //! current rotation frame
   Double_t   fCA;           //! cosine of current angle
   Double_t   fSA;           //! sinus of current angle  
-//   AliTPCkalmanFit&  operator=(const AliTPCkalmanFit&){;}// not implemented
+  AliTPCkalmanFit&  operator=(const AliTPCkalmanFit&);// not implemented
 //   AliTPCkalmanFit(const AliTPCkalmanFit&){;} //not implemented
   ClassDef(AliTPCkalmanFit,1);
 };

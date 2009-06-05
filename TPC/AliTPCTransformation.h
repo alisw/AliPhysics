@@ -20,12 +20,12 @@ public:
   AliTPCTransformation(const AliTPCTransformation&trafo);
   ~AliTPCTransformation();
   //
+  virtual Double_t GetDeltaXYZ(Int_t coord, Int_t volID, Double_t param, Double_t x, Double_t y, Double_t z);
   void SetParams(Double_t param, Double_t sigma, Double_t sigma2Time, TVectorD* fixedParams);
   Bool_t Init();
   void   SetActive(Bool_t flag){ fIsActive = flag;}
   Bool_t IsActive(){return fIsActive;}
   //
-  virtual Double_t GetDeltaXYZ(Int_t coord, Int_t volID, Double_t param, Double_t x, Double_t y, Double_t z);
   //
   static TBits * BitsSide(Bool_t aside);
   static TBits * BitsAll();
@@ -83,6 +83,7 @@ public:
   static  GenFuncG    fgFormulas[10000];   //! array of pointers to formula
   static  TObjArray*  fgFormulasName;      //! array of formalas name
 private:
+  AliTPCTransformation &operator=(const AliTPCTransformation&);    // not implemented
 
   ClassDef(AliTPCTransformation,1);
 };

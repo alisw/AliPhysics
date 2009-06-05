@@ -495,7 +495,7 @@ AliSplineFit * AliTPCcalibTimeGain::MakeSplineFit(TGraphErrors * graph) {
 
 
 
-TGraphErrors * AliTPCcalibTimeGain::GetGraphAttachment(Int_t minEntries, Int_t nmaxBin, Float_t fracLow, Float_t fracUp) {
+TGraphErrors * AliTPCcalibTimeGain::GetGraphAttachment(Int_t minEntries, Int_t nmaxBin, Float_t /*fracLow*/, Float_t /*fracUp*/) {
   //
   // For each time bin the driftlength-dependence of the signal is fitted.
   //

@@ -169,7 +169,8 @@ AliTPCTransformation::AliTPCTransformation(const AliTPCTransformation&trafo):
   fParam(trafo.fParam),          // free parameter of transformation 
   fSigma(trafo.fSigma),          // uncertainty of the parameter
   fSigma2Time(trafo.fSigma2Time),     // change of the error in time - (For kalman filter) 
-  fFixedParam(0),     // fixed parameters of tranformation  
+  fFixedParam(0),     // fixed parameters of tranformation
+  fIsActive(trafo.fIsActive),   // swith - On/Off
   //
   fInit(kFALSE),      // initialization flag - set to kTRUE if corresponding formulas found
   fFormulaX(0),       // x formula - pointer to the function
