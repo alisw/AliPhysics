@@ -78,15 +78,6 @@ void AliMUONTrigger::CreateInputs()
 }
 
 //----------------------------------------------------------------------
-void AliMUONTrigger::CreateInputs(const TObjArray& inputs)
-{
-  /// inputs from array
-
-  AliTriggerDetector::CreateInputs(inputs);
-
-}
-
-//----------------------------------------------------------------------
 void AliMUONTrigger::Trigger()
 {
   /// sets the trigger inputs

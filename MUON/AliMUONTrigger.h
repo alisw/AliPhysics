@@ -24,7 +24,6 @@ class AliMUONTrigger : public AliTriggerDetector
    AliMUONTrigger();  // constructor
    virtual ~AliMUONTrigger();  // destructor
    virtual void    CreateInputs();
-   virtual void    CreateInputs(const TObjArray& inputs);
    virtual void    Trigger();
 
 private:
