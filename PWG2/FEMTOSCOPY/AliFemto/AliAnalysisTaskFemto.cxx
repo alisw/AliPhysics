@@ -136,6 +136,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
 void AliAnalysisTaskFemto::CreateOutputObjects() {
   printf("Creating Femto Analysis objects\n");
 
+  gSystem->SetIncludePath("-I$ROOTSYS/include -I./STEERBase/ -I./ESD/ -I./AOD/ -I./ANALYSIS/ -I./ANALYSISalice/ -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser");
   gROOT->LoadMacro("ConfigFemtoAnalysis.C");
   //  fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
   SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine("ConfigFemtoAnalysis()"));
@@ -177,14 +178,14 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
       
       if (hd) {
 	
-	printf ("Got MC cocktail event header %p\n", (void *) hd);
+	//	printf ("Got MC cocktail event header %p\n", (void *) hd);
 	TList *lhd = hd->GetHeaders();
-	printf ("Got list of headers %d\n", lhd->GetEntries());
+	//	printf ("Got list of headers %d\n", lhd->GetEntries());
 	
 	for (int iterh=0; iterh<lhd->GetEntries(); iterh++) 
 	  {
 	    hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(iterh));
-	    printf ("HIJING header at %i is %p\n", iterh, (void *) hdh);
+	    //	    printf ("HIJING header at %i is %p\n", iterh, (void *) hdh);
 	  }
       }    
     }

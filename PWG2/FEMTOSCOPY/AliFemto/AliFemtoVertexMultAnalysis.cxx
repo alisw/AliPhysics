@@ -215,7 +215,7 @@ void AliFemtoVertexMultAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
   // Perform event processing
   // in bins of z vertex and multiplicity
 
-  cout << " AliFemtoVertexMultAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) " << endl;
+  // cout << " AliFemtoVertexMultAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) " << endl;
   // get right mixing buffer
   double vertexZ = hbtEvent->PrimVertPos().z();
   double mult = hbtEvent->UncorrectedNumberOfPrimaries();

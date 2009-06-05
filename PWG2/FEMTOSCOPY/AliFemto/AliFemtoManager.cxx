@@ -173,7 +173,7 @@ AliFemtoString AliFemtoManager::Report(){
   AliFemtoEventWriterIterator tEventWriterIter;
   AliFemtoEventWriter* currentEventWriter;
   for (tEventWriterIter=fEventWriterCollection->begin();tEventWriterIter!=fEventWriterCollection->end();tEventWriterIter++){
-    cout << "AliFemtoManager - asking for EventWriter Report" << endl;
+    //    cout << "AliFemtoManager - asking for EventWriter Report" << endl;
     currentEventWriter = *tEventWriterIter;
     stemp+=currentEventWriter->Report();
   }
@@ -183,7 +183,7 @@ AliFemtoString AliFemtoManager::Report(){
   AliFemtoSimpleAnalysisIterator tAnalysisIter;
   AliFemtoAnalysis* currentAnalysis;
   for (tAnalysisIter=fAnalysisCollection->begin();tAnalysisIter!=fAnalysisCollection->end();tAnalysisIter++){
-    cout << "AliFemtoManager - asking for Analysis Report" << endl;
+    //    cout << "AliFemtoManager - asking for Analysis Report" << endl;
     currentAnalysis = *tAnalysisIter;
     stemp+=currentAnalysis->Report();
   }
@@ -217,10 +217,10 @@ AliFemtoEventWriter* AliFemtoManager::EventWriter( int n ){  // return pointer t
 int AliFemtoManager::ProcessEvent(){
   // process a single event by reading it and passing it to each
   // analysis and event writer
-  cout << "AliFemtoManager::ProcessEvent" << endl;
+  //  cout << "AliFemtoManager::ProcessEvent" << endl;
   // NOTE - this ReturnHbtEvent makes a *new* AliFemtoEvent - delete it when done!
   AliFemtoEvent* currentHbtEvent = fEventReader->ReturnHbtEvent();
-  cout << "Event reader has returned control to manager" << endl;
+  //  cout << "Event reader has returned control to manager" << endl;
   
   // if no HbtEvent is returned, then we abort processing.
   // the question is now: do we try again next time (i.e. there may be an HbtEvent next time)
