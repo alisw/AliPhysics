@@ -895,6 +895,20 @@ AliDCSSensorArray * AliTPCcalibDB::GetVoltageSensors(Int_t run){
   return voltageArray;
 }
 
+AliDCSSensorArray * AliTPCcalibDB::GetGoofieSensors(Int_t run){
+  //
+  // Get temperature sensor array
+  //
+  AliDCSSensorArray * goofieArray = (AliDCSSensorArray *)fGoofieArray.At(run);
+  if (!goofieArray) {
+    GetRunInformations(run);
+    goofieArray = (AliDCSSensorArray *)fGoofieArray.At(run);
+  }
+  return goofieArray;
+}
+
+
+
 AliTPCCalibVdrift *     AliTPCcalibDB::GetVdrift(Int_t run){
   //
   // Get the interface to the the vdrift 
