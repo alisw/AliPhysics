@@ -435,10 +435,12 @@ void  AliMCTrackingTestTask::FitTrackRefs(TParticle * part, TClonesArray * trefs
   paramUpdate->AddCovariance(covar);
   Double_t mass = part->GetMass();
   Double_t charge = part->GetPDG()->Charge()/3.;
+/*
   Float_t alphaIn= TMath::ATan2(refIn->Y(),refIn->X());
   Float_t radiusIn= refIn->R();
   Float_t alphaOut= TMath::ATan2(refOut->Y(),refOut->X());
   Float_t radiusOut= refOut->R();
+*/
   AliMagF * field = (AliMagF*) TGeoGlobalMagField::Instance()->GetField();
   for (Int_t iref = iref0; iref<=iref1; iref++){
     AliTrackReference * ref = (AliTrackReference*)trefs->At(iref);
