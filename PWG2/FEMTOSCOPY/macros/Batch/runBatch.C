@@ -57,7 +57,7 @@ void runBatch(const char *chainlistfile) {
   
   //ANALYSIS PART
   gSystem->SetIncludePath("-I$ROOTSYS/include  -I\"/usr/local/CERN/root/include\" -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I./ESD -I./AOD -I./ANALYSIS -I./PWG2AOD/AOD");
-  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
+  //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
   //  gROOT->LoadMacro("AliAnalysisTaskFemto.cxx+");
   //  const char *collectionfile = "wn.xml";
 
@@ -73,20 +73,32 @@ void runBatch(const char *chainlistfile) {
   AliESDInputHandler* esdH = new AliESDInputHandler;
   esdH->SetInactiveBranches("FMD CaloCluster");
   mgr->SetInputEventHandler(esdH);  
+
+  AliMCEventHandler *mcH = new AliMCEventHandler;
+  mgr->SetMCtruthEventHandler(mcH);
   //____________________________________________//
   // 1st Pt task
-  AliAnalysisTaskFemto *task1 = new AliAnalysisTaskFemto("TaskFemto");
+//   AliAnalysisTaskFemto *task1 = new AliAnalysisTaskFemto("TaskFemto");
 
-  mgr->AddTask(task1);
+//   mgr->AddTask(task1);
 
-  // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clist1", TList::Class(),AliAnalysisManager::kOutputContainer,"Femto.ESD.root");
+//   // Create containers for input/output
+//   //  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+//   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("input0", 
+// 							   TTree::Class(), AliAnalysisManager::kInputContainer);
+//   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clist1", TList::Class(),AliAnalysisManager::kOutputContainer,"Femto.ESD.root");
   
+  gROOT->LoadMacro("AddTaskFemto.C");
+  AliAnalysisTaskFemto *taskfemto = AddTaskFemto();
+
+//   cout << "What ???" << endl;
+//   int deb;
+//   cin >> deb;
+
   //____________________________________________//
-//  cinput1->SetData(chain);
-  mgr->ConnectInput(task1,0,cinput1);
-  mgr->ConnectOutput(task1,0,coutput1);
+  //  cinput1->SetData(chain);
+//   mgr->ConnectInput(task1,0,cinput1);
+//   mgr->ConnectOutput(task1,0,coutput1);
 
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
