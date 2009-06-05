@@ -141,6 +141,7 @@ extern "C" {
   typedef int (*AliHLTSimulationInit_t)(AliHLTSimulation* pSim, AliRunLoader* pRunLoader, const char* options);
   typedef int (*AliHLTSimulationRun_t)(AliHLTSimulation* pSim, AliRunLoader* pRunLoader);
   typedef int (*AliHLTSimulationGetLibraryVersion_t)();
+  typedef int (*AliHLTSimulationInitOCDB_t)(AliHLTSimulation* pSim);
 
   /**
    * Create an instance of the AliHLTSimulation class
@@ -162,6 +163,10 @@ extern "C" {
    * Get version no of the library/class interface
    */
   int AliHLTSimulationGetLibraryVersion();
+  /**
+   * Init the OCDB for HLT simulation
+   */
+  int AliHLTSimulationInitOCDB(AliHLTSimulation* pSim);
 #ifdef __cplusplus
 }
 #endif

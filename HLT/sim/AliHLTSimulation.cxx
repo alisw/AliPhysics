@@ -30,12 +30,13 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliHeader.h"
-#include "AliTracker.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliCDBPath.h"
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
+#include "AliCDBStorage.h"
+#include "AliGRPObject.h"
 #include "AliHLTSystem.h"
 #include "AliHLTPluginBase.h"
 #include "AliRawReaderFile.h"
@@ -43,6 +44,9 @@
 #include "AliRawReaderRoot.h"
 #include "AliESDEvent.h"
 #include "AliHLTOUTComponent.h"
+#include "AliMagF.h"
+#include "TGeoGlobalMagField.h"
+#include "TSystem.h"
 
 #if ALIHLTSIMULATION_LIBRARY_VERSION != LIBHLTSIM_VERSION
 #error library version in header file and lib*.pkg do not match
@@ -158,13 +162,51 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
     delete pTokens;
   }
 
-  // init solenoid field
-  Double_t solenoidBz=AliTracker::GetBz();
   AliCDBManager* man = AliCDBManager::Instance();
   if (man && man->IsDefaultStorageSet())
   {
-    const char* cdbSolenoidPath="HLT/ConfigHLT/SolenoidBz";
     int runNo=pRunLoader->GetHeader()->GetRun();
+
+    // init solenoid field
+    Double_t solenoidBz=0;
+    AliMagF *field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+    if (field) {
+      solenoidBz=field->SolenoidField()*field->Factor();
+      AliDebug(0,Form("magnetic field: %f %f", field->SolenoidField(),field->Factor()));
+    } else {
+      // workaround for bug #51285
+      AliError("can not get the AliMagF instance, falling back to GRP entry");
+      AliCDBEntry *pGRPEntry = man->Get("GRP/GRP/Data", runNo);
+      if (pGRPEntry) {
+	AliGRPObject* pGRPData=dynamic_cast<AliGRPObject*>(pGRPEntry->GetObject());
+	assert(pGRPData!=NULL);
+	if (pGRPData) {
+	  // this is just a workaround at the moment, common functionality in AliReconstruction
+	  // is needed to reconstruct the magnetic field in a common way
+	  // the code is partly taken from AliReconstruction::InitGRP
+	  Bool_t ok = kTRUE;
+	  Float_t l3Current = pGRPData->GetL3Current((AliGRPObject::Stats)0);
+	  if (l3Current == AliGRPObject::GetInvalidFloat()) {
+	    AliError("GRP/GRP/Data entry:  missing value for the L3 current !");
+	    ok = kFALSE;
+	  }
+    
+	  Char_t l3Polarity = pGRPData->GetL3Polarity();
+	  if (l3Polarity == AliGRPObject::GetInvalidChar()) {
+	    AliError("GRP/GRP/Data entry:  missing value for the L3 polarity !");
+	    ok = kFALSE;
+	  }
+	  
+	  if (ok) {
+	    solenoidBz=l3Current/6000;
+	    if (l3Polarity) solenoidBz*=-1;
+	  } else {
+	    AliError("invalid L3 field information in GRP entry");
+	  }
+	}
+      }
+    }
+    const char* cdbSolenoidPath="HLT/ConfigHLT/SolenoidBz";
     TString cdbSolenoidParam;
     cdbSolenoidParam.Form("-solenoidBz %f", solenoidBz);
 
@@ -176,10 +218,19 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
     if (!pEntry || !pString || pString->GetString().CompareTo(cdbSolenoidParam)!=0) {
       TObjString obj(cdbSolenoidParam);
       AliCDBPath cdbSolenoidEntry(cdbSolenoidPath);
-      AliCDBId cdbSolenoidId(cdbSolenoidEntry, runNo, runNo);
+      AliCDBId cdbSolenoidId(cdbSolenoidEntry, runNo, runNo, 0, 0);
       AliCDBMetaData cdbMetaData;
+      cdbMetaData.SetResponsible("Matthias.Richter@cern.ch");
+      cdbMetaData.SetComment("Automatically produced GRP entry (AliHLTSimulation) for the magnetic field initialization of HLT components");
       man->Put(&obj, cdbSolenoidId, &cdbMetaData);
+
+      // unload the cache due to bug #51281
+      man->UnloadFromCache(cdbSolenoidPath);
     }
+  } else if (man) {
+    AliError("OCDB default storage not yet set, can not prepare OCDB entries");    
+  } else {
+    AliError("unable to get instance of AliCDBMetaData, can not prepare OCDB entries");    
   }
 
   // scan options
@@ -278,6 +329,23 @@ int AliHLTSimulationGetLibraryVersion()
 {
   // see header file for function documentation
   return LIBHLTSIM_VERSION;
+}
+
+int AliHLTSimulationInitOCDB(AliHLTSimulation* /*pSim*/)
+{
+  // see header file for function documentation
+
+  // this is an attempt to solve issue #48360
+  // since there are many jobs running in parallel during the production,
+  // all the jobs want to put entries into the OCDB. The solution is to
+  // make them temporary, since they are only used to propagate information
+  // from the simulation to the reconstruction.
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (man && man->IsDefaultStorageSet())
+  {
+    man->SetSpecificStorage("HLT/ConfigHLT/SolenoidBz", Form("local://%s",gSystem->pwd()));
+    man->SetSpecificStorage("HLT/ConfigHLT/esdLayout", Form("local://%s",gSystem->pwd()));
+  }
 }
 
 extern "C" void AliHLTSimulationCompileInfo(const char*& date, const char*& time)
