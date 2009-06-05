@@ -12,6 +12,7 @@
  *                                                                   *
  *********************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT_)
 #include "AliFemtoManager.h"
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
@@ -44,6 +45,7 @@
 #include "AliFemtoModelCorrFctnSource.h"
 #include "AliFemtoCutMonitorParticlePtPDG.h"
 #include "AliFemtoKTPairCut.h"
+#endif
 
 //________________________________________________________________________
 AliFemtoManager* ConfigFemtoAnalysis() {
