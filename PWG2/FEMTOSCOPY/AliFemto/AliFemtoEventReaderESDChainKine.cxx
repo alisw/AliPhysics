@@ -128,7 +128,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
   string tFriendFileName;
 
   // Get the friend information
-  cout<<"starting to read event "<<fCurEvent<<endl;
+  cout << "AliFemtoEventReaderESDChainKine::Starting to read event: "<<fCurEvent<<endl;
   //  fEvent->SetESDfriend(fEventFriend);
 	
   hbtEvent = new AliFemtoEvent;
@@ -260,6 +260,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       
       if (fUseTPCOnly) {
 	if (!esdtrack->GetTPCInnerParam()) {
+	  cout << "No TPC inner param !" << endl;
 	  delete trackCopy;
 	  continue;
 	}
@@ -271,7 +272,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 
 	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
 	if (v.mag() < 0.0001) {
-	  //	cout << "Found 0 momentum ???? " <<endl;
+	  //	  cout << "Found 0 momentum ???? " << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
 	  delete trackCopy;
 	  continue;
 	}
@@ -302,7 +303,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	
 	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
 	if (v.mag() < 0.0001) {
-	  //	cout << "Found 0 momentum ???? " <<endl;
+	  //	  cout << "Found 0 momentum ???? "  << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
 	  delete trackCopy;
 	  continue;
 	}
@@ -438,7 +439,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
   
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
   fCurEvent++;	
-  cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
+  //  cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
   return hbtEvent; 
 }
 //___________________
