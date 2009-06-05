@@ -21,7 +21,6 @@ class AliTRDTrigger : public AliTriggerDetector {
   AliTRDTrigger();
   ~AliTRDTrigger();
 
-  virtual void CreateInputs(const TObjArray& inputs);
   virtual void CreateInputs();
   virtual void Trigger();
 

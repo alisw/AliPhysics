@@ -78,11 +78,17 @@ AliTriggerDetector::~AliTriggerDetector()
 }
 
 //_____________________________________________________________________________
-void AliTriggerDetector::CreateInputs(const TObjArray &inputs)
+void AliTriggerDetector::AssignInputs(const TObjArray &inputs)
 {
-   // Define the inputs to the Central Trigger Processor
-   // This is a dummy version 
-   
+  // Cross-check the trigger inputs provided by the detector trigger
+  // processor (TP) and the inputs defined in CTP
+  // a) If the input is defined in the TP, but not in CTP it
+  // will be generated but not used by CTP. It will be possibly stored
+  // in the detector raw data if the hardware allows this.
+  // b) If hte input is not defined in the TP, but is defined in CTP
+  // then a warning is issued and the CTP simulation is working
+  // with this input disabled.
+ 
    // Check if we have to create the inputs first
    if( fInputs.GetEntriesFast() == 0 ) {
      // Create the inputs that the detector can provide

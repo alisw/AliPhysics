@@ -235,7 +235,7 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader, const char *detec
 
 	    AliDebug(1,Form("Triggering from digits for %s", det->GetName() ) );
             AliTriggerDetector* trgdet = det->CreateTriggerDetector();
-            trgdet->CreateInputs(fConfiguration->GetInputs());
+            trgdet->AssignInputs(fConfiguration->GetInputs());
             TStopwatch stopwatchDet;
             stopwatchDet.Start();
             trgdet->Trigger();

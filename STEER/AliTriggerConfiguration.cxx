@@ -909,7 +909,7 @@ Bool_t AliTriggerConfiguration::CheckConfiguration( TString& configfile )
       if( IsSelected( det->GetName(), detStr ) ) {
          AliInfo( Form( "Creating inputs for %s", det->GetName() ) );
          AliTriggerDetector* dtrg = det->CreateTriggerDetector();
-         dtrg->CreateInputs(GetInputs());
+         dtrg->AssignInputs(GetInputs());
          TObjArray* detInp = dtrg->GetInputs();
          for( Int_t i=0; i<detInp->GetEntriesFast(); i++ ) {
             AliInfo( Form( "Adding input %s", ((AliTriggerInput*)detInp->At(i))->GetName() ) );
