@@ -532,7 +532,7 @@ void AliMUONQADataMakerRec::InitRaws()
 
   const Bool_t histogram(kFALSE);
 
-  fTrackerDataMaker = new AliMUONTrackerDataMaker(GetRecoParam(),
+  fTrackerDataMaker = new AliMUONTrackerDataMaker(GetMUONRecoParam(),
                                                   AliCDBManager::Instance()->GetRun(),
                                                   0x0,
                                                   AliCDBManager::Instance()->GetDefaultStorage()->GetURI(),
@@ -1183,7 +1183,7 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
   
   // load ESD event in the interface
   AliMUONESDInterface esdInterface;
-  if (GetRecoParam()) AliMUONESDInterface::ResetTracker(GetRecoParam());
+  if (GetMUONRecoParam()) AliMUONESDInterface::ResetTracker(GetMUONRecoParam());
   else AliError("Unable to get recoParam: use default ones for residual calculation");
   esdInterface.LoadEvent(*esd);
   

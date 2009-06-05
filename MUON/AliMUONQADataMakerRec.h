@@ -157,7 +157,7 @@ private:
   void MakeRecPointsTrigger(TTree* treeR);
 	
   /// Return reco parameters
-  const AliMUONRecoParam* GetRecoParam() const { return dynamic_cast<const AliMUONRecoParam *>(fRecoParam); }
+  const AliMUONRecoParam* GetMUONRecoParam() const { return dynamic_cast<const AliMUONRecoParam *>(fRecoParam); }
   
   Bool_t  fIsInitRaws;       //!<  info if InitRaws() went ok
   Bool_t  fIsInitRecPointsTracker;  //!<  info if InitRecPoints() went ok
