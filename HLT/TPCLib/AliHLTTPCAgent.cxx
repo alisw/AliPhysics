@@ -172,7 +172,13 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     handler->CreateConfiguration("TPC-globalmerger","TPCCAGlobalMerger",mergerInput.Data(),"");
 
     // the esd converter configuration
-    handler->CreateConfiguration("TPC-esd-converter", "TPCEsdConverter"   , "TPC-globalmerger", "");
+    TString converterInput="TPC-globalmerger";
+    if (!rawReader) {
+      // propagate cluster info to the esd converter in order to fill the MC information
+      converterInput+=" ";
+      converterInput+=sinkClusterInput;
+    }
+    handler->CreateConfiguration("TPC-esd-converter", "TPCEsdConverter"   , converterInput.Data(), "");
 
     // cluster dump collection
     handler->CreateConfiguration("TPC-clusters", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLUSTERS' 'TPC '");
