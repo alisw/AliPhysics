@@ -9,6 +9,11 @@
 
 TString acorde_module_path(Int_t module);
 
+Color_t g_acorde_raw_color_on  = kRed;
+Color_t g_acorde_raw_color_off = kBlue;
+
+UChar_t g_acorde_raw_transp_on  = 30;
+UChar_t g_acorde_raw_transp_off = 60;
 
 void acorde_raw()
 {
@@ -53,8 +58,9 @@ void acorde_raw()
 
     TEveGeoShape* eg_shape = new TEveGeoShape(TString::Format("Module %d", module),
                                               TString::Format("Module %d, %s", module, val ? "ON" : "OFF"));
+    eg_shape->SetMainColor       (val ? g_acorde_raw_color_on  : g_acorde_raw_color_off);
+    eg_shape->SetMainTransparency(val ? g_acorde_raw_transp_on : g_acorde_raw_transp_off);
     eg_shape->SetPickable(kTRUE);
-    eg_shape->SetMainColor(val ? kRed : kBlue);
     eg_shape->RefMainTrans().SetFrom(*gGeoManager->GetCurrentMatrix());
     eg_shape->SetShape((TGeoShape*) gGeoManager->GetCurrentVolume()->GetShape()->Clone());
 
