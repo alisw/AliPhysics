@@ -97,7 +97,7 @@ fPlotLevel(0)
 {
 /// Default constructor
 
-  sprintf(fRootDataFileName,""); //Gain
+  sprintf(fRootDataFileName," "); //Gain
 }
 //  AliMUONPedestal& operator=(const AliMUONPedestal& other); Copy ctor
   

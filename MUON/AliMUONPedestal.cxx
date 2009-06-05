@@ -61,10 +61,8 @@ fPedestalStore(new AliMUON2DMap(kFALSE)),
 fIndex(-1)
 {
 /// Default constructor
-
-//   sprintf(fOutFolder,".");
-  sprintf(fHistoFileName,"");
-  sprintf(fprefixDA,""); 
+  sprintf(fHistoFileName," ");
+  sprintf(fprefixDA," "); 
 }
 //  AliMUONPedestal& operator=(const AliMUONPedestal& other); Copy ctor
 
