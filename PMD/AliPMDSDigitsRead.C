@@ -4,40 +4,35 @@
 //                                                     //
 // ----------------------------------------------------//
 #include <Riostream.h>
+
 void AliPMDSDigitsRead(Int_t nevt = 1) 
 {
   TStopwatch timer;
   timer.Start();
 
+  //FILE *fpw = fopen("sdigits.dat","w");
 
   TH2F *h2 = new TH2F("h2","Y vs. X",200,-100.,100.,200,-100.,100.);
+
   AliRunLoader *fRunLoader = AliRunLoader::Open("galice.root");
+
   if (!fRunLoader)
     { 
       Error("Open","Can not open session for file %s.",file);
     }
   
-  //  fRunLoader->LoadgAlice();
-  fRunLoader->LoadHeader();
-  gAlice = fRunLoader->GetAliRun();
-  
-  if (gAlice)
-    {
-      printf("AliRun object found on file.\n");
-    }
-  else
-    {
-      printf("Could not find AliRun object.\n");
-    }
-  fPMD  = (AliPMD*)gAlice->GetDetector("PMD");
+
+  Int_t nEvent = fRunLoader->GetNumberOfEvents();
+
   fPMDLoader = fRunLoader->GetLoader("PMDLoader");
+
   if (fPMDLoader == 0x0)
     {
       cerr<<"OpengAlice : Can not find PMD or PMDLoader\n";
     }
   
   fPMDLoader->LoadSDigits("READ");
-  TClonesArray *fSDigits; 
+  TClonesArray *fSDigits = 0x0; 
   
   // -------------------------------------------------------------- //
   
@@ -48,6 +43,16 @@ void AliPMDSDigitsRead(Int_t nevt = 1)
   Float_t  xx,yy;
 
   AliPMDUtility cc;  
+
+
+  AliPMDsdigit  *pmdsdigit = 0x0;
+  TBranch *branch;
+
+  if (nevt > nEvent)
+    {
+      nevt = nEvent;
+      printf("Input number is more than the number of events, set to number of events = %d\n",nevt);
+    }
   
   for (Int_t ievt = 0; ievt <nevt; ievt++)
     {
@@ -57,8 +62,8 @@ void AliPMDSDigitsRead(Int_t nevt = 1)
 	{
 	  cout << " Can not get TreeD" << endl;
 	}
-      AliPMDsdigit  *pmdsdigit;
-      TBranch *branch = fTreeS->GetBranch("PMDSDigit");
+
+      branch = fTreeS->GetBranch("PMDSDigit");
       branch->SetAddress(&fSDigits);
       
       Int_t nmodules = (Int_t) fTreeS->GetEntries();
@@ -77,6 +82,8 @@ void AliPMDSDigitsRead(Int_t nevt = 1)
 	      ypos   = pmdsdigit->GetColumn();
 	      edep   = pmdsdigit->GetCellEdep();
 	      Int_t trno   = pmdsdigit->GetTrackNumber();
+
+	      //if (ievt == 0) fprintf(fpw,"Track # = %d\n",trno);
 	      
 	      if(smn <12)
 		{
