@@ -170,6 +170,7 @@
 #include "AliTRDclusterResolution.h"
 #include "info/AliTRDclusterInfo.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDcluster.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDCommonParam.h"
 #include "Cal/AliTRDCalROC.h"
@@ -606,6 +607,31 @@ void AliTRDclusterResolution::SetVisual()
 //_______________________________________________________
 void AliTRDclusterResolution::ProcessCharge()
 {
+// Resolution as a function of cluster charge.
+//
+// As described in the function ProcessCenterPad() the error parameterization for clusters for phi = a_L can be 
+// written as:
+// BEGIN_LATEX
+// #sigma_{y}^{2} = #sigma_{y}^{2}|_{B=0} + tg^{2}(#alpha_{L})*#sigma_{x}^{2}
+// END_LATEX
+// with the contribution in case of B=0 given by:
+// BEGIN_LATEX
+// #sigma_{y}|_{B=0} = #sigma_{diff}*Gauss(0, s_{ly}) + #delta_{#sigma}(q)
+// END_LATEX
+// which further can be simplified to:
+// BEGIN_LATEX
+// <#sigma_{y}|_{B=0}>(q) = <#sigma_{y}> + #delta_{#sigma}(q)
+// <#sigma_{y}> = #int{f(q)#sigma_{y}dq}
+// END_LATEX
+// The results for s_y and f(q) are displayed below:
+//Begin_Html
+//<img src="TRD/clusterQerror.gif">
+//End_Html
+// The function has to extended to accomodate gain calibration scalling and errors.
+//
+// Author
+// Alexandru Bercuci <A.Bercuci@gsi.de>
+
   TH2I *h2 = 0x0;
   if(!(h2 = (TH2I*)fContainer->At(kQRes))) {
     AliWarning("Missing dy=f(Q) histo");
@@ -667,15 +693,31 @@ void AliTRDclusterResolution::ProcessCharge()
 //_______________________________________________________
 void AliTRDclusterResolution::ProcessCenterPad()
 {
-// Resolution as a function of y displacement from pad center
-// only for phi equal exB and clusters close to cathode wire plane
-// for ideal simulations time bins 4,5 and 6.
+// Resolution as a function of y displacement from pad center and drift length.
+//
+// Since the error parameterization of cluster r-phi position can be written as (see AliTRDcluster::SetSigmaY2()):
+// BEGIN_LATEX
+// #sigma_{y}^{2} = (#sigma_{diff}*Gauss(0, s_{ly}) + #delta_{#sigma}(q))^{2} + tg^{2}(#alpha_{L})*#sigma_{x}^{2} + tg^{2}(#phi-#alpha_{L})*#sigma_{x}^{2}+[tg(#phi-#alpha_{L})*tg(#alpha_{L})*x]^{2}/12
+// END_LATEX
+// one can see that for phi = a_L one gets the following expression:
+// BEGIN_LATEX
+// #sigma_{y}^{2} = #sigma_{y}^{2}|_{B=0} + tg^{2}(#alpha_{L})*#sigma_{x}^{2}
+// END_LATEX
+// where we have explicitely marked the remaining term in case of absence of magnetic field. Thus one can use the 
+// previous equation to estimate s_y for B=0 and than by comparing in magnetic field conditions one can get the s_x.
+// This is a simplified method to determine the error parameterization for s_x and s_y as compared to the one 
+// implemented in ProcessSigma(). For more details on cluster error parameterization please see also 
+// AliTRDcluster::SetSigmaY2()
+// 
+// Author
+// Alexandru Bercuci <A.Bercuci@gsi.de>
 
   TObjArray *arr = (TObjArray*)fContainer->At(kCenter);
   if(!arr) {
     AliWarning("Missing dy=f(y | x, ly) container");
     return;
   }
+  Double_t exb2 = fExB*fExB;
   Float_t s[AliTRDgeometry::kNlayer];
   TF1 f("f", "gaus", -.5, .5);
   TF1 fp("fp", "gaus", -3.5, 3.5);
@@ -693,16 +735,17 @@ void AliTRDclusterResolution::ProcessCenterPad()
     if(!(h3p = (TH3S*)arr->At(nl+il))) continue;
     gs = (TGraphErrors*)arrRes->At(il+1);
     fLy = il;
+//    printf("Ly[%d]\n", il);
     for(Int_t ix=1; ix<=h3r->GetXaxis()->GetNbins(); ix++){
       ax = h3r->GetXaxis(); ax->SetRange(ix, ix);
       ax = h3p->GetXaxis(); ax->SetRange(ix, ix);
       fX  = ax->GetBinCenter(ix);
-      //printf("  x[%2d]=%4.2f\n", ix, fX);
+//      printf("  x[%2d]=%4.2f\n", ix, fX);
       for(Int_t iy=1; iy<=h3r->GetYaxis()->GetNbins(); iy++){
         ax = h3r->GetYaxis(); ax->SetRange(iy, iy);
         ax = h3p->GetYaxis(); ax->SetRange(iy, iy);
         fY  = ax->GetBinCenter(iy);
-        //printf("    y[%2d]=%5.2f\n", iy, fY);
+//        printf("    y[%2d]=%5.2f\n", iy, fY);
         // finish navigation in the HnSparse
 
         h1 = (TH1D*)h3r->Project3D("z");
@@ -738,6 +781,19 @@ void AliTRDclusterResolution::ProcessCenterPad()
       fX  = ax->GetBinCenter(ix);
       h1 = h2->ProjectionY("hCenPy", ix, ix);
       //if((Int_t)h1->Integral() < 1.e-10) continue; 
+
+      // Apply lorentz angle correction
+      // retrieve error on the drift length
+      Double_t s2x = AliTRDcluster::GetSX(ix-1); s2x *= s2x;
+      for(Int_t iy=1; iy<h1->GetNbinsX(); iy++){
+        Double_t s2 = h1->GetBinContent(iy); s2*= s2;
+        // sigma square corrected for Lorentz angle
+        // s2 = s2_y(y_w,x)+exb2*s2_x
+        h1->SetBinContent(iy, TMath::Sqrt(TMath::Max(s2 - exb2*s2x, Double_t(0.))));
+        printf("s[%6.2f] sx[%6.2f] sy[%6.2f]\n",
+        1.e4*TMath::Sqrt(s2), 1.e4*TMath::Abs(fExB*AliTRDcluster::GetSX(ix-1)), 
+        1.e4*h1->GetBinContent(iy));
+      }
       h1->Fit(&f, "QN");
       s[il]+=f.GetParameter(2);
       printf("%6.4f,%s", f.GetParameter(0), ix%6?" ":"\n     ");
@@ -766,6 +822,46 @@ void AliTRDclusterResolution::ProcessCenterPad()
 //_______________________________________________________
 void AliTRDclusterResolution::ProcessSigma()
 {
+// As the r-phi coordinate is the only one which is measured by the TRD detector we have to rely on it to
+// estimate both the radial (x) and r-phi (y) errors. This method is based on the following assumptions. 
+// The measured error in the y direction is the sum of the intrinsic contribution of the r-phi measurement
+// with the contribution of the radial measurement - because x is not a parameter of Alice track model (Kalman).
+// BEGIN_LATEX
+// #sigma^{2}|_{y} = #sigma^{2}_{y*} + #sigma^{2}_{x*}   
+// END_LATEX
+// In the general case 
+// BEGIN_LATEX
+// #sigma^{2}_{y*} = #sigma^{2}_{y} + tg^{2}(#alpha_{L})#sigma^{2}_{x_{drift}}   
+// #sigma^{2}_{x*} = tg^{2}(#phi - #alpha_{L})*(#sigma^{2}_{x_{drift}} + #sigma^{2}_{x_{0}}
+// END_LATEX
+// where we have explicitely show the lorentz angle correction on y and the projection of radial component on the y
+// direction through the track angle in the bending plane (phi). Also we have shown that the radial component in the
+// last equation has twp terms, the drift and the misalignment (x_0). For ideal geometry or known misalignment one 
+// can solve the equation
+// BEGIN_LATEX
+// #sigma^{2}|_{y} = tg^{2}(#phi - #alpha_{L})*#sigma^{2}_{x} + [#sigma^{2}_{y} + tg^{2}(#alpha_{L})#sigma^{2}_{x}]
+// END_LATEX
+// by fitting a straight line:
+// BEGIN_LATEX
+// #sigma^{2}|_{y} = a(x_{cl}, z_{cl}) * tg^{2}(#phi - #alpha_{L}) + b(x_{cl}, z_{cl})
+// END_LATEX
+// the error parameterization will be given by:
+// BEGIN_LATEX
+// #sigma_{x} (x_{cl}, z_{cl}) = #sqrt{a(x_{cl}, z_{cl})}
+// #sigma_{y} (x_{cl}, z_{cl}) = #sqrt{b(x_{cl}, z_{cl}) - a(x_{cl}, z_{cl}) * tg^{2}(#alpha_{L})}
+// END_LATEX
+// Below there is an example of such dependency. 
+//Begin_Html
+//<img src="TRD/clusterSigmaMethod.gif">
+//End_Html
+//
+// The error parameterization obtained by this method are implemented in the functions AliTRDcluster::GetSX() and
+// AliTRDcluster::GetSYdrift(). For an independent method to determine s_y as a function of drift length check the 
+// function ProcessCenterPad().
+//  
+// Author
+// Alexandru Bercuci <A.Bercuci@gsi.de>
+
   TObjArray *arr = (TObjArray*)fContainer->At(kSigm);
   if(!arr){
     AliWarning("Missing dy=f(x_d, d_w) container");
@@ -877,6 +973,79 @@ void AliTRDclusterResolution::ProcessSigma()
 //_______________________________________________________
 void AliTRDclusterResolution::ProcessMean()
 {
+// By this method the cluster shift in r-phi and radial directions can be estimated by comparing with the MC.
+// The resolution of the cluster corrected for pad tilt with respect to MC in the r-phi (measuring) plane can be 
+// expressed by:
+// BEGIN_LATEX
+// #Delta y=w - y_{MC}(x_{cl})
+// w = y_{cl}^{'} + h*(z_{MC}(x_{cl})-z_{cl})
+// y_{MC}(x_{cl}) = y_{0} - dy/dx*x_{cl}
+// z_{MC}(x_{cl}) = z_{0} - dz/dx*x_{cl}
+// y_{cl}^{'} = y_{cl}-x_{cl}*tg(#alpha_{L})
+// END_LATEX
+// where x_cl is the drift length attached to a cluster, y_cl is the r-phi coordinate of the cluster measured by
+// charge sharing on adjacent pads and y_0 and z_0 are MC reference points (as example the track references at 
+// entrance/exit of a chamber). If we suppose that both r-phi (y) and radial (x) coordinate of the clusters are 
+// affected by errors we can write
+// BEGIN_LATEX
+// x_{cl} = x_{cl}^{*} + #delta x 
+// y_{cl} = y_{cl}^{*} + #delta y 
+// END_LATEX 
+// where the starred components are the corrected values. Thus by definition the following quantity
+// BEGIN_LATEX
+// #Delta y^{*}= w^{*} - y_{MC}(x_{cl}^{*})
+// END_LATEX
+// has 0 average over all dependency. Using this decomposition we can write:
+// BEGIN_LATEX
+// <#Delta y>=<#Delta y^{*}> + <#delta x * (dy/dx-h*dz/dx) + #delta y - #delta x * tg(#alpha_{L})>
+// END_LATEX
+// which can be transformed to the following linear dependence:
+// BEGIN_LATEX
+// <#Delta y>= <#delta x> * (dy/dx-h*dz/dx) + <#delta y - #delta x * tg(#alpha_{L})>
+// END_LATEX
+// if expressed as function of dy/dx-h*dz/dx. Furtheremore this expression can be plotted for various clusters
+// i.e. we can explicitely introduce the diffusion (x_cl) and drift cell - anisochronity (z_cl) dependences. From 
+// plotting this dependence and linear fitting it with:
+// BEGIN_LATEX
+// <#Delta y>= a(x_{cl}, z_{cl}) * (dy/dx-h*dz/dx) + b(x_{cl}, z_{cl})
+// END_LATEX
+// the systematic shifts will be given by:
+// BEGIN_LATEX
+// #delta x (x_{cl}, z_{cl}) = a(x_{cl}, z_{cl})
+// #delta y (x_{cl}, z_{cl}) = b(x_{cl}, z_{cl}) + a(x_{cl}, z_{cl}) * tg(#alpha_{L})
+// END_LATEX
+// Below there is an example of such dependency. 
+//Begin_Html
+//<img src="TRD/clusterShiftMethod.gif">
+//End_Html
+//
+// The occurance of the radial shift is due to the following conditions 
+//   - the approximation of a constant drift velocity over the drift length (larger drift velocities close to 
+//     cathode wire plane)
+//   - the superposition of charge tails in the amplification region (first clusters appear to be located at the 
+//     anode wire)
+//   - the superposition of charge tails in the drift region (shift towards anode wire)
+//   - diffusion effects which convolute with the TRF thus enlarging it
+//   - approximate knowledge of the TRF (approximate measuring in test beam conditions) 
+// 
+// The occurance of the r-phi shift is due to the following conditions 
+//   - approximate model for cluster shape (LUT)
+//   - rounding-up problems
+//
+// The numerical results for ideal simulations for the radial and r-phi shifts are displayed below and used 
+// for the cluster reconstruction (see the functions AliTRDcluster::GetXcorr() and AliTRDcluster::GetYcorr()). 
+//Begin_Html
+//<img src="TRD/clusterShiftX.gif">
+//<img src="TRD/clusterShiftY.gif">
+//End_Html
+// More details can be found in the presentation given during the TRD
+// software meeting at the end of 2008 and beginning of year 2009, published on indico.cern.ch.
+// 
+// Author 
+// Alexandru Bercuci <A.Bercuci@gsi.de>
+
+
+ 
   TObjArray *arr = (TObjArray*)fContainer->At(kMean);
   if(!arr){
     AliWarning("Missing dy=f(x_d, d_w) container");
