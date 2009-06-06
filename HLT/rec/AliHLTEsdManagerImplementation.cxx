@@ -249,6 +249,14 @@ int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(AliESDEvent* pS
 {
   // see header file for class documentation
   int iResult=0;
+
+  // Matthias 2009-06-06: writing of individual ESD files for the different origins was a
+  // first attempt when functionality was missing in the AliRoot framework and remained as
+  // debugging feature. ESD merging is now implemented and data written to the hltEsd, so
+  // the feature is now disabled because it causes increasing memory consumption. Presumably
+  // not because of a memory leak but the way the internal TTree is used and kept in memory. 
+  return 0;
+
 #ifndef HAVE_NOT_ESD_COPY
   if (fName.IsNull()) {
     // this is the first event, create the file name
