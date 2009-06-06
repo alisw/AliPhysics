@@ -39,6 +39,7 @@
 
 #include "AliGenCocktailAfterBurner.h"
 #include "AliGenCocktailEntry.h"
+#include "AliGenCocktailEventHeader.h"
 #include "AliCollisionGeometry.h"
 #include "AliStack.h"
 #include "AliMC.h"
@@ -127,9 +128,7 @@ void AliGenCocktailAfterBurner::Init()
        fInternalStacks->Delete(); //clean after previous generation cycle
      }
 
-// ANDREAS MORSCH ---------------------------------------------------(
     if (fCollisionGeometries) delete[] fCollisionGeometries;
-// ANDREAS MORSCH ---------------------------------------------------)
     
     this->AliGenCocktail::Init(); 
     
@@ -161,7 +160,11 @@ void AliGenCocktailAfterBurner::Generate()
       cout<<"#####################################"<<endl
           <<"#AliGenCocktailAfterBurner::Generate#"<<endl
           <<"#####################################"<<endl;
-    
+    // Initialize header
+    if (fHeader) delete fHeader;
+    fHeader = new AliGenCocktailEventHeader("Cocktail Header");
+    //
+
     Int_t i; //iterator
     AliStack * stack;
     
@@ -220,9 +223,7 @@ void AliGenCocktailAfterBurner::Generate()
                 fCurrentGenerator->Generate();
                 entry->SetLast(partArray->GetEntriesFast());
 		
-// ANDREAS MORSCH ---------------------------------------------------(
 		if (fCurrentGenerator->ProvidesCollisionGeometry())  fCollisionGeometries[i] = fCurrentGenerator->CollisionGeometry();
-// ANDREAS MORSCH ---------------------------------------------------)
 		
            }
 /***********************************************/
@@ -268,7 +269,8 @@ void AliGenCocktailAfterBurner::Generate()
       SetTracks(0); //copy event 0 to gAlice stack
 	
 /*********************************************************************/
-	
+      // Pass the header to gAlice
+      gAlice->SetGenEventHeader(fHeader); 
     }//else generated
 }
 /*********************************************************************/
@@ -288,8 +290,6 @@ AliStack* AliGenCocktailAfterBurner::GetStack(Int_t n) const
 /*********************************************************************/ 
 /*********************************************************************/ 
 
-// ANDREAS MORSCH ---------------------------------------------------(
-
 AliCollisionGeometry* AliGenCocktailAfterBurner::GetCollisionGeometry(Int_t n) const
 {
 //Returns the pointer to the N'th stack (event)
@@ -300,8 +300,6 @@ AliCollisionGeometry* AliGenCocktailAfterBurner::GetCollisionGeometry(Int_t n) c
     }
     return fCollisionGeometries[n];
 }
-
-// ANDREAS MORSCH ---------------------------------------------------)
 
 /*********************************************************************/ 
 /*********************************************************************/ 
