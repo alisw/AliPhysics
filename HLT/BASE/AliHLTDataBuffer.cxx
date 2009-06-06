@@ -71,6 +71,7 @@ AliHLTUInt32_t AliHLTDataBuffer::fgMargin=1024;
 AliHLTLogging AliHLTDataBuffer::fgLogging;
 const Int_t AliHLTDataBuffer::fgkSafetyPatternSize=16;
 const char AliHLTDataBuffer::fgkSafetyPattern[]={0x28, 0x63, 0x29, 0x4d, 0x52, 0x49, 0x43, 0x48, 0x54, 0x45, 0x52, 0x20, 0x32, 0x30, 0x30, 0x37};
+AliHLTUInt32_t AliHLTDataBuffer::fgEventCount=0;
 
 AliHLTDataBuffer::~AliHLTDataBuffer()
 {
@@ -543,6 +544,23 @@ int AliHLTDataBuffer::DeleteRawBuffers()
   return iResult;
 }
 
+int AliHLTDataBuffer::PrintStatistics() 
+{
+  // see header file for function documentation
+  int iResult=0;
+  int iFree=0;
+  int iActive=0;
+  AliHLTRawBufferPList::iterator buffer;;
+  for (buffer=fgFreeBuffers.begin(); buffer!=fgFreeBuffers.end(); buffer++) {
+    iFree+=(*buffer)->GetTotalSize();
+  }
+  for (buffer=fgActiveBuffers.begin(); buffer!=fgActiveBuffers.end(); buffer++) {
+    iActive+=(*buffer)->GetTotalSize();
+  }
+  fgLogging.Logging(kHLTLogInfo, "AliHLTDataBuffer::PrintStatistics", "data buffer handling", "Total memory allocation: %d byte; %d free buffers (%d byte) - %d active buffers (%d byte) ", iFree+iActive, fgFreeBuffers.size(), iFree, fgActiveBuffers.size(), iActive);
+  return iResult;
+}
+
 AliHLTConsumerDescriptor* AliHLTDataBuffer::FindConsumer(const AliHLTComponent* pConsumer, AliHLTConsumerDescriptorPList &list) const
 {
   // see header file for function documentation
@@ -709,7 +727,8 @@ AliHLTDataBuffer::AliHLTRawBuffer::AliHLTRawBuffer(AliHLTUInt32_t size)
   :
   fSize(0),
   fTotalSize(size),
-  fPtr(static_cast<AliHLTUInt8_t*>(malloc(size)))
+  fPtr(static_cast<AliHLTUInt8_t*>(malloc(size))),
+  fLastEventCount(0)
 {
   // see header file for class documentation
   // or
@@ -765,6 +784,7 @@ AliHLTUInt8_t* AliHLTDataBuffer::AliHLTRawBuffer::UseBuffer(AliHLTUInt32_t size)
   // see header file for function documentation
   if (size>0 && fTotalSize>=size) {
     fSize=size;
+    fLastEventCount=AliHLTDataBuffer::fgEventCount;
     return fPtr;
   }
   return NULL;
@@ -773,7 +793,12 @@ AliHLTUInt8_t* AliHLTDataBuffer::AliHLTRawBuffer::UseBuffer(AliHLTUInt32_t size)
 int AliHLTDataBuffer::AliHLTRawBuffer::CheckSize(AliHLTUInt32_t size) const
 {
   // see header file for function documentation
-  return fTotalSize>=size && ((fTotalSize-size)<fgMargin);
+  if (fTotalSize<size) return 0;
+  unsigned adjust=0;
+  if (fLastEventCount+1<AliHLTDataBuffer::fgEventCount) {
+    adjust=AliHLTDataBuffer::fgEventCount-fLastEventCount;
+  }
+  return (adjust>2) || ((fTotalSize-size)<(fgMargin<<adjust));
 }
 
 int AliHLTDataBuffer::AliHLTRawBuffer::Reset()

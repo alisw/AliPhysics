@@ -226,6 +226,19 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   {fgLogging.SetLocalLoggingLevel(level); AliHLTLogging::SetLocalLoggingLevel(level);}
 
   /**
+   * Print summary of the global buffer management.
+   */
+  static int PrintStatistics();
+
+  /**
+   * Set the global event count.
+   * The event count is deployed to find buffers which have not been used
+   * for a while. In such a case to policy to find an appropriate buffer is
+   * adjusted.
+   */
+  static int SetGlobalEventCount(AliHLTUInt32_t eventCount) {fgEventCount=eventCount; return 0;}
+
+  /**
    * @class AliHLTDataSegment
    * @brief  Descriptor of a data segment within the buffer.
    */
@@ -303,7 +316,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   class AliHLTRawBuffer {
   public:
     /** standard constructor */
-    AliHLTRawBuffer() : fSize(0), fTotalSize(0), fPtr(NULL) {}
+    AliHLTRawBuffer() : fSize(0), fTotalSize(0), fPtr(NULL), fLastEventCount(0) {}
     /** constructor */
     AliHLTRawBuffer(AliHLTUInt32_t size);
     /** destructor */
@@ -318,6 +331,9 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
 
     /**
      * Check whether buffer fits for a request.
+     * A buffer fits if it is at least of the requested size and at most
+     * the requested size plus a margin. The margin increases with the
+     * number of events the buffer has not been used.
      * @param size    size of the request in bytes
      * @return 1 if buffer is big enough, 0 if not
      */
@@ -375,6 +391,8 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     AliHLTUInt32_t fTotalSize;                                     // see above
     /** the buffer */
     AliHLTUInt8_t* fPtr;                                           //! transient
+    /** last event count where the buffer has been used */
+    AliHLTUInt32_t fLastEventCount;                                //! transient
   };
 
  private:
@@ -483,6 +501,8 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   /** the safety pattern */
   static const char fgkSafetyPattern[];                            //!transient
 
+  static AliHLTUInt32_t fgEventCount;                              //!transient
+
   //////////////////////////////////////////////////////////////////////////////
   // internal helper functions
 
@@ -515,7 +535,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    */
   int CleanupConsumerList();
 
-  ClassDef(AliHLTDataBuffer, 0)
+  ClassDef(AliHLTDataBuffer, 1)
 };
 
 #endif // ALIHLTDATABUFFER_H

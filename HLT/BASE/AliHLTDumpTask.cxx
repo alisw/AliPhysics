@@ -145,7 +145,17 @@ int AliHLTDumpTask::ReleaseDataBlocks()
   if (!fpDataBuffer) return 0;
 
   if (fBlocks.size()==0 && fpDataBuffer->GetNofPendingConsumers()>0) {
-    // not yet subscribed
+    // There are data blocks in the parents which this task has not yet
+    // subscribed to. The subscription takes place in GetDataBlocks.
+    // However, this method is not necessarily called.
+    //
+    // In order to switch buffer states correctly, first let the dummy
+    // task as the only consumer subscribe to all those buffers and
+    // release them further down. Basically, the buffers are arranged
+    // in a different internal list, which is the only state they can be
+    // released from. This approach has been chosen to implement the
+    // DumpTask having no real consumers but at the same time has to
+    // behave like a normal task in AliHLTTask::ProcessTask
     fpDataBuffer->Subscribe(fpDummyTask->GetComponent(), fBlocks);
   }
 

@@ -41,6 +41,7 @@ using namespace std;
 #include "AliHLTOUTHandler.h"
 #include "AliHLTOUTTask.h"
 #include "AliHLTControlTask.h"
+#include "AliHLTDataBuffer.h"
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TStopwatch.h>
@@ -411,6 +412,7 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop)
 	  // currently ignored 
 	  iResult=0;
 	}
+	AliHLTDataBuffer::SetGlobalEventCount(iCount);
       }
       fEventCount+=iNofEvents;
       if (bStop) StopTasks();
@@ -424,6 +426,7 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop)
     iResult=0; // do not propagate the error
   }
   ClearStatusFlags(kRunning);
+  AliHLTDataBuffer::PrintStatistics();
   return iResult;
 }
 
