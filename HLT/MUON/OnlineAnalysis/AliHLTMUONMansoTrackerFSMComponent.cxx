@@ -1111,6 +1111,40 @@ void AliHLTMUONMansoTrackerFSMComponent::FoundTrack(AliHLTMUONMansoTrackerFSM* t
 	AliHLTMUONMansoTracksBlockWriter* block =
 		reinterpret_cast<AliHLTMUONMansoTracksBlockWriter*>(fBlock);
 	
+	AliHLTMUONMansoTrackStruct newTrack;
+	tracker->FillTrackData(newTrack);
+	
+	// Check if there is any track that uses the same hits as the one found.
+	// If there is, then use the one that has the higher pT.
+	for (AliHLTUInt32_t i = 0; i < block->Nentries(); i++)
+	{
+		AliHLTMUONMansoTrackStruct& track = (*block)[i];
+		bool hasNoDuplicates = true;
+		for (AliHLTUInt32_t j = 0; j < 4; j++)
+		{
+			if (track.fHit[j] == AliHLTMUONConstants::NilRecHitStruct()) continue;
+			if (newTrack.fHit[j] == AliHLTMUONConstants::NilRecHitStruct()) continue;
+			if (track.fHit[j] == newTrack.fHit[j])
+			{
+				hasNoDuplicates = false;
+				break;
+			}
+		}
+		if (hasNoDuplicates) continue;
+		
+		// The tracks share a hit, so find out if the new track has higher pT
+		// If it does, then replace the old track, otherwise simply ignore the new track.
+		double newPt = sqrt(newTrack.fPx * newTrack.fPx + newTrack.fPy * newTrack.fPy);
+		double oldPt = sqrt(track.fPx * track.fPx + track.fPy * track.fPy);
+		if (newPt > oldPt)
+		{
+			track = newTrack;
+			DebugTrace("\tReplaced track " << i << " with: " << *track);
+		}
+		return;
+	}
+	
+	// No track found with duplicate hits so we can add the new track as is.
 	AliHLTMUONMansoTrackStruct* track = block->AddEntry();
 	if (track == NULL)
 	{
@@ -1125,8 +1159,8 @@ void AliHLTMUONMansoTrackerFSMComponent::FoundTrack(AliHLTMUONMansoTrackerFSM* t
 	}
  
 	fTrackCount++;
-	tracker->FillTrackData(*track);
-	DebugTrace("\tTrack data = " << *track);
+	*track = newTrack;
+	DebugTrace("\tAdded new track: " << *track);
 }
 
 
