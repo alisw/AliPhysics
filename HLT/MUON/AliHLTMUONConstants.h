@@ -268,9 +268,11 @@ public:
 		return fgkDecisionComponentCDBPath;
 	}
 	
-	static double DefaultNonBendingReso() { return 0.01; }
+	/// Returns the typical X (non-bending plane) resolution of the hit reconstruction (units = cm).
+	static double DefaultNonBendingReso() { return 0.144; }
 	
-	static double DefaultBendingReso() { return 0.144; }
+	/// Returns the typical Y (bending plane) resolution of the hit reconstruction (units = cm).
+	static double DefaultBendingReso() { return 0.01; }
 
 private:
 
