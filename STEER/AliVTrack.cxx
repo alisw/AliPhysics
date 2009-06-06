@@ -51,3 +51,26 @@ Double_t AliVTrack::GetBz() const
   }
   return TMath::Sign(kAlmost0Field,bz) + bz;
 }
+
+void AliVTrack::GetBxByBz(Double_t b[3]) const 
+{
+  // returns Bz component of the magnetic field (kG)
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!fld) {
+     b[0] = b[1] = 0.;
+     b[2] =-kAlmost0Field;
+     return;
+  }
+
+  if (fld->IsUniform()) {
+     b[0] = b[1] = 0.;
+     b[2] = -fld->SolenoidField();
+  }  else {
+     Double_t r[3]; GetXYZ(r);
+     Double_t bb[3]; fld->Field(r,bb);
+     b[0] = -bb[0]; 
+     b[1] = -bb[1]; 
+     b[2] = -(TMath::Sign(kAlmost0Field,bb[2]) + bb[2]);
+  }
+  return;
+}

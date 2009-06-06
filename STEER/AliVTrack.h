@@ -25,6 +25,7 @@ public:
   virtual ULong_t  GetStatus() const = 0;
   virtual Bool_t   GetXYZ(Double_t *p) const = 0;
   virtual Double_t GetBz() const;
+  virtual void     GetBxByBz(Double_t b[3]) const;
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const = 0;
 
   ClassDef(AliVTrack,0)  // base class for tracks

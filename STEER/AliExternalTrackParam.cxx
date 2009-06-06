@@ -1644,3 +1644,216 @@ Int_t AliExternalTrackParam::GetIndex(Int_t i, Int_t j) const {
 
   return min+(max+1)*max/2;
 }
+
+
+void AliExternalTrackParam::g3helx3(Double_t qfield, 
+                                    Double_t step,
+                                    Double_t vect[7]) {
+/******************************************************************
+ *                                                                *
+ *       GEANT3 tracking routine in a constant field oriented     *
+ *       along axis 3                                             *
+ *       Tracking is performed with a conventional                *
+ *       helix step method                                        *
+ *                                                                *
+ *       Authors    R.Brun, M.Hansroul  *********                 *
+ *       Rewritten  V.Perevoztchikov                              *
+ *                                                                *
+ *       Rewritten in C++ by I.Belikov                            *
+ *                                                                *
+ *  qfield (kG)       - particle charge times magnetic field      *
+ *  step   (cm)       - step length along the helix               *
+ *  vect[7](cm,GeV/c) - input/output x, y, z, px/p, py/p ,pz/p, p *
+ *                                                                *
+ ******************************************************************/
+  const Int_t ix=0, iy=1, iz=2, ipx=3, ipy=4, ipz=5, ipp=6;
+
+  Double_t cosx=vect[ipx], cosy=vect[ipy], cosz=vect[ipz];
+
+  Double_t rho = qfield*kB2C/vect[ipp]; 
+  Double_t tet = rho*step;
+
+  Double_t tsint, sintt, sint, cos1t; 
+  if (TMath::Abs(tet) > 0.15) {
+     sint  = TMath::Sin(tet);
+     sintt = sint/tet;
+     tsint = (tet - sint)/tet;
+     Double_t t=TMath::Sin(0.5*tet);
+     cos1t = 2*t*t/tet;
+  } else {
+     tsint = tet*tet/6.;
+     sintt = 1.- tsint;
+     sint  = tet*sintt;
+     cos1t = 0.5*tet; 
+  }
+
+  Double_t f1 = step*sintt;
+  Double_t f2 = step*cos1t;
+  Double_t f3 = step*tsint*cosz;
+  Double_t f4 = -tet*cos1t;
+  Double_t f5 = sint;
+
+  vect[ix]  += f1*cosx - f2*cosy;
+  vect[iy]  += f1*cosy + f2*cosx;
+  vect[iz]  += f1*cosz + f3;
+
+  vect[ipx] += f4*cosx - f5*cosy;
+  vect[ipy] += f4*cosy + f5*cosx;  
+
+}
+
+Bool_t AliExternalTrackParam::PropagateToBxByBz(Double_t xk, const Double_t b[3]) {
+  //----------------------------------------------------------------
+  // Extrapolate this track to the plane X=xk in the field b[].
+  //
+  // X [cm] is in the "tracking coordinate system" of this track.
+  // b[]={Bx,By,Bz} [kG] is in the Global coordidate system.
+  //----------------------------------------------------------------
+
+  Double_t dx=xk-fX;
+  if (TMath::Abs(dx)<=kAlmost0)  return kTRUE;
+
+  Double_t crv=GetC(b[2]);
+  if (TMath::Abs(b[2]) < kAlmost0Field) crv=0.;
+
+  Double_t f1=fP[2], f2=f1 + crv*dx;
+  if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
+  if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
+
+
+  // Estimate the covariance matrix  
+  Double_t &fP3=fP[3], &fP4=fP[4];
+  Double_t 
+  &fC00=fC[0],
+  &fC10=fC[1],   &fC11=fC[2],  
+  &fC20=fC[3],   &fC21=fC[4],   &fC22=fC[5],
+  &fC30=fC[6],   &fC31=fC[7],   &fC32=fC[8],   &fC33=fC[9],  
+  &fC40=fC[10],  &fC41=fC[11],  &fC42=fC[12],  &fC43=fC[13], &fC44=fC[14];
+
+  Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
+
+  //f = F - 1
+  Double_t f02=    dx/(r1*r1*r1);            Double_t cc=crv/fP4;
+  Double_t f04=0.5*dx*dx/(r1*r1*r1);         f04*=cc;
+  Double_t f12=    dx*fP3*f1/(r1*r1*r1);
+  Double_t f14=0.5*dx*dx*fP3*f1/(r1*r1*r1);  f14*=cc;
+  Double_t f13=    dx/r1;
+  Double_t f24=    dx;                       f24*=cc;
+  
+  //b = C*ft
+  Double_t b00=f02*fC20 + f04*fC40, b01=f12*fC20 + f14*fC40 + f13*fC30;
+  Double_t b02=f24*fC40;
+  Double_t b10=f02*fC21 + f04*fC41, b11=f12*fC21 + f14*fC41 + f13*fC31;
+  Double_t b12=f24*fC41;
+  Double_t b20=f02*fC22 + f04*fC42, b21=f12*fC22 + f14*fC42 + f13*fC32;
+  Double_t b22=f24*fC42;
+  Double_t b40=f02*fC42 + f04*fC44, b41=f12*fC42 + f14*fC44 + f13*fC43;
+  Double_t b42=f24*fC44;
+  Double_t b30=f02*fC32 + f04*fC43, b31=f12*fC32 + f14*fC43 + f13*fC33;
+  Double_t b32=f24*fC43;
+  
+  //a = f*b = f*C*ft
+  Double_t a00=f02*b20+f04*b40,a01=f02*b21+f04*b41,a02=f02*b22+f04*b42;
+  Double_t a11=f12*b21+f14*b41+f13*b31,a12=f12*b22+f14*b42+f13*b32;
+  Double_t a22=f24*b42;
+
+  //F*C*Ft = C + (b + bt + a)
+  fC00 += b00 + b00 + a00;
+  fC10 += b10 + b01 + a01; 
+  fC20 += b20 + b02 + a02;
+  fC30 += b30;
+  fC40 += b40;
+  fC11 += b11 + b11 + a11;
+  fC21 += b21 + b12 + a12;
+  fC31 += b31; 
+  fC41 += b41;
+  fC22 += b22 + b22 + a22;
+  fC32 += b32;
+  fC42 += b42;
+
+  
+  // Appoximate step length
+  Double_t step=dx*TMath::Abs(r2 + f2*(f1+f2)/(r1+r2));
+  step *= TMath::Sqrt(1.+ GetTgl()*GetTgl());
+
+
+  // Get the track's (x,y,z) and (px,py,pz) in the Global System
+  Double_t r[3]; GetXYZ(r);
+  Double_t p[3]; GetPxPyPz(p);
+  Double_t pp=GetP();
+  p[0] /= pp;
+  p[1] /= pp;
+  p[2] /= pp;
+
+
+  // Rotate to the system where Bx=By=0.
+  Double_t bt=TMath::Sqrt(b[0]*b[0] + b[1]*b[1]);
+  Double_t cosphi=1., sinphi=0.;
+  if (bt > kAlmost0) {cosphi=b[0]/bt; sinphi=b[1]/bt;}
+  Double_t bb=TMath::Sqrt(b[0]*b[0] + b[1]*b[1] + b[2]*b[2]);
+  Double_t costet=1., sintet=0.;
+  if (bb > kAlmost0) {costet=b[2]/bb; sintet=bt/bb;}
+  Double_t vect[7];
+
+  vect[0] = costet*cosphi*r[0] + costet*sinphi*r[1] - sintet*r[2];
+  vect[1] = -sinphi*r[0] + cosphi*r[1];
+  vect[2] = sintet*cosphi*r[0] + sintet*sinphi*r[1] + costet*r[2];
+
+  vect[3] = costet*cosphi*p[0] + costet*sinphi*p[1] - sintet*p[2];
+  vect[4] = -sinphi*p[0] + cosphi*p[1];
+  vect[5] = sintet*cosphi*p[0] + sintet*sinphi*p[1] + costet*p[2];
+
+  vect[6] = pp;
+
+
+  // Do the helix step
+  g3helx3(GetSign()*bb,step,vect);
+
+
+  // Rotate back to the Global System
+  r[0] = cosphi*costet*vect[0] - sinphi*vect[1] + cosphi*sintet*vect[2];
+  r[1] = sinphi*costet*vect[0] + cosphi*vect[1] + sinphi*sintet*vect[2];
+  r[2] = -sintet*vect[0] + costet*vect[2];
+
+  p[0] = cosphi*costet*vect[3] - sinphi*vect[4] + cosphi*sintet*vect[5];
+  p[1] = sinphi*costet*vect[3] + cosphi*vect[4] + sinphi*sintet*vect[5];
+  p[2] = -sintet*vect[3] + costet*vect[5];
+
+
+  // Rotate back to the Tracking System
+  Double_t cosalp = TMath::Cos(fAlpha);
+  Double_t sinalp =-TMath::Sin(fAlpha);
+
+  Double_t 
+  t    = cosalp*r[0] - sinalp*r[1];
+  r[1] = sinalp*r[0] + cosalp*r[1];  
+  r[0] = t;
+
+  t    = cosalp*p[0] - sinalp*p[1]; 
+  p[1] = sinalp*p[0] + cosalp*p[1];
+  p[0] = t; 
+
+
+  // Do the final correcting step to the target plane (linear approximation)
+  Double_t x=r[0], y=r[1], z=r[2];
+  if (TMath::Abs(dx) > kAlmost0) {
+     if (TMath::Abs(p[0]) < kAlmost0) return kFALSE;
+     dx = xk - r[0];
+     x += dx;
+     y += p[1]/p[0]*dx;
+     z += p[2]/p[0]*dx;  
+  }
+
+
+  // Calculate the track parameters
+  t=TMath::Sqrt(p[0]*p[0] + p[1]*p[1]);
+  fX    = x;
+  fP[0] = y;
+  fP[1] = z;
+  fP[2] = p[1]/t;
+  fP[3] = p[2]/t; 
+  fP[4] = GetSign()/(t*pp);
+
+  return kTRUE;
+}
+
