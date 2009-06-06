@@ -1026,7 +1026,7 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
       uvt[0] = 2. * x * t;
       uvt[1] = 2. * x * t * tilt ;
       w = 2. * (y + tilt * (z - zVertex)) * t;
-      error = 2. * TMath::Sqrt(cl->GetSigmaY2()) * t;
+      error = 2. * TMath::Sqrt(cl->GetSigmaY2()+tilt*tilt*cl->GetSigmaZ2()) * t;
       fitter->AddPoint(uvt, w, error);
       nPoints++;
     }
@@ -1126,7 +1126,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
       w = 2. * (y + tilt*z) * t;
       // error definition changes for the different calls
       we = 2. * t;
-      we *= sigError ? TMath::Sqrt(cl->GetSigmaY2()) : 0.2;
+      we *= sigError ? TMath::Sqrt(cl->GetSigmaY2()+tilt*tilt*cl->GetSigmaZ2()) : 0.2;
       fitter->AddPoint(uvt, w, we);
       zfitter.AddPoint(&x, z, static_cast<Double_t>(TMath::Sqrt(cl->GetSigmaZ2())));
       nPoints++;
