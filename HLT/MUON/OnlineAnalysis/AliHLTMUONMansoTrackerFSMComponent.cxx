@@ -1114,8 +1114,14 @@ void AliHLTMUONMansoTrackerFSMComponent::FoundTrack(AliHLTMUONMansoTrackerFSM* t
 	AliHLTMUONMansoTrackStruct newTrack;
 	tracker->FillTrackData(newTrack);
 	
-	// Check if there is any track that uses the same hits as the one found.
-	// If there is, then use the one that has the higher pT.
+	// The indicies of the duplicate tracks. If set to block->Nentries() then
+	// this indicates the index is not used.
+	AliHLTUInt32_t dup1 = block->Nentries();
+	AliHLTUInt32_t dup2 = block->Nentries();
+	
+	// Check if there are any tracks that use the same hits as the one found.
+	// If there are, then use the one that has the highest pT.
+	// There will be at most 2 duplicate tracks.
 	for (AliHLTUInt32_t i = 0; i < block->Nentries(); i++)
 	{
 		AliHLTMUONMansoTrackStruct& track = (*block)[i];
@@ -1132,35 +1138,87 @@ void AliHLTMUONMansoTrackerFSMComponent::FoundTrack(AliHLTMUONMansoTrackerFSM* t
 		}
 		if (hasNoDuplicates) continue;
 		
-		// The tracks share a hit, so find out if the new track has higher pT
-		// If it does, then replace the old track, otherwise simply ignore the new track.
-		double newPt = sqrt(newTrack.fPx * newTrack.fPx + newTrack.fPy * newTrack.fPy);
-		double oldPt = sqrt(track.fPx * track.fPx + track.fPy * track.fPy);
-		if (newPt > oldPt)
+		if (dup1 == block->Nentries())
 		{
-			track = newTrack;
-			DebugTrace("\tReplaced track " << i << " with: " << *track);
+			dup1 = i;
 		}
-		return;
+		else if (dup2 == block->Nentries())
+		{
+			dup2 = i;
+		}
+		else
+		{
+			HLTError("Found more than 2 tracks with duplicate hits. This is completely unexpected. Something is seriously wrong!");
+		}
 	}
 	
-	// No track found with duplicate hits so we can add the new track as is.
-	AliHLTMUONMansoTrackStruct* track = block->AddEntry();
-	if (track == NULL)
+	if (dup1 != block->Nentries() and dup2 != block->Nentries())
 	{
-		Logging(kHLTLogError,
-			"AliHLTMUONMansoTrackerFSMComponent::FoundTrack",
-			"Buffer overflow",
-			"We have overflowed the output buffer for Manso track data."
-			  " The output buffer size is only %d bytes.",
-			block->BufferSize()
-		);
-		return;
+		// In this case we found 2 duplicate entries.
+		// Figure out which one has the highest pT and keep only that one.
+		AliHLTMUONMansoTrackStruct& track1 = (*block)[dup1];
+		AliHLTMUONMansoTrackStruct& track2 = (*block)[dup2];
+		double newPt = sqrt(newTrack.fPx * newTrack.fPx + newTrack.fPy * newTrack.fPy);
+		double dupPt1 = sqrt(track1.fPx * track1.fPx + track1.fPy * track1.fPy);
+		double dupPt2 = sqrt(track2.fPx * track2.fPx + track2.fPy * track2.fPy);
+		
+		if (newPt >= dupPt1 and newPt >= dupPt2)
+		{
+			// The new track must replace both existing tracks.
+			track1 = newTrack;
+			track2 = (*block)[block->Nentries()-1];
+		}
+		else if (dupPt1 >= newPt and dupPt1 >= dupPt2)
+		{
+			// track1 has the highest pT so ignore the new track and delete track2.
+			track2 = (*block)[block->Nentries()-1];
+		}
+		else
+		{
+			// In this case track2 must have the highest pT so ignore the new
+			// track and delete track1.
+			track1 = (*block)[block->Nentries()-1];
+		}
+		
+		// Decrement the number of entries because we deleted a track.
+		assert(fTrackCount > 0);
+		assert(block->Nentries() > 0);
+		block->SetNumberOfEntries(block->Nentries()-1);
+		fTrackCount--;
 	}
- 
-	fTrackCount++;
-	*track = newTrack;
-	DebugTrace("\tAdded new track: " << *track);
+	else if (dup1 != block->Nentries())
+	{
+		// Only one track with duplicate hits found.
+		// See if the new track has higher pT. If it does then replace the
+		// exisiting track, otherwise ignore the new track.
+		AliHLTMUONMansoTrackStruct& track1 = (*block)[dup1];
+		double newPt = sqrt(newTrack.fPx * newTrack.fPx + newTrack.fPy * newTrack.fPy);
+		double dupPt1 = sqrt(track1.fPx * track1.fPx + track1.fPy * track1.fPy);
+		if (newPt >= dupPt1)
+		{
+			track1 = newTrack;
+		}
+	}
+	else
+	{
+		// No track found with duplicate hits so we can add the new track as it is.
+		AliHLTMUONMansoTrackStruct* track = block->AddEntry();
+		if (track == NULL)
+		{
+			Logging(kHLTLogError,
+				"AliHLTMUONMansoTrackerFSMComponent::FoundTrack",
+				"Buffer overflow",
+				"We have overflowed the output buffer for Manso track data."
+				" The output buffer size is only %d bytes.",
+				block->BufferSize()
+			);
+			return;
+		}
+	
+		fTrackCount++;
+		*track = newTrack;
+		DebugTrace("\tAdded new track: " << *track);
+	}
 }
 
 
