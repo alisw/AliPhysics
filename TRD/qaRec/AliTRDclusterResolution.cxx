@@ -260,6 +260,7 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
   TLegend *leg = 0x0;
   TList *l = 0x0;
   TObjArray *arr = 0x0;
+  TTree *t = 0x0;
   TH2 *h2 = 0x0;TH1 *h1 = 0x0;
   TGraphErrors *gm(0x0), *gs(0x0), *gp(0x0);
   switch(ifig){
@@ -296,34 +297,78 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
     leg->Draw();
     return kTRUE;
   case kSigm:
-    if(!(arr = (TObjArray*)fResults->At(kSigm))) break;
-    gPad->Divide(2, 1); l = gPad->GetListOfPrimitives();
-    if(!(h2 = (TH2F*)arr->At(0))) return kFALSE;
+    if(!(t = (TTree*)fResults->At(kSigm))) break;
+    t->Draw("z:t>>h2x(23, 0.1, 2.4, 25, 0., 2.5)","sx*(1)", "lego2fb");
+    h2 = (TH2F*)gROOT->FindObject("h2x");
+    printf("  const Double_t sx[24][25]={\n");
+    for(Int_t ix=1; ix<=h2->GetNbinsX(); ix++){
+      printf("    {");
+      for(Int_t iy=1; iy<h2->GetNbinsY(); iy++){
+        printf("%6.4f ", h2->GetBinContent(ix, iy));
+      }
+      printf("%6.4f},\n", h2->GetBinContent(ix, h2->GetNbinsY()));
+    }
+    printf("  };\n");
+    gPad->Divide(2, 1, 1.e-5, 1.e-5); l = gPad->GetListOfPrimitives();
     ((TVirtualPad*)l->At(0))->cd();
-    h1 = h2->ProjectionY("hsx_pyy"); h1->Scale(1.e4/kND); h1->SetMarkerStyle(24);
+    h1 = h2->ProjectionX("hsx_pxx"); h1->Scale(1.e4/kND); h1->SetMarkerStyle(24);
     h1->SetYTitle("<#sigma_{x}> [#mum]");
+    h1->SetXTitle("t_{drift} [#mus]");
     h1->GetXaxis()->SetRange(2, kNTB-1); h1->Draw("pc");
 
-    if(!(h2 = (TH2F*)arr->At(1))) return kFALSE;
+    t->Draw("z:t>>h2y(23, 0.1, 2.4, 25, 0., 2.5)","sy*(1)", "lego2fb");
+    h2 = (TH2F*)gROOT->FindObject("h2y");
+    printf("  const Double_t sy[24][25]={\n");
+    for(Int_t ix=1; ix<=h2->GetNbinsX(); ix++){
+      printf("    {");
+      for(Int_t iy=1; iy<h2->GetNbinsY(); iy++){
+        printf("%6.4f ", h2->GetBinContent(ix, iy));
+      }
+      printf("%6.4f},\n", h2->GetBinContent(ix, h2->GetNbinsY()));
+    }
+    printf("  };\n");
     ((TVirtualPad*)l->At(1))->cd();
-    h1 = h2->ProjectionY("hsy_pyy"); h1->Scale(1.e4/kND); h1->SetMarkerStyle(24);
+    h1 = h2->ProjectionX("hsy_pxx"); h1->Scale(1.e4/kND); h1->SetMarkerStyle(24);
     h1->SetYTitle("<#sigma_{y}> [#mum]");
+    h1->SetXTitle("t_{drift} [#mus]");
     h1->GetXaxis()->SetRange(2, kNTB-1); h1->Draw("pc");
     return kTRUE;
   case kMean:
-    if(!(arr = (TObjArray*)fResults->At(kMean))) break;
-    gPad->Divide(2, 1);  l = gPad->GetListOfPrimitives();
+    if(!(t = (TTree*)fResults->At(kMean))) break;
+    t->Draw("z:t>>h2x(23, 0.1, 2.4, 25, 0., 2.5)","dx*(1)", "goff");
+    h2 = (TH2F*)gROOT->FindObject("h2x");
+    printf("  const Double_t dx[24][25]={\n");
+    for(Int_t ix=1; ix<=h2->GetNbinsX(); ix++){
+      printf("    {");
+      for(Int_t iy=1; iy<h2->GetNbinsY(); iy++){
+        printf("%6.4f ", h2->GetBinContent(ix, iy));
+      }
+      printf("%6.4f},\n", h2->GetBinContent(ix, h2->GetNbinsY()));
+    }
+    printf("  };\n");
+    gPad->Divide(2, 1, 1.e-5, 1.e-5); l = gPad->GetListOfPrimitives();
     ((TVirtualPad*)l->At(0))->cd();
-    if(!(gm = (TGraphErrors*)arr->At(0))) return kFALSE;
-    gm->Draw("apl");
-    gm->GetHistogram()->SetXTitle("t_{drift} [#mus]");
-    gm->GetHistogram()->SetYTitle("dx [#mum]");
+    h1 = h2->ProjectionX("hdx_pxx"); h1->Scale(1.e4/kND); h1->SetMarkerStyle(24);
+    h1->SetYTitle("<dx> [#mum]");
+    h1->SetXTitle("t_{drift} [#mus]");
+    h1->GetXaxis()->SetRange(2, kNTB-1); h1->Draw("pc");
 
+    t->Draw("z:t>>h2y(23, 0.1, 2.4, 25, 0., 2.5)","dy*(1)", "goff");
+    h2 = (TH2F*)gROOT->FindObject("h2y");
+    printf("  const Double_t dy[24][25]={\n");
+    for(Int_t ix=1; ix<=h2->GetNbinsX(); ix++){
+      printf("    {");
+      for(Int_t iy=1; iy<h2->GetNbinsY(); iy++){
+        printf("%6.4f ", h2->GetBinContent(ix, iy));
+      }
+      printf("%6.4f},\n", h2->GetBinContent(ix, h2->GetNbinsY()));
+    }
+    printf("  };\n");
     ((TVirtualPad*)l->At(1))->cd();
-    if(!(gm = (TGraphErrors*)arr->At(1))) return kFALSE;
-    gm->Draw("apl");
-    gm->GetHistogram()->SetXTitle("t_{drift} [#mus]");
-    gm->GetHistogram()->SetYTitle("dy [#mum]");
+    h1 = h2->ProjectionX("hdy_pxx"); h1->Scale(1.e4/kND); h1->SetMarkerStyle(24);
+    h1->SetYTitle("<dy> [#mum]");
+    h1->SetXTitle("t_{drift} [#mus]");
+    h1->GetXaxis()->SetRange(2, kNTB-1); h1->Draw("pc");
 
     return kTRUE;
   default:
@@ -528,14 +573,14 @@ Bool_t AliTRDclusterResolution::PostProcess()
 
 
     fResults->AddAt(t = new TTree("sigm", "dy=f(dw,x,dydx)"), kSigm);
-    t->Branch("x", &fX, "x/F");
+    t->Branch("t", &fX, "t/F");
     t->Branch("z", &fZ, "z/F");
     t->Branch("sx", &fR[0], "sx[2]/F");
     t->Branch("sy", &fR[2], "sy[2]/F");
 
 
     fResults->AddAt(t = new TTree("mean", "dy=f(dw,x,dydx - h dzdx)"), kMean);
-    t->Branch("x", &fX, "x/F");
+    t->Branch("t", &fX, "t/F");
     t->Branch("z", &fZ, "z/F");
     t->Branch("dx", &fR[0], "dx[2]/F");
     t->Branch("dy", &fR[2], "dy[2]/F");
@@ -641,6 +686,15 @@ void AliTRDclusterResolution::ProcessCharge()
   TAxis *ax = 0x0;
   TH1D *h1 = 0x0;
 
+  // compute mean error on x
+  Double_t s2x = 0.; 
+  for(Int_t ix=5; ix<kNTB; ix++){
+    // retrieve error on the drift length
+    s2x += AliTRDcluster::GetSX(ix);
+  }
+  s2x /= (kNTB-5); s2x *= s2x;
+  Double_t exb2 = fExB*fExB;
+
   TObjArray *arr = (TObjArray*)fResults->At(kQRes);
   TGraphErrors *gqm = (TGraphErrors*)arr->At(0);
   TGraphErrors *gqs = (TGraphErrors*)arr->At(1);
@@ -663,8 +717,8 @@ void AliTRDclusterResolution::ProcessCharge()
     gqm->SetPointError(ip, 0., 1.e4*f.GetParError(1));
 
     // correct sigma for ExB effect
-    gqs->SetPoint(ip, q, 1.e4*f.GetParameter(2)/**f.GetParameter(2)-exb2*sxd2*/);
-    gqs->SetPointError(ip, 0., 1.e4*f.GetParError(2)/**f.GetParameter(2)*/);
+    gqs->SetPoint(ip, q, 1.e4*(f.GetParameter(2)*f.GetParameter(2)-exb2*s2x));
+    gqs->SetPointError(ip, 0., 1.e4*f.GetParError(2)*f.GetParameter(2));
 
     // save probability
     n += entries;
@@ -684,8 +738,8 @@ void AliTRDclusterResolution::ProcessCharge()
 
   // error parametrization s(q) = <sy> + b(1/q-1/q0)
   TF1 fq("fq", "[0] + [1]/x", 20., 250.);
-  gqs->Fit(&fq);
-  //printf("sm=%f [0]=%f [1]=%f\n", 1.e-4*sm, fq.GetParameter(0), fq.GetParameter(1));
+  gqs->Fit(&fq/*, "W"*/);
+  printf("sm=%f [0]=%f [1]=%f\n", 1.e-4*sm, fq.GetParameter(0), fq.GetParameter(1));
   printf("  const Float_t sq0inv = %f; // [1/q0]\n", (sm-fq.GetParameter(0))/fq.GetParameter(1));
   printf("  const Float_t sqb    = %f; // [cm]\n", 1.e-4*fq.GetParameter(1));
 }
@@ -774,7 +828,7 @@ void AliTRDclusterResolution::ProcessCenterPad()
             "goff");
     h2=(TH2F*)gROOT->FindObject("h");
     f.FixParameter(1, 0.);
-    Int_t n = h2->GetXaxis()->GetNbins(); s[il]=0.;
+    Int_t n = h2->GetXaxis()->GetNbins(), nn(0); s[il]=0.;
     printf("    {");
     for(Int_t ix=1; ix<=n; ix++){
       ax = h2->GetXaxis();
@@ -785,24 +839,33 @@ void AliTRDclusterResolution::ProcessCenterPad()
       // Apply lorentz angle correction
       // retrieve error on the drift length
       Double_t s2x = AliTRDcluster::GetSX(ix-1); s2x *= s2x;
-      for(Int_t iy=1; iy<h1->GetNbinsX(); iy++){
+      Int_t nnn = 0;
+      for(Int_t iy=1; iy<=h1->GetNbinsX(); iy++){
         Double_t s2 = h1->GetBinContent(iy); s2*= s2;
         // sigma square corrected for Lorentz angle
         // s2 = s2_y(y_w,x)+exb2*s2_x
-        h1->SetBinContent(iy, TMath::Sqrt(TMath::Max(s2 - exb2*s2x, Double_t(0.))));
+        Double_t sy = TMath::Sqrt(TMath::Max(s2 - exb2*s2x, Double_t(0.)));
+        if(sy<1.e-20) continue;
+        h1->SetBinContent(iy, sy); nnn++;
         printf("s[%6.2f] sx[%6.2f] sy[%6.2f]\n",
         1.e4*TMath::Sqrt(s2), 1.e4*TMath::Abs(fExB*AliTRDcluster::GetSX(ix-1)), 
         1.e4*h1->GetBinContent(iy));
       }
-      h1->Fit(&f, "QN");
-      s[il]+=f.GetParameter(2);
-      printf("%6.4f,%s", f.GetParameter(0), ix%6?" ":"\n     ");
+      // do fit only if enough data
+      Double_t sPRF = 0.;
+      if(nnn>5){
+        h1->Fit(&f, "QN");
+        sPRF = f.GetParameter(2);
+        nn++;
+      }
+      s[il]+=sPRF;
+      printf("%6.4f,%s", sPRF, ix%6?" ":"\n     ");
       Int_t jx = gs->GetN();
-      gs->SetPoint(jx, fX, 1.e4*f.GetParameter(0));
+      gs->SetPoint(jx, fX, 1.e4*sPRF);
       gs->SetPointError(jx, 0., 0./*f.GetParError(0)*/);
     }
     printf("\b},\n");
-    s[il]/=n;
+    s[il]/=nn;
 
     f.ReleaseParameter(2);
 
@@ -832,14 +895,14 @@ void AliTRDclusterResolution::ProcessSigma()
 // In the general case 
 // BEGIN_LATEX
 // #sigma^{2}_{y*} = #sigma^{2}_{y} + tg^{2}(#alpha_{L})#sigma^{2}_{x_{drift}}   
-// #sigma^{2}_{x*} = tg^{2}(#phi - #alpha_{L})*(#sigma^{2}_{x_{drift}} + #sigma^{2}_{x_{0}}
+// #sigma^{2}_{x*} = tg^{2}(#phi - #alpha_{L})*(#sigma^{2}_{x_{drift}} + #sigma^{2}_{x_{0}} + tg^{2}(#alpha_{L})*x^{2}/12)
 // END_LATEX
 // where we have explicitely show the lorentz angle correction on y and the projection of radial component on the y
 // direction through the track angle in the bending plane (phi). Also we have shown that the radial component in the
 // last equation has twp terms, the drift and the misalignment (x_0). For ideal geometry or known misalignment one 
 // can solve the equation
 // BEGIN_LATEX
-// #sigma^{2}|_{y} = tg^{2}(#phi - #alpha_{L})*#sigma^{2}_{x} + [#sigma^{2}_{y} + tg^{2}(#alpha_{L})#sigma^{2}_{x}]
+// #sigma^{2}|_{y} = tg^{2}(#phi - #alpha_{L})*(#sigma^{2}_{x} + tg^{2}(#alpha_{L})*x^{2}/12)+ [#sigma^{2}_{y} + tg^{2}(#alpha_{L})#sigma^{2}_{x}]
 // END_LATEX
 // by fitting a straight line:
 // BEGIN_LATEX
@@ -847,8 +910,8 @@ void AliTRDclusterResolution::ProcessSigma()
 // END_LATEX
 // the error parameterization will be given by:
 // BEGIN_LATEX
-// #sigma_{x} (x_{cl}, z_{cl}) = #sqrt{a(x_{cl}, z_{cl})}
-// #sigma_{y} (x_{cl}, z_{cl}) = #sqrt{b(x_{cl}, z_{cl}) - a(x_{cl}, z_{cl}) * tg^{2}(#alpha_{L})}
+// #sigma_{x} (x_{cl}, z_{cl}) = #sqrt{a(x_{cl}, z_{cl}) - tg^{2}(#alpha_{L})*x^{2}/12}
+// #sigma_{y} (x_{cl}, z_{cl}) = #sqrt{b(x_{cl}, z_{cl}) - #sigma^{2}_{x} (x_{cl}, z_{cl}) * tg^{2}(#alpha_{L})}
 // END_LATEX
 // Below there is an example of such dependency. 
 //Begin_Html
@@ -857,7 +920,14 @@ void AliTRDclusterResolution::ProcessSigma()
 //
 // The error parameterization obtained by this method are implemented in the functions AliTRDcluster::GetSX() and
 // AliTRDcluster::GetSYdrift(). For an independent method to determine s_y as a function of drift length check the 
-// function ProcessCenterPad().
+// function ProcessCenterPad(). One has to keep in mind that while this method return the mean s_y over the distance
+// to pad center distribution the other method returns the *STANDARD* value at center=0 (maximum). To recover the 
+// standard value one has to solve the obvious equation:
+// BEGIN_LATEX
+// #sigma_{y}^{STANDARD} = #frac{<#sigma_{y}>}{#int{s exp(s^{2}/#sigma) ds}}
+// END_LATEX
+// with "<s_y>" being the value calculated here and "sigma" the width of the s_y distribution calculated in 
+// ProcessCenterPad().
 //  
 // Author
 // Alexandru Bercuci <A.Bercuci@gsi.de>
@@ -883,13 +953,14 @@ void AliTRDclusterResolution::ProcessSigma()
   TH1 *hFrame=0x0;
   TH1D *h1 = 0x0; TH3S *h3=0x0;
   TAxis *ax = 0x0;
-  Double_t exb2 = fExB*fExB;
-
+  Double_t exb2 = fExB*fExB, x;
+  AliTRDcluster c;
   TTree *t = (TTree*)fResults->At(kSigm);
   for(Int_t ix=0; ix<kNTB; ix++){
     if(!(h3=(TH3S*)arr->At(ix))) continue;
-    fX = fAt->GetBinCenter(ix+1);
-    
+    c.SetPadTime(ix);
+    x = c.GetXloc(0., 1.5);
+    fX= fAt->GetBinCenter(ix+1);
     for(Int_t iz=1; iz<=h3->GetXaxis()->GetNbins(); iz++){
       ax = h3->GetXaxis();
       ax->SetRange(iz, iz);
@@ -928,29 +999,37 @@ void AliTRDclusterResolution::ProcessSigma()
         ggs->SetPoint(jp, tgg2, s2);
         ggs->SetPointError(jp, 0., s2e);
       }
+      // TODO here a more robust fit method has to be provided
+      // for which lower boundaries on the parameters have to 
+      // be imposed. Unfortunately the Minuit fit does not work 
+      // for the TGraph in the case of B not 0.
       if(gs.Eval()) continue;
 
-      // s^2_x = s0^2_x - x^2*tg^2(a_L)/12
-      fR[0] = gs.GetParameter(1)/* - x*x*exb2/12.*/;
-      if(fR[0]<0.) continue; 
-      fR[0] = TMath::Sqrt(fR[0]);
-      fR[1] = .5*gs.GetParError(1)/fR[0];
+      fR[0] = gs.GetParameter(1) - x*x*exb2/12.;
+      printf("s2x+x2=%f ang=%f s2x=%f\n", gs.GetParameter(1), x*x*exb2/12., fR[0]);
+      fR[0] = TMath::Max(fR[0], Float_t(4.e-4)); 
 
       // s^2_y  = s0^2_y + tg^2(a_L) * s^2_x
       // s0^2_y = f(D_L)*x + s_PRF^2 
-      fR[2]= gs.GetParameter(0)/*-exb2*sx*/;
-      if(fR[1] <0.) continue;
+      fR[2]= gs.GetParameter(0)-exb2*fR[0];
+      printf("s2y+s2x=%f s2y=%f\n", fR[0], fR[2]);
+      fR[2] = TMath::Max(fR[2], Float_t(2.5e-5)); 
+      fR[0] = TMath::Sqrt(fR[0]);
+      fR[1] = .5*gs.GetParError(1)/fR[0];
       fR[2] = TMath::Sqrt(fR[2]);
       fR[3] = gs.GetParError(0)+exb2*exb2*gs.GetParError(1);
       t->Fill();
+      printf("    xd=%4.2f[cm] sx=%6.1f[um] sy=%5.1f[um]\n", x, 1.e4*fR[0], 1.e4*fR[2]);
 
       if(!fCanvas) continue;
       fCanvas->cd(); fCanvas->SetLogx(); //fCanvas->SetLogy();
       if(!hFrame){ 
+        fCanvas->SetMargin(0.15, 0.01, 0.1, 0.01);
         hFrame=new TH1I("hFrame", "", 100, 0., .3);
         hFrame->SetMinimum(0.);hFrame->SetMaximum(.005);
         hFrame->SetXTitle("tg^{2}(#phi-#alpha_{L})");
         hFrame->SetYTitle("#sigma^{2}y[cm^{2}]");
+        hFrame->GetYaxis()->SetTitleOffset(2.);
         hFrame->SetLineColor(1);hFrame->SetLineWidth(1);
         hFrame->Draw();
       } else hFrame->Reset();
@@ -963,8 +1042,6 @@ void AliTRDclusterResolution::ProcessSigma()
       fCanvas->Modified(); fCanvas->Update();
       if(IsSaveAs()) fCanvas->SaveAs(Form("Figures/ProcessSigma_z[%5.3f]_x[%5.3f].gif", fZ, fX));
       else gSystem->Sleep(100);
-
-      printf("    xd=%4.1f[cm] sx=%5.3e[cm] sy=%5.3e[cm]\n", fX, TMath::Sqrt(fR[0]), TMath::Sqrt(fR[1]));
     }
   }
   return;
@@ -1059,12 +1136,15 @@ void AliTRDclusterResolution::ProcessMean()
   TH1 *hFrame=0x0;
   TH1D *h1 = 0x0; TH3S *h3 =0x0;
   TAxis *ax = 0x0;
+  Double_t x;
 
+  AliTRDcluster c;
   TTree *t = (TTree*)fResults->At(kMean);
   for(Int_t ix=0; ix<kNTB; ix++){
     if(!(h3=(TH3S*)arr->At(ix))) continue;
-    fX = fAt->GetBinCenter(ix+1);
-  
+    c.SetPadTime(ix);
+    x = c.GetXloc(0., 1.5);
+    fX= fAt->GetBinCenter(ix+1);
     for(Int_t iz=1; iz<=h3->GetXaxis()->GetNbins(); iz++){
       ax = h3->GetXaxis();
       ax->SetRange(iz, iz);
@@ -1098,14 +1178,17 @@ void AliTRDclusterResolution::ProcessMean()
       fR[1] = line.GetParError(1);
       fR[2] = line.GetParameter(0) + fExB*fR[0]; // xs = dy - tg(a_L)*dx
       t->Fill();
+      printf("    xd=%4.2f[cm] dx=%6.2f[um] dy=%6.2f[um]\n", x, 1.e4*fR[0], 1.e4*fR[2]);
 
       if(!fCanvas) continue;
       fCanvas->cd();
       if(!hFrame){ 
+        fCanvas->SetMargin(0.1, 0.02, 0.1, 0.01);
         hFrame=new TH1I("hFrame", "", 100, -.3, .3);
         hFrame->SetMinimum(-.1);hFrame->SetMaximum(.1);
         hFrame->SetXTitle("tg#phi-htg#theta");
-        hFrame->SetYTitle("#Deltay[cm]");
+        hFrame->SetYTitle("#Delta y[cm]");
+        hFrame->GetYaxis()->SetTitleOffset(1.5);
         hFrame->SetLineColor(1);hFrame->SetLineWidth(1);
         hFrame->Draw();
       } else hFrame->Reset();
@@ -1113,12 +1196,6 @@ void AliTRDclusterResolution::ProcessMean()
       fCanvas->Modified(); fCanvas->Update();
       if(IsSaveAs()) fCanvas->SaveAs(Form("Figures/ProcessMean_Z[%5.3f]_X[%5.3f].gif", fZ, fX));
       else gSystem->Sleep(100);
-      printf("    xd=%4.2f[cm] dx=%5.3e[cm] dy=%5.3e[cm]\n", fX, fR[0], fR[2]);
     }
   }
-  
-  // draw shift results
-  //t->Draw("z:x>>h(24, 0, 2.4, 25, 0, 2.5)", "dx*(abs(dx)<1.e-2)", "lego2fb");
-  //t->Draw("z:x>>h(24, 0, 2.4, 25, 0, 2.5)", "dy*(abs(dx)<1.e-2)", "lego2fb");
-
 }
