@@ -54,7 +54,7 @@ AliTRDcluster::AliTRDcluster()
   for (Int_t i = 0; i < 7; i++) {
     fSignals[i] = 0;
   }
-
+  SetBit(kLUT);
 }
 
 //___________________________________________________________________________
@@ -79,6 +79,7 @@ AliTRDcluster::AliTRDcluster(Int_t det, UChar_t col, UChar_t row, UChar_t time, 
   memcpy(&fSignals, sig, 7*sizeof(Short_t));
   fQ = fSignals[2]+fSignals[3]+fSignals[4];
   SetVolumeId(vid);
+  SetBit(kLUT);
 }
 
 //___________________________________________________________________________
@@ -109,7 +110,7 @@ AliTRDcluster::AliTRDcluster(Int_t det, Float_t q
   if (tracks) {
     AddTrackIndex(tracks);
   }
-
+  SetBit(kLUT);
 }
 
 //_____________________________________________________________________________
@@ -129,7 +130,6 @@ AliTRDcluster::AliTRDcluster(const AliTRDcluster &c)
   // Copy constructor 
   //
 
-  SetBit(kInChamber, c.IsInChamber());
   SetLabel(c.GetLabel(0),0);
   SetLabel(c.GetLabel(1),1);
   SetLabel(c.GetLabel(2),2);
@@ -310,8 +310,8 @@ Double_t AliTRDcluster::GetSX(Int_t tb, Double_t z)
   };
   if(z>=0. && z<.25) return sx[tb][Int_t(z/.025)];
   
-  Double_t m = 1.e-8; for(Int_t id=10; id--;) if(sx[tb][id]>m) m=sx[tb][id];
-  return m;
+  Double_t m = 0.; for(Int_t id=10; id--;) m+=sx[tb][id];
+  return m*.1;
 }
 
 //___________________________________________________________________________
@@ -374,7 +374,8 @@ Double_t AliTRDcluster::GetSYdrift(Int_t tb, Int_t ly, Double_t/* z*/)
      0.0345, 0.0328, 0.0341, 0.0332, 0.0356, 0.0398
     },
   };
-  return lSy[ly][tb];
+  // adjusted ...
+  return TMath::Max(lSy[ly][tb]-0.0150, 0.0010);
 
 /*  const Double_t sy[24][10]={
     {0.000e+00, 2.610e-01, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 0.000e+00, 4.680e-01},
@@ -435,7 +436,7 @@ Double_t AliTRDcluster::GetSYcharge(Float_t q)
 // A.Bercuci <A.Bercuci@gsi.de>
 
   const Float_t sq0inv = 0.019962; // [1/q0]
-  const Float_t sqb    = 1.0281564;// [cm]
+  const Float_t sqb    = 0.037328; // [cm]
 
   return sqb*(1./q - sq0inv);
 }
@@ -680,6 +681,21 @@ void AliTRDcluster::SetSigmaY2(Float_t s2, Float_t dt, Float_t exb, Float_t x, F
 // is known (tgp). For this reason the errors (and optional position) of TRD clusters are recalculated during 
 // tracking and thus clusters attached to tracks might differ from bare clusters.
 // 
+// Taking into account all contributions one can write the the TRD cluster error parameterization as:
+// BEGIN_LATEX
+// #sigma_{y}^{2} = (#sigma_{diff}*Gauss(0, s_{ly}) + #delta_{#sigma}(q))^{2} + tg^{2}(#alpha_{L})*#sigma_{x}^{2} + tg^{2}(#phi-#alpha_{L})*#sigma_{x}^{2}+[tg(#phi-#alpha_{L})*tg(#alpha_{L})*x]^{2}/12
+// END_LATEX
+// From this formula one can deduce a that the simplest calibration method for PRF and diffusion contributions is 
+// by measuring resolution at B=0T and phi=0. To disentangle further the two remaining contributions one has 
+// to represent s2 as a function of drift length. 
+// 
+// In the gaussian model the diffusion contribution can be expressed as:
+// BEGIN_LATEX
+// #sigma^{2}_{y} = #sigma^{2}_{PRF} + #frac{x#delta_{t}^{2}}{(1+tg(#alpha_{L}))^{2}}
+// END_LATEX
+// thus resulting the PRF contribution. For the case of the LUT model both contributions have to be determined from 
+// the fit (see AliTRDclusterResolution::ProcessCenter() for details).
+// 
 // Author:
 // A.Bercuci <A.Bercuci@gsi.de>
 
@@ -687,11 +703,11 @@ void AliTRDcluster::SetSigmaY2(Float_t s2, Float_t dt, Float_t exb, Float_t x, F
   Int_t ly = AliTRDgeometry::GetLayer(fDetector);
   if(IsRPhiMethod(kCOG)) sigmaY2 = 4.e-4;
   else if(IsRPhiMethod(kLUT)){ 
-    Float_t sd = GetSYdrift(fLocalTimeBin, ly, z);//printf("drift[%6.2f] ", 1.e4*sd);
-    sigmaY2 = GetSYprf(ly, fCenter, sd);//printf("PRF[%6.2f] ", 1.e4*sigmaY2);
+    Float_t sd = GetSYdrift(fLocalTimeBin, ly, z); //printf("drift[%6.2f] ", 1.e4*sd);
+    sigmaY2 = GetSYprf(ly, fCenter, sd); //printf("PRF[%6.2f] ", 1.e4*sigmaY2);
     // add charge contribution TODO scale with respect to s2
-    sigmaY2+= GetSYcharge(TMath::Abs(fQ));//printf("Q[%6.2f] ", 1.e4*sigmaY2);
-    sigmaY2 = TMath::Max(sigmaY2, Float_t(0.)); //!! protection 
+    sigmaY2+= GetSYcharge(TMath::Abs(fQ)); //printf("Q[%6.2f] ", 1.e4*sigmaY2);
+    sigmaY2 = TMath::Max(sigmaY2, Float_t(0.0010)); //!! protection 
     sigmaY2*= sigmaY2;
   } else if(IsRPhiMethod(kGAUS)){
     // PRF contribution
@@ -709,13 +725,13 @@ void AliTRDcluster::SetSigmaY2(Float_t s2, Float_t dt, Float_t exb, Float_t x, F
 
   // Lorentz angle shift contribution 
   Float_t sx = GetSX(fLocalTimeBin, z); sx*=sx;
-  sigmaY2+= exb2*sx;//printf("Al[%6.2f] ", 1.e4*TMath::Sqrt(sigmaY2));
+  sigmaY2+= exb2*sx; //printf("Al[%6.2f] ", 1.e4*TMath::Sqrt(sigmaY2));
 
   // Radial contribution due to not measuring x in Kalman model 
-  sigmaY2+= tgg*sx;//printf("x[%6.2f] ", 1.e4*TMath::Sqrt(sigmaY2));
+  sigmaY2+= tgg*sx; //printf("x[%6.2f] ", 1.e4*TMath::Sqrt(sigmaY2));
 
   // Track angle contribution
-  sigmaY2+= tgg*x*x*exb2/12.;//printf("angle[%6.2f]\n", 1.e4*TMath::Sqrt(sigmaY2));
+  sigmaY2+= tgg*x*x*exb2/12.; //printf("angle[%6.2f]\n", 1.e4*TMath::Sqrt(sigmaY2));
 
   AliCluster::SetSigmaY2(sigmaY2);
 }
