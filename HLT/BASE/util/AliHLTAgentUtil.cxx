@@ -130,6 +130,7 @@ int AliHLTAgentUtil::GetHandlerDescription(AliHLTComponentDataType dt,
 					   AliHLTOUTHandlerDesc& desc) const
 {
   // see header file for class documentation
+  return 0;
 
   // handler for the component statistics data blocks {'COMPSTAT':'PRIV'}
   if (dt==kAliHLTDataTypeComponentStatistics ||
@@ -145,6 +146,7 @@ AliHLTOUTHandler* AliHLTAgentUtil::GetOutputHandler(AliHLTComponentDataType dt,
 						   AliHLTUInt32_t /*spec*/)
 {
   // see header file for class documentation
+  return NULL;
 
   // handler for the component statistics data blocks {'COMPSTAT':'PRIV'}
   if (dt==kAliHLTDataTypeComponentStatistics ||
