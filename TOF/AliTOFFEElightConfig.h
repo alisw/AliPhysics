@@ -29,9 +29,16 @@ class AliTOFFEEchannelConfig
   Int_t fLatencyWindow; // latency window [ns]
 
  public:
+  AliTOFFEEchannelConfig() : fStatus(0x0), fMatchingWindow(0), fLatencyWindow(0) {}; // default construct
+  ~AliTOFFEEchannelConfig() {}; // default destructor
+
   UChar_t GetStatus() const {return fStatus;}; // get status
   Int_t GetMatchingWindow() const {return fMatchingWindow;}; // get matching window
   Int_t GetLatencyWindow() const {return fLatencyWindow;}; // get latency window
+
+  void SetStatus(UChar_t value) {fStatus = value;}; // set status
+  void SetMatchingWindow(Int_t value) {fMatchingWindow = value;}; // set matching window
+  void SetLatencyWindow(Int_t value) {fLatencyWindow = value;}; // set latency window
 
   Bool_t IsEnabled() const {return (GetStatus() & kStatusEnabled);}; // is enabled
 
@@ -50,10 +57,17 @@ class AliTOFFEElightConfig
   AliTOFFEEchannelConfig fChannelConfig[fgkNumberOfChannels]; // channel config array
 
  public:
+  AliTOFFEElightConfig() : fVersion(0), fRunNumber(0), fRunType(0), fChannelConfig() {}; // default construct
+  ~AliTOFFEElightConfig() {}; // default destructor
+
   Int_t GetVersion() const {return fVersion;}; // get version
   Int_t GetRunNumber() const {return fRunNumber;}; // get run number
   Int_t GetRunType() const {return fRunType;}; // get run type
-  AliTOFFEEchannelConfig *GetChannelConfig(Int_t i) {return i < fgkNumberOfChannels ? &fChannelConfig[i] : NULL;}; // get channel config
+  AliTOFFEEchannelConfig *GetChannelConfig(Int_t i) {return (i < fgkNumberOfChannels ? &fChannelConfig[i] : NULL);}; // get channel config
+
+  void SetVersion(Int_t value) {fVersion = value;}; // get version
+  void SetRunNumber(Int_t value) {fRunNumber = value;}; // get run number
+  void SetRunType(Int_t value) {fRunType = value;}; // get run type
 
 };
 

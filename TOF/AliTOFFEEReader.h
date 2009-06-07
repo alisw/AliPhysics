@@ -18,6 +18,7 @@
 //#include "AliTOFGeometry.h"
 
 class AliTOFFEEConfig;
+class AliTOFFEElightConfig;
 
 class AliTOFFEEReader :
 public TObject 
@@ -38,22 +39,34 @@ public TObject
   static Int_t GetNumberOfChannels() {return fgkNumberOfChannels;}; // get number of channels
   static Int_t GetNumberOfIndexes() {return fgkNumberOfIndexes;}; // get number of indexes
   AliTOFFEEConfig *GetFEEConfig() const {return fFEEConfig;}; // get FEE config
+  AliTOFFEElightConfig *GetFEElightConfig() const {return fFEElightConfig;}; // get FEElight config
   Bool_t GetChannelEnabled(Int_t iIndex) const {return iIndex < GetNumberOfIndexes() ? fChannelEnabled[iIndex] : kFALSE;}; // get channel enabled
   Int_t GetMatchingWindow(Int_t iIndex) const {return iIndex < GetNumberOfIndexes() ? fMatchingWindow[iIndex] : 0;}; // get matching window
+  Int_t GetLatencyWindow(Int_t iIndex) const {return iIndex < GetNumberOfIndexes() ? fLatencyWindow[iIndex] : 0;}; // get latency window
   
   /* setters */
   
   /* methods */
+
+  /* TOFFEE methods */
   void LoadFEEConfig(const Char_t *FileName) const; // load FEE config
   void DumpFEEConfig(); // dump FEE config
   Int_t ParseFEEConfig(); // parse FEE config
+
+  /* TOFFEElight methods */
+  void LoadFEElightConfig(const Char_t *FileName) const; // load FEElight config
+  void CreateFEElightConfig(const Char_t *filename); // create FEElight config
+  Int_t ParseFEElightConfig(); // parse FEElight config
+
   void ResetChannelEnabledArray(); // reset channel enabled array
   void Reset(); // reset channel enabled array
-  Bool_t IsChannelEnabled(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iTDC, Int_t iChannel) const; // is channel enabled
   Bool_t IsChannelEnabled(Int_t iIndex) const {return GetChannelEnabled(iIndex);}; // is channel enabled
-  Int_t GetMatchingWindow(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iTDC, Int_t iChannel) const; // get matching window
   
  private:
+
+  /* TOFFEE */
+  Bool_t IsChannelEnabled(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iTDC, Int_t iChannel) const; // is channel enabled (from TOFFEE)
+  Int_t GetMatchingWindow(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iTDC, Int_t iChannel) const; // get matching window (from TOFFEE)
 
   static const Int_t fgkNumberOfDDLs = 72; // number of DDLs
   static const Int_t fgkNumberOfTRMs = 10; // number of TRMs
@@ -63,8 +76,10 @@ public TObject
   static const Int_t fgkNumberOfIndexes = 157248; // number of indexes
 
   AliTOFFEEConfig *fFEEConfig; // FEE config
+  AliTOFFEElightConfig *fFEElightConfig; // FEElight config
   Bool_t fChannelEnabled[fgkNumberOfIndexes]; // channel enabled
   Int_t fMatchingWindow[fgkNumberOfIndexes]; // matching window
+  Int_t fLatencyWindow[fgkNumberOfIndexes]; // matching window
 
   ClassDef(AliTOFFEEReader, 1);
 

@@ -28,6 +28,7 @@
 #include <TSystem.h>
 #include "AliTOFFEEReader.h"
 #include "AliTOFFEEConfig.h"
+#include "AliTOFFEElightConfig.h"
 #include "AliTOFRawStream.h"
 #include "AliTOFGeometry.h"
 #include "AliLog.h"
@@ -40,8 +41,10 @@ ClassImp(AliTOFFEEReader)
 AliTOFFEEReader::AliTOFFEEReader() :
   TObject(),
   fFEEConfig(new AliTOFFEEConfig()),
+  fFEElightConfig(new AliTOFFEElightConfig()),
   fChannelEnabled(),
-  fMatchingWindow()
+  fMatchingWindow(),
+  fLatencyWindow()
 {
   /* 
    * 
@@ -56,7 +59,8 @@ AliTOFFEEReader::AliTOFFEEReader() :
 
 AliTOFFEEReader::AliTOFFEEReader(const AliTOFFEEReader &source) :
   TObject(source),
-  fFEEConfig(new AliTOFFEEConfig())
+  fFEEConfig(new AliTOFFEEConfig()),
+  fFEElightConfig(new AliTOFFEElightConfig())
 {
   /* 
    * 
@@ -65,6 +69,7 @@ AliTOFFEEReader::AliTOFFEEReader(const AliTOFFEEReader &source) :
    */
 
   memcpy(fFEEConfig, source.fFEEConfig, sizeof(AliTOFFEEConfig));
+  memcpy(fFEElightConfig, source.fFEElightConfig, sizeof(AliTOFFEElightConfig));
 }
 
 //_______________________________________________________________
@@ -80,6 +85,7 @@ AliTOFFEEReader::operator=(const AliTOFFEEReader &source)
 
   TObject::operator=(source);
   memcpy(fFEEConfig, source.fFEEConfig, sizeof(AliTOFFEEConfig));
+  memcpy(fFEElightConfig, source.fFEElightConfig, sizeof(AliTOFFEElightConfig));
   return *this;
 }
 
@@ -94,6 +100,7 @@ AliTOFFEEReader::~AliTOFFEEReader()
    */
 
   delete fFEEConfig;
+  delete fFEElightConfig;
 }
 
 //_______________________________________________________________
@@ -125,6 +132,7 @@ AliTOFFEEReader::Reset()
   for (Int_t iIndex = 0; iIndex < GetNumberOfIndexes(); iIndex++) {
     fChannelEnabled[iIndex] = kFALSE;
     fMatchingWindow[iIndex] = 0;
+    fLatencyWindow[iIndex] = 0;
   }
 }
 
@@ -148,6 +156,24 @@ AliTOFFEEReader::LoadFEEConfig(const Char_t *FileName) const
 
 //_______________________________________________________________
 
+void
+AliTOFFEEReader::LoadFEElightConfig(const Char_t *FileName) const
+{
+  /*
+   *
+   * load FEElight config
+   *
+   */
+
+  Char_t *expandedFileName = gSystem->ExpandPathName(FileName);
+  std::ifstream is;
+  is.open(expandedFileName, std::ios::binary);
+  is.read((Char_t *)fFEElightConfig, sizeof(AliTOFFEElightConfig));
+  is.close();
+}
+
+//_______________________________________________________________
+
 Int_t
 AliTOFFEEReader::ParseFEEConfig()
 {
@@ -160,7 +186,7 @@ AliTOFFEEReader::ParseFEEConfig()
    *
    */
 
-  AliInfo("parsing TOF FEE config")
+  AliInfo("parsing TOF FEE config");
 
   AliTOFRawStream rawStream;
   Int_t nEnabled = 0;
@@ -198,6 +224,35 @@ AliTOFFEEReader::ParseFEEConfig()
 		nEnabled++;
 	      }
 	    }
+  return nEnabled;
+}
+
+//_______________________________________________________________
+
+Int_t
+AliTOFFEEReader::ParseFEElightConfig()
+{
+  /* 
+   *
+   * parse FEElight config
+   *
+   * loops over all FEE channels, checks whether they are enabled
+   * and sets channel enabled 
+   *
+   */
+
+  AliInfo("parsing TOF FEElight config");
+
+  Int_t nEnabled = 0;
+  AliTOFFEEchannelConfig *channelConfig = NULL;
+  for (Int_t i = 0; i < GetNumberOfIndexes(); i++) {
+    channelConfig = fFEElightConfig->GetChannelConfig(i);
+    if (channelConfig->IsEnabled())
+      nEnabled++;
+    fChannelEnabled[i] = channelConfig->IsEnabled();
+    fMatchingWindow[i] = channelConfig->GetMatchingWindow();
+  }
+ 
   return nEnabled;
 }
 
@@ -449,3 +504,36 @@ AliTOFFEEReader::DumpFEEConfig()
   } /* loop over crates */
 }
 
+//_______________________________________________________________
+
+void
+AliTOFFEEReader::CreateFEElightConfig(const Char_t *filename)
+{
+  /*
+   *
+   * create FEElight config 
+   *
+   */
+
+  AliTOFFEElightConfig lightConfig;
+
+  for (Int_t i = 0; i < GetNumberOfIndexes(); i++) {
+    if (fChannelEnabled[i]) {
+      lightConfig.GetChannelConfig(i)->SetStatus(AliTOFFEEchannelConfig::kStatusEnabled);
+      lightConfig.GetChannelConfig(i)->SetMatchingWindow(fMatchingWindow[i]);
+      lightConfig.GetChannelConfig(i)->SetLatencyWindow(fLatencyWindow[i]);
+    }
+    else {
+      lightConfig.GetChannelConfig(i)->SetStatus(0x0);
+      lightConfig.GetChannelConfig(i)->SetMatchingWindow(0);
+      lightConfig.GetChannelConfig(i)->SetLatencyWindow(0);
+    }
+  }
+
+  Char_t *expandedFileName = gSystem->ExpandPathName(filename);
+  std::ofstream os;
+  os.open(expandedFileName, std::ios::binary);
+  os.write((Char_t *)&lightConfig, sizeof(AliTOFFEElightConfig));
+  os.close();
+  
+}
