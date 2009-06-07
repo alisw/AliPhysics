@@ -8,6 +8,7 @@ CLASS_HDRS:=  	AliHLTITStrack.h \
 		AliHLTITSAgent.h\
 		AliHLTITSClusterFinderSPDComponent.h\
 		AliHLTITSClusterFinderSSDComponent.h\
+		AliHLTITSClusterHistoComponent.h \
 		AliHLTITSCompressRawDataSDDComponent.h \
 		tracking/AliITStrackerHLT.h \
 		tracking/AliHLTITSDetector.h \
@@ -17,7 +18,9 @@ CLASS_HDRS:=  	AliHLTITStrack.h \
 
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
 
-MODULE_HDRS:= 	$(CLASS_HDRS)
+MODULE_HDRS:= 	$(CLASS_HDRS) \
+		AliHLTITSSpacePointData.h \
+		AliHLTITSClusterDataFormat.h
 
 MODULE_DHDR:= 		
 

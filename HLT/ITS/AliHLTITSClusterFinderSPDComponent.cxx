@@ -32,6 +32,8 @@ using namespace std;
 #include "AliHLTDataTypes.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSRecPoint.h"
+#include "AliHLTITSSpacePointData.h"
+#include "AliHLTITSClusterDataFormat.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -88,14 +90,14 @@ void AliHLTITSClusterFinderSPDComponent::GetInputDataTypes( vector<AliHLTCompone
 
 AliHLTComponentDataType AliHLTITSClusterFinderSPDComponent::GetOutputDataType() {
   // see header file for class documentation
-  return kAliHLTDataTypeTObjArray;
+  return kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD;
 }
 
 void AliHLTITSClusterFinderSPDComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
   // see header file for class documentation
 
   constBase = 0;
-  inputMultiplier = 0.3;
+  inputMultiplier = 1;
 }
 
 AliHLTComponent* AliHLTITSClusterFinderSPDComponent::Spawn() {
@@ -219,52 +221,45 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoEvent( const AliHLTComponentEventDat
     }
     
     fClusterFinder->RawdataToClusters(fRawReader,fClusters);
+ 
+    UInt_t nClusters=0;
+    for(int i=0;i<fNModules;i++){
+      if(fClusters[i] != NULL){
+	nClusters += fClusters[i]->GetEntries(); 
+      }
+    }
     
-    /*
-    Float_t xyz[3];
-    filebuf fb;
-    fb.open ("test.txt",ios::out | ios::app);
-    ostream os(&fb);
+    UInt_t bufferSize = nClusters * sizeof(AliHLTITSSpacePointData) + sizeof(AliHLTITSClusterData);
+    AliHLTUInt8_t *buffer = new AliHLTUInt8_t[bufferSize];
+    AliHLTITSClusterData *outputClusters = reinterpret_cast<AliHLTITSClusterData*>(buffer);
+    outputClusters->fSpacePointCnt=nClusters;
+
+    int clustIdx=0;
     for(int i=0;i<fNModules;i++){
       if(fClusters[i] != NULL){
 	for(int j=0;j<fClusters[i]->GetEntries();j++){
 	  AliITSRecPoint *recpoint = (AliITSRecPoint*) fClusters[i]->At(j);
-	  recpoint->GetGlobalXYZ(xyz);
-	  os<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
+	  outputClusters->fSpacePoints[clustIdx].fY=recpoint->GetY();
+	  outputClusters->fSpacePoints[clustIdx].fZ=recpoint->GetZ();
+	  outputClusters->fSpacePoints[clustIdx].fSigmaY2=recpoint->GetSigmaY2();
+	  outputClusters->fSpacePoints[clustIdx].fSigmaZ2=recpoint->GetSigmaZ2();
+	  outputClusters->fSpacePoints[clustIdx].fSigmaYZ=recpoint->GetSigmaYZ();
+	  outputClusters->fSpacePoints[clustIdx].fQ=recpoint->GetQ();
+	  outputClusters->fSpacePoints[clustIdx].fNy=recpoint->GetNy();
+	  outputClusters->fSpacePoints[clustIdx].fNz=recpoint->GetNz();
+	  outputClusters->fSpacePoints[clustIdx].fLayer=recpoint->GetLayer();
+	  outputClusters->fSpacePoints[clustIdx].fIndex=recpoint->GetDetectorIndex();// | recpoint->GetPindex() | recpoint->GetNindex();
+	  outputClusters->fSpacePoints[clustIdx].fTracks[0]=recpoint->GetLabel(0);
+	  outputClusters->fSpacePoints[clustIdx].fTracks[1]=recpoint->GetLabel(1);
+	  outputClusters->fSpacePoints[clustIdx].fTracks[2]=recpoint->GetLabel(2);
+
+	  clustIdx++;
 	}
       }
     }
-    */
 
-    PushBack(*fClusters,kAliHLTDataTypeTObjArray|kAliHLTDataOriginITSSPD,iter->fSpecification);
+    PushBack(buffer,bufferSize,kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD,iter->fSpecification);
 
-    /*
-    TClonesArray *clustersOut = new TClonesArray();
-          
-    for(int i=0;i<fNModules;i++){
-      if(fClusters[i] != NULL){
-	for(int j=0;j<fClusters[i]->GetEntriesFast();j++) {
-	  clustersOut->Add(&fClusters[i][j]);
-	  //PushBack(fClusters[i],kAliHLTDataTypeTObjArray|kAliHLTDataOriginITSSPD,iter->fSpecification);
-	}
-      }
-    }
-    
-    PushBack(clustersOut,kAliHLTDataTypeTObjArray|kAliHLTDataOriginITSSPD,iter->fSpecification);
-
-    Float_t xyz2[3];
-    filebuf fb2;
-    fb2.open ("test2.txt",ios::out | ios::app);
-    ostream os2(&fb2);
-    for(int j=0;j<clustersOut->GetEntriesFast();j++){
-      AliITSRecPoint *recpoint = (AliITSRecPoint*) clustersOut->At(j);
-      recpoint->GetGlobalXYZ(xyz2);
-      os2<<xyz2[0]<<" "<<xyz2[1]<<" "<<xyz2[2]<<endl;
-    }
-
-    clustersOut->Clear();
-    delete clustersOut;
-    */
     for (Int_t iModule = 0; iModule < fNModules; iModule++) {  
       if(fClusters[iModule]){delete fClusters[iModule];}
       fClusters[iModule] = NULL;
@@ -274,9 +269,6 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoEvent( const AliHLTComponentEventDat
     
   } //  for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ ) {    
   
-    //fClusterFinder->RawdataToClusters(fRawReader,&fClusters);
-  
-  //PushBack( (TObject**) fClusters,kAliHLTDataTypeTObjArray,0x00000000);
-
   return 0;
 }
+ 

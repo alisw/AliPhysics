@@ -54,9 +54,13 @@ void rec_spd_cluster(const char* input="./", char* opt="")
   }
 
   //add dummy
-  AliHLTConfiguration dummyconf("dummy", "Dummy", dummyInput.Data(), "-output_percentage 0");
+  //AliHLTConfiguration dummyconf("dummy", "Dummy", dummyInput.Data(), "-output_percentage 0");
+  //option+="dummy";
 
-  option+="dummy";
+  AliHLTConfiguration cfconf("clusterHisto","ITSClusterHisto",dummyInput.Data(),"");
+  AliHLTConfiguration fwconf("histFile","ROOTFileWriter", "clusterHisto","-datafile ClusterHisto -concatenate-events -overwrite");
+
+  option+="histFile";
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
