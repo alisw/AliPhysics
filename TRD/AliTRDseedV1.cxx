@@ -849,8 +849,12 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
 // Detailed description
 //	
 // We start up by defining the track direction in the xy plane and roads. The roads are calculated based
-// on tracking information (variance in the r-phi direction) and estimated variance of clusters. For 
-// estimating the last contribution the following expression is considered :  
+// on tracking information (variance in the r-phi direction) and estimated variance of the standard 
+// clusters (see AliTRDcluster::SetSigmaY2()) corrected for tilt (see GetCovAt()). From this the road is
+// BEGIN_LATEX
+// r_{y} = 3*#sqrt{12*(#sigma^{2}_{Kalman}(y) + #frac{#sigma^{2}_{cl}(y) + tg^{2}(#alpha_{L})#sigma^{2}_{cl}(z)}{1+tg^{2}(#alpha_{L})})}
+// r_{z} = 1.5*L_{pad}
+// END_LATEX
 // 
 // Author Alexandru Bercuci <A.Bercuci@gsi.de>
 
@@ -864,11 +868,19 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
   Int_t t0 = 14;
   Int_t kClmin = Int_t(fReconstructor->GetRecoParam() ->GetFindableClusters()*AliTRDtrackerV1::GetNTimeBins());
 
-  Double_t syRef  = TMath::Sqrt(fRefCov[0]);
+  Double_t s2yTrk= fRefCov[0], 
+           s2yCl = 0., 
+           s2zCl = GetPadLength()*GetPadLength()/12., 
+           syRef = TMath::Sqrt(s2yTrk),
+           t2    = GetTilt()*GetTilt();
   //define roads
-  Double_t kroady = 1.; 
-  //fReconstructor->GetRecoParam() ->GetRoad1y();
-  Double_t kroadz = GetPadLength() * 1.5 + 1.;
+  Double_t kroady = 1., //fReconstructor->GetRecoParam() ->GetRoad1y();
+           kroadz = GetPadLength() * 1.5 + 1.;
+  // define probing cluster (the perfect cluster) and default calibration
+  Short_t sig[] = {0, 0, 10, 30, 10, 0,0};
+  AliTRDcluster cp(fDet, 6, 75, 0, sig, 0);
+  Calibrate();
+
   if(kPRINT) printf("AttachClusters() sy[%f] road[%f]\n", syRef, kroady);
 
   // working variables
@@ -887,13 +899,20 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
   for (Int_t it = 0; it < AliTRDtrackerV1::GetNTimeBins(); it++) {
     if(!(layer = chamber->GetTB(it))) continue;
     if(!Int_t(*layer)) continue;
-    
+    // get track projection at layers position
     dx   = fX0 - layer->GetX();
     yt = fYref[0] - fYref[1] * dx;
     zt = fZref[0] - fZref[1] * dx;
-    if(kPRINT) printf("\t%2d dx[%f] yt[%f] zt[%f]\n", it, dx, yt, zt);
+    // get standard cluster error corrected for tilt
+    cp.SetLocalTimeBin(it);
+    cp.SetSigmaY2(0.02, fDiffT, fExB, dx, -1./*zt*/, fYref[1]);
+    s2yCl = (cp.GetSigmaY2() + t2*s2zCl)/(1.+t2);
+    // get estimated road
+    kroady = 3.*TMath::Sqrt(12.*(s2yTrk + s2yCl));
 
-    // select clusters on a 5 sigmaKalman level
+    if(kPRINT) printf("  %2d dx[%f] yt[%f] zt[%f] sT[um]=%6.2f sy[um]=%6.2f syTilt[um]=%6.2f yRoad[mm]=%f\n", it, dx, yt, zt, 1.e4*TMath::Sqrt(s2yTrk), 1.e4*TMath::Sqrt(cp.GetSigmaY2()), 1.e4*TMath::Sqrt(s2yCl), 1.e1*kroady);
+
+    // select clusters
     cond[0] = yt; cond[2] = kroady;
     cond[1] = zt; cond[3] = kroadz;
     Int_t n=0, idx[6];
@@ -938,10 +957,11 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
     if(ncl[ir] > 3) AliMathBase::EvaluateUni(ncl[ir], yres[ir], mean, syDis, Int_t(ncl[ir]*.8));
     else {
       mean = 0.; syDis = 0.;
+      continue;
     } 
 
     // TODO check mean and sigma agains cluster resolution !!
-    if(kPRINT) printf("\tr[%2d] m[%f %5.3fsigma] s[%f]\n", ir, mean, TMath::Abs(mean/syRef), syDis);
+    if(kPRINT) printf("\tr[%2d] m[%f %5.3fsigma] s[%f]\n", ir, mean, TMath::Abs(mean/syDis), syDis);
     // select clusters on a 3 sigmaDistr level
     Bool_t kFOUND = kFALSE;
     for(Int_t ic = ncl[ir]; ic--;){
