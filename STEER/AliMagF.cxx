@@ -92,26 +92,20 @@ AliMagF::AliMagF(const char *name, const char* title, Int_t integ,
   //
   const char* parname = 0;
   //  
-  if (fMapType == k2kG) {
-    fSolenoid = 2.;
-    parname = fDipoleOFF ? "Sol12_Dip0_Hole":"Sol12_Dip6_Hole";
-  } else if (fMapType == k5kG) {
-    fSolenoid = 5.;
-    parname = fDipoleOFF ? "Sol30_Dip0_Hole":"Sol30_Dip6_Hole";
-  } else if (fMapType == k5kGUniform) {
-    fSolenoid = 5.;
-    parname = "Sol30_Dip6_Uniform";
-  } else {
-    AliFatal(Form("Unknown field identifier %d is requested\n",fMapType)); 
-  }
+  if      (fMapType == k2kG) parname = fDipoleOFF ? "Sol12_Dip0_Hole":"Sol12_Dip6_Hole";
+  else if (fMapType == k5kG) parname = fDipoleOFF ? "Sol30_Dip0_Hole":"Sol30_Dip6_Hole";
+  else if (fMapType == k5kGUniform) parname = "Sol30_Dip6_Uniform";
+  else AliFatal(Form("Unknown field identifier %d is requested\n",fMapType));
   //
   SetDataFileName(path);
   SetParamName(parname);
   //
-  SetFactorSol(factorSol);
-  SetFactorDip(factorDip);
   LoadParameterization();
   InitMachineField(fBeamType,fBeamEnergy);
+  double xyz[3]={0.,0.,0.};
+  fSolenoid = GetBz(xyz);
+  SetFactorSol(factorSol);
+  SetFactorDip(factorDip);
 }
 
 //_______________________________________________________________________

@@ -53,7 +53,7 @@ class AliMagF : public TVirtualMagField
   Double_t     Max()                                            const {return fMax;}
   Int_t        Integ()                                          const {return fInteg;}
   Int_t        PrecInteg()                                      const {return fPrecInteg;}  
-  Double_t     SolenoidField()                                  const {return -fFactorSol*fSolenoid;}
+  Double_t     SolenoidField()                                  const {return fFactorSol*fSolenoid;}
   //
   Char_t*      GetDataFileName()                                const {return (Char_t*)fParNames.GetName();}
   Char_t*      GetParamName()                                   const {return (Char_t*)fParNames.GetTitle();}
