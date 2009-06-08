@@ -40,7 +40,7 @@
 #include "AliQAChecker.h"
 #include "AliT0RawReader.h"
 
-#include "iostream.h"
+#include <Riostream.h>
 
 ClassImp(AliT0QADataMakerSim)
            
