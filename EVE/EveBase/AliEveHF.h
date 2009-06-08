@@ -1,5 +1,6 @@
 // $Id$
 // Main author: Davide Caffarri 2009
+// Base header class to HF visualization
 
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
@@ -27,12 +28,12 @@ class AliEveHFList;
 
 class AliEveHF : public TEvePointSet
 {
-  friend class AliEveHFList;
-  friend class AliEveHFEditor;
+  friend class AliEveHFList; //friend class for the list of HF in the same event
+  friend class AliEveHFEditor; //friend class for the list of HF visualization
 
 public:
   AliEveHF();
-  AliEveHF(TEveRecTrack* tNeg, TEveRecTrack* tPos, Double_t primVtx[3], AliAODRecoDecay* aodObj, Double_t firstPointTrack[3], TEveTrackPropagator* rs);
+  AliEveHF(TEveRecTrack* tNeg, TEveRecTrack* tPos, Double_t primVtx[3], AliAODRecoDecay* aodObj, TEveTrackPropagator* rs);
   virtual ~AliEveHF();
 
   void MakeHF();
@@ -48,17 +49,17 @@ public:
   //HF Property
 
   Float_t GetPhi()     { return fRecDecayHF.Phi(); }
-  Float_t GetEta()     { return fRecDecayP_HF.Eta(); }
+  Float_t GetEta()     { return fRecDecayMomHF.Eta(); }
   Float_t GetRadius()  { return fRecDecayHF.Perp(); }
-  Float_t GetPt()      { return fRecDecayP_HF.Perp(); }
+  Float_t GetPt()      { return fRecDecayMomHF.Perp(); }
 
   Double_t GetInvariantMassPart()     { CalculateInvMass(fDecay); return fInvariantMassPart; }
   Double_t GetInvariantMassAntiPart() { CalculateInvMass(fDecay); return fInvariantMassAntiPart; }
 
-  Float_t GetChi2Vtx()  { return fChi2SecondVtx; }
-  Float_t GetCosPointingAngle() {return fPointingAngleHF; }
+  Float_t GetChi2Vtx() const { return fChi2SecondVtx; }
+  Float_t GetCosPointingAngle() const {return fPointingAngleHF; }
 
-  AliAODRecoDecay *GetAODobj() {return fAODobj; }
+  AliAODRecoDecay *GetAODobj() const {return fAODobj; }
 
   Int_t GetAODIndex() const { return fAODIndex; }
   void  SetAODIndex(Int_t ind) { fAODIndex = ind;}
@@ -68,10 +69,10 @@ public:
 
   //Prongs Property
 
-  Double_t GetProngDCA(Int_t iProng) { return fProngDCA[iProng]; }
+  Double_t GetProngDCA(Int_t iProng)const { return fProngDCA[iProng]; }
   void SetProngDCA() const ;
 
-  Double_t Getd0Prong(Int_t iProng)  { return fProngd0[iProng]; }
+  Double_t Getd0Prong(Int_t iProng)const  { return fProngd0[iProng]; }
   void Setd0Prong() const ;
 
   void CalculateInvMass(Int_t decay);
@@ -79,31 +80,31 @@ public:
   Bool_t SelectInvMass(Int_t decay, Float_t decayCuts);
 
   void      SetMaxProbPdgPid();
-  Int_t     GetPdgProngMaxProb(Int_t iProng) { return fProngMaxProbPdg[iProng]; }
-  Double_t  GetPidProngMaxProb(Int_t iProng) { return fProngMaxProbPid[iProng]; }
+  Int_t     GetPdgProngMaxProb(Int_t iProng)const { return fProngMaxProbPdg[iProng]; }
+  Double_t  GetPidProngMaxProb(Int_t iProng)const { return fProngMaxProbPid[iProng]; }
 
   TEveTrackPropagator* GetPropagator() const  { return fRnrStyle; }
 
-  TEveTrack* GetNegTrack() { return fNegTrack; }
-  TEveTrack* GetPosTrack() { return fPosTrack; }
+  TEveTrack* GetNegTrack()const { return fNegTrack; }
+  TEveTrack* GetPosTrack()const { return fPosTrack; }
 
-  TEveLine*  GetPointingLine() { return fPointingLine; }
+  TEveLine*  GetPointingLine()const { return fPointingLine; }
 
 protected:
 
-  AliAODRecoDecay  *fAODobj;
+  AliAODRecoDecay  *fAODobj;  //AOD object of the HF decay. 
 
   TEveVector  fRecBirthHF;    // Reconstucted birth point of neutral particle
   TEveVector  fRecDecayHF;    // Point of closest approach
-  TEveVector  fRecDecayP_HF;
+  TEveVector  fRecDecayMomHF;   // Momentum of the HF 
   Double_t    fPointingAngleHF; // Track Pointing Angle
 
-  TEveTrack        *fNegTrack;
-  TEveTrack        *fPosTrack;
+  TEveTrack        *fNegTrack;  //Negative daughter of the HF
+  TEveTrack        *fPosTrack;  //Positive daughter of the HF
 
-  TEveTrackPropagator *fRnrStyle;
+  TEveTrackPropagator *fRnrStyle;  //Eve propagator for the track 
 
-  TEveLine         *fPointingLine;
+  TEveLine         *fPointingLine;  //Flight Line of the HF 
 
   Int_t             fnProng;      // Number of Prong.
   Int_t             fAODIndex;    // Index in HF loop array.
@@ -114,10 +115,10 @@ protected:
   Int_t             *fProngMaxProbPdg;//[fnProng] Maximum PDG probability for the negative daughter
   Double_t          *fProngMaxProbPid;//[fnProng] Maximum PID probability for the negative daughter
 
-  Double_t           fInvariantMassPart;
-  Double_t           fInvariantMassAntiPart;
+  Double_t           fInvariantMassPart; //Invariant Mass of the particle
+  Double_t           fInvariantMassAntiPart; //Invariant Mass of the Antiparticle
 
-  Int_t              fDecay;
+  Int_t              fDecay; //Index for the type of decay
 
  private:
   AliEveHF(const AliEveHF&);            // Not implemented
@@ -132,8 +133,8 @@ protected:
 /******************************************************************************/
 class AliEveHFList : public TEveElementList
 {
-  friend class AliEveHFListEditor;
-  //  friend class AliEveHF;
+  friend class AliEveHFListEditor; //Class for the list of HF visualization 
+
 
 public:
   AliEveHFList();
@@ -172,37 +173,37 @@ public:
   void   FilterByInvariantMass (Int_t decay, Float_t deltaInvariantMass);
 
 protected:
-  TString              fTitle;
+  TString              fTitle; 
 
   TEveTrackPropagator *fRnrStyle;
 
-  Bool_t               fRnrDaughters;
-  Bool_t               fRnrHFvtx;
-  Bool_t               fRnrHFpath;
+  Bool_t               fRnrDaughters; //variable for HF daughters visualization
+  Bool_t               fRnrHFvtx; //variable for the HF vertex visualization
+  Bool_t               fRnrHFpath; //variable for the visualization of the HF line
 
   Color_t*             fProngColor;//[fnProng]
 
-  Float_t              fMinRCut;
-  Float_t              fMaxRCut;
+  Float_t              fMinRCut; //minimum cut for the radius 
+  Float_t              fMaxRCut; //maximum cut for the radius
 
-  Float_t              fMinDaughterDCA;
-  Float_t              fMaxDaughterDCA;
+  Float_t              fMinDaughterDCA; //minimum cut for the DCA of the daughter particles
+  Float_t              fMaxDaughterDCA; //maximum cut for the DCA of the daughter particles
 
-  Float_t              fMinPt;
-  Float_t              fMaxPt;
+  Float_t              fMinPt; //minimum cut for the Pt
+  Float_t              fMaxPt; //maximum cut for the Pt
 
-  Float_t              fMinCosPointingAngle;
-  Float_t              fMaxCosPointingAngle;
+  Float_t              fMinCosPointingAngle; //minimum cut for the cosine of the pointing angle 
+  Float_t              fMaxCosPointingAngle; //maximum cut for the cosine of the pointing angle 
 
-  Float_t              fMind0;
-  Float_t              fMaxd0;
+  Float_t              fMind0; //minimum cut for the impact parameter
+  Float_t              fMaxd0; //maximum cut for the impact parameter
 
   Int_t*               fProngCheckedPid;//[fnProng]
 
   Float_t*             fProngCheckedProb;//[fnProng]
 
-  Float_t              fDeltaInvariantMass;
-  Int_t                fDecay;
+  Float_t              fDeltaInvariantMass; //invariant mass window to select the candidate
+  Int_t                fDecay; //index for the type of decay
 
 private:
   void Init();

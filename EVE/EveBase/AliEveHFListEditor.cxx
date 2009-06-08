@@ -69,7 +69,7 @@ AliEveHFListEditor::AliEveHFListEditor(const TGWindow *p, Int_t width, Int_t hei
    AddFrame(fMinMaxCosPointingAngle, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
 
-   fValueInvMass = new TEveGDoubleValuator(this, "Invariant Mass:", 80, 0);
+   fValueInvMass = new TEveGDoubleValuator(this, "Delta Invariant Mass:", 80, 0);
    fValueInvMass->SetNELength(5);
    fValueInvMass->SetLabelWidth(120);
    fValueInvMass->Build();

@@ -129,7 +129,7 @@ void AliEveHFEditor::DisplayDetailed()
   lhfTransverseMomentumDirection->SetLineWidth(2);
   Float_t scalePt = 100.; // this needs to be available as a ruler
   lhfTransverseMomentumDirection->SetPoint(0,fM->fRecDecayHF.fX, fM->fRecDecayHF.fY, fM->fRecDecayHF.fZ);
-  lhfTransverseMomentumDirection->SetPoint(1,scalePt*fM->fRecDecayP_HF.fX, scalePt*fM->fRecDecayP_HF.fY,0);
+  lhfTransverseMomentumDirection->SetPoint(1,scalePt*fM->fRecDecayMomHF.fX, scalePt*fM->fRecDecayMomHF.fY,0);
 
   TEvePointSet *pvlocation = new TEvePointSet("PV location");
   pvlocation->SetNextPoint(fM->fRecBirthHF.fX, fM->fRecBirthHF.fY, fM->fRecBirthHF.fZ);

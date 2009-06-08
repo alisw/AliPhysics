@@ -40,7 +40,7 @@ AliEveHF::AliEveHF():
   fAODobj(0x0),
   fRecBirthHF(0,0,0),
   fRecDecayHF(0,0,0),
-  fRecDecayP_HF(0,0,0),
+  fRecDecayMomHF(0,0,0),
   fPointingAngleHF(0),
 
   fNegTrack(0),
@@ -69,14 +69,14 @@ AliEveHF::AliEveHF():
 }
 
 //______________________________________________________________________________
-AliEveHF::AliEveHF(TEveRecTrack* tNeg, TEveRecTrack* tPos, Double_t primVtx[3], AliAODRecoDecay* aodObj, Double_t /*firstPointTrack*/[3], TEveTrackPropagator* rs) :
+AliEveHF::AliEveHF(TEveRecTrack* tNeg, TEveRecTrack* tPos, Double_t primVtx[3], AliAODRecoDecay* aodObj, TEveTrackPropagator* rs) :
 
   TEvePointSet(),
 
   fAODobj(aodObj),
   fRecBirthHF(primVtx[0], primVtx[1], primVtx[2]),
   fRecDecayHF(aodObj->GetSecVtxX(), aodObj->GetSecVtxY(), aodObj->GetSecVtxZ()),
-  fRecDecayP_HF(aodObj->Px(),aodObj->Py(),aodObj->Pz()),
+  fRecDecayMomHF(aodObj->Px(),aodObj->Py(),aodObj->Pz()),
   fPointingAngleHF(aodObj->CosPointingAngle(primVtx)),
 
   fNegTrack(new TEveTrack(tNeg, rs)),
@@ -158,7 +158,7 @@ void AliEveHF::SetMaxProbPdgPid()
   for (Int_t ip=0; ip<fnProng; ip++){
     fAODobj->GetPIDProng(ip, pid);
 
-    fProngMaxProbPid[ip]=pid[0]; //lascio cosi perchè mi da errore se lo uso come puntatore
+    fProngMaxProbPid[ip]=pid[0]; 
     for (Int_t pp=1; pp<5; pp++)
       if (pid[pp]>pid[pp-1]) {
 	fProngMaxProbPid[ip]=pid[pp];
@@ -183,6 +183,8 @@ void AliEveHF::SetMaxProbPdgPid()
 //________________________________________________________________________________________
 void AliEveHF::CalculateInvMass(Int_t decay)
 {
+
+  //Method to calculate the invariant mass of the particle and the antiparticle. 
   UInt_t   pdg2[2];
   Double_t mPDG,minv;
 
@@ -205,6 +207,8 @@ void AliEveHF::CalculateInvMass(Int_t decay)
 //______________________________________________________________________________
 Bool_t AliEveHF::SelectInvMass(Int_t decay, Float_t decayCuts)
 {
+
+  //Member fuction to select particles using the invariant mass cuts. 
   UInt_t   pdg2[2];
   Double_t mPDG,minv;
 
@@ -370,11 +374,12 @@ void AliEveHFList::MakeHFs()
 void AliEveHFList::FilterByPt(Float_t minPt, Float_t maxPt)
 {
 
+  //Select visibility of elements based on their Pt
 
   fMinPt = minPt;
   fMaxPt = maxPt;
 
-  for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)//lista gli HF!!!
+  for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)
     {
       AliEveHF *hf = (AliEveHF*) *i;
       Float_t  pt  = hf->GetPt();
@@ -392,7 +397,7 @@ void AliEveHFList::FilterByRadius(Float_t minR, Float_t maxR)
   fMinRCut = minR;
   fMaxRCut = maxR;
 
-  for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)//lista gli HF!!!
+  for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)
     {
       AliEveHF *hf = (AliEveHF*) *i;
       Float_t  rad = hf->GetRadius();
@@ -409,13 +414,13 @@ void AliEveHFList::FilterByRadius(Float_t minR, Float_t maxR)
 //______________________________________________________________________________
 void AliEveHFList::FilterByCosPointingAngle(Float_t minCosPointingAngle, Float_t maxCosPointingAngle)
 {
-  // Select visibility of elements based on the V0 pt.
+  // Select visibility of elements based on the HF cosine of the pointing angle
 
   fMinCosPointingAngle = minCosPointingAngle;
   fMaxCosPointingAngle = maxCosPointingAngle;
 
 
-  for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)//lista gli HF!!!
+  for(List_i i = fChildren.begin(); i != fChildren.end(); ++i)
     {
       AliEveHF *hf = (AliEveHF*) *i;
       Float_t  cosPointingAngle = hf->GetCosPointingAngle();
@@ -429,7 +434,7 @@ void AliEveHFList::FilterByCosPointingAngle(Float_t minCosPointingAngle, Float_t
 //______________________________________________________________________________
 void AliEveHFList::FilterByd0(Float_t mind0, Float_t maxd0)
 {
-  // Select visibility of elements based on the V0 pt.
+  // Select visibility of elements based on the HF impact parameter.
 
   fMind0 = mind0;
   fMaxd0 = maxd0;

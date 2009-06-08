@@ -48,7 +48,7 @@ AliEveHF* aod_make_HF(TEveTrackPropagator* rnrStyle, AliAODVertex* primAODVtx,
   aod_hf_init_rectrack(rcPos, pos);
   //rcPos.fIndex = v0->GetPindex();
 
-  AliEveHF* myHF = new AliEveHF(&rcNeg, &rcPos, primVtx ,rd, v, rnrStyle);
+  AliEveHF* myHF = new AliEveHF(&rcNeg, &rcPos, primVtx ,rd, rnrStyle);
   myHF->SetElementName(Form("D0->Kpi %d", i));
   myHF->SetElementTitle(Form("CosPointingAngle %f", rd->CosPointingAngle()));
   myHF->SetAODIndex(i);
