@@ -32,8 +32,17 @@ class AliHLTTPCDigitReader;
  * TPCClusterFinderPacked first have to read the data one by one, which means that row, pad and
  * time signals have to be compared between each new digit, which leads to a slower alorithm. 
  * 
+ *
+ * The clusterfinder is now using the AliTPCTransform instead of the AliHLTTPCTransform for  
+ * transformations from row, pad time -> x,y,z.
+ *
+ * <h2>General properties:</h2>
+ *
  * Component ID: \b TPCClusterFinderDecoder and TPCClusterFinderPacked <br>
  * Library: \b libAliHLTTPC
+ * Input Data Types: @ref kAliHLTDataTypeDDLRaw <br>
+ * Output Data Types: @ref AliHLTTPCDefinitions::fgkClustersDataType and/or kAliHLTDataTypeHwAddr16 <br> 
+ *
  *
  * Mandatory arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -67,6 +76,12 @@ class AliHLTTPCDigitReader;
  * \li unsorted        <br>  
  * \li nsigma-threshold <br>  
  *
+ * <h2>Default CDB entries:</h2>
+ * The component has two default CDB entries
+ * \li <tt>TPC/Calib/PadTime0</tt>.
+ * \li <tt>TPC/Calib/Parameters</tt>.
+ *
+ * These entries are used by the AliTPCTransform class to correct for T0 and drift.
  * @ingroup alihlt_tpc_components
  */
 class AliHLTTPCClusterFinderComponent : public AliHLTProcessor

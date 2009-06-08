@@ -39,6 +39,9 @@ using namespace std;
 #include "AliHLTTPCDefinitions.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCParam.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -180,6 +183,22 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   // see header file for class documentation
   if ( fClusterFinder )
     return EINPROGRESS;
+
+  //Test if the OCDB entries used by AliTPCTransform is availible
+  AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();  
+  //
+  AliTPCCalPad * time0TPC = calib->GetPadTime0(); 
+  if(!time0TPC){
+    HLTError("OCDB entry TPC/Calib/PadTime0 (AliTPCcalibDB::GetPadTime0()) is not available.");
+    return -ENOENT;
+  }
+
+  AliTPCParam  * param    = calib->GetParameters();
+  if(!param){
+    HLTError("OCDB entry TPC/Calib/Parameters (AliTPCcalibDB::GetParameters()) is not available.");
+    return -ENOENT;
+  }
+
 
   fClusterFinder = new AliHLTTPCClusterFinder();
 
