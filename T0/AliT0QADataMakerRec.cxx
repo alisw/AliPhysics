@@ -104,6 +104,12 @@ void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
       GetRawsData(207)->GetXaxis()->SetTitle("#PMT");
       GetRawsData(207)->GetYaxis()->SetTitle("Charge, #channels");
     }
+    if ( task == AliQAv1::kDIGITSR) {
+      GetDigitsData(0)->SetOption("COLZ");
+      GetDigitsData(1)->SetOption("COLZ");
+      GetDigitsData(2)->SetOption("COLZ");
+
+    }
     if ( task == AliQAv1::kRECPOINTS) {
       GetRecPointsData(0)->SetOption("COLZ");
       GetRecPointsData(1)->SetOption("COLZ");
@@ -164,7 +170,7 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F* fhRawTrigger = new TH1F("hRawTrigger"," phys triggers;Trigger #;Counts",5,0,5);
   Add2RawsList(fhRawTrigger ,97, !expert, image, !saveCorr);
   
-  TH1F* fhRawMean = new TH1F("hRawMean","online mean signal;??;??", 100,2400,2500);
+  TH1F* fhRawMean = new TH1F("hRawMean","online mean signal;;??", 100,2400,2500);
   Add2RawsList( fhRawMean,98, !expert, image, !saveCorr);
   TH1F* fhRawVertex = new TH1F("hRawVertex","online vertex signal;??;??", 100,0,600);
   Add2RawsList( fhRawVertex,99, !expert, image, !saveCorr);
@@ -226,10 +232,9 @@ void AliT0QADataMakerRec::InitRaws()
   //100,-500,500);
 
   Add2RawsList( fhEffLED,206, !expert, !image, saveCorr);
-  TH2F* fhEffQTC = new TH2F("hEffQTC","QTC amplitude%s;Amplitude [ADC counts];Counts",24, 0 ,24, 
-			      100,0,7000);
+  TH2F* fhEffQTC = new TH2F("hEffQTC","QTC amplitude%s;Amplitude [ADC counts];Counts",24, 0 ,24,   100,0,7000);
   Add2RawsList( fhEffQTC,207, !expert, !image, saveCorr);
-  //yeys guide line
+  //eyes guide line
   //  TH2F* fhLineQTC = new TH2F("hLineQTC","QTC amplitude boeder",24, 0 ,24, 
   //			      100,0,7000);
 //  Add2RawsList( fhLineQTC,208, !expert, !image, saveCorr);
@@ -242,11 +247,11 @@ void AliT0QADataMakerRec::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH2F * fhDigCFD = new TH2F("fhDigCFD", " CFD digits;something;something else",25,-0.5,24.5,100,100,1000);
-  Add2DigitsList( fhDigCFD,0);
-  TH2F *fhDigLEDamp = new TH2F("fhDigLEDamp", " LED-CFD digits;something;something else",25,-0.5,24.5,100,100,1000);
+  TH2F * fhDigCFD = new TH2F("fhDigCFD", " CFD digits; #PMT; CFD digits[#channels]",25,-0.5,24.5,100,0,1000);
+  Add2DigitsList( fhDigCFD,0, !expert, image);
+  TH2F *fhDigLEDamp = new TH2F("fhDigLEDamp", " LED-CFD digits; #PMT; LED-CFD amplitude ",25,-0.5,24.5,100,100,1000);
   Add2DigitsList( fhDigLEDamp,1, !expert, image);
-  TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits;something;something else",25,-0.5,24.5,100,100,1000);
+  TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits; #PMT; QTC amplitude",25,-0.5,24.5,100,100,10000);
   Add2DigitsList( fhDigQTC,2, !expert, image);}
 
 //____________________________________________________________________________ 
@@ -265,7 +270,7 @@ void AliT0QADataMakerRec::InitRecPoints()
 				24, 0 ,24, 200,-10,10);
   Add2RecPointsList (fhRecAmpDiff, 1, !expert, image);
   
-  TH1F *fhMean = new TH1F("hMean","online - rec mean;??;??",1000, -5000, 5000);
+  TH1F *fhMean = new TH1F("hMean","online - rec mean;online - rec mean[#channels];",2000, -1000, 1000);
   Add2RecPointsList ( fhMean,2, !expert, image);
  }
 
@@ -276,9 +281,9 @@ void AliT0QADataMakerRec::InitESDs()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F *fhESDMean = new TH1F("hESDmean"," ESD mean;??;??",100,2400,2500);
+  TH1F *fhESDMean = new TH1F("hESDmean"," ESD mean; mean time[%channels]",1000,0,1000);
   Add2ESDsList(fhESDMean, 0, !expert, image) ;
-  TH1F * fhESDVertex = new TH1F("hESDvertex","ESD vertex;??;??",82,-30,30);
+  TH1F * fhESDVertex = new TH1F("hESDvertex","ESDvertex; vertex[cm];",82,-30,30);
   Add2ESDsList(fhESDVertex, 1, !expert, image) ;
   
 
@@ -408,9 +413,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	  }
 	} 
 
-      
-      
-      delete start;
+           delete start;
       }
     }
   
@@ -448,7 +451,7 @@ void AliT0QADataMakerRec::MakeDigits( TTree *digitsTree)
     if (digCFD->At(i)>0) {
       Int_t cfd=digCFD->At(i)- refpoint;
       GetDigitsData(0) ->Fill(i,cfd);
-      GetDigitsData(1) -> Fill(i,(digLED->At(i) - digCFD->At(i)));
+      GetDigitsData(1) -> Fill(i, (digLED->At(i) - digCFD->At(i)));
       GetDigitsData(2) -> Fill(i, (digQT1->At(i) - digQT0->At(i)));
     }
     }  
@@ -466,7 +469,7 @@ void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)
   //fills QA histos for clusters
 
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
-    if (!frecpoints) {
+  if (!frecpoints) {
     AliError("Reconstruct Fill ESD >> no recpoints found");
     return;
   }
@@ -474,12 +477,12 @@ void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)
   if (brRec) {
     brRec->SetAddress(&frecpoints);
   }else{
-      AliError(Form("EXEC Branch T0 rec not found "));
-      return;
+    AliError(Form("EXEC Branch T0 rec not found "));
+    return;
   } 
     
   brRec->GetEntry(0);
-    
+  
   for ( Int_t i=0; i<24; i++) {
     if(i<12)
       GetRecPointsData(0) -> Fill(i, frecpoints -> GetTime(i) - frecpoints -> GetTime(0)); 
@@ -488,20 +491,16 @@ void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)
     GetRecPointsData(1) -> Fill( i, frecpoints -> GetAmp(i) - frecpoints->AmpLED(i));
   }
   Double_t mmm=frecpoints->GetOnlineMean()- frecpoints->GetMeanTime();
-   GetRecPointsData(2) ->Fill(mmm);
-   // printf(" AliT0QADataMakerRec: diff mean  %f \n",mmm ); 
-   // GetRecPointsData(73) ->Fill(frecpoints->GetMeanTime());
+  GetRecPointsData(2) ->Fill(mmm);
   
-
-
 }
 
 //____________________________________________________________________________
 void AliT0QADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
-
+  
   GetESDsData(0) -> Fill(esd->GetT0());
   GetESDsData(1)-> Fill(esd->GetT0zVertex());
-
+  
 }

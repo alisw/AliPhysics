@@ -18,8 +18,8 @@
 
 //---
 //  Produces the data needed to calculate the quality assurance. 
-//  All data must be mergeable objects.
-//  A. Mastroserio
+//  Alla.Maevskaya@cern.ch
+//  
 //---
 
 // --- ROOT system ---
@@ -40,6 +40,8 @@
 #include "AliQAChecker.h"
 #include "AliT0RawReader.h"
 
+#include "iostream.h"
+
 ClassImp(AliT0QADataMakerSim)
            
 //____________________________________________________________________________ 
@@ -48,16 +50,6 @@ ClassImp(AliT0QADataMakerSim)
 
 {
   // ctor
-  /*
-  for(Int_t i=0; i<24; i++) {
-    fhHitsTime[i]=0x0;
-   fhDigCFD[i]=0x0;
-    fhDigLEDamp[i]=0x0;
-    fhRecCFD[i]=0x0;
-    fhRecLEDamp[i]=0x0;
-    fhRecQTC[i]=0x0;
-  }
-  */
  //   fDetectorDir = fOutput->GetDirectory(GetName()) ;  
 //   if (!fDetectorDir) 
 //     fDetectorDir = fOutput->mkdir(GetName()) ;  
@@ -68,16 +60,6 @@ AliT0QADataMakerSim::AliT0QADataMakerSim(const AliT0QADataMakerSim& qadm) :
   AliQADataMakerSim() 
 {
   //copy ctor 
-  /*
-  for(Int_t i=0; i<24; i++) {
-    fhHitsTime[i]=0x0;
-    fhDigCFD[i]=0x0;
-    fhDigLEDamp[i]=0x0;
-    fhRecCFD[i]=0x0;
-    fhRecLEDamp[i]=0x0;
-    fhRecQTC[i]=0x0;
-  }
-  */
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
 }
@@ -88,7 +70,7 @@ AliT0QADataMakerSim& AliT0QADataMakerSim::operator = (const AliT0QADataMakerSim&
   // Equal operator.
   this->~AliT0QADataMakerSim();
   new(this) AliT0QADataMakerSim(qadm);
-  return *this;
+  return *this; 
 }
 //____________________________________________________________________________
 void AliT0QADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
@@ -115,9 +97,9 @@ void AliT0QADataMakerSim::InitHits()
 
   TString timename;
   
-  TH2F *fhHitsTimeA = new TH2F("hHitsTimeA", "Hits Efficiency;Time [ns];Efficiency [%]", 25, 0, 25, 100,12,15 );
+  TH2F *fhHitsTimeA = new TH2F("hHitsTimeA", "Hits Efficiency;#PMT; Time [ns];", 13, 12, 25, 100,12,15 );
   Add2HitsList(fhHitsTimeA,0, !expert, image);
-  TH2F *fhHitsTimeC = new TH2F("hHitsTimeC", "Hits Efficiency;Time [ns];Efficiency [%]", 25, 0, 25, 100,2,5 );
+  TH2F *fhHitsTimeC = new TH2F("hHitsTimeC", "Hits Efficiency;#PMT; Time [ns];", 13, 0, 13, 100,2,5 );
   Add2HitsList(fhHitsTimeC,1, !expert, image);
 }
 
@@ -128,11 +110,11 @@ void AliT0QADataMakerSim::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH2F * fhDigCFD = new TH2F("fhDigCFD", " CFD digits;something;something else",25,-0.5,24.5,100,100,1000);
+  TH2F * fhDigCFD = new TH2F("fhDigCFD", " CFD digits; #PMT; CFD time [#channel]",25,-0.5,24.5,100,0,1000);
   Add2DigitsList( fhDigCFD,0);
-  TH2F *fhDigLEDamp = new TH2F("fhDigLEDamp", " LED-CFD digits;something;something else",25,-0.5,24.5,100,100,1000);
+  TH2F *fhDigLEDamp = new TH2F("fhDigLEDamp", " LED-CFD digits; #PMT; amplitude  LED-CFD [#channel]",25,-0.5,24.5,100,100,1000);
   Add2DigitsList( fhDigLEDamp,1, !expert, image);
-  TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits;something;something else",25,-0.5,24.5,100,100,1000);
+  TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits; #PMT; amplitude QTC [#channel]",25,-0.5,24.5,200,500,10000);
   Add2DigitsList( fhDigQTC,2, !expert, image);
   
   
@@ -207,6 +189,7 @@ void AliT0QADataMakerSim::MakeDigits( TTree *digitsTree)
   fDigits->GetQT0(*digQT0);
   fDigits->GetQT1(*digQT1);
   refpoint = fDigits->RefPoint();
+
    for (Int_t i=0; i<24; i++)
     {
       if (digCFD->At(i)>0) {
@@ -214,6 +197,7 @@ void AliT0QADataMakerSim::MakeDigits( TTree *digitsTree)
 	GetDigitsData(0) ->Fill(i,cfd);
 	GetDigitsData(1) -> Fill(i,(digLED->At(i) - digCFD->At(i)));
 	GetDigitsData(2) -> Fill(i, (digQT1->At(i) - digQT0->At(i)));
+
       }
     }  
       
