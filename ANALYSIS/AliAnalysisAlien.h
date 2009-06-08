@@ -40,7 +40,7 @@ public:
    virtual void        SetAdditionalLibs(const char *list)               {fAdditionalLibs = list;}
    virtual void        SetPrice(Int_t price=1)                           {fPrice = price;}
    virtual void        SetRunRange(Int_t min, Int_t max)                 {fRunRange[0] = min; fRunRange[1] = max;}
-   virtual void        SetNMasterJobs(Int_t njobs)                       {fNMasterJobs = njobs;}
+   virtual void        SetNrunsPerMaster(Int_t nruns=1)                  {fNrunsPerMaster = nruns;}
    virtual void        SetMaxMergeFiles(Int_t nfiles)                    {fMaxMergeFiles = nfiles;}
    virtual void        SetSplitMode(const char *type="se")               {fSplitMode = type;}
    virtual void        SetSplitMaxInputFileNumber(Int_t nfiles=100)      {fSplitMaxInputFileNumber = nfiles;}
@@ -99,7 +99,7 @@ private:
    Int_t            fMasterResubmitThreshold; // Failed jobs will be resubmitted until this DONE ratio
    Int_t            fNtestFiles;      // Number of files used in the testing case
    Int_t            fRunRange[2];     // Run range
-   Int_t            fNMasterJobs;     // Number of masterjobs to be launched
+   Int_t            fNrunsPerMaster;  // Number of runs per masterjob
    Int_t            fMaxMergeFiles;   // Maximum number of files to be merged in one chunk
    TString          fRunNumbers;      // List of runs to be processed
    TString          fExecutable;      // Executable script for AliEn job
