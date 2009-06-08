@@ -75,7 +75,7 @@ AliTPCkalmanFit::AliTPCkalmanFit():
   //
   // Default constructor
   //  
-  for (Int_t ihis=0; ihis<8; ihis++){
+  for (Int_t ihis=0; ihis<12; ihis++){
     fLinearTrackDelta[ihis]=0;
     fLinearTrackPull[ihis]=0;
   }
@@ -98,7 +98,7 @@ void AliTPCkalmanFit::Add(const AliTPCkalmanFit * kalman){
   //
   //
   Update(kalman);
-  for (Int_t i=0;i<8;i++){
+  for (Int_t i=0;i<12;i++){
     if (fLinearTrackDelta[i] && kalman->fLinearTrackDelta[i]){
       fLinearTrackDelta[i]->Add(kalman->fLinearTrackDelta[i]);
     }
@@ -143,23 +143,35 @@ void AliTPCkalmanFit::Init(){
 			"tan(#phi)",
 			"tan(theta)"};
   //
-  TString deltaName[8]={"#Delta_{y}(cm)",
-			"100*#Delta_{#phi}(cm)",
-			"100^{2}dy0^{2}/dx0^{2}(cm)",
-			"100^{2}dy1^{2}/dx1^{2}(cm)",
-			"#Delta_{z}(cm)",
-			"100*#Delta_{#theta}(cm)",
-			"100^{2}*dz0^{2}/dx0^{2}(cm)",
-			"100^{2}*dz1^{2}/dx1^{2}(cm)"};
-  TString pullName[8]={"#Delta_{y}(unit)",
-		       "100*#Delta_{#phi}(unit)",
-		       "100^{2}dy0^{2}/dx0^{2}(unit)",
-		       "100^{2}dy1^{2}/dx1^{2}(unit)",
-		       "#Delta_{z}(unit)",
-		       "100*#Delta_{#theta}(unit)",
-		       "100^{2}*dz0^{2}/dx0^{2}(unit)",
-		       "100^{2}*dz1^{2}/dx1^{2}(unit)"};
-  for (Int_t ihis=0; ihis<8; ihis++){
+  TString deltaName[12]={"#Delta_{y}(cm)",
+			 "100*#Delta_{#phi}(cm)",
+			 "100^{2}dy0^{2}/dx0^{2}(cm)",
+			 "100^{2}dy1^{2}/dx1^{2}(cm)",
+			 "#Delta_{z}(cm)",
+			 "100*#Delta_{#theta}(cm)",
+			 "100^{2}*dz0^{2}/dx0^{2}(cm)",
+			 "100^{2}*dz1^{2}/dx1^{2}(cm)",
+			 "RMSy_{0} (cm)",
+			 "RMSy_{1} (cm)",
+			 "RMSz_{0} (cm)",
+			 "RMSz_{1} (cm)"};
+
+  TString pullName[12]={"#Delta_{y}(unit)",
+			"100*#Delta_{#phi}(unit)",
+			"100^{2}dy0^{2}/dx0^{2}(unit)",
+			"100^{2}dy1^{2}/dx1^{2}(unit)",
+			"#Delta_{z}(unit)",
+			"100*#Delta_{#theta}(unit)",
+			"100^{2}*dz0^{2}/dx0^{2}(unit)",
+			"100^{2}*dz1^{2}/dx1^{2}(unit)"
+			"RMSy_{0} (cm)",
+			"RMSy_{1} (cm)",
+			"RMSz_{0} (cm)",
+			"RMSz_{1} (cm)"};
+  //
+  //
+  //
+  for (Int_t ihis=0; ihis<12; ihis++){
     fLinearTrackDelta[ihis]=0;
     fLinearTrackPull[ihis]=0;
     xminQA[0]=-0.5; xmaxQA[0] = 0.5; 
@@ -245,7 +257,7 @@ void AliTPCkalmanFit::Update(const AliTPCkalmanFit * kalman){
 
 
 
-void AliTPCkalmanFit::FitTrackLinear(AliTrackPointArray &points, Int_t step, TTreeSRedirector *debug){
+void AliTPCkalmanFit::FitTrackLinear(AliTrackPointArray &points, TTreeSRedirector *debug){
   //
   //
 
@@ -284,7 +296,7 @@ void AliTPCkalmanFit::FitTrackLinear(AliTrackPointArray &points, Int_t step, TTr
   //
   // 1.b Fit the track in the rotated frame - MakeSeed 
   //
-  for (Int_t ipoint=0; ipoint<npoints-1; ipoint+=step){
+  for (Int_t ipoint=0; ipoint<npoints-1; ipoint++){
     Double_t rx =   fCA*points.GetX()[ipoint]+fSA*points.GetY()[ipoint];
     Double_t ry =  -fSA*points.GetX()[ipoint]+fCA*points.GetY()[ipoint];
     Double_t rz =  points.GetZ()[ipoint];
@@ -327,7 +339,7 @@ void AliTPCkalmanFit::FitTrackLinear(AliTrackPointArray &points, Int_t step, TTr
   // Fit thetrack together with correction
   //
   AliTrackPoint point;
-  for (Int_t ipoint=0; ipoint<npoints-1; ipoint+=step){
+  for (Int_t ipoint=0; ipoint<npoints-1; ipoint++){
     //
     if (!points.GetPoint(point,ipoint)) continue;
     Double_t erry2 = chi2Y;
@@ -554,6 +566,18 @@ void AliTPCkalmanFit::DumpTrackLinear(AliTrackPointArray &points, TTreeSRedirect
   x[0]/=100*100*TMath::Sqrt((*errs[11])[2]*(*errs[11])[2]);
   fLinearTrackPull[7]->Fill(x);
 
+  //
+  // rms of track
+  //
+  x[0]= chi2N[0];
+  fLinearTrackDelta[8]->Fill(x);
+  x[0]= chi2N[1];
+  fLinearTrackDelta[9]->Fill(x);
+  x[0]= chi2N[2];
+  fLinearTrackDelta[10]->Fill(x);
+  x[0]= chi2N[3];
+  fLinearTrackDelta[11]->Fill(x);
+  //
 
 
   for (Int_t ifit=0; ifit<8;ifit++){
@@ -657,6 +681,7 @@ void  AliTPCkalmanFit::UpdateLinear(AliTrackPoint &point, TTreeSRedirector *debu
   vecZk(1,0) =  rxyz[2];
   measR(0,0) = point.GetCov()[1]; measR(0,1)=0;
   measR(1,1) = point.GetCov()[2]; measR(1,0)=0;
+  //
   vecYk = vecZk-matHk*vecXk;               // Innovation or measurement residual
   matHkT=matHk.T(); matHk.T();
   matSk = (matHk*(covXk*matHkT))+measR;    // Innovation (or residual) covariance
@@ -766,14 +791,25 @@ void AliTPCkalmanFit::ApplyCalibration(AliTrackPointArray *array, Double_t csign
   }
 }
 
-Bool_t AliTPCkalmanFit::DumpCorelation(Double_t threshold,  const char *mask){
+Bool_t AliTPCkalmanFit::DumpCorelation(Double_t threshold,  const char *mask0, const char *mask1){
   //
   //
   //
   TMatrixD &mat = *fCalibCovar;
   Int_t nrow= mat.GetNrows();
   for (Int_t irow=0; irow<nrow; irow++){
+    AliTPCTransformation * trans0 = GetTransformation(irow);
+    TString  strName0(trans0->GetName());
+    if (mask0){
+      if (!strName0.Contains(mask0)) continue;
+    }
     for (Int_t icol=irow+1; icol<nrow; icol++){
+      AliTPCTransformation * trans1 = GetTransformation(icol);
+      TString  strName1(trans1->GetName());
+      if (mask1){
+	if (!strName1.Contains(mask1)) continue;
+      }	
+      //
       Double_t diag = TMath::Sqrt(TMath::Abs(mat(irow,irow)*mat(icol,icol))); 
       if (diag<=0){
 	printf("Negative covariance\t%d\t%d\t%f\n",irow,icol, mat(irow,icol));
@@ -781,16 +817,6 @@ Bool_t AliTPCkalmanFit::DumpCorelation(Double_t threshold,  const char *mask){
       }
       Double_t corr0 = mat(irow,icol)/diag;
       if (TMath::Abs(corr0)>threshold){
-	AliTPCTransformation * trans0 = GetTransformation(irow);
-	AliTPCTransformation * trans1 = GetTransformation(icol);
-	TString  strName0(trans0->GetName());
-	if (mask){
-	  if (!strName0.Contains(mask)) continue;
-	}
-	TString  strName1(trans1->GetName());
-	if (mask){
-	  if (!strName1.Contains(mask)) continue;
-	}	
 	printf("%d\t%d\t%s\t%s\t%f\t%f\t%f\n", irow,icol, trans0->GetName(), trans1->GetName(),
 	       TMath::Sqrt(mat(irow,irow)), TMath::Sqrt(mat(icol,icol)), corr0);
       }
@@ -944,9 +970,9 @@ AliTPCkalmanFit *  AliTPCkalmanFit::Test(Int_t ntracks){
        "gcovar.="<<kalmanFit2->fCalibCovar<<
        "\n";
      if (i%20==0) {
-       kalmanFit0->FitTrackLinear(*array,1,pcstream); // fit track - dump intermediate results
+       kalmanFit0->FitTrackLinear(*array,pcstream); // fit track - dump intermediate results
      }else{
-       kalmanFit0->FitTrackLinear(*array,1,0);        // fit track + calibration
+       kalmanFit0->FitTrackLinear(*array,0);        // fit track + calibration
      }
      kalmanFit0->DumpTrackLinear(*array,pcstream);    // dump track residuals to the tree + fill histograms
   }

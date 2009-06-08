@@ -27,7 +27,7 @@ public:
   //
   void SetStatus(const char * name, Bool_t setOn, Bool_t isOr=kTRUE);
   //
-  void FitTrackLinear(AliTrackPointArray& points, Int_t step=1,  TTreeSRedirector *debug=0);
+  void FitTrackLinear(AliTrackPointArray& points,  TTreeSRedirector *debug=0);
   void DumpTrackLinear(AliTrackPointArray& points, TTreeSRedirector *debug);
   void UpdateLinear(AliTrackPoint &point, TTreeSRedirector *debug=0);
 
@@ -39,7 +39,7 @@ public:
   void  ApplyCalibration(AliTrackPointArray *array, Double_t csign);
   Bool_t  CheckCovariance(TMatrixD &covar, Float_t maxEl);
   
-  Bool_t DumpCorelation(Double_t threshold, const char *mask=0);
+  Bool_t DumpCorelation(Double_t threshold, const char *mask0=0, const char *mask1=0);
   Bool_t DumpCalib(const char *mask=0);
   //
   Double_t GetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z);
@@ -57,8 +57,8 @@ public:
   //
   TMatrixD  *fLinearParam;      // linear parameters
   TMatrixD  *fLinearCovar;      // linear covariance
-  THnSparse *fLinearTrackDelta[8];   // linear tracks matching residuals - delta 
-  THnSparse *fLinearTrackPull[8];    // linear tracks matching residuals  - pull
+  THnSparse *fLinearTrackDelta[12];   // linear tracks matching residuals - delta 
+  THnSparse *fLinearTrackPull[12];    // linear tracks matching residuals  - pull
   //
   //
   //
@@ -72,7 +72,7 @@ public:
   Double_t   fSA;           //! sinus of current angle  
   AliTPCkalmanFit&  operator=(const AliTPCkalmanFit&);// not implemented
 //   AliTPCkalmanFit(const AliTPCkalmanFit&){;} //not implemented
-  ClassDef(AliTPCkalmanFit,1);
+  ClassDef(AliTPCkalmanFit,2);
 };
 
 
