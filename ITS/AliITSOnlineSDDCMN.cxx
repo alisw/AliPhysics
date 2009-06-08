@@ -106,10 +106,8 @@ void  AliITSOnlineSDDCMN::ValidateAnodes(){
 }
 
 //______________________________________________________________________
-void AliITSOnlineSDDCMN::AddEvent(TH2F* hrawd){
+TH2F* AliITSOnlineSDDCMN::GetCleanEvent(TH2F* hrawd) const {
   // 
-  fNEvents++;
-  const Int_t kTimeBins=fLastGoodTB+1;
   TH2F* hcorrd=new TH2F("hcorrd","",hrawd->GetNbinsX(),hrawd->GetXaxis()->GetXmin(),hrawd->GetXaxis()->GetXmax(),hrawd->GetNbinsY(),hrawd->GetYaxis()->GetXmin(),hrawd->GetYaxis()->GetXmax());
   for(Int_t itb=fFirstGoodTB;itb<=fLastGoodTB;itb++){
     Float_t sumEven=0., sumOdd=0.;
@@ -133,14 +131,23 @@ void AliITSOnlineSDDCMN::AddEvent(TH2F* hrawd){
       hcorrd->SetBinContent(itb+1,ian+1,cntCorr);
     }
   }
+  return hcorrd;
+}
+//______________________________________________________________________
+void AliITSOnlineSDDCMN::AddEvent(TH2F* hrawd){
+  // 
+  fNEvents++;
+  TH2F* hcorrd=GetCleanEvent(hrawd);
 
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     if(!fGoodAnode[ian]) continue;
     Float_t sumQ=0.;
+    Int_t cnt=0;
     for(Int_t itb=fFirstGoodTB;itb<=fLastGoodTB;itb++){
-      sumQ+=TMath::Power(hcorrd->GetBinContent(itb+1,ian+1)-fBaseline[ian],2);      
+      sumQ+=TMath::Power(hcorrd->GetBinContent(itb+1,ian+1)-fBaseline[ian],2); 
+      cnt++;    
     }
-    fSumCorrNoise[ian]+=TMath::Sqrt(sumQ/(Float_t)kTimeBins);
+    fSumCorrNoise[ian]+=TMath::Sqrt(sumQ/(Float_t)cnt);
   }
   delete hcorrd;
 }

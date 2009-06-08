@@ -26,7 +26,7 @@
 // Origin: F. Prino (prino@to.infn.it)
 
 
-void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t lastEv=15,Int_t jpad=16, Int_t statuscut=7){
+void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t adcfreq=20, Int_t nDDL=0, Int_t firstEv=10, Int_t lastEv=15,Int_t jpad=16, Int_t statuscut=7){
 
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
@@ -55,12 +55,8 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
 	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
 	histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
 	anal[index]=new AliITSOnlineSDDInjectors(iddl,imod,isid);
-/* Uncomment these lines for analysis of runs with 40 MHz sapling */
-// 	anal[index]->SetInjLineRange(0,20,50);
-// 	anal[index]->SetInjLineRange(1,90,160);
-// 	anal[index]->SetInjLineRange(2,170,240);
-// 	anal[index]->SetTimeStep(25.);
-/* END of lines to be uncommented */
+	if(adcfreq==40) anal[index]->Set40MHzConfig();
+	else anal[index]->Set20MHzConfig();
 	nWrittenEv[index]=0;
       }
     }
@@ -172,7 +168,7 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
 	    gvel[index]->GetXaxis()->SetTitleOffset(0.6);
 	    gvel[index]->GetYaxis()->SetTitleOffset(0.6);
 	    if(gvel[index]->GetN()>0) gvel[index]->Draw("AP");
-	    Float_t *param=anal[index]->GetDriftSpeedFitParam();
+	    Double_t *param=anal[index]->GetDriftSpeedFitParam();
 	    funz->SetParameters(param[0],param[1],param[2],param[3]);
 	    funz->SetLineColor(2);
 	    funz->DrawCopy("LSAME");
@@ -314,12 +310,12 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, In
 
 }
 
-void AnalyzeSDDInjectorsAllMod(Int_t nrun, Int_t n2, Char_t* dir="LHC08d_SDD", Int_t nDDL=0, Int_t firstEv=15, Int_t lastEv=15){
+void AnalyzeSDDInjectorsAllMod(Int_t nrun, Int_t n2, Char_t* dir="LHC08d_SDD", Int_t adcfreq=20, Int_t nDDL=0, Int_t firstEv=15, Int_t lastEv=15){
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
   sprintf(filnam,"alien:///alice/data/2008/%s/%09d/raw/08%09d%03d.10.root",dir,nrun,nrun,n2);
   printf("Open file %s\n",filnam);
-  AnalyzeSDDInjectorsAllMod(filnam,nDDL,firstEv,lastEv);
+  AnalyzeSDDInjectorsAllMod(filnam,adcfreq,nDDL,firstEv,lastEv);
 }
 
 

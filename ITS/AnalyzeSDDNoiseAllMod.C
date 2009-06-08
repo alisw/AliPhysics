@@ -23,7 +23,7 @@
 // All DDLs are analyzed, the argument nDDL selects the DDL to be plotted
 // Origin: F. Prino (prino@to.infn.it)
 
-void AnalyzeSDDNoiseAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t lastEv=12){
+void AnalyzeSDDNoiseAllMod(Char_t *datafil, Int_t adcfreq=20, Int_t nDDL=0, Int_t firstEv=10, Int_t lastEv=12){
 
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
@@ -37,7 +37,9 @@ void AnalyzeSDDNoiseAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t 
     for(Int_t imod=0; imod<kModPerDDL;imod++){
       for(Int_t isid=0;isid<kSides;isid++){
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
-	base[index]=new AliITSOnlineSDDBase(iddl,imod,isid);
+	base[index]=new AliITSOnlineSDDBase(iddl,imod,isid);	
+	if(adcfreq==40) base[index]->SetLastGoodTB(254);
+	else base[index]->SetLastGoodTB(126);
 	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
 	histo[index]=new TH2F(hisnam,"",128,-0.5,127.5,256,-0.5,255.5);
       }
@@ -127,6 +129,8 @@ void AnalyzeSDDNoiseAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t 
       for(Int_t isid=0;isid<kSides;isid++){
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	corr[index]=new AliITSOnlineSDDCMN(iddl,imod,isid);
+	if(adcfreq==40) corr[index]->SetLastGoodTB(254);
+	else corr[index]->SetLastGoodTB(126);
 	isFilled[index]=0;
       }
     }
@@ -369,10 +373,10 @@ void AnalyzeSDDNoiseAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t 
 
 }
 
-void AnalyzeSDDNoiseAllMod(Int_t nrun, Int_t n2, Char_t* dir="LHC08d_SDD",Int_t nDDL=0, Int_t firstEv=15, Int_t lastEv=18){
+void AnalyzeSDDNoiseAllMod(Int_t nrun, Int_t n2, Char_t* dir="LHC08d_SDD",Int_t adcfreq=20, Int_t nDDL=0, Int_t firstEv=15, Int_t lastEv=18){
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
   sprintf(filnam,"alien:///alice/data/2008/%s/%09d/raw/08%09d%03d.10.root",dir,nrun,nrun,n2);
   printf("Open file %s\n",filnam);
-  AnalyzeSDDNoiseAllMod(filnam,nDDL,firstEv,lastEv);
+  AnalyzeSDDNoiseAllMod(filnam,adcfreq,nDDL,firstEv,lastEv);
 }

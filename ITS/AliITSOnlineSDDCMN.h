@@ -19,6 +19,7 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
   AliITSOnlineSDDCMN(Int_t nddl, Int_t ncarlos, Int_t sid);
   virtual ~AliITSOnlineSDDCMN();
   void Reset();
+  TH2F* GetCleanEvent(TH2F* hrawd) const;
   void AddEvent(TH2F* hrawd);
   void ValidateAnodes();
   void ReadBaselines();

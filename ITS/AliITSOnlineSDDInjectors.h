@@ -23,6 +23,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, Int_t sid);
   virtual ~AliITSOnlineSDDInjectors();
 
+
   void SetThresholds(Float_t tl, Float_t th){
     fLowThreshold=tl;
     fHighThreshold=th;
@@ -30,6 +31,18 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   void SetInjLineRange(Int_t jlin, Int_t tbmin, Int_t tbmax){
     fTbMin[jlin]=tbmin;
     fTbMax[jlin]=tbmax;
+  }
+  void Set20MHzConfig(){
+    SetInjLineRange(0,10,20);
+    SetInjLineRange(1,50,70);
+    SetInjLineRange(2,100,120);
+    SetTimeStep(50.);
+  }
+  void Set40MHzConfig(){
+    SetInjLineRange(0,20,50);
+    SetInjLineRange(1,90,160);
+    SetInjLineRange(2,170,240);
+    SetTimeStep(25.);
   }
   void SetPolOrder(Int_t n){fPolOrder=n;}
   void SetMinDriftSpeed(Float_t vmin){fMinDriftSpeed=vmin;}

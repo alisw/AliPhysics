@@ -23,7 +23,7 @@
 // Origin: F. Prino (prino@to.infn.it)
 
 
-void AnalyzeSDDGainAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t lastEv=16, Float_t pascalDAC=100){
+void AnalyzeSDDGainAllMod(Char_t *datafil, Int_t adcfreq=20, Int_t nDDL=0, Int_t firstEv=10, Int_t lastEv=16, Float_t pascalDAC=100){
 
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
@@ -40,6 +40,8 @@ void AnalyzeSDDGainAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t l
       for(Int_t isid=0;isid<kSides;isid++){
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	anal[index]=new AliITSOnlineSDDTP(iddl,imod,isid,pascalDAC);
+	if(adcfreq==40) anal[index]->SetLastGoodTB(254);
+	else anal[index]->SetLastGoodTB(126);
 	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
 	histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
 	isFilled[index]=0;
@@ -222,10 +224,10 @@ void AnalyzeSDDGainAllMod(Char_t *datafil, Int_t nDDL, Int_t firstEv=10, Int_t l
 
 }
 
-void AnalyzeSDDGainAllMod(Int_t nrun, Int_t n2, Char_t* dir="LHC08d_SDD", Int_t nDDL=0, Int_t firstEv=15, Int_t lastEv=20, Float_t pascalDAC=100){
+void AnalyzeSDDGainAllMod(Int_t nrun, Int_t n2, Char_t* dir="LHC08d_SDD",Int_t adcfreq=20, Int_t nDDL=0, Int_t firstEv=15, Int_t lastEv=20, Float_t pascalDAC=100){
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
   sprintf(filnam,"alien:///alice/data/2008/%s/%09d/raw/08%09d%03d.10.root",dir,nrun,nrun,n2);
   printf("Open file %s\n",filnam);
-  AnalyzeSDDGainAllMod(filnam,nDDL,firstEv,lastEv,pascalDAC);
+  AnalyzeSDDGainAllMod(filnam,adcfreq,nDDL,firstEv,lastEv,pascalDAC);
 }
