@@ -17,15 +17,18 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   //             set here which plots will be shown by default
   //==================================================================================
   Bool_t plotIntFlow = kTRUE;                  // integrated flow (no-name) // to be improved
+  Bool_t plotIntFlowRelativeToMC = kTRUE;      // plot |v{MC}-v{method}/v{MC}| for integrated flow (no-name) // to be improved
   // RP = particles used to determine the reaction plane
-  Bool_t plotIntFlowRP = kTRUE;              // integrated flow RP
+  Bool_t plotIntFlowRP = kTRUE;             // integrated flow RP
+  Bool_t plotIntFlowRelativeToMCRP = kTRUE;   // plot |v{MC}-v{method}/v{MC}| for integrated flow (RP) // to be improved
   Bool_t plotDiffFlowPtRP = kTRUE;             // differential flow (Pt,RP)
   Bool_t plotDiffFlowEtaRP = kTRUE;             // differential flow (Eta,RP)
   Bool_t plotDiffFlowPtRelativeToMCRP = kTRUE;  // plot |v{MC}-v{method}/v{MC}| as a function of pt for RPs   
   // POI = particle of interest
-  Bool_t plotIntFlowPOI = kTRUE;              //integrated flow POI
-  Bool_t plotDiffFlowPtPOI = kTRUE;           //differential flow (Pt,POI)
-  Bool_t plotDiffFlowEtaPOI = kTRUE;          //differential flow (Eta,POI)
+  Bool_t plotIntFlowPOI = kTRUE;              // integrated flow POI
+  Bool_t plotIntFlowRelativeToMCPOI = kTRUE;   // plot |v{MC}-v{method}/v{MC}| for integrated flow (POI) // to be improved  
+  Bool_t plotDiffFlowPtPOI = kTRUE;           // differential flow (Pt,POI)
+  Bool_t plotDiffFlowEtaPOI = kTRUE;         // differential flow (Eta,POI)
   //==================================================================================
   
   
@@ -696,6 +699,51 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   TGraph* flowResultsPOI = new TGraphErrors(nMethods, x, flowValuePOI, xError, flowErrorPOI);
   flowResultsPOI->SetMarkerStyle(markerStylePOI);
   flowResultsPOI->SetMarkerColor(markerColorPOI);
+  
+  // for plot |v{MC}-v{method}/v{MC}|
+  // no-name, RP and POI
+  Double_t flowRelativeToMC[nMethods] = {0.};
+  Double_t flowRelativeToMCError[nMethods] = {0.}; 
+  Double_t flowRelativeToMCRP[nMethods] = {0.};
+  Double_t flowRelativeToMCErrorRP[nMethods] = {0.}; 
+  Double_t flowRelativeToMCPOI[nMethods] = {0.};
+  Double_t flowRelativeToMCErrorPOI[nMethods] = {0.}; 
+  flowRelativeToMC[0] = 0.; // MC relative to itself (to be improved)
+  flowRelativeToMCRP[0] = 0.; // MC relative to itself (to be improved)
+  flowRelativeToMCPOI[0] = 0.; // MC relative to itself (to be improved)
+  for(Int_t i=1;i<nMethods;i++) 
+  {
+   if(flowValue[0] != 0)
+   {
+    if(flowValue[i] != 0) flowRelativeToMC[i] = (flowValue[i]-flowValue[0])/(flowValue[0]);
+    if(flowError[i] != 0) flowRelativeToMCError[i] = flowError[i]/flowValue[0];
+   }
+   if(flowValueRP[0] != 0)
+   {
+    if(flowValueRP[i] != 0) flowRelativeToMCRP[i] = (flowValueRP[i]-flowValueRP[0])/(flowValueRP[0]);
+    if(flowErrorRP[i] != 0) flowRelativeToMCErrorRP[i] = flowErrorRP[i]/flowValueRP[0];
+   }
+   if(flowValuePOI[0] != 0)
+   {
+    if(flowValuePOI[i] != 0) flowRelativeToMCPOI[i] = (flowValuePOI[i]-flowValuePOI[0])/(flowValuePOI[0]);
+    if(flowErrorPOI[i] != 0) flowRelativeToMCErrorPOI[i] = flowErrorPOI[i]/flowValuePOI[0];
+   }
+  } // for(Int_t i=1;i<nMethods;i++) 
+  
+  // integrated flow (no-name) relative to MC:
+  TGraph* flowResultsRelativeToMC = new TGraphErrors(nMethods, x, flowRelativeToMC, xError, flowRelativeToMCError);
+  flowResultsRelativeToMC->SetMarkerStyle(markerStyle);
+  flowResultsRelativeToMC->SetMarkerColor(markerColor);
+  
+  // integrated flow (RP) relative to MC:
+  TGraph* flowResultsRelativeToMCRP = new TGraphErrors(nMethods, x, flowRelativeToMCRP, xError, flowRelativeToMCErrorRP);
+  flowResultsRelativeToMCRP->SetMarkerStyle(markerStyleRP);
+  flowResultsRelativeToMCRP->SetMarkerColor(markerColorRP);
+ 
+  // integrated flow (POI) relative to MC:
+  TGraph* flowResultsRelativeToMCPOI = new TGraphErrors(nMethods, x, flowRelativeToMCPOI, xError, flowRelativeToMCErrorPOI);
+  flowResultsRelativeToMCPOI->SetMarkerStyle(markerStylePOI);
+  flowResultsRelativeToMCPOI->SetMarkerColor(markerColorPOI);
   //-----------------------------------------------------------------------------------
   
   //----------------------------------------------------------------------------------
@@ -1332,6 +1380,36 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
  }// end of if(plotIntFlow) 
  //----------------------------------------------------------------------------------
  
+ 
+ //----------------------------------------------------------------------------------
+ // final drawing for integrated flow relative to MC (no-name):
+ if(plotIntFlowRelativeToMC)
+ {
+  TCanvas* intFlowAllRelativeToMCCanvas = new TCanvas("Integrated Flow Relative To MC","Integrated Flow Relative To MC",1000,600);
+ 
+  intFlowAllRelativeToMCCanvas->Divide(2,1);
+ 
+  // 1st pad is for plot:
+  (intFlowAllRelativeToMCCanvas->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+  
+  TH1D *intFlowAllRelativeToMC = new TH1D(*intFlowAll);
+  
+  (intFlowAllRelativeToMC->GetYaxis())->SetRangeUser(-1,1); 
+  intFlowAllRelativeToMC->Draw("E1");            
+  
+  if(flowResultsRelativeToMC) flowResultsRelativeToMC->Draw("PSAME");
+
+  // 2nd pad is for legend:
+  (intFlowAllRelativeToMCCanvas->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+ 
+  if(textDefault) textDefault->Draw();
+ 
+  if(textResults) textResults->Draw();
+ 
+ }// end of if(plotIntFlowRelativeToMC) 
+ //----------------------------------------------------------------------------------
+ 
+ 
  //----------------------------------------------------------------------------------
  //final drawing for integrated flow of RP (i.e. of particles used to determine the reaction plane):
  if(plotIntFlowRP)
@@ -1392,6 +1470,36 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
  }//end of if(plotIntFlowRP} 
  //----------------------------------------------------------------------------------
  
+ 
+ //----------------------------------------------------------------------------------
+ // final drawing for integrated flow relative to MC (RP):
+ if(plotIntFlowRelativeToMCRP)
+ {
+  TCanvas* intFlowAllRelativeToMCRPCanvas = new TCanvas("Integrated Flow (RP) Relative To MC","Integrated Flow (RP) Relative To MC",1000,600);
+ 
+  intFlowAllRelativeToMCRPCanvas->Divide(2,1);
+ 
+  // 1st pad is for plot:
+  (intFlowAllRelativeToMCRPCanvas->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+  
+  TH1D *intFlowAllRelativeToMCRP = new TH1D(*intFlowAll);
+  
+  (intFlowAllRelativeToMCRP->GetYaxis())->SetRangeUser(-1,1); 
+  intFlowAllRelativeToMCRP->Draw("E1");            
+  
+  if(flowResultsRelativeToMCRP) flowResultsRelativeToMCRP->Draw("PSAME");
+
+  // 2nd pad is for legend:
+  (intFlowAllRelativeToMCRPCanvas->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+ 
+  if(textDefault) textDefault->Draw();
+ 
+  if(textResultsRP) textResultsRP->Draw();
+ 
+ }// end of if(plotIntFlowRelativeToMC) 
+ //----------------------------------------------------------------------------------
+  
+ 
  //----------------------------------------------------------------------------------
  //final drawing for integrated flow of POI (i.e. of particles of interest):
  if(plotIntFlowPOI)
@@ -1450,7 +1558,37 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
 
   if(textResultsPOI) textResultsPOI->Draw();
  }// end of if(plotIntFlowPOI) 
- //----------------------------------------------------------------------------------         
+ //----------------------------------------------------------------------------------      
+ 
+    
+ //----------------------------------------------------------------------------------
+ // final drawing for integrated flow relative to MC (POI):
+ if(plotIntFlowRelativeToMCPOI)
+ {
+  TCanvas* intFlowAllRelativeToMCPOICanvas = new TCanvas("Integrated Flow (POI) Relative To MC","Integrated Flow (POI) Relative To MC",1000,600);
+ 
+  intFlowAllRelativeToMCPOICanvas->Divide(2,1);
+ 
+  // 1st pad is for plot:
+  (intFlowAllRelativeToMCPOICanvas->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+  
+  TH1D *intFlowAllRelativeToMCPOI = new TH1D(*intFlowAll);
+  
+  (intFlowAllRelativeToMCPOI->GetYaxis())->SetRangeUser(-1,1); 
+  intFlowAllRelativeToMCPOI->Draw("E1");            
+  
+  if(flowResultsRelativeToMCPOI) flowResultsRelativeToMCPOI->Draw("PSAME");
+
+  // 2nd pad is for legend:
+  (intFlowAllRelativeToMCPOICanvas->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+ 
+  if(textDefault) textDefault->Draw();
+ 
+  if(textResultsPOI) textResultsPOI->Draw();
+ 
+ }// end of if(plotIntFlowRelativeToMC) 
+ //----------------------------------------------------------------------------------
+         
  //==================================================================================   
 
 
