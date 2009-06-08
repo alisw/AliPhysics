@@ -303,5 +303,4 @@ void AliMUONPedestal::MakePedStore(TString shuttleFile_1 = "")
     histoFile->Close(); 
     delete fPedestalStore ;
   }
-
 }
