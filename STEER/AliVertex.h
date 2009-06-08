@@ -46,6 +46,7 @@ class AliVertex : public AliVVertex {
   virtual Bool_t   GetStatus() const {
     TString title = GetTitle();
     if(fNContributors>0 || (title.Contains("cosmics") && !title.Contains("failed"))) return 1;
+    if(title.Contains("smearMC")) return 1;
     return 0;
   }
   virtual Bool_t IsFromVertexer3D() const {
