@@ -130,6 +130,12 @@ private:
     kESDLocalChi2YPerChMean     = 95, ///< local chi2-Y per Ch: mean
     kESDLocalChi2XPerDEMean     = 96, ///< local chi2-X per DE: mean
     kESDLocalChi2YPerDEMean     = 97, ///< local chi2-Y per DE: mean
+    kESDLocalChi2InCh           = 98, ///< local chi2-X distribution in chamber i
+    kESDLocalChi2PerChMean      = 108, ///< local chi2 per Ch: mean
+    kESDLocalChi2PerDEMean      = 109, ///< local chi2 per DE: mean
+    
+    kESDThetaX                  = 110, ///< thetaX distribution
+    kESDThetaY                  = 111, ///< thetaY distribution
     
     kESDnTotClustersPerCh       = 1000, ///< total number of associated clusters per chamber
     kESDnTotClustersPerDE       = 1001, ///< total number of associated clusters per DE
@@ -141,7 +147,8 @@ private:
     kESDSumResidualX2PerDE      = 1007, ///< sum of cluster-track residual-X**2 per DE
     kESDSumResidualY2PerDE      = 1008, ///< sum of cluster-track residual-Y**2 per DE
     kESDSumLocalChi2XPerDE      = 1009, ///< sum of local chi2-X per DE
-    kESDSumLocalChi2YPerDE      = 1010  ///< sum of local chi2-X per DE
+    kESDSumLocalChi2YPerDE      = 1010, ///< sum of local chi2-Y per DE
+    kESDSumLocalChi2PerDE       = 1011  ///< sum of local chi2 per DE
   };
   
 private:

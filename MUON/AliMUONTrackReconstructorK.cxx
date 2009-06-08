@@ -1240,17 +1240,12 @@ Bool_t AliMUONTrackReconstructorK::RunSmoother(AliMUONTrack &track)
   // Smoothed parameters and covariances at first cluster = filtered parameters and covariances
   previousTrackParam->SetSmoothParameters(previousTrackParam->GetParameters());
   previousTrackParam->SetSmoothCovariances(previousTrackParam->GetCovariances());
-  
-  // Compute local chi2 at first cluster
-  AliMUONVCluster *cluster = previousTrackParam->GetClusterPtr();
-  Double_t dX = cluster->GetX() - previousTrackParam->GetNonBendingCoor();
-  Double_t dY = cluster->GetY() - previousTrackParam->GetBendingCoor();
-  Double_t chi2 = dX * dX / cluster->GetErrX2() + dY * dY / cluster->GetErrY2();
-  
-  // Save local chi2 at first cluster
-  previousTrackParam->SetLocalChi2(chi2);
-  
+
   AliMUONTrackParam *currentTrackParam = (AliMUONTrackParam*) track.GetTrackParamAtCluster()->After(previousTrackParam);
+  
+  // Save local chi2 at first cluster = last additional chi2 provided by Kalman
+  previousTrackParam->SetLocalChi2(previousTrackParam->GetTrackChi2() - currentTrackParam->GetTrackChi2());
+  
   while (currentTrackParam) {
     
     // Get variables
@@ -1262,7 +1257,7 @@ Bool_t AliMUONTrackReconstructorK::RunSmoother(AliMUONTrack &track)
     const TMatrixD &filteredCovariances       = currentTrackParam->GetCovariances();        // C(k k)
     const TMatrixD &previousSmoothCovariances = previousTrackParam->GetSmoothCovariances(); // C(k+1 n)
     
-    // Compute smoother gain: A(k) = C(kk) * F(f)^t * (C(k+1 k))^-1
+    // Compute smoother gain: A(k) = C(kk) * F(k)^t * (C(k+1 k))^-1
     TMatrixD extrapWeight(extrapCovariances);
     if (extrapWeight.Determinant() != 0) {
       extrapWeight.Invert(); // (C(k+1 k))^-1
@@ -1270,8 +1265,8 @@ Bool_t AliMUONTrackReconstructorK::RunSmoother(AliMUONTrack &track)
       AliWarning(" Determinant = 0");
       return kFALSE;
     }
-    TMatrixD smootherGain(filteredCovariances,TMatrixD::kMultTranspose,propagator); // C(kk) * F(f)^t
-    smootherGain *= extrapWeight; // C(kk) * F(f)^t * (C(k+1 k))^-1
+    TMatrixD smootherGain(filteredCovariances,TMatrixD::kMultTranspose,propagator); // C(kk) * F(k)^t
+    smootherGain *= extrapWeight; // C(kk) * F(k)^t * (C(k+1 k))^-1
     
     // Compute smoothed parameters: X(k n) = X(k k) + A(k) * (X(k+1 n) - X(k+1 k))
     TMatrixD tmpParam(previousSmoothParameters,TMatrixD::kMinus,extrapParameters); // X(k+1 n) - X(k+1 k)
@@ -1291,7 +1286,7 @@ Bool_t AliMUONTrackReconstructorK::RunSmoother(AliMUONTrack &track)
     currentTrackParam->SetSmoothCovariances(smoothCovariances);
     
     // Compute smoothed residual: r(k n) = cluster - X(k n)
-    cluster = currentTrackParam->GetClusterPtr();
+    AliMUONVCluster* cluster = currentTrackParam->GetClusterPtr();
     TMatrixD smoothResidual(2,1);
     smoothResidual.Zero();
     smoothResidual(0,0) = cluster->GetX() - smoothParameters(0,0);
@@ -1531,7 +1526,10 @@ void AliMUONTrackReconstructorK::FinalizeTrack(AliMUONTrack &track)
   if (!track.IsImproved()) {
     smoothed = kFALSE;
     if (GetRecoParam()->UseSmoother()) smoothed = RunSmoother(track);
-    if (!smoothed) track.UpdateCovTrackParamAtCluster();
+    if (!smoothed) {
+      track.UpdateCovTrackParamAtCluster();
+      track.ComputeLocalChi2(kTRUE);
+    }
   } else smoothed = GetRecoParam()->UseSmoother();
   
   // copy smoothed parameters and covariances if any
