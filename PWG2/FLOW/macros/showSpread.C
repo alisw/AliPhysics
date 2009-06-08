@@ -380,7 +380,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
    fileLYZ1SUM->Close();
    if(listLYZ1SUM) 
    {
-    lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1")); 
+    lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1SUM")); 
     if(lyz1sumCommonHistRes && lyz1sumCommonHistRes->GetHistIntFlow())
     {
      lyz1sumValueNONAME[counter] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinContent(1);
@@ -407,7 +407,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
    fileLYZ1PROD->Close();
    if(listLYZ1PROD) 
    {
-    lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1")); 
+    lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1PROD")); 
     if(lyz1prodCommonHistRes && lyz1prodCommonHistRes->GetHistIntFlow())
     {
      lyz1prodValueNONAME[counter] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinContent(1);
@@ -650,7 +650,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
      if(mergedOutputListLYZ1SUM) 
      {
       AliFlowCommonHistResults *lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
-                                                    (mergedOutputListLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1")); 
+                                                    (mergedOutputListLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1SUM")); 
       if(lyz1sumCommonHistRes && lyz1sumCommonHistRes->GetHistIntFlow())
       {
        mergedValueLYZ1SUM = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinContent(1);
@@ -680,7 +680,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
      if(mergedOutputListLYZ1PROD) 
      {
       AliFlowCommonHistResults *lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> 
-                                                    (mergedOutputListLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1")); 
+                                                    (mergedOutputListLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1PROD")); 
       if(lyz1prodCommonHistRes && lyz1prodCommonHistRes->GetHistIntFlow())
       {
        mergedValueLYZ1PROD = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinContent(1);
