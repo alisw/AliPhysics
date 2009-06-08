@@ -213,9 +213,9 @@ Bool_t AliTrackPointArray::GetPoint(AliTrackPoint &p, Int_t i) const
   if (i >= fNPoints) return kFALSE;
   p.SetXYZ(fX[i],fY[i],fZ[i],&fCov[6*i]);
   p.SetVolumeID(fVolumeID[i]);
-  p.SetCharge(fCharge[i]);
-  p.SetDriftTime(fDriftTime[i]);
-  p.SetChargeRatio(fChargeRatio[i]);
+  p.SetCharge(fCharge ? fCharge[i] : 0);
+  p.SetDriftTime(fDriftTime ? fDriftTime[i] : 0);
+  p.SetChargeRatio(fChargeRatio ? fChargeRatio[i] : 0);
   p.SetExtra(fIsExtra ? fIsExtra[i] : kFALSE);
   return kTRUE;
 }
