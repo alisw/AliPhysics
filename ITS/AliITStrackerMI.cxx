@@ -1174,7 +1174,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	      AliDebug(2,"update failed");
 	      continue;
 	    } 
-	    updatetrack->SetSampledEdx(cl->GetQ(),updatetrack->GetNumberOfClusters()-1); //b.b.
+	    updatetrack->SetSampledEdx(cl->GetQ(),ilayer-2); 
 	    modstatus = 1; // found
 	  } else {             // virtual cluster in dead zone
 	    updatetrack->SetNDeadZone(updatetrack->GetNDeadZone()+1);
@@ -2294,7 +2294,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      
      if (clAcc) {
        if (!UpdateMI(track,clAcc,maxchi2,idx)) return kFALSE;
-       track->SetSampledEdx(clAcc->GetQ(),track->GetNumberOfClusters()-1);
+       track->SetSampledEdx(clAcc->GetQ(),ilayer-2);
      }
      track->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
 
@@ -3557,12 +3557,6 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
 void AliITStrackerMI::CookdEdx(AliITStrackMI* track)
 {
   //
-  //
-  //  Int_t list[6];
-  //AliITSRecPoint * clist[6];
-  //  Int_t shared = GetNumberOfSharedClusters(track,index,list,clist);
-  Float_t dedx[4];
-  Int_t accepted=0;
   track->SetChi2MIP(9,0);
   for (Int_t i=0;i<track->GetNumberOfClusters();i++){
     Int_t cindex = track->GetClusterIndex(i);
@@ -3574,33 +3568,10 @@ void AliITStrackerMI::CookdEdx(AliITStrackMI* track)
       if (cl->GetLabel(ind)==lab) isWrong=0;
     }
     track->SetChi2MIP(9,track->GetChi2MIP(9)+isWrong*(2<<l));
-    if (l<2) continue;
-    //if (l>3 && (cl->GetNy()>4) || (cl->GetNz()>4)) continue;  //shared track
-    //if (l>3&& !(cl->GetType()==1||cl->GetType()==10)) continue;
-    //if (l<4&& !(cl->GetType()==1)) continue;   
-    dedx[accepted]= track->GetSampledEdx(i);
-    //dedx[accepted]= track->fNormQ[l];
-    accepted++;
   }
-  if (accepted<1) {
-    track->SetdEdx(0);
-    return;
-  }
-  Int_t indexes[4];
-  TMath::Sort(accepted,dedx,indexes,kFALSE);
   Double_t low=0.;
   Double_t up=0.51;    
-  Double_t nl=low*accepted, nu =up*accepted;  
-  Float_t sumamp = 0;
-  Float_t sumweight =0;
-  for (Int_t i=0; i<accepted; i++) {
-    Float_t weight =1;
-    if (i<nl+0.1)     weight = TMath::Max(1.-(nl-i),0.);
-    if (i>nu-1)     weight = TMath::Max(nu-i,0.);
-    sumamp+= dedx[indexes[i]]*weight;
-    sumweight+=weight;
-  }
-  track->SetdEdx(sumamp/sumweight);
+  track->CookdEdx(low,up);
 }
 //------------------------------------------------------------------------
 void AliITStrackerMI::MakeCoefficients(Int_t ntracks){

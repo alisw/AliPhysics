@@ -450,8 +450,8 @@ Int_t AliITStrackerV2::RefitInward(AliESDEvent *event) {
        CookLabel(&fTrackToFollow,0.); //For comparison only
 
        if (fTrackToFollow.PropagateTo(3.,0.0028,65.19)) {//The beam pipe 
+	 fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSrefit);
          AliESDtrack  *esdTrack =fTrackToFollow.GetESDtrack();
-         esdTrack->UpdateTrackParams(&fTrackToFollow,AliESDtrack::kITSrefit);
          Double_t r[3]={0.,0.,0.};
          Double_t maxD=3.;
 	 esdTrack->RelateToVertex(event->GetVertex(),GetBz(r),maxD);
@@ -634,7 +634,7 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
     if (TMath::Abs(fTrackToFollow.GetD(GetX(),GetY()))>4) return 0;
 
   fTrackToFollow.
-    SetSampledEdx(cc->GetQ(),fTrackToFollow.GetNumberOfClusters()-1); //b.b.
+    SetSampledEdx(cc->GetQ(),fI-2); //b.b.
 
   {
   Double_t x0;
@@ -1088,7 +1088,7 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
        if (!t->Update(cl,maxchi2,idx)) {
           return kFALSE;
        }
-       t->SetSampledEdx(cl->GetQ(),t->GetNumberOfClusters()-1);
+       t->SetSampledEdx(cl->GetQ(),i-2);
      }
 
      {

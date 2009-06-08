@@ -916,6 +916,9 @@ void AliITStrackerSA::StoreTrack(AliITStrackV2 *t,AliESDEvent *event) const
   for(Int_t i=0;i<12;i++) {
     outtrack.SetITSModuleIndex(i,t->GetModuleIndex(i));
   }
+  Double_t sdedx[4]={0.,0.,0.,0.};
+  for(Int_t i=0; i<4; i++) sdedx[i]=t->GetSampledEdx(i);
+  outtrack.SetITSdEdxSamples(sdedx);
   event->AddTrack(&outtrack);
 
   return;

@@ -87,13 +87,19 @@ void AliITStrackV2::ResetClusters() {
   SetNumberOfClusters(0);
 } 
 
+//____________________________________________________________________________
 void AliITStrackV2::UpdateESDtrack(ULong_t flags) const {
+  // Update track params
   fESDtrack->UpdateTrackParams(this,flags);
   // copy the module indices
   for(Int_t i=0;i<12;i++) {
     //   printf("     %d\n",GetModuleIndex(i));
     fESDtrack->SetITSModuleIndex(i,GetModuleIndex(i));
   }
+  // copy the 4 dedx samples
+  Double_t sdedx[4]={0.,0.,0.,0.};
+  for(Int_t i=0; i<4; i++) sdedx[i]=fdEdxSample[i];
+  fESDtrack->SetITSdEdxSamples(sdedx);
 }
 
 //____________________________________________________________________________
@@ -424,36 +430,47 @@ void AliITStrackV2::CookdEdx(Double_t low, Double_t up) {
   //-----------------------------------------------------------------
   // This function calculates dE/dX within the "low" and "up" cuts.
   // Origin: Boris Batyunya, JINR, Boris.Batiounia@cern.ch 
+  // Updated: F. Prino 8-June-2009
   //-----------------------------------------------------------------
-  // The clusters order is: SSD-2, SSD-1, SDD-2, SDD-1, SPD-2, SPD-1
+  // The cluster order is: SDD-1, SDD-2, SSD-1, SSD-2
 
-  Int_t i;
   Int_t nc=0;
-  for (i=0; i<GetNumberOfClusters(); i++) {
-    Int_t idx=GetClusterIndex(i);
-    idx=(idx&0xf0000000)>>28;
-    if (idx>1) nc++; // Take only SSD and SDD
+  Float_t dedx[4];
+  for (Int_t il=0; il<4; il++) { // count good (>0) dE/dx values
+    if(fdEdxSample[il]>0.){
+      dedx[nc]= fdEdxSample[il];
+      nc++;
+    }
+  }
+  if(nc<1){
+    SetdEdx(0.);
+    return;
   }
 
-  Int_t swap;//stupid sorting
+  Int_t swap; // sort in ascending order
   do {
     swap=0;
-    for (i=0; i<nc-1; i++) {
-      if (fdEdxSample[i]<=fdEdxSample[i+1]) continue;
-      Float_t tmp=fdEdxSample[i];
-      fdEdxSample[i]=fdEdxSample[i+1]; fdEdxSample[i+1]=tmp;
+    for (Int_t i=0; i<nc-1; i++) {
+      if (dedx[i]<=dedx[i+1]) continue;
+      Float_t tmp=dedx[i];
+      dedx[i]=dedx[i+1]; 
+      dedx[i+1]=tmp;
       swap++;
     }
   } while (swap);
 
-  Int_t nl=Int_t(low*nc), nu=Int_t(up*nc); //b.b. to take two lowest dEdX
-                                           // values from four ones choose
-                                           // nu=2
-  Float_t dedx=0;
-  for (i=nl; i<nu; i++) dedx += fdEdxSample[i];
-  if (nu-nl>0) dedx /= (nu-nl);
 
-  SetdEdx(dedx);
+  Double_t nl=low*nc, nu =up*nc;
+  Float_t sumamp = 0;
+  Float_t sumweight =0;
+  for (Int_t i=0; i<nc; i++) {
+    Float_t weight =1;
+    if (i<nl+0.1)     weight = TMath::Max(1.-(nl-i),0.);
+    if (i>nu-1)     weight = TMath::Max(nu-i,0.);
+    sumamp+= dedx[i]*weight;
+    sumweight+=weight;
+  }
+  SetdEdx(sumamp/sumweight);
 }
 
 //____________________________________________________________________________
