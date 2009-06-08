@@ -64,6 +64,9 @@ public:
   static  Double_t       TPClocaldLxdGY(Double_t *xyz, Double_t * param);
   static  Double_t       TPClocaldLydGX(Double_t *xyz, Double_t * param);
   static  Double_t       TPClocaldLydGY(Double_t *xyz, Double_t * param);
+  static  Double_t       TPClocaldRzdGX(Double_t *xyz, Double_t * param);
+  static  Double_t       TPClocaldRzdGY(Double_t *xyz, Double_t * param);
+
   //
   // TPC  quadrant misalignment
   //

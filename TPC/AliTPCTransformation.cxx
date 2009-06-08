@@ -18,6 +18,14 @@
     Currently Bitmask is used for filtering 
 
 
+ Transformation - naming convention:
+ //
+ XXX(local)YYYZZZ
+ TPClocaldLxdGX
+ XXX   - detector if detector specific
+ local - if local transforamtion
+ YYY   - type of transformation
+ ZZZ   - return type of transformation
 
 */
 
@@ -65,12 +73,15 @@ Int_t  AliTPCTransformation::BuildBasicFormulas(){
   RegisterFormula("TPCscalingZDr",(GenFuncG)(AliTPCTransformation::TPCscalingZDr));
   RegisterFormula("TPCscalingPhiLocal",(GenFuncG)(AliTPCTransformation::TPCscalingPhiLocal));
   //
-  // TPC Local X and Y misalignment 
+  // TPC Local X and Y misalignment + rotation 
   //
   RegisterFormula("TPClocaldLxdGX",(GenFuncG)(AliTPCTransformation::TPClocaldLxdGX));
   RegisterFormula("TPClocaldLxdGY",(GenFuncG)(AliTPCTransformation::TPClocaldLxdGY));
   RegisterFormula("TPClocaldLydGX",(GenFuncG)(AliTPCTransformation::TPClocaldLydGX));
   RegisterFormula("TPClocaldLydGY",(GenFuncG)(AliTPCTransformation::TPClocaldLydGY));
+  RegisterFormula("TPClocaldRzdGX",(GenFuncG)(AliTPCTransformation::TPClocaldRzdGX));
+  RegisterFormula("TPClocaldRzdGY",(GenFuncG)(AliTPCTransformation::TPClocaldRzdGY));
+
   //
   // Z offset
   //
@@ -254,7 +265,12 @@ TBits * AliTPCTransformation::BitsAll(){
 Double_t AliTPCTransformation::GetDeltaXYZ(Int_t coord, Int_t volID, Double_t param, Double_t x, Double_t y, Double_t z){
   //
   //
-  //
+  // coord - type of coordinate
+  //       - 0 -X
+  //         1 -Y
+  //         2 -Z
+  //         3 -R
+  //         4 -RPhi
   if (!fIsActive) return 0;
   if (fBitMask && (!(*fBitMask)[volID])) return 0;
   Double_t xyz[5]={x,y,z, param,volID};
@@ -363,64 +379,160 @@ Double_t       AliTPCTransformation::TPCscalingROFC(Double_t *xyz, Double_t * pa
 //
 // TPC sector local misalignment 
 //
-Double_t AliTPCTransformation:: TPClocaldLxdGX(Double_t *xyz, Double_t * /*param*/){
+//
+//
+Double_t AliTPCTransformation:: TPClocaldLxdGX(Double_t *xyz, Double_t * param){
   //
   // xyz - [0..2] - position 
   //       [3]    - scale parameter
   //       [4]    - volID
+  // param[0]= n  - cos(n *alpha)
+  // param[1]= n  - sin(n *alpha)
+  // param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
   // return delta in global coordiante system
   //
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
   Double_t ca     = TMath::Cos(alpha);
-  //  Double_t sa     = TMath::Sin(alpha);
-  return ca*xyz[3];    
+  //  Double_t sa     = TMath::Sin(alpha); 
+  const Double_t xIROCOROC = 133.4;
+  Double_t factor = xyz[3];
+  if (param[0]>0)  factor*=TMath::Cos(alpha*param[0]);
+  if (param[1]>0)  factor*=TMath::Sin(alpha*param[1]);
+  if (param[2]>0.5 && TMath::Sqrt(xyz[1]*xyz[1]+xyz[0]*xyz[0])>xIROCOROC) factor*=-1;
+  return ca*factor;    
 }
 
-Double_t AliTPCTransformation::TPClocaldLxdGY(Double_t *xyz, Double_t * /*param*/){
+Double_t AliTPCTransformation::TPClocaldLxdGY(Double_t *xyz, Double_t * param){
   //
   // xyz - [0..2] - position 
   //       [3]    - scale parameter
   //       [4]    - volID
+  // param[0]= n  - cos(n *alpha)
+  // param[1]= n  - sin(n *alpha)
+  // param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
   // return delta in global coordiante system
   //
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
   //Double_t ca     = TMath::Cos(alpha);
   Double_t sa     = TMath::Sin(alpha);
-  return   sa*xyz[3];  
+  const Double_t xIROCOROC = 133.4;
+  Double_t factor = xyz[3];
+  if (param[0]>0)  factor*=TMath::Cos(alpha*param[0]);
+  if (param[1]>0)  factor*=TMath::Sin(alpha*param[1]);
+  if (param[2]>0.5 && TMath::Sqrt(xyz[1]*xyz[1]+xyz[0]*xyz[0])>xIROCOROC) factor*=-1;  
+  return   sa*factor;  
 }
 
-Double_t AliTPCTransformation:: TPClocaldLydGX(Double_t *xyz, Double_t * /*param*/){
+Double_t AliTPCTransformation:: TPClocaldLydGX(Double_t *xyz, Double_t * param){
   //
   // xyz - [0..2] - position 
   //       [3]    - scale parameter
   //       [4]    - volID
+  // param[0]= n  - cos(n *alpha)
+  // param[1]= n  - sin(n *alpha)
+  // param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
   // return delta in global coordiante system
   //
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
   //Double_t ca     = TMath::Cos(alpha);
   Double_t sa     = TMath::Sin(alpha);
-  return            -sa*xyz[3];  
+  const Double_t xIROCOROC = 133.4;
+  Double_t factor = xyz[3];
+  if (param[0]>0)  factor*=TMath::Cos(alpha*param[0]);
+  if (param[1]>0)  factor*=TMath::Sin(alpha*param[1]);
+  if (param[2]>0.5 && TMath::Sqrt(xyz[1]*xyz[1]+xyz[0]*xyz[0])>xIROCOROC) factor*=-1;  
+  return            -sa*factor;  
 }
 
-Double_t AliTPCTransformation::TPClocaldLydGY(Double_t *xyz, Double_t * /*param*/){
+Double_t AliTPCTransformation::TPClocaldLydGY(Double_t *xyz, Double_t * param){
   //
   // xyz - [0..2] - position 
   //       [3]    - scale parameter
   //       [4]    - volID
+  // param[0]= n  - cos(n *alpha)
+  // param[1]= n  - sin(n *alpha)
+  // param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
   // return delta in global coordiante system
   //
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
   Double_t ca     = TMath::Cos(alpha);
   //Double_t sa     = TMath::Sin(alpha);
-  return   ca*xyz[3];  
+  const Double_t xIROCOROC = 133.4;
+  Double_t factor = xyz[3];
+  if (param[0]>0)  factor*=TMath::Cos(alpha*param[0]);
+  if (param[1]>0)  factor*=TMath::Sin(alpha*param[1]);
+  if (param[2]>0.5 && TMath::Sqrt(xyz[1]*xyz[1]+xyz[0]*xyz[0])>xIROCOROC) factor*=-1;  
+  return   ca*factor;  
 }
 
 
-Double_t        AliTPCTransformation::TPCDeltaZ(Double_t *xyz, Double_t * /*param*/){
+Double_t AliTPCTransformation::TPClocaldRzdGX(Double_t *xyz, Double_t * param){
+  //
+  // xyz - [0..2] - position 
+  //       [3]    - scale parameter - rotation angle in mrad
+  //       [4]    - volID
+  // param[0]= n  - cos(n *alpha)
+  // param[1]= n  - sin(n *alpha)
+  // param[2]     - indication - 0 - the same for IROC OROC 1 - opposite  
+  // return delta in global coordiante system
+  //
+  Int_t    sector = TMath::Nint(xyz[4]);
+  Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
+  Double_t ca     = TMath::Cos(alpha);  
+  Double_t sa     = TMath::Sin(alpha);
+  Double_t lx     =  xyz[0]*ca + xyz[1]*sa;
+  Double_t ly     = -xyz[0]*sa + xyz[1]*ca;
+  //
+  const Double_t xIROCOROC = 133.4;  
+  lx-=xIROCOROC;
+  Double_t rot      =  xyz[3]*0.001;    // rotation in mrad
+  if (param[0]>0)  rot*=TMath::Cos(alpha*param[0]);
+  if (param[1]>0)  rot*=TMath::Sin(alpha*param[1]);
+  if (param[2]>0.5 && lx>0) rot*=-1;  
+  //
+  Double_t dlxR     =  - ly*rot; 
+  Double_t dlyR     =    lx*rot;
+  Double_t dgxR     =  dlxR*ca - dlyR*sa;
+  //Double_t dgyR     =  dlxR*sa + dlyR*ca;
+  return  dgxR;            
+}
+
+Double_t AliTPCTransformation::TPClocaldRzdGY(Double_t *xyz, Double_t * param){
+  //
+  // xyz - [0..2] - position 
+  //       [3]    - scale parameter - rotation angle in mrad
+  //       [4]    - volID
+  // param[0]= n  - cos(n *alpha)
+  // param[1]= n  - sin(n *alpha)
+  // param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
+  // return delta in global coordiante system
+  //
+  Int_t    sector = TMath::Nint(xyz[4]);
+  Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
+  Double_t ca     = TMath::Cos(alpha);  
+  Double_t sa     = TMath::Sin(alpha);
+  Double_t lx     =  xyz[0]*ca + xyz[1]*sa;
+  Double_t ly     = -xyz[0]*sa + xyz[1]*ca;
+  //
+  const Double_t xIROCOROC = 133.4;  
+  lx-=xIROCOROC;
+  Double_t rot      =  xyz[3]*0.001;    // rotation in mrad
+  if (param[0]>0)  rot*=TMath::Cos(alpha*param[0]);
+  if (param[1]>0)  rot*=TMath::Sin(alpha*param[1]);
+  if (param[2]>0.5 && lx>0) rot*=-1;  
+  Double_t dlxR     =  - ly*rot; 
+  Double_t dlyR     =    lx*rot;
+  //Double_t dgxR     =  dlxR*ca - dlyR*sa;
+  Double_t dgyR     =  dlxR*sa + dlyR*ca;
+  return  dgyR;            
+}
+
+
+Double_t        AliTPCTransformation::TPCDeltaZ(Double_t *xyz, Double_t * param){
   //
   // xyz - [0..2] - position 
   //        [3]    - scale parameter
