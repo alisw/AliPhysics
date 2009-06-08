@@ -78,7 +78,7 @@ Double_t AliTracker::GetBz()
 {
   AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!fld) return kAlmost0Field;
-  Double_t bz = -fld->SolenoidField();
+  Double_t bz = fld->SolenoidField();
   return TMath::Sign(kAlmost0Field,bz) + bz;
 }
 
@@ -89,7 +89,7 @@ Double_t AliTracker::GetBz(const Double_t *r) {
   //------------------------------------------------------------------
   AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!fld) return  kAlmost0Field;
-  Double_t bz = -fld->GetBz(r);
+  Double_t bz = fld->GetBz(r);
   return  TMath::Sign(kAlmost0Field,bz) + bz;
 }
 
