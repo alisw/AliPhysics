@@ -88,6 +88,7 @@ AliESDVertex* AliITSVertexerFast::FindVertexForCurrentEvent(TTree *itsClusterTre
     vrtx[k] = gRandom->Gaus(vrttrue[k],fSmear[k]);
   }
   fCurrentVertex = new AliESDVertex(vrtx,fSmear,"Smeared Generated Vertex");
+  fCurrentVertex->SetTitle("vertexer: smearMC");
   return fCurrentVertex;
   
 }
