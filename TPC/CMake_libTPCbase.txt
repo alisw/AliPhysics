@@ -21,7 +21,8 @@ set(SRCS
 	AliTPCCalibTCF.cxx AliTPCAltroEmulator.cxx  AliTPCeventInfo.cxx 
         AliTransform.cxx AliTPCTransform.cxx AliTPCAlign.cxx AliTPCGoofieValues.cxx 
 	AliTPCdataQA.cxx AliTPCQAChecker.cxx AliTPCConfigDA.cxx AliExternalComparison.cxx
-	AliTPCkalmanTime.cxx AliESDcosmic.cxx AliTPCPointCorrection.cxx 
+	AliTPCkalmanTime.cxx AliESDcosmic.cxx AliTPCPointCorrection.cxx AliTPCTransformation.cxx
+	AliTPCkalmanFit.cxx
 )
 
 # fill list of header files from list of source files
