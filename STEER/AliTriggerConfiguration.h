@@ -102,7 +102,7 @@ public:
       static AliTriggerConfiguration* LoadConfiguration(TString & des);
       static AliTriggerConfiguration* LoadConfigurationFromString(const char* configuration);
 
-      enum {kNMaxInputs = 50}; // CTP handles up to 50 trigger detector inputs
+      enum {kNMaxInputs = 60}; // CTP handles up to 60 trigger detector inputs
       enum {kNMaxInteractions = 2}; // CTP handles up to two different interactions
       enum {kNMaxFunctions = 2}; // CTP handles up to two different logical functions
       enum {kNMaxClasses = 50}; // Maximum number of trigger classes = 50
