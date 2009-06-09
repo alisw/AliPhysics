@@ -34,7 +34,13 @@ AliESDPmdTrack::AliESDPmdTrack () :
   fCluADC(0),
   fCluPID(0),
   fDet(0),
-  fNcell(0)
+  fNcell(0),
+  fSmn(-1),
+  fTrackNo(-1),
+  fTrackPid(-1),
+  fClMatching(0),
+  fSigX(9999),
+  fSigY(9999)
 {
   // Default Constructor
 }
@@ -48,7 +54,13 @@ AliESDPmdTrack::AliESDPmdTrack (const AliESDPmdTrack& PMDTrack) :
   fCluADC(PMDTrack.fCluADC),
   fCluPID(PMDTrack.fCluPID),
   fDet(PMDTrack.fDet),
-  fNcell(PMDTrack.fNcell)
+  fNcell(PMDTrack.fNcell),
+  fSmn(PMDTrack.fSmn),
+  fTrackNo(PMDTrack.fTrackNo),
+  fTrackPid(PMDTrack.fTrackPid),
+  fClMatching(PMDTrack.fClMatching),
+  fSigX(PMDTrack.fSigX),
+  fSigY(PMDTrack.fSigY)
 {
   // Copy Constructor
 }
@@ -66,6 +78,12 @@ AliESDPmdTrack &AliESDPmdTrack::operator=(const AliESDPmdTrack& PMDTrack)
   fCluPID = PMDTrack.fCluPID;
   fDet    = PMDTrack.fDet;
   fNcell  = PMDTrack.fNcell;
+  fSmn    = PMDTrack.fSmn;
+  fTrackNo= PMDTrack.fTrackNo;
+  fTrackPid = PMDTrack.fTrackPid;
+  fClMatching = PMDTrack.fClMatching;
+  fSigX = PMDTrack.fSigX;
+  fSigY = PMDTrack.fSigY;
   return *this;
 }
 
