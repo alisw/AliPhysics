@@ -492,7 +492,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    TString path;
    Int_t nruns = 0;
    TString schunk;
-   TGridCollection *cbase, *cadd;
+   TGridCollection *cbase=0, *cadd=0;
    if (!fRunNumbers.Length() && !fRunRange[0]) return kTRUE;
    // Several runs
    if (fRunNumbers.Length()) {
@@ -1167,7 +1167,7 @@ Bool_t AliAnalysisAlien::MergeOutputs()
       if (!res) continue;
       TFileMerger *fm = 0;
       TIter nextmap(res);
-      TMap *map;
+      TMap *map = 0;
       previous_chunk = "";
       count_chunk = 0;
       // Check if there is a merge operation to resume
