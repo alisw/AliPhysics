@@ -306,14 +306,14 @@ class AliHLTComponent : public AliHLTLogging {
    * The call is redirected to the internal method DoInit which can be
    * overridden by the child class.
    * During Init also the environment structure is passed to the component.
-   * @param environ        environment pointer with environment dependent function
+   * @param comenv         environment pointer with environment dependent function
    *                       calls
    * @param environParam   additional parameter for function calls, the pointer
    *                       is passed as it is
    * @param argc           size of the argument array
    * @param argv           augment array for component initialization
    */
-  virtual int Init( const AliHLTAnalysisEnvironment* environ, void* environParam, int argc, const char** argv );
+  virtual int Init( const AliHLTAnalysisEnvironment* comenv, void* environParam, int argc, const char** argv );
 
   /**
    * Clean-up function to terminate data processing.
@@ -420,6 +420,18 @@ class AliHLTComponent : public AliHLTLogging {
    * @param desc    component description
    */
   int SetComponentDescription(const char* desc);
+
+  /**
+   * Set the running environment for the component.
+   * Originally, the environment was set in the Init function. However, the setup of
+   * the CDB is required before. In order to have proper logging functionality, the
+   * environment is required.
+   * @param comenv         environment pointer with environment dependent function
+   *                       calls
+   * @param environParam   additional parameter for function calls, the pointer
+   *                       is passed as it is
+   */
+  int SetComponentEnvironment(const AliHLTAnalysisEnvironment* comenv, void* environParam);
 
   // Information member functions for registration.
 

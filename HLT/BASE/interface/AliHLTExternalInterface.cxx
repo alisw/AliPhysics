@@ -126,8 +126,9 @@ int AliHLTAnalysisCreateComponent( const char* componentType, void* environParam
   if (!cdbPath) cdbPath = getenv("ALICE_ROOT");
   int ret = gComponentHandler->CreateComponent( componentType, comp);
   if (ret>=0 && comp) {
-    comp->InitCDB(cdbPath, gComponentHandler);
     const AliHLTAnalysisEnvironment* comenv=gComponentHandler->GetEnvironment();
+    comp->SetComponentEnvironment(comenv, environParam);
+    comp->InitCDB(cdbPath, gComponentHandler);
     if (comenv) {
       if (description) {
 	comp->SetComponentDescription(description);

@@ -151,7 +151,7 @@ int AliHLTComponent::UnsetGlobalComponentHandler()
   return SetGlobalComponentHandler(NULL,1);
 }
 
-int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environParam, int argc, const char** argv )
+int AliHLTComponent::SetComponentEnvironment(const AliHLTAnalysisEnvironment* comenv, void* environParam)
 {
   // see header file for function documentation
   HLTLogKeyword(fChainId.c_str());
@@ -161,6 +161,17 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
     memcpy(&fEnvironment, comenv, comenv->fStructSize<sizeof(AliHLTAnalysisEnvironment)?comenv->fStructSize:sizeof(AliHLTAnalysisEnvironment));
     fEnvironment.fStructSize=sizeof(AliHLTAnalysisEnvironment);
     fEnvironment.fParam=environParam;
+  }
+  return iResult;
+}
+
+int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environParam, int argc, const char** argv )
+{
+  // see header file for function documentation
+  HLTLogKeyword(fChainId.c_str());
+  int iResult=0;
+  if (comenv) {
+    SetComponentEnvironment(comenv, environParam);
   }
   fComponentArgs="";
   const char** pArguments=NULL;
@@ -266,11 +277,14 @@ int AliHLTComponent::InitCDB(const char* cdbPath, AliHLTComponentHandler* pHandl
 {
   // see header file for function documentation
   int iResult=0;
+  HLTInfo("Using CDB: %s", cdbPath);
   if (pHandler) {
   // I have to think about separating the library handling from the
-  // component handler. Requiring the component hanlder here is not
+  // component handler. Requiring the component handler here is not
   // the cleanest solution.
-  // We presume the library already to be loaded
+  // We presume the library already to be loaded, which is the case
+  // because it is loaded in the initialization of the logging functionality
+  //
   // find the symbol
   AliHLTMiscInitCDB_t pFunc=(AliHLTMiscInitCDB_t)pHandler->FindSymbol(ALIHLTMISC_LIBRARY, ALIHLTMISC_INIT_CDB);
   if (pFunc) {
