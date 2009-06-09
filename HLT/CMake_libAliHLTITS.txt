@@ -8,11 +8,22 @@ ITS/AliHLTITSclusterer.cxx
 ITS/AliHLTITSAgent.cxx
 ITS/AliHLTITSClusterFinderSPDComponent.cxx
 ITS/AliHLTITSClusterFinderSSDComponent.cxx
+ITS/AliHLTITSClusterHistoComponent.cxx
 ITS/AliHLTITSCompressRawDataSDDComponent.cxx
+ITS/tracking/AliITStrackerHLT.cxx
+ITS/tracking/AliHLTITSDetector.cxx
+ITS/tracking/AliHLTITSLayer.cxx
+ITS/tracking/AliHLTITSTrack.cxx
+ITS/tracking/AliHLTVertexer.cxx
 )
 
 # fill list of header files from list of source files
 # by exchanging the file extension
 String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
+set(HDRS ${HDRS}
+  ITS/AliHLTITSSpacePointData.h
+  ITS/AliHLTITSClusterDataFormat.h
+
+)
 AddLibrary(AliHLTITS "${SRCS}" "${HDRS}")
