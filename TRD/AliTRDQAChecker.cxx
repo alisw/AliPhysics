@@ -53,7 +53,7 @@ Double_t * AliTRDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
 
   //Int_t count[AliRecoParam::kNSpecies] = { 0 }; 
 
-  if (index != AliQAv1::kRECPOINTS) return test;
+  if (index != AliQAv1::kREC) return test;
 
   const Double_t lowAmp = 30;
   const Double_t highAmp = 50;
