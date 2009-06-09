@@ -25,7 +25,7 @@ public:
                virtual   ~AliTriggerDetector();
 	       AliTriggerDetector(const AliTriggerDetector & de );
 
-                  void    AssignInputs(const TObjArray& inputs);
+          virtual void    AssignInputs(const TObjArray& inputs);
           virtual void    CreateInputs();
           virtual void    Trigger();
   //  Setters

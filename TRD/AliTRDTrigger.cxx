@@ -55,16 +55,21 @@ AliTRDTrigger::~AliTRDTrigger()
   fInputs.Clear(); // inputs are deleted either by CTP or submodule
 }
 
-void AliTRDTrigger::CreateInputs()
+void AliTRDTrigger::AssignInputs(const TObjArray& inputs)
 {
   // Create inputs for all registered trigger modules.
   if( fInputs.GetEntriesFast() > 0 ) return;
 
   TIter trigger(&fTriggers);
   while (AliTriggerDetector *trgDet = (AliTriggerDetector*) trigger()) {
-    trgDet->CreateInputs();
+    trgDet->AssignInputs(inputs);
     fInputs.AddAll(trgDet->GetInputs());
   }
+}
+
+void AliTRDTrigger::CreateInputs()
+{
+
 }
 
 void AliTRDTrigger::Trigger()
