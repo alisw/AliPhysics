@@ -221,6 +221,17 @@ sim_hlt_tpc(const char* options="CA")
   sim.SetMakeDigitsFromHits("");
   sim.SetMakeTrigger("");
   sim.SetRunQA(":");
+
+  // the normal simulation sets the specific storage for the GRP entry
+  if (!gSystem->AccessPathName("GRP/GRP/Data")) {
+    cerr << "*********************************************************" << endl;
+    cerr << "error: no GRP entry found in the currect directory, simulation might be incomplete. Skip setting specific storage for GRP entry" << endl;
+    cerr << "*********************************************************" << endl << endl;
+  } else {
+    sim.SetSpecificStorage("GRP/GRP/Data",
+			   Form("local://%s",gSystem->pwd()));
+  }
+
   TString rawDataSelection="HLT";
   if (bRawData) rawDataSelection="ALL";
   if (bRawHLTData || bRawData) sim.SetWriteRawData(rawDataSelection, "raw.root", kTRUE);
