@@ -106,52 +106,53 @@ Int_t AliHFEpidTOF::IsSelected(AliVParticle *_track)
   //
 
   AliESDtrack *track = dynamic_cast<AliESDtrack*>(_track);
-  
-  if(!AliESDtrack::kTOFout) return AliPID::kUnknown;
+  Long_t status = 0;
+  status = track->GetStatus(); 
+
+  if(!(status & AliESDtrack::kTOFout)) return AliPID::kUnknown;
   
   (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(0.);
 
-  Double_t ItrackL = track->GetIntegratedLength();
-  Double_t TOFsignal = track->GetTOFsignal();
-  Double_t TOF = TOFsignal;
-
-  if(ItrackL > 0)
+  Double_t tItrackL = track->GetIntegratedLength();
+  Double_t tTOFsignal = track->GetTOFsignal();
+  
+  if(tItrackL > 0)
     (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(1.);
 
-  if(TOFsignal > 0)
+  if(tTOFsignal > 0)
     (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(2.);
   
 
-  if(ItrackL <=0 || TOFsignal <=0) return AliPID::kUnknown;
+  if(tItrackL <=0 || tTOFsignal <=0) return AliPID::kUnknown;
 
   (dynamic_cast<TH1F *>(fQAList->At(kHistTOFpidFlags)))->Fill(3.);
-  (dynamic_cast<TH1F *>(fQAList->At(kHistTOFsignal)))->Fill(TOFsignal/1000.);
-  (dynamic_cast<TH1F *>(fQAList->At(kHistTOFlength)))->Fill(ItrackL);
+  (dynamic_cast<TH1F *>(fQAList->At(kHistTOFsignal)))->Fill(tTOFsignal/1000.);
+  (dynamic_cast<TH1F *>(fQAList->At(kHistTOFlength)))->Fill(tItrackL);
   // get the TOF pid probabilities
-  Double_t ESDpid[5] = {0., 0., 0., 0., 0.};
-  Float_t TOFpid_sum = 0.;
+  Double_t tESDpid[5] = {0., 0., 0., 0., 0.};
+  Float_t tTOFpid_sum = 0.;
   // find the largest PID probability
-  track->GetTOFpid(ESDpid);
-  Double_t MAXpid = 0.;
-  Int_t MAXindex = -1;
+  track->GetTOFpid(tESDpid);
+  Double_t tMAXpid = 0.;
+  Int_t tMAXindex = -1;
   for(Int_t i=0; i<5; ++i){
-    TOFpid_sum += ESDpid[i];
-    if(ESDpid[i] > MAXpid){
-      MAXpid = ESDpid[i];
-      MAXindex = i;
+    tTOFpid_sum += tESDpid[i];
+    if(tESDpid[i] > tMAXpid){
+      tMAXpid = tESDpid[i];
+      tMAXindex = i;
     }
   }
   
-  Double_t P = track->GetOuterParam()->P();
-  Double_t beta = (ItrackL/100.)/(TMath::C()*(TOFsignal/1e12));
+  Double_t p = track->GetOuterParam()->P();
+  Double_t beta = (tItrackL/100.)/(TMath::C()*(tTOFsignal/1e12));
   
-  if(TMath::Abs(TOFpid_sum - 1) > 0.01) return AliPID::kUnknown;
+  if(TMath::Abs(tTOFpid_sum - 1) > 0.01) return AliPID::kUnknown;
   else{
     // should be the same as AliPID flags
     
-    (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpid_0+MAXindex)))->Fill(beta, P);
-    (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpid_beta_v_P)))->Fill(beta, P);
-    return MAXindex;
+    (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpid_0+tMAXindex)))->Fill(beta, p);
+    (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpid_beta_v_P)))->Fill(beta, p);
+    return tMAXindex;
   }
 }
 

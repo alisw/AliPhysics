@@ -53,8 +53,6 @@ AliHFEcuts::AliHFEcuts():
   fMaxChi2clusterTPC(0.),
   fMinClusterRatioTPC(0.),
   fSigmaToVtx(0.),
-  fMaxImpactParamR(0.),
-  fMaxImpactParamZ(0.),
   fHistQA(0x0),
   fCutList(0x0)
 {
@@ -78,8 +76,6 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fMaxChi2clusterTPC(c.fMaxChi2clusterTPC),
   fMinClusterRatioTPC(c.fMinClusterRatioTPC),
   fSigmaToVtx(c.fSigmaToVtx),
-  fMaxImpactParamR(c.fMaxImpactParamR),
-  fMaxImpactParamZ(c.fMaxImpactParamZ),
   fHistQA(0x0),
   fCutList(0x0)
 {
@@ -270,10 +266,10 @@ void AliHFEcuts::SetHFElectronCuts(){
   if(IsRequireITSpixel()){
     hfecuts->SetRequireITSpixel(AliHFEextraCuts::ITSPixel_t(fCutITSPixel));
   }
-  if(IsRequireMaxImpactParam()){
-    hfecuts->SetMaxImpactParamR(fMaxImpactParamR);
-    hfecuts->SetMaxImpactParamZ(fMaxImpactParamZ);
-  }
+/*  if(IsRequireDCAToVertex()){
+    hfecuts->SetMaxImpactParamR(fDCAtoVtx[0]);
+    hfecuts->SetMaxImpactParamZ(fDCAtoVtx[1]);
+  }*/
   if(fMinTrackletsTRD) hfecuts->SetMinTrackletsTRD(fMinTrackletsTRD);
   if(fMinClusterRatioTPC > 0.) hfecuts->SetClusterRatioTPC(fMinClusterRatioTPC);
   if(IsInDebugMode()) hfecuts->SetQAOn(fHistQA);

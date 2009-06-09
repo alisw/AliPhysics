@@ -33,24 +33,24 @@ class TList;
 class AliHFEcuts : public TObject{
   enum{
     kDebugMode = BIT(14)
-      };
+  };
   typedef enum{
     kPrimary = 0,
-      kProductionVertex = 1,
-      kSigmaToVertex = 2,
-      kDCAToVertex = 3,
-      kITSPixel = 4,
-      kMaxImpactParam = 5
-      } Require_t;
+    kProductionVertex = 1,
+    kSigmaToVertex = 2,
+    kDCAToVertex = 3,
+    kITSPixel = 4,
+    kMaxImpactParam = 5
+  } Require_t;
  public:
 
   typedef enum{
     kStepMCGenerated = 0,
-      kStepMCInAcceptance = 1,
-      kStepRecKine = 2,
-      kStepRecPrim = 3,
-      kStepHFEcuts = 4
-      } CutStep_t;
+    kStepMCInAcceptance = 1,
+    kStepRecKine = 2,
+    kStepRecPrim = 3,
+    kStepHFEcuts = 4
+  } CutStep_t;
 
   static const Int_t kNcutSteps;
 
@@ -95,8 +95,7 @@ class AliHFEcuts : public TObject{
   void SetRequireDCAToVertex() { SETBIT(fRequirements, kDCAToVertex); };
   void SetRequireIsPrimary() { SETBIT(fRequirements, kPrimary); };
   void SetRequireITSPixel() { SETBIT(fRequirements, kITSPixel); }
-  void SetRequireMaxImpactParam() { SETBIT(fRequirements, kMaxImpactParam); };
-  void SetRequireProdVetrex() { SETBIT(fRequirements, kProductionVertex); };
+  void SetRequireProdVertex() { SETBIT(fRequirements, kProductionVertex); };
   void SetRequireSigmaToVertex() { SETBIT(fRequirements, kSigmaToVertex); };
     
  private:
@@ -116,8 +115,6 @@ class AliHFEcuts : public TObject{
   Double_t fMaxChi2clusterTPC;	// Max Chi2 per TPC cluster
   Double_t fMinClusterRatioTPC;	// Min. Ratio findable / found TPC clusters
   Double_t fSigmaToVtx;	// Sigma To Vertex
-  Double_t fMaxImpactParamR;	// Max. Impact Parameter in Radial Direction
-  Double_t fMaxImpactParamZ;	// Max. Impact Parameter in Z Direction
     
   TList *fHistQA;		//! QA Histograms
   TObjArray *fCutList;	//! List of cut objects(Correction Framework Manager)
@@ -128,7 +125,7 @@ class AliHFEcuts : public TObject{
     //__________________________________________________________________
     void AliHFEcuts::SetProductionVertex(Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax){
       // Set the production vertex constraint
-      SetRequireProdVetrex();
+      SetRequireProdVertex();
       fProdVtx[0] = xmin;
       fProdVtx[1] = xmax;
       fProdVtx[2] = ymin;
@@ -143,9 +140,9 @@ void AliHFEcuts::SetSigmaToVertex(Double_t sig){
 
 //__________________________________________________________________
 void AliHFEcuts::SetMaxImpactParam(Double_t radial, Double_t z){
-  SetRequireMaxImpactParam();
-  fMaxImpactParamR = radial;
-  fMaxImpactParamZ = z;
+  SetRequireDCAToVertex();
+  fDCAtoVtx[0] = radial;
+  fDCAtoVtx[1] = z;
 }
 
 //__________________________________________________________________
@@ -159,7 +156,7 @@ void AliHFEcuts::CreateStandardCuts(){
   //
   // Standard Cuts defined by the HFE Group
   //
-  SetRequireProdVetrex();
+  SetRequireProdVertex();
   fProdVtx[0] = -1;
   fProdVtx[1] = 1;
   fProdVtx[2] = -1;
@@ -174,9 +171,5 @@ void AliHFEcuts::CreateStandardCuts(){
   fMinClusterRatioTPC = 0.6;
   fPtRange[0] = 0.1;
   fPtRange[1] = 20.;
-  fSigmaToVtx = 4.;
-  SetRequireMaxImpactParam();
-  fMaxImpactParamR = 3.;
-  fMaxImpactParamZ = 12.;
 }
 #endif
