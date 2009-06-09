@@ -53,7 +53,7 @@ struct InitialParamsHydjet_t {
    Double_t fEpsilon;     //coordinate asymmetry parameter
   
    Int_t fDecay;    // flag to switch on/off hadron decays<0: decays off,>=0: decays on, (default: 0)
-   Int_t fWeakDecay;    //flag to switch on/off weak hadron decays <0: decays off, >0: decays on, (default: 0)
+   Double_t fWeakDecay;    //flag to switch on/off weak hadron decays <0: decays off, >0: decays on, (default: 0)
    Int_t fPythDecay;    //Flag to choose how to decay resonances in high-pt part, fPythDecay: 0 by PYTHIA decayer, 
                                      //1 by FASTMC decayer(mstj(21)=0)  
   
@@ -103,6 +103,7 @@ struct InitialParamsHydjet_t {
 
 
 };
+
 
 class InitialStateHydjet : public InitialState {
  public:

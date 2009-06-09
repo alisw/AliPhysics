@@ -75,11 +75,10 @@ using std::cout;
 using std::endl;
 
 void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocator) {
+  // Generate initial particles from the soft and hard components
  
   //----- high-pt part------------------------------
- 
   TLorentzVector partJMom, partJPos, zeroVec;
-
   HYJPAR.ishad  = fParams.fIshad;
   PYQPAR.T0     = fParams.fT0;
   PYQPAR.tau0   = fParams.fTau0;
@@ -87,32 +86,29 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
   PYQPAR.ienglu = fParams.fIenglu;
   PYQPAR.ianglu = fParams.fIanglu;
 
-  //std::cout<<"in InitialStateHydjet::Initialize nhsel"<<fParams.fNhsel<<std::endl;
+  //  cout<<"in InitialStateHydjet::Initialize nhsel"<<fParams.fNhsel<<endl;
 
+  // run a HYDJET event
+  hyevnt_(); 
+  //  std::cout<<"in InitialStateHydjet after hyevnt"<<std::endl;
+   
+  //get number of particles in jets
+  Int_t numbJetPart = HYPART.njp;  //
+  Double_t  Bgen = HYFPAR.bgen;
+  Int_t  Njet = HYJPAR.njet;
+  Int_t  Nbcol = HYFPAR.nbcol;
+  
+  //  std::cout<<"in InitialStateHydjet::Initialize bgen "<<Bgen<<" njet "<<Njet<<" "<<" Nbcol "<<Nbcol<<std::endl;
+  //  std::cout<<"in InitialStateHydjet::Initialize numb jet part"<<numbJetPart<<std::endl;
 
   if(fParams.fNhsel != 0) {   
-    //generate non-equilibrated part event
-
-    //std::cout<<"in InitialStateHydjet before hyevnt"<<std::endl;
-
-    hyevnt_();
-    
-    //std::cout<<"in InitialStateHydjet after hyevnt"<<std::endl;
-    
-    
-    //get number of particles in jets
     Int_t numbJetPart = HYPART.njp;
-//     Double_t  Bgen = HYFPAR.bgen;
-//     Int_t  Njet = HYJPAR.njet;
-//     Int_t  Nbcol = HYFPAR.nbcol;
-
- // std::cout<<"in InitialStateHydjet::Initialize bgen "<<Bgen<<" njet "<<Njet<<" "<<" Nbcol "<<Nbcol<<std::endl;
- // std::cout<<"in InitialStateHydjet::Initialize numb jet part"<<numbJetPart<<std::endl;
-
-
     for(Int_t i = 0; i <numbJetPart; ++i) {
       Int_t pdg = int(HYPART.ppart[i][1]);
-      if(pdg==310) pdg=311; //Kos Kol 130 we have no in the table, we do not put its in the list, the same for e,mu  
+      //      if(pdg==310) pdg=311; //Kos Kol 130 we have no in the table, we do not put its in the list, the same for e,mu  
+      //      if(pdg==130 || pdg==-130) continue;
+      //      if(pdg==311 || pdg==-311 || pdg=130 || pdg==-130 || pdg==310 || pdg==-310)
+      //	cout << "pdg = " << pdg << endl;
       Double_t px = HYPART.ppart[i][2];
       Double_t py = HYPART.ppart[i][3];
       Double_t pz = HYPART.ppart[i][4];
@@ -123,19 +119,27 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
       Double_t vt = HYPART.ppart[i][9];    
       partJMom.SetXYZT(px, py, pz, e); 
       partJPos.SetXYZT(vx, vy, vz, vt);
-      //  std::cout<<" --InitialStateHydjet  pdg "<<pdg<<" px "<<px<<" py "<<py<<" pz "<<pz<<" e"<<e<<std::endl;
-      //  std::cout<<" vx in fm "<<vx<<" vy "<<vy<<" vz "<<vz<<"vt"<<vt<<std::endl;
+      //std::cout<<" --InitialStateHydjet  pdg "<<pdg<<" px "<<px<<" py "<<py<<" pz "<<pz<<" e"<<e<<std::endl;
+      //        std::cout<<" vx in fm "<<vx<<" vy "<<vy<<" vz "<<vz<<"vt"<<vt<<std::endl;
       ParticlePDG *partDef = fDatabase->GetPDGParticle(pdg);
+      //      cout<<"after ParticlePDG"<<pdg<<" partDef"<<partDef<<endl;
+      
       Int_t type =1;                //from jet
-      if(partDef)allocator.AddParticle(Particle(partDef, partJPos, partJMom, 0, 0,type,-1, zeroVec, zeroVec), source); 
+      if(partDef)
+	allocator.AddParticle(Particle(partDef, partJPos, partJMom, 0, 0,type,-1, zeroVec, zeroVec), source);
+      //      else 
+      //	cout << "particle not added in output (no definition in DatabasePDG)" << endl;
     }
-  }  //nhsel !=0 not only hydro!             
+  }       //nhsel !=0 not only hydro!             
 
-  //std::cout<<"in InitialStateHydjet::Initialize 2"<<std::endl;
+  //  std::cout<<"in InitialStateHydjet::Initialize 2"<<std::endl;
 
          
   //----------HYDRO part------------------------------------------------
   if(fParams.fNhsel < 3) {
+   
+    //    cout<<"in HYDRO part 0"<<endl;
+  
     const Double_t  weightMax = 2*TMath::CosH(fParams.fUmax);
     const Int_t nBins = 100;
     Double_t probList[nBins];
@@ -149,32 +153,36 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
     //-------------------------------------
     // get impact parameter    
     //    Double_t impactParameter = HYFPAR.bgen;
+
+
+    //    cout<<"in HYDRO part 1"<<endl;
     
     //effective volume for central     
     double dYl= 2 * fParams.fYlmax; //uniform distr. [-Ylmax; Ylmax]  
     if(fParams.fEtaType >0) dYl = TMath::Sqrt(2 * TMath::Pi()) * fParams.fYlmax ;  //Gaussian distr. 
-    Double_t VolEffcent = 2 * TMath::Pi() * fParams.fTau * dYl * (fParams.fR * fParams.fR)/TMath::Power((fParams.fUmax),2)*((fParams.fUmax)*TMath::SinH((fParams.fUmax))-TMath::CosH((fParams.fUmax))+ 1);
+    Double_t volEffcent = 2 * TMath::Pi() * fParams.fTau * dYl * (fParams.fR * fParams.fR)/TMath::Power((fParams.fUmax),2)*((fParams.fUmax)*TMath::SinH((fParams.fUmax))-TMath::CosH((fParams.fUmax))+ 1);
+  
+    //    cout<<"in HYDRO part 2"<<HYFPAR.npart<<" " <<HYFPAR.npart0<<endl;
  
     //effective volume for non-central Simpson2 
-    Double_t VolEffnoncent = fParams.fTau * dYl * SimpsonIntegrator2(0., 2.*TMath::Pi());
+    Double_t volEffnoncent = fParams.fTau * dYl * SimpsonIntegrator2(0., 2.*TMath::Pi());
+    fVolEff = volEffcent * HYFPAR.npart/HYFPAR.npart0;
 
-    fVolEff = VolEffcent * HYFPAR.npart/HYFPAR.npart0;
+    Double_t coeffRB = TMath::Sqrt(volEffcent * HYFPAR.npart/HYFPAR.npart0/volEffnoncent);
+    Double_t coeffR1 = HYFPAR.npart/HYFPAR.npart0;
+    coeffR1 = TMath::Power(coeffR1, 0.333333);
 
-    Double_t coeff_RB = TMath::Sqrt(VolEffcent * HYFPAR.npart/HYFPAR.npart0/VolEffnoncent);
-    Double_t coeff_R1 = HYFPAR.npart/HYFPAR.npart0;
-    coeff_R1 = TMath::Power(coeff_R1, 0.333333);
+    //    std::cout<<"HYFPAR.npart"<<HYFPAR.npart<<std::endl;
 
-   //std::cout<<"HYFPAR.npart"<<HYFPAR.npart<<std::endl;
+    double veff=fVolEff;
 
-    double Veff=fVolEff;
-
-   std::cout<<"Veff "<<Veff<<std::endl;
+    //    std::cout<<"veff "<<veff<<std::endl;
    
     //------------------------------------
     //cycle on particles types
     for(Int_t i = 0; i < fParams.fNPartTypes; ++i) {
-      double Mparam = fParams.fPartMult[2 * i] * Veff;
-      Int_t multiplicity = gRandom->Poisson(Mparam);
+      Double_t mparam = fParams.fPartMult[2 * i] * veff;
+      Int_t multiplicity = gRandom->Poisson(mparam);
       const Int_t encoding = fParams.fPartEnc[i];
 
       if(multiplicity > 0) {
@@ -185,7 +193,7 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
 	}
 	//no charm now !
 	if(partDef->GetCharmQNumber()!=0 || partDef->GetCharmAQNumber()!=0){
-	  cout<<"charmed particle, don't use now ! "<<encoding<<endl;
+	  //	  cout<<"charmed particle, don't use now ! "<<encoding<<endl;
 	  continue;
 	}
 
@@ -200,13 +208,13 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
 	//prepare histogram to sample hadron energy: 
 	Double_t h = (eMax - mass) / nBins;
 	Double_t x = mass + 0.5 * h;
-	Int_t i;        
-	for(i = 0; i < nBins; ++i) {
-	  if(x>=mu && fParams.fThFO>0)probList[i] = x * TMath::Sqrt(x * x - mass * mass) / 
+        Int_t ii; 
+	for(ii = 0; ii < nBins; ++ii) {
+	  if(x>=mu && fParams.fThFO>0)probList[ii] = x * TMath::Sqrt(x * x - mass * mass) / 
 					(TMath::Exp((x - mu) / (fParams.fThFO)) + d);
-	  if(x>=mu && fParams.fThFO<=0)probList[i] = x * TMath::Sqrt(x * x - mass * mass) / 
+	  if(x>=mu && fParams.fThFO<=0)probList[ii] = x * TMath::Sqrt(x * x - mass * mass) / 
 					 (TMath::Exp((x - mu) / (fParams.fT)) + d);								 
-	  if(x<mu)probList[i] = 0.; 
+	  if(x<mu)probList[ii] = 0.; 
 	  x += h;
 	}
 	arrayFunctDistE.PrepareTable(probList);
@@ -215,8 +223,8 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
 	h = (fParams.fR) / nBins;
 	x =  0.5 * h;
 	Double_t param = (fParams.fUmax) / (fParams.fR);
-	for(i = 0; i < nBins; ++i) {
-	  probList[i] = x * TMath::CosH(param*x);
+	for(ii = 0; ii < nBins; ++ii) {
+	  probList[ii] = x * TMath::CosH(param*x);
 	  x += h;
 	}
 	arrayFunctDistR.PrepareTable(probList);
@@ -224,7 +232,7 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
 	//loop over hadrons, assign hadron coordinates and momenta
 	Double_t weight = 0., yy = 0., px0 = 0., py0 = 0., pz0 = 0.;
 	Double_t e = 0., x0 = 0., y0 = 0., z0 = 0., t0 = 0., etaF = 0.; 
-	Double_t r, RB, phiF;
+	Double_t r, rB, phiF;
       
 	for(Int_t j = 0; j < multiplicity; ++j) {               
 	  do {
@@ -234,17 +242,17 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
 	    if(TMath::Abs(etaF)>5.)continue;
 	    
 	    //old
-	    //	  double RBold = fParams.fR * TMath::Sqrt(1-fParams.fEpsilon);
+	    //	  double rBold = fParams.fR * TMath::Sqrt(1-fParams.fEpsilon);
 	    
-	    RB = fParams.fR * coeff_RB * coeff_R1;
+	    rB = fParams.fR * coeffRB * coeffR1;
 	        
 	    Double_t rho = TMath::Sqrt(gRandom->Rndm());
 	    Double_t phi = TMath::TwoPi() * gRandom->Rndm();
-	    Double_t Rx =  TMath::Sqrt(1-fParams.fEpsilon)*RB; 
-	    Double_t Ry =  TMath::Sqrt(1+fParams.fEpsilon)*RB;
+	    Double_t rx =  TMath::Sqrt(1-fParams.fEpsilon)*rB; 
+	    Double_t ry =  TMath::Sqrt(1+fParams.fEpsilon)*rB;
 	    
-	    x0 = Rx * rho * TMath::Cos(phi);
-	    y0 = Ry * rho * TMath::Sin(phi);
+	    x0 = rx * rho * TMath::Cos(phi);
+	    y0 = ry * rho * TMath::Sin(phi);
 	    r = TMath::Sqrt(x0*x0+y0*y0);
 	    phiF = TMath::Abs(TMath::ATan(y0/x0));
 	    
@@ -253,14 +261,14 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
 	    if(x0>0&&y0<0)phiF = 2.*TMath::Pi()-phiF;
 	    
 	    //proper time with emission duration                                                               
-	    Double_t tau = coeff_R1 * fParams.fTau +  sqrt(2.) * fParams.fSigmaTau * coeff_R1 * (gRandom->Gaus()); 	  
+	    Double_t tau = coeffR1 * fParams.fTau +  sqrt(2.) * fParams.fSigmaTau * coeffR1 * (gRandom->Gaus()); 	  
 	    z0 = tau  * TMath::SinH(etaF);                                                                             
 	    t0 = tau  * TMath::CosH(etaF);
 	  
-	    Double_t rhou = fParams.fUmax * r / RB;
+	    Double_t rhou = fParams.fUmax * r / rB;
 
-	    //double_t rold= r/coeff_RB;
-	    //Double_t rhou_old = fParams.fUmax * rold / RBold;
+	    //double_t rold= r/coeffRB;
+	    //Double_t rhou_old = fParams.fUmax * rold / rBold;
 	    //std::cout<<"rhou"<<rhou<<"rhou_old"<<rhou_old<<std::endl;
         
 	    Double_t uxf = TMath::SinH(rhou)*TMath::Sqrt(1+fParams.fDelta)*TMath::Cos(phiF); 
@@ -294,6 +302,8 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
 	  partPos.SetXYZT(x0, y0, z0, t0);
 	  partMom.Boost(vec3);
 	  Int_t type =0; //hydro
+
+	  //           cout<<"before AddParticle in HYDRO part"<<endl;
 	  allocator.AddParticle(Particle(partDef, partPos, partMom, 0., 0, type, -1, zeroVec, zeroVec), source);
 	  
         } //nhsel==4 , no hydro part
@@ -301,12 +311,14 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
     } 
   }
   
-    std::cout<<"in InitialStateHydjet::Initialize OUT"<<std::endl;
+  //    std::cout<<"in InitialStateHydjet::Initialize OUT"<<std::endl;
 
 }
 
 Bool_t InitialStateHydjet::ReadParams() {     
-  std::cout<<"\nWelcome to Hydjet++ hadron freezeout generator!\nInput: \n\n"; 
+  // Read parameters from an input file in ascii 
+ 
+  //  std::cout<<"\nWelcome to Hydjet++ hadron freezeout generator!\nInput: \n\n"; 
   Float_t par[200] = {0.};
   Int_t i = 0; 
   std::string s(40,' '); 
@@ -415,6 +427,9 @@ Bool_t InitialStateHydjet::ReadParams() {
 }
 
 Bool_t InitialStateHydjet::MultIni() {
+  // Calculate average multiplicities, chemical potentials (if necessary),
+  // initialize pyquen 
+
   //check and redefine input parameters
   if(fParams.fTMuType>0 &&  fParams.fSqrtS > 2.24) {
     if(fParams.fSqrtS < 2.24){
@@ -436,7 +451,7 @@ Bool_t InitialStateHydjet::MultIni() {
     //compute strangeness potential
     if(fParams.fMuB > 0.01)
       fParams.fMuS = psp->CalculateStrangePotential();
-    cout << "fMuS = " << fParams.fMuS << endl;  
+    //    cout << "fMuS = " << fParams.fMuS << endl;  
     
     //if user choose fYlmax larger then allowed by kinematics at the specified beam energy sqrt(s)     
     if(fParams.fYlmax > TMath::Log(fParams.fSqrtS/0.94)){
@@ -448,8 +463,8 @@ Bool_t InitialStateHydjet::MultIni() {
     if(fParams.fCorrS <= 0.) {
       //see F. Becattini, J. Mannien, M. Gazdzicki, Phys Rev. C73 044905 (2006)
       fParams.fCorrS = 1. - 0.386* TMath::Exp(-1.23*fParams.fT/fParams.fMuB);
-      std::cout<<"The phenomenological f-la F. Becattini et al. PRC73 044905 (2006) for CorrS was used." << std::endl;
-      std::cout<<"Strangeness suppression parameter = "<<fParams.fCorrS << std::endl;
+      //      std::cout<<"The phenomenological f-la F. Becattini et al. PRC73 044905 (2006) for CorrS was used." << std::endl;
+      //      std::cout<<"Strangeness suppression parameter = "<<fParams.fCorrS << std::endl;
       
     }
     std::cout<<"The phenomenological f-la J. Cleymans et al. PRC73 034905 (2006) for Tch mu_B was used." << std::endl;
@@ -464,8 +479,8 @@ Bool_t InitialStateHydjet::MultIni() {
   }
   
   
-  std::cout<<"Used eta_max = "<<fParams.fYlmax<<  std::endl;
-  std::cout<<"maximal allowed eta_max TMath::Log(fParams.fSqrtS/0.94)=  "<<TMath::Log(fParams.fSqrtS/0.94)<<std::endl;
+  //  std::cout<<"Used eta_max = "<<fParams.fYlmax<<  std::endl;
+  //  std::cout<<"maximal allowed eta_max TMath::Log(fParams.fSqrtS/0.94)=  "<<TMath::Log(fParams.fSqrtS/0.94)<<std::endl;
   
   
   
@@ -489,7 +504,7 @@ Bool_t InitialStateHydjet::MultIni() {
   PYQPAR.ianglu = fParams.fIanglu;
   
   
-  myini_();
+  myini_();  //
   
   
   // calculation of  multiplicities of different particle species
@@ -508,16 +523,18 @@ Bool_t InitialStateHydjet::MultIni() {
   if (fParams.fEtaType >0) dYl = TMath::Sqrt(2 * TMath::Pi()) * fParams.fYlmax ;  //Gaussian distr.                                                                            
   fVolEff = 2 * TMath::Pi() * fParams.fTau * dYl * (fParams.fR * fParams.fR)/TMath::Power((fParams.fUmax),2) * 
     ((fParams.fUmax)*TMath::SinH((fParams.fUmax))-TMath::CosH((fParams.fUmax))+ 1);
-  std::cout <<"central Effective volume = " << fVolEff << " [fm^3]" << std::endl;
+  //  std::cout << "pion pointer = " << fDatabase->GetPDGParticle(211) << std::endl;
+  //  std::cout << "pion mass = " << (fDatabase->GetPDGParticle(211))->GetMass() << std::endl;
+  //  std::cout <<"central Effective volume = " << fVolEff << " [fm^3]" << std::endl;
   
   Double_t particleDensity_pi_ch=0;
   Double_t particleDensity_pi_th=0;
   //  Double_t particleDensity_th_0=0;
   
   if(fParams.fThFO != fParams.fT && fParams.fThFO > 0){
-    GrandCanonical gc_ch(15, fParams.fT, fParams.fMuB, fParams.fMuS, fParams.fMuI3);
-    GrandCanonical gc_pi_th(15, fParams.fThFO, 0., 0., fParams.fMu_th_pip);
-    GrandCanonical gc_th_0(15, fParams.fThFO, 0., 0., 0.);
+    //GrandCanonical gc_ch(15, fParams.fT, fParams.fMuB, fParams.fMuS, fParams.fMuI3);
+    //GrandCanonical gc_pi_th(15, fParams.fThFO, 0., 0., fParams.fMu_th_pip);
+    //GrandCanonical gc_th_0(15, fParams.fThFO, 0., 0., 0.);
     particleDensity_pi_ch = gc_ch.ParticleNumberDensity(fDatabase->GetPDGParticle(211));
     particleDensity_pi_th = gc_pi_th.ParticleNumberDensity(fDatabase->GetPDGParticle(211));
   }
@@ -527,11 +544,13 @@ Bool_t InitialStateHydjet::MultIni() {
     Int_t encoding = currParticle->GetPDG();
     //strangeness supression
     Double_t gammaS = 1;
-    Int_t S = Int_t(currParticle->GetStrangeness());
-    if(encoding == 333)S = 2;
-    if(fParams.fCorrS < 1. && S != 0)gammaS = TMath::Power(fParams.fCorrS,-TMath::Abs(S));
+    Int_t s = Int_t(currParticle->GetStrangeness());
+    if(encoding == 333) 
+      s = 2;
+    if(fParams.fCorrS < 1. && s != 0)
+      gammaS = TMath::Power(fParams.fCorrS,-TMath::Abs(s));
     //average densities      
-    Double_t particleDensity = gammaS*gc.ParticleNumberDensity(currParticle);
+    Double_t particleDensity = gc.ParticleNumberDensity(currParticle)/gammaS;
     
     //compute chemical potential for single f.o. mu==mu_ch
     Double_t mu = fParams.fMuB  * Int_t(currParticle->GetBaryonNumber()) + 
@@ -552,7 +571,14 @@ Bool_t InitialStateHydjet::MultIni() {
       particleDensity = numb_dens_bolt;         
     }
     
-     if(abs(encoding)==22)particleDensity=0;
+    // set particle number density to zero for some species
+    // photons
+    if(abs(encoding)==22)
+      particleDensity=0;
+    // K0L and K0S
+    if(abs(encoding)==130 || abs(encoding)==310) {
+      particleDensity=0;
+    }    
     
     if(particleDensity > 0.) {
       //      outMult<<encoding<< "         " <<particleDensity<< "      "<<mu<<std::endl;
@@ -568,18 +594,19 @@ Bool_t InitialStateHydjet::MultIni() {
 }
 
 Double_t InitialStateHydjet::SimpsonIntegrator2(Double_t a, Double_t b) {
+  // Simpson integration
   Int_t nsubIntervals=10000;
   Double_t h = (b - a)/nsubIntervals; //0-pi, phi
   Double_t s=0;
-  //  Double_t h2 = (fParams.fR)/nsubIntervals; //0-R maximal RB ?
+  //  Double_t h2 = (fParams.fR)/nsubIntervals; //0-R maximal rB ?
 
   Double_t x = 0; //phi
   for(Int_t j = 1; j < nsubIntervals; j++) {
     x += h; // phi
     Double_t e = fParams.fEpsilon;
     Double_t RsB = fParams.fR; //test: podstavit' *coefff_RB
-    Double_t RB = RsB *(TMath::Sqrt(1-e*e)/TMath::Sqrt(1+e*TMath::Cos(2*x))); //f-la7 RB    
-    Double_t sr = SimpsonIntegrator(0,RB,x);
+    Double_t rB = RsB *(TMath::Sqrt(1-e*e)/TMath::Sqrt(1+e*TMath::Cos(2*x))); //f-la7 rB    
+    Double_t sr = SimpsonIntegrator(0,rB,x);
     s += sr;
   }
   return s*h;
@@ -587,6 +614,7 @@ Double_t InitialStateHydjet::SimpsonIntegrator2(Double_t a, Double_t b) {
 }
 
 Double_t InitialStateHydjet::SimpsonIntegrator(Double_t a, Double_t b, Double_t phi) {
+  // Simpson integration
   Int_t nsubIntervals=100;
   Double_t h = (b - a)/nsubIntervals;
   Double_t s = f2(phi,a + 0.5*h);
@@ -606,6 +634,7 @@ Double_t InitialStateHydjet::SimpsonIntegrator(Double_t a, Double_t b, Double_t 
 
 //f2=f(phi,r)
 Double_t InitialStateHydjet::f2(Double_t x, Double_t y) {
+  // formula
   Double_t RsB = fParams.fR; //test: podstavit' *coefff_RB
   Double_t rhou =  fParams.fUmax * y / RsB;
   Double_t ff = y*TMath::CosH(rhou)*
@@ -616,10 +645,11 @@ Double_t InitialStateHydjet::f2(Double_t x, Double_t y) {
 
 
 Double_t InitialStateHydjet::MidpointIntegrator2(Double_t a, Double_t b) {
+  // Perform integration through the mid-point method
   Int_t nsubIntervals=2000; 
   Int_t nsubIntervals2=1; 
   Double_t h = (b - a)/nsubIntervals; //0-pi , phi
-  Double_t h2 = (fParams.fR)/nsubIntervals; //0-R maximal RB ?
+  Double_t h2 = (fParams.fR)/nsubIntervals; //0-R maximal rB ?
 
   Double_t x = a + 0.5*h;
   Double_t y = 0;
@@ -632,9 +662,9 @@ Double_t InitialStateHydjet::MidpointIntegrator2(Double_t a, Double_t b) {
     x += h; // integr  phi
 
     Double_t RsB = fParams.fR; //test: podstavit' *coefff_RB
-    Double_t  RB = RsB *(TMath::Sqrt(1-e*e)/TMath::Sqrt(1+e*TMath::Cos(2*x))); //f-la7 RB
+    Double_t  rB = RsB *(TMath::Sqrt(1-e*e)/TMath::Sqrt(1+e*TMath::Cos(2*x))); //f-la7 rB
 
-    nsubIntervals2 = Int_t(RB / h2)+1;
+    nsubIntervals2 = Int_t(rB / h2)+1;
     // integr R 
     y=0;
     for(Int_t i = 1; i < nsubIntervals2; i++) 

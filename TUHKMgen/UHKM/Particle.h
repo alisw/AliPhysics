@@ -23,7 +23,13 @@
 
 class Particle {
  public:
+
   Particle(const TLorentzVector &, const TLorentzVector &);
+ 
+  Particle(const Particle& copy);
+  Particle& operator=(const Particle&);
+
+  virtual ~Particle() {};
   Particle(ParticlePDG *pdg = 0);
   Particle(ParticlePDG *pdg, const TLorentzVector &pos, const TLorentzVector &mom,
 	   Double_t lastInterTime = 0., Int_t lastInterNum = 0, Int_t type=0);
@@ -80,11 +86,11 @@ class Particle {
   // aic(2008/08/08): functions added in order to enable tracking of mother/daughter particles by a unique index
   // The index coincides with the position of the particle in the secondaries list.
   Int_t SetIndex() {fIndex = ++fLastIndex; return fIndex;}
-  Int_t GetIndex() {return fIndex;}
+  Int_t GetIndex() const {return fIndex;}
   static Int_t GetLastIndex() {return fLastIndex;}
   void InitIndexing() {fLastIndex = -1;}
   void SetMother(Int_t value) {fMotherIndex = value;}
-  Int_t GetMother() {return fMotherIndex;}
+  Int_t GetMother() const {return fMotherIndex;}
   void SetDaughter(Int_t value) {
     if(fNDaughters==3) {
       std::cout << "Warning in Particle::SetDaughter() Already 3 daughters are set!! Check it out!!" << std::endl;
@@ -92,8 +98,8 @@ class Particle {
     }
     fDaughterIndex[fNDaughters++] = value;
   }
-  Int_t GetNDaughters() {return fNDaughters;}
-  Int_t GetDaughter(Int_t value) {
+  Int_t GetNDaughters() const {return fNDaughters;}
+  Int_t GetDaughter(Int_t value) const {
     if(value<0 || value>fNDaughters-1) {
       std::cout << "Warning in Particle::GetDaughter(Int_t) This particle has " << fNDaughters 
 		<< " daughters. The argument must range from 0 to " << fNDaughters-1 << std::endl;

@@ -28,9 +28,9 @@ using std::ios;
 DatabasePDG::DatabasePDG():
   fNParticles(0),
   fUseCharmParticles(kTRUE),
-  fMinimumWidth(0.),
+  fMinimumWidth(0.0),
   fMaximumWidth(10.),
-  fMinimumMass(0.),
+  fMinimumMass(0.0001),
   fMaximumMass(10.)
 {
   
@@ -607,7 +607,7 @@ Bool_t DatabasePDG::IsChannelAllowed(DecayChannel *channel, Double_t motherMass)
   Double_t daughtersSumMass = 0.0;
   for(Int_t i=0; i<channel->GetNDaughters(); i++)
     daughtersSumMass += GetPDGParticle(channel->GetDaughterPDG(i))->GetMass();
-  if(daughtersSumMass<motherMass)
+  if(daughtersSumMass<=motherMass)
     return kTRUE;
   return kFALSE;
 }

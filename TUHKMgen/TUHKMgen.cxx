@@ -15,7 +15,7 @@
 //                                                                         //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef TUHKMgen_H
+#ifndef TUHKMGEN_H
 #include "TUHKMgen.h"
 #endif
 #include "TObjArray.h"
@@ -30,6 +30,8 @@
 #include <iostream>
 using namespace std;
 
+//class TObjArray;
+
 ClassImp(TUHKMgen)
 
 TUHKMgen::TUHKMgen() : 
@@ -41,14 +43,16 @@ TUHKMgen::TUHKMgen() :
   fNPprim(0),
   fNPsec(0),
   fHydjetParams(),
-  fStableFlagged(0),
-  fUseCharmParticles(kFALSE),
-  fMinWidth(0.0),
-  fMaxWidth(10.0),
-  fMinMass(0.0001),
-  fMaxMass(10.0)
+  fStableFlagged(0)
+  //  fUseCharmParticles(kFALSE),
+  //  fMinWidth(0.0),
+  //  fMaxWidth(10.0),
+  //  fMinMass(0.0001),
+  //  fMaxMass(10.0)
 {
-  cout << "TUHKMgen::TUHKMgen() IN" << endl;
+  // default constructor setting reasonable defaults for initial parameters (central Pb+Pb at 5.5 TeV)
+
+  //  cout << "TUHKMgen::TUHKMgen() IN" << endl;
 
   // Set reasonable default values for LHC
   
@@ -129,20 +133,23 @@ TUHKMgen::TUHKMgen() :
     fStableFlagStatus[i] = kFALSE;
   }
   fStableFlagged = 0;
-  cout << "TUHKMgen::TUHKMgen() OUT" << endl;
+  //  cout << "TUHKMgen::TUHKMgen() OUT" << endl;
 }
 
 //______________________________________________________________________________
 TUHKMgen::~TUHKMgen()
 {
-  cout << "TUHKMgen::~TUHKMgen() IN" << endl;
+  // destructor, deletes the InitialStateHydjet object
+  //  cout << "TUHKMgen::~TUHKMgen() IN" << endl;
   if(fInitialState)
     delete fInitialState;
-  cout << "TUHKMgen::~TUHKMgen() OUT" << endl;
+  //  cout << "TUHKMgen::~TUHKMgen() OUT" << endl;
 }
 
 void TUHKMgen::SetAllParametersRHIC()
 {
+  // Set reasonable input parameters for 0-5% central Au+Au collisions
+  // at 200 GeV at RHIC
   SetEcms(200.0);                // RHIC top energy
   SetAw(197);                    // Au+Au
   SetIfb(1);
@@ -178,6 +185,7 @@ void TUHKMgen::SetAllParametersRHIC()
 
 void TUHKMgen::SetAllParametersLHC()
 {
+  // Set reasonable input parameters for 0-5% Pb+Pb collisions at 5.5 TeV at LHC
   SetEcms(5500.0);               // LHC
   SetAw(207);                    // Pb+Pb
   SetIfb(1);
@@ -211,14 +219,16 @@ void TUHKMgen::SetAllParametersLHC()
   SetPyquenIanglu(0);            // small gluon angular distribution
 }
 
-TObjArray* TUHKMgen::ImportParticles(Option_t *)
+TObjArray* TUHKMgen::ImportParticles(const Option_t *)
 {
-  cout << "TObjArray* TUHKMgen::ImportParticles(Option_t) IN" << endl;
+  // Function overloading the TGenerator::ImportParticles() member function.
+  // The particles from the local particle list (fSecondariesList) are
+  // forwarded to the TGenerator::fParticles 
+  //  cout << "TObjArray* TUHKMgen::ImportParticles(Option_t) IN" << endl;
   fParticles->Clear();
-  cout << "TObjArray* TUHKMgen::ImportParticles(Option_t): UHKM stack contains " << fNPsec << " particles." << endl;
+  //  cout << "TObjArray* TUHKMgen::ImportParticles(Option_t): UHKM stack contains " << fNPsec << " particles." << endl;
   Int_t nump = 0;
   LPIT_t it,e;
-  Double_t Fm2Gev = 1.;//0.197327; //UHKM has coordinates in fm
    
   for(it = fSecondariesList.begin(), e = fSecondariesList.end(); it != e; ++it) {
     TVector3 pos(it->Pos().Vect());
@@ -245,8 +255,8 @@ TObjArray* TUHKMgen::ImportParticles(Option_t *)
     TParticle* p = new TParticle(it->Encoding(), type,	                        //pdg,stat
 				 im1, im2, id1, id2,				                //m1,m2,d1,d2
 				 mom[0], mom[1], mom[2], TMath::Sqrt(mom.Mag2() + m1 * m1),	//px,py,pz,e
-				 pos[0]*1.e-13*Fm2Gev, pos[1]*1.e-13*Fm2Gev, pos[2]*1.e-13*Fm2Gev, 
-				 it->T()*1.e-13*Fm2Gev/3e10);    		        //x,y,z,t
+				 pos[0]*1.e-13, pos[1]*1.e-13, pos[2]*1.e-13, 
+				 it->T()*1.e-13/3e10);    		        //x,y,z,t
   
      p->SetUniqueID(nump);
      fParticles->Add(p);
@@ -254,14 +264,16 @@ TObjArray* TUHKMgen::ImportParticles(Option_t *)
  
   fAllocator.FreeList(fSourceList);
   fAllocator.FreeList(fSecondariesList);
-  cout << "TObjArray* TUHKMgen::ImportParticles(Option_t) OUT" << endl;
+  //  cout << "TObjArray* TUHKMgen::ImportParticles(Option_t) OUT" << endl;
   return fParticles;
 }
 
-Int_t TUHKMgen::ImportParticles(TClonesArray *particles,Option_t* option)
+Int_t TUHKMgen::ImportParticles(TClonesArray *particles, const Option_t* option)
 {
-  //z-start import
-  cout << "Int_t TUHKMgen::ImportParticles(TClonesArray*, Option_t) IN" << endl;
+  // Function overloading the TGenerator::ImportParticles() member function.
+  // The particles from the local particle list (fSecondariesList) are
+  // forwarded to the TGenerator::fParticles
+  //  cout << "Int_t TUHKMgen::ImportParticles(TClonesArray*, Option_t) IN" << endl;
   if(particles==0) return 0;
   TClonesArray &particlesR=*particles;
   particlesR.Clear();
@@ -270,15 +282,19 @@ Int_t TUHKMgen::ImportParticles(TClonesArray *particles,Option_t* option)
   Int_t numprim,numsec;  numprim=numsec=0;
   Int_t nump = 0;
   LPIT_t it,e;
-  Double_t Fm2Gev = 1.; //UHKM has coordinates in fm //0.197327;
-
-  cout << "TUHKMgen::ImportParticles() option(All or Sec) = " << option << endl;
+  
+  //  cout << "TUHKMgen::ImportParticles() option(All or Sec) = " << option << endl;
   for(it = fSecondariesList.begin(), e = fSecondariesList.end(); it != e; ++it) {
-    //      cout << "TUHKMgen::ImportParticles() import particle pdg(" << it->Encoding() << ")" << endl;
-    TVector3 pos(it->Pos().Vect());
-    TVector3 mom(it->Mom().Vect());
-    Float_t m1 = it->TableMass();
-    Int_t im1 = it->GetMother();
+    //!!! for(Int_t pp=0;pp<100;pp++) {
+	//      cout << "TUHKMgen::ImportParticles() import particle pdg(" << it->Encoding() << ")" << endl;
+    TVector3 pos(it->Pos().Vect());  //
+    //!!! TVector3 pos(0.0, 0.1, 0.2);
+    TVector3 mom(it->Mom().Vect());  //
+    //!!! TVector3 mom(-0.1, 0.1, 0.2);
+    Float_t m1 = it->TableMass();  //
+    //!!!    Float_t m1 = 0.139;
+    Int_t im1 = it->GetMother();  //
+    //!!!    Int_t im1 = (pp<50? -1 : pp-50);
     //    Int_t nd = 0;
     Int_t im2 = -1;
     Int_t id1 = -1;
@@ -286,7 +302,8 @@ Int_t TUHKMgen::ImportParticles(TClonesArray *particles,Option_t* option)
     
     //    nd = it->GetNDaughters();
 
-    Int_t type = it->GetType();  // 0-hydro, 1-jets
+    Int_t type = it->GetType();  //  // 0-hydro, 1-jets
+    //!!!    Int_t type = 0;
     
     if (im1> -1) {
       TParticle *mother = (TParticle*) (particlesR.UncheckedAt(im1+1));	   
@@ -300,36 +317,45 @@ Int_t TUHKMgen::ImportParticles(TClonesArray *particles,Option_t* option)
     new (particlesR[nump]) TParticle(it->Encoding(), type,			                        //pdg,stat
 				     im1, im2, id1, id2,				                //m1,m2,d1,d2
 				     mom[0], mom[1], mom[2], TMath::Sqrt(mom.Mag2() + m1 * m1),	//px,py,pz,e
-				     pos[0]*1.e-13*Fm2Gev, pos[1]*1.e-13*Fm2Gev, pos[2]*1.e-13*Fm2Gev, 
-				     it->T()*1.e-13*Fm2Gev/3e10);    		        //x,y,z,t
-
+				     pos[0]*1.e-13, pos[1]*1.e-13, pos[2]*1.e-13, 
+				     it->T()*1.e-13/3e10);    		        //x,y,z,t
+    
+    /*!!! new (particlesR[nump]) TParticle(211, type,                                         //pdg,stat
+                                     im1, im2, id1, id2,                                                //m1,m2,d1,d2
+                                     mom[0], mom[1], mom[2], TMath::Sqrt(mom.Mag2() + m1 * m1), //px,py,pz,e
+                                     pos[0]*1.e-13, pos[1]*1.e-13, pos[2]*1.e-13,
+                                     0.0*1.e-13/3e10);                       //x,y,z,t
+    !!!*/
 
     particlesR[nump]->SetUniqueID(nump);
     numsec++;
   }//end for
   
-  fAllocator.FreeList(fSourceList);
-  fAllocator.FreeList(fSecondariesList);
-  printf("Scan and add prim %d sec %d and all %d particles\n",
-	 numprim,numsec,nump);
-  cout << "Int_t TUHKMgen::ImportParticles(TClonesArray*, Option_t) OUT" << endl;
+  fAllocator.FreeList(fSourceList);  //
+  fAllocator.FreeList(fSecondariesList);  //
+  //  printf("Scan and add prim %d sec %d and all %d particles\n",
+  //	 numprim,numsec,nump);
+  //  cout << "Int_t TUHKMgen::ImportParticles(TClonesArray*, Option_t) OUT" << endl;
   return nump;
 }
 
 //______________________________________________________________________________
 void TUHKMgen::Initialize()
 {
-  cout << "TUHKMgen::Initialize() IN" << endl;
-  fInitialState = new InitialStateHydjet();
-  SetAllParameters();
-  fInitialState->LoadPDGInfo();
+  // Function overloading the TGenerator::Initialize() member function.
+  // The Monte-Carlo model is initialized (input parameters are transmitted, 
+  // particle list and decay channels are loaded, average multiplicities are calculated, etc.)
+  //  cout << "TUHKMgen::Initialize() IN" << endl;
+  fInitialState = new InitialStateHydjet();  //
+  SetAllParameters();  //
+  fInitialState->LoadPDGInfo();  //
   // set the stable flags
-  for(Int_t i=0; i<fStableFlagged; i++) 
-    fInitialState->SetPDGParticleStable(fStableFlagPDG[i], fStableFlagStatus[i]);
+  for(Int_t i=0; i<fStableFlagged; i++) //
+    fInitialState->SetPDGParticleStable(fStableFlagPDG[i], fStableFlagStatus[i]); //
 
-  if(!fInitialState->MultIni())
-    Error("TUHKMgen::Initialize()", "Bad status return from MultIni(). Check it out!! \n");
-  cout << "TUHKMgen::Initialize() OUT" << endl;
+  if(!fInitialState->MultIni()) //
+    Error("TUHKMgen::Initialize()", "Bad status return from MultIni(). Check it out!! \n");  //
+  //  cout << "TUHKMgen::Initialize() OUT" << endl;
 }
 
 void TUHKMgen::Print(const Option_t*) const
@@ -339,24 +365,33 @@ void TUHKMgen::Print(const Option_t*) const
 
 void TUHKMgen::GenerateEvent()
 {
-  cout << "TUHKMgen::GenerateEvent() IN" << endl;
+  // Member function overloading the TGenerator::GenerateEvent()
+  // The HYDJET++ model is run and the particle lists (fSourceList and fSecondariesList) are filled
+  //  cout << "TUHKMgen::GenerateEvent() IN" << endl;
+ // cout << "TUHKMgen::GenerateEvent() IN fSourceList " <<endl;
+  //  cout<< " fInitialStrate "<<fInitialState<<endl;  //
+  //" fSourceList "<< fSourceList<<" fAllocator "<< fAllocator <<endl;
+  
   // Generate the initial particles
-  fInitialState->Initialize(fSourceList, fAllocator);
-  cout << "TUHKMgen::fInitialState->Initialize" << endl;
+  fInitialState->Initialize(fSourceList, fAllocator);  //
+  //  cout << "TUHKMgen::fInitialState->Initialize" << endl;
  
-  if(fSourceList.empty()) 
-    Error("TUHKMgen::GenerateEvent()", "Source particle list empty after fireball initialization!! \n");
+  if(fSourceList.empty()) //
+    Error("TUHKMgen::GenerateEvent()", "Source particle list empty after fireball initialization!! \n");  //
 
   // Run the decays
- 
-  cout << "after Initilize: get_time, weak_decay_limit" <<fInitialState->GetTime()<<fInitialState->GetWeakDecayLimit()<< endl; 
-  if(fInitialState->GetTime() >= 0.)
-    fInitialState->Evolve(fSourceList, fSecondariesList, fAllocator, fInitialState->GetWeakDecayLimit());
-  cout << "TUHKMgen::GenerateEvent() OUT" << endl;
+
+  //  cout << "after Initilize: get_time, weak_decay_limit" <<fInitialState->GetTime()<<fInitialState->GetWeakDecayLimit()<< endl;   //
+  if(fInitialState->GetTime() >= 0.)  //
+    fInitialState->Evolve(fSourceList, fSecondariesList, fAllocator, fInitialState->GetWeakDecayLimit());  //
+  //  cout << "TUHKMgen::GenerateEvent() OUT" << endl;
 }
 
 void TUHKMgen::SetAllParameters() {
-  cout << "TUHKMgen::SetAllParameters() IN" << endl;
+  // forward all model input parameters to the InitialStateHydjet object
+  // which will handle all the Monte-Carlo simulation using HYDJET++ model
+
+  //  cout << "TUHKMgen::SetAllParameters() IN" << endl;
 
   fInitialState->fParams.fSqrtS = fHydjetParams.fSqrtS;
   fInitialState->fParams.fAw = fHydjetParams.fAw;
@@ -396,10 +431,11 @@ void TUHKMgen::SetAllParameters() {
 
   fInitialState->SetPDGParticleFilename(fParticleFilename);
   fInitialState->SetPDGDecayFilename(fDecayFilename);
-  fInitialState->SetUseCharmParticles(fUseCharmParticles);
-  fInitialState->SetWidthRange(fMinWidth, fMaxWidth);
-  fInitialState->SetMassRange(fMinMass, fMaxMass);
-  //for(Int_t i=0; i<fStableFlagged; i++) fInitialState->SetPDGParticleStable(fStableFlagPDG[i], fStableFlagStatus[i]);
-  cout << "TUHKMgen::SetAllParameters() OUT" << endl;
+  //  fInitialState->SetUseCharmParticles(fUseCharmParticles);
+  //  fInitialState->SetWidthRange(fMinWidth, fMaxWidth);
+  //  fInitialState->SetMassRange(fMinMass, fMaxMass);
+  //  for(Int_t i=0; i<fStableFlagged; i++) 
+  //    fInitialState->SetPDGParticleStable(fStableFlagPDG[i], fStableFlagStatus[i]);
+  //  cout << "TUHKMgen::SetAllParameters() OUT" << endl;
 }
 

@@ -14,7 +14,7 @@
 //                                                                         //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <TUHKMgen.h>
+#include "TUHKMgen.h"
 #ifndef DATABASE_PDG
 #include "DatabasePDG.h"
 #endif
@@ -41,6 +41,12 @@
 #include <string>
 using namespace std;
 
+//class TClonesArray;
+//enum TMCProcess;
+//class AliRun;
+//class TSystem;
+//class AliDecayer; 
+
 ClassImp(AliGenUHKM)
 
 //_______________________________________
@@ -49,14 +55,11 @@ AliGenUHKM::AliGenUHKM()
    fTrials(0),
    fUHKMgen(0),
    fHydjetParams(),
-   fStableFlagged(0),
-   fUseCharmParticles(kFALSE),
-   fMinWidth(0.0),
-   fMaxWidth(10.0),
-   fMinMass(0.0001),
-   fMaxMass(10.0)
+   fStableFlagged(0)
 {
-  cout << "AliGenUHKM::AliGenUHKM() IN" << endl;
+  // Default constructor setting up default reasonable parameter values
+  // for central Pb+Pb collisions at 5.5TeV 
+  //  cout << "AliGenUHKM::AliGenUHKM() IN" << endl;
   
   // LHC
   fHydjetParams.fSqrtS=5500; //LHC
@@ -129,7 +132,7 @@ AliGenUHKM::AliGenUHKM()
   }
   fStableFlagged = 0;
 
-  cout << "AliGenUHKM::AliGenUHKM() OUT" << endl;
+  //  cout << "AliGenUHKM::AliGenUHKM() OUT" << endl;
 }
 
 //_______________________________________
@@ -138,18 +141,15 @@ AliGenUHKM::AliGenUHKM(Int_t npart)
    fTrials(0),
    fUHKMgen(0),
    fHydjetParams(),
-   fStableFlagged(0),
-   fUseCharmParticles(kFALSE),
-   fMinWidth(0.0),
-   fMaxWidth(10.0),
-   fMinMass(0.0001),
-   fMaxMass(10.0)
+   fStableFlagged(0)
 {
-  cout << "AliGenUHKM::AliGenUHKM(Int_t) IN" << endl;
+  // Constructor specifying the size of the particle table
+  // and setting up default reasonable parameter values
+  // for central Pb+Pb collisions at 5.5TeV
+  //  cout << "AliGenUHKM::AliGenUHKM(Int_t) IN" << endl;
   fName = "UHKM";
   fTitle= "Particle Generator using UHKM 3.0";
 
-  // Constructor specifying the size of the particle table
   fNprimaries = 0;   
 
   //LHC
@@ -223,15 +223,19 @@ AliGenUHKM::AliGenUHKM(Int_t npart)
   }
   fStableFlagged = 0;  
 
-  cout << "AliGenUHKM::AliGenUHKM(Int_t) OUT" << endl;
+  //  cout << "AliGenUHKM::AliGenUHKM(Int_t) OUT" << endl;
 }
 
 //__________________________________________
 AliGenUHKM::~AliGenUHKM()
-{}
+{
+  // Destructor, do nothing
+}
 
 void AliGenUHKM::SetAllParametersRHIC() 
 {
+  // Set reasonable default parameters for 0-5% central Au+Au collisions
+  // at 200 GeV at RHIC
   SetEcms(200.0);                // RHIC top energy
   SetAw(197);                    // Au+Au
   SetBmin(0.0);                  // 0%
@@ -250,7 +254,7 @@ void AliGenUHKM::SetAllParametersRHIC()
   SetEtaRMax(1.1);               // Umax = 1.1
   SetMomAsymmPar(0.0);           // delta = 0.0
   SetCoordAsymmPar(0.0);         // epsilon = 0.0
-  SetFlagWeakDecay(0);           // weak decay on (<0 off !!!)
+  //  SetFlagWeakDecay(0);           // weak decay on (<0 off !!!)
   SetEtaType(1);                 // gaus distributed with fYmax dispersion (0 means boost invariant)
   SetGammaS(1.0);                // gammaS = 1.0 (no strangeness canonical suppresion)
   SetPyquenNhsel(2);             // hydro on, jets on, jet quenching on
@@ -265,6 +269,8 @@ void AliGenUHKM::SetAllParametersRHIC()
 
 void AliGenUHKM::SetAllParametersLHC()
 {
+  // Set reasonable default parameters for 0-5% central Pb+Pb collisions
+  // at 5.5 TeV at LHC
   SetEcms(5500.0);               // LHC
   SetAw(207);                    // Pb+Pb
   SetBmin(0.0);                  // 0%
@@ -283,7 +289,7 @@ void AliGenUHKM::SetAllParametersLHC()
   SetEtaRMax(1.1);               // Umax = 1.1
   SetMomAsymmPar(0.0);           // delta = 0.0
   SetCoordAsymmPar(0.0);         // epsilon = 0.0
-  SetFlagWeakDecay(0);           // weak decay on (<0 off !!!)
+  //  SetFlagWeakDecay(0);           // weak decay on (<0 off !!!)
   SetEtaType(1);                 // gaus distributed with fYmax dispersion (0 means boost invariant)
   SetGammaS(1.0);                // gammaS = 1.0 (no strangeness canonical suppresion)
   SetPyquenNhsel(2);             // hydro on, jets on, jet quenching on
@@ -299,27 +305,32 @@ void AliGenUHKM::SetAllParametersLHC()
 //_________________________________________
 void AliGenUHKM::Init()
 {
-  cout << "AliGenUHKM::Init() IN" << endl;
+  // Initialization of the TGenerator::TUHKMgen interface object. 
+  // Model input parameters are transmited to the TUHKMgen object which forwards them
+  // further to the model.
+  // HYDJET++ is initialized (average multiplicities are calculated, particle species definitions and decay
+  // channels are loaded, etc.)
+  //  cout << "AliGenUHKM::Init() IN" << endl;
 
   SetMC(new TUHKMgen());
   fUHKMgen = (TUHKMgen*) fMCEvGen;
   SetAllParameters();
-
+  
   AliGenMC::Init();
 
   fUHKMgen->Initialize();
-  CheckPDGTable();
+  CheckPDGTable();    //
 
-  fUHKMgen->Print();
-  cout << "AliGenUHKM::Init() OUT" << endl;
+  fUHKMgen->Print();  //
+  //  cout << "AliGenUHKM::Init() OUT" << endl;
 }
-
-
 
 //________________________________________
 void AliGenUHKM::Generate()
 {
-  cout << "AliGenUHKM::Generate() IN" << endl;
+  // Generate one HYDJET++ event, get the output and push particles further 
+  // to AliRoot's stack 
+  //  cout << "AliGenUHKM::Generate() IN" << endl;
   Float_t polar[3] = {0,0,0};
   Float_t origin[3]   = {0,0,0};
   Float_t origin0[3]  = {0,0,0};
@@ -340,7 +351,7 @@ void AliGenUHKM::Generate()
   fUHKMgen->ImportParticles(&fParticles,"All");
 
   Int_t np = fParticles.GetEntriesFast();
-  cout << "AliGenUHKM::Generate() GetEntries  " <<np<< endl;
+  //  cout << "AliGenUHKM::Generate() GetEntries  " <<np<< endl;
 
 
   Int_t* idsOnStack = new Int_t[np];
@@ -355,20 +366,21 @@ void AliGenUHKM::Generate()
     // -1 is the trivial code (when it does not exist)
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TParticle *iparticle = (TParticle*)fParticles.At(i);
-//    cout << "AliGenUHKM::Generate() particle #" << i << " in fParticles *********************"<< endl;
+    //   cout << "AliGenUHKM::Generate() particle #" << i << " in fParticles *********************"<< endl;
 
     Int_t kf = iparticle->GetPdgCode();
-//    cout << "AliGenUHKM::Generate() PDG = " << kf << endl;
+    //    if(kf==130 || kf==-130)
+    //      cout << "AliGenUHKM::Generate() PDG = " << kf << endl;
 
     Bool_t hasMother = (iparticle->GetFirstMother() >= 0);
 
-//    cout << "AliGenUHKM::Generate() mother index in fParticles = " 
-//	 << (iparticle->GetFirstMother()==-1 ? -1 : iparticle->GetFirstMother()+1)  
-//	 << " ; hasMother = " << hasMother << endl;
-
+    //    cout << "AliGenUHKM::Generate() mother index in fParticles = " 
+    //	 << (iparticle->GetFirstMother()==-1 ? -1 : iparticle->GetFirstMother()+1)  
+    //	 << " ; hasMother = " << hasMother << endl;
+    //    cout << "AliGenUHKM::Generate() type (0-hydro;1-jet) = " << iparticle->GetStatusCode() << endl;
     Bool_t hasDaughter = (iparticle->GetNDaughters() > 0);
 
-   // cout << "AliGenUHKM::Generate() n.daughters = " << iparticle->GetNDaughters() 
+    // cout << "AliGenUHKM::Generate() n.daughters = " << iparticle->GetNDaughters() 
     //<< " ; hasDaughter = " << hasDaughter << endl;
 
 
@@ -376,7 +388,7 @@ void AliGenUHKM::Generate()
       //      cout << "AliGenUHKM::Generate() decayed particle (not trackable)" << endl;
       // This particle has decayed
       // It will not be tracked
-      // Add it only once with coordiinates not
+      // Add it only once with coordinates not
       // smeared with primary vertex position
       Float_t p[3] = {p[0] = iparticle->Px(),
                       p[1] = iparticle->Py(),
@@ -388,34 +400,34 @@ void AliGenUHKM::Generate()
       v[2] = iparticle->Vz();
       Float_t time = iparticle->T();
 
-      Int_t type    = iparticle->GetStatusCode(); //j1/h0
+      //      if(kf==130 || kf==-130) cout << "type = " << iparticle->GetStatusCode() << endl; //j1/h0
 
       Int_t imo = -1;
       if(hasMother) {
         imo = iparticle->GetFirstMother(); //index of mother particle in fParticles
       } // if has mother
-      Bool_t trackFlag = (!hasDaughter);   // tFlag is kFALSE --> do not track the particle
+      Bool_t trackFlag = kFALSE;   // tFlag is kFALSE --> do not track the particle
 
-//      printf("Pushing Track %d with status %d mother %d\n", kf, trackFlag, imo>=0?idsOnStack[imo]:imo);
+      //      printf("Pushing Track %d with status %d mother %d\n", kf, trackFlag, imo>=0?idsOnStack[imo]:imo);
       PushTrack(trackFlag, (imo>=0 ? idsOnStack[imo+1] : imo), kf,
                 p[0], p[1], p[2], energy,
                 v[0], v[1], v[2], time,
                 polar[0], polar[1], polar[2],
                 (hasMother ? kPDecay : kPNoProcess), nt);
-    //  cout << "AliGenUHKM::Generate() pushed on stack with stack index = " << nt 
-//	   << "; mother index on stack = " << (imo>=0 ? idsOnStack[imo+1] : imo) << endl;
+      //      cout << "AliGenUHKM::Generate() pushed on stack with stack index = " << nt 
+      //	   << "; mother index on stack = " << (imo>=0 ? idsOnStack[imo+1] : imo) << endl;
       idsOnStack[i] = nt;
       fNprimaries++;
       KeepTrack(nt);
     }
     else {
-      //      cout << "AliGenUHKM::Generate() final particle --> push it twice on the stack" << endl;
+      //            cout << "AliGenUHKM::Generate() final particle --> push it twice on the stack" << endl;
       // This is a final state particle
       // It will be tracked
       // Add it TWICE to the stack !!!
       // First time with event-wide coordinates (for femtoscopy) -
       //   this one will not be tracked
-      // Second time with event-wide ccordiantes and vertex smearing
+      // Second time with event-wide c0ordinates and vertex smearing
       //   this one will be tracked
       Float_t p[3] = {p[0] = iparticle->Px(),
                       p[1] = iparticle->Py(),
@@ -426,24 +438,24 @@ void AliGenUHKM::Generate()
       v[1] = iparticle->Vy();
       v[2] = iparticle->Vz();
 
-      Int_t type    = iparticle->GetStatusCode(); //j1/h0
+      Int_t type    = iparticle->GetStatusCode(); // 1-from jet / 0-from hydro 
+      //if(kf==130 || kf==-130) cout << "type = " << iparticle->GetStatusCode() << endl; //j1/h0
       Int_t coeffT=1;
-      if(type==1)coeffT=-1; //to separate particles from jets
+      if(type==1) coeffT=-1; //to separate particles from jets
 
       Int_t imo = -1;
       
       if(hasMother) {
         imo = iparticle->GetFirstMother();
       } // if has mother
-      Bool_t trackFlag = (hasDaughter);  // tFlag = kFALSE --> do not track this one, its for femtoscopy
-       
+      Bool_t trackFlag = kFALSE;  // tFlag = kFALSE --> do not track this one, its for femtoscopy
       PushTrack(trackFlag, (imo>=0 ? idsOnStack[imo+1] : imo), kf,
                 p[0], p[1], p[2], energy,
                 v[0], v[1], v[2], (iparticle->T())*coeffT,
                 polar[0], polar[1], polar[2],
                 hasMother ? kPDecay:kPNoProcess, nt);
-     // cout << "AliGenUHKM::Generate() pushed on stack with stack index = " << nt
-    //       << "; mother index on stack = " << (imo>=0 ? idsOnStack[imo+1] : imo) << endl;
+      //      cout << "AliGenUHKM::Generate() pushed on stack with stack index = " << nt
+      //           << "; mother index on stack = " << (imo>=0 ? idsOnStack[imo+1] : imo) << endl;
 
       idsOnStack[i] = nt;
       fNprimaries++;
@@ -454,16 +466,16 @@ void AliGenUHKM::Generate()
       origin[2] = origin0[2]+v[2];
       imo = nt;
       
-      trackFlag = (!hasDaughter);    // tFlag = kTRUE --> track this one
-      //cout << "AliGenUHKM::Generate() trackFlag = " << trackFlag << endl;
+      trackFlag = kTRUE;    // tFlag = kTRUE --> track this one
+      //      cout << "AliGenUHKM::Generate() trackFlag = " << trackFlag << endl;
 
       PushTrack(trackFlag, imo, kf,
                 p[0], p[1], p[2], energy,
                 origin[0], origin[1], origin[2], iparticle->T(),
                 polar[0], polar[1], polar[2],
                 hasMother ? kPDecay:kPNoProcess, nt);
-     // cout << "AliGenUHKM::Generate() pushed on stack with stack index = " << nt
-    //       << "; mother index on stack = " << imo << endl;
+      //      cout << "AliGenUHKM::Generate() pushed on stack with stack index = " << nt
+      //           << "; mother index on stack = " << imo << endl;
       fNprimaries++;
       KeepTrack(nt);
     }
@@ -498,8 +510,8 @@ void AliGenUHKM::Generate()
 
   //  gAlice->SetGenEventHeader(header);
 
-  printf(" Finish Generate .. %d ..\n",nt);
-  cout << "AliGenUHKM::Generate() OUT" << endl;
+  //  printf(" Finish Generate .. %d ..\n",nt);
+  //  cout << "AliGenUHKM::Generate() OUT" << endl;
 }
 
 void AliGenUHKM::Copy(TObject &) const
@@ -508,7 +520,9 @@ void AliGenUHKM::Copy(TObject &) const
 }
 
 void AliGenUHKM::SetAllParameters() {
-  cout << "AliGenUHKM::SetAllParameters() IN" << endl;
+  // Forward all input parameters to the TGenerator::TUHKMgen object
+
+  //  cout << "AliGenUHKM::SetAllParameters() IN" << endl;
 
   fUHKMgen->SetEcms(fHydjetParams.fSqrtS);
   fUHKMgen->SetBmin(fHydjetParams.fBmin);
@@ -549,12 +563,19 @@ void AliGenUHKM::SetAllParameters() {
 
   fUHKMgen->SetPDGParticleFile(fParticleFilename);
   fUHKMgen->SetPDGDecayFile(fDecayFilename);
-  for(Int_t i=0; i<fStableFlagged; i++) fUHKMgen->SetPDGParticleStable(fStableFlagPDG[i], fStableFlagStatus[i]);
-  fUHKMgen->SetUseCharmParticles(fUseCharmParticles);
-  fUHKMgen->SetMinimumWidth(fMinWidth);
-  fUHKMgen->SetMaximumWidth(fMaxWidth);
-  fUHKMgen->SetMinimumMass(fMinMass);
-  fUHKMgen->SetMaximumMass(fMaxMass);
+  //  fUHKMgen->SetUseCharmParticles(fUseCharmParticles);
+  //  fUHKMgen->SetMinimumWidth(fMinWidth);
+  //  fUHKMgen->SetMaximumWidth(fMaxWidth);
+  //  fUHKMgen->SetMinimumMass(fMinMass);
+  //  fUHKMgen->SetMaximumMass(fMaxMass);
+
+  cout << "AliGenUHKM::Init() no. stable flagged particles = " << fStableFlagged << endl;
+  for(Int_t i=0; i<fStableFlagged; i++) {
+    cout << "AliGenUHKM::Init() flag no. " << i
+         << " PDG = " << fStableFlagPDG[i]
+         << " flag = " << fStableFlagStatus[i] << endl;
+    fUHKMgen->SetPDGParticleStable(fStableFlagPDG[i], fStableFlagStatus[i]);
+  }
 
  cout<<" Print all parameters "<<endl;
  cout<<" SqrtS = "<<fHydjetParams.fSqrtS<<endl;
@@ -600,34 +621,35 @@ cout<<" --------Flags------ "<<endl;
   cout<<" Ienglu= "<<fHydjetParams.fIenglu<<endl;
   cout<<" Ianglu= "<<fHydjetParams.fIanglu<<endl;
 
-  cout<<"----PDG table parameters---"<<endl;
+  //  cout<<"----PDG table parameters---"<<endl;
   
-  cout<<" UseCharmParticles= "<<fUseCharmParticles<<endl;
-  cout<<" MinimumWidth= "<<fMinWidth<<endl;
-  cout<<" MaximumWidth= "<<fMaxWidth<<endl;
-  cout<<" MinimumMass= "<<fMinMass<<endl;
-  cout<<" MaximumMass= "<<fMaxMass<<endl;
+  //  cout<<" UseCharmParticles= "<<fUseCharmParticles<<endl;
+  //  cout<<" MinimumWidth= "<<fMinWidth<<endl;
+  //  cout<<" MaximumWidth= "<<fMaxWidth<<endl;
+  //  cout<<" MinimumMass= "<<fMinMass<<endl;
+  //  cout<<" MaximumMass= "<<fMaxMass<<endl;
 
-
-
-  cout << "AliGenUHKM::SetAllParameters() OUT" << endl;
+  //  cout << "AliGenUHKM::SetAllParameters() OUT" << endl;
 }
 
 // add the additional PDG codes from UHKM(SHARE table) to ROOT's table
 void AliGenUHKM::CheckPDGTable() {
-  cout << "AliGenUHKM::CheckPDGTable()   IN" << endl;
+  // Add temporarely all particle definitions from HYDJET++ which miss in the ROOT's PDG tables
+  // to the TDatabasePDG table.
+
+  //  cout << "AliGenUHKM::CheckPDGTable()   IN" << endl;
   //TDabasePDG *rootPDG  = TDatabasePDG::Instance();         // ROOT's PDG table
   DatabasePDG *uhkmPDG = fUHKMgen->PDGInfo();              // UHKM's PDG table
   TParticlePDG *rootTestParticle;
   ParticlePDG *uhkmTestParticle;
-
-  cout << "particles with good status in UHKM table = " << uhkmPDG->GetNParticles() << endl;
+  
+  //  cout << "particles with good status in UHKM table = " << uhkmPDG->GetNParticles() << endl;
   // loop over all particles in the SHARE table
   for(Int_t i=0; i<uhkmPDG->GetNParticles(); i++) {
-    cout << "particle #" << i << " ================" << endl;
+    //    cout << "particle #" << i << " ================" << endl;
     // get a particle specie
     uhkmTestParticle = uhkmPDG->GetPDGParticleByIndex(i);
-    cout << "PDG = " << uhkmTestParticle->GetPDG() << endl;
+    //    cout << "PDG = " << uhkmTestParticle->GetPDG() << endl;
     // check if this code exists in ROOT's table
     rootTestParticle = TDatabasePDG::Instance()->GetParticle(uhkmTestParticle->GetPDG());
     if(!rootTestParticle) {    // if not then add it to the ROOT's PDG database
@@ -638,13 +660,14 @@ void AliGenUHKM::CheckPDGTable() {
 					    uhkmTestParticle->GetWidth(), 
 					    (Int_t(uhkmTestParticle->GetBaryonNumber())==0 ? "meson" : "baryon"),
 					    uhkmTestParticle->GetPDG());    
-     cout << "Not found in ROOT's PDG database --> added now" << endl;
-    if(uhkmTestParticle->GetWidth()<1e-10) cout<<uhkmTestParticle->GetPDG()<<"its mass "<< 
-    TDatabasePDG::Instance()->GetParticle(uhkmTestParticle->GetPDG())->Mass()<<
-    TDatabasePDG::Instance()->GetParticle(uhkmTestParticle->GetPDG())->Width()<<endl;  
+      //      cout << "Not found in ROOT's PDG database --> added now" << endl;
+      if(uhkmTestParticle->GetWidth()<1e-10) 
+	cout << uhkmTestParticle->GetPDG() << "its mass "
+	     << TDatabasePDG::Instance()->GetParticle(uhkmTestParticle->GetPDG())->Mass()
+	     << TDatabasePDG::Instance()->GetParticle(uhkmTestParticle->GetPDG())->Width() << endl;  
     }
-    else
-      cout << "Found in ROOT's PDG database --> not added" << endl;
+    //    else
+      //      cout << "Found in ROOT's PDG database --> not added" << endl;
   }  // end for
-  cout << "AliGenUHKM::CheckPDGTable()   OUT" << endl;
+  //  cout << "AliGenUHKM::CheckPDGTable()   OUT" << endl;
 }

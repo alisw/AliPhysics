@@ -18,23 +18,45 @@
 using std::cout;
 using std::endl;
 
-ParticlePDG::ParticlePDG() {
-  fPDG   = kNonsensePDG;
-  fMass  = -1.0;
-  fWidth = 0.0;
-  fNDecayChannels = 0;
+ParticlePDG::ParticlePDG() :
+  fPDG(kNonsensePDG),
+  fMass(-1.0),
+  fWidth(0.0),
+  fSpin(0.0),
+  fIsospin(0.0),
+  fIsospinZ(0.0),
+  fLightQuarkNumber(0.0),
+  fAntiLightQuarkNumber(0.0),
+  fStrangeQuarkNumber(0.0),
+  fAntiStrangeQuarkNumber(0.0),
+  fCharmQuarkNumber(0.0),
+  fAntiCharmQuarkNumber(0.0),
+  fNDecayChannels(0),
+  fStable(0.0)
+{
   for(Int_t i=0; i<kMaxDecayChannels; i++)
     fDecayChannels[i] = new DecayChannel();
 }
 
-ParticlePDG::ParticlePDG(Char_t *name, Int_t pdg, Double_t mass, Double_t width) {
+ParticlePDG::ParticlePDG(Char_t *name, Int_t pdg, Double_t mass, Double_t width) :
+  fPDG(pdg),
+  fMass(mass),
+  fWidth(width),
+  fSpin(0.0),
+  fIsospin(0.0),
+  fIsospinZ(0.0),
+  fLightQuarkNumber(0.0),
+  fAntiLightQuarkNumber(0.0),
+  fStrangeQuarkNumber(0.0),
+  fAntiStrangeQuarkNumber(0.0),
+  fCharmQuarkNumber(0.0),
+  fAntiCharmQuarkNumber(0.0),
+  fNDecayChannels(0),
+  fStable(0.0)
+{
   for(Int_t i=0; i<9; i++)
     if(*(name+i) != '\0') fName[i] = *(name+i);
     else break;
-  fPDG   = pdg;
-  fMass  = mass;
-  fWidth = width;
-  fNDecayChannels = 0;
   for(Int_t i=0; i<kMaxDecayChannels; i++)
     fDecayChannels[i] = new DecayChannel();
 }

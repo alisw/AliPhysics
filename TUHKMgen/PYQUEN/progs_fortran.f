@@ -7,7 +7,7 @@ c*******************************************
       real p,v,plu
       external ludata,pydata
       double precision numpar,npar0,nbco0 
-      common /lujets/ n,k(150000,5),p(150000,5),v(150000,5)
+c      common /lujets/ n,k(150000,5),p(150000,5),v(150000,5)
       common /hyjets/ nhj,nhp,khj(150000,5),phj(150000,5),vhj(150000,5) 
       common /hyfpar/ bgen,nbcol,npart,npart0,npyt,nhyd
       common /hyflow/ ytfl,ylfl,Tf,fpart 
@@ -24,8 +24,8 @@ c*******************************************
 
       
       common /hypart/ppart(10,50000),bmin,bmax,njp
-      save /lujets/,/hyjets/,/hyflow/,/hyjpar/,/hyfpar/,/pyqpar/,
-     >     /pysubs/,/pypars/,/pydat1/
+c      save /lujets/,/hyjets/,/hyflow/,/hyjpar/,/hyfpar/,/pyqpar/,
+c     >     /pysubs/,/pypars/,/pydat1/
 
 * ----------- INITIALIZATION OF RUNDOM GENERATOR
       MRPY(1)=iseed_fromC 
@@ -119,8 +119,8 @@ c*******************************************
 
 *
 
-      save /pyint7/,/pypars/,/pysubs/,/hyjpar/,/hyipar/,/hypyin/,
-     >     /hyflow/,/hygeom/,/hythic/    
+c--      save /pyint7/,/pypars/,/pysubs/,/hyjpar/,/hyipar/,/hypyin/,
+c--     >     /hyflow/,/hygeom/,/hythic/    
             
 * start HYDJET initialization 
       init=1
@@ -303,7 +303,7 @@ c       write(*,*)" ipdg ", ipdg, " KC ",KC," delta ",delta
       real p,v, delta
       external hsin,hftaa,numpar,hyhard,hipsear,pyr,pymass,PYCOMP 
       external ludata 
-      common /lujets/ n,k(150000,5),p(150000,5),v(150000,5)
+c      common /lujets/ n,k(150000,5),p(150000,5),v(150000,5)
       common /hyjets/ nhj,nhp,khj(150000,5),phj(150000,5),vhj(150000,5)
       common /hyipar/ bminh,bmaxh,AW,RA,npar0,nbco0,Apb,Rpb,np,init,ipr
       common /hypyin/ ene,rzta,rnta,bfix,ifb,nh
@@ -314,22 +314,23 @@ c-ml
       common /hypart/ppart(10,50000),bmin,bmax,njp
       COMMON /PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
 
-      save/lujets/,/hyjets/,/hyipar/,/hyfpar/,/hyflow/,/hyjpar/,/hypyin/
+c--      save/lujets/,/hyjets/,/hyipar/,/hyfpar/,/hyflow/,/hyjpar/,/hypyin/
 
 
 * reset lujets and hyjets arrays before event generation 
 
-c      write(*,*)'in hyevnt 0'
+         write(*,*)'in hyevnt 0'
 
       n=0 
       nhj=0 
+      
       do ncl=1,150000
        do j=1,5
-        p(ncl,j)=0.
+c        p(ncl,j)=0.
         phj(ncl,j)=0.d0
-        v(ncl,j)=0. 
+c        v(ncl,j)=0. 
         vhj(ncl,j)=0.d0  
-        k(ncl,j)=0
+c        k(ncl,j)=0
         khj(ncl,j)=0 
        enddo
       end do 
@@ -352,7 +353,7 @@ c      write(*,*)'in hyevnt 0'
        bgen=bb1/RA 
       end if 
       
-c       write(*,*)'in hyevnt bminh bgen sigin',RA,bminh,bgen,sigin
+       write(*,*)'in hyevnt bminh bgen sigin',RA,bminh,bgen,sigin
                     
 * calculate # of nucelons-participants and binary NN sub-collisions 
       npart=numpar(b1)                          ! Npart(b) 
@@ -400,13 +401,13 @@ c--
      
 * fill array 'lujets' 
      
-      do ih=1,nhj
-       do jh=1,5
-        p(ih,jh)=phj(ih,jh)
-        k(ih,jh)=khj(ih,jh)                  
-        v(ih,jh)=vhj(ih,jh) 
-       end do
-      end do
+c      do ih=1,nhj
+c       do jh=1,5
+c        p(ih,jh)=phj(ih,jh)
+c        k(ih,jh)=khj(ih,jh)                  
+c        v(ih,jh)=vhj(ih,jh) 
+c       end do
+c      end do
       
 c-ml
 c-      call luedit(2)                      ! remove unstable particles and partons 
@@ -440,8 +441,8 @@ c-      call luedit(2)                      ! remove unstable particles and part
       common /hyipar/ bminh,bmaxh,AW,RA,npar0,nbco0,Apb,Rpb,np,init,ipr
       common /hyfpar/ bgen,nbcol,npart,npart0,npyt,nhyd 
       common /hypyin/ ene,rzta,rnta,bfix,ifb,nh
-      save /pyjets/,/pypars/,/pydat1/,/pydat2/,/pydat3/,/pysubs/,
-     +     /hyjets/,/parimp/,/hyjpar/,/hyipar/,/hyfpar/,/hypyin/
+c--      save /pyjets/,/pypars/,/pydat1/,/pydat2/,/pydat3/,/pysubs/,
+c--     +     /hyjets/,/parimp/,/hyjpar/,/hyipar/,/hyfpar/,/hypyin/
 
 * generate 'njet' PYTHIA events and fill arrays for partons and hadrons 
        
@@ -606,7 +607,7 @@ c       write(*,*)'in hyhard OUT'
       double precision npar0,nbco0 
       external hsin  
       common /hyipar/ bminh,bmaxh,AW,RA,npar0,nbco0,Apb,Rpb,np,init,ipr
-      save /hyipar/ 
+c--      save /hyipar/ 
       xmin=(bmaxh-bminh)*RA 
       
 c      write(*,*)'bmaxh bminh',bmaxh,bminh
@@ -628,7 +629,7 @@ c      write(*,*)'bmaxh bminh',bmaxh,bminh
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       external hftaa 
       common /hyjpar/ ptmin,sigin,sigjet,nhsel,ishad,njet   
-      save /hyjpar/ 
+c--      save /hyjpar/ 
       br=x 
       hsin=br*(1.d0-dexp(-0.1d0*hftaa(br)*sigin)) 
       return 
@@ -655,7 +656,7 @@ c      write(*,*)'bmaxh bminh',bmaxh,bminh
       external HFUNC2 
       common /hyipar/ bminh,bmaxh,AW,RA,npar0,nbco0,Apb,Rpb,np,init,ipr
       common /hynup1/ bp,xx
-      save /hyipar/  
+c--      save /hyipar/  
       if(init.eq.1) then 
        Rl=Rpb
       else 
@@ -678,7 +679,7 @@ c      write(*,*)'bmaxh bminh',bmaxh,bminh
       common /hyipar/ bminh,bmaxh,AW,RA,npar0,nbco0,Apb,Rpb,np,init,ipr
       common /hyjpar/ ptmin,sigin,sigjet,nhsel,ishad,njet 
       common /hynup1/ bp,x 
-      save /hyipar/,/hyjpar/ 
+c--      save /hyipar/,/hyjpar/ 
       r1=dsqrt(abs(y*y+bp*bp/4.d0+y*bp*dcos(x))) 
       r2=dsqrt(abs(y*y+bp*bp/4.d0-y*bp*dcos(x)))
       s=1.d0-dexp(-0.1d0*sigin*hythik(r2))
@@ -690,7 +691,7 @@ c      write(*,*)'bmaxh bminh',bmaxh,bminh
       double precision function hftaa(c)  
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       common /hythic/ BAB(110),TAB(110),TAAB(110)
-      save /hythic/ 
+c--      save /hythic/ 
       call parinv(c,BAB,TAAB,110,RES) 
       hftaa=RES 
       return 
@@ -702,7 +703,7 @@ c      write(*,*)'bmaxh bminh',bmaxh,bminh
       external HFUNC4 
       common /hyipar/ bminh,bmaxh,AW,RA,npar0,nbco0,Apb,Rpb,np,init,ipr
       common /hynup1/ bp,xx
-      save /hyipar/  
+c--      save /hyipar/  
       if(init.eq.1) then 
        Rl=Rpb
       else 
@@ -725,7 +726,7 @@ c      write(*,*)'bmaxh bminh',bmaxh,bminh
       common /hyipar/ bminh,bmaxh,AW,RA,npar0,nbco0,Apb,Rpb,np,init,ipr
       common /hyjpar/ ptmin,sigin,sigjet,nhsel,ishad,njet 
       common /hynup1/ bp,x 
-      save /hyipar/,/hyjpar/ 
+c--      save /hyipar/,/hyjpar/ 
       r1=dsqrt(abs(y*y+bp*bp/4.d0+y*bp*dcos(x))) 
       r2=dsqrt(abs(y*y+bp*bp/4.d0-y*bp*dcos(x)))
       HFUNC4=y*hythik(r1)*hythik(r2) 
@@ -736,7 +737,7 @@ c      write(*,*)'bmaxh bminh',bmaxh,bminh
        double precision function hythik(r)   
        IMPLICIT DOUBLE PRECISION(A-H, O-Z)
        common /hythic/ BAB(110),TAB(110),TAAB(110)
-       save /hythic/ 
+c--       save /hythic/ 
        call parinv(r,BAB,TAB,110,RES) 
        hythik=RES 
        return
@@ -748,7 +749,7 @@ c      write(*,*)'bmaxh bminh',bmaxh,bminh
        double precision npar0,nbco0 
        common /hyipar/ bminh,bmaxh,AW,RA,npar0,nbco0,Apb,Rpb,np,init,ipr
        common /hygeom/ BC 
-       save /hyipar/,/hygeom/ 
+c--       save /hyipar/,/hygeom/ 
        if(init.eq.1) then 
         Rl=Rpb
        else 
@@ -770,7 +771,7 @@ c      write(*,*)'bmaxh bminh',bmaxh,bminh
       common /hyipar/ bminh,bmaxh,AW,RA,npar0,nbco0,Apb,Rpb,np,init,ipr
       common /hyfpar/ bgen,nbcol,npart,npart0,npyt,nhyd 
       common /hyshad/ bbmin,bbmax,inuc 
-      save /hyipar/,/hyfpar/,/hyshad/ 
+c--      save /hyipar/,/hyfpar/,/hyshad/ 
       dimension res(2)
       kf=kfh 
       xbj=xbjh 

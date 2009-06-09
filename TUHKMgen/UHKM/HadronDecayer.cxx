@@ -46,9 +46,13 @@ using std::endl;
 Double_t GetDecayTime(const Particle &parent, Double_t weakDecayLimit) {
   ParticlePDG *pDef = parent.Def(); 
   Double_t width = pDef->GetWidth(); //GeV
-  if(width > weakDecayLimit) {
+
+  // if particle is set to be stable then return 0
+  if(pDef->GetStableStatus())
+    return 0.;
+
+  if(width > weakDecayLimit && weakDecayLimit>=0.0) {
     const Double_t slope =  parent.E() * 0.1973 / (pDef->GetMass() * width);
-//    cout<<"get decay time"<<pDef->GetPDG()<<" "<<slope<<endl;
     return -slope * TMath::Log(gRandom->Rndm());//in fm/c
   }
 
@@ -61,10 +65,10 @@ extern SERVICEEVCommon SERVICEEV;
 
 void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, DatabasePDG* database) {
   // check if the parent particle has been decayed already
-  
+  //  std::cout << "HadronDecayer::Decay() IN" << std::endl;
   Int_t daughters = parent.GetNDaughters();
 
-//cout<<"in Decay pdg"<< parent.Def()->GetPDG()<<"daughters "<<daughters<<endl;
+  //cout<<"in Decay pdg"<< parent.Def()->GetPDG()<<"daughters "<<daughters<<endl;
 
   if(daughters>0)  // particle decayed already
     return;
@@ -91,6 +95,13 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
   Int_t iterations = 0;
   // Try to decay the particle
   while(!success) {
+    //    std::cout << "HadronDecayer::Decay() iteration #" << iterations << std::endl;
+    if(iterations>1000) {
+      std::cout << "HadronDecayer::Decay() more than 1000 iterations to decay particle with code " 
+		<< pDef->GetPDG() << std::endl;
+      std::cout << "               Will be left undecayed ... check it out!" << std::endl;
+      return;
+    }
     // get a random mass using the Breit Wigner distribution 
     Double_t BWmass = gRandom->BreitWigner(PDGmass, pDef->GetWidth()); 
     //!!!!    
@@ -115,21 +126,32 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
       Delta=0.0;
     } 
       
+    // K0 decay into K0s or K0l
+    if(TMath::Abs(encoding)==311) {
+      BWmass=PDGmass;
+      Delta=0.0;
+    }
+
+    //    std::cout << "HadronDecayer::Decay() BWmass = " << BWmass << std::endl;
+    //    std::cout << "HadronDecayer::Decay() Delta = " << Delta << std::endl;
     //for particles from PYTHIA table only, if the BW mass is outside the cut range then quit this iteration and generate another BW mass
     if(ComprCodePyth!=0 && Delta>0 && (BWmass<PDGmass-Delta || BWmass>PDGmass+Delta)){
       //      std::cout<<"encoding"<<encoding<<"delta"<<Delta<<"width "<<pDef->GetWidth()<<"mass"<<BWmass<<std::endl;
+      iterations++;
+      //      std::cout << "HadronDecayer::Decay() BWmass outside cut, try again" << std::endl;
       continue;
     }    
     //----    
     
-    if(BWmass>5)
-      std::cout<<" > 5 encoding"<<encoding<<" pdgmass "<<PDGmass<<" delta "<<Delta<<"width "<<pDef->GetWidth()<<" mass "<<BWmass<<"CC"<<ComprCodePyth<<std::endl;
+    //    if(BWmass>5)
+    //      std::cout<<" > 5 encoding"<<encoding<<" pdgmass "<<PDGmass<<" delta "<<Delta<<"width "<<pDef->GetWidth()<<" mass "<<BWmass<<"CC"<<ComprCodePyth<<std::endl;
     
     // check how many decay channels are allowed with the generated mass
     Int_t nAllowedChannels = database->GetNAllowedChannels(pDef, BWmass);
     // if no decay channels are posible with this mass, then generate another BW mass
     if(nAllowedChannels==0) {    
       iterations++;
+      //      std::cout << "HadronDecayer::Decay() no decays allowed at this BW mass" << std::endl;
       continue;
     }
 
@@ -144,10 +166,14 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
     Int_t chosenChannel = 1000;
     Bool_t found = kFALSE;
     Int_t channelIterations = 0;
+    //    std::cout << "HadronDecayer::Decay() randValue = " << randValue  << std::endl;
     while(!found) {
+      //      std::cout << "HadronDecayer::Decay() channel iteration #" << channelIterations << std::endl;
       for(Int_t nChannel = 0; nChannel < nDecayChannel; ++nChannel) {
 	randValue -= pDef->GetDecayChannel(nChannel)->GetBranching();
+	//	std::cout << "HadronDecayer::Decay() channel #" << nChannel << " randValue = " << randValue << std::endl;
 	if(randValue <= 0. && database->IsChannelAllowed(pDef->GetDecayChannel(nChannel), BWmass)) {
+	  //	  std::cout << "HadronDecayer::Decay() channel found" << std::endl;
 	  chosenChannel = nChannel;
 	  found = kTRUE;
 	  break;
@@ -180,9 +206,12 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
     if(nSec == 1) {
       // initialize the daughter particle
       Particle p1(database->GetPDGParticle(dc->GetDaughterPDG(0)));
+      p1.Pos(parentBW.Pos());
+      p1.Mom(parent.Mom());
       p1.SetLastMotherPdg(parentBW.Encoding());
       p1.SetLastMotherDecayCoor(parentBW.Pos());
       p1.SetLastMotherDecayMom(parentBW.Mom());
+      p1.SetType(NB);
 
       // link the parent and daughters trough their indexes in the list
       Int_t parentIndex = -1;
@@ -233,14 +262,14 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
  
       if(deltaS>0.001) {
 
-	cout << "2-body decay kinematic check in lab system: " << pDef->GetPDG() << " --> " << p1.Encoding() << " + " << p2.Encoding() << endl;
-	cout << "Mother    (e,px,py,pz): " << parentBW.Mom().E() << "\t" << parentBW.Mom().X() << "\t" << parentBW.Mom().Y() << "\t" << parentBW.Mom().Z() << endl;
-	cout << "Mother    (x,y,z,t): " << parentBW.Pos().X() << "\t" << parentBW.Pos().Y() << "\t" << parentBW.Pos().Z() << "\t" << parentBW.Pos().T() << endl;
+	//	cout << "2-body decay kinematic check in lab system: " << pDef->GetPDG() << " --> " << p1.Encoding() << " + " << p2.Encoding() << endl;
+	//	cout << "Mother    (e,px,py,pz): " << parentBW.Mom().E() << "\t" << parentBW.Mom().X() << "\t" << parentBW.Mom().Y() << "\t" << parentBW.Mom().Z() << endl;
+	//	cout << "Mother    (x,y,z,t): " << parentBW.Pos().X() << "\t" << parentBW.Pos().Y() << "\t" << parentBW.Pos().Z() << "\t" << parentBW.Pos().T() << endl;
 
-	cout << "Daughter1 (e,px,py,pz): " << p1.Mom().E() << "\t" << p1.Mom().X() << "\t" << p1.Mom().Y() << "\t" << p1.Mom().Z() << endl;
-	cout << "Daughter2 (e,px,py,pz): " << p2.Mom().E() << "\t" << p2.Mom().X() << "\t" << p2.Mom().Y() << "\t" << p2.Mom().Z() << endl;	
-	cout << "2-body decay delta(sqrtS) = " << deltaS << endl;
-	cout << "Repeating the decay algorithm ..." << endl;
+	//	cout << "Daughter1 (e,px,py,pz): " << p1.Mom().E() << "\t" << p1.Mom().X() << "\t" << p1.Mom().Y() << "\t" << p1.Mom().Z() << endl;
+	//	cout << "Daughter2 (e,px,py,pz): " << p2.Mom().E() << "\t" << p2.Mom().X() << "\t" << p2.Mom().Y() << "\t" << p2.Mom().Z() << endl;	
+	//	cout << "2-body decay delta(sqrtS) = " << deltaS << endl;
+	//	cout << "Repeating the decay algorithm ..." << endl;
 
 	iterations++;
 	continue;
@@ -364,13 +393,13 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
       // if deltaS is too big then repeat the kinematic procedure
       if(deltaS>0.001) {
 
-	cout << "3-body decay kinematic check in lab system: " << pDef->GetPDG() << " --> " << p1.Encoding() << " + " << p2.Encoding() << " + " << p3.Encoding() << endl;
-	cout << "Mother    (e,px,py,pz): " << parentBW.Mom().E() << "\t" << parentBW.Mom().X() << "\t" << parentBW.Mom().Y() << "\t" << parentBW.Mom().Z() << endl;
-	cout << "Daughter1 (e,px,py,pz): " << p1.Mom().E() << "\t" << p1.Mom().X() << "\t" << p1.Mom().Y() << "\t" << p1.Mom().Z() << endl;
-	cout << "Daughter2 (e,px,py,pz): " << p2.Mom().E() << "\t" << p2.Mom().X() << "\t" << p2.Mom().Y() << "\t" << p2.Mom().Z() << endl;
-	cout << "Daughter3 (e,px,py,pz): " << p3.Mom().E() << "\t" << p3.Mom().X() << "\t" << p3.Mom().Y() << "\t" << p3.Mom().Z() << endl;
-	cout << "3-body decay delta(sqrtS) = " << deltaS << endl;
-	cout << "Repeating the decay algorithm..." << endl;
+	//	cout << "3-body decay kinematic check in lab system: " << pDef->GetPDG() << " --> " << p1.Encoding() << " + " << p2.Encoding() << " + " << p3.Encoding() << endl;
+	//	cout << "Mother    (e,px,py,pz): " << parentBW.Mom().E() << "\t" << parentBW.Mom().X() << "\t" << parentBW.Mom().Y() << "\t" << parentBW.Mom().Z() << endl;
+	//	cout << "Daughter1 (e,px,py,pz): " << p1.Mom().E() << "\t" << p1.Mom().X() << "\t" << p1.Mom().Y() << "\t" << p1.Mom().Z() << endl;
+	//	cout << "Daughter2 (e,px,py,pz): " << p2.Mom().E() << "\t" << p2.Mom().X() << "\t" << p2.Mom().Y() << "\t" << p2.Mom().Z() << endl;
+	//	cout << "Daughter3 (e,px,py,pz): " << p3.Mom().E() << "\t" << p3.Mom().X() << "\t" << p3.Mom().Y() << "\t" << p3.Mom().Z() << endl;
+	//	cout << "3-body decay delta(sqrtS) = " << deltaS << endl;
+	//	cout << "Repeating the decay algorithm..." << endl;
 
 	iterations++;
 	continue;

@@ -1,22 +1,48 @@
+// This class provides an interface between the HYDJET++ Monte-Carlo model
+// and AliRoot (by inheriting from the AliGenMC class).
+// This class uses the TUHKMgen class (which inherits from TGenerator) to
+// transmit parameters and receive output from the model.
+
 #ifndef ALIGENUHKM_H
 #define ALIGENUHKM_H
 
 #include "AliGenMC.h"
 #include <TString.h>
-
 #include "TUHKMgen.h"
 #ifndef INITIALSTATEHYDJET_INCLUDED
 #include "InitialStateHydjet.h"
 #endif
+#include "TParticle.h"
 
 #include <string>
 using namespace std;
 
-class TUHKMgen;
-class TParticle;
+//class TUHKMgen;
+//class TParticle;
+//class InitialStateHydjet;
 
 class AliGenUHKM : public AliGenMC
 {
+ protected:
+  Int_t       fTrials;         // Number of trials
+  TUHKMgen    *fUHKMgen;       // UHKM
+  
+  InitialParamsHydjet_t fHydjetParams;    // list of parameters for the initial state
+  // details for the PDG database
+  Char_t fParticleFilename[256];            // particle list filename
+  Char_t fDecayFilename[256];               // decay table filename
+  Int_t fStableFlagPDG[500];                // array of PDG codes flagged
+  Bool_t fStableFlagStatus[500];            // array of decay flag status
+  Int_t fStableFlagged;                     // number of toggled decay flags
+
+  void SetAllParameters();
+  void CheckPDGTable();
+  
+ private:
+  void Copy(TObject &rhs) const;
+  AliGenUHKM(const AliGenUHKM&);
+  AliGenUHKM & operator = (const AliGenUHKM &);
+  
  public:
   AliGenUHKM();
   AliGenUHKM(Int_t npart);
@@ -25,13 +51,13 @@ class AliGenUHKM : public AliGenMC
   virtual void    Generate();
   virtual void    Init();
   //  virtual void    AddHeader(AliGenEventHeader* header);
-
+  
   // Setters
   // set reasonable default parameters suited for central Au+Au collisions at RHIC(200GeV)
   void SetAllParametersRHIC();
   // set reasonable default parameters suited for central Pb+Pb collisions at LHC(5.5TeV)
   void SetAllParametersLHC();
-
+  
   void SetEcms(Double_t value) {fHydjetParams.fSqrtS = value;}          // CMS energy per nucleon [GeV] (<2.24 given temperature and ch pot are used)
   void SetAw(Double_t value) {fHydjetParams.fAw = value;}             // nuclei mass number
   void SetBmin(Double_t value) {fHydjetParams.fBmin = value;}           // Minimum impact parameter
@@ -54,7 +80,6 @@ class AliGenUHKM : public AliGenMC
   void SetMomAsymmPar(Double_t value) {fHydjetParams.fDelta = value;}          // Momentum asymmetry parameter
   void SetCoordAsymmPar(Double_t value) {fHydjetParams.fEpsilon = value;}        // Coordinate asymmetry parameter
 
-  void SetFlagWeakDecay(Int_t value) {fHydjetParams.fWeakDecay = value;} //flag to switch on/off weak hadron decays <0:decays off, >0: decays on, (default: 0)
   void SetEtaType(Int_t value) {fHydjetParams.fEtaType = value;} // flag to choose rapidity distribution, if fEtaType<=0,
                                                   //then uniform rapidity distribution in [-fYlmax,fYlmax] if fEtaType>0,
                                                   //then Gaussian with dispertion = fYlmax
@@ -81,80 +106,44 @@ class AliGenUHKM : public AliGenMC
                                                    //gluons (0: small-angular, 1: wide-angular, 2:collinear) (default: 0).
 
 
-  void SetPDGParticleFile(Char_t *name) {strcpy(fParticleFilename, name);}//Set the filename containing the particle PDG info
-  void SetPDGDecayFile(Char_t *name) {strcpy(fDecayFilename, name);} //Set the filename containing the PDG decay channels info
+  void SetPDGParticleFile(const Char_t *name) {strcpy(fParticleFilename, name);}//Set the filename containing the particle PDG info
+  void SetPDGDecayFile(const Char_t *name) {strcpy(fDecayFilename, name);} //Set the filename containing the PDG decay channels info
   void SetPDGParticleStable(Int_t pdg, Bool_t value) { // Turn on/off the decay flag for a PDG particle
     fStableFlagPDG[fStableFlagged] = pdg;
     fStableFlagStatus[fStableFlagged++] = value;
   }
-  void SetUseCharmParticles(Bool_t flag) {fUseCharmParticles = flag;}
-  void SetMinimumWidth(Double_t value) {fMinWidth = value;}
-  void SetMaximumWidth(Double_t value) {fMaxWidth = value;}
-  void SetMinimumMass(Double_t value) {fMinMass = value;}
-  void SetMaximumMass(Double_t value) {fMaxMass = value;}
 
   // Getters
-  Double_t GetEcms() {return fHydjetParams.fSqrtS;}
-  Double_t GetAw() {return fHydjetParams.fAw;}
-  Double_t GetBmin() {return fHydjetParams.fBmin;}
-  Double_t GetBmax() {return fHydjetParams.fBmax;}
-  Double_t GetChFrzTemperature() {return fHydjetParams.fT;}
-  Double_t GetMuB() {return fHydjetParams.fMuB;}
-  Double_t GetMuS() {return fHydjetParams.fMuS;}
-  Double_t GetMuQ() {return fHydjetParams.fMuI3;}
-  Double_t GetThFrzTemperature() {return fHydjetParams.fThFO;}
-  Double_t GetMuPionThermal() {return fHydjetParams.fMu_th_pip;}
-  Int_t    GetSeed() {return fHydjetParams.fSeed;}
-  Double_t GetTauB() {return fHydjetParams.fTau;}
-  Double_t GetSigmaTau() {return fHydjetParams.fSigmaTau;}
-  Double_t GetRmaxB() {return fHydjetParams.fR;}
-  Double_t GetYlMax() {return fHydjetParams.fYlmax;}
-  Double_t GetEtaRMax() {return fHydjetParams.fUmax;}
-  Double_t GetMomAsymmPar() {return fHydjetParams.fDelta;}
-  Double_t GetCoordAsymmPar() {return fHydjetParams.fEpsilon;}
-  Int_t    GetFlagWeakDecay() {return fHydjetParams.fWeakDecay;}
-  Int_t    GetEtaType() {return fHydjetParams.fEtaType;}
-  Double_t GetGammaS() {return fHydjetParams.fCorrS;}
-  Int_t    GetPyquenNhsel() {return fHydjetParams.fNhsel;}
-  Int_t    GetPyquenShad() {return fHydjetParams.fIshad;}
-  Double_t GetPyquenPtmin() {return fHydjetParams.fPtmin;}
-  Double_t GetPyquenT0() {return fHydjetParams.fT0;}
-  Double_t GetPyquenTau0() {return fHydjetParams.fTau0;}
-  Double_t GetPyquenNf() {return fHydjetParams.fNf;}
-  Double_t GetPyquenIenglu() {return fHydjetParams.fIenglu;}
-  Double_t GetPyquenIanglu() {return fHydjetParams.fIanglu;}
-  Char_t*  GetPDGParticleFile() {return fParticleFilename;}
-  Char_t*  GetPDGDecayFile() {return fDecayFilename;}
-  Bool_t   GetUseCharmParticles(){return fUseCharmParticles;}
-  Double_t GetMinimumWidth() {return fMinWidth;}
-  Double_t GetMaximumWidth() {return fMaxWidth;}
-  Double_t GetMinimumMass() {return fMinMass;}
-  Double_t GetMaximumMass() {return fMaxMass;}
-
- protected:
-  Int_t       fTrials;         // Number of trials
-  TUHKMgen    *fUHKMgen;       // UHKM
-
-  InitialParamsHydjet_t fHydjetParams;    // list of parameters for the initial state
-  // details for the PDG database
-  Char_t fParticleFilename[256];            // particle list filename
-  Char_t fDecayFilename[256];               // decay table filename
-  Int_t fStableFlagPDG[500];                // array of PDG codes flagged
-  Bool_t fStableFlagStatus[500];            // array of decay flag status
-  Int_t fStableFlagged;                     // number of toggled decay flags
-  Bool_t fUseCharmParticles;                   // flag to turn on/off the use of charm particles
-  Double_t fMinWidth;                          // minimum decay width for the particles to be used from the PDG database
-  Double_t fMaxWidth;                          // maximum ----
-  Double_t fMinMass;                           // minimum mass for the particles to be used from the PDG database
-  Double_t fMaxMass;                           // maximum ----
-
-  void SetAllParameters();
-  void CheckPDGTable();
-  
- private:
-  void Copy(TObject &rhs) const;
-  AliGenUHKM(const AliGenUHKM&);
-  AliGenUHKM & operator = (const AliGenUHKM &);
+  Double_t GetEcms() const {return fHydjetParams.fSqrtS;}
+  Double_t GetAw() const {return fHydjetParams.fAw;}
+  Double_t GetBmin() const {return fHydjetParams.fBmin;}
+  Double_t GetBmax() const {return fHydjetParams.fBmax;}
+  Double_t GetChFrzTemperature() const {return fHydjetParams.fT;}
+  Double_t GetMuB() const {return fHydjetParams.fMuB;}
+  Double_t GetMuS() const {return fHydjetParams.fMuS;}
+  Double_t GetMuQ() const {return fHydjetParams.fMuI3;}
+  Double_t GetThFrzTemperature() const {return fHydjetParams.fThFO;}
+  Double_t GetMuPionThermal() const {return fHydjetParams.fMu_th_pip;}
+  Int_t    GetSeed() const {return fHydjetParams.fSeed;}
+  Double_t GetTauB() const {return fHydjetParams.fTau;}
+  Double_t GetSigmaTau() const {return fHydjetParams.fSigmaTau;}
+  Double_t GetRmaxB() const {return fHydjetParams.fR;}
+  Double_t GetYlMax() const {return fHydjetParams.fYlmax;}
+  Double_t GetEtaRMax() const {return fHydjetParams.fUmax;}
+  Double_t GetMomAsymmPar() const {return fHydjetParams.fDelta;}
+  Double_t GetCoordAsymmPar() const {return fHydjetParams.fEpsilon;}
+  Int_t    GetEtaType() const {return fHydjetParams.fEtaType;}
+  Double_t GetGammaS() const {return fHydjetParams.fCorrS;}
+  Int_t    GetPyquenNhsel() const {return fHydjetParams.fNhsel;}
+  Int_t    GetPyquenShad() const {return fHydjetParams.fIshad;}
+  Double_t GetPyquenPtmin() const {return fHydjetParams.fPtmin;}
+  Double_t GetPyquenT0() const {return fHydjetParams.fT0;}
+  Double_t GetPyquenTau0() const {return fHydjetParams.fTau0;}
+  Double_t GetPyquenNf() const {return fHydjetParams.fNf;}
+  Double_t GetPyquenIenglu() const {return fHydjetParams.fIenglu;}
+  Double_t GetPyquenIanglu() const {return fHydjetParams.fIanglu;}
+  const Char_t*  GetPDGParticleFile() const {return fParticleFilename;}
+  const Char_t*  GetPDGDecayFile() const {return fDecayFilename;}
 
   ClassDef(AliGenUHKM, 6) // AliGenerator interface to UHKM
 };

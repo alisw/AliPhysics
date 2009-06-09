@@ -68,6 +68,32 @@ Particle::Particle(ParticlePDG *prop, const TLorentzVector &pos, const TLorentzV
   for(Int_t i=0; i<3; i++) fDaughterIndex[i] = -1;
 }
 
+Particle::Particle(const Particle& copy) :
+  fPosition(copy.Pos()),
+    fMomentum(copy.Mom()),
+    fLastMotherDecayCoor(copy.GetLastMotherDecayCoor()),
+    fLastMotherDecayMom(copy.GetLastMotherDecayMom()),
+    fParticleProperties(copy.Def()),
+    fLastInteractionTime(copy.GetLastInterTime()),
+    fInteractionNumber(copy.GetLastInterNumber()),
+    fLastMotherPdg(copy.GetLastMotherPdg()),
+    fType(copy.GetType()),
+    fIndex(copy.GetIndex()),
+    fMotherIndex(copy.GetMother()),
+    fNDaughters(copy.GetNDaughters())
+{
+      for(Int_t i=0; i<fNDaughters; i++) {
+        fDaughterIndex[i] = copy.GetDaughter(i);
+      }
+}
+
+
+
+Particle & Particle::operator=(const Particle& /*copy*/) {
+  return *this;
+}
+
+
 Int_t Particle::Encoding() const {
   return fParticleProperties->GetPDG();
 }
