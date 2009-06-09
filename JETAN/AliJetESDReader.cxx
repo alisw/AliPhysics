@@ -491,11 +491,11 @@ void AliJetESDReader::InitUnitArray()
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0 && nBin<fNumUnits+nElements+n0+n1)
 		    {
-		      Float_t phi = eta = 0.;
-		      fGrid1->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0),phi,eta);
+		      Float_t phi0 = eta = 0.;
+		      fGrid1->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0),phi0,eta);
 		      Deta = fGrid1->GetDeta(); 
 		      Dphi = fGrid1->GetDphi(); 
-		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
+		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi0,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0+n1 && nBin<fNumUnits+nElements+n0+n1+n2)
 		    {
