@@ -78,6 +78,16 @@ int main(int argc, char **argv) {
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
   const Int_t kSides=2;
+  Int_t adcSamplFreq=40;
+  if(gSystem->Getenv("DAQ_DETDB_LOCAL")!=NULL){
+    const char* dir=gSystem->Getenv("DAQ_DETDB_LOCAL");    
+    TString filnam=Form("%s/fee.conf",dir); 
+    FILE* feefil=fopen(filnam.Data(),"r"); 
+    fscanf(feefil,"%d \n",&adcSamplFreq);
+    fclose(feefil);
+  }
+
+
   AliITSOnlineSDDInjectors **injan=new AliITSOnlineSDDInjectors*[kTotDDL*kModPerDDL*kSides];
   TH2F **histo=new TH2F*[kTotDDL*kModPerDDL*kSides];
   Int_t nWrittenEv[kTotDDL*kModPerDDL*kSides];
@@ -89,6 +99,8 @@ int main(int argc, char **argv) {
       for(Int_t isid=0;isid<kSides;isid++){
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	injan[index]=new AliITSOnlineSDDInjectors(iddl,imod,isid);
+	if(adcSamplFreq==20) injan[index]->Set20MHzConfig();
+	else injan[index]->Set40MHzConfig();
 	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
 	histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
 	nWrittenEv[index]=0;

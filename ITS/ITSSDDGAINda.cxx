@@ -78,6 +78,16 @@ int main(int argc, char **argv) {
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
   const Int_t kSides=2;
+  Int_t adcSamplFreq=40;
+  if(gSystem->Getenv("DAQ_DETDB_LOCAL")!=NULL){
+    const char* dir=gSystem->Getenv("DAQ_DETDB_LOCAL");    
+    TString filnam=Form("%s/fee.conf",dir); 
+    FILE* feefil=fopen(filnam.Data(),"r"); 
+    fscanf(feefil,"%d \n",&adcSamplFreq);
+    TString shcomm=Form("tar -rf SDDbase_LDC.tar -C %s fee.conf",dir); 
+    gSystem->Exec(shcomm.Data());
+    fclose(feefil);
+  }
 
   AliITSOnlineSDDTP **tpan=new AliITSOnlineSDDTP*[kTotDDL*kModPerDDL*kSides];
   TH2F **histo=new TH2F*[kTotDDL*kModPerDDL*kSides];
@@ -88,6 +98,8 @@ int main(int argc, char **argv) {
       for(Int_t isid=0;isid<kSides;isid++){
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	tpan[index]=new AliITSOnlineSDDTP(iddl,imod,isid,100.);
+	if(adcSamplFreq==20) tpan[index]->SetLastGoodTB(126);
+	else tpan[index]->SetLastGoodTB(254);
 	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
 	histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
 	isFilled[index]=0;
