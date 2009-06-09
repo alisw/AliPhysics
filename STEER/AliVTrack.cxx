@@ -54,7 +54,7 @@ Double_t AliVTrack::GetBz() const
 
 void AliVTrack::GetBxByBz(Double_t b[3]) const 
 {
-  // returns Bz component of the magnetic field (kG)
+  // returns the Bx, By and Bz components of the magnetic field (kG)
   AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!fld) {
      b[0] = b[1] = 0.;
