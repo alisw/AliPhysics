@@ -50,10 +50,6 @@ fOfflineTransform(NULL)
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt  
   
-  fOfflineTransform = AliTPCcalibDB::Instance()->GetTransform(); 
-  if(!fOfflineTransform){
-    HLTError("AliHLTTPCHWClusterTransformComponent():  Offline transform not in AliTPCcalibDB.");
-  }
 }
 
 AliHLTTPCHWClusterTransformComponent::~AliHLTTPCHWClusterTransformComponent() { 
@@ -102,6 +98,13 @@ AliHLTComponent* AliHLTTPCHWClusterTransformComponent::Spawn() {
 	
 int AliHLTTPCHWClusterTransformComponent::DoInit( int /*argc*/, const char** /*argv*/ ) { 
 // see header file for class documentation
+
+  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
+  if(!pCalib ||
+     !(fOfflineTransform = AliTPCcalibDB::Instance()->GetTransform())){
+    HLTError("Can not retrieve Offline transform from AliTPCcalibDB (%p)", pCalib);
+    return -ENOENT;
+  }
 
 //   Int_t i = 0;
 //   Char_t* cpErr;
