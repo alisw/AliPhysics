@@ -14,11 +14,11 @@ void RunAnalysisAODVertexingHF()
   //
 
   //
-  TString analysisMode = "grid"; // "local", "grid", or "proof" (not yet)
+  TString analysisMode = "local"; // "local", "grid", or "proof" (not yet)
   TString inputMode    = "list"; // "list", "xml", or "dataset" (not yet)
   Long64_t nentries=1234567890,firstentry=0;
-  Bool_t useParFiles=kTRUE;
-  Bool_t useAlienPlugin=kTRUE;
+  Bool_t useParFiles=kFALSE;
+  Bool_t useAlienPlugin=kFALSE;
   TString pluginmode="full";
   TString loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/";
   //
@@ -99,12 +99,12 @@ void RunAnalysisAODVertexingHF()
   TString dataset; // for proof
 
   if(!useAlienPlugin) {
-    TString makeAODInputChain="MakeAODInputchain.C"; loadLibraries.Prepend(loadMacroPath.Data());
+    TString makeAODInputChain="MakeAODInputChain.C"; makeAODInputChain.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(makeAODInputChain.Data());
     if(inputMode=="list") {
       // Local files
       chainAOD = MakeAODInputChain();// with this it reads ./AliAOD.root and ./AliAOD.VertexingHF.root
-      chainAOD = MakeAODInputChain("alien:///alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/180100/",1,1);
+      //chainAOD = MakeAODInputChain("alien:///alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/180100/",1,1);
     } else if(inputMode=="xml") {
       // xml
       chainAOD = MakeAODInputChain("collection_aod.xml","collection_aodHF.xml");
