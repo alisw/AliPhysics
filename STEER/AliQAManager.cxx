@@ -1428,3 +1428,15 @@ void AliQAManager::SetWriteExpert()
       fQAWriteExpert[iDet] = kTRUE ;
   }
 }  
+
+//_____________________________________________________________________________
+void AliQAManager::Destroy() {
+// delete AliQAManager instance and
+// all associated objects
+
+  if (fgQAInstance) {
+    delete fgQAInstance;
+    fgQAInstance = 0x0;
+  }
+}
+

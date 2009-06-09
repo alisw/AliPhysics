@@ -78,6 +78,7 @@ public:
 	void             SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
 	void             SetTasks(TString tasks) { fTasks = tasks ; }
   void             SetWriteExpert() ; 
+  static void      Destroy();
 
 private: 
 	Bool_t			DoIt(const AliQAv1::TASKINDEX_t taskIndex) ;
