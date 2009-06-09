@@ -520,7 +520,7 @@ AliReconstruction::~AliReconstruction()
     delete fAlignObjArray;
   }
   fSpecCDBUri.Delete();
-  delete fQAManager;
+
   AliCodeTimer::Instance()->Print();
 }
 
@@ -1977,8 +1977,11 @@ void AliReconstruction::Terminate()
   // In case of empty events the tags will contain dummy values
   AliCodeTimerAuto("");
 
-  AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
-  esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent,fGRPData, AliQAv1::Instance()->GetQA(), AliQAv1::Instance()->GetEventSpecies(), AliQAv1::kNDET, AliRecoParam::kNSpecies);
+  // Do not call the ESD tag creator in case of PROOF-based reconstruction
+  if (!fInput) {
+    AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
+    esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent,fGRPData, AliQAv1::Instance()->GetQA(), AliQAv1::Instance()->GetEventSpecies(), AliQAv1::kNDET, AliRecoParam::kNSpecies);
+  }
 
   // Cleanup of CDB manager: cache and active storages!
   AliCDBManager::Instance()->ClearCache();
@@ -2827,6 +2830,9 @@ void AliReconstruction::CleanUp()
     delete ffile;
     ffile = NULL;
   }
+
+  delete fQAManager;
+  fQAManager = NULL;
 
   TGeoGlobalMagField::Instance()->SetField(NULL);
 }
