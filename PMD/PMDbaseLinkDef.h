@@ -23,4 +23,5 @@
 #pragma link C++ class  AliPMDsdigit+;
 #pragma link C++ class  AliPMDQAChecker+;
 #pragma link C++ class  AliPMDMisAligner+;
+#pragma link C++ class  AliPMDHotData+;
 #endif
