@@ -16,10 +16,10 @@ void TestPreprocessor()
 
     // create AliTestShuttle instance
     // The parameters are run, startTime, endTime
-    AliTestShuttle* shuttle = new AliTestShuttle(7, 0, 1);
+    AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 1);
 
 
-    printf("Test Shuttle temp dir: %s\n", AliShuttleInterface::GetShuttleTempDir());
+//    printf("Test Shuttle temp dir: %s\n", AliShuttleInterface::GetShuttleTempDir());
 
     // TODO if needed, change location of OCDB and Reference test folders
     // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB
@@ -74,6 +74,7 @@ void TestPreprocessor()
     
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "PMD", "PMD_PED.root", "GDC0", "PMD_PED.root");
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "PMD", "PMDGAINS.root", "GDC0", "xy.root");
+    shuttle->AddInputFile(AliShuttleInterface::kDAQ, "PMD", "PMD_HOT.root", "GDC0", "hot.root");
     
     // TODO(3)
     //
@@ -81,7 +82,7 @@ void TestPreprocessor()
     // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
     // using GetRunType function.
 
-    shuttle->SetInputRunType("PEDESTAL_RUN");
+    shuttle->SetInputRunType("PHYSICS");
 
     // TODO(4)
     //
@@ -99,7 +100,7 @@ void TestPreprocessor()
     // using GetFromOCDB function.
     
     TObjString obj("This is a condition parameter stored in OCDB");
-    AliCDBId id("TPC/Calib/Data", 0, AliCDBRunRange::Infinity());
+    AliCDBId id("PMD/Calib/Hot", 0, AliCDBRunRange::Infinity());
     AliCDBMetaData md;
     AliCDBEntry entry(&obj, id, &md);
 
@@ -122,14 +123,14 @@ void TestPreprocessor()
     //
     // Check the file which should have been created
     AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-	->Get("PMD/Calib/Ped", 7);
+	->Get("PMD/Calib/Hot", 7);
     if (!chkEntry)
     {
 	printf("The file is not there. Something went wrong.\n");
 	return;
     }
     
-    AliPMDPedestal* output = dynamic_cast<AliPMDPedestal*> (chkEntry->GetObject());
+    AliPMDHotData* output = dynamic_cast<AliPMDHotData*> (chkEntry->GetObject());
     // If everything went fine, draw the result
     if (output)
 	output->Print();
