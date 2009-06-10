@@ -274,11 +274,17 @@ Bool_t AliRsnCutStd::IsSelected(ETarget tgt, AliRsnDaughter *track)
     case kCharge:
       fCutValueI = (Int_t)track->Charge();
       return OkValue();
+    case kTruePID:
+      fCutValueI = (Int_t)track->PerfectPID();
+      return OkValue();
     case kAssignedPID:
       fCutValueI = (Int_t)track->AssignedPID();
       return OkValue();
     case kRequiredPID:
       fCutValueI = (Int_t)track->RequiredPID();
+      return OkValue();
+    case kRealisticPID:
+      fCutValueI = (Int_t)track->RealisticPID();
       return OkValue();
     default:
       AliWarning(Form("Value %d is not included in available cuts for DAUGHTER. Cut skipped.", fType));
