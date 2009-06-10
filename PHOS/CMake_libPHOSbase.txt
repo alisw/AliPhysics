@@ -5,14 +5,12 @@ set(SRCS
                  AliPHOSLoader.cxx
                  AliPHOSHit.cxx AliPHOSTrackSegmentMaker.cxx  AliPHOSPID.cxx
                  AliPHOSClusterizer.cxx
-                 AliPHOSCalibrationDB.cxx AliPHOSDigitizer.cxx
+                 AliPHOSDigitizer.cxx
                  AliPHOSSDigitizer.cxx AliPHOSDigit.cxx
-                 AliPHOSFastRecParticle.cxx AliPHOSRawStream2004.cxx
+                 AliPHOSFastRecParticle.cxx 
                  AliPHOSCalibData.cxx
-		 AliPHOSCalibrationData.cxx
                  AliPHOSCpvCalibData.cxx
-                 AliPHOSEmcCalibData.cxx AliPHOSCalibrManager.cxx
-		 AliPHOSConTableDB.cxx
+                 AliPHOSEmcCalibData.cxx
                  AliPHOSPulseGenerator.cxx
                  AliPHOSRawDecoder.cxx
                  AliPHOSRawDecoderv1.cxx

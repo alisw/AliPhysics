@@ -5,9 +5,6 @@ set(SRCS
                  AliPHOSvFast.cxx AliPHOSvImpacts.cxx 
                  AliPHOSCPVDigit.cxx  
                  AliPHOSTick.cxx 
-                 AliPHOSRaw2Digits.cxx AliPHOSBeamTestEvent.cxx 
-                 AliPHOSCalibrator.cxx 
-                 AliPHOSOnlineMonitor.cxx 
                  AliPHOSQADataMakerSim.cxx 
 )
 

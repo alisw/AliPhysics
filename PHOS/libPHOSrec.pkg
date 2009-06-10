@@ -11,7 +11,6 @@ SRCS          =  \
                  AliPHOSRecManager.cxx AliPHOSRecCpvManager.cxx \
 		 AliPHOSRecEmcManager.cxx \
                  AliPHOSClusterizerv2.cxx AliPHOSPIDv1.cxx \
-		 AliPHOSJet.cxx AliPHOSJetFinder.cxx\
 		 AliPHOSGridFile.cxx \
 		 AliPHOSTracker.cxx \
 		 AliPHOSEsdCluster.cxx \
