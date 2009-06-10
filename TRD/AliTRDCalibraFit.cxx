@@ -484,34 +484,31 @@ Bool_t AliTRDCalibraFit::AnalyseCH(AliTRDCalibraVector *calvect)
     // Take the histo
     Double_t nentries = 0.0;
     Double_t mean = 0.0;
-    TH1F *projch = 0x0;
-    Bool_t something = kTRUE;
-    if(!calvect->GetCHEntries(fCountDet)) something = kFALSE;
-    if(something){
-      TString tname("CH");
-      tname += idect;
-      projch  = calvect->ConvertVectorCHHisto(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(0)*fCalibraMode->GetNfragRphi(0)))),(const char *) tname);
-      projch->SetDirectory(0);
-      for (Int_t k = 0; k < calvect->GetNumberBinCharge(); k++) {
-        nentries += projch->GetBinContent(k+1);
-	mean += projch->GetBinCenter(k+1)*projch->GetBinContent(k+1);
-      }
-      if (nentries > 0) {
-	fNumberEnt++;
-	mean /= nentries;
-      }
-      //printf("The number of entries for the group %d is %f\n",idect,nentries);
-      // Rebin
-      if (fRebin >  1) {
-	projch = ReBin((TH1F *) projch);
-      }
+    if(!calvect->GetCHEntries(fCountDet)) {
+      NotEnoughStatisticCH(idect);
+      continue;
+    }
+    
+    TString tname("CH");
+    tname += idect;
+    TH1F *projch  = calvect->ConvertVectorCHHisto(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(0)*fCalibraMode->GetNfragRphi(0)))),(const char *) tname);
+    projch->SetDirectory(0);
+    for (Int_t k = 0; k < calvect->GetNumberBinCharge(); k++) {
+      nentries += projch->GetBinContent(k+1);
+      mean += projch->GetBinCenter(k+1)*projch->GetBinContent(k+1);
+    }
+    if (nentries > 0) {
+      fNumberEnt++;
+      mean /= nentries;
+    }
+    //printf("The number of entries for the group %d is %f\n",idect,nentries);
+    // Rebin
+    if (fRebin >  1) {
+      projch = ReBin((TH1F *) projch);
     }
     // This detector has not enough statistics or was not found in VectorCH
     if (nentries <= fMinEntries) {
       NotEnoughStatisticCH(idect);
-      if (fDebugLevel != 1) {
-	if(projch) delete projch;
-      }     
       continue;
     }
     // Statistic of the histos fitted
@@ -528,10 +525,6 @@ Bool_t AliTRDCalibraFit::AnalyseCH(AliTRDCalibraVector *calvect)
       }
     // Fill Infos Fit
     FillInfosFitCH(idect); 
-    // Memory!!!
-    if (fDebugLevel != 1) {
-      delete projch;
-    }
   } // Boucle object
   // Normierungcharge
   if (fDebugLevel != 1) {
@@ -671,24 +664,21 @@ Bool_t AliTRDCalibraFit::AnalysePH(AliTRDCalibraVector *calvect)
     UpdatefCountDetAndfCount(idect,1);
     ReconstructFitRowMinRowMax(idect,1);
     // Take the histo
-    TH1F *projph = 0x0;
     fEntriesCurrent = 0;
-    Bool_t something = kTRUE;
-    if(!calvect->GetPHEntries(fCountDet)) something = kFALSE;
-    if(something){
-      TString tname("PH");
-      tname += idect;
-      projph  = CorrectTheError((TGraphErrors *) (calvect->ConvertVectorPHTGraphErrors(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1)))),(const char *) tname)));
-      projph->SetDirectory(0);
+    if(!calvect->GetPHEntries(fCountDet)) {
+      NotEnoughStatisticPH(idect,fEntriesCurrent);
+      continue;
     }
+    TString tname("PH");
+    tname += idect;
+    TH1F *projph  = calvect->CorrectTheError((TGraphErrors *) (calvect->ConvertVectorPHTGraphErrors(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1)))),(const char *) tname)),fEntriesCurrent);
+    projph->SetDirectory(0);
+    if(fEntriesCurrent > 0) fNumberEnt++;
     //printf("The number of entries for the group %d is %d\n",idect,fEntriesCurrent);
     // This detector has not enough statistics or was off
     if (fEntriesCurrent <=  fMinEntries) {
       //printf("Not enough stat!\n");
       NotEnoughStatisticPH(idect,fEntriesCurrent);
-      if (fDebugLevel != 1) {
-	if(projph) delete projph;
-      }
       continue;
     }
     // Statistic of the histos fitted
@@ -707,12 +697,8 @@ Bool_t AliTRDCalibraFit::AnalysePH(AliTRDCalibraVector *calvect)
       }
     // Fill the tree if end of a detector or only the pointer to the branch!!!
     FillInfosFitPH(idect,fEntriesCurrent);
-    // Memory!!!
-    if (fDebugLevel != 1) {
-      delete projph;
-    }
   } // Boucle object
- 
+  
   // Mean Statistic
   if (fNumberFit > 0) {
     AliInfo(Form("There are %d with at least one entries. %d fits have been proceeded (sucessfully or not...). There is a mean statistic of: %d over these fitted histograms and %d successfulled fits",fNumberEnt, fNumberFit, (Int_t) fStatisticMean/fNumberFit,fNumberFitSuccess));
@@ -942,22 +928,19 @@ Bool_t AliTRDCalibraFit::AnalysePRF(AliTRDCalibraVector *calvect)
     UpdatefCountDetAndfCount(idect,2);
     ReconstructFitRowMinRowMax(idect,2);
     // Take the histo
-    TH1F *projprf = 0x0;
     fEntriesCurrent = 0;
-    Bool_t something = kTRUE;
-    if(!calvect->GetPRFEntries(fCountDet)) something = kFALSE;
-    if(something){
-      TString tname("PRF");
-      tname += idect;
-      projprf  = CorrectTheError((TGraphErrors *) (calvect->ConvertVectorPRFTGraphErrors(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1)))),(const char *) tname)));
-      projprf->SetDirectory(0);
+    if(!calvect->GetPRFEntries(fCountDet)) {
+      NotEnoughStatisticPRF(idect);
+      continue;
     }
+    TString tname("PRF");
+    tname += idect;
+    TH1F *projprf  = calvect->CorrectTheError((TGraphErrors *) (calvect->ConvertVectorPRFTGraphErrors(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1)))),(const char *) tname)),fEntriesCurrent);
+    projprf->SetDirectory(0);
+    if(fEntriesCurrent > 0) fNumberEnt++;
     // This detector has not enough statistics or was off
     if (fEntriesCurrent <= fMinEntries) {
       NotEnoughStatisticPRF(idect);
-      if (fDebugLevel != 1) {
-	if(projprf) delete projprf;
-      }
       continue;
     }
     // Statistic of the histos fitted
@@ -974,10 +957,6 @@ Bool_t AliTRDCalibraFit::AnalysePRF(AliTRDCalibraVector *calvect)
       }    
     // Fill the tree if end of a detector or only the pointer to the branch!!!
     FillInfosFitPRF(idect);
-    // Memory!!!
-    if (fDebugLevel != 1) {
-      delete projprf;
-    }
   } // Boucle object
   // Mean Statistics
   if (fNumberFit > 0) {
@@ -1037,35 +1016,33 @@ Bool_t AliTRDCalibraFit::AnalysePRFMarianFit(AliTRDCalibraVector *calvect)
     UpdatefCountDetAndfCount(idect,2);
     ReconstructFitRowMinRowMax(idect,2);
     // Take the histo
-    TGraphErrors *projprftree = 0x0;
     fEntriesCurrent  = 0;
-    Bool_t something = kTRUE;
-    if(!calvect->GetPRFEntries(fCountDet)) something = kFALSE;
-    if(something){
-      TString tname("PRF");
-      tname += idect;
-      projprftree  = calvect->ConvertVectorPRFTGraphErrors(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1)))),(const char *) tname);
-      nbins   = projprftree->GetN();
-      arrayx  = (Double_t *)projprftree->GetX();
-      arraye  = (Double_t *)projprftree->GetEX();
-      arraym  = (Double_t *)projprftree->GetY();
-      arrayme = (Double_t *)projprftree->GetEY();
-      Float_t step = arrayx[1]-arrayx[0];
-      lowedge = arrayx[0] - step/2.0;
-      upedge  = arrayx[(nbins-1)] + step/2.0;
-      //printf("nbins est %d\n",nbins);
-      for(Int_t k = 0; k < nbins; k++){
-	fEntriesCurrent += (Int_t)arraye[k];
-	//printf("for %d we have %f, %f\n",k,arraye[k],((projprftree->GetEX())[k]));
-	if(arraye[k]>0.0) arrayme[k] = TMath::Sqrt(TMath::Abs(arrayme[k]-arraym[k]*arraym[k])/arraye[k]);
-      }
-      if(fEntriesCurrent > 0) fNumberEnt++;
+    if(!calvect->GetPRFEntries(fCountDet)) {
+      NotEnoughStatisticPRF(idect);
+      continue;
     }
+    TString tname("PRF");
+    tname += idect;
+    TGraphErrors *projprftree  = calvect->ConvertVectorPRFTGraphErrors(fCountDet,(idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1)))),(const char *) tname);
+    nbins   = projprftree->GetN();
+    arrayx  = (Double_t *)projprftree->GetX();
+    arraye  = (Double_t *)projprftree->GetEX();
+    arraym  = (Double_t *)projprftree->GetY();
+    arrayme = (Double_t *)projprftree->GetEY();
+    Float_t step = arrayx[1]-arrayx[0];
+    lowedge = arrayx[0] - step/2.0;
+    upedge  = arrayx[(nbins-1)] + step/2.0;
+    //printf("nbins est %d\n",nbins);
+    for(Int_t k = 0; k < nbins; k++){
+      fEntriesCurrent += (Int_t)arraye[k];
+      //printf("for %d we have %f, %f\n",k,arraye[k],((projprftree->GetEX())[k]));
+      if(arraye[k]>0.0) arrayme[k] = TMath::Sqrt(TMath::Abs(arrayme[k]-arraym[k]*arraym[k])/arraye[k]);
+    }
+    if(fEntriesCurrent > 0) fNumberEnt++;
     //printf("The number of entries for the group %d is %d\n",idect,fEntriesCurrent);
     // This detector has not enough statistics or was off
     if (fEntriesCurrent <= fMinEntries) {
       NotEnoughStatisticPRF(idect);
-      if(projprftree) delete projprftree;
       continue;
     }
     // Statistic of the histos fitted
@@ -1082,10 +1059,6 @@ Bool_t AliTRDCalibraFit::AnalysePRFMarianFit(AliTRDCalibraVector *calvect)
       }    
     // Fill the tree if end of a detector or only the pointer to the branch!!!
     FillInfosFitPRF(idect);
-    // Memory!!!
-    if (fDebugLevel != 1) {
-      delete projprftree;
-    }
   } // Boucle object
   // Mean Statistics
   if (fNumberFit > 0) {
@@ -5631,53 +5604,6 @@ TH1F *AliTRDCalibraFit::ReBin(const TH1F *hist) const
 
   return rehist;
   
-}
-
-//_____________________________________________________________________________
-TH1F *AliTRDCalibraFit::CorrectTheError(const TGraphErrors *hist)
-{
-  //
-  // In the case of the vectors method the trees contains TGraphErrors for PH and PRF
-  // to be able to add them after
-  // We convert it to a TH1F to be able to applied the same fit function method
-  // After having called this function you can not add the statistics anymore
-  //
-
-  TH1F *rehist = 0x0;
-
-  Int_t nbins       = hist->GetN();
-  Double_t *x       = hist->GetX();
-  Double_t *entries = hist->GetEX();
-  Double_t *mean    = hist->GetY();
-  Double_t *square  = hist->GetEY();
-  fEntriesCurrent   = 0;
-
-  if (nbins < 2) {
-    return rehist; 
-  }
-
-  Double_t step     = x[1] - x[0]; 
-  Double_t minvalue = x[0] - step/2;
-  Double_t maxvalue = x[(nbins-1)] + step/2;
-
-  rehist = new TH1F("projcorrecterror","",nbins,minvalue,maxvalue);
-
-  for (Int_t k = 0; k < nbins; k++) {
-    rehist->SetBinContent(k+1,mean[k]);
-    if (entries[k] > 0.0) {
-      fEntriesCurrent += (Int_t) entries[k];
-      Double_t d = TMath::Abs(square[k] - (mean[k]*mean[k]));
-      rehist->SetBinError(k+1,TMath::Sqrt(d/entries[k]));
-    }
-    else {
-      rehist->SetBinError(k+1,0.0);
-    }
-  }
-
-  if(fEntriesCurrent > 0) fNumberEnt++;
-
-  return rehist;
- 
 }
 //
 //____________Some basic geometry function_____________________________________

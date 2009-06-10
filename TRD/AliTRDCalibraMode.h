@@ -63,7 +63,7 @@ class AliTRDCalibraMode : public TObject {
 	  Short_t  GetRowMax(Int_t i) const                                  { return fRowMax[i];              }
 	  Short_t  GetColMin(Int_t i) const                                  { return fColMin[i];              }
 	  Short_t  GetColMax(Int_t i) const                                  { return fColMax[i];              }
-	  Short_t  GetXbins(Int_t i) const                                   { return fXbins[i];               }
+	  Int_t    GetXbins(Int_t i) const                                   { return fXbins[i];               }
           Short_t  GetDetChamb0(Int_t i) const                               { return fDetChamb0[i];           }
           Short_t  GetDetChamb2(Int_t i) const                               { return fDetChamb2[i];           }
     

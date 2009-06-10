@@ -97,8 +97,7 @@ class AliTRDCalibraFillHisto : public TObject {
 	  Bool_t   IsHLT() const                                             { return fIsHLT;                        }  
 
   // Choice to fill or not the 2D
-          void     SetMcmCorrectAngle(Bool_t mcmcorrectangle = kTRUE)        { fMcmCorrectAngle = mcmcorrectangle;   }
-          void     SetPH2dOn(Bool_t ph2don = kTRUE)                          { fPH2dOn          = ph2don;            }
+	  void     SetPH2dOn(Bool_t ph2don = kTRUE)                          { fPH2dOn          = ph2don;            }
           void     SetCH2dOn(Bool_t ch2don = kTRUE)                          { fCH2dOn          = ch2don;            }
           void     SetPRF2dOn(Bool_t prf2don = kTRUE)                        { fPRF2dOn         = prf2don;           }
           void     SetHisto2d(Bool_t histo2d = kTRUE)                        { fHisto2d         = histo2d;           }
@@ -107,8 +106,7 @@ class AliTRDCalibraFillHisto : public TObject {
 	  void     SetLinearFitterDebugOn(Bool_t debug = kTRUE)              { fLinearFitterDebugOn = debug;         }
 	 	  
   
-          Bool_t   GetMcmCorrectAngle() const                                { return fMcmCorrectAngle;        }
-          Bool_t   GetPH2dOn() const                                         { return fPH2dOn;                 }
+	  Bool_t   GetPH2dOn() const                                         { return fPH2dOn;                 }
           Bool_t   GetCH2dOn() const                                         { return fCH2dOn;                 }
           Bool_t   GetPRF2dOn() const                                        { return fPRF2dOn;                }
           Bool_t   GetHisto2d() const                                        { return fHisto2d;                }
@@ -140,7 +138,7 @@ class AliTRDCalibraFillHisto : public TObject {
 	  void     SetPerSuperModule(Int_t i);
 	  void     SetProcent(Float_t procent)                               { fProcent              = procent;              }
           void     SetDifference(Short_t difference)                         { fDifference           = difference;           }
-          void     SetNumberClusters(Short_t numberClusters)                 { if(numberClusters > 0) fNumberClusters       = numberClusters;       }
+          void     SetNumberClusters(Short_t numberClusters)                 { if(numberClusters >= 0) fNumberClusters       = numberClusters;       }
 	  void     SetNumberClustersf(Short_t numberClustersf)               { fNumberClustersf      = numberClustersf;      }
           void     SetNumberBinCharge(Short_t numberBinCharge)               { fNumberBinCharge      = numberBinCharge;      }
           void     SetNumberBinPRF(Short_t numberBinPRF)                     { fNumberBinPRF         = numberBinPRF;         }
@@ -177,8 +175,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
           Bool_t   fIsHLT;                  // Now if HLT, the per detector
 
   // Choice to fill or not the 2D
-          Bool_t   fMcmCorrectAngle;        // Apply correction due to the mcmtrackletangle in the z direction (only) assuming  from vertex
-          Bool_t   fCH2dOn;                 // Chose to fill the 2D histos or vectors for the relative gain calibration 
+	  Bool_t   fCH2dOn;                 // Chose to fill the 2D histos or vectors for the relative gain calibration 
           Bool_t   fPH2dOn;                 // Chose to fill the 2D histos or vectors for the drift velocity and T0
           Bool_t   fPRF2dOn;                // Chose to fill the 2D histos or vectors for the pad response function calibration
           Bool_t   fHisto2d;                // Chose to fill the 2D histos

@@ -62,6 +62,11 @@
 #pragma link C++ class  AliTRDCalibraVdriftLinearFit+;
 #pragma link C++ class  AliTRDCalibPadStatus+;
 
+#pragma link C++ class  AliTRDEntriesInfo+;
+#pragma link C++ class  AliTRDPhInfo+;
+#pragma link C++ class  AliTRDPrfInfo+;
+#pragma link C++ class  AliTRDUshortInfo+;
+
 #pragma link C++ class  AliTRDPreprocessor+;
 #pragma link C++ class  AliTRDSaxHandler+;
 

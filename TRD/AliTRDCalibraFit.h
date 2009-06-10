@@ -98,10 +98,6 @@ class AliTRDCalibraFit : public TObject {
        AliTRDCalDet *MakeOutliersStatDet(const TObjArray *vectorFit, const char *name, Double_t &mean);
        TObject      *MakeOutliersStatPad(const TObjArray *vectorFit, const char *name, Double_t &mean);
        
-       
-       // Correct the error
-       TH1F   *CorrectTheError(const TGraphErrors *hist);
-       
        //
        // Set or Get the variables
        //
@@ -153,6 +149,35 @@ class AliTRDCalibraFit : public TObject {
        // AliTRDCalibraMode
        AliTRDCalibraMode *GetCalibraMode() const                          { return fCalibraMode;            }
        
+       class AliTRDFitInfo : public TObject {
+	 
+       public:
+	 
+	 AliTRDFitInfo()
+	   :TObject()
+	   ,fCoef(0x0)
+	   ,fDetector(-1)                                   { }    
+	 AliTRDFitInfo(const AliTRDFitInfo &i) 
+	   :TObject(i)
+	   ,fCoef(0x0)
+	   ,fDetector(-1)                                   { }
+	 AliTRDFitInfo &operator=(const AliTRDFitInfo&)     { return *this;            }
+	 virtual ~AliTRDFitInfo()                           { if(fCoef) { delete [] fCoef;} }
+	 
+	 void      SetCoef(Float_t *coef)                   { fCoef = coef;            }
+	 void      SetDetector(Int_t detector)              { fDetector = detector;    }
+	 
+	 Float_t  *GetCoef() const                          { return fCoef;            }
+	 Int_t     GetDetector() const                      { return fDetector;        }
+	 
+       protected:
+	 
+	 Float_t  *fCoef;                        // Relative coefficient for each group of the detector
+	 Int_t     fDetector;                    // Detector number
+	 
+       };
+
+
  protected:
        
        // Geometry
@@ -217,34 +242,6 @@ class AliTRDCalibraFit : public TObject {
        
        Float_t *fCurrentCoefDetector;     // Current values for the detector 
        Float_t *fCurrentCoefDetector2;    // Current values for the detector   
-       
-       class AliTRDFitInfo : public TObject {
-	 
-       public:
-	 
-	 AliTRDFitInfo()
-	   :TObject()
-	   ,fCoef(0x0)
-	   ,fDetector(-1)                                   { }    
-	 AliTRDFitInfo(const AliTRDFitInfo &i) 
-	   :TObject(i)
-	   ,fCoef(0x0)
-	   ,fDetector(-1)                                   { }
-	 AliTRDFitInfo &operator=(const AliTRDFitInfo&)     { return *this;            }
-	 virtual ~AliTRDFitInfo()                           { if(fCoef) { delete [] fCoef;} }
-	 
-	 void      SetCoef(Float_t *coef)                   { fCoef = coef;            }
-	 void      SetDetector(Int_t detector)              { fDetector = detector;    }
-	 
-	 Float_t  *GetCoef() const                          { return fCoef;            }
-	 Int_t     GetDetector() const                      { return fDetector;        }
-	 
-       protected:
-	 
-	 Float_t  *fCoef;                        // Relative coefficient for each group of the detector
-	 Int_t     fDetector;                    // Detector number
-    
-       };
        
        TObjArray       fVectorFit;            // Vectors to fit
        TObjArray       fVectorFit2;           // Vectors to fit

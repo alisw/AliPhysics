@@ -40,6 +40,10 @@ set(SRCS
       AliTRDCalibraVector.cxx
       AliTRDCalibraVdriftLinearFit.cxx
       AliTRDCalibPadStatus.cxx
+      AliTRDEntriesInfo.cxx
+      AliTRDPhInfo.cxx
+      AliTRDPrfInfo.cxx
+      AliTRDUshortInfo.cxx
       AliTRDQAChecker.cxx
       AliTRDPreprocessor.cxx
       AliTRDSaxHandler.cxx

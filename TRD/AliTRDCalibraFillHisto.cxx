@@ -119,7 +119,6 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   :TObject()
   ,fGeo(0)
   ,fIsHLT(kFALSE)
-  ,fMcmCorrectAngle(kFALSE)
   ,fCH2dOn(kFALSE)
   ,fPH2dOn(kFALSE)
   ,fPRF2dOn(kFALSE)
@@ -147,9 +146,9 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fNumberTrack(0)
   ,fTimeMax(0)
   ,fSf(10.0)
-  ,fNumberBinCharge(100)
-  ,fNumberBinPRF(40)
-  ,fNgroupprf(0)
+  ,fNumberBinCharge(50)
+  ,fNumberBinPRF(10)
+  ,fNgroupprf(3)
   ,fAmpTotal(0x0)
   ,fPHPlace(0x0)
   ,fPHValue(0x0)
@@ -188,7 +187,6 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   :TObject(c)
   ,fGeo(0)
   ,fIsHLT(c.fIsHLT)
-  ,fMcmCorrectAngle(c.fMcmCorrectAngle)
   ,fCH2dOn(c.fCH2dOn)
   ,fPH2dOn(c.fPH2dOn)
   ,fPRF2dOn(c.fPRF2dOn)
@@ -404,23 +402,10 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
       fCalibraVector->SetDetCha0(k,fCalibraMode->GetDetChamb0(k));
       fCalibraVector->SetDetCha2(k,fCalibraMode->GetDetChamb2(k));
     }
-    TString namech("Nz");
-    namech += fCalibraMode->GetNz(0);
-    namech += "Nrphi";
-    namech += fCalibraMode->GetNrphi(0);
-    fCalibraVector->SetNameCH((const char* ) namech);
-    TString nameph("Nz");
-    nameph += fCalibraMode->GetNz(1);
-    nameph += "Nrphi";
-    nameph += fCalibraMode->GetNrphi(1);
-    fCalibraVector->SetNamePH((const char* ) nameph);
-    TString nameprf("Nz");
-    nameprf += fCalibraMode->GetNz(2);
-    nameprf += "Nrphi";
-    nameprf += fCalibraMode->GetNrphi(2);
-    nameprf += "Ngp";
-    nameprf += fNgroupprf;
-    fCalibraVector->SetNamePRF((const char* ) nameprf);
+    fCalibraVector->SetNzNrphi(0,fCalibraMode->GetNz(0),fCalibraMode->GetNrphi(0));
+    fCalibraVector->SetNzNrphi(1,fCalibraMode->GetNz(1),fCalibraMode->GetNrphi(1));
+    fCalibraVector->SetNzNrphi(2,fCalibraMode->GetNz(2),fCalibraMode->GetNrphi(2));
+    fCalibraVector->SetNbGroupPRF(fNgroupprf);
   }
  
   // Create the 2D histos corresponding to the pad groupCalibration mode
@@ -709,10 +694,12 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
     // Fill the stuffs if a good tracklet
     ////////////////////////////////////////
     if (fGoodTracklet) {
-      
+
       // drift velocity unables to cut bad tracklets 
       Bool_t  pass = FindP1TrackPHtrackletV1(tracklet, nbclusters);
 	
+      //printf("pass %d and nbclusters %d\n",pass,nbclusters);
+
       // Gain calibration
       if (fCH2dOn) {
 	FillTheInfoOfTheTrackCH(nbclusters);
@@ -1093,8 +1080,9 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
   for(Int_t k = 0;  k < npoints; k++){
     //Take the cluster
     AliTRDcluster *cl  = (AliTRDcluster *) t->GetCluster(k+index0);
+    if(!cl) continue;
     Short_t  *signals  = cl->GetSignals();
-    Double_t     time  = cl->GetLocalTimeBin();
+    Double_t     time  = cl->GetPadTime();
     //Calculate x if possible 
     Float_t xcenter    = 0.0;    
     Bool_t  echec1      = kTRUE;   
@@ -1150,7 +1138,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
     //Take the cluster
     AliTRDcluster *cl      = (AliTRDcluster *) t->GetCluster(k+index0);
     Short_t  *signals      = cl->GetSignals();              // signal
-    Double_t     time      = cl->GetLocalTimeBin();              // time bin
+    Double_t     time      = cl->GetPadTime();              // time bin
     Float_t padPosTracklet = line[0]+line[1]*time;          // reconstruct position from fit
     Float_t padPos         = cl->GetPadCol();               // middle pad
     Double_t dpad          = padPosTracklet - padPos;       // reconstruct position relative to middle pad from fit 
@@ -1406,9 +1394,11 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
   AliTRDcluster *cl                   = 0x0;
   for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
     // reject shared clusters on pad row
-    if(((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNclusters) && (cl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) continue;
-   
-    Double_t     time  = cl->GetLocalTimeBin();
+    if((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNclusters) {
+      if((cl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) continue;
+    }
+    if(!(cl = tracklet->GetClusters(ic))) continue;
+    Double_t     time  = cl->GetPadTime();
     if((time<=7) || (time>=21)) continue;
     Short_t  *signals  = cl->GetSignals(); 
     Float_t xcenter    = 0.0;    
@@ -1476,7 +1466,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
     if(!(cl = tracklet->GetClusters(ic))) continue;
 
     Short_t  *signals      = cl->GetSignals();              // signal
-    Double_t     time      = cl->GetLocalTimeBin();         // time bin
+    Double_t     time      = cl->GetPadTime();         // time bin
     Float_t padPosTracklet = line[0]+line[1]*time;          // reconstruct position from fit
     Float_t padPos         = cl->GetPadCol();               // middle pad
     Double_t dpad          = padPosTracklet - padPos;       // reconstruct position relative to middle pad from fit 
@@ -1916,7 +1906,10 @@ void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(AliTRDcluster *cl, Double_t dqdl
   
   // time bin of the cluster not corrected
   Int_t    time     = cl->GetPadTime();
-   
+  Float_t  charge   = TMath::Abs(cl->GetQ());  
+
+  //printf("Store::time %d, amplitude %f\n",time,dqdl);
+  
   //Correct for the gain coefficient used in the database for reconstruction
   Float_t correctthegain = 1.0;
   if(fIsHLT) correctthegain = fCalDetGain->GetValue(fDetectorPreviousTrack);
@@ -1933,13 +1926,16 @@ void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(AliTRDcluster *cl, Double_t dqdl
 
   // Fill the fAmpTotal with the charge
   if (fCH2dOn) {
-    if((!fLimitChargeIntegration) || (cl->IsInChamber())) fAmpTotal[(Int_t) group[0]] += correction;
+    if((!fLimitChargeIntegration) || (cl->IsInChamber())) {
+      //printf("Store::group %d, amplitude %f\n",group[0],correction);
+      fAmpTotal[(Int_t) group[0]] += correction;
+    }
   }
 
   // Fill the fPHPlace and value
   if (fPH2dOn) {
     fPHPlace[time] = group[1];
-    fPHValue[time] = correction;
+    fPHValue[time] = charge;
   }
   
 }
@@ -1982,6 +1978,8 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH(Int_t nbclusters)
   Int_t fd            = -1;   // Premiere zone non nulle
   Float_t totalcharge = 0.0;  // Total charge for the supermodule histo
 
+  //printf("CH2d nbclusters %d, fNumberClusters %d, fNumberClustersf %d\n",nbclusters,fNumberClusters,fNumberClustersf);
+
   if(nbclusters < fNumberClusters) return;
   if(nbclusters > fNumberClustersf) return;
 
@@ -1989,9 +1987,12 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH(Int_t nbclusters)
   // Normalize with the number of clusters
   Double_t normalizeCst = fRelativeScale;
   if(fNormalizeNbOfCluster) normalizeCst = normalizeCst*nbclusters;
+
+  //printf("Number of groups in one detector %d\n",fCalibraMode->GetNfragZ(0)*fCalibraMode->GetNfragRphi(0));
   
   // See if the track goes through different zones
   for (Int_t k = 0; k < fCalibraMode->GetNfragZ(0)*fCalibraMode->GetNfragRphi(0); k++) {
+    //printf("fAmpTotal %f for %d\n",fAmpTotal[k],k);
     if (fAmpTotal[k] > 0.0) {
       totalcharge += fAmpTotal[k];
       nb++;
@@ -2001,6 +2002,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH(Int_t nbclusters)
     }
   }
 
+  //printf("CH2d: nb %d, fd %d, calibration group %d, amplitude %f, detector %d\n",nb,fd,fCalibraMode->GetXbins(0),fAmpTotal[fd]/normalizeCst,fDetectorPreviousTrack);
     
   switch (nb)
     { 
