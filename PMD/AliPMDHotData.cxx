@@ -48,18 +48,18 @@ AliPMDHotData::AliPMDHotData(const AliPMDHotData& hotda) :
   SetTitle(hotda.GetName());
   Reset();
   for(Int_t det = 0; det < kDet; det++)
-  {
+    {
       for(Int_t smn = 0; smn < kModule; smn++)
-      {
+	{
 	  for(Int_t row = 0; row < kRow; row++)
-	  {
+	    {
 	      for(Int_t col = 0; col < kCol; col++)
-	      {
+		{
 		  fHotChannel[det][smn][row][col] = hotda.GetHotChannel(det,smn,row,col);
-	      }
-	  }
-      }
-  }
+		}
+	    }
+	}
+    }
 }
 // ----------------------------------------------------------------- //
 AliPMDHotData &AliPMDHotData::operator =(const AliPMDHotData& hotda)
@@ -91,36 +91,35 @@ AliPMDHotData::~AliPMDHotData()
 // ----------------------------------------------------------------- //
 void AliPMDHotData::Reset()
 {
-  //memset(fgainfact ,1,2*24*48*96*sizeof(Float_t));
 
   for(Int_t det = 0; det < kDet; det++)
-  {
+    {
       for(Int_t smn = 0; smn < kModule; smn++)
-      {
+	{
 	  for(Int_t row = 0; row < kRow; row++)
-	  {
-	      for(Int_t col = 0; col < kCol; col++)
+	    {
+	    for(Int_t col = 0; col < kCol; col++)
 	      {
-		     fHotChannel[det][smn][row][col] = 0.;
+		fHotChannel[det][smn][row][col] = 0.;
 	      }
-	  }
-      }
-  }
+	    }
+	}
+    }
 }
+// ----------------------------------------------------------------- //
 // ----------------------------------------------------------------- //
 Float_t AliPMDHotData:: GetHotChannel(Int_t det, Int_t smn, Int_t row, Int_t col) const
 {
   return fHotChannel[det][smn][row][col];
 }
-// ----------------------------------------------------------------- //
 void AliPMDHotData::SetHotChannel(Int_t det, Int_t smn, Int_t row, Int_t col, Float_t flag)
 {
   fHotChannel[det][smn][row][col] = flag;
 }
-//--------------------------------------------------------------------- //
+//------------------------------------------------------------------------------ //
 void AliPMDHotData::Print(Option_t *) const
 {
-  printf("\n ######gain factors for each cells ####\n");
+  printf("\n ######Flag for each cells ####\n");
   for(Int_t det = 0; det < kDet; det++)
     {
       for(Int_t smn = 0; smn < kModule; smn++)
@@ -129,9 +128,10 @@ void AliPMDHotData::Print(Option_t *) const
 	    {
 	      for(Int_t col = 0; col < kCol; col++)
 		{
-		  // printf("Gain[%d,%d,%d,%d]= %4.1f \n",det,smn,row,col,
-		  // fHotChannel[det][smn][row][col]);
+		  printf("Flag[%d,%d,%d,%d]= %4.1f \n",det,smn,row,col,
+			 fHotChannel[det][smn][row][col]);
 		}
+	      printf("\n");
 	    }
 	}
     }
