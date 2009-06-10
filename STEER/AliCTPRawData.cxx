@@ -14,10 +14,12 @@
  **************************************************************************/
 
 ////////////////////////////////////////////////////////////
-//This class contains the methods to create raw data      //
-//for CTP (trigger). The CTP data format is taken as      //
-//described in the Trigger TDR - pages 134 and 135.       //
-////////////////////////////////////////////////////////////
+//This class contains the methods to create raw data                //
+//for CTP (trigger). The CTP data format is taken as                //
+//described in the Trigger TDR - pages 134  and 135.                //
+//The updated version of raw data is in:                            //
+//http://epweb2.ph.bham.ac.uk/user/krivda/alice/ctp/ctp_readout1.pdf//
+//////////////////////////////////////////////////////////
 
 #include <TObject.h>
 #include <TString.h>
@@ -63,6 +65,9 @@ void AliCTPRawData::RawData()
   // raw data in a DDL file
   ULong64_t l2class = 0;
   UChar_t l2cluster = 0;
+  UInt_t l0input = 0;
+  UInt_t l1input = 0;
+  UShort_t l2input=0;
   AliInfo("Storing the CTP DDL raw data...");
   AliRunLoader *runloader = AliRunLoader::Instance();
   if (runloader) {
@@ -74,6 +79,10 @@ void AliCTPRawData::RawData()
       l2class = aCTP->GetClassMask();
       // Then get the detector cluster to be read out
       l2cluster = aCTP->GetClusterMask();
+      // Then get the input cluster mask
+      l0input = aCTP->GetL0TriggerInputs();
+      l1input = aCTP->GetL1TriggerInputs();
+      l2input = aCTP->GetL2TriggerInputs();
     }
     else
       AliWarning("No trigger can be loaded! Putting empty trigger class into the CTP raw data !");
@@ -92,8 +101,7 @@ void AliCTPRawData::RawData()
 
   // Writing CTP raw data here
   // The format is taken as in
-  // pages 134 and 135 of the
-  // Trigger TDR
+  // dhttp://epweb2.ph.bham.ac.uk/user/krivda/alice/ctp/ctp_readout1.pdf
 
   // If not 0, from where??
   UInt_t bunchCross = 0;
@@ -102,25 +110,25 @@ void AliCTPRawData::RawData()
 
   // First 3 words here - Bunch-crossing and orbit numbers
   UInt_t word = 0;
-  word |= 0 << 13; // BlockID = 0 in case of CTP readout
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= bunchCross & 0xFFF;
   AliDebug(1,Form("CTP word1 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
 
   word = 0;
-  word |= 0 << 13; // BlockID = 0 in case of CTP readout
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= (orbitId >> 12) & 0xFFF;
   AliDebug(1,Form("CTP word2 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
-  word |= 0 << 13; // BlockID = 0 in case of CTP readout
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= orbitId & 0xFFF;
   AliDebug(1,Form("CTP word3 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
 
   // Now the 4th word
   word = 0;
-  word |= 0 << 13; // BlockID = 0 in case of CTP readout
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= ((UInt_t)esr) << 10;
   word |= 0 << 8; // L2SwC - physics trigger
   word |= (l2cluster & 0x3F) << 2; // L2Cluster
@@ -128,28 +136,55 @@ void AliCTPRawData::RawData()
   AliDebug(1,Form("CTP word4 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
 
-  // Then the last 4 words with the trigger classes
+  // Then the  4 words with the trigger classes
   word = 0;
-  word |= 0 << 13; // BlockID = 0 in case of CTP readout
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)((l2class >> 36) & 0xFFF);
   AliDebug(1,Form("CTP word5 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
-  word |= 0 << 13; // BlockID = 0 in case of CTP readout
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)((l2class >> 24) & 0xFFF);
   AliDebug(1,Form("CTP word6 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
-  word |= 0 << 13; // BlockID = 0 in case of CTP readout
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)((l2class >> 12) & 0xFFF);
   AliDebug(1,Form("CTP word7 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
-  word |= 0 << 13; // BlockID = 0 in case of CTP readout
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)(l2class & 0xFFF);
   AliDebug(1,Form("CTP word8 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
 
+  // The last 5 words with trigger inputs
+  word = 0;
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
+  word |= (UInt_t)((l0input >> 12) & 0xFFF);
+  AliDebug(1,Form("CTP word9 = 0x%x",word));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
+  word = 0;
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
+  word |= (UInt_t)((l0input >> 0) & 0xFFF);
+  AliDebug(1,Form("CTP word10 = 0x%x",word));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
+  word = 0;
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
+  word |= (UInt_t)((l1input >> 12) & 0xFFF);
+  AliDebug(1,Form("CTP word11 = 0x%x",word));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
+  word = 0;
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
+  word |= (UInt_t)((l1input >> 0) & 0xFFF);
+  AliDebug(1,Form("CTP word12 = 0x%x",word));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
+  word = 0;
+  word |= 0 << 15; // BlockID = 0 in case of CTP readout
+  word |= (UInt_t)((l2input >> 0) & 0xFFF);
+  AliDebug(1,Form("CTP word13 = 0x%x",word));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
+  
   delete outfile;
 
   return;
