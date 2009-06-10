@@ -123,10 +123,6 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH1F * fhGamRatioPt ; //! Reco/MC pT distribution of generated photons
   TH1F * fhGamRatioPhi; //! Reco/MC phi distribution of generated photons
   TH1F * fhGamRatioEta; //! Reco/MC eta distribution of generated photons
-  TH2F * fhGam2E  ; //! E distribution, Reco vs MC of generated photons
-  TH2F * fhGam2Pt ; //! pT distribution, Reco vs MC of generated photons
-  TH2F * fhGam2Phi; //! phi distribution, Reco vs MC of generated photons
-  TH2F * fhGam2Eta; //! eta distribution, Reco vs MC of generated photons	
   TH2F * fhEleE  ; //! E distribution of generated electrons, Reco
   TH2F * fhElePt ; //! pT distribution of generated electrons, Reco
   TH2F * fhElePhi; //! phi distribution of generated electron, Reco 
@@ -143,6 +139,27 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F * fhChHadPt ; //! pT distribution of generated charged hadron, Reco
   TH2F * fhChHadPhi; //! phi distribution of generated charged hadron, Reco 
   TH2F * fhChHadEta; //! eta distribution of generated charged hadron, Reco 
+
+  TH2F * fhGamECharged  ; //! E distribution of generated photons, Reco, track matched cluster
+  TH2F * fhGamPtCharged ; //! pT distribution of generated photons, Reco, track matched cluster
+  TH2F * fhGamPhiCharged; //! phi distribution of generated photon, Reco, track matched cluster 
+  TH2F * fhGamEtaCharged; //! eta distribution of generated photons, Reco, track matched cluster 
+  TH2F * fhEleECharged  ; //! E distribution of generated electrons, Reco, track matched cluster
+  TH2F * fhElePtCharged ; //! pT distribution of generated electrons, Reco, track matched cluster
+  TH2F * fhElePhiCharged; //! phi distribution of generated electron, Reco, track matched cluster 
+  TH2F * fhEleEtaCharged; //! eta distribution of generated electrons, Reco, track matched cluster 		
+  TH2F * fhPi0ECharged  ; //! E distribution of generated pi0, Reco, gamma decay overlapped, track matched cluster
+  TH2F * fhPi0PtCharged ; //! pT distribution of generated pi0, Reco, gamma decay overlapped, track matched cluster
+  TH2F * fhPi0PhiCharged; //! phi distribution of generated pi0, Reco, gamma decay overlapped, track matched cluster
+  TH2F * fhPi0EtaCharged; //! eta distribution of generated pi0, Reco, gamma decay overlapped, track matched cluster
+  TH2F * fhNeHadECharged  ; //! E distribution of generated neutral hadron, Reco, track matched cluster
+  TH2F * fhNeHadPtCharged ; //! pT distribution of generated neutral hadron, Reco, track matched cluster
+  TH2F * fhNeHadPhiCharged; //! phi distribution of generated neutral hadron, Reco , track matched cluster
+  TH2F * fhNeHadEtaCharged; //! eta distribution of generated neutral hadron, Reco, track matched cluster 	
+  TH2F * fhChHadECharged  ; //! E distribution of generated charged hadron, Reco, track matched cluster
+  TH2F * fhChHadPtCharged ; //! pT distribution of generated charged hadron, Reco, track matched cluster
+  TH2F * fhChHadPhiCharged; //! phi distribution of generated charged hadron, Reco, track matched cluster 
+  TH2F * fhChHadEtaCharged; //! eta distribution of generated charged hadron, Reco, track matched cluster 	
 	
   TH1F *fhGenGamAccE   ; // E of primary gamma
   TH1F *fhGenGamAccPt  ; // pt of primary gamma
@@ -158,6 +175,23 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH1F *fh1dR;         //! distance between projected track and cluster
   TH2F *fh2EledEdx;    //! dE/dx vs. momentum for electron candidates
   TH2F *fh2MatchdEdx;  //! dE/dx vs. momentum for all matches
+	
+  TH1F *fhMCEle1pOverE;     //! p/E for track-cluster matches, MC electrons
+  TH1F *fhMCEle1dR;         //! distance between projected track and cluster, MC electrons
+  TH2F *fhMCEle2MatchdEdx;  //! dE/dx vs. momentum for all matches, MC electrons	
+	
+  TH1F *fhMCChHad1pOverE;     //! p/E for track-cluster matches, MC charged hadrons
+  TH1F *fhMCChHad1dR;         //! distance between projected track and cluster, MC charged hadrons
+  TH2F *fhMCChHad2MatchdEdx;  //! dE/dx vs. momentum for all matches, MC charged
+	
+  TH1F *fhMCNeutral1pOverE;     //! p/E for track-cluster matches, MC neutral
+  TH1F *fhMCNeutral1dR;         //! distance between projected track and cluster, MC neutral
+  TH2F *fhMCNeutral2MatchdEdx;  //! dE/dx vs. momentum for all matches, MC neutral	
+	
+  TH1F *fh1pOverER02;           //! p/E for track-cluster matches, dR > 0.2	
+  TH1F *fhMCEle1pOverER02;      //! p/E for track-cluster matches, dR > 0.2, MC electrons
+  TH1F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
+  TH1F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
 	ClassDef(AliAnaCalorimeterQA,1)
 } ;
