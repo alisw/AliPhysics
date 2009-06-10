@@ -25,6 +25,7 @@
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
 
+#include "AliRsnPIDDefESD.h"
 #include "AliRsnDaughter.h"
 
 ClassImp(AliRsnDaughter)
@@ -248,7 +249,7 @@ AliPID::EParticleType AliRsnDaughter::AssignedPID() const
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnDaughter::CombineWithPriors(Double_t *priors)
+Bool_t AliRsnDaughter::CombineWithPriors(Double_t *priors, AliRsnPIDDefESD *pidDef)
 {
 //
 // Combine current PID weights (assumed to be them) with prior probs
@@ -257,9 +258,23 @@ Bool_t AliRsnDaughter::CombineWithPriors(Double_t *priors)
   Int_t       i;
   Double_t    sum = 0.0;
 
+  // get PID weights according to definition
+  // if the reference is not ESD or the pidDef is null
+  // of it is not null but is requires the ESD pid,
+  // the standard PID value is used, otherwise
+  if (pidDef)
+  {
+    AliESDtrack *esdTrack = GetRefESD();
+    if (esdTrack) pidDef->ComputeWeights(esdTrack, fPID);
+  }
+  else
+  {
+    for (i = 0; i < AliPID::kSPECIES; i++) fPID[i] = fRef->PID()[i];
+  }
+
   // multiply weights and priors
   for (i = 0; i < AliPID::kSPECIES; i++) {
-    fPID[i] = priors[i] * fRef->PID()[i];
+    fPID[i] *= priors[i];
     sum += fPID[i];
   }
   if (sum <= (Double_t) 0.) {

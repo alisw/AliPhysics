@@ -25,6 +25,7 @@ class TParticle;
 class AliStack;
 class AliESDtrack;
 class AliAODEvent;
+class AliRsnPIDDefESD;
 
 class AliRsnDaughter : public TObject
 {
@@ -73,7 +74,7 @@ class AliRsnDaughter : public TObject
 
     // PID
     const Double_t        *PID() const {return fRef->PID();}
-    Bool_t                 CombineWithPriors(Double_t *priors);
+    Bool_t                 CombineWithPriors(Double_t *priors, AliRsnPIDDefESD *pidDef = 0x0);
     AliPID::EParticleType  RealisticPID() const;
     AliPID::EParticleType  PerfectPID() const;
     Double_t               PIDProb(AliPID::EParticleType type) const {return PID()[(Int_t)type];}
