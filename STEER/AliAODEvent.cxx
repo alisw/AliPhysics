@@ -388,7 +388,6 @@ Int_t AliAODEvent::GetEMCALClusters(TRefArray *clusters) const
   // fills the provided TRefArray with all found emcal clusters
 
   clusters->Clear();
-  cout<<"AOD event 1: nclus "<<GetNCaloClusters()<<endl;
   AliAODCaloCluster *cl = 0;
   Bool_t first = kTRUE;
   for (Int_t i = 0; i < GetNCaloClusters(); i++) {
