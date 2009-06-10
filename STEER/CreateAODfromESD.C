@@ -83,10 +83,10 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     // Cuts on V0s
     AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("AliESDv0Cuts", "Standard pp");
     esdV0Cuts->SetMinRadius(0.2);
-    esdV0Cuts->SetMaxRadius(100);
+    esdV0Cuts->SetMaxRadius(200);
     esdV0Cuts->SetMinDcaPosToVertex(0.05);
     esdV0Cuts->SetMinDcaNegToVertex(0.05);
-    esdV0Cuts->SetMaxDcaV0Daughters(0.5);
+    esdV0Cuts->SetMaxDcaV0Daughters(1.0);
     esdV0Cuts->SetMinCosinePointingAngle(0.99);
     AliAnalysisFilter* v0Filter = new AliAnalysisFilter("v0Filter");
     v0Filter->AddCuts(esdV0Cuts);
