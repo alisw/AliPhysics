@@ -72,7 +72,6 @@
 #include "AliPHOSLoader.h"
 #include "AliPHOS.h"
 #include "AliPHOSHit.h"
-#include "AliPHOSCalibrationDB.h"
 
 ClassImp(AliPHOSLoader)
 
@@ -90,7 +89,7 @@ const TString AliPHOSLoader::fgkCpvRecPointsBranchName("PHOSCpvRP");//Name for b
 const TString AliPHOSLoader::fgkTrackSegmentsBranchName("PHOSTS");//Name for branch with TrackSegments
 const TString AliPHOSLoader::fgkRecParticlesBranchName("PHOSRP");//Name for branch with Reconstructed Particles
 //____________________________________________________________________________ 
-AliPHOSLoader::AliPHOSLoader() : fBranchTitle(), fcdb(0), fDebug(0), fTmpHits(0x0)
+AliPHOSLoader::AliPHOSLoader() : fBranchTitle(), fDebug(0), fTmpHits(0x0)
 {
   //def ctor
   fTmpHits =  new TClonesArray("AliPHOSHit",1000);
@@ -98,14 +97,14 @@ AliPHOSLoader::AliPHOSLoader() : fBranchTitle(), fcdb(0), fDebug(0), fTmpHits(0x
 //____________________________________________________________________________ 
 AliPHOSLoader::AliPHOSLoader(const Char_t *detname,const Char_t *eventfoldername) :
       AliLoader(detname, eventfoldername),
-      fBranchTitle(), fcdb(0), fDebug(0), fTmpHits(0x0)
+      fBranchTitle(), fDebug(0), fTmpHits(0x0)
 {
   //ctor
 }
 //____________________________________________________________________________ 
 AliPHOSLoader::AliPHOSLoader(const Char_t *detname,TFolder *topfolder):
   AliLoader(detname,topfolder),
-  fBranchTitle(), fcdb(0), fDebug(0), fTmpHits(0x0)
+  fBranchTitle(), fDebug(0), fTmpHits(0x0)
 
 {
   //ctor
@@ -831,34 +830,6 @@ void AliPHOSLoader::CleanRecParticles()
  }
 //____________________________________________________________________________ 
 
-void AliPHOSLoader::ReadCalibrationDB(const char * database,const char * filename)
-{
-  // Read calibration data base from file
-  if(fcdb && (strcmp(database,fcdb->GetTitle())==0))
-    return ;
-
-  TFile * file = gROOT->GetFile(filename) ;
-  if(!file)
-    file = TFile::Open(filename);
-  if(!file){
-    AliError(Form("Cannot open file %s", filename)) ;
-    return ;
-  }
-  if(fcdb)
-    fcdb->Delete() ;
-  fcdb = dynamic_cast<AliPHOSCalibrationDB *>(file->Get("AliPHOSCalibrationDB")) ;
-  if(!fcdb)
-    AliError(Form("No database %s in file %s", database, filename)) ;
-}
-//____________________________________________________________________________ 
-
-// AliPHOSSDigitizer*  AliPHOSLoader::PHOSSDigitizer() 
-// { 
-// //return PHOS SDigitizer
-//  return  dynamic_cast<AliPHOSSDigitizer*>(SDigitizer()) ;
-// }
-
-//____________________________________________________________________________ 
 void AliPHOSLoader::MakeHitsArray()
 {
   // Add Hits array to the data folder

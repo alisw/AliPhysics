@@ -52,7 +52,6 @@ class AliPHOSEmcRecPoint ;
 class AliPHOSCpvRecPoint ; 
 class AliPHOSTrackSegment ;
 class AliPHOSRecParticle ;  
-class AliPHOSCalibrationDB ;
 class AliPHOSSDigitizer ; 
 class AliPHOSDigitizer ;
   
@@ -176,12 +175,9 @@ public:
 
   Int_t   GetDebug()                     const {return fDebug;      }
   TString GetBranchTitle()               const {return fBranchTitle;}
-  AliPHOSCalibrationDB * CalibrationDB() const {return fcdb;        }
-  void ReadCalibrationDB(const char * name, const char * filename);
   
 protected:
   TString fBranchTitle;            //Title of the branch
-  AliPHOSCalibrationDB * fcdb ;       //!
 
 private:
 

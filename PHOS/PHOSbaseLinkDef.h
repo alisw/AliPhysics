@@ -10,14 +10,10 @@
 #pragma link C++ class AliPHOSTrackSegmentMaker+;
 #pragma link C++ class AliPHOSPID+;
 #pragma link C++ class AliPHOSClusterizer+;
-#pragma link C++ class AliPHOSCalibrationDB+;
-#pragma link C++ class AliPHOSCalibrationData+;
-#pragma link C++ class AliPHOSCalibrManager+;
 #pragma link C++ class AliPHOSDigitizer+;
 #pragma link C++ class AliPHOSSDigitizer+;
 #pragma link C++ class AliPHOSDigit+;
 #pragma link C++ class AliPHOSFastRecParticle+;
-#pragma link C++ class AliPHOSRawStream2004+;
 #pragma link C++ class AliPHOSCalibData+;
 #pragma link C++ class AliPHOSCpvCalibData+;
 #pragma link C++ class AliPHOSEmcCalibData+;
@@ -40,7 +36,6 @@
 
 #pragma link C++ class AliPHOSRecoParam+;
 #pragma link C++ class AliPHOSSimParam+;
-#pragma link C++ class AliPHOSConTableDB+;
 
 #pragma link C++ class AliPHOSImpact+;
 #pragma link C++ class AliPHOSTrigger+;

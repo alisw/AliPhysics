@@ -12,10 +12,6 @@
 #pragma link C++ class AliPHOSvImpacts+;
 #pragma link C++ class AliPHOSCPVDigit+;
 #pragma link C++ class AliPHOSTick+;
-#pragma link C++ class AliPHOSRaw2Digits+;
-#pragma link C++ class AliPHOSBeamTestEvent+;
-#pragma link C++ class AliPHOSCalibrator+;
-#pragma link C++ class AliPHOSOnlineMonitor+;
 #pragma link C++ class AliPHOSQADataMakerSim+;
 
 #endif

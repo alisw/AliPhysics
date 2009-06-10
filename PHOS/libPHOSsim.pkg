@@ -4,9 +4,6 @@ SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
                  AliPHOSvFast.cxx AliPHOSvImpacts.cxx \
                  AliPHOSCPVDigit.cxx  \
                  AliPHOSTick.cxx \
-                 AliPHOSRaw2Digits.cxx AliPHOSBeamTestEvent.cxx \
-                 AliPHOSCalibrator.cxx \
-                 AliPHOSOnlineMonitor.cxx \
                  AliPHOSQADataMakerSim.cxx 
 
 HDRS:= $(SRCS:.cxx=.h) 

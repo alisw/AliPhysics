@@ -180,7 +180,6 @@
 #include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSDigitizer.h"
-#include "AliPHOSCalibrationDB.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
