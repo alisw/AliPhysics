@@ -341,10 +341,8 @@ AliTPCCalibCE::AliTPCCalibCE() :
   fVEventNumber(1000),
   fVTime0SideA(1000),
   fVTime0SideC(1000),
-  fTimeStamp(0),
   fEventId(-1),
-  fRunNumber(-1),
-  fOldRunNumber(-1),
+  fOldRunNumber(0),
   fPadTimesArrayEvent(72),
   fPadQArrayEvent(72),
   fPadRMSArrayEvent(72),
@@ -417,10 +415,8 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
   fVEventNumber(sig.fVEventNumber),
   fVTime0SideA(sig.fVTime0SideA),
   fVTime0SideC(sig.fVTime0SideC),
-  fTimeStamp(0),
   fEventId(-1),
-  fRunNumber(-1),
-  fOldRunNumber(-1),
+  fOldRunNumber(0),
   fPadTimesArrayEvent(72),
   fPadQArrayEvent(72),
   fPadRMSArrayEvent(72),
@@ -558,10 +554,8 @@ AliTPCCalibCE::AliTPCCalibCE(const TMap *config) :
   fVEventNumber(1000),
   fVTime0SideA(1000),
   fVTime0SideC(1000),
-  fTimeStamp(0),
   fEventId(-1),
-  fRunNumber(-1),
-  fOldRunNumber(-1),
+  fOldRunNumber(0),
   fPadTimesArrayEvent(72),
   fPadQArrayEvent(72),
   fPadRMSArrayEvent(72),
@@ -1065,7 +1059,9 @@ void AliTPCCalibCE::EndEvent()
       }
 
       if ( (fNevents>0) && (fOldRunNumber==fRunNumber) )
-        GetHistoT0(iSec,kTRUE)->Fill( time-time0Side[(iSec/18)%2],iChannel );
+        // test that we really found the CE signal reliably 
+        if ( TMath::Abs(fVTime0SideA.GetMatrixArray()[fNevents-1]-time0Side[0])<.05)
+          GetHistoT0(iSec,kTRUE)->Fill( time-time0Side[(iSec/18)%2],iChannel );
 
 
 

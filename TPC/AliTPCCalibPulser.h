@@ -160,8 +160,6 @@ private:
   
   Bool_t IsEdgePad(Int_t sector, Int_t row, Int_t pad);
   
-  virtual void ResetEvent();
-  virtual void EndEvent();
   void ResetPad();
   void ProcessPad();
   
@@ -171,7 +169,10 @@ private:
   TVectorF* GetPadQEvent(Int_t sector, Bool_t force=kFALSE);
   TVectorF* GetPadRMSEvent(Int_t sector, Bool_t force=kFALSE);
   TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
-  
+
+protected:
+  virtual void ResetEvent();
+  virtual void EndEvent();
   
   
   ClassDef(AliTPCCalibPulser,5)           //Implementation of the TPC pulser calibration

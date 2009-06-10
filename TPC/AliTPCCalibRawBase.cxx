@@ -35,7 +35,9 @@
 #include "AliAltroRawStream.h"
 #include "AliTPCROC.h"
 #include "AliTPCRawStreamFast.h"
+#include "AliTPCRawStreamV3.h"
 #include "AliTPCRawStream.h"
+#include "AliLog.h"
 #include "TTreeStream.h"
 #include "event.h"
 
@@ -50,11 +52,15 @@ AliTPCCalibRawBase::AliTPCCalibRawBase() :
   fNevents(0),
   fDebugLevel(0),
   fStreamLevel(0),
-  fTimeStamp(0),
   fRunNumber(0),
+  fTimeStamp(0),
   fEventType(0),
   fAltroL1Phase(0),
   fAltroL1PhaseTB(0),
+  fCurrRCUId(-1),
+  fPrevRCUId(-1),
+  fCurrDDLNum(-1),
+  fPrevDDLNum(-1),
   fUseL1Phase(kTRUE),
   fDebugStreamer(0x0),
   fAltroRawStream(0x0),
@@ -74,11 +80,15 @@ AliTPCCalibRawBase::AliTPCCalibRawBase(const AliTPCCalibRawBase &calib) :
   fNevents(calib.fNevents),
   fDebugLevel(calib.fDebugLevel),
   fStreamLevel(calib.fStreamLevel),
-  fTimeStamp(0),
   fRunNumber(0),
+  fTimeStamp(0),
   fEventType(0),
   fAltroL1Phase(0),
   fAltroL1PhaseTB(0),
+  fCurrRCUId(-1),
+  fPrevRCUId(-1),
+  fCurrDDLNum(-1),
+  fPrevDDLNum(-1),
   fUseL1Phase(kTRUE),
   fDebugStreamer(0x0),
   fAltroRawStream(0x0),
@@ -128,7 +138,7 @@ Bool_t AliTPCCalibRawBase::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
         Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
         for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
           Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
-          Update(isector,iRow,iPad,iTimeBin+1,signal);
+            Update(isector,iRow,iPad,iTimeBin+1,signal);
           withInput = kTRUE;
         }
       }
@@ -157,6 +167,69 @@ Bool_t AliTPCCalibRawBase::ProcessEventFast(AliRawReader *rawReader)
   return res;
 }
 //_____________________________________________________________________
+Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStreamV3 *rawStreamV3)
+{
+  //
+  // Event Processing loop - AliTPCRawStreamV3
+  //
+  ResetEvent();
+  Bool_t withInput = kFALSE;
+  fAltroL1Phase=0;
+  fAltroL1PhaseTB=0;
+//   fAltroRawStream = static_cast<AliAltroRawStream*>(rawStreamV3);
+  while ( rawStreamV3->NextDDL() ){
+    if (AliLog::GetGlobalDebugLevel()>2) rawStreamV3->PrintRCUTrailer();
+    if (fUseL1Phase){
+//         fAltroL1Phase  = fAltroRawStream->GetL1Phase();
+      fAltroL1Phase  = rawStreamV3->GetL1Phase();
+      fAltroL1PhaseTB = (fAltroL1Phase*1e09/100.);
+      AliDebug(1, Form("L1Phase: %.2e\n",fAltroL1PhaseTB));
+    }
+    fCurrRCUId=rawStreamV3->GetRCUId();
+    fCurrDDLNum=rawStreamV3->GetDDLNumber();
+    while ( rawStreamV3->NextChannel() ){
+      Int_t isector  = rawStreamV3->GetSector();                       //  current sector
+      Int_t iRow     = rawStreamV3->GetRow();                          //  current row
+      Int_t iPad     = rawStreamV3->GetPad();                          //  current pad
+      while ( rawStreamV3->NextBunch() ){
+        Int_t  startTbin    = (Int_t)rawStreamV3->GetStartTimeBin();
+//         Int_t  endTbin      = (Int_t)rawStreamV3->GetEndTimeBin();
+        Int_t  bunchlength  = (Int_t)rawStreamV3->GetBunchLength();
+        const UShort_t *sig = rawStreamV3->GetSignals();
+        for (Int_t iTimeBin = 0; iTimeBin<bunchlength; iTimeBin++){
+          Float_t signal=(Float_t)sig[iTimeBin];
+//            printf("%02d - %03d - %03d - %04d: %.1f\n",isector,iRow,iPad,startTbin,signal);
+          Update(isector,iRow,iPad,startTbin--,signal);
+          fPrevRCUId=fCurrRCUId;
+          fPrevDDLNum=fCurrDDLNum;
+          withInput = kTRUE;
+        }
+      }
+    }
+  }
+  if (withInput){
+    EndEvent();
+  }
+  return withInput;
+}
+//_____________________________________________________________________
+Bool_t AliTPCCalibRawBase::ProcessEvent(AliRawReader *rawReader)
+{
+  //
+  //  Event processing loop - AliRawReader
+  //
+  AliRawEventHeaderBase* eventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
+  if (eventHeader){
+    fTimeStamp   = eventHeader->Get("Timestamp");
+    fRunNumber = eventHeader->Get("RunNb");
+    fEventType = eventHeader->Get("Type");
+  }
+  AliTPCRawStreamV3 *rawStreamV3 = new AliTPCRawStreamV3(rawReader, (AliAltroMapping**)fMapping);
+  Bool_t res=ProcessEvent(rawStreamV3);
+  delete rawStreamV3;
+  return res;
+}
+//_____________________________________________________________________
 Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStream *rawStream)
 {
   //
@@ -174,6 +247,10 @@ Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStream *rawStream)
       fAltroL1Phase  = fAltroRawStream->GetL1Phase();
       fAltroL1PhaseTB = (fAltroL1Phase*1e09/100.);
     }
+    fPrevRCUId=fCurrRCUId;
+    fCurrRCUId=rawStream->GetRCUId();
+    fPrevDDLNum=fCurrDDLNum;
+    fCurrDDLNum=rawStream->GetDDLNumber();
     Int_t isector  = rawStream->GetSector();                       //  current sector
     Int_t iRow     = rawStream->GetRow();                          //  current row
     Int_t iPad     = rawStream->GetPad();                          //  current pad
@@ -190,7 +267,7 @@ Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStream *rawStream)
   return withInput;
 }
 //_____________________________________________________________________
-Bool_t AliTPCCalibRawBase::ProcessEvent(AliRawReader *rawReader)
+Bool_t AliTPCCalibRawBase::ProcessEventOld(AliRawReader *rawReader)
 {
   //
   //  Event processing loop - AliRawReader

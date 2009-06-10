@@ -93,9 +93,7 @@ public:
   void  SetNnoiseThresholdMax(Float_t n) {fNoiseThresholdMax=n;}
   void  SetNnoiseThresholdSum(Float_t n) {fNoiseThresholdSum=n;}
   //
-  void  SetTimeStampEvent(Double_t timestamp){ fTimeStamp = timestamp; }
-  void  SetRunNumber(Double_t eventnumber){ fRunNumber = eventnumber; }
-  void  SetEventInfo(Double_t runNumber, Double_t timestamp, Double_t eventId){ fRunNumber=runNumber; fTimeStamp=timestamp; fEventId=eventId;}
+  void  SetEventInfo(UInt_t runNumber,UInt_t timestamp, UInt_t eventId){ fRunNumber=runNumber; fTimeStamp=timestamp; fEventId=eventId;}
   //
   void  SetPedestalDatabase(AliTPCCalPad *pedestalTPC, AliTPCCalPad *padNoiseTPC) {fPedestalTPC = pedestalTPC; fPadNoiseTPC = padNoiseTPC;}
   void  SetIsZeroSuppressed(Bool_t zs=kTRUE) { fIsZeroSuppressed=zs; }
@@ -172,10 +170,8 @@ private:
   TVectorD  fVEventNumber;          //  Eventnumbers of the events
   TVectorF  fVTime0SideA;           //  Mean Time0 for side A for all events
   TVectorF  fVTime0SideC;           //  Mean Time0 for side C for all events
-  Double_t  fTimeStamp;             //! Timestamp of the current event
   Double_t  fEventId;               //! Event Id of the current event
-  Double_t  fRunNumber;             //! Run Number of the current event
-  Double_t  fOldRunNumber;          //! Old Run Number
+  UInt_t  fOldRunNumber;          //! Old Run Number
   
   TObjArray fPadTimesArrayEvent;    //! Pad Times for the event, before mean Time0 corrections
   TObjArray fPadQArrayEvent;        //! Charge for the event, only needed for debugging streamer

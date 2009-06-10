@@ -16,6 +16,7 @@ class AliAltroRawStream;
 class AliRawReader;
 class AliTPCAltroMapping;
 class AliTPCRawStreamFast;
+class AliTPCRawStreamV3;
 class AliTPCRawStream;
 class AliTPCROC;
 class TTreeSRedirector;
@@ -35,10 +36,15 @@ public:
   
   Bool_t ProcessEventFast(AliTPCRawStreamFast *rawStreamFast);
   Bool_t ProcessEventFast(AliRawReader        *rawReader);
-  
-  Bool_t ProcessEvent(AliTPCRawStream *rawStream);
-  Bool_t ProcessEvent(AliRawReader    *rawReader);
+
+  //uses the new decoder which is compatible with the new altro format
+  Bool_t ProcessEvent(AliTPCRawStreamV3   *rawStreamV3);
+  Bool_t ProcessEvent(AliRawReader        *rawReader);
   Bool_t ProcessEvent(eventHeaderStruct   *event);
+
+  //For using the old decoder use the following functions
+  Bool_t ProcessEvent(AliTPCRawStream *rawStream);
+  Bool_t ProcessEventOld(AliRawReader    *rawReader);
   
   virtual Int_t Update(const Int_t /*isector*/, const Int_t /*iRow*/, const Int_t /*iPad*/,
                        const Int_t /*iTimeBin*/, const Float_t /*signal*/) { return 0; }
@@ -50,6 +56,10 @@ public:
   //
   void SetUseL1Phase(Bool_t useL1Phase=kTRUE) {fUseL1Phase=useL1Phase;}
   //
+  void  SetTimeStampEvent(UInt_t timestamp){ fTimeStamp = timestamp; }
+  void  SetRunNumber(UInt_t eventnumber){ fRunNumber = eventnumber; }
+
+  //
   Int_t GetFirstTimeBin()   const { return fFirstTimeBin;  }
   Int_t GetLastTimeBin()    const { return fLastTimeBin;   }
   Int_t GetNevents() const { return fNevents; }
@@ -58,8 +68,8 @@ public:
   Double_t GetL1PhaseTB() const {return fAltroL1PhaseTB;}
   Bool_t   GetUseL1Phase()const {return fUseL1Phase;}
 //
-  UInt_t GetTimeStamp() const {return fTimeStamp;}
   UInt_t GetRunNumber() const {return fRunNumber;}
+  UInt_t GetTimeStamp() const {return fTimeStamp;}
   UInt_t GetEventType() const {return fEventType;}
   //
   AliTPCAltroMapping **GetAltroMapping() { return fMapping; }
@@ -85,12 +95,16 @@ protected:
   Int_t fDebugLevel;                  //! debug level
   Int_t fStreamLevel;                 //! level of streamer output
   //
+  UInt_t fRunNumber;                  // current run number from event header
   UInt_t fTimeStamp;                  //! time stamp from event header
-  UInt_t fRunNumber;                  //! current run number from event header
   UInt_t fEventType;                  //! current event Type from event header
   //
   Double_t fAltroL1Phase;             //! L1 Phase
   Float_t  fAltroL1PhaseTB;           //! L1 Phase in time bins
+  Int_t    fCurrRCUId;                //! Current RCU Id
+  Int_t    fPrevRCUId;                //! Previous RCU Id
+  Int_t    fCurrDDLNum;               //! Current DDL number
+  Int_t    fPrevDDLNum;               //! Current DDL number
   Bool_t   fUseL1Phase;               //  use L1 Phase information?
   //
   TTreeSRedirector *fDebugStreamer;   //! debug streamer
@@ -104,7 +118,7 @@ protected:
   virtual void ResetEvent(){ return; }           //Reset Event counters
   
   
-  ClassDef(AliTPCCalibRawBase,1)      //  Calibration base class for raw data processing
+  ClassDef(AliTPCCalibRawBase,2)      //  Calibration base class for raw data processing
     
 };
 
