@@ -68,6 +68,7 @@
 #pragma link C++ class AliITSpidESD+;
 #pragma link C++ class AliITSpidESD1+;
 #pragma link C++ class AliITSpidESD2+;
+#pragma link C++ class AliITSdEdxAnalyzer+;
 //beam test classes
 #pragma link C++ class AliITSBeamTestDig+;
 #pragma link C++ class AliITSBeamTestDigSPD+;

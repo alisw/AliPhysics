@@ -38,6 +38,7 @@ set(SRCS
 		AliITSpidESD.cxx 
 		AliITSpidESD1.cxx 
 		AliITSpidESD2.cxx 
+		AliITSdEdxAnalyzer.cxx
                 AliITSPident.cxx 
                 AliITSSteerPid.cxx 
                 AliITSPidParItem.cxx 
