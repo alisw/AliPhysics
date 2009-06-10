@@ -58,6 +58,7 @@ class AliRsnPIDDefESD : public TObject {
     void        ComputeWeights(AliESDtrack *track, Double_t *weights);
     void        PrintStatus();
     const char* DetName(EDetector);
+    const char* SchemeName();
 
   private:
 

@@ -230,6 +230,26 @@ const char* AliRsnPIDDefESD::DetName(EDetector det) {
 }
 
 //_____________________________________________________________________________
+const char* AliRsnPIDDefESD::SchemeName() {
+//
+// Scheme name for messages
+//
+
+  TString out;
+
+  Int_t i, ndet = 0;
+
+  for (i = 0; i < kDetectors; i++)
+    if (fUseDet[i])
+    {
+      if (ndet > 0) out += '_';
+      out.Append(DetName((EDetector)i));
+    }
+
+  return out.Data();
+}
+
+//_____________________________________________________________________________
 void AliRsnPIDDefESD::SetDivValue(EDetector det, Double_t value, Bool_t userHigher) {
 //
 // Sets div.value properties for detector
