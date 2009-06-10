@@ -1,0 +1,26 @@
+#-*- Mode: Makefile -*-
+
+SRCS= UNICOR/AliAnalysisTaskUnicor.cxx \
+      UNICOR/AliUnicorAnalCorrel.cxx \
+      UNICOR/AliUnicorAnal.cxx \
+      UNICOR/AliUnicorAnalGlobal.cxx \
+      UNICOR/AliUnicorAnalHighpt.cxx	 \
+      UNICOR/AliUnicorAnalPtfluc.cxx	 \
+      UNICOR/AliUnicorAnalSingle.cxx	 \
+      UNICOR/AliUnicorEventAliceESD.cxx \
+      UNICOR/AliUnicorEvent.cxx \
+      UNICOR/AliUnicorHN.cxx \
+      UNICOR/AliUnicorPair.cxx 
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:= PWG2unicorLinkDef.h
+
+EXPORT:=
+
+EINCLUDE:= PWG2/UNICOR 
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD 
+endif
