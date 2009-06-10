@@ -1252,7 +1252,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
 
   // fit XZ
   if(IsRowCross()){
-    // THE LEADING CLUSTER METHOD
+/*    // THE LEADING CLUSTER METHOD
     Float_t xMin = fX0;
     Int_t ic=n=kNclusters-1; jc = &fClusters[ic];
     AliTRDcluster *c0 =0x0, **kc = &fClusters[kNtb-1];
@@ -1266,10 +1266,10 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     fZfit[0] = .5*(zc[0]+zc[kNclusters-1]); fZfit[1] = 0.;
     // Error parameterization
     fS2Z     = fdX*fZref[1];
-    fS2Z    *= fS2Z; fS2Z    *= 0.2887; //  1/sqrt(12)
-/*
+    fS2Z    *= fS2Z; fS2Z    *= 0.2887; //  1/sqrt(12)*/
+
     // THE FIT X-Q PLANE METHOD 
-    ic=n=kNclusters-1; jc = &fClusters[ic];
+    Int_t ic=n=kNclusters-1; jc = &fClusters[ic];
     for(; ic>kNtb; ic--, --jc){
       if(!(c = (*jc))) continue;
       if(!c->IsInChamber()) continue;
@@ -1294,7 +1294,6 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     fS2Z     = 0.05+0.4*TMath::Abs(fZref[1]); fS2Z *= fS2Z;
     // TODO correct formula
     //fS2Z     = sigma_x*TMath::Abs(fZref[1]);
-*/
   } else {
     fZfit[0] = zc[0]; fZfit[1] = 0.;
     fS2Z     = GetPadLength()*GetPadLength()/12.;
