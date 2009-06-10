@@ -29,8 +29,6 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliITStrackV2.h"
-#include "AliITSRecPoint.h"
-#include "AliITStrackerMI.h"
 #include "AliITSLoader.h"
 #include "AliITSPident.h"
 #include "AliITSSteerPid.h"
@@ -38,36 +36,31 @@
 
 ClassImp(AliITSpidESD2)
 //_________________________________________________________________________
-  AliITSpidESD2::AliITSpidESD2():AliITSpidESD(),
-fTracker(0),
-fSp(0)
-{ //
-  //  The main constructor
-}
-//_________________________________________________________________________
-AliITSpidESD2::AliITSpidESD2(AliITStrackerMI* tracker):AliITSpidESD(),
-fTracker(tracker),
-fSp(0)
-{ //
+AliITSpidESD2::AliITSpidESD2():
+  AliITSpidESD(),
+  fSp(0)
+{ 
   //  The main constructor
   fSp=new AliITSSteerPid();
   fSp->InitLayer();
 }
+
+
 //_________________________________________________________________________
 AliITSpidESD2::~AliITSpidESD2(){
   //destructor
 
   if(fSp)delete fSp;
-
 }
+
+
 //______________________________________________________________________
 AliITSpidESD2::AliITSpidESD2(const AliITSpidESD2 &ob) :AliITSpidESD(ob),
-fTracker(ob.fTracker),
 fSp(ob.fSp) 
 {
   // Copy constructor
- 
 }
+
 
 //______________________________________________________________________
 AliITSpidESD2& AliITSpidESD2::operator=(const AliITSpidESD2& ob ){
@@ -77,83 +70,58 @@ AliITSpidESD2& AliITSpidESD2::operator=(const AliITSpidESD2& ob ){
   return *this;
 }
 
-//_________________________________________________________________________
-Int_t AliITSpidESD2::MakePID(TTree *clustersTree, AliESDEvent *event)
-{
+    
+//______________________________________________________________________
+void AliITSpidESD2::GetITSpidSingleTrack(AliESDtrack* esdtr, Double_t condprobfun[]){
+  // Method to calculate PID probabilities for a single track
+  
+  Double_t dEdxsignal=esdtr->GetITSsignal();
+  Double_t momits=esdtr->GetP();
+  Double_t qclu[4];
+  esdtr->GetITSdEdxSamples(qclu);
 
-  //
+  Float_t qclucorr[8],nlay[8];
+  for(Int_t jj=0;jj<8;jj++){
+    if(jj<4 && qclu[jj]>0){
+      qclucorr[jj]=qclu[jj]; 
+      nlay[jj]=jj+2; // layers numbered from 0 to 5
+    }
+    else{ 
+      qclucorr[jj]=-1;
+      nlay[jj]=0;
+    }
+  }
+  
+  Float_t prip=0.33;
+  Float_t prik=0.33;
+  Float_t pripi=0.33;
+  Float_t prie=0.;
+  AliITSPident mypid(momits,dEdxsignal,fSp,qclucorr,nlay,prip,prik,pripi,prie);
+  condprobfun[0]=mypid.GetProdCondFunPi();//el --PID in the ITS does not distinguish among Pi,el,mu
+  condprobfun[1]=mypid.GetProdCondFunPi();//mu
+  condprobfun[2]=mypid.GetProdCondFunPi();//pi
+  condprobfun[3]=mypid.GetProdCondFunK();//kaon
+  condprobfun[4]=mypid.GetProdCondFunPro();//pro
+  return;
+}
+
+
+
+//_________________________________________________________________________
+Int_t AliITSpidESD2::MakePID(AliESDEvent *event){
   //  This function calculates the "detector response" PID probabilities 
-  //
-  Double_t xr,par[5];
-  AliITStrackV2* track=0;
-  fTracker->LoadClusters(clustersTree);
-  printf("==== Landau Fit PID ITS ====== \n");
+
   Int_t ntrk=event->GetNumberOfTracks();
-  Double_t momits;
-  // for (Int_t i=0; i<ntrk; i++) {
+  const Int_t kns=AliPID::kSPECIES;
+  Double_t condprobfun[kns];
+    
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *esdtr=event->GetTrack(i);
-    if ((esdtr->GetStatus()&AliESDtrack::kITSin )==0)
+    if ((esdtr->GetStatus()&AliESDtrack::kITSin )==0){
       if ((esdtr->GetStatus()&AliESDtrack::kITSout)==0) continue;
-
-    track = new AliITStrackV2(*esdtr);
-    Double_t dEdxsignal=track->GetdEdx();
-    track->GetExternalParameters(xr,par);
-    if (par[4]!=0) {
-      Float_t lamb=TMath::ATan(par[3]);
-      momits=1/(TMath::Abs(par[4])*TMath::Cos(lamb));
     }
-    else {
-      AliWarning("Null particle momentum in ITS");
-      momits = 0.;
-    } 
-    Double_t snp=track->GetSnp();
-    Double_t tgl=track->GetTgl();
-    const Int_t kns=AliPID::kSPECIES;
-    Double_t condprobfun[kns];
-    for(Int_t ii=0;ii<kns;ii++)condprobfun[ii]=0;
-    Int_t cluind[12];
-    for(Int_t ii=0;ii<12;ii++){
-      cluind[ii]=track->GetClusterIndex(ii);
-    }
-    AliITSRecPoint* cluarr[12];
-    Float_t qclu[8],qclucorr[8],nlay[8];
-    for(Int_t ii=0;ii<8;ii++){
-      qclu[ii]=0;
-      qclucorr[ii]=0;
-      nlay[ii]=0;
-    }
-    Int_t jj=0;
-    for(Int_t ij=0;ij<12;ij++){
-      cluind[ij]=track->GetClusterIndex(ij);
-      if(cluind[ij]>0){
-	cluarr[ij]=(AliITSRecPoint*)fTracker->GetCluster(cluind[ij]);
-	Int_t lay=cluarr[ij]->GetLayer();
-	if(lay>1){//sdd+ssd only
-	  qclu[jj]=cluarr[ij]->GetQ(); 
-	  qclucorr[jj]=qclu[jj]*TMath::Sqrt((1-snp*snp)/(1+tgl*tgl));
-	  nlay[jj]=lay;
-	  jj++;
-	}
-	else qclucorr[jj]=-1;
-      }
-    }
-
-    Float_t prip=0.33;
-    Float_t prik=0.33;
-    Float_t pripi=0.33;
-    Float_t prie=0.;
-    AliITSPident mypid(momits,dEdxsignal,fSp,qclucorr,nlay,prip,prik,pripi,prie); 
-    condprobfun[0]=mypid.GetProdCondFunPi();//el --PID in the ITS does not distinguish among Pi,el,mu
-    condprobfun[1]=mypid.GetProdCondFunPi();//mu
-    condprobfun[2]=mypid.GetProdCondFunPi();//pi
-    condprobfun[3]=mypid.GetProdCondFunK();//kaon
-    condprobfun[4]=mypid.GetProdCondFunPro();//pro
-
+    GetITSpidSingleTrack(esdtr,condprobfun);
     esdtr->SetITSpid(condprobfun);
-
-    delete track;
   }
-  fTracker->UnloadClusters();
   return 0;
 }

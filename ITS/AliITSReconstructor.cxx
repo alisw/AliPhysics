@@ -178,7 +178,7 @@ AliTracker* AliITSReconstructor::CreateTracker() const
   AliITSReconstructor* nc = const_cast<AliITSReconstructor*>(this);
   if(pidOpt==1){
     Info("FillESD","ITS LandauFitPID option has been selected\n");
-    nc->fItsPID = new AliITSpidESD2((AliITStrackerMI*)tracker);
+    nc->fItsPID = new AliITSpidESD2();
   }
   else{
     Info("FillESD","ITS default PID\n");
@@ -246,19 +246,10 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
 }
 
 //_____________________________________________________________________________
-void AliITSReconstructor::FillESD(TTree * /*digitsTree*/, TTree *clustersTree, 
+void AliITSReconstructor::FillESD(TTree * /*digitsTree*/, TTree * /*clustersTree*/, 
 				  AliESDEvent* esd) const
 {
 // make PID, find V0s and cascade
-  if(fItsPID!=0) {
-    Int_t pidOpt = GetRecoParam()->GetPID();
-    if(pidOpt==1){
-      fItsPID->MakePID(clustersTree,esd);
-    }else{
-      fItsPID->MakePID(esd);
-    }
-  }
-  else {
-    Error("FillESD","!! cannot do the PID !!\n");
-  }
+  if(fItsPID!=0) fItsPID->MakePID(esd);
+  else AliError("!! cannot do the PID !!");
 }
