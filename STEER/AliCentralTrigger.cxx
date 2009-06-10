@@ -64,6 +64,9 @@ AliCentralTrigger::AliCentralTrigger() :
    TObject(),
    fClassMask(0),
    fClusterMask(0),
+   fL0TriggerInputs(0),
+   fL1TriggerInputs(0),
+   fL2TriggerInputs(0),
    fConfiguration(NULL)
 {
    // Default constructor
@@ -75,6 +78,9 @@ AliCentralTrigger::AliCentralTrigger( TString & config ) :
    TObject(),
    fClassMask(0),
    fClusterMask(0),
+   fL0TriggerInputs(0),
+   fL1TriggerInputs(0),
+   fL2TriggerInputs(0),
    fConfiguration(NULL)
 {
    // Default constructor
@@ -94,6 +100,9 @@ void AliCentralTrigger::DeleteConfiguration()
   // Delete the active configuration
   fClassMask = 0;
   fClusterMask = 0;
+  fL0TriggerInputs = 0;
+  fL1TriggerInputs = 0;
+  fL2TriggerInputs = 0;
   if (fConfiguration) {
     if (IsOwner()) delete fConfiguration;
     fConfiguration = 0x0;
@@ -106,6 +115,9 @@ void AliCentralTrigger::Reset()
    // Reset Class Mask and classes
    fClassMask = 0;
    fClusterMask = 0;
+   fL0TriggerInputs = 0;
+   fL1TriggerInputs = 0;
+   fL2TriggerInputs = 0;
 
    if (fConfiguration) {
      const TObjArray& classesArray = fConfiguration->GetClasses();
@@ -127,7 +139,7 @@ void AliCentralTrigger::MakeBranch( TString name, TTree * tree )
       TBranch* branch = tree->GetBranch( name );
       if( branch == 0x0 ) {
          AliDebug( 1, "Creating new branch" );
-         branch = tree->Branch( name, &(this->fClassMask), "fClassMask/l:fClusterMask/i" );
+         branch = tree->Branch( name, &(this->fClassMask), "fClassMask/l:fClusterMask/i:fL0TriggerInputs/i:fL1TriggerInputs/i:fL2TriggerInputs/s" );
          branch->SetAutoDelete( kFALSE );
       }
       else {
@@ -269,6 +281,8 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader, const char *detec
 
       // Check trigger conditions and create the trigger class mask
       TriggerClasses();
+      // Calculate trigger Input pattern
+      TriggerInputs();
 
       // Clear trigger detectors
       trgdetArray.SetOwner();
@@ -294,7 +308,31 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader, const char *detec
 
    return kTRUE;
 }
-
+//----------------------------------------------------------------------------
+void AliCentralTrigger::TriggerInputs()
+{
+ // Find which inputs are in configuration
+ // and calculate input pattern
+ fL0TriggerInputs=0;
+ fL1TriggerInputs=0;
+ fL2TriggerInputs=0;
+ if(fConfiguration){
+    const TObjArray& inputsArray = fConfiguration->GetInputs();
+    Int_t ninputs = inputsArray.GetEntriesFast();
+    for( Int_t j=0; j<ninputs; j++ ) {
+      AliTriggerInput* input = (AliTriggerInput*)inputsArray.At( j );
+      if(input->GetValue()){
+       UChar_t level=input->GetLevel();
+            if(level == 0) fL0TriggerInputs |= (input->GetMask());
+       else if(level == 1) fL1TriggerInputs |= (input->GetMask());
+       else if(level == 2) fL2TriggerInputs |= (input->GetMask());
+       else{
+         AliError(Form("Unknown input level:%c:",level));
+       }
+      }
+    }
+ }
+}
 //_____________________________________________________________________________
 ULong64_t AliCentralTrigger::TriggerClasses()
 {

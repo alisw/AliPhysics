@@ -39,6 +39,7 @@ public:
                 Bool_t    LoadConfiguration( TString & config );
                 Bool_t    RunTrigger( AliRunLoader * runloader , const char* detectors);
              ULong64_t    TriggerClasses();
+	          void    TriggerInputs();
                   void    Reset();
 		  void    DeleteConfiguration();
                   void    MakeBranch( TString name, TTree * tree );
@@ -46,6 +47,9 @@ public:
                TString    GetDetectors();
              ULong64_t    GetClassMask() const { return fClassMask; }
 	        UInt_t    GetClusterMask() const { return fClusterMask; }
+	     	UInt_t    GetL0TriggerInputs() const { return fL0TriggerInputs; }
+	     	UInt_t    GetL1TriggerInputs() const { return fL1TriggerInputs; }
+	      UShort_t    GetL2TriggerInputs() const { return fL2TriggerInputs; }
  AliTriggerConfiguration* GetConfiguration() { return fConfiguration; }
              TObjArray*   GetFiredClasses() const;
                   void    Print( const Option_t* opt ="" ) const;
@@ -55,9 +59,16 @@ public:
 	       // is read from the event header
 	       void       SetClassMask(ULong64_t mask) { fClassMask = mask; }
 	       void       SetClusterMask(UInt_t mask)  { fClusterMask = mask; }
+	       void       SetL0TriggerInputs(UInt_t mask)  { fL0TriggerInputs = mask; }
+	       void       SetL1TriggerInputs(UInt_t mask)  { fL1TriggerInputs = mask; }
+	       void       SetL2TriggerInputs(UShort_t mask)  { fL2TriggerInputs = mask; }
 protected:
              ULong64_t    fClassMask;          // UID ( bitwise OR of conditions mask )
                 UInt_t    fClusterMask;        // UID ( bitwise OR of clusters mask - detector pattern)
+    	        UInt_t    fL0TriggerInputs;    // L0 trigger inputs (24 bits)
+                UInt_t    fL1TriggerInputs;    // L1 trigger inputs (24 bits)
+              UShort_t    fL2TriggerInputs;    // L2 trigger inputs (12 bits)
+
  AliTriggerConfiguration* fConfiguration;      // Trigger Configuration used
 
 private:
