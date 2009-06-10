@@ -466,6 +466,11 @@ Float_t AliTRDseedV1::GetdQdl(Int_t ic, Float_t *dl) const
 //   - dx     : anisochronity, track inclination - see Fit and AliTRDcluster::GetXloc() 
 //              and AliTRDcluster::GetYloc() for the effects taken into account
 // 
+//Begin_Html
+//<img src="TRD/trackletDQDT.gif">
+//End_Html
+// In the picture the energy loss measured on the tracklet as a function of drift time [left] and respectively 
+// drift length [right] for different particle species is displayed.
 // Author : Alex Bercuci <A.Bercuci@gsi.de>
 //
   Float_t dq = 0.;

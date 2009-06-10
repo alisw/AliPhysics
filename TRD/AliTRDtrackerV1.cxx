@@ -1302,35 +1302,56 @@ Double_t AliTRDtrackerV1::FitLine(const AliTRDtrackV1 *track, AliTRDseedV1 *trac
 //_________________________________________________________________________
 Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1 *tracklets, Bool_t sigError, Int_t np, AliTrackPoint *points)
 {
-  //
-  // Performs a Riemann fit taking tilting pad correction into account
-  // The equation of a Riemann circle, where the y position is substituted by the 
-  // measured y-position taking pad tilting into account, has to be transformed
-  // into a 4-dimensional hyperplane equation
-  // Riemann circle: (x-x0)^2 + (y-y0)^2 -R^2 = 0
-  // Measured y-Position: ymeas = y - tan(phiT)(zc - zt)
-  //          zc: center of the pad row
-  //          zt: z-position of the track
-  // The z-position of the track is assumed to be linear dependent on the x-position
-  // Transformed equation: a + b * u + c * t + d * v  + e * w - 2 * (ymeas + tan(phiT) * zc) * t = 0
-  // Transformation:       u = 2 * x * t
-  //                       v = 2 * tan(phiT) * t
-  //                       w = 2 * tan(phiT) * (x - xref) * t
-  //                       t = 1 / (x^2 + ymeas^2)
-  // Parameters:           a = -1/y0
-  //                       b = x0/y0
-  //                       c = (R^2 -x0^2 - y0^2)/y0
-  //                       d = offset
-  //                       e = dz/dx
-  // If the offset respectively the slope in z-position is impossible, the parameters are fixed using 
-  // results from the simple riemann fit. Afterwards the fit is redone.
-  // The curvature is calculated according to the formula:
-  //                       curv = a/(1 + b^2 + c*a) = 1/R
-  //
-  // Paramters:   - Array of tracklets (connected to the track candidate)
-  //              - Flag selecting the error definition
-  // Output:      - Chi2 values of the track (in Parameter list)
-  //
+//
+// Performs a Riemann fit taking tilting pad correction into account
+//
+// Paramters:   - Array of tracklets (connected to the track candidate)
+//              - Flag selecting the error definition
+// Output:      - Chi2 values of the track (in Parameter list)
+//
+// The equations which has to be solved simultaneously are:
+// BEGIN_LATEX
+// R^{2} = (x-x_{0})^{2} + (y^{*}-y_{0})^{2}
+// y^{*} = y - tg(h)(z - z_{t})
+// z_{t} = z_{0}+dzdx*(x-x_{r})
+// END_LATEX
+// with (x, y, z) the coordinate of the cluster, (x_0, y_0, z_0) the coordinate of the center of the Riemann circle,
+// R its radius, x_r a constant refrence radial position in the middle of the TRD stack  and dzdx the slope of the 
+// track in the x-z plane. Using the following transformations
+// BEGIN_LATEX
+// t = 1 / (x^{2} + y^{2})
+// u = 2 * x * t
+// v = 2 * tan(h) * t
+// w = 2 * tan(h) * (x - x_{r}) * t
+// END_LATEX
+// One gets the following linear equation
+// BEGIN_LATEX
+// a + b * u + c * t + d * v  + e * w = 2 * (y + tg(h) * z) * t
+// END_LATEX
+// where the coefficients have the following meaning 
+// BEGIN_LATEX
+// a = -1/y_{0}
+// b = x_{0}/y_{0}
+// c = (R^{2} -x_{0}^{2} - y_{0}^{2})/y_{0}
+// d = z_{0}
+// e = dz/dx
+// END_LATEX
+// The error calculation for the free term is thus
+// BEGIN_LATEX
+// #sigma = 2 * #sqrt{#sigma^{2}_{y} + (tilt corr ...) + tg^{2}(h) * #sigma^{2}_{z}} * t
+// END_LATEX
+//
+// From this simple model one can compute chi^2 estimates and a rough approximation of pt from the curvature according 
+// to the formula:
+// BEGIN_LATEX
+// C = 1/R = a/(1 + b^{2} + c*a)
+// END_LATEX
+//
+// Authors
+//   M.Ivanov <M.Ivanov@gsi.de>
+//   A.Bercuci <A.Bercuci@gsi.de>
+//   M.Fasel <M.Fasel@gsi.de>
+
   TLinearFitter *fitter = GetTiltedRiemanFitter();
   fitter->StoreData(kTRUE);
   fitter->ClearPoints();

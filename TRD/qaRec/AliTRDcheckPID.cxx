@@ -158,7 +158,7 @@ TObjArray * AliTRDcheckPID::Histos(){
       xBins, -0.5, xBins - 0.5,
       AliTRDtrackerV1::GetNTimeBins(), 0., .5*AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght());
   } else h->Reset();
-  fPH->AddAt(h, 0);
+  fPH->AddAt(h, 1);
 
   // histos of the number of clusters distribution for all 5 particle species and 11 momenta 
   if(!(h = (TH2F*)gROOT->FindObject("NClus"))){
@@ -556,17 +556,17 @@ TH1 *AliTRDcheckPID::PlotPH(const AliTRDtrackV1 *track)
   if(!IsInRange(momentum)) return 0x0;;
 
   AliTRDseedV1 *tracklet = 0x0;
-  AliTRDcluster *TRDcluster = 0x0;
+  AliTRDcluster *cluster = 0x0;
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   Int_t iBin = FindBin(species, momentum);
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
     tracklet = fTrack->GetTracklet(iChamb);
     if(!tracklet) continue;
     Float_t x0 = tracklet->GetX0(); 
-    for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
-      if(!(TRDcluster = tracklet->GetClusters(iClus))) continue;
-      hPHT -> Fill(iBin, TRDcluster->GetLocalTimeBin(), TMath::Abs(TRDcluster->GetQ()));
-      hPHX -> Fill(iBin, x0 - TRDcluster->GetX(), tracklet->GetdQdl(iClus));
+    for(Int_t ic = 0; ic < AliTRDtrackerV1::GetNTimeBins(); ic++){
+      if(!(cluster = tracklet->GetClusters(ic))) continue;
+      hPHT -> Fill(iBin, cluster->GetLocalTimeBin(), TMath::Abs(cluster->GetQ()));
+      hPHX -> Fill(iBin, x0 - cluster->GetX(), tracklet->GetdQdl(ic));
     }
   }
   return hPHT;
@@ -842,7 +842,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
 
     // save 2.0 GeV projection as reference
     TLegend *legPH = new TLegend(.4, .7, .68, .98);
-    legPH->SetBorderSize(1);
+    legPH->SetBorderSize(1);legPH->SetFillColor(0);
     legPH->SetHeader("Particle Species");
     if(!(arr = (TObjArray*)(fContainer->At(kPH)))) break;
     if(!(h2 = (TProfile2D*)(arr->At(0)))) break;
@@ -882,7 +882,6 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
         h1->GetYaxis()->SetTitle("<dQ/dl> [a.u./cm]");
       }
       h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
-      legPH->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
       FIRST = kFALSE;
     }
 
