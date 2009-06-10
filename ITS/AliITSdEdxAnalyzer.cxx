@@ -222,15 +222,12 @@ Int_t AliITSdEdxAnalyzer::GetPaticleIdFromTPC(const AliESDtrack* track) const {
 Double_t AliITSdEdxAnalyzer::BetheBloch(const Float_t p, const Float_t m) const {
   //
   Double_t dedxbb=0.;
-  switch(fBBmodel){
-  case 0:
+  if(fBBmodel==0){
     Double_t betagamma=p/m;
     Double_t conv=fDensity*1E6*fThickness/116.31*fMIP;
     dedxbb=conv*AliExternalTrackParam::BetheBlochSolid(betagamma);
-    break;
-  case 1:
+  }else if(fBBmodel==1){
     dedxbb=fMIP*AliITSpidESD::Bethe(p,m);
-    break;
   }
   return dedxbb;
 }
