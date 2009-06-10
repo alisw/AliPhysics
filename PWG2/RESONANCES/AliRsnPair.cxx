@@ -366,20 +366,6 @@ void AliRsnPair::AddFunction(AliRsnFunction *fcn)
   AliDebug(AliLog::kDebug+2,"->");
 }
 
-/*
-//_____________________________________________________________________________
-void AliRsnPair::AddFunction(AliRsnFunctionDef *fcn)
-{
-//
-// Adds a new computing function
-//
-  AliDebug(AliLog::kDebug+2,"<-");
-  Int_t size = fFunctions.GetEntries();
-  new (fFunctions[size]) AliRsnFunctionNew(fcn);
-    AliDebug(AliLog::kDebug+2,"->");
-}
-*/
-
 //________________________________________________________________________________________
 Bool_t AliRsnPair::CutPass(AliRsnDaughter *d)
 {
