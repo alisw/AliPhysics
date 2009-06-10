@@ -233,7 +233,7 @@ fPlaneEff(0) {
   if (AliITSReconstructor::GetRecoParam()->GetComputePlaneEff() &&
       AliITSReconstructor::GetRecoParam()->GetIPlanePlaneEff()>=0) {
     Int_t iplane=AliITSReconstructor::GetRecoParam()->GetIPlanePlaneEff();
-    if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(iplane))
+    if(!AliITSReconstructor::GetRecoParam()->GetLayersToSkip(iplane)==1)
       AliWarning(Form("Evaluation of Plane Eff for layer %d will be attempted without removing it from tracker",iplane));
     if (iplane<2) fPlaneEff = new AliITSPlaneEffSPD();
     else if (iplane<4) fPlaneEff = new AliITSPlaneEffSDD();
@@ -739,6 +739,7 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
     //Refitting...
     Bool_t pe=(AliITSReconstructor::GetRecoParam()->GetComputePlaneEff() &&
                AliITSReconstructor::GetRecoParam()->GetIPlanePlaneEff()>=0);
+
     AliDebug(2,Form("Refit LABEL %d  %d",t->GetLabel(),t->GetNumberOfClusters()));
     if (RefitAt(AliITSRecoParam::GetrInsideSPD1(),&fTrackToFollow,t,kTRUE,pe)) {
        AliDebug(2,"  refit OK");

@@ -124,7 +124,7 @@ void AliITSReconstructor::Reconstruct(AliRawReader* rawReader, TTree *clustersTr
 AliTracker* AliITSReconstructor::CreateTrackleter() const
 {
 // create the SPD trackeleter (for SPD PlaneEfficiency evaluation)
-  if(!GetRecoParam()->GetComputePlaneEff() && !GetRecoParam()->GetUseTrackletsPlaneEff()) return NULL;
+  if(!GetRecoParam()->GetComputePlaneEff() || !GetRecoParam()->GetUseTrackletsPlaneEff()) return NULL;
   //Int_t trackerOpt = GetRecoParam()->GetTracker();
   AliTracker* trackleter;
   trackleter = new AliITSTrackleterSPDEff();

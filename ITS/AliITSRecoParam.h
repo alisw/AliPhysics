@@ -218,7 +218,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t  GetUpdateOncePerEventPlaneEff() const {return fUpdateOncePerEventPlaneEff;}
   void    SetMinContVtxPlaneEff(Int_t n=3) {fMinContVtxPlaneEff=n; return;}
   Int_t   GetMinContVtxPlaneEff() const {return fMinContVtxPlaneEff;}
-  void   SetIPlanePlaneEff(Int_t i=0) {if(i<0 || i>=AliITSgeomTGeo::kNLayers) return; fIPlanePlaneEff=i; }
+  void   SetIPlanePlaneEff(Int_t i=0) {if(i<-1 || i>=AliITSgeomTGeo::kNLayers) return; fIPlanePlaneEff=i; }
   Int_t  GetIPlanePlaneEff() const {return fIPlanePlaneEff;}
   void   SetReadPlaneEffFrom0CDB(Bool_t read=kTRUE) { fReadPlaneEffFromOCDB=read; }
   Bool_t GetReadPlaneEffFromOCDB() const { return fReadPlaneEffFromOCDB; }
@@ -498,7 +498,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fTrackleterZetaWindowL1; // Search window in zeta for inner layer (1) (SPD PlaneEff using tracklets)
   Bool_t fUpdateOncePerEventPlaneEff; // option to update chip efficiency once/event (to avoid doubles)
   Int_t  fMinContVtxPlaneEff; // min number of contributors to ESD vtx for SPD PlaneEff using tracklets
-  Int_t  fIPlanePlaneEff; // index of the plane (in the range [0,5])  to study the efficiency
+  Int_t  fIPlanePlaneEff; // index of the plane (in the range [-1,5]) to study the efficiency (-1 ->Tracklets)
   Bool_t fReadPlaneEffFromOCDB; // enable initial reading of Plane Eff statistics from OCDB
                                // The analized events would be used to increase the statistics
   Double_t fMinPtPlaneEff;  // minimum p_t of the track to be used for Plane Efficiency evaluation
