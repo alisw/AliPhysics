@@ -35,6 +35,8 @@ class AliMUONErrorCounter : public TNamed
     Int_t fBusPatch; ///< Buspath ID
     Int_t fManuId;   ///< Manu ID
     Int_t fEvents;   ///< Events with error in this buspatch
+
+  ClassDef(AliMUONErrorCounter,1) // 
 };
 
 #endif //ALIMUONERRORCOUNTER_H 

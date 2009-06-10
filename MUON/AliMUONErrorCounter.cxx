@@ -28,6 +28,10 @@
 /// \author Alberto Baldisseri, JL Charvet (05/05/2009)
 //-----------------------------------------------------------------------------
 
+/// \cond CLASSIMP
+ClassImp(AliMUONErrorCounter)
+/// \endcond
+
 //______________________________________________________________________________
 AliMUONErrorCounter::AliMUONErrorCounter(Int_t bp, Int_t manu, Int_t ev) 
   : fBusPatch(bp), 
