@@ -377,6 +377,10 @@ void AliTPCQADataMakerRec::InitRecPoints()
 void AliTPCQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   // make QA data from ESDs
+ 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetESDsData(KClusters) )
+    InitESDs() ;
   
   const Int_t nESDTracks = esd->GetNumberOfTracks();
   Int_t nTPCtracks = 0; 
@@ -405,13 +409,21 @@ void AliTPCQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // To make QA for the RAW data we use the TPC Calibration framework 
   // to handle the data and then in the end extract the data
   //
-	rawReader->Reset() ; 
+  if ( ! GetRawsData(kOccupancy) )
+    InitRaws() ;
+  
+  rawReader->Reset() ; 
   fTPCdataQA[AliRecoParam::AConvert(fEventSpecie)]->ProcessEvent(rawReader);  
  }
 
 //____________________________________________________________________________
 void AliTPCQADataMakerRec::MakeDigits(TTree* digitTree)
 {
+
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(kDigitsADC) )
+    InitDigits() ;
+  
   TBranch* branch = digitTree->GetBranch("Segment");
   AliSimDigits* digArray = 0;
   branch->SetAddress(&digArray);
@@ -434,6 +446,10 @@ void AliTPCQADataMakerRec::MakeDigits(TTree* digitTree)
 //____________________________________________________________________________
 void AliTPCQADataMakerRec::MakeRecPoints(TTree* recTree)
 {
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRecPointsData(kQmaxShort) )
+    InitRecPoints() ;
+
   AliTPCClustersRow *clrow = new AliTPCClustersRow();
   clrow->SetClass("AliTPCclusterMI");
   clrow->SetArray(0);

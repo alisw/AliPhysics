@@ -252,7 +252,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fInitCDBCalled(kFALSE),
   fSetRunNumberFromDataCalled(kFALSE),
   fQADetectors("ALL"), 
-  fQAManager(NULL),  
   fQATasks("ALL"), 
   fRunQA(kTRUE),  
   fRunGlobalQA(kTRUE),
@@ -349,7 +348,6 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fInitCDBCalled(rec.fInitCDBCalled),
   fSetRunNumberFromDataCalled(rec.fSetRunNumberFromDataCalled),
   fQADetectors(rec.fQADetectors), 
-  fQAManager(NULL),  
   fQATasks(rec.fQATasks), 
   fRunQA(rec.fRunQA),  
   fRunGlobalQA(rec.fRunGlobalQA),
@@ -484,7 +482,6 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fInitCDBCalled               = rec.fInitCDBCalled;
   fSetRunNumberFromDataCalled  = rec.fSetRunNumberFromDataCalled;
   fQADetectors                 = rec.fQADetectors;
-  fQAManager                     = NULL;  
   fQATasks                     = rec.fQATasks; 
   fRunQA                       = rec.fRunQA;  
   fRunGlobalQA                 = rec.fRunGlobalQA;
@@ -533,16 +530,16 @@ void AliReconstruction::InitQA()
   if (fInitQACalled) return;
   fInitQACalled = kTRUE;
   
-  fQAManager = AliQAManager::QAManager("rec") ; 
+  AliQAManager * qam = AliQAManager::QAManager("rec") ; 
   if (fWriteQAExpertData)
-    fQAManager->SetWriteExpert() ; 
+    qam->SetWriteExpert() ; 
  
-  if (fQAManager->IsDefaultStorageSet()) {
+  if (qam->IsDefaultStorageSet()) {
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     AliWarning("Default QA reference storage has been already set !");
     AliWarning(Form("Ignoring the default storage declared in AliReconstruction: %s",fQARefUri.Data()));
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    fQARefUri = fQAManager->GetDefaultStorage()->GetURI();
+    fQARefUri = qam->GetDefaultStorage()->GetURI();
   } else {
     if (fQARefUri.Length() > 0) {
     	AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -556,23 +553,23 @@ void AliReconstruction::InitQA()
         AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     		
       }
-    fQAManager->SetDefaultStorage(fQARefUri);
+    qam->SetDefaultStorage(fQARefUri);
   }
   
   if (fRunQA) {
-  fQAManager->SetActiveDetectors(fQADetectors) ; 
+  qam->SetActiveDetectors(fQADetectors) ; 
   for (Int_t det = 0 ; det < AliQAv1::kNDET ; det++) {
-    fQAManager->SetCycleLength(AliQAv1::DETECTORINDEX_t(det), fQACycles[det]) ;  
-    fQAManager->SetWriteExpert(AliQAv1::DETECTORINDEX_t(det)) ;
+    qam->SetCycleLength(AliQAv1::DETECTORINDEX_t(det), fQACycles[det]) ;  
+    qam->SetWriteExpert(AliQAv1::DETECTORINDEX_t(det)) ;
   }
   if (!fRawReader && !fInput && fQATasks.Contains(AliQAv1::kRAWS))
     fQATasks.ReplaceAll(Form("%d",AliQAv1::kRAWS), "") ;
-  fQAManager->SetTasks(fQATasks) ; 
-  fQAManager->InitQADataMaker(AliCDBManager::Instance()->GetRun()) ; 
+  qam->SetTasks(fQATasks) ; 
+  qam->InitQADataMaker(AliCDBManager::Instance()->GetRun()) ; 
   }
   if (fRunGlobalQA) {
     Bool_t sameCycle = kFALSE ;
-    AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQAv1::kGLOBAL);
+    AliQADataMaker *qadm = qam->GetQADataMaker(AliQAv1::kGLOBAL);
     AliInfo(Form("Initializing the global QA data maker"));
     if (fQATasks.Contains(Form("%d", AliQAv1::kRECPOINTS))) {
       qadm->StartOfCycle(AliQAv1::kRECPOINTS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
@@ -593,11 +590,7 @@ void AliReconstruction::MergeQA(const char *fileName)
 {
   //Initialize the QA and start of cycle 
   AliCodeTimerAuto("") ;
-  if ( ! fQAManager ) {
-    AliFatal("Hum... this should not happen") ; 
-  } else { 
-   fQAManager->Merge(AliCDBManager::Instance()->GetRun(),fileName) ; 
-  }
+  AliQAManager::QAManager()->Merge(AliCDBManager::Instance()->GetRun(),fileName) ; 
   AliSysInfo::AddStamp("MergeQA") ; 
 }
   
@@ -1591,7 +1584,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
         const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
         reconstructor->SetRecoParam(par);
         if (fRunQA) {
-          fQAManager->SetRecoParam(iDet, par) ; 
+          AliQAManager::QAManager()->SetRecoParam(iDet, par) ; 
         }
       }
     }
@@ -1599,8 +1592,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     // QA on single raw 
   if (fRunQA) {
-    fQAManager->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
-    fQAManager->RunOneEvent(fRawReader) ;  
+    AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
+    AliQAManager::QAManager()->RunOneEvent(fRawReader) ;  
   }
     // local single event reconstruction
     if (!fRunLocalReconstruction.IsNull()) {
@@ -1824,11 +1817,11 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     if (fCleanESD) CleanESD(fesd);
 
   if (fRunQA) {
-    fQAManager->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
-    fQAManager->RunOneEvent(fesd) ; 
+    AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
+    AliQAManager::QAManager()->RunOneEvent(fesd) ; 
   }
   if (fRunGlobalQA) {
-      AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQAv1::kGLOBAL);
+    AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
       qadm->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
     if (qadm && fQATasks.Contains(Form("%d", AliQAv1::kESDS)))
       qadm->Exec(AliQAv1::kESDS, fesd);
@@ -1872,7 +1865,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     }
 	
   if (fRunQA || fRunGlobalQA) 
-      fQAManager->Increment() ; 
+    AliQAManager::QAManager()->Increment() ; 
   
     return kTRUE;
 }
@@ -1936,10 +1929,10 @@ void AliReconstruction::SlaveTerminate()
 
   // End of cycle for the in-loop  
   if (fRunQA) 
-    fQAManager->EndOfCycle() ;
+    AliQAManager::QAManager()->EndOfCycle() ;
   
   if (fRunGlobalQA) {
-    AliQADataMaker *qadm = fQAManager->GetQADataMaker(AliQAv1::kGLOBAL);
+    AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
     if (qadm) {
       if (fQATasks.Contains(Form("%d", AliQAv1::kRECPOINTS))) 
         qadm->EndOfCycle(AliQAv1::kRECPOINTS);
@@ -2048,21 +2041,19 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
       } else {
         reconstructor->Reconstruct(digitsTree, clustersTree);
         if (fRunQA) {
-          fQAManager->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
-          fQAManager->RunOneEventInOneDetector(iDet, digitsTree) ; 
+          AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
+          AliQAManager::QAManager()->RunOneEventInOneDetector(iDet, digitsTree) ; 
         }
       }
       loader->UnloadDigits();
     }
-
-		TString detQAStr(fQADetectors) ; 
 		if (fRunQA) {
-      fQAManager->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
-			fQAManager->RunOneEventInOneDetector(iDet, clustersTree) ; 
+      AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
+			AliQAManager::QAManager()->RunOneEventInOneDetector(iDet, clustersTree) ; 
     }
-	loader->WriteRecPoints("OVERWRITE");
-	loader->UnloadRecPoints();
-	AliSysInfo::AddStamp(Form("LRec%s_%d",fgkDetectorName[iDet],eventNr), iDet,1,eventNr);
+    loader->WriteRecPoints("OVERWRITE");
+    loader->UnloadRecPoints();
+    AliSysInfo::AddStamp(Form("LRec%s_%d",fgkDetectorName[iDet],eventNr), iDet,1,eventNr);
   }
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
     AliError(Form("the following detectors were not found: %s",
@@ -2300,6 +2291,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 
   AliInfo("running tracking");
 
+  
   //Fill the ESD with the T0 info (will be used by the TOF) 
   if (fReconstructor[11] && fLoader[11]) {
     fLoader[11]->LoadRecPoints("READ");
@@ -2350,8 +2342,8 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
       AliSysInfo::AddStamp(Form("RLoadCluster0%s_%d",fgkDetectorName[iDet],eventNr), iDet,1, eventNr);
       tree = fLoader[iDet]->TreeR();
       if (!tree) {
-	AliError(Form("Can't get the %s cluster tree", fgkDetectorName[iDet]));
-	return kFALSE;
+        AliError(Form("Can't get the %s cluster tree", fgkDetectorName[iDet]));
+        return kFALSE;
       }
       fTracker[iDet]->LoadClusters(tree); 
       AliSysInfo::AddStamp(Form("TLoadCluster0%s_%d",fgkDetectorName[iDet],eventNr), iDet,2, eventNr);
@@ -2359,8 +2351,14 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 
     // run tracking
     if (iDet>1) // start filling residuals for the "outer" detectors
-    if (fRunGlobalQA) AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kTRUE);     
-
+      if (fRunGlobalQA) {
+        AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kTRUE);     
+        TObjArray ** arr = AliTracker::GetResidualsArray() ; 
+        if ( ! arr[fRecoParam.GetEventSpecie()]->At(0) ) {
+          AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
+          qadm->InitRecPointsForTracker() ; 
+        }
+      }
     if (fTracker[iDet]->PropagateBack(esd) != 0) {
       AliError(Form("%s backward propagation failed", fgkDetectorName[iDet]));
       //      return kFALSE;
@@ -2389,8 +2387,15 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 
     // run tracking
     if (iDet<2) // start filling residuals for TPC and ITS
-    if (fRunGlobalQA) AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kTRUE);     
-
+      if (fRunGlobalQA) {
+        AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kTRUE);     
+        TObjArray ** arr = AliTracker::GetResidualsArray() ; 
+        if ( ! arr[fRecoParam.GetEventSpecie()]->At(0) ) {
+          AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
+          qadm->InitRecPointsForTracker() ; 
+        }
+      }
+    
     if (fTracker[iDet]->RefitInward(esd) != 0) {
       AliError(Form("%s inward refit failed", fgkDetectorName[iDet]));
       //      return kFALSE;
@@ -2831,9 +2836,8 @@ void AliReconstruction::CleanUp()
     ffile = NULL;
   }
 
-  delete fQAManager;
-  fQAManager = NULL;
-
+  AliQAManager::Destroy() ; 
+  
   TGeoGlobalMagField::Instance()->SetField(NULL);
 }
 

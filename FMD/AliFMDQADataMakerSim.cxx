@@ -137,6 +137,10 @@ void AliFMDQADataMakerSim::InitDigits()
 //_____________________________________________________________________
 void AliFMDQADataMakerSim::MakeHits(TClonesArray * hits)
 {
+  // Check id histograms already created for this Event Specie
+  if ( ! GetHitsData(0) )
+    InitHits() ;
+
   TIter next(hits);
   AliFMDHit * hit;
   while ((hit = static_cast<AliFMDHit *>(next()))) 
@@ -173,6 +177,10 @@ void AliFMDQADataMakerSim::MakeDigits(TClonesArray * digits)
   // makes data from Digits
   if(!digits) return;
 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+
   for(Int_t i = 0 ; i < digits->GetEntriesFast() ; i++) {
     //Raw ADC counts
     AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
@@ -202,6 +210,10 @@ void AliFMDQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
   // makes data from Digits
   if(!sdigits) return;
   
+  // Check id histograms already created for this Event Specie
+  if ( ! GetSDigitsData(0) )
+    InitSDigits() ;
+
   for(Int_t i = 0 ; i < sdigits->GetEntriesFast() ; i++) {
     //Raw ADC counts
     AliFMDSDigit* sdigit = static_cast<AliFMDSDigit*>(sdigits->At(i));

@@ -192,7 +192,6 @@ AliSimulation::AliSimulation(const char* configFileName,
   fLego(NULL),
   fQADetectors("ALL"),                  
   fQATasks("ALL"),	
-  fQAManager(NULL), 
   fRunQA(kTRUE), 
   fEventSpecie(AliRecoParam::kDefault),
   fWriteQAExpertData(kTRUE), 
@@ -204,10 +203,10 @@ AliSimulation::AliSimulation(const char* configFileName,
   SetGAliceFile("galice.root");
   
 // for QA
-	fQAManager = AliQAManager::QAManager("sim") ; 
-	fQAManager->SetActiveDetectors(fQADetectors) ; 
+	AliQAManager * qam = AliQAManager::QAManager("sim") ; 
+	qam->SetActiveDetectors(fQADetectors) ; 
 	fQATasks = Form("%d %d %d", AliQAv1::kHITS, AliQAv1::kSDIGITS, AliQAv1::kDIGITS) ; 
-	fQAManager->SetTasks(fQATasks) ; 	
+	qam->SetTasks(fQATasks) ; 	
 }
 
 //_____________________________________________________________________________
@@ -227,8 +226,7 @@ AliSimulation::~AliSimulation()
   fSpecCDBUri.Delete();
   if (fgInstance==this) fgInstance = 0;
 
-	delete fQAManager ; 
-	
+  AliQAManager:: Destroy() ; 	
   AliCodeTimer::Instance()->Print();
 }
 
@@ -251,19 +249,19 @@ void AliSimulation::InitQA()
   if (fInitCDBCalled) return;
   fInitCDBCalled = kTRUE;
 
-  fQAManager = AliQAManager::QAManager("sim") ; 
-  fQAManager->SetActiveDetectors(fQADetectors) ; 
+  AliQAManager * qam = AliQAManager::QAManager("sim") ; 
+  qam->SetActiveDetectors(fQADetectors) ; 
   fQATasks = Form("%d %d %d", AliQAv1::kHITS, AliQAv1::kSDIGITS, AliQAv1::kDIGITS) ; 
-  fQAManager->SetTasks(fQATasks) ;
+  qam->SetTasks(fQATasks) ;
  	if (fWriteQAExpertData)
-    fQAManager->SetWriteExpert() ; 
+    qam->SetWriteExpert() ; 
   
-  if (fQAManager->IsDefaultStorageSet()) {
+  if (qam->IsDefaultStorageSet()) {
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     AliWarning("Default QA reference storage has been already set !");
     AliWarning(Form("Ignoring the default storage declared in AliSimulation: %s",fQARefUri.Data()));
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    fQARefUri = fQAManager->GetDefaultStorage()->GetURI();
+    fQARefUri = qam->GetDefaultStorage()->GetURI();
   } else {
       if (fQARefUri.Length() > 0) {
         AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -276,7 +274,7 @@ void AliSimulation::InitQA()
         AliWarning(Form("Setting it now to: %s", fQARefUri.Data()));
         AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
       }
-    fQAManager->SetDefaultStorage(fQARefUri);
+    qam->SetDefaultStorage(fQARefUri);
   }
 }
 
@@ -1142,7 +1140,7 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
 {
 // run the digitization and produce summable digits
   static Int_t eventNr=0;
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("") ;
 
   // initialize CDB storage, run number, set CDB lock
   InitCDB();
@@ -2057,12 +2055,12 @@ Bool_t AliSimulation::RunQA()
 	// run the QA on summable hits, digits or digits
 	
   if(!gAlice) return kFALSE;
-	fQAManager->SetRunLoader(AliRunLoader::Instance()) ;
+	AliQAManager::QAManager()->SetRunLoader(AliRunLoader::Instance()) ;
 
 	TString detectorsw("") ;  
 	Bool_t rv = kTRUE ; 
-  fQAManager->SetEventSpecie(fEventSpecie) ;
-	detectorsw = fQAManager->Run(fQADetectors.Data()) ; 
+  AliQAManager::QAManager()->SetEventSpecie(fEventSpecie) ;
+	detectorsw = AliQAManager::QAManager()->Run(fQADetectors.Data()) ; 
 	if ( detectorsw.IsNull() ) 
 		rv = kFALSE ; 
 	return rv ; 
@@ -2109,10 +2107,10 @@ Bool_t AliSimulation::SetRunQA(TString detAndAction)
     tempo.ReplaceAll(Form("%d", AliQAv1::kDIGITS), AliQAv1::GetTaskName(AliQAv1::kDIGITS)) ; 	
 	AliInfo( Form("QA will be done on \"%s\" for \"%s\"\n", fQADetectors.Data(), tempo.Data()) ) ;  
 	fRunQA = kTRUE ;
-	fQAManager->SetActiveDetectors(fQADetectors) ; 
-	fQAManager->SetTasks(fQATasks) ; 
+	AliQAManager::QAManager()->SetActiveDetectors(fQADetectors) ; 
+	AliQAManager::QAManager()->SetTasks(fQATasks) ; 
   for (Int_t det = 0 ; det < AliQAv1::kNDET ; det++) 
-    fQAManager->SetWriteExpert(AliQAv1::DETECTORINDEX_t(det)) ;
+    AliQAManager::QAManager()->SetWriteExpert(AliQAv1::DETECTORINDEX_t(det)) ;
   
 	return kTRUE; 
 } 

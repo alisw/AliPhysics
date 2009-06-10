@@ -44,14 +44,16 @@ ClassImp(AliZDCQADataMakerRec)
            
 //____________________________________________________________________________ 
   AliZDCQADataMakerRec::AliZDCQADataMakerRec() : 
-  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kZDC), "ZDC Quality Assurance Data Maker")
+  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kZDC), "ZDC Quality Assurance Data Maker"), 
+  fDigit(0)
 {
   // ctor
 }
 
 //____________________________________________________________________________ 
 AliZDCQADataMakerRec::AliZDCQADataMakerRec(const AliZDCQADataMakerRec& qadm) :
-  AliQADataMakerRec() 
+  AliQADataMakerRec(),      
+  fDigit(0)
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()); 
@@ -272,6 +274,10 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 {
   // Filling Raws QA histos
   //
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRawsData(0) )
+    InitRaws() ;
+
 	rawReader->Reset() ; 
   Float_t sum_ZNC=0., sum_ZNA=0., sum_ZPC=0., sum_ZPA=0.;
   Float_t sumQ_ZNC=0., sumQ_ZNA=0., sumQ_ZPC=0., sumQ_ZPA=0.;
@@ -359,21 +365,17 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 //___________________________________________________________________________
 void AliZDCQADataMakerRec::MakeDigits(TTree *digitTree )
 {
-  // makes data from Digit Tree
   TBranch * branch = digitTree->GetBranch("ZDC");
   if(!branch){
     AliError("ZDC branch in Digit Tree not found"); 
     return;
   } 
-  AliZDCDigit* fDigit = NULL ; 
-  char** add = (char**) (branch->GetAddress());
-  if(add){
-    fDigit = (AliZDCDigit*)(*add);
-  } 
-  else{
-    if(!fDigit) fDigit = new AliZDCDigit();
-    branch->SetAddress(&fDigit);
-  }
+  
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+  
+  branch->SetAddress(&fDigit);
   
   Int_t ndig = digitTree->GetEntries();
   
@@ -449,14 +451,14 @@ void AliZDCQADataMakerRec::MakeDigits(TTree *digitTree )
   GetDigitsData(7)->Fill(adcSumQ_ZPA);
   //
   /*GetDigitsData(12)->Fill(adcSum_ZNC_lg);
-  GetDigitsData(13)->Fill(adcSum_ZNA_lg);
-  GetDigitsData(14)->Fill(adcSum_ZPC_lg);
-  GetDigitsData(15)->Fill(adcSum_ZPA_lg);
-  //
-  GetDigitsData(16)->Fill(adcSumQ_ZNC_lg);
-  GetDigitsData(17)->Fill(adcSumQ_ZNA_lg);
-  GetDigitsData(18)->Fill(adcSumQ_ZPC_lg);
-  GetDigitsData(19)->Fill(adcSumQ_ZPA_lg);*/
+   GetDigitsData(13)->Fill(adcSum_ZNA_lg);
+   GetDigitsData(14)->Fill(adcSum_ZPC_lg);
+   GetDigitsData(15)->Fill(adcSum_ZPA_lg);
+   //
+   GetDigitsData(16)->Fill(adcSumQ_ZNC_lg);
+   GetDigitsData(17)->Fill(adcSumQ_ZNA_lg);
+   GetDigitsData(18)->Fill(adcSumQ_ZPC_lg);
+   GetDigitsData(19)->Fill(adcSumQ_ZPA_lg);*/
 }
 
 //____________________________________________________________________________
@@ -464,6 +466,11 @@ void AliZDCQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   // make QA data from ESDs
   //
+  
+  // Check id histograms already created for this Event Specie
+  if ( ! GetESDsData(0) )
+    InitESDs() ;
+
   AliESDZDC * zdcESD =  esd->GetESDZDC();
   //
   Double32_t * centr_ZNC = zdcESD->GetZNCCentroid();

@@ -210,6 +210,11 @@ void AliEMCALQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   // make QA data from ESDs
 
+  
+  // Check id histograms already created for this Event Specie
+  if ( ! GetESDsData(kESDCaloClusE) )
+    InitESDs() ;
+  
   Int_t nTot = 0 ; 
   for ( Int_t index = 0; index < esd->GetNumberOfCaloClusters() ; index++ ) {
     AliESDCaloCluster * clu = esd->GetCaloCluster(index) ;
@@ -246,6 +251,10 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // For now, to avoid redoing the expensive signal fits we just
   // look at max vs min of the signal spextra, a la online usage in
   // AliCaloCalibPedestal
+
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRawsData(kSigLG) )
+    InitRaws() ;
 
   rawReader->Reset() ;
   AliCaloRawStream in(rawReader,"EMCAL"); 
@@ -386,7 +395,11 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 void AliEMCALQADataMakerRec::MakeDigits(TClonesArray * digits)
 {
   // makes data from Digits
-  
+ 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+
   GetDigitsData(1)->Fill(digits->GetEntriesFast()) ; 
   TIter next(digits) ; 
   AliEMCALDigit * digit ; 
@@ -422,6 +435,11 @@ void AliEMCALQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     AliError("can't get the branch with the EMCAL clusters !");
     return;
   }
+
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRecPointsData(kRecPM) )
+    InitRecPoints() ;
+  
   TObjArray * emcrecpoints = new TObjArray(100) ;
   emcbranch->SetAddress(&emcrecpoints);
   emcbranch->GetEntry(0);

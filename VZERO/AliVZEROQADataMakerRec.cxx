@@ -127,6 +127,8 @@ void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
   AliQAChecker::Instance()->Run(AliQAv1::kVZERO, task, list) ;
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
+      continue ;
     SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
     if(task == AliQAv1::kRAWS){
   	  int nMaxBin = GetRawsData(kPedestalTimeInt0)->GetNbinsY();
@@ -452,6 +454,10 @@ void AliVZEROQADataMakerRec::MakeDigits(TClonesArray * digits)
 {
   // makes data from Digits
   
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+
   GetDigitsData(0)->Fill(digits->GetEntriesFast()) ; 
   TIter next(digits) ; 
   AliVZEROdigit *VZERODigit ; 
@@ -485,6 +491,10 @@ void AliVZEROQADataMakerRec::MakeDigits(TTree *digitTree)
 void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   // Creates QA data from ESDs
+  
+  // Check id histograms already created for this Event Specie
+  if ( ! GetESDsData(kCellMultiV0A) )
+    InitESDs() ;
   
   UInt_t eventType = esd->GetEventType();
 
@@ -542,7 +552,11 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
  {
   // Fills histograms with Raws, computes average ADC values dynamically (pedestal subtracted)
                   
-  rawReader->Reset() ; 
+   // Check id histograms already created for this Event Specie
+   if ( ! GetRawsData(kPedestalInt0) )
+     InitRaws() ;
+
+   rawReader->Reset() ; 
   AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
   rawStream->Next();
   

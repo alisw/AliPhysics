@@ -132,6 +132,11 @@ void AliHMPIDQADataMakerSim::MakeHits(TClonesArray * data)
   if (!hits){
     AliError("Wrong type of hits container") ; 
   } else {
+    
+    // Check id histograms already created for this Event Specie
+    if ( ! GetHitsData(0) )
+      InitHits() ;
+
     TIter next(hits); 
     AliHMPIDHit * hit ; 
     while ( (hit = dynamic_cast<AliHMPIDHit *>(next())) ) {
@@ -164,6 +169,11 @@ void AliHMPIDQADataMakerSim::MakeDigits(TClonesArray * data)
   if ( !chamber) {
     AliError("Wrong type of digits container") ; 
   } else {
+
+    // Check id histograms already created for this Event Specie
+    if ( ! GetDigitsData(0) )
+      InitDigits() ;
+
     for(Int_t i =0; i< chamber->GetEntries(); i++)
       {
 	TClonesArray * digits = dynamic_cast<TClonesArray*>(chamber->At(i)); 
@@ -210,6 +220,11 @@ void AliHMPIDQADataMakerSim::MakeSDigits(TClonesArray * data)
   if (!sdigits) {
     AliError("Wrong type of sdigits container") ; 
   } else {
+
+    // Check id histograms already created for this Event Specie
+    if ( ! GetSDigitsData(0) )
+      InitSDigits() ;
+
     TIter next(sdigits) ; 
     AliHMPIDDigit * sdigit ; 
     while ( (sdigit = dynamic_cast<AliHMPIDDigit *>(next())) ) {

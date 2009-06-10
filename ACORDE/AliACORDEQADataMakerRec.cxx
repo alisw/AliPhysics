@@ -145,6 +145,11 @@ void AliACORDEQADataMakerRec::InitESDs()
 void AliACORDEQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
   //fills QA histos for RAW
+
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRawsData(0) )
+    InitRaws() ;
+
   rawReader->Reset();
   AliACORDERawStream rawStream(rawReader);
   size_t contSingle=0;
@@ -213,6 +218,11 @@ void AliACORDEQADataMakerRec::MakeDigits( TTree *digitsTree)
   if (!branch) {
     AliWarning("ACORDE branch in Digits Tree not found");
   } else {
+
+    // Check id histograms already created for this Event Specie
+    if ( ! GetDigitsData(0) )
+      InitDigits() ;
+
     branch->SetAddress(&digits);
     for(Int_t track = 0 ; track < branch->GetEntries() ; track++) {
       branch->GetEntry(track);
@@ -233,7 +243,11 @@ void AliACORDEQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
 
-        AliESDACORDE * fESDACORDE= esd->GetACORDEData();
+  // Check id histograms already created for this Event Specie
+  if ( ! GetESDsData(0) )
+    InitESDs() ;
+
+  AliESDACORDE * fESDACORDE= esd->GetACORDEData();
         Int_t *fACORDEMultiMuon =fESDACORDE->GetACORDEMultiMuon();
         Int_t *fACORDESingleMuon=fESDACORDE->GetACORDESingleMuon();
 
@@ -243,9 +257,5 @@ void AliACORDEQADataMakerRec::MakeESDs(AliESDEvent * esd)
             if(fACORDEMultiMuon[i]==1)
                GetESDsData(1) -> Fill(i);
         }
-
-
-
-
 }
 

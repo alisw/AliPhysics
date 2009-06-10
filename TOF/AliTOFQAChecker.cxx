@@ -46,6 +46,8 @@ Double_t * AliTOFQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** lis
   Int_t count[AliRecoParam::kNSpecies] = { 0 }; 
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
+      continue ;
     test[specie] = 1.0 ; 
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ; 
@@ -56,8 +58,8 @@ Double_t * AliTOFQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** lis
       TIter next(list[specie]) ; 
       TH1 * hdata ;
       count[specie] = 0 ; 
-      while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
-        if (hdata) { 
+      while ( (hdata = static_cast<TH1 *>(next())) ) {
+        if (hdata && hdata->InheritsFrom("TH1")) { 
           Double_t rv = 0.;
           if(hdata->GetEntries()>0)rv=1; 
           AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv)) ; 

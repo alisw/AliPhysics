@@ -24,6 +24,7 @@
 //
 
 // --- ROOT system ---
+#include <TROOT.h> 
 #include <TCanvas.h> 
 #include <TPaveText.h>
 #include <TSystem.h> 
@@ -99,6 +100,10 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
 {
   //copy ctor
   fDetectorDirName = GetName() ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    fParameterList[specie] = qadm.fParameterList[specie] ; 
+    fImage[specie] = qadm.fImage[specie] ; 
+  }
 }
 
 //____________________________________________________________________________ 
@@ -127,27 +132,24 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list,
     AliError(Form("QA data Object must be a generic ROOT object and derive fom TH1 and not %s", className.Data())) ; 
 	} else if ( index > 10000 ) {
 		AliError("Max number of authorized QA objects is 10000") ; 
-  } else {    
+  } else {
+    hist->SetDirectory(0) ; 
     if (expert) 
       hist->SetBit(AliQAv1::GetExpertBit()) ;
     if (image) 
       hist->SetBit(AliQAv1::GetImageBit()) ;  
-    TH1 * histClone[AliRecoParam::kNSpecies] ; 
-    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      histClone[specie] = CloneMe(hist, specie) ; 
-      histClone[specie]->SetDirectory(0) ; 
-      list[specie]->AddAtAndExpand(histClone[specie], index) ; 
-      if(saveForCorr) {  
-        const Char_t * name = Form("%s_%s", list[AliRecoParam::AConvert(AliRecoParam::kDefault)]->GetName(), hist->GetName()) ;  
-        TParameter<double> * p = new TParameter<double>(name, 9999.9999) ;
-        if ( fParameterList[specie] == NULL )
-          fParameterList[specie] = new TList() ; 
-        fParameterList[specie]->Add(p) ;
-      }
+    const Char_t * name = Form("%s_%s", AliRecoParam::GetEventSpecieName(fEventSpecie), hist->GetName()) ;
+    hist->SetName(name) ; 
+    if(saveForCorr) {  
+      const Char_t * cname = Form("%s_%s", list[AliRecoParam::AConvert(AliRecoParam::kDefault)]->GetName(), hist->GetName()) ;  
+      TParameter<double> * p = new TParameter<double>(cname, 9999.9999) ;
+      if ( fParameterList[AliRecoParam::AConvert(fEventSpecie)] == NULL )
+        fParameterList[AliRecoParam::AConvert(fEventSpecie)] = new TList() ; 
+      fParameterList[AliRecoParam::AConvert(fEventSpecie)]->Add(p) ;
     }
-    rv = list[AliRecoParam::kDefault]->GetLast() ;
+    list[AliRecoParam::AConvert(fEventSpecie)]->AddAtAndExpand(hist, index) ; 
+    rv = list[AliRecoParam::AConvert(fEventSpecie)]->GetLast() ;
   }
-  delete hist ; 
   return rv ; 
 }
 
@@ -156,7 +158,7 @@ TH1 *  AliQADataMaker::CloneMe(TH1 * hist, Int_t specie) const
 {
   // clones a histogram 
   const Char_t * name = Form("%s_%s", AliRecoParam::GetEventSpecieName(specie), hist->GetName()) ;
-  TH1 * hClone = dynamic_cast<TH1 *>(hist->Clone(name)) ; 
+  TH1 * hClone = static_cast<TH1 *>(hist->Clone(name)) ; 
   if ( hist->TestBit(AliQAv1::GetExpertBit()) )
     hClone->SetBit(AliQAv1::GetExpertBit()) ; 
   if ( hist->TestBit(AliQAv1::GetImageBit()) )
@@ -196,25 +198,18 @@ TObject * AliQADataMaker::GetData(TObjArray ** list, const Int_t index)
 	}
 
   SetEventSpecie(fEventSpecie) ;  
-  if ( GetRecoParam() ) {
-    if ( AliRecoParam::Convert(GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault) {
-      SetEventSpecie(GetRecoParam()->GetEventSpecie()) ; 
-    } else { 
-      AliError(Form("Event Specie from RecoParam of %s is = %d\n", GetName(), fEventSpecie));
-    }
-  }
-	if (list[AliRecoParam::AConvert(fEventSpecie)]) {
+  Int_t esindex = AliRecoParam::AConvert(fEventSpecie) ; 
+  TH1 * histClone = NULL ; 
+	if (list[esindex]) {
 		if ( index > 10000 ) {
 			AliError("Max number of authorized QA objects is 10000") ; 
-			return NULL ; 
 		} else {
-      Int_t esindex = AliRecoParam::AConvert(fEventSpecie) ; 
-      return list[esindex]->At(index) ; 
-		} 	
-  } else {
-		AliError("Data list is NULL !!") ; 
-		return NULL ; 		
-	}
+      if ( list[esindex]->At(index) )  {
+        histClone = static_cast<TH1*>(list[esindex]->At(index)) ; 
+      } 	
+    }
+  }
+  return histClone ; 		
 }
 
 //____________________________________________________________________________ 
@@ -226,13 +221,16 @@ TObjArray*  AliQADataMaker::Init(AliQAv1::TASKINDEX_t task, AliRecoParam::EventS
 }
 
 //____________________________________________________________________________ 
-void AliQADataMaker::MakeTheImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Char_t * mode) 
+void AliQADataMaker::MakeTheImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, const Char_t * mode) 
 {
   // makes the QA image for sim and rec
-  TIter next(list[0]) ;  
+  TIter next(list[AliRecoParam::AConvert(fEventSpecie)]) ;  
   TH1 * hdata = NULL ; 
   Int_t nImages = 0 ;
-  while ( (hdata=dynamic_cast<TH1 *>(next())) ) {
+  while ( (hdata=static_cast<TH1 *>(next())) ) {
+    TString cln(hdata->ClassName()) ; 
+    if ( ! cln.Contains("TH1") )
+      continue ; 
     if ( hdata->TestBit(AliQAv1::GetImageBit()) )
       nImages++; 
   }
@@ -264,7 +262,10 @@ void AliQADataMaker::MakeTheImage( TObjArray ** list, AliQAv1::TASKINDEX_t task,
       TH1* hist = NULL ;
       Int_t npad = 1 ; 
       fImage[esIndex]->cd(npad) ; 
-      while ( (hist=dynamic_cast<TH1*>(nexthist())) ) {
+      while ( (hist=static_cast<TH1*>(nexthist())) ) {
+        TString cln(hist->ClassName()) ; 
+        if ( ! cln.Contains("TH1") )
+          continue ; 
         if(hist->TestBit(AliQAv1::GetImageBit())) {
           hist->Draw() ; 
           fImage[esIndex]->cd(++npad) ; 

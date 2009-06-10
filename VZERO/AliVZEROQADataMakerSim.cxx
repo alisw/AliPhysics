@@ -133,7 +133,11 @@ void AliVZEROQADataMakerSim::MakeHits(TClonesArray * hits)
 {
 	//make QA data from Hits
 
-    GetHitsData(0)->Fill(hits->GetEntriesFast()) ;    // fills Hit multiplicity
+  // Check id histograms already created for this Event Specie
+  if ( ! GetHitsData(0) )
+    InitHits() ;
+
+  GetHitsData(0)->Fill(hits->GetEntriesFast()) ;    // fills Hit multiplicity
     Int_t nhits = hits->GetEntriesFast();
     for (Int_t ihit=0;ihit<nhits;ihit++) 
 	{
@@ -165,6 +169,10 @@ void AliVZEROQADataMakerSim::MakeHits(TTree *hitTree)
       AliError("Branch VZERO hit not found");
       exit(111);
     } 
+    // Check id histograms already created for this Event Specie
+    if ( ! GetHitsData(0) )
+      InitHits() ;
+    
     Int_t ntracks    = (Int_t) hitTree->GetEntries();
     
     if (ntracks<=0) return;
@@ -192,7 +200,11 @@ void AliVZEROQADataMakerSim::MakeDigits(TClonesArray * digits)
 {
   // makes data from Digits
 
-    GetDigitsData(0)->Fill(digits->GetEntriesFast()) ; 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+
+  GetDigitsData(0)->Fill(digits->GetEntriesFast()) ; 
     TIter next(digits) ; 
     AliVZEROdigit *VZERODigit ; 
     while ( (VZERODigit = dynamic_cast<AliVZEROdigit *>(next())) ) {

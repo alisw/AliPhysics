@@ -205,6 +205,10 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 //
 // Filling Raws QA histos
 //
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRawsData(0) )
+    InitRaws() ;
+  
 	  rawReader->Reset() ; 
 		AliHMPIDRawStream stream(rawReader);
 
@@ -239,6 +243,10 @@ void AliHMPIDQADataMakerRec::MakeDigits(TClonesArray * data)
   //
   //filling QA histos for Digits
   //
+
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
   
   TObjArray *chamber = dynamic_cast<TObjArray*>(data);
   if ( !chamber) {
@@ -265,6 +273,7 @@ void AliHMPIDQADataMakerRec::MakeDigits(TTree * data)
   //
   //Opening the Digit Tree
   //
+
   TObjArray *pObjDig=new TObjArray(AliHMPIDParam::kMaxCh+1);
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
     TClonesArray *pCA=new TClonesArray("AliHMPIDDigit");
@@ -288,6 +297,10 @@ void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   //filling QA histos for clusters
   //
   AliHMPIDParam *pPar =AliHMPIDParam::Instance();
+
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRecPointsData(0) )
+    InitRecPoints() ;
   
   static TClonesArray *clusters;
   if(!clusters) clusters = new TClonesArray("AliHMPIDCluster");
@@ -321,6 +334,10 @@ void AliHMPIDQADataMakerRec::MakeESDs(AliESDEvent * esd)
   //fills QA histos for ESD
   //
 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetESDsData(0) )
+    InitESDs() ;
+  
   for(Int_t iTrk = 0 ; iTrk < esd->GetNumberOfTracks() ; iTrk++){
     AliESDtrack *pTrk = esd->GetTrack(iTrk) ;
     GetESDsData(0)->Fill(pTrk->GetP(),pTrk->GetHMPIDsignal());
@@ -358,6 +375,8 @@ void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
   
   if(task==AliQAv1::kRAWS) {
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
+        continue ;
       for(Int_t iddl=0;iddl<14;iddl++) {
         TH1F *h = (TH1F*)histos[specie]->At(14+iddl); //ddl histos scaled by the number of events 
         h->Scale(1./(Float_t)fEvtRaw);

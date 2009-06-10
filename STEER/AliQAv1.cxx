@@ -378,12 +378,12 @@ TFile * AliQAv1::GetQADataFile(const char * name, Int_t run)
 		fgQADataFile = TFile::Open(temp, opt.Data()) ;
 	} else {
 		if ( strcmp(temp, fgQADataFile->GetName()) != 0 ) {
-			fgQADataFile = dynamic_cast<TFile *>(gROOT->FindObject(temp)) ; 
+			fgQADataFile = static_cast<TFile *>(gROOT->FindObject(temp)) ;
 			if ( !fgQADataFile ) {
-				if  (gSystem->AccessPathName(temp))
-					opt = "NEW" ;
-				else 
-					opt = "UPDATE" ; 
+          if  (gSystem->AccessPathName(temp))
+            opt = "NEW" ;
+          else 
+            opt = "UPDATE" ; 
 				fgQADataFile = TFile::Open(temp, opt.Data()) ;
 			}
 		}
@@ -526,10 +526,10 @@ AliQAv1 * AliQAv1::Instance()
 
   if ( ! fgQA) {
     TFile * f = GetQAResultFile() ; 
-    fgQA = dynamic_cast<AliQAv1 *>(f->Get("QA")) ; 
+    fgQA = static_cast<AliQAv1 *>(f->Get("QA")) ; 
     if ( ! fgQA ) 
       fgQA = new AliQAv1() ;
-  }	
+  }
   return fgQA ;
 }
 
@@ -550,9 +550,9 @@ AliQAv1 * AliQAv1::Instance(const DETECTORINDEX_t det)
   
   if ( ! fgQA) {
     TFile * f = GetQAResultFile() ; 
-	fgQA = dynamic_cast<AliQAv1 *>(f->Get("QA")) ; 
+    fgQA = static_cast<AliQAv1 *>(f->Get("QA")) ; 
     if ( ! fgQA ) 
-		fgQA = new AliQAv1(det) ;
+      fgQA = new AliQAv1(det) ;
   }		
   fgQA->Set(det) ;
   return fgQA ;
@@ -577,10 +577,10 @@ AliQAv1 * AliQAv1::Instance(const ALITASK_t tsk)
       AliInfoClass("fgQA = gAlice->GetQA()") ;
       break ;
     case kESD:
-      AliInfoClass("fgQA = dynamic_cast<AliQAv1 *> (esdFile->Get(\"QA\")") ;
+      AliInfoClass("fgQA = static_cast<AliQAv1 *> (esdFile->Get(\"QA\")") ;
       break ;
     case kANA:
-      AliInfoClass("fgQA = dynamic_cast<AliQAv1 *> (esdFile->Get(\"QA\")") ;
+      AliInfoClass("fgQA = static_cast<AliQAv1 *> (esdFile->Get(\"QA\")") ;
       break ;
     case kNTASK:
       break ;
@@ -745,9 +745,8 @@ void AliQAv1::Show(DETECTORINDEX_t det) const
   if ( det == kNULLDET) 
     det = fDet ;  
   for (Int_t ies = 0 ; ies < fNEventSpecies ; ies++) {
-    const Bool_t what = IsEventSpecieSet(ies) ;
-    if ( what )
-      ShowStatus(det, kNULLTASK, AliRecoParam::Convert(ies)) ; 
+    if ( IsEventSpecieSet(ies) )
+      ShowStatus(det, kNULLTASK, AliRecoParam::ConvertIndex(ies)) ; 
   }
 }
 
@@ -759,9 +758,8 @@ void AliQAv1::ShowAll() const
   for (index = 0 ; index < kNDET ; index++) {
 		for (Int_t tsk = kRAW ; tsk < kNTASK ; tsk++) {
       for (Int_t ies = 0 ; ies < fNEventSpecies ; ies++) {
-        const Bool_t what = IsEventSpecieSet(ies) ;
-        if ( what )
-          ShowStatus(DETECTORINDEX_t(index), ALITASK_t(tsk), AliRecoParam::Convert(ies)) ;
+        if ( IsEventSpecieSet(ies) )
+          ShowStatus(DETECTORINDEX_t(index), ALITASK_t(tsk), AliRecoParam::ConvertIndex(ies)) ;
       }
     }
 	}

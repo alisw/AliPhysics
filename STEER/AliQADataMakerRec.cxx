@@ -114,7 +114,7 @@ AliQADataMakerRec::~AliQADataMakerRec()
       }
     }
 		delete[] fRecPointsQAList ; 
-	}
+  }
 }
 
 //__________________________________________________________________
@@ -158,46 +158,49 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
     return ; 
   //DefaultEndOfDetectorCycle(task) ;
 	EndOfDetectorCycle(task, list) ;
-	TDirectory * subDir = NULL ;
-	if (fDetectorDir) 
-		subDir = fDetectorDir->GetDirectory(AliQAv1::GetTaskName(task)) ; 
-	if ( subDir ) {
-		subDir->cd() ; 
-    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(specie)) ;
-      if (eventSpecieDir) {
-        eventSpecieDir->cd() ;    
-        if (list[specie]) {
-          TIter next(list[specie]) ; 
-          TObject * obj ; 
-          while( (obj = next()) ) {
-            if (!obj->TestBit(AliQAv1::GetExpertBit()))
-              obj->Write() ;
-          }
-          if (WriteExpert()) {
-            TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQAv1::GetExpert()) ; 
-            if ( expertDir ) { // Write only if requested
-              expertDir->cd() ;
-              next.Reset() ; 
-              while( (obj = next()) ) {
-                if (!obj->TestBit(AliQAv1::GetExpertBit()))
-                  continue ; 
-                obj->Write() ;
-              }      
-            }
-          }
-        }
-        if ( !fCorrNt )
-          continue ; 
-        if (fCorrNt[specie] && AliQAv1::GetDetIndex(GetName()) == AliQAv1::kCORR) {
-          eventSpecieDir->cd() ; 
-          fCorrNt[specie]->Write() ; 
-        }
+  fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 
+  if (!fDetectorDir)
+    fDetectorDir = fOutput->mkdir(GetDetectorDirName()) ; 
+  TDirectory * subDir = fDetectorDir->GetDirectory(AliQAv1::GetTaskName(task)) ; 
+  if (!subDir)
+    subDir = fDetectorDir->mkdir(AliQAv1::GetTaskName(task)) ;  
+  subDir->cd() ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
+      continue ; 
+    TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(specie)) ;
+    if (!eventSpecieDir) 
+      eventSpecieDir = subDir->mkdir(AliRecoParam::GetEventSpecieName(specie)) ; 
+    eventSpecieDir->cd() ;    
+    if (list[specie]) {
+      TIter next(list[specie]) ; 
+      TObject * obj ; 
+      while( (obj = next()) ) {
+        if (!obj->TestBit(AliQAv1::GetExpertBit()))
+          obj->Write() ;
+      }
+      if (WriteExpert()) {
+        TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQAv1::GetExpert()) ; 
+        if (!expertDir)
+          expertDir = eventSpecieDir->mkdir(AliQAv1::GetExpert()) ; 
+        expertDir->cd() ;
+        next.Reset() ; 
+        while( (obj = next()) ) {
+          if (!obj->TestBit(AliQAv1::GetExpertBit()))
+            continue ; 
+          obj->Write() ;
+        }      
       }
     }
+    if ( !fCorrNt )
+      continue ; 
+    if (fCorrNt[specie] && AliQAv1::GetDetIndex(GetName()) == AliQAv1::kCORR) {
+      eventSpecieDir->cd() ; 
+      fCorrNt[specie]->Write() ; 
+    }
     fOutput->Save() ; 
-	}
-    MakeImage(task) ; 
+  }
+  MakeImage(task) ; 
 }
 
 //____________________________________________________________________________ 
@@ -247,31 +250,31 @@ void AliQADataMakerRec::Exec(AliQAv1::TASKINDEX_t task, TObject * data)
 	
 	if ( task == AliQAv1::kRAWS ) {
 		AliDebug(AliQAv1::GetQADebugLevel(), "Processing Raws QA") ; 
-		AliRawReader * rawReader = dynamic_cast<AliRawReader *>(data) ; 
+		AliRawReader * rawReader = static_cast<AliRawReader *>(data) ; 
 		if (rawReader) 
 			MakeRaws(rawReader) ;
 		else
       AliDebug(AliQAv1::GetQADebugLevel(), "Raw data are not processed") ;     
 	} else if ( task == AliQAv1::kDIGITSR ) {
 		AliDebug(AliQAv1::GetQADebugLevel(), "Processing Digits QA") ; 
-		TTree * tree = dynamic_cast<TTree *>(data) ; 
-		if (tree) {
+		TTree * tree = static_cast<TTree *>(data) ; 
+		if (strcmp(tree->ClassName(), "TTree") == 0) {
 			MakeDigits(tree) ; 
 		} else {
 			AliWarning("data are not a TTree") ; 
 		}
 	} else if ( task == AliQAv1::kRECPOINTS ) {
 		AliDebug(AliQAv1::GetQADebugLevel(), "Processing RecPoints QA") ; 
-		TTree * tree = dynamic_cast<TTree *>(data) ; 
-		if (tree) {
+		TTree * tree = static_cast<TTree *>(data) ; 
+		if (strcmp(tree->ClassName(), "TTree") == 0) {
 			MakeRecPoints(tree) ; 
 		} else {
 			AliWarning("data are not a TTree") ; 
 		}
 	} else if ( task == AliQAv1::kESDS ) {
 		AliDebug(AliQAv1::GetQADebugLevel(), "Processing ESDs QA") ; 
-		AliESDEvent * esd = dynamic_cast<AliESDEvent *>(data) ; 
-		if (esd) 
+		AliESDEvent * esd = static_cast<AliESDEvent *>(data) ; 
+		if (strcmp(esd->ClassName(), "AliESDEvent") == 0) 
 			MakeESDs(esd) ;
 		else 
 			AliError("Wrong type of esd container") ; 
@@ -292,40 +295,36 @@ TObjArray **  AliQADataMakerRec::Init(AliQAv1::TASKINDEX_t task, Int_t cycles)
 		if (! fRawsQAList ) { 
       fRawsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-        fRawsQAList[specie] = new TObjArray(100) ;	 
+        fRawsQAList[specie] = new TObjArray(1) ;	 
         fRawsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ;
       }
-			InitRaws() ;
 		}
 		rv = fRawsQAList ;
 	} else if ( task == AliQAv1::kDIGITSR ) {
 		if ( ! fDigitsQAList ) {
       fDigitsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-        fDigitsQAList[specie] = new TObjArray(100) ; 
+        fDigitsQAList[specie] = new TObjArray(1) ; 
         fDigitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
       }
-      InitDigits() ;
 		}
 		rv = fDigitsQAList ;
 	} else if ( task == AliQAv1::kRECPOINTS ) {
 		if ( ! fRecPointsQAList ) {
       fRecPointsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-        fRecPointsQAList[specie] = new TObjArray(100) ; 
+        fRecPointsQAList[specie] = new TObjArray(1) ; 
         fRecPointsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
       }
-      InitRecPoints() ;
-		}
+    }
 		rv = fRecPointsQAList ;
 	} else if ( task == AliQAv1::kESDS ) {
 		if ( ! fESDsQAList ) {
       fESDsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-        fESDsQAList[specie] = new TObjArray(100) ;
+        fESDsQAList[specie] = new TObjArray(1) ;
         fESDsQAList[specie]->SetName(Form("%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
       }
-			InitESDs() ;
 		}
 		rv = fESDsQAList ;
 	}
@@ -366,21 +365,24 @@ void AliQADataMakerRec::InitRecoParams()
     }
     else {
       TObject * recoParamObj = entry->GetObject() ; 
-      if (dynamic_cast<TObjArray*>(recoParamObj)) {
+      if ( strcmp(recoParamObj->ClassName(), "TObjArray") == 0 ) {
         // The detector has only one set of reco parameters
         AliDebug(AliQAv1::GetQADebugLevel(), Form("Array of reconstruction parameters found for detector %s",GetName()));
-        TObjArray *recoParamArray = dynamic_cast<TObjArray*>(recoParamObj) ;
+        TObjArray *recoParamArray = static_cast<TObjArray*>(recoParamObj) ;
         for (Int_t iRP=0; iRP<recoParamArray->GetEntriesFast(); iRP++) {
-          fRecoParam = dynamic_cast<AliDetectorRecoParam*>(recoParamArray->At(iRP)) ;
-          if (fRecoParam->IsDefault()) break;
+          fRecoParam = static_cast<AliDetectorRecoParam*>(recoParamArray->At(iRP)) ;
+          if (!fRecoParam) 
+            break ; 
+          else if (fRecoParam->IsDefault()) 
+            break ; 
         }
       }
-      else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
-        // The detector has only onse set of reco parameters
+      else if (recoParamObj->InheritsFrom("AliDetectorRecoParam")) {
+        // The detector has only one set of reco parameters
         // Registering it in AliRecoParam
         AliDebug(AliQAv1::GetQADebugLevel(), Form("Single set of reconstruction parameters found for detector %s",GetName()));
-        dynamic_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
-        fRecoParam = dynamic_cast<AliDetectorRecoParam*>(recoParamObj) ;
+        fRecoParam = static_cast<AliDetectorRecoParam*>(recoParamObj) ;
+        static_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
       } else { 
         AliError(Form("No valid RecoParam object found in the OCDB for detector %s",GetName()));
       }
@@ -416,21 +418,21 @@ void AliQADataMakerRec::StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const
 	AliDebug(AliQAv1::GetQADebugLevel(), Form(" Run %d Cycle %d task %s file %s", 
 				 fRun, fCurrentCycle, AliQAv1::GetTaskName(task).Data(), fOutput->GetName() )) ;
 
-	fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 
-	if (!fDetectorDir)
-		fDetectorDir = fOutput->mkdir(GetDetectorDirName()) ; 
-
-	TDirectory * subDir = fDetectorDir->GetDirectory(AliQAv1::GetTaskName(task)) ; 
-	if (!subDir)
-		subDir = fDetectorDir->mkdir(AliQAv1::GetTaskName(task)) ;  
-  
-  for ( Int_t specie = AliRecoParam::kDefault ; specie < AliRecoParam::kNSpecies ; specie++ ) {
-    TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(specie)) ; 
-    if (!eventSpecieDir) 
-      eventSpecieDir = subDir->mkdir(AliRecoParam::GetEventSpecieName(specie)) ; 
-    TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQAv1::GetExpert()) ; 
-    if (!expertDir)
-      expertDir = eventSpecieDir->mkdir(AliQAv1::GetExpert()) ; 
-  } 
+//	fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 
+//	if (!fDetectorDir)
+//		fDetectorDir = fOutput->mkdir(GetDetectorDirName()) ; 
+//  
+//	TDirectory * subDir = fDetectorDir->GetDirectory(AliQAv1::GetTaskName(task)) ; 
+//	if (!subDir)
+//		subDir = fDetectorDir->mkdir(AliQAv1::GetTaskName(task)) ;  
+//  
+//  for ( Int_t specie = AliRecoParam::kDefault ; specie < AliRecoParam::kNSpecies ; specie++ ) {
+//    TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(specie)) ; 
+//    if (!eventSpecieDir) 
+//      eventSpecieDir = subDir->mkdir(AliRecoParam::GetEventSpecieName(specie)) ; 
+//    TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQAv1::GetExpert()) ; 
+//    if (!expertDir)
+//      expertDir = eventSpecieDir->mkdir(AliQAv1::GetExpert()) ; 
+//  } 
 	StartOfDetectorCycle() ; 
 }

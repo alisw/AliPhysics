@@ -145,7 +145,11 @@ void AliPMDQADataMakerSim::MakeHits(TClonesArray *hits)
 {
     //make QA data from Hits
 
-    Int_t premul = 0, cpvmul = 0;
+  // Check id histograms already created for this Event Specie
+  if ( ! GetHitsData(0) )
+    InitHits() ;
+
+  Int_t premul = 0, cpvmul = 0;
     Float_t edepkev = 0.;
     TIter next(hits); 
     AliPMDhit * hit; 
@@ -225,7 +229,11 @@ void AliPMDQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
 {
     // makes data from SDigits
 
-    Int_t cpvmul = 0, premul = 0;
+  // Check id histograms already created for this Event Specie
+  if ( ! GetSDigitsData(0) )
+    InitSDigits() ;
+
+  Int_t cpvmul = 0, premul = 0;
     Float_t edepkev = 0.;
 
     TIter next(sdigits) ; 
@@ -280,7 +288,11 @@ void AliPMDQADataMakerSim::MakeDigits(TClonesArray * digits)
 {
     // makes data from Digits
     
-    Int_t cpvmul = 0, premul = 0;
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+
+  Int_t cpvmul = 0, premul = 0;
 
     TIter next(digits) ; 
     AliPMDdigit * digit ; 

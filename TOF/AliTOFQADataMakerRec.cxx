@@ -129,7 +129,6 @@ void AliTOFQADataMakerRec::InitDigits()
   h3->Sumw2() ;
   h3->GetYaxis()->SetTitleOffset(1.15);
   Add2DigitsList(h3, 3, !expert, image) ;
-  
 }
 
 //____________________________________________________________________________ 
@@ -141,7 +140,7 @@ void AliTOFQADataMakerRec::InitRecPoints()
 
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-  
+
   TH1F * h0 = new TH1F("hTOFRecPoints",    "Number of TOF RecPoints;TOF recPoint number [10 power];Counts",301, -1.02, 5.) ;
   h0->Sumw2() ;
   Add2RecPointsList(h0, 0, !expert, image) ;
@@ -162,7 +161,6 @@ void AliTOFQADataMakerRec::InitRecPoints()
   h4->Sumw2() ;
   h4->GetYaxis()->SetTitleOffset(1.15);
   Add2RecPointsList(h4, 4, !expert, image) ;
-
 }
 
 //____________________________________________________________________________ 
@@ -201,7 +199,11 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   //
   // makes data from Raws
   //
-
+  
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRawsData(0) )
+    InitRaws() ;
+  
   Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;
   Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
 
@@ -253,6 +255,7 @@ void AliTOFQADataMakerRec::MakeDigits(TClonesArray * digits)
   //
   // makes data from Digits
   //
+ 
   Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;
   Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
   Int_t in[5];
@@ -280,7 +283,6 @@ void AliTOFQADataMakerRec::MakeDigits(TClonesArray * digits)
       GetMapIndeces(in,out);
       GetDigitsData(3)->Fill( out[0],out[1]) ;//digit map
   }
-  
 }
 
 //____________________________________________________________________________
@@ -289,6 +291,10 @@ void AliTOFQADataMakerRec::MakeDigits(TTree * digitTree)
   //
   // makes data from Digit Tree
   //
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+  
   TClonesArray * digits = new TClonesArray("AliTOFdigit", 1000) ; 
   
   TBranch * branch = digitTree->GetBranch("TOF") ;
@@ -308,6 +314,10 @@ void AliTOFQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   // Make data from Clusters
   //
 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRecPointsData(0) )
+    InitRecPoints() ;
+  
   Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;
   Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
 
@@ -360,6 +370,10 @@ void AliTOFQADataMakerRec::MakeESDs(AliESDEvent * esd)
   //
   // make QA data from ESDs
   //  
+  // Check id histograms already created for this Event Specie
+  if ( ! GetESDsData(0) )
+    InitESDs() ;
+  
   Int_t ntrk = esd->GetNumberOfTracks() ; 
   Int_t ntof=0;
   Int_t ntofpid=0;
@@ -391,7 +405,6 @@ void AliTOFQADataMakerRec::MakeESDs(AliESDEvent * esd)
     Float_t ratio = (Float_t)ntofpid/(Float_t)ntof*100.;
     GetESDsData(4)->Fill(ratio) ;
   }
-
 }
 
 //____________________________________________________________________________ 
@@ -407,7 +420,6 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-
   AliQAChecker::Instance()->Run(AliQAv1::kTOF, task, list) ;  
 }
 //____________________________________________________________________________

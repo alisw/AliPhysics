@@ -125,6 +125,11 @@ void AliEMCALQADataMakerSim::MakeHits(TClonesArray * hits)
 {
   //make QA data from Hits
 
+  
+  // Check id histograms already created for this Event Specie
+  if ( ! GetHitsData(0) )
+    InitHits() ;
+  
   GetHitsData(1)->Fill(hits->GetEntriesFast()) ; 
   TIter next(hits) ; 
   AliEMCALHit * hit ; 
@@ -167,6 +172,11 @@ void AliEMCALQADataMakerSim::MakeDigits(TClonesArray * digits)
 {
   // makes data from Digits
 
+  
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+  
   GetDigitsData(1)->Fill(digits->GetEntriesFast()) ; 
   TIter next(digits) ; 
   AliEMCALDigit * digit ; 
@@ -199,6 +209,11 @@ void AliEMCALQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
   // makes data from SDigits
   //Need a copy of the SDigitizer to calibrate the sdigit amplitude to
   //energy in GeV
+  
+  // Check id histograms already created for this Event Specie
+  if ( ! GetSDigitsData(0) )
+    InitSDigits() ;
+  
   AliEMCALSDigitizer* sDigitizer = new AliEMCALSDigitizer();
 
   GetSDigitsData(1)->Fill(sdigits->GetEntriesFast()) ; 

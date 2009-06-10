@@ -67,10 +67,12 @@ AliQACheckerBase::AliQACheckerBase(const char * name, const char * title) :
   
   AliDebug(AliQAv1::GetQADebugLevel(), "Default setting is:") ;
   if ( AliDebugLevel()  == AliQAv1::GetQADebugLevel() ) {
-    printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO]) ; 
-    printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING]) ; 
-    printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR]) ; 
-    printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
+    const Char_t * text= Form(" INFO    -> %1.5f <  value <  %1.5f  WARNING -> %1.5f <  value <= %1.5f \n ERROR   -> %1.5f <  value <= %1.5f \n FATAL   -> %1.5f <= value <  %1.5f \n", 
+                              fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO], 
+                              fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING], 
+                              fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR], 
+                              fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
+    AliInfo(Form("%s", text)) ; 
   }
 }
 
@@ -180,7 +182,10 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** li
         TIter next(list[specie]) ; 
         TH1 * hdata ;
         count[specie] = 0 ; 
-        while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
+        while ( (hdata = static_cast<TH1 *>(next())) ) {
+          TString cln(hdata->ClassName()) ; 
+          if ( ! cln.Contains("TH1") )
+            continue ;           
           if ( hdata) { 
             if ( hdata->TestBit(AliQAv1::GetExpertBit()) )  // does not perform the test for expert data
               continue ; 
@@ -269,22 +274,25 @@ void AliQACheckerBase::SetHiLo(Float_t * hiValue, Float_t * lowValue)
 {
   AliDebug(AliQAv1::GetQADebugLevel(), "Previous setting was:") ;
   if ( AliDebugLevel() == AliQAv1::GetQADebugLevel() ) {
-    printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO]) ; 
-    printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING]) ; 
-    printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR]) ; 
-    printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
+    const Char_t * text= Form(" INFO    -> %1.5f <  value <  %1.5f  WARNING -> %1.5f <  value <= %1.5f \n ERROR   -> %1.5f <  value <= %1.5f \n FATAL   -> %1.5f <= value <  %1.5f \n", 
+                              fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO], 
+                              fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING], 
+                              fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR], 
+                              fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
+    AliInfo(Form("%s", text)) ; 
   }
   
   for (Int_t index = 0 ; index < AliQAv1::kNBIT ; index++) {
     fLowTestValue[index]  = lowValue[index] ; 
-    fUpTestValue[index] = hiValue[index] ; 
+    fUpTestValue[index]   = hiValue[index] ; 
   }
   AliDebug(AliQAv1::GetQADebugLevel(), "Current setting is:") ;
   if ( AliDebugLevel()  == AliQAv1::GetQADebugLevel() ) {
-    printf( "                      INFO    -> %1.5f <  value <  %1.5f \n", fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO]) ; 
-    printf( "                      WARNING -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING]) ; 
-    printf( "                      ERROR   -> %1.5f <  value <= %1.5f \n", fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR]) ; 
-    printf( "                      FATAL   -> %1.5f <= value <  %1.5f \n", fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ; 
+    const Char_t * text= Form(" INFO    -> %1.5f <  value <  %1.5f  WARNING -> %1.5f <  value <= %1.5f \n ERROR   -> %1.5f <  value <= %1.5f \n FATAL   -> %1.5f <= value <  %1.5f \n", 
+                              fLowTestValue[AliQAv1::kINFO], fUpTestValue[AliQAv1::kINFO], 
+                              fLowTestValue[AliQAv1::kWARNING], fUpTestValue[AliQAv1::kWARNING], 
+                              fLowTestValue[AliQAv1::kERROR], fUpTestValue[AliQAv1::kERROR], 
+                              fLowTestValue[AliQAv1::kFATAL], fUpTestValue[AliQAv1::kFATAL]) ;     AliInfo(Form("%s", text)) ; 
   }
 }
 

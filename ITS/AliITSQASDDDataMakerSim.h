@@ -31,16 +31,17 @@ public:
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASDDDataMakerSim() {;}   // dtor
-  virtual void InitDigits();
-  virtual void InitSDigits();
-  virtual void InitHits();
-  virtual void MakeDigits(TClonesArray * /*digits*/){;}
-  virtual void MakeSDigits(TClonesArray * /*sdigits*/){;}
-  virtual void MakeHits(TClonesArray * /*hits*/){;}
-  virtual void MakeDigits(TTree * digits);
-  virtual void MakeSDigits(TTree * sdigits);
-  virtual void MakeHits(TTree * hits);
+  virtual Int_t InitDigits();
+  virtual Int_t InitSDigits();
+  virtual Int_t InitHits();
+  virtual Int_t MakeDigits(TClonesArray * /*digits*/){;}
+  virtual Int_t MakeSDigits(TClonesArray * /*sdigits*/){;}
+  virtual Int_t MakeHits(TClonesArray * /*hits*/){;}
+  virtual Int_t MakeDigits(TTree * digits);
+  virtual Int_t MakeSDigits(TTree * sdigits);
+  virtual Int_t MakeHits(TTree * hits);
   Int_t GetOffset(AliQAv1::TASKINDEX_t task);
+  void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
 
 private:

@@ -31,16 +31,17 @@ public:
 	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)                    
     { return Add2List(hist, index, fDigitsQAList, expert, image) ; }
 	virtual Int_t Add2ESDsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)    
-    { return -1 ; } 
+  { return -1 ; } 
 	virtual Int_t Add2HitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)                      
-    { return Add2List(hist, index, fHitsQAList, expert, image) ; }
+  { return Add2List(hist, index, fHitsQAList, expert, image) ; }
 	virtual Int_t Add2RecPointsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/) 
     { return -1 ; } 
-	virtual Int_t Add2RawsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*saveForCorr = kFALSE*/, const Bool_t /*image = kFALSE*/)      
+  virtual Int_t Add2RawsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*saveForCorr = kFALSE*/, const Bool_t /*image = kFALSE*/)      
     { return -1 ; }  
-	virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)   
+ virtual Int_t Add2SDigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)   
     { return Add2List(hist, index, fSDigitsQAList, expert, image) ; }
-	virtual void        Exec(AliQAv1::TASKINDEX_t task, TObject * data) ;
+
+  virtual void        Exec(AliQAv1::TASKINDEX_t task, TObject * data) ;
 	virtual void        EndOfCycle() ;
 	virtual void        EndOfCycle(AliQAv1::TASKINDEX_t task) ;
 	virtual void        EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** ) {AliInfo("To be implemented by detectors");} 
@@ -75,10 +76,10 @@ protected:
 	virtual void   MakeSDigits(TTree * )            {AliInfo("To be implemented by detectors");} 
 	virtual void   StartOfDetectorCycle()           {AliInfo("To be implemented by detectors");} 
 
-	TObjArray * *    fDigitsQAList ;    //! list of the digits QA data objects
-	TObjArray * *    fHitsQAList ;      //! list of the hits QA data objects
-	TObjArray * *    fSDigitsQAList ;   //! list of the sdigits QA data objects
-  
+	TObjArray * *    fDigitsQAList ;     //! list of the digits QA data objects
+	TObjArray * *    fHitsQAList ;       //! list of the hits QA data objects
+	TObjArray * *    fSDigitsQAList ;    //! list of the sdigits QA data objects
+	  
  ClassDef(AliQADataMakerSim,1)  // description 
 
 };

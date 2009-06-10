@@ -30,18 +30,19 @@ public:
   AliITSQASSDDataMakerRec(AliITSQADataMakerRec *aliITSQADataMakerRec, Bool_t kMode = kFALSE, Int_t ldc=0);  //ctor
   AliITSQASSDDataMakerRec(const AliITSQASSDDataMakerRec& qadm);
   AliITSQASSDDataMakerRec& operator = (const AliITSQASSDDataMakerRec& qac);
-  virtual void InitRaws();
-  virtual void InitDigits();
-  virtual void InitRecPoints();
-  virtual void MakeRaws(AliRawReader *rawReader);
-  virtual void MakeDigits(TClonesArray* /*digits*/)  {return;}
-  virtual void MakeDigits(TTree *digitsTree);
-  virtual void MakeRecPoints(TTree *clustersTree);
+  virtual Int_t InitRaws();
+  virtual Int_t InitDigits();
+  virtual Int_t InitRecPoints();
+  virtual Int_t MakeRaws(AliRawReader *rawReader);
+  virtual Int_t MakeDigits(TClonesArray* /*digits*/)  {return 0;}
+  virtual Int_t MakeDigits(TTree *digitsTree);
+  virtual Int_t MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASSDDataMakerRec(); // dtor
 
   Int_t GetOffset(AliQAv1::TASKINDEX_t task);
+  void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
 
  private:

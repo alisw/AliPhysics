@@ -120,6 +120,11 @@ void AliACORDEQADataMakerSim::MakeHits(TTree *hitTree)
 	if (!branch) {
 		AliWarning("ACORDE branch in Hit Tree not found");
 	} else {
+    
+    // Check id histograms already created for this Event Specie
+    if ( ! GetHitsData(0) )
+      InitHits() ;
+
     branch->SetAddress(&hits);
 		for(Int_t track = 0 ; track < branch->GetEntries() ; track++) {
 			branch->GetEntry(track);
@@ -143,6 +148,11 @@ void AliACORDEQADataMakerSim::MakeDigits( TTree *digitsTree)
   if (!branch) {
     AliWarning("ACORDE branch in Digits Tree not found");
   } else {
+ 
+    // Check id histograms already created for this Event Specie
+    if ( ! GetDigitsData(0) )
+      InitDigits() ;
+
     branch->SetAddress(&digits);
     for(Int_t track = 0 ; track < branch->GetEntries() ; track++) {
       branch->GetEntry(track);

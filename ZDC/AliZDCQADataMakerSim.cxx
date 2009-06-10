@@ -152,7 +152,12 @@ void AliZDCQADataMakerSim::MakeHits(TClonesArray * /*data*/)
 {
   //filling QA histos for Hits
   //
-    TIter next(fHits); 
+
+  // Check id histograms already created for this Event Specie
+  if ( ! GetHitsData(0) )
+    InitHits() ;
+  
+  TIter next(fHits); 
     AliZDCHit * hit; 
     while((hit = dynamic_cast<AliZDCHit *>(next()))){
       if(hit->GetVolume(0)==1) GetHitsData(0)->Fill(hit->GetXImpact(),hit->GetYImpact());
@@ -215,14 +220,12 @@ void AliZDCQADataMakerSim::MakeDigits(TTree *digitTree )
     AliError("ZDC branch in Digit Tree not found"); 
     return;
   } 
-  char** add = (char**) (branch->GetAddress());
-  if(add){
-      fDigit = (AliZDCDigit*)(*add);
-  } 
-  else{
-      if(!fDigit) fDigit = new AliZDCDigit();
-      branch->SetAddress(&fDigit);
-  }
+  
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+  
+  branch->SetAddress(&fDigit);
   
   Int_t ndig = digitTree->GetEntries();
    

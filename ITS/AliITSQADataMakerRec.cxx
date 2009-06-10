@@ -180,8 +180,20 @@ void AliITSQADataMakerRec::InitRaws()
 void AliITSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 { 
   // Fill QA for RAW   
-  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeRaws(rawReader);
-  if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeRaws(rawReader);
+  return ; 
+
+  if(fSubDetector == 0 || fSubDetector == 1)  {
+    Int_t rv = fSPDDataMaker->MakeRaws(rawReader) ; 
+    if ( rv != 0 )
+      fSDDDataMaker->SetOffset(AliQAv1::kRAWS, fRawsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+  }
+  
+  if(fSubDetector == 0 || fSubDetector == 2) {
+    Int_t rv = fSPDDataMaker->MakeRaws(rawReader) ; 
+    if ( rv != 0 )
+      fSSDDataMaker->SetOffset(AliQAv1::kRAWS, fRawsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+  }
+
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeRaws(rawReader);
 }
 
@@ -207,8 +219,19 @@ void AliITSQADataMakerRec::InitDigits()
 void AliITSQADataMakerRec::MakeDigits(TTree * digitsTree)
 {
   // Fill QA for recpoints
-  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeDigits(digitsTree);
-  if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeDigits(digitsTree);
+  return ; 
+  if(fSubDetector == 0 || fSubDetector == 1) {
+    Int_t rv = fSPDDataMaker->MakeDigits(digitsTree) ; 
+    if ( rv != 0 )
+      fSDDDataMaker->SetOffset(AliQAv1::kDIGITSR, fDigitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+  }
+  
+  if(fSubDetector == 0 || fSubDetector == 2) {
+    Int_t rv = fSPDDataMaker->MakeDigits(digitsTree) ; 
+    if ( rv != 0 )
+      fSSDDataMaker->SetOffset(AliQAv1::kDIGITSR, fDigitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+  }
+  
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeDigits(digitsTree);
 }
 
@@ -233,9 +256,20 @@ void AliITSQADataMakerRec::InitRecPoints()
 //____________________________________________________________________________ 
 void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
+  return ; 
   // Fill QA for recpoints
-  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeRecPoints(clustersTree);
-  if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeRecPoints(clustersTree);
+  if(fSubDetector == 0 || fSubDetector == 1) {
+    Int_t rv = fSPDDataMaker->MakeRecPoints(clustersTree) ; 
+    if ( rv != 0 )
+      fSDDDataMaker->SetOffset(AliQAv1::kRECPOINTS, fDigitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+  }
+  
+  if(fSubDetector == 0 || fSubDetector == 2) {
+    Int_t rv = fSPDDataMaker->MakeRecPoints(clustersTree) ; 
+    if ( rv != 0 )
+      fSSDDataMaker->SetOffset(AliQAv1::kRECPOINTS, fDigitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+  }
+  
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeRecPoints(clustersTree);
 }
 
@@ -395,6 +429,10 @@ void AliITSQADataMakerRec::InitESDs()
 void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
 {
   // Make QA data from ESDs
+
+  // Check id histograms already created for this Event Specie
+  if ( ! GetESDsData(0) )
+    InitESDs() ;
   
   const Int_t nESDTracks = esd->GetNumberOfTracks();
   Int_t nITSrefit5 = 0; 

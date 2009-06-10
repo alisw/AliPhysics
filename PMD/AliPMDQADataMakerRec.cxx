@@ -409,7 +409,11 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
     //Fill prepared histograms with Raw digit properties
 
-    TObjArray *pmdddlcont = 0x0;
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRawsData(0) )
+    InitRaws() ;
+
+  TObjArray *pmdddlcont = 0x0;
     pmdddlcont = new TObjArray();
     AliPMDRawStream stream(rawReader);
     
@@ -491,6 +495,10 @@ void AliPMDQADataMakerRec::MakeDigits(TClonesArray * digits)
 {
   // makes data from Digits
   
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+
   Int_t cpvmul = 0, premul = 0;
   
   TIter next(digits) ; 
@@ -545,7 +553,11 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
     // makes data from RecPoints
 
-    Int_t multDdl0 = 0, multDdl1 = 0, multDdl2 = 0;
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRecPointsData(0) )
+    InitRecPoints() ;
+
+  Int_t multDdl0 = 0, multDdl1 = 0, multDdl2 = 0;
     Int_t multDdl3 = 0, multDdl4 = 0, multDdl5 = 0;
 
     AliPMDrecpoint1 * recpoint; 
@@ -620,6 +632,7 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     GetRecPointsData(7)->Fill(multDdl2,multDdl3);
     GetRecPointsData(8)->Fill(multDdl4,multDdl5);
 
+    recpoints->Delete() ; 
     delete recpoints;
 
 }
@@ -630,7 +643,11 @@ void AliPMDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   // make QA data from ESDs
 
-    Int_t premul = 0, cpvmul = 0;
+  // Check id histograms already created for this Event Specie
+  if ( ! GetESDsData(0) )
+    InitESDs() ;
+
+  Int_t premul = 0, cpvmul = 0;
 
   for (Int_t icl = 0; icl < esd->GetNumberOfPmdTracks(); icl++)
     {

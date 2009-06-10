@@ -112,14 +112,14 @@ void AliITSQASPDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, 
 }
 
 //____________________________________________________________________________ 
-void AliITSQASPDDataMakerRec::InitRaws()
+Int_t AliITSQASPDDataMakerRec::InitRaws()
 { 
   // Initialization for RAW data - SPD -
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-  
-  fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList[AliRecoParam::kDefault])->GetEntries();
+  Int_t rv = 0 ; 
+//  fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList[AliRecoParam::kDefault])->GetEntries();
   fAdvLogger = new AliITSRawStreamSPDErrorLog();  
   AliDebug(AliQAv1::GetQADebugLevel(), "Book Offline Histograms for SPD\n ");
 
@@ -129,7 +129,7 @@ void AliITSQASPDDataMakerRec::InitRaws()
   TH1F *hlayer = new TH1F("SPDLayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerRec->Add2RawsList(hlayer, 0+fGenRawsOffset, expert, !image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hlayer, 0+fGenRawsOffset, expert, !image, !saveCorr);
   fSPDhRawsTask++;
 
   TH1F **hmod = new TH1F*[2];
@@ -141,7 +141,7 @@ void AliITSQASPDDataMakerRec::InitRaws()
     hmod[iLay]=new TH1F(name,title,fgknSPDmodules,0,fgknSPDmodules);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RawsList(hmod[iLay], 1+iLay+fGenRawsOffset, !expert, image, !saveCorr);
+    rv = fAliITSQADataMakerRec->Add2RawsList(hmod[iLay], 1+iLay+fGenRawsOffset, !expert, image, !saveCorr);
     fSPDhRawsTask++;
   }
   for (Int_t iDDL=0; iDDL<20; iDDL++) {
@@ -150,14 +150,14 @@ void AliITSQASPDDataMakerRec::InitRaws()
     hhitMap[iDDL]=new TH2F(name,title,320,0,10*32,1536,0,6*256);
     hhitMap[iDDL]->GetXaxis()->SetTitle("Column");
     hhitMap[iDDL]->GetYaxis()->SetTitle("Row");
-    fAliITSQADataMakerRec->Add2RawsList(hhitMap[iDDL], 3+(2*iDDL)+fGenRawsOffset, expert, !image, !saveCorr);
+    rv = fAliITSQADataMakerRec->Add2RawsList(hhitMap[iDDL], 3+(2*iDDL)+fGenRawsOffset, expert, !image, !saveCorr);
     fSPDhRawsTask++;
     sprintf(name,"SPDErrors_SPD_DDL%d",iDDL+1);
     sprintf(title,"Error codes - SPD DDL %d",iDDL+1);
     herrors[iDDL] = new TH1F (name,title,fAdvLogger->GetNrErrorCodes(),0,fAdvLogger->GetNrErrorCodes());
     herrors[iDDL]->SetXTitle("Error Code");
     herrors[iDDL]->SetYTitle("Nr of errors");
-    fAliITSQADataMakerRec->Add2RawsList(herrors[iDDL], 4+(2*iDDL)+fGenRawsOffset, expert, !image, !saveCorr);
+    rv = fAliITSQADataMakerRec->Add2RawsList(herrors[iDDL], 4+(2*iDDL)+fGenRawsOffset, expert, !image, !saveCorr);
     fSPDhRawsTask++;
   }
 
@@ -168,7 +168,7 @@ void AliITSQASPDDataMakerRec::InitRaws()
     hMultSPDhits[iLay]=new TH1F(name,title,200,0.,200.);
     hMultSPDhits[iLay]->GetXaxis()->SetTitle("Hit multiplicity");
     hMultSPDhits[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits[iLay], 43+iLay+fGenRawsOffset, expert, !image, !saveCorr);
+    rv = fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits[iLay], 43+iLay+fGenRawsOffset, expert, !image, !saveCorr);
     fSPDhRawsTask++;
   }
 
@@ -176,17 +176,22 @@ void AliITSQASPDDataMakerRec::InitRaws()
          = new TH2F("SPDHitMultCorrelation_SPD","Hit multiplicity correlation - SPD",200,0.,200.,200,0.,200.);
   hMultSPDhits2MultSPDhits1->GetXaxis()->SetTitle("Hit multiplicity (Layer 1)");
   hMultSPDhits2MultSPDhits1->GetYaxis()->SetTitle("Hit multiplicity (Layer 2)");
-  fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits2MultSPDhits1, 45+fGenRawsOffset, !expert, image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits2MultSPDhits1, 45+fGenRawsOffset, !expert, image, !saveCorr);
   fSPDhRawsTask++;
  
   AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD Raws histograms booked\n",fSPDhRawsTask));
+  return rv ; 
 }
 
-
 //____________________________________________________________________________
-void AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
+Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 { 
   // Fill QA for RAW - SPD -
+  Int_t rv = 0 ; 
+  // Check id histograms already created for this Event Specie
+  if ( ! fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset) )
+    rv = InitRaws() ;
+  
   rawReader->Reset();
   AliITSRawStreamSPD *rawStreamSPD = new AliITSRawStreamSPD(rawReader);
   rawStreamSPD->ActivateAdvancedErrorLog(kTRUE,fAdvLogger);
@@ -237,16 +242,17 @@ void AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   
   delete rawStreamSPD;  
   AliDebug(AliQAv1::GetQADebugLevel(),Form("Event completed, %d raw digits read",nDigitsL1+nDigitsL2));
+  return rv ; 
 }
 
 //____________________________________________________________________________ 
-void AliITSQASPDDataMakerRec::InitDigits()
+Int_t AliITSQASPDDataMakerRec::InitDigits()
 { 
   // Initialization for DIGIT data - SPD -
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ;
-  
-  fGenDigitsOffset = (fAliITSQADataMakerRec->fDigitsQAList[AliRecoParam::kDefault])->GetEntries();
+  Int_t rv = 0 ; 
+//  fGenDigitsOffset = (fAliITSQADataMakerRec->fDigitsQAList[AliRecoParam::kDefault])->GetEntries();
   //fSPDhDigitsTask must be incremented by one unit every time a histogram is ADDED to the QA List
   
   Char_t name[50];
@@ -255,7 +261,7 @@ void AliITSQASPDDataMakerRec::InitDigits()
   TH1F *hlayer = new TH1F("SPDLayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerRec->Add2DigitsList(hlayer,fGenDigitsOffset, expert, !image);
+  rv = fAliITSQADataMakerRec->Add2DigitsList(hlayer,fGenDigitsOffset, expert, !image);
   fSPDhDigitsTask++;
   
   TH1F **hmod = new TH1F*[2];
@@ -265,20 +271,20 @@ void AliITSQASPDDataMakerRec::InitDigits()
     hmod[iLay]=new TH1F(name,title,240,0,240);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2DigitsList(hmod[iLay],1+iLay+fGenDigitsOffset, !expert, image);
+    rv = fAliITSQADataMakerRec->Add2DigitsList(hmod[iLay],1+iLay+fGenDigitsOffset, !expert, image);
     fSPDhDigitsTask++;
   }
   
   TH1F *hcolumns = new TH1F("SPDColumns_SPD","Columns - SPD",160,0.,160.);
   hcolumns->GetXaxis()->SetTitle("Column number");
   hcolumns->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerRec->Add2DigitsList(hcolumns,3+fGenDigitsOffset, expert, !image);
+  rv = fAliITSQADataMakerRec->Add2DigitsList(hcolumns,3+fGenDigitsOffset, expert, !image);
   fSPDhDigitsTask++;
   
   TH1F *hrows = new TH1F("SPDRows_SPD","Rows - SPD",256,0.,256.);
   hrows->GetXaxis()->SetTitle("Row number");
   hrows->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerRec->Add2DigitsList(hrows,4+fGenDigitsOffset, expert, !image);
+  rv = fAliITSQADataMakerRec->Add2DigitsList(hrows,4+fGenDigitsOffset, expert, !image);
   fSPDhDigitsTask++;
   
   TH1F** hMultSPDdigits = new TH1F*[2];
@@ -288,7 +294,7 @@ void AliITSQASPDDataMakerRec::InitDigits()
     hMultSPDdigits[iLay]=new TH1F(name,title,200,0.,200.);
     hMultSPDdigits[iLay]->GetXaxis()->SetTitle("Digit multiplicity");
     hMultSPDdigits[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2DigitsList(hMultSPDdigits[iLay], 5+iLay+fGenDigitsOffset, !expert, image);
+    rv = fAliITSQADataMakerRec->Add2DigitsList(hMultSPDdigits[iLay], 5+iLay+fGenDigitsOffset, !expert, image);
     fSPDhDigitsTask++;
   }
   
@@ -296,24 +302,29 @@ void AliITSQASPDDataMakerRec::InitDigits()
     = new TH2F("SPDDigitMultCorrelation_SPD","Digit multiplicity correlation - SPD",200,0.,200.,200,0.,200.);
   hMultSPDdig2MultSPDdig1->GetXaxis()->SetTitle("Digit multiplicity (Layer 1)");
   hMultSPDdig2MultSPDdig1->GetYaxis()->SetTitle("Digit multiplicity (Layer 2)");
-  fAliITSQADataMakerRec->Add2DigitsList(hMultSPDdig2MultSPDdig1,7+fGenDigitsOffset, !expert, image);
+  rv = fAliITSQADataMakerRec->Add2DigitsList(hMultSPDdig2MultSPDdig1,7+fGenDigitsOffset, !expert, image);
   fSPDhDigitsTask++;
   
   AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD Digits histograms booked\n",fSPDhDigitsTask));
-  
+  return rv ; 
 }
 
 //____________________________________________________________________________
-void AliITSQASPDDataMakerRec::MakeDigits(TTree *digits)
+Int_t AliITSQASPDDataMakerRec::MakeDigits(TTree *digits)
 { 
   // Fill QA for DIGIT - SPD -
+  Int_t rv = 0 ; 
+  // Check id histograms already created for this Event Specie
+  if ( ! fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset) )
+    rv = InitDigits() ;
+
 //  AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
 //  fITS->SetTreeAddress();
 //  TClonesArray *iITSdigits  = fITS->DigitsAddress(0);  // 0->SPD
   TBranch *branchD = digits->GetBranch("ITSDigitsSPD");
   if (!branchD) { 
     AliError("can't get the branch with the SPD ITS digits !");
-    return;
+    return rv;
   }
   static TClonesArray statDigits("AliITSdigitSPD");
   TClonesArray *iITSdigits = &statDigits;
@@ -345,20 +356,21 @@ void AliITSQASPDDataMakerRec::MakeDigits(TTree *digits)
   fAliITSQADataMakerRec->GetDigitsData(5+fGenDigitsOffset)->Fill(nDigitsL1);
   fAliITSQADataMakerRec->GetDigitsData(6+fGenDigitsOffset)->Fill(nDigitsL2);
   fAliITSQADataMakerRec->GetDigitsData(7+fGenDigitsOffset)->Fill(nDigitsL1,nDigitsL2);
+  return rv ; 
 }
 
 //____________________________________________________________________________ 
-void AliITSQASPDDataMakerRec::InitRecPoints()
+Int_t AliITSQASPDDataMakerRec::InitRecPoints()
 {
   // Initialization for RECPOINTS - SPD -
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-  
-  fGenRecPointsOffset = (fAliITSQADataMakerRec->fRecPointsQAList[AliRecoParam::kDefault])->GetEntries();
+  Int_t rv = 0 ; 
+//  fGenRecPointsOffset = (fAliITSQADataMakerRec->fRecPointsQAList[AliRecoParam::kDefault])->GetEntries();
   TH1F* hlayer= new TH1F("SPDLayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
   hlayer->GetYaxis()->SetTitle("Entries");
-  fAliITSQADataMakerRec->Add2RecPointsList(hlayer, 0+fGenRecPointsOffset, expert, !image); 
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(hlayer, 0+fGenRecPointsOffset, expert, !image); 
   fSPDhRecPointsTask++;
 
   TH1F** hmod = new TH1F*[2];
@@ -384,7 +396,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hmod[iLay]=new TH1F(name,title,fgknSPDmodules,0,fgknSPDmodules);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hmod[iLay], 1+(10*iLay)+fGenRecPointsOffset, expert, !image); 
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(hmod[iLay], 1+(10*iLay)+fGenRecPointsOffset, expert, !image); 
     fSPDhRecPointsTask++;
 
     sprintf(name,"SPDxLoc_SPD%d",iLay+1);
@@ -392,7 +404,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hxl[iLay]=new TH1F(name,title,100,-4.,4.);
     hxl[iLay]->GetXaxis()->SetTitle("Local x [cm]");
     hxl[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hxl[iLay], 2+(10*iLay)+fGenRecPointsOffset, expert, !image);
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(hxl[iLay], 2+(10*iLay)+fGenRecPointsOffset, expert, !image);
     fSPDhRecPointsTask++;
 
     sprintf(name,"SPDzLoc_SPD%d",iLay+1);
@@ -400,7 +412,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hzl[iLay]=new TH1F(name,title,100,-4.,4.);
     hzl[iLay]->GetXaxis()->SetTitle("Local z [cm]");
     hzl[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hzl[iLay], 3+(10*iLay)+fGenRecPointsOffset, expert, !image); 
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(hzl[iLay], 3+(10*iLay)+fGenRecPointsOffset, expert, !image); 
     fSPDhRecPointsTask++;
 
     sprintf(name,"SPDxGlob_SPD%d",iLay+1);
@@ -408,7 +420,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hxg[iLay]=new TH1F(name,title,100,-xlim[iLay],xlim[iLay]);
     hxg[iLay]->GetXaxis()->SetTitle("Global x [cm]");
     hxg[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hxg[iLay],4+(10*iLay)+fGenRecPointsOffset, expert, !image);  
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(hxg[iLay],4+(10*iLay)+fGenRecPointsOffset, expert, !image);  
     fSPDhRecPointsTask++;
 
     sprintf(name,"SPDyGlob_SPD%d",iLay+1);
@@ -416,7 +428,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hyg[iLay]=new TH1F(name,title,100,-xlim[iLay],xlim[iLay]);
     hyg[iLay]->GetXaxis()->SetTitle("Global y [cm]");
     hyg[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hyg[iLay], 5+(10*iLay)+fGenRecPointsOffset, expert, !image); 
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(hyg[iLay], 5+(10*iLay)+fGenRecPointsOffset, expert, !image); 
     fSPDhRecPointsTask++;
 
     sprintf(name,"SPDzGlob_SPD%d",iLay+1);
@@ -424,7 +436,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hzg[iLay]=new TH1F(name,title,150,-zlim[iLay],zlim[iLay]);
     hzg[iLay]->GetXaxis()->SetTitle("Global z [cm]");
     hzg[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hzg[iLay], 6+(10*iLay)+fGenRecPointsOffset, expert, !image); 
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(hzg[iLay], 6+(10*iLay)+fGenRecPointsOffset, expert, !image); 
     fSPDhRecPointsTask++;
 
     sprintf(name,"SPDr_SPD%d",iLay+1);
@@ -432,7 +444,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hr[iLay]=new TH1F(name,title,100,0.,10.);
     hr[iLay]->GetXaxis()->SetTitle("r [cm]");
     hr[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hr[iLay], 7+(10*iLay)+fGenRecPointsOffset, expert, !image);  
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(hr[iLay], 7+(10*iLay)+fGenRecPointsOffset, expert, !image);  
     fSPDhRecPointsTask++;
 
     sprintf(name,"SPDphi_SPD%d",iLay+1);
@@ -440,7 +452,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hphi[iLay]=new TH1F(name,title,1000,0.,2*TMath::Pi());
     hphi[iLay]->GetXaxis()->SetTitle("#varphi [rad]");
     hphi[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hphi[iLay], 8+(10*iLay)+fGenRecPointsOffset, expert, !image);
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(hphi[iLay], 8+(10*iLay)+fGenRecPointsOffset, expert, !image);
     fSPDhRecPointsTask++;
     
     sprintf(name,"SPDSizeYvsZ_SPD%d",iLay+1);
@@ -448,7 +460,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hNyNz[iLay]=new TH2F(name,title,100,0.,100.,100,0.,100.);
     hNyNz[iLay]->GetXaxis()->SetTitle("z length");
     hNyNz[iLay]->GetYaxis()->SetTitle("y length");
-    fAliITSQADataMakerRec->Add2RecPointsList(hNyNz[iLay], 9+(10*iLay)+fGenRecPointsOffset, expert, !image); 
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(hNyNz[iLay], 9+(10*iLay)+fGenRecPointsOffset, expert, !image); 
     fSPDhRecPointsTask++;
 
     sprintf(name,"SPDphi_z_SPD%d",iLay+1);
@@ -456,7 +468,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hPhiZ[iLay]=new TH2F(name,title,150,-zlim[iLay],zlim[iLay],200,0.,2*TMath::Pi());
     hPhiZ[iLay]->GetXaxis()->SetTitle("Global z [cm]");
     hPhiZ[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
-    fAliITSQADataMakerRec->Add2RecPointsList(hPhiZ[iLay], 10+(10*iLay)+fGenRecPointsOffset, !expert, image);
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(hPhiZ[iLay], 10+(10*iLay)+fGenRecPointsOffset, !expert, image);
     fSPDhRecPointsTask++;
 
   }
@@ -464,13 +476,13 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
   TH2F *hrPhi=new TH2F("SPDr_phi_SPD","#varphi vs r - SPD",100,0.,10.,100,0.,2*TMath::Pi());
   hrPhi->GetXaxis()->SetTitle("r [cm]");
   hrPhi->GetYaxis()->SetTitle("#varphi [rad]");
-  fAliITSQADataMakerRec->Add2RecPointsList(hrPhi, 21+fGenRecPointsOffset, expert, !image);
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(hrPhi, 21+fGenRecPointsOffset, expert, !image);
   fSPDhRecPointsTask++;
 
   TH2F *hxy=new TH2F("SPDx_y_SPD","Global y vs x - SPD",200,-10.,10.,200,-10.,10.);
   hxy->GetXaxis()->SetTitle("Global x [cm]");
   hxy->GetYaxis()->SetTitle("Global y [cm]");
-  fAliITSQADataMakerRec->Add2RecPointsList(hxy, 22+fGenRecPointsOffset, !expert, image);
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(hxy, 22+fGenRecPointsOffset, !expert, image);
   fSPDhRecPointsTask++;
 
   for (Int_t iLay=0;iLay<2;iLay++) {
@@ -479,7 +491,7 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
     hMultSPDcl[iLay]=new TH1F(name,title,200,0.,200.);
     hMultSPDcl[iLay]->GetXaxis()->SetTitle("Cluster multiplicity");
     hMultSPDcl[iLay]->GetYaxis()->SetTitle("Entries");
-    fAliITSQADataMakerRec->Add2RecPointsList(hMultSPDcl[iLay], 23+iLay+fGenRecPointsOffset, !expert, image);
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(hMultSPDcl[iLay], 23+iLay+fGenRecPointsOffset, !expert, image);
     fSPDhRecPointsTask++;
   } 
 
@@ -487,25 +499,30 @@ void AliITSQASPDDataMakerRec::InitRecPoints()
         new TH2F("SPDMultCorrelation_SPD","Cluster multiplicity correlation - SPD",200,0.,200.,200,0.,200.);
   hMultSPDcl2MultSPDcl1->GetXaxis()->SetTitle("Clusters multiplicity (Layer 1)");
   hMultSPDcl2MultSPDcl1->GetYaxis()->SetTitle("Clusters multiplicity (Layer 2)"); 
-  fAliITSQADataMakerRec->Add2RecPointsList(hMultSPDcl2MultSPDcl1, 25+fGenRecPointsOffset, !expert, image);
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(hMultSPDcl2MultSPDcl1, 25+fGenRecPointsOffset, !expert, image);
   fSPDhRecPointsTask++;
 
   AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD Recs histograms booked\n",fSPDhRecPointsTask));
 
-
+  return rv ; 
 }
 
 //____________________________________________________________________________ 
-void AliITSQASPDDataMakerRec::MakeRecPoints(TTree * clusterTree)
+Int_t AliITSQASPDDataMakerRec::MakeRecPoints(TTree * clusterTree)
 {
   // Fill QA for RecPoints - SPD -
+  Int_t rv = 0 ; 
   static TClonesArray statITSCluster("AliITSRecPoint");
   TClonesArray *ITSCluster = &statITSCluster;
   TBranch* itsClusterBranch=clusterTree->GetBranch("ITSRecPoints");
   if (!itsClusterBranch) {
     AliError("can't get the branch with the ITS clusters !");
-    return;
+    return rv;
   }
+  // Check id histograms already created for this Event Specie
+  if ( ! fAliITSQADataMakerRec->GetRecPointsData(fGenRecPointsOffset) )
+    rv = InitRecPoints() ;
+  
   itsClusterBranch->SetAddress(&ITSCluster);
   Int_t nItsMods = (Int_t)clusterTree->GetEntries();
   
@@ -562,6 +579,7 @@ void AliITSQASPDDataMakerRec::MakeRecPoints(TTree * clusterTree)
   fAliITSQADataMakerRec->GetRecPointsData(25 +fGenRecPointsOffset)->Fill(nClusters[0],nClusters[1]);
   
   statITSCluster.Clear();
+  return rv ;
 }
 
 
@@ -573,6 +591,9 @@ Int_t AliITSQASPDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task) {
   Int_t offset=0;
   if( task == AliQAv1::kRAWS ) {
     offset=fGenRawsOffset;
+  }
+  else if( task == AliQAv1::kDIGITSR ) {
+    offset=fGenDigitsOffset;
   }
   else if( task == AliQAv1::kRECPOINTS ) {
     offset=fGenRecPointsOffset;
@@ -589,12 +610,34 @@ Int_t AliITSQASPDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task) {
 
 //_______________________________________________________________
 
+void AliITSQASPDDataMakerRec::SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset) {
+  // Returns offset number according to the specified task
+  if( task == AliQAv1::kRAWS ) {
+   fGenRawsOffset=offset;
+  }
+  else if( task == AliQAv1::kDIGITSR ) {
+    fGenDigitsOffset=offset;
+  }
+  else if( task == AliQAv1::kRECPOINTS ) {
+    fGenRecPointsOffset=offset;
+  }
+   else {
+    AliInfo("No task has been selected. Offset set to zero.\n");
+  }
+}
+
+//_______________________________________________________________
+
 Int_t AliITSQASPDDataMakerRec::GetTaskHisto(AliQAv1::TASKINDEX_t task) {
   // Returns the number of histograms associated to the specified task
+
   Int_t histotot=0;
 
   if( task == AliQAv1::kRAWS ) {
     histotot=fSPDhRawsTask;
+  }
+  else if( task == AliQAv1::kDIGITSR ) {
+    histotot=fSPDhDigitsTask;
   }
   else if( task == AliQAv1::kRECPOINTS ){
     histotot=fSPDhRecPointsTask;
@@ -605,6 +648,4 @@ Int_t AliITSQASPDDataMakerRec::GetTaskHisto(AliQAv1::TASKINDEX_t task) {
   else {
     AliInfo("No task has been selected. TaskHisto set to zero.\n");
   }
-
-  return histotot;
 }

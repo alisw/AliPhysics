@@ -1,4 +1,4 @@
-/**************************************************************************
+;/**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -143,6 +143,11 @@ void AliT0QADataMakerSim::MakeHits(TTree *hitTree)
     
     if (ntracks<=0) return;
     // Start loop on tracks in the hits containers
+
+    // Check id histograms already created for this Event Specie
+    if ( ! GetHitsData(0) )
+      InitHits() ;
+
     for (Int_t track=0; track<ntracks;track++) {
       branch->GetEntry(track);
       Int_t nhits = hits->GetEntriesFast();
@@ -181,6 +186,11 @@ void AliT0QADataMakerSim::MakeDigits( TTree *digitsTree)
     AliError(Form("EXEC Branch T0 digits not found"));
      return;
   }
+
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+
   digitsTree->GetEvent(0);
   digitsTree->GetEntry(0);
   brDigits->GetEntry(0);

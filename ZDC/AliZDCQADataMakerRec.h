@@ -12,6 +12,9 @@
 
 
 #include "AliQADataMakerRec.h"
+
+class AliZDCDigit;
+
 class AliZDCQADataMakerRec: public AliQADataMakerRec {
 
 public:
@@ -33,6 +36,8 @@ private:
   virtual void   StartOfDetectorCycle() ; 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list) ;
 
+  AliZDCDigit    *fDigit; 	//! Pointer to digit in tree  
+ 
   ClassDef(AliZDCQADataMakerRec,1)  // description 
 
 };

@@ -31,17 +31,18 @@ public:
 	virtual ~AliQADataMakerRec() ; // dtor
   
  	virtual Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)    
-    { return Add2List(hist, index, fDigitsQAList, expert, image) ; }
-	virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)                      
+  { return Add2List(hist, index, fDigitsQAList, expert, image) ; }
+  virtual Int_t Add2ESDsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)                      
     { return Add2List(hist, index, fESDsQAList, expert, image) ; }
-	virtual Int_t Add2HitsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)      
+  virtual Int_t Add2HitsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)      
     { return -1 ; }  
-	virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)                 
+  virtual Int_t Add2RecPointsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE)                 
     { return Add2List(hist, index, fRecPointsQAList, expert, image) ; }
-	virtual Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE, const Bool_t saveForCorr = kFALSE)  { 
-    return Add2List(hist, index, fRawsQAList, expert, image, saveForCorr) ; }
-	virtual Int_t Add2SDigitsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)   { return -1 ; } 
-	virtual void        Exec(AliQAv1::TASKINDEX_t task, TObject * data) ;
+  virtual Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE, const Bool_t saveForCorr = kFALSE)  
+  { return Add2List(hist, index, fRawsQAList, expert, image, saveForCorr) ; }
+  virtual Int_t Add2SDigitsList(TH1 * /*hist*/, const Int_t /*index*/, const Bool_t /*expert = kFALSE*/, const Bool_t /*image = kFALSE*/)   { return -1 ; } 
+	
+  virtual void        Exec(AliQAv1::TASKINDEX_t task, TObject * data) ;
 	virtual void        EndOfCycle() ;
 	virtual void        EndOfCycle(AliQAv1::TASKINDEX_t task) ;
 	virtual void        EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** ) {AliInfo("To be implemented by detectors");} 
@@ -83,14 +84,14 @@ protected:
 	virtual void   MakeSDigits(TTree * )               {AliWarning("Call not valid") ; }    
 	virtual void   StartOfDetectorCycle()              {AliInfo("To be implemented by detectors");} 
 
-	TObjArray * *               fDigitsQAList ;    //! list of the digits QA data objects
-	TObjArray * *               fESDsQAList ;      //! list of the ESDs QA data objects
-	TObjArray * *               fRawsQAList ;      //! list of the raws QA data objects
-	TObjArray * *               fRecPointsQAList ; //! list of the RecPoints QA data objects
-  TNtupleD  * *               fCorrNt ;          //! This is used by Corr only to hold its Ntuple. 
-  const AliDetectorRecoParam *fRecoParam;        //! const pointer to the reco parameters to be used in the reco QA
+	TObjArray * *               fDigitsQAList ;     //! list of the digits QA data objects
+	TObjArray * *               fESDsQAList ;       //! list of the ESDs QA data objects
+	TObjArray * *               fRawsQAList ;       //! list of the raws QA data objects
+	TObjArray * *               fRecPointsQAList ;  //! list of the RecPoints QA data objects
+  TNtupleD  **                 fCorrNt ;          //! This is used by Corr only to hold its Ntuple. 
+  const AliDetectorRecoParam *fRecoParam;         //! const pointer to the reco parameters to be used in the reco QA
   
- ClassDef(AliQADataMakerRec,3)  // description 
+ ClassDef(AliQADataMakerRec,4)  // description 
 
 };
 

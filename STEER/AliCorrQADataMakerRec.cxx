@@ -129,7 +129,7 @@ void AliCorrQADataMakerRec::InitRaws()
     if (list) {
       TIter next(list) ; 
       TParameter<double> * p ; 
-      while ( (p = dynamic_cast<TParameter<double>*>(next()) ) ) {
+      while ( (p = static_cast<TParameter<double>*>(next()) ) ) {
         varlist.Append(p->GetName()) ; 
         varlist.Append(":") ; 
         fMaxRawVar++ ; 
@@ -171,11 +171,11 @@ void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
       TList * list = qadm->GetParameterList() ; 
       TIter next(list) ; 
       TParameter<double> * p ; 
-      while ( (p = dynamic_cast<TParameter<double>*>(next()) ) ) {
+      while ( (p = static_cast<TParameter<double>*>(next()) ) ) {
         varvalue[index++] = p->GetVal() ; 
       }
     }
-    (dynamic_cast<TNtupleD*>(fCorrNt[(Int_t)TMath::Log2(fEventSpecie)]))->Fill(varvalue);
+    (static_cast<TNtupleD*>(fCorrNt[(Int_t)TMath::Log2(fEventSpecie)]))->Fill(varvalue);
     delete [] varvalue;
   }
 }

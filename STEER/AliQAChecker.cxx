@@ -195,12 +195,16 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
       AliCDBEntry * entry = manQA->Get(detOCDBDir, manQA->GetRun()) ;
       if (entry) {
         dirOCDB = new TObjArray*[AliRecoParam::kNSpecies] ;	
-        TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
+        TList * listDetQAD =static_cast<TList *>(entry->GetObject()) ;
+        if ( strcmp(listDetQAD->ClassName(), "TList") != 0 ) {
+          AliError(Form("Expected a Tlist and found a %s for detector %s", listDetQAD->ClassName(), det)) ; 
+          continue ; 
+        }       
         TIter next(listDetQAD) ;
         TObjArray * ar ; 
         while ( (ar = (TObjArray*)next()) )
           if ( listDetQAD ) 
-          dirOCDB[specie] = dynamic_cast<TObjArray *>(listDetQAD->FindObject(Form("%s/%s", task, AliRecoParam::GetEventSpecieName(specie)))) ; 
+          dirOCDB[specie] = static_cast<TObjArray *>(listDetQAD->FindObject(Form("%s/%s", task, AliRecoParam::GetEventSpecieName(specie)))) ; 
       }
     }
   }
@@ -223,7 +227,7 @@ void AliQAChecker::LoadRunInfoFromGRP()
   AliGRPObject* grpObject = 0x0;
   if (entry) {
 
-	  TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
+	  TMap* m = static_cast<TMap*>(entry->GetObject());  // old GRP entry
 
 	  if (m) {
 	    AliDebug(AliQAv1::GetQADebugLevel(), "It is a map");
@@ -234,7 +238,7 @@ void AliQAChecker::LoadRunInfoFromGRP()
 
     else {
 	    AliDebug(AliQAv1::GetQADebugLevel(), "It is a new GRP object");
-        grpObject = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
+        grpObject = static_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
     }
 
     entry->SetOwner(0);
@@ -321,7 +325,7 @@ Bool_t AliQAChecker::Run(const char * fileName)
   TList * detKeyList = AliQAv1::GetQADataFile(fileName)->GetListOfKeys() ; 
   TIter nextd(detKeyList) ; 
   TKey * detKey ; 
-  while ( (detKey = dynamic_cast<TKey *>(nextd()) ) ) {
+  while ( (detKey = static_cast<TKey *>(nextd()) ) ) {
     AliDebug(AliQAv1::GetQADebugLevel(), Form("Found %s", detKey->GetName())) ;
     //Check which detector
     TString detName ; 

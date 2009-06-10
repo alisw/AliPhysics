@@ -181,6 +181,10 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
   // This function fills the ESD QA histograms
   // as a part of global QA
   //-----------------------------------------------------------
+  // Check id histograms already created for this Event Specie
+  if ( ! GetESDsData(kClr0) )
+    InitESDs() ;
+
   const AliESDEvent *esd=event;
 
   Int_t ntrk=esd->GetNumberOfTracks() ; 

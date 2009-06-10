@@ -81,7 +81,8 @@ public:
   void                SetPrintImage(Bool_t opt = kTRUE) { fPrintImage = opt ; }
   virtual void        SetRecoParam(const AliDetectorRecoParam *) {;}
 
-	  
+  virtual void        InitRecPointsForTracker() {;} // needed by AliGlobalQADataMaker
+
 protected: 
 
 	Int_t          Add2List(TH1 * hist, const Int_t index, TObjArray ** list, const Bool_t expert = kFALSE, const Bool_t image = kFALSE, const Bool_t saveForCorr = kFALSE) ;
@@ -108,7 +109,7 @@ protected:
 	virtual void   MakeSDigits(TClonesArray * )      = 0 ;  
 	virtual void   MakeSDigits(TTree * )             = 0 ;  
   //virtual void   MakeTrackSegments(TTree * )		 = 0 ;  
-  virtual void   MakeTheImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Char_t * mode) ; 
+  virtual void   MakeTheImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, const Char_t * mode) ; 
 	void           ResetCycle() { fCurrentCycle++ ; fCycleCounter = 0 ; } 
 	virtual void   StartOfDetectorCycle()            = 0 ;
 	

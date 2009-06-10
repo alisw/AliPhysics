@@ -347,6 +347,10 @@ void AliPHOSQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   // make QA data from ESDs
 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetESDsData(kESDSpec) )
+    InitESDs() ;
+  
   Int_t nTot = 0 ; 
   Double_t eTot = 0 ; 
   for ( Int_t index = 0; index < esd->GetNumberOfCaloClusters() ; index++ ) {
@@ -367,6 +371,11 @@ void AliPHOSQADataMakerRec::MakeESDs(AliESDEvent * esd)
 void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
   //Fill prepared histograms with Raw digit properties
+
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRawsData(kLGpedRMS) )
+    InitRaws() ;
+ 
   rawReader->Reset() ;
   AliPHOSRawDecoder * decoder ;
   if(strcmp(GetRecoParam()->EMCDecoderVersion(),"v1")==0)
@@ -481,7 +490,14 @@ void AliPHOSQADataMakerRec::MakeDigits(TClonesArray * digits)
 {
   // makes data from Digits
   
-  GetDigitsData(1)->Fill(digits->GetEntriesFast()) ; 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(kDigits) )
+    InitDigits() ;
+
+  TH1 * hist = GetDigitsData(kDigitsMul) ; 
+  if ( ! hist )
+    InitDigits() ;
+  GetDigitsData(kDigitsMul)->Fill(digits->GetEntriesFast()) ; 
   TIter next(digits) ; 
   AliPHOSDigit * digit ; 
   while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
@@ -515,6 +531,11 @@ void AliPHOSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
       AliError("can't get the branch with the PHOS EMC clusters !");
       return;
     }
+    
+    // Check id histograms already created for this Event Specie
+    if ( ! GetRecPointsData(kRPSpec) )
+      InitRecPoints() ;
+    
     TObjArray * emcrecpoints = new TObjArray(100) ;
     emcbranch->SetAddress(&emcrecpoints);
     emcbranch->GetEntry(0);
@@ -523,7 +544,7 @@ void AliPHOSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     TIter next(emcrecpoints) ; 
     AliPHOSEmcRecPoint * rp ; 
     Double_t eTot = 0. ; 
-    while ( (rp = dynamic_cast<AliPHOSEmcRecPoint *>(next())) ) {
+    while ( (rp = static_cast<AliPHOSEmcRecPoint *>(next())) ) {
       GetRecPointsData(kRPSpec)->Fill( rp->GetEnergy()) ;
       Int_t mod = rp->GetPHOSMod() ;
       TVector3 pos ;

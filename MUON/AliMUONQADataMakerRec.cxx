@@ -184,7 +184,9 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
   DisplayTriggerInfo(task);
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    SetEventSpecie(specie) ; 
+    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
+      continue ;
+    SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
     if ( task == AliQAv1::kRAWS && fTrackerDataMaker ) 
       {
         TIter next(list[specie]);
@@ -231,42 +233,42 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
       // loop over chambers
       for (Int_t iCh = 0; iCh < AliMUONConstants::NTrackingCh(); iCh++) {
 	
-	TH1* hTrackerClusterChargePerChamber = GetRecPointsData(kTrackerClusterChargePerChamber+iCh);
-	Double_t sigmaCharge = hTrackerClusterChargePerChamber->GetRMS();
-	hTrackerClusterChargePerChMean->SetBinContent(iCh+1, hTrackerClusterChargePerChamber->GetMean());
-	hTrackerClusterChargePerChMean->SetBinError(iCh+1, hTrackerClusterChargePerChamber->GetMeanError());
-	hTrackerClusterChargePerChSigma->SetBinContent(iCh+1, sigmaCharge);
-	hTrackerClusterChargePerChSigma->SetBinError(iCh+1, hTrackerClusterChargePerChamber->GetRMSError());
-	
-	TH1* hTrackerClusterMultiplicityPerChamber = GetRecPointsData(kTrackerClusterMultiplicityPerChamber+iCh);
-	Double_t sigmaSize = hTrackerClusterMultiplicityPerChamber->GetRMS();
-	hTrackerClusterMultiplicityPerChMean->SetBinContent(iCh+1, hTrackerClusterMultiplicityPerChamber->GetMean());
-	hTrackerClusterMultiplicityPerChMean->SetBinError(iCh+1, hTrackerClusterMultiplicityPerChamber->GetMeanError());
-	hTrackerClusterMultiplicityPerChSigma->SetBinContent(iCh+1, sigmaSize);
-	hTrackerClusterMultiplicityPerChSigma->SetBinError(iCh+1, hTrackerClusterMultiplicityPerChamber->GetRMSError());
-	
-	// loop over DE into chamber iCh
-	AliMpDEIterator it;
-	it.First(iCh);
-	while ( !it.IsDone()) {
-	  
-	  Int_t iDE = it.CurrentDEId();
-	  
-	  TH1* hTrackerClusterChargePerDE = GetRecPointsData(kTrackerClusterChargePerDE+iDE);
-	  hTrackerClusterChargePerDEMean->SetBinContent(iDE+1, hTrackerClusterChargePerDE->GetMean());
-	  Double_t nClusters = hTrackerClusterChargePerDE->GetEntries();
-	  if (nClusters > 1) hTrackerClusterChargePerDEMean->SetBinError(iDE+1, sigmaCharge/TMath::Sqrt(nClusters));
-	  else hTrackerClusterChargePerDEMean->SetBinError(iDE+1, hTrackerClusterChargePerChamber->GetXaxis()->GetXmax());
-	  
-	  TH1* hTrackerClusterMultiplicityPerDE = GetRecPointsData(kTrackerClusterMultiplicityPerDE+iDE);
-	  hTrackerClusterMultiplicityPerDEMean->SetBinContent(iDE+1, hTrackerClusterMultiplicityPerDE->GetMean());
-	  nClusters = hTrackerClusterMultiplicityPerDE->GetEntries();
-	  if (nClusters > 1) hTrackerClusterMultiplicityPerDEMean->SetBinError(iDE+1, sigmaSize/TMath::Sqrt(nClusters));
-	  else hTrackerClusterMultiplicityPerDEMean->SetBinError(iDE+1, hTrackerClusterMultiplicityPerChamber->GetXaxis()->GetXmax());
-	  
-	  it.Next();
-	}
-	  
+        TH1* hTrackerClusterChargePerChamber = GetRecPointsData(kTrackerClusterChargePerChamber+iCh);
+        Double_t sigmaCharge = hTrackerClusterChargePerChamber->GetRMS();
+        hTrackerClusterChargePerChMean->SetBinContent(iCh+1, hTrackerClusterChargePerChamber->GetMean());
+        hTrackerClusterChargePerChMean->SetBinError(iCh+1, hTrackerClusterChargePerChamber->GetMeanError());
+        hTrackerClusterChargePerChSigma->SetBinContent(iCh+1, sigmaCharge);
+        hTrackerClusterChargePerChSigma->SetBinError(iCh+1, hTrackerClusterChargePerChamber->GetRMSError());
+        
+        TH1* hTrackerClusterMultiplicityPerChamber = GetRecPointsData(kTrackerClusterMultiplicityPerChamber+iCh);
+        Double_t sigmaSize = hTrackerClusterMultiplicityPerChamber->GetRMS();
+        hTrackerClusterMultiplicityPerChMean->SetBinContent(iCh+1, hTrackerClusterMultiplicityPerChamber->GetMean());
+        hTrackerClusterMultiplicityPerChMean->SetBinError(iCh+1, hTrackerClusterMultiplicityPerChamber->GetMeanError());
+        hTrackerClusterMultiplicityPerChSigma->SetBinContent(iCh+1, sigmaSize);
+        hTrackerClusterMultiplicityPerChSigma->SetBinError(iCh+1, hTrackerClusterMultiplicityPerChamber->GetRMSError());
+        
+        // loop over DE into chamber iCh
+        AliMpDEIterator it;
+        it.First(iCh);
+        while ( !it.IsDone()) {
+          
+          Int_t iDE = it.CurrentDEId();
+          
+          TH1* hTrackerClusterChargePerDE = GetRecPointsData(kTrackerClusterChargePerDE+iDE);
+          hTrackerClusterChargePerDEMean->SetBinContent(iDE+1, hTrackerClusterChargePerDE->GetMean());
+          Double_t nClusters = hTrackerClusterChargePerDE->GetEntries();
+          if (nClusters > 1) hTrackerClusterChargePerDEMean->SetBinError(iDE+1, sigmaCharge/TMath::Sqrt(nClusters));
+          else hTrackerClusterChargePerDEMean->SetBinError(iDE+1, hTrackerClusterChargePerChamber->GetXaxis()->GetXmax());
+          
+          TH1* hTrackerClusterMultiplicityPerDE = GetRecPointsData(kTrackerClusterMultiplicityPerDE+iDE);
+          hTrackerClusterMultiplicityPerDEMean->SetBinContent(iDE+1, hTrackerClusterMultiplicityPerDE->GetMean());
+          nClusters = hTrackerClusterMultiplicityPerDE->GetEntries();
+          if (nClusters > 1) hTrackerClusterMultiplicityPerDEMean->SetBinError(iDE+1, sigmaSize/TMath::Sqrt(nClusters));
+          else hTrackerClusterMultiplicityPerDEMean->SetBinError(iDE+1, hTrackerClusterMultiplicityPerChamber->GetXaxis()->GetXmax());
+          
+          it.Next();
+        }
+        
       }
       
     }
@@ -975,12 +977,17 @@ void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
     /// make QA for rawdata
 
-    if ( ! fIsInitRaws ) {
+  if ( ! GetRawsData(0) )
+    InitRaws() ;
+
+  if ( ! fIsInitRaws ) {
       AliWarningStream() 
         << "Skipping function due to a failure in Init" << endl;
       return;
     }    
 
+    // Check id histograms already created for this Event Specie
+  
   if ( rawReader->GetType() == AliRawEventHeaderBase::kPhysicsEvent ) 
   {
     rawReader->Reset();
@@ -1081,6 +1088,11 @@ void AliMUONQADataMakerRec::MakeRawsTrigger(AliRawReader* rawReader)
 void AliMUONQADataMakerRec::MakeDigits(TTree* digitsTree)         
 {
   /// makes data from Digits
+
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+ 
   if (!fDigitStore)
     fDigitStore = AliMUONVDigitStore::Create(*digitsTree);
   fDigitStore->Connect(*digitsTree, false);
@@ -1102,7 +1114,11 @@ void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 {
 	/// Fill histograms from treeR
 	
-	if (fIsInitRecPointsTracker) MakeRecPointsTracker(clustersTree);
+  // Check id histograms already created for this Event Specie
+  if ( ! GetRecPointsData(0) )
+    InitRecPoints() ;
+ 
+  if (fIsInitRecPointsTracker) MakeRecPointsTracker(clustersTree);
 	if (fIsInitRecPointsTrigger) MakeRecPointsTrigger(clustersTree);
 }
 
@@ -1212,11 +1228,15 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
 {
   /// make QA data from ESDs
   
+  // Check id histograms already created for this Event Specie
+  if ( ! GetESDsData(0) )
+    InitESDs() ;
+ 
   if ( ! fIsInitESDs ) {
     AliWarningStream() 
     << "Skipping function due to a failure in Init" << endl;
     return;
-  }    
+  }  
   
   // load ESD event in the interface
   AliMUONESDInterface esdInterface;
@@ -1316,6 +1336,7 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQAv1::TASKINDEX_t task)
   /// Display trigger information in a user-friendly way:
   /// from local board and strip numbers to their position on chambers
   //
+  
 
   if(task!=AliQAv1::kRECPOINTS && task!=AliQAv1::kRAWS) return;
 

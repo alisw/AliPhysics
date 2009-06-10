@@ -28,17 +28,18 @@ public:
                           AliITSRawStreamSPDErrorLog *aliITSRawStreamSPDErrorLog = NULL); //ctor
   AliITSQASPDDataMakerRec(const AliITSQASPDDataMakerRec& qadm);
   AliITSQASPDDataMakerRec& operator = (const AliITSQASPDDataMakerRec& qac);
-  virtual void InitRaws();
-  virtual void InitDigits();
-  virtual void InitRecPoints();
-  virtual void MakeRaws(AliRawReader *rawReader);
-  virtual void MakeRecPoints(TTree *clustersTree);
-  virtual void MakeDigits(TClonesArray* /*digits*/)  {return;}
-  virtual void MakeDigits(TTree *clustersTree);
-  virtual void StartOfDetectorCycle();
-  virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
+  virtual Int_t InitRaws();
+  virtual Int_t InitDigits();
+  virtual Int_t InitRecPoints();
+  virtual Int_t MakeRaws(AliRawReader *rawReader);
+  virtual Int_t MakeRecPoints(TTree *clustersTree);
+  virtual Int_t MakeDigits(TClonesArray* /*digits*/)  {return 0;}
+  virtual Int_t MakeDigits(TTree *clustersTree);
+  virtual void  StartOfDetectorCycle();
+  virtual void  EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASPDDataMakerRec();   // dtor
   Int_t GetOffset(AliQAv1::TASKINDEX_t task);
+  void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
 
 private: 
@@ -54,7 +55,7 @@ private:
   Int_t   fSPDhDigitsTask;                    // number of booked SPD histograms for the RecPoints Task
   Int_t   fSPDhRecPointsTask;                 // number of booked SPD histograms for the RecPoints Task
   Int_t   fGenRawsOffset;                     // QAchecking Raws offset
-  Int_t   fGenDigitsOffset;                   // QAchecking RecPoints offset
+  Int_t   fGenDigitsOffset;                   // QAchecking Digits offset
   Int_t   fGenRecPointsOffset;                // QAchecking RecPoints offset
   AliITSRawStreamSPDErrorLog *fAdvLogger;  // pointer to special error logger object
 

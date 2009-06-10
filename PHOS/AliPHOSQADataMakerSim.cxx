@@ -127,6 +127,11 @@ void AliPHOSQADataMakerSim::MakeHits()
 {
   //make QA data from Hits
   
+  // Check id histograms already created for this Event Specie
+  if ( ! GetHitsData(kHits) )
+    InitHits() ;
+  
+  
   TIter next(fHits) ; 
   AliPHOSHit * hit ; 
   while ( (hit = dynamic_cast<AliPHOSHit *>(next())) ) {
@@ -159,8 +164,12 @@ void AliPHOSQADataMakerSim::MakeHits(TTree * hitTree)
 void AliPHOSQADataMakerSim::MakeDigits(TClonesArray * digits)
 {
   // makes data from Digits
-
-    GetDigitsData(1)->Fill(digits->GetEntriesFast()) ; 
+  
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(kDigits) )
+    InitDigits() ;
+  
+  GetDigitsData(1)->Fill(digits->GetEntriesFast()) ; 
     TIter next(digits) ; 
     AliPHOSDigit * digit ; 
     while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
@@ -189,12 +198,17 @@ void AliPHOSQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
 {
   // makes data from SDigits
   
-	GetSDigitsData(1)->Fill(sdigits->GetEntriesFast()) ; 
-    TIter next(sdigits) ; 
-    AliPHOSDigit * sdigit ; 
-    while ( (sdigit = dynamic_cast<AliPHOSDigit *>(next())) ) {
-      GetSDigitsData(kSDigits)->Fill( sdigit->GetEnergy()) ;
-    } 
+  
+  // Check id histograms already created for this Event Specie
+  if ( ! GetSDigitsData(kSDigits) )
+    InitSDigits() ;
+
+  GetSDigitsData(1)->Fill(sdigits->GetEntriesFast()) ; 
+  TIter next(sdigits) ; 
+  AliPHOSDigit * sdigit ; 
+  while ( (sdigit = dynamic_cast<AliPHOSDigit *>(next())) ) {
+    GetSDigitsData(kSDigits)->Fill( sdigit->GetEnergy()) ;
+  } 
 }
 
 //____________________________________________________________________________

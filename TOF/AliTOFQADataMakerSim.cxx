@@ -161,6 +161,10 @@ void AliTOFQADataMakerSim::MakeHits(TClonesArray * hits)
   //make QA data from Hits
   //
 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetHitsData(0) )
+    InitHits() ;
+  
   Int_t in[5];
   Int_t out[5];
 
@@ -197,7 +201,7 @@ void AliTOFQADataMakerSim::MakeHits(TTree * hitTree)
   //
   if(!hitTree){
     AliError("can't get the tree with TOF hits !");
-    return;
+    return; 
   }	
 
   TBranch * branch = hitTree->GetBranch("TOF") ;
@@ -234,6 +238,11 @@ void AliTOFQADataMakerSim::MakeDigits(TClonesArray * digits)
   //
   // makes data from Digits
   //
+ 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+  
   Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;
   Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
   Int_t in[5];
@@ -290,6 +299,10 @@ void AliTOFQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
   // makes data from SDigits
   //
 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetSDigitsData(0) )
+    InitSDigits() ;
+  
   Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;
   Int_t in[5];
   Int_t out[5];

@@ -180,6 +180,10 @@ void AliTRDQADataMakerSim::MakeHits(TClonesArray * hits)
   // Make QA data from Hits
   //
 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetHitsData(0) )
+    InitHits() ;
+
   TIter next(hits); 
   AliTRDhit * hit; 
 
@@ -205,7 +209,7 @@ void AliTRDQADataMakerSim::MakeHits(TTree * hitTree)
 
   TBranch *branch = hitTree->GetBranch("TRD");
   if (!CheckPointer(branch, "TRD hits branch")) return;
-
+  
   Int_t nhits = (Int_t)(hitTree->GetTotBytes()/sizeof(AliTRDhit));
   TClonesArray *hits = new TClonesArray("AliTRDhit", nhits+1000);
   TClonesArray *tmp = new TClonesArray("AliTRDhit", 1000);
@@ -237,6 +241,10 @@ void AliTRDQADataMakerSim::MakeDigits(TClonesArray * digits)
   // Makes data from Digits
   //
 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
+  
   TIter next(digits) ; 
   AliTRDdigit * digit ; 
   
@@ -257,7 +265,9 @@ void AliTRDQADataMakerSim::MakeDigits(TTree * digits)
   //
   // Makes data from digits tree
   //
-
+  // Check id histograms already created for this Event Specie
+  if ( ! GetDigitsData(0) )
+    InitDigits() ;
   // Info("Make digits", "From a tree");
 
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
@@ -285,18 +295,18 @@ void AliTRDQADataMakerSim::MakeDigits(TTree * digits)
       Int_t nTbins = digitsIn->GetNtime();
       
       for(Int_t row = 0; row < nRows; row++) 
-	for(Int_t col = 0; col < nCols; col++) 
-	  for(Int_t time = 0; time < nTbins; time++) 
-	    {   
-	      Float_t signal = digitsIn->GetData(row,col,time);
-	      if (signal < 1) continue;
-	      histDet->Fill(i);
-	      histTime->Fill(time);
-	      histSignal->Fill(signal);
-	    }
-
-    //delete digitsIn;
-  }
+        for(Int_t col = 0; col < nCols; col++) 
+          for(Int_t time = 0; time < nTbins; time++) 
+            {   
+              Float_t signal = digitsIn->GetData(row,col,time);
+              if (signal < 1) continue;
+              histDet->Fill(i);
+              histTime->Fill(time);
+              histSignal->Fill(signal);
+            }
+      
+      //delete digitsIn;
+    }
   delete digitsManager;
 }
 
@@ -307,6 +317,10 @@ void AliTRDQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
   // Makes data from Digits
   //
 
+  // Check id histograms already created for this Event Specie
+  if ( ! GetSDigitsData(0) )
+    InitSDigits() ;
+  
   TIter next(sdigits) ; 
   AliTRDdigit * digit ; 
   while ( (digit = dynamic_cast<AliTRDdigit *>(next())) ) {
@@ -323,7 +337,10 @@ void AliTRDQADataMakerSim::MakeSDigits(TTree * digits)
   //
   // Makes data from SDigits
   //
-
+  // Check id histograms already created for this Event Specie
+  if ( ! GetSDigitsData(0) )
+    InitSDigits() ;
+  
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
   digitsManager->SetSDigits(kTRUE);
   digitsManager->CreateArrays();

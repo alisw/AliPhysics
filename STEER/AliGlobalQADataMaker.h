@@ -27,13 +27,15 @@ public:
   AliGlobalQADataMaker(const AliQADataMakerRec& qadm):
 	AliQADataMakerRec(qadm) {;}
 
+  void InitRecPointsForTracker() { InitRecPoints(); }
+
 private:
 	void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
 
 	void InitRaws(); 
-	void InitRecPoints();
+  void InitRecPoints();
   void InitESDs();
-
+  
 	void MakeRaws(AliRawReader* rawReader) ; 
   void MakeESDs(AliESDEvent *event);
 

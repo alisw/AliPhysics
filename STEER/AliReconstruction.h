@@ -274,7 +274,6 @@ private:
   Int_t  fQACycles[     AliQAv1::kNDET];  // # events over which QA data are accumulated
   Bool_t fQAWriteExpert[AliQAv1::kNDET];  // Flag to save or not expert QA data
   TString               fQADetectors ;  // list of detectors to be QA'ed 	
-  AliQAManager * fQAManager    ;   //! steering class to run QA
   TString               fQATasks ;      // list of QA tasks to be performed	
   Bool_t                fRunQA ;        // Run QA flag
   Bool_t                fRunGlobalQA;   // Run global QA flag
