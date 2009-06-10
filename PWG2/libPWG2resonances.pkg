@@ -5,6 +5,7 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnCut.cxx \
       RESONANCES/AliRsnCutStd.cxx \
       RESONANCES/AliRsnCutBetheBloch.cxx \
+      RESONANCES/AliRsnCutESDPrimary.cxx \
       RESONANCES/AliRsnCutSet.cxx \
       RESONANCES/AliRsnCutMgr.cxx \
       RESONANCES/AliRsnExpression.cxx \
@@ -12,8 +13,8 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnPIDDefESD.cxx \
       RESONANCES/AliRsnEvent.cxx \
       RESONANCES/AliRsnPairDef.cxx \
-      RESONANCES/AliRsnHistoDef.cxx \
       RESONANCES/AliRsnFunction.cxx \
+      RESONANCES/AliRsnFunctionAxis.cxx \
       RESONANCES/AliRsnPair.cxx \
       RESONANCES/AliRsnVATProcessInfo.cxx \
       RESONANCES/AliRsnVAnalysisTaskSE.cxx \
