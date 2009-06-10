@@ -183,7 +183,6 @@ void AliAnalysisKinkESDMC::CreateOutputObjects()
    fListOfHistos->Add(fptKink);
    fListOfHistos->Add(fcodeH);
    fListOfHistos->Add(fdcodeH);
-   fListOfHistos->Add(fdcodeH);
    fListOfHistos->Add(fAngMomK);
    fListOfHistos->Add(fAngMomPi);
    fListOfHistos->Add(fRpr);
