@@ -110,7 +110,7 @@ void AliTriggerInput::Print( const Option_t* ) const
    cout << "Trigger Input:" << endl; 
    cout << "  Name:        " << GetName() << endl;
    cout << "  Detector:    " << GetTitle() << "(Id=" << (Int_t)fDetectorId << ")" << endl;
-   cout << "  Level:       " << fLevel << endl;
+   cout << "  Level:       " << (Int_t)fLevel << endl;
    cout << "  Signature:   " << fSignature << endl;
    cout << "  Number:      " << (Int_t)TMath::Log2(fMask) << endl;
    if (IsActive())
