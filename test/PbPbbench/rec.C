@@ -19,7 +19,6 @@ void rec() {
   TStopwatch timer;
   timer.Start();
   reco.Run();
-  reco.MergeQA() ; 
   timer.Stop();
   timer.Print();
 }
