@@ -272,12 +272,8 @@ void AliCFUnfolding::CreateEstMeasured() {
 
 
   // clean the measured estimate spectrum
-  for (Long_t i=0; i<fMeasuredEstimate->GetNbins(); i++) {
-    fMeasuredEstimate->GetBinContent(i,fCoordinatesN_M);
-    fMeasuredEstimate->SetBinContent(fCoordinatesN_M,0.);
-    fMeasuredEstimate->SetBinError  (fCoordinatesN_M,0.);
-  }
-  
+  fMeasuredEstimate->Reset();
+
   THnSparse* priorTimesEff = (THnSparse*) fPrior->Clone();
   priorTimesEff->Multiply(fEfficiency);
 
@@ -359,7 +355,7 @@ void AliCFUnfolding::Unfold() {
     CreateInvResponse();
     CreateUnfolded();
     chi2 = GetChi2();
-    AliDebug(1,Form("Chi2 at iteration %d is %e",iIterBayes,chi2));
+    AliDebug(0,Form("Chi2 at iteration %d is %e",iIterBayes,chi2));
     if (fMaxChi2>0. && chi2<fMaxChi2) {
       break;
     }
@@ -387,11 +383,7 @@ void AliCFUnfolding::CreateUnfolded() {
 
 
   // clear the unfolded spectrum
-  for (Long_t i=0; i<fUnfolded->GetNbins(); i++) {
-    fUnfolded->GetBinContent(i,fCoordinatesN_T);
-    fUnfolded->SetBinContent(fCoordinatesN_T,0.);
-    fUnfolded->SetBinError  (fCoordinatesN_T,0.);
-  }
+  fUnfolded->Reset();
   
   for (Long_t iBin=0; iBin<fInverseResponse->GetNbins(); iBin++) {
     Double_t invResponseValue = fInverseResponse->GetBinContent(iBin,fCoordinates2N);
@@ -475,9 +467,9 @@ Double_t AliCFUnfolding::GetChi2() {
 
   Double_t chi2 = 0. ;
   for (Long_t iBin=0; iBin<fPrior->GetNbins(); iBin++) {
-    Double_t priorValue = fPrior->GetBinContent(iBin);
-//     chi2 += (priorValue>0. ? TMath::Power(fUnfolded->GetBinContent(iBin) - priorValue,2) / priorValue : 0.) ;
-    chi2 += (fUnfolded->GetBinError(iBin)>0. ? TMath::Power((fUnfolded->GetBinContent(iBin) - priorValue)/fUnfolded->GetBinError(iBin),2) / priorValue : 0.) ;
+    Double_t priorValue = fPrior->GetBinContent(iBin,fCoordinatesN_T);
+    Double_t error_unf  = fUnfolded->GetBinError(fCoordinatesN_T);
+    chi2 += (error_unf > 0. ? TMath::Power((fUnfolded->GetBinContent(fCoordinatesN_T) - priorValue)/error_unf,2) / priorValue : 0.) ;
   }
   return chi2;
 }

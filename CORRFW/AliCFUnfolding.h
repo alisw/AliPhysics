@@ -45,6 +45,7 @@ class AliCFUnfolding : public TNamed {
   THnSparse* GetEfficiency()      const {return fEfficiency;}
   THnSparse* GetUnfolded()        const {return fUnfolded;}
   THnSparse* GetEstMeasured()     const {return fMeasuredEstimate;}
+  THnSparse* GetMeasured()        const {return fMeasured;}
   THnSparse* GetConditional()     const {return fConditional;}
   TF1*       GetSmoothFunction()  const {return fSmoothFunction;}
 
