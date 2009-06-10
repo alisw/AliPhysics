@@ -31,7 +31,7 @@ AliAnalysisTaskCheckPerformanceCascade *AddTaskCheckPerformanceCascade(Short_t l
    if (mgr->GetMCtruthEventHandler()) outname += "MC";
    outname += "-CascadeList.root";
  
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCasc",
+	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCascMC",
 								   TList::Class(),
 								   AliAnalysisManager::kOutputContainer,
 								   outname );
