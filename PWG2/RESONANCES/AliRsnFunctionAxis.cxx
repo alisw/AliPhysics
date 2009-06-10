@@ -145,7 +145,7 @@ void AliRsnFunctionAxis::SetBins(Double_t min, Double_t max, Double_t step)
 }
 
 //_____________________________________________________________________________
-Double_t AliRsnFunctionAxis::Eval(AliRsnDaughter *daughter)
+Double_t AliRsnFunctionAxis::Eval(AliRsnDaughter* /*daughter*/)
 {
 //
 // EValuation method for single tracks
