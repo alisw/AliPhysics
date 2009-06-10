@@ -22,7 +22,6 @@
   TStopwatch timer;
   timer.Start();
   reco.Run("raw.root");
-  reco.MergeQA() ; 
   timer.Stop();
   timer.Print();
 }
