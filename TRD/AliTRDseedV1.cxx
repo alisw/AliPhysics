@@ -456,7 +456,7 @@ Float_t AliTRDseedV1::GetdQdl(Int_t ic, Float_t *dl) const
 // Using the linear approximation of the track inside one TRD chamber (TRD tracklet) 
 // the charge per unit length can be written as:
 // BEGIN_LATEX
-// #frac{dq}{dl} = #frac{q_{c}}{dx * #sqrt{1 + #(){#frac{dy}{dx}}^{2}_{fit} + #(){#frac{dy}{dx}}^{2}_{ref}}}
+// #frac{dq}{dl} = #frac{q_{c}}{dx * #sqrt{1 + #(){#frac{dy}{dx}}^{2}_{fit} + #(){#frac{dz}{dx}}^{2}_{ref}}}
 // END_LATEX
 // where qc is the total charge collected in the current time bin and dx is the length 
 // of the time bin. 
@@ -852,7 +852,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
 // on tracking information (variance in the r-phi direction) and estimated variance of the standard 
 // clusters (see AliTRDcluster::SetSigmaY2()) corrected for tilt (see GetCovAt()). From this the road is
 // BEGIN_LATEX
-// r_{y} = 3*#sqrt{12*(#sigma^{2}_{Kalman}(y) + #frac{#sigma^{2}_{cl}(y) + tg^{2}(#alpha_{L})#sigma^{2}_{cl}(z)}{1+tg^{2}(#alpha_{L})})}
+// r_{y} = 3*#sqrt{12*(#sigma^{2}_{Trk}(y) + #frac{#sigma^{2}_{cl}(y) + tg^{2}(#alpha_{L})#sigma^{2}_{cl}(z)}{1+tg^{2}(#alpha_{L})})}
 // r_{z} = 1.5*L_{pad}
 // END_LATEX
 // 

@@ -144,12 +144,21 @@ TObjArray * AliTRDcheckPID::Histos(){
   fContainer->AddAt(h, kdEdxSlice);
 
   // histos of the pulse height distribution for all 5 particle species and 11 momenta 
-  if(!(h = (TH2F*)gROOT->FindObject("PH"))){
-    h = new TProfile2D("PH", "", 
+  TObjArray *fPH = new TObjArray(2);
+  fPH->SetOwner(); fPH->SetName("PH");
+  fContainer->AddAt(fPH, kPH);
+  if(!(h = (TProfile2D*)gROOT->FindObject("PHT"))){
+    h = new TProfile2D("PHT", "", 
       xBins, -0.5, xBins - 0.5,
       AliTRDtrackerV1::GetNTimeBins(), -0.5, AliTRDtrackerV1::GetNTimeBins() - 0.5);
   } else h->Reset();
-  fContainer->AddAt(h, kPH);
+  fPH->AddAt(h, 0);
+  if(!(h = (TProfile2D*)gROOT->FindObject("PHX"))){
+    h = new TProfile2D("PHX", "", 
+      xBins, -0.5, xBins - 0.5,
+      AliTRDtrackerV1::GetNTimeBins(), 0., .5*AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght());
+  } else h->Reset();
+  fPH->AddAt(h, 0);
 
   // histos of the number of clusters distribution for all 5 particle species and 11 momenta 
   if(!(h = (TH2F*)gROOT->FindObject("NClus"))){
@@ -523,11 +532,14 @@ TH1 *AliTRDcheckPID::PlotPH(const AliTRDtrackV1 *track)
   
   if(!CheckTrackQuality(fTrack)) return 0x0;
   
-  TProfile2D *hPH;
-  if(!(hPH = dynamic_cast<TProfile2D *>(fContainer->At(kPH)))){
+  TObjArray *arr = 0x0;
+  TProfile2D *hPHX, *hPHT;
+  if(!(arr = dynamic_cast<TObjArray *>(fContainer->At(kPH)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
+  hPHT = (TProfile2D*)arr->At(0);
+  hPHX = (TProfile2D*)arr->At(1);
 
   Int_t pdg = 0;
   Float_t momentum = 0.;
@@ -550,12 +562,14 @@ TH1 *AliTRDcheckPID::PlotPH(const AliTRDtrackV1 *track)
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
     tracklet = fTrack->GetTracklet(iChamb);
     if(!tracklet) continue;
+    Float_t x0 = tracklet->GetX0(); 
     for(Int_t iClus = 0; iClus < AliTRDtrackerV1::GetNTimeBins(); iClus++){
       if(!(TRDcluster = tracklet->GetClusters(iClus))) continue;
-      hPH -> Fill(iBin, TRDcluster->GetLocalTimeBin(), tracklet->GetdQdl(iClus));
+      hPHT -> Fill(iBin, TRDcluster->GetLocalTimeBin(), TMath::Abs(TRDcluster->GetQ()));
+      hPHX -> Fill(iBin, x0 - TRDcluster->GetX(), tracklet->GetdQdl(iClus));
     }
   }
-  return hPH;
+  return hPHT;
 }
 
 
@@ -730,6 +744,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
   Bool_t FIRST = kTRUE;
   TGraphErrors *g = 0x0;
   TAxis *ax = 0x0;
+  TObjArray *arr = 0x0;
   TH1 *h1 = 0x0, *h=0x0;
   TH2 *h2 = 0x0;
   TList *content = 0x0;
@@ -822,28 +837,55 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
   case kdEdxSlice:
     break;
   case kPH:{
+    gPad->Divide(2, 1, 1.e-5, 1.e-5);
+    TList *l=gPad->GetListOfPrimitives();
+
     // save 2.0 GeV projection as reference
     TLegend *legPH = new TLegend(.4, .7, .68, .98);
     legPH->SetBorderSize(1);
-    FIRST = kTRUE;
-    if(!(h2 = (TH2F*)(fContainer->At(kPH)))) break;;
     legPH->SetHeader("Particle Species");
-    gPad->SetMargin(0.1, 0.01, 0.1, 0.01);
+    if(!(arr = (TObjArray*)(fContainer->At(kPH)))) break;
+    if(!(h2 = (TProfile2D*)(arr->At(0)))) break;
+
+    TVirtualPad *pad = ((TVirtualPad*)l->At(0));pad->cd();
+    pad->SetMargin(0.1, 0.01, 0.1, 0.01);
+    FIRST = kTRUE;
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
-      h1 = h2->ProjectionY("py", bin, bin);
+      h1 = h2->ProjectionY("pyt", bin, bin);
       if(!h1->GetEntries()) continue;
       h1->SetMarkerStyle(24);
       h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
       if(FIRST){
         h1->GetXaxis()->SetTitle("t_{drift} [100*ns]");
+        h1->GetYaxis()->SetTitle("<dQ/dt> [a.u.]");
+      }
+      h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
+      legPH->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
+      FIRST = kFALSE;
+    }
+
+    pad = ((TVirtualPad*)l->At(1));pad->cd();
+    pad->SetMargin(0.1, 0.01, 0.1, 0.01);
+    if(!(h2 = (TProfile2D*)(arr->At(1)))) break;
+    FIRST = kTRUE;
+    for(Int_t is=0; is<AliPID::kSPECIES; is++){
+      Int_t bin = FindBin(is, 2.);
+      h1 = h2->ProjectionY("pyx", bin, bin);
+      if(!h1->GetEntries()) continue;
+      h1->SetMarkerStyle(24);
+      h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
+      h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
+      if(FIRST){
+        h1->GetXaxis()->SetTitle("x_{drift} [cm]");
         h1->GetYaxis()->SetTitle("<dQ/dl> [a.u./cm]");
       }
       h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
       legPH->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
       FIRST = kFALSE;
     }
+
     if(FIRST) break;
     legPH->Draw();
     gPad->SetLogy(0);

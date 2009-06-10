@@ -270,13 +270,22 @@ Double_t AliTRDcluster::GetSX(Int_t tb, Double_t z)
 {
 // Returns the error parameterization in the radial direction for TRD clusters as function of 
 // the calibrated time bin (tb) and optionally distance to anode wire (z). By default (no z information) 
-// the largest value over all cluster to wire values is chosen.
+// the mean value over all cluster to wire distance is chosen.
 // 
-// The result is displayed in the figure below as a 2D plot and also as the projection on the drift axis. 
+// There are several contributions which are entering in the definition of the radial errors of the clusters. 
+// Although an analytic defition should be possible for the moment this is not yet available but instead a 
+// numerical parameterization is provided (see AliTRDclusterResolution::ProcessSigma() for the calibration 
+// method). The result is displayed in the figure below as a 2D plot and also as the projection on the drift axis. 
 //
 //Begin_Html
 //<img src="TRD/clusterXerrorDiff2D.gif">
 //End_Html
+//
+// Here is a list of uncertainty components:
+// - Time Response Function (TRF) - the major contribution. since TRF is also not symmetric (even if tail is 
+//   cancelled) it also creates a systematic shift dependent on the charge distribution before and after the cluster.
+// - longitudinal diffusion - increase the width of TRF and scales with square root of drift length
+// - variation in the drift velocity within the drift cell 
 //
 // Author
 // A.Bercuci <A.Bercuci@gsi.de>
@@ -477,7 +486,9 @@ Double_t AliTRDcluster::GetXcorr(Int_t tb, Double_t z)
 // Drift length correction [cm]. Due to variation of mean drift velocity along the drift region
 // from nominal vd at xd->infinity. For drift velocity determination based on tracking information 
 // the correction should be negligible.
-//
+//Begin_Html
+//<img src="TRD/clusterXcorr.gif">
+//End_Html
 // TODO to be parametrized in term of drift velocity at infinite drift length
 // A.Bercuci (Mar 28 2009)
 
@@ -545,6 +556,9 @@ Double_t AliTRDcluster::GetXcorr(Int_t tb, Double_t z)
 Double_t AliTRDcluster::GetYcorr(Int_t ly, Float_t y)
 {
 // PRF correction for the LUT r-phi cluster shape.
+//Begin_Html
+//<img src="TRD/clusterYcorr.gif">
+//End_Html
 
   const Float_t cy[AliTRDgeometry::kNlayer][3] = {
     { 4.014e-04, 8.605e-03, -6.880e+00},
@@ -567,7 +581,7 @@ Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const /*q*/, 
 // Input parameters:
 //   t0 - calibration aware trigger delay [us]
 //   vd - drift velocity in the region of the cluster [cm/us]
-//   z  - distance to the anode wire [cm]. By default 0.2 !!
+//   z  - distance to the anode wire [cm]. By default average over the drift cell width.
 //   q & xq - array of charges and cluster positions from previous clusters in the tracklet [a.u.]
 // Output values :
 //   return x position of the cluster with respect to the 
@@ -580,16 +594,21 @@ Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const /*q*/, 
 // END_LATEX
 // where t_0 is the delay of the trigger signal. t_cause is the causality delay between ionisation electrons hitting 
 // the anode and the registration of maximum signal by the electronics - it is due to the rising time of the TRF 
-// convoluted with the diffusion width. t_TC is the residual charge from previous bins due to residual tails after tail 
-// cancellation.
+// A second order correction here comes from the fact that the time spreading of charge at anode is the convolution of
+// TRF with the diffusion and thus cross-talk between clusters before and after local clusters changes with drift length. 
+// t_TC is the residual charge from previous (in time) clusters due to residual tails after tail cancellation. 
+// This tends to push cluster forward and depends on the magnitude of their charge.
 //
-// The drift velocity is considered to vary linearly with the drift length (independent of the distance to the anode wire 
-// in the z direction). Thus one can write the calculate iteratively the drift length from the expression:
+// The drift velocity varies with the drift length (and distance to anode wire) as described by cell structure simulation. 
+// Thus one, in principle, can calculate iteratively the drift length from the expression:
 // BEGIN_LATEX
-// x = t_{drift}(x)*v_{drfit}(x)
+// x = t_{drift}(x)*v_{drift}(x)
 // END_LATEX
+// In practice we use a numerical approach (AliTRDcluster::GetXcorr()) to correct for anisochronity obtained from MC 
+// comparison (see AliTRDclusterResolution::ProcessSigma()). Also the calibration of 0 approximation (no x dependence)
+// for t_cause is obtained from MC comparisons and impossible to disentangle in real life from trigger delay.
 //
-// Authors
+// Author
 // Alex Bercuci <A.Bercuci@gsi.de>
 //
 
@@ -644,8 +663,12 @@ Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const /*q*/, 
 //_____________________________________________________________________________
 Float_t AliTRDcluster::GetYloc(Double_t y0, Double_t s2, Double_t W, Double_t *const y1, Double_t *const y2)
 {
+// Calculate, in tracking cooordinate system, the r-phi offset the cluster from the middle of the center pad. Three possible methods are implemented:
+//   - Center of Gravity (COG) see AliTRDcluster::GetDYcog()
+//   - Look-up Table (LUT) see AliTRDcluster::GetDYlut()
+//   - Gauss shape (GAUS) see AliTRDcluster::GetDYgauss()
+// In addition for the case of LUT method position corrections are also applied (see AliTRDcluster::GetYcorr())
 
-  //printf("  s[%3d %3d %3d] w[%f %f] yr[%f %f]\n", fSignals[2], fSignals[3], fSignals[4], w1/(w1+w2), w2/(w1+w2), y1r*W, y2r*W);
   if(IsRPhiMethod(kCOG)) GetDYcog();
   else if(IsRPhiMethod(kLUT)) GetDYlut();
   else if(IsRPhiMethod(kGAUS)) GetDYgauss(s2/W/W, y1, y2);

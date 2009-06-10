@@ -763,6 +763,19 @@ void AliTRDclusterResolution::ProcessCenterPad()
 // implemented in ProcessSigma(). For more details on cluster error parameterization please see also 
 // AliTRDcluster::SetSigmaY2()
 // 
+// The representation of dy=f(y_cen, x_drift| layer) can be also used to estimate the systematic shift in the r-phi 
+// coordinate resulting from imperfection in the cluster shape parameterization. From the expresion of the shift derived 
+// in ProcessMean() with phi=exb one gets: 
+// BEGIN_LATEX
+// <#Delta y>= <#delta x> * (tg(#alpha_{L})-h*dz/dx) + <#delta y - #delta x * tg(#alpha_{L})>
+// <#Delta y>(y_{cen})= -h*<#delta x>(x_{drift}, q_{cl}) * dz/dx + #delta y(y_{cen}, ...)
+// END_LATEX
+// where all dependences are made explicit. This last expression can be used in two ways:
+//   - by average on the dz/dx we can determine directly dy (the method implemented here) 
+//   - by plotting as a function of dzdx one can determine both dx and dy components in an independent method.
+//Begin_Html
+//<img src="TRD/clusterYcorr.gif">
+//End_Html
 // Author
 // Alexandru Bercuci <A.Bercuci@gsi.de>
 
