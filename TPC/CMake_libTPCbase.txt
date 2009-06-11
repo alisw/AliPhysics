@@ -10,7 +10,7 @@ set(SRCS
 	AliTPCmapper.cxx 
 	AliTPCROC.cxx AliTPCCalROC.cxx AliTPCCalPad.cxx AliTPCCalDet.cxx 
 	AliTPCcalibDB.cxx 
-	AliTPCAltroMapping.cxx AliTPCRawStream.cxx AliTPCRawStreamFast.cxx 
+	AliTPCAltroMapping.cxx AliTPCRawStream.cxx AliTPCRawStreamFast.cxx AliTPCRawStreamV3.cxx
 	AliTPCLaserTracks.cxx AliTPCSensorTemp.cxx  AliTPCSensorTempArray.cxx 
 	AliTPCCalibRawBase.cxx AliTPCCalibPedestal.cxx AliTPCCalibPulser.cxx   AliTPCCalibCE.cxx 
         AliTPCPreprocessor.cxx   AliTPCPreprocessorOnline.cxx 
