@@ -25,7 +25,6 @@
 #include "AliTPCpidESD.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
-#include "AliMathBase.h"
 
 ClassImp(AliTPCpidESD)
 
@@ -74,7 +73,8 @@ Double_t AliTPCpidESD::Bethe(Double_t betaGamma) const {
   //           2. for reconstructed PID
   //
   const Float_t kmeanCorrection =0.1;
-  Double_t bb=AliMathBase::BetheBlochAleph(betaGamma,fKp1,fKp2,fKp3,fKp4,fKp5);
+  Double_t bb=
+    AliExternalTrackParam::BetheBlochAleph(betaGamma,fKp1,fKp2,fKp3,fKp4,fKp5);
   Double_t meanCorrection =(1+(bb-1)*kmeanCorrection);
   bb *= meanCorrection;
   return bb;
