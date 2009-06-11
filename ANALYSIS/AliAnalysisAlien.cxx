@@ -501,6 +501,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       TIter next(arr);
       while ((os=(TObjString*)next())) {
          path = Form("%s/%s ", fGridDataDir.Data(), os->GetString().Data());
+         if (!gGrid->Cd(path)) continue;
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
          else file = Form("%s.xml", os->GetString().Data());
          // If local collection file does not exist, create it via 'find' command.
@@ -563,6 +564,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       // Process a full run range.
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
          path = Form("%s/%d ", fGridDataDir.Data(), irun);
+         if (!gGrid->Cd(path)) continue;
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
          else file = Form("%d.xml", irun);
          if (FileExists(file) && fNrunsPerMaster<2 && !TestBit(AliAnalysisGrid::kTest)) {
