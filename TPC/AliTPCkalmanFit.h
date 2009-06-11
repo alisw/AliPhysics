@@ -35,6 +35,7 @@ public:
   void PropagateTime(Int_t time);
   void Update(const AliTPCkalmanFit * kalman);
 
+  static AliTrackPointArray * SortPoints(AliTrackPointArray &points);
   static AliTrackPointArray * MakePointArrayLinear(Double_t alpha, Double_t y0, Double_t z0, Double_t ky, Double_t kz, Double_t err=0.02); 
   void  ApplyCalibration(AliTrackPointArray *array, Double_t csign);
   Bool_t  CheckCovariance(TMatrixD &covar, Float_t maxEl);

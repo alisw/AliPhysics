@@ -713,6 +713,40 @@ void  AliTPCkalmanFit::UpdateLinear(AliTrackPoint &point, TTreeSRedirector *debu
 }
 
 
+AliTrackPointArray * AliTPCkalmanFit::SortPoints(AliTrackPointArray &points){
+  //
+  //Creates the array  - points sorted according radius - neccessay for kalman fit
+  // 
+  //
+  // 0. choose the frame - rotation angle
+  //
+  Int_t npoints = points.GetNPoints();
+  if (npoints<1) return 0;
+  Double_t currentAlpha = TMath::ATan2(points.GetY()[npoints-1]-points.GetY()[0], points.GetX()[npoints-1]-points.GetX()[0]);  
+  Double_t ca = TMath::Cos(currentAlpha);
+  Double_t sa = TMath::Sin(currentAlpha);
+  //
+  // 1. sort the points
+  //
+  Double_t *rxvector = new Double_t[npoints];
+  Int_t    *indexes  = new Int_t[npoints];
+  for (Int_t ipoint=0; ipoint<npoints-1; ipoint++){
+    rxvector[ipoint]=ca*points.GetX()[ipoint]+sa*points.GetY()[ipoint];
+  }
+  TMath::Sort(npoints, rxvector,indexes,kFALSE);
+  AliTrackPoint point;
+  AliTrackPointArray *pointsSorted= new AliTrackPointArray(npoints);
+  for (Int_t ipoint=0; ipoint<npoints; ipoint++){
+    if (!points.GetPoint(point,indexes[ipoint])) continue;
+    pointsSorted->AddPoint(ipoint,&point);
+  }
+  delete [] rxvector;
+  delete [] indexes;
+  return pointsSorted;
+}
+
+
+
 AliTrackPointArray * AliTPCkalmanFit::MakePointArrayLinear(Double_t alpha, Double_t y0, Double_t z0, Double_t ky, Double_t kz, Double_t err){
   //
   //
