@@ -15,6 +15,7 @@
 #include <TObjArray.h>
 
 class AliEveMacroExecutor;
+class AliEveEventSelector;
 
 class AliRunLoader;
 class AliESDEvent;
@@ -62,9 +63,6 @@ public:
   virtual void  NextEvent();
   virtual void  PrevEvent();
   virtual void  Close();
-  Bool_t        FindNextByTrigger(Int_t& i);
-  Bool_t        FindPrevByTrigger(Int_t& i);
-
 
   Int_t         GetEventId()         const { return fEventId; }
   AliRunLoader* GetRunLoader()       const { return fRunLoader; }
@@ -77,6 +75,7 @@ public:
   TTree*        GetAODTree()         const { return fAODTree; }
   AliAODEvent*  GetAOD()             const { return fAOD;     }
   virtual const Text_t* GetTitle()   const { return fPath.Data(); }
+  AliEveEventSelector* GetEventSelector() const { return fPEventSelector; }
   TString       GetEventInfoHorizontal() const;
   TString       GetEventInfoVertical()   const;
 
@@ -110,11 +109,6 @@ public:
   void          SetAutoLoadTime(Float_t time);
   void          SetAutoLoad(Bool_t autoLoad);
   void          AutoLoadNextEvent();
-
-  Bool_t        GetSelectOnTriggerType()     const { return fSelectOnTriggerType; }
-  TString       GetTriggerType()             const { return fTriggerType; }
-  void          SetTriggerType(const TString& triggertype) { fTriggerType = triggertype; }
-  void          SetSelectOnTriggerType(Bool_t sel)         { fSelectOnTriggerType = sel; }
 
   Bool_t        AreEventFilesOpened()    const { return fIsOpen;       }
   Bool_t        IsEventAvailable()       const { return fHasEvent;     }
@@ -150,13 +144,12 @@ protected:
   Bool_t        fHasEvent;              // Is an event available.
   Bool_t        fExternalCtrl;          // Are we under external event-loop.
 
-  Bool_t        fSelectOnTriggerType;   // Whether to select on trigger-type.
-  TString       fTriggerType;           // Trigger-type to select on.
-
   AliEveMacroExecutor *fExecutor;       // Executor for std macros
 
   TEveElementList     *fTransients;     // Container for additional transient (per event) elements.
   TEveElementList     *fTransientLists; // Container for lists of transient (per event) elements.
+
+  AliEveEventSelector* fPEventSelector; // Event filter
 
   TList        *fSubManagers;           // Dependent event-managers, used for event embedding.
 

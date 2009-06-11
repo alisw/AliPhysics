@@ -230,6 +230,12 @@ void visscan_init(Bool_t show_extra_geo=kFALSE)
   new AliQAHistViewer(gClient->GetRoot(), 600, 400, kTRUE);
   slot->StopEmbedding("QA histograms");
 
+  //event selection tab
+  slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
+  slot->StartEmbedding();
+  new AliEveEventSelectorWindow(gClient->GetRoot(), 600, 400, AliEveEventManager::GetMaster()->GetEventSelector());
+  slot->StopEmbedding("Selections");
+
   browser->GetTabRight()->SetTab(1);
 
   browser->StartEmbedding(TRootBrowser::kBottom);

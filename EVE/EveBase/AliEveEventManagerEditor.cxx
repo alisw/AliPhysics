@@ -103,7 +103,6 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
   fNextEvent    (0),
   fLastEvent    (0),
   fRefresh      (0),
-  fTrigger      (0),
   fEventId      (0),
   fInfoLabel    (0),
   fAutoLoad     (0),
@@ -158,14 +157,6 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
     fAutoLoadTime->SetToolTip("Automatic event loading time in seconds.");
     fAutoLoadTime->Connect("ValueSet(Double_t)", cls, this, "DoSetAutoLoadTime()");
 
-    MkLabel(f, "||", 0, 8, 8);
-
-    MkLabel(f, "TRG select:", 0, 0, 4, 4);
-    fTrigger = new TGComboBox(f);
-    f->AddFrame(fTrigger, new TGLayoutHints(kLHintsNormal));
-    fTrigger->Resize(75,20);
-    //fTrigger->EnableTextInput(kTRUE);
-    fTrigger->Connect("Selected(const char*)", cls, this, "DoSetTriggerType(const char*)");
   }
 
   fEventInfo = new TGTextView(this, 400, 600);
@@ -251,23 +242,6 @@ void AliEveEventManagerWindow::DoSetAutoLoadTime()
 }
 
 //______________________________________________________________________________
-void AliEveEventManagerWindow::DoSetTriggerType(const char* type)
-{
-  // Slot for setting trigger type.
-
-  TString typestr = type;
-  if (typestr=="")
-  {
-    fM->SetSelectOnTriggerType(kFALSE);
-  }
-  else
-  {
-    fM->SetTriggerType( typestr );
-    fM->SetSelectOnTriggerType(kTRUE);
-  }
-}
-
-//______________________________________________________________________________
 void AliEveEventManagerWindow::Update()
 {
   // Update current event, number of available events, list of active triggers
@@ -290,8 +264,6 @@ void AliEveEventManagerWindow::Update()
   fAutoLoadTime->SetValue(fM->GetAutoLoadTime());
 
   fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
-
-  SetupTriggerSelect();
 
   Layout();
 }
@@ -332,44 +304,5 @@ TGLabel* AliEveEventManagerWindow::MkLabel(TGCompositeFrame* p,
   }
   p->AddFrame(l, new TGLayoutHints(kLHintsNormal, lo,ro,to,bo));
   return l;
-}
-
-void AliEveEventManagerWindow::SetupTriggerSelect()
-{
-  // Do nothing if already enabled.
-  if (fTrigger->GetNumberOfEntries() > 0)
-    return;
-
-  AliESDEvent* esd = fM->GetESD();
-  if (esd && fM->GetESDFile() != 0)
-  {
-    TString activetrg = esd->GetESDRun()->GetActiveTriggerClasses();  //Get list of active classes
-    TObjArray* activetrgarr = activetrg.Tokenize(" "); //break up the classes string, space as separator
-    Int_t entries = activetrgarr->GetEntries();  //how many triggerclasses
-    TString entry;  //to hold the triger class name
-    TObjString* entryobj;
-    if (entries == 0)
-    {
-      fTrigger->SetEnabled(kFALSE);  //no trigger classes
-    }
-    else
-    {
-      fTrigger->RemoveAll(); //some initial cleanup
-      fTrigger->SetEnabled(kTRUE);  //no trigger classes
-      fTrigger->AddEntry("",-1);  //first entry empty - select to not filter by trigger
-      for (Int_t i=0;i<entries;i++)
-      {
-	entryobj = (TObjString*)activetrgarr->At(i);
-	entry = entryobj->GetString();
-	fTrigger->AddEntry(entry.Data(), i);
-      }
-    }
-    fTrigger->Select(-1, kTRUE); //set default no filtering and emit
-    fTrigger->SetEnabled(kTRUE);
-  }
-  else
-  {
-    fTrigger->SetEnabled(kFALSE);
-  }
 }
 

@@ -16,6 +16,10 @@
 #pragma link C++ class AliEveEventManagerEditor+;
 #pragma link C++ class AliEveEventManagerWindow+;
 
+// AliEveEventSelector
+#pragma link C++ class AliEveEventSelector+;
+#pragma link C++ class AliEveEventSelectorWindow+;
+
 // AliEveMacro and AliEveMacroExecutor
 #pragma link C++ class AliEveMacro+;
 #pragma link C++ class AliEveMacroEditor+;

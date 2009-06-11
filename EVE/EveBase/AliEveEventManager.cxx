@@ -8,6 +8,7 @@
  **************************************************************************/
 
 #include "AliEveEventManager.h"
+#include "AliEveEventSelector.h"
 #include "AliEveMacroExecutor.h"
 #include <TEveManager.h>
 #include <TEveViewer.h>
@@ -122,6 +123,8 @@ void AliEveEventManager::InitInternals()
   fTransientLists = new TEveElementList("Transient Lists", "Containers of transient elements.");
   fTransientLists->IncDenyDestroy();
   gEve->AddToListTree(fTransientLists, kFALSE);
+
+  fPEventSelector = new AliEveEventSelector(this);
 }
 
 AliEveEventManager::AliEveEventManager(const TString& name) :
@@ -135,8 +138,8 @@ AliEveEventManager::AliEveEventManager(const TString& name) :
   fRawReader (0),
   fAutoLoad  (kFALSE), fAutoLoadTime (5.),     fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
-  fSelectOnTriggerType(kFALSE), fTriggerType(""),
   fExecutor    (0), fTransients(0), fTransientLists(0),
+  fPEventSelector(0),
   fSubManagers (0),
   fAutoLoadTimerRunning(kFALSE)
 {
@@ -156,8 +159,8 @@ AliEveEventManager::AliEveEventManager(const TString& name, const TString& path,
   fRawReader (0),
   fAutoLoad  (kFALSE), fAutoLoadTime (5),      fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
-  fSelectOnTriggerType(kFALSE), fTriggerType(""),
   fExecutor    (0), fTransients(0), fTransientLists(0),
+  fPEventSelector(0),
   fSubManagers (0),
   fAutoLoadTimerRunning(kFALSE)
 {
@@ -781,16 +784,13 @@ void AliEveEventManager::NextEvent()
   }
   else
   {
-    Int_t nexteventbytrigger=0;
-    if (fSelectOnTriggerType)
+    Int_t nextevent=0;
+    if (fPEventSelector->FindNext(nextevent))
     {
-      if (FindNextByTrigger(nexteventbytrigger)) //if not found do nothing
-        GotoEvent(nexteventbytrigger);
+      GotoEvent(nextevent);
     }
-    else if (fEventId < GetMaxEventId(kTRUE))
-      GotoEvent(fEventId + 1);
-    else
-      GotoEvent(0);
+    //else 
+    //  GotoEvent(fEventId + 1);
   }
 }
 
@@ -808,14 +808,13 @@ void AliEveEventManager::PrevEvent()
   {
     throw (kEH + "Event-loop is under external control.");
   }
-  Int_t nexteventbytrigger=0;
-  if (fSelectOnTriggerType)
+  Int_t nextevent=0;
+  if (fPEventSelector->FindPrev(nextevent))
   {
-    if (FindPrevByTrigger(nexteventbytrigger))
-      GotoEvent(nexteventbytrigger);
+    GotoEvent(nextevent);
   }
-  else
-    GotoEvent(fEventId - 1);
+  //else
+  //  GotoEvent(fEventId - 1);
 }
 
 void AliEveEventManager::Close()
@@ -1187,80 +1186,6 @@ void AliEveEventManager::AutoLoadNextEvent()
   if (fAutoLoad && !fExternalCtrl)
     StartAutoLoadTimer();
 }
-
-
-//------------------------------------------------------------------------------
-// Event selection by trigger
-//------------------------------------------------------------------------------
-
-Bool_t AliEveEventManager::FindNextByTrigger(Int_t& event)
-{
-  // Find next event that matches the trigger.
-  // If a matching event is not found, we loop around and eventually
-  // end up at the same event.
-
-  static const TEveException kEH("AliEveEventManager::FindNextByTrigger ");
-
-  if (!fESDTree) return kFALSE;
-  TString firedtrclasses;
-  for (Int_t i = fEventId+1; i<GetMaxEventId(kTRUE)+1; i++)
-  {
-    if (fESDTree->GetEntry(i) <= 0)
-      throw (kEH + "failed getting required event from ESD.");
-    firedtrclasses = fESD->GetFiredTriggerClasses();
-    if (firedtrclasses.Contains(fTriggerType))
-    {
-      event=i;
-      return kTRUE;
-    }
-  }
-  for (Int_t i = 0; i<fEventId+1; i++)
-  {
-    if (fESDTree->GetEntry(i) <= 0)
-      throw (kEH + "failed getting required event from ESD.");
-    firedtrclasses = fESD->GetFiredTriggerClasses();
-    if (firedtrclasses.Contains(fTriggerType))
-    {
-      event=i;
-      return kTRUE;
-    }
-  }
-  return kFALSE;
-}
-
-Bool_t AliEveEventManager::FindPrevByTrigger(Int_t& event)
-{
-  // Find previous event that matches the trigger.
-
-  static const TEveException kEH("AliEveEventManager::FindPrevByTrigger ");
-
-  if (!fESDTree) return kFALSE;
-  TString firedtrclasses;
-  for (Int_t i = fEventId-1; i>=0; i--)
-  {
-    if (fESDTree->GetEntry(i) <= 0)
-      throw (kEH + "failed getting required event from ESD.");
-    firedtrclasses = fESD->GetFiredTriggerClasses();
-    if (firedtrclasses.Contains(fTriggerType))
-    {
-      event=i;
-      return kTRUE;
-    }
-  }
-  for (Int_t i = GetMaxEventId(kTRUE); i>fEventId-1; i--)
-  {
-    if (fESDTree->GetEntry(i) <= 0)
-      throw (kEH + "failed getting required event from ESD.");
-    firedtrclasses = fESD->GetFiredTriggerClasses();
-    if (firedtrclasses.Contains(fTriggerType))
-    {
-      event=i;
-      return kTRUE;
-    }
-  }
-  return kFALSE;
-}
-
 
 //------------------------------------------------------------------------------
 // Post event-loading functions

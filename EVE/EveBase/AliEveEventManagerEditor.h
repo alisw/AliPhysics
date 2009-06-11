@@ -81,8 +81,6 @@ public:
   void DoSetAutoLoad();
   void DoSetAutoLoadTime();
 
-  void DoSetTriggerType(const char* type);
-
   void Update();
 
 protected:
@@ -93,8 +91,6 @@ protected:
   TGTextButton         *fNextEvent;    // Go to next event
   TGTextButton         *fLastEvent;    // Go to last event
   TGTextButton         *fRefresh;      // Refresh event-file state
-
-  TGComboBox           *fTrigger;
 
   TGNumberEntry        *fEventId;      // Display/edit current event id
   TGLabel              *fInfoLabel;    // Display last available event id
@@ -108,8 +104,6 @@ protected:
 			    Int_t lo=0, Int_t ro=0, Int_t to=0, Int_t bo=0);
   TGLabel* MkLabel(TGCompositeFrame* p, const char* txt, Int_t width,
 		   Int_t lo=0, Int_t ro=0, Int_t to=2, Int_t bo=0);
-
-  void SetupTriggerSelect();                //Sets up the trigger selection list
 
 private:
   AliEveEventManagerWindow(const AliEveEventManagerWindow&);            // Not implemented
