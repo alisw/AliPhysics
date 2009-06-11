@@ -86,20 +86,14 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
   PYQPAR.ienglu = fParams.fIenglu;
   PYQPAR.ianglu = fParams.fIanglu;
 
-  //  cout<<"in InitialStateHydjet::Initialize nhsel"<<fParams.fNhsel<<endl;
-
   // run a HYDJET event
   hyevnt_(); 
-  //  std::cout<<"in InitialStateHydjet after hyevnt"<<std::endl;
    
   //get number of particles in jets
-  Int_t numbJetPart = HYPART.njp;  //
-  Double_t  Bgen = HYFPAR.bgen;
-  Int_t  Njet = HYJPAR.njet;
-  Int_t  Nbcol = HYFPAR.nbcol;
-  
-  //  std::cout<<"in InitialStateHydjet::Initialize bgen "<<Bgen<<" njet "<<Njet<<" "<<" Nbcol "<<Nbcol<<std::endl;
-  //  std::cout<<"in InitialStateHydjet::Initialize numb jet part"<<numbJetPart<<std::endl;
+  //Int_t numbJetPart = HYPART.njp;  
+  //Double_t  Bgen = HYFPAR.bgen;
+  //Int_t  Njet = HYJPAR.njet;
+  //Int_t  Nbcol = HYFPAR.nbcol;
 
   if(fParams.fNhsel != 0) {   
     Int_t numbJetPart = HYPART.njp;
@@ -154,15 +148,13 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
     // get impact parameter    
     //    Double_t impactParameter = HYFPAR.bgen;
 
-
-    //    cout<<"in HYDRO part 1"<<endl;
     
     //effective volume for central     
     double dYl= 2 * fParams.fYlmax; //uniform distr. [-Ylmax; Ylmax]  
     if(fParams.fEtaType >0) dYl = TMath::Sqrt(2 * TMath::Pi()) * fParams.fYlmax ;  //Gaussian distr. 
-    Double_t volEffcent = 2 * TMath::Pi() * fParams.fTau * dYl * (fParams.fR * fParams.fR)/TMath::Power((fParams.fUmax),2)*((fParams.fUmax)*TMath::SinH((fParams.fUmax))-TMath::CosH((fParams.fUmax))+ 1);
-  
-    //    cout<<"in HYDRO part 2"<<HYFPAR.npart<<" " <<HYFPAR.npart0<<endl;
+    Double_t volEffcent = 2 * TMath::Pi() * fParams.fTau * dYl * 
+    (fParams.fR * fParams.fR)/TMath::Power((fParams.fUmax),2)*
+    ((fParams.fUmax)*TMath::SinH((fParams.fUmax))-TMath::CosH((fParams.fUmax))+ 1);
  
     //effective volume for non-central Simpson2 
     Double_t volEffnoncent = fParams.fTau * dYl * SimpsonIntegrator2(0., 2.*TMath::Pi());
@@ -172,12 +164,8 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
     Double_t coeffR1 = HYFPAR.npart/HYFPAR.npart0;
     coeffR1 = TMath::Power(coeffR1, 0.333333);
 
-    //    std::cout<<"HYFPAR.npart"<<HYFPAR.npart<<std::endl;
-
     double veff=fVolEff;
 
-    //    std::cout<<"veff "<<veff<<std::endl;
-   
     //------------------------------------
     //cycle on particles types
     for(Int_t i = 0; i < fParams.fNPartTypes; ++i) {
@@ -241,9 +229,6 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
 	    n1.SetXYZT(0.,0.,TMath::SinH(etaF),TMath::CosH(etaF));  
 	    if(TMath::Abs(etaF)>5.)continue;
 	    
-	    //old
-	    //	  double rBold = fParams.fR * TMath::Sqrt(1-fParams.fEpsilon);
-	    
 	    rB = fParams.fR * coeffRB * coeffR1;
 	        
 	    Double_t rho = TMath::Sqrt(gRandom->Rndm());
@@ -267,9 +252,6 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
 	  
 	    Double_t rhou = fParams.fUmax * r / rB;
 
-	    //double_t rold= r/coeffRB;
-	    //Double_t rhou_old = fParams.fUmax * rold / rBold;
-	    //std::cout<<"rhou"<<rhou<<"rhou_old"<<rhou_old<<std::endl;
         
 	    Double_t uxf = TMath::SinH(rhou)*TMath::Sqrt(1+fParams.fDelta)*TMath::Cos(phiF); 
 	    Double_t uyf = TMath::SinH(rhou)*TMath::Sqrt(1-fParams.fDelta)*TMath::Sin(phiF);

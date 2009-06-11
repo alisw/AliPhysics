@@ -65,7 +65,7 @@ Bool_t DatabasePDG::LoadParticles() {
   particleFile.open(fParticleFilename);
   if(!particleFile) {
     cout << "ERROR in DatabasePDG::LoadParticles() : The ASCII file containing the PDG particle list (\""
-         << fParticleFilename << "\") was not found !! Aborting..." << endl;
+         << fParticleFilename << "\") was not found !! Exiting..." << endl;
     return kFALSE;
   }
   

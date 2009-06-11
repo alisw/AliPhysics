@@ -150,6 +150,7 @@ typedef std::list<Particle>::iterator LPIT_t;
 
 class ParticleAllocator {
  public:
+  ParticleAllocator() : fFreeNodes(0) {};
   void AddParticle(const Particle & particle, List_t & list);
   void FreeListNode(List_t & list, LPIT_t it);
   void FreeList(List_t & list);

@@ -283,7 +283,7 @@ Int_t TUHKMgen::ImportParticles(TClonesArray *particles, const Option_t* option)
   Int_t nump = 0;
   LPIT_t it,e;
   
-  //  cout << "TUHKMgen::ImportParticles() option(All or Sec) = " << option << endl;
+    cout << "TUHKMgen::ImportParticles() option(All or Sec) = " << option << endl;
   for(it = fSecondariesList.begin(), e = fSecondariesList.end(); it != e; ++it) {
     //!!! for(Int_t pp=0;pp<100;pp++) {
 	//      cout << "TUHKMgen::ImportParticles() import particle pdg(" << it->Encoding() << ")" << endl;
