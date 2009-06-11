@@ -2759,7 +2759,7 @@ AliVertexer* AliReconstruction::CreateVertexer()
 
   AliVertexer* vertexer = NULL;
   AliReconstructor* itsReconstructor = GetReconstructor(0);
-  if (itsReconstructor) {
+  if (itsReconstructor && (fRunLocalReconstruction.Contains("ITS"))) {
     vertexer = itsReconstructor->CreateVertexer();
   }
   if (!vertexer) {
