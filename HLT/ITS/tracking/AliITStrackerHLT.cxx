@@ -61,6 +61,7 @@
 #include "AliHLTVertexer.h"
 
 
+ClassImp(AliITStrackerHLT)
 
 Bool_t AliITStrackerHLT::TransportToX( AliExternalTrackParam *t, double x ) const
 {

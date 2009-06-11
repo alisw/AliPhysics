@@ -41,6 +41,7 @@
 #include "AliTracker.h"
 
 
+ClassImp(AliHLTITSTrack)
 
 //____________________________________________________________________________
 AliHLTITSTrack::AliHLTITSTrack() : 
@@ -83,6 +84,7 @@ AliHLTITSTrack &AliHLTITSTrack::operator=(const AliHLTITSTrack& t)
   }
   fLab = t.fLab;
   fFakeRatio = t.fFakeRatio;
+  return *this;
 }
 
 

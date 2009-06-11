@@ -76,6 +76,8 @@ class AliHLTITSTrack : public AliKalmanTrack
   AliESDtrack *fESDtrack;    //! pointer to the connected ESD track
 
   Float_t fExpQ;            // expected Q
+
+  ClassDef(AliHLTITSTrack,0)   //HLT ITS tracker
 };
 
 

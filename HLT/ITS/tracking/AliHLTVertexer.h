@@ -16,14 +16,15 @@ class AliHLTVertexer
 {
 public:
 
-  class AliESDTrackInfo{
-  public:
-    AliESDTrackInfo(){}
-
-    AliKFParticle fParticle; //* assigned KFParticle
-    Bool_t fPrimUsedFlag;    //* flag shows that the particle was used for primary vertex fit
-    Bool_t fOK;              //* is the track good enough
-  };
+  class AliESDTrackInfo
+    {
+    public:
+      AliESDTrackInfo(): fParticle(),fPrimUsedFlag(0),fOK(0){}
+      
+      AliKFParticle fParticle; //* assigned KFParticle
+      Bool_t fPrimUsedFlag;    //* flag shows that the particle was used for primary vertex fit
+      Bool_t fOK;              //* is the track good enough
+    };
 
   AliHLTVertexer();
   ~AliHLTVertexer(){ delete[] fTrackInfos; }

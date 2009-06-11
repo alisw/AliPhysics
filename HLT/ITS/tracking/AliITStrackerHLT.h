@@ -106,6 +106,7 @@ protected:
 private:
   AliITStrackerHLT(const AliITStrackerHLT &tracker);
   AliITStrackerHLT & operator=(const AliITStrackerHLT &tracker);  
+  ClassDef(AliITStrackerHLT,0)   //HLT ITS tracker
 };
 
 
