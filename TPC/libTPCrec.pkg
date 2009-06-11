@@ -8,7 +8,7 @@ SRCS:=  AliTPCcluster.cxx \
 	AliTPCtrack.cxx AliTPCtracker.cxx \
 	AliTPCpolyTrack.cxx  AliTPCseed.cxx AliTPCtrackerMI.cxx \
 	AliTPCtrackerSector.cxx \
-	AliTPCPid.cxx AliTPCtrackPid.cxx AliTPCpidESD.cxx \
+	AliTPCPid.cxx AliTPCtrackPid.cxx \
 	AliTPCReconstructor.cxx AliTPCRecoParam.cxx AliTPCClusterParam.cxx  \
         AliTPCTracklet.cxx AliTPCQADataMakerRec.cxx \
 	AliPadMax.cxx AliTPCclustererKr.cxx AliTPCclusterKr.cxx AliTPCvtpr.cxx

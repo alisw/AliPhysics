@@ -28,6 +28,8 @@ set(SRCS
        AliESDACORDE.cxx
        AliTriggerIR.cxx
        AliESDVZEROfriend.cxx
+       AliTPCpidESD.cxx
+       AliTOFpidESD.cxx
 )
 
 # fill list of header files from list of source files

@@ -19,7 +19,6 @@ AliTPCtrackerMI.cxx
 AliTPCtrackerSector.cxx
 AliTPCPid.cxx
 AliTPCtrackPid.cxx
-AliTPCpidESD.cxx
 AliTPCReconstructor.cxx
 AliTPCRecoParam.cxx
 AliTPCClusterParam.cxx

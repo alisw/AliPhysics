@@ -74,6 +74,8 @@
 
 #pragma link C++ class  AliESDVZEROfriend+;
 
+#pragma link C++ class  AliTPCpidESD+;
+#pragma link C++ class  AliTOFpidESD+;
 
 #endif
 

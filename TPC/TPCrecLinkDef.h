@@ -40,7 +40,6 @@
 
 #pragma link C++ class AliTPCPid+;
 #pragma link C++ class AliTPCtrackPid+;
-#pragma link C++ class AliTPCpidESD+;
 
 #pragma link C++ class AliTPCReconstructor+;
 #pragma link C++ class AliTPCRecoParam+;
