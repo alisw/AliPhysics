@@ -174,12 +174,12 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName(GetName()); 
   
-  fhRe1=new TH3D*[fNCentrBin*fNPID] ;
-  fhRe2=new TH3D*[fNCentrBin*fNPID] ;
-  fhRe3=new TH3D*[fNCentrBin*fNPID] ;
-  fhMi1=new TH3D*[fNCentrBin*fNPID] ;
-  fhMi2=new TH3D*[fNCentrBin*fNPID] ;
-  fhMi3=new TH3D*[fNCentrBin*fNPID] ;
+  fhRe1 = new TH3D*[fNCentrBin*fNPID] ;
+  fhRe2 = new TH3D*[fNCentrBin*fNPID] ;
+  fhRe3 = new TH3D*[fNCentrBin*fNPID] ;
+  fhMi1 = new TH3D*[fNCentrBin*fNPID] ;
+  fhMi2 = new TH3D*[fNCentrBin*fNPID] ;
+  fhMi3 = new TH3D*[fNCentrBin*fNPID] ;
   
   char key[255] ;
   char title[255] ;
@@ -488,10 +488,16 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
 	// Refill analysis histograms of this class with corresponding histograms in output list. 
 	
 	// Histograms of this analsys are kept in the same list as other analysis, recover the position of
-	// the first one and then add the next 
+	// the first one and then add the next.
 	Int_t index = outputList->IndexOf(outputList->FindObject(GetAddedHistogramsStringToName()+"hRe_cen0_pid0_dist1"));
 	
-
+	if(!fhRe1) fhRe1 = new TH3D*[fNCentrBin*fNPID] ;
+	if(!fhRe2) fhRe2 = new TH3D*[fNCentrBin*fNPID] ;
+	if(!fhRe3) fhRe3 = new TH3D*[fNCentrBin*fNPID] ;
+	if(!fhMi1) fhMi1 = new TH3D*[fNCentrBin*fNPID] ;
+	if(!fhMi2) fhMi2 = new TH3D*[fNCentrBin*fNPID] ;
+	if(!fhMi3) fhMi3 = new TH3D*[fNCentrBin*fNPID] ;	
+	
     for(Int_t ic=0; ic<fNCentrBin; ic++){
         for(Int_t ipid=0; ipid<fNPID; ipid++){
 			fhRe1[ic*fNPID+ipid] = (TH3D*) outputList->At(index++);
