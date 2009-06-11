@@ -16,7 +16,7 @@
 //    root[1] AnalysisTrainNew(ana_mode, plugin_mode, "train_default_<date>/ConfigTrain.C")
 
 //==================   TRAIN NAME   ============================================
-TString     train_name         = "default"; // enters file names, so no blancs or special characters
+TString     train_name         = "LHC09a5"; // enters file names, so no blancs or special characters
 //==============================================================================
 
 // ### Settings that make sense in PROOF only
@@ -38,13 +38,19 @@ Bool_t      usePLUGIN          = kTRUE;   // do not change
 Bool_t      usePAR             = kFALSE;  // use par files for extra libs
 Bool_t      useCPAR            = kFALSE;  // use par files for common libs
 TString     root_version       = "v5-23-04";
-TString     aliroot_version    = "v4-17-02";
+TString     aliroot_version    = "v4-17-03";
 // Change production base directory here
-TString     alien_datadir      = "/alice/sim/PDC_09/LHC09a4/";
-// Use up to 10 non-zero run numbers
-//Int_t       run_numbers[10]    = {81272,    81273 ,     81274,     0,     0,
-//                                      0,     0,     0,     0,     0};
-Int_t       run_range[2]       =  {81270, 81275};
+TString     alien_datadir      = "/alice/sim/PDC_09/LHC09a5/";
+// Number of files merged in a chunk
+Int_t       maxMergeFiles      = 50;
+// Files that should not be merged
+TString     mergeExclude       = "AliAOD.root AliAOD.VertexingHF.root AOD.tag.root";
+// Number of runs per master job
+Int_t       nRunsPerMaster     = 10;
+// Maximum number of files per job (gives size of AOD)
+Int_t       nFilesPerJob       = 100;
+// Set the run range
+Int_t       run_range[2]       =  {90000, 90040};
 // ### Settings that make sense only for local analysis
 //==============================================================================
 // Change local xml dataset for local interactive analysis
@@ -52,7 +58,7 @@ TString     local_xmldataset   = "";
 
 // ### Other flags to steer the analysis
 //==============================================================================
-Bool_t      useDBG             = kTRUE;  // activate debugging
+Bool_t      useDBG             = kFALSE;  // activate debugging
 Bool_t      useMC              = kTRUE;  // use MC info
 Bool_t      useTAGS            = kFALSE; // use ESD tags for selection
 Bool_t      useKFILTER         = kTRUE;  // use Kinematics filter
@@ -74,8 +80,8 @@ Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
 Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
 Int_t       iPWG2spectra       = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
 Int_t       iPWG2flow          = 1;      // Flow analysis task (PWG2)
-Int_t       iPWG2res           = 0;      // Resonances task (PWG2)
-Int_t       iPWG2kink          = 1;      // Kink analysis task (PWG2)
+Int_t       iPWG2res           = 1;      // Resonances task (PWG2)
+Int_t       iPWG2kink          = 0;      // Kink analysis task (PWG2)
 
 // Temporaries.
 TString anaPars = "";
@@ -792,7 +798,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
 // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode(plugin_mode);
    plugin->SetNtestFiles(1);
-   plugin->SetPreferedSE("ALICE::NIHAM::FILE");
+   plugin->SetPreferedSE("ALICE::Legnaro::SE");
 // Set versions of used packages
    plugin->SetAPIVersion("V2.4");
    plugin->SetROOTVersion(root_version);
@@ -803,7 +809,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
    plugin->SetGridDataDir(alien_datadir);
 // Set data search pattern
    if (iAODanalysis) plugin->SetDataPattern("*AliAOD.root");
-   else              plugin->SetDataPattern("*AliESDs.root");
+   else              plugin->SetDataPattern("*ESD.tag.root");
 // ...then add run numbers to be considered
    plugin->SetRunRange(run_range[0], run_range[1]);
 //   for (Int_t i=0; i<10; i++) {
@@ -846,14 +852,16 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
 // Declare the output file names separated by blancs.
 // (can be like: file.root or file.root@ALICE::Niham::File)
    plugin->SetDefaultOutputs();
-   plugin->SetMergeExcludes("AliAOD.root");
+   plugin->SetMergeExcludes(mergeExclude);
+   plugin->SetMaxMergeFiles(maxMergeFiles);
+   plugin->SetNrunsPerMaster(nRunsPerMaster);
 // Optionally define the files to be archived.
 //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:*.root@ALICE::NIHAM::File");
    plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro(Form("%s.C", train_name.Data()));
 // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-   plugin->SetSplitMaxInputFileNumber(100);
+   plugin->SetSplitMaxInputFileNumber(nFilesPerJob);
 // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
 //   plugin->SetMaxInitFailed(5);
 // Optionally resubmit threshold.
@@ -911,6 +919,10 @@ void WriteConfig()
    out << "   root_version    = " << "\"" << root_version.Data() << "\";" << endl;
    out << "   aliroot_version = " << "\"" << aliroot_version.Data() << "\";" << endl;
    out << "   alien_datadir   = " << "\"" << alien_datadir.Data() << "\";" << endl;
+   out << "   maxMergeFiles   = " << maxMergeFiles << ";" << endl;
+   out << "   mergeExclude    = " << "\"" << mergeExclude.Data() << "\";" << endl;
+   out << "   nRunsPerMaster  = " << nRunsPerMaster << ";" << endl;
+   out << "   nFilesPerJob    = " << nFilesPerJob << ";" << endl;
 //   for (Int_t i=0; i<10; i++) {
 //      if (run_numbers[i]) 
 //         out << "   run_numbers[" << i << "]  = " << run_numbers[i] << ";" << endl;
