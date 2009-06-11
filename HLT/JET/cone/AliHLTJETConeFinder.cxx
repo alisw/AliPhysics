@@ -215,26 +215,31 @@ Int_t AliHLTJETConeFinder::FindConeLeading() {
 
   // -- Pick up jet reader
   AliHLTJETReader *reader = dynamic_cast<AliHLTJETReader*> (fReader);
-  
+
   // -- Pick up jet canidates
   TClonesArray* jetCandidates = reader->GetJetCandidates();
   
-  // -- Sort jet candidates with seed pt 
-  jetCandidates->Sort();
- 
-  // -- Use leading seed only
-  //    Keep index 0, remove the others
-  if ( (dynamic_cast<AliHLTJETConeHeader*> (fHeader))->GetUseLeading() ) {
+  // -- Check for more than 1 jet candidate
+  if ( reader->GetNJetCandidates() > 1 ) {
     
-    for ( Int_t iter = 1; iter < reader->GetNJetCandidates(); iter++ )
-      jetCandidates->RemoveAt(iter);
+    // -- Sort jet candidates with seed pt 
+    jetCandidates->Sort();
     
-    reader->SetNJetCandidates(1);
-  }
-  
+    // -- Use leading seed only
+    //    Keep index 0, remove the others
+    if ( (dynamic_cast<AliHLTJETConeHeader*> (fHeader))->GetUseLeading() ) {
+      
+      for ( Int_t iter = 1; iter < reader->GetNJetCandidates(); iter++ )
+	jetCandidates->RemoveAt(iter);
+      
+      reader->SetNJetCandidates(1);
+    }
+
+  } // if ( reader->GetNJetCandidates() > 1 ) {
+
   // -- Resize the seed TClonesArray
   jetCandidates->Compress();
-
+  
   return 0;
 }
 
@@ -261,7 +266,7 @@ Int_t AliHLTJETConeFinder::FindConeJets() {
     Int_t cellIdx = 0;
     
     // -- Loop over cells around ssed
-    while ( (cellIdx = fGrid->NextCell() ) != -1 && !iResult) {
+    while ( (cellIdx = fGrid->NextCell() ) >= 0 && !iResult) {
 
       AliHLTJETConeEtaPhiCell* cell = NULL;
       if ( ! (cell = reinterpret_cast<AliHLTJETConeEtaPhiCell*>(fGrid->UncheckedAt(cellIdx))) )
@@ -271,7 +276,7 @@ Int_t AliHLTJETConeFinder::FindConeJets() {
 	HLTError( "Error adding cell %d to jet candiate %d", cellIdx, iter);
 	continue;
       }
-    } // while ( (cellIdx = fGrid->NextCell() ) != -1 && !iResult) {
+    } // while ( (cellIdx = fGrid->NextCell() ) >= 0 && !iResult) {
     
   } // for ( Int_t iter = 0; iter < reader->GetNJetCandidates(); iter++ ) {
   
