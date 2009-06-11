@@ -295,8 +295,8 @@ void AliEveEventSelector::SetTriggerSelectionString( TString str )
   const AliESDRun* run = fPEventManager->GetESD()->GetESDRun();
   for (Int_t i=0; i<run->kNTriggerClasses; i++)
   {
-    const char* name = run->GetTriggerClass(i);
-    if (name=="") continue;
+    TString name(run->GetTriggerClass(i));
+    if (name.IsNull()) continue;
     TString valuestr("(");
     valuestr += fTriggerMaskPatternString;
     valuestr += "&";
