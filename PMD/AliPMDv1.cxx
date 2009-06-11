@@ -50,6 +50,7 @@
 #include "AliMagF.h" 
 #include "AliPMDv1.h"
 #include "AliRun.h"
+#include "AliTrackReference.h"
 
 const Int_t   AliPMDv1::fgkNcolUM1    = 48;     // Number of cols in UM, type 1
 const Int_t   AliPMDv1::fgkNcolUM2    = 96;     // Number of cols in UM, type 2
@@ -1830,9 +1831,6 @@ void AliPMDv1::CreatePMD()
 
   // Position co-ordinates of Unit Modules
   
-  //Double_t xcord[48];
-  //Double_t ycord[48];
-
   Double_t xcord[24];
   Double_t ycord[24];
   
@@ -1861,33 +1859,6 @@ void AliPMDv1::CreatePMD()
   xcord[22] = -xb1;
   xcord[23] = -xb2;
 
-  /*
-  xcord[24] = xa1;
-  xcord[25] = xa2;
-  xcord[26] = xa3;
-  xcord[27] = xa1;
-  xcord[28] = xa2;
-  xcord[29] = xa3;
-  xcord[30] = -xa1;
-  xcord[31] = -xa2;
-  xcord[32] = -xa3;
-  xcord[33] = -xa1;
-  xcord[34] = -xa2;
-  xcord[35] = -xa3;
-  xcord[36] = xb1;
-  xcord[37] = xb2;
-  xcord[38] = xb1;
-  xcord[39] = xb2;
-  xcord[40] = xb1;
-  xcord[41] = xb2;
-  xcord[42] = -xb1;
-  xcord[43] = -xb2;
-  xcord[44] = -xb1;
-  xcord[45] = -xb2;
-  xcord[46] = -xb1;
-  xcord[47] = -xb2;
-  */
-
   ycord[0]  = ya1;
   ycord[1]  = ya1;
   ycord[2]  = ya1;
@@ -1913,32 +1884,6 @@ void AliPMDv1::CreatePMD()
   ycord[22] = -yb3;
   ycord[23] = -yb3;
 
-  /*
-  ycord[24] = ya1;
-  ycord[25] = ya1;
-  ycord[26] = ya1;
-  ycord[27] = ya2;
-  ycord[28] = ya2;
-  ycord[29] = ya2;
-  ycord[30] = -ya1;
-  ycord[31] = -ya1;
-  ycord[32] = -ya1;
-  ycord[33] = -ya2;
-  ycord[34] = -ya2;
-  ycord[35] = -ya2;
-  ycord[36] = yb1;
-  ycord[37] = yb1;
-  ycord[38] = yb2;
-  ycord[39] = yb2;
-  ycord[40] = yb3;
-  ycord[41] = yb3;
-  ycord[42] = -yb1;
-  ycord[43] = -yb1;
-  ycord[44] = -yb2;
-  ycord[45] = -yb2;
-  ycord[46] = -yb3;
-  ycord[47] = -yb3;
-  */  
 
   // Placement of unit modules EUM1 & EUV1(long type)
   // and EUM2 & EUV2(short type)
@@ -2380,6 +2325,9 @@ void AliPMDv1::StepManager()
     gMC->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
+
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kPMD);
+
   }
 }
 
