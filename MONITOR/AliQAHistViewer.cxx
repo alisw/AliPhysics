@@ -58,6 +58,7 @@ void AliQAHistViewer::DoDrawNext()
            break;
        }
    }
+   c1->cd(0);
    c1->Update();
 }
 
@@ -94,6 +95,7 @@ void AliQAHistViewer::DoDrawPrev()
            break;
        }
    }
+   c1->cd(0);
    c1->Update();
 }
 
