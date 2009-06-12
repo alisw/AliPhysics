@@ -152,10 +152,10 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
   //checking if the container is alrerady created
 	
   if(fOutputContainer == NULL){
-    //print warning
+    cout<<"WARNING: GetOutputContainer: output container object is NULL"<<endl;
     return;
   }
-	
+
   if(fHistogramMap != NULL){
     TIter iter(fHistogramMap);
     TObjString *histogramName;
@@ -197,10 +197,10 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	  fResolutionContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
 	}
       }
-      else if(histogramString.Contains("Match")){// means it should be put in the mapping folder
+      else if(histogramString.Contains("TrueConv")){// means it should be put in the true conv folder
 	if(fMatchContainer == NULL){
 	  fMatchContainer = new TList();
-	  fMatchContainer->SetName("Match histograms");
+	  fMatchContainer->SetName("True conversion histograms");
 	}
 	if(fMatchContainer != NULL){
 	  fMatchContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));

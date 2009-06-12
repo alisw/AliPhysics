@@ -13,6 +13,7 @@
 #include "AliAnalysisTaskSE.h"
 #include <vector>
 #include "AliV0Reader.h"
+#include "AliGammaConversionAODObject.h"
 
 class TNtuple;
 class AliGammaConversionHistograms;
@@ -23,6 +24,8 @@ class AliESDEvent;
 class AliAODEvent;
 class TList;
 class AliStack;
+class AliESDtrackCuts;
+
 
 class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 {
@@ -43,8 +46,35 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void ProcessV0sNoCut();
   void ProcessV0s();
   void ProcessGammasForNeutralMesonAnalysis();
+
+  // AOD
+  TString GetAODBranchName() const {return  fAODBranchName;}
+  void SetAODBranchName(TString name)  {fAODBranchName = name ;}	
+  void FillAODWithConversionGammas();
+  // end AOD
+
+
+ // for GammaJetAnalysis
+  void ProcessGammasForGammaJetAnalysis();
+  void CreateListOfChargedParticles();
+  Double_t GetMinimumDistanceToCharge(Int_t);
+  void CalculateJetCone(Int_t,Int_t);
+  Int_t GetIndexHighestPtGamma();
+  void SetESDtrackCuts();
+  // end of Gamma Jet
+
+  void SetMinPtForGammaJet(Double_t minPtForGammaJet){fMinPtForGammaJet=minPtForGammaJet;}
+  void SetMinIsoConeSize(Double_t minIsoConeSize){fMinIsoConeSize=minIsoConeSize;}
+  void SetMinPtIsoCone(Double_t minPtIsoCone){fMinPtIsoCone=minPtIsoCone;}
+  void SetMinPtGamChargedCorr(Double_t minPtGamChargedCorr){fMinPtGamChargedCorr=minPtGamChargedCorr;}
+  void SetMinPtJetCone(Double_t minPtJetCone){fMinPtJetCone=minPtJetCone;}
+
   void SetHistograms(AliGammaConversionHistograms *const histograms){fHistograms=histograms;}
   void SetDoMCTruth(Bool_t flag){fDoMCTruth=flag;}
+  void SetDoNeutralMeson(Bool_t flag){fDoNeutralMeson=flag;}
+  void SetDoJet(Bool_t flag){fDoJet=flag;}
+  void SetDoChic(Bool_t flag){fDoChic=flag;}
+
   void SetElectronMass(Double_t electronMass){fElectronMass = electronMass;}
   void SetGammaMass(Double_t gammaMass){fGammaMass = gammaMass;}
   void SetGammaWidth(Double_t gammaWidth){fGammaWidth = gammaWidth;}
@@ -92,6 +122,9 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   AliGammaConversionHistograms *fHistograms; // Pointer to the histogram handling class
 
   Bool_t fDoMCTruth; // Flag to switch on/off MC truth 
+  Bool_t fDoNeutralMeson;
+  Bool_t fDoJet;
+  Bool_t fDoChic;
     
   vector<TParticle*> fMCAllGammas; // vector containing all MC gammas
   vector<TParticle*> fMCPi0s; //vector containing all MC Pi0s
@@ -126,6 +159,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 
   Double_t fMinOpeningAngleGhostCut; // minimum angle cut
 
+  AliESDtrackCuts* fEsdTrackCuts;           // Object containing the parameters of the esd track cuts
+
   Bool_t fCalculateBackground; //flag to set backgrount calculation on/off
   Bool_t fWriteNtuple;         // flag to set if writing to ntuple on/off
   TNtuple *fGammaNtuple;       // Ntuple for gamma values
@@ -133,7 +168,23 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 
   Int_t fTotalNumberOfAddedNtupleEntries; // number of added ntuple entries
 
-  ClassDef(AliAnalysisTaskGammaConversion, 3); // Analysis task for gamma conversions
+  vector<AliESDtrack*> fChargedParticles;
+  vector<Int_t> fChargedParticlesId;
+
+  Double_t fGammaPtHighest;
+  Double_t fMinPtForGammaJet;
+  Double_t fMinIsoConeSize;
+  Double_t fMinPtIsoCone;
+  Double_t fMinPtGamChargedCorr;
+  Double_t fMinPtJetCone;
+  Int_t    fLeadingChargedIndex;
+
+  TClonesArray* fAODBranch ;        //! selected particles branch
+  TString fAODBranchName; // New AOD branch name
+  
+  vector<AliGammaConversionAODObject> fAODObjects;
+
+  ClassDef(AliAnalysisTaskGammaConversion, 4); // Analysis task for gamma conversions
 };
  
 #endif //ALIANALYSISTASKGAMMA_H
