@@ -76,18 +76,25 @@ int main(int argc, char **argv) {
   }
 
 
-  Int_t maxNEvents=18; // maximum number of events to be analyzed
+  Int_t maxNEvents=10; // maximum number of events to be analyzed
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
   const Int_t kSides=2;
   Int_t adcSamplFreq=40;
+  Bool_t readfeeconf=kFALSE;
+  gSystem->Exec("rm -f SDDbase_*.data");
   if(gSystem->Getenv("DAQ_DETDB_LOCAL")!=NULL){
     const char* dir=gSystem->Getenv("DAQ_DETDB_LOCAL");    
     TString filnam=Form("%s/fee.conf",dir); 
     FILE* feefil=fopen(filnam.Data(),"r"); 
-    fscanf(feefil,"%d \n",&adcSamplFreq);
-    fclose(feefil);
+    if(feefil){
+      fscanf(feefil,"%d \n",&adcSamplFreq);
+      fclose(feefil);
+      readfeeconf=kTRUE;
+      printf("ADC sampling frequency = %d MHz\n",adcSamplFreq);
+    }
   }
+  if(!readfeeconf) printf("File fee.conf not found, sampling frequency set to 40 MHz\n");
   
   AliITSOnlineSDDBase **base=new AliITSOnlineSDDBase*[kTotDDL*kModPerDDL*kSides];
   AliITSOnlineSDDCMN **corr=new AliITSOnlineSDDCMN*[kTotDDL*kModPerDDL*kSides];
@@ -110,9 +117,11 @@ int main(int argc, char **argv) {
   /* report progress */
   daqDA_progressReport(8);
   Int_t iev;
+  Int_t ievPed;
   for(Int_t iStep=0;iStep<2;iStep++){
     printf("Start Analysis Step %d\n",iStep);
     iev=0;
+    ievPed=0;
     if(iStep==1){
       for(Int_t iddl=0; iddl<kTotDDL;iddl++){
 	for(Int_t imod=0; imod<kModPerDDL;imod++){
@@ -160,7 +169,6 @@ int main(int argc, char **argv) {
 	}
 
 	iev++; 
-	if(iev>maxNEvents) break;
 
 	/* use event - here, just write event id to result file */
 	eventT=event->eventType;
@@ -182,6 +190,7 @@ int main(int argc, char **argv) {
 	  break;  // uncomment this line for test raw data
 	case PHYSICS_EVENT: // uncomment this line for test raw data
 	  printf(" event number = %i \n",iev);
+	  ievPed++; 
 	  AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 
 
@@ -226,6 +235,7 @@ int main(int argc, char **argv) {
 	  /* free resources */
 	  free(event);
 	}
+	if(ievPed>=maxNEvents) break;
       }
     }
 
@@ -238,12 +248,12 @@ int main(int argc, char **argv) {
 	    base[index]->WriteToASCII();
 	  }
 	}
-      }  
+      }
     }
   }
 
   /* write report */
-  printf("Run #%s, received %d calibration events\n",getenv("DATE_RUN_NUMBER"),iev);
+  printf("Run #%s, received %d calibration events\n",getenv("DATE_RUN_NUMBER"),ievPed);
 
   /* report progress */
   daqDA_progressReport(90);

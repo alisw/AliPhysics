@@ -79,15 +79,22 @@ int main(int argc, char **argv) {
   const Int_t kModPerDDL=12;
   const Int_t kSides=2;
   Int_t adcSamplFreq=40;
-  if(gSystem->Getenv("DAQ_DETDB_LOCAL")!=NULL){
+  Bool_t readfeeconf=kFALSE;
+  gSystem->Exec("rm -f  SDDbase_LDC.tar");
+   if(gSystem->Getenv("DAQ_DETDB_LOCAL")!=NULL){
     const char* dir=gSystem->Getenv("DAQ_DETDB_LOCAL");    
     TString filnam=Form("%s/fee.conf",dir); 
     FILE* feefil=fopen(filnam.Data(),"r"); 
-    fscanf(feefil,"%d \n",&adcSamplFreq);
-    TString shcomm=Form("tar -rf SDDbase_LDC.tar -C %s fee.conf",dir); 
-    gSystem->Exec(shcomm.Data());
-    fclose(feefil);
+    if(feefil){
+      fscanf(feefil,"%d \n",&adcSamplFreq);
+      TString shcomm=Form("tar -rf SDDbase_LDC.tar -C %s fee.conf",dir); 
+      gSystem->Exec(shcomm.Data());
+      fclose(feefil);
+      readfeeconf=kTRUE;
+      printf("ADC sampling frequency = %d MHz\n",adcSamplFreq);
+    }
   }
+  if(!readfeeconf) printf("File fee.conf not found, sampling frequency set to 40 MHz\n");
 
   AliITSOnlineSDDTP **tpan=new AliITSOnlineSDDTP*[kTotDDL*kModPerDDL*kSides];
   TH2F **histo=new TH2F*[kTotDDL*kModPerDDL*kSides];

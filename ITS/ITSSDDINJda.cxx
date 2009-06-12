@@ -79,13 +79,21 @@ int main(int argc, char **argv) {
   const Int_t kModPerDDL=12;
   const Int_t kSides=2;
   Int_t adcSamplFreq=40;
+  Bool_t readfeeconf=kFALSE;
+  gSystem->Exec("rm -f SDDinj_ddl*.data");
   if(gSystem->Getenv("DAQ_DETDB_LOCAL")!=NULL){
     const char* dir=gSystem->Getenv("DAQ_DETDB_LOCAL");    
-    TString filnam=Form("%s/fee.conf",dir); 
+    TString filnam=Form("%s/fee.conf",dir);    
     FILE* feefil=fopen(filnam.Data(),"r"); 
-    fscanf(feefil,"%d \n",&adcSamplFreq);
-    fclose(feefil);
+    if(feefil){
+      fscanf(feefil,"%d \n",&adcSamplFreq);
+      fclose(feefil);
+      readfeeconf=kTRUE;
+      printf("ADC sampling frequency = %d MHz\n",adcSamplFreq);
+    }
   }
+  if(!readfeeconf) printf("File fee.conf not found, sampling frequency set to 40 MHz\n");
+
 
 
   AliITSOnlineSDDInjectors **injan=new AliITSOnlineSDDInjectors*[kTotDDL*kModPerDDL*kSides];
@@ -112,6 +120,7 @@ int main(int argc, char **argv) {
   /* report progress */
   daqDA_progressReport(10);
   Int_t iev=0;
+  Int_t ievInj=0;
   /* read the data files */
   int n;
   for (n=1;n<argc;n++) {
@@ -139,14 +148,12 @@ int main(int argc, char **argv) {
 	printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
 	return -1;
       }
-
       /* retry if got no event */
       if (event==NULL) {
 	break;
       }
+      iev++;
 
-      iev++; 
-      if(iev>maxNEvents) break;
       
       /* use event - here, just write event id to result file */
       eventT=event->eventType;
@@ -167,10 +174,11 @@ int main(int argc, char **argv) {
 	break;  // uncomment this line for test raw data
       case PHYSICS_EVENT: // uncomment this line for test raw data
 	printf(" event number = %i \n",iev);
+	ievInj++; 
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 
 	UInt_t timeSt=rawReader->GetTimestamp();
-	//UInt_t timeSt=iev*5000+12;  // fake timestamp for test
+
 	Int_t evtyp=0;
 	while(rawReader->ReadHeader()){
 	  const UInt_t *subev = rawReader->GetSubEventAttributes();
@@ -216,10 +224,13 @@ int main(int argc, char **argv) {
 	/* free resources */
 	free(event);
       }
+      if(ievInj>=maxNEvents) break;
     }
-    
   }
-    
+  /* write report */
+  printf("Run #%s, received %d injector events\n",getenv("DATE_RUN_NUMBER"),ievInj);
+
+  gSystem->Exec("rm -f  SDDinj_LDC.tar");
   Char_t filnam[100],command[120];
   for(Int_t iddl=0; iddl<kTotDDL;iddl++){
     for(Int_t imod=0; imod<kModPerDDL;imod++){
@@ -234,8 +245,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  /* write report */
-  printf("Run #%s, received %d injector events\n",getenv("DATE_RUN_NUMBER"),iev);
 
   /* report progress */
   daqDA_progressReport(90);
