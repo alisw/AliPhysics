@@ -80,11 +80,15 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fQvectorForEachEventY(NULL),//to be removed
  fQCorrelations(NULL),
  fQCorrelationsW(NULL),
+ fQCorrectionsCos(NULL),
+ fQCorrectionsSin(NULL),
  fQProduct(NULL),
  fDirectCorrelations(NULL),
  fDirectCorrelationsW(NULL),
  fDirectCorrelationsDiffFlow(NULL),
  fDirectCorrelationsDiffFlowW(NULL),
+ fDirectCorrectionsCos(NULL),
+ fDirectCorrectionsSin(NULL),
  f2PerPtBin1n1nPOI(NULL),
  f4PerPtBin1n1n1n1nPOI(NULL),
  f2PerEtaBin1n1nPOI(NULL),
@@ -178,6 +182,8 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fSmRP1p3kPtEta(NULL),
  
  // ----- RESULTS ----
+ 
+ fFinalCorrectionsForNUA(NULL), // NUA = non-uniform acceptance
  
  // non-weighted integrated flow:
  fIntFlowResultsQC(NULL),
@@ -432,7 +438,58 @@ void AliFlowAnalysisWithQCumulants::Init()
  fHistList->Add(fQCorrelationsW);
  //.........................................................................
  
+ //.........................................................................
+ // corrections for non-uniform acceptance (cos terms) calculated from Q-vectors
+ fQCorrectionsCos = new TProfile("fQCorrectionsCos"," corrections for non-uniform acceptance (cos terms)",100,0,100,"s");
+ fQCorrectionsCos->SetTickLength(-0.01,"Y");
+ fQCorrectionsCos->SetMarkerStyle(25);
+ fQCorrectionsCos->SetLabelSize(0.03);
+ fQCorrectionsCos->SetLabelOffset(0.01,"Y");
+ // 1-p:
+ (fQCorrectionsCos->GetXaxis())->SetBinLabel(1,"cos(n(#phi_{1}))>");
+ // 2-p:
+ // 3-p:
  
+ // add fQCorrectionsCos to the main list:
+ fHistList->Add(fQCorrectionsCos);
+ //.........................................................................  
+ 
+ // corrections for non-uniform acceptance (cos terms) calculated with nested loops
+ fDirectCorrectionsCos = new TProfile("fDirectCorrectionsCos"," corrections for non-uniform acceptance (cos terms)",100,0,100,"s");
+ fDirectCorrectionsCos->SetTickLength(-0.01,"Y");
+ fDirectCorrectionsCos->SetMarkerStyle(25);
+ fDirectCorrectionsCos->SetLabelSize(0.03);
+ fDirectCorrectionsCos->SetLabelOffset(0.01,"Y");
+ // binned in the samw way as fQCorrectionsCos (see above)
+ // add fDirectCorrectionsCos to the main list:
+ fHistList->Add(fDirectCorrectionsCos);
+     
+ //.........................................................................
+ // corrections for non-uniform acceptance (sin terms) calculated from Q-vectors
+ fQCorrectionsSin = new TProfile("fQCorrectionsSin"," corrections for non-uniform acceptance (sin terms)",100,0,100,"s");
+ fQCorrectionsSin->SetTickLength(-0.01,"Y");
+ fQCorrectionsSin->SetMarkerStyle(25);
+ fQCorrectionsSin->SetLabelSize(0.03);
+ fQCorrectionsSin->SetLabelOffset(0.01,"Y");
+ // 1-p:
+ (fQCorrectionsSin->GetXaxis())->SetBinLabel(1,"sin(n(#phi_{1}))>");
+ // 2-p:
+ // 3-p:
+ 
+ // add fQCorrectionsSin to the main list:
+ fHistList->Add(fQCorrectionsSin);
+ //.........................................................................      
+
+ // corrections for non-uniform acceptance (sin terms) calculated with nested loops
+ fDirectCorrectionsSin = new TProfile("fDirectCorrectionsSin"," corrections for non-uniform acceptance (sin terms)",100,0,100,"s");
+ fDirectCorrectionsSin->SetTickLength(-0.01,"Y");
+ fDirectCorrectionsSin->SetMarkerStyle(25);
+ fDirectCorrectionsSin->SetLabelSize(0.03);
+ fDirectCorrectionsSin->SetLabelOffset(0.01,"Y");
+ // binned in the samw way as fQCorrectionsSin (see above)
+ // add fDirectCorrectionsSin to the main list:
+ fHistList->Add(fDirectCorrectionsSin);     
+               
  //average products
  fQProduct = new TProfile("fQProduct","average of products",6,0,6,"s");
  fQProduct->SetTickLength(-0.01,"Y");
@@ -668,6 +725,16 @@ void AliFlowAnalysisWithQCumulants::Init()
  fSmRP1p3kPtEta = new TH2D("fSmRP1p3kPtEta","S^{m}_{1,3}(p_{t},#eta) for RPs",fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
  
  // ----- RESULTS ----
+ 
+ // final corrections for non-uniform acceptance for QC{2}, QC{4}, QC{6} and QC{8}:
+ fFinalCorrectionsForNUA = new TH1D("fFinalCorrectionsForNUA","Corrections for non-uniform acceptance to Q-cumulants",4,0,4);
+ fFinalCorrectionsForNUA->SetLabelSize(0.06);
+ fFinalCorrectionsForNUA->SetMarkerStyle(25);
+ (fFinalCorrectionsForNUA->GetXaxis())->SetBinLabel(1,"QC{2}");
+ (fFinalCorrectionsForNUA->GetXaxis())->SetBinLabel(2,"QC{4}");
+ (fFinalCorrectionsForNUA->GetXaxis())->SetBinLabel(3,"QC{6}");
+ (fFinalCorrectionsForNUA->GetXaxis())->SetBinLabel(4,"QC{8}");
+ fResultsList->Add(fFinalCorrectionsForNUA);
  
  // final results for non-weighted no-name integrated flow:
  fIntFlowResultsQC = new TH1D("fIntFlowResultsQC","Integrated Flow from Q-cumulants",4,0,4);
@@ -1430,8 +1497,12 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  {
   // calculate all correlations needed for 'no-name' integrated flow WITHOUT weights 
   // (the results are stored in 1D profile fQCorrelations) 
-  if(!(fUseWeights)) this->CalculateCorrelationsForIntegratedFlow();
- 
+  if(!(fUseWeights)) 
+  {
+   this->CalculateCorrelationsForIntegratedFlow(); 
+   this->CalculateCorrectionsForNonUniformAcceptanceCosTerms();
+   this->CalculateCorrectionsForNonUniformAcceptanceSinTerms();
+  }
   // calculate all correlations needed for 'no-name' integrated flow WITH weights 
   // (the results are stored in 1D profile fQCorrelationsW) 
   if(fUseWeights) this->CalculateWeightedCorrelationsForIntegratedFlow();
@@ -1439,6 +1510,8 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  else if (!evaluateNestedLoopsForIntegratedFlow)
  {
   this->CalculateCorrelationsForIntegratedFlow();
+  this->CalculateCorrectionsForNonUniformAcceptanceCosTerms();
+  this->CalculateCorrectionsForNonUniformAcceptanceSinTerms();
   if(fUseWeights) this->CalculateWeightedCorrelationsForIntegratedFlow();
  }
 
@@ -2477,6 +2550,140 @@ void AliFlowAnalysisWithQCumulants::CalculateWeightedCorrelationsForDifferential
 //================================================================================================================================
 
 
+void AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceCosTerms()
+{
+ // calculate corrections for non-uniform acceptance of the detector (cos terms)
+ 
+ // multiplicity:
+ Double_t dMult = (*fSMpk)(0,0);
+ 
+ // real and imaginary parts of non-weighted Q-vectors evaluated in harmonics n, 2n, 3n and 4n: 
+ Double_t dReQ1n = (*fReQ)(0,0);
+ Double_t dReQ2n = (*fReQ)(1,0);
+ //Double_t dReQ3n = (*fReQ)(2,0);
+ //Double_t dReQ4n = (*fReQ)(3,0);
+ Double_t dImQ1n = (*fImQ)(0,0);
+ Double_t dImQ2n = (*fImQ)(1,0);
+ //Double_t dImQ3n = (*fImQ)(2,0);
+ //Double_t dImQ4n = (*fImQ)(3,0);
+        
+ //                                  *************************************************************
+ //                                  **** corrections for non-uniform acceptance (cos terms): ****
+ //                                  *************************************************************
+ //
+ // Remark 1: corrections for non-uniform acceptance (cos terms) calculated with non-weighted Q-vectors 
+ //           are stored in 1D profile fQCorrectionsCos.
+ // Remark 2: binning of fQCorrectionsCos is organized as follows:
+ // --------------------------------------------------------------------------------------------------------------------
+ // 1st bin: <<cos(n*(phi1))>> = cosP1n
+ // 2nd bin: <<cos(n*(phi1+phi2))>> = cosP1nP1n
+ // 3rd bin: <<cos(n*(phi1-phi2-phi3))>> = cosP1nM1nM1n
+ // ...
+ // --------------------------------------------------------------------------------------------------------------------
+  
+ // 1-particle:
+ Double_t cosP1n = 0.; // <<cos(n*(phi1))>>
+   
+ if(dMult>0)
+ {
+  cosP1n = dReQ1n/dMult; 
+  
+  fQCorrectionsCos->Fill(0.,cosP1n,dMult);  
+ } 
+ 
+ // 2-particle:
+ Double_t cosP1nP1n = 0.; // <<cos(n*(phi1+phi2))>>
+ 
+ if(dMult>1)
+ {
+  cosP1nP1n = (pow(dReQ1n,2)-pow(dImQ1n,2)-dReQ2n)/(dMult*(dMult-1)); 
+  
+  fQCorrectionsCos->Fill(1.,cosP1nP1n,dMult*(dMult-1));  
+ } 
+ 
+ // 3-particle:
+ Double_t cosP1nM1nM1n = 0.; // <<cos(n*(phi1-phi2-phi3))>>
+ 
+ if(dMult>2)
+ {
+  cosP1nM1nM1n = (     dReQ1n*(pow(dReQ1n,2)+pow(dImQ1n,2))  -  dReQ1n*dReQ2n   -  dImQ1n*dImQ2n   -  2.*(dMult-1)*dReQ1n          )            /(dMult*(dMult-1)*(dMult-2)); 
+  
+  fQCorrectionsCos->Fill(2.,cosP1nM1nM1n,dMult*(dMult-1)*(dMult-2));  
+ } 
+ 
+} // end of AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceCosTerms()
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceSinTerms()
+{
+ // calculate corrections for non-uniform acceptance of the detector (sin terms)
+ 
+ // multiplicity:
+ Double_t dMult = (*fSMpk)(0,0);
+ 
+ // real and imaginary parts of non-weighted Q-vectors evaluated in harmonics n, 2n, 3n and 4n: 
+ Double_t dReQ1n = (*fReQ)(0,0);
+ Double_t dReQ2n = (*fReQ)(1,0);
+ //Double_t dReQ3n = (*fReQ)(2,0);
+ //Double_t dReQ4n = (*fReQ)(3,0);
+ Double_t dImQ1n = (*fImQ)(0,0);
+ Double_t dImQ2n = (*fImQ)(1,0);
+ //Double_t dImQ3n = (*fImQ)(2,0);
+ //Double_t dImQ4n = (*fImQ)(3,0);
+        
+ //                                  *************************************************************
+ //                                  **** corrections for non-uniform acceptance (sin terms): ****
+ //                                  *************************************************************
+ //
+ // Remark 1: corrections for non-uniform acceptance (sin terms) calculated with non-weighted Q-vectors 
+ //           are stored in 1D profile fQCorrectionsSin.
+ // Remark 2: binning of fQCorrectionsSin is organized as follows:
+ // --------------------------------------------------------------------------------------------------------------------
+ // 1st bin: <<sin(n*(phi1))>> = sinP1n
+ // 2nd bin: <<sin(n*(phi1+phi2))>> = sinP1nP1n
+ // 3rd bin: <<sin(n*(phi1-phi2-phi3))>> = sinP1nM1nM1n
+ // ...
+ // --------------------------------------------------------------------------------------------------------------------
+ 
+ // 1-particle:
+ Double_t sinP1n = 0.; // <sin(n*(phi1))>
+ 
+ if(dMult>0)
+ {
+  sinP1n = dImQ1n/dMult; 
+     
+  fQCorrectionsSin->Fill(0.,sinP1n,dMult);  
+ } 
+ 
+ // 2-particle:
+ Double_t sinP1nP1n = 0.; // <<sin(n*(phi1+phi2))>>
+ 
+ if(dMult>1)
+ {
+  sinP1nP1n = (2.*dReQ1n*dImQ1n-dImQ2n)/(dMult*(dMult-1)); 
+     
+  fQCorrectionsSin->Fill(1.,sinP1nP1n,dMult*(dMult-1));  
+ } 
+ 
+ // 3-particle:
+ Double_t sinP1nM1nM1n = 0.; // <<sin(n*(phi1-phi2-phi3))>>
+ 
+ if(dMult>2)
+ {
+  sinP1nM1nM1n = (     -dImQ1n*(pow(dReQ1n,2)+pow(dImQ1n,2))  +  dReQ1n*dImQ2n   -  dImQ1n*dReQ2n   +  2.*(dMult-1)*dImQ1n          )            /(dMult*(dMult-1)*(dMult-2)); 
+  
+  fQCorrectionsSin->Fill(2.,sinP1nM1nM1n,dMult*(dMult-1)*(dMult-2));  
+ } 
+ 
+} // end of AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceSinTerms()
+
+
+//================================================================================================================================
+
+
 void AliFlowAnalysisWithQCumulants::EvaluateNestedLoopsForIntegratedFlow(AliFlowEventSimple* anEvent)
 {
  // evaluate the nested loops relevant for integrated flow (needed for cross-checking the results)
@@ -2568,6 +2775,10 @@ void AliFlowAnalysisWithQCumulants::EvaluateNestedLoopsForIntegratedFlow(AliFlow
  //       ---- bins 121-140: 8-particle correlations ----
  //..............................................................................................
  
+ // Remark 5: corrections for non-uniform acceptance (cos terms) calculated with nested loops are stored
+ //           in 1D profile fDirectCorrectionsCos (binning is the same as in fQCorrectionsCos - see above);
+ // Remark 6: corrections for non-uniform acceptance (sin terms) calculated with nested loops are stored
+ //           in 1D profile fDirectCorrectionsSin (binning is the same as in fQCorrectionsSin - see above);
  
  // 2-particle correlations:       
  for(Int_t i1=0;i1<nPrim;i1++)
@@ -2576,6 +2787,10 @@ void AliFlowAnalysisWithQCumulants::EvaluateNestedLoopsForIntegratedFlow(AliFlow
   if(!(fTrack->InRPSelection())) continue;
   phi1=fTrack->Phi();
   if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(phi1*nBinsPhi/TMath::TwoPi())));
+  // corrections for non-uniform acceptance (cos terms)
+  fDirectCorrectionsCos->Fill(0.,cos(n*phi1),1.); // <cos(n*phi1)>
+  // corrections for non-uniform acceptance (sin terms)
+  fDirectCorrectionsSin->Fill(0.,sin(n*phi1),1.); // <sin(n*phi1)>  
   for(Int_t i2=0;i2<nPrim;i2++)
   {
    if(i2==i1)continue;
@@ -2600,10 +2815,20 @@ void AliFlowAnalysisWithQCumulants::EvaluateNestedLoopsForIntegratedFlow(AliFlow
    fDirectCorrelationsW->Fill(3.,cos(4.*n*(phi1-phi2)),pow(wPhi1,4)*pow(wPhi2,4)); // <w1^4 w2^4 cos(4n*(phi1-phi2))> 
    fDirectCorrelationsW->Fill(4.,cos(n*(phi1-phi2)),pow(wPhi1,3)*wPhi2);           // <w1^3 w2 cos(n*(phi1-phi2))>
    //................................................................................................................
-   
+ 
+   // corrections for non-uniform acceptance (cos terms)
+   //................................................................................................................
+   fDirectCorrectionsCos->Fill(1.,cos(n*(phi1+phi2)),1.); // <<cos(n*(phi1+phi2))>>
+   //................................................................................................................
+  
+   // corrections for non-uniform acceptance (sin terms)
+   //................................................................................................................
+   fDirectCorrectionsSin->Fill(1.,sin(n*(phi1+phi2)),1.); // <<sin(n*(phi1+phi2))>>
+   //................................................................................................................
+
   }
  }  
-
+ 
  // 3-particle correlations:         
  for(Int_t i1=0;i1<nPrim;i1++)
  {
@@ -2642,6 +2867,17 @@ void AliFlowAnalysisWithQCumulants::EvaluateNestedLoopsForIntegratedFlow(AliFlow
     // 3-p:
     fDirectCorrelationsW->Fill(20.,cos(2.*n*phi1-n*(phi2+phi3)),pow(wPhi1,2)*wPhi2*wPhi3); // <w1^2 w2 w3 cos(n*(2phi1-phi2-phi3))>
     //..............................................................................................................................
+    
+    
+    // corrections for non-uniform acceptance (cos terms)
+    //................................................................................................................
+    fDirectCorrectionsCos->Fill(2.,cos(n*(phi1-phi2-phi3)),1.); // <<cos(n*(phi1-phi2-phi3))>>
+    //................................................................................................................
+  
+    // corrections for non-uniform acceptance (sin terms)
+    //................................................................................................................
+    fDirectCorrectionsSin->Fill(2.,sin(n*(phi1-phi2-phi3)),1.); // <<sin(n*(phi1-phi2-phi3))>>
+    //................................................................................................................
     
    }
   }
@@ -3393,6 +3629,9 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
  {	
   // with or without weights
   TBits *useWeightsBits = dynamic_cast<TBits*>(outputListHistos->FindObject("TBits"));
+  
+  //final results (no-name integrated flow without weights)
+  TH1D *finalCorrectionsForNUA = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("fFinalCorrectionsForNUA"));
          
   //final results (no-name integrated flow without weights)
   TH1D *intFlowResultsQC = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("fIntFlowResultsQC"));
@@ -3458,7 +3697,13 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   
   //weighted multi-particle correlations calculated from Q-vectors
   TProfile *qCorrelationsW = dynamic_cast<TProfile*>(outputListHistos->FindObject("fQCorrelationsW"));
+
+  // corrections for non-uniform acceptance (cos terms) calculated from Q-vectors
+  TProfile *qCorrectionsCos = dynamic_cast<TProfile*>(outputListHistos->FindObject("fQCorrectionsCos"));
   
+  // corrections for non-uniform acceptance (sin terms) calculated from Q-vectors
+  TProfile *qCorrectionsSin = dynamic_cast<TProfile*>(outputListHistos->FindObject("fQCorrectionsSin"));
+
   //average of products: 1st bin: <2*4>, 2nd bin: <2*6>, ...
   TProfile *QProduct = dynamic_cast<TProfile*>(outputListHistos->FindObject("fQProduct"));
   
@@ -3506,7 +3751,11 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   // multi-particle correlations calculated with nested loop (needed for int. flow)
   TProfile *directCorrelationsDiffFlowW = dynamic_cast<TProfile*>(outputListHistos->FindObject("fDirectCorrelationsDiffFlowW"));
   
+  // corrections for non-uniform acceptance (cos terms) calculated with nested loop
+  TProfile *directCorrectionsCos = dynamic_cast<TProfile*>(outputListHistos->FindObject("fDirectCorrectionsCos"));
   
+  // corrections for non-uniform acceptance (sin terms) calculated with nested loop
+  TProfile *directCorrectionsSin = dynamic_cast<TProfile*>(outputListHistos->FindObject("fDirectCorrectionsSin"));
   
   
   
@@ -3610,6 +3859,7 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   //---------------------------------------------------- 
  
   this->SetUseWeightsBits(useWeightsBits);
+  this->SetFinalCorrectionsForNUA(finalCorrectionsForNUA);
   this->SetIntFlowResults(intFlowResultsQC); 
   this->SetIntFlowResultsW(intFlowResultsQCW);
   this->SetIntFlowResultsPOI(intFlowResultsPOIQC); 
@@ -3639,6 +3889,8 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   this->SetQCorrelations(qCorrelations);
   this->SetQCorrelationsW(qCorrelationsW);
+  this->SetQCorrectionsCos(qCorrectionsCos);
+  this->SetQCorrectionsSin(qCorrectionsSin);
   this->SetQProduct(QProduct);
   this->SetQVectorComponents(QVectorComponents);
  
@@ -3671,6 +3923,8 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   this->SetDirectCorrelationsW(directCorrelationsW);
   this->SetDirectCorrelationsDiffFlow(directCorrelationsDiffFlow);
   this->SetDirectCorrelationsDiffFlowW(directCorrelationsDiffFlowW);
+  this->SetDirectCorrectionsCos(directCorrectionsCos);
+  this->SetDirectCorrectionsSin(directCorrectionsSin);
   
   // non-weighted correlations for each (pt,eta) bin for POIs:
   this->Set2pPtEtaPOI(twoPtEtaPOI);
@@ -3793,6 +4047,8 @@ void AliFlowAnalysisWithQCumulants::Finish()
  //                      *************************************
  //                      **** CALCULATE THE FINAL RESULTS ****
  //                      *************************************    
+  
+ if(!fUseWeights) this->CalculateFinalCorrectionsForNonUniformAcceptance(); // to be improved (to calculate also when weights are used) 
   
  // integrated flow ('no-name') without weights:
  // calculate final results for no-name integrated flow without weights:
@@ -3964,6 +4220,97 @@ TProfile* AliFlowAnalysisWithQCumulants::MakeEtaProjection(TProfile2D *profilePt
 //================================================================================================================================
 
 
+void AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAcceptance(Bool_t useWeights)
+{
+ // final corrections for non-uniform acceptance for QC{2}, QC{4}, QC{6} and QC{8}
+ 
+ // 2-, 4-, 6- and 8-particle azimuthal correlation (not corrected for bias from non-uniform accaptance!):
+ Double_t two   = 0.; // <<2>>_{n|n}
+ Double_t four  = 0.; // <<4>>_{n,n|n,n}
+ Double_t six   = 0.; // <<6>>_{n,n,n|n,n,n}
+ Double_t eight = 0.; // <<8>>_{n,n,n,n|n,n,n,n}
+ 
+ if(!(useWeights))
+ {
+  // measured multi-particle correlations:
+  two   = fQCorrelations->GetBinContent(1);  
+  four  = fQCorrelations->GetBinContent(11); 
+  six   = fQCorrelations->GetBinContent(24); 
+  eight = fQCorrelations->GetBinContent(31);                                                                                                      
+ }
+ 
+ // corrections for non-uniform acceptance for QC{2}, QC{4}, QC{6} and QC{8}
+ Double_t twoCorrection   = 0.; // bias to QC{2} coming from non-uniform acceptance of the detector 
+ Double_t fourCorrection  = 0.; // bias to QC{4} coming from non-uniform acceptance of the detector 
+ //Double_t sixCorrection   = 0.; // bias to QC{6} coming from non-uniform acceptance of the detector  
+ //Double_t eightCorrection = 0.; // bias to QC{8} coming from non-uniform acceptance of the detector  
+ 
+ if(fQCorrectionsCos && fQCorrectionsCos && fFinalCorrectionsForNUA)
+ { 
+  // correction to QC{2}:
+  Double_t twoCorrection1stTerm = pow(fQCorrectionsCos->GetBinContent(1),2); // <<cos(n*phi1)>>^2 
+  Double_t twoCorrection2ndTerm = pow(fQCorrectionsSin->GetBinContent(1),2); // <<sin(n*phi1)>>^2 
+  // final correction to QC{2}:
+  twoCorrection = twoCorrection1stTerm + twoCorrection2ndTerm;
+  // store final correction to QC{2}:
+  fFinalCorrectionsForNUA->SetBinContent(1,twoCorrection);
+  
+  cout<<"Quantifying corrections for non-uniform acceptance for QC:"<<endl;
+  cout<<endl;
+  
+  if(two-twoCorrection)
+  {
+   cout<<"  QC{2,biased}/QC{2,corrected} = "<<two/(two-twoCorrection)<<endl;
+  } else 
+    {
+     cout<<"  QC{2,corrected} = 0"<<endl;     
+    }
+          
+  // correction to QC{4}:
+  Double_t fourCorrection1stTerm = fQCorrectionsCos->GetBinContent(1)
+                                 * fQCorrectionsCos->GetBinContent(3); // <<cos(n*phi1)>><<cos(n*(phi1-phi2-phi3))>> 
+  Double_t fourCorrection2ndTerm = fQCorrectionsSin->GetBinContent(1)
+                                 * fQCorrectionsSin->GetBinContent(3); // <<sin(n*phi1)>><<sin(n*(phi1-phi2-phi3))>> 
+  Double_t fourCorrection3rdTerm = pow(fQCorrectionsCos->GetBinContent(2),2); // <<cos(n*(phi1+phi2))>>^2 
+  Double_t fourCorrection4thTerm = pow(fQCorrectionsSin->GetBinContent(2),2); // <<sin(n*(phi1+phi2))>>^2 
+  Double_t fourCorrection5thTerm = fQCorrectionsCos->GetBinContent(2)
+                                 * (pow(fQCorrectionsCos->GetBinContent(1),2)
+                                    - pow(fQCorrectionsSin->GetBinContent(1),2)); // <<cos(n*(phi1+phi2))>>(<<cos(n*phi1)>>^2+<<sin(n*phi1)>>^2) 
+  Double_t fourCorrection6thTerm = fQCorrectionsSin->GetBinContent(2)
+                                 * fQCorrectionsCos->GetBinContent(1)
+                                 * fQCorrectionsSin->GetBinContent(1); // <<sin(n*(phi1+phi2))>><<cos(n*phi1)>><<sin(n*phi1)>>
+  Double_t fourCorrection7thTerm = two*(pow(fQCorrectionsCos->GetBinContent(1),2)
+                                   + pow(fQCorrectionsSin->GetBinContent(1),2)); // <<cos(n*(phi1-phi2))>>(<<cos(n*phi1)>>^2+<<sin(n*phi1)>>^2) 
+  Double_t fourCorrection8thTerm = pow(pow(fQCorrectionsCos->GetBinContent(1),2)
+                                   + pow(fQCorrectionsSin->GetBinContent(1),2),2); // (<<cos(n*phi1)>>^2+<<sin(n*phi1)>>^2)^2 
+  // final correction to QC{4}:
+  fourCorrection = 4.*fourCorrection1stTerm-4.*fourCorrection2ndTerm
+                 + fourCorrection3rdTerm+fourCorrection4thTerm
+                 - 4.*fourCorrection5thTerm-8.*fourCorrection6thTerm
+                 - 8.*fourCorrection7thTerm+6.*fourCorrection8thTerm;
+  // store final correction to QC{4}:               
+  fFinalCorrectionsForNUA->SetBinContent(2,fourCorrection);   
+  
+  if(four-2.*pow(two,2.)-fourCorrection)
+  {
+   cout<<"  QC{4,biased}/QC{4,corrected} = "<<(four-2.*pow(two,2.))/(four-2.*pow(two,2.)-fourCorrection)<<endl;
+  } else 
+    {
+     cout<<"  QC{4,corrected} = 0"<<endl;     
+    }
+
+ } else 
+   {
+    cout<<"WARNING: fQCorrectionsCos, fQCorrectionsCos or fFinalCorrectionsForNUA is NULL in QC::CFCFNUA !!!!"<<endl;
+    cout<<"         Corrections for non-uniform acceptance were not calculated.                              "<<endl;
+   }
+  
+} // end of AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAcceptance(Bool_t useWeights)
+
+
+//================================================================================================================================
+
+
 void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForNoNameIntegratedFlow(Bool_t useWeights)
 {
  // calculate final results for 'no-name' integrated flow
@@ -3976,10 +4323,11 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForNoNameIntegratedFlow
  
  if(!(useWeights))
  {
+  // measured multi-particle correlations:
   two   = fQCorrelations->GetBinContent(1);  
   four  = fQCorrelations->GetBinContent(11); 
   six   = fQCorrelations->GetBinContent(24); 
-  eight = fQCorrelations->GetBinContent(31); 
+  eight = fQCorrelations->GetBinContent(31);                                                                                                      
  }
 
  if(useWeights)
@@ -3995,6 +4343,18 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForNoNameIntegratedFlow
  Double_t fourthOrderQCumulant = four-2.*pow(two,2.); // c_n{4}
  Double_t sixthOrderQCumulant  = six-9.*two*four+12.*pow(two,3.); // c_n{6}
  Double_t eightOrderQCumulant  = eight-16.*two*six-18.*pow(four,2.)+144.*pow(two,2.)*four-144.*pow(two,4.); // c_n{8} 
+ 
+ // corrections for non-uniform acceptance for QC{2}, QC{4}, QC{6} and QC{8}
+ Double_t twoCorrection   = fFinalCorrectionsForNUA->GetBinContent(1); // bias to QC{2} coming from non-uniform acceptance of the detector 
+ Double_t fourCorrection  = fFinalCorrectionsForNUA->GetBinContent(2); // bias to QC{4} coming from non-uniform acceptance of the detector 
+ //Double_t sixCorrection   = fFinalCorrectionsForNUA->GetBinContent(3); // bias to QC{6} coming from non-uniform acceptance of the detector  
+ //Double_t eightCorrection = fFinalCorrectionsForNUA->GetBinContent(4); // bias to QC{8} coming from non-uniform acceptance of the detector  
+ 
+ // applying the corrections for non-uniform acceptance:
+ secondOrderQCumulant = secondOrderQCumulant - twoCorrection;
+ fourthOrderQCumulant = fourthOrderQCumulant - fourCorrection;
+ //sixthOrderQCumulant = sixthOrderQCumulant - sixCorrection;
+ //eightOrderQCumulant = eightOrderQCumulant - eightCorrection;
  
  if(useWeights) sixthOrderQCumulant = 0.; // to be removed (once 6th order with weights is calculated)
  if(useWeights) eightOrderQCumulant = 0.; // to be removed (once 8th order with weights is calculated)
@@ -4775,6 +5135,27 @@ void AliFlowAnalysisWithQCumulants::CompareDirectAndQCorrelationsForIntegratedFl
   cout<<"<8>_{1n,1n,1n,1n|1n,1n,1n,1n} from Q-vectors    = "<<fQCorrelations->GetBinContent(31)<<endl;
   cout<<"<8>_{1n,1n,1n,1n|1n,1n,1n,1n} from nested loops = "<<fDirectCorrelations->GetBinContent(31)<<endl;
   cout<<endl; 
+  cout<<"****************************************************"<<endl;
+  cout<<"****************************************************"<<endl;
+  cout<<endl;
+  cout<<"<cos(n*phi1)> from Q-vectors    = "<<fQCorrectionsCos->GetBinContent(1)<<endl;
+  cout<<"<cos(n*phi1)> from nested loops = "<<fDirectCorrectionsCos->GetBinContent(1)<<endl;
+  cout<<endl;
+  cout<<"<sin(n*phi1)> from Q-vectors    = "<<fQCorrectionsSin->GetBinContent(1)<<endl;
+  cout<<"<sin(n*phi1)> from nested loops = "<<fDirectCorrectionsSin->GetBinContent(1)<<endl;
+  cout<<endl;  
+  cout<<"<cos(n*(phi1+phi2))> from Q-vectors    = "<<fQCorrectionsCos->GetBinContent(2)<<endl;
+  cout<<"<cos(n*(phi1+phi2))> from nested loops = "<<fDirectCorrectionsCos->GetBinContent(2)<<endl;
+  cout<<endl;
+  cout<<"<sin(n*(phi1+phi2))> from Q-vectors    = "<<fQCorrectionsSin->GetBinContent(2)<<endl;
+  cout<<"<sin(n*(phi1+phi2))> from nested loops = "<<fDirectCorrectionsSin->GetBinContent(2)<<endl;
+  cout<<endl; 
+  cout<<"<cos(n*(phi1-phi2-phi3))> from Q-vectors    = "<<fQCorrectionsCos->GetBinContent(3)<<endl;
+  cout<<"<cos(n*(phi1-phi2-phi3))> from nested loops = "<<fDirectCorrectionsCos->GetBinContent(3)<<endl;
+  cout<<endl;
+  cout<<"<sin(n*(phi1-phi2-phi3))> from Q-vectors    = "<<fQCorrectionsSin->GetBinContent(3)<<endl;
+  cout<<"<sin(n*(phi1-phi2-phi3))> from nested loops = "<<fDirectCorrectionsSin->GetBinContent(3)<<endl;
+  cout<<endl;  
  }
  
  if(useWeights)
