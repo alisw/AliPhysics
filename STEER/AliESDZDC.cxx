@@ -166,18 +166,18 @@ Double32_t * AliESDZDC::GetZNCCentroid()
   // Provide coordinates of centroid over ZN (side C) front face
   Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
   Float_t y[4] = {-1.75, -1.72, 1.75, 1.75};
-  Float_t NumX=0., NumY=0., Den=0.;
+  Float_t numX=0., numY=0., den=0.;
   Float_t alpha=0.395, w;
   for(Int_t i=0; i<4; i++){
     if(fZN1TowerEnergy[i+1]<0.) fZN1TowerEnergy[i+1]=0.;
     w = TMath::Power(fZN1TowerEnergy[i+1], alpha);
-    NumX += x[i]*w;
-    NumY += y[i]*w;
-    Den += w;
+    numX += x[i]*w;
+    numY += y[i]*w;
+    den += w;
   }
-  if(Den!=0){
-    fZNCCentrCoord[0] = 1.8665*NumX/Den;
-    fZNCCentrCoord[1] = 1.8665*NumY/Den;
+  if(den!=0){
+    fZNCCentrCoord[0] = 1.8665*numX/den;
+    fZNCCentrCoord[1] = 1.8665*numY/den;
   }
   return fZNCCentrCoord;
 }
@@ -188,19 +188,19 @@ Double32_t * AliESDZDC::GetZNACentroid()
   // Provide coordinates of centroid over ZN (side A) front face
   Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
   Float_t y[4] = {-1.75, -1.72, 1.75, 1.75};
-  Float_t NumX=0., NumY=0., Den=0.;
+  Float_t numX=0., numY=0., den=0.;
   Float_t alpha=0.395, w;
   for(Int_t i=0; i<4; i++){
     if(fZN2TowerEnergy[i+1]<0.) fZN2TowerEnergy[i+1]=0.;
     w = TMath::Power(fZN2TowerEnergy[i+1], alpha);
-    NumX += x[i]*w;
-    NumY += y[i]*w;
-    Den += w;
+    numX += x[i]*w;
+    numY += y[i]*w;
+    den += w;
   }
   //
-  if(Den!=0){
-    fZNACentrCoord[0] = 1.8665*NumX/Den;
-    fZNACentrCoord[1] = 1.8665*NumY/Den;
+  if(den!=0){
+    fZNACentrCoord[0] = 1.8665*numX/den;
+    fZNACentrCoord[1] = 1.8665*numY/den;
   }
   return fZNACentrCoord;
 }
