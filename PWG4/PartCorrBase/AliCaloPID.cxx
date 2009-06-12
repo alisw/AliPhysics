@@ -153,11 +153,11 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
     abort();
   }
   
-  Float_t wPh =  fPHOSPhotonWeight ;
+  Float_t wPh  =  fPHOSPhotonWeight ;
   Float_t wPi0 =  fPHOSPi0Weight ;
-  Float_t wE =  fPHOSElectronWeight ;
-  Float_t wCh =  fPHOSChargeWeight ;
-  Float_t wNe =  fPHOSNeutralWeight ;
+  Float_t wE   =  fPHOSElectronWeight ;
+  Float_t wCh  =  fPHOSChargeWeight ;
+  Float_t wNe  =  fPHOSNeutralWeight ;
   
   
   if(calo == "PHOS" && fPHOSWeightFormula){
@@ -202,9 +202,10 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
       pdg = kNeutralUnknown ;
   }
   else{//EMCAL
-    if(pid[AliAODCluster::kPhoton]  > wPh) pdg = kPhoton ;
+    if(pid[AliAODCluster::kPhoton]+pid[AliAODCluster::kElectron]  > wPh) pdg = kPhoton ; //temporal sollution until track matching for electrons is considered
+    //if(pid[AliAODCluster::kPhoton]  > wPh) pdg = kPhoton ;
     else if(pid[AliAODCluster::kPi0] > wPi0) pdg = kPi0 ; 
-    else if(pid[AliAODCluster::kElectron]  > wE) pdg = kElectron ;
+    //else if(pid[AliAODCluster::kElectron]  > wE) pdg = kElectron ;
     else if(chargedHadronWeight + neutralHadronWeight > wCh) pdg = kChargedHadron ;  
     else if(neutralHadronWeight + chargedHadronWeight > wNe) pdg = kNeutralHadron ; 
     else pdg =  kNeutralUnknown ;
