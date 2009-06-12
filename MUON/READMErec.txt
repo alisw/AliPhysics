@@ -31,7 +31,10 @@ position.
 - We loop over pads in the bending and non-bending planes of the DE to form groups of contiguous pads. We then merge the overlapping groups
 of pads from both cathodes to build the pre-clusters that are the objects to be clusterized.
 - We unfold each pre-cluster in order to extract the number and the position of individual clusters merged in it (complex pre-clusters are
-made of a superimposition of signals from muon from physical background (e.g. hadrons) and from electronic noise).
+made of a superimposition of signals from muon, from physical background (e.g. hadrons) and from electronic noise).
+- We finally determine the MC label: take the one of the simulated track that contribute the most to the total charge of the 2 (bending and the
+non bending) pads located below the cluster position. This is possible only if we perform the reconstruction from simulated digits (which contain
+the list of MC track contributions). We set it to -1 when reconstructing from raw data or in case of failure.
 
 Several versions of pre-clustering are available, all inheriting from AliMUONVClusterFinder, with different ways to loop over pads to form
 pre-clusters:
@@ -71,22 +74,27 @@ both inheriting from AliMUONVTrackReconstructor. The reconstructed muon tracks a
 
 The general tracking procedure is as follow:
 - Build primary track candidates using clusters on station 4 and 5: Make all combination of clusters between the two chambers of station 5(4).
-For each combination compute the local position and orientation of the track and estimate its bending momentum given the averaged magnetic field
-inside the dipole and assuming that the track is coming from the vertex. Then select pairs for which the estimated bending momentum and the
-non-bending slope are within given limits. Extrapolate the primary track candidates to station 4(5), look for at least one compatible cluster to
-validate them and recompute the track parameters.
-- Remove the identical track candidates, i.e. the ones sharing exactly the same clusters.
+For each combination compute the local position and impact parameter of the tracklet at vertex and estimate its bending momentum given the averaged
+magnetic field inside the dipole and assuming that the track is coming from the vertex. Also compute the corresponding error and covariances of
+these parameters. Then select pairs for which the estimated bending momentum and the non-bending impact parameter at vertex are within given limits
+taking into account the errors. Extrapolate the primary track candidates to station 4(5), look for at least one compatible cluster to validate them
+and recompute the track parameters and covariances.
+- Remove the identical track candidates (i.e. the ones sharing exactly the same clusters), and the ones whose bending momentum and non-bending
+impact parameter at vertex are out of given limits taking into account the errors.
 - Propagate the track to stations 3, 2 then 1. At each station, ask the "ClusterServer" to provide clusters in the region of interest defined in
-the reconstruction parameters. Select the one(s) compatible with the track and recompute the track parameters, or remove the track if no good
-cluster is found.
+the reconstruction parameters. Select the one(s) compatible with the track and recompute the track parameters and covariances. Remove the track if
+no good cluster is found or if its re-computed bending momentum and non-bending impact parameter at vertex are out of given limits taking into
+account the errors.
 - Remove the connected tracks (i.e. the ones sharing one cluster or more in stations 3, 4 or 5) keeping the one with the largest number of cluster
-or the one with the lowest chi2 in case of equality. Then recompute the track parameters at each attached cluster (using the so-called Smoother
-algorithm in the case of the "Kalman" tracking).
+or the one with the lowest chi2 in case of equality. Then recompute the track parameters and covariances at each attached cluster (using the
+so-called Smoother algorithm in the case of the "Kalman" tracking).
+- Find the MC label from the label of each attached cluster (if available): more than 50% of clusters must share the same label, including 1 before
+and 1 after the dipole. Set it to -1 when reconstructing real data or in case of failure.
 - The reconstructed tracks are finally matched with the trigger tracks (reconstructed from the local response of the trigger) to identify the
 muon(s) that made the trigger.
 
 The new clusters to be attached to the track are selected according to their local chi2 (i.e. their transverse position relatively to the track,
-normalized by the convolution of the cluster resolution with the resolution of track extrapolated at the cluster location).
+normalized by the convolution of the cluster resolution with the resolution of the track extrapolated to the cluster location).
 If several compatible clusters are found on the same chamber, the track candidate is duplicated to consider all the possibilities.
 
 The last part of the tracking is the extrapolation of the reconstructed tracks to the vertex of the collision. The vertex position is measured
@@ -128,27 +136,32 @@ Every option/parameter can be set one by one. Here is the complete list of avail
 - <code>CombineClusterTrackReco(flag)</code>: switch on/off the combined cluster/track reconstruction
 - <code>SaveFullClusterInESD(flag, % of event)</code>: save all cluster info (including pads) in ESD, for the given percentage of events
   (100% by default)
+- <code>SelectOnTrackSlope(flag)</code>: switch to select tracks on their slope instead of impact parameter at vertex and/or bending momentum.
 - <code>SetMinBendingMomentum(value)</code>: set the minimum acceptable value (GeV/c) of track momentum in bending plane
 - <code>SetMaxBendingMomentum(value)</code>: set the maximum acceptable value (GeV/c) of track momentum in bending plane
-- <code>SetMaxNonBendingSlope(value)</code>: set the maximum value of the track slope in non bending plane
-- <code>SetMaxBendingSlope(value)</code>: set the maximum value of the track slope in non bending plane (used when B=0)
-- <code>SetNonBendingVertexDispersion(value)</code>: set the vertex dispersion (cm) in non bending plane (used for original tracking only)
-- <code>SetBendingVertexDispersion(value)</code>: set the vertex dispersion (cm) in bending plane (used for original tracking only)
+- <code>SetMaxNonBendingSlope(value)</code>: set the maximum value of the track slope in non bending plane (used when selecting on track slope).
+- <code>SetMaxBendingSlope(value)</code>: set the maximum value of the track slope in non bending plane (used when selecting on track slope).
+- <code>SetNonBendingVertexDispersion(value)</code>: set the vertex dispersion (cm) in non bending plane (used for the original tracking and to
+  select track on their non-bending impact parameter at vertex).
+- <code>SetBendingVertexDispersion(value)</code>: set the vertex dispersion (cm) in bending plane (used for the original tracking, to compute the
+  error on the estimated bending momentum at the very begining and to select track on their bending impact parameter at vertex (used when B=0)).
 - <code>SetMaxNonBendingDistanceToTrack(value)</code>: set the maximum distance to the track to search for compatible cluster(s) in non bending
-  direction. This value is convoluted with the track resolution to define the region of interest.
+  direction. This value is convoluted with both the track and the cluster resolutions to define the region of interest.
 - <code>SetMaxBendingDistanceToTrack(value)</code>: set the maximum distance to the track to search for compatible cluster(s) in bending direction
-  This value is convoluted with the track resolution to define the region of interest.
+  This value is convoluted with both the track and the cluster resolutions to define the region of interest.
 - <code>SetSigmaCutForTracking(value)</code>: set the cut in sigma to apply on cluster (local chi2) and track (global chi2) during tracking
 - <code>ImproveTracks(flag, sigma cut)</code>: recompute the local chi2 of each cluster with the final track parameters and removed the ones that
-  do not pass a new quality cut. The track is removed if we do not end with at least one good cluster per station.
+  do not pass a new quality cut. The track is removed if we do not end with at least one good cluster per requested station and two clusters in
+  station 4 and 5 together whatever they are requested or not.
 - <code>ImproveTracks(flag)</code>: same as above using the default quality cut
 - <code>SetSigmaCutForTrigger(value)</code>: set the cut in sigma to apply on track during trigger hit pattern search
 - <code>SetStripCutForTrigger(value)</code>: set the cut in strips to apply on trigger track during trigger chamber efficiency
 - <code>SetMaxStripAreaForTrigger(value)</code>: set the maximum search area in strips to apply on trigger track during trigger chamber efficiency
 - <code>SetMaxNormChi2MatchTrigger(value)</code>: set the maximum normalized chi2 for tracker/trigger track matching
 - <code>TrackAllTracks(flag)</code>: consider all the clusters passing the sigma cut (duplicate the track) or only the best one
-- <code>RecoverTracks(flag)</code>: if no cluster is found in a given station, we try it again after having removed the worst of the 2 clusters
-  attached in the previous station (assuming it was a cluster from background).
+- <code>RecoverTracks(flag)</code>: during the tracking procedure, if no cluster is found in station 1 or 2, we try it again after having removed
+  (if possible with respect to the condition to keep at least 1 cluster per requested station) the worst cluster attached in the previous station
+  (assuming it was a cluster from background).
 - <code>MakeTrackCandidatesFast(flag)</code>: make the primary track candidates formed by cluster on stations 4 and 5 assuming there is no
   magnetic field in that region to speed up the reconstruction.
 - <code>MakeMoreTrackCandidates(Bool_t flag)</code>: make the primary track candidate using 1 cluster on station 4 and 1 cluster on station 5
@@ -156,7 +169,7 @@ Every option/parameter can be set one by one. Here is the complete list of avail
 - <code>ComplementTracks(Bool_t flag)</code>: look for potentially missing cluster to be attached to the track (a track may contain up to 2
   clusters per chamber do to the superimposition of DE, while the tracking procedure is done in such a way that only 1 can be attached).
 - <code>RemoveConnectedTracksInSt12(Bool_t flag)</code>: extend the definition of connected tracks to be removed at the end of the tracking
-procedure to the ones sharing one cluster on more in any station, including stations 1 and 2.
+  procedure to the ones sharing one cluster on more in any station, including stations 1 and 2.
 - <code>UseSmoother(Bool_t flag)</code>: use or not the smoother to recompute the track parameters at each attached cluster
   (used for Kalman tracking only)
 - <code>UseChamber(Int_t iCh, Bool_t flag)</code>: set the chambers to be used (disable the clustering if the chamber is not used).
@@ -173,6 +186,8 @@ procedure to the ones sharing one cluster on more in any station, including stat
 - <code>ChargeSigmaCut(Double_t value)</code>: Number of sigma cut we must apply when cutting on adc-ped
 - <code>SetDefaultNonBendingReso(Int_t iCh, Double_t val)</code>: Set the default non bending resolution of chamber iCh
 - <code>SetDefaultBendingReso(Int_t iCh, Double_t val)</code>: Set the default bending resolution of chamber iCh
+- <code>SetMaxTriggerTracks(Int_t val)</code>: Set the maximum number of trigger tracks above which the tracking is cancelled
+- <code>SetMaxTrackCandidates(Int_t val)</code>: Set the maximum number of track candidates above which the tracking abort
 
 We can use the method Print("FULL") to printout all the parameters and options set in the class AliMUONRecoParam.
 
@@ -181,36 +196,40 @@ RecoParams can be put into OCDB using the MakeMUONSingleRecoParam.C or MakeMUONR
 \section rec_s5 ESD content
 
 Three kinds of track can be saved in ESD: a tracker track matched with a trigger track, a tracker track alone and a trigger track alone (unused
-data members are set to default values in the last two cases). These tracks are stored in objects of the class AliESDMuonTrack. Those objects
-contain:
+data members are set to default values in the last two cases). These tracks are stored in objects of the class AliESDMuonTrack. Two methods can be
+used to know the content of an ESD track:
+- <code>ContainTrackerData()</code>: Return kTRUE if the track contain tracker data
+- <code>ContainTriggerData()</code>: Return kTRUE if the track contain trigger data
+
+The AliESDMuonTrack objects contain:
 - Tracker track parameters (x, theta_x, y, theta_y, 1/p_yz) at vertex (x=x_vtx; y=y_vtx)
 - Tracker track parameters in the vertex plane
 - Tracker track parameters at first cluster
 - Tracker track parameter covariances at first cluster
-- Tracker track global informations (chi2, number of clusters, cluster map)
+- Tracker track global informations (track ID, chi2, number of clusters, cluster map, MC label if any)
 - TClonesArray of associated clusters stored in AliESDMuonCluster objects
-- Trigger track informations (local trigger decision, strip pattern, hit pattern)
+- Trigger track informations (local trigger decision, strip pattern, hit pattern, ...)
 - Chi2 of tracker/trigger track matching
 
-Each AliESDMuonCluster object contain by default:
+The AliESDMuonCluster objects contain:
 - Cluster ID providing information about the location of the cluster (chamber ID and DE ID)
 - Cluster position (x,y,z)
 - Cluster resolution (sigma_x,sigma_y)
-
-More information about clusters can be stored in these objects for a given fraction of events:
 - Charge
 - Chi2
-- TClonesArray of associated pads stored in AliESDMuonPad objects
+- MC label if any
+- TClonesArray of associated pads stored in AliESDMuonPad objects for a given fraction of events
 
-Each AliESDMuonPad object contain:
+The AliESDMuonPad objects contain:
 - Digit ID providing information about the location of the digit (DE ID, Manu ID, Manu channel and cathode)
 - Raw charge (ADC value)
 - Calibrated charge
+- One saturation bit and one calibration bit to say whether it is saturated/calibrated or not
 
 
 \section rec_s6 Conversion between MUON/ESD objects
 
-Every conversion between MUON objects (AliMUOVDigit/AliMUONVCluster/AliMUONTrack) and ESD objects
+Every conversion between MUON objects (AliMUONVDigit/AliMUONVCluster/AliMUONTrack) and ESD objects
 (AliESDMuonPad/AliESDMuonCluster/AliESDMuonTrack) is done by the class AliMUONESDInterface. There are 2 ways of using this class:
 
 1) Using the static methods to convert the objects one by one (and possibly put them into the provided store):
@@ -234,8 +253,9 @@ Every conversion between MUON objects (AliMUOVDigit/AliMUONVCluster/AliMUONTrack
 \verbatim
   ...
   AliMUONLocalTrigger* locTrg = ...;
+  AliMUONTriggerTrack* triggerTrack = ...;
   AliESDMuonTrack esdTrack;
-  AliMUONESDInterface::MUONToESD(locTrg, esdTrack, trackId);
+  AliMUONESDInterface::MUONToESD(*locTrg, esdTrack, trackId, triggerTrack);
 \endverbatim
 
 - Convert an AliESDMuonTrack to an AliMUONTrack:
@@ -301,8 +321,8 @@ Note: You can change (via static method) the type of the store this class is usi
 We can re-clusterize and re-track the clusters/tracks stored into the ESD by using the class AliMUONRefitter. This class gets the MUON objects
 to be refitted from an instance of AliMUONESDInterface (see section @ref rec_s6), then uses the reconstruction framework to refit the
 objects. The reconstruction parameters are still set via the class AliMUONRecoParam (see section @ref rec_s5). The initial data are not changed.
-Results are stored into new MUON objects. The aim of the refitting is to be able to study effects of changing the reconstruction parameters or the
-calibration parameters without re-running the entire reconstruction.
+Results are stored into new MUON objects. The aim of the refitting is to be able to study effects of changing the reconstruction parameter, the
+calibration parameters or the alignment without re-running the entire reconstruction.
 
 To use this class we first have to connect it to the ESD interface containing MUON objects:
 \verbatim
