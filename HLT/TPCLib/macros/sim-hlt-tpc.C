@@ -223,7 +223,7 @@ sim_hlt_tpc(const char* options="CA")
   sim.SetRunQA(":");
 
   // the normal simulation sets the specific storage for the GRP entry
-  if (!gSystem->AccessPathName("GRP/GRP/Data")) {
+  if (gSystem->AccessPathName("GRP/GRP/Data")) {
     cerr << "*********************************************************" << endl;
     cerr << "error: no GRP entry found in the currect directory, simulation might be incomplete. Skip setting specific storage for GRP entry" << endl;
     cerr << "*********************************************************" << endl << endl;
