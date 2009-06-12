@@ -262,11 +262,11 @@ void  AliAnaExample::MakeAnalysisFillAOD()
       
       AliESDCaloCells * esdCell = new AliESDCaloCells ;
       if(fDetector == "PHOS") {
-	//ConnectAODPHOSCells(); //Do Only when filling AODCaloCells
+	ConnectAODPHOSCells(); //Do Only when filling AODCaloCells
 	esdCell = (AliESDCaloCells *) GetPHOSCells();
       }
       else  {
-	//ConnectAODEMCALCells(); //Do Only when filling AODCaloCells
+	ConnectAODEMCALCells(); //Do Only when filling AODCaloCells
 	esdCell = (AliESDCaloCells *) GetEMCALCells();
       }
       
