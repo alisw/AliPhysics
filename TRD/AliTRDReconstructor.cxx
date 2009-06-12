@@ -49,6 +49,7 @@
 ClassImp(AliTRDReconstructor)
 
 TClonesArray *AliTRDReconstructor::fgClusters = 0x0;
+TClonesArray *AliTRDReconstructor::fgTracklets = 0x0;
 Char_t* AliTRDReconstructor::fgSteerNames[kNsteer] = {
   "DigitsConversion       "
  ,"Tail Cancellation      "
@@ -65,6 +66,7 @@ Char_t* AliTRDReconstructor::fgSteerNames[kNsteer] = {
  ,"Tracklet Improve       "
  ,"HLT Mode              "
  ,"Cosmic Reconstruction "
+ ,"Process Online Tracklets"
 };
 Char_t* AliTRDReconstructor::fgSteerFlags[kNsteer] = {
   "dc"// digits conversion [false]
@@ -82,6 +84,7 @@ Char_t* AliTRDReconstructor::fgSteerFlags[kNsteer] = {
  ,"ti"// improve tracklets in stand alone track finder [true]
  ,"hlt"// HLT reconstruction [false]
  ,"cos"// Cosmic Reconstruction [false]
+ ,"tp"// also use online tracklets for reconstruction [false]
 };
 Char_t* AliTRDReconstructor::fgTaskNames[kNtasks] = {
   "RawReader"
@@ -153,6 +156,9 @@ AliTRDReconstructor::~AliTRDReconstructor()
   if(fgClusters) {
     fgClusters->Delete(); delete fgClusters;
   }
+  if(fgTracklets) {
+    fgTracklets->Delete(); delete fgTracklets;
+  }
   if(fSteerParam&kOwner){
     for(Int_t itask = 0; itask < kNtasks; itask++)
       if(fDebugStream[itask]) delete fDebugStream[itask];
@@ -216,6 +222,10 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   // take over ownership of clusters
   fgClusters = clusterer.RecPoints();
   clusterer.SetClustersOwner(kFALSE);
+
+  // take over ownership of online tracklets
+  fgTracklets = clusterer.TrackletsArray();
+  clusterer.SetTrackletsOwner(kFALSE);
 }
 
 //_____________________________________________________________________________
@@ -239,6 +249,10 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   // take over ownership of clusters
   fgClusters = clusterer.RecPoints();
   clusterer.SetClustersOwner(kFALSE);
+
+  // take over ownership of online tracklets
+  fgTracklets = clusterer.TrackletsArray();
+  clusterer.SetTrackletsOwner(kFALSE);
 }
 
 //_____________________________________________________________________________

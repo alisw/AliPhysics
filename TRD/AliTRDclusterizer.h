@@ -39,7 +39,8 @@ class AliTRDclusterizer : public TNamed
 
   // steering flags
   enum{
-    kOwner  = BIT(14)  //  toggle cluster ownership
+    kTrOwner= BIT(13)  //  toggle online tracklets ownership
+   ,kClOwner= BIT(14)  //  toggle cluster ownership
    ,kLabels = BIT(15)  //  toggle MC labels for clusters
    ,kHLT    = BIT(16)  //  HLT mode
    ,kLUT    = BIT(17)  //  using look up table for cluster's r-phi position
@@ -81,6 +82,7 @@ class AliTRDclusterizer : public TNamed
   Bool_t   WriteClusters(Int_t det);
   void     ResetRecPoints();
   virtual TClonesArray    *RecPoints();
+  TClonesArray    *TrackletsArray();
   Bool_t   WriteTracklets(Int_t det);
 
   Bool_t   Raw2Clusters(AliRawReader *rawReader);
@@ -96,8 +98,9 @@ class AliTRDclusterizer : public TNamed
   static UChar_t   GetStatus(Short_t &signal);
   Int_t            GetAddedClusters() {return fNoOfClusters;}
 
-  Bool_t   IsClustersOwner() const {return TestBit(kOwner);}
-  virtual void     SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
+  Bool_t   IsClustersOwner() const {return TestBit(kClOwner);}
+  virtual void     SetClustersOwner(Bool_t own=kTRUE) {SetBit(kTrOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
+  void     SetTrackletsOwner(Bool_t own=kTRUE) {SetBit(kTrOwner, own); if(!own) {fTracklets = 0x0; } }
 
 protected:
 
@@ -106,8 +109,6 @@ protected:
   void             TailCancelation();
 
   Float_t  Unfold(Double_t eps, Int_t layer, Double_t *padSignal) const;
-  //Double_t GetCOG(Double_t signal[5]) const; 
-  //Double_t LUTposition(Int_t ilayer, Double_t ampL, Double_t ampC, Double_t ampR) const;
   
   void             SetPadStatus(const UChar_t status, UChar_t &encoding);
   UChar_t          GetPadStatus(UChar_t encoding) const;
@@ -118,11 +119,13 @@ protected:
   void             CreateCluster(const MaxStruct &Max); 
   inline void      CalcAdditionalInfo(const MaxStruct &Max, Short_t *const signals, Int_t &nPadCount);
   virtual void     AddClusterToArray(AliTRDcluster *cluster);
+  inline void      AddTrackletsToArray();
 
   const AliTRDReconstructor *fReconstructor; //! reconstructor
   AliRunLoader        *fRunLoader;           //! Run Loader
   TTree               *fClusterTree;         //! Tree with the cluster
   TClonesArray        *fRecPoints;           //! Array of clusters
+  TClonesArray        *fTracklets;           //! Array of online tracklets
 
   TTree               *fTrackletTree;        //! Tree for tracklets
 

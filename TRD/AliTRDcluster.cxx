@@ -14,7 +14,6 @@
  **************************************************************************/
 
 /* $Id$ */
-
  
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -28,6 +27,7 @@
 #include "AliTRDcluster.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
+#include "AliTRDtrackletWord.h"
 
 ClassImp(AliTRDcluster)
 
@@ -111,6 +111,24 @@ AliTRDcluster::AliTRDcluster(Int_t det, Float_t q
     AddTrackIndex(tracks);
   }
   SetBit(kLUT);
+}
+
+//_____________________________________________________________________________
+AliTRDcluster::AliTRDcluster(const AliTRDtrackletWord *const tracklet, Int_t det, UShort_t volid)
+  :AliCluster(volid,tracklet->GetX(),tracklet->GetY(),tracklet->GetZ(),0,0,0)
+  ,fPadCol(0)
+  ,fPadRow(0)
+  ,fPadTime(0)
+  ,fLocalTimeBin(0)
+  ,fNPads(0)
+  ,fClusterMasking(0)
+  ,fDetector(det)
+  ,fQ(0.)
+  ,fCenter(0.)
+{
+  //
+  // Constructor from online tracklet 
+  //
 }
 
 //_____________________________________________________________________________

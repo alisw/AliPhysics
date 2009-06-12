@@ -13,6 +13,8 @@
 
 #include "AliCluster.h"
 
+class AliTRDtrackletWord;
+
 class AliTRDcluster : public AliCluster {
 public:
   enum ETRDclusterStatus { 
@@ -35,6 +37,7 @@ public:
     Int_t *tracks, Char_t npads, Short_t *signals,
     UChar_t col, UChar_t row, UChar_t time,
     Char_t timebin, Float_t center, UShort_t volid);
+  AliTRDcluster(const AliTRDtrackletWord *const tracklet, Int_t det, UShort_t volid);
   AliTRDcluster(const AliTRDcluster &c);
   virtual ~AliTRDcluster() {};
 

@@ -38,8 +38,9 @@ public:
     ,kImproveTracklet   = BIT(12) // Improve tracklet in the SA TRD track finder 
     ,kHLT            = BIT(13)
     ,kCosmic         = BIT(14)
-    ,kOwner          = BIT(15)
-    ,kNsteer         = 15       // number of tasks
+    ,kProcTracklets  = BIT(15) // process online tracklets
+    ,kOwner          = BIT(16)
+    ,kNsteer         = 16       // number of tasks
   };
   enum ETRDReconstructorTask {
     kRawReader    = 0
@@ -67,6 +68,7 @@ public:
   virtual void        FillESD(AliRawReader *, TTree *clusterTree, AliESDEvent *esd) const { FillESD((TTree * )NULL, clusterTree, esd);                    }
   virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
   static TClonesArray* GetClusters() {return fgClusters;}
+  static TClonesArray* GetTracklets() {return fgTracklets;}
   Int_t               GetNdEdxSlices() const     { return (Int_t)AliTRDpidUtil::GetNdEdxSlices(GetPIDMethod());}
   ETRDReconstructorGas GetDriftGas() const        { return fSteerParam&kDriftGas ? kAr : kXe;}
   AliTRDpidUtil::ETRDPIDMethod       GetPIDMethod() const       { return fSteerParam&kSteerPID ? AliTRDpidUtil::kNN : AliTRDpidUtil::kLQ;}
@@ -86,12 +88,14 @@ public:
   Bool_t              UseLUT() const             { return fSteerParam&kLUT;}
   Bool_t              UseGAUS() const             { return fSteerParam&kGAUS;}
   Bool_t              UseTailCancelation() const { return fSteerParam&kTC;}
+  Bool_t              IsProcessingTracklets() const { return fSteerParam&kProcTracklets;}
   
   static void         Options(UInt_t steer=0, UChar_t *stream=0x0);
   virtual void        Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;
   virtual void        Reconstruct(TTree *digitsTree, TTree *clusterTree) const;
 
   static void         SetClusters(TClonesArray *clusters) {fgClusters = clusters;}
+  static void         SetTracklets(TClonesArray *tracklets) {fgTracklets = tracklets;}
   void	              SetOption(Option_t *opt);
   inline void         SetTCParams(Double_t *par);
   void                SetStreamLevel(Int_t level, ETRDReconstructorTask task= kTracker);
@@ -107,6 +111,7 @@ private:
   TTreeSRedirector *fDebugStream[kNtasks];// Debug Streamer container;
  
   static TClonesArray *fgClusters;    // list of clusters for local reconstructor
+  static TClonesArray *fgTracklets;   // list of online tracklets for local reconstructor
 
   ClassDef(AliTRDReconstructor, 2)    //  Class for the TRD reconstruction
 

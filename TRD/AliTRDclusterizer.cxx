@@ -49,6 +49,7 @@
 #include "AliTRDSignalIndex.h"
 #include "AliTRDrawStreamBase.h"
 #include "AliTRDfeeParam.h"
+#include "AliTRDtrackletWord.h"
 
 #include "TTreeStream.h"
 
@@ -65,6 +66,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
   ,fRunLoader(NULL)
   ,fClusterTree(NULL)
   ,fRecPoints(NULL)
+  ,fTracklets(NULL)
   ,fTrackletTree(NULL)
   ,fDigitsManager(new AliTRDdigitsManager())
   ,fTrackletContainer(NULL)
@@ -122,6 +124,7 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title, co
   ,fRunLoader(NULL)
   ,fClusterTree(NULL)
   ,fRecPoints(NULL)
+  ,fTracklets(NULL)
   ,fTrackletTree(NULL)
   ,fDigitsManager(new AliTRDdigitsManager())
   ,fTrackletContainer(NULL)
@@ -174,6 +177,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
   ,fRunLoader(NULL)
   ,fClusterTree(NULL)
   ,fRecPoints(NULL)
+  ,fTracklets(NULL)
   ,fTrackletTree(NULL)
   ,fDigitsManager(NULL)
   ,fTrackletContainer(NULL)
@@ -222,6 +226,11 @@ AliTRDclusterizer::~AliTRDclusterizer()
     delete fRecPoints;
   }
 
+  if (fTracklets){
+    fTracklets->Delete();
+    delete fTracklets;
+  }
+
   if (fDigitsManager) {
     delete fDigitsManager;
     fDigitsManager = NULL;
@@ -236,11 +245,6 @@ AliTRDclusterizer::~AliTRDclusterizer()
     delete fTransform;
     fTransform     = NULL;
   }
-
-//   if (fLUT) {
-//     delete [] fLUT;
-//     fLUT           = NULL;
-//   }
 
 }
 
@@ -629,7 +633,7 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   fDigitsManager->SetUseDictionaries(TestBit(kLabels));
 
   // tracklet container for raw tracklet writing
-  if (!fTrackletContainer && fReconstructor->IsWritingTracklets()) {
+  if (!fTrackletContainer && ( fReconstructor->IsWritingTracklets() || fReconstructor->IsProcessingTracklets() )) {
     // maximum tracklets for one HC
     const Int_t kTrackletChmb=256;
     fTrackletContainer = new UInt_t *[2];
@@ -654,7 +658,7 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
     if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det);
   }
   
-  if (fReconstructor->IsWritingTracklets()){
+  if (fTrackletContainer){
     delete [] fTrackletContainer[0];
     delete [] fTrackletContainer[1];
     delete [] fTrackletContainer;
@@ -779,6 +783,9 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   Int_t    iGeoLayer  = AliGeomManager::kTRD1 + fLayer;
   Int_t    iGeoModule = istack + AliTRDgeometry::Nstack() * isector;
   fVolid      = AliGeomManager::LayerToVolUID(iGeoLayer,iGeoModule); 
+
+  if(fReconstructor->IsProcessingTracklets() && fTrackletContainer)
+    AddTrackletsToArray();
 
   fColMax    = fDigits->GetNcol();
   //Int_t nRowMax    = fDigits->GetNrow();
@@ -1025,6 +1032,26 @@ void AliTRDclusterizer::AddClusterToArray(AliTRDcluster *cluster)
   Int_t n = RecPoints()->GetEntriesFast();
   if(n!=fNoOfClusters)AliError(Form("fNoOfClusters != RecPoints()->GetEntriesFast %i != %i \n", fNoOfClusters, n));
   new((*RecPoints())[n]) AliTRDcluster(*cluster);
+}
+
+//_____________________________________________________________________________
+void AliTRDclusterizer::AddTrackletsToArray()
+{
+  //
+  // Add the online tracklets of this chamber to the array
+  //
+
+  UInt_t* trackletword;
+  for(Int_t side=0; side<2; side++)
+    {
+      Int_t trkl=0;
+      trackletword=fTrackletContainer[side];
+      do{
+	Int_t n = TrackletsArray()->GetEntriesFast();
+	new((*TrackletsArray())[n]) AliTRDcluster(&AliTRDtrackletWord(trackletword[trkl]),fDet,fVolid);
+	trkl++;
+      }while(trackletword[trkl]>0);
+    }
 }
 
 //_____________________________________________________________________________
@@ -1322,6 +1349,22 @@ TClonesArray *AliTRDclusterizer::RecPoints()
     AliTRDReconstructor::SetClusters(0x0);
   }
   return fRecPoints;
+
+}
+
+//_____________________________________________________________________________
+TClonesArray *AliTRDclusterizer::TrackletsArray() 
+{
+  //
+  // Returns the list of rec points
+  //
+
+  if (!fTracklets && fReconstructor->IsProcessingTracklets()) {
+    fTracklets = new TClonesArray("AliTRDcluster", 2*MAX_TRACKLETS_PERHC);
+    //SetClustersOwner(kTRUE);
+    //AliTRDReconstructor::SetTracklets(0x0);
+  }
+  return fTracklets;
 
 }
 
