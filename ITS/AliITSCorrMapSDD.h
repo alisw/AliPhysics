@@ -72,6 +72,7 @@ class AliITSCorrMapSDD : public TNamed {
 
   Float_t GetCorrection(Float_t z, Float_t x, AliITSsegmentationSDD *seg);
   TH2F* GetMapHisto() const;
+  TH1F* GetMapProfile() const;
   TH1F* GetResidualDistr(Float_t dmin=-300., Float_t dmax=300.) const;
 
 

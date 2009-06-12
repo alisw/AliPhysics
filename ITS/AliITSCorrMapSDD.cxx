@@ -56,7 +56,8 @@ Float_t AliITSCorrMapSDD::GetCorrection(Float_t z, Float_t x, AliITSsegmentation
   if(bina>nAnodes)  AliError("Wrong anode anumber!");
   if(bina>=nAnodesHybrid) bina-=nAnodesHybrid;
   Float_t stept = seg->Dx()*kMicronTocm/(Float_t)fNDriftPts;
-  Int_t bint = TMath::Abs((Int_t)(x/stept));
+  Float_t drLen= seg->Dx()*kMicronTocm-TMath::Abs(x);
+  Int_t bint = TMath::Abs((Int_t)(drLen/stept));
   if(bint==fNDriftPts) bint-=1;
   if(bint>=fNDriftPts) AliError("Wrong bin number along drift direction!");
   return kMicronTocm*GetCellContent(bina,bint);
@@ -73,6 +74,22 @@ TH2F* AliITSCorrMapSDD::GetMapHisto() const{
     }
   }
   return hmap;
+}
+//______________________________________________________________________
+TH1F* AliITSCorrMapSDD::GetMapProfile() const{
+  // Returns a TH1F with the projection of the map along drift coordinate
+  Char_t hname[50];
+  sprintf(hname,"p%s",GetName());
+  TH1F* hprof=new TH1F(hname,"",fNDriftPts,0.,35.);
+  for(Int_t iDr=0;iDr<fNDriftPts; iDr++){
+    Float_t meanval=0.;
+    for(Int_t iAn=0;iAn<fNAnodePts; iAn++){
+      meanval+=GetCellContent(iAn,iDr);
+    }
+    hprof->SetBinContent(iDr+1,meanval/fNAnodePts);
+  }
+  return hprof;
+  
 }
 //______________________________________________________________________
 TH1F* AliITSCorrMapSDD::GetResidualDistr(Float_t dmin, Float_t dmax) const{
