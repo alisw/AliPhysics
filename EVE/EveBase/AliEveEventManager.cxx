@@ -789,8 +789,6 @@ void AliEveEventManager::NextEvent()
     {
       GotoEvent(nextevent);
     }
-    //else 
-    //  GotoEvent(fEventId + 1);
   }
 }
 
@@ -813,8 +811,6 @@ void AliEveEventManager::PrevEvent()
   {
     GotoEvent(nextevent);
   }
-  //else
-  //  GotoEvent(fEventId - 1);
 }
 
 void AliEveEventManager::Close()

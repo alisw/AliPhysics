@@ -4,13 +4,14 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
-//  Finds events according to specified criteria
+//  AliEveEventSelector class
+//  selects events according to given criteria
 //
-//  origin: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
+//  origin: Mikolaj Krzewicki, Nikhef, Mikolaj.Krzewicki@cern.ch
 //
-//////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
 #include "AliEveEventSelector.h"
 #include "AliEveEventManager.h"
@@ -29,8 +30,7 @@ ClassImp(AliEveEventSelector)
 //_____________________________________________________________________________
 AliEveEventSelector::AliEveEventSelector(AliEveEventManager* evman):
   fPEventManager(evman),
-  fWrapAround(kTRUE),
-  fMaxEventId(fPEventManager->GetMaxEventId()),
+  fWrapAround(kFALSE),
   fSelectOnString(kFALSE),
   fString(""),
   fPEntryList(NULL),
@@ -51,12 +51,12 @@ AliEveEventSelector::AliEveEventSelector(AliEveEventManager* evman):
 void AliEveEventSelector::SetSelectionString( const TString& str )
 {
   //selection string setter
+  //takes care of producing a list of entries passing selection
 
   TTree* pESDTree = fPEventManager->GetESDTree();
   if (!pESDTree || fString==str) return;//don't waist time
   fString = str;
   if (str == "" ) return;//on reset don't recalculate
-  fMaxEventId = fPEventManager->GetMaxEventId();
   pESDTree->Draw( ">>listofentries", fString, "entrylist");
   fPEntryList = dynamic_cast<TEntryList*>(gDirectory->Get("listofentries"));
 }
@@ -64,6 +64,8 @@ void AliEveEventSelector::SetSelectionString( const TString& str )
 //_____________________________________________________________________________
 void AliEveEventSelector::SetSelectionString( const char* str )
 {
+  //selection string setter
+
   TString ts = str;
   SetSelectionString(ts);
 }
@@ -71,12 +73,16 @@ void AliEveEventSelector::SetSelectionString( const char* str )
 //_____________________________________________________________________________
 void AliEveEventSelector::SetTriggerType( const TString& type )
 {
+  //trigger type setter
+
   fTriggerType = type;
 }
 
 //_____________________________________________________________________________
 void AliEveEventSelector::SetTriggerType( const char* type)
 {
+  //trigger type setter
+
   TString ts = type;
   SetTriggerType(ts);
 }
@@ -84,15 +90,16 @@ void AliEveEventSelector::SetTriggerType( const char* type)
 //_____________________________________________________________________________
 void AliEveEventSelector::UpdateEntryList()
 {
-  //update the entrylist from file if file changed
+  //update the entrylist from if file changed
+
   TTree* pESDTree = fPEventManager->GetESDTree();
   if (!pESDTree) return;
   
-  Long64_t treesize = fPEventManager->GetMaxEventId();
-  if (treesize<=fMaxEventId) return; //nothing changed, do nothing
+  Long64_t treesize = fPEventManager->GetMaxEventId()+1;
+  if (treesize<=fLastTreeSize) return; //nothing changed, do nothing
   pESDTree->Draw(">>+fPEntryList", fString, "entrylist",
-      fMaxEventId, treesize-fMaxEventId );
-  fMaxEventId = treesize;
+                 fLastTreeSize+1, treesize-fLastTreeSize );
+  fLastTreeSize = treesize;
 }
 
 //_____________________________________________________________________________
@@ -114,7 +121,7 @@ Bool_t AliEveEventSelector::FindNext( Int_t& output )
   if (!pESDTree) return kFALSE;
   AliESDEvent* pESDEvent = fPEventManager->GetESD();
   Int_t eventId = fPEventManager->GetEventId();
-  fMaxEventId = fPEventManager->GetMaxEventId();
+  Int_t fMaxEventId = fPEventManager->GetMaxEventId();
 
   if (!fSelectOnString)
   {
@@ -145,6 +152,7 @@ Bool_t AliEveEventSelector::FindNext( Int_t& output )
   else
   {
     //select using the entrylist
+    UpdateEntryList(); //update entry list if tree got bigger
     for (Long64_t i=fEntryListId+1; i<fPEntryList->GetN(); i++ )
     {
       Long64_t entry = fPEntryList->GetEntry(i);
@@ -187,7 +195,7 @@ Bool_t AliEveEventSelector::FindPrev( Int_t& output )
   if (!pESDTree) return kFALSE;
   AliESDEvent* pESDEvent = fPEventManager->GetESD();
   Int_t eventId = fPEventManager->GetEventId();
-  fMaxEventId = fPEventManager->GetMaxEventId();
+  Int_t fMaxEventId = fPEventManager->GetMaxEventId();
 
   if (!fSelectOnString)
   {
@@ -252,16 +260,13 @@ Bool_t AliEveEventSelector::FindPrev( Int_t& output )
 Bool_t AliEveEventSelector::CheckOtherSelection( AliESDEvent* pESDEvent )
 {
   //checks the event for any other hardcoded selection criteria
+  
   Bool_t ret=kTRUE;
 
   //trigger stuff
   if (fSelectOnTriggerType)
   {
     TString firedtrclasses = pESDEvent->GetFiredTriggerClasses();
-    printf(firedtrclasses.Data());
-    printf("\n");
-    printf(fTriggerType.Data());
-    printf("\n");
     if (!(firedtrclasses.Contains(fTriggerType))) return kFALSE;
     //if (!pESDEvent->IsTriggerClassFired(fTriggerType.Data())) return kFALSE;
   }
@@ -280,8 +285,8 @@ Bool_t AliEveEventSelector::CheckOtherSelection( AliESDEvent* pESDEvent )
     triggermaskstr += triggermask;
     TString selstr(fTriggerSelectionString); //make copy
     selstr.ReplaceAll(fTriggerMaskPatternString,triggermaskstr);
-    Int_t returncode;
-    Bool_t result = static_cast<Bool_t>(gROOT->ProcessLine(selstr,&returncode));
+    //Int_t returncode;
+    Bool_t result = static_cast<Bool_t>(gROOT->ProcessLine(selstr));//,&returncode));
     //if (!returncode) return kFALSE;
     if (!result) return kFALSE;
   }
@@ -292,6 +297,8 @@ Bool_t AliEveEventSelector::CheckOtherSelection( AliESDEvent* pESDEvent )
 //_____________________________________________________________________________
 void AliEveEventSelector::SetTriggerSelectionString( TString str )
 {
+  //parses and sets the trigger selection formula
+  
   const AliESDRun* run = fPEventManager->GetESD()->GetESDRun();
   for (Int_t i=0; i<run->kNTriggerClasses; i++)
   {

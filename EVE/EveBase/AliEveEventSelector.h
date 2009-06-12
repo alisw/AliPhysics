@@ -4,13 +4,17 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+////////////////////////////////////////////////////////////////////////////
+//
+//  AliEveEventSelector class
+//  selects events according to given criteria
+//
+//  origin: Mikolaj Krzewicki, Nikhef, Mikolaj.Krzewicki@cern.ch
+//
+////////////////////////////////////////////////////////////////////////////
+
 #ifndef AliEveEventSelector_H
 #define AliEveEventSelector_H
-
-// AliEveEventSelector
-//
-// Event selector class
-//
 
 #include "AliEveEventManager.h"
 #include <TObject.h>
@@ -72,25 +76,25 @@ private:
   AliEveEventSelector(const AliEveEventSelector&);
   AliEveEventSelector& operator=(const AliEveEventSelector&);
 
-  AliEveEventManager *fPEventManager;
-  Bool_t fWrapAround;
-  Long64_t fMaxEventId;
+  AliEveEventManager *fPEventManager; //event manager
+  Bool_t fWrapAround;                 //go back to the first event after the last?
   
-  Bool_t fSelectOnString;
-  TString fString;
-  TEntryList* fPEntryList;
-  Int_t  fEntryListId;
+  Bool_t fSelectOnString;             //whether to select on string expression
+  TString fString;                    //expression to select on
+  TEntryList* fPEntryList;            //list of enry numbers after selection
+  Int_t  fEntryListId;                //current entry no. in entry list
+  Int_t fLastTreeSize;                //stores the last treesize
 
-  Bool_t fSelectOnTriggerType;
-  TString fTriggerType;
+  Bool_t fSelectOnTriggerType;        //whether to select on trigger type
+  TString fTriggerType;               //trigger type
 
-  Bool_t fSelectOnTriggerString;
-  TString fTriggerSelectionString;
-  TString fTriggerMaskPatternString;
+  Bool_t fSelectOnTriggerString;      //whether to select on trigger type with a formula
+  TString fTriggerSelectionString;    //trigger selection formula
+  TString fTriggerMaskPatternString;  //trigger mask placeholder for evaluation
 
-  Bool_t fSelectOnMultiplicity;
-  Int_t fMultiplicityLow;
-  Int_t fMultiplicityHigh;
+  Bool_t fSelectOnMultiplicity;       //whether to select on multiplicity
+  Int_t fMultiplicityLow;             //lower bound on multiplicity
+  Int_t fMultiplicityHigh;            //higher bound on multiplicity
 
 
   ClassDef(AliEveEventSelector, 2); 

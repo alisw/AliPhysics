@@ -4,6 +4,14 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+///////////////////////////////////////////////////////////////////////////
+//
+//  implementation of a GUI for the event/trigger selection
+//
+//  origin: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
+//
+//////////////////////////////////////////////////////////////////////////
+
 #include "AliEveEventSelectorWindow.h"
 #include "AliEveEventSelector.h"
 #include "AliEveEventManager.h"
@@ -74,6 +82,7 @@ AliEveEventSelectorWindow::AliEveEventSelectorWindow(const TGWindow *p, UInt_t w
   TGCheckButton* checktextsel = new TGCheckButton(hframetxtsel);
   checktextsel->Connect("Toggled(Bool_t)", "AliEveEventSelector",
                         fPSelector, "SetSelectOnString(Bool_t)");
+  checktextsel->SetState(fPSelector->GetSelectOnString() ? kButtonDown : kButtonUp);
   hframetxtsel->AddFrame(checktextsel, new TGLayoutHints(kLHintsLeft));
 
   fPEntryLowerBound = new TGNumberEntry(hframetxtsel);
@@ -96,6 +105,7 @@ AliEveEventSelectorWindow::AliEveEventSelectorWindow(const TGWindow *p, UInt_t w
   fPCheckTriggerSimple = new TGCheckButton(hframetrigger);
   fPCheckTriggerSimple->Connect("Toggled(Bool_t)","AliEveEventSelector",
                           fPSelector,"SetSelectOnTriggerType(Bool_t)");
+  fPCheckTriggerSimple->SetState(fPSelector->GetSelectOnTriggerType() ? kButtonDown : kButtonUp );
   hframetrigger->AddFrame(fPCheckTriggerSimple, new TGLayoutHints(kLHintsLeft));
   fPComboBoxTrigger = new TGComboBox(hframetrigger);
   fPComboBoxTrigger->Resize(100,20);
@@ -109,6 +119,7 @@ AliEveEventSelectorWindow::AliEveEventSelectorWindow(const TGWindow *p, UInt_t w
   hframetrigger->AddFrame(fPCheckTriggerString, new TGLayoutHints(kLHintsLeft));
   fPCheckTriggerString->Connect("Toggled(Bool_t)","AliEveEventSelector",
                            fPSelector,"SetSelectOnTriggerString(Bool_t)");
+  fPCheckTriggerString->SetState(fPSelector->GetSelectOnTriggerString() ? kButtonDown : kButtonUp );
   fPEntryTriggerSelection = new TGTextEntry(hframetrigger);
   hframetrigger->AddFrame(fPEntryTriggerSelection, new TGLayoutHints(kLHintsExpandX));
   TGTextButton* buttontrigsel = new TGTextButton(hframetrigger,"Set");
@@ -125,6 +136,7 @@ AliEveEventSelectorWindow::AliEveEventSelectorWindow(const TGWindow *p, UInt_t w
   TGCheckButton* checkmult = new TGCheckButton(hframemult);
   checkmult->Connect("Toggled(Bool_t)", "AliEveEventSelector",
                       fPSelector,"SetSelectOnMultiplicity(Bool_t)");
+  checkmult->SetState(fPSelector->GetSelectOnMultiplicity() ? kButtonDown : kButtonUp );
   hframemult->AddFrame(checkmult, new TGLayoutHints(kLHintsLeft));
   fPEntryMultLow = new TGNumberEntry(hframemult);
   hframemult->AddFrame(fPEntryMultLow, new TGLayoutHints(kLHintsLeft));
@@ -145,6 +157,7 @@ AliEveEventSelectorWindow::AliEveEventSelectorWindow(const TGWindow *p, UInt_t w
   hframewrap->AddFrame(checkwraparound, new TGLayoutHints(kLHintsLeft));
   checkwraparound->Connect("Toggled(Bool_t)","AliEveEventSelector",
                            fPSelector, "SetWrapAround(Bool_t)");
+  checkwraparound->SetState(fPSelector->GetWrapAround() ? kButtonDown : kButtonUp );
 
   SetupTriggerSelect();
   
@@ -159,11 +172,14 @@ AliEveEventSelectorWindow::AliEveEventSelectorWindow(const TGWindow *p, UInt_t w
 //______________________________________________________________________________
 AliEveEventSelectorWindow::~AliEveEventSelectorWindow()
 {
+  //dtor
 }
 
 //______________________________________________________________________________
 void AliEveEventSelectorWindow::SetupTriggerSelect()
-{   
+{ 
+  //Set up the list of available triggers
+
   // Do nothing if already enabled.
   if (fPComboBoxTrigger->GetNumberOfEntries() > 0)
     return;
@@ -205,6 +221,8 @@ void AliEveEventSelectorWindow::SetupTriggerSelect()
 //______________________________________________________________________________
 void AliEveEventSelectorWindow::DoSetSelectionString()
 {
+  //process the entered formula and send it to the selector
+
   TString str = fPEntryFormula->GetText();
   TString s;
   if (fPEntryLowerBound->GetNumber()==0&&fPEntryHigherBound->GetNumber()==0)
@@ -229,6 +247,8 @@ void AliEveEventSelectorWindow::DoSetSelectionString()
 //______________________________________________________________________________
 void AliEveEventSelectorWindow::DoDrawHistogram()
 {
+  //Draw histogram with formula in the draw field
+
   TTree* tree = fPSelector->GetESDTree();
   TString str = fPDrawFormula->GetText();
   str += ">>selectionhist";
@@ -242,6 +262,8 @@ void AliEveEventSelectorWindow::DoDrawHistogram()
 //______________________________________________________________________________
 void AliEveEventSelectorWindow::DoSetTriggerSelectionString()
 {
+  //Set trigger selection formula
+  
   TString string = fPEntryTriggerSelection->GetText();
   fPSelector->SetTriggerSelectionString(string);
   fPEntryTriggerSelection->SetToolTipText(fPSelector->GetTriggerSelectionString());
@@ -250,6 +272,8 @@ void AliEveEventSelectorWindow::DoSetTriggerSelectionString()
 //______________________________________________________________________________
 void AliEveEventSelectorWindow::DoHandleTriggerFromComboBox(const char* str)
 {
+  //Dispatch the trigger selection to proper destination
+  
   if (fPSelector->GetSelectOnTriggerString() && !fPSelector->GetSelectOnTriggerType())
   {
     fPEntryTriggerSelection->Insert(str);
@@ -262,6 +286,8 @@ void AliEveEventSelectorWindow::DoHandleTriggerFromComboBox(const char* str)
 //______________________________________________________________________________
 void AliEveEventSelectorWindow::DoSetMultiplicityRange()
 {
+  //Set the multiplicity range
+  
   fPSelector->SetMultiplicityLow(fPEntryMultLow->GetNumber());
   fPSelector->SetMultiplicityHigh(fPEntryMultHigh->GetNumber());
 }
