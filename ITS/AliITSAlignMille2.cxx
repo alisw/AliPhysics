@@ -48,6 +48,33 @@
 
 ClassImp(AliITSAlignMille2)
 
+const Char_t* AliITSAlignMille2::kRecKeys[] = {
+  "GEOMETRY_FILE",
+  "SUPERMODULE_FILE",
+  "CONSTRAINTS_REFERENCE_FILE",
+  "PREALIGNMENT_FILE",
+  "PRECALIBSDD_FILE",
+  "INITCALBSDD_FILE",
+  "SET_GLOBAL_DELTAS",
+  "CONSTRAINT_LOCAL",
+  "MODULE_VOLUID",
+  "MODULE_INDEX",
+  "SET_PSEUDO_PARENTS",
+  "SET_TRACK_FIT_METHOD",
+  "SET_MINPNT_TRA",
+  "SET_NSTDDEV",
+  "SET_RESCUT_INIT",
+  "SET_RESCUT_OTHER",
+  "SET_LOCALSIGMAFACTOR",
+  "SET_STARTFAC",
+  "SET_B_FIELD",
+  "SET_SPARSE_MATRIX",
+  "REQUIRE_POINT",
+  "CONSTRAINT_ORPHANS",
+  "CONSTRAINT_SUBUNITS",
+  "APPLY_CONSTRAINT"
+};
+
 
 //========================================================================================================
 
@@ -151,6 +178,8 @@ AliITSAlignMille2::~AliITSAlignMille2()
 }
 
 ///////////////////////////////////////////////////////////////////////
+
+
 TObjArray* AliITSAlignMille2::GetConfigRecord(FILE* stream, TString& recTitle, TString& recOpt, Bool_t rew)
 {
   // read new record from config file
@@ -183,6 +212,40 @@ TObjArray* AliITSAlignMille2::GetConfigRecord(FILE* stream, TString& recTitle, T
 }
 
 //________________________________________________________________________________________________________
+Int_t AliITSAlignMille2::CheckConfigRecords(FILE* stream)
+{  
+  TString record,recTitle;
+  int lineCnt = 0;
+  rewind(stream);
+  while (record.Gets(stream)) {
+    int cmt=record.Index("#"); 
+    lineCnt++;
+    if (cmt>=0) record.Remove(cmt);  // skip comment
+    record.ReplaceAll("\t"," ");
+    record.ReplaceAll("\r"," ");
+    record.Remove(TString::kBoth,' ');
+    if (record.IsNull()) continue;   // nothing to decode  
+    // extract keyword
+    int spc = record.Index(" ");
+    if (spc>0) recTitle = record(0,spc);
+    else     recTitle = record;
+    recTitle.ToUpper();
+    Bool_t strOK = kFALSE;
+    for (int ik=kNKeyWords;ik--;) if (recTitle == kRecKeys[ik]) {strOK = kTRUE; break;}
+    if (strOK) continue;
+    //
+    AliError(Form("Unknown keyword %s at line %d",
+		  recTitle.Data(),lineCnt));
+    return -1;
+    //
+  }
+  //
+  rewind(stream);
+  return 0;
+}
+
+
+//________________________________________________________________________________________________________
 Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
 {  
   // return 0 if success
@@ -198,39 +261,41 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
   fNModules = 0;
   Bool_t stopped = kFALSE;
   //
+  if (CheckConfigRecords(pfc)<0) return -1;
+  //
   while(1) { 
     //
     // ============= 1: we read some obligatory records in predefined order ================
     //  
-    recTitle = "GEOMETRY_FILE";
+    recTitle = kRecKeys[kGeomFile];
     if ( !GetConfigRecord(pfc,recTitle,recOpt,1) || 
 	 (fGeometryFileName=recOpt).IsNull()     || 
 	 gSystem->AccessPathName(recOpt.Data())  ||
 	 InitGeometry()	)
       { AliError("Failed to find/load Geometry"); stopped = kTRUE; break;}
     //
-    recTitle = "SUPERMODULE_FILE";
+    recTitle = kRecKeys[kSuperModileFile];
     if ( !GetConfigRecord(pfc,recTitle,recOpt,1) || 
 	 recOpt.IsNull()                         || 
 	 gSystem->AccessPathName(recOpt.Data())  ||
 	 LoadSuperModuleFile(recOpt.Data()))
       { AliError("Failed to find/load SuperModules"); stopped = kTRUE; break;}
     //
-    recTitle = "CONSTRAINTS_REFERENCE_FILE";      // LOCAL_CONSTRAINTS are defined wrt these deltas
+    recTitle = kRecKeys[kConstrRefFile];      // LOCAL_CONSTRAINTS are defined wrt these deltas
     if ( GetConfigRecord(pfc,recTitle,recOpt,1) ) {
       if (recOpt.IsNull() || recOpt=="IDEAL") SetConstraintWrtRef( "IDEAL" );
       else if (gSystem->AccessPathName(recOpt.Data()) || SetConstraintWrtRef(recOpt.Data()) )
 	{ AliError("Failed to load reference deltas for local constraints"); stopped = kTRUE; break;}
     }
     //	 
-    recTitle = "PREALIGNMENT_FILE";
+    recTitle = kRecKeys[kPrealignFile];
     if ( GetConfigRecord(pfc,recTitle,recOpt,1) )
       if ( (fPreAlignmentFileName=recOpt).IsNull() || 
 	   gSystem->AccessPathName(recOpt.Data())   ||
 	   ApplyToGeometry()) 
 	{ AliError(Form("Failed to load Prealignment file %s",recOpt.Data())); stopped = kTRUE; break;}
     //
-    recTitle = "PRECALIBSDD_FILE";
+    recTitle = kRecKeys[kPreCalSDDFile];
     if ( GetConfigRecord(pfc,recTitle,recOpt,1) ) {
       if ( recOpt.IsNull() || gSystem->AccessPathName(recOpt.Data()) ) {stopped = kTRUE; break;}
       AliInfo(Form("Using %s for SDD precalibration",recOpt.Data()));
@@ -242,7 +307,7 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
       if (!fCorrectSDD) {AliError("Precalibration SDD object is not found"); stopped = kTRUE; break;}
     }
     //
-    recTitle = "INITCALBSDD_FILE";
+    recTitle = kRecKeys[ kInitCalSDDFile ];
     if ( GetConfigRecord(pfc,recTitle,recOpt,1) ) {
       if ( recOpt.IsNull() || gSystem->AccessPathName(recOpt.Data()) ) {stopped = kTRUE; break;}
       AliInfo(Form("Using %s as SDD calibration used in TrackPoints",recOpt.Data()));
@@ -254,13 +319,13 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
       if (!fInitialRecSDD) {AliError("Initial Calibration SDD object is not found"); stopped = kTRUE; break;}
     }
     //
-    recTitle = "SET_GLOBAL_DELTAS";
+    recTitle = kRecKeys[ kGlobalDeltas ];
     if ( GetConfigRecord(pfc,recTitle,recOpt,1) ) SetUseGlobalDelta(kTRUE);
     //
     // =========== 2: see if there are local gaussian constraints defined =====================
     //            Note that they should be loaded before the modules declaration
     //
-    recTitle = "CONSTRAINT_LOCAL";
+    recTitle = kRecKeys[ kConstrLocal ];
     while( (recArr=GetConfigRecord(pfc,recTitle,recOpt,0)) ) {
       nrecElems = recArr->GetLast()+1;
       if (recOpt.IsFloat()) {stopped = kTRUE; break;} // wrong name
@@ -293,7 +358,7 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
     //
     rewind(pfc);
     while( (recArr=GetConfigRecord(pfc,recTitle="",recOpt,0)) ) {
-      if (!(recTitle=="MODULE_VOLUID" || recTitle=="MODULE_INDEX")) continue;
+      if (!(recTitle==kRecKeys[ kModVolID ] || recTitle==kRecKeys[ kModIndex ])) continue;
       // Expected format: MODULE id tolX tolY tolZ tolPsi tolTh tolPhi [[sigX sigY sigZ]  extra params]
       // where tol* is the tolerance (sigma) for given DOF. 0 means fixed
       // sig* is the scaling parameters for the errors of the clusters of this module
@@ -398,35 +463,35 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
       //
       // some simple flags -----------------------------------------------------------------------
       //
-      if      (recTitle == "SET_PSEUDO_PARENTS")  SetAllowPseudoParents(kTRUE);
+      if      (recTitle == kRecKeys[ kPseudoParents ])  SetAllowPseudoParents(kTRUE);
       //
       // some optional parameters ----------------------------------------------------------------
-      else if (recTitle == "SET_TRACK_FIT_METHOD") {
+      else if (recTitle == kRecKeys[ kTrackFitMethod ]) {
 	if (recOpt.IsNull() || !recOpt.IsDigit() ) {stopped = kTRUE; break;}
 	SetInitTrackParamsMeth(recOpt.Atoi());
       }
       //
-      else if (recTitle == "SET_MINPNT_TRA") {
+      else if (recTitle == kRecKeys[ kMinPntTrack ]) {
 	if (recOpt.IsNull() || !recOpt.IsDigit() ) {stopped = kTRUE; break;}
 	fMinNPtsPerTrack = recOpt.Atoi();
       }
       //
-      else if (recTitle == "SET_NSTDDEV") {
+      else if (recTitle == kRecKeys[ kNStDev ]) {
 	if (recOpt.IsNull() || !recOpt.IsFloat() ) {stopped = kTRUE; break;}
 	fNStdDev = (Int_t)recOpt.Atof();
       }
       //
-      else if (recTitle == "SET_RESCUT_INIT") {
+      else if (recTitle == kRecKeys[ kResCutInit  ]) {
 	if (recOpt.IsNull() || !recOpt.IsFloat() ) {stopped = kTRUE; break;}
 	fResCutInitial = recOpt.Atof();
       }
       //
-      else if (recTitle == "SET_RESCUT_OTHER") {
+      else if (recTitle == kRecKeys[ kResCutOther ]) {
 	if (recOpt.IsNull() || !recOpt.IsFloat() ) {stopped = kTRUE; break;}
 	fResCut = recOpt.Atof();
       }
       //
-      else if (recTitle == "SET_LOCALSIGMAFACTOR") { //-------------------------
+      else if (recTitle == kRecKeys[ kLocalSigFactor ]) { //-------------------------
 	for (irec=0;irec<3;irec++) if (nrecElems>irec+1) {
 	    fSigmaFactor[irec] = ((TObjString*)recArr->At(irec+1))->GetString().Atof();
 	    if (fSigmaFactor[irec]<=0.) stopped = kTRUE;
@@ -434,12 +499,12 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
 	if (stopped) break; 
       }
       //
-      else if (recTitle == "SET_STARTFAC") {        //-------------------------
+      else if (recTitle == kRecKeys[ kStartFactor ]) {        //-------------------------
 	if (recOpt.IsNull() || !recOpt.IsFloat() ) {stopped = kTRUE; break;}
 	fStartFac = recOpt.Atof();
       }
       //
-      else if (recTitle == "SET_B_FIELD") {         //-------------------------
+      else if (recTitle == kRecKeys[ kBField ]) {         //-------------------------
 	if (recOpt.IsNull() || !recOpt.IsFloat() ) {stopped = kTRUE; break;}
 	fBField = recOpt.Atof();
 	if (fBField>0) {
@@ -454,7 +519,7 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
 	}
       }
       //
-      else if (recTitle == "SET_SPARSE_MATRIX") {   // matrix solver type
+      else if (recTitle == kRecKeys[ kSparseMatrix ]) {   // matrix solver type
 	//
 	AliMillePede2::SetGlobalMatSparse(kTRUE);
 	if (recOpt.IsNull()) continue;
@@ -482,7 +547,7 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
 	}	
       }
       //
-      else if (recTitle == "REQUIRE_POINT") {       //-------------------------
+      else if (recTitle == kRecKeys[ kRequirePoint ]) {       //-------------------------
 	// syntax:   REQUIRE_POINT where ndet updw nreqpts
 	//    where = LAYER or DETECTOR
 	//    ndet = detector number: 1-6 for LAYER and 1-3 for DETECTOR (SPD=1, SDD=2, SSD=3)
@@ -512,7 +577,7 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
       }
       //
       // global constraints on the subunits/orphans 
-      else if (recTitle == "CONSTRAINT_ORPHANS") {    //------------------------
+      else if (recTitle == kRecKeys[ kConstrOrphans ]) {    //------------------------
 	// expect CONSTRAINT_ORPHANS MEAN/MEDIAN Value parID0 ... parID1 ...
 	if (nrecElems<4) {stopped = kTRUE; break;}
 	recExt = recArr->At(2)->GetName();
@@ -530,7 +595,7 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
 	else {stopped = kTRUE; break;}
       }
       //
-      else if (recTitle == "CONSTRAINT_SUBUNITS") {    //------------------------
+      else if (recTitle == kRecKeys[ kConstrSubunits ]) {    //------------------------
 	// expect ONSTRAINT_SUBUNITS MEAN/MEDIAN Value parID0 ... parID1 ... VolID1 ... VolIDn - VolIDm
 	if (nrecElems<5) {stopped = kTRUE; break;}
 	recExt = recArr->At(2)->GetName();
@@ -576,7 +641,7 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
       } 
       // 
       // association of modules with local constraints
-      else if (recTitle == "APPLY_CONSTRAINT") {            //------------------------
+      else if (recTitle == kRecKeys[ kApplyConstr ]) {            //------------------------
 	// expect APPLY_CONSTRAINT NAME [NAME1...] [VolID1 ... VolIDn - VolIDm]
 	if (nrecElems<3) {stopped = kTRUE; break;}
 	int nmID0=-1,nmID1=-1;
@@ -2933,5 +2998,4 @@ void AliITSAlignMille2::ConvertParamsToLocal()
     mod->SetGeomParamsGlobal(kFALSE);
   }
 }
-
 

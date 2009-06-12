@@ -190,6 +190,7 @@ class AliITSAlignMille2: public TObject
   void      Init();
   Int_t     LoadConfig(const Char_t *cfile="AliITSAlignMille.conf");
   TObjArray* GetConfigRecord(FILE* stream, TString& recTitle, TString& recOpt, Bool_t rew);
+  Int_t     CheckConfigRecords(FILE* stream);
   //
   void      BuildHierarchy();
   Int_t     LoadSuperModuleFile(const Char_t *cfile="ITSMilleSuperModules.root");
@@ -224,6 +225,35 @@ class AliITSAlignMille2: public TObject
   //
  protected:
   //
+  enum {
+    kGeomFile,
+    kSuperModileFile,
+    kConstrRefFile,
+    kPrealignFile,
+    kPreCalSDDFile,
+    kInitCalSDDFile,
+    kGlobalDeltas,
+    kConstrLocal,
+    kModVolID,
+    kModIndex,
+    kPseudoParents,
+    kTrackFitMethod,
+    kMinPntTrack,
+    kNStDev,
+    kResCutInit,
+    kResCutOther,
+    kLocalSigFactor,
+    kStartFactor,
+    kBField,
+    kSparseMatrix,
+    kRequirePoint,
+    kConstrOrphans,
+    kConstrSubunits,
+    kApplyConstr,
+    //
+    kNKeyWords
+  };                                            // id's of the keywirds for config file records
+
   // millepede stuffs
   AliMillePede2 *fMillepede;                    // Detector independent alignment class
   Double_t      fStartFac;                      // Initial value for chi2 cut 
@@ -302,8 +332,10 @@ class AliITSAlignMille2: public TObject
   //
   static AliITSAlignMille2* fgInstance;         // global pointer on itself
   static Int_t              fgInstanceID;       // global counter of the instances
+  static const Char_t     * kRecKeys[];         // keywords for config file records
   //
   ClassDef(AliITSAlignMille2, 0)
 };
 
 #endif
+
