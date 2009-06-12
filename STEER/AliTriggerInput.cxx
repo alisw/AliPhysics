@@ -72,7 +72,7 @@ const char* AliTriggerInput::fgkCTPDetectorName[AliDAQ::kNDetectors] = {
 //_____________________________________________________________________________
   AliTriggerInput::AliTriggerInput( TString name, TString det, UChar_t level, Int_t signature, Char_t number ):
     TNamed( name.Data(), det.Data() ),
-    fMask((number >= 0) ? 1 << number : 0 ),
+    fMask((number > 0) ? 1 << (number-1) : 0 ),
     fValue(0),
     fSignature(signature),
     fLevel(level),
