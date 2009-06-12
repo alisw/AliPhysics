@@ -49,7 +49,10 @@ class AliFlowAnalysisWithQCumulants{
   virtual void CalculateWeightedCorrelationsForIntegratedFlow();
   virtual void CalculateCorrelationsForDifferentialFlow(TString type="POI");
   virtual void CalculateWeightedCorrelationsForDifferentialFlow(TString type="POI");
-  
+
+  virtual void CalculateCorrectionsForNonUniformAcceptanceCosTerms();  
+  virtual void CalculateCorrectionsForNonUniformAcceptanceSinTerms();  
+      
   virtual void EvaluateNestedLoopsForIntegratedFlow(AliFlowEventSimple* anEvent); 
   virtual void EvaluateNestedLoopsForDifferentialFlow(AliFlowEventSimple* anEvent); 
   
@@ -58,6 +61,8 @@ class AliFlowAnalysisWithQCumulants{
   
   TProfile* MakePtProjection(TProfile2D *profilePtEta) const;
   TProfile* MakeEtaProjection(TProfile2D *profilePtEta) const;
+  
+  virtual void CalculateFinalCorrectionsForNonUniformAcceptance(Bool_t useWeights=kFALSE);
   
   virtual void CalculateFinalResultsForNoNameIntegratedFlow(Bool_t useWeights=kFALSE);
   virtual void CalculateFinalResultsForRPandPOIIntegratedFlow(Bool_t useWeights, TString type);
@@ -84,6 +89,9 @@ class AliFlowAnalysisWithQCumulants{
   
   void SetResultsList(TList* rlist) {this->fResultsList = rlist;}
   TList* GetResultsList() const {return this->fResultsList;}  
+  
+  void SetFinalCorrectionsForNUA(TH1D* const fcfnua) {this->fFinalCorrectionsForNUA = fcfnua;}; // NUA = non-uniform acceptance
+  TH1D* GetFinalCorrectionsForNUA() const {return this->fFinalCorrectionsForNUA;};
  
   void SetIntFlowResults(TH1D* const ifr) {this->fIntFlowResultsQC = ifr;};
   TH1D* GetIntFlowResults() const {return this->fIntFlowResultsQC;};
@@ -155,6 +163,12 @@ class AliFlowAnalysisWithQCumulants{
   void SetQCorrelationsW(TProfile* const QCorrW) {this->fQCorrelationsW = QCorrW;};
   TProfile* GetQCorrelationsW() const {return this->fQCorrelationsW;};
   
+  void SetQCorrectionsCos(TProfile* const QCorrectCos) {this->fQCorrectionsCos = QCorrectCos;};
+  TProfile* GetQCorrectionsCos() const {return this->fQCorrectionsCos;};
+  
+  void SetQCorrectionsSin(TProfile* const QCorrectSin) {this->fQCorrectionsSin = QCorrectSin;};
+  TProfile* GetQCorrectionsSin() const {return this->fQCorrectionsSin;};
+  
   void SetQProduct(TProfile* const qp) {this->fQProduct = qp;};
   TProfile* GetQProduct() const {return this->fQProduct;};
   
@@ -221,6 +235,12 @@ class AliFlowAnalysisWithQCumulants{
   void SetDirectCorrelationsDiffFlowW(TProfile* const dcdfw) {this->fDirectCorrelationsDiffFlowW = dcdfw;};
   TProfile* GetDirectCorrelationsDiffFlowW() const {return this->fDirectCorrelationsDiffFlowW;};
   
+  void SetDirectCorrectionsCos(TProfile* const dCorrectCos) {this->fDirectCorrectionsCos = dCorrectCos;};
+  TProfile* GetDirectCorrectionsCos() const {return this->fDirectCorrectionsCos;};
+
+  void SetDirectCorrectionsSin(TProfile* const dCorrectSin) {this->fDirectCorrectionsSin = dCorrectSin;};
+  TProfile* GetDirectCorrectionsSin() const {return this->fDirectCorrectionsSin;};
+
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
   
@@ -427,12 +447,17 @@ class AliFlowAnalysisWithQCumulants{
   TProfile*                  fQvectorForEachEventY;     //profile containing the y-components of Q-vectors from all events (to be removed)   
   TProfile*                  fQCorrelations;            //multi-particle correlations calculated from Q-vectors 
   TProfile*                  fQCorrelationsW;           //weighted multi-particle correlations calculated from Q-vectors 
+  TProfile*                  fQCorrectionsCos;          // corrections for non-uniform acceptance (cos terms) calculated from Q-vectors 
+  TProfile*                  fQCorrectionsSin;          // corrections for non-uniform acceptance (sin terms) calculated from Q-vectors 
   TProfile*                  fQProduct;                 //average of products: 1st bin: <2*4>, 2nd bin: <2*6>, ...
   
   TProfile*          fDirectCorrelations;               // multi-particle correlations calculated with nested loop needed for int. flow 
   TProfile*          fDirectCorrelationsW;              // multi-particle correlations calculated with nested loop needed for weighted int. flow
   TProfile*          fDirectCorrelationsDiffFlow;       // multi-particle correlations calculated with nested loop needed for diff. flow
   TProfile*          fDirectCorrelationsDiffFlowW;      // multi-particle correlations calculated with nested loop needed for weighted int. flow
+
+  TProfile*          fDirectCorrectionsCos;             // corrections for non-uniform acceptance (cos terms) calculated with nested loops
+  TProfile*          fDirectCorrectionsSin;             // corrections for non-uniform acceptance (sin terms) calculated with nested loops
   
   // POI (Particles Of Interest):
   // non-weighted correlations
@@ -544,7 +569,9 @@ class AliFlowAnalysisWithQCumulants{
   TH2D *fSmRP1p3kPtEta; // pow(sum_{i=1}^{m_RP} w_{i}^{3} cos(n phi_{i}), 1)
   
   // ----- RESULTS ----
-  
+
+  TH1D *fFinalCorrectionsForNUA; // final corrections for non-uniform acceptance for QC{2}, QC{4}, QC{6} and QC{8}
+
   // non-weighted integrated flow:
   TH1D *fIntFlowResultsQC;     // final results for non-weighted no-name integrated flow
   TH1D *fIntFlowResultsPOIQC;  // final results for non-weighted POIs integrated flow

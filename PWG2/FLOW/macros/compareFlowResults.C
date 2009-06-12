@@ -1393,8 +1393,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   (intFlowAllRelativeToMCCanvas->cd(1))->SetPad(0.0,0.0,0.75,1.0);
   
   TH1D *intFlowAllRelativeToMC = new TH1D(*intFlowAll);
-  
-  (intFlowAllRelativeToMC->GetYaxis())->SetRangeUser(-1,1); 
+  (intFlowAllRelativeToMC->GetYaxis())->SetRangeUser(-1,1);
+  (intFlowAllRelativeToMC->GetYaxis())->SetTitle("(v_{n}\{method\} - v_{n}\{MC\})/v_{n}\{MC\}"); 
   intFlowAllRelativeToMC->Draw("E1");            
   
   if(flowResultsRelativeToMC) flowResultsRelativeToMC->Draw("PSAME");
@@ -1483,8 +1483,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   (intFlowAllRelativeToMCRPCanvas->cd(1))->SetPad(0.0,0.0,0.75,1.0);
   
   TH1D *intFlowAllRelativeToMCRP = new TH1D(*intFlowAll);
-  
   (intFlowAllRelativeToMCRP->GetYaxis())->SetRangeUser(-1,1); 
+  (intFlowAllRelativeToMCRP->GetYaxis())->SetTitle("(v_{n}\{method\} - v_{n}\{MC\})/v_{n}\{MC\}");
   intFlowAllRelativeToMCRP->Draw("E1");            
   
   if(flowResultsRelativeToMCRP) flowResultsRelativeToMCRP->Draw("PSAME");
@@ -1496,7 +1496,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
  
   if(textResultsRP) textResultsRP->Draw();
  
- }// end of if(plotIntFlowRelativeToMC) 
+ }// end of if(plotIntFlowRelativeToMCRP) 
  //----------------------------------------------------------------------------------
   
  
@@ -1573,8 +1573,8 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   (intFlowAllRelativeToMCPOICanvas->cd(1))->SetPad(0.0,0.0,0.75,1.0);
   
   TH1D *intFlowAllRelativeToMCPOI = new TH1D(*intFlowAll);
-  
   (intFlowAllRelativeToMCPOI->GetYaxis())->SetRangeUser(-1,1); 
+  (intFlowAllRelativeToMCPOI->GetYaxis())->SetTitle("(v_{n}\{method\} - v_{n}\{MC\})/v_{n}\{MC\}");
   intFlowAllRelativeToMCPOI->Draw("E1");            
   
   if(flowResultsRelativeToMCPOI) flowResultsRelativeToMCPOI->Draw("PSAME");
@@ -1586,7 +1586,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
  
   if(textResultsPOI) textResultsPOI->Draw();
  
- }// end of if(plotIntFlowRelativeToMC) 
+ }// end of if(plotIntFlowRelativeToMCPOI) 
  //----------------------------------------------------------------------------------
          
  //==================================================================================   
@@ -2380,7 +2380,6 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
  }// end of if(plotDiffFlowPtRP)
  //----------------------------------------------------------------------------------
  
- 
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Eta, RP):
  if(plotDiffFlowEtaRP)
@@ -2614,13 +2613,14 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   }
  }// end of if(plotDiffFlowEtaRP)
  //----------------------------------------------------------------------------------
-
+ 
+ */
  
  //----------------------------------------------------------------------------------
  // final drawing for plot |(v{method}-v{MC})/v{MC}| as a function of pt for RPs  
  if(plotDiffFlowPtRelativeToMCRP)
  {  
-  TCanvas* diffFlowPtRelativeToMCRP = new TCanvas("Differential Flow (Pt) of RPs relative to MC","Differential Flow (Pt) of RPs relative to MC",1000,600);
+  TCanvas* diffFlowPtRelativeToMCRP = new TCanvas("Differential Flow (Pt) of RPs relative to MC","Differ1ential Flow (Pt) of RPs relative to MC",1000,600);
   
   diffFlowPtRelativeToMCRP->Divide(2,1);
  
@@ -3027,7 +3027,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   } 
  } 
  //----------------------------------------------------------------------------------
-
+ 
  //----------------------------------------------------------------------------------
  //final drawing for differential flow (Pt, POI):
  if(plotDiffFlowPtPOI)
