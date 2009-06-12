@@ -32,6 +32,8 @@ EveBase/AliEveVSDCreator.cxx
 EveBase/AliEveHF.cxx
 EveBase/AliEveHFListEditor.cxx
 EveBase/AliEveHFEditor.cxx
+EveBase/AliEveEventSelectorWindow.cxx
+EveBase/AliEveEventSelector.cxx
 )
 
 # fill list of header files from list of source files
