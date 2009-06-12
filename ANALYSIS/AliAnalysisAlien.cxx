@@ -502,6 +502,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       while ((os=(TObjString*)next())) {
          path = Form("%s/%s ", fGridDataDir.Data(), os->GetString().Data());
          if (!gGrid->Cd(path)) continue;
+         CdWork();
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
          else file = Form("%s.xml", os->GetString().Data());
          // If local collection file does not exist, create it via 'find' command.
@@ -565,6 +566,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
          path = Form("%s/%d ", fGridDataDir.Data(), irun);
          if (!gGrid->Cd(path)) continue;
+         CdWork();
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
          else file = Form("%d.xml", irun);
          if (FileExists(file) && fNrunsPerMaster<2 && !TestBit(AliAnalysisGrid::kTest)) {
@@ -599,6 +601,9 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             }
          } else {
             nruns++;
+            // Check if the collection for the chunk exist locally.
+            Int_t nchunk = (nruns-1)/fNrunsPerMaster;
+            if (FileExists(fInputFiles->At(nchunk)->GetName())) continue;
             printf("   Merging collection <%s> into %d runs chunk...\n",file.Data(),fNrunsPerMaster);
             if (((nruns-1)%fNrunsPerMaster) == 0) {
                schunk = Form("%d", irun);
@@ -618,6 +623,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             }        
             printf("Exporting merged collection <%s> and copying to AliEn.\n", schunk.Data());
             cbase->ExportXML(Form("file://%s", schunk.Data()),kFALSE,kFALSE, schunk, "Merged runs");
+            if (FileExists(schunk)) {
+               Info("CreateDataset", "\n#####   Dataset %s exist. Skipping copy...", schunk.Data());
+               continue;
+            }   
             TFile::Cp(Form("file:%s",schunk.Data()), Form("alien://%s/%s",workdir.Data(), schunk.Data()));
             if (!FileExists(schunk)) {
                Error("CreateDataset", "Copy command did NOT succeed for %s", schunk.Data());
