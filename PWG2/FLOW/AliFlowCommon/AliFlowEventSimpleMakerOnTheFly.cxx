@@ -275,14 +275,15 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   pEvent->SetNumberOfTracks(iGoodTracks);//tracks used either for RP or for POI selection
   pEvent->SetMCReactionPlaneAngle(dMCReactionPlaneAngle);
 
-  if (!dMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  dMCReactionPlaneAngle << endl;
-  else cout<<" MC Reaction Plane Angle = unknown "<< endl;
+  if ( (++fCount % 100) == 0) {
+    if (!dMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  dMCReactionPlaneAngle << endl;
+    else cout<<" MC Reaction Plane Angle = unknown "<< endl;
+    cout<<" iGoodTracks = "<< iGoodTracks << endl;
+    cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;
+    cout<<" # of POI selected tracks = "<<iSelParticlesPOI<<endl;  
+    cout << "# " << fCount << " events processed" << endl;
+  }
 
-  cout<<" iGoodTracks = "<< iGoodTracks << endl;
-  cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;
-  cout<<" # of POI selected tracks = "<<iSelParticlesPOI<<endl;  
-  cout << "# " << ++fCount << " events processed" << endl;
-  
   return pEvent;  
  
 } // end of CreateEventOnTheFly()
