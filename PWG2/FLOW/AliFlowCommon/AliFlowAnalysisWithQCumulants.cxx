@@ -4345,10 +4345,17 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForNoNameIntegratedFlow
  Double_t eightOrderQCumulant  = eight-16.*two*six-18.*pow(four,2.)+144.*pow(two,2.)*four-144.*pow(two,4.); // c_n{8} 
  
  // corrections for non-uniform acceptance for QC{2}, QC{4}, QC{6} and QC{8}
- Double_t twoCorrection   = fFinalCorrectionsForNUA->GetBinContent(1); // bias to QC{2} coming from non-uniform acceptance of the detector 
- Double_t fourCorrection  = fFinalCorrectionsForNUA->GetBinContent(2); // bias to QC{4} coming from non-uniform acceptance of the detector 
- //Double_t sixCorrection   = fFinalCorrectionsForNUA->GetBinContent(3); // bias to QC{6} coming from non-uniform acceptance of the detector  
- //Double_t eightCorrection = fFinalCorrectionsForNUA->GetBinContent(4); // bias to QC{8} coming from non-uniform acceptance of the detector  
+ Double_t twoCorrection = 0.;
+ Double_t fourCorrection = 0.;
+ //Double_t sixCorrection = 0.;
+ //Double_t eightCorrection = 0.;
+ if(fFinalCorrectionsForNUA)
+ {
+  twoCorrection   = fFinalCorrectionsForNUA->GetBinContent(1); // bias to QC{2} coming from non-uniform acceptance of the detector 
+  fourCorrection  = fFinalCorrectionsForNUA->GetBinContent(2); // bias to QC{4} coming from non-uniform acceptance of the detector 
+  // sixCorrection   = fFinalCorrectionsForNUA->GetBinContent(3); // bias to QC{6} coming from non-uniform acceptance of the detector  
+  // eightCorrection = fFinalCorrectionsForNUA->GetBinContent(4); // bias to QC{8} coming from non-uniform acceptance of the detector  
+ }
  
  // applying the corrections for non-uniform acceptance:
  secondOrderQCumulant = secondOrderQCumulant - twoCorrection;
