@@ -58,7 +58,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void ProcessGammasForGammaJetAnalysis();
   void CreateListOfChargedParticles();
   Double_t GetMinimumDistanceToCharge(Int_t);
-  void CalculateJetCone(Int_t,Int_t);
+  void CalculateJetCone(Int_t);
   Int_t GetIndexHighestPtGamma();
   void SetESDtrackCuts();
   // end of Gamma Jet

@@ -569,10 +569,10 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       if(daughter0->GetPdgCode() != 22 || daughter1->GetPdgCode() != 22) continue; //check for gamma gamma daughters
 			
       // Check the acceptance for both gammas
-      Bool_t GammaEtaCut = kTRUE;
-      if(TMath::Abs(daughter0->Eta()) > fV0Reader->GetEtaCut() || TMath::Abs(daughter1->Eta()) > fV0Reader->GetEtaCut()  ) GammaEtaCut = kFALSE;
-      Bool_t GammaRCut = kTRUE;
-      if(daughter0->R() > fV0Reader->GetMaxRCut() || daughter1->R() > fV0Reader->GetMaxRCut()  ) GammaRCut = kFALSE;
+      Bool_t gammaEtaCut = kTRUE;
+      if(TMath::Abs(daughter0->Eta()) > fV0Reader->GetEtaCut() || TMath::Abs(daughter1->Eta()) > fV0Reader->GetEtaCut()  ) gammaEtaCut = kFALSE;
+      Bool_t gammaRCut = kTRUE;
+      if(daughter0->R() > fV0Reader->GetMaxRCut() || daughter1->R() > fV0Reader->GetMaxRCut()  ) gammaRCut = kFALSE;
 			
 			
 			
@@ -656,7 +656,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	  fHistograms->FillHistogram("MC_Pi0_Secondaries_GammaDaughter_OpeningAngle", GetMCOpeningAngle(daughter0,daughter1));
 	  fHistograms->FillHistogram("MC_Pi0_Secondaries_XY", particle->Vx(),particle->Vy());//only fill from one daughter to avoid multiple filling
 					
-	  if(GammaEtaCut && GammaRCut){  
+	  if(gammaEtaCut && gammaRCut){  
 	    //if(TMath::Abs(daughter0->Eta()) <= fV0Reader->GetEtaCut() && TMath::Abs(daughter1->Eta()) <= fV0Reader->GetEtaCut() ){
 	    fHistograms->FillHistogram("MC_Pi0_Secondaries_Pt_Eta_withinAcceptance", particle->Pt(),particle->Eta());
 	    fHistograms->FillHistogram("MC_Pi0_Secondaries_Pt_Rapid_withinAcceptance", particle->Pt(),rapidity);
@@ -677,7 +677,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	  fHistograms->FillHistogram("MC_Pi0_GammaDaughter_OpeningAngle", GetMCOpeningAngle(daughter0,daughter1));
 	  fHistograms->FillHistogram("MC_Pi0_XY", particle->Vx(), particle->Vy());//only fill from one daughter to avoid multiple filling
 
-	  if(GammaEtaCut && GammaRCut){
+	  if(gammaEtaCut && gammaRCut){
 	    //	  if(TMath::Abs(daughter0->Eta()) <= fV0Reader->GetEtaCut() && TMath::Abs(daughter1->Eta()) <= fV0Reader->GetEtaCut() ){
 	    fHistograms->FillHistogram("MC_Pi0_Pt_Eta_withinAcceptance", particle->Pt(),particle->Eta());
 	    fHistograms->FillHistogram("MC_Pi0_Pt_Rapid_withinAcceptance", particle->Pt(),rapidity);
@@ -701,7 +701,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	fHistograms->FillHistogram("MC_Eta_GammaDaughter_OpeningAngle", GetMCOpeningAngle(daughter0,daughter1));
 	fHistograms->FillHistogram("MC_Eta_XY", particle->Vx(), particle->Vy());//only fill from one daughter to avoid multiple filling
 				
-	if(GammaEtaCut && GammaRCut){  
+	if(gammaEtaCut && gammaRCut){  
 	//	if(TMath::Abs(daughter0->Eta()) <= fV0Reader->GetEtaCut() && TMath::Abs(daughter1->Eta()) <= fV0Reader->GetEtaCut() ){
 	  fHistograms->FillHistogram("MC_Eta_Pt_Eta_withinAcceptance", particle->Pt(),particle->Eta());
 	  fHistograms->FillHistogram("MC_Eta_Pt_Rapid_withinAcceptance", particle->Pt(),rapidity);
@@ -728,7 +728,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       fHistograms->FillHistogram("MC_Mother_Phi",tmpPhi);
       fHistograms->FillHistogram("MC_Mother_InvMass_vs_Pt",particle->GetMass(),particle->Pt());			
       
-      if(GammaEtaCut && GammaRCut){  
+      if(gammaEtaCut && gammaRCut){  
   //      if(TMath::Abs(daughter0->Eta()) <= fV0Reader->GetEtaCut() && TMath::Abs(daughter1->Eta()) <= fV0Reader->GetEtaCut() ){
 	fHistograms->FillHistogram("MC_Mother_Pt_Eta_withinAcceptance", particle->Pt(),particle->Eta());
 	fHistograms->FillHistogram("MC_Mother_Pt_Rapid_withinAcceptance", particle->Pt(),rapidity);
@@ -1155,8 +1155,8 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	chi2BG = backgroundCandidate->GetChi2()/backgroundCandidate->GetNDF();
 	if(chi2BG>0 && chi2BG<fV0Reader->GetChi2CutMeson()){
 					
-	  TVector3 MomentumVectorbackgroundCandidate(backgroundCandidate->GetPx(),backgroundCandidate->GetPy(),backgroundCandidate->GetPz());
-	  TVector3 SpaceVectorbackgroundCandidate(backgroundCandidate->GetX(),backgroundCandidate->GetY(),backgroundCandidate->GetZ());
+	  TVector3 momentumVectorbackgroundCandidate(backgroundCandidate->GetPx(),backgroundCandidate->GetPy(),backgroundCandidate->GetPz());
+	  TVector3 spaceVectorbackgroundCandidate(backgroundCandidate->GetX(),backgroundCandidate->GetY(),backgroundCandidate->GetZ());
 					
 	  Double_t openingAngleBG = currentEventGoodV0->GetAngle(*previousGoodV0);
 
@@ -1172,15 +1172,15 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 					
 	  fHistograms->FillHistogram("ESD_Background_GammaDaughter_OpeningAngle", openingAngleBG);
 	  fHistograms->FillHistogram("ESD_Background_Energy", backgroundCandidate->GetE());
-	  fHistograms->FillHistogram("ESD_Background_Pt",  MomentumVectorbackgroundCandidate.Pt());
-	  fHistograms->FillHistogram("ESD_Background_Eta", MomentumVectorbackgroundCandidate.Eta());
+	  fHistograms->FillHistogram("ESD_Background_Pt",  momentumVectorbackgroundCandidate.Pt());
+	  fHistograms->FillHistogram("ESD_Background_Eta", momentumVectorbackgroundCandidate.Eta());
 	  fHistograms->FillHistogram("ESD_Background_Rapidity", rapidity);
-	  fHistograms->FillHistogram("ESD_Background_Phi", SpaceVectorbackgroundCandidate.Phi());
+	  fHistograms->FillHistogram("ESD_Background_Phi", spaceVectorbackgroundCandidate.Phi());
 	  fHistograms->FillHistogram("ESD_Background_Mass", massBG);
-	  fHistograms->FillHistogram("ESD_Background_R", SpaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
-	  fHistograms->FillHistogram("ESD_Background_ZR", backgroundCandidate->GetZ(), SpaceVectorbackgroundCandidate.Pt());
+	  fHistograms->FillHistogram("ESD_Background_R", spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
+	  fHistograms->FillHistogram("ESD_Background_ZR", backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
 	  fHistograms->FillHistogram("ESD_Background_XY", backgroundCandidate->GetX(), backgroundCandidate->GetY());
-	  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,MomentumVectorbackgroundCandidate.Pt());
+	  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,momentumVectorbackgroundCandidate.Pt());
 	  fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
 	}
       }
@@ -1203,13 +1203,13 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForGammaJetAnalysis(){
 
   for(UInt_t gammaIndex=0;gammaIndex<fKFReconstructedGammas.size();gammaIndex++){
     AliKFParticle * currentGamma = &fKFReconstructedGammas[gammaIndex];
-    TVector3 MomentumVectorCurrentGamma(currentGamma->GetPx(),currentGamma->GetPy(),currentGamma->GetPz());
+    TVector3 momentumVectorCurrentGamma(currentGamma->GetPx(),currentGamma->GetPy(),currentGamma->GetPz());
 
-    if( MomentumVectorCurrentGamma.Pt()> fMinPtForGammaJet){
+    if( momentumVectorCurrentGamma.Pt()> fMinPtForGammaJet){
       distIsoMin=GetMinimumDistanceToCharge(gammaIndex);
 
       if (distIsoMin > fMinIsoConeSize && fLeadingChargedIndex>=0){
-	CalculateJetCone(gammaIndex,fLeadingChargedIndex);
+	CalculateJetCone(gammaIndex);
       }
     }
   }
@@ -1232,7 +1232,7 @@ void AliAnalysisTaskGammaConversion::CreateListOfChargedParticles(){
     }
   }
 }
-void AliAnalysisTaskGammaConversion::CalculateJetCone(Int_t gammaIndex, Int_t fLeadingChargedIndex){
+void AliAnalysisTaskGammaConversion::CalculateJetCone(Int_t gammaIndex){
   // CalculateJetCone
 
   Double_t cone;
@@ -1240,17 +1240,17 @@ void AliAnalysisTaskGammaConversion::CalculateJetCone(Int_t gammaIndex, Int_t fL
   Double_t ptJet=0;
   
   AliKFParticle * currentGamma = &fKFReconstructedGammas[gammaIndex];
-  TVector3 MomentumVectorCurrentGamma(currentGamma->GetPx(),currentGamma->GetPy(),currentGamma->GetPz());
+  TVector3 momentumVectorCurrentGamma(currentGamma->GetPx(),currentGamma->GetPy(),currentGamma->GetPz());
 
   AliESDtrack* leadingCharged = fChargedParticles[fLeadingChargedIndex];
   Double_t momLeadingCharged[3];
   leadingCharged->GetConstrainedPxPyPz(momLeadingCharged);
 
-  TVector3 MomentumVectorLeadingCharged(momLeadingCharged[0],momLeadingCharged[1],momLeadingCharged[2]);
+  TVector3 momentumVectorLeadingCharged(momLeadingCharged[0],momLeadingCharged[1],momLeadingCharged[2]);
 
-  Double_t phi1=MomentumVectorLeadingCharged.Phi();
-  Double_t eta1=MomentumVectorLeadingCharged.Eta();
-  Double_t phi3=MomentumVectorCurrentGamma.Phi();
+  Double_t phi1=momentumVectorLeadingCharged.Phi();
+  Double_t eta1=momentumVectorLeadingCharged.Eta();
+  Double_t phi3=momentumVectorCurrentGamma.Phi();
 
   for(UInt_t iCh=0;iCh<fChargedParticles.size();iCh++){
     AliESDtrack* curTrack = fChargedParticles[iCh];
@@ -1258,9 +1258,9 @@ void AliAnalysisTaskGammaConversion::CalculateJetCone(Int_t gammaIndex, Int_t fL
     if(fLeadingChargedIndex==chId || fLeadingChargedIndex==chId) continue;
     Double_t mom[3];
     curTrack->GetConstrainedPxPyPz(mom);
-    TVector3 MomentumVectorChargedParticle(mom[0],mom[1],mom[2]);
-    Double_t phi2=MomentumVectorChargedParticle.Phi();
-    Double_t eta2=MomentumVectorChargedParticle.Eta();
+    TVector3 momentumVectorChargedParticle(mom[0],mom[1],mom[2]);
+    Double_t phi2=momentumVectorChargedParticle.Phi();
+    Double_t eta2=momentumVectorChargedParticle.Eta();
 
 
     cone=100.;
@@ -1275,10 +1275,10 @@ void AliAnalysisTaskGammaConversion::CalculateJetCone(Int_t gammaIndex, Int_t fL
       }
     }
     
-    if(cone <coneSize&& MomentumVectorChargedParticle.Pt()>fMinPtJetCone ){
-      ptJet+= MomentumVectorChargedParticle.Pt();
-      Double_t ffzHdrGam = MomentumVectorChargedParticle.Pt()/MomentumVectorCurrentGamma.Pt();
-      Double_t imbalanceHdrGam=-MomentumVectorChargedParticle.Dot(MomentumVectorCurrentGamma)/MomentumVectorCurrentGamma.Mag2();
+    if(cone <coneSize&& momentumVectorChargedParticle.Pt()>fMinPtJetCone ){
+      ptJet+= momentumVectorChargedParticle.Pt();
+      Double_t ffzHdrGam = momentumVectorChargedParticle.Pt()/momentumVectorCurrentGamma.Pt();
+      Double_t imbalanceHdrGam=-momentumVectorChargedParticle.Dot(momentumVectorCurrentGamma)/momentumVectorCurrentGamma.Mag2();
       fHistograms->FillHistogram("ESD_FFzHdrGam",ffzHdrGam);
       fHistograms->FillHistogram("ESD_ImbalanceHdrGam",imbalanceHdrGam);
 
@@ -1293,7 +1293,7 @@ void AliAnalysisTaskGammaConversion::CalculateJetCone(Int_t gammaIndex, Int_t fL
       dphiHdrGam-=(TMath::TwoPi());
     }
 
-    if (MomentumVectorChargedParticle.Pt()>fMinPtGamChargedCorr){
+    if (momentumVectorChargedParticle.Pt()>fMinPtGamChargedCorr){
       fHistograms->FillHistogram("ESD_dphiHdrGamIsolated",dphiHdrGam);
     }
   }//track loop
@@ -1308,10 +1308,10 @@ Double_t AliAnalysisTaskGammaConversion::GetMinimumDistanceToCharge(Int_t indexH
   Double_t ptLeadingCharged=-1.;
 
   AliKFParticle * gammaHighestPt = &fKFReconstructedGammas[indexHighestPtGamma];
-  TVector3 MomentumVectorgammaHighestPt(gammaHighestPt->GetPx(),gammaHighestPt->GetPy(),gammaHighestPt->GetPz());
+  TVector3 momentumVectorgammaHighestPt(gammaHighestPt->GetPx(),gammaHighestPt->GetPy(),gammaHighestPt->GetPz());
  
-  Double_t phi1=MomentumVectorgammaHighestPt.Phi();
-  Double_t eta1=MomentumVectorgammaHighestPt.Eta();
+  Double_t phi1=momentumVectorgammaHighestPt.Phi();
+  Double_t eta1=momentumVectorgammaHighestPt.Eta();
   
   for(UInt_t iCh=0;iCh<fChargedParticles.size();iCh++){
     AliESDtrack* curTrack = fChargedParticles[iCh];
@@ -1319,12 +1319,12 @@ Double_t AliAnalysisTaskGammaConversion::GetMinimumDistanceToCharge(Int_t indexH
     if(fElectronv1[indexHighestPtGamma]==chId || fElectronv2[indexHighestPtGamma]==chId) continue;
     Double_t mom[3];
     curTrack->GetConstrainedPxPyPz(mom);
-    TVector3 MomentumVectorChargedParticle(mom[0],mom[1],mom[2]);
-    Double_t phi2=MomentumVectorChargedParticle.Phi();
-    Double_t eta2=MomentumVectorChargedParticle.Eta();
+    TVector3 momentumVectorChargedParticle(mom[0],mom[1],mom[2]);
+    Double_t phi2=momentumVectorChargedParticle.Phi();
+    Double_t eta2=momentumVectorChargedParticle.Eta();
     Double_t iso=pow(  (pow( (eta1-eta2),2)+ pow((phi1-phi2),2)),0.5 );
     
-    if(MomentumVectorChargedParticle.Pt()>fMinPtIsoCone ){
+    if(momentumVectorChargedParticle.Pt()>fMinPtIsoCone ){
       if (iso<fIsoMin){
 	fIsoMin=iso;
       }
@@ -1338,13 +1338,13 @@ Double_t AliAnalysisTaskGammaConversion::GetMinimumDistanceToCharge(Int_t indexH
     if ( dphiHdrGam > (3.*TMath::PiOver2()) ){
       dphiHdrGam-=(TMath::TwoPi());
     }
-    if (MomentumVectorChargedParticle.Pt()>fMinPtGamChargedCorr){
+    if (momentumVectorChargedParticle.Pt()>fMinPtGamChargedCorr){
       fHistograms->FillHistogram("ESD_dphiHdrGam",dphiHdrGam);
     }
     
     if (dphiHdrGam>0.9*TMath::Pi() && dphiHdrGam<1.1*TMath::Pi()){
-     if (MomentumVectorChargedParticle.Pt()> ptLeadingCharged && MomentumVectorChargedParticle.Pt()>0.1*MomentumVectorgammaHighestPt.Pt()){
-	ptLeadingCharged=MomentumVectorChargedParticle.Pt();
+     if (momentumVectorChargedParticle.Pt()> ptLeadingCharged && momentumVectorChargedParticle.Pt()>0.1*momentumVectorgammaHighestPt.Pt()){
+	ptLeadingCharged=momentumVectorChargedParticle.Pt();
 	fLeadingChargedIndex=iCh;
       }
     }
@@ -1359,13 +1359,14 @@ Double_t AliAnalysisTaskGammaConversion::GetMinimumDistanceToCharge(Int_t indexH
    //GetIndexHighestPtGamma
 
   Int_t indexHighestPtGamma=-1;
-  Double_t fGammaPtHighest = -100.;
+  //Double_t 
+  fGammaPtHighest = -100.;
   
   for(UInt_t firstGammaIndex=0;firstGammaIndex<fKFReconstructedGammas.size();firstGammaIndex++){
      AliKFParticle * gammaHighestPtCandidate = &fKFReconstructedGammas[firstGammaIndex];
-     TVector3 MomentumVectorgammaHighestPtCandidate(gammaHighestPtCandidate->GetPx(),gammaHighestPtCandidate->GetPy(),gammaHighestPtCandidate->GetPz());
-     if (MomentumVectorgammaHighestPtCandidate.Pt() > fGammaPtHighest){
-       fGammaPtHighest=MomentumVectorgammaHighestPtCandidate.Pt();
+     TVector3 momentumVectorgammaHighestPtCandidate(gammaHighestPtCandidate->GetPx(),gammaHighestPtCandidate->GetPy(),gammaHighestPtCandidate->GetPz());
+     if (momentumVectorgammaHighestPtCandidate.Pt() > fGammaPtHighest){
+       fGammaPtHighest=momentumVectorgammaHighestPtCandidate.Pt();
        //gammaHighestPt = gammaHighestPtCandidate;
        indexHighestPtGamma=firstGammaIndex;
      }
@@ -2017,13 +2018,13 @@ double AliAnalysisTaskGammaConversion::GetSigmaToVertex(AliESDtrack* t)
   return d;
 }
 vector <TLorentzVector> AliAnalysisTaskGammaConversion::GetTLorentzVector(vector <AliESDtrack*> esdTrack){
-
+  //Return TLoresntz vector of track?
   vector <TLorentzVector> tlVtrack(0);
 
   for(UInt_t itrack=0; itrack < esdTrack.size(); itrack++){
-    double P[3]; esdTrack[itrack]->GetConstrainedPxPyPz(P);
+    double p[3]; esdTrack[itrack]->GetConstrainedPxPyPz(p);
     TLorentzVector currentTrack;
-    currentTrack.SetXYZM(P[0],P[1],P[2],fElectronMass);
+    currentTrack.SetXYZM(p[0],p[1],p[2],fElectronMass);
     tlVtrack.push_back(currentTrack);
   }
 
