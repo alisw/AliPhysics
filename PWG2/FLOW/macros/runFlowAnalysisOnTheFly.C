@@ -14,8 +14,8 @@ Bool_t LYZ2PROD = kFALSE;
 Bool_t LYZEP    = kFALSE;
 Bool_t GFC      = kTRUE;
 Bool_t QC       = kTRUE;
-Bool_t FQD      = kFALSE;
-Bool_t MCEP     = kFALSE;
+Bool_t FQD      = kTRUE;
+Bool_t MCEP     = kTRUE;
 //--------------------------------------------------------------------------------------
 
 // Weights 
@@ -25,7 +25,7 @@ Bool_t usePtWeights  = kFALSE; // pt weights
 Bool_t useEtaWeights = kFALSE; // eta weights
 
 // Parameters for the simulation of events 'on the fly': 
-Bool_t bSameSeed = kTRUE; // use always the same seed for random generators. 
+Bool_t bSameSeed = kFALSE; // use always the same seed for random generators. 
                            // usage of same seed (kTRUE) is relevant in two cases:
                            // 1.) If you want to use LYZ method to calcualte differential flow;
                            // 2.) If you want to use phi weights for GFC, QC and FQD
@@ -34,18 +34,26 @@ Bool_t bConstantHarmonics = kTRUE; // harmonics V1, V2, V4... are constant (kTRU
 
 Int_t iLoops = 1; // number of times to use each track (to simulate nonflow)
 
-Bool_t bMultDistrOfRPsIsGauss = kFALSE; // 1.) if kTRUE  = multiplicitiy of RPs is sampled e-b-e from Gaussian distribution with
+Bool_t bMultDistrOfRPsIsGauss = kTRUE; // 1.) if kTRUE  = multiplicitiy of RPs is sampled e-b-e from Gaussian distribution with
                                         //                 mean = iMultiplicityOfRP and spread = dMultiplicitySpreadOfRP
                                         // 2.) if kFALSE = multiplicitiy of RPs is sampled e-b-e uniformly from 
                                         //                 interval [iMinMultOfRP,iMaxMultOfRP]
                                         // 3.) for a fixed multiplicity use Gaussian with zero spread or use uniform with iMinMult=iMaxMult
                                         
-Bool_t bV2DistrOfRPsIsGauss = kFALSE; // 1.) if kTRUE  = elliptic flow of RPs is sampled e-b-e from Gaussian distribution with
+Bool_t bV2DistrOfRPsIsGauss = kTRUE; // 1.) if kTRUE  = elliptic flow of RPs is sampled e-b-e from Gaussian distribution with
                                       //                 mean = dV2RP and spread = dV2SpreadRP
                                       // 2.) if kFALSE = elliptic flow of RPs is sampled e-b-e uniformly from 
                                       //                 interval [dMinV2RP,dMaxV2RP]
                                       // 3.) for a fixed elliptic flow use Gaussian with zero spread or use uniform with dMinV2RP=dMaxV2RP
-                                                                                   
+
+Bool_t uniformAcceptance = kTRUE; // 1.) if kTRUE = detectors has uniform azimuthal acceptance
+                                  // 2.) if kFALSE = you will simulate detector with non-uniform acceptance in one or two sectors. 
+                                  //                 For each of two sectors you specify phi_min, phi_max and probability p. Then all particles 
+                                  //                 going in direction phi_min < phi < phi_max will be taken with probability p. If p = 0, that
+                                  //                 sector is blocked. Set bellow phimin1, phimax1, p1 for the first sector and phimin2, phimax2, p2 
+                                  //                 for the second sector. If you set phimin2 = phimax2 = p2 = 0, only first non-uniform sector is 
+                                  //                 simulated.
+                                                                                                                                                                                                                                                          
 Int_t iMultiplicityOfRP = 500;        // mean multiplicity of RPs (if sampled from Gaussian)
 Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs (if sampled from Gaussian)
 Int_t iMinMultOfRP = 400;             // minimal multiplicity of RPs (if sampled uniformly)
@@ -73,12 +81,28 @@ Double_t dV4RP = 0.0; // harmonic V4 of RPs (to be improved: name needed)
 Double_t dV4SpreadRP = 0.0; // harmonic V4's spread of RPs (to be improved: name needed)
 //......................................................................................  
 
+//......................................................................................  
+// settings for non-uniform acceptance:
+// Remark: set the angles in degrees from interval [0,360] and probability from interval [0,1]
+
+// 1st non-uniform sector:
+Double_t phimin1 = 60;  // first non-uniform sector starts at this azimuth
+Double_t phimax1 = 120; // first non-uniform sector ends at this azimuth
+Double_t p1 = 0.33;        // e.g. if p1 = 0 all particles emitted in phimin1 < phi < phimax1 are blocked
+                        // e.g. if p1 = 0.5 half of the particles emitted in phimin1 < phi < phimax1 are blocked
+
+// 2nd non-uniform sector (Remark: if you do NOT want to simulate this sector, set phimin2 = phimax2 = p2 = 0):                 
+Double_t phimin2 = 0.0; // second non-uniform sector starts at this azimuth (make sure phimin2 > phimax1 !!!!)
+Double_t phimax2 = 0.0; // second non-uniform sector ends at this azimuth
+Double_t p2 = 0.0;
+//......................................................................................  
+
 enum anaModes {mLocal,mLocalSource,mLocalPAR};
 // mLocal: Analyze data on your computer using aliroot
 // mLocalPAR: Analyze data on your computer using root + PAR files
 // mLocalSource: Analyze data on your computer using root + source files
                                           
-int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=10)
+int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
 {
  TStopwatch timer;
  timer.Start();
@@ -87,6 +111,31 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=10)
  if (LYZ1PROD && LYZ2PROD)  {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1.  "<<endl; exit(); }
  if (LYZ2SUM && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
  if (LYZ1SUM && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
+
+ if(!uniformAcceptance && phimin1 > phimax1)
+ {
+  cout<<"WARNING: you must have phimin1 < phimax1 !!!!"<<endl;
+  break;
+ }
+
+ if (!uniformAcceptance && !((phimin2 == 0.) && (phimax2 == 0.) && (p2 == 0.)) && (phimin2 < phimax1 || phimin2 > phimax2))
+ {
+  cout<<"WARNING: you must have phimin2 > phimax1 and phimin2 < phimax2 !!!!"<<endl;
+  break;
+ }
+ 
+ if((phimin1 < 0 || phimin1 > 360) || (phimax1 < 0 || phimax1 > 360) || 
+    (phimin2 < 0 || phimin2 > 360) || (phimax2 < 0 || phimax2 > 360) )
+ {
+  cout<<"WARNING: you must take azimuthal angles from interval [0,360] !!!!"<<endl;
+  break;
+ }
+ 
+ if((p1 < 0 || p1 > 1) || (p2 < 0 || p2 > 1))
+ {
+  cout<<"WARNING: you must take p1 and p2 from interval [0,1] !!!!"<<endl;
+  break;
+ }
  
  cout<<endl;
  cout<<endl;
@@ -113,6 +162,10 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=10)
   TTimeStamp dt;
   sseed = dt.GetNanoSec()/1000;
  }
+ 
+ cout<<endl;
+ cout<<"Seed for the random generators is "<<sseed<<endl;
+ cout<<endl;
  
  //---------------------------------------------------------------------------------------
  // If the weights are used: 
@@ -308,12 +361,24 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=10)
      eventMakerOnTheFly->SetMaxV2RP(dMaxV2RP);  
     }
  }
+ 
  // (pt,eta) dependent harmonic V2:
  if(!bConstantHarmonics)
  {
   eventMakerOnTheFly->SetUseConstantHarmonics(bConstantHarmonics);
   eventMakerOnTheFly->SetV2RPMax(dV2RPMax);
   eventMakerOnTheFly->SetPtCutOff(dPtCutOff);  
+ }
+ 
+ // non-uniform acceptance:
+ if(!uniformAcceptance)
+ {
+  eventMakerOnTheFly->SetFirstSectorPhiMin(phimin1);
+  eventMakerOnTheFly->SetFirstSectorPhiMax(phimax1);
+  eventMakerOnTheFly->SetFirstSectorProbability(p1);
+  eventMakerOnTheFly->SetSecondSectorPhiMin(phimin2);
+  eventMakerOnTheFly->SetSecondSectorPhiMax(phimax2);
+  eventMakerOnTheFly->SetSecondSectorProbability(p2);
  }
        
  //---------------------------------------------------------------------------------------  

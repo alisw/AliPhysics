@@ -94,6 +94,24 @@ class AliFlowEventSimpleMakerOnTheFly {
   
   void SetPtCutOff(Double_t dPtCutOff) {this->fPtCutOff = dPtCutOff;}
   Double_t GetPtCutOff() const {return this->fPtCutOff;} 
+  
+  void SetFirstSectorPhiMin(Double_t dPhiMin1) {this->fPhiMin1 = dPhiMin1;}
+  Double_t GetFirstSectorPhiMin() const {return this->fPhiMin1;} 
+  
+  void SetFirstSectorPhiMax(Double_t dPhiMax1) {this->fPhiMax1 = dPhiMax1;}
+  Double_t GetFirstSectorPhiMax() const {return this->fPhiMax1;}
+  
+  void SetFirstSectorProbability(Double_t dProbability1) {this->fProbability1 = dProbability1;}
+  Double_t GetFirstProbability() const {return this->fProbability1;}  
+  
+  void SetSecondSectorPhiMin(Double_t dPhiMin2) {this->fPhiMin2 = dPhiMin2;}
+  Double_t GetSecondSectorPhiMin() const {return this->fPhiMin2;} 
+  
+  void SetSecondSectorPhiMax(Double_t dPhiMax2) {this->fPhiMax2 = dPhiMax2;}
+  Double_t GetSecondSectorPhiMax() const {return this->fPhiMax2;}
+  
+  void SetSecondSectorProbability(Double_t dProbability2) {this->fProbability2 = dProbability2;}
+  Double_t GetSecondProbability() const {return this->fProbability2;}  
   //................................................................................................
   
   void SetNoOfLoops(Int_t noofl) {this->fNoOfLoops = noofl;}
@@ -134,6 +152,13 @@ class AliFlowEventSimpleMakerOnTheFly {
   // (pt,eta) dependent harmonics:
   Double_t  fV2RPMax;                // elliptic flow of RPs
   Double_t  fPtCutOff;               // elliptic flow spread of RPs
+  // non-uniform acceptance:
+  Double_t  fPhiMin1;                // first non-uniform sector starts at azimuth fPhiMin1
+  Double_t  fPhiMax1;                // first non-uniform sector ends at azimuth fPhiMax1
+  Double_t  fProbability1;           // particles emitted in fPhiMin1 < phi < fPhiMax1 are taken with probability fProbability1 
+  Double_t  fPhiMin2;                // second non-uniform sector starts at azimuth fPhiMin2
+  Double_t  fPhiMax2;                // second non-uniform sector starts at azimuth fPhiMax2
+  Double_t  fProbability2;           // particles emitted in fPhiMin2 < phi < fPhiMax2 are taken with probability fProbability2
   //................................................................................................
   
   //................................................................................................
