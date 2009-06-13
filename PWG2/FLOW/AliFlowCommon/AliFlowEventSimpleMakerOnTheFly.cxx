@@ -56,7 +56,13 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fV4RP(0.), 
   fV4SpreadRP(0.), 
   fV2RPMax(0.), 
-  fPtCutOff(0.), 
+  fPtCutOff(0.),
+  fPhiMin1(0.),              
+  fPhiMax1(0.),             
+  fProbability1(0.),       
+  fPhiMin2(0.),   
+  fPhiMax2(0.),            
+  fProbability2(0.),          
   fPtSpectra(NULL),
   fPhiDistribution(NULL),
   fMyTRandom3(NULL),
@@ -182,6 +188,12 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
   Double_t dTmpEta = 0.;
   Double_t dTmpV2 = 0.;
   Double_t dTmpPhi = 0.;
+  Bool_t bUniformAcceptance = kTRUE;
+  Double_t Pi = TMath::Pi();
+  if(!((fPhiMin1==0.) && (fPhiMax1==0.) && (fPhiMin2==0.) && (fPhiMax2==0.)))
+  {
+   bUniformAcceptance = kFALSE;
+  }
   for(Int_t i=0;i<iNewMultiplicityOfRP;i++) {
     dTmpPt = fPtSpectra->GetRandom();
     dTmpEta = fMyTRandom3->Uniform(dEtaMin,dEtaMax);
@@ -198,15 +210,63 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
     // add the track to the event
     for(Int_t d=0;d<fNoOfLoops;d++) {
       AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-      pTrack->SetPt(dTmpPt);
-      pTrack->SetEta(dTmpEta);
-      pTrack->SetPhi(dTmpPhi);
-      pTrack->SetForRPSelection(kTRUE);
-      iSelParticlesRP++;
-      pTrack->SetForPOISelection(kTRUE);
-      iSelParticlesPOI++;
-      pEvent->TrackCollection()->Add(pTrack);
-      iGoodTracks++;
+      
+      // uniform acceptance:
+      if(bUniformAcceptance)
+      {
+       pTrack->SetPt(dTmpPt); 
+       pTrack->SetEta(dTmpEta); 
+       pTrack->SetPhi(dTmpPhi); 
+       pTrack->SetForRPSelection(kTRUE); 
+       iSelParticlesRP++; 
+       pTrack->SetForPOISelection(kTRUE); 
+       iSelParticlesPOI++; 
+       pEvent->TrackCollection()->Add(pTrack); 
+       iGoodTracks++; 
+      }
+      // non-uniform acceptance, 1st sector:
+      else if ((dTmpPhi > fPhiMin1*Pi/180) && (dTmpPhi < fPhiMax1*Pi/180))
+      {
+       if(fMyTRandom3->Uniform(0,1) > 1 - fProbability1)
+       {
+        pTrack->SetPt(dTmpPt);
+        pTrack->SetEta(dTmpEta);
+        pTrack->SetPhi(dTmpPhi);
+        pTrack->SetForRPSelection(kTRUE);
+        iSelParticlesRP++;
+        pTrack->SetForPOISelection(kTRUE);
+        iSelParticlesPOI++;
+        pEvent->TrackCollection()->Add(pTrack);
+        iGoodTracks++;
+       }
+      } 
+      // non-uniform acceptance, 2nd sector:
+      else if ((dTmpPhi > fPhiMin2*Pi/180) && (dTmpPhi < fPhiMax2*Pi/180))
+      {
+       if(fMyTRandom3->Uniform(0,1) > 1 - fProbability2)
+       {
+        pTrack->SetPt(dTmpPt);
+        pTrack->SetEta(dTmpEta);
+        pTrack->SetPhi(dTmpPhi);
+        pTrack->SetForRPSelection(kTRUE);
+        iSelParticlesRP++;
+        pTrack->SetForPOISelection(kTRUE);
+        iSelParticlesPOI++;
+        pEvent->TrackCollection()->Add(pTrack);
+        iGoodTracks++;
+       }
+      } else 
+        {
+         pTrack->SetPt(dTmpPt);
+         pTrack->SetEta(dTmpEta);
+         pTrack->SetPhi(dTmpPhi);
+         pTrack->SetForRPSelection(kTRUE);
+         iSelParticlesRP++;
+         pTrack->SetForPOISelection(kTRUE);
+         iSelParticlesPOI++;
+         pEvent->TrackCollection()->Add(pTrack);
+         iGoodTracks++;
+        }
     }
   }
   
