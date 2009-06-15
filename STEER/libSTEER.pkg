@@ -70,7 +70,8 @@ AliRunInfo.cxx AliEventInfo.cxx \
 AliRecoParam.cxx AliDetectorRecoParam.cxx \
 AliMillePedeRecord.cxx AliMillePede2.cxx AliMatrixSq.cxx \
 AliVectorSparse.cxx AliMatrixSparse.cxx \
-AliSymMatrix.cxx AliRectMatrix.cxx AliMinResSolve.cxx
+AliSymMatrix.cxx AliRectMatrix.cxx AliMinResSolve.cxx \
+AliGRPManager.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

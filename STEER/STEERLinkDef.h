@@ -158,4 +158,6 @@
 #pragma link C++ class AliSymMatrix+;
 #pragma link C++ class AliRectMatrix+;
 
+#pragma link C++ class AliGRPManager+;
+
 #endif
