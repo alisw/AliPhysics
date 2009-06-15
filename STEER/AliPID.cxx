@@ -101,7 +101,7 @@ const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESN+1] = {
   ::kPi0,
   ::kNeutron,
   ::kK0,
-  ::kGamma,
+  ::kElectron,
   0
 };
 
