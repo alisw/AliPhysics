@@ -926,10 +926,10 @@ Bool_t AliTRDCalibraVector::FindTheMaxEntries(Int_t i, Int_t &detectormax, Int_t
   }
   max = -10.0;
   groupmax = -1;
-  for(Int_t i = 0; i < numberofgroup; i++){
-    if(nbgroup[i] > max){
-      max = nbgroup[i];
-      groupmax = i;
+  for(Int_t io = 0; io < numberofgroup; io++){
+    if(nbgroup[io] > max){
+      max = nbgroup[io];
+      groupmax = io;
     }
   }
   if((max == 0.0) || (groupmax < 0.0) || (groupmax >= numberofgroup)) return kFALSE;
@@ -1399,4 +1399,5 @@ void AliTRDCalibraVector::SetNzNrphi(Int_t i, Int_t nz, Int_t nrphi) {
     fModePRF |= nrphi;
   }
   
-}  
+}
+
