@@ -13,12 +13,12 @@ SRCS		=  AliFMDInput.cxx 		\
 		   AliFMDBaseDA.cxx		\
                    AliFMDPedestalDA.cxx		\
 		   AliFMDGainDA.cxx		\
-		   AliFMDSpectraDisplay.cxx	\
-	 	   AliFMDBackgroundCorrection.cxx 
+		   AliFMDSpectraDisplay.cxx	
+
 
 HDRS		=  $(SRCS:.cxx=.h) 
 DHDR		:= FMDutilLinkDef.h
-EINCLUDE 	:= RAW FMD/analysis
+EINCLUDE 	:= RAW
 
 #ELIBS           := FMDanalysis
 #ELIBSDIR	:= $(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)

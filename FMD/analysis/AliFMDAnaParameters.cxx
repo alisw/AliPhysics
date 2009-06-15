@@ -39,10 +39,10 @@ ClassImp(AliFMDAnaParameters)
   ; // This is here to keep Emacs for indenting the next line
 #endif
 
-const char* AliFMDAnaParameters::fgkBackgroundCorrection  = "FMD/Correction/Background";
-const char* AliFMDAnaParameters::fgkEnergyDists = "FMD/Correction/EnergyDistribution";
-const char* AliFMDAnaParameters::fkBackgroundID = "background";
-const char* AliFMDAnaParameters::fkEnergyDistributionID = "energydistributions";
+//const char* AliFMDAnaParameters::fgkBackgroundCorrection  = "FMD/Correction/Background";
+//const char* AliFMDAnaParameters::fgkEnergyDists = "FMD/Correction/EnergyDistribution";
+const char* AliFMDAnaParameters::fgkBackgroundID = "background";
+const char* AliFMDAnaParameters::fgkEnergyDistributionID = "energydistributions";
 //____________________________________________________________________
 AliFMDAnaParameters* AliFMDAnaParameters::fgInstance = 0;
 
@@ -94,7 +94,7 @@ void AliFMDAnaParameters::InitBackground() {
   
   if (!fin) return;
   
-  fBackground = dynamic_cast<AliFMDAnaCalibBackgroundCorrection*>(fin->Get(fkBackgroundID));
+  fBackground = dynamic_cast<AliFMDAnaCalibBackgroundCorrection*>(fin->Get(fgkBackgroundID));
   if (!fBackground) AliFatal("Invalid background object from CDB");
   
 }
@@ -106,7 +106,7 @@ void AliFMDAnaParameters::InitEnergyDists() {
   //AliCDBEntry*   edist = GetEntry(fgkEnergyDists);
   if (!fin) return;
   
-  fEnergyDistribution = dynamic_cast<AliFMDAnaCalibEnergyDistribution*>(fin->Get(fkEnergyDistributionID));
+  fEnergyDistribution = dynamic_cast<AliFMDAnaCalibEnergyDistribution*>(fin->Get(fgkEnergyDistributionID));
   
   if (!fEnergyDistribution) AliFatal("Invalid background object from CDB");
   
@@ -171,8 +171,8 @@ Float_t AliFMDAnaParameters::GetMPV(Int_t det, Char_t ring, Float_t eta) {
     return 1024;
   }
     
-  Float_t MPV           = fitFunc->GetParameter(1);
-  return MPV;
+  Float_t mpv           = fitFunc->GetParameter(1);
+  return mpv;
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::Get2MIPWeight(Int_t det, Char_t ring, Float_t eta) {
@@ -185,14 +185,14 @@ Float_t AliFMDAnaParameters::Get2MIPWeight(Int_t det, Char_t ring, Float_t eta) 
   TH1F* hEnergyDist     = GetEnergyDistribution(det,ring,eta);
   TF1*  fitFunc         = hEnergyDist->GetFunction("FMDfitFunc");
   if(!fitFunc) return 0;
-  Float_t TwoMIPweight    = fitFunc->GetParameter(3);
+  Float_t twoMIPweight    = fitFunc->GetParameter(3);
   
   
   
-  if(TwoMIPweight < 1e-05)
-    TwoMIPweight = 0;
+  if(twoMIPweight < 1e-05)
+    twoMIPweight = 0;
   
-  return TwoMIPweight;
+  return twoMIPweight;
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::Get3MIPWeight(Int_t det, Char_t ring, Float_t eta) {
@@ -205,17 +205,17 @@ Float_t AliFMDAnaParameters::Get3MIPWeight(Int_t det, Char_t ring, Float_t eta) 
   TH1F* hEnergyDist     = GetEnergyDistribution(det,ring,eta);
   TF1*  fitFunc         = hEnergyDist->GetFunction("FMDfitFunc");
   if(!fitFunc) return 0;
-  Float_t ThreeMIPweight    = fitFunc->GetParameter(4);
+  Float_t threeMIPweight    = fitFunc->GetParameter(4);
   
-  if(ThreeMIPweight < 1e-05)
-    ThreeMIPweight = 0;
+  if(threeMIPweight < 1e-05)
+    threeMIPweight = 0;
   
-  Float_t TwoMIPweight    = fitFunc->GetParameter(3);
+  Float_t twoMIPweight    = fitFunc->GetParameter(3);
   
-  if(TwoMIPweight < 1e-05)
-    ThreeMIPweight = 0;
+  if(twoMIPweight < 1e-05)
+    threeMIPweight = 0;
     
-  return ThreeMIPweight;
+  return threeMIPweight;
 }
 //____________________________________________________________________
 Int_t AliFMDAnaParameters::GetNetaBins() {
@@ -266,7 +266,7 @@ TH1F* AliFMDAnaParameters::GetDoubleHitCorrection(Int_t det,
   return fBackground->GetDoubleHitCorrection(det,ring);
 }
 //_____________________________________________________________________
-Float_t AliFMDAnaParameters::GetMaxR(Char_t ring) {
+Float_t AliFMDAnaParameters::GetMaxR(Char_t ring) const{
   Float_t radius = 0;
   if(ring == 'I')
     radius = 17.2;
@@ -278,7 +278,7 @@ Float_t AliFMDAnaParameters::GetMaxR(Char_t ring) {
   return radius;
 }
 //_____________________________________________________________________
-Float_t AliFMDAnaParameters::GetMinR(Char_t ring) {
+Float_t AliFMDAnaParameters::GetMinR(Char_t ring) const{
   Float_t radius = 0;
   if(ring == 'I')
     radius = 4.5213;
@@ -304,7 +304,7 @@ void AliFMDAnaParameters::SetCorners(Char_t ring) {
   
 }
 //_____________________________________________________________________
-Float_t AliFMDAnaParameters::GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec)
+Float_t AliFMDAnaParameters::GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec) const
 {
   Int_t nsec = (ring == 'I' ? 20 : 40);
   Float_t basephi = 0;
@@ -334,13 +334,13 @@ Float_t AliFMDAnaParameters::GetPhiFromSector(UShort_t det, Char_t ring, UShort_
   return phi;
 }
 //_____________________________________________________________________
-Float_t AliFMDAnaParameters::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx)
+Float_t AliFMDAnaParameters::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx) const
 {
   // AliFMDRing fmdring(ring);
   // fmdring.Init();
   Float_t   rad       = GetMaxR(ring)-GetMinR(ring);
-  Float_t   Nstrips   = (ring == 'I' ? 512 : 256);
-  Float_t   segment   = rad / Nstrips;
+  Float_t   nStrips   = (ring == 'I' ? 512 : 256);
+  Float_t   segment   = rad / nStrips;
   Float_t   r         = GetMinR(ring) + segment*strip;
   Float_t   z         = 0;
   Int_t hybrid = sec / 2;
@@ -397,8 +397,8 @@ AliFMDAnaParameters::GetStripLength(Char_t ring, UShort_t strip)
   // fmdring.Init();
   
   Float_t rad        = GetMaxR(ring)-GetMinR(ring);
-  Float_t   Nstrips   = (ring == 'I' ? 512 : 256);
-  Float_t segment    = rad / Nstrips;
+  Float_t   nStrips   = (ring == 'I' ? 512 : 256);
+  Float_t segment    = rad / nStrips;
   
   //TVector2* corner1  = fmdring.GetVertex(2);  
   // TVector2* corner2  = fmdring.GetVertex(3);
@@ -442,10 +442,10 @@ AliFMDAnaParameters::GetBaseStripLength(Char_t ring, UShort_t strip)
   // AliFMDRing fmdring(ring);
   // fmdring.Init();
   Float_t rad             = GetMaxR(ring)-GetMinR(ring);
-  Float_t Nstrips         = (ring == 'I' ? 512 : 256);
-  Float_t Nsec            = (ring == 'I' ? 20 : 40);
-  Float_t segment         = rad / Nstrips;
-  Float_t basearc         = 2*TMath::Pi() / (0.5*Nsec); // One hybrid: 36 degrees inner, 18 outer
+  Float_t nStrips         = (ring == 'I' ? 512 : 256);
+  Float_t nSec            = (ring == 'I' ? 20 : 40);
+  Float_t segment         = rad / nStrips;
+  Float_t basearc         = 2*TMath::Pi() / (0.5*nSec); // One hybrid: 36 degrees inner, 18 outer
   Float_t radius          = GetMinR(ring) + strip*segment;
   Float_t basearclength   = 0.5*basearc * radius;                // One sector   
   

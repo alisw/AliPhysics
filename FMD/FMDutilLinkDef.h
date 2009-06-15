@@ -30,7 +30,7 @@
 #pragma link C++ class  AliFMDBaseDA;
 #pragma link C++ class  AliFMDPedestalDA;
 #pragma link C++ class  AliFMDGainDA;
-#pragma link C++ class  AliFMDBackgroundCorrection+;
+
 
 #pragma link C++ class  AliFMDSpectraDisplay;
 #pragma link C++ class  AliFMDSpectraDisplay::AliFMDSpectraDisplayElement;

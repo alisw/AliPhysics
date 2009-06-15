@@ -198,7 +198,6 @@ void AliFMDAnalysisTaskGenerateBackground::UserExec(Option_t */*option*/)
 	//  doubleHits->Fill(eta);
 	//	}
 	
-	
 	fLastTrackByStrip.operator()(det,ring,sec,strip) = (Float_t)i;
 	if(strip >0)
 	  fLastTrackByStrip.operator()(det,ring,sec,strip-1) = (Float_t)i;
@@ -310,7 +309,7 @@ void AliFMDAnalysisTaskGenerateBackground::ReadFromFile(const Char_t* filename, 
   
   if(storeInOCDB) {
     TFile fcalib("$ALICE_ROOT/FMD/Correction/Background/background.root","RECREATE");
-    fBackground->Write(AliFMDAnaParameters::fkBackgroundID);
+    fBackground->Write(AliFMDAnaParameters::GetBackgroundID());
     fcalib.Close();
     /*  AliCDBManager* cdb = AliCDBManager::Instance();
     cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
