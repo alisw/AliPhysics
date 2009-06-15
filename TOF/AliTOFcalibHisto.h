@@ -137,7 +137,7 @@ public TObject
   static void SetCalibParFileName(const Char_t *value) {fgCalibParFileName = value;}; /* set calib par file name */
 
   /* methods */
-  static Int_t GetIndexEO(Int_t ddl, Int_t trm, Int_t chain, Int_t tdc, Int_t channel) {return (channel + 15 * tdc + 120 * chain + 240 * trm + 2400 * ddl);}; /* get index EO */
+  static Int_t GetIndexEO(Int_t ddl, Int_t trm, Int_t chain, Int_t tdc, Int_t channel) {return (channel + 8 * tdc + 120 * chain + 240 * trm + 2400 * ddl);}; /* get index EO */
   void LoadCalibHisto(); /* load calib histo */
   void LoadCalibPar(); /* load calib par */
   void WriteCalibHisto(); /* write calib histo */
