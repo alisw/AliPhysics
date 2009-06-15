@@ -1,4 +1,4 @@
- /**************************************************************************
+/**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -37,6 +37,9 @@
 #include "AliTriggerScalers.h"
 #include "AliTriggerScalersRecord.h"
 #include "AliTriggerRunScalers.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 
 ClassImp( AliTriggerRunScalers )
 
@@ -56,8 +59,9 @@ AliTriggerRunScalers::AliTriggerRunScalers():
 void AliTriggerRunScalers::AddTriggerScalers( AliTriggerScalersRecord* scaler ) 
 { 
   //
-  fScalersRecord.AddLast( scaler ); 
-  fScalersRecord.Sort(); 
+  fScalersRecord.AddLast( scaler );
+  if (!AliTriggerRunScalers::ConsistencyCheck()) AliErrorClass("Trigger counters not in the right order or decreasing!");
+//  fScalersRecord.Sort(); 
 }
 
 //_____________________________________________________________________________
@@ -137,13 +141,14 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
                             filename.Data(), strLine.Data() )); 
       return NULL;
     }
-    UInt_t orbit     = ((TObjString*)tokens->At(0))->String().Atoi();
-    UInt_t period    = ((TObjString*)tokens->At(1))->String().Atoi();
-    UInt_t seconds   = ((TObjString*)tokens->At(2))->String().Atoi();
-    UInt_t microSecs = ((TObjString*)tokens->At(3))->String().Atoi();
+
+    UInt_t orbit     = strtoul(((TObjString*)tokens->At(0))->String(), NULL, 10);
+    UInt_t period    = strtoul(((TObjString*)tokens->At(1))->String(), NULL, 10);
+    UInt_t seconds   = strtoul(((TObjString*)tokens->At(2))->String(), NULL, 10);
+    UInt_t microSecs = strtoul(((TObjString*)tokens->At(3))->String(), NULL, 10);
+
     AliTriggerScalersRecord * rec = new AliTriggerScalersRecord();
     rec->SetTimeStamp( orbit, period, seconds, microSecs );
-    
     TString strLine1;
     for (Int_t i=0; i<nclass; ++i) {
       strLine1.ReadLine(*file);
@@ -156,12 +161,13 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
 	delete rec;
 	return rScaler;
       }
-      UInt_t LOCB = ((TObjString*)tokens1->At(0))->String().Atoi();
-      UInt_t LOCA = ((TObjString*)tokens1->At(1))->String().Atoi();
-      UInt_t L1CB = ((TObjString*)tokens1->At(2))->String().Atoi();
-      UInt_t L1CA = ((TObjString*)tokens1->At(3))->String().Atoi();
-      UInt_t L2CB = ((TObjString*)tokens1->At(4))->String().Atoi();
-      UInt_t L2CA = ((TObjString*)tokens1->At(5))->String().Atoi();
+      UInt_t LOCB = strtoul(((TObjString*)tokens1->At(0))->String(), NULL, 10);
+      UInt_t LOCA = strtoul(((TObjString*)tokens1->At(1))->String(), NULL, 10);
+      UInt_t L1CB = strtoul(((TObjString*)tokens1->At(2))->String(), NULL, 10);
+      UInt_t L1CA = strtoul(((TObjString*)tokens1->At(3))->String(), NULL, 10);
+      UInt_t L2CB = strtoul(((TObjString*)tokens1->At(4))->String(), NULL, 10);
+      UInt_t L2CA = strtoul(((TObjString*)tokens1->At(5))->String(), NULL, 10);
+
       rScaler->GetClass(i);
       rec->AddTriggerScalers( rScaler->GetClass(i),
                               LOCB, LOCA, L1CB,
@@ -213,7 +219,100 @@ Int_t  AliTriggerRunScalers::FindNearestScalersRecord( AliTimeStamp * stamp )
    else 
     return (result < 0 ) ? position-1 : position; // nearst < stamp   
 }
+//_____________________________________________________________________________
+Bool_t AliTriggerRunScalers::ConsistencyCheck()
+{
 
+UInt_t LOCB_2, LOCA_2, L1CB_2, L1CA_2, L2CB_2, L2CA_2, LOCB_1, LOCA_1, L1CB_1, L1CA_1, L2CB_1, L2CA_1;
+char *LOCBstat = "NULL", *LOCAstat = "NULL", *L1CBstat = "NULL", *L1CAstat = "NULL", *L2CBstat = "NULL", *L2CAstat = "NULL";
+Int_t position = fScalersRecord.GetEntriesFast()-1;
+
+if (position == 0) return 1;
+
+AliTriggerScalersRecord* Scalers2 = (AliTriggerScalersRecord*)fScalersRecord.At(position);
+AliTriggerScalersRecord* Scalers1 = (AliTriggerScalersRecord*)fScalersRecord.At(position-1);
+if (Scalers2->Compare((AliTriggerScalersRecord*)fScalersRecord.At(position-1)) == -1) return 0;
+else for( Int_t i=0; i<fnClasses; ++i ){
+
+TObjArray* ScalersArray2 = (TObjArray*)Scalers2->GetTriggerScalers();
+AliTriggerScalers* counters2 = (AliTriggerScalers*)ScalersArray2->At(i);
+	LOCB_2 = counters2->GetLOCB();
+	LOCA_2 = counters2->GetLOCA();
+	L1CB_2 = counters2->GetL1CB();
+	L1CA_2 = counters2->GetL1CA();
+	L2CB_2 = counters2->GetL2CB();
+	L2CA_2 = counters2->GetL2CA();
+
+TObjArray* ScalersArray1 = (TObjArray*)Scalers1->GetTriggerScalers();
+AliTriggerScalers* counters1 = (AliTriggerScalers*)ScalersArray1->At(i);
+	LOCB_1 = counters1->GetLOCB();
+	LOCA_1 = counters1->GetLOCA();
+	L1CB_1 = counters1->GetL1CB();
+	L1CA_1 = counters1->GetL1CA();
+	L2CB_1 = counters1->GetL2CB();
+	L2CA_1 = counters1->GetL2CA();
+
+if ( LOCB_2 > LOCB_1 ) LOCBstat = "increase";
+else if ( LOCB_2 < LOCB_1 && (LOCB_1 - LOCB_2) > 1000000000) LOCBstat = "overflow";
+else return 0;
+
+if ( LOCA_2 > LOCA_1 ) LOCAstat = "increase";
+else if ( LOCA_2 < LOCA_1 && (LOCA_1 - LOCA_2) > 1000000000) LOCAstat = "overflow";
+else return 0;
+
+if ( L1CB_2 > L1CB_1 ) L1CBstat = "increase";
+else if ( L1CB_2 < L1CB_1 && (L1CB_1 - L1CB_2) > 1000000000) L1CBstat = "overflow";
+else return 0;
+
+if ( L1CA_2 > L1CA_1 ) L1CAstat = "increase";
+else if ( L1CA_2 < L1CA_1 && (L1CA_1 - L1CA_2) > 1000000000) L1CAstat = "overflow";
+else return 0;
+
+if ( L2CB_2 > L2CB_1 ) L2CBstat = "increase";
+else if ( L2CB_2 < L2CB_1 && (L2CB_1 - L2CB_2) > 1000000000) L2CBstat = "overflow";
+else return 0;
+
+if ( L2CA_2 > L2CA_1 ) L2CAstat = "increase";
+else if ( L2CA_2 < L2CA_1 && (L2CA_1 - L2CA_2) > 1000000000) L2CAstat = "overflow";
+else return 0;
+
+
+if ( (LOCB_2 - LOCB_1) < (LOCA_2 - LOCA_1) && LOCBstat == "increase" && LOCAstat == "increase" ) return 0;
+else if ( (4294967295ul - LOCB_1 + LOCB_2 ) < (LOCA_2 - LOCA_1) && LOCBstat == "overflow" && LOCAstat == "increase" ) return 0;
+else if ( (LOCB_2 - LOCB_1) < (4294967295ul - LOCA_1 + LOCA_2) && LOCBstat == "increase" && LOCAstat == "overflow" ) return 0;
+else if ( (4294967295ul - LOCB_1 + LOCB_2 ) < (4294967295ul - LOCA_1 + LOCA_2) && LOCBstat == "overflow" && LOCAstat == "overflow" ) return 0;
+
+if ( (LOCA_2 - LOCA_1) < (L1CB_2 - L1CB_1) && LOCAstat == "increase" && L1CBstat == "increase" ) return 0;
+else if ( (4294967295ul - LOCA_1 + LOCA_2 ) < (L1CB_2 - L1CB_1) && LOCAstat == "overflow" && L1CBstat == "increase" ) return 0;
+else if ( (LOCA_2 - LOCA_1) < (4294967295ul - L1CB_1 + L1CB_2) && LOCAstat == "increase" && L1CBstat == "overflow" ) return 0;
+else if ( (4294967295ul - LOCA_1 + LOCA_2 ) < (4294967295ul - L1CB_1 + L1CB_2) && LOCAstat == "overflow" && L1CBstat == "overflow" ) return 0;
+
+if ( (L1CB_2 - L1CB_1) < (L1CA_2 - L1CA_1) && L1CBstat == "increase" && L1CAstat == "increase" ) return 0;
+else if ( (4294967295ul - L1CB_1 + L1CB_2 ) < (L1CA_2 - L1CA_1) && L1CBstat == "overflow" && L1CAstat == "increase" ) return 0;
+else if ( (L1CB_2 - L1CB_1) < (4294967295ul - L1CA_1 + L1CA_2) && L1CBstat == "increase" && L1CAstat == "overflow" ) return 0;
+else if ( (4294967295ul - L1CB_1 + L1CB_2 ) < (4294967295ul - L1CA_1 + L1CA_2) && L1CBstat == "overflow" && L1CAstat == "overflow" ) return 0;
+
+if ( (L1CA_2 - L1CA_1) < (L2CB_2 - L2CB_1) && L1CAstat == "increase" && L2CBstat == "increase" ) return 0;
+else if ( (4294967295ul- L1CA_1 + L1CA_2 ) < (L2CB_2 - L2CB_1) && L1CAstat == "overflow" && L2CBstat == "increase" ) return 0;
+else if ( (L1CA_2 - L1CA_1) < (4294967295ul- L2CB_1 + L2CB_2) && L1CAstat == "increase" && L2CBstat == "overflow" ) return 0;
+else if ( (4294967295ul- L1CA_1 + L1CA_2 ) < (4294967295ul- L2CB_1 + L2CB_2) && L1CAstat == "overflow" && L2CBstat == "overflow" ) return 0;
+
+if ( (L2CB_2 - L2CB_1) < (L2CA_2 - L2CA_1) && L2CBstat == "increase" && L2CAstat == "increase" ) return 0;
+else if ( (4294967295ul- L2CB_1 + L2CB_2 ) < (L2CA_2 - L2CA_1) && L2CBstat == "overflow" && L2CAstat == "increase" ) return 0;
+else if ( (L2CB_2 - L2CB_1) < (4294967295ul- L2CA_1 + L2CA_2) && L2CBstat == "increase" && L2CAstat == "overflow" ) return 0;
+else if ( (4294967295ul- L2CB_1 + L2CB_2 ) < (4294967295ul- L2CA_1 + L2CA_2) && L2CBstat == "overflow" && L2CAstat == "overflow" ) return 0;
+
+
+
+
+cout<<"LOCB_1 =" << LOCB_1 <<"  LOCB_2="<<LOCB_2<<endl;
+if ( L1CB_2 < L1CB_1 || L1CA_2 < L1CA_1 || L2CB_2 < L2CB_1 || L2CA_2 < L2CA_1) return 0;
+else if ( LOCB_2 < LOCB_1 && ((LOCB_1 - LOCB_2) < 1000000000) ) return 0;//verify this number with Roman!
+ 
+}
+
+return 1;
+}
 //_____________________________________________________________________________
 void AliTriggerRunScalers::Print( const Option_t* ) const
 {

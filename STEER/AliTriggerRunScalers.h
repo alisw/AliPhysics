@@ -14,7 +14,6 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 class TObject;
-
 class AliTimeStamp;
 class AliTriggerScalersRecord;
 
@@ -35,7 +34,7 @@ public:
   AliTriggerScalersRecord*   GetScalersRecord( Int_t index )         
                                                 { return (AliTriggerScalersRecord*)fScalersRecord.At(index); }
                     Int_t    FindNearestScalersRecord( AliTimeStamp * stamp );
-        
+                   Bool_t    ConsistencyCheck();
   //  Setters
                      void    SetVersion( Short_t ver )       { fVersion = ver;   }            
                      void    SetRunNumber( ULong_t run )     { fRunNumber = run; }
@@ -45,7 +44,7 @@ public:
              virtual void    Print( const Option_t* opt ="" ) const;
 
                                         
- static AliTriggerRunScalers*  ReadScalers( TString & filename );
+static AliTriggerRunScalers*  ReadScalers( TString & filename );
                                       
 
 private:
