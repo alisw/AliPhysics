@@ -39,14 +39,14 @@ void runElectronTask(const char *treelist = 0x0){
   esdchain->SetBranchStatus("Tracks", 1);
   
   // Start the Analysis Manager and Create Handlers
-  AliAnalysisManager *pidEffManager = new AliAnalysisManager("PID efficiency studies");
+  AliAnalysisManager *pidEffManager = new AliAnalysisManager("Single Electron Analysis");
   pidEffManager->SetInputEventHandler(new AliESDInputHandler);
   pidEffManager->SetMCtruthEventHandler(new AliMCEventHandler);
   AliAnalysisElectronTask *task = new AliAnalysisElectronTask;
   pidEffManager->AddTask(task);
   task->ConnectInput(0, pidEffManager->CreateContainer("esdTree", TChain::Class(), AliAnalysisManager::kInputContainer));
   task->ConnectOutput(0, pidEffManager->CreateContainer("nEvents", TH1I::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));
-  task->ConnectOutput(1, pidEffManager->CreateContainer("Results", AliCFContainer::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));
+  task->ConnectOutput(1, pidEffManager->CreateContainer("Results", TList::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));
   task->ConnectOutput(2, pidEffManager->CreateContainer("QA", TList::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));
   
   // Run the Analysis
