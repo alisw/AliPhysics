@@ -28,10 +28,10 @@
 #include <AliMagF.h>
 #include <AliCDBManager.h>
 #include <AliCDBStorage.h>
-#include <AliCDBEntry.h>
 #include <AliGRPObject.h>
 #include <AliHeader.h>
 #include <AliGeomManager.h>
+#include <AliGRPManager.h>
 
 #include <TFile.h>
 #include <TTree.h>
@@ -86,7 +86,7 @@ TString  AliEveEventManager::fgCdbUri("local://$ALICE_ROOT/OCDB");
 
 TList*   AliEveEventManager::fgAODfriends = 0;
 
-AliGRPObject* AliEveEventManager::fgGRPData      = 0;
+Bool_t        AliEveEventManager::fgGRPLoaded    = kFALSE;
 AliMagF*      AliEveEventManager::fgMagField     = 0;
 Bool_t        AliEveEventManager::fgUniformField = kFALSE;
 
@@ -984,7 +984,7 @@ AliMagF* AliEveEventManager::AssertMagField()
   if (fgMagField)
     return fgMagField;
 
-  if (fgGRPData == 0)
+  if (!fgGRPLoaded)
   {
     InitGRP();
   }
@@ -1340,145 +1340,15 @@ Bool_t AliEveEventManager::InitGRP()
 
   static const TEveException kEH("AliEveEventManager::InitGRP ");
 
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
-
-  if (entry)
-  {
-    TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
-
-    if (m)
-    {
-      ::Info(kEH, "Found a TMap in GRP/GRP/Data, converting it into an AliGRPObject");
-      fgGRPData = new AliGRPObject();
-      fgGRPData->ReadValuesFromMap(m);
-    }
-    else
-    {
-      ::Info(kEH, "Found an AliGRPObject in GRP/GRP/Data, reading it");
-      fgGRPData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
-      entry->SetOwner(0);
-    }
-
-    AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
-  }
-
-  if (!fgGRPData)
-  {
-    ::Error(kEH, "No GRP entry found in OCDB!");
+  AliGRPManager grpMgr;
+  if (!grpMgr.ReadGRPEntry()) {
     return kFALSE;
   }
-
-  TString lhcState = fgGRPData->GetLHCState();
-  if (lhcState==AliGRPObject::GetInvalidString())
-  {
-    ::Error(kEH, "GRP/GRP/Data entry:  missing value for the LHC state ! Using UNKNOWN");
-    lhcState = "UNKNOWN";
+  fgGRPLoaded = kTRUE;
+  if (!grpMgr.SetMagField()) {
+    throw kEH + "Setting of field failed!";
   }
 
-  TString beamType = fgGRPData->GetBeamType();
-  if (beamType==AliGRPObject::GetInvalidString())
-  {
-    ::Error(kEH, "GRP/GRP/Data entry:  missing value for the beam type ! Using UNKNOWN");
-    beamType = "UNKNOWN";
-  }
-
-  Float_t beamEnergy = fgGRPData->GetBeamEnergy();
-  if (beamEnergy==AliGRPObject::GetInvalidFloat())
-  {
-    ::Error(kEH, "GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
-    beamEnergy = 0;
-  }
-  beamEnergy /= 120E3; // energy is provided in MeV*120
-
-  TString runType = fgGRPData->GetRunType();
-  if (runType==AliGRPObject::GetInvalidString())
-  {
-    ::Error(kEH, "GRP/GRP/Data entry:  missing value for the run type ! Using UNKNOWN");
-    runType = "UNKNOWN";
-  }
-
-  Int_t activeDetectors = fgGRPData->GetDetectorMask();
-  if (activeDetectors==AliGRPObject::GetInvalidUInt())
-  {
-    ::Error(kEH, "GRP/GRP/Data entry:  missing value for the detector mask ! Using 1074790399");
-    activeDetectors = 1074790399;
-  }
-
-
-  // Might become useful.
-  /*
-    fRunInfo = new AliRunInfo(lhcState, beamType, beamEnergy, runType, activeDetectors);
-    printf("AliRunInfo - %s %s %f %s %d\n", lhcState.Data(), beamType.Data(), beamEnergy, runType.Data(), activeDetectors);
-    fRunInfo->Dump();
-
-
-    // Process the list of active detectors
-    if (activeDetectors) {
-    UInt_t detMask = activeDetectors;
-    fRunLocalReconstruction = MatchDetectorList(fRunLocalReconstruction,detMask);
-    fRunTracking = MatchDetectorList(fRunTracking,detMask);
-    fFillESD = MatchDetectorList(fFillESD,detMask);
-    fQADetectors = MatchDetectorList(fQADetectors,detMask);
-    fLoadCDB.Form("%s %s %s %s",
-    fRunLocalReconstruction.Data(),
-    fRunTracking.Data(),
-    fFillESD.Data(),
-    fQADetectors.Data());
-    fLoadCDB = MatchDetectorList(fLoadCDB,detMask);
-    if (!((detMask >> AliDAQ::DetectorID("ITSSPD")) & 0x1)) {
-    // switch off the vertexer
-    ::Info(kEH, "SPD is not in the list of active detectors. Vertexer switched off.");
-    fRunVertexFinder = kFALSE;
-    }
-    if (!((detMask >> AliDAQ::DetectorID("TRG")) & 0x1)) {
-    // switch off the reading of CTP raw-data payload
-    if (fFillTriggerESD) {
-    ::Info(kEH, "CTP is not in the list of active detectors. CTP data reading switched off.");
-    fFillTriggerESD = kFALSE;
-    }
-    }
-    }
-
-    ::Info(kEH, "===================================================================================");
-    ::Info(kEH, "Running local reconstruction for detectors: %s",fRunLocalReconstruction.Data());
-    ::Info(kEH, "Running tracking for detectors: %s",fRunTracking.Data());
-    ::Info(kEH, "Filling ESD for detectors: %s",fFillESD.Data());
-    ::Info(kEH, "Quality assurance is active for detectors: %s",fQADetectors.Data());
-    ::Info(kEH, "CDB and reconstruction parameters are loaded for detectors: %s",fLoadCDB.Data());
-    ::Info(kEH, "===================================================================================");
-  */
-
-  //*** Dealing with the magnetic field map
-  if (TGeoGlobalMagField::Instance()->IsLocked())
-  {
-    ::Info(kEH, "Running with externally locked B field!");
-  }
-  else
-  {
-    // Construct the field map out of the information retrieved from GRP.
-
-    Float_t l3Current = fgGRPData->GetL3Current((AliGRPObject::Stats)0);
-    if (l3Current == AliGRPObject::GetInvalidFloat())
-      throw kEH + "GRPData entry: missing value for the L3 current!";
-    
-    Char_t l3Polarity = fgGRPData->GetL3Polarity();
-    if (l3Polarity == AliGRPObject::GetInvalidChar())
-      throw kEH + "GRPData entry: missing value for the L3 polarity!";
-
-    Float_t diCurrent = fgGRPData->GetDipoleCurrent((AliGRPObject::Stats)0);
-    if (diCurrent == AliGRPObject::GetInvalidFloat())
-      throw kEH + "GRPData entry: missing value for the dipole current!";
-
-    Char_t diPolarity = fgGRPData->GetDipolePolarity();
-    if (diPolarity == AliGRPObject::GetInvalidChar()) 
-      throw kEH + "GRPData entry: missing value for the dipole polarity!";
-
-    if (!SetFieldMap(l3Current, diCurrent, l3Polarity ? -1:1, diPolarity ? -1:1))
-      throw kEH + "Failed to create B field map!";
-
-    ::Info(kEH, "Running with the B field constructed from GRP.");
-  }
-  
   //*** Get the diamond profiles from OCDB
   // Eventually useful.
 
@@ -1507,108 +1377,3 @@ Bool_t AliEveEventManager::InitGRP()
 
   return kTRUE;
 } 
-
-Bool_t AliEveEventManager::SetFieldMap(Float_t l3Cur, Float_t diCur,
-				       Float_t l3Pol, Float_t diPol,
-				       Float_t beamenergy,
-				       const Char_t *beamtype,
-				       const Char_t *path) 
-{
-  //------------------------------------------------
-  // The magnetic field map, defined externally...
-  // L3 current 30000 A  -> 0.5 T
-  // L3 current 12000 A  -> 0.2 T
-  // dipole current 6000 A
-  // The polarities must be the same
-  //------------------------------------------------
-
-  static const TEveException kEH("AliEveEventManager::SetFieldMap ");
-
-  const Float_t l3NominalCurrent1 = 30000.0; // (A)
-  const Float_t l3NominalCurrent2 = 12000.0; // (A)
-  const Float_t diNominalCurrent  = 6000.0;  // (A)
-
-  const Float_t tolerance = 0.03; // relative current tolerance
-  const Float_t zero      = 77.0; // "zero" current (A)
-
-  TString s = (l3Pol < 0) ? "L3: -" : "L3: +";
-
-  AliMagF::BMap_t map = AliMagF::k5kG;
-
-  double fcL3, fcDip;
-
-  l3Cur = TMath::Abs(l3Cur);
-  if (TMath::Abs(l3Cur-l3NominalCurrent1)/l3NominalCurrent1 < tolerance)
-  {
-    fcL3 = l3Cur/l3NominalCurrent1;
-    map  = AliMagF::k5kG;
-    s   += "0.5 T;  ";
-  }
-  else if (TMath::Abs(l3Cur-l3NominalCurrent2)/l3NominalCurrent2 < tolerance)
-  {
-    fcL3 = l3Cur/l3NominalCurrent2;
-    map  = AliMagF::k2kG;
-    s   += "0.2 T;  ";
-  }
-  else if (l3Cur <= zero)
-  {
-    fcL3 = 0;
-    map  = AliMagF::k5kGUniform;
-    s   += "0.0 T;  ";
-    fgUniformField = kTRUE; // track with the uniform (zero) B field
-  }
-  else
-  {
-    ::Error(kEH, "Wrong L3 current (%f A)!", l3Cur);
-    return kFALSE;
-  }
-
-  diCur = TMath::Abs(diCur);
-  if (TMath::Abs(diCur-diNominalCurrent)/diNominalCurrent < tolerance)
-  {
-    // 3% current tolerance...
-    fcDip = diCur/diNominalCurrent;
-    s    += "Dipole ON";
-  }
-  else if (diCur <= zero)
-  { // some small current..
-    fcDip = 0.;
-    s    += "Dipole OFF";
-  }
-  else
-  {
-    ::Error(kEH, "Wrong dipole current (%f A)!", diCur);
-    return kFALSE;
-  }
-
-  if (l3Pol != diPol && (map==AliMagF::k5kG || map==AliMagF::k2kG) && fcDip != 0)
-  {
-    ::Error(kEH, "L3 and Dipole polarities must be the same");
-    return kFALSE;
-  }
-
-  if (l3Pol<0) fcL3  = -fcL3;
-  if (diPol<0) fcDip = -fcDip;
-
-  AliMagF::BeamType_t btype = AliMagF::kNoBeamField;
-  TString btypestr = beamtype;
-  btypestr.ToLower();
-
-  TPRegexp protonBeam("(proton|p)\\s*-?\\s*\\1");
-  TPRegexp ionBeam   ("(lead|pb|ion|a)\\s*-?\\s*\\1");
-
-  if (btypestr.Contains(ionBeam))
-    btype = AliMagF::kBeamTypeAA;
-  else if (btypestr.Contains(protonBeam))
-    btype = AliMagF::kBeamTypepp;
-  else
-    ::Info(kEH, "Cannot determine the beam type from %s, assume no LHC magnet field",
-	   beamtype);
-
-  AliMagF* fld = new AliMagF("MagneticFieldMap", s.Data(), 2, fcL3, fcDip, 10., map, path, 
-			     btype,beamenergy);
-  TGeoGlobalMagField::Instance()->SetField(fld);
-  TGeoGlobalMagField::Instance()->Lock();
-
-  return kTRUE;
-}

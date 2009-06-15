@@ -164,7 +164,7 @@ protected:
 
   static TList   *fgAODfriends;         // Global list of AOD friend names to be attached during opening of the event-data (empty by default).
 
-  static AliGRPObject *fgGRPData;       // Global run parameters.
+  static Bool_t        fgGRPLoaded;     // Global run parameters loaded?
   static AliMagF      *fgMagField;      // Global pointer to magnetic field.
   static Bool_t        fgUniformField;  // Track with uniform field.
 
@@ -177,11 +177,6 @@ private:
   void StopAutoLoadTimer();
 
   static Bool_t InitGRP();
-  static Bool_t SetFieldMap(Float_t l3Cur, Float_t diCur,
-			    Float_t l3Pol, Float_t diPol,
-			    Float_t beamenergy     = 7000,
-			    const Char_t *beamtype = "pp",
-			    const Char_t *path     = "$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
 
   Bool_t fAutoLoadTimerRunning; // State of auto-load timer.
 
