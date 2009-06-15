@@ -153,7 +153,7 @@ Bool_t AliTriggerConfiguration::AddInput( AliTriggerInput* input )
     return kTRUE;
   }
   else {
-    AliError("CTP can handle up to 50 inputs ! Impossible to add the required input !");
+    AliError("CTP can handle up to 60 inputs ! Impossible to add the required input !");
     return kFALSE;
   }
 }
