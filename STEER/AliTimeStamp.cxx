@@ -89,14 +89,16 @@ void AliTimeStamp::SetTimeStamp( UInt_t orbit, UInt_t period,
 Int_t AliTimeStamp::Compare( const TObject* obj ) const
 {
   // Compare 
-  
-  if( fOrbit < ((AliTimeStamp*)obj)->fOrbit ) return -1;
-  if( fOrbit > ((AliTimeStamp*)obj)->fOrbit ) return 1;
-  if( fPeriod < ((AliTimeStamp*)obj)->fPeriod ) return -1;
-  if( fPeriod > ((AliTimeStamp*)obj)->fPeriod ) return 1;
-  if( fBunchCross < ((AliTimeStamp*)obj)->fBunchCross ) return -1;
-  if( fBunchCross > ((AliTimeStamp*)obj)->fBunchCross ) return 1;
-  return 0;
+
+  if( fPeriod > ((AliTimeStamp*)obj)->fPeriod )  return 1;
+  else { if( fPeriod < ((AliTimeStamp*)obj)->fPeriod )  return -1;
+  else { if( fOrbit > ((AliTimeStamp*)obj)->fOrbit )  return 1;
+  else { if( fOrbit < ((AliTimeStamp*)obj)->fOrbit )  return -1;
+  else { if( fBunchCross > ((AliTimeStamp*)obj)->fBunchCross )  return 1;
+  else { if( fBunchCross < ((AliTimeStamp*)obj)->fBunchCross )  return -1;
+  else return 0;
+}}}}}
+
 }
 
 //_____________________________________________________________________________
