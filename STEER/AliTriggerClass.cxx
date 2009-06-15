@@ -36,6 +36,7 @@ ClassImp(AliTriggerClass)
 AliTriggerClass::AliTriggerClass():
   TNamed(),
   fClassMask(0),
+  fIndex(0),
   fDescriptor(NULL),
   fCluster(NULL),
   fPFProtection(NULL),
@@ -53,7 +54,8 @@ AliTriggerClass::AliTriggerClass( TString & name, UChar_t index,
 				  AliTriggerPFProtection *pfp, AliTriggerBCMask *mask,
 				  UInt_t prescaler, Bool_t allrare) :
   TNamed( name, name ),
-  fClassMask( 1 << (index-1)),
+  fClassMask( 1ull << ULong64_t(index-1)),
+  fIndex(index),
   fDescriptor( desc ),
   fCluster( clus ),
   fPFProtection( pfp ),
@@ -72,7 +74,8 @@ AliTriggerClass::AliTriggerClass( AliTriggerConfiguration *config,
 				  TString &pfp, TString &mask,
 				  UInt_t prescaler, Bool_t allrare) :
   TNamed( name, name ),
-  fClassMask( 1 << (index-1)),
+  fClassMask( 1ull << ULong64_t(index-1)),
+  fIndex(index),
   fDescriptor( NULL ),
   fCluster( NULL ),
   fPFProtection( NULL ),
@@ -99,6 +102,7 @@ AliTriggerClass::~AliTriggerClass()
 //_____________________________________________________________________________
 AliTriggerClass::AliTriggerClass( const AliTriggerClass& trclass ):
   TNamed( trclass ),
+  fIndex(trclass.fIndex),
   fClassMask(trclass.fClassMask),
   fDescriptor(trclass.fDescriptor),
   fCluster(trclass.fCluster),
@@ -119,6 +123,7 @@ AliTriggerClass& AliTriggerClass::operator=(const AliTriggerClass& trclass)
    if (this != &trclass) {
       TNamed::operator=(trclass);
       fClassMask = trclass.fClassMask;
+      fIndex=trclass.fIndex;
       fDescriptor = trclass.fDescriptor;
       fCluster = trclass.fCluster;
       fPFProtection = trclass.fPFProtection;
@@ -142,6 +147,8 @@ Bool_t AliTriggerClass::CheckClass(AliTriggerConfiguration* config) const
     AliError(Form("The class (%s) has invalid mask pattern !",GetName()));
     return kFALSE;
   }
+
+  // check comsistency of index and mask
 
   if (!config->GetDescriptors().FindObject(fDescriptor)) {
     AliError(Form("The class (%s) contains invalid descriptor !",GetName()));
@@ -195,7 +202,8 @@ void AliTriggerClass::Print( const Option_t* ) const
    // Print
   cout << "Trigger Class:" << endl;
   cout << "  Name:         " << GetName() << endl;
-  cout << "  Index:        " << (Int_t)TMath::Log2(fClassMask) + 1 << endl;
+  cout << "  ClassBit:     0x" << hex << fClassMask << dec << endl;
+  cout << "  Index:        " <<  (UInt_t)fIndex <<  endl;
   cout << "  Descriptor:   " << fDescriptor->GetName() << endl;
   cout << "  Cluster:      " << fCluster->GetName() << endl;
   cout << "  PF Protection:" << fPFProtection->GetName() << endl;

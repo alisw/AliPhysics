@@ -54,7 +54,8 @@ public:
                   Bool_t  CheckClass(AliTriggerConfiguration *config) const;
 		  Bool_t  IsActive( const TObjArray& inputs, const TObjArray& functions) const;
 private:
-	       ULong64_t  fClassMask;    // position of the class in the trigger pattern
+	       ULong64_t  fClassMask;    // trigger mask (1<< (index-1))
+	       	 UChar_t  fIndex;        // position of class in mask
     AliTriggerDescriptor* fDescriptor;   // pointer to the descriptor
        AliTriggerCluster* fCluster;      // pointer to the cluster
   AliTriggerPFProtection* fPFProtection; // pointer to the past-future protection
