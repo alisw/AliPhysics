@@ -26,7 +26,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
-
+#include <TObjArray.h>
 #include "AliLog.h"  
 #include "AliTimeStamp.h"
 #include "AliTriggerScalers.h"
@@ -36,7 +36,7 @@ ClassImp( AliTriggerScalersRecord )
 //_____________________________________________________________________________
 AliTriggerScalersRecord::AliTriggerScalersRecord():
   fTimestamp(),
-  fScalers(60)
+  fScalers()
 {
 }
 
@@ -86,8 +86,8 @@ AliTriggerScalers* AliTriggerScalersRecord::GetTriggerScalersForClass( Int_t cla
       result = 0;
       position = (base+last) / 2;
       op2 = (AliTriggerScalers *)fScalers.At(position);
-      if( op2 && op2->fClassIndex > classmask ) result = -1;
-      if( op2 && op2->fClassIndex < classmask ) result = 1;
+      if( op2 && op2->GetClassIndex() > classmask ) result = -1;
+      if( op2 && op2->GetClassIndex() < classmask ) result = 1;
   
       if (op2 && result == 0)
          return op2;

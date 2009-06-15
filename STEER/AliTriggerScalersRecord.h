@@ -15,7 +15,7 @@
 // in partition  
 //
 //////////////////////////////////////////////////////////////////////////////
-
+class TObjArray;
 class  AliTimeStamp;
 
 class AliTriggerScalersRecord : public TObject {
@@ -39,10 +39,13 @@ public:
             virtual void    Print( const Option_t* opt ="" ) const;
 
        
-            AliTimeStamp    fTimestamp;    // record timestamp
-               TObjArray    fScalers;      // Array of scalers (AliTriggerScalers)  
+             
      
 private:  
+
+            AliTimeStamp    fTimestamp;    // record timestamp
+               TObjArray    fScalers;      // Array of scalers (AliTriggerScalers) 
+
 
                             AliTriggerScalersRecord( const AliTriggerScalersRecord &rec );
  AliTriggerScalersRecord&   operator=(const AliTriggerScalersRecord& rec);

@@ -39,7 +39,15 @@ public:
        virtual Bool_t    IsSortable() const { return kTRUE; }
         virtual Int_t    Compare( const TObject* obj ) const;
          virtual void    Print( const Option_t* opt ="" ) const;
-        
+               UInt_t    GetLOCB() const { return fLOCB; }
+               UInt_t    GetLOCA() const { return fLOCA; }
+               UInt_t    GetL1CB() const { return fL1CB; }
+               UInt_t    GetL1CA() const { return fL1CA; }
+               UInt_t    GetL2CB() const { return fL2CB; }
+               UInt_t    GetL2CA() const { return fL2CA; }
+              UChar_t    GetClassIndex() const { return fClassIndex; }
+private: 
+   
               UChar_t    fClassIndex;      // class index 
                UInt_t    fLOCB;            //  L0 triggers before any vetos  (32 bits)
                UInt_t    fLOCA;            //  L0 triggers after all vetos   (32 bits)
@@ -47,8 +55,8 @@ public:
                UInt_t    fL1CA;            //  L1 triggers after all vetos   (32 bits)
                UInt_t    fL2CB;            //  L2 triggers before any vetos  (32 bits)
                UInt_t    fL2CA;            //  L2 triggers after all vetos   (32 bits)
-    
-private:    
+
+
                          AliTriggerScalers( const AliTriggerScalers &run );
     AliTriggerScalers&   operator=(const AliTriggerScalers& clus);
 
