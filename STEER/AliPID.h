@@ -35,8 +35,10 @@ class AliPID : public TObject {
     kEleCon = 9,
     kUnknown = 10
   };
-  static Float_t       ParticleMass(Int_t iType) 
-    {return fgkParticleMass[iType];};
+  static Float_t       ParticleMass(Int_t iType) {
+     if(!fgkParticleMass[0]) Init(); 
+     return fgkParticleMass[iType];
+  }
   static const char*   ParticleName(Int_t iType) 
     {return fgkParticleName[iType];};
   static const char*   ParticleShortName(Int_t iType) 
@@ -72,7 +74,7 @@ class AliPID : public TObject {
 
  private:
 
-  void                 Init();
+  static void          Init();
 
   Bool_t               fCharged;                   // flag for charged/neutral
   Double_t             fProbDensity[kSPECIESN];    // probability densities
