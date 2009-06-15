@@ -2,6 +2,9 @@
 
 set(SRCS
       hfe/AliHFEcollection.cxx 
+      hfe/AliHFEmcQA.cxx
+      hfe/AliHFEsecVtx.cxx
+      hfe/AliHFEpriVtx.cxx
       hfe/AliHFEpid.cxx 
       hfe/AliHFEpidBase.cxx 
       hfe/AliHFEpidTPC.cxx 
