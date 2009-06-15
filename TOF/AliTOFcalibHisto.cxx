@@ -55,6 +55,8 @@ const TString AliTOFcalibHisto::fgkCalibConstName[kNcalibConsts] = {
 //__________________________________________________________________________
 
 const TString AliTOFcalibHisto::fgkCalibMapName[kNcalibMaps] = {
+  /* main index */
+  "Index",
   /* EO indices */
   "DDL",
   "TRM", 
@@ -113,8 +115,9 @@ const Float_t AliTOFcalibHisto::fgkInterfaceCardDelay = 5.7898e-2; /* from LHC08
 
 //__________________________________________________________________________
 
-/* number of readout channels */
+/* number of readout channels (DO/EO) */
 const Int_t AliTOFcalibHisto::fgkNchannels = 157248;
+const Int_t AliTOFcalibHisto::fgkNchannelsEO = 172800;
 
 //__________________________________________________________________________
 
@@ -309,7 +312,10 @@ AliTOFcalibHisto::WriteCalibHisto()
     CreateHisto(&fCalibConst[iConst], fgkCalibConstName[iConst].Data(), 1);
   /* create maps */
   for (Int_t iMap = 0; iMap < kNcalibMaps; iMap++)
-    CreateHisto(&fCalibMap[iMap], fgkCalibMapName[iMap].Data(), fgkNchannels);
+    if (iMap == kIndex)
+      CreateHisto(&fCalibMap[iMap], fgkCalibMapName[iMap].Data(), fgkNchannelsEO);
+    else
+      CreateHisto(&fCalibMap[iMap], fgkCalibMapName[iMap].Data(), fgkNchannels);
 
   /*** SETUP CONSTS ***/
 
@@ -321,7 +327,7 @@ AliTOFcalibHisto::WriteCalibHisto()
   /***  SETUP MAPS  ***/
 
   AliTOFRawStream rawStream;
-  Int_t det[5], dummy, index, sector, plate, strip, sectorStrip, padz, padx, pad, icIndex;
+  Int_t indexEO, det[5], dummy, index, sector, plate, strip, sectorStrip, padz, padx, pad, icIndex;
 
   /* temporarly disable warnings */
   AliLog::EType_t logLevel = (AliLog::EType_t)AliLog::GetGlobalLogLevel();
@@ -351,6 +357,7 @@ AliTOFcalibHisto::WriteCalibHisto()
 	      continue;
 	    
 	    /* setup information */
+	    indexEO = GetIndexEO(ddl, trm, chain, tdc, channel);
 	    index = AliTOFGeometry::GetIndex(det);
 	    sector = det[0];
 	    plate = det[1];
@@ -363,6 +370,8 @@ AliTOFcalibHisto::WriteCalibHisto()
 
 	    /* set maps */
 
+	    /* main index */
+	    SetHisto(fCalibMap[kIndex], indexEO, index);
 	    /* EO indices */
 	    SetHisto(fCalibMap[kDDL], index, ddl);
 	    SetHisto(fCalibMap[kTRM], index, trm);
@@ -481,3 +490,4 @@ AliTOFcalibHisto::ApplyNominalCorrection(AliESDtrack *track)
   Double_t time = rawTime - 1.e3 * GetNominalCorrection(index);
   track->SetTOFsignal(time);
 }
+

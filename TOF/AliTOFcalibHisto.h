@@ -50,6 +50,8 @@ public TObject
   };
 
   enum ECalibMap_t {
+    /* main index */
+    kIndex,
     /* EO indices */
     kDDL, 
     kTRM, 
@@ -101,7 +103,8 @@ public TObject
   static const Float_t fgkFlatCableDelay; /* flat cable delay */
   static const Float_t fgkInterfaceCardDelay; /* interface card delay */
 
-  static const Int_t fgkNchannels; /* number of readout channels */
+  static const Int_t fgkNchannels; /* number of readout channels (DO) */
+  static const Int_t fgkNchannelsEO; /* number of readout channels (EO) */
   static const Int_t fgkDDLBCshift[72]; /* DDL BC shifts due to TTC fibers */
   static const Float_t fgkFlatCableLength[91]; /* strip flat-cable length */
   static const Float_t fgkInterfaceCardLength[48]; /* interface card length */
@@ -134,6 +137,7 @@ public TObject
   static void SetCalibParFileName(const Char_t *value) {fgCalibParFileName = value;}; /* set calib par file name */
 
   /* methods */
+  static Int_t GetIndexEO(Int_t ddl, Int_t trm, Int_t chain, Int_t tdc, Int_t channel) {return (channel + 15 * tdc + 120 * chain + 240 * trm + 2400 * ddl);}; /* get index EO */
   void LoadCalibHisto(); /* load calib histo */
   void LoadCalibPar(); /* load calib par */
   void WriteCalibHisto(); /* write calib histo */
