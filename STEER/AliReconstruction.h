@@ -79,7 +79,6 @@ public:
     {fLoadAlignData = detectors;};
 
   //*** Magnetic field setters
-  void SetUniformFieldTracking(Bool_t flag=kTRUE){fUniformField=flag;} 
   Bool_t SetFieldMap(Float_t l3Current=30000., Float_t diCurrent=6000., 
 		     Float_t l3Pol=1., Float_t dipPol=1., Float_t benergy=7000., 
 		     const Char_t* btype="pp",  
@@ -204,9 +203,6 @@ private:
   Bool_t         GetEventInfo();   // fill the event info inside the event loop
 
   const char    *MatchDetectorList(const char *detectorList, UInt_t detectorMask);
-
-  //*** Magnetic field map settings *******************
-  Bool_t         fUniformField;       // uniform field tracking flag
 
   //*** Global reconstruction flags *******************
   Bool_t         fRunVertexFinder;    // run the vertex finder

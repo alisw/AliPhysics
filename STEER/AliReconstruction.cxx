@@ -194,7 +194,6 @@ const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] =
 //_____________________________________________________________________________
 AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   TSelector(),
-  fUniformField(kFALSE),
   fRunVertexFinder(kTRUE),
   fRunVertexFinderTracks(kTRUE),
   fRunHLTTracking(kFALSE),
@@ -290,7 +289,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
 //_____________________________________________________________________________
 AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   TSelector(),
-  fUniformField(rec.fUniformField),
   fRunVertexFinder(rec.fRunVertexFinder),
   fRunVertexFinderTracks(rec.fRunVertexFinderTracks),
   fRunHLTTracking(rec.fRunHLTTracking),
@@ -400,7 +398,6 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
 // TSelector members should not be touched
   if(&rec == this) return *this;
 
-  fUniformField          = rec.fUniformField;
   fRunVertexFinder       = rec.fRunVertexFinder;
   fRunVertexFinderTracks = rec.fRunVertexFinderTracks;
   fRunHLTTracking        = rec.fRunHLTTracking;
@@ -928,7 +925,6 @@ Bool_t AliReconstruction::SetFieldMap(Float_t l3Cur, Float_t diCur, Float_t l3Po
     fcL3 = 0;
     map  = AliMagF::k5kGUniform;
     s   += "0.0 T;  ";
-    fUniformField=kTRUE;        // track with the uniform (zero) B field
   } else {
     AliError(Form("Wrong L3 current (%f A)!",l3Cur));
     return kFALSE;
