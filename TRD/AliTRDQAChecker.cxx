@@ -64,7 +64,8 @@ Double_t * AliTRDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
     if (!hist) continue;
     
     Double_t value = hist->Integral(hist->FindBin(lowAmp), hist->FindBin(highAmp));
-    test[specie] = value / hist->GetSum();
+    if (hist->GetSum())
+      test[specie] = value / hist->GetSum();
 
   }
   return test ; 
