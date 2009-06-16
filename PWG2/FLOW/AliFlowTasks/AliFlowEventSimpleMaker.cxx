@@ -400,12 +400,12 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
-  
+    
   Int_t iGoodTracks = 0;           //number of good tracks
   Int_t itrkN = 0;                 //track counter
   Int_t iSelParticlesRP = 0;      //number of tracks selected for Int
   Int_t iSelParticlesPOI = 0;     //number of tracks selected for Diff
-  
+
   //normal loop
   while (itrkN < iNumberOfInputTracks) {
     AliESDtrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
@@ -421,25 +421,27 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
     }
     
     if (bPassedRPFlowCuts || bPassedPOIFlowCuts) {
-      //make new AliFLowTrackSimple
-      AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-      pTrack->SetPt(pParticle->Pt() );
-      pTrack->SetEta(pParticle->Eta() );
-      pTrack->SetPhi(pParticle->Phi() );
+      for(Int_t d=0;d<fNoOfLoops;d++) {
+        //make new AliFLowTrackSimple
+        AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
+        pTrack->SetPt(pParticle->Pt() );
+        pTrack->SetEta(pParticle->Eta() );
+        pTrack->SetPhi(pParticle->Phi()-fEllipticFlowValue*TMath::Sin(2*(pParticle->Phi()-fMCReactionPlaneAngle)) );
       
-      //marking the particles used for int. flow:
-      if(bPassedRPFlowCuts) {  
-        pTrack->SetForRPSelection(kTRUE);
-        iSelParticlesRP++;
-      }
-      //marking the particles used for diff. flow:
-      if(bPassedPOIFlowCuts) {
-        pTrack->SetForPOISelection(kTRUE);
-        iSelParticlesPOI++;
-      }
-      //adding a particles which were used either for int. or diff. flow to the list
-      pEvent->TrackCollection()->Add(pTrack);
-      iGoodTracks++;
+        //marking the particles used for int. flow:
+    	  if(bPassedRPFlowCuts && iSelParticlesRP < fMultiplicityOfEvent) {  
+          pTrack->SetForRPSelection(kTRUE);
+          iSelParticlesRP++;
+    	  }
+    	  //marking the particles used for diff. flow:
+        if(bPassedPOIFlowCuts && iGoodTracks%fNoOfLoops==0) {
+          pTrack->SetForPOISelection(kTRUE);
+          iSelParticlesPOI++;
+        }
+      	//adding a particles which were used either for int. or diff. flow to the list
+      	pEvent->TrackCollection()->Add(pTrack);
+      	iGoodTracks++;
+    	}//end of for(Int_t d=0;d<iLoops;d++)
     }//end of if(bPassedIntFlowCuts || bPassedDiffFlowCuts) 
     itrkN++; 
     bPassedRPFlowCuts  = kFALSE;
@@ -449,7 +451,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
   pEvent->SetEventNSelTracksRP(iSelParticlesRP);  
   pEvent->SetNumberOfTracks(iGoodTracks);
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
-  
+
   if ( (++fCount % 100) == 0) {
     if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
     else cout<<" MC Reaction Plane Angle = unknown "<< endl;

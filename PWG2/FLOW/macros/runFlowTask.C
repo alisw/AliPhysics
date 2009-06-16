@@ -53,11 +53,17 @@ void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 100,
   if (type == "ESD"){
     AliVEventHandler* esdH = new AliESDInputHandler;
     mgr->SetInputEventHandler(esdH);
+    
+    AliMCEventHandler *mc = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mc); 
   }
   
   if (type == "AOD"){
     AliVEventHandler* aodH = new AliAODInputHandler;
     mgr->SetInputEventHandler(aodH); 
+    
+    AliMCEventHandler *mc = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mc); 
   }
   
   if (type == "MC" || type == "ESDMC0" || type == "ESDMC1"){
@@ -65,7 +71,8 @@ void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 100,
     mgr->SetInputEventHandler(esdH);
     
     AliMCEventHandler *mc = new AliMCEventHandler();
-    mgr->SetMCtruthEventHandler(mc); }
+    mgr->SetMCtruthEventHandler(mc); 
+  }
   
   
   //____________________________________________//
