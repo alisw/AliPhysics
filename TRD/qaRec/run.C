@@ -54,6 +54,7 @@
 #include "AliTracker.h"
 #include "AliLog.h"
 #include "AliCDBManager.h"
+#include "AliGRPManager.h"
 #include "AliGeomManager.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
@@ -115,14 +116,12 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdbManager->SetRun(0);
   cdbManager->SetCacheFlag(kFALSE);
-  // initialize magnetic field.
-  if(!TGeoGlobalMagField::Instance()->GetField()){
-    TGeoGlobalMagField::Instance()->SetField(
-      new AliMagF("Maps","Maps", 2, 1., 10., AliMagF::k5kG)
-      //AliMagF("Maps","Maps", 2, 0., 10., AliMagF::k2kG);
-    );
-    AliGeomManager::LoadGeometry();
-  }
+  // initialize magnetic field from the GRP manager.
+  AliGRPManager grpMan;
+  grpMan.ReadGRPEntry();
+  grpMan.SetMagField();
+  //AliRunInfo *runInfo = grpMan.GetRunInfo();
+  AliGeomManager::LoadGeometry();
 
 
   // DEFINE DATA CHAIN
