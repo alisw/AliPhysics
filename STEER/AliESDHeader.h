@@ -70,7 +70,7 @@ private:
   UShort_t     fL2TriggerInputs;   //L2 Trigger Inputs
 //  AliTriggerScalersRecordESD *fTriggerScalers;   //Object containing the L0, L1 and L2 trigger counters of triggered classes in event
 
-  ClassDef(AliESDHeader,3)
+  ClassDef(AliESDHeader,4)
 };
 
 #endif
