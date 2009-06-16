@@ -56,18 +56,18 @@ private:
   AliEveEventSelector* fPSelector; //event selector
   TRootEmbeddedCanvas* fPCanvas;   //the canvas for histograms
 
-  TGTextEntry* fPDrawFormula;      //test draw input field
-  TGTextEntry* fPEntryFormula;     //selectin formula field
-  TGNumberEntry* fPEntryLowerBound; //lower boung for the formula
-  TGNumberEntry* fPEntryHigherBound; //higher bound for the formula
-  TGTextButton* fPButtonTextDone;    //done button for selection formula
+  TGTextEntry*   fPDrawFormula;           //test draw input field
+  TGTextEntry*   fPEntryFormula;          //selectin formula field
+  TGNumberEntry* fPEntryLowerBound;       //lower boung for the formula
+  TGNumberEntry* fPEntryHigherBound;      //higher bound for the formula
+  TGTextButton*  fPButtonTextDone;        //done button for selection formula
   
-  TGComboBox* fPComboBoxTrigger;     //trigger selection box
-  TGTextEntry* fPEntryTriggerSelection; //trigger selection formula entry field
-  TGCheckButton* fPCheckTriggerSimple;  //use simple trigger select
-  TGCheckButton* fPCheckTriggerString;  //use trigger select formula
-  TGNumberEntry* fPEntryMultHigh;       //lowest allowed multiplicity field
-  TGNumberEntry* fPEntryMultLow;        //higest allowed multiplicity field
+  TGComboBox*    fPComboBoxTrigger;       //trigger selection box
+  TGTextEntry*   fPEntryTriggerSelection; //trigger selection formula entry field
+  TGCheckButton* fPCheckTriggerSimple;    //use simple trigger select
+  TGCheckButton* fPCheckTriggerString;    //use trigger select formula
+  TGNumberEntry* fPEntryMultHigh;         //lowest allowed multiplicity field
+  TGNumberEntry* fPEntryMultLow;          //higest allowed multiplicity field
 
   AliEveEventSelectorWindow(const AliEveEventSelectorWindow&);
   AliEveEventSelectorWindow& operator=(const AliEveEventSelectorWindow&);

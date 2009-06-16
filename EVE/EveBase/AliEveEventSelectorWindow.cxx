@@ -33,18 +33,20 @@ ClassImp(AliEveEventSelectorWindow)
 //______________________________________________________________________________
 AliEveEventSelectorWindow::AliEveEventSelectorWindow(const TGWindow *p, UInt_t w, UInt_t h,
                                                      AliEveEventSelector* sel) :
-    TGMainFrame(p, w, h),
-    fPSelector(sel),
-    fPCanvas(NULL),
-    fPDrawFormula(NULL),
-    fPEntryFormula(NULL),
-    fPEntryLowerBound(NULL),
-    fPEntryHigherBound(NULL),
-    fPButtonTextDone(NULL),
-    fPComboBoxTrigger(NULL),
-    fPEntryTriggerSelection(NULL),
-    fPCheckTriggerSimple(NULL),
-    fPCheckTriggerString(NULL)
+  TGMainFrame(p, w, h),
+  fPSelector(sel),
+  fPCanvas(0),
+  fPDrawFormula(0),
+  fPEntryFormula(0),
+  fPEntryLowerBound(0),
+  fPEntryHigherBound(0),
+  fPButtonTextDone(0),
+  fPComboBoxTrigger(0),
+  fPEntryTriggerSelection(0),
+  fPCheckTriggerSimple(0),
+  fPCheckTriggerString(0),
+  fPEntryMultHigh(0),
+  fPEntryMultLow(0)
 {
   //ctor
 

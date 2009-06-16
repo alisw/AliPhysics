@@ -36,8 +36,8 @@ public:
   AliEveEventManager* GetEventManager() { return fPEventManager; }
   TTree* GetESDTree() const { return fPEventManager->GetESDTree(); }
 
-  Bool_t         FindNext(Int_t& i);
-  Bool_t         FindPrev(Int_t& i);
+  Bool_t FindNext(Int_t& i);
+  Bool_t FindPrev(Int_t& i);
   
   void SetSelectionString( const TString& str );
   void SetSelectionString( const char* str );
@@ -79,22 +79,22 @@ private:
   AliEveEventManager *fPEventManager; //event manager
   Bool_t fWrapAround;                 //go back to the first event after the last?
   
-  Bool_t fSelectOnString;             //whether to select on string expression
+  Bool_t  fSelectOnString;            //whether to select on string expression
   TString fString;                    //expression to select on
   TEntryList* fPEntryList;            //list of enry numbers after selection
   Int_t  fEntryListId;                //current entry no. in entry list
-  Int_t fLastTreeSize;                //stores the last treesize
+  Int_t  fLastTreeSize;               //stores the last treesize
 
-  Bool_t fSelectOnTriggerType;        //whether to select on trigger type
+  Bool_t  fSelectOnTriggerType;       //whether to select on trigger type
   TString fTriggerType;               //trigger type
 
-  Bool_t fSelectOnTriggerString;      //whether to select on trigger type with a formula
+  Bool_t  fSelectOnTriggerString;     //whether to select on trigger type with a formula
   TString fTriggerSelectionString;    //trigger selection formula
   TString fTriggerMaskPatternString;  //trigger mask placeholder for evaluation
 
   Bool_t fSelectOnMultiplicity;       //whether to select on multiplicity
-  Int_t fMultiplicityLow;             //lower bound on multiplicity
-  Int_t fMultiplicityHigh;            //higher bound on multiplicity
+  Int_t  fMultiplicityLow;            //lower bound on multiplicity
+  Int_t  fMultiplicityHigh;           //higher bound on multiplicity
 
 
   ClassDef(AliEveEventSelector, 2); 
