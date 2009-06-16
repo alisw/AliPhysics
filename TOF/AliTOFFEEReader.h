@@ -38,6 +38,7 @@ public TObject
   static Int_t GetNumberOfTDCs() {return fgkNumberOfTDCs;}; // get number of TDCs
   static Int_t GetNumberOfChannels() {return fgkNumberOfChannels;}; // get number of channels
   static Int_t GetNumberOfIndexes() {return fgkNumberOfIndexes;}; // get number of indexes
+  static Int_t GetNumberOfIndexesEO() {return fgkNumberOfIndexesEO;}; // get number of indexes EO
   AliTOFFEEConfig *GetFEEConfig() const {return fFEEConfig;}; // get FEE config
   AliTOFFEElightConfig *GetFEElightConfig() const {return fFEElightConfig;}; // get FEElight config
   Bool_t GetChannelEnabled(Int_t iIndex) const {return iIndex < GetNumberOfIndexes() ? fChannelEnabled[iIndex] : kFALSE;}; // get channel enabled
@@ -74,6 +75,7 @@ public TObject
   static const Int_t fgkNumberOfTDCs = 15; // number of TDCs
   static const Int_t fgkNumberOfChannels = 8; // number of channels
   static const Int_t fgkNumberOfIndexes = 157248; // number of indexes
+  static const Int_t fgkNumberOfIndexesEO = 172800; // number of indexes EO
 
   AliTOFFEEConfig *fFEEConfig; // FEE config
   AliTOFFEElightConfig *fFEElightConfig; // FEElight config

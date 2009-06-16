@@ -340,6 +340,9 @@ AliTOFcalibHisto::WriteCalibHisto()
 	for (Int_t tdc = 0; tdc < 15; tdc++)
 	  for (Int_t channel = 0; channel < 8; channel++) {
 	    
+	    /* compute index EO */
+	    indexEO = GetIndexEO(ddl, trm, chain, tdc, channel);
+
 	    /* convert EO indices into detector oriented (DO) indices
 	       (this call causes some warnings because the loop includes
 	       EO indices which are not connected to physical channels) */
@@ -353,11 +356,12 @@ AliTOFcalibHisto::WriteCalibHisto()
 		det[1] < 0 || det[1] > 4 ||
 		det[2] < 0 || det[2] > 18 ||
 		det[3] < 0 || det[3] > 1 ||
-		det[4] < 0 || det[4] > 47)
+		det[4] < 0 || det[4] > 47) {
+	      SetHisto(fCalibMap[kIndex], indexEO, -1);
 	      continue;
+	    }
 	    
 	    /* setup information */
-	    indexEO = GetIndexEO(ddl, trm, chain, tdc, channel);
 	    index = AliTOFGeometry::GetIndex(det);
 	    sector = det[0];
 	    plate = det[1];

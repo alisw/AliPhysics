@@ -50,7 +50,7 @@ class AliTOFFEElightConfig
 {
 
  private:
-  static const Int_t fgkNumberOfChannels = 157248; // number of channels
+  static const Int_t fgkNumberOfChannels = 172800; // number of channels
   Int_t fVersion; // version
   Int_t fRunNumber; // run number
   Int_t fRunType; // run type

@@ -31,6 +31,7 @@
 #include "AliTOFFEElightConfig.h"
 #include "AliTOFRawStream.h"
 #include "AliTOFGeometry.h"
+#include "AliTOFcalibHisto.h"
 #include "AliLog.h"
 #include <fstream>
 
@@ -243,14 +244,21 @@ AliTOFFEEReader::ParseFEElightConfig()
 
   AliInfo("parsing TOF FEElight config");
 
-  Int_t nEnabled = 0;
+  AliTOFcalibHisto calibHisto;
+  calibHisto.LoadCalibHisto();
+
+  Int_t nEnabled = 0, index;
   AliTOFFEEchannelConfig *channelConfig = NULL;
-  for (Int_t i = 0; i < GetNumberOfIndexes(); i++) {
+  for (Int_t i = 0; i < GetNumberOfIndexesEO(); i++) {
     channelConfig = fFEElightConfig->GetChannelConfig(i);
-    if (channelConfig->IsEnabled())
-      nEnabled++;
-    fChannelEnabled[i] = channelConfig->IsEnabled();
-    fMatchingWindow[i] = channelConfig->GetMatchingWindow();
+    if (!channelConfig->IsEnabled()) continue;
+    /* get index DO from index EO */
+    index = (Int_t)calibHisto.GetCalibMap(AliTOFcalibHisto::kIndex, i);
+    if (index == -1) continue;
+    nEnabled++;
+    fChannelEnabled[index] = channelConfig->IsEnabled();
+    fMatchingWindow[index] = channelConfig->GetMatchingWindow();
+    fLatencyWindow[index] = channelConfig->GetLatencyWindow();
   }
  
   return nEnabled;
