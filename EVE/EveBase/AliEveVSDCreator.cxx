@@ -29,6 +29,7 @@
 #include <AliRunLoader.h>
 #include <AliTPCParam.h>
 
+#include <TDatabasePDG.h>
 #include <TSystem.h>
 #include <TFile.h>
 

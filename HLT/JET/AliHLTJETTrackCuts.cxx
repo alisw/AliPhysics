@@ -33,6 +33,7 @@ using namespace std;
 #endif
 
 #include "AliHLTJETTrackCuts.h"
+#include <TDatabasePDG.h>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTJETTrackCuts)

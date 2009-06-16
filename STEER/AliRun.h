@@ -45,7 +45,6 @@ public:
    virtual  const char *GetBaseFile() const 
     {return fBaseFileName.Data();}
    virtual  Int_t GetEvent(Int_t event);
-   virtual  void  SetEvent(Int_t event) {fEvent=event;}
    virtual  void  SetConfigFunction(const char * config="Config();")
    {fConfigFunction=config;}
    virtual  const char *GetConfigFunction() const 
@@ -80,7 +79,6 @@ public:
 
 protected:
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
-  Int_t          fEvent;             //! Current event number (from 1)
   Int_t          fEventNrInRun;      //! Current unique event number in run
   TObjArray     *fModules;           //  List of Detectors
   AliMC         *fMCApp;             //  Pointer to virtual MC Application

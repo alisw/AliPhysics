@@ -31,6 +31,7 @@
 #include <TPDGCode.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
+#include <TDatabasePDG.h>
 #include <TTree.h>
 #include <TDirectory.h>
 

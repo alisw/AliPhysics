@@ -11,6 +11,7 @@
 #include <TProfile.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
+#include <TDatabasePDG.h>
 
 #include <AliLog.h>
 #include <AliESDVertex.h>

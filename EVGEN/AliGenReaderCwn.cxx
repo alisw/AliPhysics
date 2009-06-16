@@ -24,6 +24,7 @@
 
 #include <TFile.h>
 #include <TParticle.h>
+#include <TDatabasePDG.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
 
