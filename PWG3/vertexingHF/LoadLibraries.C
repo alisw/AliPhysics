@@ -12,13 +12,11 @@ void LoadLibraries(Bool_t useParFiles=kFALSE) {
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG3base.so");
   gSystem->Load("libPWG3vertexingHF.so");
-  if(!useParFiles) {
-    gSystem->Load("libJETAN");
-    gSystem->Load("libPWG3base");
-    gSystem->Load("libPWG3muon");
-    gSystem->Load("libPWG4PartCorrBase");
-    gSystem->Load("libPWG4PartCorrDep");
-  }
+  gSystem->Load("libJETAN.so");
+  gSystem->Load("libPWG3muon.so");
+  gSystem->Load("libPWG4PartCorrBase.so");
+  gSystem->Load("libPWG4PartCorrDep.so");
+ 
 
   if(useParFiles) {
     setupPar("STEERBase");
@@ -27,7 +25,12 @@ void LoadLibraries(Bool_t useParFiles=kFALSE) {
     setupPar("ANALYSIS");
     setupPar("ANALYSISalice");
     setupPar("CORRFW");  
+    setupPar("PWG3base");
     setupPar("PWG3vertexingHF");
+    setupPar("JETAN");
+    setupPar("PWG3muon");
+    setupPar("PWG4PartCorrBase");
+    setupPar("PWG4PartCorrDep"); 
   }
 
   return;
