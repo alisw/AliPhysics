@@ -2749,17 +2749,15 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
   AliTRDtrackV1 track(seeds, &params[1], c, params[0], params[6]*alpha+shift);
   track.PropagateTo(params[0]-5.0);
   AliTRDseedV1 *ptrTracklet = 0x0;
-  // Sign clusters
-  for (Int_t jLayer = 0; jLayer < AliTRDgeometry::kNlayer; jLayer++) {
-    ptrTracklet = &seeds[jLayer];
-    if(!ptrTracklet->IsOK()) continue;
-    if(TMath::Abs(ptrTracklet->GetYref(1) - ptrTracklet->GetYfit(1)) >= .2) continue; // check this condition with Marian
-  }
-  // 
+
+  // skip Kalman filter for HLT
   if(fReconstructor->IsHLT()){ 
-    for(Int_t ip=0; ip<kNPlanes; ip++){
-      track.UnsetTracklet(ip);
-      ptrTracklet = SetTracklet(&seeds[ip]);
+    for (Int_t jLayer = 0; jLayer < AliTRDgeometry::kNlayer; jLayer++) {
+      track.UnsetTracklet(jLayer);
+      ptrTracklet = &seeds[jLayer];
+      if(!ptrTracklet->IsOK()) continue;
+      if(TMath::Abs(ptrTracklet->GetYref(1) - ptrTracklet->GetYfit(1)) >= .2) continue; // check this condition with Marian
+      ptrTracklet = SetTracklet(ptrTracklet);
       ptrTracklet->UseClusters();
       track.SetTracklet(ptrTracklet, fTracklets->GetEntriesFast()-1);
     }
