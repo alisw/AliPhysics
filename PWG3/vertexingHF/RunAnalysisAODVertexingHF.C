@@ -14,12 +14,12 @@ void RunAnalysisAODVertexingHF()
   //
 
   //
-  TString analysisMode = "local"; // "local", "grid", or "proof" (not yet)
+  TString analysisMode = "grid"; // "local", "grid", or "proof" (not yet)
   TString inputMode    = "list"; // "list", "xml", or "dataset" (not yet)
   Long64_t nentries=1234567890,firstentry=0;
   Bool_t useParFiles=kFALSE;
-  Bool_t useAlienPlugin=kFALSE;
-  TString pluginmode="full";
+  Bool_t useAlienPlugin=kTRUE;
+  TString pluginmode="test";
   TString loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/";
   //
 
@@ -168,7 +168,7 @@ void RunAnalysisAODVertexingHF()
 
   taskName="AddTaskBkgLikeSign.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSEBkgLikeSignJPSI *lsTask = AddTaskBkgLikeSign();
+  //AliAnalysisTaskSEBkgLikeSignJPSI *lsTask = AddTaskBkgLikeSign();
 
   //taskName="AddTaskBtoJPSItoEle.C"; taskName.Prepend(loadMacroPath.Data());
   //gROOT->LoadMacro(taskName.Data());
@@ -182,7 +182,7 @@ void RunAnalysisAODVertexingHF()
   //gROOT->LoadMacro(taskName.Data());
   //AliCFHeavyFlavourTaskMultiVar *cfmvTask = AddTaskCFMultiVar();
 
-  taskName="AddTaskMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
+  taskName="AddTaskCFMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   AliCFHeavyFlavourTaskMultiVarMultiStep *cfmvmsTask = AddTaskCFMultiVarMultiStep();
 
@@ -221,12 +221,13 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    // Declare input data to be processed.
    // Method 1: Create automatically XML collections using alien 'find' command.
    // Define production directory LFN
-   plugin->SetGridDataDir("/alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/");
+   //plugin->SetGridDataDir("/alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/");
+   plugin->SetGridDataDir("/alice/cern.ch/user/m/mgheata/analysisESD/output_train_default_28May2009_09h33/");
    // Set data search pattern
    plugin->SetDataPattern("AliAOD.root");
    plugin->SetFriendChainName("AliAOD.VertexingHF.root");
    // ...then add run numbers to be considered
-   plugin->AddRunNumber(180100);
+  plugin->AddRunNumber(529007);
    // Method 2: Declare existing data files (raw collections, xml collections, root file)
    // If no path mentioned data is supposed to be in the work directory (see SetGridWorkingDir())
    // XML collections added via this method can be combined with the first method if
@@ -242,7 +243,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //plugin->SetAnalysisSource("$ALICE_ROOT/PWG3/vertexingHF/AliAnalysisTaskSECompareHF.cxx");
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->SetAdditionalLibs("libPWG3vertexingHF.so");
+   plugin->SetAdditionalLibs("libPWG3vertexingHF.so libPWG3base.so libPWG3muon.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so");
    // use par files
    if(useParFiles) {
      plugin->EnablePackage("STEERBase.par");
@@ -251,7 +252,11 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
      plugin->EnablePackage("ANALYSIS.par");
      plugin->EnablePackage("ANALYSISalice.par");
      plugin->EnablePackage("CORRFW.par");
+     plugin->EnablePackage("PWG3base.par");
      plugin->EnablePackage("PWG3vertexingHF.par");
+     plugin->EnablePackage("PWG3muon.par");
+     plugin->EnablePackage("PWG4PartCorrBase.par");
+     plugin->EnablePackage("PWG4PartCorrDep.par");
    }
    // Declare the output file names separated by blancs.
    // (can be like: file.root or file.root@ALICE::Niham::File)
