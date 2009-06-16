@@ -2527,11 +2527,13 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
       if (esd->GetBunchCrossNumber() != input.GetBCID())
 	AliError(Form("Invalid bunch-crossing id found in CTP raw-data: %x %x",
 		      input.GetBCID(),esd->GetBunchCrossNumber()));
+      AliESDHeader* esdheader = esd->GetHeader();
+      esdheader->SetL0TriggerInputs(input.GetL0Inputs());
+      esdheader->SetL1TriggerInputs(input.GetL1Inputs());
+      esdheader->SetL2TriggerInputs(input.GetL2Inputs());
     }
 
-  // Here one has to add the filling of trigger inputs and
-  // interaction records
-  // ...
+  // Here one has to add the filling interaction records
   }
   return kTRUE;
 }
@@ -3210,6 +3212,11 @@ Bool_t AliReconstruction::GetEventInfo()
     if (fRunLoader && (!fRunLoader->LoadTrigger())) {
       aCTP = fRunLoader->GetTrigger();
       fEventInfo.SetTriggerMask(aCTP->GetClassMask());
+      // get inputs from actp - just get
+      AliESDHeader* esdheader = fesd->GetHeader();
+      esdheader->SetL0TriggerInputs(aCTP->GetL0TriggerInputs());
+      esdheader->SetL1TriggerInputs(aCTP->GetL1TriggerInputs());
+      esdheader->SetL2TriggerInputs(aCTP->GetL2TriggerInputs());
       fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(aCTP->GetClusterMask()));
     }
     else {
@@ -3236,7 +3243,7 @@ Bool_t AliReconstruction::GetEventInfo()
       Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
       fesd->SetTriggerClass(trclass->GetName(),trindex);
       if (fRawReader) fRawReader->LoadTriggerClass(trclass->GetName(),trindex);
-      if (trmask & (1 << trindex)) {
+      if (trmask & (1ull << trindex)) {
 	trclasses += " ";
 	trclasses += trclass->GetName();
 	trclasses += " ";
