@@ -18,8 +18,10 @@ void testFastJet(const char* file="testdata.dat")
       gSystem->Load("libAOD.so");
       gSystem->Load("libESD.so");
       gSystem->Load("libANALYSISalice.so");
-      gSystem->Load("libJETAN.so");
       
+      gSystem->Load("libJETAN.so");
+      gSystem->Load("libFASTJETAN.so");
+
       AliFastJetFinder* jetFinder = new AliFastJetFinder();
       jetFinder->RunTest(file);
       
