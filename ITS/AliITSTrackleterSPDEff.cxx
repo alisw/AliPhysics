@@ -32,6 +32,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TParticle.h>
+#include <TParticlePDG.h>
 #include <TSystem.h>
 #include <Riostream.h>
 #include <TClonesArray.h>
