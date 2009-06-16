@@ -13,8 +13,8 @@ DA to write mapping for the ZDC ADCs
 
 Contact: Chiara.Oppedisano@to.infn.it
 Link: 
-Run Type: PHYSICS, STANDALONE_BC, STANDALONE_COSMIC, STANDALONE_CENTRAL, 
-	  STANDALONE_MB, STANDALONE_SEMICENTRAL
+Run Type: PHYSICS, CALIBRATION_BC, CALIBRATION_CENTRAL, 
+	  CALIBRATION_MB, CALIBRATION_SEMICENTRAL, CALIBRATION_COSMIC
 DA Type: MON
 Number of events needed: 1 (SOD is read) 
 Input Files:  none
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   monitorDeclareTable(const_cast<char**>(tableSOD));
   
   int status = 0;
-  int const kNChannels = 48;
+  int const kNChannels = 24;
 
   /* log start of process */
   printf("\nZDC MAPPING program started\n");  
@@ -117,8 +117,8 @@ int main(int argc, char **argv) {
       eventT=event->eventType;
       
       Int_t ich=0;
-      Int_t adcMod[kNChannels], adcCh[kNChannels], sigCode[kNChannels];
-      Int_t det[kNChannels], sec[kNChannels];
+      Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
+      Int_t det[2*kNChannels], sec[2*kNChannels];
       
       if(eventT==START_OF_DATA){
 	sodRead = kTRUE;
@@ -129,8 +129,8 @@ int main(int argc, char **argv) {
         mapFile4Shuttle = fopen(MAPDATA_FILE,"w");
 	if(!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
         else{
-	  while(rawStreamZDC->Next()){
-            if((rawStreamZDC->IsChMapping()) && (ich<kNChannels)){
+	  while((rawStreamZDC->Next()) && (ich<2*kNChannels)){
+            if(rawStreamZDC->IsChMapping()){
 	      adcMod[ich] = rawStreamZDC->GetADCModFromMap(ich);
 	      adcCh[ich] = rawStreamZDC->GetADCChFromMap(ich);
 	      sigCode[ich] = rawStreamZDC->GetADCSignFromMap(ich);

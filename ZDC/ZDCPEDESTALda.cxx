@@ -380,6 +380,10 @@ int main(int argc, char **argv) {
   // --- In-time pedestals
   TF1 *ADCfunchg[kNChannels];
   for(Int_t i=0; i<kNChannels; i++){
+     if(hPedhg[i]->GetEntries() == 0){
+       printf("\n WARNING! Empty histos -> ending DA WITHOUT writing output\n\n");
+       return -1;
+     } 
      hPedhg[i]->Fit("gaus","Q");
      ADCfunchg[i] = hPedhg[i]->GetFunction("gaus");
      MeanPed[i] = (Double_t) ADCfunchg[i]->GetParameter(1);

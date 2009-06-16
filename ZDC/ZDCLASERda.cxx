@@ -412,7 +412,7 @@ int main(int argc, char **argv) {
     else xlow[k] = maxXval[k]-150.;
     // checking if histos are empty
     if(hZNChg[k]->GetEntries() == 0){
-      printf("\n WARNING! Empty LASER histos -> ending DA\n\n");
+      printf("\n WARNING! Empty LASER histos -> ending DA WITHOUT writing output\n\n");
       return -1;
     } 
     //
