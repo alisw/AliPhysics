@@ -14,6 +14,7 @@
 #pragma link C++ class AliAnalysisTaskSEVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSESelectHF+;
 #pragma link C++ class AliAnalysisTaskSECompareHF+;
+#pragma link C++ class AliAnalysisTaskSEDplus+;
 #pragma link C++ class AliCFHeavyFlavourTask+;
 #pragma link C++ class AliCFHeavyFlavourTaskMultiVar+;
 #pragma link C++ class AliCFHeavyFlavourTaskMultiVarMultiStep+;
