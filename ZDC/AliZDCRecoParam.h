@@ -10,6 +10,8 @@
 //                                                      //
 //////////////////////////////////////////////////////////
 
+#include <TH2F.h>
+#include <TH1D.h>
 #include <TF1.h>
 #include "AliDetectorRecoParam.h"
 
@@ -20,32 +22,19 @@ class AliZDCRecoParam : public AliDetectorRecoParam {
   AliZDCRecoParam();
   virtual ~AliZDCRecoParam();
 
-  virtual TF1* GetfZNCen()  const =0;    
-  virtual TF1* GetfZNPer()  const =0;    
-  virtual TF1* GetfZPCen()  const =0;    
-  virtual TF1* GetfZPPer()  const =0;    
-  virtual TF1* GetfZDCCen() const =0;   
-  virtual TF1* GetfZDCPer() const =0;   
-  virtual TF1* GetfbCen()   const =0;     
-  virtual TF1* GetfbPer()   const =0;     
-  virtual TF1* GetfZEMn()   const =0;     
-  virtual TF1* GetfZEMp()   const =0;     
-  virtual TF1* GetfZEMsp()  const =0;    
-  virtual TF1* GetfZEMb()   const =0;   
-  //
-  virtual Float_t GetZEMEndValue()    const =0;     
-  virtual Float_t GetZEMCutFraction() const =0;  
-  virtual Float_t GetDZEMSup()        const =0;  	     
-  virtual Float_t GetDZEMInf()        const =0;  	     
-  virtual Float_t GetEZN1MaxValue()   const =0;    
-  virtual Float_t GetEZP1MaxValue()   const =0;    
-  virtual Float_t GetEZDC1MaxValue()  const =0;   
-  virtual Float_t GetEZN2MaxValue()   const =0;    
-  virtual Float_t GetEZP2MaxValue()   const =0;    
-  virtual Float_t GetEZDC2MaxValue()  const =0;   
+  virtual TH2F*   GethZDCvsZEM()  const = 0;	
+  virtual TH2F*   GethZDCCvsZEM() const = 0;	
+  virtual TH2F*   GethZDCAvsZEM() const = 0;	
+  virtual TH1D*   GethNpartDist() const = 0;	
+  virtual TH1D*   GethbDist()     const = 0;	
+  virtual Float_t GetClkCenter()  const = 0;
   
+  virtual void SetZDCvsZEM(TH2F* /*hCorr*/)  {printf(" AliZDCRecoParam::SetZDCvsZEM doesn't set anything!!!");}    
+  virtual void SetZDCCvsZEM(TH2F* /*hCorr*/) {printf(" AliZDCRecoParam::SetZDCCvsZEM doesn't set anything!!!");}    
+  virtual void SetZDCAvsZEM(TH2F* /*hCorr*/) {printf(" AliZDCRecoParam::SetZDCAvsZEM doesn't set anything!!!");}    
+
     
-  virtual void PrintParameters() const {} 
+  virtual void PrintParameters() const {;} 
   
  protected:
   

@@ -15,7 +15,8 @@
 #include "AliZDCTrigger.h"
 
 class AliZDCPedestals;
-class AliZDCCalib;
+class AliZDCEnCalib;
+class AliZDCTowCalib;
  
 class AliZDC : public AliDetector {
 
@@ -50,7 +51,7 @@ public:
   void    SetZDCCalibFName(const char *name);
   char*   GetZDCCalibFName() const {return (char*)fZDCCalibFName.Data();}
   AliZDCPedestals* GetPedCalib()   const  {return fPedCalib;}
-  AliZDCCalib*     GetECalibData() const  {return fCalibData;}
+  AliZDCEnCalib*   GetECalibData() const  {return fEnCalibData;}
 
   // Trigger
   virtual AliTriggerDetector* CreateTriggerDetector() const
@@ -69,14 +70,15 @@ protected:
   Int_t        fNoShower;		// Flag to switch off the shower	
 
   //Calibration data member 
-  AliZDCPedestals* fPedCalib;		// Pedestal data for ZDC
-  AliZDCCalib*     fCalibData;		// Energy and equalization data for ZDC
+  AliZDCPedestals* fPedCalib;		//! Pedestal data for ZDC
+  AliZDCEnCalib*   fEnCalibData;	//! Energy data for ZDC
+  AliZDCTowCalib*  fTowCalibData;	//! Equalization data for ZDC
 
   TString          fZDCCalibFName; 	// Name of the ZDC calibration data
  
   Int_t fSpectatorTracked; // Are spectator tracked by generator?
   
-  ClassDef(AliZDC,8)  	// Zero Degree Calorimeter base class
+  ClassDef(AliZDC,9)  	// Zero Degree Calorimeter base class
 };
  
 // Calibration

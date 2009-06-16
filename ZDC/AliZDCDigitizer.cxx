@@ -46,7 +46,8 @@
 
 class AliCDBStorage;
 class AliZDCPedestals;
-class AliZDCCalib;
+class AliZDCEnCalib;
+class AliZDCTowerCalib;
 
 ClassImp(AliZDCDigitizer)
 
@@ -57,7 +58,8 @@ AliZDCDigitizer::AliZDCDigitizer() :
   fIsSignalInADCGate(kFALSE),
   fFracLostSignal(0.),
   fPedData(0), 
-  fCalibData(0),
+  fEnCalibData(0),
+  fTowCalibData(0),
   fSpectators2Track(kFALSE)
 {
 // Default constructor    
@@ -71,7 +73,8 @@ AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   fIsSignalInADCGate(kFALSE),
   fFracLostSignal(0.),
   fPedData(GetPedData()), 
-  fCalibData(GetCalibData()),
+  fEnCalibData(GetEnCalibData()),
+  fTowCalibData(GetTowCalibData()),
   fSpectators2Track(kFALSE)
 {
   // Get calibration data
@@ -94,7 +97,8 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
   fIsSignalInADCGate(digitizer.fIsSignalInADCGate),
   fFracLostSignal(digitizer.fFracLostSignal),
   fPedData(digitizer.fPedData),
-  fCalibData(digitizer.fCalibData),
+  fEnCalibData(digitizer.fEnCalibData),
+  fTowCalibData(digitizer.fTowCalibData),
   fSpectators2Track(digitizer.fSpectators2Track)
 {
   // Copy constructor
@@ -547,15 +551,30 @@ AliZDCPedestals* AliZDCDigitizer::GetPedData() const
 }
 
 //_____________________________________________________________________________
-AliZDCCalib* AliZDCDigitizer::GetCalibData() const
+AliZDCEnCalib* AliZDCDigitizer::GetEnCalibData() const
 {
 
   // Getting calibration object for ZDC set
 
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/EMDCalib");
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/EnCalib");
   if(!entry) AliFatal("No calibration data loaded!");  
 
-  AliZDCCalib *calibdata = dynamic_cast<AliZDCCalib*>  (entry->GetObject());
+  AliZDCEnCalib *calibdata = dynamic_cast<AliZDCEnCalib*>  (entry->GetObject());
+  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+
+  return calibdata;
+}
+
+//_____________________________________________________________________________
+AliZDCTowerCalib* AliZDCDigitizer::GetTowCalibData() const
+{
+
+  // Getting calibration object for ZDC set
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/TowCalib");
+  if(!entry) AliFatal("No calibration data loaded!");  
+
+  AliZDCTowerCalib *calibdata = dynamic_cast<AliZDCTowerCalib*>  (entry->GetObject());
   if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
 
   return calibdata;

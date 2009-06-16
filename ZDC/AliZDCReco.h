@@ -17,10 +17,11 @@ public:
 	     Float_t* ezn1tow, Float_t* ezp1tow, Float_t* ezn2tow, Float_t* ezp2tow, 
 	     Float_t* ezem1, Float_t* ezem2, Float_t* ref1, Float_t* ref2, 
 	     //	   
-	     Int_t detspnLeft,  Int_t detsppLeft, Int_t detspnRight, Int_t detsppRight,  
-	     Int_t trspnLeft, Int_t trsppLeft, Int_t trspLeft, 
-	     Int_t trspnRight, Int_t trsppRight, Int_t trspRight,
-	     Int_t partLeft, Int_t partRight, Float_t b);
+	     Int_t detspnSideA,  Int_t detsppSideA, 
+	     Int_t detspnSideC, Int_t detsppSideC,  
+	     Int_t trsp, Int_t trspSideA, Int_t trspSideC,
+	     Int_t npart, Int_t npartSideA, Int_t npartSideC, 
+	     Float_t b, Float_t bSideA, Float_t bSideC);
 
   AliZDCReco(const AliZDCReco &oldreco);
   virtual ~AliZDCReco() {}
@@ -56,19 +57,19 @@ public:
   virtual Float_t GetPMRef2HRsignal()   const  {return fZEM2signal[0];}
   virtual Float_t GetPMRef2LRsignal()   const  {return fZEM2signal[1];}
   //
-  virtual Int_t   GetNDetSpecNLeft()   const {return fNDetSpecNLeft;}
-  virtual Int_t   GetNDetSpecPLeft()   const {return fNDetSpecPLeft;}
-  virtual Int_t   GetNDetSpecNRight()  const {return fNDetSpecNRight;}
-  virtual Int_t   GetNDetSpecPRight()  const {return fNDetSpecPRight;}
-  virtual Int_t   GetNTrueSpecNLeft()  const {return fNTrueSpecNLeft;}
-  virtual Int_t   GetNTrueSpecPLeft()  const {return fNTrueSpecPLeft;}
-  virtual Int_t   GetNTrueSpecLeft()   const {return fNTrueSpecLeft;}
-  virtual Int_t   GetNTrueSpecNRight() const {return fNTrueSpecNRight;}
-  virtual Int_t   GetNTrueSpecPRight() const {return fNTrueSpecPRight;}
-  virtual Int_t   GetNTrueSpecRight()  const {return fNTrueSpecRight;}
-  virtual Int_t   GetNPartLeft()       const {return fNPartLeft;}
-  virtual Int_t   GetNPartRight()      const {return fNPartRight;}
-  virtual Float_t GetImpPar()          const {return fImpPar;}
+  virtual Int_t   GetNDetSpecNSideA()  const {return fNDetSpecNSideA;}
+  virtual Int_t   GetNDetSpecPSideA()  const {return fNDetSpecPSideA;}
+  virtual Int_t   GetNDetSpecNSideC()  const {return fNDetSpecNSideC;}
+  virtual Int_t   GetNDetSpecPSideC()  const {return fNDetSpecPSideC;}
+  virtual Int_t   GetNTrueSpectators() const {return fNTrueSpectators;}
+  virtual Int_t   GetNTrueSpecSideA()  const {return fNTrueSpecSideA;}
+  virtual Int_t   GetNTrueSpecSideC()  const {return fNTrueSpecSideC;}
+  virtual Int_t   GetNParticipants()   const {return fNParticipants;}
+  virtual Int_t   GetNPartSideA()      const {return fNPartSideA;}
+  virtual Int_t   GetNPartSideC()      const {return fNPartSideC;}
+  virtual Float_t GetImpParameter()    const {return fImpParameter;}
+  virtual Float_t GetImpParSideA()     const {return fImpParSideA;}
+  virtual Float_t GetImpParSideC()     const {return fImpParSideC;}
 
   // Print method
   virtual void Print(Option_t *) const;
@@ -91,22 +92,22 @@ private:
   Float_t fPMRef1[2];	 // Reference PM side C
   Float_t fPMRef2[2];	 // Reference PM side A
   //
-  Int_t	  fNDetSpecNLeft;  // Number of spectator neutrons detected
-  Int_t	  fNDetSpecPLeft;  // Number of spectator protons detected
-  Int_t	  fNDetSpecNRight; // Number of spectator neutrons detected
-  Int_t	  fNDetSpecPRight; // Number of spectator protons detected
-  Int_t	  fNTrueSpecNLeft; // Estimate of the number of spectator neutrons generated
-  Int_t	  fNTrueSpecPLeft; // Estimate of the number of spectator protons generated
-  Int_t	  fNTrueSpecLeft;  // Estimate of the total number of spectators
-  Int_t	  fNTrueSpecNRight;// Estimate of the number of spectator neutrons generated
-  Int_t	  fNTrueSpecPRight;// Estimate of the number of spectator protons generated
-  Int_t	  fNTrueSpecRight; // Estimate of the total number of spectators
-  Int_t	  fNPartLeft;	// Estimate of the number of participants for 1 nucleus
-  Int_t	  fNPartRight;	// Estimate of the number of participants for 1 nucleus
-  Float_t fImpPar;	// Estimate of the impact parameter
+  Int_t	  fNDetSpecNSideA; // Number of spectator neutrons detected
+  Int_t	  fNDetSpecPSideA; // Number of spectator protons detected
+  Int_t	  fNDetSpecNSideC; // Number of spectator neutrons detected
+  Int_t	  fNDetSpecPSideC; // Number of spectator protons detected
+  Int_t	  fNTrueSpectators;// Estimate of the total number of spectators
+  Int_t	  fNTrueSpecSideA; // Estimate of the number of spectators side A
+  Int_t	  fNTrueSpecSideC; // Estimate of the number of spectators side C
+  Int_t	  fNParticipants;  // Estimate of the total number of participants
+  Int_t	  fNPartSideA;	   // Estimate of the number of participants side A
+  Int_t	  fNPartSideC;	   // Estimate of the number of participants side C
+  Float_t fImpParameter;   // Estimate of the impact parameter
+  Float_t fImpParSideA;	   // Estimate of the impact parameter side A
+  Float_t fImpParSideC;	   // Estimate of the impact parameter side B
 
 
-  ClassDef(AliZDCReco,5)  // RecPoints for the Zero Degree Calorimeters
+  ClassDef(AliZDCReco,6)  // RecPoints for the Zero Degree Calorimeters
 };
  
 #endif

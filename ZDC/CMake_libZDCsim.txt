@@ -5,11 +5,13 @@ AliZDC.cxx
 AliZDCv3.cxx
 AliZDCHit.cxx
 AliZDCSDigit.cxx
+AliGenZDC.cxx
 AliZDCFragment.cxx
 AliZDCDigitizer.cxx
-AliGenZDC.cxx
-AliZDCTrigger.cxx
 AliZDCQADataMakerSim.cxx
+AliZDCTrigger.cxx
+AliZDCTriggerParameters.cxx
+AliZDCTriggerProcessor.cxx
 )
 
 # fill list of header files from list of source files

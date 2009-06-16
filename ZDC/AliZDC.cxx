@@ -47,7 +47,8 @@
 #include "AliZDCDigitizer.h"
 #include "AliZDCRawStream.h"
 #include "AliZDCPedestals.h"
-#include "AliZDCCalib.h"
+#include "AliZDCEnCalib.h"
+#include "AliZDCTowerCalib.h"
 #include "AliFstream.h"
 
  
@@ -58,7 +59,8 @@ AliZDC::AliZDC() :
   AliDetector(),
   fNoShower(0),
   fPedCalib(0),
-  fCalibData(0),
+  fEnCalibData(0),
+  fTowCalibData(0),
   fZDCCalibFName(""),
   fSpectatorTracked(1)
 {
@@ -79,7 +81,8 @@ AliZDC::AliZDC(const char *name, const char *title) :
   AliDetector(name,title),
   fNoShower  (0),
   fPedCalib(0),
-  fCalibData(0),
+  fEnCalibData(0),
+  fTowCalibData(0),
   fZDCCalibFName(""),
   fSpectatorTracked(1)
 {
@@ -110,8 +113,9 @@ AliZDC::~AliZDC()
   //
 
   fIshunt = 0;
-  delete fPedCalib;
-  delete fCalibData;
+  if(fPedCalib) delete fPedCalib;
+  if(fEnCalibData) delete fEnCalibData;
+  if(fEnCalibData) delete fEnCalibData;
 
 }
 
@@ -120,7 +124,8 @@ AliZDC::AliZDC(const AliZDC& ZDC) :
 AliDetector("ZDC","ZDC"),
 fNoShower(ZDC.fNoShower),
 fPedCalib(ZDC.fPedCalib),
-fCalibData(ZDC.fCalibData),
+fEnCalibData(ZDC.fEnCalibData),
+fTowCalibData(ZDC.fTowCalibData),
 fZDCCalibFName(ZDC.fZDCCalibFName),
 fSpectatorTracked(ZDC.fSpectatorTracked)
 {
@@ -134,7 +139,8 @@ AliZDC& AliZDC::operator=(const AliZDC& ZDC)
   if(this!=&ZDC){
     fNoShower = ZDC.fNoShower;
     fPedCalib = ZDC.fPedCalib;
-    fCalibData = ZDC.fCalibData;
+    fEnCalibData = ZDC.fEnCalibData;
+    fTowCalibData = ZDC.fTowCalibData;
     fZDCCalibFName = ZDC.fZDCCalibFName;
   } return *this;
 }
@@ -601,9 +607,7 @@ void AliZDC::Digits2Raw()
       Error("Digits2Raw", "sector[0] = %d, sector[1] = %d", 
 	    digit.GetSector(0), digit.GetSector(1));
       continue;
-    }
-    
-    
+    }    
   }
   //
   /*
@@ -615,11 +619,13 @@ void AliZDC::Digits2Raw()
  
   // End of Block
   UInt_t lADCEndBlockGEO = lADCHeaderGEO;
-  UInt_t lADCEndBlockEvCount = gAlice->GetEventNrInRun();
+  // Event counter in ADC EOB -> getting no. of events in run from AliRunLoader
+  // get run loader
+  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
+  UInt_t lADCEndBlockEvCount = runLoader->GetEventNumber();
   //  
   lADCEndBlock = lADCEndBlockGEO << 27 | 0x1 << 26 | lADCEndBlockEvCount;
   //printf("\t AliZDC::Digits2Raw -> ADCEndBlock = %d\n",lADCEndBlock);
-
 
   // open the output file
   char fileName[30];

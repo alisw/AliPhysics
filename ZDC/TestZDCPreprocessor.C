@@ -41,7 +41,7 @@ void TestZDCPreprocessor(Int_t obj=0)
   //     To use it uncomment the following line:
   //
   TMap* dcsAliasMap = CreateDCSAliasMap();
-  //WriteDCSAliasMap();
+  WriteDCSAliasMap();
 
   // now give the alias map to the shuttle
   shuttle->SetDCSInput(dcsAliasMap);
@@ -61,11 +61,14 @@ void TestZDCPreprocessor(Int_t obj=0)
   // Note that the test preprocessor name is TPC. The name of the detector's preprocessor must follow
   // the "online" naming convention ALICE-INT-2003-039.
   //
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDESTALS", "LDC0", "ZDCPedestal.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDESTALDATA", "LDC0", "ZDCPedestal.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDHISTOS",    "LDC0", "ZDCPedHisto.root");
   //
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASER", "LDC0", "ZDCLaserCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASERDATA",   "LDC0", "ZDCLaserCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASERHISTOS", "LDC0", "ZDCLasHisto.root");
   //
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB", "LDC0", "ZDCEMDCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "ENERGYCALIB", "LDC0", "ZDCEnCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "TOWERCALIB", "LDC0", "ZDCTowerCalib.dat");
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PHYSICS", "LDC0", "ZDCChMapping.dat");
   //
@@ -78,9 +81,9 @@ void TestZDCPreprocessor(Int_t obj=0)
   // using GetRunType function.
   if(obj==1)      shuttle->SetInputRunType("STANDALONE_PEDESTAL");
   else if(obj==2) shuttle->SetInputRunType("STANDALONE_LASER");
-  else if(obj==3) shuttle->SetInputRunType("STANDALONE_EMD");
+  else if(obj==3) shuttle->SetInputRunType("CALIBRATION_EMD");
   else if(obj==4) shuttle->SetInputRunType("STANDALONE_COSMIC");
-  else if(obj==5) shuttle->SetInputRunType("STANDALONE_BC");
+  else if(obj==5) shuttle->SetInputRunType("CALIBRATION_BC");
   else if(obj==6) shuttle->SetInputRunType("PHYSICS");
 
   // TODO(4)
@@ -139,17 +142,17 @@ void TestZDCPreprocessor(Int_t obj=0)
   else if(obj==2) chkEntry1 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
   			->Get("ZDC/Calib/LaserCalib", 0);
   else if(obj==3) chkEntry1 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/EMDCalib", 0);
+  			->Get("ZDC/Calib/EnCalib", 0);
   
   
   if(!chkEntry0){
-    printf("No file in \n ZDC/Calib/ChMap\n");
+    printf("No file in ZDC/Calib/ChMap\n");
     return;
   }
   if(!chkEntry1){
-    if(obj==1) printf("No file in \n ZDC/Calib/Pedestal\n");
-    else if(obj==2) printf("No file in \n ZDC/Calib/LaserCalib\n");
-    else if(obj==3) printf("No file in \n ZDC/Calib/EMDCalib\n");
+    if(obj==1) printf("No file in ZDC/Calib/Pedestal\n");
+    else if(obj==2) printf("No file in ZDC/Calib/LaserCalib\n");
+    else if(obj==3) printf("No file in ZDC/Calib/EnCalib\n");
     return;
   }
   
@@ -191,14 +194,14 @@ TMap* CreateDCSAliasMap()
     valueSet->SetOwner(1);
 
     TString aliasName = aliasNames[nAlias];
-    printf("\n\n alias: %s\n\n",aliasName.Data());
+    //printf("\n\n alias: %s\n\n",aliasName.Data());
 
     Float_t simVal = (Float_t) (random.Rndm()*0.025+random.Rndm()*0.1);
     for(int i=0;i<3;i++)
     {
       int timeStamp1[3] = {0,500,1000};
       AliDCSValue* dcsVal = new AliDCSValue(simVal, timeStamp1[i]);
-      printf("%s\n",dcsVal->ToString());
+      //printf("%s\n",dcsVal->ToString());
       valueSet->Add(dcsVal);
     }
     aliasMap->Add(new TObjString(aliasName), valueSet);
@@ -240,13 +243,13 @@ TMap* CreateDCSAliasMap()
     valueSet->SetOwner(1);
    
     TString aliasName = aliasNames[nAlias];
-    printf("\n\n alias: %s\n\n",aliasName.Data());
+    //printf("\n\n alias: %s\n\n",aliasName.Data());
 
     for(int timeStamp=0;timeStamp<=1000;timeStamp+=500)
     {
       Float_t simVal = (Float_t) (random.Gaus()*600.+1800.);
       AliDCSValue* dcsVal = new AliDCSValue(simVal, timeStamp);
-      printf("%s\n",dcsVal->ToString());
+      //printf("%s\n",dcsVal->ToString());
       valueSet->Add(dcsVal);
     }
     aliasMap->Add(new TObjString(aliasName), valueSet);

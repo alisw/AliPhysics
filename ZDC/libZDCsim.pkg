@@ -1,9 +1,9 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS= AliZDC.cxx AliZDCv3.cxx \
-      AliZDCHit.cxx AliZDCSDigit.cxx AliZDCFragment.cxx AliZDCDigitizer.cxx \
-      AliGenZDC.cxx AliZDCTrigger.cxx AliZDCQADataMakerSim.cxx
+SRCS= AliZDC.cxx AliZDCv3.cxx AliGenZDC.cxx  AliZDCFragment.cxx \
+      AliZDCHit.cxx AliZDCSDigit.cxx AliZDCDigitizer.cxx AliZDCQADataMakerSim.cxx \
+      AliZDCTrigger.cxx AliZDCTriggerParameters.cxx AliZDCTriggerProcessor.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 

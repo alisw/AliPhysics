@@ -33,19 +33,19 @@ AliZDCReco::AliZDCReco() :
 	
   TObject(),
   //
-  fNDetSpecNLeft(0),
-  fNDetSpecPLeft(0),
-  fNDetSpecNRight(0),
-  fNDetSpecPRight(0),
-  fNTrueSpecNLeft(0),
-  fNTrueSpecPLeft(0),
-  fNTrueSpecLeft(0),
-  fNTrueSpecNRight(0),
-  fNTrueSpecPRight(0),
-  fNTrueSpecRight(0),
-  fNPartLeft(0),
-  fNPartRight(0),
-  fImpPar(0)
+  fNDetSpecNSideA(0),
+  fNDetSpecPSideA(0),
+  fNDetSpecNSideC(0),
+  fNDetSpecPSideC(0),
+  fNTrueSpectators(0),
+  fNTrueSpecSideA(0),
+  fNTrueSpecSideC(0),
+  fNParticipants(0),
+  fNPartSideA(0),
+  fNPartSideC(0),
+  fImpParameter(0),
+  fImpParSideA(0),
+  fImpParSideC(0)
 
 { 
   //
@@ -63,32 +63,31 @@ AliZDCReco::AliZDCReco() :
   
 
 //_____________________________________________________________________________
-AliZDCReco::AliZDCReco(Float_t* ezn1, Float_t* ezp1, Float_t* ezn2, Float_t* ezp2,  
-	     Float_t* ezn1tow, Float_t* ezp1tow,
-	     Float_t* ezn2tow, Float_t* ezp2tow, 
-	     Float_t* ezem1, Float_t* ezem2, 
-	     Float_t* ref1, Float_t* ref2, 
-	     //	   
-	     Int_t detspnLeft,  Int_t detsppLeft, Int_t detspnRight, Int_t detsppRight,  
-	     Int_t trspnLeft, Int_t trsppLeft, Int_t trspLeft, 
-	     Int_t trspnRight, Int_t trsppRight, Int_t trspRight,
-	     Int_t partLeft, Int_t partRight, Float_t b) :
+AliZDCReco::AliZDCReco(
+     Float_t* ezn1, Float_t* ezp1, Float_t* ezn2, Float_t* ezp2,  
+     Float_t* ezn1tow, Float_t* ezp1tow, Float_t* ezn2tow, Float_t* ezp2tow, 
+     Float_t* ezem1, Float_t* ezem2, Float_t* ref1, Float_t* ref2, 
+     //    
+     Int_t detspnSideA,  Int_t detsppSideA, Int_t detspnSideC, Int_t detsppSideC,  
+     Int_t trsp, Int_t trspSideA,Int_t trspSideC,
+     Int_t npart, Int_t npartSideA, Int_t npartSideC, 
+     Float_t b, Float_t bSideA, Float_t bSideC) :
 	
   TObject(),
   //
-  fNDetSpecNLeft(detspnLeft),
-  fNDetSpecPLeft(detsppLeft),
-  fNDetSpecNRight(detspnRight),
-  fNDetSpecPRight(detsppRight),
-  fNTrueSpecNLeft(trspnLeft),
-  fNTrueSpecPLeft(trsppLeft),
-  fNTrueSpecLeft(trspLeft),
-  fNTrueSpecNRight(trspnRight),
-  fNTrueSpecPRight(trsppRight),
-  fNTrueSpecRight(trspRight),
-  fNPartLeft(partLeft),
-  fNPartRight(partRight),
-  fImpPar(b)
+  fNDetSpecNSideA(detspnSideA),
+  fNDetSpecPSideA(detsppSideA),
+  fNDetSpecNSideC(detspnSideC),
+  fNDetSpecPSideC(detsppSideC),
+  fNTrueSpectators(trsp),
+  fNTrueSpecSideA(trspSideA),
+  fNTrueSpecSideC(trspSideC),
+  fNParticipants(npart),
+  fNPartSideA(npartSideA),
+  fNPartSideC(npartSideC),
+  fImpParameter(b),
+  fImpParSideA(bSideA),
+  fImpParSideC(bSideC)
 
 { 
   //
@@ -116,19 +115,19 @@ AliZDCReco::AliZDCReco(Float_t* ezn1, Float_t* ezp1, Float_t* ezn2, Float_t* ezp
 //______________________________________________________________________________
 AliZDCReco::AliZDCReco(const AliZDCReco &oldreco) :
 TObject(),
-fNDetSpecNLeft(oldreco.GetNDetSpecNLeft()),
-fNDetSpecPLeft(oldreco.GetNDetSpecPLeft()),
-fNDetSpecNRight(oldreco.GetNDetSpecNRight()),        
-fNDetSpecPRight(oldreco.GetNDetSpecPRight()),       
-fNTrueSpecNLeft(oldreco.GetNTrueSpecNLeft()), 	
-fNTrueSpecPLeft(oldreco.GetNTrueSpecPLeft()), 	
-fNTrueSpecLeft(oldreco.GetNTrueSpecLeft()),
-fNTrueSpecNRight(oldreco.GetNTrueSpecNRight()),	
-fNTrueSpecPRight(oldreco.GetNTrueSpecPRight()),	
-fNTrueSpecRight(oldreco.GetNTrueSpecRight()),  	
-fNPartLeft(oldreco.GetNPartLeft()),		       
-fNPartRight(oldreco.GetNPartRight()),  		       
-fImpPar(oldreco.GetImpPar())      
+fNDetSpecNSideA(oldreco.GetNDetSpecNSideA()),
+fNDetSpecPSideA(oldreco.GetNDetSpecPSideA()),
+fNDetSpecNSideC(oldreco.GetNDetSpecNSideC()),        
+fNDetSpecPSideC(oldreco.GetNDetSpecPSideC()),       
+fNTrueSpectators(oldreco.GetNTrueSpectators()),
+fNTrueSpecSideA(oldreco.GetNTrueSpecSideA()),
+fNTrueSpecSideC(oldreco.GetNTrueSpecSideC()),  	
+fNParticipants(oldreco.GetNParticipants()),		       
+fNPartSideA(oldreco.GetNPartSideA()),		       
+fNPartSideC(oldreco.GetNPartSideC()),  		       
+fImpParameter(oldreco.GetImpParameter()),      
+fImpParSideA(oldreco.GetImpParSideA()),      
+fImpParSideC(oldreco.GetImpParSideC())      
 {
   // Copy constructor
 
@@ -167,16 +166,21 @@ void AliZDCReco::Print(Option_t *) const {
   //
   // Printing Reconstruction Parameters
   //
-  printf(" \t ---   Reconstruction -> EZN1 = %f TeV, EZP1 = %f TeV,  EZEM1 = %f GeV ,  EZEM2 = %f GeV \n "		
-	 "EZN2 = %f TeV, EZP2 = %f TeV \n"
-	 " \t NDetSpecNLeft = %d, NDetSpecPLeft = %d, NspecnLeft = %d,"
-	 " NspecpLeft = %d, NpartLeft = %d"
-	 " \t NDetSpecNRight = %d, NDetSpecPRight = %d, NspecnRight = %d,"
-	 " NspecpRight = %d, NpartRight = %d"
-	 " \t b = %f fm\n ", 
-	 fZN1Energy[0]/1000.,fZP1Energy[0]/1000.,fZEM1signal[0]/1000.,fZEM2signal[0]/1000., 
+  printf(" ****************** AliZDCReco object ******************\n"
+  	 "       ---------------   side A ---------------\n"
+	 " E_{ZN} = %f TeV, E_{ZP} = %f TeV, "
+	 " E_{ZEM1} =  %f TeV,  E_{ZEM2} = %f TeV\n "
+	 " N_{spec n}^{DET} = %d, N_{spec p}^{DET} = %d,"
+	 " N_{part} = %d, b = %1.4f fm\n"
+  	 "       ---------------   side C ---------------\n"
+	 " E_{ZN} = %f TeV, E_{ZP} = %f TeV\n "
+	 " N_{spec n}^{DET} = %d, N_{spec p}^{DET} = %d,"
+	 " N_{part} = %d, b = %1.4f fm\n"
+         " *******************************************************\n",
 	 fZN2Energy[0]/1000., fZP2Energy[0]/1000.,
-	 fNDetSpecNLeft,fNDetSpecPLeft,fNTrueSpecNLeft,fNTrueSpecPLeft,fNPartLeft,
-	 fNDetSpecNRight,fNDetSpecPRight,fNTrueSpecNRight,fNTrueSpecPRight,fNPartRight,
-	 fImpPar);
+	 fZEM1signal[0]/1000.,fZEM2signal[0]/1000.,
+	 fNDetSpecNSideA,fNDetSpecPSideA, fNPartSideA,fImpParSideA,
+	 fZN1Energy[0]/1000.,fZP1Energy[0]/1000.,	
+         fNDetSpecNSideC,fNDetSpecPSideC,fNPartSideC,fImpParSideC);
+	 
 }

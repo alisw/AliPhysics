@@ -21,5 +21,7 @@
 #pragma link C++ class  AliZDCQADataMakerSim+;
 
 #pragma link C++ class  AliZDCTrigger+;
+#pragma link C++ class  AliZDCTriggerParameters+;
+#pragma link C++ class  AliZDCTriggerProcessor+;
 
 #endif

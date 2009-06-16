@@ -16,12 +16,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // Class with ZDC reconstruction parameters                                  //
-// Origin: Chiara.Oppedisano@to.infn.it                                        //
+// Origin: Chiara.Oppedisano@to.infn.it                                       //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 
-//#include <TF1.h>
 #include "AliZDCRecoParampp.h"
 
 ClassImp(AliZDCRecoParampp)
@@ -30,32 +29,17 @@ ClassImp(AliZDCRecoParampp)
 AliZDCRecoParampp::AliZDCRecoParampp() :
   AliZDCRecoParam()
 {
-  //
+
   //Default constructor
 }
-//_____________________________________________________________________________
-AliZDCRecoParampp::~AliZDCRecoParampp()
-{
-// destructor
-}
 
 //_____________________________________________________________________________
-AliZDCRecoParampp *AliZDCRecoParampp::GetppRecoParam()
+AliZDCRecoParampp *AliZDCRecoParampp::GetppRecoParam() const
 {
-  //
-  // Makes default reconstruction parameters 
-  //
-  AliZDCRecoParampp *param = new AliZDCRecoParampp();
   
+  // Getting default reconstruction parameters 
+  
+  AliZDCRecoParampp *param = new AliZDCRecoParampp();
   return param;
 
-}
-
-//_____________________________________________________________________________
-void AliZDCRecoParampp::PrintParameters() const 
-{
-  //
-  // print reconstruction parameters
-  //
-  printf("\n\n\t AliZDCRecoParampp -> parameters set for reconstruction\n");
 }
