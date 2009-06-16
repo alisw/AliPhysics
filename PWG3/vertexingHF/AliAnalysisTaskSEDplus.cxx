@@ -49,9 +49,6 @@ fHistBackground(0),
 fVHF(0)
 {
   // Default constructor
-
-  // Output slot #1 writes into a TList container
-  DefineOutput(1,TList::Class());  //My private output
 }
 
 //________________________________________________________________________
