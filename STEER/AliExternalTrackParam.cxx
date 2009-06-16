@@ -28,6 +28,7 @@
 #include <TMatrixDSym.h>
 #include <TPolyMarker3D.h>
 #include <TVector3.h>
+#include <TMatrixD.h>
 
 #include "AliExternalTrackParam.h"
 #include "AliVVertex.h"
@@ -1857,3 +1858,82 @@ Bool_t AliExternalTrackParam::PropagateToBxByBz(Double_t xk, const Double_t b[3]
   return kTRUE;
 }
 
+Bool_t AliExternalTrackParam::Translate(Double_t *vTrasl,Double_t *covV){
+  //
+  //Translation: in the event mixing, the tracks can be shifted 
+  //of the difference among primary vertices (vTrasl) and 
+  //the covariance matrix is changed accordingly 
+  //(covV = covariance of the primary vertex).
+  //Origin: "Romita, Rossella" <R.Romita@gsi.de>
+  // 
+  TVector3 translation;
+  // vTrasl coordinates in the local system
+  translation.SetXYZ(vTrasl[0],vTrasl[1],vTrasl[2]);
+  translation.RotateZ(-fAlpha);
+  translation.GetXYZ(vTrasl);
+
+ //compute the new x,y,z of the track
+  Double_t NewX=fX-vTrasl[0];
+  Double_t NewY=fP[0]-vTrasl[1];
+  Double_t NewZ=fP[1]-vTrasl[2];
+  
+  //define the new parameters
+  Double_t NewParam[5];
+  NewParam[0]=NewY;
+  NewParam[1]=NewZ;
+  NewParam[2]=fP[2];
+  NewParam[3]=fP[3];
+  NewParam[4]=fP[4];
+
+  // recompute the covariance matrix:
+  // 1. covV in the local system
+  Double_t cosRot=TMath::Cos(fAlpha), sinRot=TMath::Sin(fAlpha);
+  TMatrixD qQi(3,3);
+  qQi(0,0) = cosRot;
+  qQi(0,1) = sinRot;
+  qQi(0,2) = 0.;
+  qQi(1,0) = -sinRot;
+  qQi(1,1) = cosRot;
+  qQi(1,2) = 0.;
+  qQi(2,0) = 0.;
+  qQi(2,1) = 0.;
+  qQi(2,2) = 1.;
+  TMatrixD uUi(3,3);
+  uUi(0,0) = covV[0];
+  uUi(0,0) = covV[0];
+  uUi(1,0) = covV[1];
+  uUi(0,1) = covV[1];
+  uUi(2,0) = covV[3];
+  uUi(0,2) = covV[3];
+  uUi(1,1) = covV[2];
+  uUi(2,2) = covV[5];
+  uUi(1,2) = covV[4];
+  if(uUi.Determinant() <= 0.) {return kFALSE;}
+  TMatrixD uUiQi(uUi,TMatrixD::kMult,qQi);
+  TMatrixD m(qQi,TMatrixD::kTransposeMult,uUiQi);
+
+  //2. compute the new covariance matrix of the track
+  Double_t sigmaXX=m(0,0);
+  Double_t sigmaXZ=m(2,0);
+  Double_t sigmaXY=m(1,0);
+  Double_t sigmaYY=GetSigmaY2()+m(1,1);
+  Double_t sigmaYZ=fC[1]+m(1,2);
+  Double_t sigmaZZ=fC[2]+m(2,2);
+  Double_t covarianceYY=sigmaYY + (-1.)*((sigmaXY*sigmaXY)/sigmaXX);
+  Double_t covarianceYZ=sigmaYZ-(sigmaXZ*sigmaXY/sigmaXX);
+  Double_t covarianceZZ=sigmaZZ-((sigmaXZ*sigmaXZ)/sigmaXX);
+
+  Double_t newCov[15];
+  newCov[0]=covarianceYY;
+  newCov[1]=covarianceYZ;
+  newCov[2]=covarianceZZ;
+  for(Int_t i=3;i<15;i++){
+    newCov[i]=fC[i];
+   }
+
+  // set the new parameters
+
+  Set(NewX,fAlpha,NewParam,newCov);
+
+  return kTRUE;
+ }

@@ -195,6 +195,9 @@ class AliExternalTrackParam: public AliVTrack {
   //
   virtual void FillPolymarker(TPolyMarker3D *pol, Float_t magf, Float_t minR, Float_t maxR, Float_t stepR);
   virtual void DrawTrack(Float_t magF, Float_t minR, Float_t maxR, Float_t stepR);
+
+  virtual Bool_t Translate(Double_t *vTrasl,Double_t *covV);
+
  protected:
   Double_t &Par(Int_t i) {return fP[i];}
   Double_t &Cov(Int_t i) {return fC[i];}
