@@ -72,8 +72,19 @@ public:
   Double_t   fCA;           //! cosine of current angle
   Double_t   fSA;           //! sinus of current angle  
   AliTPCkalmanFit&  operator=(const AliTPCkalmanFit&);// not implemented
-//   AliTPCkalmanFit(const AliTPCkalmanFit&){;} //not implemented
-  ClassDef(AliTPCkalmanFit,2);
+  AliTPCkalmanFit(const AliTPCkalmanFit&):TNamed(),
+                                  fCalibration(0),
+                                  fCalibParam(0),
+                                  fCalibCovar(0),
+                                  fLinearParam(0),
+                                  fLinearCovar(0),
+                                  fLastTimeStamp(-1),
+                                  fCurrentAlpha(0),  //! current rotation frame
+                                  fCA(0),     //! cosine of current angle
+                                  fSA(0)     //! sinus of current angle  
+                                          
+{;} //not implemented
+  ClassDef(AliTPCkalmanFit,3);
 };
 
 

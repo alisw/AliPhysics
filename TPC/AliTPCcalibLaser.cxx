@@ -2137,7 +2137,7 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain, const char * cutUser){
   Double_t pphi[3];
   Double_t pphiP[3];
   Double_t pmZ[3];
-  Double_t pmP4[3];
+  
   //
   for (Int_t id=0; id<336; id++){
     // id =205;

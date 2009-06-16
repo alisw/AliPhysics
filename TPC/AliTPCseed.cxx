@@ -1128,7 +1128,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   Float_t gainGG      = 1;  // gas gain factor -always enabled
   Float_t gainPad     = 1;  // gain map  - used always
   Float_t corrPos     = 1;  // local position correction - if posNorm enabled
-  Float_t corrNorm    = 1;  // normalization factor - set Q to channel 50
+
   //   
   //
   //
