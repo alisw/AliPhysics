@@ -45,12 +45,4 @@
 #pragma	link C++ class AliCdfJetFinder+;
 #pragma	link C++ class AliCdfJetHeader+;
 #pragma	link C++ class AliEventShape+;
-
-#ifdef WITHFASTJET
-#pragma	link C++ class AliFastJetFinder+;
-#pragma	link C++ class AliFastJetHeaderV1+;
-#pragma	link C++ class AliSISConeJetFinder+;
-#pragma	link C++ class AliSISConeJetHeader+;
-#endif
-
 #endif
