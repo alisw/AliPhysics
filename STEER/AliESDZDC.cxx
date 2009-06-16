@@ -39,7 +39,12 @@ AliESDZDC::AliESDZDC() :
   fZDCEMEnergy(0),
   fZDCEMEnergy1(0),
   fZDCParticipants(0),
-  fZDCParticipants2(0)
+  fZDCPartSideA(0),
+  fZDCPartSideC(0),
+  fImpactParameter(0),
+  fImpactParamSideA(0),
+  fImpactParamSideC(0),
+  fESDQuality(0)
 {
   for(Int_t i=0; i<5; i++){
     fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
@@ -62,7 +67,11 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
   fZDCEMEnergy(zdc.fZDCEMEnergy),
   fZDCEMEnergy1(zdc.fZDCEMEnergy1),
   fZDCParticipants(zdc.fZDCParticipants),
-  fZDCParticipants2(zdc.fZDCParticipants2)
+  fZDCPartSideA(zdc.fZDCPartSideA),
+  fZDCPartSideC(zdc.fZDCPartSideC),
+  fImpactParameter(zdc.fImpactParameter),
+  fImpactParamSideA(zdc.fImpactParamSideC),
+  fESDQuality(zdc.fESDQuality)
 {
   // copy constructor
   for(Int_t i=0; i<5; i++){
@@ -91,8 +100,6 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
     fZDCP1Energy = zdc.fZDCP1Energy;
     fZDCN2Energy = zdc.fZDCN2Energy;
     fZDCP2Energy = zdc.fZDCP2Energy;
-    fZDCParticipants = zdc.fZDCParticipants;
-    fZDCParticipants2 = zdc.fZDCParticipants2;
     fZDCEMEnergy = zdc.fZDCEMEnergy;
     fZDCEMEnergy1 = zdc.fZDCEMEnergy1;
     for(Int_t i=0; i<5; i++){
@@ -105,10 +112,20 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
        fZP1TowerEnergyLR[i] = zdc.fZP1TowerEnergyLR[i];
        fZP2TowerEnergyLR[i] = zdc.fZP2TowerEnergyLR[i];
     }
+    //
+    fZDCParticipants = zdc.fZDCParticipants;
+    fZDCPartSideA = zdc.fZDCPartSideA;
+    fZDCPartSideC = zdc.fZDCPartSideC;
+    fImpactParameter = zdc.fImpactParameter;
+    fImpactParamSideA = zdc.fImpactParamSideA;
+    fImpactParamSideC = zdc.fImpactParamSideC;
+    //
     for(Int_t i=0; i<2; i++){
          fZNACentrCoord[i] = zdc.fZNACentrCoord[i];
          fZNCCentrCoord[i] = zdc.fZNCCentrCoord[i];
     }
+    //
+    fESDQuality = zdc.fESDQuality;
   } 
   return *this;
 }
@@ -136,8 +153,6 @@ void AliESDZDC::Reset()
   fZDCP1Energy=0;
   fZDCN2Energy=0;
   fZDCP2Energy=0;
-  fZDCParticipants=0;  
-  fZDCParticipants2=0;  
   fZDCEMEnergy=0;
   fZDCEMEnergy1=0;
   for(Int_t i=0; i<5; i++){
@@ -146,18 +161,26 @@ void AliESDZDC::Reset()
     fZN1TowerEnergyLR[i] = fZN2TowerEnergyLR[i] = 0.;
     fZP1TowerEnergyLR[i] = fZP2TowerEnergyLR[i] = 0.;
   }
+  fZDCParticipants=0;  
+  fZDCPartSideA=0;  
+  fZDCPartSideC=0;  
+  fImpactParameter=0;
+  fImpactParamSideA=0;
+  fImpactParamSideC=0;
   for(Int_t i=0; i<2; i++){
        fZNACentrCoord[i] = fZNCCentrCoord[i] = 0.;
   }
+  fESDQuality=0;
 }
 
 //______________________________________________________________________________
 void AliESDZDC::Print(const Option_t *) const
 {
   //  Print ESD for the ZDC
-  printf("\n \t ZN1Energy = %f TeV, ZP1Energy = %f TeV, ZN2Energy = %f TeV,"
-  " ZP2Energy = %f, Npart side C = %d, Npart side A = %d\n",
-  fZDCN1Energy,fZDCP1Energy,fZDCN2Energy,fZDCP2Energy,fZDCParticipants,fZDCParticipants2);
+  printf("\n \t E_{ZNC} = %f TeV, E_{ZPC} = %f TeV, E_{ZNA} = %f TeV, E_{ZPA} = %f TeV,"
+  " E_{ZEM} = %f GeV, Npart = %d, b = %1.2f fm\n",
+  fZDCN1Energy/1000.,fZDCP1Energy/1000.,fZDCN2Energy/1000.,fZDCP2Energy/1000.,
+  fZDCEMEnergy+fZDCEMEnergy1, fZDCParticipants,fImpactParameter);
 }
 
 //______________________________________________________________________________
@@ -165,9 +188,11 @@ Double32_t * AliESDZDC::GetZNCCentroid()
 {
   // Provide coordinates of centroid over ZN (side C) front face
   Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
-  Float_t y[4] = {-1.75, -1.72, 1.75, 1.75};
+  Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
   Float_t numX=0., numY=0., den=0.;
-  Float_t alpha=0.395, w;
+  Float_t c, alpha=0.395, w;
+  TF1 * fun = new TF1("fun","1.89358-0.71262/(x+0.71789)",0.,100.);
+  //
   for(Int_t i=0; i<4; i++){
     if(fZN1TowerEnergy[i+1]<0.) fZN1TowerEnergy[i+1]=0.;
     w = TMath::Power(fZN1TowerEnergy[i+1], alpha);
@@ -176,8 +201,10 @@ Double32_t * AliESDZDC::GetZNCCentroid()
     den += w;
   }
   if(den!=0){
-    fZNCCentrCoord[0] = 1.8665*numX/den;
-    fZNCCentrCoord[1] = 1.8665*numY/den;
+    // ATTENTION! Needs to be changed if E_beam(A-A) != 2.76 A TeV !!!!
+    c = fZDCN1Energy/2760.;
+    fZNCCentrCoord[0] = c*numX/den;
+    fZNCCentrCoord[1] = c*numY/den;
   }
   return fZNCCentrCoord;
 }
@@ -187,9 +214,10 @@ Double32_t * AliESDZDC::GetZNACentroid()
 {
   // Provide coordinates of centroid over ZN (side A) front face
   Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
-  Float_t y[4] = {-1.75, -1.72, 1.75, 1.75};
+  Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
   Float_t numX=0., numY=0., den=0.;
-  Float_t alpha=0.395, w;
+  Float_t c, alpha=0.395, w;
+  TF1 * fun = new TF1("fun","1.89358-0.71262/(x+0.71789)",0.,100.);
   for(Int_t i=0; i<4; i++){
     if(fZN2TowerEnergy[i+1]<0.) fZN2TowerEnergy[i+1]=0.;
     w = TMath::Power(fZN2TowerEnergy[i+1], alpha);
@@ -199,8 +227,10 @@ Double32_t * AliESDZDC::GetZNACentroid()
   }
   //
   if(den!=0){
-    fZNACentrCoord[0] = 1.8665*numX/den;
-    fZNACentrCoord[1] = 1.8665*numY/den;
+    // ATTENTION! Needs to be changed if E_beam(A-A) != 2.76 A TeV !!!!
+    c = fZDCN2Energy/2760.;
+    fZNACentrCoord[0] = c*numX/den;
+    fZNACentrCoord[1] = c*numY/den;
   }
   return fZNACentrCoord;
 }

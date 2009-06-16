@@ -13,6 +13,7 @@
 
 #include <TObject.h>
 #include <TMath.h>
+#include <TF1.h>
 
 
 class AliESDZDC: public TObject {
@@ -30,7 +31,11 @@ public:
   	   {if(i==0){return fZDCEMEnergy;} else if(i==1){return fZDCEMEnergy1;}
 	   return 0;}
   Short_t  GetZDCParticipants() const {return fZDCParticipants;}
-  Short_t  GetZDCParticipants2() const {return fZDCParticipants2;}
+  Short_t  GetZDCPartSideA() const {return fZDCPartSideA;}
+  Short_t  GetZDCPartSideC() const {return fZDCPartSideC;}
+  Double_t GetImpactParameter() const {return fImpactParameter;}
+  Double_t GetImpactParamSideA() const {return fImpactParamSideA;}
+  Double_t GetImpactParamSideC() const {return fImpactParamSideC;}
   const Double_t * GetZN1TowerEnergy() const {return fZN1TowerEnergy;}
   const Double_t * GetZN2TowerEnergy() const {return fZN2TowerEnergy;}
   const Double_t * GetZP1TowerEnergy() const {return fZP1TowerEnergy;}
@@ -44,13 +49,16 @@ public:
   Double32_t * GetZNACentroid();
   //
   void  SetZDC(Double_t n1Energy, Double_t p1Energy, 
-  		Double_t emEnergy0, Double_t emEnergy1,
-	       	Double_t n2Energy, Double_t p2Energy, 
-		Short_t participants, Short_t participants2) 
+  	       Double_t emEnergy0, Double_t emEnergy1,
+	       Double_t n2Energy, Double_t p2Energy, 
+	       Short_t participants, Short_t nPartA, Short_t nPartC,
+	       Double_t b, Double_t bA, Double_t bC, UInt_t recoFlag) 
    	{fZDCN1Energy=n1Energy; fZDCP1Energy=p1Energy; 
-    	fZDCEMEnergy=emEnergy0; fZDCEMEnergy1=emEnergy1;
-    	fZDCN2Energy=n2Energy; fZDCP2Energy=p2Energy; 
-	fZDCParticipants=participants; fZDCParticipants2=participants2;}
+    	 fZDCEMEnergy=emEnergy0; fZDCEMEnergy1=emEnergy1;
+    	 fZDCN2Energy=n2Energy; fZDCP2Energy=p2Energy; 
+	 fZDCParticipants=participants; fZDCPartSideA=nPartA; fZDCPartSideC=nPartC;
+	 fImpactParameter=b; fImpactParamSideA=bA, fImpactParamSideC=bC,
+	 fESDQuality=recoFlag;}
   //
   void  SetZN1TowerEnergy(Float_t tow1[5])
           {for(Int_t i=0; i<5; i++) fZN1TowerEnergy[i] = tow1[i];}
@@ -92,12 +100,17 @@ private:
   Double32_t   fZN2TowerEnergyLR[5];// reco E in 5 ZN2 sectors - low gain chain
   Double32_t   fZP1TowerEnergyLR[5];// reco E in 5 ZP1 sectors - low gain chain
   Double32_t   fZP2TowerEnergyLR[5];// reco E in 5 ZP2 sectors - low gain chain
-  Short_t      fZDCParticipants;// number of participants estimated by the ZDC - side C
-  Short_t      fZDCParticipants2;// number of participants estimated by the ZDC - side A
-  Double32_t   fZNACentrCoord[2];// Coordinates of the centroid over ZNC
-  Double32_t   fZNCCentrCoord[2];// Coordinates of the centroid over ZNA
+  Short_t      fZDCParticipants;    // number of participants estimated by the ZDC (ONLY in A-A)
+  Short_t      fZDCPartSideA;     // number of participants estimated by the ZDC (ONLY in A-A)
+  Short_t      fZDCPartSideC;     // number of participants estimated by the ZDC (ONLY in A-A)
+  Double32_t   fImpactParameter;  // impact parameter estimated by the ZDC (ONLY in A-A)
+  Double32_t   fImpactParamSideA; // impact parameter estimated by the ZDC (ONLY in A-A)
+  Double32_t   fImpactParamSideC; // impact parameter estimated by the ZDC (ONLY in A-A)
+  Double32_t   fZNACentrCoord[2]; // Coordinates of the centroid over ZNC
+  Double32_t   fZNCCentrCoord[2]; // Coordinates of the centroid over ZNA
+  UInt_t       fESDQuality;	  // flags from reconstruction
   //
-  ClassDef(AliESDZDC,9)
+  ClassDef(AliESDZDC,10)
 };
 
 #endif

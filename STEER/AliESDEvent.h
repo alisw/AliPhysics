@@ -148,12 +148,11 @@ public:
   Double_t GetZDCP2Energy() const {return fESDZDC->GetZDCP2Energy();}
   Double_t GetZDCEMEnergy(Int_t i=0) const {return fESDZDC->GetZDCEMEnergy(i);}
   Int_t   GetZDCParticipants() const {return fESDZDC->GetZDCParticipants();}
-  Int_t   GetZDCParticipants2() const {return fESDZDC->GetZDCParticipants2();}
   void    SetZDC(Float_t n1Energy, Float_t p1Energy, Float_t em1Energy, Float_t em2Energy,
-                 Float_t n2Energy, Float_t p2Energy, 
-		 Int_t participants, Int_t participants2)
+                 Float_t n2Energy, Float_t p2Energy, Int_t participants, Int_t nPartA,
+		 Int_t nPartC, Double_t b, Double_t bA, Double_t bC, UInt_t recoflag)
   {fESDZDC->SetZDC(n1Energy, p1Energy, em1Energy, em2Energy, n2Energy, p2Energy, 
-   participants, participants2);}
+   participants, nPartA, nPartC, b, bA, bC,  recoflag);}
 
 
   // FMD
