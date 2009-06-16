@@ -1,34 +1,24 @@
  void testPDF(Double_t a = 208.)
 {
+
+    gSystem->Load("liblhapdf.so");
+    StrucFunc_t pdf = kCTEQ6ll;
+    
+
 // Dynamically link some shared libs                    
+
+    
+//    
     char    parm[20][20];
     Double_t val[20];
 //
 //  Initialization
 //
     printf("PDF initialized with: \n \n");
-    strncpy(parm[0], "NPTYPE\0",  20);
-    val[0]  =  1.;
-    printf("%10s %13.3f \n", parm[0], val[0]);
-    strncpy(parm[1], "NGROUP\0",  20);
-    val[1]  = 5.;
-    printf("%10s %13.3f\n", parm[1], val[1]);
-    strncpy(parm[2], "NSET\0",    20);
-    val[2]  = 12.;
-    printf("%10s %13.3f\n", parm[2], val[2]);
-    strncpy(parm[3], "TMAS\0",    20);
-    val[3]  = 175.;
-    printf("%10s %13.3f\n", parm[3], val[3]);    
-    strncpy(parm[4], "NATYPE\0",  20);
-    val[4]  = 4.;
-    printf("%10s %13.3f\n", parm[4], val[4]);    
-    strncpy(parm[5], "NAGROUP\0", 20);
-    val[5]  = 0.;
-    printf("%10s %13.3f\n", parm[5], val[5]);    
-    strncpy(parm[6], "NASET\0",   20);
-    val[6]  = 0.;
-    printf("%10s %13.3f\n", parm[6]);    
+    strncpy(parm[0], "DEFAULT             ",  20);
+    val[0]  = AliStructFuncType::PDFsetIndex(pdf);
     AliStructFuncType::PdfSet(parm, val);
+
 //
 //  Plots
 //
