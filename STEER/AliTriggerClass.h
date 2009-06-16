@@ -64,7 +64,7 @@ private:
                   Bool_t  fAllRare;      // All or Rare trigger
 		  Bool_t  fStatus;       //! true = Condition has been satisfied after Trigger
 
-  ClassDef( AliTriggerClass, 1 )  // Define a trigger class object
+  ClassDef( AliTriggerClass, 2 )  // Define a trigger class object
 };
 
 #endif
