@@ -990,14 +990,14 @@ UInt_t AliTOFPreprocessor::ProcessFEEData()
   /* load current TOF FEE config from DCS FXS, parse, 
    * fill current FEE histogram and set FEE status */
   
-  const char * nameFile = GetFile(kDCS,"TofFeeMap",""); 
+  const char * nameFile = GetFile(kDCS,"TofFeeLightMap",""); 
   AliInfo(Form("nameFile = %s",nameFile));
   if (nameFile == NULL) {
 	  return 15;
   } 
-  feeReader.LoadFEEConfig(nameFile);
-  Int_t parseFee = feeReader.ParseFEEConfig();
-  AliDebug(2,Form("%i enabled channels found in FEE configuration",parseFee));
+  feeReader.LoadFEElightConfig(nameFile);
+  Int_t parseFee = feeReader.ParseFEElightConfig();
+  AliDebug(2,Form("%i enabled channels found in FEElight configuration",parseFee));
   /* load stored TOF FEE from OCDB and compare it with current FEE.
    * if stored FEE is different from current FEE set update flag.
    * if there is no stored FEE in OCDB set update flag */

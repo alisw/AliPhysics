@@ -37,7 +37,7 @@ void TOFPreprocessor(Char_t * RunType="PHYSICS")
   // processing files. for the time being, the files are local.
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "DELAYS", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Total.root");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "RUNLevel", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Partial.root");
-  shuttle->AddInputFile(AliTestShuttle::kDCS, "TOF", "TofFeeMap", "", "$ALICE_ROOT/TOF/ShuttleInput/TOFFEE.20090401.182503.67577");
+  shuttle->AddInputFile(AliTestShuttle::kDCS, "TOF", "TofFeeLightMap", "", "$ALICE_ROOT/TOF/ShuttleInput/TOFFEElight.20090616.102605.8000");
 
   TString filename;
   TString LDCname;
