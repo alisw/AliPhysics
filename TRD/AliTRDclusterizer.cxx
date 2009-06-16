@@ -1048,7 +1048,8 @@ void AliTRDclusterizer::AddTrackletsToArray()
       trackletword=fTrackletContainer[side];
       do{
 	Int_t n = TrackletsArray()->GetEntriesFast();
-	new((*TrackletsArray())[n]) AliTRDcluster(&AliTRDtrackletWord(trackletword[trkl]),fDet,fVolid);
+	AliTRDtrackletWord tmp(trackletword[trkl]);
+	new((*TrackletsArray())[n]) AliTRDcluster(&tmp,fDet,fVolid);
 	trkl++;
       }while(trackletword[trkl]>0);
     }
