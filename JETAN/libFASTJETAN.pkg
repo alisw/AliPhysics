@@ -2,15 +2,17 @@
 
 SRCS =  AliFastJetFinder.cxx AliFastJetHeaderV1.cxx \
         AliSISConeJetFinder.cxx AliSISConeJetHeader.cxx
-ifneq ($(FASTJET),)
+ifneq ($(FASTJET_ROOT),)
+        EINCLUDE += $(FASTJET)_ROOT/include		
 else	
-	FASTJET=$(ALICE_ROOT)/JETAN
+	FASTJET_ROOT=$(ALICE_ROOT)/JETAN
+        EINCLUDE += $(FASTJET_ROOT)/fastjet		
 endif
 
 
 HDRS:= $(SRCS:.cxx=.h) 
 DHDR= FASTJETANLinkDef.h
-EINCLUDE += $(FASTJET)/include
+
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
