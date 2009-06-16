@@ -15,7 +15,9 @@
 //-------------------------------------------------------------------------
 
 #include "AliVEvent.h"
+#include "AliVVertex.h"
 #include <TList.h>
+#include <TObjArray.h>
 
 class AliMixedEvent : public AliVEvent {
 
@@ -38,8 +40,11 @@ public:
     virtual void Print(Option_t * /*option*/) const  {;} 
     // Specific Services
     virtual void AddEvent(AliVEvent* evt);
+    virtual void SetPrimaryVertex(AliVVertex* newVertex) {fMeanVertex = newVertex;}
+    AliVVertex* GetPrimaryVtx(){return fMeanVertex;}
     virtual void Reset();
     virtual void Init();
+    const AliVVertex* GetEventVertex(Int_t i) const;
     
     // Header
     virtual AliVHeader* GetHeader() const {return 0;}
@@ -86,11 +91,13 @@ public:
 
   // Primary vertex
     virtual const AliVVertex   *GetPrimaryVertex() const {return 0;}
+    virtual void ComputeVtx(TObjArray *vertices,Double_t *pos,Double_t *sig); 
 private:
     TList   fEventList;         //! List of Events
     Int_t   fNEvents;           //! Number of Events 
     Int_t   fNumberOfTracks;    //! Total number of tracks
     Int_t*  fNTracksCumul;      //! Cumulant
+    AliVVertex* fMeanVertex;    //! Mean vertex
     
     ClassDef(AliMixedEvent, 0)  // Container for mixed events
 };
