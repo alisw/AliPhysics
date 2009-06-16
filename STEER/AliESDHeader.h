@@ -13,6 +13,7 @@
 //-------------------------------------------------------------------------
 
 #include "AliVHeader.h"
+//#include "AliTriggerScalersRecordESD.h"
 
 class AliESDHeader: public AliVHeader {
 public:
@@ -30,6 +31,17 @@ public:
   void      SetBunchCrossNumber(UShort_t n) {fBunchCrossNumber=n;}
   void      SetPeriodNumber(UInt_t n) {fPeriodNumber=n;}
   void      SetTriggerCluster(UChar_t n) {fTriggerCluster = n;}
+
+//************Setters/Getters for Trigger Inputs and TriggerScalersRecordESD
+  void SetL0TriggerInputs(UInt_t n) {fL0TriggerInputs=n;}
+  void SetL1TriggerInputs(UInt_t n) {fL1TriggerInputs=n;}
+  void SetL2TriggerInputs(UShort_t n) {fL2TriggerInputs=n;}
+  UInt_t      GetL0TriggerInputs() const {return fL0TriggerInputs;}  
+  UInt_t      GetL1TriggerInputs() const {return fL1TriggerInputs;} 
+  UShort_t    GetL2TriggerInputs() const {return fL2TriggerInputs;} 
+//  void SetTriggerScalersRecord(AliTriggerScalersESD *scalerRun) {fTRiggerScalers.Add(sacler) }
+//  AliTriggerScalersRecordESD *GetTriggerScalersRecord() {return fTriggerScalers; }
+//**************************************************************************
 
   ULong64_t GetTriggerMask() const {return fTriggerMask;}
   UInt_t    GetOrbitNumber() const {return fOrbitNumber;}
@@ -53,7 +65,11 @@ private:
   Int_t        fEventNumberInFile; // Running Event count in the file
   UShort_t     fBunchCrossNumber;  // Bunch Crossing Number
   UChar_t      fTriggerCluster;    // Trigger cluster (mask)
-  
+  UInt_t       fL0TriggerInputs;   //L0 Trigger Inputs 
+  UInt_t       fL1TriggerInputs;   //L1 Trigger Inputs
+  UShort_t     fL2TriggerInputs;   //L2 Trigger Inputs
+//  AliTriggerScalersRecordESD *fTriggerScalers;   //Object containing the L0, L1 and L2 trigger counters of triggered classes in event
+
   ClassDef(AliESDHeader,3)
 };
 

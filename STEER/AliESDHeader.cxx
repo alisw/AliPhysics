@@ -29,6 +29,10 @@ ClassImp(AliESDHeader)
 AliESDHeader::AliESDHeader() :
   AliVHeader(),
   fTriggerMask(0),
+  fL0TriggerInputs(0),
+  fL1TriggerInputs(0),
+  fL2TriggerInputs(0),
+//  fTriggerScalers(0x0),
   fOrbitNumber(0),
   fTimeStamp(0),
   fEventType(0),
@@ -52,6 +56,10 @@ AliESDHeader::~AliESDHeader()
 AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   AliVHeader(header),
   fTriggerMask(header.fTriggerMask),
+  fL0TriggerInputs(header.fL0TriggerInputs),
+  fL1TriggerInputs(header.fL1TriggerInputs),
+  fL2TriggerInputs(header.fL2TriggerInputs),
+//  fTriggerScalers(header.fTriggerScalers),
   fOrbitNumber(header.fOrbitNumber),
   fTimeStamp(header.fTimeStamp),
   fEventType(header.fEventType),
@@ -72,6 +80,10 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
   if(this!=&header) {
     AliVHeader::operator=(header);
     fTriggerMask = header.fTriggerMask;
+    fL0TriggerInputs = header.fL0TriggerInputs;
+    fL1TriggerInputs = header.fL1TriggerInputs;
+    fL2TriggerInputs = header.fL2TriggerInputs;
+//    fTriggerScalers = header.fTriggerScalers;
     fOrbitNumber = header.fOrbitNumber;
     fTimeStamp = header.fTimeStamp;
     fEventType = header.fEventType;
@@ -106,6 +118,10 @@ void AliESDHeader::Reset()
 {
   // reset all data members
   fTriggerMask       = 0;
+  fL0TriggerInputs   = 0;
+  fL1TriggerInputs   = 0;
+  fL2TriggerInputs   = 0;
+//  fTriggerScalers    = 0;
   fOrbitNumber       = 0;
   fTimeStamp         = 0;
   fEventType         = 0;
