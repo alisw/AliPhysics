@@ -42,6 +42,7 @@ t->Exec();
 #include "TTree.h"
 #include "TStopwatch.h"
 #include "TParticle.h"
+#include "TDatabasePDG.h"
 
 //ALIROOT includes
 #include "AliMCEvent.h"

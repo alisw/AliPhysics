@@ -45,6 +45,7 @@ IMPORTANT FOR PROOF FAST PROTOTYPING ANALYSIS
 //ROOT includes
 #include "Rtypes.h"
 #include "TClonesArray.h"
+#include "TDatabasePDG.h"
 //ALIROOT includes
 #include "AliTrackReference.h"
 #include "AliMCInfo.h" 
