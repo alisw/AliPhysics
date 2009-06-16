@@ -397,14 +397,13 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
   
   AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
     
-  Int_t iN = iNumberOfInputTracks; //maximum number of tracks in AliFlowEventSimple
   Int_t iGoodTracks = 0;           //number of good tracks
   Int_t itrkN = 0;                 //track counter
   Int_t iSelParticlesPOI = 0;     //number of tracks selected for Diff
   Int_t iSelParticlesRP = 0;      //number of tracks selected for Int
 
   //normal loop
-  while (iGoodTracks < iN && itrkN < iNumberOfInputTracks) {
+  while (itrkN < iNumberOfInputTracks) {
     AliESDtrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
     //make new AliFLowTrackSimple
     AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
