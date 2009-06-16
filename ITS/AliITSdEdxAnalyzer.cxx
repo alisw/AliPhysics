@@ -224,7 +224,7 @@ Double_t AliITSdEdxAnalyzer::BetheBloch(const Float_t p, const Float_t m) const 
   Double_t dedxbb=0.;
   if(fBBmodel==0){
     Double_t betagamma=p/m;
-    Double_t conv=fDensity*1E6*fThickness/116.31*fMIP;
+    Double_t conv=fDensity*1E6*fThickness/116.24*fMIP;
     dedxbb=conv*AliExternalTrackParam::BetheBlochSolid(betagamma);
   }else if(fBBmodel==1){
     dedxbb=fMIP*AliITSpidESD::Bethe(p,m);
