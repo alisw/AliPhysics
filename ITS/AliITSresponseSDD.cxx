@@ -30,7 +30,8 @@
 #include <AliITSgeomTGeo.h>
 
 const Float_t AliITSresponseSDD::fgkTimeOffsetDefault = 54.30;
-const Float_t AliITSresponseSDD::fgkADC2keVDefault = 3.25;
+const Float_t AliITSresponseSDD::fgkADC2keVDefault = 3.34;
+const Float_t AliITSresponseSDD::fgkChargevsTimeDefault = 0.00355;
 const Float_t AliITSresponseSDD::fgkCarlosRXClockPeriod = 25.;
 ClassImp(AliITSresponseSDD)
 
@@ -38,7 +39,8 @@ ClassImp(AliITSresponseSDD)
 AliITSresponseSDD::AliITSresponseSDD():
 TObject(),
 fTimeOffset(fgkTimeOffsetDefault),
-fADC2keV(fgkADC2keVDefault){
+fADC2keV(fgkADC2keVDefault),
+fChargevsTime(fgkChargevsTimeDefault){
   // default constructor
   for(Int_t i=0; i<kNSDDmods;i++){
     fTimeZero[i]=fgkTimeOffsetDefault;

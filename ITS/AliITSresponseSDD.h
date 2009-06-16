@@ -73,8 +73,12 @@ class AliITSresponseSDD : public TObject {
   static Float_t DefaultTimeOffset() {return fgkTimeOffsetDefault;}
 
   virtual void SetADC2keV(Float_t conv){fADC2keV=conv;}
+  virtual void SetChargevsTime(Float_t slope){fChargevsTime=slope;}
   virtual Float_t GetADC2keV()const {return fADC2keV;}
-  static Float_t DefaulttADC2keV() {return fgkADC2keVDefault;}
+  virtual Float_t GetChargevsTime()const {return fChargevsTime;}
+
+  static Float_t DefaultADC2keV() {return fgkADC2keVDefault;}
+  static Float_t DefaultChargevsTime() {return fgkChargevsTimeDefault;}
 
   static Float_t GetCarlosRXClockPeriod() {return fgkCarlosRXClockPeriod;}
  
@@ -89,6 +93,7 @@ class AliITSresponseSDD : public TObject {
 
   static const Float_t fgkTimeOffsetDefault;   // default for fTimeOffset
   static const Float_t fgkADC2keVDefault;      // default for fADC2keV
+  static const Float_t fgkChargevsTimeDefault; // default for fChargevsTime
   static const Float_t fgkCarlosRXClockPeriod; // clock period for CarlosRX
 
   Float_t  fTimeOffset;             // Time offset due to electronic delays 
@@ -96,13 +101,14 @@ class AliITSresponseSDD : public TObject {
   Float_t  fTimeZero[kNSDDmods];    // Time Zero for each module
   Float_t  fDeltaVDrift[kNSDDmods]; // Vdrift correction (um/ns) for each module
   Float_t  fADC2keV;                // Conversion factor from ADC to keV
-
+  Float_t  fChargevsTime;           // Correction for zero suppression effect
+  
  private:
 
   AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
   AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
-  ClassDef(AliITSresponseSDD,17) 
+  ClassDef(AliITSresponseSDD,18) 
      
     };
 #endif

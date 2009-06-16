@@ -250,7 +250,8 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	y=trk[1];
 	z=trk[2]; 
 
-	q/=rsdd->GetADC2keV();  //to have MPV 1 MIP = 86.4 KeV
+	q/=rsdd->GetADC2keV();
+	q+=(driftTime*rsdd->GetChargevsTime()); // correction for zero supp.
 	if(cal-> IsAMAt20MHz()) q*=2.; // account for 1/2 sampling freq.
 	if(q<repa->GetMinClusterChargeSDD()) continue; // remove noise clusters
 
