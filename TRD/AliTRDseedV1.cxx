@@ -474,32 +474,35 @@ Float_t AliTRDseedV1::GetdQdl(Int_t ic, Float_t *dl) const
 // Author : Alex Bercuci <A.Bercuci@gsi.de>
 //
   Float_t dq = 0.;
-  if(fClusters[ic]){ 
-    if(!fClusters[ic]->IsInChamber()) return 0.;
+  // check whether both clusters are inside the chamber
+  Bool_t hasClusterInChamber = kFALSE;
+  if(fClusters[ic] && fClusters[ic]->IsInChamber()){
+    hasClusterInChamber = kTRUE;
     dq += TMath::Abs(fClusters[ic]->GetQ());
+  }else if(fClusters[ic+kNtb] && fClusters[ic+kNtb]->IsInChamber()){
+    hasClusterInChamber = kTRUE;
+    dq += TMath::Abs(fClusters[ic+kNtb]->GetQ());
   }
-  if(fClusters[ic+kNtb]) dq += TMath::Abs(fClusters[ic+kNtb]->GetQ());
+  if(!hasClusterInChamber) return 0.;
   if(dq<1.e-3) return 0.;
-  
 
   Double_t dx = fdX;
   if(ic-1>=0 && ic+1<kNtb){
     Float_t x2(0.), x1(0.);
-    // try to estimate upper radial position
-    if(fClusters[ic-1]) x2 = fClusters[ic-1]->GetX(); 
-    else if(fClusters[ic-1+kNtb]) x2 = fClusters[ic-1+kNtb]->GetX(); 
-    else if(fClusters[ic]) x2 = fClusters[ic]->GetX()+fdX;
+    // try to estimate upper radial position (find the cluster which is inside the chamber)
+    if(fClusters[ic-1] && fClusters[ic-1]->IsInChamber()) x2 = fClusters[ic-1]->GetX(); 
+    else if(fClusters[ic-1+kNtb] && fClusters[ic-1+kNtb]->IsInChamber()) x2 = fClusters[ic-1+kNtb]->GetX(); 
+    else if(fClusters[ic] && fClusters[ic]->IsInChamber()) x2 = fClusters[ic]->GetX()+fdX;
     else x2 = fClusters[ic+kNtb]->GetX()+fdX;
-    // try to estimate lower radial position
-    if(fClusters[ic+1]) x1 = fClusters[ic+1]->GetX();
-    else if(fClusters[ic+1+kNtb]) x1 = fClusters[ic+1+kNtb]->GetX();
-    else if(fClusters[ic]) x1 = fClusters[ic]->GetX()-fdX;
+    // try to estimate lower radial position (find the cluster which is inside the chamber)
+    if(fClusters[ic+1] && fClusters[ic+1]->IsInChamber()) x1 = fClusters[ic+1]->GetX();
+    else if(fClusters[ic+1+kNtb] && fClusters[ic+1+kNtb]->IsInChamber()) x1 = fClusters[ic+1+kNtb]->GetX();
+    else if(fClusters[ic] && fClusters[ic]->IsInChamber()) x1 = fClusters[ic]->GetX()-fdX;
     else x1 = fClusters[ic+kNtb]->GetX()-fdX;
 
     dx = .5*(x2 - x1);
   }
   dx *= TMath::Sqrt(1. + fYfit[1]*fYfit[1] + fZref[1]*fZref[1]);
-
   if(dl) (*dl) = dx;
   return dq/dx;
 }
@@ -1654,3 +1657,4 @@ Bool_t AliTRDseedV1::IsEqual(const TObject *o) const
   }
   return kTRUE;
 }
+
