@@ -27,20 +27,8 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliAnalysisTaskJetsCDF.cxx AliCdfJetFinder.cxx AliCdfJetHeader.cxx \
 	AliEventShape.cxx
 
-
-ifneq ($(FASTJET),)
-	SRCS+= AliFastJetFinder.cxx AliFastJetHeaderV1.cxx \
-	AliSISConeJetFinder.cxx AliSISConeJetHeader.cxx
-endif
-
-
 HDRS:= $(SRCS:.cxx=.h) 
 DHDR= JETANLinkDef.h
-
-ifneq ($(FASTJET),)
-	EINCLUDE += $(FASTJET)/include
-	CINTFLAGS += -DWITHFASTJET
-endif
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
