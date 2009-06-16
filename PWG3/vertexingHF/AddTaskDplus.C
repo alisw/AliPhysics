@@ -23,14 +23,14 @@ AliAnalysisTaskSEDplus *AddTaskDplus()
 
   //                                                                                                                                    
   // Create containers for input/output                                                                                                 
-  AliAnalysisDataContainer *cinput = mgr->CreateContainer("cinput",TChain::Class(),
+  AliAnalysisDataContainer *cinputDplus = mgr->CreateContainer("cinputDplus",TChain::Class(),
                                                           AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("coutput",TList::Class(),
+  AliAnalysisDataContainer *coutputDplus = mgr->CreateContainer("coutputDplus",TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,
                                                            "InvMassDplus.root");
   mgr->ConnectInput(dplusTask,0,mgr->GetCommonInputContainer());
 
-  mgr->ConnectOutput(dplusTask,1,coutput);
+  mgr->ConnectOutput(dplusTask,1,coutputDplus);
 
   return dplusTask;
 }
