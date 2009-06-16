@@ -77,10 +77,30 @@ void RunAnalysisAODVertexingHF()
       parFile="CORRFW.par"; parFile.Prepend(parDir.Data());
       gProof->UploadPackage(parFile.Data());
       gProof->EnablePackage("CORRFW");
+      // --- Enable the PWG3base Package
+      parFile="PWG3base.par"; parFile.Prepend(parDir.Data());
+      gProof->UploadPackage(parFile.Data());
+      gProof->EnablePackage("PWG3base");
       // --- Enable the PWG3vertexingHF Package
       parFile="PWG3vertexingHF.par"; parFile.Prepend(parDir.Data());
       gProof->UploadPackage(parFile.Data());
       gProof->EnablePackage("PWG3vertexingHF");
+      // --- Enable the JETAN Package
+      parFile="JETAN.par"; parFile.Prepend(parDir.Data());
+      gProof->UploadPackage(parFile.Data());
+      gProof->EnablePackage("JETAN");
+      // --- Enable the PWG3muon Package
+      parFile="PWG3muon.par"; parFile.Prepend(parDir.Data());
+      gProof->UploadPackage(parFile.Data());
+      gProof->EnablePackage("PWG3muon");
+      // --- Enable the PWG4PartCorrBase Package
+      parFile="PWG4PartCorrBase.par"; parFile.Prepend(parDir.Data());
+      gProof->UploadPackage(parFile.Data());
+      gProof->EnablePackage("PWG4PartCorrBase");
+      // --- Enable the PWG4PartCorrDep Package
+      parFile="PWG4PartCorrDep.par"; parFile.Prepend(parDir.Data());
+      gProof->UploadPackage(parFile.Data());
+      gProof->EnablePackage("PWG4PartCorrDep");
     }
     gProof->ShowEnabledPackages(); // show a list of enabled packages
   }
@@ -146,9 +166,9 @@ void RunAnalysisAODVertexingHF()
   //gROOT->LoadMacro(taskName.Data());
   //AliAnalysisTaskSESelectHF *seleTask = AddTaskSelectHF();
 
-  //taskName="AddTaskBkgLikeSign.C"; taskName.Prepend(loadMacroPath.Data());
-  //gROOT->LoadMacro(taskName.Data());
-  //AliAnalysisTaskSEBkgLikeSignJPSI *lsTask = AddTaskBkgLikeSign();
+  taskName="AddTaskBkgLikeSign.C"; taskName.Prepend(loadMacroPath.Data());
+  gROOT->LoadMacro(taskName.Data());
+  AliAnalysisTaskSEBkgLikeSignJPSI *lsTask = AddTaskBkgLikeSign();
 
   //taskName="AddTaskBtoJPSItoEle.C"; taskName.Prepend(loadMacroPath.Data());
   //gROOT->LoadMacro(taskName.Data());
@@ -162,9 +182,9 @@ void RunAnalysisAODVertexingHF()
   //gROOT->LoadMacro(taskName.Data());
   //AliCFHeavyFlavourTaskMultiVar *cfmvTask = AddTaskCFMultiVar();
 
-  //taskName="AddTaskMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
-  //gROOT->LoadMacro(taskName.Data());
-  //AliCFHeavyFlavourTaskMultiVarMultiStep *cfmvmsTask = AddTaskCFMultiVarMultiStep();
+  taskName="AddTaskMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
+  gROOT->LoadMacro(taskName.Data());
+  AliCFHeavyFlavourTaskMultiVarMultiStep *cfmvmsTask = AddTaskCFMultiVarMultiStep();
 
 
   //-------------------------------------------------------------------
