@@ -226,9 +226,9 @@ Bool_t AliTriggerRunScalers::ConsistencyCheck()
 {
 
 UInt_t LOCB_2, LOCA_2, L1CB_2, L1CA_2, L2CB_2, L2CA_2, LOCB_1, LOCA_1, L1CB_1, L1CA_1, L2CB_1, L2CA_1;
-char *LOCBstat = "NULL", *LOCAstat = "NULL", *L1CBstat = "NULL", *L1CAstat = "NULL", *L2CBstat = "NULL", *L2CAstat = "NULL";
+Bool_t increase0B=0, increase0A=0, increase1B=0,  increase1A=0, increase2B=0, increase2A=0;
+Bool_t overflow0B=0, overflow0A=0, overflow1B=0,  overflow1A=0, overflow2B=0, overflow2A=0;
 Int_t position = fScalersRecord.GetEntriesFast()-1;
-
 if (position == 0) return 1;
 
 AliTriggerScalersRecord* Scalers2 = (AliTriggerScalersRecord*)fScalersRecord.At(position);
@@ -254,63 +254,59 @@ AliTriggerScalers* counters1 = (AliTriggerScalers*)ScalersArray1->At(i);
 	L2CB_1 = counters1->GetL2CB();
 	L2CA_1 = counters1->GetL2CA();
 
-if ( LOCB_2 > LOCB_1 ) LOCBstat = "increase";
-else if ( LOCB_2 < LOCB_1 && (LOCB_1 - LOCB_2) > 1000000000) LOCBstat = "overflow";
+UInt_t const max1 = 4294967295ul;  //32bit counters overflow after 4294967295
+UInt_t const max2 = 1000000000ul;  //when counters overflow they seem to be decreasing. Assume decrease cannot be smaller than max2.
+
+if ( LOCB_2 > LOCB_1 ) increase0B=1;
+else if ( LOCB_2 < LOCB_1 && (LOCB_1 - LOCB_2) > max2) overflow0B=1;
 else return 0;
 
-if ( LOCA_2 > LOCA_1 ) LOCAstat = "increase";
-else if ( LOCA_2 < LOCA_1 && (LOCA_1 - LOCA_2) > 1000000000) LOCAstat = "overflow";
+if ( LOCA_2 > LOCA_1 ) increase0A=1;
+else if ( LOCA_2 < LOCA_1 && (LOCA_1 - LOCA_2) > max2) overflow0A=1;
 else return 0;
 
-if ( L1CB_2 > L1CB_1 ) L1CBstat = "increase";
-else if ( L1CB_2 < L1CB_1 && (L1CB_1 - L1CB_2) > 1000000000) L1CBstat = "overflow";
+if ( L1CB_2 > L1CB_1 ) increase1B=1;
+else if ( L1CB_2 < L1CB_1 && (L1CB_1 - L1CB_2) > max2) overflow1B=1;
 else return 0;
 
-if ( L1CA_2 > L1CA_1 ) L1CAstat = "increase";
-else if ( L1CA_2 < L1CA_1 && (L1CA_1 - L1CA_2) > 1000000000) L1CAstat = "overflow";
+if ( L1CA_2 > L1CA_1 ) increase1A=1;
+else if ( L1CA_2 < L1CA_1 && (L1CA_1 - L1CA_2) > max2) overflow1A=1;
 else return 0;
 
-if ( L2CB_2 > L2CB_1 ) L2CBstat = "increase";
-else if ( L2CB_2 < L2CB_1 && (L2CB_1 - L2CB_2) > 1000000000) L2CBstat = "overflow";
+if ( L2CB_2 > L2CB_1 ) increase2B=1;
+else if ( L2CB_2 < L2CB_1 && (L2CB_1 - L2CB_2) > max2) overflow2B=1;
 else return 0;
 
-if ( L2CA_2 > L2CA_1 ) L2CAstat = "increase";
-else if ( L2CA_2 < L2CA_1 && (L2CA_1 - L2CA_2) > 1000000000) L2CAstat = "overflow";
+if ( L2CA_2 > L2CA_1 ) increase2A=1;
+else if ( L2CA_2 < L2CA_1 && (L2CA_1 - L2CA_2) > max2) overflow2A=1;
 else return 0;
 
 
-if ( (LOCB_2 - LOCB_1) < (LOCA_2 - LOCA_1) && LOCBstat == "increase" && LOCAstat == "increase" ) return 0;
-else if ( (4294967295ul - LOCB_1 + LOCB_2 ) < (LOCA_2 - LOCA_1) && LOCBstat == "overflow" && LOCAstat == "increase" ) return 0;
-else if ( (LOCB_2 - LOCB_1) < (4294967295ul - LOCA_1 + LOCA_2) && LOCBstat == "increase" && LOCAstat == "overflow" ) return 0;
-else if ( (4294967295ul - LOCB_1 + LOCB_2 ) < (4294967295ul - LOCA_1 + LOCA_2) && LOCBstat == "overflow" && LOCAstat == "overflow" ) return 0;
+if ( (LOCB_2 - LOCB_1) < (LOCA_2 - LOCA_1) && increase0B && increase0A ) return 0;
+else if ( (max1 - LOCB_1 + LOCB_2 ) < (LOCA_2 - LOCA_1) && overflow0B && increase0A ) return 0;
+else if ( (LOCB_2 - LOCB_1) < (max1 - LOCA_1 + LOCA_2) && increase0B && overflow0A ) return 0;
+else if ( (max1 - LOCB_1 + LOCB_2 ) < (max1 - LOCA_1 + LOCA_2) && overflow0B && overflow0A ) return 0;
 
-if ( (LOCA_2 - LOCA_1) < (L1CB_2 - L1CB_1) && LOCAstat == "increase" && L1CBstat == "increase" ) return 0;
-else if ( (4294967295ul - LOCA_1 + LOCA_2 ) < (L1CB_2 - L1CB_1) && LOCAstat == "overflow" && L1CBstat == "increase" ) return 0;
-else if ( (LOCA_2 - LOCA_1) < (4294967295ul - L1CB_1 + L1CB_2) && LOCAstat == "increase" && L1CBstat == "overflow" ) return 0;
-else if ( (4294967295ul - LOCA_1 + LOCA_2 ) < (4294967295ul - L1CB_1 + L1CB_2) && LOCAstat == "overflow" && L1CBstat == "overflow" ) return 0;
+if ( (LOCA_2 - LOCA_1) < (L1CB_2 - L1CB_1) && increase0A && increase1B ) return 0;
+else if ( (max1 - LOCA_1 + LOCA_2 ) < (L1CB_2 - L1CB_1) && overflow0A && increase1B ) return 0;
+else if ( (LOCA_2 - LOCA_1) < (max1 - L1CB_1 + L1CB_2) && increase0A && overflow1B ) return 0;
+else if ( (max1 - LOCA_1 + LOCA_2 ) < (max1 - L1CB_1 + L1CB_2) && overflow0A && overflow1B ) return 0;
 
-if ( (L1CB_2 - L1CB_1) < (L1CA_2 - L1CA_1) && L1CBstat == "increase" && L1CAstat == "increase" ) return 0;
-else if ( (4294967295ul - L1CB_1 + L1CB_2 ) < (L1CA_2 - L1CA_1) && L1CBstat == "overflow" && L1CAstat == "increase" ) return 0;
-else if ( (L1CB_2 - L1CB_1) < (4294967295ul - L1CA_1 + L1CA_2) && L1CBstat == "increase" && L1CAstat == "overflow" ) return 0;
-else if ( (4294967295ul - L1CB_1 + L1CB_2 ) < (4294967295ul - L1CA_1 + L1CA_2) && L1CBstat == "overflow" && L1CAstat == "overflow" ) return 0;
+if ( (L1CB_2 - L1CB_1) < (L1CA_2 - L1CA_1) && increase1B && increase1A ) return 0;
+else if ( (max1 - L1CB_1 + L1CB_2 ) < (L1CA_2 - L1CA_1) && overflow1B && increase1A ) return 0;
+else if ( (L1CB_2 - L1CB_1) < (max1 - L1CA_1 + L1CA_2) && increase1B && overflow1A ) return 0;
+else if ( (max1 - L1CB_1 + L1CB_2 ) < (max1 - L1CA_1 + L1CA_2) && overflow1B && overflow1A ) return 0;
 
-if ( (L1CA_2 - L1CA_1) < (L2CB_2 - L2CB_1) && L1CAstat == "increase" && L2CBstat == "increase" ) return 0;
-else if ( (4294967295ul- L1CA_1 + L1CA_2 ) < (L2CB_2 - L2CB_1) && L1CAstat == "overflow" && L2CBstat == "increase" ) return 0;
-else if ( (L1CA_2 - L1CA_1) < (4294967295ul- L2CB_1 + L2CB_2) && L1CAstat == "increase" && L2CBstat == "overflow" ) return 0;
-else if ( (4294967295ul- L1CA_1 + L1CA_2 ) < (4294967295ul- L2CB_1 + L2CB_2) && L1CAstat == "overflow" && L2CBstat == "overflow" ) return 0;
+if ( (L1CA_2 - L1CA_1) < (L2CB_2 - L2CB_1) && increase1A && increase2B ) return 0;
+else if ( (max1 - L1CA_1 + L1CA_2 ) < (L2CB_2 - L2CB_1) && overflow1A && increase2B ) return 0;
+else if ( (L1CA_2 - L1CA_1) < (max1 - L2CB_1 + L2CB_2) && increase1A && overflow2B ) return 0;
+else if ( (max1 - L1CA_1 + L1CA_2 ) < (max1 - L2CB_1 + L2CB_2) && overflow1A && overflow2B ) return 0;
 
-if ( (L2CB_2 - L2CB_1) < (L2CA_2 - L2CA_1) && L2CBstat == "increase" && L2CAstat == "increase" ) return 0;
-else if ( (4294967295ul- L2CB_1 + L2CB_2 ) < (L2CA_2 - L2CA_1) && L2CBstat == "overflow" && L2CAstat == "increase" ) return 0;
-else if ( (L2CB_2 - L2CB_1) < (4294967295ul- L2CA_1 + L2CA_2) && L2CBstat == "increase" && L2CAstat == "overflow" ) return 0;
-else if ( (4294967295ul- L2CB_1 + L2CB_2 ) < (4294967295ul- L2CA_1 + L2CA_2) && L2CBstat == "overflow" && L2CAstat == "overflow" ) return 0;
+if ( (L2CB_2 - L2CB_1) < (L2CA_2 - L2CA_1) && increase2B && increase2A ) return 0;
+else if ( (max1 - L2CB_1 + L2CB_2 ) < (L2CA_2 - L2CA_1) && overflow2B && increase2A ) return 0;
+else if ( (L2CB_2 - L2CB_1) < (max1 - L2CA_1 + L2CA_2) && increase2B && overflow2A ) return 0;
+else if ( (max1 - L2CB_1 + L2CB_2 ) < (max1 - L2CA_1 + L2CA_2) && overflow2B && overflow2A ) return 0;
 
-
-
-
-cout<<"LOCB_1 =" << LOCB_1 <<"  LOCB_2="<<LOCB_2<<endl;
-if ( L1CB_2 < L1CB_1 || L1CA_2 < L1CA_1 || L2CB_2 < L2CB_1 || L2CA_2 < L2CA_1) return 0;
-else if ( LOCB_2 < LOCB_1 && ((LOCB_1 - LOCB_2) < 1000000000) ) return 0;//verify this number with Roman!
- 
 }
 
 return 1;
