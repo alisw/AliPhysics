@@ -977,7 +977,7 @@ void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
     /// make QA for rawdata
 
-  if ( ! GetRawsData(0) )
+  if ( ! GetRawsData(kTriggerScalersBP) )
     InitRaws() ;
 
   if ( ! fIsInitRaws ) {
@@ -1115,7 +1115,7 @@ void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 	/// Fill histograms from treeR
 	
   // Check id histograms already created for this Event Specie
-  if ( ! GetRecPointsData(0) )
+  if ( ! GetRecPointsData(kTrackerNumberOfClustersPerChamber) )
     InitRecPoints() ;
  
   if (fIsInitRecPointsTracker) MakeRecPointsTracker(clustersTree);
@@ -1229,7 +1229,7 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
   /// make QA data from ESDs
   
   // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(0) )
+  if ( ! GetESDsData(kESDnTracks) )
     InitESDs() ;
  
   if ( ! fIsInitESDs ) {
