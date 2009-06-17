@@ -183,12 +183,16 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
   // Display trigger histos in a more user friendly way
   DisplayTriggerInfo(task);
   
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+  {
     if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
       continue ;
     SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
     if ( task == AliQAv1::kRAWS && fTrackerDataMaker ) 
       {
+
+        if ( !GetRawsData(kTrackerBusPatchOccupancy) ) continue;
+        
         TIter next(list[specie]);
         TObject* o;
         Bool_t alreadyThere(kFALSE);
@@ -223,6 +227,8 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
     // Normalize RecPoints histos
     if ( task == AliQAv1::kRECPOINTS ) {
       
+      if (!GetRecPointsData(kTrackerClusterChargePerChMean)) continue;
+
       TH1* hTrackerClusterChargePerChMean = GetRecPointsData(kTrackerClusterChargePerChMean);
       TH1* hTrackerClusterChargePerChSigma = GetRecPointsData(kTrackerClusterChargePerChSigma);
       TH1* hTrackerClusterMultiplicityPerChMean = GetRecPointsData(kTrackerClusterMultiplicityPerChMean);
@@ -275,6 +281,8 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
     
     // Normalize ESD histos
     if ( task == AliQAv1::kESDS ) {
+      
+      if (!GetESDsData(kESDnClustersPerTrack)) continue;
       
       Double_t nTracks = GetESDsData(kESDnClustersPerTrack)->GetEntries();
       if (nTracks <= 0) continue;
@@ -1340,6 +1348,17 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQAv1::TASKINDEX_t task)
 
   if(task!=AliQAv1::kRECPOINTS && task!=AliQAv1::kRAWS) return;
 
+  // check we get histograms, otherwise return right now
+  if ( task == AliQAv1::kRECPOINTS )
+  {
+    if ( !GetRecPointsData(kTriggerDigitsBendPlane) ) return;
+  }
+  
+  if ( task == AliQAv1::kRAWS ) 
+  {
+    if ( !GetRawsData(kTriggerScalersBP) ) return;
+  }
+  
   AliMUONTriggerDisplay triggerDisplay;
   
   TH3F* histoStrips=0x0;
