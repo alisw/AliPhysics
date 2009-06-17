@@ -198,19 +198,22 @@ Event::AddParticle(Particle* aParticle)
 	if (((*tPLIter).GetMass() == aParticle->GetMass()) &&
 	    ((*tPLIter).GetI3() == aParticle->GetI3()) &&
 	    ((*tPLIter).GetBarionN() == aParticle->GetBarionN()) &&
-	    ((*tPLIter).GetStrangeness() == aParticle->GetStrangeness()))
-	  break;
-	if ((*tPLIter).GetMass() < aParticle->GetMass())
-	  break;
-	else if ((*tPLIter).GetMass() == aParticle->GetMass())
-	  if ((*tPLIter).GetI3() < aParticle->GetI3())
-	    break;
-	  else if ((*tPLIter).GetI3() == aParticle->GetI3())
-	    if ((*tPLIter).GetBarionN() < aParticle->GetBarionN())
-	      break;
-	    else if ((*tPLIter).GetBarionN() == aParticle->GetBarionN())
-	      if ((*tPLIter).GetStrangeness() < aParticle->GetStrangeness())
-		break;
+	    ((*tPLIter).GetStrangeness() == aParticle->GetStrangeness())) {
+	  break; }
+	if ((*tPLIter).GetMass() < aParticle->GetMass()) {
+	  break; }
+	else if ((*tPLIter).GetMass() == aParticle->GetMass()) {
+	  if ((*tPLIter).GetI3() < aParticle->GetI3()) {
+	    break; }
+	  else if ((*tPLIter).GetI3() == aParticle->GetI3()) {
+	    if ((*tPLIter).GetBarionN() < aParticle->GetBarionN()) {
+	      break; }
+	    else if ((*tPLIter).GetBarionN() == aParticle->GetBarionN()) {
+	      if ((*tPLIter).GetStrangeness() < aParticle->GetStrangeness()) {
+		break; }
+	    }
+	  }
+	}
 	tPLIter++;
       }
     mParticles.insert(tPLIter, *aParticle);
@@ -294,7 +297,7 @@ Event::DecayParticles()
   //  InitParticleScan();
   while ((tFather = GetParticleOfCount(tCount))) 
     {
-      if (tFather->GetParticleType()->GetGamma() >= 0.0)
+      if (tFather->GetParticleType()->GetGamma() >= 0.0) {
 	if ((tFather->GetParticleType()->GetTable()) && (((DecayTable *) tFather->GetParticleType()->GetTable())->GetChannelCount()+1 > 0))
 	  {
 	    tDecayer->DecayParticle(tFather, &tPart1, &tPart2, &tPart3);
@@ -336,6 +339,7 @@ Event::DecayParticles()
 	else
 	  {
 	  }
+      }
       tCount++;
     }
 
