@@ -200,7 +200,8 @@ Double32_t * AliESDZDC::GetZNCCentroid()
   }
   if(den!=0){
     // ATTENTION! Needs to be changed if E_beam(A-A) != 2.76 A TeV !!!!
-    c = fZDCN1Energy/2760.;
+    Float_t nSpecn = fZDCN1Energy/2760.;
+    c = 1.89358-0.71262/(nSpecn+0.71789);
     fZNCCentrCoord[0] = c*numX/den;
     fZNCCentrCoord[1] = c*numY/den;
   }
@@ -215,17 +216,19 @@ Double32_t * AliESDZDC::GetZNACentroid()
   Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
   Float_t numX=0., numY=0., den=0.;
   Float_t c, alpha=0.395, w;
+
   for(Int_t i=0; i<4; i++){
-      if(fZN2TowerEnergy[i+1]<0.) fZN2TowerEnergy[i+1]=0.;
-      w = TMath::Power(fZN2TowerEnergy[i+1], alpha);
-      numX += x[i]*w;
-      numY += y[i]*w;
-      den += w;
+    if(fZN2TowerEnergy[i+1]<0.) fZN2TowerEnergy[i+1]=0.;
+    w = TMath::Power(fZN2TowerEnergy[i+1], alpha);
+    numX += x[i]*w;
+    numY += y[i]*w;
+    den += w;
   }
   //
   if(den!=0){
     // ATTENTION! Needs to be changed if E_beam(A-A) != 2.76 A TeV !!!!
-    c = fZDCN2Energy/2760.;
+    Float_t nSpecn = fZDCN2Energy/2760.;
+    c = 1.89358-0.71262/(nSpecn+0.71789);
     fZNACentrCoord[0] = c*numX/den;
     fZNACentrCoord[1] = c*numY/den;
   }
