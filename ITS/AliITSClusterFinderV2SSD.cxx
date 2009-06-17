@@ -1780,11 +1780,11 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	    for (Int_t ilab=0;ilab<3;ilab++) milab[ilab] = neg[j].GetLabel(ilab);	  
 	    CheckLabels2(milab);
 	    milab[3]=( j << 10 ) + idet; // pos|neg|det
-	    Int_t info[3] = {0.,neg[j].GetNd(),fNlayer[fModule]};
+      	    Int_t info[3]={0,(Int_t)neg[j].GetNd(),fNlayer[fModule]};
 
-	lp[2]=0.0022*0.0022;  //SigmaY2
-	lp[3]=0.110*0.110;  //SigmaZ2
-	lp[5]=-0.00012; // out-of-diagonal element of covariance matrix
+	    lp[2]=0.0022*0.0022;  //SigmaY2
+	    lp[3]=0.110*0.110;  //SigmaZ2
+	    lp[5]=-0.00012; // out-of-diagonal element of covariance matrix
  	
 	    AliITSRecPoint * cl2;
 	    if(clusters){
@@ -1833,7 +1833,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	for (Int_t ilab=0;ilab<3;ilab++) milab[ilab] = pos[i].GetLabel(ilab);	  
 	CheckLabels2(milab);
 	milab[3]=( (i<<10) << 10 ) + idet; // pos|neg|det
-	Int_t info[3] = {pos[i].GetNd(),0.,fNlayer[fModule]};
+	Int_t info[3] = {(Int_t)pos[i].GetNd(),0,fNlayer[fModule]};
 
 	lp[2]=0.031*0.031;  //SigmaY2
 	lp[3]=1.15*1.15;  //SigmaZ2
@@ -1882,7 +1882,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	for (Int_t ilab=0;ilab<3;ilab++) milab[ilab] = neg[j].GetLabel(ilab);	  
 	CheckLabels2(milab);
 	milab[3]=( j << 10 ) + idet; // pos|neg|det
-	Int_t info[3] = {0.,neg[j].GetNd(),fNlayer[fModule]};
+	Int_t info[3] = {0,(Int_t)neg[j].GetNd(),fNlayer[fModule]};
 
 	lp[2]=0.0085*0.0085;  //SigmaY2
 	lp[3]=1.15*1.15;  //SigmaZ2
