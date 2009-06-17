@@ -42,7 +42,8 @@ AliMixedEvent::AliMixedEvent() :
     fEventList(),
     fNEvents(0),       
     fNumberOfTracks(0),
-    fNTracksCumul(0)
+    fNTracksCumul(0),
+    fMeanVertex(0)
 {
     // Default constructor
 }
@@ -52,7 +53,8 @@ AliMixedEvent::AliMixedEvent(const AliMixedEvent& Evnt) :
     fEventList(),
     fNEvents(0),
     fNumberOfTracks(0),
-    fNTracksCumul(0)
+    fNTracksCumul(0),
+    fMeanVertex(0)
 { } // Copy constructor
 
 AliMixedEvent& AliMixedEvent::operator=(const AliMixedEvent& vEvnt)

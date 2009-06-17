@@ -26,6 +26,7 @@ AliGenPythiaEventHeader::AliGenPythiaEventHeader():
     fNUQJets(0), 
     fXJet(-1.),
     fYJet(-1.),
+    fInMediumLength(0.),
     fPtHard(0.) 
 {
 // Default Constructor
@@ -45,6 +46,7 @@ AliGenPythiaEventHeader::AliGenPythiaEventHeader(const char* name):
     fNUQJets(0), 
     fXJet(-1.),
     fYJet(-1.),
+    fInMediumLength(0.),
     fPtHard(0.) 
 {
 // Constructor

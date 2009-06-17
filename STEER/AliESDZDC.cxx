@@ -27,8 +27,6 @@
 
 ClassImp(AliESDZDC)
 
-//Float_t funCParCentr(const Int_t n) {return 1.8936-0.7126/(n + 0.7179);}
-
 //______________________________________________________________________________
 AliESDZDC::AliESDZDC() :
   TObject(),
@@ -70,7 +68,8 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
   fZDCPartSideA(zdc.fZDCPartSideA),
   fZDCPartSideC(zdc.fZDCPartSideC),
   fImpactParameter(zdc.fImpactParameter),
-  fImpactParamSideA(zdc.fImpactParamSideC),
+  fImpactParamSideA(zdc.fImpactParamSideA),
+  fImpactParamSideC(zdc.fImpactParamSideC),
   fESDQuality(zdc.fESDQuality)
 {
   // copy constructor
@@ -191,7 +190,6 @@ Double32_t * AliESDZDC::GetZNCCentroid()
   Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
   Float_t numX=0., numY=0., den=0.;
   Float_t c, alpha=0.395, w;
-  TF1 * fun = new TF1("fun","1.89358-0.71262/(x+0.71789)",0.,100.);
   //
   for(Int_t i=0; i<4; i++){
     if(fZN1TowerEnergy[i+1]<0.) fZN1TowerEnergy[i+1]=0.;
@@ -217,13 +215,12 @@ Double32_t * AliESDZDC::GetZNACentroid()
   Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
   Float_t numX=0., numY=0., den=0.;
   Float_t c, alpha=0.395, w;
-  TF1 * fun = new TF1("fun","1.89358-0.71262/(x+0.71789)",0.,100.);
   for(Int_t i=0; i<4; i++){
-    if(fZN2TowerEnergy[i+1]<0.) fZN2TowerEnergy[i+1]=0.;
-    w = TMath::Power(fZN2TowerEnergy[i+1], alpha);
-    numX += x[i]*w;
-    numY += y[i]*w;
-    den += w;
+      if(fZN2TowerEnergy[i+1]<0.) fZN2TowerEnergy[i+1]=0.;
+      w = TMath::Power(fZN2TowerEnergy[i+1], alpha);
+      numX += x[i]*w;
+      numY += y[i]*w;
+      den += w;
   }
   //
   if(den!=0){
