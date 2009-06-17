@@ -95,6 +95,7 @@ AliITSMisAligner::AliITSMisAligner():
 
 //________________________________________________________________________
 AliITSMisAligner::AliITSMisAligner(const AliITSMisAligner &mAligner):
+    AliMisAligner(),
     fRnd(mAligner.fRnd),
     fInd(0),
     fAlignObjArray(mAligner.fAlignObjArray),
@@ -117,6 +118,8 @@ AliITSMisAligner::AliITSMisAligner(const AliITSMisAligner &mAligner):
     //
     // copy constructor
     //
+
+  SetMisalType(mAligner.GetMisalType());
 }
 
 //________________________________________________________________________
