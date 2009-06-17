@@ -1162,6 +1162,8 @@ Bool_t AliTRDdigitizer::ConvertSignals(Int_t det, AliTRDarraySignal *signals)
     if (!Signal2ADC(det,signals)) {
       return kFALSE;
     }
+    // Run digital processing for digits
+    RunDigitalProcessing(det);
   }
 
   // Compress the arrays
@@ -1307,9 +1309,6 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
 
     } // for: col
   } // for: row
-
-  // Run the digital processing in the MCM
-  RunDigitalProcessing(digits, det);
 
   return kTRUE;
 
@@ -1559,6 +1558,9 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
     fSDigitsManager->RemoveDigits(det);
     fSDigitsManager->RemoveDictionaries(det);
 
+    // Run digital processing
+    RunDigitalProcessing(det);
+
     // Compress the arrays
     CompressOutputArrays(det);
 
@@ -1777,7 +1779,7 @@ Int_t AliTRDdigitizer::ExB(Float_t vdrift, Double_t driftlength, Double_t &lCol)
 }
 
 //_____________________________________________________________________________
-void AliTRDdigitizer::RunDigitalProcessing(AliTRDarrayADC *digits, Int_t det)
+void AliTRDdigitizer::RunDigitalProcessing(Int_t det)
 {
   //
   // Run the digital processing in the TRAP
@@ -1787,6 +1789,10 @@ void AliTRDdigitizer::RunDigitalProcessing(AliTRDarrayADC *digits, Int_t det)
 
   //Create and initialize the mcm object 
   AliTRDmcmSim* mcmfast = new AliTRDmcmSim(); 
+
+  AliTRDarrayADC *digits = fDigitsManager->GetDigits(det);
+  if (!digits)
+    return;
 
   //Call the methods in the mcm class using the temporary array as input  
   for(Int_t rob = 0; rob < digits->GetNrow() / 2; rob++)
@@ -1806,4 +1812,5 @@ void AliTRDdigitizer::RunDigitalProcessing(AliTRDarrayADC *digits, Int_t det)
   }
 
   delete mcmfast;
+
 }
