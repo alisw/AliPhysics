@@ -13,6 +13,19 @@
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 
+////////////////////////////////////////////////////
+// AliAnalysisTaskFlowEvent:
+//
+// analysis task for filling the flow event
+// from MCEvent, ESD, AOD ....
+// and put it in an output stream so it can 
+// be used by the various flow analysis methods 
+// for cuts the correction framework is used
+// which also outputs QA histograms to view
+// the effects of the cuts
+////////////////////////////////////////////////////
+
+
 #include "Riostream.h" //needed as include
 #include "TChain.h"
 #include "TTree.h"
@@ -48,16 +61,6 @@ class AliAnalysisTask;
 
 #include "AliAnalysisTaskFlowEvent.h"
 
-// AliAnalysisTaskFlowEvent:
-//
-// analysis task for filling the flow event
-// from MCEvent, ESD, AOD ....
-// and put it in an output stream so it can 
-// be used by the various flow analysis methods 
-// for cuts the correction framework is used
-// which also outputs QA histrograms to view
-// the effects of the cuts
-
 
 ClassImp(AliAnalysisTaskFlowEvent)
   
@@ -69,6 +72,8 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on) 
   fAOD(NULL),
   fEventMaker(NULL),
   fAnalysisType("ESD"),
+  fMinMult(0),
+  fMaxMult(10000000),
   fCFManager1(NULL),
   fCFManager2(NULL),
   fQAInt(NULL),
@@ -87,7 +92,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on) 
     DefineOutput(1, TList::Class());
     DefineOutput(2, TList::Class()); }  
   // and for testing open an output file
-  //  fOutputFile = new TFile("FlowEvents.root","RECREATE");
+  // fOutputFile = new TFile("FlowEvents.root","RECREATE");
 
 }
 
@@ -98,6 +103,8 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fAOD(NULL),
   fEventMaker(NULL),
   fAnalysisType("ESD"),
+  fMinMult(0),
+  fMaxMult(10000000),
   fCFManager1(NULL),
   fCFManager2(NULL),
   fQAInt(NULL),
@@ -182,6 +189,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   if (eventHandler) {
     mcEvent = eventHandler->MCEvent();
     if (mcEvent) {
+      //cout<<mcEvent-> GenEventHeader()->GetName()<<endl; //TEST
       //COCKTAIL with HIJING
       if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Cocktail Header")) { //returns 0 if matches
 	AliGenCocktailEventHeader *headerC = dynamic_cast<AliGenCocktailEventHeader *> (mcEvent-> GenEventHeader()); 
@@ -191,7 +199,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 	    AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(0)); 
 	    if (hdh) {
 	      fRP = hdh->ReactionPlaneAngle();
-	      //cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
+	      //cout<<"The reactionPlane from Cocktail + Hijing is: "<< fRP <<endl; 
 	    }
 	  }
 	}
@@ -216,7 +224,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 	//else { cout<<"headerH is NULL"<<endl; }
       }
     }
-    //else {cout<<"No MC event!"<<endl; }
+    else {cout<<"No MC event!"<<endl; } //TEST
     
   }
   //else {cout<<"No eventHandler!"<<endl; }
@@ -238,6 +246,8 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 
     // analysis 
     Printf("Number of MC particles: %d", mcEvent->GetNumberOfTracks());
+    fEventMaker->SetMinMult(fMinMult);
+    fEventMaker->SetMaxMult(fMaxMult);
     fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
     // here we have the fEvent and want to make it available as an output stream
     // so no delete fEvent;
@@ -251,6 +261,8 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
     // analysis 
+    fEventMaker->SetMinMult(fMinMult);
+    fEventMaker->SetMaxMult(fMaxMult);
     fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
   }
   // Fill the FlowEventSimple for ESD input combined with MC info  
@@ -265,7 +277,8 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     fCFManager1->SetEventInfo(mcEvent);
     fCFManager2->SetEventInfo(mcEvent);
 
-
+    fEventMaker->SetMinMult(fMinMult);
+    fEventMaker->SetMaxMult(fMaxMult);
     if (fAnalysisType == "ESDMC0") { 
       fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 0); //0 = kine from ESD, 1 = kine from MC
     } else if (fAnalysisType == "ESDMC1") {
@@ -278,6 +291,8 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     Printf("There are %d tracks in this event", fAOD->GetNumberOfTracks());
 
     // analysis 
+    fEventMaker->SetMinMult(fMinMult);
+    fEventMaker->SetMaxMult(fMaxMult);
     //For the moment don't use CF //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD,fCFManager1,fCFManager2);
     fEvent = fEventMaker->FillTracks(fAOD);
   }
