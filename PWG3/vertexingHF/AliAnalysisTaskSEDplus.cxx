@@ -187,35 +187,34 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	d->SetOwnPrimaryVtx(vtx1);
 	unsetvtx=kTRUE;
       }
-      if(d->SelectDplus(fVHF->GetDplusCuts()))
-	{
+      if(d->SelectDplus(fVHF->GetDplusCuts())) {
 	  
 	  
-	  Int_t labDp = d->MatchToMC(411,arrayMC);
-	  //  if(labDp>=0) {
-	    AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
-	    if(labDp>=0) {
-	      Int_t pdgDp = TMath::Abs(partDp->GetPdgCode());
-	      if(pdgDp==411){
-
-	  fHistSignal->Fill(d->InvMassDplus());
-	  fHistMass->Fill(d->InvMassDplus());
+	Int_t labDp = d->MatchToMC(411,arrayMC);
+    
+	if(labDp>=0) {
+	  AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
+	  Int_t pdgDp = TMath::Abs(partDp->GetPdgCode());
+	  if(pdgDp==411){
 	    
-	  // Post the data already here
-	  PostData(1,fOutput);
-
-	  fNtupleDplus->Fill(pdgDp,partDp->Px()-d->Px(),partDp->Py()-d->Py(),partDp->Pz()-d->Pz(),d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),partDp->Pt(),d->CosPointingAngle(),d->DecayLength(),partDp->Xv(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());
-	      }
-	    }	  
-else {     
-	    fHistBackground->Fill(d->InvMassDplus());
-	    fNtupleDplusbackg->Fill(d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),d->CosPointingAngle(),d->DecayLength(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());	    
-
-	  fHistMass->Fill(d->InvMassDplus());
- }
+	    fHistSignal->Fill(d->InvMassDplus());
+	    fHistMass->Fill(d->InvMassDplus());
+	    
+	    // Post the data already here
+	    PostData(1,fOutput);
+	    
+	    fNtupleDplus->Fill(pdgDp,partDp->Px()-d->Px(),partDp->Py()-d->Py(),partDp->Pz()-d->Pz(),d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),partDp->Pt(),d->CosPointingAngle(),d->DecayLength(),partDp->Xv(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());
+	  }
+	}	  
+	else {     
+	  fHistBackground->Fill(d->InvMassDplus());
+	  fNtupleDplusbackg->Fill(d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),d->CosPointingAngle(),d->DecayLength(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());	    
 	  
-	
+	  fHistMass->Fill(d->InvMassDplus());
 	}
+	
+	
+      }
 
 
 	
