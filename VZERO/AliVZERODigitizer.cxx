@@ -188,7 +188,9 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
     Error("Exec", "Can not get output VZERO Loader");
     return;}
 
-  outLoader->LoadDigits("update");
+  const char* mode = "update";
+  if(outRunLoader->GetEventNumber() == 0) mode = "recreate";
+  outLoader->LoadDigits(mode);
   if (!outLoader->TreeD()) outLoader->MakeTree("D");
   outLoader->MakeDigitsContainer();
   TTree* treeD  = outLoader->TreeD();
