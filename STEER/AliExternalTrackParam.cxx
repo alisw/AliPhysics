@@ -1873,17 +1873,17 @@ Bool_t AliExternalTrackParam::Translate(Double_t *vTrasl,Double_t *covV){
   translation.GetXYZ(vTrasl);
 
  //compute the new x,y,z of the track
-  Double_t NewX=fX-vTrasl[0];
-  Double_t NewY=fP[0]-vTrasl[1];
-  Double_t NewZ=fP[1]-vTrasl[2];
+  Double_t newX=fX-vTrasl[0];
+  Double_t newY=fP[0]-vTrasl[1];
+  Double_t newZ=fP[1]-vTrasl[2];
   
   //define the new parameters
-  Double_t NewParam[5];
-  NewParam[0]=NewY;
-  NewParam[1]=NewZ;
-  NewParam[2]=fP[2];
-  NewParam[3]=fP[3];
-  NewParam[4]=fP[4];
+  Double_t newParam[5];
+  newParam[0]=newY;
+  newParam[1]=newZ;
+  newParam[2]=fP[2];
+  newParam[3]=fP[3];
+  newParam[4]=fP[4];
 
   // recompute the covariance matrix:
   // 1. covV in the local system
@@ -1933,7 +1933,7 @@ Bool_t AliExternalTrackParam::Translate(Double_t *vTrasl,Double_t *covV){
 
   // set the new parameters
 
-  Set(NewX,fAlpha,NewParam,newCov);
+  Set(newX,fAlpha,newParam,newCov);
 
   return kTRUE;
  }
