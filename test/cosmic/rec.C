@@ -100,7 +100,6 @@ void rec(const char *filename="raw.root", const Int_t mfield=1)
   AliExternalTrackParam::SetMostProbablePt(mostProbPt);
 
   // AliReconstruction settings
-  rec.SetUniformFieldTracking(kFALSE);
   rec.SetWriteESDfriend(kTRUE);
   rec.SetWriteAlignmentData();
   rec.SetInput(filename);

@@ -2,7 +2,6 @@ void rec() {
 
   AliReconstruction reco;
 
-  reco.SetUniformFieldTracking(kFALSE);
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
 

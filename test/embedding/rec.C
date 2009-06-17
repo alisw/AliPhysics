@@ -1,7 +1,6 @@
 void rec(Int_t embrun=0) {
 //  new AliRun("gAlice","The ALICE Off-line Simulation Framework");
   AliReconstruction reco;
-  reco.SetUniformFieldTracking(kFALSE);
   reco.SetWriteESDfriend(kTRUE);
   reco.SetWriteAlignmentData(kFALSE);
 //    reco.SetRecoParam("ITS",AliITSRecoParam::GetHighFluxParam());
