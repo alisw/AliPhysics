@@ -5023,16 +5023,19 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAccept
    if(fCorrectionsCosP1nPsiPtEtaPOI && fQCorrectionsCos)
    {
     // pt,eta: 
+    if(f2pFinalCorrectionsForNUAPtEtaPOI) f2pFinalCorrectionsForNUAPtEtaPOI->Reset(); // to be improved
     TH2D *correctionPtEta1stTerm = new TH2D(*(fCorrectionsCosP1nPsiPtEtaPOI->ProjectionXY("","e")));
     correctionPtEta1stTerm->Scale(fQCorrectionsCos->GetBinContent(1)); // to be improved: are errors propagated correctly here?   
     if(f2pFinalCorrectionsForNUAPtEtaPOI) f2pFinalCorrectionsForNUAPtEtaPOI->Add(correctionPtEta1stTerm); // to be improved (if condition goes somewhere else)
     delete correctionPtEta1stTerm;
     // pt:
+    if(f2pFinalCorrectionsForNUAPtPOI) f2pFinalCorrectionsForNUAPtPOI->Reset(); // to be improved
     TH1D *correctionPt1stTerm = new TH1D(*((this->MakePtProjection(fCorrectionsCosP1nPsiPtEtaPOI))->ProjectionX("","e"))); // to be improved: are errors propagated correctly here? 
     correctionPt1stTerm->Scale(fQCorrectionsCos->GetBinContent(1)); // to be improved: are errors propagated correctly here? 
     if(f2pFinalCorrectionsForNUAPtPOI) f2pFinalCorrectionsForNUAPtPOI->Add(correctionPt1stTerm); // to be improved (if condition goes somewhere else)
     delete correctionPt1stTerm;
     // eta:
+    if(f2pFinalCorrectionsForNUAEtaPOI) f2pFinalCorrectionsForNUAEtaPOI->Reset(); // to be improved    
     TH1D *correctionEta1stTerm = new TH1D(*((this->MakeEtaProjection(fCorrectionsCosP1nPsiPtEtaPOI))->ProjectionX("","e"))); // to be improved: are errors propagated correctly here? 
     correctionEta1stTerm->Scale(fQCorrectionsCos->GetBinContent(1)); // to be improved: are errors propagated correctly here? 
     if(f2pFinalCorrectionsForNUAEtaPOI) f2pFinalCorrectionsForNUAEtaPOI->Add(correctionEta1stTerm); // to be improved (if condition goes somewhere else)
@@ -5046,7 +5049,7 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAccept
    // 2nd term: <<sin(n*psi)>><<sin(n*phi)>>:  
    if(fCorrectionsSinP1nPsiPtEtaPOI && fQCorrectionsSin)
    {
-    // pt,eta: 
+    // pt,eta:
     TH2D *correctionPtEta2ndTerm = new TH2D(*(fCorrectionsSinP1nPsiPtEtaPOI->ProjectionXY("","e")));
     correctionPtEta2ndTerm->Scale(fQCorrectionsSin->GetBinContent(1)); // to be improved: are errors propagated correctly here?    
     if(f2pFinalCorrectionsForNUAPtEtaPOI) f2pFinalCorrectionsForNUAPtEtaPOI->Add(correctionPtEta2ndTerm); // to be improved (if condition goes somewhere else)
@@ -5074,16 +5077,19 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAccept
      if(fCorrectionsCosP1nPsiPtEtaRP && fQCorrectionsCos)
      {
       // pt,eta: 
+      if(f2pFinalCorrectionsForNUAPtEtaRP) f2pFinalCorrectionsForNUAPtEtaRP->Reset(); // to be improved
       TH2D *correctionPtEta1stTerm = new TH2D(*(fCorrectionsCosP1nPsiPtEtaRP->ProjectionXY("","e")));
       correctionPtEta1stTerm->Scale(fQCorrectionsCos->GetBinContent(1)); // to be improved: are errors propagated correctly here?    
       if(f2pFinalCorrectionsForNUAPtEtaRP) f2pFinalCorrectionsForNUAPtEtaRP->Add(correctionPtEta1stTerm); // to be improved (if condition goes somewhere else)
       delete correctionPtEta1stTerm;
       // pt:
+      if(f2pFinalCorrectionsForNUAPtRP) f2pFinalCorrectionsForNUAPtRP->Reset(); // to be improved
       TH1D *correctionPt1stTerm = new TH1D(*((this->MakePtProjection(fCorrectionsCosP1nPsiPtEtaRP))->ProjectionX("","e"))); // to be improved: are errors propagated correctly here? 
       correctionPt1stTerm->Scale(fQCorrectionsCos->GetBinContent(1)); // to be improved: are errors propagated correctly here? 
       if(f2pFinalCorrectionsForNUAPtRP) f2pFinalCorrectionsForNUAPtRP->Add(correctionPt1stTerm); // to be improved (if condition goes somewhere else)
       delete correctionPt1stTerm;
       // eta:
+      if(f2pFinalCorrectionsForNUAEtaRP) f2pFinalCorrectionsForNUAEtaRP->Reset(); // to be improved
       TH1D *correctionEta1stTerm = new TH1D(*((this->MakeEtaProjection(fCorrectionsCosP1nPsiPtEtaRP))->ProjectionX("","e"))); // to be improved: are errors propagated correctly here? 
       correctionEta1stTerm->Scale(fQCorrectionsCos->GetBinContent(1)); // to be improved: are errors propagated correctly here? 
       if(f2pFinalCorrectionsForNUAEtaRP) f2pFinalCorrectionsForNUAEtaRP->Add(correctionEta1stTerm); // to be improved (if condition goes somewhere else)
