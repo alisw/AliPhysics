@@ -11,6 +11,8 @@
 // Author: C.Di Giglio, carmelo.digiglio@ba.infn.it
 //*************************************************************************
 
+#include <TROOT.h>
+#include <TSystem.h>
 #include <TList.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -51,14 +53,14 @@ class AliAnalysisTaskSEBkgLikeSignJPSI : public AliAnalysisTaskSE
   TH1F    *fHistd0d0JPSI;          //! Product of impact parameters
   TH1F    *fHistd0d0LS;            //!
   TH1F    *fHistDCAJPSI;           //! Distance of closest approach
-  TH1F    *fHistDCALS;             //!
+  TH1F    *fHistDCALS;             //! like-sign
   AliAnalysisVertexingHF *fVHF;    // Vertexer heavy flavour (used to pass the cuts)
 
   Int_t fTotPosPairs;              //
   Int_t fTotNegPairs;              // normalization
   Double_t fLsNormalization;       //
  
-  ClassDef(AliAnalysisTaskSEBkgLikeSignJPSI,0); // comparison of unlike-sign and like-sign background for J/psi->ee
+  ClassDef(AliAnalysisTaskSEBkgLikeSignJPSI,1); // comparison of unlike-sign and like-sign background for J/psi->ee
 };
 
 #endif

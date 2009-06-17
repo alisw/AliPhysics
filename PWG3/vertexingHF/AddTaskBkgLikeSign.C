@@ -16,21 +16,22 @@ AliAnalysisTaskSEBkgLikeSignJPSI *AddTaskBkgLikeSign()
   }   
 
   // Like-sign background analysis task    
-  AliAnalysisTaskSEBkgLikeSignJPSI *hfTask = new AliAnalysisTaskSEBkgLikeSignJPSI("CmpLikeSignAnalysis");
-  hfTask->SetDebugLevel(2);
+  AliAnalysisTaskSEBkgLikeSignJPSI *lsTask = new AliAnalysisTaskSEBkgLikeSignJPSI("CmpLikeSignAnalysis");
+  lsTask->SetDebugLevel(2);
 
-  mgr->AddTask(hfTask);
+  mgr->AddTask(lsTask);
 
   //
   // Create containers for input/output
-  mgr->ConnectInput(hfTask,0,mgr->GetCommonInputContainer());
-
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("coutputLikeSign",TList::Class(),
+  AliAnalysisDataContainer *cinputLS = mgr->CreateContainer("cinputLikeSign",TChain::Class(), 
+							  AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutputLS = mgr->CreateContainer("coutputLikeSign",TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,
                                                            "CmpLikeSignJPSI.root");
 
-  mgr->ConnectOutput(hfTask,1,coutput);
+  mgr->ConnectInput(lsTask,0,mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(lsTask,1,coutputLS);
 
 
-  return hfTask;
+  return lsTask;
 }
