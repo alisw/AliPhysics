@@ -45,6 +45,7 @@
 #include "AliFlowAnalysisWithQCumulants.h"
 #include "TArrayD.h"
 #include "TRandom.h"
+#include "TF1.h"
 
 class TH1;
 class TH2;
@@ -89,6 +90,8 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fDirectCorrelationsDiffFlowW(NULL),
  fDirectCorrectionsCos(NULL),
  fDirectCorrectionsSin(NULL),
+ fDirectCorrectionsDiffFlowCos(NULL),
+ fDirectCorrectionsDiffFlowSin(NULL),
  f2PerPtBin1n1nPOI(NULL),
  f4PerPtBin1n1n1n1nPOI(NULL),
  f2PerEtaBin1n1nPOI(NULL),
@@ -129,6 +132,17 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fUseEtaWeights(kFALSE),
  fUseWeights(kFALSE), 
  fUseWeightsBits(NULL), 
+ 
+ // ....................................................
+ // POI:
+ fCorrectionsCosP1nPsiPtEtaPOI(NULL),
+ fCorrectionsSinP1nPsiPtEtaPOI(NULL),
+ 
+ // RP:
+ fCorrectionsCosP1nPsiPtEtaRP(NULL),
+ fCorrectionsSinP1nPsiPtEtaRP(NULL),
+ // ....................................................
+ 
 
  // ...................................................................................................................
  // Q_{n,k} and S^M_{n,k}:    
@@ -201,6 +215,24 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  f6pPtEtaPOI(NULL),
  f8pPtEtaPOI(NULL),
  
+ // corrections for non-uniform acceptance to non-weighted correlations for each (pt,eta) bin for POIs:
+ f2pFinalCorrectionsForNUAPtEtaPOI(NULL),
+ f4pFinalCorrectionsForNUAPtEtaPOI(NULL),
+ f6pFinalCorrectionsForNUAPtEtaPOI(NULL),
+ f8pFinalCorrectionsForNUAPtEtaPOI(NULL), 
+ 
+ // corrections for non-uniform acceptance to non-weighted correlations for each (pt) bin for POIs:
+ f2pFinalCorrectionsForNUAPtPOI(NULL),
+ f4pFinalCorrectionsForNUAPtPOI(NULL),
+ f6pFinalCorrectionsForNUAPtPOI(NULL),
+ f8pFinalCorrectionsForNUAPtPOI(NULL), 
+ 
+ // corrections for non-uniform acceptance to non-weighted correlations for each (eta) bin for POIs:
+ f2pFinalCorrectionsForNUAEtaPOI(NULL),
+ f4pFinalCorrectionsForNUAEtaPOI(NULL),
+ f6pFinalCorrectionsForNUAEtaPOI(NULL),
+ f8pFinalCorrectionsForNUAEtaPOI(NULL), 
+ 
  // non-weighted final results for differential flow for POIs:
  // 3D (pt,eta)
  fvn2ndPtEtaPOI(NULL),
@@ -246,6 +278,24 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  f4pPtEtaRP(NULL),
  f6pPtEtaRP(NULL),
  f8pPtEtaRP(NULL),
+ 
+ // corrections for non-uniform acceptance to non-weighted correlations for each (pt,eta) bin for RPs:
+ f2pFinalCorrectionsForNUAPtEtaRP(NULL),
+ f4pFinalCorrectionsForNUAPtEtaRP(NULL),
+ f6pFinalCorrectionsForNUAPtEtaRP(NULL),
+ f8pFinalCorrectionsForNUAPtEtaRP(NULL), 
+ 
+ // corrections for non-uniform acceptance to non-weighted correlations for each (pt) bin for RPs:
+ f2pFinalCorrectionsForNUAPtRP(NULL),
+ f4pFinalCorrectionsForNUAPtRP(NULL),
+ f6pFinalCorrectionsForNUAPtRP(NULL),
+ f8pFinalCorrectionsForNUAPtRP(NULL), 
+ 
+ // corrections for non-uniform acceptance to non-weighted correlations for each (eta) bin for RPs:
+ f2pFinalCorrectionsForNUAEtaRP(NULL),
+ f4pFinalCorrectionsForNUAEtaRP(NULL),
+ f6pFinalCorrectionsForNUAEtaRP(NULL),
+ f8pFinalCorrectionsForNUAEtaRP(NULL), 
  
  // non-weighted final results for differential flow for RPs:
  // 3D (pt,eta)
@@ -488,7 +538,19 @@ void AliFlowAnalysisWithQCumulants::Init()
  fDirectCorrectionsSin->SetLabelOffset(0.01,"Y");
  // binned in the samw way as fQCorrectionsSin (see above)
  // add fDirectCorrectionsSin to the main list:
- fHistList->Add(fDirectCorrectionsSin);     
+ fHistList->Add(fDirectCorrectionsSin); 
+ 
+ // corrections for non-uniform acceptance (cos terms) calculated with nested loops (needed for diff. flow)
+ fDirectCorrectionsDiffFlowCos = new TProfile("fDirectCorrectionsDiffFlowCos","corrections for non-uniform acceptance (cos terms) with nested loops",200,0,200,"s");
+ fDirectCorrectionsDiffFlowCos->SetXTitle("");
+ fDirectCorrectionsDiffFlowCos->SetYTitle("corrections");
+ fHistList->Add(fDirectCorrectionsDiffFlowCos);      
+ 
+ // corrections for non-uniform acceptance (sin terms) calculated with nested loops (needed for diff. flow)
+ fDirectCorrectionsDiffFlowSin = new TProfile("fDirectCorrectionsDiffFlowSin","corrections for non-uniform acceptance (sin terms) with nested loops",200,0,200,"s");
+ fDirectCorrectionsDiffFlowSin->SetXTitle("");
+ fDirectCorrectionsDiffFlowSin->SetYTitle("corrections");
+ fHistList->Add(fDirectCorrectionsDiffFlowSin);                       
                
  //average products
  fQProduct = new TProfile("fQProduct","average of products",6,0,6,"s");
@@ -666,12 +728,40 @@ void AliFlowAnalysisWithQCumulants::Init()
  f8pDistribution->SetYTitle("Counts");
  fHistList->Add(f8pDistribution);
  
+ // .......................................................................................................................................
+ // POI:
+ // <<cos n(psi1>> for POIs:
+ fCorrectionsCosP1nPsiPtEtaPOI = new TProfile2D("fCorrectionsCosP1nPsiPtEtaPOI","<<cos n(#psi_{1})>> (p_{t},#eta) for POIs",
+                               fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax,"s");
+ fCorrectionsCosP1nPsiPtEtaPOI->SetXTitle("p_{t}");
+ fCorrectionsCosP1nPsiPtEtaPOI->SetYTitle("#eta");
+ fDiffFlowList->Add(fCorrectionsCosP1nPsiPtEtaPOI);
+ 
+ // <<sin n(psi1>> for POIs:
+ fCorrectionsSinP1nPsiPtEtaPOI = new TProfile2D("fCorrectionsSinP1nPsiPtEtaPOI","<<Sin n(#psi_{1})>> (p_{t},#eta) for POIs",
+                               fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax,"s");
+ fCorrectionsSinP1nPsiPtEtaPOI->SetXTitle("p_{t}");
+ fCorrectionsSinP1nPsiPtEtaPOI->SetYTitle("#eta");
+ fDiffFlowList->Add(fCorrectionsSinP1nPsiPtEtaPOI);
  
  
  
  
+ // RP:
+ // <<cos n(psi1>> for RPs:
+ fCorrectionsCosP1nPsiPtEtaRP = new TProfile2D("fCorrectionsCosP1nPsiPtEtaRP","<<cos n(#psi_{1})>> (p_{t},#eta) for RPs",
+                               fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax,"s");
+ fCorrectionsCosP1nPsiPtEtaRP->SetXTitle("p_{t}");
+ fCorrectionsCosP1nPsiPtEtaRP->SetYTitle("#eta");
+ fDiffFlowList->Add(fCorrectionsCosP1nPsiPtEtaRP);
  
- 
+ // <<sin n(psi1>> for RPs:
+ fCorrectionsSinP1nPsiPtEtaRP = new TProfile2D("fCorrectionsSinP1nPsiPtEtaRP","<<Sin n(#psi_{1})>> (p_{t},#eta) for RPs",
+                               fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax,"s");
+ fCorrectionsSinP1nPsiPtEtaRP->SetXTitle("p_{t}");
+ fCorrectionsSinP1nPsiPtEtaRP->SetYTitle("#eta");
+ fDiffFlowList->Add(fCorrectionsSinP1nPsiPtEtaRP);
+ // .......................................................................................................................................
  
  // .......................................................................................................................................
  // Q_{n,k} and S^M_{n,k}:    
@@ -796,33 +886,122 @@ void AliFlowAnalysisWithQCumulants::Init()
  (fIntFlowResultsRPQCW->GetXaxis())->SetBinLabel(4,"v_{n}{8}");
  fResultsList->Add(fIntFlowResultsRPQCW);
  
- // <cos n(psi1-phi2)> for POIs:
- f2pPtEtaPOI = new TProfile2D("f2pPtEtaPOI","<cos n(#psi_{1}-#phi_{2})> (p_{t},#eta) for POIs",
+ // <<cos n(psi1-phi2)>> for POIs:
+ f2pPtEtaPOI = new TProfile2D("f2pPtEtaPOI","<<cos n(#psi_{1}-#phi_{2})>> (p_{t},#eta) for POIs",
                                fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax,"s");
  f2pPtEtaPOI->SetXTitle("p_{t}");
  f2pPtEtaPOI->SetYTitle("#eta");
  fDiffFlowList->Add(f2pPtEtaPOI);
  
- // <cos n(psi1+phi2-phi3-phi4)> for POIs:
- f4pPtEtaPOI = new TProfile2D("f4pPtEtaPOI","<cos n(#psi_{1}+#phi_{2}-#phi_{3}-#phi_{4})> (p_{t},#eta) for POIs",
+ // <<cos n(psi1+phi2-phi3-phi4)>> for POIs:
+ f4pPtEtaPOI = new TProfile2D("f4pPtEtaPOI","<<cos n(#psi_{1}+#phi_{2}-#phi_{3}-#phi_{4})>> (p_{t},#eta) for POIs",
                                fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax,"s");
  f4pPtEtaPOI->SetXTitle("p_{t}");
  f4pPtEtaPOI->SetYTitle("#eta");
  fDiffFlowList->Add(f4pPtEtaPOI);
  
- // <cos n(psi1+phi2+phi3-phi4-phi5-phi6)> for POIs:
- f6pPtEtaPOI = new TProfile2D("f6pPtEtaPOI","<cos n(#psi_{1}+#phi_{2}+#phi_{3}-#phi_{4}-#phi_{5}-#phi_{6})> (p_{t},#eta) for POIs",
+ // <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for POIs:
+ f6pPtEtaPOI = new TProfile2D("f6pPtEtaPOI","<<cos n(#psi_{1}+#phi_{2}+#phi_{3}-#phi_{4}-#phi_{5}-#phi_{6})>> (p_{t},#eta) for POIs",
                                fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax,"s");
  f6pPtEtaPOI->SetXTitle("p_{t}");
  f6pPtEtaPOI->SetYTitle("#eta");
  fDiffFlowList->Add(f6pPtEtaPOI);
  
- // <cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)> for POIs:
- f8pPtEtaPOI = new TProfile2D("f8pPtEtaPOI","<cos n(#psi_{1}+#phi_{2}+#phi_{3}+#phi_{4}-#phi_{5}-#phi_{6}-#phi_{7}-#phi_{8})> (p_{t},#eta) for POIs",
+ // <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for POIs:
+ f8pPtEtaPOI = new TProfile2D("f8pPtEtaPOI","<<cos n(#psi_{1}+#phi_{2}+#phi_{3}+#phi_{4}-#phi_{5}-#phi_{6}-#phi_{7}-#phi_{8})>> (p_{t},#eta) for POIs",
                                fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax,"s");
  f8pPtEtaPOI->SetXTitle("p_{t}");
  f8pPtEtaPOI->SetYTitle("#eta");
  fDiffFlowList->Add(f8pPtEtaPOI);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1-phi2)>> for POIs:
+ f2pFinalCorrectionsForNUAPtEtaPOI = new TH2D("f2pFinalCorrectionsForNUAPtEtaPOI",
+                           "correction for NUA to <<cos n(#psi_{1}-#phi_{2})>> (p_{t},#eta) for POIs",
+                            fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
+ f2pFinalCorrectionsForNUAPtEtaPOI->SetXTitle("p_{t}");
+ f2pFinalCorrectionsForNUAPtEtaPOI->SetYTitle("#eta");
+ fResultsList->Add(f2pFinalCorrectionsForNUAPtEtaPOI);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1+phi2-phi3-phi4)>> for POIs:
+ f4pFinalCorrectionsForNUAPtEtaPOI = new TH2D("f4pFinalCorrectionsForNUAPtEtaPOI",
+                           "correction for NUA to <<cos n(psi1+phi2-phi3-phi4)>> (p_{t},#eta) for POIs",
+                            fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
+ f4pFinalCorrectionsForNUAPtEtaPOI->SetXTitle("p_{t}");
+ f4pFinalCorrectionsForNUAPtEtaPOI->SetYTitle("#eta");
+ fResultsList->Add(f4pFinalCorrectionsForNUAPtEtaPOI);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for POIs:
+ f6pFinalCorrectionsForNUAPtEtaPOI = new TH2D("f6pFinalCorrectionsForNUAPtEtaPOI",
+                           "correction for NUA to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> (p_{t},#eta) for POIs",
+                            fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
+ f6pFinalCorrectionsForNUAPtEtaPOI->SetXTitle("p_{t}");
+ f6pFinalCorrectionsForNUAPtEtaPOI->SetYTitle("#eta");
+ fResultsList->Add(f6pFinalCorrectionsForNUAPtEtaPOI);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for POIs:
+ f8pFinalCorrectionsForNUAPtEtaPOI = new TH2D("f8pFinalCorrectionsForNUAPtEtaPOI",
+                           "correction for NUA to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> (p_{t},#eta) for POIs",
+                            fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
+ f8pFinalCorrectionsForNUAPtEtaPOI->SetXTitle("p_{t}");
+ f8pFinalCorrectionsForNUAPtEtaPOI->SetYTitle("#eta");
+ fResultsList->Add(f8pFinalCorrectionsForNUAPtEtaPOI);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1-phi2)>> for POIs:
+ f2pFinalCorrectionsForNUAPtPOI = new TH1D("f2pFinalCorrectionsForNUAPtPOI",
+                           "correction for NUA to <<cos n(#psi_{1}-#phi_{2})>> (p_{t}) for POIs",
+                            fnBinsPt,fPtMin,fPtMax);
+ f2pFinalCorrectionsForNUAPtPOI->SetXTitle("p_{t}");
+ fResultsList->Add(f2pFinalCorrectionsForNUAPtPOI);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1+phi2-phi3-phi4)>> for POIs:
+ f4pFinalCorrectionsForNUAPtPOI = new TH1D("f4pFinalCorrectionsForNUAPtPOI",
+                           "correction for NUA to <<cos n(psi1+phi2-phi3-phi4)>> (p_{t}) for POIs",
+                            fnBinsPt,fPtMin,fPtMax);
+ f4pFinalCorrectionsForNUAPtPOI->SetXTitle("p_{t}");
+ fResultsList->Add(f4pFinalCorrectionsForNUAPtPOI);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for POIs:
+ f6pFinalCorrectionsForNUAPtPOI = new TH1D("f6pFinalCorrectionsForNUAPtPOI",
+                           "correction for NUA to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> (p_{t}) for POIs",
+                            fnBinsPt,fPtMin,fPtMax);
+ f6pFinalCorrectionsForNUAPtPOI->SetXTitle("p_{t}");
+ fResultsList->Add(f6pFinalCorrectionsForNUAPtPOI);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for POIs:
+ f8pFinalCorrectionsForNUAPtPOI = new TH1D("f8pFinalCorrectionsForNUAPtPOI",
+                           "correction for NUA to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> (p_{t}) for POIs",
+                            fnBinsPt,fPtMin,fPtMax);
+ f8pFinalCorrectionsForNUAPtPOI->SetXTitle("p_{t}");
+ fResultsList->Add(f8pFinalCorrectionsForNUAPtPOI);
+ 
+ // correction for non-uniform acceEtaance to <<cos n(psi1-phi2)>> for POIs:
+ f2pFinalCorrectionsForNUAEtaPOI = new TH1D("f2pFinalCorrectionsForNUAEtaPOI",
+                           "correction for NUA to <<cos n(#psi_{1}-#phi_{2})>> (#eta) for POIs",
+                            fnBinsEta,fEtaMin,fEtaMax);
+ f2pFinalCorrectionsForNUAEtaPOI->SetXTitle("#eta");
+ fResultsList->Add(f2pFinalCorrectionsForNUAEtaPOI);
+ 
+ // correction for non-uniform acceEtaance to <<cos n(psi1+phi2-phi3-phi4)>> for POIs:
+ f4pFinalCorrectionsForNUAEtaPOI = new TH1D("f4pFinalCorrectionsForNUAEtaPOI",
+                           "correction for NUA to <<cos n(psi1+phi2-phi3-phi4)>> (#eta) for POIs",
+                            fnBinsEta,fEtaMin,fEtaMax);
+ f4pFinalCorrectionsForNUAEtaPOI->SetXTitle("#eta");
+ fResultsList->Add(f4pFinalCorrectionsForNUAEtaPOI);
+ 
+ // correction for non-uniform acceEtaance to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for POIs:
+ f6pFinalCorrectionsForNUAEtaPOI = new TH1D("f6pFinalCorrectionsForNUAEtaPOI",
+                           "correction for NUA to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> (#eta) for POIs",
+                            fnBinsEta,fEtaMin,fEtaMax);
+ f6pFinalCorrectionsForNUAEtaPOI->SetXTitle("#eta");
+ fResultsList->Add(f6pFinalCorrectionsForNUAEtaPOI);
+ 
+ // correction for non-uniform acceEtaance to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for POIs:
+ f8pFinalCorrectionsForNUAEtaPOI = new TH1D("f8pFinalCorrectionsForNUAEtaPOI",
+                           "correction for NUA to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> (#eta) for POIs",
+                            fnBinsEta,fEtaMin,fEtaMax);
+ f8pFinalCorrectionsForNUAEtaPOI->SetXTitle("#eta");
+ fResultsList->Add(f8pFinalCorrectionsForNUAEtaPOI);
+ 
  
  // non-weighted v'_{n}{2,QC} (pt,eta) for POIs
  fvn2ndPtEtaPOI = new TH2D("fvn2ndPtEtaPOI","v'_{n}{2,QC} (p_{t},#eta) for POIs",fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
@@ -976,33 +1155,121 @@ void AliFlowAnalysisWithQCumulants::Init()
  fvn8thEtaPOIW->SetXTitle("#eta");
  fResultsList->Add(fvn8thEtaPOIW);
  
- // <cos n(psi1-phi2)> for RPs:
- f2pPtEtaRP = new TProfile2D("f2pPtEtaRP","<cos n(#psi_{1}-#phi_{2})> (p_{t},#eta) for RPs",
+ // <<cos n(psi1-phi2)>> for RPs:
+ f2pPtEtaRP = new TProfile2D("f2pPtEtaRP","<<cos n(#psi_{1}-#phi_{2})>> (p_{t},#eta) for RPs",
                                fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax,"s");
  f2pPtEtaRP->SetXTitle("p_{t}");
  f2pPtEtaRP->SetYTitle("#eta");
  fDiffFlowList->Add(f2pPtEtaRP);
  
- // <cos n(psi1+phi2-phi3-phi4)> for RPs:
- f4pPtEtaRP = new TProfile2D("f4pPtEtaRP","<cos n(#psi_{1}+#phi_{2}-#phi_{3}-#phi_{4})> (p_{t},#eta) for RPs",
+ // <<cos n(psi1+phi2-phi3-phi4)>> for RPs:
+ f4pPtEtaRP = new TProfile2D("f4pPtEtaRP","<<cos n(#psi_{1}+#phi_{2}-#phi_{3}-#phi_{4})>> (p_{t},#eta) for RPs",
                                fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax,"s");
  f4pPtEtaRP->SetXTitle("p_{t}");
  f4pPtEtaRP->SetYTitle("#eta");
  fDiffFlowList->Add(f4pPtEtaRP);
  
- // <cos n(psi1+phi2+phi3-phi4-phi5-phi6)> for RPs:
- f6pPtEtaRP = new TProfile2D("f6pPtEtaRP","<cos n(#psi_{1}+#phi_{2}+#phi_{3}-#phi_{4}-#phi_{5}-#phi_{6})> (p_{t},#eta) for RPs",
+ // <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for RPs:
+ f6pPtEtaRP = new TProfile2D("f6pPtEtaRP","<<cos n(#psi_{1}+#phi_{2}+#phi_{3}-#phi_{4}-#phi_{5}-#phi_{6})>> (p_{t},#eta) for RPs",
                                fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax,"s");
  f6pPtEtaRP->SetXTitle("p_{t}");
  f6pPtEtaRP->SetYTitle("#eta");
  fDiffFlowList->Add(f6pPtEtaRP);
  
- // <cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)> for RPs:
- f8pPtEtaRP = new TProfile2D("f8pPtEtaRP","<cos n(#psi_{1}+#phi_{2}+#phi_{3}+#phi_{4}-#phi_{5}-#phi_{6}-#phi_{7}-#phi_{8})> (p_{t},#eta) for RPs",
+ // <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for RPs:
+ f8pPtEtaRP = new TProfile2D("f8pPtEtaRP","<<cos n(#psi_{1}+#phi_{2}+#phi_{3}+#phi_{4}-#phi_{5}-#phi_{6}-#phi_{7}-#phi_{8})>> (p_{t},#eta) for RPs",
                                fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax,"s");
  f8pPtEtaRP->SetXTitle("p_{t}");
  f8pPtEtaRP->SetYTitle("#eta");
  fDiffFlowList->Add(f8pPtEtaRP);
+  
+ // correction for non-uniform acceptance to <<cos n(psi1-phi2)>> for RPs:
+ f2pFinalCorrectionsForNUAPtEtaRP = new TH2D("f2pFinalCorrectionsForNUAPtEtaRP",
+                           "correction for NUA to <<cos n(#psi_{1}-#phi_{2})>> (p_{t},#eta) for RPs",
+                            fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
+ f2pFinalCorrectionsForNUAPtEtaRP->SetXTitle("p_{t}");
+ f2pFinalCorrectionsForNUAPtEtaRP->SetYTitle("#eta");
+ fResultsList->Add(f2pFinalCorrectionsForNUAPtEtaRP);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1+phi2-phi3-phi4)>> for RPs:
+ f4pFinalCorrectionsForNUAPtEtaRP = new TH2D("f4pFinalCorrectionsForNUAPtEtaRP",
+                           "correction for NUA to <<cos n(psi1+phi2-phi3-phi4)>> (p_{t},#eta) for RPs",
+                            fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
+ f4pFinalCorrectionsForNUAPtEtaRP->SetXTitle("p_{t}");
+ f4pFinalCorrectionsForNUAPtEtaRP->SetYTitle("#eta");
+ fResultsList->Add(f4pFinalCorrectionsForNUAPtEtaRP);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for RPs:
+ f6pFinalCorrectionsForNUAPtEtaRP = new TH2D("f6pFinalCorrectionsForNUAPtEtaRP",
+                           "correction for NUA to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> (p_{t},#eta) for RPs",
+                            fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
+ f6pFinalCorrectionsForNUAPtEtaRP->SetXTitle("p_{t}");
+ f6pFinalCorrectionsForNUAPtEtaRP->SetYTitle("#eta");
+ fResultsList->Add(f6pFinalCorrectionsForNUAPtEtaRP);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for RPs:
+ f8pFinalCorrectionsForNUAPtEtaRP = new TH2D("f8pFinalCorrectionsForNUAPtEtaRP",
+                           "correction for NUA to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> (p_{t},#eta) for RPs",
+                            fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
+ f8pFinalCorrectionsForNUAPtEtaRP->SetXTitle("p_{t}");
+ f8pFinalCorrectionsForNUAPtEtaRP->SetYTitle("#eta");
+ fResultsList->Add(f8pFinalCorrectionsForNUAPtEtaRP);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1-phi2)>> for RPs:
+ f2pFinalCorrectionsForNUAPtRP = new TH1D("f2pFinalCorrectionsForNUAPtRP",
+                           "correction for NUA to <<cos n(#psi_{1}-#phi_{2})>> (p_{t}) for RPs",
+                            fnBinsPt,fPtMin,fPtMax);
+ f2pFinalCorrectionsForNUAPtRP->SetXTitle("p_{t}");
+ fResultsList->Add(f2pFinalCorrectionsForNUAPtRP);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1+phi2-phi3-phi4)>> for RPs:
+ f4pFinalCorrectionsForNUAPtRP = new TH1D("f4pFinalCorrectionsForNUAPtRP",
+                           "correction for NUA to <<cos n(psi1+phi2-phi3-phi4)>> (p_{t}) for RPs",
+                            fnBinsPt,fPtMin,fPtMax);
+ f4pFinalCorrectionsForNUAPtRP->SetXTitle("p_{t}");
+ fResultsList->Add(f4pFinalCorrectionsForNUAPtRP);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for RPs:
+ f6pFinalCorrectionsForNUAPtRP = new TH1D("f6pFinalCorrectionsForNUAPtRP",
+                           "correction for NUA to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> (p_{t}) for RPs",
+                            fnBinsPt,fPtMin,fPtMax);
+ f6pFinalCorrectionsForNUAPtRP->SetXTitle("p_{t}");
+ fResultsList->Add(f6pFinalCorrectionsForNUAPtRP);
+ 
+ // correction for non-uniform acceptance to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for RPs:
+ f8pFinalCorrectionsForNUAPtRP = new TH1D("f8pFinalCorrectionsForNUAPtRP",
+                           "correction for NUA to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> (p_{t}) for RPs",
+                            fnBinsPt,fPtMin,fPtMax);
+ f8pFinalCorrectionsForNUAPtRP->SetXTitle("p_{t}");
+ fResultsList->Add(f8pFinalCorrectionsForNUAPtRP);
+ 
+ // correction for non-uniform acceEtaance to <<cos n(psi1-phi2)>> for RPs:
+ f2pFinalCorrectionsForNUAEtaRP = new TH1D("f2pFinalCorrectionsForNUAEtaRP",
+                           "correction for NUA to <<cos n(#psi_{1}-#phi_{2})>> (#eta) for RPs",
+                            fnBinsEta,fEtaMin,fEtaMax);
+ f2pFinalCorrectionsForNUAEtaRP->SetXTitle("#eta");
+ fResultsList->Add(f2pFinalCorrectionsForNUAEtaRP);
+ 
+ // correction for non-uniform acceEtaance to <<cos n(psi1+phi2-phi3-phi4)>> for RPs:
+ f4pFinalCorrectionsForNUAEtaRP = new TH1D("f4pFinalCorrectionsForNUAEtaRP",
+                           "correction for NUA to <<cos n(psi1+phi2-phi3-phi4)>> (#eta) for RPs",
+                            fnBinsEta,fEtaMin,fEtaMax);
+ f4pFinalCorrectionsForNUAEtaRP->SetXTitle("#eta");
+ fResultsList->Add(f4pFinalCorrectionsForNUAEtaRP);
+ 
+ // correction for non-uniform acceEtaance to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for RPs:
+ f6pFinalCorrectionsForNUAEtaRP = new TH1D("f6pFinalCorrectionsForNUAEtaRP",
+                           "correction for NUA to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> (#eta) for RPs",
+                            fnBinsEta,fEtaMin,fEtaMax);
+ f6pFinalCorrectionsForNUAEtaRP->SetXTitle("#eta");
+ fResultsList->Add(f6pFinalCorrectionsForNUAEtaRP);
+ 
+ // correction for non-uniform acceEtaance to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for RPs:
+ f8pFinalCorrectionsForNUAEtaRP = new TH1D("f8pFinalCorrectionsForNUAEtaRP",
+                           "correction for NUA to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> (#eta) for RPs",
+                            fnBinsEta,fEtaMin,fEtaMax);
+ f8pFinalCorrectionsForNUAEtaRP->SetXTitle("#eta");
+ fResultsList->Add(f8pFinalCorrectionsForNUAEtaRP);
  
  // non-weighted v'_{n}{2,QC} (pt,eta) for RPs
  fvn2ndPtEtaRP = new TH2D("fvn2ndPtEtaRP","v'_{n}{2,QC} (p_{t},#eta) for RPs",fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
@@ -1482,7 +1749,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   }  
  } 
  
- 
+   
  
  
  //                                     *****************************
@@ -1492,6 +1759,9 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  // nested loops (needed for cross-checking the results):
  Bool_t evaluateNestedLoopsForIntegratedFlow = kFALSE;    // to be improved / removed
  Bool_t evaluateNestedLoopsForDifferentialFlow = kFALSE; // to be improved / removed
+ // Remark: setBefore in AliFlowCommonConstants: 
+ // Double_t AliFlowCommonConstants::fgEtaMin  = -1.;	     
+ // Double_t AliFlowCommonConstants::fgEtaMax  =  1.;	
  
  if(evaluateNestedLoopsForIntegratedFlow && nPrim>0 && nPrim<14) // to be improved / removed (eventually I would not need this if())
  {
@@ -1500,8 +1770,8 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   if(!(fUseWeights)) 
   {
    this->CalculateCorrelationsForIntegratedFlow(); 
-   this->CalculateCorrectionsForNonUniformAcceptanceCosTerms();
-   this->CalculateCorrectionsForNonUniformAcceptanceSinTerms();
+   this->CalculateCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlowCosTerms();
+   this->CalculateCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlowSinTerms();
   }
   // calculate all correlations needed for 'no-name' integrated flow WITH weights 
   // (the results are stored in 1D profile fQCorrelationsW) 
@@ -1510,8 +1780,8 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  else if (!evaluateNestedLoopsForIntegratedFlow)
  {
   this->CalculateCorrelationsForIntegratedFlow();
-  this->CalculateCorrectionsForNonUniformAcceptanceCosTerms();
-  this->CalculateCorrectionsForNonUniformAcceptanceSinTerms();
+  this->CalculateCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlowCosTerms();
+  this->CalculateCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlowSinTerms();
   if(fUseWeights) this->CalculateWeightedCorrelationsForIntegratedFlow();
  }
 
@@ -1525,6 +1795,10 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   {
    this->CalculateCorrelationsForDifferentialFlow("POI");
    this->CalculateCorrelationsForDifferentialFlow("RP");
+   this->CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms("POI");
+   this->CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowSinTerms("POI");
+   this->CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms("RP");
+   this->CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowSinTerms("RP");
   }
   // calculate all correlations needed for differential flow WITH weights
   // and store the results in 2D profiles (pt,eta): 
@@ -1540,6 +1814,10 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  {
   this->CalculateCorrelationsForDifferentialFlow("POI");
   this->CalculateCorrelationsForDifferentialFlow("RP");
+  this->CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms("POI");
+  this->CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowSinTerms("POI");
+  this->CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms("RP");
+  this->CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowSinTerms("RP");
   
   if(fUseWeights) 
   {
@@ -2333,7 +2611,7 @@ void AliFlowAnalysisWithQCumulants::CalculateCorrelationsForDifferentialFlow(TSt
    
     // fill the 2D profile to get the average correlation for each (pt, eta) bin:
     if(type == "POI")
-    {
+    { 
      f2pPtEtaPOI->Fill(fPtMin+(p-1)*dBinWidthPt,fEtaMin+(e-1)*dBinWidthEta,two1n1nPtEta,dmPtEta*dMult-dmPrimePrimePtEta);
     }
     else if(type == "RP")
@@ -2341,7 +2619,7 @@ void AliFlowAnalysisWithQCumulants::CalculateCorrelationsForDifferentialFlow(TSt
      f2pPtEtaRP->Fill(fPtMin+(p-1)*dBinWidthPt,fEtaMin+(e-1)*dBinWidthEta,two1n1nPtEta,dmPtEta*dMult-dmPrimePrimePtEta);   
     }
    } // end of if(dmPtEta*dMult-dmPrimePrimePtEta)
-   
+  
    // 4'-particle correlation:
    Double_t four1n1n1n1nPtEta = 0.;
    if((dmPtEta-dmPrimePrimePtEta)*dMult*(dMult-1.)*(dMult-2.)
@@ -2550,9 +2828,9 @@ void AliFlowAnalysisWithQCumulants::CalculateWeightedCorrelationsForDifferential
 //================================================================================================================================
 
 
-void AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceCosTerms()
+void AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlowCosTerms()
 {
- // calculate corrections for non-uniform acceptance of the detector (cos terms)
+ // calculate corrections for non-uniform acceptance of the detector for no-name integrated flow (cos terms)
  
  // multiplicity:
  Double_t dMult = (*fSMpk)(0,0);
@@ -2611,15 +2889,15 @@ void AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceC
   fQCorrectionsCos->Fill(2.,cosP1nM1nM1n,dMult*(dMult-1)*(dMult-2));  
  } 
  
-} // end of AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceCosTerms()
+} // end of AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlowCosTerms()
 
 
 //================================================================================================================================
 
 
-void AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceSinTerms()
+void AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlowSinTerms()
 {
- // calculate corrections for non-uniform acceptance of the detector (sin terms)
+ // calculate corrections for non-uniform acceptance of the detector for no-name integrated flow (sin terms)
  
  // multiplicity:
  Double_t dMult = (*fSMpk)(0,0);
@@ -2678,7 +2956,309 @@ void AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceS
   fQCorrectionsSin->Fill(2.,sinP1nM1nM1n,dMult*(dMult-1)*(dMult-2));  
  } 
  
-} // end of AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceSinTerms()
+} // end of AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlowSinTerms()
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms(TString type)
+{
+ // calculate corrections for non-uniform acceptance of the detector for differential flow (cos terms)
+ 
+ // pt and eta bin width:
+ Double_t dBinWidthPt = 0.; // to be improved (should I promote this variable to data members?)
+ Double_t dBinWidthEta = 0.; // to be improved (should I promote this variable to data members?)
+ 
+ if(fnBinsPt) dBinWidthPt=(fPtMax-fPtMin)/fnBinsPt;  
+ if(fnBinsEta) dBinWidthEta=(fEtaMax-fEtaMin)/fnBinsEta;  
+ 
+ // multiplicity:
+ //Double_t dMult = (*fSMpk)(0,0);
+ 
+ // real and imaginary parts of non-weighted Q-vectors evaluated in harmonics n, 2n, 3n and 4n: 
+ //Double_t dReQ1n = (*fReQ)(0,0);
+ //Double_t dReQ2n = (*fReQ)(1,0);
+ //Double_t dReQ3n = (*fReQ)(2,0);
+ //Double_t dReQ4n = (*fReQ)(3,0);
+ //Double_t dImQ1n = (*fImQ)(0,0);
+ //Double_t dImQ2n = (*fImQ)(1,0);
+ //Double_t dImQ3n = (*fImQ)(2,0);
+ //Double_t dImQ4n = (*fImQ)(3,0);
+
+ // looping over all (pt,eta) bins and calculating correlations needed for differential flow: 
+ for(Int_t p=1;p<=fnBinsPt;p++)
+ {
+  for(Int_t e=1;e<=fnBinsEta;e++)
+  {
+   // real and imaginary parts of q_n (non-weighted Q-vector evaluated only for POIs in harmonic n for each (pt,eta) bin): 
+   Double_t dReqnPtEta = 0.;
+   Double_t dImqnPtEta = 0.;
+
+   // number of POIs in each (pt,eta) bin:
+   Double_t dmPtEta = 0.;
+
+   // real and imaginary parts of q''_{n}, q''_{2n}, ... 
+   // (non-weighted Q-vectors evaluated only for particles which are both RPs and POIs in harmonic n, 2n, ... for each (pt,eta) bin): 
+   //Double_t dReqPrimePrime1nPtEta = 0.;
+   //Double_t dImqPrimePrime1nPtEta = 0.;
+   //Double_t dReqPrimePrime2nPtEta = 0.;
+   //Double_t dImqPrimePrime2nPtEta = 0.;
+
+   // number of particles which are both RPs and POIs in each (pt,eta) bin:
+   //Double_t dmPrimePrimePtEta = 0.;
+   
+   if(type == "POI")
+   {
+    // q''_{n}, q''_{2n}:
+    //...............................................................................................
+    //dReqPrimePrime1nPtEta = fReqPrimePrime1nPtEta->GetBinContent(fReqPrimePrime1nPtEta->GetBin(p,e));
+    //dImqPrimePrime1nPtEta = fImqPrimePrime1nPtEta->GetBinContent(fImqPrimePrime1nPtEta->GetBin(p,e));
+    //dReqPrimePrime2nPtEta = fReqPrimePrime2nPtEta->GetBinContent(fReqPrimePrime2nPtEta->GetBin(p,e));
+    //dImqPrimePrime2nPtEta = fImqPrimePrime2nPtEta->GetBinContent(fImqPrimePrime2nPtEta->GetBin(p,e));
+    //...............................................................................................
+   
+    // m'':
+    //dmPrimePrimePtEta = fmPrimePrimePtEta->GetBinContent(fmPrimePrimePtEta->GetBin(p,e));
+   
+    // q'_{n}: 
+    dReqnPtEta = fReqnPtEta->GetBinContent(fReqnPtEta->GetBin(p,e));
+    dImqnPtEta = fImqnPtEta->GetBinContent(fImqnPtEta->GetBin(p,e));
+    dmPtEta    = fmPtEta->GetBinContent(fmPtEta->GetBin(p,e));
+   }
+   else if(type == "RP")
+   {
+    // q_RP{n}, q_RP{2n}:
+    //...............................................................................................
+    //dReqPrimePrime1nPtEta = fReqRP1nPtEta->GetBinContent(fReqRP1nPtEta->GetBin(p,e));
+    //dImqPrimePrime1nPtEta = fImqRP1nPtEta->GetBinContent(fImqRP1nPtEta->GetBin(p,e));
+    //dReqPrimePrime2nPtEta = fReqRP2nPtEta->GetBinContent(fReqRP2nPtEta->GetBin(p,e));
+    //dImqPrimePrime2nPtEta = fImqRP2nPtEta->GetBinContent(fImqRP2nPtEta->GetBin(p,e));
+    //...............................................................................................
+   
+    // m'':
+    //dmPrimePrimePtEta = fmRPPtEta->GetBinContent(fmRPPtEta->GetBin(p,e));
+   
+    dReqnPtEta = fReqRP1nPtEta->GetBinContent(fReqRP1nPtEta->GetBin(p,e)); // not a bug ;-)
+    dImqnPtEta = fImqRP1nPtEta->GetBinContent(fImqRP1nPtEta->GetBin(p,e)); // not a bug ;-)
+    dmPtEta    = fmRPPtEta->GetBinContent(fmRPPtEta->GetBin(p,e));         // not a bug ;-) 
+   }
+   
+   // 1'-p correction:
+   Double_t oneCosP1nPsiPtEta = 0.;
+   
+   if(dmPtEta)
+   {
+    oneCosP1nPsiPtEta = dReqnPtEta/dmPtEta;
+   
+    // fill the 2D profile to get the average 1'-p correction for each (pt, eta) bin:
+    if(type == "POI")
+    { 
+     fCorrectionsCosP1nPsiPtEtaPOI->Fill(fPtMin+(p-1)*dBinWidthPt,fEtaMin+(e-1)*dBinWidthEta,
+                                         oneCosP1nPsiPtEta,dmPtEta);
+    }
+    else if(type == "RP")
+    {
+     fCorrectionsCosP1nPsiPtEtaRP->Fill(fPtMin+(p-1)*dBinWidthPt,fEtaMin+(e-1)*dBinWidthEta,
+                                         oneCosP1nPsiPtEta,dmPtEta);
+    }
+   } // end of if(dmPtEta*dMult-dmPrimePrimePtEta)
+   
+   /*
+   
+   // 4'-particle correlation:
+   Double_t four1n1n1n1nPtEta = 0.;
+   if((dmPtEta-dmPrimePrimePtEta)*dMult*(dMult-1.)*(dMult-2.)
+       + dmPrimePrimePtEta*(dMult-1.)*(dMult-2.)*(dMult-3.)) // to be improved (introduce a new variable for this expression)
+   {
+    four1n1n1n1nPtEta = ((pow(dReQ1n,2.)+pow(dImQ1n,2.))*(dReqnPtEta*dReQ1n+dImqnPtEta*dImQ1n)
+                      - dReqPrimePrime2nPtEta*(pow(dReQ1n,2.)-pow(dImQ1n,2.))
+                      - 2.*dImqPrimePrime2nPtEta*dReQ1n*dImQ1n
+                      - dReqnPtEta*(dReQ1n*dReQ2n+dImQ1n*dImQ2n)
+                      + dImqnPtEta*(dImQ1n*dReQ2n-dReQ1n*dImQ2n)
+                      - 2.*dMult*(dReqnPtEta*dReQ1n+dImqnPtEta*dImQ1n)
+                      - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))*dmPrimePrimePtEta                      
+                      + 6.*(dReqPrimePrime1nPtEta*dReQ1n+dImqPrimePrime1nPtEta*dImQ1n)                                            
+                      + 1.*(dReqPrimePrime2nPtEta*dReQ2n+dImqPrimePrime2nPtEta*dImQ2n)                      
+                      + 2.*(dReqnPtEta*dReQ1n+dImqnPtEta*dImQ1n)                       
+                      + 2.*dmPrimePrimePtEta*dMult                      
+                      - 6.*dmPrimePrimePtEta)        
+                      / ((dmPtEta-dmPrimePrimePtEta)*dMult*(dMult-1.)*(dMult-2.)
+                          + dmPrimePrimePtEta*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+    
+    // fill the 2D profile to get the average correlation for each (pt, eta) bin:
+    if(type == "POI")
+    {
+     f4pPtEtaPOI->Fill(fPtMin+(p-1)*dBinWidthPt,fEtaMin+(e-1)*dBinWidthEta,four1n1n1n1nPtEta,
+                       (dmPtEta-dmPrimePrimePtEta)*dMult*(dMult-1.)*(dMult-2.)
+                        + dmPrimePrimePtEta*(dMult-1.)*(dMult-2.)*(dMult-3.));
+    }
+    else if(type == "RP")
+    {
+     f4pPtEtaRP->Fill(fPtMin+(p-1)*dBinWidthPt,fEtaMin+(e-1)*dBinWidthEta,four1n1n1n1nPtEta,
+                      (dmPtEta-dmPrimePrimePtEta)*dMult*(dMult-1.)*(dMult-2.)
+                       + dmPrimePrimePtEta*(dMult-1.)*(dMult-2.)*(dMult-3.));   
+    }
+   } // end of if((dmPtEta-dmPrimePrimePtEta)*dMult*(dMult-1.)*(dMult-2.)
+     //            +dmPrimePrimePtEta*(dMult-1.)*(dMult-2.)*(dMult-3.))
+   
+  */
+   
+  } // end of for(Int_t e=1;e<=fnBinsEta;e++)
+ } // end of for(Int_t p=1;p<=fnBinsPt;p++)
+ 
+} // end of AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms(TString type)
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowSinTerms(TString type)
+{
+ // calculate corrections for non-uniform acceptance of the detector for differential flow (sin terms)
+ 
+ // pt and eta bin width:
+ Double_t dBinWidthPt = 0.; // to be improved (should I promote this variable to data members?)
+ Double_t dBinWidthEta = 0.; // to be improved (should I promote this variable to data members?)
+ 
+ if(fnBinsPt) dBinWidthPt=(fPtMax-fPtMin)/fnBinsPt;  
+ if(fnBinsEta) dBinWidthEta=(fEtaMax-fEtaMin)/fnBinsEta;  
+ 
+ // multiplicity:
+ //Double_t dMult = (*fSMpk)(0,0);
+ 
+ // real and imaginary parts of non-weighted Q-vectors evaluated in harmonics n, 2n, 3n and 4n: 
+ //Double_t dReQ1n = (*fReQ)(0,0);
+ //Double_t dReQ2n = (*fReQ)(1,0);
+ //Double_t dReQ3n = (*fReQ)(2,0);
+ //Double_t dReQ4n = (*fReQ)(3,0);
+ //Double_t dImQ1n = (*fImQ)(0,0);
+ //Double_t dImQ2n = (*fImQ)(1,0);
+ //Double_t dImQ3n = (*fImQ)(2,0);
+ //Double_t dImQ4n = (*fImQ)(3,0);
+
+ // looping over all (pt,eta) bins and calculating correlations needed for differential flow: 
+ for(Int_t p=1;p<=fnBinsPt;p++)
+ {
+  for(Int_t e=1;e<=fnBinsEta;e++)
+  {
+   // real and imaginary parts of q_n (non-weighted Q-vector evaluated only for POIs in harmonic n for each (pt,eta) bin): 
+   Double_t dReqnPtEta = 0.;
+   Double_t dImqnPtEta = 0.;
+
+   // number of POIs in each (pt,eta) bin:
+   Double_t dmPtEta = 0.;
+
+   // real and imaginary parts of q''_{n}, q''_{2n}, ... 
+   // (non-weighted Q-vectors evaluated only for particles which are both RPs and POIs in harmonic n, 2n, ... for each (pt,eta) bin): 
+   //Double_t dReqPrimePrime1nPtEta = 0.;
+   //Double_t dImqPrimePrime1nPtEta = 0.;
+   //Double_t dReqPrimePrime2nPtEta = 0.;
+   //Double_t dImqPrimePrime2nPtEta = 0.;
+
+   // number of particles which are both RPs and POIs in each (pt,eta) bin:
+   //Double_t dmPrimePrimePtEta = 0.;
+   
+   if(type == "POI")
+   {
+    // q''_{n}, q''_{2n}:
+    //...............................................................................................
+    //dReqPrimePrime1nPtEta = fReqPrimePrime1nPtEta->GetBinContent(fReqPrimePrime1nPtEta->GetBin(p,e));
+    //dImqPrimePrime1nPtEta = fImqPrimePrime1nPtEta->GetBinContent(fImqPrimePrime1nPtEta->GetBin(p,e));
+    //dReqPrimePrime2nPtEta = fReqPrimePrime2nPtEta->GetBinContent(fReqPrimePrime2nPtEta->GetBin(p,e));
+    //dImqPrimePrime2nPtEta = fImqPrimePrime2nPtEta->GetBinContent(fImqPrimePrime2nPtEta->GetBin(p,e));
+    //...............................................................................................
+   
+    // m'':
+    //dmPrimePrimePtEta = fmPrimePrimePtEta->GetBinContent(fmPrimePrimePtEta->GetBin(p,e));
+   
+    // q'_{n}: 
+    dReqnPtEta = fReqnPtEta->GetBinContent(fReqnPtEta->GetBin(p,e));
+    dImqnPtEta = fImqnPtEta->GetBinContent(fImqnPtEta->GetBin(p,e));
+    dmPtEta    = fmPtEta->GetBinContent(fmPtEta->GetBin(p,e));
+   }
+   else if(type == "RP")
+   {
+    // q_RP{n}, q_RP{2n}:
+    //...............................................................................................
+    //dReqPrimePrime1nPtEta = fReqRP1nPtEta->GetBinContent(fReqRP1nPtEta->GetBin(p,e));
+    //dImqPrimePrime1nPtEta = fImqRP1nPtEta->GetBinContent(fImqRP1nPtEta->GetBin(p,e));
+    //dReqPrimePrime2nPtEta = fReqRP2nPtEta->GetBinContent(fReqRP2nPtEta->GetBin(p,e));
+    //dImqPrimePrime2nPtEta = fImqRP2nPtEta->GetBinContent(fImqRP2nPtEta->GetBin(p,e));
+    //...............................................................................................
+   
+    // m'':
+    //dmPrimePrimePtEta = fmRPPtEta->GetBinContent(fmRPPtEta->GetBin(p,e));
+   
+    dReqnPtEta = fReqRP1nPtEta->GetBinContent(fReqRP1nPtEta->GetBin(p,e)); // not a bug ;-)
+    dImqnPtEta = fImqRP1nPtEta->GetBinContent(fImqRP1nPtEta->GetBin(p,e)); // not a bug ;-)
+    dmPtEta    = fmRPPtEta->GetBinContent(fmRPPtEta->GetBin(p,e));         // not a bug ;-) 
+   }
+   
+   // 1'-p correction:
+   Double_t oneSinP1nPsiPtEta = 0.;
+   
+   if(dmPtEta)
+   {
+    oneSinP1nPsiPtEta = dImqnPtEta/dmPtEta;
+   
+    // fill the 2D profile to get the average 1'-p correction for each (pt, eta) bin:
+    if(type == "POI")
+    { 
+     fCorrectionsSinP1nPsiPtEtaPOI->Fill(fPtMin+(p-1)*dBinWidthPt,fEtaMin+(e-1)*dBinWidthEta,
+                                         oneSinP1nPsiPtEta,dmPtEta);
+    }
+    else if(type == "RP")
+    {
+     fCorrectionsSinP1nPsiPtEtaRP->Fill(fPtMin+(p-1)*dBinWidthPt,fEtaMin+(e-1)*dBinWidthEta,
+                                         oneSinP1nPsiPtEta,dmPtEta);
+    }
+   } // end of if(dmPtEta*dMult-dmPrimePrimePtEta)
+   
+   /*
+   
+   // 4'-particle correlation:
+   Double_t four1n1n1n1nPtEta = 0.;
+   if((dmPtEta-dmPrimePrimePtEta)*dMult*(dMult-1.)*(dMult-2.)
+       + dmPrimePrimePtEta*(dMult-1.)*(dMult-2.)*(dMult-3.)) // to be improved (introduce a new variable for this expression)
+   {
+    four1n1n1n1nPtEta = ((pow(dReQ1n,2.)+pow(dImQ1n,2.))*(dReqnPtEta*dReQ1n+dImqnPtEta*dImQ1n)
+                      - dReqPrimePrime2nPtEta*(pow(dReQ1n,2.)-pow(dImQ1n,2.))
+                      - 2.*dImqPrimePrime2nPtEta*dReQ1n*dImQ1n
+                      - dReqnPtEta*(dReQ1n*dReQ2n+dImQ1n*dImQ2n)
+                      + dImqnPtEta*(dImQ1n*dReQ2n-dReQ1n*dImQ2n)
+                      - 2.*dMult*(dReqnPtEta*dReQ1n+dImqnPtEta*dImQ1n)
+                      - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))*dmPrimePrimePtEta                      
+                      + 6.*(dReqPrimePrime1nPtEta*dReQ1n+dImqPrimePrime1nPtEta*dImQ1n)                                            
+                      + 1.*(dReqPrimePrime2nPtEta*dReQ2n+dImqPrimePrime2nPtEta*dImQ2n)                      
+                      + 2.*(dReqnPtEta*dReQ1n+dImqnPtEta*dImQ1n)                       
+                      + 2.*dmPrimePrimePtEta*dMult                      
+                      - 6.*dmPrimePrimePtEta)        
+                      / ((dmPtEta-dmPrimePrimePtEta)*dMult*(dMult-1.)*(dMult-2.)
+                          + dmPrimePrimePtEta*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+    
+    // fill the 2D profile to get the average correlation for each (pt, eta) bin:
+    if(type == "POI")
+    {
+     f4pPtEtaPOI->Fill(fPtMin+(p-1)*dBinWidthPt,fEtaMin+(e-1)*dBinWidthEta,four1n1n1n1nPtEta,
+                       (dmPtEta-dmPrimePrimePtEta)*dMult*(dMult-1.)*(dMult-2.)
+                        + dmPrimePrimePtEta*(dMult-1.)*(dMult-2.)*(dMult-3.));
+    }
+    else if(type == "RP")
+    {
+     f4pPtEtaRP->Fill(fPtMin+(p-1)*dBinWidthPt,fEtaMin+(e-1)*dBinWidthEta,four1n1n1n1nPtEta,
+                      (dmPtEta-dmPrimePrimePtEta)*dMult*(dMult-1.)*(dMult-2.)
+                       + dmPrimePrimePtEta*(dMult-1.)*(dMult-2.)*(dMult-3.));   
+    }
+   } // end of if((dmPtEta-dmPrimePrimePtEta)*dMult*(dMult-1.)*(dMult-2.)
+     //            +dmPrimePrimePtEta*(dMult-1.)*(dMult-2.)*(dMult-3.))
+   
+  */
+   
+  } // end of for(Int_t e=1;e<=fnBinsEta;e++)
+ } // end of for(Int_t p=1;p<=fnBinsPt;p++)
+ 
+} // end of AliFlowAnalysisWithQCumulants::CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowSinTerms(TString type)
 
 
 //================================================================================================================================
@@ -3276,6 +3856,10 @@ void AliFlowAnalysisWithQCumulants::EvaluateNestedLoopsForDifferentialFlow(AliFl
   if(!((fTrack->Pt()>=1.1 && fTrack->Pt()<1.2) && (fTrack->Eta()>=-0.55 && fTrack->Eta()<-0.525) && (fTrack->InPOISelection())))continue; 
   psi1=fTrack->Phi();
   if(phiWeights) wPhi1 = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(psi1*nBinsPhi/TMath::TwoPi())));
+  
+  fDirectCorrectionsDiffFlowCos->Fill(0.,cos(1.*n*(psi1)),1.); // <<cos(n*(psi1))>>
+  fDirectCorrectionsDiffFlowSin->Fill(0.,sin(1.*n*(psi1)),1.); // <<sin(n*(psi1))>>
+  
   for(Int_t i2=0;i2<nPrim;i2++)
   {
    if(i2==i1)continue;
@@ -3751,21 +4335,62 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   // multi-particle correlations calculated with nested loop (needed for int. flow)
   TProfile *directCorrelationsDiffFlowW = dynamic_cast<TProfile*>(outputListHistos->FindObject("fDirectCorrelationsDiffFlowW"));
   
-  // corrections for non-uniform acceptance (cos terms) calculated with nested loop
+  // corrections for non-uniform acceptance (cos terms) calculated with nested loop (integrated flow)
   TProfile *directCorrectionsCos = dynamic_cast<TProfile*>(outputListHistos->FindObject("fDirectCorrectionsCos"));
   
-  // corrections for non-uniform acceptance (sin terms) calculated with nested loop
+  // corrections for non-uniform acceptance (sin terms) calculated with nested loop (integrated flow)
   TProfile *directCorrectionsSin = dynamic_cast<TProfile*>(outputListHistos->FindObject("fDirectCorrectionsSin"));
   
+  // corrections for non-uniform acceptance (cos terms) calculated with nested loop (differential flow)
+  TProfile *directCorrectionsDiffFlowCos = dynamic_cast<TProfile*>(outputListHistos->FindObject("fDirectCorrectionsDiffFlowCos"));
   
-  
-  
+  // corrections for non-uniform acceptance (sin terms) calculated with nested loop (differential flow)
+  TProfile *directCorrectionsDiffFlowSin = dynamic_cast<TProfile*>(outputListHistos->FindObject("fDirectCorrectionsDiffFlowSin"));
+
   // ...............................................................................................................................................
   // non-weighted correlations for each (pt,eta) bin for POIs:
   TProfile2D *twoPtEtaPOI   = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("DifferentialFlow")))->FindObject("f2pPtEtaPOI"));
   TProfile2D *fourPtEtaPOI  = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("DifferentialFlow")))->FindObject("f4pPtEtaPOI"));
   TProfile2D *sixPtEtaPOI   = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("DifferentialFlow")))->FindObject("f6pPtEtaPOI"));
   TProfile2D *eightPtEtaPOI = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("DifferentialFlow")))->FindObject("f8pPtEtaPOI"));
+
+
+  //...................................................................................................... 
+
+
+  // terms: corrections for non-uniform acceptance to non-weighted correlations for differential flow of POIs:
+  TProfile2D *correctionsCosP1nPsiPtEtaPOI = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("DifferentialFlow")))->FindObject("fCorrectionsCosP1nPsiPtEtaPOI"));
+  TProfile2D *correctionsSinP1nPsiPtEtaPOI = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("DifferentialFlow")))->FindObject("fCorrectionsSinP1nPsiPtEtaPOI"));
+  
+  
+  //....
+  
+  
+  // terms: corrections for non-uniform acceptance to non-weighted correlations for differential flow of POIs:
+  TProfile2D *correctionsCosP1nPsiPtEtaRP = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("DifferentialFlow")))->FindObject("fCorrectionsCosP1nPsiPtEtaRP"));
+  TProfile2D *correctionsSinP1nPsiPtEtaRP = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("DifferentialFlow")))->FindObject("fCorrectionsSinP1nPsiPtEtaRP"));
+  
+  
+  //...................................................................................................... 
+  
+            
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of POIs:
+  TH2D *twoFinalCorrectionForNUAPtEtaPOI = dynamic_cast<TH2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f2pFinalCorrectionsForNUAPtEtaPOI"));
+  TH2D *fourFinalCorrectionForNUAPtEtaPOI = dynamic_cast<TH2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f4pFinalCorrectionsForNUAPtEtaPOI"));
+  TH2D *sixFinalCorrectionForNUAPtEtaPOI = dynamic_cast<TH2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f6pFinalCorrectionsForNUAPtEtaPOI"));
+  TH2D *eightFinalCorrectionForNUAPtEtaPOI = dynamic_cast<TH2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f8pFinalCorrectionsForNUAPtEtaPOI"));  
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of POIs:
+  TH1D *twoFinalCorrectionForNUAPtPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f2pFinalCorrectionsForNUAPtPOI"));
+  TH1D *fourFinalCorrectionForNUAPtPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f4pFinalCorrectionsForNUAPtPOI"));
+  TH1D *sixFinalCorrectionForNUAPtPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f6pFinalCorrectionsForNUAPtPOI"));
+  TH1D *eightFinalCorrectionForNUAPtPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f8pFinalCorrectionsForNUAPtPOI"));  
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of POIs:
+  TH1D *twoFinalCorrectionForNUAEtaPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f2pFinalCorrectionsForNUAEtaPOI"));
+  TH1D *fourFinalCorrectionForNUAEtaPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f4pFinalCorrectionsForNUAEtaPOI"));
+  TH1D *sixFinalCorrectionForNUAEtaPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f6pFinalCorrectionsForNUAEtaPOI"));
+  TH1D *eightFinalCorrectionForNUAEtaPOI = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f8pFinalCorrectionsForNUAEtaPOI"));  
  
   // non-weighted final results for differential flow for each for POIs:
   // 3D (pt,eta)
@@ -3800,7 +4425,7 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   TH1D *vn2ndPtPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("fvn2ndPtPOIW"));  
   TH1D *vn4thPtPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("fvn4thPtPOIW")); 
   TH1D *vn6thPtPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("fvn6thPtPOIW")); 
-  TH1D *vn8thPtPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("fvn8thPtPOIW"));
+	  TH1D *vn8thPtPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("fvn8thPtPOIW"));
   // 2D (eta)
   TH1D *vn2ndEtaPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("fvn2ndEtaPOIW"));  
   TH1D *vn4thEtaPOIW = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("fvn4thEtaPOIW")); 
@@ -3812,6 +4437,24 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   TProfile2D *fourPtEtaRP  = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("DifferentialFlow")))->FindObject("f4pPtEtaRP"));
   TProfile2D *sixPtEtaRP   = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("DifferentialFlow")))->FindObject("f6pPtEtaRP"));
   TProfile2D *eightPtEtaRP = dynamic_cast<TProfile2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("DifferentialFlow")))->FindObject("f8pPtEtaRP"));
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of RPs:
+  TH2D *twoFinalCorrectionForNUAPtEtaRP = dynamic_cast<TH2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f2pFinalCorrectionsForNUAPtEtaRP"));
+  TH2D *fourFinalCorrectionForNUAPtEtaRP = dynamic_cast<TH2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f4pFinalCorrectionsForNUAPtEtaRP"));
+  TH2D *sixFinalCorrectionForNUAPtEtaRP = dynamic_cast<TH2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f6pFinalCorrectionsForNUAPtEtaRP"));
+  TH2D *eightFinalCorrectionForNUAPtEtaRP = dynamic_cast<TH2D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f8pFinalCorrectionsForNUAPtEtaRP")); 
+ 
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of RPs:
+  TH1D *twoFinalCorrectionForNUAPtRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f2pFinalCorrectionsForNUAPtRP"));
+  TH1D *fourFinalCorrectionForNUAPtRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f4pFinalCorrectionsForNUAPtRP"));
+  TH1D *sixFinalCorrectionForNUAPtRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f6pFinalCorrectionsForNUAPtRP"));
+  TH1D *eightFinalCorrectionForNUAPtRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f8pFinalCorrectionsForNUAPtRP"));  
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of RPs:
+  TH1D *twoFinalCorrectionForNUAEtaRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f2pFinalCorrectionsForNUAEtaRP"));
+  TH1D *fourFinalCorrectionForNUAEtaRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f4pFinalCorrectionsForNUAEtaRP"));
+  TH1D *sixFinalCorrectionForNUAEtaRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f6pFinalCorrectionsForNUAEtaRP"));
+  TH1D *eightFinalCorrectionForNUAEtaRP = dynamic_cast<TH1D*>((dynamic_cast<TList*>(outputListHistos->FindObject("Results")))->FindObject("f8pFinalCorrectionsForNUAEtaRP")); 
  
   // non-weighted final results for differential flow for RPs:
   // 3D (pt,eta)
@@ -3925,12 +4568,46 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   this->SetDirectCorrelationsDiffFlowW(directCorrelationsDiffFlowW);
   this->SetDirectCorrectionsCos(directCorrectionsCos);
   this->SetDirectCorrectionsSin(directCorrectionsSin);
+  this->SetDirectCorrectionsDiffFlowCos(directCorrectionsDiffFlowCos);
+  this->SetDirectCorrectionsDiffFlowSin(directCorrectionsDiffFlowSin);
   
   // non-weighted correlations for each (pt,eta) bin for POIs:
   this->Set2pPtEtaPOI(twoPtEtaPOI);
   this->Set4pPtEtaPOI(fourPtEtaPOI);
   this->Set6pPtEtaPOI(sixPtEtaPOI);
   this->Set8pPtEtaPOI(eightPtEtaPOI);
+  
+  
+  //............................................
+  // terms: corrections for non-uniform acceptance to non-weighted correlations for differential flow of POIs:
+  this->SetCorrectionsCosP1nPsiPtEtaPOI(correctionsCosP1nPsiPtEtaPOI);
+  this->SetCorrectionsSinP1nPsiPtEtaPOI(correctionsSinP1nPsiPtEtaPOI);
+  
+  
+  //....
+  
+  
+  this->SetCorrectionsCosP1nPsiPtEtaRP(correctionsCosP1nPsiPtEtaRP);
+  this->SetCorrectionsSinP1nPsiPtEtaRP(correctionsSinP1nPsiPtEtaRP);      
+  //............................................
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of POIs:
+  this->Set2pFinalCorrectionsForNUAPtEtaPOI(twoFinalCorrectionForNUAPtEtaPOI); 
+  this->Set4pFinalCorrectionsForNUAPtEtaPOI(fourFinalCorrectionForNUAPtEtaPOI);
+  this->Set6pFinalCorrectionsForNUAPtEtaPOI(sixFinalCorrectionForNUAPtEtaPOI);
+  this->Set8pFinalCorrectionsForNUAPtEtaPOI(eightFinalCorrectionForNUAPtEtaPOI);
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of POIs:
+  this->Set2pFinalCorrectionsForNUAPtPOI(twoFinalCorrectionForNUAPtPOI);
+  this->Set4pFinalCorrectionsForNUAPtPOI(fourFinalCorrectionForNUAPtPOI);
+  this->Set6pFinalCorrectionsForNUAPtPOI(sixFinalCorrectionForNUAPtPOI);
+  this->Set8pFinalCorrectionsForNUAPtPOI(eightFinalCorrectionForNUAPtPOI);
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of POIs:
+  this->Set2pFinalCorrectionsForNUAEtaPOI(twoFinalCorrectionForNUAEtaPOI);
+  this->Set4pFinalCorrectionsForNUAEtaPOI(fourFinalCorrectionForNUAEtaPOI);
+  this->Set6pFinalCorrectionsForNUAEtaPOI(sixFinalCorrectionForNUAEtaPOI);
+  this->Set8pFinalCorrectionsForNUAEtaPOI(eightFinalCorrectionForNUAEtaPOI);
   
   // non-weighted final results for differential flow for POIs:
   // 3D (pt,eta)
@@ -3977,6 +4654,24 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   this->Set4pPtEtaRP(fourPtEtaRP);
   this->Set6pPtEtaRP(sixPtEtaRP);
   this->Set8pPtEtaRP(eightPtEtaRP);
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of RPs:
+  this->Set2pFinalCorrectionsForNUAPtEtaRP(twoFinalCorrectionForNUAPtEtaRP);
+  this->Set4pFinalCorrectionsForNUAPtEtaRP(fourFinalCorrectionForNUAPtEtaRP);
+  this->Set6pFinalCorrectionsForNUAPtEtaRP(sixFinalCorrectionForNUAPtEtaRP);
+  this->Set8pFinalCorrectionsForNUAPtEtaRP(eightFinalCorrectionForNUAPtEtaRP);
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of RPs:
+  this->Set2pFinalCorrectionsForNUAPtRP(twoFinalCorrectionForNUAPtRP);
+  this->Set4pFinalCorrectionsForNUAPtRP(fourFinalCorrectionForNUAPtRP);
+  this->Set6pFinalCorrectionsForNUAPtRP(sixFinalCorrectionForNUAPtRP);
+  this->Set8pFinalCorrectionsForNUAPtRP(eightFinalCorrectionForNUAPtRP);
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of RPs:
+  this->Set2pFinalCorrectionsForNUAEtaRP(twoFinalCorrectionForNUAEtaRP);
+  this->Set4pFinalCorrectionsForNUAEtaRP(fourFinalCorrectionForNUAEtaRP);
+  this->Set6pFinalCorrectionsForNUAEtaRP(sixFinalCorrectionForNUAEtaRP);
+  this->Set8pFinalCorrectionsForNUAEtaRP(eightFinalCorrectionForNUAEtaRP);
   
   // non-weighted final results for differential flow for RPs:
   // 3D (pt,eta)
@@ -4035,7 +4730,7 @@ void AliFlowAnalysisWithQCumulants::Finish()
  {
   this->CompareDirectAndQCorrelationsForIntegratedFlow(fUseWeights);
  } 
- // compare correlations needed for integrated flow:
+ // compare correlations needed for differential flow: 
  if(fDirectCorrelationsDiffFlow->GetBinContent(1) != 0 || fDirectCorrelationsDiffFlowW->GetBinContent(1) != 0) 
  {
   this->CompareDirectAndQCorrelationsForDifferentialFlow(fUseWeights);
@@ -4048,7 +4743,12 @@ void AliFlowAnalysisWithQCumulants::Finish()
  //                      **** CALCULATE THE FINAL RESULTS ****
  //                      *************************************    
   
- if(!fUseWeights) this->CalculateFinalCorrectionsForNonUniformAcceptance(); // to be improved (to calculate also when weights are used) 
+ if(!fUseWeights) 
+ {
+  this->CalculateFinalCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlow(); // to be improved (to calculate also when weights are used) 
+  this->CalculateFinalCorrectionsForNonUniformAcceptanceForDifferentialFlow(kFALSE,"POI"); // to be improved (to calculate also when weights are used) 
+  this->CalculateFinalCorrectionsForNonUniformAcceptanceForDifferentialFlow(kFALSE,"RP"); // to be improved (to calculate also when weights are used)
+ }
   
  // integrated flow ('no-name') without weights:
  // calculate final results for no-name integrated flow without weights:
@@ -4057,7 +4757,6 @@ void AliFlowAnalysisWithQCumulants::Finish()
  // integrated flow ('no-name') with weights:
  // calculate final results for no-name integrated flow with weights:
  if(fUseWeights) this->CalculateFinalResultsForNoNameIntegratedFlow(fUseWeights);
- 
  
  //            **** POI ****
  
@@ -4220,7 +4919,7 @@ TProfile* AliFlowAnalysisWithQCumulants::MakeEtaProjection(TProfile2D *profilePt
 //================================================================================================================================
 
 
-void AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAcceptance(Bool_t useWeights)
+void AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlow(Bool_t useWeights)
 {
  // final corrections for non-uniform acceptance for QC{2}, QC{4}, QC{6} and QC{8}
  
@@ -4245,7 +4944,7 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAccept
  //Double_t sixCorrection   = 0.; // bias to QC{6} coming from non-uniform acceptance of the detector  
  //Double_t eightCorrection = 0.; // bias to QC{8} coming from non-uniform acceptance of the detector  
  
- if(fQCorrectionsCos && fQCorrectionsCos && fFinalCorrectionsForNUA)
+ if(fQCorrectionsCos && fQCorrectionsSin && fFinalCorrectionsForNUA)
  { 
   // correction to QC{2}:
   Double_t twoCorrection1stTerm = pow(fQCorrectionsCos->GetBinContent(1),2); // <<cos(n*phi1)>>^2 
@@ -4301,11 +5000,133 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAccept
 
  } else 
    {
-    cout<<"WARNING: fQCorrectionsCos, fQCorrectionsCos or fFinalCorrectionsForNUA is NULL in QC::CFCFNUA !!!!"<<endl;
-    cout<<"         Corrections for non-uniform acceptance were not calculated.                              "<<endl;
+    cout<<"WARNING: fQCorrectionsCos, fQCorrectionsSin or fFinalCorrectionsForNUA is NULL in QC::CFCFNUA !!!!"<<endl;
+    cout<<"         Corrections for non-uniform acceptance were not calculated for 'noname' integrated flow. "<<endl;
    }
   
-} // end of AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAcceptance(Bool_t useWeights)
+} // end of AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlow(Bool_t useWeights)
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAcceptanceForDifferentialFlow(Bool_t useWeights,TString type)
+{
+ // calculate final corrections due to non-uniform acceptance of the detector to reduced multi-particle correlations
+ if(!(useWeights))
+ {
+  if(type == "POI")
+  { 
+   // **** corrections for non-uniform acceptance for 2nd order QC' for POI's ****
+   
+   // 1st term: <<cos(n*psi)>><<cos(n*phi)>>:
+   if(fCorrectionsCosP1nPsiPtEtaPOI && fQCorrectionsCos)
+   {
+    // pt,eta: 
+    TH2D *correctionPtEta1stTerm = new TH2D(*(fCorrectionsCosP1nPsiPtEtaPOI->ProjectionXY("","e")));
+    correctionPtEta1stTerm->Scale(fQCorrectionsCos->GetBinContent(1)); // to be improved: are errors propagated correctly here?   
+    if(f2pFinalCorrectionsForNUAPtEtaPOI) f2pFinalCorrectionsForNUAPtEtaPOI->Add(correctionPtEta1stTerm); // to be improved (if condition goes somewhere else)
+    delete correctionPtEta1stTerm;
+    // pt:
+    TH1D *correctionPt1stTerm = new TH1D(*((this->MakePtProjection(fCorrectionsCosP1nPsiPtEtaPOI))->ProjectionX("","e"))); // to be improved: are errors propagated correctly here? 
+    correctionPt1stTerm->Scale(fQCorrectionsCos->GetBinContent(1)); // to be improved: are errors propagated correctly here? 
+    if(f2pFinalCorrectionsForNUAPtPOI) f2pFinalCorrectionsForNUAPtPOI->Add(correctionPt1stTerm); // to be improved (if condition goes somewhere else)
+    delete correctionPt1stTerm;
+    // eta:
+    TH1D *correctionEta1stTerm = new TH1D(*((this->MakeEtaProjection(fCorrectionsCosP1nPsiPtEtaPOI))->ProjectionX("","e"))); // to be improved: are errors propagated correctly here? 
+    correctionEta1stTerm->Scale(fQCorrectionsCos->GetBinContent(1)); // to be improved: are errors propagated correctly here? 
+    if(f2pFinalCorrectionsForNUAEtaPOI) f2pFinalCorrectionsForNUAEtaPOI->Add(correctionEta1stTerm); // to be improved (if condition goes somewhere else)
+    delete correctionEta1stTerm;    
+   } else
+     { 
+      cout<<"WARNING: (fCorrectionsCosP1nPsiPtEtaPOI && fQCorrectionsCos && f2pFinalCorrectionsForNUAPtEtaPOI) is NULL in QC::CFCFNUAFDF() !!!!  "<<endl;
+      cout<<"         Corrections for non-uniform acceptance for differential flow are not correct."<<endl;
+     } 
+     
+   // 2nd term: <<sin(n*psi)>><<sin(n*phi)>>:  
+   if(fCorrectionsSinP1nPsiPtEtaPOI && fQCorrectionsSin)
+   {
+    // pt,eta: 
+    TH2D *correctionPtEta2ndTerm = new TH2D(*(fCorrectionsSinP1nPsiPtEtaPOI->ProjectionXY("","e")));
+    correctionPtEta2ndTerm->Scale(fQCorrectionsSin->GetBinContent(1)); // to be improved: are errors propagated correctly here?    
+    if(f2pFinalCorrectionsForNUAPtEtaPOI) f2pFinalCorrectionsForNUAPtEtaPOI->Add(correctionPtEta2ndTerm); // to be improved (if condition goes somewhere else)
+    delete correctionPtEta2ndTerm;
+    // pt:
+    TH1D *correctionPt2ndTerm = new TH1D(*((this->MakePtProjection(fCorrectionsSinP1nPsiPtEtaPOI))->ProjectionX("","e"))); // to be improved: are errors propagated correctly here? 
+    correctionPt2ndTerm->Scale(fQCorrectionsSin->GetBinContent(1)); // to be improved: are errors propagated correctly here? 
+    if(f2pFinalCorrectionsForNUAPtPOI) f2pFinalCorrectionsForNUAPtPOI->Add(correctionPt2ndTerm); // to be improved (if condition goes somewhere else)
+    delete correctionPt2ndTerm;
+    // eta:
+    TH1D *correctionEta2ndTerm = new TH1D(*((this->MakeEtaProjection(fCorrectionsSinP1nPsiPtEtaPOI))->ProjectionX("","e"))); // to be improved: are errors propagated correctly here? 
+    correctionEta2ndTerm->Scale(fQCorrectionsSin->GetBinContent(1)); // to be improved: are errors propagated correctly here? 
+    if(f2pFinalCorrectionsForNUAEtaPOI) f2pFinalCorrectionsForNUAEtaPOI->Add(correctionEta2ndTerm); // to be improved (if condition goes somewhere else)
+    delete correctionEta2ndTerm; 
+   } else
+     { 
+      cout<<"WARNING: (fCorrectionsSinP1nPsiPtEtaPOI && fQCorrectionsSin) is NULL in QC::CFCFNUAFDF() !!!!  "<<endl;
+      cout<<"         Corrections for non-uniform acceptance for differential flow are not correct."<<endl;
+     } 
+  } else if(type == "RP")
+    {
+     // **** corrections for non-uniform acceptance for 2nd order QC' for RP's ****
+   
+     // 1st term: <<cos(n*psi)>><<cos(n*phi)>>:
+     if(fCorrectionsCosP1nPsiPtEtaRP && fQCorrectionsCos)
+     {
+      // pt,eta: 
+      TH2D *correctionPtEta1stTerm = new TH2D(*(fCorrectionsCosP1nPsiPtEtaRP->ProjectionXY("","e")));
+      correctionPtEta1stTerm->Scale(fQCorrectionsCos->GetBinContent(1)); // to be improved: are errors propagated correctly here?    
+      if(f2pFinalCorrectionsForNUAPtEtaRP) f2pFinalCorrectionsForNUAPtEtaRP->Add(correctionPtEta1stTerm); // to be improved (if condition goes somewhere else)
+      delete correctionPtEta1stTerm;
+      // pt:
+      TH1D *correctionPt1stTerm = new TH1D(*((this->MakePtProjection(fCorrectionsCosP1nPsiPtEtaRP))->ProjectionX("","e"))); // to be improved: are errors propagated correctly here? 
+      correctionPt1stTerm->Scale(fQCorrectionsCos->GetBinContent(1)); // to be improved: are errors propagated correctly here? 
+      if(f2pFinalCorrectionsForNUAPtRP) f2pFinalCorrectionsForNUAPtRP->Add(correctionPt1stTerm); // to be improved (if condition goes somewhere else)
+      delete correctionPt1stTerm;
+      // eta:
+      TH1D *correctionEta1stTerm = new TH1D(*((this->MakeEtaProjection(fCorrectionsCosP1nPsiPtEtaRP))->ProjectionX("","e"))); // to be improved: are errors propagated correctly here? 
+      correctionEta1stTerm->Scale(fQCorrectionsCos->GetBinContent(1)); // to be improved: are errors propagated correctly here? 
+      if(f2pFinalCorrectionsForNUAEtaRP) f2pFinalCorrectionsForNUAEtaRP->Add(correctionEta1stTerm); // to be improved (if condition goes somewhere else)
+      delete correctionEta1stTerm;    
+     } else
+       { 
+        cout<<"WARNING: (fCorrectionsCosP1nPsiPtEtaRP && fQCorrectionsCos) is NULL in QC::CFCFNUAFDF() !!!!  "<<endl;
+        cout<<"         Corrections for non-uniform acceptance for differential flow are not correct."<<endl;
+       } 
+     // 2nd term: <<sin(n*psi)>><<sin(n*phi)>>:  
+     if(fCorrectionsSinP1nPsiPtEtaRP && fQCorrectionsSin)
+     {
+      // pt,eta: 
+      TH2D *correctionPtEta2ndTerm = new TH2D(*(fCorrectionsSinP1nPsiPtEtaRP->ProjectionXY("","e")));
+      correctionPtEta2ndTerm->Scale(fQCorrectionsSin->GetBinContent(1)); // to be improved: are errors propagated correctly here?    
+      if(f2pFinalCorrectionsForNUAPtEtaRP) f2pFinalCorrectionsForNUAPtEtaRP->Add(correctionPtEta2ndTerm); // to be improved (if condition goes somewhere else)
+      delete correctionPtEta2ndTerm;
+      // pt:
+      TH1D *correctionPt2ndTerm = new TH1D(*((this->MakePtProjection(fCorrectionsSinP1nPsiPtEtaRP))->ProjectionX("","e"))); // to be improved: are errors propagated correctly here? 
+      correctionPt2ndTerm->Scale(fQCorrectionsSin->GetBinContent(1)); // to be improved: are errors propagated correctly here? 
+      if(f2pFinalCorrectionsForNUAPtRP) f2pFinalCorrectionsForNUAPtRP->Add(correctionPt2ndTerm); // to be improved (if condition goes somewhere else)
+      delete correctionPt2ndTerm;
+      // eta:
+      TH1D *correctionEta2ndTerm = new TH1D(*((this->MakeEtaProjection(fCorrectionsSinP1nPsiPtEtaRP))->ProjectionX("","e"))); // to be improved: are errors propagated correctly here? 
+      correctionEta2ndTerm->Scale(fQCorrectionsSin->GetBinContent(1)); // to be improved: are errors propagated correctly here? 
+      if(f2pFinalCorrectionsForNUAEtaRP) f2pFinalCorrectionsForNUAEtaRP->Add(correctionEta2ndTerm); // to be improved (if condition goes somewhere else)
+      delete correctionEta2ndTerm; 
+     } else
+       { 
+        cout<<"WARNING: (fCorrectionsSinP1nPsiPtEtaRP && fQCorrectionsSin) is NULL in QC::CFCFNUAFDF() !!!!  "<<endl;
+        cout<<"         Corrections for non-uniform acceptance for differential flow are not correct."<<endl;
+       }              
+    } else // to else if(type == "RP")
+      {
+       cout<<"WARNING: Type must be either POI or RP in QC::CFCFNUAFDF() !!!!                           "<<endl;
+       cout<<"         Corrections for non-uniform acceptance for differential flow were not calculated."<<endl;
+      }  
+ } else // to if(!(useWeights))
+   {
+    // ...
+   }
+ 
+} // end of AliFlowAnalysisWithQCumulants::CalculateFinalCorrectionsForNonUniformAcceptanceForDifferentialFlow(Bool_t useWeights,TString type)
 
 
 //================================================================================================================================
@@ -4679,7 +5500,6 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(
  if(namePtEta->Contains("RP")) *type  = "RP";
  if(namePtEta->Contains("W")) *w      = "W";
  if(namePtEta->Contains("2")) *order2nd  = "2";
- 
  if(profile4thPtEta) *namePtEta = profile4thPtEta->GetName();
  if(namePtEta->Contains("4")) *order4th = "4";
 
@@ -4688,7 +5508,7 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(
  
  if(profile8thPtEta) *namePtEta = profile8thPtEta->GetName();
  if(namePtEta->Contains("8")) *order8th = "8";
- 
+
  TProfile *profile2ndPt = NULL;
  TProfile *profile4thPt = NULL;
  TProfile *profile6thPt = NULL;
@@ -4730,7 +5550,7 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(
  
  if(!(*w == "W"))
  {
-  dV2 = fIntFlowResultsQC->GetBinContent(1);  
+  dV2 = fIntFlowResultsQC->GetBinContent(1); 
   dV4 = fIntFlowResultsQC->GetBinContent(2); 
   dV6 = fIntFlowResultsQC->GetBinContent(3); 
   dV8 = fIntFlowResultsQC->GetBinContent(4); 
@@ -4795,6 +5615,22 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(
    // 2nd order: 
    twoPrimePtEta = profile2ndPtEta->GetBinContent(profile2ndPtEta->GetBin(p,e));
    secondOrderDiffFlowCumulantPtEta = twoPrimePtEta;
+   
+
+   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   // to be improved (applying correction for NUA):
+   if(namePtEta->Contains("POI"))
+   {
+    if(f2pFinalCorrectionsForNUAPtEtaPOI) secondOrderDiffFlowCumulantPtEta = twoPrimePtEta 
+                                     - f2pFinalCorrectionsForNUAPtEtaPOI->GetBinContent(f2pFinalCorrectionsForNUAPtEtaPOI->GetBin(p,e)) ;
+   } else if (namePtEta->Contains("RP"))
+     {  
+      if(f2pFinalCorrectionsForNUAPtEtaRP) secondOrderDiffFlowCumulantPtEta = twoPrimePtEta 
+                                       - f2pFinalCorrectionsForNUAPtEtaRP->GetBinContent(f2pFinalCorrectionsForNUAPtEtaRP->GetBin(p,e));
+     }
+   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   
+   
    if(dV2)
    {
     dv2PtEta = secondOrderDiffFlowCumulantPtEta/dV2;
@@ -4830,6 +5666,22 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(
   // 2nd order: 
   twoPrimePt = profile2ndPt->GetBinContent(p);
   secondOrderDiffFlowCumulantPt = twoPrimePt;
+  
+  
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  // to be improved (applying correction for NUA):
+  if(namePtEta->Contains("POI"))
+  {
+   if(f2pFinalCorrectionsForNUAPtPOI) secondOrderDiffFlowCumulantPt = twoPrimePt
+                                    - f2pFinalCorrectionsForNUAPtPOI->GetBinContent(p) ;
+  } else if (namePtEta->Contains("RP"))
+    {
+     if(f2pFinalCorrectionsForNUAPtRP) secondOrderDiffFlowCumulantPt = twoPrimePt
+                                      - f2pFinalCorrectionsForNUAPtRP->GetBinContent(p);
+    }
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  
+  
   if(dV2)
   {
    dv2Pt = secondOrderDiffFlowCumulantPt/dV2;
@@ -4886,6 +5738,22 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(
   // 2nd order: 
   twoPrimeEta = profile2ndEta->GetBinContent(e);
   secondOrderDiffFlowCumulantEta = twoPrimeEta;
+  
+  
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  // to be improved (applying correction for NUA):
+  if(namePtEta->Contains("POI"))
+  {
+   if(f2pFinalCorrectionsForNUAEtaPOI) secondOrderDiffFlowCumulantEta = twoPrimeEta
+                                    - f2pFinalCorrectionsForNUAEtaPOI->GetBinContent(e) ;
+  } else if (namePtEta->Contains("RP"))
+    {
+     if(f2pFinalCorrectionsForNUAEtaRP) secondOrderDiffFlowCumulantEta = twoPrimeEta
+                                      - f2pFinalCorrectionsForNUAEtaRP->GetBinContent(e);
+    }
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  
+  
   if(dV2)
   {
    dv2Eta = secondOrderDiffFlowCumulantEta/dV2;
@@ -4904,6 +5772,7 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForDifferentialFlow(
     fCommonHistsResults2nd->FillDifferentialFlowEtaRP(e,dv2Eta,0.); //to be improved (errors && bb or bb+1 ?)
    }
      
+
   }
   
   // 4th order: 
@@ -5223,6 +6092,15 @@ void AliFlowAnalysisWithQCumulants::CompareDirectAndQCorrelationsForDifferential
   cout<<endl;  
   cout<<"<cos(n(psi1+phi2-phi3-phi4))> from Q-vectors    = "<<f4pPtEtaPOI->GetBinContent(f4pPtEtaPOI->GetBin(12,19))<<endl;
   cout<<"<cos(n(psi1+phi2-phi3-phi4))> from nested loops = "<<fDirectCorrelationsDiffFlow->GetBinContent(41)<<endl;
+  cout<<endl;   
+  cout<<"****************************************************"<<endl;
+  cout<<"****************************************************"<<endl;
+  cout<<endl;
+  cout<<"<cos(n(psi1))> from Q-vectors    = "<<fCorrectionsCosP1nPsiPtEtaPOI->GetBinContent(fCorrectionsCosP1nPsiPtEtaPOI->GetBin(12,19))<<endl;
+  cout<<"<cos(n(psi1))> from nested loops = "<<fDirectCorrectionsDiffFlowCos->GetBinContent(1)<<endl;
+  cout<<endl;  
+  cout<<"<sin(n(psi1))> from Q-vectors    = "<<fCorrectionsSinP1nPsiPtEtaPOI->GetBinContent(fCorrectionsSinP1nPsiPtEtaPOI->GetBin(12,19))<<endl;
+  cout<<"<sin(n(psi1))> from nested loops = "<<fDirectCorrectionsDiffFlowSin->GetBinContent(1)<<endl;
   cout<<endl;  
  }
  
@@ -5259,6 +6137,20 @@ void AliFlowAnalysisWithQCumulants::WriteHistograms(TString outputFileName)
 void AliFlowAnalysisWithQCumulants::TempDeleteMe()
 {
  /*
+ TProfile *tempDeleteMe = new TProfile("tempDeleteMe","tempDeleteMe",2,0,2);
+ tempDeleteMe->Fill(0.5,10);
+ tempDeleteMe->Fill(0.5,20);
+ 
+ tempDeleteMe->Fill(1.5,100);
+ tempDeleteMe->Fill(1.5,200);
+ 
+ cout<<tempDeleteMe->GetBinContent(1)<<endl;
+ cout<<tempDeleteMe->GetBinContent(2)<<endl;
+ */
+ 
+ 
+ 
+ /*
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
  TCanvas* qvectorPlot = new TCanvas("qvectorPlot","Q-vector Plot",1000,1000);
  
@@ -5292,7 +6184,7 @@ void AliFlowAnalysisWithQCumulants::TempDeleteMe()
  */                             
                                                                                                                                                               
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
-
+ /*
  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx                          
  Int_t nBinsPt=3, nBinsEta=2;
  Double_t ptMin=0., ptMax=3.;
@@ -5333,6 +6225,9 @@ void AliFlowAnalysisWithQCumulants::TempDeleteMe()
  
   tempCanvas->cd(2);  
   //tempEta->Draw();
+  
+ */ 
+  
  
  /*
  cout<<tempPtEta->GetBinContent(tempPtEta->GetBin(1,1))<<endl;
