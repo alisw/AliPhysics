@@ -10,6 +10,10 @@
 
 // SETTING THE CUTS
 
+// event selection
+const Int_t multmin = 10;  //used for CORRFW cuts and for AliFlowEventSimple!
+const Int_t multmax = 100; //used for CORRFW cuts and for AliFlowEventSimple!
+
 // For RP selection
 const Double_t ptmin1 = 0.0;
 const Double_t ptmax1 = 10.0;
@@ -153,11 +157,15 @@ if (LYZ2PROD){
   if (QA) { 
     taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kTRUE); 
     taskFE->SetAnalysisType(type);
+    taskFE->SetMinMult(multmin);
+    taskFE->SetMaxMult(multmax);
     mgr->AddTask(taskFE);
   }
   else { 
     taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kFALSE); 
     taskFE->SetAnalysisType(type);
+    taskFE->SetMinMult(multmin);
+    taskFE->SetMaxMult(multmax);
     mgr->AddTask(taskFE);
   }
  
@@ -167,6 +175,18 @@ if (LYZ2PROD){
     //Set TList for the QA histograms
     TList* qaRP  = new TList(); 
     TList* qaPOI = new TList();
+  }
+
+  //############# event cuts on multiplicity
+  AliCFEventGenCuts* mcEventCuts = new AliCFEventGenCuts("mcEventCuts","MC-level event cuts");
+  mcEventCuts->SetNTracksCut(multmin,multmax); 
+  if (QA) { 
+    mcEventCuts->SetQAOn(qaRP);
+  }
+  AliCFEventRecCuts* recEventCuts = new AliCFEventRecCuts("recEventCuts","rec-level event cuts");
+  recEventCuts->SetNTracksCut(multmin,multmax); 
+  if (QA) { 
+    recEventCuts->SetQAOn(qaRP);
   }
 
   //############# cuts on MC
@@ -303,6 +323,13 @@ if (LYZ2PROD){
     }
   }
   
+  printf("CREATE EVENT CUTS\n");
+  TObjArray* mcEventList = new TObjArray(0);
+  mcEventList->AddLast(mcEventCuts);
+    
+  TObjArray* recEventList = new TObjArray(0);
+  recEventList->AddLast(recEventCuts);
+
   printf("CREATE MC KINE CUTS\n");
   TObjArray* mcList1 = new TObjArray(0);
   mcList1->AddLast(mcKineCuts1);
@@ -339,6 +366,9 @@ if (LYZ2PROD){
   
   printf("CREATE INTERFACE AND CUTS\n");
   AliCFManager* cfmgr1 = new AliCFManager();
+  cfmgr1->SetNStepEvent(3);
+  cfmgr1->SetEventCutsList(AliCFManager::kEvtGenCuts,mcEventList); 
+  cfmgr1->SetEventCutsList(AliCFManager::kEvtRecCuts,recEventList); 
   cfmgr1->SetNStepParticle(4); 
   cfmgr1->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList1);
   cfmgr1->SetParticleCutsList(AliCFManager::kPartAccCuts,accList1);

@@ -3,6 +3,14 @@
 
 /* $Id$ */
 
+//////////////////////////////////////////////////////////////////////////
+// AliFlowEventSimpleMaker:
+// Class to fill the AliFlowEventSimple with AliFlowTrackSimple objects
+// author: N. van der Kolk (kolk@nikhef.nl),  Ante Bilandzic (anteb@nikhef.nl),  
+// Raimond Snellings (Raimond.Snellings@nikhef.nl) 
+//////////////////////////////////////////////////////////////////////////
+
+
 #ifndef AliFlowEventSimpleMaker_H
 #define AliFlowEventSimpleMaker_H
 
@@ -15,9 +23,6 @@ class AliMCEvent;
 class AliESDEvent;
 class AliAODEvent;
 
-// AliFlowEventSimpleMaker:
-// Class to fill the AliFlowEventSimple with AliFlowTrackSimple objects
-// author: N. van der Kolk (kolk@nikhef.nl),  Ante Bilandzic (anteb@nikhef.nl),  Raimond Snellings (Raimond.Snellings@nikhef.nl) 
           
 class AliFlowEventSimpleMaker {
 
@@ -44,24 +49,34 @@ class AliFlowEventSimpleMaker {
   AliFlowEventSimple* FillTracks(AliAODEvent* anInput); //use own cuts
   AliFlowEventSimple* FillTracks(AliAODEvent* anInput, AliCFManager* rpCFManager, AliCFManager* poiCFManager);  //use CF(2x)
   
-  void SetNoOfLoops(Int_t noofl) {this->fNoOfLoops = noofl;}
-  Int_t GetNoOfLoops() const {return this->fNoOfLoops;} 
+  void  SetNoOfLoops(Int_t noofl) {this->fNoOfLoops = noofl;}
+  Int_t GetNoOfLoops() const      {return this->fNoOfLoops;} 
   
-  void SetEllipticFlowValue(Double_t elfv) {this->fEllipticFlowValue = elfv;}
-  Double_t GetEllipticFlowValue() const {return this->fEllipticFlowValue;} 
+  void     SetEllipticFlowValue(Double_t elfv) {this->fEllipticFlowValue = elfv;}
+  Double_t GetEllipticFlowValue() const        {return this->fEllipticFlowValue;} 
   
-  void SetMultiplicityOfEvent(Int_t multevnt) {this->fMultiplicityOfEvent = multevnt;}
-  Int_t GetMultiplicityOfEvent() const {return this->fMultiplicityOfEvent;} 
+  void  SetMultiplicityOfEvent(Int_t multevnt) {this->fMultiplicityOfEvent = multevnt;}
+  Int_t GetMultiplicityOfEvent() const         {return this->fMultiplicityOfEvent;} 
   
+  void  SetMinMult(Int_t multmin) {this->fMinMult = multmin; }
+  Int_t GetMinMult() const        {return this->fMinMult; }
+  void  SetMaxMult(Int_t multmax) {this->fMaxMult = multmax; }
+  Int_t GetMaxMult() const        {return this->fMaxMult; }
+
  private:
   AliFlowEventSimpleMaker(const AliFlowEventSimpleMaker& anAnalysis);            //copy constructor
   AliFlowEventSimpleMaker& operator=(const AliFlowEventSimpleMaker& anAnalysis); //assignment operator
-  Double_t  fMCReactionPlaneAngle;   // the angle of the reaction plane from the MC truth
-  Int_t     fCount;   // counter for the number of events processed
 
-  Int_t     fNoOfLoops; // number of times to use the same particle (nonflow) 
-  Double_t  fEllipticFlowValue; // Add Flow. Must be in range [0,1].
-  Int_t     fMultiplicityOfEvent; // Set maximal multiplicity.
+  Double_t  fMCReactionPlaneAngle; // the angle of the reaction plane from the MC truth
+  Int_t     fCount;                // counter for the number of events processed
+
+  Int_t     fNoOfLoops;            // number of times to use the same particle (nonflow) 
+  Double_t  fEllipticFlowValue;    // Add Flow. Must be in range [0,1].
+  Int_t     fMultiplicityOfEvent;  // Set maximal multiplicity (when manipulating the event).
+
+  Int_t     fMinMult;              // Minimum multiplicity from tracks selected using CORRFW
+  Int_t     fMaxMult;              // Maximum multiplicity from tracks selected using CORRFW
+
      
   ClassDef(AliFlowEventSimpleMaker,0)    // macro for rootcint
 };

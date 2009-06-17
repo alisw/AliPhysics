@@ -2,12 +2,15 @@
 * See cxx source for full Copyright notice */
 /* $Id: $ */
 
+//////////////////////////////////////////////////////
+// AliAnalysisTaskFlowEvent:
+// analysis task to fill the flow event 
+// and make it available to the flow analysis methods.
+//////////////////////////////////////////////////////
+
+
 #ifndef AliAnalysisTaskFlowEvent_H
 #define AliAnalysisTaskFlowEvent_H
-
-// AliAnalysisTaskFlowEvent:
-// analysis task to fill the flow event and make it available to the methods
-
 
 class AliESDEvent;
 class AliAODEvent;
@@ -29,8 +32,14 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  void SetAnalysisType(TString type) { this->fAnalysisType = type; }
-  TString GetAnalysisType() const    { return this->fAnalysisType; }
+  void    SetAnalysisType(TString type){ this->fAnalysisType = type; }
+  TString GetAnalysisType() const      { return this->fAnalysisType; }
+
+  void    SetMinMult(Int_t multmin)    {this->fMinMult = multmin; }
+  Int_t   GetMinMult() const           {return this->fMinMult; }
+  void    SetMaxMult(Int_t multmax)    {this->fMaxMult = multmax; }
+  Int_t   GetMaxMult() const           {return this->fMaxMult; }
+
 
   void          SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
   AliCFManager* GetCFManager1()           {return this->fCFManager1; }
@@ -53,12 +62,13 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
   AliAODEvent*  fAOD;                     // AOD object
   AliFlowEventSimpleMaker* fEventMaker;   // FlowEventSimple maker object
   TString       fAnalysisType;            // can be MC, ESD or AOD
+  Int_t         fMinMult;                 // Minimum multiplicity from tracks selected using CORRFW
+  Int_t         fMaxMult;                 // Maximum multiplicity from tracks selected using CORRFW
   AliCFManager* fCFManager1;              // correction framework manager
   AliCFManager* fCFManager2;              // correction framework manager
   TList*        fQAInt;                   // QA histogram list
   TList*        fQADiff;                  // QA histogram list
-
-  Bool_t fQA;                             // flag to set the filling of the QA hostograms
+  Bool_t        fQA;                      // flag to set the filling of the QA hostograms
 
   ClassDef(AliAnalysisTaskFlowEvent, 1); // example of analysis
 };
