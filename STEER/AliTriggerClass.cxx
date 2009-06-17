@@ -102,8 +102,8 @@ AliTriggerClass::~AliTriggerClass()
 //_____________________________________________________________________________
 AliTriggerClass::AliTriggerClass( const AliTriggerClass& trclass ):
   TNamed( trclass ),
-  fIndex(trclass.fIndex),
   fClassMask(trclass.fClassMask),
+  fIndex(trclass.fIndex),
   fDescriptor(trclass.fDescriptor),
   fCluster(trclass.fCluster),
   fPFProtection(trclass.fPFProtection),
