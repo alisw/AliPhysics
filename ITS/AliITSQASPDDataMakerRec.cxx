@@ -648,4 +648,5 @@ Int_t AliITSQASPDDataMakerRec::GetTaskHisto(AliQAv1::TASKINDEX_t task) {
   else {
     AliInfo("No task has been selected. TaskHisto set to zero.\n");
   }
+  return histotot;
 }
