@@ -24,11 +24,15 @@
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TClonesArray.h>
+#include <TNtuple.h>
+#include <TList.h>
+#include <TH1F.h>
 
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliAnalysisVertexingHF.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSEBkgLikeSignJPSI.h"
 
@@ -114,8 +118,6 @@ void AliAnalysisTaskSEBkgLikeSignJPSI::Init()
 
   fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");
   fVHF->PrintStatus();
-
-  return;
 
   return;
 }
@@ -249,6 +251,7 @@ void AliAnalysisTaskSEBkgLikeSignJPSI::UserExec(Option_t */*option*/)
         unsetvtx=kTRUE;
     }
     Int_t okBtoJPSIls=0;
+    Float_t ddddd=d->CosPointingAngle();
     if(d->SelectBtoJPSI(fVHF->GetBtoJPSICuts(),okBtoJPSIls)) {
        fHistMassLS->Fill(d->InvMassJPSIee());
        fHistCPtaLS->Fill(d->CosPointingAngle());
@@ -270,8 +273,8 @@ void AliAnalysisTaskSEBkgLikeSignJPSI::UserExec(Option_t */*option*/)
           fHistCtsLSneg->Fill(d->CosThetaStarJPSI());
           PostData(1,fOutput);
         }
-      PostData(1,fOutput);
-      }
+       PostData(1,fOutput);
+    }
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
 
@@ -301,7 +304,7 @@ void AliAnalysisTaskSEBkgLikeSignJPSI::UserExec(Option_t */*option*/)
       fHistDCAJPSI->Fill(100*d->GetDCA());
       PostData(1,fOutput);
     }
-   if(unsetvtx) d->UnsetOwnPrimaryVtx();
+    if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
 
   return;
