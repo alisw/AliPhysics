@@ -104,6 +104,19 @@ AliZDCRecoParamPbPb::AliZDCRecoParamPbPb(const AliZDCRecoParamPbPb &oldrecopar) 
       fhbDist->SetDirectory(0);
   }
 }
+
+//_____________________________________________________________________________
+AliZDCRecoParamPbPb &AliZDCRecoParamPbPb::operator =(const AliZDCRecoParamPbPb &recpar)
+{
+ //assignment operator
+ fhZDCvsZEM = recpar.GethZDCvsZEM();
+ fhZDCCvsZEM = recpar.GethZDCCvsZEM();
+ fhZDCAvsZEM = recpar.GethZDCAvsZEM();
+ fhNpartDist = recpar.GethNpartDist();
+ fhbDist = recpar.GethbDist();
+ fClkCenter = recpar.GetClkCenter(); 
+
+}
  
 //_____________________________________________________________________________
 AliZDCRecoParamPbPb::~AliZDCRecoParamPbPb()

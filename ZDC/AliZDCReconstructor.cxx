@@ -382,6 +382,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
    // Do
    Bool_t ch2process = kTRUE;
    //
+   // Setting reco flags (part I)
    if((rawData.IsADCDataWord()) && (rawData.IsUnderflow() == kTRUE)){
      fRecoFlag = 0x1<< 9;
      ch2process = kFALSE;
@@ -390,7 +391,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
      fRecoFlag = 0x1 << 8;
      ch2process = kFALSE;
    }
-   if(rawData.GetNChannelsOn() < 48 ) fRecoFlag = 0x1 << 2;
+   if(rawData.GetNChannelsOn() < 48 ) fRecoFlag = 0x1 << 6;
    
    if((rawData.IsADCDataWord()) && (ch2process == kTRUE)){
      
@@ -579,6 +580,20 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     sPMRef2[0] = pmRef[0]   - (corrCoeff1[23]*pmRefoot[1]+corrCoeff0[23]);
     sPMRef2[1] = pmReflg[0] - (corrCoeff1[23+kNch]*pmRefootlg[1]+corrCoeff0[23+kNch]);
   }
+  // Setting reco flags (part II)
+  Float_t sumZNAhg, sumZPAhg, sumZNChg, sumZPChg;
+  for(Int_t jj=0; jj<5; jj++){
+    sumZNAhg += tZN2Corr[jj];
+    sumZPAhg += tZP2Corr[jj];
+    sumZNChg += tZN1Corr[jj];
+    sumZPChg += tZP1Corr[jj];
+  }
+  if(sumZNAhg>0.)     fRecoFlag = 0x1;
+  if(sumZPAhg>0.)     fRecoFlag = 0x1 << 1;
+  if(dZEM1Corr[0]>0.) fRecoFlag = 0x1 << 2;
+  if(dZEM2Corr[0]>0.) fRecoFlag = 0x1 << 3;
+  if(sumZNChg>0.)     fRecoFlag = 0x1 << 4;
+  if(sumZPChg>0.)     fRecoFlag = 0x1 << 5;
     
   // If CALIBRATION_MB run build the RecoParam object 
   if(fIsCalibrationMB){

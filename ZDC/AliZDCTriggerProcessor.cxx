@@ -38,8 +38,18 @@ AliZDCTriggerProcessor::AliZDCTriggerProcessor(Float_t* signal, AliZDCTriggerPar
   // standard constructor II
 }
 
+//_____________________________________________________________________________
+AliZDCTriggerProcessor &AliZDCTriggerProcessor::operator =(const AliZDCTriggerProcessor &trig)
+{
+ //assignment operator
+ fSignal = trig.GetSignal(); 
+ fTriggerParam = trig.GetTriggerParamFromOCDB();
+
+}
+
 //______________________________________________________________________________________________
 AliZDCTriggerProcessor::AliZDCTriggerProcessor(const AliZDCTriggerProcessor& trigg) :
+  TObject(),
   fSignal(trigg.fSignal),
   fTriggerParam(trigg.fTriggerParam)
 {
@@ -58,10 +68,22 @@ UInt_t AliZDCTriggerProcessor::ProcessEvent()
   // process ZDC signals in order to determine the trigger output
   UInt_t ctpInput = 0;
   //
-  if(MBTrigger() == kTRUE) ctpInput = 0x1;
-  if(CentralTrigger() == kTRUE) ctpInput = 0x1 << 1;
-  if(SemicentralTrigger() == kTRUE) ctpInput = 0x1 << 2;
-  if(EMDTrigger() == kTRUE) ctpInput = 0x1 << 3;
+  Bool_t mbTriggered = MBTrigger();
+  if(mbTriggered == kTRUE) ctpInput = 0x1;
+  Bool_t cenTriggered = CentralTrigger();
+  if(cenTriggered == kTRUE) ctpInput = 0x1 << 1;
+  Bool_t semicenTriggered = SemicentralTrigger();
+  if(semicenTriggered == kTRUE) ctpInput = 0x1 << 2;
+  Bool_t emdTriggered = EMDTrigger();
+  if(emdTriggered == kTRUE) ctpInput = 0x1 << 3;
+  
+  if((mbTriggered == kTRUE) || (cenTriggered == kTRUE) || 
+     (semicenTriggered == kTRUE) || (emdTriggered == kTRUE)){
+      return 1;
+  }
+  else{
+    return 0;
+  }
 }
 
 //______________________________________________________________________________________________

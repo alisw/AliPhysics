@@ -24,6 +24,7 @@ class AliZDCRecoParamPbPb : public AliZDCRecoParam {
   AliZDCRecoParamPbPb(TH2F * hZDCvsZEM, TH2F * hZDCCvsZEM, TH2F * hZDCAvsZEM,
   		      TH1D * hNpart, TH1D * hb, Float_t clkCent);
   AliZDCRecoParamPbPb(const AliZDCRecoParamPbPb &oldrecopar);
+  AliZDCRecoParamPbPb& operator= (const AliZDCRecoParamPbPb &recpar);
   virtual ~AliZDCRecoParamPbPb();
 
   AliZDCRecoParamPbPb *GetPbPbRecoParam() const;

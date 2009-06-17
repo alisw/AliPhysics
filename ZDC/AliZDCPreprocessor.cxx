@@ -419,10 +419,10 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
      }
      TFile *histoFile = TFile::Open(stringPedFileName.Data());
      //
-     AliCDBMetaData metadata;
-     metadata.SetResponsible("Chiara Oppedisano");
-     metadata.SetComment("Pedestal histos");
-     resPedHist = StoreReferenceData("Histos","Pedestal", histoFile, &metadata);
+     AliCDBMetaData metadata1;
+     metadata1.SetResponsible("Chiara Oppedisano");
+     metadata1.SetComment("Pedestal histos");
+     resPedHist = StoreReferenceData("Histos","Pedestal", histoFile, &metadata1);
   }
   delete daqSourceH; daqSourceH = 0;
  }
@@ -508,10 +508,10 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
      }
      TFile *histoFile = TFile::Open(stringLASERFileName.Data());
      //
-     AliCDBMetaData metadata;
-     metadata.SetResponsible("Chiara Oppedisano");
-     metadata.SetComment("Laser run histos");
-     resPedHist = StoreReferenceData("Histos", "Laser", histoFile, &metadata);
+     AliCDBMetaData metadata2;
+     metadata2.SetResponsible("Chiara Oppedisano");
+     metadata2.SetComment("Laser run histos");
+     resPedHist = StoreReferenceData("Histos", "Laser", histoFile, &metadata2);
   }
   delete daqSourceH; daqSourceH = 0;
  }

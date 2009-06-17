@@ -20,13 +20,14 @@ class AliZDCTriggerProcessor : public TObject
     AliZDCTriggerProcessor(Float_t* signal);
     AliZDCTriggerProcessor(Float_t* signal, AliZDCTriggerParameters* ocdbParam);
     AliZDCTriggerProcessor(const AliZDCTriggerProcessor& trigg);  
+    AliZDCTriggerProcessor& operator= (const AliZDCTriggerProcessor &trig);
     virtual ~AliZDCTriggerProcessor();
     
     AliZDCTriggerParameters *GetTriggerParamFromOCDB() const;
     virtual void SetTriggerParam(AliZDCTriggerParameters* ocdbParam) 
     	{fTriggerParam = ocdbParam;}
     
-    const Float_t* GetSignal() const {return fSignal;}
+    Float_t* GetSignal() const {return fSignal;}
     Float_t  GetSignal(Int_t idet) const {return fSignal[idet];}
     void  SetSignal(Float_t* signal) 
     	    {for(Int_t i=0; i<6; i++) fSignal[i] = signal[i];}
