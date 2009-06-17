@@ -199,12 +199,15 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 
     
   // loop over D*+ candidates
+  /*
   for (Int_t iDstar = 0; iDstar < inputArrayDstar->GetEntries(); iDstar++) {
     AliAODRecoCascadeHF *c = (AliAODRecoCascadeHF*)inputArrayDstar->UncheckedAt(iDstar);
     Int_t labDstar = c->MatchToMC(413,421,mcArray);
     if(labDstar>=0) printf("GOOD MATCH FOR D*+\n"); 
   }
-  
+  */
+  // Post the data already here
+  PostData(1,fOutput);
 
   return;
 }
