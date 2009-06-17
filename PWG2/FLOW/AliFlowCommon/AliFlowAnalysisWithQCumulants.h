@@ -50,8 +50,10 @@ class AliFlowAnalysisWithQCumulants{
   virtual void CalculateCorrelationsForDifferentialFlow(TString type="POI");
   virtual void CalculateWeightedCorrelationsForDifferentialFlow(TString type="POI");
 
-  virtual void CalculateCorrectionsForNonUniformAcceptanceCosTerms();  
-  virtual void CalculateCorrectionsForNonUniformAcceptanceSinTerms();  
+  virtual void CalculateCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlowCosTerms();  
+  virtual void CalculateCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlowSinTerms();  
+  virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms(TString type="POI");  
+  virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowSinTerms(TString type="POI");  
       
   virtual void EvaluateNestedLoopsForIntegratedFlow(AliFlowEventSimple* anEvent); 
   virtual void EvaluateNestedLoopsForDifferentialFlow(AliFlowEventSimple* anEvent); 
@@ -62,7 +64,8 @@ class AliFlowAnalysisWithQCumulants{
   TProfile* MakePtProjection(TProfile2D *profilePtEta) const;
   TProfile* MakeEtaProjection(TProfile2D *profilePtEta) const;
   
-  virtual void CalculateFinalCorrectionsForNonUniformAcceptance(Bool_t useWeights=kFALSE);
+  virtual void CalculateFinalCorrectionsForNonUniformAcceptanceForNoNameIntegratedFlow(Bool_t useWeights=kFALSE);
+  virtual void CalculateFinalCorrectionsForNonUniformAcceptanceForDifferentialFlow(Bool_t useWeights=kFALSE,TString type="POI");
   
   virtual void CalculateFinalResultsForNoNameIntegratedFlow(Bool_t useWeights=kFALSE);
   virtual void CalculateFinalResultsForRPandPOIIntegratedFlow(Bool_t useWeights, TString type);
@@ -240,6 +243,12 @@ class AliFlowAnalysisWithQCumulants{
 
   void SetDirectCorrectionsSin(TProfile* const dCorrectSin) {this->fDirectCorrectionsSin = dCorrectSin;};
   TProfile* GetDirectCorrectionsSin() const {return this->fDirectCorrectionsSin;};
+  
+  void SetDirectCorrectionsDiffFlowCos(TProfile* const dcdfCos) {this->fDirectCorrectionsDiffFlowCos = dcdfCos;};
+  TProfile* GetDirectCorrectionsDiffFlowCos() const {return this->fDirectCorrectionsDiffFlowCos;};
+  
+  void SetDirectCorrectionsDiffFlowSin(TProfile* const dcdfSin) {this->fDirectCorrectionsDiffFlowSin = dcdfSin;};
+  TProfile* GetDirectCorrectionsDiffFlowSin() const {return this->fDirectCorrectionsDiffFlowSin;};
 
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
@@ -255,12 +264,35 @@ class AliFlowAnalysisWithQCumulants{
   
   void SetUseWeightsBits(TBits* const uwb) {this->fUseWeightsBits = uwb;};
   TBits* GetUseWeightsBits() const {return this->fUseWeightsBits;};
+ 
+  // .................................................................................................
+  // POI:
+  // corrections for non-uniform acceptance for differential flow (cos terms):
+  void SetCorrectionsCosP1nPsiPtEtaPOI(TProfile2D* const cCosP1nPsiPtEtaPOI) {this->fCorrectionsCosP1nPsiPtEtaPOI = cCosP1nPsiPtEtaPOI;};
+  TProfile2D* GetCorrectionsCosP1nPsiPtEtaPOI() const {return this->fCorrectionsCosP1nPsiPtEtaPOI;};
+ 
+  // ...
   
+  // corrections for non-uniform acceptance for differential flow (sin terms):
+  void SetCorrectionsSinP1nPsiPtEtaPOI(TProfile2D* const cSinP1nPsiPtEtaPOI) {this->fCorrectionsSinP1nPsiPtEtaPOI = cSinP1nPsiPtEtaPOI;};
+  TProfile2D* GetCorrectionsSinP1nPsiPtEtaPOI() const {return this->fCorrectionsSinP1nPsiPtEtaPOI;};
+
+  // ...
+
+  // RP: 
+  // corrections for non-uniform acceptance for differential flow (cos terms):
+  void SetCorrectionsCosP1nPsiPtEtaRP(TProfile2D* const cCosP1nPsiPtEtaRP) {this->fCorrectionsCosP1nPsiPtEtaRP = cCosP1nPsiPtEtaRP;};
+  TProfile2D* GetCorrectionsCosP1nPsiPtEtaRP() const {return this->fCorrectionsCosP1nPsiPtEtaRP;};
   
+  // ...
   
+  // corrections for non-uniform acceptance for differential flow (sin terms):
+  void SetCorrectionsSinP1nPsiPtEtaRP(TProfile2D* const cSinP1nPsiPtEtaRP) {this->fCorrectionsSinP1nPsiPtEtaRP = cSinP1nPsiPtEtaRP;};
+  TProfile2D* GetCorrectionsSinP1nPsiPtEtaRP() const {return this->fCorrectionsSinP1nPsiPtEtaRP;};
   
+  // ...
   
-  
+  // .................................................................................................
   
   // .................................................................................................
   // non-weighted correlations for differential flow of POIs:
@@ -272,6 +304,36 @@ class AliFlowAnalysisWithQCumulants{
   TProfile2D* Get6pPtEtaPOI() const {return this->f6pPtEtaPOI;};
   void Set8pPtEtaPOI(TProfile2D* const eppep) {this->f8pPtEtaPOI = eppep;};
   TProfile2D* Get8pPtEtaPOI() const {return this->f8pPtEtaPOI;};
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for differential flow of POIs:
+  void Set2pFinalCorrectionsForNUAPtEtaPOI(TH2D* const tpfcfnuapePOI) {this->f2pFinalCorrectionsForNUAPtEtaPOI = tpfcfnuapePOI;};
+  TH2D* Get2pFinalCorrectionsForNUAPtEtaPOI() const {return this->f2pFinalCorrectionsForNUAPtEtaPOI;};
+  void Set4pFinalCorrectionsForNUAPtEtaPOI(TH2D* const fpfcfnuapePOI) {this->f4pFinalCorrectionsForNUAPtEtaPOI = fpfcfnuapePOI;};
+  TH2D* Get4pFinalCorrectionsForNUAPtEtaPOI() const {return this->f4pFinalCorrectionsForNUAPtEtaPOI;};
+  void Set6pFinalCorrectionsForNUAPtEtaPOI(TH2D* const spfcfnuapePOI) {this->f6pFinalCorrectionsForNUAPtEtaPOI = spfcfnuapePOI;};
+  TH2D* Get6pFinalCorrectionsForNUAPtEtaPOI() const {return this->f6pFinalCorrectionsForNUAPtEtaPOI;};
+  void Set8pFinalCorrectionsForNUAPtEtaPOI(TH2D* const epfcfnuapePOI) {this->f8pFinalCorrectionsForNUAPtEtaPOI = epfcfnuapePOI;};
+  TH2D* Get8pFinalCorrectionsForNUAPtEtaPOI() const {return this->f8pFinalCorrectionsForNUAPtEtaPOI;};
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for each (pt) bin for differential flow of POIs:
+  void Set2pFinalCorrectionsForNUAPtPOI(TH1D* const tpfcfnuapPOI) {this->f2pFinalCorrectionsForNUAPtPOI = tpfcfnuapPOI;};
+  TH1D* Get2pFinalCorrectionsForNUAPtPOI() const {return this->f2pFinalCorrectionsForNUAPtPOI;};
+  void Set4pFinalCorrectionsForNUAPtPOI(TH1D* const fpfcfnuapPOI) {this->f4pFinalCorrectionsForNUAPtPOI = fpfcfnuapPOI;};
+  TH1D* Get4pFinalCorrectionsForNUAPtPOI() const {return this->f4pFinalCorrectionsForNUAPtPOI;};
+  void Set6pFinalCorrectionsForNUAPtPOI(TH1D* const spfcfnuapPOI) {this->f6pFinalCorrectionsForNUAPtPOI = spfcfnuapPOI;};
+  TH1D* Get6pFinalCorrectionsForNUAPtPOI() const {return this->f6pFinalCorrectionsForNUAPtPOI;};
+  void Set8pFinalCorrectionsForNUAPtPOI(TH1D* const epfcfnuapPOI) {this->f8pFinalCorrectionsForNUAPtPOI = epfcfnuapPOI;};
+  TH1D* Get8pFinalCorrectionsForNUAPtPOI() const {return this->f8pFinalCorrectionsForNUAPtPOI;};
+
+  // corrections for non-uniform acceptance to non-weighted correlations for each (eta) bin for differential flow of POIs:
+  void Set2pFinalCorrectionsForNUAEtaPOI(TH1D* const tpfcfnuaePOI) {this->f2pFinalCorrectionsForNUAEtaPOI = tpfcfnuaePOI;};
+  TH1D* Get2pFinalCorrectionsForNUAEtaPOI() const {return this->f2pFinalCorrectionsForNUAEtaPOI;};
+  void Set4pFinalCorrectionsForNUAEtaPOI(TH1D* const fpfcfnuaePOI) {this->f4pFinalCorrectionsForNUAEtaPOI = fpfcfnuaePOI;};
+  TH1D* Get4pFinalCorrectionsForNUAEtaPOI() const {return this->f4pFinalCorrectionsForNUAEtaPOI;};
+  void Set6pFinalCorrectionsForNUAEtaPOI(TH1D* const spfcfnuaePOI) {this->f6pFinalCorrectionsForNUAEtaPOI = spfcfnuaePOI;};
+  TH1D* Get6pFinalCorrectionsForNUAEtaPOI() const {return this->f6pFinalCorrectionsForNUAEtaPOI;};
+  void Set8pFinalCorrectionsForNUAEtaPOI(TH1D* const epfcfnuaePOI) {this->f8pFinalCorrectionsForNUAEtaPOI = epfcfnuaePOI;};
+  TH1D* Get8pFinalCorrectionsForNUAEtaPOI() const {return this->f8pFinalCorrectionsForNUAEtaPOI;};
   
   // non-weighted final results for differential flow of POIs:
   // 3D (pt,eta):
@@ -351,6 +413,36 @@ class AliFlowAnalysisWithQCumulants{
   void Set8pPtEtaRP(TProfile2D* const epper) {this->f8pPtEtaRP = epper;};
   TProfile2D* Get8pPtEtaRP() const {return this->f8pPtEtaRP;};
   
+  // corrections for non-uniform acceptance to non-weighted correlations for each (pt,eta) bin for differential flow of RPs:
+  void Set2pFinalCorrectionsForNUAPtEtaRP(TH2D* const tpfcfnuapeRP) {this->f2pFinalCorrectionsForNUAPtEtaRP = tpfcfnuapeRP;};
+  TH2D* Get2pFinalCorrectionsForNUAPtEtaRP() const {return this->f2pFinalCorrectionsForNUAPtEtaRP;};
+  void Set4pFinalCorrectionsForNUAPtEtaRP(TH2D* const fpfcfnuapeRP) {this->f4pFinalCorrectionsForNUAPtEtaRP = fpfcfnuapeRP;};
+  TH2D* Get4pFinalCorrectionsForNUAPtEtaRP() const {return this->f4pFinalCorrectionsForNUAPtEtaRP;};
+  void Set6pFinalCorrectionsForNUAPtEtaRP(TH2D* const spfcfnuapeRP) {this->f6pFinalCorrectionsForNUAPtEtaRP = spfcfnuapeRP;};
+  TH2D* Get6pFinalCorrectionsForNUAPtEtaRP() const {return this->f6pFinalCorrectionsForNUAPtEtaRP;};
+  void Set8pFinalCorrectionsForNUAPtEtaRP(TH2D* const epfcfnuapeRP) {this->f8pFinalCorrectionsForNUAPtEtaRP = epfcfnuapeRP;};
+  TH2D* Get8pFinalCorrectionsForNUAPtEtaRP() const {return this->f8pFinalCorrectionsForNUAPtEtaRP;};
+
+  // corrections for non-uniform acceptance to non-weighted correlations for each (pt) bin for differential flow of RPs:
+  void Set2pFinalCorrectionsForNUAPtRP(TH1D* const tpfcfnuapRP) {this->f2pFinalCorrectionsForNUAPtRP = tpfcfnuapRP;};
+  TH1D* Get2pFinalCorrectionsForNUAPtRP() const {return this->f2pFinalCorrectionsForNUAPtRP;};
+  void Set4pFinalCorrectionsForNUAPtRP(TH1D* const fpfcfnuapRP) {this->f4pFinalCorrectionsForNUAPtRP = fpfcfnuapRP;};
+  TH1D* Get4pFinalCorrectionsForNUAPtRP() const {return this->f4pFinalCorrectionsForNUAPtRP;};
+  void Set6pFinalCorrectionsForNUAPtRP(TH1D* const spfcfnuapRP) {this->f6pFinalCorrectionsForNUAPtRP = spfcfnuapRP;};
+  TH1D* Get6pFinalCorrectionsForNUAPtRP() const {return this->f6pFinalCorrectionsForNUAPtRP;};
+  void Set8pFinalCorrectionsForNUAPtRP(TH1D* const epfcfnuapRP) {this->f8pFinalCorrectionsForNUAPtRP = epfcfnuapRP;};
+  TH1D* Get8pFinalCorrectionsForNUAPtRP() const {return this->f8pFinalCorrectionsForNUAPtRP;};
+
+  // corrections for non-uniform acceptance to non-weighted correlations for each (eta) bin for differential flow of RPs:
+  void Set2pFinalCorrectionsForNUAEtaRP(TH1D* const tpfcfnuaeRP) {this->f2pFinalCorrectionsForNUAEtaRP = tpfcfnuaeRP;};
+  TH1D* Get2pFinalCorrectionsForNUAEtaRP() const {return this->f2pFinalCorrectionsForNUAEtaRP;};
+  void Set4pFinalCorrectionsForNUAEtaRP(TH1D* const fpfcfnuaeRP) {this->f4pFinalCorrectionsForNUAEtaRP = fpfcfnuaeRP;};
+  TH1D* Get4pFinalCorrectionsForNUAEtaRP() const {return this->f4pFinalCorrectionsForNUAEtaRP;};
+  void Set6pFinalCorrectionsForNUAEtaRP(TH1D* const spfcfnuaeRP) {this->f6pFinalCorrectionsForNUAEtaRP = spfcfnuaeRP;};
+  TH1D* Get6pFinalCorrectionsForNUAEtaRP() const {return this->f6pFinalCorrectionsForNUAEtaRP;};
+  void Set8pFinalCorrectionsForNUAEtaRP(TH1D* const epfcfnuaeRP) {this->f8pFinalCorrectionsForNUAEtaRP = epfcfnuaeRP;};
+  TH1D* Get8pFinalCorrectionsForNUAEtaRP() const {return this->f8pFinalCorrectionsForNUAEtaRP;};
+        
   // non-weighted final results for differential flow of RPs:
   // 3D (pt,eta):
   void Setvn2ndPtEtaRP(TH2D* const v2per) {this->fvn2ndPtEtaRP = v2per;};
@@ -459,6 +551,9 @@ class AliFlowAnalysisWithQCumulants{
   TProfile*          fDirectCorrectionsCos;             // corrections for non-uniform acceptance (cos terms) calculated with nested loops
   TProfile*          fDirectCorrectionsSin;             // corrections for non-uniform acceptance (sin terms) calculated with nested loops
   
+  TProfile*          fDirectCorrectionsDiffFlowCos;     // corrections for non-uniform acceptance (cos terms) calculated with nested loops (diff)
+  TProfile*          fDirectCorrectionsDiffFlowSin;     // corrections for non-uniform acceptance (sin terms) calculated with nested loops (diff)
+  
   // POI (Particles Of Interest):
   // non-weighted correlations
   TProfile*                  f2PerPtBin1n1nPOI;         //<<2'>>_{n|n} per pt-bin
@@ -516,6 +611,31 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t                     fUseEtaWeights;            // eta weights
   Bool_t                     fUseWeights;               // use phi || pt || eta weights
   TBits*                     fUseWeightsBits;           // use phi || pt || eta weights 
+  
+  // ...................................................................................................................
+  // POI:
+  // corrections for non-uniform acceptance for differential flow (cos terms):
+  TProfile2D *fCorrectionsCosP1nPsiPtEtaPOI; // <<cos(n*psi)>>
+  
+  // ...
+  
+  // corrections for non-uniform acceptance for differential flow (sin terms):
+  TProfile2D *fCorrectionsSinP1nPsiPtEtaPOI; // <<sin(n*psi)>>  
+  
+  // ...
+  
+  // RP:
+  // corrections for non-uniform acceptance for differential flow (cos terms):
+  TProfile2D *fCorrectionsCosP1nPsiPtEtaRP; // <<cos(n*psi)>>
+  
+  // ...
+  
+  // corrections for non-uniform acceptance for differential flow (sin terms):
+  TProfile2D *fCorrectionsSinP1nPsiPtEtaRP; // <<sin(n*psi)>>  
+  
+  // ...
+
+  // ...................................................................................................................
   
   // ...................................................................................................................  
   // Q_{n,k} and S^M_{n,k}:        
@@ -583,10 +703,28 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fIntFlowResultsRPQCW;  // final results for weighted RPs integrated flow
   
   // non-weighted correlations for each (pt,eta) bin for POIs:
-  TProfile2D *f2pPtEtaPOI; // <cos n(psi1-phi2)> for POIs
-  TProfile2D *f4pPtEtaPOI; // <cos n(psi1+phi2-phi3-phi4)> for POIs 
-  TProfile2D *f6pPtEtaPOI; // <cos n(psi1+phi2+phi3-phi4-phi5-phi6)> for POIs 
-  TProfile2D *f8pPtEtaPOI; // <cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)> for POIs 
+  TProfile2D *f2pPtEtaPOI; // <<cos n(psi1-phi2)>> for POIs
+  TProfile2D *f4pPtEtaPOI; // <<cos n(psi1+phi2-phi3-phi4)>> for POIs 
+  TProfile2D *f6pPtEtaPOI; // <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for POIs 
+  TProfile2D *f8pPtEtaPOI; // <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for POIs 
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for each (pt,eta) bin for POIs:
+  TH2D *f2pFinalCorrectionsForNUAPtEtaPOI; // correction to <<cos n(psi1-phi2)>> for POIs
+  TH2D *f4pFinalCorrectionsForNUAPtEtaPOI; // correction to <<cos n(psi1+phi2-phi3-phi4)>> for POIs 
+  TH2D *f6pFinalCorrectionsForNUAPtEtaPOI; // correction to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for POIs 
+  TH2D *f8pFinalCorrectionsForNUAPtEtaPOI; // correction to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for POIs 
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for each (pt) bin for POIs:
+  TH1D *f2pFinalCorrectionsForNUAPtPOI; // correction to <<cos n(psi1-phi2)>> for POIs
+  TH1D *f4pFinalCorrectionsForNUAPtPOI; // correction to <<cos n(psi1+phi2-phi3-phi4)>> for POIs 
+  TH1D *f6pFinalCorrectionsForNUAPtPOI; // correction to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for POIs 
+  TH1D *f8pFinalCorrectionsForNUAPtPOI; // correction to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for POIs 
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for each (eta) bin for POIs:
+  TH1D *f2pFinalCorrectionsForNUAEtaPOI; // correction to <<cos n(psi1-phi2)>> for POIs
+  TH1D *f4pFinalCorrectionsForNUAEtaPOI; // correction to <<cos n(psi1+phi2-phi3-phi4)>> for POIs 
+  TH1D *f6pFinalCorrectionsForNUAEtaPOI; // correction to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for POIs 
+  TH1D *f8pFinalCorrectionsForNUAEtaPOI; // correction to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for POIs 
   
   // non-weighted final results for differential flow for POIs:
   // 3D (pt,eta):
@@ -633,6 +771,24 @@ class AliFlowAnalysisWithQCumulants{
   TProfile2D *f4pPtEtaRP; // <cos n(psi1+phi2-phi3-phi4)> for RPs 
   TProfile2D *f6pPtEtaRP; // <cos n(psi1+phi2+phi3-phi4-phi5-phi6)> for RPs 
   TProfile2D *f8pPtEtaRP; // <cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)> for RPs
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for each (pt,eta) bin for RPs:
+  TH2D *f2pFinalCorrectionsForNUAPtEtaRP; // correction to <<cos n(psi1-phi2)>> for RPs
+  TH2D *f4pFinalCorrectionsForNUAPtEtaRP; // correction to <<cos n(psi1+phi2-phi3-phi4)>> for RPs 
+  TH2D *f6pFinalCorrectionsForNUAPtEtaRP; // correction to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for RPs 
+  TH2D *f8pFinalCorrectionsForNUAPtEtaRP; // correction to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for RPs 
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for each (pt) bin for RPs:
+  TH1D *f2pFinalCorrectionsForNUAPtRP; // correction to <<cos n(psi1-phi2)>> for RPs
+  TH1D *f4pFinalCorrectionsForNUAPtRP; // correction to <<cos n(psi1+phi2-phi3-phi4)>> for RPs 
+  TH1D *f6pFinalCorrectionsForNUAPtRP; // correction to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for RPs 
+  TH1D *f8pFinalCorrectionsForNUAPtRP; // correction to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for RPs 
+  
+  // corrections for non-uniform acceptance to non-weighted correlations for each (eta) bin for RPs:
+  TH1D *f2pFinalCorrectionsForNUAEtaRP; // correction to <<cos n(psi1-phi2)>> for RPs
+  TH1D *f4pFinalCorrectionsForNUAEtaRP; // correction to <<cos n(psi1+phi2-phi3-phi4)>> for RPs 
+  TH1D *f6pFinalCorrectionsForNUAEtaRP; // correction to <<cos n(psi1+phi2+phi3-phi4-phi5-phi6)>> for RPs 
+  TH1D *f8pFinalCorrectionsForNUAEtaRP; // correction to <<cos n(psi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8)>> for RPs 
   
   // non-weighted final results for differential flow for RPs:
   // 3D (pt,eta):
