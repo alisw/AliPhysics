@@ -33,7 +33,7 @@ AliEventTagCuts::AliEventTagCuts() :
   TObject(),
   fPeriodNumberMin(0), fPeriodNumberMax(0xFFFFFFFF), fPeriodNumberFlag(kFALSE),
   fOrbitNumberMin(0), fOrbitNumberMax(0xFFFFFFFF), fOrbitNumberFlag(kFALSE),
-  fBunchCrossNumberMin(0), fBunchCrossNumberMax(0xFFFFFFFF), 
+  fBunchCrossNumberMin(0), fBunchCrossNumberMax(0xFFFF), 
   fBunchCrossNumberFlag(kFALSE),
   fEventType(7), fEventTypeFlag(kFALSE),
 
@@ -254,7 +254,7 @@ void AliEventTagCuts::Reset() {
 
   fPeriodNumberMin = 0, fPeriodNumberMax = 0xFFFFFFFF;
   fOrbitNumberMin = 0, fOrbitNumberMax = 0xFFFFFFFF;
-  fBunchCrossNumberMin = 0, fBunchCrossNumberMax = 0xFFFFFFFF;
+  fBunchCrossNumberMin = 0, fBunchCrossNumberMax = 0xFFFF;
 
   fEventType = 7;
 
