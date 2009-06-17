@@ -48,7 +48,7 @@ void AnalyzeSDDNoiseAllMod(Char_t *datafil,
 	if(adcfreq==40) base[index]->SetLastGoodTB(254);
 	else base[index]->SetLastGoodTB(126);
 	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
-	histo[index]=new TH2F(hisnam,"",128,-0.5,127.5,256,-0.5,255.5);
+	histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
       }
     }
   }
