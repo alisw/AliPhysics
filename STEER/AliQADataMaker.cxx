@@ -130,8 +130,8 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list,
   TString className(classType->GetName()) ; 
   if( ! className.BeginsWith("T") && ! classType->InheritsFrom("TH1") ) {
     AliError(Form("QA data Object must be a generic ROOT object and derive fom TH1 and not %s", className.Data())) ; 
-	} else if ( index > 10000 ) {
-		AliError("Max number of authorized QA objects is 10000") ; 
+	} else if ( index > AliQAv1::GetMaxQAObj() ) {
+		AliError(Form("Max number of authorized QA objects is %d", AliQAv1::GetMaxQAObj())) ; 
   } else {
     hist->SetDirectory(0) ; 
     if (expert) 
@@ -191,7 +191,7 @@ void AliQADataMaker::Finish() const
 //____________________________________________________________________________ 
 TObject * AliQADataMaker::GetData(TObjArray ** list, const Int_t index)  
 { 
-	// Returns the QA object at index. Limit is 100. 
+	// Returns the QA object at index. Limit is AliQAv1::GetMaxQAObj() 
   if ( ! list ) {
 		AliError("Data list is NULL !!") ; 
 		return NULL ; 		
@@ -200,12 +200,13 @@ TObject * AliQADataMaker::GetData(TObjArray ** list, const Int_t index)
   SetEventSpecie(fEventSpecie) ;  
   Int_t esindex = AliRecoParam::AConvert(fEventSpecie) ; 
   TH1 * histClone = NULL ; 
-	if (list[esindex]) {
-		if ( index > 10000 ) {
-			AliError("Max number of authorized QA objects is 10000") ; 
+  TObjArray * arr = list[esindex] ; 
+	if (arr) {
+		if ( index > AliQAv1::GetMaxQAObj() ) {
+			AliError(Form("Max number of authorized QA objects is %d", AliQAv1::GetMaxQAObj())) ; 
 		} else {
-      if ( list[esindex]->At(index) )  {
-        histClone = static_cast<TH1*>(list[esindex]->At(index)) ; 
+      if ( arr->At(index) )  {
+        histClone = static_cast<TH1*>(arr->At(index)) ; 
       } 	
     }
   }

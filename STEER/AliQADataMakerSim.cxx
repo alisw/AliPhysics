@@ -251,7 +251,7 @@ TObjArray **  AliQADataMakerSim::Init(AliQAv1::TASKINDEX_t task, Int_t cycles)
 		if ( ! fHitsQAList ) {
       fHitsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-        fHitsQAList[specie] = new TObjArray(1) ;	 
+        fHitsQAList[specie] = new TObjArray(AliQAv1::GetMaxQAObj()) ;	 
         fHitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ;
       }
 		}
@@ -260,7 +260,7 @@ TObjArray **  AliQADataMakerSim::Init(AliQAv1::TASKINDEX_t task, Int_t cycles)
 		if ( ! fSDigitsQAList ) {
       fSDigitsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-        fSDigitsQAList[specie] = new TObjArray(1) ; 
+        fSDigitsQAList[specie] = new TObjArray(AliQAv1::GetMaxQAObj()) ; 
         fSDigitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
       }
 		}
@@ -269,7 +269,7 @@ TObjArray **  AliQADataMakerSim::Init(AliQAv1::TASKINDEX_t task, Int_t cycles)
 	   if ( ! fDigitsQAList ) {
        fDigitsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
        for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {    
-         fDigitsQAList[specie] = new TObjArray(1) ;
+         fDigitsQAList[specie] = new TObjArray(AliQAv1::GetMaxQAObj()) ;
          fDigitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ;
        }
 	   }

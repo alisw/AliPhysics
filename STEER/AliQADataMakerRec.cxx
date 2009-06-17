@@ -295,7 +295,7 @@ TObjArray **  AliQADataMakerRec::Init(AliQAv1::TASKINDEX_t task, Int_t cycles)
 		if (! fRawsQAList ) { 
       fRawsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-        fRawsQAList[specie] = new TObjArray(1) ;	 
+        fRawsQAList[specie] = new TObjArray(AliQAv1::GetMaxQAObj()) ;	 
         fRawsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ;
       }
 		}
@@ -304,7 +304,7 @@ TObjArray **  AliQADataMakerRec::Init(AliQAv1::TASKINDEX_t task, Int_t cycles)
 		if ( ! fDigitsQAList ) {
       fDigitsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-        fDigitsQAList[specie] = new TObjArray(1) ; 
+        fDigitsQAList[specie] = new TObjArray(AliQAv1::GetMaxQAObj()) ; 
         fDigitsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
       }
 		}
@@ -313,7 +313,7 @@ TObjArray **  AliQADataMakerRec::Init(AliQAv1::TASKINDEX_t task, Int_t cycles)
 		if ( ! fRecPointsQAList ) {
       fRecPointsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-        fRecPointsQAList[specie] = new TObjArray(1) ; 
+        fRecPointsQAList[specie] = new TObjArray(AliQAv1::GetMaxQAObj()) ; 
         fRecPointsQAList[specie]->SetName(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
       }
     }
@@ -322,7 +322,7 @@ TObjArray **  AliQADataMakerRec::Init(AliQAv1::TASKINDEX_t task, Int_t cycles)
 		if ( ! fESDsQAList ) {
       fESDsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-        fESDsQAList[specie] = new TObjArray(1) ;
+        fESDsQAList[specie] = new TObjArray(AliQAv1::GetMaxQAObj()) ;
         fESDsQAList[specie]->SetName(Form("%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
       }
 		}

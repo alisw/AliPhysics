@@ -47,35 +47,36 @@
 
 
 ClassImp(AliQAv1)
-AliQAv1  * AliQAv1::fgQA                   = 0x0 ;
-TFile    * AliQAv1::fgQADataFile           = 0x0 ;   
-TString    AliQAv1::fgQADataFileName       = "QA" ;  // will transform into Det.QA.run.root  
-TFile    * AliQAv1::fgQARefFile            = 0x0 ;   
-TString    AliQAv1::fgQARefDirName	       = "" ; 
-TString    AliQAv1::fgQARefFileName        = "QA.root" ;
-TFile    * AliQAv1::fgQAResultFile         = 0x0 ;  
-TString    AliQAv1::fgQAResultDirName      = "" ;  
-TString    AliQAv1::fgQAResultFileName     = "QA.root" ; 
-TString    AliQAv1::fgDetNames[]           = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
-                                            "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global", "CORR"} ;   
-TString    AliQAv1::fgGRPPath              = "GRP/GRP/Data" ; 
-TString       AliQAv1::fgTaskNames[]       = {"Raws", "Hits", "SDigits", "Digits", "DigitsR", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
-const TString AliQAv1::fgkLabLocalFile     = "file://"  ; 
-const TString AliQAv1::fgkLabLocalOCDB     = "local://" ;  
-const TString AliQAv1::fgkLabAliEnOCDB     = "alien://" ;  
-const TString AliQAv1::fgkRefFileName      = "QA.root" ; 
-const TString AliQAv1::fgkQAName           = "QA"  ; 
-const TString AliQAv1::fgkQACorrNtName     = "CorrQA" ;  
-const TString AliQAv1::fgkRefOCDBDirName   = "QA"  ; 
-TString AliQAv1::fgRefDataDirName	         = ""  ; 
-const TString AliQAv1::fgkQARefOCDBDefault = "alien://folder=/alice/QA/20"  ; 
-const TString AliQAv1::fgkExpert           = "Expert" ; 
-const UInt_t  AliQAv1::fgkExpertBit        = 0x40000 ; 
-const UInt_t  AliQAv1::fgkQABit            = 0x80000 ; 
-const UInt_t  AliQAv1::fgkImageBit         = 0x100000 ; 
-const Int_t   AliQAv1::fgkQADebugLevel     = 99 ; 
-const TString AliQAv1::fImageFileName      = "QAImage" ; 
-const TString AliQAv1::fImageFileFormat    = "eps" ; 
+AliQAv1  *     AliQAv1::fgQA                   = 0x0 ;
+TFile    *     AliQAv1::fgQADataFile           = 0x0 ;   
+TString        AliQAv1::fgQADataFileName       = "QA" ;  // will transform into Det.QA.run.root  
+TFile    *     AliQAv1::fgQARefFile            = 0x0 ;   
+TString        AliQAv1::fgQARefDirName	       = "" ; 
+TString        AliQAv1::fgQARefFileName        = "QA.root" ;
+TFile    *     AliQAv1::fgQAResultFile         = 0x0 ;  
+TString        AliQAv1::fgQAResultDirName      = "" ;  
+TString        AliQAv1::fgQAResultFileName     = "QA.root" ; 
+TString        AliQAv1::fgDetNames[]           = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
+                                                  "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global", "CORR"} ;   
+TString        AliQAv1::fgGRPPath              = "GRP/GRP/Data" ; 
+TString        AliQAv1::fgTaskNames[]          = {"Raws", "Hits", "SDigits", "Digits", "DigitsR", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
+const TString  AliQAv1::fgkLabLocalFile        = "file://"  ; 
+const TString  AliQAv1::fgkLabLocalOCDB        = "local://" ;  
+const TString  AliQAv1::fgkLabAliEnOCDB        = "alien://" ;  
+const TString  AliQAv1::fgkRefFileName         = "QA.root" ; 
+const TString  AliQAv1::fgkQAName              = "QA"  ; 
+const TString  AliQAv1::fgkQACorrNtName        = "CorrQA" ;  
+const TString  AliQAv1::fgkRefOCDBDirName      = "QA"  ; 
+TString AliQAv1::fgRefDataDirName	             = ""  ; 
+const TString  AliQAv1::fgkQARefOCDBDefault    = "alien://folder=/alice/QA/20"  ; 
+const TString  AliQAv1::fgkExpert              = "Expert" ; 
+const UInt_t   AliQAv1::fgkExpertBit           = 0x40000 ; 
+const UInt_t   AliQAv1::fgkQABit               = 0x80000 ; 
+const UInt_t   AliQAv1::fgkImageBit            = 0x100000 ; 
+const Int_t    AliQAv1::fgkQADebugLevel        = 99 ; 
+const TString  AliQAv1::fImageFileName         = "QAImage" ; 
+const TString  AliQAv1::fImageFileFormat       = "eps" ; 
+const UShort_t AliQAv1::fgkMaxQAObjects        = 10000 ; 
 
 //____________________________________________________________________________
 AliQAv1::AliQAv1() : 
