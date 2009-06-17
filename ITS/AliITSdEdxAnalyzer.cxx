@@ -233,15 +233,15 @@ Double_t AliITSdEdxAnalyzer::BetheBloch(const Float_t p, const Float_t m) const 
 }
 //______________________________________________________________________
 TGraph* AliITSdEdxAnalyzer::GetBetheBlochGraph(const Int_t pdgcode) const {
-  // Fills a TGraph with Bethe-Bloch expe
-  TGraph* g=new TGraph(0);
-  TParticlePDG* p=TDatabasePDG::Instance()->GetParticle(pdgcode);
-  Float_t mass=p->Mass();
-  for(Int_t ip=0; ip<100;ip++){
-    Float_t p=fPMin+(ip+0.5)*(fPMax-fPMin)/100.;
-    g->SetPoint(ip,p,BetheBloch(p,mass));
-  }
-  g->GetXaxis()->SetTitle("Momentum (GeV/c)");
-  g->GetYaxis()->SetTitle("dE/dx (keV/300 #mum)");
-  return g;
+ // Fills a TGraph with Bethe-Bloch expe
+ TGraph* g=new TGraph(0);
+ TParticlePDG* part=TDatabasePDG::Instance()->GetParticle(pdgcode);
+ Float_t mass=part->Mass();
+ for(Int_t ip=0; ip<100;ip++){
+   Float_t p=fPMin+(ip+0.5)*(fPMax-fPMin)/100.;
+   g->SetPoint(ip,p,BetheBloch(p,mass));
+ }
+ g->GetXaxis()->SetTitle("Momentum (GeV/c)");
+ g->GetYaxis()->SetTitle("dE/dx (keV/300 #mum)");
+ return g;
 }
