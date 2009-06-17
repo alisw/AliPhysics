@@ -1157,8 +1157,9 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
     if (!det || !det->IsActive()) continue;
     if (IsSelected(det->GetName(), detStr)) {
       AliInfo(Form("creating summable digits for %s", det->GetName()));
-      AliCodeTimerAuto(Form("creating summable digits for %s", det->GetName()));
+      AliCodeTimerStart(Form("creating summable digits for %s", det->GetName()));
       det->Hits2SDigits();
+      AliCodeTimerStop(Form("creating summable digits for %s", det->GetName()));
       AliSysInfo::AddStamp(Form("Digit_%s_%d",det->GetName(),eventNr), 0,1, eventNr);
     }
   }
