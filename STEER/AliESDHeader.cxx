@@ -29,17 +29,17 @@ ClassImp(AliESDHeader)
 AliESDHeader::AliESDHeader() :
   AliVHeader(),
   fTriggerMask(0),
-  fL0TriggerInputs(0),
-  fL1TriggerInputs(0),
-  fL2TriggerInputs(0),
-//  fTriggerScalers(0x0),
   fOrbitNumber(0),
   fTimeStamp(0),
   fEventType(0),
   fPeriodNumber(0),
   fEventNumberInFile(0),
   fBunchCrossNumber(0),
-  fTriggerCluster(0)
+  fTriggerCluster(0),
+  fL0TriggerInputs(0),
+  fL1TriggerInputs(0),
+  fL2TriggerInputs(0)
+//  fTriggerScalers(0x0)
 {
   // default constructor
 
@@ -56,17 +56,17 @@ AliESDHeader::~AliESDHeader()
 AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   AliVHeader(header),
   fTriggerMask(header.fTriggerMask),
-  fL0TriggerInputs(header.fL0TriggerInputs),
-  fL1TriggerInputs(header.fL1TriggerInputs),
-  fL2TriggerInputs(header.fL2TriggerInputs),
-//  fTriggerScalers(header.fTriggerScalers),
   fOrbitNumber(header.fOrbitNumber),
   fTimeStamp(header.fTimeStamp),
   fEventType(header.fEventType),
   fPeriodNumber(header.fPeriodNumber),
   fEventNumberInFile(header.fEventNumberInFile),
   fBunchCrossNumber(header.fBunchCrossNumber),
-  fTriggerCluster(header.fTriggerCluster)
+  fTriggerCluster(header.fTriggerCluster),
+  fL0TriggerInputs(header.fL0TriggerInputs),
+  fL1TriggerInputs(header.fL1TriggerInputs),
+  fL2TriggerInputs(header.fL2TriggerInputs)
+//  fTriggerScalers(header.fTriggerScalers),
 {
   // copy constructor
 
@@ -80,10 +80,6 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
   if(this!=&header) {
     AliVHeader::operator=(header);
     fTriggerMask = header.fTriggerMask;
-    fL0TriggerInputs = header.fL0TriggerInputs;
-    fL1TriggerInputs = header.fL1TriggerInputs;
-    fL2TriggerInputs = header.fL2TriggerInputs;
-//    fTriggerScalers = header.fTriggerScalers;
     fOrbitNumber = header.fOrbitNumber;
     fTimeStamp = header.fTimeStamp;
     fEventType = header.fEventType;
@@ -91,6 +87,10 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     fEventNumberInFile = header.fEventNumberInFile;
     fBunchCrossNumber = header.fBunchCrossNumber;
     fTriggerCluster = header.fTriggerCluster;
+    fL0TriggerInputs = header.fL0TriggerInputs;
+    fL1TriggerInputs = header.fL1TriggerInputs;
+    fL2TriggerInputs = header.fL2TriggerInputs;
+//    fTriggerScalers = header.fTriggerScalers;
     SetName(header.fName);
     SetTitle(header.fTitle);
 
@@ -118,10 +118,6 @@ void AliESDHeader::Reset()
 {
   // reset all data members
   fTriggerMask       = 0;
-  fL0TriggerInputs   = 0;
-  fL1TriggerInputs   = 0;
-  fL2TriggerInputs   = 0;
-//  fTriggerScalers    = 0;
   fOrbitNumber       = 0;
   fTimeStamp         = 0;
   fEventType         = 0;
@@ -129,6 +125,10 @@ void AliESDHeader::Reset()
   fEventNumberInFile = 0;
   fBunchCrossNumber  = 0;
   fTriggerCluster    = 0;
+  fL0TriggerInputs   = 0;
+  fL1TriggerInputs   = 0;
+  fL2TriggerInputs   = 0;
+//  fTriggerScalers    = 0;
 }
 
 //______________________________________________________________________________
