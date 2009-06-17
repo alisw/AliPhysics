@@ -120,10 +120,11 @@ Int_t AliRecoParam::AConvert(EventSpecie_t es)
     default:
       break;
   }
-  if (rv >= 0) 
-    return rv ;
-  else 
+
+  if (rv < 0) 
     AliFatalClass(Form("Wrong event specie conversion %d", es)) ; 
+
+  return rv ;
 }
 
 AliRecoParam::EventSpecie_t AliRecoParam::Convert(Int_t ies)
