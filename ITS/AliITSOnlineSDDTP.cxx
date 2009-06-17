@@ -152,8 +152,9 @@ void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms){
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     if(!fGoodAnode[ian]) continue;
     if(fNEvents[ian]==0) continue;
-    sum+=GetChannelGain(ian);
-    sumq+=TMath::Power(GetChannelGain(ian),2);
+    Float_t chgain=GetChannelGain(ian);
+    sum+=chgain;
+    sumq+=chgain*chgain;
     cnt++;
   }
   if(cnt>0){ 

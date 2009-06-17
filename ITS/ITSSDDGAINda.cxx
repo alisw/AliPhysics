@@ -49,6 +49,7 @@ extern "C" {
 #include "AliRawReaderDate.h"
 #include "AliITSOnlineSDDTP.h"
 #include "AliITSRawStreamSDD.h"
+#include "AliITSRawStreamSDDCompressed.h"
 /* Main routine
       Arguments: list of DATE raw data files
 */
@@ -80,6 +81,7 @@ int main(int argc, char **argv) {
   const Int_t kSides=2;
   Int_t adcSamplFreq=40;
   Bool_t readfeeconf=kFALSE;
+  Int_t dataformat=1;
   gSystem->Exec("rm -f  SDDbase_LDC.tar");
    if(gSystem->Getenv("DAQ_DETDB_LOCAL")!=NULL){
     const char* dir=gSystem->Getenv("DAQ_DETDB_LOCAL");    
@@ -87,14 +89,15 @@ int main(int argc, char **argv) {
     FILE* feefil=fopen(filnam.Data(),"r"); 
     if(feefil){
       fscanf(feefil,"%d \n",&adcSamplFreq);
+      fscanf(feefil,"%d \n",&dataformat);
+      fclose(feefil);
       TString shcomm=Form("tar -rf SDDbase_LDC.tar -C %s fee.conf",dir); 
       gSystem->Exec(shcomm.Data());
-      fclose(feefil);
       readfeeconf=kTRUE;
-      printf("ADC sampling frequency = %d MHz\n",adcSamplFreq);
+      printf("ADC sampling frequency = %d MHz dataformat code =%d \n",adcSamplFreq,dataformat);
     }
   }
-  if(!readfeeconf) printf("File fee.conf not found, sampling frequency set to 40 MHz\n");
+  if(!readfeeconf) printf("File fee.conf not found, sampling frequency set to 40 MHz and data format to 1\n");
 
   AliITSOnlineSDDTP **tpan=new AliITSOnlineSDDTP*[kTotDDL*kModPerDDL*kSides];
   TH2F **histo=new TH2F*[kTotDDL*kModPerDDL*kSides];
@@ -189,16 +192,22 @@ int main(int argc, char **argv) {
 	    }
 	  }
 	}
-	AliITSRawStreamSDD s(rawReader);
+	AliITSRawStream* s;
+	if(dataformat==0){
+	  s=new AliITSRawStreamSDD(rawReader);
+	}else{
+	  s=new AliITSRawStreamSDDCompressed(rawReader);
+	  if(dataformat==1) s->SetADCEncoded(kTRUE);
+	}
 	
-	while(s.Next()){
+	while(s->Next()){
 	  Int_t iDDL=rawReader->GetDDLID();
-	  Int_t iCarlos=s.GetCarlosId();
-	  if(s.IsCompletedModule()) continue;
-	  if(s.IsCompletedDDL()) continue;
+	  Int_t iCarlos=s->GetCarlosId();
+	  if(s->IsCompletedModule()) continue;
+	  if(s->IsCompletedDDL()) continue;
 	  if(iDDL>=0 && iDDL<kTotDDL){ 
-	    Int_t index=kSides*(kModPerDDL*iDDL+iCarlos)+s.GetChannel(); 
-	    histo[index]->Fill(s.GetCoord2(),s.GetCoord1(),s.GetSignal());
+	    Int_t index=kSides*(kModPerDDL*iDDL+iCarlos)+s->GetChannel(); 
+	    histo[index]->Fill(s->GetCoord2(),s->GetCoord1(),s->GetSignal());
 	    isFilled[index]=1;
 	  }
 	}

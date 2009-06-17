@@ -13,6 +13,7 @@
 #include "AliITSOnlineSDDBase.h"
 #include "AliITSOnlineSDDCMN.h"
 #include "AliITSRawStreamSDD.h"
+#include "AliITSRawStreamSDDCompressed.h"
 #include "TPaveStats.h"
 #endif
 
@@ -23,7 +24,13 @@
 // All DDLs are analyzed, the argument nDDL selects the DDL to be plotted
 // Origin: F. Prino (prino@to.infn.it)
 
-void AnalyzeSDDNoiseAllMod(Char_t *datafil, Int_t adcfreq=20, Int_t nDDL=0, Int_t firstEv=10, Int_t lastEv=12){
+void AnalyzeSDDNoiseAllMod(Char_t *datafil, 
+			   Int_t adcfreq=20, 
+			   Int_t nDDL=0, 
+			   Int_t firstEv=10, 
+			   Int_t lastEv=12, 
+			   Int_t dataformat=1){
+
 
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
@@ -76,17 +83,24 @@ void AnalyzeSDDNoiseAllMod(Char_t *datafil, Int_t adcfreq=20, Int_t nDDL=0, Int_
 	}
       }
     }
-    AliITSRawStreamSDD s(rd);
-    while(s.Next()){
+    AliITSRawStream* s;
+    if(dataformat==0){
+      s=new AliITSRawStreamSDD(rd);
+    }else{
+      s=new AliITSRawStreamSDDCompressed(rd);
+      if(dataformat==1) s->SetADCEncoded(kTRUE);
+    }
+    while(s->Next()){
       Int_t iDDL=rd->GetDDLID();
-      Int_t iCarlos=s.GetCarlosId();
-      if(s.IsCompletedModule()) continue;
-      if(s.IsCompletedDDL()) continue;
+      Int_t iCarlos=s->GetCarlosId();
+      if(s->IsCompletedModule()) continue;
+      if(s->IsCompletedDDL()) continue;
       if(iDDL>=0 && iDDL<kTotDDL){ 
-	Int_t index=kSides*(kModPerDDL*iDDL+iCarlos)+s.GetChannel(); 
-	histo[index]->Fill(s.GetCoord2(),s.GetCoord1(),s.GetSignal());
+	Int_t index=kSides*(kModPerDDL*iDDL+iCarlos)+s->GetChannel(); 
+	histo[index]->Fill(s->GetCoord2(),s->GetCoord1(),s->GetSignal());
       }
     }
+    delete s;
     iev++;
     for(Int_t iddl=0; iddl<kTotDDL;iddl++){
       for(Int_t imod=0; imod<kModPerDDL;imod++){
@@ -157,18 +171,25 @@ void AnalyzeSDDNoiseAllMod(Char_t *datafil, Int_t adcfreq=20, Int_t nDDL=0, Int_
       }
     }
     
-    AliITSRawStreamSDD s(rd2);
-    while(s.Next()){
+    AliITSRawStream* s;
+    if(dataformat==0){
+      s=new AliITSRawStreamSDD(rd2);
+    }else{
+      s=new AliITSRawStreamSDDCompressed(rd2);
+      if(dataformat==1) s->SetADCEncoded(kTRUE);
+    }
+    while(s->Next()){
       Int_t iDDL=rd2->GetDDLID();
-      Int_t iCarlos=s.GetCarlosId();
-      if(s.IsCompletedModule()) continue;
-      if(s.IsCompletedDDL()) continue;
+      Int_t iCarlos=s->GetCarlosId();
+      if(s->IsCompletedModule()) continue;
+      if(s->IsCompletedDDL()) continue;
       if(iDDL>=0 && iDDL<kTotDDL){ 
-	Int_t index=kSides*(kModPerDDL*iDDL+iCarlos)+s.GetChannel(); 
-	histo[index]->Fill(s.GetCoord2(),s.GetCoord1(),s.GetSignal());
+	Int_t index=kSides*(kModPerDDL*iDDL+iCarlos)+s->GetChannel(); 
+	histo[index]->Fill(s->GetCoord2(),s->GetCoord1(),s->GetSignal());
 	isFilled[index]=1;
       }
     }
+    delete s;
     iev++;
     for(Int_t iddl=0; iddl<kTotDDL;iddl++){
       for(Int_t imod=0; imod<kModPerDDL;imod++){
@@ -373,10 +394,16 @@ void AnalyzeSDDNoiseAllMod(Char_t *datafil, Int_t adcfreq=20, Int_t nDDL=0, Int_
 
 }
 
-void AnalyzeSDDNoiseAllMod(Int_t nrun, Int_t n2, Char_t* dir="LHC08d_SDD",Int_t adcfreq=20, Int_t nDDL=0, Int_t firstEv=15, Int_t lastEv=18){
+void AnalyzeSDDNoiseAllMod(Int_t nrun, Int_t n2, Char_t* dir="LHC08d_SDD",
+			   Int_t adcfreq=20, 
+			   Int_t nDDL=0, 
+			   Int_t firstEv=15, 
+			   Int_t lastEv=18, 
+			   Int_t dataformat=1){
+
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
   sprintf(filnam,"alien:///alice/data/2008/%s/%09d/raw/08%09d%03d.10.root",dir,nrun,nrun,n2);
   printf("Open file %s\n",filnam);
-  AnalyzeSDDNoiseAllMod(filnam,adcfreq,nDDL,firstEv,lastEv);
+  AnalyzeSDDNoiseAllMod(filnam,adcfreq,nDDL,firstEv,lastEv,dataformat);
 }

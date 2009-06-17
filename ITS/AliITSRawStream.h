@@ -41,6 +41,11 @@ class AliITSRawStream: public TObject {
     virtual void     SetZeroSuppLowThreshold(Int_t /*iMod*/, Int_t /*iSid*/, Int_t /*th*/) {
       AliError("This method must be implemented in a derived class");
     };
+    virtual void     SetADCEncoded(Bool_t /*fl*/) {
+      AliError("This method must be implemented in a derived class");
+    };
+
+
     virtual Int_t     GetCarlosId() const {
       AliError("This method must be implemented in a derived class");
       return -1;

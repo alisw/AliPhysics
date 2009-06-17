@@ -41,8 +41,9 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
   void GetMinAndMaxBaseline(Float_t &basMin, Float_t &basMax) const;
   Float_t GetMinimumBaseline() const;
   Float_t GetAnodeRawNoise(Int_t iAnode) const{
-    if(fNEvents>0) return TMath::Sqrt(fSumRawNoise[iAnode]/fNEvents-TMath::Power(GetAnodeBaseline(iAnode),2));
-    
+    Float_t noise2=0.;
+    if(fNEvents>0) noise2=fSumRawNoise[iAnode]/fNEvents-fSumBaseline[iAnode]*fSumBaseline[iAnode]/fNEvents/fNEvents;
+    if(noise2>0.) return TMath::Sqrt(noise2);
     else return 0;
   }
 

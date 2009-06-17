@@ -93,8 +93,9 @@ void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
     sum[ian]=0.;
     Int_t cnt=0;
     for(Int_t itb=fFirstGoodTB;itb<=fLastGoodTB;itb++){
-      sum[ian]+=hrawd->GetBinContent(itb+1,ian+1);
-      sumQ+=TMath::Power(hrawd->GetBinContent(itb+1,ian+1),2);
+      Float_t cbin=hrawd->GetBinContent(itb+1,ian+1);
+      sum[ian]+=cbin;
+      sumQ+=cbin*cbin;
       cnt++;
     }
     sum[ian]/=(Float_t)cnt;
@@ -102,7 +103,6 @@ void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
     fSumBaseline[ian]+=sum[ian];
     fSumRawNoise[ian]+=sumQ;
   }
-
   if(fNEvents==1) ValidateAnodes();
 
   Float_t *cmnEven = new Float_t[kTimeBins];
@@ -130,7 +130,7 @@ void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
       Float_t cmnCoef=cmnOdd[itb];
       if(ian%2==0) cmnCoef=cmnEven[itb];
       num+=(hrawd->GetBinContent(itb+1,ian+1)-sum[ian])*cmnCoef;
-      den+=TMath::Power(cmnCoef,2);
+      den+=cmnCoef*cmnCoef;
     }
     if(den!=0) fSumCMN[ian]+=num/den;
   }

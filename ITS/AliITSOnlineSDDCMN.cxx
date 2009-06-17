@@ -144,7 +144,8 @@ void AliITSOnlineSDDCMN::AddEvent(TH2F* hrawd){
     Float_t sumQ=0.;
     Int_t cnt=0;
     for(Int_t itb=fFirstGoodTB;itb<=fLastGoodTB;itb++){
-      sumQ+=TMath::Power(hcorrd->GetBinContent(itb+1,ian+1)-fBaseline[ian],2); 
+      Float_t cntdiff=hcorrd->GetBinContent(itb+1,ian+1)-fBaseline[ian];
+      sumQ+=cntdiff*cntdiff;
       cnt++;    
     }
     fSumCorrNoise[ian]+=TMath::Sqrt(sumQ/(Float_t)cnt);
