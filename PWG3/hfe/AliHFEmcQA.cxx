@@ -431,8 +431,8 @@ void AliHFEmcQA::GetDecayedKine(Int_t iTrack, const Int_t kquark, Int_t kdecayed
              TParticle* grandMa = fStack->Particle(jLabel);
              Int_t grandMaPDG = grandMa->GetPdgCode();
 
-             for (Int_t i=0; i<fNparents; i++){
-                if (abs(grandMaPDG)==fParentSelect[1][i]){
+             for (Int_t j=0; j<fNparents; j++){
+                if (abs(grandMaPDG)==fParentSelect[1][j]){
 
                   if (kquark == fkCharm) return;
                   // fill electron kinematics
@@ -457,7 +457,7 @@ void AliHFEmcQA::GetDecayedKine(Int_t iTrack, const Int_t kquark, Int_t kdecayed
                   fHistComm[iq].fDeDistance->Fill(grandMa->Pt(),dedistance.P());
                   return;
                 }
-             } 
+             }
 
              partMother = grandMa;
           } // end of iteration 
