@@ -70,7 +70,7 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
 
  protected:
   Int_t           fPDG;         //  PDG code of searched V0's
-  AliCFManager   *fCFManager  ; //  pointer to the CF manager
+  AliCFManager   *fCFManager;   //  pointer to the CF manager
   TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
   Int_t fCountMC;               //  MC particle found
   Int_t fCountAcc;              //  MC particle found that satisfy acceptance cuts
@@ -83,7 +83,7 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
                                 //  with generated values also for reconstructed particles
   Int_t fMinITSClusters;        //  min n. of ITS clusters for RecoDecay
   
-  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,0); // class for HF corrections as a function of many variables
+  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,1); // class for HF corrections as a function of many variables
 };
 
 #endif
