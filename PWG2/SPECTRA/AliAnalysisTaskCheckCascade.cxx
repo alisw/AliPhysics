@@ -1170,20 +1170,27 @@ void AliAnalysisTaskCheckCascade::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
 
-  fHistTrackMultiplicity = dynamic_cast<TH1F*> (   ((TList*)GetOutputData(1))->FindObject("fHistTrackMultiplicity") );
-  if (!fHistTrackMultiplicity) {
-    Printf("ERROR: fHistTrackMultiplicity not available");
-    return;
-  }
+  TList *cRetrievedList = 0x0;
+         cRetrievedList = (TList*)GetOutputData(1);
+	if(!cRetrievedList){
+		Printf("ERROR - AliAnalysisTaskCheckCascade: ouput data container list not available\n");
+		return;
+	}
+
+  fHistTrackMultiplicity = dynamic_cast<TH1F*> (   cRetrievedList->FindObject("fHistTrackMultiplicity") );
+	if (!fHistTrackMultiplicity) {
+		Printf("ERROR - AliAnalysisTaskCheckCascade: fHistTrackMultiplicity not available\n");
+		return;
+	}
  
-  fHistCascadeMultiplicity = dynamic_cast<TH1F*> ( ((TList*)GetOutputData(1))->FindObject("fHistCascadeMultiplicity"));
-  if (!fHistCascadeMultiplicity) {
-    Printf("ERROR: fHistCascadeMultiplicity not available");
-    return;
-  }
+  fHistCascadeMultiplicity = dynamic_cast<TH1F*> ( cRetrievedList->FindObject("fHistCascadeMultiplicity"));
+	if (!fHistCascadeMultiplicity) {
+		Printf("ERROR - AliAnalysisTaskCheckCascade: fHistCascadeMultiplicity not available\n");
+		return;
+	}
    
-  TCanvas *c2 = new TCanvas("AliAnalysisTaskCheckCascade","Multiplicity",10,10,510,510);
-  c2->cd(1)->SetLogy();
+  TCanvas *canCheckCascade = new TCanvas("AliAnalysisTaskCheckCascade","Multiplicity",10,10,510,510);
+  canCheckCascade->cd(1)->SetLogy();
 
   fHistTrackMultiplicity->SetMarkerStyle(22);
   fHistTrackMultiplicity->DrawCopy("E");
