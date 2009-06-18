@@ -58,7 +58,7 @@ class AliCFHeavyFlavourTask : public AliAnalysisTaskSE {
   Int_t fCountMC;               // MC particle found
   Int_t fEvents;                // n. of events
   
-  ClassDef(AliCFHeavyFlavourTask,0);
+  ClassDef(AliCFHeavyFlavourTask,1); // simple CF application to D0->Kpi
 };
 
 #endif
