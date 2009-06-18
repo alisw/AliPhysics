@@ -50,9 +50,11 @@ public:
   //
   static  Int_t          BuildBasicFormulas(); //build list of basic formulas
   static  Double_t       TPCscalingRPol(Double_t *xyz, Double_t * param);
-  static  Double_t       TPCscalingZDr(Double_t *xyz, Double_t * param);
-  static  Double_t       TPCscalingZDrGy(Double_t *xyz, Double_t * param);
+  static  Double_t       TPCscalingZDrift(Double_t *xyz, Double_t * param);
+  static  Double_t       TPCscalingZDriftGy(Double_t *xyz, Double_t * param);
+  static  Double_t       TPCscalingZDriftT0(Double_t *xyz, Double_t * param);
   static  Double_t       TPCscalingPhiLocal(Double_t *xyz, Double_t * param);
+  static  Double_t       TPClocalRPhiEdge(Double_t *xyz, Double_t * param);
   //
   // TPC Field cage + ROC misalingment induced distortion
   //

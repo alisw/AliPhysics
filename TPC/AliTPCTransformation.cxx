@@ -70,9 +70,11 @@ Int_t  AliTPCTransformation::BuildBasicFormulas(){
   RegisterFormula("TPCscalingRIFC",(GenFuncG)(AliTPCTransformation::TPCscalingRIFC));
   RegisterFormula("TPCscalingROFC",(GenFuncG)(AliTPCTransformation::TPCscalingROFC));
   //
-  RegisterFormula("TPCscalingZDr",(GenFuncG)(AliTPCTransformation::TPCscalingZDr));
-  RegisterFormula("TPCscalingZDrGy",(GenFuncG)(AliTPCTransformation::TPCscalingZDrGy));
+  RegisterFormula("TPCscalingZDr",(GenFuncG)(AliTPCTransformation::TPCscalingZDrift));
+  RegisterFormula("TPCscalingZDrGy",(GenFuncG)(AliTPCTransformation::TPCscalingZDriftGy));
+  RegisterFormula("TPCscalingZDriftT0",(GenFuncG)(AliTPCTransformation::TPCscalingZDriftT0));
   RegisterFormula("TPCscalingPhiLocal",(GenFuncG)(AliTPCTransformation::TPCscalingPhiLocal));
+  RegisterFormula("TPClocalRPhiEdge",(GenFuncG)(AliTPCTransformation::TPClocalRPhiEdge));
   //
   // TPC Local X and Y misalignment + rotation 
   //
@@ -319,19 +321,33 @@ Double_t  AliTPCTransformation::TPCscalingRPol(Double_t *xyz, Double_t * param){
 }
 
 
-Double_t  AliTPCTransformation::TPCscalingZDr(Double_t *xyz, Double_t * param){
+Double_t  AliTPCTransformation::TPCscalingZDrift(Double_t *xyz, Double_t * param){
   //
   //
   // Scaling and shift of TPC radius
   // xyz[0..2] - global xyz of point 
   // xyz[3]    - scale parameter
   Double_t driftP  = TMath::Power(1. - TMath::Abs(xyz[2]/250.), param[0]);
-  Double_t deltaZ  = (xyz[2]>0) ? -driftP : driftP;
+  Int_t    sector = TMath::Nint(xyz[4]);
+  Double_t deltaZ  = (sector%36<18) ? -driftP : driftP;
   return deltaZ*xyz[3];
 }
 
+Double_t  AliTPCTransformation::TPCscalingZDriftT0(Double_t *xyz, Double_t * /*param*/){
+  //
+  //
+  // Z shift because time 0 offset
+  // opposite on A and C side
+  //
+  // xyz[0..2] - global xyz of point 
+  // xyz[3]    - scale parameter
+  Int_t    sector = TMath::Nint(xyz[4]);
+  Double_t sign  = (sector%36<18) ? -1 : 1;
+  return sign*xyz[3];
+}
 
-Double_t  AliTPCTransformation::TPCscalingZDrGy(Double_t *xyz, Double_t * param){
+
+Double_t  AliTPCTransformation::TPCscalingZDriftGy(Double_t *xyz, Double_t * param){
   //
   //
   // Scaling and shift of TPC radius
@@ -339,7 +355,8 @@ Double_t  AliTPCTransformation::TPCscalingZDrGy(Double_t *xyz, Double_t * param)
   // xyz[3]    - scale parameter
   Double_t driftP  = TMath::Power(1. - TMath::Abs(xyz[2]/250.), param[0]);
   Double_t gy      = xyz[1]/250.;
-  Double_t deltaZ  = (xyz[2]>0) ? -driftP : driftP;
+  Int_t    sector = TMath::Nint(xyz[4]);
+  Double_t deltaZ  = (sector%36<18) ? -driftP : driftP;
   return deltaZ*xyz[3]*gy;
 }
 
@@ -359,6 +376,24 @@ Double_t  AliTPCTransformation::TPCscalingPhiLocal(Double_t *xyz, Double_t * par
   //
   Double_t deltaAlpha  = radius*TMath::Power(2.*9.*localAlpha/TMath::Pi(),param[0]);
   return deltaAlpha*xyz[3];
+}
+
+Double_t  AliTPCTransformation::TPClocalRPhiEdge(Double_t *xyz, Double_t * param){
+  //
+  //
+  // Scaling if the local y -phi
+  // xyz[0..2] - global xyz of point 
+  // xyz[3]    - scale parameter
+  // param[0]  - dedge offset - should be around gap size/2.
+  // param[1]  - dedge factor - should be around gap size/2.
+  Double_t alpha       = TMath::ATan2(xyz[1],xyz[0]);
+  Double_t sector      = TMath::Nint(9*alpha/TMath::Pi()-0.5);
+  Double_t localAlpha  = (alpha-(sector+0.5)*TMath::Pi()/9.);
+  Double_t radius      = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+  Double_t deltaAlpha  = TMath::Pi()/18.-TMath::Abs(localAlpha);
+  Double_t distEdge    = (deltaAlpha*radius);
+  Double_t factor      = 1./(1.+(distEdge-param[0])/param[1]);
+  return factor*xyz[3]*((localAlpha>0)? -1.:1.);
 }
 
 
