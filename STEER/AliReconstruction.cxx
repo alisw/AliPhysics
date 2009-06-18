@@ -2350,10 +2350,13 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
       if (fRunGlobalQA) {
         AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kTRUE);     
         TObjArray ** arr = AliTracker::GetResidualsArray() ; 
-        if ( ! arr[fRecoParam.GetEventSpecie()]->At(0) ) {
-          AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
-          qadm->InitRecPointsForTracker() ; 
-        }
+	if (arr) {
+	  TObjArray * elem = arr[fRecoParam.GetEventSpecie()];
+	  if ( elem && (! elem->At(0)) ) {
+	    AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
+	    if (qadm) qadm->InitRecPointsForTracker() ; 
+	  }
+	}
       }
     if (fTracker[iDet]->PropagateBack(esd) != 0) {
       AliError(Form("%s backward propagation failed", fgkDetectorName[iDet]));
@@ -2386,10 +2389,13 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
       if (fRunGlobalQA) {
         AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kTRUE);     
         TObjArray ** arr = AliTracker::GetResidualsArray() ; 
-        if ( ! arr[fRecoParam.GetEventSpecie()]->At(0) ) {
-          AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
-          qadm->InitRecPointsForTracker() ; 
-        }
+	if (arr) {
+	  TObjArray * elem = arr[fRecoParam.GetEventSpecie()];
+	  if ( elem && (! elem->At(0)) ) {
+	    AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
+	    if (qadm) qadm->InitRecPointsForTracker() ; 
+	  }
+	}
       }
     
     if (fTracker[iDet]->RefitInward(esd) != 0) {
