@@ -1,3 +1,10 @@
+//-------------------------------------------------------------------------
+//
+// This is the PROOF-enabled version of ITS/AliITSComparisonV2.C macro.
+// Origin:  Andrei.Zalite@cern.ch
+//
+//-------------------------------------------------------------------------
+
 #include "TChain.h"
 #include "TH1F.h"
 #include "TH2F.h"

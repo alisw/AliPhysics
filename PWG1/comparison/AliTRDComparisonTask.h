@@ -1,5 +1,12 @@
-#ifndef AliTRDComparisonTask_cxx
-#define AliTRDComparisonTask_cxx
+#ifndef ALITRDCOMPARISONTASK_H
+#define ALITRDCOMPARISONTASK_H
+
+//-------------------------------------------------------------------------
+//
+// This is the PROOF-enabled version of TRD/Macros/AliTRDComparisonV2.C macro.
+// Origin:  Andrei.Zalite@cern.ch
+//
+//-------------------------------------------------------------------------
 
 class TList;
 class TH1F;
@@ -24,21 +31,21 @@ class AliTRDComparisonTask: public AliAnalysisTaskSE
     virtual void Terminate(Option_t *);
   
   private:
-    TList* fListOfHistos;
+    TList* fListOfHistos;; // The list of output histos
     
-    TH1F* hgood;
-    TH1F* hfound;
-    TH1F* hfake;
-    TH1F* hp;
-    TH1F* hl;
-    TH1F* hpt;
-    TH1F* hmpt;
-    TH1F* he;
-    TH2F* hep;
-    TH1F* hgoodPhi;
-    TH1F* hfoundPhi;
-    TH1F* hz;
-    TH1F* hc;
+    TH1F* fGood;           // good tracks
+    TH1F* fFound;          // found tracks
+    TH1F* fFake;           // fake tracks
+    TH1F* fP;              // phi resolution
+    TH1F* fL;              // lambda resolution 
+    TH1F* fPt;             // pt resolution
+    TH1F* fHmpt;           // Y and Z resolution
+    TH1F* fE;              // dE/dx for MIP
+    TH2F* fEp;             // dE/dx vs momentum
+    TH1F* fGoodPhi;        // phi for good tracks
+    TH1F* fFoundPhi;       // phi for found tracks
+    TH1F* fZ;              // z resolution
+    TH1F* fC;              // number of assigned clusters
     
     AliTRDComparisonTask(const AliTRDComparisonTask&); // not implemented
     AliTRDComparisonTask& operator=(const AliTRDComparisonTask&); // not implemented
