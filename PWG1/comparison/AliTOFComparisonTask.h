@@ -1,5 +1,12 @@
-#ifndef AliTOFComparisonTask_cxx
-#define AliTOFComparisonTask_cxx
+#ifndef ALITOFCOMPARISONTASK_H
+#define ALITOFCOMPARISONTASK_H
+
+//-------------------------------------------------------------------------
+//
+// This is the PROOF-enabled version of TOF/AliTOFComparison.C macro.
+// Origin:  Andrei.Zalite@cern.ch
+//
+//-------------------------------------------------------------------------
 
 class TList;
 class TH1F;
@@ -24,16 +31,16 @@ class AliTOFComparisonTask: public AliAnalysisTaskSE
     virtual void Terminate(Option_t *);
   
   private:
-    TList* fListOfHistos;
+    TList* fListOfHistos;// the list of the output histos
     
-    TH1F* hgood;
-    TH1F* hfound;
-    TH1F* hfake;
-    TH1F* hgoodPhi;
-    TH1F* hfoundPhi;
-    TH1F* hgoodl;
-    TH1F* hfakel;
-    TH1F* hfoundl;
+    TH1F* fGood;         // good tracks
+    TH1F* fFound;        // found tracks
+    TH1F* fFake;         // fake tracks
+    TH1F* fGoodPhi;      // phi for good tracks
+    TH1F* fFoundPhi;     // phi for found tracks
+    TH1F* fGoodl;        // tan(lambda) for good tracks
+    TH1F* fFakel;        // tan(lambda) for fake tracks
+    TH1F* fFoundl;       // tan(lambda) for found tracks
     
     AliTOFComparisonTask(const AliTOFComparisonTask&); // not implemented
     AliTOFComparisonTask& operator=(const AliTOFComparisonTask&); // not implemented
