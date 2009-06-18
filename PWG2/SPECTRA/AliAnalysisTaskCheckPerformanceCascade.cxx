@@ -1767,20 +1767,25 @@ void AliAnalysisTaskCheckPerformanceCascade::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
-
-  fHistMCTrackMultiplicity = dynamic_cast<TH1F*> (  ((TList*)GetOutputData(1))->FindObject("fHistMCTrackMultiplicity")  );
-  if (!fHistMCTrackMultiplicity) {
-    Printf("ERROR: fHistMCTrackMultiplicity not available");
+  TList *cRetrievedList = 0x0;
+  cRetrievedList = (TList*)GetOutputData(1);
+  if(!cRetrievedList){
+    Printf("ERROR - AliAnalysisTaskCheckPerformanceCascade : ouput data container list not available\n");
     return;
   }
-  
-   
-  TCanvas *c2 = new TCanvas("AliAnalysisTaskCheckPerformanceCascade","Multiplicity",10,10,510,510);
-  c2->cd(1)->SetLogy();
+
+  fHistMCTrackMultiplicity = dynamic_cast<TH1F*> (  cRetrievedList->FindObject("fHistMCTrackMultiplicity")  );
+  if (!fHistMCTrackMultiplicity) {
+    Printf("ERROR - AliAnalysisTaskCheckPerformanceCascade : fHistMCTrackMultiplicity not available");
+    return;
+  }
+
+  TCanvas *canCheckPerformanceCascade = new TCanvas("AliAnalysisTaskCheckPerformanceCascade","Multiplicity",10,10,510,510);
+  canCheckPerformanceCascade->cd(1)->SetLogy();
 
   fHistMCTrackMultiplicity->SetMarkerStyle(22);
   fHistMCTrackMultiplicity->DrawCopy("E");
- // fHistV0Multiplicity->SetMarkerStyle(26);
- // fHistV0Multiplicity->DrawCopy("ESAME");
+  // fHistV0Multiplicity->SetMarkerStyle(26);
+  // fHistV0Multiplicity->DrawCopy("ESAME");
 
 }
