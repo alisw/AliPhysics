@@ -366,7 +366,10 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 10, const char*
 	      Int_t nNewMultOfEvent = random3Temp.Gaus(nMultiplicityOfEvent,nSigmaMult);
 	      cout << "new multiplicity: " << nNewMultOfEvent << endl;
   	      Double_t xNewFlowValue = random3Temp.Gaus(xEllipticFlowValue,xSigmaFlow);
-	      cout << "new flow value: " << xNewFlowValue << endl;
+	      if ( (fCount % 100) == 0) {
+		cout << "new multiplicity: " << nNewMultOfEvent << endl;
+		cout << "new flow value: " << xNewFlowValue << endl;
+	      }
   	      fEventMaker->SetNoOfLoops(nLoops);
 	      fEventMaker->SetEllipticFlowValue(xNewFlowValue);
 	      fEventMaker->SetMultiplicityOfEvent(nNewMultOfEvent);
