@@ -58,7 +58,8 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
    fHistProDiffFlowEtaRP(NULL),
    fHistProDiffFlowPtEtaPOI(NULL),
    fHistProDiffFlowPtPOI(NULL),
-   fHistProDiffFlowEtaPOI(NULL)
+   fHistProDiffFlowEtaPOI(NULL),
+   fHistSpreadOfFlow(NULL)
 {
 
   // Constructor.
@@ -160,7 +161,12 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   fHistProDiffFlowEtaPOI = new TProfile("FlowPro_VetaPOI_MCEP","FlowPro_VetaPOI_MCEP",iNbinsEta,dEtaMin,dEtaMax);
   fHistProDiffFlowEtaPOI->SetXTitle("#eta");
   fHistProDiffFlowEtaPOI->SetYTitle("");
-  fHistList->Add(fHistProDiffFlowEtaPOI);          
+  fHistList->Add(fHistProDiffFlowEtaPOI);         
+  
+  fHistSpreadOfFlow = new TH1D("fHistSpreadOfFlow","fHistSpreadOfFlow",1000,0,1);
+  fHistSpreadOfFlow->SetXTitle("v_{2}");
+  fHistSpreadOfFlow->SetYTitle("counts");
+  fHistList->Add(fHistSpreadOfFlow);           
  
   fEventNumber = 0;  //set number of events to zero
       
@@ -193,8 +199,11 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
     Double_t dv2  = 0.;
     Double_t dPt  = 0.;
     Double_t dEta = 0.;
-    //Double_t dPi = TMath::Pi();                   
-                                                             
+    //Double_t dPi = TMath::Pi();  
+    
+    // profile to calculate flow e-b-y:
+    TProfile *flowEBE = new TProfile("flowEBE","flowEBE",1,0,1);
+                                                                                         
     //calculate flow
     //loop over the tracks of the event
     Int_t iNumberOfTracks = anEvent->NumberOfTracks(); 
@@ -205,10 +214,12 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
 	  if (pTrack->InRPSelection()){
             dPhi = pTrack->Phi();
             dv2  = TMath::Cos(2*(dPhi-aRP));
-	    dPt  = pTrack->Pt();
-	    dEta = pTrack->Eta();
-            //no-name int. flow (to be improved):
+	         dPt  = pTrack->Pt();
+	         dEta = pTrack->Eta();
+            //no-name int. flow (to be improved = name needed!):
             fHistProIntFlow->Fill(0.,dv2);
+            //no-name int. flow e-b-e (to be improved = name needed!):
+            flowEBE->Fill(0.,dv2);
             //differential flow (Pt, Eta, RP):
             fHistProDiffFlowPtEtaRP->Fill(dPt,dEta,dv2,1.);
             //differential flow (Pt, RP):
@@ -235,6 +246,10 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
 	  
     fEventNumber++;
     //    cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
+    
+    // store flow value for this event:
+    fHistSpreadOfFlow->Fill(flowEBE->GetBinContent(1));
+    delete flowEBE; 
   }
 }
   //--------------------------------------------------------------------    

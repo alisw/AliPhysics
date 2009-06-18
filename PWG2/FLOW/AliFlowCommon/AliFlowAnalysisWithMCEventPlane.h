@@ -91,8 +91,12 @@ class AliFlowAnalysisWithMCEventPlane {
    
    TProfile* GetHistProDiffFlowEtaPOI()   {return this->fHistProDiffFlowEtaPOI; } 
    void      SetHistProDiffFlowEtaPOI(TProfile* aHistProDiffFlowEtaPOI) 
-     {this->fHistProDiffFlowEtaPOI = aHistProDiffFlowEtaPOI; }    
-
+     {this->fHistProDiffFlowEtaPOI = aHistProDiffFlowEtaPOI; } 
+     
+   TH1D* GetHistSpreadOfFlow()   {return this->fHistSpreadOfFlow; } 
+   void      SetHistSpreadOfFlow(TH1D* aHistSpreadOfFlow) 
+     {this->fHistSpreadOfFlow = aHistSpreadOfFlow; }    
+   
  private:
  
    AliFlowAnalysisWithMCEventPlane(const AliFlowAnalysisWithMCEventPlane& aAnalysis);             //copy constructor
@@ -119,7 +123,8 @@ class AliFlowAnalysisWithMCEventPlane {
    TProfile*    fHistProDiffFlowEtaRP;    // profile used to calculate the differential flow (Eta) of RP particles 
    TProfile2D*  fHistProDiffFlowPtEtaPOI; // profile used to calculate the differential flow (Pt,Eta) of POI particles
    TProfile*    fHistProDiffFlowPtPOI;    // profile used to calculate the differential flow (Pt) of POI particles 
-   TProfile*    fHistProDiffFlowEtaPOI ;  // profile used to calculate the differential flow (Eta) of POI particles    
+   TProfile*    fHistProDiffFlowEtaPOI;   // profile used to calculate the differential flow (Eta) of POI particles
+   TH1D*        fHistSpreadOfFlow;        // histogram filled with NONAME integrated flow calculated e-b-e    
    
    ClassDef(AliFlowAnalysisWithMCEventPlane,1)  // Analyse particle distribution versus MC reaction plane
      };
