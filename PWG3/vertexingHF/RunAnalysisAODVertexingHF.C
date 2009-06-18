@@ -166,9 +166,9 @@ void RunAnalysisAODVertexingHF()
   //gROOT->LoadMacro(taskName.Data());
   //AliAnalysisTaskSESelectHF *seleTask = AddTaskSelectHF();
 
-  taskName="AddTaskBkgLikeSign.C"; taskName.Prepend(loadMacroPath.Data());
+  taskName="AddTaskBkgLikeSignJPSI.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSEBkgLikeSignJPSI *lsTask = AddTaskBkgLikeSign();
+  AliAnalysisTaskSEBkgLikeSignJPSI *lsTask = AddTaskBkgLikeSignJPSI();
 
   //taskName="AddTaskBtoJPSItoEle.C"; taskName.Prepend(loadMacroPath.Data());
   //gROOT->LoadMacro(taskName.Data());
