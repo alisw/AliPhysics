@@ -18,13 +18,13 @@
 //                                                                           //
 // class for running the QA makers                                           //
 //                                                                           //
-//   AliQAManager qas;                                                //
-//   qas.Run(AliQAv1::kRAWS, rawROOTFileName);                                 //
-//   qas.Run(AliQAv1::kHITS);                                                  //
-//   qas.Run(AliQAv1::kSDIGITS);                                               //
-//   qas.Run(AliQAv1::kDIGITS);                                                //
-//   qas.Run(AliQAv1::kRECPOINTS);                                             //
-//   qas.Run(AliQAv1::kESDS);                                                  //
+//   AliQAManager qas;                                                       //
+//   qas.Run(AliQAv1::kRAWS, rawROOTFileName);                               //
+//   qas.Run(AliQAv1::kHITS);                                                //
+//   qas.Run(AliQAv1::kSDIGITS);                                             //
+//   qas.Run(AliQAv1::kDIGITS);                                              //
+//   qas.Run(AliQAv1::kRECPOINTS);                                           //
+//   qas.Run(AliQAv1::kESDS);                                                //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -135,6 +135,7 @@ AliQAManager::AliQAManager(const Char_t * mode, const Char_t* gAliceFilename) :
     }
   }
   SetWriteExpert() ; 
+  fMode.ToLower() ; 
   if (fMode.Contains("sim")) 
 		fMode.ReplaceAll("s", "S") ; 
   else if (fMode.Contains("rec")) 
@@ -377,7 +378,7 @@ AliLoader * AliQAManager::GetLoader(Int_t iDet)
 {
 	// get the loader for a detector
 
-	if ( !fRunLoader || iDet == AliQAv1::kCORR) 
+	if ( !fRunLoader || iDet == AliQAv1::kCORR || iDet == AliQAv1::kGLOBAL ) 
 		return NULL ; 
 	
 	TString detName = AliQAv1::GetDetName(iDet) ;
@@ -470,7 +471,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
       if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
         qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 
-  } else {
+  } else if ( iDet != AliQAv1::kCORR ) {
     
     // load the QA data maker object
     TPluginManager* pluginManager = gROOT->GetPluginManager() ;
@@ -483,7 +484,9 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
     if (!pluginHandler) {
       AliDebug(AliQAv1::GetQADebugLevel(), Form("defining plugin for %s", qadmName.Data())) ;
       TString libs = gSystem->GetLibraries() ;
-      if (libs.Contains("lib" + detName + GetMode() + ".so") || (gSystem->Load("lib" + detName + GetMode() + ".so") >= 0)) {
+      TString temp(GetMode()) ;
+      temp.ToLower() ; 
+      if (libs.Contains("lib" + detName + GetMode() + ".so") || (gSystem->Load("lib" + detName + temp.Data() + ".so") >= 0)) {
         pluginManager->AddHandler("AliQADataMaker", detName, qadmName, detName + "qadm", qadmName + "()") ;
       } else {
         pluginManager->AddHandler("AliQADataMaker", detName, qadmName, detName, qadmName + "()") ;
@@ -1080,8 +1083,10 @@ AliQAManager * AliQAManager::QAManager(const Char_t * mode, TMap *entryCache, In
   // returns AliQAManager instance (singleton)
   
 	if (!fgQAInstance) {
-    if ( (strcmp(mode, "sim") != 0) && (strcmp(mode, "rec") != 0) )
-      AliFatalClass("You must specify sim or rec") ; 
+    if ( (strcmp(mode, "sim") != 0) && (strcmp(mode, "rec") != 0) ) {
+      AliErrorClass("You must specify sim or rec") ; 
+      return NULL ; 
+    }
     fgQAInstance = new AliQAManager(mode) ;  
     if (!entryCache)
 		  fgQAInstance->Init();
@@ -1431,8 +1436,8 @@ void AliQAManager::SetWriteExpert()
 
 //_____________________________________________________________________________
 void AliQAManager::Destroy() {
-// delete AliQAManager instance and
-// all associated objects
+  // delete AliQAManager instance and
+  // all associated objects
 
   if (fgQAInstance) {
     delete fgQAInstance ;
@@ -1440,3 +1445,10 @@ void AliQAManager::Destroy() {
   }
 }
 
+//_____________________________________________________________________________
+void AliQAManager::ShowQA() {
+  // Show the result of the QA checking
+  // for all detectors 
+	for ( Int_t detIndex = 0 ; detIndex < AliQAv1::kNDET ; detIndex++) 
+    AliQAv1::Instance(AliQAv1::GetDetIndex(AliQAv1::GetDetName(detIndex)))->Show() ; 
+}

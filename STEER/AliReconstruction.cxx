@@ -2840,6 +2840,8 @@ void AliReconstruction::CleanUp()
     ffile = NULL;
   }
 
+  if (AliQAManager::QAManager())
+    AliQAManager::QAManager()->ShowQA() ; 
   AliQAManager::Destroy() ; 
   
   TGeoGlobalMagField::Instance()->SetField(NULL);

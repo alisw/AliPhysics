@@ -263,7 +263,7 @@ void AliQACheckerBase::Finish() const
 {
 	// wrap up and save QA in proper file
 	AliQAv1 * qa = AliQAv1::Instance() ; 
-	qa->Show() ;
+	//qa->Show() ;
 	AliQAv1::GetQAResultFile()->cd() ; 
 	qa->Write(qa->GetName(), kWriteDelete) ;   
 	AliQAv1::GetQAResultFile()->Close() ; 

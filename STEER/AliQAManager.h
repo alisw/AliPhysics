@@ -43,7 +43,8 @@ private:
   ~AliQAManager() ; 
 
 public:
-	void             EndOfCycle(TObjArray * detArray=0x0) ; 
+  static void      Destroy() ;
+  void             EndOfCycle(TObjArray * detArray=0x0) ; 
   void             EndOfCycle(TString detectors) ; 
 	UInt_t           GetCurrentEvent() const { return fCurrentEvent ; }
 	TObjArray *      GetFromOCDB(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, const Char_t * year) const ; 
@@ -78,8 +79,8 @@ public:
 	void             SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
 	void             SetTasks(TString tasks) { fTasks = tasks ; }
   void             SetWriteExpert() ; 
-  static void      Destroy();
-
+  void             ShowQA() ; 
+  
 private: 
 	Bool_t			DoIt(const AliQAv1::TASKINDEX_t taskIndex) ;
 	AliLoader * GetLoader(Int_t iDet) ; 

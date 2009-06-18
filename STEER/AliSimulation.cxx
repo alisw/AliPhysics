@@ -226,7 +226,8 @@ AliSimulation::~AliSimulation()
   fSpecCDBUri.Delete();
   if (fgInstance==this) fgInstance = 0;
 
-  AliQAManager:: Destroy() ; 	
+  AliQAManager::QAManager()->ShowQA() ; 
+  AliQAManager::Destroy() ; 	
   AliCodeTimer::Instance()->Print();
 }
 
