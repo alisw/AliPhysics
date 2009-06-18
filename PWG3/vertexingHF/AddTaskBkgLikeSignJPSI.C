@@ -15,6 +15,7 @@ AliAnalysisTaskSEBkgLikeSignJPSI *AddTaskBkgLikeSignJPSI()
     return NULL;
   }   
 
+
   // Like-sign background analysis task    
   AliAnalysisTaskSEBkgLikeSignJPSI *lsTask = new AliAnalysisTaskSEBkgLikeSignJPSI("CmpLikeSignAnalysis");
   lsTask->SetDebugLevel(2);
