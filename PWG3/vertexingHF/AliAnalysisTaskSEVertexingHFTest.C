@@ -22,7 +22,7 @@ void AliAnalysisTaskSEVertexingHFTest()
     TString treeName,fileName;
     if(inputAOD) {
       treeName="aodTree"; 
-      fileName="AliAODs.root";
+      fileName="AliAOD.root";
     } else {
       treeName="esdTree"; 
       fileName="AliESDs.root";
