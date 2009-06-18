@@ -31,8 +31,9 @@
 
 #include "AliGenHijing.h"
 #include "AliGenHijingEventHeader.h"
-#include "AliRun.h"
 #include "AliHijingRndm.h"
+#include "AliLog.h"
+#include "AliRun.h"
 
 ClassImp(AliGenHijing)
 
@@ -257,7 +258,6 @@ void AliGenHijing::Generate()
       
       
       Int_t np = fParticles.GetEntriesFast();
-      printf("\n **************************************************%d\n",np);
       Int_t nc = 0;
       if (np == 0 ) continue;
       Int_t i;
@@ -388,12 +388,12 @@ void AliGenHijing::Generate()
       delete[] newPos;
       delete[] pSelected;
       
-      printf("\n I've put %i particles on the stack \n",nc);
+      AliInfo(Form("\n I've put %i particles on the stack \n",nc));
       if (nc > 0) {
 	  jev += nc;
 	  if (jev >= fNpart || fNpart == -1) {
 	      fKineBias = Float_t(fNpart)/Float_t(fTrials);
-	      printf("\n Trials: %i %i %i\n",fTrials, fNpart, jev);
+	      AliInfo(Form("\n Trials: %i %i %i\n",fTrials, fNpart, jev));
 	      break;
 	  }
       }

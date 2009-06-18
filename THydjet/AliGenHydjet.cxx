@@ -27,6 +27,7 @@
 #include <TClonesArray.h>
 
 #include "AliGenHydjet.h"
+#include "AliLog.h"
 #include "AliGenHydjetEventHeader.h"
 #include "AliRun.h"
 #include "AliPythiaRndm.h"
@@ -134,7 +135,6 @@ void AliGenHydjet::Generate()
       fHydjet->ImportParticles(&fParticles,"All");
 
       Int_t np = fParticles.GetEntriesFast();
-      printf("\n **************************************************%d\n",np);
       Int_t nc = 0;
       if (np == 0 ) continue;
       Int_t i;
@@ -197,7 +197,7 @@ void AliGenHydjet::Generate()
       } // particle loop
       delete[] pSelected;
 
-      printf("\n I've put %i particles on the stack \n",nc);
+      AliInfo(Form("\n I've put %i particles on the stack \n",nc));
       if (nc > 0) break;
   } // event loop
   MakeHeader();
