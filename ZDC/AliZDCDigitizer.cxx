@@ -211,7 +211,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
       }
       Float_t sdSignal = sdigit.GetLightPM();
       if(fIsSignalInADCGate == kFALSE){
-        AliInfo(Form("\t Signal time %f -> fraction %f of ZDC signal for det.(%d, %d) out of ADC gate\n",
+        AliDebug(2,Form("\t Signal time %f -> fraction %f of ZDC signal for det.(%d, %d) out of ADC gate\n",
 		sdigit.GetTrackTime(),fFracLostSignal,sdigit.GetSector(0),sdigit.GetSector(1)));
 	sdSignal = (1-fFracLostSignal)*sdSignal;
       }
