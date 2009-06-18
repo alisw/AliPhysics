@@ -1,4 +1,4 @@
-AliAnalysisTaskSEBkgLikeSignJPSI *AddTaskBkgLikeSign() 
+AliAnalysisTaskSEBkgLikeSignJPSI *AddTaskBkgLikeSignJPSI() 
 {
   //
   // Test macro for the AliAnalysisTaskSEBkgLikeSignJPSI
@@ -11,7 +11,7 @@ AliAnalysisTaskSEBkgLikeSignJPSI *AddTaskBkgLikeSign()
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskBkgLikeSign", "No analysis manager to connect to.");
+    ::Error("AddTaskBkgLikeSignJPSI", "No analysis manager to connect to.");
     return NULL;
   }   
 
