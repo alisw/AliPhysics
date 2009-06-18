@@ -176,7 +176,7 @@ ALILIBS	      := -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
 LIBS := $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS)
 
 ARVERSIONFILE := $(EXPORTDIR)/ARVersion.h
-SVNREV        := $(strip $(shell svn info | grep "Last Changed Rev:" | \
+SVNREV        := $(strip $(shell LANG=C svn info | grep "Last Changed Rev:" | \
 			         cut -d: -f2 ))
 SVNBRANCH     := $(subst //alisoft.cern.ch/AliRoot/,,$(shell svn info | grep "URL:" | cut -d: -f3 ))
 
