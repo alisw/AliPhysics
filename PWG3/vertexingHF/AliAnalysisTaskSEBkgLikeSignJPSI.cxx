@@ -337,13 +337,15 @@ void AliAnalysisTaskSEBkgLikeSignJPSI::Terminate(Option_t */*option*/)
   fHistDCAJPSI = dynamic_cast<TH1F*>(fOutput->FindObject("fHistDCAJPSI"));
   fHistDCALS = dynamic_cast<TH1F*>(fOutput->FindObject("fHistDCALS"));
 
-  fHistMassLS->Scale((1/fLsNormalization)*fHistMassLS->GetEntries());
-  fHistCtsLS->Scale((1/fLsNormalization)*fHistCtsLS->GetEntries());
-  fHistCtsLSpos->Scale((1/fLsNormalization)*fHistCtsLSpos->GetEntries());
-  fHistCtsLSneg->Scale((1/fLsNormalization)*fHistCtsLSneg->GetEntries());
-  fHistCPtaLS->Scale((1/fLsNormalization)*fHistCPtaLS->GetEntries());
-  fHistd0d0LS->Scale((1/fLsNormalization)*fHistd0d0LS->GetEntries());
-  fHistDCALS->Scale((1/fLsNormalization)*fHistDCALS->GetEntries());
+  if(fLsNormalization>0.) {
+    fHistMassLS->Scale((1/fLsNormalization)*fHistMassLS->GetEntries());
+    fHistCtsLS->Scale((1/fLsNormalization)*fHistCtsLS->GetEntries());
+    fHistCtsLSpos->Scale((1/fLsNormalization)*fHistCtsLSpos->GetEntries());
+    fHistCtsLSneg->Scale((1/fLsNormalization)*fHistCtsLSneg->GetEntries());
+    fHistCPtaLS->Scale((1/fLsNormalization)*fHistCPtaLS->GetEntries());
+    fHistd0d0LS->Scale((1/fLsNormalization)*fHistd0d0LS->GetEntries());
+    fHistDCALS->Scale((1/fLsNormalization)*fHistDCALS->GetEntries());
+  }
 
   return;
 }
