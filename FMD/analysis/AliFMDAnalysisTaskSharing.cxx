@@ -293,7 +293,7 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
     }
   if(mult > 15)
     {
-      std::cout<<"rejecting hit in FMD "<<det<<" "<<ring<<std::endl;
+      //   std::cout<<"rejecting hit in FMD "<<det<<" "<<ring<<std::endl;
       fSharedThis      = kFALSE;
       fSharedPrev      = kFALSE;
       return 0;

@@ -12,7 +12,8 @@ AliAnalysisTaskSE(),
   fSharing("Sharing",kFALSE),
   fDensity("Density",kFALSE),
   fBackground("BackgroundCorrected",kFALSE),
-  fDndeta("dNdeta",kFALSE)
+  fDndeta("dNdeta",kFALSE),
+  fPrimary(kTRUE)
 {
   // Default constructor
 }
@@ -23,9 +24,10 @@ AliFMDAnalysisTaskSE::AliFMDAnalysisTaskSE(const char* name):
   fSharing("Sharing",kFALSE),
   fDensity("Density",kFALSE),
   fBackground("BackgroundCorrected",kFALSE),
-  fDndeta("dNdeta",kFALSE)
+  fDndeta("dNdeta",kFALSE),
+  fPrimary(kTRUE)
 {
- 
+  
   DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________
@@ -59,7 +61,7 @@ void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
   fDndeta.SetInputVertex(vtxString1);
   fDndeta.SetInputList(bgcorlist); 
   fDndeta.SetOutputList(fListOfHistos); 
-  
+  fDndeta.SetAnalyzePrimary(fPrimary);
   fSharing.CreateOutputObjects();
   fDensity.CreateOutputObjects();
   fBackground.CreateOutputObjects();

@@ -29,7 +29,8 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
       fNMCevents(o.fNMCevents),
       fStandalone(o.fStandalone),
       fMCevent(o.fMCevent),
-      fLastTrackByStrip(o.fLastTrackByStrip) {}
+      fLastTrackByStrip(o.fLastTrackByStrip),
+      fPrimary(o.fPrimary) {}
     AliFMDAnalysisTaskDndeta& operator=(const AliFMDAnalysisTaskDndeta&) { return *this; }
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option = "");
@@ -45,7 +46,7 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
     void SetMCEvent(AliMCEvent* mcevent) {fMCevent = mcevent;}
     void ProcessPrimary();
     TList* GetOutputList() {return fOutputList;}
-    
+    void SetAnalyzePrimary(Bool_t prim) {fPrimary = prim;}
  private:
     Int_t         fDebug;        //  Debug flag
     TList*        fOutputList;
@@ -58,6 +59,7 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
     Bool_t        fStandalone;
     AliMCEvent*   fMCevent;
     AliFMDFloatMap fLastTrackByStrip;
+    Bool_t        fPrimary;
     ClassDef(AliFMDAnalysisTaskDndeta, 0); // Analysis task for FMD analysis
 };
  

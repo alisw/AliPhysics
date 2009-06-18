@@ -40,7 +40,8 @@ AliFMDAnalysisTaskDndeta::AliFMDAnalysisTaskDndeta()
   fNMCevents(),
   fStandalone(kTRUE),
   fMCevent(0),
-  fLastTrackByStrip()
+  fLastTrackByStrip(),
+  fPrimary(kTRUE)
 {
   // Default constructor
   DefineInput (0, TList::Class());
@@ -59,7 +60,8 @@ AliFMDAnalysisTaskDndeta::AliFMDAnalysisTaskDndeta(const char* name, Bool_t SE):
     fNMCevents(),
     fStandalone(kTRUE),
     fMCevent(0),
-    fLastTrackByStrip()
+    fLastTrackByStrip(),
+    fPrimary(kTRUE)
 {
   fStandalone = SE;
   if(fStandalone) {
@@ -188,7 +190,7 @@ void AliFMDAnalysisTaskDndeta::Exec(Option_t */*option*/)
     }
   }
   
-  if(fMCevent)
+  if(fMCevent && fPrimary)
     ProcessPrimary();
   
   if(fStandalone) {
@@ -259,7 +261,7 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
 	firstTrack = kFALSE;
       }
     }
-     
+    
     for(Int_t j=0; j<particle->GetNumberOfTrackReferences();j++) {
       
       AliTrackReference* ref = particle->GetTrackReference(j);
@@ -271,13 +273,7 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
       Float_t thisStripTrack = fLastTrackByStrip.operator()(det,ring,sec,strip);
       if(particle->Charge() != 0 && i != thisStripTrack ) {
 	//Double_t x,y,z;
-	/*AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
-	fmdgeo->Detector2XYZ(det,ring,sec,strip,x,y,z);
 	
-	Float_t   phi   = TMath::ATan2(y,x);
-	if(phi<0) phi   = phi+2*TMath::Pi();
-	Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
-	Float_t   theta = TMath::ATan2(r,z-vertex.At(2));*/
 	Float_t   eta   = pars->GetEtaFromStrip(det,ring,sec,strip,vertex.At(2));//-1*TMath::Log(TMath::Tan(0.5*theta));
 	TH1F* hHits = (TH1F*)fOutputList->FindObject(Form("hHits_FMD%d%c_vtxbin%d",det,ring,vertexBin));
 	hHits->Fill(eta);
@@ -294,10 +290,10 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
 	
 	
       }
-    }
+      }
     
     
-  }
+      }
   
 }
 //_____________________________________________________________________
