@@ -32,8 +32,12 @@
   e.g:
   kalmanFit0->SetInstance(kalmanFit0);   // 
   kalmanFit0->InitTransformation();      //
+  //
   TF2 fxRZdz("fxRZdz","sign(y)*1000*(AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,x,0,y)-AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,x,0,y-1))",85,245,-250,250);
   fxRZdz->Draw("");
+
+  TF2 fxRZ("fxRZ","sign(y)*10*(AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,x,0,y))",85,245,-250,250);
+  fxRZ->Draw("");
 
 
 
@@ -257,7 +261,7 @@ void AliTPCkalmanFit::Update(const AliTPCkalmanFit * kalman){
 
 
 
-void AliTPCkalmanFit::FitTrackLinear(AliTrackPointArray &points, TTreeSRedirector *debug){
+void AliTPCkalmanFit::FitTrackLinear(AliTrackPointArray &points, TTreeSRedirector *debug,  Float_t scalingRMSY, Float_t scalingRMSZ){
   //
   //
 
@@ -346,14 +350,14 @@ void AliTPCkalmanFit::FitTrackLinear(AliTrackPointArray &points, TTreeSRedirecto
     Double_t errz2 = chi2Z;
     //set error - it is hack
     Float_t *cov = (Float_t*) point.GetCov();
-    cov[1] = erry2+kOff0;
-    cov[2] = errz2+kOff0;
+    cov[1] = (erry2+kOff0)*scalingRMSY;
+    cov[2] = (errz2+kOff0)*scalingRMSZ;
     UpdateLinear(point,debug);
     if (!points.GetPoint(point,npoints-1-ipoint)) continue;
     //set error - it is hack
     cov = (Float_t*) point.GetCov();
-    cov[1] = erry2+kOff0;
-    cov[2] = errz2+kOff0;
+    cov[1] = (erry2+kOff0)*scalingRMSY;
+    cov[2] = (errz2+kOff0)*scalingRMSZ;
     UpdateLinear(point,debug);
   }
   //
@@ -595,6 +599,23 @@ void AliTPCkalmanFit::Propagate(TTreeSRedirector */*debug*/){
   //
   // Propagate the Kalman
   //
+}
+
+void AliTPCkalmanFit::AddCovariance(const char * varName, Double_t sigma){
+  //
+  //
+  //
+  if (fCalibCovar) return;
+  if (!fCalibration) return;
+  if (!fCalibration->FindObject(varName)) return;
+  Int_t ncalibs = fCalibration->GetEntries();
+  TString strVar(varName);
+  for (Int_t icalib=0;icalib<ncalibs; icalib++){
+    AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(icalib);
+    if (strVar.CompareTo(transform->GetName())==0){
+      (*fCalibCovar)(icalib,icalib)+=sigma*sigma;
+    }
+  }
 }
 
 
@@ -856,27 +877,40 @@ Bool_t AliTPCkalmanFit::DumpCorelation(Double_t threshold,  const char *mask0, c
       }
     }
   }
-  return (nrow>0);
+  return (nrow>0);   
 }
 
-Bool_t AliTPCkalmanFit::DumpCalib(const char *mask){
+Bool_t AliTPCkalmanFit::DumpCalib(const char *mask, Float_t correlationCut){
   //
   // Print calibration entries - name, value, error
   //
   TMatrixD &mat = *fCalibCovar;
   Int_t nrow= mat.GetNrows();
   TString  strMask(mask);
+  TVectorD vecCorrSum(nrow);
+  for (Int_t irow=0; irow<nrow; irow++){
+    vecCorrSum[irow]=0;
+    for (Int_t icol=0; icol<nrow; icol++){
+      Double_t diag = TMath::Sqrt(TMath::Abs(mat(irow,irow)*mat(icol,icol))); 
+      Double_t corr0 = mat(irow,icol)/diag;
+      vecCorrSum[irow]+=TMath::Abs(corr0);
+    }
+    vecCorrSum[irow]-=1.;
+    vecCorrSum[irow]*=0.5;
+  }
+
   for (Int_t irow=0; irow<nrow; irow++){
     AliTPCTransformation * trans0 = GetTransformation(irow);
     TString  strName(trans0->GetName());
     if (mask){
       if (!strName.Contains(mask)) continue;
     }
-    printf("%d\t%s\t%f\t%f\n", 
+    if (vecCorrSum[irow]<correlationCut) continue;
+    printf("%d\t%s\t%f\t%f\t%f\n", 
 	   irow, 
 	   trans0->GetName(),
 	   (*fCalibParam)(irow,0),
-	   TMath::Sqrt(mat(irow,irow)));          
+	   TMath::Sqrt(mat(irow,irow)),  vecCorrSum[irow]);          
   }
   return (nrow>0);
 }

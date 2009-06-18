@@ -27,12 +27,13 @@ public:
   //
   void SetStatus(const char * name, Bool_t setOn, Bool_t isOr=kTRUE);
   //
-  void FitTrackLinear(AliTrackPointArray& points,  TTreeSRedirector *debug=0);
+  void FitTrackLinear(AliTrackPointArray& points,  TTreeSRedirector *debug=0, Float_t scalingRMSY=1., Float_t scalingRMSZ=1.);
   void DumpTrackLinear(AliTrackPointArray& points, TTreeSRedirector *debug);
   void UpdateLinear(AliTrackPoint &point, TTreeSRedirector *debug=0);
 
   void Propagate(TTreeSRedirector *debug=0);
   void PropagateTime(Int_t time);
+  void AddCovariance(const char * varName, Double_t sigma);
   void Update(const AliTPCkalmanFit * kalman);
 
   static AliTrackPointArray * SortPoints(AliTrackPointArray &points);
@@ -41,7 +42,7 @@ public:
   Bool_t  CheckCovariance(TMatrixD &covar, Float_t maxEl);
   
   Bool_t DumpCorelation(Double_t threshold, const char *mask0=0, const char *mask1=0);
-  Bool_t DumpCalib(const char *mask=0);
+  Bool_t DumpCalib(const char *mask=0, Float_t correlationCut=-1);
   //
   Double_t GetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z);
   static Double_t SGetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z);
