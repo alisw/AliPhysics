@@ -251,7 +251,6 @@ void AliAnalysisTaskSEBkgLikeSignJPSI::UserExec(Option_t */*option*/)
         unsetvtx=kTRUE;
     }
     Int_t okBtoJPSIls=0;
-    Float_t ddddd=d->CosPointingAngle();
     if(d->SelectBtoJPSI(fVHF->GetBtoJPSICuts(),okBtoJPSIls)) {
        fHistMassLS->Fill(d->InvMassJPSIee());
        fHistCPtaLS->Fill(d->CosPointingAngle());
