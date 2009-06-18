@@ -1,5 +1,4 @@
 #include "TChain.h"
-#include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TList.h"
@@ -9,10 +8,6 @@
 #include "TLine.h"
 #include "TText.h"
 #include "TFile.h"
-#include "TBenchmark.h"
-
-#include "AliAnalysisTask.h"
-#include "AliAnalysisManager.h"
 
 #include "AliLog.h"
 #include "AliVEvent.h"
@@ -26,21 +21,23 @@
 
 ClassImp(AliITSComparisonTask)
 
+extern TStyle *gStyle;
+
 AliITSComparisonTask::AliITSComparisonTask()
   : AliAnalysisTaskSE("AliITSComaprisonTask"),
     fListOfHistos(0),
-    hgood(0),
-    hfound(0),
-    hfake(0),
-    hp(0),
-    hl(0),
-    hpt(0),
-    htip(0),
-    he(0),
-    hep(0),
-    hgoodPhi(0),
-    hfoundPhi(0),
-    hlip(0)
+    fGood(0),
+    fFound(0),
+    fFake(0),
+    fP(0),
+    fL(0),
+    fPt(0),
+    fTip(0),
+    fE(0),
+    fEp(0),
+    fGoodPhi(0),
+    fFoundPhi(0),
+    fLip(0)
 {
   // Default constructor
   AliInfo("Default constructor AliITSComparisonTask");
@@ -56,18 +53,18 @@ AliITSComparisonTask::AliITSComparisonTask()
 AliITSComparisonTask::AliITSComparisonTask(const char* name)
   : AliAnalysisTaskSE(name),
     fListOfHistos(0),
-    hgood(0),
-    hfound(0),
-    hfake(0),
-    hp(0),
-    hl(0),
-    hpt(0),
-    htip(0),
-    he(0),
-    hep(0),
-    hgoodPhi(0),
-    hfoundPhi(0),
-    hlip(0)
+    fGood(0),
+    fFound(0),
+    fFake(0),
+    fP(0),
+    fL(0),
+    fPt(0),
+    fTip(0),
+    fE(0),
+    fEp(0),
+    fGoodPhi(0),
+    fFoundPhi(0),
+    fLip(0)
 {
   // Constructor
   AliInfo("Constructor AliITSComparisonTask");
@@ -88,32 +85,32 @@ void AliITSComparisonTask::UserCreateOutputObjects()
   // Create output container
   fListOfHistos = new TList();
   
-  hgood = new TH1F("hgood", "Pt for good tracks", 34, 0.2, 7.0);
-  hfound = new TH1F("hfound", "Pt for found tracks", 34, 0.2, 7.0);
-  hfake = new TH1F("hfake",  "Pt for fake tracks", 34, 0.2, 7.0);
-  hp = new TH1F("hp", "PHI resolution", 50, -20., 20.);
-  hl = new TH1F("hl", "LAMBDA resolution", 50, -20., 20.);
-  hpt = new TH1F("hpt", "Relative Pt resolution", 30, -10., 10.);
-  htip = new TH1F("htip", "Transverse impact parameter", 40, -800., 800.);
-  he = new TH1F("he", "dE/dX for pions with 0.4<p<0.5 GeV/c", 50, 0., 100.);
-  hep = new TH2F("hep", "dE/dX vs momentum", 50, 0., 2., 50, 0., 400.);
-  hgoodPhi = new TH1F("hgoodPhi", "Phi for good tracks", 90, 0., 2.*TMath::Pi());
-  hfoundPhi = new TH1F("hfoundPhi", "Phi for found tracks", 90, 0., 2.*TMath::Pi());
-  hlip = new TH1F("hlip","Longitudinal impact parameter", 40, -800., 800.);
+  fGood = new TH1F("fGood", "Pt for good tracks", 34, 0.2, 7.0);
+  fFound = new TH1F("fFound", "Pt for found tracks", 34, 0.2, 7.0);
+  fFake = new TH1F("fFake",  "Pt for fake tracks", 34, 0.2, 7.0);
+  fP = new TH1F("fP", "PHI resolution", 50, -20., 20.);
+  fL = new TH1F("fL", "LAMBDA resolution", 50, -20., 20.);
+  fPt = new TH1F("fPt", "Relative Pt resolution", 30, -10., 10.);
+  fTip = new TH1F("fTip", "Transverse impact parameter", 40, -800., 800.);
+  fE = new TH1F("fE", "dE/dX for pions with 0.4<p<0.5 GeV/c", 50, 0., 100.);
+  fEp = new TH2F("fEp", "dE/dX vs momentum", 50, 0., 2., 50, 0., 400.);
+  fGoodPhi = new TH1F("fGoodPhi", "Phi for good tracks", 90, 0., 2.*TMath::Pi());
+  fFoundPhi = new TH1F("fFoundPhi", "Phi for found tracks", 90, 0., 2.*TMath::Pi());
+  fLip = new TH1F("fLip","Longitudinal impact parameter", 40, -800., 800.);
   
   
-  fListOfHistos->Add(hgood);
-  fListOfHistos->Add(hfound);
-  fListOfHistos->Add(hfake);
-  fListOfHistos->Add(hp);
-  fListOfHistos->Add(hl);
-  fListOfHistos->Add(hpt);
-  fListOfHistos->Add(htip);
-  fListOfHistos->Add(he);
-  fListOfHistos->Add(hep);
-  fListOfHistos->Add(hgoodPhi);
-  fListOfHistos->Add(hfoundPhi);
-  fListOfHistos->Add(hlip);
+  fListOfHistos->Add(fGood);
+  fListOfHistos->Add(fFound);
+  fListOfHistos->Add(fFake);
+  fListOfHistos->Add(fP);
+  fListOfHistos->Add(fL);
+  fListOfHistos->Add(fPt);
+  fListOfHistos->Add(fTip);
+  fListOfHistos->Add(fE);
+  fListOfHistos->Add(fEp);
+  fListOfHistos->Add(fGoodPhi);
+  fListOfHistos->Add(fFoundPhi);
+  fListOfHistos->Add(fLip);
 }
 
 
@@ -151,57 +148,57 @@ void AliITSComparisonTask::UserExec(Option_t *)
     if (TMath::Abs(vz) > 50.) continue; 
     
     // Loop over Track References
-    Bool_t LabelTPC = kFALSE;
+    Bool_t labelTPC = kFALSE;
     AliTrackReference* trackRef = 0;
-    UInt_t ITSLayerMap = 0;
+    UInt_t iTSLayerMap = 0;
     for (Int_t iTrackRef = 0; iTrackRef  < track->GetNumberOfTrackReferences(); iTrackRef++) {
       trackRef = track->GetTrackReference(iTrackRef);
       if(trackRef) {
 	Int_t detectorId = trackRef->DetectorId();
 	if (detectorId == AliTrackReference::kITS) {
-	  Float_t Radius = trackRef->R();
-	  if (Radius > 2.5 && Radius < 5.5)
-	    ITSLayerMap |= 1;
-	  else if (Radius > 5.5 && Radius < 8.5)
-	    ITSLayerMap |= 1 << 1;
-	  else if (Radius > 13.5 && Radius < 16.5)
-	    ITSLayerMap |= 1 << 2;
-	  else if (Radius > 22. && Radius < 26.)
-	    ITSLayerMap |= 1 << 3;
-	  else if (Radius > 36. && Radius < 41.)
-	    ITSLayerMap |= 1 << 4;
-	  else if (Radius > 42. && Radius < 46.)
-	    ITSLayerMap |= 1 << 5;
+	  Float_t radius = trackRef->R();
+	  if (radius > 2.5 && radius < 5.5)
+	    iTSLayerMap |= 1;
+	  else if (radius > 5.5 && radius < 8.5)
+	    iTSLayerMap |= 1 << 1;
+	  else if (radius > 13.5 && radius < 16.5)
+	    iTSLayerMap |= 1 << 2;
+	  else if (radius > 22. && radius < 26.)
+	    iTSLayerMap |= 1 << 3;
+	  else if (radius > 36. && radius < 41.)
+	    iTSLayerMap |= 1 << 4;
+	  else if (radius > 42. && radius < 46.)
+	    iTSLayerMap |= 1 << 5;
 	  else {
-	    Printf("Wrong radius %f ", Radius);
+	    Printf("Wrong radius %f ", radius);
 	    return;
 	  }
 
 	}
 	if (detectorId == AliTrackReference::kTPC) {	    
-	  LabelTPC = kTRUE;
+	  labelTPC = kTRUE;
 	  break;
 	}
       }      
     }    // track references loop   
     
     // Skip tracks that passed not all ITS layers 
-    if (ITSLayerMap != 0x3F) continue;
+    if (iTSLayerMap != 0x3F) continue;
     
     // "Good" tracks
-    if (LabelTPC) {
+    if (labelTPC) {
       AliMCComparisonTrack* ref = new((*refs)[nt]) AliMCComparisonTrack();
       ref->SetLabel(iTracks);
       TParticle* particle = track->Particle();
       Int_t pdg = particle->GetPdgCode();
       ref->SetPDG(pdg); 
       ref->SetPz(track->Pz());
-      Float_t Pt = track->Pt();
-      ref->SetPt(Pt);
-      hgood->Fill(Pt);
+      Float_t pt = track->Pt();
+      ref->SetPt(pt);
+      fGood->Fill(pt);
       Float_t phig = track->Phi();
       ref->SetPhi(phig);
-      hgoodPhi->Fill(phig);
+      fGoodPhi->Fill(phig);
       nt++;  
     }  
   }    // track loop 
@@ -221,14 +218,14 @@ void AliITSComparisonTask::UserExec(Option_t *)
   Int_t nfake = 0;
   Int_t nlost = 0;
   
-  Int_t MCgoods = refs->GetEntriesFast();
+  Int_t mcGoods = refs->GetEntriesFast();
   
   // Loop over all "good" MC tracks
-  for (Int_t k = 0; k < MCgoods; k++) {
+  for (Int_t k = 0; k < mcGoods; k++) {
     AliMCComparisonTrack* ref = (AliMCComparisonTrack*)refs->UncheckedAt(k); 
-    Int_t MCLabel = ref->GetLabel();
+    Int_t mcLabel = ref->GetLabel();
     Float_t ptg = ref->GetPt(); 
-    Float_t PhiG = ref->GetPhi();
+    Float_t phiG = ref->GetPhi();
     iFound = kFALSE;
     for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
       AliESDtrack* track = esd->GetTrack(iTrack);  
@@ -240,17 +237,17 @@ void AliITSComparisonTask::UserExec(Option_t *)
       //      if (! track->IsOn(AliESDtrack::kTPCrefit)) continue;
       if (! track->IsOn(AliESDtrack::kITSrefit)) continue;
       
-      Int_t Label =  track->GetLabel();
+      Int_t label =  track->GetLabel();
       
-      if (MCLabel == TMath::Abs(Label)) {	  
-        if (MCLabel == Label) {
+      if (mcLabel == TMath::Abs(label)) {	  
+        if (mcLabel == label) {
 	  nfound++;
-	  hfound->Fill(ptg);
-	  hfoundPhi->Fill(PhiG);
+	  fFound->Fill(ptg);
+	  fFoundPhi->Fill(phiG);
 	} 
 	else {
 	  nfake++;
-	  hfake->Fill(ptg);
+	  fFake->Fill(ptg);
 	}
 	iFound = kTRUE;
 
@@ -258,28 +255,28 @@ void AliITSComparisonTask::UserExec(Option_t *)
 	Double_t pt = track->Pt();
 	
         Float_t lam = TMath::ATan2(track->Pz(),pt); 
-        Float_t pt_1 = 1/pt;
+        Float_t pt1 = 1/pt;
 	
 	Float_t phig = ref->GetPhi();
-        hp->Fill((phi - phig)*1000.);   
+        fP->Fill((phi - phig)*1000.);   
 	
 	Float_t lamg = TMath::ATan2(ref->GetPz(),ptg);
-        hl->Fill((lam - lamg)*1000.);
+        fL->Fill((lam - lamg)*1000.);
 	
-        hpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);  
+        fPt->Fill((pt1 - 1/ptg)/(1/ptg)*100.);  
 	
         Float_t d,z; track->GetImpactParameters(d,z);
-        htip->Fill(10000.*d);
-        hlip->Fill(10000.*z);
+        fTip->Fill(10000.*d);
+        fLip->Fill(10000.*z);
 	
 	Float_t mom = pt/TMath::Cos(lam);
         Float_t dedx = track->GetTPCsignal();
-        hep->Fill(mom, dedx, 1.);
+        fEp->Fill(mom, dedx, 1.);
 	
 	Int_t pdg = ref->GetPDG();
         if (TMath::Abs(pdg )== 211) { // pions
 	  if (mom > 0.4 && mom < 0.5) {
-            he->Fill(dedx, 1.);
+            fE->Fill(dedx, 1.);
           }
 	}   
 	   
@@ -312,18 +309,18 @@ void AliITSComparisonTask::Terminate(Option_t *)
     return;
   }
 
-  hgood = dynamic_cast<TH1F*>(fListOfHistos->At(0));
-  hfound = dynamic_cast<TH1F*>(fListOfHistos->At(1));
-  hfake = dynamic_cast<TH1F*>(fListOfHistos->At(2));  
-  hp = dynamic_cast<TH1F*>(fListOfHistos->At(3));
-  hl = dynamic_cast<TH1F*>(fListOfHistos->At(4));
-  hpt = dynamic_cast<TH1F*>(fListOfHistos->At(5));
-  htip = dynamic_cast<TH1F*>(fListOfHistos->At(6));
-  he = dynamic_cast<TH1F*>(fListOfHistos->At(7));
-  hep = dynamic_cast<TH2F*>(fListOfHistos->At(8));
-  hgoodPhi = dynamic_cast<TH1F*>(fListOfHistos->At(9));
-  hfoundPhi = dynamic_cast<TH1F*>(fListOfHistos->At(10));
-  hlip = dynamic_cast<TH1F*>(fListOfHistos->At(11));
+  fGood = dynamic_cast<TH1F*>(fListOfHistos->At(0));
+  fFound = dynamic_cast<TH1F*>(fListOfHistos->At(1));
+  fFake = dynamic_cast<TH1F*>(fListOfHistos->At(2));  
+  fP = dynamic_cast<TH1F*>(fListOfHistos->At(3));
+  fL = dynamic_cast<TH1F*>(fListOfHistos->At(4));
+  fPt = dynamic_cast<TH1F*>(fListOfHistos->At(5));
+  fTip = dynamic_cast<TH1F*>(fListOfHistos->At(6));
+  fE = dynamic_cast<TH1F*>(fListOfHistos->At(7));
+  fEp = dynamic_cast<TH2F*>(fListOfHistos->At(8));
+  fGoodPhi = dynamic_cast<TH1F*>(fListOfHistos->At(9));
+  fFoundPhi = dynamic_cast<TH1F*>(fListOfHistos->At(10));
+  fLip = dynamic_cast<TH1F*>(fListOfHistos->At(11));
   
   gStyle->SetOptStat(111110);
   gStyle->SetOptFit(1);
@@ -334,32 +331,32 @@ void AliITSComparisonTask::Terminate(Option_t *)
   
   TPad* p1 = new TPad("p1", "", 0., 0.3, 0.5, 0.6); p1->Draw();
   p1->cd(); p1->SetFillColor(42); p1->SetFrameFillColor(10);
-  hp->SetFillColor(4); hp->SetXTitle("(mrad)");
-  if (hp->GetEntries() < minc) hp->Draw(); else hp->Fit("gaus"); c1->cd();
+  fP->SetFillColor(4); fP->SetXTitle("(mrad)");
+  if (fP->GetEntries() < minc) fP->Draw(); else fP->Fit("gaus"); c1->cd();
   
   TPad* p2 = new TPad("p2", "", 0.5, 0.3, 1., 0.6); p2->Draw();
   p2->cd(); p2->SetFillColor(42); p2->SetFrameFillColor(10);
-  hl->SetFillColor(4); hl->SetXTitle("(mrad)");
-  if (hl->GetEntries() < minc) hl->Draw(); else hl->Fit("gaus"); c1->cd();
+  fL->SetFillColor(4); fL->SetXTitle("(mrad)");
+  if (fL->GetEntries() < minc) fL->Draw(); else fL->Fit("gaus"); c1->cd();
   
   TPad* p3 = new TPad("p3", "", 0., 0., 0.5, 0.3); p3->Draw();
   p3->cd(); p3->SetFillColor(42); p3->SetFrameFillColor(10);
-  hpt->SetFillColor(2); hpt->SetXTitle("(%)");
-  if (hpt->GetEntries() < minc) hpt->Draw(); else hpt->Fit("gaus"); c1->cd();
+  fPt->SetFillColor(2); fPt->SetXTitle("(%)");
+  if (fPt->GetEntries() < minc) fPt->Draw(); else fPt->Fit("gaus"); c1->cd();
   
   TPad* p4 = new TPad("p4", "", 0.5, 0., 1., 0.3); p4->Draw();
   p4->cd(); p4->SetFillColor(42); p4->SetFrameFillColor(10);
-  htip->SetFillColor(6); htip->SetXTitle("(micron)");
-  if (htip->GetEntries() < minc) htip->Draw(); else htip->Fit("gaus");
-  hlip->Draw("same"); c1->cd();
+  fTip->SetFillColor(6); fTip->SetXTitle("(micron)");
+  if (fTip->GetEntries() < minc) fTip->Draw(); else fTip->Fit("gaus");
+  fLip->Draw("same"); c1->cd();
   
   TPad* p5 = new TPad("p5", "", 0., 0.6, 1., 1.); p5->Draw(); p5->cd();
   p5->SetFillColor(41); p5->SetFrameFillColor(10);
-  hfound->Sumw2(); hgood->Sumw2(); hfake->Sumw2();
+  fFound->Sumw2(); fGood->Sumw2(); fFake->Sumw2();
   TH1F* hg = new TH1F("hg", "Efficiency for good tracks", 34, 0.2, 7.0);
   TH1F* hf = new TH1F("hf", "Efficiency for fake tracks", 34, 0.2, 7.0);
-  hg->Divide(hfound,hgood,1.,1.,"B");
-  hf->Divide(hfake,hgood,1.,1.,"B");
+  hg->Divide(fFound,fGood,1.,1.,"B");
+  hf->Divide(fFake,fGood,1.,1.,"B");
   hg->SetLineColor(4); hg->SetLineWidth(2);
   hg->SetMaximum(1.4);
   hg->SetYTitle("Tracking efficiency");
@@ -387,24 +384,24 @@ void AliITSComparisonTask::Terminate(Option_t *)
   
   TPad* p6 = new TPad("p6", "", 0., 0., 1., .5); p6->Draw();
   p6->cd(); p6->SetFillColor(42); p6->SetFrameFillColor(10);
-  he->SetFillColor(2); he->SetFillStyle(3005);
-  he->SetXTitle("Arbitrary Units");
-  if (he->GetEntries() < minc) he->Draw(); else he->Fit("gaus"); c2->cd();
+  fE->SetFillColor(2); fE->SetFillStyle(3005);
+  fE->SetXTitle("Arbitrary Units");
+  if (fE->GetEntries() < minc) fE->Draw(); else fE->Fit("gaus"); c2->cd();
   
   TPad* p7 = new TPad("p7", "", 0., 0.5, 1., 1.); p7->Draw();
   p7->cd(); p7->SetFillColor(42); p7->SetFrameFillColor(10);
-  hep->SetFillColor(2); hep->SetFillStyle(3005);
-  hep->SetMarkerStyle(8);
-  hep->SetMarkerSize(0.4);
-  hep->SetXTitle("p (GeV/c)"); hep->SetYTitle("dE/dX (Arb. Units)");
-  hep->Draw(); c1->cd();
+  fEp->SetFillColor(2); fEp->SetFillStyle(3005);
+  fEp->SetMarkerStyle(8);
+  fEp->SetMarkerSize(0.4);
+  fEp->SetXTitle("p (GeV/c)"); fEp->SetYTitle("dE/dX (Arb. Units)");
+  fEp->Draw(); c1->cd();
   
   TCanvas* c3 = new TCanvas("c3", "", 10, 10, 510, 510);
   c3->SetFillColor(42); c3->SetFrameFillColor(10);
-  hfoundPhi->Sumw2(); hgoodPhi->Sumw2();
+  fFoundPhi->Sumw2(); fGoodPhi->Sumw2();
   TH1F* hgphi = new TH1F("hgphi", "Efficiency for good tracks (Phi)", 
 			 90, 0., 2.*TMath::Pi());
-  hgphi->Divide(hfoundPhi, hgoodPhi, 1., 1., "B"); 
+  hgphi->Divide(fFoundPhi, fGoodPhi, 1., 1., "B"); 
   hgphi->SetYTitle("Tracking efficiency");
   hgphi->SetXTitle("Phi (rad)");
   hgphi->Draw();
