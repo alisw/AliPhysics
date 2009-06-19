@@ -24,6 +24,7 @@ public:
 
   void  AddCalibration(AliTPCTransformation * calib);
   AliTPCTransformation * GetTransformation(Int_t i){return (fCalibration)? (AliTPCTransformation *)fCalibration->At(i):0;}  
+  Int_t GetTransformationIndex(const char * trName);
   //
   void SetStatus(const char * name, Bool_t setOn, Bool_t isOr=kTRUE);
   //
@@ -44,8 +45,14 @@ public:
   Bool_t DumpCorelation(Double_t threshold, const char *mask0=0, const char *mask1=0);
   Bool_t DumpCalib(const char *mask=0, Float_t correlationCut=-1);
   //
-  Double_t GetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z);
-  static Double_t SGetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z);
+  //Double_t GetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z);
+  //static Double_t SGetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z);
+
+  Double_t GetTPCDeltaXYZ(Int_t coord, Int_t volID, Int_t icoordsys, Double_t x, Double_t y, Double_t z);
+  static Double_t SGetTPCDeltaXYZ(Int_t coord, Int_t volID, Int_t icoordsys, Double_t x, Double_t y, Double_t z);
+  Double_t GetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID, Int_t icoordsys, Double_t x, Double_t y, Double_t z);
+  static Double_t SGetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID, Int_t icoordsys, Double_t x, Double_t y, Double_t z);
+
   AliTPCkalmanFit *Test(Int_t ntracks);
  public:
   //

@@ -33,7 +33,7 @@
   kalmanFit0->SetInstance(kalmanFit0);   // 
   kalmanFit0->InitTransformation();      //
   //
-  TF2 fxRZdz("fxRZdz","sign(y)*1000*(AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,x,0,y)-AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,x,0,y-1))",85,245,-250,250);
+  TF2 fxRZdz("fxRZdz","sign(y)*1000*(AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,0,x,0,y)-AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,0,x,0,y-1))",85,245,-250,250);
   fxRZdz->Draw("");
 
   TF2 fxRZ("fxRZ","sign(y)*10*(AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,x,0,y))",85,245,-250,250);
@@ -624,14 +624,15 @@ void AliTPCkalmanFit::PropagateTime(Int_t time){
   // Propagate the calibration in time
   // - Increase covariance matrix
   //
-  if (fCalibCovar) return;
+  if (!fCalibCovar) return;
   Int_t ncalibs = fCalibration->GetEntries();
   Double_t deltaT = 0;
   if (fLastTimeStamp>0) deltaT = (fLastTimeStamp-time)/(60*60.);  // delta T in hours
   fLastTimeStamp = time;  
   for (Int_t icalib=0;icalib<ncalibs; icalib++){
     AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(icalib);
-    (*fCalibCovar)(icalib,icalib)+=  transform->fSigma2Time*deltaT;
+    if ((*fCalibCovar)(icalib,icalib)<transform->fSigmaMax*transform->fSigmaMax)
+      (*fCalibCovar)(icalib,icalib)+=  transform->fSigma2Time*TMath::Abs(deltaT);
   }
 }
 
@@ -822,6 +823,26 @@ void AliTPCkalmanFit::AddCalibration(AliTPCTransformation * calib){
   fCalibration->AddLast(calib);
 }
 
+Int_t AliTPCkalmanFit::GetTransformationIndex(const char * trName){
+  //
+  //
+  //
+  if (!fCalibration) return -1;
+  if (!fCalibration->FindObject(trName)) return -1;
+  //
+  Int_t ncalibs = fCalibration->GetEntries();
+  TString strVar(trName);
+  for (Int_t icalib=0;icalib<ncalibs; icalib++){
+    AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(icalib);
+    if (strVar.CompareTo(transform->GetName())==0){
+      return icalib;
+    }
+  }
+  return -1;
+}
+
+
+
 void AliTPCkalmanFit::ApplyCalibration(AliTrackPointArray *array, Double_t csign){
   //
   //
@@ -891,11 +912,11 @@ Bool_t AliTPCkalmanFit::DumpCalib(const char *mask, Float_t correlationCut){
   for (Int_t irow=0; irow<nrow; irow++){
     vecCorrSum[irow]=0;
     for (Int_t icol=0; icol<nrow; icol++){
+      if (icol==irow) continue;
       Double_t diag = TMath::Sqrt(TMath::Abs(mat(irow,irow)*mat(icol,icol))); 
       Double_t corr0 = mat(irow,icol)/diag;
       vecCorrSum[irow]+=TMath::Abs(corr0);
     }
-    vecCorrSum[irow]-=1.;
     vecCorrSum[irow]*=0.5;
   }
 
@@ -1051,18 +1072,76 @@ AliTPCkalmanFit *  AliTPCkalmanFit::Test(Int_t ntracks){
 }
 
 
-Double_t AliTPCkalmanFit::GetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z){
+// Double_t AliTPCkalmanFit::GetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z){
+//   //
+//   // function for visualization purposes
+//   //
+//   if (!fCalibration) return 0;
+//   Int_t ncalibs = fCalibration->GetEntries();
+//   if (ncalibs==0) return 0;
+//   Double_t dxdydz[3]={0,0,0};
+//   //
+//   if (volID<0){
+//     Double_t alpha       = TMath::ATan2(y,x);
+//     Double_t r           = TMath::Sqrt(y*y+x*x);
+//     volID                = TMath::Nint(9*alpha/TMath::Pi()-0.5);
+//     if (volID<0) volID+=18;
+//     if (z<0) volID+=18;
+//     if (r>120) volID+=36;
+//   }
+//   for (Int_t icalib=0; icalib<ncalibs; icalib++){
+//     AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(icalib);
+//     Double_t param = (*fCalibParam)(icalib,0);
+//     dxdydz[coord] += transform->GetDeltaXYZ(coord,volID, param, x, y,z); 
+//   }
+//   return dxdydz[coord];
+// }
+
+// Double_t AliTPCkalmanFit::SGetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z){
+//   //
+//   //
+//   //
+//   if (AliTPCkalmanFit::fgInstance==0) return 0;
+//   return AliTPCkalmanFit::fgInstance->GetTPCDeltaXYZ(coord, volID,x,y,z);
+// }
+
+
+
+
+
+Double_t AliTPCkalmanFit::GetTPCDeltaXYZ(Int_t coord, Int_t volID, Int_t icoordsys, Double_t x, Double_t y, Double_t z){
   //
   // function for visualization purposes
+  //
+  // coord - coordinate for output
+  //       - 0 -X
+  //         1 -Y
+  //         2 -Z
+  //         3 -R
+  //         4 -RPhi
+  //         5 -Z
+  //
+  //icoordsys - type of coordinate system for input
+  //         - 0  - x,y,z
+  //         - 1  - r,phi,z
   //
   if (!fCalibration) return 0;
   Int_t ncalibs = fCalibration->GetEntries();
   if (ncalibs==0) return 0;
-  Double_t dxdydz[3]={0,0,0};
+  Double_t xyz[3]={0,0,0};
+  Double_t dxdydz[6]={0,0,0,0,0,0};
+  Double_t alpha;
+  Double_t r;
+  if(icoordsys==0)alpha=TMath::ATan2(y,x); r =TMath::Sqrt(y*y+x*x);
+  if(icoordsys==1)alpha=y; r=x;
+  Double_t ca    = TMath::Cos(alpha);
+  Double_t sa    = TMath::Sin(alpha);
+  if(icoordsys==0)xyz[0]=x; xyz[1]=y; xyz[2]=z;
+  if(icoordsys==1)xyz[0]=x*ca; xyz[1]=x*sa; xyz[2]=z;
   //
   if (volID<0){
-    Double_t alpha       = TMath::ATan2(y,x);
-    Double_t r           = TMath::Sqrt(y*y+x*x);
+    // Double_t alpha       = TMath::ATan2(y,x);
+    //Double_t r           = TMath::Sqrt(y*y+x*x);
     volID                = TMath::Nint(9*alpha/TMath::Pi()-0.5);
     if (volID<0) volID+=18;
     if (z<0) volID+=18;
@@ -1071,16 +1150,63 @@ Double_t AliTPCkalmanFit::GetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, D
   for (Int_t icalib=0; icalib<ncalibs; icalib++){
     AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(icalib);
     Double_t param = (*fCalibParam)(icalib,0);
-    dxdydz[coord] += transform->GetDeltaXYZ(coord,volID, param, x, y,z); 
+    for (Int_t icoord=0;icoord<6;icoord++){
+      dxdydz[icoord] += transform->GetDeltaXYZ(icoord,volID, param, xyz[0],xyz[1],xyz[2]);
+    } 
   }
+
   return dxdydz[coord];
 }
 
-Double_t AliTPCkalmanFit::SGetTPCDeltaXYZ(Int_t coord, Int_t volID, Double_t x, Double_t y, Double_t z){
+
+Double_t AliTPCkalmanFit::SGetTPCDeltaXYZ(Int_t coord, Int_t volID, Int_t icoordsys, Double_t x, Double_t y, Double_t z){
   //
   //
   //
   if (AliTPCkalmanFit::fgInstance==0) return 0;
-  return AliTPCkalmanFit::fgInstance->GetTPCDeltaXYZ(coord, volID,x,y,z);
+  return AliTPCkalmanFit::fgInstance->GetTPCDeltaXYZ(coord, volID, icoordsys,x,y,z);
 }
 
+
+
+
+
+Double_t AliTPCkalmanFit::GetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID, Int_t icoordsys, Double_t x, Double_t y, Double_t z){
+
+  Int_t ncalibs = fCalibration->GetEntries();
+  //Int_t volID=-1;
+  //Double_t xyz[3]={x,y,z};
+  Double_t r;
+  Double_t alpha;
+  if(icoordsys==0)r=TMath::Sqrt(x*x+y*y); alpha = TMath::ATan2(y,x);
+  if(icoordsys==1)r=x; alpha = y;
+  Double_t ca    = TMath::Cos(alpha);
+  Double_t sa    = TMath::Sin(alpha);
+  Double_t xyz[3];
+  if(icoordsys==0)xyz[0]=x;xyz[1]=y;xyz[2]=z; 
+  if(icoordsys=-1)xyz[0]=x*ca; xyz[1]=x*sa; xyz[2]=z;
+  //xyz[3]=param; xyz[4]=volID;
+
+  if (volID<0){
+    //Double_t alpha       = TMath::ATan2(xyz[1],xyz[0]);
+    //Double_t r           = TMath::Sqrt(xyz[1]*xyz[1]+xyz[0]*xyz[0]);
+    volID                = TMath::Nint(9*alpha/TMath::Pi()-0.5);
+    if (volID<0) volID+=18;
+    if (xyz[2]<0) volID+=18;
+    if (r>120) volID+=36;
+  }
+  AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(calibID);
+  //transform->SetInstance(transform);
+  Double_t param = (*fCalibParam)(calibID,0);
+  Double_t delta = (Double_t)transform->GetDeltaXYZ(coord,volID, param, xyz[0],xyz[1],xyz[2]);
+      
+  return delta;
+}
+
+Double_t AliTPCkalmanFit::SGetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID, Int_t icoordsys, Double_t x, Double_t y, Double_t z){
+  //
+  //
+  //
+  if (AliTPCkalmanFit::fgInstance==0) return 0;
+  return AliTPCkalmanFit::fgInstance->GetTPCtransXYZ(coord, volID, calibID,icoordsys,x,y,z);
+}
