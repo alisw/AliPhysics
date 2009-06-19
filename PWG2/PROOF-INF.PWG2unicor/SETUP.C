@@ -1,4 +1,4 @@
-/=============================================================================
+//=============================================================================
 void SETUP() {
   CheckLoadLibrary("libPhysics.so");
   CheckLoadLibrary("libEG.so");
@@ -13,7 +13,7 @@ void SETUP() {
   gROOT->ProcessLine(".include PWG2unicor/UNICOR");
   gSystem->Setenv("PWG2unicor_INCLUDE", "PWG2unicor/UNICOR");
 }
-/=============================================================================
+//=============================================================================
 Int_t CheckLoadLibrary(const char* library) {
 
   // load library if not yet done
@@ -21,4 +21,4 @@ Int_t CheckLoadLibrary(const char* library) {
   if (strlen(gSystem->GetLibraries(Form("%s.so", library), "", kFALSE)) > 0) return 1;  
   return gSystem->Load(library);
 }
-/=============================================================================
+//=============================================================================
