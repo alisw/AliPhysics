@@ -62,7 +62,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	
   // *** Begin pion-pion (positive) analysis ***
 
-  AliFemtoVertexMultAnalysis *anpip = new AliFemtoVertexMultAnalysis(3, -15.6, 15.6, 5, 2, 200);
+  AliFemtoVertexMultAnalysis *anpip = new AliFemtoVertexMultAnalysis(3, -15.6, 15.6, 5, 2, 200000);
   anpip->SetNumEventsToMix(10);
   anpip->SetMinSizePartCollection(2);
 
@@ -222,7 +222,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   // *** Begin pion-pion (negative) analysis ***
 
-  AliFemtoVertexMultAnalysis *anpim = new AliFemtoVertexMultAnalysis(3, -15.6, 15.6, 5, 2, 200);
+  AliFemtoVertexMultAnalysis *anpim = new AliFemtoVertexMultAnalysis(3, -15.6, 15.6, 5, 2, 200000);
   anpim->SetNumEventsToMix(10);
   anpim->SetMinSizePartCollection(2);
 
