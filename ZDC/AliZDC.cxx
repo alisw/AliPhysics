@@ -30,6 +30,7 @@
 #include <TFile.h>
 #include <TSystem.h>
 #include <TRandom.h>
+#include <TParticle.h>
 
 // --- AliRoot header files
 #include "AliDetector.h"
@@ -152,7 +153,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   // 		Add a ZDC hit to the hit list.
   
   static Float_t trackTime=0., primKinEn=0., xImpact=0., yImpact=0., sFlag=0.;
-  static Int_t   pcPDGcode;
+  static Int_t   pcPDGcode, motPDGcode;
 
   AliZDCHit *newquad, *curprimquad;
   newquad = new AliZDCHit(fIshunt, track, vol, hits);
@@ -160,20 +161,23 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   
   if(fNhits==0){
       // First hit -> setting flag for primary or secondary particle
-      Int_t primary = gAlice->GetMCApp()->GetPrimary(track);     
+      TParticle * p = gAlice->GetMCApp()->Particle(track);
+      Int_t imo = p->GetFirstMother();
       //
-      if(track != primary){
+      if(track != imo){
         newquad->SetSFlag(1);  // SECONDARY particle entering the ZDC
       }
-      else if(track == primary){
+      else if(track == imo){
         newquad->SetSFlag(0);  // PRIMARY particle entering the ZDC
-      }  
-      sFlag 	= newquad->GetSFlag();
-      primKinEn = newquad->GetPrimKinEn();
-      xImpact 	= newquad->GetXImpact();
-      yImpact 	= newquad->GetYImpact();
-      pcPDGcode	= newquad->GetPDGCode();
-      trackTime = newquad->GetTrackTOF();
+      }
+      //  
+      sFlag 	 = newquad->GetSFlag();
+      primKinEn  = newquad->GetPrimKinEn();
+      xImpact 	 = newquad->GetXImpact();
+      yImpact 	 = newquad->GetYImpact();
+      pcPDGcode	 = newquad->GetPDGCode();
+      motPDGcode = newquad->GetMotherPDGCode();
+      trackTime  = newquad->GetTrackTOF();
    }
    else{       
       newquad->SetPrimKinEn(primKinEn);
@@ -181,6 +185,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       newquad->SetYImpact(yImpact);
       newquad->SetSFlag(sFlag);
       newquad->SetPDGCode(pcPDGcode);
+      newquad->SetMotherPDGCode(motPDGcode);
       newquad->SetTrackTOF(trackTime);
    }
  

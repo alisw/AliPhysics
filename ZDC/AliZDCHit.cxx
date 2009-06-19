@@ -36,6 +36,7 @@ AliZDCHit::AliZDCHit() :
   fLightPMC(0.),
   fEnergy(0.), 
   fPDGCode(0),
+  fMotherPDGCode(0),
   fTrackTOF(0.)
 
 {
@@ -56,7 +57,8 @@ AliZDCHit::AliZDCHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits) :
   fLightPMC(hits[8]),
   fEnergy(hits[9]), 
   fPDGCode((Int_t) hits[10]),
-  fTrackTOF(hits[11])
+  fMotherPDGCode((Int_t) hits[11]),
+  fTrackTOF(hits[12])
 
 {
   //
@@ -80,6 +82,7 @@ AliZDCHit::AliZDCHit(const AliZDCHit &oldhit) :
   fLightPMC(oldhit.GetLightPMC()),
   fEnergy(oldhit.GetEnergy()),
   fPDGCode(oldhit.GetPDGCode()),
+  fMotherPDGCode(oldhit.GetMotherPDGCode()),
   fTrackTOF(oldhit.GetTrackTOF())
 {
   // Copy constructor

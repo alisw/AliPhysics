@@ -2128,6 +2128,13 @@ void AliZDCv3::Init()
   gMC->Gstpar(idtmed[i], "CUTNEU", 1.);
   gMC->Gstpar(idtmed[i], "CUTHAD", 1.);
   
+  // Thresholds for showering in the luminometer
+  i = 9; //copper
+  gMC->Gstpar(idtmed[i], "CUTGAM", .001);
+  gMC->Gstpar(idtmed[i], "CUTELE", .001);
+  gMC->Gstpar(idtmed[i], "CUTNEU", .01);
+  gMC->Gstpar(idtmed[i], "CUTHAD", .01);
+  
   // Avoid too detailed showering along the beam line 
   i = 7; //iron with energy loss (ZIRON)
   gMC->Gstpar(idtmed[i], "CUTGAM", .1);
@@ -2286,12 +2293,12 @@ void AliZDCv3::StepManager()
   // Routine called at every step in the Zero Degree Calorimeters
   //
   Int_t   j, vol[2]={0,0}, ibeta=0, ialfa=0, ibe=0, nphe=0;
-  Float_t hits[12], x[3], xdet[3], um[3], ud[3];
+  Float_t hits[13], x[3], xdet[3], um[3], ud[3];
   Float_t m=0., ekin=0., destep=0., be=0., out=0.;
   Double_t s[3], p[3];
   const char *knamed;
   //
-  for(j=0;j<12;j++) hits[j]=-999.;
+  for(j=0;j<13;j++) hits[j]=-999.;
   //
   // --- This part is for no shower developement in beam pipe and TDI
   // If particle interacts with beam pipe or TDI -> return
@@ -2327,7 +2334,7 @@ void AliZDCv3::StepManager()
       //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", 
       //     gMC->TrackMass(), p[3], p[2], gMC->CurrentVolName());
       //
-      if(ipr!=0){
+      /*if(ipr!=0){
         printf("\n\t **********************************\n");
         printf("\t ********** Side C **********\n");
         printf("\t # of spectators in IT = %d\n",fpLostITC);
@@ -2337,7 +2344,7 @@ void AliZDCv3::StepManager()
         printf("\t # of spectators in D1 = %d\n",fpLostD1A);
         printf("\t # of spectators in TDI = %d\n",fpLostTDI);
         printf("\t **********************************\n");
-      }
+      }*/
       gMC->StopTrack();
     }
     return;
@@ -2463,20 +2470,28 @@ void AliZDCv3::StepManager()
 	// X takes into account the LHC x-axis sign
 	// which is opposite to positive x on detcetor front face
 	// for side A detectors (ZNA and ZPA)  
-        if(vol[0]==4 || vol[0]==5) hits[4] = -xdet[0];
-	else hits[4] = xdet[0];
-        hits[5] = xdet[1];
+        if(vol[0]==4 || vol[0]==5){
+	  hits[4] = -xdet[0];
+	}
+	else{
+	  hits[4] = xdet[0];
+        }
+	hits[5] = xdet[1];
 	hits[6] = 0;
         hits[7] = 0;
         hits[8] = 0;
         hits[9] = 0;
 	//
 	Int_t curTrackN = gAlice->GetMCApp()->GetCurrentTrackNumber();
-        TParticle *part = (gAlice->GetMCApp())->Particle(curTrackN);
+        TParticle *part = gAlice->GetMCApp()->Particle(curTrackN);
+        Int_t imo = part->GetFirstMother();
+        TParticle * pmot = gAlice->GetMCApp()->Particle(imo);
+	
 	hits[10] = part->GetPdgCode();
+        hits[11] = pmot->GetPdgCode();
 	//printf("\t PDGCode = %d\n", part->GetPdgCode());
         //
-	hits[11] = 1.0e09*gMC->TrackTime();
+	hits[12] = 1.0e09*gMC->TrackTime(); // in ns!
 	//printf("\t TrackTime = %f\n", hits[11]);
 
 	AddHit(curTrackN, vol, hits);
