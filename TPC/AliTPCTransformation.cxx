@@ -128,6 +128,7 @@ AliTPCTransformation::AliTPCTransformation():
   fCoordSystem(0),    // coord system of  output deltas 
   fParam(0),          // free parameter of transformation 
   fSigma(0),          // uncertainty of the parameter
+  fSigmaMax(0),       //maximal sigma (Not allowed to increase in propagate time by bigger factor)
   fSigma2Time(0),     // change of the error in time - (For kalman filter) 
   fFixedParam(0),     // fixed parameters of tranformation  
   fIsActive(kTRUE),   // swith - On/Off
@@ -154,6 +155,7 @@ AliTPCTransformation::AliTPCTransformation(const char *name, TBits *mask, const 
   fCoordSystem(coordSystem), // coordinate system of output deltas
   fParam(0),          // free parameter of transformation 
   fSigma(0),
+  fSigmaMax(0),       //maximal sigma (Not allowed to increase in propagate time by bigger factor)
   fSigma2Time(0),     // change of sigma in time
   fFixedParam(0),     // fixed parameters of tranformation  
   fIsActive(kTRUE),   // swith - On/Off
@@ -182,6 +184,7 @@ AliTPCTransformation::AliTPCTransformation(const AliTPCTransformation&trafo):
   fCoordSystem(0),    // coord system of  output deltas 
   fParam(trafo.fParam),          // free parameter of transformation 
   fSigma(trafo.fSigma),          // uncertainty of the parameter
+  fSigmaMax(trafo.fSigma),       //maximal sigma (Not allowed to increase in propagate time by bigger factor)
   fSigma2Time(trafo.fSigma2Time),     // change of the error in time - (For kalman filter) 
   fFixedParam(0),     // fixed parameters of tranformation
   fIsActive(trafo.fIsActive),   // swith - On/Off
@@ -213,6 +216,7 @@ void AliTPCTransformation::SetParams(Double_t param, Double_t sigma, Double_t si
   //
   fParam = param;
   fSigma = sigma;
+  fSigmaMax = sigma;
   fSigma2Time = sigma2Time;
   if (fFixedParam) delete fFixedParam;
   fFixedParam = new TVectorD(*fixedParams);
@@ -265,6 +269,43 @@ TBits * AliTPCTransformation::BitsAll(){
   return bits;
 }
 
+// Double_t AliTPCTransformation::GetDeltaXYZ(Int_t coord, Int_t volID, Double_t param, Double_t x, Double_t y, Double_t z){
+//   //
+//   //
+//   // coord - type of coordinate
+//   //       - 0 -X
+//   //         1 -Y
+//   //         2 -Z
+//   //         3 -R
+//   //         4 -RPhi
+//   if (!fIsActive) return 0;
+//   if (fBitMask && (!(*fBitMask)[volID])) return 0;
+//   Double_t xyz[5]={x,y,z, param,volID};
+//   if (fCoordSystem==0){
+//     // cartezian system
+//     if (coord==0 && fFormulaX) return fFormulaX(xyz,fFixedParam->GetMatrixArray()); 
+//     if (coord==1 && fFormulaY) return fFormulaY(xyz,fFixedParam->GetMatrixArray()); 
+//     if (coord==2 && fFormulaZ) return fFormulaZ(xyz,fFixedParam->GetMatrixArray());
+//   }
+//   if (fCoordSystem==1){  
+//     // cylindrical system
+//     if (coord==2) {
+//       if (fFormulaZ==0) return 0;
+//       return fFormulaZ(xyz,fFixedParam->GetMatrixArray());
+//     }
+//     Double_t rrphiz[3]={0,0,0};
+//     if (fFormulaX) rrphiz[0] = fFormulaX(xyz,fFixedParam->GetMatrixArray());
+//     if (fFormulaY) rrphiz[1] = fFormulaY(xyz,fFixedParam->GetMatrixArray());
+//     Double_t alpha = TMath::ATan2(y,x);
+//     Double_t ca    = TMath::Cos(alpha);
+//     Double_t sa    = TMath::Sin(alpha);
+//     if (coord==0) return ca*rrphiz[0]-sa*rrphiz[1];
+//     if (coord==1) return sa*rrphiz[0]+ca*rrphiz[1];
+//   }
+//   return 0;
+// }
+
+
 Double_t AliTPCTransformation::GetDeltaXYZ(Int_t coord, Int_t volID, Double_t param, Double_t x, Double_t y, Double_t z){
   //
   //
@@ -274,18 +315,31 @@ Double_t AliTPCTransformation::GetDeltaXYZ(Int_t coord, Int_t volID, Double_t pa
   //         2 -Z
   //         3 -R
   //         4 -RPhi
+  //         5 -Z
   if (!fIsActive) return 0;
   if (fBitMask && (!(*fBitMask)[volID])) return 0;
   Double_t xyz[5]={x,y,z, param,volID};
+  Double_t alpha = TMath::ATan2(y,x);
+  Double_t ca    = TMath::Cos(alpha);
+  Double_t sa    = TMath::Sin(alpha);
+
   if (fCoordSystem==0){
     // cartezian system
-    if (coord==0 && fFormulaX) return fFormulaX(xyz,fFixedParam->GetMatrixArray()); 
-    if (coord==1 && fFormulaY) return fFormulaY(xyz,fFixedParam->GetMatrixArray()); 
-    if (coord==2 && fFormulaZ) return fFormulaZ(xyz,fFixedParam->GetMatrixArray());
+    Double_t dxdydz[3]={0,0,0};
+    if(fFormulaX) dxdydz[0]=fFormulaX(xyz,fFixedParam->GetMatrixArray());
+    if(fFormulaY) dxdydz[1]=fFormulaY(xyz,fFixedParam->GetMatrixArray());
+    if(fFormulaZ) dxdydz[2]=fFormulaZ(xyz,fFixedParam->GetMatrixArray());
+
+    if (coord==0) return dxdydz[0];
+    if (coord==1) return dxdydz[1];
+    if (coord==2) return dxdydz[2];
+    if (coord==3) return dxdydz[0]*ca+dxdydz[1]*sa;
+    if (coord==4) return -dxdydz[0]*sa+dxdydz[1]*ca;
+    if (coord==5) return dxdydz[2];
   }
   if (fCoordSystem==1){  
     // cylindrical system
-    if (coord==2) {
+    if (coord==2||coord==5) {
       if (fFormulaZ==0) return 0;
       return fFormulaZ(xyz,fFixedParam->GetMatrixArray());
     }
@@ -297,9 +351,13 @@ Double_t AliTPCTransformation::GetDeltaXYZ(Int_t coord, Int_t volID, Double_t pa
     Double_t sa    = TMath::Sin(alpha);
     if (coord==0) return ca*rrphiz[0]-sa*rrphiz[1];
     if (coord==1) return sa*rrphiz[0]+ca*rrphiz[1];
+    if (coord==3) return rrphiz[0];
+    if (coord==4) return rrphiz[1];
   }
   return 0;
 }
+
+
 
 Double_t  AliTPCTransformation::TPCscalingRPol(Double_t *xyz, Double_t * param){
   //

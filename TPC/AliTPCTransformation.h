@@ -42,6 +42,7 @@ public:
   Int_t      fCoordSystem;   // coord system of  output deltas 
   Double_t   fParam;         // free parameter of transformation
   Double_t   fSigma;         // error of the parameter
+  Double_t   fSigmaMax;      // maximal sigma (Not allowed to increase in propagate time by bigger factor)
   Double_t   fSigma2Time;    // change of the error in time (per hour) - (For kalman filter) 
   TVectorD  *fFixedParam;    // fixed parameters of tranformation
   Bool_t     fIsActive;      // switch - is transformation active
@@ -91,7 +92,7 @@ public:
 private:
   AliTPCTransformation &operator=(const AliTPCTransformation&);    // not implemented
 
-  ClassDef(AliTPCTransformation,1);
+  ClassDef(AliTPCTransformation,2);
 };
 
 #endif
