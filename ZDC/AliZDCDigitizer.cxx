@@ -420,7 +420,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
   Int_t pl, i, k, iev=0, rnd[125], volume[2];
   for(pl=0;pl<125;pl++) rnd[pl] = 0;
   if(numEvents > 125) {
-    AliWarning(Form("numEvents (%d) is larger than 125", numEvents));
+    AliDebug(2,Form("numEvents (%d) is larger than 125", numEvents));
     numEvents = 125;
   }
   for(pl=0;pl<numEvents;pl++){

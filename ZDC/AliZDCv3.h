@@ -67,11 +67,11 @@ protected:
   Float_t fZEMLength; // ZEM length
   
   // Parameters for proton accepancy studies
-  Int_t fpLostITC, fpLostD1C, fpDetectedC, fnDetectedC, fnLumiC; // Side C
-  Int_t fpLostITA, fpLostD1A, fpLostTDI, fpDetectedA, fnDetectedA, fnLumiA, fnTrou; // Side A
+  Int_t fpLostITC, fpLostD1C, fpDetectedC, fnDetectedC; // Side C
+  Int_t fpLostITA, fpLostD1A, fpLostTDI, fpDetectedA, fnDetectedA; // Side A
   
   
-   ClassDef(AliZDCv3,3)  // Zero Degree Calorimeter version 1
+   ClassDef(AliZDCv3,4)  // Zero Degree Calorimeter version 1
 }; 
  
 #endif

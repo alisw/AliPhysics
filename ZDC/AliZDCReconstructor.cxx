@@ -105,7 +105,7 @@ void AliZDCReconstructor::Init()
   
     TString runType = grpData->GetRunType();
     if(runType==AliGRPObject::GetInvalidString()){
-      AliError("GRP/GRP/Data entry:  missing value for the run type ! Using UNKNOWN");
+      AliWarning("GRP/GRP/Data entry:  missing value for the run type ! Using UNKNOWN");
       runType = "UNKNOWN";
     }
     if((runType.CompareTo("CALIBRATION_MB")) == 0){
@@ -128,7 +128,7 @@ void AliZDCReconstructor::Init()
     
     TString beamType = grpData->GetBeamType();
     if(beamType==AliGRPObject::GetInvalidString()){
-      AliError("GRP/GRP/Data entry:  missing value for the beam energy !");
+      AliWarning("GRP/GRP/Data entry:  missing value for the beam energy !");
       AliError("\t ZDC does not reconstruct event 4 UNKNOWN beam type\n");
       return;
     }
@@ -144,7 +144,7 @@ void AliZDCReconstructor::Init()
     
     fBeamEnergy = grpData->GetBeamEnergy();
     if(fBeamEnergy==AliGRPObject::GetInvalidFloat()){
-      AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0.");
+      AliWarning("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0.");
       fBeamEnergy = 0.;
     }
     

@@ -395,7 +395,7 @@ Bool_t AliZDCRawStream::Next()
 	    // Protection manually set since it returns:
 	    // RawData48 mod. 3 ch. 2048 signal 515
 	    // to be checked with Pietro!!!!!!!!!!!!!!!!!!!!!!!
-	    //AliWarning(" No. of cabled channels > fNChannelsOn!!!");
+	    //AliDebug(2," No. of cabled channels > fNChannelsOn!!!");
             fPosition++;
 	    return kTRUE;
 	  }
@@ -527,12 +527,12 @@ Bool_t AliZDCRawStream::Next()
 	
 	// Final checks
 	if(fSector[0]<1 || fSector[0]>5){
-          AliError(Form(" No valid detector assignment: %d",fSector[0]));
+          AliWarning(Form(" No valid detector assignment: %d",fSector[0]));
           fRawReader->AddMajorErrorLog(kInvalidSector);
 	}
 	//
 	if(fSector[1]<0 || fSector[1]>5){
-          AliError(Form(" No valid sector assignment: %d",fSector[1]));
+          AliWarning(Form(" No valid sector assignment: %d",fSector[1]));
           fRawReader->AddMajorErrorLog(kInvalidSector);
 	}
 	//

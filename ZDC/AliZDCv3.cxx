@@ -72,14 +72,11 @@ AliZDCv3::AliZDCv3() :
   fpLostD1C(0), 
   fpDetectedC(0),
   fnDetectedC(0),
-  fnLumiC(0),
   fpLostITA(0), 
   fpLostD1A(0), 
   fpLostTDI(0), 
   fpDetectedA(0),
-  fnDetectedA(0),
-  fnLumiA(0),
-  fnTrou(0)
+  fnDetectedA(0)
 {
   //
   // Default constructor for Zero Degree Calorimeter
@@ -107,14 +104,11 @@ AliZDCv3::AliZDCv3(const char *name, const char *title) :
   fpLostD1C(0), 
   fpDetectedC(0),
   fnDetectedC(0),
-  fnLumiC(0),
   fpLostITA(0), 
   fpLostD1A(0), 
   fpLostTDI(0), 
   fpDetectedA(0),
-  fnDetectedA(0),  
-  fnLumiA(0),
-  fnTrou(0)
+  fnDetectedA(0)  
 {
   //
   // Standard constructor for Zero Degree Calorimeter 
@@ -630,7 +624,7 @@ void AliZDCv3::CreateBeamLine()
   boxpar[0] = 8.0/2.;
   boxpar[1] = 8.0/2.;
   boxpar[2] = 15./2.;
-  gMC->Gsvolu("QLUC", "BOX ", idtmed[6], boxpar, 3);
+  gMC->Gsvolu("QLUC", "BOX ", idtmed[9], boxpar, 3);
   gMC->Gspos("QLUC", 1, "ZDCC", 0., 0.,  fPosZNC[2]+66.+boxpar[2], 0, "ONLY");
   //printf("	QLUC LUMINOMETER from z = %1.2f to z= %1.2f\n",  fPosZNC[2]+66., fPosZNC[2]+66.+2*boxpar[2]);
 	         
@@ -1346,7 +1340,7 @@ void AliZDCv3::CreateBeamLine()
   boxpar[0] = 8.0/2.;
   boxpar[1] = 8.0/2.;
   boxpar[2] = 15./2.;
-  gMC->Gsvolu("QLUA", "BOX ", idtmed[6], boxpar, 3);
+  gMC->Gsvolu("QLUA", "BOX ", idtmed[9], boxpar, 3);
   gMC->Gspos("QLUA", 1, "ZDCA", 0., 0.,  fPosZNA[2]-66.-boxpar[2], 0, "ONLY");
   //printf("	QLUA LUMINOMETER from z = %1.2f to z= %1.2f\n\n",  fPosZNA[2]-66., fPosZNA[2]-66.-2*boxpar[2]);
 
@@ -1991,6 +1985,10 @@ void AliZDCv3::CreateMaterials()
   // --- Copper (energy loss taken into account)
   ubuf[0] = 1.10;
   AliMaterial(6, "COPP0", 63.54, 29., 8.96, 1.4, 0., ubuf, 1);
+
+  // --- Copper 
+  ubuf[0] = 1.10;
+  AliMaterial(9, "COPP1", 63.54, 29., 8.96, 1.4, 0., ubuf, 1);
   
   // --- Iron (energy loss taken into account)
   ubuf[0] = 1.1;
@@ -2027,8 +2025,8 @@ void AliZDCv3::CreateMaterials()
   // --- Fibers (SiO2) = 3 ; 
   // --- Fibers (SiO2) = 4 ; 
   // --- Lead = 5 ; 
-  // --- Copper (with energy loss)= 6 ;
-  // --- Copper (with energy loss)= 13 ; 
+  // --- Copper (with high thr.)= 6 ;
+  // --- Copper (with low thr.)=  9;
   // --- Iron (with energy loss) = 7 ; 
   // --- Iron (without energy loss) = 8 ; 
   // --- Vacuum (no field) = 10 
@@ -2059,10 +2057,10 @@ void AliZDCv3::CreateMaterials()
   AliMedium(6, "ZCOPP", 6, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(7, "ZIRON", 7, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(8, "ZIRONN",8, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(9, "ZCOPL", 6, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(10,"ZVOID",10, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(12,"ZAIR", 12, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  //
   AliMedium(11,"ZVOIM",11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(12,"ZAIR", 12, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
 
 
 } 
@@ -2107,7 +2105,7 @@ void AliZDCv3::Init()
   Int_t *idtmed = fIdtmed->GetArray();  
   Int_t i;
   // Thresholds for showering in the ZDCs 
-  i = 1; //tantalum
+  i = 1; //Wa lloy
   gMC->Gstpar(idtmed[i], "CUTGAM", .001);
   gMC->Gstpar(idtmed[i], "CUTELE", .001);
   gMC->Gstpar(idtmed[i], "CUTNEU", .01);
@@ -2138,7 +2136,7 @@ void AliZDCv3::Init()
   gMC->Gstpar(idtmed[i], "CUTHAD", 1.);
   
   // Avoid too detailed showering along the beam line 
-  i = 8; //iron with energy loss (ZIRONN)
+  i = 8; //iron without energy loss (ZIRONN)
   gMC->Gstpar(idtmed[i], "CUTGAM", .1);
   gMC->Gstpar(idtmed[i], "CUTELE", .1);
   gMC->Gstpar(idtmed[i], "CUTNEU", 1.);
@@ -2290,9 +2288,6 @@ void AliZDCv3::StepManager()
   Int_t   j, vol[2]={0,0}, ibeta=0, ialfa=0, ibe=0, nphe=0;
   Float_t hits[12], x[3], xdet[3], um[3], ud[3];
   Float_t m=0., ekin=0., destep=0., be=0., out=0.;
-  // Parametrization for light guide uniformity
-  // NEW!!! Light guide tilted @ 51 degrees
-  Float_t guiPar[4]={0.31,-0.0006305,0.01337,0.8895};
   Double_t s[3], p[3];
   const char *knamed;
   //
@@ -2317,7 +2312,6 @@ void AliZDCv3::StepManager()
 	  else fpLostD1A += 1;
 	  ipr=1;
 	}
-	else if(!strncmp(knamed,"QAL",3)) fnTrou++;
       }
       else if(gMC->CurrentMedium() == fMedSensTDI){ 
         knamed = gMC->CurrentVolName();
@@ -2327,11 +2321,6 @@ void AliZDCv3::StepManager()
 	  ipr=1;
         }
 	else if(!strncmp(knamed,"QTD",3)) fpLostTDI += 1;
-	else if(!strncmp(knamed,"QLU",3)){
-	  if(s[2]<0) fnLumiC ++;
-	  else fnLumiA++;
-	  ipr=1;
-	}
       }
       //
       //gMC->TrackMomentum(p[0], p[1], p[2], p[3]);
@@ -2343,13 +2332,10 @@ void AliZDCv3::StepManager()
         printf("\t ********** Side C **********\n");
         printf("\t # of spectators in IT = %d\n",fpLostITC);
         printf("\t # of spectators in D1 = %d\n",fpLostD1C);
-        printf("\t # of spectators in luminometer = %d\n",fnLumiC);
         printf("\t ********** Side A **********\n");
         printf("\t # of spectators in IT = %d\n",fpLostITA);
         printf("\t # of spectators in D1 = %d\n",fpLostD1A);
         printf("\t # of spectators in TDI = %d\n",fpLostTDI);
-        printf("\t # of spectators in luminometer = %d\n",fnLumiA);
-        printf("\t # of spectators in trousers = %d\n",fnTrou);
         printf("\t **********************************\n");
       }
       gMC->StopTrack();
@@ -2461,7 +2447,7 @@ void AliZDCv3::StepManager()
       }
     }    
     if((vol[1]!=1) && (vol[1]!=2) && (vol[1]!=3) && (vol[1]!=4))
-      AliError(Form("AliZDCv3 -> WRONG tower for det %d: tow %d with xdet=(%f, %f)\n",
+      AliError(Form(" WRONG tower for det %d: tow %d with xdet=(%f, %f)\n",
 		vol[0], vol[1], xdet[0], xdet[1]));
     // Ch. debug
     //printf("\t *** det %d vol %d xdet(%f, %f)\n",vol[0], vol[1], xdet[0], xdet[1]);
@@ -2533,13 +2519,13 @@ void AliZDCv3::StepManager()
 	   hits[7] = 0.;
 	   hits[8] = 0.;
 	   AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
-	   }
+	 }
 	 else{
 	   hits[9] = destep;
 	   hits[7] = 0.;
 	   hits[8] = 0.;
 	   AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
-	   }
+	 }
       }
   }
  
@@ -2646,6 +2632,10 @@ void AliZDCv3::StepManager()
 	 Float_t z = -xalic[2]+fPosZEM[2]+2*fZEMLength-xalic[1];
 	 //z = xalic[2]-fPosZEM[2]-fZEMLength-xalic[1]*(TMath::Tan(45.*kDegrad));
          //printf("	fPosZEM[2]+2*fZEMLength = %f", fPosZEM[2]+2*fZEMLength);
+         //
+	 // Parametrization for light guide uniformity
+         // NEW!!! Light guide tilted @ 51 degrees
+         Float_t guiPar[4]={0.31,-0.0006305,0.01337,0.8895};
 	 Float_t guiEff = guiPar[0]*(guiPar[1]*z*z+guiPar[2]*z+guiPar[3]);
 	 out = out*guiEff;
 	 nphe = gRandom->Poisson(out);

@@ -43,7 +43,7 @@ AliZDCDataDCS::AliZDCDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime):
 {
    // Standard constructor
    
-   AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
+   AliDebug(2,Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
    TTimeStamp(startTime).AsString(),
    TTimeStamp(endTime).AsString()));
 
@@ -68,13 +68,13 @@ void AliZDCDataDCS::ProcessData(TMap& aliasMap)
    for(int j=0; j<kNAliases; j++){
       aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
       if(!aliasArr){
-   	AliError(Form("Alias %s not found!", fAliasNames[j].Data()));
+   	AliWarning(Form("Alias %s not found!", fAliasNames[j].Data()));
    	continue;
       }
       Introduce(j, aliasArr);
 
       if(aliasArr->GetEntries()<=2){
-   	AliError(Form("Alias %s has just %d entries!",
+   	AliWarning(Form("Alias %s has just %d entries!",
    			fAliasNames[j].Data(),aliasArr->GetEntries()));
    	continue;
       }
@@ -155,8 +155,8 @@ void AliZDCDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)
    // Getting array of DCS aliases
    
    int entries = aliasArr->GetEntries();
-   AliInfo(Form("************ Alias: %s **********",fAliasNames[numAlias].Data()));
-   AliInfo(Form("	   %d DP values collected",entries));
+   AliDebug(2,Form("************ Alias: %s **********",fAliasNames[numAlias].Data()));
+   AliDebug(2,Form("	   %d DP values collected",entries));
 
 }
 
@@ -171,7 +171,7 @@ void AliZDCDataDCS::CreateGraph(int i, int dim, const Double_t *x, const Double_
 
    gr->GetXaxis()->SetTimeDisplay(1);
    gr->SetTitle(fAliasNames[i].Data());
-//   AliInfo(Form("Array entries: %d",fGraphs.GetEntriesFast()));
+//   AliDebug(2,Form("Array entries: %d",fGraphs.GetEntriesFast()));
 
 
 }
