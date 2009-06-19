@@ -1174,6 +1174,7 @@ Double_t AliTPCkalmanFit::SGetTPCDeltaXYZ(Int_t coord, Int_t volID, Int_t icoord
 Double_t AliTPCkalmanFit::GetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID, Int_t icoordsys, Double_t x, Double_t y, Double_t z){
 
   Int_t ncalibs = fCalibration->GetEntries();
+  if (calibID>=ncalibs) return 0;
   //Int_t volID=-1;
   //Double_t xyz[3]={x,y,z};
   Double_t r;
@@ -1184,7 +1185,7 @@ Double_t AliTPCkalmanFit::GetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID
   Double_t sa    = TMath::Sin(alpha);
   Double_t xyz[3];
   if(icoordsys==0)xyz[0]=x;xyz[1]=y;xyz[2]=z; 
-  if(icoordsys=-1)xyz[0]=x*ca; xyz[1]=x*sa; xyz[2]=z;
+  if(icoordsys==1)xyz[0]=x*ca; xyz[1]=x*sa; xyz[2]=z;
   //xyz[3]=param; xyz[4]=volID;
 
   if (volID<0){
