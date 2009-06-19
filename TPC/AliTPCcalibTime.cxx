@@ -14,47 +14,46 @@
  **************************************************************************/
 
 /*
-    Comments to be written here:
-    1. What do we calibrate.
+Comments to be written here:
 
-Time dependence of gain and drift velocity in order to account for changes in: temperature, pressure, gas composition.
+1. What do we calibrate.
+
+  Time dependence of gain and drift velocity in order to account for changes in: temperature, pressure, gas composition.
 
   AliTPCcalibTime *calibTime = new AliTPCcalibTime("cosmicTime","cosmicTime",0, 1213.9e+06, 1213.96e+06, 0.04e+04, 0.04e+04);
 
+2. How to interpret results
 
-    2. How to interpret results
-    3. Simple example
+3. Simple example
 
-a.) determine the required time range:
+  a) determine the required time range:
 
-AliXRDPROOFtoolkit tool;
-TChain * chain = tool.MakeChain("pass2.txt","esdTree",0,6000);
-chain->Draw("GetTimeStamp()")
+  AliXRDPROOFtoolkit tool;
+  TChain * chain = tool.MakeChain("pass2.txt","esdTree",0,6000);
+  chain->Draw("GetTimeStamp()")
 
-b) analyse calibration object on Proof in calibration train 
+  b) analyse calibration object on Proof in calibration train 
 
-AliTPCcalibTime *calibTime = new AliTPCcalibTime("cosmicTime","cosmicTime", StartTimeStamp, EndTimeStamp, IntegrationTimeVdrift, IntegrationTimeDeDx);
-s
-c) plot results
- .x ~/NimStyle.C
+  AliTPCcalibTime *calibTime = new AliTPCcalibTime("cosmicTime","cosmicTime", StartTimeStamp, EndTimeStamp, IntegrationTimeVdrift);
+
+  c) plot results
+  .x ~/NimStyle.C
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
 
-TFile f("CalibObjects.root");
-AliTPCcalibTime *cal = (AliTPCcalibTime *)f->Get("TPCCalib")->FindObject("calibTime");
-cal->GetHistVdrift()->Projection(1,0)->Draw()
+  TFile f("CalibObjects.root");
+  AliTPCcalibTime *cal = (AliTPCcalibTime *)f->Get("TPCCalib")->FindObject("calibTime");
+  cal->GetHistoDrift("all")->Projection(2,0)->Draw()
+  cal->GetFitDrift("all")->Draw("lp")
 
-    4. Analysis using debug streamers.    
+4. Analysis using debug streamers.    
 
-    gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-    gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
-    AliXRDPROOFtoolkit tool;
-    TChain * chainTime = tool.MakeChain("time.txt","timeInfo",0,10200);
-    chainTime->Lookup();
-
-
+  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+  AliXRDPROOFtoolkit tool;
+  TChain * chainTime = tool.MakeChain("time.txt","timeInfo",0,10200);
+  chainTime->Lookup();
 */
-
 
 #include "Riostream.h"
 #include "TChain.h"
@@ -102,20 +101,13 @@ ClassImp(AliTPCcalibTime)
 
 AliTPCcalibTime::AliTPCcalibTime() 
   :AliTPCcalibBase(), 
-   fHistDeDxTgl(0),
-   fHistDeDx(0),
-   fHistVdrift(0),
-   fIntegrationTimeDeDx(0),
-   fIntegrationTimeVdrift(0),  
    fLaser(0),       // pointer to laser calibration
    fDz(0),          // current delta z
-   fdEdx(0),        // current dEdx
-   fdEdxRatio(0),   // current dEdx ratio
-   fTl(0),          // current tan(lambda)
-   fCutMaxD(5),        // maximal distance in rfi ditection
+   fCutMaxD(2),        // maximal distance in rfi ditection
    fCutMaxDz(20),      // maximal distance in rfi ditection
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99),  // direction vector products
+   fCutTracks(10),
    fMapDz(0),          //NEW! Tmap of V drifts for different triggers
    fTimeBins(0),
    fTimeStart(0),
@@ -139,25 +131,21 @@ AliTPCcalibTime::AliTPCcalibTime()
     fHistVdriftLaserA[i]=0;
     fHistVdriftLaserC[i]=0;
   }
+  for (Int_t i=0;i<5;i++) {
+    fCosmiMatchingHisto[i]=0;
+  }
 }
 
 
-AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeDeDx, Int_t deltaIntegrationTimeVdrift)
+AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeVdrift)
   :AliTPCcalibBase(),
-   fHistDeDxTgl(0),
-   fHistDeDx(0),
-   fHistVdrift(0),
-   fIntegrationTimeDeDx(0),
-   fIntegrationTimeVdrift(0),  
    fLaser(0),       // pointer to laser calibration
    fDz(0),          // current delta z
-   fdEdx(0),        // current dEdx
-   fdEdxRatio(0),   // current dEdx ratio
-   fTl(0),          // current tan(lambda)
-   fCutMaxD(5),        // maximal distance in rfi ditection
+   fCutMaxD(2),        // maximal distance in rfi ditection
    fCutMaxDz(20),      // maximal distance in rfi ditection
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99),  // direction vector products
+   fCutTracks(10),
    fMapDz(0),          //NEW! Tmap of V drifts for different triggers
    fTimeBins(0),
    fTimeStart(0),
@@ -182,30 +170,7 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
 
   AliInfo("Non Default Constructor");
 
-
-  fIntegrationTimeDeDx = deltaIntegrationTimeDeDx;
-  fIntegrationTimeVdrift = deltaIntegrationTimeVdrift;
-
-  Double_t deltaTime = EndTime - StartTime;
-  
-  Int_t binsVdrift[2] = {TMath::Nint(deltaTime/deltaIntegrationTimeVdrift), 100};
-  Double_t xminVdrift[2] = {StartTime, -20};
-  Double_t xmaxVdrift[2] = {EndTime, 20};
-  fHistVdrift = new THnSparseF("HistVdrift","vDrift; time;#Delta z",2,binsVdrift,xminVdrift,xmaxVdrift);
-
-  Int_t binsDeDxTgl[4] = {TMath::Nint(deltaTime/deltaIntegrationTimeDeDx),30,100,10000};
-  Double_t xminDeDxTgl[4] = {StartTime,-1,0.7,-0.5};
-  Double_t xmaxDeDxTgl[4] = {EndTime,1,1.3,999.5};
-  fHistDeDxTgl = new THnSparseF("HistDeDxTgl","dEdx vs tgl;time;tgl;dEdxUp/dEdxLow",3,binsDeDxTgl,xminDeDxTgl,xmaxDeDxTgl); 
-
-  Int_t binsDeDx[2] = {TMath::Nint(deltaTime/deltaIntegrationTimeDeDx),100};
-  Double_t xminDeDx[2] = {StartTime,1};
-  Double_t xmaxDeDx[2] = {EndTime,100};
-  fHistDeDx = new THnSparseF("HistDeDx","dEdx l;time;dEdx",2,binsDeDx,xminDeDx,xmaxDeDx);
-
-//  fLaser =  new AliTPCcalibLaser("laserTPC","laserTPC",kFALSE);
-
-  fTimeBins   =TMath::Nint(deltaTime/deltaIntegrationTimeVdrift);
+  fTimeBins   =(EndTime-StartTime)/deltaIntegrationTimeVdrift;
   fTimeStart  =StartTime; //(((TObjString*)(mapGRP->GetValue("fAliceStartTime")))->GetString()).Atoi();
   fTimeEnd    =EndTime;   //(((TObjString*)(mapGRP->GetValue("fAliceStopTime")))->GetString()).Atoi();
   fPtBins     = 200;
@@ -214,7 +179,7 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   fVdriftBins = 200;
   fVdriftStart= -20.0/500.0;
   fVdriftEnd  =  20.0/500.0;
-  fRunBins    = 10000;
+  fRunBins    = 100000;
   fRunStart   = -0.5;
   fRunEnd     = 0.5;
 
@@ -240,17 +205,16 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   fXmaxVdrift[3] = fRunEnd;
 
   fMapDz=new TMap();
+
+  for (Int_t i=0;i<5;i++) {
+    fCosmiMatchingHisto[i]=new TH1F("Cosmics matching","Cosmics matching",100,0,0);
+  }
 }
-
-
 
 AliTPCcalibTime::~AliTPCcalibTime(){
   //
   // Destructor
   //
-  delete fHistDeDxTgl;
-  delete fHistDeDx;
-  delete fHistVdrift;
   for (Int_t i=0;i<3;i++){
     delete fHistVdriftLaserA[i];
     delete fHistVdriftLaserC[i];
@@ -258,18 +222,16 @@ AliTPCcalibTime::~AliTPCcalibTime(){
   fMapDz->SetOwner();
   fMapDz->Delete();
   delete fMapDz;  
+  for (Int_t i=0;i<5;i++) {
+    delete fCosmiMatchingHisto[i];
+  }
 }
-
 
 void AliTPCcalibTime::ResetCurrent(){
   //
   // reset current values
   //
   fDz=0;          // current delta z
-  fdEdx=0;        // current dEdx
-  fdEdxRatio=0;   // current dEdx ratio
-  fTl=0;          // current tan(lambda)
-
 }
 
 Bool_t AliTPCcalibTime::IsLaser(AliESDEvent *event){
@@ -382,14 +344,11 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
   chi2A= vdriftA[4];
   npointsC= TMath::Nint(vdriftC[3]);
   chi2C= vdriftC[4];
-  //
-  //
 
-  //  
   TTimeStamp tstamp(fTime);
   Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
   Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
-  //
+
   Double_t vecVdriftLaserA[4]={fTime,(ptrelative0+ptrelative1)/2.0,1./((*(fLaser->fFitAside))[1])-1,event->GetRunNumber()};
   Double_t vecVdriftLaserC[4]={fTime,(ptrelative0+ptrelative1)/2.0,1./((*(fLaser->fFitCside))[1])-1,event->GetRunNumber()};
 
@@ -409,15 +368,9 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
     fHistVdriftLaserA[i]->Fill(vecVdriftLaserA);
     fHistVdriftLaserC[i]->Fill(vecVdriftLaserC);
   }
-  //
-  //
-  //
-
-
 }
 
 void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
-
   if (!event) {
     Printf("ERROR: ESD not available");
     return;
@@ -426,10 +379,7 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
     Printf("no time stamp!");
     return;
   }
-
-
-  UInt_t time = event->GetTimeStamp();
-
+  
   //fd
   // Find cosmic pairs
   // 
@@ -438,9 +388,8 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
   //
   Int_t ntracks=event->GetNumberOfTracks();
   if (ntracks==0) return;
-  if (ntracks > 10) return; // temporary debug to remove LASER events
-
-
+  if (ntracks > fCutTracks) return;
+  
   if (GetDebugLevel()>1) printf("Hallo world: Im here\n");
   AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   
@@ -452,39 +401,25 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
   // track loop
   //
   for (Int_t i=0;i<ntracks;++i) {
-   AliESDtrack *track = event->GetTrack(i);
-
-   const AliExternalTrackParam * trackIn = track->GetInnerParam();
-   const AliExternalTrackParam * trackOut = track->GetOuterParam();
-   if (!trackIn) continue;
-   if (!trackOut) continue;
-   
-   AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
-   TObject *calibObject;
-   AliTPCseed *seed = 0;
-   for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-     if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-   }
-   if (seed) { 
-     tpcSeeds.AddAt(seed,i);
-     if (track->GetTPCNcls() > 50) {
-       Double_t meanP = 0.5*(trackIn->GetP() + trackOut->GetP());
-       Double_t TPCsignal = seed->CookdEdxNorm(0.0,0.6,1,0,159,0x0,kTRUE,kTRUE);
-       Double_t vecDeDx[2] = {time, TPCsignal};
-       if (meanP > 12) {
-	 fdEdx = TPCsignal;
-	 fHistDeDx->Fill(vecDeDx);
-       }
-     }
-   }
+    AliESDtrack *track = event->GetTrack(i);
+    
+    const AliExternalTrackParam * trackIn = track->GetInnerParam();
+    const AliExternalTrackParam * trackOut = track->GetOuterParam();
+    if (!trackIn) continue;
+    if (!trackOut) continue;
+    
+    AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
+    TObject *calibObject;
+    AliTPCseed *seed = 0;
+    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
+    if (seed) tpcSeeds.AddAt(seed,i);
   }
-  
   if (ntracks<2) return;
   //
   // Find pairs
   //
   for (Int_t i=0;i<ntracks;++i) {
-    AliESDtrack *track0 = event->GetTrack(i);     
+    AliESDtrack *track0 = event->GetTrack(i);
     // track0 - choosen upper part
     if (!track0) continue;
     if (!track0->GetOuterParam()) continue;
@@ -493,100 +428,95 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
     track0->GetDirection(d1);    
     for (Int_t j=0;j<ntracks;++j) {
       if (i==j) continue;
-       AliESDtrack *track1 = event->GetTrack(j);   
-       //track 1 lower part
-       if (!track1) continue;
-       if (!track1->GetOuterParam()) continue;
-       if (track1->GetOuterParam()->GetAlpha()>0) continue;
-       //
-       Double_t d2[3];
-       track1->GetDirection(d2);
+      AliESDtrack *track1 = event->GetTrack(j);   
+      //track 1 lower part
+      if (!track1) continue;
+      if (!track1->GetOuterParam()) continue;
+      if (track1->GetOuterParam()->GetAlpha()>0) continue;
+      //
+      Double_t d2[3];
+      track1->GetDirection(d2);
       
-       AliTPCseed * seed0 = (AliTPCseed*) tpcSeeds.At(i);
-       AliTPCseed * seed1 = (AliTPCseed*) tpcSeeds.At(j);
-       if (! seed0) continue;
-       if (! seed1) continue;
-       Float_t dir = (d1[0]*d2[0] + d1[1]*d2[1] + d1[2]*d2[2]);
-       Float_t dist0  = track0->GetLinearD(0,0);
-       Float_t dist1  = track1->GetLinearD(0,0);
-       //
-       // conservative cuts - convergence to be guarantied
-       // applying before track propagation
-       if (TMath::Abs(dist0+dist1)>fCutMaxD) continue;   // distance to the 0,0
-       if (dir>fCutMinDir) continue;               // direction vector product
-       Float_t bz = AliTracker::GetBz();
-       Float_t dvertex0[2];   //distance to 0,0
-       Float_t dvertex1[2];   //distance to 0,0 
-       track0->GetDZ(0,0,0,bz,dvertex0);
-       track1->GetDZ(0,0,0,bz,dvertex1);
-       if (TMath::Abs(dvertex0[1])>250) continue;
-       if (TMath::Abs(dvertex1[1])>250) continue;
-       //
-       //
-       //
-       Float_t dmax = TMath::Max(TMath::Abs(dist0),TMath::Abs(dist1));
-       AliExternalTrackParam param0(*track0);
-       AliExternalTrackParam param1(*track1);
-       //
-       // Propagate using Magnetic field and correct fo material budget
-       //
-       AliTracker::PropagateTrackTo(&param0,dmax+1,0.0005,3,kTRUE);
-       AliTracker::PropagateTrackTo(&param1,dmax+1,0.0005,3,kTRUE);
-       //
-       // Propagate rest to the 0,0 DCA - z should be ignored
-       //
-       //Bool_t b0 = ;
-       param0.PropagateToDCA(&vtx,bz,1000);
-       //Bool_t b1 = 
-       param1.PropagateToDCA(&vtx,bz,1000);
-       //      
-       param0.GetDZ(0,0,0,bz,dvertex0);
-       param1.GetDZ(0,0,0,bz,dvertex1);
-       //
-       Double_t xyz0[3];//,pxyz0[3];
-       Double_t xyz1[3];//,pxyz1[3];
-       param0.GetXYZ(xyz0);
-       param1.GetXYZ(xyz1);
-       Bool_t isPair = IsPair(&param0,&param1);
-
-       Double_t z0 = track0->GetOuterParam()->GetZ();
-       Double_t z1 = track1->GetOuterParam()->GetZ();
-
-       Double_t z0inner = track0->GetInnerParam()->GetZ();
-       Double_t z1inner = track1->GetInnerParam()->GetZ();
-
-       if (isPair && z0>0 && z0inner>0 && z1<0 && z1inner<0) {
-	 Double_t vecVdrift[2] = {time, param0.GetZ() - param1.GetZ()};
-	 
-	 if (track0->GetTPCNcls() > 80) {
-	   fDz = param0.GetZ() - param1.GetZ();
-           TTimeStamp tstamp(fTime);
-           Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
-           Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
-           THnSparse* curHist   =(THnSparseF*)(fMapDz->GetValue(event->GetFiredTriggerClasses()));
-           if(!curHist){
-             curHist=new THnSparseF(event->GetFiredTriggerClasses(),"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
-             fMapDz->Add(new TObjString(event->GetFiredTriggerClasses()),curHist);
-           }
-           Double_t vecVdrift2[4]={fTime,(ptrelative0+ptrelative1)/2.0,fDz/500.0,event->GetRunNumber()};
-           curHist->Fill(vecVdrift2);
-
-	   fHistVdrift->Fill(vecVdrift);
-	 }
-       }
-       if (isPair && z0 > 0 && z1 > 0) {
-	 if (track1->GetTPCNcls()> 110 && track0->GetTPCNcls()> 110 && seed1->CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE) > 0) {
-	   Float_t dedxratio = seed0->CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE)/seed1->CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE);
-	   Double_t vecDeDxTgl[3] = {time, track0->GetTgl(), seed0->CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE)/seed1->CookdEdxNorm(0,0.6,1,0,159,0,kFALSE,kTRUE)};
-	   fHistDeDxTgl->Fill(vecDeDxTgl);
-	   fdEdxRatio = dedxratio;
-	   fTl = track0->GetTgl() ;
-	 }
-       }
-       
+      AliTPCseed * seed0 = (AliTPCseed*) tpcSeeds.At(i);
+      AliTPCseed * seed1 = (AliTPCseed*) tpcSeeds.At(j);
+      if (! seed0) continue;
+      if (! seed1) continue;
+      Float_t dir = (d1[0]*d2[0] + d1[1]*d2[1] + d1[2]*d2[2]);
+      Float_t dist0  = track0->GetLinearD(0,0);
+      Float_t dist1  = track1->GetLinearD(0,0);
+      //
+      // conservative cuts - convergence to be guarantied
+      // applying before track propagation
+      if (TMath::Abs(dist0+dist1)>fCutMaxD) continue;   // distance to the 0,0
+      if (dir>fCutMinDir) continue;               // direction vector product
+      Float_t bz = AliTracker::GetBz();
+      Float_t dvertex0[2];   //distance to 0,0
+      Float_t dvertex1[2];   //distance to 0,0 
+      track0->GetDZ(0,0,0,bz,dvertex0);
+      track1->GetDZ(0,0,0,bz,dvertex1);
+      if (TMath::Abs(dvertex0[1])>250) continue;
+      if (TMath::Abs(dvertex1[1])>250) continue;
+      //
+      //
+      //
+      Float_t dmax = TMath::Max(TMath::Abs(dist0),TMath::Abs(dist1));
+      AliExternalTrackParam param0(*track0);
+      AliExternalTrackParam param1(*track1);
+      //
+      // Propagate using Magnetic field and correct fo material budget
+      //
+      AliTracker::PropagateTrackTo(&param0,dmax+1,0.0005,3,kTRUE);
+      AliTracker::PropagateTrackTo(&param1,dmax+1,0.0005,3,kTRUE);
+      //
+      // Propagate rest to the 0,0 DCA - z should be ignored
+      //
+      //Bool_t b0 = ;
+      param0.PropagateToDCA(&vtx,bz,1000);
+      //Bool_t b1 = 
+      param1.PropagateToDCA(&vtx,bz,1000);
+      //      
+      param0.GetDZ(0,0,0,bz,dvertex0);
+      param1.GetDZ(0,0,0,bz,dvertex1);
+      //
+      Double_t xyz0[3];//,pxyz0[3];
+      Double_t xyz1[3];//,pxyz1[3];
+      param0.GetXYZ(xyz0);
+      param1.GetXYZ(xyz1);
+      Bool_t isPair = IsPair(&param0,&param1);
+      
+      Double_t z0 = track0->GetOuterParam()->GetZ();
+      Double_t z1 = track1->GetOuterParam()->GetZ();
+      
+      Double_t z0inner = track0->GetInnerParam()->GetZ();
+      Double_t z1inner = track1->GetInnerParam()->GetZ();
+      
+      if (isPair && z0>0 && z0inner>0 && z1<0 && z1inner<0) {
+	if (track0->GetTPCNcls() > 80) {
+	  fDz = param0.GetZ() - param1.GetZ();
+	  TTimeStamp tstamp(fTime);
+	  Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
+	  Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
+	  Double_t vecVdrift[4]={fTime,(ptrelative0+ptrelative1)/2.0,fDz/500.0,event->GetRunNumber()};
+	  THnSparse* curHist=0;
+	  
+	  curHist=(THnSparseF*)(fMapDz->GetValue(event->GetFiredTriggerClasses()));
+	  if(!curHist){
+	    curHist=new THnSparseF(event->GetFiredTriggerClasses(),"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
+	    fMapDz->Add(new TObjString(event->GetFiredTriggerClasses()),curHist);
+	  }
+	  curHist->Fill(vecVdrift);
+	  
+	  curHist=(THnSparseF*)(fMapDz->GetValue("all"));
+	  if(!curHist){
+	    curHist=new THnSparseF("all","HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
+	    fMapDz->Add(new TObjString("all"),curHist);
+	  }
+	  curHist->Fill(vecVdrift);
+	}
+      }
     } // end 2nd order loop        
   } // end 1st order loop
-
+  
   if (fStreamLevel>0){
     TTreeSRedirector *cstream = GetDebugStreamer();
     if (cstream){
@@ -623,9 +553,6 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
 	// accumulated values
 	//
 	"fDz="<<fDz<<          //! current delta z
-	"fdEdx="<<fdEdx<<        //! current dEdx
-	"fdEdxRatio="<<fdEdxRatio<<   //! current dEdx ratio
-	"fTl="<<fTl<<          //! current tan(lambda)
 	"trigger="<<event->GetFiredTriggerClasses()<<
 	"\n";
     }
@@ -633,12 +560,88 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
   printf("Trigger: %s\n",event->GetFiredTriggerClasses().Data());
 }
 
-void AliTPCcalibTime::Analyze() {
-  //
-  //
-  //
-  TH2D * hVdrift = GetHistVdrift()->Projection(1,0);
-  hVdrift->Draw();
+void AliTPCcalibTime::Analyze(){}
+
+THnSparse* AliTPCcalibTime::GetHistoDrift(TObjString* name){
+  return (THnSparseF*)(fMapDz->GetValue(name));
+}
+
+THnSparse* AliTPCcalibTime::GetHistoDrift(const char* name){
+  TObjString* objName=new TObjString(name);
+  THnSparse* histoDrift=0;
+  if(objName){
+    histoDrift=GetHistoDrift(objName);
+    delete objName;
+    objName=0;
+  }
+  return histoDrift;
+}
+
+TMap* AliTPCcalibTime::GetHistoDrift(){
+  return fMapDz;
+}
+
+TGraphErrors* AliTPCcalibTime::GetGraphDrift(TObjString* name){
+  THnSparse* histoDrift=GetHistoDrift(name);
+  TGraphErrors*    graphDrift=0;
+  if(histoDrift) graphDrift=FitSlices(histoDrift,2,0,400,100,0.05,0.95, kTRUE);
+  return graphDrift;
+}
+
+TGraphErrors* AliTPCcalibTime::GetGraphDrift(const char* name){
+  TObjString* objName=new TObjString(name);
+  TGraphErrors* graphDrift=0;
+  if(objName){
+    graphDrift=GetGraphDrift(objName);
+    delete objName;
+    objName=0;
+  }
+  return graphDrift;
+}
+
+TMap* AliTPCcalibTime::GetGraphDrift(){
+  TMap* mapGraphDrift=new TMap();
+  TIterator* iterator=fMapDz->MakeIterator();
+  iterator->Reset();
+  TPair* addPair=0;
+  while((addPair=(TPair*)(fMapDz->FindObject(iterator->Next())))) mapGraphDrift->Add((TObjString*)addPair->Key(), GetGraphDrift((TObjString*)addPair->Key()));
+  return mapGraphDrift;
+}
+
+TGraph* AliTPCcalibTime::GetFitDrift(TObjString* name){
+  TGraphErrors* graphDrift=GetGraphDrift(name);
+  TGraph* fitDrift=0;
+  if(graphDrift && graphDrift->GetN()){
+    AliSplineFit fit;
+    fit.SetGraph(graphDrift);
+    fit.SetMinPoints(graphDrift->GetN()+1);
+    fit.InitKnots(graphDrift,2,0,0.001);
+    fit.SplineFit(0);
+    fitDrift=fit.MakeGraph(graphDrift->GetX()[0],graphDrift->GetX()[graphDrift->GetN()-1],50000,0);
+    delete graphDrift;
+    graphDrift=0;
+  }
+  return fitDrift;
+}
+
+TGraph* AliTPCcalibTime::GetFitDrift(const char* name){
+  TObjString* objName=new TObjString(name);
+  TGraph* fitDrift=0;
+  if(objName){
+    fitDrift=GetFitDrift(objName);
+    delete objName;
+    objName=0;
+  }
+  return fitDrift;
+}
+
+TMap* AliTPCcalibTime::GetFitDrift(){
+  TMap* mapFitDrift=new TMap();
+  TIterator* iterator = fMapDz->MakeIterator();
+  iterator->Reset();
+  TPair* addPair=0;
+  while((addPair=(TPair*)(fMapDz->FindObject(iterator->Next())))) mapFitDrift->Add((TObjString*)addPair->Key(), GetFitDrift((TObjString*)addPair->Key()));
+  return mapFitDrift;
 }
 
 Long64_t AliTPCcalibTime::Merge(TCollection *li) {
@@ -651,19 +654,13 @@ Long64_t AliTPCcalibTime::Merge(TCollection *li) {
       Error("Merge","Attempt to add object of class %s to a %s", cal->ClassName(), this->ClassName());
       return -1;
     }
-
-    // add histograms here...
-    fHistDeDxTgl->Add(cal->GetHistDeDxVsTgl());
-    fHistVdrift->Add(cal->GetHistVdrift());
-    fHistDeDx->Add(cal->GetHistDeDx());
-
     for (Int_t imeas=0; imeas<3; imeas++){
       if (cal->GetHistVdriftLaserA(imeas) && cal->GetHistVdriftLaserA(imeas)){
 	fHistVdriftLaserA[imeas]->Add(cal->GetHistVdriftLaserA(imeas));
 	fHistVdriftLaserC[imeas]->Add(cal->GetHistVdriftLaserC(imeas));
       }
     }
-    TMap * addMap=cal->GetMapDz();
+    TMap * addMap=cal->GetHistoDrift();
     if(!addMap) return 0;
     TIterator* iterator = addMap->MakeIterator();
     iterator->Reset();
@@ -679,13 +676,16 @@ Long64_t AliTPCcalibTime::Merge(TCollection *li) {
       }
       localHist->Add(addHist);
     }
+    if (cal->GetCosmiMatchingHisto(0)) fCosmiMatchingHisto[0]->Add(cal->GetCosmiMatchingHisto(0));
+    if (cal->GetCosmiMatchingHisto(1)) fCosmiMatchingHisto[1]->Add(cal->GetCosmiMatchingHisto(1));
+    if (cal->GetCosmiMatchingHisto(2)) fCosmiMatchingHisto[2]->Add(cal->GetCosmiMatchingHisto(2));
+    if (cal->GetCosmiMatchingHisto(3)) fCosmiMatchingHisto[3]->Add(cal->GetCosmiMatchingHisto(3));
+    if (cal->GetCosmiMatchingHisto(4)) fCosmiMatchingHisto[4]->Add(cal->GetCosmiMatchingHisto(4));
   }
   return 0;
 }
 
 Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1){
-  //
-  //
   /*
   // 0. Same direction - OPOSITE  - cutDir +cutT    
   TCut cutDir("cutDir","dir<-0.99")
@@ -695,13 +695,17 @@ Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPara
   // 2. The same rphi 
   TCut cutD("cutD","abs(Tr0.fP[0]+Tr1.fP[0])<5")
   //
-  //
-  //
   TCut cutPt("cutPt","abs(Tr1.fP[4]+Tr0.fP[4])<1&&abs(Tr0.fP[4])+abs(Tr1.fP[4])<10");  
   // 1/Pt diff cut
   */
   const Double_t *p0 = tr0->GetParameter();
   const Double_t *p1 = tr1->GetParameter();
+  fCosmiMatchingHisto[0]->Fill(p0[0]+p1[0]);
+  fCosmiMatchingHisto[1]->Fill(p0[1]-p1[1]);
+  fCosmiMatchingHisto[2]->Fill(tr0->GetAlpha()+tr1->GetAlpha());
+  fCosmiMatchingHisto[3]->Fill(p0[3]+p1[3]);
+  fCosmiMatchingHisto[4]->Fill(p0[4]+p1[4]);
+  
   if (TMath::Abs(p0[3]+p1[3])>fCutTheta) return kFALSE;
   if (TMath::Abs(p0[0]+p1[0])>fCutMaxD)  return kFALSE;
   if (TMath::Abs(p0[1]-p1[1])>fCutMaxDz)  return kFALSE;
@@ -709,8 +713,7 @@ Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPara
   tr0->GetDirection(d0);    
   tr1->GetDirection(d1);       
   if (d0[0]*d1[0] + d0[1]*d1[1] + d0[2]*d1[2] >fCutMinDir) return kFALSE;
-  //
+
   return kTRUE;  
 }
-
 

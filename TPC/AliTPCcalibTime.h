@@ -18,6 +18,7 @@ class TList;
 class AliESDEvent;
 class AliESDtrack;
 class AliTPCcalibLaser;
+class TGraphErrors;
 
 #include "TTreeStream.h"
 #include "TMap.h"
@@ -25,80 +26,77 @@ class AliTPCcalibLaser;
 class AliTPCcalibTime:public AliTPCcalibBase {
 public:
   AliTPCcalibTime(); 
-  AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeDeDx, Int_t deltaIntegrationTimeVdrift);
+  AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeVdrift);
   virtual ~AliTPCcalibTime();
   
   virtual void           Process(AliESDEvent *event);
   virtual Long64_t       Merge(TCollection *li);
   virtual void           Analyze();
   //
-  static Bool_t           IsLaser(AliESDEvent *event);
+  static Bool_t          IsLaser(AliESDEvent *event);
   void                   ProcessLaser (AliESDEvent *event);
   void                   ProcessCosmic(AliESDEvent *event);
   Bool_t                 IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
   //
-  THnSparse *                 GetHistVdrift(){return (THnSparse*) fHistVdrift;};
-  THnSparse *                 GetHistDeDxVsTgl(){return (THnSparse*) fHistDeDxTgl;};
-  THnSparse *                 GetHistDeDx(){return (THnSparse*) fHistDeDx;};
-  THnSparse *                 GetHistVdriftLaserA(Int_t index=1){return (THnSparse*) fHistVdriftLaserA[index];};
-  THnSparse *                 GetHistVdriftLaserC(Int_t index=1){return (THnSparse*) fHistVdriftLaserC[index];};
-  TMap      *                 GetMapDz(){return (TMap *) fMapDz;};
-
+  THnSparse* GetHistVdriftLaserA(Int_t index=1){return fHistVdriftLaserA[index];};
+  THnSparse* GetHistVdriftLaserC(Int_t index=1){return fHistVdriftLaserC[index];};
+  THnSparse* GetHistoDrift(TObjString* name);
+  THnSparse* GetHistoDrift(const char* name);
+  TMap*      GetHistoDrift();
+  TGraphErrors*    GetGraphDrift(TObjString* name);
+  TGraphErrors*    GetGraphDrift(const char* name);
+  TMap*      GetGraphDrift();
+  TGraph*    GetFitDrift(TObjString* name);
+  TGraph*    GetFitDrift(const char* name);
+  TMap*      GetFitDrift();
+  TH1F*      GetCosmiMatchingHisto(Int_t index=0){return fCosmiMatchingHisto[index];};
   
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
 private:
   void ResetCurrent();                  // reset current values
 
-  THnSparse * fHistDeDxTgl;             // dEdx vs. dip angle vs time histogram
-  THnSparse * fHistDeDx;                // dEdx vs. time histogram (cosmics: all particles on Fermi plateau)
-  THnSparse * fHistVdrift;              // drift velocity vs time histogram
-
-  Float_t fIntegrationTimeDeDx;         // required statistics for each dEdx time bin
-  Float_t fIntegrationTimeVdrift;       // required statistics for each Vdrift time bin
-
   AliTPCcalibLaser * fLaser;            //! laser calibration
   //
   // current information
   //
   Float_t fDz;          //! current delta z
-  Float_t fdEdx;        //! current dEdx
-  Float_t fdEdxRatio;   //! current dEdx ratio
-  Float_t fTl;          //! current tan(lambda)
   
   // cuts
   //
   Float_t fCutMaxD;     // maximal distance in rfi ditection
-  Float_t fCutMaxDz;     // maximal distance in z ditection
+  Float_t fCutMaxDz;    // maximal distance in z ditection
   Float_t fCutTheta;    // maximal distance in theta ditection
   Float_t fCutMinDir;   // direction vector products
+  Int_t   fCutTracks;   // maximal number of tracks
  
   AliTPCcalibTime(const AliTPCcalibTime&); 
   AliTPCcalibTime& operator=(const AliTPCcalibTime&); 
 
+  TH1F* fCosmiMatchingHisto[5];
 
   // laser histo
-  THnSparse * fHistVdriftLaserA[3];		//NEW! Histograms for V drift from laser
-  THnSparse * fHistVdriftLaserC[3];		//NEW! Histograms for V drift from laser
+  THnSparse * fHistVdriftLaserA[3];	//Histograms for V drift from laser
+  THnSparse * fHistVdriftLaserC[3];	//Histograms for V drift from laser
   // DELTA Z histo
-  TMap      * fMapDz;			//NEW! Tmap of V drifts for different triggers
+  TMap      * fMapDz;			//Tmap of V drifts for different triggers
 
-  Int_t    fTimeBins;			//NEW! Bins time
-  Double_t fTimeStart;			//NEW! Start time
-  Double_t fTimeEnd;			//NEW! End time
-  Int_t    fPtBins;			//NEW! Bins pt
-  Double_t fPtStart;			//NEW! Start pt
-  Double_t fPtEnd;			//NEW! End pt
-  Int_t    fVdriftBins;			//NEW! Bins vdrift
-  Double_t fVdriftStart;		//NEW! Start vdrift
-  Double_t fVdriftEnd;			//NEW! End vdrift
-  Int_t    fRunBins;			//NEW! Bins run
-  Double_t fRunStart;			//NEW! Start run
-  Double_t fRunEnd;			//NEW! End run
-  Int_t    fBinsVdrift[4];		//NEW! Bins for vdrift
-  Double_t fXminVdrift[4];		//NEW! Xmax for vdrift
-  Double_t fXmaxVdrift[4];		//NEW! Xmin for vdrift
-  ClassDef(AliTPCcalibTime, 1); 
+  Int_t    fTimeBins;			//Bins time
+  Double_t fTimeStart;			//Start time
+  Double_t fTimeEnd;			//End time
+  Int_t    fPtBins;			//Bins pt
+  Double_t fPtStart;			//Start pt
+  Double_t fPtEnd;			//End pt
+  Int_t    fVdriftBins;			//Bins vdrift
+  Double_t fVdriftStart;		//Start vdrift
+  Double_t fVdriftEnd;			//End vdrift
+  Int_t    fRunBins;			//Bins run
+  Double_t fRunStart;			//Start run
+  Double_t fRunEnd;			//End run
+  Int_t    fBinsVdrift[4];		//Bins for vdrift
+  Double_t fXminVdrift[4];		//Xmax for vdrift
+  Double_t fXmaxVdrift[4];		//Xmin for vdrift
+  ClassDef(AliTPCcalibTime, 2); 
 };
 
 #endif
