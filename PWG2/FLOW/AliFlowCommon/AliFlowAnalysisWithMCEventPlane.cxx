@@ -163,7 +163,7 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   fHistProDiffFlowEtaPOI->SetYTitle("");
   fHistList->Add(fHistProDiffFlowEtaPOI);         
   
-  fHistSpreadOfFlow = new TH1D("fHistSpreadOfFlow","fHistSpreadOfFlow",1000,0,1);
+  fHistSpreadOfFlow = new TH1D("fHistSpreadOfFlow","fHistSpreadOfFlow",1000,-1,1);
   fHistSpreadOfFlow->SetXTitle("v_{2}");
   fHistSpreadOfFlow->SetYTitle("counts");
   fHistList->Add(fHistSpreadOfFlow);           
@@ -248,7 +248,7 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
     //    cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
     
     // store flow value for this event:
-    fHistSpreadOfFlow->Fill(flowEBE->GetBinContent(1));
+    fHistSpreadOfFlow->Fill(flowEBE->GetBinContent(1),flowEBE->GetBinEntries(1));
     delete flowEBE; 
   }
 }
