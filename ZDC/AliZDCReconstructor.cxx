@@ -384,11 +384,11 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
    //
    // Setting reco flags (part I)
    if((rawData.IsADCDataWord()) && (rawData.IsUnderflow() == kTRUE)){
-     fRecoFlag = 0x1<< 9;
+     fRecoFlag = 0x1<< 8;
      ch2process = kFALSE;
    }
    if((rawData.IsADCDataWord()) && (rawData.IsOverflow() == kTRUE)){
-     fRecoFlag = 0x1 << 8;
+     fRecoFlag = 0x1 << 7;
      ch2process = kFALSE;
    }
    if(rawData.GetNChannelsOn() < 48 ) fRecoFlag = 0x1 << 6;
