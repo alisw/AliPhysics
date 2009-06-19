@@ -211,11 +211,7 @@ public:
 
 protected:
   Bool_t ComputeRoad(AliITStrackMI* track,Int_t ilayer,Int_t idet,Double_t &zmin,Double_t &zmax,Double_t &ymin,Double_t &ymax) const;
-  
-  void FindV02(AliESDEvent *event);  //try to find V0
-  void RefitV02(const AliESDEvent *event);  //try to refit  V0's
-  void UpdateTPCV0(const AliESDEvent *event);  //try to update, or reject TPC  V0s
-  
+    
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   void CookLabel(AliITStrackMI *t,Float_t wrong) const;
   Double_t GetEffectiveThickness();
