@@ -66,6 +66,10 @@ fVHF(0)
 
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
+  // Output slot #2 writes into a TNtuple container
+  DefineOutput(2,TNtuple::Class());  //My private output
+  // Output slot #3 writes into a TNtuple container
+  DefineOutput(3,TNtuple::Class());  //My private output
 }
 
 //________________________________________________________________________
@@ -131,9 +135,6 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Ptpi:Ptpi2:PtK:PtRec:PtTrue:PointingAngle:DecLeng:VxTrue:VxRec:InvMass:sigvert");
   fNtupleDplusbackg = new TNtuple("fNtupleDplusbackg","D + backg","Ptpibkg:Ptpi2bkg:PtKbkg:PtRecbkg:PointingAnglebkg:DLbkg:VxRecbkg:InvMassbkg:sigvertbkg");
   
-  fOutput->Add(fNtupleDplus);
-  fOutput->Add(fNtupleDplusbackg);
-
   return;
 }
 
@@ -204,20 +205,18 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    PostData(1,fOutput);
 	    
 	    fNtupleDplus->Fill(pdgDp,partDp->Px()-d->Px(),partDp->Py()-d->Py(),partDp->Pz()-d->Pz(),d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),partDp->Pt(),d->CosPointingAngle(),d->DecayLength(),partDp->Xv(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());
+	    PostData(2,fNtupleDplus);
 	  }
-	}	  
-	else {     
+	} else {     
 	  fHistBackground->Fill(d->InvMassDplus());
 	  fNtupleDplusbackg->Fill(d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),d->CosPointingAngle(),d->DecayLength(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());	    
-	  
+	  PostData(3,fNtupleDplusbackg);
 	  fHistMass->Fill(d->InvMassDplus());
 	}
 	
 	
       }
 
-
-	
       if(unsetvtx) d->UnsetOwnPrimaryVtx();
 
     }
@@ -240,11 +239,12 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
     return;
   }
 
-  fNtupleDplus = dynamic_cast<TNtuple*>(fOutput->FindObject("fNtupleDplus"));
   fHistMass = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMass"));
   fHistSignal = dynamic_cast<TH1F*>(fOutput->FindObject("fHistSignal"));
   fHistBackground = dynamic_cast<TH1F*>(fOutput->FindObject("fHistBackground"));
-  fNtupleDplusbackg = dynamic_cast<TNtuple*>(fOutput->FindObject("fNtupleDplusbackg"));
-    return;
+  fNtupleDplus = dynamic_cast<TNtuple*>(GetOutputData(2));
+  fNtupleDplusbackg = dynamic_cast<TNtuple*>(GetOutputData(3));
+
+  return;
 }
 

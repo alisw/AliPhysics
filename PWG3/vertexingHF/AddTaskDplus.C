@@ -28,9 +28,17 @@ AliAnalysisTaskSEDplus *AddTaskDplus()
   AliAnalysisDataContainer *coutputDplus = mgr->CreateContainer("coutputDplus",TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,
                                                            "InvMassDplus.root");
+  AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer("coutputDplus2",TNtuple::Class(),
+                                                           AliAnalysisManager::kOutputContainer,
+								 "InvMassDplus.root");
+  AliAnalysisDataContainer *coutputDplus3 = mgr->CreateContainer("coutputDplus3",TNtuple::Class(),
+                                                           AliAnalysisManager::kOutputContainer,
+								 "InvMassDplus.root");
   mgr->ConnectInput(dplusTask,0,mgr->GetCommonInputContainer());
 
   mgr->ConnectOutput(dplusTask,1,coutputDplus);
+  mgr->ConnectOutput(dplusTask,2,coutputDplus2);
+  mgr->ConnectOutput(dplusTask,3,coutputDplus3);
 
   return dplusTask;
 }

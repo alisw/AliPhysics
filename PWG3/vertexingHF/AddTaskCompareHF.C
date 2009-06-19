@@ -23,14 +23,19 @@ AliAnalysisTaskSECompareHF *AddTaskCompareHF()
   
   //
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput = mgr->CreateContainer("cinput",TChain::Class(), 
+  AliAnalysisDataContainer *cinputCmp = mgr->CreateContainer("cinput",TChain::Class(), 
 							  AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("coutput",TList::Class(),
+  AliAnalysisDataContainer *coutputCmp1 = mgr->CreateContainer("coutputCmp1",TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   "CmpHF.root");
+  AliAnalysisDataContainer *coutputCmp2 = mgr->CreateContainer("coutputCmp2",TNtuple::Class(),
+							   AliAnalysisManager::kOutputContainer, 
+							   "CmpHF.root");
+
   mgr->ConnectInput(hfTask,0,mgr->GetCommonInputContainer());
 
-  mgr->ConnectOutput(hfTask,1,coutput);
+  mgr->ConnectOutput(hfTask,1,coutputCmp1);
+  mgr->ConnectOutput(hfTask,2,coutputCmp2);
 
   return hfTask;
 }
