@@ -181,7 +181,7 @@ private:
     kBusPatchOccupancyTooLow = (1<<3),
     kBusPatchOccupancyTooHigh = (1<<4),
     kDEOccupancyTooLow = (1<<5),
-    kDEOccupancyTooHigh = (1<<6),
+    kDEOccupancyTooHigh = (1<<6)
   };
   
   const AliMUONCalibrationData& fkCalibrationData; //!< helper class to get data access (not owner)
