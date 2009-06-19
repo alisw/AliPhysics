@@ -1,4 +1,4 @@
-AliAnalysisTaskKinkResonance *AddTaskKinkResonanceKstar(Short_t lCollidingSystems=0 /*0 = pp, 1 = AA*/)
+AliAnalysisTaskKinkResonance *AddTaskKinkResonance(Short_t lCollidingSystems=0 /*0 = pp, 1 = AA*/)
 {
 // Creates, configures and attaches to the train a kink resonance task.
 // Get the pointer to the existing analysis manager via the static access method.
