@@ -44,7 +44,7 @@ ClassImp(AliAnalysisTaskSECompareHF)
 AliAnalysisTaskSECompareHF::AliAnalysisTaskSECompareHF():
 AliAnalysisTaskSE(),
 fOutput(0), 
-fNtupleD0Cmp(0),
+fNtupleCmp(0),
 fHistMass(0),
 fVHF(0)
 {
@@ -57,7 +57,7 @@ fVHF(0)
 AliAnalysisTaskSECompareHF::AliAnalysisTaskSECompareHF(const char *name):
 AliAnalysisTaskSE(name),
 fOutput(0), 
-fNtupleD0Cmp(0),
+fNtupleCmp(0),
 fHistMass(0),
 fVHF(0)
 {
@@ -114,7 +114,7 @@ void AliAnalysisTaskSECompareHF::UserCreateOutputObjects()
   fHistMass->SetMinimum(0);
   fOutput->Add(fHistMass);
 
-  fNtupleD0Cmp = new TNtuple("fNtupleD0Cmp","D0 comparison","pdg:VxRec:VxTrue:PtRec:PtTrue");
+  fNtupleCmp = new TNtuple("fNtupleCmp","Charm comparison","pdg:nprongs:VxRec:VxTrue:ErrVx:VyRec:VyTrue:ErrVy:VzRec:VzTrue:ErrVz:Chi2toNDF:PtRec:Mrec");
 
   return;
 }
@@ -128,6 +128,15 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
+
+  // load HF vertices                     
+  TClonesArray *inputArrayVertices =
+    (TClonesArray*)aod->GetList()->FindObject("VerticesHF");
+  if(!inputArrayVertices) {
+    printf("AliAnalysisTaskSECompareHF::UserExec: Vertices branch not found!\n");
+    return;
+  }
+
   // load D0->Kpi candidates                                                   
   TClonesArray *inputArrayD0toKpi =
     (TClonesArray*)aod->GetList()->FindObject("D0toKpi");
@@ -166,40 +175,113 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
     return;
   }
   
-    
-  // loop over D0->Kpi candidates
-  Int_t nInD0toKpi = inputArrayD0toKpi->GetEntriesFast();
-  printf("Number of D0->Kpi: %d\n",nInD0toKpi);
+  Int_t nprongs,lab,okD0,okD0bar,pdg;
+  Bool_t unsetvtx;    
+  Double_t invmass,cov[6],errx,erry,errz;
 
-  for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
-    AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArrayD0toKpi->UncheckedAt(iD0toKpi);
-    Bool_t unsetvtx=kFALSE;
-    if(!d->GetOwnPrimaryVtx()) {
-      d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-      unsetvtx=kTRUE;
-    }
-    Int_t okD0=0,okD0bar=0; 
-    if(d->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
-      Int_t labD0 = d->MatchToMC(421,mcArray);
-      if(labD0>=0) {
-	AliAODMCParticle *partD0 = (AliAODMCParticle*)mcArray->At(labD0);
-	Int_t pdgD0 = partD0->GetPdgCode();
-	Double_t invmass = (pdgD0==421 ? d->InvMassD0() : d->InvMassD0bar());
-	fHistMass->Fill(invmass);
-	// Post the data already here
-	PostData(1,fOutput);
+  // loop over vertices
+  Int_t nVertices = inputArrayVertices->GetEntriesFast();
+  printf("Number of vertices: %d\n",nVertices);
 
-	fNtupleD0Cmp->Fill(pdgD0,d->Xv(),partD0->Xv(),d->Pt(),partD0->Pt());
-	PostData(2,fNtupleD0Cmp);
+  for (Int_t iVtx = 0; iVtx < nVertices; iVtx++) {
+    AliAODVertex *vtx = (AliAODVertex*)inputArrayVertices->UncheckedAt(iVtx);
+
+    // get parent AliAODRecoDecayHF
+    nprongs= vtx->GetNDaughters();
+
+    switch(nprongs) {
+    case 2: // look for D0->Kpi
+      AliAODRecoDecayHF2Prong *d2 = (AliAODRecoDecayHF2Prong*)vtx->GetParent();
+      lab = d2->MatchToMC(421,mcArray);
+      if(lab>=0) {
+	unsetvtx=kFALSE;
+	if(!d2->GetOwnPrimaryVtx()) {
+	  d2->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+	  unsetvtx=kTRUE;
+	}
+	okD0=0; okD0bar=0; 
+	if(d2->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
+	  AliAODMCParticle *part = (AliAODMCParticle*)mcArray->At(lab);
+	  pdg = part->GetPdgCode();
+	  invmass = (pdg==421 ? d2->InvMassD0() : d2->InvMassD0bar());
+	  fHistMass->Fill(invmass);
+	  // Post the data already here
+	  PostData(1,fOutput);
+	  
+	  AliAODVertex *secVtx = d2->GetSecondaryVtx();
+	  secVtx->GetCovarianceMatrix(cov);
+	  errx=1.; erry=1.; errz=1.;
+	  if(cov[0]>0) errx = TMath::Sqrt(cov[0]);
+	  if(cov[2]>0) erry = TMath::Sqrt(cov[2]);
+	  if(cov[5]>0) errz = TMath::Sqrt(cov[5]);
+	  
+	  fNtupleCmp->Fill(pdg,nprongs,d2->Xv(),part->Xv(),errx,d2->Yv(),part->Yv(),erry,d2->Zv(),part->Zv(),errz,d2->GetReducedChi2(),d2->Pt(),invmass);
+	  PostData(2,fNtupleCmp);
+	}
+	if(unsetvtx) d2->UnsetOwnPrimaryVtx();
       }
+      break;
+    case 3: // look for D+
+      AliAODRecoDecayHF3Prong *d3 = (AliAODRecoDecayHF3Prong*)vtx->GetParent();
+      lab = d3->MatchToMC(411,mcArray);
+      if(lab>=0) {
+	unsetvtx=kFALSE;
+	if(!d3->GetOwnPrimaryVtx()) {
+	  d3->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+	  unsetvtx=kTRUE;
+	}
+	if(d3->SelectDplus(fVHF->GetDplusCuts())) {
+	  AliAODMCParticle *part = (AliAODMCParticle*)mcArray->At(lab);
+	  pdg = part->GetPdgCode();
+	  invmass = d3->InvMassDplus();
+	  AliAODVertex *secVtx = d3->GetSecondaryVtx();
+	  secVtx->GetCovarianceMatrix(cov);
+	  errx=1.; erry=1.; errz=1.;
+	  if(cov[0]>0) errx = TMath::Sqrt(cov[0]);
+	  if(cov[2]>0) erry = TMath::Sqrt(cov[2]);
+	  if(cov[5]>0) errz = TMath::Sqrt(cov[5]);
+	  
+	  fNtupleCmp->Fill(pdg,nprongs,d3->Xv(),part->Xv(),errx,d3->Yv(),part->Yv(),erry,d3->Zv(),part->Zv(),errz,d3->GetReducedChi2(),d3->Pt(),invmass);
+	  PostData(2,fNtupleCmp);
+	}
+	if(unsetvtx) d3->UnsetOwnPrimaryVtx();
+      }
+      break;
+    case 4: // look for D0->Kpipipi
+      AliAODRecoDecayHF4Prong *d4 = (AliAODRecoDecayHF4Prong*)vtx->GetParent();
+      lab = d4->MatchToMC(421,mcArray);
+      if(lab>=0) {
+	unsetvtx=kFALSE;
+	if(!d4->GetOwnPrimaryVtx()) {
+	  d4->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+	  unsetvtx=kTRUE;
+	}
+	okD0=0; okD0bar=0; 
+	if(d4->SelectD0(fVHF->GetD0to4ProngsCuts(),okD0,okD0bar)) {
+	  AliAODMCParticle *part = (AliAODMCParticle*)mcArray->At(lab);
+	  pdg = part->GetPdgCode();
+	  //invmass = (pdg==421 ? d->InvMassD0() : d->InvMassD0bar());
+	  invmass = 10.; 	  
+
+	  AliAODVertex *secVtx = d4->GetSecondaryVtx();
+	  secVtx->GetCovarianceMatrix(cov);
+	  errx=1.; erry=1.; errz=1.;
+	  if(cov[0]>0) errx = TMath::Sqrt(cov[0]);
+	  if(cov[2]>0) erry = TMath::Sqrt(cov[2]);
+	  if(cov[5]>0) errz = TMath::Sqrt(cov[5]);
+
+	  fNtupleCmp->Fill(pdg,nprongs,d4->Xv(),part->Xv(),errx,d4->Yv(),part->Yv(),erry,d4->Zv(),part->Zv(),errz,d4->GetReducedChi2(),d4->Pt(),invmass);
+	  PostData(2,fNtupleCmp);
+  
+	}
+	if(unsetvtx) d4->UnsetOwnPrimaryVtx();
+      }
+      break;
     }
-    if(unsetvtx) d->UnsetOwnPrimaryVtx();
-  } // end loop on D0->Kpi
+
+  } // end loop on vertices
 
 
-  // SIMPLE EXAMPLE OF D*+ MATCHING
-
-    
   // loop over D*+ candidates
   /*
   for (Int_t iDstar = 0; iDstar < inputArrayDstar->GetEntries(); iDstar++) {
@@ -208,9 +290,10 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
     if(labDstar>=0) printf("GOOD MATCH FOR D*+\n"); 
   }
   */
+
   // Post the data already here
   PostData(1,fOutput);
-  PostData(2,fNtupleD0Cmp);
+  PostData(2,fNtupleCmp);
 
   return;
 }
@@ -229,7 +312,7 @@ void AliAnalysisTaskSECompareHF::Terminate(Option_t */*option*/)
 
   fHistMass = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMass"));
 
-  fNtupleD0Cmp = dynamic_cast<TNtuple*> (GetOutputData(2));
+  fNtupleCmp = dynamic_cast<TNtuple*> (GetOutputData(2));
 
   return;
 }
