@@ -1220,8 +1220,8 @@ void AliTPCv2::Init()
   }
 
 
-  AliInfo("*** TPC version 2 initialized ***");
-  AliInfo(Form("Maximum number of steps = %d",gMC->GetMaxNStep()));
+  AliDebug(1,"*** TPC version 2 initialized ***");
+  AliDebug(1,Form("Maximum number of steps = %d",gMC->GetMaxNStep()));
 
   //
   
