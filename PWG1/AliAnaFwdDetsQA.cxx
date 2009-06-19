@@ -51,8 +51,10 @@ AliAnalysisTaskSE("AliAnaFwdDetsQA"),
   fT0vtxRec(0),
   fT0vtxRecGen(0),
   fT0time(0),
+  fT0time2(0),
   fT0mult(0),
   fT0vtxRes(0),
+  fT0ampl(0),
   fV0a(0),
   fV0c(0),
   fV0multA(0),
@@ -60,7 +62,8 @@ AliAnalysisTaskSE("AliAnaFwdDetsQA"),
   fV0multAcorr(0),
   fV0multCcorr(0),
   fV0Acorr(0),
-  fV0Ccorr(0)
+  fV0Ccorr(0),
+  fV0ampl(0)
 {
   // Default constructor
   // Define input and output slots here
@@ -76,8 +79,10 @@ AliAnalysisTaskSE(name),
   fT0vtxRec(0),
   fT0vtxRecGen(0),
   fT0time(0),
+  fT0time2(0),
   fT0mult(0),
   fT0vtxRes(0),
+  fT0ampl(0),
   fV0a(0),
   fV0c(0),
   fV0multA(0),
@@ -85,7 +90,8 @@ AliAnalysisTaskSE(name),
   fV0multAcorr(0),
   fV0multCcorr(0),
   fV0Acorr(0),
-  fV0Ccorr(0)
+  fV0Ccorr(0),
+  fV0ampl(0)
 {
   // Constructor
   AliInfo("Constructor AliAnaFwdDetsQA");
@@ -170,8 +176,10 @@ void AliAnaFwdDetsQA::UserCreateOutputObjects()
   
   fT0vtxRec = CreateHisto("hT0vtxRec", "Z vertex reconstructed with T0", 100, -25, 25, "Z_{vtx} [cm]", "");
   fT0time   = CreateHisto("hT0time", "Time0 reconstruction with T0", 5000, 10000, 20000, "t_{0} [ps]", "");
+  fT0time2  = CreateHisto("hT0time2", "Time0 reconstruction with T0 (mult > 10)", 5000, 10000, 20000, "t_{0} [ps]", "");
   fT0mult   = CreateHisto("hT0mult", "Total reconstructed multiplicity in T0", 100, -0.5, 99.5, "Multiplicity", "");
   fT0vtxRes = CreateHisto("hT0vtxRes", "T0 Z vertex resolution", 100, -25, 25, "Delta(Z_{vtx}) [cm]", "");
+  fT0ampl   = CreateHisto("hT0ampl","T0 multiplicity in single channel (all T0 channels)",400,-0.5,99.5);
   
   fT0vtxRecGen = new TH2F("hT0vtxRecGen", "T0 reconstructed vs generated Z vertex", 100, -25, 25, 100, -25, 25);
   fT0vtxRecGen->GetXaxis()->SetTitle("Generated Z vertex");
@@ -183,6 +191,7 @@ void AliAnaFwdDetsQA::UserCreateOutputObjects()
   fV0c = CreateHisto("hV0c","Number of fired PMTs (V0C)",65,-0.5,64.5);
   fV0multA = CreateHisto("hV0multA","Total reconstructed multiplicity (V0A)",100,0.,1000.);
   fV0multC = CreateHisto("hV0multC","Total reconstructed multiplicity (V0C)",100,0.,1000.);
+  fV0ampl  = CreateHisto("hV0ampl","V0 multiplicity in single channel (all V0 channels)",400,-0.5,99.5);
 
   fV0multAcorr = new TH2F("hV0multAcorr", "Reconstructed vs generated (primaries only) multiplicity (V0A)",100,0.,500.,100,0.,1000.);
   fV0multAcorr->GetXaxis()->SetTitle("# of primaries in V0A acceptance");
@@ -211,6 +220,9 @@ void AliAnaFwdDetsQA::UserCreateOutputObjects()
   fListOfHistos->Add(fV0multCcorr);
   fListOfHistos->Add(fV0Acorr);
   fListOfHistos->Add(fV0Ccorr);
+  fListOfHistos->Add(fT0ampl);
+  fListOfHistos->Add(fV0ampl);
+  fListOfHistos->Add(fT0time2);
 }
 
 void AliAnaFwdDetsQA::UserExec(Option_t */*option*/)
@@ -239,6 +251,7 @@ void AliAnaFwdDetsQA::UserExec(Option_t */*option*/)
     AliMCParticle* track = mcEvent->GetTrack(iTracks);
     TParticle* particle = track->Particle();
     if (!particle) continue;
+    if (track->Charge() == 0) continue;
     Double_t eta = particle->Eta();
     if (eta > 2.8 && eta < 5.1) {
       nV0A++;
@@ -269,9 +282,12 @@ void AliAnaFwdDetsQA::UserExec(Option_t */*option*/)
   Double_t t0mult = 0;
   for(Int_t i = 0; i < 24; i++) {
     t0mult += esdT0->GetT0amplitude()[i];
+    fT0ampl->Fill(esdT0->GetT0amplitude()[i]);
   }
 
   fT0mult->Fill(t0mult);
+  if (t0mult > 10)
+    fT0time2->Fill(t0time);
 
   AliESDVZERO* esdV0 = esd->GetVZEROData();
   fV0a->Fill(esdV0->GetNbPMV0A());
@@ -284,6 +300,9 @@ void AliAnaFwdDetsQA::UserExec(Option_t */*option*/)
   fV0Acorr->Fill((Float_t)nV0A,(Float_t)esdV0->GetNbPMV0A());
   fV0Ccorr->Fill((Float_t)nV0C,(Float_t)esdV0->GetNbPMV0C());
 
+  for(Int_t i = 0; i < 64; i++) {
+    fV0ampl->Fill(esdV0->GetMultiplicity(i));
+  }
   // Post output data.
   PostData(1, fListOfHistos);
 }
@@ -310,6 +329,11 @@ void AliAnaFwdDetsQA::Terminate(Option_t *)
   fV0multCcorr = dynamic_cast<TH2F*>(fListOfHistos->At(10));
   fV0Acorr = dynamic_cast<TH2F*>(fListOfHistos->At(11));
   fV0Ccorr = dynamic_cast<TH2F*>(fListOfHistos->At(12));
+
+  fT0ampl = dynamic_cast<TH1F*>(fListOfHistos->At(13));
+  fV0ampl = dynamic_cast<TH1F*>(fListOfHistos->At(14));
+  fT0time2 = dynamic_cast<TH1F*>(fListOfHistos->At(15));
+
 
   // draw the histograms if not in batch mode
   if (!gROOT->IsBatch()) {
@@ -339,6 +363,12 @@ void AliAnaFwdDetsQA::Terminate(Option_t *)
     fV0Acorr->DrawCopy();
     new TCanvas;
     fV0Ccorr->DrawCopy();
+    new TCanvas;
+    fT0ampl->DrawCopy("E");
+    new TCanvas;
+    fV0ampl->DrawCopy("E");
+    new TCanvas;
+    fT0time2->DrawCopy("E");
   }
 
   // write the output histograms to a file
@@ -353,6 +383,8 @@ void AliAnaFwdDetsQA::Terminate(Option_t *)
   fT0mult->Write();
   fT0vtxRecGen->Write();
   fT0vtxRes->Write();
+  fT0ampl->Write();
+  fT0time2->Write();
 
   fV0a->Write();
   fV0c->Write();
@@ -362,6 +394,7 @@ void AliAnaFwdDetsQA::Terminate(Option_t *)
   fV0multCcorr->Write();
   fV0Acorr->Write();
   fV0Ccorr->Write();
+  fV0ampl->Write();
 
   outputFile->Close();
   delete outputFile;

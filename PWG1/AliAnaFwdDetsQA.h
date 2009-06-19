@@ -33,8 +33,10 @@ class AliAnaFwdDetsQA : public AliAnalysisTaskSE
   TH1F* fT0vtxRec;
   TH2F* fT0vtxRecGen;
   TH1F* fT0time;
+  TH1F* fT0time2;
   TH1F* fT0mult;
   TH1F* fT0vtxRes;
+  TH1F* fT0ampl;
 
   TH1F* fV0a;
   TH1F* fV0c;
@@ -44,6 +46,7 @@ class AliAnaFwdDetsQA : public AliAnalysisTaskSE
   TH2F* fV0multCcorr;
   TH2F* fV0Acorr;
   TH2F* fV0Ccorr;
+  TH1F* fV0ampl;
 
   AliAnaFwdDetsQA(const AliAnaFwdDetsQA&); // not implemented
   AliAnaFwdDetsQA& operator=(const AliAnaFwdDetsQA&); // not implemented

@@ -24,7 +24,7 @@ void runProofFwdDetsQA(const char * dataset = "/COMMON/COMMON/LHC09a4_run8101X",
 
   // Create task
 
-  gProof->Load(Form("%s/PWG1/comparison/AliAnaFwdDetsQA.cxx++g",
+  gProof->Load(Form("%s/PWG1/AliAnaFwdDetsQA.cxx++g",
 		    gSystem->Getenv("ALICE_ROOT")));
   AliAnalysisTask *task = new AliAnaFwdDetsQA("AliAnaFwdDetsQA");
 
