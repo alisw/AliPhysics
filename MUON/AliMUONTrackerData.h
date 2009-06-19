@@ -27,6 +27,10 @@ public:
   AliMUONTrackerData(const char* name="", const char* title="", 
                      Int_t dimension=0,
                      Bool_t issingleevent=kFALSE);
+  
+  AliMUONTrackerData(const char* name, const char* title,
+                     const AliMUONVStore& manuValues);
+  
   virtual ~AliMUONTrackerData();
 
   Bool_t Add(const AliMUONTrackerData& data);
@@ -121,6 +125,8 @@ public:
   /// To allow merging of different objects
   virtual Long64_t Merge(TCollection* list);
     
+  Bool_t ExportAsASCIIOccupancyFile(const char* filename, Int_t runNumber) const;
+  
 private:
     
   void FillHisto(Int_t detElemId, Int_t manuId, Int_t manuChannel,
@@ -200,6 +206,10 @@ private:
   void Add2D(const AliMUONVStore& src, AliMUONVStore& dest) const;
   
   void Add1D(const AliMUONVStore& src, AliMUONVStore& dest) const;
+  
+  void AssertStores();
+  
+  Bool_t UpdateNumberOfEvents(TArrayI* nevents);
   
 private:
   

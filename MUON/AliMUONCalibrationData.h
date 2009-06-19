@@ -60,8 +60,8 @@ public:
   /// Create a local trigger mask store (which must be deleted) for a given run
   static AliMUONVStore* CreateLocalTriggerBoardMasks(Int_t runNumber, Int_t* startOfValidity=0);
 
-  /// Create a kill map store (which must be deleted) from OCDB for the given run
-  static AliMUONVStore* CreateKillMap(Int_t runNumber, Int_t* startOfValidity=0);
+  /// Create an occupancy map store (which must be deleted) from OCDB for the given run
+  static AliMUONVStore* CreateOccupancyMap(Int_t runNumber, Int_t* startOfValidity=0);
 
   /// Create a pedestal store (which must be deleted) from OCDB for the given run
   static AliMUONVStore* CreatePedestals(Int_t runNumber, Int_t* startOfValidity=0);
@@ -101,11 +101,8 @@ public:
   /// Get the pedestal store
   AliMUONVStore* Pedestals() const;
 
-  /// Get the kill map store
-  AliMUONVStore* KillMap() const;
-
-  /// Get the kill map calibration object for channels within (detElemId,manuId).
-  AliMUONVCalibParam* KillMap(Int_t detElemId, Int_t manuId) const;
+  /// Get the occupancy map store
+  AliMUONVStore* OccupancyMap() const;
 
   /// Get the Pedestal calibration object for channels within (detElemId,manuId).
   AliMUONVCalibParam* Pedestals(Int_t detElemId, Int_t manuId) const;
@@ -154,9 +151,9 @@ private:
   mutable AliMUONVStore* fCapacitances; //!< Manu capacitances
   mutable AliMUONVStore* fNeighbours; //!< list of neighbours for all channels
   
-  mutable AliMUONVStore* fKillMap; //!< kill map
+  mutable AliMUONVStore* fOccupancyMap; //!< occupancy map
   
-  ClassDef(AliMUONCalibrationData,9) // Storage for all MUON calibration data.
+  ClassDef(AliMUONCalibrationData,10) // Storage for all MUON calibration data.
 };
 
 #endif

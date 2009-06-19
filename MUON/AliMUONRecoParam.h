@@ -264,14 +264,33 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// Get the maximum number of track candidates above which the tracking abort
   Int_t GetMaxTrackCandidates() const {return fMaxTrackCandidates;}
   
-  virtual void Print(Option_t *option = "") const;
+  /// Set the limits for the acceptable manu occupancy
+  void SetManuOccupancyLimits(float low, float high) { fManuOccupancyLimits[0]=low; fManuOccupancyLimits[1]=high; }
+  /// Retrieve low value of manu occupancy limit
+  Float_t ManuOccupancyLowLimit() const { return fManuOccupancyLimits[0]; }
+  /// Retrieve high value of manu occupancy limit
+  Float_t ManuOccupancyHighLimit() const { return fManuOccupancyLimits[1]; }
+
+  /// Set the limits for the acceptable bp occupancy
+  void SetBuspatchOccupancyLimits(float low, float high) { fBuspatchOccupancyLimits[0]=low; fBuspatchOccupancyLimits[1]=high; }
+  /// Retrieve low value of bp occupancy limit
+  Float_t BuspatchOccupancyLowLimit() const { return fBuspatchOccupancyLimits[0]; }
+  /// Retrieve high value of bp occupancy limit
+  Float_t BuspatchOccupancyHighLimit() const { return fBuspatchOccupancyLimits[1]; }
+
+  /// Set the limits for the acceptable DE occupancy
+  void SetDEOccupancyLimits(float low, float high) { fDEOccupancyLimits[0]=low; fDEOccupancyLimits[1]=high; }
+  /// Retrieve low value of DE occupancy limit
+  Float_t DEOccupancyLowLimit() const { return fDEOccupancyLimits[0]; }
+  /// Retrieve high value of DE occupancy limit
+  Float_t DEOccupancyHighLimit() const { return fDEOccupancyLimits[1]; }
   
+  virtual void Print(Option_t *option = "") const;
   
  private:
   
   void SetDefaultLimits();
   
-	
  private:
   
   /// clustering mode:  NOCLUSTERING, PRECLUSTER, PRECLUSTERV2, PRECLUSTERV3, COG, <pre>
@@ -355,13 +374,17 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   
   Bool_t     fSelectTrackOnSlope; ///< select track candidates according to their slope (instead of their impact parameter)
   
+  Double32_t fManuOccupancyLimits[2]; ///< low and high thresholds for manu occupancy cut
+  Double32_t fBuspatchOccupancyLimits[2]; ///< low and high thresholds for bus patch occupancy cut
+  Double32_t fDEOccupancyLimits[2]; ///< low and high thresholds for DE occupancy cut
+  
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
   void SetCosmicParam();
   
   
-  ClassDef(AliMUONRecoParam,13) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,14) // MUON reco parameters
 };
 
 #endif

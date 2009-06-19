@@ -21,6 +21,7 @@
 #include "AliMUONHVSubprocessor.h"
 #include "AliMUONGMSSubprocessor.h"
 #include "AliMUONGainSubprocessor.h"
+#include "AliMUONOccupancySubprocessor.h"
 
 #include "AliLog.h"
 #include "AliShuttleInterface.h"
@@ -45,10 +46,11 @@ ClassImp(AliMUONTrackerPreprocessor)
 //_____________________________________________________________________________
 AliMUONTrackerPreprocessor::AliMUONTrackerPreprocessor(AliShuttleInterface* shuttle)
 : AliMUONPreprocessor("MCH",shuttle),
-  fPedestalSubprocessor(new AliMUONPedestalSubprocessor(this)),
-  fGMSSubprocessor(new AliMUONGMSSubprocessor(this)),    
-  fHVSubprocessor(new AliMUONHVSubprocessor(this)),
-  fGainSubprocessor(new AliMUONGainSubprocessor(this))
+fPedestalSubprocessor(new AliMUONPedestalSubprocessor(this)),
+fGMSSubprocessor(new AliMUONGMSSubprocessor(this)),    
+fHVSubprocessor(new AliMUONHVSubprocessor(this)),
+fGainSubprocessor(new AliMUONGainSubprocessor(this)),
+fOccupancySubprocessor(new AliMUONOccupancySubprocessor(this))
 {
   /// ctor. 
     
@@ -67,6 +69,7 @@ AliMUONTrackerPreprocessor::~AliMUONTrackerPreprocessor()
   delete fGMSSubprocessor;
   delete fHVSubprocessor;
   delete fGainSubprocessor;
+  delete fOccupancySubprocessor;
 }
 
 //_____________________________________________________________________________
@@ -101,7 +104,9 @@ AliMUONTrackerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   {
     Bool_t useDCS(kTRUE);
     Add(fHVSubprocessor,useDCS); // to be called only for physics runs
+    Add(fOccupancySubprocessor);
     Log("INFO-Will run HV subprocessor");
+    Log("INFO-Will run Occupancy subprocessor");
   }
   else
   {

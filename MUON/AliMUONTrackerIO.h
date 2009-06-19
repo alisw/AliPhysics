@@ -31,6 +31,9 @@ public:
   static Int_t ReadGains(const char* filename, AliMUONVStore& gainStore, TString& comment);
   static Int_t DecodeGains(TString data, AliMUONVStore& gainStore, TString& comment);
   
+  static Int_t ReadOccupancy(const char* filename, AliMUONVStore& occupancyMap);
+  static Int_t DecodeOccupancy(TString data, AliMUONVStore& occupancyMap);
+  
   static Int_t ReadCapacitances(const char* filename, AliMUONVStore& capaStore);
   
   /// Error code constants

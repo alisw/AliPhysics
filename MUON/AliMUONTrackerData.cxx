@@ -43,7 +43,9 @@
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TString.h>
+#include <TTimeStamp.h>
 #include <TVector2.h>
+#include <cassert>
 #include <float.h>
 
 /// \class AliMUONTrackerData
@@ -94,6 +96,154 @@ fNofEventsPerDDL(0x0)
   fDimensionNames->AddAt(new TObjString("n"),NumberOfDimensions()-fgkVirtualExtraDimension);
   Clear();
 }
+
+//_____________________________________________________________________________
+AliMUONTrackerData::AliMUONTrackerData(const char* name, const char* title,
+                                       const AliMUONVStore& manuValues)
+: AliMUONVTrackerData(name,title),
+fIsSingleEvent(kFALSE),
+fChannelValues(0x0),
+fManuValues(0x0),
+fBusPatchValues(0x0),
+fDEValues(0x0),
+fChamberValues(0x0),
+fPCBValues(0x0),
+fDimension(0),
+fNevents(0),
+fDimensionNames(0x0),
+fExternalDimensionNames(0x0),
+fExternalDimension(0),
+fHistogramming(0x0),
+fHistos(0x0),
+fXmin(0.0),
+fXmax(0.0),
+fIsChannelLevelEnabled(kFALSE),
+fIsManuLevelEnabled(kTRUE),
+fNofDDLs(0),
+fNofEventsPerDDL(0x0)
+{  
+  /// ctor with pre-computed values at the manu level
+  /// In this case, we force fIsChannelLevelEnabled = kFALSE
+  /// ctor
+  
+  if (manuValues.GetSize()==0)
+  {
+    AliFatal("Cannot create a tracker data from nothing in that case !");
+  }
+  
+  if ( !AliMpDDLStore::Instance(kFALSE) && !AliMpManuStore::Instance(kFALSE) )
+  {
+    AliError("Cannot work without (full) mapping");
+    return;
+  }
+  
+  TIter next(manuValues.CreateIterator());
+  AliMUONVCalibParam* m = static_cast<AliMUONVCalibParam*>(next());
+  
+  Int_t dimension = ( m->Dimension() - fgkExtraDimension - fgkVirtualExtraDimension ) / 2;
+  
+  fDimension = External2Internal(dimension)+fgkExtraDimension;
+  
+  fDimensionNames = new TObjArray(fDimension+fgkVirtualExtraDimension);
+  fExternalDimensionNames = new TObjArray(dimension);
+  fExternalDimension = dimension;
+  fHistogramming = new Int_t[fExternalDimension];
+  memset(fHistogramming,0,sizeof(Int_t)); // histogramming is off by default. Use MakeHistogramForDimension to turn it on.
+
+  fExternalDimensionNames->SetOwner(kTRUE);
+  fDimensionNames->SetOwner(kTRUE);  
+  fDimensionNames->AddAt(new TObjString("occ"),IndexOfOccupancyDimension());
+  fDimensionNames->AddAt(new TObjString("N"),IndexOfNumberDimension());
+  fDimensionNames->AddAt(new TObjString("n"),NumberOfDimensions()-fgkVirtualExtraDimension);
+  Clear();
+  TArrayI nevents(AliDAQ::NumberOfDdls("MUONTRK"));
+  AssertStores();
+  
+  next.Reset();
+  AliMUONVCalibParam* external;
+  
+  while ( ( external = static_cast<AliMUONVCalibParam*>(next()) ) )
+  {
+    Int_t detElemId, manuId;
+    
+    GetDEManu(*external,detElemId,manuId);
+    
+    AliMUONVCalibParam* chamber(0x0);
+    AliMUONVCalibParam* de(0x0);
+    AliMUONVCalibParam* busPatch(0x0);
+    AliMUONVCalibParam* pcb(0x0);
+    AliMUONVCalibParam* manu(0x0);
+    AliMUONVCalibParam* channel(0x0);
+    AliMpDetElement* mpde(0x0);
+    
+    AliMUONVCalibParam* wec = new AliMUONCalibParamND(external->Dimension()-1,1,detElemId,manuId,0);
+    // as external, but without event count
+    wec->SetValueAsDouble(0,0,external->ValueAsDouble(0,0));
+    wec->SetValueAsDouble(0,1,external->ValueAsDouble(0,1));
+    wec->SetValueAsDouble(0,2,external->ValueAsDouble(0,2));
+    wec->SetValueAsDouble(0,3,external->ValueAsDouble(0,3));
+    
+    Int_t mid = GetParts(wec,chamber,de,busPatch,pcb,manu,channel,mpde);
+
+    if ( manuId != mid ) 
+    {
+      AliError(Form("Something is wrong for DE %5d : manuId = %d vs mid = %d",detElemId,manuId,mid));
+      continue;
+    }
+    
+    if ( manuId < 0 ) 
+    {
+      AliError("Got a < 0 manuId. Should not happen here !");
+      continue;
+    }
+    
+    assert(channel==0x0);
+    
+    Int_t n1 = manu->ValueAsInt(0,IndexOfNumberDimension());
+    Int_t n2 = external->ValueAsInt(0,IndexOfNumberDimension());
+    if  ( n1 != n2 )
+    {
+      AliError(Form("Incoherent number of manu channels for DE %5d MANU %5d : %d vs %d",
+                    detElemId,manuId,n1,n2));
+    }
+    
+    Int_t nevt = external->ValueAsInt(0,4);
+    
+    Int_t busPatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
+
+    Int_t ddl = AliMpDDLStore::Instance()->GetDDLfromBus(busPatchId);
+
+    if ( nevents[ddl] == 0 ) 
+    {
+      nevents[ddl] = nevt;
+    }
+    else
+    {
+      if ( nevents.At(ddl) != nevt ) 
+      {
+        AliError(Form("Nevt mismatch for DE %5d MANU %5d DDL %d : %d vs %d",
+                      detElemId,manuId,ddl,nevents.At(ddl),nevt));
+        continue;
+      }
+    }
+    
+    for ( Int_t i = 0; i < wec->Dimension()-1; ++i ) 
+    {
+      manu->SetValueAsDouble(0,i,manu->ValueAsDouble(0,i) + wec->ValueAsDouble(0,i));
+      
+      busPatch->SetValueAsDouble(0,i,busPatch->ValueAsDouble(0,i) + wec->ValueAsDouble(0,i));
+      
+      de->SetValueAsDouble(0,i,de->ValueAsDouble(0,i) + wec->ValueAsDouble(0,i));
+      
+      chamber->SetValueAsDouble(0,i,chamber->ValueAsDouble(0,i) + wec->ValueAsDouble(0,i));
+    }    
+    delete wec;
+  }  
+  
+  UpdateNumberOfEvents(&nevents);
+
+}
+
 
 //_____________________________________________________________________________
 AliMUONTrackerData::~AliMUONTrackerData()
@@ -330,21 +480,10 @@ AliMUONTrackerData::Replace(const AliMUONVStore& store)
 
 //_____________________________________________________________________________
 Bool_t
-AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bool_t replace)
+AliMUONTrackerData::UpdateNumberOfEvents(TArrayI* nevents)
 {
-  /// Add the given external store to our internal store
+  /// Update the number of events
   
-  AliCodeTimerAuto(GetName());
-    
-  if ( !replace)
-  {
-    if ( IsSingleEvent() && NumberOfEvents(-1) == 1 ) 
-    {
-      AliError(Form("%s is supposed to be single event only",GetName()));
-      return kFALSE;
-    }  
-  }
-
   if (!fNofDDLs)
   {
     fNofDDLs = AliDAQ::NumberOfDdls("MUONTRK");
@@ -354,7 +493,7 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bo
       fNofEventsPerDDL[i] = 0;
     }
   }
-    
+  
   if (nevents)
   {
     if (nevents->GetSize() != fNofDDLs ) 
@@ -378,6 +517,14 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bo
       fNevents = TMath::Max(fNevents,fNofEventsPerDDL[i]);
     }
   }
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONTrackerData::AssertStores()
+{
+  /// Insure our stores are allocated
   
   if (!fChamberValues)
   {
@@ -397,10 +544,10 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bo
       deIt.Next();
     }
     
-		if ( fIsChannelLevelEnabled ) 
-		{
-			fChannelValues = new AliMUON2DMap(kTRUE);
-		}
+    if ( fIsChannelLevelEnabled ) 
+    {
+      fChannelValues = new AliMUON2DMap(kTRUE);
+    }
     if  ( fIsManuLevelEnabled ) 
     {
       fManuValues = new AliMUON2DMap(kTRUE);
@@ -410,6 +557,28 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bo
     fDEValues = new AliMUON1DMap(numberOfDEs);
     fChamberValues = new AliMUON1DArray;
   }
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bool_t replace)
+{
+  /// Add the given external store to our internal store
+  
+  AliCodeTimerAuto(GetName());
+    
+  if ( !replace)
+  {
+    if ( IsSingleEvent() && NumberOfEvents(-1) == 1 ) 
+    {
+      AliError(Form("%s is supposed to be single event only",GetName()));
+      return kFALSE;
+    }  
+  }
+
+  UpdateNumberOfEvents(nevents);
+  
+  AssertStores();
   
   TIter next(store.CreateIterator());
   AliMUONVCalibParam* external;
@@ -427,9 +596,13 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bo
       return kFALSE;
     }
     
-
-    AliMUONVCalibParam* chamber, *de, *busPatch, *pcb, *manu, *channel;
-    AliMpDetElement* mpde;
+    AliMUONVCalibParam* chamber(0x0);
+    AliMUONVCalibParam* de(0x0);
+    AliMUONVCalibParam* busPatch(0x0);
+    AliMUONVCalibParam* pcb(0x0);
+    AliMUONVCalibParam* manu(0x0);
+    AliMUONVCalibParam* channel(0x0);
+    AliMpDetElement* mpde(0x0);
     
     Int_t manuId = GetParts(external,chamber,de,busPatch,pcb,manu,channel,mpde);
     
@@ -1110,6 +1283,9 @@ AliMUONTrackerData::GetParts(AliMUONVCalibParam* external,
 {
   /// Get containers at all levels
  
+  chamber = de = busPatch = pcb = manu = channel = 0x0;
+  mpde = 0x0;
+  
   AliMpDDLStore* ddlStore = AliMpDDLStore::Instance();
   
   Int_t detElemId;
@@ -1138,7 +1314,10 @@ AliMUONTrackerData::GetParts(AliMUONVCalibParam* external,
     pcbIndex = namer.ManuId2PCBIndex(detElemId,manuId);
   }
   
-  channel = ChannelParam(detElemId,manuId,external);
+  if ( fIsChannelLevelEnabled ) 
+  {
+    channel = ChannelParam(detElemId,manuId,external);
+  }
   
   manu = ManuParam(detElemId,manuId,kTRUE);
   
@@ -1614,6 +1793,67 @@ AliMUONTrackerData::Streamer(TBuffer &R__b)
   else {
     AliMUONTrackerData::Class()->WriteBuffer(R__b, this);
   }
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMUONTrackerData::ExportAsASCIIOccupancyFile(const char* filename, Int_t runNumber) const
+{
+  /// Export only the occupancy part, in a format compatible with what
+  /// the online occupancy DA is writing
+  
+  if ( ! AliMpDDLStore::Instance(kFALSE) )
+  {
+    AliError("Mapping not loaded. Cannot work");
+    return kFALSE;
+  }
+  
+  if (!fManuValues)
+  {
+    AliError("No manu values. Cannot work");
+    return kFALSE;
+  }
+  
+  ofstream out(filename);
+  
+  if (out.bad())
+  {
+    AliError(Form("Cannot create file %s",filename));
+    return kFALSE;
+  }
+  
+  out << "//===========================================================================" << endl;
+  out << "//  Hit counter exported from $Id$" << endl;
+  out << "//===========================================================================" << endl;
+  out << "//" << endl;
+  out << "//       * Run Number          : " << runNumber << endl;
+  out << "//       * File Creation Date  : " << TTimeStamp().AsString("l") << endl;
+  out << "//---------------------------------------------------------------------------" << endl;
+  out << "//  BP   MANU  SUM_N  NEVENTS" << endl;
+  out << "//---------------------------------------------------------------------------" << endl;
+  
+  TIter next(fManuValues->CreateIterator());
+  AliMUONVCalibParam* manu;
+  
+  while ( ( manu = static_cast<AliMUONVCalibParam*>(next()) ) )
+  {
+    Int_t detElemId = manu->ID0();
+    Int_t manuId = manu->ID1();
+    Int_t busPatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
+    Int_t ddl = AliMpDDLStore::Instance()->GetDDLfromBus( busPatchId);
+    if ( busPatchId < 0 || ddl < 0 )
+    {
+      AliError(Form("Got invalid (DE,manu,bp,ddl)=(%d,%d,%d,%d). Skipping it",detElemId,manuId,busPatchId,ddl));
+      continue;
+    }
+
+    Int_t nevents = fNofEventsPerDDL[ddl];
+    
+    out << Form("%5d %5d %10d %10d",busPatchId,manuId,manu->ValueAsInt(0,IndexOfOccupancyDimension()),nevents) << endl;
+  }
+  
+  out.close();
+  return kTRUE;
 }
 
 

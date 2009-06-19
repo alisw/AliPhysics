@@ -270,9 +270,10 @@ void AliMUONRecoParam::SetCosmicParam()
   }
   for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   fBypassSt45 = 0;
-  fPadGoodnessMask = 0xC00BE80;
+  fPadGoodnessMask = 0x400BE80; // Ped Mean is Zero | Ped Mean Too Low | Ped Mean Too High | Ped Sigma Too Low | Ped Sigma Too High | Ped is missing | HV is missing | manu occupancy too high
   fMaxTriggerTracks = 100;
   fMaxTrackCandidates = 10000;
+  SetManuOccupancyLimits(-1,0.5); // reject manu above occ=50%
   
 }
 
@@ -437,8 +438,14 @@ void AliMUONRecoParam::Print(Option_t *option) const
   cout << Form("%e <= Gain linear term <= %e",GainA1LowLimit(),GainA1HighLimit()) << endl;
   cout << Form("%e <= Gain quadratic term <= %e",GainA2LowLimit(),GainA2HighLimit()) << endl;
   cout << Form("%5.0f <= Gain threshold term <= %5.0f",GainThresLowLimit(),GainThresHighLimit()) << endl;
-  
+    
   cout << Form("And we cut on charge >= %7.2f x ( pedestal sigma ) ",ChargeSigmaCut()) << endl;
+  
+  cout << "Occupancy limits are :" << endl;
+  
+  cout << Form("%7.2f <= Manu occupancy < %7.2f",ManuOccupancyLowLimit(),ManuOccupancyHighLimit()) << endl;
+  cout << Form("%7.2f <= Buspatch occupancy < %7.2f",BuspatchOccupancyLowLimit(),BuspatchOccupancyHighLimit()) << endl;
+  cout << Form("%7.2f <= DE occupancy < %7.2f",DEOccupancyLowLimit(),DEOccupancyHighLimit()) << endl;
   
   cout << "chamber non bending resolution = |";
   for (Int_t iCh = 0; iCh < 10; iCh++) cout << Form(" %6.3f |",fDefaultNonBendingReso[iCh]);
@@ -480,9 +487,17 @@ AliMUONRecoParam::SetDefaultLimits()
 	fGainThresLimits[0] = 0;
 	fGainThresLimits[1] = 4095;
 	
-	fPadGoodnessMask = 0x8008080; // Ped is missing | HV is missing | killed
+	fPadGoodnessMask = 0x8080; // Ped is missing | HV is missing
 
-  
+  fManuOccupancyLimits[0] = -1.0; 
+  fManuOccupancyLimits[1] = 1.0;
+
+  fBuspatchOccupancyLimits[0] = -1.0; 
+  fBuspatchOccupancyLimits[1] = 1.0;
+
+  fDEOccupancyLimits[0] = -1.0; 
+  fDEOccupancyLimits[1] = 1.0;
+
   fChargeSigmaCut = 4.0;
 }
 

@@ -77,7 +77,15 @@ AliMUONTrackerACFDataMaker::AliMUONTrackerACFDataMaker(const char* acfPath,
       store = new AliMUON1DMap(20000);
       AliMUONTrackerIO::ReadCapacitances(filename.Data(),*store);
     }
-    
+    else if ( stype == "OCCUPANCY" )
+    {
+      store = new AliMUON2DMap(true);
+      AliMUONTrackerIO::ReadOccupancy(filename.Data(),*store);
+      fData = new AliMUONTrackerData(Form("OCC%d",number),"OccupancyMap",*store);
+      fData->SetDimensionName(0,"One");
+      fData->SetDimensionName(1,"Zero");
+    }
+  
     if (!store)
     {
       fIsValid = kFALSE;
@@ -87,7 +95,12 @@ AliMUONTrackerACFDataMaker::AliMUONTrackerACFDataMaker(const char* acfPath,
       return;
     }
     
+  if (stype != "OCCUPANCY" ) 
+  {
     fData->Add(*store);
+  }
+  
+  delete store;
 }
 
 //_____________________________________________________________________________

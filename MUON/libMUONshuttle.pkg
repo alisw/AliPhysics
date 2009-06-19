@@ -11,7 +11,8 @@ AliMUONGainSubprocessor.cxx \
 AliMUONTrackerPreprocessor.cxx \
 AliMUONTriggerSubprocessor.cxx \
 AliMUONTriggerDCSSubprocessor.cxx \
-AliMUONTriggerPreprocessor.cxx
+AliMUONTriggerPreprocessor.cxx \
+AliMUONOccupancySubprocessor.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

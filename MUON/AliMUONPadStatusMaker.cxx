@@ -26,15 +26,13 @@
 
 #include "AliMUONPadStatusMaker.h"
 
-#include "AliQAv1.h"
-
 #include "AliMUON2DMap.h"
 #include "AliMUON2DStoreValidator.h"
 #include "AliMUONCalibParamNI.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONStringIntMap.h"
 #include "AliMUONVCalibParam.h"
-#include "AliMUONVTrackerData.h"
+#include "AliMUONTrackerData.h"
 
 #include "AliMpArea.h"
 #include "AliMpArrayI.h"
@@ -75,77 +73,26 @@ fHVSt12Limits(0,5000),
 fHVSt345Limits(0,5000),
 fPedMeanLimits(0,4095),
 fPedSigmaLimits(0,4095),
-fManuOccupancyLimits(0,0.1),
+fManuOccupancyLimits(0,1.0),
+fBusPatchOccupancyLimits(0,1.0),
+fDEOccupancyLimits(0,1.0),
 fStatus(new AliMUON2DMap(true)),
 fHV(new TExMap),
 fPedestals(calibData.Pedestals()),
 fGains(calibData.Gains()),
-fTrackerData(0x0),
-fKillMap(calibData.KillMap())
+fTrackerData(0x0)
 {
   /// ctor
   AliDebug(1,Form("ped store %s gain store %s",
                   fPedestals->ClassName(),
                   fGains->ClassName()));
   
-  TString qaFileName(AliQAv1::GetQADataFileName("MUON",calibData.RunNumber()));
-  
-  // search the QA file in memory first.
-  TFile* f = static_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(qaFileName.Data()));
-
-  if (!f)
+  if ( calibData.OccupancyMap() )
   {
-    // then tries to open it
-    if ( gSystem->AccessPathName(qaFileName.Data()) == kFALSE ) 
-    {
-      f = TFile::Open(qaFileName.Data());
-      if ( f )
-      {
-        AliDebug(1,Form("Got %s from disk",qaFileName.Data()));
-      }
-    }
-  }
-  else
-  {
-    AliDebug(1,Form("Got %s from memory",qaFileName.Data()));
-  }
-  
-  if (f)
-  {
-    TDirectory* d = gDirectory;
-    
-    f->cd("MUON/Raws");
-    
-    TIter next(gDirectory->GetListOfKeys());
-    TKey* key;
-    
-    while ( ( key = static_cast<TKey*>(next()) ) && !fTrackerData )
-    {
-      TString name(key->GetName());
-      
-      if ( name.Contains("CALZ") )
-      {
-        fTrackerData = dynamic_cast<AliMUONVTrackerData*>(key->ReadObj());
-      }
-      
-    }
-    
-    gDirectory = d;
-    
-    if ( fTrackerData ) 
-    {
-      AliInfo(Form("Will make a cut on MANU occupancy from TrackerData=%s",fTrackerData->GetName()));
-    }
-    else
-    {
-      AliWarning(Form("Found a QA file = %s, but could not get the expected TrackerData in there... (probably not a serious problem though)",
-                      f->GetName()));
-    }
-  }
-  else
-  {
-    AliWarning("Did not find QA file, so will not use manu occupancy as a criteria");
-  }
+    AliInfo("Will use occupancy map to cut, if so required in AliMUONRecoParam");    
+    /// create a tracker data from the occupancy map
+    fTrackerData = new AliMUONTrackerData("OCC","OCC",*(calibData.OccupancyMap()));
+  }    
 }
 
 //_____________________________________________________________________________
@@ -154,6 +101,7 @@ AliMUONPadStatusMaker::~AliMUONPadStatusMaker()
   /// dtor.
   delete fStatus;
   delete fHV;
+  delete fTrackerData;
 }
 
 //_____________________________________________________________________________
@@ -165,9 +113,9 @@ AliMUONPadStatusMaker::AsString(Int_t status)
   Int_t pedStatus;
   Int_t gainStatus;
   Int_t hvStatus;
-  Int_t otherStatus;
+  Int_t occStatus;
   
-  DecodeStatus(status,pedStatus,hvStatus,gainStatus,otherStatus);
+  DecodeStatus(status,pedStatus,hvStatus,gainStatus,occStatus);
   
   TString s;
   
@@ -193,9 +141,12 @@ AliMUONPadStatusMaker::AsString(Int_t status)
 	if ( hvStatus & kHVSwitchOFF ) s+="& HV has switch OFF ";
 	if ( hvStatus & kHVMissing ) s+="& HV is missing ";
 
-  if ( otherStatus & kManuOccupancyTooHigh ) s+="& manu occupancy too high ";
-  if ( otherStatus & kManuOccupancyTooLow ) s+="& manu occupancy too low ";
-  if ( otherStatus & kKilled ) s+="& killed";
+  if ( occStatus & kManuOccupancyTooHigh ) s+="& manu occupancy too high ";
+  if ( occStatus & kManuOccupancyTooLow ) s+="& manu occupancy too low ";
+  if ( occStatus & kBusPatchOccupancyTooHigh ) s+="& bus patch occupancy too high ";
+  if ( occStatus & kBusPatchOccupancyTooLow ) s+="& bus patch occupancy too low ";
+  if ( occStatus & kDEOccupancyTooHigh ) s+="& DE occupancy too high ";
+  if ( occStatus & kDEOccupancyTooLow ) s+="& DE occupancy too low ";
   
   if ( s[0] == '&' ) s[0] = ' ';
   
@@ -220,13 +171,13 @@ Int_t
 AliMUONPadStatusMaker::BuildStatus(Int_t pedStatus, 
                                    Int_t hvStatus, 
                                    Int_t gainStatus,
-                                   Int_t otherStatus)
+                                   Int_t occStatus)
 {
   /// Build a complete status from specific parts (ped,hv,gain)
   
   return ( hvStatus & 0xFF ) | ( ( pedStatus & 0xFF ) << 8 ) | 
   ( ( gainStatus & 0xFF ) << 16 ) |
-  ( ( otherStatus & 0xFF ) << 24 ) ;
+  ( ( occStatus & 0xFF ) << 24 ) ;
 }
 
 //_____________________________________________________________________________
@@ -235,11 +186,11 @@ AliMUONPadStatusMaker::DecodeStatus(Int_t status,
                                     Int_t& pedStatus, 
                                     Int_t& hvStatus, 
                                     Int_t& gainStatus,
-                                    Int_t& otherStatus)
+                                    Int_t& occStatus)
 {
   /// Decode complete status into specific parts (ped,hv,gain)
   
-  otherStatus = ( status & 0xFF000000 ) >> 24;
+  occStatus = ( status & 0xFF000000 ) >> 24;
   gainStatus = ( status & 0xFF0000 ) >> 16;
   pedStatus = ( status & 0xFF00 ) >> 8;
   hvStatus = (status & 0xFF);
@@ -528,16 +479,9 @@ AliMUONPadStatusMaker::ComputeStatus(Int_t detElemId, Int_t manuId) const
 
   AliMUONVCalibParam* gains = static_cast<AliMUONVCalibParam*>(fGains->FindObject(detElemId,manuId));
   
-  AliMUONVCalibParam* kill(0x0);
-  
-  if ( fKillMap ) 
-  {
-    kill = static_cast<AliMUONVCalibParam*>(fKillMap->FindObject(detElemId,manuId));
-  }
-  
   Int_t hvStatus = HVStatus(detElemId,manuId);
 
-  Int_t otherStatus = OtherStatus(detElemId,manuId);
+  Int_t occStatus = OccupancyStatus(detElemId,manuId);
   
   for ( Int_t manuChannel = 0; manuChannel < param->Size(); ++manuChannel )
   {
@@ -578,12 +522,7 @@ AliMUONPadStatusMaker::ComputeStatus(Int_t detElemId, Int_t manuId) const
       gainStatus = kGainMissing;
     }
     
-    if ( kill && (kill->ValueAsInt(manuChannel,0) > 0) ) 
-    {
-      otherStatus |= kKilled;
-    }
-        
-    Int_t status = BuildStatus(pedStatus,hvStatus,gainStatus,otherStatus);
+    Int_t status = BuildStatus(pedStatus,hvStatus,gainStatus,occStatus);
       
     param->SetValueAsIntFast(manuChannel,0,status);
   }
@@ -593,22 +532,52 @@ AliMUONPadStatusMaker::ComputeStatus(Int_t detElemId, Int_t manuId) const
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONPadStatusMaker::OtherStatus(Int_t detElemId, Int_t manuId) const
+AliMUONPadStatusMaker::OccupancyStatus(Int_t detElemId, Int_t manuId) const
 {
   /// Get the "other" status for a given manu
+ 
+  Int_t rv(0);
+  
   if ( fTrackerData ) 
   {
-    Double_t occ = fTrackerData->Manu(detElemId,manuId,2);
-    if ( occ < fManuOccupancyLimits.X() )
+    const Int_t occIndex = 2;
+    
+    Double_t occ = fTrackerData->DetectionElement(detElemId,occIndex);
+    
+    if ( occ <= fDEOccupancyLimits.X() )
     {
-      return kManuOccupancyTooLow;
+      rv |= kDEOccupancyTooLow;
+    } 
+    else if ( occ > fDEOccupancyLimits.Y() )
+    {
+      rv |= kDEOccupancyTooHigh;
     }
-    if ( occ > fManuOccupancyLimits.Y() )
+    
+    Int_t busPatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
+    
+    occ = fTrackerData->BusPatch(busPatchId,occIndex);
+
+    if ( occ <= fBusPatchOccupancyLimits.X() )
     {
-      return kManuOccupancyTooHigh;
+      rv |= kBusPatchOccupancyTooLow;
+    } 
+    else if ( occ > fBusPatchOccupancyLimits.Y() )
+    {
+      rv |= kBusPatchOccupancyTooHigh;
+    }
+    
+    occ = fTrackerData->Manu(detElemId,manuId,occIndex);
+    
+    if ( occ <= fManuOccupancyLimits.X() )
+    {
+      rv |= kManuOccupancyTooLow;
+    } 
+    else if ( occ > fManuOccupancyLimits.Y() )
+    {
+      rv |= kManuOccupancyTooHigh;
     }
   }
-  return 0;
+  return rv;
 }
 
 //_____________________________________________________________________________

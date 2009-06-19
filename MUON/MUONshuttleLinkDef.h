@@ -18,5 +18,6 @@
 #pragma link C++ class AliMUONTriggerSubprocessor+;
 #pragma link C++ class AliMUONTriggerDCSSubprocessor+;
 #pragma link C++ class AliMUONTriggerPreprocessor+;
+#pragma link C++ class AliMUONOccupancySubprocessor+;
 
 #endif

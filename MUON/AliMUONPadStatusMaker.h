@@ -122,7 +122,7 @@ private:
 
   Int_t HVStatus(Int_t detElemId, Int_t manuId) const;
 
-  Int_t OtherStatus(Int_t detElemId, Int_t manuId) const;
+  Int_t OccupancyStatus(Int_t detElemId, Int_t manuId) const;
   
   void SetHVStatus(Int_t detElemId, Int_t index, Int_t status) const;
 
@@ -174,11 +174,14 @@ private:
   };
   
   /// Other
-  enum EOtherStatus
+  enum EOccupancyStatus
   {
     kManuOccupancyTooLow = (1<<1),
     kManuOccupancyTooHigh = (1<<2),
-    kKilled = (1<<3)
+    kBusPatchOccupancyTooLow = (1<<3),
+    kBusPatchOccupancyTooHigh = (1<<4),
+    kDEOccupancyTooLow = (1<<5),
+    kDEOccupancyTooHigh = (1<<6),
   };
   
   const AliMUONCalibrationData& fkCalibrationData; //!< helper class to get data access (not owner)
@@ -194,6 +197,8 @@ private:
   TVector2 fPedSigmaLimits; //!< Low and High threshold for pedestal sigma
   
   TVector2 fManuOccupancyLimits; //!< Low and High manu occupancy limits
+  TVector2 fBusPatchOccupancyLimits; //!< Low and High buspatch occupancy limits
+  TVector2 fDEOccupancyLimits; //!< Low and High DE occupancy limits
   
   AliMUONVStore* fStatus; //!< statuses of the pads
   
@@ -203,8 +208,6 @@ private:
   AliMUONVStore* fGains; //!< gain values
   
   AliMUONVTrackerData* fTrackerData; //!< to get occupancies...
-  
-  AliMUONVStore* fKillMap; //!< to selectively force killing of some channels
   
   ClassDef(AliMUONPadStatusMaker,0) // Creates pad statuses from ped,gain,hv
 };

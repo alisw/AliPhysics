@@ -70,7 +70,7 @@ fTriggerLut(0x0),
 fTriggerEfficiency(0x0),
 fCapacitances(0x0),
 fNeighbours(0x0),
-fKillMap(0x0)
+fOccupancyMap(0x0)
 {
 /// Default ctor.
 
@@ -84,7 +84,7 @@ fKillMap(0x0)
   {
     Gains();
     Pedestals();
-    KillMap();
+    OccupancyMap();
     HV();
     TriggerDCS();
     LocalTriggerBoardMasks(0);
@@ -211,10 +211,10 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path, Int_t* s
 
 //_____________________________________________________________________________
 AliMUONVStore*
-AliMUONCalibrationData::CreateKillMap(Int_t runNumber, Int_t* startOfValidity)
+AliMUONCalibrationData::CreateOccupancyMap(Int_t runNumber, Int_t* startOfValidity)
 {
-  /// Create a new killmap store from the OCDB for a given run
-  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/KillMap",startOfValidity));
+  /// Create a new occupancy map store from the OCDB for a given run
+  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/OccupancyMap",startOfValidity));
 }
 
 //_____________________________________________________________________________
@@ -360,33 +360,15 @@ AliMUONCalibrationData::LocalTriggerBoardMasks(Int_t localBoardNumber) const
 
 //_____________________________________________________________________________
 AliMUONVStore*
-AliMUONCalibrationData::KillMap() const
+AliMUONCalibrationData::OccupancyMap() const
 {
-  /// Get kill map
-  if (!fKillMap)
+  /// Get occupancy map
+  if (!fOccupancyMap)
   {
-    fKillMap = CreateKillMap(fRunNumber);
+    fOccupancyMap = CreateOccupancyMap(fRunNumber);
   }
-  return fKillMap;
+  return fOccupancyMap;
 }
-
-//_____________________________________________________________________________
-AliMUONVCalibParam*
-AliMUONCalibrationData::KillMap(Int_t detElemId, Int_t manuId) const
-{
-  /// Return the killmap for a given (detElemId, manuId) pair.
-  /// A return value of 0x0 is quite possible, meaning the manu should
-  /// not be killed ;-)
-  
-  AliMUONVStore* killMap = KillMap();
-  if (!killMap) 
-  {
-    return 0x0;
-  }
-  
-  return static_cast<AliMUONVCalibParam*>(killMap->FindObject(detElemId,manuId));
-}
-
 
 //_____________________________________________________________________________
 AliMUONVStore*

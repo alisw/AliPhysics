@@ -31,10 +31,12 @@ ClassImp(AliMUONTrackerIO)
 /// \endcond
 
 #include "AliLog.h"
+#include "AliMUONCalibParamND.h"
 #include "AliMUONCalibParamNF.h"
 #include "AliMUONVStore.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
+#include "AliMpDetElement.h"
 #include <Riostream.h>
 #include <TClass.h>
 #include <TObjString.h>
@@ -51,6 +53,104 @@ AliMUONTrackerIO::AliMUONTrackerIO()
 AliMUONTrackerIO::~AliMUONTrackerIO()
 {
   /// dtor
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONTrackerIO::ReadOccupancy(const char* filename,AliMUONVStore& occupancyMap)
+{
+  /// Read occupancy file created by online DA
+  /// and append values to the occupancyMap store.
+  /// Expected format of the file is :
+  /// busPatchId manuId sumofn nevt
+  
+  TString sFilename(gSystem->ExpandPathName(filename));
+  
+  std::ifstream in(sFilename.Data());
+  if (!in.good()) 
+  {
+    return kCannotOpenFile;
+  }
+  
+  TString datastring;
+  ostringstream stream;
+  char line[1024];
+  while ( in.getline(line,1024) )
+  	stream << line << "\n";
+  datastring = TString(stream.str().c_str());
+  
+  in.close();
+  
+  return DecodeOccupancy(datastring,occupancyMap);
+  
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONTrackerIO::DecodeOccupancy(TString data, AliMUONVStore& occupancyMap)
+{
+  /// Decode occupancy string created append values to the occupancyMap store.
+  /// Expected format of the file is :
+  /// busPatchId manuId sumofn nevt
+ 
+  if ( ! AliMpDDLStore::Instance(kFALSE) )
+  {
+    AliErrorClass("Mapping not loaded. Cannot work");
+    return 0;
+  }
+  
+  char line[1024];
+  istringstream in(data.Data());
+  
+  Int_t n(0);
+  
+  while ( in.getline(line,1024) )
+  {
+    AliDebugClass(3,Form("line=%s",line));
+    if ( line[0] == '/' && line[1] == '/' ) continue;
+    std::istringstream sin(line);
+    
+    Int_t busPatchId, manuId;
+    Int_t numberOfEvents;
+    Double_t sumn;
+
+    sin >> busPatchId >> manuId >> sumn >> numberOfEvents;
+    
+    Int_t detElemId = AliMpDDLStore::Instance()->GetDEfromBus(busPatchId);
+
+    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+
+    Int_t numberOfChannelsInManu = -1;
+    
+    if (de) numberOfChannelsInManu = de->NofChannelsInManu(manuId);
+
+    if ( numberOfChannelsInManu <= 0 ) 
+    {
+      AliErrorClass(Form("BP %5d DE %5d MANU %5d nchannels=%d",busPatchId,detElemId,manuId,numberOfChannelsInManu));
+      continue;      
+    }
+    
+    AliMUONVCalibParam* occupancy = 
+    static_cast<AliMUONVCalibParam*>(occupancyMap.FindObject(detElemId,manuId));
+    if (occupancy) 
+    {
+      AliErrorClass(Form("DE %5d MANU %5d is already there ?!",detElemId,manuId));
+      continue;
+    }
+        
+    occupancy = new AliMUONCalibParamND(5,1,detElemId,manuId,0);
+
+    occupancyMap.Add(occupancy);
+    
+    occupancy->SetValueAsDouble(0,0,sumn);
+    occupancy->SetValueAsDouble(0,1,sumn); // with only 0 and 1s, sumw = sumw2 = sumn
+    occupancy->SetValueAsDouble(0,2,sumn);
+    occupancy->SetValueAsInt(0,3,numberOfChannelsInManu);
+    occupancy->SetValueAsInt(0,4,numberOfEvents);
+    ++n;
+  }
+  
+  return n;
 }
 
 //_____________________________________________________________________________

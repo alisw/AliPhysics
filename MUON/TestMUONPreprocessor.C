@@ -67,6 +67,8 @@
 ///    LDC3.gain
 /// GMS/
 ///    GMS.root
+/// OCCUPANCY/
+///    mch.occupancy
 /// PEDESTALS/
 ///    LDC0.ped
 ///    LDC1.ped
@@ -184,6 +186,8 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC2",Form("%s/GAINS/LDC2.gain",sourceDirectory));
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC3",Form("%s/GAINS/LDC3.gain",sourceDirectory));
 
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","OCCUPANCY","MON",Form("%s/OCCUPANCY/mch.occupancy",sourceDirectory));
+
   // and GMS file
   shuttle->AddInputFile(AliTestShuttle::kDCS,"MCH","GMS","GMS",Form("%s/GMS/GMS.root",sourceDirectory));
 
@@ -270,14 +274,14 @@ TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
 	// HV Switch (St345 only)
 	TObjArray* valueSet = new TObjArray;
 	valueSet->SetOwner(kTRUE);
-	Bool_t value = kTRUE;
+	Bool_t bvalue = kTRUE;
 //      Float_t r = random.Uniform();
 //      if ( r < 0.007 ) value = kFALSE;      
 //      if ( aliasName.Contains("DE513sw2") ) value = kFALSE;
       
 	for ( UInt_t timeStamp = 0; timeStamp < 60*3; timeStamp += 60 )
 	{
-	  AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
+	  AliDCSValue* dcsValue = new AliDCSValue(bvalue,timeStamp);
 	  valueSet->Add(dcsValue);
 	}
 	aliasMap->Add(new TObjString(*alias),valueSet);

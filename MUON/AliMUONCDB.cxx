@@ -34,6 +34,7 @@
 #include "AliMUON1DMap.h"
 #include "AliMUON2DMap.h"
 #include "AliMUON2DStoreValidator.h"
+#include "AliMUONCalibParamND.h"
 #include "AliMUONCalibParamNF.h"
 #include "AliMUONCalibParamNI.h"
 #include "AliMUONConstants.h"
@@ -533,56 +534,51 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONCDB::MakeKillMapStore(AliMUONVStore& killMapStore)
+AliMUONCDB::MakeOccupancyMapStore(AliMUONVStore& occupancyMapStore, Bool_t defaultValues)
 {
-  /// Create a kill map.
+  /// Create an occupancy map.
   
   AliCodeTimerAuto("");
   
-  Int_t nchannels(0);
   Int_t nmanus(0);
-  
-  const Int_t kChannels(AliMpConstants::ManuNofChannels());
-  
-  const Float_t kFractionOfDeadManu(0.1); // within [0.,1.]
-  
-  if ( kFractionOfDeadManu == 0.0 ) return 0.0;
   
   Int_t detElemId;
   Int_t manuId;
   
   AliMpManuIterator it;
   
+  Int_t nevents(1000);
+  
   while ( it.Next(detElemId,manuId) )
   {
-    // skip a given fraction of manus
-    if ( gRandom->Uniform() > kFractionOfDeadManu) continue;
-    
     ++nmanus;
     
-    AliMUONVCalibParam* kill = new AliMUONCalibParamNI(1,kChannels,detElemId,manuId,0);
+    AliMUONVCalibParam* occupancy = new AliMUONCalibParamND(5,1,detElemId,manuId,0);
     
+    Double_t occ = 0.0;
+
     AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
     
-    for ( Int_t manuChannel = 0; manuChannel < kChannels; ++manuChannel )
-    {
-      if ( ! de->IsConnectedChannel(manuId,manuChannel) ) continue;
-      
-      ++nchannels;
-      
-      kill->SetValueAsInt(manuChannel,0,1);
-      
-    }
-    Bool_t ok = killMapStore.Add(kill);
+    Int_t numberOfChannelsInManu = de->NofChannelsInManu(manuId);
+    
+    if (!defaultValues) occ = gRandom->Rndm(1.0);
+
+    Double_t sumn = occ*nevents;
+    
+    occupancy->SetValueAsFloat(0,0,sumn); 
+    occupancy->SetValueAsFloat(0,1,sumn);
+    occupancy->SetValueAsFloat(0,2,sumn);
+    occupancy->SetValueAsInt(0,3,numberOfChannelsInManu);
+    occupancy->SetValueAsInt(0,4,nevents);
+    
+    Bool_t ok = occupancyMapStore.Add(occupancy);
     if (!ok)
     {
       AliError(Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
     }
-    if ( fMaxNofChannelsToGenerate > 0 && nchannels >= fMaxNofChannelsToGenerate ) break;
   }
   
-  AliInfo(Form("%d Manus and %d channels.",nmanus,nchannels));
-  return nchannels;
+  return nmanus;
 }
 
 //_____________________________________________________________________________
@@ -1119,22 +1115,19 @@ AliMUONCDB::WritePedestals(Bool_t defaultValues,
 
 //_____________________________________________________________________________
 void 
-AliMUONCDB::WriteKillMap(Bool_t defaultValues,
-                         Int_t startRun, Int_t endRun)
+AliMUONCDB::WriteOccupancyMap(Bool_t defaultValues,
+                              Int_t startRun, Int_t endRun)
 {
-  /// generate kill map values (either empty one if defaultValues=true, or
-  /// random one, see MakeKillMapStore) and
+  /// generate occupancy map values (either empty one if defaultValues=true, or
+  /// random one, see MakeOccupancyMapStore) and
   /// store them into CDB located at cdbpath, with a validity period
   /// ranging from startRun to endRun
   
-  AliMUONVStore* killMapStore = Create2DMap();
-  if ( !defaultValues )
-  {
-    Int_t ngenerated = MakeKillMapStore(*killMapStore);
-    AliInfo(Form("Ngenerated = %d",ngenerated));
-  }
-  WriteToCDB("MUON/Calib/KillMap",killMapStore,startRun,endRun,defaultValues);
-  delete killMapStore;
+  AliMUONVStore* occupancyMapStore = Create2DMap();
+  Int_t ngenerated = MakeOccupancyMapStore(*occupancyMapStore,defaultValues);
+  AliInfo(Form("Ngenerated = %d",ngenerated));
+  WriteToCDB("MUON/Calib/OccupancyMap",occupancyMapStore,startRun,endRun,defaultValues);
+  delete occupancyMapStore;
 }
 
 
@@ -1214,6 +1207,6 @@ AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
   WriteGains(defaultValues,startRun,endRun);
   WriteCapacitances(defaultValues,startRun,endRun);
   WriteNeighbours(startRun,endRun);
-  WriteKillMap(startRun,endRun,defaultValues);
+  WriteOccupancyMap(startRun,endRun,defaultValues);
 }
 

@@ -171,13 +171,13 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
     
     /// OCDB selection
     
-    fOCDBTypes->AddEntry("Pedestals",0);
-    fOCDBTypes->AddEntry("Gains",1);
-    fOCDBTypes->AddEntry("Capacitances",2);
+  fOCDBTypes->AddEntry("Pedestals",0);
+  fOCDBTypes->AddEntry("Gains",1);
+  fOCDBTypes->AddEntry("Capacitances",2);
   fOCDBTypes->AddEntry("HV",3);
-  fOCDBTypes->AddEntry("KillMap",4);
-    fOCDBTypes->Select(0);
-    fOCDBTypes->Resize(100,20);
+  fOCDBTypes->AddEntry("Occupancy",4);
+  fOCDBTypes->Select(0);
+  fOCDBTypes->Resize(100,20);
     
     TGButton* createOCDBButton = new TGTextButton(fOCDBSelector,"Create data source");
     createOCDBButton->Connect("Clicked()",
@@ -208,7 +208,7 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
     fACFTypes->AddEntry("Gains",1);
   fACFTypes->AddEntry("Capacitances",2);
   fACFTypes->AddEntry("HV",3);
-  fACFTypes->AddEntry("KillMap",4);
+  fACFTypes->AddEntry("Occupancy",4);
     fACFTypes->Select(0);
     fACFTypes->Resize(100,20);
     
