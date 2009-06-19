@@ -135,7 +135,7 @@ void runBatch() {
     //_____________Setting up PWG2evchar library__________//
     //____________________________________________________//
     setupPar("PWG2unicor");
-    gSystem->Load("libPWG2UNICOR.so");
+    gSystem->Load("libPWG2unicor.so");
   }
   
   if (runFMDanalysis) {
