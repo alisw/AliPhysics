@@ -127,7 +127,7 @@ void DCSGenerateAPD(const char *inputFileName,
   // end of setup, let's go..
   
   int rcu_addr_card = rcu_addr_start[RCUFWVersion];
-  int csp_addr = trailer_offset[RCUFWVersion];
+  int csp_addr = trailer_offset[FEEBCVersion];
   int word = 0;
   char comment[400];
   
@@ -160,8 +160,8 @@ void DCSGenerateAPD(const char *inputFileName,
 	     DS verified this with section 16.1 "Bias voltage programming", table 8
 	     of H. Muller's PHOS manual (version from Jan 2007) 
 	  */ 
-	  if (icsp<16) { csp_addr = trailer_offset[RCUFWVersion] + icsp; }
-	  else { csp_addr = trailer_offset[RCUFWVersion] - 1 - (icsp%16); }
+	  if (icsp<16) { csp_addr = trailer_offset[FEEBCVersion] + icsp; }
+	  else { csp_addr = trailer_offset[FEEBCVersion] - 1 - (icsp%16); }
 	  if (icsp >= 24) csp_addr += 0x20;
 
 	  // what does the desired voltage (in V) correspond to in DAC?
