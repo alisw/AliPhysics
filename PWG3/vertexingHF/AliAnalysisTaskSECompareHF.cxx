@@ -65,6 +65,8 @@ fVHF(0)
 
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
+  // Output slot #2 writes into a TNtuple container
+  DefineOutput(2,TNtuple::Class());  //My private output
 }
 
 //________________________________________________________________________
@@ -113,7 +115,6 @@ void AliAnalysisTaskSECompareHF::UserCreateOutputObjects()
   fOutput->Add(fHistMass);
 
   fNtupleD0Cmp = new TNtuple("fNtupleD0Cmp","D0 comparison","pdg:VxRec:VxTrue:PtRec:PtTrue");
-  fOutput->Add(fNtupleD0Cmp);
 
   return;
 }
@@ -189,6 +190,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	PostData(1,fOutput);
 
 	fNtupleD0Cmp->Fill(pdgD0,d->Xv(),partD0->Xv(),d->Pt(),partD0->Pt());
+	PostData(2,fNtupleD0Cmp);
       }
     }
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
@@ -208,6 +210,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
   */
   // Post the data already here
   PostData(1,fOutput);
+  PostData(2,fNtupleD0Cmp);
 
   return;
 }
@@ -224,8 +227,9 @@ void AliAnalysisTaskSECompareHF::Terminate(Option_t */*option*/)
     return;
   }
 
-  fNtupleD0Cmp = dynamic_cast<TNtuple*>(fOutput->FindObject("fNtupleD0Cmp"));
   fHistMass = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMass"));
+
+  fNtupleD0Cmp = dynamic_cast<TNtuple*> (GetOutputData(2));
 
   return;
 }
