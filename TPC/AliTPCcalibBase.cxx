@@ -287,7 +287,7 @@ TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t ax
     for(Int_t jbin=1; jbin<projectionHist->GetNbinsX()-1; jbin++) {
       integral+=projectionHist->GetBinContent(jbin);
     }
-    printf("Integral %f\t%f\n",integral, projectionHist->GetSum());
+    //printf("Integral %f\t%f\n",integral, projectionHist->GetSum());
     //
     //
     Float_t currentSum=0;
