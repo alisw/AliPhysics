@@ -48,6 +48,7 @@ SRCS= FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoEventReaderAODChain.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoAODTrackCut.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoCutMonitor.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoCorrFctn.cxx \
       FEMTOSCOPY/AliFemto/AliAnalysisTaskFemto.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
@@ -63,7 +64,6 @@ HDRS += FEMTOSCOPY/AliFemto/AliFmThreeVector.h \
         FEMTOSCOPY/AliFemto/AliFemtoAnalysisCollection.h \
         FEMTOSCOPY/AliFemto/AliFemtoAnalysis.h \
         FEMTOSCOPY/AliFemto/AliFemtoCorrFctnCollection.h \
-        FEMTOSCOPY/AliFemto/AliFemtoCorrFctn.h \
         FEMTOSCOPY/AliFemto/AliFemtoEnumeration.h \
         FEMTOSCOPY/AliFemto/AliFemtoHelix.h \
         FEMTOSCOPY/AliFemto/AliFemtoHiddenInfo.h \
