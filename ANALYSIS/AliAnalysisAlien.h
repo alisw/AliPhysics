@@ -70,13 +70,15 @@ public:
    virtual Bool_t      CreateDataset(const char *pattern);
    virtual Bool_t      CreateJDL();
    virtual void        EnablePackage(const char *package);
+   static  const char *GetJobStatus(Int_t jobidstart, Int_t lastid, Int_t &nrunning, Int_t &nwaiting, Int_t &nerror, Int_t &ndone);
    virtual Bool_t      MergeOutputs();
    virtual void        Print(Option_t *option="") const;
    virtual void        StartAnalysis(Long64_t nentries=123456789, Long64_t firstentry=0);
+   virtual void        Submit();
    virtual void        WriteAnalysisFile();
    virtual void        WriteAnalysisMacro();
    virtual void        WriteExecutable();
-   Bool_t              WriteJDL(Int_t index, Bool_t copy);
+   Bool_t              WriteJDL(Bool_t copy);
    virtual void        WriteValidationScript();
 
 protected:
@@ -85,6 +87,7 @@ protected:
    void                CheckDataType(const char *lfn, Bool_t &is_collection, Bool_t &is_xml, Bool_t &use_tags);
    virtual Bool_t      Connect();
    virtual void        SetDefaults();  
+   void                SubmitNext();
 
    Bool_t              FileExists(const char *lfn) const;
    Bool_t              IsCollection(const char *lfn) const;
@@ -101,6 +104,7 @@ private:
    Int_t            fRunRange[2];     // Run range
    Int_t            fNrunsPerMaster;  // Number of runs per masterjob
    Int_t            fMaxMergeFiles;   // Maximum number of files to be merged in one chunk
+   Int_t            fNsubmitted;      // Number of jobs submitted
    TString          fRunNumbers;      // List of runs to be processed
    TString          fExecutable;      // Executable script for AliEn job
    TString          fArguments;       // Arguments for the executable script
@@ -128,6 +132,6 @@ private:
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 4)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 5)   // Class providing some AliEn utilities
 };
 #endif
