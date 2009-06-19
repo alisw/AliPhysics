@@ -41,6 +41,8 @@ TString     root_version       = "v5-23-04";
 TString     aliroot_version    = "v4-17-03";
 // Change production base directory here
 TString     alien_datadir      = "/alice/sim/PDC_09/LHC09a5/";
+// AliEn output directory. If blank will become output_<train_name>
+TString     alien_outdir       = "/alice/sim/PDC_09/LHC09a5/AOD";
 // Number of files merged in a chunk
 Int_t       maxMergeFiles      = 50;
 // Files that should not be merged
@@ -58,7 +60,8 @@ TString     local_xmldataset   = "";
 
 // ### Other flags to steer the analysis
 //==============================================================================
-Bool_t      useDBG             = kFALSE;  // activate debugging
+Bool_t      useDATE            = kFALSE; // use date in train name
+Bool_t      useDBG             = kFALSE; // activate debugging
 Bool_t      useMC              = kTRUE;  // use MC info
 Bool_t      useTAGS            = kFALSE; // use ESD tags for selection
 Bool_t      useKFILTER         = kTRUE;  // use Kinematics filter
@@ -81,7 +84,7 @@ Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
 Int_t       iPWG2spectra       = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
 Int_t       iPWG2flow          = 1;      // Flow analysis task (PWG2)
 Int_t       iPWG2res           = 1;      // Resonances task (PWG2)
-Int_t       iPWG2kink          = 0;      // Kink analysis task (PWG2)
+Int_t       iPWG2kink          = 1;      // Kink analysis task (PWG2)
 
 // Temporaries.
 TString anaPars = "";
@@ -316,9 +319,14 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    //    
    if (mgr->InitAnalysis()) {
       mgr->PrintStatus();
-      if (saveTrain) gSystem->ChangeDirectory(train_name);
+      if (saveTrain || strlen(config_file)) gSystem->ChangeDirectory(train_name);
       StartAnalysis(smode, chain);
-   }   
+      if (saveTrain) {
+         printf("=== Registering ConfigTrain.C in the output directory <%s> ===\n",
+                alien_outdir.Data());
+         TFile::Cp("file:ConfigTrain.C", Form("alien://%s/ConfigTrain.C", alien_outdir.Data()));
+      }
+   }
 }
 
 //______________________________________________________________________________
@@ -826,7 +834,8 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
    if (iAODanalysis) plugin->SetGridWorkingDir("analysisAOD");
    else              plugin->SetGridWorkingDir("analysisESD");
 // Declare alien output directory. Relative to working directory.
-   plugin->SetGridOutputDir(Form("output_%s",train_name.Data())); // In this case will be $HOME/work/output
+   if (!alien_outdir.Length()) alien_outdir = Form("output_%s",train_name.Data());
+   plugin->SetGridOutputDir(alien_outdir);
 
    TString ana_sources = "";
    TString ana_add = "";
@@ -892,11 +901,15 @@ void WriteConfig()
       ::Error("AnalysisTrainNew.C::Export","Could not generate file name");
       return;
    }
-   const char date[64];
-   fdate.getline(date,64);
-   fdate.close();
-   gSystem->Exec("rm date.tmp");
-   train_name = Form("train_%s_%s", train_name.Data(), date);
+   if (useDATE) {
+      const char date[64];
+      fdate.getline(date,64);
+      fdate.close();
+      gSystem->Exec("rm date.tmp");
+      train_name = Form("train_%s_%s", train_name.Data(), date);
+   } else {
+      train_name = Form("train_%s", train_name.Data());
+   }   
    TString cdir = gSystem->WorkingDirectory();
    gSystem->MakeDirectory(train_name);
    gSystem->ChangeDirectory(train_name);
@@ -919,6 +932,8 @@ void WriteConfig()
    out << "   root_version    = " << "\"" << root_version.Data() << "\";" << endl;
    out << "   aliroot_version = " << "\"" << aliroot_version.Data() << "\";" << endl;
    out << "   alien_datadir   = " << "\"" << alien_datadir.Data() << "\";" << endl;
+   if (!alien_outdir.Length()) alien_outdir = Form("output_%s",train_name.Data());
+   out << "   alien_outdir    = " << "\"" << alien_outdir.Data() << "\";" << endl;
    out << "   maxMergeFiles   = " << maxMergeFiles << ";" << endl;
    out << "   mergeExclude    = " << "\"" << mergeExclude.Data() << "\";" << endl;
    out << "   nRunsPerMaster  = " << nRunsPerMaster << ";" << endl;
