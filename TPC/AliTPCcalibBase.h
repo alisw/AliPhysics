@@ -45,7 +45,7 @@ public:
   Int_t      GetDebugLevel() const {return fDebugLevel;}
   virtual void RegisterDebugOutput(const char *path);
   static     Bool_t HasLaser(AliESDEvent *event);
-  static TGraphErrors *        FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries, Int_t nmaxBin, Float_t fracLow=0.1, Float_t fracUp=0.9);
+  static TGraphErrors *        FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries, Int_t nmaxBin, Float_t fracLow=0.1, Float_t fracUp=0.9, Bool_t useMedian=kFALSE, TTreeSRedirector *cstream=0);
 
 protected: 
   TTreeSRedirector *fDebugStreamer;     //! debug streamer

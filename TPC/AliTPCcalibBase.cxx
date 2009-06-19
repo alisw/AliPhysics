@@ -249,10 +249,11 @@ void AliTPCcalibBase::RegisterDebugOutput(const char *path){
 
 
 
-TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries, Int_t nmaxBin, Float_t fracLow, Float_t fracUp){
+TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries, Int_t nmaxBin, Float_t fracLow, Float_t fracUp, Bool_t useMedian, TTreeSRedirector *cstream){
   //
   // Fitting slices of the projection(axisDim1,axisDim2) of a sparse histogram
   // 
+  TF1 funcGaus("funcGaus","gaus");
   TH2D * hist = h->Projection(axisDim1, axisDim2);
   Double_t *xvec = new Double_t[hist->GetNbinsX()];
   Double_t *yvec = new Double_t[hist->GetNbinsX()];
@@ -309,14 +310,26 @@ TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t ax
     Double_t xrms    =  hist->GetRMS()+hist->GetXaxis()->GetBinWidth(1)/TMath::Sqrt(12.); 
     Double_t binWidth = projectionHist->GetXaxis()->GetBinWidth(1);
     if (rms>0){
-      TF1 funcGaus("funcGaus","gaus");
       // cut on +- 4 RMS
       projectionHist->Fit(&funcGaus,"QN","",xMin, xMax);
+      Double_t chi2 = funcGaus.GetChisquare();
       //  
       xvec[counter] = xcenter;
       yvec[counter] = funcGaus.GetParameter(1);
       xerr[counter] = xrms;
       yerr[counter] = funcGaus.GetParError(1); 
+      if (useMedian) yvec[counter] = xMedian;
+      if (cstream){
+	(*cstream)<<"fitDebug"<<
+	  "xcenter="<<xcenter<<
+	  "xMin="<<xMin<<
+	  "xMax="<<xMax<<
+	  "xMedian="<<xMedian<<
+	  "xFitM"<<yvec[counter]<<
+	  "xFitS"<<yerr[counter]<<
+	  "chi2="<<chi2<<	  
+	  "\n";
+      }
       counter++;
     }else{
       xvec[counter] = xcenter;
