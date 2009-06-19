@@ -79,6 +79,7 @@ Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tra
 Int_t       iMUONcopyAOD       = 0;      // Task that copies only muon events in a separate AOD (PWG3)
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4) - needs ESD filter
 Int_t       iPWG4partcorr      = 1;      // Gamma-hadron correlations task (PWG4)
+Int_t       iPWG4gammaconv     = 0;      // Gamma conversion analysis (PWG4)
 Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
 Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
 Int_t       iPWG2spectra       = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
@@ -115,13 +116,14 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    if (iESDfilter)   printf("=  ESD filter                                                    =\n");
    if (iMUONcopyAOD) printf("=  MUON copy AOD                                                 =\n");
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
-   if (iPWG2spectra) printf("=  PWG2 proton, checkCascade, checkV0, strange                   =\n");
+   if (iPWG2spectra) printf("=  PWG2 proton, checkCascade, checkV0, strange, performance cascade =\n");
    if (iPWG2femto)   printf("=  PWG2 femtoscopy                                               =\n");
    if (iPWG2flow)    printf("=  PWG2 flow                                                     =\n");
    if (iPWG2res)     printf("=  PWG2 resonances                                               =\n");
    if (iPWG2kink)    printf("=  PWG2 kink analysis                                            =\n");
    if (iPWG3vertexing) printf("=  PWG3 vertexing                                            =\n");
    if (iPWG4partcorr)  printf("=  PWG4 gamma-hadron, pi0 and gamma-jet correlations         =\n");
+   if (iPWG4gammaconv) printf("=  PWG4 gamma conversion                                     =\n");
    printf("==================================================================\n");
    printf(":: use MC truth      %d\n", (UInt_t)useMC);
    printf(":: use KINE filter   %d\n", (UInt_t)useKFILTER);
@@ -241,6 +243,10 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskStrange.C");
       AliAnalysisTaskStrange *taskstrange = AddTaskStrange();
       if (!taskstrange) ::Warning("AnalysisTrainNew", "AliAnalysisTaskStrange cannot run for this train conditions - EXCLUDED");
+      // performance cascades
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskCheckPerformanceCascade.C");
+      AliAnalysisTaskStrange *taskperfcascade = AddTaskCheckPerformanceCascade();
+      if (!taskperfcascade) ::Warning("AnalysisTrainNew", "AliAnalysisTaskCheckPerformanceCascade cannot run for this train conditions - EXCLUDED");
    }   
    
    // Femtoscopy analysis modules
@@ -312,6 +318,15 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       if (!taskpartcorrPHOS) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation PHOS cannot run for this train conditions - EXCLUDED");
       AliAnalysisTaskParticleCorrelation *taskpartcorrEMCAL = AddTaskPartCorr("AOD", "EMCAL");
       if (!taskpartcorrEMCAL) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation EMCAL cannot run for this train conditions - EXCLUDED");
+   }   
+
+   // PWG4 gamma conversion analysis
+   if (iPWG4gammaconv) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskGammaConversion.C");
+      TString fileIn = "";
+      TString arguments = " -data-list "+  fileIn+ " -output-file-name common" + " -run-on-train"+" -run-jet"+" -run-chic"+" -run-neutralmeson";
+      AliAnalysisTaskGammaConversion * taskGammaConversion = AddTaskGammaConversion(arguments,mgr->GetCommonInputContainer());
+      if (!taskGammaConversion) ::Warning("AnalysisTrainNew", "AliAnalysisTaskGammaConversion cannot run for these train conditions - EXCLUDED");
    }   
    //==========================================================================
    // FOR THE REST OF THE TASKS THE MACRO AddTaskXXX() is not yet implemented/
@@ -400,6 +415,8 @@ void CheckModuleFlags(const char *mode) {
          if (iJETAN) 
             ::Info("AnalysisTrainNew.C::CheckModuleFlags", "JETAN disabled in analysis on AOD's without AOD handler");
          iJETAN = 0;
+         if (iPWG4gammaconv)
+            ::Info("AnalysisTrainNew.C::CheckModuleFlags", "iPWG4gammaconv disabled on AOD's");
       }
       // Disable tasks that do not work yet on AOD data
       if (iPWG2kink)         
@@ -569,13 +586,16 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    // JETAN
    if (iJETAN) {
       if (!LoadLibrary("JETAN", mode, kTRUE)) return kFALSE;
-   }   
-            
+   }               
    // PWG4 particle correlations
    if (iPWG4partcorr) {   
       if (!LoadLibrary("PWG4PartCorrBase", mode, kTRUE) ||
           !LoadLibrary("PWG4PartCorrDep", mode, kTRUE)) return kFALSE;
    }
+   // PWG4 gamma conversion
+   if (iPWG4gammaconv) {
+      if (!LoadLibrary("PWG4GammaConv", mode, kTRUE)) return kFALSE;
+   }      
    // PWG2 task protons 
    if (iPWG2spectra) {
       if (!LoadLibrary("PWG2spectra", mode, kTRUE)) return kFALSE;
@@ -959,6 +979,7 @@ void WriteConfig()
    out << "   iMUONcopyAOD    = " << iMUONcopyAOD << ";" << endl;
    out << "   iJETAN          = " << iJETAN << ";" << endl;
    out << "   iPWG4partcorr   = " << iPWG4partcorr << ";" << endl;
+   out << "   iPWG4gammaconv  = " << iPWG4gammaconv << ";" << endl;
    out << "   iPWG2femto      = " << iPWG2femto << ";" << endl;
    out << "   iPWG2spectra    = " << iPWG2spectra << ";" << endl;
    out << "   iPWG2flow       = " << iPWG2flow << ";" << endl;
