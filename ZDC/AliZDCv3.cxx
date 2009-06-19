@@ -2484,15 +2484,18 @@ void AliZDCv3::StepManager()
 	//
 	Int_t curTrackN = gAlice->GetMCApp()->GetCurrentTrackNumber();
         TParticle *part = gAlice->GetMCApp()->Particle(curTrackN);
-        Int_t imo = part->GetFirstMother();
-        TParticle * pmot = gAlice->GetMCApp()->Particle(imo);
-	
 	hits[10] = part->GetPdgCode();
-        hits[11] = pmot->GetPdgCode();
 	//printf("\t PDGCode = %d\n", part->GetPdgCode());
+	//
+        Int_t imo = part->GetFirstMother();
+	if(imo>0){
+          TParticle * pmot = gAlice->GetMCApp()->Particle(imo);
+          hits[11] = pmot->GetPdgCode();
+	}
+	else hits[11]=0;
         //
 	hits[12] = 1.0e09*gMC->TrackTime(); // in ns!
-	//printf("\t TrackTime = %f\n", hits[11]);
+	//printf("\t TrackTime = %f\n", hits[12]);
 
 	AddHit(curTrackN, vol, hits);
 	
