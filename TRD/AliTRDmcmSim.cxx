@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  TRD MCM (Multi Chip Module) simulator                                    //
@@ -222,6 +224,7 @@ Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob
     return kFALSE;
   }
 
+  Bool_t retval = kTRUE;
   trdLoader->LoadDigits();
   fDigitsManager = 0x0;
   AliTRDdigitsManager *digMgr = new AliTRDdigitsManager();
@@ -229,34 +232,37 @@ Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob
   digMgr->CreateArrays();
   digMgr->ReadDigits(trdLoader->TreeD());
   AliTRDarrayADC *digits = (AliTRDarrayADC*) digMgr->GetDigits(det);
-  if (!digits->HasData())
-    return kFALSE;
-  digits->Expand();
+  if (digits->HasData()) {
+    digits->Expand();
 
-  Int_t padrow = fFeeParam->GetPadRowFromMCM(rob, mcm);
-  Int_t padcol = 0;
-  for (Int_t ch = 0; ch < fNADC; ch++) {
-    padcol = GetCol(ch);
-    for (Int_t tb = 0; tb < fNTimeBin; tb++) {
-      if (padcol < 0) {
-        fADCR[ch][tb] = 0;
-        fADCF[ch][tb] = 0;
-      }
-      else {
-        if (digits->GetData(padrow,padcol, tb) < 0) {
-          fADCR[ch][tb] = 0;
-          fADCF[ch][tb] = 0;
-        }
-        else {
-          fADCR[ch][tb] = digits->GetData(padrow, padcol, tb) << fgkAddDigits;
-          fADCF[ch][tb] = digits->GetData(padrow, padcol, tb) << fgkAddDigits;
-        }
+    Int_t padrow = fFeeParam->GetPadRowFromMCM(rob, mcm);
+    Int_t padcol = 0;
+    for (Int_t ch = 0; ch < fNADC; ch++) {
+      padcol = GetCol(ch);
+      for (Int_t tb = 0; tb < fNTimeBin; tb++) {
+	if (padcol < 0) {
+	  fADCR[ch][tb] = 0;
+	  fADCF[ch][tb] = 0;
+	}
+	else {
+	  if (digits->GetData(padrow,padcol, tb) < 0) {
+	    fADCR[ch][tb] = 0;
+	    fADCF[ch][tb] = 0;
+	  }
+	  else {
+	    fADCR[ch][tb] = digits->GetData(padrow, padcol, tb) << fgkAddDigits;
+	    fADCF[ch][tb] = digits->GetData(padrow, padcol, tb) << fgkAddDigits;
+	  }
+	}
       }
     }
   }
+  else 
+    retval = kFALSE;
+
   delete digMgr;
 
-  return kTRUE;
+  return kFALSE;
 }
 
 void AliTRDmcmSim::NoiseTest(Int_t nsamples, Int_t mean, Int_t sigma, Int_t inputGain, Int_t inputTail)
@@ -1293,7 +1299,7 @@ void AliTRDmcmSim::CalcFitreg()
             }
             AliTRDarrayDictionary *dict = (AliTRDarrayDictionary*) fDigitsManager->GetDictionary(fDetector, iDict);
             if (dict->GetDim() == 0) {
-              AliError("Dictionary has dim. 0");
+              AliError(Form("Dictionary %i of det. %i has dim. 0", fDetector, iDict));
               continue;
             }
             dict->Expand();
