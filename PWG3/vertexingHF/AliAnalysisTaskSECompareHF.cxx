@@ -178,6 +178,9 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
   Int_t nprongs,lab,okD0,okD0bar,pdg;
   Bool_t unsetvtx;    
   Double_t invmass,cov[6],errx,erry,errz;
+  AliAODRecoDecayHF2Prong *d2=0;
+  AliAODRecoDecayHF3Prong *d3=0;
+  AliAODRecoDecayHF4Prong *d4=0;
 
   // loop over vertices
   Int_t nVertices = inputArrayVertices->GetEntriesFast();
@@ -191,7 +194,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 
     switch(nprongs) {
     case 2: // look for D0->Kpi
-      AliAODRecoDecayHF2Prong *d2 = (AliAODRecoDecayHF2Prong*)vtx->GetParent();
+      d2 = (AliAODRecoDecayHF2Prong*)vtx->GetParent();
       lab = d2->MatchToMC(421,mcArray);
       if(lab>=0) {
 	unsetvtx=kFALSE;
@@ -222,7 +225,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
       }
       break;
     case 3: // look for D+
-      AliAODRecoDecayHF3Prong *d3 = (AliAODRecoDecayHF3Prong*)vtx->GetParent();
+      d3 = (AliAODRecoDecayHF3Prong*)vtx->GetParent();
       lab = d3->MatchToMC(411,mcArray);
       if(lab>=0) {
 	unsetvtx=kFALSE;
@@ -248,7 +251,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
       }
       break;
     case 4: // look for D0->Kpipipi
-      AliAODRecoDecayHF4Prong *d4 = (AliAODRecoDecayHF4Prong*)vtx->GetParent();
+      d4 = (AliAODRecoDecayHF4Prong*)vtx->GetParent();
       lab = d4->MatchToMC(421,mcArray);
       if(lab>=0) {
 	unsetvtx=kFALSE;
