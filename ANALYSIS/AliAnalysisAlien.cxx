@@ -1514,8 +1514,8 @@ void AliAnalysisAlien::SubmitNext()
       printf("********* %s\n",query.Data());
       res = gGrid->Command(query);
       if (res) {
-         const char *cjobId1 = res->GetKey(0,"jobId");
-         if (!cjobId1) {
+         TString cjobId1 = res->GetKey(0,"jobId");
+         if (!cjobId1.Length()) {
             Error("StartAnalysis", "Your JDL %s could not be submitted", fJDLName.Data());
             iscalled = kFALSE;
             return;
@@ -1523,10 +1523,10 @@ void AliAnalysisAlien::SubmitNext()
             Info("StartAnalysis", "\n_______________________________________________________________________ \
             \n#####   Your JDL %s submitted (%d to go). \nTHE JOB ID IS: %s \
             \n_______________________________________________________________________",
-                fJDLName.Data(), nmasterjobs-fNsubmitted-1, cjobId1);
+                fJDLName.Data(), nmasterjobs-fNsubmitted-1, cjobId1.Data());
             jobID += cjobId1;
             jobID += " ";
-            lastmaster = atoi(cjobId1);
+            lastmaster = cjobId1.Atoi();
             if (!firstmaster) firstmaster = lastmaster;
             fNsubmitted++;
          }          
