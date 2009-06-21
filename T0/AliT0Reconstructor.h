@@ -13,6 +13,7 @@
 #include "AliReconstructor.h"
 #include "AliT0Parameters.h"
 #include "AliT0Calibrator.h"
+#include "AliT0RecoParam.h"
 
 class AliT0Reconstructor: public AliReconstructor {
  public:
@@ -30,7 +31,10 @@ class AliT0Reconstructor: public AliReconstructor {
   virtual void     FillESD( TTree* digitsTree,  TTree*clustersTree, AliESDEvent*esd ) const;
 
   virtual Bool_t   HasDigitConversion() const {return kFALSE;}
+  static const AliT0RecoParam* GetRecoParam()
+    { return dynamic_cast<const AliT0RecoParam*>(AliReconstructor::GetRecoParam(11)); } // getting RecoParam obj
    
+ 
  protected:
   Float_t             fdZonA;             // Zideal - Zreal side A 
   Float_t             fdZonC;             // Zideal - Zreal side C

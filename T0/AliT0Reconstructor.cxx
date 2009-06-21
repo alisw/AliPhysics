@@ -50,11 +50,8 @@ ClassImp(AliT0Reconstructor)
 {
   //constructor
 
- AliDebug(1,"Start reconstructor ");
-  
   fParam = AliT0Parameters::Instance();
   fParam->Init();
-   TString option = GetOption(); 
  
   for (Int_t i=0; i<24; i++){
         TGraph* gr = fParam ->GetAmpLEDRec(i);
@@ -62,12 +59,13 @@ ClassImp(AliT0Reconstructor)
 	  TGraph* gr1 = fParam ->GetAmpLED(i);
 	  if (gr1) fAmpLED.AddAtAndExpand(gr1,i) ; 
 	  TGraph* gr2 = fParam ->GetQTC(i);
-	  if (gr2) fQTC.AddAtAndExpand(gr2,i) ; 
-	
+	  if (gr2) fQTC.AddAtAndExpand(gr2,i) ; 	
   }
+
   
   fdZonC = TMath::Abs(fParam->GetZPositionShift("T0/C/PMT1"));
   fdZonA = TMath::Abs(fParam->GetZPositionShift("T0/A/PMT15"));
+
   fCalib = new AliT0Calibrator();
 
 }
@@ -76,13 +74,13 @@ ClassImp(AliT0Reconstructor)
 AliT0Reconstructor::AliT0Reconstructor(const AliT0Reconstructor &r):
   AliReconstructor(r),
 					     fdZonA(0),
-					     fdZonC(0),
+	                                     fdZonC(0),
 					     fZposition(0),
 					     fParam(NULL),
-                                             fAmpLEDrec(),
+                                             fAmpLEDrec(0),
 					     fQTC(0),
 					     fAmpLED(0),
-					     fCalib()
+  					     fCalib()
 
  {
   //
@@ -99,7 +97,6 @@ AliT0Reconstructor &AliT0Reconstructor::operator=(const AliT0Reconstructor &r)
   //
   // Assignment operator
   //
-
   if (this != &r) ((AliT0Reconstructor &) r).Copy(*this);
   return *this;
 
@@ -111,9 +108,9 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   
 {
   // T0 digits reconstruction
-  // T0RecPoint writing 
-  
-  
+  Int_t refAmp = GetRecoParam()->GetRefAmp();
+  Int_t refPoint = GetRecoParam()->GetRefPoint();
+ 
   TArrayI * timeCFD = new TArrayI(24); 
   TArrayI * timeLED = new TArrayI(24); 
   TArrayI * chargeQT0 = new TArrayI(24); 
@@ -151,9 +148,6 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   Int_t pmtBestC=99999;
   Float_t timeDiff=999999, meanTime=0;
   
-  //  Int_t mv2MIP = fParam-> GetmV2Mip();     
-
-
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
   clustersTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints, 405,1);
   
@@ -165,7 +159,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       else
 	adc[ipmt] = 0;
       
-      time[ipmt] = fCalib-> WalkCorrection( ipmt, adc[ipmt], Float_t( timeCFD->At(ipmt))) ;
+      time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, adc[ipmt],  timeCFD->At(ipmt)) ;
 	     
       Double_t sl = Double_t(timeLED->At(ipmt) - timeCFD->At(ipmt));
       //    time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt],"cosmic" ) ;
@@ -215,7 +209,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     frecpoints->SetMeanTime(Int_t(meanTime));
     //online mean
     frecpoints->SetOnlineMean(Int_t(onlineMean));
-    AliDebug(10,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm online mean %i ps",timeDiff, meanTime,vertex, Int_t(onlineMean)));
+    AliDebug(10,Form("  timeDiff %f #channel,  meanTime %f #channel, vertex %f cm online mean %i ps",timeDiff, meanTime,vertex, Int_t(onlineMean)));
     
   }
   
@@ -233,9 +227,13 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
 void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) const
 {
   // T0 raw ->
-  // T0RecPoint writing 
-  
-  //Q->T-> coefficients !!!! should be measured!!!
+  //
+  // reference amplitude and time ref. point from reco param
+
+ Int_t refAmp = GetRecoParam()->GetRefAmp();
+ Int_t refPoint = GetRecoParam()->GetRefPoint();
+
+
   Int_t allData[110][5];
   
   Int_t timeCFD[24], timeLED[24], chargeQT0[24], chargeQT1[24];
@@ -251,12 +249,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Int_t pmtBestC=99999;
   Float_t timeDiff=9999999, meanTime=0;
   Float_t meanVertex = fParam->GetMeanVertex();
-  printf("meanVertex %f \n",meanVertex);
    
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
   
   recTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints, 405,1);
-   
    
   AliDebug(10," before read data ");
   AliT0RawReader myrawreader(rawReader);
@@ -315,10 +311,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   else
 	     adc[ipmt] = 0;
 	   
-	   time[ipmt] = fCalib-> WalkCorrection( ipmt, adc[ipmt], timeCFD[ipmt]) ;
+
+	   time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, adc[ipmt], timeCFD[ipmt] ) ;
 	   
       	   Double_t sl = timeLED[ipmt] - timeCFD[ipmt];
-	     //    time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt],"cosmic" ) ;
+	     //    time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt] ) ;
 	   AliDebug(10,Form(" ipmt %i QTC %i , time in chann %i (led-cfd) %i ",
 			    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
 	   Double_t ampMip =( (TGraph*)fAmpLED.At(ipmt))->Eval(sl);
@@ -353,7 +350,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        if(besttimeA !=9999999)  frecpoints->SetTimeBestA(Int_t(besttimeA));
        if( besttimeC != 9999999 ) frecpoints->SetTimeBestC(Int_t(besttimeC));
-       AliDebug(5,Form(" pmtA %i besttimeA %f ps, pmtC %i besttimeC %f ps",
+       AliDebug(5,Form(" pmtA %i besttimeA %f ps, pmtC %i besttimeC %f #channel",
 		       pmtBestA,besttimeA, pmtBestC,  besttimeC));
        Float_t c = 0.0299792458; // cm/ps
        Float_t vertex = 99999;
@@ -365,7 +362,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	 frecpoints->SetVertex(vertex);
 	 frecpoints->SetMeanTime(Int_t(meanTime));
 	 frecpoints->SetOnlineMean(Int_t(onlineMean));
-	 AliDebug(5,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm meanVertex %f online mean %i ",timeDiff, meanTime,vertex,meanVertex, onlineMean));
+	 AliDebug(5,Form("  timeDiff %f #channel,  meanTime %f #channel, vertex %f cm meanVertex %f online mean %i ",timeDiff, meanTime,vertex,meanVertex, onlineMean));
 	 
        }
     } // if (else )raw data

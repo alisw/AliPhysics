@@ -30,6 +30,8 @@
 #include "AliLog.h"
 #include "AliT0Parameters.h"
 #include "AliT0Calibrator.h"
+#include "AliT0Reconstructor.h"
+#include "AliT0RecoParam.h"
 #include <TGraph.h>
 #include <TH1F.h>
 #include <TMath.h>
@@ -44,18 +46,18 @@ ClassImp(AliT0Calibrator)
 				     
 {
   //constructor
-
    AliT0Parameters* param = AliT0Parameters::Instance();
    param->Init();
-  
+   //slewing correcion and equalizing channels
+
   fChannelWidth = param->GetChannelWidth() ;  
+   //   Double_t *grX ; 
   for (Int_t i=0; i<24; i++){
     fMaxValue[i]=0;
     fTimeDelayCFD[i] = Int_t (param->GetTimeDelayCFD(i));
-    
     TGraph* fu = param ->GetWalk(i);
-    //    TGraph* fu  = param ->GetAmpLEDRec(i);
-    fWalk.AddAtAndExpand(fu,i);	
+    fWalk.AddAtAndExpand(fu,i);
+     
   }
   
 }
@@ -88,16 +90,25 @@ AliT0Calibrator &AliT0Calibrator::operator=(const AliT0Calibrator &r)
 
 
 //____________________________________________________________________
-Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time) 
+
+Int_t  AliT0Calibrator::WalkCorrection(Int_t refAmp,  Int_t ipmt, Int_t qt, Int_t time) 
+
 {
-  //slewing correcion and equalizing channels
+  //
+  // referemce amplitude for walk correction now read from RecoParam
+
+  Double_t *grY ; 
 
   Int_t walk=0;
 
   Int_t timeEq=0, timeWalk=0;  
   TGraph *fu1=(TGraph*) fWalk.At(ipmt);
-  if(fu1 && fu1->GetN()>0) 
-    walk=Int_t(fu1->Eval(Double_t(qt)));
+  if(fu1 && fu1->GetN()>0) {
+    grY = fu1->GetY();
+    fMaxValue[ipmt]=grY[refAmp-1];
+    //    TGraph* fu  = param ->GetAmpLEDRec(i);
+    walk = Int_t (fMaxValue[ipmt]) + Int_t(fu1->Eval(Double_t(qt)));
+  }
   
   timeWalk = time + walk   ;
   timeEq= timeWalk - fTimeDelayCFD[ipmt];

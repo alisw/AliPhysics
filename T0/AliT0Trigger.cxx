@@ -28,10 +28,17 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliTriggerInput.h"
+#include "AliT0Parameters.h"
+#include "AliT0TriggerParameters.h"
+#include <AliCDBManager.h>        
+#include <AliCDBEntry.h>          
+#include <AliCDBStorage.h>  
 
 #include "AliT0.h"
 #include "AliT0digit.h"
 #include "AliT0Trigger.h"
+
+#include "Riostream.h"
 
 //----------------------------------------------------------------------
 ClassImp(AliT0Trigger)
@@ -44,13 +51,22 @@ AliT0Trigger::AliT0Trigger()
 {
    SetName("T0");
    CreateInputs();
+   AliCDBManager *stor =AliCDBManager::Instance();
+   //time equalizing
+   AliCDBEntry* fCalibentry  = stor->Get("T0/Calib/TriggerParam");
+   if (fCalibentry)
+     fTrigPar  = (AliT0TriggerParameters*)fCalibentry->GetObject();
+   else {
+         AliWarning(" No trigger parameters  in CDB , use default"); 
+   }
+
 }
 
 //----------------------------------------------------------------------
 void AliT0Trigger::CreateInputs()
 {
    // inputs 
-   
+ 
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
    
@@ -59,6 +75,7 @@ void AliT0Trigger::CreateInputs()
    fInputs.AddLast( new AliTriggerInput( "T0_Vertex_L0", "T0", 0 ) );
    fInputs.AddLast( new AliTriggerInput( "T0_Centr_L0", "T0",  0 ) );
    fInputs.AddLast( new AliTriggerInput( "T0_SemiCentral_L0", "T0",  0 ) );
+
 }
 
 //----------------------------------------------------------------------
@@ -92,12 +109,19 @@ void AliT0Trigger::Trigger()
   Int_t   timeDiff = fDigits->TimeDiff();
   Int_t    sumMult=   fDigits->SumMult();
 
-  if (besttimeA > 0 && besttimeA <99999  )  SetInput("T0_A_L0");
-  if (besttimeC>0  && besttimeC<99999)   SetInput("T0_C_L0"); 
+  //trigger parameteres
+
+  Float_t timeWindowLow = fTrigPar->GetTimeWindowLow(); 
+  Float_t timeWindowHigh = fTrigPar->GetTimeWindowHigh(); 
+  Int_t ampCentr = fTrigPar->GetAmpCentr(); 
+  Int_t ampSemiCentr =  fTrigPar->GetAmpSemiCentr();
+
+  if (besttimeA > 0 && besttimeA <99999)  SetInput("T0_A_L0");
+  if (besttimeC > 0  && besttimeC<99999)   SetInput("T0_C_L0"); 
   //6093 corrsponds to vertex -20cm, 6202 vertex +20 with delay 150nc eqalized on the TVDC unit 
-  if (timeDiff >6090 && timeDiff < 6210)       SetInput("T0_Vertex_L0");
-  if (sumMult > 175)                           SetInput("T0_Centr_L0");
-  if (sumMult>155 && sumMult <= 175)           SetInput("T0_SemiCentral_L0");;
+  if (timeDiff >timeWindowLow && timeDiff < timeWindowHigh) SetInput("T0_Vertex_L0");
+  if (sumMult > ampCentr)  SetInput("T0_Centr_L0");
+  if (sumMult> ampSemiCentr && sumMult <= ampCentr) SetInput("T0_SemiCentral_L0");;
 
    
 }
