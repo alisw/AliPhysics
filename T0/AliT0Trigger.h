@@ -11,6 +11,7 @@
 /////////////////////////////////////////////////
 
 #include "AliTriggerDetector.h"
+#include "AliT0TriggerParameters.h"
 class AliT0;
 
 class AliT0Trigger : public AliTriggerDetector
@@ -25,6 +26,8 @@ class AliT0Trigger : public AliTriggerDetector
   
   AliT0 *fT0;          //!
   AliT0digit *fDigits   ; //! digits
+
+  AliT0TriggerParameters* fTrigPar;  // trigger parameters
 
   AliT0Trigger(const AliT0Trigger&);
   AliT0Trigger& operator=(const AliT0Trigger&);
