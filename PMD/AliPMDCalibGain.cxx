@@ -194,7 +194,7 @@ Int_t AliPMDCalibGain::ExtractHotChannel(const Char_t *rootFile)
 
   if(!hotmapfile)
     {
-      printf(" NO HOTCHANNEL MAP FOUND (PMD_HOR.root) FILE IS FOUND \n");
+      printf(" NO HOTCHANNEL MAP FOUND (PMD_HOT.root) FILE IS FOUND \n");
       fHotFlag[kDet][kMaxSMN][kMaxRow][kMaxCol] = 0.;
     }
 
@@ -459,13 +459,22 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader, TObjArray *pmdddlc
   
 }
 // ------------------------------------------------------------------------ //
-void AliPMDCalibGain::Analyse(TTree *gaintree)
+void AliPMDCalibGain::Analyse(TTree *gaintree, TTree *meantree)
 {
   // Calculates the mean
   Int_t   det, sm, row, col;
   Float_t gain;
-  Float_t modmean  = 0.;
   Float_t cellmean = 0.;
+
+  Float_t modmean[2][24];
+
+  for (Int_t idet=0; idet < 2; idet++)
+    {
+      for (Int_t ism = 0; ism < 24; ism++)
+	{
+	  modmean[idet][ism] = 0.;
+	}
+    }
 
   gaintree->Branch("det",&det,"det/I");
   gaintree->Branch("sm",&sm,"sm/I");
@@ -478,7 +487,7 @@ void AliPMDCalibGain::Analyse(TTree *gaintree)
       for(Int_t ism = 0; ism < kMaxSMN; ism++)
 	{
 	  if (fSMCount[idet][ism] > 0)
-	    modmean = fSMIso[idet][ism]/fSMCount[idet][ism];
+	    modmean[idet][ism] = fSMIso[idet][ism]/fSMCount[idet][ism];
 	  for(Int_t irow = 0; irow < kMaxRow; irow++)
 	    {
 	      for(Int_t icol = 0; icol < kMaxCol; icol++)
@@ -493,7 +502,7 @@ void AliPMDCalibGain::Analyse(TTree *gaintree)
 		  col      = icol;
 		  if (cellmean > 0.0 && fCellCount[idet][ism][irow][icol]>0.)
 		    {
-		      gain = cellmean/modmean;
+		      gain = cellmean/modmean[idet][ism];
 		    }
 		  else
 		    {
@@ -505,10 +514,28 @@ void AliPMDCalibGain::Analyse(TTree *gaintree)
 	    }
 	}
     }
+
+  Float_t smmean;
+
+  // Writing each module mean value
+  meantree->Branch("det",&det,"det/I");
+  meantree->Branch("sm",&sm,"sm/I");
+  meantree->Branch("smmean",&smmean,"row/F");
   
+  for(Int_t idet = 0; idet < kDet; idet++)
+    {
+      for (Int_t ism = 0; ism < kMaxSMN; ism++)
+	{
+	  det    = idet;
+	  sm     = ism;
+	  smmean = modmean[idet][ism];
+	  meantree->Fill();
+	}
+    }
+
 }
 // ------------------------------------------------------------------------ //
-void AliPMDCalibGain::AnalyseHotCell(TTree *hottree)
+void AliPMDCalibGain::FindHotCell(TTree *hottree, Float_t xvar)
 {
   // Calculates the mean
   Int_t   det, sm, row, col;
@@ -516,7 +543,9 @@ void AliPMDCalibGain::AnalyseHotCell(TTree *hottree)
   Float_t meannhit;
   Float_t meanSqnhit;
   Float_t sigmanhit,nhitcut;
-  
+
+  //Float_t xvar = 5.;
+
   hottree->Branch("det",&det,"det/I");
   hottree->Branch("sm",&sm,"sm/I");
   hottree->Branch("row",&row,"row/I");
@@ -532,7 +561,7 @@ void AliPMDCalibGain::AnalyseHotCell(TTree *hottree)
 	      meannhit   = fTempnhit[idet][ism]/fCountSm[idet][ism];
 	      meanSqnhit = fTempnhitSq[idet][ism]/fCountSm[idet][ism];
 	      sigmanhit  = sqrt(meanSqnhit-(meannhit*meannhit));
-	      nhitcut    = meannhit + 6.*sigmanhit;
+	      nhitcut    = meannhit + xvar*sigmanhit;
 
 	      for(Int_t irow = 0; irow < kMaxRow; irow++)
 		{

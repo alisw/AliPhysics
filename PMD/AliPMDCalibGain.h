@@ -24,8 +24,8 @@ class AliPMDCalibGain : public TObject
 
   Bool_t ProcessEvent(AliRawReader *rawReader, TObjArray *pmdddlcont);  //Looks for iso cells
 
-  void Analyse(TTree *gaintree);
-  void AnalyseHotCell(TTree *hottree); // finds hot cell
+  void Analyse(TTree *gaintree, TTree *meantree);
+  void FindHotCell(TTree *hottree, Float_t xvar); // finds hot cell
   
  private:
 
@@ -50,6 +50,6 @@ class AliPMDCalibGain : public TObject
   Float_t fTempnhitSq[kDet][kMaxSMN];  // square of hit freq. of each mod.
   FILE    *fpw;                        // write the temp file
 
-ClassDef(AliPMDCalibGain,6)            // description 
+ClassDef(AliPMDCalibGain,7)            // description 
 };
 #endif // ALIPMDCALIBGAIN_H

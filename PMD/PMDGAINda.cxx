@@ -18,7 +18,6 @@ extern "C" {
 
 #include "event.h"
 #include "monitor.h"
-//#include "daqDA.h"
 
 #include <Riostream.h>
 #include <stdio.h>
@@ -56,14 +55,15 @@ int main(int argc, char **argv) {
     int status = 0;
 
 
-    Int_t filestatus = -1, totevt = -1;
-    Int_t maxevt = -1;
+    Int_t filestatus = -1, xvar = 5;
+    Int_t totevt = -1, maxevt = -1;
 
     // Reads the pedestal file and keep the values in memory for subtraction
 
     AliPMDCalibGain calibgain;
 
     // Fetch the pedestal file - PMD_PED.root 
+
     status = daqDA_DB_getFile("PMD_PED.root","PMD_PED.root");
 
     if(!status)
@@ -75,12 +75,13 @@ int main(int argc, char **argv) {
 	printf("*** Pedestal file NOT retrieved from DB *** \n");
 	return -1;
       }
-
+    
     Int_t pstatus = calibgain.ExtractPedestal("PMD_PED.root");
 
     if(pstatus == -3) return -3;
 
-    TTree *ic = NULL;
+    TTree *ic    = NULL;
+    TTree *meanc = NULL;
 
     // Retrieve the PMD_GAIN_CONFIGFILE
     status = daqDA_DB_getFile("PMD_GAIN_CONFIGFILE","PMD_GAIN_CONFIGFILE");
@@ -96,10 +97,11 @@ int main(int argc, char **argv) {
       }
     else
       {
-	fscanf(fp1,"%d %d %d\n",&filestatus, &totevt,&maxevt);
-	//printf("%d %d %d\n",filestatus, totevt, maxevt);
+	fscanf(fp1,"%d %d %d %d\n",&filestatus, &xvar, &totevt, &maxevt);
+	//printf("%d %d %d %d\n",filestatus, xvar, totevt, maxevt);
       }
     fclose(fp1);
+
     
     if (filestatus == 1)
       {
@@ -113,7 +115,18 @@ int main(int argc, char **argv) {
 	  {
 	    printf("--- pmd_gain_tempfile.dat: not retrieved from DB ---\n");
 	  }
+	// Retrieve the hot cell file from DB - PMD_HOT.root
+	status = daqDA_DB_getFile("PMD_HOT.root","PMD_HOT.root");
+	if(!status)
+	  {
+	    calibgain.ExtractHotChannel("PMD_HOT.root");
+	  }
+	else
+	  {
+	    printf("--- pmd_gain_tempfile.dat: not retrieved from DB ---\n");
+	  }
       }
+
 
     // decoding the events
     
@@ -214,7 +227,26 @@ int main(int argc, char **argv) {
 
     /* exit when last event received, no need to wait for TERM signal */
 
-    ic = new TTree("ic","PMD Gain tree");
+
+    ic    = new TTree("ic","PMD Gain tree");
+    meanc = new TTree("meanc","PMD Module mean tree");
+
+    if (filestatus == 0)
+      {
+	TFile *hotRun = new TFile ("PMD_HOT.root","RECREATE");
+
+	TTree *hot = new TTree("hot","PMD Hot cell tree");
+	
+	calibgain.FindHotCell(hot,xvar);
+	
+	hot->Write();
+	hotRun->Close();
+
+	// store the hot cell root file in the DB
+
+	status = daqDA_DB_storeFile("PMD_HOT.root","PMD_HOT.root");
+      }
+
 
     totevt += nevents_physics++;
 
@@ -234,7 +266,8 @@ int main(int argc, char **argv) {
 	status = daqDA_DB_storeFile("pmd_gain_tempfile.dat","pmd_gain_tempfile.dat");
 
 	filestatus = 1;
-	fprintf(fp1,"%d %d %d\n",filestatus,totevt,maxevt);
+	fprintf(fp1,"%d %d %d %d\n",filestatus,xvar,totevt,maxevt);
+	fclose(fp1);
 
 	// Store the configfile in the DB
 	status = daqDA_DB_storeFile("PMD_GAIN_CONFIGFILE","PMD_GAIN_CONFIGFILE");
@@ -247,37 +280,49 @@ int main(int argc, char **argv) {
 	printf("***  Writing the PMDGAINS.root file           ***\n");
 	printf("-----------------------------------------------\n");
 
-	calibgain.Analyse(ic);
+	calibgain.Analyse(ic, meanc);
 
 	TFile * gainRun = new TFile ("PMDGAINS.root","RECREATE"); 
 	ic->Write();
 	gainRun->Close();
 
+	TFile * meanRun = new TFile ("PMD_MEAN_SM.root","RECREATE"); 
+	meanc->Write();
+	meanRun->Close();
+
+
 	filestatus = 0;
 	totevt     = 0;
-	fprintf(fp1,"%d %d %d\n",filestatus,totevt,maxevt);
+	fprintf(fp1,"%d %d %d %d\n",filestatus,xvar,totevt,maxevt);
+	fclose(fp1);
 
 	// Store the configfile in the DB
 	status = daqDA_DB_storeFile("PMD_GAIN_CONFIGFILE","PMD_GAIN_CONFIGFILE");
-
       }
-    fclose(fp1);
     
     delete ic;
     ic = 0;
+
+    delete meanc;
+    meanc = 0;
     
 
     /* store the result file on FES */
  
     if (filestatus == 0)
       {
-	printf("root file is created and getting exported\n");
+	printf("root file for cell gain is created and getting exported\n");
 	status = daqDA_FES_storeFile("PMDGAINS.root","PMDGAINS.root");
+	printf("root file for hot cell is created and getting exported\n");
+	status = daqDA_FES_storeFile("PMD_HOT.root","PMD_HOT.root");
+	printf("root file for normalised means of different modules\n");
+	status = daqDA_FES_storeFile("PMD_MEAN_SM.root","PMD_MEAN_SM.root");
       }
-
+    
     if (status) {
       status = -2;
     }
+
 
 
     return status;
