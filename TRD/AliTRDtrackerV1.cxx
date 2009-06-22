@@ -631,29 +631,37 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
 //_____________________________________________________________________________
 Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 {
-  // Extrapolates the TRD track in the TOF direction.
-  //
-  // Parameters
-  //   t : the TRD track which has to be extrapolated
-  // 
-  // Output
-  //   number of clusters attached to the track
-  //
-  // Detailed description
-  //
-  // Starting from current radial position of track <t> this function
-  // extrapolates the track through the 6 TRD layers. The following steps
-  // are being performed for each plane:
-  // 1. prepare track:
-  //   a. get plane limits in the local x direction
-  //   b. check crossing sectors 
-  //   c. check track inclination
-  // 2. build tracklet (see AliTRDseed::AttachClusters() for details)
-  // 3. evaluate material budget using the geo manager
-  // 4. propagate and update track using the tracklet information.
-  //
-  // Debug level 2
-  //
+// Extrapolates/Build the TRD track in the TOF direction.
+//
+// Parameters
+//   t : the TRD track which has to be extrapolated
+// 
+// Output
+//   number of clusters attached to the track
+//
+// Starting from current radial position of track <t> this function
+// extrapolates the track through the 6 TRD layers. The following steps
+// are being performed for each plane:
+// 1. Propagate track to the entrance of the next chamber:
+//   - get chamber limits in the radial direction
+//   - check crossing sectors 
+//   - check track inclination
+//   - check track prolongation against boundary conditions (see exclusion boundaries on AliTRDgeometry::IsOnBoundary())
+// 2. Build tracklet (see AliTRDseed::AttachClusters() for details) for this layer if needed. If only 
+//    Kalman filter is needed and tracklets are already linked to the track this step is skipped.
+// 3. Fit tracklet using the information from the Kalman filter.
+// 4. Propagate and update track at reference radial position of the tracklet.
+// 5. Register tracklet with the tracker and track; update pulls monitoring.
+//
+// Observation
+//   1. During the propagation a bit map is filled detailing the status of the track in each TRD chamber
+//   2. By default the status of the track before first TRD update is saved. 
+// 
+// Debug level 2
+//
+// Author
+//   Alexandru Bercuci <A.Bercuci@gsi.de>
+//
 
   Int_t n = 0;
   Double_t driftLength = .5*AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick();
@@ -2343,54 +2351,63 @@ Double_t AliTRDtrackerV1::BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int
 //____________________________________________________________________
 Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *sseed, Int_t *ipar)
 {
-  //
-  // Make tracklet seeds in the TRD stack.
-  //
-  // Parameters :
-  //   layers : Array of stack propagation layers containing clusters
-  //   sseed  : Array of empty tracklet seeds. On exit they are filled.
-  //   ipar   : Control parameters:
-  //       ipar[0] -> seeding chambers configuration
-  //       ipar[1] -> stack index
-  //       ipar[2] -> number of track candidates found so far
-  //
-  // Output :
-  //   Number of tracks candidates found.
-  // 
-  // Detailed description
-  //
-  // The following steps are performed:
-  // 1. Select seeding layers from seeding chambers
-  // 2. Select seeding clusters from the seeding AliTRDpropagationLayerStack.
-  //   The clusters are taken from layer 3, layer 0, layer 1 and layer 2, in
-  //   this order. The parameters controling the range of accepted clusters in
-  //   layer 0, 1, and 2 are defined in AliTRDchamberTimeBin::BuildCond().
-  // 3. Helix fit of the cluster set. (see AliTRDtrackerFitter::FitRieman(AliTRDcluster**))
-  // 4. Initialize seeding tracklets in the seeding chambers.
-  // 5. Filter 0.
-  //   Chi2 in the Y direction less than threshold ... (1./(3. - sLayer))
-  //   Chi2 in the Z direction less than threshold ... (1./(3. - sLayer))
-  // 6. Attach clusters to seeding tracklets and find linear approximation of
-  //   the tracklet (see AliTRDseedV1::AttachClustersIter()). The number of used
-  //   clusters used by current seeds should not exceed ... (25).
-  // 7. Filter 1.
-  //   All 4 seeding tracklets should be correctly constructed (see
-  //   AliTRDseedV1::AttachClustersIter())
-  // 8. Helix fit of the seeding tracklets
-  // 9. Filter 2.
-  //   Likelihood calculation of the fit. (See AliTRDtrackerV1::CookLikelihood() for details)
-  // 10. Extrapolation of the helix fit to the other 2 chambers:
-  //    a) Initialization of extrapolation tracklet with fit parameters
-  //    b) Helix fit of tracklets
-  //    c) Attach clusters and linear interpolation to extrapolated tracklets
-  //    d) Helix fit of tracklets
-  // 11. Improve seeding tracklets quality by reassigning clusters.
-  //      See AliTRDtrackerV1::ImproveSeedQuality() for details.
-  // 12. Helix fit of all 6 seeding tracklets and chi2 calculation
-  // 13. Hyperplane fit and track quality calculation. See AliTRDtrackerFitter::FitHyperplane() for details.
-  // 14. Cooking labels for tracklets. Should be done only for MC
-  // 15. Register seeds.
-  //
+//
+// Seed tracklets and build candidate TRD tracks.
+//
+// Parameters :
+//   layers : Array of stack propagation layers containing clusters
+//   sseed  : Array of empty tracklet seeds. On exit they are filled.
+//   ipar   : Control parameters:
+//       ipar[0] -> seeding chambers configuration
+//       ipar[1] -> stack index
+//       ipar[2] -> number of track candidates found so far
+//
+// Output :
+//   Number of tracks candidates found.
+// 
+// The following steps are performed:
+// 1. Build seeding layers by collapsing all time bins from each of the four seeding chambers along the 
+// radial coordinate. See AliTRDtrackingChamber::GetSeedingLayer() for details. The chambers selection for seeding
+// is described in AliTRDtrackerV1::Clusters2TracksStack().
+// 2. Using the seeding clusters from the seeding layer (step 1) build combinatorics using the following algorithm:
+// - for each seeding cluster in the lower seeding layer find
+// - all seeding clusters in the upper seeding layer inside a road defined by a given phi angle. The angle 
+//   is calculated on the minimum pt of tracks from vertex accesible to the stand alone tracker.
+// - for each pair of two extreme seeding clusters select middle upper cluster using roads defined externally by the 
+//   reco params
+// - select last seeding cluster as the nearest to the linear approximation of the track described by the first three
+//   seeding clusters.
+//   The implementation of road calculation and cluster selection can be found in the functions AliTRDchamberTimeBin::BuildCond()
+//   and AliTRDchamberTimeBin::GetClusters().   
+// 3. Helix fit of the seeding clusters set. (see AliTRDtrackerFitter::FitRieman(AliTRDcluster**)). No tilt correction is 
+//    performed at this level 
+// 4. Initialize seeding tracklets in the seeding chambers.
+// 5. *Filter 0* Chi2 cut on the Y and Z directions. The threshold is set externally by the reco params.
+// 6. Attach (true) clusters to seeding tracklets (see AliTRDseedV1::AttachClusters()) and fit tracklet (see 
+//    AliTRDseedV1::Fit()). The number of used clusters used by current seeds should not exceed ... (25).
+// 7. *Filter 1* Check if all 4 seeding tracklets are correctly constructed.
+// 8. Helix fit of the clusters from the seeding tracklets with tilt correction. Refit tracklets using the new 
+//    approximation of the track.
+// 9. *Filter 2* Calculate likelihood of the track. (See AliTRDtrackerV1::CookLikelihood()). The following quantities are
+//    checked against the Riemann fit:
+//      - position resolution in y
+//      - angular resolution in the bending plane
+//      - likelihood of the number of clusters attached to the tracklet
+// 10. Extrapolation of the helix fit to the other 2 chambers *non seeding* chambers:
+//      - Initialization of extrapolation tracklets with the fit parameters
+//      - Attach clusters to extrapolated tracklets
+//      - Helix fit of tracklets
+// 11. Improve seeding tracklets quality by reassigning clusters based on the last parameters of the track
+//      See AliTRDtrackerV1::ImproveSeedQuality() for details.
+// 12. Helix fit of all 6 seeding tracklets and chi2 calculation
+// 13. Hyperplane fit and track quality calculation. See AliTRDtrackerFitter::FitHyperplane() for details.
+// 14. Cooking labels for tracklets. Should be done only for MC
+// 15. Register seeds.
+//
+// Authors:
+//   Marian Ivanov <M.Ivanov@gsi.de>
+//   Alexandru Bercuci <A.Bercuci@gsi.de>
+//   Markus Fasel <M.Fasel@gsi.de>
 
   AliTRDtrackingChamber *chamber = 0x0;
   AliTRDcluster *c[kNSeedPlanes] = {0x0, 0x0, 0x0, 0x0}; // initilize seeding clusters
@@ -2402,7 +2419,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   // chi2[1] = tracklet chi2 on the R direction
   Double_t chi2[4];
 
-  // this should be data member of AliTRDtrack
+  // this should be data member of AliTRDtrack TODO
   Double_t seedQuality[kMaxTracksStack];
   
   // unpack control parameters
@@ -2410,7 +2427,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
   Int_t ntracks = ipar[1];
   Int_t istack  = ipar[2];
   Int_t planes[kNSeedPlanes]; GetSeedingConfig(config, planes);	
-  Int_t planesExt[kNPlanes-kNSeedPlanes];         GetExtrapolationConfig(config, planesExt);
+  Int_t planesExt[kNPlanes-kNSeedPlanes]; GetExtrapolationConfig(config, planesExt);
 
 
   // Init chambers geometry
@@ -2470,9 +2487,9 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
       c[0] = (*fSeedTB[0])[index[jcl++]];
       if(!c[0]) continue;
       Double_t dx    = c[3]->GetX() - c[0]->GetX();
-      Double_t theta = (c[3]->GetZ() - c[0]->GetZ())/dx;
-      Double_t phi   = (c[3]->GetY() - c[0]->GetY())/dx;
-      fSeedTB[1]->BuildCond(c[0], cond1, 1, theta, phi);
+      Double_t dzdx = (c[3]->GetZ() - c[0]->GetZ())/dx;
+      Double_t dydx   = (c[3]->GetY() - c[0]->GetY())/dx;
+      fSeedTB[1]->BuildCond(c[0], cond1, 1, dzdx, dydx);
       fSeedTB[1]->GetClusters(cond1, jndex, mcl);
       //printf("Found c[0] candidates 1 %d\n", mcl);
 
@@ -2480,7 +2497,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
       while(kcl<mcl) {
         c[1] = (*fSeedTB[1])[jndex[kcl++]];
         if(!c[1]) continue;
-        fSeedTB[2]->BuildCond(c[1], cond2, 2, theta, phi);
+        fSeedTB[2]->BuildCond(c[1], cond2, 2, dzdx, dydx);
         c[2] = fSeedTB[2]->GetNearestCluster(cond2);
         //printf("Found c[1] candidate 2 %p\n", c[2]);
         if(!c[2]) continue;
@@ -2720,31 +2737,40 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
 //_____________________________________________________________________________
 AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
 {
-  //
-  // Build a TRD track out of tracklet candidates
-  //
-  // Parameters :
-  //   seeds  : array of tracklets
-  //   params : track parameters (see MakeSeeds() function body for a detailed description)
-  //
-  // Output :
-  //   The TRD track.
-  //
-  // Detailed description
-  //
-  // To be discussed with Marian !!
-  //
+//
+// Build a TRD track out of tracklet candidates
+//
+// Parameters :
+//   seeds  : array of tracklets
+//   params : array of track parameters as they are estimated by stand alone tracker. 7 elements.
+//     [0] - radial position of the track at reference point
+//     [1] - y position of the fit at [0]
+//     [2] - z position of the fit at [0]
+//     [3] - snp of the first tracklet
+//     [4] - tgl of the first tracklet
+//     [5] - curvature of the Riemann fit - 1/pt
+//     [6] - sector rotation angle
+//
+// Output :
+//   The TRD track.
+//
+// Initialize the TRD track based on the parameters of the fit and a parametric covariance matrix 
+// (diagonal with constant variance terms TODO - correct parameterization) 
+// 
+// In case of HLT just register the tracklets in the tracker and return values of the Riemann fit. For the
+// offline case perform a full Kalman filter on the already found tracklets (see AliTRDtrackerV1::FollowBackProlongation() 
+// for details). Do also MC label calculation and PID if propagation successfully.
 
-
+ 
   Double_t alpha = AliTRDgeometry::GetAlpha();
   Double_t shift = AliTRDgeometry::GetAlpha()/2.0;
   Double_t c[15];
 
-  c[ 0] = 0.2;
-  c[ 1] = 0.0; c[ 2] = 2.0;
-  c[ 3] = 0.0; c[ 4] = 0.0; c[ 5] = 0.02;
-  c[ 6] = 0.0; c[ 7] = 0.0; c[ 8] = 0.0;  c[ 9] = 0.1;
-  c[10] = 0.0; c[11] = 0.0; c[12] = 0.0;  c[13] = 0.0; c[14] = params[5]*params[5]*0.01;
+  c[ 0] = 0.2; // s^2_y
+  c[ 1] = 0.0; c[ 2] = 2.0; // s^2_z
+  c[ 3] = 0.0; c[ 4] = 0.0; c[ 5] = 0.02; // s^2_snp
+  c[ 6] = 0.0; c[ 7] = 0.0; c[ 8] = 0.0;  c[ 9] = 0.1; // s^2_tgl
+  c[10] = 0.0; c[11] = 0.0; c[12] = 0.0;  c[13] = 0.0; c[14] = params[5]*params[5]*0.01; // s^2_1/pt
 
   AliTRDtrackV1 track(seeds, &params[1], c, params[0], params[6]*alpha+shift);
   track.PropagateTo(params[0]-5.0);
