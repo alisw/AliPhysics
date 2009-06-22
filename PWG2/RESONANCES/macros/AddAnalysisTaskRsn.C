@@ -17,10 +17,10 @@ static Int_t     minNClustersTPC = 50;
 
 Bool_t AddAnalysisTaskRsn
 (
-  AliLog::EType_t  debugType = AliLog::kInfo, // debug depth for some classes
-  const char      *outFile   = "rsn.root",    // output file name
-  Bool_t           sourceESD = kTRUE          // if true, the source of data is ESD, otherwise is AOD
-                                              // (coming from filter task)
+  AliLog::EType_t  debugType  = AliLog::kInfo, // debug depth for some classes
+  Bool_t           useTPCOnly = kFALSE,        // use TPC only PID
+  const char      *outFile    = "rsn.root",    // output file name
+  Bool_t           sourceESD  = kTRUE,         // if true, the source of data is ESD, otherwise is AOD from filter task
 )
 {
   // retrieve analysis manager
@@ -28,7 +28,8 @@ Bool_t AddAnalysisTaskRsn
 
   // initialize task
   AliRsnAnalysisSE *task = new AliRsnAnalysisSE("AliRsnAnalysisSE");
-  task->SetLogType(debugType, "AliRsnAnalysisManager:AliRsnPairManager:AliRsnPairManager:AliRsnPair");
+  //task->SetLogType(debugType, "AliRsnAnalysisManager:AliRsnPairManager:AliRsnPairManager:AliRsnPair");
+  task->SetLogType(debugType, "AliRsnCut:AliRsnCutPrimaryVertex");
 
   // set prior probabilities for PID
   task->SetPriorProbability(AliPID::kElectron, 0.02);
@@ -40,20 +41,17 @@ Bool_t AddAnalysisTaskRsn
 
   // initialize analysis manager with pairs from config
   AliRsnAnalysisManager *anaMgr = task->GetAnalysisManager("MyAnalysisSE");
-  anaMgr->Add(CreatePairsNoPID("RHO_NoPID_0"   , 113, AliPID::kPion, AliPID::kPion, 10000.0));
-  anaMgr->Add(CreatePairsNoPID("RHO_NoPID_10"  , 113, AliPID::kPion, AliPID::kPion,     0.1));
-  anaMgr->Add(CreatePairsNoPID("RHO_NoPID_20"  , 113, AliPID::kPion, AliPID::kPion,     0.2));
-  anaMgr->Add(CreatePairsPID  ("RHO_PID"       , 113, AliPID::kPion, AliPID::kPion));
   anaMgr->Add(CreatePairsNoPID("PHI_NoPID_0"   , 333, AliPID::kKaon, AliPID::kKaon, 10000.0));
   anaMgr->Add(CreatePairsNoPID("PHI_NoPID_10"  , 333, AliPID::kKaon, AliPID::kKaon,     0.1));
   anaMgr->Add(CreatePairsNoPID("PHI_NoPID_20"  , 333, AliPID::kKaon, AliPID::kKaon,     0.2));
   anaMgr->Add(CreatePairsPID  ("PHI_PID"       , 333, AliPID::kKaon, AliPID::kKaon));
-  anaMgr->Add(CreatePairsNoPID("KSTAR_NoPID_0" , 313, AliPID::kKaon, AliPID::kPion, 10000.0));
-  anaMgr->Add(CreatePairsNoPID("KSTAR_NoPID_10", 313, AliPID::kKaon, AliPID::kPion,     0.1));
-  anaMgr->Add(CreatePairsNoPID("KSTAR_NoPID_20", 313, AliPID::kKaon, AliPID::kPion,     0.2));
-  anaMgr->Add(CreatePairsPID  ("KSTAR_PID"     , 313, AliPID::kKaon, AliPID::kPion));
+  //anaMgr->Add(CreatePairsNoPID("KSTAR_NoPID_0" , 313, AliPID::kKaon, AliPID::kPion, 10000.0));
+  //anaMgr->Add(CreatePairsNoPID("KSTAR_NoPID_10", 313, AliPID::kKaon, AliPID::kPion,     0.1));
+  //anaMgr->Add(CreatePairsNoPID("KSTAR_NoPID_20", 313, AliPID::kKaon, AliPID::kPion,     0.2));
+  //anaMgr->Add(CreatePairsPID  ("KSTAR_PID"     , 313, AliPID::kKaon, AliPID::kPion));
+  cout << "CREATED PAIRS" << endl;
 
-  // setup cuts
+  // setup cuts for ESD tracks
   if (sourceESD)
   {
     AliESDtrackCuts *esdCuts = new AliESDtrackCuts;
@@ -71,20 +69,39 @@ Bool_t AddAnalysisTaskRsn
     esdCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
     task->SetESDtrackCuts(esdCuts);
   }
+  cout << "SET ESD CUTS" << endl;
+
+  // set PID customization if necessary
+  if (useTPCOnly) {
+    Info("Using TPC only PID");
+    task->GetPIDDef()->SetScheme(AliRsnPIDDefESD::kSchemeTPC);
+  }
+  cout << "SET PID SCHEME" << endl;
+
+  // setup cuts for events (good primary vertex)
+  AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 3);
+  AliRsnCutSet *cutSetEvent = new AliRsnCutSet("eventCuts");
+  cutSetEvent->AddCut(cutVertex);
+  cutSetEvent->SetCutScheme("cutVertex");
+  task->SetEventCuts(cutSetEvent);
+  cout << "SET EVENT CUT SCHEME" << endl;
 
   // add the task to manager
   mgr->AddTask(task);
+  cout << "ADD TASK" << endl;
 
   // connect input container according to source choice
   if (sourceESD) mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  else mgr->ConnectInput(task, mgr->GetCommonOutputContainer());
+  else mgr->ConnectInput(task, 0, mgr->GetCommonOutputContainer());
+  cout << "CONNECT INPUT" << endl;
 
   // initialize and connect container for the output
   AliAnalysisDataContainer *out = mgr->CreateContainer("RSN", TList::Class(), AliAnalysisManager::kOutputContainer, outFile);
   mgr->ConnectOutput(task, 1, out);
+  cout << "CONNECT OUTPUT" << endl;
 }
 
-AliRsnFunction* DefineFunction()
+AliRsnFunction* DefineFunctionIM()
 {
 //
 // In general, for all processed pairs in one analysis the same functions are computed.
@@ -93,13 +110,38 @@ AliRsnFunction* DefineFunction()
 
   // define all binnings
   AliRsnFunctionAxis *axisIM   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairInvMass,    1000,  0.0,   2.0);
-  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,           20,  0.0,  10.0);
-  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          20, -1.0,   1.0);
-  AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,        10,  0.0, 250.0);
+  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,           10,  0.0,  10.0);
+  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          10, -1.0,   1.0);
+  AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,         8,  0.0, 200.0);
 
   // define function
   AliRsnFunction *fcn = new AliRsnFunction;
   fcn->AddAxis(axisIM);
+  fcn->AddAxis(axisPt);
+  fcn->AddAxis(axisEta);
+  fcn->AddAxis(axisMult);
+
+  return fcn;
+}
+
+AliRsnFunction* DefineFunctionP1P2()
+{
+//
+// In general, for all processed pairs in one analysis the same functions are computed.
+// Then, they are defined separately here and added in the same way to all pairs.
+//
+
+  // define all binnings
+  AliRsnFunctionAxis *axisP1   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kTrack1P,          50,  0.0,   5.0);
+  AliRsnFunctionAxis *axisP2   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kTrack2P,          50,  0.0,   5.0);
+  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,           10,  0.0,  10.0);
+  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          10, -1.0,   1.0);
+  AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,         8,  0.0, 200.0);
+
+  // define function
+  AliRsnFunction *fcn = new AliRsnFunction;
+  fcn->AddAxis(axisP1);
+  fcn->AddAxis(axisP2);
   fcn->AddAxis(axisPt);
   fcn->AddAxis(axisEta);
   fcn->AddAxis(axisMult);
@@ -183,6 +225,9 @@ AliRsnPairManager* CreatePairsNoPID
   // -- true daughters of a phi resonance (only for true pairs histogram)cutSetPairTrue->AddCut(cutTrue);
   AliRsnCutStd *cutTruePair = new AliRsnCutStd("cutTrue", AliRsnCutStd::kTruePair, resonancePDG);
 
+  // cuts on event:
+  // -- none (specified for whole task)
+
   // cut set definition for all pairs
   AliRsnCutSet *cutSetParticle = new AliRsnCutSet("trackCuts");
   cutSetParticle->AddCut(cutKaonBB);
@@ -211,11 +256,13 @@ AliRsnPairManager* CreatePairsNoPID
 
   // === FUNCTIONS ================================================================================
 
-  AliRsnFunction *fcn = DefineFunction();
+  AliRsnFunction *fcn   = DefineFunctionIM();
+  AliRsnFunction *fcnPP = DefineFunctionP1P2();
 
   for (i = 0; i < nArray; i++) {
     for (j = 0; j < 4; j++) {
       noPID[i][j]->AddFunction(fcn);
+      if (j < 2) noPID[i][j]->AddFunction(fcnPP);
     }
   }
 
@@ -328,12 +375,17 @@ AliRsnPairManager* CreatePairsPID
 
   // === FUNCTIONS ================================================================================
 
-  AliRsnFunction *fcn = DefineFunction();
+  AliRsnFunction *fcn   = DefineFunctionIM();
+  AliRsnFunction *fcnPP = DefineFunctionP1P2();
 
   for (i = 0; i < nArray; i++) {
     for (j = 0; j < 4; j++) {
       perfectPID[i][j]->AddFunction(fcn);
       realisticPID[i][j]->AddFunction(fcn);
+      if (j < 2) {
+        perfectPID[i][j]->AddFunction(fcnPP);
+        realisticPID[i][j]->AddFunction(fcnPP);
+      }
     }
   }
 
