@@ -2351,7 +2351,8 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
         AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kTRUE);     
         TObjArray ** arr = AliTracker::GetResidualsArray() ; 
 	if (arr) {
-	  TObjArray * elem = arr[fRecoParam.GetEventSpecie()];
+	  AliRecoParam::EventSpecie_t es=fRecoParam.GetEventSpecie();
+	  TObjArray * elem = arr[AliRecoParam::AConvert(es)];
 	  if ( elem && (! elem->At(0)) ) {
 	    AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
 	    if (qadm) qadm->InitRecPointsForTracker() ; 
@@ -2390,7 +2391,8 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
         AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kTRUE);     
         TObjArray ** arr = AliTracker::GetResidualsArray() ; 
 	if (arr) {
-	  TObjArray * elem = arr[fRecoParam.GetEventSpecie()];
+	  AliRecoParam::EventSpecie_t es=fRecoParam.GetEventSpecie();
+	  TObjArray * elem = arr[AliRecoParam::AConvert(es)];
 	  if ( elem && (! elem->At(0)) ) {
 	    AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
 	    if (qadm) qadm->InitRecPointsForTracker() ; 
