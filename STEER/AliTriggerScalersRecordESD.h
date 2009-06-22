@@ -25,7 +25,7 @@ public:
                     
                             virtual   ~AliTriggerScalersRecordESD() { fScalers.SetOwner(); fScalers.Delete(); }
                  
-                 
+                    void    Reset();
                     void    AddTriggerScalers( AliTriggerScalersESD* scaler );
                     void    AddTriggerScalers( UChar_t classIndex, ULong64_t LOCB, ULong64_t LOCA,        
                                               ULong64_t L1CB, ULong64_t L1CA, ULong64_t L2CB, ULong64_t L2CA );
@@ -34,16 +34,15 @@ public:
     AliTriggerScalersESD*   GetTriggerScalersForClass( Int_t classindex );       
                                 
             virtual void    Print( const Option_t* opt ="" ) const;
-
+                      
+                      AliTriggerScalersRecordESD( const AliTriggerScalersRecordESD &rec );
+                      AliTriggerScalersRecordESD&   operator=(const AliTriggerScalersRecordESD& rec);      
                
 
 private:  
 
-                      TObjArray    fScalers;      // Array of scalers (AliTriggerScalersESD) 
-                      AliTriggerScalersRecordESD( const AliTriggerScalersRecordESD &rec );
-                      AliTriggerScalersRecordESD&   operator=(const AliTriggerScalersRecordESD& rec);      
-
-   ClassDef( AliTriggerScalersRecordESD, 1 )  // Define a Record of Trigger Scalers 
+                        TObjArray    fScalers;      // Array of scalers (AliTriggerScalersESD) 
+                        ClassDef( AliTriggerScalersRecordESD, 1 )  // Define a Record of Trigger Scalers 
 };
 
 #endif

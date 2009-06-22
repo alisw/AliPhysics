@@ -1,4 +1,4 @@
- /*************************************************************************
+/*************************************************************************
 * Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
 * Author: The ALICE Off-line Project.                                    *
@@ -10,7 +10,8 @@
 * copies and that both the copyright notice and this permission notice   *
 * appear in the supporting documentation. The authors make no claims     *
 * about the suitability of this software for any purpose. It is          *
-* provided "as is" without express or implied warranty.                  * **************************************************************************/
+* provided "as is" without express or implied warranty.                  * 
+**************************************************************************/
 
 
 #include <Riostream.h>
@@ -22,6 +23,7 @@
 ClassImp( AliTriggerScalersRecordESD )
 //_____________________________________________________________________________
 AliTriggerScalersRecordESD::AliTriggerScalersRecordESD():
+TObject(),
 fScalers()
 {
 }
@@ -37,6 +39,34 @@ void AliTriggerScalersRecordESD::AddTriggerScalers( UChar_t classIndex, ULong64_
                                          ULong64_t L1CB, ULong64_t L1CA, ULong64_t L2CB, ULong64_t L2CA )
 {
     AddTriggerScalers( new AliTriggerScalersESD( classIndex, LOCB, LOCA, L1CB, L1CA, L2CB, L2CA ) );
+} 
+
+//_____________________________________________________________________________
+AliTriggerScalersRecordESD::AliTriggerScalersRecordESD( const AliTriggerScalersRecordESD &rec ) :
+TObject(rec),
+fScalers()
+{
+for (Int_t i = 0; i < rec.fScalers.GetEntriesFast(); i++) {
+    if (rec.fScalers[i]) fScalers.Add(rec.fScalers[i]->Clone());
+  }
+}
+//_____________________________________________________________________________
+AliTriggerScalersRecordESD& AliTriggerScalersRecordESD:: operator=(const AliTriggerScalersRecordESD& rec)
+{
+if(&rec == this) return *this;
+((TObject *)this)->operator=(rec);
+for (Int_t i = 0; i < rec.fScalers.GetEntriesFast(); i++) {
+    if (rec.fScalers[i]) fScalers.Add(rec.fScalers[i]->Clone());
+  }
+
+return *this;
+} 
+
+//_____________________________________________________________________________
+void AliTriggerScalersRecordESD::Reset()
+{
+fScalers.SetOwner();
+fScalers.Clear();
 } 
 
 //_____________________________________________________________________________
