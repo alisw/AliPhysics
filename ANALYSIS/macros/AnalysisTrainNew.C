@@ -83,8 +83,8 @@ Int_t       iPWG4gammaconv     = 0;      // Gamma conversion analysis (PWG4)
 Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
 Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
 Int_t       iPWG2spectra       = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
-Int_t       iPWG2flow          = 1;      // Flow analysis task (PWG2)
-Int_t       iPWG2res           = 1;      // Resonances task (PWG2)
+Int_t       iPWG2flow          = 0;      // Flow analysis task (PWG2)
+Int_t       iPWG2res           = 0;      // Resonances task (PWG2)
 Int_t       iPWG2kink          = 1;      // Kink analysis task (PWG2)
 
 // Temporaries.
@@ -245,7 +245,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       if (!taskstrange) ::Warning("AnalysisTrainNew", "AliAnalysisTaskStrange cannot run for this train conditions - EXCLUDED");
       // performance cascades
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskCheckPerformanceCascade.C");
-      AliAnalysisTaskStrange *taskperfcascade = AddTaskCheckPerformanceCascade();
+      AliAnalysisTaskCheckPerformanceCascade *taskperfcascade = AddTaskCheckPerformanceCascade();
       if (!taskperfcascade) ::Warning("AnalysisTrainNew", "AliAnalysisTaskCheckPerformanceCascade cannot run for this train conditions - EXCLUDED");
    }   
    
@@ -262,8 +262,8 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       AliAnalysisKinkESDMC *taskkink = AddTaskKink();
       if (!taskkink) ::Warning("AnalysisTrainNew", "AliAnalysisKinkESDMC cannot run for this train conditions - EXCLUDED");
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKinkResonance.C");
-      AliResonanceKinkPID *taskkinkres = AddTaskKinkResonance();
-      if (!taskkinkres) ::Warning("AnalysisTrainNew", "AliResonanceKinkPID cannot run for this train conditions - EXCLUDED");
+      AliAnalysisTaskKinkResonance *taskkinkres = AddTaskKinkResonance();
+      if (!taskkinkres) ::Warning("AnalysisTrainNew", "AliAnalysisTaskKinkResonance cannot run for this train conditions - EXCLUDED");
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/KINK/macros/AddTaskKinkResonanceLikeSign.C");
       AliResonanceKinkLikeSign *taskkinklikesign = AddTaskKinkResonanceLikeSign();
       if (!taskkinklikesign) ::Warning("AnalysisTrainNew", "AliResonanceKinkLikeSign cannot run for this train conditions - EXCLUDED");
@@ -301,7 +301,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    // PWG2 resonances
    if (iPWG2res) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/RESONANCES/macros/AddAnalysisTaskRsn.C");
-      AddAnalysisTaskRsn("rsn.root", useMC);
+      AddAnalysisTaskRsn(AliLog::kError, kFALSE, "output_rsn.root", !(Bool_t)iAODhandler);
    }   
            
    // PWG3 vertexing
