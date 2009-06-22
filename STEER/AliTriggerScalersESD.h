@@ -37,7 +37,19 @@ public:
               UChar_t    GetClassIndex() { return fClassIndex; }
          virtual void    Print( const Option_t* opt ="" ) const;
 
-                 
+          AliTriggerScalersESD( const AliTriggerScalersESD &scal );
+          AliTriggerScalersESD&   operator=(const AliTriggerScalersESD& scal);
+
+               ULong64_t    GetLOCB() const { return fLOCB; }
+               ULong64_t    GetLOCA() const { return fLOCA; }
+               ULong64_t    GetL1CB() const { return fL1CB; }
+               ULong64_t    GetL1CA() const { return fL1CA; }
+               ULong64_t    GetL2CB() const { return fL2CB; }
+               ULong64_t    GetL2CA() const { return fL2CA; }
+                 UChar_t    GetClassIndex() const { return fClassIndex; }
+
+
+ 
     
 private:    
                          UChar_t    fClassIndex;            //  number of triggered classes        
@@ -47,9 +59,7 @@ private:
                ULong64_t    fL1CA;            //  L1 triggers after all vetos   (64 bits)
                ULong64_t    fL2CB;            //  L2 triggers before any vetos  (64 bits)
                ULong64_t    fL2CA;            //  L2 triggers after all vetos   (64 bits)
-                         AliTriggerScalersESD( const AliTriggerScalersESD &run );
-                         AliTriggerScalersESD&   operator=(const AliTriggerScalersESD& clus);
-
+                        
    ClassDef( AliTriggerScalersESD, 1 )  // Define a Run Trigger Scalers (Scalers)
 };
 
