@@ -65,7 +65,7 @@ Bool_t      useDBG             = kFALSE; // activate debugging
 Bool_t      useMC              = kTRUE;  // use MC info
 Bool_t      useTAGS            = kFALSE; // use ESD tags for selection
 Bool_t      useKFILTER         = kTRUE;  // use Kinematics filter
-Bool_t      useTR              = kFALSE; // use track references
+Bool_t      useTR              = kTRUE;  // use track references
 Bool_t      useCORRFW          = kFALSE; // do not change
 Bool_t      useAODTAGS         = kTRUE;  // use AOD tags
 Bool_t      saveTrain          = kTRUE;  // save train configuration as: 
@@ -83,9 +83,11 @@ Int_t       iPWG4gammaconv     = 0;      // Gamma conversion analysis (PWG4)
 Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
 Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
 Int_t       iPWG2spectra       = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
-Int_t       iPWG2flow          = 1;      // Flow analysis task (PWG2)
+Int_t       iPWG2flow          = 0;      // Flow analysis task (PWG2)
 Int_t       iPWG2res           = 0;      // Resonances task (PWG2)
 Int_t       iPWG2kink          = 1;      // Kink analysis task (PWG2)
+Int_t       iPWG2evchar        = 1;      // Event characteristics (PWG2)
+Int_t       iPWG2unicor        = 1;      // Unicor analysis (PWG2)
 
 // Temporaries.
 TString anaPars = "";
@@ -121,6 +123,8 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    if (iPWG2flow)    printf("=  PWG2 flow                                                     =\n");
    if (iPWG2res)     printf("=  PWG2 resonances                                               =\n");
    if (iPWG2kink)    printf("=  PWG2 kink analysis                                            =\n");
+   if (iPWG2evchar)  printf("=  PWG2 event characteristics                                    =\n");
+   if (iPWG2unicor)    printf("=  PWG2 Unicor analysis                                        =\n");
    if (iPWG3vertexing) printf("=  PWG3 vertexing                                            =\n");
    if (iPWG4partcorr)  printf("=  PWG4 gamma-hadron, pi0 and gamma-jet correlations         =\n");
    if (iPWG4gammaconv) printf("=  PWG4 gamma conversion                                     =\n");
@@ -269,6 +273,21 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       if (!taskkinklikesign) ::Warning("AnalysisTrainNew", "AliResonanceKinkLikeSign cannot run for this train conditions - EXCLUDED");
    }   
 
+   // Event characterization
+   if (iPWG2evchar) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/EVCHAR/macros/AddTaskSPDdNdEta.C");
+      AliAnalysisTaskSPDdNdEta *taskspddndeta = AddTaskSPDdNdEta();
+      if (!taskspddndeta) ::Warning("AnalysisTrainNew", "AliAnalysisTaskSPDdNdEta cannot run for this train conditions - EXCLUDED");
+      taskspddndeta->SetReadMC(useMC);
+   }   
+
+   // Unicor
+   if (iPWG2unicor) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG2/UNICOR/AddTaskUnicor.C");
+      AliAnalysisTaskUnicor *taskunicor = AddTaskUnicor();
+      if (!taskspddndeta) ::Warning("AnalysisTrainNew", "AliAnalysisTaskUnicor cannot run for this train conditions - EXCLUDED");
+   }   
+
    // Flow analysis
    if (iPWG2flow) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/macros/AddTaskFlow.C");
@@ -338,7 +357,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       mgr->PrintStatus();
       if (saveTrain || strlen(config_file)) gSystem->ChangeDirectory(train_name);
       StartAnalysis(smode, chain);
-      if (saveTrain) {
+      if (saveTrain && smode=="GRID") {
          printf("=== Registering ConfigTrain.C in the output directory <%s> ===\n",
                 alien_outdir.Data());
          TFile::Cp("file:ConfigTrain.C", Form("alien://%s/ConfigTrain.C", alien_outdir.Data()));
@@ -424,6 +443,9 @@ void CheckModuleFlags(const char *mode) {
       if (iPWG2kink)         
          ::Info("AnalysisTrainNew.C::CheckModuleFlags", "PWG2kink disabled in analysis on AOD's");
          iPWG2kink = 0;
+      if (iPWG2unicor)         
+         ::Info("AnalysisTrainNew.C::CheckModuleFlags", "PWG2unicor disabled in analysis on AOD's");
+         iPWG2unicor = 0;
    } else {   
    // ESD analysis
       iMUONcopyAOD = 0;
@@ -614,6 +636,14 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    // PWG2 kink
    if (iPWG2kink) {
       if (!LoadLibrary("PWG2kink", mode, kTRUE)) return kFALSE;
+   }   
+   // PWG2 unicor
+   if (iPWG2unicor) {
+      if (!LoadLibrary("PWG2unicor", mode, kTRUE)) return kFALSE;
+   }   
+   // PWG2 evchar
+   if (iPWG2evchar) {
+      if (!LoadLibrary("PWG2evchar", mode, kTRUE)) return kFALSE;
    }   
    // PWG2 femtoscopy
    if (iPWG2femto) {
@@ -987,6 +1017,8 @@ void WriteConfig()
    out << "   iPWG2flow       = " << iPWG2flow << ";" << endl;
    out << "   iPWG2res        = " << iPWG2res << ";" << endl;
    out << "   iPWG2kink       = " << iPWG2kink << ";" << endl;
+   out << "   iPWG2unicor     = " << iPWG2unicor << ";" << endl;
+   out << "   iPWG2evchar     = " << iPWG2evchar << ";" << endl;
    out << "}" << endl;
    ::Info("AnalysisTrainNew.C::WriteConfig", "Train configuration wrote to file %s", Form("config_%s.C", train_name.Data()));
    gSystem->ChangeDirectory(cdir);
