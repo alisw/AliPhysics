@@ -11,8 +11,11 @@
 // SETTING THE CUTS
 
 // event selection
-const Int_t multmin = 10;  //used for CORRFW cuts and for AliFlowEventSimple!
-const Int_t multmax = 100; //used for CORRFW cuts and for AliFlowEventSimple!
+const Int_t multminESD = 10;  //used for CORRFW cuts 
+const Int_t multmaxESD = 10000; //used for CORRFW cuts 
+
+const Int_t multmin = 8;     //used for AliFlowEventSimple (to set the centrality)
+const Int_t multmax = 10000;     //used for AliFlowEventSimple (to set the centrality)
 
 // For RP selection
 const Double_t ptmin1 = 0.0;
@@ -179,12 +182,12 @@ if (LYZ2PROD){
 
   //############# event cuts on multiplicity
   AliCFEventGenCuts* mcEventCuts = new AliCFEventGenCuts("mcEventCuts","MC-level event cuts");
-  mcEventCuts->SetNTracksCut(multmin,multmax); 
+  mcEventCuts->SetNTracksCut(multminESD,multmaxESD); 
   if (QA) { 
     mcEventCuts->SetQAOn(qaRP);
   }
   AliCFEventRecCuts* recEventCuts = new AliCFEventRecCuts("recEventCuts","rec-level event cuts");
-  recEventCuts->SetNTracksCut(multmin,multmax); 
+  recEventCuts->SetNTracksCut(multminESD,multmaxESD); 
   if (QA) { 
     recEventCuts->SetQAOn(qaRP);
   }
