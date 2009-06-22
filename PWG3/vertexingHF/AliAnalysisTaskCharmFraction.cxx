@@ -352,7 +352,7 @@ void AliAnalysisTaskCharmFraction::Exec(Option_t *)
     //unsetvtx=kTRUE;
     
     Int_t okD0=0,okD0bar=0; 
-    Double_t invMassD0,invMassD0bar,cutmassvalue;
+    Double_t invMassD0,invMassD0bar,cutmassvalue=-1.;
     Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
     nomum=kFALSE;
     background=kFALSE;
