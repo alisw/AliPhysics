@@ -531,15 +531,15 @@ void AliKFParticleBase::SetProductionVertex( const AliKFParticleBase &Vtx )
   mAi[1] = fC[3]*fC[4] - fC[1]*fC[5];
   mAi[3] = fC[1]*fC[4] - fC[2]*fC[3];
   Double_t det = (fC[0]*mAi[0] + fC[1]*mAi[1] + fC[3]*mAi[3]);
-  if( det>1.e-8 ) det = 1./det;    
+  if( det>1.e-20 ) det = 1./det;    
   else det = 0;
 
   mAi[0] *= det;
   mAi[1] *= det;
   mAi[3] *= det;
-  mAi[2] = ( fC[3]*fC[3] - fC[0]*fC[5] )*det;
-  mAi[4] = ( fC[0]*fC[4] - fC[1]*fC[3] )*det;
-  mAi[5] = ( fC[1]*fC[1] - fC[0]*fC[2] )*det;
+  mAi[2] = ( fC[0]*fC[5] - fC[3]*fC[3] )*det;
+  mAi[4] = ( fC[1]*fC[3] - fC[0]*fC[4] )*det;
+  mAi[5] = ( fC[0]*fC[2] - fC[1]*fC[1] )*det;
 
   Double_t mB[5][3];
 
@@ -579,7 +579,7 @@ void AliKFParticleBase::SetProductionVertex( const AliKFParticleBase &Vtx )
 
     det = ( mAV[0]*mAVi[0] + mAV[1]*mAVi[1] + mAV[3]*mAVi[3] );
 
-    if( TMath::Abs(det) > 1.E-8 ){
+    if( TMath::Abs(det) > 1.E-20 ){
 
       Double_t dChi2 = ( +(mAVi[0]*z[0] + mAVi[1]*z[1] + mAVi[3]*z[2])*z[0]
 			 +(mAVi[1]*z[0] + mAVi[2]*z[1] + mAVi[4]*z[2])*z[1]
