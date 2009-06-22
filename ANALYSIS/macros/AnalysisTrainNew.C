@@ -83,7 +83,7 @@ Int_t       iPWG4gammaconv     = 0;      // Gamma conversion analysis (PWG4)
 Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
 Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
 Int_t       iPWG2spectra       = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
-Int_t       iPWG2flow          = 0;      // Flow analysis task (PWG2)
+Int_t       iPWG2flow          = 1;      // Flow analysis task (PWG2)
 Int_t       iPWG2res           = 0;      // Resonances task (PWG2)
 Int_t       iPWG2kink          = 1;      // Kink analysis task (PWG2)
 
@@ -272,16 +272,18 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    // Flow analysis
    if (iPWG2flow) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/macros/AddTaskFlow.C");
-      Bool_t SP     = kTRUE;
-      Bool_t LYZ1   = kTRUE;
-      Bool_t LYZ2   = kFALSE;
-      Bool_t LYZEP  = kFALSE;
-      Bool_t GFC    = kTRUE;
-      Bool_t QC     = kTRUE;
-      Bool_t FQD    = kTRUE;
-      Bool_t MCEP   = kFALSE; //not for pp 
+      Bool_t SP       = kTRUE;
+      Bool_t LYZ1SUM  = kTRUE;
+      Bool_t LYZ1PROD = kTRUE;
+      Bool_t LYZ2SUM  = kFALSE; 
+      Bool_t LYZ2PROD = kFALSE;
+      Bool_t LYZEP    = kFALSE; 
+      Bool_t GFC      = kTRUE;
+      Bool_t QC       = kTRUE;
+      Bool_t FQD      = kFALSE;
+      Bool_t MCEP     = kFALSE; //does not work yet 24/12/08
       Bool_t kineFromESD = kTRUE;
-      Bool_t METHODS[] = {SP,LYZ1,LYZ2,LYZEP,GFC,QC,FQD,MCEP};
+      Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP};
       // Analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
       TString type = "AOD";
       if (!iAODanalysis) type = "ESD";
