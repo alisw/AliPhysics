@@ -35,7 +35,7 @@ class AliPMDRawStream: public TObject {
     AliPMDRawStream(const AliPMDRawStream& stream);
     AliPMDRawStream& operator = (const AliPMDRawStream& stream);
 
-    void             GetRowCol(Int_t ddlno, Int_t smn, Int_t pbusid, 
+    void             GetRowCol(Int_t imodule, Int_t pbusid, 
 			       UInt_t mcmno, UInt_t chno,
 			       Int_t startRowBus[], Int_t endRowBus[],
 			       Int_t startColBus[], Int_t endColBus[],
@@ -45,22 +45,28 @@ class AliPMDRawStream: public TObject {
     void             TransformH2S(Int_t smn, Int_t &row, Int_t &col) const;
     Int_t            ComputeParity(UInt_t data1);
     UInt_t           GetNextWord();
-    void             Ddl0Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+    void             Ddl0Mapping(Int_t modulePerDDL,
+				 Int_t moduleNo[],    Int_t mcmperBus[],
 				 Int_t startRowBus[], Int_t endRowBus[],
 				 Int_t startColBus[], Int_t endColBus[]);
-    void             Ddl1Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+    void             Ddl1Mapping(Int_t modulePerDDL,
+				 Int_t moduleNo[],    Int_t mcmperBus[],
 				 Int_t startRowBus[], Int_t endRowBus[],
 				 Int_t startColBus[], Int_t endColBus[]);
-    void             Ddl2Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+    void             Ddl2Mapping(Int_t modulePerDDL,
+				 Int_t moduleNo[],    Int_t mcmperBus[],
 				 Int_t startRowBus[], Int_t endRowBus[],
 				 Int_t startColBus[], Int_t endColBus[]);
-    void             Ddl3Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+    void             Ddl3Mapping(Int_t modulePerDDL,
+				 Int_t moduleNo[],    Int_t mcmperBus[],
 				 Int_t startRowBus[], Int_t endRowBus[],
 				 Int_t startColBus[], Int_t endColBus[]);
-    void             Ddl4Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+    void             Ddl4Mapping(Int_t modulePerDDL,
+				 Int_t moduleNo[],    Int_t mcmperBus[],
 				 Int_t startRowBus[], Int_t endRowBus[],
 				 Int_t startColBus[], Int_t endColBus[]);
-    void             Ddl5Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
+    void             Ddl5Mapping(Int_t modulePerDDL,
+				 Int_t moduleNo[],    Int_t mcmperBus[],
 				 Int_t startRowBus[], Int_t endRowBus[],
 				 Int_t startColBus[], Int_t endColBus[]);
 
@@ -68,7 +74,7 @@ class AliPMDRawStream: public TObject {
     UChar_t*         fData;         // pointer to the data
     Int_t            fPosition;
 
-    ClassDef(AliPMDRawStream, 6)    // class for reading PMD raw digits
+    ClassDef(AliPMDRawStream, 7)    // class for reading PMD raw digits
 };
 
 #endif

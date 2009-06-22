@@ -103,32 +103,39 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 
   Char_t filename[80];
 
+  // open the ddl file info to know the modules per DDL
+  TString ddlinfofileName(gSystem->Getenv("ALICE_ROOT"));
+  ddlinfofileName += "/PMD/PMD_ddl_info.dat";
+
+  ifstream infileddl;
+  infileddl.open(ddlinfofileName.Data(), ios::in); // ascii file
+  if(!infileddl) AliError("Could not read the ddl info file");
+
+
 
   Int_t mmodule = 0;
+  Int_t ddlno;
+  Int_t modno;
+  Int_t *modulenoddl = 0x0;
+
   for(Int_t iddl = 0; iddl < kDDL; iddl++)
     {
+      if (infileddl.eof()) break;
+      infileddl >> ddlno >> modulePerDDL;
+
+      if (modulePerDDL == 0) continue;
+
+      modulenoddl = new Int_t [modulePerDDL];
+      for (Int_t im = 0; im < modulePerDDL; im++)
+	{
+	  infileddl >> modno;
+	  modulenoddl[im] = modno;
+	}
+
       strcpy(filename,AliDAQ::DdlFileName("PMD",iddl));
       
       outfile = new AliFstream(filename);
       
-      if (iddl < 4)
-	{
-	  modulePerDDL = 6;
-	  mmodule = 6*iddl;
-	}
-      else if (iddl == 4)
-	{
-	  modulePerDDL = 12;
-	  mmodule = 24;
-	}
-      else if (iddl == 5)
-	{
-	  modulePerDDL = 12;
-	  mmodule = 30;
-	}
-
-
-
       // Write the Dummy Data Header into the file
       Int_t bHPosition = outfile->Tellp();
       outfile->WriteBuffer((char*)(&header),sizeof(header));
@@ -144,17 +151,15 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 
       for(Int_t ium = 0; ium < modulePerDDL; ium++)
 	{
-	  if (iddl == 4 && ium == 6) mmodule = 42;
+	  //if (iddl == 4 && ium == 6) mmodule = 42;
 
 	  // Extract energy deposition per cell and pack it
 	  // in a 32-bit word and returns all the total words
 	  // per one unit-module
 	  
-	  GetUMDigitsData(treeD, mmodule, iddl, contentsBus, busPatch);
-	  mmodule++;
+	  mmodule = modulenoddl[ium];
+	  GetUMDigitsData(treeD, mmodule, iddl, modulePerDDL, contentsBus, busPatch);
 	}
-
-      
 
       Int_t ij = 0;
       Int_t dsp[10];
@@ -361,14 +366,16 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
       delete outfile;
     } // DDL Loop over
 
-
+  delete [] modulenoddl;
+  infileddl.close();
 }
 //____________________________________________________________________________
 void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
-				       Int_t ddlno, Int_t *contentsBus,
+				       Int_t ddlno, Int_t modulePerDDL,
+				       Int_t *contentsBus,
 				       UInt_t busPatch[][1536])
 {
-  // Retrives digits data UnitModule by UnitModule
+  // Retrieves digits data UnitModule by UnitModule
 
   UInt_t baseword;
   UInt_t mcmno, chno;
@@ -396,15 +403,7 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
       endRowBus[i]   = -1;
       endColBus[i]   = -1;
     }
-  Int_t modulePerDDL = 0;
-  if (ddlno < 4)
-    {
-      modulePerDDL = 6;
-    }
-  else if (ddlno == 4 || ddlno == 5)
-    {
-      modulePerDDL = 12;
-    }
+
 
   TString fileName(gSystem->Getenv("ALICE_ROOT"));
 
@@ -442,6 +441,8 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
     {
       infile >> moduleno;
       infile >> totPatchBus >> bPatchBus >> ePatchBus;
+      
+      if (totPatchBus == 0) continue;    // BKN
 
       if (moduleno == imodule)
 	{
@@ -468,6 +469,39 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
 
   infile.close();
 
+  // Read if some chains are off
+  TString rchainName(gSystem->Getenv("ALICE_ROOT"));
+  rchainName += "/PMD/PMD_removed_chains.dat";
+
+  ifstream rchainfile;
+  rchainfile.open(rchainName.Data(), ios::in); // ascii file
+  if(!rchainfile)AliError("Could not read the removed cahins file");
+
+  Int_t srowoff1[2][24], erowoff1[2][24];
+  Int_t scoloff1[2][24], ecoloff1[2][24];
+  Int_t srowoff2[2][24], erowoff2[2][24];
+  Int_t scoloff2[2][24], ecoloff2[2][24];
+
+  Int_t rows1, rowe1, cols1, cole1;
+  Int_t rows2, rowe2, cols2, cole2;
+
+  for (Int_t im = 0; im < 48; im++)
+    {
+      rchainfile >> det >> smn >> rows1 >> rowe1 >> cols1 >> cole1
+		 >> rows2 >> rowe2 >> cols2 >> cole2;
+      
+      srowoff1[det][smn] = rows1;
+      erowoff1[det][smn] = rowe1;
+      scoloff1[det][smn] = cols1;
+      ecoloff1[det][smn] = cole1;
+      srowoff2[det][smn] = rows2;
+      erowoff2[det][smn] = rowe2;
+      scoloff2[det][smn] = cols2;
+      ecoloff2[det][smn] = cole2;
+    }
+
+  rchainfile.close();
+
   treeD->GetEntry(imodule); 
   Int_t nentries = fDigits->GetLast();
   Int_t totword = nentries+1;
@@ -485,8 +519,30 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
       adc    = (UInt_t) pmddigit->GetADC();
 
       TransformS2H(smn,irow,icol);
+      
+      // remove the non-existence channels
 
-      GetMCMCh(ddlno, smn, irow, icol, beginPatchBus, endPatchBus,
+      //printf("%d %d %d %d\n",det,smn,irow,icol);
+      //printf("--- %d   %d   %d   %d\n",srowoff[det][smn],erowoff[det][smn],
+      //     scoloff[det][smn],ecoloff[det][smn]);
+
+      if (irow >= srowoff1[det][smn] && irow <= erowoff1[det][smn])
+	{
+	  if (icol >= scoloff1[det][smn] && icol <= ecoloff1[det][smn])
+	    {
+	      continue;
+	    }
+	}
+      if (irow >= srowoff2[det][smn] && irow <= erowoff2[det][smn])
+	{
+	  if (icol >= scoloff2[det][smn] && icol <= ecoloff2[det][smn])
+	    {
+	      continue;
+	    }
+	}
+
+
+      GetMCMCh(imodule, irow, icol, beginPatchBus, endPatchBus,
 	       mcmperBus, startRowBus, startColBus,
 	       endRowBus, endColBus, busno, mcmno, chno);
 
@@ -538,7 +594,7 @@ void AliPMDDDLRawData::TransformS2H(Int_t smn, Int_t &irow, Int_t &icol)
 
 //____________________________________________________________________________
 
-void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t smn, Int_t row, Int_t col,
+void AliPMDDDLRawData::GetMCMCh(Int_t imodule, Int_t row, Int_t col,
 				Int_t beginPatchBus, Int_t endPatchBus,
 				Int_t *mcmperBus,
 				Int_t *startRowBus, Int_t *startColBus,
@@ -660,18 +716,22 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t smn, Int_t row, Int_t col,
     
     
     for (Int_t i = 0; i < 16; i++)
-    {
+      {
 	for (Int_t j = 0; j < 4; j++)
-	{
-	    if (ddlno == 0 || ddlno == 1) iCh[i][j] = kChDdl01[i][j];
-	    if (ddlno == 2 || ddlno == 3) iCh[i][j] = kChDdl23[i][j];
+	  {
 	    
-	    if (ddlno == 4 && smn < 6)                iCh[i][j] = kChDdl41[i][j];
-	    if (ddlno == 4 && (smn >= 18 && smn < 24))iCh[i][j] = kChDdl42[i][j];
-	    if (ddlno == 5 && (smn >= 12 && smn < 18))iCh[i][j] = kChDdl51[i][j];
-	    if (ddlno == 5 && (smn >=  6 && smn < 12))iCh[i][j] = kChDdl52[i][j];
-	}
-    }
+	    if(imodule < 6)                    iCh[i][j] = kChDdl01[i][j];
+	    if(imodule >= 6 && imodule <= 11)  iCh[i][j] = kChDdl01[i][j];
+	    if(imodule >= 12 && imodule <= 17) iCh[i][j] = kChDdl23[i][j];
+	    if(imodule >= 18 && imodule <= 23) iCh[i][j] = kChDdl23[i][j];
+
+	    if(imodule >= 24 && imodule <= 29) iCh[i][j] = kChDdl41[i][j];
+	    if(imodule >= 42 && imodule <= 47) iCh[i][j] = kChDdl42[i][j];
+	    if(imodule >= 36 && imodule <= 41) iCh[i][j] = kChDdl51[i][j];
+	    if(imodule >= 30 && imodule <= 35) iCh[i][j] = kChDdl52[i][j];
+	    
+	  }
+      }
 
 
   Int_t irownew = row%16;
@@ -687,30 +747,35 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t smn, Int_t row, Int_t col,
       Int_t scol = startColBus[ibus];
       Int_t ecol = endColBus[ibus];
       Int_t tmcm = mcmperBus[ibus];
+
       if ((row >= srow && row <= erow) && (col >= scol && col <= ecol))
 	{
 	  busno = ibus;
 	  
 	  // Find out the MCM Number
 	  //
-	  
-	  if (ddlno == 0 || ddlno == 1)
+
+	  if (imodule < 6)                  mcmno = (col-scol)/4 + 1;
+	  if (imodule >= 6 && imodule < 12) mcmno = (col-scol)/4 + 1;
+
+	  if (imodule >= 12 && imodule < 18)
 	    {
-	      // PRE plane, SU Mod = 0, 1
-	      mcmno = (col-scol)/4 + 1;
-	      
-	    }
-	  else if (ddlno == 2 || ddlno == 3)
-	    {
-	      // PRE plane,  SU Mod = 2, 3
 	      icolnew = (col - scol)/4;
 	      mcmno = tmcm - icolnew;
-	    }
-	  else if (ddlno == 4 )
+	    }	      
+	  if (imodule >= 18 && imodule < 24)
 	    {
-	      // CPV plane,  SU Mod = 0, 3 : ddl = 4
-	      
-	      if(ibus <= 18)
+	      icolnew = (col - scol)/4;
+	      mcmno = tmcm - icolnew;
+	    }	      
+
+	  // DDL = 4
+	  if (imodule >= 24 && imodule < 30)
+	    {
+
+	      //if (tmcm == 24)
+	      Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
+	      if(rowdiff > 16)
 		{
 		  Int_t midrow = srow + 16;
 		  if(row >= srow && row < midrow)
@@ -718,38 +783,46 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t smn, Int_t row, Int_t col,
 		      mcmno = 12 + (col-scol)/4 + 1;
 		    }
 		  else if(row >= midrow && row <= erow)
-		  
+		    
 		    {
 		      mcmno = (col-scol)/4 + 1;
 		    }
 		}
-	      
-	      else if (ibus > 18)
+	      else if (rowdiff < 16)
 		{
-		  Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
-		  if(rowdiff > 16)
+		  mcmno = (col-scol)/4 + 1;
+		}
+	    
+	    }	      
+	  if (imodule >= 42 && imodule < 48)
+	    {
+	      Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
+	      if(rowdiff > 16)
+		{
+		  Int_t midrow = srow + 16;
+		  if (row >= midrow && row <= erow)
 		    {
-		      Int_t midrow = srow + 16;
-		      if (row >= midrow && row <= erow)
-			{
-			  mcmno = 12 + (ecol -col)/4 + 1;
-			}
-		      else if (row >= srow && row < midrow)
-			{
-			  mcmno = (ecol - col)/4 + 1;
-			}
+		      mcmno = 12 + (ecol -col)/4 + 1;
 		    }
-		  else if (rowdiff < 16)
+		  else if (row >= srow && row < midrow)
 		    {
 		      mcmno = (ecol - col)/4 + 1;
 		    }
 		}
-	    }
-	  else if ( ddlno == 5)
+	      else if (rowdiff < 16)
+		{
+		  mcmno = (ecol - col)/4 + 1;
+		}
+	    }	      
+
+	  // DDL = 5
+	  if (imodule >= 30 && imodule < 36)
 	    {
 	      // CPV plane,  SU Mod = 1, 2 : ddl = 5
 	      
-	      if(ibus <= 18)
+	      //if(tmcm == 24)
+	      Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
+	      if(rowdiff > 16)
 		{
 		  Int_t midrow = srow + 16;
 		  if(row >= srow && row < midrow)
@@ -761,28 +834,33 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t smn, Int_t row, Int_t col,
 		      mcmno = (col-scol)/4 + 1;
 		    }
 		}
-	      
-	      else if (ibus > 18)
+	      else if(rowdiff < 16)
 		{
-		  Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
-		  if(rowdiff > 16)
+		  mcmno = (col-scol)/4 + 1;
+		}
+	      
+	    }
+	  if (imodule >= 36 && imodule < 42)
+	    {
+	      Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
+	      if(rowdiff > 16)
+		{
+		  Int_t midrow = srow + 16;
+		  if (row >= midrow && row <= erow)
 		    {
-		      Int_t midrow = srow + 16;
-		      if (row >= midrow && row <= erow)
-			{
-			  mcmno = 12 + (ecol - col)/4 + 1;
-			}
-		      else if (row >= srow && row < midrow)
-			{
-			  mcmno = (ecol - col)/4 + 1;
-			}
+		      mcmno = 12 + (ecol - col)/4 + 1;
 		    }
-		  else if (rowdiff < 16)
+		  else if (row >= srow && row < midrow)
 		    {
 		      mcmno = (ecol - col)/4 + 1;
 		    }
 		}
+	      else if (rowdiff < 16)
+		{
+		  mcmno = (ecol - col)/4 + 1;
+		}
 	    }
+
 	}
     }
 } 

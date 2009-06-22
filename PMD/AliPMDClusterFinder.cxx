@@ -26,6 +26,7 @@
 #include <TTree.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
+#include <TSystem.h>
 
 #include "AliLog.h"
 #include "AliRunLoader.h"
@@ -518,6 +519,34 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
+  // open the ddl file info to know the module
+  TString ddlinfofileName(gSystem->Getenv("ALICE_ROOT"));
+  ddlinfofileName += "/PMD/PMD_ddl_info.dat";
+  
+  ifstream infileddl;
+  infileddl.open(ddlinfofileName.Data(), ios::in); // ascii file
+  if(!infileddl) AliError("Could not read the ddl info file");
+
+  Int_t ddlno;
+  Int_t modno;
+  Int_t modulePerDDL;
+  Int_t moduleddl[6];
+
+  for(Int_t jddl = 0; jddl < 6; jddl++)
+    {
+      if (infileddl.eof()) break;
+      infileddl >> ddlno >> modulePerDDL;
+      moduleddl[jddl] = modulePerDDL;
+
+      if (modulePerDDL == 0) continue;
+      for (Int_t im = 0; im < modulePerDDL; im++)
+	{
+	  infileddl >> modno;
+	}
+    }
+
+  infileddl.close();
+
   // Set the minimum noise cut per module before clustering
 
   fRecoParam = AliPMDReconstructor::GetRecoParam();
@@ -526,7 +555,6 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
     {
        AliFatal("No Reco Param found for PMD!!!");
     }
-
 
   ResetRecpoint();
 
@@ -545,15 +573,9 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   AliPMDRawStream pmdinput(rawReader);
 
   while ((indexDDL = pmdinput.DdlData(&pmdddlcont)) >=0)
-  {
-      if (indexDDL < 4)
-	{
-	  iSMN = 6;
-	}
-      else if (indexDDL >= 4)
-	{
-	  iSMN = 12;
-	}
+    {
+      iSMN = moduleddl[indexDDL];
+
       Int_t ***precpvADC;
       precpvADC = new int **[iSMN];
       for (Int_t i=0; i<iSMN; i++) precpvADC[i] = new int *[kRow];
@@ -596,6 +618,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	    {
 	      AliError(Form("*Row %d and Column NUMBER %d NOT Valid *",
 			    row, col));
+
 	      continue; 
 	    }
 
@@ -615,7 +638,24 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  //printf("sig = %d gain = %f\n",sig,gain);
 	  sig = (Int_t) (sig1*gain);
 
-	  if (indexDDL < 4)
+	  if (indexDDL == 0)
+	    {
+	      if (det != 0)
+		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
+			      indexDDL, det));
+	      if (iSMN == 6)
+		{
+		  indexsmn = smn;
+		}
+	      else if (iSMN == 12)
+		{
+		  if (smn < 6)
+		    indexsmn = smn;
+		  else if (smn >= 18 && smn < 24)
+		    indexsmn = smn-12;
+		}
+	    }
+	  else if (indexDDL >= 1 && indexDDL < 4)
 	    {
 	      if (det != 0)
 		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
@@ -641,15 +681,12 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	      if (det != 1)
 		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
 			      indexDDL, det));
-	      if (smn >= 6 && smn < 12)
-		{
-		  indexsmn = smn - 6;
-		}
-	      else if (smn >= 12 && smn < 18)
+	      if (smn >= 6 && smn < 18)
 		{
 		  indexsmn = smn - 6;
 		}
 	    }	      
+
 	  precpvADC[indexsmn][row][col] = sig;
 	}
       
@@ -675,7 +712,23 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 		} // row
 	    }     // col
 	  
-	  if (indexDDL < 4)
+	  if (indexDDL == 0)
+	    {
+	      if (iSMN == 6)
+		{
+		  ismn = indexsmn;
+		}
+	      else if (iSMN == 12)
+		{
+		  
+		  if (indexsmn < 6)
+		    ismn = indexsmn;
+		  else if (indexsmn >= 6 && indexsmn < 12)
+		    ismn = indexsmn + 12;
+		}
+	      idet = 0;
+	    }
+	  else if (indexDDL >= 1 && indexDDL < 4)
 	    {
 	      ismn = indexsmn + indexDDL * 6;
 	      idet = 0;
@@ -694,14 +747,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	    }
 	  else if (indexDDL == 5)
 	    {
-	      if (indexsmn < 6)
-		{
-		  ismn = indexsmn + 6;
-		}
-	      else if (indexsmn >= 6 && indexsmn < 12)
-		{
-		  ismn = indexsmn + 6;
-		}
+	      ismn = indexsmn + 6;
 	      idet = 1;
 	    }
 
@@ -820,6 +866,34 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
 
+  // open the ddl file info to know the module
+  TString ddlinfofileName(gSystem->Getenv("ALICE_ROOT"));
+  ddlinfofileName += "/PMD/PMD_ddl_info.dat";
+  
+  ifstream infileddl;
+  infileddl.open(ddlinfofileName.Data(), ios::in); // ascii file
+  if(!infileddl) AliError("Could not read the ddl info file");
+
+  Int_t ddlno;
+  Int_t modno;
+  Int_t modulePerDDL;
+  Int_t moduleddl[6];
+
+  for(Int_t jddl = 0; jddl < 6; jddl++)
+    {
+      if (infileddl.eof()) break;
+      infileddl >> ddlno >> modulePerDDL;
+      moduleddl[jddl] = modulePerDDL;
+
+      if (modulePerDDL == 0) continue;
+      for (Int_t im = 0; im < modulePerDDL; im++)
+	{
+	  infileddl >> modno;
+	}
+    }
+
+  infileddl.close();
+
   // Set the minimum noise cut per module before clustering
 
   fRecoParam = AliPMDReconstructor::GetRecoParam();
@@ -853,16 +927,11 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
   AliPMDRawStream pmdinput(rawReader);
   Int_t indexDDL = -1;
 
-  while ((indexDDL = pmdinput.DdlData(&pmdddlcont)) >=0) {
+  while ((indexDDL = pmdinput.DdlData(&pmdddlcont)) >=0)
+    {
+      
+      iSMN = moduleddl[indexDDL];
 
-      if (indexDDL < 4)
-	{
-	  iSMN = 6;
-	}
-      else if (indexDDL >= 4)
-	{
-	  iSMN = 12;
-	}
       Int_t ***precpvADC;
       precpvADC = new int **[iSMN];
       for (Int_t i=0; i<iSMN; i++) precpvADC[i] = new int *[kRow];
@@ -918,8 +987,24 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	  //printf("sig = %d gain = %f\n",sig,gain);
 	  sig = (Int_t) (sig1*gain);
 
-
-	  if (indexDDL < 4)
+	  if (indexDDL == 0)
+	    {
+	      if (det != 0)
+		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
+			      indexDDL, det));
+	      if (iSMN == 6)
+		{
+		  indexsmn = smn;
+		}
+	      else if (iSMN == 12)
+		{
+		  if (smn < 6)
+		    indexsmn = smn;
+		  else if (smn >= 18 && smn < 24)
+		    indexsmn = smn-12;
+		}
+	    }
+	  else if (indexDDL >= 1 && indexDDL < 4)
 	    {
 	      if (det != 0)
 		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
@@ -945,15 +1030,12 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	      if (det != 1)
 		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
 			      indexDDL, det));
-	      if (smn >= 6 && smn < 12)
-		{
-		  indexsmn = smn - 6;
-		}
-	      else if (smn >= 12 && smn < 18)
+	      if (smn >= 6 && smn < 18)
 		{
 		  indexsmn = smn - 6;
 		}
 	    }	      
+	  
 	  precpvADC[indexsmn][row][col] = sig;
 
 	}
@@ -975,8 +1057,24 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 		} // row
 	    }     // col
 
-	  
-	  if (indexDDL < 4)
+
+	  if (indexDDL == 0)
+	    {
+	      if (iSMN == 6)
+		{
+		  ismn = indexsmn;
+		}
+	      else if (iSMN == 12)
+		{
+		  
+		  if (indexsmn < 6)
+		    ismn = indexsmn;
+		  else if (indexsmn >= 6 && indexsmn < 12)
+		    ismn = indexsmn + 12;
+		}
+	      idet = 0;
+	    }
+	  else if (indexDDL >= 1 && indexDDL < 4)
 	    {
 	      ismn = indexsmn + indexDDL * 6;
 	      idet = 0;
@@ -995,14 +1093,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	    }
 	  else if (indexDDL == 5)
 	    {
-	      if (indexsmn < 6)
-		{
-		  ismn = indexsmn + 6;
-		}
-	      else if (indexsmn >= 6 && indexsmn < 12)
-		{
-		  ismn = indexsmn + 6;
-		}
+	      ismn = indexsmn + 6;
 	      idet = 1;
 	    }
 
