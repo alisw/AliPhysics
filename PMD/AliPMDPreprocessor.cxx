@@ -30,6 +30,7 @@
 #include "AliCDBMetaData.h"
 #include "AliPMDCalibData.h"
 #include "AliPMDHotData.h"
+#include "AliPMDMeanSm.h"
 #include "AliPMDPedestal.h"
 #include "AliPMDPreprocessor.h"
 
@@ -241,7 +242,7 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	Log("Error storing");                        
 	return 1;
       }
-    //----------------------------------------------------
+    //------------------For Storing HOT Data-------------------------//
     AliPMDHotData *hotda = new AliPMDHotData();
     TList* filesource = GetFileSources(kDAQ, "PMD_HOT.root");
 	
@@ -315,9 +316,71 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	return 1;
       }
     //-------------------------------------------------------------------  
-
+//-----------------------------------for storing SM MEAN--------------//
 	
-    // Store DCS data for reference
+    //------------------For Storing HOT Data-------------------------//
+    AliPMDMeanSm *smmeanda = new AliPMDMeanSm();
+    TList* filesourc = GetFileSources(kDAQ, "PMD_MEAN_SM.root");
+	
+    if(!filesourc) {
+      Log(Form("No sources found for PMD_MEAN_SM.root!"));
+      return 1;
+    }
+    
+    AliInfo("Here's the list of sources for PMD_MEAN_SM.root");
+    filesourc->Print();
+    
+    TIter iter3(filesourc);
+    TObjString* sourc;
+    UInt_t meanresult = 0;
+    TString filenam;
+    while((sourc=dynamic_cast<TObjString*> (iter3.Next()))){
+      filenam = GetFile(kDAQ, "PMD_MEAN_SM.root", sourc->GetName());
+      if(filenam.Length() == 0) {
+	Log(Form("Error retrieving file from source %s failed!", sourc->GetName()));
+	delete filesourc;
+	return 1;
+      }
+      
+      Log(Form("File with id PMD_MEAN_SM.root got from %s", sourc->GetName()));
+      
+      Int_t det, sm ;
+      Float_t smmean;
+      
+      TFile *f3= new TFile(filenam.Data());
+      if(!f3 || !f3->IsOpen()) 
+	{
+	  Log(Form("Error opening file with Id PMD_MEAN_SM.root from source %s!", sourc->GetName()));
+	  return 1;
+	} 
+      TTree *tree2 = dynamic_cast<TTree *> (f3->Get("mean"));
+      if (!tree2) 
+	{
+	  Log("Could not find object \"hot\" in DAQ file!");
+	  return 1;
+	}
+      
+      tree2->SetBranchAddress("det",  &det);
+      tree2->SetBranchAddress("sm",   &sm);
+      tree2->SetBranchAddress("smmean", &smmean);
+      
+      Int_t nEntries = (Int_t) tree2->GetEntries();
+      for(Int_t j = 0; j < nEntries; j++)
+	{
+	  tree2->GetEntry(j);
+	  smmeanda->SetMeanSm(det,sm,smmean);
+	}
+      f3->Close();
+      delete f3;
+    }
+    meanresult = Store("Calib","SMMEAN", smmeanda, &metaData);
+    delete smmeanda;
+    if(meanresult==0)
+      {
+	Log("Error storing");                        
+	return 1;
+      }
+    // -------------Store DCS data for reference------------//
     AliCDBMetaData metadata;
     metadata.SetComment("DCS data for PMD");
     Bool_t resStore = kFALSE;
