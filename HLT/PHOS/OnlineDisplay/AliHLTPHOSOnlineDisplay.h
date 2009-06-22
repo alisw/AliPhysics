@@ -1,35 +1,55 @@
 //-*- Mode: C++ -*-
 // $Id$
 
-#ifndef ALIHLTPHOSONLINEDISPLAY
-#define ALIHLTPHOSONLINEDISPLAY
+#ifndef ALIHLTPHOSONLINEDISPLAY_H
+#define ALIHLTPHOSONLINEDISPLAY_H
 
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice */
 
 
-#include "AliHLTHOMERData.h"
-#include "AliHLTHOMERReader.h"
-#include "AliHLTHOMERWriter.h"
+//#include "AliHLTHOMERData.h"
+//#include "AliHLTHOMERReader.h"
+//#include "AliHLTHOMERWriter.h"
 #include "Rtypes.h"
-#include <TGFrame.h>
-#include "TH2.h"
-#include "AliHLTPHOSGetEventButton.h" 
-#include "TGTab.h"
-#include <TRootEmbeddedCanvas.h>
-#include <TCanvas.h>
-#include "TGFrame.h"
-#include "AliHLTPHOSOnlineDisplayEventTab.h"
-#include "AliHLTPHOSOnlineDisplayCalibTab.h"
+//#include <TGFrame.h>
+//#include "TH2.h"
+//#include "AliHLTPHOSGetEventButton.h" 
+//#include "TGTab.h"
+//#include <TRootEmbeddedCanvas.h>
+//#include <TCanvas.h>
+//#include "TGFrame.h"
+//#include "AliHLTPHOSOnlineDisplayEventTab.h"
+//#include "AliHLTPHOSOnlineDisplayCalibTab.h"
 
 #include "AliHLTPHOSConstants.h"
 
-#include "AliHLTPHOSOnlineDisplayEventTab.h"
-#include "AliHLTPHOSOnlineDisplayFourierTab.h"
+//#include "AliHLTPHOSOnlineDisplayEventTab.h"
+//#include "AliHLTPHOSOnlineDisplayFourierTab.h"
 #include "AliHLTPHOSBase.h"
 
-#include "TSystem.h"
-#include "TStyle.h"
+//#include "TSystem.h"
+//#include "TStyle.h"
+
+
+class TStyle;
+class TSystem;
+class AliHLTPHOSOnlineDisplayFourierTab;
+class AliHLTPHOSOnlineDisplayEventTab;
+class AliHLTPHOSConstants;
+class AliHLTPHOSOnlineDisplayCalibTab;
+class AliHLTPHOSOnlineDisplayEventTab;
+class TGFrame;
+class TCanvas;
+class TRootEmbeddedCanvas;
+class TGTab;
+class AliHLTPHOSGetEventButton;
+class TH2;
+class TGFrame;
+
+class AliHLTHOMERWriter;
+class AliHLTHOMERReader;
+class AliHLTHOMERData;
 
 using namespace PhosHLTConst;
 
@@ -45,6 +65,23 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame, public AliHLTPHOSBase
  public:
   ~AliHLTPHOSOnlineDisplay();
 
+  /** Copy constructor */  
+  AliHLTPHOSOnlineDisplay(const AliHLTPHOSOnlineDisplay &) : 
+    TGMainFrame(),
+    AliHLTPHOSBase(),
+    fRunNumber(0),
+    fgRawDataCanvas(0)
+  {
+    //Copy constructor not implemented
+  }
+  
+  /** Assignment */
+  AliHLTPHOSOnlineDisplay & operator = (const AliHLTPHOSOnlineDisplay)
+  {
+    //Assignment
+    return *this; 
+  }
+
   
   int GetNextEvent();
   int GetHistogram();
@@ -53,32 +90,32 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame, public AliHLTPHOSBase
   void EvaluateAverage();
   int ScanArguments(int argc, char** argv);
   static AliHLTPHOSOnlineDisplay* Instance(int argc, char** argv);  
-  static AliHLTPHOSOnlineDisplayEventTab  *fgEventTabPtr;
-  static AliHLTPHOSOnlineDisplayFourierTab  *fgFourierTabPtr;
+  static AliHLTPHOSOnlineDisplayEventTab  *fgEventTabPtr; //COMMENT
+  static AliHLTPHOSOnlineDisplayFourierTab  *fgFourierTabPtr; //COMMENT
   void Gain2Text(const int gain,  char *txt) const;
 
  protected:
     
-  int fRunNumber;
+  int fRunNumber; //COMMENT
   //  bool fIsSetRunNumber;
 
 
  private:
   AliHLTPHOSOnlineDisplay();
   AliHLTPHOSOnlineDisplay(int argc, char** argv);
-  static AliHLTPHOSOnlineDisplayCalibTab  *fgCalibTabPtr;
-  static TGTab               *fTab;
-  static AliHLTPHOSOnlineDisplay* fgInstancePtr;
-  static unsigned int fgNHosts;
-  static unsigned int fgNPorts;
-  static AliHLTHOMERReader* fgHomerReaderPtr;
-  static AliHLTHOMERReader* fgHomerReadersPtr[MAXHOSTS];
-  static char  *fgHosts[MAXHOSTS];
-  static short unsigned    *fgPorts;
-  static Bool_t fgAccumulate;
-  static Bool_t fgSyncronize;
-  TCanvas  *fgRawDataCanvas;
-  TH1D     *fgRawDataPlotsPtr[MAXHISTOGRAMS];
+  static AliHLTPHOSOnlineDisplayCalibTab  *fgCalibTabPtr; //COMMENT
+  static TGTab               *fgTab; //COMMENT
+  static AliHLTPHOSOnlineDisplay* fgInstancePtr; //COMMENT
+  static unsigned int fgNHosts; //COMMENT
+  static unsigned int fgNPorts; //COMMENT 
+  static AliHLTHOMERReader* fgHomerReaderPtr; //COMMENT 
+  static AliHLTHOMERReader* fgHomerReadersPtr[MAXHOSTS]; //COMMENT
+  static char  *fgHosts[MAXHOSTS]; //COMMENT
+  static short unsigned    *fgPorts;  //COMMENT 
+  static Bool_t fgAccumulate; //COMMENT 
+  static Bool_t fgSyncronize; //COMMENT
+  TCanvas  *fgRawDataCanvas; //COMMENT
+  TH1D     *fgRawDataPlotsPtr[MAXHISTOGRAMS]; //COMMENT
   
   // int fRunNumber;
   //  bool fIsSetRunNumber;
