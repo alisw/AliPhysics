@@ -21,6 +21,7 @@
 
  
 #include <TROOT.h>
+#include <TRandom.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
 #include <TChain.h>
@@ -368,6 +369,19 @@ void AliAnalysisTaskJetSpectrum::UserCreateOutputObjects()
 
   }
   
+
+  // tmp histos do not add to the header
+  TH2F *hCorrPt = new TH2F("fh2PtRecPhiCorrPt","#Delta#phi correlation pt weighted",nBinPt,binLimitsPt,180,TMath::Pi()/-2,1.5*TMath::Pi());
+  fHistList->Add(hCorrPt);
+  TH2F *hCorrRanPt = new TH2F("fh2PtRecPhiCorrPtRan","#Delta#phi Random correlation pt weighted",nBinPt,binLimitsPt,180,TMath::Pi()/-2,1.5*TMath::Pi());
+  fHistList->Add(hCorrRanPt);
+
+  TH2F *hCorr = new TH2F("fh2PtRecPhiCorr","#Delta#phi correlation",nBinPt,binLimitsPt,180,TMath::Pi()/-2,1.5*TMath::Pi());
+  fHistList->Add(hCorr);
+  TH2F *hCorrRan = new TH2F("fh2PtRecPhiCorrRan","#Delta#phi Random correlation",nBinPt,binLimitsPt,180,TMath::Pi()/-2,1.5*TMath::Pi());
+  fHistList->Add(hCorrRan);
+
+
   /////////////////////////////////////////////////////////////////
   fh1JetMultiplicity = new TH1F("fh1JetMultiplicity", "Jet Multiplicity", 51, 0., 50.);
 
@@ -657,6 +671,7 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
   for(int ir = 0;ir < nRecJets;++ir){
     Double_t ptRec = recJets[ir].Pt();
     Double_t phiRec = recJets[ir].Phi();
+    Double_t phiRecRan = TMath::Pi()*gRandom->Rndm(); // better take real jet axis from previous events (TPC acceptance in phi)
     if(phiRec<0)phiRec+=TMath::Pi()*2.;    
     Double_t etaRec = recJets[ir].Eta();
     if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
@@ -720,6 +735,23 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
 	  //          if (fAOD->GetTrack(it)->Pt()>0.03*eGen && fAOD->GetTrack(it)->E()<=eGen && r<0.7) // CKB cannot cut on gen properties 
           if (fAOD->GetTrack(it)->Pt()>0.03*eRec && fAOD->GetTrack(it)->Pt()<=eRec && r<0.7)
             nPart++;
+
+
+	  // correlate jet axis of leading jet with particles
+	  if(ir==0){
+	    Float_t phi =  fAOD->GetTrack(it)->Phi();
+	    Float_t dPhi = phi - phiRec; 
+	    if(dPhi>TMath::Pi()/1.5)dPhi = dPhi - 2.*TMath::Pi();
+	    if(dPhi<(-0.5*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();
+	    Float_t dPhiRan = phi - phiRecRan; 
+	    if(dPhiRan>TMath::Pi()/1.5)dPhiRan = dPhiRan - 2.*TMath::Pi();
+	    if(dPhiRan<(-0.5*TMath::Pi()))dPhiRan = dPhiRan + 2.*TMath::Pi();
+	    ((TH2F*)fHistList->FindObject("fh2PtRecPhiCorr"))->Fill(ptRec,dPhi);
+	    ((TH2F*)fHistList->FindObject("fh2PtRecPhiCorrRan"))->Fill(ptRec,dPhiRan);
+	    ((TH2F*)fHistList->FindObject("fh2PtRecPhiCorrPt"))->Fill(ptRec,dPhi,fAOD->GetTrack(it)->Pt());
+	    ((TH2F*)fHistList->FindObject("fh2PtRecPhiCorrPtRan"))->Fill(ptRec,dPhiRan,fAOD->GetTrack(it)->Pt());
+
+	  }
         }
 	if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
 
@@ -890,5 +922,6 @@ void AliAnalysisTaskJetSpectrum::GetClosestJets(AliAODJet *genJets,const Int_t &
     if(iDebug>1)printf("\n");
   }
 }
+
 
 
