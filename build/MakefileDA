@@ -121,8 +121,8 @@ $(DAEXE): $(DAOBJ) $(BINPATH) $(LIBPATH) $(DALIB) $(DAQDALIB) $(EXTRAROOTLIB)
 	$(EXTRAROOTLIB) \
 	$(ROOTLIBDIR)/libRoot.a \
 	$(ROOTLIBDIR)/libfreetype.a $(ROOTLIBDIR)/libpcre.a \
-	$(DAQDALIB) $(MONITORLIBS) $(AMOREDALIBS) \
-	$(SYSLIBS)
+	$(SYSLIBS) \
+	$(DAQDALIB) $(MONITORLIBS) $(AMOREDALIBS)
 
 $(DAOBJ): $(DASRC) $(DAQDADIR) $(DADEP) $(DATARGETDIR)
 	@echo "***** Compiling $(DASRC) *****"
@@ -137,11 +137,11 @@ $(DADEP): $(DASRC) $(DAQDADIR) $(DATARGETDIR)
 $(DATARGETDIR):
 	$(MUTE)if [ ! -d '$@' ]; then echo "***** Making directory $@ *****"; mkdir -p $@; fi
 
-$(DALIB): $(ALIROOTALIBS)
+$(DALIB): $(ARVERSIONFILE) $(ALIROOTALIBS)
 	@echo "***** Linking static library $(DALIB) *****"
 	$(MUTE)rm -rf $@
 	$(MUTE)rm -rf junk
-	$(MUTE)mkdir junk && cd junk && $(addprefix $(AR) x ../,$(addsuffix &&,$^)) $(AR) r $@ *.o && cd .. && rm -rf junk
+	$(MUTE)mkdir junk && cd junk && $(addprefix $(AR) x ../,$(addsuffix &&,$(filter-out $(ARVERSIONFILE),$^))) $(AR) r $@ *.o && cd .. && rm -rf junk
 
 $(EXTRAROOTLIB): $(LIBPATH) 
 	$(MUTE)$(AR) r $@ `ls ${ROOTSYS}/montecarlo/vmc/src/*.o ${ROOTSYS}/tree/treeplayer/src/*.o ${ROOTSYS}/io/xmlparser/src/*.o ${ROOTSYS}/math/minuit2/src/*.o`
@@ -192,8 +192,8 @@ $(DAMAKEFILE): $(DATARGETDIR)
 	@echo "		$(EXTRAROOTLIB) \\" >> $@
 	@echo "		""$$""(ROOTSYS)/lib/libRoot.a \\" >> $@
 	@echo "		""$$""(ROOTSYS)/lib/libfreetype.a ""$$""(ROOTSYS)/lib/libpcre.a \\" >> $@
-	@echo "		""$$""(DAQDALIB) ""$$""(MONITORLIBS) ""$$""(AMOREDALIBS) \\" >> $@
-	@echo "		$(SYSLIBS)" >> $@
+	@echo "         $(SYSLIBS) \\" >> $@
+	@echo "		""$$""(DAQDALIB) ""$$""(MONITORLIBS) ""$$""(AMOREDALIBS)" >> $@
 	@echo "" >> $@
 	@echo "${DAMODULE}${SUBDAMODULE}${DANAME}da.o: ${DAMODULE}${SUBDAMODULE}${DANAME}da.cxx" >> $@
 	@echo "		""$$""(CXX) -c ""$$""(CXXFLAGS) -I""$$""(DAQDADIR) ""$$""< -o ""$$""@" >> $@
