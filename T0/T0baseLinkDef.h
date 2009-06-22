@@ -25,5 +25,6 @@
 #pragma link C++ class  AliT0RawData+;
 #pragma link C++ class  AliT0Digitizer+;
 #pragma link C++ class  AliT0MisAligner+;
+#pragma link C++ class  AliT0TriggerParameters+;
 
 #endif
