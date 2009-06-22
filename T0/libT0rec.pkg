@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS= AliT0Reconstructor.cxx AliT0Calibrator.cxx AliT0CalibLaserData.cxx AliT0QADataMakerRec.cxx 
+SRCS= AliT0Reconstructor.cxx AliT0Calibrator.cxx AliT0CalibLaserData.cxx AliT0QADataMakerRec.cxx AliT0RecoParam.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 
