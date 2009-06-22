@@ -11,6 +11,7 @@ class AliAODEvent;
 class TH1F;
 class TH2F;
 class TH1I;
+class TProfile;
 class TVector3;
 class TTree;
 
@@ -21,6 +22,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     virtual           ~AliAnalysisTaskUE() {;}
     
     // Implementation of interace methods
+    virtual     Bool_t Notify();
     virtual     void   ConnectInputData(Option_t *);
     virtual     void   CreateOutputObjects();
     virtual     void   Exec(Option_t *option);
@@ -33,6 +35,11 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
       fMinJetPtInHist = min; 
       fMaxJetPtInHist = max; 
     }
+    // Setters for MC
+    void  SetUseMCBranch(){fUseMCParticleBranch = kTRUE;}
+    void  SetConstrainDistance(Bool_t val1, Double_t val2){ fMinDistance = val2; fConstrainDistance = val1;}
+    void  SetSimulateChJetPt(){fSimulateChJetPt = kTRUE;}
+    void  SetUseAODMCParticle(){fUseAliStack = kFALSE;}
     
     void   SetAnaTopology( Int_t val )    { fAnaType = val;    }
     void   SetRegionType( Int_t val )     { fRegionType = val; }
@@ -41,9 +48,11 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     void   SetFilterBit( UInt_t val )     { fFilterBit = val;  }
     void   SetJetsOnFly( Bool_t val )     { fJetsOnFly = val;  }
     void   SetConeRadius( Double_t val )  { fConeRadius = val; }
+    void   SetConePosition(Int_t val)     { fConePosition= val; }
     void   SetUseSingleCharge()  { fUseSingleCharge = kTRUE; } 
     void   SetUseNegativeChargeType()        { fUsePositiveCharge = kFALSE; }
     // Jet cuts
+    void   SetPtMinChPartJet( Double_t val )  { fChJetPtMin = val; }
     void   SetJet1EtaCut( Double_t val )      { fJet1EtaCut = val; }
     void   SetJet2DeltaPhiCut( Double_t val ) { fJet2DeltaPhiCut = val; }
     void   SetJet2RatioPtCut( Double_t val )  { fJet2RatioPtCut = val; }
@@ -77,6 +86,13 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     Double_t   fMinJetPtInHist;   //  min Jet Pt value for histo range
     Double_t   fMaxJetPtInHist;   //  max Jet Pt value for histo range
     
+    // For MC
+    Bool_t fUseMCParticleBranch;  // Run Over mcparticles branch in AOD
+    Bool_t fConstrainDistance;    // Constrain Distance between rec jet and pyth
+    Double_t fMinDistance;  // Minimum distance between rec jet and pyth
+    Bool_t fSimulateChJetPt; // Naive simulation of charged jet Pt from original Jet in MC Header
+    Bool_t fUseAliStack;     // Use AliSatck for particle info otherwise "mcparticles" branch in AOD
+    
     // Cuts 
     Int_t   fAnaType;          // Analysis type on jet topology: 
     //     1=inclusive  (default) 
@@ -94,6 +110,13 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     Int_t   fRegionType;       // 1 = transverse regions (default)
     // 2 = cone regions   
     Double_t   fConeRadius;       // if selected Cone-like region type, set Radius (=0.7 default)
+    Int_t   fConePosition;     // This parameter set how will cone center in transversal zone will be set
+    //    1 : To be used in any jet topology (default value)
+    //        eta_cone = eta_leadingjet
+    //        phi_cone = phi_leadingjet + - 90
+    //    2 : To be used in multiple jet topology (code will cry otherwise)
+    //        eta_cone = (eta_leadingjet + eta_subleadingjet)/2
+    //        phi_cone = phi_leadingjet + - 90
     Double_t   fAreaReg;       // Area of the region To be used as normalization factor when filling histograms
     // if fRegionType = 2 not always it is included within eta range
     Bool_t   fUseChPartJet;     // Use "Charged Particle Jet" instead of jets from AOD
@@ -121,7 +144,8 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     UInt_t   fFilterBit;        // Select tracks from an specific track cut (default 0xFF all track selected)
     Bool_t   fJetsOnFly;        // if jets are reconstructed on the fly from AOD tracks (see ConnectInputData() )
     
-    // Jet cuts    
+    // Jet cuts 
+    Double_t   fChJetPtMin;       // Min Pt for charged Particle Jet
     Double_t   fJet1EtaCut;       // |jet1 eta| < fJet1EtaCut   (fAnaType = 1,2,3)
     Double_t   fJet2DeltaPhiCut;  // |Jet1.Phi - Jet2.Phi| < fJet2DeltaPhiCut (fAnaType = 2,3)
     Double_t   fJet2RatioPtCut;   // Jet2.Pt/Jet1Pt > fJet2RatioPtCut  (fAnaType = 2,3)
@@ -157,9 +181,14 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     TH1F*  fhRegionAvePartPtMinVsEt; //!
     TH1F*  fhRegionMaxPartPtMaxVsEt; //!
     
+    //        TH2F*  fhValidRegion; //! test to be canceled
+    
+    TProfile* fh1Xsec;               //!
+    TH1F*  fh1Trials;                //!
+    
     TTree* fSettingsTree;            //! Fast Settings saving
     
-    //        TH2F*  fhValidRegion; //! test to be canceled
+    
     
     ClassDef( AliAnalysisTaskUE, 1); // Analysis task for Underlying Event analysis
   };

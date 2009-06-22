@@ -23,23 +23,30 @@
 #include <TH1I.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TProfile.h>
 #include <TCanvas.h>
 #include <TVector3.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TTree.h>
 #include <TBranch.h>
+#include <TRandom.h>
 
 #include "AliAnalysisTaskUE.h"
 #include "AliAnalysisManager.h"
 #include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAODHandler.h"
 #include "AliStack.h"
 #include "AliAODJet.h"
 #include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 
+#include "AliGenPythiaEventHeader.h"
+#include "AliAnalysisHelperJetTasks.h"
+#include "AliStack.h"
 #include "AliLog.h"
 
 //
@@ -78,9 +85,15 @@ fListOfHistos(0x0),
 fBinsPtInHist(30),     
 fMinJetPtInHist(0.),
 fMaxJetPtInHist(300.),  
+fUseMCParticleBranch(kFALSE),
+fConstrainDistance(kTRUE),
+fMinDistance(0.2),
+fSimulateChJetPt(kFALSE),
+fUseAliStack(kTRUE),
 fAnaType(1),         
 fRegionType(1),
 fConeRadius(0.7),
+fConePosition(1),
 fAreaReg(1.5393), // Pi*0.7*0.7
 fUseChPartJet(kFALSE),
 fUseSingleCharge(kFALSE),
@@ -88,6 +101,7 @@ fUsePositiveCharge(kTRUE),
 fOrdering(1),
 fFilterBit(0xFF),
 fJetsOnFly(kFALSE),
+fChJetPtMin(5.0),
 fJet1EtaCut(0.2),
 fJet2DeltaPhiCut(2.616),    // 150 degrees
 fJet2RatioPtCut(0.8),
@@ -115,6 +129,8 @@ fhRegionDiffSumPtVsEt(0x0),
 fhRegionAvePartPtMaxVsEt(0x0),
 fhRegionAvePartPtMinVsEt(0x0),
 fhRegionMaxPartPtMaxVsEt(0x0),
+fh1Xsec(0x0),
+fh1Trials(0x0),
 fSettingsTree(0x0)//,   fhValidRegion(0x0)
 {
   // Default constructor
@@ -123,6 +139,58 @@ fSettingsTree(0x0)//,   fhValidRegion(0x0)
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());
+}
+
+//______________________________________________________________
+Bool_t AliAnalysisTaskUE::Notify()
+{
+  //
+  // Implemented Notify() to read the cross sections
+  // and number of trials from pyxsec.root
+  // Copy from AliAnalysisTaskJetSpectrum
+  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+  Double_t xsection = 0;
+  UInt_t   ntrials  = 0;
+  if(tree){
+    TFile *curfile = tree->GetCurrentFile();
+    if (!curfile) {
+      Error("Notify","No current file");
+      return kFALSE;
+    }
+    if(!fh1Xsec||!fh1Trials){
+      Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
+      return kFALSE;
+    }
+    
+    TString fileName(curfile->GetName());
+    if(fileName.Contains("AliESDs.root")){
+      fileName.ReplaceAll("AliESDs.root", "pyxsec.root");
+    }
+    else if(fileName.Contains("AliAOD.root")){
+      fileName.ReplaceAll("AliAOD.root", "pyxsec.root");
+    }
+    else if(fileName.Contains("galice.root")){
+      // for running with galice and kinematics alone...                      
+      fileName.ReplaceAll("galice.root", "pyxsec.root");
+    }
+    TFile *fxsec = TFile::Open(fileName.Data());
+    if(!fxsec){
+      Printf("%s:%d %s not found in the Input",(char*)__FILE__,__LINE__,fileName.Data());
+      // no a severe condition
+      return kTRUE;
+    }
+    TTree *xtree = (TTree*)fxsec->Get("Xsection");
+    if(!xtree){
+      Printf("%s:%d tree not found in the pyxsec.root",(char*)__FILE__,__LINE__);
+    }
+    xtree->SetBranchAddress("xsection",&xsection);
+    xtree->SetBranchAddress("ntrials",&ntrials);
+    xtree->GetEntry(0);
+    fh1Xsec->Fill("<#sigma>",xsection);
+    fh1Trials->Fill("#sum{ntrials}",ntrials);
+  }
+  
+  return kTRUE;
 }
 
 //____________________________________________________________________
@@ -280,7 +348,6 @@ void  AliAnalysisTaskUE::AnalyseUE()
     }
   }
   
-  
   fhNJets->Fill(nJets);
   
   if( fDebug > 1 ) {
@@ -329,7 +396,7 @@ void  AliAnalysisTaskUE::AnalyseUE()
     }
   }
   
-  fhEleadingPt->Fill( maxPtJet1 );
+  //fhEleadingPt->Fill( maxPtJet1 );
   //Area for Normalization Purpose at Display histos
   SetRegionArea(jetVect);
   
@@ -342,47 +409,243 @@ void  AliAnalysisTaskUE::AnalyseUE()
   Int_t    nTrackRegionNegat = 0;
   static const Double_t k270rad = 270.*TMath::Pi()/180.;
   
-  Int_t nTracks = fAOD->GetNTracks();
-  for (Int_t ipart=0; ipart<nTracks; ++ipart) {
-    AliAODTrack* part = fAOD->GetTrack( ipart );
-    if ( !part->TestFilterBit(fFilterBit) ) continue; // track cut selection
-    // PID Selection: Reject everything but hadrons
-    Bool_t isHadron = part->GetMostProbablePID()==AliAODTrack::kPion || 
-                      part->GetMostProbablePID()==AliAODTrack::kKaon || 
-                      part->GetMostProbablePID()==AliAODTrack::kProton;
-    if ( !isHadron ) continue;
+  if (!fUseMCParticleBranch){
+    fhEleadingPt->Fill( maxPtJet1 );
+    Int_t nTracks = fAOD->GetNTracks();
     
-    if ( !part->Charge() ) continue; //Only charged
-    if ( fUseSingleCharge ) { // Charge selection
-      if ( fUsePositiveCharge && part->Charge() < 0.) continue; // keep Positives
-      if ( !fUsePositiveCharge && part->Charge() > 0.) continue; // keep Negatives
+    for (Int_t ipart=0; ipart<nTracks; ++ipart) {
+      
+      AliAODTrack* part = fAOD->GetTrack( ipart );
+      if ( !part->TestFilterBit(fFilterBit) ) continue; // track cut selection
+      if (!part->IsPrimaryCandidate()) continue; // reject whatever is not linked to collision point
+      // PID Selection: Reject everything but hadrons
+      Bool_t isHadron = part->GetMostProbablePID()==AliAODTrack::kPion || 
+                        part->GetMostProbablePID()==AliAODTrack::kKaon || 
+                        part->GetMostProbablePID()==AliAODTrack::kProton;
+      if ( !isHadron ) continue;
+      
+      if ( !part->Charge() ) continue; //Only charged
+      if ( fUseSingleCharge ) { // Charge selection
+        if ( fUsePositiveCharge && part->Charge() < 0.) continue; // keep Positives
+        if ( !fUsePositiveCharge && part->Charge() > 0.) continue; // keep Negatives
+      }
+      
+      if ( part->Pt() < fTrackPtCut ) continue;
+      if( TMath::Abs(part->Eta()) > fTrackEtaCut ) continue;
+      
+      TVector3 partVect(part->Px(), part->Py(), part->Pz());
+      
+      Double_t deltaPhi = jetVect[0].DeltaPhi(partVect)+k270rad;
+      if( deltaPhi > 2.*TMath::Pi() )  deltaPhi-= 2.*TMath::Pi();
+      fhdNdEtaPhiDist->Fill( deltaPhi );
+      
+      fhFullRegPartPtDistVsEt->Fill( part->Pt(), maxPtJet1 );
+      
+      Int_t region = IsTrackInsideRegion( jetVect, &partVect );  
+      
+      if (region > 0) {
+        if( maxPartPtRegion < part->Pt() ) maxPartPtRegion = part->Pt();
+        sumPtRegionPosit += part->Pt();
+        nTrackRegionPosit++;
+        fhTransRegPartPtDistVsEt->Fill( part->Pt(), maxPtJet1 );
+      }
+      if (region < 0) {
+        if( maxPartPtRegion < part->Pt() ) maxPartPtRegion = part->Pt();
+        sumPtRegionNegat += part->Pt();
+        nTrackRegionNegat++;
+        fhTransRegPartPtDistVsEt->Fill( part->Pt(), maxPtJet1 );
+      }
+    }//end loop AOD tracks
+  }
+  else {
+    
+    // this is the part we only use when we have MC information
+    // More than a test for values of it also resumes the reconstruction efficiency of jets
+    // As commented bellow if available for the data, we try to pair reconstructed jets with simulated ones
+    // afterwards we kept angular variables of MC jet to perform UE analysis over MC particles
+    // TODO: Handle Multiple jet environment. 06/2009 just suited for inclusive jet condition ( fAnaType = 1 ) 
+    
+      AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+      if (!mcHandler) {
+        Printf("ERROR: Could not retrieve MC event handler");
+        return;
+      }
+      
+      AliMCEvent* mcEvent = mcHandler->MCEvent();
+      if (!mcEvent) {
+        Printf("ERROR: Could not retrieve MC event");
+        return;
+      }
+    AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
+    if(!pythiaGenHeader){
+      return;
     }
     
-    if ( part->Pt() < fTrackPtCut ) continue;
-    
-    TVector3 partVect(part->Px(), part->Py(), part->Pz());
-    
-    Double_t deltaPhi = jetVect[0].DeltaPhi(partVect)+k270rad;
-    if( deltaPhi > 2.*TMath::Pi() )  deltaPhi-= 2.*TMath::Pi();
-    fhdNdEtaPhiDist->Fill( deltaPhi );
-    fhFullRegPartPtDistVsEt->Fill( part->Pt(), maxPtJet1 );
-    
-    Int_t region = IsTrackInsideRegion( jetVect, &partVect );  
-    
-    if (region > 0) {
-      if( maxPartPtRegion < part->Pt() ) maxPartPtRegion = part->Pt();
-      sumPtRegionPosit += part->Pt();
-      nTrackRegionPosit++;
-      fhTransRegPartPtDistVsEt->Fill( part->Pt(), maxPtJet1 );
+    //Get Jets from MC header
+    Int_t nPythiaGenJets = pythiaGenHeader->NTriggerJets();
+    AliAODJet pythiaGenJets[4];
+    TVector3 jetVectnew[4];
+    Int_t iCount = 0;
+    for(int ip = 0;ip < nPythiaGenJets;++ip){
+      if (iCount>3) break;
+      Float_t p[4];
+      pythiaGenHeader->TriggerJet(ip,p);
+      TVector3 tempVect(p[0],p[1],p[2]);
+      if ( TMath::Abs(tempVect.Eta())>fJet1EtaCut ) continue;
+      pythiaGenJets[iCount].SetPxPyPzE(p[0],p[1],p[2],p[3]);
+      jetVectnew[iCount].SetXYZ(pythiaGenJets[iCount].Px(), pythiaGenJets[iCount].Py(), pythiaGenJets[iCount].Pz());
+      iCount++;
     }
-    if (region < 0) {
-      if( maxPartPtRegion < part->Pt() ) maxPartPtRegion = part->Pt();
-      sumPtRegionNegat += part->Pt();
-      nTrackRegionNegat++;
-      fhTransRegPartPtDistVsEt->Fill( part->Pt(), maxPtJet1 );
+    
+    if (!iCount) return;// no jet in eta acceptance
+    
+    //Search the index of the nearest MC jet to the leading jet reconstructed from the input data
+    Int_t index = 0;
+    if (fConstrainDistance){
+      Float_t deltaR = 0.;
+      Float_t dRTemp = 0.;
+      for (Int_t i=0; i<iCount; i++){
+         if (!i) {
+         dRTemp = jetVectnew[i].DeltaR(jetVect[0]);
+         index = i;
+         }
+         deltaR = jetVectnew[i].DeltaR(jetVect[0]);
+         if (deltaR < dRTemp){
+         index = i;
+         dRTemp = deltaR;
+         }
+      }
+   
+      if (jetVectnew[index].DeltaR(jetVect[0]) > fMinDistance) return;
+    }
+    //Let's add some taste to jet and simulate pt of charged alone 
+    //eta and phi are kept as original
+    //Play a Normal Distribution
+    Float_t random = 1.;  
+    if (fSimulateChJetPt){
+      while(1){
+        random = gRandom->Gaus(0.6,0.25);
+        if (random > 0. && random < 1. && 
+            (random * jetVectnew[index].Pt()>6.)) break;
+      }
+    }
+    
+    //Set new Pt & Fill histogram accordingly
+    maxPtJet1 = random * jetVectnew[index].Pt();
+    
+    
+    fhEleadingPt->Fill( maxPtJet1 );
+
+    if (fUseAliStack){//Try Stack Information to perform UE analysis
+    
+      AliStack* mcStack = mcEvent->Stack();//Load Stack
+      Int_t nTracksMC = mcStack->GetNtrack();
+      for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
+        //Cuts
+        if(!(mcStack->IsPhysicalPrimary(iTracks))) continue;
+        
+        TParticle* mctrk = mcStack->Particle(iTracks);
+        
+        Double_t charge = mctrk->GetPDG()->Charge();
+        if (charge == 0) continue;
+        
+        if ( fUseSingleCharge ) { // Charge selection
+          if ( fUsePositiveCharge && charge < 0.) continue; // keep Positives
+          if ( !fUsePositiveCharge && charge > 0.) continue; // keep Negatives
+        }
+        
+        //Kinematics cuts on particle
+        if ((mctrk->Pt() < fTrackPtCut) || (TMath::Abs(mctrk->Eta()) > fTrackEtaCut )) continue;
+        
+        Bool_t isHadron = TMath::Abs(mctrk->GetPdgCode())==211 ||
+                          TMath::Abs(mctrk->GetPdgCode())==2212 ||
+                          TMath::Abs(mctrk->GetPdgCode())==321;
+        
+        if (!isHadron) continue;
+        
+        TVector3 partVect(mctrk->Px(), mctrk->Py(), mctrk->Pz());
+
+        Double_t deltaPhi = jetVectnew[index].DeltaPhi(partVect)+k270rad;
+        if( deltaPhi > 2.*TMath::Pi() )  deltaPhi-= 2.*TMath::Pi();
+        fhdNdEtaPhiDist->Fill( deltaPhi );
+        
+        fhFullRegPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
+        
+        //We are not interested on stack organization but don't loose track of info
+        TVector3 tempVector =  jetVectnew[0];
+        jetVectnew[0] = jetVectnew[index];
+        jetVectnew[index] = tempVector;
+        
+        Int_t region = IsTrackInsideRegion( jetVectnew, &partVect );  
+        
+        if (region > 0) {
+          if( maxPartPtRegion < mctrk->Pt() ) maxPartPtRegion = mctrk->Pt();
+          sumPtRegionPosit += mctrk->Pt();
+          nTrackRegionPosit++;
+          fhTransRegPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
+        }
+        if (region < 0) {
+          if( maxPartPtRegion < mctrk->Pt() ) maxPartPtRegion = mctrk->Pt();
+          sumPtRegionNegat += mctrk->Pt();
+          nTrackRegionNegat++;
+          fhTransRegPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
+        }
+      }  // end loop stack Particles
+      
+    }else{//Try mc Particle
+
+      TClonesArray* farray = (TClonesArray*)fAOD->FindListObject("mcparticles");
+       
+      Int_t ntrks = farray->GetEntries();
+      if (fDebug>1) AliInfo(Form("In UE MC analysis tracks %d \n",ntrks));
+      for(Int_t i =0 ; i < ntrks; i++){   
+        AliAODMCParticle* mctrk = (AliAODMCParticle*)farray->At(i);
+        //Cuts
+        if (!(mctrk->IsPhysicalPrimary())) continue;
+        //if (!(mctrk->IsPrimary())) continue;
+        
+        if (mctrk->Charge() == 0 || mctrk->Charge()==-99) continue;
+        
+        if (mctrk->Pt() < fTrackPtCut ) continue;
+        if( TMath::Abs(mctrk->Eta()) > fTrackEtaCut ) continue;
+        
+        Bool_t isHadron = TMath::Abs(mctrk->GetPdgCode())==211 ||
+                          TMath::Abs(mctrk->GetPdgCode())==2212 ||
+                          TMath::Abs(mctrk->GetPdgCode())==321;
+        
+        if (!isHadron) continue;
+        
+        TVector3 partVect(mctrk->Px(), mctrk->Py(), mctrk->Pz());
+
+        Double_t deltaPhi = jetVectnew[index].DeltaPhi(partVect)+k270rad;
+        if( deltaPhi > 2.*TMath::Pi() )  deltaPhi-= 2.*TMath::Pi();
+        fhdNdEtaPhiDist->Fill( deltaPhi );
+
+        fhFullRegPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
+        
+        //We are not interested on stack organization but don't loose track of info
+        TVector3 tempVector =  jetVectnew[0];
+        jetVectnew[0] = jetVectnew[index];
+        jetVectnew[index] = tempVector;
+        
+        Int_t region = IsTrackInsideRegion( jetVectnew, &partVect );  
+        
+        if (region > 0) {
+          if( maxPartPtRegion < mctrk->Pt() ) maxPartPtRegion = mctrk->Pt();
+          sumPtRegionPosit += mctrk->Pt();
+          nTrackRegionPosit++;
+          fhTransRegPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
+        }
+        if (region < 0) {
+          if( maxPartPtRegion < mctrk->Pt() ) maxPartPtRegion = mctrk->Pt();
+          sumPtRegionNegat += mctrk->Pt();
+          nTrackRegionNegat++;
+          fhTransRegPartPtDistVsEt->Fill( mctrk->Pt(), maxPtJet1 );
+        }
+        
+      }//end loop AliAODMCParticle tracks
     }
   }
-  
   //How quantities will be sorted before Fill Min and Max Histogram
   //  1=Plots will be CDF-like
   //  2=Plots will be Marchesini-like
@@ -486,9 +749,22 @@ Int_t AliAnalysisTaskUE::IsTrackInsideRegion(TVector3 *jetVect, TVector3 *partVe
     Double_t deltaR = 0.;
     
     TVector3 positVect,negatVect;
-    positVect.SetMagThetaPhi(1, 2.*atan(exp(-jetVect[0].Eta())), jetVect[0].Phi()+TMath::PiOver2());
-    negatVect.SetMagThetaPhi(1, 2.*atan(exp(-jetVect[0].Eta())), jetVect[0].Phi()-TMath::PiOver2());
-    
+    if (fConePosition==1){
+      positVect.SetMagThetaPhi(1, 2.*atan(exp(-jetVect[0].Eta())), jetVect[0].Phi()+TMath::PiOver2());
+      negatVect.SetMagThetaPhi(1, 2.*atan(exp(-jetVect[0].Eta())), jetVect[0].Phi()-TMath::PiOver2());
+    }else if (fConePosition==2){
+       if(fAnaType<2) AliFatal("Prevent error in Analysis type there might be only 1 jet. To avoid overflow better Correct UE config");
+       positVect.SetMagThetaPhi(1, 2.*atan(exp(-(jetVect[0].Eta()+jetVect[1].Eta())/2.)), jetVect[0].Phi()+TMath::PiOver2());
+       negatVect.SetMagThetaPhi(1, 2.*atan(exp(-(jetVect[0].Eta()+jetVect[1].Eta())/2.)), jetVect[0].Phi()-TMath::PiOver2());
+    }else if (fConePosition==3){
+       if(fAnaType<2) AliFatal("Prevent error in Analysis type there might be only 1 jet. To avoid overflow better Correct UE config");
+       Double_t weightEta = jetVect[0].Eta() * jetVect[0].Pt()/(jetVect[0].Pt() + jetVect[1].Pt()) + 
+                            jetVect[1].Eta() * jetVect[1].Pt()/(jetVect[0].Pt() + jetVect[1].Pt());
+       //Double_t weightEta = jetVect[0].Eta() * jetVect[0].Mag()/(jetVect[0].Mag() + jetVect[1].Mag()) + 
+       //                     jetVect[1].Eta() * jetVect[1].Mag()/(jetVect[0].Mag() + jetVect[1].Mag());
+       positVect.SetMagThetaPhi(1, 2.*atan(exp(-weightEta)), jetVect[0].Phi()+TMath::PiOver2());
+       negatVect.SetMagThetaPhi(1, 2.*atan(exp(-weightEta)), jetVect[0].Phi()-TMath::PiOver2());
+    }
     if (TMath::Abs(positVect.DeltaPhi(*partVect)) < fConeRadius ) { 
       region = 1;  
       deltaR = positVect.DrEtaPhi(*partVect);
@@ -575,8 +851,8 @@ TObjArray*  AliAnalysisTaskUE::FindChargedParticleJets()
       if( r < fConeRadius ) {
         Double_t fPt   = jet->E()+track1->Pt();  // Scalar sum of Pt
         // recalculating the centroid
-        Double_t eta = jet->Eta()*jet->E()/fPt + track1->Eta()/fPt;
-        Double_t phi = jet->Phi()*jet->E()/fPt + track1->Phi()/fPt;
+        Double_t eta = jet->Eta()*jet->E()/fPt + track1->Eta()*track1->Pt()/fPt;
+        Double_t phi = jet->Phi()*jet->E()/fPt + track1->Phi()*track1->Pt()/fPt;
         jet->SetPtEtaPhiE( 1., eta, phi, fPt );
         tracks.Remove( track1 );
       }
@@ -594,6 +870,7 @@ TObjArray*  AliAnalysisTaskUE::FindChargedParticleJets()
   aodjets->SetOwner(kTRUE);
   for(Int_t ijet=0; ijet<njets; ++ijet) {
     TLorentzVector* jet = (TLorentzVector*)jets->At(ijet);
+    if (jet->E() < fChJetPtMin) continue;
     Float_t px, py,pz,en; // convert to 4-vector
     px = jet->E() * TMath::Cos(jet->Phi());  // Pt * cos(phi)
     py = jet->E() * TMath::Sin(jet->Phi());  // Pt * sin(phi)
@@ -666,7 +943,7 @@ void AliAnalysisTaskUE::SetRegionArea(TVector3 *jetVect)
       fAreaReg=TMath::Pi()*fConeRadius*fConeRadius-fAreaCorrFactor;
     }
   }else AliWarning("Unknown Rgion Type");
-  if (fDebug>5) AliInfo(Form("\n dEta=%5.3f Angle =%5.3f Region Area = %5.3f Corr Factor=%5.4f \n",deltaEta,TMath::ACos(deltaEta/fConeRadius),fAreaReg,fAreaCorrFactor));
+  if (fDebug>10) AliInfo(Form("\n dEta=%5.3f Angle =%5.3f Region Area = %5.3f Corr Factor=%5.4f \n",deltaEta,TMath::ACos(deltaEta/fConeRadius),fAreaReg,fAreaCorrFactor));
 }
 
 //____________________________________________________________________
@@ -793,6 +1070,15 @@ void  AliAnalysisTaskUE::CreateHistos()
   fhRegionMaxPartPtMaxVsEt->Sumw2();
   fListOfHistos->Add( fhRegionMaxPartPtMaxVsEt );    // At(20)
   
+  fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1); 
+  fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
+  fh1Xsec->Sumw2();
+  fListOfHistos->Add( fh1Xsec );            //At(21)
+  
+  fh1Trials = new TH1F("fh1Trials","trials from pyxsec.root",1,0,1);
+  fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+  fh1Trials->Sumw2();
+  fListOfHistos->Add( fh1Trials ); //At(22)
   
   fSettingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
   fSettingsTree->Branch("fConeRadius", &fConeRadius,"Rad/D");
@@ -811,7 +1097,7 @@ void  AliAnalysisTaskUE::CreateHistos()
   fSettingsTree->Fill();
 
   
-  fListOfHistos->Add( fSettingsTree );    // At(21)
+  fListOfHistos->Add( fSettingsTree );    // At(23)
   
   /*   
    // For debug region selection
@@ -855,8 +1141,10 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
     
     fhNJets              = (TH1F*)fListOfHistos->At(0);
     
+    //fhValidRegion  = (TH2F*)fListOfHistos->At(21);
+    
     // Canvas
-    TCanvas* c1 = new TCanvas("c1",Form("sumPt dist (%s)", GetTitle()),60,60,1200,800);
+    TCanvas* c1 = new TCanvas("c1",Form("sumPt dist (%s)", GetTitle()),60,60,1100,700);
     c1->Divide(2,2);
     c1->cd(1);
     TH1F *h1r = new TH1F("hRegionEtvsSumPtMax" , "", fBinsPtInHist,  fMinJetPtInHist, fMaxJetPtInHist);
@@ -906,11 +1194,23 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
     h6r->DrawCopy("p same");
     c1->Update();
     
+    //Get Normalization
+    fh1Xsec                = (TProfile*)fListOfHistos->At(21);
+    fh1Trials              = (TH1F*)fListOfHistos->At(22);
+    
+    Double_t xsec = fh1Xsec->GetBinContent(1);
+    Double_t ntrials = fh1Trials->GetBinContent(1);
+    Double_t normFactor = xsec/ntrials;
+    Printf("xSec %f nTrials %f Norm %f \n",xsec,ntrials,normFactor);
+    
+    
     TCanvas* c2 = new TCanvas("c2","Jet Pt dist",160,160,1200,800);
     c2->Divide(2,2);
     c2->cd(1);
     fhEleadingPt->SetMarkerStyle(20);
     fhEleadingPt->SetMarkerColor(2);
+    fhEleadingPt->Scale(normFactor);
+    //fhEleadingPt->Draw("p");
     fhEleadingPt->DrawCopy("p");
     gPad->SetLogy();
     
@@ -923,6 +1223,9 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
     c2->cd(3);      
     fhNJets->DrawCopy();
     
+    //c2->cd(4);      
+    //fhValidRegion->DrawCopy("p");
+    
     //fhTransRegPartPtDist  = (TH1F*)fListOfHistos->At(2);
     fhRegionMultMin          = (TH1F*)fListOfHistos->At(3);
     fhMinRegAvePt     = (TH1F*)fListOfHistos->At(4);
@@ -931,7 +1234,7 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
     fhMinRegSumPtvsMult   = (TH1F*)fListOfHistos->At(7);
     
     // Canvas
-    TCanvas* c3 = new TCanvas("c3"," p_{T} dist",160,160,1200,800);
+    TCanvas* c3 = new TCanvas("c3"," pT dist",160,160,1200,800);
     c3->Divide(2,2);
     c3->cd(1);
     /*fhTransRegPartPtDist->SetMarkerStyle(20);
