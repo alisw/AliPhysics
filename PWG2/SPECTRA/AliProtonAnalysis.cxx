@@ -880,7 +880,7 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
 
   TH1D *gEfficiency[2][3]; //efficiency as a function of pT and of y (raws-[2])
   TH1D *gCorrection[2][3]; //efficiency as a function of pT and of y (raws-[2])
-  TString gTitle = 0;
+  TString gTitle;
   //Get the projection of the efficiency maps
   for(Int_t iParameter = 0; iParameter < 2; iParameter++) {
     gEfficiency[iParameter][0] = effProtonsStep0Step1->Project(iParameter);
