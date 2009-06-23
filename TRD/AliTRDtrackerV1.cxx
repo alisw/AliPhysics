@@ -256,17 +256,27 @@ AliRieman* AliTRDtrackerV1::GetRiemanFitter()
 //_____________________________________________________________________________
 Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event) 
 {
-  //
-  // Gets seeds from ESD event. The seeds are AliTPCtrack's found and
-  // backpropagated by the TPC tracker. Each seed is first propagated 
-  // to the TRD, and then its prolongation is searched in the TRD.
-  // If sufficiently long continuation of the track is found in the TRD
-  // the track is updated, otherwise it's stored as originaly defined 
-  // by the TPC tracker.   
-  //  
+// Propagation of ESD tracks from TPC to TOF detectors and building of the TRD track. For building
+// a TRD track an ESD track is used as seed. The informations obtained on the TRD track (measured points,
+// covariance, PID, etc.) are than used to update the corresponding ESD track.
+// Each track seed is first propagated to the geometrical limit of the TRD detector. 
+// Its prolongation is searched in the TRD and if corresponding clusters are found tracklets are 
+// constructed out of them (see AliTRDseedV1::AttachClusters()) and the track is updated. 
+// Otherwise the ESD track is left unchanged.
+// 
+// The following steps are performed:
+// 1. Selection of tracks based on the variance in the y-z plane.
+// 2. Propagation to the geometrical limit of the TRD volume. If track propagation fails the AliESDtrack::kTRDStop is set.
+// 3. Prolongation inside the fiducial volume (see AliTRDtrackerV1::FollowBackProlongation()) and marking
+// the following status bits:
+//   - AliESDtrack::kTRDin - if the tracks enters the TRD fiducial volume
+//   - AliESDtrack::kTRDStop - if the tracks fails propagation
+//   - AliESDtrack::kTRDbackup - if the tracks fulfills chi2 conditions and qualify for refitting
+// 4. Writting to friends, PID, MC label, quality etc. Setting status bit AliESDtrack::kTRDout.
+// 5. Propagation to TOF. If track propagation fails the AliESDtrack::kTRDStop is set.
+//  
 
-  // Calibration monitor
-  AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
+  AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance(); // Calibration monitor
   if (!calibra) AliInfo("Could not get Calibra instance\n");
   
   // Define scalers
@@ -654,7 +664,14 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 // 5. Register tracklet with the tracker and track; update pulls monitoring.
 //
 // Observation
-//   1. During the propagation a bit map is filled detailing the status of the track in each TRD chamber
+//   1. During the propagation a bit map is filled detailing the status of the track in each TRD chamber. The following errors are being registered for each tracklet:
+// - AliTRDtrackV1::kProlongation : track prolongation failed
+// - AliTRDtrackV1::kPropagation : track prolongation failed
+// - AliTRDtrackV1::kAdjustSector : failed during sector crossing
+// - AliTRDtrackV1::kSnp : too large bending
+// - AliTRDtrackV1::kTrackletInit : fail to initialize tracklet
+// - AliTRDtrackV1::kUpdate : fail to attach clusters or fit the tracklet
+// - AliTRDtrackV1::kUnknown : anything which is not covered before
 //   2. By default the status of the track before first TRD update is saved. 
 // 
 // Debug level 2
@@ -2352,7 +2369,9 @@ Double_t AliTRDtrackerV1::BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int
 Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *sseed, Int_t *ipar)
 {
 //
-// Seed tracklets and build candidate TRD tracks.
+// Seed tracklets and build candidate TRD tracks. The procedure is used during barrel tracking to account for tracks which are 
+// either missed by TPC prolongation or conversions inside the TRD volume. 
+// For stand alone tracking the procedure is used to estimate all tracks measured by TRD. 
 //
 // Parameters :
 //   layers : Array of stack propagation layers containing clusters

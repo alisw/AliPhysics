@@ -558,10 +558,15 @@ Bool_t AliTRDseedV1::CookPID()
 // Output
 //   returns pointer to the probability array and 0x0 if missing DB access 
 //
-// Detailed description
+// Retrieve PID probabilities for e+-, mu+-, K+-, pi+- and p+- from the DB according to tracklet information:
+// - estimated momentum at tracklet reference point 
+// - dE/dx measurements
+// - tracklet length
+// - TRD layer
+// According to the steering settings specified in the reconstruction one of the following methods are used
+// - Neural Network [default] - option "nn"  
+// - 2D Likelihood - option "!nn"  
 
-  
-  // retrive calibration db
   AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
     AliError("No access to calibration data");

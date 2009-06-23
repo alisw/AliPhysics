@@ -278,11 +278,20 @@ Bool_t AliTRDtrackV1::CookLabel(Float_t wrong)
 //_______________________________________________________________
 Bool_t AliTRDtrackV1::CookPID()
 {
-  //
-  // Cook the PID information
-  //
+//
+// Cook the PID information for the track by delegating the omonim function of the tracklets. 
+// Computes the number of tracklets used. The tracklet information are considered independent. 
+// For the moment no global track measurement of PID is performed as for example to estimate 
+// bremsstrahlung probability based on global chi2 of the track.
+//
+// The status bit AliESDtrack::kTRDpid is set during the call of AliTRDtrackV1::UpdateESDtrack().The PID performance of the 
+//TRD for tracks with 6 tacklets is displayed below.
+//Begin_Html
+//<img src="TRD/trackPID.gif">
+//End_Html
+//
   
-  // Reset the a priori probabilities
+  /*Reset the a priori probabilities*/
   Double_t pid = 1. / AliPID::kSPECIES;
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fPID[ispec] = pid;	
 
@@ -290,7 +299,7 @@ Bool_t AliTRDtrackV1::CookPID()
   // no tracklet found for PID calculations
   if(!fPIDquality) return kFALSE;
   
-  // slot for PID calculation @ track level
+  // slot for PID calculation @ track level for bremsstrahlung TODO
   
   // normalize probabilities
   Double_t probTotal = 0.0;
