@@ -245,14 +245,15 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
     Float_t charge(0.0);
     Int_t statusMap;
     Bool_t isSaturated(kFALSE);
-    
+
+    ++fNumberOfPads;
+
     Bool_t ok = IsValidDigit(digit->DetElemId(),digit->ManuId(),digit->ManuChannel(),&statusMap);
 
     digit->SetStatusMap(statusMap);
     
     if (ok)
     {
-      ++fNumberOfPads;
       charge = CalibrateDigit(digit->DetElemId(),digit->ManuId(),digit->ManuChannel(),
                               digit->ADC(),nsigmas,&isSaturated);
     }
