@@ -77,10 +77,12 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
 	{
 		store = AliMUONCalibrationData::CreateOccupancyMap(runNumber,&startOfValidity);
     
-    fData = new AliMUONTrackerData(Form("OCC%d",runNumber),"OccupancyMap",*store);
-    
-    fData->SetDimensionName(0,"One");
-    fData->SetDimensionName(1,"Zero");
+    if (store)
+    {
+      fData = new AliMUONTrackerData(Form("OCC%d",runNumber),"OccupancyMap",*store);
+      fData->SetDimensionName(0,"One");
+      fData->SetDimensionName(1,"Zero");
+    }
 	}
 	else if ( stype == "GAINS" ) 
 	{
@@ -114,7 +116,7 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
 		return;
 	}
 	
-  if ( type != "OCCUPANCY" )
+  if ( stype != "OCCUPANCY" )
   {
     fData->Add(*store);
 	}
