@@ -627,7 +627,7 @@ int AliHLTComponentHandler::ActivateAgents(const char* library, const char* blac
 
     // check if the current agent is in the black list
     if (blackList) {
-      char* found=strstr(blackList, pAgent->GetModuleId());
+      const char* found=strstr(blackList, pAgent->GetModuleId());
       if (found) {
 	found+=strlen(pAgent->GetModuleId());
 	// skip this agent as it is in the blacklist
