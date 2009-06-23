@@ -207,7 +207,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			if (daughter0 == 0 || daughter1 == 0) {
 				AliDebug(2, "Error! the D0 MC doesn't have correct daughters!! But it should have, this check was already done...");
 			}
-			if (TMath::Abs(daughter1 - daughter0 != 1)) {
+			if (TMath::Abs(daughter1 - daughter0) != 1) {
 				AliDebug(2, "The D0 MC doesn't come from a 2-prong decay, but it should be, this check was already done...");
 			}
 			AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter0));
@@ -1043,7 +1043,7 @@ Bool_t AliCFHeavyFlavourTaskMultiVarMultiStep::GetGeneratedValuesFromMCParticle(
 		AliDebug(2, "Error! the D0 MC doesn't have correct daughters!!");
 		return isOk;  
 	}
-	if (TMath::Abs(daughter1 - daughter0 != 1)) {
+	if (TMath::Abs(daughter1 - daughter0) != 1) {
 		AliDebug(2, "The D0 MC doesn't come from a 2-prong decay, skipping!!");
 		return isOk;  
 	}
