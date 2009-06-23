@@ -34,6 +34,7 @@
 #include "AliHLTTPCPad.h"
 #include <sys/time.h>
 #include <algorithm>
+#include <cmath>
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
 
@@ -84,7 +85,8 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   f32BitFormat(kFALSE),
   fDoMC(kFALSE),
   fClusterMCVector(),
-  fOfflineTransform(NULL)
+  fOfflineTransform(NULL),
+  fTimeMeanDiff(2)
 {
   //constructor  
   fOfflineTransform = AliTPCcalibDB::Instance()->GetTransform(); 
@@ -430,7 +432,9 @@ Bool_t AliHLTTPCClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCCluste
   //Checking if we have a match on the next pad
   for(UInt_t candidateNumber=0;candidateNumber<nextPad->fClusterCandidates.size();candidateNumber++){
     AliHLTTPCClusters *candidate =&nextPad->fClusterCandidates[candidateNumber]; 
-    if(cluster->fMean-candidate->fMean==1 || candidate->fMean-cluster->fMean==1 || cluster->fMean-candidate->fMean==0){
+    //    if(cluster->fMean-candidate->fMean==1 || candidate->fMean-cluster->fMean==1 || cluster->fMean-candidate->fMean==0){
+    
+    if( abs((Int_t)(cluster->fMean - candidate->fMean)) <= fTimeMeanDiff ){
       if(fDeconvPad){
 	if(candidate->fTotalCharge<fTotalChargeOfPreviousClusterCandidate){//peak is reached
 	  fChargeOfCandidatesFalling=kTRUE;
@@ -476,9 +480,6 @@ Bool_t AliHLTTPCClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCCluste
       else{
 	return kFALSE;
       }
-    }
-    else{
-      return kFALSE;
     }
   }
   return kFALSE;

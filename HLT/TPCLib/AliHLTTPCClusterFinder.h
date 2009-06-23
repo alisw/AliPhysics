@@ -281,12 +281,14 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   vector<MCWeight> fClusterMCVector;                               //! transient
 
-  AliTPCTransform * fOfflineTransform;
+  AliTPCTransform * fOfflineTransform;                             //! transient
+
+  Float_t fTimeMeanDiff;                                           //! transient
 
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
 #endif
   
-  ClassDef(AliHLTTPCClusterFinder,8) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder,9) //Fast cluster finder
 };
 #endif
