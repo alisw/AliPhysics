@@ -47,12 +47,16 @@ class AliHFEcuts : public TObject{
   typedef enum{
     kStepMCGenerated = 0,
     kStepMCInAcceptance = 1,
-    kStepRecKine = 2,
-    kStepRecPrim = 3,
-    kStepHFEcuts = 4
-  } CutStep_t;
+    kStepRecKineTPC = 2,
+    kStepRecKineITS = 3,
+    kStepRecPrim = 4,
+    kStepHFEcutsITS = 5,
+    kStepHFEcutsTPC = 6,
+    kStepHFEcutsTRD = 7
+   } CutStep_t;
 
   static const Int_t kNcutSteps;
+  static const Int_t kNcutESDSteps;
 
   AliHFEcuts();
   AliHFEcuts(const AliHFEcuts &c);
@@ -97,14 +101,20 @@ class AliHFEcuts : public TObject{
   void SetRequireITSPixel() { SETBIT(fRequirements, kITSPixel); }
   void SetRequireProdVertex() { SETBIT(fRequirements, kProductionVertex); };
   void SetRequireSigmaToVertex() { SETBIT(fRequirements, kSigmaToVertex); };
+
+  void SetDebugLevel(Int_t level) { fDebugLevel = level; };
+  Int_t GetDebugLevel() const { return fDebugLevel; };
     
  private:
   void SetParticleGenCutList();
   void SetAcceptanceCutList();
-  void SetRecKineCutList();
+  void SetRecKineTPCCutList();
+  void SetRecKineITSCutList();
   void SetRecPrimaryCutList();
-  void SetHFElectronCuts();
-    
+  void SetHFElectronITSCuts();
+  void SetHFElectronTPCCuts();
+  void SetHFElectronTRDCuts();
+  
   ULong64_t fRequirements;	// Bitmap for requirements
   Double_t fDCAtoVtx[2];	// DCA to Vertex
   Double_t fProdVtx[4];	// Production Vertex
@@ -118,6 +128,8 @@ class AliHFEcuts : public TObject{
     
   TList *fHistQA;		//! QA Histograms
   TObjArray *fCutList;	//! List of cut objects(Correction Framework Manager)
+
+  Int_t fDebugLevel;    // Debug Level
     
   ClassDef(AliHFEcuts, 1)   // Container for HFE cuts
     };
@@ -166,7 +178,8 @@ void AliHFEcuts::CreateStandardCuts(){
   fDCAtoVtx[1] = 10.;
   fMinClustersTPC = 50;
   fMinTrackletsTRD = 6;
-  fCutITSPixel = AliHFEextraCuts::kAny;
+  SetRequireITSPixel();
+  fCutITSPixel = AliHFEextraCuts::kBoth;
   fMaxChi2clusterTPC = 3.5;
   fMinClusterRatioTPC = 0.6;
   fPtRange[0] = 0.1;

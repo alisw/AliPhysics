@@ -48,14 +48,19 @@ class AliHFEextraCuts : public AliCFCutBase{
     inline void SetMinImpactParamZ(Double_t impactParam);
     inline void SetMaxImpactParamZ(Double_t impactParam);
     inline void SetMinTrackletsTRD(Int_t minTracklets);
+
+    void SetDebugLevel(Int_t level) { fDebugLevel = level; };
+    Int_t GetDebugLevel() const { return fDebugLevel; };
     
   protected:
     virtual void AddQAHistograms(TList *qaList);
     Bool_t CheckESDCuts(AliESDtrack *track);
     Bool_t CheckMCCuts(AliMCParticle */*track*/);
+    Bool_t CheckITSstatus(Int_t itsStatus);
     void FillQAhistosESD(AliESDtrack *track, UInt_t when);
 //     void FillQAhistosMC(AliMCParticle *track, UInt_t when);
     void FillCutCorrelation(ULong64_t survivedCut);
+    void PrintBitMap(Int_t bitmap);
     
   private:
     typedef enum{
@@ -83,6 +88,8 @@ class AliHFEextraCuts : public AliCFCutBase{
     UChar_t fPixelITS;			// Cut on ITS Pixels
     
     TList *fQAlist;			//! Directory for QA histograms
+  
+    Int_t fDebugLevel;    // Debug Level
   
   ClassDef(AliHFEextraCuts, 1)      // Additional cuts implemented by the ALICE HFE group
 };

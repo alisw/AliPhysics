@@ -12,15 +12,21 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /**************************************************************************
  *                                                                        *
  * QA class of Heavy Flavor quark and fragmeted/decayed particles         *
+ * -Check kinematics of Heavy Quarks/hadrons, and decayed leptons         *
+ *    pT, rapidity                                                        *
+ *    decay lepton kinematics w/wo acceptance                             *
+ *    heavy hadron decay length, electron pT fraction carried from decay  *
+ * -Check yield of Heavy Quarks/hadrons                                   *
+ *    Number of produced heavy quark                                      *
+ *    Number of produced hadron of given pdg code                         *
  *                                                                        *
  **************************************************************************/
 
-#ifndef _ALIHFEMCQA_H_
-#define _ALIHFEMCQA_H_
+#ifndef ALIHFEMCQA_H
+#define ALIHFEMCQA_H
 
 #ifndef ROOT_TObject
 #include <TObject.h>
@@ -36,48 +42,44 @@ class AliStack;
 class AliHFEmcQA: public TObject {
 
         public: 
-                enum heavyType {fkCharm=4, fkBeauty=5};
-                enum qType {fkQuark, fkantiQuark, fkElectron, fkElectron2nd, fkeHadron, fkDeHadron};
+                enum heavyType {kCharm=4, kBeauty=5, kElectronPDG=11};
+                enum qType {kQuark, kantiQuark, kHadron, keHadron, kDeHadron, kElectron, kElectron2nd};
                 AliHFEmcQA();
                 AliHFEmcQA(const AliHFEmcQA &p); // copy constructor
                 AliHFEmcQA &operator=(const AliHFEmcQA &); // assignment operator
 
                 virtual ~AliHFEmcQA();
 
-                void PostAnalyze();
-                void SetVerbosity(Bool_t verb=kTRUE) {fVerbos=verb;}
+                const void PostAnalyze();
+                void CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt=""); // create histograms for mc qa analysis
+                void SetStack(AliStack* const stack){fStack=stack;} // set stack pointer
+                void Init();
+
+                void GetQuarkKine(Int_t iTrack, const Int_t kquark); // get heavy quark kinematics distribution
+                void GetHadronKine(Int_t iTrack, const Int_t kquark); // get heavy hadron kinematics distribution
+                void GetDecayedKine(Int_t iTrack, const Int_t kquark, const Int_t kdecayed, Int_t icut, Bool_t isbarrel=kFALSE); // get decay electron kinematics distribution
+                void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
 
         protected:
-                void SetStack(AliStack* stack){fStack=stack;} // set stack pointer
-                void CreateHistograms(const Int_t kquark, TString hnopt=""); // create histograms for mc qa analysis
-                void Init();
-                void GetQuarkKine(Int_t iTrack, const Int_t kquark); // get heavy quark kinematics distribution
-                void GetDecayedKine(Int_t iTrack, const Int_t kquark, const Int_t kdecayed, Bool_t isbarrel=kFALSE); // get decay electron kinematics distribution
-                void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
                 void IdentifyMother(Int_t mother_label, Int_t &mother_pdg, Int_t &grandmother_label); // 
                 void HardScattering(const Int_t kquark, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from hard scattering
-                void reportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // report if the quark production process is unknown
+                void ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // report if the quark production process is unknown
                 Bool_t IsFromInitialShower(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from initial parton shower 
                 Bool_t IsFromFinalParton(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from final parton shower
-                Float_t GetRapidity(TParticle *part); // return rapidity
+                const Float_t GetRapidity(TParticle *part); // return rapidity
 
-                Bool_t fVerbos; //
+                AliStack* fStack; // stack pointer           
 
-                AliStack* fStack; //            
-
-                static const Int_t fgkGluon; //
-                static const Int_t fgkPDGInterested; //
-                static const Int_t fgkMaxGener; //
-                static const Int_t fgkMaxIter; //
-                static const Int_t fgkqType; //
+                static const Int_t fgkGluon; // gluon pdg code
+                static const Int_t fgkMaxGener; // ancester level wanted to be checked 
+                static const Int_t fgkMaxIter; // number of iteration to find out matching particle 
+                static const Int_t fgkqType; // number of particle type to be checked
 
 
                 enum ProcessType_t
                         {
-                        fkPairCreationFromq,  fkPairCreationFromg,  fkFlavourExitation,  fkGluonSplitting, fkInitialPartonShower, fkLightQuarkShower
+                        kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
                         };
-
-                TString fkqTypeLabel[6]; //
 
                 struct hists{
                         TH1F *fPdgCode; // histogram to store particle pdg code
@@ -88,22 +90,22 @@ class AliHFEmcQA: public TObject {
                 struct histsComm {
                         TH1F *fNq; // histogram to store number of quark
                         TH1F *fProcessID; // histogram to store process id 
-                        TH2F *fePtRatio; //
-                        TH2F *fDePtRatio; //
-                        TH2F *feDistance; //
-                        TH2F *fDeDistance; //
+                        TH2F *fePtRatio; // fraction of electron pT from D or B hadron
+                        TH2F *fDePtRatio; // fraction of D electron pT from B hadron 
+                        TH2F *feDistance; // distance between electron production point to mother particle 
+                        TH2F *fDeDistance; // distance between D electron production point to mother particle
                 };
 
-                hists fHist[2][6]; //
-                histsComm fHistComm[2]; //
+                hists fHist[2][7][5]; // struct of histograms to store kinematics of given particles
+                histsComm fHistComm[2][5]; // struct of additional histograms of given particles
 
-                TParticle *fHeavyQuark[50]; //
-                Int_t fIsHeavy[2]; //
-                Int_t fNparents; //
-                Int_t fParentSelect[2][7]; //
+                TParticle *fHeavyQuark[50]; // store pointer of heavy flavour quark 
+                Int_t fIsHeavy[2]; // count of heavy flavour
+                Int_t fNparents; // number of heavy hadrons to be considered
+                Int_t fParentSelect[2][7]; // heavy hadron species
 
 
-		ClassDef(AliHFEmcQA,0); // HFE Monte Carlo quality assurance
+        ClassDef(AliHFEmcQA,0);
 };
 
 #endif

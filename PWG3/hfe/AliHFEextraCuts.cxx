@@ -47,7 +47,8 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fClusterRatioTPC(0.),
   fMinTrackletsTRD(0),
   fPixelITS(0),
-  fQAlist(0x0)
+  fQAlist(0x0),
+  fDebugLevel(0)
 {
   //
   // Default Constructor
@@ -63,7 +64,8 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fClusterRatioTPC(c.fClusterRatioTPC),
   fMinTrackletsTRD(c.fMinTrackletsTRD),
   fPixelITS(c.fPixelITS),
-  fQAlist(0x0)
+  fQAlist(0x0),
+  fDebugLevel(c.fDebugLevel)
 {
   //
   // Copy constructor
@@ -89,6 +91,7 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fClusterRatioTPC = c.fClusterRatioTPC;
     fMinTrackletsTRD = c.fMinTrackletsTRD;
     fPixelITS = c.fPixelITS;
+    fDebugLevel = c.fDebugLevel;
 
     memcpy(fImpactParamCut, c.fImpactParamCut, sizeof(Float_t) * 4);
     if(IsQAOn()){
@@ -144,6 +147,10 @@ Bool_t AliHFEextraCuts::CheckESDCuts(AliESDtrack *track){
   trdTracklets = track->GetTRDpidQuality();
   #endif  
   UChar_t itsPixel = track->GetITSClusterMap();
+  Int_t det, status1, status2;
+  Float_t xloc, zloc;
+  track->GetITSModuleIndexInfo(0, det, status1, xloc, zloc);
+  track->GetITSModuleIndexInfo(1, det, status2, xloc, zloc);
   if(TESTBIT(fRequirements, kMinImpactParamR)){
     // cut on min. Impact Parameter in Radial direction
     if(impact_r >= fImpactParamCut[0]) SETBIT(survivedCut, kMinImpactParamR);
@@ -170,18 +177,38 @@ Bool_t AliHFEextraCuts::CheckESDCuts(AliESDtrack *track){
   }
   if(TESTBIT(fRequirements, kPixelITS)){
     // cut on ITS pixel layers
-    if(fPixelITS == kFirst)
+    if(fDebugLevel > 0){
+      printf("ITS cluster Map: ");
+      PrintBitMap(itsPixel);
+    }
     switch(fPixelITS){
-      case kFirst: if(itsPixel & BIT(0)) SETBIT(survivedCut, kPixelITS);
-		   break;
-      case kSecond: if(itsPixel & BIT(1)) SETBIT(survivedCut, kPixelITS);
-		   break;
-      case kBoth: if((itsPixel & BIT(0)) && (itsPixel & BIT(1))) SETBIT(survivedCut, kPixelITS);
-		  break;
-      case kAny: if((itsPixel & BIT(0)) || (itsPixel & BIT(1))) SETBIT(survivedCut, kPixelITS);
-		 break;
+      case kFirst: 
+          if(itsPixel & BIT(0)) 
+            SETBIT(survivedCut, kPixelITS);
+          else if(!CheckITSstatus(status1))
+            SETBIT(survivedCut, kPixelITS);
+		    break;
+      case kSecond: 
+          if(itsPixel & BIT(1)) 
+            SETBIT(survivedCut, kPixelITS);
+          else if(!CheckITSstatus(status2))
+            SETBIT(survivedCut, kPixelITS);
+		    break;
+      case kBoth: 
+          if((itsPixel & BIT(0)) && (itsPixel & BIT(1))) 
+            SETBIT(survivedCut, kPixelITS);
+          else if(!CheckITSstatus(status1) && !CheckITSstatus(status2))
+            SETBIT(survivedCut, kPixelITS);
+		    break;
+      case kAny: 
+          if((itsPixel & BIT(0)) || (itsPixel & BIT(1))) 
+            SETBIT(survivedCut, kPixelITS);
+          else if(!CheckITSstatus(status1) || !CheckITSstatus(status2))
+            SETBIT(survivedCut, kPixelITS);
+		    break;
       default: break;
     }
+    if(fDebugLevel > 0)printf("Survived Cut: %s\n", TESTBIT(survivedCut, kPixelITS) ? "YES" : "NO");
   }
   if(fRequirements == survivedCut){
     //
@@ -320,4 +347,26 @@ void AliHFEextraCuts::AddQAHistograms(TList *qaList){
     histo2D->GetYaxis()->SetBinLabel(firsty + icut, labels[icut].Data());
   }
   qaList->AddLast(fQAlist);
+}
+
+//______________________________________________________
+void AliHFEextraCuts::PrintBitMap(Int_t bitmap){
+  for(Int_t ibit = 32; ibit--; )
+    printf("%d", bitmap & BIT(ibit) ? 1 : 0);
+  printf("\n");
+}
+
+//______________________________________________________
+Bool_t AliHFEextraCuts::CheckITSstatus(Int_t itsStatus){
+  //
+  // Check whether ITS area is dead
+  //
+  Bool_t status;
+  switch(itsStatus){
+    case 2: status = kFALSE; break;
+    case 3: status = kFALSE; break;
+    case 7: status = kFALSE; break;
+    default: status = kTRUE;
+  }
+  return status;
 }

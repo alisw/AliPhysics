@@ -15,6 +15,14 @@
 /**************************************************************************
  *                                                                        *
  * QA class of Heavy Flavor quark and fragmeted/decayed particles         *
+ * -Check kinematics of Heavy Quarks/hadrons, and decayed leptons         *
+ *    pT, rapidity                                                        *
+ *    decay lepton kinematics w/wo acceptance                             *
+ *    heavy hadron decay length, electron pT fraction carried from decay  *
+ * -Check yield of Heavy Quarks/hadrons                                   *
+ *    Number of produced heavy quark                                      *
+ *    Number of produced hadron of given pdg code                         *
+ *                                                                        *
  *                                                                        *
  * Authors:                                                               *
  *   MinJung Kweon <minjung@physi.uni-heidelberg.de>                      *
@@ -45,26 +53,23 @@
 
 const Int_t AliHFEmcQA::fgkGluon=21;
 const Int_t AliHFEmcQA::fgkMaxGener=10;
-const Int_t AliHFEmcQA::fgkMaxIter=1000;
-const Int_t AliHFEmcQA::fgkqType = 6;    // number of species waiting for QA done
+const Int_t AliHFEmcQA::fgkMaxIter=100;
+const Int_t AliHFEmcQA::fgkqType = 7;    // number of species waiting for QA done
 
 ClassImp(AliHFEmcQA)
 
 //_______________________________________________________________________________________________
 AliHFEmcQA::AliHFEmcQA() : 
-        fVerbos(kFALSE) 
-        ,fStack(0x0) 
+        fStack(0x0) 
         ,fNparents(0) 
 {
         // Default constructor
         
-        if (fVerbos) AliInfo("***** Warning! fVerbos is set to TRUE! ******");
 }
 
 //_______________________________________________________________________________________________
 AliHFEmcQA::AliHFEmcQA(const AliHFEmcQA&p):
         TObject(p)
-        ,fVerbos(p.fVerbos)
         ,fStack(0x0) 
         ,fNparents(p.fNparents) 
 {
@@ -90,63 +95,68 @@ AliHFEmcQA::~AliHFEmcQA()
 }
 
 //_______________________________________________________________________________________________
-void AliHFEmcQA::PostAnalyze()
+const void AliHFEmcQA::PostAnalyze()
 {
 }
 
 //__________________________________________
-void AliHFEmcQA::CreateHistograms(const Int_t kquark, TString hnopt) 
+void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt) 
 {
   // create histograms
 
-  if (kquark != fkCharm && kquark != fkBeauty) {
+  if (kquark != kCharm && kquark != kBeauty) {
     AliDebug(1, "This task is only for heavy quark QA, return\n");
     return; 
   }
-  Int_t iq = kquark - fkCharm; 
+  Int_t iq = kquark - kCharm; 
 
   TString kqTypeLabel[fgkqType];
-  if (kquark == fkCharm){
-    kqTypeLabel[fkQuark]="c";
-    kqTypeLabel[fkantiQuark]="cbar";
-    kqTypeLabel[fkElectron]="ce";
-    kqTypeLabel[fkElectron2nd]="nulle";
-    kqTypeLabel[fkeHadron]="ceHadron";
-    kqTypeLabel[fkDeHadron]="nullHadron";
-  } else if (kquark == fkBeauty){
-    kqTypeLabel[fkQuark]="b";
-    kqTypeLabel[fkantiQuark]="bbar";
-    kqTypeLabel[fkElectron]="be";
-    kqTypeLabel[fkElectron2nd]="bce";
-    kqTypeLabel[fkeHadron]="beHadron";
-    kqTypeLabel[fkDeHadron]="bDeHadron";
+  if (kquark == kCharm){
+    kqTypeLabel[kQuark]="c";
+    kqTypeLabel[kantiQuark]="cbar";
+    kqTypeLabel[kHadron]="cHadron";
+    kqTypeLabel[keHadron]="ceHadron";
+    kqTypeLabel[kDeHadron]="nullHadron";
+    kqTypeLabel[kElectron]="ce";
+    kqTypeLabel[kElectron2nd]="nulle";
+  } else if (kquark == kBeauty){
+    kqTypeLabel[kQuark]="b";
+    kqTypeLabel[kantiQuark]="bbar";
+    kqTypeLabel[kHadron]="bHadron";
+    kqTypeLabel[keHadron]="beHadron";
+    kqTypeLabel[kDeHadron]="bDeHadron";
+    kqTypeLabel[kElectron]="be";
+    kqTypeLabel[kElectron2nd]="bce";
   }
 
 
   TString hname; 
   for (Int_t iqType = 0; iqType < fgkqType; iqType++ ){
+     if (iqType < keHadron && icut > 0) continue; // don't duplicate histogram for quark and hadron
      hname = hnopt+"PdgCode_"+kqTypeLabel[iqType];
-     fHist[iq][iqType].fPdgCode = new TH1F(hname,hname,20001,-10000.5,10000.5);
+     fHist[iq][iqType][icut].fPdgCode = new TH1F(hname,hname,20001,-10000.5,10000.5);
      hname = hnopt+"Pt_"+kqTypeLabel[iqType];
-     fHist[iq][iqType].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",150,0,30);
+     fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",150,0,30);
      hname = hnopt+"Y_"+kqTypeLabel[iqType];
-     fHist[iq][iqType].fY = new TH1F(hname,hname,150,-7.5,7.5);
+     fHist[iq][iqType][icut].fY = new TH1F(hname,hname,150,-7.5,7.5);
      hname = hnopt+"Eta_"+kqTypeLabel[iqType];
-     fHist[iq][iqType].fEta = new TH1F(hname,hname,150,-7.5,7.5);
+     fHist[iq][iqType][icut].fEta = new TH1F(hname,hname,150,-7.5,7.5);
   }
 
-  hname = hnopt+"Nq_"+kqTypeLabel[fkQuark];
-  fHistComm[iq].fNq = new TH1F(hname,hname,10,-0.5,9.5);
-  hname = hnopt+"ProcessID_"+kqTypeLabel[fkQuark];
-  fHistComm[iq].fProcessID = new TH1F(hname,hname,21,-10.5,10.5);
-  hname = hnopt+"ePtRatio_"+kqTypeLabel[fkQuark];
-  fHistComm[iq].fePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",100,0,30,100,0,1);
-  hname = hnopt+"DePtRatio_"+kqTypeLabel[fkQuark];
-  fHistComm[iq].fDePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",100,0,30,100,0,1);
-  hname = hnopt+"eDistance_"+kqTypeLabel[fkQuark];
-  fHistComm[iq].feDistance= new TH2F(hname,hname+";p_{T} (GeV/c);distance (cm)",100,0,30,200,0,2);
-  hname = hnopt+"DeDistance_"+kqTypeLabel[fkQuark];
-  fHistComm[iq].fDeDistance= new TH2F(hname,hname+";p_{T} (GeV/c);distance (cm)",100,0,30,200,0,2);
+  if (icut == 0){ 
+    hname = hnopt+"Nq_"+kqTypeLabel[kQuark];
+    fHistComm[iq][icut].fNq = new TH1F(hname,hname,10,-0.5,9.5);
+    hname = hnopt+"ProcessID_"+kqTypeLabel[kQuark];
+    fHistComm[iq][icut].fProcessID = new TH1F(hname,hname,21,-10.5,10.5);
+  }
+  hname = hnopt+"ePtRatio_"+kqTypeLabel[kQuark];
+  fHistComm[iq][icut].fePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",100,0,30,100,0,1);
+  hname = hnopt+"DePtRatio_"+kqTypeLabel[kQuark];
+  fHistComm[iq][icut].fDePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",100,0,30,100,0,1);
+  hname = hnopt+"eDistance_"+kqTypeLabel[kQuark];
+  fHistComm[iq][icut].feDistance= new TH2F(hname,hname+";p_{T} (GeV/c);distance (cm)",100,0,30,200,0,2);
+  hname = hnopt+"DeDistance_"+kqTypeLabel[kQuark];
+  fHistComm[iq][icut].fDeDistance= new TH2F(hname,hname+";p_{T} (GeV/c);distance (cm)",100,0,30,200,0,2);
 
 }
 
@@ -184,11 +194,11 @@ void AliHFEmcQA::GetQuarkKine(Int_t iTrack, const Int_t kquark)
 {
   // get heavy quark kinematics
 
-    if (kquark != fkCharm && kquark != fkBeauty) {
+    if (kquark != kCharm && kquark != kBeauty) {
       AliDebug(1, "This task is only for heavy quark QA, return\n");
       return; 
     }
-    Int_t iq = kquark - fkCharm; 
+    Int_t iq = kquark - kCharm; 
 
 
     if (iTrack < 0) { 
@@ -226,7 +236,7 @@ void AliHFEmcQA::GetQuarkKine(Int_t iTrack, const Int_t kquark)
 
         if ( abs(partMother->GetPdgCode()) != kquark ){
           // search fragmented partons in the same string
-          Bool_t IsSameString = kTRUE; 
+          Bool_t isSameString = kTRUE; 
           for (Int_t i=1; i<fgkMaxIter; i++){
              iLabel = iLabel - 1;
              if (iLabel>-1) { partMother = fStack->Particle(iLabel); }
@@ -235,8 +245,8 @@ void AliHFEmcQA::GetQuarkKine(Int_t iTrack, const Int_t kquark)
                return; 
              }
              if ( abs(partMother->GetPdgCode()) == kquark ) break;
-             if ( partMother->GetStatusCode() != 12 ) IsSameString = kFALSE;
-             if (!IsSameString) return; 
+             if ( partMother->GetStatusCode() != 12 ) isSameString = kFALSE;
+             if (!isSameString) return; 
           }
         }
         AliDebug(1, "Can not find heavy parton of this heavy hadron in the string, return\n");
@@ -248,15 +258,15 @@ void AliHFEmcQA::GetQuarkKine(Int_t iTrack, const Int_t kquark)
 
         // fill kinematics for heavy parton
         if (partMother->GetPdgCode() > 0) { // quark
-          fHist[iq][fkQuark].fPdgCode->Fill(partMother->GetPdgCode());
-          fHist[iq][fkQuark].fPt->Fill(partMother->Pt());
-          fHist[iq][fkQuark].fY->Fill(GetRapidity(partMother));
-          fHist[iq][fkQuark].fEta->Fill(partMother->Eta());
+          fHist[iq][kQuark][0].fPdgCode->Fill(partMother->GetPdgCode());
+          fHist[iq][kQuark][0].fPt->Fill(partMother->Pt());
+          fHist[iq][kQuark][0].fY->Fill(GetRapidity(partMother));
+          fHist[iq][kQuark][0].fEta->Fill(partMother->Eta());
         } else{ // antiquark
-          fHist[iq][fkantiQuark].fPdgCode->Fill(partMother->GetPdgCode());
-          fHist[iq][fkantiQuark].fPt->Fill(partMother->Pt());
-          fHist[iq][fkantiQuark].fY->Fill(GetRapidity(partMother));
-          fHist[iq][fkantiQuark].fEta->Fill(partMother->Eta());
+          fHist[iq][kantiQuark][0].fPdgCode->Fill(partMother->GetPdgCode());
+          fHist[iq][kantiQuark][0].fPt->Fill(partMother->Pt());
+          fHist[iq][kantiQuark][0].fY->Fill(GetRapidity(partMother));
+          fHist[iq][kantiQuark][0].fEta->Fill(partMother->Eta());
         }
 
       } // end of heavy parton slection loop 
@@ -270,16 +280,16 @@ void AliHFEmcQA::EndOfEventAna(const Int_t kquark)
 {
   // end of event analysis
 
-  if (kquark != fkCharm && kquark != fkBeauty) {
+  if (kquark != kCharm && kquark != kBeauty) {
     AliDebug(1, "This task is only for heavy quark QA, return\n");
     return; 
   }
-  Int_t iq = kquark - fkCharm; 
+  Int_t iq = kquark - kCharm; 
 
 
   // # of heavy quark per event
   AliDebug(1,Form("Number of heavy quark in this event = %d \n",fIsHeavy[iq]));
-  fHistComm[iq].fNq->Fill(fIsHeavy[iq]);
+  fHistComm[iq][0].fNq->Fill(fIsHeavy[iq]);
 
   Int_t motherID[fgkMaxGener];
   Int_t motherType[fgkMaxGener];
@@ -318,7 +328,7 @@ void AliHFEmcQA::EndOfEventAna(const Int_t kquark)
           if (IsFromInitialShower(ancestorLabel[ig],motherID[i],motherType[i],motherLabel[i])) break;
           if (IsFromFinalParton(ancestorLabel[ig],motherID[i],motherType[i],motherLabel[i])) break;
           // if it is not the above case, something is strange
-          reportStrangeness(motherID[i],motherType[i],motherLabel[i]);
+          ReportStrangeness(motherID[i],motherType[i],motherLabel[i]);
           break;
      } 
      if (ancestorLabel[ig] == -1){ // from hard scattering
@@ -342,47 +352,117 @@ void AliHFEmcQA::EndOfEventAna(const Int_t kquark)
      Int_t id2 = ipair*2 + 1;
 
      if (motherType[id1] == 2 && motherType[id2] == 2){
-       if (motherLabel[id1] == motherLabel[id2]) processID = fkGluonSplitting; // gluon spliting
+       if (motherLabel[id1] == motherLabel[id2]) processID = kGluonSplitting; // gluon spliting
        else processID = -9;
      }
      else if (motherType[id1] == -1 && motherType[id2] == -1) {
        if (motherLabel[id1] == -1 && motherLabel[id2] == -1) {
-         if (motherID[id1] == fgkGluon) processID = fkPairCreationFromg; // gluon fusion
-         else processID = fkPairCreationFromq; // q-qbar pair creation
+         if (motherID[id1] == fgkGluon) processID = kPairCreationFromg; // gluon fusion
+         else processID = kPairCreationFromq; // q-qbar pair creation
        }
        else processID = -8;
      }
      else if (motherType[id1] == -1 || motherType[id2] == -1) {
        if ((motherLabel[id1] == -1 || motherLabel[id2] == -1) && (motherLabel[id1]*motherLabel[id2] == -2 || motherLabel[id1]*motherLabel[id2] == -3)) {
-         if(motherID[id1]*motherID[id2] == kquark*fgkGluon) processID = fkFlavourExitation; // flavour exitation 
-         else processID = fkLightQuarkShower;
+         if(motherID[id1]*motherID[id2] == kquark*fgkGluon) processID = kFlavourExitation; // flavour exitation 
+         else processID = kLightQuarkShower;
        }
        else processID = -7;
      }
      else if (motherType[id1] == -2 || motherType[id2] == -2) {
-       if (motherLabel[id1] == motherLabel[id2]) processID = fkInitialPartonShower; // initial parton shower
+       if (motherLabel[id1] == motherLabel[id2]) processID = kInitialPartonShower; // initial parton shower
        else processID = -6;
        
      }
      else processID = -5;
 
      if (nheavypair >1) AliDebug(1,Form("Multi pair found : process ID = %d\n",processID));
-     else fHistComm[iq].fProcessID->Fill(processID);
+     else fHistComm[iq][0].fProcessID->Fill(processID);
      AliDebug(1,Form("Process ID = %d\n",processID));
   } // end of # heavy quark pair loop
 
 }
 
 //__________________________________________
-void AliHFEmcQA::GetDecayedKine(Int_t iTrack, const Int_t kquark, Int_t kdecayed, Bool_t isbarrel) 
+void AliHFEmcQA::GetHadronKine(Int_t iTrack, const Int_t kquark)
+{
+    // decay electron kinematics
+
+    if (kquark != kCharm && kquark != kBeauty) {
+      AliDebug(1, "This task is only for heavy quark QA, return\n");
+      return;
+    }
+    Int_t iq = kquark - kCharm;
+
+    if (iTrack < 0) {
+      AliDebug(1, "Stack label is negative, return\n");
+      return;
+    }
+
+    TParticle* mcpart = fStack->Particle(iTrack);
+
+    Int_t iLabel = mcpart->GetFirstMother();
+    if (iLabel<0){
+      AliDebug(1, "Stack label is negative, return\n");
+      return;
+    }
+
+    TParticle *partCopy = mcpart;
+    Int_t pdgcode = mcpart->GetPdgCode();
+    Int_t pdgcodeCopy = pdgcode;
+
+    // if the mother is charmed hadron  
+    Bool_t IsDirectCharm = kFALSE;
+    if ( int(abs(pdgcode)/100.) == kCharm || int(abs(pdgcode)/1000.) == kCharm ) {
+
+          // iterate until you find B hadron as a mother or become top ancester 
+          for (Int_t i=1; i<fgkMaxIter; i++){
+
+             Int_t jLabel = mcpart->GetFirstMother();
+             if (jLabel == -1){
+               IsDirectCharm = kTRUE;
+               break; // if there is no ancester
+             }
+             if (jLabel < 0){ // safety protection
+               AliDebug(1, "Stack label is negative, return\n");
+               return;
+             }
+             // if there is an ancester
+             TParticle* mother = fStack->Particle(jLabel);
+             Int_t motherPDG = mother->GetPdgCode();
+    
+             for (Int_t j=0; j<fNparents; j++){
+                if (abs(motherPDG)==fParentSelect[1][j]) return; // return if this hadron is originated from b
+             }
+
+             mcpart = mother;
+          } // end of iteration 
+    } // end of if
+    if((IsDirectCharm == kTRUE && kquark == kCharm) || kquark == kBeauty) {
+         for (Int_t i=0; i<fNparents; i++){
+            if (abs(pdgcodeCopy)==fParentSelect[iq][i]){
+
+              // fill hadron kinematics
+              fHist[iq][kHadron][0].fPdgCode->Fill(pdgcodeCopy);
+              fHist[iq][kHadron][0].fPt->Fill(partCopy->Pt());
+              fHist[iq][kHadron][0].fY->Fill(GetRapidity(partCopy));
+              fHist[iq][kHadron][0].fEta->Fill(partCopy->Eta());
+
+            }
+         }
+    } // end of if
+}
+
+//__________________________________________
+void AliHFEmcQA::GetDecayedKine(Int_t iTrack, const Int_t kquark, Int_t kdecayed, Int_t icut, Bool_t isbarrel) 
 {
     // decay electron kinematics
     
-    if (kquark != fkCharm && kquark != fkBeauty) {
+    if (kquark != kCharm && kquark != kBeauty) {
       AliDebug(1, "This task is only for heavy quark QA, return\n");
       return; 
     }
-    Int_t iq = kquark - fkCharm; 
+    Int_t iq = kquark - kCharm; 
 
     if (iTrack < 0) { 
       AliDebug(1, "Stack label is negative, return\n");
@@ -401,25 +481,24 @@ void AliHFEmcQA::GetDecayedKine(Int_t iTrack, const Int_t kquark, Int_t kdecayed
     }
 
     TParticle *partMother = fStack->Particle(iLabel);
+    TParticle *partMotherCopy = partMother;
     Int_t maPdgcode = partMother->GetPdgCode();
-    TParticle *partMotherCopy = fStack->Particle(iLabel);
-    Int_t maPdgcodeCopy = partMotherCopy->GetPdgCode();
+    Int_t maPdgcodeCopy = maPdgcode;
 
     // get electron production vertex   
     TLorentzVector ePoint;
     mcpart->ProductionVertex(ePoint);
 
-
     // if the mother is charmed hadron  
-    Bool_t IsMotherDirectCharm = kFALSE;
-    if ( int(abs(maPdgcode)/100.) == fkCharm || int(abs(maPdgcode)/1000.) == fkCharm ) { 
+    Bool_t isMotherDirectCharm = kFALSE;
+    if ( int(abs(maPdgcode)/100.) == kCharm || int(abs(maPdgcode)/1000.) == kCharm ) { 
 
           // iterate until you find B hadron as a mother or become top ancester 
           for (Int_t i=1; i<fgkMaxIter; i++){
 
              Int_t jLabel = partMother->GetFirstMother(); 
              if (jLabel == -1){
-               IsMotherDirectCharm = kTRUE;
+               isMotherDirectCharm = kTRUE;
                break; // if there is no ancester
              }
              if (jLabel < 0){ // safety protection
@@ -434,27 +513,27 @@ void AliHFEmcQA::GetDecayedKine(Int_t iTrack, const Int_t kquark, Int_t kdecayed
              for (Int_t j=0; j<fNparents; j++){
                 if (abs(grandMaPDG)==fParentSelect[1][j]){
 
-                  if (kquark == fkCharm) return;
+                  if (kquark == kCharm) return;
                   // fill electron kinematics
-                  fHist[iq][fkElectron2nd].fPdgCode->Fill(mcpart->GetPdgCode());
-                  fHist[iq][fkElectron2nd].fPt->Fill(mcpart->Pt());
-                  fHist[iq][fkElectron2nd].fY->Fill(GetRapidity(mcpart));
-                  fHist[iq][fkElectron2nd].fEta->Fill(mcpart->Eta());
+                  fHist[iq][kElectron2nd][icut].fPdgCode->Fill(mcpart->GetPdgCode());
+                  fHist[iq][kElectron2nd][icut].fPt->Fill(mcpart->Pt());
+                  fHist[iq][kElectron2nd][icut].fY->Fill(GetRapidity(mcpart));
+                  fHist[iq][kElectron2nd][icut].fEta->Fill(mcpart->Eta());
 
                   // fill mother hadron kinematics
-                  fHist[iq][fkDeHadron].fPdgCode->Fill(grandMaPDG); 
-                  fHist[iq][fkDeHadron].fPt->Fill(grandMa->Pt());
-                  fHist[iq][fkDeHadron].fY->Fill(GetRapidity(grandMa));
-                  fHist[iq][fkDeHadron].fEta->Fill(grandMa->Eta());
+                  fHist[iq][kDeHadron][icut].fPdgCode->Fill(grandMaPDG); 
+                  fHist[iq][kDeHadron][icut].fPt->Fill(grandMa->Pt());
+                  fHist[iq][kDeHadron][icut].fY->Fill(GetRapidity(grandMa));
+                  fHist[iq][kDeHadron][icut].fEta->Fill(grandMa->Eta());
                  
                   // ratio between pT of electron and pT of mother B hadron 
-                  if(grandMa->Pt()) fHistComm[iq].fDePtRatio->Fill(grandMa->Pt(),mcpart->Pt()/grandMa->Pt());
+                  if(grandMa->Pt()) fHistComm[iq][icut].fDePtRatio->Fill(grandMa->Pt(),mcpart->Pt()/grandMa->Pt());
 
                   // distance between electron production point and mother hadron production point
                   TLorentzVector debPoint;
                   grandMa->ProductionVertex(debPoint);
                   TLorentzVector dedistance = ePoint - debPoint;
-                  fHistComm[iq].fDeDistance->Fill(grandMa->Pt(),dedistance.P());
+                  fHistComm[iq][icut].fDeDistance->Fill(grandMa->Pt(),dedistance.P());
                   return;
                 }
              }
@@ -462,30 +541,30 @@ void AliHFEmcQA::GetDecayedKine(Int_t iTrack, const Int_t kquark, Int_t kdecayed
              partMother = grandMa;
           } // end of iteration 
     } // end of if
-    if((IsMotherDirectCharm == kTRUE && kquark == fkCharm) || kquark == fkBeauty) {
+    if((isMotherDirectCharm == kTRUE && kquark == kCharm) || kquark == kBeauty) {
          for (Int_t i=0; i<fNparents; i++){
             if (abs(maPdgcodeCopy)==fParentSelect[iq][i]){
 
               // fill electron kinematics
-              fHist[iq][fkElectron].fPdgCode->Fill(mcpart->GetPdgCode());
-              fHist[iq][fkElectron].fPt->Fill(mcpart->Pt());
-              fHist[iq][fkElectron].fY->Fill(GetRapidity(mcpart));
-              fHist[iq][fkElectron].fEta->Fill(mcpart->Eta());  
+              fHist[iq][kElectron][icut].fPdgCode->Fill(mcpart->GetPdgCode());
+              fHist[iq][kElectron][icut].fPt->Fill(mcpart->Pt());
+              fHist[iq][kElectron][icut].fY->Fill(GetRapidity(mcpart));
+              fHist[iq][kElectron][icut].fEta->Fill(mcpart->Eta());  
 
               // fill mother hadron kinematics
-              fHist[iq][fkeHadron].fPdgCode->Fill(maPdgcodeCopy); 
-              fHist[iq][fkeHadron].fPt->Fill(partMotherCopy->Pt());
-              fHist[iq][fkeHadron].fY->Fill(GetRapidity(partMotherCopy));
-              fHist[iq][fkeHadron].fEta->Fill(partMotherCopy->Eta());
+              fHist[iq][keHadron][icut].fPdgCode->Fill(maPdgcodeCopy); 
+              fHist[iq][keHadron][icut].fPt->Fill(partMotherCopy->Pt());
+              fHist[iq][keHadron][icut].fY->Fill(GetRapidity(partMotherCopy));
+              fHist[iq][keHadron][icut].fEta->Fill(partMotherCopy->Eta());
 
               // ratio between pT of electron and pT of mother B hadron 
-              if(partMotherCopy->Pt()) fHistComm[iq].fePtRatio->Fill(partMotherCopy->Pt(),mcpart->Pt()/partMotherCopy->Pt());
+              if(partMotherCopy->Pt()) fHistComm[iq][icut].fePtRatio->Fill(partMotherCopy->Pt(),mcpart->Pt()/partMotherCopy->Pt());
 
               // distance between electron production point and mother hadron production point
               TLorentzVector ebPoint;
               partMotherCopy->ProductionVertex(ebPoint);
               TLorentzVector edistance = ePoint - ebPoint;
-              fHistComm[iq].feDistance->Fill(partMotherCopy->Pt(),edistance.P());
+              fHistComm[iq][icut].feDistance->Fill(partMotherCopy->Pt(),edistance.P());
             }
          }
     } // end of if
@@ -495,6 +574,8 @@ void AliHFEmcQA::GetDecayedKine(Int_t iTrack, const Int_t kquark, Int_t kdecayed
 //__________________________________________
 void AliHFEmcQA::IdentifyMother(Int_t mother_label, Int_t &mother_pdg, Int_t &grandmother_label)
 {
+       // find mother pdg code and label 
+
        if (mother_label < 0) { 
          AliDebug(1, "Stack label is negative, return\n");
          return; 
@@ -506,9 +587,10 @@ void AliHFEmcQA::IdentifyMother(Int_t mother_label, Int_t &mother_pdg, Int_t &gr
 }
 
 //__________________________________________
-// mothertype -1 means this heavy quark coming from hard vertex
 void AliHFEmcQA::HardScattering(const Int_t kquark, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel)
 {
+       // mothertype -1 means this heavy quark coming from hard vertex
+
        TParticle *afterinitialrad1  = fStack->Particle(4);
        TParticle *afterinitialrad2  = fStack->Particle(5);
            
@@ -538,9 +620,10 @@ void AliHFEmcQA::HardScattering(const Int_t kquark, Int_t &motherID, Int_t &moth
 }
 
 //__________________________________________
-// mothertype -2 means this heavy quark coming from initial state 
 Bool_t AliHFEmcQA::IsFromInitialShower(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel)
 {
+       // mothertype -2 means this heavy quark coming from initial state 
+
        if (inputmotherlabel==2 || inputmotherlabel==3){ // mother exist before initial state radiation
          TParticle *heavysMother = fStack->Particle(inputmotherlabel);
          motherID = heavysMother->GetPdgCode(); 
@@ -555,9 +638,10 @@ Bool_t AliHFEmcQA::IsFromInitialShower(Int_t inputmotherlabel, Int_t &motherID, 
 }
 
 //__________________________________________
-// mothertype 2 means this heavy quark coming from final state 
 Bool_t AliHFEmcQA::IsFromFinalParton(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel)
 {
+       // mothertype 2 means this heavy quark coming from final state 
+
        if (inputmotherlabel > 5){ // mother exist after hard scattering
          TParticle *heavysMother = fStack->Particle(inputmotherlabel);
          motherID = heavysMother->GetPdgCode(); 
@@ -571,8 +655,10 @@ Bool_t AliHFEmcQA::IsFromFinalParton(Int_t inputmotherlabel, Int_t &motherID, In
 }
 
 //__________________________________________
-void AliHFEmcQA::reportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &motherlabel)
+void AliHFEmcQA::ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &motherlabel)
 {
+      // mark strange behavior  
+
        mothertype = -888;
        motherlabel = -888;
        motherID = -888;
@@ -580,8 +666,10 @@ void AliHFEmcQA::reportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &mo
 }
 
 //__________________________________________
-Float_t AliHFEmcQA::GetRapidity(TParticle *part)
+const Float_t AliHFEmcQA::GetRapidity(TParticle *part)
 {
+      // return rapidity
+
        Float_t rapidity;        
        if(part->Energy() - part->Pz() == 0 || part->Energy() + part->Pz() == 0) rapidity=-999; 
        else rapidity = 0.5*(TMath::Log((part->Energy()+part->Pz()) / (part->Energy()-part->Pz()))); 
