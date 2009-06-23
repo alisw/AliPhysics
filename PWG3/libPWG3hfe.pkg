@@ -11,7 +11,8 @@ SRCS= hfe/AliHFEcollection.cxx \
       hfe/AliHFEpidTOF.cxx \
       hfe/AliHFEpidMC.cxx \
       hfe/AliHFEextraCuts.cxx \
-      hfe/AliHFEcuts.cxx 
+      hfe/AliHFEcuts.cxx \
+      hfe/AliAnalysisTaskHFE.cxx
 HDRS= $(SRCS:.cxx=.h)
 
 DHDR= PWG3hfeLinkDef.h
