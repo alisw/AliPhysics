@@ -255,7 +255,8 @@ void AliITSsimulationSSD::HitsToAnalogDigits(AliITSmodule *mod,
       // EF - 21/04/09
       tof = mod->GetHit(i)->GetTOF();
       tof *= 1.E+6; // convert time in microsecond
-      de = de * fTimeResponse->Eval(-1.*tof+2.);
+      if(tof<2.) de = de * fTimeResponse->Eval(-1.*tof+2.);
+      else de = 0.;
       //
 
       HitToDigit(module, x0, y0, z0, x1, y1, z1, de,tav);
@@ -770,7 +771,6 @@ istream &operator>>(istream &os,AliITSsimulationSSD &source){
     return os;
 }
 //______________________________________________________________________
-
 
 
 
