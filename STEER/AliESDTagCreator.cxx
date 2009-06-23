@@ -196,7 +196,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
   //private method that creates tag files
   TString fSession = type;
   TString fguid, fmd5, fturl;
-  TString fTempGuid = 0;
+  TString fTempGuid;
 
   /////////////
   //muon code//
@@ -452,7 +452,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     evTag->SetBunchCrossNumber(esd->GetBunchCrossNumber());
     evTag->SetGUID(fguid);
     if(fSession == "grid") {
-      evTag->SetMD5(0);
+      evTag->SetMD5("");
       evTag->SetTURL(fturl);
       evTag->SetSize(0);
     }

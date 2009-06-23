@@ -774,9 +774,9 @@ void AliStack::DumpPStack ()
   printf("\n=======================================================================\n\n");
   
   // print  particle file map
-  printf("\nParticle file map: \n");
-  for (i=0; i<fNtrack; i++) 
-      printf("   %d th entry: %d \n",i,fParticleFileMap[i]);
+  // printf("\nParticle file map: \n");
+  // for (i=0; i<fNtrack; i++) 
+  //     printf("   %d th entry: %d \n",i,fParticleFileMap[i]);
 }
 
 

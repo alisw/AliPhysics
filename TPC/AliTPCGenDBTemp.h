@@ -30,14 +30,14 @@ public:
   void            MakeCalib(const char *file, const char *fMap,
                             const TTimeStamp& startTime,
 			    const TTimeStamp& endTime, Int_t run,
-			    const TString& amandaString=0);
+			    const TString& amandaString="");
   void            MakeConfig(const char *file, Int_t firstRun, Int_t lastRun, 
                             const char *confDir);
 
 // functionality
 
   static TClonesArray* ReadList(const char* fname, const char *title="tempConf", 
-                                 const TString& amandaString=0);
+                                 const TString& amandaString="");
   static TTree*   ReadListTree(const char* fname, const char *title="tempConf");
 
 // getters/setters

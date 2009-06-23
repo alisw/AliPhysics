@@ -400,7 +400,7 @@ void AliMUONRawStreamTrigger::AddErrorMessage()
 {
 /// add message into logger of AliRawReader per event
 
-  TString msg = 0;
+  TString msg;
   Int_t occurance = 0;
   AliMUONLogger* log = fPayload->GetErrorLogger();
   

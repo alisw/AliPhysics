@@ -181,10 +181,10 @@ Int_t AliEveHOMERXMLHandler::AddSourceTDS( TXMLNode * xmlNode ) {
   TXMLNode * attrNode = NULL;
   TXMLNode * prevNode = xmlNode;
 
-  TString xmlHostname = 0;
-  TString xmlPort = 0;
+  TString xmlHostname;
+  TString xmlPort;
 
-  TString hostname = 0;
+  TString hostname;
   Int_t port = 0;
 
   // -- Get hostname and port from TDS node out of XML
@@ -307,7 +307,7 @@ Int_t AliEveHOMERXMLHandler::FillSourceInformation( TString xmlParent, AliHLTHOM
 TString AliEveHOMERXMLHandler::GetNodename( TString xmlHostname ) {
   // Get xml nodename out of xml hostname
 
-  TString nodename = 0;
+  TString nodename;
 
   TXMLNode * node = NULL;
   TXMLNode * prevNode = fRootNode->GetChildren();
@@ -325,7 +325,7 @@ TString AliEveHOMERXMLHandler::GetNodename( TString xmlHostname ) {
     TXMLAttr *attr = 0;
     TIter next(attrList);
 
-    TString nodeId = 0;
+    TString nodeId;
 
     // Get "nodeID" and "nodeName" of this "Node" node
     while ( ( attr = (TXMLAttr*)next() ) ) {

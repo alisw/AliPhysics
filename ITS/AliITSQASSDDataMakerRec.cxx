@@ -305,8 +305,8 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
     AliDebug(AliQAv1::GetQADebugLevel(), "Book Offline Histograms for SSD\n ");
   }
   AliDebug(AliQAv1::GetQADebugLevel(), Form("Number of histograms (SPD+SDD): %d\n",fGenRawsOffset));
-  TString gTitle = 0;
-  TString gName  = 0;
+  TString gTitle;
+  TString gName;
   //book online-offline QA histos
   TH1D *fHistSSDEventType = new TH1D("fHistSSDEventType",
 				     "SSD Event Type;Event type;Events",

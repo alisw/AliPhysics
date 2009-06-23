@@ -112,7 +112,7 @@ Bool_t AliTagCreator::MergeTags(const char *type) {
   TString localFileName = "Run"; localFileName += tag->GetRunId(); 
   localFileName += ".Merged."; localFileName += tagPattern.Data();
      
-  TString filename = 0x0;
+  TString filename;
   
   if(fStorage == 0) {
     filename = localFileName.Data();      
@@ -158,7 +158,7 @@ Bool_t AliTagCreator::MergeTags(const char *type, TGridResult *result) {
   TString localFileName = "Run"; localFileName += tag->GetRunId(); 
   localFileName += ".Merged"; localFileName += tagPattern.Data();
      
-  TString filename = 0x0;
+  TString filename;
   
   if(fStorage == 0) {
     filename = localFileName.Data();      

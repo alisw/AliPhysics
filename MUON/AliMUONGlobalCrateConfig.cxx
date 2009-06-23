@@ -351,7 +351,7 @@ TString AliMUONGlobalCrateConfig::GetJtagCrateName(Int_t jtagLine, Int_t index) 
 { 
   /// Get the crate name for a given line and a given index 
   if (jtagLine > AliMpConstants::LocalBoardNofChannels() || index > AliMpConstants::LocalBoardNofChannels())
-    return 0x0;
+    return "";
   else                                       
     return fJtagCrateName[jtagLine*fgkJtagNofLines + index];
 }

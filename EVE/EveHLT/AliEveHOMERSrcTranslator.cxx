@@ -192,7 +192,7 @@ Int_t AliEveHOMERSrcTranslator::FillSourceDesc( AliHLTHOMERSourceDesc* source, T
 TString AliEveHOMERSrcTranslator::ResolveHostname( TString nodename ){
   // resolves the hostname, out of the XML nodename, and the realm set
 
-  TString hostname = 0;
+  TString hostname;
 
   // -- Set hostname according to realm
   if ( ! fRealm.CompareTo( "ACR" ) ) 

@@ -526,7 +526,7 @@ if(!deadSPD || !noisySPD || !foEffSPD || !foNoiSPD
   entrySSD->SetOwner(kTRUE);
   */
 
-  TObject *emptyssd = 0; TString ssdobjectname = 0;
+  TObject *emptyssd = 0; TString ssdobjectname;
   AliITSNoiseSSDv2 *noiseSSD = new AliITSNoiseSSDv2();  
   emptyssd = (TObject *)entryNoiseSSD->GetObject();
   ssdobjectname = emptyssd->GetName();

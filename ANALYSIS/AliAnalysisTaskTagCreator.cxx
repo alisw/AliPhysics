@@ -99,7 +99,7 @@ void AliAnalysisTaskTagCreator::UserExec(Option_t */*option*/)
     }
     evtTag->SetGUID(fguid);
     if(opt.Contains("grid")) {
-	evtTag->SetMD5(0);
+	evtTag->SetMD5("");
 	evtTag->SetTURL(fturl);
 	evtTag->SetSize(0);
     }
