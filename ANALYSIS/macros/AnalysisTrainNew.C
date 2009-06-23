@@ -83,7 +83,7 @@ Int_t       iPWG4gammaconv     = 0;      // Gamma conversion analysis (PWG4)
 Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
 Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
 Int_t       iPWG2spectra       = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
-Int_t       iPWG2flow          = 0;      // Flow analysis task (PWG2)
+Int_t       iPWG2flow          = 1;      // Flow analysis task (PWG2)
 Int_t       iPWG2res           = 0;      // Resonances task (PWG2)
 Int_t       iPWG2kink          = 1;      // Kink analysis task (PWG2)
 Int_t       iPWG2evchar        = 1;      // Event characteristics (PWG2)
@@ -449,6 +449,11 @@ void CheckModuleFlags(const char *mode) {
    } else {   
    // ESD analysis
       iMUONcopyAOD = 0;
+      if (!useMC) useTR = kFALSE;
+      if (!useTR) {
+         ::Info("AnalysisTrainNew.C::CheckModuleFlags", "iPWG2evchar disabled if not reading track references");
+         iPWG2evchar = 0;
+      }   
    }       
    if (iJETAN) iESDfilter=1;
    if (iESDfilter) iAODhandler=1;
