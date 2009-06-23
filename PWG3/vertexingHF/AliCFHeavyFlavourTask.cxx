@@ -155,7 +155,7 @@ void AliCFHeavyFlavourTask::UserExec(Option_t *)
 			AliDebug(2, "Error! the D0 MC doesn't have correct daughters!!");
 			continue;  
 		}
-		if (TMath::Abs(daughter1 - daughter0 != 1)) {
+		if (TMath::Abs(daughter1 - daughter0) != 1) {
 			AliDebug(2, "The D0 MC doesn't come from a 2-prong decay, skipping!!");
 			continue;  
 		}

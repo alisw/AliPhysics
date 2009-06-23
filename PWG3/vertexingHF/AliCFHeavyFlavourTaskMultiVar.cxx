@@ -590,7 +590,7 @@ Bool_t AliCFHeavyFlavourTaskMultiVar::GetGeneratedValuesFromMCParticle(AliAODMCP
 		AliDebug(2, "Error! the D0 MC doesn't have correct daughters!!");
 		return isOk;  
 	}
-	if (TMath::Abs(daughter1 - daughter0 != 1)) {
+	if (TMath::Abs(daughter1 - daughter0) != 1) {
 		AliDebug(2, "The D0 MC doesn't come from a 2-prong decay, skipping!!");
 		return isOk;  
 	}
