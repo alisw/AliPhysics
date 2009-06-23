@@ -1063,7 +1063,7 @@ ALIITS_LIBS=
 CHECK_HLTMODULE([its],
 		[AliITSCompressRawDataSDD.h], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/ITS],
 		[Gui RAWDatasim], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[ITSbase ITSrec], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[ITSbase ITSrec ITSsim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
 if test "x$enable_module" = "xmissheader"; then

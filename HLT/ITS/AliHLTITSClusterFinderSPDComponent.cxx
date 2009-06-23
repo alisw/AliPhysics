@@ -34,6 +34,7 @@ using namespace std;
 #include "AliITSRecPoint.h"
 #include "AliHLTITSSpacePointData.h"
 #include "AliHLTITSClusterDataFormat.h"
+#include <AliHLTDAQ.h>
 
 #include <cstdlib>
 #include <cerrno>
@@ -46,7 +47,7 @@ ClassImp(AliHLTITSClusterFinderSPDComponent);
 
 AliHLTITSClusterFinderSPDComponent::AliHLTITSClusterFinderSPDComponent()
   :
-  fNModules(240/*AliITSDetTypeRec::fgkDefaultNModulesSPD*/),
+  fNModules(AliITSgeomTGeo::GetNDetectors(1)*AliITSgeomTGeo::GetNLadders(1) + AliITSgeomTGeo::GetNDetectors(2)*AliITSgeomTGeo::GetNLadders(2)/*240*/),
   fClusterFinder(NULL),
   fRawReader(NULL),
   fDettype(NULL),
@@ -97,7 +98,7 @@ void AliHLTITSClusterFinderSPDComponent::GetOutputDataSize( unsigned long& const
   // see header file for class documentation
 
   constBase = 0;
-  inputMultiplier = 1;
+  inputMultiplier = 100;
 }
 
 AliHLTComponent* AliHLTITSClusterFinderSPDComponent::Spawn() {
@@ -109,7 +110,7 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoInit( int /*argc*/, const char** /*a
   // see header file for class documentation
 
   if ( fClusterFinder )
-    return EINPROGRESS;
+    return -EINPROGRESS;
 
   fClusters = new TClonesArray*[fNModules]; 
   for (Int_t iModule = 0; iModule < fNModules; iModule++) {
@@ -118,6 +119,7 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoInit( int /*argc*/, const char** /*a
 
   //fgeomInit = new AliITSInitGeometry(kvSPD02,2);
   fgeomInit = new AliITSInitGeometry(kvPPRasymmFMD,2);
+  //fgeomInit->InitAliITSgeom(fgeom);
   fgeom = fgeomInit->CreateAliITSgeom();
   
   //set dettype
@@ -125,15 +127,16 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoInit( int /*argc*/, const char** /*a
   fDettype->SetITSgeom(fgeom);
   fDettype->SetReconstructionModel(0,fClusterFinder);
   fDettype->SetDefaultClusterFindersV2(kTRUE);
-  fDettype->GetCalibration();
-  fSeg = new AliITSsegmentationSSD();
-  fDettype->SetSegmentationModel(0,fSeg);
+  fDettype->SetDefaults();
+  //fDettype->GetCalibration();
+  //fSeg = new AliITSsegmentationSPD();
+  //fDettype->SetSegmentationModel(0,fSeg);
   
   fClusterFinder = new AliITSClusterFinderV2SPD(fDettype); 
   fClusterFinder->InitGeometry();
 
   if ( fRawReader )
-    return EINPROGRESS;
+    return -EINPROGRESS;
 
   fRawReader = new AliRawReaderMemory();
 
@@ -204,9 +207,9 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoEvent( const AliHLTComponentEventDat
     if(spec>0x00040000){
       HLTDebug("The Spec is to high for ITS SPD");
     }
-
+    
     Int_t id = 0;
-    for ( Int_t ii = 0; ii < 20 ; ii++ ) {   //number of ddl's
+    for ( Int_t ii = 0; ii < AliHLTDAQ::NumberOfDdls("ITSSPD") ; ii++ ) {   //number of ddl's
       if ( spec & 0x00000001 ) {
 	id += ii;
 	break;
@@ -265,6 +268,8 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoEvent( const AliHLTComponentEventDat
       fClusters[iModule] = NULL;
     }
     
+    delete buffer; 
+
     fRawReader->ClearBuffers();
     
   } //  for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ ) {    

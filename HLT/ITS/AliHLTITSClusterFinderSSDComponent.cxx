@@ -32,6 +32,9 @@ using namespace std;
 #include "AliHLTDataTypes.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSRecPoint.h"
+#include "AliHLTITSSpacePointData.h"
+#include "AliHLTITSClusterDataFormat.h"
+#include <AliHLTDAQ.h>
 
 #include <cstdlib>
 #include <cerrno>
@@ -44,7 +47,7 @@ ClassImp(AliHLTITSClusterFinderSSDComponent);
 
 AliHLTITSClusterFinderSSDComponent::AliHLTITSClusterFinderSSDComponent()
   :
-  fNModules(1698/*AliITSDetTypeRec::fgkDefaultNModulesSSD*/),
+  fNModules(AliITSgeomTGeo::GetNDetectors(5)*AliITSgeomTGeo::GetNLadders(5) + AliITSgeomTGeo::GetNDetectors(6)*AliITSgeomTGeo::GetNLadders(6)/*1698*/),
   fClusterFinder(NULL),
   fRawReader(NULL),
   fDettype(NULL),
@@ -89,14 +92,14 @@ void AliHLTITSClusterFinderSSDComponent::GetInputDataTypes( vector<AliHLTCompone
 
 AliHLTComponentDataType AliHLTITSClusterFinderSSDComponent::GetOutputDataType() {
   // see header file for class documentation
-  return kAliHLTDataTypeTObjArray;
+  return  kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD;
 }
 
 void AliHLTITSClusterFinderSSDComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
   // see header file for class documentation
 
   constBase = 0;
-  inputMultiplier = 0.3;
+  inputMultiplier = 100;
 }
 
 AliHLTComponent* AliHLTITSClusterFinderSSDComponent::Spawn() {
@@ -108,7 +111,7 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoInit( int /*argc*/, const char** /*a
   // see header file for class documentation
 
   if ( fClusterFinder )
-    return EINPROGRESS;
+    return -EINPROGRESS;
 
   fClusters = new TClonesArray*[fNModules]; 
   for (Int_t iModule = 0; iModule < fNModules; iModule++) {
@@ -117,6 +120,7 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoInit( int /*argc*/, const char** /*a
 
   //fgeomInit = new AliITSInitGeometry(kvSSD02,2);
   fgeomInit = new AliITSInitGeometry(kvPPRasymmFMD,2);
+  //fgeomInit->InitAliITSgeom(fgeom);
   fgeom = fgeomInit->CreateAliITSgeom();
   
   //set dettype
@@ -124,16 +128,17 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoInit( int /*argc*/, const char** /*a
   fDettype->SetITSgeom(fgeom);
   fDettype->SetReconstructionModel(2,fClusterFinder);
   fDettype->SetDefaultClusterFindersV2(kTRUE);
-  fSeg = new AliITSsegmentationSSD();
-  fSeg->Init();
-  fDettype->SetSegmentationModel(2,fSeg);
-  fDettype->GetCalibration();
+  fDettype->SetDefaults();
+  //fSeg = new AliITSsegmentationSSD();
+  //fSeg->Init();
+  //fDettype->SetSegmentationModel(2,fSeg);
+  //fDettype->GetCalibration();
     
   fClusterFinder = new AliITSClusterFinderV2SSD(fDettype); 
   fClusterFinder->InitGeometry();
   
   if ( fRawReader )
-    return EINPROGRESS;
+    return -EINPROGRESS;
 
   fRawReader = new AliRawReaderMemory();
 
@@ -206,7 +211,7 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoEvent( const AliHLTComponentEventDat
     }
 
     Int_t id = 512;                  
-    for ( Int_t ii = 0; ii < 16 ; ii++ ) {
+    for ( Int_t ii = 0; ii < AliHLTDAQ::NumberOfDdls("ITSSSD") ; ii++ ) {
       if ( spec & 0x00000001 ) {
 	id += ii;
 	break;
@@ -221,43 +226,55 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoEvent( const AliHLTComponentEventDat
     }
     
     fClusterFinder->RawdataToClusters(fRawReader,fClusters);
-    
-    Float_t xyz[3];
-    filebuf fb;
-    fb.open ("test.txt",ios::out | ios::app);
-    ostream os(&fb);
+
+    UInt_t nClusters=0;
     for(int i=0;i<fNModules;i++){
       if(fClusters[i] != NULL){
-	for(int j=0;j<fClusters[i]->GetEntries();j++){
-	  AliITSRecPoint *recpoint = (AliITSRecPoint*) fClusters[i]->At(j);
-	  recpoint->GetGlobalXYZ(xyz);
-	  os<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
-	}
+        nClusters += fClusters[i]->GetEntries(); 
       }
     }
-   
-    PushBack(*fClusters,kAliHLTDataTypeTObjArray|kAliHLTDataOriginITSSSD,iter->fSpecification);
     
-    /*  
+    UInt_t bufferSize = nClusters * sizeof(AliHLTITSSpacePointData) + sizeof(AliHLTITSClusterData);
+    AliHLTUInt8_t *buffer = new AliHLTUInt8_t[bufferSize];
+    AliHLTITSClusterData *outputClusters = reinterpret_cast<AliHLTITSClusterData*>(buffer);
+    outputClusters->fSpacePointCnt=nClusters;
+    
+    int clustIdx=0;
     for(int i=0;i<fNModules;i++){
       if(fClusters[i] != NULL){
-	PushBack(fClusters[i],kAliHLTDataTypeTObjArray|kAliHLTDataOriginITSSSD,iter->fSpecification);
-	}
+        for(int j=0;j<fClusters[i]->GetEntries();j++){
+          AliITSRecPoint *recpoint = (AliITSRecPoint*) fClusters[i]->At(j);
+          outputClusters->fSpacePoints[clustIdx].fY=recpoint->GetY();
+          outputClusters->fSpacePoints[clustIdx].fZ=recpoint->GetZ();
+          outputClusters->fSpacePoints[clustIdx].fSigmaY2=recpoint->GetSigmaY2();
+          outputClusters->fSpacePoints[clustIdx].fSigmaZ2=recpoint->GetSigmaZ2();
+          outputClusters->fSpacePoints[clustIdx].fSigmaYZ=recpoint->GetSigmaYZ();
+          outputClusters->fSpacePoints[clustIdx].fQ=recpoint->GetQ();
+          outputClusters->fSpacePoints[clustIdx].fNy=recpoint->GetNy();
+          outputClusters->fSpacePoints[clustIdx].fNz=recpoint->GetNz();
+          outputClusters->fSpacePoints[clustIdx].fLayer=recpoint->GetLayer();
+          outputClusters->fSpacePoints[clustIdx].fIndex=recpoint->GetDetectorIndex();// | recpoint->GetPindex() | recpoint->GetNindex();
+          outputClusters->fSpacePoints[clustIdx].fTracks[0]=recpoint->GetLabel(0);
+          outputClusters->fSpacePoints[clustIdx].fTracks[1]=recpoint->GetLabel(1);
+          outputClusters->fSpacePoints[clustIdx].fTracks[2]=recpoint->GetLabel(2);
+	  
+          clustIdx++;
+        }
+      }
     }
-    */
     
+    PushBack(buffer,bufferSize,kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD,iter->fSpecification);  
+        
     for (Int_t iModule = 0; iModule < fNModules; iModule++) {       
       if(fClusters[iModule]){delete fClusters[iModule];}
       fClusters[iModule] = NULL;
     }
     
+    delete buffer; 
+
     fRawReader->ClearBuffers();
     
   } //  for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ ) {    
   
-    //fClusterFinder->RawdataToClusters(fRawReader,&fClusters);
-  
-  //PushBack( (TObject**) fClusters,kAliHLTDataTypeTObjArray,0x00000000);
-
   return 0;
 }
