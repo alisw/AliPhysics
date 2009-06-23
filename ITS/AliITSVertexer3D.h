@@ -51,7 +51,7 @@ class AliITSVertexer3D : public AliITSVertexer {
   void SetDiffPhiMax(Float_t pm = 0.025){fDiffPhiMax = pm;}
   void SetMeanPSelTracks(Float_t pGeV=0.875){fMeanPSelTrk = pGeV;}
   void SetMeanPtSelTracks(Float_t ptGeV=0.630){fMeanPtSelTrk = ptGeV;}
-  void SetMeanPPtSelTracks(Float_t fieldTesla);
+  void SetMeanPPtSelTracks(Double_t fieldTesla);
   void SetMinDCAforPileup(Float_t mindist=0.1) {fDCAforPileup=mindist;}
   void SetPileupAlgo(UShort_t optalgo=0){fPileupAlgo=optalgo;}
   void SetBinSizeR(Float_t siz=0.1){fBinSizeR=siz;}

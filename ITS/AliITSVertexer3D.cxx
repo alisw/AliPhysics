@@ -157,7 +157,7 @@ void AliITSVertexer3D::FindVertex3D(TTree *itsClusterTree){
       fVert3D.Print();
       end of debug lines  */ 
   
-  Float_t vRadius=TMath::Sqrt(fVert3D.GetXv()*fVert3D.GetXv()+fVert3D.GetYv()*fVert3D.GetYv());
+  Double_t vRadius=TMath::Sqrt(fVert3D.GetXv()*fVert3D.GetXv()+fVert3D.GetYv()*fVert3D.GetYv());
   if(vRadius<GetPipeRadius() && fVert3D.GetNContributors()>0){
     Double_t position[3]={fVert3D.GetXv(),fVert3D.GetYv(),fVert3D.GetZv()};
     Double_t covmatrix[6];
@@ -227,7 +227,7 @@ void AliITSVertexer3D::FindVertex3DIterative(){
 	fZpuv = fVertArray[kk].GetZv();
       }
     }
-    Float_t vRadius=TMath::Sqrt(fVertArray[0].GetXv()*fVertArray[0].GetXv()+fVertArray[0].GetYv()*fVertArray[0].GetYv());
+    Double_t vRadius=TMath::Sqrt(fVertArray[0].GetXv()*fVertArray[0].GetXv()+fVertArray[0].GetYv()*fVertArray[0].GetYv());
     if(vRadius<GetPipeRadius() && fVertArray[0].GetNContributors()>0){
       Double_t position[3]={fVertArray[0].GetXv(),fVertArray[0].GetYv(),fVertArray[0].GetZv()};
       Double_t covmatrix[6];
@@ -270,9 +270,11 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   TClonesArray *itsRec  = 0;
   if(optCuts==0) fZHisto->Reset();
  // gc1 are local and global coordinates for layer 1
-  Float_t gc1[3]={0.,0.,0.};
+  Float_t gc1f[3]={0.,0.,0.};
+  Double_t gc1[3]={0.,0.,0.};
   // gc2 are local and global coordinates for layer 2
-  Float_t gc2[3]={0.,0.,0.};
+  Float_t gc2f[3]={0.,0.,0.};
+  Double_t gc2[3]={0.,0.,0.};
 
   itsRec = fDetTypeRec->RecPoints();
   TBranch *branch = NULL;
@@ -283,12 +285,12 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   }
 
   // Set values for cuts
-  Float_t xbeam=GetNominalPos()[0]; 
-  Float_t ybeam=GetNominalPos()[1];
-  Float_t zvert=0.;
-  Float_t deltaPhi=fCoarseDiffPhiCut;
-  Float_t deltaR=fCoarseMaxRCut;
-  Float_t dZmax=fZCutDiamond;
+  Double_t xbeam=GetNominalPos()[0]; 
+  Double_t ybeam=GetNominalPos()[1];
+  Double_t zvert=0.;
+  Double_t deltaPhi=fCoarseDiffPhiCut;
+  Double_t deltaR=fCoarseMaxRCut;
+  Double_t dZmax=fZCutDiamond;
   if(fPileupAlgo == 2){
     deltaPhi=fFineDiffPhiCut;
     deltaR=fMaxRCut;
@@ -334,7 +336,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   Double_t a[3]={xbeam,ybeam,0.}; 
   Double_t b[3]={xbeam,ybeam,10.};
   AliStrLine zeta(a,b,kTRUE);
-  Float_t bField=AliTracker::GetBz()/10.; //T
+  static Double_t bField=AliTracker::GetBz()/10.; //T
   SetMeanPPtSelTracks(bField);
 
   Int_t nolines = 0;
@@ -356,7 +358,9 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
       UShort_t idClu1=modul1*kMaxCluPerMod+j;
       if(fUsedCluster.TestBitNumber(idClu1)) continue;
       AliITSRecPoint *recp1 = (AliITSRecPoint*)prpl1.At(j);
-      recp1->GetGlobalXYZ(gc1);
+      recp1->GetGlobalXYZ(gc1f);
+      for(Int_t ico=0;ico<3;ico++)gc1[ico]=gc1f[ico];
+
       Double_t phi1 = TMath::ATan2(gc1[1]-ybeam,gc1[0]-xbeam);
       if(phi1<0)phi1=2*TMath::Pi()+phi1;
       for(Int_t ladl2=0 ; ladl2<fLadOnLay2*2+1;ladl2++){
@@ -372,17 +376,18 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	    UShort_t idClu2=modul2*kMaxCluPerMod+j2;
 	    if(fUsedCluster.TestBitNumber(idClu2)) continue;
 	    AliITSRecPoint *recp2 = (AliITSRecPoint*)itsRec->At(j2);
-	    recp2->GetGlobalXYZ(gc2);
+	    recp2->GetGlobalXYZ(gc2f);
+	    for(Int_t ico=0;ico<3;ico++)gc2[ico]=gc2f[ico];
 	    Double_t phi2 = TMath::ATan2(gc2[1]-ybeam,gc2[0]-xbeam);
 	    if(phi2<0)phi2=2*TMath::Pi()+phi2;
 	    Double_t diff = TMath::Abs(phi2-phi1); 
 	    if(diff>TMath::Pi())diff=2.*TMath::Pi()-diff; 
 	    if(optCuts==0 && diff<fDiffPhiMax){
-	      Float_t r1=TMath::Sqrt(gc1[0]*gc1[0]+gc1[1]*gc1[1]);
-	      Float_t zc1=gc1[2];
-	      Float_t r2=TMath::Sqrt(gc2[0]*gc2[0]+gc2[1]*gc2[1]);
-	      Float_t zc2=gc2[2];
-	      Float_t zr0=(r2*zc1-r1*zc2)/(r2-r1); //Z @ null radius
+	      Double_t r1=TMath::Sqrt(gc1[0]*gc1[0]+gc1[1]*gc1[1]);
+	      Double_t zc1=gc1[2];
+	      Double_t r2=TMath::Sqrt(gc2[0]*gc2[0]+gc2[1]*gc2[1]);
+	      Double_t zc2=gc2[2];
+	      Double_t zr0=(r2*zc1-r1*zc2)/(r2-r1); //Z @ null radius
 	      fZHisto->Fill(zr0);
 	    }
 	    if(diff>deltaPhi)continue;
@@ -403,38 +408,38 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	    recp2->GetGlobalCov(cov);
 
 
-	    Float_t rad1=TMath::Sqrt(gc1[0]*gc1[0]+gc1[1]*gc1[1]);
-	    Float_t rad2=TMath::Sqrt(gc2[0]*gc2[0]+gc2[1]*gc2[1]);
-	    Float_t factor=(rad1+rad2)/(rad2-rad1); //factor to account for error on tracklet direction 
+	    Double_t rad1=TMath::Sqrt(gc1[0]*gc1[0]+gc1[1]*gc1[1]);
+	    Double_t rad2=TMath::Sqrt(gc2[0]*gc2[0]+gc2[1]*gc2[1]);
+	    Double_t factor=(rad1+rad2)/(rad2-rad1); //factor to account for error on tracklet direction 
 
-	    Float_t curvErr=0;
+	    Double_t curvErr=0;
 	    if(bField>0.00001){
-	      Float_t curvRadius=fMeanPtSelTrk/(0.3*bField)*100; //cm 
-	      Float_t dRad=TMath::Sqrt(TMath::Power((gc1[0]-gc2[0]),2)+TMath::Power((gc1[1]-gc2[1]),2));
-	      Float_t aux=dRad/2.+rad1;
+	      Double_t curvRadius=fMeanPtSelTrk/(0.3*bField)*100; //cm 
+	      Double_t dRad=TMath::Sqrt(TMath::Power((gc1[0]-gc2[0]),2)+TMath::Power((gc1[1]-gc2[1]),2));
+	      Double_t aux=dRad/2.+rad1;
 	      curvErr=TMath::Sqrt(curvRadius*curvRadius-dRad*dRad/4.)-TMath::Sqrt(curvRadius*curvRadius-aux*aux); //cm
 	    }
-	    Float_t sigmasq[3];
+	    Double_t sigmasq[3];
 	    sigmasq[0]=(cov[0]+curvErr*curvErr/2.)*factor*factor;
 	    sigmasq[1]=(cov[3]+curvErr*curvErr/2.)*factor*factor;
 	    sigmasq[2]=cov[5]*factor*factor;
 
 	    // Multiple scattering
-	    Float_t pOverMass=fMeanPSelTrk/0.140;
- 	    Float_t beta2=pOverMass*pOverMass/(1+pOverMass*pOverMass);
- 	    Float_t p2=fMeanPSelTrk*fMeanPSelTrk;
- 	    Float_t rBP=GetPipeRadius();
- 	    Float_t dBP=0.08/35.3; // 800 um of Be
- 	    Float_t dL1=0.01; //approx. 1% of radiation length  
- 	    Float_t theta2BP=14.1*14.1/(beta2*p2*1e6)*dBP;
- 	    Float_t theta2L1=14.1*14.1/(beta2*p2*1e6)*dL1;
-	    Float_t rtantheta1=(rad2-rad1)*TMath::Tan(TMath::Sqrt(theta2L1));
-	    Float_t rtanthetaBP=(rad1-rBP)*TMath::Tan(TMath::Sqrt(theta2BP));
+	    Double_t pOverMass=fMeanPSelTrk/0.140;
+ 	    Double_t beta2=pOverMass*pOverMass/(1+pOverMass*pOverMass);
+ 	    Double_t p2=fMeanPSelTrk*fMeanPSelTrk;
+ 	    Double_t rBP=GetPipeRadius();
+ 	    Double_t dBP=0.08/35.3; // 800 um of Be
+ 	    Double_t dL1=0.01; //approx. 1% of radiation length  
+ 	    Double_t theta2BP=14.1*14.1/(beta2*p2*1e6)*dBP;
+ 	    Double_t theta2L1=14.1*14.1/(beta2*p2*1e6)*dL1;
+	    Double_t rtantheta1=(rad2-rad1)*TMath::Tan(TMath::Sqrt(theta2L1));
+	    Double_t rtanthetaBP=(rad1-rBP)*TMath::Tan(TMath::Sqrt(theta2BP));
  	    for(Int_t ico=0; ico<3;ico++){    
  	      sigmasq[ico]+=rtantheta1*rtantheta1*factor*factor/3.;
  	      sigmasq[ico]+=rtanthetaBP*rtanthetaBP*factor*factor/3.;
  	    }
-	    Float_t wmat[9]={1.,0.,0.,0.,1.,0.,0.,0.,1.};
+	    Double_t wmat[9]={1.,0.,0.,0.,1.,0.,0.,0.,1.};
 	    if(sigmasq[0]!=0.) wmat[0]=1./sigmasq[0];
 	    if(sigmasq[1]!=0.) wmat[4]=1./sigmasq[1];
 	    if(sigmasq[2]!=0.) wmat[8]=1./sigmasq[2];
@@ -456,15 +461,15 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   // Finds the 3D vertex information using tracklets
   Int_t retcode = -1;
 
-  Float_t xbeam=GetNominalPos()[0];
-  Float_t ybeam=GetNominalPos()[1];
-  Float_t zvert=0.;
-  Float_t deltaR=fCoarseMaxRCut;
+  Double_t xbeam=GetNominalPos()[0];
+  Double_t ybeam=GetNominalPos()[1];
+  Double_t zvert=0.;
+  Double_t deltaR=fCoarseMaxRCut;
   if(fPileupAlgo == 2) {
     deltaR=fMaxRCut;
     if(optCuts!=0)AliWarning(Form("fPileupAlgo=2 AND optCuts=%d. It should be 0",optCuts));
   }
-  Float_t dZmax=fZCutDiamond;
+  Double_t dZmax=fZCutDiamond;
   if(optCuts==1){
     xbeam=fVert3D.GetXv();
     ybeam=fVert3D.GetYv();
@@ -477,10 +482,10 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     deltaR=fMaxRCut;
   }
 
-  Float_t rl=-fCoarseMaxRCut;
-  Float_t rh=fCoarseMaxRCut;
-  Float_t zl=-fZCutDiamond;
-  Float_t zh=fZCutDiamond;
+  Double_t rl=-fCoarseMaxRCut;
+  Double_t rh=fCoarseMaxRCut;
+  Double_t zl=-fZCutDiamond;
+  Double_t zh=fZCutDiamond;
   Int_t nbr=(Int_t)((rh-rl)/fBinSizeR+0.0001);
   Int_t nbz=(Int_t)((zh-zl)/fBinSizeZ+0.0001);
   Int_t nbrcs=(Int_t)((rh-rl)/(fBinSizeR*2.)+0.0001);
@@ -499,7 +504,7 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     AliStrLine *l1 = (AliStrLine*)fLines.At(i);
     for(Int_t j=i+1;j<fLines.GetEntriesFast();j++){
       AliStrLine *l2 = (AliStrLine*)fLines.At(j);
-      Float_t dca=l1->GetDCA(l2);
+      Double_t dca=l1->GetDCA(l2);
       if(dca > fDCAcut || dca<0.00001) continue;
       Double_t point[3];
       Int_t retc = l1->Cross(l2,point);
@@ -552,8 +557,8 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   Int_t ntrkl,ntimes;
   FindPeaks(h3d,peak,ntrkl,ntimes);  
   delete h3d;
-  Float_t binsizer=(rh-rl)/nbr;
-  Float_t binsizez=(zh-zl)/nbz;
+  Double_t binsizer=(rh-rl)/nbr;
+  Double_t binsizez=(zh-zl)/nbz;
   if(optCuts==0 && (ntrkl<=2 || ntimes>1)){
     ntrkl=0;
     ntimes=0;
@@ -566,7 +571,7 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
 
   //         Second selection loop
 
-  Float_t bs=(binsizer+binsizez)/2.;
+  Double_t bs=(binsizer+binsizez)/2.;
   for(Int_t i=0; i<fLines.GetEntriesFast();i++){
     AliStrLine *l1 = (AliStrLine*)fLines.At(i);
     if(l1->GetDistFromPoint(peak)>2.5*bs)fLines.RemoveAt(i);
@@ -595,7 +600,7 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
 }
 
 //________________________________________________________
-void AliITSVertexer3D::SetMeanPPtSelTracks(Float_t fieldTesla){
+void AliITSVertexer3D::SetMeanPPtSelTracks(Double_t fieldTesla){
   // Sets mean values of Pt based on the field
   // for P (used in multiple scattering) the most probable value is used
   if(TMath::Abs(fieldTesla-0.5)<0.01){
