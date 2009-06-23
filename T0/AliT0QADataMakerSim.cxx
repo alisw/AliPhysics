@@ -98,8 +98,10 @@ void AliT0QADataMakerSim::InitHits()
   TString timename;
   
   TH2F *fhHitsTimeA = new TH2F("hHitsTimeA", "Hits Efficiency;#PMT; Time [ns];", 13, 12, 25, 100,12,15 );
-  Add2HitsList(fhHitsTimeA,0, !expert, image);
+  fhHitsTimeA->SetOption("COLZ");
+ Add2HitsList(fhHitsTimeA,0, !expert, image);
   TH2F *fhHitsTimeC = new TH2F("hHitsTimeC", "Hits Efficiency;#PMT; Time [ns];", 13, 0, 13, 100,2,5 );
+  fhHitsTimeC->SetOption("COLZ");
   Add2HitsList(fhHitsTimeC,1, !expert, image);
 }
 
@@ -111,10 +113,13 @@ void AliT0QADataMakerSim::InitDigits()
   const Bool_t image    = kTRUE ; 
   
   TH2F * fhDigCFD = new TH2F("fhDigCFD", " CFD digits; #PMT; CFD time [#channel]",25,-0.5,24.5,100,0,1000);
+  fhDigCFD->SetOption("COLZ");
   Add2DigitsList( fhDigCFD,0);
   TH2F *fhDigLEDamp = new TH2F("fhDigLEDamp", " LED-CFD digits; #PMT; amplitude  LED-CFD [#channel]",25,-0.5,24.5,100,100,1000);
+  fhDigLEDamp->SetOption("COLZ");
   Add2DigitsList( fhDigLEDamp,1, !expert, image);
   TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits; #PMT; amplitude QTC [#channel]",25,-0.5,24.5,200,500,10000);
+  fhDigQTC->SetOption("COLZ");
   Add2DigitsList( fhDigQTC,2, !expert, image);
   
   
