@@ -43,11 +43,7 @@ class AliHFEpriVtx : public TObject {
                 AliHFEpriVtx &operator=(const AliHFEpriVtx &); // assignment operator
                 virtual ~AliHFEpriVtx();
 
-
-
-        protected:
                 void CreateHistograms(TString hnopt=""); // create histograms
-
                 void Init();
                 void SetEvent(AliESDEvent* ESD){fESD1=ESD;}; // set ESD pointer
                 void SetStack(AliStack* stack){fStack=stack;} // set stack pointer
@@ -87,7 +83,7 @@ class AliHFEpriVtx : public TObject {
                 TH2F *fDiffDCAvsNt; // histogram to fill DCA difference as a function of pT
 
 
-		ClassDef(AliHFEpriVtx,0); // primary vertex QA for HFE
+        ClassDef(AliHFEpriVtx,0);
 };
 
 #endif

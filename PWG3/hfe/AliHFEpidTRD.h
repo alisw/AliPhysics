@@ -19,10 +19,6 @@
  #include "AliHFEpidBase.h"
  #endif
 
-class TAxis;
-class TH1F;
-class TMap;
-class TString;
 class AliVParticle;
 
 class AliHFEpidTRD : public AliHFEpidBase{
@@ -31,6 +27,9 @@ class AliHFEpidTRD : public AliHFEpidBase{
       kLQ = 0,
       kNN = 1
     } PIDMethodTRD_t;
+    enum{
+      kThreshParams = 24
+    };
     AliHFEpidTRD(const Char_t *name);
     AliHFEpidTRD(const AliHFEpidTRD &ref);
     AliHFEpidTRD& operator=(const AliHFEpidTRD &ref);
@@ -40,22 +39,15 @@ class AliHFEpidTRD : public AliHFEpidBase{
     virtual Int_t IsSelected(AliVParticle *track);
     virtual Bool_t HasQAhistos() const { return kFALSE; };
 
-    void LoadTRDthresholds();
-
     void SetPIDMethod(PIDMethodTRD_t method) { fPIDMethod = method; };
-    void SetThresholdFile(Char_t *thresholdFile) { fThresholdFile = thresholdFile; };
-
   protected:
     void Copy(TObject &ref) const;
-    TH1F *GetTRDthresholds(Float_t electronEff);
-    void SetTRDthresholds(TH1F *thresholds, Float_t electronEff);
-
+    Double_t GetTRDthresholds(Double_t electronEff, Double_t p);
+    void InitParameters();
+    void GetParameters(Double_t electronEff, Double_t *parameters);
   private:
-    TString fThresholdFile;                                 // Threshold file name
     PIDMethodTRD_t fPIDMethod;                              // PID Method: 2D Likelihood or Neural Network
-    TMap *fTRDthresholds;                                   //! TRD Thresholds
-    TAxis *fTRDelectronEfficiencies;                        //! Electron Efficiencies corresponding to reference histos
-
+    Double_t fThreshParams[kThreshParams];                  // Threshold parametrisation
   ClassDef(AliHFEpidTRD, 1)     // TRD electron ID class
 };
 

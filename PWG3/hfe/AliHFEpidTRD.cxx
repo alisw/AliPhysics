@@ -44,28 +44,23 @@ ClassImp(AliHFEpidTRD)
 //___________________________________________________________________
 AliHFEpidTRD::AliHFEpidTRD(const char* name) :
     AliHFEpidBase(name)
-  , fThresholdFile("TRD.PIDthresholds.root")
   , fPIDMethod(kNN)
-  , fTRDthresholds(0x0)
-  , fTRDelectronEfficiencies(0x0)
 {
   //
   // default  constructor
   // 
-  fTRDthresholds = new TMap();
+  memset(fThreshParams, 0, sizeof(Double_t) * kThreshParams);
 }
 
 //___________________________________________________________________
 AliHFEpidTRD::AliHFEpidTRD(const AliHFEpidTRD &ref):
     AliHFEpidBase("")
-  , fThresholdFile("")
   , fPIDMethod(kLQ)
-  , fTRDthresholds(0x0)
-  , fTRDelectronEfficiencies(0x0)
 {
   //
   // Copy constructor
   //
+  memset(fThreshParams, 0, sizeof(Double_t) * kThreshParams);
   ref.Copy(*this);
 }
 
@@ -87,14 +82,8 @@ void AliHFEpidTRD::Copy(TObject &ref) const {
   //
   AliHFEpidTRD &target = dynamic_cast<AliHFEpidTRD &>(ref);
 
-  target.fThresholdFile = fThresholdFile;
   target.fPIDMethod = fPIDMethod;
-  if(fTRDthresholds){
-    target.fTRDthresholds = dynamic_cast<TMap *>(fTRDthresholds->Clone());
-  }
-  if(fTRDelectronEfficiencies){
-    target.fTRDelectronEfficiencies = new TAxis(*fTRDelectronEfficiencies);
-  }
+  memcpy(target.fThreshParams, fThreshParams, sizeof(Double_t) * kThreshParams);
   AliHFEpidBase::Copy(ref);
 }
 
@@ -103,11 +92,6 @@ AliHFEpidTRD::~AliHFEpidTRD(){
   //
   // Destructor
   //
-  if(fTRDthresholds){
-    fTRDthresholds->Delete();
-    delete fTRDthresholds;
-  }
-  if(fTRDelectronEfficiencies) delete fTRDelectronEfficiencies;
 }
 
 //______________________________________________________
@@ -116,44 +100,7 @@ Bool_t AliHFEpidTRD::InitializePID(){
   // InitializePID: Load TRD thresholds and create the electron efficiency axis
   // to navigate 
   //
-  LoadTRDthresholds();
-  // Fill the electron efficiencies axis for the TRD alone PID
-  Int_t nEffs = fTRDthresholds->GetEntries() + 1;
-  TIterator* thres =fTRDthresholds->MakeIterator();
-  TObjString *key = 0x0;
-  Double_t *tmp = new Double_t[nEffs], *titer = tmp;
-  while((key = dynamic_cast<TObjString *>((*thres)()))){
-    (*titer++) = static_cast<Double_t>(key->String().Atoi())/100.;
-  }
-  delete thres;
-  *titer = 1.;
-  // Sort the electron efficiencies and put them into the TAxis for later navigation
-  Int_t *ind = new Int_t[nEffs], *iiter = ind;
-  TMath::Sort(nEffs, tmp, ind, kFALSE);
-  Double_t *eleffs = new Double_t[nEffs], *eiter = eleffs;
-  while(eiter < &eleffs[nEffs]) *(eiter++) = tmp[*(iiter++)];
-  // print the content
-  Int_t cnt = 0;
-  if(GetDebugLevel() > 1){
-    printf("Printing electron efficiency bins:\n");
-    eiter = eleffs;
-    thres = fTRDthresholds->MakeIterator();
-    TObject *object = 0x0;
-    while(eiter < &eleffs[nEffs - 1]){
-      printf("eleffs[%d] = %f", cnt++, *(eiter++));
-      key = dynamic_cast<TObjString *>(thres->Next());
-      object = fTRDthresholds->GetValue(key->String().Data());
-      printf(", Content: %p\n", (void *)object);
-    }
-  }
-  delete[] tmp; delete[] ind;
-  fTRDelectronEfficiencies = new TAxis(nEffs - 1, eleffs);
-  if(GetDebugLevel() > 1){
-    printf("Printing axis content:\n");
-    for(Int_t ibin = fTRDelectronEfficiencies->GetFirst(); ibin <= fTRDelectronEfficiencies->GetLast(); ibin++)
-      printf("%d.) minimum: %f, maximum? %f\n", ibin, fTRDelectronEfficiencies->GetBinLowEdge(ibin), fTRDelectronEfficiencies->GetBinUpEdge(ibin));
-  }
-  delete[] eleffs;
+  InitParameters();
   return kTRUE;
 }
 
@@ -169,71 +116,60 @@ Int_t AliHFEpidTRD::IsSelected(AliVParticle *track){
   Double_t p = esdTrack->GetOuterParam() ? esdTrack->GetOuterParam()->P() : esdTrack->P();
   if(p < 0.6) return 0;
 
-  // Get the Histograms
-  TH1 *threshist = GetTRDthresholds(0.91);
-  Int_t bin = 0;
-  if(p > threshist->GetXaxis()->GetXmax()) 
-    bin = threshist->GetXaxis()->GetLast();
-  else if(p < threshist->GetXaxis()->GetXmin()) 
-    bin = threshist->GetXaxis()->GetFirst();
-  else
-    bin = threshist->GetXaxis()->FindBin(p);
-
   Double_t pidProbs[AliPID::kSPECIES];
   esdTrack->GetTRDpid(pidProbs);
-  if(pidProbs[AliPID::kElectron] > threshist->GetBinContent(bin)) return 11;
+  if(pidProbs[AliPID::kElectron] > GetTRDthresholds(0.91, p)) return 11;
   return 0;
 }
 
 //___________________________________________________________________
-void AliHFEpidTRD::LoadTRDthresholds(){
+Double_t AliHFEpidTRD::GetTRDthresholds(Double_t electronEff, Double_t p){ 
   //
-  // Load TRD threshold histograms from File
-  //
-  TFile *mythresholds = TFile::Open(fThresholdFile);
-  TKey *object = 0x0;
-  TString electron_eff;
-  TObjArray *histos = 0x0;
-  Float_t eff;
-  TH1F *refhist = 0x0;
-  TIterator *keyIterator = mythresholds->GetListOfKeys()->MakeIterator();
-  TString histnames[2] = {"fHistThreshLQ", "fHistThreshNN"};
-  gROOT->cd();
-  while((object = dynamic_cast<TKey *>((*keyIterator)()))){
-    // Get the electron efficiency bin this histogram was taken with
-    electron_eff = object->GetName();
-    electron_eff = electron_eff.Remove(0,3);
-    eff = static_cast<Float_t>(electron_eff.Atoi())/100.;
-
-    // Get the threshold according to the selected 
-    histos = dynamic_cast<TObjArray *>(object->ReadObj());
-    refhist = dynamic_cast<TH1F *>(histos->FindObject(histnames[fPIDMethod].Data()));
-    SetTRDthresholds(refhist, eff);
-    histos->Delete();
-    delete histos;
-  }
-  delete keyIterator;
-  mythresholds->Close();
-  delete mythresholds;
+  // Return momentum dependent and electron efficiency dependent TRD thresholds
+  // 
+  Double_t params[4];
+  GetParameters(electronEff, params);
+  return 1. - params[0] * p - params[1] * TMath::Exp(-params[2] * p) - params[3];
 }
 
 //___________________________________________________________________
-void AliHFEpidTRD::SetTRDthresholds(TH1F *thresholds, Float_t electronEff){
+void AliHFEpidTRD::InitParameters(){
   //
-  // Set the threshold histogram for the TRD pid
+  // Fill the Parameters into an array
   //
-  fTRDthresholds->Add(new TObjString(Form("%d", TMath::Nint(electronEff * 100.))), new TH1F(*thresholds));
+
+  // Parameters for 6 Layers
+  fThreshParams[0] = -0.001839; // 0.7 electron eff
+  fThreshParams[1] = 0.000276;
+  fThreshParams[2] = 0.044902; 
+  fThreshParams[3] = 1.726751;
+  fThreshParams[4] = -0.002405; // 0.75 electron eff
+  fThreshParams[5] = 0.000372;
+  fThreshParams[6] = 0.061775;
+  fThreshParams[7] = 1.739371;
+  fThreshParams[8] = -0.003178; // 0.8 electron eff
+  fThreshParams[9] = 0.000521;
+  fThreshParams[10] = 0.087585;
+  fThreshParams[11] = 1.749154;
+  fThreshParams[12] = -0.004058; // 0.85 electron eff
+  fThreshParams[13] = 0.000748;
+  fThreshParams[14] = 0.129583;
+  fThreshParams[15] = 1.782323;
+  fThreshParams[16] = -0.004967; // 0.9 electron eff
+  fThreshParams[17] = 0.001216;
+  fThreshParams[18] = 0.210128;
+  fThreshParams[19] = 1.807665;
+  fThreshParams[20] = -0.000996; // 0.95 electron eff
+  fThreshParams[21] = 0.002627;
+  fThreshParams[22] = 0.409099;
+  fThreshParams[23] = 1.787076;
 }
 
 //___________________________________________________________________
-TH1F *AliHFEpidTRD::GetTRDthresholds(Float_t electronEff){ 
-  Int_t bin = 0;
-  if(electronEff < fTRDelectronEfficiencies->GetXmin()) bin = fTRDelectronEfficiencies->GetFirst();
-  else if(electronEff > fTRDelectronEfficiencies->GetXmax()) bin = fTRDelectronEfficiencies->GetLast();
-  else bin = fTRDelectronEfficiencies->FindBin(electronEff);
- TObjString keyname = Form("%d", TMath::Nint(fTRDelectronEfficiencies->GetBinLowEdge(bin)* 100.));
-/*  printf("Key: %s\n", keyname.String().Data());*/
-  TH1F *thresholds = dynamic_cast<TH1F *>((dynamic_cast<TPair *>(fTRDthresholds->FindObject(&keyname)))->Value());
-/*  printf("thresholds: %p\n", thresholds);*/
-  return thresholds;
+void AliHFEpidTRD::GetParameters(Double_t electronEff, Double_t *parameters){
+  //
+  // return parameter set for the given efficiency bin
+  //
+  Int_t effbin = static_cast<Int_t>((electronEff - 0.7)/0.3 * 6.);
+  memcpy(parameters, fThreshParams + effbin * 4, sizeof(Double_t) * 4);
 }

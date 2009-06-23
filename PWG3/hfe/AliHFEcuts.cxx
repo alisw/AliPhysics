@@ -18,6 +18,7 @@
  * ALICE Heavy Flavour Electron Group                                   *
  *                                                                      *
  * Authors:                                                             *
+ *   Raphaelle Bailhache <R.Bailhache@gsi.de>                           *
  *   Markus Fasel <M.Fasel@gsi.de>                                      *
  *   Markus Heide <mheide@uni-muenster.de>                              *
  *   Matus Kalisky <m.kalisky@uni-muenster.de>                          *
@@ -42,8 +43,8 @@
 
 ClassImp(AliHFEcuts)
 
-const Int_t AliHFEcuts::kNcutSteps = 5;
-
+const Int_t AliHFEcuts::kNcutSteps = 8;
+const Int_t AliHFEcuts::kNcutESDSteps = 6;
 //__________________________________________________________________
 AliHFEcuts::AliHFEcuts():
   fRequirements(0),
@@ -54,7 +55,8 @@ AliHFEcuts::AliHFEcuts():
   fMinClusterRatioTPC(0.),
   fSigmaToVtx(0.),
   fHistQA(0x0),
-  fCutList(0x0)
+  fCutList(0x0),
+  fDebugLevel(0)
 {
   //
   // Default Constructor
@@ -77,7 +79,8 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fMinClusterRatioTPC(c.fMinClusterRatioTPC),
   fSigmaToVtx(c.fSigmaToVtx),
   fHistQA(0x0),
-  fCutList(0x0)
+  fCutList(0x0),
+  fDebugLevel(0)
 {
   //
   // Copy Constructor
@@ -105,19 +108,28 @@ AliHFEcuts::~AliHFEcuts(){
 
 //__________________________________________________________________
 void AliHFEcuts::Initialize(AliCFManager *cfm){
+
   // Call all the setters for the cuts
   SetParticleGenCutList();
   SetAcceptanceCutList();
-  SetRecKineCutList();
+  SetRecKineTPCCutList();
+  SetRecKineITSCutList();
   SetRecPrimaryCutList();
-  SetHFElectronCuts();
+  SetHFElectronITSCuts();
+  SetHFElectronTPCCuts();
+  SetHFElectronTRDCuts();
+
   
   // Connect the cuts
   cfm->SetParticleCutsList(kStepMCGenerated, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartGenCuts")));
   cfm->SetParticleCutsList(kStepMCInAcceptance, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartAccCuts")));
-  cfm->SetParticleCutsList(kStepRecKine, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartRecCuts")));
+  cfm->SetParticleCutsList(kStepRecKineTPC, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartRecKineTPCCuts")));
+  cfm->SetParticleCutsList(kStepRecKineITS, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartRecKineITSCuts")));
   cfm->SetParticleCutsList(kStepRecPrim, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartPrimCuts")));
-  cfm->SetParticleCutsList(kStepHFEcuts, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartHFECuts")));
+  cfm->SetParticleCutsList(kStepHFEcutsITS, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartHFECutsITS")));
+  cfm->SetParticleCutsList(kStepHFEcutsTPC, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartHFECutsTPC")));
+  cfm->SetParticleCutsList(kStepHFEcutsTRD, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartHFECutsTRD")));
+
 }
 
 //__________________________________________________________________
@@ -125,9 +137,13 @@ void AliHFEcuts::Initialize(){
   // Call all the setters for the cuts
   SetParticleGenCutList();
   SetAcceptanceCutList();
-  SetRecKineCutList();
+  SetRecKineTPCCutList();
+  SetRecKineITSCutList();
   SetRecPrimaryCutList();
-  SetHFElectronCuts();
+  SetHFElectronITSCuts();
+  SetHFElectronTPCCuts();
+  SetHFElectronTRDCuts();
+
 }
 
 //__________________________________________________________________
@@ -186,7 +202,7 @@ void AliHFEcuts::SetAcceptanceCutList(){
 }
 
 //__________________________________________________________________
-void AliHFEcuts::SetRecKineCutList(){
+void AliHFEcuts::SetRecKineTPCCutList(){
   //
   // Track Kinematics and Quality cuts (Based on the Standard cuts from PWG0)
   //
@@ -199,7 +215,6 @@ void AliHFEcuts::SetRecKineCutList(){
   // Min. Number of Clusters:
   //  TPC: 50
   // RefitRequired:
-  //  ITS
   //  TPC
   // Chi2 per TPC cluster: 3.5
   //
@@ -210,7 +225,7 @@ void AliHFEcuts::SetRecKineCutList(){
   AliCFTrackQualityCuts *trackQuality = new AliCFTrackQualityCuts("fCutsQualityRec","REC Track Quality Cuts");
   trackQuality->SetMinNClusterTPC(fMinClustersTPC);
   trackQuality->SetMaxChi2PerClusterTPC(fMaxChi2clusterTPC);
-  trackQuality->SetStatus(AliESDtrack::kTPCrefit & AliESDtrack::kITSrefit);
+  trackQuality->SetStatus(AliESDtrack::kTPCrefit);
   trackQuality->SetMaxCovDiagonalElements(2., 2., 0.5, 0.5, 2); 
 
   AliCFTrackKineCuts *kineCuts = new AliCFTrackKineCuts("fCutsKineRec", "REC Kine Cuts");
@@ -223,9 +238,30 @@ void AliHFEcuts::SetRecKineCutList(){
   }
   
   TObjArray *recCuts = new TObjArray;
-  recCuts->SetName("fPartRecCuts");
+  recCuts->SetName("fPartRecKineTPCCuts");
   recCuts->AddLast(trackQuality);
   recCuts->AddLast(kineCuts);
+  fCutList->AddLast(recCuts);
+}
+
+//__________________________________________________________________
+void AliHFEcuts::SetRecKineITSCutList(){
+  //
+  // Track Kinematics and Quality cuts (Based on the Standard cuts from PWG0)
+  //
+  // RefitRequired:
+  //  ITS
+  //
+  AliCFTrackQualityCuts *trackQuality = new AliCFTrackQualityCuts("fCutsQualityRec","REC Track Quality Cuts");
+  trackQuality->SetStatus(AliESDtrack::kITSrefit);
+  
+  if(IsInDebugMode()){
+    trackQuality->SetQAOn(fHistQA);
+  }
+  
+  TObjArray *recCuts = new TObjArray;
+  recCuts->SetName("fPartRecKineITSCuts");
+  recCuts->AddLast(trackQuality);
   fCutList->AddLast(recCuts);
 }
 
@@ -239,11 +275,13 @@ void AliHFEcuts::SetRecPrimaryCutList(){
   //  No Kink daughters
   //
   AliCFTrackIsPrimaryCuts *primaryCut = new AliCFTrackIsPrimaryCuts("fCutsPrimaryCuts", "REC Primary Cuts");
+#ifdef V4_17_00
   if(IsRequireDCAToVertex()){
     primaryCut->SetDCAToVertex2D(kTRUE);
     primaryCut->SetMaxDCAToVertexXY(fDCAtoVtx[0]);
     primaryCut->SetMaxDCAToVertexZ(fDCAtoVtx[1]);
   }
+#endif
   if(IsRequireSigmaToVertex()){
     primaryCut->SetRequireSigmaToVertex(kTRUE);
     primaryCut->SetMaxNSigmaToVertex(fSigmaToVtx);
@@ -258,24 +296,55 @@ void AliHFEcuts::SetRecPrimaryCutList(){
 }
 
 //__________________________________________________________________
-void AliHFEcuts::SetHFElectronCuts(){
+void AliHFEcuts::SetHFElectronITSCuts(){
   //
-  // Special Cuts introduced by the HFElectron Group
+  // Special Cuts introduced by the HFElectron Group: ITS
   //
-  AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroup","Extra cuts from the HFE group");
+  AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupPixels","Extra cuts from the HFE group");
   if(IsRequireITSpixel()){
     hfecuts->SetRequireITSpixel(AliHFEextraCuts::ITSPixel_t(fCutITSPixel));
   }
-/*  if(IsRequireDCAToVertex()){
+#ifndef V4_17_00
+  if(IsRequireDCAToVertex()){
     hfecuts->SetMaxImpactParamR(fDCAtoVtx[0]);
     hfecuts->SetMaxImpactParamZ(fDCAtoVtx[1]);
-  }*/
-  if(fMinTrackletsTRD) hfecuts->SetMinTrackletsTRD(fMinTrackletsTRD);
+  }
+#endif
+  
+  if(IsInDebugMode()) hfecuts->SetQAOn(fHistQA);
+  
+  TObjArray *hfeCuts = new TObjArray;
+  hfeCuts->SetName("fPartHFECutsITS");
+  hfeCuts->AddLast(hfecuts);
+  fCutList->AddLast(hfeCuts);
+}
+
+//__________________________________________________________________
+void AliHFEcuts::SetHFElectronTPCCuts(){
+  //
+  // Special Cuts introduced by the HFElectron Group: TPC
+  //
+  AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTPC","Extra cuts from the HFE group");
   if(fMinClusterRatioTPC > 0.) hfecuts->SetClusterRatioTPC(fMinClusterRatioTPC);
   if(IsInDebugMode()) hfecuts->SetQAOn(fHistQA);
   
   TObjArray *hfeCuts = new TObjArray;
-  hfeCuts->SetName("fPartHFECuts");
+  hfeCuts->SetName("fPartHFECutsTPC");
+  hfeCuts->AddLast(hfecuts);
+  fCutList->AddLast(hfeCuts);
+}
+
+//__________________________________________________________________
+void AliHFEcuts::SetHFElectronTRDCuts(){
+  //
+  // Special Cuts introduced by the HFElectron Group: TRD
+  //
+  AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTRD","Extra cuts from the HFE group");
+  if(fMinTrackletsTRD > 0.) hfecuts->SetMinTrackletsTRD(fMinTrackletsTRD);
+  if(IsInDebugMode()) hfecuts->SetQAOn(fHistQA);
+  
+  TObjArray *hfeCuts = new TObjArray;
+  hfeCuts->SetName("fPartHFECutsTRD");
   hfeCuts->AddLast(hfecuts);
   fCutList->AddLast(hfeCuts);
 }

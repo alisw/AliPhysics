@@ -15,7 +15,13 @@
 #ifndef ALIANALYSISTASKHFE_H
 #define ALIANALYSISTASKHFE_H
 
+#ifndef ALIANALYSISTASK_H
 #include "AliAnalysisTask.h"
+#endif
+
+#ifndef ROOT_THnSparse
+#include <THnSparse.h>
+#endif
 
 class AliHFEpid;
 class AliHFEcuts;
@@ -26,49 +32,57 @@ class AliESDEvent;
 class AliESDtrackCuts;
 class AliMCEvent;
 class TH1I; 
-class THnSparse;
 class TList;
 
 class AliAnalysisTaskHFE : public AliAnalysisTask{
   enum{
-    kIsQAOn = BIT(14),
-    kIsMCQAOn = BIT(15),
-    kIsSecVtxOn = BIT(16)
+    kIsQAOn = BIT(18),
+    kIsMCQAOn = BIT(19),
+    kIsSecVtxOn = BIT(20),
+    kIsPriVtxOn = BIT(21)
   };
-	public:
-		AliAnalysisTaskHFE();
-		~AliAnalysisTaskHFE();
+  public:
+    AliAnalysisTaskHFE();
+    AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref);
+    AliAnalysisTaskHFE& operator=(const AliAnalysisTaskHFE &ref);
+    ~AliAnalysisTaskHFE();
 
-		virtual void ConnectInputData(Option_t *);
-		virtual void CreateOutputObjects();
-		virtual void Exec(Option_t *);
-		virtual void Terminate(Option_t *);
+    virtual void ConnectInputData(Option_t *);
+    virtual void CreateOutputObjects();
+    virtual void Exec(Option_t *);
+    virtual void Terminate(Option_t *);
 
     Bool_t IsQAOn() const     { return TestBit(kIsQAOn); };
-    Bool_t IsMCQAOn() const   { return TestBit(kIsMCQAOn); }
+    Bool_t IsMCQAOn() const   { return TestBit(kIsMCQAOn); };
     Bool_t IsSecVtxOn() const { return TestBit(kIsSecVtxOn); };
+    Bool_t IsPriVtxOn() const { return TestBit(kIsPriVtxOn); };
     void SetQAOn()            { SetBit(kIsQAOn, kTRUE); };
     void SetMCQAOn()          { SetBit(kIsMCQAOn, kTRUE); };
+    void SetPriVtxOn()        { SetBit(kIsPriVtxOn, kTRUE); };
     void SetSecVtxOn()        { SetBit(kIsSecVtxOn, kTRUE); };
+ 
+  protected:
+    void Copy(TObject &o) const;
 
-	private:
+  private:
     void MakeParticleContainer();
 
-		AliESDEvent *fESD;		                //! The ESD Event
-		AliMCEvent *fMC;		                  //! The MC Event
-		AliCFManager *fCFM;		                //! Correction Framework Manager
+    AliESDEvent *fESD;                    //! The ESD Event
+    AliMCEvent *fMC;                      //! The MC Event
+    AliCFManager *fCFM;                   //! Correction Framework Manager
     THnSparseF *fCorrelation;             //! response matrix for unfolding  
     THnSparseF *fFakeElectrons;           //! Contamination from Fake Electrons
-		AliHFEpid *fPID;                      //! PID
+    AliHFEpid *fPID;                      //! PID
     AliHFEcuts *fCuts;                    //! Cut Collection
     AliHFEsecVtx *fSecVtx;                //! Secondary Vertex Analysis
-    AliHFEmcQA *fAnalysisMCQA;            //! MC QA
-		TH1I *fNEvents;			                  //! counter for the number of Events
-		TList *fQA;			                      //! QA histos for the cuts
+    AliHFEmcQA *fMCQA;                    //! MC QA
+    TH1I *fNEvents;                       //! counter for the number of Events
+    TList *fQA;                           //! QA histos for the cuts
     TList *fOutput;                       //! Container for Task Output
     TList *fHistMCQA;                     //! Output container for MC QA histograms 
     TList *fHistSECVTX;                   //! Output container for sec. vertexing results
 
-	ClassDef(AliAnalysisTaskHFE, 1)    // The electron Analysis Task
+    ClassDef(AliAnalysisTaskHFE, 1)       // The electron Analysis Task
 };
 #endif
+
