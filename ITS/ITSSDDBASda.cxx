@@ -85,6 +85,7 @@ int main(int argc, char **argv) {
   Bool_t readfeeconf=kFALSE;
   Int_t dataformat=1;
   gSystem->Exec("rm -f SDDbase_*.data");
+  gSystem->Exec("rm -f  SDDbase_step2_LDC.tar");
   if(gSystem->Getenv("DAQ_DETDB_LOCAL")!=NULL){
     const char* dir=gSystem->Getenv("DAQ_DETDB_LOCAL");    
     TString filnam=Form("%s/fee.conf",dir); 
@@ -102,6 +103,7 @@ int main(int argc, char **argv) {
   AliITSOnlineSDDBase **base=new AliITSOnlineSDDBase*[kTotDDL*kModPerDDL*kSides];
   AliITSOnlineSDDCMN **corr=new AliITSOnlineSDDCMN*[kTotDDL*kModPerDDL*kSides];
   TH2F **histo=new TH2F*[kTotDDL*kModPerDDL*kSides];
+  Bool_t isFilled[kTotDDL*kModPerDDL*kSides];
 
   Char_t hisnam[20];
   for(Int_t iddl=0; iddl<kTotDDL;iddl++){
@@ -113,6 +115,7 @@ int main(int argc, char **argv) {
 	else base[index]->SetLastGoodTB(254);
 	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
 	histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
+	isFilled[index]=0;
       }
     }
   }
@@ -133,6 +136,7 @@ int main(int argc, char **argv) {
 	    corr[index]=new AliITSOnlineSDDCMN(iddl,imod,isid);
 	    if(adcSamplFreq==20) corr[index]->SetLastGoodTB(126);
 	    else corr[index]->SetLastGoodTB(254);
+	    isFilled[index]=0;
 	  }
 	}
       }
@@ -228,6 +232,7 @@ int main(int argc, char **argv) {
 	    if(iDDL>=0 && iDDL<kTotDDL){ 
 	      Int_t index=kSides*(kModPerDDL*iDDL+iCarlos)+s->GetChannel(); 
 	      histo[index]->Fill(s->GetCoord2(),s->GetCoord1(),s->GetSignal());
+	      isFilled[index]=1;
 	    }
 	  }
 	  delete s;
@@ -270,6 +275,7 @@ int main(int argc, char **argv) {
 
 
 
+  Char_t filnam[100],command[150];
   TFile *fh=new TFile("SDDbaseHistos.root","RECREATE");
   for(Int_t iddl=0; iddl<kTotDDL;iddl++){
     for(Int_t imod=0; imod<kModPerDDL;imod++){
@@ -277,7 +283,12 @@ int main(int argc, char **argv) {
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	corr[index]->ValidateAnodes();
 	corr[index]->WriteToASCII();
-	corr[index]->WriteToROOT(fh);
+	if(isFilled[index]){
+	  corr[index]->WriteToROOT(fh);
+	  sprintf(filnam,"SDDbase_step2_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
+	  sprintf(command,"tar -rf SDDbase_step2_LDC.tar %s",filnam);
+	  gSystem->Exec(command);
+	}
       }
     }
   }

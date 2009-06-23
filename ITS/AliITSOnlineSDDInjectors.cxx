@@ -12,7 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <TFile.h>
 #include "AliITSOnlineSDDInjectors.h"
+#include "AliLog.h"
 #include <TH2F.h>
 #include <TGraphErrors.h>
 #include <TMath.h>
@@ -103,12 +105,7 @@ void AliITSOnlineSDDInjectors::Reset(){
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::AnalyzeEvent(TH2F* his){
   //
-  Reset();
-  fHisto=his;
-  FindGoodInjectors();
-  FindCentroids();
-  CalcTimeBinZero();
-  for(Int_t j=0;j<kInjPads;j++) CalcDriftSpeed(j);
+  AddEvent(his);
   FitDriftSpeedVsAnode();
 }
 //______________________________________________________________________
@@ -529,4 +526,30 @@ void AliITSOnlineSDDInjectors::WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_
   }
   fprintf(outf,"\n");
   fclose(outf);  
+}
+//______________________________________________________________________
+Bool_t AliITSOnlineSDDInjectors::WriteToROOT(TFile *fil) const {
+  //
+  if(fil==0){ 
+    AliWarning("Invalid pointer to ROOT file");
+    return kFALSE;    
+  }  
+  Char_t hisnam[20];
+  fil->cd();
+  sprintf(hisnam,"hdrsp%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F hdsp(hisnam,"",kInjPads,-0.5,kInjPads-0.5);
+  if(fNEvents==0){
+    AliWarning("Zero analyzed events");
+    return kFALSE;    
+  }  
+    
+  for(Int_t i=0;i<kInjPads;i++){ 
+    hdsp.SetBinContent(i+1,GetMeanDriftSpeed(i));    
+    Double_t rms=GetRMSDriftSpeed(i);
+    Double_t err=0.;
+    if(rms>0.) err=rms/TMath::Sqrt(fNEvents);
+    hdsp.SetBinError(i+1,err);
+  }
+  hdsp.Write();
+  return kTRUE;    
 }

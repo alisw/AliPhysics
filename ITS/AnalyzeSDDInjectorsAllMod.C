@@ -204,6 +204,17 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
   hpad7l->Scale(nfac);
   hpad7r->Scale(nfac);
 
+  TFile *outfil1=new TFile("DriftSpeedVsAnode.root","recreate");
+  for(Int_t iddl=0; iddl<kTotDDL;iddl++){
+    for(Int_t imod=0; imod<kModPerDDL;imod++){
+      for(Int_t isid=0;isid<kSides;isid++){
+	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+	anal[index]->WriteToROOT(outfil1);
+      }
+    }
+  }
+  outfil1->Close();
+
   Int_t ipt0=0, ipt1=0;
   Float_t Edrift=(1800-45)/291/0.012;  
   TFile *outfil=new TFile("DriftSpeedHistos.root","recreate");

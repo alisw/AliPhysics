@@ -236,16 +236,19 @@ int main(int argc, char **argv) {
       if(ievInj>=maxNEvents) break;
     }
   }
+
   /* write report */
   printf("Run #%s, received %d injector events\n",getenv("DATE_RUN_NUMBER"),ievInj);
 
   gSystem->Exec("rm -f  SDDinj_LDC.tar");
   Char_t filnam[100],command[120];
+  TFile *fh=new TFile("SDDinjectHistos.root","RECREATE");
   for(Int_t iddl=0; iddl<kTotDDL;iddl++){
     for(Int_t imod=0; imod<kModPerDDL;imod++){
       for(Int_t isid=0;isid<kSides;isid++){
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	if(nWrittenEv[index]>0){
+	  injan[index]->WriteToROOT(fh);
 	  sprintf(filnam,"SDDinj_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
 	  sprintf(command,"tar -rf SDDinj_LDC.tar %s",filnam);
 	  gSystem->Exec(command);
@@ -253,7 +256,7 @@ int main(int argc, char **argv) {
       }  
     }
   }
-
+  fh->Close();
 
   /* report progress */
   daqDA_progressReport(90);
