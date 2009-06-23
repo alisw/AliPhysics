@@ -24,6 +24,7 @@
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 
+ClassImp(AliHLTVertexer)
 
 AliHLTVertexer::AliHLTVertexer():
   fESD(0),

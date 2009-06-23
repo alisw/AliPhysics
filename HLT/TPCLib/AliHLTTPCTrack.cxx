@@ -71,7 +71,8 @@ AliHLTTPCTrack::AliHLTTPCTrack()
   fIsLocal(true),
   //  fRowRange({0,0}),
 
-  fPID(0)
+  fPID(0),
+  fId(-1)
 {
   //Constructor
   fRowRange[0]=0;
@@ -107,6 +108,7 @@ void AliHLTTPCTrack::Copy(AliHLTTPCTrack *tpt)
   SetMCid(tpt->GetMCid());
   SetPID(tpt->GetPID());
   SetSector(tpt->GetSector());
+  SetId( tpt->GetId());
 }
 
 Int_t AliHLTTPCTrack::Compare(const AliHLTTPCTrack *track) const

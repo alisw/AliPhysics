@@ -63,6 +63,8 @@
 
 ClassImp(AliITStrackerHLT)
 
+
+
 Bool_t AliITStrackerHLT::TransportToX( AliExternalTrackParam *t, double x ) const
 {
   return t->PropagateTo( x, t->GetBz() );
@@ -111,14 +113,16 @@ Int_t AliITStrackerHLT::UpdateMI(AliHLTITSTrack* track, const AliITSRecPoint* cl
 
 AliHLTITSLayer AliITStrackerHLT::fgLayers[AliITSgeomTGeo::kNLayers]; // ITS layers
 
-AliITStrackerHLT::AliITStrackerHLT():AliTracker(),
-fEsd(0),
-fUseTGeo(3),
-fxOverX0Pipe(-1.),
-fxTimesRhoPipe(-1.),
-fDebugStreamer(0),
-fITSChannelStatus(0),
-fkDetTypeRec(0)
+AliITStrackerHLT::AliITStrackerHLT()
+  :AliTracker(),
+   fEsd(0),
+   fUseTGeo(3),
+   fxOverX0Pipe(-1.),
+   fxTimesRhoPipe(-1.),
+   fDebugStreamer(0),
+   fITSChannelStatus(0),
+   fkDetTypeRec(0),
+   fTracks()
 {
   //Default constructor
   Int_t i;
@@ -127,14 +131,16 @@ fkDetTypeRec(0)
   for(i=0;i<6;i++) {fxOverX0Layer[i]=-1.;fxTimesRhoLayer[i]=-1.;}
 }
 //------------------------------------------------------------------------
-AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom) : AliTracker(),
-fEsd(0),
-fUseTGeo(3),
-fxOverX0Pipe(-1.),
-fxTimesRhoPipe(-1.),
-fDebugStreamer(0),
-fITSChannelStatus(0),
-fkDetTypeRec(0)
+AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom) 
+: AliTracker(),
+  fEsd(0),
+  fUseTGeo(3),
+  fxOverX0Pipe(-1.),
+  fxTimesRhoPipe(-1.),
+  fDebugStreamer(0),
+  fITSChannelStatus(0),
+  fkDetTypeRec(0),
+  fTracks()
 {
   //--------------------------------------------------------------------
   //This is the AliITStrackerHLT constructor
@@ -225,14 +231,16 @@ fkDetTypeRec(0)
 
 }
 //------------------------------------------------------------------------
-AliITStrackerHLT::AliITStrackerHLT(const AliITStrackerHLT &tracker):AliTracker(tracker),
-fEsd(tracker.fEsd),
-fUseTGeo(tracker.fUseTGeo),
-fxOverX0Pipe(tracker.fxOverX0Pipe),
-fxTimesRhoPipe(tracker.fxTimesRhoPipe),
-fDebugStreamer(tracker.fDebugStreamer),
-fITSChannelStatus(tracker.fITSChannelStatus),
-fkDetTypeRec(tracker.fkDetTypeRec)
+AliITStrackerHLT::AliITStrackerHLT(const AliITStrackerHLT &tracker)
+:AliTracker(tracker),
+ fEsd(tracker.fEsd),
+ fUseTGeo(tracker.fUseTGeo),
+ fxOverX0Pipe(tracker.fxOverX0Pipe),
+ fxTimesRhoPipe(tracker.fxTimesRhoPipe),
+ fDebugStreamer(tracker.fDebugStreamer),
+ fITSChannelStatus(tracker.fITSChannelStatus),
+ fkDetTypeRec(tracker.fkDetTypeRec),
+ fTracks()
 {
   //Copy constructor
   Int_t i;
@@ -303,6 +311,71 @@ void AliITStrackerHLT::ReadBadFromDetTypeRec() {
   
   return;
 }
+
+
+//------------------------------------------------------------------------
+void AliITStrackerHLT::LoadClusters( std::vector<AliITSRecPoint> clusters) 
+{
+  //--------------------------------------------------------------------
+  //This function loads ITS clusters
+  //--------------------------------------------------------------------
+  
+  //SignDeltas(clusters,GetZ());
+  
+  for( unsigned int icl=0; icl<clusters.size(); icl++ ){
+    
+    AliITSRecPoint &cl = clusters[icl];
+    Int_t i=cl.GetLayer();
+    //Int_t ndet=fgLayers[i].GetNdetectors();
+    //Int_t detector=cl.GetDetectorIndex();
+    if (!cl.Misalign()) AliWarning("Can't misalign this cluster !");
+    fgLayers[i].InsertCluster(new AliITSRecPoint(cl));
+  }
+
+  for( int i=0; i<AliITSgeomTGeo::GetNLayers(); i++ ){
+    for( int detector = 0; detector<fgLayers[i].GetNdetectors(); detector++ ){
+
+      // add dead zone "virtual" cluster in SPD, if there is a cluster within 
+      // zwindow cm from the dead zone      
+      if (i<2 && AliITSReconstructor::GetRecoParam()->GetAddVirtualClustersInDeadZone()) {
+	for (Float_t xdead = 0; xdead < AliITSRecoParam::GetSPDdetxlength(); xdead += (i+1.)*AliITSReconstructor::GetRecoParam()->GetXPassDeadZoneHits()) {
+	  Int_t lab[4]   = {0,0,0,detector};
+	  Int_t info[3]  = {0,0,i};
+	  Float_t q      = 0.; // this identifies virtual clusters
+	  Float_t hit[5] = {xdead,
+			    0.,
+			    AliITSReconstructor::GetRecoParam()->GetSigmaXDeadZoneHit2(),
+			    AliITSReconstructor::GetRecoParam()->GetSigmaZDeadZoneHit2(),
+			    q};
+	  Bool_t local   = kTRUE;
+	  Double_t zwindow = AliITSReconstructor::GetRecoParam()->GetZWindowDeadZone();
+	  hit[1] = fSPDdetzcentre[0]+0.5*AliITSRecoParam::GetSPDdetzlength();
+	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  hit[1] = fSPDdetzcentre[1]-0.5*AliITSRecoParam::GetSPDdetzlength();
+	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  hit[1] = fSPDdetzcentre[1]+0.5*AliITSRecoParam::GetSPDdetzlength();
+	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  hit[1] = fSPDdetzcentre[2]-0.5*AliITSRecoParam::GetSPDdetzlength();
+	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  hit[1] = fSPDdetzcentre[2]+0.5*AliITSRecoParam::GetSPDdetzlength();
+	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  hit[1] = fSPDdetzcentre[3]-0.5*AliITSRecoParam::GetSPDdetzlength();
+	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	}
+      } // "virtual" clusters in SPD    
+    }
+    fgLayers[i].ResetRoad(); //road defined by the cluster density
+    fgLayers[i].SortClusters();
+  }  
+}
+
+
 //------------------------------------------------------------------------
 Int_t AliITStrackerHLT::LoadClusters(TTree *cTree) {
   //--------------------------------------------------------------------
@@ -414,6 +487,54 @@ Int_t AliITStrackerHLT::CorrectForTPCtoITSDeadZoneMaterial(AliHLTITSTrack *t) {
 
 #include "TStopwatch.h"
 
+void AliITStrackerHLT::Reconstruct( std::vector<AliExternalTrackParam> tracksTPC )
+{
+  //--------------------------------------------------------------------
+  // This functions reconstructs ITS tracks
+  // The clusters must be already loaded !
+  //--------------------------------------------------------------------
+  
+  Double_t pimass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  fTracks.clear();
+
+  for( unsigned int itr=0; itr<tracksTPC.size(); itr++ ){
+
+    AliHLTITSTrack tMI( tracksTPC[itr] );
+    AliHLTITSTrack *t = &tMI;
+    t->SetTPCtrackId( itr );
+    t->SetMass(pimass); 
+    t->SetExpQ(0);
+
+    if (!CorrectForTPCtoITSDeadZoneMaterial(t))  continue;
+      
+    //Int_t tpcLabel=t->GetLabel(); //save the TPC track label       
+      
+    FollowProlongationTree(t);
+    int nclu=0;
+    for(Int_t i=0; i<6; i++) {
+      if( t->GetClusterIndex(i)>=0 ) nclu++; 
+    }
+    //cout<<"N assigned ITS clusters = "<<nclu<<std::endl;
+    if( nclu>0 ){
+      t->SetLabel(-1);//tpcLabel);
+      t->SetFakeRatio(1.);
+      CookLabel(t,0.); //For comparison only
+      //cout<<"label = "<<t->GetLabel()<<" / "<<tpcLabel<<endl;
+      TransportToX(t, 0 );
+      //cout<<"\n fill track : parameters at "<<t->GetX()<<": "<< TMath::Sqrt(TMath::Abs(t->GetSigmaY2()))<<" "<< TMath::Sqrt(TMath::Abs(t->GetSigmaY2()))<<endl;
+	//t->Print();
+      fTracks.push_back( *t );
+    }
+  }
+
+  //AliHLTVertexer vertexer;
+  //vertexer.SetESD( event );
+  //vertexer.FindPrimaryVertex();
+  //vertexer.FindV0s();
+}
+
+
+
 //------------------------------------------------------------------------
 Int_t AliITStrackerHLT::Clusters2Tracks(AliESDEvent *event) {
   //--------------------------------------------------------------------
@@ -424,53 +545,33 @@ Int_t AliITStrackerHLT::Clusters2Tracks(AliESDEvent *event) {
   TStopwatch timer;
   
   fEsd = event;         // store pointer to the esd 
+  std::vector<AliExternalTrackParam> tracksTPC;
  
-  {/* Read ESD tracks */
-   
-    Double_t pimass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  for( int itr=0; itr<event->GetNumberOfTracks(); itr++ ){
 
-    for( int itr=0; itr<event->GetNumberOfTracks(); itr++ ){
+    AliESDtrack *esdTrack = event->GetTrack(itr);
 
-      AliESDtrack *esdTrack = event->GetTrack(itr);
+    if ((esdTrack->GetStatus()&AliESDtrack::kTPCin)==0) continue;
+    if (esdTrack->GetStatus()&AliESDtrack::kTPCout) continue;
+    if (esdTrack->GetStatus()&AliESDtrack::kITSin) continue;
+    if (esdTrack->GetKinkIndex(0)>0) continue;   //kink daughter
+    
+    AliHLTITSTrack t(*esdTrack);
+    t.SetTPCtrackId( itr );
+    tracksTPC.push_back( t );
+  }
 
-      if ((esdTrack->GetStatus()&AliESDtrack::kTPCin)==0) continue;
-      if (esdTrack->GetStatus()&AliESDtrack::kTPCout) continue;
-      if (esdTrack->GetStatus()&AliESDtrack::kITSin) continue;
-      if (esdTrack->GetKinkIndex(0)>0) continue;   //kink daughter
-      AliHLTITSTrack tMI(*esdTrack);
-      AliHLTITSTrack *t = &tMI;
-      
-      if (tMI.GetMass()<0.9*pimass) t->SetMass(pimass); 
-      t->SetExpQ(TMath::Max(0.8*t->GetESDtrack()->GetTPCsignal(),30.));
-
-      if (!CorrectForTPCtoITSDeadZoneMaterial(t))  continue;
-
-      Int_t tpcLabel=t->GetLabel(); //save the TPC track label       
-      
-      FollowProlongationTree(t);
-      int nclu=0;
-      for(Int_t i=0; i<6; i++) {
-	if( t->GetClusterIndex(i)>=0 ) nclu++; 
-      }
-      cout<<"N assigned ITS clusters = "<<nclu<<std::endl;
-      if( nclu>0 ){
-	t->SetLabel(-1);//tpcLabel);
-	t->SetFakeRatio(1.);
-	CookLabel(t,0.); //For comparison only
-	cout<<"label = "<<t->GetLabel()<<" / "<<tpcLabel<<endl;
-	TransportToX(t, 0 );
-	cout<<"\n fill track : parameters at "<<t->GetX()<<": "<< TMath::Sqrt(TMath::Abs(t->GetSigmaY2()))<<" "<< TMath::Sqrt(TMath::Abs(t->GetSigmaY2()))<<endl;
-	//t->Print();
-	UpdateESDtrack(t,AliESDtrack::kITSin);          
-      }
-    }
-  } /* End Read ESD tracks */
-
+  Reconstruct( tracksTPC );
+  
+  for( unsigned int itr=0; itr<fTracks.size(); itr++ ){
+    AliHLTITSTrack &t = fTracks[itr];    
+    UpdateESDtrack(event->GetTrack(t.TPCtrackId()), &t, AliESDtrack::kITSin);          
+  }
+ 
   AliHLTVertexer vertexer;
   vertexer.SetESD( event );
   vertexer.FindPrimaryVertex();
-  vertexer.FindV0s();
-
+  vertexer.FindV0s();  
 
   timer.Stop();
   static double totalTime = 0;
@@ -815,50 +916,44 @@ AliHLTITSLayer & AliITStrackerHLT::GetLayer(Int_t layer) const
 
 
 
-
-
-
-
-
-
-
-
-
-
 //------------------------------------------------------------------------
-void AliITStrackerHLT::CookLabel(AliHLTITSTrack *track,Float_t wrong) const {
-  //--------------------------------------------------------------------
-  //This function "cooks" a track label. If label<0, this track is fake.
-  //--------------------------------------------------------------------
-  Int_t tpcLabel=-1; 
-     
-  if ( track->GetESDtrack())   tpcLabel =  TMath::Abs(track->GetESDtrack()->GetTPCLabel());
+void AliITStrackerHLT::CookLabel(AliHLTITSTrack *track,Float_t wrong) const 
+{
+  // get MC label for the track
 
-   Int_t nwrong=0;
-   cout<<"cook label: nclu = "<<track->GetNumberOfClusters()<<endl;
-   for (Int_t i=0;i<track->GetNumberOfClusters();i++){
-     Int_t cindex = track->GetClusterIndex(i);
-     //Int_t l=(cindex & 0xf0000000) >> 28;
-     AliITSRecPoint *cl = (AliITSRecPoint*)GetCluster(cindex);
-     Int_t isWrong=1;
-     for (Int_t ind=0;ind<3;ind++){
-       if (tpcLabel>0)
-	 if (cl->GetLabel(ind)==tpcLabel) isWrong=0;
-       AliDebug(2,Form("icl %d  ilab %d lab %d",i,ind,cl->GetLabel(ind)));
-     }
-      nwrong+=isWrong;
-   }
-   Int_t nclusters = track->GetNumberOfClusters();
-   if (nclusters > 0) //PH Some tracks don't have any cluster
-     track->SetFakeRatio(double(nwrong)/double(nclusters));
-   cout<<"fake ratio = "<<track->GetFakeRatio()<<endl;
-   if (tpcLabel>0){
-     if (track->GetFakeRatio()>wrong) track->SetLabel(-tpcLabel);
-     else
-       track->SetLabel(tpcLabel);
-   }
-   AliDebug(2,Form(" nls %d wrong %d  label %d  tpcLabel %d\n",nclusters,nwrong,track->GetLabel(),tpcLabel));
-   
+  Int_t mcLabel = -1;
+  
+  vector<int> labels;
+  Int_t nClusters = track->GetNumberOfClusters();
+
+  for (Int_t i=0; i<nClusters; i++){
+    Int_t cindex = track->GetClusterIndex(i);
+    //Int_t l=(cindex & 0xf0000000) >> 28;
+    AliITSRecPoint *cl = (AliITSRecPoint*)GetCluster(cindex);    
+    if ( cl->GetLabel(0) >= 0 ) labels.push_back(cl->GetLabel(0)) ;
+    if ( cl->GetLabel(1) >= 0 ) labels.push_back(cl->GetLabel(1)) ;
+    if ( cl->GetLabel(2) >= 0 ) labels.push_back(cl->GetLabel(2)) ;
+  }
+  std::sort( labels.begin(), labels.end() );	  
+  labels.push_back( -1 ); // put -1 to the end	  
+  int labelMax = -1, labelCur = -1, nLabelsMax = 0, nLabelsCurr = 0;
+  for ( unsigned int iLab = 0; iLab < labels.size(); iLab++ ) {
+    if ( labels[iLab] != labelCur ) {	      
+      if ( labelCur >= 0 && nLabelsMax< nLabelsCurr ) {
+	nLabelsMax = nLabelsCurr;
+	labelMax = labelCur;
+      }
+      labelCur = labels[iLab];
+      nLabelsCurr = 0;
+    }
+    nLabelsCurr++;
+  }
+	  
+  if( labelMax>=0 && nLabelsMax <= wrong * nClusters ) labelMax = -labelMax;
+  
+  mcLabel = labelMax;
+		
+  track->SetLabel( mcLabel );
 }
 
 
@@ -902,6 +997,8 @@ Double_t AliITStrackerHLT::GetPredictedChi2MI(AliHLTITSTrack* track, const AliIT
   }
   return chi2;
 }
+
+
 
 
 //------------------------------------------------------------------------
@@ -975,15 +1072,15 @@ void AliITStrackerHLT::SignDeltas(const TObjArray *clusterArray, Float_t vz)
   }
 }
 //------------------------------------------------------------------------
-void AliITStrackerHLT::UpdateESDtrack(AliHLTITSTrack* track, ULong_t flags) const
+void AliITStrackerHLT::UpdateESDtrack(AliESDtrack *tESD, AliHLTITSTrack* track, ULong_t flags) const
 {
   //
   // Update ESD track
   //
-  track->UpdateESDtrack(flags);
-  AliHLTITSTrack * oldtrack = (AliHLTITSTrack*)(track->GetESDtrack()->GetITStrack());
+  tESD->UpdateTrackParams(track,flags);
+  AliHLTITSTrack * oldtrack = (AliHLTITSTrack*)(tESD->GetITStrack());
   if (oldtrack) delete oldtrack; 
-  track->GetESDtrack()->SetITStrack(new AliHLTITSTrack(*track));
+  tESD->SetITStrack(new AliHLTITSTrack(*track));
 }
 
 

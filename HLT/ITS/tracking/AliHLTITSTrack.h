@@ -17,10 +17,15 @@ class AliESDtrack;
 class AliHLTITSTrack : public AliKalmanTrack 
 {
  public:
+
   AliHLTITSTrack();
   AliHLTITSTrack(AliESDtrack& t,Bool_t c=kFALSE) throw (const Char_t *);
+  AliHLTITSTrack(AliExternalTrackParam& t ) throw (const Char_t *);
   AliHLTITSTrack(const AliHLTITSTrack& t);
   AliHLTITSTrack &operator=(const AliHLTITSTrack& t);
+
+  Int_t TPCtrackId(){ return fTPCtrackId;}
+  void SetTPCtrackId( Int_t v ){ fTPCtrackId = v;}
 
   Int_t GetProlongationFast(Double_t alpha, Double_t xr,Double_t &y, Double_t &z);
 
@@ -50,10 +55,7 @@ class AliHLTITSTrack : public AliKalmanTrack
   Bool_t Propagate(Double_t xr) { return Propagate(GetAlpha(),xr); }
   
   void ResetClusters();
-  void UpdateESDtrack(ULong_t flags) const;
   
-  AliESDtrack *GetESDtrack() const {return fESDtrack;}
-
   using AliExternalTrackParam::GetC;
   Double_t GetC() const {return AliExternalTrackParam::GetC(GetBz());}
   Double_t GetD(Double_t x, Double_t y) const {
@@ -72,10 +74,8 @@ class AliHLTITSTrack : public AliKalmanTrack
 
   Int_t fIndex[2*AliITSgeomTGeo::kNLayers]; // indices of associated clusters 
 
-
-  AliESDtrack *fESDtrack;    //! pointer to the connected ESD track
-
   Float_t fExpQ;            // expected Q
+  Int_t  fTPCtrackId;
 
   ClassDef(AliHLTITSTrack,0)   //HLT ITS tracker
 };

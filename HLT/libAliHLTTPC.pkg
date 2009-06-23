@@ -149,7 +149,7 @@ EINCLUDE 	:= HLT/TPCLib \
 		   HLT/RCU \
 		   TPC \
 		   RAW \
-		   STEER
+		   STEER ITS HLT/ITS/tracking
 
 LIBRARY_DEP := -lHLTbase -lAliHLTRCU -lAliHLTUtil \
                -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase \

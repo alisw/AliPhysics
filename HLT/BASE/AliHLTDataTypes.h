@@ -958,6 +958,11 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */	
   extern const AliHLTComponentDataType kAliHLTDataTypeJet;                // {HLTJETV0,"***"}
+  
+  /** Container of ITS tracks
+   * @ingroup alihlt_component_datatypes
+   */	
+  extern const AliHLTComponentDataType fgkITSTracksDataType;
 
   //////////////////////////////////////////////////////////////////////////
   //

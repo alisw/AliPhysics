@@ -43,6 +43,11 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusterFinder.h"
+#include "AliHLTITSTrackerComponent.h"
+#include "AliHLTITSTrackDataHeader.h"
+#include "AliHLTITSTrackData.h"
+#include "AliHLTITSTrack.h"
+#include "AliHLTVertexer.h"
 #include <vector>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -182,7 +187,6 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
       pESD->Reset(); 
       pESD->SetMagneticField(fSolenoidBz);
       const AliHLTComponentBlockData* iter = NULL;
-      AliHLTTPCTrackletData* inPtr=NULL;
       int bIsTrackSegs=0;
 
       // first read all the MC information
@@ -202,6 +206,10 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	  fDoMCLabels = 1;
 	}
       }
+      
+      std::vector<int> trackIdESD2TPCmap; // map esd index -> tpc index
+
+      Int_t nTPCTracks = 0;
 
       // do the conversion of tracks
       for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
@@ -227,10 +235,11 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 			 "possible mismatch in treatment of local coordinate system");
 	    }
 	    AliHLTTPCTrackArray tracks;
-	    inPtr=(AliHLTTPCTrackletData*)iter->fPtr;
+	    AliHLTTPCTrackletData* inPtr = (AliHLTTPCTrackletData*) iter->fPtr;
+	    nTPCTracks += inPtr->fTrackletCnt;
 	    HLTDebug("reading block %d (slice %d): %d tracklets", ndx, minslice, inPtr->fTrackletCnt);
 	    if ((iResult=tracks.FillTracksChecked(inPtr->fTracklets, inPtr->fTrackletCnt, iter->fSize, minslice, 0/*don't rotate*/))>=0) {
-	      if ((iResult=Tracks2ESD(&tracks, pESD))>=0) {
+	      if ((iResult=Tracks2ESD(&tracks, pESD, trackIdESD2TPCmap))>=0) {
 		iAddedDataBlocks++;
 	      }
 	    }
@@ -238,12 +247,59 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	    HLTError("invalid sector number");
 	    iResult=-EBADF;
 	  }
+	}      
+      }
+
+      // ITS updated tracks
+
+      int nESDTracks = pESD->GetNumberOfTracks();
+
+      // create map of tpc->esd track indices
+
+      int *trackIdTPC2ESDmap = new int[ nTPCTracks ];
+      {
+	for( int i=0; i<nTPCTracks; i++ ) trackIdTPC2ESDmap[i] = -1;
+	for( unsigned int i=0; i<trackIdESD2TPCmap.size(); i++ ){
+	  int tpcId = trackIdESD2TPCmap[i];
+	  if( tpcId>=0 && tpcId<nTPCTracks ) trackIdTPC2ESDmap[tpcId] = i;
 	}
       }
+
+      for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
+	iter = blocks+ndx;
+	if(iter->fDataType == fgkITSTracksDataType ) {
+	  AliHLTITSTrackDataHeader *inPtr = reinterpret_cast<AliHLTITSTrackDataHeader*>( iter->fPtr );
+	  int nTracks = inPtr->fTrackletCnt;	  
+	  for( int itr=0; itr<nTracks; itr++ ){
+	    AliHLTITSTrackData &tr = inPtr->fTracks[itr];
+	    AliHLTITSTrack tITS( tr.fTrackParam );
+	    int ncl=0;
+	    for( int il=0; il<6; il++ ){
+	      if( tr.fClusterIds[il]>=0 ) tITS.SetClusterIndex(ncl++,  tr.fClusterIds[il]);
+	    }
+	    tITS.SetNumberOfClusters( ncl );
+	    int tpcId = tr.fTPCId;
+	    if( tpcId<0 || tpcId>=nTPCTracks ) continue;
+	    int esdID = trackIdTPC2ESDmap[tpcId];
+	    if( esdID<0 || esdID>=nESDTracks ) continue;
+	    AliESDtrack *tESD = pESD->GetTrack( esdID );
+	    if( tESD ) tESD->UpdateTrackParams( &tITS, AliESDtrack::kITSin );
+	  }
+	}
+      }  
+      delete[] trackIdTPC2ESDmap;
+      
+      // primary vertex & V0's 
+
+      //AliHLTVertexer vertexer;
+      //vertexer.SetESD( pESD );
+      //vertexer.FindPrimaryVertex();
+      //vertexer.FindV0s();
+
       if (iAddedDataBlocks>0 && pTree) {
 	pTree->Fill();
       }
-
+  
   } else {
     iResult=-EINVAL;
   }
@@ -251,10 +307,12 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
   return iResult;
 }
 
-int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESDEvent* pESD)
+int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESDEvent* pESD,
+					    std::vector<int> &trackIdESD2TPCmap )
 {
   // see header file for class documentation
   int iResult=0;
+
   if (pTracks && pESD) {    
  
     for (int i=0; i<pTracks->GetNTracks() && iResult>=0; i++) {
@@ -283,7 +341,7 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	    
 	  // get MC label for the track
 	  
-	  vector<int> labels;
+	  std::vector<int> labels;
 	  
 	  UInt_t *hits = pTrack->GetHitNumbers();
 	  Int_t nHits = pTrack->GetNHits();
@@ -339,7 +397,7 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	iotrack.SetTPCPoints(points);
 
 	pESD->AddTrack(&iotrack);
-	
+	trackIdESD2TPCmap.push_back(pTrack->GetId());
       } else {
 	HLTError("internal mismatch in array");
 	iResult=-EFAULT;

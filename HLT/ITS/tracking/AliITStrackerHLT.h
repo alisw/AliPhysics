@@ -7,7 +7,7 @@
 class TTree;
 class TTreeSRedirector;
 class AliESDEvent;
-
+class AliESDtrack;
 
 class AliITSChannelStatus;
 class AliITSDetTypeRec;
@@ -19,14 +19,21 @@ class AliITSDetTypeRec;
 
 #include "AliITSRecPoint.h"
 #include "AliTracker.h"
-
+#include "AliHLTITSTrack.h"
+#include <vector>
 
 //-------------------------------------------------------------------------
 class AliITStrackerHLT : public AliTracker {
 public:
+
+  
+  void LoadClusters( std::vector<AliITSRecPoint> clusters );
+  void Reconstruct( std::vector<AliExternalTrackParam> tracksTPC );
+  std::vector< AliHLTITSTrack > &Tracks(){ return fTracks;}
+
   Bool_t TransportToX( AliExternalTrackParam *t, double x ) const;
   Bool_t TransportToPhiX( AliExternalTrackParam *t, double phi, double x ) const;
-  Bool_t UpdateMy( AliExternalTrackParam *t, double y, double z, double err2y, double err2z ) const;
+  
   void GetClusterErrors2( Int_t layer, const AliITSRecPoint *cluster, AliHLTITSTrack* track, double &err2Y, double &err2Z ) const ;
 
   AliITStrackerHLT();
@@ -62,7 +69,10 @@ public:
  
   void FollowProlongationTree(AliHLTITSTrack * otrack);
 
+
+
 protected:
+
   Bool_t ComputeRoad(AliHLTITSTrack* track,Int_t ilayer,Int_t idet,Double_t &zmin,Double_t &zmax,Double_t &ymin,Double_t &ymax) const;
   
   
@@ -75,7 +85,7 @@ protected:
   Int_t CorrectForPipeMaterial(AliHLTITSTrack *t, TString direction="inward");
   Int_t CorrectForShieldMaterial(AliHLTITSTrack *t, TString shield, TString direction="inward");
   Int_t CorrectForLayerMaterial(AliHLTITSTrack *t, Int_t layerindex, Double_t oldGlobXYZ[3], TString direction="inward");
-  void UpdateESDtrack(AliHLTITSTrack* track, ULong_t flags) const;
+  void UpdateESDtrack(AliESDtrack *tESD,AliHLTITSTrack* track, ULong_t flags) const;
   void ReadBadFromDetTypeRec();
   
   Int_t CheckDeadZone(AliHLTITSTrack *track,Int_t ilayer,Int_t idet,Double_t dz,Double_t dy,Bool_t noClusters=kFALSE) const;
@@ -102,6 +112,7 @@ protected:
   TTreeSRedirector *fDebugStreamer;      //!debug streamer
   AliITSChannelStatus *fITSChannelStatus;//! bitmaps with channel status for SPD and SDD
   const AliITSDetTypeRec *fkDetTypeRec;         //! ITS det type rec, from AliITSReconstructor
+  std::vector< AliHLTITSTrack > fTracks;
 
 private:
   AliITStrackerHLT(const AliITStrackerHLT &tracker);

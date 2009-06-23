@@ -27,7 +27,7 @@ public:
     };
 
   AliHLTVertexer();
-  ~AliHLTVertexer(){ delete[] fTrackInfos; }
+  virtual ~AliHLTVertexer(){ delete[] fTrackInfos; }
 
   void SetESD( AliESDEvent *event );
 
@@ -41,6 +41,8 @@ public:
 
   AliESDEvent *fESD;
   AliESDTrackInfo *fTrackInfos;
+
+  ClassDef(AliHLTVertexer,0)   //HLT vertex finder
 
 };
 

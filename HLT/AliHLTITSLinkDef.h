@@ -21,4 +21,5 @@
 #pragma link C++ class AliHLTVertexer+;
 #pragma link C++ class AliITStrackerHLT+;
 #pragma link C++ class AliHLTITSTrack+;
+#pragma link C++ class AliHLTITSVertexer+;
 #endif

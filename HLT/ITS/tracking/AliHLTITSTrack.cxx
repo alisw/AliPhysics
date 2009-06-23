@@ -45,18 +45,18 @@ ClassImp(AliHLTITSTrack)
 
 //____________________________________________________________________________
 AliHLTITSTrack::AliHLTITSTrack() : 
-  AliKalmanTrack(),
-  fESDtrack(0),
-  fExpQ(40)
+  AliKalmanTrack(),  
+  fExpQ(40),
+  fTPCtrackId(0)
 {
   for(Int_t i=0; i<2*AliITSgeomTGeo::kNLayers; i++) {fIndex[i]=-1; }
 }
 
 //____________________________________________________________________________
 AliHLTITSTrack::AliHLTITSTrack(const AliHLTITSTrack& t) : 
-  AliKalmanTrack(t),
-  fESDtrack(t.fESDtrack),
-  fExpQ(t.fExpQ)
+  AliKalmanTrack(t),  
+  fExpQ(t.fExpQ),
+  fTPCtrackId( t.fTPCtrackId)
 {
   //------------------------------------------------------------------
   //Copy constructor
@@ -75,9 +75,9 @@ AliHLTITSTrack &AliHLTITSTrack::operator=(const AliHLTITSTrack& t)
   //------------------------------------------------------------------
   //Copy constructor
   //------------------------------------------------------------------
-  *(AliKalmanTrack*)this = t;
-  fESDtrack = t.fESDtrack;
+  *(AliKalmanTrack*)this = t;  
   fExpQ = t.fExpQ;
+  fTPCtrackId = t.fTPCtrackId;
   Int_t i;
   for (i=0; i<2*AliITSgeomTGeo::GetNLayers(); i++) {
     fIndex[i]=t.fIndex[i];
@@ -91,8 +91,8 @@ AliHLTITSTrack &AliHLTITSTrack::operator=(const AliHLTITSTrack& t)
 //____________________________________________________________________________
 AliHLTITSTrack::AliHLTITSTrack(AliESDtrack& t,Bool_t c) throw (const Char_t *) :
   AliKalmanTrack(),
-  fESDtrack(&t),
-  fExpQ(40)
+  fExpQ(40),
+  fTPCtrackId( 0 )
 {
   //------------------------------------------------------------------
   // Conversion ESD track -> ITS track.
@@ -106,15 +106,27 @@ AliHLTITSTrack::AliHLTITSTrack(AliESDtrack& t,Bool_t c) throw (const Char_t *) :
   Set(par->GetX(),par->GetAlpha(),par->GetParameter(),par->GetCovariance());
 
   SetLabel(t.GetLabel());
-  SetMass(t.GetMass());
+  //SetMass(t.GetMass());
   SetNumberOfClusters(t.GetITSclusters(fIndex));
-
-  if (t.GetStatus()&AliESDtrack::kTIME) {
-    StartTimeIntegral();
-    Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
-    SetIntegratedLength(t.GetIntegratedLength());
-  }
 }
+
+//____________________________________________________________________________
+AliHLTITSTrack::AliHLTITSTrack(AliExternalTrackParam& t ) throw (const Char_t *) :
+  AliKalmanTrack(),  
+  fExpQ(40),
+  fTPCtrackId( 0 )
+{
+  //------------------------------------------------------------------
+  // Conversion ESD track -> ITS track.
+  // If c==kTRUE, create the ITS track out of the constrained params.
+  //------------------------------------------------------------------
+  const AliExternalTrackParam *par=&t;
+  Set(par->GetX(),par->GetAlpha(),par->GetParameter(),par->GetCovariance());
+  SetLabel(t.GetLabel());
+  //SetMass(t.GetMass());
+  SetNumberOfClusters(0);
+}
+
 
 Double_t AliHLTITSTrack::GetPredictedChi2(const AliCluster* c) const
 {
@@ -166,10 +178,6 @@ void AliHLTITSTrack::ResetClusters() {
   SetChi2(0.); 
   SetNumberOfClusters(0);
 } 
-
-void AliHLTITSTrack::UpdateESDtrack(ULong_t flags) const {
-  fESDtrack->UpdateTrackParams(this,flags);
-}
 
 
 
@@ -269,13 +277,6 @@ Bool_t AliHLTITSTrack::Update(const AliCluster* c, Double_t chi2, Int_t index)
   Int_t n=GetNumberOfClusters();
 
   if (chi2<0) return kTRUE;
-
-  // fill residuals for ITS+TPC tracks 
-  if (fESDtrack) {
-    if (fESDtrack->GetStatus()&AliESDtrack::kTPCin) {
-      AliTracker::FillResiduals(this,p,cov,c->GetVolumeId());
-    }
-  }
 
   fIndex[n]=index;
   SetNumberOfClusters(n+1);

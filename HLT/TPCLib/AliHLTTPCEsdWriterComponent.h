@@ -21,6 +21,7 @@ class TTree;
 class AliESDEvent;
 class AliHLTTPCTrackArray;
 #include "AliHLTTPCClusterFinder.h"
+#include <vector>
 
 /**
  * @class AliHLTTPCEsdWriterComponent
@@ -233,7 +234,7 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
    * @param pESD     pointer to ESD
    * @return neg. error code if failed
    */
-  int Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESDEvent* pESD);
+  int Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESDEvent* pESD, std::vector<int> &trackIdESD2TPCmap);
 
  private:
   /** copy constructor prohibited */

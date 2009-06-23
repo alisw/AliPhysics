@@ -261,6 +261,7 @@ int AliHLTTPCTrackArray::FillTracksChecked(AliHLTTPCTrackSegmentData* tr, Int_t 
       break;
     }
     AliHLTTPCTrack *track = NextTrack(); 
+    track->SetId( i );
     track->SetPt(trs->fPt);
     track->SetPterr(trs->fPterr);
     Float_t psi[1];

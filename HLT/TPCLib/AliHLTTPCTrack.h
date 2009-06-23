@@ -128,6 +128,7 @@ class AliHLTTPCTrack : public AliTPCtrack {
   Int_t GetSector()   const {return fSector;}
 
   UInt_t *GetHitNumbers() {return fHitNumbers;}
+  Int_t GetId(){ return fId; }
 
   // setter   
   void SetPID(Float_t pid) {fPID=pid;}  
@@ -155,6 +156,8 @@ class AliHLTTPCTrack : public AliTPCtrack {
   void SetCenterX(Double_t f) {fCenterX = f;}
   void SetCenterY(Double_t f) {fCenterY = f;}
   void SetCharge(Int_t f) {fQ = f;}
+  void SetId( Int_t f ) { fId = f; }
+
   void ComesFromMainVertex(Bool_t f) {fFromMainVertex = f;}
 
   /**
@@ -220,9 +223,10 @@ class AliHLTTPCTrack : public AliTPCtrack {
   Float_t fPID; //pid 
   static const int fgkHitArraySize=159; // size of hit array
   UInt_t fHitNumbers[fgkHitArraySize]; //Array of hit numbers for this track
+  Int_t fId; // unique ID of the track
 
   Bool_t IsPoint(Bool_t ispoint) {fIsPoint = ispoint;return fIsPoint;}
-  
-  ClassDef(AliHLTTPCTrack,2) //Base track class
+
+  ClassDef(AliHLTTPCTrack,3) //Base track class
 };
 #endif
