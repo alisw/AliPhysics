@@ -283,8 +283,12 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
 Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 { 
   // Fill QA for RAW - SDD -
-  
+
   Int_t rv = 0 ; 
+
+  // Check id histograms already created for this Event Specie
+  if ( ! fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset) )
+    rv = InitRaws () ;
 
   if(!fDDLModuleMap){
     AliError("SDD DDL module map not available - skipping SDD QA");
@@ -293,9 +297,7 @@ Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   if(rawReader->GetType() != 7) return rv;  // skips non physical triggers
   AliDebug(AliQAv1::GetQADebugLevel(),"entering MakeRaws\n");                 
   
-  // Check id histograms already created for this Event Specie
-  if ( ! fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset) )
-    rv = InitRaws () ;
+
   
   rawReader->Reset();       
   AliITSRawStream *stream;
@@ -419,7 +421,7 @@ Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 Int_t AliITSQASDDDataMakerRec::InitDigits()
 { 
 
-  //printf(" ======================================================> Init digits\n " );
+
   // Initialization for DIGIT data - SDD -  
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ;
@@ -453,7 +455,7 @@ Int_t AliITSQASDDDataMakerRec::InitDigits()
 //____________________________________________________________________________
 Int_t AliITSQASDDDataMakerRec::MakeDigits(TTree * digits)
 { 
-  //printf(" ======================================================> make digits\n " );
+
   // Fill QA for DIGIT - SDD -
   //AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
   //fITS->SetTreeAddress();
@@ -481,7 +483,7 @@ Int_t AliITSQASDDDataMakerRec::MakeDigits(TTree * digits)
     digits->GetEvent(nmod);
     Int_t ndigits = iITSdigits->GetEntries();
     fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset)->Fill(nmod,ndigits);
-    //printf(" Filled:  =======================================> %s \t %i \t %i \n",fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset)->GetName(), nmod, ndigits );
+
     for (Int_t idig=0; idig<ndigits; idig++) {
       AliITSdigit *dig=(AliITSdigit*)iITSdigits->UncheckedAt(idig);
       Int_t iz=dig->GetCoord1();  // cell number z
@@ -498,6 +500,8 @@ Int_t AliITSQASDDDataMakerRec::MakeDigits(TTree * digits)
 //____________________________________________________________________________ 
 Int_t AliITSQASDDDataMakerRec::InitRecPoints()
 {
+
+
   // Initialization for RECPOINTS - SDD -
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
@@ -631,9 +635,6 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
       
     }//online
 
-  //printf("%d SDD Recs histograms booked\n",fSDDhRecPointsTask);
-
-
   AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SDD Recs histograms booked\n",fSDDhRecPointsTask));
 
   return rv ; 
@@ -644,15 +645,16 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
  // Fill QA for RecPoints - SDD -
   Int_t rv = 0 ; 
+
+  // Check id histograms already created for this Event Specie
+  if ( ! fAliITSQADataMakerRec->GetRecPointsData(fGenRecPointsOffset) )
+    rv = InitRecPoints() ;
   Int_t lay, lad, det; 
   TBranch *branchRecP = clustersTree->GetBranch("ITSRecPoints");
   if (!branchRecP) {
     AliError("can't get the branch with the ITS clusters !");
     return rv ;
   }
-  // Check id histograms already created for this Event Specie
-  if ( ! fAliITSQADataMakerRec->GetRecPointsData(fGenRecPointsOffset) )
-    rv = InitRecPoints() ;
 
   static TClonesArray statRecpoints("AliITSRecPoint") ;
   TClonesArray *recpoints = &statRecpoints;
@@ -677,6 +679,7 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
       recp->GetGlobalXYZ(cluglo);
       Float_t rad=TMath::Sqrt(cluglo[0]*cluglo[0]+cluglo[1]*cluglo[1]); 
       Float_t phi=TMath::ATan2(cluglo[1],cluglo[0]);
+ 
       fAliITSQADataMakerRec->GetRecPointsData(9 +fGenRecPointsOffset)->Fill(recp->GetDetLocalX(),recp->GetDetLocalZ());//local distribution
       fAliITSQADataMakerRec->GetRecPointsData(2 +fGenRecPointsOffset)->Fill(cluglo[0],cluglo[1]);//global distribution YX
       fAliITSQADataMakerRec->GetRecPointsData(3 +fGenRecPointsOffset)->Fill(cluglo[2],rad);//global distribution rz
@@ -685,14 +688,14 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
 	  fAliITSQADataMakerRec->GetRecPointsData(14 +fGenRecPointsOffset)->Fill(cluglo[0],cluglo[1]);//global distribution YX FSE
 	  fAliITSQADataMakerRec->GetRecPointsData(15 +fGenRecPointsOffset)->Fill(cluglo[2],rad);//global distribution rz FSE
 	}
-      if(recp->GetLayer() ==2) {
+      if(recp->GetLayer() ==3) {
 	fAliITSQADataMakerRec->GetRecPointsData(0  +fGenRecPointsOffset)->Fill(recp->GetQ()) ;//total charge of layer 3
 	fAliITSQADataMakerRec->GetRecPointsData(7  +fGenRecPointsOffset)->Fill(lad);//lad pattern layer 3
 	fAliITSQADataMakerRec->GetRecPointsData(10 +fGenRecPointsOffset)->Fill(rad);//r distribution layer 3
 	fAliITSQADataMakerRec->GetRecPointsData(12 +fGenRecPointsOffset)->Fill(phi);// phi distribution layer 3
 	fAliITSQADataMakerRec->GetRecPointsData(4  +fGenRecPointsOffset)->Fill(cluglo[2],phi);// phi distribution layer 3
       }
-      else if(recp->GetLayer() ==3) {
+      else if(recp->GetLayer() ==4) {
 	fAliITSQADataMakerRec->GetRecPointsData(1  +fGenRecPointsOffset)->Fill(recp->GetQ()) ;//total charge layer 4
 	fAliITSQADataMakerRec->GetRecPointsData(8  +fGenRecPointsOffset)->Fill(lad);//ladpatternlayer4
 	fAliITSQADataMakerRec->GetRecPointsData(11 +fGenRecPointsOffset)->Fill(rad);//r distribution

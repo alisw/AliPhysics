@@ -161,6 +161,7 @@ void AliITSQADataMakerRec::EndOfDetectorCycle(const char * /*fgDataName*/)
 //____________________________________________________________________________ 
 void AliITSQADataMakerRec::InitRaws()
 {  
+
   // Initialization for RAW data 
 	if(fSubDetector == 0 || fSubDetector == 1) {
 	  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitRaws\n");
@@ -180,18 +181,18 @@ void AliITSQADataMakerRec::InitRaws()
 void AliITSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 { 
   // Fill QA for RAW   
-  return ; 
+  //return ; 
 
   if(fSubDetector == 0 || fSubDetector == 1)  {
     Int_t rv = fSPDDataMaker->MakeRaws(rawReader) ; 
     if ( rv != 0 )
-      fSDDDataMaker->SetOffset(AliQAv1::kRAWS, fRawsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+      fSDDDataMaker->SetOffset(AliQAv1::kRAWS, fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
   }
   
   if(fSubDetector == 0 || fSubDetector == 2) {
-    Int_t rv = fSPDDataMaker->MakeRaws(rawReader) ; 
+    Int_t rv = fSDDDataMaker->MakeRaws(rawReader) ; 
     if ( rv != 0 )
-      fSSDDataMaker->SetOffset(AliQAv1::kRAWS, fRawsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+      fSSDDataMaker->SetOffset(AliQAv1::kRAWS, fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
   }
 
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeRaws(rawReader);
@@ -200,6 +201,7 @@ void AliITSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 //____________________________________________________________________________ 
 void AliITSQADataMakerRec::InitDigits()
 {
+
   // Initialization for DIGITS
   if(fSubDetector == 0 || fSubDetector == 1) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitDigitss\n");
@@ -218,8 +220,8 @@ void AliITSQADataMakerRec::InitDigits()
 //____________________________________________________________________________ 
 void AliITSQADataMakerRec::MakeDigits(TTree * digitsTree)
 {
+
   // Fill QA for recpoints
-  return ; 
   if(fSubDetector == 0 || fSubDetector == 1) {
     Int_t rv = fSPDDataMaker->MakeDigits(digitsTree) ; 
     if ( rv != 0 )
@@ -227,7 +229,7 @@ void AliITSQADataMakerRec::MakeDigits(TTree * digitsTree)
   }
   
   if(fSubDetector == 0 || fSubDetector == 2) {
-    Int_t rv = fSPDDataMaker->MakeDigits(digitsTree) ; 
+    Int_t rv = fSDDDataMaker->MakeDigits(digitsTree) ; 
     if ( rv != 0 )
       fSSDDataMaker->SetOffset(AliQAv1::kDIGITSR, fDigitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
   }
@@ -238,6 +240,7 @@ void AliITSQADataMakerRec::MakeDigits(TTree * digitsTree)
 //____________________________________________________________________________ 
 void AliITSQADataMakerRec::InitRecPoints()
 {
+
   // Initialization for RECPOINTS
   if(fSubDetector == 0 || fSubDetector == 1) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitRecPoints\n");
@@ -256,18 +259,18 @@ void AliITSQADataMakerRec::InitRecPoints()
 //____________________________________________________________________________ 
 void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
-  return ; 
+ 
   // Fill QA for recpoints
   if(fSubDetector == 0 || fSubDetector == 1) {
     Int_t rv = fSPDDataMaker->MakeRecPoints(clustersTree) ; 
     if ( rv != 0 )
-      fSDDDataMaker->SetOffset(AliQAv1::kRECPOINTS, fDigitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+      fSDDDataMaker->SetOffset(AliQAv1::kRECPOINTS, fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
   }
   
   if(fSubDetector == 0 || fSubDetector == 2) {
-    Int_t rv = fSPDDataMaker->MakeRecPoints(clustersTree) ; 
+    Int_t rv = fSDDDataMaker->MakeRecPoints(clustersTree) ; 
     if ( rv != 0 )
-      fSSDDataMaker->SetOffset(AliQAv1::kRECPOINTS, fDigitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+      fSSDDataMaker->SetOffset(AliQAv1::kRECPOINTS, fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
   }
   
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeRecPoints(clustersTree);
@@ -277,6 +280,7 @@ void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 //____________________________________________________________________________ 
 void AliITSQADataMakerRec::InitESDs()
 {
+
   // Create ESDs histograms in ESDs subdir
 
   Bool_t expertHistogram = kTRUE;
