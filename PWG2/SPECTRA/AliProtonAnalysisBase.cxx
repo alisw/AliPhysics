@@ -111,7 +111,7 @@ Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliESDtrack* const track) {
   Double_t gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
   Double_t eta = 0.0;
 
-  if(kTPC) {
+  if(fProtonAnalysisMode == kTPC) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0; eta = -10.0;
@@ -164,7 +164,7 @@ Bool_t AliProtonAnalysisBase::IsAccepted(AliESDEvent *esd,
   Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
   Double_t dca3D = 0.0;
   
-  if((kTPC)&&(!kHybrid)) {
+  if((fProtonAnalysisMode == kTPC)&&(fProtonAnalysisMode != kHybrid)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0;
@@ -181,7 +181,7 @@ Bool_t AliProtonAnalysisBase::IsAccepted(AliESDEvent *esd,
 			       100.,dca,cov);
     }
   }
-  else if(kHybrid) {
+  else if(fProtonAnalysisMode == kHybrid) {
      AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0;
@@ -446,7 +446,7 @@ Float_t AliProtonAnalysisBase::GetSigmaToVertex(AliESDtrack* esdTrack) const {
   Float_t b[2];
   Float_t bRes[2];
   Float_t bCov[3];
-  if((kTPC)&&(!kHybrid))
+  if((fProtonAnalysisMode == kTPC)&&(fProtonAnalysisMode != kHybrid))
     esdTrack->GetImpactParametersTPC(b,bCov);
   else
     esdTrack->GetImpactParameters(b,bCov);
