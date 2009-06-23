@@ -7,6 +7,23 @@ const Int_t    PDG    =    211;
 const Int_t    minclustersTPC = 40 ;
 //----------------------------------------------------
 
+/*
+
+Macro to prepare the necessary objects to perform spectrum unfolding 
+(to be used by the class AliCFUnfolding)
+
+Note that the efficiency calculation (and therfore the container filling) 
+has to be done using MC values (and not reconstructed values)
+
+This macro creates the following objects :
+- (AliCFContainer) container    : used to calculate the efficiency (see AliCFEffGrid)
+- (THnSparseD)     correlation  : this is the response matrix
+
+Once you have run this macro, you may launch unfolding using 
+the example macro CORRFW/test/testUnfolding.C
+
+*/
+
 Bool_t AliCFTaskForUnfolding()
 {
   
@@ -21,7 +38,9 @@ Bool_t AliCFTaskForUnfolding()
   printf("\n\nRunning on local file, please check the path\n\n");
 
   analysisChain = new TChain("esdTree");
-  analysisChain->Add("AliESDs.root");
+  analysisChain->Add("your_data_path/001/AliESDs.root");
+  analysisChain->Add("your_data_path/002/AliESDs.root");
+
   
   Info("AliCFTaskForUnfolding",Form("CHAIN HAS %d ENTRIES",(Int_t)analysisChain->GetEntries()));
 
@@ -53,6 +72,8 @@ Bool_t AliCFTaskForUnfolding()
   //setting the bin limits
   container -> SetBinLimits(ipt,binLim0);
   container -> SetBinLimits(ieta ,binLim1);
+  container -> SetVarTitle(ipt,"pT");
+  container -> SetVarTitle(ieta,"#eta");
 
   // Gen-Level kinematic cuts
   AliCFTrackKineCuts *mcKineCuts = new AliCFTrackKineCuts("mcKineCuts","MC-level kinematic cuts");
