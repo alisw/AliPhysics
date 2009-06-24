@@ -184,6 +184,22 @@ Bool_t AliMpCDB::LoadDDLStore(Bool_t warn)
 }    
 
 //______________________________________________________________________________
+Bool_t AliMpCDB::LoadAll2(const char* cdbpath, Int_t runNumber, Bool_t warn)
+{
+  /// Load everything in one shot 
+  return 
+  LoadDDLStore2(cdbpath,runNumber,warn) && 
+  LoadManuStore2(cdbpath,runNumber,warn);
+}
+
+//______________________________________________________________________________
+Bool_t AliMpCDB::LoadAll(Bool_t warn)
+{
+  /// Load everything in one shot 
+  return LoadDDLStore(warn) && LoadManuStore(warn);
+}
+
+//______________________________________________________________________________
 Bool_t AliMpCDB::LoadManuStore(Bool_t warn)
 {
 /// Load the DDL store from the mapping data from OCDB,
