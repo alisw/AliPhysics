@@ -166,7 +166,7 @@ void RunAnalysisAODVertexingHF()
   taskName="AddTaskDplus.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   AliAnalysisTaskSEDplus *dplusTask = AddTaskDplus();
-  /*
+  
   //taskName="AddTaskSelectHF.C"; taskName.Prepend(loadMacroPath.Data());
   //gROOT->LoadMacro(taskName.Data());
   //AliAnalysisTaskSESelectHF *seleTask = AddTaskSelectHF();
@@ -183,14 +183,6 @@ void RunAnalysisAODVertexingHF()
   gROOT->LoadMacro(taskName.Data());
   AliAnalysisTaskSEBtoJPSItoEle *jpsiTask = AddTaskBtoJPSItoEle();
 
-  //taskName="AddTaskCF.C"; taskName.Prepend(loadMacroPath.Data());
-  //gROOT->LoadMacro(taskName.Data());
-  //AliCFHeavyFlavourTask *cfTask = AddTaskCF();
-
-  //taskName="AddTaskCFMultiVar.C"; taskName.Prepend(loadMacroPath.Data());
-  //gROOT->LoadMacro(taskName.Data());
-  //AliCFHeavyFlavourTaskMultiVar *cfmvTask = AddTaskCFMultiVar();
-
   taskName="AddTaskCFMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   AliCFHeavyFlavourTaskMultiVarMultiStep *cfmvmsTask = AddTaskCFMultiVarMultiStep();
@@ -202,7 +194,7 @@ void RunAnalysisAODVertexingHF()
   AliAnalysisTaskCharmFraction *cFractTaskNoMCSel  = AddTaskCharmFraction("d0D0NoMCSel.root",kFALSE,kTRUE,kFALSE);
   AliAnalysisTaskCharmFraction *cFractTaskNoMCSel  = AddTaskCharmFraction("d0D0NoMCSel_SideBand.root",kTRUE,kTRUE,kFALSE);
   AliAnalysisTaskCharmFraction *cFractTaskPureBack = AddTaskCharmFraction("d0D0_PureBack.root",kFALSE,kTRUE,kTRUE,kTRUE,kFALSE,kTRUE,kTRUE,kTRUE,kTRUE);
-  */
+  
 
   //-------------------------------------------------------------------
 
