@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -23,7 +24,6 @@
 
 #include <TTree.h>
 #include <TFile.h>
-#include <TRef.h>
 #include <TString.h>
 #include <TList.h>
 #include <TROOT.h>
@@ -416,7 +416,6 @@ void AliAODHandler::CreateTree(Int_t flag)
     // Creates the AOD Tree
     fTreeA = new TTree("aodTree", "AliAOD tree");
     fTreeA->Branch(fAODEvent->GetList());
-    TRef junk = (TObject*)fTreeA->BranchRef();
     if (flag == 0) fTreeA->SetDirectory(0);
 }
 
@@ -606,7 +605,6 @@ Bool_t AliAODExtension::Init(Option_t *option)
   }  
   fTreeE = new TTree("aodTree", "AliAOD tree");
   fTreeE->Branch(fAODEvent->GetList());
-  TRef junk = (TObject*)fTreeE->BranchRef();
   owd->cd();
   return kTRUE;
 }
