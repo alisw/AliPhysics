@@ -3,7 +3,8 @@
 
 CLASS_HDRS:=	AliHLTGlobalTrackMerger.h \
 		AliHLTGlobalTrackMergerComponent.h \
-		AliHLTGlobalAgent.h
+		AliHLTGlobalAgent.h \
+		AliHLTVertexer.h
 
 # 		
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)

@@ -58,7 +58,7 @@
 #include "AliITSV0Finder.h"
 #include "AliITStrackerHLT.h"
 //#include "AliHLTTPCCATrackParam.h"
-#include "AliHLTVertexer.h"
+//#include "AliHLTVertexer.h"
 
 
 ClassImp(AliITStrackerHLT)
@@ -568,10 +568,10 @@ Int_t AliITStrackerHLT::Clusters2Tracks(AliESDEvent *event) {
     UpdateESDtrack(event->GetTrack(t.TPCtrackId()), &t, AliESDtrack::kITSin);          
   }
  
-  AliHLTVertexer vertexer;
-  vertexer.SetESD( event );
-  vertexer.FindPrimaryVertex();
-  vertexer.FindV0s();  
+  //AliHLTVertexer vertexer;
+  //vertexer.SetESD( event );
+  //vertexer.FindPrimaryVertex();
+  //vertexer.FindV0s();  
 
   timer.Stop();
   static double totalTime = 0;

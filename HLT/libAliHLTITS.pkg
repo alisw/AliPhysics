@@ -14,8 +14,7 @@ CLASS_HDRS:=  	AliHLTITStrack.h \
 		tracking/AliHLTITSTrackerComponent.h \
 		tracking/AliHLTITSDetector.h \
 		tracking/AliHLTITSLayer.h \
-		tracking/AliHLTITSTrack.h \
-		tracking/AliHLTVertexer.h
+		tracking/AliHLTITSTrack.h 
 
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
 
