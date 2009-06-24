@@ -1053,7 +1053,14 @@ Bool_t AliCFHeavyFlavourTaskMultiVarMultiStep::GetGeneratedValuesFromMCParticle(
 		AliWarning("At least one Daughter Particle not found in tree, skipping"); 
 		return isOk;  
 	}
-	
+	if (!(TMath::Abs(mcPartDaughter0->GetPdgCode())==321 &&
+	      TMath::Abs(mcPartDaughter1->GetPdgCode())==211) && 
+	    !(TMath::Abs(mcPartDaughter0->GetPdgCode())==211 &&
+	      TMath::Abs(mcPartDaughter1->GetPdgCode())==321)) {
+	  AliDebug(2, "The D0 MC doesn't come from a Kpi decay, skipping!!");
+	  return isOk;  
+	}
+
 	Double_t vtx1[3] = {0,0,0};   // primary vertex		
 	Double_t vtx2daughter0[3] = {0,0,0};   // secondary vertex from daughter 0
 	Double_t vtx2daughter1[3] = {0,0,0};   // secondary vertex from daughter 1
