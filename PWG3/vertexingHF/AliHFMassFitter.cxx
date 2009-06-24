@@ -209,6 +209,8 @@ void AliHFMassFitter::SetHisto(TH1F *histoToFit){
 //___________________________________________________________________________
 
 void AliHFMassFitter::Reset() {
+  fMass=1.85;
+  fSigmaSgn=0.012;
   delete fhistoInvMass;
 }
 
@@ -736,6 +738,9 @@ void AliHFMassFitter::MassFitter(Bool_t draw){
   
   fhistoInvMass->Fit(massname.Data(),"R,L,E,+,0");
   cout<<"fit done"<<endl;
+  //reset value of fMass and fSigmaSgn to those found from fit
+  fMass=funcmass->GetParameter(nFitPars-2);
+  fSigmaSgn=funcmass->GetParameter(nFitPars-1);
   
   for(Int_t i=0;i<nFitPars;i++){
     fFitPars[i+2*bkgPar-3]=funcmass->GetParameter(i);
@@ -759,6 +764,7 @@ void AliHFMassFitter::MassFitter(Bool_t draw){
     funcmass->DrawClone("sames");
     cout<<"Drawn"<<endl;
   }
+
 
   //increase counter of number of fits done
   fcounter++;
