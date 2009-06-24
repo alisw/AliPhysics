@@ -204,7 +204,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    // Post the data already here
 	    PostData(1,fOutput);
 	    
-	    fNtupleDplus->Fill(pdgDp,partDp->Px()-d->Px(),partDp->Py()-d->Py(),partDp->Pz()-d->Pz(),d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),partDp->Pt(),d->CosPointingAngle(),d->DecayLength(),partDp->Xv(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());
+	    AliAODMCParticle *dg0 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(0));
+	    fNtupleDplus->Fill(pdgDp,partDp->Px()-d->Px(),partDp->Py()-d->Py(),partDp->Pz()-d->Pz(),d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),partDp->Pt(),d->CosPointingAngle(),d->DecayLength(),dg0->Xv(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());
 	    PostData(2,fNtupleDplus);
 	  }
 	} else {     

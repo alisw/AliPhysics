@@ -187,7 +187,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
   
   Int_t nprongs,lab,okD0,okD0bar,pdg;
   Bool_t unsetvtx;    
-  Double_t invmass,cov[6],errx,erry,errz;
+  Double_t invmass,posRec[3],posTrue[3],covRec[6],errx,erry,errz;
   AliAODRecoDecayHF2Prong *d2=0;
   AliAODRecoDecayHF3Prong *d3=0;
   AliAODRecoDecayHF4Prong *d4=0;
@@ -198,6 +198,14 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 
   for (Int_t iVtx = 0; iVtx < nVertices; iVtx++) {
     AliAODVertex *vtx = (AliAODVertex*)inputArrayVertices->UncheckedAt(iVtx);
+
+    vtx->GetXYZ(posRec);  
+    vtx->GetCovarianceMatrix(covRec);
+    errx=1.; erry=1.; errz=1.;
+    if(covRec[0]>0) errx = TMath::Sqrt(covRec[0]);
+    if(covRec[2]>0) erry = TMath::Sqrt(covRec[2]);
+    if(covRec[5]>0) errz = TMath::Sqrt(covRec[5]);
+	  
 
     // get parent AliAODRecoDecayHF
     nprongs= vtx->GetNDaughters();
@@ -214,24 +222,23 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	  unsetvtx=kTRUE;
 	}
 	okD0=0; okD0bar=0; 
-	if(d2->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
-	  AliAODMCParticle *part = (AliAODMCParticle*)mcArray->At(lab);
-	  pdg = part->GetPdgCode();
-	  invmass = (pdg==421 ? d2->InvMassD0() : d2->InvMassD0bar());
-	  fHistMass->Fill(invmass);
-	  // Post the data already here
-	  PostData(1,fOutput);
-	  
-	  AliAODVertex *secVtx = d2->GetSecondaryVtx();
-	  secVtx->GetCovarianceMatrix(cov);
-	  errx=1.; erry=1.; errz=1.;
-	  if(cov[0]>0) errx = TMath::Sqrt(cov[0]);
-	  if(cov[2]>0) erry = TMath::Sqrt(cov[2]);
-	  if(cov[5]>0) errz = TMath::Sqrt(cov[5]);
-	  
-	  fNtupleCmp->Fill(pdg,nprongs,d2->Xv(),part->Xv(),errx,d2->Yv(),part->Yv(),erry,d2->Zv(),part->Zv(),errz,d2->GetReducedChi2(),d2->Pt(),invmass);
-	  PostData(2,fNtupleCmp);
-	}
+	//if(d2->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) { // no cuts, otherwise we bias the resolution
+	AliAODMCParticle *dMC = (AliAODMCParticle*)mcArray->At(lab);
+	pdg = dMC->GetPdgCode();
+	invmass = (pdg==421 ? d2->InvMassD0() : d2->InvMassD0bar());
+	fHistMass->Fill(invmass);
+	// Post the data already here
+	PostData(1,fOutput);
+	// get a daughter for true pos of decay vertex
+	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
+	dg0MC->XvYvZv(posTrue);
+	fNtupleCmp->Fill(pdg,nprongs,
+			 posRec[0],posTrue[0],errx,
+			 posRec[1],posTrue[1],erry,
+			 posRec[2],posTrue[2],errz,
+			 d2->GetReducedChi2(),d2->Pt(),invmass);
+	PostData(2,fNtupleCmp);
+	//}
 	if(unsetvtx) d2->UnsetOwnPrimaryVtx();
       }
       break;
@@ -244,20 +251,20 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	  d3->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
 	  unsetvtx=kTRUE;
 	}
-	if(d3->SelectDplus(fVHF->GetDplusCuts())) {
-	  AliAODMCParticle *part = (AliAODMCParticle*)mcArray->At(lab);
-	  pdg = part->GetPdgCode();
-	  invmass = d3->InvMassDplus();
-	  AliAODVertex *secVtx = d3->GetSecondaryVtx();
-	  secVtx->GetCovarianceMatrix(cov);
-	  errx=1.; erry=1.; errz=1.;
-	  if(cov[0]>0) errx = TMath::Sqrt(cov[0]);
-	  if(cov[2]>0) erry = TMath::Sqrt(cov[2]);
-	  if(cov[5]>0) errz = TMath::Sqrt(cov[5]);
-	  
-	  fNtupleCmp->Fill(pdg,nprongs,d3->Xv(),part->Xv(),errx,d3->Yv(),part->Yv(),erry,d3->Zv(),part->Zv(),errz,d3->GetReducedChi2(),d3->Pt(),invmass);
-	  PostData(2,fNtupleCmp);
-	}
+	//if(d3->SelectDplus(fVHF->GetDplusCuts())) {
+	AliAODMCParticle *dMC = (AliAODMCParticle*)mcArray->At(lab);
+	pdg = dMC->GetPdgCode();
+	invmass = d3->InvMassDplus();
+	// get a daughter for true pos of decay vertex
+	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
+	dg0MC->XvYvZv(posTrue);
+	fNtupleCmp->Fill(pdg,nprongs,
+			 posRec[0],posTrue[0],errx,
+			 posRec[1],posTrue[1],erry,
+			 posRec[2],posTrue[2],errz,
+			 d3->GetReducedChi2(),d3->Pt(),invmass);
+	PostData(2,fNtupleCmp);
+	//}
 	if(unsetvtx) d3->UnsetOwnPrimaryVtx();
       }
       break;
@@ -271,23 +278,21 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	  unsetvtx=kTRUE;
 	}
 	okD0=0; okD0bar=0; 
-	if(d4->SelectD0(fVHF->GetD0to4ProngsCuts(),okD0,okD0bar)) {
-	  AliAODMCParticle *part = (AliAODMCParticle*)mcArray->At(lab);
-	  pdg = part->GetPdgCode();
-	  //invmass = (pdg==421 ? d->InvMassD0() : d->InvMassD0bar());
-	  invmass = 10.; 	  
-
-	  AliAODVertex *secVtx = d4->GetSecondaryVtx();
-	  secVtx->GetCovarianceMatrix(cov);
-	  errx=1.; erry=1.; errz=1.;
-	  if(cov[0]>0) errx = TMath::Sqrt(cov[0]);
-	  if(cov[2]>0) erry = TMath::Sqrt(cov[2]);
-	  if(cov[5]>0) errz = TMath::Sqrt(cov[5]);
-
-	  fNtupleCmp->Fill(pdg,nprongs,d4->Xv(),part->Xv(),errx,d4->Yv(),part->Yv(),erry,d4->Zv(),part->Zv(),errz,d4->GetReducedChi2(),d4->Pt(),invmass);
-	  PostData(2,fNtupleCmp);
-  
-	}
+	//if(d4->SelectD0(fVHF->GetD0to4ProngsCuts(),okD0,okD0bar)) {
+	AliAODMCParticle *dMC = (AliAODMCParticle*)mcArray->At(lab);
+	pdg = dMC->GetPdgCode();
+	//invmass = (pdg==421 ? d->InvMassD0() : d->InvMassD0bar());
+	invmass = 10.; 	  // dummy
+	// get a daughter for true pos of decay vertex
+	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
+	dg0MC->XvYvZv(posTrue);
+	fNtupleCmp->Fill(pdg,nprongs,
+			 posRec[0],posTrue[0],errx,
+			 posRec[1],posTrue[1],erry,
+			 posRec[2],posTrue[2],errz,
+			 d4->GetReducedChi2(),d4->Pt(),invmass);
+	PostData(2,fNtupleCmp);
+	//}
 	if(unsetvtx) d4->UnsetOwnPrimaryVtx();
       }
       break;
