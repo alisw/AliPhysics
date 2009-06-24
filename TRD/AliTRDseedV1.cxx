@@ -869,7 +869,8 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
 // r_{z} = 1.5*L_{pad}
 // END_LATEX
 // 
-// Author Alexandru Bercuci <A.Bercuci@gsi.de>
+// Author : Alexandru Bercuci <A.Bercuci@gsi.de>
+// Debug  : level >3
 
   Bool_t kPRINT = kFALSE;
   if(!fReconstructor->GetRecoParam() ){
@@ -898,18 +899,19 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
 
   // working variables
   const Int_t kNrows = 16;
-  AliTRDcluster *clst[kNrows][kNclusters];
-  Double_t cond[4], dx, dy, yt, zt,
-    yres[kNrows][kNclusters];
-  Int_t idxs[kNrows][kNclusters], ncl[kNrows], ncls = 0;
+  const Int_t kNcls  = 3*kNclusters; // buffer size
+  AliTRDcluster *clst[kNrows][kNcls];
+  Double_t cond[4], dx, dy, yt, zt, yres[kNrows][kNcls];
+  Int_t idxs[kNrows][kNcls], ncl[kNrows], ncls = 0;
   memset(ncl, 0, kNrows*sizeof(Int_t));
-  memset(clst, 0, kNrows*kNclusters*sizeof(AliTRDcluster*));
+  memset(yres, 0, kNrows*kNcls*sizeof(Double_t));
+  memset(clst, 0, kNrows*kNcls*sizeof(AliTRDcluster*));
 
   // Do cluster projection
   AliTRDcluster *c = 0x0;
   AliTRDchamberTimeBin *layer = 0x0;
   Bool_t kBUFFER = kFALSE;
-  for (Int_t it = 0; it < AliTRDtrackerV1::GetNTimeBins(); it++) {
+  for (Int_t it = 0; it < kNtb; it++) {
     if(!(layer = chamber->GetTB(it))) continue;
     if(!Int_t(*layer)) continue;
     // get track projection at layers position
@@ -946,8 +948,8 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
       yres[r][ncl[r]] = dy;
       ncl[r]++; ncls++;
 
-      if(ncl[r] >= kNclusters) {
-        AliWarning(Form("Cluster candidates reached limit %d. Some may be lost.", kNclusters));
+      if(ncl[r] >= kNcls) {
+        AliWarning(Form("Cluster candidates reached buffer limit %d. Some may be lost.", kNcls));
         kBUFFER = kTRUE;
         break;
       }
@@ -972,6 +974,16 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
       mean = 0.; syDis = 0.;
       continue;
     } 
+
+    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 3){
+      TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
+      TVectorD dy(ncl[ir], yres[ir]);
+      cstreamer << "AttachClusters"
+          << "dy=" << &dy
+          << "m="  << mean
+          << "s="  << syDis
+          << "\n";
+    }
 
     // TODO check mean and sigma agains cluster resolution !!
     if(kPRINT) printf("\tr[%2d] m[%f %5.3fsigma] s[%f]\n", ir, mean, TMath::Abs(mean/syDis), syDis);
