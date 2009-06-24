@@ -38,6 +38,7 @@
 #include "AliMUONCalibParamNF.h"
 #include "AliMUONCalibParamNI.h"
 #include "AliMUONConstants.h"
+#include "AliMUONRejectList.h"
 #include "AliMUONTrackerIO.h"
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMUONTriggerLut.h"
@@ -530,6 +531,26 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
   
   AliInfo(Form("%d Manus and %d channels.",nmanus,nchannels));
   return nchannels;
+}
+
+//_____________________________________________________________________________
+AliMUONRejectList* 
+AliMUONCDB::MakeRejectListStore(Bool_t defaultValues)
+{
+  /// Create a reject list
+  
+  AliCodeTimerAuto("");
+
+  AliMUONRejectList* rl = new AliMUONRejectList;
+  
+  if (!defaultValues)
+  {
+    rl->SetDetectionElementProbability(510);
+    rl->SetDetectionElementProbability(508);
+    return rl;
+  }
+  
+  return rl;
 }
 
 //_____________________________________________________________________________
@@ -1130,6 +1151,21 @@ AliMUONCDB::WriteOccupancyMap(Bool_t defaultValues,
   delete occupancyMapStore;
 }
 
+//_____________________________________________________________________________
+void 
+AliMUONCDB::WriteRejectList(Bool_t defaultValues,
+                              Int_t startRun, Int_t endRun)
+{
+  /// generate reject list values (either empty one if defaultValues=true, or
+  /// random one, see MakeRejectListStore) and
+  /// store them into CDB located at cdbpath, with a validity period
+  /// ranging from startRun to endRun
+  
+  AliMUONRejectList* rl = MakeRejectListStore(defaultValues);
+  WriteToCDB("MUON/Calib/RejectList",rl,startRun,endRun,defaultValues);
+  delete rl;
+}
+
 
 //_____________________________________________________________________________
 void 
@@ -1208,5 +1244,6 @@ AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
   WriteCapacitances(defaultValues,startRun,endRun);
   WriteNeighbours(startRun,endRun);
   WriteOccupancyMap(startRun,endRun,defaultValues);
+  WriteRejectList(startRun,endRun,defaultValues);
 }
 

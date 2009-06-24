@@ -47,21 +47,32 @@
 /// If a pad is at a physical boundary, is will for sure have some bits at 1
 /// (i.e. a non-existing neighbour is considered = bad).
 ///
+///
+/// add something about the reject list/probabilities here... (LA)
+///
 /// \author Laurent Aphecetche
 //-----------------------------------------------------------------------------
 
 #include "AliMUONPadStatusMapMaker.h"
 
+#include "AliCodeTimer.h"
 #include "AliLog.h"
+#include "AliMpDDLStore.h"
+#include "AliMpDetElement.h"
+#include "AliMpManuIterator.h"
 #include "AliMUON2DMap.h"
+#include "AliMUONCalibParamNF.h"
 #include "AliMUONCalibParamNI.h"
+#include "AliMUONCalibrationData.h"
 #include "AliMUONPadStatusMaker.h"
-#include "AliMUONVStore.h"
+#include "AliMUONRejectList.h"
 #include "AliMUONVCalibParam.h"
+#include "AliMUONVStore.h"
 #include "AliMpConstants.h"
 #include <Riostream.h>
 #include <TList.h>
-#include "AliCodeTimer.h"
+#include "TRandom.h"
+#include <cassert>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONPadStatusMapMaker)
@@ -76,7 +87,9 @@ AliMUONPadStatusMapMaker::AliMUONPadStatusMapMaker(const AliMUONPadStatusMaker& 
 : TObject(),
 fkStatusMaker(padStatusMaker),
 fMask(mask),
-fStatusMap(new AliMUON2DMap(true))
+fStatusMap(new AliMUON2DMap(true)),
+fRejectProbabilities(new AliMUON2DMap(true)),
+fRejectList(0x0)
 {
   /// ctor
   if (!deferredInitialization)
@@ -92,6 +105,77 @@ fStatusMap(new AliMUON2DMap(true))
       ComputeStatusMap(detElemId,manuId);
     }
   }
+  
+  /// Whatever the deferred flag is, we *have* to compute the reject 
+  /// probabilities here and now, for *all* channels.
+  
+  AliMUONRejectList* rl = padStatusMaker.CalibrationData().RejectList();
+  
+  if (rl)
+  {
+    AliMpManuIterator it;
+    Int_t detElemId;
+    Int_t manuId;
+    
+    while ( it.Next(detElemId,manuId) )
+    {
+      AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+      Int_t busPatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
+      
+      AliMUONVCalibParam* param = new AliMUONCalibParamNF(1,AliMpConstants::ManuNofChannels(),detElemId,manuId,0);
+      
+      Int_t n(0);
+      
+      for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i ) 
+      {
+        Float_t proba(0.0);
+        
+        if ( de->IsConnectedChannel(manuId,i) )
+        {
+          proba = TMath::Max(rl->DetectionElementProbability(detElemId),rl->BusPatchProbability(busPatchId));
+          
+          proba = TMath::Max(proba,rl->ManuProbability(detElemId,manuId));
+          
+          proba = TMath::Max(proba,rl->ChannelProbability(detElemId,manuId,i));
+          
+          if ( proba > 0 ) 
+          {
+            ++n;
+            param->SetValueAsFloat(i,0,proba);
+          }
+        }
+      }
+      
+      if ( n > 0 ) 
+      {
+        fRejectProbabilities->Add(param);
+      }
+      else
+      {
+        // no need to add empty stuff...
+        delete param;
+      }
+    }
+  
+    if ( rl->IsBinary())
+    {
+      fRejectList = fRejectProbabilities;
+      fRejectProbabilities = 0x0;
+      AliDebug(1,"RejectList = RejectProbabilities");
+      StdoutToAliDebug(1,fRejectList->Print("","MEAN"));
+    }
+    else
+    {
+      AliWarning("Will run with non trivial survival probabilities for channels, manus, etc... Better check this is a simulation and not real data !");
+      fRejectList = new AliMUON2DMap(true);
+    }
+  }
+  else
+  {
+    fRejectList = fRejectProbabilities;
+    fRejectProbabilities = 0x0;
+    AliInfo("No RejectList found, so no RejectList will be used.");
+  }
 }
 
 //_____________________________________________________________________________
@@ -99,6 +183,8 @@ AliMUONPadStatusMapMaker::~AliMUONPadStatusMapMaker()
 {
   /// dtor
   delete fStatusMap;
+  delete fRejectProbabilities;
+  delete fRejectList;
 }
 
 //_____________________________________________________________________________
@@ -166,6 +252,53 @@ AliMUONPadStatusMapMaker::ComputeStatusMap(Int_t detElemId, Int_t manuId) const
 }
 
 //_____________________________________________________________________________
+void 
+AliMUONPadStatusMapMaker::RefreshRejectProbabilities()
+{
+  /// From the (fixed) fRejectProbabilities, compute
+  /// a fRejectList that will be valid for one event
+  /// If fRejectProbabilities=0x0 it means we're dealing with
+  /// trivial probabilities (0 or 1) and those are assumed to be already
+  /// in fRejectList then.
+  
+  if ( !fRejectProbabilities ) return;
+  
+  AliCodeTimerAuto("");
+  
+  fRejectList->Clear();
+  
+  TIter next(fRejectProbabilities->CreateIterator());
+  AliMUONVCalibParam* paramProba;
+  AliMUONVCalibParam* paramReject;
+  
+  while ( ( paramProba = static_cast<AliMUONVCalibParam*>(next()) ) )
+  {
+    paramReject = new AliMUONCalibParamNF(1,paramProba->Size(),paramProba->ID0(),paramProba->ID1(),0.0);
+    
+    Int_t n(0);
+    
+    for ( Int_t i = 0; i < paramProba->Size(); ++i ) 
+    {
+      Float_t proba = paramProba->ValueAsFloat(i);
+      Float_t x(proba);
+      
+      if ( proba > 0.0 && proba < 1.0 ) 
+      {
+        x = gRandom->Rndm();
+        proba = ( x < proba ) ? 1.0 : 0.0;
+      }
+      
+      if (proba>0.0)
+      {
+        ++n;
+        paramReject->SetValueAsFloat(i,0,proba);
+      }
+    }
+    if (n) fRejectList->Add(paramReject);
+  }
+}
+
+//_____________________________________________________________________________
 Int_t
 AliMUONPadStatusMapMaker::StatusMap(Int_t detElemId, Int_t manuId, 
                                     Int_t manuChannel) const
@@ -179,5 +312,23 @@ AliMUONPadStatusMapMaker::StatusMap(Int_t detElemId, Int_t manuId,
     // not yet computed, so do it now
     param = ComputeStatusMap(detElemId,manuId);
   }
-  return param->ValueAsInt(manuChannel);
+  
+  Int_t statusMap = param->ValueAsInt(manuChannel);
+  
+  AliMUONVCalibParam* r = static_cast<AliMUONVCalibParam*>(fRejectList->FindObject(detElemId,manuId));
+  
+  if (r)
+  {
+    Float_t v= r->ValueAsFloat(manuChannel);
+    
+    assert (v==0.0 || v==1.0 ); 
+
+    if ( v > 0 ) 
+    {
+      statusMap |= fgkSelfDead;
+    }
+  }
+  
+  return statusMap;
+  
 }

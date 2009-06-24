@@ -17,13 +17,14 @@
 #endif
 
 class AliCDBEntry;
-class AliMUONTriggerEfficiencyCells;
-class AliMUONTriggerLut;
-class AliMUONVStore;
-class AliMUONVStore;
-class AliMUONVCalibParam;
 class AliMUONGlobalCrateConfig;
 class AliMUONRegionalTriggerConfig;
+class AliMUONRejectList;
+class AliMUONTriggerEfficiencyCells;
+class AliMUONTriggerLut;
+class AliMUONVCalibParam;
+class AliMUONVStore;
+class AliMUONVStore;
 class TMap;
 
 class AliMUONCalibrationData : public TObject
@@ -62,6 +63,9 @@ public:
 
   /// Create an occupancy map store (which must be deleted) from OCDB for the given run
   static AliMUONVStore* CreateOccupancyMap(Int_t runNumber, Int_t* startOfValidity=0);
+
+  /// Create a rejectlist store (which must be deleted) from OCDB for the given run
+  static AliMUONRejectList* CreateRejectList(Int_t runNumber, Int_t* startOfValidity=0);
 
   /// Create a pedestal store (which must be deleted) from OCDB for the given run
   static AliMUONVStore* CreatePedestals(Int_t runNumber, Int_t* startOfValidity=0);
@@ -103,6 +107,9 @@ public:
 
   /// Get the occupancy map store
   AliMUONVStore* OccupancyMap() const;
+
+  /// Get the reject list store
+  AliMUONRejectList* RejectList() const;
 
   /// Get the Pedestal calibration object for channels within (detElemId,manuId).
   AliMUONVCalibParam* Pedestals(Int_t detElemId, Int_t manuId) const;
@@ -153,7 +160,9 @@ private:
   
   mutable AliMUONVStore* fOccupancyMap; //!< occupancy map
   
-  ClassDef(AliMUONCalibrationData,10) // Storage for all MUON calibration data.
+  mutable AliMUONRejectList* fRejectList; //!< reject list
+  
+  ClassDef(AliMUONCalibrationData,11) // Storage for all MUON calibration data.
 };
 
 #endif

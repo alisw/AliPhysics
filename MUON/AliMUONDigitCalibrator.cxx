@@ -207,8 +207,10 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
   /// Calibrate the digits contained in digitStore  
   TIter next(digitStore.CreateTrackerIterator());
   AliMUONVDigit* digit;
-  Int_t detElemId(-1);
-  Double_t nsigmas = fChargeSigmaCut;
+
+  fStatusMapMaker->RefreshRejectProbabilities(); // this will do something only for simulations
+  // (and only for those simulations where the reject list contain probabilities which are
+  // different from zero or one)
   
   AliDebug(1,Form("# of digits = %d",digitStore.GetSize()));
   
@@ -222,26 +224,6 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
     
     digit->Calibrated(kTRUE);
     
-    if ( digit->DetElemId() != detElemId ) 
-    {
-      // Find out occupancy of that DE
-      detElemId = digit->DetElemId();
-      AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
-      Double_t nchannels = de->NofChannels();
-      Double_t occ = digitStore.GetSize(detElemId)/nchannels;
-      if ( occ > 0.05 ) 
-      {
-        nsigmas = 10.0; // enlarge (a lot) sigma cut if occupancy is high
-        // (which probably means zero suppression was not exactly OK).
-        fLogger->Log(Form("Will use %5.0f*sigma cut for DE %04d "
-                          "due to high occupancy",nsigmas,detElemId));
-      }
-      else
-      {
-        nsigmas = fChargeSigmaCut;
-      }
-    }
-
     Float_t charge(0.0);
     Int_t statusMap;
     Bool_t isSaturated(kFALSE);
@@ -255,11 +237,17 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
     if (ok)
     {
       charge = CalibrateDigit(digit->DetElemId(),digit->ManuId(),digit->ManuChannel(),
-                              digit->ADC(),nsigmas,&isSaturated);
+                              digit->ADC(),fChargeSigmaCut,&isSaturated);
     }
     else
     {
+      AliDebug(3,Form("Rejecting the pad DE %4d MANU %4d CH %2d ADC %6d STATUSMAP %x STATUS %s",
+                      digit->DetElemId(),digit->ManuId(),digit->ManuChannel(),
+                      digit->ADC(),statusMap,
+                      fStatusMaker->AsString(fStatusMaker->PadStatus(digit->DetElemId(),digit->ManuId(),digit->ManuChannel())).Data()));
+
       ++fNumberOfBadPads;
+      
     }
     
     digit->SetCharge(charge);

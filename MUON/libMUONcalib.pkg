@@ -20,7 +20,8 @@ SRCS:=  AliMUONTriggerLut.cxx \
         AliMUONTrackerData.cxx \
         AliMUONPedestal.cxx \
         AliMUONGain.cxx \
-        AliMUONErrorCounter.cxx 
+        AliMUONErrorCounter.cxx \
+        AliMUONRejectList.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)

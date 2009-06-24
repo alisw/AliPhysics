@@ -22,6 +22,7 @@ class AliMUONTriggerLut;
 class AliMUONTriggerEfficiencyCells;
 class AliMUONRegionalTriggerConfig;
 class AliMUONGlobalCrateConfig;
+class AliMUONRejectList;
 
 class AliMUONCDB : public TObject
 {
@@ -41,7 +42,8 @@ public:
   Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues);
   Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, const char* file);
   Int_t MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues);
-  Int_t MakeOccupancyMapStore(AliMUONVStore& occupancyMapStore, Bool_t defaultValues);
+  Int_t MakeOccupancyMapStore(AliMUONVStore& occupancyMap, Bool_t defaultValues);
+  AliMUONRejectList* MakeRejectListStore(Bool_t defaultValues);
   
   Int_t MakeLocalTriggerMaskStore(AliMUONVStore& ltm) const;  
   Int_t MakeRegionalTriggerConfigStore(AliMUONRegionalTriggerConfig& rtm) const;
@@ -74,6 +76,7 @@ public:
   void WriteCapacitances(Bool_t defaultValues, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteCapacitances(const char* file, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteOccupancyMap(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteRejectList(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   
   void WriteLocalTriggerMasks(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteRegionalTriggerConfig(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());

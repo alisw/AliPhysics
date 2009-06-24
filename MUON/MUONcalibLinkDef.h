@@ -33,6 +33,7 @@
 #pragma link C++ class AliMUONPedestal+;
 #pragma link C++ class AliMUONGain+;
 #pragma link C++ class AliMUONErrorCounter+;
+#pragma link C++ class AliMUONRejectList+;
 
 
 #endif

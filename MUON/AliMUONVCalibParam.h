@@ -103,10 +103,11 @@ public:
   /// Return 1E38 as invalid float value
   static Float_t InvalidFloatValue() { return 1E38; }
 
-protected:
-    
   static UInt_t BuildUniqueID(Int_t id0, Int_t id1);
   static void DecodeUniqueID(UInt_t uniqueID, Int_t& id0, Int_t& id1);
+
+protected:
+  
   static Int_t ID0(UInt_t uniqueID);
   static Int_t ID1(UInt_t uniqueID);
   

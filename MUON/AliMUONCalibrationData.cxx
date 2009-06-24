@@ -21,6 +21,7 @@
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
 #include "AliLog.h"
+#include "AliMUONRejectList.h"
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMUONTriggerLut.h"
 #include "AliMUONVStore.h"
@@ -70,7 +71,8 @@ fTriggerLut(0x0),
 fTriggerEfficiency(0x0),
 fCapacitances(0x0),
 fNeighbours(0x0),
-fOccupancyMap(0x0)
+fOccupancyMap(0x0),
+fRejectList(0x0)
 {
 /// Default ctor.
 
@@ -85,6 +87,7 @@ fOccupancyMap(0x0)
     Gains();
     Pedestals();
     OccupancyMap();
+    RejectList();
     HV();
     TriggerDCS();
     LocalTriggerBoardMasks(0);
@@ -206,6 +209,12 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path, Int_t* s
 		if ( startOfValidity )  *startOfValidity = AliCDBRunRange::Infinity();
   }
 	
+  {
+    
+  AliCodeTimerAutoClass(Form("Failed to get %s for run %d",path,runNumber));
+
+  }
+  
   return 0x0;
 }
 
@@ -215,6 +224,14 @@ AliMUONCalibrationData::CreateOccupancyMap(Int_t runNumber, Int_t* startOfValidi
 {
   /// Create a new occupancy map store from the OCDB for a given run
   return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/OccupancyMap",startOfValidity));
+}
+
+//_____________________________________________________________________________
+AliMUONRejectList*
+AliMUONCalibrationData::CreateRejectList(Int_t runNumber, Int_t* startOfValidity)
+{
+  /// Create a new rejectlist store from the OCDB for a given run
+  return dynamic_cast<AliMUONRejectList*>(CreateObject(runNumber,"MUON/Calib/RejectList",startOfValidity));
 }
 
 //_____________________________________________________________________________
@@ -368,6 +385,18 @@ AliMUONCalibrationData::OccupancyMap() const
     fOccupancyMap = CreateOccupancyMap(fRunNumber);
   }
   return fOccupancyMap;
+}
+
+//_____________________________________________________________________________
+AliMUONRejectList*
+AliMUONCalibrationData::RejectList() const
+{
+  /// Get reject list
+  if (!fRejectList)
+  {
+    fRejectList = CreateRejectList(fRunNumber);
+  }
+  return fRejectList;
 }
 
 //_____________________________________________________________________________

@@ -30,7 +30,10 @@ class AliMUONPadStatusMaker : public TObject
 public:
   AliMUONPadStatusMaker(const AliMUONCalibrationData& calibData);
   virtual ~AliMUONPadStatusMaker();
-      
+  
+  /// Get the reference to the calibrationdata object we use.
+  const AliMUONCalibrationData& CalibrationData() const { return fkCalibrationData; }
+  
   /** Get access to internal status store (for debug only, as it may not be complete,
     depending on whether you've already called PadStatus for all possible de,manu
     combinations or not...

@@ -39,6 +39,8 @@ public:
   /// Return status bit map to tell a pad is bad
   static Int_t SelfDeadMask() { return fgkSelfDead; }
   
+  void RefreshRejectProbabilities(); 
+  
 private:
   /// Not implemented
   AliMUONPadStatusMapMaker(const AliMUONPadStatusMapMaker&);
@@ -70,6 +72,8 @@ private:
   const AliMUONPadStatusMaker& fkStatusMaker; //!< to access pad statuses
   Int_t fMask; //!< mask to be tested
   mutable AliMUONVStore* fStatusMap; //!< status map
+  AliMUONVStore* fRejectProbabilities; //!< reject probabilities (channel based, computed once per run)
+  AliMUONVStore* fRejectList; //!< reject list (which channels should be rejected, might change event-by-event for simulations)
   
   ClassDef(AliMUONPadStatusMapMaker,0) // Pad status map maker
 };
