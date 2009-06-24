@@ -108,6 +108,7 @@ AliTOFDigitMap::~AliTOFDigitMap()
 //
   if (fDigitMap) {
     for (Int_t i=0; i<fMaxIndex; i++)  delete[] fDigitMap[i];
+    delete [] fDigitMap;
   }
 
 
