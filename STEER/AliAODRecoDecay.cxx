@@ -584,10 +584,11 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
   Double_t pxMother = part->Px();
   Double_t pyMother = part->Py();
   Double_t pzMother = part->Pz();
-  // within 1 MeV
-  if(TMath::Abs(pxMother-pxSumDgs) > 0.001 ||
-     TMath::Abs(pyMother-pySumDgs) > 0.001 ||
-     TMath::Abs(pzMother-pzSumDgs) > 0.001) return -1;
+  // within 0.1%
+  if((TMath::Abs(pxMother-pxSumDgs)/(TMath::Abs(pxMother)+1.e-13)) > 0.001 &&
+     (TMath::Abs(pyMother-pySumDgs)/(TMath::Abs(pyMother)+1.e-13)) > 0.001 &&
+     (TMath::Abs(pzMother-pzSumDgs)/(TMath::Abs(pzMother)+1.e-13)) > 0.001) 
+    return -1;
  
   return labMother;
 }
