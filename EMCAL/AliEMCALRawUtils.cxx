@@ -38,7 +38,7 @@ class AliLog;
 class AliCaloAltroMapping;
 #include "AliAltroBuffer.h"
 #include "AliRawReader.h"
-#include "AliCaloRawStream.h"
+#include "AliCaloRawStreamV3.h"
 #include "AliDAQ.h"
   
 #include "AliEMCALRecParam.h"
@@ -297,7 +297,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
     return;
   }
 
-  AliCaloRawStream in(reader,"EMCAL",fMapping);
+  AliCaloRawStreamV3 in(reader,"EMCAL",fMapping);
   // Select EMCAL DDL's;
   reader->Select("EMCAL");
 
@@ -317,69 +317,72 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   Int_t id =  -1;
   Float_t time = 0. ; 
   Float_t amp = 0. ; 
+  Int_t i = 0;
+  Int_t startBin = 0;
 
   //Graph to hold data we will fit (should be converted to an array
   //later to speed up processing
   TGraph * gSig = new TGraph(GetRawFormatTimeBins()); 
 
-  Int_t readOk = 1;
   Int_t lowGain = 0;
   Int_t caloFlag = 0; // low, high gain, or TRU, or LED ref.
 
-  while (readOk && in.GetModule() < 0) 
-    readOk = in.Next();  // Go to first digit
-
-  while (readOk) { 
-
-    id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
-    caloFlag = in.GetCaloFlag();
-    lowGain = in.IsLowGain();
-    Int_t maxTime = in.GetTime();  // timebins come in reverse order
-    if (maxTime < 0 || maxTime >= GetRawFormatTimeBins()) {
-      AliWarning(Form("Invalid time bin %d",maxTime));
-      maxTime = GetRawFormatTimeBins();
-    }
-    gSig->Set(maxTime+1);
-    // There is some kind of zero-suppression in the raw data, 
-    // so set up the TGraph in advance
-    for (Int_t i=0; i < maxTime; i++) {
-      gSig->SetPoint(i, i , 0);
-    }
-
-    Int_t iTime = 0;
-    do {
-      if (in.GetTime() >= gSig->GetN()) {
-	  AliWarning("Too many time bins");
-	  gSig->Set(in.GetTime());
-      }
+  // start loop over input stream 
+  while (in.NextDDL()) {
+    while (in.NextChannel()) {
       
-      gSig->SetPoint(in.GetTime(), in.GetTime(), in.GetSignal()) ;
+      id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
+      caloFlag = in.GetCaloFlag();
+      lowGain = in.IsLowGain();
 
-      if (in.GetTime() > maxTime)
-        maxTime = in.GetTime();
-      iTime++;
-    } while ((readOk = in.Next()) && !in.IsNewHWAddress());
-
-    FitRaw(gSig, signalF, amp, time) ; 
-    
-    if (caloFlag == 0 || caloFlag == 1) { // low gain or high gain 
-      if (amp > 0 && amp < 2000) {  //check both high and low end of
-	//result, 2000 is somewhat arbitrary - not nice with magic numbers in the code..
-	AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
-	
-	AddDigit(digitsArr, id, lowGain, (Int_t)amp, time);
+      // There can be zero-suppression in the raw data, 
+      // so set up the TGraph in advance
+      for (i=0; i < GetRawFormatTimeBins(); i++) {
+	gSig->SetPoint(i, i , 0);
       }
+      Int_t maxTime = 0;
+
+      while (in.NextBunch()) {
+	const UShort_t *sig = in.GetSignals();
+	startBin = in.GetStartTimeBin();
+
+	if (maxTime < in.GetStartTimeBin()) {
+	  maxTime = in.GetStartTimeBin(); // timebins come in reverse order
+	}
+
+	if (maxTime < 0 || maxTime >= GetRawFormatTimeBins()) {
+	  AliWarning(Form("Invalid time bin %d",maxTime));
+	  maxTime = GetRawFormatTimeBins();
+	}
+
+	for (i = 0; i < in.GetBunchLength(); i++) {
+	  time = startBin--;
+	  gSig->SetPoint(time, time, sig[i]) ;
+	}
+      } // loop over bunches
+    
+      gSig->Set(maxTime+1);
+      FitRaw(gSig, signalF, amp, time) ; 
+    
+      if (caloFlag == 0 || caloFlag == 1) { // low gain or high gain 
+	if (amp > 0 && amp < 2000) {  //check both high and low end of
+	//result, 2000 is somewhat arbitrary - not nice with magic numbers in the code..
+	  AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
 	
-    }
+	  AddDigit(digitsArr, id, lowGain, (Int_t)amp, time);
+	}
+	
+      }
 
-    // Reset graph
-    for (Int_t index = 0; index < gSig->GetN(); index++) {
-      gSig->SetPoint(index, index, 0) ;  
-    } 
-    // Reset starting parameters for fit function
-    signalF->SetParameters(10.,0.,fTau,fOrder,5.); //reset all defaults just to be safe
+      // Reset graph
+      for (Int_t index = 0; index < gSig->GetN(); index++) {
+	gSig->SetPoint(index, index, 0) ;  
+      } 
+      // Reset starting parameters for fit function
+      signalF->SetParameters(10.,0.,fTau,fOrder,5.); //reset all defaults just to be safe
 
-  }; // EMCAL entries loop
+   } // end while over channel   
+  } //end while over DDL's, of input stream 
   
   delete signalF ; 
   delete gSig;

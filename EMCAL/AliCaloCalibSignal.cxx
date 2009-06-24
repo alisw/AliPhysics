@@ -36,7 +36,7 @@
 
 #include "AliRawReader.h"
 #include "AliRawEventHeaderBase.h"
-#include "AliCaloRawStream.h"
+#include "AliCaloRawStreamV3.h"
 
 //The include file
 #include "AliCaloCalibSignal.h"
@@ -324,13 +324,13 @@ Bool_t AliCaloCalibSignal::AddInfo(const AliCaloCalibSignal *sig)
 Bool_t AliCaloCalibSignal::ProcessEvent(AliRawReader *rawReader)
 {
   // if fMapping is NULL the rawstream will crate its own mapping
-  AliCaloRawStream rawStream(rawReader, fCaloString, (AliAltroMapping**)fMapping);
+  AliCaloRawStreamV3 rawStream(rawReader, fCaloString, (AliAltroMapping**)fMapping);
 
   return ProcessEvent( &rawStream, (AliRawEventHeaderBase*)rawReader->GetEventHeader() );
 }
 
 //_____________________________________________________________________
-Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderBase *aliHeader)
+Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeaderBase *aliHeader)
 { 
   // Method to process=analyze one event in the data stream
   if (!in) return kFALSE; //Return right away if there's a null pointer
@@ -347,8 +347,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
   int LEDAmpVal[fgkMaxRefs * 2]; // factor 2 is for the two gain values
   memset(LEDAmpVal, 0, sizeof(LEDAmpVal));
 
-  int sample, isample = 0; //The sample temp, and the sample number in current event.
-  int max = fgkSampleMin, min = fgkSampleMax;//Use these for picking the signal
+  int sample; // temporary value
   int gain = 0; // high or low gain
   
   // Number of Low and High gain channels for this event:
@@ -359,12 +358,26 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
   int RefNum = 0; // array index for LED references
 
   // loop first to get the fraction of channels with amplitudes above cut
-  while (in->Next()) {
-    sample = in->GetSignal(); //Get the adc signal
-    if (sample < min) min = sample;
-    if (sample > max) max = sample;
-    isample++;
-    if ( isample >= in->GetTimeLength()) {
+
+  while (in->NextDDL()) {
+    while (in->NextChannel()) {
+
+      // counters
+      int max = fgkSampleMin, min = fgkSampleMax; // min and max sample values
+      
+      while (in->NextBunch()) {
+	const UShort_t *sig = in->GetSignals();
+	for (Int_t i = 0; i < in->GetBunchLength(); i++) {
+	  sample = sig[i];
+
+	  // check if it's a min or max value
+	  if (sample < min) min = sample;
+	  if (sample > max) max = sample;
+
+	} // loop over samples in bunch
+      } // loop over bunches
+
+      gain = -1; // init to not valid value
       //If we're here then we're done with this tower
       if ( in->IsLowGain() ) {
 	gain = 0;
@@ -376,6 +389,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
 	gain = in->GetRow(); // gain coded in (in RCU/Altro mapping) as Row info for LED refs..
       }
 
+      // it should be enough to check the SuperModule info for each DDL really, but let's keep it here for now
       int arrayPos = in->GetModule(); //The modules are numbered starting from 0
       //Debug
       if (arrayPos < 0 || arrayPos >= fModules) {
@@ -403,13 +417,12 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderB
 	LEDAmpVal[RefNum] = max - min;
       } // end of LED ref
       
-      max = fgkSampleMin; min = fgkSampleMax;
-      isample = 0;
-      
-    }//End if end of tower
+    } // end while over channel 
    
-  }//end while, of stream
+  }//end while over DDL's, of input stream
   
+  in->Reset(); // just in case the next customer forgets to check if the stream was reset..
+
   // now check if it was a led event, only use high gain (that should be sufficient)
   if (fReqFractionAboveAmp) {
     bool ok = false;

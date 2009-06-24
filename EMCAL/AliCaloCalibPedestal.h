@@ -10,7 +10,7 @@
 // \file AliCaloCalibPedestal.h
 //   \brief Description:
 //   A help class for monitoring and calibration tools: MOOD, AMORE etc.,
-//   that can process events from a standard AliCaloRawStream,
+//   that can process events from a standard AliCaloRawStreamV3,
 //   most usually from LED/pulser runs. It stores signal info as
 //   typical (highest) amplitude, and pedestal info in geometrically-binned
 //   2D profiles of the detectors (EMCAL and PHOS).
@@ -26,7 +26,7 @@
 #include "TProfile2D.h"
 #include "TH2.h"
 #include "TObjArray.h"
-class AliCaloRawStream;
+class AliCaloRawStreamV3;
 class AliCaloAltroMapping;
 class AliRawReader;
 
@@ -51,7 +51,7 @@ class AliCaloCalibPedestal : public TObject {
 
   // Event processing methods:  
   Bool_t ProcessEvent(AliRawReader *rawReader);
-  Bool_t ProcessEvent(AliCaloRawStream    *in);
+  Bool_t ProcessEvent(AliCaloRawStreamV3    *in);
   
   // Mapping handling
   AliCaloAltroMapping **GetAltroMapping() { return fMapping; };

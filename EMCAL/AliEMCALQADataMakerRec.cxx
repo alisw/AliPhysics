@@ -44,7 +44,7 @@ Authors:  J.Klay (Cal Poly) May 2008
 #include "AliEMCALReconstructor.h"
 #include "AliEMCALRecParam.h"
 #include "AliRawReader.h"
-#include "AliCaloRawStream.h"
+#include "AliCaloRawStreamV3.h"
 
 ClassImp(AliEMCALQADataMakerRec)
            
@@ -257,7 +257,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     InitRaws() ;
 
   rawReader->Reset() ;
-  AliCaloRawStream in(rawReader,"EMCAL"); 
+  AliCaloRawStreamV3 in(rawReader,"EMCAL"); 
 
   // setup
   int nTowersPerSM = 1152; // number of towers in a SuperModule; 24x48
@@ -281,35 +281,49 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   int time = 0;
   // counters, on sample level
   int i = 0; // the sample number in current event.
-  int max = sampleMin, min = sampleMax;//Use these for picking the pedestal
   int maxTime = 0;
+  int startBin = 0;
 
-  // for the pedestal calculation
-  int sampleSum = 0; // sum of samples
-  int squaredSampleSum = 0; // sum of samples squared
-  int nSum = 0; // number of samples in sum
   // calc. quantities
   double meanPed = 0, squaredMean = 0, rmsPed = 0;
-  
-  while (in.Next()) { // loop over input stream
-    sample = in.GetSignal(); //Get the adc signal
-    time = in.GetTime();
-    if (sample < min) { min = sample; }
-    if (sample > max) { 
-      max = sample;
-      maxTime = time;
-    }
-    i++;
 
-    // should we add it for the pedestal calculation?
-    if ( (firstPedestalSample<=time && time<=lastPedestalSample) || // sample time in range
-	 !selectPedestalSamples ) { // or we don't restrict the sample range.. - then we'll take all 
-      sampleSum += sample;
-      squaredSampleSum += sample*sample;
-      nSum++;
-    }
+  // start loop over input stream  
+  while (in.NextDDL()) {
+    while (in.NextChannel()) {
 
-    if ( i >= in.GetTimeLength()) {
+      // counters
+      int max = sampleMin, min = sampleMax; // min and max sample values
+      
+      // for the pedestal calculation
+      int sampleSum = 0; // sum of samples
+      int squaredSampleSum = 0; // sum of samples squared
+      int nSum = 0; // number of samples in sum
+      
+      while (in.NextBunch()) {
+	const UShort_t *sig = in.GetSignals();
+	startBin = in.GetStartTimeBin();
+	for (i = 0; i < in.GetBunchLength(); i++) {
+	  sample = sig[i];
+	  time = startBin--;
+
+	  // check if it's a min or max value
+	  if (sample < min) min = sample;
+	  if (sample > max) {
+	    max = sample;
+	    maxTime = time;
+	  }
+
+	  // should we add it for the pedestal calculation?
+	  if ( (firstPedestalSample<=time && time<=lastPedestalSample) || // sample time in range
+	       !selectPedestalSamples ) { // or we don't restrict the sample range.. - then we'll take all 
+	    sampleSum += sample;
+	    squaredSampleSum += sample*sample;
+	    nSum++;
+	  }
+	  
+	} // loop over samples in bunch
+      } // loop over bunches
+
       // calculate pedesstal estimate: mean of possibly selected samples
       if (nSum > 0) {
 	meanPed = sampleSum / (1.0 * nSum);
@@ -332,6 +346,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	gain = 1;
       }
       
+      // it should be enough to check the SuperModule info for each DDL really, but let's keep it here for now
       iSM = in.GetModule(); //The modules are numbered starting from 0
 
       if (iSM>=0 && iSM<fSuperModules) { // valid module reading, can go on with filling
@@ -360,18 +375,9 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	}
       } // SM index OK
 
-      // reset counters
-      max = sampleMin; min = sampleMax;
-      maxTime = 0;
-      i = 0;
-      // also pedestal calc counters
-      sampleSum = 0; // sum of samples
-      squaredSampleSum = 0; // sum of samples squared
-      nSum = 0; // number of samples in sum
-    
-    }//End if, of channel
+    }// end while over channel 
    
-  }//end while, of stream
+  }//end while over DDL's, of input stream 
 
   // let's also fill the SM and event counter histograms
   int nTotalHG = 0;

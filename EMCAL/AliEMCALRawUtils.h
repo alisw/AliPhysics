@@ -19,8 +19,8 @@
 //
 #include "TObject.h" // for ROOT types
 #include <TString.h>
-//#include "AliCaloRawStream.h"
-class AliCaloRawStream;
+//#include "AliCaloRawStreamV3.h"
+class AliCaloRawStreamV3;
 class AliAltroMapping;
 class TGraph;
 class TF1;

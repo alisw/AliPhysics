@@ -46,7 +46,7 @@ extern "C" {
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliRawEventHeaderBase.h"
-#include "AliCaloRawStream.h"
+#include "AliCaloRawStreamV3.h"
 #include "AliCaloAltroMapping.h"
 #include "AliLog.h"
 
@@ -63,7 +63,7 @@ extern "C" {
 
 int main(int argc, char **argv) {
 
-  AliLog::SetClassDebugLevel("AliCaloRawStream",-5);
+  AliLog::SetClassDebugLevel("AliCaloRawStreamV3",-5);
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);
 

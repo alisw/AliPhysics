@@ -40,7 +40,7 @@
 
 #include "AliLog.h"
 #include "AliRawReader.h"
-#include "AliCaloRawStream.h"
+#include "AliCaloRawStreamV3.h"
 #include "AliEMCALCalibHistoProducer.h"
 
 ClassImp(AliEMCALCalibHistoProducer)
@@ -183,38 +183,31 @@ void AliEMCALCalibHistoProducer::Run()
   
 //   TH1F* gHighGain = 0;
 //   TH1F* gLowGain = 0;
-  Int_t iBin = 0;
+  char hname[128];
   Int_t iEvent = 0;
   Int_t runNum = 0;
   Int_t nProfFreq = 1000; //Number of events with which a bin of the TProfile if filled
   Int_t nEvtBins = 1000; //Total number of the profile survey bins.
 
-  AliCaloRawStream in(fRawReader,"EMCAL");
+  AliCaloRawStreamV3 in(fRawReader,"EMCAL");
 
   // Read raw data event by event
 
   while (fRawReader->NextEvent()) {
     runNum = fRawReader->GetRunNumber();
-    Float_t energy = 0;
-     while ( in.Next() ) { 
 
-      if(fSMInstalled[in.GetModule()]==kFALSE) continue;
-       
-      if (in.GetSignal() > energy) {
-	energy = (Double_t) in.GetSignal();
-      }    
+    while (in.NextDDL()) {
+      while (in.NextChannel()) {
 
-      iBin++;
+	if(fSMInstalled[in.GetModule()]==kFALSE) continue;
 
-      if(iBin==in.GetTimeLength()) {
-	iBin=0;
-	    
+	// indices
 	Int_t mod = in.GetModule();
 	Int_t col = in.GetColumn();
 	Int_t row = in.GetRow();
 	Int_t evtbin = iEvent/nProfFreq;
-	char hname[128];
-
+	Bool_t HighGainFlag = in.IsHighGain();
+	
 	//Check if histogram/profile already exist, if not create it.
 	if(!fAmpHisto[mod][col][row]) {
 	  sprintf(hname,"mod%dcol%drow%d",mod,col,row);
@@ -224,14 +217,23 @@ void AliEMCALCalibHistoProducer::Run()
 	  sprintf(hname,"mod%d",mod);
 	  fAmpProf[mod] = new TProfile(hname,hname,nEvtBins,0.,nEvtBins);
 	}
+	
+	// loop over samples
+	Int_t maxSample = 0;
+	while (in.NextBunch()) {
+	  const UShort_t *sig = in.GetSignals();
+	  for (Int_t i = 0; i < in.GetBunchLength(); i++) {
+	    if (sig[i] > maxSample) maxSample = sig[i];
+	  }
+	} // bunches
+	
 	//Fill histogram/profile 
-	Bool_t lowGainFlag = in.IsLowGain();
-	if(!lowGainFlag) {
-	  fAmpHisto[mod][col][row]->Fill(energy);
-	  fAmpProf[mod]->Fill(evtbin, energy);
+	if(HighGainFlag) {
+	  fAmpHisto[mod][col][row]->Fill(maxSample);
+	  fAmpProf[mod]->Fill(evtbin, maxSample);
 	}
-      }
-    }
+      } // channels
+    } // DDL's
 
     // update histograms in local file every 100th event
     if(iEvent%fUpdatingRate == 0) {

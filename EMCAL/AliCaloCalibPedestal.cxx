@@ -40,7 +40,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "AliCaloRawStream.h"
+#include "AliCaloRawStreamV3.h"
 
 //The include file
 #include "AliCaloCalibPedestal.h"
@@ -328,12 +328,12 @@ Bool_t AliCaloCalibPedestal::AddInfo(const AliCaloCalibPedestal *ped)
 Bool_t AliCaloCalibPedestal::ProcessEvent(AliRawReader *rawReader)
 { 
   // if fMapping is NULL the rawstream will crate its own mapping
-  AliCaloRawStream rawStream(rawReader, fCaloString, (AliAltroMapping**)fMapping);
+  AliCaloRawStreamV3 rawStream(rawReader, fCaloString, (AliAltroMapping**)fMapping);
   return ProcessEvent(&rawStream);
 }
 
 //_____________________________________________________________________
-Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
+Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
 { 
   // Method to process=analyze one event in the data stream
   if (!in) return kFALSE; //Return right away if there's a null pointer
@@ -343,33 +343,45 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
   int sample = 0;
   int gain = 0;
   int time = 0;
-  // counters
-  int i = 0; // the sample number in current event.
-  int max = fgkSampleMin, min = fgkSampleMax;//Use these for picking the pedestal
+  int i = 0; // sample counter
+  int startBin = 0;
 
-  // for the pedestal calculation
-  int sampleSum = 0; // sum of samples
-  int squaredSampleSum = 0; // sum of samples squared
-  int nSum = 0; // number of samples in sum
-  // calc. quantities
-  double mean = 0, squaredMean = 0, rms = 0;
-  
-  while (in->Next()) {
-    sample = in->GetSignal(); //Get the adc signal
-    if (sample < min) min = sample;
-    if (sample > max) max = sample;
-    i++;
+  // start loop over input stream 
+  while (in->NextDDL()) {
+    while (in->NextChannel()) {
 
-    // should we add it for the pedestal calculation?
-    time = in->GetTime();
-    if ( (fFirstPedestalSample<=time && time<=fLastPedestalSample) || // sample time in range
-	 !fSelectPedestalSamples ) { // or we don't restrict the sample range.. - then we'll take all 
-      sampleSum += sample;
-      squaredSampleSum += sample*sample;
-      nSum++;
-    }
+      // counters
+      int max = fgkSampleMin, min = fgkSampleMax; // min and max sample values
+      
+      // for the pedestal calculation
+      int sampleSum = 0; // sum of samples
+      int squaredSampleSum = 0; // sum of samples squared
+      int nSum = 0; // number of samples in sum
+      // calc. quantities
+      double mean = 0, squaredMean = 0, rms = 0;
+      
+      while (in->NextBunch()) {
+	const UShort_t *sig = in->GetSignals();
+	startBin = in->GetStartTimeBin();
+	for (i = 0; i < in->GetBunchLength(); i++) {
+	  sample = sig[i];
+	  time = startBin--;
 
-    if ( i >= in->GetTimeLength()) {
+	  // check if it's a min or max value
+	  if (sample < min) min = sample;
+	  if (sample > max) max = sample;
+	  
+	  // should we add it for the pedestal calculation?
+	  if ( (fFirstPedestalSample<=time && time<=fLastPedestalSample) || // sample time in range
+	       !fSelectPedestalSamples ) { // or we don't restrict the sample range.. - then we'll take all 
+	    sampleSum += sample;
+	    squaredSampleSum += sample*sample;
+	    nSum++;
+	  }
+	  
+	} // loop over samples in bunch
+      } // loop over bunches
+
       // calculate pedesstal estimate: mean of possibly selected samples
       if (nSum > 0) {
 	mean = sampleSum / (1.0 * nSum);
@@ -382,8 +394,8 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
 	squaredMean = 0;
 	rms  = 0;
       }
-
-      //If we're here then we're done with this tower
+      
+      // we're done with the calc. for this channel; let's prepare to fill histo
       gain = -1; // init to not valid value
       if ( in->IsLowGain() ) {
 	gain = 0;
@@ -392,17 +404,17 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
 	gain = 1;
       }
       
+      // it should be enough to check the SuperModule info for each DDL really, but let's keep it here for now
       int arrayPos = in->GetModule(); //The modules are numbered starting from 0
       if (arrayPos >= fModules) {
 	//TODO: return an error message, if appopriate (perhaps if debug>0?)
 	return kFALSE;
-      } 
-    
+      }     
       //Debug
       if (arrayPos < 0 || arrayPos >= fModules) {
 	printf("Oh no: arrayPos = %i.\n", arrayPos); 
       }
-
+      
       fNChanFills++; // one more channel found, and profile to be filled
       //NOTE: coordinates are (column, row) for the profiles
       if (gain == 0) {
@@ -420,20 +432,14 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
 	  ((TProfile2D*)fPedestalHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), mean); 
 	  ((TProfile2D*)fPedestalRMSHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), rms);
 	}
-      }//end if gain
+      }//end if valid gain
 
-      // reset counters
-      max = fgkSampleMin; min = fgkSampleMax;
-      i = 0;
-      // also pedestal calc counters
-      sampleSum = 0; // sum of samples
-      squaredSampleSum = 0; // sum of samples squared
-      nSum = 0; // number of samples in sum
     
-    }//End if end of tower
-   
-  }//end while, of stream
-  
+    }// end while over channel   
+  }//end while over DDL's, of input stream 
+
+  in->Reset(); // just in case the next customer forgets to check if the stream was reset..
+ 
   return kTRUE;
 }
 

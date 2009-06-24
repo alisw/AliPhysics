@@ -9,7 +9,7 @@
 // \file AliCaloCalibSignal.h
 //   \brief Description:
 //   A help class for monitoring and calibration tools: MOOD, AMORE etc.,
-//   that can process events from a standard AliCaloRawStream,
+//   that can process events from a standard AliCaloRawStreamV3,
 //   most usually from LED/pulser runs. It stores signal info as
 //   typical (highest) amplitude vs time in TGraphs (one per channel)
 //   or TProfiles if we decide to just store the averages (and not all points) 
@@ -25,7 +25,7 @@
 #include "TString.h"
 #include "TTree.h"
 
-class AliCaloRawStream;
+class AliCaloRawStreamV3;
 class AliCaloAltroMapping;
 class AliRawReader;
 class AliRawEventHeaderBase;
@@ -45,7 +45,7 @@ class AliCaloCalibSignal : public TObject {
   
   // Event processing methods:
   Bool_t ProcessEvent(AliRawReader *rawReader);
-  Bool_t ProcessEvent(AliCaloRawStream *in, AliRawEventHeaderBase *aliHeader); // added header for time info
+  Bool_t ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeaderBase *aliHeader); // added header for time info
   Bool_t CheckFractionAboveAmp(int *AmpVal, int nTotChan); // check fraction of signals to check for LED events
 
   // Mapping handling
