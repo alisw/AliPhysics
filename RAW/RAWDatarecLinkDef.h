@@ -14,6 +14,7 @@
 #pragma link C++ class AliRawReaderMemory+;
 #pragma link C++ class AliAltroRawStream+;
 #pragma link C++ class AliCaloRawStream+;
+#pragma link C++ class AliCaloRawStreamV3+;
 #pragma link C++ class AliVMERawStream+;
 #pragma link C++ class AliAltroDecoder+;
 #pragma link C++ class AliAltroData+;

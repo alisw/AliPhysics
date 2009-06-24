@@ -8,6 +8,7 @@ SRCS:=  AliFilter.cxx \
 	AliRawHLTManager.cxx \
 	AliAltroRawStream.cxx \
 	AliCaloRawStream.cxx \
+	AliCaloRawStreamV3.cxx \
 	AliVMERawStream.cxx \
 	AliAltroDecoder.cxx AliAltroData.cxx AliAltroBunch.cxx AliAltroRawStreamFast.cxx \
 	AliAltroRawStreamV3.cxx
