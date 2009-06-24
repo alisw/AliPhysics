@@ -14,8 +14,6 @@ set(SRCS
        vertexingHF/AliAnalysisTaskCharmFraction.cxx
        vertexingHF/AliAnalysisTaskSEBkgLikeSignJPSI.cxx
        vertexingHF/AliAnalysisTaskSEBkgLikeSignD0.cxx
-       vertexingHF/AliCFHeavyFlavourTask.cxx
-       vertexingHF/AliCFHeavyFlavourTaskMultiVar.cxx
        vertexingHF/AliCFHeavyFlavourTaskMultiVarMultiStep.cxx
        vertexingHF/AliMultiDimVector.cxx
        vertexingHF/AliSignificanceCalculator.cxx
