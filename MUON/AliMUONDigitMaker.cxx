@@ -308,12 +308,10 @@ AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
   Int_t loCircuit;
 
   fRawStreamTrigger->SetReader(rawReader);
-  AliMUONRawStreamTriggerHP* rawStreamTrigger =
-    dynamic_cast<AliMUONRawStreamTriggerHP*>(fRawStreamTrigger);
 
   while (fRawStreamTrigger->NextDDL())
   {
-    darcHeader = rawStreamTrigger->GetHeaders();
+    darcHeader = fRawStreamTrigger->GetHeaders();
     
     // fill global trigger information
     if (fTriggerStore) 
@@ -327,7 +325,7 @@ AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
       }
     }
     
-    Int_t nReg = rawStreamTrigger->GetRegionalHeaderCount();
+    Int_t nReg = fRawStreamTrigger->GetRegionalHeaderCount();
     
     for(Int_t iReg = 0; iReg < nReg ;iReg++)
     {   //reg loop
@@ -341,7 +339,7 @@ AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
         fLogger->Log(Form("Missing crate number %d in DDL %d\n", iReg, fRawStreamTrigger->GetDDL()));
      
       
-      regHeader =  rawStreamTrigger->GetRegionalHeader(iReg);
+      regHeader =  fRawStreamTrigger->GetRegionalHeader(iReg);
       
       Int_t nLocal = regHeader->GetLocalStructCount();
       for(Int_t iLocal = 0; iLocal < nLocal; iLocal++) 
