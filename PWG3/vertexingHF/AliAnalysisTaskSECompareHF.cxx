@@ -46,6 +46,7 @@ AliAnalysisTaskSE(),
 fOutput(0), 
 fNtupleCmp(0),
 fHistMass(0),
+fHistNEvents(0),
 fVHF(0)
 {
   // Default constructor
@@ -59,6 +60,7 @@ AliAnalysisTaskSE(name),
 fOutput(0), 
 fNtupleCmp(0),
 fHistMass(0),
+fHistNEvents(0),
 fVHF(0)
 {
   // Standard constructor
@@ -114,6 +116,11 @@ void AliAnalysisTaskSECompareHF::UserCreateOutputObjects()
   fHistMass->SetMinimum(0);
   fOutput->Add(fHistMass);
 
+  fHistNEvents = new TH1F("fHistNEvents", "Number of processed events; ; Events",3,-1.5,1.5);
+  fHistNEvents->Sumw2();
+  fHistNEvents->SetMinimum(0);
+  fOutput->Add(fHistNEvents);
+
   fNtupleCmp = new TNtuple("fNtupleCmp","Charm comparison","pdg:nprongs:VxRec:VxTrue:ErrVx:VyRec:VyTrue:ErrVy:VzRec:VzTrue:ErrVz:Chi2toNDF:PtRec:Mrec");
 
   return;
@@ -128,6 +135,9 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
+  fHistNEvents->Fill(0); // count event
+  // Post the data already here
+  PostData(1,fOutput);
 
   // load HF vertices                     
   TClonesArray *inputArrayVertices =
@@ -195,6 +205,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
     switch(nprongs) {
     case 2: // look for D0->Kpi
       d2 = (AliAODRecoDecayHF2Prong*)vtx->GetParent();
+      if(d2->Charge() != 0) continue; // these are D* 
       lab = d2->MatchToMC(421,mcArray);
       if(lab>=0) {
 	unsetvtx=kFALSE;
@@ -314,6 +325,7 @@ void AliAnalysisTaskSECompareHF::Terminate(Option_t */*option*/)
   }
 
   fHistMass = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMass"));
+  fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
 
   fNtupleCmp = dynamic_cast<TNtuple*> (GetOutputData(2));
 

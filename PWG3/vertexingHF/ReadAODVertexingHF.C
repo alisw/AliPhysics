@@ -120,6 +120,7 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
     
     for (Int_t iD0toKpi = 0; iD0toKpi < nD0toKpi; iD0toKpi++) {
       AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->UncheckedAt(iD0toKpi);
+
       Bool_t unsetvtx=kFALSE;
       if(!d->GetOwnPrimaryVtx()) {
 	d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
