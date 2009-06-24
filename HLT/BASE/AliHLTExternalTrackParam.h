@@ -31,6 +31,8 @@ struct AliHLTExternalTrackParam
       Float_t fSinPsi;
       Float_t fTgl;
       Float_t fC[15];
+      Int_t   fTrackID;
+      UInt_t  fFlags;
       UInt_t  fNPoints;
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
       UInt_t  fPointIDs[1];
