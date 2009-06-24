@@ -191,7 +191,7 @@ void AliLog::ReadEnvSettings()
     char* p = const_cast<char*>(levels.Data());
     while (const char* module = strtok(p, " ")) {
       p = NULL;
-      char* pos = index(module, ':');
+      char* pos = const_cast<char*>(index(module, ':'));
       if (!pos) continue;
       *(pos++) = '\0';
       Int_t level = atoi(pos);
@@ -206,7 +206,7 @@ void AliLog::ReadEnvSettings()
     char* p = const_cast<char*>(levels.Data());
     while (const char* className = strtok(p, " ")) {
       p = NULL;
-      char* pos = index(className, ':');
+      char* pos = const_cast<char*>(index(className, ':'));
       if (!pos) continue;
       *(pos++) = '\0';
       Int_t level = atoi(pos);
