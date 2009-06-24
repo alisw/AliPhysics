@@ -92,7 +92,7 @@ fkRecoParam(recoParam)
   
   if (!fClusterServer)
   {
-    AliInfo("No cluster server given. Will use AliMUONLegacyClusterServer");
+    AliDebug(1,"No cluster server given. Will use AliMUONLegacyClusterServer");
     fIsOwnerOfClusterServer = kTRUE;
   }
   else
@@ -168,7 +168,7 @@ Int_t AliMUONTracker::LoadClusters(TTree* clustersTree)
     fInputClusterStore = AliMUONVClusterStore::Create(*clustersTree);
     if ( fInputClusterStore ) 
     {
-      AliInfo(Form("Created %s from cluster tree",fInputClusterStore->ClassName()));
+      AliDebug(1,Form("Created %s from cluster tree",fInputClusterStore->ClassName()));
       fInputClusterStore->Clear();
       fInputClusterStore->Connect(*clustersTree,kFALSE);
     }
@@ -346,7 +346,7 @@ AliMUONVTrackReconstructor* AliMUONTracker::CreateTrackReconstructor(const AliMU
     return 0x0;
   }
   
-  AliInfoClass(Form("Will use %s for tracking",trackReco->ClassName()));
+  AliDebugClass(1,Form("Will use %s for tracking",trackReco->ClassName()));
   
   return trackReco;
 }
