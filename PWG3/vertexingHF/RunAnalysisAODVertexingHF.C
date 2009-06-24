@@ -158,10 +158,15 @@ void RunAnalysisAODVertexingHF()
   gROOT->LoadMacro(taskName.Data());
   AliAnalysisTaskSECompareHF *cmpTask = AddTaskCompareHF();
 
+  taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
+  gROOT->LoadMacro(taskName.Data());
+  AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass();
+
+  
   taskName="AddTaskDplus.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   AliAnalysisTaskSEDplus *dplusTask = AddTaskDplus();
-
+  /*
   //taskName="AddTaskSelectHF.C"; taskName.Prepend(loadMacroPath.Data());
   //gROOT->LoadMacro(taskName.Data());
   //AliAnalysisTaskSESelectHF *seleTask = AddTaskSelectHF();
@@ -197,7 +202,7 @@ void RunAnalysisAODVertexingHF()
   AliAnalysisTaskCharmFraction *cFractTaskNoMCSel  = AddTaskCharmFraction("d0D0NoMCSel.root",kFALSE,kTRUE,kFALSE);
   AliAnalysisTaskCharmFraction *cFractTaskNoMCSel  = AddTaskCharmFraction("d0D0NoMCSel_SideBand.root",kTRUE,kTRUE,kFALSE);
   AliAnalysisTaskCharmFraction *cFractTaskPureBack = AddTaskCharmFraction("d0D0_PureBack.root",kFALSE,kTRUE,kTRUE,kTRUE,kFALSE,kTRUE,kTRUE,kTRUE,kTRUE);
-
+  */
 
   //-------------------------------------------------------------------
 
