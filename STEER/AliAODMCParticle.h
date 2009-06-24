@@ -99,10 +99,10 @@ class AliAODMCParticle: public AliVParticle {
   Int_t            fLabel;                // Label of the original MCParticle 
   Int_t            fMother;               // Index of the mother particles
   Int_t            fDaughter[2];          // Indices of the daughter particles
-  Double32_t       fPx;                   // [0.,0.,12] x component of momentum
-  Double32_t       fPy;                   // [0.,0.,12] y component of momentum
-  Double32_t       fPz;                   // [0.,0.,12] z component of momentum
-  Double32_t       fE;                    // [0.,0.,12] Energy
+  Double32_t       fPx;                   // x component of momentum
+  Double32_t       fPy;                   // y component of momentum
+  Double32_t       fPz;                   // z component of momentum
+  Double32_t       fE;                    // [0.,0.,12]
 
   Double32_t       fVx;                   // [0.,0.,12] x of production vertex
   Double32_t       fVy;                   // [0.,0.,12] y of production vertex
@@ -128,7 +128,7 @@ class AliAODMCParticle: public AliVParticle {
  
 
 
-  ClassDef(AliAODMCParticle,1)  // AliVParticle realisation for AODMCParticles
+  ClassDef(AliAODMCParticle,2)  // AliVParticle realisation for AODMCParticles
 
 };
 
