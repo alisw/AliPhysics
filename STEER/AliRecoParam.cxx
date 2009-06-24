@@ -231,54 +231,60 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
 
     // Now we look into the trigger type in order to decide
     // on the remaining cases (cosmic event within LHC run,
-    // high-mult event based on high-mult SPD trigger
-    // within p-p run, laser triggers within physics run,
+    // calibration, for example TPC laser, triggers within physics run,
     // special DAQ events considered as calibration etc...)
     if (evInfo.GetEventType() != 7) {
       // START_OF_*, END_OF_*, CALIBRATION etc events
       fEventSpecie = kCalib;
+      return;
     }
 
     TString triggerClasses = evInfo.GetTriggerClasses();
     TObjArray* trClassArray = triggerClasses.Tokenize(" ");
     Int_t nTrClasses = trClassArray->GetEntriesFast();
     Bool_t cosmicTrigger = kFALSE,
-      laserTrigger = kFALSE,
-      highMultTrigger = kFALSE,
+      calibTrigger = kFALSE,
       otherTrigger = kFALSE;
     for( Int_t i=0; i<nTrClasses; ++i ) {
       TString trClass = ((TObjString*)trClassArray->At(i))->String();
-      if (trClass.BeginsWith("C0A") ||
-	  trClass.BeginsWith("C0SC") ||
-	  trClass.BeginsWith("C0OC")) {
-      // ACORDE/SPD/TOF cosmic trigger, so we have cosmic event
-      // not always true, but we don't have a better idea...
-	cosmicTrigger = kTRUE;
+
+      if (trClass.BeginsWith("C0L")) {
+	// Calibration triggers always start with C0L
+	calibTrigger = kTRUE;
+	continue;
       }
-      else if (trClass.BeginsWith("C0LSR")) {
-	// Laser trigger
-	laserTrigger = kTRUE;
-      }
-      else if (trClass.BeginsWith("C0SH")) {
-	// High-multiplicity SPD trugger
-	// Have to add other high-mult triggers here...
-	highMultTrigger = kTRUE;
+
+      TObjArray* tmp = trClass.Tokenize("-");
+      TObjString* bcName = (TObjString*)tmp->At(1);
+      if (bcName) {
+	if ((bcName->String().CompareTo("ABCE") == 0) ||
+	    (bcName->String().CompareTo("E")    == 0) ||
+	    (bcName->String().CompareTo("NONE") == 0)) {
+	  // Cosmic triggers are identified by empty bunch-crossing mask
+	  // The naming comvention is:
+	  // A	filled bunch from A side, empty from C side
+	  // B	filled bunch from both sides
+	  // C	filled bunch from C side, empty from A side
+	  // E	empty bunch from both sides
+	  cosmicTrigger = kTRUE;
+	  delete tmp;
+	  continue;
+	}
       }
       else {
-	otherTrigger = kTRUE;
+	AliWarning(Form("Trigger class %s doesn't comply with the naming convention!",trClass.Data()));
       }
+      delete tmp;
+
+      otherTrigger = kTRUE;
     }
 
-    if (laserTrigger) {
+    if (calibTrigger) {
       fEventSpecie = kCalib;
       return;
     }
-    if (cosmicTrigger && !highMultTrigger && !otherTrigger) {
+    if (cosmicTrigger && !otherTrigger) {
       fEventSpecie = kCosmic;
-      return;
-    }
-    if (highMultTrigger) {
-      fEventSpecie = kHighMult;
       return;
     }
 
