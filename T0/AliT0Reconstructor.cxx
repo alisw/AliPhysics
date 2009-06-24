@@ -201,7 +201,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   Float_t c = 0.0299792; // cm/ps
   Float_t vertex = 0;
   if(besttimeA !=999999 && besttimeC != 999999 ){
-    timeDiff = (besttimeC - besttimeA)*channelWidth;
+    //    timeDiff = (besttimeC - besttimeA)*channelWidth;
+    timeDiff = (besttimeA - besttimeC)*channelWidth;
     meanTime = Float_t((besttimeA + besttimeC)/2);// * channelWidth); 
     //    meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;
     vertex = meanVertex - c*(timeDiff)/2.;// + (fdZonA - fdZonC)/2; 
@@ -355,7 +356,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        Float_t c = 0.0299792458; // cm/ps
        Float_t vertex = 99999;
        if(besttimeA <9999999 && besttimeC < 9999999 ){
-	 timeDiff = ( besttimeC - besttimeA) *channelWidth;
+	 timeDiff = ( besttimeA - besttimeC) *channelWidth;
 	 meanTime =  Float_t((besttimeA + besttimeC)/2.);  
 	 onlineMean = onlineMean ;
 	 vertex =  meanVertex - c*(timeDiff)/2.; //+ (fdZonA - fdZonC)/2; 
