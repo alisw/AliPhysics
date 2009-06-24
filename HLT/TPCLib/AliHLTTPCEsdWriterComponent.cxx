@@ -43,11 +43,11 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusterFinder.h"
-#include "AliHLTITSTrackerComponent.h"
-#include "AliHLTITSTrackDataHeader.h"
-#include "AliHLTITSTrackData.h"
-#include "AliHLTITSTrack.h"
-#include "AliHLTVertexer.h"
+//#include "AliHLTITSTrackerComponent.h"
+//#include "AliHLTITSTrackDataHeader.h"
+//#include "AliHLTITSTrackData.h"
+//#include "AliHLTITSTrack.h"
+//#include "AliHLTVertexer.h"
 #include <vector>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -251,7 +251,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
       }
 
       // ITS updated tracks
-
+      /*
       int nESDTracks = pESD->GetNumberOfTracks();
 
       // create map of tpc->esd track indices
@@ -286,7 +286,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	    if( tESD ) tESD->UpdateTrackParams( &tITS, AliESDtrack::kITSin );
 	  }
 	}
-      }  
+      }   
       delete[] trackIdTPC2ESDmap;
       
       // primary vertex & V0's 
@@ -295,7 +295,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
       //vertexer.SetESD( pESD );
       //vertexer.FindPrimaryVertex();
       //vertexer.FindV0s();
-
+      */
       if (iAddedDataBlocks>0 && pTree) {
 	pTree->Fill();
       }
