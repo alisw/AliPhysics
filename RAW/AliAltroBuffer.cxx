@@ -129,23 +129,6 @@ void AliAltroBuffer::FillBuffer(Int_t val)
   }
 }
 
-
-//_____________________________________________________________________________
-void AliAltroBuffer::WriteDummyTrailer(Int_t wordsNumber, Int_t padNumber,
-				       Int_t rowNumber, Int_t secNumber)
-{
-//Writes a trailer of 40 bits
-
-   Int_t num = fFreeCellBuffer % 4;
-   for(Int_t i = 0; i < num; i++) {
-     FillBuffer(0x2AA);
-   }//end for
-   FillBuffer(wordsNumber);
-   FillBuffer(padNumber);
-   FillBuffer(rowNumber);
-   FillBuffer(secNumber);
-}
-
 //_____________________________________________________________________________
 void AliAltroBuffer::WriteTrailer(Int_t wordsNumber, Int_t padNumber,
 				  Int_t rowNumber, Int_t secNumber)
@@ -153,9 +136,7 @@ void AliAltroBuffer::WriteTrailer(Int_t wordsNumber, Int_t padNumber,
 //Writes a trailer of 40 bits
 
   if (!fMapping) {
-    AliError("No ALTRO mapping information is loaded! Filling a dummy trailer!");
-    return WriteDummyTrailer(wordsNumber,padNumber,
-			     rowNumber,secNumber);
+    AliFatal("No ALTRO mapping information is loaded!");
   }
 
   Short_t hwAddress = fMapping->GetHWAddress(rowNumber,padNumber,secNumber);
