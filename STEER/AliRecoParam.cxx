@@ -204,14 +204,13 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
 
   if (strcmp(runInfo->GetLHCState(),"STABLE_BEAMS") == 0) {
     // In case of stable beams
-//    if ((strcmp(runInfo->GetBeamType(),"A-A") == 0) ||
-//	(strcmp(runInfo->GetBeamType(),"A-") == 0) ||
-//	(strcmp(runInfo->GetBeamType(),"-A") == 0)) {
+    if ((strcmp(runInfo->GetBeamType(),"A-A") == 0) ||
+	(strcmp(runInfo->GetBeamType(),"A-") == 0) ||
+	(strcmp(runInfo->GetBeamType(),"-A") == 0)) {
       // Heavy ion run (any beam tha is not pp, the event specie is set to kHighMult
       fEventSpecie = kHighMult;
-//    }
-//    else 
-    if ((strcmp(runInfo->GetBeamType(),"p-p") == 0) ||
+    }
+    else if ((strcmp(runInfo->GetBeamType(),"p-p") == 0) ||
 	     (strcmp(runInfo->GetBeamType(),"p-") == 0) ||
 	     (strcmp(runInfo->GetBeamType(),"-p") == 0) ||
 	     (strcmp(runInfo->GetBeamType(),"P-P") == 0) ||
