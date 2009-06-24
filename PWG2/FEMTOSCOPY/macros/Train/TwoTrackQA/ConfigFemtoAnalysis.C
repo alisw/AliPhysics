@@ -7,6 +7,7 @@
  *                                                                   *
  *********************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT_)
 #include "AliFemtoManager.h"
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
@@ -39,6 +40,7 @@
 #include "AliFemtoModelCorrFctnSource.h"
 #include "AliFemtoCutMonitorParticlePtPDG.h"
 #include "AliFemtoKTPairCut.h"
+#endif
 
 //________________________________________________________________________
 AliFemtoManager* ConfigFemtoAnalysis() {
@@ -114,7 +116,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     AliFemtoShareQualityCorrFctn *csqqinvpipstd= new AliFemtoShareQualityCorrFctn("sqqinvcfpipstd",40,0.0,0.4);
     anpipstd->AddCorrFctn(csqqinvpipstd);
 
-    AliFemtoCorrFctnDirectYlm *cylmpipstd = new AliFemtoCorrFctnDirectYlm("cylmpipstd",3,60,0.0,0.3);
+    AliFemtoCorrFctnDirectYlm *cylmpipstd = new AliFemtoCorrFctnDirectYlm("cylmpipstd",3,60,0.0,0.3,1);
     anpipstd->AddCorrFctn(cylmpipstd);
     
     AliFemtoQinvCorrFctn *cqinvpipstd = new AliFemtoQinvCorrFctn("qinvcfpipstd", 100,0.0,1.0);
@@ -177,7 +179,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     AliFemtoShareQualityCorrFctn *csqqinvpimstd= new AliFemtoShareQualityCorrFctn("sqqinvcfpimstd",40,0.0,0.4);
     anpimstd->AddCorrFctn(csqqinvpimstd);
 
-    AliFemtoCorrFctnDirectYlm *cylmpimstd = new AliFemtoCorrFctnDirectYlm("cylmpimstd",3,60,0.0,0.3);
+    AliFemtoCorrFctnDirectYlm *cylmpimstd = new AliFemtoCorrFctnDirectYlm("cylmpimstd",3,60,0.0,0.3,1);
     anpimstd->AddCorrFctn(cylmpimstd);
     
     AliFemtoQinvCorrFctn *cqinvpimstd = new AliFemtoQinvCorrFctn("qinvcfpimstd", 100,0.0,1.0);
@@ -241,7 +243,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     AliFemtoShareQualityCorrFctn *csqqinvpipnct= new AliFemtoShareQualityCorrFctn("sqqinvcfpipnct",40,0.0,0.4);
     anpipnct->AddCorrFctn(csqqinvpipnct);
 
-    AliFemtoCorrFctnDirectYlm *cylmpipnct = new AliFemtoCorrFctnDirectYlm("cylmpipnct",3,60,0.0,0.3);
+    AliFemtoCorrFctnDirectYlm *cylmpipnct = new AliFemtoCorrFctnDirectYlm("cylmpipnct",3,60,0.0,0.3,1);
     anpipnct->AddCorrFctn(cylmpipnct);
     
     AliFemtoQinvCorrFctn *cqinvpipnct = new AliFemtoQinvCorrFctn("qinvcfpipnct", 100,0.0,1.0);
@@ -304,7 +306,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     AliFemtoShareQualityCorrFctn *csqqinvpimnct= new AliFemtoShareQualityCorrFctn("sqqinvcfpimnct",40,0.0,0.4);
     anpimnct->AddCorrFctn(csqqinvpimnct);
 
-    AliFemtoCorrFctnDirectYlm *cylmpimnct = new AliFemtoCorrFctnDirectYlm("cylmpimnct",3,60,0.0,0.3);
+    AliFemtoCorrFctnDirectYlm *cylmpimnct = new AliFemtoCorrFctnDirectYlm("cylmpimnct",3,60,0.0,0.3,1);
     anpimnct->AddCorrFctn(cylmpimnct);
     
     AliFemtoQinvCorrFctn *cqinvpimnct = new AliFemtoQinvCorrFctn("qinvcfpimnct", 100,0.0,1.0);
@@ -368,7 +370,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     AliFemtoShareQualityCorrFctn *csqqinvpiptpc= new AliFemtoShareQualityCorrFctn("sqqinvcfpiptpc",40,0.0,0.4);
     anpiptpc->AddCorrFctn(csqqinvpiptpc);
 
-    AliFemtoCorrFctnDirectYlm *cylmpiptpc = new AliFemtoCorrFctnDirectYlm("cylmpiptpc",3,60,0.0,0.3);
+    AliFemtoCorrFctnDirectYlm *cylmpiptpc = new AliFemtoCorrFctnDirectYlm("cylmpiptpc",3,60,0.0,0.3,1);
     anpiptpc->AddCorrFctn(cylmpiptpc);
     
     AliFemtoQinvCorrFctn *cqinvpiptpc = new AliFemtoQinvCorrFctn("qinvcfpiptpc", 100,0.0,1.0);
@@ -431,7 +433,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     AliFemtoShareQualityCorrFctn *csqqinvpimtpc= new AliFemtoShareQualityCorrFctn("sqqinvcfpimtpc",40,0.0,0.4);
     anpimtpc->AddCorrFctn(csqqinvpimtpc);
 
-    AliFemtoCorrFctnDirectYlm *cylmpimtpc = new AliFemtoCorrFctnDirectYlm("cylmpimtpc",3,60,0.0,0.3);
+    AliFemtoCorrFctnDirectYlm *cylmpimtpc = new AliFemtoCorrFctnDirectYlm("cylmpimtpc",3,60,0.0,0.3,1);
     anpimtpc->AddCorrFctn(cylmpimtpc);
     
     AliFemtoQinvCorrFctn *cqinvpimtpc = new AliFemtoQinvCorrFctn("qinvcfpimtpc", 100,0.0,1.0);
