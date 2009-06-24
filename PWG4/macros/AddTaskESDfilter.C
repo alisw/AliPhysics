@@ -33,7 +33,7 @@ AliAnalysisTaskESDfilter *AddTaskESDfilter(bool bUseKineFilter = true)
    // to the AODHandler, this will not be needed when                           
    // AODHandler goes to ANALYSISalice                                          
    AliAnalysisTaskMCParticleFilter *kinefilter = 0;
-   if (useKineFilter) {
+   if (bUseKineFilter) {
       kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Kine Filter");
       mgr->AddTask(kinefilter);
    }
