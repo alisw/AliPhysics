@@ -52,6 +52,8 @@ class AliHFMassFitter : public TNamed {
   void     GetFitPars(Float_t*) const;
   void     GetTypeOfFit(Bool_t &background, Int_t &typeb) const {background = fWithBkg; typeb = ftypeOfFit4Bkg;}
   Int_t    GetReflectionSigmaFactor() const {return ffactor;} 
+  Double_t GetMean() const {return fMass;}
+  Double_t GetSigma()const {return fSigmaSgn;}
 
   void     InitNtuParam(char *ntuname="ntupar");
   void     FillNtuParam();
