@@ -49,7 +49,10 @@ class AliVertexerTracks : public TObject {
 					Bool_t optPropagate=kTRUE);
   AliESDVertex* RemoveTracksFromVertex(AliESDVertex *inVtx,
 				       TObjArray *trkArray,UShort_t *id,
-				       Float_t *diamondxy); 
+				       Float_t *diamondxy) const; 
+  AliESDVertex* RemoveConstraintFromVertex(AliESDVertex *inVtx,
+					   Float_t *diamondxyz,
+					   Float_t *diamondcov) const;
   void  SetITSMode(Double_t dcacut=0.1,
 		   Double_t dcacutIter0=0.1,
 		   Double_t maxd0z0=0.5,

@@ -715,7 +715,7 @@ Bool_t AliVertexerTracks::PropagateTrackTo(AliExternalTrackParam *track,
 AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
 							TObjArray *trkArray,
 							UShort_t *id,
-							Float_t *diamondxy) 
+							Float_t *diamondxy) const
 {
 //
 // Removes tracks in trksTree from fit of inVtx
@@ -772,7 +772,7 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
     sumWi -= wWi;
     sumWiri -= wWiri;
 
-    // track chi2
+    // track contribution to chi2
     TMatrixD deltar = rv; deltar -= ri;
     TMatrixD wWideltar(wWi,TMatrixD::kMult,deltar);
     Double_t chi2i = deltar(0,0)*wWideltar(0,0)+
@@ -809,7 +809,7 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
   cov[5] = vVnew(2,2);
   
   // store data in the vertex object
-  AliESDVertex *outVtx = new AliESDVertex(position,cov,chi2,nUsedTrks);
+  AliESDVertex *outVtx = new AliESDVertex(position,cov,chi2,nUsedTrks+1); // the +1 is for the constraint
   outVtx->SetTitle(inVtx->GetTitle());
   UShort_t *inindices = inVtx->GetIndices();
   Int_t nIndices = nUsedTrks;
@@ -835,6 +835,106 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
     outVtx->PrintStatus();
     outVtx->PrintIndices();
   */
+
+  return outVtx;
+}
+//---------------------------------------------------------------------------
+AliESDVertex* AliVertexerTracks::RemoveConstraintFromVertex(AliESDVertex *inVtx,
+						     Float_t *diamondxyz,
+						     Float_t *diamondcov) const
+{
+//
+// Removes diamond constraint from fit of inVtx
+//
+
+  if(!strstr(inVtx->GetTitle(),"VertexerTracksWithConstraint")) {
+    printf("ERROR: primary vertex has no constraint: cannot remove it\n");
+    return 0x0;
+  }
+  if(inVtx->GetNContributors()<3) {
+    printf("ERROR: primary vertex has less than 2 tracks: cannot remove contraint\n");
+    return 0x0;
+  }
+
+  // diamond constraint 
+  TMatrixD vVb(3,3);
+  vVb(0,0) = diamondcov[0];
+  vVb(0,1) = diamondcov[1];
+  vVb(0,2) = 0.;
+  vVb(1,0) = diamondcov[1];
+  vVb(1,1) = diamondcov[2];
+  vVb(1,2) = 0.;
+  vVb(2,0) = 0.;
+  vVb(2,1) = 0.;
+  vVb(2,2) = diamondcov[5];
+  TMatrixD vVbInv(TMatrixD::kInverted,vVb);
+  TMatrixD rb(3,1);
+  rb(0,0) = diamondxyz[0];
+  rb(1,0) = diamondxyz[1];
+  rb(2,0) = diamondxyz[2];
+  TMatrixD vVbInvrb(vVbInv,TMatrixD::kMult,rb);
+
+  // input vertex
+  TMatrixD rv(3,1);
+  rv(0,0) = inVtx->GetXv();
+  rv(1,0) = inVtx->GetYv();
+  rv(2,0) = inVtx->GetZv();
+  TMatrixD vV(3,3);
+  Double_t cov[6];
+  inVtx->GetCovMatrix(cov);
+  vV(0,0) = cov[0];
+  vV(0,1) = cov[1]; vV(1,0) = cov[1];
+  vV(1,1) = cov[2];
+  vV(0,2) = cov[3]; vV(2,0) = cov[3];
+  vV(1,2) = cov[4]; vV(2,1) = cov[4]; 
+  vV(2,2) = cov[5];
+  TMatrixD vVInv(TMatrixD::kInverted,vV);
+  TMatrixD vVInvrv(vVInv,TMatrixD::kMult,rv);
+
+
+  TMatrixD sumWi = vVInv - vVbInv;
+
+
+  TMatrixD sumWiri = vVInvrv - vVbInvrb;
+
+  TMatrixD rvnew(3,1);
+  TMatrixD vVnew(3,3);
+
+  // new inverted of weights matrix
+  TMatrixD invsumWi(TMatrixD::kInverted,sumWi);
+  vVnew = invsumWi;
+  // new position of primary vertex
+  rvnew.Mult(vVnew,sumWiri);
+
+  Double_t position[3];
+  position[0] = rvnew(0,0);
+  position[1] = rvnew(1,0);
+  position[2] = rvnew(2,0);
+  cov[0] = vVnew(0,0);
+  cov[1] = vVnew(0,1);
+  cov[2] = vVnew(1,1);
+  cov[3] = vVnew(0,2);
+  cov[4] = vVnew(1,2);
+  cov[5] = vVnew(2,2);
+
+
+  Double_t chi2 = inVtx->GetChi2();
+
+  // diamond constribution to chi2
+  TMatrixD deltar = rv; deltar -= rb;
+  TMatrixD vVbInvdeltar(vVbInv,TMatrixD::kMult,deltar);
+  Double_t chi2b = deltar(0,0)*vVbInvdeltar(0,0)+
+                   deltar(1,0)*vVbInvdeltar(1,0)+
+                   deltar(2,0)*vVbInvdeltar(2,0);
+  // remove from total chi2
+  chi2 -= chi2b;
+
+  // store data in the vertex object
+  AliESDVertex *outVtx = new AliESDVertex(position,cov,chi2,inVtx->GetNContributors()-1);
+  outVtx->SetTitle("VertexerTracksNoConstraint");
+  UShort_t *inindices = inVtx->GetIndices();
+  Int_t nIndices = inVtx->GetNIndices();
+  outVtx->SetIndices(nIndices,inindices);
 
   return outVtx;
 }
