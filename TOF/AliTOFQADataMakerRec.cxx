@@ -200,10 +200,6 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // makes data from Raws
   //
   
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRawsData(0) )
-    InitRaws() ;
-  
   Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;
   Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
 
@@ -250,7 +246,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 }
 
 //____________________________________________________________________________
-void AliTOFQADataMakerRec::MakeDigits(TClonesArray * digits)
+void AliTOFQADataMakerRec::MakeDigits()
 {
   //
   // makes data from Digits
@@ -261,14 +257,14 @@ void AliTOFQADataMakerRec::MakeDigits(TClonesArray * digits)
   Int_t in[5];
   Int_t out[5];
   
-  Int_t nentries=digits->GetEntriesFast();
+  Int_t nentries=fDigitsArray->GetEntriesFast();
   if(nentries<=0){
     GetDigitsData(0)->Fill(-1.) ; 
   }else{
     GetDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
   } 
   
-  TIter next(digits) ; 
+  TIter next(fDigitsArray) ; 
   AliTOFdigit * digit ; 
   while ( (digit = dynamic_cast<AliTOFdigit *>(next())) ) {
     
@@ -291,20 +287,20 @@ void AliTOFQADataMakerRec::MakeDigits(TTree * digitTree)
   //
   // makes data from Digit Tree
   //
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
   
-  TClonesArray * digits = new TClonesArray("AliTOFdigit", 1000) ; 
+  if (fDigitsArray) 
+    fDigitsArray->Clear() ; 
+  else
+    fDigitsArray = new TClonesArray("AliTOFdigit", 1000) ; 
   
   TBranch * branch = digitTree->GetBranch("TOF") ;
   if ( ! branch ) {
     AliError("TOF branch in Digit Tree not found") ; 
     return;
   }
-  branch->SetAddress(&digits) ;
+  branch->SetAddress(&fDigitsArray) ;
   branch->GetEntry(0) ; 
-  MakeDigits(digits) ; 
+  MakeDigits() ; 
 }
 
 //____________________________________________________________________________
@@ -313,11 +309,7 @@ void AliTOFQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   //
   // Make data from Clusters
   //
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRecPointsData(0) )
-    InitRecPoints() ;
-  
+ 
   Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;
   Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
 
@@ -370,9 +362,6 @@ void AliTOFQADataMakerRec::MakeESDs(AliESDEvent * esd)
   //
   // make QA data from ESDs
   //  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(0) )
-    InitESDs() ;
   
   Int_t ntrk = esd->GetNumberOfTracks() ; 
   Int_t ntof=0;

@@ -409,10 +409,6 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
     //Fill prepared histograms with Raw digit properties
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRawsData(0) )
-    InitRaws() ;
-
   TObjArray *pmdddlcont = 0x0;
     pmdddlcont = new TObjArray();
     AliPMDRawStream stream(rawReader);
@@ -491,17 +487,13 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
 }
 //____________________________________________________________________________
-void AliPMDQADataMakerRec::MakeDigits(TClonesArray * digits)
+void AliPMDQADataMakerRec::MakeDigits()
 {
   // makes data from Digits
   
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
-
-  Int_t cpvmul = 0, premul = 0;
+   Int_t cpvmul = 0, premul = 0;
   
-  TIter next(digits) ; 
+  TIter next(fDigitsArray) ; 
   AliPMDdigit * digit ; 
   while ( (digit = dynamic_cast<AliPMDdigit *>(next())) )
     {
@@ -528,10 +520,13 @@ void AliPMDQADataMakerRec::MakeDigits(TTree * digitTree)
 {
   // makes data from Digit Tree
   
-  TClonesArray * digits = new TClonesArray("AliPMDdigit", 1000) ; 
+  if (fDigitsArray) 
+    fDigitsArray->Clear() ; 
+  else
+    fDigitsArray = new TClonesArray("AliPMDdigit", 1000) ; 
   
   TBranch * branch = digitTree->GetBranch("PMDDigit") ;
-  branch->SetAddress(&digits) ;
+  branch->SetAddress(&fDigitsArray) ;
   
   if ( ! branch )
     {
@@ -542,7 +537,7 @@ void AliPMDQADataMakerRec::MakeDigits(TTree * digitTree)
     for (Int_t ient = 0; ient < branch->GetEntries(); ient++)
       {
 	    branch->GetEntry(ient) ; 
-	    MakeDigits(digits) ; 
+	    MakeDigits() ; 
       }
     
     }
@@ -553,20 +548,18 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
     // makes data from RecPoints
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRecPointsData(0) )
-    InitRecPoints() ;
-
   Int_t multDdl0 = 0, multDdl1 = 0, multDdl2 = 0;
     Int_t multDdl3 = 0, multDdl4 = 0, multDdl5 = 0;
 
     AliPMDrecpoint1 * recpoint; 
 
-    TClonesArray * recpoints = 0x0;
-    recpoints = new TClonesArray("AliPMDrecpoint1", 1000) ; 
+  if (fRecPointsArray) 
+    fRecPointsArray->Clear() ; 
+  else 
+    fRecPointsArray = new TClonesArray("AliPMDrecpoint1", 1000) ; 
     
     TBranch * branch = clustersTree->GetBranch("PMDRecpoint") ;
-    branch->SetAddress(&recpoints) ;
+    branch->SetAddress(&fRecPointsArray) ;
 
     if ( ! branch )
     {
@@ -578,7 +571,7 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 	{
 	    branch->GetEntry(imod) ;
 
-	    TIter next(recpoints) ; 
+	    TIter next(fRecPointsArray) ; 
 
 	    while ( (recpoint = dynamic_cast<AliPMDrecpoint1 *>(next())) )
 	      {
@@ -631,10 +624,6 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     GetRecPointsData(6)->Fill(multDdl0,multDdl1);
     GetRecPointsData(7)->Fill(multDdl2,multDdl3);
     GetRecPointsData(8)->Fill(multDdl4,multDdl5);
-
-    recpoints->Delete() ; 
-    delete recpoints;
-
 }
 
 //____________________________________________________________________________
@@ -642,10 +631,6 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 void AliPMDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   // make QA data from ESDs
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(0) )
-    InitESDs() ;
 
   Int_t premul = 0, cpvmul = 0;
 

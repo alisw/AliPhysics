@@ -47,14 +47,14 @@ ClassImp(AliHMPIDQADataMakerSim)
            
 //____________________________________________________________________________ 
   AliHMPIDQADataMakerSim::AliHMPIDQADataMakerSim() : 
-  AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kHMPID), "HMPID Quality Assurance Data Maker")
+  AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kHMPID), "HMPID Quality Assurance Data Maker"), fChannel(0)
 {
   // ctor
 }
 
 //____________________________________________________________________________ 
 AliHMPIDQADataMakerSim::AliHMPIDQADataMakerSim(const AliHMPIDQADataMakerSim& qadm) :
-  AliQADataMakerSim() 
+  AliQADataMakerSim(),fChannel(0)
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
@@ -123,114 +123,87 @@ void AliHMPIDQADataMakerSim::InitSDigits()
 
 //____________________________________________________________________________ 
 
-void AliHMPIDQADataMakerSim::MakeHits(TClonesArray * data)
+void AliHMPIDQADataMakerSim::MakeHits()
 {
  //
  //filling QA histos for Hits
  //
-  TClonesArray * hits = dynamic_cast<TClonesArray *>(data) ; 
-  if (!hits){
-    AliError("Wrong type of hits container") ; 
-  } else {
-    
-    // Check id histograms already created for this Event Specie
-    if ( ! GetHitsData(0) )
-      InitHits() ;
+  
+  TIter next(fHitsArray); 
+  AliHMPIDHit * hit ; 
+  while ( (hit = dynamic_cast<AliHMPIDHit *>(next())) ) {
+    if(hit->Pid()<500000) GetHitsData(0)->Fill(hit->Q()) ;
+    if(hit->Pid()<500000) GetHitsData(hit->Ch()+1)->Fill(hit->LorsX(),hit->LorsY());
+  }
+} 
 
-    TIter next(hits); 
-    AliHMPIDHit * hit ; 
-    while ( (hit = dynamic_cast<AliHMPIDHit *>(next())) ) {
-      if(hit->Pid()<500000) GetHitsData(0)->Fill(hit->Q()) ;
-      if(hit->Pid()<500000) GetHitsData(hit->Ch()+1)->Fill(hit->LorsX(),hit->LorsY());
-    }
-  } 
-
-}
 //___________________________________________________________________________
 void AliHMPIDQADataMakerSim::MakeHits(TTree * data)
 {
 //
 //Opening of the Hit TTree 
 //
- TClonesArray *pHits=new TClonesArray("AliHMPIDHit");  data->SetBranchAddress("HMPID",&pHits);
+ if (fHitsArray) 
+   fHitsArray->Clear() ; 
+  else 
+    fHitsArray=new TClonesArray("AliHMPIDHit");  
+  data->SetBranchAddress("HMPID",&fHitsArray);
   for(Int_t iEnt=0;iEnt<data->GetEntriesFast();iEnt++){//entries loop
     data->GetEntry(iEnt);
-    MakeHits(pHits);
+    MakeHits();
   }//entries loop
 }
-//____________________________________________________________________________
-void AliHMPIDQADataMakerSim::MakeDigits(TClonesArray * data)
+//___________________________________________________________________________
+void AliHMPIDQADataMakerSim::MakeDigits()
 {
- //
- //filling QA histos for Digits
- //
-
-  TObjArray *chamber = dynamic_cast<TObjArray*>(data);
-  if ( !chamber) {
-    AliError("Wrong type of digits container") ; 
-  } else {
-
-    // Check id histograms already created for this Event Specie
-    if ( ! GetDigitsData(0) )
-      InitDigits() ;
-
-    for(Int_t i =0; i< chamber->GetEntries(); i++)
-      {
-	TClonesArray * digits = dynamic_cast<TClonesArray*>(chamber->At(i)); 
-	GetDigitsData(0)->Fill(i,digits->GetEntriesFast()/(48.*80.*6.));
-	TIter next(digits); 
-	AliHMPIDDigit * digit; 
-	while ( (digit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
-	  GetDigitsData(1)->Fill(10.*i+digit->Pc(),1./(48.*80.));
-          GetDigitsData(2+i)->Fill(digit->PadChX(),digit->PadChY());
-          GetDigitsData(9+i*6+digit->Pc())->Fill(digit->Q());
-	}  
-      }
-  }
-}
+  //
+  //filling QA histos for Digits
+  //
+   
+  Int_t i = fChannel ; 
+  GetDigitsData(0)->Fill(i,fDigitsArray->GetEntriesFast()/(48.*80.*6.));
+  TIter next(fDigitsArray); 
+  AliHMPIDDigit * digit; 
+  while ( (digit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
+    GetDigitsData(1)->Fill(10.*i+digit->Pc(),1./(48.*80.));
+    GetDigitsData(2+i)->Fill(digit->PadChX(),digit->PadChY());
+    GetDigitsData(9+i*6+digit->Pc())->Fill(digit->Q());
+  }  
+}  
 //___________________________________________________________________________
 void AliHMPIDQADataMakerSim::MakeDigits(TTree * data)
 {
-//
-//Opening the Digit Tree
-//
- TObjArray *pObjDig=new TObjArray(AliHMPIDParam::kMaxCh+1);
+  //
+  //Opening the Digit Tree
+  //
+  
+  if(fDigitsArray) 
+    fDigitsArray->Clear() ; 
+  else
+    fDigitsArray=new TClonesArray("AliHMPIDDigit");
+  
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
-    TClonesArray *pCA=new TClonesArray("AliHMPIDDigit");
-    pObjDig->AddAt(pCA,iCh);
+    fChannel = iCh ; 
+    data->SetBranchAddress(Form("HMPID%i",iCh),&fDigitsArray);
+    data->GetEntry(0);
+    MakeDigits();
+    fDigitsArray->Clear() ; 
   }
-
-  pObjDig->SetOwner(kTRUE);
-
-  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
-    data->SetBranchAddress(Form("HMPID%i",iCh),&(*pObjDig)[iCh]);
-  }
-  data->GetEntry(0);
-
-   MakeDigits((TClonesArray *)pObjDig);
 }
+
 //____________________________________________________________________________
 
-void AliHMPIDQADataMakerSim::MakeSDigits(TClonesArray * data)
+void AliHMPIDQADataMakerSim::MakeSDigits()
 {
  //
  //filling QA histos for SDigits
  //
-  TClonesArray * sdigits = dynamic_cast<TClonesArray *>(data) ; 
-  if (!sdigits) {
-    AliError("Wrong type of sdigits container") ; 
-  } else {
-
-    // Check id histograms already created for this Event Specie
-    if ( ! GetSDigitsData(0) )
-      InitSDigits() ;
-
-    TIter next(sdigits) ; 
-    AliHMPIDDigit * sdigit ; 
-    while ( (sdigit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
-	    GetSDigitsData(0)->Fill(sdigit->Q());
-    } 
-  }
+ 
+  TIter next(fSDigitsArray) ; 
+  AliHMPIDDigit * sdigit ; 
+  while ( (sdigit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
+    GetSDigitsData(0)->Fill(sdigit->Q());
+  } 
 }
 //___________________________________________________________________________
 void AliHMPIDQADataMakerSim::MakeSDigits(TTree * data)
@@ -238,16 +211,19 @@ void AliHMPIDQADataMakerSim::MakeSDigits(TTree * data)
  //
  // Opening the SDigit Tree
  //
- TClonesArray * sdigits = new TClonesArray("AliHMPIDDigit", 1000) ;
+ if (fSDigitsArray)
+   fSDigitsArray->Clear() ; 
+  else 
+    fSDigitsArray = new TClonesArray("AliHMPIDDigit", 1000) ;
 
   TBranch * branch = data->GetBranch("HMPID") ;
   if ( ! branch ) {
     AliError("HMPID SDigit Tree not found") ;
     return;
   }
-  branch->SetAddress(&sdigits) ;
+  branch->SetAddress(&fSDigitsArray) ;
   branch->GetEntry(0) ;
-  MakeSDigits(sdigits) ;
+  MakeSDigits() ;
 }
 //____________________________________________________________________________
 void AliHMPIDQADataMakerSim::StartOfDetectorCycle()

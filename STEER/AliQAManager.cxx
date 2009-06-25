@@ -471,7 +471,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
       if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
         qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
 
-  } else if ( iDet != AliQAv1::kCORR ) {
+  } else if ( iDet < AliQAv1::kHLT ) {
     
     // load the QA data maker object
     TPluginManager* pluginManager = gROOT->GetPluginManager() ;

@@ -53,7 +53,8 @@ AliQADataMakerRec::AliQADataMakerRec(const char * name, const char * title) :
   fRawsQAList(NULL), 
   fRecPointsQAList(NULL),
   fCorrNt(NULL), 
-  fRecoParam(NULL) 
+  fRecoParam(NULL),
+  fRecPointsArray(NULL)
 {
   // ctor
 	fDetectorDirName = GetName() ; 
@@ -67,7 +68,8 @@ AliQADataMakerRec::AliQADataMakerRec(const AliQADataMakerRec& qadm) :
   fRawsQAList(qadm.fRawsQAList),
   fRecPointsQAList(qadm.fRecPointsQAList),
   fCorrNt(qadm.fCorrNt),  
-  fRecoParam(qadm.fRecoParam) 
+  fRecoParam(qadm.fRecoParam),
+  fRecPointsArray(NULL)
 {
   //copy ctor
  	SetName(qadm.GetName()) ; 
@@ -114,6 +116,10 @@ AliQADataMakerRec::~AliQADataMakerRec()
       }
     }
 		delete[] fRecPointsQAList ; 
+  }
+  if (fRecPointsArray) {
+    fRecPointsArray->Clear() ; 
+    delete fRecPointsArray ; 
   }
 }
 
@@ -165,8 +171,8 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
   if (!subDir)
     subDir = fDetectorDir->mkdir(AliQAv1::GetTaskName(task)) ;  
   subDir->cd() ; 
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) { // skip Default
+    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) || AliRecoParam::ConvertIndex(specie) == AliRecoParam::kDefault) 
       continue ; 
     TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(specie)) ;
     if (!eventSpecieDir) 

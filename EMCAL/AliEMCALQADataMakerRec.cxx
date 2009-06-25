@@ -210,11 +210,6 @@ void AliEMCALQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   // make QA data from ESDs
 
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(kESDCaloClusE) )
-    InitESDs() ;
-  
   Int_t nTot = 0 ; 
   for ( Int_t index = 0; index < esd->GetNumberOfCaloClusters() ; index++ ) {
     AliESDCaloCluster * clu = esd->GetCaloCluster(index) ;
@@ -251,10 +246,6 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // For now, to avoid redoing the expensive signal fits we just
   // look at max vs min of the signal spextra, a la online usage in
   // AliCaloCalibPedestal
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRawsData(kSigLG) )
-    InitRaws() ;
 
   rawReader->Reset() ;
   AliCaloRawStreamV3 in(rawReader,"EMCAL"); 
@@ -398,16 +389,12 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 }
 
 //____________________________________________________________________________
-void AliEMCALQADataMakerRec::MakeDigits(TClonesArray * digits)
+void AliEMCALQADataMakerRec::MakeDigits()
 {
   // makes data from Digits
- 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
 
-  GetDigitsData(1)->Fill(digits->GetEntriesFast()) ; 
-  TIter next(digits) ; 
+  GetDigitsData(1)->Fill(fDigitsArray->GetEntriesFast()) ; 
+  TIter next(fDigitsArray) ; 
   AliEMCALDigit * digit ; 
   while ( (digit = dynamic_cast<AliEMCALDigit *>(next())) ) {
     GetDigitsData(0)->Fill( digit->GetAmp()) ;
@@ -419,15 +406,18 @@ void AliEMCALQADataMakerRec::MakeDigits(TClonesArray * digits)
 void AliEMCALQADataMakerRec::MakeDigits(TTree * digitTree)
 {
   // makes data from Digit Tree
-  TClonesArray * digits = new TClonesArray("AliEMCALDigit", 1000) ; 
+  if (fDigitsArray) 
+    fDigitsArray->Clear() ; 
+  else
+    fDigitsArray = new TClonesArray("AliEMCALDigit", 1000) ; 
   
   TBranch * branch = digitTree->GetBranch("EMCAL") ;
   if ( ! branch ) {
     AliWarning("EMCAL branch in Digit Tree not found") ; 
   } else {
-    branch->SetAddress(&digits) ;
+    branch->SetAddress(&fDigitsArray) ;
     branch->GetEntry(0) ; 
-    MakeDigits(digits) ; 
+    MakeDigits() ; 
   }
   
 }
@@ -441,10 +431,6 @@ void AliEMCALQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     AliError("can't get the branch with the EMCAL clusters !");
     return;
   }
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRecPointsData(kRecPM) )
-    InitRecPoints() ;
   
   TObjArray * emcrecpoints = new TObjArray(100) ;
   emcbranch->SetAddress(&emcrecpoints);

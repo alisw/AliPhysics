@@ -52,7 +52,6 @@ ClassImp(AliFMDQADataMakerRec)
 AliFMDQADataMakerRec::AliFMDQADataMakerRec() : 
   AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kFMD), 
 		    "FMD Quality Assurance Data Maker"),
-  fDigitsArray("AliFMDDigit", 0),
   fRecPointsArray("AliFMDRecPoint", 1000)
 {
   // ctor
@@ -63,7 +62,6 @@ AliFMDQADataMakerRec::AliFMDQADataMakerRec() :
 AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm) 
   : AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kFMD), 
 		      "FMD Quality Assurance Data Maker"),
-    fDigitsArray(qadm.fDigitsArray),
     fRecPointsArray(qadm.fRecPointsArray)
 {
   // copy ctor 
@@ -74,7 +72,6 @@ AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm)
 //_____________________________________________________________________
 AliFMDQADataMakerRec& AliFMDQADataMakerRec::operator = (const AliFMDQADataMakerRec& qadm ) 
 {
-  fDigitsArray = qadm.fDigitsArray;
   fRecPointsArray = qadm.fRecPointsArray;
   
   return *this;
@@ -191,10 +188,6 @@ void AliFMDQADataMakerRec::MakeESDs(AliESDEvent * esd)
   AliESDFMD* fmd = esd->GetFMDData();
   if (!fmd) return;
   
-  // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(0) )
-    InitESDs() ;
-
   for(UShort_t det=1;det<=3;det++) {
     for (UShort_t ir = 0; ir < 2; ir++) {
       Char_t   ring = (ir == 0 ? 'I' : 'O');
@@ -214,21 +207,17 @@ void AliFMDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 
 
 //_____________________________________________________________________
-void AliFMDQADataMakerRec::MakeDigits(TClonesArray * digits)
+void AliFMDQADataMakerRec::MakeDigits()
 {
   // makes data from Digits  
-  if(!digits)  {
+  if(!fDigitsArray)  {
     AliError("FMD Digit object not found!!") ;
     return;
   }
   
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
-
-  for(Int_t i=0;i<digits->GetEntriesFast();i++) {
+  for(Int_t i=0;i<fDigitsArray->GetEntriesFast();i++) {
     //Raw ADC counts
-    AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
+    AliFMDDigit* digit = static_cast<AliFMDDigit*>(fDigitsArray->At(i));
     GetDigitsData(0)->Fill(digit->Counts());
   }
 }
@@ -237,28 +226,33 @@ void AliFMDQADataMakerRec::MakeDigits(TClonesArray * digits)
 void AliFMDQADataMakerRec::MakeDigits(TTree * digitTree)
 {
   
-  fDigitsArray.Clear();
+  if (fDigitsArray) 
+    fDigitsArray->Clear();
+  else 
+    fDigitsArray = new TClonesArray("AliFMDDigit", 1000);
+
   TBranch*      branch = digitTree->GetBranch("FMD");
   if (!branch) {
     AliWarning("FMD branch in Digit Tree not found") ; 
     return;
   } 
-  TClonesArray* digitsAddress = &fDigitsArray;
-  branch->SetAddress(&digitsAddress);
+  branch->SetAddress(&fDigitsArray);
   branch->GetEntry(0); 
-  MakeDigits(digitsAddress);
+  MakeDigits();
 }
 
 //_____________________________________________________________________
 void AliFMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRawsData(0) )
-    InitRaws() ;
+ AliFMDRawReader fmdReader(rawReader,0);
+  
+  if (fDigitsArray) 
+    fDigitsArray->Clear();
+  else 
+    fDigitsArray = new TClonesArray("AliFMDDigit", 1000);
 
-  AliFMDRawReader fmdReader(rawReader,0);
-  TClonesArray* digitsAddress = &fDigitsArray;
+  TClonesArray* digitsAddress = fDigitsArray;
   
   rawReader->Reset();
 		
@@ -287,11 +281,7 @@ void AliFMDQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 {
   // makes data from RecPoints
   
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRecPointsData(0) )
-    InitRecPoints() ;
-
-  AliFMDParameters* pars = AliFMDParameters::Instance();
+   AliFMDParameters* pars = AliFMDParameters::Instance();
   fRecPointsArray.Clear();
   TBranch *fmdbranch = clustersTree->GetBranch("FMD");
   if (!fmdbranch) { 

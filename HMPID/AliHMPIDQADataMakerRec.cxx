@@ -50,14 +50,14 @@ ClassImp(AliHMPIDQADataMakerRec)
            
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec() : 
-  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kHMPID), "HMPID Quality Assurance Data Maker"),fEvtRaw(0)
+  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kHMPID), "HMPID Quality Assurance Data Maker"),fEvtRaw(0), fChannel(0)
 {
   // ctor
 }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec(const AliHMPIDQADataMakerRec& qadm) :
-  AliQADataMakerRec(),fEvtRaw(qadm.fEvtRaw)
+  AliQADataMakerRec(),fEvtRaw(qadm.fEvtRaw), fChannel(qadm.fChannel)
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
@@ -205,10 +205,6 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 //
 // Filling Raws QA histos
 //
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRawsData(0) )
-    InitRaws() ;
-  
 	  rawReader->Reset() ; 
 		AliHMPIDRawStream stream(rawReader);
 
@@ -238,35 +234,23 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDQADataMakerRec::MakeDigits(TClonesArray * data)
+void AliHMPIDQADataMakerRec::MakeDigits()
 {
   //
   //filling QA histos for Digits
   //
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
+  Int_t i = fChannel ; 
+  GetDigitsData(0)->Fill(i,fDigitsArray->GetEntriesFast()/(48.*80.*6.));
+  TIter next(fDigitsArray); 
+  AliHMPIDDigit * digit; 
+  while ( (digit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
+    GetDigitsData(1)->Fill(10.*i+digit->Pc(),1./(48.*80.));
+    GetDigitsData(2+i)->Fill(digit->PadChX(),digit->PadChY());
+    GetDigitsData(9+i*6+digit->Pc())->Fill(digit->Q());
+  }  
+}  
   
-  TObjArray *chamber = dynamic_cast<TObjArray*>(data);
-  if ( !chamber) {
-    AliError("Wrong type of digits container") ; 
-  } else {
-    for(Int_t i =0; i< chamber->GetEntries(); i++)
-      {
-      TClonesArray * digits = dynamic_cast<TClonesArray*>(chamber->At(i)); 
-      GetDigitsData(0)->Fill(i,digits->GetEntriesFast()/(48.*80.*6.));
-      TIter next(digits); 
-      AliHMPIDDigit * digit; 
-      while ( (digit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
-        GetDigitsData(1)->Fill(10.*i+digit->Pc(),1./(48.*80.));
-        GetDigitsData(2+i)->Fill(digit->PadChX(),digit->PadChY());
-        GetDigitsData(9+i*6+digit->Pc())->Fill(digit->Q());
-      }  
-      }
-  }
-}
-
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::MakeDigits(TTree * data)
 {
@@ -274,20 +258,18 @@ void AliHMPIDQADataMakerRec::MakeDigits(TTree * data)
   //Opening the Digit Tree
   //
 
-  TObjArray *pObjDig=new TObjArray(AliHMPIDParam::kMaxCh+1);
-  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
-    TClonesArray *pCA=new TClonesArray("AliHMPIDDigit");
-    pObjDig->AddAt(pCA,iCh);
-  }
-  
-  pObjDig->SetOwner(kTRUE);
+  if(fDigitsArray) 
+    fDigitsArray->Clear() ; 
+  else
+    fDigitsArray=new TClonesArray("AliHMPIDDigit");
   
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
-    data->SetBranchAddress(Form("HMPID%i",iCh),&(*pObjDig)[iCh]);
+    fChannel = iCh ; 
+    fDigitsArray->Clear() ; 
+    data->SetBranchAddress(Form("HMPID%i",iCh),&fDigitsArray);
+    data->GetEntry(0);
+    MakeDigits();
   }
-  data->GetEntry(0);
-  
-  MakeDigits((TClonesArray *)pObjDig);
 }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -297,20 +279,18 @@ void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   //filling QA histos for clusters
   //
   AliHMPIDParam *pPar =AliHMPIDParam::Instance();
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRecPointsData(0) )
-    InitRecPoints() ;
-  
-  static TClonesArray *clusters;
-  if(!clusters) clusters = new TClonesArray("AliHMPIDCluster");
+ 
+  if (fRecPointsArray) 
+    fRecPointsArray->Clear() ; 
+  else 
+    fRecPointsArray = new TClonesArray("AliHMPIDCluster");
   
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
     TBranch *branch = clustersTree->GetBranch(Form("HMPID%d",iCh));
-    branch->SetAddress(&clusters);
+    branch->SetAddress(&fRecPointsArray);
     branch->GetEntry(0);
-    GetRecPointsData(0)->Fill(iCh,clusters->GetEntries());
-    TIter next(clusters);
+    GetRecPointsData(0)->Fill(iCh,fRecPointsArray->GetEntries());
+    TIter next(fRecPointsArray);
     AliHMPIDCluster *clu;
     while ( (clu = dynamic_cast<AliHMPIDCluster *>(next())) ) {
       GetRecPointsData(1)->Fill(clu->Status(),iCh);
@@ -318,14 +298,11 @@ void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
       if(clu->Q()>100) GetRecPointsData(2+iCh)->Fill(clu->Size());
       else {
         GetRecPointsData(2+7+iCh)->Fill(clu->Size());
-	GetRecPointsData(2+14+iCh*6+sect)->Fill(clu->Q());
+        GetRecPointsData(2+14+iCh*6+sect)->Fill(clu->Q());
       }    
       GetRecPointsData(2+14+42+iCh*6+sect)->Fill(clu->Q());
     }
   }
-
-  clusters->Clear();
-  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::MakeESDs(AliESDEvent * esd)
@@ -333,11 +310,7 @@ void AliHMPIDQADataMakerRec::MakeESDs(AliESDEvent * esd)
   //
   //fills QA histos for ESD
   //
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(0) )
-    InitESDs() ;
-  
+ 
   for(Int_t iTrk = 0 ; iTrk < esd->GetNumberOfTracks() ; iTrk++){
     AliESDtrack *pTrk = esd->GetTrack(iTrk) ;
     GetESDsData(0)->Fill(pTrk->GetP(),pTrk->GetHMPIDsignal());
@@ -375,7 +348,7 @@ void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
   
   if(task==AliQAv1::kRAWS) {
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
+      if (! IsValidEventSpecie(specie, histos) )
         continue ;
       for(Int_t iddl=0;iddl<14;iddl++) {
         TH1F *h = (TH1F*)histos[specie]->At(14+iddl); //ddl histos scaled by the number of events 
@@ -383,8 +356,6 @@ void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
       }
     }
   }
-  
    AliQAChecker::Instance()->Run(AliQAv1::kHMPID, task, histos);
-
 }
 

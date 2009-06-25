@@ -37,7 +37,7 @@ private:
   virtual void   InitESDs() ;      //book ESD QA histo 
   virtual void   MakeRaws(AliRawReader* rawReader) ;
   virtual void   MakeRecPoints(TTree * clusters)    ;  //Fill cluster QA histo
-  virtual void   MakeDigits(TClonesArray * /*digits*/) {;} 
+  virtual void   MakeDigits() {;} 
   virtual void   MakeDigits(TTree * digTree);
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;

@@ -79,16 +79,21 @@ AliPHOSQADataMakerRec& AliPHOSQADataMakerRec::operator = (const AliPHOSQADataMak
 void AliPHOSQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
-  if(GetRawsData(kHGqualMod1) && GetRawsData(kHGmod1))
-    GetRawsData(kHGqualMod1)->Divide( GetRawsData(kHGmod1) ) ;
-  if(GetRawsData(kHGqualMod2) && GetRawsData(kHGmod2))
-    GetRawsData(kHGqualMod2)->Divide( GetRawsData(kHGmod2) ) ;
-  if(GetRawsData(kHGqualMod3) && GetRawsData(kHGmod3))
-    GetRawsData(kHGqualMod3)->Divide( GetRawsData(kHGmod3) ) ;
-  if(GetRawsData(kHGqualMod4) && GetRawsData(kHGmod4))
-    GetRawsData(kHGqualMod4)->Divide( GetRawsData(kHGmod4) ) ;
-  if(GetRawsData(kHGqualMod5) && GetRawsData(kHGmod5))
-    GetRawsData(kHGqualMod5)->Divide( GetRawsData(kHGmod5) ) ;
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if (! IsValidEventSpecie(specie, list)) 
+      continue ;
+    SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
+    if(GetRawsData(kHGqualMod1) && GetRawsData(kHGmod1))
+      GetRawsData(kHGqualMod1)->Divide( GetRawsData(kHGmod1) ) ;
+    if(GetRawsData(kHGqualMod2) && GetRawsData(kHGmod2))
+      GetRawsData(kHGqualMod2)->Divide( GetRawsData(kHGmod2) ) ;
+    if(GetRawsData(kHGqualMod3) && GetRawsData(kHGmod3))
+      GetRawsData(kHGqualMod3)->Divide( GetRawsData(kHGmod3) ) ;
+    if(GetRawsData(kHGqualMod4) && GetRawsData(kHGmod4))
+      GetRawsData(kHGqualMod4)->Divide( GetRawsData(kHGmod4) ) ;
+    if(GetRawsData(kHGqualMod5) && GetRawsData(kHGmod5))
+      GetRawsData(kHGqualMod5)->Divide( GetRawsData(kHGmod5) ) ;
+  }
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQAv1::kPHOS, task, list) ;  
 }
@@ -346,11 +351,7 @@ void AliPHOSQADataMakerRec::InitRaws()
 void AliPHOSQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   // make QA data from ESDs
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(kESDSpec) )
-    InitESDs() ;
-  
+ 
   Int_t nTot = 0 ; 
   Double_t eTot = 0 ; 
   for ( Int_t index = 0; index < esd->GetNumberOfCaloClusters() ; index++ ) {
@@ -372,10 +373,6 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
   //Fill prepared histograms with Raw digit properties
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRawsData(kLGpedRMS) )
-    InitRaws() ;
- 
   rawReader->Reset() ;
   AliPHOSRawDecoder * decoder ;
   if(strcmp(GetRecoParam()->EMCDecoderVersion(),"v1")==0)
@@ -486,19 +483,15 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 }
 
 //____________________________________________________________________________
-void AliPHOSQADataMakerRec::MakeDigits(TClonesArray * digits)
+void AliPHOSQADataMakerRec::MakeDigits()
 {
   // makes data from Digits
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(kDigits) )
-    InitDigits() ;
 
   TH1 * hist = GetDigitsData(kDigitsMul) ; 
   if ( ! hist )
     InitDigits() ;
-  GetDigitsData(kDigitsMul)->Fill(digits->GetEntriesFast()) ; 
-  TIter next(digits) ; 
+  GetDigitsData(kDigitsMul)->Fill(fDigitsArray->GetEntriesFast()) ; 
+  TIter next(fDigitsArray) ; 
   AliPHOSDigit * digit ; 
   while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
     GetDigitsData(kDigits)->Fill( digit->GetEnergy()) ;
@@ -509,15 +502,18 @@ void AliPHOSQADataMakerRec::MakeDigits(TClonesArray * digits)
 void AliPHOSQADataMakerRec::MakeDigits(TTree * digitTree)
 {
 	// makes data from Digit Tree
-	TClonesArray * digits = new TClonesArray("AliPHOSDigit", 1000) ; 
+	if (fDigitsArray) 
+    fDigitsArray->Clear() ; 
+  else 
+    fDigitsArray = new TClonesArray("AliPHOSDigit", 1000) ; 
   
 	TBranch * branch = digitTree->GetBranch("PHOS") ;
 	if ( ! branch ) {
 		AliWarning("PHOS branch in Digit Tree not found") ; 
 	} else {
-		branch->SetAddress(&digits) ;
+		branch->SetAddress(&fDigitsArray) ;
 		branch->GetEntry(0) ; 
-		MakeDigits(digits) ; 
+		MakeDigits() ; 
 	}
 }
 
@@ -531,10 +527,6 @@ void AliPHOSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
       AliError("can't get the branch with the PHOS EMC clusters !");
       return;
     }
-    
-    // Check id histograms already created for this Event Specie
-    if ( ! GetRecPointsData(kRPSpec) )
-      InitRecPoints() ;
     
     TObjArray * emcrecpoints = new TObjArray(100) ;
     emcbranch->SetAddress(&emcrecpoints);

@@ -29,7 +29,7 @@ private:
   virtual void   InitRecPoints() {;} 
   virtual void   InitRaws(); 
   virtual void   MakeDigits(TTree * /*recTree*/) ;
-  virtual void   MakeDigits(TClonesArray* /*digits*/)  {return;}
+  virtual void   MakeDigits()  {return;}
   virtual void   MakeRecPoints(TTree * /*recTree*/) {;} 
   virtual void   MakeRaws(AliRawReader* rawReader) ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;

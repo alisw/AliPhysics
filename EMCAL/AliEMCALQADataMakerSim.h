@@ -35,11 +35,11 @@ private:
   virtual void   InitHits() ; 
   virtual void   InitDigits() ; 
   virtual void   InitSDigits() ; 
-  virtual void   MakeHits(TClonesArray * hits) ;
+  virtual void   MakeHits() ;
   virtual void   MakeHits(TTree * hitTree) ;
-  virtual void   MakeDigits(TClonesArray * digits) ; 
+  virtual void   MakeDigits() ; 
   virtual void   MakeDigits(TTree * digitTree) ; 
-  virtual void   MakeSDigits(TClonesArray * sigits) ; 
+  virtual void   MakeSDigits() ; 
   virtual void   MakeSDigits(TTree * sigitTree) ; 
   virtual void   StartOfDetectorCycle() ; 
 

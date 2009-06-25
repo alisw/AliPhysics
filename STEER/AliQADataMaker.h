@@ -67,7 +67,9 @@ public:
 	virtual TObjArray** Init(AliQAv1::TASKINDEX_t, Int_t cycles = -1)                                 = 0 ;
   TObjArray*          Init(AliQAv1::TASKINDEX_t, AliRecoParam::EventSpecie_t es, Int_t cycles = -1) ;
 	virtual void        Init(AliQAv1::TASKINDEX_t, TObjArray ** list, Int_t run, Int_t cycles = -1)   = 0 ;
+	virtual void        InitRaws()          = 0 ; 
 	Bool_t              IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
+  Bool_t              IsValidEventSpecie(Int_t eventSpecieIndex, TObjArray ** list) ; 
   virtual void        MakeImage(AliQAv1::TASKINDEX_t task) = 0 ; 
 	void                Reset() { fCycleCounter = 0 ; }
 	void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
@@ -95,18 +97,17 @@ protected:
 	virtual void   InitHits()          = 0 ; 
   //virtual void   InitRecParticles()  = 0 ; 
 	virtual void   InitRecPoints()     = 0 ; 
-	virtual void   InitRaws()          = 0 ; 
 	virtual void   InitSDigits()       = 0 ; 
   //virtual void   InitTrackSegments()  = 0 ; 
 	virtual void   MakeESDs(AliESDEvent * )          = 0 ; 
-	virtual void   MakeHits(TClonesArray * )         = 0 ; 
+	virtual void   MakeHits()         = 0 ; 
 	virtual void   MakeHits(TTree * )                = 0 ;  
-	virtual void   MakeDigits(TClonesArray * )       = 0 ;  
+	virtual void   MakeDigits()       = 0 ;  
 	virtual void   MakeDigits(TTree * )              = 0 ; 
-  //virtual void   MakeRecParticles(TClonesArray * ) = 0 ; 
+  //virtual void   MakeRecParticles( ) = 0 ; 
 	virtual void   MakeRaws(AliRawReader *)          = 0 ; 
 	virtual void   MakeRecPoints(TTree * )           = 0 ; 
-	virtual void   MakeSDigits(TClonesArray * )      = 0 ;  
+	virtual void   MakeSDigits()      = 0 ;  
 	virtual void   MakeSDigits(TTree * )             = 0 ;  
   //virtual void   MakeTrackSegments(TTree * )		 = 0 ;  
   virtual void   MakeTheImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, const Char_t * mode) ; 
@@ -125,11 +126,13 @@ protected:
   AliRecoParam::EventSpecie_t fEventSpecie ; //! event specie, see AliRecoParam
   TCanvas **     fImage ;           //[AliRecoParam::kNSpecies] 
   Bool_t         fPrintImage ;      //! flag to print the images or not
+  TClonesArray * fDigitsArray ;    //! array to hold the sdigits
+  
 private:
 	AliQADataMaker& operator = (const AliQADataMaker& /*qadm*/); // Not implemented
 
   
- ClassDef(AliQADataMaker,2)  // description 
+ ClassDef(AliQADataMaker,3)  // description 
 
 };
 

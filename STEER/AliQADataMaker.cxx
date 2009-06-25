@@ -71,7 +71,8 @@ AliQADataMaker::AliQADataMaker(const Char_t * name, const Char_t * title) :
   fRun(0), 
   fEventSpecie(AliRecoParam::kDefault), 
   fImage(new TCanvas*[AliRecoParam::kNSpecies]), 
-  fPrintImage(kTRUE) 
+  fPrintImage(kTRUE), 
+  fDigitsArray(NULL) 
 {
   // ctor
   fDetectorDirName = GetName() ; 
@@ -95,8 +96,8 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   fRun(qadm.fRun), 
   fEventSpecie(qadm.fEventSpecie), 
   fImage(qadm.fImage),  
-  fPrintImage(kTRUE)
-
+  fPrintImage(kTRUE),
+  fDigitsArray(NULL) 
 {
   //copy ctor
   fDetectorDirName = GetName() ; 
@@ -117,6 +118,11 @@ AliQADataMaker::~AliQADataMaker()
   }
   delete[] fImage ; 
   delete[] fParameterList ; 
+
+  if (fDigitsArray) {
+    fDigitsArray->Clear() ; 
+    delete fDigitsArray ;
+  }
 }
 
 //____________________________________________________________________________
@@ -202,6 +208,24 @@ TObject * AliQADataMaker::GetData(TObjArray ** list, const Int_t index)
   TH1 * histClone = NULL ; 
   TObjArray * arr = list[esindex] ; 
 	if (arr) {
+    if ( ! arr->GetEntriesFast() ) {
+      // Initializes the histograms 
+      TString arrName(arr->GetName()) ; 
+      if (arrName.Contains(AliQAv1::GetTaskName(AliQAv1::kRAWS)))
+        InitRaws() ; 
+      else if (arrName.Contains(AliQAv1::GetTaskName(AliQAv1::kHITS)))
+        InitHits() ; 
+      else if (arrName.Contains(AliQAv1::GetTaskName(AliQAv1::kSDIGITS)))
+        InitSDigits() ; 
+      else if (arrName.Contains(AliQAv1::GetTaskName(AliQAv1::kDIGITS)))
+        InitDigits() ; 
+      else if (arrName.Contains(AliQAv1::GetTaskName(AliQAv1::kDIGITSR)))
+        InitSDigits() ; 
+      else if (arrName.Contains(AliQAv1::GetTaskName(AliQAv1::kRECPOINTS)))
+        InitRecPoints() ; 
+      else if (arrName.Contains(AliQAv1::GetTaskName(AliQAv1::kESDS)))
+        InitESDs() ; 
+    }
 		if ( index > AliQAv1::GetMaxQAObj() ) {
 			AliError(Form("Max number of authorized QA objects is %d", AliQAv1::GetMaxQAObj())) ; 
 		} else {
@@ -222,6 +246,17 @@ TObjArray*  AliQADataMaker::Init(AliQAv1::TASKINDEX_t task, AliRecoParam::EventS
 }
 
 //____________________________________________________________________________ 
+Bool_t AliQADataMaker::IsValidEventSpecie(Int_t eventSpecieIndex, TObjArray ** list)
+{
+  // check if event specie was present in current run or 
+  // if histograms of this event specie have been created
+  if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(eventSpecieIndex)) || ! list[eventSpecieIndex]->GetEntriesFast() )
+    return kFALSE ;
+  else
+    return kTRUE ;
+}
+
+//____________________________________________________________________________ 
 void AliQADataMaker::MakeTheImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, const Char_t * mode) 
 {
   // makes the QA image for sim and rec
@@ -236,7 +271,7 @@ void AliQADataMaker::MakeTheImage( TObjArray ** list, AliQAv1::TASKINDEX_t task,
       nImages++; 
   }
   if ( nImages == 0 ) {
-    AliWarning(Form("No histogram will be plotted for %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data())) ;  
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("No histogram will be plotted for %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data())) ;  
   } else {
     AliDebug(AliQAv1::GetQADebugLevel(), Form("%d histograms will be plotted for %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data())) ;  
     for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {

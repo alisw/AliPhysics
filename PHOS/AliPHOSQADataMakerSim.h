@@ -40,17 +40,13 @@ private:
   virtual void   InitHits() ; 
   virtual void   InitDigits() ; 
   virtual void   InitSDigits() ; 
-  using AliQADataMakerSim::MakeHits;
-          void   MakeHits() ;
+  virtual void   MakeHits() ;
   virtual void   MakeHits(TTree * hitTree) ;
-  virtual void   MakeDigits(TClonesArray * digits) ; 
+  virtual void   MakeDigits() ; 
   virtual void   MakeDigits(TTree * digitTree) ; 
-  virtual void   MakeSDigits(TClonesArray * sigits) ; 
+  virtual void   MakeSDigits() ; 
   virtual void   MakeSDigits(TTree * sigitTree) ; 
   virtual void   StartOfDetectorCycle() ; 
-
-private:
-  TClonesArray * fHits;  //!Array of PHOS hits
 
   ClassDef(AliPHOSQADataMakerSim,2)  // description 
 

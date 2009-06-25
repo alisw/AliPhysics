@@ -34,11 +34,11 @@ private:
   virtual void   InitSDigits();
   virtual void   InitDigits(); 
 
-  virtual void   MakeHits(TClonesArray * hits);
+  virtual void   MakeHits();
   virtual void   MakeHits(TTree * hitTree) ;
-  virtual void   MakeSDigits(TClonesArray * sigits) ; 
+  virtual void   MakeSDigits() ; 
   virtual void   MakeSDigits(TTree * sigitTree) ; 
-  virtual void   MakeDigits(TClonesArray * digits) ; 
+  virtual void   MakeDigits() ; 
   virtual void   MakeDigits(TTree * digitTree) ; 
   virtual void   StartOfDetectorCycle() ; 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;

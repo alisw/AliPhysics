@@ -54,7 +54,7 @@ private:
   virtual void   InitRecPoints() ; 
   virtual void   InitRaws() ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;
-  virtual void   MakeDigits(TClonesArray * digits) ;
+  virtual void   MakeDigits() ;
   virtual void   MakeDigits(TTree * digTree) ; 
   virtual void   MakeRecPoints(TTree * recpoTree) ; 
   virtual void   MakeRaws(AliRawReader* rawReader) ; 

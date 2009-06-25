@@ -129,19 +129,15 @@ void AliVZEROQADataMakerSim::InitDigits()
 
 
 //____________________________________________________________________________
-void AliVZEROQADataMakerSim::MakeHits(TClonesArray * hits)
+void AliVZEROQADataMakerSim::MakeHits()
 {
 	//make QA data from Hits
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetHitsData(0) )
-    InitHits() ;
-
-  GetHitsData(0)->Fill(hits->GetEntriesFast()) ;    // fills Hit multiplicity
-    Int_t nhits = hits->GetEntriesFast();
+  Int_t nhits = fHitsArray->GetEntriesFast();
+  GetHitsData(0)->Fill(nhits) ;    // fills Hit multiplicity
     for (Int_t ihit=0;ihit<nhits;ihit++) 
 	{
-	   AliVZEROhit  * VZEROHit   = (AliVZEROhit*) hits->UncheckedAt(ihit);
+	   AliVZEROhit  * VZEROHit   = (AliVZEROhit*) fHitsArray->UncheckedAt(ihit);
 	   if (!VZEROHit) {
  	      AliError("The unchecked hit doesn't exist");
 	      break;
@@ -156,7 +152,10 @@ void AliVZEROQADataMakerSim::MakeHits(TClonesArray * hits)
 void AliVZEROQADataMakerSim::MakeHits(TTree *hitTree)
 {
   //fills QA histos for Hits
-  TClonesArray * hits = new TClonesArray("AliVZEROhit", 1000);
+ if (fHitsArray)
+   fHitsArray->Clear() ; 
+  else 
+    fHitsArray = new TClonesArray("AliVZEROhit", 1000);
   
   TBranch * branch = hitTree->GetBranch("VZERO") ;
   if ( ! branch ) {
@@ -164,7 +163,7 @@ void AliVZEROQADataMakerSim::MakeHits(TTree *hitTree)
   } else {
 
    if (branch) {
-      branch->SetAddress(&hits);
+      branch->SetAddress(&fHitsArray);
     }else{
       AliError("Branch VZERO hit not found");
       exit(111);
@@ -179,11 +178,11 @@ void AliVZEROQADataMakerSim::MakeHits(TTree *hitTree)
     // Start loop on tracks in the hits containers
     for (Int_t track=0; track<ntracks;track++) {
       branch->GetEntry(track);
-      GetHitsData(0)->Fill(hits->GetEntriesFast()) ;    // fills Hit multiplicity
-      Int_t nhits = hits->GetEntriesFast();
+      Int_t nhits = fHitsArray->GetEntriesFast();
+      GetHitsData(0)->Fill(nhits) ;    // fills Hit multiplicity
       for (Int_t ihit=0;ihit<nhits;ihit++) 
 	{
-	  AliVZEROhit  * VZEROHit   = (AliVZEROhit*) hits->UncheckedAt(ihit);
+	  AliVZEROhit  * VZEROHit   = (AliVZEROhit*) fHitsArray->UncheckedAt(ihit);
 	  if (!VZEROHit) {
  	    AliError("The unchecked hit doesn't exist");
 	    break;
@@ -196,16 +195,12 @@ void AliVZEROQADataMakerSim::MakeHits(TTree *hitTree)
 
 
 //____________________________________________________________________________
-void AliVZEROQADataMakerSim::MakeDigits(TClonesArray * digits)
+void AliVZEROQADataMakerSim::MakeDigits()
 {
   // makes data from Digits
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
-
-  GetDigitsData(0)->Fill(digits->GetEntriesFast()) ; 
-    TIter next(digits) ; 
+  GetDigitsData(0)->Fill(fDigitsArray->GetEntriesFast()) ; 
+    TIter next(fDigitsArray) ; 
     AliVZEROdigit *VZERODigit ; 
     while ( (VZERODigit = dynamic_cast<AliVZEROdigit *>(next())) ) {
          Int_t   PMNumber  = VZERODigit->PMNumber();         
@@ -220,15 +215,18 @@ void AliVZEROQADataMakerSim::MakeDigits(TTree *digitTree)
 {
     // makes data from Digit Tree
 	
-    TClonesArray * digits = new TClonesArray("AliVZEROdigit", 1000) ; 
+  if (fDigitsArray)
+    fDigitsArray->Clear() ; 
+  else 
+    fDigitsArray = new TClonesArray("AliVZEROdigit", 1000) ; 
 
     TBranch * branch = digitTree->GetBranch("VZERODigit") ;
     if ( ! branch ) {
          AliWarning("VZERO branch in Digit Tree not found") ; 
     } else {
-         branch->SetAddress(&digits) ;
+         branch->SetAddress(&fDigitsArray) ;
          branch->GetEntry(0) ; 
-         MakeDigits(digits) ; 
+         MakeDigits() ; 
     }  
 }
 

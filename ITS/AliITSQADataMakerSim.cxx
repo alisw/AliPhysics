@@ -116,6 +116,8 @@ void AliITSQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   // launch the QA checking
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if (! IsValidEventSpecie(specie, list) )
+      continue ; 
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
     if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list[specie]);
     if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list[specie]);
@@ -158,22 +160,22 @@ void AliITSQADataMakerSim::InitDigits()
 }
 
 //____________________________________________________________________________
-void AliITSQADataMakerSim::MakeDigits(TClonesArray * digits)
+void AliITSQADataMakerSim::MakeDigits()
 { 
   // Fill QA for digits   
   if(fSubDetector == 0 || fSubDetector == 1) {
-    Int_t rv = fSPDDataMaker->MakeDigits(digits) ; 
+    Int_t rv = fSPDDataMaker->MakeDigits() ; 
     if ( rv != 0 )
       fSDDDataMaker->SetOffset(AliQAv1::kDIGITS, fDigitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
   }
   
   if(fSubDetector == 0 || fSubDetector == 2) {
-    Int_t rv = fSDDDataMaker->MakeDigits(digits) ; 
+    Int_t rv = fSDDDataMaker->MakeDigits() ; 
     if ( rv != 0 )
       fSSDDataMaker->SetOffset(AliQAv1::kDIGITS, fDigitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
   }
 
-  if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeDigits(digits);
+  if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeDigits();
 }
 
 //____________________________________________________________________________
@@ -214,22 +216,22 @@ void AliITSQADataMakerSim::InitSDigits()
 }
 
 //____________________________________________________________________________ 
-void AliITSQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
+void AliITSQADataMakerSim::MakeSDigits()
 {
   // Fill QA for recpoints
   if(fSubDetector == 0 || fSubDetector == 1){
-    Int_t rv = fSPDDataMaker->MakeSDigits(sdigits) ; 
+    Int_t rv = fSPDDataMaker->MakeSDigits() ; 
     if ( rv != 0 )
       fSDDDataMaker->SetOffset(AliQAv1::kSDIGITS, fSDigitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
   }
   
   if(fSubDetector == 0 || fSubDetector == 2) {
-    Int_t rv = fSDDDataMaker->MakeSDigits(sdigits) ; 
+    Int_t rv = fSDDDataMaker->MakeSDigits() ; 
     if ( rv != 0 )
       fSSDDataMaker->SetOffset(AliQAv1::kSDIGITS, fSDigitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
   }
 
-  if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeSDigits(sdigits);
+  if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeSDigits();
 }
 
 //____________________________________________________________________________ 
@@ -270,22 +272,22 @@ void AliITSQADataMakerSim::InitHits()
 }
 
 //____________________________________________________________________________ 
-void AliITSQADataMakerSim::MakeHits(TClonesArray * hits)
+void AliITSQADataMakerSim::MakeHits()
 {
   // Fill QA for hits
   if(fSubDetector == 0 || fSubDetector == 1) {
-    Int_t rv = fSPDDataMaker->MakeHits(hits) ; 
+    Int_t rv = fSPDDataMaker->MakeHits() ; 
     if ( rv != 0 )
       fSDDDataMaker->SetOffset(AliQAv1::kHITS, fHitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
   }
   
   if(fSubDetector == 0 || fSubDetector == 2) {
-    Int_t rv = fSDDDataMaker->MakeHits(hits) ; 
+    Int_t rv = fSDDDataMaker->MakeHits() ; 
     if ( rv != 0 )
       fSSDDataMaker->SetOffset(AliQAv1::kHITS, fHitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
   }
 
-  if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeHits(hits);
+  if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeHits();
 }
 
 //____________________________________________________________________________ 

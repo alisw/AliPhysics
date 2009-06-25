@@ -115,21 +115,19 @@ void AliACORDEQADataMakerSim::MakeHits(TTree *hitTree)
 {
   // Here we fill the QA histos for Hits declared above
 
-	TClonesArray * hits = new TClonesArray("AliACORDEhit",1000);
+	if (fHitsArray) 
+    fHitsArray->Clear() ; 
+  else
+    fHitsArray = new TClonesArray("AliACORDEhit",1000);
 	TBranch * branch = hitTree->GetBranch("ACORDE");
 	if (!branch) {
 		AliWarning("ACORDE branch in Hit Tree not found");
 	} else {
-    
-    // Check id histograms already created for this Event Specie
-    if ( ! GetHitsData(0) )
-      InitHits() ;
-
-    branch->SetAddress(&hits);
+    branch->SetAddress(&fHitsArray);
 		for(Int_t track = 0 ; track < branch->GetEntries() ; track++) {
 			branch->GetEntry(track);
-			for(Int_t ihit=0 ; ihit < hits->GetEntriesFast() ; ihit++) {
-				AliACORDEhit *AcoHit = (AliACORDEhit*) hits->UncheckedAt(ihit);
+			for(Int_t ihit=0 ; ihit < fHitsArray->GetEntriesFast() ; ihit++) {
+				AliACORDEhit *AcoHit = (AliACORDEhit*) fHitsArray->UncheckedAt(ihit);
 				if(!AcoHit) {
 					AliError("The unchecked hit doesn't exist");
 					continue ;
@@ -143,21 +141,20 @@ void AliACORDEQADataMakerSim::MakeHits(TTree *hitTree)
 void AliACORDEQADataMakerSim::MakeDigits( TTree *digitsTree)
 {
   //fills QA histos for Digits
-  TClonesArray * digits = new TClonesArray("AliACORDEdigit",1000);
+  if (fDigitsArray) 
+    fDigitsArray->Clear() ; 
+  else
+    fDigitsArray = new TClonesArray("AliACORDEdigit",1000);
+  
   TBranch * branch = digitsTree->GetBranch("ACORDEdigit");
   if (!branch) {
     AliWarning("ACORDE branch in Digits Tree not found");
   } else {
- 
-    // Check id histograms already created for this Event Specie
-    if ( ! GetDigitsData(0) )
-      InitDigits() ;
-
-    branch->SetAddress(&digits);
+   branch->SetAddress(&fDigitsArray);
     for(Int_t track = 0 ; track < branch->GetEntries() ; track++) {
       branch->GetEntry(track);
-      for(Int_t idigit = 0 ; idigit < digits->GetEntriesFast() ; idigit++) {
-        AliACORDEdigit *AcoDigit = (AliACORDEdigit*) digits->UncheckedAt(idigit);
+      for(Int_t idigit = 0 ; idigit < fDigitsArray->GetEntriesFast() ; idigit++) {
+        AliACORDEdigit *AcoDigit = (AliACORDEdigit*) fDigitsArray->UncheckedAt(idigit);
         if (!AcoDigit) {
           AliError("The unchecked digit doesn't exist");
           continue ;

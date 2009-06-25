@@ -34,16 +34,17 @@ private:
   virtual void   InitRecPoints();  //book cluster QA histo
   virtual void   InitRaws();     //book raw QA histo
   virtual void   InitESDs() ;      //book ESD QA histo 
-  virtual void   MakeDigits(TClonesArray* digits) ;
+  virtual void   MakeDigits() ;
   virtual void   MakeDigits(TTree * digits)    ;  //Fill cluster QA histo
   virtual void   MakeRecPoints(TTree * clusters)    ;  //Fill cluster QA histo
   virtual void   MakeRaws(AliRawReader* rawReader);
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
   virtual void   StartOfDetectorCycle() ;
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** obj) ;
-  Int_t   fEvtRaw;    //internal event counter for raw 
+  Int_t   fEvtRaw;    //!internal event counter for raw 
+  Int_t   fChannel ; //!
 
-  ClassDef(AliHMPIDQADataMakerRec,1)  // description 
+  ClassDef(AliHMPIDQADataMakerRec,2)  // description 
 
 };
 

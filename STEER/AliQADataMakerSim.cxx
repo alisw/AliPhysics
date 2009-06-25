@@ -42,7 +42,9 @@ AliQADataMakerSim::AliQADataMakerSim(const char * name, const char * title) :
   AliQADataMaker(name, title), 
   fDigitsQAList(NULL), 
   fHitsQAList(NULL),
-  fSDigitsQAList(NULL)
+  fSDigitsQAList(NULL),  
+  fHitsArray(NULL),
+  fSDigitsArray(NULL)
 {
 	// ctor
 	fDetectorDirName = GetName() ; 
@@ -53,7 +55,9 @@ AliQADataMakerSim::AliQADataMakerSim(const AliQADataMakerSim& qadm) :
   AliQADataMaker(qadm.GetName(), qadm.GetTitle()), 
   fDigitsQAList(qadm.fDigitsQAList),
   fHitsQAList(qadm.fHitsQAList),
-  fSDigitsQAList(qadm.fSDigitsQAList)
+  fSDigitsQAList(qadm.fSDigitsQAList),  
+  fHitsArray(NULL),
+  fSDigitsArray(NULL)
 {
   //copy ctor
   fDetectorDirName = GetName() ; 
@@ -84,6 +88,14 @@ AliQADataMakerSim::~AliQADataMakerSim()
     }
  		delete[] fSDigitsQAList ;
   }
+  if (fHitsArray) {
+    fHitsArray->Clear() ; 
+    delete fHitsArray ;
+  }
+  if (fSDigitsArray) {
+    fSDigitsArray->Clear() ; 
+    delete fSDigitsArray ;
+  }  
 }
 
 //__________________________________________________________________
@@ -167,8 +179,8 @@ void AliQADataMakerSim::Exec(AliQAv1::TASKINDEX_t task, TObject * data)
 	if ( task == AliQAv1::kHITS ) {  
 		AliDebug(AliQAv1::GetQADebugLevel(), "Processing Hits QA") ; 
  		if (strcmp(data->ClassName(), "TClonesArray") == 0) { 
-      TClonesArray * arr = static_cast<TClonesArray *>(data) ; 
-			MakeHits(arr) ;
+      fHitsArray = static_cast<TClonesArray *>(data) ; 
+			MakeHits() ;
 		} else if (strcmp(data->ClassName(), "TTree") == 0) {
 			TTree * tree = static_cast<TTree *>(data) ; 
       MakeHits(tree) ; 
@@ -178,8 +190,8 @@ void AliQADataMakerSim::Exec(AliQAv1::TASKINDEX_t task, TObject * data)
 	} else if ( task == AliQAv1::kSDIGITS ) {
 		AliDebug(AliQAv1::GetQADebugLevel(), "Processing SDigits QA") ; 
 		if (strcmp(data->ClassName(), "TClonesArray") == 0) { 
-      TClonesArray * arr = static_cast<TClonesArray *>(data) ; 
-			MakeSDigits(arr) ;
+      fSDigitsArray = static_cast<TClonesArray *>(data) ; 
+			MakeSDigits() ;
 		} else if (strcmp(data->ClassName(), "TTree") == 0) {
 			TTree * tree = static_cast<TTree *>(data) ; 
       MakeSDigits(tree) ; 
@@ -189,8 +201,8 @@ void AliQADataMakerSim::Exec(AliQAv1::TASKINDEX_t task, TObject * data)
  	} else if ( task == AliQAv1::kDIGITS ) {
 		AliDebug(AliQAv1::GetQADebugLevel(), "Processing Digits QA") ; 
 		if (strcmp(data->ClassName(), "TClonesArray") == 0) { 
-      TClonesArray * arr = static_cast<TClonesArray *>(data) ; 
-			MakeDigits(arr) ;
+      fDigitsArray = static_cast<TClonesArray *>(data) ; 
+			MakeDigits() ;
 		} else if (strcmp(data->ClassName(), "TTree") == 0)  {
 			TTree * tree = static_cast<TTree *>(data) ; 
       MakeDigits(tree) ; 

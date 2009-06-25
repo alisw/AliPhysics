@@ -35,7 +35,6 @@ ClassImp(AliZDCQADataMakerSim)
 //____________________________________________________________________________ 
   AliZDCQADataMakerSim::AliZDCQADataMakerSim() : 
       AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kZDC), "ZDC Quality Assurance Data Maker"),
-      fHits(0),
       fDigit(0)
 {
   // ctor
@@ -44,7 +43,6 @@ ClassImp(AliZDCQADataMakerSim)
 //____________________________________________________________________________ 
 AliZDCQADataMakerSim::AliZDCQADataMakerSim(const AliZDCQADataMakerSim& qadm) :
     AliQADataMakerSim(), 
-    fHits(0),
     fDigit(0) 
 {
   //copy ctor 
@@ -148,7 +146,7 @@ void AliZDCQADataMakerSim::InitDigits()
 }
 
 //____________________________________________________________________________
-void AliZDCQADataMakerSim::MakeHits(TClonesArray * /*data*/)
+void AliZDCQADataMakerSim::MakeHits()
 {
   //filling QA histos for Hits
   //
@@ -157,7 +155,7 @@ void AliZDCQADataMakerSim::MakeHits(TClonesArray * /*data*/)
   if ( ! GetHitsData(0) )
     InitHits() ;
   
-  TIter next(fHits); 
+  TIter next(fHitsArray); 
     AliZDCHit * hit; 
     while((hit = dynamic_cast<AliZDCHit *>(next()))){
       if(hit->GetVolume(0)==1) GetHitsData(0)->Fill(hit->GetXImpact(),hit->GetYImpact());
@@ -185,13 +183,15 @@ void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
     return;
   } 
   else{
+    if (fHitsArray) 
+      fHitsArray->Clear() ;                    
     char** add = (char**) (branch->GetAddress());
     if(add){
-        fHits = (TClonesArray*)(*add);
+        fHitsArray = (TClonesArray*)(*add);
     } 
     else{
-        if(!fHits) fHits = new TClonesArray("AliZDCHit", 1000);
-        branch->SetAddress(&fHits);
+        if(!fHitsArray) fHitsArray = new TClonesArray("AliZDCHit", 1000);
+        branch->SetAddress(&fHitsArray);
     }
     Int_t ntracks = (Int_t) hitTree->GetEntries();
     //printf("\n\t *** no.track %d\n",ntracks);
@@ -206,7 +206,7 @@ void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
         //printf("\n");
         //
         MakeHits(); 
-        fHits->Clear();
+        fHitsArray->Clear();
     }	
   }
 }

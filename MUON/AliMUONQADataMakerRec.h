@@ -42,7 +42,7 @@ protected:
   
   virtual void MakeRaws(AliRawReader* rawReader); 
   virtual void MakeDigits(TTree* dig); 
-  virtual void MakeDigits(TClonesArray* /*digits*/)  {return;}
+  virtual void MakeDigits()  {return;}
   virtual void MakeRecPoints(TTree* recpo); 
   virtual void MakeESDs(AliESDEvent* esd) ;
   

@@ -149,10 +149,6 @@ void AliMUONQADataMakerSim::InitDigits()
 void AliMUONQADataMakerSim::MakeHits(TTree* hitsTree)        
 {
   /// makes data from Hits
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetHitsData(0) )
-    InitHits() ;
 
   if (!fHitStore)
     fHitStore = AliMUONVHitStore::Create(*hitsTree);
@@ -177,10 +173,6 @@ void AliMUONQADataMakerSim::MakeSDigits(TTree* sdigitsTree)
 {
   /// makes data from SDigits
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetSDigitsData(0) )
-    InitSDigits() ;
-
   if (!fDigitStore)
     fDigitStore = AliMUONVDigitStore::Create(*sdigitsTree);
   fDigitStore->Connect(*sdigitsTree, false);
@@ -202,10 +194,6 @@ void AliMUONQADataMakerSim::MakeDigits(TTree* digitsTree)
 {
    /// makes data from Digits
   
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
-
   if (!fDigitStore)
     fDigitStore = AliMUONVDigitStore::Create(*digitsTree);
   fDigitStore->Connect(*digitsTree, false);

@@ -32,9 +32,9 @@ public:
   virtual Int_t InitDigits();
   virtual Int_t InitSDigits();
   virtual Int_t InitHits();
-  virtual Int_t MakeDigits(TClonesArray * /*digits*/){return 0;}
-  virtual Int_t MakeSDigits(TClonesArray * /*sdigits*/){return 0;}
-  virtual Int_t MakeHits (TClonesArray * /*hits*/){return 0;}
+  virtual Int_t MakeDigits(){return 0;}
+  virtual Int_t MakeSDigits(){return 0;}
+  virtual Int_t MakeHits (){return 0;}
   virtual Int_t MakeDigits(TTree * digits);
   virtual Int_t MakeSDigits(TTree * sdigits);
   virtual Int_t MakeHits(TTree * hits);

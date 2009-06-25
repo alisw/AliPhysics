@@ -44,17 +44,17 @@ private:
   // Digits QA
   virtual void   InitDigits();
   virtual void   MakeDigits(TTree *digitTree);
-  virtual void   MakeDigits(TClonesArray *) {AliWarning("Method not implemented\n");}
+  virtual void   MakeDigits() {AliWarning("Method not implemented\n");}
 
   // Hits QA
   virtual void   InitHits();
   virtual void   MakeHits(TTree *hitTree);
-  virtual void   MakeHits(TClonesArray *) {AliWarning("Method not implemented\n");}
+  virtual void   MakeHits() {AliWarning("Method not implemented\n");}
 
   // SDigits QA (empty)
   virtual void   InitSDigits() {}
   virtual void   MakeSDigits(TTree* ) {AliWarning("Method not implemented\n");}
-  virtual void   MakeSDigits(TClonesArray* ) {AliWarning("Method not implemented\n");}
+  virtual void   MakeSDigits() {AliWarning("Method not implemented\n");}
 
   ClassDef(AliTPCQADataMakerSim,1)  // TPC Sim Quality Assurance Data Maker 
 };

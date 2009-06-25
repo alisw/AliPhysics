@@ -136,9 +136,6 @@ void AliTPCQADataMakerSim::InitHits()
 //____________________________________________________________________________
 void AliTPCQADataMakerSim::MakeDigits(TTree* digitTree)
 {
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(kDigitsADC) )
-    InitDigits() ;
 
   TBranch* branch = digitTree->GetBranch("Segment");
   AliSimDigits* digArray = 0;
@@ -164,10 +161,6 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
 {
   // make QA data from Hit Tree
  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetHitsData(kNhits) )
-    InitHits() ;
-
   const Int_t nTracks = hitTree->GetEntries();
   TBranch* branch = hitTree->GetBranch("TPC2");
   AliTPCv2* tpc = (AliTPCv2*)gAlice->GetDetector("TPC");

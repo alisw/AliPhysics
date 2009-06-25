@@ -38,15 +38,15 @@ private:
   virtual void   InitDigits();
     
     /// make hits QA from Array (not implemented)
-  virtual void   MakeHits(TClonesArray* /*hits*/) {return;}
+  virtual void   MakeHits() {return;}
     /// make hits QA from tree
   virtual void   MakeHits(TTree* hitsTree);
     /// make SDigits QA from Array (not implemented)
-  virtual void   MakeSDigits(TClonesArray* /*sigits*/) {return;} 
+  virtual void   MakeSDigits() {return;} 
     /// make SDigits QA from Tree
   virtual void   MakeSDigits(TTree* sigitsTree);
      /// make Digits QA from Array (not implemented)
-  virtual void   MakeDigits(TClonesArray* /*digits*/)  {return;}
+  virtual void   MakeDigits()  {return;}
       /// make SDigits QA from Tree
   virtual void   MakeDigits(TTree* digitsTree);
   

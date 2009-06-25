@@ -141,17 +141,13 @@ void AliPMDQADataMakerSim::InitDigits()
 }
 
 //____________________________________________________________________________ 
-void AliPMDQADataMakerSim::MakeHits(TClonesArray *hits)
+void AliPMDQADataMakerSim::MakeHits()
 {
     //make QA data from Hits
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetHitsData(0) )
-    InitHits() ;
-
   Int_t premul = 0, cpvmul = 0;
     Float_t edepkev = 0.;
-    TIter next(hits); 
+    TIter next(fHitsArray); 
     AliPMDhit * hit; 
     
     while ( (hit = dynamic_cast<AliPMDhit *>(next())) )
@@ -202,41 +198,28 @@ void AliPMDQADataMakerSim::MakeHits(TTree * hitTree)
 	return;
     }
 
-    static TClonesArray statichits("AliPMDhit", 1000);
-    statichits.Clear();
-    TClonesArray *hits = &statichits;
-    static TClonesArray staticdummy("AliPMDhit", 1000);
-    staticdummy.Clear();
-    TClonesArray *dummy = &staticdummy;
-    branch->SetAddress(&dummy);
-    Int_t index = 0 ;  
+  if (fHitsArray) 
+    fHitsArray->Clear() ; 
+  else 
+    fHitsArray = new TClonesArray("AliPMDhit", 1000);
 
-    for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
-	branch->GetEntry(ientry) ; 
-	for (Int_t ihit = 0 ; ihit < dummy->GetEntries() ; ihit++) {
-	    AliPMDhit * hit = dynamic_cast<AliPMDhit *> (dummy->At(ihit)) ; 
-	    new((*hits)[index]) AliPMDhit(*hit) ; 
+  branch->SetAddress(&fHitsArray);
 
-	    index++ ;
-	} 
-    } 	
-
-    MakeHits(hits);
-
+  for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
+    branch->GetEntry(ientry) ; 
+    MakeHits();
+    fHitsArray->Clear() ; 
+  } 	
 }
 //____________________________________________________________________________
-void AliPMDQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
+void AliPMDQADataMakerSim::MakeSDigits()
 {
     // makes data from SDigits
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetSDigitsData(0) )
-    InitSDigits() ;
 
   Int_t cpvmul = 0, premul = 0;
     Float_t edepkev = 0.;
 
-    TIter next(sdigits) ; 
+    TIter next(fSDigitsArray) ; 
     AliPMDsdigit * sdigit ; 
     while ( (sdigit = dynamic_cast<AliPMDsdigit *>(next())) )
     {
@@ -264,37 +247,30 @@ void AliPMDQADataMakerSim::MakeSDigits(TTree * sdigitTree)
 {
     // makes data from SDigit Tree
 
-    TClonesArray * sdigits = new TClonesArray("AliPMDsdigit", 1000) ; 
+  if (fSDigitsArray) 
+    fSDigitsArray->Clear() ; 
+  else 
+    fSDigitsArray = new TClonesArray("AliPMDsdigit", 1000) ; 
     
     TBranch * branch = sdigitTree->GetBranch("PMDSDigit") ;
-    branch->SetAddress(&sdigits) ;
+    branch->SetAddress(&fSDigitsArray) ;
 
-    if ( ! branch )
-    {
-	AliWarning("PMD branch in SDigit Tree not found") ; 
-    }
-    else
-    {
-	for (Int_t ient = 0; ient < branch->GetEntries(); ient++)
-	{
-	    branch->GetEntry(ient) ;
-	    MakeSDigits(sdigits) ; 
-	}
+    if ( ! branch ){
+      AliWarning("PMD branch in SDigit Tree not found") ; 
+    } else {
+	    branch->GetEntry(0) ;
+	    MakeSDigits() ; 
     }
 }
 
 //____________________________________________________________________________
-void AliPMDQADataMakerSim::MakeDigits(TClonesArray * digits)
+void AliPMDQADataMakerSim::MakeDigits()
 {
     // makes data from Digits
-    
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
 
   Int_t cpvmul = 0, premul = 0;
 
-    TIter next(digits) ; 
+    TIter next(fDigitsArray) ; 
     AliPMDdigit * digit ; 
     while ( (digit = dynamic_cast<AliPMDdigit *>(next())) )
     {
@@ -321,10 +297,13 @@ void AliPMDQADataMakerSim::MakeDigits(TTree * digitTree)
 {
     // makes data from Digit Tree
 
-    TClonesArray * digits = new TClonesArray("AliPMDdigit", 1000) ; 
+  if (fDigitsArray) 
+    fDigitsArray->Clear() ; 
+  else 
+    fDigitsArray = new TClonesArray("AliPMDdigit", 1000) ; 
     
     TBranch * branch = digitTree->GetBranch("PMDDigit") ;
-    branch->SetAddress(&digits) ;
+    branch->SetAddress(&fDigitsArray) ;
 
     if ( ! branch )
     {
@@ -334,10 +313,12 @@ void AliPMDQADataMakerSim::MakeDigits(TTree * digitTree)
     {
 	for (Int_t ient = 0; ient < branch->GetEntries(); ient++)
 	{
-	    branch->GetEntry(ient) ; 
-	    MakeDigits(digits) ; 
+    branch->GetEntry(ient) ; 
+    MakeDigits() ; 
+    fDigitsArray->Clear() ; 
+    
 	}
-	
+      
     }
 }
 

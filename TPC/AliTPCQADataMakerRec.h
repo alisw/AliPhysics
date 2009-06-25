@@ -53,7 +53,7 @@ private:
 
   // Digits QA
   virtual void   InitDigits();
-  virtual void   MakeDigits(TClonesArray* /*digits*/)  {return;}
+  virtual void   MakeDigits()  {return;}
   virtual void   MakeDigits(TTree *digTree);
   
   // RecPoints QA

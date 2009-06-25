@@ -55,7 +55,8 @@ ClassImp(AliTRDQADataMakerSim)
 
 //____________________________________________________________________________ 
   AliTRDQADataMakerSim::AliTRDQADataMakerSim() : 
-  AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kTRD), "TRD Quality Assurance Data Maker")
+  AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kTRD), "TRD Quality Assurance Data Maker"),
+  fTmpHits(NULL) 
 {
   //
   // Default constructor
@@ -63,7 +64,8 @@ ClassImp(AliTRDQADataMakerSim)
 
 //____________________________________________________________________________ 
 AliTRDQADataMakerSim::AliTRDQADataMakerSim(const AliTRDQADataMakerSim& qadm) :
-  AliQADataMakerSim()
+  AliQADataMakerSim(), 
+  fTmpHits(NULL)
 {
   //
   // Copy constructor 
@@ -85,6 +87,15 @@ AliTRDQADataMakerSim& AliTRDQADataMakerSim::operator=(const AliTRDQADataMakerSim
   new(this) AliTRDQADataMakerSim(qadm);
   return *this;
 
+}
+
+//____________________________________________________________________________ 
+AliTRDQADataMakerSim::~AliTRDQADataMakerSim()
+{
+  if (fTmpHits) {
+    fTmpHits->Clear() ; 
+    delete fTmpHits ; 
+  }
 }
 
 //____________________________________________________________________________ 
@@ -174,17 +185,13 @@ void AliTRDQADataMakerSim::InitSDigits()
 }
 
 //____________________________________________________________________________
-void AliTRDQADataMakerSim::MakeHits(TClonesArray * hits)
+void AliTRDQADataMakerSim::MakeHits()
 {
   //
   // Make QA data from Hits
   //
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetHitsData(0) )
-    InitHits() ;
-
-  TIter next(hits); 
+  
+  TIter next(fHitsArray); 
   AliTRDhit * hit; 
 
   while ( (hit = dynamic_cast<AliTRDhit *>(next())) ) {
@@ -211,41 +218,31 @@ void AliTRDQADataMakerSim::MakeHits(TTree * hitTree)
   if (!CheckPointer(branch, "TRD hits branch")) return;
   
   Int_t nhits = (Int_t)(hitTree->GetTotBytes()/sizeof(AliTRDhit));
-  TClonesArray *hits = new TClonesArray("AliTRDhit", nhits+1000);
-  TClonesArray *tmp = new TClonesArray("AliTRDhit", 1000);
-  branch->SetAddress(&tmp);
-
+  if (fHitsArray)
+    fHitsArray->Clear() ; 
+  else
+   fHitsArray = new TClonesArray("AliTRDhit", nhits+1000);
+  
   Int_t index = 0;
   Int_t nEntries = (Int_t)branch->GetEntries();
   for(Int_t i = 0; i < nEntries; i++) {
     branch->GetEntry(i);
-    Int_t nHits = (Int_t)tmp->GetEntries();
-    for(Int_t j=0; j<nHits; j++) {
-      AliTRDhit *hit = (AliTRDhit*)tmp->At(j);
-      new((*hits)[index++]) AliTRDhit(*hit);
-    }
+    MakeHits();
+    fHitsArray->Clear() ; 
   }
-
-  tmp->Delete();
-  delete tmp;
-  MakeHits(hits);
-  hits->Delete();
-  delete hits;
-
 }
 
 //____________________________________________________________________________
-void AliTRDQADataMakerSim::MakeDigits(TClonesArray * digits)
+void AliTRDQADataMakerSim::MakeDigits()
 {
   //
   // Makes data from Digits
   //
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
+  if (!fDigitsArray)
+    return ; 
   
-  TIter next(digits) ; 
+  TIter next(fDigitsArray) ; 
   AliTRDdigit * digit ; 
   
   // Info("Make digits", "From the arrya");
@@ -265,9 +262,6 @@ void AliTRDQADataMakerSim::MakeDigits(TTree * digits)
   //
   // Makes data from digits tree
   //
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
   // Info("Make digits", "From a tree");
 
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
@@ -311,17 +305,16 @@ void AliTRDQADataMakerSim::MakeDigits(TTree * digits)
 }
 
 //____________________________________________________________________________
-void AliTRDQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
+void AliTRDQADataMakerSim::MakeSDigits()
 {
   //
   // Makes data from Digits
   //
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetSDigitsData(0) )
-    InitSDigits() ;
-  
-  TIter next(sdigits) ; 
+  if (!fSDigitsArray)
+    return ; 
+
+  TIter next(fSDigitsArray) ; 
   AliTRDdigit * digit ; 
   while ( (digit = dynamic_cast<AliTRDdigit *>(next())) ) {
     GetDigitsData(0)->Fill(digit->GetDetector());

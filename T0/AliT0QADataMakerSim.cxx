@@ -131,7 +131,10 @@ void AliT0QADataMakerSim::InitDigits()
 void AliT0QADataMakerSim::MakeHits(TTree *hitTree)
 {
   //fills QA histos for Hits
-  TClonesArray * hits = new TClonesArray("AliT0hit", 1000);
+  if (fHitsArray) 
+    fHitsArray->Clear() ; 
+  else 
+    fHitsArray = new TClonesArray("AliT0hit", 1000);
   
   TBranch * branch = hitTree->GetBranch("T0") ;
   if ( ! branch ) {
@@ -139,7 +142,7 @@ void AliT0QADataMakerSim::MakeHits(TTree *hitTree)
   } else {
 
    if (branch) {
-      branch->SetAddress(&hits);
+      branch->SetAddress(&fHitsArray);
     }else{
       AliError("Branch T0 hit not found");
       exit(111);
@@ -149,16 +152,12 @@ void AliT0QADataMakerSim::MakeHits(TTree *hitTree)
     if (ntracks<=0) return;
     // Start loop on tracks in the hits containers
 
-    // Check id histograms already created for this Event Specie
-    if ( ! GetHitsData(0) )
-      InitHits() ;
-
     for (Int_t track=0; track<ntracks;track++) {
       branch->GetEntry(track);
-      Int_t nhits = hits->GetEntriesFast();
+      Int_t nhits = fHitsArray->GetEntriesFast();
       for (Int_t ihit=0;ihit<nhits;ihit++) 
 	{
-	  AliT0hit  * startHit   = (AliT0hit*) hits->UncheckedAt(ihit);
+	  AliT0hit  * startHit   = (AliT0hit*) fHitsArray->UncheckedAt(ihit);
 	  if (!startHit) {
  	    AliError("The unchecked hit doesn't exist");
 	    continue;
@@ -191,10 +190,6 @@ void AliT0QADataMakerSim::MakeDigits( TTree *digitsTree)
     AliError(Form("EXEC Branch T0 digits not found"));
      return;
   }
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
 
   digitsTree->GetEvent(0);
   digitsTree->GetEntry(0);

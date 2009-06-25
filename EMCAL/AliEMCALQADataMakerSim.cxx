@@ -121,17 +121,12 @@ void AliEMCALQADataMakerSim::InitSDigits()
 }
 
 //____________________________________________________________________________
-void AliEMCALQADataMakerSim::MakeHits(TClonesArray * hits)
+void AliEMCALQADataMakerSim::MakeHits()
 {
   //make QA data from Hits
-
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetHitsData(0) )
-    InitHits() ;
-  
-  GetHitsData(1)->Fill(hits->GetEntriesFast()) ; 
-  TIter next(hits) ; 
+ 
+  GetHitsData(1)->Fill(fHitsArray->GetEntriesFast()) ; 
+  TIter next(fHitsArray) ; 
   AliEMCALHit * hit ; 
   while ( (hit = dynamic_cast<AliEMCALHit *>(next())) ) {
     GetHitsData(0)->Fill( hit->GetEnergy()) ;
@@ -144,41 +139,31 @@ void AliEMCALQADataMakerSim::MakeHits(TTree * hitTree)
 {
   // make QA data from Hit Tree
   
-  TClonesArray * hits = new TClonesArray("AliEMCALHit", 1000);
+  if (fHitsArray) 
+    fHitsArray->Clear() ; 
+  else
+    fHitsArray = new TClonesArray("AliEMCALHit", 1000);
   
   TBranch * branch = hitTree->GetBranch("EMCAL") ;
   if ( ! branch ) {
     AliWarning("EMCAL branch in Hit Tree not found") ; 
   } else {
-    TClonesArray * tmp =  new TClonesArray("AliEMCALHit", 1000) ;
-    branch->SetAddress(&tmp) ;
-    Int_t index = 0 ;  
+    branch->SetAddress(&fHitsArray) ;
     for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
       branch->GetEntry(ientry) ; 
-      for (Int_t ihit = 0 ; ihit < tmp->GetEntries() ; ihit++) {
-	AliEMCALHit * hit = dynamic_cast<AliEMCALHit *> (tmp->At(ihit)) ; 
-	new((*hits)[index]) AliEMCALHit(*hit) ; 
-	index++ ;
-      } 
-    } 	
-    tmp->Delete() ; 
-    delete tmp ; 
-    MakeHits(hits) ; 
+      MakeHits() ; 
+      fHitsArray->Clear() ; 
+    }
   }
 }
 
 //____________________________________________________________________________
-void AliEMCALQADataMakerSim::MakeDigits(TClonesArray * digits)
+void AliEMCALQADataMakerSim::MakeDigits()
 {
   // makes data from Digits
-
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
-  
-  GetDigitsData(1)->Fill(digits->GetEntriesFast()) ; 
-  TIter next(digits) ; 
+ 
+  GetDigitsData(1)->Fill(fDigitsArray->GetEntriesFast()) ; 
+  TIter next(fDigitsArray) ; 
   AliEMCALDigit * digit ; 
   while ( (digit = dynamic_cast<AliEMCALDigit *>(next())) ) {
     GetDigitsData(0)->Fill( digit->GetAmp()) ;
@@ -190,34 +175,33 @@ void AliEMCALQADataMakerSim::MakeDigits(TClonesArray * digits)
 void AliEMCALQADataMakerSim::MakeDigits(TTree * digitTree)
 {
   // makes data from Digit Tree
-  TClonesArray * digits = new TClonesArray("AliEMCALDigit", 1000) ; 
+  if (fDigitsArray) 
+    fDigitsArray->Clear() ; 
+  else
+    fDigitsArray = new TClonesArray("AliEMCALDigit", 1000) ; 
   
   TBranch * branch = digitTree->GetBranch("EMCAL") ;
   if ( ! branch ) {
     AliWarning("EMCAL branch in Digit Tree not found") ; 
   } else {
-    branch->SetAddress(&digits) ;
+    branch->SetAddress(&fDigitsArray) ;
     branch->GetEntry(0) ; 
-    MakeDigits(digits) ; 
+    MakeDigits() ; 
   }
 
 }
 
 //____________________________________________________________________________
-void AliEMCALQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
+void AliEMCALQADataMakerSim::MakeSDigits()
 {
   // makes data from SDigits
   //Need a copy of the SDigitizer to calibrate the sdigit amplitude to
   //energy in GeV
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetSDigitsData(0) )
-    InitSDigits() ;
-  
+
   AliEMCALSDigitizer* sDigitizer = new AliEMCALSDigitizer();
 
-  GetSDigitsData(1)->Fill(sdigits->GetEntriesFast()) ; 
-  TIter next(sdigits) ; 
+  GetSDigitsData(1)->Fill(fSDigitsArray->GetEntriesFast()) ; 
+  TIter next(fSDigitsArray) ; 
   AliEMCALDigit * sdigit ; 
   while ( (sdigit = dynamic_cast<AliEMCALDigit *>(next())) ) {
     GetSDigitsData(0)->Fill( sDigitizer->Calibrate(sdigit->GetAmp())) ;
@@ -230,15 +214,18 @@ void AliEMCALQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
 void AliEMCALQADataMakerSim::MakeSDigits(TTree * sdigitTree)
 {
   // makes data from SDigit Tree
-  TClonesArray * sdigits = new TClonesArray("AliEMCALDigit", 1000) ; 
+  if (fSDigitsArray) 
+    fSDigitsArray->Clear() ; 
+  else 
+    fSDigitsArray = new TClonesArray("AliEMCALDigit", 1000) ; 
   
   TBranch * branch = sdigitTree->GetBranch("EMCAL") ;
   if ( ! branch ) {
     AliWarning("EMCAL branch in SDigit Tree not found") ; 
   } else {
-    branch->SetAddress(&sdigits) ;
+    branch->SetAddress(&fSDigitsArray) ;
     branch->GetEntry(0) ;
-    MakeSDigits(sdigits) ; 
+    MakeSDigits() ; 
   }
 
 }

@@ -100,9 +100,9 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 
     // loop over event types
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
+      if (! IsValidEventSpecie(specie, list)) 
         continue ;
-      //list[specie]->Print();
+    //list[specie]->Print();
       
       // fill detector map;
       for(Int_t i = 0 ; i < 540 ; i++) {
@@ -230,9 +230,9 @@ void AliTRDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
     
     // create ratios
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
+      if (! IsValidEventSpecie(specie, list)) 
         continue ;
-      for(Int_t type = 0 ; type < 2 ; type++) {
+     for(Int_t type = 0 ; type < 2 ; type++) {
         for(Int_t i = 0 ; i < knRatio ; i++) {
           TH1D *ratio = (TH1D*)list[specie]->At(19 + 2*i + type);
           TH1D *histN = (TH1D*)list[specie]->At(3 + 2*kN[i] + type);
@@ -496,10 +496,6 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
   //
   // Make QA data from ESDs
   //
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(0) )
-    InitESDs() ;
   
   Int_t nTracks = esd->GetNumberOfTracks();
   GetESDsData(0)->Fill(nTracks);
@@ -700,11 +696,7 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   //
   
   AliInfo("Execution of QA for Raw data");
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRawsData(0) )
-    InitRaws() ;
-  
+ 
   //printf("Execution of QA for Raw data\n");
 
   // create raw reader TB
@@ -867,11 +859,7 @@ void AliTRDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   // 
   
   //  Info("MakeRecPoints", "making");
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRecPointsData(0) )
-    InitRecPoints() ;
-  
+ 
   Int_t nsize = Int_t(clustersTree->GetTotBytes() / (sizeof(AliTRDcluster))); 
   TObjArray *clusterArray = new TObjArray(nsize+1000); 
 

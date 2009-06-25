@@ -33,9 +33,9 @@ class AliVZEROQADataMakerSim: public AliQADataMakerSim {
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list);
   virtual void   InitHits(); 
   virtual void   InitDigits();  
-  virtual void   MakeHits(TClonesArray* hits) ;
+  virtual void   MakeHits() ;
   virtual void   MakeHits(TTree* hitTree) ;
-  virtual void   MakeDigits(TClonesArray* digits) ; 
+  virtual void   MakeDigits() ; 
   virtual void   MakeDigits(TTree* digitTree) ; 
   virtual void   StartOfDetectorCycle() ; 
   

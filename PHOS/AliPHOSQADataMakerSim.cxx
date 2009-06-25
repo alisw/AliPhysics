@@ -44,22 +44,18 @@ ClassImp(AliPHOSQADataMakerSim)
            
 //____________________________________________________________________________ 
 AliPHOSQADataMakerSim::AliPHOSQADataMakerSim() : 
-  AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kPHOS), "PHOS Quality Assurance Data Maker"),
-  fHits(0x0)
+  AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kPHOS), "PHOS Quality Assurance Data Maker")
 {
   // ctor
-  fHits = new TClonesArray("AliPHOSHit", 1000);
 }
 
 //____________________________________________________________________________ 
 AliPHOSQADataMakerSim::AliPHOSQADataMakerSim(const AliPHOSQADataMakerSim& qadm) :
-  AliQADataMakerSim(),
-  fHits(0x0)
+  AliQADataMakerSim()
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
-  fHits = new TClonesArray("AliPHOSHit", 1000);
 }
 
 //__________________________________________________________________
@@ -127,12 +123,7 @@ void AliPHOSQADataMakerSim::MakeHits()
 {
   //make QA data from Hits
   
-  // Check id histograms already created for this Event Specie
-  if ( ! GetHitsData(kHits) )
-    InitHits() ;
-  
-  
-  TIter next(fHits) ; 
+  TIter next(fHitsArray) ; 
   AliPHOSHit * hit ; 
   while ( (hit = dynamic_cast<AliPHOSHit *>(next())) ) {
     GetHitsData(kHits)->Fill( hit->GetEnergy()) ;
@@ -144,67 +135,66 @@ void AliPHOSQADataMakerSim::MakeHits(TTree * hitTree)
 {
   // make QA data from Hit Tree
   
+  if (fHitsArray)
+    fHitsArray->Clear() ; 
+  else
+    fHitsArray = new TClonesArray("AliPHOSHit", 1000);
+
   TBranch * branch = hitTree->GetBranch("PHOS") ;
   if ( ! branch ) {
     AliWarning("PHOS branch in Hit Tree not found") ; 
   } else {
     Int_t nHits = 0;
-    branch->SetAddress(&fHits) ;
+    branch->SetAddress(&fHitsArray) ;
     for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
       branch->GetEntry(ientry) ;
-      nHits += fHits->GetEntriesFast();
+      nHits += fHitsArray->GetEntriesFast();
       MakeHits() ; 
-      fHits->Clear();
+      fHitsArray->Clear();
     } 	
     GetHitsData(1)->Fill(nHits) ;
   }
 }
 
 //____________________________________________________________________________
-void AliPHOSQADataMakerSim::MakeDigits(TClonesArray * digits)
+void AliPHOSQADataMakerSim::MakeDigits()
 {
   // makes data from Digits
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(kDigits) )
-    InitDigits() ;
-  
-  GetDigitsData(1)->Fill(digits->GetEntriesFast()) ; 
-    TIter next(digits) ; 
-    AliPHOSDigit * digit ; 
-    while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
-      GetDigitsData(kDigits)->Fill( digit->GetEnergy()) ;
-    }  
+ 
+  GetDigitsData(1)->Fill(fDigitsArray->GetEntriesFast()) ; 
+  TIter next(fDigitsArray) ; 
+  AliPHOSDigit * digit ; 
+  while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
+    GetDigitsData(kDigits)->Fill( digit->GetEnergy()) ;
+  }  
 }
 
 //____________________________________________________________________________
 void AliPHOSQADataMakerSim::MakeDigits(TTree * digitTree)
 {
 	// makes data from Digit Tree
-	TClonesArray * digits = new TClonesArray("AliPHOSDigit", 1000) ; 
+	if (fDigitsArray) 
+    fDigitsArray->Clear() ; 
+  else
+    fDigitsArray = new TClonesArray("AliPHOSDigit", 1000) ; 
 
 	TBranch * branch = digitTree->GetBranch("PHOS") ;
 	if ( ! branch ) {
 		AliWarning("PHOS branch in Digit Tree not found") ; 
 	} else {
-		branch->SetAddress(&digits) ;
+		branch->SetAddress(&fDigitsArray) ;
 		branch->GetEntry(0) ; 
-		MakeDigits(digits) ; 
+		MakeDigits() ; 
 	}
 }
 
 //____________________________________________________________________________
-void AliPHOSQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
+void AliPHOSQADataMakerSim::MakeSDigits()
 {
   // makes data from SDigits
-  
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetSDigitsData(kSDigits) )
-    InitSDigits() ;
 
-  GetSDigitsData(1)->Fill(sdigits->GetEntriesFast()) ; 
-  TIter next(sdigits) ; 
+  GetSDigitsData(1)->Fill(fSDigitsArray->GetEntriesFast()) ; 
+  TIter next(fSDigitsArray) ; 
   AliPHOSDigit * sdigit ; 
   while ( (sdigit = dynamic_cast<AliPHOSDigit *>(next())) ) {
     GetSDigitsData(kSDigits)->Fill( sdigit->GetEnergy()) ;
@@ -215,15 +205,18 @@ void AliPHOSQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
 void AliPHOSQADataMakerSim::MakeSDigits(TTree * sdigitTree)
 {
 	// makes data from SDigit Tree
-	TClonesArray * sdigits = new TClonesArray("AliPHOSDigit", 1000) ; 
-
+	if (fSDigitsArray) 
+    fSDigitsArray->Clear() ; 
+  else
+    fSDigitsArray = new TClonesArray("AliPHOSDigit", 1000) ; 
+  
 	TBranch * branch = sdigitTree->GetBranch("PHOS") ;
 	if ( ! branch ) {
 		AliWarning("PHOS branch in SDigit Tree not found") ; 
 	} else {
-		branch->SetAddress(&sdigits) ;
+		branch->SetAddress(&fSDigitsArray) ;
 		branch->GetEntry(0) ;
-		MakeSDigits(sdigits) ; 
+		MakeSDigits() ; 
 	}
 }
 

@@ -47,10 +47,7 @@ ClassImp(AliFMDQADataMakerSim)
 //_____________________________________________________________________
 AliFMDQADataMakerSim::AliFMDQADataMakerSim() 
   :  AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kFMD),
-		       "FMD Quality Assurance Data Maker"),
-     fSDigitsArray("AliFMDSDigit", 1000),
-     fDigitsArray("AliFMDDigit", 1000),
-     fHitsArray("AliFMDHit", 10)
+		       "FMD Quality Assurance Data Maker")
 {
   // ctor
 
@@ -58,10 +55,7 @@ AliFMDQADataMakerSim::AliFMDQADataMakerSim()
 
 //_____________________________________________________________________
 AliFMDQADataMakerSim::AliFMDQADataMakerSim(const AliFMDQADataMakerSim& qadm) 
-  : AliQADataMakerSim(),
-    fSDigitsArray(qadm.fSDigitsArray),
-    fDigitsArray(qadm.fDigitsArray),
-    fHitsArray(qadm.fHitsArray)
+  : AliQADataMakerSim()
 {
   //copy ctor 
   
@@ -70,11 +64,8 @@ AliFMDQADataMakerSim::AliFMDQADataMakerSim(const AliFMDQADataMakerSim& qadm)
   
 }
 //_____________________________________________________________________
-AliFMDQADataMakerSim& AliFMDQADataMakerSim::operator = (const AliFMDQADataMakerSim& qadm ) 
+AliFMDQADataMakerSim& AliFMDQADataMakerSim::operator = (const AliFMDQADataMakerSim& ) 
 {
-  fSDigitsArray = qadm.fSDigitsArray;
-  fDigitsArray = qadm.fDigitsArray;
-  fHitsArray = qadm.fHitsArray;
   
   return *this;
 }
@@ -135,13 +126,13 @@ void AliFMDQADataMakerSim::InitDigits()
 }
 
 //_____________________________________________________________________
-void AliFMDQADataMakerSim::MakeHits(TClonesArray * hits)
+void AliFMDQADataMakerSim::MakeHits()
 {
   // Check id histograms already created for this Event Specie
   if ( ! GetHitsData(0) )
     InitHits() ;
 
-  TIter next(hits);
+  TIter next(fHitsArray);
   AliFMDHit * hit;
   while ((hit = static_cast<AliFMDHit *>(next()))) 
     GetHitsData(0)->Fill(hit->Edep()/hit->Length()*0.032);
@@ -152,38 +143,35 @@ void AliFMDQADataMakerSim::MakeHits(TTree * hitTree)
 {
   // make QA data from Hit Tree
   
-  fHitsArray.Clear();
+  if (fHitsArray) 
+    fHitsArray->Clear() ; 
+  else
+    fHitsArray = new TClonesArray("AliFMDHit", 1000) ; 
   
   TBranch * branch = hitTree->GetBranch("FMD") ;
   if (!branch) {
     AliWarning("FMD branch in Hit Tree not found") ; 
     return;
   }
-  
-  TClonesArray* hitsAddress = &fHitsArray;
-  
-  branch->SetAddress(&hitsAddress) ;
+    
+  branch->SetAddress(&fHitsArray) ;
   
   for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
     branch->GetEntry(ientry);
-    MakeHits(hitsAddress);   //tmp); 
+    MakeHits();   //tmp); 
+    fHitsArray->Clear() ; 
   } 	
-  
 }
 
 //_____________________________________________________________________
-void AliFMDQADataMakerSim::MakeDigits(TClonesArray * digits)
+void AliFMDQADataMakerSim::MakeDigits()
 {
   // makes data from Digits
-  if(!digits) return;
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
-
-  for(Int_t i = 0 ; i < digits->GetEntriesFast() ; i++) {
+  if(!fDigitsArray) return;
+  
+  for(Int_t i = 0 ; i < fDigitsArray->GetEntriesFast() ; i++) {
     //Raw ADC counts
-    AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
+    AliFMDDigit* digit = static_cast<AliFMDDigit*>(fDigitsArray->At(i));
     GetDigitsData(0)->Fill(digit->Counts());
   }
 }
@@ -192,31 +180,30 @@ void AliFMDQADataMakerSim::MakeDigits(TClonesArray * digits)
 void AliFMDQADataMakerSim::MakeDigits(TTree * digitTree)
 {
   
-  fDigitsArray.Clear();
+  if (fDigitsArray) 
+    fDigitsArray->Clear();
+  else 
+    fDigitsArray = new TClonesArray("AliFMDDigit", 1000) ; 
+  
   TBranch * branch = digitTree->GetBranch("FMD") ;
   if (!branch)    {
       AliWarning("FMD branch in Digit Tree not found") ; 
       return;
   } 
-  TClonesArray* digitAddress = &fDigitsArray;
-  branch->SetAddress(&digitAddress) ;
+  branch->SetAddress(&fDigitsArray) ;
   branch->GetEntry(0) ; 
-  MakeDigits(digitAddress) ; 
+  MakeDigits() ; 
 }
 
 //_____________________________________________________________________
-void AliFMDQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
+void AliFMDQADataMakerSim::MakeSDigits()
 {
   // makes data from Digits
-  if(!sdigits) return;
+  if(!fSDigitsArray) return;
   
-  // Check id histograms already created for this Event Specie
-  if ( ! GetSDigitsData(0) )
-    InitSDigits() ;
-
-  for(Int_t i = 0 ; i < sdigits->GetEntriesFast() ; i++) {
+   for(Int_t i = 0 ; i < fSDigitsArray->GetEntriesFast() ; i++) {
     //Raw ADC counts
-    AliFMDSDigit* sdigit = static_cast<AliFMDSDigit*>(sdigits->At(i));
+    AliFMDSDigit* sdigit = static_cast<AliFMDSDigit*>(fSDigitsArray->At(i));
     GetSDigitsData(0)->Fill(sdigit->Counts());
   }
 }
@@ -225,16 +212,18 @@ void AliFMDQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
 void AliFMDQADataMakerSim::MakeSDigits(TTree * sdigitTree)
 {
   
-  fSDigitsArray.Clear();
+  if (fSDigitsArray) 
+    fSDigitsArray->Clear() ;
+  else 
+    fSDigitsArray = new TClonesArray("AliFMDSDigit", 1000) ; 
   TBranch * branch = sdigitTree->GetBranch("FMD") ;
   if (!branch)    {
     AliWarning("FMD branch in SDigit Tree not found") ; 
     return;
   } 
-  TClonesArray* sdigitAddress = &fSDigitsArray;
-  branch->SetAddress(&sdigitAddress) ;
+  branch->SetAddress(&fSDigitsArray) ;
   branch->GetEntry(0) ; 
-  MakeSDigits(sdigitAddress) ; 
+  MakeSDigits() ; 
 }
 
 //_____________________________________________________________________ 

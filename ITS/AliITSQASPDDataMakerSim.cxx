@@ -169,10 +169,7 @@ Int_t AliITSQASPDDataMakerSim::MakeDigits(TTree *digits)
 { 
   // Fill QA for DIGIT - SPD -
   Int_t rv = 0 ; 
-  // Check id histograms already created for this Event Specie
-  if ( ! fAliITSQADataMakerSim->GetDigitsData(fGenOffsetD) )
-    rv = InitDigits() ;
-  
+ 
   AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
   fITS->SetTreeAddress();
   TClonesArray *iITSdigits  = fITS->DigitsAddress(0);  // 0->SPD
@@ -247,13 +244,13 @@ Int_t AliITSQASPDDataMakerSim::MakeSDigits(TTree *sdigits)
 { 
   // Fill QA for SDIGIT - SPD -
   Int_t rv = 0 ; 
-  // Check id histograms already created for this Event Specie
-  if ( ! fAliITSQADataMakerSim->GetSDigitsData(fGenOffsetS) )
-   rv = InitSDigits() ;
- 
+  
+  static TClonesArray * sdig ; 
+  if (! sdig )
+    sdig = new TClonesArray( "AliITSpListItem",1000 );
+  
   TBranch *brchSDigits = sdigits->GetBranch("ITS");
   for (Int_t imod=0; imod<240; ++imod){
-    TClonesArray * sdig = new TClonesArray( "AliITSpListItem",1000 );
     brchSDigits->SetAddress( &sdig );
     brchSDigits->GetEvent(imod);
     Int_t nsdig=sdig->GetEntries();
@@ -265,7 +262,7 @@ Int_t AliITSQASPDDataMakerSim::MakeSDigits(TTree *sdigits)
       fAliITSQADataMakerSim->GetSDigitsData(0+fGenOffsetS)->Fill(1,nsdig);
       fAliITSQADataMakerSim->GetSDigitsData(2+fGenOffsetS)->Fill(imod,nsdig);
     }
-    delete sdig;
+    sdig->Clear() ;
   }
   return rv ; 
 }
@@ -322,9 +319,6 @@ Int_t AliITSQASPDDataMakerSim::MakeHits(TTree *hits)
 { 
   // Fill QA for HITS - SPD -
   Int_t rv = 0 ; 
-  // Check id histograms already created for this Event Specie
-  if ( ! fAliITSQADataMakerSim->GetHitsData(fGenOffsetH) )
-    rv = InitHits() ;
  
   AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
   fITS->SetTreeAddress();

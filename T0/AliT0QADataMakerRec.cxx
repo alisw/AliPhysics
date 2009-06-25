@@ -87,9 +87,9 @@ void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQAv1::kT0, task, list) ;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
+    if (! IsValidEventSpecie(specie, list)) 
       continue ;
-    SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
+   SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
     if ( task == AliQAv1::kRAWS ) {
       const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
       for (Int_t itr=0; itr<6; itr++) {
@@ -283,10 +283,6 @@ void AliT0QADataMakerRec::InitESDs()
 //____________________________________________________________________________
 void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 {
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRawsData(0) )
-    InitRaws() ;
 
 	rawReader->Reset() ; 
   //fills QA histos for RAW
@@ -419,10 +415,6 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 void AliT0QADataMakerRec::MakeDigits( TTree *digitsTree)
 {
   //fills QA histos for Digits
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
 
   TArrayI *digCFD = new TArrayI(24);
   TArrayI *digLED = new TArrayI(24);
@@ -480,10 +472,6 @@ void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)
     AliError(Form("EXEC Branch T0 rec not found "));
     return;
   } 
-    
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRecPointsData(0) )
-    InitRecPoints() ;
 
   brRec->GetEntry(0);
   
@@ -504,10 +492,6 @@ void AliT0QADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
   
-  // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(0) )
-    InitESDs() ;
-
   GetESDsData(0) -> Fill(esd->GetT0());
   GetESDsData(1)-> Fill(esd->GetT0zVertex());
   

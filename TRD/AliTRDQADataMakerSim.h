@@ -31,7 +31,7 @@ class AliTRDQADataMakerSim: public AliQADataMakerSim {
   AliTRDQADataMakerSim() ;          // ctor
   AliTRDQADataMakerSim(const AliTRDQADataMakerSim& qadm) ;   
   AliTRDQADataMakerSim& operator = (const AliTRDQADataMakerSim& qadm) ;
-  virtual ~AliTRDQADataMakerSim() {;} // dtor
+  virtual ~AliTRDQADataMakerSim() ; // dtor
 
  private:
 
@@ -41,16 +41,17 @@ class AliTRDQADataMakerSim: public AliQADataMakerSim {
   virtual void InitSDigits() ;
 
   virtual void MakeHits(TTree * hitTree);
-  virtual void MakeHits(TClonesArray * hits);
+  virtual void MakeHits();
 
   virtual void MakeSDigits(TTree *sdigitTree);
-  virtual void MakeSDigits(TClonesArray * sigits); 
+  virtual void MakeSDigits(); 
 
   virtual void MakeDigits(TTree *digitTree);
-  virtual void MakeDigits(TClonesArray * digits); 
+  virtual void MakeDigits(); 
 
   virtual void StartOfDetectorCycle() ; 
   Int_t    CheckPointer(TObject *obj, const char *name);
+  TClonesArray *fTmpHits ; 
 
   ClassDef(AliTRDQADataMakerSim,1)   // Creates the TRD QA data
 

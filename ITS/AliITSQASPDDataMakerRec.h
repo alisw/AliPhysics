@@ -33,7 +33,7 @@ public:
   virtual Int_t InitRecPoints();
   virtual Int_t MakeRaws(AliRawReader *rawReader);
   virtual Int_t MakeRecPoints(TTree *clustersTree);
-  virtual Int_t MakeDigits(TClonesArray* /*digits*/)  {return 0;}
+  virtual Int_t MakeDigits()  {return 0;}
   virtual Int_t MakeDigits(TTree *clustersTree);
   virtual void  StartOfDetectorCycle();
   virtual void  EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);

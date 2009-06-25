@@ -146,10 +146,6 @@ void AliACORDEQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
   //fills QA histos for RAW
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRawsData(0) )
-    InitRaws() ;
-
   rawReader->Reset();
   AliACORDERawStream rawStream(rawReader);
   size_t contSingle=0;
@@ -213,21 +209,19 @@ if(rawStream.Next())
 void AliACORDEQADataMakerRec::MakeDigits( TTree *digitsTree)
 {
   //fills QA histos for Digits
-  TClonesArray * digits = new TClonesArray("AliACORDEdigit",1000);
+  if (fDigitsArray) 
+    fDigitsArray->Clear() ; 
+  else 
+    fDigitsArray = new TClonesArray("AliACORDEdigit",1000);
   TBranch * branch = digitsTree->GetBranch("ACORDEdigit");
   if (!branch) {
     AliWarning("ACORDE branch in Digits Tree not found");
   } else {
-
-    // Check id histograms already created for this Event Specie
-    if ( ! GetDigitsData(0) )
-      InitDigits() ;
-
-    branch->SetAddress(&digits);
+    branch->SetAddress(&fDigitsArray);
     for(Int_t track = 0 ; track < branch->GetEntries() ; track++) {
       branch->GetEntry(track);
-      for(Int_t idigit = 0 ; idigit < digits->GetEntriesFast() ; idigit++) {
-        AliACORDEdigit *AcoDigit = (AliACORDEdigit*) digits->UncheckedAt(idigit);
+      for(Int_t idigit = 0 ; idigit < fDigitsArray->GetEntriesFast() ; idigit++) {
+        AliACORDEdigit *AcoDigit = (AliACORDEdigit*) fDigitsArray->UncheckedAt(idigit);
         if (!AcoDigit) {
           AliError("The unchecked digit doesn't exist");
           continue ;
@@ -242,10 +236,6 @@ void AliACORDEQADataMakerRec::MakeDigits( TTree *digitsTree)
 void AliACORDEQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(0) )
-    InitESDs() ;
 
   AliESDACORDE * fESDACORDE= esd->GetACORDEData();
         Int_t *fACORDEMultiMuon =fESDACORDE->GetACORDEMultiMuon();

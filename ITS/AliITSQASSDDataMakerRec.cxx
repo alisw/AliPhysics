@@ -648,9 +648,6 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
 Int_t AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) { 
   // Fill QA for RAW - SSD -
   Int_t rv = 0 ; 
-  // Check id histograms already created for this Event Specie
-  if ( ! fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset) )
-    rv = InitRaws() ;
 
   Int_t gStripNumber;
   Int_t gHistPosition;
@@ -932,10 +929,6 @@ Int_t AliITSQASSDDataMakerRec::MakeDigits(TTree *digits) {
     return rv;
   }
   
-  // Check id histograms already created for this Event Specie
-  if ( ! fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset) )
-    rv = InitDigits() ;
-
   static TClonesArray statDigits("AliITSdigitSSD");
   TClonesArray *iSSDdigits = &statDigits;
   branchD->SetAddress(&iSSDdigits);  
@@ -1246,11 +1239,7 @@ Int_t AliITSQASSDDataMakerRec::MakeRecPoints(TTree *clustersTree)
     AliError("can't get the branch with the ITS clusters !");
     return rv;
   }
-
-  // Check id histograms already created for this Event Specie
-  if ( ! fAliITSQADataMakerRec->GetRecPointsData(fGenRecPointsOffset) )
-    rv = InitRecPoints() ;
-  
+ 
   static TClonesArray statRecpoints("AliITSRecPoint");
   TClonesArray *recpoints = &statRecpoints;
   branchRecP->SetAddress(&recpoints);

@@ -25,16 +25,15 @@ private:
   virtual void   InitHits(); 
   virtual void   InitDigits(); 
   virtual void   InitSDigits() {;} 
-  virtual void   MakeHits(TClonesArray * hits = 0);
+  virtual void   MakeHits();
   virtual void   MakeHits(TTree * hitTree);
-  virtual void   MakeDigits(TClonesArray * /*digits*/){;} 
+  virtual void   MakeDigits(){;} 
   virtual void   MakeDigits(TTree * digTree);
-  virtual void   MakeSDigits(TClonesArray * /*sdigits*/) {;} 
+  virtual void   MakeSDigits() {;} 
   virtual void   MakeSDigits(TTree * /*sdigTree*/) {;}
   virtual void   StartOfDetectorCycle(); 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list);
   //
-  TClonesArray   *fHits; 	//! Array containing ZDC hits
   AliZDCDigit    *fDigit; 	//! Pointer to digit in tree  
   
   ClassDef(AliZDCQADataMakerSim,2)  // description 

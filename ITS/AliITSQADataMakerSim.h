@@ -35,9 +35,9 @@ public:
   virtual void InitDigits();
   virtual void InitSDigits();
   virtual void InitHits();
-  virtual void MakeDigits(TClonesArray * digits);
-  virtual void MakeSDigits(TClonesArray * sdigits);
-  virtual void MakeHits(TClonesArray * hits);
+  virtual void MakeDigits();
+  virtual void MakeSDigits();
+  virtual void MakeHits();
   virtual void MakeDigits(TTree * digits);
   virtual void MakeSDigits(TTree * sdigits);
   virtual void MakeHits(TTree * hits);

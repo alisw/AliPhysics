@@ -75,7 +75,7 @@ const UInt_t   AliQAv1::fgkQABit               = 0x80000 ;
 const UInt_t   AliQAv1::fgkImageBit            = 0x100000 ; 
 const Int_t    AliQAv1::fgkQADebugLevel        = 99 ; 
 const TString  AliQAv1::fImageFileName         = "QAImage" ; 
-const TString  AliQAv1::fImageFileFormat       = "eps" ; 
+const TString  AliQAv1::fImageFileFormat       = "pdf" ; 
 const UShort_t AliQAv1::fgkMaxQAObjects        = 10000 ; 
 
 //____________________________________________________________________________

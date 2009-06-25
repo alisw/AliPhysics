@@ -185,7 +185,7 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
   {
-    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
+    if (! IsValidEventSpecie(specie, list)  ) 
       continue ;
     SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
     if ( task == AliQAv1::kRAWS && fTrackerDataMaker ) 
@@ -985,9 +985,6 @@ void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
     /// make QA for rawdata
 
-  if ( ! GetRawsData(kTriggerScalersBP) )
-    InitRaws() ;
-
   if ( ! fIsInitRaws ) {
       AliWarningStream() 
         << "Skipping function due to a failure in Init" << endl;
@@ -1097,10 +1094,6 @@ void AliMUONQADataMakerRec::MakeDigits(TTree* digitsTree)
 {
   /// makes data from Digits
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
- 
   if (!fDigitStore)
     fDigitStore = AliMUONVDigitStore::Create(*digitsTree);
   fDigitStore->Connect(*digitsTree, false);
@@ -1122,10 +1115,6 @@ void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 {
 	/// Fill histograms from treeR
 	
-  // Check id histograms already created for this Event Specie
-  if ( ! GetRecPointsData(kTrackerNumberOfClustersPerChamber) )
-    InitRecPoints() ;
- 
   if (fIsInitRecPointsTracker) MakeRecPointsTracker(clustersTree);
 	if (fIsInitRecPointsTrigger) MakeRecPointsTrigger(clustersTree);
 }
@@ -1236,10 +1225,6 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
 {
   /// make QA data from ESDs
   
-  // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(kESDnTracks) )
-    InitESDs() ;
- 
   if ( ! fIsInitESDs ) {
     AliWarningStream() 
     << "Skipping function due to a failure in Init" << endl;

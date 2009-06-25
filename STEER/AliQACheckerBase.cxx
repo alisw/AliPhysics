@@ -171,7 +171,7 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** li
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     test[specie] = 1.0 ; 
-    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie)) 
       continue ; 
     if (list[specie]->GetEntries() == 0)  
       test[specie] = 0. ; // nothing to check
@@ -231,8 +231,8 @@ Double_t AliQACheckerBase::DiffC(const TH1 * href, const TH1 * hin) const
 Double_t AliQACheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
 {
   // compares two histograms using the Kolmogorov test
-  if ( hin->Integral() == 0 ) {
-    AliDebug(AliQAv1::GetQADebugLevel(), Form("Spectrum %s is empty", hin->GetName())) ; 
+  if ( hin->Integral() == 0 || href->Integral() == 0) {
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("Spectrum %s or its reference is empty", hin->GetName())) ; 
     return 0. ;
   }
     

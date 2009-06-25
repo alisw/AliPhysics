@@ -127,7 +127,7 @@ void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
   AliQAChecker::Instance()->Run(AliQAv1::kVZERO, task, list) ;
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
+    if (! IsValidEventSpecie(specie, list)) 
       continue ;
     SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
     if(task == AliQAv1::kRAWS){
@@ -450,16 +450,12 @@ void AliVZEROQADataMakerRec::InitDigits()
 }
 
 //____________________________________________________________________________
-void AliVZEROQADataMakerRec::MakeDigits(TClonesArray * digits)
+void AliVZEROQADataMakerRec::MakeDigits()
 {
   // makes data from Digits
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
 
-  GetDigitsData(0)->Fill(digits->GetEntriesFast()) ; 
-  TIter next(digits) ; 
+  GetDigitsData(0)->Fill(fDigitsArray->GetEntriesFast()) ; 
+  TIter next(fDigitsArray) ; 
   AliVZEROdigit *VZERODigit ; 
   while ( (VZERODigit = dynamic_cast<AliVZEROdigit *>(next())) ) {
     Int_t   PMNumber  = VZERODigit->PMNumber();         
@@ -474,15 +470,18 @@ void AliVZEROQADataMakerRec::MakeDigits(TTree *digitTree)
 {
   // makes data from Digit Tree
 	
-  TClonesArray * digits = new TClonesArray("AliVZEROdigit", 1000) ; 
+  if ( fDigitsArray ) 
+    fDigitsArray->Clear() ; 
+  else 
+    fDigitsArray = new TClonesArray("AliVZEROdigit", 1000) ; 
   
   TBranch * branch = digitTree->GetBranch("VZERODigit") ;
   if ( ! branch ) {
     AliWarning("VZERO branch in Digit Tree not found") ; 
   } else {
-    branch->SetAddress(&digits) ;
+    branch->SetAddress(&fDigitsArray) ;
     branch->GetEntry(0) ; 
-    MakeDigits(digits) ; 
+    MakeDigits() ; 
   }  
 }
 
@@ -491,10 +490,6 @@ void AliVZEROQADataMakerRec::MakeDigits(TTree *digitTree)
 void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   // Creates QA data from ESDs
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(kCellMultiV0A) )
-    InitESDs() ;
   
   UInt_t eventType = esd->GetEventType();
 

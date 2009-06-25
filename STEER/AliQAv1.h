@@ -90,7 +90,7 @@ public:
   void                   Set(QABIT_t bit, AliRecoParam::EventSpecie_t es) ;
   void                   Set(QABIT_t bit, Int_t es) ;
   void                   SetEventSpecie(AliRecoParam::EventSpecie_t es) 
-  {Int_t ibit=0; while(es!=1<<ibit) ++ibit; fEventSpecies[ibit] = kTRUE ; }
+  {if(es==AliRecoParam::kDefault) return; Int_t ibit=0; while(es!=1<<ibit) ++ibit; fEventSpecies[ibit] = kTRUE ; }
   static void            SetQADebug() { AliLog::SetGlobalDebugLevel(GetQADebugLevel()); }
   static void            SetQAResultDirName(const char * name) ; 
   static void            SetQARefStorage(const char * name) ; 

@@ -40,7 +40,7 @@ private:
   virtual void   InitRaws() ;    //book Digit QA histo
   virtual void   InitDigits() ;    //book Digit QA histo
   virtual void   MakeDigits(TTree* digitsTree) ;   //Fill Digit QA histo
-  virtual void   MakeDigits(TClonesArray *) {}       //Dummy for the moment
+  virtual void   MakeDigits() {}       //Dummy for the moment
   virtual void   InitRecPoints();  //book cluster QA histo
   virtual void   InitESDs() ;      //book ESD QA histo 
   virtual void   MakeRaws(AliRawReader* rawReader) ;

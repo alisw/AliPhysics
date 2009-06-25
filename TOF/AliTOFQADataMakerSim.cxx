@@ -155,26 +155,22 @@ void AliTOFQADataMakerSim::InitSDigits()
 }
 
 //____________________________________________________________________________
-void AliTOFQADataMakerSim::MakeHits(TClonesArray * hits)
+void AliTOFQADataMakerSim::MakeHits()
 {
   //
   //make QA data from Hits
   //
 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetHitsData(0) )
-    InitHits() ;
-  
   Int_t in[5];
   Int_t out[5];
 
-  Int_t nentries=hits->GetEntriesFast();
+  Int_t nentries= fHitsArray->GetEntriesFast();
   if(nentries<=0) {
     GetHitsData(0)->Fill(-1.) ; 
   } else{
     GetHitsData(0)->Fill(TMath::Log10(nentries)) ; 
   }
-  TIter next(hits) ; 
+  TIter next(fHitsArray) ; 
   AliTOFhitT0 * hit ; 
   while ( (hit = dynamic_cast<AliTOFhitT0 *>(next())) ) {
 
@@ -189,7 +185,6 @@ void AliTOFQADataMakerSim::MakeHits(TClonesArray * hits)
     GetMapIndeces(in,out);
     GetHitsData(3)->Fill( out[0],out[1]) ;//hit map
   }
-
 }
 
 
@@ -211,51 +206,39 @@ void AliTOFQADataMakerSim::MakeHits(TTree * hitTree)
     return;
   }
 
-  static TClonesArray statichits("AliTOFhitT0", 1000);
-  statichits.Clear();
-  TClonesArray *hits = &statichits;
-  static TClonesArray staticdummy("AliTOFhitT0", 1000);
-  staticdummy.Clear();
-  TClonesArray *dummy = &staticdummy;
-  branch->SetAddress(&dummy);
-  Int_t index = 0 ;  
+  if (fHitsArray) 
+    fHitsArray->Clear() ; 
+  else 
+    fHitsArray = new TClonesArray("AliTOFhitT0", 1000) ;
+  
+  branch->SetAddress(&fHitsArray);
   for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
     branch->GetEntry(ientry) ; 
-    for (Int_t ihit = 0 ; ihit < dummy->GetEntries() ; ihit++) {
-      AliTOFhitT0 * hit = dynamic_cast<AliTOFhitT0 *> (dummy->At(ihit)) ; 
-      new((*hits)[index]) AliTOFhitT0(*hit) ; 
-      index++ ;
-    } 
+    MakeHits() ; 
+    fHitsArray->Clear() ; 
   } 	
-
-  MakeHits(hits) ; 
-
 }
 
 //____________________________________________________________________________
-void AliTOFQADataMakerSim::MakeDigits(TClonesArray * digits)
+void AliTOFQADataMakerSim::MakeDigits()
 {
   //
   // makes data from Digits
   //
- 
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
   
   Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;
   Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
   Int_t in[5];
   Int_t out[5];
 
-  Int_t nentries=digits->GetEntriesFast();
+  Int_t nentries=fDigitsArray->GetEntriesFast();
   if(nentries<=0){
     GetDigitsData(0)->Fill(-1.) ; 
   }else{
     GetDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
   } 
 
-  TIter next(digits) ; 
+  TIter next(fDigitsArray) ; 
   AliTOFdigit * digit ; 
   while ( (digit = dynamic_cast<AliTOFdigit *>(next())) ) {
     
@@ -280,41 +263,40 @@ void AliTOFQADataMakerSim::MakeDigits(TTree * digitTree)
   //
   // makes data from Digit Tree
   //
-  TClonesArray * digits = new TClonesArray("AliTOFdigit", 1000) ; 
+  if (fDigitsArray) 
+    fDigitsArray->Clear() ; 
+  else 
+    fDigitsArray = new TClonesArray("AliTOFdigit", 1000) ; 
   
   TBranch * branch = digitTree->GetBranch("TOF") ;
   if ( ! branch ) {
     AliError("TOF branch in Digit Tree not found") ; 
     return;
   }
-  branch->SetAddress(&digits) ;
+  branch->SetAddress(&fDigitsArray) ;
   branch->GetEntry(0) ; 
-  MakeDigits(digits) ; 
+  MakeDigits() ; 
 }
 
 //____________________________________________________________________________
-void AliTOFQADataMakerSim::MakeSDigits(TClonesArray * sdigits)
+void AliTOFQADataMakerSim::MakeSDigits()
 {
   //
   // makes data from SDigits
   //
-
-  // Check id histograms already created for this Event Specie
-  if ( ! GetSDigitsData(0) )
-    InitSDigits() ;
   
   Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;
   Int_t in[5];
   Int_t out[5];
 
-  Int_t nentries=sdigits->GetEntriesFast();
+  Int_t nentries=fSDigitsArray->GetEntriesFast();
   if(nentries<=0){
     GetSDigitsData(0)->Fill(-1.) ; 
   }else{
     GetSDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
   } 
 
-  TIter next(sdigits) ; 
+  TIter next(fSDigitsArray) ; 
   AliTOFSDigit * sdigit ; 
   while ( (sdigit = dynamic_cast<AliTOFSDigit *>(next())) ) {
     
@@ -338,16 +320,19 @@ void AliTOFQADataMakerSim::MakeSDigits(TTree * sdigitTree)
   //
   // makes data from SDigit Tree
   //
-  TClonesArray * sdigits = new TClonesArray("AliTOFSDigit", 1000) ; 
+  if (fSDigitsArray) 
+    fSDigitsArray->Clear() ; 
+  else 
+    fSDigitsArray = new TClonesArray("AliTOFSDigit", 1000) ; 
   
   TBranch * branch = sdigitTree->GetBranch("TOF") ;
   if ( ! branch ) {
     AliError("TOF branch in SDigit Tree not found") ; 
     return;
   }
-  branch->SetAddress(&sdigits) ;
+  branch->SetAddress(&fSDigitsArray) ;
   branch->GetEntry(0) ; 
-  MakeSDigits(sdigits) ; 
+  MakeSDigits() ; 
 }
 
 //____________________________________________________________________________ 

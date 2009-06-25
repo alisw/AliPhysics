@@ -34,7 +34,7 @@ public:
   virtual Int_t InitDigits();
   virtual Int_t InitRecPoints();
   virtual Int_t MakeRaws(AliRawReader *rawReader);
-  virtual Int_t MakeDigits(TClonesArray* /*digits*/)  {return 0;}
+  virtual Int_t MakeDigits()  {return 0;}
   virtual Int_t MakeDigits(TTree *digitsTree);
   virtual Int_t MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();

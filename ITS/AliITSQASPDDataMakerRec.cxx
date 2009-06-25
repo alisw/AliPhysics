@@ -188,9 +188,6 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 { 
   // Fill QA for RAW - SPD -
   Int_t rv = 0 ; 
-  // Check id histograms already created for this Event Specie
-  if ( ! fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset) )
-    rv = InitRaws() ;
   
   rawReader->Reset();
   AliITSRawStreamSPD *rawStreamSPD = new AliITSRawStreamSPD(rawReader);
@@ -314,9 +311,6 @@ Int_t AliITSQASPDDataMakerRec::MakeDigits(TTree *digits)
 { 
   // Fill QA for DIGIT - SPD -
   Int_t rv = 0 ; 
-  // Check id histograms already created for this Event Specie
-  if ( ! fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset) )
-    rv = InitDigits() ;
 
 //  AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
 //  fITS->SetTreeAddress();
@@ -519,9 +513,6 @@ Int_t AliITSQASPDDataMakerRec::MakeRecPoints(TTree * clusterTree)
     AliError("can't get the branch with the ITS clusters !");
     return rv;
   }
-  // Check id histograms already created for this Event Specie
-  if ( ! fAliITSQADataMakerRec->GetRecPointsData(fGenRecPointsOffset) )
-    rv = InitRecPoints() ;
   
   itsClusterBranch->SetAddress(&ITSCluster);
   Int_t nItsMods = (Int_t)clusterTree->GetEntries();

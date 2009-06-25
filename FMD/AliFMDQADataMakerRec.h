@@ -32,14 +32,13 @@ private:
   virtual void   InitRecPoints(); 
   virtual void   InitRaws(); 
   virtual void   MakeESDs(AliESDEvent * esd);
-  virtual void   MakeDigits(TClonesArray * digits); 
+  virtual void   MakeDigits(); 
   virtual void   MakeDigits(TTree * digitTree); 
   virtual void   MakeRecPoints(TTree * recpoTree); 
   virtual void   MakeRaws(AliRawReader* rawReader); 
   virtual void   StartOfDetectorCycle(); 
   Int_t GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board, UShort_t monitor = 0);
   ClassDef(AliFMDQADataMakerRec,0)  // description 
-  TClonesArray fDigitsArray;
   TClonesArray fRecPointsArray;
 
 };
