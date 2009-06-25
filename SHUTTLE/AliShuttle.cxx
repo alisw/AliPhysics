@@ -2354,7 +2354,7 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 		return NULL;
 	}
 
-	TString sourceName = 0;
+	TString sourceName = "";
 	if (system == kDAQ)
 	{
 		sourceName = "DAQsource";
@@ -2433,7 +2433,7 @@ TList* AliShuttle::GetFileIDs(Int_t system, const char* detector, const char* so
 		return NULL;
 	}
 
-	TString sourceName = 0;
+	TString sourceName = "";
 	if (system == kDAQ)
 	{
 		sourceName = "DAQsource";
