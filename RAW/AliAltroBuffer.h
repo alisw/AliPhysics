@@ -37,19 +37,19 @@ class AliAltroBuffer: public TObject {
   virtual void  WriteTrailer(Int_t wordsNumber, Short_t hwAddress); 
   //this method is used to write the trailer
 
-  virtual void  WriteChannel(Int_t padNumber, Int_t rowNumber, Int_t secNumber,
+  void  WriteChannel(Int_t padNumber, Int_t rowNumber, Int_t secNumber,
 		     Int_t nTimeBins, const Int_t* adcValues, 
 		     Int_t threshold = 0);
   //this method is used to write all ADC values and the trailer of a channel
-  virtual void  WriteChannel(Short_t hwAddress,
+  void  WriteChannel(Short_t hwAddress,
 		     Int_t nTimeBins, const Int_t* adcValues, 
 		     Int_t threshold = 0);
   //this method is used to write all ADC values and the trailer of a channel
-  virtual Int_t WriteBunch(Int_t nTimeBins, const Int_t* adcValues,
+  Int_t WriteBunch(Int_t nTimeBins, const Int_t* adcValues,
 		   Int_t threshold = 0);
   //this method is used to write all ADC values
 
-  virtual void  WriteDataHeader(Bool_t dummy, Bool_t compressed);
+  void  WriteDataHeader(Bool_t dummy, Bool_t compressed);
   //this method is used to write the data header
 
   virtual void  WriteRCUTrailer(Int_t rcuId);
@@ -59,7 +59,7 @@ class AliAltroBuffer: public TObject {
   //this method is used to set the verbose level 
   //level  0 no output messages
   //level !=0 some messages are displayed during the run
-  virtual void  Flush();
+  void  Flush();
   //this method is used to fill the buffer with 2AA hexadecimal value and save it into the output file
 
   void  SetMapping(AliAltroMapping *mapping) { fMapping = mapping; }

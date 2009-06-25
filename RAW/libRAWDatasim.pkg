@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS:=  AliBitPacking.cxx AliAltroBuffer.cxx
+SRCS:=  AliBitPacking.cxx AliAltroBuffer.cxx AliAltroBufferV3.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
@@ -16,7 +16,7 @@ ifdef DATE_ROOT
 EINCLUDE+= ${DATE_COMMON_DEFS}
 endif
 
-EXPORT:= AliAltroBuffer.h AliBitPacking.h
+EXPORT:= AliAltroBuffer.h AliAltroBufferV3.h AliBitPacking.h
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \

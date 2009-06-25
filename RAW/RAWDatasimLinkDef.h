@@ -6,5 +6,6 @@
 
 #pragma link C++ class AliBitPacking+;
 #pragma link C++ class AliAltroBuffer+;
+#pragma link C++ class AliAltroBufferV3+;
 
 #endif
