@@ -85,10 +85,12 @@
 #pragma link C++ class AliEveTRDHitsEditor+;
 #pragma link C++ class AliEveTRDClusters+;
 #pragma link C++ class AliEveTRDTracklet+;
+#pragma link C++ class AliEveTRDTrackletOnline+;
 #pragma link C++ class AliEveTRDTrack+;
 #pragma link C++ class AliEveTRDTrackList+;
 #pragma link C++ class AliEveTRDTrackListEditor+;
 #pragma link C++ class AliEveTRDMacroWizzard+;
+#pragma link C++ class AliEveTRDmcm+;
 
 // TOF
 #pragma link C++ class AliEveTOFDigitsInfo+;

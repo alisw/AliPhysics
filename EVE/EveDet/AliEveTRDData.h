@@ -95,16 +95,14 @@ private:
 
 
 class AliTRDseedV1;
-class AliTRDtrackletMCM;
 class AliEveTRDTracklet : public TEveLine
 {
 public:
   AliEveTRDTracklet(AliTRDseedV1 *trklt);
-  AliEveTRDTracklet(AliTRDtrackletMCM *tracklet);
   ~AliEveTRDTracklet();
   AliEveTRDClusters* GetClusters() const {return fClusters;}
   void               Print(Option_t *o="") const; // *MENU*
-  void               ShowMCM(Option_t *opt = "RHT") const; // *MENU*
+
 private:
   AliEveTRDClusters *fClusters;  // clusters
 
@@ -151,5 +149,53 @@ private:
   ClassDef(AliEveTRDTrack, 0);  // TRD track visualisation
 };
 
+
+#include "TEveElement.h"
+
+class AliTRDtrackletMCM;
+class AliTRDtrackletWord;
+class AliEveTRDTrackletOnline : public TEveLine
+{
+public:
+  AliEveTRDTrackletOnline(AliTRDtrackletMCM *tracklet);
+  AliEveTRDTrackletOnline(AliTRDtrackletWord *tracklet);
+  ~AliEveTRDTrackletOnline();
+
+//  void               Print(Option_t *o="") const; // *MENU*
+  void               ShowMCM(Option_t *opt = "RHT") const; // *MENU*
+private:
+  Int_t fDetector;
+  Int_t fROB;
+  Int_t fMCM;
+
+  AliEveTRDTrackletOnline(const AliEveTRDTrackletOnline&);            // Not implemented
+  AliEveTRDTrackletOnline& operator=(const AliEveTRDTrackletOnline&); // Not implemented
+
+  ClassDef(AliEveTRDTrackletOnline, 0); // TRD tracklet visualisation
+};
+
+
+class AliTRDmcmSim;
+class AliEveTRDmcm : public TEveElement, public TNamed
+{
+ public:
+  AliEveTRDmcm();
+  ~AliEveTRDmcm();
+
+  Bool_t Init(Int_t det, Int_t rob, Int_t mcm); // *MENU*
+  Bool_t LoadDigits(); // *MENU*
+  Bool_t Filter(); // *MENU*
+  Bool_t Tracklet(); // *MENU*
+  void Draw(Option_t* option = "FHT"); // *MENU*
+  Bool_t AssignPointer(const char* ptrname = "mcmtest"); // *MENU*
+
+ protected:
+  AliTRDmcmSim *fMCM;
+
+  AliEveTRDmcm(const AliEveTRDmcm&); // not implemented
+  AliEveTRDmcm& operator=(const AliEveTRDmcm&); // not implemented
+
+  ClassDef(AliEveTRDmcm, 0);
+};
 
 #endif

@@ -7,8 +7,10 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#include "TROOT.h"
 #include "TVector.h"
 #include "TLinearFitter.h"
+#include "TCanvas.h"
 
 #include "TEveTrans.h"
 #include "TEveManager.h"
@@ -29,11 +31,13 @@
 #include "AliTRDcluster.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackletMCM.h"
+#include "AliTRDtrackletWord.h"
 #include "AliTRDmcmSim.h"
 #include "AliTRDtrackV1.h"
 #include "AliTRDtrackerV1.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDdigitsManager.h"
+#include "AliTRDmcmSim.h"
 #include "AliTRDarrayADC.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDgeometry.h"
@@ -46,6 +50,8 @@ ClassImp(AliEveTRDDigits)
 ClassImp(AliEveTRDClusters)
 ClassImp(AliEveTRDTracklet)
 ClassImp(AliEveTRDTrack)
+ClassImp(AliEveTRDTrackletOnline)
+ClassImp(AliEveTRDmcm)
 
 ///////////////////////////////////////////////////////////
 /////////////   AliEveTRDDigits       /////////////////////
@@ -401,55 +407,10 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   //SetPoint(1, x0, y0, z0);
 }
 
-AliEveTRDTracklet::AliEveTRDTracklet(AliTRDtrackletMCM *tracklet) : 
-  TEveLine(),
-  fClusters(0x0)
-{
-  SetName("TRD tracklet");
-  AliTRDtrackletMCM *trkl = new AliTRDtrackletMCM(*tracklet);
-  SetUserData(trkl);
-
-  SetTitle(Form("Det: %i, ROB: %i, MCM: %i, Label: %i\n0x%08x", 
-                trkl->GetDetector(), trkl->GetROB(), trkl->GetMCM(), trkl->GetLabel(),
-                trkl->GetTrackletWord()));
-  SetLineColor(kRed);
-
-  AliTRDgeometry *geo = new AliTRDgeometry();
-
-  Float_t length = 10;
-  Double_t x[3];
-  Double_t p[3];
-  x[0] = trkl->GetX();
-  x[1] = trkl->GetY();
-  x[2] = trkl->GetZ();
-  
-  geo->RotateBack(trkl->GetDetector(), x, p);
-  SetPoint(0, p[0], p[1], p[2]);
-
-  x[0] -= length;
-  x[1] += length * trkl->GetdYdX();
-  x[2] *= x[0] / (x[0] + length);
-  geo->RotateBack(trkl->GetDetector(), x, p);
-  SetPoint(1, p[0], p[1], p[2]);
-}
 
 AliEveTRDTracklet::~AliEveTRDTracklet() 
 {
-  AliTRDtrackletMCM *trkl = dynamic_cast<AliTRDtrackletMCM*> ((AliTRDtrackletBase*) GetUserData());
-  delete trkl;
-}
 
-void AliEveTRDTracklet::ShowMCM(Option_t *opt) const
-{
-  AliTRDtrackletMCM *trkl = dynamic_cast<AliTRDtrackletMCM*> ((AliTRDtrackletBase*) GetUserData());
-  if (!trkl)
-    return;
-  printf("Det: %3i, ROB: %i, MCM: %2i\n", trkl->GetDetector(), trkl->GetROB(), trkl->GetMCM());
-  AliTRDmcmSim *mcm = new AliTRDmcmSim();
-  AliRunLoader *rl = AliEveEventManager::AssertRunLoader();
-  mcm->LoadMCM(rl, trkl->GetDetector(), trkl->GetROB(), trkl->GetMCM());
-  mcm->Tracklet();
-  mcm->Draw(opt);
 }
 
 //______________________________________________________________________________
@@ -649,4 +610,191 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
 
   // save track status
   fTrackState = s;
+}
+
+
+AliEveTRDTrackletOnline::AliEveTRDTrackletOnline(AliTRDtrackletMCM *tracklet) :
+  TEveLine(),
+  fDetector(-1),
+  fROB(-1),
+  fMCM(-1)
+{
+  AliTRDtrackletMCM *trkl = new AliTRDtrackletMCM(*tracklet);
+  SetUserData(trkl);
+
+  fDetector = trkl->GetDetector();
+  fROB = trkl->GetROB();
+  fMCM = trkl->GetMCM();
+
+  SetName("TRD tracklet");
+  SetTitle(Form("Det: %i, ROB: %i, MCM: %i, Label: %i\n0x%08x", 
+                trkl->GetDetector(), trkl->GetROB(), trkl->GetMCM(), trkl->GetLabel(),
+                trkl->GetTrackletWord()));
+  SetLineColor(kRed);
+
+  AliTRDgeometry *geo = new AliTRDgeometry();
+//  TGeoHMatrix *matrix = geo->GetClusterMatrix(trkl->GetDetector());
+
+  Float_t length = 3.;
+  Double_t x[3];
+  Double_t p[3];
+  x[0] = trkl->GetX();
+  x[1] = trkl->GetY();
+  x[2] = trkl->GetZ();
+
+  fDetector = trkl->GetDetector();
+  AliTRDpadPlane *pp = geo->GetPadPlane(geo->GetLayer(fDetector), geo->GetStack(fDetector));
+  fROB = 2 * (trkl->GetZbin() / 4) + (trkl->GetY() > 0 ? 1 : 0);
+  fMCM = (((Int_t) ((trkl->GetY()) / pp->GetWidthIPad()) + 72) / 18) % 4 
+    + 4 * (trkl->GetZbin() % 4) ;
+  AliInfo(Form("From position/tracklet: ROB: %i/%i, MCM: %i/%i", 
+               fROB, trkl->GetROB(), fMCM, trkl->GetMCM()));  
+  
+  geo->RotateBack(trkl->GetDetector(), x, p);
+//  matrix->LocalToMaster(x, p);
+  SetPoint(0, p[0], p[1], p[2]);
+
+  x[0] -= length;
+  x[1] += length * trkl->GetdYdX();
+  x[2] *= x[0] / (x[0] + length);
+  geo->RotateBack(trkl->GetDetector(), x, p);
+//  matrix->LocalToMaster(x, p);
+  SetPoint(1, p[0], p[1], p[2]);
+  delete geo;
+}
+
+AliEveTRDTrackletOnline::AliEveTRDTrackletOnline(AliTRDtrackletWord *tracklet) :
+  TEveLine(),
+  fDetector(-1),
+  fROB(-1),
+  fMCM(-1)
+{
+  AliTRDtrackletWord *trkl = new AliTRDtrackletWord(*tracklet);
+  SetUserData(trkl);
+
+  AliTRDgeometry *geo = new AliTRDgeometry();
+  fDetector = trkl->GetDetector();
+  AliTRDpadPlane *pp = geo->GetPadPlane(geo->GetLayer(fDetector), geo->GetStack(fDetector));
+  fROB = 2 * (trkl->GetZbin() / 4) + (trkl->GetY() > 0 ? 1 : 0);
+  fMCM = (((Int_t) ((trkl->GetY()) / pp->GetWidthIPad()) + 72) / 18) % 4 
+    + 4 * (trkl->GetZbin() % 4) ;
+
+  SetName("TRD tracklet");
+  SetTitle(Form("Det: %i, ROB: %i, MCM: %i, Label: %i\n0x%08x", 
+                trkl->GetDetector(), fROB, fMCM, -1,
+                trkl->GetTrackletWord()));
+  SetLineColor(kRed);
+
+//  AliTRDgeometry *geo = new AliTRDgeometry();
+
+  Float_t length = 3.;
+  Double_t x[3];
+  Double_t p[3];
+  x[0] = trkl->GetX();
+  x[1] = trkl->GetY();
+  x[2] = trkl->GetZ();
+  
+  geo->RotateBack(trkl->GetDetector(), x, p);
+  SetPoint(0, p[0], p[1], p[2]);
+
+  x[0] -= length;
+  x[1] += length * trkl->GetdYdX();
+  x[2] *= x[0] / (x[0] + length);
+  geo->RotateBack(trkl->GetDetector(), x, p);
+  SetPoint(1, p[0], p[1], p[2]);
+  delete geo;
+}
+
+AliEveTRDTrackletOnline::~AliEveTRDTrackletOnline() 
+{
+  AliTRDtrackletMCM *trkl = dynamic_cast<AliTRDtrackletMCM*> ((AliTRDtrackletBase*) GetUserData());
+  printf("trkl: %p\n", (void*)trkl);
+//  delete trkl;
+  AliTRDtrackletWord *trklWord = dynamic_cast<AliTRDtrackletWord*> ((AliTRDtrackletBase*) GetUserData());
+  printf("trklWord: %p\n", (void*)trklWord);
+//  delete trklWord;
+}
+
+void AliEveTRDTrackletOnline::ShowMCM(Option_t *opt) const
+{
+  if (fDetector < 0 || fROB < 0 || fMCM < 0)
+    return;
+
+  AliEveTRDmcm *evemcm = new AliEveTRDmcm();
+  evemcm->Init(fDetector, fROB, fMCM);
+  evemcm->LoadDigits();
+  evemcm->Draw(opt);
+
+  TEveElementList *mcmlist = 0x0;
+  if (gEve->GetCurrentEvent()) 
+    mcmlist = (TEveElementList*) gEve->GetCurrentEvent()->FindChild("TRD MCMs");
+  if (!mcmlist) {
+    mcmlist = new TEveElementList("TRD MCMs");
+    gEve->AddElement(mcmlist);
+  }
+  gEve->AddElement(evemcm, mcmlist);
+}
+
+
+AliEveTRDmcm::AliEveTRDmcm() :
+  TEveElement(),
+  TNamed(),
+  fMCM(new AliTRDmcmSim())
+{
+  SetName("MCM");
+  SetTitle("Unknown MCM");
+}
+
+AliEveTRDmcm::~AliEveTRDmcm()
+{
+  delete fMCM;
+}
+
+Bool_t AliEveTRDmcm::Init(Int_t det, Int_t rob, Int_t mcm)
+{
+  SetName(Form("MCM: Det. %i, ROB %i, MCM %i", det, rob, mcm));
+  SetTitle(Form("MCM: Det. %i, ROB %i, MCM %i", det, rob, mcm));
+  fMCM->Init(det, rob, mcm);
+  fMCM->Reset();
+  return kTRUE;
+}
+
+Bool_t AliEveTRDmcm::LoadDigits()
+{
+  AliRunLoader *rl = AliEveEventManager::AssertRunLoader();
+  return fMCM->LoadMCM(rl, fMCM->GetDetector(), 
+                       fMCM->GetRobPos(), fMCM->GetMcmPos());
+}
+
+Bool_t AliEveTRDmcm::Filter()
+{
+  fMCM->Filter();
+  return kTRUE;
+}
+
+Bool_t AliEveTRDmcm::Tracklet()
+{
+  fMCM->Tracklet();
+  return kTRUE;
+}
+
+void AliEveTRDmcm::Draw(Option_t* option)
+{
+  const char *mcmname = Form("mcm_%i_%i_%i", fMCM->GetDetector(),
+                             fMCM->GetRobPos(), fMCM->GetMcmPos());
+
+  TCanvas *c = dynamic_cast<TCanvas*> (gROOT->FindObject(mcmname));
+  if (!c)
+    c = gEve->AddCanvasTab("TRD MCM");
+  c->SetTitle(Form("MCM %i on ROB %i of det. %i", 
+                   fMCM->GetMcmPos(), fMCM->GetRobPos(), fMCM->GetDetector()));
+  c->SetName(mcmname);
+  c->cd();
+  fMCM->Draw(option);
+}
+
+Bool_t AliEveTRDmcm::AssignPointer(const char* ptrname)
+{
+  gROOT->ProcessLine(Form("AliTRDmcmSim* %s = (AliTRDmcmSim *) 0x%x", ptrname, fMCM));
+  return kTRUE;
 }

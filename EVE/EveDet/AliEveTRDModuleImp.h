@@ -25,6 +25,7 @@
 
 #include "AliEveTRDModule.h"
 
+class TTree;
 class TObjArray;
 class TClonesArray;
 
@@ -55,7 +56,7 @@ public:
   void  LoadClusters(TObjArray *cs);
   void  LoadClusters(AliTRDtrackingChamber *tc);
   void  LoadDigits(AliTRDdigitsManager *digits);
-  void  LoadTracklets(TObjArray *ts);
+  void  LoadTracklets(TTree *trklTree);
 
   void  Paint(Option_t* option="");
   void  Reset();
@@ -67,7 +68,7 @@ protected:
   AliEveTRDDigits  *fDigits;    // digits representation
   AliEveTRDHits    *fHits;      // hits representation
   AliEveTRDHits    *fRecPoints; // cluster representation
-  std::vector<TEveTrack*> *fTracklets; // mcm tracklets
+  TClonesArray     *fTracklets; // mcm tracklets
   AliTRDgeometry   *fGeo;      // TRD geometry
   TEveGeoTopNode   *fShape;    // rendarable geometry of the chamber 
   // data representation section

@@ -11,6 +11,7 @@
 #include "AliEveTRDData.h"
 #include "EveBase/AliEveEventManager.h"
 
+#include "TTree.h"
 #include "TGListTree.h"
 #include "TClonesArray.h"
 #include "TGeoManager.h"
@@ -30,7 +31,7 @@
 #include "AliTRDhit.h"
 #include "AliTRDcluster.h"
 #include "AliTRDtrackingChamber.h"
-#include "AliTRDmcmTracklet.h"
+#include "AliTRDtrackletMCM.h"
 
 ClassImp(AliEveTRDChamber)
 ClassImp(AliEveTRDNode)
@@ -360,39 +361,42 @@ void AliEveTRDChamber::LoadHits(TClonesArray *hits, Int_t &idx)
 }
 
 //______________________________________________________________________________
-void AliEveTRDChamber::LoadTracklets(TObjArray *tracks)
+void AliEveTRDChamber::LoadTracklets(TTree *trklTree)
 {
   //
   // Draw tracks
   //
+
   if(!fGeo){
     Error("LoadTracklets()", Form("Geometry not set for chamber %d. Please call first AliEveTRDChamber::SetGeometry().", fDet));
     return;
   }
 
   if(!fTracklets){
-    fTracklets = new std::vector<TEveTrack*>;
-  } else fTracklets->clear();
+    fTracklets = new TClonesArray("AliEveTRDTrackletOnline",100);
+  } else {
+    fTracklets->Delete();
+    TEveElementList *trklChild = (TEveElementList*) FindChild("Tracklets");
+    trklChild->Destroy();
+  }
 
 
-  AliTRDmcmTracklet *trk = 0x0;
-  Double_t cloc[3], cglo[3];
-  for(int itrk=0; itrk<tracks->GetEntries();itrk++){
-    trk = (AliTRDmcmTracklet*)tracks->At(itrk);
-    trk->MakeTrackletGraph(fGeo,.5);
-    fTracklets->push_back(new TEveTrack());
-    fTracklets->back()->SetLineColor(4);
+  TBranch *mcmBranch = trklTree->GetBranch("mcmtrklbranch");
+  if (!mcmBranch)
+    return;
 
-    cloc[0] = trk->GetTime0(); // x0
-    cloc[1] = trk->GetOffset(); // y0
-    cloc[2] = trk->GetRowz(); // z
-    fGeo->RotateBack(fDet,cloc,cglo);
-    fTracklets->back()->SetNextPoint(cglo[0], cglo[1], cglo[2]);
+  AliTRDtrackletMCM *trkl = 0x0;
+  mcmBranch->SetAddress(&trkl);
 
-    cloc[0] += 3.7; // x1
-    cloc[1] += TMath::Tan(trk->GetSlope()*TMath::Pi()/180.) * 3.7; // y1
-    fGeo->RotateBack(fDet,cloc,cglo);
-    fTracklets->back()->SetNextPoint(cglo[0], cglo[1], cglo[2]);
+  TEveElementList* listOfTracklets = new TEveElementList("Tracklets");
+  gEve->AddElement(listOfTracklets, this);
+
+  for(Int_t iTrkl = 0; iTrkl < mcmBranch->GetEntries(); iTrkl++){
+    mcmBranch->GetEntry(iTrkl);
+    if (trkl->GetDetector() == GetID()) {
+      new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliEveTRDTrackletOnline(trkl);
+      gEve->AddElement(new AliEveTRDTrackletOnline(trkl), listOfTracklets);
+    }
   }
   fLoadTracklets = kTRUE;
 }
@@ -416,7 +420,8 @@ void AliEveTRDChamber::Paint(Option_t* option)
   if(fHits && fRnrHits) fHits->GetObject()->Paint(option);
 
   if(fTracklets && fRnrTracklets){
-    for(std::vector<TEveTrack*>::iterator i=fTracklets->begin(); i != fTracklets->end(); ++i) (*i)->Paint(option);
+//    for (Int_t iTrkl = 0; iTrkl < fTracklets->GetEntriesFast(); iTrkl++) 
+//      ((AliEveTRDTrackletOnline*) (*fTracklets)[iTrkl])->Paint();
   }
 }
 
@@ -439,7 +444,7 @@ void AliEveTRDChamber::Reset()
     fLoadRecPoints = kFALSE;
   }
   if(fTracklets){
-    fTracklets->clear();
+    fTracklets->Delete();
     fLoadTracklets = kFALSE;
   }
 }

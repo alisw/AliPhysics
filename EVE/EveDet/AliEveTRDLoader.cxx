@@ -163,7 +163,7 @@ Bool_t AliEveTRDLoader::GoToEvent(int ev)
     if(!t) return kFALSE;
     if(!LoadClusters(t)) return kFALSE;
   } else if(fDataType&kTRDTracklets){
-    t = (TTree*)gDirectory->Get("TreeT");
+    t = (TTree*)gDirectory->Get("tracklets");
     if(!t) return kFALSE;
     if(!LoadTracklets(t)) return kFALSE;
   } else AliWarning("Please select first the type of data that you want to monitor and then hit the \"Load\" button.");
@@ -260,22 +260,19 @@ Bool_t AliEveTRDLoader::LoadDigits(TTree *tD)
 
 
 //______________________________________________________________________________
-Bool_t AliEveTRDLoader::LoadTracklets(TTree *tT)
+Bool_t AliEveTRDLoader::LoadTracklets(TTree *trklTree)
 {
   // Load tracklets.
 
   AliInfo("Loading ...");
   if(!fChildren.size()) return kFALSE;
 
-  TObjArray *tracks = new TObjArray();
-  tT->SetBranchAddress("TRDmcmTracklet",&tracks);
 
   AliEveTRDChamber *chmb = 0x0;
-  AliTRDmcmTracklet *trk=0x0;
+
   for(int idet=0; idet<540; idet++){
-    if(!tT->GetEntry(idet)) continue;
-    if(tracks->GetEntriesFast()) trk = (AliTRDmcmTracklet*)tracks->UncheckedAt(0);
-    if((chmb = GetChamber(trk->GetDetector()))) chmb->LoadTracklets(tracks);
+    if((chmb = GetChamber(idet)))
+      chmb->LoadTracklets(trklTree);
   }
 
   return kTRUE;
@@ -320,7 +317,7 @@ Bool_t AliEveTRDLoader::Open(const char *filename, const char *dir)
       fDataType = 0; 
     }
     fDataType|=kTRDClusters;  
-  } else if(((TObjString*)(*so)[1])->GetString().CompareTo("Tracks") == 0){
+  } else if(((TObjString*)(*so)[1])->GetString().CompareTo("Tracklets") == 0){
     if(count && !fDataType&kTRDTracklets){ 
       AliWarning("Data type set to TRACKLETS according to file name. Previous settings will be overwritten.");
       fDataType = 0; 

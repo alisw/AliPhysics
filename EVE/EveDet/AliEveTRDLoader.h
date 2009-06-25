@@ -70,7 +70,7 @@ protected:
   virtual Bool_t	LoadHits(TTree *tH);
   virtual Bool_t	LoadClusters(TTree *tC);
   virtual Bool_t	LoadDigits(TTree *tD);
-  virtual Bool_t	LoadTracklets(TTree *tT);
+  virtual Bool_t	LoadTracklets(TTree *trklTree);
           void    SetDataLinked(Bool_t linked = kTRUE) {SetBit(1, linked);}
 
   virtual void		Unload();
