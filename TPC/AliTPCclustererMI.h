@@ -37,8 +37,9 @@ public:
   AliTPCclustererMI &operator = (const AliTPCclustererMI & param); //assignment
   virtual ~AliTPCclustererMI();
   virtual void Digits2Clusters();
+  virtual void Digits2ClustersOld(AliRawReader* rawReader);
   virtual void Digits2Clusters(AliRawReader* rawReader);
-  virtual void SetInput(TTree * tree);  // set input tree with digits    
+  virtual void SetInput(TTree * tree);  // set input tree with digits
   virtual void SetOutput(TTree * tree); // set output tree with 
   virtual void FillRow();               // fill the output container - Tree or TObjArray
   TObjArray * GetOutputArray(){return fOutputArray;}
@@ -61,7 +62,8 @@ private:
   void FindClusters(AliTPCCalROC * noiseROC);
   Bool_t AcceptCluster(AliTPCclusterMI*c);
   Double_t  ProcesSignal(Float_t * signal, Int_t nchannels, Int_t id[3], Double_t &rms, Double_t &pedestalCalib);
-
+  void ProcessSectorData(Float_t** allBins, Int_t** allSigBins, Int_t*  allNSigBins);
+  
   Float_t * fBins;       //!digits array
   Int_t   * fSigBins; //!digits array containg only timebins above threshold
   Int_t     fNSigBins;//!size of fSigBins
