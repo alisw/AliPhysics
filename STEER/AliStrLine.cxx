@@ -313,19 +313,22 @@ void AliStrLine::PrintStatus() const {
 //________________________________________________________
 Int_t AliStrLine::IsParallelTo(AliStrLine *line) const {
   // returns 1 if lines are parallel, 0 if not paralel
+  const Double_t prec=1e-14;
   Double_t cd2[3];
   line->GetCd(cd2);
   Double_t vecpx=fCd[1]*cd2[2]-fCd[2]*cd2[1];
-  if(vecpx!=0) return 0;
+  if(TMath::Abs(vecpx) > prec) return 0;
   Double_t vecpy=-fCd[0]*cd2[2]+fCd[2]*cd2[0];
-  if(vecpy!=0) return 0;
+  if(TMath::Abs(vecpy) > prec) return 0;
   Double_t vecpz=fCd[0]*cd2[1]-fCd[1]*cd2[0];
-  if(vecpz!=0) return 0;
+  if(TMath::Abs(vecpz) > prec) return 0;
   return 1;
 }
 //________________________________________________________
 Int_t AliStrLine::Crossrphi(AliStrLine *line){
   // Cross 2 lines in the X-Y plane
+  const Double_t prec=1e-14;
+  const Double_t big=1e20;
   Double_t p2[3];
   Double_t cd2[3];
   line->GetP0(p2);
@@ -338,10 +341,11 @@ Int_t AliStrLine::Crossrphi(AliStrLine *line){
   Double_t f=p2[1]-fP0[1];
   Double_t deno = a*e-b*d;
   Int_t retcode = 0;
-  if(deno != 0.) {
+  if(TMath::Abs(deno) > prec) {
     fTpar = (c*e-b*f)/deno;
   }
   else {
+    fTpar = big;
     retcode = -1;
   }
   return retcode;
@@ -351,6 +355,7 @@ Int_t AliStrLine::Crossrphi(AliStrLine *line){
 Int_t AliStrLine::CrossPoints(AliStrLine *line, Double_t *point1, Double_t *point2){
   // Looks for the crossing point estimated starting from the
   // DCA segment
+  const Double_t prec=1e-14;
   Double_t p2[3];
   Double_t cd2[3];
   line->GetP0(p2);
@@ -372,7 +377,7 @@ Int_t AliStrLine::CrossPoints(AliStrLine *line, Double_t *point1, Double_t *poin
     a12-=fCd[i]*fCd[i];
   }
   Double_t deno = a11*a22-a21*a12;
-  if(deno == 0.) return -1;
+  if(TMath::Abs(deno) < prec) return -1;
   fTpar = (a11*k2-a21*k1) / deno;
   Double_t par2 = (k1*a22-k2*a12) / deno;
   line->SetPar(par2);
@@ -398,6 +403,7 @@ Int_t AliStrLine::Cross(AliStrLine *line, Double_t *point){
 //___________________________________________________________
 Double_t AliStrLine::GetDCA(AliStrLine *line) const{
   //Returns the distance of closest approach between two lines
+  const Double_t prec=1e-14;
   Double_t p2[3];
   Double_t cd2[3];
   line->GetP0(p2);
@@ -411,7 +417,7 @@ Double_t AliStrLine::GetDCA(AliStrLine *line) const{
       dist2+=(fP0[i]-p2[i])*fCd[i];
       mod+=fCd[i]*fCd[i];
     }
-    if(mod!=0){
+    if(TMath::Abs(mod) > prec){
       dist2/=mod;
       return TMath::Sqrt(dist1q-dist2*dist2);
     }else{return -1;}
@@ -426,7 +432,7 @@ Double_t AliStrLine::GetDCA(AliStrLine *line) const{
        dist+=(fP0[i]-p2[i])*perp[i];
      }
      mod=sqrt(mod);
-     if(mod!=0){
+     if(TMath::Abs(mod) > prec){
        dist/=mod;
        return TMath::Abs(dist);
      }else{return -1;}
