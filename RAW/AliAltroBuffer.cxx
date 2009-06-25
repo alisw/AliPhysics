@@ -232,10 +232,10 @@ Int_t AliAltroBuffer::WriteBunch(Int_t nTimeBins, const Int_t* adcValues,
 }
 
 //_____________________________________________________________________________
-void AliAltroBuffer::WriteDataHeader(Bool_t dummy, Bool_t compressed)
+void AliAltroBuffer::WriteDataHeader(Bool_t dummy, Bool_t /*compressed*/)
 {
 //Write a (dummy or real) DDL data header, 
-//set the compression bit if compressed
+//set the attributes according to the RCU version
 
   AliRawDataHeaderSim header;
   if (dummy) {
@@ -243,20 +243,18 @@ void AliAltroBuffer::WriteDataHeader(Bool_t dummy, Bool_t compressed)
     fDataHeaderPos = fFile->Tellp();
     fFile->WriteBuffer((char*)(&header), sizeof(header));
   } else {
-    WriteRCUTrailer(0);
+    UChar_t rcuVer = WriteRCUTrailer(0);
     UInt_t currentFilePos = fFile->Tellp();
     fFile->Seekp(fDataHeaderPos);
     header.fSize = 0xFFFFFFFF; // RCU can't write raw-data size so we always get an 'invalid' size field
-    //    header.fSize = currentFilePos-fDataHeaderPos;
-    header.SetAttribute(0);  // valid data
-    if (compressed) header.SetAttribute(1); 
+    header.fAttributesSubDetectors |= (rcuVer << 24);
     fFile->WriteBuffer((char*)(&header), sizeof(header));
     fFile->Seekp(currentFilePos);
   }
 }
 
 //_____________________________________________________________________________
-void AliAltroBuffer::WriteRCUTrailer(Int_t rcuId)
+UChar_t AliAltroBuffer::WriteRCUTrailer(Int_t rcuId)
 {
   // Writes the RCU trailer
   // rcuId the is serial number of the corresponding
@@ -271,7 +269,7 @@ void AliAltroBuffer::WriteRCUTrailer(Int_t rcuId)
   
   if ((size % 5) != 0) {
     AliFatal(Form("The current raw data payload is not a mutiple of 5 (%d) ! Can not write the RCU trailer !",size));
-    return;
+    return 0;
   }
 
   // Now put the size in unit of number of 40bit words
@@ -292,4 +290,5 @@ void AliAltroBuffer::WriteRCUTrailer(Int_t rcuId)
   buffer |= 0xAAAA << 16;
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
 
+  return 0;
 }

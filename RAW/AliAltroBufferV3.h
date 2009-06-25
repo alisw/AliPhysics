@@ -30,7 +30,7 @@ class AliAltroBufferV3: public AliAltroBuffer {
   virtual void  WriteTrailer(Int_t wordsNumber, Short_t hwAddress); 
   //this method is used to write the trailer
 
-  virtual void  WriteRCUTrailer(Int_t rcuId);
+  virtual UChar_t WriteRCUTrailer(Int_t rcuId);
   //this method is used to write the RCU trailer
 
   enum { kMaxWords = 1024 };

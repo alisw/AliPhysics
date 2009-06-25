@@ -37,11 +37,6 @@ AliAltroBuffer(fileName,mapping),
 AliAltroBufferV3::~AliAltroBufferV3()
 {
 // destructor
-
-  if (fVerbose) Info("~AliAltroBufferV3", "File Created");
-
-  delete fFile;
-
 }
 
 //_____________________________________________________________________________
@@ -120,7 +115,7 @@ void AliAltroBufferV3::ReverseAndWrite()
 }
 
 //_____________________________________________________________________________
-void AliAltroBufferV3::WriteRCUTrailer(Int_t rcuId)
+UChar_t AliAltroBufferV3::WriteRCUTrailer(Int_t rcuId)
 {
   // Writes the RCU trailer
   // rcuId the is serial number of the corresponding
@@ -132,28 +127,58 @@ void AliAltroBufferV3::WriteRCUTrailer(Int_t rcuId)
   UInt_t currentFilePos = fFile->Tellp();
   UInt_t size = currentFilePos-fDataHeaderPos;
   size -= sizeof(AliRawDataHeader);
+  size /= 4;
   
-  if ((size % 5) != 0) {
-    AliFatal(Form("The current raw data payload is not a mutiple of 5 (%d) ! Can not write the RCU trailer !",size));
-    return;
+  if (size > 0x3FFFFFF) {
+    AliFatal(Form("The current raw data payload size of %d is bigger than the max possible one ! Can not write the RCU trailer !",size));
+    return 2;
   }
 
-  // Now put the size in unit of number of 40bit words
-  size /= 5;
+  // Now add the the RCU trailer tag
+  size |= (1 << 31);
   fFile->WriteBuffer((char *)(&size),sizeof(UInt_t));
 
-  // Now several not yet full defined fields
-  // In principle they are supposed to contain
-  // information about the sampling frequency,
-  // L1 phase, list of 'dead' FECs, etc.
-  //  UInt_t buffer[n];
-  //  fFile->WriteBuffer((char *)(buffer),sizeof(UInt_t)*n);
+  // Now several well defined fields contained
+  // in the trailer
+  // For details check the RCU manual
+  UInt_t buffer;
+
+  buffer  = (0x1 << 26);
+  buffer |= (0x1 << 31);
+  fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
   
-  //  Now the RCU identifier and size of the trailer
-  //  FOr the moment the triler size is 2 32-bit words
-  UInt_t buffer = (2 & 0x7F);
-  buffer |= ((rcuId & 0x1FF) << 7);
-  buffer |= 0xAAAA << 16;
+  buffer  = (0x2 << 26);
+  buffer |= (0x1 << 31);
+  fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
+  
+  buffer  = (0x3 << 26);
+  buffer |= (0x1 << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
 
+  buffer  = 0x3FFFFFF;
+  buffer |= (0x4 << 26);
+  buffer |= (0x1 << 31);
+  fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
+  buffer  = 0x3FFFFFF;
+  buffer |= (0x5 << 26);
+  buffer |= (0x1 << 31);
+  fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
+
+  buffer  = (0x6 << 26);
+  buffer |= (0x1 << 31);
+  fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
+  
+  buffer  = (0x7 << 26);
+  buffer |= (0x1 << 31);
+  fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
+  
+  //  Now the RCU identifier and size of the trailer
+  buffer = (9 & 0x7F);
+  buffer |= ((rcuId & 0x1FF) << 7);
+  buffer |= (0x2 << 16);
+  buffer |= (0x8 << 26);
+  buffer |= (0x3 << 30);
+  fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
+
+  return 2;
 }
