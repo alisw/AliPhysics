@@ -340,13 +340,14 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
       for (i=0; i < GetRawFormatTimeBins(); i++) {
 	gSig->SetPoint(i, i , 0);
       }
+		
       Int_t maxTime = 0;
 
       while (in.NextBunch()) {
 	const UShort_t *sig = in.GetSignals();
 	startBin = in.GetStartTimeBin();
 
-	if (maxTime < in.GetStartTimeBin()) {
+	if (((UInt_t) maxTime) < in.GetStartTimeBin()) {
 	  maxTime = in.GetStartTimeBin(); // timebins come in reverse order
 	}
 
