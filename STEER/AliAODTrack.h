@@ -212,7 +212,7 @@ class AliAODTrack : public AliVTrack {
   void SetUsedForVtxFit(Bool_t used = kTRUE) { used ? SetBit(kUsedForVtxFit) : ResetBit(kUsedForVtxFit); }
   void SetUsedForPrimVtxFit(Bool_t used = kTRUE) { used ? SetBit(kUsedForPrimVtxFit) : ResetBit(kUsedForPrimVtxFit); }
 
-  void SetOneOverPt(Double_t oneOverPt) { fMomentum[0] = oneOverPt; }
+  void SetOneOverPt(Double_t oneOverPt) { fMomentum[0] = 1. / oneOverPt; }
   void SetPt(Double_t pt) { fMomentum[0] = pt; };
   void SetPhi(Double_t phi) { fMomentum[1] = phi; }
   void SetTheta(Double_t theta) { fMomentum[2] = theta; }
