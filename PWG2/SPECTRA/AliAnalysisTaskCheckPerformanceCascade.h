@@ -166,6 +166,10 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
 	TH1F	*fHistMassWithCombPIDXiPlus;		//! reconstructed Xi+ effective mass, with bach. comb PID
 	TH1F	*fHistMassWithCombPIDOmegaMinus;	//! reconstructed Omega- effective mass, with bach. comb PID
 	TH1F	*fHistMassWithCombPIDOmegaPlus;		//! reconstructed Omega+ effective mass, with bach. comb PID
+	
+	// - PID Probability versus MC Pt(bachelor track)
+	TH2F	*f2dHistPIDprobaKaonVsMCPtBach;		//! Comb. PID probability for the bach. to be a Kaon Vs MC pt(bach)
+	TH2F	*f2dHistPIDprobaPionVsMCPtBach;		//! Comb. PID probability for the bach. to be a Pion Vs MC pt(bach)	
 
 	// - Effective mass histos with perfect MC PID
 	TH1F	*fHistMassWithMcPIDXiMinus;		//! reconstructed Xi- effective mass, with MC bach. PID
@@ -174,31 +178,37 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
 	TH1F	*fHistMassWithMcPIDOmegaPlus;		//! reconstructed Omega+ effective mass, with MC bach. PID
 
 	
-	// - Effective mass histos for the cascade candidates associated with MC
+	// - Effective mass histos for the cascade candidates associated with MC, without PID info
 	TH1F	*fHistAsMCMassXiMinus;			//! reconstr. cascade effective mass, under Xi- hyp. for Associated cand.
 	TH1F	*fHistAsMCMassXiPlus;			//! reconstr. cascade effective mass, under Xi+ hyp. for Associated cand.
 	TH1F	*fHistAsMCMassOmegaMinus;		//! reconstr. cascade effective mass, under Omega- hyp. for Associated cand.
 	TH1F	*fHistAsMCMassOmegaPlus;		//! reconstr. cascade effective mass, under Omega+ hyp. for Associated cand.
 	
-	// - Generated Pt of the cascade candidates associated with MC
+	// - Generated Pt of the cascade candidates associated with MC + having the proper maximum proba of combined PID for bachelor
+	TH1F	*fHistAsMCandCombPIDGenPtXiMinus;	//! generated Pt from the MC Xi- associated with Reco cand + with PID info
+	TH1F	*fHistAsMCandCombPIDGenPtXiPlus;	//! generated Pt from the MC Xi+ associated with Reco cand + with PID info
+	TH1F	*fHistAsMCandCombPIDGenPtOmegaMinus;	//! generated Pt from the MC Omega- associated with Reco cand + with PID info
+	TH1F	*fHistAsMCandCombPIDGenPtOmegaPlus;	//! generated Pt from the MC Omega+ associated with Reco cand + with PID info
+	
+	// - Generated Pt of the cascade candidates associated with MC, without PID info
 	TH1F	*fHistAsMCGenPtXiMinus;			//! generated Pt from the MC Xi- associated with a reconstr. cascade
 	TH1F	*fHistAsMCGenPtXiPlus;			//! generated Pt from the MC Xi+ associated with a reconstr. cascade
 	TH1F	*fHistAsMCGenPtOmegaMinus;		//! generated Pt from the MC Omega- associated with a reconstr. cascade
 	TH1F	*fHistAsMCGenPtOmegaPlus;		//! generated Pt from the MC Omega+ associated with a reconstr. cascade
-  
-	// - Generated Y of the cascade candidates associated with MC
+	
+	// - Generated Y of the cascade candidates associated with MC, without PID info
 	TH1F	*fHistAsMCGenYXiMinus;			//! generated Rap. from the MC Xi- associated with a reconstr. cascade
 	TH1F	*fHistAsMCGenYXiPlus;			//! generated Rap. from the MC Xi+ associated with a reconstr. cascade
 	TH1F	*fHistAsMCGenYOmegaMinus;		//! generated Rap. from the MC Omega- associated with a reconstr. cascade
 	TH1F	*fHistAsMCGenYOmegaPlus;		//! generated Rap. from the MC Omega+ associated with a reconstr. cascade
 	
-	// - Generated Y Vs Generated Pt, for the cascade candidates associated with MC
+	// - Generated Y Vs Generated Pt, for the cascade candidates associated with MC, without PID info
 	TH2F	*f2dHistAsMCGenYVsGenPtXiMinus;		//! gen. Rap. Vs gen. Pt from the MC Xi- associated with a reconstr. cascade
 	TH2F	*f2dHistAsMCGenYVsGenPtXiPlus;		//! gen. Rap. Vs gen. Pt from the MC Xi+ associated with a reconstr. cascade
 	TH2F	*f2dHistAsMCGenYVsGenPtOmegaMinus;	//! gen. Rap. Vs gen. Pt from the MC Omega- associated with a reconstr. cascade
 	TH2F	*f2dHistAsMCGenYVsGenPtOmegaPlus;	//! gen. Rap. Vs gen. Pt from the MC Omega+ associated with a reconstr. cascade
 	
-	// - Generated Eta of the the cascade candidates associated with MC
+	// - Generated Eta of the the cascade candidates associated with MC, without PID info
 	TH1F	*fHistAsMCGenEtaXiMinus;		//! generated Eta from the MC Xi- associated with a reconstr. cascade
 	TH1F	*fHistAsMCGenEtaXiPlus;			//! generated Eta from the MC Xi+ associated with a reconstr. cascade
 	TH1F	*fHistAsMCGenEtaOmegaMinus;		//! generated Eta from the MC Omega- associated with a reconstr. cascade

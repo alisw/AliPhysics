@@ -154,6 +154,9 @@ fListHistCascade(0),
 	// - Effective mass histos with combined PID
     fHistMassWithCombPIDXiMinus(0), fHistMassWithCombPIDXiPlus(0),
     fHistMassWithCombPIDOmegaMinus(0), fHistMassWithCombPIDOmegaPlus(0),
+    	
+	// - PID Probability versus MC Pt(bachelor track)
+    f2dHistPIDprobaKaonVsMCPtBach(0), f2dHistPIDprobaPionVsMCPtBach(0),
     
     	// - Effective mass histos with perfect MC PID on the bachelor
     fHistMassWithMcPIDXiMinus(0), fHistMassWithMcPIDXiPlus(0),
@@ -164,6 +167,12 @@ fListHistCascade(0),
     fHistAsMCMassXiPlus(0),		
     fHistAsMCMassOmegaMinus(0),
     fHistAsMCMassOmegaPlus(0),
+    
+	// - Generated Pt of the the cascade candidates associated with MC + Info Comb. PID
+    fHistAsMCandCombPIDGenPtXiMinus(0),
+    fHistAsMCandCombPIDGenPtXiPlus(0),
+    fHistAsMCandCombPIDGenPtOmegaMinus(0),
+    fHistAsMCandCombPIDGenPtOmegaPlus(0),
 	
 	// - Generated Pt of the the cascade candidates associated with MC
     fHistAsMCGenPtXiMinus(0),		
@@ -320,6 +329,9 @@ fListHistCascade(0),
     fHistMassWithCombPIDXiMinus(0), fHistMassWithCombPIDXiPlus(0),
     fHistMassWithCombPIDOmegaMinus(0), fHistMassWithCombPIDOmegaPlus(0),
     
+	// - PID Probability versus MC Pt(bachelor track)
+    f2dHistPIDprobaKaonVsMCPtBach(0), f2dHistPIDprobaPionVsMCPtBach(0),
+    
     	// - Effective mass histos with perfect MC PID on the bachelor
     fHistMassWithMcPIDXiMinus(0), fHistMassWithMcPIDXiPlus(0),
     fHistMassWithMcPIDOmegaMinus(0), fHistMassWithMcPIDOmegaPlus(0),
@@ -329,7 +341,13 @@ fListHistCascade(0),
     fHistAsMCMassXiPlus(0),		
     fHistAsMCMassOmegaMinus(0),
     fHistAsMCMassOmegaPlus(0),
-	
+    	
+	// - Generated Pt of the the cascade candidates associated with MC + Info Comb. PID
+    fHistAsMCandCombPIDGenPtXiMinus(0),
+    fHistAsMCandCombPIDGenPtXiPlus(0),
+    fHistAsMCandCombPIDGenPtOmegaMinus(0),
+    fHistAsMCandCombPIDGenPtOmegaPlus(0),
+    
 	// - Generated Pt of the the cascade candidates associated with MC
     fHistAsMCGenPtXiMinus(0),		
     fHistAsMCGenPtXiPlus(0),		
@@ -758,7 +776,7 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
   }
     
   
-  
+//--------------------------------------------------------------------------------
 // Part 2 - Any reconstructed cascades + reconstructed cascades associated with MC
   
 		// - Effective mass histos for cascades candidates.
@@ -807,6 +825,18 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
     fListHistCascade->Add(fHistMassWithCombPIDOmegaPlus);
   }
   
+  		// - PID Probability versus MC Pt(bachelor track)
+  if(! f2dHistPIDprobaKaonVsMCPtBach ){
+	f2dHistPIDprobaKaonVsMCPtBach  = new TH2F( "f2dHistPIDprobaKaonVsMCPtBach" , "Comb. PID proba to be K^{#pm} Vs MC Bach. Pt ; Pt_{MC}(Bach.) (GeV/c); Comb. PID Proba (Bach. = K^{#pm})", 100, 0.0, 5.0, 110, 0.0, 1.10 );
+	fListHistCascade->Add(f2dHistPIDprobaKaonVsMCPtBach);
+  }
+  
+  if(! f2dHistPIDprobaPionVsMCPtBach ){
+	f2dHistPIDprobaPionVsMCPtBach  = new TH2F( "f2dHistPIDprobaPionVsMCPtBach" , "Comb. PID proba to be #pi^{#pm} Vs MC Bach. Pt ; Pt_{MC}(Bach.) (GeV/c); Comb. PID Proba (Bach. = #pi^{#pm})", 100, 0.0, 5.0, 110, 0.0, 1.10 );
+	fListHistCascade->Add(f2dHistPIDprobaPionVsMCPtBach);
+  }
+  
+  
   		// - Effective mass histos with perfect MC PID on the bachelor
   
   if (! fHistMassWithMcPIDXiMinus) {
@@ -852,29 +882,52 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
 	  fListHistCascade->Add(fHistAsMCMassOmegaPlus);
   }
   
+		
+		// - Generated Pt of the the cascade candidates associated with MC + profiting from Comb. PID
   
+  if (!fHistAsMCandCombPIDGenPtXiMinus) {
+	  fHistAsMCandCombPIDGenPtXiMinus = new TH1F("fHistAsMCandCombPIDGenPtXiMinus", "P_{t} of gen. #Xi^{-} (associated+Bach.PID);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
+	  fListHistCascade->Add(fHistAsMCandCombPIDGenPtXiMinus );
+  }
+  
+  if (!fHistAsMCandCombPIDGenPtXiPlus) {
+	  fHistAsMCandCombPIDGenPtXiPlus = new TH1F("fHistAsMCandCombPIDGenPtXiPlus", "P_{t} of gen. #Xi^{+} (associated+Bach.PID);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
+	  fListHistCascade->Add(fHistAsMCandCombPIDGenPtXiPlus );
+  }
+  
+  if (!fHistAsMCandCombPIDGenPtOmegaMinus) {
+	  fHistAsMCandCombPIDGenPtOmegaMinus = new TH1F("fHistAsMCandCombPIDGenPtOmegaMinus", "P_{t} of gen. #Omega^{-} (associated+Bach.PID);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
+	  fListHistCascade->Add(fHistAsMCandCombPIDGenPtOmegaMinus );
+  }
+  
+  if (!fHistAsMCandCombPIDGenPtOmegaPlus) {
+	  fHistAsMCandCombPIDGenPtOmegaPlus = new TH1F("fHistAsMCandCombPIDGenPtOmegaPlus", "P_{t} of gen. #Omega^{+} (associated+Bach.PID);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
+	  fListHistCascade->Add(fHistAsMCandCombPIDGenPtOmegaPlus );
+  }
+  
+
   		// - Generated Pt of the the cascade candidates associated with MC
   
   if (!fHistAsMCGenPtXiMinus) {
-	  fHistAsMCGenPtXiMinus = new TH1F("fHistAsMCGenPtXiMinus", "P_{t} of gen. #Xi^{-} (associated);P_{t} (GeV/c);Number of Casc", 200, 0., 10.);
+	  fHistAsMCGenPtXiMinus = new TH1F("fHistAsMCGenPtXiMinus", "P_{t} of gen. #Xi^{-} (associated);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
 	  fListHistCascade->Add(fHistAsMCGenPtXiMinus );
   }
   
   if (!fHistAsMCGenPtXiPlus) {
-	  fHistAsMCGenPtXiPlus = new TH1F("fHistAsMCGenPtXiPlus", "P_{t} of gen. #Xi^{+} (associated);P_{t} (GeV/c);Number of Casc", 200, 0., 10.);
+	  fHistAsMCGenPtXiPlus = new TH1F("fHistAsMCGenPtXiPlus", "P_{t} of gen. #Xi^{+} (associated);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
 	  fListHistCascade->Add(fHistAsMCGenPtXiPlus );
   }
   
   if (!fHistAsMCGenPtOmegaMinus) {
-	  fHistAsMCGenPtOmegaMinus = new TH1F("fHistAsMCGenPtOmegaMinus", "P_{t} of gen. #Omega^{-} (associated);P_{t} (GeV/c);Number of Casc", 200, 0., 10.);
+	  fHistAsMCGenPtOmegaMinus = new TH1F("fHistAsMCGenPtOmegaMinus", "P_{t} of gen. #Omega^{-} (associated);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
 	  fListHistCascade->Add(fHistAsMCGenPtOmegaMinus );
   }
   
   if (!fHistAsMCGenPtOmegaPlus) {
-	  fHistAsMCGenPtOmegaPlus = new TH1F("fHistAsMCGenPtOmegaPlus", "P_{t} of gen. #Omega^{+} (associated);P_{t} (GeV/c);Number of Casc", 200, 0., 10.);
+	  fHistAsMCGenPtOmegaPlus = new TH1F("fHistAsMCGenPtOmegaPlus", "P_{t} of gen. #Omega^{+} (associated);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
 	  fListHistCascade->Add(fHistAsMCGenPtOmegaPlus );
   }
-  
+   
   
   		// - Generated Y of the the cascade candidates associated with MC
   
@@ -947,44 +1000,44 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
   		// - Resolution in Pt as function of generated Pt
   
   if(! f2dHistAsMCResPtXiMinus) {
-	  f2dHistAsMCResPtXiMinus = new TH2F( "f2dHistAsMCResPtXiMinus", "Resolution in Pt reconstruction for #Xi^{-}; Pt_{MC} (GeV/c); (Pt_{reco} - Pt_{MC}) / Pt_{MC} (%)", 200, 0., 10., 200, -0.1, 0.1);
+	  f2dHistAsMCResPtXiMinus = new TH2F( "f2dHistAsMCResPtXiMinus", "Resolution in Pt reconstruction for #Xi^{-}; Pt_{MC} (GeV/c); (Pt_{reco} - Pt_{MC}) / Pt_{MC}", 200, 0., 10., 200, -0.1, 0.1);
 	  fListHistCascade->Add(f2dHistAsMCResPtXiMinus);
   }
   
   if(! f2dHistAsMCResPtXiPlus) {
-	  f2dHistAsMCResPtXiPlus = new TH2F( "f2dHistAsMCResPtXiPlus", "Resolution in Pt reconstruction for #Xi^{+}; Pt_{MC} (GeV/c); (Pt_{reco} - Pt_{MC}) / Pt_{MC} (%)", 200, 0., 10., 200, -0.1, 0.1);
+	  f2dHistAsMCResPtXiPlus = new TH2F( "f2dHistAsMCResPtXiPlus", "Resolution in Pt reconstruction for #Xi^{+}; Pt_{MC} (GeV/c); (Pt_{reco} - Pt_{MC}) / Pt_{MC}", 200, 0., 10., 200, -0.1, 0.1);
 	  fListHistCascade->Add(f2dHistAsMCResPtXiPlus);
   }
   
   if(! f2dHistAsMCResPtOmegaMinus) {
-	  f2dHistAsMCResPtOmegaMinus = new TH2F( "f2dHistAsMCResPtOmegaMinus", "Resolution in Pt reconstruction for #Omega^{-}; Pt_{MC} (GeV/c); (Pt_{reco} - Pt_{MC}) / Pt_{MC} (%)", 200, 0., 10., 200, -0.1, 0.1);
+	  f2dHistAsMCResPtOmegaMinus = new TH2F( "f2dHistAsMCResPtOmegaMinus", "Resolution in Pt reconstruction for #Omega^{-}; Pt_{MC} (GeV/c); (Pt_{reco} - Pt_{MC}) / Pt_{MC}", 200, 0., 10., 200, -0.1, 0.1);
 	  fListHistCascade->Add(f2dHistAsMCResPtOmegaMinus);
   }
   
   if(! f2dHistAsMCResPtOmegaPlus) {
-	  f2dHistAsMCResPtOmegaPlus = new TH2F( "f2dHistAsMCResPtOmegaPlus", "Resolution in Pt reconstruction for #Omega^{+}; Pt_{MC} (GeV/c); (Pt_{reco} - Pt_{MC}) / Pt_{MC} (%)", 200, 0., 10., 200, -0.1, 0.1);
+	  f2dHistAsMCResPtOmegaPlus = new TH2F( "f2dHistAsMCResPtOmegaPlus", "Resolution in Pt reconstruction for #Omega^{+}; Pt_{MC} (GeV/c); (Pt_{reco} - Pt_{MC}) / Pt_{MC}", 200, 0., 10., 200, -0.1, 0.1);
 	  fListHistCascade->Add(f2dHistAsMCResPtOmegaPlus);
   }
   
   		// - Resolution in R(2D) as function of generated R
   
   if(! f2dHistAsMCResRXiMinus) {
-	  f2dHistAsMCResRXiMinus = new TH2F( "f2dHistAsMCResRXiMinus", "Resolution in transv. position for #Xi^{-}; R_{MC} (cm); (R_{reco} - R_{MC}) / R_{MC} (%)", 450, 0., 45.0, 240, -0.3, 0.3);
+	  f2dHistAsMCResRXiMinus = new TH2F( "f2dHistAsMCResRXiMinus", "Resolution in transv. position for #Xi^{-}; R_{MC} (cm); (R_{reco} - R_{MC}) / R_{MC}", 450, 0., 45.0, 240, -0.3, 0.3);
 	  fListHistCascade->Add(f2dHistAsMCResRXiMinus);
   }
   
   if(! f2dHistAsMCResRXiPlus) {
-	  f2dHistAsMCResRXiPlus = new TH2F( "f2dHistAsMCResRXiPlus", "Resolution in transv. position for #Xi^{+}; R_{MC} (cm); (R_{reco} - R_{MC}) / R_{MC} (%)", 450, 0., 45.0, 240, -0.3, 0.3);
+	  f2dHistAsMCResRXiPlus = new TH2F( "f2dHistAsMCResRXiPlus", "Resolution in transv. position for #Xi^{+}; R_{MC} (cm); (R_{reco} - R_{MC}) / R_{MC}", 450, 0., 45.0, 240, -0.3, 0.3);
 	  fListHistCascade->Add(f2dHistAsMCResRXiPlus);
   }
   
   if(! f2dHistAsMCResROmegaMinus) {
-	  f2dHistAsMCResROmegaMinus = new TH2F( "f2dHistAsMCResROmegaMinus", "Resolution in transv. position for #Omega^{-}; R_{MC} (cm); (R_{reco} - R_{MC}) / R_{MC} (%)", 450, 0., 45.0, 240, -0.3, 0.3);
+	  f2dHistAsMCResROmegaMinus = new TH2F( "f2dHistAsMCResROmegaMinus", "Resolution in transv. position for #Omega^{-}; R_{MC} (cm); (R_{reco} - R_{MC}) / R_{MC}", 450, 0., 45.0, 240, -0.3, 0.3);
 	  fListHistCascade->Add(f2dHistAsMCResROmegaMinus);
   }
   
   if(! f2dHistAsMCResROmegaPlus) {
-	  f2dHistAsMCResROmegaPlus = new TH2F( "f2dHistAsMCResROmegaPlus", "Resolution in transv. position for #Omega^{+}; R_{MC} (cm); (R_{reco} - R_{MC}) / R_{MC} (%)", 450, 0., 45.0, 240, -0.3, 0.3);
+	  f2dHistAsMCResROmegaPlus = new TH2F( "f2dHistAsMCResROmegaPlus", "Resolution in transv. position for #Omega^{+}; R_{MC} (cm); (R_{reco} - R_{MC}) / R_{MC}", 450, 0., 45.0, 240, -0.3, 0.3);
 	  fListHistCascade->Add(f2dHistAsMCResROmegaPlus);
   }
   
@@ -1510,24 +1563,27 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	Bool_t   lIsBachelorKaon    = kFALSE;
 	Bool_t   lIsBachelorPion    = kFALSE;
 	
+	// 4.1 - Combined PID
 	// Reasonable guess for the priors for the cascade track sample
 	Double_t lPriorsGuessXi[5]    = {0.0, 0.0, 2, 0, 1};
 	Double_t lPriorsGuessOmega[5] = {0.0, 0.0, 1, 1, 1};
-	AliPID pidXi;		pidXi.SetPriors(    lPriorsGuessXi    );
-	AliPID pidOmega;	pidOmega.SetPriors( lPriorsGuessOmega );
+	AliPID   pidXi;		pidXi.SetPriors(    lPriorsGuessXi    );
+	AliPID   pidOmega;	pidOmega.SetPriors( lPriorsGuessOmega );
+	Double_t ppion = -2.0;
+	Double_t pkaon = -2.0;
 	
 	if( bachTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
 		Double_t r[10]; bachTrackXi->GetESDpid(r);
 		pidXi.SetProbabilities(r);
 		pidOmega.SetProbabilities(r);
 		// Check if the bachelor track is a pion
-		Double_t ppion = pidXi.GetProbability(AliPID::kPion);
+		    ppion = pidXi.GetProbability(AliPID::kPion);
 		if (ppion > pidXi.GetProbability(AliPID::kElectron) &&
 		    ppion > pidXi.GetProbability(AliPID::kMuon)     &&
 		    ppion > pidXi.GetProbability(AliPID::kKaon)     &&
 		    ppion > pidXi.GetProbability(AliPID::kProton)   )     lIsBachelorPion = kTRUE;
 		// Check if the bachelor track is a kaon
-		Double_t pkaon = pidOmega.GetProbability(AliPID::kKaon);
+		    pkaon = pidOmega.GetProbability(AliPID::kKaon);
 		if (pkaon > pidOmega.GetProbability(AliPID::kElectron) &&
 		    pkaon > pidOmega.GetProbability(AliPID::kMuon)     &&
 		    pkaon > pidOmega.GetProbability(AliPID::kPion)     &&
@@ -1535,20 +1591,26 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 		
 	}// end if bachelor track with existing combined PID
 	
-	           
 	if( lChargeXi < 0 && lIsBachelorPion )    fHistMassWithCombPIDXiMinus     ->Fill( lInvMassXiMinus );
 	if( lChargeXi > 0 && lIsBachelorPion )    fHistMassWithCombPIDXiPlus      ->Fill( lInvMassXiPlus );
 	if( lChargeXi < 0 && lIsBachelorKaon )    fHistMassWithCombPIDOmegaMinus  ->Fill( lInvMassOmegaMinus );
 	if( lChargeXi > 0 && lIsBachelorKaon )    fHistMassWithCombPIDOmegaPlus   ->Fill( lInvMassOmegaPlus );
          
 	
+	// 4.2 - PID proba Vs Pt(Bach)
+	Int_t      lblBachForPID  = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
+	TParticle* mcBachForPID   = lMCstack->Particle( lblBachForPID );
+	Double_t   lmcPtBach      = mcBachForPID->Pt();
+	
+	if(lIsBachelorPion)   f2dHistPIDprobaPionVsMCPtBach->Fill( lmcPtBach, ppion );
+	if(lIsBachelorKaon)   f2dHistPIDprobaKaonVsMCPtBach->Fill( lmcPtBach, pkaon );
+	
+			
+	// 4.3 - MC perfect PID
 	Bool_t   lIsBachelorMCPiMinus  = kFALSE;
 	Bool_t   lIsBachelorMCPiPlus   = kFALSE;
 	Bool_t   lIsBachelorMCKMinus   = kFALSE;
 	Bool_t   lIsBachelorMCKPlus    = kFALSE;	
-	
-	Int_t      lblBachForPID  = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
-	TParticle* mcBachForPID   = lMCstack->Particle( lblBachForPID );
 	
 	if( mcBachForPID->GetPdgCode() == -211) lIsBachelorMCPiMinus = kTRUE;
 	if( mcBachForPID->GetPdgCode() ==  211) lIsBachelorMCPiPlus  = kTRUE;
@@ -1560,10 +1622,10 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	if( lChargeXi < 0 && lIsBachelorMCKMinus  )    fHistMassWithMcPIDOmegaMinus  ->Fill( lInvMassOmegaMinus );
 	if( lChargeXi > 0 && lIsBachelorMCKPlus   )    fHistMassWithMcPIDOmegaPlus   ->Fill( lInvMassOmegaPlus );
 	
-
+        
 	
 	
-	// - Step 4 : MC association
+	// - Step 5 : MC association (care : lots of "continue;" below this line)
 	//-------------	
 	
 	Bool_t lAssoXiMinus    = kFALSE;
@@ -1576,7 +1638,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 		cout 	<< "MC EventNumber : " << lMCevent->Header()->GetEvent() 
 			<< " / MC event Number in Run : " << lMCevent->Header()->GetEventNrInRun() << endl;
 	
-	// - Step 4.1 : level of the V0 daughters
+	// - Step 5.1 : level of the V0 daughters
 		
 	Int_t lblPosV0Dghter = (Int_t) TMath::Abs( pTrackXi->GetLabel() );  
 		// Abs value = needed ! question of quality track association ...
@@ -1586,7 +1648,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
 	
 
-	// - Step 4.2 : level of the Xi daughters
+	// - Step 5.2 : level of the Xi daughters
 		
 	Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother() ; 
 	Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
@@ -1605,7 +1667,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	TParticle* mcBach   = lMCstack->Particle( lblBach );	
 				
 
-	// - Step 4.3 : level of Xi candidate
+	// - Step 5.3 : level of Xi candidate
 	
 	Int_t lblGdMotherPosV0Dghter =   mcMotherPosV0Dghter->GetFirstMother() ;
 	Int_t lblGdMotherNegV0Dghter =   mcMotherNegV0Dghter->GetFirstMother() ;
@@ -1627,7 +1689,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	TParticle* mcMotherBach = lMCstack->Particle( lblMotherBach );
 	
 		
-	// - Step 4.4 : Manage boolean for association
+	// - Step 5.4 : Manage boolean for association
 	
 	if( mcMotherBach 		->GetPdgCode() ==   3312 &&
 	    mcGdMotherPosV0Dghter	->GetPdgCode() ==   3312 &&
@@ -1689,7 +1751,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	}
 
 	
-	// - Step 5 : Plots around the cascade candidates associated with MC
+	// - Step 6 : Plots around the cascade candidates associated with MC
 	//-------------	
 	
 	Double_t lmcPt             = mcMotherBach->Pt();
@@ -1706,6 +1768,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	if( lChargeXi < 0 && lAssoXiMinus){	
 		fHistAsMCMassXiMinus	      ->Fill( lInvMassXiMinus  );
 		fHistAsMCGenPtXiMinus         ->Fill( lmcPt            );
+		if(lIsBachelorPion)	fHistAsMCandCombPIDGenPtXiMinus->Fill( lmcPt );
 		fHistAsMCGenYXiMinus          ->Fill( lmcRapXi         );
 		f2dHistAsMCGenYVsGenPtXiMinus ->Fill( lmcRapXi, lmcPt  );
 		fHistAsMCGenEtaXiMinus        ->Fill( lmcEta           );
@@ -1716,6 +1779,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	else if( lChargeXi > 0 && lAssoXiPlus){	
 		fHistAsMCMassXiPlus	      ->Fill( lInvMassXiPlus   );
 		fHistAsMCGenPtXiPlus          ->Fill( lmcPt            );
+		if(lIsBachelorPion)	fHistAsMCandCombPIDGenPtXiPlus->Fill( lmcPt );
 		fHistAsMCGenYXiPlus           ->Fill( lmcRapXi         );
 		f2dHistAsMCGenYVsGenPtXiPlus  ->Fill( lmcRapXi, lmcPt  );
 		fHistAsMCGenEtaXiPlus         ->Fill( lmcEta           );
@@ -1726,6 +1790,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	else if( lChargeXi < 0 && lAssoOmegaMinus){	
 		fHistAsMCMassOmegaMinus          ->Fill( lInvMassOmegaMinus );
 		fHistAsMCGenPtOmegaMinus         ->Fill( lmcPt              );
+		if(lIsBachelorKaon)	fHistAsMCandCombPIDGenPtOmegaMinus->Fill( lmcPt );
 		fHistAsMCGenYOmegaMinus          ->Fill( lmcRapXi           );
 		f2dHistAsMCGenYVsGenPtOmegaMinus ->Fill( lmcRapXi, lmcPt    );
 		fHistAsMCGenEtaOmegaMinus        ->Fill( lmcEta             );
@@ -1736,6 +1801,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	else if( lChargeXi > 0 && lAssoOmegaPlus){	
 		fHistAsMCMassOmegaPlus           ->Fill( lInvMassOmegaPlus );
 		fHistAsMCGenPtOmegaPlus          ->Fill( lmcPt             );
+		if(lIsBachelorKaon)	fHistAsMCandCombPIDGenPtOmegaPlus->Fill( lmcPt );
 		fHistAsMCGenYOmegaPlus           ->Fill( lmcRapXi          );
 		f2dHistAsMCGenYVsGenPtOmegaPlus  ->Fill( lmcRapXi, lmcPt   );
 		fHistAsMCGenEtaOmegaPlus         ->Fill( lmcEta            );
@@ -1767,25 +1833,25 @@ void AliAnalysisTaskCheckPerformanceCascade::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
+	
   TList *cRetrievedList = 0x0;
   cRetrievedList = (TList*)GetOutputData(1);
   if(!cRetrievedList){
-    Printf("ERROR - AliAnalysisTaskCheckPerformanceCascade : ouput data container list not available\n");
-    return;
-  }
-
+	Printf("ERROR - AliAnalysisTaskCheckPerformanceCascade : ouput data container list not available\n");
+	return;
+  }	
+	
   fHistMCTrackMultiplicity = dynamic_cast<TH1F*> (  cRetrievedList->FindObject("fHistMCTrackMultiplicity")  );
   if (!fHistMCTrackMultiplicity) {
     Printf("ERROR - AliAnalysisTaskCheckPerformanceCascade : fHistMCTrackMultiplicity not available");
     return;
   }
-
+  
+   
   TCanvas *canCheckPerformanceCascade = new TCanvas("AliAnalysisTaskCheckPerformanceCascade","Multiplicity",10,10,510,510);
   canCheckPerformanceCascade->cd(1)->SetLogy();
 
   fHistMCTrackMultiplicity->SetMarkerStyle(22);
   fHistMCTrackMultiplicity->DrawCopy("E");
-  // fHistV0Multiplicity->SetMarkerStyle(26);
-  // fHistV0Multiplicity->DrawCopy("ESAME");
 
 }
