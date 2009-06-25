@@ -147,7 +147,7 @@ Bool_t AliT0Align::LoadSurveyData()
  
  AliSurveyObj * s1 = new AliSurveyObj();
  const int numberPoints = 2;
- TString pointNames[numberPoints]={"FLANGE_CENTER","C67_6_Beamcircle"}; 
+ TString pointNames[numberPoints]={"Flange_0","C67_6_Beamcircle"}; 
  
  if(fRepLoc == 0) 
  { 
