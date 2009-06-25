@@ -95,7 +95,7 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   fParameterList(qadm.fParameterList),  
   fRun(qadm.fRun), 
   fEventSpecie(qadm.fEventSpecie), 
-  fImage(qadm.fImage),  
+  fImage(NULL),  
   fPrintImage(kTRUE),
   fDigitsArray(NULL) 
 {
