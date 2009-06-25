@@ -28,34 +28,34 @@ class AliITSVertexer3D : public AliITSVertexer {
   AliESDVertex GetVertex3D() const {return fVert3D;}
   virtual void PrintStatus() const;
   static Bool_t DistBetweenVertices(AliESDVertex &a, AliESDVertex &b, Double_t test, Double_t &dist);
-  void SetWideFiducialRegion(Float_t dz = 40.0, Float_t dr=2.5){
+  void SetWideFiducialRegion(Double_t dz = 40.0, Double_t dr=2.5){
     SetCoarseMaxRCut(dr);
     SetZCutDiamond(dz);
   }
-  void SetNarrowFiducialRegion(Float_t dz = 0.5, Float_t dr=0.5){
+  void SetNarrowFiducialRegion(Double_t dz = 0.5, Double_t dr=0.5){
     SetMaxRCut(dr);
     SetMaxZCut(dz);
   }
-  void SetDeltaPhiCuts(Float_t dphiloose=0.5, Float_t dphitight=0.025){
+  void SetDeltaPhiCuts(Double_t dphiloose=0.5, Double_t dphitight=0.025){
     SetCoarseDiffPhiCut(dphiloose);
     SetDiffPhiMax(dphitight);
   }
-  void SetCoarseDiffPhiCut(Float_t dphi = 0.5){fCoarseDiffPhiCut=dphi;}
-  void SetFineDiffPhiCut(Float_t dphi = 0.05){fFineDiffPhiCut=dphi;}
-  void SetCutOnPairs(Float_t cp = 0.1){fCutOnPairs = cp;}
-  void SetCoarseMaxRCut(Float_t rad = 2.5){fCoarseMaxRCut=rad;}
-  void SetMaxRCut(Float_t rad = 0.5){fMaxRCut=rad;}
-  void SetZCutDiamond(Float_t zcut = 20.0){fZCutDiamond=zcut;}
-  void SetMaxZCut(Float_t dz = 0.5){fMaxZCut=dz;}
-  void SetDCACut(Float_t dca=0.1){fDCAcut=dca;} 
-  void SetDiffPhiMax(Float_t pm = 0.025){fDiffPhiMax = pm;}
-  void SetMeanPSelTracks(Float_t pGeV=0.875){fMeanPSelTrk = pGeV;}
-  void SetMeanPtSelTracks(Float_t ptGeV=0.630){fMeanPtSelTrk = ptGeV;}
+  void SetCoarseDiffPhiCut(Double_t dphi = 0.5){fCoarseDiffPhiCut=dphi;}
+  void SetFineDiffPhiCut(Double_t dphi = 0.05){fFineDiffPhiCut=dphi;}
+  void SetCutOnPairs(Double_t cp = 0.1){fCutOnPairs = cp;}
+  void SetCoarseMaxRCut(Double_t rad = 2.5){fCoarseMaxRCut=rad;}
+  void SetMaxRCut(Double_t rad = 0.5){fMaxRCut=rad;}
+  void SetZCutDiamond(Double_t zcut = 20.0){fZCutDiamond=zcut;}
+  void SetMaxZCut(Double_t dz = 0.5){fMaxZCut=dz;}
+  void SetDCACut(Double_t dca=0.1){fDCAcut=dca;} 
+  void SetDiffPhiMax(Double_t pm = 0.025){fDiffPhiMax = pm;}
+  void SetMeanPSelTracks(Double_t pGeV=0.875){fMeanPSelTrk = pGeV;}
+  void SetMeanPtSelTracks(Double_t ptGeV=0.630){fMeanPtSelTrk = ptGeV;}
   void SetMeanPPtSelTracks(Double_t fieldTesla);
-  void SetMinDCAforPileup(Float_t mindist=0.1) {fDCAforPileup=mindist;}
+  void SetMinDCAforPileup(Double_t mindist=0.1) {fDCAforPileup=mindist;}
   void SetPileupAlgo(UShort_t optalgo=0){fPileupAlgo=optalgo;}
-  void SetBinSizeR(Float_t siz=0.1){fBinSizeR=siz;}
-  void SetBinSizeZ(Float_t siz=0.8){fBinSizeZ=siz;}
+  void SetBinSizeR(Double_t siz=0.1){fBinSizeR=siz;}
+  void SetBinSizeZ(Double_t siz=0.8){fBinSizeZ=siz;}
 
 protected:
   AliITSVertexer3D(const AliITSVertexer3D& vtxr);
@@ -73,27 +73,27 @@ protected:
 
   TClonesArray fLines;      //! array of tracklets
   AliESDVertex fVert3D;        // 3D Vertex
-  Float_t fCoarseDiffPhiCut; // loose cut on DeltaPhi for RecPoint matching
-  Float_t fFineDiffPhiCut; // tight value of DeltaPhi for RP matching (2nd method) 
-  Float_t fCutOnPairs; //cut on distance between pairs of tracklets 
-  Float_t fCoarseMaxRCut; // cut on tracklet DCA to Z axis
-  Float_t fMaxRCut; // cut on tracklet DCA to beam axis
-  Float_t fZCutDiamond;   // cut on +-Z of the diamond
-  Float_t fMaxZCut;   // cut on Z distance from estimated vertex
-  Float_t fDCAcut; // cut on tracklet to tracklet and tracklet to vertex DCA
-  Float_t fDiffPhiMax;     // Maximum delta phi allowed among corr. pixels
-  Float_t fMeanPSelTrk; // GeV, mean P for tracks with dphi<0.01 rad
-  Float_t fMeanPtSelTrk; // GeV, mean Pt for tracks with dphi<0.01 rad
+  Double_t fCoarseDiffPhiCut; // loose cut on DeltaPhi for RecPoint matching
+  Double_t fFineDiffPhiCut; // tight value of DeltaPhi for RP matching (2nd method) 
+  Double_t fCutOnPairs; //cut on distance between pairs of tracklets 
+  Double_t fCoarseMaxRCut; // cut on tracklet DCA to Z axis
+  Double_t fMaxRCut; // cut on tracklet DCA to beam axis
+  Double_t fZCutDiamond;   // cut on +-Z of the diamond
+  Double_t fMaxZCut;   // cut on Z distance from estimated vertex
+  Double_t fDCAcut; // cut on tracklet to tracklet and tracklet to vertex DCA
+  Double_t fDiffPhiMax;     // Maximum delta phi allowed among corr. pixels
+  Double_t fMeanPSelTrk; // GeV, mean P for tracks with dphi<0.01 rad
+  Double_t fMeanPtSelTrk; // GeV, mean Pt for tracks with dphi<0.01 rad
   TBits   fUsedCluster;  // flag for used clusters in vertex calculation
   TH1F *fZHisto;           //! histogram with coarse z distribution
-  Float_t  fDCAforPileup;  // Minimum DCA to 1st vertex for pileup tracklets 
-  Float_t  fBinSizeR;      // Histo3D bin size along radius
-  Float_t  fBinSizeZ;      // Histo3D bin size along z
+  Double_t  fDCAforPileup;  // Minimum DCA to 1st vertex for pileup tracklets 
+  Double_t  fBinSizeR;      // Histo3D bin size along radius
+  Double_t  fBinSizeZ;      // Histo3D bin size along z
   UShort_t fPileupAlgo;    // Algo for pileup identification
                            // 0->VertexerZ pileup algo
                            // 1->Unused RecPoints algo
 
-  ClassDef(AliITSVertexer3D,9);
+  ClassDef(AliITSVertexer3D,10);
 
 };
 

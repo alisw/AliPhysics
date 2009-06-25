@@ -74,7 +74,7 @@ AliITSVertexer3D::AliITSVertexer3D():
   SetPileupAlgo();
   SetBinSizeR();
   SetBinSizeZ();
-  Float_t binsize=0.02; // default 200 micron
+  Double_t binsize=0.02; // default 200 micron
   Int_t nbins=static_cast<Int_t>(1+2*fZCutDiamond/binsize);
   fZHisto=new TH1F("hz","",nbins,-fZCutDiamond,-fZCutDiamond+binsize*nbins);
 }
@@ -636,11 +636,11 @@ void AliITSVertexer3D::FindPeaks(TH3F* histo, Double_t *peak, Int_t &nOfTracklet
   Int_t peak2bin[3]={-1,-1,-1};
   Int_t bc2=-1;
   for(Int_t i=xax->GetFirst();i<=xax->GetLast();i++){
-    Float_t xval = xax->GetBinCenter(i);
+    Double_t xval = xax->GetBinCenter(i);
     for(Int_t j=yax->GetFirst();j<=yax->GetLast();j++){
-      Float_t yval = yax->GetBinCenter(j);
+      Double_t yval = yax->GetBinCenter(j);
       for(Int_t k=zax->GetFirst();k<=zax->GetLast();k++){
-	Float_t zval = zax->GetBinCenter(k);
+	Double_t zval = zax->GetBinCenter(k);
 	Int_t bc =(Int_t)histo->GetBinContent(i,j,k);
 	if(bc==0) continue;
 	if(bc>nOfTracklets){
@@ -741,7 +741,7 @@ void AliITSVertexer3D::PileupFromZ(){
   Int_t nPeaks=AliITSVertexerZ::GetPeakRegion(fZHisto,binmin,binmax);   
   if(nPeaks==2)AliWarning("2 peaks found");
   Int_t firstPeakCont=0;
-  Float_t firstPeakPos=0.;
+  Double_t firstPeakPos=0.;
   for(Int_t i=binmin-1;i<=binmax+1;i++){
     firstPeakCont+=static_cast<Int_t>(fZHisto->GetBinContent(i));
     firstPeakPos+=fZHisto->GetBinContent(i)*fZHisto->GetBinCenter(i);
