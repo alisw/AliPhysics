@@ -77,6 +77,7 @@ using namespace std;
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
 #include "AliTPCRawStream.h"
+#include "AliTPCRawStreamV3.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCROC.h"
 #include "AliMathBase.h"
@@ -293,6 +294,66 @@ AliTPCdataQA::~AliTPCdataQA() /*FOLD00*/
   delete [] fAllSigBins;
   delete [] fAllNSigBins;
 }
+//_____________________________________________________________________
+Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *rawStreamV3)
+{
+  //
+  // Event Processing loop - AliTPCRawStreamV3
+  //
+  Bool_t withInput = kFALSE;
+  Int_t nSignals = 0;
+  Int_t lastSector = -1;
+  
+  while ( rawStreamV3->NextDDL() ){
+    while ( rawStreamV3->NextChannel() ){
+      Int_t iSector = rawStreamV3->GetSector(); //  current sector
+      Int_t iRow    = rawStreamV3->GetRow();    //  current row
+      Int_t iPad    = rawStreamV3->GetPad();    //  current pad
+      if (iRow<0 || iPad<0) continue;
+      // Call local maxima finder if the data is in a new sector
+      if(iSector != lastSector) {
+        
+        if(nSignals>0)
+          FindLocalMaxima(lastSector);
+        
+        CleanArrays();
+        lastSector = iSector;
+        nSignals = 0;
+      }
+      
+      while ( rawStreamV3->NextBunch() ){
+        Int_t  startTbin    = (Int_t)rawStreamV3->GetStartTimeBin();
+        Int_t  bunchlength  = (Int_t)rawStreamV3->GetBunchLength();
+        const UShort_t *sig = rawStreamV3->GetSignals();
+        
+        for (Int_t iTimeBin = 0; iTimeBin<bunchlength; iTimeBin++){
+          Float_t signal=(Float_t)sig[iTimeBin];
+          nSignals += Update(iSector,iRow,iPad,startTbin--,signal);
+          withInput = kTRUE;
+        }
+      }
+    }
+  }
+  
+  if (lastSector>=0&&nSignals>0)
+    FindLocalMaxima(lastSector);
+  
+  return withInput;
+}
+
+//_____________________________________________________________________
+Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *rawReader)
+{
+  //
+  //  Event processing loop - AliRawReader
+  //
+  AliTPCRawStreamV3 *rawStreamV3 = new AliTPCRawStreamV3(rawReader, (AliAltroMapping**)fMapping);
+  Bool_t res=ProcessEvent(rawStreamV3);
+  delete rawStreamV3;
+  if(res)
+    fEventCounter++; // only increment event counter if there is TPC data
+  return res;
+}
 
 //_____________________________________________________________________
 Bool_t AliTPCdataQA::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
@@ -305,33 +366,33 @@ Bool_t AliTPCdataQA::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
   Int_t lastSector = -1;
 
   while ( rawStreamFast->NextDDL() ){
-      while ( rawStreamFast->NextChannel() ){
-
-	Int_t iSector  = rawStreamFast->GetSector(); //  current sector
-	Int_t iRow     = rawStreamFast->GetRow();    //  current row
-	Int_t iPad     = rawStreamFast->GetPad();    //  current pad
-	// Call local maxima finder if the data is in a new sector
-	if(iSector != lastSector) {
-	  
-	  if(nSignals>0)
-	    FindLocalMaxima(lastSector);
-	  
-	  CleanArrays();
-	  lastSector = iSector;
-	  nSignals = 0;
-	}
-	
-	while ( rawStreamFast->NextBunch() ){
-	  Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-	  Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
-	  
-	  for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
-	    Float_t signal = rawStreamFast->GetSignals()[iTimeBin-startTbin];
-	    nSignals += Update(iSector,iRow,iPad,iTimeBin+1,signal);
-	    withInput = kTRUE;
-	  }
-	}
+    while ( rawStreamFast->NextChannel() ){
+      
+      Int_t iSector  = rawStreamFast->GetSector(); //  current sector
+      Int_t iRow     = rawStreamFast->GetRow();    //  current row
+      Int_t iPad     = rawStreamFast->GetPad();    //  current pad
+  // Call local maxima finder if the data is in a new sector
+      if(iSector != lastSector) {
+        
+        if(nSignals>0)
+          FindLocalMaxima(lastSector);
+        
+        CleanArrays();
+        lastSector = iSector;
+        nSignals = 0;
       }
+      
+      while ( rawStreamFast->NextBunch() ){
+        Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
+        Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
+        
+        for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
+          Float_t signal = rawStreamFast->GetSignals()[iTimeBin-startTbin];
+          nSignals += Update(iSector,iRow,iPad,iTimeBin+1,signal);
+          withInput = kTRUE;
+        }
+      }
+    }
   }
   
   return withInput;
@@ -370,12 +431,12 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStream *rawStream)
     Int_t iPad     = rawStream->GetPad();         //  current pad
     Int_t iTimeBin = rawStream->GetTime();        //  current time bin
     Float_t signal = rawStream->GetSignal();      //  current ADC signal
-
+    
     // Call local maxima finder if the data is in a new sector
     if(iSector != lastSector) {
       
       if(nSignals>0)
-	FindLocalMaxima(lastSector);
+        FindLocalMaxima(lastSector);
       
       CleanArrays();
       lastSector = iSector;
@@ -389,12 +450,15 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStream *rawStream)
     }
   }
 
+  if (lastSector>=0&&nSignals>0)
+    FindLocalMaxima(lastSector);
+  
   return withInput;
 }
 
 
 //_____________________________________________________________________
-Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *rawReader)
+Bool_t AliTPCdataQA::ProcessEventOld(AliRawReader *rawReader)
 {
   //
   //  Event processing loop - AliRawReader

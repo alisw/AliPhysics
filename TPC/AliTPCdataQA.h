@@ -15,6 +15,7 @@ class TTreeSRedirector;
 class AliTPCROC;
 class AliTPCCalROC;
 class AliTPCRawStream;
+class AliTPCRawStreamV3;
 class AliTPCRawStreamFast;
 class AliRawReader;
 class AliTPCAltroMapping;
@@ -39,7 +40,9 @@ public:
   Bool_t ProcessEventFast(AliTPCRawStreamFast *rawStreamFast);
   Bool_t ProcessEventFast(AliRawReader        *rawReader);
   Bool_t ProcessEvent(AliTPCRawStream *rawStream);
+  Bool_t ProcessEvent(AliTPCRawStreamV3 *rawStreamV3);
   Bool_t ProcessEvent(AliRawReader    *rawReader);
+  Bool_t ProcessEventOld(AliRawReader    *rawReader);
   Bool_t ProcessEvent(eventHeaderStruct   *event);
 
   void   Analyse();
