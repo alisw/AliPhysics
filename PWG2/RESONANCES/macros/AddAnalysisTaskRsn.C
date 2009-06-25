@@ -20,7 +20,7 @@ Bool_t AddAnalysisTaskRsn
   AliLog::EType_t  debugType  = AliLog::kInfo, // debug depth for some classes
   Bool_t           useTPCOnly = kFALSE,        // use TPC only PID
   const char      *outFile    = "rsn.root",    // output file name
-  Bool_t           sourceESD  = kTRUE,         // if true, the source of data is ESD, otherwise is AOD from filter task
+  Bool_t           sourceESD  = kTRUE          // if true, the source of data is ESD, otherwise is AOD from filter task
 )
 {
   // retrieve analysis manager
@@ -79,11 +79,16 @@ Bool_t AddAnalysisTaskRsn
   cout << "SET PID SCHEME" << endl;
 
   // setup cuts for events (good primary vertex)
+  /* Commented out by AK - not working 
   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 3);
   AliRsnCutSet *cutSetEvent = new AliRsnCutSet("eventCuts");
+  */
+
+  /* Commented out by AK - not working 
   cutSetEvent->AddCut(cutVertex);
   cutSetEvent->SetCutScheme("cutVertex");
   task->SetEventCuts(cutSetEvent);
+  */
   cout << "SET EVENT CUT SCHEME" << endl;
 
   // add the task to manager
@@ -124,6 +129,7 @@ AliRsnFunction* DefineFunctionIM()
   return fcn;
 }
 
+/* Commented out by AK - not working 
 AliRsnFunction* DefineFunctionP1P2()
 {
 //
@@ -148,6 +154,7 @@ AliRsnFunction* DefineFunctionP1P2()
 
   return fcn;
 }
+*/
 
 AliRsnPairManager* CreatePairsNoPID
 (
@@ -257,12 +264,15 @@ AliRsnPairManager* CreatePairsNoPID
   // === FUNCTIONS ================================================================================
 
   AliRsnFunction *fcn   = DefineFunctionIM();
+  /* Commented out by AK - not working 
   AliRsnFunction *fcnPP = DefineFunctionP1P2();
-
+  */
   for (i = 0; i < nArray; i++) {
     for (j = 0; j < 4; j++) {
       noPID[i][j]->AddFunction(fcn);
+  /* Commented out by AK - not working 
       if (j < 2) noPID[i][j]->AddFunction(fcnPP);
+  */
     }
   }
 
@@ -376,16 +386,21 @@ AliRsnPairManager* CreatePairsPID
   // === FUNCTIONS ================================================================================
 
   AliRsnFunction *fcn   = DefineFunctionIM();
+  /* Commented out by AK - not working 
   AliRsnFunction *fcnPP = DefineFunctionP1P2();
+  */
 
   for (i = 0; i < nArray; i++) {
     for (j = 0; j < 4; j++) {
       perfectPID[i][j]->AddFunction(fcn);
       realisticPID[i][j]->AddFunction(fcn);
-      if (j < 2) {
+      /* Commented out by AK - not working 
+	 if (j < 2) {
         perfectPID[i][j]->AddFunction(fcnPP);
         realisticPID[i][j]->AddFunction(fcnPP);
       }
+      */
+      
     }
   }
 
