@@ -82,7 +82,7 @@ void AliAltroBufferV3::WriteTrailer(Int_t wordsNumber, Short_t hwAddress)
   //Writes a trailer (header) of 32 bits using
   //a given hardware adress
   UInt_t temp = hwAddress & 0xFFF;
-  temp = (wordsNumber << 16) & 0x3FF;
+  temp |= ((wordsNumber & 0x3FF) << 16);
   temp |= (0x1 << 30);
 
   fFile->WriteBuffer((char *)(&temp),sizeof(UInt_t));
@@ -97,7 +97,7 @@ void AliAltroBufferV3::ReverseAndWrite()
   // write the buffer to the file
   UInt_t temp = 0;
   Int_t shift = 20;
-  for(Int_t i = fN; i >= 0; i--) {
+  for(Int_t i = (fN-1); i >= 0; i--) {
     temp |= (fArray[i] << shift);
     shift -= 10;
     if (shift < 0) {
