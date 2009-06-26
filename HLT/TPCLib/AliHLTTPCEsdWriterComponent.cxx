@@ -43,11 +43,8 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusterFinder.h"
-//#include "AliHLTITSTrackerComponent.h"
-//#include "AliHLTITSTrackDataHeader.h"
-//#include "AliHLTITSTrackData.h"
-//#include "AliHLTITSTrack.h"
-//#include "AliHLTVertexer.h"
+#include "AliHLTExternalTrackParam.h"
+#include "AliHLTKalmanTrack.h"
 #include <vector>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -207,13 +204,32 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	}
       }
       
-      std::vector<int> trackIdESD2TPCmap; // map esd index -> tpc index
-
-      Int_t nTPCTracks = 0;
 
       // do the conversion of tracks
+
       for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
 	iter = blocks+ndx;
+	
+	if( iter->fDataType == ( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC ) ){	  
+	  AliHLTTracksData* dataPtr = ( AliHLTTracksData* ) iter->fPtr;
+	  int nTracks = dataPtr->fCount;
+	  AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
+	  for( int itr=0; itr<nTracks; itr++ ){
+	    AliHLTKalmanTrack t(*currOutTrack);
+	    Float_t points[4] = {currOutTrack->fX, currOutTrack->fY, currOutTrack->fLastX, currOutTrack->fLastY };
+	    Int_t mcLabel = fDoMCLabels ? mcLabel = GetTrackMCLabel( currOutTrack->fPointIDs, currOutTrack->fNPoints ) :-1;  
+	    t.SetLabel( mcLabel );
+	    
+	    AliESDtrack iotrack;
+	    iotrack.UpdateTrackParams( &t,AliESDtrack::kTPCin);
+	    iotrack.SetTPCPoints(points);
+	    pESD->AddTrack(&iotrack);
+	    unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + currOutTrack->fNPoints * sizeof( unsigned int );
+	    currOutTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currOutTrack) + dSize );
+	  }
+	}
+
+	
 	if ( (bIsTrackSegs=(iter->fDataType == AliHLTTPCDefinitions::fgkTrackSegmentsDataType))==1 ||
 	     iter->fDataType == AliHLTTPCDefinitions::fgkTracksDataType ) {
 	  Int_t minslice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
@@ -235,11 +251,10 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 			 "possible mismatch in treatment of local coordinate system");
 	    }
 	    AliHLTTPCTrackArray tracks;
-	    AliHLTTPCTrackletData* inPtr = (AliHLTTPCTrackletData*) iter->fPtr;
-	    nTPCTracks += inPtr->fTrackletCnt;
+	    AliHLTTPCTrackletData* inPtr = (AliHLTTPCTrackletData*) iter->fPtr;	    
 	    HLTDebug("reading block %d (slice %d): %d tracklets", ndx, minslice, inPtr->fTrackletCnt);
 	    if ((iResult=tracks.FillTracksChecked(inPtr->fTracklets, inPtr->fTrackletCnt, iter->fSize, minslice, 0/*don't rotate*/))>=0) {
-	      if ((iResult=Tracks2ESD(&tracks, pESD, trackIdESD2TPCmap))>=0) {
+	      if ((iResult=Tracks2ESD(&tracks, pESD ))>=0) {
 		iAddedDataBlocks++;
 	      }
 	    }
@@ -250,52 +265,6 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	}      
       }
 
-      // ITS updated tracks
-      /*
-      int nESDTracks = pESD->GetNumberOfTracks();
-
-      // create map of tpc->esd track indices
-
-      int *trackIdTPC2ESDmap = new int[ nTPCTracks ];
-      {
-	for( int i=0; i<nTPCTracks; i++ ) trackIdTPC2ESDmap[i] = -1;
-	for( unsigned int i=0; i<trackIdESD2TPCmap.size(); i++ ){
-	  int tpcId = trackIdESD2TPCmap[i];
-	  if( tpcId>=0 && tpcId<nTPCTracks ) trackIdTPC2ESDmap[tpcId] = i;
-	}
-      }
-
-      for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
-	iter = blocks+ndx;
-	if(iter->fDataType == fgkITSTracksDataType ) {
-	  AliHLTITSTrackDataHeader *inPtr = reinterpret_cast<AliHLTITSTrackDataHeader*>( iter->fPtr );
-	  int nTracks = inPtr->fTrackletCnt;	  
-	  for( int itr=0; itr<nTracks; itr++ ){
-	    AliHLTITSTrackData &tr = inPtr->fTracks[itr];
-	    AliHLTITSTrack tITS( tr.fTrackParam );
-	    int ncl=0;
-	    for( int il=0; il<6; il++ ){
-	      if( tr.fClusterIds[il]>=0 ) tITS.SetClusterIndex(ncl++,  tr.fClusterIds[il]);
-	    }
-	    tITS.SetNumberOfClusters( ncl );
-	    int tpcId = tr.fTPCId;
-	    if( tpcId<0 || tpcId>=nTPCTracks ) continue;
-	    int esdID = trackIdTPC2ESDmap[tpcId];
-	    if( esdID<0 || esdID>=nESDTracks ) continue;
-	    AliESDtrack *tESD = pESD->GetTrack( esdID );
-	    if( tESD ) tESD->UpdateTrackParams( &tITS, AliESDtrack::kITSin );
-	  }
-	}
-      }   
-      delete[] trackIdTPC2ESDmap;
-      
-      // primary vertex & V0's 
-
-      //AliHLTVertexer vertexer;
-      //vertexer.SetESD( pESD );
-      //vertexer.FindPrimaryVertex();
-      //vertexer.FindV0s();
-      */
       if (iAddedDataBlocks>0 && pTree) {
 	pTree->Fill();
       }
@@ -307,8 +276,63 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
   return iResult;
 }
 
-int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESDEvent* pESD,
-					    std::vector<int> &trackIdESD2TPCmap )
+Int_t AliHLTTPCEsdWriterComponent::GetTrackMCLabel( unsigned int *hits, int nHits )
+{
+  // get MC label for the track	 
+
+  Int_t mcLabel = -1;
+	    
+  std::vector<int> labels;
+
+  for( Int_t ih=0; ih<nHits; ih++){
+    UInt_t id = hits[ih];
+    int iSlice = id>>25;
+    int iPatch = (id>>22)&0x7; 
+    int iCluster = id&0x3fffff;
+    if( iSlice<0 || iSlice>36 || iPatch<0 || iPatch>5 ){
+      HLTError("Corrupted TPC cluster Id: slice %d, patch %d, cluster %d",
+	       iSlice, iPatch,iCluster );
+      continue;
+    }
+    AliHLTTPCClusterFinder::ClusterMCInfo *patchLabels = fClusterLabels[iSlice*6 + iPatch];
+    if( !patchLabels ) continue;
+    if( iCluster >= fNClusterLabels[iSlice*6 + iPatch] ){
+      HLTError("TPC slice %d, patch %d: ClusterID==%d >= N MC labels==%d ",
+	       iSlice, iPatch,iCluster, fNClusterLabels[iSlice*6 + iPatch] );
+      continue;
+    }
+    AliHLTTPCClusterFinder::ClusterMCInfo &lab = patchLabels[iCluster];	    
+    if ( lab.fClusterID[0].fMCID >= 0 ) labels.push_back( lab.fClusterID[0].fMCID );
+    if ( lab.fClusterID[1].fMCID >= 0 ) labels.push_back( lab.fClusterID[1].fMCID );
+    if ( lab.fClusterID[2].fMCID >= 0 ) labels.push_back( lab.fClusterID[2].fMCID );
+  }
+	  
+  std::sort( labels.begin(), labels.end() );
+	  
+  labels.push_back( -1 ); // put -1 to the end
+	  
+  int labelMax = -1, labelCur = -1, nLabelsMax = 0, nLabelsCurr = 0;
+  for ( unsigned int iLab = 0; iLab < labels.size(); iLab++ ) {
+    if ( labels[iLab] != labelCur ) {	      
+      if ( labelCur >= 0 && nLabelsMax< nLabelsCurr ) {
+	nLabelsMax = nLabelsCurr;
+	labelMax = labelCur;
+      }
+      labelCur = labels[iLab];
+      nLabelsCurr = 0;
+    }
+    nLabelsCurr++;
+  }
+  
+  if( labelMax>=0 && nLabelsMax < 0.9 * nHits ) labelMax = -labelMax;
+  
+  mcLabel = labelMax;
+
+  return mcLabel;
+}
+
+
+int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESDEvent* pESD )
 {
   // see header file for class documentation
   int iResult=0;
@@ -338,58 +362,8 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	Int_t mcLabel = -1;
 
 	if( fDoMCLabels ){
-	    
-	  // get MC label for the track
-	  
-	  std::vector<int> labels;
-	  
-	  UInt_t *hits = pTrack->GetHitNumbers();
-	  Int_t nHits = pTrack->GetNHits();
-	  for( Int_t ih=0; ih<nHits; ih++){
-	    UInt_t id = hits[ih];
-	    int iSlice = id>>25;
-	    int iPatch = (id>>22)&0x7; 
-	    int iCluster = id&0x3fffff;
-	    if( iSlice<0 || iSlice>36 || iPatch<0 || iPatch>5 ){
-	      HLTError("Corrupted TPC cluster Id: slice %d, patch %d, cluster %d",
-		       iSlice, iPatch,iCluster );
-	      continue;
-	    }
-	    AliHLTTPCClusterFinder::ClusterMCInfo *patchLabels = fClusterLabels[iSlice*6 + iPatch];
-	    if( !patchLabels ) continue;
-	    if( iCluster >= fNClusterLabels[iSlice*6 + iPatch] ){
-	      HLTError("TPC slice %d, patch %d: ClusterID==%d >= N MC labels==%d ",
-		       iSlice, iPatch,iCluster, fNClusterLabels[iSlice*6 + iPatch] );
-	      continue;
-	    }
-	    AliHLTTPCClusterFinder::ClusterMCInfo &lab = patchLabels[iCluster];	    
-	    if ( lab.fClusterID[0].fMCID >= 0 ) labels.push_back( lab.fClusterID[0].fMCID );
-	    if ( lab.fClusterID[1].fMCID >= 0 ) labels.push_back( lab.fClusterID[1].fMCID );
-	    if ( lab.fClusterID[2].fMCID >= 0 ) labels.push_back( lab.fClusterID[2].fMCID );
-	  }
-	  
-	  std::sort( labels.begin(), labels.end() );
-	  
-	  labels.push_back( -1 ); // put -1 to the end
-	  
-	  int labelMax = -1, labelCur = -1, nLabelsMax = 0, nLabelsCurr = 0;
-	  for ( unsigned int iLab = 0; iLab < labels.size(); iLab++ ) {
-	    if ( labels[iLab] != labelCur ) {	      
-	      if ( labelCur >= 0 && nLabelsMax< nLabelsCurr ) {
-		nLabelsMax = nLabelsCurr;
-		labelMax = labelCur;
-	      }
-	      labelCur = labels[iLab];
-	      nLabelsCurr = 0;
-	    }
-	    nLabelsCurr++;
-	  }
-	  
-	  if( labelMax>=0 && nLabelsMax < 0.9 * nHits ) labelMax = -labelMax;
-
-	  mcLabel = labelMax;
-	}
-	
+	  mcLabel = GetTrackMCLabel( pTrack->GetHitNumbers(), pTrack->GetNHits() );
+	}    
 	pTrack->SetLabel( mcLabel );
 	
 	AliESDtrack iotrack;
@@ -397,7 +371,6 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	iotrack.SetTPCPoints(points);
 
 	pESD->AddTrack(&iotrack);
-	trackIdESD2TPCmap.push_back(pTrack->GetId());
       } else {
 	HLTError("internal mismatch in array");
 	iResult=-EFAULT;

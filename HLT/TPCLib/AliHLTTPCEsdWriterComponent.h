@@ -21,7 +21,6 @@ class TTree;
 class AliESDEvent;
 class AliHLTTPCTrackArray;
 #include "AliHLTTPCClusterFinder.h"
-#include <vector>
 
 /**
  * @class AliHLTTPCEsdWriterComponent
@@ -229,12 +228,20 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
 		    int nBlocks, int* pMinSlice=NULL, int* pMaxSlice=NULL);
 
   /**
+   * Get MC label for a track
+   * @param hits array of track hit Id's
+   * @param nHits n of hits
+   * @return neg. -1 if failed
+   */
+  int GetTrackMCLabel( unsigned int *hits, int nHits );
+
+  /**
    * Covert tracks to AliTPCtracks (AliKalmanTracks) and add them to ESD.
    * @param pTracks  array of tracks
    * @param pESD     pointer to ESD
    * @return neg. error code if failed
    */
-  int Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESDEvent* pESD, std::vector<int> &trackIdESD2TPCmap);
+  int Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESDEvent* pESD );
 
  private:
   /** copy constructor prohibited */
