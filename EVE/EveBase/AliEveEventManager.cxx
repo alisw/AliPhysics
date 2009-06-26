@@ -525,6 +525,28 @@ void AliEveEventManager::Open()
       if (cdb->IsDefaultStorageSet() == kFALSE)
 	throw (kEH + "CDB initialization failed.");
     }
+    
+    TString expCDB(fgCdbUri);
+    gSystem->ExpandPathName(expCDB);
+    if (cdb->GetDefaultStorage()->GetURI() == expCDB)
+    {
+      TString grp     = "GRP/GRP/Data";
+      TString grppath = fPath + "/" + grp;
+      if (gSystem->AccessPathName(grppath, kReadPermission) == kFALSE)
+      {
+	if (cdb->GetSpecificStorage(grp))
+	{
+	  Warning(kEH, "Local GRP exists, but the specific storage is already set.");
+	}
+	else
+	{
+	  Info(kEH, "Setting CDB specific-storage for GRP from event directory.");
+	  TString lpath("local://");
+	  lpath += fPath;
+	  cdb->SetSpecificStorage(grp, lpath);
+	}
+      }
+    }
     cdb->SetRun(runNo);
   }
 
@@ -989,7 +1011,7 @@ AliMagF* AliEveEventManager::AssertMagField()
     InitGRP();
   }
 
-  if (TGeoGlobalMagField::Instance())
+  if (TGeoGlobalMagField::Instance()->GetField())
   {
     fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
     if (fgMagField == 0)
