@@ -37,16 +37,12 @@ using namespace std;
 #include "AliCDBManager.h"
 #include "TObjString.h"
 #include "TObjArray.h"
-#include "AliHLTTPCDefinitions.h"
 #include "AliITStrackerHLT.h"
-#include "AliHLTITSTrackDataHeader.h"
-#include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCTrackArray.h"
-#include "AliHLTTPCTrackletDataFormat.h"
-#include "AliHLTTPCTrack.h"
 #include "AliHLTITSSpacePointData.h"
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliHLTDataTypes.h"
+#include "AliHLTExternalTrackParam.h"
+#include "AliHLTKalmanTrack.h"
 
 
 
@@ -108,7 +104,7 @@ void AliHLTITSTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
 {
   // see header file for class documentation
   list.clear();
-  list.push_back( AliHLTTPCDefinitions::fgkTracksDataType );
+  list.push_back( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD );
 }
@@ -116,7 +112,7 @@ void AliHLTITSTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
 AliHLTComponentDataType AliHLTITSTrackerComponent::GetOutputDataType()
 {
   // see header file for class documentation  
-  return fgkITSTracksDataType;
+  return kAliHLTDataTypeTrack|kAliHLTDataOriginITS;
 }
 
 void AliHLTITSTrackerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -342,27 +338,20 @@ int AliHLTITSTrackerComponent::DoEvent
     const AliHLTComponentBlockData* iter = blocks+ndx;
  
     // Read TPC tracks
-   
-    if ( iter->fDataType == AliHLTTPCDefinitions::fgkTracksDataType ){
-      AliHLTTPCTrackArray tracks;
-      AliHLTTPCTrackletData *inPtr=(AliHLTTPCTrackletData*)iter->fPtr;
-      iResult=tracks.FillTracksChecked( inPtr->fTracklets, inPtr->fTrackletCnt, iter->fSize, -1, 0 );      
-      if ( iResult < 0 ){
-	HLTError("internal mismatch in array");
-	iResult=-EFAULT;
-	break;
-      }
-      for (int i=0; i<tracks.GetNTracks(); i++) {
-	AliHLTTPCTrack* pTrack = tracks[i];
-	if( !pTrack ) continue;
-	if( pTrack->Convert2AliKalmanTrack() ){	  
-	  //HLTError("conversion to AliKalmanTrack failed for track %d of %d", i, pTracks->GetNTracks());	
-	  continue;
-	}
-	tracksTPC.push_back( *pTrack );
-	tracksTPCId.push_back(currentTrackID++);    
+    
+    if( iter->fDataType == ( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC ) ){	  
+      AliHLTTracksData* dataPtr = ( AliHLTTracksData* ) iter->fPtr;
+      int nTracks = dataPtr->fCount;
+      AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
+      for( int itr=0; itr<nTracks; itr++ ){
+	AliHLTKalmanTrack t(*currOutTrack);
+	tracksTPC.push_back( t );
+	tracksTPCId.push_back( currOutTrack->fTrackID );
+	unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + currOutTrack->fNPoints * sizeof( unsigned int );
+	currOutTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currOutTrack) + dSize );
       }
     }
+
 
     // Read ITS clusters
 
@@ -409,41 +398,61 @@ int AliHLTITSTrackerComponent::DoEvent
   // Fill output tracks
 
   {
-    unsigned int mySize = 0;
-  
-    // check if there was enough space in the output buffer
+    unsigned int mySize = 0;    
+     
+    AliHLTTracksData* outPtr = ( AliHLTTracksData* )( outputPtr );
+
+    AliHLTExternalTrackParam* currOutTrack = outPtr->fTracklets;
+
+    mySize =   ( ( AliHLTUInt8_t * )currOutTrack ) -  ( ( AliHLTUInt8_t * )outputPtr );
+
+    outPtr->fCount = 0;
     
     int nTracks = fTracker->Tracks().size();
-    mySize =  sizeof( AliHLTITSTrackDataHeader ) + nTracks*sizeof( AliHLTITSTrackData );
-    if ( mySize > maxBufferSize ) {
-      mySize = 0;
-      iResult = -ENOSPC; 
-      nTracks=0;     
-    } else {
-      AliHLTITSTrackDataHeader *outPtr = ( AliHLTITSTrackDataHeader* )( outputPtr );
-      outPtr->fTrackletCnt = nTracks;
-      AliHLTITSTrackData *tr = outPtr->fTracks;
-      for( int itr=0; itr<nTracks; itr++ ){
-	tr->fTrackParam = fTracker->Tracks()[itr];
-	tr->fTPCId = tracksTPCId[fTracker->Tracks()[itr].TPCtrackId()];
-	tr->fClusterIds[0] = 0;
-	tr->fClusterIds[1] = 0;
-	tr->fClusterIds[2] = 0;
-	tr->fClusterIds[3] = 0;
-	tr->fClusterIds[4] = 0;
-	tr->fClusterIds[5] = 0;
-	tr++;
+
+    for ( int itr = 0; itr < nTracks; itr++ ) {
+
+      const AliExternalTrackParam &tp = fTracker->Tracks()[itr];
+      int id =  tracksTPCId[fTracker->Tracks()[itr].TPCtrackId()];
+
+      int nClusters = 0;
+
+      unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + nClusters * sizeof( unsigned int );
+
+      if ( mySize + dSize > maxBufferSize ) {
+        HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d tracks are not stored", maxBufferSize, mySize, nTracks - itr + 1 );
+        iResult = -ENOSPC;
+        break;
       }
+
+      currOutTrack->fAlpha = tp.GetAlpha();
+      currOutTrack->fX = tp.GetX();
+      currOutTrack->fY = tp.GetY();
+      currOutTrack->fZ = tp.GetZ();            
+      currOutTrack->fLastX = 0;
+      currOutTrack->fLastY = 0;
+      currOutTrack->fLastZ = 0;      
+      currOutTrack->fq1Pt = tp.GetSigned1Pt();
+      currOutTrack->fSinPsi = tp.GetSnp();
+      currOutTrack->fTgl = tp.GetTgl();
+      for( int i=0; i<15; i++ ) currOutTrack->fC[i] = tp.GetCovariance()[i];
+      currOutTrack->fTrackID = id;
+      currOutTrack->fFlags = 0;
+      currOutTrack->fNPoints = nClusters;    
+      currOutTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currOutTrack) + dSize );
+      mySize += dSize;
+      outPtr->fCount++;
     }
+  
 
     AliHLTComponentBlockData resultData;
     FillBlockData( resultData );
     resultData.fOffset = 0;
     resultData.fSize = mySize;
-    resultData.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( 0, 35, 0, 5 );
+    resultData.fDataType = kAliHLTDataTypeTrack|kAliHLTDataOriginITS;
     outputBlocks.push_back( resultData );
-    size = resultData.fSize;
-
+    size = resultData.fSize;  
+    
     HLTInfo( "ITS tracker:: output %d tracks",nTracks );
   }
   return iResult;
