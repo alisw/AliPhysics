@@ -6,6 +6,7 @@
 #ifndef _ALIHLTEXTERNALTRACKPARAM_H_
 #define _ALIHLTEXTERNALTRACKPARAM_H_
 
+#include "AliHLTDataTypes.h"
 #include "AliHLTStdIncludes.h"
 
 /**
