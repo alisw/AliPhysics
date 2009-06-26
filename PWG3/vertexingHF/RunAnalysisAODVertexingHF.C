@@ -19,7 +19,7 @@ void RunAnalysisAODVertexingHF()
   Long64_t nentries=1234567890,firstentry=0;
   Bool_t useParFiles=kFALSE;
   Bool_t useAlienPlugin=kTRUE;
-  TString pluginmode="test";
+  TString pluginmode="full";
   TString loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/";
   //
 
@@ -157,7 +157,7 @@ void RunAnalysisAODVertexingHF()
   taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   AliAnalysisTaskSECompareHF *cmpTask = AddTaskCompareHF();
-
+  
   taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass();
@@ -194,7 +194,7 @@ void RunAnalysisAODVertexingHF()
   AliAnalysisTaskCharmFraction *cFractTaskNoMCSel  = AddTaskCharmFraction("d0D0NoMCSel.root",kFALSE,kTRUE,kFALSE);
   AliAnalysisTaskCharmFraction *cFractTaskNoMCSel  = AddTaskCharmFraction("d0D0NoMCSel_SideBand.root",kTRUE,kTRUE,kFALSE);
   AliAnalysisTaskCharmFraction *cFractTaskPureBack = AddTaskCharmFraction("d0D0_PureBack.root",kFALSE,kTRUE,kTRUE,kTRUE,kFALSE,kTRUE,kTRUE,kTRUE,kTRUE);
-  
+  AliAnalysisTaskCharmFraction *cFractTaskFromB    = AddTaskCharmFraction("d0D0_FromB.root",kFALSE,kTRUE,kTRUE,kFALSE,kTRUE);
 
   //-------------------------------------------------------------------
 
