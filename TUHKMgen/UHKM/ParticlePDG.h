@@ -19,15 +19,12 @@
 #include "DecayChannel.h"
 #endif
 
-const Int_t kMaxDecayChannels = 20;
+const Int_t kMaxDecayChannels = 100;
 
 class ParticlePDG {
  public:
   ParticlePDG();
- 
   ParticlePDG(Char_t* name, Int_t pdg, Double_t mass, Double_t width);
-
-  
   ~ParticlePDG();
   
   void AddChannel(DecayChannel* channel);

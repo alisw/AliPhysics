@@ -12,7 +12,7 @@
 #ifndef PARTICLE_PDG
 #include "ParticlePDG.h"
 #endif
-#ifndef DATABASE_PDG
+#ifndef DATABASEPDG_H
 #include "DatabasePDG.h"
 #endif
 

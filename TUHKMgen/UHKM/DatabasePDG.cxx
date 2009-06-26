@@ -1,3 +1,9 @@
+// DatabasePDG stores and handles PDG information
+// The PDG particle definitions and decay channels are read
+// in the begining from ASCII files
+// PDG definitions loaded can be selected according to their
+// mass and decay width
+
 /*
   Copyright   : The FASTMC and SPHMC Collaboration
   Author      : Ionut Cristian Arsene 
@@ -11,7 +17,7 @@
 */
 
 
-#ifndef DATABASE_PDG
+#ifndef DATABASEPDG_H
 #include "DatabasePDG.h"
 #endif
 
@@ -33,6 +39,7 @@ DatabasePDG::DatabasePDG():
   fMinimumMass(0.0001),
   fMaximumMass(10.)
 {
+  // Default constructor, initialize members, set input files  
   
   strcpy(fParticleFilename, "particles.data");
   strcpy(fDecayFilename, "tabledecay.txt");
@@ -61,6 +68,8 @@ Bool_t DatabasePDG::LoadData() {
 }
 
 Bool_t DatabasePDG::LoadParticles() {
+  // Read particle definitions from the ascii file  
+
   ifstream particleFile;
   particleFile.open(fParticleFilename);
   if(!particleFile) {
@@ -131,39 +140,41 @@ Bool_t DatabasePDG::LoadParticles() {
 }
 
 Bool_t DatabasePDG::LoadDecays() {
+  // Read the decay channel definitions from the ascii file
+
   ifstream decayFile;
   decayFile.open(fDecayFilename);
   if(!decayFile) {
     cout << "ERROR in DatabasePDG::LoadDecays() : The ASCII file containing the decays list (\""
-         << fDecayFilename << "\") was not found !! Aborting..." << endl;
+         << fDecayFilename << "\") was not found !! Exiting..." << endl;
     return kFALSE;
   }
   
-  Int_t mother_pdg, daughter_pdg[3];
+  Int_t motherPdg, daughterPdg[3];
   Double_t branching;
   
   decayFile.exceptions(ios::failbit);
   while(!decayFile.eof()) {
-    mother_pdg = 0;
-    for(Int_t i=0; i<3; i++) daughter_pdg[i] = 0;
+    motherPdg = 0;
+    for(Int_t i=0; i<3; i++) daughterPdg[i] = 0;
     branching = -1.0;
     try {
-      decayFile >> mother_pdg;
+      decayFile >> motherPdg;
       for(Int_t i=0; i<3; i++) 
-        decayFile >> daughter_pdg[i];
+        decayFile >> daughterPdg[i];
       decayFile >> branching;
     }
     catch (ios::failure const &problem) {
       cout << problem.what() << endl;
       break;
     }
-    if((mother_pdg!=0) && (daughter_pdg[0]!=0) && (branching>=0)) {
+    if((motherPdg!=0) && (daughterPdg[0]!=0) && (branching>=0)) {
       Int_t nDaughters = 0;
       for(Int_t i=0; i<3; i++)
-        if(daughter_pdg[i]!=0)
+        if(daughterPdg[i]!=0)
           nDaughters++;
-      ParticlePDG* particle = GetPDGParticle(mother_pdg);
-      DecayChannel decay(mother_pdg, branching, nDaughters, daughter_pdg);
+      ParticlePDG* particle = GetPDGParticle(motherPdg);
+      DecayChannel decay(motherPdg, branching, nDaughters, daughterPdg);
       particle->AddChannel(&decay);
     }
   }
@@ -176,7 +187,9 @@ Bool_t DatabasePDG::LoadDecays() {
   return kTRUE;
 }
 
-ParticlePDG* DatabasePDG::GetPDGParticleByIndex(Int_t index) {
+ParticlePDG* DatabasePDG::GetPDGParticleByIndex(Int_t index) const {
+  // Return a PDG particle definition based on its index in the particle list 
+
   if(index<0 || index>fNParticles) {
     cout << "Warning in DatabasePDG::GetPDGParticleByIndex(Int_t): Particle index is negative or too big !!" << endl
          << " It must be inside this range: [0, " << fNParticles-1 << "]" << endl
@@ -186,7 +199,11 @@ ParticlePDG* DatabasePDG::GetPDGParticleByIndex(Int_t index) {
   return fParticles[index];
 }
 
-Bool_t DatabasePDG::GetPDGParticleStatusByIndex(Int_t index) {
+Bool_t DatabasePDG::GetPDGParticleStatusByIndex(Int_t index) const {
+  // Return the status of a PDG particle definition based on its index in the particle list
+  // The status is kTRUE when a particle passed the mass, width and charm criteria
+  // and kFALSE otherwise
+
   if(index<0 || index>fNParticles) {
     cout << "Warning in DatabasePDG::GetPDGParticleStatusByIndex(Int_t): Particle index is negative or too big !!" << endl
          << " It must be inside this range: [0, " << fNParticles-1 << "]" << endl
@@ -196,7 +213,10 @@ Bool_t DatabasePDG::GetPDGParticleStatusByIndex(Int_t index) {
   return fStatus[index];
 }
 
-ParticlePDG* DatabasePDG::GetPDGParticle(Int_t pdg) {
+ParticlePDG* DatabasePDG::GetPDGParticle(Int_t pdg) const {
+  // Return a PDG particle definition based on the PDG code (PYTHIA convention) 
+  // If more than 1 definition with the asked PDG code is found then a warning is issued 
+
   Int_t nFindings = 0;
   Int_t firstTimeIndex = 0;
   for(Int_t i=0; i<fNParticles; i++) {
@@ -220,7 +240,11 @@ ParticlePDG* DatabasePDG::GetPDGParticle(Int_t pdg) {
   return 0x0;
 }
 
-Bool_t DatabasePDG::GetPDGParticleStatus(Int_t pdg) {
+Bool_t DatabasePDG::GetPDGParticleStatus(Int_t pdg) const {
+  // Return the status of a PDG particle definition based on its PDG code (PYTHIA convention)
+  // The status is kTRUE when a particle passed the mass, width and charm criteria
+  // and kFALSE otherwise
+
   Int_t nFindings = 0;
   Int_t firstTimeIndex = 0;
   for(Int_t i=0; i<fNParticles; i++) {
@@ -244,7 +268,10 @@ Bool_t DatabasePDG::GetPDGParticleStatus(Int_t pdg) {
   return kFALSE;
 }
 
-ParticlePDG* DatabasePDG::GetPDGParticle(Char_t* name) {
+ParticlePDG* DatabasePDG::GetPDGParticle(Char_t* name) const {
+  // Return a PDG particle definition based on its name
+  // If more than 1 definition with the asked PDG code is found then a warning is issued
+
   Int_t nFindings = 0;
   Int_t firstTimeIndex = 0;
   for(Int_t i=0; i<fNParticles; i++) {
@@ -268,7 +295,11 @@ ParticlePDG* DatabasePDG::GetPDGParticle(Char_t* name) {
   return 0x0;
 }
 
-Bool_t DatabasePDG::GetPDGParticleStatus(Char_t* name) {
+Bool_t DatabasePDG::GetPDGParticleStatus(Char_t* name) const {
+  // Return the status of a PDG particle definition based on its name
+  // The status is kTRUE when a particle passed the mass, width and charm criteria
+  // and kFALSE otherwise
+
   Int_t nFindings = 0;
   Int_t firstTimeIndex = 0;
   for(Int_t i=0; i<fNParticles; i++) {
@@ -292,7 +323,9 @@ Bool_t DatabasePDG::GetPDGParticleStatus(Char_t* name) {
   return kFALSE;
 }
 
-void DatabasePDG::DumpData(Bool_t dumpAll) {
+void DatabasePDG::DumpData(Bool_t dumpAll) const {
+  // Printout all the information in the PDG database
+
   cout << "***********************************************************************************************************" << endl;
   cout << "Dumping all the information contained in the database..." << endl;
   Int_t nDecays = 0;
@@ -346,8 +379,9 @@ void DatabasePDG::DumpData(Bool_t dumpAll) {
   }
 }
 
-Int_t DatabasePDG::CheckImpossibleDecays(Bool_t dump) {
+Int_t DatabasePDG::CheckImpossibleDecays(Bool_t dump) const {
   // Check the database for impossible decays
+
   Int_t nImpossibleDecays = 0;
   for(Int_t currPart=0; currPart<fNParticles; currPart++) {
     if(!fStatus[currPart]) continue;
@@ -394,6 +428,8 @@ Int_t DatabasePDG::CheckImpossibleDecays(Bool_t dump) {
 }
 
 void DatabasePDG::SetUseCharmParticles(Bool_t flag) {
+  // Switch on/off the use of charmed particles
+
   if(fNParticles>0) {
     fUseCharmParticles = flag;
     for(Int_t i=0; i<fNParticles; i++) {
@@ -409,6 +445,7 @@ void DatabasePDG::SetUseCharmParticles(Bool_t flag) {
 }
 
 void DatabasePDG::SetMinimumWidth(Double_t value) {
+  // Set the minimum decay width for the particle definitions to be generated in the soft fireball
   if(fNParticles>0) {
     fMinimumWidth = value;
     for(Int_t i=0; i<fNParticles; i++) {
@@ -424,6 +461,8 @@ void DatabasePDG::SetMinimumWidth(Double_t value) {
 }
 
 void DatabasePDG::SetMaximumWidth(Double_t value) {
+  // Set the maximum decay width for the particle definitions to be generated in the soft fireball
+
   if(fNParticles>0) {
     fMaximumWidth = value;
     for(Int_t i=0; i<fNParticles; i++) {
@@ -439,6 +478,8 @@ void DatabasePDG::SetMaximumWidth(Double_t value) {
 }
 
 void DatabasePDG::SetWidthRange(Double_t min, Double_t max) {
+  // Set the decay width range for the particle definitions to be generated in the soft fireball
+
   if(fNParticles>0) {
     fMinimumWidth = min;
     fMaximumWidth = max;
@@ -457,6 +498,8 @@ void DatabasePDG::SetWidthRange(Double_t min, Double_t max) {
 }
 
 void DatabasePDG::SetMinimumMass(Double_t value) {
+  // Set the minimum mass for the particle definitions to be generated in the soft fireball
+
   if(fNParticles>0) {
     fMinimumMass = value;
     for(Int_t i=0; i<fNParticles; i++) {
@@ -472,6 +515,8 @@ void DatabasePDG::SetMinimumMass(Double_t value) {
 }
 
 void DatabasePDG::SetMaximumMass(Double_t value) {
+  // Set the maximum mass for the particle definitions to be generated in the soft fireball
+
   if(fNParticles>0) {
     fMaximumMass = value;
     for(Int_t i=0; i<fNParticles; i++) {
@@ -487,6 +532,8 @@ void DatabasePDG::SetMaximumMass(Double_t value) {
 }
 
 void DatabasePDG::SetMassRange(Double_t min, Double_t max) {
+  // Set the mass range for the particle definitions to be generated in the soft fireball
+
   if(fNParticles>0) {
     fMinimumMass = min;
     fMaximumMass = max;
@@ -505,6 +552,8 @@ void DatabasePDG::SetMassRange(Double_t min, Double_t max) {
 }
 
 void DatabasePDG::SortParticles() {
+  // Sort the particle list so that those with kTRUE status will be always on top of the list
+
   if(fNParticles<2) {
     cout << "Warning in DatabasePDG::SortParticles() : No particles to sort. Load data first!!" << endl;
     return;
@@ -536,7 +585,11 @@ void DatabasePDG::SortParticles() {
   return;
 }
 
-Int_t DatabasePDG::GetNParticles(Bool_t all) {
+Int_t DatabasePDG::GetNParticles(Bool_t all) const {
+  // Return the number of particle definitions in the database
+  // If all is kTRUE then return number of all particle
+  // If all is kFALSE then return the number of good status (kTRUE) particles
+
   if(all)
     return fNParticles;
 
@@ -547,6 +600,9 @@ Int_t DatabasePDG::GetNParticles(Bool_t all) {
 }
 
 void DatabasePDG::UseThisListOfParticles(Char_t *filename, Bool_t exclusive) {
+  // Read a list of PDG codes from the file "filename" and mark them with good status (kTRUE)
+  // while all the other will be marked kFALSE (only if exclusive = kTRUE)     
+
   if(fNParticles<1) {
     cout << "Error in DatabasePDG::UseThisListOfParticles(Char_t*, Bool_t) : You must load the data before calling this function!!" << endl;
     return;
@@ -556,7 +612,7 @@ void DatabasePDG::UseThisListOfParticles(Char_t *filename, Bool_t exclusive) {
   listFile.open(filename);
   if(!listFile) {
     cout << "ERROR in DatabasePDG::UseThisListOfParticles(Char_t*, Bool_t) : The ASCII file containing the PDG codes list (\""
-         << filename << "\") was not found !! Aborting..." << endl;
+         << filename << "\") was not found !! Exiting..." << endl;
     return;
   }
 
@@ -603,7 +659,9 @@ void DatabasePDG::UseThisListOfParticles(Char_t *filename, Bool_t exclusive) {
   return;
 }
 
-Bool_t DatabasePDG::IsChannelAllowed(DecayChannel *channel, Double_t motherMass) {
+Bool_t DatabasePDG::IsChannelAllowed(DecayChannel *channel, Double_t motherMass) const {
+  // Check if the decay channel "channel" is allowed by using the mother particle mass "motherMass"
+
   Double_t daughtersSumMass = 0.0;
   for(Int_t i=0; i<channel->GetNDaughters(); i++)
     daughtersSumMass += GetPDGParticle(channel->GetDaughterPDG(i))->GetMass();
@@ -612,7 +670,9 @@ Bool_t DatabasePDG::IsChannelAllowed(DecayChannel *channel, Double_t motherMass)
   return kFALSE;
 }
 
-Int_t DatabasePDG::GetNAllowedChannels(ParticlePDG *particle, Double_t motherMass) {
+Int_t DatabasePDG::GetNAllowedChannels(ParticlePDG *particle, Double_t motherMass) const {
+  // Check how many decay channels are allowed for a given particle definition at a given mass
+
   Int_t nAllowedChannels = 0;
   for(Int_t i=0; i<particle->GetNDecayChannels(); i++)
     nAllowedChannels += (IsChannelAllowed(particle->GetDecayChannel(i), motherMass) ? 1:0);

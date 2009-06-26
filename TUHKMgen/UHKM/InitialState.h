@@ -12,7 +12,7 @@
 #ifndef PARTICLE_INCLUDED
 #include "Particle.h"
 #endif
-#ifndef DATABASE_PDG
+#ifndef DATABASEPDG_H
 #include "DatabasePDG.h"
 #endif
 
@@ -47,11 +47,12 @@ class InitialState {
   virtual void Initialize(List_t &source, ParticleAllocator &allocator) = 0;
   virtual Bool_t ReadParams() = 0;
   virtual Bool_t MultIni() = 0;
-  virtual Double_t GetTime() = 0;
+  virtual Bool_t RunDecays() = 0;
   virtual Int_t GetNev() = 0;
   virtual Double_t GetWeakDecayLimit() = 0;
     
-  virtual void Evolve(List_t &source, List_t &secondaries, ParticleAllocator &allocator, Double_t weakDecayLimit);
+  //  virtual void Evolve(List_t &source, List_t &secondaries, ParticleAllocator &allocator, Double_t weakDecayLimit);
+  virtual void Evolve(List_t &secondaries, ParticleAllocator &allocator, Double_t weakDecayLimit);
  protected:
    DatabasePDG *fDatabase;
  private:

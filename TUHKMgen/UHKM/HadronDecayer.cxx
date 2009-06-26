@@ -17,7 +17,7 @@
 #include <TError.h>
 #include <TMath.h>
 
-#ifndef DATABASE_PDG
+#ifndef DATABASEPDG_H
 #include "DatabasePDG.h"
 #endif
 #ifndef PARTICLE_PDG
@@ -64,14 +64,6 @@ extern "C" void mydelta_();
 extern SERVICEEVCommon SERVICEEV;
 
 void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, DatabasePDG* database) {
-  // check if the parent particle has been decayed already
-  //  std::cout << "HadronDecayer::Decay() IN" << std::endl;
-  Int_t daughters = parent.GetNDaughters();
-
-  //cout<<"in Decay pdg"<< parent.Def()->GetPDG()<<"daughters "<<daughters<<endl;
-
-  if(daughters>0)  // particle decayed already
-    return;
 
   // Get the PDG properties of the particle
   ParticlePDG *pDef = parent.Def();
@@ -88,7 +80,7 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
 
   // get the PDG mass of the specie  
   Double_t PDGmass = pDef->GetMass();
-  int ComprCodePyth=0;
+  Int_t ComprCodePyth=0;
   Float_t Delta =0;
 
   Bool_t success = kFALSE;
@@ -102,9 +94,9 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
       std::cout << "               Will be left undecayed ... check it out!" << std::endl;
       return;
     }
+    
     // get a random mass using the Breit Wigner distribution 
-    Double_t BWmass = gRandom->BreitWigner(PDGmass, pDef->GetWidth()); 
-    //!!!!    
+    Double_t BWmass = gRandom->BreitWigner(PDGmass, pDef->GetWidth());     
     //      BWmass = PDGmass;
     // Try to cut the Breit Wigner tail of the particle using the cuts from pythia
     // The Delta variable is obtained from pythia based on the specie
@@ -132,26 +124,18 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
       Delta=0.0;
     }
 
-    //    std::cout << "HadronDecayer::Decay() BWmass = " << BWmass << std::endl;
-    //    std::cout << "HadronDecayer::Decay() Delta = " << Delta << std::endl;
     //for particles from PYTHIA table only, if the BW mass is outside the cut range then quit this iteration and generate another BW mass
     if(ComprCodePyth!=0 && Delta>0 && (BWmass<PDGmass-Delta || BWmass>PDGmass+Delta)){
-      //      std::cout<<"encoding"<<encoding<<"delta"<<Delta<<"width "<<pDef->GetWidth()<<"mass"<<BWmass<<std::endl;
       iterations++;
-      //      std::cout << "HadronDecayer::Decay() BWmass outside cut, try again" << std::endl;
       continue;
     }    
-    //----    
-    
-    //    if(BWmass>5)
-    //      std::cout<<" > 5 encoding"<<encoding<<" pdgmass "<<PDGmass<<" delta "<<Delta<<"width "<<pDef->GetWidth()<<" mass "<<BWmass<<"CC"<<ComprCodePyth<<std::endl;
     
     // check how many decay channels are allowed with the generated mass
     Int_t nAllowedChannels = database->GetNAllowedChannels(pDef, BWmass);
     // if no decay channels are posible with this mass, then generate another BW mass
     if(nAllowedChannels==0) {    
       iterations++;
-      //      std::cout << "HadronDecayer::Decay() no decays allowed at this BW mass" << std::endl;
+            std::cout << "HadronDecayer::Decay() no decays allowed at this BW mass" << std::endl;
       continue;
     }
 
@@ -166,14 +150,10 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
     Int_t chosenChannel = 1000;
     Bool_t found = kFALSE;
     Int_t channelIterations = 0;
-    //    std::cout << "HadronDecayer::Decay() randValue = " << randValue  << std::endl;
     while(!found) {
-      //      std::cout << "HadronDecayer::Decay() channel iteration #" << channelIterations << std::endl;
-      for(Int_t nChannel = 0; nChannel < nDecayChannel; ++nChannel) {
+      for(Int_t nChannel = 0; nChannel < nDecayChannel; nChannel++) {
 	randValue -= pDef->GetDecayChannel(nChannel)->GetBranching();
-	//	std::cout << "HadronDecayer::Decay() channel #" << nChannel << " randValue = " << randValue << std::endl;
 	if(randValue <= 0. && database->IsChannelAllowed(pDef->GetDecayChannel(nChannel), BWmass)) {
-	  //	  std::cout << "HadronDecayer::Decay() channel found" << std::endl;
 	  chosenChannel = nChannel;
 	  found = kTRUE;
 	  break;
@@ -213,14 +193,12 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
       p1.SetLastMotherDecayMom(parentBW.Mom());
       p1.SetType(NB);
 
-      // link the parent and daughters trough their indexes in the list
-      Int_t parentIndex = -1;
-      if(parent.GetMother()==-1) parentIndex = parent.SetIndex();   // parents which are primaries don't have yet an index
-      else parentIndex = parent.GetIndex();                         // parents which are secondaries have an index
+      // add the daughter to the list of secondaries
+      Int_t parentIndex = parent.GetIndex();
       Int_t p1Index = p1.SetIndex();                           // set the daughter index
       p1.SetMother(parentIndex);                               // set the mother index for this daughter 
-      parent.SetDaughter(p1Index);                             // set p1 as daughter to the parent 
-      if(parent.GetMother()==-1) allocator.AddParticle(parent, output);   // add it only if its a primary particle
+      parent.SetFirstDaughterIndex(p1Index);
+      parent.SetLastDaughterIndex(p1Index);
       allocator.AddParticle(p1, output);
       success = kTRUE;  
     }
@@ -246,7 +224,6 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
       p2.SetLastMotherPdg(parentBW.Encoding());
       p2.SetLastMotherDecayCoor(parentBW.Pos());
       p2.SetLastMotherDecayMom(parentBW.Mom());
-      // std::cout<<"2d NB="<<NB<<std::endl;
       //set to daughters the same type as has mother
       p1.SetType(NB);
       p2.SetType(NB);
@@ -259,35 +236,22 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
 				    (parentBW.Mom().E()-p1.Mom().E()-p2.Mom().E())*(parentBW.Mom().E()-p1.Mom().E()-p2.Mom().E()));
       // if deltaS is too big then repeat the kinematic procedure
  
- 
       if(deltaS>0.001) {
-
-	//	cout << "2-body decay kinematic check in lab system: " << pDef->GetPDG() << " --> " << p1.Encoding() << " + " << p2.Encoding() << endl;
-	//	cout << "Mother    (e,px,py,pz): " << parentBW.Mom().E() << "\t" << parentBW.Mom().X() << "\t" << parentBW.Mom().Y() << "\t" << parentBW.Mom().Z() << endl;
-	//	cout << "Mother    (x,y,z,t): " << parentBW.Pos().X() << "\t" << parentBW.Pos().Y() << "\t" << parentBW.Pos().Z() << "\t" << parentBW.Pos().T() << endl;
-
-	//	cout << "Daughter1 (e,px,py,pz): " << p1.Mom().E() << "\t" << p1.Mom().X() << "\t" << p1.Mom().Y() << "\t" << p1.Mom().Z() << endl;
-	//	cout << "Daughter2 (e,px,py,pz): " << p2.Mom().E() << "\t" << p2.Mom().X() << "\t" << p2.Mom().Y() << "\t" << p2.Mom().Z() << endl;	
-	//	cout << "2-body decay delta(sqrtS) = " << deltaS << endl;
-	//	cout << "Repeating the decay algorithm ..." << endl;
-
 	iterations++;
 	continue;
       }
       // push particles to the list of secondaries
-      Int_t parentIndex = -1;
-      if(parent.GetMother()==-1) parentIndex = parent.SetIndex();   // parents which are primaries don't have yet an index
-      else parentIndex = parent.GetIndex();                         // parents which are secondaries have an index
+      Int_t parentIndex = parent.GetIndex();
       p1.SetIndex(); 
       p2.SetIndex();
       p1.SetMother(parentIndex); 
       p2.SetMother(parentIndex);
-      parent.SetDaughter(p1.GetIndex());
-      parent.SetDaughter(p2.GetIndex());
-      if(parent.GetMother()==-1) allocator.AddParticle(parent, output);      // add it only if its a primary
+      parent.SetFirstDaughterIndex(p1.GetIndex());
+      parent.SetLastDaughterIndex(p2.GetIndex());
       allocator.AddParticle(p1, output);
       allocator.AddParticle(p2, output);
       success = kTRUE;
+    
     }
 
     // third case: three daughter particle
@@ -381,10 +345,7 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
       p1.SetType(NB);
       p2.SetType(NB);
       p3.SetType(NB);
- //      std::cout<<"3d NB="<<NB<<std::endl;
 
-
-            
       // energy conservation check in the lab system
       Double_t deltaS = TMath::Sqrt((parentBW.Mom().X()-p1.Mom().X()-p2.Mom().X()-p3.Mom().X())*(parentBW.Mom().X()-p1.Mom().X()-p2.Mom().X()-p3.Mom().X()) +
 				    (parentBW.Mom().Y()-p1.Mom().Y()-p2.Mom().Y()-p3.Mom().Y())*(parentBW.Mom().Y()-p1.Mom().Y()-p2.Mom().Y()-p3.Mom().Y()) +
@@ -392,7 +353,6 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
 				    (parentBW.Mom().E()-p1.Mom().E()-p2.Mom().E()-p3.Mom().E())*(parentBW.Mom().E()-p1.Mom().E()-p2.Mom().E()-p3.Mom().E()));
       // if deltaS is too big then repeat the kinematic procedure
       if(deltaS>0.001) {
-
 	//	cout << "3-body decay kinematic check in lab system: " << pDef->GetPDG() << " --> " << p1.Encoding() << " + " << p2.Encoding() << " + " << p3.Encoding() << endl;
 	//	cout << "Mother    (e,px,py,pz): " << parentBW.Mom().E() << "\t" << parentBW.Mom().X() << "\t" << parentBW.Mom().Y() << "\t" << parentBW.Mom().Z() << endl;
 	//	cout << "Daughter1 (e,px,py,pz): " << p1.Mom().E() << "\t" << p1.Mom().X() << "\t" << p1.Mom().Y() << "\t" << p1.Mom().Z() << endl;
@@ -405,19 +365,15 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
 	continue;
       }
 
-      Int_t parentIndex = -1;
-      if(parent.GetMother()==-1) parentIndex = parent.SetIndex();   // parents which are primaries don't have yet an index
-      else parentIndex = parent.GetIndex();                         // parents which are secondaries have an index
+      Int_t parentIndex = parent.GetIndex();
       p1.SetIndex();
       p2.SetIndex();
       p3.SetIndex();
       p1.SetMother(parentIndex); 
       p2.SetMother(parentIndex);
       p3.SetMother(parentIndex);
-      parent.SetDaughter(p1.GetIndex());
-      parent.SetDaughter(p2.GetIndex());
-      parent.SetDaughter(p3.GetIndex());
-      if(parent.GetMother()==-1) allocator.AddParticle(parent, output);    // add it only if its a primary
+      parent.SetFirstDaughterIndex(p1.GetIndex());
+      parent.SetLastDaughterIndex(p3.GetIndex());
       allocator.AddParticle(p1, output);
       allocator.AddParticle(p2, output);
       allocator.AddParticle(p3, output);

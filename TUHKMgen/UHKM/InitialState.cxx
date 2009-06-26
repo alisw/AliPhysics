@@ -14,87 +14,59 @@
 #include <iostream> 
 #include <fstream>
 using namespace std;
-// aic(2008/08/08): define the fLastIndex static variable 
-Int_t Particle::fLastIndex;
 
-void InitialState::Evolve(List_t &source, List_t &secondaries, ParticleAllocator &allocator, Double_t weakDecayLimit) {
-  cout << "InitialState::Evolve()  IN" << endl;
+// aic(2008/08/08): define the fLastIndex static variable 
+//Int_t Particle::fLastIndex;
+
+void InitialState::Evolve(List_t &secondaries, ParticleAllocator &allocator, Double_t weakDecayLimit) {
+  // Particle indexes are set for primaries already from InitialStateHydjet::Initialize()
+
+  // particle list iterators
   LPIT_t it;
   LPIT_t e;
 
-  // Initialize the fLastIndex to -1
-  it = source.begin();
-  it->InitIndexing();
+  // Particle indexes are set for primaries already from InitialStateHydjet::Initialize()
 
-  //  cout << "InitialState::Evolve()  Loop over primaries" << endl;
-  // Loop over source list (primary particles) 
-  for(it = source.begin(), e = source.end(); it != e; ++it) {
-    //    cout << "InitialState::Evolve()  particle(in primary loop) code = " << it->Encoding() << endl;
-    //    if(GetPDGParticleStableStatus(it->Encoding())) {
-      //      cout << "InitialState::Evolve() its a stable marked particle, decay time should be 0" << endl;
-      //    }
-    // calculate the decay time of the particle
-    Double_t decayTime = GetDecayTime(*it, weakDecayLimit);
-    //    cout << "InitialState::Evolve()  decay time = " << decayTime << endl;
-    TVector3 shift(it->Mom().BoostVector());
-    shift *= decayTime;
-    it->SetLastInterTime(it->T() + decayTime);
+  // Decay loop
+  // Note that the decay products are always added at the end of list so the unstable products are
+  // decayed when the iterator reaches them (used for cascade decays)
 
-    // if the particle is unstable run the decayer 
-    if(decayTime > 0.) {
-      //      cout << "InitialState::Evolve()  perform decay..." << endl;
-      it->Pos(it->Pos() += TLorentzVector(shift, 0.));
-      it->T(it->T() + decayTime);
-      // perform the decay procedure
-      // the primaries are added to the list of secondaries inside Decay()
-      Decay(secondaries, *it, allocator, fDatabase);  
-    }
-    // else just add the primary to the list of particles
-    else {
-      //      cout << "InitialState::Evolve()  stable particle (just add it to the list of final particles)" << endl;
-      it->SetIndex();
-      allocator.AddParticle(*it, secondaries);
-    }
-  }
+  it = secondaries.begin();
 
-  //  cout << "InitialState::Evolve()  Loop over secondaries" << endl;
-  // Loop over the secondaries list and decay the cascades
-  for(it = secondaries.begin(), e = secondaries.end(); it != e;) {
-    //    cout << "InitialState::Evolve()  particle(in secondaries loop) code " << it->Encoding() << endl;
-    if(GetPDGParticleStableStatus(it->Encoding())) {
-      //      cout << "InitialState::Evolve()  its a stable particle " << it->Encoding()
-      //	   << "(already added to final list)"  << endl;
-      ++it;
+  for(it = secondaries.begin(), e = secondaries.end(); it != e; it++) {
+    // if the decay procedure was applied already skip ... (e.g. particles from pythia history information)
+    if(it->GetDecayed()) {
       continue;
     }
-    // the primaries are already decayed, so just ignore it
-    if(it->GetMother()==-1) {  
-      //      cout << "InitialState::Evolve()  its a primary (already decayed)" << endl;
-      ++it;
-      continue;
-    }
+
+    // generate the decay time; if particle is stable or set to stable decayTime=0
     Double_t decayTime = GetDecayTime(*it, weakDecayLimit);
-    //    cout << "InitialState::Evolve()  decay time = " << decayTime << endl;
     it->SetLastInterTime(it->T() + decayTime);
     TVector3 shift(it->Mom().BoostVector());
     shift *= decayTime; 
-    
-    // if the particle is unstable run the decays
+    it->SetDecayed();
+
+    // if decayTime>0 then apply the decay procedure (only 2 or 3 body decays)
     if(decayTime > 0.) {
-      //      cout << "InitialState::Evolve()  perform decay..." << endl;
       it->Pos(it->Pos() += TLorentzVector(shift, 0.));
       it->T(it->T() + decayTime);
-      // The decay products are added to the list inside the Decay() function
-      // The mother particle is not removed from list but can be distinguished 
-      // since the daughter indexes will be initialized
       Decay(secondaries, *it, allocator, fDatabase);
-      ++it;
     }
-    // else just continue
-    else {
-      //      cout << "InitialState::Evolve() no decay, continue to next particle" << endl;
-      ++it;
-    }
+    // if particle is stable just continue
   }
-  //  cout << "InitialState::Evolve()  OUT"<< endl;
+
+  it = secondaries.begin();
+  Int_t npart = it->GetLastIndex();
+  cout << "particles generated = " << npart << endl;
+  for(Int_t count=0; count<npart; count++, it++) {
+//    cout << "=====================================================" << endl;
+//    cout << "InitialState::Evolve() particle count = " << count << endl;
+//    cout << "InitialState::Evolve() particle pdg = " << it->Encoding() << endl;
+//    cout << "InitialState::Evolve() index = " << it->GetIndex() << endl;
+//    cout << "InitialState::Evolve() mother index = " << it->GetMother() << endl;
+//    cout << "InitialState::Evolve() mother pdg = " << it->GetLastMotherPdg() << endl;
+//    cout << "InitialState::Evolve() n daughters = " << it->GetNDaughters() << endl;
+//    cout << "InitialState::Evolve() d (first, last) = " << it->GetFirstDaughterIndex() << ", " 
+//	 << it->GetLastDaughterIndex() << endl;
+  }
 }

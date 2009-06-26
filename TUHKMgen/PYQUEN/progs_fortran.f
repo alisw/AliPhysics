@@ -316,10 +316,7 @@ c-ml
 
 c--      save/lujets/,/hyjets/,/hyipar/,/hyfpar/,/hyflow/,/hyjpar/,/hypyin/
 
-
-* reset lujets and hyjets arrays before event generation 
-
-         write(*,*)'in hyevnt 0'
+* reset hyjets arrays before event generation 
 
       n=0 
       nhj=0 
@@ -410,7 +407,7 @@ c       end do
 c      end do
       
 c-ml
-c-      call luedit(2)                      ! remove unstable particles and partons 
+c      call luedit(2)                      ! remove unstable particles and partons 
 
 
 

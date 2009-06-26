@@ -22,7 +22,7 @@
 #ifndef PARTICLE_INCLUDED
 #include "Particle.h"
 #endif
-#ifndef DATABASE_PDG
+#ifndef DATABASEPDG_H
 #include "DatabasePDG.h"
 #endif
 #ifndef PARTICLE_PDG

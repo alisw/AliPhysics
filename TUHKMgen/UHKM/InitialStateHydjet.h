@@ -1,3 +1,10 @@
+// InitialStateHydjet is the class which controls the entire 
+// event simulation (input parameters, physics, output)
+// InitialStateHydjet inherits from class InitialState
+// MultIni() member function initializes PYQUEN and calculates the average soft multiplicities 
+// Initialize() member function calls the PYQUEN soubroutine for the hard part of the event
+// The resonance decay is performed by the function InitialState::Evolve()
+
 /*                                                                            
                                                                             
         Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
@@ -6,18 +13,20 @@
 
 */
 
-#ifndef INITIALSTATEHYDJET_INCLUDED
-#define INITIALSTATEHYDJET_INCLUDED
+#ifndef INITIALSTATEHYDJET_H
+#define INITIALSTATEHYDJET_H
 
-#ifndef DATABASE_PDG
-#include "DatabasePDG.h"
-#endif
-#ifndef PARTICLE_INCLUDED
-#include "Particle.h"
-#endif
+//#ifndef DATABASE_PDG
+//#include "DatabasePDG.h"
+//#endif
+//#ifndef PARTICLE_INCLUDED
+//#include "Particle.h"
+//#endif
 #ifndef INITIAL_STATE
 #include "InitialState.h"
 #endif
+
+class ParticleAllocator;
 
 struct InitialParamsHydjet_t {
 
@@ -107,12 +116,18 @@ struct InitialParamsHydjet_t {
 
 class InitialStateHydjet : public InitialState {
  public:
+  InitialParamsHydjet_t fParams;             // the list of initial state parameters
+ private:
+  Double_t fVolEff;                           // the effective volume
+
+ public:
   InitialStateHydjet() : fParams(), fVolEff(0){};
   ~InitialStateHydjet() {};
   
   void SetVolEff(Double_t value) {fVolEff = value;}
-  Double_t GetVolEff() {return fVolEff;}
-  virtual Double_t GetTime() {return fParams.fDecay;}
+  Double_t GetVolEff() const {return fVolEff;}
+  //  virtual Double_t GetTime() {return fParams.fDecay;}
+  virtual Bool_t RunDecays() {return (fParams.fDecay>0 ? kTRUE : kFALSE);}
   virtual Int_t GetNev() {return fParams.fNevnt;}
   virtual Double_t GetWeakDecayLimit() {return fParams.fWeakDecay;}  
   
@@ -121,18 +136,12 @@ class InitialStateHydjet : public InitialState {
   virtual Bool_t MultIni();
   Bool_t IniOfThFreezeoutParameters();
  
-  Double_t f(Double_t);
-  Double_t f2(Double_t, Double_t);
+  Double_t f(Double_t x);
+  Double_t f2(Double_t x, Double_t y);
    
-  Double_t SimpsonIntegrator(Double_t, Double_t, Double_t);
-  Double_t SimpsonIntegrator2(Double_t, Double_t);
-  Double_t MidpointIntegrator2(Double_t, Double_t);
- public:
-  InitialParamsHydjet_t fParams;             // the list of initial state parameters  
-  
- private:
-  Double_t fVolEff;                           // the effective volume
-
+  Double_t SimpsonIntegrator(Double_t a, Double_t b, Double_t phi);
+  Double_t SimpsonIntegrator2(Double_t a, Double_t b);
+  Double_t MidpointIntegrator2(Double_t a, Double_t b);
 };
 
 #endif

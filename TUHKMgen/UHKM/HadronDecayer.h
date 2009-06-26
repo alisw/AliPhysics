@@ -8,7 +8,7 @@
                            November. 2, 2005                                
 
 */
-#ifndef DATABASE_PDG
+#ifndef DATABASEPDG_H
 #include "DatabasePDG.h"
 #endif
 #ifndef PARTICLE_INCLUDED

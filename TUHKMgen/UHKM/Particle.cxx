@@ -22,13 +22,17 @@ Particle::Particle(ParticlePDG *prop):
   fParticleProperties(prop),
   fLastInteractionTime(0.),
   fInteractionNumber(0),
+  fPythiaStatusCode(-1),
   fLastMotherPdg(0),
   fType(0),
   fIndex(-1),
   fMotherIndex(-1),
-  fNDaughters(0)
+  fNDaughters(0),
+  fFirstDaughterIndex(-1),
+  fLastDaughterIndex(-1),
+  fDecayed(kFALSE)
 {
-  for(Int_t i=0; i<3; i++) fDaughterIndex[i] = -1;
+
 }
 
 Particle::Particle(ParticlePDG *prop, const TLorentzVector &pos, 
@@ -40,13 +44,16 @@ Particle::Particle(ParticlePDG *prop, const TLorentzVector &pos,
   fParticleProperties(prop),
   fLastInteractionTime(lit),
   fInteractionNumber(lin),
+  fPythiaStatusCode(-1),
   fLastMotherPdg(0),
   fType(type),
   fIndex(-1),
   fMotherIndex(-1),
-  fNDaughters(0)
+  fNDaughters(0),
+  fFirstDaughterIndex(-1),
+  fLastDaughterIndex(-1),
+  fDecayed(kFALSE)
 {
-  for(Int_t i=0; i<3; i++) fDaughterIndex[i] = -1;
 }
 
 Particle::Particle(ParticlePDG *prop, const TLorentzVector &pos, const TLorentzVector &mom,
@@ -59,35 +66,37 @@ Particle::Particle(ParticlePDG *prop, const TLorentzVector &pos, const TLorentzV
   fParticleProperties(prop),
   fLastInteractionTime(t),
   fInteractionNumber(n),
+  fPythiaStatusCode(-1),
   fLastMotherPdg(motherPdg),
   fType(ty),
   fIndex(-1),
   fMotherIndex(-1),
-  fNDaughters(0)
+  fNDaughters(0),
+  fFirstDaughterIndex(-1),
+  fLastDaughterIndex(-1),
+  fDecayed(kFALSE)
 {
-  for(Int_t i=0; i<3; i++) fDaughterIndex[i] = -1;
 }
 
 Particle::Particle(const Particle& copy) :
   fPosition(copy.Pos()),
-    fMomentum(copy.Mom()),
-    fLastMotherDecayCoor(copy.GetLastMotherDecayCoor()),
-    fLastMotherDecayMom(copy.GetLastMotherDecayMom()),
-    fParticleProperties(copy.Def()),
-    fLastInteractionTime(copy.GetLastInterTime()),
-    fInteractionNumber(copy.GetLastInterNumber()),
-    fLastMotherPdg(copy.GetLastMotherPdg()),
-    fType(copy.GetType()),
-    fIndex(copy.GetIndex()),
-    fMotherIndex(copy.GetMother()),
-    fNDaughters(copy.GetNDaughters())
+  fMomentum(copy.Mom()),
+  fLastMotherDecayCoor(copy.GetLastMotherDecayCoor()),
+  fLastMotherDecayMom(copy.GetLastMotherDecayMom()),
+  fParticleProperties(copy.Def()),
+  fLastInteractionTime(copy.GetLastInterTime()),
+  fInteractionNumber(copy.GetLastInterNumber()),
+  fPythiaStatusCode(copy.GetPythiaStatusCode()),
+  fLastMotherPdg(copy.GetLastMotherPdg()),
+  fType(copy.GetType()),
+  fIndex(copy.GetIndex()),
+  fMotherIndex(copy.GetMother()),
+  fNDaughters(copy.GetNDaughters()),
+  fFirstDaughterIndex(copy.GetFirstDaughterIndex()),
+  fLastDaughterIndex(copy.GetLastDaughterIndex()),
+  fDecayed(copy.GetDecayed())
 {
-      for(Int_t i=0; i<fNDaughters; i++) {
-        fDaughterIndex[i] = copy.GetDaughter(i);
-      }
 }
-
-
 
 Particle & Particle::operator=(const Particle& /*copy*/) {
   return *this;

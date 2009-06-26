@@ -1,3 +1,7 @@
+// DatabasePDG stores and handles PDG information
+// The PDG particle definitions and decay channels are read
+// in the begining from ASCII files
+
 /*
   Copyright   : The FASTMC and SPHMC Collaboration
   Author      : Ionut Cristian Arsene 
@@ -10,15 +14,15 @@
   SHARE (Computer Physics Communications 167 229 (2005)) collaborations.
 */
 
-#ifndef DATABASE_PDG
-#define DATABASE_PDG
+#ifndef DATABASEPDG_H
+#define DATABASEPDG_H
 
 #include "Rtypes.h"
 #ifndef PARTICLE_PDG
 #include "ParticlePDG.h"
 #endif
 
-const Int_t kMaxParticles = 500;
+const Int_t kMaxParticles = 1000;
 
 class DatabasePDG {
  public:
@@ -54,24 +58,24 @@ class DatabasePDG {
   
   Char_t* GetParticleFilename() {return fParticleFilename;}
   Char_t* GetDecayFilename() {return fDecayFilename;}
-  Int_t GetNParticles(Bool_t all = kFALSE);      // true - no. of all particles; false - no. of good status particles
-  ParticlePDG* GetPDGParticleByIndex(Int_t index);
-  Bool_t GetPDGParticleStatusByIndex(Int_t index);
-  ParticlePDG* GetPDGParticle(Int_t pdg);
-  Bool_t GetPDGParticleStatus(Int_t pdg);
-  ParticlePDG* GetPDGParticle(Char_t *name);
-  Bool_t GetPDGParticleStatus(Char_t *name);
-  Bool_t GetUseCharmParticles() {return fUseCharmParticles;};
-  Double_t GetMinimumWidth() {return fMinimumWidth;};
-  Double_t GetMaximumWidth() {return fMaximumWidth;};
-  Double_t GetMinimumMass() {return fMinimumMass;};
-  Double_t GetMaximumMass() {return fMaximumMass;};
-  void DumpData(Bool_t dumpAll = kFALSE); // print the PDG information in the console
-  Int_t CheckImpossibleDecays(Bool_t dump = kFALSE);   // print all impossible decays included in the database
-  Bool_t IsChannelAllowed(DecayChannel *channel, Double_t motherMass);
-  Int_t GetNAllowedChannels(ParticlePDG *particle, Double_t motherMass);
+  Int_t GetNParticles(Bool_t all = kFALSE) const;      // true - no. of all particles; false - no. of good status particles
+  ParticlePDG* GetPDGParticleByIndex(Int_t index) const;
+  Bool_t GetPDGParticleStatusByIndex(Int_t index) const;
+  ParticlePDG* GetPDGParticle(Int_t pdg) const;
+  Bool_t GetPDGParticleStatus(Int_t pdg) const;
+  ParticlePDG* GetPDGParticle(Char_t *name) const;
+  Bool_t GetPDGParticleStatus(Char_t *name) const; 
+  Bool_t GetUseCharmParticles() const {return fUseCharmParticles;};
+  Double_t GetMinimumWidth() const {return fMinimumWidth;};
+  Double_t GetMaximumWidth() const {return fMaximumWidth;};
+  Double_t GetMinimumMass() const {return fMinimumMass;};
+  Double_t GetMaximumMass() const {return fMaximumMass;};
+  void DumpData(Bool_t dumpAll = kFALSE) const; // print the PDG information in the console
+  Int_t CheckImpossibleDecays(Bool_t dump = kFALSE) const;   // print all impossible decays included in the database
+  Bool_t IsChannelAllowed(DecayChannel *channel, Double_t motherMass) const;
+  Int_t GetNAllowedChannels(ParticlePDG *particle, Double_t motherMass) const;
   void SetStable(Int_t pdg, Bool_t value) {GetPDGParticle(pdg)->SetStable(value);}
-  Bool_t GetStableStatus(Int_t pdg) {return GetPDGParticle(pdg)->GetStableStatus();}
+  Bool_t GetStableStatus(Int_t pdg) const {return GetPDGParticle(pdg)->GetStableStatus();}
 
  private:
   DatabasePDG(const DatabasePDG&);

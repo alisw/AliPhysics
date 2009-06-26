@@ -18,17 +18,14 @@
 #include "ParticlePDG.h"
 #endif
 #include <iostream>
-
+using namespace std;
 //class ParticlePDG;
 
 class Particle {
  public:
-
   Particle(const TLorentzVector &, const TLorentzVector &);
- 
   Particle(const Particle& copy);
   Particle& operator=(const Particle&);
-
   virtual ~Particle() {};
   Particle(ParticlePDG *pdg = 0);
   Particle(ParticlePDG *pdg, const TLorentzVector &pos, const TLorentzVector &mom,
@@ -60,6 +57,9 @@ class Particle {
   TLorentzVector &Mom(){return fMomentum;}
   const TLorentzVector &Mom()const{return fMomentum;}
   TLorentzVector &Mom(const TLorentzVector &val){return fMomentum = val;}
+
+  void SetDecayed() {fDecayed = kTRUE;}
+  Bool_t GetDecayed() const {return fDecayed;}
    		
   void Boost(const TVector3 &val){fMomentum.Boost(val);}
   void Boost(const TLorentzVector &val){fMomentum.Boost(val.BoostVector());}
@@ -85,33 +85,34 @@ class Particle {
 
   // aic(2008/08/08): functions added in order to enable tracking of mother/daughter particles by a unique index
   // The index coincides with the position of the particle in the secondaries list.
-  Int_t SetIndex() {fIndex = ++fLastIndex; return fIndex;}
+  Int_t SetIndex() {
+    fIndex = ++fLastIndex; 
+    return fIndex;
+  }
   Int_t GetIndex() const {return fIndex;}
   static Int_t GetLastIndex() {return fLastIndex;}
-  void InitIndexing() {fLastIndex = -1;}
+  static void InitIndexing() {
+    fLastIndex = -1;
+  }
   void SetMother(Int_t value) {fMotherIndex = value;}
   Int_t GetMother() const {return fMotherIndex;}
-  void SetDaughter(Int_t value) {
-    if(fNDaughters==3) {
-      std::cout << "Warning in Particle::SetDaughter() Already 3 daughters are set!! Check it out!!" << std::endl;
-      return;
-    }
-    fDaughterIndex[fNDaughters++] = value;
-  }
-  Int_t GetNDaughters() const {return fNDaughters;}
-  Int_t GetDaughter(Int_t value) const {
-    if(value<0 || value>fNDaughters-1) {
-      std::cout << "Warning in Particle::GetDaughter(Int_t) This particle has " << fNDaughters 
-		<< " daughters. The argument must range from 0 to " << fNDaughters-1 << std::endl;
-      return -1;
-    }
-    return fDaughterIndex[value];
-  }
+  void SetFirstDaughterIndex(Int_t index) {fFirstDaughterIndex = index;}
+  void SetLastDaughterIndex(Int_t index) {fLastDaughterIndex = index;}
+  void SetPythiaStatusCode(Int_t code) {fPythiaStatusCode = code;}
+  Int_t GetPythiaStatusCode() const {return fPythiaStatusCode;}
 
-  // void SetLastMotherDecayCoor(TLorentzVector fLastMotherDecayCoor);
+  //  Int_t GetNDaughters() const {return fNDaughters;}
+  Int_t GetNDaughters() const {
+    if(fFirstDaughterIndex==-1 || fLastDaughterIndex==-1) 
+      return 0;
+    else
+      return fLastDaughterIndex-fFirstDaughterIndex+1;
+  }
+  Int_t GetFirstDaughterIndex() const {return fFirstDaughterIndex;}
+  Int_t GetLastDaughterIndex() const {return fLastDaughterIndex;}
+
   TLorentzVector &SetLastMotherDecayCoor(const TLorentzVector &val){return fLastMotherDecayCoor = val;}
   const TLorentzVector &GetLastMotherDecayCoor()const{return fLastMotherDecayCoor;}
-  //  void SetLastMotherDecayMom(TLorentzVector fLastMotherDecayMom);
   TLorentzVector &SetLastMotherDecayMom(const TLorentzVector &val){return fLastMotherDecayMom = val;}
   const TLorentzVector &GetLastMotherDecayMom()const{return fLastMotherDecayMom;}
 
@@ -132,14 +133,16 @@ class Particle {
   ParticlePDG     *fParticleProperties;
   Double_t         fLastInteractionTime;
   Int_t            fInteractionNumber;
+  Int_t            fPythiaStatusCode;
   Int_t            fLastMotherPdg;
   Int_t            fType; //0-hydro, 1-jets
   Int_t            fIndex;                    // index (0 based) of particle in the final particle list which will contain both primaries and secondaries
   Int_t            fMotherIndex;              // index of the mother (-1 if its a primary particle)
   Int_t            fNDaughters;               // number of daughter particles (0 if the particle had not decayed)
-  Int_t            fDaughterIndex[3];         // array of indexes for the daughter particles (the indexes are -1 for non-existing daughters)
+  Int_t            fFirstDaughterIndex;       // index for the first daughter particle (-1 if non-existing)
+  Int_t            fLastDaughterIndex;        // index for the last daughter particle (-1 if non-existing)
+  Bool_t           fDecayed;                  // true if the decay procedure already applied
   static Int_t     fLastIndex;                // the last index assigned
-
 };
 
 Double_t S(const TLorentzVector &, const TLorentzVector &);
@@ -150,7 +153,7 @@ typedef std::list<Particle>::iterator LPIT_t;
 
 class ParticleAllocator {
  public:
-  ParticleAllocator() : fFreeNodes(0) {};
+  ParticleAllocator() {};
   void AddParticle(const Particle & particle, List_t & list);
   void FreeListNode(List_t & list, LPIT_t it);
   void FreeList(List_t & list);

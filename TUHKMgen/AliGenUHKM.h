@@ -9,7 +9,7 @@
 #include "AliGenMC.h"
 #include <TString.h>
 #include "TUHKMgen.h"
-#ifndef INITIALSTATEHYDJET_INCLUDED
+#ifndef INITIALSTATEHYDJET_H
 #include "InitialStateHydjet.h"
 #endif
 #include "TParticle.h"
@@ -17,9 +17,6 @@
 #include <string>
 using namespace std;
 
-//class TUHKMgen;
-//class TParticle;
-//class InitialStateHydjet;
 
 class AliGenUHKM : public AliGenMC
 {
