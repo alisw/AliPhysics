@@ -14,9 +14,22 @@
  **************************************************************************/
 
 //---------------------------------------------------------------------
-// PxCone CDF Algorithm Jet finder header class
-// Stores parameters of CDF Jet finder
+// Jet Finder based on CDF algortihm
+// Charged jet evolution and the underlying event in proton-antiproton collisions at 1.8 TeV
+// Physical Review D, vol. 65, Issue 9, id. 092002
+// http://www.phys.ufl.edu/~rfield/cdf/chgjet/chgjet_intro.html
+// Authors : Adrian.Sevcenco@cern.ch (adriansev@spacescience.ro )
+//           Daniel.Felea@cern.ch    (dfelea@spacescience.ro)
+//           Ciprian.Mihai.Mitu@cern.ch  (mcm@spacescience.ro)
 //---------------------------------------------------------------------
+
+
+/*
+Changelog
+
+
+
+*/
 
 #include "AliCdfJetHeader.h"
 ClassImp ( AliCdfJetHeader )
@@ -25,12 +38,11 @@ ClassImp ( AliCdfJetHeader )
 
 AliCdfJetHeader::AliCdfJetHeader() :
     fRadius (0.7),
-    fPtMin  (0.),
-    fPtMax (0.),
-    fEtaMin (0.),
-    fEtaMax (0.),
-    fPhiMin (0.),
-    fPhiMax (0.)
+    fMinPartJet (1),
+    fJetPtCut (0.),
+    fDebugCDF (false),
+    fAODwrite (false),
+    fAODtracksWrite (false)
   {
   // Constructor
   }
@@ -47,3 +59,4 @@ AliCdfJetHeader::AliCdfJetHeader() :
 //
 //
 //   }
+

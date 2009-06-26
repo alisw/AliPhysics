@@ -4,61 +4,56 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//-----------------------------------------------
-// PxCone CDF Algorithm Jet finder header class
-// Stores the parameters of CDF Jet finder
-//-----------------------------------------------
-
 #include "AliJetHeader.h"
 
 class AliCdfJetHeader : public AliJetHeader
   {
   public:
 
-    AliCdfJetHeader();
-    virtual ~AliCdfJetHeader() { }
+  AliCdfJetHeader();
+  virtual ~AliCdfJetHeader() { }
 
-    Double_t GetRadius ()  { return fRadius; }
-    Double_t GetPtMin  ()  { return fPtMin ; }
-    Double_t GetPtMax  ()  { return fPtMax ; }
-    Double_t GetEtaMin ()  { return fEtaMin ; }
-    Double_t GetEtaMax ()  { return fEtaMax ; }
-    Double_t GetPhiMin ()  { return fPhiMin ; }
-    Double_t GetPhiMax ()  { return fPhiMax ; }
+  // Getters
+  Double_t GetRadius   ()  { return fRadius; }
+  Double_t GetJetPtCut ()  { return fJetPtCut ; }
+  Int_t GetMinPartJet  ()  { return fMinPartJet ; }
 
+  // Setters
+  void SetRadius         ( Double_t radius )          {fRadius = radius; }
+  void SetJetPtCut       ( Double_t jet_pt_cut )      { fJetPtCut = jet_pt_cut; }
+  void SetDebugCDF       ( Bool_t debug )             { fDebugCDF = debug; }
+  void SetAODwrite       ( Bool_t aodwrite )          { fAODwrite = aodwrite ; }
+  void SetAODtracksWrite ( Bool_t aodtrackswrite )    { fAODtracksWrite = aodtrackswrite ; }
+  void SetMinPartJet     ( Int_t npart )              { fMinPartJet = npart ; }
 
-    // Setters
+//  void SetCDFJetHeader   () { fCDFheader = (AliCdfJetHeader*)fHeader; }
 
-    void SetRadius ( Double_t f ) {fRadius = f;}
-    void SetPtMin  ( Double_t f ) {fPtMin = f;}
-    void SetPtMax  ( Double_t f ) {fPtMax = f;}
-    void SetEtaMin ( Double_t f ) {fEtaMin = f;}
-    void SetEtaMax ( Double_t f ) {fEtaMax = f;}
-    void SetPhiMin ( Double_t f ) {fPhiMin = f;}
-    void SetPhiMax ( Double_t f ) {fPhiMax = f;}
-
-
-    // others
+  Bool_t IsDebugCDF() const { return fDebugCDF ; }
+  Bool_t IsAODwrite() const { return fAODwrite ; }
+  Bool_t IsAODtracksWrite() const { return fAODtracksWrite ; }
 
 //     void PrintParameters() const ;
 
   protected:
 
-   AliCdfJetHeader(const AliCdfJetHeader &jh);
-	 AliCdfJetHeader& operator=(const AliCdfJetHeader &jh);
+  AliCdfJetHeader(const AliCdfJetHeader &jh);
+  AliCdfJetHeader& operator=(const AliCdfJetHeader &jh);
 
-   // parameters of algorithm
-   Double_t fRadius;      //  Cone radius
+  // parameters of algorithm
+  Double_t fRadius ;      //  Cone radius
+  Int_t  fMinPartJet ;       // minimum number of particles in jet
 
-   // ranges of Pt,Eta and Phi cut ranges ; by default == 0
-   Double_t fPtMin;       // minimum pt
-   Double_t fPtMax;       // maximum pt
-   Double_t fEtaMin;      // minimum eta
-   Double_t fEtaMax;      // maximum eta
-   Double_t fPhiMin;      // minimum phi
-   Double_t fPhiMax;      // maximum phi
+  // JET Pt cut
+  Double_t fJetPtCut ;  // pt cut of jets
 
-   ClassDef ( AliCdfJetHeader, 1 )
+  Bool_t fDebugCDF ;         // debug flag for CDF
+  Bool_t fAODwrite ;         // flag for writing to AOD
+  Bool_t fAODtracksWrite ;   // flag for writing tracks to AOD
+
+//  AliCdfJetHeader* fCDFheader ; // local pointer to CDF Jet Header
+
+  ClassDef ( AliCdfJetHeader, 1 )
 
   };
 #endif
+

@@ -14,9 +14,22 @@
  **************************************************************************/
 
 //---------------------------------------------------------------------
-//
-//
+// Jet Finder based on CDF algortihm
+// Charged jet evolution and the underlying event in proton-antiproton collisions at 1.8 TeV
+// Physical Review D, vol. 65, Issue 9, id. 092002
+// http://www.phys.ufl.edu/~rfield/cdf/chgjet/chgjet_intro.html
+// Authors : Adrian.Sevcenco@cern.ch (adriansev@spacescience.ro )
+//           Daniel.Felea@cern.ch    (dfelea@spacescience.ro)
+//           Ciprian.Mihai.Mitu@cern.ch  (mcm@spacescience.ro)
 //---------------------------------------------------------------------
+
+/*
+Changelog
+
+
+
+*/
+
 #include <vector>
 #include <iostream>
 #include <Riostream.h>
@@ -38,20 +51,27 @@
 #include "AliAODEvent.h"
 #include "TProfile.h"
 
-using namespace std ;
-
-struct varContainer // container for Particle variables
-  { // variables of container struct
-  Double_t  pt; Double_t eta; Double_t phi;
-  Int_t njet; // if jets are stored in varContainer nr_jet is multiplicity of jet
-  } ;
 
 ClassImp ( AliCdfJetFinder )
 
 //______________________________________________________________________________
 AliCdfJetFinder::AliCdfJetFinder():
-   AliJetFinder(),
-   fHistos(0)
+    AliJetFinder(),
+    fHistos(0),
+    fDebug(0),
+    fFromAod(0),
+    fAODwrite(0),
+    fAODtracksWrite(0),
+    fRefArr (NULL),
+    fNJets(-9999),
+    fNPart(-9999),
+    fRadius(0.7),
+    fMinJetParticles(1),
+    fJetPtCut(0.),
+    fVectParticle(NULL),
+    fVectJet(NULL),
+    fPtArray(NULL),
+    fIdxArray(NULL)
   {  /* Constructor */  }
 
 //______________________________________________________________________________
@@ -59,9 +79,6 @@ AliCdfJetFinder::~AliCdfJetFinder()
 
   {
   // destructor
-  cout << "Calling the destructor ... " << endl ;
-  Reset();
-  cout << "Destructor called!" << endl;
   }
 
 //______________________________________________________________________________
@@ -70,302 +87,616 @@ void AliCdfJetFinder::CreateOutputObjects(TList *histos)
   // Create the list of histograms. Only the list is owned.
   fHistos = histos;
 
-  TH1F *h1 = new TH1F ("histo1", "no jets/event", 100, 0,20);
+//  gStyle->SetOptStat(11111111);
+
+  TH1F *h1 = new TH1F ("histo1", "Pt distribution of jets", 200, 0,200);  // 1GeV/bin
   h1->SetStats(kTRUE);
-  h1->GetXaxis()->SetTitle("N_{jets}");
-  h1->GetYaxis()->SetTitle("#frac{dN}{dN_{jets}}");
+  h1->GetXaxis()->SetTitle("P_{T} of jets");
+  h1->GetYaxis()->SetTitle("Number of jets");
   h1->GetXaxis()->SetTitleColor(1);
   h1->SetMarkerStyle(kFullCircle);
   fHistos->Add(h1);
 
-  TH1F *h2 = new TH1F ("histo2", "no part/leading jet", 40, 0,40);
+  TH1F *h2 = new TH1F ("histo2", "Eta distribution of jets", 240, -1.2,1.2); // 1 unit of rapidity / 100 bin
   h2->SetStats(kTRUE);
-  h2->GetXaxis()->SetTitle("N_{leading}");
-  h2->GetYaxis()->SetTitle("#frac{dN}{dN_{leading}}");
+  h2->GetXaxis()->SetTitle("Eta of jets");
+  h2->GetYaxis()->SetTitle("Number of jets");
   h2->GetXaxis()->SetTitleColor(1);
   h2->SetMarkerStyle(kFullCircle);
   fHistos->Add(h2);
 
-  TProfile * h3 = new TProfile ("histo3","ProfileX of (pt,npart) of leading jets", 25, 0. ,25. , 0.,25. ) ;
+  TH1F *h3 = new TH1F ("histo3", "Phi distribution of jets", 400, -4,4);
   h3->SetStats(kTRUE);
-  h3->GetXaxis()->SetTitle("P_{t}");
-  h3->GetYaxis()->SetTitle("N_{leading}");
+  h3->GetXaxis()->SetTitle("Phi of jets");
+  h3->GetYaxis()->SetTitle("Number of jets");
   h3->GetXaxis()->SetTitleColor(1);
   h3->SetMarkerStyle(kFullCircle);
   fHistos->Add(h3);
 
-  TH1F *h4 = new TH1F ("histo4", "Charge momentum distribution for leading jet", 500, 0 , 5);
+  TH1F *h4 = new TH1F ("histo4", "Multiplicity of jets", 40, 0,40);  // 1 unit of multiplicity /bin
+  h4->SetStats(kTRUE);
+  h4->GetXaxis()->SetTitle("Particles in jets");
+  h4->GetYaxis()->SetTitle("Number of jets");
+  h4->GetXaxis()->SetTitleColor(1);
+  h4->SetMarkerStyle(kFullCircle);
   fHistos->Add(h4);
 
-  TProfile *h5 = new TProfile ("histo5", "ProfileX of N_{charge} vs dphi leading jet", 100 , 0. , 200. , 0 , 100 );
+  TH1F *h5 = new TH1F ("histo5", "Distribution of jets in events", 100, 0,100);
+  h5->SetStats(kTRUE);
+  h5->GetXaxis()->SetTitle("Number of jets");
+  h5->GetYaxis()->SetTitle("Number of events");
+  h5->GetXaxis()->SetTitleColor(1);
+  h5->SetMarkerStyle(kFullCircle);
   fHistos->Add(h5);
 
-  TH1F *h6 = new TH1F ("histo6", " \"Transverse\" Pt Distribution ", 70, 0 , 14);
+  TH1F *h6 = new TH1F ("histo6", "Jet1 Charged Multiplicity Distribution", 30, 0,30);
+  h6->SetStats(kTRUE);
+  h6->GetXaxis()->SetTitle("N_{chg}");
+  h6->GetYaxis()->SetTitle("Number of jets");
+  h6->GetXaxis()->SetTitleColor(1);
+  h6->SetMarkerStyle(kFullCircle);
   fHistos->Add(h6);
 
+  TProfile * h7 = new TProfile ("histo7","N_{chg}(jet1) vs P_{T}(charged jet1)", 200, 0. ,200. , 0.,200. ) ;
+  h7->SetStats(kTRUE);
+  h7->GetXaxis()->SetTitle("P_{T} (charged jet1) (GeV/c)");
+  h7->GetYaxis()->SetTitle("<N_{chg}(jet1)> in 1 GeV/c bin");
+  h7->GetXaxis()->SetTitleColor(1);
+  h7->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h7);
 
-//cout << "CreateOutputObjetcs done!" << endl ;
+  TH1F *h8 = new TH1F ("histo8", "Charge momentum distribution for leading jet", 120, 0 , 1.2);
+  h8->SetStats(kTRUE);
+  h8->GetXaxis()->SetTitle("Jets");
+  h8->GetYaxis()->SetTitle("Particle distribution");
+  h8->GetXaxis()->SetTitleColor(1);
+  h8->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h8);
+
+  TProfile *h9 = new TProfile ("histo9", "N_{chg} vs the Azimuthal Angle from Charged Jet1", 50 , 0. , 180. , 0 , 20 );
+  h9->SetStats(kTRUE);
+  h9->GetXaxis()->SetTitle("#Delta#phi (degrees)");
+  h9->GetYaxis()->SetTitle("<N_{chg}> in 3.6 degree bin");
+  h9->GetXaxis()->SetTitleColor(1);
+  h9->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h9);
+
+  TProfile *h10 = new TProfile ("histo10", "P_{T} sum vs the Azimuthal Angle from Charged Jet1", 50 , 0. , 180. , 0 , 100 );
+  h10->SetStats(kTRUE);
+  h10->GetXaxis()->SetTitle("#Delta#phi (degrees)");
+  h10->GetYaxis()->SetTitle("<P_{T} sum> in 3.6 degree bin");
+  h10->GetXaxis()->SetTitleColor(1);
+  h10->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h10);
+
+  TH1F *h11 = new TH1F ("histo11", " \"Transverse\" Pt Distribution ", 70, 0 , 14);
+  h11->SetStats(kTRUE);
+  h11->GetXaxis()->SetTitle("P_{T} (GeV/c)");
+  h11->GetYaxis()->SetTitle("dN_{chg}/dP_{T} (1/GeV/c)");
+  h11->GetXaxis()->SetTitleColor(1);
+  h11->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h11);
+
+  TH1F *h20 = new TH1F ("histo20", "Distribution of R in leading jet", 400, 0.,4.);
+  h20->SetStats(kTRUE);
+  h20->GetXaxis()->SetTitle("R [formula]");
+  h20->GetYaxis()->SetTitle("dN/dR");
+  h20->GetXaxis()->SetTitleColor(1);
+  h20->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h20);
+
+  TProfile * h21 = new TProfile ("histo21","N_{chg}(in the event - including jet1) vs P_{T}(charged jet1)", 200, 0., 50. , 0., 30. ) ;
+  h21->SetStats(kTRUE);
+  h21->GetXaxis()->SetTitle("P_{T} (charged jet1) (GeV/c)");
+  h21->GetYaxis()->SetTitle("<N_{chg}(in the event - including jet1)> in 1 GeV/c bin");
+  h21->GetXaxis()->SetTitleColor(1);
+  h21->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h21);
+
+  TProfile * h22 = new TProfile ("histo22","PT_{sum}(in the event - including jet1) vs P_{T}(charged jet1)", 200, 0. , 50. , 0., 50. ) ;
+  h22->SetStats(kTRUE);
+  h22->GetXaxis()->SetTitle("P_{T} (charged jet1) (GeV/c)");
+  h22->GetYaxis()->SetTitle("<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin");
+  h22->GetXaxis()->SetTitleColor(1);
+  h22->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h22);
+
+  TProfile * h21_toward = new TProfile ("histo21_toward","N_{chg}(in the event - including jet1) vs P_{T}(charged jet1)", 200, 0., 50. , 0., 12. ) ;
+  h21_toward->SetStats(kTRUE);
+  h21_toward->GetXaxis()->SetTitle("P_{T} (charged jet1) (GeV/c)");
+  h21_toward->GetYaxis()->SetTitle("<N_{chg}(in the event - including jet1)> in 1 GeV/c bin");
+  h21_toward->GetXaxis()->SetTitleColor(1);
+  h21_toward->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h21_toward);
+
+  TProfile * h21_transverse = new TProfile ("histo21_transverse","N_{chg}(in the event - including jet1) vs P_{T}(charged jet1)", 200, 0., 50. , 0., 12. ) ;
+  h21_transverse->SetStats(kTRUE);
+  h21_transverse->GetXaxis()->SetTitle("P_{T} (charged jet1) (GeV/c)");
+  h21_transverse->GetYaxis()->SetTitle("<N_{chg}(in the event - including jet1)> in 1 GeV/c bin");
+  h21_transverse->GetXaxis()->SetTitleColor(1);
+  h21_transverse->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h21_transverse);
+
+  TProfile * h21_away = new TProfile ("histo21_away","N_{chg}(in the event - including jet1) vs P_{T}(charged jet1)", 200, 0., 50. , 0., 12. ) ;
+  h21_away->SetStats(kTRUE);
+  h21_away->GetXaxis()->SetTitle("P_{T} (charged jet1) (GeV/c)");
+  h21_away->GetYaxis()->SetTitle("<N_{chg}(in the event - including jet1)> in 1 GeV/c bin");
+  h21_away->GetXaxis()->SetTitleColor(1);
+  h21_away->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h21_away);
+
+  TProfile * h22_toward = new TProfile ("histo22_toward","PT_{sum}(in the event - including jet1) vs P_{T}(charged jet1)", 200, 0. , 50. , 0., 50. ) ;
+  h22_toward->SetStats(kTRUE);
+  h22_toward->GetXaxis()->SetTitle("P_{T} (charged jet1) (GeV/c)");
+  h22_toward->GetYaxis()->SetTitle("<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin");
+  h22_toward->GetXaxis()->SetTitleColor(1);
+  h22_toward->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h22_toward);
+
+  TProfile * h22_transverse = new TProfile ("histo22_transverse","PT_{sum}(in the event - including jet1) vs P_{T}(charged jet1)", 200, 0. , 50. , 0., 50. ) ;
+  h22_transverse->SetStats(kTRUE);
+  h22_transverse->GetXaxis()->SetTitle("P_{T} (charged jet1) (GeV/c)");
+  h22_transverse->GetYaxis()->SetTitle("<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin");
+  h22_transverse->GetXaxis()->SetTitleColor(1);
+  h22_transverse->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h22_transverse);
+
+  TProfile * h22_away = new TProfile ("histo22_away","PT_{sum}(in the event - including jet1) vs P_{T}(charged jet1)", 200, 0. , 50. , 0., 50. ) ;
+  h22_away->SetStats(kTRUE);
+  h22_away->GetXaxis()->SetTitle("P_{T} (charged jet1) (GeV/c)");
+  h22_away->GetYaxis()->SetTitle("<PT_{sum}(in the event - including jet1)> in 1 GeV/c bin");
+  h22_away->GetXaxis()->SetTitleColor(1);
+  h22_away->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h22_away);
+
+  TH1F *h23_toward = new TH1F ("histo23_toward","'Toward' Pt Distribution of charged particles", 200, 0., 14.);
+  h23_toward->SetStats(kTRUE);
+  h23_toward->GetXaxis()->SetTitle("P_{T} (charged) (GeV/c)");
+  h23_toward->GetYaxis()->SetTitle("dN_{chg}/dP_{T} (1/GeV/c)");
+  h23_toward->GetXaxis()->SetTitleColor(1);
+  h23_toward->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h23_toward);
+
+  TH1F *h23_transverse = new TH1F ("histo23_transverse","'Transverse' Pt Distribution of charged particles", 200, 0., 14.);
+  h23_transverse->SetStats(kTRUE);
+  h23_transverse->GetXaxis()->SetTitle("P_{T} (charged) (GeV/c)");
+  h23_transverse->GetYaxis()->SetTitle("dN_{chg}/dP_{T} (1/GeV/c)");
+  h23_transverse->GetXaxis()->SetTitleColor(1);
+  h23_transverse->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h23_transverse);
+
+  TH1F *h23_away = new TH1F ("histo23_away","'Away' Pt Distribution of charged particles", 200, 0., 14.);
+  h23_away->SetStats(kTRUE);
+  h23_away->GetXaxis()->SetTitle("P_{T} (charged) (GeV/c)");
+  h23_away->GetYaxis()->SetTitle("dN_{chg}/dP_{T} (1/GeV/c)");
+  h23_away->GetXaxis()->SetTitleColor(1);
+  h23_away->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h23_away);
+
+  TProfile * h24 = new TProfile ("histo24","Jet1 Size vs P_{T}(charged jet1)", 200, 0., 50. , 0., 0.5) ;
+  h24->SetStats(kTRUE);
+  h24->GetXaxis()->SetTitle("P_{T} (charged jet1) (GeV/c)");
+  h24->GetYaxis()->SetTitle("<R(chgjet1)> in 1 GeV/c bin");
+  h24->GetXaxis()->SetTitleColor(1);
+  h24->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h24);
+
+  TProfile * h25 = new TProfile ("histo25","Jet1 Size vs P_{T}(charged jet1)", 200, 0., 50. , 0., 0.5) ;
+  h25->SetStats(kTRUE);
+  h25->GetXaxis()->SetTitle("P_{T} (charged jet1) (GeV/c)");
+  h25->GetYaxis()->SetTitle("<R(chgjet1)> in 1 GeV/c bin");
+  h25->GetXaxis()->SetTitleColor(1);
+  h25->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h25);
+
+  TProfile *h26 = new TProfile ("histo26", "N_{chg} vs the Distance R from Charged Jet1", 30, 0., 0.6, 0., 0.8);
+  h26->SetStats(kTRUE);
+  h26->GetXaxis()->SetTitle("Distance R");
+  h26->GetYaxis()->SetTitle("<N_{chg}> in 0.02 bin");
+  h26->GetXaxis()->SetTitleColor(1);
+  h26->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h26);
+
+  TProfile *h27 = new TProfile ("histo27", "N_{chg} vs the Distance R from Charged Jet1", 30, 0., 0.6, 0., 0.8);
+  h27->SetStats(kTRUE);
+  h27->GetXaxis()->SetTitle("Distance R");
+  h27->GetYaxis()->SetTitle("<N_{chg}> in 0.02 bin");
+  h27->GetXaxis()->SetTitleColor(1);
+  h27->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h27);
+
+  TProfile *h28 = new TProfile ("histo28", "PT_{sum} vs the Distance R from Charged Jet1", 30, 0., 0.6, 0.01, 10.);
+  h28->SetStats(kTRUE);
+  h28->GetXaxis()->SetTitle("Distance R");
+  h28->GetYaxis()->SetTitle("<PT_{sum} (GeV/c)> in 0.02 bin");
+  h28->GetXaxis()->SetTitleColor(1);
+  h28->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h28);
+
+  TProfile *h29 = new TProfile ("histo29", "PT_{sum} vs the Distance R from Charged Jet1", 30, 0., 0.6, 0.01, 10.);
+  h29->SetStats(kTRUE);
+  h29->GetXaxis()->SetTitle("Distance R");
+  h29->GetYaxis()->SetTitle("<PT_{sum} (GeV/c)> in 0.02 bin");
+  h29->GetXaxis()->SetTitleColor(1);
+  h29->SetMarkerStyle(kFullCircle);
+  fHistos->Add(h29);
+
 }
+
+
+//______________________________________________________________________________
+/*
+Jet Algorithm:
+ * Order all charged particles according to their PT.
+ * Start with the highest PT particle and include in the "jet" all particles within the "radius" R = 0.7
+    (considering each particle in the order of decreasing PT and recalculating the centroid of the jet after
+    each new particle is added to the jet).
+ * Go to the next highest PT particle (not already included in a jet) and include in the "jet" all particles
+    (not already included in a jet) within the radius R =0.7.
+ * Continue until all particles are in a "jet".
+
+*/
+//______________________________________________________________________________
 
 //______________________________________________________________________________
 void AliCdfJetFinder::FindJets()
+{
+AliCdfJetHeader *header = (AliCdfJetHeader*)fHeader;
+
+  if (header)
+    {
+    fDebug            = header->IsDebugCDF();
+    fAODwrite         = header->IsAODwrite() ;       // write jets to AOD
+    fAODtracksWrite   = header->IsAODtracksWrite() ; // write jet tracks to AOD
+    fRadius           = header->GetRadius();      // get Radius from jet finder header
+    fMinJetParticles  = header->GetMinPartJet (); // get minimum multiplicity of an jet
+    fJetPtCut         = header->GetJetPtCut ();   // get minimum of jet pt
+    }
+  else
+    { cout << "Header not found" << endl; return; }
+
+// temporary until the other problems are resolved
+fAODwrite = 0 ;
+
+if (fAODwrite)
   {
-  //cout << "Begining of FindJets ..." << endl ;
-  //1) Fill 1 array with momentum and initialise another array for indexes
-  //2) Run algorithm
-  //   2.1) Sort momentum array
-  //   2.2) loop over arrays of TLorentzVectors
-  //   2.3) flag as a possible jet
-  //3) fill AliAODJet list
-  Bool_t debug = kFALSE;
+  fFromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
+  if (fFromAod) { fRefArr = fReader->GetReferences(); }
+  }
 
-  TRefArray *refs = 0;
-  Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
-  if (fromAod) { refs = fReader->GetReferences(); }
+fFromAod = 0 ; // disable for the moment ; only ESD reading for now
 
-  AliCdfJetHeader *header = (AliCdfJetHeader*)fHeader;
-  Double_t radius = header->GetRadius(); // get Radius from header
-//  cout << "Radius is : " << radius << endl ;
+InitData();
+
+if (!fNPart) { if (fDebug) {cout << "entries = 0 ; Event empty !!!" << endl ;} return; } // if event empty then exit
+
+FindCones();
+
+ComputeConesWeight();
+
+if (fAODwrite) { cout << "Writing AOD" << endl ; WriteJets(); }
+
+AnalizeJets();
+
+Clean();
+
+}
+
+//______________________________________________________________________________
+void AliCdfJetFinder::InitData()
+{
 
   TClonesArray * vectArray = fReader->GetMomentumArray() ;
-  if ( vectArray == 0 ) { cout << "Could not get the momentum array" << endl; return; }
+    if ( vectArray == 0 ) { cout << "Could not get the momentum array" << endl; return; }
 
-  Int_t nPart = vectArray->GetEntries()  ; // n particles in this event;
-  if ( nPart == 0 ) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
+  fNPart = vectArray->GetEntries()  ; // n particles in this event;
 
-  Int_t nJets = 0; // n jets in this event
+  if ( fNPart == 0 ) { return ; } // if event empty then exit
 
-  fJets->SetNinput ( nPart ) ; // number of input objects
+  fJets->SetNinput ( fNPart ) ; // number of input objects
 
-  varContainer **vectParticle = new varContainer* [nPart]; // container for Particles
-  varContainer **vectJet      = new varContainer* [nPart]; // container for Jets
+  fVectParticle = new varContainer* [fNPart]; // container for Particles
+  fVectJet      = new varContainer* [fNPart]; // container for Jets
 
-  Double_t *ptArray = new Double_t [nPart] ; // momentum array
-  Int_t   *idxArray = new Int_t    [nPart] ; // index array of sorted pts
+  fPtArray  = new Double_t [fNPart] ; // momentum array
+  fIdxArray = new Int_t    [fNPart] ; // index array of sorted pts
 
   // initialisation of momentum and index arrays
-  //  cout << "Filling idxArray && momArray for sorting " << endl;
-  for ( Int_t i = 0 ; i < nPart ; i++ )
-    {// SORTING STEP :: ptArray with data from TClonesArray of TLorentzVector
+  for (  Int_t i = 0 ; i < fNPart ; i++ )
+    {// SORTING STEP :: fPtArray with data from TClonesArray of TLorentzVector
     TLorentzVector * lv = (TLorentzVector*) vectArray->At(i);
-    // INITIALISATION of local arrays for temporary storage
+
+   // INITIALISATION of local arrays for temporary storage
     varContainer *aParticle = new varContainer;
     aParticle->pt   = lv->Pt();
     aParticle->eta  = lv->Eta();
-    aParticle->phi  = lv->Phi();
-    aParticle->njet = -1;
-    vectParticle[i] = aParticle;
+    aParticle->phi  = DeltaPhiNorm ( lv->Phi() ); // normalize to -pi,pi
+    aParticle->njet = -999;
+
+    fVectParticle[i] = aParticle;  // vector of Particles
 
     // initializing arrays
-    idxArray [i] = 0 ;
-     ptArray [i] = aParticle->pt ;
+    fIdxArray [i] = -999 ;
+     fPtArray [i] = aParticle->pt ;
     }
 
-  TMath::Sort ( nPart, ptArray, idxArray ) ; // get a sorted array of indexes with size = size of TClonesArray
+  TMath::Sort ( fNPart, fPtArray, fIdxArray ) ; // get a sorted array of indexes with TClonesArray.Size()
 
-  Double_t  pt_jet = 0. ,
-           eta_jet = 0. ,
-           phi_jet = 0. ,
-           sum_eta = 0. ,
-           sum_phi = 0. ;  // jet variables
+}
 
-  Int_t idxPtSort = 0 ,  // index of array of sorted pt indexes
-         npartJet = 0 ;  // number of particles in curent jet
 
-  TBits lkup_table ( nPart ) ;  // bit container of size npart
+//______________________________________________________________________________
+void AliCdfJetFinder::FindCones()
+{
+  Double_t  pt_seed = 0. , eta_seed = 0. , phi_seed = 0. ; // leading particle params
+  Double_t pt_tmp = 0. , eta_tmp = 0. , phi_tmp = 0. ; // temporary variables to be used in various calculations
+  Double_t deta = 0. , dphi = 0. , d_computed = 0. ;
+  Bool_t in_jet = 0 ;
 
-  while ( lkup_table.CountBits(0) != (UInt_t)nPart )
+  fNJets = -1 ; // n jets in this event
+  Int_t idxPtSort = -1 ;  // index of array of sorted pt indexes
+
+  if (fDebug) { cout << "\n\n\n\n\n\n------------------\nBegin Event Analysis\n------------------\n\n" << endl ;}
+
+  cout << "fNPart = " << fNPart << endl;
+
+  TBits lkup_table ( fNPart ) ;  // bit container ; 1-to-1 corespondence with fIdxArray
+
+  while ( lkup_table.CountBits() != (UInt_t)fNPart )
     { // loop over particles in event until all flags are set
-    UInt_t first_non_flagged = lkup_table.FirstNullBit(0) ; // set the index to the first NON flagged bit ; less conditions
+    UInt_t first_non_flagged = lkup_table.FirstNullBit() ; // set the index to the first NON flagged bit ; less conditions
 
-    npartJet = 0 ; // reseting number of particles in jet
-    pt_jet   = 0.;
-    eta_jet  = 0.;
-    phi_jet  = 0.;
-    sum_eta  = 0.;
-    sum_phi  = 0.;
+    cout << "\n\nfirst_non_flagged : " << first_non_flagged << endl;
 
-    for ( UInt_t i_part = first_non_flagged ; i_part < (UInt_t)nPart ; i_part++ )
+    ++fNJets; // incrementing the jet counter
+    if (fDebug) { printf("JET %d \n", fNJets); }
+
+    pt_seed = 0. ; eta_seed = 0. ; phi_seed = 0. ;  // reseting leading particle params
+
+    for (  UInt_t i_part = first_non_flagged ; i_part < (UInt_t)fNPart ; i_part++ )
       {// iteration over particles in event
-      // reseting variables
-
       // the loop is done over sorted array of pt
-      idxPtSort = idxArray[i_part] ;  // index entry of TLorentzVector from vect_arr
+      idxPtSort = fIdxArray[i_part] ;  // index of particle ! fIdxArray is an index list pt sorted
 
-      if ( lkup_table.TestBitNumber(i_part) == 1 ) { continue; } // if 4vector is already flagged skip it
+      if ( lkup_table.TestBitNumber(i_part) ) { continue; } // if 4vector is already flagged skip it
 
-      //taking info from vectParticle ;
-      Double_t  pt_tmp = vectParticle[idxPtSort]->pt ;
-      Double_t eta_tmp = vectParticle[idxPtSort]->eta ;
-      Double_t phi_tmp = vectParticle[idxPtSort]->phi ;
-      if (debug) printf("   particle %d: pt=%g\n", i_part, pt_tmp);
+      //init computed and used vars
+      pt_tmp = 0. ; eta_tmp = 0. ; phi_tmp = 0. ;
+      deta = 0. ; dphi = 0. ; d_computed = 0. ; in_jet = 0 ;
 
-      // all angles are expressed in rad
-
-      if ( TMath::Abs(eta_tmp) > 0.9 )
-         {
-         lkup_table.SetBitNumber ( i_part, 1 ) ; // mark particle as used to be skipped
-         continue ;
-         }
-
+      //taking info from fVectParticle ;
+       pt_tmp = fVectParticle[idxPtSort]->pt ;
+      eta_tmp = fVectParticle[idxPtSort]->eta ;
+      phi_tmp = fVectParticle[idxPtSort]->phi ;
 
       if ( i_part == first_non_flagged )
         {// this is first particle in event; leading particle
-        // initialise the jet variables with leading particle numbers
+        // begin the search around this particle in a fRadius
 
-        npartJet++; // incrementing counter of particles in jet (nparJet == 1) (leading particle)
-        pt_jet = pt_tmp ;
-        eta_jet = eta_tmp ;
-        phi_jet = phi_tmp ;
-        if (debug) printf("  first part in jet: npartjet=%d  pt_jet=%g\n", npartJet, pt_jet);
+        // CENTRE OF THE JET
+        pt_seed = pt_tmp ; eta_seed = eta_tmp ; phi_seed = phi_tmp ; // seeding the jet with first particle idxPtSort
 
-        lkup_table.SetBitNumber ( i_part, 1 ) ; // flag the 4vector
+        lkup_table.SetBitNumber ( i_part ) ; // flag the index of particle in lkup_table
+        fVectParticle[idxPtSort]->njet = fNJets ; // associate particle with current jet number
 
-        vectParticle[idxPtSort]->njet = nJets ; // associate particle with current jet
+        if (fDebug) { printf("\nLeading particle :: particle index = %d ;  at sorted index %d ; in jet %d \n", idxPtSort, i_part, fNJets); }
+        if (fDebug) { printf("pt= %g ; eta= %g ; phi = %g \n", pt_tmp, eta_tmp, phi_tmp) ; }
+        if (fDebug) { lkup_table.Print() ;}
 
         continue ; // skip to next particle
         }
 
       // condition to be in jet
-      Double_t deta = eta_jet - eta_tmp ;
-      Double_t dphi = phi_jet - phi_tmp ;
+      deta = eta_tmp - eta_seed ;
+      dphi = DeltaPhiNorm ( phi_tmp - phi_seed ) ; // computing dphi and normalizing to (0,2pi) interval in one step
 
-      if ( dphi < -TMath::Pi() ) { dphi = -dphi - 2.0 * TMath::Pi() ; }
-      if ( dphi >  TMath::Pi() ) { dphi = -dphi + 2.0 * TMath::Pi() ; }
+      d_computed = Distance (deta, dphi) ; // Distance(fRadius) to (eta,phi) seed
 
-      Double_t r_computed = TMath::Sqrt ( deta * deta + dphi * dphi ) ;
-
-      Bool_t in_jet = ( r_computed <= radius ) ? 1 : 0 ; // if r_computed is within jet_r in_jet == 1 else 0
+      in_jet = ( ( fRadius - d_computed ) >= 0.000000001 ) ? 1 : 0 ; // if r_computed is within jet_r in_jet == 1 else 0
 
       if ( in_jet )
         { // calculus of jet variables
-        npartJet++;  // incrementing counter of particles in jet
+        lkup_table.SetBitNumber ( i_part ) ;  // flag the index of particle in lkup_table
+        fVectParticle[idxPtSort]->njet = fNJets ; // setting in particle list the associated jet
 
-        pt_jet += pt_tmp ;
-        sum_eta += (pt_tmp * eta_tmp) ;
-        sum_phi += (pt_tmp * phi_tmp) ;
-        eta_jet = sum_eta / pt_jet ;
-        phi_jet = sum_phi / pt_jet ;
+        if (fDebug) { printf("\njet particle :: particle index = %d ; at sorted index %d ; in jet %d ; found at radius %g ;  \n", idxPtSort, i_part, fNJets, d_computed); }
+        if (fDebug) { printf("pt= %g ; eta= %g ; phi = %g \n", pt_tmp, eta_tmp, phi_tmp) ; }
+        if (fDebug) { lkup_table.Print() ;}
 
-        lkup_table.SetBitNumber ( i_part, 1 ) ;  // flag the 4vector
-        vectParticle[idxPtSort]->njet = nJets ; // setting in particle list the associated jet
-        if (debug) printf("   particle added to jet: npartjet=%d  pt_jet=%g\n", npartJet, pt_jet);
         continue ; // skip to next particle
         }
 
       }
-      // end of iteration over event; one jet definition
+      // end of iteration over event; one jet definition of content ; jet parameters to be computed later
+    }
+}
 
-    varContainer *aJet = new varContainer;
-    aJet->pt = pt_jet;
-    aJet->eta = eta_jet;
-    aJet->phi = phi_jet;
-    aJet->njet = npartJet;
-    vectJet[nJets++] = aJet;   // store the jet (from jet 0 to nJets-1 )
-    if (debug) printf("=== current jet: npartjet=%d  ptjet=%g\n", npartJet,pt_jet);
 
-       // writing aod information
-    Double_t px = 0., py = 0., pz = 0., en = 0.; // convert to 4-vector
-    px = pt_jet * TMath::Cos ( phi_jet ) ;
-    py = pt_jet * TMath::Sin ( phi_jet ) ;
-    pz = pt_jet / TMath::Tan ( 2.0 * TMath::ATan ( TMath::Exp ( -eta_jet ) ) ) ;
+//______________________________________________________________________________
+void AliCdfJetFinder::ComputeConesWeight()
+{
+/*
+      CALCULUS OF JETS Pt, Eta and Phi (centre of weight in (eta,phi) plane)
+*/
+  // rescan the vector of particles by identify them by asociate jet number for computing of weight centre
+  // we know : fNJets = the number of jets
+
+Double_t pt_jet , eta_jet , phi_jet ; Int_t npartJet ;
+Double_t pt_tmp = 0. , eta_tmp = 0. , phi_tmp = 0. ; // temporary variables to be used in various calculations
+Int_t idxPtSort = -999 ;  // index of array of sorted pt indexes
+
+for(  Int_t jet = 0 ; jet < fNJets ; jet++ )
+  {
+  if (fDebug) { printf("\n\n--- Computing weight of Jet %d \n", jet ); }
+  npartJet = 0 ; pt_jet = 0. ; eta_jet = 0. ; phi_jet = 0. ; // reset variables for a new computation
+
+  for (  Int_t i_part = 0 ; i_part < fNPart ; i_part++ )
+    {// iteration over particles in event
+    // the loop is done over sorted array of pt
+    idxPtSort = fIdxArray[i_part] ;  // index of particle ! fIdxArray is an index list pt sorted
+
+    if ( fVectParticle[idxPtSort]->njet == jet )
+      {
+      ++npartJet; // incrementing the counter of jet particles
+
+      //taking info from fVectParticle ;
+       pt_tmp = fVectParticle[idxPtSort]->pt ;
+      eta_tmp = fVectParticle[idxPtSort]->eta ;
+      phi_tmp = DeltaPhiNorm ( fVectParticle[idxPtSort]->phi ) ;
+
+      pt_jet += pt_tmp ;
+      eta_jet = ( (pt_jet*eta_jet) + (pt_tmp*eta_tmp) )/(pt_jet + pt_tmp) ;
+      phi_jet = ( (pt_jet*phi_jet) + (pt_tmp*phi_tmp) )/(pt_jet + pt_tmp) ;
+
+      }
+      // add a particle and recalculation of centroid
+    }
+    // end of 1 jet computation
+
+    varContainer *aJet = new varContainer;  // Jet container
+    aJet->pt = pt_jet; aJet->eta = eta_jet; aJet->phi = phi_jet; aJet->njet = npartJet; // setting jet vars in container
+    fVectJet[jet] = aJet;   // store the number of the jet(fNJets) and increment afterwards
+
+    if (fDebug) { printf ("=== current jet %d : npartjet= %d ; pt_jet= %g ; eta_jet = %g ; phi_jet = %g \n\n\n",
+                                       jet,     npartJet,      pt_jet,      eta_jet,       phi_jet ) ; }
+
+  }
+  //end loop over jets
+
+}
+
+
+//______________________________________________________________________________
+void AliCdfJetFinder::WriteJets()
+{ // Writing AOD jets and AOD tracks
+
+/*  for(  Int_t jet_nr = 0 ; jet_nr < fNJets ; jet_nr++ )
+    {
+    Double_t pt = 0., eta = 0., phi = 0., // jet variables
+             px = 0., py = 0., pz = 0., en = 0.; // convert to 4-vector
+    pt  = fVectJet[ jet_nr ]->pt   ; // pt  of jet
+    eta = fVectJet[ jet_nr ]->eta  ; // eta of jet
+    phi = fVectJet[ jet_nr ]->phi  ; // phi of jet
+
+    px = pt * TMath::Cos ( phi ) ;
+    py = pt * TMath::Sin ( phi ) ;
+    pz = pt / TMath::Tan ( 2.0 * TMath::ATan ( TMath::Exp ( -eta ) ) ) ;
     en = TMath::Sqrt ( px * px + py * py + pz * pz );
 
-    if (npartJet<2) continue;         // do not add jets with less than 2 particles
-    if (debug) cout << "Jet 4vect : " << "px = " << px << " ; py = " << py << " ; pz = " << pz << " ; E = " << en << endl;
-
     AliAODJet jet (px, py, pz, en);
-//    cout << "Printing jet " << endl;
-    if (debug) jet.Print("");
-
-    if (fromAod) {
-      for (Int_t parts = 0; parts < nPart; parts++ ) { 
-        if (vectParticle[parts]->njet == nJets-1) 
-          jet.AddTrack(refs->At(parts));
-      }
-    }
-
-//    cout << "Adding jet ... " ;
     AddJet(jet);
-//    cout << "added \n" << endl;
 
-    }
-    // end of while loop over particles ; ends when all particles were flagged as used and all jets defined
+    if (fDebug) jet.Print("");
 
-  /////////////////////////////////
-  ////   END OF EVENT PARSING   ///
-  /////////////////////////////////
+    if (fromAod && AODtracksWrite)
+      {
+      for (  Int_t jet_track = 0; jet_track < fNPart; jet_track++ )
+        { if ( fVectParticle[jet_track]->njet == jet_nr ) { jet.AddTrack(refs->At(jet_track)) ; } }
+      }
+      // tracks REFs written in AOD
+
+    }*/
+
+//jets vector parsed and written to AOD
+
+}
+
+
+//______________________________________________________________________________
+void AliCdfJetFinder::AnalizeJets()
+  {
+
+  //persistent pointer to histo20
+  TH1F *h_r = (TH1F*)fHistos->FindObject("histo20");
 
   Int_t   *jets_pt_idx = 0;     // sorted array of jets pt
   Double_t    *jets_pt = 0;     // array of jets pts
-  Int_t leading_jet_index = -1 ;   // index of leading jet from vectJet
-  Int_t part_leadjet = 0 ;         // number of particles in leading jet
+  Int_t leading_jet_index = -1 ;   // index of leading jet from fVectJet
+  Int_t part_leadjet = 0 ; // number of particles in leading jet
   Double_t   pt_leadjet = 0. ; // pt  of leading jet
   Double_t  eta_leadjet = 0. ; // eta of leading jet
   Double_t  phi_leadjet = 0. ; // phi of leading jet
-  Int_t * idx_leadjet_part = 0;
 
-  if (nJets > 0)
-    { // if there is at least one jet in event
-    jets_pt_idx = new Int_t    [nJets] ;
-    jets_pt     = new Double_t [nJets] ;
+  jets_pt_idx = new Int_t    [fNJets] ;
+  jets_pt     = new Double_t [fNJets] ;
 
-    // filing the idx_ptjets array
-    if (debug) printf("List of unsorted jets:\n");
-    for( Int_t i = 0 ; i < nJets ; i++ )
+//________________________________________________________________________________________
+//  Jet sorting and finding the leading jet that coresponds to cuts in pt and multiplicity
+//________________________________________________________________________________________
+
+  // filing the idx_ptjets array
+  if (fDebug) printf("List of unsorted jets:\n");
+  for(  Int_t i = 0 ; i < fNJets ; i++ )
+    {
+    jets_pt_idx [i] = 0 ;
+    jets_pt     [i] = fVectJet[i]->pt ;
+    if (fDebug) { cout << "   jet found: " << i << " npartjet=" << fVectJet[i]->njet << " ; jets_pt = " << jets_pt[i] << endl; }
+    }
+
+  TMath::Sort ( fNJets, jets_pt , jets_pt_idx ) ; // sorting pt of jets
+
+  // selection of leading jet
+  // looping over jets searching for __first__ one that coresponds to cuts
+  for(  Int_t i = 0 ; i < fNJets ; i++ )
+    {
+    if ( ( fVectJet[ jets_pt_idx[i] ]->njet >= fMinJetParticles ) && ( fVectJet[ jets_pt_idx[i] ]->pt >= fJetPtCut ) )
       {
-      jets_pt_idx [i] = 0 ;
-      jets_pt [i] = vectJet[i]->pt ;
-      if (debug) cout << "   jet found: " << i << " npartjet=" << vectJet[i]->njet << "  jets_pt[i]= " << jets_pt [i] << endl;
+      leading_jet_index = jets_pt_idx[i] ;
+      part_leadjet = fVectJet[ leading_jet_index ]->njet ; // number of particles in leading jet
+        pt_leadjet = fVectJet[ leading_jet_index ]->pt   ; // pt  of leading jet
+       eta_leadjet = fVectJet[ leading_jet_index ]->eta  ; // eta of leading jet
+       phi_leadjet = fVectJet[ leading_jet_index ]->phi  ; // phi of leading jet
+
+      if (fDebug)
+      { printf("Leading jet %d : npart= %d ; pt= %g ; eta = %g ; phi = %g \n", leading_jet_index, part_leadjet, pt_leadjet, eta_leadjet, phi_leadjet ); }
+
+      break ;
       }
-    TMath::Sort ( nJets, jets_pt , jets_pt_idx ) ; // sorting pt of jets
-
-    // selection of leading jet with nr of particles > 1
-    for( Int_t i = 0 ; i < nJets ; i++ )
-      {
-      if ( vectJet[ jets_pt_idx[i] ]->njet > 1 )
-        {
-        leading_jet_index = jets_pt_idx[i] ;
-        part_leadjet = vectJet[ leading_jet_index ]->njet ; // number of particles in leading jet
-          pt_leadjet = vectJet[ leading_jet_index ]->pt   ; // pt  of leading jet
-         eta_leadjet = vectJet[ leading_jet_index ]->eta  ; // eta of leading jet
-         phi_leadjet = vectJet[ leading_jet_index ]->phi  ; // phi of leading jet
-
-        cout << "Leading jet: npart = " << part_leadjet
-             << " ; pt  = " << pt_leadjet
-             << " ; phi = " << phi_leadjet
-             << " ; eta = " << eta_leadjet
-             << endl ;
-        break ;
-        }
-      }
-      // end of selection of leading jet
-
-   // Filling an array with indexes of leading jet particles
-   idx_leadjet_part = new Int_t [part_leadjet] ;
-   Int_t counter = 0;
-   if (debug) printf("   Searching particles with jet index %d\n", leading_jet_index);
-   for( Int_t i = 0 ; i <nPart ; i++ )
-     {
-     if ( vectParticle[i]->njet == leading_jet_index )
-       {
-       idx_leadjet_part[counter++] = i ;
-       if (debug) cout << "   " << counter-1 << ": index=" << i << "  pt=" <<  vectParticle[i]->pt << endl;
-       }
-     }
-   if ( (counter-1) > part_leadjet ) { cout << " Counter > part_leadjet !!!!" << endl;}
-
-   }
-    // end of loop over DETECTED jets
+    }
+    // end of selection of leading jet
 
 
 
+//////////////////////////////////////////////////
+////  Computing of values used in histograms
+//////////////////////////////////////////////////
+
+//___________________________________________________________________________
+// pt_sum of all particles in event
+//___________________________________________________________________________
+cout << "Computing sum of pt in event" << endl ;
+Double_t pt_sum_event = 0.;
+for (  Int_t i = 0 ; i< fNPart ; i++ ) { pt_sum_event += fVectParticle[i]->pt ; }
+printf ("Sum of all Pt in event : pt_sum_event = %g", pt_sum_event) ;
+
+//___________________________________________________________________________
+// Filling an array with indexes of leading jet particles
+//___________________________________________________________________________
+Int_t * idx_leadjet_part = new Int_t [part_leadjet] ;
+Int_t counter_part_lead_jet = 0;
+
+cout << "Filling an array with indexes of leading jet particles" << endl;
+
+for( Int_t i = 0 ; i < fNPart ; i++ )
+  {
+  if ( fVectParticle[i]->njet == leading_jet_index )
+    {  idx_leadjet_part[counter_part_lead_jet++] = i ; }
+  }
+
+if ( (counter_part_lead_jet-1) > part_leadjet ) { cout << " Counter_part_lead_jet > part_leadjet !!!!" << endl;}
+
+
+//___________________________________________________________________________
 // Calculus of part distribution in leading jet
+//___________________________________________________________________________
 Double_t z = 0. ;
 Double_t *z_part_ljet = new Double_t [ part_leadjet ] ; // array of z of particles in leading jet
+
+cout << "Entering loop of calculus of part distribution in leading jet" << endl ;
+
 for( Int_t j = 0 ; j < part_leadjet ; j++ )
   {
-  Double_t z_j = vectParticle[idx_leadjet_part[j]]->pt ;
+  Double_t z_j = fVectParticle[idx_leadjet_part[j]]->pt ;
   z =  z_j / pt_leadjet ;
   z_part_ljet [j] = z ;
   cout << "idx_leadjet_part[j] = " << idx_leadjet_part[j]
@@ -375,75 +706,232 @@ for( Int_t j = 0 ; j < part_leadjet ; j++ )
   }
 
 
-/*
+//___________________________________________________________________________
+// array of delta phi's between phi of particles and leading jet phi
+//___________________________________________________________________________
+cout << "array of delta phi's between phi of particles and leading jet phi" << endl;
 Double_t dphi_partLJ = 0. ;
-Double_t dphiArray [nPart];
-for( Int_t part = 0 ; part < nPart ; part++ )
+Double_t *dphi_part_ljet = new Double_t [fNPart];
+for(  Int_t part = 0 ; part < fNPart ; part++ )
   {
-  dphi_partLJ = phi_leadjet - phi_partT [part] ;
-
-  if ( dphi_partLJ < -TMath::Pi() ) { dphi_partLJ = -dphi_partLJ - 2.0 * TMath::Pi() ; }
-  if ( dphi_partLJ >  TMath::Pi() ) { dphi_partLJ = -dphi_partLJ + 2.0 * TMath::Pi() ; }
-
-  dphi_partLJ = TMath::Abs(dphi_partLJ) ;
-
-  dphiArray [part] = dphi_partLJ ;
+  dphi_partLJ = fVectParticle[part]->phi - phi_leadjet ;
+  dphi_partLJ = DeltaPhiNorm (dphi_partLJ) ; // restrict the delta phi to (0,pi) interval
+  dphi_part_ljet [part] = dphi_partLJ ;
+  printf("part= %d ; dphi_partLJ = %g  \n", part, dphi_partLJ );
   }
-*/
-  // Fill nr_jet histogram
-  if (fHistos)
+
+
+//______________________________________________________________________________
+//  Pt distribution for all particles
+//______________________________________________________________________________
+TH1F * h_pt = (TH1F*)fHistos->FindObject("histo11");
+if ( h_pt ) { for (  Int_t i = 0 ; i < fNPart ; i++ ) { h_pt->Fill( fVectParticle[i]->pt ); } }
+
+//___________________________________________________________________________
+// Recomputing of radius of particles in leading jet
+//___________________________________________________________________________
+if (fDebug) { printf("   Searching particles with jet index %d\n", leading_jet_index); }
+
+Double_t ddeta = 0. , ddphi = 0. , r_part = 0. ;
+
+for( Int_t j = 0 ; j < part_leadjet ; j++ )
+  {
+  ddeta = eta_leadjet - fVectParticle[idx_leadjet_part[j]]->eta;
+
+  Double_t phi_tmp = fVectParticle[idx_leadjet_part[j]]->phi ;
+  phi_tmp = DeltaPhiNorm (phi_tmp);
+
+  ddphi = DeltaPhiNorm ( phi_leadjet - phi_tmp ) ; // restrict the delta phi to (-pi,pi) interval
+
+  r_part = Distance (ddeta, ddphi) ;
+
+  printf ("Particle %d with Re-Computed radius = %f ", idx_leadjet_part[j], r_part) ;
+  if ( (r_part - fRadius) >= 0.00000001 )
+    { printf ("    bigger than selected radius of %f\n", fRadius ); }
+  else
+    { printf ("\n") ; }
+
+  if (h_r) h_r->Fill(r_part);
+
+  }
+
+
+
+//_______________________________________________________________________
+// Computing of radius that contain 80% of Leading Jet ( PT and multiplicity )
+//_______________________________________________________________________
+Double_t core_part_leadjet = 0.8 * part_leadjet ;
+Double_t core_pt_leadjet = 0.8 * pt_leadjet ;
+Int_t counter_core_part = 0 ;
+Double_t counter_core_pt = 0. ;
+Int_t sorted_index = -1 ;
+
+TProfile * h_prof_24 = (TProfile*)fHistos->FindObject("histo24");
+TProfile * h_prof_25 = (TProfile*)fHistos->FindObject("histo25");
+
+TProfile * h_prof_26 = (TProfile*)fHistos->FindObject("histo26");
+TProfile * h_prof_27 = (TProfile*)fHistos->FindObject("histo27");
+TProfile * h_prof_28 = (TProfile*)fHistos->FindObject("histo28");
+TProfile * h_prof_29 = (TProfile*)fHistos->FindObject("histo29");
+
+
+if ((h_prof_24) && (h_prof_25) && (h_prof_26) && (h_prof_27) && (h_prof_28) && (h_prof_29) )
+{
+for(  Int_t part = 0 ; part < fNPart ; part++ )
+  {
+  Double_t pt_tmp = 0. ; Double_t eta_tmp = 0. ; Double_t phi_tmp = 0. ; // temporary variables
+  Double_t d_part = 0. ;
+  sorted_index = fIdxArray[part] ;
+
+  if ( fVectParticle [ sorted_index ]->njet == leading_jet_index )
     {
-//    printf("FILLING histograms\n");
-    TH1F *h_jets = (TH1F*)fHistos->FindObject("histo1");
-    if (h_jets) h_jets->Fill(nJets);
+     pt_tmp = fVectParticle[sorted_index]->pt ;
+    eta_tmp = fVectParticle[sorted_index]->eta ;
+    phi_tmp = fVectParticle[sorted_index]->phi ;
 
-    // There may be no leading jet with more that 2 particles !
-    TH1F *h_leadpart = (TH1F*)fHistos->FindObject("histo2");
-    if (part_leadjet && h_leadpart) h_leadpart->Fill(part_leadjet);
+    ++counter_core_part ;
+    counter_core_pt += pt_tmp ;
 
-    TProfile * h_prof = (TProfile*)fHistos->FindObject("histo3");
-    if (part_leadjet && h_prof) h_prof->Fill(pt_leadjet,part_leadjet);
+    d_part = Distance ( eta_leadjet - eta_tmp, phi_leadjet - phi_tmp ) ;
 
-    TH1F *h_MD = (TH1F*)fHistos->FindObject("histo4");
-      for( Int_t k = 0  ; k < part_leadjet ; k++)
-        { h_MD->Fill( z_part_ljet[k] ); }
+    if ( counter_core_part <=  core_part_leadjet ) { h_prof_24->Fill(pt_leadjet, d_part); }
+    if ( counter_core_pt <= core_pt_leadjet ) { h_prof_25->Fill(pt_leadjet, d_part); }
 
+    if (pt_leadjet >  5.) { h_prof_26->Fill(d_part, counter_core_part); h_prof_28->Fill(d_part, counter_core_pt); }
+    if (pt_leadjet > 30.) { h_prof_27->Fill(d_part, counter_core_part); h_prof_29->Fill(d_part, counter_core_pt); }
 
-//     TProfile *h_phi = (TProfile*)fHistos->At(4);
-//     for( Int_t k = 0  ; k < nPart ; k++)
-//       { h_phi->Fill( TMath::RadToDeg() * dphiArray [k] , nPart ) ; }
-
-
-//    TH1F *h_tpd = (TH1F*)fHistos->At(5);
-//     for( Int_t k = 0  ; k < nPart ; k++)
-//       {
-//       if ( (phi_partT[k] > (TMath::Pi()/3.)) && (phi_partT[k] < (2. * TMath::Pi()/3.)) )
-//         { h_tpd->Fill( pt_partT [k] ) ; }
-//       }
+    }
+  }
+}
 
 
+
+
+
+
+
+
+
+
+  TH1F *h_jet_pt = (TH1F*)fHistos->FindObject("histo1");
+  TH1F *h_jet_eta = (TH1F*)fHistos->FindObject("histo2");
+  TH1F *h_jet_phi = (TH1F*)fHistos->FindObject("histo3");
+  TH1F *h_jet_njet = (TH1F*)fHistos->FindObject("histo4");
+
+  for(  Int_t jet = 0 ; jet < fNJets ; jet++ )
+    {
+    if (h_jet_pt)   h_jet_pt   ->Fill ( fVectJet[ jet ]->pt   ) ;
+    if (h_jet_eta)  h_jet_eta  ->Fill ( fVectJet[ jet ]->eta  ) ;
+    if (h_jet_phi)  h_jet_phi  ->Fill ( fVectJet[ jet ]->phi  ) ;
+    if (h_jet_njet) h_jet_njet ->Fill ( fVectJet[ jet ]->njet ) ;
+    }
+
+  TH1F *h_jets = (TH1F*)fHistos->FindObject("histo5");
+  if (h_jets) h_jets->Fill(fNJets);
+
+  TH1F *h_leadpart = (TH1F*)fHistos->FindObject("histo6");
+  if (h_leadpart) h_leadpart->Fill(part_leadjet);
+
+  TProfile * h_prof = (TProfile*)fHistos->FindObject("histo7");
+  if (h_prof) h_prof->Fill(pt_leadjet,part_leadjet);
+
+  TH1F *h_MD = (TH1F*)fHistos->FindObject("histo8");
+   for(  Int_t k = 0  ; k < part_leadjet ; k++)
+     { h_MD->Fill( z_part_ljet[k] ); }
+
+  TProfile * h_phi = (TProfile*)fHistos->FindObject("histo9");
+    for(  Int_t k = 0  ; k < part_leadjet ; k++)
+        { h_phi->Fill( TMath::RadToDeg() * dphi_part_ljet [k] , fNPart ) ; }
+
+  TProfile * h_tpd = (TProfile*)fHistos->FindObject("histo10");
+    for(  Int_t k = 0  ; k < fNPart ; k++)
+        { h_tpd->Fill( TMath::RadToDeg() * dphi_part_ljet [k] , pt_sum_event ) ; }
+
+
+  TProfile * h_prof1 = (TProfile*)fHistos->FindObject("histo21");
+  if (h_prof1) h_prof1->Fill(pt_leadjet, fNPart);
+
+  TProfile * h_prof2 = (TProfile*)fHistos->FindObject("histo22");
+  if (h_prof2) h_prof2->Fill(pt_leadjet, pt_sum_event);
+
+  TProfile * h_prof1_toward = (TProfile*)fHistos->FindObject("histo21_toward");
+  TProfile * h_prof1_transverse = (TProfile*)fHistos->FindObject("histo21_transverse");
+  TProfile * h_prof1_away = (TProfile*)fHistos->FindObject("histo21_away");
+  TProfile * h_prof2_toward = (TProfile*)fHistos->FindObject("histo22_toward");
+  TProfile * h_prof2_transverse = (TProfile*)fHistos->FindObject("histo22_transverse");
+  TProfile * h_prof2_away = (TProfile*)fHistos->FindObject("histo22_away");
+  TH1F * h_pt_toward = (TH1F*)fHistos->FindObject("histo23_toward");
+  TH1F * h_pt_transverse = (TH1F*)fHistos->FindObject("histo23_transverse");
+  TH1F * h_pt_away = (TH1F*)fHistos->FindObject("histo23_away");
+
+
+
+  if ( (h_prof1_toward) && (h_prof1_transverse) && (h_prof1_away) && (h_prof2_toward) && (h_prof2_transverse) && (h_prof2_away) )
+    {
+    for( Int_t part = 0  ; part < fNPart ; part++)
+      {
+      Double_t pt_part = fVectParticle[part]->pt ; // pt of particle
+      if ( ( dphi_part_ljet[part] >=0.) && ( dphi_part_ljet[part] < pi/3. ) )
+        {
+        h_prof1_toward->Fill( pt_leadjet, fNPart );
+        h_prof2_toward->Fill( pt_leadjet, pt_sum_event);
+        h_pt_toward->Fill( pt_part );
+        }
+      else
+      if ( ( dphi_part_ljet[part] >= (pi/3.)) && ( dphi_part_ljet[part] < (2.*pi/3.)) )
+        {
+        h_prof1_transverse->Fill( pt_leadjet, fNPart );
+        h_prof2_transverse->Fill( pt_leadjet, pt_sum_event);
+        h_pt_transverse->Fill( pt_part );
+        }
+      else
+      if ( ( dphi_part_ljet[part] >= ( 2.*pi/3.)) && ( dphi_part_ljet[part] < pi ) )
+        {
+        h_prof1_away->Fill( pt_leadjet, fNPart );
+        h_prof2_away->Fill( pt_leadjet, pt_sum_event);
+        h_pt_away->Fill( pt_part );
+        }
+      }
     }
 
 
+
+
+
+
+
+}
+
+
+//______________________________________________________________________________
+void AliCdfJetFinder::Clean()
+{
+
+
   // CLEANING SECTION
-  for (Int_t i=0; i<nPart; i++) delete vectParticle[i];
-  delete [] vectParticle;
-  for (Int_t i=0; i<nJets; i++) delete vectJet[i];
-  delete [] vectJet;
-  delete [] ptArray;
-  delete [] idxArray;
+  delete [] fVectParticle;
+  delete [] fVectJet;
+  delete [] fPtArray;
+  delete [] fIdxArray;
 
-  if (z_part_ljet) delete [] z_part_ljet;
-  if (idx_leadjet_part) delete [] idx_leadjet_part;
-  if (jets_pt_idx) delete [] jets_pt_idx ;
-  if (jets_pt) delete [] jets_pt ;
+//  if (z_part_ljet) delete [] z_part_ljet;
+//  if (idx_leadjet_part) delete [] idx_leadjet_part;
+//  if (jets_pt_idx) delete [] jets_pt_idx ;
+//  if (jets_pt) delete [] jets_pt ;
 
-  vectArray->Delete() ; // TClonesArray of lorentz vectors
-  }
-// end of FindJets
+//  vectArray->Delete() ; // TClonesArray of lorentz vectors
+
+  Reset();
+
+
+
+}
+
+
 
 
 //______________________________________________________________________________
 void AliCdfJetFinder::FinishRun()
 {}
+
 
