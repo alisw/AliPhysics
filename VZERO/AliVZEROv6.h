@@ -36,6 +36,7 @@
 #include "AliConst.h"
 #include "AliMagF.h"
 #include "AliVZEROhit.h"
+#include "AliVZEROdigit.h"
 #include "AliLog.h"
  
 class AliVZEROv6 : public AliVZERO {
