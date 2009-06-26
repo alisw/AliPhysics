@@ -198,6 +198,8 @@ AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
 	AddRunType("CALIBRATION_EMD");
 	AddRunType("CALIBRATION_MB");
 	AddRunType("CALIBRATION_SEMICENTRAL");
+	AddRunType("CALIBRATION");
+	AddRunType("PEDESTAL");
 }
 
 //_______________________________________________________________
