@@ -125,7 +125,7 @@
 #include "AliCodeTimer.h"
 #include "AliDAQ.h"
 #include "AliDigitizer.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliGRPObject.h"
 #include "AliGenEventHeader.h"
 #include "AliGenerator.h"
@@ -1806,18 +1806,11 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     //
     // Open esd file if available
     TFile* esdFile = TFile::Open(esdFileName);
-    Bool_t esdOK = (esdFile != 0);
-    AliESD* esd = new AliESD;
     TTree* treeESD = 0;
-    if (esdOK) {
-	treeESD = (TTree*) esdFile->Get("esdTree");
-	if (!treeESD) {
-	    AliWarning("No ESD tree found");
-	    esdOK = kFALSE;
-	} else {
-	    treeESD->SetBranchAddress("ESD", &esd);
-	}
-    }
+    AliESDEvent* esd = new AliESDEvent();
+    esdFile->GetObject("esdTree", treeESD);
+    if (treeESD) esd->ReadFromTree(treeESD);
+
     //
     // Create the RawReader
     TString fileName(rawDirectory);
@@ -1858,7 +1851,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
 
 	//
 	//  If ESD information available obtain reconstructed vertex and store in header.
-	if (esdOK) {
+	if (treeESD) {
 	    treeESD->GetEvent(nev);
 	    const AliESDVertex* esdVertex = esd->GetPrimaryVertex();
 	    Double_t position[3];
