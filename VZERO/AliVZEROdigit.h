@@ -16,6 +16,8 @@ class AliVZEROdigit: public AliDigit  {
     AliVZEROdigit(Int_t /* PMnumber */, Int_t  /* ADC */, Int_t /* Time */);
     AliVZEROdigit(Int_t /* PMnumber */, Int_t  /* ADC */, Int_t /* Time */, 
                   Int_t /* TimeWidth*/, Bool_t /* BBFlag */, Bool_t /* BGFlag */);
+    AliVZEROdigit(Int_t /* PMnumber */, Int_t  /* ADC */, Int_t /* Time */, 
+                  Int_t /* TimeWidth*/, Bool_t /* BBFlag */, Bool_t /* BGFlag */, Bool_t /* Integrator */);
     virtual ~AliVZEROdigit() {};
     virtual void Print(const Option_t* option="") const;
     
@@ -25,6 +27,7 @@ class AliVZEROdigit: public AliDigit  {
     Int_t   Width()    const {return fWidth;} 
     Bool_t  BBFlag()   const {return fBBFlag;} 
     Bool_t  BGFlag()   const {return fBGFlag;}
+    Bool_t  Integrator()   const {return fIntegrator;}
        
   private:
     Int_t  fTrack;         // Track number
@@ -37,8 +40,9 @@ class AliVZEROdigit: public AliDigit  {
     Int_t  fWidth;         // Width of the time distribution
     Bool_t fBBFlag;        // Beam-Beam Flag given by Yannick in Raw Data only
     Bool_t fBGFlag;        // Beam-Gas  Flag given by Yannick in Raw Data only
+	Bool_t fIntegrator;	   // Integrator used
     
-    ClassDef(AliVZEROdigit,2)  //Digit (Header) object for set : VZERO
+    ClassDef(AliVZEROdigit,3)  //Digit (Header) object for set : VZERO
 };
 
 #endif

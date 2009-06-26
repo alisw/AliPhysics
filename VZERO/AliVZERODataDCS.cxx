@@ -96,7 +96,7 @@ void AliVZERODataDCS::ProcessData(TMap& aliasMap){
       return;
     }
 
-    Introduce(iAlias, aliasArr);
+    //Introduce(iAlias, aliasArr);
     
     if(aliasArr->GetEntries()<2){
       AliError(Form("Alias %s has just %d entries!",
@@ -116,6 +116,7 @@ void AliVZERODataDCS::ProcessData(TMap& aliasMap){
    		Values[iValue] = aValue->GetFloat();
    		Times[iValue] = (Double_t) (aValue->GetTimeStamp());
 		fHv[iAlias]->Fill(Values[iValue]);
+		printf("%s %f\n",fAliasNames[iAlias].Data(),Values[iValue]);
    		iValue++;
     }      
     CreateGraph(iAlias, aliasArr->GetEntries(), Times, Values); // fill graphs 

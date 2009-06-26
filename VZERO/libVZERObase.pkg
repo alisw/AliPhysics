@@ -7,8 +7,11 @@ SRCS= AliVZEROLoader.cxx \
       AliVZEROPreprocessor.cxx \
       AliVZERODataDCS.cxx \
       AliVZEROQAChecker.cxx \
-      AliVZEROMisAligner.cxx
-
+      AliVZEROMisAligner.cxx \
+	  AliVZEROLogicalSignal.cxx \
+	  AliVZERODataFEE.cxx \
+	  AliVZEROTriggerSimulator.cxx \
+	  AliVZEROTriggerData.cxx 
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:=VZERObaseLinkDef.h

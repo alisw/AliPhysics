@@ -13,5 +13,9 @@
 #pragma link C++ class  AliVZERODataDCS+;
 #pragma link C++ class  AliVZEROQAChecker+;
 #pragma link C++ class  AliVZEROMisAligner+;
+#pragma link C++ class  AliVZEROLogicalSignal+;
+#pragma link C++ class  AliVZERODataFEE+;
+#pragma link C++ class  AliVZEROTriggerSimulator+;
+#pragma link C++ class  AliVZEROTriggerData+;
 
 #endif

@@ -27,7 +27,8 @@ AliVZEROdigit::AliVZEROdigit()
     fTime(0),
     fWidth(0),
     fBBFlag(0),
-    fBGFlag(0)
+    fBGFlag(0),
+	fIntegrator(0)
 
 {
   // Standard default constructor 
@@ -43,7 +44,8 @@ AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits)
    fTime(0),
    fWidth(0),
    fBBFlag(0),
-   fBGFlag(0)
+   fBGFlag(0),
+   fIntegrator(0)
   
 {
   // Creates VZERO digits  
@@ -63,7 +65,8 @@ AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Int_t adc, Int_t time)
    fTime(0),
    fWidth(0),
    fBBFlag(0),
-   fBGFlag(0)
+   fBGFlag(0),
+	fIntegrator(0)
 {  
    fPMNumber   = PMnumber;
    fADC        = adc;
@@ -76,21 +79,31 @@ AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Int_t adc, Int_t time,
    :AliDigit(),
    fTrack(0),
    fEvent(0),
-   fPMNumber(0),
-   fADC(0),
-   fTime(0),
-   fWidth(0),
-   fBBFlag(0),
-   fBGFlag(0)
+   fPMNumber(PMnumber),
+   fADC(adc),
+   fTime(time),
+   fWidth(width),
+   fBBFlag(BeamBeamFlag),
+	fBGFlag(BeamGasFlag),
+	fIntegrator(0)
 {  
 
-   fPMNumber   = PMnumber;    // PM number
-   fADC        = adc;         // ADC value
-   fTime       = time;        // Leading time 
-   fWidth      = width;       // Time Width
-   fBBFlag     = BeamBeamFlag;      // Beam Beam Flag
-   fBGFlag     = BeamGasFlag;      // Beam Gas  Flag
-
+}
+//__________________________________________________________________________
+AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Int_t adc, Int_t time, 
+                             Int_t width, Bool_t BeamBeamFlag, Bool_t BeamGasFlag, Bool_t integrator)
+:AliDigit(),
+fTrack(0),
+fEvent(0),
+fPMNumber(PMnumber),
+fADC(adc),
+fTime(time),
+fWidth(width),
+fBBFlag(BeamBeamFlag),
+fBGFlag(BeamGasFlag),
+fIntegrator(integrator)
+{  
+	
 }
 
 //__________________________________________________________________________

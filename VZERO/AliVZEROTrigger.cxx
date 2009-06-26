@@ -19,9 +19,11 @@
 
 #include "AliRun.h"
 #include "AliRunLoader.h"
+#include "AliTriggerInput.h"
 
+#include "AliVZEROdigit.h"
+#include "AliVZEROTriggerSimulator.h"
 #include "AliVZEROTrigger.h"
-#include "AliVZEROTriggerMask.h"
 
 //______________________________________________________________________
 ClassImp(AliVZEROTrigger)
@@ -35,69 +37,79 @@ ClassImp(AliVZEROTrigger)
 
 //______________________________________________________________________
 
-AliVZEROTrigger::AliVZEROTrigger()
-  :AliTriggerDetector(),
-   fAdcThresHold(0.0),
-   fTimeWindowWidthBBA(50.0),
-   fTimeWindowWidthBGA(20.0),
-   fTimeWindowWidthBBC(50.0),
-   fTimeWindowWidthBGC(20.0)
-   
+AliVZEROTrigger::AliVZEROTrigger():AliTriggerDetector()
 {
    SetName("VZERO");
    CreateInputs();
-
-   SetAdcThreshold();
 }
 //______________________________________________________________________
 void AliVZEROTrigger::CreateInputs()
 {
-   // inputs
+	// Do not create inputs again!!
+	if( fInputs.GetEntriesFast() > 0 ) return;
 
-   // Do not create inputs again!!
-   if( fInputs.GetEntriesFast() > 0 ) return;
-
-   fInputs.AddLast( new AliTriggerInput( "VZERO_LEFT", "VZERO", 0 ) );
-   fInputs.AddLast( new AliTriggerInput( "VZERO_RIGHT","VZERO", 0 ) );
-   fInputs.AddLast( new AliTriggerInput( "VZERO_AND",  "VZERO", 0 ) );
-   fInputs.AddLast( new AliTriggerInput( "VZERO_OR",   "VZERO", 0 ) );
-   fInputs.AddLast( new AliTriggerInput( "VZERO_BEAMGAS", "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_BBA_AND_BBC", "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_BBA_OR_BBC","VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_BGA_AND_BBC",  "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_BGA",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_BGC_AND_BBA", "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_BGC",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_CTA1_AND_CTC1",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_CTA1_OR_CTC1",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_CTA2_AND_CTC2",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_CTA2_OR_CTC2",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_MTA_AND_MTC",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_MTA_OR_MTC",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_BBA",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_BBC",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_BGA_OR_BGC",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_BEAMGAS",   "VZERO", 0 ) );
+	
 }
 
 //______________________________________________________________________
 void AliVZEROTrigger::Trigger()
 {
-  
   //  ********** Get run loader for the current event **********
-  AliRunLoader* runLoader = AliRunLoader::Instance();
+	AliRunLoader* runLoader = AliRunLoader::Instance();
 
-  AliVZEROLoader* loader = 
-    (AliVZEROLoader* )runLoader->GetLoader( "VZEROLoader" );
+	AliLoader* loader = runLoader->GetLoader( "VZEROLoader" );
 
-  loader->LoadDigits("READ");
-  TTree* vzeroDigitsTree = loader->TreeD();
-  if (!vzeroDigitsTree) return;
+	if(!loader) {
+		AliError("Can not get VZERO loader");
+		return;
+	}
+	loader->LoadDigits("READ");
+	TTree* vzeroDigitsTree = loader->TreeD();
 
-  TClonesArray* vzeroDigits = new TClonesArray("AliVZEROdigit",1000);
-  TBranch* digitBranch = vzeroDigitsTree->GetBranch("VZERODigit");
-  digitBranch->SetAddress(&vzeroDigits);
+	if (!vzeroDigitsTree) {
+		AliError("Can not get the VZERO digit tree");
+		return;
+	}
+	TClonesArray* vzeroDigits = NULL;
+	TBranch* digitBranch = vzeroDigitsTree->GetBranch("VZERODigit");
+	digitBranch->SetAddress(&vzeroDigits);
 
-  AliVZEROTriggerMask *TriggerMask = new AliVZEROTriggerMask();
-  TriggerMask->SetAdcThreshold(fAdcThresHold);
-  TriggerMask->SetTimeWindowWidthBBA(fTimeWindowWidthBBA);
-  TriggerMask->SetTimeWindowWidthBGA(fTimeWindowWidthBGA);
-  TriggerMask->SetTimeWindowWidthBBC(fTimeWindowWidthBBC);
-  TriggerMask->SetTimeWindowWidthBGC(fTimeWindowWidthBGC);
-  TriggerMask->FillMasks(vzeroDigitsTree,vzeroDigits);
-
-  if ( (TriggerMask->GetBGtriggerV0A()>0) ||
-       (TriggerMask->GetBGtriggerV0C()>0)) SetInput( "VZERO_BEAMGAS" );
-  if (TriggerMask->GetBBtriggerV0A()>0)  SetInput( "VZERO_LEFT" );
-  if (TriggerMask->GetBBtriggerV0C()>0)  SetInput( "VZERO_RIGHT" );
-  if ( (TriggerMask->GetBBtriggerV0A()>0) ||
-       (TriggerMask->GetBBtriggerV0C()>0)) SetInput( "VZERO_OR" );
-  if ( (TriggerMask->GetBBtriggerV0A()>0) &&
-       (TriggerMask->GetBBtriggerV0C()>0)) SetInput( "VZERO_AND" );
+	AliVZEROTriggerSimulator * triggerSimulator = new AliVZEROTriggerSimulator(vzeroDigitsTree,vzeroDigits);
+	
+	triggerSimulator->Run();
+	
+	if(triggerSimulator->GetBBAandBBC())	SetInput( "VZERO_BBA_AND_BBC" );
+	if(triggerSimulator->GetBBAorBBC())		SetInput( "VZERO_BBA_OR_BBC" );
+	if(triggerSimulator->GetBGAandBBC())	SetInput( "VZERO_BGA_AND_BBC" );
+	if(triggerSimulator->GetBGA())			SetInput( "VZERO_BGA" );
+	if(triggerSimulator->GetBGCandBBA())	SetInput( "VZERO_BGC_AND_BBA" );
+	if(triggerSimulator->GetBGC())			SetInput( "VZERO_BGC" );
+	if(triggerSimulator->GetCTA1andCTC1())	SetInput( "VZERO_CTA1_AND_CTC1" );
+	if(triggerSimulator->GetCTA1orCTC1())	SetInput( "VZERO_CTA1_OR_CTC1" );
+	if(triggerSimulator->GetCTA2andCTC2())	SetInput( "VZERO_CTA2_AND_CTC2" );
+	if(triggerSimulator->GetCTA1orCTC1())	SetInput( "VZERO_CTA1_OR_CTC1" );
+ 	if(triggerSimulator->GetMTAandMTC())	SetInput( "VZERO_MTA_AND_MTC" );
+ 	if(triggerSimulator->GetMTAorMTC())		SetInput( "VZERO_MTA_OR_MTC" );
+ 	if(triggerSimulator->GetBBA())			SetInput( "VZERO_BBA" );
+ 	if(triggerSimulator->GetBBC())			SetInput( "VZERO_BBC" );
+ 	if(triggerSimulator->GetBGAorBGC())		SetInput( "VZERO_BGA_OR_BGC" );
+ 	if(triggerSimulator->GetBeamGas())		SetInput( "VZERO_BEAMGAS" );
 
   return;
 }

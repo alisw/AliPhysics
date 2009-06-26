@@ -33,6 +33,7 @@
 #include "AliVZEROTriggerMask.h"
 #include "AliESDfriend.h"
 #include "AliESDVZEROfriend.h"
+#include "AliVZEROdigit.h"
 
 ClassImp(AliVZEROReconstructor)
 
@@ -101,7 +102,7 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   rawReader->Reset();
   AliVZERORawStream rawStream(rawReader);
   if (rawStream.Next()) {  
-     Int_t ADC_max[64], adc[64], time[64], width[64], BBFlag[64], BGFlag[64];   
+     Int_t ADC_max[64], adc[64], time[64], width[64], BBFlag[64], BGFlag[64], integrator[64];   
      for(Int_t i=0; i<64; i++) {
          // Search for the maximum charge in the train of 21 LHC clocks 
          // regardless of the integrator which has been operated:
@@ -119,6 +120,7 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 	 width[j]  =  rawStream.GetWidth(i);
 	 BBFlag[j] =  rawStream.GetBBFlag(i,imax);
 	 BGFlag[j] =  rawStream.GetBGFlag(i,imax); 
+	 integrator[j] =  rawStream.GetIntegratorFlag(i,imax); 
 
 	 // Filling the esd friend object
 	 fESDVZEROfriend->SetBBScalers(j,rawStream.GetBBScalers(i));
@@ -154,7 +156,7 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
      for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
          new ((*digitsArray)[digitsArray->GetEntriesFast()])
              AliVZEROdigit(iChannel, adc[iChannel], time[iChannel],
-	                   width[iChannel], BBFlag[iChannel], BGFlag[iChannel]);
+	                   width[iChannel], BBFlag[iChannel], BGFlag[iChannel],integrator[iChannel]);
      }
   }
 
@@ -211,6 +213,7 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
 	BBFlag[pmNumber]= digit->BBFlag();
 	BGFlag[pmNumber]= digit->BGFlag();
         // printf("PM = %d,  MIP per ADC channel = %f \n",pmNumber, fCalibData->GetMIPperADC(pmNumber));
+		//AliInfo(Form("PM = %d,  ADC = %d TDC %d",pmNumber, digit->ADC(),digit->Time()));
         // cut of ADC at 1MIP/2 
 	if(fCollisionMode >0) { 
 	   Float_t MIP = 2.0;  

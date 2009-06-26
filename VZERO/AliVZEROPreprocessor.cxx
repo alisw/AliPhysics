@@ -1,5 +1,6 @@
 #include "AliVZEROPreprocessor.h"
 #include "AliVZEROCalibData.h"
+#include "AliVZEROTriggerData.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBEntry.h"
 #include "AliDCSValue.h"
@@ -18,8 +19,9 @@ ClassImp(AliVZEROPreprocessor)
 
 //______________________________________________________________________________________________
 AliVZEROPreprocessor::AliVZEROPreprocessor(AliShuttleInterface* shuttle) :
-  AliPreprocessor("V00", shuttle),
-  fData(0)
+	AliPreprocessor("V00", shuttle),
+	fData(0),
+	fFEEData(0)
  
 {
   // constructor  
@@ -33,15 +35,16 @@ AliVZEROPreprocessor::AliVZEROPreprocessor(AliShuttleInterface* shuttle) :
 AliVZEROPreprocessor::~AliVZEROPreprocessor()
 {
   // destructor
-  
-   delete fData;
+	delete fFEEData;
+	delete fData;
+	
 }
 
 //______________________________________________________________________________________________
 void AliVZEROPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	UInt_t endTime)
 {
-  // Creates AliZDCDataDCS object
+  // Creates AliVZERODataDCS object
 
    AliPreprocessor::Initialize(run, startTime, endTime);
   
@@ -55,7 +58,8 @@ void AliVZEROPreprocessor::Initialize(Int_t run, UInt_t startTime,
    fStartTime = GetStartTimeDCSQuery ();
    fEndTime   = GetEndTimeDCSQuery ();
 
-   fData      = new AliVZERODataDCS(fRun, fStartTime, fEndTime);
+	fData      = new AliVZERODataDCS(fRun, fStartTime, fEndTime);
+	fFEEData   = new AliVZERODataFEE(fRun, fStartTime, fEndTime);		
    
 }
 
@@ -75,11 +79,11 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
   TString fileName; 
   AliVZEROCalibData *calibData = new AliVZEROCalibData();
   
-  // *************** From DCS ******************
+  // *************** HV From DCS ******************
   // Fills data into a AliVZERODataDCS object
   if(!dcsAliasMap) return 1;
 
- 	// The processing of the DCS input data is forwarded to AliVZERODataDCS
+ 	// The Processing of the DCS input data is forwarded to AliVZERODataDCS
 
 	fData->ProcessData(*dcsAliasMap);
 	//fData->Draw(""); 		// Draws the HV values as a function of time
@@ -153,6 +157,30 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
   delete calibData;
   delete sourceList; 
 
+ // -----------------------------------------------------------------------
+ // Retrieve Front End Electronics Parameters from the DCS
+ // -----------------------------------------------------------------------
+	AliVZEROTriggerData *triggerData = new AliVZEROTriggerData();
+
+ 	// The processing of the DCS input data is forwarded to AliVZERODataFEE
+	fFEEData->ProcessData(*dcsAliasMap);
+
+	// Writes VZERO FEE parameters values into VZERO  Trigger parametrization object
+	triggerData->FillData(fFEEData);
+
+	// Stores the VZERO Trigger Object into CalibrationDB
+	
+	resECal=kTRUE;
+	
+	result = 0;
+	metaData.SetBeamPeriod(0);
+	metaData.SetResponsible("Brigitte Cheynis");
+	metaData.SetComment("This preprocessor fills an AliVZEROTriggerData object");
+	
+	resECal = Store("Trigger", "Data", triggerData, &metaData, 0, kTRUE);
+	if(resECal==kFALSE ) result = 1;
+	
+	
   return result;
 }
 
