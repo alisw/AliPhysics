@@ -5,7 +5,7 @@
  *
  * See cxx source for full Copyright notice                               
  */
-#include "AliVZERODataFEE.h";
+#include "AliVZERODataFEE.h"
 
 #include <TNamed.h>
 
