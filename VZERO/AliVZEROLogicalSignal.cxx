@@ -55,7 +55,7 @@ AliVZEROLogicalSignal::AliVZEROLogicalSignal(UShort_t profilClock, UInt_t delay)
 	
 	fStart += delay*10.e-3; // Add 10 ps par register unit
 	fStop  += delay*10.e-3; 
-};
+}
 //_____________________________________________________________________________
 AliVZEROLogicalSignal::AliVZEROLogicalSignal(const AliVZEROLogicalSignal &signal) : 
 	TObject(), fStart(signal.fStart), 
