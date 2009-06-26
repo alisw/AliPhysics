@@ -121,11 +121,13 @@ Bool_t AliRawReaderDateOnline::NextEvent()
     if (eventT==END_OF_RUN) {
       AliInfo("EOR event detected");
       Reset();
+      free(fEvent);
       fEvent = NULL;
       return kFALSE;
     }
     
     if (!IsEventSelected()) {
+      free(fEvent);
       continue;
     }
 
