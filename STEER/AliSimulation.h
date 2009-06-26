@@ -24,6 +24,7 @@ class AliRunLoader;
 class AliLegoGenerator;
 class AliLego;
 class AliMagF;
+class AliHLTSimulation;
 
 class AliSimulation: public TNamed {
 public:
@@ -105,6 +106,7 @@ public:
 
   // HLT
   void SetRunHLT(const char* options) {fRunHLT=options;}
+  virtual Bool_t CreateHLT();
   virtual Bool_t RunHLT();
   virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
   AliLego* Lego() const {return fLego;}
@@ -185,11 +187,12 @@ private:
   Bool_t               fWriteQAExpertData ;             //! decides wheter or not to write experts QA data; true by default
 
   //HLT
-  TString        fRunHLT;             // HLT options, HLT is disabled if empty, default='default'
+  TString              fRunHLT;       //! HLT options, HLT is disabled if empty, default='default'
+  AliHLTSimulation*    fpHLT;         //! The instance of HLT simulation
 
   Bool_t         fWriteGRPEntry;      // Write or not GRP entry corresponding to the settings in Config.C
 
-  ClassDef(AliSimulation, 9)  // class for running generation, simulation and digitization
+  ClassDef(AliSimulation, 10)  // class for running generation, simulation and digitization
 };
 
 #endif

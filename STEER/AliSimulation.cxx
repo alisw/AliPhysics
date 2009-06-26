@@ -196,6 +196,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fEventSpecie(AliRecoParam::kDefault),
   fWriteQAExpertData(kTRUE), 
   fRunHLT("default"),
+  fpHLT(NULL),
   fWriteGRPEntry(kTRUE)
 {
 // create simulation object with default parameters
@@ -611,6 +612,12 @@ Bool_t AliSimulation::Run(Int_t nEvents)
    
   if (nEvents > 0) fNEvents = nEvents;
 
+  // create and setup the HLT instance
+  if (!fRunHLT.IsNull() && !CreateHLT()) {
+    if (fStopOnError) return kFALSE;
+    // disable HLT
+    fRunHLT="";
+  }
   
   // generation and simulation -> hits
   if (fRunGeneration) {
@@ -1307,7 +1314,13 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
 
   // run HLT simulation on simulated DDL raw files
   // and produce HLT ddl raw files to be included in date/root file
-  if (IsSelected("HLT", detStr) && !fRunHLT.IsNull()) {
+  // bugfix 2009-06-26: the decision whether to write HLT raw data
+  // is taken in RunHLT. Here HLT always needs to be run in order to
+  // create HLT digits, unless its switched off. This is due to the
+  // special placement of the HLT between the generation of DDL files
+  // and conversion to DATE/Root file.
+  detStr.ReplaceAll("HLT", "");
+  if (!fRunHLT.IsNull()) {
     if (!RunHLT()) {
       if (fStopOnError) return kFALSE;
     }
@@ -1929,6 +1942,63 @@ Int_t AliSimulation::GetDetIndex(const char* detector)
 }
 
 //_____________________________________________________________________________
+Bool_t AliSimulation::CreateHLT()
+{
+  // Init the HLT simulation.
+  // The function  loads the library and creates the instance of AliHLTSimulation.
+  // the main reason for the decoupled creation is to set the transient OCDB
+  // objects before the OCDB is locked
+
+  // load the library dynamically
+  gSystem->Load(ALIHLTSIMULATION_LIBRARY);
+
+  // check for the library version
+  AliHLTSimulationGetLibraryVersion_t fctVersion=(AliHLTSimulationGetLibraryVersion_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_GET_LIBRARY_VERSION));
+  if (!fctVersion) {
+    AliError(Form("can not load library %s", ALIHLTSIMULATION_LIBRARY));
+    return kFALSE;
+  }
+  if (fctVersion()!= ALIHLTSIMULATION_LIBRARY_VERSION) {
+    AliError(Form("%s version does not match: compiled for version %d, loaded %d", ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_LIBRARY_VERSION, fctVersion()));
+    return kFALSE;
+  }
+
+  // print compile info
+  typedef void (*CompileInfo)( const char*& date, const char*& time);
+  CompileInfo fctInfo=(CompileInfo)gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, "CompileInfo");
+  if (fctInfo) {
+    const char* date="";
+    const char* time="";
+    (*fctInfo)(date, time);
+    if (!date) date="unknown";
+    if (!time) time="unknown";
+    AliInfo(Form("%s build on %s (%s)", ALIHLTSIMULATION_LIBRARY, date, time));
+  } else {
+    AliInfo(Form("no build info available for %s", ALIHLTSIMULATION_LIBRARY));
+  }
+
+  // create instance of the HLT simulation
+  AliHLTSimulationCreateInstance_t fctCreate=(AliHLTSimulationCreateInstance_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_CREATE_INSTANCE));
+  if (fctCreate==NULL || (fpHLT=(fctCreate()))==NULL) {
+    AliError(Form("can not create instance of HLT simulation (creator %p)", fctCreate));
+    return kFALSE;    
+  }
+
+  TString specObjects;
+  for (Int_t i = 0; i < fSpecCDBUri.GetEntriesFast(); i++) {
+    if (specObjects.Length()>0) specObjects+=" ";
+    specObjects+=fSpecCDBUri[i]->GetName();
+  }
+
+  AliHLTSimulationSetup_t fctSetup=(AliHLTSimulationSetup_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_SETUP));
+  if (fctSetup==NULL || fctSetup(fpHLT, this, specObjects.Data())<0) {
+    AliWarning(Form("failed to setup HLT simulation (function %p)", fctSetup));
+  }
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 Bool_t AliSimulation::RunHLT()
 {
   // Run the HLT simulation
@@ -1961,50 +2031,22 @@ Bool_t AliSimulation::RunHLT()
   //     raw data is simulated
 
   int iResult=0;
+
+  if (!fpHLT && !CreateHLT()) {
+    return kFALSE;
+  }
+  AliHLTSimulation* pHLT=fpHLT;
+
   AliRunLoader* pRunLoader = LoadRun("READ");
   if (!pRunLoader) return kFALSE;
 
   // initialize CDB storage, run number, set CDB lock
+  // thats for the case of running HLT simulation without all the other steps
+  // multiple calls are handled by the function, so we can just call
   InitCDB();
   if (!SetRunNumberFromData()) if (fStopOnError) return kFALSE;
   SetCDBLock();
   
-  // load the library dynamically
-  gSystem->Load(ALIHLTSIMULATION_LIBRARY);
-
-  // check for the library version
-  AliHLTSimulationGetLibraryVersion_t fctVersion=(AliHLTSimulationGetLibraryVersion_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_GET_LIBRARY_VERSION));
-  if (!fctVersion) {
-    AliError(Form("can not load library %s", ALIHLTSIMULATION_LIBRARY));
-    return kFALSE;
-  }
-  if (fctVersion()!= ALIHLTSIMULATION_LIBRARY_VERSION) {
-    AliError(Form("%s version does not match: compiled for version %d, loaded %d", ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_LIBRARY_VERSION, fctVersion()));
-    return kFALSE;
-  }
-
-  // print compile info
-  typedef void (*CompileInfo)( const char*& date, const char*& time);
-  CompileInfo fctInfo=(CompileInfo)gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, "CompileInfo");
-  if (fctInfo) {
-    const char* date="";
-    const char* time="";
-    (*fctInfo)(date, time);
-    if (!date) date="unknown";
-    if (!time) time="unknown";
-    AliInfo(Form("%s build on %s (%s)", ALIHLTSIMULATION_LIBRARY, date, time));
-  } else {
-    AliInfo(Form("no build info available for %s", ALIHLTSIMULATION_LIBRARY));
-  }
-
-  // create instance of the HLT simulation
-  AliHLTSimulationCreateInstance_t fctCreate=(AliHLTSimulationCreateInstance_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_CREATE_INSTANCE));
-  AliHLTSimulation* pHLT=NULL;
-  if (fctCreate==NULL || (pHLT=(fctCreate()))==NULL) {
-    AliError(Form("can not create instance of HLT simulation (creator %p)", fctCreate));
-    return kFALSE;    
-  }
-
   // init the HLT simulation
   TString options;
   if (fRunHLT.CompareTo("default")!=0) options=fRunHLT;
