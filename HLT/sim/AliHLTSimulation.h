@@ -62,6 +62,7 @@
 class AliRunLoader;
 class AliHLTPluginBase;
 class AliRawReader;
+class AliSimulation;
 
 /**
  * @class AliHLTSimulation
@@ -129,6 +130,7 @@ class AliHLTSimulation : public TObject {
 #define ALIHLTSIMULATION_LIBRARY_VERSION     0
 #define ALIHLTSIMULATION_CREATE_INSTANCE     "AliHLTSimulationCreateInstance"
 #define ALIHLTSIMULATION_DELETE_INSTANCE     "AliHLTSimulationDeleteInstance"
+#define ALIHLTSIMULATION_SETUP               "AliHLTSimulationSetup"
 #define ALIHLTSIMULATION_INIT                "AliHLTSimulationInit"
 #define ALIHLTSIMULATION_RUN                 "AliHLTSimulationRun"
 #define ALIHLTSIMULATION_GET_LIBRARY_VERSION "AliHLTSimulationGetLibraryVersion"
@@ -138,6 +140,7 @@ extern "C" {
 #endif
   typedef AliHLTSimulation* (*AliHLTSimulationCreateInstance_t)();
   typedef int (*AliHLTSimulationDeleteInstance_t)(AliHLTSimulation* pSim);
+  typedef int (*AliHLTSimulationSetup_t)(AliHLTSimulation* pHLTSim, AliSimulation* pSim, const char* options);
   typedef int (*AliHLTSimulationInit_t)(AliHLTSimulation* pSim, AliRunLoader* pRunLoader, const char* options);
   typedef int (*AliHLTSimulationRun_t)(AliHLTSimulation* pSim, AliRunLoader* pRunLoader);
   typedef int (*AliHLTSimulationGetLibraryVersion_t)();
@@ -152,7 +155,15 @@ extern "C" {
    */
   int AliHLTSimulationDeleteInstance(AliHLTSimulation* pSim);
   /**
-   * Set options for an instance
+   * Setup the HLT simulation.
+   * Setup is done right after the creation. To be called before
+   * the actual AliSimulation starts when the OCDB is not yet locked.
+   */
+  int AliHLTSimulationSetup(AliHLTSimulation* pHLTSim, AliSimulation* pSim, const char* options);
+  /**
+   * Set options for an instance.
+   * Init is invoked right before running HLT simulation, i.e. after all
+   * the other AliSimulation was done
    */
   int AliHLTSimulationInit(AliHLTSimulation* pSim, AliRunLoader* pRunLoader, const char* options);
   /**
@@ -163,10 +174,6 @@ extern "C" {
    * Get version no of the library/class interface
    */
   int AliHLTSimulationGetLibraryVersion();
-  /**
-   * Init the OCDB for HLT simulation
-   */
-  int AliHLTSimulationInitOCDB(AliHLTSimulation* pSim);
 #ifdef __cplusplus
 }
 #endif

@@ -26,6 +26,7 @@
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "AliHLTSimulation.h"
+#include "AliSimulation.h"
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -336,7 +337,7 @@ int AliHLTSimulationGetLibraryVersion()
   return LIBHLTSIM_VERSION;
 }
 
-int AliHLTSimulationInitOCDB(AliHLTSimulation* /*pSim*/)
+int AliHLTSimulationSetup(AliHLTSimulation* /*pHLTSim*/, AliSimulation* pSim, const char* specificObjects)
 {
   // see header file for function documentation
 
@@ -345,20 +346,36 @@ int AliHLTSimulationInitOCDB(AliHLTSimulation* /*pSim*/)
   // all the jobs want to put entries into the OCDB. The solution is to
   // make them temporary, since they are only used to propagate information
   // from the simulation to the reconstruction.
-  AliCDBManager* man = AliCDBManager::Instance();
-  if (man && man->IsDefaultStorageSet())
-  {
-    man->SetSpecificStorage("HLT/ConfigHLT/SolenoidBz", Form("local://%s",gSystem->pwd()));
-    man->SetSpecificStorage("HLT/ConfigHLT/esdLayout", Form("local://%s",gSystem->pwd()));
+
+  if (!pSim) return -EINVAL;
+  const char* entries[]={
+    "HLT/ConfigHLT/SolenoidBz",
+    "HLT/ConfigHLT/esdLayout",
+    NULL
+  };
+
+  TString specificStorage; 
+  specificStorage.Form("local://%s",gSystem->pwd());
+  for (const char** pEntry=entries; *pEntry!=NULL; pEntry++) {
+    const char* pObject=specificObjects?strstr(specificObjects, *pEntry):NULL;
+    if (pObject) {
+      // skip this entry if it is found in the list and either
+      // last one or separated by a blank
+      pObject+=strlen(*pEntry);
+      if (*pObject==0 || *pObject==' ') continue;
+    }
+    pSim->SetSpecificStorage(*pEntry, specificStorage.Data());
   }
 
   return 0;
 }
 
-extern "C" void AliHLTSimulationCompileInfo(const char*& date, const char*& time)
+#ifndef HAVE_COMPILEINFO
+extern "C" void CompileInfo(const char*& date, const char*& time)
 {
   // the fall back compile info of the HLTsim library
   // this is not up-to-date if other files have been changed and recompiled
   date=__DATE__; time=__TIME__;
   return;
 }
+#endif

@@ -22,6 +22,7 @@ include $(top_srcdir)/libHLTsim.pkg
 
 # compiler flags
 AM_CPPFLAGS			= -DMODULE=$(MODULE) \
+				  -DHAVE_COMPILEINFO \
 				  $(PACKCXXFLAGS) \
 				  $(foreach i, $(EINCLUDE),  \
 					$(shell echo $(i) | sed -e "/HLT\//!d" -e "s|HLT/|-I$(top_srcdir)/|")) \
