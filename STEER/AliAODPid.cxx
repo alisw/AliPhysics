@@ -38,6 +38,7 @@ AliAODPid::AliAODPid():
 {
   // default constructor
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=0; 
+    for(Int_t i=0; i<3; i++) fEMCALPosition[i] = 0.;
   
 }
 
@@ -64,6 +65,7 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
     fTRDslices = new Double32_t[fTRDnSlices];
     for(Int_t i=0; i< fTRDnSlices; i++) fTRDslices[i]=pid.fTRDslices[i];
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
+    for(Int_t i=0; i<3; i++) fEMCALPosition[i]=pid.fEMCALPosition[i];
 }
 
 //______________________________________________________________________________
@@ -87,6 +89,7 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
     fTOFesdsignal=pid.fTOFesdsignal;
     fHMPIDsignal=pid.fHMPIDsignal;
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
+    for(Int_t i=0; i<3; i++) fEMCALPosition[i]=pid.fEMCALPosition[i];
   }
 
   return *this;
@@ -102,4 +105,28 @@ void AliAODPid::SetIntegratedTimes(Double_t timeint[kSPECIES])
 {
  // Returns the array with integrated times for each particle hypothesis
 for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=timeint[i];
+}
+//_______________________________________________________________________________
+void AliAODPid::GetEMCALPosition(Double_t emcalpos[3])
+{
+ // Returns the array with extrapolated track position at the EMCAL surface
+  for(Int_t i=0; i<3; i++) emcalpos[i]=fEMCALPosition[i];
+}
+//_______________________________________________________________________________
+void AliAODPid::SetEMCALPosition(Double_t emcpos[3])
+{
+ // Sets the array with extrapolated track position at the EMCAL surface
+  for(Int_t i=0; i<3; i++) fEMCALPosition[i]=emcpos[i];
+}
+//_______________________________________________________________________________
+void AliAODPid::GetEMCALMomentum(Double_t emcalmom[3])
+{
+ // Returns the array with extrapolated track momentum at the EMCAL surface
+  for(Int_t i=0; i<3; i++) emcalmom[i]=fEMCALMomentum[i];
+}
+//_______________________________________________________________________________
+void AliAODPid::SetEMCALMomentum(Double_t emcmom[3])
+{
+ // Sets the array with extrapolated track momentum at the EMCAL surface
+  for(Int_t i=0; i<3; i++) fEMCALMomentum[i]=emcmom[i];
 }

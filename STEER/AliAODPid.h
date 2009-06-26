@@ -29,7 +29,8 @@ class AliAODPid : public TObject {
   void      SetTOFsignal(Double_t tof)                         {fTOFesdsignal=tof;}
   void      SetIntegratedTimes(Double_t timeint[5]);
   void      SetHMPIDsignal(Double_t hmpid)                     {fHMPIDsignal=hmpid;}
-
+  void      SetEMCALPosition(Double_t emcalpos[3]);
+  void      SetEMCALMomentum(Double_t emcalmom[3]);
 
   Double_t  GetITSsignal()       {return  fITSsignal;}
   Double_t  GetTPCsignal()       {return  fTPCsignal;}
@@ -38,17 +39,23 @@ class AliAODPid : public TObject {
   Double_t  GetTOFsignal()       {return  fTOFesdsignal;} 
   void      GetIntegratedTimes(Double_t timeint[5]); 
   Double_t  GetHMPIDsignal()     {return  fHMPIDsignal;}
+  void      GetEMCALPosition(Double_t emcalpos[3]);
+  void      GetEMCALMomentum(Double_t emcalmom[3]);
 
  private :
-  Double32_t fITSsignal;      //[0.,0.,10] detector raw signal
-  Double32_t fTPCsignal;      //[0.,0.,10] detector raw signal
-  Int_t      fTRDnSlices;     //N slices used for PID in the TRD
-  Double32_t* fTRDslices;     //[fTRDnSlices]
-  Double32_t fTOFesdsignal;   //TOF signal - t0 (T0 interaction time)
-  Double32_t fIntTime[5];     //track time hypothesis
-  Double32_t fHMPIDsignal;    //detector raw signal
+  Double32_t fITSsignal;        //[0.,0.,10] detector raw signal
+  Double32_t fTPCsignal;        //[0.,0.,10] detector raw signal
+  Int_t      fTRDnSlices;       //N slices used for PID in the TRD
+  Double32_t* fTRDslices;       //[fTRDnSlices]
+  Double32_t fTOFesdsignal;     //TOF signal - t0 (T0 interaction time)
+  Double32_t fIntTime[5];       //track time hypothesis
+  Double32_t fHMPIDsignal;      //detector raw signal
+  Double32_t fEMCALPosition[3]; //global position of track
+				//extrapolated to EMCAL surface
+  Double32_t fEMCALMomentum[3]; //momentum of track
+				//extrapolated to EMCAL surface
 
-  ClassDef(AliAODPid,1);
+  ClassDef(AliAODPid,2);
 };
 
 #endif

@@ -396,7 +396,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    if (esdCascadeBach->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdCascadeBach->GetStatus());
-            SetAODPID(esdCascadeBach,aodTrack,detpid,timezero);
+            SetAODPID(esdCascadeBach,aodTrack,detpid,timezero,esd->GetMagneticField());
 	}
 	else {
 	    aodTrack = dynamic_cast<AliAODTrack*>( aodTrackRefs->At(idxBachFromCascade) );
@@ -475,7 +475,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 		if (esdCascadePos->GetSign() > 0) nPosTracks++;
 		aodTrack->ConvertAliPIDtoAODPID();
 		aodTrack->SetFlags(esdCascadePos->GetStatus());
-		SetAODPID(esdCascadePos,aodTrack,detpid,timezero);
+		SetAODPID(esdCascadePos,aodTrack,detpid,timezero,esd->GetMagneticField());
 		}
 		else {
 			aodTrack = dynamic_cast<AliAODTrack*>(aodTrackRefs->At(idxPosFromV0Dghter));
@@ -518,7 +518,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 		if (esdCascadeNeg->GetSign() > 0) nPosTracks++;
 		aodTrack->ConvertAliPIDtoAODPID();
 		aodTrack->SetFlags(esdCascadeNeg->GetStatus());
-		SetAODPID(esdCascadeNeg,aodTrack,detpid,timezero);
+		SetAODPID(esdCascadeNeg,aodTrack,detpid,timezero,esd->GetMagneticField());
 		}
 		else {
 			aodTrack = dynamic_cast<AliAODTrack*>(aodTrackRefs->At(idxNegFromV0Dghter));
@@ -732,7 +732,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    if (esdV0Pos->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdV0Pos->GetStatus());
-            SetAODPID(esdV0Pos,aodTrack,detpid,timezero);
+            SetAODPID(esdV0Pos,aodTrack,detpid,timezero,esd->GetMagneticField());
 	}
 	else {
 	    aodTrack = dynamic_cast<AliAODTrack*>(aodTrackRefs->At(posFromV0));
@@ -773,7 +773,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	    if (esdV0Neg->GetSign() > 0) nPosTracks++;
 	    aodTrack->ConvertAliPIDtoAODPID();
 	    aodTrack->SetFlags(esdV0Neg->GetStatus());
-            SetAODPID(esdV0Neg,aodTrack,detpid,timezero);
+            SetAODPID(esdV0Neg,aodTrack,detpid,timezero,esd->GetMagneticField());
 	}
 	else {
 	    aodTrack = dynamic_cast<AliAODTrack*>(aodTrackRefs->At(negFromV0));
@@ -905,7 +905,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			mother->ConvertAliPIDtoAODPID();
 			primary->AddDaughter(mother);
 			mother->ConvertAliPIDtoAODPID();
-                        SetAODPID(esdTrackM,mother,detpid,timezero);
+                        SetAODPID(esdTrackM,mother,detpid,timezero,esd->GetMagneticField());
 		    }
 		    else {
 //			cerr << "Error: event " << esd->GetEventNumberInFile() << " kink " << TMath::Abs(ikink)-1
@@ -962,7 +962,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			daughter->ConvertAliPIDtoAODPID();
 			vkink->AddDaughter(daughter);
 			daughter->ConvertAliPIDtoAODPID();
-                       SetAODPID(esdTrackD,daughter,detpid,timezero);
+                       SetAODPID(esdTrackD,daughter,detpid,timezero,esd->GetMagneticField());
 		    }
 		    else {
 //			cerr << "Error: event " << esd->GetEventNumberInFile() << " kink " << TMath::Abs(ikink)-1
@@ -1020,7 +1020,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	if (esdTrack->GetSign() > 0) nPosTracks++;
 	aodTrack->SetFlags(esdTrack->GetStatus());
 	aodTrack->ConvertAliPIDtoAODPID();
-	SetAODPID(esdTrack,aodTrack,detpid,timezero);
+	SetAODPID(esdTrack,aodTrack,detpid,timezero,esd->GetMagneticField());
     } // end of loop on tracks
     
     // Update number of AOD tracks in header at the end of track loop (M.G.)
@@ -1170,7 +1170,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 }
 
 
-void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t timezero)
+void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t timezero, Double_t bfield)
 {
   //
   // Setter for the raw PID detector signals
@@ -1178,7 +1178,7 @@ void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aod
 
   if(esdtrack->Pt()>fHighPthreshold) {
     detpid = new AliAODPid();
-    SetDetectorRawSignals(detpid,esdtrack,timezero);
+    SetDetectorRawSignals(detpid,esdtrack,timezero, bfield);
     aodtrack->SetDetPID(detpid);
   } else {
     if(fPtshape){
@@ -1186,7 +1186,7 @@ void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aod
 	Double_t y = fPtshape->Eval(esdtrack->Pt())/fPtshape->Eval(fHighPthreshold);
 	if(gRandom->Rndm(0)<1./y){
 	  detpid = new AliAODPid();
-	  SetDetectorRawSignals(detpid,esdtrack,timezero);
+	  SetDetectorRawSignals(detpid,esdtrack,timezero, bfield);
 	  aodtrack->SetDetPID(detpid);
 	}//end rndm
       }//end if p < pmin
@@ -1194,7 +1194,7 @@ void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aod
   }// end else
 }
 
-void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track, Double_t timezero)
+void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track, Double_t timezero, Double_t bfield)
 {
 //
 //assignment of the detector signals (AliXXXesdPID inspired)
@@ -1221,6 +1221,25 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
 
  aodpid->SetTOFsignal(track->GetTOFsignal()-timezero); // to be fixed
  aodpid->SetHMPIDsignal(track->GetHMPIDsignal());
+
+ //Extrapolate track to EMCAL surface for AOD-level track-cluster matching
+ Double_t emcpos[3] = {0.,0.,0.};
+ Double_t emcmom[3] = {0.,0.,0.};
+ aodpid->SetEMCALPosition(emcpos);
+ aodpid->SetEMCALMomentum(emcmom);
+
+ AliExternalTrackParam *outerparam = (AliExternalTrackParam*)track->GetOuterParam();
+ if(!outerparam) return;
+
+ //To be replaced by call to AliEMCALGeoUtils when the class becomes available
+ Double_t radius = 441.0; //[cm] EMCAL radius +13cm
+
+ Bool_t okpos = outerparam->GetXYZAt(radius,bfield,emcpos);
+ Bool_t okmom = outerparam->GetPxPyPzAt(radius,bfield,emcmom);
+ if(!(okpos && okmom)) return;
+
+ aodpid->SetEMCALPosition(emcpos);
+ aodpid->SetEMCALMomentum(emcmom);
 
 }
 
