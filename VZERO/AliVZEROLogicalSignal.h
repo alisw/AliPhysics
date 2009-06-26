@@ -19,7 +19,7 @@ public:
 	AliVZEROLogicalSignal operator& (const AliVZEROLogicalSignal &signal) const;
 	AliVZEROLogicalSignal operator| (const AliVZEROLogicalSignal &signal) const;
 	// Print method
-	virtual void Print(Option_t* opt="") const { AliInfo(Form("\t -> Start %f Stop %f\n ",fStart,fStop));};
+	virtual void Print(Option_t* opt="") const { AliInfo(Form("\t -> Start %f Stop %f\n ",fStart,fStop));}
 	
 	Float_t GetStartTime() const {return fStart;};
 	Float_t GetStopTime() const {return fStop;};
