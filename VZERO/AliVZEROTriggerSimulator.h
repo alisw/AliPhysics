@@ -8,7 +8,7 @@
 
 #include <TObject.h>
 
-#include "AliVZEROTriggerData.h";
+#include "AliVZEROTriggerData.h"
 
 class AliVZEROLogicalSignal;
 class TTree;
