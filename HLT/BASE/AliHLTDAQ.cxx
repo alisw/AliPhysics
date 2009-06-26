@@ -48,6 +48,14 @@ AliHLTDAQ::~AliHLTDAQ()
   // see header file for class documentation
 }
 
+Int_t       AliHLTDAQ::NumberOfDetectors()
+{
+  // see header file for class documentation
+  if (!fgpInstance) GetInstance();
+  if (fgpInstance) return fgpInstance->VirtNumberOfDetectors();
+  return -1;
+}
+
 Int_t       AliHLTDAQ::DetectorID(const char *detectorName)
 {
   // see header file for class documentation
@@ -142,6 +150,52 @@ Int_t       AliHLTDAQ::NumberOfDdls(Int_t detectorID)
   if (!fgpInstance) GetInstance();
   if (fgpInstance) return fgpInstance->VirtNumberOfDdls(detectorID);
   return -1;
+}
+
+const char *AliHLTDAQ::ListOfTriggeredDetectors(UInt_t detectorPattern)
+{
+  // see header file for class documentation
+  if (!fgpInstance) GetInstance();
+  if (fgpInstance) return fgpInstance->VirtListOfTriggeredDetectors(detectorPattern);
+  return NULL;
+}
+
+UInt_t      AliHLTDAQ::DetectorPattern(const char *detectorList)
+{
+  // see header file for class documentation
+  if (!fgpInstance) GetInstance();
+  if (fgpInstance) return fgpInstance->VirtDetectorPattern(detectorList);
+  return 0;
+}
+
+const char *AliHLTDAQ::OfflineModuleName(const char *detectorName)
+{
+  // see header file for class documentation
+  if (!fgpInstance) GetInstance();
+  if (fgpInstance) return fgpInstance->VirtOfflineModuleName(detectorName);
+  return NULL;
+}
+const char *AliHLTDAQ::OfflineModuleName(Int_t detectorID)
+{
+  // see header file for class documentation
+  if (!fgpInstance) GetInstance();
+  if (fgpInstance) return fgpInstance->VirtOfflineModuleName(detectorID);
+  return NULL;
+}
+
+const char *AliHLTDAQ::OnlineName(const char *detectorName)
+{
+  // see header file for class documentation
+  if (!fgpInstance) GetInstance();
+  if (fgpInstance) return fgpInstance->VirtOnlineName(detectorName);
+  return NULL;
+}
+const char *AliHLTDAQ::OnlineName(Int_t detectorID)
+{
+  // see header file for class documentation
+  if (!fgpInstance) GetInstance();
+  if (fgpInstance) return fgpInstance->VirtOnlineName(detectorID);
+  return NULL;
 }
 
 AliHLTDAQ* AliHLTDAQ::GetInstance()

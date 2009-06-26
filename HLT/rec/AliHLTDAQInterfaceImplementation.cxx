@@ -39,8 +39,14 @@ AliHLTDAQInterfaceImplementation::AliHLTDAQInterfaceImplementation()
 
 AliHLTDAQInterfaceImplementation::~AliHLTDAQInterfaceImplementation()
 {
-}
   // see header file for class documentation
+}
+
+Int_t       AliHLTDAQInterfaceImplementation::VirtNumberOfDetectors()
+{
+  // see header file for class documentation
+  return AliDAQ::kNDetectors;
+}
 
 Int_t       AliHLTDAQInterfaceImplementation::VirtDetectorID(const char *detectorName)
 {
@@ -113,4 +119,40 @@ Int_t       AliHLTDAQInterfaceImplementation::VirtNumberOfDdls(Int_t detectorID)
 {
   // see header file for class documentation
   return AliDAQ::NumberOfDdls(detectorID);
+}
+
+const char *AliHLTDAQInterfaceImplementation::VirtListOfTriggeredDetectors(UInt_t detectorPattern)
+{
+  // see header file for class documentation
+  return AliDAQ::ListOfTriggeredDetectors(detectorPattern);
+}
+
+UInt_t      AliHLTDAQInterfaceImplementation::VirtDetectorPattern(const char *detectorList)
+{
+  // see header file for class documentation
+  return AliDAQ::DetectorPattern(detectorList);
+}
+
+const char *AliHLTDAQInterfaceImplementation::VirtOfflineModuleName(const char *detectorName)
+{
+  // see header file for class documentation
+  return AliDAQ::OfflineModuleName(detectorName);
+}
+
+const char *AliHLTDAQInterfaceImplementation::VirtOfflineModuleName(Int_t detectorID)
+{
+  // see header file for class documentation
+  return AliDAQ::OfflineModuleName(detectorID);
+}
+
+const char *AliHLTDAQInterfaceImplementation::VirtOnlineName(const char *detectorName)
+{
+  // see header file for class documentation
+  return AliDAQ::OnlineName(detectorName);
+}
+
+const char *AliHLTDAQInterfaceImplementation::VirtOnlineName(Int_t detectorID)
+{
+  // see header file for class documentation
+  return AliDAQ::OnlineName(detectorID);
 }

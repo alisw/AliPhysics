@@ -34,6 +34,8 @@ class AliHLTDAQInterfaceImplementation : public AliHLTDAQ {
   /** destructor */
   virtual ~AliHLTDAQInterfaceImplementation();
 
+  Int_t       VirtNumberOfDetectors();
+
   Int_t       VirtDetectorID(const char *detectorName);
   const char *VirtDetectorName(Int_t detectorID);
 
@@ -50,6 +52,15 @@ class AliHLTDAQInterfaceImplementation : public AliHLTDAQ {
 
   Int_t       VirtNumberOfDdls(const char *detectorName);
   Int_t       VirtNumberOfDdls(Int_t detectorID);
+
+  const char *VirtListOfTriggeredDetectors(UInt_t detectorPattern);
+  UInt_t      VirtDetectorPattern(const char *detectorList);
+
+  const char *VirtOfflineModuleName(const char *detectorName);
+  const char *VirtOfflineModuleName(Int_t detectorID);
+
+  const char *VirtOnlineName(const char *detectorName);
+  const char *VirtOnlineName(Int_t detectorID);
 
  protected:
 

@@ -25,6 +25,8 @@ class AliHLTDAQ {
  public:
   AliHLTDAQ();
   virtual ~AliHLTDAQ();
+  static  Int_t       NumberOfDetectors();
+
   static  Int_t       DetectorID(const char *detectorName);
   static  const char *DetectorName(Int_t detectorID);
 
@@ -42,9 +44,20 @@ class AliHLTDAQ {
   static  Int_t       NumberOfDdls(const char *detectorName);
   static  Int_t       NumberOfDdls(Int_t detectorID);
 
+  static const char *ListOfTriggeredDetectors(UInt_t detectorPattern);
+  static UInt_t      DetectorPattern(const char *detectorList);
+
+  static const char *OfflineModuleName(const char *detectorName);
+  static const char *OfflineModuleName(Int_t detectorID);
+
+  static const char *OnlineName(const char *detectorName);
+  static const char *OnlineName(Int_t detectorID);
+
   static AliHLTDAQ* GetInstance();
 
  private:
+  virtual  Int_t       VirtNumberOfDetectors()=0;
+
   virtual  Int_t       VirtDetectorID(const char *detectorName)=0;
   virtual  const char *VirtDetectorName(Int_t detectorID)=0;
 
@@ -61,6 +74,15 @@ class AliHLTDAQ {
 
   virtual  Int_t       VirtNumberOfDdls(const char *detectorName)=0;
   virtual  Int_t       VirtNumberOfDdls(Int_t detectorID)=0;
+
+  virtual  const char *VirtListOfTriggeredDetectors(UInt_t detectorPattern)=0;
+  virtual  UInt_t      VirtDetectorPattern(const char *detectorList)=0;
+
+  virtual  const char *VirtOfflineModuleName(const char *detectorName)=0;
+  virtual  const char *VirtOfflineModuleName(Int_t detectorID)=0;
+
+  virtual  const char *VirtOnlineName(const char *detectorName)=0;
+  virtual  const char *VirtOnlineName(Int_t detectorID)=0;
 
   /** global instance */
   static AliHLTDAQ* fgpInstance; //!
