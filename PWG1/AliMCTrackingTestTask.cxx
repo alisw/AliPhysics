@@ -441,6 +441,8 @@ void  AliMCTrackingTestTask::FitTrackRefs(TParticle * part, TClonesArray * trefs
   Float_t alphaOut= TMath::ATan2(refOut->Y(),refOut->X());
   Float_t radiusOut= refOut->R();
 */
+  Bool_t isOKP=kTRUE;
+  Bool_t isOKU=kTRUE;
   AliMagF * field = (AliMagF*) TGeoGlobalMagField::Instance()->GetField();
   for (Int_t iref = iref0; iref<=iref1; iref++){
     AliTrackReference * ref = (AliTrackReference*)trefs->At(iref);
@@ -448,17 +450,17 @@ void  AliMCTrackingTestTask::FitTrackRefs(TParticle * part, TClonesArray * trefs
     Double_t pos[3] = {ref->X(), ref->Y(), ref->Z()};
     Double_t mag[3];
     field->Field(pos,mag);
-    paramPropagate->Rotate(alphaC);
-    paramUpdate->Rotate(alphaC);
+    isOKP&=paramPropagate->Rotate(alphaC);
+    isOKU&=paramUpdate->Rotate(alphaC);
     for (Float_t xref= paramPropagate->GetX(); xref<ref->R(); xref++){
-      paramPropagate->PropagateTo(xref, -mag[2]);
-      paramUpdate->PropagateTo(xref, -mag[2]);
+      isOKP&=paramPropagate->PropagateTo(xref, mag[2]);
+      isOKU&=paramUpdate->PropagateTo(xref, mag[2]);
     }
-    paramPropagate->PropagateTo(ref->R(), -mag[2]);
-    paramUpdate->PropagateTo(ref->R(), -mag[2]);
+    isOKP&=paramPropagate->PropagateTo(ref->R(), mag[2]);
+    isOKU&=paramUpdate->PropagateTo(ref->R(), mag[2]);
     Double_t clpos[2] = {0, ref->Z()};
     Double_t clcov[3] = { 0.005,0,0.005};
-    paramUpdate->Update(clpos, clcov);  
+    isOKU&= paramUpdate->Update(clpos, clcov);  
   }
   TTreeSRedirector *pcstream = GetDebugStreamer();
   if (pcstream){
@@ -472,6 +474,8 @@ void  AliMCTrackingTestTask::FitTrackRefs(TParticle * part, TClonesArray * trefs
     paramPropagate->GetPxPyPz(gmomP.GetMatrixArray());
 
      (*pcstream)<<"MCupdate"<<
+       "isOKU="<<isOKU<<
+       "isOKP="<<isOKP<<
        "m="<<mass<<
        "q="<<charge<<
        "part.="<<part<<
