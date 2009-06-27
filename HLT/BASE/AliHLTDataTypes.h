@@ -54,6 +54,7 @@
  *  12       added common data type id 'CLUSTERS'
  *           added data type 'ECSPARAM' for the full ECS parameter string to
  *           be sebt during SOR
+ *           added kAliHLTDataTypeTrackMC (TRACK_MC) data type
  */
 #define ALIHLT_DATA_TYPES_VERSION 12
 
@@ -382,6 +383,11 @@ const int kAliHLTComponentDataTypefIDsize=8;
  * @ingroup alihlt_component_datatypes
  */
 #define kAliHLTTrackDataTypeID                {'H','L','T','T','R','A','C','K'}
+
+/** Track Monte Carlo information
+ * @ingroup alihlt_component_datatypes
+ */
+#define kAliHLTTrackMCDataTypeID              {'T','R','A','C','K','_','M','C'}
 
 /** TClonesArray of AliExternalTrackParam
  * @ingroup alihlt_component_datatypes
@@ -947,6 +953,10 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */	
   extern const AliHLTComponentDataType kAliHLTDataTypeTrack;              // {HLTTRACK,"***"}
+
+  /** Track Monte Carlo information
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeTrackMC;            // {TRACK_MC,"***"}
 
   /** TClonesArray of AliExternalTrackParam
    * @ingroup alihlt_component_datatypes
