@@ -2,14 +2,6 @@
 
 set(SRCS
 trigger/AliHLTTrigger.cxx
-trigger/AliHLTTriggerDecision.cxx
-trigger/AliHLTTriggerDomain.cxx
-trigger/AliHLTDomainEntry.cxx
-trigger/AliHLTReadoutList.cxx
-trigger/AliHLTTriggerMenu.cxx
-trigger/AliHLTTriggerMenuItem.cxx
-trigger/AliHLTTriggerMenuSymbol.cxx
-trigger/AliHLTGlobalTriggerDecision.cxx
 trigger/AliHLTGlobalTrigger.cxx
 trigger/AliHLTGlobalTriggerConfig.cxx
 trigger/AliHLTGlobalTriggerComponent.cxx

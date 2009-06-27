@@ -29,7 +29,7 @@
 /// from individual components that derive from AliHLTTrigger.
 
 #include "AliHLTReadoutList.h"
-#include "AliDAQ.h"
+#include "AliHLTDAQ.h"
 #include "Riostream.h"
 #include "TString.h"
 #include "TObjString.h"
@@ -367,14 +367,14 @@ void AliHLTReadoutList::Print(Option_t* /*option*/) const
   // Prints the DDLs that will be readout according to this readout list.
   
   cout << "Readout enabled for DDLs:" << endl;
-  for (Int_t i = 0; i < AliDAQ::kNDetectors; i++)
+  for (Int_t i = 0; i < AliHLTDAQ::NumberOfDetectors(); i++)
   {
-    Int_t maxddls = AliDAQ::NumberOfDdls(i);
-    cout << AliDAQ::DetectorName(i) << ":";
+    Int_t maxddls = AliHLTDAQ::NumberOfDdls(i);
+    cout << AliHLTDAQ::DetectorName(i) << ":";
     bool nonefound = true;
     for (Int_t j = 0; j < maxddls; j++)
     {
-      Int_t ddlId = ( ((i == AliDAQ::kNDetectors-1) ? 30 : i) << 8 ) + j;
+      Int_t ddlId = ( ((i == AliHLTDAQ::NumberOfDetectors()-1) ? 30 : i) << 8 ) + j;
       if (GetDDLBit(ddlId))
       {
         cout << " " << ddlId;

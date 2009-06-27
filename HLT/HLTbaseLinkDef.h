@@ -43,6 +43,14 @@
 #pragma link C++ class AliHLTMessage+;
 #pragma link C++ class AliHLTEventStatistics+;
 #pragma link C++ class AliHLTBlockDataCollection+;
+#pragma link C++ class AliHLTTriggerDecision.h+;
+#pragma link C++ class AliHLTGlobalTriggerDecision.h+;
+#pragma link C++ class AliHLTReadoutList.h+;
+#pragma link C++ class AliHLTTriggerDomain.h+;
+#pragma link C++ class AliHLTDomainEntry.h+;
+#pragma link C++ class AliHLTTriggerMenu.h+;
+#pragma link C++ class AliHLTTriggerMenuItem.h+;
+#pragma link C++ class AliHLTTriggerMenuSymbol.h+;
 #pragma link C++ class AliHLTRunStatistics+;
 #pragma link C++ class AliHLTPluginBase+;
 #endif

@@ -40,6 +40,14 @@ BASE/AliHLTMemoryFile.cxx
 BASE/AliHLTMessage.cxx
 BASE/AliHLTEventStatistics.cxx
 BASE/AliHLTBlockDataCollection.cxx
+BASE/AliHLTTriggerDecision.h      
+BASE/AliHLTGlobalTriggerDecision.h
+BASE/AliHLTReadoutList.h          
+BASE/AliHLTTriggerDomain.h        
+BASE/AliHLTDomainEntry.h          
+BASE/AliHLTTriggerMenu.h          
+BASE/AliHLTTriggerMenuItem.h      
+BASE/AliHLTTriggerMenuSymbol.h    
 BASE/AliHLTRunStatistics.cxx
 BASE/AliHLT_C_Component_WrapperInterface.cxx
 BASE/AliHLTDataTypes.cxx 

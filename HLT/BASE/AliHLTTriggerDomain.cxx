@@ -30,7 +30,7 @@
 #include "Riostream.h"
 #include "TObjArray.h"
 #include "TObjString.h"
-#include "AliDAQ.h"
+#include "AliHLTDAQ.h"
 
 ClassImp(AliHLTTriggerDomain)
 
@@ -163,7 +163,7 @@ void AliHLTTriggerDomain::Add(const AliHLTReadoutList& list)
   // Adds the readout list to the trigger domain.
   // See header file for more details.
   
-  Int_t detId[AliDAQ::kNDetectors] = {
+  Int_t detId[] = {
       AliHLTReadoutList::kITSSPD, AliHLTReadoutList::kITSSDD, AliHLTReadoutList::kITSSSD,
       AliHLTReadoutList::kTPC, AliHLTReadoutList::kTRD, AliHLTReadoutList::kTOF,
       AliHLTReadoutList::kHMPID, AliHLTReadoutList::kPHOS, AliHLTReadoutList::kCPV,
@@ -173,18 +173,18 @@ void AliHLTTriggerDomain::Add(const AliHLTReadoutList& list)
       AliHLTReadoutList::kEMCAL, AliHLTReadoutList::kDAQTEST, AliHLTReadoutList::kHLT
     };
   
-  for (Int_t deti = 0; deti < AliDAQ::kNDetectors; deti++)
+  for (Int_t deti = 0; deti < AliHLTDAQ::NumberOfDetectors() && deti<(sizeof(detId)/sizeof(Int_t)); deti++)
   {
     if (list.DetectorEnabled(detId[deti]))
     {
-      Add("DAQRDOUT", AliDAQ::OnlineName(deti));
+      Add("DAQRDOUT", AliHLTDAQ::OnlineName(deti));
     }
     else
     {
-      for (Int_t i = 0; i < AliDAQ::NumberOfDdls(deti); i++)
+      for (Int_t i = 0; i < AliHLTDAQ::NumberOfDdls(deti); i++)
       {
-        Int_t ddlId = AliDAQ::DdlID(deti, i);
-        if (list.IsDDLEnabled(ddlId)) Add("DAQRDOUT", AliDAQ::OnlineName(deti), ddlId);
+        Int_t ddlId = AliHLTDAQ::DdlID(deti, i);
+        if (list.IsDDLEnabled(ddlId)) Add("DAQRDOUT", AliHLTDAQ::OnlineName(deti), ddlId);
       }
     }
   }
@@ -293,7 +293,7 @@ void AliHLTTriggerDomain::Remove(const AliHLTReadoutList& list)
   // Removes the entries in the readout list from the trigger domain that are enabled.
   // See header file for more details.
   
-  Int_t detId[AliDAQ::kNDetectors] = {
+  Int_t detId[] = {
       AliHLTReadoutList::kITSSPD, AliHLTReadoutList::kITSSDD, AliHLTReadoutList::kITSSSD,
       AliHLTReadoutList::kTPC, AliHLTReadoutList::kTRD, AliHLTReadoutList::kTOF,
       AliHLTReadoutList::kHMPID, AliHLTReadoutList::kPHOS, AliHLTReadoutList::kCPV,
@@ -303,18 +303,18 @@ void AliHLTTriggerDomain::Remove(const AliHLTReadoutList& list)
       AliHLTReadoutList::kEMCAL, AliHLTReadoutList::kDAQTEST, AliHLTReadoutList::kHLT
     };
   
-  for (Int_t deti = 0; deti < AliDAQ::kNDetectors; deti++)
+  for (Int_t deti = 0; deti < AliHLTDAQ::NumberOfDetectors() && deti<(sizeof(detId)/sizeof(Int_t)); deti++)
   {
     if (list.DetectorEnabled(detId[deti]))
     {
-      Remove("DAQRDOUT", AliDAQ::OnlineName(deti));
+      Remove("DAQRDOUT", AliHLTDAQ::OnlineName(deti));
     }
     else
     {
-      for (Int_t i = 0; i < AliDAQ::NumberOfDdls(deti); i++)
+      for (Int_t i = 0; i < AliHLTDAQ::NumberOfDdls(deti); i++)
       {
-        Int_t ddlId = AliDAQ::DdlID(deti, i);
-        if (list.IsDDLEnabled(ddlId)) Remove("DAQRDOUT", AliDAQ::OnlineName(deti), ddlId);
+        Int_t ddlId = AliHLTDAQ::DdlID(deti, i);
+        if (list.IsDDLEnabled(ddlId)) Remove("DAQRDOUT", AliHLTDAQ::OnlineName(deti), ddlId);
       }
     }
   }
@@ -835,12 +835,12 @@ AliHLTTriggerDomain::operator AliHLTReadoutList () const
   // Typecast operator which constructs a readout list from the trigger domain.
   
   AliHLTReadoutList result;
-  for (Int_t deti = 0; deti < AliDAQ::kNDetectors; deti++)
+  for (Int_t deti = 0; deti < AliHLTDAQ::NumberOfDetectors(); deti++)
   {
-    for (Int_t i = 0; i < AliDAQ::NumberOfDdls(deti); i++)
+    for (Int_t i = 0; i < AliHLTDAQ::NumberOfDdls(deti); i++)
     {
-      Int_t ddlId = AliDAQ::DdlID(deti, i);
-      if (Contains(AliHLTDomainEntry("DAQRDOUT", AliDAQ::OnlineName(deti), ddlId)))
+      Int_t ddlId = AliHLTDAQ::DdlID(deti, i);
+      if (Contains(AliHLTDomainEntry("DAQRDOUT", AliHLTDAQ::OnlineName(deti), ddlId)))
       {
         result.EnableDDLBit(ddlId);
       }

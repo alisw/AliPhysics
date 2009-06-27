@@ -42,6 +42,14 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTMessage.h \
 		AliHLTEventStatistics.h \
 		AliHLTBlockDataCollection.h \
+                AliHLTTriggerDecision.h                     \
+                AliHLTGlobalTriggerDecision.h               \
+                AliHLTReadoutList.h                         \
+                AliHLTTriggerDomain.h                       \
+                AliHLTDomainEntry.h                         \
+                AliHLTTriggerMenu.h                         \
+                AliHLTTriggerMenuItem.h                     \
+                AliHLTTriggerMenuSymbol.h                   \
                 AliHLTRunStatistics.h \
                 AliHLTKalmanTrack.h
 
