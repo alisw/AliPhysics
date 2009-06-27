@@ -1179,8 +1179,8 @@ Double_t AliTPCkalmanFit::GetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID
   //Double_t xyz[3]={x,y,z};
   Double_t r;
   Double_t alpha;
-  if(icoordsys==0)r=TMath::Sqrt(x*x+y*y); alpha = TMath::ATan2(y,x);
-  if(icoordsys==1)r=x; alpha = y;
+  if(icoordsys==0){r=TMath::Sqrt(x*x+y*y); alpha = TMath::ATan2(y,x);}
+  if(icoordsys==1){r=x; alpha = y;}
   Double_t ca    = TMath::Cos(alpha);
   Double_t sa    = TMath::Sin(alpha);
   Double_t xyz[3];
@@ -1210,4 +1210,74 @@ Double_t AliTPCkalmanFit::SGetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibI
   //
   if (AliTPCkalmanFit::fgInstance==0) return 0;
   return AliTPCkalmanFit::fgInstance->GetTPCtransXYZ(coord, volID, calibID,icoordsys,x,y,z);
+}
+
+
+void AliTPCkalmanFit::MakeTreeTrans(TTreeSRedirector *debug){
+  //
+  // Make the Tree before and after current calibration
+  //
+  if (!fCalibParam) {
+    AliError("Kalman Fit not initialized");
+    return;
+  }
+  //
+  //
+  //
+  const Int_t ncalibs = fCalibration->GetEntries();
+  TMatrixD dxdydz(ncalibs,5);
+
+
+  Double_t x[3];
+  for (x[0]=-250.;x[0]<=250.;x[0]+=10.){
+    for (x[1]=-250.;x[1]<=250.;x[1]+=10.){
+      for (x[2]=-250.;x[2]<=250.;x[2]+=20.) {
+	Double_t r=TMath::Sqrt(x[0]*x[0]+x[1]*x[1]);
+	if (r<20) continue;
+	if (r>260) continue;
+	//Double_t z = x[2];
+	Double_t phi=TMath::ATan2(x[1],x[0]);
+	Double_t ca=TMath::Cos(phi);
+	Double_t sa=TMath::Sin(phi);
+	Double_t dx=0;
+	Double_t dy=0;
+	Double_t dz=0;
+	Double_t dr=0;
+	Double_t rdphi=0;
+
+
+	for(Int_t icalib=0;icalib<ncalibs;icalib++){
+	  for(Int_t icoord=0;icoord<5;icoord++){
+	    dxdydz(icalib,icoord)= GetTPCtransXYZ(icoord, -1, icalib, 0, x[0], x[1], x[2]);
+	  }
+	}
+	dx=GetTPCDeltaXYZ(0, -1, 0, x[0], x[1], x[2]);
+	dy=GetTPCDeltaXYZ(1, -1, 0, x[0], x[1], x[2]);
+	dz=GetTPCDeltaXYZ(2, -1, 0, x[0], x[1], x[2]);
+	dr=GetTPCDeltaXYZ(3, -1, 0, x[0], x[1], x[2]);
+	rdphi=GetTPCDeltaXYZ(4, -1, 0, x[0], x[1], x[2]);
+
+
+	if(debug){
+	  (*debug)<<"positions"<<
+	    "x="<<x[0]<<
+	    "y="<<x[1]<<
+	    "z="<<x[2]<<
+	    "r="<<r<<
+	    "ca="<<ca<<
+	    "sa="<<sa<<
+	    "phi="<<phi<<
+	    "dx="<<dx<<
+	    "dy="<<dy<<
+	    "dz="<<dz<<
+	    "dr="<<dr<<
+	    "rdphi="<<rdphi<<
+	    "dxdydz.="<<&dxdydz<<
+	    "\n";
+	}
+      }
+    }
+    Printf("x0=%f finished",x[0]);
+  }
+
 }
