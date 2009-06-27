@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id:$
 #ifndef ALIHLTGLOBALTRIGGERDECISION_H
 #define ALIHLTGLOBALTRIGGERDECISION_H
 /* This file is property of and copyright by the ALICE HLT Project        *

@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id:$
 #ifndef ALIHLTTRIGGERMENU_H
 #define ALIHLTTRIGGERMENU_H
 /* This file is property of and copyright by the ALICE HLT Project        *

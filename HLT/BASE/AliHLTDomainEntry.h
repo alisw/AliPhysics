@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id:$
 #ifndef ALIHLTDOMAINENTRY_H
 #define ALIHLTDOMAINENTRY_H
 /* This file is property of and copyright by the ALICE HLT Project        *

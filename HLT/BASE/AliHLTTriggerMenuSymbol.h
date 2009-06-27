@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id:$
 #ifndef ALIHLTTRIGGERMENUSYMBOL_H
 #define ALIHLTTRIGGERMENUSYMBOL_H
 /* This file is property of and copyright by the ALICE HLT Project        *

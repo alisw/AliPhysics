@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id:$
 #ifndef ALIHLTGLOBALTRIGGER_H
 #define ALIHLTGLOBALTRIGGER_H
 /* This file is property of and copyright by the ALICE HLT Project        *

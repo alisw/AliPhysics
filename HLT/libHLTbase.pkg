@@ -68,7 +68,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTDefinitions.h \
 		AliHLTStdIncludes.h
 
-MODULE_DHDR:=
+MODULE_DHDR:=	HLTbaseLinkDef.h
 
 SRCS:=$(patsubst %,BASE/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,BASE/%,$(CLASS_HDRS))

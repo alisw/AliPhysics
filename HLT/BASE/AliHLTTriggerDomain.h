@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id:$
 #ifndef ALIHLTTRIGGERDOMAIN_H
 #define ALIHLTTRIGGERDOMAIN_H
 /* This file is property of and copyright by the ALICE HLT Project        *
