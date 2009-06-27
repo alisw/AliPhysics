@@ -3,6 +3,8 @@
 
 CLASS_HDRS:=	AliHLTGlobalTrackMerger.h \
 		AliHLTGlobalTrackMergerComponent.h \
+		AliHLTGlobalEsdConverterComponent.h \
+		AliHLTGlobalBarrelTrack.h \
 		AliHLTGlobalAgent.h \
 		AliHLTVertexer.h
 
