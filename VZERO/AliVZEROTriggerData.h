@@ -15,7 +15,7 @@ public:
 	AliVZEROTriggerData(Int_t nRun, UInt_t startTime, UInt_t endTime);
 	~AliVZEROTriggerData();
 	AliVZEROTriggerData(const AliVZEROTriggerData &triggerData);
-	AliVZEROTriggerData& operator= (const AliVZEROTriggerData &triggerData);
+	AliVZEROTriggerData& operator= (const AliVZEROTriggerData &/*triggerData*/){AliInfo("Not implemented");return *this;};
 	
 	void FillData(AliVZERODataFEE * data);
 
@@ -209,6 +209,5 @@ private:
 	ClassDef( AliVZEROTriggerData, 1 )  
 
 };
-
 
 #endif // ALIVZEROTRIGGERDATA_H

@@ -19,14 +19,14 @@ public:
 	AliVZEROLogicalSignal operator& (const AliVZEROLogicalSignal &signal) const;
 	AliVZEROLogicalSignal operator| (const AliVZEROLogicalSignal &signal) const;
 	// Print method
-	virtual void Print(Option_t* opt="") const { AliInfo(Form("\t -> Start %f Stop %f\n ",fStart,fStop));}
+	virtual void Print(Option_t* opt="") const { AliInfo(Form("\t%s -> Start %f Stop %f\n ",opt,fStart,fStop));}
 	
 	Float_t GetStartTime() const {return fStart;};
 	Float_t GetStopTime() const {return fStop;};
 	Float_t GetWidth() const {return (fStop - fStart);};
 	
-	void SetStartTime(Float_t time);
-	void SetStopTime(Float_t time);
+	void SetStartTime(Float_t time){fStart = time;};
+	void SetStopTime(Float_t time){fStop = time;};
 	
 	Bool_t IsInCoincidence(Float_t time);
 	
@@ -41,3 +41,4 @@ private:
 };
 
 #endif // ALIVZEROLOGICALSIGNAL_H
+

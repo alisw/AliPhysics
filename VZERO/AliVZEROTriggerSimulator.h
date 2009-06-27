@@ -20,7 +20,7 @@ public:
 	AliVZEROTriggerSimulator(TTree * digitsTree, TClonesArray* digits);
 	~AliVZEROTriggerSimulator();
 	AliVZEROTriggerSimulator(const AliVZEROTriggerSimulator &triggerSim);
-	AliVZEROTriggerSimulator& operator= (const AliVZEROTriggerSimulator &triggerSim);
+	AliVZEROTriggerSimulator& operator= (const AliVZEROTriggerSimulator & /*triggerSim*/){AliInfo("Not implemented");return *this;};
 	
 	AliVZEROTriggerData * GetTriggerData() const {return fTriggerData;};
 	
