@@ -263,7 +263,7 @@ int AliHLTITSTrackerComponent::DoInit( int argc, const char** argv )
   // Configure the ITS tracker component
 
   if ( fTracker ) return EINPROGRESS;
-  fTracker = new AliITStrackerHLT();
+  fTracker = new AliITStrackerHLT(0);
 
   TString arguments = "";
   for ( int i = 0; i < argc; i++ ) {
