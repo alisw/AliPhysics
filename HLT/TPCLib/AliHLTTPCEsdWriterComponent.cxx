@@ -217,7 +217,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	  for( int itr=0; itr<nTracks; itr++ ){
 	    AliHLTKalmanTrack t(*currOutTrack);
 	    Float_t points[4] = {currOutTrack->fX, currOutTrack->fY, currOutTrack->fLastX, currOutTrack->fLastY };
-	    Int_t mcLabel = fDoMCLabels ? mcLabel = GetTrackMCLabel( currOutTrack->fPointIDs, currOutTrack->fNPoints ) :-1;  
+	    Int_t mcLabel = fDoMCLabels ? GetTrackMCLabel( currOutTrack->fPointIDs, currOutTrack->fNPoints ) :-1;  
 	    t.SetLabel( mcLabel );
 	    
 	    AliESDtrack iotrack;
