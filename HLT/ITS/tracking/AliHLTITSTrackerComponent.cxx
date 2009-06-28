@@ -331,7 +331,7 @@ int AliHLTITSTrackerComponent::DoEvent
   vector< int > tracksTPCId;
   std::vector<AliITSRecPoint> clusters;
 
-  int currentTrackID = 0;
+  //int currentTrackID = 0;
 
   for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
 

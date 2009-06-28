@@ -52,7 +52,7 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   /// Set the list of associated points
   int SetPoints(const UInt_t* pArray, UInt_t arraySize);
 
-  static int ConvertTrackDataArray(const AliHLTTracksData* pTracks, int sizeInByte, vector<AliHLTGlobalBarrelTrack> &tgtArray);
+  static int ConvertTrackDataArray(const AliHLTTracksData* pTracks, unsigned sizeInByte, vector<AliHLTGlobalBarrelTrack> &tgtArray);
 
   /// dummy function required by AliKalmanTrack
   Double_t GetPredictedChi2(const AliCluster*) const {return 0.0;}

@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -174,7 +174,7 @@ void AliHLTTriggerDomain::Add(const AliHLTReadoutList& list)
       AliHLTReadoutList::kEMCAL, AliHLTReadoutList::kDAQTEST, AliHLTReadoutList::kHLT
     };
   
-  for (Int_t deti = 0; deti < AliHLTDAQ::NumberOfDetectors() && deti<(sizeof(detId)/sizeof(Int_t)); deti++)
+  for (Int_t deti = 0; deti < AliHLTDAQ::NumberOfDetectors() && (unsigned)deti<(sizeof(detId)/sizeof(Int_t)); deti++)
   {
     if (list.DetectorEnabled(detId[deti]))
     {
@@ -304,7 +304,7 @@ void AliHLTTriggerDomain::Remove(const AliHLTReadoutList& list)
       AliHLTReadoutList::kEMCAL, AliHLTReadoutList::kDAQTEST, AliHLTReadoutList::kHLT
     };
   
-  for (Int_t deti = 0; deti < AliHLTDAQ::NumberOfDetectors() && deti<(sizeof(detId)/sizeof(Int_t)); deti++)
+  for (Int_t deti = 0; deti < AliHLTDAQ::NumberOfDetectors() && (unsigned)deti<(sizeof(detId)/sizeof(Int_t)); deti++)
   {
     if (list.DetectorEnabled(detId[deti]))
     {

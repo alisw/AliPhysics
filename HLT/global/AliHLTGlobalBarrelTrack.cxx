@@ -83,7 +83,7 @@ AliHLTGlobalBarrelTrack::~AliHLTGlobalBarrelTrack()
   // see header file for class documentation
 }
 
-int AliHLTGlobalBarrelTrack::ConvertTrackDataArray(const AliHLTTracksData* pTracks, int sizeInByte, vector<AliHLTGlobalBarrelTrack> &tgtArray)
+int AliHLTGlobalBarrelTrack::ConvertTrackDataArray(const AliHLTTracksData* pTracks, unsigned sizeInByte, vector<AliHLTGlobalBarrelTrack> &tgtArray)
 {
   // see header file for class documentation
   int iResult=0;
@@ -95,7 +95,7 @@ int AliHLTGlobalBarrelTrack::ConvertTrackDataArray(const AliHLTTracksData* pTrac
 
   tgtArray.resize(pTracks->fCount);
   const AliHLTUInt8_t* pCurrent=reinterpret_cast<const AliHLTUInt8_t*>(pTracks->fTracklets);
-  for (int i=0; i<pTracks->fCount; i++) {
+  for (unsigned i=0; i<pTracks->fCount; i++) {
     if (pCurrent+sizeof(AliHLTExternalTrackParam)>=pEnd) {
       iResult=-EINVAL; break;
     }
@@ -128,6 +128,6 @@ int AliHLTGlobalBarrelTrack::SetPoints(const UInt_t* pArray, UInt_t arraySize)
   // see header file for class documentation
   if (!pArray || arraySize==0) return 0;
   fPoints.resize(arraySize);
-  for (int i=0; i<arraySize; i++) fPoints[i]=pArray[i];
+  for (unsigned i=0; i<arraySize; i++) fPoints[i]=pArray[i];
   return fPoints.size();
 }
