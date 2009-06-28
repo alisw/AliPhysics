@@ -89,10 +89,6 @@ ClassImp(AliMUONQADataMakerRec)
 //____________________________________________________________________________ 
 AliMUONQADataMakerRec::AliMUONQADataMakerRec() : 
 AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kMUON), "MUON Quality Assurance Data Maker"),
-fIsInitRaws(kFALSE),
-fIsInitRecPointsTracker(kFALSE),
-fIsInitRecPointsTrigger(kFALSE),
-fIsInitESDs(kFALSE),
 fDigitStore(0x0),
 fTriggerStore(0x0),
 fDigitMaker(0x0),
@@ -118,10 +114,6 @@ AliMUONQADataMakerRec::Ctor()
 //____________________________________________________________________________ 
 AliMUONQADataMakerRec::AliMUONQADataMakerRec(const AliMUONQADataMakerRec& qadm) :
 AliQADataMakerRec(qadm),
-fIsInitRaws(kFALSE),
-fIsInitRecPointsTracker(kFALSE),
-fIsInitRecPointsTrigger(kFALSE),
-fIsInitESDs(kFALSE),
 fDigitStore(0x0),
 fTriggerStore(0x0),
 fDigitMaker(0x0),
@@ -473,7 +465,6 @@ void AliMUONQADataMakerRec::InitRaws()
 	if ( ! AliCDBManager::Instance()->GetDefaultStorage() )
 	{
 		AliError("CDB default storage not set. Cannot work.");
-		fIsInitRaws=kFALSE;
 	}
 	
 	TH3F* h3 = new TH3F("hTriggerScalersBendPlane", "Trigger scalers in bending plane",
@@ -567,8 +558,6 @@ void AliMUONQADataMakerRec::InitRaws()
   fTrackerDataMaker->Data()->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level
 	
   fTrackerDataMaker->SetRunning(kTRUE);
-  
-	fIsInitRaws = kTRUE;
 }
 
 //__________________________________________________________________
@@ -690,8 +679,6 @@ void AliMUONQADataMakerRec::InitRecPointsTracker()
   h1F->SetMarkerStyle(kFullDotMedium);
   h1F->SetMarkerColor(kRed);
   Add2RecPointsList(h1F, kTrackerClusterChargePerDEMean, !expert, image);
-  
-  fIsInitRecPointsTracker=kTRUE;
 }
 
 //____________________________________________________________________________ 
@@ -740,8 +727,6 @@ void AliMUONQADataMakerRec::InitRecPointsTrigger()
     TH2F* h4 = (TH2F*)triggerDisplay.GetEmptyDisplayHisto("hFiredBoardsDisplay", AliMUONTriggerDisplay::kDisplayBoards,
 							  0, 0, "Fired boards");
     Add2RecPointsList(h4, kTriggerBoardsDisplay, !expert, image);
-	
-	fIsInitRecPointsTrigger = kTRUE;
 }
 
 
@@ -976,20 +961,12 @@ void AliMUONQADataMakerRec::InitESDs()
   Add2ESDsList(hESDSumLocalChi2YPerDE, kESDSumLocalChi2YPerDE, expert, !image);
   TH1F* hESDSumLocalChi2PerDE = new TH1F("hESDSumLocalChi2PerDE", "sum of local chi2 (~0.5*(#chi^{2}_{X}+#chi^{2}_{Y})) per DE;DetElem ID;#Sigma(local #chi^{2})", nDE+1, -0.5, nDE+0.5);
   Add2ESDsList(hESDSumLocalChi2PerDE, kESDSumLocalChi2PerDE, expert, !image);
-  
-  fIsInitESDs =  kTRUE;
 }
 
 //____________________________________________________________________________
 void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
     /// make QA for rawdata
-
-  if ( ! fIsInitRaws ) {
-      AliWarningStream() 
-        << "Skipping function due to a failure in Init" << endl;
-      return;
-    }    
 
     // Check id histograms already created for this Event Specie
   
@@ -1008,6 +985,9 @@ void AliMUONQADataMakerRec::MakeRawsTracker(AliRawReader* rawReader)
 {
 	/// make QA for rawdata tracker
   	
+  /// forces init
+  GetRawsData(kTrackerBusPatchOccupancy);
+  
 	((AliMUONTrackerDataMaker*)fTrackerDataMaker)->SetRawReader(rawReader);
 	
 	fTrackerDataMaker->ProcessEvent();
@@ -1115,8 +1095,8 @@ void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 {
 	/// Fill histograms from treeR
 	
-  if (fIsInitRecPointsTracker) MakeRecPointsTracker(clustersTree);
-	if (fIsInitRecPointsTrigger) MakeRecPointsTrigger(clustersTree);
+  MakeRecPointsTracker(clustersTree);
+	MakeRecPointsTrigger(clustersTree);
 }
 
 //____________________________________________________________________________
@@ -1137,7 +1117,6 @@ void AliMUONQADataMakerRec::MakeRecPointsTracker(TTree* clustersTree)
 		fClusterStore = AliMUONVClusterStore::Create(*clustersTree);
 		if (!fClusterStore) 
 		{
-			fIsInitRecPointsTracker = kFALSE;
 			return;
 		}
 	}
@@ -1224,12 +1203,6 @@ void AliMUONQADataMakerRec::MakeRecPointsTrigger(TTree* clustersTree)
 void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
 {
   /// make QA data from ESDs
-  
-  if ( ! fIsInitESDs ) {
-    AliWarningStream() 
-    << "Skipping function due to a failure in Init" << endl;
-    return;
-  }  
   
   // load ESD event in the interface
   AliMUONESDInterface esdInterface;
