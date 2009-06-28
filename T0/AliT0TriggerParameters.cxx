@@ -67,6 +67,13 @@ AliT0TriggerParameters& AliT0TriggerParameters:: operator=(const AliT0TriggerPar
 
   if (this == &p)
     return *this;
+  AliT0TriggerParameters:: operator=(p);
+  fSwtPmt = p.fSwtPmt;
+  fAmpCentr = p.fAmpCentr;
+  fAmpSemiCentr = p.fAmpSemiCentr;
+  fTimeWindowLow = p.fTimeWindowLow;
+  fTimeWindowHigh = p.fTimeWindowHigh;
+  return *this;
  
 }
 

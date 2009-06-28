@@ -84,6 +84,8 @@ AliT0RecoParam& AliT0RecoParam:: operator=(const AliT0RecoParam &p)
   AliDetectorRecoParam::operator=(p);
   fRefAmp = p.fRefAmp;
   fRefPoint = p.fRefPoint;
+  return *this;
+
 }
 //_____________________________________________________________________________
  
