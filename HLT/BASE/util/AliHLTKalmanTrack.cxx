@@ -17,6 +17,9 @@
 #include "AliHLTKalmanTrack.h"
 #include "AliHLTExternalTrackParam.h"
 
+/** ROOT macro for the implementation of ROOT specific class methods */
+ClassImp(AliHLTKalmanTrack)
+
 AliHLTKalmanTrack::AliHLTKalmanTrack( const AliHLTExternalTrackParam &t)
   : AliKalmanTrack()
 {

@@ -50,8 +50,7 @@ CLASS_HDRS:=  	AliHLTComponent.h \
                 AliHLTTriggerMenu.h                         \
                 AliHLTTriggerMenuItem.h                     \
                 AliHLTTriggerMenuSymbol.h                   \
-                AliHLTRunStatistics.h \
-                AliHLTKalmanTrack.h
+                AliHLTRunStatistics.h
 
 
 

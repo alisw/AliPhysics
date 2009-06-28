@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 #ifdef __CINT__
 #pragma link off all globals;
 #pragma link off all classes;
@@ -51,7 +51,6 @@
 #pragma link C++ class AliHLTTriggerMenuItem+;
 #pragma link C++ class AliHLTTriggerMenuSymbol+;
 #pragma link C++ class AliHLTRunStatistics+;
-#pragma link C++ class AliHLTKalmanTrack+;
 #pragma link C++ struct AliHLTComponentDataType+;
 #pragma link C++ struct AliHLTEventDDL+;
 #endif
