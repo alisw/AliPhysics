@@ -237,7 +237,7 @@ AliMUONPreClusterFinder::NextCluster()
   
   if ( ShouldAbort() ) 
   {
-    AliError("Aborting clustering of that DE because we've got too many pads");
+    AliError(Form("Aborting clustering of DE %d because we've got too many pads",fDetElemId));
     fClusters.Remove(cluster);
     fClusters.Compress();
     return 0x0;
