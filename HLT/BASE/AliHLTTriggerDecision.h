@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id:$
+// $Id$
 #ifndef ALIHLTTRIGGERDECISION_H
 #define ALIHLTTRIGGERDECISION_H
 /* This file is property of and copyright by the ALICE HLT Project        *
@@ -63,11 +63,32 @@ class AliHLTTriggerDecision : public TObject
   virtual const char* GetName() const { return fName.Data(); }
   
   /**
+   * Inherited from TObject. Returns the description of the trigger decision.
+   */
+  virtual const char* GetTitle() const { return fDescription.Data(); }
+  
+  /**
    * Inherited from TObject. This prints the contents of the trigger decision.
    * \param option  Can be "short" which will print the short format.
    */
   virtual void Print(Option_t* option = "") const;
-  
+
+  /**
+   * Inherited from TObject. Copy this to the specified object.
+   */
+  virtual void Copy(TObject &object) const;
+
+  /**
+   * Inherited from TObject. Create a new clone.
+   */
+  virtual TObject *Clone(const char *newname="") const;
+
+  /**
+   * Inherited from TObject. Return the result of the trigger.
+   * @return   "0" or "1" (note: its a string)
+   */
+  virtual Option_t *GetOption() const;
+
   /**
    * Returns the result of the trigger decision.
    * \returns true if the event was triggered and should be readout.

@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id:$
+// $Id$
 #ifndef ALIHLTGLOBALTRIGGERDECISION_H
 #define ALIHLTGLOBALTRIGGERDECISION_H
 /* This file is property of and copyright by the ALICE HLT Project        *
@@ -47,7 +47,17 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
    *    global information but not the lists of input objects.
    */
   virtual void Print(Option_t* option = "") const;
+
+  /**
+   * Inherited from TObject. Copy this to the specified object.
+   */
+  virtual void Copy(TObject &object) const;
   
+  /**
+   * Inherited from TObject. Create a new clone.
+   */
+  virtual TObject *Clone(const char *newname="") const;
+
   /**
    * Returns the number of trigger inputs that contributed to this global trigger decision.
    */

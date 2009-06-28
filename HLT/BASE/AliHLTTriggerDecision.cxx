@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -83,3 +83,31 @@ void AliHLTTriggerDecision::Print(Option_t* option) const
   fTriggerDomain.Print();
 }
 
+void AliHLTTriggerDecision::Copy(TObject &object) const
+{
+  // copy this to the specified object
+
+  AliHLTTriggerDecision* pDecision=dynamic_cast<AliHLTTriggerDecision*>(&object);
+  if (pDecision) {
+    // copy members if target is a AliHLTTriggerDecision
+    *pDecision=*this;
+  }
+
+  // copy the base class
+  TObject::Copy(object);
+}
+
+TObject *AliHLTTriggerDecision::Clone(const char */*newname*/) const
+{
+  // create a new clone, classname is ignored
+
+  return new AliHLTTriggerDecision(*this);
+}
+
+Option_t *AliHLTTriggerDecision::GetOption() const
+{
+  // Return the result of the trigger.
+  // "0" or "1"
+  if (Result()) return "1";
+  return "0";
+}
