@@ -78,6 +78,7 @@ private:
 	static const Int_t fgkNoGain; //!< do not apply gain calib at all
 	static const Int_t fgkGainConstantCapa; //!< apply gain (from OCDB) with constant capa
 	static const Int_t fgkGain; //!< apply gain and capa (from OCDB)
+	static const Int_t fgkInjectionGain; //!< apply injection gain (from OCDB)
 	
   ClassDef(AliMUONDigitCalibrator,9) // Calibrate raw digit
 };

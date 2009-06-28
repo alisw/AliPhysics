@@ -343,7 +343,7 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   
   Bool_t     fSaveFullClusterInESD; ///< kTRUE to save all cluster info (including pads) in ESD
   
-  /// calibration mode:  GAIN, NOGAIN, GAINCONSTANTCAPA
+  /// calibration mode:  GAIN, NOGAIN, GAINCONSTANTCAPA, INJECTIONGAIN
   TString    fCalibrationMode; ///<\brief calibration mode
   
   Int_t      fBypassSt45; ///< non-zero to use trigger tracks to generate "fake" clusters in St 4 and 5. Can be 0, 4, 5 or 45 only

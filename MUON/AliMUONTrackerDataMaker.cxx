@@ -181,6 +181,7 @@ AliMUONTrackerDataMaker::Ctor(const AliMUONRecoParam* recoParam,
     if ( scalib == "GAIN" ) type = "CALC";
     if ( scalib == "NOGAIN" ) type = "CALZ";
     if ( scalib == "GAINCONSTANTCAPA") type = "CALG";
+    if ( scalib == "INJECTIONGAIN" ) type = "CALE";
   }
   
   if ( !fRunNumber ) 

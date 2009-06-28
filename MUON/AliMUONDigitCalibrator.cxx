@@ -1,17 +1,17 @@
 /**************************************************************************
-* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
-*                                                                        *
-* Author: The ALICE Off-line Project.                                    *
-* Contributors are mentioned in the code where appropriate.              *
-*                                                                        *
-* Permission to use, copy, modify and distribute this software and its   *
-* documentation strictly for non-commercial purposes is hereby granted   *
-* without fee, provided that the above copyright notice appears in all   *
-* copies and that both the copyright notice and this permission notice   *
-* appear in the supporting documentation. The authors make no claims     *
-* about the suitability of this software for any purpose. It is          *
-* provided "as is" without express or implied warranty.                  *
-**************************************************************************/
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 // $Id$
 
@@ -62,6 +62,7 @@ ClassImp(AliMUONDigitCalibrator)
 const Int_t AliMUONDigitCalibrator::fgkNoGain(0);
 const Int_t AliMUONDigitCalibrator::fgkGainConstantCapa(1);
 const Int_t AliMUONDigitCalibrator::fgkGain(2);
+const Int_t AliMUONDigitCalibrator::fgkInjectionGain(3);
 
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
@@ -130,21 +131,26 @@ AliMUONDigitCalibrator::Ctor(const char* calibMode,
     fApplyGains = fgkGain;
     AliInfo("Will apply gain correction, with measured capacitances");
   }
+  else if ( cMode == "INJECTIONGAIN")
+	{
+		fApplyGains = fgkInjectionGain;
+    AliInfo("Will apply injection gain correction, with EMELEC factory gains");
+	}  
   else
   {
     AliError(Form("Invalid calib mode = %s. Will use NOGAIN instead",calibMode));
     fApplyGains = fgkNoGain;
   }
-       
+  
   // Load mapping manu store
   if ( ! AliMpCDB::LoadManuStore() ) {
     AliFatal("Could not access manu store from OCDB !");
   }
-
+  
   fStatusMaker = new AliMUONPadStatusMaker(calib);
   
   // Set default values, as loose as reasonable
-
+  
   fChargeSigmaCut = 3.0;
   
 	Int_t mask(0x8080); // reject pads where ped *or* hv are missing
@@ -173,10 +179,10 @@ AliMUONDigitCalibrator::Ctor(const char* calibMode,
   fStatusMapMaker = new AliMUONPadStatusMapMaker(*fStatusMaker,mask,deferredInitialization);
   
   fPedestals = calib.Pedestals();
-
+  
   fGains = calib.Gains(); // we get gains whatever the calibMode is, in order
   // to get the saturation value...
-
+  
   if ( fApplyGains == fgkGain ) 
   {
     fCapacitances = calib.Capacitances();
@@ -192,7 +198,7 @@ AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
   
   AliInfo("Summary of messages:");
   fLogger->Print();
-
+  
 	AliInfo(Form("We have seen %g pads, and rejected %g (%7.2f %%)",
 							 fNumberOfPads,fNumberOfBadPads,
 							 ( fNumberOfPads > 0 ) ? fNumberOfBadPads*100.0/fNumberOfPads : 0 ));
@@ -207,7 +213,7 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
   /// Calibrate the digits contained in digitStore  
   TIter next(digitStore.CreateTrackerIterator());
   AliMUONVDigit* digit;
-
+  
   fStatusMapMaker->RefreshRejectProbabilities(); // this will do something only for simulations
   // (and only for those simulations where the reject list contain probabilities which are
   // different from zero or one)
@@ -227,11 +233,11 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
     Float_t charge(0.0);
     Int_t statusMap;
     Bool_t isSaturated(kFALSE);
-
+    
     ++fNumberOfPads;
-
+    
     Bool_t ok = IsValidDigit(digit->DetElemId(),digit->ManuId(),digit->ManuChannel(),&statusMap);
-
+    
     digit->SetStatusMap(statusMap);
     
     if (ok)
@@ -245,7 +251,7 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
                       digit->DetElemId(),digit->ManuId(),digit->ManuChannel(),
                       digit->ADC(),statusMap,
                       fStatusMaker->AsString(fStatusMaker->PadStatus(digit->DetElemId(),digit->ManuId(),digit->ManuChannel())).Data()));
-
+      
       ++fNumberOfBadPads;
       
     }
@@ -291,39 +297,41 @@ AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manu
   }
   
   Float_t padc = adc-pedestal->ValueAsFloat(manuChannel,0);
-  Float_t charge(0);
-  Float_t capa(1.0);
   
-  if ( fApplyGains == fgkGainConstantCapa ) 
+	// Gain (mV/fC) = 1/(a0*capa) with a0~1.25 and capa~0.2 
+  Float_t charge(0);
+  Float_t capa(0.2); // capa = 0.2 and a0 = 1.25
+	Float_t a0(1.25);  // is equivalent to gain = 4 mV/fC
+	Float_t a1(0);
+	Float_t adc2mv(0.61); // 1 ADC channel = 0.61 mV
+	Float_t injGain(4); // By default the gain is set to 4 mV/fC
+	
+  if ( fApplyGains == fgkGain || fApplyGains == fgkInjectionGain ) 
   {
-    capa = 0.2; // pF
-  }
-  else if ( fApplyGains == fgkGain ) 
-  {
-    
-
     Int_t serialNumber 
-      = AliMpManuStore::Instance()->GetManuSerial(detElemId, manuId);
+    = AliMpManuStore::Instance()->GetManuSerial(detElemId, manuId);
     
     AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fCapacitances->FindObject(serialNumber));
     
     if ( param )
     {
-      capa = param->ValueAsFloat(manuChannel);
+      capa = param->ValueAsFloat(manuChannel,0);
+			injGain = param->ValueAsFloat(manuChannel,1);
     }
     else
     {
-      fLogger->Log(Form("No capa found for serialNumber=%d",serialNumber));
-      capa = 0.0;
+      // If capa not found in the OCDB we use default value
+	    fLogger->Log(Form("No capa (injGain) found for serialNumber=%d",serialNumber));
+			return 0.0;
     }
   }
   
   if ( padc > nsigmas*pedestal->ValueAsFloat(manuChannel,1) ) 
   {
-    if ( fApplyGains != fgkNoGain ) 
+    if ( fApplyGains == fgkGain || fApplyGains == fgkGainConstantCapa ) 
     {
-      Float_t a0 = gain->ValueAsFloat(manuChannel,0);
-      Float_t a1 = gain->ValueAsFloat(manuChannel,1);
+      a0 = gain->ValueAsFloat(manuChannel,0);
+      a1 = gain->ValueAsFloat(manuChannel,1);
       Int_t thres = gain->ValueAsInt(manuChannel,2);
       if ( padc < thres ) 
       {
@@ -333,24 +341,28 @@ AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manu
       {
         charge = a0*thres + a0*(padc-thres) + a1*(padc-thres)*(padc-thres);
       }
+			charge *= capa*adc2mv;
     }
-    else
+    else if ( fApplyGains == fgkInjectionGain ) 
     {
-      charge = padc;
+			
+      charge = padc*adc2mv/injGain;
     }
+		else
+		{
+			charge = a0*padc*capa*adc2mv;
+		}
   }
-  
-  charge *= capa;
   
   if ( isSaturated ) 
   {
     Int_t saturation(3000);
-  
+    
     if ( gain && ( fApplyGains != fgkNoGain ) )
     {
       saturation = gain->ValueAsInt(manuChannel,4);
     }
-  
+    
     if ( padc >= saturation )
     {
       *isSaturated = kTRUE;

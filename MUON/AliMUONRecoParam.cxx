@@ -106,6 +106,7 @@ AliMUONRecoParam::GetCalibrationMode() const
   /// NOGAIN : only do pedestal subtraction
   /// GAIN : do pedestal subtraction, and apply gain correction, but with a
   ///        single capacitance value for all channels
+  /// INJECTIONGAIN : as GAIN, but with gain values taken as EMELEC factory values
   /// GAINCONSTANTCAPA : as GAIN, but with a channel-dependent capacitance value
   
   return fCalibrationMode.Data();

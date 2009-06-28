@@ -85,6 +85,7 @@ private:
   TGCheckButton* fCalibrateNoGain; ///< to trig calibration of raw data (only 0 suppression)
   TGCheckButton* fCalibrateGainConstantCapa; ///< to trig calibration of raw data (0-supp and gain w/ constant capacitance)
   TGCheckButton* fCalibrateGain; ///< to trig calibration of raw data (full blown calibration)
+  TGCheckButton* fCalibrateEmelecGain; ///< to trig calibration of raw data (full blown calibration but with factory gains)
   TGCheckButton* fHistogramButton; ///< to trig histogramming of raw data
   TGNumberEntry* fHistoMin; ///< xmin of histo to make
   TGNumberEntry* fHistoMax; ///< xmax of histo to make
@@ -106,7 +107,7 @@ private:
   static const char* fgkNumberOfDataSourcesKey; ///< key used to store the # of data sources in the resource file
   static const char* fgkDataSourceURIKey; ///< key usde to store the data source URIs in the resource file
 
-  ClassDef(AliMUONPainterDataSourceFrame,3) // Data source selection frame
+  ClassDef(AliMUONPainterDataSourceFrame,4) // Data source selection frame
 };
 
 #endif

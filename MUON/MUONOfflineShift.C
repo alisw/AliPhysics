@@ -49,7 +49,7 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
-#include "AliMUONPainterRegistry.h"
+#include "AliMUONPainterDataRegistry.h"
 #include "AliMUONRecoParam.h"
 #include "AliMUONTrackerDataMaker.h"
 #include "AliMUONVTrackerData.h"
@@ -103,7 +103,7 @@ Int_t DataMakerReading(const char* input,
     dm = new AliMUONTrackerDataMaker(rawReader,histogram);
   }
   
-  AliMUONPainterRegistry::Instance()->Register(dm);
+  AliMUONPainterDataRegistry::Instance()->Register(dm);
 
   timer.Start(kTRUE);
   Int_t n(0);
@@ -146,7 +146,7 @@ void Occupancy(ostream& outfile)
   
   const Int_t occIndex = 2;
   
-  AliMUONPainterRegistry* reg = AliMUONPainterRegistry::Instance();
+  AliMUONPainterDataRegistry* reg = AliMUONPainterDataRegistry::Instance();
 
   Int_t nofDataSources = reg->NumberOfDataSources();
 
@@ -237,6 +237,7 @@ void MUONOfflineShift(const char* input="alien:///alice/data/2009/LHC09a/0000674
   TStopwatch timer2;
   TStopwatch timer3;
   TStopwatch timer4;
+  TStopwatch timer5;
   
   Int_t n1 = DataMakerReading(input,timer1,"","",kTRUE,0,0);
 
@@ -246,12 +247,15 @@ void MUONOfflineShift(const char* input="alien:///alice/data/2009/LHC09a/0000674
 
   Int_t n4 = DataMakerReading(input,timer4,ocdbPath,"GAIN");
 
+  Int_t n5 = DataMakerReading(input,timer5,ocdbPath,"INJECTIONGAIN");
+
   Print("DataMakerReading(HRAW)",timer1,n1);  
   Print("DataMakerReading(HCALZ)",timer2,n2);
   Print("DataMakerReading(HCALG)",timer3,n3);
   Print("DataMakerReading(HCALC)",timer4,n4);
+  Print("DataMakerReading(HCALE)",timer5,n5);
   
-  AliMUONPainterRegistry* reg = AliMUONPainterRegistry::Instance();
+  AliMUONPainterDataRegistry* reg = AliMUONPainterDataRegistry::Instance();
   
   TFile f(gSystem->ExpandPathName(Form("%s.root",outputBase)),"RECREATE");
   ofstream out(gSystem->ExpandPathName(Form("%s.log",outputBase)));

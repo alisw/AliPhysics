@@ -64,9 +64,10 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fRawSelector21(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
   fRawSelector22(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
   fRawSelector23(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
-  fCalibrateNoGain(new TGCheckButton(fRawSelector22,"Ped subraction")),
-  fCalibrateGainConstantCapa(new TGCheckButton(fRawSelector22,"Ped subraction + gain (capa cste)")),
-  fCalibrateGain(new TGCheckButton(fRawSelector22,"Full calib (Ped subraction + gain with capa)")),
+  fCalibrateNoGain(new TGCheckButton(fRawSelector22,"Ped sub")),
+  fCalibrateGainConstantCapa(new TGCheckButton(fRawSelector22,"Ped sub+gain (capa cste)")),
+  fCalibrateGain(new TGCheckButton(fRawSelector22,"Full calib (Ped sub+gain w/ capa)")),
+  fCalibrateEmelecGain(new TGCheckButton(fRawSelector22,"Full calib (Ped sub+inj gain w/ capa)")),
   fHistogramButton(new TGCheckButton(fRawSelector23,"Histogram")),
   fHistoMin(new TGNumberEntry(fRawSelector23,0)),
   fHistoMax(new TGNumberEntry(fRawSelector23,4096)),
@@ -137,6 +138,7 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
     fRawSelector22->AddFrame(fCalibrateNoGain, new TGLayoutHints(kLHintsTop,5,5,5,5));
     fRawSelector22->AddFrame(fCalibrateGainConstantCapa, new TGLayoutHints(kLHintsTop,5,5,5,5));
     fRawSelector22->AddFrame(fCalibrateGain, new TGLayoutHints(kLHintsTop,5,5,5,5));
+    fRawSelector22->AddFrame(fCalibrateEmelecGain, new TGLayoutHints(kLHintsTop,5,5,5,5));
     fRawSelector22->AddFrame(fRawOCDBPath, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
     fRawOCDBPath->SetEnabled(kFALSE);
     
@@ -158,6 +160,7 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
     fCalibrateNoGain->Connect("Clicked()","AliMUONPainterDataSourceFrame",this,"CalibrateButtonClicked()");
     fCalibrateGainConstantCapa->Connect("Clicked()","AliMUONPainterDataSourceFrame",this,"CalibrateButtonClicked()");
     fCalibrateGain->Connect("Clicked()","AliMUONPainterDataSourceFrame",this,"CalibrateButtonClicked()");
+  fCalibrateEmelecGain->Connect("Clicked()","AliMUONPainterDataSourceFrame",this,"CalibrateButtonClicked()");
 
     openButton->Connect("Clicked()",
                         "AliMUONPainterDataSourceFrame",
@@ -280,7 +283,8 @@ AliMUONPainterDataSourceFrame::CalibrateButtonClicked()
   
   if ( fCalibrateNoGain->IsOn() ||
        fCalibrateGainConstantCapa->IsOn() ||
-       fCalibrateGain->IsOn() ) 
+       fCalibrateGain->IsOn() || 
+       fCalibrateEmelecGain->IsOn() ) 
   {
     fRawOCDBPath->SetEnabled(kTRUE);
     fRawOCDBPath->SetFocus();
@@ -470,6 +474,12 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource()
   {
     calibMode = "GAINCONSTANTCAPA";
     name = "CALG";
+  }
+
+  if ( fCalibrateEmelecGain->IsOn() ) 
+  {
+    calibMode = "INJECTIONGAIN";
+    name = "CALE";
   }
   
   if ( fCalibrateNoGain->IsOn() ) 

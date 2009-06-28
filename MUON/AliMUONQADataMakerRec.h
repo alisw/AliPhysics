@@ -166,11 +166,6 @@ private:
   /// Return reco parameters
   const AliMUONRecoParam* GetMUONRecoParam() const { return dynamic_cast<const AliMUONRecoParam *>(fRecoParam); }
   
-  Bool_t  fIsInitRaws;       //!<  info if InitRaws() went ok
-  Bool_t  fIsInitRecPointsTracker;  //!<  info if InitRecPoints() went ok
-  Bool_t  fIsInitRecPointsTrigger;  //!<  info if InitRecPoints() went ok
-  Bool_t  fIsInitESDs;       //!<  info if InitESDs() went ok
-  
   AliMUONVDigitStore*   fDigitStore; //!< pointer to digits store
   AliMUONVTriggerStore* fTriggerStore; //!< pointer to trigger store
   AliMUONDigitMaker*    fDigitMaker;  //!< pointer to digit maker
@@ -178,7 +173,7 @@ private:
 	
   AliMUONVTrackerDataMaker* fTrackerDataMaker; //!< tracker data accumulation
   
-  ClassDef(AliMUONQADataMakerRec,5)  // MUON Quality assurance data maker
+  ClassDef(AliMUONQADataMakerRec,6)  // MUON Quality assurance data maker
 
 };
 #endif

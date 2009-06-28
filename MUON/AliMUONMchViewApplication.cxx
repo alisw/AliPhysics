@@ -353,6 +353,11 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("0.97");
+  rn->AddLine("");
+  rn->AddLine("Adding calibration option with Emelec (aka injection) gain");
+  rn->AddLine("");
+  
   rn->AddLine("0.96a");
   rn->AddLine("");
   rn->AddLine("Internal reorganization of the contour computations, that lead to improved performance. ");
