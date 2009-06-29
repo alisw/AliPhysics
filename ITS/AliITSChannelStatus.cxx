@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:$ */
+/* $Id$ */
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -29,8 +29,10 @@
 #include "AliITSChannelStatus.h"
 #include "AliITSCalibrationSPD.h"
 #include "AliITSCalibrationSDD.h"
+#include "AliITSCalibrationSSD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
+#include "AliITSsegmentationSSD.h"
 #include "AliCDBEntry.h"
 #include "TMath.h"
 #include "AliLog.h"
@@ -42,20 +44,24 @@ ClassImp(AliITSChannelStatus)
 AliITSChannelStatus::AliITSChannelStatus():
 TObject(),
 fSPDChannelStatus(0),
-fSDDChannelStatus(0)
+fSDDChannelStatus(0),
+fSSDChannelStatus(0)
 {
   // default constructor 
   UInt_t nSPDchan=kSPDModules*kSPDNpxPerModule*kSPDNpzPerModule;
   fSPDChannelStatus=new TBits(nSPDchan);
   UInt_t nSDDchan=kSDDModules*kSDDAnodesPerModule;
   fSDDChannelStatus=new TBits(nSDDchan);
+  UInt_t nSSDchan=kSSDModules*kSSDStripsPerModule;
+  fSSDChannelStatus=new TBits(nSSDchan);
   InitDefaults();
 }
 //______________________________________________________________________
 AliITSChannelStatus::AliITSChannelStatus(AliCDBManager *cdb):
 TObject(),
 fSPDChannelStatus(0),
-fSDDChannelStatus(0)
+fSDDChannelStatus(0),
+fSSDChannelStatus(0)
 {
   AliCDBEntry* spdEntryD = cdb->Get("ITS/Calib/SPDDead");
   if (!spdEntryD) AliFatal("Cannot get CDB entry for SPDDead");
@@ -72,23 +78,34 @@ fSDDChannelStatus(0)
   TObjArray* calArrSDD = (TObjArray*)sddEntry->GetObject();
   if (!calArrSDD) AliFatal("No object found in CalibSDD file");
 
+  AliCDBEntry* ssdEntry = cdb->Get("ITS/Calib/CalibSSD");
+  if (!ssdEntry) AliFatal("Cannot get CDB entry for CalibSSD");
+  TObjArray* calArrSSD = (TObjArray*)ssdEntry->GetObject();
+  if (!calArrSSD) AliFatal("No object found in CalibSSD file");
+
   UInt_t nSPDchan=kSPDModules*kSPDNpxPerModule*kSPDNpzPerModule;
   fSPDChannelStatus=new TBits(nSPDchan);
   UInt_t nSDDchan=kSDDModules*kSDDAnodesPerModule;
   fSDDChannelStatus=new TBits(nSDDchan);
-  InitFromOCDB(deadArrSPD,noisArrSPD,calArrSDD);
+  UInt_t nSSDchan=kSSDModules*kSSDStripsPerModule;
+  fSSDChannelStatus=new TBits(nSSDchan);
+  InitFromOCDB(deadArrSPD,noisArrSPD,calArrSDD,calArrSSD);
 }
 //______________________________________________________________________
 AliITSChannelStatus::AliITSChannelStatus(const AliITSDetTypeRec *dtrec):
 TObject(),
 fSPDChannelStatus(0),
-fSDDChannelStatus(0)
+fSDDChannelStatus(0),
+fSSDChannelStatus(0)
 {
   UInt_t nSPDchan=kSPDModules*kSPDNpxPerModule*kSPDNpzPerModule;
   fSPDChannelStatus=new TBits(nSPDchan);
   
   UInt_t nSDDchan=kSDDModules*kSDDAnodesPerModule;
   fSDDChannelStatus=new TBits(nSDDchan);
+
+  UInt_t nSSDchan=kSSDModules*kSSDStripsPerModule;
+  fSSDChannelStatus=new TBits(nSSDchan);
   
   // SPD modules
   for(Int_t imod=0; imod<kSPDModules; imod++){
@@ -126,6 +143,21 @@ fSDDChannelStatus(0)
       fSDDChannelStatus->SetBitNumber(index,cstatus);
     }
   }
+
+  // SSD modules
+  for (Int_t imod = 0; imod < kSSDModules; imod++) {
+    AliITSCalibrationSSD* calssd=(AliITSCalibrationSSD*)dtrec->GetCalibrationModel(kSSDFirstModule+imod);
+    for(Int_t ip=0; ip<kSSDStripsPerModule; ip++) {
+      Int_t index=imod*kSSDStripsPerModule+ip;
+      Bool_t cstatus = kTRUE;
+      if (ip < 768 && calssd->IsPChannelBad(ip))
+	cstatus = kFALSE;
+      if (ip >= 768 && calssd->IsNChannelBad(ip-768))
+	cstatus = kFALSE;
+
+      fSSDChannelStatus->SetBitNumber(index,cstatus);
+    }
+  }
 }
 //______________________________________________________________________
 void  AliITSChannelStatus::InitDefaults(){
@@ -144,9 +176,15 @@ void  AliITSChannelStatus::InitDefaults(){
       fSDDChannelStatus->SetBitNumber(index,kTRUE);
     }
   }
+  for(Int_t imod=0; imod<kSSDModules; imod++){
+    for(Int_t is=0; is<kSSDStripsPerModule; is++){
+      Int_t index=imod*kSSDStripsPerModule+is;
+      fSSDChannelStatus->SetBitNumber(index,kTRUE);
+    }
+  }
 }
 //______________________________________________________________________
-void AliITSChannelStatus::InitFromOCDB(TObjArray* deadArrSPD, TObjArray* noisArrSPD, TObjArray* calArrSDD){
+void AliITSChannelStatus::InitFromOCDB(TObjArray* deadArrSPD, TObjArray* noisArrSPD, TObjArray* calArrSDD, TObjArray *calArrSSD){
 // fills bitmaps from arrays of AliITSCalibrationSXD objects
 
   // SPD modules
@@ -186,12 +224,28 @@ void AliITSChannelStatus::InitFromOCDB(TObjArray* deadArrSPD, TObjArray* noisArr
       fSDDChannelStatus->SetBitNumber(index,cstatus);
     }
   }
+
+  // SSD modules
+  for (Int_t imod = 0; imod < kSSDModules; imod++) {
+    AliITSCalibrationSSD* calssd=(AliITSCalibrationSSD*)calArrSSD->At(imod);
+    for(Int_t ip=0; ip<kSSDStripsPerModule; ip++) {
+      Int_t index=imod*kSSDStripsPerModule+ip;
+      Bool_t cstatus = kTRUE;
+      if (ip < 768 && calssd->IsPChannelBad(ip))
+	cstatus = kFALSE;
+      if (ip >= 768 && calssd->IsNChannelBad(ip-768))
+	cstatus = kFALSE;
+
+      fSSDChannelStatus->SetBitNumber(index,cstatus);
+    }
+  }
 }
 //______________________________________________________________________
 AliITSChannelStatus::AliITSChannelStatus(const AliITSChannelStatus& cstatus):
 TObject(),
 fSPDChannelStatus(cstatus.fSPDChannelStatus),
-fSDDChannelStatus(cstatus.fSDDChannelStatus)
+fSDDChannelStatus(cstatus.fSDDChannelStatus),
+fSSDChannelStatus(cstatus.fSSDChannelStatus)
 {
   // copy constructor 
 }
@@ -209,12 +263,13 @@ AliITSChannelStatus::~AliITSChannelStatus(){
   // destructor
   if(fSPDChannelStatus) delete fSPDChannelStatus;
   if(fSDDChannelStatus) delete fSDDChannelStatus;
+  if(fSSDChannelStatus) delete fSSDChannelStatus;
 }
 
 //______________________________________________________________________
 Bool_t AliITSChannelStatus::CheckBounds(Int_t imod, Int_t iz, Int_t ix) const {
   // check for out of bounds
-  if(imod<0 || imod>=kSPDModules+kSDDModules){
+  if(imod<0 || imod>=kSPDModules+kSDDModules+kSSDModules){
     AliError(Form("Module number out of range 0-%d",kSPDModules+kSDDModules));
     return kFALSE;
   }
@@ -223,9 +278,15 @@ Bool_t AliITSChannelStatus::CheckBounds(Int_t imod, Int_t iz, Int_t ix) const {
       AliError("SPD: Pixel number out of range");
       return kFALSE;
     }
-  }else{
+  }else if (imod<kSSDFirstModule){
     if(iz<0 || iz>=kSDDAnodesPerModule){
       AliError("SDD: anode number out of range");
+      return kFALSE;
+    }
+  }
+  else {
+    if(iz<0 || iz>=kSSDStripsPerModule){
+      AliError("SSD: strip number out of range");
       return kFALSE;
     }
   }
@@ -238,10 +299,15 @@ Bool_t AliITSChannelStatus::GetChannelStatus(Int_t imod, Int_t iz, Int_t ix) con
   if(imod<kSPDModules){
     Int_t index=imod*kSPDNpxPerModule*kSPDNpzPerModule+ix*kSPDNpzPerModule+iz;
     return fSPDChannelStatus->TestBitNumber(index);
-  }else{
+  } else if (imod < kSSDFirstModule) {
     imod-=kSPDModules;
     Int_t index=imod*kSDDAnodesPerModule+iz;
     return fSDDChannelStatus->TestBitNumber(index);    
+  }
+  else { // SSD: iz is strip number 0-767 P-side, 768 - 1535 N-side
+    imod-=kSSDFirstModule;
+    Int_t index=imod*kSSDStripsPerModule+iz;
+    return fSSDChannelStatus->TestBitNumber(index);    
   }
 }
 //______________________________________________________________________
@@ -251,10 +317,15 @@ void AliITSChannelStatus::SetChannelStatus(Bool_t cstatus, Int_t imod, Int_t iz,
   if(imod<kSPDModules){
     Int_t index=imod*kSPDNpxPerModule*kSPDNpzPerModule+ix*kSPDNpzPerModule+iz;
     fSPDChannelStatus->SetBitNumber(index,cstatus);
-  }else{
+  }else if (imod < kSSDFirstModule) {
     imod-=kSPDModules;
     Int_t index=imod*kSDDAnodesPerModule+iz;
     fSDDChannelStatus->SetBitNumber(index,cstatus);
+  }
+  else { // SSD: iz is strip number 0-767 P-side, 768 - 1535 N-side
+    imod-=kSSDFirstModule;
+    Int_t index=imod*kSSDStripsPerModule+iz;
+    return fSSDChannelStatus->SetBitNumber(index,cstatus);    
   }
 }
 //______________________________________________________________________
@@ -332,8 +403,54 @@ Bool_t AliITSChannelStatus::GetSPDLimits(Float_t zlocmin, Float_t zlocmax, Float
   return kTRUE;
 }
 //______________________________________________________________________
+Bool_t AliITSChannelStatus::GetSSDLimits(Int_t layer, Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax, Int_t& iPmin, Int_t& iPmax, Int_t& iNmin, Int_t& iNmax) const {
+  // Returns min, max strip for SSD, given a search window
+  static AliITSsegmentationSSD seg;
+
+  AliDebug(2,Form("xmin %f zmin %f xmax %f zmax %f\n",xlocmin,zlocmin,xlocmax,zlocmax));
+
+  Int_t p,n;
+  seg.SetLayer(layer);
+  seg.GetPadIxz(xlocmin,zlocmin,p,n);
+  iPmin = iPmax = p;
+  iNmin = iNmax = n;
+  AliDebug(5,Form("lay %d xmin, zmin p %d n %d\n",layer,p,n));
+  seg.GetPadIxz(xlocmax,zlocmin,p,n);
+  iPmin = TMath::Min(iPmin,p);
+  iPmax = TMath::Min(iPmax,p);
+  iNmin = TMath::Min(iNmin,n);
+  iNmax = TMath::Min(iNmax,n);
+  AliDebug(5,Form("lay %d xmax, zmin p %d n %d\n",layer,p,n));
+  seg.GetPadIxz(xlocmax,zlocmax,p,n);
+  iPmin = TMath::Min(iPmin,p);
+  iPmax = TMath::Min(iPmax,p);
+  iNmin = TMath::Min(iNmin,n);
+  iNmax = TMath::Min(iNmax,n);
+  AliDebug(5,Form("lay %d xmax, zmax p %d n %d\n",layer,p,n));
+  seg.GetPadIxz(xlocmin,zlocmax,p,n);
+  iPmin = TMath::Min(iPmin,p);
+  iPmax = TMath::Min(iPmax,p);
+  iNmin = TMath::Min(iNmin,n);
+  iNmax = TMath::Min(iNmax,n);
+  AliDebug(5,Form("lay %d xmin, zmax p %d n %d\n",layer,p,n));
+
+  if (iPmin < 0)
+    iPmin = 0;
+  if (iNmin < 0)
+    iNmin = 0;
+  if (iPmax >= kSSDStripsPerSide)
+    iPmax = kSSDStripsPerSide-1;
+  if (iNmax >= kSSDStripsPerSide)
+    iNmax = kSSDStripsPerSide-1;
+  AliDebug(2,Form("lay %d p %d %d n %d %d\n",layer,iPmin,iPmax,iNmin,iNmax));
+  return kTRUE;
+}
+//______________________________________________________________________
 Bool_t AliITSChannelStatus::AnyBadInRoad(Int_t imod, Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax) const{
   // Checks if there is at least one bad channel in the search road
+  // For SSD: return kTRUE if there is at least one bad strip on both sides
+  //          if only bad strips on one side 1D clusters can be used
+  AliDebug(2,Form("checking for module %d",imod));
   if(imod<kSPDModules){
     Int_t izmin,izmax,ixmin,ixmax;
     Bool_t retcode=GetSPDLimits(zlocmin,zlocmax,xlocmin,xlocmax,izmin,izmax,ixmin,ixmax);
@@ -343,17 +460,34 @@ Bool_t AliITSChannelStatus::AnyBadInRoad(Int_t imod, Float_t zlocmin, Float_t zl
 	if(GetChannelStatus(imod,iz,ix)==kFALSE) return kTRUE;
       }
     }
-  }else{
+  }else if (imod < kSSDFirstModule) {
     Int_t izmin,izmax,izmin2,izmax2;
     Bool_t retcode=GetSDDLimits(zlocmin,zlocmax,xlocmin,xlocmax,izmin,izmax,izmin2,izmax2);
     if(!retcode) return kFALSE;
     for(Int_t iz=izmin; iz<=izmax;iz++){
-      if(GetChannelStatus(imod,iz,0)==kFALSE) return kTRUE;
+      if(GetChannelStatus(imod,iz,0)==kFALSE) { return kTRUE;}
     }
     if(izmin2!=-1 && izmax2!=-1){
       for(Int_t iz=izmin2; iz<=izmax2;iz++){
-	if(GetChannelStatus(imod,iz,0)==kFALSE) return kTRUE;
+	if(GetChannelStatus(imod,iz,0)==kFALSE) { return kTRUE;}
       }
+    }
+  }
+  else {
+    Int_t layer = 5;
+    if (imod > kSSDMaxModLay5) 
+      layer = 6;
+    Int_t iPmin,iPmax,iNmin,iNmax;
+    Bool_t retcode=GetSSDLimits(layer,zlocmin,zlocmax,xlocmin,xlocmax,iPmin,iPmax,iNmin,iNmax);
+    if(!retcode) return kFALSE;
+    Int_t nPbad = 0;
+    for(Int_t iP=iPmin; iP<=iPmax;iP++){
+      if(GetChannelStatus(imod,iP,0)==kFALSE) nPbad++;
+    }
+    if (nPbad == 0)
+      return kFALSE;
+    for(Int_t iN=iNmin; iN<=iNmax;iN++){
+      if(GetChannelStatus(imod,iN+768,0)==kFALSE) { return kTRUE; }
     }
   }
   return kFALSE;
@@ -361,6 +495,8 @@ Bool_t AliITSChannelStatus::AnyBadInRoad(Int_t imod, Float_t zlocmin, Float_t zl
 //______________________________________________________________________
 Float_t AliITSChannelStatus::FractionOfBadInRoad(Int_t imod, Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax) const{
   // Calculate the fraction of bad channels in the road  
+  // Note: SSD returns fraction of dead strips on 'best' side. This 
+  //       is not proportional to dead surface area. 
   Float_t totChan=0.;
   Float_t badChan=0.;
   if(imod<kSPDModules){
@@ -373,7 +509,7 @@ Float_t AliITSChannelStatus::FractionOfBadInRoad(Int_t imod, Float_t zlocmin, Fl
 	if(GetChannelStatus(imod,iz,ix)==kFALSE) badChan+=1.;
       }
     }
-  }else{
+  }else if (imod < kSSDFirstModule) {
     Int_t izmin,izmax,izmin2,izmax2;
     Bool_t retcode=GetSDDLimits(zlocmin,zlocmax,xlocmin,xlocmax,izmin,izmax,izmin2,izmax2);
     if(!retcode) return 0.;
@@ -388,6 +524,28 @@ Float_t AliITSChannelStatus::FractionOfBadInRoad(Int_t imod, Float_t zlocmin, Fl
       }
     }
   }
+  else {
+    Int_t layer = 5;
+    if (imod > kSSDMaxModLay5) 
+      layer = 6;
+    Int_t iPmin,iPmax,iNmin,iNmax;
+    Bool_t retcode=GetSSDLimits(layer,zlocmin,zlocmax,xlocmin,xlocmax,iPmin,iPmax,iNmin,iNmax);
+    if(!retcode) return kFALSE;
+    Int_t nPbad = 0;
+    for(Int_t iP=iPmin; iP<=iPmax;iP++){
+      if(GetChannelStatus(imod,iP,0)==kFALSE) nPbad++;
+    }
+    Float_t fracP = (Float_t) nPbad / (iPmax-iPmin+1);
+    if (nPbad == 0)
+      return 0;
+    Int_t nNbad = 0;
+    for(Int_t iN=iNmin; iN<=iNmax;iN++){
+      if(GetChannelStatus(imod,iN+768,0)==kFALSE) nNbad++;
+    }
+    Float_t fracN = (Float_t) nNbad / (iPmax-iPmin+1);
+    return TMath::Min(fracP,fracN);
+  }
   if(totChan==0.) return 0.;
   else return badChan/totChan;
 }
+

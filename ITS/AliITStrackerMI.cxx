@@ -4316,11 +4316,10 @@ Int_t AliITStrackerMI::CheckDeadZone(AliITStrackMI *track,
 
 
   if (!AliITSReconstructor::GetRecoParam()->GetUseSingleBadChannelsFromOCDB()
-      || ilayer==4 || ilayer==5     // SSD
       || !noClusters) return 0;
 
   // There are no clusters in road: check if there is at least 
-  // a bad SPD pixel or SDD anode 
+  // a bad SPD pixel or SDD anode or SSD strips on both sides
 
   Int_t idetInITS=idet;
   for(Int_t l=0;l<ilayer;l++) idetInITS+=AliITSgeomTGeo::GetNLadders(l+1)*AliITSgeomTGeo::GetNDetectors(l+1);
@@ -4628,3 +4627,4 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
   }
 return;
 }
+
