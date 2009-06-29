@@ -24,7 +24,7 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliJetMCReaderHeader.cxx \
 	AliJetHistos.cxx \
 	AliAnalysisTaskDiJets.cxx \
-	AliAnalysisTaskJetsCDF.cxx AliCdfJetFinder.cxx AliCdfJetHeader.cxx \
+	AliCdfJetHeader.cxx \
 	AliEventShape.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
