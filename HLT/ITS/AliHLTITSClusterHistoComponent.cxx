@@ -76,7 +76,9 @@ void AliHLTITSClusterHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeLi
 {
   // see header file for class documentation
   list.clear();
-  list.push_back( kAliHLTDataTypeTObjArray );
+  list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD );
+  list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD );
+  list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD );
 }
 
 AliHLTComponentDataType AliHLTITSClusterHistoComponent::GetOutputDataType()
@@ -145,8 +147,13 @@ int AliHLTITSClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
   if(!IsDataEvent())
     return 0;
   
-  for ( iter = GetFirstInputBlock(kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD); iter != NULL; iter = GetNextInputBlock() ) {
+  for ( iter = GetFirstInputBlock(kAliHLTDataTypeClusters); iter != NULL; iter = GetNextInputBlock() ) {
     
+    if(iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSPD) && 
+       iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSDD) && 
+       iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSSD))
+       continue;
+
     const AliHLTITSClusterData* clusterData = (const AliHLTITSClusterData*) iter->fPtr;
     Int_t nSpacepoint = (Int_t) clusterData->fSpacePointCnt;
     TotalSpacePoint += nSpacepoint;

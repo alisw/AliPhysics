@@ -35,6 +35,7 @@ using namespace std;
 #include "AliHLTITSSpacePointData.h"
 #include "AliHLTITSClusterDataFormat.h"
 #include <AliHLTDAQ.h>
+#include "AliGeomManager.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -115,6 +116,14 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoInit( int /*argc*/, const char** /*a
   fClusters = new TClonesArray*[fNModules]; 
   for (Int_t iModule = 0; iModule < fNModules; iModule++) {
     fClusters[iModule] = NULL;
+  }
+
+  AliCDBManager* man = AliCDBManager::Instance();
+  AliGeomManager::LoadGeometry();
+ 
+  if (!man->IsDefaultStorageSet()){
+    HLTError("Default CDB storage has not been set !");
+    return -ENOENT;
   }
 
   //fgeomInit = new AliITSInitGeometry(kvSPD02,2);
