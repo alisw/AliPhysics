@@ -24,6 +24,13 @@ class AliHLTKalmanTrack :public AliKalmanTrack
   Bool_t PropagateTo(Double_t /*xr*/, Double_t /*x0*/, Double_t /*rho*/){ return 0; }
   Bool_t Update(const AliCluster* /*c*/, Double_t /*chi2*/, Int_t /*index*/){ return 0; }
 
+  virtual Int_t GetClusterIndex(Int_t) const { 
+    return 0;
+  } 
+  virtual Double_t GetPIDsignal() const {
+    return 0.;
+  }
+
  private:
   ClassDef(AliHLTKalmanTrack, 0) // Temporary class to convert AliHLTExternalTrackParam to ESD tracks
 };
