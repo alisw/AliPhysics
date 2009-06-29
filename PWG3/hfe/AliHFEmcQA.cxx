@@ -95,7 +95,7 @@ AliHFEmcQA::~AliHFEmcQA()
 }
 
 //_______________________________________________________________________________________________
-const void AliHFEmcQA::PostAnalyze()
+void AliHFEmcQA::PostAnalyze()
 {
 }
 
@@ -536,7 +536,7 @@ void AliHFEmcQA::GetDecayedKine(Int_t iTrack, const Int_t kquark, Int_t kdecayed
                   fHistComm[iq][icut].fDeDistance->Fill(grandMa->Pt(),dedistance.P());
                   return;
                 }
-             }
+             } 
 
              partMother = grandMa;
           } // end of iteration 
@@ -666,7 +666,7 @@ void AliHFEmcQA::ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &mo
 }
 
 //__________________________________________
-const Float_t AliHFEmcQA::GetRapidity(TParticle *part)
+Float_t AliHFEmcQA::GetRapidity(TParticle *part)
 {
       // return rapidity
 
@@ -675,3 +675,4 @@ const Float_t AliHFEmcQA::GetRapidity(TParticle *part)
        else rapidity = 0.5*(TMath::Log((part->Energy()+part->Pz()) / (part->Energy()-part->Pz()))); 
        return rapidity;
 }
+
