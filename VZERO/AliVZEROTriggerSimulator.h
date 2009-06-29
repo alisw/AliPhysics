@@ -19,8 +19,6 @@ public:
 	AliVZEROTriggerSimulator();
 	AliVZEROTriggerSimulator(TTree * digitsTree, TClonesArray* digits);
 	~AliVZEROTriggerSimulator();
-	AliVZEROTriggerSimulator(const AliVZEROTriggerSimulator &triggerSim);
-	AliVZEROTriggerSimulator& operator= (const AliVZEROTriggerSimulator & /*triggerSim*/){AliInfo("Not implemented");return *this;};
 	
 	AliVZEROTriggerData * GetTriggerData() const {return fTriggerData;};
 	
@@ -62,6 +60,8 @@ public:
 	
 private:
 	// Private methods
+	AliVZEROTriggerSimulator(const AliVZEROTriggerSimulator &/*triggerSim*/);
+	AliVZEROTriggerSimulator& operator= (const AliVZEROTriggerSimulator & /*triggerSim*/);
 	AliVZEROTriggerData * LoadTriggerData() const ;
 	void GenerateBBWindows();
 	void GenerateBGWindows();
@@ -92,3 +92,4 @@ private:
 
 
 #endif // ALIVZEROTRIGGERSIMULATOR_H
+

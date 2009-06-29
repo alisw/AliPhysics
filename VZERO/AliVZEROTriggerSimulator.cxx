@@ -32,20 +32,12 @@
 
 ClassImp(AliVZEROTriggerSimulator)
 
-//________________________________________________________________
-AliVZEROTriggerSimulator::AliVZEROTriggerSimulator(const AliVZEROTriggerSimulator& triggersim) : 
-TObject(),fTriggerData(LoadTriggerData()),fDigitsTree(NULL),fDigits(NULL),fTriggerWord(0)
-
-{
-	// copy constructor
-	
-	AliInfo("Not implemented");
-}
-
 //_____________________________________________________________________________
 AliVZEROTriggerSimulator::AliVZEROTriggerSimulator(TTree * digitsTree, TClonesArray* digits) : 
-TObject(),fTriggerData(LoadTriggerData()),fDigitsTree(digitsTree),fDigits(digits),fTriggerWord(0)
+TObject(),fTriggerData(NULL),fDigitsTree(digitsTree),fDigits(digits),fTriggerWord(0)
 {
+	fTriggerData = LoadTriggerData();
+	
 	for(int i=0;i<64;i++) {
 		fBBFlags[i] = fBGFlags[i] = kFALSE;
 		fCharges[i] = 0;
@@ -61,8 +53,10 @@ TObject(),fTriggerData(LoadTriggerData()),fDigitsTree(digitsTree),fDigits(digits
 }
 //_____________________________________________________________________________
 AliVZEROTriggerSimulator::AliVZEROTriggerSimulator() : 
-TObject(),fTriggerData(LoadTriggerData()),fDigitsTree(NULL),fDigits(NULL),fTriggerWord(0)
+TObject(),fTriggerData(NULL),fDigitsTree(NULL),fDigits(NULL),fTriggerWord(0)
 {
+	fTriggerData = LoadTriggerData();
+
 	for(int i=0;i<64;i++) {
 		fBBFlags[i] = fBGFlags[i] = kFALSE;
 		fCharges[i] = 0;
@@ -253,4 +247,5 @@ void AliVZEROTriggerSimulator::Run() {
 	AliInfo(Form("Charges  : V0A = %d  V0C = %d ",chargeV0A, chargeV0C )); 
 	
 }
+
 
