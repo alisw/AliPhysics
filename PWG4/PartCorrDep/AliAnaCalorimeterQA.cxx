@@ -227,7 +227,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	// store them in fOutputContainer
     
 	TList * outputContainer = new TList() ; 
-	outputContainer->SetName("ExampleHistos") ; 
+	outputContainer->SetName("QAHistos") ; 
 	
 	Int_t nptbins  = GetHistoNPtBins();
 	Int_t nphibins = GetHistoNPhiBins();
@@ -860,7 +860,13 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	//Play with the MC stack if available
 	AliStack * stack = 0x0;
 	TParticle * primary = 0x0;
-	if(IsDataMC()) stack =  GetMCStack() ;
+	if(IsDataMC()) { 
+		stack =  GetMCStack() ;
+		if(!stack) {
+			printf("Stack not available, have you switched on the MC data?\n");
+			return;
+		}
+	}
 	
 	//Get List with clusters  
 	TRefArray * partList = new TRefArray();
@@ -882,9 +888,9 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	//Get vertex for photon momentum calculation
 	Double_t v[3] ; //vertex ;
 	GetReader()->GetVertex(v);
-	
+
 	for(Int_t iclus = 0; iclus < partList->GetEntriesFast(); iclus++){
-		
+		//printf(" cluster %d\n",iclus);
 		AliAODCaloCluster * calo =  (AliAODCaloCluster*) (partList->At(iclus));
 		//if(calo->GetNCells() <= 2) continue;
 		//Get cluster kinematics
@@ -905,7 +911,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		
 		//matched cluster with tracks
 		Int_t ntracksmatched = calo->GetNTracksMatched();
-		
+
 		//Fill histograms only possible when simulation
 		if(IsDataMC()){
 	        //Play with the MC stack if available
@@ -920,8 +926,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 				printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
 				continue ;
 	        }
+			
 	        //cout<<"LABEL > "<<label<<endl;
 	        primary = GetMCStack()->Particle(label);
+
 		    Int_t pdg = primary->GetPdgCode();
 		    Float_t vx = primary->Vx();
 		    Float_t vy = primary->Vy();
@@ -1127,10 +1135,11 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 				if(trackIndex >= 0){
 					AliESDtrack* track = (AliESDtrack*) esd->GetTrack(trackIndex);
 					if (track && track->GetOuterParam() ) {
-						
+
 						Double_t tphi = track->GetOuterParam()->Phi();
 						Double_t teta = track->GetOuterParam()->Eta();
 						Double_t tmom = track->GetOuterParam()->P();
+
 						Double_t deta = teta - eta;
 						Double_t dphi = tphi - phi;
 						if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
@@ -1144,9 +1153,11 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 						
 						fh1dR->Fill(dR);
 						fh2MatchdEdx->Fill(track->P(),track->GetTPCsignal());
-					    Int_t pdg = primary->GetPdgCode();
-						Double_t  charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+					
 						if(IsDataMC() && primary){ 
+							 Int_t pdg = primary->GetPdgCode();
+							 Double_t  charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+							
 							if(TMath::Abs(pdg) == 11){
 								fhMCEle1pOverE->Fill(pOverE);
 								fhMCEle1dR->Fill(dR);
@@ -1185,7 +1196,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 						if ( (track->GetStatus() & status) == status) printf("ITS+TPC\n");
 					}
 					else {
-						Printf("ERROR: Could not receive track %d", trackIndex);
+						printf("ERROR: Could not receive track %d\n", trackIndex);
 					}
 				}// non negative track index
 			}//do only if input are ESDs
@@ -1289,6 +1300,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			}
 		} //primary loop
 	} //Is data MC
+	
+	if(GetDebug() > 0)
+		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - End \n");
+	
 	
 }
 

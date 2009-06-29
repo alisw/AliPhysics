@@ -27,10 +27,11 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else if(data=="ESD") reader = new AliCaloTrackESDReader();
   else if(data=="MC") reader = new AliCaloTrackMCReader();
   reader->SetDebug(-1);//10 for lots of messages
-  
+  if(calorimeter == "EMCAL") reader->SwitchOnEMCALCells();
+  if(calorimeter == "PHOS")  reader->SwitchOnPHOSCells();
   //Min particle pT
-  reader->SetEMCALPtMin(0.5); 
-  reader->SetPHOSPtMin(0.5);
+  reader->SetEMCALPtMin(0.2); 
+  reader->SetPHOSPtMin(0.2);
   reader->SetCTSPtMin(0.2);
   reader->Print("");
   
@@ -45,7 +46,21 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   pid->SetTOFCut(5.e-9);
   pid->SetDebug(-1);
   pid->Print("");
-  
+	
+  AliFidutialCut * fidCut = new AliFidutialCut();
+  fidCut->DoCTSFidutialCut(kFALSE) ;
+  fidCut->DoEMCALFidutialCut(kTRUE) ;
+  fidCut->DoPHOSFidutialCut(kTRUE) ;
+	
+  AliAnaCalorimeterQA *qa = new AliAnaCalorimeterQA();
+  qa->SetDebug(-1); //10 for lots of messages
+  qa->SetCalorimeter(calorimeter);
+  qa->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  qa->AddToHistogramsName("AnaCaloQA_"+calorimeter);
+  qa->SetFidutialCut(fidCut);
+  qa->SwitchOnFidutialCut();
+  qa->Print("");	
+	
   AliAnaPhoton *anaphoton1 = new AliAnaPhoton();
   anaphoton1->SetDebug(-1); //10 for lots of messages
   //anaphoton->SetMinPt(0.5);
@@ -56,19 +71,40 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaphoton1->SwitchOffCaloPID();
   anaphoton1->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
   anaphoton1->SwitchOffFidutialCut();
-  anaphoton1->SetOutputAODName("PhotonsForPi0IM"+calorimeter);
+  anaphoton1->SetOutputAODName("PhotonsForIM"+calorimeter);
   anaphoton1->Print("");
 
   AliAnaPi0 *anapi0 = new AliAnaPi0();
   anapi0->SetDebug(-1);//10 for lots of messages
-  anapi0->SetInputAODName("PhotonsForPi0IM"+calorimeter);
+  anapi0->SetInputAODName("PhotonsForIM"+calorimeter);
   anapi0->SetCaloPID(pid);
   anapi0->SetCalorimeter(calorimeter);
   anapi0->SwitchOnFidutialCut();
   anapi0->SwitchOffDataMC() ;//Access MC stack and fill more histograms
   anapi0->Print("");
   
-  
+//  AliAnaNeutralMeson *ananeutral = new AliAnaNeutralMeson();
+//  ananeutral->SetDebug(-1);//10 for lots of messages
+//  ananeutral->SetInputAODName("PhotonsForIM"+calorimeter);
+//  ananeutral->SetCaloPID(pid);
+//  //	ananeutral->SetNCentrBin(5); //number of bins in centrality 
+//  //	ananeutral->SetNZvertBin(5); //number of bins for vertex position
+//  //	ananeutral->SetNRPBin(6); //number of bins in reaction plain
+//  ananeutral->SetAnaPi0Eta(kTRUE); //whether analysis pi0 and eta
+//  ananeutral->SetAnaOmega(kTRUE);   //whether analysis omega
+//  ananeutral->SetNPID(3);
+//  ananeutral->SetInvMassCut(1.);
+//  ananeutral->SetNEventsMixed(6);
+//  ananeutral->SetNAsyBinsMinMax(200,0,1.);
+//  ananeutral->SetNPtBinsMinMax(200,0,20.);
+//  ananeutral->SetNMassBinsMinMas(200,0,1.);
+//  ananeutral->SetPi0MassPeakWidthCut(0.015);
+//  ananeutral->SetCalorimeter(calorimeter);
+//  ananeutral->SwitchOnFidutialCut();
+//  ananeutral->SwitchOffDataMC() ;//Access MC stack and fill more histograms
+//  ananeutral->AddToHistogramsName("AnaNeutralMeson_");
+//  ananeutral->Print("");
+	
   // -------------------------------------------------
   // --- Photon Isolation and Correlation Analysis ---
   // -------------------------------------------------
@@ -136,7 +172,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anacorrhadron->SetPtCutRange(1,100);
   anacorrhadron->SetDeltaPhiCutRange(1.5,4.5);
   anacorrhadron->SelectIsolated(kTRUE); // do correlation with isolated photons
-	if(calorimeter=="PHOS"){
+  if(calorimeter=="PHOS"){
     //Correlate with particles in EMCAL
     anacorrhadron->SwitchOnCaloPID();
     anacorrhadron->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
@@ -146,12 +182,14 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader
-  maker->AddAnalysis(anaphoton1,0);
-  maker->AddAnalysis(anapi0,1);
-  maker->AddAnalysis(anaphoton2,2);
-  maker->AddAnalysis(anaisol,3);
-  maker->AddAnalysis(anacorrjet,4);
-  maker->AddAnalysis(anacorrhadron,5);
+  maker->AddAnalysis(qa,0);
+  maker->AddAnalysis(anaphoton1,1);
+  maker->AddAnalysis(anapi0,2);
+  maker->AddAnalysis(anaphoton2,3);
+  maker->AddAnalysis(anaisol,4);
+  maker->AddAnalysis(anacorrjet,5);
+  maker->AddAnalysis(anacorrhadron,6);
+  //maker->AddAnalysis(ananeutral,7);
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker()  ;
