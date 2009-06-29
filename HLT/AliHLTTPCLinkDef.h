@@ -78,6 +78,7 @@
 #pragma link C++ class  AliHLTTPCTrackDumpComponent+;
 #pragma link C++ class  AliHLTTPCClusterDumpComponent+;
 #pragma link C++ class  AliHLTTPCCalibTracksComponent+;
+#pragma link C++ class  AliHLTTPCTrackMCMarkerComponent+;
 
 #pragma link C++ class  AliHLTTPCCATrack+;
 #pragma link C++ class  AliHLTTPCCATracklet+;
