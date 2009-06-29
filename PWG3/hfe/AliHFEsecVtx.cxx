@@ -123,6 +123,7 @@ void AliHFEsecVtx::Init()
         fParentSelect[1][5] = 5232;
         fParentSelect[1][6] = 5332;
 
+/*
         fid[0][0] = 0;
         fid[0][1] = 1;
         fid[0][2] = 2;
@@ -166,6 +167,7 @@ void AliHFEsecVtx::Init()
         fia[3][1][1] = 3;
         fia[3][2][0] = 2;
         fia[3][2][1] = 3;
+*/
 
 } 
 
@@ -195,6 +197,50 @@ void AliHFEsecVtx::InitAnaPair()
                 fpairedInvMass[i] = -1;
                 fpairedSignedLxy[i] = -1;
         }
+
+        fid[0][0] = 0;
+        fid[0][1] = 1;
+        fid[0][2] = 2;
+
+        fid[1][0] = 0;
+        fid[1][1] = 1;
+        fid[1][2] = 3;
+
+        fid[2][0] = 0;
+        fid[2][1] = 2;
+        fid[2][2] = 3;
+
+        fid[3][0] = 1;
+        fid[3][1] = 2;
+        fid[3][2] = 3;
+
+        fia[0][0][0] = 0;
+        fia[0][0][1] = 1;
+        fia[0][1][0] = 0;
+        fia[0][1][1] = 2;
+        fia[0][2][0] = 1;
+        fia[0][2][1] = 2;
+
+        fia[1][0][0] = 0;
+        fia[1][0][1] = 1;
+        fia[1][1][0] = 0;
+        fia[1][1][1] = 3;
+        fia[1][2][0] = 1;
+        fia[1][2][1] = 3;
+
+        fia[2][0][0] = 0;
+        fia[2][0][1] = 2;
+        fia[2][1][0] = 0;
+        fia[2][1][1] = 3;
+        fia[2][2][0] = 2;
+        fia[2][2][1] = 3;
+
+        fia[3][0][0] = 1;
+        fia[3][0][1] = 2;
+        fia[3][1][0] = 1;
+        fia[3][1][1] = 3;
+        fia[3][2][0] = 2;
+        fia[3][2][1] = 3;
 
 }
 
@@ -305,7 +351,6 @@ void AliHFEsecVtx::AnaPair(AliESDtrack* track1, AliESDtrack* track2, Int_t index
         AliKFParticle::SetField(fESD1->GetMagneticField());
         AliKFParticle kfTrack1(*track1, pdg1);
         AliKFParticle kfTrack2(*track2, pdg2);
-
         AliKFParticle kfSecondary(kfTrack1,kfTrack2);
 
         // copy primary vertex from ESD
@@ -510,6 +555,8 @@ void AliHFEsecVtx::FindSECVTXCandid4Tracks(AliESDtrack *track)
         Int_t indexB[3];
         Double_t sevchi2[4];
         AliESDtrack *htrack[4];
+
+        if(fPairTagged>20) return; // protection
 
         TMath::Sort(fPairTagged,fpairedChi2,index,kFALSE);
 
@@ -928,8 +975,8 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
              TParticle* grandMa = fStack->Particle(jLabel);
              Int_t grandMaPDG = grandMa->GetPdgCode();
 
-             for (Int_t i=0; i<fNparents; i++){
-                if (abs(grandMaPDG)==fParentSelect[1][i]){
+             for (Int_t j=0; j<fNparents; j++){
+                if (abs(grandMaPDG)==fParentSelect[1][j]){
 
                   origin = kBeautyCharm;
                   return origin;
@@ -970,8 +1017,8 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
              TParticle* grandMa = fStack->Particle(jLabel);
              Int_t grandMaPDG = grandMa->GetPdgCode();
 
-             for (Int_t i=0; i<fNparents; i++){
-                if (abs(grandMaPDG)==fParentSelect[1][i]){
+             for (Int_t j=0; j<fNparents; j++){
+                if (abs(grandMaPDG)==fParentSelect[1][j]){
                   origin = kBeautyGamma;
                   return origin;
                 }
@@ -1004,8 +1051,8 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
              TParticle* grandMa = fStack->Particle(jLabel);
              Int_t grandMaPDG = grandMa->GetPdgCode();
 
-             for (Int_t i=0; i<fNparents; i++){
-                if (abs(grandMaPDG)==fParentSelect[1][i]){
+             for (Int_t j=0; j<fNparents; j++){
+                if (abs(grandMaPDG)==fParentSelect[1][j]){
                   origin = kBeautyPi0;
                   return origin;
                 }
@@ -1038,8 +1085,8 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
              TParticle* grandMa = fStack->Particle(jLabel);
              Int_t grandMaPDG = grandMa->GetPdgCode();
 
-             for (Int_t i=0; i<fNparents; i++){
-                if (abs(grandMaPDG)==fParentSelect[1][i]){
+             for (Int_t j=0; j<fNparents; j++){
+                if (abs(grandMaPDG)==fParentSelect[1][j]){
                   origin = kBeautyElse;
                   return origin;
                 }
@@ -1258,3 +1305,4 @@ Bool_t AliHFEsecVtx::SingleTrackCut(AliESDtrack* track)
 */
         return kTRUE;
 }
+
