@@ -11,7 +11,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERBaseLinkDef.h 31877 2009-04-07 23:54:19Z morsch
+// From STEERBaseLinkDef.h 32242 2009-05-07 10:50:59Z hristov
 
     enum  AliLog::EType_t {};
  
@@ -75,6 +75,7 @@
     class AliTriggerScalersRecord {};
     
     class AliExternalTrackParam {};
+    class AliQA {};
 
 /** @} */
 
@@ -83,7 +84,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERLinkDef.h 31150 2009-02-21 22:04:32Z schutz
+// From STEERLinkDef.h 32918 2009-06-15 10:54:49Z cvetan
 
     enum VertexSmear_t {};
     enum VertexSource_t {};
@@ -216,7 +217,6 @@
 
     class AliGRPObject {};
 
-    class AliQA {};
     class AliQAv1 {};
 
     class AliRunInfo {};
@@ -228,9 +228,12 @@
     class AliMillePedeRecord {};
     class AliMinResSolve {};
     class AliMatrixSparse {};
+    class AliVectorSparse {};
     class AliMatrixSq {};
     class AliSymMatrix {};
+    class AliRectMatrix {};
 
+    class AliGRPManager {};
 /** @} */
 
 /** @defgroup ESD ESD
@@ -238,7 +241,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From ESDLinkDef.h 31714 2009-03-28 08:15:12Z morsch
+// From ESDLinkDef.h 32939 2009-06-16 10:44:00Z cvetan
 
     enum   AliESDEvent::ESDListIndex {};
 
@@ -306,6 +309,11 @@
 
     class  AliESDVZEROfriend {};
 
+    class  AliTPCpidESD {};
+    class  AliTOFpidESD {};
+
+    class  AliTriggerScalersESD {};
+    class  AliTriggerScalersRecordESD {};
 /** @} */
 
 /** @defgroup CDB CDB
@@ -313,7 +321,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From CDBLinkDef.h revision 23864 2008-02-12 06:25:33Z hristov
+// From CDBLinkDef.h 31411 2009-03-11 13:13:53Z zampolli
 
     class AliCDBPath {};
     class AliCDBRunRange {};
@@ -358,7 +366,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From AODLinkDef.h 29409 2008-10-22 13:39:36Z kleinb
+// From AODLinkDef.h 32064 2009-04-27 14:11:50Z agheata
 
     enum   AliAODVertex::AODVtx_t {};
     enum   AliAODTrack::AODTrk_t {};
