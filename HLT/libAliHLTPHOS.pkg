@@ -77,7 +77,6 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
 		  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \
 		  AliHLTPHOSRcuCellAverageEnergyDataStruct.h \
-		  AliHLTPHOSRecPointDataStruct.h \
 		  AliHLTPHOSRecPointContainerStruct.h \
 		  AliHLTPHOSDigitContainerDataStruct.h \
 		  AliHLTPHOSRcuDigitContainerDataStruct.h \
