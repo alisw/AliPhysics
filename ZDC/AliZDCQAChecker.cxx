@@ -32,475 +32,630 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
 {
   // Checks the QA histograms on the input list: 
   //
-  Double_t * test   = new Double_t[AliRecoParam::kNSpecies] ;
-  Int_t *    ntests = new Int_t[AliRecoParam::kNSpecies]  ; 
+  Double_t *  test   = new Double_t[AliRecoParam::kNSpecies] ;
+  Int_t *     ntests = new Int_t[AliRecoParam::kNSpecies]  ; 
   const char* taskName = AliQAv1::GetAliTaskName(index);
   //
-  
-  //YS Int_t beamType=0; // 0 -> protons, 1 -> ions
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    test[specie] = 1.0 ; 
-    ntests[specie] = 0 ; 
-    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
-      continue ; 
+  for(Int_t specie = 0; specie < AliRecoParam::kNSpecies; specie++) {
+    test[specie] = 1.0; 
+    ntests[specie] = 0; 
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) )  continue ; 
     // ====================================================================
     // 	Checks for p-p events
     // ====================================================================
-    //if (beamType==0){
-    if ( specie == AliRecoParam::kLowMult) {
+    if (specie == AliRecoParam::kLowMult) {
       if(list[specie]->GetEntries()==0){  
-        AliWarning("\tAliZDCQAChecker->The list to be checked is empty!"); // nothing to check
+        AliWarning("\t The list to be checked is empty!"); // nothing to check
         return test;
       }
       //AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName));
       TIter next(list[specie]); 
       ntests[specie] = 0; 
       TH1 * hdata;	  
+      Float_t res=0., percentageDiff=0.15;
       while((hdata = dynamic_cast<TH1 *>(next()))){
         if(hdata){ 
           // -------------------------------------------------------------------
           if(index == AliQAv1::kSIM){
             //AliDebug(AliQAv1::GetQADebugLevel(), Form("\tAliZDCQAChecker-> checking histo %s",hdata->GetName()));
-            // Check DIGITS histos
-            if(!(strncmp(hdata->GetName(),"hDig",4))){
-              if(hdata->GetEntries()>0){
-                test[specie] += 1.; 
-                ntests[specie]++;
-              }
-            }
             // Check HITS histos
-            else{ 
+            Float_t sumZNA=0., sumZNC=0., sumZPA=0., sumZPC=0.;
+            Float_t pmCZNA=0., pmCZNC=0., pmCZPA=0., pmCZPC=0.;
+            Float_t pmQZNA=0., pmQZNC=0., pmQZPA=0., pmQZPC=0.;
+            Float_t sumADCZNA=0., sumADCZNC=0., sumADCZPA=0., sumADCZPC=0.;
+            Float_t adcCZNA=0., adcCZNC=0., adcCZPA=0., adcCZPC=0.;
+            Float_t adcQZNA=0., adcQZNC=0., adcQZPA=0., adcQZPC=0.;
+	    Int_t ihitHisto=0, idigHisto=0;
+            //
+	    if(!(strncmp(hdata->GetName(),"hHits",5))){
               if(hdata->GetEntries()>0){
-                test[specie] += 1.; 
-                ntests[specie]++;
-              }
+	        if(ihitHisto==0)      sumZNC = hdata->GetMean();
+		else if(ihitHisto==1) sumZNA = hdata->GetMean();
+		else if(ihitHisto==2) sumZPC = hdata->GetMean();
+		else if(ihitHisto==3) sumZPA = hdata->GetMean();
+	        else if(ihitHisto==4) pmQZNC = hdata->GetMean();
+	        else if(ihitHisto==5) pmQZNA = hdata->GetMean();
+	        else if(ihitHisto==6) pmQZPC = hdata->GetMean();
+	        else if(ihitHisto==7) pmQZPA = hdata->GetMean();
+	        else if(ihitHisto==8)  pmCZNC = hdata->GetMean();
+	        else if(ihitHisto==9)  pmCZNA = hdata->GetMean();
+	        else if(ihitHisto==10) pmCZPC = hdata->GetMean();
+	        else if(ihitHisto==11) pmCZPA = hdata->GetMean();
+	      }
+	      //
+	      // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
+	      if(ihitHisto==11){
+	        if(sumZNC!=0){
+                  if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(sumZNA!=0){
+                  if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
+                    res=1.;
+                  else percentageDiff=
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(sumZPC!=0){
+                  if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(sumZPA!=0){
+                  if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	      }
+	      ihitHisto++;
             }
-            // -------------------------------------------------------------------
-          } else if(index == AliQAv1::kRAW) {
-            if(hdata->GetEntries()!=0){
-              if(hdata->GetMean()>10.) 
-                test[specie] += 1.; 
-              else 
-                test[specie] = 0.5; 
-              ntests[specie]++;
+            // Check DIGIT HIGH GAIN CHAIN histos
+            else if(!(strncmp(hdata->GetName(),"hDig",4))){ 
+              if(hdata->GetEntries()>0){
+	        if(idigHisto==0)      sumADCZNC = hdata->GetMean();
+		else if(idigHisto==1) sumADCZNA = hdata->GetMean();
+		else if(idigHisto==2) sumADCZPC = hdata->GetMean();
+		else if(idigHisto==3) sumADCZPA = hdata->GetMean();
+	        else if(idigHisto==4) pmQZNC = hdata->GetMean();
+	        else if(idigHisto==5) pmQZNA = hdata->GetMean();
+	        else if(idigHisto==6) pmQZPC = hdata->GetMean();
+	        else if(idigHisto==7) pmQZPA = hdata->GetMean();
+	        else if(idigHisto==8)  pmCZNC = hdata->GetMean();
+	        else if(idigHisto==9)  pmCZNA = hdata->GetMean();
+	        else if(idigHisto==10) pmCZPC = hdata->GetMean();
+	        else if(idigHisto==11) pmCZPA = hdata->GetMean();
+	      }
+	      //
+	      // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
+	      if(idigHisto==11){
+	        if(sumADCZNC!=0){
+                  if((TMath::Abs(adcQZNC-adcCZNC)/adcCZNC)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(sumADCZNA!=0){
+                  if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(sumADCZPC!=0){
+                  if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(sumADCZPA!=0){
+                  if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	      }
+	      idigHisto++;	      
             }
-            // -------------------------------------------------------------------
-          } else if(index == AliQAv1::kESD) {
-            Int_t    esdInd=0;
+          } 
+          // -------------------------------------------------------------------
+	  else if(index == AliQAv1::kRAW) {
+            Float_t sumADCZNA=0., sumADCZNC=0., sumADCZPA=0., sumADCZPC=0.;
+            Float_t adcCZNA=0., adcCZNC=0., adcCZPA=0., adcCZPC=0.;
+            Float_t adcQZNA=0., adcQZNC=0., adcQZPA=0., adcQZPC=0.;
+	    Int_t irawHisto=0;
+	    //
+            // Check RAW HIGH GAIN CHAIN histos
+            if(hdata->GetEntries()>0){
+	      if(irawHisto==0)      sumADCZNC = hdata->GetMean();
+	      else if(irawHisto==1) sumADCZNA = hdata->GetMean();
+	      else if(irawHisto==2) sumADCZPC = hdata->GetMean();
+	      else if(irawHisto==3) sumADCZPA = hdata->GetMean();
+	      else if(irawHisto==4) adcQZNC = hdata->GetMean();
+	      else if(irawHisto==5) adcQZNA = hdata->GetMean();
+	      else if(irawHisto==6) adcQZPC = hdata->GetMean();
+	      else if(irawHisto==7) adcQZPA = hdata->GetMean();
+	      else if(irawHisto==8)  adcCZNC = hdata->GetMean();
+	      else if(irawHisto==9)  adcCZNA = hdata->GetMean();
+	      else if(irawHisto==10) adcCZPC = hdata->GetMean();
+	      else if(irawHisto==11) adcCZPA = hdata->GetMean();
+	    }
+	    //
+	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
+	    if(irawHisto==11){
+	      if(sumADCZNC!=0){
+            	if((TMath::Abs(adcQZNC-adcCZNC)/adcCZNC)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZNA!=0){
+            	if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZPC!=0){
+            	if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZPA!=0){
+            	if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	    }
+	    irawHisto++;	    
+          } 
+          // -------------------------------------------------------------------
+	  else if(index == AliQAv1::kESD) {
+            Float_t sumADCZNA=0., sumADCZNC=0., sumADCZPA=0., sumADCZPC=0.;
+            Float_t pmCZNA=0., pmCZNC=0., pmCZPA=0., pmCZPC=0.;
+            Float_t pmQZNA=0., pmQZNC=0., pmQZPA=0., pmQZPC=0.;
+            Int_t esdInd=0;
+	    //
+            // Check ESD HIGH GAIN CHAIN histos
             if(hdata->GetEntries()!=0){
-              if(esdInd>1){
-                if(hdata->GetMean()>10.) 
-                  test[specie] += 1.; 
-                else 
-                  test[specie] = 0.5; 
-                ntests[specie]++;
-              }
+	      if(esdInd==2)      sumADCZNC = hdata->GetMean();
+	      else if(esdInd==3) sumADCZNA = hdata->GetMean();
+	      else if(esdInd==4) sumADCZPC = hdata->GetMean();
+	      else if(esdInd==5) sumADCZPA = hdata->GetMean();
+	      else if(esdInd==6) pmQZNC = hdata->GetMean();
+	      else if(esdInd==7) pmQZNA = hdata->GetMean();
+	      else if(esdInd==8) pmQZPC = hdata->GetMean();
+	      else if(esdInd==9) pmQZPA = hdata->GetMean();
+	      else if(esdInd==10) pmCZNC = hdata->GetMean();
+	      else if(esdInd==11) pmCZNA = hdata->GetMean();
+	      else if(esdInd==12) pmCZPC = hdata->GetMean();
+	      else if(esdInd==13) pmCZPA = hdata->GetMean();
+	    }
+	    //
+	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
+	    if(esdInd==13){
+	      if(sumADCZNC!=0){
+            	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZNA!=0){
+            	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZPC!=0){
+            	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZPA!=0){
+            	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
             }
             esdInd++;
-            // -------------------------------------------------------------------
-         } else {
+         }  
+	 else {
            AliWarning(Form("\n\t No ZDC QA for %s task\n",taskName)); 
            return NULL;
          }
-        } else
-            AliError("AliZDCQAChecker-> No histos!!!\n");
+        }//if(hdata) 
+	else AliError("AliZDCQAChecker-> No histos!!!\n");
       }
-    }
+    } // LowMult (p-p)
     // ====================================================================
     // 	Checks for A-A events
     // ====================================================================
-    //else if (beamType==1){ 
-    else if ( specie == AliRecoParam::kHighMult) {
+    else if (specie == AliRecoParam::kHighMult) {
       if(list[specie]->GetEntries()==0){  
-        AliWarning("\tAliZDCQAChecker->The list to be checked is empty!");
+        AliWarning("\t The list to be checked is empty!");
         return test;
       }
       //AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName));
-      
+      //
       TIter next(list[specie]); 
+      ntests[specie] = 0; 
       TH1 * hdata;	  
+      Float_t res=0., percentageDiff=0.10;
       while((hdata = dynamic_cast<TH1 *>(next()))){
         if(hdata){ 
           //AliDebug(AliQAv1::GetQADebugLevel(), Form("\tAliZDCQAChecker-> checking histo %s",hdata->GetName()));
-          ntests[specie] = 0; 
-          Double_t meanX=0., meanY=0.;
-          Double_t meanZNA=0., rmsZNA=0., meanZNC=0.;
-          Double_t meanZPA=0., rmsZPA=0., meanZPC=0.;
-          Double_t pmCZNA=0., pmCZNC=0., pmCZPA=0., pmCZPC=0.;
-          Double_t pmQZNA=0., pmQZNC=0., pmQZPA=0., pmQZPC=0.;
-          Float_t  res=0.;
-          Int_t    testgood=0;
           // -------------------------------------------------------------------
           if(index == AliQAv1::kSIM){
-            Int_t    digInd=0;
-            // Check DIGITS histos
-            if (!(strncmp(hdata->GetName(),"hDig",4))){
-              // [1] check response of ZNC vs. ZNA
-              if(digInd==0 || digInd==1){
-                if(digInd==0){
-                  if(hdata->GetEntries() != 0.){
-                    testgood=1;
-                    meanZNA = hdata->GetMean();
-                    rmsZNA = hdata->GetRMS();
-                  }
-                }
-                else{
-                  if(hdata->GetEntries() != 0.){
-                    testgood=1;
-                    meanZNC = hdata->GetMean();
-                  }
-                  else testgood=0;
-                  // check if the response m.v. of ZNA and ZNC are equal (@ 1sigma level)
-                  if(testgood==1){
-                    if(TMath::Abs(meanZNA-meanZNC)<rmsZNA) 
-                      res=1.;
-                    else 
-                      res=.5;
-                    testgood=0;
-                    test[specie] += res;
-                    ntests[specie]++;
-                    //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
-                  }
-                  else res=0.;
-                }
-              }
-              // [2] check response of ZPC vs. ZPA
-              else if(digInd==2 || digInd==3){
-                if(digInd==2){
-                  if(hdata->GetEntries() != 0.){
-                    testgood=1;
-                    meanZPA = hdata->GetMean();
-                    rmsZPA = hdata->GetRMS();
-                  }
-                }
-                else{
-                  if(hdata->GetEntries() != 0.){
-                    testgood=1;
-                    meanZPC = hdata->GetMean();
-                  }
-               // check if the response m.v. of ZPA and ZPC are equal (@ 3sigma level)
-               if(testgood==1){
-                 if(TMath::Abs(meanZPA-meanZPC)<(3.*rmsZPA)) 
-                   res=1.;
-                 else 
-                   res=.5;
-                 test[specie] += res;
-                 ntests[specie]++;
-                 testgood=0;
-                 //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]);
-               }
-               else res=0.;
-                }
-              }
-              // [2] check PMC responses vs. summed PMQ responses
-              else if(digInd>3 && digInd<12){
-                if(digInd==4) pmQZNC = hdata->GetMean();
-                else if(digInd==5) pmQZNA = hdata->GetMean();
-                else if(digInd==6) pmQZPC = hdata->GetMean();
-                else if(digInd==7) pmQZPA = hdata->GetMean();
-                else if(digInd==8){
-                  pmCZNC = hdata->GetMean();
-                  if(TMath::Abs(pmQZNC-pmCZNC)<(0.1*(pmQZNC+pmCZNC)/2)) 
-                    res=1.;
-                  else 
-                    res=0.5;
-                  test[specie] += res;
-                  ntests[specie]++;
-                  //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
-                }
-                else if(digInd==9){
-                  pmCZNA = hdata->GetMean();
-                  if(TMath::Abs(pmQZNA-pmCZNA)<(0.1*(pmQZNA+pmCZNA)/2)) 
-                    res=1.;
-                  else 
-                    res=0.5;
-                  test[specie] += res;
-                  ntests[specie]++;
-                  //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
-                }
-                else if(digInd==10){
-                  pmCZPC = hdata->GetMean();
-                  if(TMath::Abs(pmQZPC-pmCZPC)<(0.1*(pmQZPC+pmCZPC)/2)) 
-                    res=1.;
-                  else 
-                    res=0.5;
-                  test[specie] += res;
-                  ntests[specie]++;
-                  //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]);
-                }
-                else if(digInd==11){
-                  pmCZPA = hdata->GetMean();
-                  if(TMath::Abs(pmQZPA-pmCZPA)<(0.1*(pmQZPA+pmCZPA)/2)) 
-                    res=1.;
-                  else 
-                    res=0.5;
-                  test[specie] += res;
-                  ntests[specie]++;
-                  //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
-                }
-              }
-              digInd++;
-            }
+            Float_t meanZNA=0., meanZNC=0., meanZPA=0., meanZPC=0.;
+            Float_t pmCZNA=0., pmCZNC=0., pmCZPA=0., pmCZPC=0.;
+            Float_t pmQZNA=0., pmQZNC=0., pmQZPA=0., pmQZPC=0.;
+            Float_t sumADCZNA=0., sumADCZNC=0., sumADCZPA=0., sumADCZPC=0.;
+            Float_t adcCZNA=0., adcCZNC=0., adcCZPA=0., adcCZPC=0.;
+            Float_t adcQZNA=0., adcQZNC=0., adcQZPA=0., adcQZPC=0.;
+            Int_t hitInd=0, digInd=0;
             // Check HITS histos
-            else{ 
-              // hits histos
-              meanX = hdata->GetMean(1);
-              meanY = hdata->GetMean(2);
-              // check if the spot is centered
-              if((TMath::Abs(meanX)<0.2) && (TMath::Abs(meanY)<0.2)) 
-                res=1.;
-              else 
-                res=0.5;
-              test[specie] += res;
-              ntests[specie]++;
-              //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]);
+            if (!(strncmp(hdata->GetName(),"hHits",5))){
+              if(hdata->GetEntries()>0){
+	        if(hitInd==0)      meanZNC = hdata->GetMean();
+		else if(hitInd==1) meanZNA = hdata->GetMean();
+		else if(hitInd==2) meanZPC = hdata->GetMean();
+		else if(hitInd==3) meanZPA = hdata->GetMean();
+	        else if(hitInd==4) pmQZNC = hdata->GetMean();
+	        else if(hitInd==5) pmQZNA = hdata->GetMean();
+	        else if(hitInd==6) pmQZPC = hdata->GetMean();
+	        else if(hitInd==7) pmQZPA = hdata->GetMean();
+	        else if(hitInd==8)  pmCZNC = hdata->GetMean();
+	        else if(hitInd==9)  pmCZNA = hdata->GetMean();
+	        else if(hitInd==10) pmCZPC = hdata->GetMean();
+	        else if(hitInd==11) pmCZPA = hdata->GetMean();
+	      }
+	      //
+	      // --- Check whether 2*|Mean ZNA - Mean ZNC|/(Mean ZNA + Mean ZNC) < percentageDiff
+	      // --- and 2*|Mean ZPA - Mean ZPC|/(Mean ZPA + Mean ZPC) < 2*percentageDiff
+	      if(hitInd==3){
+	        if(meanZNC!=0 && meanZNA!=0){
+                  if((2*TMath::Abs(meanZNC-meanZNA)/(meanZNA+meanZNC))<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(meanZPC!=0 && meanZPA!=0){
+                  if((TMath::Abs(meanZPC-meanZPA)/(meanZPA+meanZPC))<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+              }
+	      // --- Check whether (mean PMQi - PMC)/PMC < percentageDiff
+	      if(hitInd==11){
+	        if(meanZNC!=0){
+                  if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(meanZNA!=0){
+                  if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(meanZPC!=0){
+                  if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(meanZPA!=0){
+                  if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	      }
+	      hitInd++;
+            }
+            // Check DIGITS histos
+            else if (!(strncmp(hdata->GetName(),"hDig",4))){
+              if(hdata->GetEntries()>0){
+	        if(digInd==0)      sumADCZNC = hdata->GetMean();
+		else if(digInd==1) sumADCZNA = hdata->GetMean();
+		else if(digInd==2) sumADCZPC = hdata->GetMean();
+		else if(digInd==3) sumADCZPA = hdata->GetMean();
+	        else if(digInd==4) adcQZNC = hdata->GetMean();
+	        else if(digInd==5) adcQZNA = hdata->GetMean();
+	        else if(digInd==6) adcQZPC = hdata->GetMean();
+	        else if(digInd==7) adcQZPA = hdata->GetMean();
+	        else if(digInd==8)  adcCZNC = hdata->GetMean();
+	        else if(digInd==9)  adcCZNA = hdata->GetMean();
+	        else if(digInd==10) adcCZPC = hdata->GetMean();
+	        else if(digInd==11) adcCZPA = hdata->GetMean();
+	      }
+	      //
+	      // --- Check whether 2*|Mean ZNA - Mean ZNC|/(Mean ZNA + Mean ZNC) < percentageDiff
+	      // --- and 2*|Mean ZPA - Mean ZPC|/(Mean ZPA + Mean ZPC) < 2*percentageDiff
+	      if(digInd==3){
+	        if(sumADCZNC!=0 && sumADCZNA!=0){
+                  if((2*TMath::Abs(sumADCZNC-sumADCZNA)/(sumADCZNA+sumADCZNC))<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(sumADCZPC!=0 && sumADCZPA!=0){
+                  if((TMath::Abs(sumADCZPC-sumADCZPA)/(sumADCZPA+sumADCZPC))<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+              }
+	      // --- Check whether (sumADC PMQi - PMC)/PMC < percentageDiff
+	      if(digInd==11){
+	        if(sumADCZNC!=0){
+                  if((TMath::Abs(adcQZNC-adcCZNC)/adcCZNC)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(sumADCZNA!=0){
+                  if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(sumADCZPC!=0){
+                  if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	        if(sumADCZPA!=0){
+                  if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) 
+                    res=1.;
+                  else 
+                    res=.5;
+                  test[specie] += res;
+                  ntests[specie]++;
+		}
+	      }
+              digInd++;
             }
           }
           // -------------------------------------------------------------------
           else if(index == AliQAv1::kRAW){
-            Int_t    rawInd=0;
-            // [1] check response of ZNC vs. ZNA
-            if(rawInd==0 || rawInd==1){
-              if(rawInd==0){
-                if(hdata->GetEntries() != 0.){
-                  testgood=1;
-                  meanZNA = hdata->GetMean();
-                  rmsZNA = hdata->GetRMS();
-                }
-              }
-              else{
-                if(hdata->GetEntries() != 0.){
-                  testgood=1;
-                  meanZNC = hdata->GetMean();
-                }
-                else testgood=0;
-                // check if the response m.v. of ZNA and ZNC are equal (@ 1sigma level)
-                if(testgood==1){
-                  if(TMath::Abs(meanZNA-meanZNC)<rmsZNA) 
-                    res=1.;
-                  else 
-                    res=.5;
-                  test[specie] += res;
-                  ntests[specie]++;
-                  testgood=0;
-                }
-                else 
-                  res=0.;
-              }
+            Float_t sumADCZNA=0., sumADCZNC=0., sumADCZPA=0., sumADCZPC=0.;
+            Float_t adcCZNA=0., adcCZNC=0., adcCZPA=0., adcCZPC=0.;
+            Float_t adcQZNA=0., adcQZNC=0., adcQZPA=0., adcQZPC=0.;
+	    Int_t rawInd=0;
+	    //
+            // Check RAW HIGH GAIN CHAIN histos
+            if(hdata->GetEntries()>0){
+	      if(rawInd==0)      sumADCZNC = hdata->GetMean();
+	      else if(rawInd==1) sumADCZNA = hdata->GetMean();
+	      else if(rawInd==2) sumADCZPC = hdata->GetMean();
+	      else if(rawInd==3) sumADCZPA = hdata->GetMean();
+	      else if(rawInd==4) adcQZNC = hdata->GetMean();
+	      else if(rawInd==5) adcQZNA = hdata->GetMean();
+	      else if(rawInd==6) adcQZPC = hdata->GetMean();
+	      else if(rawInd==7) adcQZPA = hdata->GetMean();
+	      else if(rawInd==8)  adcCZNC = hdata->GetMean();
+	      else if(rawInd==9)  adcCZNA = hdata->GetMean();
+	      else if(rawInd==10) adcCZPC = hdata->GetMean();
+	      else if(rawInd==11) adcCZPA = hdata->GetMean();
+	    }
+            //
+	    // --- Check whether 2*|Mean ZNA - Mean ZNC|/(Mean ZNA + Mean ZNC) < percentageDiff
+	    // --- and 2*|Mean ZPA - Mean ZPC|/(Mean ZPA + Mean ZPC) < 2*percentageDiff
+	    if(rawInd==3){
+	      if(sumADCZNC!=0 && sumADCZNA!=0){
+            	if((2*TMath::Abs(sumADCZNC-sumADCZNA)/(sumADCZNA+sumADCZNC))<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZPC!=0 && sumADCZPA!=0){
+            	if((TMath::Abs(sumADCZPC-sumADCZPA)/(sumADCZPA+sumADCZPC))<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
             }
-            // [2] check response of ZPC vs. ZPA
-            else if(rawInd==2 || rawInd==3){
-              if(rawInd==2){
-                if(hdata->GetEntries() != 0.){
-                  testgood=1;
-                  meanZPA = hdata->GetMean();
-                  rmsZPA = hdata->GetRMS();
-                }
-              }
-              else{
-                if(hdata->GetEntries() != 0.){
-                  testgood=1;
-                  meanZPC = hdata->GetMean();
-                }
-                // check if the response m.v. of ZPA and ZPC are equal (@ 3sigma level)
-                if(testgood==1){
-                  if(TMath::Abs(meanZPA-meanZPC)<(3.*rmsZPA)) 
-                    res=1.;
-                  else 
-                    res=.5;
-                  test[specie] += res;
-                  ntests[specie]++;
-                  testgood=0;
-                }
-                else 
-                  res=0.;
-              }
-            }
-            // [2] check PMC responses vs. summed PMQ responses
-            else if(rawInd>3 && rawInd<12){
-              if(rawInd==4) pmQZNC = hdata->GetMean();
-              else if(rawInd==5) pmQZNA = hdata->GetMean();
-              else if(rawInd==6) pmQZPC = hdata->GetMean();
-              else if(rawInd==7) pmQZPA = hdata->GetMean();
-              else if(rawInd==8){
-                pmCZNC = hdata->GetMean();
-                if(TMath::Abs(pmQZNC-pmCZNC)<(0.1*(pmQZNC+pmCZNC)/2)) 
-                  res=1.;
-                else 
-                  res=0.5;
-                test[specie] += res;
-                ntests[specie]++;
-              }
-              else if(rawInd==9){
-                pmCZNA = hdata->GetMean();
-                if(TMath::Abs(pmQZNA-pmCZNA)<(0.1*(pmQZNA+pmCZNA)/2)) 
-                  res=1.;
-                else 
-                  res=0.5;
-                test[specie] += res;
-                ntests[specie]++;
-              }
-              else if(rawInd==10){
-                pmCZPC = hdata->GetMean();
-                if(TMath::Abs(pmQZPC-pmCZPC)<(0.1*(pmQZPC+pmCZPC)/2)) 
-                  res=1.;
-                else 
-                  res=0.5;
-                test[specie] += res;
-                ntests[specie]++;
-              }
-              else if(rawInd==11){
-                pmCZPA = hdata->GetMean();
-                if(TMath::Abs(pmQZPA-pmCZPA)<(0.1*(pmQZPA+pmCZPA)/2)) 
-                  res=1.;
-                else 
-                  res=0.5;
-                test[specie] += res;
-                ntests[specie]++;
-              }
-            }
-            rawInd++;
-          }
+	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
+	    if(rawInd==11){
+	      if(sumADCZNC!=0){
+            	if((TMath::Abs(adcQZNC-adcCZNC)/adcCZNC)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZNA!=0){
+            	if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZPC!=0){
+            	if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZPA!=0){
+            	if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	    }
+	    rawInd++;	 
+	  }   
           // -------------------------------------------------------------------
           else if(index == AliQAv1::kESD){
-            Double_t eneQZNC, eneQZNA ;  
-            Double_t eneQZPC, eneQZPA ;  
-            Double_t eneCZNC, eneCZNA ;  
-            Double_t eneCZPC, eneCZPA ;            
+            Float_t sumADCZNA=0., sumADCZNC=0., sumADCZPA=0., sumADCZPC=0.;
+            Float_t pmCZNA=0., pmCZNC=0., pmCZPA=0., pmCZPC=0.;
+            Float_t pmQZNA=0., pmQZNC=0., pmQZPA=0., pmQZPC=0.;
             Int_t esdInd=0;
-            if(esdInd<2){
-              // hits histos
-              meanX = hdata->GetMean(1);
-              meanY = hdata->GetMean(2);
-              // check if the spot is centered
-              if((TMath::Abs(meanX)<0.2) && (TMath::Abs(meanY)<0.2)) 
-                res=1.;
-              else 
-                res=0.5;
-              test[specie] += res;
-              ntests[specie]++;
+	    //
+            // Check ESD HIGH GAIN CHAIN histos
+            if(hdata->GetEntries()!=0){
+	      if(esdInd==2)      sumADCZNC = hdata->GetMean();
+	      else if(esdInd==3) sumADCZNA = hdata->GetMean();
+	      else if(esdInd==4) sumADCZPC = hdata->GetMean();
+	      else if(esdInd==5) sumADCZPA = hdata->GetMean();
+	      else if(esdInd==6) pmQZNC = hdata->GetMean();
+	      else if(esdInd==7) pmQZNA = hdata->GetMean();
+	      else if(esdInd==8) pmQZPC = hdata->GetMean();
+	      else if(esdInd==9) pmQZPA = hdata->GetMean();
+	      else if(esdInd==10) pmCZNC = hdata->GetMean();
+	      else if(esdInd==11) pmCZNA = hdata->GetMean();
+	      else if(esdInd==12) pmCZPC = hdata->GetMean();
+	      else if(esdInd==13) pmCZPA = hdata->GetMean();
+	    }
+	    //
+	    // --- Check whether 2*|Mean ZNA - Mean ZNC|/(Mean ZNA + Mean ZNC) < percentageDiff
+	    // --- and 2*|Mean ZPA - Mean ZPC|/(Mean ZPA + Mean ZPC) < 2*percentageDiff
+	    if(esdInd==5){
+	      if(sumADCZNC!=0 && sumADCZNA!=0){
+            	if((2*TMath::Abs(sumADCZNC-sumADCZNA)/(sumADCZNA+sumADCZNC))<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZPC!=0 && sumADCZPA!=0){
+            	if((TMath::Abs(sumADCZPC-sumADCZPA)/(sumADCZPA+sumADCZPC))<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
             }
-            //
-            else{
-              // [1] check response of ZNC vs. ZNA
-              if(esdInd==0 || esdInd==1){
-                if(esdInd==0){
-                  if(hdata->GetEntries() != 0.){
-                    testgood=1;
-                    meanZNA = hdata->GetMean();
-                    rmsZNA = hdata->GetRMS();
-                  }
-                }
-                else{
-                  if(hdata->GetEntries() != 0.){
-                    testgood=1;
-                    meanZNC = hdata->GetMean();
-                  }
-                  else testgood=0;
-                  // check if the response m.v. of ZNA and ZNC are equal (@ 1sigma level)
-                  if(testgood==1){
-                    if(TMath::Abs(meanZNA-meanZNC)<rmsZNA) 
-                      res=1.;
-                    else 
-                      res=.5;
-                    testgood=0;
-                    test[specie] += res;
-                    ntests[specie]++;
-                  }
-                  else res=0.;
-                }
-              }
-              // [2] check response of ZPC vs. ZPA
-              else if(esdInd==2 || esdInd==3){
-                if(esdInd==2){
-                  if(hdata->GetEntries() != 0.){
-                    testgood=1;
-                    meanZPA = hdata->GetMean();
-                    rmsZPA = hdata->GetRMS();
-                  }
-                }
-                else{
-                  if(hdata->GetEntries() != 0.){
-                    testgood=1;
-                    meanZPC = hdata->GetMean();
-                  }
-                  // check if the response m.v. of ZPA and ZPC are equal (@ 3sigma level)
-                  if(testgood==1){
-                    if(TMath::Abs(meanZPA-meanZPC)<(3.*rmsZPA)) 
-                      res=1.;
-                    else 
-                      res=.5;
-                    test[specie] += res;
-                    ntests[specie]++;
-                    testgood=0;
-                  }
-                  else res=0.;
-                }
-              }
-              // [2] check eneC responses vs. summed eneQ responses
-              else if(esdInd>3 && esdInd<12){
-                if(esdInd==4) eneQZNC = hdata->GetMean();
-                else if(esdInd==5) eneQZNA = hdata->GetMean();
-                else if(esdInd==6) eneQZPC = hdata->GetMean();
-                else if(esdInd==7) eneQZPA = hdata->GetMean();
-                else if(esdInd==8){
-                  eneCZNC = hdata->GetMean();
-                  if(TMath::Abs(eneQZNC-eneCZNC)<(0.1*(eneQZNC+eneCZNC)/2)) 
-                    res=1.;
-                  else 
-                    res=0.5;
-                  test[specie] += res;
-                  ntests[specie]++;
-                }
-                else if(esdInd==9){
-                  eneCZNA = hdata->GetMean();
-                  if(TMath::Abs(eneQZNA-eneCZNA)<(0.1*(eneQZNA+eneCZNA)/2)) 
-                    res=1.;
-                  else 
-                    res=0.5;
-                  test[specie] += res;
-                  ntests[specie]++;
-                }
-                else if(esdInd==10){
-                  eneCZPC = hdata->GetMean();
-                  if(TMath::Abs(eneQZPC-eneCZPC)<(0.1*(eneQZPC+eneCZPC)/2)) 
-                    res=1.;
-                  else 
-                    res=0.5;
-                  test[specie] += res;
-                  ntests[specie]++;
-                }
-                else if(esdInd==11){
-                  eneCZPA = hdata->GetMean();
-                  if(TMath::Abs(eneQZPA-eneCZPA)<(0.1*(eneQZPA+eneCZPA)/2)) 
-                    res=1.;
-                  else 
-                    res=0.5;
-                  test[specie] += res;
-                  ntests[specie]++;
-                }
-              }
-              esdInd++;
+	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
+	    if(esdInd==13){
+	      if(sumADCZNC!=0){
+            	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZNA!=0){
+            	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZPC!=0){
+            	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumADCZPA!=0){
+            	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
             }
-            //AliDebug(AliQAv1::GetQADebugLevel(), Form("\t %d performed tests, results %1.2f\n",ntests[specie],test[specie]/ntests[specie]));
-          }
-          else {
-          AliWarning(Form("\n\t No ZDC QA for %s task\n",taskName)); 
-          return NULL;
-          }
-        } else
-            AliError("\t AliZDCQAChecker->No histos!!!\n");
-        }
-    } else {
-      AliError(Form("Checking not implemented for %s, %s", 
+            esdInd++;
+          }  
+	  else {
+            AliWarning(Form("\n\t No ZDC QA for %s task\n",taskName)); 
+            return NULL;
+          } 
+        }//if(hdata) 
+	else AliError("\t  No histos found for ZDC!!!\n");
+      }
+    } // HighMult (Pb-Pb) 
+    else {
+       AliError(Form("Checking not implemented for %s, %s", 
                     AliRecoParam::GetEventSpecieName(AliRecoParam::kCosmic), 
                     AliRecoParam::GetEventSpecieName(AliRecoParam::kCalib))) ; 
     }
-  }
+  } // Loop on species
    
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     if(ntests[specie]!=0) test[specie] = test[specie]/ntests[specie];
-        AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\tAliZDCQAChecker-> QA check result = %1.2f\n",test[specie]));
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\t ZDC QA check result = %1.2f\n",test[specie]));
   }
   delete [] ntests ; 
   return test; 

@@ -74,62 +74,64 @@ AliZDCQADataMakerRec& AliZDCQADataMakerRec::operator = (const AliZDCQADataMakerR
 void AliZDCQADataMakerRec::InitRaws()
 {
   // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
   //
   // ------------------- HIGH GAIN CHAIN ---------------------------
   TH1F * hRawZNCTot = new TH1F("hRawZNCTot", "Raw signal in ZNC;Amplitude [ADC counts];Counts", 100, 0., 6000.);
   TH1F * hRawZNATot = new TH1F("hRawZNATot", "Raw signal in ZNA;Amplitude [ADC counts];Counts", 100, 0., 6000.);
   TH1F * hRawZPCTot = new TH1F("hRawZPCTot", "Raw signal in ZPC;Amplitude [ADC counts];Counts", 100, 0., 10000.);
   TH1F * hRawZPATot = new TH1F("hRawZPATot", "Raw signal in ZPA;Amplitude [ADC counts];Counts", 100, 0., 10000.);
-  Add2RawsList(hRawZNCTot, 0);
-  Add2RawsList(hRawZNATot, 1);
-  Add2RawsList(hRawZPCTot, 2);
-  Add2RawsList(hRawZPATot, 3);
+  Add2RawsList(hRawZNCTot, 0, !expert, image);
+  Add2RawsList(hRawZNATot, 1, !expert, image);
+  Add2RawsList(hRawZPCTot, 2, !expert, image);
+  Add2RawsList(hRawZPATot, 3, !expert, image);
   //
   TH1F * hRawSumQZNC = new TH1F("hRawSumQZNC", "Raw summed 4 ZNC quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
   TH1F * hRawSumQZNA = new TH1F("hRawSumQZNA", "Raw summed 4 ZNA quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
   TH1F * hRawSumQZPC = new TH1F("hRawSumQZPC", "Raw summed 4 ZPC quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
   TH1F * hRawSumQZPA = new TH1F("hRawSumQZPA", "Raw summed 4 ZPA quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  Add2RawsList(hRawSumQZNC, 4, kTRUE);
-  Add2RawsList(hRawSumQZNA, 5, kTRUE);
-  Add2RawsList(hRawSumQZPC, 6, kTRUE);
-  Add2RawsList(hRawSumQZPA, 7, kTRUE);
+  Add2RawsList(hRawSumQZNC, 4, expert, !image);
+  Add2RawsList(hRawSumQZNA, 5, expert, !image);
+  Add2RawsList(hRawSumQZPC, 6, expert, !image);
+  Add2RawsList(hRawSumQZPA, 7, expert, !image);
   //
   TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw common ZNC PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
   TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw common ZNA PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
   TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw common ZPC PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
   TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw common ZPA PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  Add2RawsList(hRawPMCZNC, 8 , kTRUE);
-  Add2RawsList(hRawPMCZNA, 9 , kTRUE);
-  Add2RawsList(hRawPMCZPC, 10, kTRUE);
-  Add2RawsList(hRawPMCZPA, 11, kTRUE);
+  Add2RawsList(hRawPMCZNC, 8 , expert, !image);
+  Add2RawsList(hRawPMCZNA, 9 , expert, !image);
+  Add2RawsList(hRawPMCZPC, 10, expert, !image);
+  Add2RawsList(hRawPMCZPA, 11, expert, !image);
   // 
-/*  // ------------------- LOW GAIN CHAIN ---------------------------
+  // ------------------- LOW GAIN CHAIN ---------------------------
   TH1F * hRawZNCTotlg = new TH1F("hRawZNCTotlg", "Rawit lg signal in ZNC", 100, 0., 6000.);
   TH1F * hRawZNATotlg = new TH1F("hRawZNATotlg", "Rawit lg signal in ZNA", 100, 0., 6000.);
   TH1F * hRawZPCTotlg = new TH1F("hRawZPCTotlg", "Rawit lg signal in ZPC", 100, 0., 10000.);
   TH1F * hRawZPATotlg = new TH1F("hRawZPATotlg", "Rawit lg signal in ZPA", 100, 0., 10000.);
-  Add2RawsList(hRawZNCTotlg, 12);
-  Add2RawsList(hRawZNATotlg, 13);
-  Add2RawsList(hRawZPCTotlg, 14);
-  Add2RawsList(hRawZPATotlg, 15);
+  Add2RawsList(hRawZNCTotlg, 12, !expert, image);
+  Add2RawsList(hRawZNATotlg, 13, !expert, image);
+  Add2RawsList(hRawZPCTotlg, 14, !expert, image);
+  Add2RawsList(hRawZPATotlg, 15, !expert, image);
   //
   TH1F * hRawSumQZNClg = new TH1F("hRawSumQZNClg", "Raw summed 4 lg ZNC quadrants",100, 0., 4000.);
   TH1F * hRawSumQZNAlg = new TH1F("hRawSumQZNAlg", "Raw summed 4 lg ZNA quadrants",100, 0., 4000.);
   TH1F * hRawSumQZPClg = new TH1F("hRawSumQZPClg", "Raw summed 4 lg ZPC quadrants",100, 0., 4000.);
   TH1F * hRawSumQZPAlg = new TH1F("hRawSumQZPAlg", "Raw summed 4 lg ZPA quadrants",100, 0., 4000.);
-  Add2RawsList(hRawSumQZNClg, 16, kTRUE);
-  Add2RawsList(hRawSumQZNAlg, 17, kTRUE);
-  Add2RawsList(hRawSumQZPClg, 18, kTRUE);
-  Add2RawsList(hRawSumQZPAlg, 19, kTRUE);
+  Add2RawsList(hRawSumQZNClg, 16, kTRUE, expert, !image);
+  Add2RawsList(hRawSumQZNAlg, 17, kTRUE, expert, !image);
+  Add2RawsList(hRawSumQZPClg, 18, kTRUE, expert, !image);
+  Add2RawsList(hRawSumQZPAlg, 19, kTRUE, expert, !image);
   //
   TH1F * hRawPMCZNClg = new TH1F("hRawPMCZNClg", "Raw common lg ZNC PMT",100, 0., 4000.);
   TH1F * hRawPMCZNAlg = new TH1F("hRawPMCZNAlg", "Raw common lg ZNA PMT",100, 0., 4000.);
   TH1F * hRawPMCZPClg = new TH1F("hRawPMCZPClg", "Raw common lg ZPC PMT",100, 0., 4000.);
   TH1F * hRawPMCZPAlg = new TH1F("hRawPMCZPAlg", "Raw common lg ZPA PMT",100, 0., 4000.);
-  Add2RawsList(hRawPMCZNClg, 20, kTRUE);
-  Add2RawsList(hRawPMCZNAlg, 21, kTRUE);
-  Add2RawsList(hRawPMCZPClg, 22, kTRUE);
-  Add2RawsList(hRawPMCZPAlg, 23, kTRUE);*/
+  Add2RawsList(hRawPMCZNClg, 20, kTRUE, expert, !image);
+  Add2RawsList(hRawPMCZNAlg, 21, kTRUE, expert, !image);
+  Add2RawsList(hRawPMCZPClg, 22, kTRUE, expert, !image);
+  Add2RawsList(hRawPMCZPAlg, 23, kTRUE, expert, !image);
 }
 
 //____________________________________________________________________________ 
@@ -169,7 +171,7 @@ void AliZDCQADataMakerRec::InitDigits()
   Add2DigitsList(hDigPMCZPA, 11, expert, !image);
   // 
   // ------------------- LOW GAIN CHAIN ---------------------------
-  /*  TH1F * hDigZNCTotlg = new TH1F("hDigZNCTotlg", "Digit lg signal in ZNC", 100, 0., 6000.);
+  TH1F * hDigZNCTotlg = new TH1F("hDigZNCTotlg", "Digit lg signal in ZNC", 100, 0., 6000.);
   TH1F * hDigZNATotlg = new TH1F("hDigZNATotlg", "Digit lg signal in ZNA", 100, 0., 6000.);
   TH1F * hDigZPCTotlg = new TH1F("hDigZPCTotlg", "Digit lg signal in ZPC", 100, 0., 6000.);
   TH1F * hDigZPATotlg = new TH1F("hDigZPATotlg", "Digit lg signal in ZPA", 100, 0., 6000.);
@@ -195,7 +197,7 @@ void AliZDCQADataMakerRec::InitDigits()
   Add2DigitsList(hDigPMCZNAlg, 21, expert, !image);
   Add2DigitsList(hDigPMCZPClg, 22, expert, !image);
   Add2DigitsList(hDigPMCZPAlg, 23, expert, !image);
-  */
+  
 }
 
 //____________________________________________________________________________
@@ -239,7 +241,7 @@ void AliZDCQADataMakerRec::InitESDs()
   Add2ESDsList(hESDPMCZPC, 12, expert, !image);
   Add2ESDsList(hESDPMCZPA, 13, expert, !image);
   // 
-/*  // ------------------- LOW GAIN CHAIN ---------------------------
+  // ------------------- LOW GAIN CHAIN ---------------------------
   TH1F * hESDZNCTotlg = new TH1F("hESDZNCTotlg", "ESD lg signal in ZNC", 100, 0., 6000.);
   TH1F * hESDZNATotlg = new TH1F("hESDZNATotlg", "ESD lg signal in ZNA", 100, 0., 6000.);
   TH1F * hESDZPCTotlg = new TH1F("hESDZPCTotlg", "ESD lg signal in ZPC", 100, 0., 10000.);
@@ -265,7 +267,7 @@ void AliZDCQADataMakerRec::InitESDs()
   Add2ESDsList(hESDPMCZNClg, 22, expert, !image);
   Add2ESDsList(hESDPMCZNAlg, 23, expert, !image);
   Add2ESDsList(hESDPMCZPClg, 24, expert, !image);
-  Add2ESDsList(hESDPMCZPAlg, 25, expert, !image);*/
+  Add2ESDsList(hESDPMCZPAlg, 25, expert, !image);
 }
   
 //____________________________________________________________________________
@@ -274,15 +276,15 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 {
   // Filling Raws QA histos
   //
-  // Check id histograms already created for this Event Specie
+  // Check if histograms already created for this Event Specie
   if ( ! GetRawsData(0) )
-    InitRaws() ;
+    InitRaws();
 
 	rawReader->Reset() ; 
   Float_t sum_ZNC=0., sum_ZNA=0., sum_ZPC=0., sum_ZPA=0.;
   Float_t sumQ_ZNC=0., sumQ_ZNA=0., sumQ_ZPC=0., sumQ_ZPA=0.;
-  //Float_t sum_ZNC_lg=0., sum_ZNA_lg=0., sum_ZPC_lg=0., sum_ZPA_lg=0.;
-  //Float_t sumQ_ZNC_lg=0., sumQ_ZNA_lg=0., sumQ_ZPC_lg=0., sumQ_ZPA_lg=0.;
+  Float_t sum_ZNC_lg=0., sum_ZNA_lg=0., sum_ZPC_lg=0., sum_ZPA_lg=0.;
+  Float_t sumQ_ZNC_lg=0., sumQ_ZNA_lg=0., sumQ_ZPC_lg=0., sumQ_ZPA_lg=0.;
   //
   AliZDCRawStream stream(rawReader);
   while(stream.Next()){
@@ -294,11 +296,11 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	   if(stream.GetSector(1)!=0) sumQ_ZNC += stream.GetADCValue();
 	   else GetRawsData(8)->Fill(stream.GetADCValue());
 	 }
-	 /*else{
+	 else{
 	   sum_ZNC_lg += stream.GetADCValue();
 	   if(stream.GetSector(1)!=0) sumQ_ZNC_lg += stream.GetADCValue();
 	   else GetRawsData(20)->Fill(stream.GetADCValue());
-	 }*/
+	 }
        }
        else if(stream.GetSector(0)==2){
          if(stream.GetADCGain()==0){
@@ -306,11 +308,11 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	   if(stream.GetSector(1)!=0) sumQ_ZPC += stream.GetADCValue();
 	   else GetRawsData(10)->Fill(stream.GetADCValue());
 	 }
-	 /*else{
+	 else{
 	   sum_ZPC_lg += stream.GetADCValue();
 	   if(stream.GetSector(1)!=0) sumQ_ZPC_lg += stream.GetADCValue();
 	   else GetRawsData(22)->Fill(stream.GetADCValue());
-	 }*/
+	 }
        }
        else if(stream.GetSector(0)==4){
          if(stream.GetADCGain()==0){
@@ -318,11 +320,11 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	   if(stream.GetSector(1)!=0) sumQ_ZNA += stream.GetADCValue();
 	   else GetRawsData(9)->Fill(stream.GetADCValue());
 	 }
-	 /*else{
+	 else{
 	   sum_ZNA_lg += stream.GetADCValue();
 	   if(stream.GetSector(1)!=0) sumQ_ZNA_lg += stream.GetADCValue();
 	   else GetRawsData(21)->Fill(stream.GetADCValue());
-	 }*/
+	 }
        }
        else if(stream.GetSector(0)==5){
          if(stream.GetADCGain()==0){
@@ -330,11 +332,11 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	   if(stream.GetSector(1)!=0) sumQ_ZPA += stream.GetADCValue();
 	   else GetRawsData(11)->Fill(stream.GetADCValue());
 	 }
-	 /*else{
+	 else{
 	   sum_ZPA_lg += stream.GetADCValue();
 	   if(stream.GetSector(1)!=0) sumQ_ZPA_lg += stream.GetADCValue();
 	   else GetRawsData(23)->Fill(stream.GetADCValue());
-	 }*/
+	 }
        }
     }
   }
@@ -349,7 +351,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   GetRawsData(6)->Fill(sumQ_ZPC);
   GetRawsData(7)->Fill(sumQ_ZPA);
   //
-  /*GetRawsData(12)->Fill(sum_ZNC_lg);
+  GetRawsData(12)->Fill(sum_ZNC_lg);
   GetRawsData(13)->Fill(sum_ZNA_lg);
   GetRawsData(14)->Fill(sum_ZPC_lg);
   GetRawsData(15)->Fill(sum_ZPA_lg);
@@ -357,7 +359,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   GetRawsData(16)->Fill(sumQ_ZNC_lg);
   GetRawsData(17)->Fill(sumQ_ZNA_lg);
   GetRawsData(18)->Fill(sumQ_ZPC_lg);
-  GetRawsData(19)->Fill(sumQ_ZPA_lg);*/
+  GetRawsData(19)->Fill(sumQ_ZPA_lg);
   //
   stream.Delete();
 }
@@ -381,61 +383,61 @@ void AliZDCQADataMakerRec::MakeDigits(TTree *digitTree )
   
   Float_t adcSum_ZNC=0., adcSum_ZNA=0., adcSum_ZPC=0., adcSum_ZPA=0.;
   Float_t adcSumQ_ZNC=0., adcSumQ_ZNA=0., adcSumQ_ZPC=0., adcSumQ_ZPA=0.;
-  //Float_t adcSum_ZNC_lg=0., adcSum_ZNA_lg=0., adcSum_ZPC_lg=0., adcSum_ZPA_lg=0.;
-  //Float_t adcSumQ_ZNC_lg=0., adcSumQ_ZNA_lg=0., adcSumQ_ZPC_lg=0., adcSumQ_ZPA_lg=0.;
+  Float_t adcSum_ZNC_lg=0., adcSum_ZNA_lg=0., adcSum_ZPC_lg=0., adcSum_ZPA_lg=0.;
+  Float_t adcSumQ_ZNC_lg=0., adcSumQ_ZNA_lg=0., adcSumQ_ZPC_lg=0., adcSumQ_ZPA_lg=0.;
   //
   for(Int_t i = 0; i < ndig; i++){
     digitTree->GetEntry(i);
     if(fDigit->GetSector(0)==1){
       adcSum_ZNC += fDigit->GetADCValue(0);
-      //adcSum_ZNC_lg += fDigit->GetADCValue(1);
+      adcSum_ZNC_lg += fDigit->GetADCValue(1);
       //
       if(fDigit->GetSector(1)!=0){
 	      adcSumQ_ZNC += fDigit->GetADCValue(0);
-	      //adcSumQ_ZNC_lg+= fDigit->GetADCValue(1);
+	      adcSumQ_ZNC_lg+= fDigit->GetADCValue(1);
       }
       else{
 	      GetDigitsData(8)->Fill(fDigit->GetADCValue(0));
-	      //GetDigitsData(20)->Fill(fDigit->GetADCValue(1));
+	      GetDigitsData(20)->Fill(fDigit->GetADCValue(1));
       }
     }
     else if(fDigit->GetSector(0)==2){
       adcSum_ZPC += fDigit->GetADCValue(0);
-      //adcSum_ZPC_lg += fDigit->GetADCValue(1);
+      adcSum_ZPC_lg += fDigit->GetADCValue(1);
       //
       if(fDigit->GetSector(1)!=0){
 	      adcSumQ_ZPC += fDigit->GetADCValue(0);
-	      //adcSumQ_ZPC_lg+= fDigit->GetADCValue(1);
+	      adcSumQ_ZPC_lg+= fDigit->GetADCValue(1);
       }
       else{
 	      GetDigitsData(10)->Fill(fDigit->GetADCValue(0));
-	      //GetDigitsData(22)->Fill(fDigit->GetADCValue(1));
+	      GetDigitsData(22)->Fill(fDigit->GetADCValue(1));
       }
     }
     else if(fDigit->GetSector(0)==4){
       adcSum_ZNA += fDigit->GetADCValue(0);
-      //adcSum_ZNA_lg += fDigit->GetADCValue(1);
+      adcSum_ZNA_lg += fDigit->GetADCValue(1);
       //
       if(fDigit->GetSector(1)!=0){
 	      adcSumQ_ZNA += fDigit->GetADCValue(0);
-	      //adcSumQ_ZNA_lg+= fDigit->GetADCValue(1);
+	      adcSumQ_ZNA_lg+= fDigit->GetADCValue(1);
       }
       else{
 	      GetDigitsData(9)->Fill(fDigit->GetADCValue(0));
-	      //GetDigitsData(21)->Fill(fDigit->GetADCValue(1));
+	      GetDigitsData(21)->Fill(fDigit->GetADCValue(1));
       }
     }
     else if(fDigit->GetSector(0)==5){
       adcSum_ZPA += fDigit->GetADCValue(0);
-      //adcSum_ZPA_lg += fDigit->GetADCValue(1);
+      adcSum_ZPA_lg += fDigit->GetADCValue(1);
       //
       if(fDigit->GetSector(1)!=0){
 	      adcSumQ_ZPA += fDigit->GetADCValue(0);
-	      //adcSumQ_ZPA_lg+= fDigit->GetADCValue(1);
+	      adcSumQ_ZPA_lg+= fDigit->GetADCValue(1);
       }
       else{
 	      GetDigitsData(11)->Fill(fDigit->GetADCValue(0));
-	      //GetDigitsData(23)->Fill(fDigit->GetADCValue(1));
+	      GetDigitsData(23)->Fill(fDigit->GetADCValue(1));
       }
     }
   }
@@ -450,15 +452,15 @@ void AliZDCQADataMakerRec::MakeDigits(TTree *digitTree )
   GetDigitsData(6)->Fill(adcSumQ_ZPC);
   GetDigitsData(7)->Fill(adcSumQ_ZPA);
   //
-  /*GetDigitsData(12)->Fill(adcSum_ZNC_lg);
-   GetDigitsData(13)->Fill(adcSum_ZNA_lg);
-   GetDigitsData(14)->Fill(adcSum_ZPC_lg);
-   GetDigitsData(15)->Fill(adcSum_ZPA_lg);
-   //
-   GetDigitsData(16)->Fill(adcSumQ_ZNC_lg);
-   GetDigitsData(17)->Fill(adcSumQ_ZNA_lg);
-   GetDigitsData(18)->Fill(adcSumQ_ZPC_lg);
-   GetDigitsData(19)->Fill(adcSumQ_ZPA_lg);*/
+  GetDigitsData(12)->Fill(adcSum_ZNC_lg);
+  GetDigitsData(13)->Fill(adcSum_ZNA_lg);
+  GetDigitsData(14)->Fill(adcSum_ZPC_lg);
+  GetDigitsData(15)->Fill(adcSum_ZPA_lg);
+  //
+  GetDigitsData(16)->Fill(adcSumQ_ZNC_lg);
+  GetDigitsData(17)->Fill(adcSumQ_ZNA_lg);
+  GetDigitsData(18)->Fill(adcSumQ_ZPC_lg);
+  GetDigitsData(19)->Fill(adcSumQ_ZPA_lg);
 }
 
 //____________________________________________________________________________
@@ -486,20 +488,20 @@ void AliZDCQADataMakerRec::MakeESDs(AliESDEvent * esd)
   GetESDsData(5)->Fill(esd->GetZDCP2Energy());
   //
   Double_t sumQZNC=0., sumQZPC=0., sumQZNA=0., sumQZPA=0.;
-  //Double_t sumQZNC_lg=0., sumQZPC_lg=0., sumQZNA_lg=0., sumQZPA_lg=0.;
+  Double_t sumQZNC_lg=0., sumQZPC_lg=0., sumQZNA_lg=0., sumQZPA_lg=0.;
   //
   const Double_t *towZNC, *towZPC, *towZNA, *towZPA;
-  //const Double_t *towZNC_lg, *towZPC_lg, *towZNA_lg, *towZPA_lg;
+  const Double_t *towZNC_lg, *towZPC_lg, *towZNA_lg, *towZPA_lg;
   //
   towZNC = zdcESD->GetZN1TowerEnergy();
   towZPC = zdcESD->GetZP1TowerEnergy();
   towZNA = zdcESD->GetZN2TowerEnergy();
   towZPA = zdcESD->GetZP2TowerEnergy();
   //
-  /*towZNC_lg = zdcESD->GetZN1TowerEnergyLR();
+  towZNC_lg = zdcESD->GetZN1TowerEnergyLR();
   towZPC_lg = zdcESD->GetZP1TowerEnergyLR();
   towZNA_lg = zdcESD->GetZN2TowerEnergyLR();
-  towZPA_lg = zdcESD->GetZP2TowerEnergyLR();*/
+  towZPA_lg = zdcESD->GetZP2TowerEnergyLR();
   //
   for(Int_t i=0; i<5; i++){
      if(i==0){
@@ -508,10 +510,10 @@ void AliZDCQADataMakerRec::MakeESDs(AliESDEvent * esd)
        GetESDsData(12)->Fill(towZPC[i]);
        GetESDsData(13)->Fill(towZPA[i]);
        //
-       /*GetESDsData(22)->Fill(towZNC_lg[i]);
+       GetESDsData(22)->Fill(towZNC_lg[i]);
        GetESDsData(23)->Fill(towZNA_lg[i]);
        GetESDsData(24)->Fill(towZPC_lg[i]);
-       GetESDsData(25)->Fill(towZPA_lg[i]);*/
+       GetESDsData(25)->Fill(towZPA_lg[i]);
      }
      else{
        sumQZNC += towZNC[i];
@@ -519,10 +521,10 @@ void AliZDCQADataMakerRec::MakeESDs(AliESDEvent * esd)
        sumQZNA += towZNA[i];
        sumQZPA += towZPA[i];
        //
-       /*sumQZNC_lg += towZNC_lg[i];
+       sumQZNC_lg += towZNC_lg[i];
        sumQZPC_lg += towZPC_lg[i];
        sumQZNA_lg += towZNA_lg[i];
-       sumQZPA_lg += towZPA_lg[i];*/
+       sumQZPA_lg += towZPA_lg[i];
      }
   }
   GetESDsData(6)->Fill(sumQZNC);
@@ -530,10 +532,10 @@ void AliZDCQADataMakerRec::MakeESDs(AliESDEvent * esd)
   GetESDsData(8)->Fill(sumQZPC);
   GetESDsData(9)->Fill(sumQZPA);
   //
-  /*GetESDsData(18)->Fill(sumQZNC_lg);
+  GetESDsData(18)->Fill(sumQZNC_lg);
   GetESDsData(19)->Fill(sumQZNA_lg);
   GetESDsData(20)->Fill(sumQZPC_lg);
-  GetESDsData(21)->Fill(sumQZPA_lg);*/
+  GetESDsData(21)->Fill(sumQZPA_lg);
 }
 
 //____________________________________________________________________________

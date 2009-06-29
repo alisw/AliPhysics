@@ -41,9 +41,10 @@ AliZDCTriggerProcessor::AliZDCTriggerProcessor(Float_t* signal, AliZDCTriggerPar
 //_____________________________________________________________________________
 AliZDCTriggerProcessor &AliZDCTriggerProcessor::operator =(const AliZDCTriggerProcessor &trig)
 {
- //assignment operator
- fSignal = trig.GetSignal(); 
- fTriggerParam = trig.GetTriggerParamFromOCDB();
+ // Equal operator.
+ this->~AliZDCTriggerProcessor();
+ new(this) AliZDCTriggerProcessor(trig);
+ return *this;  
 
 }
 

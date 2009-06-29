@@ -581,7 +581,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     sPMRef2[1] = pmReflg[0] - (corrCoeff1[23+kNch]*pmRefootlg[1]+corrCoeff0[23+kNch]);
   }
   // Setting reco flags (part II)
-  Float_t sumZNAhg, sumZPAhg, sumZNChg, sumZPChg;
+  Float_t sumZNAhg=0, sumZPAhg=0, sumZNChg=0, sumZPChg=0;
   for(Int_t jj=0; jj<5; jj++){
     sumZNAhg += tZN2Corr[jj];
     sumZPAhg += tZP2Corr[jj];

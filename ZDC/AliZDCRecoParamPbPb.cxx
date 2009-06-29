@@ -108,14 +108,11 @@ AliZDCRecoParamPbPb::AliZDCRecoParamPbPb(const AliZDCRecoParamPbPb &oldrecopar) 
 //_____________________________________________________________________________
 AliZDCRecoParamPbPb &AliZDCRecoParamPbPb::operator =(const AliZDCRecoParamPbPb &recpar)
 {
- //assignment operator
- fhZDCvsZEM = recpar.GethZDCvsZEM();
- fhZDCCvsZEM = recpar.GethZDCCvsZEM();
- fhZDCAvsZEM = recpar.GethZDCAvsZEM();
- fhNpartDist = recpar.GethNpartDist();
- fhbDist = recpar.GethbDist();
- fClkCenter = recpar.GetClkCenter(); 
-
+  // Equal operator.
+  this->~AliZDCRecoParamPbPb();
+  new(this) AliZDCRecoParamPbPb(recpar);
+  return *this;  
+ 
 }
  
 //_____________________________________________________________________________
