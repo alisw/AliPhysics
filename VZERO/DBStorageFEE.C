@@ -12,7 +12,7 @@ void DBStorageFEE(){
 	
 	const int N = AliVZEROTriggerData::kNCIUBoards;
 	
-	UShort_t Clk1Win1[N] = {1,1,1,1,3,3,3,3,};
+	UShort_t Clk1Win1[N] = {1,1,1,1,3,3,3,3};
 	UShort_t Clk2Win1[N] = {3,3,3,3,14,14,14,14};
 	triggerData->SetClk1Win1(Clk1Win1);
 	triggerData->SetClk2Win1(Clk2Win1);
