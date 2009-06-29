@@ -405,9 +405,9 @@ TArrayI AliITSOnlineSPDfoAnalyzer::ChooseDACValues(Int_t hs, Int_t chip) const
       h = fNh[iqual][hs][chip]->Projection(idim); 
       dacs.AddAt((Int_t)h->GetBinLowEdge(h->GetMaximumBin()+1),idim);
       Int_t bin=-1;
-      if(idim == fFOHandler->kPreVTH && CorrectPreVTHChioce(h,bin) ) {
-	dacs.AddAt((Int_t)h->GetBinLowEdge(bin+1),idim);  
-      }     
+      if(fFOHandler->GetFOscanInfo()->GetDACindex(idim)==fFOHandler->kIdPreVTH && CorrectPreVTHChioce(h,bin)) {
+       dacs.AddAt((Int_t)h->GetBinLowEdge(bin+1),idim);
+      }
       dacs.AddAt(iqual,fNdims);
     }//idim
   }//iqual
@@ -545,23 +545,29 @@ Bool_t AliITSOnlineSPDfoAnalyzer::CorrectPreVTHChioce(const TH1D *h,Int_t &bin) 
   // Checks if more maxima of the same height are present in the pre_VTH case
   //
   
+  
+  Int_t maxbin = h->GetMaximum();
+  Double_t maxentries = h->GetBinContent(maxbin);
+  
   Int_t counts =0;
   Int_t bins[10]={0,0,0,0,0,0,0,0,0,0};
   Int_t binindex=0;
   Bool_t check=kFALSE;
 
   for(Int_t i=0; i<= h->GetNbinsX(); i++){    
-    if(h->GetBinContent(i) == h->GetMaximum() || h->GetBinContent(i) == h->GetMaximum()-1) {
+     if(h->GetBinContent(i) == maxentries){
       counts++;
       bins[binindex]=i;
       binindex++;
     }
   }
   
-  if(counts>1) {
+  if(counts>0) {
     bin=bins[binindex-1];
     check = kTRUE; 
   }
+  
+  
   return check; 
 }
 
