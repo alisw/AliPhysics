@@ -189,7 +189,7 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
 }
   
 //_____________________________________________________________________________
-Int_t  AliTriggerRunScalers::FindNearestScalersRecord( AliTimeStamp * stamp )
+Int_t  AliTriggerRunScalers::FindNearestScalersRecord( const AliTimeStamp *stamp ) const
 {
    // Find Trigger scaler record with the closest timestamp <= "stamp"
    // using a binary search. 
@@ -199,7 +199,7 @@ Int_t  AliTriggerRunScalers::FindNearestScalersRecord( AliTimeStamp * stamp )
    Int_t   base, position=-1, last, result = 0;
    AliTimeStamp *op2 = NULL;
    
-   fScalersRecord.Sort();
+   //fScalersRecord.Sort();
 
    base = 0;
    last = fScalersRecord.GetEntriesFast();

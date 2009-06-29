@@ -30,10 +30,9 @@ public:
                   ULong_t    GetRunNumber()        const { return fRunNumber;     }
                   UChar_t    GetNumClasses()       const { return fnClasses;      }
                    Char_t    GetClass( Int_t i )   const { return fClassIndex[i]; }
-                TObjArray*   GetScalersRecords()   { return &fScalersRecord; } 
-  AliTriggerScalersRecord*   GetScalersRecord( Int_t index )         
-                                                { return (AliTriggerScalersRecord*)fScalersRecord.At(index); }
-                    Int_t    FindNearestScalersRecord( AliTimeStamp * stamp );
+          const TObjArray*   GetScalersRecords()   const { return &fScalersRecord; } 
+  AliTriggerScalersRecord*   GetScalersRecord( Int_t index ) const { return (AliTriggerScalersRecord*)fScalersRecord.At(index); }
+                    Int_t    FindNearestScalersRecord( const AliTimeStamp *stamp ) const;
                    Bool_t    ConsistencyCheck();
   //  Setters
                      void    SetVersion( Short_t ver )       { fVersion = ver;   }            
