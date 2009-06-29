@@ -977,7 +977,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
 
     if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 3){
       TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
-      TVectorD dy(ncl[ir], yres[ir]);
+      TVectorD vdy(ncl[ir], yres[ir]);
       UChar_t stat(0);
       if(IsKink()) SETBIT(stat, 0);
       if(IsStandAlone()) SETBIT(stat, 1);
@@ -986,7 +986,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
           << "det="    << fDet
           << "pt="     << fPt
           << "s2y="    << s2yTrk
-          << "dy="     << &dy
+          << "dy="     << &vdy
           << "m="      << mean
           << "s="      << syDis
           << "\n";

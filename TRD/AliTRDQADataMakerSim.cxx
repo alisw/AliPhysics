@@ -223,7 +223,7 @@ void AliTRDQADataMakerSim::MakeHits(TTree * hitTree)
   else
    fHitsArray = new TClonesArray("AliTRDhit", nhits+1000);
   
-  Int_t index = 0;
+  //Int_t index = 0;
   Int_t nEntries = (Int_t)branch->GetEntries();
   for(Int_t i = 0; i < nEntries; i++) {
     branch->GetEntry(i);
