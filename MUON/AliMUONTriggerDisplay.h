@@ -35,7 +35,8 @@ public:
   enum EDisplayOption {
     kDefaultDisplay,   ///< Default display
     kNumbered,         ///< Histogram filled with board numbers
-    kShowZeroes        ///< Displays strip/board/slat content even if it is 0
+    kShowZeroes,       ///< Displays strip/board/slat content even if it is 0
+    kNormalizeToArea   ///< Draw input histo divided by element area
   };
 
   TH2* GetEmptyDisplayHisto(TString displayHistoName, EDisplayType displayType,

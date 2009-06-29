@@ -190,6 +190,9 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
       AliWarning("Display histogram not initialized. Please initialize it first!");
       return kFALSE;
   }
+  else if ( inputHisto->GetEntries() == 0 ) {
+    return kTRUE;
+  }
 
   Float_t xWidth, yWidth, yWidthSlat=0., xWidthCol=0.;
   Float_t x1,x2,y1,y2;
@@ -422,9 +425,19 @@ void AliMUONTriggerDisplay::FillBins(TH1* inputHisto, TH2* displayHisto,
     binY2 = meanBin;
   }
 
+  Float_t elementArea = 1.;
+  if(displayOpt == kNormalizeToArea) {
+    elementArea = (x2 - x1 + 2*kShiftX) * 
+      (y2 - y1 + 2*kShiftY); // In InitOrDisplayTriggerInfo: 
+                             // x2 = x_c + xHalfWidth - kShiftX
+                             // x1 = x_c - xHalfWidth + kShiftX
+                             // so x2 - x1 + 2*kShiftX returns the element width.
+
+  }
+
   for(Int_t ibinx=binX1; ibinx<=binX2; ibinx++){
     for(Int_t ibiny=binY1; ibiny<=binY2; ibiny++){
-      displayHisto->SetBinContent(ibinx,ibiny,binContent);
+      displayHisto->SetBinContent(ibinx,ibiny,binContent/elementArea);
     }
   }
 }
