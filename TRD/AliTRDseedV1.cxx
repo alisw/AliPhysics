@@ -53,7 +53,6 @@
 #include "AliTRDchamberTimeBin.h"
 #include "AliTRDtrackingChamber.h"
 #include "AliTRDtrackerV1.h"
-#include "AliTRDReconstructor.h"
 #include "AliTRDrecoParam.h"
 #include "AliTRDCommonParam.h"
 
@@ -893,6 +892,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
   // define probing cluster (the perfect cluster) and default calibration
   Short_t sig[] = {0, 0, 10, 30, 10, 0,0};
   AliTRDcluster cp(fDet, 6, 75, 0, sig, 0);
+  if(fReconstructor->IsHLT())cp.SetRPhiMethod(AliTRDcluster::kCOG);
   Calibrate();
 
   if(kPRINT) printf("AttachClusters() sy[%f] road[%f]\n", syRef, kroady);

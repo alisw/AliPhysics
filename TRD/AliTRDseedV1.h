@@ -35,13 +35,14 @@
 #include "AliTRDcluster.h"
 #endif
 
+#include "AliTRDReconstructor.h"
+
 class TTreeSRedirector;
 
 class AliRieman;
 
 class AliTRDtrackingChamber;
 class AliTRDtrackV1;
-class AliTRDReconstructor;
 class AliTRDpadPlane;
 class AliTRDseedV1 : public AliTRDtrackletBase
 {
@@ -262,8 +263,13 @@ inline void AliTRDseedV1::Init(const AliRieman *rieman)
   fZref[1] = rieman->GetDZat(fX0);
   fYref[0] = rieman->GetYat(fX0);
   fYref[1] = rieman->GetDYat(fX0);
-  fRefCov[0] = rieman->GetErrY(fX0);
-  fRefCov[2] = rieman->GetErrZ(fX0);
+  if(fReconstructor && fReconstructor->IsHLT()){
+    fRefCov[0] = 1;
+    fRefCov[2] = 10;
+  }else{
+    fRefCov[0] = rieman->GetErrY(fX0);
+    fRefCov[2] = rieman->GetErrZ(fX0);
+  }
   fC       = rieman->GetC(); 
   fChi2    = rieman->GetChi2();
 }
