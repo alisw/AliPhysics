@@ -150,6 +150,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, Ali
 }
 
 //-----------------------------------------------------------------------   
+/*
 AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, AliCFManager* intCFManager, AliCFManager* diffCFManager)
 {
   //Fills the event from the ESD
@@ -238,7 +239,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
   }
   
 }
-
+*/
 //-----------------------------------------------------------------------   
 AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  AliCFManager* intCFManager, AliCFManager* diffCFManager)
 {
@@ -695,6 +696,84 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput)
 }
 
 //-----------------------------------------------------------------------   
+
+AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, AliCFManager* intCFManager, AliCFManager* diffCFManager)
+{
+  //Fills the event from the ESD
+  
+  //flags for particles passing int. and diff. flow cuts
+  Bool_t bPassedRPFlowCuts  = kFALSE;
+  Bool_t bPassedPOIFlowCuts = kFALSE;
+  
+  Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
+  
+  AliFlowEventSimple* pEvent = new AliFlowEventSimple(10);
+    
+  Int_t iGoodTracks = 0;           //number of good tracks
+  Int_t itrkN = 0;                 //track counter
+  Int_t iSelParticlesRP = 0;      //number of tracks selected for Int
+  Int_t iSelParticlesPOI = 0;     //number of tracks selected for Diff
+
+  //normal loop
+  while (itrkN < iNumberOfInputTracks) {
+    AliESDtrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
+    
+    //check if pParticle passes the cuts
+    if (intCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) && 
+	intCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle)) {
+      bPassedRPFlowCuts = kTRUE;
+    }
+    if (diffCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) && 
+	diffCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle)) {
+      bPassedPOIFlowCuts = kTRUE;
+    }
+    
+    if (bPassedRPFlowCuts || bPassedPOIFlowCuts) {
+      for(Int_t d=0;d<fNoOfLoops;d++) {
+        //make new AliFLowTrackSimple
+        AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
+        pTrack->SetPt(pParticle->Pt() );
+        pTrack->SetEta(pParticle->Eta() );
+        pTrack->SetPhi(pParticle->Phi()-fEllipticFlowValue*TMath::Sin(2*(pParticle->Phi()-fMCReactionPlaneAngle)) );
+      
+        //marking the particles used for int. flow:
+    	  if(bPassedRPFlowCuts && iSelParticlesRP < fMultiplicityOfEvent) {  
+          pTrack->SetForRPSelection(kTRUE);
+          iSelParticlesRP++;
+    	  }
+    	  //marking the particles used for diff. flow:
+        if(bPassedPOIFlowCuts && iGoodTracks%fNoOfLoops==0) {
+          pTrack->SetForPOISelection(kTRUE);
+          iSelParticlesPOI++;
+        }
+      	//adding a particles which were used either for int. or diff. flow to the list
+      	pEvent->TrackCollection()->Add(pTrack);
+      	iGoodTracks++;
+    	}//end of for(Int_t d=0;d<iLoops;d++)
+    }//end of if(bPassedIntFlowCuts || bPassedDiffFlowCuts) 
+    itrkN++; 
+    bPassedRPFlowCuts  = kFALSE;
+    bPassedPOIFlowCuts = kFALSE;
+  }//end of while (itrkN < iNumberOfInputTracks)
+  
+  pEvent->SetEventNSelTracksRP(iSelParticlesRP);  
+  pEvent->SetNumberOfTracks(iGoodTracks);
+  pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
+
+  if ( (++fCount % 100) == 0) {
+    if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
+    else cout<<" MC Reaction Plane Angle = unknown "<< endl;
+    cout<<" iGoodTracks = "<<iGoodTracks<<endl;
+    cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;
+    cout<<" # of POI selected tracks = "<<iSelParticlesPOI<<endl;  
+    cout << "# " << fCount << " events processed" << endl;
+  }
+
+  return pEvent;
+}
+
+//-----------------------------------------------------------------------   
+
 AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput)
 {
   //Fills the event from the AOD

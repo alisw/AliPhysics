@@ -13,24 +13,13 @@
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 
-////////////////////////////////////////////////////
-// AliAnalysisTaskFlowEvent:
-//
-// analysis task for filling the flow event
-// from MCEvent, ESD, AOD ....
-// and put it in an output stream so it can 
-// be used by the various flow analysis methods 
-// for cuts the correction framework is used
-// which also outputs QA histograms to view
-// the effects of the cuts
-////////////////////////////////////////////////////
-
-
 #include "Riostream.h" //needed as include
 #include "TChain.h"
 #include "TTree.h"
 #include "TFile.h" //needed as include
 #include "TList.h"
+#include "TRandom3.h"
+#include "TTimeStamp.h"
 
 // ALICE Analysis Framework
 class AliAnalysisTask;
@@ -61,6 +50,16 @@ class AliAnalysisTask;
 
 #include "AliAnalysisTaskFlowEvent.h"
 
+// AliAnalysisTaskFlowEvent:
+//
+// analysis task for filling the flow event
+// from MCEvent, ESD, AOD ....
+// and put it in an output stream so it can 
+// be used by the various flow analysis methods 
+// for cuts the correction framework is used
+// which also outputs QA histrograms to view
+// the effects of the cuts
+
 
 ClassImp(AliAnalysisTaskFlowEvent)
   
@@ -72,13 +71,19 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on) 
   fAOD(NULL),
   fEventMaker(NULL),
   fAnalysisType("ESD"),
-  fMinMult(0),
-  fMaxMult(10000000),
   fCFManager1(NULL),
   fCFManager2(NULL),
   fQAInt(NULL),
   fQADiff(NULL),
-  fQA(on)
+  fQA(on),
+  fMCReactionPlaneAngle(0.),
+  fCount(0),
+  fNoOfLoops(1),
+  fEllipticFlowValue(0.),
+  fSigmaEllipticFlowValue(0.),
+  fMultiplicityOfEvent(1000000000),
+  fSigmaMultiplicityOfEvent(0),
+  fMyTRandom3(NULL)
 {
   // Constructor
   cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name)"<<endl;
@@ -92,7 +97,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on) 
     DefineOutput(1, TList::Class());
     DefineOutput(2, TList::Class()); }  
   // and for testing open an output file
-  // fOutputFile = new TFile("FlowEvents.root","RECREATE");
+  //  fOutputFile = new TFile("FlowEvents.root","RECREATE");
 
 }
 
@@ -103,16 +108,63 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fAOD(NULL),
   fEventMaker(NULL),
   fAnalysisType("ESD"),
-  fMinMult(0),
-  fMaxMult(10000000),
   fCFManager1(NULL),
   fCFManager2(NULL),
   fQAInt(NULL),
   fQADiff(NULL),
-  fQA(kFALSE)
+  fQA(kFALSE),
+  fMCReactionPlaneAngle(0.),
+  fCount(0),
+  fNoOfLoops(1),
+  fEllipticFlowValue(0.),
+  fSigmaEllipticFlowValue(0.),
+  fMultiplicityOfEvent(1000000000),
+  fSigmaMultiplicityOfEvent(0),
+  fMyTRandom3(NULL)
 {
   // Constructor
   cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent()"<<endl;
+}
+
+//________________________________________________________________________
+AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, UInt_t iseed) : 
+  AliAnalysisTask(name, ""), 
+//  fOutputFile(NULL),
+  fESD(NULL),
+  fAOD(NULL),
+  fEventMaker(NULL),
+  fAnalysisType("ESD"),
+  fCFManager1(NULL),
+  fCFManager2(NULL),
+  fQAInt(NULL),
+  fQADiff(NULL),
+  fQA(on),
+  fMCReactionPlaneAngle(0.),
+  fCount(0),
+  fNoOfLoops(1),
+  fEllipticFlowValue(0.),
+  fSigmaEllipticFlowValue(0.),
+  fMultiplicityOfEvent(1000000000),
+  fSigmaMultiplicityOfEvent(0),
+  fMyTRandom3(NULL)
+{
+  // Constructor
+  cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, UInt_t iseed)"<<endl;
+
+  fMyTRandom3 = new TRandom3(iseed);   
+  gRandom->SetSeed(fMyTRandom3->Integer(65539));
+  
+  // Define input and output slots here
+  // Input slot #0 works with a TChain
+  DefineInput(0, TChain::Class());
+  // Define here the flow event output
+  DefineOutput(0, AliFlowEventSimple::Class());  
+  if(on) {
+    DefineOutput(1, TList::Class());
+    DefineOutput(2, TList::Class()); }  
+  // and for testing open an output file
+  //  fOutputFile = new TFile("FlowEvents.root","RECREATE");
+
 }
 
 //________________________________________________________________________
@@ -121,7 +173,7 @@ AliAnalysisTaskFlowEvent::~AliAnalysisTaskFlowEvent()
   //
   // Destructor
   //
-
+  if (fMyTRandom3) delete fMyTRandom3;
   // objects in the output list are deleted 
   // by the TSelector dtor (I hope)
 
@@ -189,7 +241,6 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   if (eventHandler) {
     mcEvent = eventHandler->MCEvent();
     if (mcEvent) {
-      //cout<<mcEvent-> GenEventHeader()->GetName()<<endl; //TEST
       //COCKTAIL with HIJING
       if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Cocktail Header")) { //returns 0 if matches
 	AliGenCocktailEventHeader *headerC = dynamic_cast<AliGenCocktailEventHeader *> (mcEvent-> GenEventHeader()); 
@@ -199,7 +250,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 	    AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(0)); 
 	    if (hdh) {
 	      fRP = hdh->ReactionPlaneAngle();
-	      //cout<<"The reactionPlane from Cocktail + Hijing is: "<< fRP <<endl; 
+	      //cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
 	    }
 	  }
 	}
@@ -224,13 +275,50 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 	//else { cout<<"headerH is NULL"<<endl; }
       }
     }
-    else {cout<<"No MC event!"<<endl; } //TEST
+    //else {cout<<"No MC event!"<<endl; }
     
   }
   //else {cout<<"No eventHandler!"<<endl; }
   
   // set the value of the monte carlo event plane for the flow event
-  fEventMaker->SetMCReactionPlaneAngle(fRP);
+  //RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+  // paste setters from AliFlowEventSimpleMaker.cxx
+  //RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+//  TRandom3 random3Temp2; //init for manual settings (R.Rietkerk)
+//  TTimeStamp dt2;
+//  Int_t sseed2 = dt2.GetNanoSec()/1000;
+//  random3Temp2.SetSeed(sseed2);
+//  cout << "seed2   = " << sseed2 << endl;
+//  cout << "random2 = " << random3Temp2.Rndm() << endl;
+  //RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+  cout << "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR" << endl;
+  cout << "TaskFlowEvent.cxx" << endl;
+  cout << "fCount" << fCount << endl;
+  cout << "fNoOfLoops" << fNoOfLoops << endl;
+  cout << "fEllipticFlowValue" << fEllipticFlowValue << endl;
+  cout << "fSigmaEllipticFlowValue" << fSigmaEllipticFlowValue << endl;
+  cout << "fMultiplicityOfEvent" << fMultiplicityOfEvent << endl;
+  cout << "fSigmaMultiplicityOfEvent" << fSigmaMultiplicityOfEvent << endl;
+  
+  cout << "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR" << endl;  
+  Double_t xRPangle=TMath::TwoPi()*(fMyTRandom3->Rndm());
+  Double_t xNewFlowValue = fMyTRandom3->Gaus(fEllipticFlowValue,fSigmaEllipticFlowValue);
+  Int_t nNewMultOfEvent = fMyTRandom3->Gaus(fMultiplicityOfEvent,fSigmaMultiplicityOfEvent);
+  
+  cout << "xRPangle = " << xRPangle << endl;
+  cout << "xNewFlowValue = " << xNewFlowValue << endl;
+  cout << "nNewMultOfEvent = " << nNewMultOfEvent << endl;
+  cout << "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR" << endl;  
+  //Int_t nNewMultOfEvent = random3Temp.Gaus(nMultiplicityOfEvent,nSigmaMult);
+	//  cout << "new multiplicity: " << nNewMultOfEvent << endl;
+ 	//Double_t xNewFlowValue = random3Temp.Gaus(xEllipticFlowValue,xSigmaFlow);
+	//  cout << "new flow value: " << xNewFlowValue << endl;
+  //fEventMaker->SetMCReactionPlaneAngle(fRP);  
+  fEventMaker->SetMCReactionPlaneAngle(xRPangle);
+  fEventMaker->SetNoOfLoops(fNoOfLoops);
+	fEventMaker->SetEllipticFlowValue(xNewFlowValue);
+	fEventMaker->SetMultiplicityOfEvent(nNewMultOfEvent);  
+  //RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
   
   // Fill the FlowEventSimple for MC input          
   if (fAnalysisType == "MC") {
@@ -246,8 +334,6 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 
     // analysis 
     Printf("Number of MC particles: %d", mcEvent->GetNumberOfTracks());
-    fEventMaker->SetMinMult(fMinMult);
-    fEventMaker->SetMaxMult(fMaxMult);
     fEvent = fEventMaker->FillTracks(mcEvent,fCFManager1,fCFManager2);
     // here we have the fEvent and want to make it available as an output stream
     // so no delete fEvent;
@@ -261,8 +347,6 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
     
     // analysis 
-    fEventMaker->SetMinMult(fMinMult);
-    fEventMaker->SetMaxMult(fMaxMult);
     fEvent = fEventMaker->FillTracks(fESD,fCFManager1,fCFManager2);
   }
   // Fill the FlowEventSimple for ESD input combined with MC info  
@@ -277,8 +361,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     fCFManager1->SetEventInfo(mcEvent);
     fCFManager2->SetEventInfo(mcEvent);
 
-    fEventMaker->SetMinMult(fMinMult);
-    fEventMaker->SetMaxMult(fMaxMult);
+
     if (fAnalysisType == "ESDMC0") { 
       fEvent = fEventMaker->FillTracks(fESD, mcEvent, fCFManager1, fCFManager2, 0); //0 = kine from ESD, 1 = kine from MC
     } else if (fAnalysisType == "ESDMC1") {
@@ -291,8 +374,6 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     Printf("There are %d tracks in this event", fAOD->GetNumberOfTracks());
 
     // analysis 
-    fEventMaker->SetMinMult(fMinMult);
-    fEventMaker->SetMaxMult(fMaxMult);
     //For the moment don't use CF //AliFlowEventSimple* fEvent = fEventMaker->FillTracks(fAOD,fCFManager1,fCFManager2);
     fEvent = fEventMaker->FillTracks(fAOD);
   }
@@ -311,3 +392,5 @@ void AliAnalysisTaskFlowEvent::Terminate(Option_t *)
   // Called once at the end of the query -- do not call in case of CAF
 
 }
+
+
