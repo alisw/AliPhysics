@@ -95,32 +95,6 @@ AliVZEROTriggerData::AliVZEROTriggerData(Int_t nRun, UInt_t startTime, UInt_t en
 	SetTitle(namst.Data());
 	
 }
-//________________________________________________________________
-AliVZEROTriggerData::AliVZEROTriggerData(const AliVZEROTriggerData& triggerdata) :
-TNamed(),
-fBBAThreshold(0),
-fBBCThreshold(0) ,  
-fBGAThreshold(0) ,  
-fBGCThreshold(0) ,  
-fBBAForBGThreshold(0) ,  
-fBBCForBGThreshold(0) ,  
-fCentralityVOAThrLow(0) ,  
-fCentralityVOAThrHigh(0) , 
-fCentralityVOCThrLow(0) ,  
-fCentralityVOCThrHigh(0) , 
-fMultV0AThrLow(0) ,  
-fMultV0AThrHigh(0) , 
-fMultV0CThrLow(0) ,  
-fMultV0CThrHigh(0),
-fRun(0),
-fStartTime(0),
-fEndTime(0),
-fIsProcessed(kFALSE)	
-{
-	// copy constructor
-	
-	AliInfo("Not implemented");
-}
 
 //________________________________________________________________
 AliVZEROTriggerData::~AliVZEROTriggerData(){
@@ -476,4 +450,5 @@ Bool_t	AliVZEROTriggerData::IsClkValid(UShort_t clock){
 	if(((RisingEdge==0)&&(FallingEdge==0)) &&(!word[0]))  isValid = kFALSE;
 	return isValid;
 }
+
 

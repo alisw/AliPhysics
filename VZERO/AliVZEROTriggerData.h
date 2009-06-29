@@ -14,8 +14,6 @@ public:
 	AliVZEROTriggerData();
 	AliVZEROTriggerData(Int_t nRun, UInt_t startTime, UInt_t endTime);
 	~AliVZEROTriggerData();
-	AliVZEROTriggerData(const AliVZEROTriggerData &triggerData);
-	AliVZEROTriggerData& operator= (const AliVZEROTriggerData &/*triggerData*/){AliInfo("Not implemented");return *this;};
 	
 	void FillData(AliVZERODataFEE * data);
 
@@ -158,6 +156,8 @@ public:
 	};
 	
 private:
+	AliVZEROTriggerData(const AliVZEROTriggerData &/*triggerData*/);
+	AliVZEROTriggerData& operator= (const AliVZEROTriggerData &/*triggerData*/);
 	
 	UShort_t fClk1Win1[kNCIUBoards]; //Profil of the Clock 1  of the Window 1 (BB window)
 	UShort_t fClk2Win1[kNCIUBoards]; //Profil of the Clock 2  of the Window 1 (BB window)
@@ -211,3 +211,4 @@ private:
 };
 
 #endif // ALIVZEROTRIGGERDATA_H
+
