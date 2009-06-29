@@ -111,7 +111,7 @@ Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliESDtrack* const track) {
   Double_t gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
   Double_t eta = 0.0;
 
-  if(fProtonAnalysisMode == kTPC) {
+  if((fProtonAnalysisMode == kTPC) || (fProtonAnalysisMode == kHybrid)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0; eta = -10.0;
@@ -123,7 +123,7 @@ Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliESDtrack* const track) {
       gPz = tpcTrack->Pz();
       eta = tpcTrack->Eta();
     }
-  }
+  }//standalone TPC or Hybrid TPC approaches
   else {
     gPt = track->Pt();
     gPx = track->Px();
@@ -164,7 +164,7 @@ Bool_t AliProtonAnalysisBase::IsAccepted(AliESDEvent *esd,
   Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
   Double_t dca3D = 0.0;
   
-  if((fProtonAnalysisMode == kTPC)&&(fProtonAnalysisMode != kHybrid)) {
+  if((fProtonAnalysisMode == kTPC)||(fProtonAnalysisMode == kHybrid)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0;
@@ -180,25 +180,8 @@ Bool_t AliProtonAnalysisBase::IsAccepted(AliESDEvent *esd,
 			       esd->GetMagneticField(),
 			       100.,dca,cov);
     }
-  }
-  else if(fProtonAnalysisMode == kHybrid) {
-     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
-    if(!tpcTrack) {
-      gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0;
-      dca[0] = -100.; dca[1] = -100.;
-      cov[0] = -100.; cov[1] = -100.; cov[2] = -100.;
-    }
-    else {
-      gPt = tpcTrack->Pt();
-      gPx = tpcTrack->Px();
-      gPy = tpcTrack->Py();
-      gPz = tpcTrack->Pz();
-      tpcTrack->PropagateToDCA(vertex,
-			       esd->GetMagneticField(),
-			       100.,dca,cov);
-    }
-  }
-  else{
+  }//standalone TPC or hybrid TPC approaches
+  else {
     gPt = track->Pt();
     gPx = track->Px();
     gPy = track->Py();
