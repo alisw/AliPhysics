@@ -217,7 +217,7 @@ Int_t AliHLTITSClusterFinderSPDComponent::DoEvent( const AliHLTComponentEventDat
       HLTDebug("The Spec is to high for ITS SPD");
     }
     
-    Int_t id = 0;
+    Int_t id = AliHLTDAQ::DdlIDOffset("ITSSPD");
     for ( Int_t ii = 0; ii < AliHLTDAQ::NumberOfDdls("ITSSPD") ; ii++ ) {   //number of ddl's
       if ( spec & 0x00000001 ) {
 	id += ii;

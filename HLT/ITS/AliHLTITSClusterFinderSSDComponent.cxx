@@ -219,7 +219,7 @@ Int_t AliHLTITSClusterFinderSSDComponent::DoEvent( const AliHLTComponentEventDat
       HLTDebug("The Spec is to high for ITS SSD");
     }
 
-    Int_t id = 512;                  
+    Int_t id = AliHLTDAQ::DdlIDOffset("ITSSSD");                  
     for ( Int_t ii = 0; ii < AliHLTDAQ::NumberOfDdls("ITSSSD") ; ii++ ) {
       if ( spec & 0x00000001 ) {
 	id += ii;
