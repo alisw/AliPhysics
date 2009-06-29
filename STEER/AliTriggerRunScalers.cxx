@@ -69,7 +69,7 @@ void AliTriggerRunScalers::AddTriggerScalers( AliTriggerScalersRecord* scaler )
 //_____________________________________________________________________________
 AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
 {
-  
+    //Read scalers from text file(.cnt) provided by CTP for given run and convert it to root format 
   if( gSystem->AccessPathName( filename.Data() ) ) {
      AliErrorClass( Form( "file (%s) not found", filename.Data() ) );
      return NULL;
@@ -163,17 +163,19 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
 	delete rec;
 	return rScaler;
       }
-      UInt_t LOCB = strtoul(((TObjString*)tokens1->At(0))->String(), NULL, 10);
-      UInt_t LOCA = strtoul(((TObjString*)tokens1->At(1))->String(), NULL, 10);
-      UInt_t L1CB = strtoul(((TObjString*)tokens1->At(2))->String(), NULL, 10);
-      UInt_t L1CA = strtoul(((TObjString*)tokens1->At(3))->String(), NULL, 10);
-      UInt_t L2CB = strtoul(((TObjString*)tokens1->At(4))->String(), NULL, 10);
-      UInt_t L2CA = strtoul(((TObjString*)tokens1->At(5))->String(), NULL, 10);
+
+      UInt_t lOCB = strtoul(((TObjString*)tokens1->At(0))->String(), NULL, 10);
+      UInt_t lOCA = strtoul(((TObjString*)tokens1->At(1))->String(), NULL, 10);
+      UInt_t l1CB = strtoul(((TObjString*)tokens1->At(2))->String(), NULL, 10);
+      UInt_t l1CA = strtoul(((TObjString*)tokens1->At(3))->String(), NULL, 10);
+      UInt_t l2CB = strtoul(((TObjString*)tokens1->At(4))->String(), NULL, 10);
+      UInt_t l2CA = strtoul(((TObjString*)tokens1->At(5))->String(), NULL, 10);
 
       rScaler->GetClass(i);
       rec->AddTriggerScalers( rScaler->GetClass(i),
-                              LOCB, LOCA, L1CB,
-                              L1CA, L2CB, L2CA );
+                              lOCB, lOCA, l1CB,
+                              l1CA, l2CB, l2CA );
+
       delete tokens1;
     } 
     rScaler->AddTriggerScalers( rec );
@@ -224,88 +226,88 @@ Int_t  AliTriggerRunScalers::FindNearestScalersRecord( AliTimeStamp * stamp )
 //_____________________________________________________________________________
 Bool_t AliTriggerRunScalers::ConsistencyCheck()
 {
-
-UInt_t LOCB_2, LOCA_2, L1CB_2, L1CA_2, L2CB_2, L2CA_2, LOCB_1, LOCA_1, L1CB_1, L1CA_1, L2CB_1, L2CA_1;
+    //Check if counters are consistent(increase). Example: lOCB(n) < lOCB(n+1) and lOCB > lOCA
+UInt_t lOCBtwo, lOCAtwo, l1CBtwo, l1CAtwo, l2CBtwo, l2CAtwo, lOCBone, lOCAone, l1CBone, l1CAone, l2CBone, l2CAone;
 Bool_t increase0B=0, increase0A=0, increase1B=0,  increase1A=0, increase2B=0, increase2A=0;
 Bool_t overflow0B=0, overflow0A=0, overflow1B=0,  overflow1A=0, overflow2B=0, overflow2A=0;
 Int_t position = fScalersRecord.GetEntriesFast()-1;
 if (position == 0) return 1;
 
-AliTriggerScalersRecord* Scalers2 = (AliTriggerScalersRecord*)fScalersRecord.At(position);
-AliTriggerScalersRecord* Scalers1 = (AliTriggerScalersRecord*)fScalersRecord.At(position-1);
-if (Scalers2->Compare((AliTriggerScalersRecord*)fScalersRecord.At(position-1)) == -1) return 0;
+AliTriggerScalersRecord* scalers2 = (AliTriggerScalersRecord*)fScalersRecord.At(position);
+AliTriggerScalersRecord* scalers1 = (AliTriggerScalersRecord*)fScalersRecord.At(position-1);
+if (scalers2->Compare((AliTriggerScalersRecord*)fScalersRecord.At(position-1)) == -1) return 0;
 else for( Int_t i=0; i<fnClasses; ++i ){
 
-TObjArray* ScalersArray2 = (TObjArray*)Scalers2->GetTriggerScalers();
-AliTriggerScalers* counters2 = (AliTriggerScalers*)ScalersArray2->At(i);
-	LOCB_2 = counters2->GetLOCB();
-	LOCA_2 = counters2->GetLOCA();
-	L1CB_2 = counters2->GetL1CB();
-	L1CA_2 = counters2->GetL1CA();
-	L2CB_2 = counters2->GetL2CB();
-	L2CA_2 = counters2->GetL2CA();
+TObjArray* scalersArray2 = (TObjArray*)scalers2->GetTriggerScalers();
+AliTriggerScalers* counters2 = (AliTriggerScalers*)scalersArray2->At(i);
+	lOCBtwo = counters2->GetLOCB();
+	lOCAtwo = counters2->GetLOCA();
+	l1CBtwo = counters2->GetL1CB();
+	l1CAtwo = counters2->GetL1CA();
+	l2CBtwo = counters2->GetL2CB();
+	l2CAtwo = counters2->GetL2CA();
 
-TObjArray* ScalersArray1 = (TObjArray*)Scalers1->GetTriggerScalers();
-AliTriggerScalers* counters1 = (AliTriggerScalers*)ScalersArray1->At(i);
-	LOCB_1 = counters1->GetLOCB();
-	LOCA_1 = counters1->GetLOCA();
-	L1CB_1 = counters1->GetL1CB();
-	L1CA_1 = counters1->GetL1CA();
-	L2CB_1 = counters1->GetL2CB();
-	L2CA_1 = counters1->GetL2CA();
+TObjArray* scalersArray1 = (TObjArray*)scalers1->GetTriggerScalers();
+AliTriggerScalers* counters1 = (AliTriggerScalers*)scalersArray1->At(i);
+	lOCBone = counters1->GetLOCB();
+	lOCAone = counters1->GetLOCA();
+	l1CBone = counters1->GetL1CB();
+	l1CAone = counters1->GetL1CA();
+	l2CBone = counters1->GetL2CB();
+	l2CAone = counters1->GetL2CA();
 
 UInt_t const max1 = 4294967295ul;  //32bit counters overflow after 4294967295
 UInt_t const max2 = 1000000000ul;  //when counters overflow they seem to be decreasing. Assume decrease cannot be smaller than max2.
 
-if ( LOCB_2 > LOCB_1 ) increase0B=1;
-else if ( LOCB_2 < LOCB_1 && (LOCB_1 - LOCB_2) > max2) overflow0B=1;
+if ( lOCBtwo > lOCBone ) increase0B=1;
+else if ( lOCBtwo < lOCBone && (lOCBone - lOCBtwo) > max2) overflow0B=1;
 else return 0;
 
-if ( LOCA_2 > LOCA_1 ) increase0A=1;
-else if ( LOCA_2 < LOCA_1 && (LOCA_1 - LOCA_2) > max2) overflow0A=1;
+if ( lOCAtwo > lOCAone ) increase0A=1;
+else if ( lOCAtwo < lOCAone && (lOCAone - lOCAtwo) > max2) overflow0A=1;
 else return 0;
 
-if ( L1CB_2 > L1CB_1 ) increase1B=1;
-else if ( L1CB_2 < L1CB_1 && (L1CB_1 - L1CB_2) > max2) overflow1B=1;
+if ( l1CBtwo > l1CBone ) increase1B=1;
+else if ( l1CBtwo < l1CBone && (l1CBone - l1CBtwo) > max2) overflow1B=1;
 else return 0;
 
-if ( L1CA_2 > L1CA_1 ) increase1A=1;
-else if ( L1CA_2 < L1CA_1 && (L1CA_1 - L1CA_2) > max2) overflow1A=1;
+if ( l1CAtwo > l1CAone ) increase1A=1;
+else if ( l1CAtwo < l1CAone && (l1CAone - l1CAtwo) > max2) overflow1A=1;
 else return 0;
 
-if ( L2CB_2 > L2CB_1 ) increase2B=1;
-else if ( L2CB_2 < L2CB_1 && (L2CB_1 - L2CB_2) > max2) overflow2B=1;
+if ( l2CBtwo > l2CBone ) increase2B=1;
+else if ( l2CBtwo < l2CBone && (l2CBone - l2CBtwo) > max2) overflow2B=1;
 else return 0;
 
-if ( L2CA_2 > L2CA_1 ) increase2A=1;
-else if ( L2CA_2 < L2CA_1 && (L2CA_1 - L2CA_2) > max2) overflow2A=1;
+if ( l2CAtwo > l2CAone ) increase2A=1;
+else if ( l2CAtwo < l2CAone && (l2CAone - l2CAtwo) > max2) overflow2A=1;
 else return 0;
 
 
-if ( (LOCB_2 - LOCB_1) < (LOCA_2 - LOCA_1) && increase0B && increase0A ) return 0;
-else if ( (max1 - LOCB_1 + LOCB_2 ) < (LOCA_2 - LOCA_1) && overflow0B && increase0A ) return 0;
-else if ( (LOCB_2 - LOCB_1) < (max1 - LOCA_1 + LOCA_2) && increase0B && overflow0A ) return 0;
-else if ( (max1 - LOCB_1 + LOCB_2 ) < (max1 - LOCA_1 + LOCA_2) && overflow0B && overflow0A ) return 0;
+if ( (lOCBtwo - lOCBone) < (lOCAtwo - lOCAone) && increase0B && increase0A ) return 0;
+else if ( (max1 - lOCBone + lOCBtwo ) < (lOCAtwo - lOCAone) && overflow0B && increase0A ) return 0;
+else if ( (lOCBtwo - lOCBone) < (max1 - lOCAone + lOCAtwo) && increase0B && overflow0A ) return 0;
+else if ( (max1 - lOCBone + lOCBtwo ) < (max1 - lOCAone + lOCAtwo) && overflow0B && overflow0A ) return 0;
 
-if ( (LOCA_2 - LOCA_1) < (L1CB_2 - L1CB_1) && increase0A && increase1B ) return 0;
-else if ( (max1 - LOCA_1 + LOCA_2 ) < (L1CB_2 - L1CB_1) && overflow0A && increase1B ) return 0;
-else if ( (LOCA_2 - LOCA_1) < (max1 - L1CB_1 + L1CB_2) && increase0A && overflow1B ) return 0;
-else if ( (max1 - LOCA_1 + LOCA_2 ) < (max1 - L1CB_1 + L1CB_2) && overflow0A && overflow1B ) return 0;
+if ( (lOCAtwo - lOCAone) < (l1CBtwo - l1CBone) && increase0A && increase1B ) return 0;
+else if ( (max1 - lOCAone + lOCAtwo ) < (l1CBtwo - l1CBone) && overflow0A && increase1B ) return 0;
+else if ( (lOCAtwo - lOCAone) < (max1 - l1CBone + l1CBtwo) && increase0A && overflow1B ) return 0;
+else if ( (max1 - lOCAone + lOCAtwo ) < (max1 - l1CBone + l1CBtwo) && overflow0A && overflow1B ) return 0;
 
-if ( (L1CB_2 - L1CB_1) < (L1CA_2 - L1CA_1) && increase1B && increase1A ) return 0;
-else if ( (max1 - L1CB_1 + L1CB_2 ) < (L1CA_2 - L1CA_1) && overflow1B && increase1A ) return 0;
-else if ( (L1CB_2 - L1CB_1) < (max1 - L1CA_1 + L1CA_2) && increase1B && overflow1A ) return 0;
-else if ( (max1 - L1CB_1 + L1CB_2 ) < (max1 - L1CA_1 + L1CA_2) && overflow1B && overflow1A ) return 0;
+if ( (l1CBtwo - l1CBone) < (l1CAtwo - l1CAone) && increase1B && increase1A ) return 0;
+else if ( (max1 - l1CBone + l1CBtwo ) < (l1CAtwo - l1CAone) && overflow1B && increase1A ) return 0;
+else if ( (l1CBtwo - l1CBone) < (max1 - l1CAone + l1CAtwo) && increase1B && overflow1A ) return 0;
+else if ( (max1 - l1CBone + l1CBtwo ) < (max1 - l1CAone + l1CAtwo) && overflow1B && overflow1A ) return 0;
 
-if ( (L1CA_2 - L1CA_1) < (L2CB_2 - L2CB_1) && increase1A && increase2B ) return 0;
-else if ( (max1 - L1CA_1 + L1CA_2 ) < (L2CB_2 - L2CB_1) && overflow1A && increase2B ) return 0;
-else if ( (L1CA_2 - L1CA_1) < (max1 - L2CB_1 + L2CB_2) && increase1A && overflow2B ) return 0;
-else if ( (max1 - L1CA_1 + L1CA_2 ) < (max1 - L2CB_1 + L2CB_2) && overflow1A && overflow2B ) return 0;
+if ( (l1CAtwo - l1CAone) < (l2CBtwo - l2CBone) && increase1A && increase2B ) return 0;
+else if ( (max1 - l1CAone + l1CAtwo ) < (l2CBtwo - l2CBone) && overflow1A && increase2B ) return 0;
+else if ( (l1CAtwo - l1CAone) < (max1 - l2CBone + l2CBtwo) && increase1A && overflow2B ) return 0;
+else if ( (max1 - l1CAone + l1CAtwo ) < (max1 - l2CBone + l2CBtwo) && overflow1A && overflow2B ) return 0;
 
-if ( (L2CB_2 - L2CB_1) < (L2CA_2 - L2CA_1) && increase2B && increase2A ) return 0;
-else if ( (max1 - L2CB_1 + L2CB_2 ) < (L2CA_2 - L2CA_1) && overflow2B && increase2A ) return 0;
-else if ( (L2CB_2 - L2CB_1) < (max1 - L2CA_1 + L2CA_2) && increase2B && overflow2A ) return 0;
-else if ( (max1 - L2CB_1 + L2CB_2 ) < (max1 - L2CA_1 + L2CA_2) && overflow2B && overflow2A ) return 0;
+if ( (l2CBtwo - l2CBone) < (l2CAtwo - l2CAone) && increase2B && increase2A ) return 0;
+else if ( (max1 - l2CBone + l2CBtwo ) < (l2CAtwo - l2CAone) && overflow2B && increase2A ) return 0;
+else if ( (l2CBtwo - l2CBone) < (max1 - l2CAone + l2CAtwo) && increase2B && overflow2A ) return 0;
+else if ( (max1 - l2CBone + l2CBtwo ) < (max1 - l2CAone + l2CAtwo) && overflow2B && overflow2A ) return 0;
 
 }
 
