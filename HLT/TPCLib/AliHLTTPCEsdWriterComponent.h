@@ -20,7 +20,6 @@
 class TTree;
 class AliESDEvent;
 class AliHLTTPCTrackArray;
-#include "AliHLTTPCClusterFinder.h"
 
 /**
  * @class AliHLTTPCEsdWriterComponent
@@ -228,14 +227,6 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
 		    int nBlocks, int* pMinSlice=NULL, int* pMaxSlice=NULL);
 
   /**
-   * Get MC label for a track
-   * @param hits array of track hit Id's
-   * @param nHits n of hits
-   * @return neg. -1 if failed
-   */
-  int GetTrackMCLabel( unsigned int *hits, int nHits );
-
-  /**
    * Covert tracks to AliTPCtracks (AliKalmanTracks) and add them to ESD.
    * @param pTracks  array of tracks
    * @param pESD     pointer to ESD
@@ -265,15 +256,6 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
 
   /** solenoid b field */
   Double_t fSolenoidBz; //! transient
-
-  /** array of pointers to cluster MC labels **/
-
-  AliHLTTPCClusterFinder::ClusterMCInfo *fClusterLabels[36*6]; //! cluster MC labels for each TPC patch
-  Int_t fNClusterLabels[36*6]; //! Number of MC labels, for check of consistensy
-  
-  /** flag for calculating MC labels for tracks **/
-
-  Bool_t fDoMCLabels;
 
   ClassDef(AliHLTTPCEsdWriterComponent, 3)
 };

@@ -170,14 +170,18 @@ sim_hlt_tpc(const char* options="CA")
     AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
   }
 
+  TString converterInput="globalmerger";
+
   // collector for the MC information to be propagated from CFs to ESDConverter
-  AliHLTConfiguration mcinfo("mcinfo", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLMCINFO' 'TPC '");
+  if (bPropagateMC){
+    AliHLTConfiguration mcinfo("mcinfo", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLMCINFO' 'TPC '");  
+    AliHLTConfiguration mcTrackMarker("mcTrackMarker","TPCTrackMCMarker","globalmerger mcinfo","" );
+    converterInput+=" mcTrackMarker";
+  }
 
   if (writerInput.Length()>0) writerInput+=" ";
   writerInput+="globalmerger";
 
-  TString converterInput="globalmerger";
-  if (bPropagateMC) converterInput+=" mcinfo";
 
   //////////////////////////////////////////////////////////////////////////////////////////
   //

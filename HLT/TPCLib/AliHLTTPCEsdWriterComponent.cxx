@@ -42,9 +42,10 @@
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCTransform.h"
-#include "AliHLTTPCClusterFinder.h"
 #include "AliHLTExternalTrackParam.h"
 #include "AliHLTKalmanTrack.h"
+#include "AliHLTTrackMCLabel.h"
+
 #include <vector>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -52,7 +53,7 @@ ClassImp(AliHLTTPCEsdWriterComponent)
 
 AliHLTTPCEsdWriterComponent::AliHLTTPCEsdWriterComponent()
   :
-  fSolenoidBz(0),fDoMCLabels(0)
+  fSolenoidBz(0)
 {
   // see header file for class documentation
   // or
@@ -91,7 +92,7 @@ void AliHLTTPCEsdWriterComponent::AliWriter::GetInputDataTypes(AliHLTComponentDa
   // see header file for class documentation
   list.push_back(AliHLTTPCDefinitions::fgkTrackSegmentsDataType);
   list.push_back(AliHLTTPCDefinitions::fgkTracksDataType);
-  list.push_back(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo);
+  list.push_back( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC );
 }
 
 int AliHLTTPCEsdWriterComponent::AliWriter::InitWriter()
@@ -179,31 +180,28 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 
   int iResult=0;
   int iAddedDataBlocks=0;
-  fDoMCLabels = 0;
+  
   if (pESD && blocks) {
       pESD->Reset(); 
       pESD->SetMagneticField(fSolenoidBz);
       const AliHLTComponentBlockData* iter = NULL;
       int bIsTrackSegs=0;
 
-      // first read all the MC information
+      // first read MC information (if present)
+
+      std::map<int,int> mcLabels;
+
       for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
 	iter = blocks+ndx;
-	if(iter->fDataType == AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo ) {
-	  if( !fDoMCLabels ){
-	    for( int i=0; i<36*6; i++ ){
-	      fClusterLabels[i] = 0;
-	      fNClusterLabels[i] = 0;
-	    }
+	if(iter->fDataType == (kAliHLTDataTypeTrackMC|kAliHLTDataOriginTPC) ) {
+	  AliHLTTrackMCData* dataPtr = ( AliHLTTrackMCData* )( iter->fPtr );
+	  for( unsigned int il=0; il<dataPtr->fCount; il++ ){
+	    AliHLTTrackMCLabel &lab = dataPtr->fLabels[il];
+	    mcLabels[lab.fTrackID] = lab.fMCLabel;
 	  }
-	  Int_t slice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
-	  Int_t patch=AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
-	  fClusterLabels[ slice*6 + patch] = (AliHLTTPCClusterFinder::ClusterMCInfo *)iter->fPtr;
-	  fNClusterLabels[ slice*6 + patch] = iter->fSize/sizeof(AliHLTTPCClusterFinder::ClusterMCInfo);
-	  fDoMCLabels = 1;
 	}
       }
-      
+
 
       // do the conversion of tracks
 
@@ -214,10 +212,15 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	  AliHLTTracksData* dataPtr = ( AliHLTTracksData* ) iter->fPtr;
 	  int nTracks = dataPtr->fCount;
 	  AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
+
 	  for( int itr=0; itr<nTracks; itr++ ){
 	    AliHLTKalmanTrack t(*currOutTrack);
 	    Float_t points[4] = {currOutTrack->fX, currOutTrack->fY, currOutTrack->fLastX, currOutTrack->fLastY };
-	    Int_t mcLabel = fDoMCLabels ? GetTrackMCLabel( currOutTrack->fPointIDs, currOutTrack->fNPoints ) :-1;  
+	    
+	    Int_t mcLabel = -1;
+	    if( mcLabels.find(currOutTrack->fTrackID)!=mcLabels.end() )
+	      mcLabel = mcLabels[currOutTrack->fTrackID];
+	    
 	    t.SetLabel( mcLabel );
 	    
 	    AliESDtrack iotrack;
@@ -227,6 +230,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	    unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + currOutTrack->fNPoints * sizeof( unsigned int );
 	    currOutTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currOutTrack) + dSize );
 	  }
+	  iAddedDataBlocks++;
 	}
 
 	
@@ -276,61 +280,6 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
   return iResult;
 }
 
-Int_t AliHLTTPCEsdWriterComponent::GetTrackMCLabel( unsigned int *hits, int nHits )
-{
-  // get MC label for the track	 
-
-  Int_t mcLabel = -1;
-	    
-  std::vector<int> labels;
-
-  for( Int_t ih=0; ih<nHits; ih++){
-    UInt_t id = hits[ih];
-    int iSlice = id>>25;
-    int iPatch = (id>>22)&0x7; 
-    int iCluster = id&0x3fffff;
-    if( iSlice<0 || iSlice>36 || iPatch<0 || iPatch>5 ){
-      HLTError("Corrupted TPC cluster Id: slice %d, patch %d, cluster %d",
-	       iSlice, iPatch,iCluster );
-      continue;
-    }
-    AliHLTTPCClusterFinder::ClusterMCInfo *patchLabels = fClusterLabels[iSlice*6 + iPatch];
-    if( !patchLabels ) continue;
-    if( iCluster >= fNClusterLabels[iSlice*6 + iPatch] ){
-      HLTError("TPC slice %d, patch %d: ClusterID==%d >= N MC labels==%d ",
-	       iSlice, iPatch,iCluster, fNClusterLabels[iSlice*6 + iPatch] );
-      continue;
-    }
-    AliHLTTPCClusterFinder::ClusterMCInfo &lab = patchLabels[iCluster];	    
-    if ( lab.fClusterID[0].fMCID >= 0 ) labels.push_back( lab.fClusterID[0].fMCID );
-    if ( lab.fClusterID[1].fMCID >= 0 ) labels.push_back( lab.fClusterID[1].fMCID );
-    if ( lab.fClusterID[2].fMCID >= 0 ) labels.push_back( lab.fClusterID[2].fMCID );
-  }
-	  
-  std::sort( labels.begin(), labels.end() );
-	  
-  labels.push_back( -1 ); // put -1 to the end
-	  
-  int labelMax = -1, labelCur = -1, nLabelsMax = 0, nLabelsCurr = 0;
-  for ( unsigned int iLab = 0; iLab < labels.size(); iLab++ ) {
-    if ( labels[iLab] != labelCur ) {	      
-      if ( labelCur >= 0 && nLabelsMax< nLabelsCurr ) {
-	nLabelsMax = nLabelsCurr;
-	labelMax = labelCur;
-      }
-      labelCur = labels[iLab];
-      nLabelsCurr = 0;
-    }
-    nLabelsCurr++;
-  }
-  
-  if( labelMax>=0 && nLabelsMax < 0.9 * nHits ) labelMax = -labelMax;
-  
-  mcLabel = labelMax;
-
-  return mcLabel;
-}
-
 
 int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESDEvent* pESD )
 {
@@ -359,13 +308,6 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
 	  points[3] = -pTrack->GetLastPointX() *s + pTrack->GetLastPointY() *c;	  
 	}
 
-	Int_t mcLabel = -1;
-
-	if( fDoMCLabels ){
-	  mcLabel = GetTrackMCLabel( pTrack->GetHitNumbers(), pTrack->GetNHits() );
-	}    
-	pTrack->SetLabel( mcLabel );
-	
 	AliESDtrack iotrack;
 	iotrack.UpdateTrackParams(pTrack,AliESDtrack::kTPCin);
 	iotrack.SetTPCPoints(points);
@@ -477,7 +419,6 @@ void AliHLTTPCEsdWriterComponent::AliConverter::GetInputDataTypes(AliHLTComponen
   // see header file for class documentation
   list.push_back(AliHLTTPCDefinitions::fgkTrackSegmentsDataType);
   list.push_back(AliHLTTPCDefinitions::fgkTracksDataType);
-  list.push_back(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo);
 }
 
 AliHLTComponentDataType AliHLTTPCEsdWriterComponent::AliConverter::GetOutputDataType()
