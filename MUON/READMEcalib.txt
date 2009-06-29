@@ -4,43 +4,74 @@
 
 \page README_calib Calibration
  
+ 
 The Offline Condition DataBase is described extensively on ALICE Offline pages.
 
-Here you'll find only information relevant to the AliMUONCDB class
- (formerly MUONCDB.C macro), which defines a set of functions to read/write 
+Here you'll find mainly information relevant to the MUON objects in the OCDB,
+and to the AliMUONCDB class (formerly MUONCDB.C macro), which defines a set of functions to read/write 
  MUON information to this CDB. Those functions are not meant to be used 
  as black boxes.
 
 Please have a closer look before using (especially the ones writing to the CDB...)
- 
 
-\section calib_s1 Calibration data objects
+\section calib_s0 MUON objects in OCDB
+ 
+<table>
+<tr><td>OCDB path</td><td>Subsystem</td><td>Run Type</td><td>FileID</td><td>DAQsource</td><td>Update frequency</td><td>Appox. Size</td></tr>
+<tr><td>MUON/Calib/RecoParam</td><td>both</td><td>N/A</td><td>N/A</td><td>N/A</td><td>Few per year ?</td><td>5 KB</td></tr>
+<tr><td>MUON/Calib/MappingData</td><td>both</td><td>N/A</td><td>N/A</td><td>N/A</td><td>Once for all once debugged</td><td>1 MB</td></tr>
+<tr><td>MUON/Calib/MappingRunData</td><td>both</td><td>N/A</td><td>N/A</td><td>N/A</td><td>Between zero and few per year</td><td>100 KB</td></tr>
+
+<tr><td>MUON/Calib/Capacitances</td><td>MCH</td><td>N/A</td><td>N/A</td><td>N/A</td><td>Once for all once debugged</td><td>7 MB</td></tr>
+<tr><td>MUON/Calib/Gains</td><td>MCH</td><td>CALIBRATION</td><td>GAINS</td><td>LDC</td><td>Once per calibration run</td><td>10 MB</td></tr>
+<tr><td>MUON/Calib/HV</td><td>MCH</td><td>PHYSICS</td><td>N/A</td><td>N/A</td><td>Once per physics run</td><td>Depends on the number of trips, 10-20 KB normally</td></tr>
+<tr><td>MUON/Calib/Neighbours</td><td>MCH</td><td>N/A</td><td>N/A</td><td>N/A</td><td>As MappingData</td><td>10 MB</td></tr>
+<tr><td>MUON/Calib/OccupancyMap</td><td>MCH</td><td>PHYSICS</td><td>OCCUPANCY</td><td>MON</td><td>Once per physics run</td><td>Depends on the number of bad manus, normally 100-200 KB</td></tr>
+<tr><td>MUON/Calib/Pedestals</td><td>MCH</td><td>PEDESTAL</td><td>PEDESTALS</td><td>LDC</td><td>Once per pedestal run</td><td>7 MB</td></tr>
+<tr><td>MUON/Calib/RejectList</td><td>MCH</td><td>N/A</td><td>N/A</td><td>N/A</td><td>Few per year</td><td>Depends on the number of bad elements</td></tr>
+
+<tr><td>MUON/Calib/GlobalTriggerCrateConfig</td><td>MTR</td><td>?</td><td>?</td><td>?</td><td>?</td><td>?</td></tr>
+<tr><td>MUON/Calib/LocalTriggerBoardMasks</td><td>MTR</td><td>?</td><td>?</td><td>?</td><td>?</td><td>?</td></tr>
+<tr><td>MUON/Calib/RegionalTriggerConfig</td><td>MTR</td><td>?</td><td>?</td><td>?</td><td>?</td><td>?</td></tr>
+<tr><td>MUON/Calib/TriggerDCS</td><td>MTR</td><td>?</td><td>?</td><td>?</td><td>?</td><td>?</td></tr>
+<tr><td>MUON/Calib/TriggerEfficiency</td><td>MTR</td><td>?</td><td>?</td><td>?</td><td>?</td><td>?</td></tr>
+<tr><td>MUON/Calib/TriggerLut</td><td>MTR</td><td>?</td><td>?</td><td>?</td><td>?</td><td>?</td></tr>
+</table>
+
+In addition, the following ones were used in the past, but have been discontinued (but are still present in the OCDB, as object removal is not allowed).
+
+<table>
+<tr><td>OCDB path</td></tr>
+<tr><td>MUON/Calib/DDLStore</td></tr>
+<tr><td>MUON/CalibGlobalTriggerBoardMasks/</td></tr>
+<tr><td>MUON/Calib/Mapping</td></tr>
+<tr><td>MUON/Calib/RegionalTriggerBoardMasks</td></tr>
+<tr><td>MUON/Calib/RegionalTriggerConfig?</td></tr>
+</table>
+
+\section calib_s1 Calibration data object classes
 
 We've designed generic data containers to store calibration information, 
 tailored to the way we usually access MUON tracker data, that is, 
 indexed by the pair (detElemId,manuId). 
-This container is called AliMUONV2DStore. You can attach a TObject to every and
+This container is called AliMUONVStore. You can attach a TObject to every and
 each pair (detElemId,manuId).
 
 For the moment, that TObject is generally of AliMUONVCalibParam type, 
  which handles a given number of channels (64 typically) as a group. 
-There's also an AliMUONV1DStore for data types which only requires indexing 
+There's also 1D versions of AliMUONVStore for data types which only requires indexing 
 by 1 value (like trigger masks for instance).
 
 As the class names suggest (V...), those classes are only interfaces. 
 Concrete ones are AliMUON2DMap (used instead of a vector as detElemId are 
-not contiguous) for the V2DStore, AliMUON1DArray (for things where indices are
-contiguous) and AliMUON1DMap for the V1DStore, and CalibParamNI (VCalibParam 
-storing n integer per channel), and CalibParamNF 
-(VCalibParam storing n floats per channel).
+not contiguous), AliMUON1DArray (for things where indices are
+contiguous) and AliMUON1DMap, and CalibParamNI (VCalibParam 
+storing n integer per channel), CalibParamNF 
+(VCalibParam storing n floats per channel), and CalibParamND (VCalibParam storing n doubles per channel).
 
 One exception are the HV values from DCS, which are stored "as they come" from 
 the shuttle-dcs interface, as a TMap, where the key is the aliasname (TString), 
 and the value a TObjArray of AliDCSValue.
-
-For trigger, the same virtual container idea applies, 
-except we're using 1D container (AliMUONV1DStore, for masks) or specific ones (for LUT
-and efficiency)
 
 \section calib_s2 CDB location
 
@@ -49,12 +80,12 @@ One very important notion is that of the DefaultStorage (which you might set wit
  the CDB is sitting (either locally on disk, or on the grid).
 
 For local tests, path will be most likely = <code> "local://$ALICE_ROOT/OCDB"</code>
-(i.e. there is, in CVS a slim version of the calibration objects needed
+(i.e. there is, in svn a slim version of the calibration objects needed
 for running the MUON code), or <code> "local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB </code>
 for Shuttle testing.
 
 When using alien, the path definition can be eg.
-<code> "alien://folder=/alice/data/2007/LHC07w/OCDB" </code>. 
+<code> "alien://folder=/alice/data/2009/OCDB" </code>. 
  
 \section calib_s3 Writing to CDB
  
@@ -68,25 +99,23 @@ the Root prompt (from within the $ALICE_ROOT/MUON directory to get the correct
 list of libraries loaded by the loadlibs.C macro)
 
 <pre>
-root[0] AliMpCDB::LoadDDLStore2(); 
-root[1] AliMpCDB::LoadManuStore2(); 
-root[2] AliMUONCDB cdb;
-root[3] Int_t startRun = 0;
-root[4] Bool_t defaultValues = kTRUE;
-root[5] cdb.WriteTrigger(startRun);
-root[6] cdb.WriteTracker(defaultValues,startRun);
+root[0] AliMpCDB::LoadAll2(); 
+root[1] AliMUONCDB cdb;
+root[2] Int_t startRun = 0;
+root[3] Bool_t defaultValues = kTRUE;
+root[4] cdb.WriteTrigger(startRun);
+root[5] cdb.WriteTracker(defaultValues,startRun);
 </pre>
 
 
 \section calib_s4 Reading the CDB
  
 The actual reading is encapsulated into AliMUONCalibrationData class. 
-e.g. to read pedestals for run 4567, one would do :
+e.g. to read pedestals for run 67138, one would do :
 
 <pre>
 AliCDBManager::Instance()->SetDefaultStorage(cdbPath);
-AliMUONCalibrationData cd(4567);
-AliMUONV2DStore* ped = cd.Pedestals();
+AliMUONVStore* ped = AliMUONCalibrationData::CreatePedestals(67138);
 </pre>
 
 If you want to plot calibration data (not terribly usefull as it's a really global view),
@@ -99,9 +128,7 @@ cdb.Plot(*ped,"pedestal")
 
 which will create 2 histograms : pedestal_0 (mean) and pedestal_1 (sigma).
 
-You might also be interested in the AliMUONStoreHelper::Diff() method 
-which generates an AliMUONV2DStore containing the difference 
-(either absolute or relative) of two AliMUONV2DStore.
+A more usefull way to look at calibration data might be the \link README_mchview mchview \endlink program.
 
 \section calib_s5 A note on status and status map
 
@@ -110,6 +137,7 @@ A special kind of object is the status map. It would deserve a full documentatio
  at the MUONStatusMap.C macro which can let you play with it. For more information,
  have a look at the AliMUONPadStatusMaker and AliMUONPadStatusMapMaker.
 
-This chapter is defined in the READMEcalib.txt file.
+ $Id$
+
 */
 
