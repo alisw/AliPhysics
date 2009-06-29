@@ -57,6 +57,8 @@ int main(int argc, char **argv) {
 
     Int_t filestatus = -1, xvar = 5;
     Int_t totevt = -1, maxevt = -1;
+    Int_t hotevtsize = -1;
+    Bool_t hotfilestatus = false;
 
     // Reads the pedestal file and keep the values in memory for subtraction
 
@@ -97,8 +99,8 @@ int main(int argc, char **argv) {
       }
     else
       {
-	fscanf(fp1,"%d %d %d %d\n",&filestatus, &xvar, &totevt, &maxevt);
-	//printf("%d %d %d %d\n",filestatus, xvar, totevt, maxevt);
+	fscanf(fp1,"%d %d %d %d %d\n",&filestatus, &xvar, &totevt, &maxevt, &hotevtsize);
+	//printf("%d %d %d %d %d\n",filestatus, xvar, totevt, maxevt, hotevtsize);
       }
     fclose(fp1);
 
@@ -208,11 +210,13 @@ int main(int argc, char **argv) {
 		
 	    case PHYSICS_EVENT:
 		nevents_physics++;
+		totevt++;
 		//if(nevents_physics%100 == 0)printf("Physis Events = %d\n",nevents_physics);
 		AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 		TObjArray *pmdddlcont = new TObjArray();
 		calibgain.ProcessEvent(rawReader, pmdddlcont);
 
+		if (totevt%hotevtsize == 0) hotfilestatus = true;
 		delete pmdddlcont;
 		pmdddlcont = 0x0;
 		delete rawReader;
@@ -245,10 +249,34 @@ int main(int argc, char **argv) {
 	// store the hot cell root file in the DB
 
 	status = daqDA_DB_storeFile("PMD_HOT.root","PMD_HOT.root");
+
+	// store the hot cell root file in the file exchange server
+
+	printf("root file for hot cell is created and getting exported\n");
+	status = daqDA_FES_storeFile("PMD_HOT.root","PMD_HOT.root");
       }
 
+    if (hotfilestatus)
+      {
+	TFile *hotRun = new TFile ("PMD_HOT.root","RECREATE");
 
-    totevt += nevents_physics++;
+	TTree *hot = new TTree("hot","PMD Hot cell tree");
+	
+	calibgain.FindHotCell(hot,xvar);
+	
+	hot->Write();
+	hotRun->Close();
+
+	// store the hot cell root file in the DB
+
+	status = daqDA_DB_storeFile("PMD_HOT.root","PMD_HOT.root");
+	
+	// store the hot cell root file in the file exchange server
+
+	printf("root file for hot cell is created and getting exported\n");
+	status = daqDA_FES_storeFile("PMD_HOT.root","PMD_HOT.root");
+      }
+
 
     fp1 = fopen("PMD_GAIN_CONFIGFILE","w+");
 
@@ -266,7 +294,7 @@ int main(int argc, char **argv) {
 	status = daqDA_DB_storeFile("pmd_gain_tempfile.dat","pmd_gain_tempfile.dat");
 
 	filestatus = 1;
-	fprintf(fp1,"%d %d %d %d\n",filestatus,xvar,totevt,maxevt);
+	fprintf(fp1,"%d %d %d %d %d\n",filestatus,xvar,totevt,maxevt,hotevtsize);
 	fclose(fp1);
 
 	// Store the configfile in the DB
@@ -293,7 +321,7 @@ int main(int argc, char **argv) {
 
 	filestatus = 0;
 	totevt     = 0;
-	fprintf(fp1,"%d %d %d %d\n",filestatus,xvar,totevt,maxevt);
+	fprintf(fp1,"%d %d %d %d %d\n",filestatus,xvar,totevt,maxevt,hotevtsize);
 	fclose(fp1);
 
 	// Store the configfile in the DB
@@ -313,11 +341,14 @@ int main(int argc, char **argv) {
       {
 	printf("root file for cell gain is created and getting exported\n");
 	status = daqDA_FES_storeFile("PMDGAINS.root","PMDGAINS.root");
-	printf("root file for hot cell is created and getting exported\n");
-	status = daqDA_FES_storeFile("PMD_HOT.root","PMD_HOT.root");
 	printf("root file for normalised means of different modules\n");
 	status = daqDA_FES_storeFile("PMD_MEAN_SM.root","PMD_MEAN_SM.root");
       }
+
+    if (hotfilestatus)
+      {
+      }
+
     
     if (status) {
       status = -2;
