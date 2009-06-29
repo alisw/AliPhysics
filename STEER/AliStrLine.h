@@ -14,14 +14,12 @@
 
 class AliStrLine : public TObject {
 
- public:
+public:
     AliStrLine();        // default constructor
-    AliStrLine(Double_t *point, Double_t *cd, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535);  // standard constructor
-    AliStrLine(Float_t *pointf, Float_t *cdf, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535); 
-    AliStrLine(Double_t *point, Double_t *sig2point, Double_t *cd, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535);
-    AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *cdf, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535); 
-    AliStrLine(Double_t *point, Double_t *sig2point, Double_t *wmat, Double_t *cd, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535);
-    AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *wmat, Float_t *cdf, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535); 
+    AliStrLine(const Double_t *const point, const Double_t *const cd, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535);  // standard constructor
+    AliStrLine(const Double_t *const point, const Double_t *const sig2point, const Double_t *const cd, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535);
+    AliStrLine(const Double_t *const point, const Double_t *const sig2point, const Double_t *const wmat, const Double_t *const cd, Bool_t twopoints=kFALSE, UShort_t id1=65535, UShort_t id2=65535);
+
     AliStrLine(const AliStrLine& source);
     AliStrLine& operator=(const AliStrLine& source);
     virtual ~AliStrLine(); // destructor
@@ -46,15 +44,15 @@ class AliStrLine : public TObject {
       AliError("Wrong element: only 2 points are stored in AliStrLine");
       return 65535;
     }
-    Int_t IsParallelTo(AliStrLine *line) const;
-    Int_t Crossrphi(AliStrLine *line);
+    Int_t IsParallelTo(const AliStrLine *line) const;
+    Int_t Crossrphi(const AliStrLine *line);
     Int_t CrossPoints(AliStrLine *line, Double_t *point1, Double_t *point2);
     Int_t Cross(AliStrLine *line, Double_t *point);
-    Double_t GetDCA(AliStrLine *line) const;
-    Double_t GetDistFromPoint(Double_t *point) const;
+    Double_t GetDCA(const AliStrLine *line) const;
+    Double_t GetDistFromPoint(const Double_t *point) const;
  protected:
-    void InitDirection(Double_t *point, Double_t *cd);
-    void InitTwoPoints(Double_t *pA, Double_t *pB);
+    void InitDirection(const Double_t *const point, const Double_t *const cd);
+    void InitTwoPoints(const Double_t *const pA, const Double_t *const pB);
     Double_t fP0[3];           // given point
     Double_t fSigma2P0[3];           // errors on coordinates of given point
     Double_t *fWMatrix;           //[6] weighting matrix

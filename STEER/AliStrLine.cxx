@@ -23,10 +23,8 @@
 ///////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
-#include <TTree.h>
 #include <TMath.h>
 
-#include "AliLog.h"
 #include "AliStrLine.h"
 
 ClassImp(AliStrLine)
@@ -47,7 +45,7 @@ AliStrLine::AliStrLine() :
 }
 
 //________________________________________________________
-AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints, UShort_t id1, UShort_t id2) :
+AliStrLine::AliStrLine(const Double_t *const point, const Double_t *const cd, Bool_t twopoints, UShort_t id1, UShort_t id2) :
   TObject(),
   fWMatrix(0),
   fTpar(0)
@@ -58,48 +56,20 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints, UShort_t 
   // if twopoint is false: point represents the 3D coordinates of a point
   //                       belonging to the straight line and cd is the
   //                       direction in space
-  for(Int_t i=0;i<3;i++){ 
+  for(Int_t i=0;i<3;i++)
     fSigma2P0[i] = 0.;
-  }
-  if(twopoints){
+
+  if(twopoints)
     InitTwoPoints(point,cd);
-  }
-  else {
+  else 
     InitDirection(point,cd);
-  }
+
   SetIdPoints(id1,id2);
 }
 
-//________________________________________________________
-AliStrLine::AliStrLine(Float_t *pointf, Float_t *cdf,Bool_t twopoints, UShort_t id1, UShort_t id2) :
-  TObject(),
-  fWMatrix(0),
-  fTpar(0)
-{
-  // Standard constructor - with float arguments
-  // if twopoints is true:  point and cd are the 3D coordinates of
-  //                        two points defininig the straight line
-  // if twopoint is false: point represents the 3D coordinates of a point
-  //                       belonging to the straight line and cd is the
-  //                       direction in space
-  Double_t point[3];
-  Double_t cd[3];
-  for(Int_t i=0;i<3;i++){
-    point[i] = pointf[i];
-    cd[i] = cdf[i];
-    fSigma2P0[i] = 0.;
-  }
-  if(twopoints){
-    InitTwoPoints(point,cd);
-  }
-  else {
-    InitDirection(point,cd);
-  }
-  SetIdPoints(id1,id2);
-}
 
 //________________________________________________________
-AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *cd,Bool_t twopoints, UShort_t id1, UShort_t id2) :
+AliStrLine::AliStrLine(const Double_t *const point, const Double_t *const sig2point, const Double_t *const cd, Bool_t twopoints, UShort_t id1, UShort_t id2) :
   TObject(),
   fWMatrix(0),
   fTpar(0)
@@ -110,47 +80,19 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *cd,Bool_t
   // if twopoint is false: point represents the 3D coordinates of a point
   //                       belonging to the straight line and cd is the
   //                       direction in space
-  for(Int_t i=0;i<3;i++){ 
+  for(Int_t i=0;i<3;i++)
     fSigma2P0[i] = sig2point[i];
-  }
-  if(twopoints){
+
+  if(twopoints)
     InitTwoPoints(point,cd);
-  }
-  else {
+  else 
     InitDirection(point,cd);
-  }
+
   SetIdPoints(id1,id2);
 }
 
 //________________________________________________________
-AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *cdf,Bool_t twopoints, UShort_t id1, UShort_t id2) :
-  TObject(),
-  fWMatrix(0),
-  fTpar(0)
-{
-  // Standard constructor - with float arguments
-  // if twopoints is true:  point and cd are the 3D coordinates of
-  //                        two points defininig the straight line
-  // if twopoint is false: point represents the 3D coordinates of a point
-  //                       belonging to the straight line and cd is the
-  //                       direction in space
-  Double_t point[3];
-  Double_t cd[3];
-  for(Int_t i=0;i<3;i++){
-    point[i] = pointf[i];
-    cd[i] = cdf[i];
-    fSigma2P0[i] = sig2point[i];
-  }
-  if(twopoints){
-    InitTwoPoints(point,cd);
-  }
-  else {
-    InitDirection(point,cd);
-  }
-  SetIdPoints(id1,id2);
-}
-//________________________________________________________
-AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *wmat, Double_t *cd,Bool_t twopoints, UShort_t id1, UShort_t id2) :
+AliStrLine::AliStrLine(const Double_t *const point, const Double_t *const sig2point, const Double_t *const wmat, const Double_t *const cd, Bool_t twopoints, UShort_t id1, UShort_t id2) :
   TObject(),
   fWMatrix(0),
   fTpar(0)
@@ -167,43 +109,11 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *wmat, Dou
     fSigma2P0[i] = sig2point[i];
     for(Int_t j=0;j<3;j++)if(j>=i)fWMatrix[k++]=wmat[3*i+j];
   }
-  if(twopoints){
+  if(twopoints)
     InitTwoPoints(point,cd);
-  }
-  else {
+  else 
     InitDirection(point,cd);
-  }
-  SetIdPoints(id1,id2);
-}
 
-//________________________________________________________
-AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *wmat, Float_t *cdf,Bool_t twopoints, UShort_t id1, UShort_t id2) :
-  TObject(),
-  fWMatrix(0),
-  fTpar(0)
-{
-  // Standard constructor - with float arguments
-  // if twopoints is true:  point and cd are the 3D coordinates of
-  //                        two points defininig the straight line
-  // if twopoint is false: point represents the 3D coordinates of a point
-  //                       belonging to the straight line and cd is the
-  //                       direction in space
-  Double_t point[3];
-  Double_t cd[3];
-  fWMatrix = new Double_t [6];
-  Int_t k = 0;
-  for(Int_t i=0;i<3;i++){
-    point[i] = pointf[i];
-    cd[i] = cdf[i];
-    fSigma2P0[i] = sig2point[i];
-    for(Int_t j=0;j<3;j++)if(j>=i)fWMatrix[k++]=wmat[3*i+j];
-  }
-  if(twopoints){
-    InitTwoPoints(point,cd);
-  }
-  else {
-    InitDirection(point,cd);
-  }
   SetIdPoints(id1,id2);
 }
 
@@ -263,24 +173,25 @@ void AliStrLine::SetWMatrix(const Double_t *wmat) {
 }
 
 //________________________________________________________
-void AliStrLine::InitDirection(Double_t *point, Double_t *cd){
+void AliStrLine::InitDirection(const Double_t *const point, const Double_t *const cd)
+{
   // Initialization from a point and a direction
-  Double_t norm = 0.;
-  for(Int_t i=0;i<3;i++)norm+=cd[i]*cd[i];
+  Double_t norm = cd[0]*cd[0]+cd[1]*cd[1]+cd[2]*cd[2];
+
   if(norm) {
-    norm = TMath::Sqrt(norm);
-    for(Int_t i=0;i<3;i++) cd[i]/=norm;
+    norm = TMath::Sqrt(1./norm);
+    for(Int_t i=0;i<3;++i) {
+      fP0[i]=point[i];
+      fCd[i]=cd[i]*norm;
+    }
+    fTpar = 0.;
   }
-  else {
-    Error("AliStrLine","Null direction cosines!!!");
-  }
-  SetP0(point);
-  SetCd(cd);
-  fTpar = 0.;
+  else AliFatal("Null direction cosines!!!");
 }
 
 //________________________________________________________
-void AliStrLine::InitTwoPoints(Double_t *pA, Double_t *pB){
+void AliStrLine::InitTwoPoints(const Double_t *const pA, const Double_t *const pB)
+{
   // Initialization from the coordinates of two
   // points in the space
   Double_t cd[3];
@@ -311,21 +222,29 @@ void AliStrLine::PrintStatus() const {
 }
 
 //________________________________________________________
-Int_t AliStrLine::IsParallelTo(AliStrLine *line) const {
+Int_t AliStrLine::IsParallelTo(const AliStrLine *line) const {
   // returns 1 if lines are parallel, 0 if not paralel
   const Double_t prec=1e-14;
   Double_t cd2[3];
   line->GetCd(cd2);
+
   Double_t vecpx=fCd[1]*cd2[2]-fCd[2]*cd2[1];
-  if(TMath::Abs(vecpx) > prec) return 0;
+  Double_t mod=TMath::Abs(fCd[1]*cd2[2])+TMath::Abs(fCd[2]*cd2[1]);
+  if(TMath::Abs(vecpx) > prec*mod) return 0;
+
   Double_t vecpy=-fCd[0]*cd2[2]+fCd[2]*cd2[0];
-  if(TMath::Abs(vecpy) > prec) return 0;
+  mod=TMath::Abs(fCd[0]*cd2[2])+TMath::Abs(fCd[2]*cd2[0]);
+  if(TMath::Abs(vecpy) > prec*mod) return 0;
+
   Double_t vecpz=fCd[0]*cd2[1]-fCd[1]*cd2[0];
+  mod=TMath::Abs(fCd[0]*cd2[1])+TMath::Abs(fCd[1]*cd2[0]);
   if(TMath::Abs(vecpz) > prec) return 0;
+
   return 1;
 }
 //________________________________________________________
-Int_t AliStrLine::Crossrphi(AliStrLine *line){
+Int_t AliStrLine::Crossrphi(const AliStrLine *line)
+{
   // Cross 2 lines in the X-Y plane
   const Double_t prec=1e-14;
   const Double_t big=1e20;
@@ -340,8 +259,9 @@ Int_t AliStrLine::Crossrphi(AliStrLine *line){
   Double_t e=-cd2[1];
   Double_t f=p2[1]-fP0[1];
   Double_t deno = a*e-b*d;
+  Double_t mod=TMath::Abs(a*e)+TMath::Abs(b*d);
   Int_t retcode = 0;
-  if(TMath::Abs(deno) > prec) {
+  if(TMath::Abs(deno) > prec*mod) {
     fTpar = (c*e-b*f)/deno;
   }
   else {
@@ -377,7 +297,8 @@ Int_t AliStrLine::CrossPoints(AliStrLine *line, Double_t *point1, Double_t *poin
     a12-=fCd[i]*fCd[i];
   }
   Double_t deno = a11*a22-a21*a12;
-  if(TMath::Abs(deno) < prec) return -1;
+  Double_t mod = TMath::Abs(a11*a22)+TMath::Abs(a21*a12);
+  if(TMath::Abs(deno) < prec*mod) return -1;
   fTpar = (a11*k2-a21*k1) / deno;
   Double_t par2 = (k1*a22-k2*a12) / deno;
   line->SetPar(par2);
@@ -386,7 +307,8 @@ Int_t AliStrLine::CrossPoints(AliStrLine *line, Double_t *point1, Double_t *poin
   return 0;
 }
 //________________________________________________________________
-Int_t AliStrLine::Cross(AliStrLine *line, Double_t *point){
+Int_t AliStrLine::Cross(AliStrLine *line, Double_t *point)
+{
 
   //Finds intersection between lines
   Double_t point1[3];
@@ -401,7 +323,8 @@ Int_t AliStrLine::Cross(AliStrLine *line, Double_t *point){
 }
 
 //___________________________________________________________
-Double_t AliStrLine::GetDCA(AliStrLine *line) const{
+Double_t AliStrLine::GetDCA(const AliStrLine *line) const
+{
   //Returns the distance of closest approach between two lines
   const Double_t prec=1e-14;
   Double_t p2[3];
@@ -431,11 +354,9 @@ Double_t AliStrLine::GetDCA(AliStrLine *line) const{
        mod+=perp[i]*perp[i];
        dist+=(fP0[i]-p2[i])*perp[i];
      }
-     mod=sqrt(mod);
-     if(TMath::Abs(mod) > prec){
-       dist/=mod;
-       return TMath::Abs(dist);
-     }else{return -1;}
+     if(TMath::Abs(mod) > prec) {
+       return TMath::Abs(dist/TMath::Sqrt(mod));
+     } else return -1;
   }
 }
 //________________________________________________________
@@ -445,8 +366,9 @@ void AliStrLine::GetCurrentPoint(Double_t *point) const {
 }
 
 //________________________________________________________
-Double_t AliStrLine::GetDistFromPoint(Double_t *point) const {
+Double_t AliStrLine::GetDistFromPoint(const Double_t *point) const 
+{
   // computes distance from point 
-  AliStrLine tmp(point,(Double_t *)fCd,kFALSE);
-  return this->GetDCA(&tmp);
+  AliStrLine tmpline(point, fCd, kFALSE);
+  return GetDCA(&tmpline);
 }
