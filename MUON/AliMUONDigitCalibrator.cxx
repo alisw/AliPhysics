@@ -183,7 +183,7 @@ AliMUONDigitCalibrator::Ctor(const char* calibMode,
   fGains = calib.Gains(); // we get gains whatever the calibMode is, in order
   // to get the saturation value...
   
-  if ( fApplyGains == fgkGain ) 
+  if ( fApplyGains == fgkGain || fApplyGains == fgkInjectionGain ) 
   {
     fCapacitances = calib.Capacitances();
   }
