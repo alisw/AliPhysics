@@ -64,7 +64,13 @@ void AliVZEROTrigger::CreateInputs()
 	fInputs.AddLast( new AliTriggerInput( "VZERO_BBC",   "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_BGA_OR_BGC",   "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_BEAMGAS",   "VZERO", 0 ) );
-	
+
+	// The following are kept for compatibility with the CTP configuration file. Will have to be removed at some point
+	fInputs.AddLast( new AliTriggerInput( "VZERO_AND", "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_OR","VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_LEFT",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "VZERO_RIGHT",   "VZERO", 0 ) );
+
 }
 
 //______________________________________________________________________
@@ -111,6 +117,13 @@ void AliVZEROTrigger::Trigger()
  	if(triggerSimulator->GetBGAorBGC())		SetInput( "VZERO_BGA_OR_BGC" );
  	if(triggerSimulator->GetBeamGas())		SetInput( "VZERO_BEAMGAS" );
 
+	// The following are kept for compatibility with the CTP configuration file. Will have to be removed at some point
+	if(triggerSimulator->GetBBAandBBC())	SetInput( "VZERO_AND" );
+	if(triggerSimulator->GetBBAorBBC())		SetInput( "VZERO_OR" );
+ 	if(triggerSimulator->GetBBA())			SetInput( "VZERO_LEFT" );
+ 	if(triggerSimulator->GetBBC())			SetInput( "VZERO_RIGHT" );
+
   return;
 }
+
 

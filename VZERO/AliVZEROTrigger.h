@@ -21,3 +21,4 @@ class AliVZEROTrigger : public AliTriggerDetector
 };
 
 #endif // AliVZEROTrigger_H
+
