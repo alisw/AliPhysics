@@ -1,10 +1,17 @@
 #include "AliLog.h"
 
+#include "AliTRDgeometry.h"
+#include "AliTRDfeeParam.h"
 #include "AliTRDtrapConfig.h"
+
+#include <fstream>
+#include <iostream>
+#include <iomanip>
 
 ClassImp(AliTRDtrapConfig)
 
 AliTRDtrapConfig* AliTRDtrapConfig::fgInstance = 0x0;
+const Int_t AliTRDtrapConfig::fgkMaxMcm = AliTRDfeeParam::GetNmcmRob() + 2;
 
 AliTRDtrapConfig::AliTRDtrapConfig() : 
   TObject()
@@ -446,12 +453,9 @@ AliTRDtrapConfig::AliTRDtrapConfig() :
   fRegs[kDMDELA]  =   SimpleReg_t("DMDELA",      0xD002, 4,      0x8        );
   fRegs[kDMDELS]  =   SimpleReg_t("DMDELS",      0xD003, 4,      0x8        );
 
-  for (Int_t iReg = 0; iReg < kLastReg; iReg++) {
-    fRegisterValue[iReg].globalValue = GetRegResetValue((TrapReg_t) iReg);
-    fRegisterValue[iReg].state = RegValue_t::kGlobal;
-//    printf("%-8s: 0x%08x\n", GetRegName((TrapReg_t) iReg), fRegisterValue[iReg].globalValue);
-  }
+  ResetRegs();
 }
+
 
 AliTRDtrapConfig* AliTRDtrapConfig::Instance()
 {
@@ -464,6 +468,23 @@ AliTRDtrapConfig* AliTRDtrapConfig::Instance()
 
   return fgInstance;
 }
+
+
+void AliTRDtrapConfig::ResetRegs(void)
+{
+   // Reset the content of all TRAP registers to the reset values (see TRAP User Manual)
+
+   for (Int_t iReg = 0; iReg < kLastReg; iReg++) {
+      if(fRegisterValue[iReg].state == RegValue_t::kIndividual) {
+	 delete [] fRegisterValue[iReg].individualValue;
+      }
+
+      fRegisterValue[iReg].globalValue = GetRegResetValue((TrapReg_t) iReg);
+      fRegisterValue[iReg].state = RegValue_t::kGlobal;
+      //    printf("%-8s: 0x%08x\n", GetRegName((TrapReg_t) iReg), fRegisterValue[iReg].globalValue);
+   }
+}
+
 
 Int_t AliTRDtrapConfig::GetTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t mcm)
 {
@@ -479,64 +500,116 @@ Int_t AliTRDtrapConfig::GetTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t mc
       return fRegisterValue[reg].globalValue;
     }
     else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
-      if ((det < 0) || (det > 539) || (rob < 0) || (rob > 7) || (mcm < 0) || (mcm > 15)) {
-        AliError("Invalid MCM specified!");
-        return -1;
-      }
-      else {
-        Int_t mcmid = 0;
-        return fRegisterValue[reg].individualValue[mcmid];
-      }
+       if((det >= 0 && det < AliTRDgeometry::Ndet()) && 
+          (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) && 
+          (mcm >= 0 && mcm < fgkMaxMcm)) {
+         return fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm];
+       }
+       else {
+         AliError("Invalid MCM specified or register is individual");
+         return -1;
+       }
+    }
+    else {  // should never be reached
+      AliError("MCM register status neither kGlobal nor kIndividual");
+      return -1;
     }
   }
   return -1;
 }
 
+
+Bool_t AliTRDtrapConfig::SetTrapReg(TrapReg_t reg, Int_t value)
+{
+  // set a global value for the given TRAP register,
+  // i.e. the same value for all TRAPs
+
+   if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
+      fRegisterValue[reg].globalValue = value;
+      return kTRUE;
+   }
+   else {
+      AliError("Register has individual values");
+   }
+   return kFALSE;
+}
+
+
+Bool_t AliTRDtrapConfig::SetTrapReg(TrapReg_t reg, Int_t value, Int_t det)
+{
+  // set a global value for the given TRAP register,
+  // i.e. the same value for all TRAPs
+
+   if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
+      fRegisterValue[reg].globalValue = value;
+      return kTRUE;
+   }
+   else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
+      // if the register is in idividual mode but a broadcast is requested, the selected register is 
+      // set to value for all MCMs on the chamber
+
+      if( (det>=0 && det<AliTRDgeometry::Ndet())) {
+	 for(Int_t rob=0; rob<AliTRDfeeParam::GetNrobC1(); rob++) {
+	    for(Int_t mcm=0; mcm<fgkMaxMcm; mcm++)
+	       fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm] = value;
+	 }
+      }
+      else {
+	 AliError("Invalid value for det, ROB or MCM selected");
+	 return kFALSE;
+      }
+   }
+   else {  // should never be reached
+      AliError("MCM register status neither kGlobal nor kIndividual");
+      return kFALSE;
+   }
+   
+   return kFALSE;
+}
+
+
 Bool_t AliTRDtrapConfig::SetTrapReg(TrapReg_t reg, Int_t value, Int_t det, Int_t rob, Int_t mcm)
 {
-  // set the value for the given TRAP register 
-  // if no MCM is specified the value is stored as global,
-  // i.e. the same for all TRAPs
+  // set the value for the given TRAP register of an individual MCM 
 
-  if ((det == -1) && (rob == -1) && (mcm == -1)) {
-    if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
-      fRegisterValue[reg].globalValue = value;
-    } 
-    else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
-      delete [] fRegisterValue[reg].individualValue;
-      fRegisterValue[reg].state = RegValue_t::kGlobal;
-      fRegisterValue[reg].globalValue = value;
-    }
-    else {
-      return kFALSE;
-    }
+   //std::cout << "-- reg: 0x" << std::hex << fRegs[reg].addr << std::dec << ", data " << value << ", det " << det << ", rob " << rob << ", mcm " << mcm << std::endl;
+
+   if( (det >= 0 && det < AliTRDgeometry::Ndet()) && 
+       (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) && 
+       (mcm >= 0 && mcm < fgkMaxMcm) ) {
+     if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
+	Int_t defaultValue = fRegisterValue[reg].globalValue;
+	
+	fRegisterValue[reg].state = RegValue_t::kIndividual;
+	fRegisterValue[reg].individualValue = new Int_t[AliTRDgeometry::Ndet()*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm];
+
+	for(Int_t i = 0; i < AliTRDgeometry::Ndet()*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm; i++)
+	   fRegisterValue[reg].individualValue[i] = defaultValue; // set the requested register of all MCMs to the value previously stored
+
+	fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm] = value;
+     }
+     else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
+	fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm] = value;
+     }
+     else {  // should never be reached
+	AliError("MCM register status neither kGlobal nor kIndividual");
+	return kFALSE;
+     }
   }
-  else if ((det < 0) || (det > 539) || (rob < 0) || (rob > 7) || (mcm < 0) || (mcm > 7)) {
-    AliError("Invalid MCM specified");
-    return kFALSE;
-  }
-  else {
-    if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
-      fRegisterValue[reg].state = RegValue_t::kIndividual;
-      fRegisterValue[reg].individualValue = new Int_t[540*38*16];
-      fRegisterValue[reg].individualValue[det*38*16 + rob*16 + mcm] = value;
-    }
-    else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
-      fRegisterValue[reg].individualValue[det*38*16 + rob*16 + mcm] = value;
-    }
-    else {
-      return kFALSE;
-    }
-  }
+   else {
+      AliError("Invalid value for det, ROB or MCM selected");
+     return kFALSE;
+   }
+
   return kTRUE;
 }
+
 
 Bool_t AliTRDtrapConfig::LoadConfig()
 {
   // load a set of TRAP register values (configuration)
-  // so far only a default set is implemented for testing
+  // here a default set is implemented for testing
   // for a detailed description of the registers see the TRAP manual
-
 
   // pedestal filter
   SetTrapReg(kFPNP, 4*10);
@@ -586,13 +659,60 @@ Bool_t AliTRDtrapConfig::LoadConfig()
   return kTRUE;
 }
 
-void AliTRDtrapConfig::PrintTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t mcm)
+
+Bool_t  AliTRDtrapConfig::LoadConfig(Int_t det, TString filename)
 {
-  // print the information about the given register
+   // load a TRAP configuration from a file
+   // The file format is the format created by the standalone 
+   // command coder: scc / show_cfdat 
+   // which are two tools to inspect/export configurations from wingDB
+
+  ResetRegs(); // does not really make sense here???
+
+  std::ifstream infile;
+  infile.open(filename.Data(), std::ifstream::in);
+  if (!infile.is_open()) {
+    AliError("Can not open MCM configuration file");
+    return kFALSE;
+  }
+
+  Int_t cmd, extali, addr, data;
+  Int_t no;
+  char tmp;
+  
+  while(infile.good()) {
+    cmd=-1;
+    extali=-1;
+    addr=-1;
+    data=-1;
+    infile >> std::skipws >> no >> tmp >> cmd >> extali >> addr >> data;
+    //      std::cout << "no: " << no << ", cmd " << cmd << ", extali " << extali << ", addr " << addr << ", data " << data <<  endl;
+    
+    if(cmd!=-1 && extali!=-1 && addr != -1 && data!= -1) {
+      AddValues(det, cmd, extali, addr, data);
+    }
+    else if(!infile.eof() && !infile.good()) {
+      infile.clear();
+      infile.ignore(256, '\n');
+    }
+    
+    if(!infile.eof())
+      infile.clear();
+  }
+  
+  infile.close();
+  
+  return kTRUE;
+}
+
+
+Bool_t AliTRDtrapConfig::PrintTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t mcm)
+{
+  // print the value stored in the given register
   // if it is individual a valid MCM has to be specified
 
   if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
-    printf("%s (%i bits) at 0x%08x is 0x%08x and resets to: 0x%08x\n", 
+    printf("%s (%i bits) at 0x%08x is 0x%08x and resets to: 0x%08x (currently global mode)\n", 
            GetRegName((TrapReg_t) reg),
            GetRegNBits((TrapReg_t) reg),
            GetRegAddress((TrapReg_t) reg),
@@ -600,16 +720,196 @@ void AliTRDtrapConfig::PrintTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t m
            GetRegResetValue((TrapReg_t) reg));
   }
   else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
-    if ((det < 0) || (det > 539) || (rob < 0) || (rob > 7) || (mcm < 0) || (mcm > 7)) {
-      AliError("Register value is MCM-specific but an invalid MCM is specified");
-    }
-    else {
-      printf("%s (%i bits) at 0x%08x is 0x%08x and resets to: 0x%08x\n", 
+    if((det >= 0 && det < AliTRDgeometry::Ndet()) && 
+       (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) && 
+       (mcm >= 0 && mcm < fgkMaxMcm)) {
+      printf("%s (%i bits) at 0x%08x is 0x%08x and resets to: 0x%08x (currently individual mode)\n", 
              GetRegName((TrapReg_t) reg),
              GetRegNBits((TrapReg_t) reg),
              GetRegAddress((TrapReg_t) reg),
-             fRegisterValue[reg].individualValue[det*38*16 + rob*16 + mcm],
+             fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm],
              GetRegResetValue((TrapReg_t) reg));
     }
+    else {
+      AliError("Register value is MCM-specific: Invalid detector, ROB or MCM requested");
+      return kFALSE;
+    }
+  }
+  else {  // should never be reached
+    AliError("MCM register status neither kGlobal nor kIndividual");
+    return kFALSE;
+  }
+  return kTRUE;
+}
+
+
+Bool_t AliTRDtrapConfig::PrintTrapAddr(Int_t addr, Int_t det, Int_t rob, Int_t mcm)
+{
+  // print the value stored at the given address in the MCM chip
+  TrapReg_t reg = GetRegByAddress(addr);
+  if (reg >= 0 && reg < kLastReg) {
+    return PrintTrapReg(reg, det, rob, mcm);
+  }
+  else {
+    AliError(Form("There is no register at address 0x%08x in the simulator", addr));
+    return kFALSE;
   }
 }
+
+
+Bool_t AliTRDtrapConfig::AddValues(UInt_t det, UInt_t cmd, UInt_t extali, UInt_t addr, UInt_t data)
+{
+   // transfer the informations provided by LoadConfig to the internal class variables
+
+  if(cmd != fgkScsnCmdWrite) {
+    AliError(Form("Invalid command received: %i", cmd));
+    return kFALSE;
+  }
+
+  TrapReg_t mcmReg = GetRegByAddress(addr);
+
+  if(mcmReg >= 0 && mcmReg < kLastReg) {
+    Int_t rocType = AliTRDgeometry::GetStack(det) == 2 ? 0 : 1;
+    
+    for(Int_t linkPair=0; linkPair<fgkMaxLinkPairs; linkPair++) {
+      if(ExtAliToAli(extali, linkPair, rocType)!=0) {
+        Int_t i=0;
+        while(fMcmlist[i] != -1 && i<fMcmlistSize) {
+          if(fMcmlist[i]==127)
+            SetTrapReg( (TrapReg_t) mcmReg, data, det);
+          else
+            SetTrapReg( (TrapReg_t) mcmReg, data, det, (fMcmlist[i]>>7), (fMcmlist[i]&0x7F));
+          i++;
+        }
+      }
+    }
+    return kTRUE;
+  }
+  else 
+    return kFALSE;
+}
+
+
+Int_t AliTRDtrapConfig::ExtAliToAli( UInt_t dest, UShort_t linkpair, UShort_t rocType)
+{
+   // Converts an extended ALICE ID which identifies a single MCM or a group of MCMs to
+   // the corresponding list of MCMs. Only broadcasts (127) are encoded as 127 
+   // The return value is the number of MCMs in the list
+
+   fMcmlist[0]=-1;
+
+  Short_t nmcm = 0;
+  UInt_t mcm, rob, robAB;
+  UInt_t cmA = 0, cmB = 0;  // Chipmask for each A and B side
+  
+  // Default chipmask for 4 linkpairs (each bit correponds each alice-mcm)
+  static const UInt_t gkChipmaskDefLp[4] = { 0x1FFFF, 0x1FFFF, 0x3FFFF, 0x1FFFF };
+  
+  rob = dest >> 7;                              // Extract ROB pattern from dest.
+  mcm = dest & 0x07F;                           // Extract MCM pattern from dest.
+  robAB = GetRobAB( rob, linkpair ); // Get which ROB sides are selected.
+  
+  // Abort if no ROB is selected
+  if( robAB == 0 ) {
+    return 0;
+  }
+  
+  // Special case
+  if( mcm == 127 ) {
+    if( robAB == 3 ) {      // This is very special 127 can stay only if two ROBs are selected
+      fMcmlist[0]=127;      // broadcase to ALL
+      fMcmlist[1]=-1;
+      return 1;
+    }
+    cmA = cmB = 0x3FFFF;
+  } else if( (mcm & 0x40) != 0 ) { // If top bit is 1 but not 127, this is chip group.
+    if( (mcm & 0x01) != 0 )                  { cmA |= 0x04444; cmB |= 0x04444; } // chip_cmrg
+    if( (mcm & 0x02) != 0 )                  { cmA |= 0x10000; cmB |= 0x10000; } // chip_bmrg
+    if( (mcm & 0x04) != 0 && rocType == 0 ) { cmA |= 0x20000; cmB |= 0x20000; } // chip_hm3
+    if( (mcm & 0x08) != 0 && rocType == 1 ) { cmA |= 0x20000; cmB |= 0x20000; } // chip_hm4
+    if( (mcm & 0x10) != 0 )                  { cmA |= 0x01111; cmB |= 0x08888; } // chip_edge
+    if( (mcm & 0x20) != 0 )                  { cmA |= 0x0aaaa; cmB |= 0x03333; } // chip_norm
+  } else { // Otherwise, this is normal chip ID, turn on only one chip.
+    cmA = 1 << mcm;
+    cmB = 1 << mcm;
+  }
+  
+  // Mask non-existing MCMs
+  cmA &= gkChipmaskDefLp[linkpair];
+  cmB &= gkChipmaskDefLp[linkpair];
+  // Remove if only one side is selected
+  if( robAB == 1 ) 
+    cmB = 0;
+  if( robAB == 2 ) 
+    cmA = 0;
+  if( robAB == 4 && linkpair != 2 ) 
+    cmA = cmB = 0; // Restrict to only T3A and T3B
+  
+  // Finally convert chipmask to list of slaves
+  nmcm = ChipmaskToMCMlist( cmA, cmB, linkpair );
+  
+  return nmcm;
+}
+
+
+Short_t AliTRDtrapConfig::GetRobAB( UShort_t robsel, UShort_t linkpair )
+{
+  // Converts the ROB part of the extended ALICE ID to robs
+
+  if( (robsel & 0x8) != 0 ) { // 1000 .. direct ROB selection. Only one of the 8 ROBs are used.
+    robsel = robsel & 7;
+    if( (robsel % 2) == 0 && (robsel / 2) == linkpair ) 
+      return 1;  // Even means A side (position 0,2,4,6)
+    if( (robsel % 2) == 1 && (robsel / 2) == linkpair ) 
+      return 2;  // Odd  means B side (position 1,3,5,7)
+    return 0;
+  }
+  
+  // ROB group
+  if( robsel == 0 ) { return 3; } // Both   ROB
+  if( robsel == 1 ) { return 1; } // A-side ROB
+  if( robsel == 2 ) { return 2; } // B-side ROB
+  if( robsel == 3 ) { return 3; } // Both   ROB
+  if( robsel == 4 ) { return 4; } // Only T3A and T3B
+  // Other number 5 to 7 are ignored (not defined) 
+  
+  return 0;
+}
+
+
+Short_t AliTRDtrapConfig::ChipmaskToMCMlist( Int_t cmA, Int_t cmB, UShort_t linkpair )
+{
+  // Converts the chipmask to a list of MCMs 
+  
+  Short_t nmcm = 0;
+  Short_t i;
+  for( i = 0 ; i < fgkMaxMcm ; i++ ) {
+     if( (cmA & (1 << i)) != 0 ) {
+	fMcmlist[nmcm] = (linkpair*2 << 7) | i;
+	++nmcm;
+    }
+    if( (cmB & (1 << i)) != 0 ) {
+       fMcmlist[nmcm] = (linkpair*2+1 << 7) | i;
+       ++nmcm;
+    }
+  }
+
+  fMcmlist[nmcm]=-1;
+  return nmcm;
+}
+
+
+AliTRDtrapConfig::TrapReg_t AliTRDtrapConfig::GetRegByAddress(Int_t address)
+{
+  TrapReg_t mcmReg = kLastReg;
+  Int_t reg  = 0;
+  do {
+    if(fRegs[reg].addr == address)
+      mcmReg = (TrapReg_t) reg;
+    reg++;
+  }  while (mcmReg == kLastReg && reg < kLastReg);
+
+  return mcmReg;
+}
+
+

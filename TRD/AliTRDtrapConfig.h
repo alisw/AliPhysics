@@ -450,12 +450,22 @@ class AliTRDtrapConfig : public TObject
   inline UShort_t    GetRegNBits(TrapReg_t reg)      { return fRegs[reg].nbits; }
   inline UInt_t      GetRegResetValue(TrapReg_t reg) { return fRegs[reg].res_val; }
 
-  Int_t GetTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1);
-  void PrintTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1);
+  TrapReg_t          GetRegByAddress(Int_t address);
 
-  Bool_t SetTrapReg(TrapReg_t reg, Int_t value, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1);
+  Int_t  GetTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1);
+  Bool_t PrintTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1);
+  Bool_t PrintTrapAddr(Int_t addr, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1);
+
+  Bool_t SetTrapReg(TrapReg_t reg, Int_t value);
+  Bool_t SetTrapReg(TrapReg_t reg, Int_t value, Int_t det);
+  Bool_t SetTrapReg(TrapReg_t reg, Int_t value, Int_t det, Int_t rob, Int_t mcm);
+
+  void ResetRegs();
 
   Bool_t LoadConfig();
+  Bool_t LoadConfig(Int_t det, TString filename);
+
+  Int_t  ExtAliToAli( UInt_t dest, UShort_t linkpair, UShort_t rocType);
 
  protected:
   static AliTRDtrapConfig *fgInstance;  // pointer to instance (singleton)
@@ -484,6 +494,19 @@ class AliTRDtrapConfig : public TObject
   SimpleReg_t fRegs[kLastReg];          // array of TRAP registers
   RegValue_t fRegisterValue[kLastReg];  // array of TRAP register values in use
 
+  Bool_t AddValues(UInt_t det, UInt_t cmd, UInt_t extali, UInt_t addr, UInt_t data);
+  Short_t GetRobAB( UShort_t robsel, UShort_t linkpair );  // Converts the ROB part of the extended ALICE ID to robs
+  Short_t ChipmaskToMCMlist( Int_t cmA, Int_t cmB, UShort_t linkpair ); // Converts the chipmask to a list of MCMs 
+
+  static const UInt_t fgkScsnCmdWrite=10;  // Command number for the write command 
+  static const Int_t fgkMaxLinkPairs=4;    // number of linkpairs used during configuration
+  static const Int_t fgkMaxMcm;            // max. no. of MCMs to be treated
+  static const Int_t fMcmlistSize=256;     // list of MCMs to which a value has to be written
+
+  Int_t fMcmlist[fMcmlistSize];  // stores the list of MCMs after the conversion from extAliID -> AliID
+
+  AliTRDtrapConfig(); // private constructor due to singleton implementation
+
 /* not yet used
   struct BlockDescr_t {
     UShort_t addr;
@@ -506,12 +529,8 @@ class AliTRDtrapConfig : public TObject
 		    kDBankSCSNData };
 */
 
- private:
-  AliTRDtrapConfig();
-
-  ClassDef(AliTRDtrapConfig, 1);
+  ClassDef(AliTRDtrapConfig, 2);
 };
 
 #endif
-
 
