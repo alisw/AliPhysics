@@ -52,7 +52,7 @@ class AliT0TriggerParameters: public TObject {
   // AliT0TriggerParameters& operator= (const AliT0TriggerParameters &);
   // AliT0TriggerParameters(const AliT0TriggerParameters &calibda);
  //
-  ClassDef(AliT0TriggerParameters,1)    // T0 Sensor Calibration data
+  ClassDef(AliT0TriggerParameters,2)    // T0 Sensor Calibration data
 };
 
 
