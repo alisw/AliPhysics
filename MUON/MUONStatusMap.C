@@ -24,8 +24,10 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliCDBManager.h"
 #include "AliMUONCalibrationData.h"
+#include "AliMUONLogger.h"
 #include "AliMUONPadStatusMaker.h"
 #include "AliMUONPadStatusMapMaker.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVStore.h"
 #include "AliMpCDB.h"
@@ -36,77 +38,37 @@
 #include "Riostream.h"
 #endif
 
-void FindBad(AliMUONPadStatusMaker& statusMaker, Int_t mask, Int_t& nBadPads, Int_t& nPads)
-{
-  AliMpManuIterator it;
-  
-  nBadPads = nPads = 0;
-  
-  Int_t detElemId;
-  Int_t manuId;
-  
-  while ( it.Next(detElemId,manuId) )
-  {
-    Bool_t bad(kFALSE);
-    
-    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
-    
-    Int_t nb(0);
-    Int_t n(0);
-
-    for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i )
-    {
-      if ( de->IsConnectedChannel(manuId,i) )
-      {
-        ++n;
-        ++nPads;
-        Int_t status = statusMaker.PadStatus(detElemId,manuId,i);
-        if ( ( status & mask) || (!mask && status) )
-        {
-          bad = kTRUE;
-          ++nBadPads;
-          ++nb;
-        }
-      }
-    }
-    
-    if (bad)
-    {
-      cout << Form("DE %4d ManuId %4d %2d bad pads over %2d pads",
-                   detElemId,manuId,nb,n) << endl;
-    }
-  }
-}
-
+//AliMUONVStore* MUONStatusMap(const TString& cdbStorage = "alien://folder=/alice/data/2009/OCDB",
 AliMUONVStore* MUONStatusMap(const TString& cdbStorage = "local://$ALICE_ROOT/OCDB",
-                             Int_t runNumber=0, Bool_t statusOnly=kFALSE, 
-                             Int_t mask=0x8080)
+                             Int_t runNumber=67138, Bool_t statusOnly=kTRUE)
 {  
-  AliCDBManager::Instance()->SetDefaultStorage(cdbStorage.Data());
-  AliCDBManager::Instance()->SetRun(runNumber);
 
-  AliMpCDB::LoadDDLStore();
+  AliMUONRecoParam* recoParam = AliMUONRecoParam::GetCosmicParam();
   
+  AliMpCDB::LoadAll2();
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  
+  man->SetDefaultStorage(cdbStorage.Data());
+  
+//  man->SetSpecificStorage("MUON/Calib/OccupancyMap","local://$ALICE_ROOT/OCDB");
+//  man->SetSpecificStorage("MUON/Calib/OccupancyMap","alien://folder=/alice/cern.ch/user/l/laphecet/OCDB");
+//  man->SetSpecificStorage("MUON/Calib/RejectList","alien://folder=/alice/cern.ch/user/l/laphecet/OCDB");
+//  man->SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/cern.ch/user/l/laphecet/OCDB");
+
+//  man->SetRun(runNumber);
+
   AliMUONCalibrationData cd(runNumber);
   
   AliMUONPadStatusMaker statusMaker(cd);
   
-//  statusMaker.SetPedMeanLimits(50,200);
-//  statusMaker.SetPedSigmaLimits(0.5,2);
+  statusMaker.SetLimits(*recoParam);
   
-  Int_t nbad;
-  Int_t ntotal;
+  delete recoParam;
   
-  FindBad(statusMaker,mask,nbad,ntotal);
-
-  if (ntotal<=0) 
-  {
-    cout << "Error : got no pad at all ?!" << endl;
-    return 0x0;
-  }  
+  UInt_t mask = recoParam->PadGoodnessMask();
   
-  cout << Form("Nbad = %6d over %6d pads (%7.2f %%)",
-               nbad,ntotal,100.0*nbad/ntotal) << endl;
+  statusMaker.Report(mask);
   
   if ( statusOnly ) return statusMaker.StatusStore();
   

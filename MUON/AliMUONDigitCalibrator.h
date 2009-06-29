@@ -74,13 +74,14 @@ private:
 	Double_t fNumberOfBadPads; //!< # of times we've rejected a bad pad
 	Double_t fNumberOfPads; //!< # of pads we've seen
 	Double_t fChargeSigmaCut; //!< number of sigmas to cut on
+  UInt_t fMask; //!< mask used to cut bad channels
   
 	static const Int_t fgkNoGain; //!< do not apply gain calib at all
 	static const Int_t fgkGainConstantCapa; //!< apply gain (from OCDB) with constant capa
 	static const Int_t fgkGain; //!< apply gain and capa (from OCDB)
 	static const Int_t fgkInjectionGain; //!< apply injection gain (from OCDB)
 	
-  ClassDef(AliMUONDigitCalibrator,9) // Calibrate raw digit
+  ClassDef(AliMUONDigitCalibrator,10) // Calibrate raw digit
 };
 
 #endif

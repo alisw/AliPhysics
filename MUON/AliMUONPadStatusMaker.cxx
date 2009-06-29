@@ -30,17 +30,21 @@
 #include "AliMUON2DStoreValidator.h"
 #include "AliMUONCalibParamNI.h"
 #include "AliMUONCalibrationData.h"
+#include "AliMUONLogger.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONStringIntMap.h"
-#include "AliMUONVCalibParam.h"
 #include "AliMUONTrackerData.h"
+#include "AliMUONVCalibParam.h"
 
 #include "AliMpArea.h"
 #include "AliMpArrayI.h"
+#include "AliMpCDB.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
 #include "AliMpDCSNamer.h"
+#include "AliMpManuIterator.h"
 #include "AliMpManuUID.h"
 
 #include "AliCDBEntry.h"
@@ -74,7 +78,7 @@ fHVSt345Limits(0,5000),
 fPedMeanLimits(0,4095),
 fPedSigmaLimits(0,4095),
 fManuOccupancyLimits(0,1.0),
-fBusPatchOccupancyLimits(0,1.0),
+fBuspatchOccupancyLimits(0,1.0),
 fDEOccupancyLimits(0,1.0),
 fStatus(new AliMUON2DMap(true)),
 fHV(new TExMap),
@@ -83,22 +87,19 @@ fGains(calibData.Gains()),
 fTrackerData(0x0)
 {
   /// ctor
-  AliDebug(1,Form("ped store %s gain store %s",
-                  fPedestals->ClassName(),
-                  fGains->ClassName()));
-  
   if ( calibData.OccupancyMap() )
   {
-    AliInfo("Will use occupancy map to cut, if so required in AliMUONRecoParam");    
     /// create a tracker data from the occupancy map
     fTrackerData = new AliMUONTrackerData("OCC","OCC",*(calibData.OccupancyMap()));
-  }    
+  }     
+  
 }
 
 //_____________________________________________________________________________
 AliMUONPadStatusMaker::~AliMUONPadStatusMaker()
 {
   /// dtor.
+ 
   delete fStatus;
   delete fHV;
   delete fTrackerData;
@@ -557,11 +558,11 @@ AliMUONPadStatusMaker::OccupancyStatus(Int_t detElemId, Int_t manuId) const
     
     occ = fTrackerData->BusPatch(busPatchId,occIndex);
 
-    if ( occ <= fBusPatchOccupancyLimits.X() )
+    if ( occ <= fBuspatchOccupancyLimits.X() )
     {
       rv |= kBusPatchOccupancyTooLow;
     } 
-    else if ( occ > fBusPatchOccupancyLimits.Y() )
+    else if ( occ > fBuspatchOccupancyLimits.Y() )
     {
       rv |= kBusPatchOccupancyTooHigh;
     }
@@ -630,3 +631,80 @@ AliMUONPadStatusMaker::SetHVStatus(Int_t detElemId, Int_t index, Int_t status) c
     fHV->Add(AliMpManuUID::BuildUniqueID(detElemId,manuId),status + 1);
   }
 }
+
+//_____________________________________________________________________________
+void
+AliMUONPadStatusMaker::SetLimits(const AliMUONRecoParam& recoParams) 
+{
+  /// Set the limits from the recoparam
+  
+  SetHVSt12Limits(recoParams.HVSt12LowLimit(),recoParams.HVSt12HighLimit());
+  SetHVSt345Limits(recoParams.HVSt345LowLimit(),recoParams.HVSt345HighLimit());
+  
+  SetPedMeanLimits(recoParams.PedMeanLowLimit(),recoParams.PedMeanHighLimit());
+  SetPedSigmaLimits(recoParams.PedSigmaLowLimit(),recoParams.PedSigmaHighLimit());
+  
+  SetGainA1Limits(recoParams.GainA1LowLimit(),recoParams.GainA1HighLimit());
+  SetGainA2Limits(recoParams.GainA2LowLimit(),recoParams.GainA2HighLimit());
+  SetGainThresLimits(recoParams.GainThresLowLimit(),recoParams.GainThresHighLimit());
+  
+  SetManuOccupancyLimits(recoParams.ManuOccupancyLowLimit(),recoParams.ManuOccupancyHighLimit());
+  SetBuspatchOccupancyLimits(recoParams.BuspatchOccupancyLowLimit(),recoParams.BuspatchOccupancyHighLimit());
+  SetDEOccupancyLimits(recoParams.DEOccupancyLowLimit(),recoParams.DEOccupancyHighLimit());  
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONPadStatusMaker::Report(UInt_t mask)
+{
+  /// Report the number of bad pads, according to the mask,
+  /// and the various reasons why they are bad (with occurence rates)
+  
+  AliInfo("");
+  AliCodeTimerAuto("");
+
+  AliMUONLogger log(1064008);
+  
+  Int_t nBadPads(0);
+  Int_t nPads(0);
+  
+  AliMpManuIterator it;
+  
+  Int_t detElemId, manuId;
+  
+  while ( it.Next(detElemId,manuId) )
+  {
+    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+    
+    for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i )
+    {
+      if ( de->IsConnectedChannel(manuId,i) ) 
+      {
+        ++nPads;
+        
+        Int_t status = PadStatus(detElemId,manuId,i);          
+        
+        if ( ( status & mask) || (!mask && status) )
+        {
+          ++nBadPads;
+          log.Log(AsString(status));
+        }
+      }
+    }
+  }
+  
+  TString msg;
+  Int_t ntimes;
+  
+  cout << Form("According to mask %x (human readable form below) %6d pads are bad (over a total of %6d, i.e. %7.2f %%)",
+               mask,nBadPads,nPads,nPads ? nBadPads*100.0/nPads : 0.0) << endl;
+  cout << AliMUONPadStatusMaker::AsCondition(mask) << endl;
+  cout << "--------" << endl;
+  
+  while ( log.Next(msg,ntimes) )
+  {
+    cout << Form("The message (%120s) occured %15d times (%7.4f %%)",msg.Data(),ntimes,ntimes*100.0/nPads) << endl;
+  }
+  
+}
+

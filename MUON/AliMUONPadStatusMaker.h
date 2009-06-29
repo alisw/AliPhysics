@@ -21,6 +21,7 @@
 
 class TExMap;
 class AliMUONCalibrationData;
+class AliMUONRecoParam;
 class AliMUONVCalibParam;
 class AliMUONVTrackerData;
 class AliMUONVStore;
@@ -97,6 +98,20 @@ public:
   void SetManuOccupancyLimits(float low, float high) { fManuOccupancyLimits.Set(low,high); }
   /// Get manu occupancy limits
   TVector2 ManuOccupancyLimits() const { return fManuOccupancyLimits; }
+
+  /// Set Low and High bus patch occupancy limits
+  void SetBuspatchOccupancyLimits(float low, float high) { fBuspatchOccupancyLimits.Set(low,high); }
+  /// Get bus patch occupancy limits
+  TVector2 BuspatchOccupancyLimits() const { return fBuspatchOccupancyLimits; }
+
+  /// Set Low and High DE occupancy limits
+  void SetDEOccupancyLimits(float low, float high) { fDEOccupancyLimits.Set(low,high); }
+  /// Get DE occupancy limits
+  TVector2 DEOccupancyLimits() const { return fDEOccupancyLimits; }
+  
+  void SetLimits(const AliMUONRecoParam& recoParams);
+
+  void Report(UInt_t mask);
   
 private:
   /// Not implemented
@@ -200,7 +215,7 @@ private:
   TVector2 fPedSigmaLimits; //!< Low and High threshold for pedestal sigma
   
   TVector2 fManuOccupancyLimits; //!< Low and High manu occupancy limits
-  TVector2 fBusPatchOccupancyLimits; //!< Low and High buspatch occupancy limits
+  TVector2 fBuspatchOccupancyLimits; //!< Low and High buspatch occupancy limits
   TVector2 fDEOccupancyLimits; //!< Low and High DE occupancy limits
   
   AliMUONVStore* fStatus; //!< statuses of the pads

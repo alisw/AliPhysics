@@ -78,7 +78,8 @@ fApplyGains(0),
 fCapacitances(0x0),
 fNumberOfBadPads(0),
 fNumberOfPads(0),
-fChargeSigmaCut(0)
+fChargeSigmaCut(0),
+fMask(0)
 {
   /// ctor
   
@@ -98,7 +99,8 @@ fApplyGains(0),
 fCapacitances(0x0),
 fNumberOfBadPads(0),
 fNumberOfPads(0),
-fChargeSigmaCut(0)
+fChargeSigmaCut(0),
+fMask(0)
 {
   /// ctor
   
@@ -153,21 +155,15 @@ AliMUONDigitCalibrator::Ctor(const char* calibMode,
   
   fChargeSigmaCut = 3.0;
   
-	Int_t mask(0x8080); // reject pads where ped *or* hv are missing
+	fMask = 0x8080; // reject pads where ped *or* hv are missing
 	
 	if ( recoParams )
 	{
     // if we have reco params, we use limits and cuts from there :
     
-		fStatusMaker->SetHVSt12Limits(recoParams->HVSt12LowLimit(),recoParams->HVSt12HighLimit());
-		fStatusMaker->SetHVSt345Limits(recoParams->HVSt345LowLimit(),recoParams->HVSt345HighLimit());
-		fStatusMaker->SetPedMeanLimits(recoParams->PedMeanLowLimit(),recoParams->PedMeanHighLimit());
-		fStatusMaker->SetPedSigmaLimits(recoParams->PedSigmaLowLimit(),recoParams->PedSigmaHighLimit());
-		fStatusMaker->SetGainA1Limits(recoParams->GainA1LowLimit(),recoParams->GainA1HighLimit());
-		fStatusMaker->SetGainA2Limits(recoParams->GainA2LowLimit(),recoParams->GainA2HighLimit());
-		fStatusMaker->SetGainThresLimits(recoParams->GainThresLowLimit(),recoParams->GainThresHighLimit());
-		
-    mask = recoParams->PadGoodnessMask();
+    fStatusMaker->SetLimits(*recoParams);
+    
+    fMask = recoParams->PadGoodnessMask();
 		//WARNING : getting this mask wrong is a very effective way of getting
 		//no digits at all out of this class ;-)
     
@@ -176,7 +172,7 @@ AliMUONDigitCalibrator::Ctor(const char* calibMode,
   
   Bool_t deferredInitialization = kTRUE;
   
-  fStatusMapMaker = new AliMUONPadStatusMapMaker(*fStatusMaker,mask,deferredInitialization);
+  fStatusMapMaker = new AliMUONPadStatusMapMaker(*fStatusMaker,fMask,deferredInitialization);
   
   fPedestals = calib.Pedestals();
   
@@ -193,16 +189,25 @@ AliMUONDigitCalibrator::Ctor(const char* calibMode,
 AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
 {
   /// dtor.
+  
+  if ( fNumberOfPads > 0 ) 
+  {
+    if ( fStatusMaker ) 
+    {
+      fStatusMaker->Report(fMask);
+    }
+    
+    AliInfo("Summary of messages:");
+
+    fLogger->Print();
+    
+    AliInfo(Form("We have seen %g pads, and rejected %g (%7.2f %%)",
+                 fNumberOfPads,fNumberOfBadPads,
+                 ( fNumberOfPads > 0 ) ? fNumberOfBadPads*100.0/fNumberOfPads : 0 ));
+	}
+
   delete fStatusMaker;
   delete fStatusMapMaker;
-  
-  AliInfo("Summary of messages:");
-  fLogger->Print();
-  
-	AliInfo(Form("We have seen %g pads, and rejected %g (%7.2f %%)",
-							 fNumberOfPads,fNumberOfBadPads,
-							 ( fNumberOfPads > 0 ) ? fNumberOfBadPads*100.0/fNumberOfPads : 0 ));
-	
   delete fLogger;
 }
 
@@ -247,13 +252,7 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
     }
     else
     {
-      AliDebug(3,Form("Rejecting the pad DE %4d MANU %4d CH %2d ADC %6d STATUSMAP %x STATUS %s",
-                      digit->DetElemId(),digit->ManuId(),digit->ManuChannel(),
-                      digit->ADC(),statusMap,
-                      fStatusMaker->AsString(fStatusMaker->PadStatus(digit->DetElemId(),digit->ManuId(),digit->ManuChannel())).Data()));
-      
-      ++fNumberOfBadPads;
-      
+      ++fNumberOfBadPads;      
     }
     
     digit->SetCharge(charge);

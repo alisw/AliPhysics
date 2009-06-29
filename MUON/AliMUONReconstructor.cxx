@@ -166,8 +166,8 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fDigitStore;
   delete fTransformer;
   delete fTriggerCircuit;
-  delete fCalibrationData;
   delete fDigitCalibrator;
+  delete fCalibrationData;
   delete fClusterServer;
   delete fTriggerStore;
   delete fTrackStore;
