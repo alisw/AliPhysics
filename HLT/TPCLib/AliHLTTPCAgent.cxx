@@ -176,8 +176,10 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     TString converterInput="TPC-globalmerger";
     if (!rawReader) {
       // propagate cluster info to the esd converter in order to fill the MC information
+      handler->CreateConfiguration("TPC-clustermc-info", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLMCINFO' 'TPC '");  
+      handler->CreateConfiguration("TPC-mcTrackMarker","TPCTrackMCMarker","TPC-globalmerger TPC-clustermc-info","" );
       converterInput+=" ";
-      converterInput+=sinkClusterInput;
+      converterInput+="TPC-mcTrackMarker";
     }
     handler->CreateConfiguration("TPC-esd-converter", "TPCEsdConverter"   , converterInput.Data(), "");
 
@@ -220,8 +222,9 @@ const char* AliHLTTPCAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
     // reconstruction chains for AliRoot simulation
     // Note: run loader is only available while running embedded into
     // AliRoot simulation
-    if (runloader->GetLoader("TPCLoader") != NULL)
-      return "TPC-esd-converter TPC-clusters";
+    //if (runloader->GetLoader("TPCLoader") != NULL)
+      //return "TPC-esd-converter TPC-clusters";
+      return "TPC-clusters";
   }
   return NULL;
 }

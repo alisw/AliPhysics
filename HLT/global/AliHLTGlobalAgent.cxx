@@ -24,9 +24,13 @@
 
 #include <cassert>
 #include "AliHLTGlobalAgent.h"
+#include "AliHLTConfigurationHandler.h"
+#include "TObjString.h"
+#include "TObjArray.h"
 
 // header files of library components
 #include "AliHLTGlobalTrackMergerComponent.h"
+#include "AliHLTGlobalEsdConverterComponent.h"
 
 /** global instance for agent registration */
 AliHLTGlobalAgent gAliHLTGlobalAgent;
@@ -56,35 +60,82 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   assert(pHandler);
   if (!pHandler) return -EINVAL;
   pHandler->AddComponent(new AliHLTGlobalTrackMergerComponent);
+  pHandler->AddComponent(new AliHLTGlobalEsdConverterComponent);
   return 0;
 }
 
-int AliHLTGlobalAgent::GetHandlerDescription(AliHLTComponentDataType dt,
-					   AliHLTUInt32_t /*spec*/,
-					  AliHLTOUTHandlerDesc& desc) const
+int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler,
+					    AliRawReader* /*rawReader*/,
+					    AliRunLoader* /*runloader*/) const
+{
+  // see header file for class documentation
+  if (!pHandler) return -EINVAL;
+
+  /////////////////////////////////////////////////////////////////////////////////////
+  //
+  // assembly of the global ESD
+
+  // define the inputs to the global ESD
+  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker";
+
+  // check for the availibility
+  TObjArray* pTokens=esdInputs.Tokenize(" ");
+  esdInputs="";
+  if (pTokens) {
+    for (int n=0; n<pTokens->GetEntriesFast(); n++) {
+      TString module=((TObjString*)pTokens->At(n))->GetString();
+      if (pHandler->FindConfiguration(module.Data())) {
+	esdInputs+=module;
+	esdInputs+=" ";
+      }
+    }
+    delete pTokens;
+  }
+
+  if (esdInputs.Length()>0) {
+    HLTInfo("Configuring inputs to global HLT ESD: %s", esdInputs.Data());
+  } else {
+    HLTWarning("No inputs to global HLT ESD found");
+  }
+
+  pHandler->CreateConfiguration("GLOBAL-esd-converter", "GlobalEsdConverter", esdInputs.Data(), "");
+  
+  return 0;
+}
+
+const char* AliHLTGlobalAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
+						    AliRunLoader* runloader) const
+{
+  // see header file for class documentation
+  if (runloader) {
+    // reconstruction chains for AliRoot simulation
+    // Note: run loader is only available while running embedded into
+    // AliRoot simulation
+    return "GLOBAL-esd-converter";
+  }
+  return NULL;
+}
+
+const char* AliHLTGlobalAgent::GetRequiredComponentLibraries() const
 {
   // see header file for class documentation
 
-  // handler for the HLT readou list and global data data blocks {'HLTRDLST':'HLT '}
-  if (dt==AliHLTComponentDataTypeInitializer("HLTRDLST", kAliHLTDataOriginOut) ||
-      dt==AliHLTComponentDataTypeInitializer("HLTTRGDT", kAliHLTDataOriginOut)) {
-      desc=AliHLTOUTHandlerDesc(kProprietary, dt, GetModuleId());
-      return 1;
-  }
+  return "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so libAliHLTITS.so";
+}
+
+int AliHLTGlobalAgent::GetHandlerDescription(AliHLTComponentDataType /*dt*/,
+					     AliHLTUInt32_t /*spec*/,
+					     AliHLTOUTHandlerDesc& /*desc*/) const
+{
+  // see header file for class documentation
 
   return 0;
 }
 
-AliHLTOUTHandler* AliHLTGlobalAgent::GetOutputHandler(AliHLTComponentDataType dt,
-						   AliHLTUInt32_t /*spec*/)
+AliHLTOUTHandler* AliHLTGlobalAgent::GetOutputHandler(AliHLTComponentDataType /*dt*/,
+						      AliHLTUInt32_t /*spec*/)
 {
   // see header file for class documentation
-
-  // handler for the HLT readou list and global data data blocks {'HLTRDLST':'HLT '}
-  if (dt==AliHLTComponentDataTypeInitializer("HLTRDLST", kAliHLTDataOriginOut) ||
-      dt==AliHLTComponentDataTypeInitializer("HLTTRGDT", kAliHLTDataOriginOut)) {
-    return NULL;
-  }
 
   return NULL;
 }

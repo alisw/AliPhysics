@@ -419,6 +419,7 @@ void AliHLTTPCEsdWriterComponent::AliConverter::GetInputDataTypes(AliHLTComponen
   // see header file for class documentation
   list.push_back(AliHLTTPCDefinitions::fgkTrackSegmentsDataType);
   list.push_back(AliHLTTPCDefinitions::fgkTracksDataType);
+  list.push_back( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC );
 }
 
 AliHLTComponentDataType AliHLTTPCEsdWriterComponent::AliConverter::GetOutputDataType()
