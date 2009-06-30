@@ -31,10 +31,12 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   AliHLTGlobalBarrelTrack();
   /** copy constructor */
   AliHLTGlobalBarrelTrack(const AliHLTGlobalBarrelTrack& t);
+  /** copy constructor */
+  AliHLTGlobalBarrelTrack(const AliHLTExternalTrackParam& p);
+
   /** assignment operator */
-  AliHLTGlobalBarrelTrack& operator=(const AliHLTGlobalBarrelTrack& t);
-  /** assignment operator */
-  AliHLTGlobalBarrelTrack& operator=(const AliHLTExternalTrackParam& extp);
+  template <class c>
+  AliHLTGlobalBarrelTrack& operator=(const c& t);
   /** destructor */
   ~AliHLTGlobalBarrelTrack();
 
@@ -42,6 +44,8 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   Double_t GetLastPointX() const {return fLastX;}
   /// Get the y position of the last assigned point
   Double_t GetLastPointY() const {return fLastY;}
+  /// return Track ID
+  Int_t TrackID() const {return fTrackID;}
 
   /// Get the number of associated points
   UInt_t GetNumberOfPoints() const;
@@ -54,18 +58,30 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
 
   static int ConvertTrackDataArray(const AliHLTTracksData* pTracks, unsigned sizeInByte, vector<AliHLTGlobalBarrelTrack> &tgtArray);
 
-  /// dummy function required by AliKalmanTrack
+  /// inherited from AliKalmanTrack, dummy implementation
   Double_t GetPredictedChi2(const AliCluster*) const {return 0.0;}
 
-  /// dummy function required by AliKalmanTrack
+  /// inherited from AliKalmanTrack, dummy implementation
   Bool_t PropagateTo(Double_t, Double_t, Double_t) {return kFALSE;}
 
-  /// dummy function required by AliKalmanTrack
+  /// inherited from AliKalmanTrack, dummy implementation
   Bool_t Update(const AliCluster*, Double_t, Int_t) {return kFALSE;}
+
+  /// Inherited from TObject, prints the track parameters
+  virtual void Print(Option_t* option = "") const;
 
  protected:
 
  private:
+  /// inherited from AliKalmanTrack, dummy implementation
+  virtual Int_t GetClusterIndex(Int_t) const { 
+    return 0;
+  } 
+  /// inherited from AliKalmanTrack, dummy implementation
+  virtual Double_t GetPIDsignal() const {
+    return 0.;
+  }
+
   /// array of points
   vector<UInt_t> fPoints; //
 
@@ -73,6 +89,9 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   Double_t fLastX; //
   /// y position of the last assigned point
   Double_t fLastY; //
+
+  /// track Id for identification during the reconstruction
+  Int_t   fTrackID; //
 
   ClassDef(AliHLTGlobalBarrelTrack, 0)
 };

@@ -39,6 +39,7 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack()
   , fPoints()
   , fLastX(0.0)
   , fLastY(0.0)
+  , fTrackID(-1)
 {
   // see header file for class documentation
   // or
@@ -52,29 +53,34 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTGlobalBarrelTrack& 
   , fPoints()
   , fLastX(t.GetLastPointX())
   , fLastY(t.GetLastPointY())
+  , fTrackID(t.TrackID())
 {
   // see header file for class documentation
   fPoints.assign(t.fPoints.begin(), t.fPoints.end());
 }
 
-AliHLTGlobalBarrelTrack& AliHLTGlobalBarrelTrack::operator=(const AliHLTGlobalBarrelTrack& t)
+AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTExternalTrackParam& p)
+  : AliKalmanTrack()
+  , fPoints()
+  , fLastX(p.fLastX)
+  , fLastY(p.fLastY)
+  , fTrackID(p.fTrackID)
 {
   // see header file for class documentation
-  this->~AliHLTGlobalBarrelTrack();
-  new (this) AliHLTGlobalBarrelTrack(t);
-  return *this;
+
+  // the 5 track parameters are named in the AliHLTExternalTrackParam
+  // while AliExternalTrackParam just uses an array[5]
+  // the members have the some order, fY is the first one
+  Set(p.fX, p.fAlpha, &p.fY, p.fC);
+  SetPoints(p.fPointIDs, p.fNPoints);
 }
 
-AliHLTGlobalBarrelTrack& AliHLTGlobalBarrelTrack::operator=(const AliHLTExternalTrackParam& p)
+template <class c>
+AliHLTGlobalBarrelTrack& AliHLTGlobalBarrelTrack::operator=(const c& p)
 {
   // see header file for class documentation
   this->~AliHLTGlobalBarrelTrack();
-  new (this) AliHLTGlobalBarrelTrack;
-  Float_t param[5]={p.fY, p.fZ, p.fq1Pt, p.fSinPsi, p.fTgl};
-  Set(p.fX, p.fAlpha, param, p.fC);
-  SetPoints(p.fPointIDs, p.fNPoints);
-  fLastX=p.fLastX;
-  fLastY=p.fLastY;
+  new (this) AliHLTGlobalBarrelTrack(p);
   return *this;
 }
 
@@ -96,14 +102,15 @@ int AliHLTGlobalBarrelTrack::ConvertTrackDataArray(const AliHLTTracksData* pTrac
   tgtArray.resize(pTracks->fCount);
   const AliHLTUInt8_t* pCurrent=reinterpret_cast<const AliHLTUInt8_t*>(pTracks->fTracklets);
   for (unsigned i=0; i<pTracks->fCount; i++) {
-    if (pCurrent+sizeof(AliHLTExternalTrackParam)>=pEnd) {
+    if (pCurrent+sizeof(AliHLTExternalTrackParam)>pEnd) {
       iResult=-EINVAL; break;
     }
     const AliHLTExternalTrackParam* track=reinterpret_cast<const AliHLTExternalTrackParam*>(pCurrent);
-    if (pCurrent+sizeof(AliHLTExternalTrackParam)+track->fNPoints+sizeof(UInt_t)<=pEnd) {
+    if (pCurrent+sizeof(AliHLTExternalTrackParam)+track->fNPoints*sizeof(UInt_t)>pEnd) {
       iResult=-EINVAL; break;
     }
     tgtArray[i]=*track;
+    pCurrent+=sizeof(AliHLTExternalTrackParam)+track->fNPoints*sizeof(UInt_t);
   }
   if (iResult<0) tgtArray.clear();
   else iResult=tgtArray.size();
@@ -130,4 +137,18 @@ int AliHLTGlobalBarrelTrack::SetPoints(const UInt_t* pArray, UInt_t arraySize)
   fPoints.resize(arraySize);
   for (unsigned i=0; i<arraySize; i++) fPoints[i]=pArray[i];
   return fPoints.size();
+}
+
+void AliHLTGlobalBarrelTrack::Print(Option_t* option) const
+{
+  // see header file for class documentation
+  cout << "********* Track Id: " << fTrackID << " *******************" << endl;
+  AliExternalTrackParam::Print(option);
+//   cout << "  Alpha "     << GetAlpha();
+//   cout << "  X "         << GetX();
+//   cout << "  Y "         << GetY();
+//   cout << "  Z "         << GetZ() << endl;
+//   cout << "  Snp "       << GetSnp();
+//   cout << "  Tgl "       << GetTgl();
+//   cout << "  Signed1Pt " << GetSigned1Pt() << endl;
 }

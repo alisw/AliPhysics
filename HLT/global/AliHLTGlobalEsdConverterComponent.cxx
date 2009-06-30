@@ -32,6 +32,7 @@
 #include "AliHLTGlobalEsdConverterComponent.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTExternalTrackParam.h"
+#include "AliHLTTrackMCLabel.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliCDBEntry.h"
@@ -47,7 +48,7 @@ AliHLTGlobalEsdConverterComponent::AliHLTGlobalEsdConverterComponent()
   , fESD(NULL)
   , fSolenoidBz(5)
   , fWriteTree(0)
-
+  , fVerbosity(0)
 {
   // see header file for class documentation
   // or
@@ -253,6 +254,26 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   // in the first attempt this component reads the TPC tracks and updates in the
   // second step from the ITS tracks
+
+
+  // first read MC information (if present)
+  std::map<int,int> mcLabels;
+
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrackMC|kAliHLTDataOriginTPC);
+       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    AliHLTTrackMCData* dataPtr = reinterpret_cast<AliHLTTrackMCData*>( pBlock->fPtr );
+    if (sizeof(AliHLTTrackMCData)+dataPtr->fCount*sizeof(AliHLTTrackMCLabel)==pBlock->fSize) {
+      for( unsigned int il=0; il<dataPtr->fCount; il++ ){
+	AliHLTTrackMCLabel &lab = dataPtr->fLabels[il];
+	mcLabels[lab.fTrackID] = lab.fMCLabel;
+      }
+    } else {
+      HLTWarning("data mismatch in block %s (0x%08x): count %d, size %d -> ignoring track MC information", 
+		 DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, 
+		 dataPtr->fCount, pBlock->fSize);
+    }
+  }
+
   std::vector<int> trackIdESD2TPCmap; // map esd index -> tpc index
 
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
@@ -267,16 +288,24 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  element->GetLastPointX(),
 	  element->GetLastPointY()
 	};
+
+	Int_t mcLabel = -1;
+	if( mcLabels.find(element->TrackID())!=mcLabels.end() )
+	  mcLabel = mcLabels[element->TrackID()];
+	element->SetLabel( mcLabel );
+
 	AliESDtrack iotrack;
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCin);
 	iotrack.SetTPCPoints(points);
 
 	pESD->AddTrack(&iotrack);
+	if (fVerbosity>0) element->Print();
       }
+      HLTInfo("converted %d track(s) to AliESDtrack and added to ESD", tracks.size());
       iAddedDataBlocks++;
     } else if (iResult<0) {
-      HLTError("can not extract tracks from data block of type %s (specification %08x) of size $d", 
-	       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
+      HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d", 
+	       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);
     }
   }
 

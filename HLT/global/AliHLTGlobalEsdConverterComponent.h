@@ -97,6 +97,9 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
   /// write object to TTree or directly
   int fWriteTree; //!transient
 
+  /// verbosity level
+  int fVerbosity; //!transient
+
   ClassDef(AliHLTGlobalEsdConverterComponent, 0)
 };
 #endif
