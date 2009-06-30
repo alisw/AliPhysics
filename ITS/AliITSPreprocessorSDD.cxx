@@ -79,8 +79,6 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
   }else if(runType== "INJECTOR"){
     Log("Process FXS files from INJECTOR RUN");
     retcode=ProcessInjector(ddlmap);
-  }else if(runType== "PHYSICS"){
-    retcode=ProcessPhysics();
   }
   if(retcode!=0) return retcode;
 
@@ -89,25 +87,6 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
   if(retcodedcs) return 0; 
   else return 1;           
 
-}
-//______________________________________________________________________
-UInt_t AliITSPreprocessorSDD::ProcessPhysics(){
-  // Get the HLT status for the PHYSICS run 
-  // needeed to define the raw data format  
-
-  AliITSHLTforSDD *hltSDD=new AliITSHLTforSDD();
-  TString hltMode = GetRunParameter("HLTmode");
-  TSubString firstChar = hltMode(0,1);
-  if (firstChar == "C") hltSDD->SetHLTmodeC(kTRUE);
-  else hltSDD->SetHLTmodeC(kFALSE);
-
-  AliCDBMetaData *md= new AliCDBMetaData();
-  md->SetResponsible("Francesco Prino");
-  md->SetBeamPeriod(0);
-  md->SetComment("HLT mode C flag for PHYSICS run");
-  Bool_t retCode = Store("Calib","HLTforSDD",hltSDD,md);
-  if(retCode) return 0;
-  else return 1;
 }
 //______________________________________________________________________
 UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
@@ -143,6 +122,16 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
     ind++;
   }
   delete sourceList;
+  // Read ADC sampling frequency from fee.conf
+  Int_t amSamplFreq=40;
+  FILE* feefil=fopen("fee.conf","r");
+  if(feefil){
+    fscanf(feefil,"%d \n",&amSamplFreq);
+    fclose(feefil);
+    Log(Form("AM sampling frequency = %d MHz",amSamplFreq));
+  }else{
+    Log("File fee.conf not found. AM sampling set at 40 MHz by default");
+  }
   
   for(Int_t iddl=0;iddl<kNumberOfDDL;iddl++){
     for(Int_t imod=0;imod<kModulesPerDDL;imod++){
@@ -150,7 +139,7 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
       if(modID==-1) continue;
       modID-=240; // to have SDD modules numbering from 0 to 260
       AliITSCalibrationSDD *cal = new AliITSCalibrationSDD("simulated");
-      cal->SetAMAt20MHz();            // for runs > 51275 with clock at 20 MHz
+      if(amSamplFreq!=40) cal->SetAMAt20MHz();
       numOfBadChannels[modID]=0;
       Int_t badch[kNumberOfChannels];
       for(Int_t isid=0;isid<=1;isid++){

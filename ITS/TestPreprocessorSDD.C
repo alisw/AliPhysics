@@ -24,16 +24,23 @@ void TestPreprocessorSDD(Char_t *optRunType="PULSER"){
   shuttle->SetDCSInput(dcsAliasMap);
 
   // DA input files
+  gSystem->Exec("rm -v OCDB/ITS/DCS/DataSDD/Run*.root");
   if(optRunType=="PULSER"){
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Calib","LDC1","SDDbase_LDC1.tar");
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Calib","LDC2","SDDbase_LDC2.tar");
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Calib","LDC3","SDDbase_LDC3.tar");
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Calib","LDC4","SDDbase_LDC4.tar");
+    shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Calib","LDC5","SDDbase_LDC5.tar");
+    shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Calib","LDC6","SDDbase_LDC6.tar");
+    gSystem->Exec("rm -v OCDB/ITS/Calib/CalibSDD/Run*.root");
   }else if(optRunType=="INJECTOR"){ 
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Injec","LDC1","SDDinj_LDC1.tar");
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Injec","LDC2","SDDinj_LDC2.tar");
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Injec","LDC3","SDDinj_LDC3.tar");
     shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Injec","LDC4","SDDinj_LDC4.tar");
+    shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Injec","LDC5","SDDinj_LDC5.tar");
+    shuttle->AddInputFile(AliShuttleInterface::kDAQ, "SDD","SDD_Injec","LDC6","SDDinj_LDC6.tar");
+    gSystem->Exec("rm -v OCDB/ITS/Calib/DriftSpeedSDD/Run*.root");
   }
 
   shuttle->SetInputRunType(optRunType);
@@ -57,15 +64,16 @@ void TestPreprocessorSDD(Char_t *optRunType="PULSER"){
   Char_t theDir[100];
   Bool_t doCheck=kFALSE;
   if(optRunType=="PULSER"){
+    gSystem->Exec("rm SDDbase_ddl*.data");
+    gSystem->Exec("rm fee.conf");
     sprintf(theDir,"ITS/Calib/CalibSDD");
     doCheck=kTRUE;
   }else if(optRunType=="INJECTOR"){ 
+    gSystem->Exec("rm SDDinj_ddl*.data");
     sprintf(theDir,"ITS/Calib/DriftSpeedSDD");
     doCheck=kTRUE;
-  }else if(optRunType=="PHYSICS"){
-    sprintf(theDir,"ITS/Calib/HLTforSDD");
-    doCheck=kTRUE;
   } 
+
   if(doCheck){
     AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get(theDir, 7);
     if (!chkEntry){
