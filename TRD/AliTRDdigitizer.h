@@ -56,6 +56,7 @@ class AliTRDdigitizer : public AliDigitizer {
           Bool_t       ConvertHits(Int_t det, Float_t *hits, Int_t nhit, AliTRDarraySignal *signals);
           Bool_t       ConvertSignals(Int_t det, AliTRDarraySignal *signals);
 
+          Bool_t       Digits2SDigits(AliTRDdigitsManager *manDig, AliTRDdigitsManager *manSDig);
           Bool_t       SDigits2Digits();
           Bool_t       MergeSDigits();
           Bool_t       ConvertSDigits();

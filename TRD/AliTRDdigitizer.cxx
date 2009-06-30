@@ -1364,6 +1364,132 @@ Bool_t AliTRDdigitizer::Signal2SDigits(Int_t det, AliTRDarraySignal *signals)
 }
 
 //_____________________________________________________________________________
+Bool_t AliTRDdigitizer::Digits2SDigits(AliTRDdigitsManager *manDig
+                                     , AliTRDdigitsManager *manSDig)
+{
+  //
+  // Converts digits into s-digits. Needed for embedding into real data.
+  //
+
+  AliDebug(1,"Start converting digits to s-digits");
+
+  AliTRDcalibDB     *calibration = AliTRDcalibDB::Instance();
+  if (!calibration) {
+    AliFatal("Could not get calibration object");
+    return kFALSE;
+  }
+
+  AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
+  if (!simParam) {
+    AliFatal("Could not get simulation parameters");
+    return kFALSE;
+  }  
+
+  // Converts number of electrons to fC
+  const Double_t kEl2fC = 1.602e-19 * 1.0e15; 
+
+  // Coupling factor
+  Double_t coupling     = simParam->GetPadCoupling() 
+                        * simParam->GetTimeCoupling();
+  // Electronics conversion factor
+  Double_t convert      = kEl2fC 
+                        * simParam->GetChipGain();
+  // ADC conversion factor
+  Double_t adcConvert   = simParam->GetADCoutRange()
+                        / simParam->GetADCinRange();
+  // The electronics baseline in mV
+  Double_t baseline     = simParam->GetADCbaseline() 
+                        / adcConvert;
+  // The electronics baseline in electrons
+  Double_t baselineEl   = baseline
+                        / convert;
+
+  // The gainfactor calibration objects
+  //const AliTRDCalDet *calGainFactorDet      = calibration->GetGainFactorDet();  
+  //AliTRDCalROC       *calGainFactorROC      = 0;
+  //Float_t             calGainFactorDetValue = 0.0;
+
+  Int_t row  = 0;
+  Int_t col  = 0;
+  Int_t time = 0;
+
+  for (Int_t det = 0; det < AliTRDgeometry::Ndet(); det++) {
+
+    Int_t nRowMax    = fGeo->GetPadPlane(det)->GetNrows();
+    Int_t nColMax    = fGeo->GetPadPlane(det)->GetNcols();
+    Int_t nTimeTotal = calibration->GetNumberOfTimeBins();
+
+    // Get the calibration objects
+    //calGainFactorROC      = calibration->GetGainFactorROC(det);
+    //calGainFactorDetValue = calGainFactorDet->GetValue(det);
+
+    // Get the digits
+    AliTRDarrayADC *digits = (AliTRDarrayADC *) manDig->GetDigits(det);
+
+    if (!manSDig->HasSDigits()) {
+      AliError("SDigits manager has no s-digits");
+      return kFALSE;
+    }
+    // Get the s-digits
+    AliTRDarraySignal     *sdigits = (AliTRDarraySignal *)     manSDig->GetSDigits(det);
+    AliTRDarrayDictionary *tracks0 = (AliTRDarrayDictionary *) manSDig->GetDictionary(det,0);
+    AliTRDarrayDictionary *tracks1 = (AliTRDarrayDictionary *) manSDig->GetDictionary(det,1);
+    AliTRDarrayDictionary *tracks2 = (AliTRDarrayDictionary *) manSDig->GetDictionary(det,2);
+    // Allocate memory space for the digits buffer
+    sdigits->Allocate(nRowMax,nColMax,nTimeTotal);
+    tracks0->Allocate(nRowMax,nColMax,nTimeTotal);
+    tracks1->Allocate(nRowMax,nColMax,nTimeTotal);
+    tracks2->Allocate(nRowMax,nColMax,nTimeTotal);
+
+    // Create the sdigits for this chamber
+    for (row  = 0; row  <  nRowMax; row++ ) {
+      for (col  = 0; col  <  nColMax; col++ ) {
+
+        // The gain factors
+        //Float_t padgain = calGainFactorDetValue 
+        //                * calGainFactorROC->GetValue(col,row);
+
+        for (time = 0; time < nTimeTotal; time++) {
+
+          Double_t signal = (Double_t) digits->GetData(row,col,time);
+
+          // ADC -> signal in mV
+          signal /= adcConvert;
+
+          // Subtract baseline in mV
+          signal -= baseline;
+
+          // Signal in mV -> signal in #electrons
+          signal /= convert;
+
+          // Gain factor
+          //signal /= padgain; // Not needed for real data
+
+          // Pad and time coupling
+          signal /= coupling;
+
+          sdigits->SetData(row,col,time,signal);
+          tracks0->SetData(row,col,time,0);
+          tracks1->SetData(row,col,time,0);
+          tracks2->SetData(row,col,time,0);
+
+        } // for: time
+
+      } // for: col
+    } // for: row
+  
+    sdigits->Compress(0);
+    tracks0->Compress();
+    tracks1->Compress();
+    tracks2->Compress();
+
+  } // for: det
+
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliTRDdigitizer::SDigits2Digits()
 {
   //

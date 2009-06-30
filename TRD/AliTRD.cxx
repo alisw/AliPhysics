@@ -610,31 +610,60 @@ Bool_t AliTRD::Raw2SDigits(AliRawReader *rawReader)
     tree = loader->TreeS();
   }
 
+  AliTRDdigitizer digitizer("TRDdigitizer","TRD digitizer class");  
+
   AliTRDrawData       *rawdata        = new AliTRDrawData();
-  AliTRDdigitsManager *sdigitsManager = rawdata->Raw2Digits(rawReader);
+  AliTRDdigitsManager *digitsManager  = rawdata->Raw2Digits(rawReader);
+
+  // Create the s-digits manager
+  AliTRDdigitsManager *sdigitsManager = new AliTRDdigitsManager();
+  sdigitsManager->SetSDigits(kTRUE);
+  sdigitsManager->CreateArrays();
+
   if (sdigitsManager) {
-    sdigitsManager->SetSDigits(kTRUE);
+
+    // Convert the digits into s-digits
+    digitizer.Digits2SDigits(digitsManager,sdigitsManager);
+
     sdigitsManager->MakeBranch(tree);
     sdigitsManager->WriteDigits();
+
+    delete digitsManager;
+
     return kTRUE;
+
   } 
   else {
+
     return kFALSE;
+
   }
 
 }
 
 //_____________________________________________________________________________
-AliLoader* AliTRD::MakeLoader(const char* topfoldername)
+AliLoader *AliTRD::MakeLoader(const Char_t *topfoldername)
 {
+  //
+  // Create a loader for the TRD tracklets
+  //
+
  fLoader = new AliLoader(GetName(),topfoldername);
 
  AliInfo("Adding Tracklets-loader");
- AliDataLoader *dl = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
+
+ AliDataLoader *dl = new AliDataLoader("TRD.Tracklets.root"
+                                      ,"tracklets"
+                                      ,"tracklets");
  fLoader->AddDataLoader(dl);
- dl = new AliDataLoader("TRD.GtuTracks.root", "gtutracks", "gtutracks");
+
+                dl = new AliDataLoader("TRD.GtuTracks.root"
+                                      ,"gtutracks"
+                                      ,"gtutracks");
  fLoader->AddDataLoader(dl);
+
  return fLoader;
+
 }
 
 //_____________________________________________________________________________
