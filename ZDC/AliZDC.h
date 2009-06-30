@@ -13,6 +13,7 @@
 
 #include "AliDetector.h"
 #include "AliZDCTrigger.h"
+#include "AliZDCChMap.h"
 
 class AliZDCPedestals;
 class AliZDCEnCalib;
@@ -52,6 +53,9 @@ public:
   char*   GetZDCCalibFName() const {return (char*)fZDCCalibFName.Data();}
   AliZDCPedestals* GetPedCalib()   const  {return fPedCalib;}
   AliZDCEnCalib*   GetECalibData() const  {return fEnCalibData;}
+  
+  // Map from OCDB
+  AliZDCChMap*     GetChMap() const;
 
   // Trigger
   virtual AliTriggerDetector* CreateTriggerDetector() const
@@ -78,7 +82,7 @@ protected:
  
   Int_t fSpectatorTracked; // Are spectator tracked by generator?
   
-  ClassDef(AliZDC,9)  	// Zero Degree Calorimeter base class
+  ClassDef(AliZDC,10)  	// Zero Degree Calorimeter base class
 };
  
 // Calibration
