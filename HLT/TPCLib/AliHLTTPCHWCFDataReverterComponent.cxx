@@ -409,8 +409,8 @@ int AliHLTTPCHWCFDataReverterComponent::DoEvent( const AliHLTComponentEventData&
 		    }
 		  }
 		}
+		altroEncoder->SetChannel(fMapping->GetHwAddress(row,padHighIndex));
 	      }
-	      altroEncoder->SetChannel(fMapping->GetHwAddress(row,padHighIndex));
 	    }
 	    padLowIndex++;
 	    padHighIndex++;
