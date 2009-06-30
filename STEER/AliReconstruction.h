@@ -42,6 +42,7 @@ class AliRecoParam;
 class AliDetectorRecoParam;
 class AliRunInfo;
 class AliGRPObject;
+class THashTable;
 #include "AliQAv1.h"
 #include "AliEventInfo.h"
 #include "AliRecoParam.h"
@@ -255,6 +256,7 @@ private:
   AliESDVertex*  fDiamondProfileSPD;       // (x,y) diamond profile from SPD for AliITSVertexer3D(Z)
   AliESDVertex*  fDiamondProfile;          // (x,y) diamond profile for AliVertexerTracks (ITS+TPC)
   AliESDVertex*  fDiamondProfileTPC;       // (x,y) diamond profile from TPC for AliVertexerTracks
+  THashTable*    fListOfCosmicTriggers;    // list of cosmic triggers as defined by trigger coordination
 
   AliGRPObject*  fGRPData;              // Data from the GRP/GRP/Data CDB folder
 
@@ -294,7 +296,7 @@ private:
 
   TTree*              fChain;      //! The raw-data chain in case of AliRawReaderChain
 
-  ClassDef(AliReconstruction, 32)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 33)      // class for running the reconstruction
 };
 
 #endif

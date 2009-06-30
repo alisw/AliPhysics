@@ -126,6 +126,7 @@
 #include <TProofOutputFile.h>
 #include <TROOT.h>
 #include <TSystem.h>
+#include <THashTable.h>
 
 #include "AliAlignObj.h"
 #include "AliCDBEntry.h"
@@ -241,6 +242,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fDiamondProfileSPD(NULL),
   fDiamondProfile(NULL),
   fDiamondProfileTPC(NULL),
+  fListOfCosmicTriggers(NULL),
   
   fGRPData(NULL),
 
@@ -336,6 +338,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fDiamondProfileSPD(rec.fDiamondProfileSPD),
   fDiamondProfile(rec.fDiamondProfile),
   fDiamondProfileTPC(rec.fDiamondProfileTPC),
+  fListOfCosmicTriggers(NULL),
   
   fGRPData(NULL),
 
@@ -467,6 +470,9 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   delete fDiamondProfileTPC; fDiamondProfileTPC = NULL;
   if (rec.fDiamondProfileTPC) fDiamondProfileTPC = new AliESDVertex(*rec.fDiamondProfileTPC);
 
+  delete fListOfCosmicTriggers; fListOfCosmicTriggers = NULL;
+  if (rec.fListOfCosmicTriggers) fListOfCosmicTriggers = (THashTable*)((rec.fListOfCosmicTriggers)->Clone());
+
   delete fGRPData; fGRPData = NULL;
   //  if (rec.fGRPData) fGRPData = (TMap*)((rec.fGRPData)->Clone());
   if (rec.fGRPData) fGRPData = (AliGRPObject*)((rec.fGRPData)->Clone());
@@ -507,6 +513,10 @@ AliReconstruction::~AliReconstruction()
 // clean up
 
   CleanUp();
+  if (fListOfCosmicTriggers) {
+    fListOfCosmicTriggers->Delete();
+    delete fListOfCosmicTriggers;
+  }
   delete fGRPData;
   fOptions.Delete();
   if (fAlignObjArray) {
@@ -1164,6 +1174,17 @@ Bool_t AliReconstruction::InitGRP() {
      AliError("No TPC diamond profile found in OCDB!");
   }
 
+  entry = AliCDBManager::Instance()->Get("GRP/Calib/CosmicTriggers");
+  if (entry) {
+    fListOfCosmicTriggers = dynamic_cast<THashTable*>(entry->GetObject());
+    entry->SetOwner(0);
+    AliCDBManager::Instance()->UnloadFromCache("GRP/Calib/CosmicTriggers");
+  }
+
+  if (!fListOfCosmicTriggers) {
+    AliWarning("Can not get list of cosmic triggers from OCDB! Cosmic event specie will be effectively disabled!");
+  }
+
   return kTRUE;
 } 
 
@@ -1567,7 +1588,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
   // Fill Event-info object
   GetEventInfo();
-  fRecoParam.SetEventSpecie(fRunInfo,fEventInfo);
+  fRecoParam.SetEventSpecie(fRunInfo,fEventInfo,fListOfCosmicTriggers);
   AliInfo(Form("Current event specie: %s",fRecoParam.PrintEventSpecie()));
 
   // Set the reco-params

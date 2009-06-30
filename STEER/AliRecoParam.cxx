@@ -28,6 +28,7 @@
 #include "TClass.h"
 #include "TObjArray.h"
 #include "TMath.h"
+#include "THashTable.h"
 #include "AliDetectorRecoParam.h"
 
 #include "AliLog.h"
@@ -189,10 +190,11 @@ void  AliRecoParam::Print(Option_t *option) const {
   }
 }
 
-void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo &evInfo)
+void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo &evInfo,
+				  const THashTable *cosmicTriggersList)
 {
-  // To be implemented
-  // Here we return always kDefault!!
+  // Implemented according to the discussions
+  // and meetings with physics and trigger coordination
 
   fEventSpecie = kDefault;
 
@@ -254,27 +256,18 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
 	continue;
       }
 
-      TObjArray* tmp = trClass.Tokenize("-");
-      TObjString* bcName = (TObjString*)tmp->At(1);
-      if (bcName) {
-	if ((bcName->String().CompareTo("ABCE") == 0) ||
-	    (bcName->String().CompareTo("E")    == 0) ||
-	    (bcName->String().CompareTo("NONE") == 0)) {
-	  // Cosmic triggers are identified by empty bunch-crossing mask
-	  // The naming comvention is:
-	  // A	filled bunch from A side, empty from C side
-	  // B	filled bunch from both sides
-	  // C	filled bunch from C side, empty from A side
-	  // E	empty bunch from both sides
+      if (cosmicTriggersList) {
+	if (cosmicTriggersList->FindObject(trClass.Data())) {
+	  // Cosmic trigger accorind to the table
+	  // provided in OCDB
 	  cosmicTrigger = kTRUE;
-	  delete tmp;
-	  continue;
+	  AliDebug(1,Form("Trigger %s identified as cosmic according to the list defined in OCDB.",
+			  trClass.Data()));
 	}
       }
       else {
-	AliWarning(Form("Trigger class %s doesn't comply with the naming convention!",trClass.Data()));
+	AliDebug(1,"Cosmic trigger list is not provided, cosmic event specie is effectively disabled!");
       }
-      delete tmp;
 
       otherTrigger = kTRUE;
     }
