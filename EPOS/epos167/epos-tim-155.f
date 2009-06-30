@@ -1,11 +1,11 @@
 c---------------------------------------------------------------------
-      subroutine timann   
+      subroutine timann
 c---------------------------------------------------------------------
 c      electron-positron
 c---------------------------------------------------------------------
       include 'epos.inc'
       include 'epos.incsem'
-      common/nfla/nfla 
+      common/nfla/nfla
       parameter (ntim=1000)
       common/cprt/nprtj,pprt(5,ntim),idprt(ntim),iorprt(ntim)
      &,idaprt(2,ntim)
@@ -52,8 +52,8 @@ c---------------------------------------------------------------------
       pprt(1,nprtj)=0.
       pprt(2,nprtj)=0.
       pprt(3,nprtj)=0.
-      pprt(4,nprtj)=en    
-      pprt(5,nprtj)=en    
+      pprt(4,nprtj)=en
+      pprt(5,nprtj)=en
       idaprt(1,nprtj)=2
       idaprt(2,nprtj)=3
       if(q20.gt.0.)then
@@ -67,7 +67,7 @@ c---------------------------------------------------------------------
         if (2.*am.lt.en) nfla=i
       enddo
       if(itflav.eq.0)then
-        s=engy**2 
+        s=engy**2
         dlz=2.4
         amz=91.1885
         al=1./real(137.035989d0)
@@ -79,29 +79,29 @@ c---------------------------------------------------------------------
         ve=0.25-2.*qe*0.232
         ae=-0.5
         qf=2./3.
-        vf=sign(.5,qf)-2.*qf*0.232 
+        vf=sign(.5,qf)-2.*qf*0.232
         af=sign(.5,qf)
         dsmax1=
-     $       2.*(qf**2-2.*qf*ve*vf*chi1 
-     $       +(ae**2+ve**2)*(af**2+vf**2)*chi2)
-     $       + abs(-4*qf*ae*af*chi1+8*ae*ve*af*vf*chi2)
-    
-        qf=-1./3.
-        vf=sign(.5,qf)-2.*qf*0.232 
-        af=sign(.5,qf)
-        dsmax2=
-     $       2.*(qf**2-2.*qf*ve*vf*chi1 
+     $       2.*(qf**2-2.*qf*ve*vf*chi1
      $       +(ae**2+ve**2)*(af**2+vf**2)*chi2)
      $       + abs(-4*qf*ae*af*chi1+8*ae*ve*af*vf*chi2)
 
- 100    iq1=1+INT(nfla*rangen()) 
+        qf=-1./3.
+        vf=sign(.5,qf)-2.*qf*0.232
+        af=sign(.5,qf)
+        dsmax2=
+     $       2.*(qf**2-2.*qf*ve*vf*chi1
+     $       +(ae**2+ve**2)*(af**2+vf**2)*chi2)
+     $       + abs(-4*qf*ae*af*chi1+8*ae*ve*af*vf*chi2)
+
+ 100    iq1=1+INT(nfla*rangen())
         call idchrg(iq1,qf)
         ct=-1.+2.*rangen()
-        vf=sign(.5,qf)-2.*qf*0.232 
+        vf=sign(.5,qf)-2.*qf*0.232
         af=sign(.5,qf)
 
         dsigma=
-     $       (1.+ct**2)*(qf**2-2.*qf*ve*vf*chi1 
+     $       (1.+ct**2)*(qf**2-2.*qf*ve*vf*chi1
      $       +(ae**2+ve**2)*(af**2+vf**2)*chi2)
      $       + ct*(-4*qf*ae*af*chi1+8*ae*ve*af*vf*chi2)
         if(rangen().gt.dsigma/max(dsmax1,dsmax2)) goto 100
@@ -109,13 +109,13 @@ c---------------------------------------------------------------------
         iq1=itflav
       endif
       if(rangen().lt.0.5)iq1=-iq1
-      
+
       nprtj=nprtj+1
       idprt(nprtj)=iq1
       pprt(4,nprtj)=en/2.
       pprt(5,nprtj)=en
       iorprt(nprtj)=1
-      
+
       nprtj=nprtj+1
       idprt(nprtj)=-iq1
       pprt(4,nprtj)=en/2.
@@ -127,16 +127,16 @@ c---------------------------------------------------------------------
       jorprt(1)=0               !!color-connection, no origin!!
       jt=1
       if(idprt(idaprt(1,1)).lt.0)jt=2
-      do i=1,nprtj 
+      do i=1,nprtj
         if(idaprt(1,i).ne.0) then
           js=jt
           if(idprt(i).lt.0.and.
      &      ((idprt(idaprt(2,i)).eq.9.and.jt.eq.1).or.
-     &      (idprt(idaprt(1,i)).eq.9.and.jt.eq.2)))then 
+     &      (idprt(idaprt(1,i)).eq.9.and.jt.eq.2)))then
             js=3-jt
           elseif(idprt(i).gt.0.and.idprt(i).ne.9.and.
      &        ((idprt(idaprt(2,i)).eq.9.and.jt.eq.2).or.
-     &        (idprt(idaprt(1,i)).eq.9.and.jt.eq.1)))then 
+     &        (idprt(idaprt(1,i)).eq.9.and.jt.eq.1)))then
             js=3-jt
           elseif(idprt(i).eq.9.and.idprt(idaprt(1,i)).ne.9.and.
      &        ((idprt(idaprt(1,i)).lt.0.and.jt.eq.2).or.
@@ -148,11 +148,11 @@ c---------------------------------------------------------------------
           jorprt(idaprt(js,i))=idaprt(3-js,i)
         endif
       enddo
-      
+
       if(ish.ge.5)then
-        i=1    
+        i=1
         do while(i.ne.0)
-          if(idaprt(1,i) .eq. 0 ) then 
+          if(idaprt(1,i) .eq. 0 ) then
             write(ifch,*) idprt(i)
             write(ifch,*) '|'
           endif
@@ -161,9 +161,9 @@ c---------------------------------------------------------------------
       endif
 
       iptl=nptl
-      i=1    
+      i=1
       do while(i.gt.0)
-        if(idaprt(1,i) .eq. 0) then 
+        if(idaprt(1,i) .eq. 0) then
           nptl=nptl+1
           do j=1,5
             pptl(j,nptl)=pprt(j,i)
@@ -214,20 +214,20 @@ c---------------------------------------------------------------------
         enddo
         write(ifch,*)
         do i=1,nprtj
-          if(pprt(5,i).eq.0.) 
+          if(pprt(5,i).eq.0.)
      &    write(ifch,99) i,(pprt(j,i),j=1,5),idprt(i)
         enddo
         write(ifch,*)
         write(ifch,*)
       endif
-      
+
  99   format(i4,5g10.3,1i4)
  98   format(i4,5g10.3,5i4)
-            
+
       call utprix('timann',ish,ishini,5)
       return
       end
-      
+
 c---------------------------------------------------------------------
       subroutine timsh1(q20,en,idfla)
 c---------------------------------------------------------------------
@@ -243,7 +243,7 @@ c---------------------------------------------------------------------
       pprt(1,nprtj)=0.
       pprt(2,nprtj)=0.
       pprt(3,nprtj)=0.
-      pprt(4,nprtj)=en    
+      pprt(4,nprtj)=en
       pprt(5,nprtj)=sqrt(q20)
       idprt(nprtj)=idfla
       call timsho(1,0)
@@ -253,7 +253,7 @@ c---------------------------------------------------------------------
 
 
 c---------------------------------------------------------------------
-      subroutine timsh2(q20,q21,en,idfla1,idfla2) 
+      subroutine timsh2(q20,q21,en,idfla1,idfla2)
 c---------------------------------------------------------------------
       include 'epos.inc'
       include 'epos.incsem'
@@ -268,7 +268,7 @@ c---------------------------------------------------------------------
       pprt(1,nprtj)=0.
       pprt(2,nprtj)=0.
       pprt(3,nprtj)=0.
-      pprt(4,nprtj)=en/2. 
+      pprt(4,nprtj)=en/2.
       pprt(5,nprtj)=sqrt(q20)
       idprt(nprtj)=idfla1
 
@@ -285,13 +285,13 @@ c---------------------------------------------------------------------
       nprtjx=1
       pprtx(1,nprtjx)=0.
       pprtx(2,nprtjx)=0.
-      pprtx(3,nprtjx)=en/2. 
-      pprtx(4,nprtjx)=en/2. 
+      pprtx(3,nprtjx)=en/2.
+      pprtx(4,nprtjx)=en/2.
       pprtx(5,nprtjx)=0
       nprtjx=2
       pprtx(1,nprtjx)=0.
       pprtx(2,nprtjx)=0.
-      pprtx(3,nprtjx)=-en/2. 
+      pprtx(3,nprtjx)=-en/2.
       pprtx(4,nprtjx)=en/2.
       pprtx(5,nprtjx)=0
 
@@ -348,7 +348,7 @@ c---------------------------------------------------------------------
       if(ij(2).eq.j2.and.ii2.eq.2)E=pprt(4,ij(1))+pprt(4,ij(2))
       zetamx=0.
       if(ij(1).ne.j1)then
-        zetamx=pprt(5,io)/pprt(4,io)/sqrt(pz(io)*(1.-pz(io))) 
+        zetamx=pprt(5,io)/pprt(4,io)/sqrt(pz(io)*(1.-pz(io)))
       endif
 
 c      call timdev(idfl,q2start,E,zetamx,idfla,idflb,qa2,z)
@@ -356,7 +356,7 @@ c......................................................................
  380  q2=q2start
       z=0.5
       PT2MIN=max(qcdlam*1.1,q2fin)
-      ALFM=LOG(PT2MIN/qcdlam) 
+      ALFM=LOG(PT2MIN/qcdlam)
       if(ish.ge.9)then
         write (ifch,*) '---------------------',ii
      $       ,pprt(5,ij(1))     !,pprt(5,ij(2))
@@ -371,20 +371,20 @@ c......................................................................
         idflb=0
         goto 999
       endif
-      
+
  390  zc=.5*(1.-sqrt(max(0.000001,1.-4.*q2fin/q2)))
       if(ish.ge.9)then
         write(ifch,*) 'zc=',zc
       endif
-      IF(idfl.EQ.9) THEN 
-        FBR=6.*LOG((1.-ZC)/ZC)+nfla*(0.5-ZC) 
+      IF(idfl.EQ.9) THEN
+        FBR=6.*LOG((1.-ZC)/ZC)+nfla*(0.5-ZC)
       ELSE
-        FBR=(8./3.)*LOG((1.-ZC)/ZC) 
+        FBR=(8./3.)*LOG((1.-ZC)/ZC)
       endif
-      
+
       B0=(33.-2.*nfla)/6.
-      
-      
+
+
 c.....select new q2
       r=rangen()
       q2=q2*exp(log(r)*B0*ALFM/FBR)
@@ -400,31 +400,31 @@ c.....select new q2
         idflb=0
         goto 999
       endif
-      
+
 c.....select flavor and z-value .....................................
-      IF(idfl.EQ.9) THEN 
+      IF(idfl.EQ.9) THEN
         if(rangen()*FBR.lt.nfla*(0.5-ZC))then
                                 ! .................g -> qqbar
           Z=ZC+(1.-2.*ZC)*rangen()
-          IF(Z**2+(1.-Z)**2.LT.rangen()) GOTO 390 
+          IF(Z**2+(1.-Z)**2.LT.rangen()) GOTO 390
           idfla=int(1.+rangen()*real(nfla))
           idflb=-idfla
         else                    !..................g -> gg
           Z=(1.-ZC)*(ZC/(1.-ZC))**rangen()
-          IF(rangen().GT.0.5) Z=1.-Z 
-          IF((1.-Z*(1.-Z))**2.lt.rangen()) GOTO 390 
+          IF(rangen().GT.0.5) Z=1.-Z
+          IF((1.-Z*(1.-Z))**2.lt.rangen()) GOTO 390
           idfla=9
           idflb=9
         endif
       ELSE
         Z=1.-(1.-ZC)*(ZC/(1.-ZC))**rangen() !!........q -> qg
-        IF(1.+Z**2.LT.2.*rangen()) GOTO 390 
+        IF(1.+Z**2.LT.2.*rangen()) GOTO 390
           idfla=idfl
           idflb=9
       endif
 
-      if(alfm/log(q2*z*(1.-z)/qcdlam).lt.rangen()) goto 390 
-      
+      if(alfm/log(q2*z*(1.-z)/qcdlam).lt.rangen()) goto 390
+
       if(ij(1).ne.j1.or.ij(2).eq.0)then
         if(E.lt.sqrt(q2))goto 390
         pzz=sqrt((E-sqrt(q2))*(E+sqrt(q2)))
@@ -449,7 +449,7 @@ c.....select flavor and z-value .....................................
       endif
  999  continue
 c......................................................................
-    
+
       pprt(5,ij(ii))=sqrt(q2)
       id(1,ii)=idfla
       id(2,ii)=idflb
@@ -533,11 +533,11 @@ c          endif
           write(ifch,*) 'pt2,pzz=',pt2,pzz,z1**2*E*pprt(5,io),z1,E
      $         ,pprt(5,io)
         endif
- 111    if(pt2.lt.0.) then 
+ 111    if(pt2.lt.0.) then
           ii=1
           if ( pprt(5,ij(1))**2-amm2(idprt(ij(1))).lt.
      $         pprt(5,ij(2))**2-amm2(idprt(ij(2))) ) ii=2
-          goto 10 
+          goto 10
         endif
         pt=sqrt(pt2)
         alpha=2.*pi*rangen()
@@ -618,7 +618,7 @@ c          endif
       if(ish.ge.5)then
         write(ifch,*)
         do i=1,nprtj
-          write(ifch,'(i4,1x,5g10.4,2i4,a,2i4)') 
+          write(ifch,'(i4,1x,5g10.4,2i4,a,2i4)')
      &    i,(pprt(j,i),j=1,5),idprt(i)
      &    ,iorprt(i),'  -->',idaprt(1,i),idaprt(2,i)
         enddo

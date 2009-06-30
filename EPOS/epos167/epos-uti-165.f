@@ -1,7 +1,7 @@
 c-----------------------------------------------------------------------
       subroutine utresc(iret)
 c-----------------------------------------------------------------------
-c  if irescl=1 rescaling is done, otherwise the purpose of going through 
+c  if irescl=1 rescaling is done, otherwise the purpose of going through
 c  this routine is to not change the seed in case of no rescaling
 c-----------------------------------------------------------------------
       include 'epos.inc'
@@ -14,13 +14,13 @@ c-----------------------------------------------------------------------
       call utpri('utresc',ish,ishini,4)
 
       errlim=0.001 !max(0.001,1./engy)
-      
+
       iret=0
       scal=1.
       nptlpt=iabs(maproj)+iabs(matarg)
       call ranfgt(seedp)        !not to change the seed ...
       if(nptl.le.nptlpt) goto 9999
-      
+
       esoll=0.d0
       p1(1)=0.d0
       p1(2)=0.d0
@@ -70,7 +70,7 @@ c           write(ifch,*)'lead',i
         if(ish.ge.2)write (ifch,*) 'Problem in utresc (0): redo event'
         write (ifmt,*) 'Problem in utresc (0): redo event'
 c       call utstop('utresc&')
-        goto 9999        
+        goto 9999
       endif
       esoll=p1(5)
       if(ish.ge.4) write (ifch,'(a,5g13.6)') 'boost-vector: ',p1
@@ -88,7 +88,7 @@ c     -----
 
       if(ish.ge.6)then
         call alistf('list after boost&')
-      endif 
+      endif
 
       if(ish.ge.5)write(ifch,'(a)')'--------rescale momenta----------'
 
@@ -119,12 +119,12 @@ c            if(abs(pptl(3,j))/pnullx.lt.0.9)then  !not spectator or diffraction
                 pini(j)=pptl(3,j)
               else
                 pptl3new=0.
-                if( force .or.( 
+                if( force .or.(
      &            ityptl(j)/10.eq.4.or.ityptl(j)/10.eq.5
      &                      ))then !try just remnant first
                   ndif=ndif+1
                   diff=sign(min(0.3*abs(pini(j)),
-     &                      rangen()*abs(difft)),difft)    
+     &                      rangen()*abs(difft)),difft)
                   pptl3new=scal*(pptl(3,j)-diff)
 c                  write(ifch,*)'par',j,pptl3new,pptl(3,j),diff,difft
 c     &                 ,ndif,pmax,scal
@@ -152,12 +152,12 @@ c sum over all particles
         if(ish.ge.6)write(ifch,*)
      $       'ipass,scal,diff/pnullx,e,esoll,pz,pmax,ndif,f:'
      $   ,ipass,scal,diff/pnullx,sum,esoll,sum3,pnullx,ndif,force
-        if(abs(scal-1.).le.errlim.and.abs(diff/pnullx).lt.errlim) 
+        if(abs(scal-1.).le.errlim.and.abs(diff/pnullx).lt.errlim)
      $  goto 300
         if(ndif.gt.0.and.(force.or.ipass.lt.150))then
 c          ndif0=ndif
           diff0=diff
-        elseif(abs(scal-1.).le.1e-2.and.abs(diff/pnullx).lt.5e-2)then 
+        elseif(abs(scal-1.).le.1e-2.and.abs(diff/pnullx).lt.5e-2)then
           goto 300
         elseif(force)then
           if(ish.ge.2)
@@ -180,7 +180,7 @@ c          ndif0=ndif
         iret=1
         goto 9999
       endif
-      
+
 c     trafo
 c     -----
  300  continue
@@ -196,16 +196,16 @@ c     -----
           endif
         endif
       enddo
-      
+
       if(ish.ge.4)call alist('list after rescaling&',1,nptl)
- 
+
  9999 continue
       if(ish.ge.2)then
         scalmean=scalmean+scal
         write(ifch,*)' average rescaling factor: ',scalmean
      &                                            /float(nrevt+1)
-      endif 
-      call ranfst(seedp)        ! ... after this subroutine      
+      endif
+      call ranfst(seedp)        ! ... after this subroutine
       call utprix('utresc',ish,ishini,4)
 
       end
@@ -224,12 +224,12 @@ c-----------------------------------------------------------------------
       nptlpt=iabs(maproj)+iabs(matarg)
       call ranfgt(seedp)        !not to change the seed ...
       if(nptl.le.nptlpt) goto 9999
-      
+
       if(ish.ge.5)write(ifch,'(a)')'---------mark ghosts---------'
 
 c     mark ghosts
 c     -----------
-      do  j=nptlpt+1,nptl 
+      do  j=nptlpt+1,nptl
         if(mod(istptl(j),10).eq.0.and.pptl(4,j).gt.0.d0)then
           amass=pptl(5,j)
           call idmass(idptl(j),amass)
@@ -253,12 +253,12 @@ c     -----------
      $       .and.abs(1.-abs(pptl(3,j))/pptl(4,j)).gt.0.01)then
         !print*,'ghost',ityptl(j),idptl(j)
            if(ish.ge.1)write(ifmt,*)'ghost:',j,idptl(j),ityptl(j)
-           if(ish.ge.5)then 
+           if(ish.ge.5)then
               write(ifch,'(a,$)')'ghost:'
               call alistc("&",j,j)
             endif
             ityptl(j)=100+ityptl(j)/10
-          endif 
+          endif
         elseif(mod(istptl(j),10).eq.0)then
            if(ish.ge.1)then
              write(ifmt,*)'Lost particle (E=0)'
@@ -270,7 +270,7 @@ c     -----------
       enddo
 
       if(ish.ge.5)write(ifch,'(a)')'---------treat ghosts---------'
-     
+
 c     treat ghosts
 c     ------------
       ifirst=1
@@ -282,15 +282,15 @@ c     ------------
       psum=0
       esum=0.
       ntry=ntry+1
-      do  j=nptlpt+1,nptl 
+      do  j=nptlpt+1,nptl
         if(mod(istptl(j),10).eq.0)then
           if(ityptl(j).ge.101.and.ityptl(j).le.105)then
             nfif=nfif+1
-            if(ifirst.eq.1)then 
+            if(ifirst.eq.1)then
               pfif=pfif+pptl(3,j)
               if(pptl(4,j).gt.0.)efif=efif+pptl(4,j)
             endif
-            if(irescl.ge.1) then 
+            if(irescl.ge.1) then
               if(ifirst.gt.1)then
                 if(pptl(4,j).gt.0.)then
                   Einv=1./pptl(4,j)
@@ -327,7 +327,7 @@ c                do k=1,3
             if(ish.ge.5)
      $           write (ifch,*) 'nrevt,psum,esum,pfif,efif,nfif,scal'
      $           ,nrevt,psum,esum,pfif,efif,nfif,scal
-          endif 
+          endif
         endif
       enddo
       if ( ish.ge.5 )  write (ifch,*) 'tot',nfif,efif,pfif,esum,psum
@@ -370,8 +370,8 @@ c                do k=1,3
 
 c Check Ghost list
 
-      if(ish.ge.5)then 
-        do  j=nptlpt+1,nptl         
+      if(ish.ge.5)then
+        do  j=nptlpt+1,nptl
           if(mod(istptl(j),10).eq.0)then
             if(ityptl(j).le.105.and.ityptl(j).ge.101)then
               write(ifch,'(a,$)')'ghost:'
@@ -381,9 +381,9 @@ c Check Ghost list
         enddo
       endif
 
- 
+
  9999 continue
-      call ranfst(seedp)        ! ... after this subroutine      
+      call ranfst(seedp)        ! ... after this subroutine
       call utprix('ughost',ish,ishini,4)
 
       end
@@ -391,7 +391,7 @@ c Check Ghost list
 c-----------------------------------------------------------------------
       subroutine utrsph(iret)
 c-----------------------------------------------------------------------
-c  if irescl=1 and ispherio=1 rescaling is done for particle used by 
+c  if irescl=1 and ispherio=1 rescaling is done for particle used by
 c  spherio as initial condition.
 c-----------------------------------------------------------------------
       include 'epos.inc'
@@ -401,11 +401,11 @@ c-----------------------------------------------------------------------
       call utpri('utrsph',ish,ishini,4)
 
       errlim=0.0001
-      
+
       iret=0
       nptlpt=iabs(maproj)+iabs(matarg)
       if(nptl.le.nptlpt) goto 9999
-      
+
       esoll=0.d0
       p1(1)=0.d0
       p1(2)=0.d0
@@ -414,7 +414,7 @@ c-----------------------------------------------------------------------
       do i=nptlpt+1,nptl
         if((istptl(i).le.11
      $   .and.(iorptl(i).ge.1.and.istptl(iorptl(i)).eq.41))
-     $   .or.istptl(i).eq.20.or.istptl(i).eq.21)then 
+     $   .or.istptl(i).eq.20.or.istptl(i).eq.21)then
          do j=1,2
            p1(j)=p1(j)+dble(pptl(j,i))
          enddo
@@ -438,7 +438,7 @@ c     -----
         if((istptl(i).le.11
      $   .and.(iorptl(i).ge.1.and.istptl(iorptl(i)).eq.41))
      $   .or.istptl(i).eq.20.or.istptl(i).eq.21
-     $   .or.(istptl(i).eq.0.and.i.le.nptlpt))then 
+     $   .or.(istptl(i).eq.0.and.i.le.nptlpt))then
           call utlob4(1,p1(1),p1(2),p1(3),p1(4),p1(5)
      $         ,pptl(1,i),pptl(2,i),pptl(3,i),pptl(4,i))
         endif
@@ -456,11 +456,11 @@ c     -----------------------------
         sum=0.
         sum3=0.
         ndif=0
-        do  j=1,nptl 
+        do  j=1,nptl
         if((istptl(j).le.11
      $   .and.(iorptl(j).ge.1.and.istptl(iorptl(j)).eq.41))
      $   .or.istptl(j).eq.20.or.istptl(j).eq.21
-     $   .or.(istptl(j).eq.0.and.j.le.nptlpt))then 
+     $   .or.(istptl(j).eq.0.and.j.le.nptlpt))then
             if(j.gt.nptlpt)then
               ndif=ndif+1
               pptl(3,j)=scal*(pptl(3,j)-diff)
@@ -484,7 +484,7 @@ c     -----------------------------
         call utmsgf
       endif
 
-      
+
 c     trafo
 c     -----
  300  continue
@@ -493,7 +493,7 @@ c      do i=nptlpt+1,nptl
         if((istptl(i).le.11
      $   .and.(iorptl(i).ge.1.and.istptl(iorptl(i)).eq.41))
      $   .or.istptl(i).eq.20.or.istptl(i).eq.21
-     $   .or.(istptl(i).eq.0.and.i.le.nptlpt))then 
+     $   .or.(istptl(i).eq.0.and.i.le.nptlpt))then
           call utlob4(-1,p1(1),p1(2),p1(3),p1(4),p1(5)
      $         ,pptl(1,i),pptl(2,i),pptl(3,i),pptl(4,i))
         endif
@@ -503,7 +503,7 @@ c      do i=nptlpt+1,nptl
           enddo
         endif
       enddo
-      
+
  9999 call utprix('utrsph',ish,ishini,4)
 
       end
@@ -515,7 +515,7 @@ c      double precision xxx
 c      dddlog=-1d50
 c      if(xxx.gt.0d0)dddlog=dlog(xxx)
 c      end
-c      
+c
 ccc-----------------------------------------------------------------------
 c      subroutine randfl(jc,iqa0,iflav,ic,isame)
 cc-----------------------------------------------------------------------
@@ -578,8 +578,8 @@ c      if(ish.ge.6)write(ifch,*)('-',i=1,30)
 c     *,' exit sr randfl ',('-',i=1,10)
 c      return
 c      end
-c 
-c 
+c
+c
 cc-----------------------------------------------------------------------
 c      subroutine ranhvy(x,eps)
 cc-----------------------------------------------------------------------
@@ -624,7 +624,7 @@ cc          good x
 c      x=z
 c      return
 c      end
-c 
+c
 c-----------------------------------------------------------------------
       function ransig()
 c-----------------------------------------------------------------------
@@ -634,7 +634,7 @@ c-----------------------------------------------------------------------
       if(rangen().gt.0.5)ransig=-1
       return
       end
- 
+
 cc-----------------------------------------------------------------------
 c      function ranxq(n,x,q,xmin)
 cc-----------------------------------------------------------------------
@@ -665,7 +665,7 @@ c      endif
 c      qran=q(imin)+rangen()*(q(n)-q(imin))
 c      ranxq=utinvt(n,x,q,qran)
 c4     continue
-c 
+c
 c      if(ranxq.lt.xmin)then
 c      call utmsg('ranxq ')
 c      write(ifch,*)'*****  ranxq=',ranxq,' <       xmin=',xmin
@@ -674,12 +674,12 @@ c      write(ifch,*)'x(imin) x x(n):',x(imin),ranxq,x(n)
 c      call utmsgf
 c      ranxq=xmin
 c      endif
-c 
+c
 c      return
 c      end
-c 
+c
 cc  ***** end r-routines
-cc  ***** beg s-routines      
+cc  ***** beg s-routines
 c
 cc-----------------------------------------------------------------------
 c      function sbet(z,w)
@@ -687,7 +687,7 @@ cc-----------------------------------------------------------------------
 c      sbet=utgam1(z)*utgam1(w)/utgam1(z+w)
 c      return
 c      end
-c 
+c
 cc-----------------------------------------------------------------------
 c      function smass(a,y,z)
 cc-----------------------------------------------------------------------
@@ -703,7 +703,7 @@ c      smass=epsi*a+as*a**(2./3.)+(ac/a**(1./3.)+dz/a/2.)*(z-zmin)**2
 c     *+dy/a/2.*(y-ymin)**2
 c      return
 c      end
-c 
+c
 cc-----------------------------------------------------------------------
 c      subroutine smassi(theta)
 cc-----------------------------------------------------------------------
@@ -714,11 +714,11 @@ cc     theta: parameter that determines all parameters in mass formula.
 cc-----------------------------------------------------------------------
 c      common/cmass/thet,epsi,as,ac,dy,dz,ym,cz,zm,sigma,rzero
 c      thet=theta
-c 
+c
 c      astr=.150
 c      pi=3.14159
 c      alp=1./137.
-c 
+c
 c      co=cos(theta)
 c      si=sin(theta)
 c      bet=(1+co**3)/2.
@@ -727,7 +727,7 @@ cctp060829      cs=astr/si
 c      cz=-astr/si*(  (  .5*(1+co**3)  )**(1./3.)-1  )
 c      sigma=6./8./pi*(astr/si)**3*(co**2/6.-si**2*(1-si)/3.-
 c     *1./3./pi*(pi/2.-theta-sin(2*theta)+si**3*alog((1+co)/si)))
-c 
+c
 c      epsi=astr*((.5*(1+co**3))**(1./3.)+2)/si
 c      as=4*pi*sigma*rzero**2
 c      ac=3./5.*alp/rzero
@@ -740,10 +740,10 @@ c     *(  1+(1+co)/(4*(1+co**3))**(2./3.)  )/
 c     *(co**6+co+co*(.5*(1+co**3))**(4./3.))
 c      zm=6*alp/(5*rzero)
 c      ym=(1-co**3)/(1+co**3)
-c 
+c
 c      return
 c      end
-c 
+c
 cc-----------------------------------------------------------------------
 c      subroutine smassp
 cc-----------------------------------------------------------------------
@@ -793,10 +793,10 @@ c      call smassu(a,y,z,ku,kd,ks,kc)
 c6     eng(j)=(smass(a,y,z)-utamnu(ku,kd,ks,kc,0,0,3))/a
 c      write(ifch,5001)ns,(eng(j),j=1,14)
 c5     continue
-c 
+c
 c      stop
 c      end
-c 
+c
 cc-----------------------------------------------------------------------
 c      subroutine smasst(kux,kdx,ksx,kcx,a,y,z)
 cc-----------------------------------------------------------------------
@@ -818,7 +818,7 @@ c      if(mod(nz,3).ne.0)stop'noninteger charge'
 c      z=nz/3
 c      return
 c      end
-c 
+c
 cc-----------------------------------------------------------------------
 c      subroutine smassu(ax,yx,zx,ku,kd,ks,kc)
 cc-----------------------------------------------------------------------
@@ -836,7 +836,7 @@ c      ks=nint(a-y)
 c      kc=0
 c      return
 c      end
-c 
+c
 cc-----------------------------------------------------------------------
 c      function spoc(a,b,c,d,x)
 cc-----------------------------------------------------------------------
@@ -876,7 +876,7 @@ c-----------------------------------------------------------------------
       utacos=acos(argum)
       return
       end
- 
+
 c----------------------------------------------------------------------
       function utamnu(keux,kedx,kesx,kecx,kebx,ketx,modus)
 c----------------------------------------------------------------------
@@ -892,21 +892,21 @@ c----------------------------------------------------------------------
       common/files/ifop,ifmt,ifch,ifcx,ifhi,ifdt,ifcp,ifdr
       common/csjcga/amnull,asuha(7)
       common/drop4/asuhax(7),asuhay(7)
-      
+
       if(modus.lt.4.or.modus.gt.5)stop'UTAMNU: not supported'
  1    format(' flavours:',6i5 )
  100  format(' flavours+mass:',6i5,f8.2 )
 c      write(ifch,1)keux,kedx,kesx,kecx,kebx,ketx      c          write(ifmt,*)'wrong mass in gethad ',damss
 
       amnull=0.
- 
+
       do i=1,7
       if(modus.eq.4)asuha(i)=asuhax(i)    !two lowest multiplets
       if(modus.eq.5)asuha(i)=asuhay(i)    !lowest multiplet
       enddo
 
       ke=iabs(keux+kedx+kesx+kecx+kebx+ketx)
- 
+
       if(keux+kedx+kesx+kecx+kebx+ketx.ge.0)then
       keu=keux
       ked=kedx
@@ -923,9 +923,9 @@ c      write(ifch,1)keux,kedx,kesx,kecx,kebx,ketx      c          write(ifmt,*)'
       ket=-ketx
       endif
 
-c      write(ifch,*)keu,ked,kes,kec,keb,ket      
+c      write(ifch,*)keu,ked,kes,kec,keb,ket
 
-c   removing top mesons  to remove t quarks or antiquarks  
+c   removing top mesons  to remove t quarks or antiquarks
       if(ket.ne.0)then
 12    continue
       ii=sign(1,ket)
@@ -939,7 +939,7 @@ c   removing top mesons  to remove t quarks or antiquarks
       if(ket.ne.0)goto12
       endif
 
-c   removing bottom mesons  to remove b quarks or antiquarks  
+c   removing bottom mesons  to remove b quarks or antiquarks
       if(keb.ne.0)then
 11    continue
       ii=sign(1,keb)
@@ -966,10 +966,10 @@ c   removing charm mesons  to remove c quarks or antiquarks
       amnull=amnull+1.87  ! (D-meson)
       if(kec.ne.0)goto10
       endif
-      
-c      write(ifch,100)keu,ked,kes,kec,keb,ket,amnull      
 
-c   removing mesons to remove s antiquarks   
+c      write(ifch,100)keu,ked,kes,kec,keb,ket,amnull
+
+c   removing mesons to remove s antiquarks
 5     continue
       if(kes.lt.0)then
       amnull=amnull+asuha(6)
@@ -981,8 +981,8 @@ c   removing mesons to remove s antiquarks
       kes=kes+1
       goto5
       endif
- 
-c   removing mesons to remove d antiquarks   
+
+c   removing mesons to remove d antiquarks
 6     continue
       if(ked.lt.0)then
       if(keu.ge.kes)then
@@ -995,8 +995,8 @@ c   removing mesons to remove d antiquarks
       ked=ked+1
       goto6
       endif
- 
-c   removing mesons to remove u antiquarks   
+
+c   removing mesons to remove u antiquarks
 7     continue
       if(keu.lt.0)then
       if(ked.ge.kes)then
@@ -1009,17 +1009,17 @@ c   removing mesons to remove u antiquarks
       keu=keu+1
       goto7
       endif
-      
-c      write(ifch,100)keu,ked,kes,kec,keb,ket,amnull      
-c      print*,keu,ked,kes,kec,keb,ket,amnull      
- 
+
+c      write(ifch,100)keu,ked,kes,kec,keb,ket,amnull
+c      print*,keu,ked,kes,kec,keb,ket,amnull
+
       if(keu+ked+kes+kec+keb+ket.ne.ke)
      *call utstop('utamnu: sum_kei /= ke&')
       keq=keu+ked
       keqx=keq
       amnux=0
- 
-c   removing strange baryons   
+
+c   removing strange baryons
       i=4
 2     i=i-1
 3     continue
@@ -1041,12 +1041,12 @@ c   removing strange baryons
       endif
 8     continue
       endif
-      
+
       if(keu+ked.ne.keq)call utstop('utamnu: keu+ked /= keq&')
-c      write(ifch,100)keu,ked,kes,kec,keb,ket,amnull+amnux      
-c      print*,keu,ked,kes,kec,keb,ket,amnull+amnux      
- 
-c   removing nonstrange baryons   
+c      write(ifch,100)keu,ked,kes,kec,keb,ket,amnull+amnux
+c      print*,keu,ked,kes,kec,keb,ket,amnull+amnux
+
+c   removing nonstrange baryons
 9     continue
       if(keu.gt.2*ked)then
       amnux=amnux+asuha(7)
@@ -1061,24 +1061,24 @@ c   removing nonstrange baryons
       goto9
       endif
       keq=keu+ked
-      
-c      write(ifch,100)keu,ked,kes,kec,keb,ket,amnull+amnux     
-c      print*,keu,ked,kes,kec,keb,ket,amnull+amnux     
- 
+
+c      write(ifch,100)keu,ked,kes,kec,keb,ket,amnull+amnux
+c      print*,keu,ked,kes,kec,keb,ket,amnull+amnux
+
       if(mod(keq,3).ne.0)call utstop('utamnu: mod(keq,3) /= 0&')
       amnux=amnux+asuha(1)*keq/3
-      
-c      write(ifch,100)keu,ked,kes,kec,keb,ket,amnull+amnux      
-c      print*,keu,ked,kes,kec,keb,ket,amnull+amnux      
- 
+
+c      write(ifch,100)keu,ked,kes,kec,keb,ket,amnull+amnux
+c      print*,keu,ked,kes,kec,keb,ket,amnull+amnux
+
       amnull=amnull+amnux
- 
+
       if(amnull.eq.0)amnull=asuha(5)
- 
+
 1000  utamnu=amnull
       return
       end
- 
+
 c-----------------------------------------------------------------------
       function utamnx(jcp,jcm)
 c-----------------------------------------------------------------------
@@ -1167,7 +1167,7 @@ c       print *,amms1,amms3,amms2,amms4,jcp,jcm
       end
 
 
- 
+
 cc-----------------------------------------------------------------------
 c      function utamny(jcp,jcm)
 cc-----------------------------------------------------------------------
@@ -1204,7 +1204,7 @@ c-----------------------------------------------------------------------
       utamnz=utamnu(keu,ked,kes,kec,keb,ket,modus)
       return
       end
- 
+
 c-----------------------------------------------------------------------
       subroutine utar(i1,i2,i3,x0,x1,x2,x3,xx)
 c-----------------------------------------------------------------------
@@ -1227,32 +1227,32 @@ cc     calculates the axis defined by the ptls i,j in the i,j cm system
 cc---------------------------------------------------------------------
 c      include 'epos.inc'
 c      double precision pi1,pi2,pi3,pi4,pj1,pj2,pj3,pj4,p1,p2,p3,p4,p5
-c     *,err,a 
+c     *,err,a
 c      a1=0
 c      a2=0
 c      a3=1
 c      pi1=dble(pptl(1,i))
-c      pi2=dble(pptl(2,i)) 
-c      pi3=dble(pptl(3,i)) 
-c      pi4=dble(pptl(4,i)) 
-c      pj1=dble(pptl(1,j)) 
-c      pj2=dble(pptl(2,j)) 
-c      pj3=dble(pptl(3,j)) 
-c      pj4=dble(pptl(4,j)) 
+c      pi2=dble(pptl(2,i))
+c      pi3=dble(pptl(3,i))
+c      pi4=dble(pptl(4,i))
+c      pj1=dble(pptl(1,j))
+c      pj2=dble(pptl(2,j))
+c      pj3=dble(pptl(3,j))
+c      pj4=dble(pptl(4,j))
 c      p1=pi1+pj1
 c      p2=pi2+pj2
 c      p3=pi3+pj3
 c      p4=pi4+pj4
 c      p5=dsqrt(p4**2-p3**2-p2**2-p1**2)
-c      call utlob2(1,p1,p2,p3,p4,p5,pi1,pi2,pi3,pi4,50)                                
-c      call utlob2(1,p1,p2,p3,p4,p5,pj1,pj2,pj3,pj4,51)                                
-c           err=(pi1+pj1)**2+(pi2+pj2)**2+(pi3+pj3)**2 
+c      call utlob2(1,p1,p2,p3,p4,p5,pi1,pi2,pi3,pi4,50)
+c      call utlob2(1,p1,p2,p3,p4,p5,pj1,pj2,pj3,pj4,51)
+c           err=(pi1+pj1)**2+(pi2+pj2)**2+(pi3+pj3)**2
 c           if(err.gt.1d-3)then
-c      call utmsg('utaxis')                                                      
+c      call utmsg('utaxis')
 c      write(ifch,*)'*****  err=',err
 c      write(ifch,*)'pi:',pi1,pi2,pi3,pi4
 c      write(ifch,*)'pj:',pj1,pj2,pj3,pj4
-c      call utmsgf                                                               
+c      call utmsgf
 c           endif
 c      a=dsqrt( (pj1-pi1)**2 + (pj2-pi2)**2 + (pj3-pi3)**2 )
 c      if(a.eq.0.d0)return
@@ -1261,7 +1261,7 @@ c      a2=sngl((pi2-pj2)/a)
 c      a3=sngl((pi3-pj3)/a)
 c      return
 c      end
-c 
+c
 cc-----------------------------------------------------------------------
 c      subroutine utchm(arp,arm,ii)
 cc-----------------------------------------------------------------------
@@ -1283,20 +1283,20 @@ c      call utmsgf
 c      endif
 c      return
 c      end
-c 
+c
 c-----------------------------------------------------------------------
       subroutine utclea(nptlii,nptl0)
 c-----------------------------------------------------------------------
 c     starting from nptlii
-c     overwrites istptl=99 particles in /cptl/, reduces so nptl 
+c     overwrites istptl=99 particles in /cptl/, reduces so nptl
 c     and update minfra and maxfra
 c-----------------------------------------------------------------------
       include 'epos.inc'
       integer newptl(mxptl)!,oldptl(mxptl),ii(mxptl)
- 
+
       ish0=ish
       if(ishsub/100.eq.18)ish=mod(ishsub,100)
- 
+
       call utpri('utclea',ish,ishini,2)
 
       nptli=max(maproj+matarg+1,nptlii)
@@ -1329,7 +1329,7 @@ c      if(ishsub/100.eq.18)ish=mod(ishsub,100)
       newptl(i)=i
 c      oldptl(i)=i
       goto 1
- 
+
 2     i=i-1
       j=i
 3     i=i+1
@@ -1341,16 +1341,16 @@ c      oldptl(i)=i
 c      oldptl(i)=j
 c      write(ifch,*)'move',j,' to ',i
 c       write(ifch,*)idptl(i),ityptl(i),idptl(j),ityptl(j),minfra,maxfra
-      call utrepl(i,j)      
+      call utrepl(i,j)
       if(j.ge.minfra0.and.j.le.maxfra0)then
         minfra1=min(minfra1,i)
         maxfra1=max(maxfra1,i)
       endif
       goto 3
- 
+
 5     nptl=i-1
       if(nptl.eq.0)then
-        nptl0=0  
+        nptl0=0
         goto 1000
       endif
 
@@ -1370,7 +1370,7 @@ c      if(io.gt.0)ii(k)=newptl(io)
 c11    continue
 c      do 12 k=1,nptl
 c12    iorptl(k)=ii(k)
-c 
+c
 c      do 13 k=1,nptl
 c      jo=jorptl(k)
 c      if(jo.le.0)ii(k)=jo
@@ -1378,7 +1378,7 @@ c      if(jo.gt.0)ii(k)=newptl(jo)
 c13    continue
 c      do 14 k=1,nptl
 c14    jorptl(k)=ii(k)
-c 
+c
 c      do 15 k=1,nptl
 c      if1=ifrptl(1,k)
 c      if(if1.le.0)ii(k)=if1
@@ -1386,7 +1386,7 @@ c      if(if1.gt.0)ii(k)=newptl(if1)
 c15    continue
 c      do 16 k=1,nptl
 c16    ifrptl(1,k)=ii(k)
-c 
+c
 c      do 17 k=1,nptl
 c      if2=ifrptl(2,k)
 c      if(if2.le.0)ii(k)=if2
@@ -1394,14 +1394,14 @@ c      if(if2.gt.0)ii(k)=newptl(if2)
 c17    continue
 c      do 18 k=1,nptl
 c18    ifrptl(2,k)=ii(k)
-c 
+c
 c      do 19 k=1,nptl
 c      if(ifrptl(1,k).eq.0.and.ifrptl(2,k).gt.0)ifrptl(1,k)=ifrptl(2,k)
 c      if(ifrptl(2,k).eq.0.and.ifrptl(1,k).gt.0)ifrptl(2,k)=ifrptl(1,k)
 c19    continue
- 
+
 1000  continue
- 
+
       if(minfra1.lt.minfra0)minfra=minfra1
       if(maxfra1.ge.minfra1)maxfra=maxfra1
 
@@ -1413,7 +1413,7 @@ c19    continue
      *,istptl(n),ityptl(n)
 35    continue
       endif
- 
+
       if(ish.ge.2)write(ifch,*)'exiting subr utclea:',nptl
      &                                                ,minfra,maxfra
 
@@ -1425,17 +1425,17 @@ c19    continue
 c---------------------------------------------------------------------
       subroutine utfit(x,y,ndata,sig,mwt,a,b,siga,sigb,chi2,q)
 c---------------------------------------------------------------------
-c linear fit to data 
+c linear fit to data
 c input:
 c    ndata: nr of data points
 c    x(),y(),sig(): data
 c    mwt: unweighted (0) or weighted (else) data points
 c output:
 c    a,b: parameters of linear fit a+b*x
-c---------------------------------------------------------------------   
+c---------------------------------------------------------------------
       INTEGER mwt,ndata
       REAL a,b,chi2,q,siga,sigb,sig(ndata),x(ndata),y(ndata)
-CU    USES utgmq 
+CU    USES utgmq
       INTEGER i
       REAL sigdat,ss,st2,sx,sxoss,sy,t,wt,utgmq
       sx=0.
@@ -1492,7 +1492,7 @@ CU    USES utgmq
       endif
       return
       END
- 
+
 c-----------------------------------------------------------------------
       function utgam1(x)
 c-----------------------------------------------------------------------
@@ -1570,7 +1570,7 @@ c-----------------------------------------------------------------------
     3 z=z-1.0d0
     4 utgam=
      1 f*((((((c(1)*z+c(2))*z+c(3))*z+c(4))*z+c(5))*z+c(6))*z+c(7))/
-     2 ((((((c(8)*z+c(9))*z+c(10))*z+c(11))*z+c(12))*z+c(13))*z+1.0d0)       
+     2 ((((((c(8)*z+c(9))*z+c(10))*z+c(11))*z+c(12))*z+c(13))*z+1.0d0)
       if(x .gt. 0.0d0) return
       utgam=3.141592653589793d0/(sin(3.141592653589793d0*x)*utgam)
       return
@@ -1681,13 +1681,13 @@ CU    USES utgmln
 1     gamser=sum*exp(-x+a*log(x)-gln)
       return
       END
- 
+
 c-------------------------------------------------------------------------
       subroutine uticpl(ic,ifla,iqaq,iret)
-c-------------------------------------------------------------------------      
+c-------------------------------------------------------------------------
 c  adds a quark (iqaq=1) or antiquark (iqaq=2) of flavour ifla
 c  to 2-id ic
-c-------------------------------------------------------------------------      
+c-------------------------------------------------------------------------
       include 'epos.inc'
       integer jc(nflav,2),ic(2)
       iret=0
@@ -1714,8 +1714,8 @@ c-------------------------------------------------------------------------
 cc-----------------------------------------------------------------------
 c      subroutine utindx(n,xar,x,i)
 cc-----------------------------------------------------------------------
-cc  input:  dimension n 
-cc          array xar(n) with xar(i) > xar(i-1) 
+cc  input:  dimension n
+cc          array xar(n) with xar(i) > xar(i-1)
 cc          some number x between xar(1) and xar(n)
 cc  output: the index i such that x is between xar(i)  and xar(i+1)
 cc-----------------------------------------------------------------------
@@ -1753,7 +1753,7 @@ c      if(lo.le.lu)call utstop('utinvt: lo.le.lu&')
 c      i=lu
 c      return
 c      end
-c 
+c
 c-----------------------------------------------------------------------
       function utinvt(n,x,q,y)
 c-----------------------------------------------------------------------
@@ -1795,7 +1795,7 @@ c-----------------------------------------------------------------------
       utinvt=x(lu)+(y-q(lu))*(x(lo)-x(lu))/(q(lo)-q(lu))
       return
       end
- 
+
 c-----------------------------------------------------------------------
       subroutine utlob2(isig,p1,p2,p3,p4,p5,x1,x2,x3,x4,idi)
 c-----------------------------------------------------------------------
@@ -1803,8 +1803,8 @@ c  performs a lorentz boost, double prec.
 c  isig=+1 is to boost the four vector x1,x2,x3,x4 such as to obtain it
 c  in the frame specified by the 5-vector p1...p5 (5-vector=4-vector+mass).
 c  isig=-1: the other way round, that means,
-c  if the 4-vector x1...x4 is given in some frame characterized by 
-c  p1...p5 with respect to to some lab-frame, utlob2 returns the 4-vector 
+c  if the 4-vector x1...x4 is given in some frame characterized by
+c  p1...p5 with respect to to some lab-frame, utlob2 returns the 4-vector
 c  x1...x4  in the lab frame.
 c  idi is a call identifyer (integer) to identify the call in case of problem
 c-----------------------------------------------------------------------
@@ -1943,7 +1943,7 @@ c-----------------------------------------------------------------------
       return
       end
 
- 
+
 c-----------------------------------------------------------------------
       subroutine utlobo(isig,p1,p2,p3,p4,p5,x1,x2,x3,x4)
 c-----------------------------------------------------------------------
@@ -1979,7 +1979,7 @@ c-----------------------------------------------------------------------
       x4=z(4)
       return
       end
- 
+
 c-----------------------------------------------------------------------
       subroutine utloc(ar,n,a,l)
 c-----------------------------------------------------------------------
@@ -1991,7 +1991,7 @@ c-----------------------------------------------------------------------
       l=n
       return
       end
- 
+
 cc-----------------------------------------------------------------------
 c      subroutine utlow(cone)
 cc-----------------------------------------------------------------------
@@ -2024,7 +2024,7 @@ c      if(cone.eq.'Y')cone='y'
 c      if(cone.eq.'Z')cone='z'
 c      return
 c      end
-c 
+c
 cc-----------------------------------------------------------------------
 c      subroutine utlow3(cthree)
 cc-----------------------------------------------------------------------
@@ -2033,7 +2033,7 @@ c      do 1 i=1,3
 c1     call utlow(cthree(i:i))
 c      return
 c      end
-c 
+c
 cc-----------------------------------------------------------------------
 c      subroutine utlow6(csix)
 cc-----------------------------------------------------------------------
@@ -2042,7 +2042,7 @@ c      do 1 i=1,6
 c1     call utlow(csix(i:i))
 c      return
 c      end
-c 
+c
 cc-----------------------------------------------------------------------
 c      function utmom(k,n,x,q)
 cc-----------------------------------------------------------------------
@@ -2056,7 +2056,7 @@ c1     utmom=utmom+((x(i)+x(i-1))/2)**k*(q(i)-q(i-1))
 c      utmom=utmom/q(n)
 c      return
 c      end
-c 
+c
 c-----------------------------------------------------------------------
       function utpcm(a,b,c)
 c-----------------------------------------------------------------------
@@ -2100,7 +2100,7 @@ c      double precision seedx                               !!!
       do nr=1,nrpri
       if(subpri(nr)(1:6).eq.text)then
       ish=ishpri(nr)
-      endif       
+      endif
       enddo
       endif
       if(ish.ge.ishx)then
@@ -2111,7 +2111,7 @@ c       if(ish.ge.ishx)write(ifch,*)'seed:',seedx            !!!
       endif
       return
       end
-      
+
 c-----------------------------------------------------------------------
       subroutine utprix(text,idmmy,ishini,ishx)
 c-----------------------------------------------------------------------
@@ -2123,7 +2123,7 @@ c-----------------------------------------------------------------------
       ish=ishini
       return
       end
-      
+
 c-----------------------------------------------------------------------
       subroutine utprj(text,idmmy,ishini,ishx)
 c-----------------------------------------------------------------------
@@ -2137,7 +2137,7 @@ c      double precision seedx                               !!!
       do nr=1,nrpri
       if(subpri(nr)(1:idx).eq.text(1:idx))then
       ish=ishpri(nr)
-      endif       
+      endif
       enddo
       endif
       if(ish.ge.ishx)then
@@ -2148,7 +2148,7 @@ c       if(ish.ge.ishx)write(ifch,*)'seed:',seedx            !!!
       endif
       return
       end
-      
+
 c-----------------------------------------------------------------------
       subroutine utprjx(text,idmmy,ishini,ishx)
 c-----------------------------------------------------------------------
@@ -2173,7 +2173,7 @@ c-----------------------------------------------------------------------
   1   utquad=utquad+(f(i)+f(i+1))/2*(x(i+1)-x(i))
       return
       end
- 
+
 c-----------------------------------------------------------------------
       subroutine utquaf(fu,n,x,q,wo,x0,x1,x2,x3)
 c-----------------------------------------------------------------------
@@ -2234,7 +2234,7 @@ c-----------------------------------------------------------------------
       rinptl(i)  =rinptl(j)
       return
       end
- 
+
 cc-----------------------------------------------------------------------
 c      subroutine utresm(icp1,icp2,icm1,icm2,amp,idpr,iadj,ireten)
 cc-----------------------------------------------------------------------
@@ -2370,7 +2370,7 @@ cc input:
 cc   funcd: subr returning fctn value and first derivative
 cc   x1,x2: x-interval
 cc   xacc:  accuracy
-cc output: 
+cc output:
 cc   utroot: root
 cc--------------------------------------------------------------------
 c      include 'epos.inc'
@@ -2479,7 +2479,7 @@ c-----------------------------------------------------------------------
       z=zs
       return
       end
- 
+
 
 c-----------------------------------------------------------------------
       subroutine utrot4(isig,ax,ay,az,x,y,z)
@@ -2502,7 +2502,7 @@ c-----------------------------------------------------------------------
       subroutine utrota(isig,ax,ay,az,x,y,z)
 c-----------------------------------------------------------------------
 c     performs a rotation
-c-----------------------------------------------------------------------      
+c-----------------------------------------------------------------------
          if(az.ge.0.)then
       rx=ax
       ry=ay
@@ -2538,13 +2538,13 @@ c-----------------------------------------------------------------------
       z=zs
       return
       end
- 
+
 c-----------------------------------------------------------------------
       subroutine utstop(text)
 c-----------------------------------------------------------------------
 c  returns error message and stops execution.
 c  text is an optonal text to appear in the error message.
-c  text is a character string of length 40; 
+c  text is a character string of length 40;
 c     for shorter text, it has to be terminated by &;
 c        example: call utstop('error in subr xyz&')
 c-----------------------------------------------------------------------
@@ -2578,7 +2578,7 @@ c-----------------------------------------------------------------------
       if(ish.eq.1)return
       write(ifch,'(1x,74a1)')('*',j=1,72)
       end
- 
+
 c-----------------------------------------------------------------
       subroutine uttrap(func,a,b,s)
 c-----------------------------------------------------------------
@@ -2603,7 +2603,7 @@ CU    USES uttras
         if (ds.lt.epsr*abs(olds)) return
         olds=s
 11    continue
- 
+
 c-c   nepsr=nepsr+1
       if(ish.ge.9)then
       call utmsg('uttrap')
@@ -2699,16 +2699,16 @@ c-------------------------------------------------------------------
 c  finds the first word of the character string line(j+1:160).
 c  the word is line(i:j) (with new i and j).
 c  if j<0 or if no word found --> new line read.
-c  a text between quotes "..." is considered one word; 
+c  a text between quotes "..." is considered one word;
 c  stronger: a text between double quotes ""..."" is consid one word
 c  stronger: a text between "{ and }" is considered one word
 c-------------------------------------------------------------------
-c  input: 
+c  input:
 c    line: character string (*160)
 c    i: integer between 1 and 160
 c    iqu: for iqu=1 a "?" is written to output before reading a line,
 c         otherwise (iqu/=1) nothing is typed
-c  output: 
+c  output:
 c    i,j: left and right end of word (word=line(i:j))
 c-------------------------------------------------------------------
       include 'epos.inc'
@@ -2721,7 +2721,7 @@ c-------------------------------------------------------------------
       character w1define*100,w2define*100
       common/cdefine/ndefine,l1define(mxdefine),l2define(mxdefine)
      &               ,w1define(mxdefine),w2define(mxdefine)
-       
+
       if(j.ge.0)then
       i=j
       goto1
@@ -2807,19 +2807,19 @@ c-------------------------------------------------------------------
             if(line(i0:i0-1+l1).eq.w1define(ndf)(1:l1))then
               if(l2.eq.l1)then
                 line(i0:i0-1+l1)=w2define(ndf)(1:l2)
-              elseif(l2.lt.l1)then 
+              elseif(l2.lt.l1)then
                 line(i0:i0+l2-1)=w2define(ndf)(1:l2)
                 do k=i0+l2,i0-1+l1
                   line(k:k)=' '
                 enddo
-              elseif(l2.gt.l1)then 
+              elseif(l2.gt.l1)then
                 do k=i0+l1,i0+l2-1
                   if(line(k:k).ne.' ')
      &        stop'utword: no space for `define` replacement.   '
                 enddo
                 line(i0:i0+l2-1)=w2define(ndf)(1:l2)
                 j=i0+l2-1
-              endif 
+              endif
             endif
           enddo
         enddo
@@ -2850,24 +2850,24 @@ c--------------------------------------------------------------------
       return
       end
 
-c-----------------------------------------------------------------------     
+c-----------------------------------------------------------------------
       subroutine getairmol(iz,ia)
-c-----------------------------------------------------------------------     
+c-----------------------------------------------------------------------
       include 'epos.inc'
-      i=0                  
-      r=rangen()              
+      i=0
+      r=rangen()
       do while(r.gt.0.)  ! choose air-molecule
-        i=i+1                      
-        r=r-airwnxs(i)              
-      enddo                      
-      iz = nint(airznxs(i))         
-      ia = nint(airanxs(i))  
+        i=i+1
+        r=r-airwnxs(i)
+      enddo
+      iz = nint(airznxs(i))
+      ia = nint(airanxs(i))
       end
 
 c----------------------------------------------------------------------
 
       subroutine factoriel
-        
+
 c----------------------------------------------------------------------
 c tabulation of fctrl(n)=n!, facto(n)=1/n! and utgamtab(x) for x=0 to 50
 c----------------------------------------------------------------------
@@ -2882,15 +2882,15 @@ c----------------------------------------------------------------------
         fctrl(i)=fctrl(i-1)*dble(i)
         facto(i)=1.d0/fctrl(i)
       enddo
-        
+
       do k=1,10000
         x=dble(k)/100.d0
         utgamtab(k)=utgam(x)
       enddo
-      
+
       return
       end
-      
+
 c-----------------------------------------------------------------------
       subroutine fremnu(amin,ca,cb,ca0,cb0,ic1,ic2,ic3,ic4)
 c-----------------------------------------------------------------------

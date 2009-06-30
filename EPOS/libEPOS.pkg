@@ -4,7 +4,7 @@ SRCS:= \
 epos167/epostimer.cxx		\
 TEpos.cxx AliGenEpos.cxx AliGenEposEventHeader.cxx
 
-HDRS=TEpos.h AliGenEpos.h AliGenEposEventHeader.h
+HDRS=TEpos.h AliGenEpos.h AliGenEposEventHeader.h   \
 
 DHDR:=EPOSLinkDef.h
 
@@ -36,6 +36,48 @@ epos167/epos-xan-154.f  \
 epos167/epos-xpr-165.f  \
 epos167/eposm.f         \
 epos167/eposu.f
+
+EXTFILES:= \
+epos167/epos.inc  \
+epos167/epos.incems  \
+epos167/epos.inchy  \
+epos167/epos.incico  \
+epos167/epos.incpar  \
+epos167/epos.incsem  \
+epos167/epos.ini1ec  \
+epos167/epos.ini1fc  \
+epos167/epos.inics  \
+epos167/epos.inidi  \
+epos167/epos.iniev  \
+epos167/epos.inirj  \
+epos167/epos.initl  \
+epos167/epos.param  \
+epos167/3flav/epos.inics  \
+epos167/3flav/epos.iniev  \
+epos167/3flav/epos.inirj  \
+epos167/3flav/epos.initl  \
+epos167/3flav/epos.param  \
+epos167/4flav/epos.inics  \
+epos167/4flav/epos.iniev  \
+epos167/4flav/epos.inirj  \
+epos167/4flav/epos.initl  \
+epos167/4flav/epos.param  \
+EPOScommon.h eposproc.h  \
+epos167/epostimer.h
+
+ifeq (g95,$(F77))
+SHLIB += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
+else
+ifeq (gfortran,$(F77))
+SHLIB := $(shell gfortran -print-file-name=libgfortran.so)
+SHLIB += $(shell gfortran -print-file-name=libgfortranbegin.a)
+else
+SHLIB         = -lg2c
+SYSLIBS +=  -lg2c
+endif
+endif
+
+SOFLAGS+= $(SHLIB)
 
 
 ifeq (macosxicc,$(ALICE_TARGET))

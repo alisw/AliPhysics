@@ -99,7 +99,7 @@ public:
 
 protected:
    virtual void GenerateInputFile();
-   virtual const char * GetInputFileName() const { return "/tmp/epos.input"; }
+   virtual const char * GetInputFileName() const { return "./epos.input"; }
 
    Int_t fLaproj;	//atomic number of projectile
    Int_t fMaproj;	//mass number of projectile

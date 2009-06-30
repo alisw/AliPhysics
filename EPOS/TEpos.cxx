@@ -155,7 +155,12 @@ void TEpos::AddExtraInputLine(const char *line) {
 void TEpos::GenerateInputFile() {
 	ofstream file(GetInputFileName(), ios_base::out | ios_base::trunc);
 	char epo[256];
-	strcpy(epo, getenv("ALICE_ROOT"));
+	char *epoEnv = getenv("EPO");
+	if (epoEnv) {
+		strcpy(epo, epoEnv);
+	} else {
+		strcpy(epo, getenv("ALICE_ROOT"));
+	}
 	strcat(epo, "/EPOS/epos167");
 
 	file << "fname pathnx " << epo << "/" << endl;
@@ -187,6 +192,10 @@ void TEpos::GenerateInputFile() {
 	file << "echo on" << endl;
 
 //	.optns file
+	int precision = file.precision();
+	file.precision(15);
+	file << "set seedj " << (gRandom->Rndm() * 1e14) << endl;
+	file.precision(precision);
 	file << "application hadron" << endl;
 	file << "set laproj " << fLaproj << endl;
 	file << "set maproj " << fMaproj << endl;

@@ -9,7 +9,7 @@ c----------------------------------------------------------------------
       common/cxyzt/xptl(mxptl),yptl(mxptl),zptl(mxptl),tptl(mxptl)
      *,optl(mxptl),uptl(mxptl),sptl(mxptl),rptl(mxptl,3)
       double precision tpro,zpro,ttar,ztar,ttaus,detap,detat
-      common /cttaus/  tpro,zpro,ttar,ztar,ttaus,detap,detat 
+      common /cttaus/  tpro,zpro,ttar,ztar,ttaus,detap,detat
       integer jc(nflav,2),ic(2)
 
       call utpri('amicro',ish,ishini,4)
@@ -57,7 +57,7 @@ ctp060829      taus=sngl(ttaus)
      $       .lt. rangen() ) goto 15
         kes=nint(x)
       endif
-      if(real((keu+ked+kes)/3).ne.real(keu+kes+ked)/3.) goto 10 
+      if(real((keu+ked+kes)/3).ne.real(keu+kes+ked)/3.) goto 10
       if(keu.ge.0)jc(1,1)=keu
       if(ked.ge.0)jc(2,1)=ked
       if(kes.ge.0)jc(3,1)=kes
@@ -88,7 +88,7 @@ c       if(ireten.eq.1)call utstop('ametro: idenco ret code = 1&')
         idr=8*10**8+ic(1)*100+ic(2)/100
         if(ish.ge.5)write(ifch,'(a,i9)')' id:',idr
         dez=0.5e-4
-      else 
+      else
         idr=idr
      *       +mod(jc(1,1)+jc(2,1)+jc(3,1)+jc(4,1),10**4)*10**4
      *       +mod(jc(1,2)+jc(2,2)+jc(3,2)+jc(4,2),10**4)
@@ -114,7 +114,7 @@ c       if(ireten.eq.1)call utstop('ametro: idenco ret code = 1&')
       radptl(nptl)=(3*volu/pi/4.)**0.33333
       istptl(nptl)=10
       tivptl(2,1)=1.
-      
+
       nptlb=nptl
       call hnbaaa(nptl,iret)
       if(iret.eq.1)stop'STOP: sr amicro: hnbaaa return code = 1.   '
@@ -131,8 +131,8 @@ c       if(ireten.eq.1)call utstop('ametro: idenco ret code = 1&')
         istptl(n)=0
         ifrptl(1,n)=0
         ifrptl(2,n)=0
-        xorptl(1,n)=x 
-        xorptl(2,n)=y 
+        xorptl(1,n)=x
+        xorptl(2,n)=y
         xorptl(3,n)=z
         xorptl(4,n)=t
         tivptl(1,n)=t
@@ -156,8 +156,8 @@ c-----------------------------------------------------------------------
       subroutine hgcaaa
 c-----------------------------------------------------------------------
 c hadronic resonance gas in grand canonical treatment
-c returns T, chemical potentials and hadronic yield 
-c (hadron chemical potentials as combinations of quark chemical potentials) 
+c returns T, chemical potentials and hadronic yield
+c (hadron chemical potentials as combinations of quark chemical potentials)
 c
 c input:
 c   iostat: 1: Boltzmann approximation, 0: quantum statistics  /metr3/
@@ -182,7 +182,7 @@ c for massless hadrons    : using analytic expressions for massles particles
 c                           and employing the  same algorithm as for massive
 c-----------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cbol/rmsbol(mspecs),ptlbol(mspecs),chebol(mspecs),tembol
@@ -277,7 +277,7 @@ c     -------------------------------
       gfac=gfac+gspecs(i)
       endif
       enddo
-      if(iabs(ispecs(nspecs)).lt.10)gfac=gfac+16. 
+      if(iabs(ispecs(nspecs)).lt.10)gfac=gfac+16.
       tem=(tecm/volu*hquer**3*30./pi**2/gfac)**.25
        else
       do i=1,nspecs
@@ -295,11 +295,11 @@ c     -------------------------------
 
        if(ish.ge.5.and.iospec.ne.iug)then
       write(ifch,*)'inversion in Boltzmann approx. :'
-       elseif(ish.ge.5.and.iospec.eq.iug)then 
+       elseif(ish.ge.5.and.iospec.eq.iug)then
       write(ifch,*)'inversion for massless hadrons :'
        endif
 
-       if(ish.ge.5)then 
+       if(ish.ge.5)then
       if(nflavs.eq.1)write(ifch,'(3x,a,8x,a)')
      *'T:','chemu:'
       if(nflavs.eq.2)write(ifch,'(3x,a,8x,a,5x,a)')
@@ -440,7 +440,7 @@ c     ---------------------------
       if(i.eq.3.and.ish.ge.5)
      *write(ifch,'(1x,a,1x,f9.6)')'chems:',chem(3)
       enddo
- 
+
 
 c     checking results
 c     ----------------
@@ -477,16 +477,16 @@ c     -------------------------------------
       ish=isho
       return
       endif
- 
+
 
 c     quantum statistics
 c     ------------------
       if(ish.ge.5)write(ifch,*)'quantum statistics:'
-      if(ish.ge.5.and.nflavs.eq.1)write(ifch,'(3x,a,8x,a)') 
+      if(ish.ge.5.and.nflavs.eq.1)write(ifch,'(3x,a,8x,a)')
      *'T:','chemu:'
-      if(ish.ge.5.and.nflavs.eq.2)write(ifch,'(3x,a,8x,a,6x,a)') 
+      if(ish.ge.5.and.nflavs.eq.2)write(ifch,'(3x,a,8x,a,6x,a)')
      *'T:','chemu:','chemd:'
-      if(ish.ge.5.and.nflavs.eq.3)write(ifch,'(3x,a,8x,a,6x,a,6x,a)') 
+      if(ish.ge.5.and.nflavs.eq.3)write(ifch,'(3x,a,8x,a,6x,a,6x,a)')
      *'T:','chemu:','chemd:','chems:'
       k=1
 
@@ -549,7 +549,7 @@ c     ---------------------------
 
 c     checking results
 c     ----------------
-      if(ish.ge.5)call hgcchh(i)  
+      if(ish.ge.5)call hgcchh(i)
 
 c     particle yield
 c     --------------
@@ -562,7 +562,7 @@ c     ----------------------------
       if(ish.ge.5)write(ifch,*)('-',i=1,30)
      *,' exit sr hgcaaa ',('-',i=1,10)
       ish=isho
-      return 
+      return
        endif
 
        if(k.gt.300)then
@@ -684,7 +684,7 @@ c--------------------------------------------------------------------
 
 c-------------------------------------------------------------------
       function hgcbk(n,x)
-c------------------------------------------------------------------ 
+c------------------------------------------------------------------
       tox=2.0/x
       bkm=hgcbk0(x)
       bk=hgcbk1(x)
@@ -698,7 +698,7 @@ c------------------------------------------------------------------
       END
 
 
-c----------------------------------------------------------------          
+c----------------------------------------------------------------
       subroutine hgccbo(iba)
 c----------------------------------------------------------------
 c returns new chem(iafs) for boltzmann statistics
@@ -710,7 +710,7 @@ c    chem(iafs)
 c-----------------------------------------------------------------------
       common/cnsta/pi,pii,hquer,prom,piom,ainfin
       common/drop6/tecm,volu
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       parameter(nflav=6)
@@ -730,7 +730,7 @@ c     ----------------------
 11    continue
       fd=0.0
       call hgchac(0)
- 
+
         do i=1,nspecs
 
         if(ifok(iafs,i).ne.0)then
@@ -770,7 +770,7 @@ c     endif
       if(k.gt.300)return
 
       goto10
-      
+
       end
 
 
@@ -781,7 +781,7 @@ c checks convergence of iterative algorithm
 c plots iteration values for T and mu_i
 c----------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cflavs/nflavs,kef(nflav),chem(nflav)
       parameter (nbin=500)
@@ -821,7 +821,7 @@ c----------------------------------------------------------------------
       write(cu,'(i3)')keu
       write(cd,'(i3)')ked
       write(cs,'(i3)')kes
- 
+
 
       write(ifhi,'(a)')       'newpage zone 1 4 1 openhisto'
       write(ifhi,'(a)')       'htyp lin xmod lin ymod lin'
@@ -848,7 +848,7 @@ c----------------------------------------------------------------------
       enddo
       write(ifhi,'(a)')       '  endarray'
       write(ifhi,'(a)')       'closehisto plot 0'
- 
+
       write(ifhi,'(a)')       'openhisto'
       write(ifhi,'(a)')       'htyp lin xmod lin ymod lin'
       write(ifhi,'(a)')       'text 0 0 "xaxis Iteration"'
@@ -925,9 +925,9 @@ c----------------------------------------------------------------------
       write(ifhi,'(a)')       'closehisto plot 0'
 
            endif
-  
+
        return
- 
+
        end
 
 c-----------------------------------------------------------------------
@@ -941,7 +941,7 @@ c  output:
 c    chem(iafs)
 c-----------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cflavs/nflavs,kef(nflav),chem(nflav)
       common/cflac/ifok(nflav,mspecs),ifoa(nflav)
@@ -964,7 +964,7 @@ c     ----------------------
        if(ifok(iafs,ians).ne.0)then
 
       call hgchac(0)
-      call hgclim(a,b) 
+      call hgclim(a,b)
       if(b.eq.0.0)then
       hpd=0.0
       else
@@ -1003,7 +1003,7 @@ c------------------------------------------------------------------
 c checks flavor conservation in particle yield
 c------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cflavs/nflavs,kef(nflav),chem(nflav)
@@ -1019,7 +1019,7 @@ c------------------------------------------------------------------
       if(dkef.le.1.e-2)then
       if(i.eq.1.and.ish.ge.5)write(ifch,*)'u conserved'
       if(i.eq.2.and.ish.ge.5)write(ifch,*)'d conserved'
-      if(i.eq.3.and.ish.ge.5)write(ifch,*)'s conserved' 
+      if(i.eq.3.and.ish.ge.5)write(ifch,*)'s conserved'
       else
       if(i.eq.1.and.ish.ge.5)write(ifch,*)'u not conserved'
       if(i.eq.2.and.ish.ge.5)write(ifch,*)'d not conserved'
@@ -1028,7 +1028,7 @@ c------------------------------------------------------------------
       endif
       enddo
 
-      return 
+      return
       end
 
 c----------------------------------------------------------------
@@ -1037,7 +1037,7 @@ c----------------------------------------------------------------
 c checks results by numerical integration
 c----------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cflavs/nflavs,kef(nflav),chem(nflav)
@@ -1106,7 +1106,7 @@ c----------------------------------------------------------------
 c checks results by numerical integration
 c----------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cflavs/nflavs,kef(nflav),chem(nflav)
@@ -1152,7 +1152,7 @@ c----------------------------------------------------------------
       endif
       hfd=ifok(i,ians)*hpd*gspecs(ians)/2./pi**2/hquer**3
       if(ish.ge.9)write(ifch,*)'hfd:',hfd
-      cfd=cfd+hfd 
+      cfd=cfd+hfd
       enddo
       if(i.eq.1.and.ish.ge.5)write(ifch,5)'flavor density u :',cfd
       if(i.eq.2.and.ish.ge.5)write(ifch,5)'flavor density d :',cfd
@@ -1170,7 +1170,7 @@ c----------------------------------------------------------------
       if(ish.ge.5)write(ifch,*)'results disagree'
        endif
 
-      return 
+      return
       end
 
 
@@ -1185,7 +1185,7 @@ c output:
 c  chem
 c---------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cflavs/nflavs,kef(nflav),chem(nflav)
@@ -1236,14 +1236,14 @@ c     goto20
 c     endif
 c     hpd=hpd*gspecs(i)*tem**3/pi**2/hquer**3
 c     if(chemgc(i).eq.abs(chemgc(i)))then
-c     hpd=gspecs(i)*(chemgc(i)*tem**2+chemgc(i)**3/pi**2)/6./hquer**3 
+c     hpd=gspecs(i)*(chemgc(i)*tem**2+chemgc(i)**3/pi**2)/6./hquer**3
 c    *-hpd
 c     endif
 
 c      else
 c     hpd=3.*gspecs(i)*tem**3*z3/4./pi**2/hquer**3
 c      endif
-  
+
          else
 
       hpd=gspecs(i)*tem**3*z3/pi**2/hquer**3
@@ -1279,7 +1279,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
 c integrand of energy density
 c------------------------------------------------------------------------
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/ciakt/gen,iafs,ians,genm
@@ -1303,7 +1303,7 @@ c-----------------------------------------------------------------
 c-----------------------------------------------------------------
 c integrand of mean square variance of  energy
 c----------------------------------------------------------------
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/ciakt/gen,iafs,ians,genm
@@ -1328,7 +1328,7 @@ c-----------------------------------------------------------------
 c-----------------------------------------------------------------
 c integrand of hadron density
 c-----------------------------------------------------------------
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/ciakt/gen,iafs,ians,genm
@@ -1353,7 +1353,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
 c integrand of energy density
 c------------------------------------------------------------------------
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/ciakt/gen,iafs,ians,genm
@@ -1367,14 +1367,14 @@ c------------------------------------------------------------------------
 
        if(mod(igsp,2).ne.0)then
       d=-1.0
-      if(eex.lt.1.e-10)return  
+      if(eex.lt.1.e-10)return
        else
       d=1.0
-       endif 
+       endif
 
       hgcfhe=sq*x**2/(exp(eex)+d)
 
-      return 
+      return
       end
 
 c-----------------------------------------------------------------
@@ -1382,7 +1382,7 @@ c-----------------------------------------------------------------
 c-----------------------------------------------------------------
 c integrand of mean square variance of  energy
 c----------------------------------------------------------------
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/ciakt/gen,iafs,ians,genm
@@ -1412,7 +1412,7 @@ c-----------------------------------------------------------------
 c-----------------------------------------------------------------
 c integrand of hadron density
 c-----------------------------------------------------------------
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/ciakt/gen,iafs,ians,genm
@@ -1426,10 +1426,10 @@ c-----------------------------------------------------------------
 
        if(mod(igsp,2).ne.0)then
       d=-1.0
-      if(eex.lt.1.e-10)return  
+      if(eex.lt.1.e-10)return
        else
       d=1.0
-       endif 
+       endif
 
       hgcfhn=x**2/(exp(eex)+d)
 
@@ -1441,7 +1441,7 @@ c-----------------------------------------------------------------
 c-----------------------------------------------------------------
 c integrand of mean square variance of hadron yield
 c----------------------------------------------------------------
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/ciakt/gen,iafs,ians,genm
@@ -1451,15 +1451,15 @@ c----------------------------------------------------------------
 
       sq=sqrt(x**2+aspecs(ians)**2)
       if(tem.ne.0.0)eex=(sq-chemgc(ians))/tem
-      if(eex.gt.60.)return 
-      if(eex.lt.(-60.))return 
+      if(eex.gt.60.)return
+      if(eex.lt.(-60.))return
 
        if(mod(igsp,2).ne.0)then
       d=-1.0
-      if(eex.lt.1.0e-10.and.eex.gt.(-1.0e-10))return  
+      if(eex.lt.1.0e-10.and.eex.gt.(-1.0e-10))return
        else
       d=1.0
-       endif 
+       endif
 
       hgcfhw=x**2/(exp(eex)+2.0*d+exp(-eex))
 
@@ -1474,7 +1474,7 @@ c returns hadronic chemical potentials as combinations of quark
 c chemical potentials
 c----------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cflavs/nflavs,kef(nflav),chem(nflav)
@@ -1503,7 +1503,7 @@ c returns integration limits for numerical evaluation of particle
 c and energy densities using quantum statistics
 c----------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/ciakt/gen,iafs,ians,genm
@@ -1544,7 +1544,7 @@ c-----------------------------------------------------------------------
       include 'epos.inc'
       parameter(maxp=500)
       common/chnbin/nump,ihadro(maxp)
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cgctot/rmstot,ptltot
@@ -1617,7 +1617,7 @@ c     ------------------
       write(ifch,*)'impossible to generate hadron configuration'
       call utstop('hgcnbi: tecm less than two pi0 masses&')
       endif
-      
+
       kk=1
 100   continue
 
@@ -1643,7 +1643,7 @@ c     ------------------
       enddo
 
       if(ish.ge.7)write(ifch,*)
-     *'sample hadron multiplicities and total mass:' 
+     *'sample hadron multiplicities and total mass:'
 
       kbar=keu+ked+kes
       kpar=iabs(keu)+iabs(ked)+iabs(kes)
@@ -1715,7 +1715,7 @@ c     start with nb protons
       if(ish.ge.9)write(ifch,*)'pnlog:',pnlog
       if(pnlog.lt.60)then
       pn=exp(pnlog)
-      else 
+      else
       pn=1.1
       endif
 
@@ -1774,17 +1774,17 @@ c     start with nb protons
 
 
 102   continue
-      
+
        ndd=0
 c      if(nbb.lt.nb)then
 c      nba=nb-nbb
 c     if(nbar.gt.0)then
-c     if(ish.ge.7)write(ifch,*)'add protons: nba:',nba 
+c     if(ish.ge.7)write(ifch,*)'add protons: nba:',nba
 c     nptlgc(19)=nptlgc(19)+nba
 c     n=n+nba
 c     amtot=amtot+aspecs(19)*nba
 c     elseif(nbar.lt.0)then
-c     if(ish.ge.7)write(ifch,*)'add aprotons: nba:',nba 
+c     if(ish.ge.7)write(ifch,*)'add aprotons: nba:',nba
 c     nptlgc(20)=nptlgc(20)+nba
 c     n=n+nba
 c     amtot=amtot+aspecs(20)*nba
@@ -1838,7 +1838,7 @@ c      endif
       kk=kk+1
       goto100
       endif
- 
+
 
       iii=0
       if(ish.ge.7)then
@@ -1962,7 +1962,7 @@ c      if(asym.gt.0.0)then
       pna=0.0
       endif
        endif
-      
+
        if(ptlngc(ib).gt.5.0)then
       pnbli=hgcpnl(ib,0)
       pnblf=hgcpnl(ib,1)
@@ -1973,7 +1973,7 @@ c      if(asym.gt.0.0)then
       else
       pnb=1.1
       endif
-       else 
+       else
       pnb=ptlngc(ib)/(nptlgc(ib)+1)
        endif
 
@@ -1994,7 +1994,7 @@ c      if(asym.gt.0.0)then
       else
       r=rangen()
       endif
- 
+
 c      else
 
 c     r=1.0
@@ -2014,7 +2014,7 @@ c      endif
       enddo
        endif
 
-        
+
         if(k(1).ne.0.or.k(2).ne.0.or.k(3).ne.0)then
        ll=ll+1
       if(ll.le.llmax)then
@@ -2065,7 +2065,7 @@ c      endif
         chitot=chitot+chi**2
         enddo
         call xhgccc(chitot)
- 
+
         u=0
         d=0
         s=0
@@ -2116,7 +2116,7 @@ c--------------------------------------------------------------------
 c returns random multiplicity from gaussian distribution for species i
 c---------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cgctot/rmstot,ptltot
       common/clatt/nlattc,npmax
@@ -2150,7 +2150,7 @@ c---------------------------------------------------------------------
       endif
 
        else
-  
+
 2     continue
       kk=kk+1
       p=0.0
@@ -2189,7 +2189,7 @@ c--------------------------------------------------------------------
       function hgcpml(i1,n1,i2,n2)
 c--------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/camgc/amgc,samgc,amtot
       common/cgcnb/nptlgc(mspecs)
@@ -2215,7 +2215,7 @@ c--------------------------------------------------------------------
       function hgcpnl(i,n)
 c--------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cgcnb/nptlgc(mspecs)
       if(ish.ge.9)write(ifch,*)'i:',i,' n:',n
@@ -2247,7 +2247,7 @@ c xpar7       max. density
 c xpar8       strange chem.pot.
 c--------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cflavs/nflavs,kef(nflav),chem(nflav)
@@ -2320,15 +2320,15 @@ c     --------------
       call uttraq(hgcfbn,a,b,hden)
       endif
       hd=hden*gspecs(ians)/2./pi**2/hquer**3
-      
+
       if(ish.ge.7)write(ifch,*)'i:',ians,' n_u:',ifok(1,ians),' hd:',hd
 
-      qd=qd+ifok(1,ians)*hd+ifok(2,ians)*hd   
+      qd=qd+ifok(1,ians)*hd+ifok(2,ians)*hd
       if(qd.gt.ymax)qd=ymax
 c     if(qd.gt.ymax)qd=0.0
       if(qd.lt.-ymax)qd=-ymax
 c     if(qd.lt.-ymax)qd=0.0
-      
+
 
       if(b.eq.0.0)then
       edi=0.0
@@ -2341,7 +2341,7 @@ c     if(qd.lt.-ymax)qd=0.0
 
       if(ish.ge.7)write(ifch,*)'i:',ians,' mu:',chemgc(ians)
      *                        ,' edi:',edi
- 
+
       ed=ed+edi
       if(ed.gt.ymax)ed=ymax
 c     if(ed.gt.ymax)ed=0.0
@@ -2350,7 +2350,7 @@ c     if(ed.gt.ymax)ed=0.0
       if(ish.ge.5)write(ifch,*)' ed:',ed,' qd:',qd
       edensi(i,ii)=ed
       qdensi(i,ii)=qd
-      
+
       enddo
       enddo
 
@@ -2397,7 +2397,7 @@ c xpar7       max. density
 c xpar8       strange chem.pot.
 c--------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cflavs/nflavs,kef(nflav),chem(nflav)
@@ -2476,7 +2476,7 @@ c     --------------
       hn=hn*volu*gspecs(ians)/2./pi**2/hquer**3
       hv=hv*volu*gspecs(ians)/2./pi**2/hquer**3
       if(ish.ge.5)write(ifch,*)'hn:',hn,' hv:',hv
-      
+
       hn=max(hn,1.e-15)
       qv=qv+hv
       qe=qe+hn
@@ -2484,7 +2484,7 @@ c     --------------
 
       if(qv.gt.ymax)qv=ymax
       if(qe.gt.ymax)qe=ymax
-      
+
 
       if(b.eq.0.0)then
       eei=0.0
@@ -2500,7 +2500,7 @@ c     --------------
       evi=evi*volu*gspecs(ians)/2./pi**2/hquer**3
       if(ish.ge.5)write(ifch,*)'eei:',eei,' evi:',evi
 
- 
+
       eei=max(eei,1.e-15)
       ev=ev+evi
       ee=ee+eei
@@ -2518,7 +2518,7 @@ c     --------------
       wn(i)=qfl(i,ii)
       v(i)=volu
       endif
-      
+
       enddo
       enddo
 
@@ -2557,7 +2557,7 @@ c     --------------
       write(ifhi,'(2e13.5)')v(j),we(j)
       enddo
       write(ifhi,'(a)')       '  endarray'
-      write(ifhi,'(a)')       'closehisto plot 0' 
+      write(ifhi,'(a)')       'closehisto plot 0'
 
       write(ifhi,'(a)')      'openhisto'
       write(ifhi,'(a,2e11.3)')'xrange',xpar4,xpar5
@@ -2577,7 +2577,7 @@ c     --------------
 c------------------------------------------------------------------
       subroutine hgcpyi(ist)
 c------------------------------------------------------------------
-c returns particle yield 
+c returns particle yield
 c input:
 c   tem   : temperature
 c   chemgc: chemical potentials
@@ -2591,7 +2591,7 @@ c  ist=1 boltzmann statistics
 c  ist=0 quantum statistics
 c--------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cgctot/rmstot,ptltot
@@ -2666,13 +2666,13 @@ c     ------------------
       rmsngc(ians)=0.0
 
        if(ist.eq.0)then
- 
+
       call uttraq(hgcfhw,a,b,var)
       var=var*gspecs(ians)*volu/2./pi**2/hquer**3
       vartot=vartot+var
       if(var.ge.0.0)rmsngc(ians)=sqrt(var)
       samgc=samgc+var*aspecs(ians)
- 
+
        else
 
       if(ptlngc(ians).ge.0.0)rmsngc(ians)=sqrt(ptlngc(ians))
@@ -2688,7 +2688,7 @@ c     ------------------
      *'<N(',ispecs(ians),')> :',ptlngc(ians),'sigma :',rmsngc(ians)
 
        enddo
-      
+
       if(vartot.ge.0.0)rmstot=sqrt(vartot)
       if(samgc.ge.0.0)samgc=sqrt(samgc)
       if(amgc.ge.tecm)samgc=sqrt(amgc)
@@ -2697,7 +2697,7 @@ c     ------------------
       if(ish.ge.5)write(ifch,'(1x,a,2x,f8.4,2x,a,2x,f10.4)')
      *'<M_tot>    :',amgc,'sigma :',samgc
 
-      return 
+      return
       end
 
 c------------------------------------------------------------------------
@@ -2711,7 +2711,7 @@ c  output:
 c    tem
 c----------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/ciakt/gen,iafs,ians,genm
@@ -2721,7 +2721,7 @@ c----------------------------------------------------------------------
       k=1
       t1=0.0
       t2=1.0
-      
+
       goto15
 
 10    tem=t1+.5*(t2-t1)
@@ -2776,7 +2776,7 @@ c     if(eden.ge.100.)return
        endif
 
        if(k.gt.300)return
- 
+
       k=k+1
       goto10
       end
@@ -2792,7 +2792,7 @@ c  output:
 c    tem
 c----------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/ciakt/gen,iafs,ians,genm
@@ -2808,7 +2808,7 @@ c     ---------------
 15    continue
       if(tem.le.1.e-6)return
       eden=0.0
- 
+
        do ians=1,nspecs
       call hgclim(a,b)
       if(b.eq.0.0)then
@@ -2837,7 +2837,7 @@ c     ---------------
      *write(ifch,*)'failure in tex'
       return
        endif
- 
+
       k=k+1
       goto10
       end
@@ -2854,13 +2854,13 @@ c    tem
 c----------------------------------------------------------------------
 
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/ciakt/gen,iafs,ians,genm
 
       k=1
-      
+
       t1=0.0
       t2=1.0
 10    tem=t1+.5*(t2-t1)
@@ -2900,7 +2900,7 @@ c----------------------------------------------------------------------
      *write(ifch,*)'failure in tm0'
       return
        endif
- 
+
       k=k+1
       goto10
       end
@@ -2915,7 +2915,7 @@ c----------------------------------------------------------------------
       integer ifl(nflav)
       double precision p(5),c(5)
       real u(3),pin(4),pout(4),poutx(4)
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
        !-------------------------------------------------------------
        !   110,  120, -120,  130, -130,  230, -230,  220,  330
@@ -2923,7 +2923,7 @@ c----------------------------------------------------------------------
        !, 1120,-1120, 1220,-1220, 1130,-1130, 2130,-2130
        !, 1230,-1230, 2230,-2230, 1330,-1330, 2330,-2330
        !, 1111,-1111, 1121,-1121, 1221,-1221, 2221,-2221, 1131,-1131
-       !, 1231,-1231, 2231,-2231, 1331,-1331, 2331,-2331, 3331,-3331 
+       !, 1231,-1231, 2231,-2231, 1331,-1331, 2331,-2331, 3331,-3331
        !-------------------------------------------------------------
       integer ianti(mspecs)
       data ianti/ 1, 3, 2, 5, 4, 7, 6, 8, 9
@@ -2950,7 +2950,7 @@ ctp060829      parameter (mxidh=3331)
       kes=jc(3,1)-jc(3,2)
       n=ndrop(keu,ked,kes)
       if(n.eq.0)stop'hnbxxx: n=0'
-      
+
 c...fill wspecs
 
       e=pptl(5,ip)
@@ -2965,9 +2965,9 @@ c...fill wspecs
         if(n.lt.0)ii=ianti(i)
         w1=wwspecs(abs(n),k-1,ii)
         w2=wwspecs(abs(n),k,ii)
-        wspecs(i)=w1+xi*(w2-w1) 
+        wspecs(i)=w1+xi*(w2-w1)
       enddo
-      
+
             if(ish.ge.5)then
             write(ifch,*)'keu,ked,kes,n:',keu,ked,kes,n
             write(ifch,'(9x, 9f6.3)')(wspecs(i),i=1,9)
@@ -3006,10 +3006,10 @@ c...initializations
         w12=w12+wspecs(i)
       enddo
       w32=0        !35,36,41,42,53,54 excluded
-      do i=37,40  
+      do i=37,40
         w32=w32+wspecs(i)
       enddo
-      do i=43,52  
+      do i=43,52
         w32=w32+wspecs(i)
       enddo
       sum=w12+w32
@@ -3033,9 +3033,9 @@ c...initializations
       do nf=1,nflav
         ifl(nf)=jc(nf,1)-jc(nf,2)
       enddo
-      
-c...print    
-  
+
+c...print
+
            if(ish.ge.5)then
            write(ifch,*)'ip=',ip,'  id=',idptl(ip),' e=',sngl(c(5))
            write(ifch,*)'jc=',jc
@@ -3044,7 +3044,7 @@ c...print
            endif
 
 c...generate number of hadrons
-      
+
       wfac=1.05 !mean increased by factor wfac
       aa=wtot*wfac
       if(aa.le.70.)then
@@ -3074,8 +3074,8 @@ c...generate number of hadrons
         nhad=max(2,nhad)
       endif
           if(ish.ge.5)write(ifch,*)'-----> ',nhad,' hadrons'
-     
-c...generate first n-2 hadrons 
+
+c...generate first n-2 hadrons
 
       do n=1,nhad-2
   1     sum=0
@@ -3090,7 +3090,7 @@ c...generate first n-2 hadrons
         elseif(ispecs(i).lt.-1000)then
           nbari=-1
         else
-          nbari=0 
+          nbari=0
         endif
         if(nbari*nbarini.gt.0
      *  .and.nbari*(nbar-nbari).lt.0.and.rangen().gt.wbar(-nbari))then
@@ -3099,17 +3099,17 @@ c...generate first n-2 hadrons
           goto1
         elseif(nbari*(nbar-nbari).lt.0)then
             if(ish.ge.5)write(ifch,*)'+++++',wbar(-nbari)
-        endif  
-        nbar=nbar-nbari    
+        endif
+        nbar=nbar-nbari
         nptl=nptl+1
         id=ispecs(i)
-        idptl(nptl)=id  
+        idptl(nptl)=id
         call idquac(nptl,nq,ns,na,jc1)
         do nf=1,nflav
          ifl(nf)=ifl(nf)-jc1(nf,1)+jc1(nf,2)
         enddo
              if(ish.ge.5)
-     *       write(ifch,*)'nptl=',nptl,'  id=',id,'  ifl=',ifl   
+     *       write(ifch,*)'nptl=',nptl,'  id=',id,'  ifl=',ifl
       enddo
       do nf=1,nflav
         if(ifl(nf).ge.0)then
@@ -3118,48 +3118,48 @@ c...generate first n-2 hadrons
         else
           jc(nf,1)=0
           jc(nf,2)=-ifl(nf)
-        endif         
+        endif
       enddo
             if(ish.ge.5)then
             write(ifch,*)'jc=',jc
             write(ifch,*)'hadrons:',(idptl(n),n=nptlb+1,nptl)
      *            ,'  --> nbar=',nbar
             endif
-      
+
 c...last two hadrons
-       
+
       if(nbar.ne.0)then
         do n=1,abs(nbar)
-          ii=nbar/abs(nbar) 
+          ii=nbar/abs(nbar)
           i1=idraflz(jc,(3-ii)/2)
           i2=idraflz(jc,(3-ii)/2)
           i3=idraflz(jc,(3-ii)/2)
           if(i1.eq.i2.and.i2.eq.i3)then
             id=ii*(i1*1000+i2*100+i3*10+1)
-          else  
+          else
             if(i2.lt.i1)then
-              ix=i1 
+              ix=i1
               i1=i2
               i2=ix
-            endif  
+            endif
             if(i3.lt.i2)then
-              ix=i2 
+              ix=i2
               i2=i3
               i3=ix
-            endif  
+            endif
             if(i2.lt.i1)then
-              ix=i1 
+              ix=i1
               i1=i2
               i2=ix
-            endif  
+            endif
             ispin=0
             if(rangen().lt.w32)ispin=1
             id=ii*(i1*1000+i2*100+i3*10+ispin)
-           endif 
+           endif
           nptl=nptl+1
-          idptl(nptl)=id   
+          idptl(nptl)=id
             if(ish.ge.5)
-     *       write(ifch,*)'nptl=',nptl,'  baryon=',id,'  jc=',jc   
+     *       write(ifch,*)'nptl=',nptl,'  baryon=',id,'  jc=',jc
         enddo
       endif
 
@@ -3176,7 +3176,7 @@ c...last two hadrons
         endif
         ii=1
         if(i2.lt.i1)then
-          ix=i1 
+          ix=i1
           i1=i2
           i2=ix
           ii=-1
@@ -3185,9 +3185,9 @@ c...last two hadrons
         if(rangen().lt.w1)ispin=1
         id=ii*(i1*100+i2*10+ispin)
         nptl=nptl+1
-        idptl(nptl)=id        
+        idptl(nptl)=id
             if(ish.ge.5)write(ifch,*)'nptl=',nptl,'  nqu=',nqu
-     &                               ,'  naq=',naq,' --> meson',id   
+     &                               ,'  naq=',naq,' --> meson',id
         call idquacjc(jc,nqu,naq)
       enddo
 
@@ -3196,14 +3196,14 @@ c...last two hadrons
             write(ifch,*)nmiss,' hadron(s) missing'
             write(ifch,*)'hadrons:',(idptl(n),n=nptlb+1,nptl)
             endif
- 
-c            nsechad=lkfoi(1,ifl(1),ifl(2),ifl(3),ifl(4))  
-c            if(nsechad.gt.0)then 
+
+c            nsechad=lkfoi(1,ifl(1),ifl(2),ifl(3),ifl(4))
+c            if(nsechad.gt.0)then
 c              i2x=min(nsechad,1+rangen()*nsechad)
 c              i2=lkfoi(1+i2x,ifl(1),ifl(2),ifl(3),ifl(4))
 c               !print*,'secnd chosen hadron:',ispecs(i2),wzspecs(i2)
-       
-c... generate momenta 
+
+c... generate momenta
 
            if(ish.ge.5)write(ifch,*)'hadron momenta:'
       do n=nptlb+1,nptl
@@ -3211,7 +3211,7 @@ c... generate momenta
         call idmass(id,am)
         !prepare proposal function
         ! f_prop:  f0(x)=0,                     x<am
-        !          f1(x)=const=f2(b),           am<x<b,  
+        !          f1(x)=const=f2(b),           am<x<b,
         !          f2(x)=x**2*exp(7-a*x),       x>b
         a=11
         b=0.9
@@ -3295,13 +3295,13 @@ c...boost
       call utprix('hnbxxx',ish,ishini,4)
       return
       end
-      
+
 c----------------------------------------------------------------------
       subroutine hnbxxxini
 c----------------------------------------------------------------------
       include 'epos.inc'
       logical lcalc
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
        !-------------------------------------------------------------
        !   110,  120, -120,  130, -130,  230, -230,  220,  330
@@ -3309,10 +3309,10 @@ c----------------------------------------------------------------------
        !, 1120,-1120, 1220,-1220, 1130,-1130, 2130,-2130
        !, 1230,-1230, 2230,-2230, 1330,-1330, 2330,-2330
        !, 1111,-1111, 1121,-1121, 1221,-1221, 2221,-2221, 1131,-1131
-       !, 1231,-1231, 2231,-2231, 1331,-1331, 2331,-2331, 3331,-3331 
+       !, 1231,-1231, 2231,-2231, 1331,-1331, 2331,-2331, 3331,-3331
        !-------------------------------------------------------------
       common/xxxspecs/wtot,wspecs(mspecs),zspecs(mspecs)
-      integer ittspecs(mspecs) 
+      integer ittspecs(mspecs)
       parameter(mxdrop=35,mxe=10)
       common/xxxspecsy/ndrop(-4:4,-4:4,-4:4)
       common/xxxspecsx/ee(mxe),wwspecs(mxdrop,mxe,mspecs)
@@ -3329,7 +3329,7 @@ c----------------------------------------------------------------------
           write(ifmt,'(3a)')'read from ',fndr(1:nfndr),' ...'
           open(1,file=fndr(1:nfndr),status='old')
           read(1,*)mxxdrop
-          if(mxxdrop.ne.mxdrop)stop'hnbxxxini: wrong nr of droplets' 
+          if(mxxdrop.ne.mxdrop)stop'hnbxxxini: wrong nr of droplets'
           do n=1,mxdrop
             read(1,*)ku,kd,ks
             if(abs(ku).gt.4)stop'hnbxxxini: ku out of range'
@@ -3351,17 +3351,17 @@ c----------------------------------------------------------------------
       else
         stop'hnbxxxini: file not found.                 '
       endif
-      end                
+      end
 
 c----------------------------------------------------------------------
       subroutine hnbaaa(ip,iret)
 c----------------------------------------------------------------------
-      include 'epos.inc' 
-      if(ioclude.eq.1)call hnbaaa156(ip,iret) 
+      include 'epos.inc'
+      if(ioclude.eq.1)call hnbaaa156(ip,iret)
       if(ioclude.eq.2)stop'ioclude.eq.2 no longer supported.    '
       if(ioclude.eq.3)call hnbaaanew(ip,iret)
       end
-      
+
 c----------------------------------------------------------------------
       subroutine hnbaaanew(ip,iret)
 c----------------------------------------------------------------------
@@ -3385,12 +3385,12 @@ c----------------------------------------------------------------------
       common/cen/ncentr /ctauhac/ntauhac(ncenthy,netahy)
       common/cranphi/ranphi,ranecc,weiecc
       character txt*40
-      data icnthnb /0/ !vv2 /0./ nvv2 /0/  vv3 /0./ 
+      data icnthnb /0/ !vv2 /0./ nvv2 /0/  vv3 /0./
       !save vv2,nvv2,vv3
       save icnthnb
-      
+
       call utpri('hnbaaa',ish,ishini,4)
-      
+
       if(ish.ge.3)then
       write(ifch,140)
   140 format(/' ----------------------------------'/
@@ -3399,12 +3399,12 @@ c----------------------------------------------------------------------
       write(ifch,*)'droplet:'
       call alist('&',ip,ip)
       endif
-      
+
       iret=0
       do j=1,5
       c(j)=pptl(j,ip)
       enddo
-                                    
+
       call idquac(ip,nqi,nsi,nai,jc)
       keu=jc(1,1)-jc(1,2)
       ked=jc(2,1)-jc(2,2)
@@ -3424,12 +3424,12 @@ c----------------------------------------------------------------------
      *  'id:',idptl(ip),' r:',radptl(ip),' m:',pptl(5,ip)
         call utmsgf
       endif
-   
-    !~~~~~~~~~read in freeze out surface properties from hydro~~~~~~~~~~~~       
-      if(iorsdf.eq.3.and.ityptl(ip).eq.60)then 
-       icnthnb=icnthnb+1  
+
+    !~~~~~~~~~read in freeze out surface properties from hydro~~~~~~~~~~~~
+      if(iorsdf.eq.3.and.ityptl(ip).eq.60)then
+       icnthnb=icnthnb+1
        if(icnthnb.eq.1)then
-        !here we use epos.iniXXX (like epos.ini1fc) 
+        !here we use epos.iniXXX (like epos.ini1fc)
         !instead of the generic filename epos.inihy
         open(3,file=fnnx(1:nfnnx)//fnhy(1:nfnhy),status='old',err=99)
         read(3,*)txt
@@ -3440,7 +3440,7 @@ c----------------------------------------------------------------------
         if(epscrix.ne.epscri(ioclude))then
           print*,'hnbaaanew: epscrix.ne.epscri(',ioclude,').       '
           stop
-        endif    
+        endif
         read(3,*)ncenthyx,netahyx,ntauhyx,nphihyx,nradhyx
         if(ncenthyx.ne.ncenthy)stop'hnbaaanew: ncenthyx.ne.ncenthy.   '
         if(netahyx.ne.netahy)stop'hnbaaanew: netahyx.ne.netahy.       '
@@ -3456,8 +3456,8 @@ c----------------------------------------------------------------------
        endif
       endif
 
-    !~~~~~~~~~define womi yomi romi~~~~~~~~~~~~     
-      if(iorsdf.eq.3.and.icnthnb.eq.1)then 
+    !~~~~~~~~~define womi yomi romi~~~~~~~~~~~~
+      if(iorsdf.eq.3.and.icnthnb.eq.1)then
        if(ioclude.eq.3)then
         do ncent=1,ncenthy
          do neta=1,netahy
@@ -3473,19 +3473,19 @@ c----------------------------------------------------------------------
        elseif(ioclude.eq.2)then
          stop'in hnbaaanew: ioclude=2 not supported any more.'
        else
-         stop'in hnbaaa: invalid ioclude.          '        
+         stop'in hnbaaa: invalid ioclude.          '
        endif
       endif
 
     !~~tau partition function paut(ncent,neta,ntau)
     !~~phi partition function pauf(ncent,neta,ntau,nphi)
-      if(iorsdf.eq.3.and.icnthnb.eq.1)then 
+      if(iorsdf.eq.3.and.icnthnb.eq.1)then
        do ncent=1,ncenthy
         do neta=1,netahy
          womax=0
          ntauhac(ncent,neta)=0
-         do ntau=1,ntauhoc(ncent)  
-          if(womi(ncent,neta,ntau,1).gt.womax )then     
+         do ntau=1,ntauhoc(ncent)
+          if(womi(ncent,neta,ntau,1).gt.womax )then
            womax=womi(ncent,neta,ntau,1)
            ntauhac(ncent,neta)=ntau
           endif
@@ -3505,11 +3505,11 @@ c----------------------------------------------------------------------
 	    c1=cos(2*phihy(nphi-1))
 	    c2=cos(2*phihy(nphi))
             w1=womi(ncent,neta,ntau  ,1)+c1*womi(ncent,neta,ntau  ,2)
-     .        -womi(ncent,neta,ntau-1,1)-c1*womi(ncent,neta,ntau-1,2)  
+     .        -womi(ncent,neta,ntau-1,1)-c1*womi(ncent,neta,ntau-1,2)
             w2=womi(ncent,neta,ntau  ,1)+c2*womi(ncent,neta,ntau  ,2)
-     .        -womi(ncent,neta,ntau-1,1)-c2*womi(ncent,neta,ntau-1,2)  
+     .        -womi(ncent,neta,ntau-1,1)-c2*womi(ncent,neta,ntau-1,2)
 	     pauf(ncent,neta,ntau,nphi)
-     .	     =pauf(ncent,neta,ntau,nphi-1)+0.5*(w1+w2)*dphi
+     .        =pauf(ncent,neta,ntau,nphi-1)+0.5*(w1+w2)*dphi
 	   enddo
 	   w=pauf(ncent,neta,ntau,nphihy)
            if(w.eq.0.)stop'hnbaaanew: w.eq.0.    '
@@ -3520,7 +3520,7 @@ c----------------------------------------------------------------------
         enddo
        enddo
       endif
-      
+
     !~~~~~~~~~determine ncentr~~~~~~~~~~~~
       if(iorsdf.eq.3.and.ityptl(ip).eq.60)then !!!fusion on!!!
         ncentr=0
@@ -3530,12 +3530,12 @@ c----------------------------------------------------------------------
          if(db.lt.dbmin)then
           dbmin=db
           ncentr=ncent
-         endif 
+         endif
         enddo
         !print*,ncentr,bimevt,centhy(ncentr)
       endif
 
-    !~~~~~define masses~~~~~~~~~~~~~~~~       
+    !~~~~~define masses~~~~~~~~~~~~~~~~
       amin=utamnu(keu,ked,kes,kec,keb,ket,5)
       aumin=amuseg
       ipo=ip
@@ -3545,7 +3545,7 @@ c----------------------------------------------------------------------
       tecmxx=tecm
 
     !~~~~~~~~~determine netar~~~~~~~~~~~~
-      if(iorsdf.eq.3.and.ityptl(ip).eq.60)then 
+      if(iorsdf.eq.3.and.ityptl(ip).eq.60)then
        z=xorptl(3,ipo)
        t=xorptl(4,ipo)
        !print*,z,t,ityptl(ip),tecm
@@ -3561,14 +3561,14 @@ c----------------------------------------------------------------------
         if(deta.lt.detamin)then
          detamin=deta
          netar=neta
-        endif 
+        endif
        enddo
        !print*,netar,zetaor,etahy(netar)
       endif
 
       fradflo=1.
-      
-    !~~~~~redefine energy in case of radial flow~~~~~~~~~~~~~~~~       
+
+    !~~~~~redefine energy in case of radial flow~~~~~~~~~~~~~~~~
       if(iappl.ne.4.and.iorsdf.eq.3.and.tecmor.gt.aumin
      ..and.ityptl(ip).eq.60)then
        am=0.
@@ -3586,12 +3586,12 @@ c----------------------------------------------------------------------
        fradflo=1.
        if(en.ne.0.)fradflo=am/en
        if(tecm*fradflo.lt.amin)fradflo=1.
-      endif 
+      endif
       tecm=tecm*fradflo
- 
-    !~~~~~redefine energy in case of long coll flow  
+
+    !~~~~~redefine energy in case of long coll flow
       if(iappl.eq.4.or.iorsdf.ne.3
-     &.or.ityptl(ip).eq.40.or.ityptl(ip).eq.50)then !not for droplets from remnants 
+     &.or.ityptl(ip).eq.40.or.ityptl(ip).eq.50)then !not for droplets from remnants
         yco=0
       else
        if(ylongmx.lt.0.)then
@@ -3599,31 +3599,31 @@ c----------------------------------------------------------------------
        else
         yco=ylongmx
        endif
-      endif 
+      endif
       tecmx=tecm
       if(yco.gt.0..and.tecmor.gt.aumin) then
-        tecm=tecm/sinh(yco)*yco     
-      else 
-        yco=0.  
+        tecm=tecm/sinh(yco)*yco
+      else
+        yco=0.
       endif
       !print*,'========= cluster energy: ',pptl(5,ip),tecmx,tecm
 
     !~~~~~~~~~redefine volume~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-      vocri=tecm/epscri(ioclude)       
-      volu=max(vocri,vocell)  
+      vocri=tecm/epscri(ioclude)
+      volu=max(vocri,vocell)
 
     !~~~~~~~~~decay~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       call hnbini(iret)
       !if(iret.ne.0)write(ifch,*)'***** unsucessfull hnbini *****'
       if(iret.ne.0)goto1000
       if(ioinct.ge.1)goto1
-        
+
       do iter=1,itermx
         naccit(iter)=0
         call hnbmet
       enddo
-     
+
 1     continue
 
       if(ioceau.eq.1.and.iappl.eq.1)call xhnbte(ip)
@@ -3644,7 +3644,7 @@ c----------------------------------------------------------------------
         do j=1,4
           pe(j)=0.
         enddo
-        do i=1,np 
+        do i=1,np
           uu(1)= 0
           uu(2)= 0
           uu(3)= sinh(yrad(i))
@@ -3660,7 +3660,7 @@ c----------------------------------------------------------------------
         do j=1,4
           pa(j)=0.
         enddo
-        do i=1,np 
+        do i=1,np
           call utlob3(1,pe(1),pe(2),pe(3),pe(4),pe(5)
      *         , pcm(1,i), pcm(2,i), pcm(3,i), pcm(4,i))
           do j=1,4
@@ -3680,17 +3680,17 @@ c----------------------------------------------------------------------
             pcm(4,j)=sqrt(pcm(1,j)**2+pcm(2,j)**2+pcm(3,j)**2
      *           +amass(j)**2)
             sum=sum+pcm(4,j)
-          enddo          
+          enddo
           scal=esoll/sum
           !write(6,*)'ipass,scal,e,esoll:'
-          !    $         ,ipass,scal,sum,esoll 
+          !    $         ,ipass,scal,sum,esoll
           if(abs(scal-1.).le.errlim) goto301
         enddo
- 301    continue      
+ 301    continue
         do j=1,4
           pa(j)=0.
         enddo
-        do i=1,np 
+        do i=1,np
           do j=1,4
             pa(j)=pa(j)+pcm(j,i)
           enddo
@@ -3705,7 +3705,7 @@ c----------------------------------------------------------------------
         bb=0
         cc=0
         dd=1
-        if(ityptl(ip).eq.60)then        
+        if(ityptl(ip).eq.60)then
           ipo=iorptl(ip)
           xx=uptl(ipo)   ! <x**2>
           yy=optl(ipo)   ! <y**2>
@@ -3726,7 +3726,7 @@ c----------------------------------------------------------------------
         endif
         errlim=0.0001
         tecm=tecmxx
-        phinull=phievt+ranphi  
+        phinull=phievt+ranphi
         do n=1,np
 	  !~~determine random tau from paut(ncentr,netar,ntau)
 	  r=rangen()
@@ -3744,7 +3744,7 @@ c----------------------------------------------------------------------
 	  f=f1/(f1-f2)
 	  fx=f
 	  tau= tau1*(1-f) + tau2*f
-          taufop(n)=tau      
+          taufop(n)=tau
 	  !~~determine phifop~~~~~
 	  r=rangen()
           if(pauf(ncentr,netar,ntau-1,nphihy).gt.0.
@@ -3777,12 +3777,12 @@ c----------------------------------------------------------------------
 	  endif
           phifop(n)=phi
 	  !~~determine yrad~~~~
-	   yr1=yomi(ncentr,netar,ntau1,1)               
-     .        +yomi(ncentr,netar,ntau1,2)*cos(2*phi)    
-           yr2=yomi(ncentr,netar,ntau2,1)               
-     .        +yomi(ncentr,netar,ntau2,2)*cos(2*phi)    
-          yr= yr1*(1-fx)+ fx*yr2  
-          yrad(n)=yr 
+	   yr1=yomi(ncentr,netar,ntau1,1)
+     .        +yomi(ncentr,netar,ntau1,2)*cos(2*phi)
+           yr2=yomi(ncentr,netar,ntau2,1)
+     .        +yomi(ncentr,netar,ntau2,2)*cos(2*phi)
+          yr= yr1*(1-fx)+ fx*yr2
+          yrad(n)=yr
          !~~determine radfop~~~~
           rad1=romi(ncentr,netar,ntau1,1)
      .        +romi(ncentr,netar,ntau1,2)*cos(2*phi)
@@ -3792,10 +3792,10 @@ c----------------------------------------------------------------------
           radfop(n)=rad
         enddo
         energ=0.
-        do n=1,np 
-          uu(1)=sinh(yrad(n))*cos(phifop(n)+phinull)   
-          uu(2)=sinh(yrad(n))*sin(phifop(n)+phinull)   
-          uu(3)=0d0           
+        do n=1,np
+          uu(1)=sinh(yrad(n))*cos(phifop(n)+phinull)
+          uu(2)=sinh(yrad(n))*sin(phifop(n)+phinull)
+          uu(3)=0d0
           uu(4)=sqrt(1+uu(1)**2+uu(2)**2)
           !px=pcm(1,n)
           !py=pcm(2,n)
@@ -3823,13 +3823,13 @@ c----------------------------------------------------------------------
             pcm(4,j)=sqrt(pcm(1,j)**2+pcm(2,j)**2+pcm(3,j)**2
      *           +amass(j)**2)
             sum=sum+pcm(4,j)
-          enddo          
+          enddo
           scal=esoll/sum
           !write(6,*)'ipass,scal,e,esoll:'
-          ! $         ,ipass,scal,sum,esoll 
+          ! $         ,ipass,scal,sum,esoll
           if(abs(scal-1.).le.errlim) goto300
         enddo
- 300    continue     
+ 300    continue
         !print*, scal
       else
         do n=1,np
@@ -3877,8 +3877,8 @@ c----------------------------------------------------------------------
           !zeta=zetaor-0.5*delzet+delzet*rangen()
           z=tau*sinh(zeta)
           t=tau*cosh(zeta)
-          xorptl(1,nptl)=r*cos(phifop(n)+phinull)   
-          xorptl(2,nptl)=r*sin(phifop(n)+phinull)   
+          xorptl(1,nptl)=r*cos(phifop(n)+phinull)
+          xorptl(2,nptl)=r*sin(phifop(n)+phinull)
           xorptl(3,nptl)=z
           xorptl(4,nptl)=t
          else
@@ -3886,9 +3886,9 @@ c----------------------------------------------------------------------
           xorptl(2,nptl)=xorptl(2,ip)
           xorptl(3,nptl)=xorptl(3,ip)
           xorptl(4,nptl)=xorptl(4,ip)
-         endif 
+         endif
         endif
-      enddo 
+      enddo
       if(ish.ge.3)then
         write(ifch,*)'decay products:'
         call alist('&',nptlb+1,nptl)
@@ -3910,12 +3910,12 @@ c----------------------------------------------------------------------
       call utprix('hnbaaa',ish,ishini,4)
       return
 
-   99 print*,'hnbaaanew: error opening hydro table' 
+   99 print*,'hnbaaanew: error opening hydro table'
       print*,'          file=',fnnx(1:nfnnx)//fnhy(1:nfnhy)
       print*,'maybe "fname inihy  ..." forgotten in optns file ???'
       print*,'    this is necessary in case of "set ioclude 3"'
       stop'070817'
-      
+
       end
 
 c------------------------------------------------------------------------------
@@ -3925,17 +3925,17 @@ c------------------------------------------------------------------------------
       if(iSpaceTime.eq.1.and.ioclude.gt.1)then
          call xCoreCorona(0,0)
          do neta=1,5,2
-           call xFoMass(neta)         
-           call xFoRadius(neta)       
-           call xFoRadRapidity(neta)  
-           call xFreezeOutTauX(neta)    
+           call xFoMass(neta)
+           call xFoRadius(neta)
+           call xFoRadRapidity(neta)
+           call xFreezeOutTauX(neta)
          enddo
          call xFreezeOutTauEta
          call xFreezeOutTZ
       elseif(iSpaceTime.eq.1)then
          call xCoreCorona(0,0)
          !stop'bjinta: space-time plots require ioclude>1.          '
-      endif         
+      endif
       end
 
 c------------------------------------------------------------------------------
@@ -3996,10 +3996,10 @@ c------------------------------------------------------------------------------
               npl=0
             endif
            endif
-           endif 
+           endif
           endif
-         endif 
-        endif  
+         endif
+        endif
       enddo
       if(nplx.gt.0)write(ifhi,'(a)')  '  endarray closehisto plot 0-'
     !..........................................................................
@@ -4054,13 +4054,13 @@ c------------------------------------------------------------------------------
               npl=0
             endif
            endif
-           endif 
-        endif  
+           endif
+        endif
       enddo
       write(ifhi,'(a)')  '  endarray closehisto plot 0'
     !..........................................................................
        end
-      
+
 c------------------------------------------------------------------------------
       subroutine xFreezeOutTauEta
 c------------------------------------------------------------------------------
@@ -4096,7 +4096,7 @@ c------------------------------------------------------------------------------
               write(ifhi,'(a,f5.1)')  'yrange 0 ',taumax
               write(ifhi,'(a)')    'txt  "xaxis [c] "'
               write(ifhi,'(a)')    'txt  "yaxis [t] (fm/c)"'
-      write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.77 0.92 "'//cbim//'"' 
+      write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.77 0.92 "'//cbim//'"'
               write(ifhi,'(a)')       'array 2'
             endif
             eta=
@@ -4108,8 +4108,8 @@ c------------------------------------------------------------------------------
               npl=0
             endif
           endif
-         endif 
-        endif  
+         endif
+        endif
       enddo
       if(npl.ne.0)write(ifhi,'(a)')  '  endarray closehisto plot 0'
       if(npl.eq.0)stop'xFreezeOutTZ: no particles!!!!!            '
@@ -4145,7 +4145,7 @@ c------------------------------------------------------------------------------
               write(ifhi,'(a)')      'yrange 0 25 '
               write(ifhi,'(a)')    'txt  "xaxis z (fm)"'
               write(ifhi,'(a)')    'txt  "yaxis t (fm/c)"'
-      write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.75 0.22 "'//cbim//'"' 
+      write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.75 0.22 "'//cbim//'"'
               write(ifhi,'(a)')       'array 2'
             endif
             write(ifhi,'(2e11.3)') xorptl(3,n),xorptl(4,n)
@@ -4154,8 +4154,8 @@ c------------------------------------------------------------------------------
               nhis=nhis+1
               npl=0
             endif
-         endif 
-        endif  
+         endif
+        endif
       enddo
       if(npl.ne.0)write(ifhi,'(a)')  '  endarray closehisto plot 0'
       if(npl.eq.0)stop'xFreezeOutTZ: no particles!!!!!            '
@@ -4178,12 +4178,12 @@ c------------------------------------------------------------------------------
       do ii=1,2
         write(ifhi,'(a,3i1)')'openhisto htyp lin name w-',neta,nn,ii
         if(ii.eq.1)then !----------------------
-         write(ifhi,'(a,f4.1)')'xmod lin xrange 0. ',taumax 
-         write(ifhi,'(a)')    'txt  "xaxis [t] (fm/c)"'              
+         write(ifhi,'(a,f4.1)')'xmod lin xrange 0. ',taumax
+         write(ifhi,'(a)')    'txt  "xaxis [t] (fm/c)"'
          write(ifhi,'(a)') 'ymod lin yrange auto auto '
          write(ifhi,'(a,f4.2,a)') 'text 0.1 0.9 "  [c]=',etahy(neta),'"'
          write(ifhi,'(a)')'txt "yaxis w?0!  w?2!  (GeVc/fm) "'
-         write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.50 0.9 "'//cbim//'  "' 
+         write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.50 0.9 "'//cbim//'  "'
         endif       !-------------------------------
         write(ifhi,'(a)')'array 2'
         deltau=tauhoc(ncentr,2)-tauhoc(ncentr,1)
@@ -4194,7 +4194,7 @@ c------------------------------------------------------------------------------
         write(ifhi,'(a)') 'endarray closehisto '
         if(ii.ne.2)write(ifhi,'(a)') 'plot 0-'
         if(ii.eq.2)write(ifhi,'(a)') 'plot 0'
-      enddo 
+      enddo
       end
 
 c------------------------------------------------------------------------------
@@ -4214,12 +4214,12 @@ c------------------------------------------------------------------------------
       do ii=1,2
         write(ifhi,'(a,3i1)')'openhisto htyp lin name r-',neta,nn,ii
         if(ii.eq.1)then !----------------------
-         write(ifhi,'(a,f4.1)')'xmod lin xrange 0. ',taumax 
+         write(ifhi,'(a,f4.1)')'xmod lin xrange 0. ',taumax
          write(ifhi,'(a)')'txt  "xaxis [t] (fm/c)"'
          write(ifhi,'(a)') 'ymod lin yrange auto auto '
          write(ifhi,'(a,f4.2,a)')'text 0.1 0.9 "   [c]=',etahy(neta),'"'
          write(ifhi,'(a)')'txt "yaxis r?0!  r?2!  (fm) "'
-         write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.50 0.9 "'//cbim//'  "' 
+         write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.50 0.9 "'//cbim//'  "'
         endif !-------------------------------
         write(ifhi,'(a)')'array 2'
         do ntau=2,ntauhac(ncentr,neta)
@@ -4231,7 +4231,7 @@ c------------------------------------------------------------------------------
         if(ii.eq.2)write(ifhi,'(a)') 'plot 0'
       enddo
       end
-      
+
 c------------------------------------------------------------------------------
       subroutine xFoRadRapidity(neta)
 c------------------------------------------------------------------------------
@@ -4254,7 +4254,7 @@ c------------------------------------------------------------------------------
          write(ifhi,'(a)') 'ymod lin yrange auto auto '
          write(ifhi,'(a,f4.2,a)')'text 0.1 0.9 "   [c]=',etahy(neta),'"'
          write(ifhi,'(a)')'txt "yaxis y?0!  y?2! "'
-          write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.50 0.9 "'//cbim//'  "' 
+          write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.50 0.9 "'//cbim//'  "'
 	endif !-------------------------------
         write(ifhi,'(a)')'array 2'
         do ntau=2,ntauhac(ncentr,neta)
@@ -4280,7 +4280,7 @@ c------------------------------------------------------------------------------
      &               ,w1define(mxdefine),w2define(mxdefine)
 
       data iperc /0,5,10,15,20,25,30,35,40,45,50,60,70,80,92,100/
-      
+
       do n=1,maxb
         bim(n)=0
       enddo
@@ -4313,7 +4313,7 @@ c------------------------------------------------------------------------------
           read(w2define(m)(1:l2define(m)),*)bim(14)
         elseif(w1define(m)(1:l1define(m)).eq.'bim92')then
           read(w2define(m)(1:l2define(m)),*)bim(15)
-        endif  
+        endif
       enddo
       bim(16)=100.
       do n=2,maxb
@@ -4321,7 +4321,7 @@ c------------------------------------------------------------------------------
           print*,'******* ERROR in subroutine centrality: '
      .       ,' #define bim?? ??? missing. *******  '
           print*,'   n=',n
-          stop'14082007' 
+          stop'14082007'
         endif
       enddo
 
@@ -4398,7 +4398,7 @@ c-----------------------------------------------------------------------
             if(abs(ch).gt.0.1.and.abs(rap).le.1.)multy1=multy1+1
           endif
          endif
-        enddo  
+        enddo
         ih1=jjj/100
         ih2=mod(jjj,100)
         if(0.5*multy1.lt.ih1.or.0.5*multy1.gt.ih2)return
@@ -4417,7 +4417,7 @@ c-----------------------------------------------------------------------
       write(ifhi,'(a)')       'text 0.05 0.90 "core"'
       write(ifhi,'(a)')       'text 0.05 0.80 "corona"'
       write(ifhi,'(a,f4.1,a)')'text 0.82 0.07 "[c]=0"'
-      write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.77 0.92 "'//cbim//'"' 
+      write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.77 0.92 "'//cbim//'"'
       write(ifhi,'(a)')       'array 2'
       ncore=0
       do i=1,nptl
@@ -4476,10 +4476,10 @@ c-----------------------------------------------------------------------
         do j=-50,50
          phi=j/50.*pi*0.55
          write(ifhi,'(2e11.3)')r1*cos(phi)-b,r1*sin(phi)
-        enddo 
+        enddo
         write(ifhi,'(a)')    '  endarray'
         write(ifhi,'(a)')    'closehisto'
-      endif        
+      endif
       if(r2.ne.0.0)then
         write(ifhi,'(a)')    'plot 0-'
         write(ifhi,'(a)')   'openhisto name stc1 htyp lyu'
@@ -4487,11 +4487,11 @@ c-----------------------------------------------------------------------
         do j=-50,50
          phi=j/50.*pi*0.55
          write(ifhi,'(2e11.3)')-r1*cos(phi)+b,r1*sin(phi)
-        enddo 
+        enddo
         write(ifhi,'(a)')    '  endarray'
         write(ifhi,'(a)')    'closehisto'
-      endif        
- 
+      endif
+
       write(ifhi,'(a)')    'plot 0'
 
    !........................................................................................
@@ -4517,9 +4517,9 @@ c-----------------------------------------------------------------------
           m=(rapx+rapmax)/delrap+1
           if(m.gt.myy)m=myy
           yy(m)=yy(m)+eco
-        endif          
-        endif          
-      enddo          
+        endif
+        endif
+      enddo
       write(ifhi,'(a)')'!---------------------------------------------'
       write(ifhi,'(a)')'!    core segment energy per d[c]dxdy         '
       write(ifhi,'(a)')'!           vs space-time rapidity rapx       '
@@ -4533,7 +4533,7 @@ c-----------------------------------------------------------------------
       write(ifhi,'(a)')  'txt "title initial energy          "'
       write(ifhi,'(a,f4.1,a)')'text 0.05 0.70 "x=0"'
       write(ifhi,'(a,f4.1,a)')'text 0.05 0.60 "y=0"'
-      write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.75 0.90 "'//cbim//'"' 
+      write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.75 0.90 "'//cbim//'"'
       write(ifhi,'(a)')  'txt  "xaxis space-time rapidity [c] "'
       write(ifhi,'(a)')  'txt  "yaxis dE/d[c]dxdy "'
       write(ifhi,'(a)')       'array 2'
@@ -4561,9 +4561,9 @@ c-----------------------------------------------------------------------
           endif
           m=(rapx+rapmax)/delrap+1
           if(m.ge.1.and.m.le.myy)yy(m)=yy(m)+eco
-        endif          
-        endif          
-      enddo          
+        endif
+        endif
+      enddo
       write(ifhi,'(a)')'!---------------------------------------------'
       write(ifhi,'(a)')'!    corona segment energy per d[c]dxdy       '
       write(ifhi,'(a)')'!           vs space-time rapidity rapx       '
@@ -4581,7 +4581,7 @@ c-----------------------------------------------------------------------
         write(ifhi,'(2e11.3)')-rapmax+(m-0.5)*delrap, yy(m)/4./delrap
       enddo
       write(ifhi,'(a)')  '  endarray closehisto plot 0-'
-      call xEiniEta(1)     
+      call xEiniEta(1)
       write(ifhi,'(a)')  'plot 0'
    !........................................................................................
       delrad=2*radmax/float(mrr)
@@ -4604,9 +4604,9 @@ c-----------------------------------------------------------------------
           m=(rinp+radmax)/delrad+1
           if(m.gt.mrr)m=mrr
           rr(m)=rr(m)+eco
-        endif          
-        endif          
-      enddo          
+        endif
+        endif
+      enddo
       write(ifhi,'(a)')'!---------------------------------------------'
       write(ifhi,'(a)')'!    core segment energy per d[c]dxdy vs x    '
       write(ifhi,'(a)')'!   (same as histogram rinp eco... in optns)  '
@@ -4619,7 +4619,7 @@ c-----------------------------------------------------------------------
       write(ifhi,'(a)')  'txt "title initial energy          "'
       write(ifhi,'(a,f4.1,a)')'text 0.05 0.70 "[c]=0"'
       write(ifhi,'(a,f4.1,a)')'text 0.05 0.60 "y=0"'
-      write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.75 0.90 "'//cbim//'"' 
+      write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.75 0.90 "'//cbim//'"'
       write(ifhi,'(a)')  'txt  "xaxis x (fm)"'
       write(ifhi,'(a)')  'txt  "yaxis dE/d[c]dxdy "'
       write(ifhi,'(a)')       'array 2'
@@ -4648,9 +4648,9 @@ c-----------------------------------------------------------------------
           m=(rinp+radmax)/delrad+1
           if(m.gt.mrr)m=mrr
           rr(m)=rr(m)+eco
-        endif          
-        endif          
-      enddo          
+        endif
+        endif
+      enddo
       write(ifhi,'(a)')'!---------------------------------------------'
       write(ifhi,'(a)')'!    corona segment energy per d[c]dxdy vs x  '
       write(ifhi,'(a)')'!   (same as histogram rinp eco... in optns)  '
@@ -4662,7 +4662,7 @@ c-----------------------------------------------------------------------
         write(ifhi,'(2e11.3)')-radmax+(m-0.5)*delrad, rr(m)/4./delrad
       enddo
       write(ifhi,'(a)')  '  endarray closehisto plot 0-'
-      call xEiniX(1)     
+      call xEiniX(1)
       write(ifhi,'(a)')  'plot 0'
    !........................................................................................
       delrad=2*radmax/float(mrr)
@@ -4685,9 +4685,9 @@ c-----------------------------------------------------------------------
           m=(routp+radmax)/delrad+1
           if(m.gt.mrr)m=mrr
           rr(m)=rr(m)+eco
-        endif          
-        endif          
-      enddo          
+        endif
+        endif
+      enddo
       write(ifhi,'(a)')'!---------------------------------------------'
       write(ifhi,'(a)')'!    core segment energy per d[c]dxdy vs y    '
       write(ifhi,'(a)')'!   (same as histogram routp eco... in optns)  '
@@ -4700,7 +4700,7 @@ c-----------------------------------------------------------------------
       write(ifhi,'(a)')  'txt "title initial energy          "'
       write(ifhi,'(a,f4.1,a)')'text 0.05 0.70 "[c]=0"'
       write(ifhi,'(a,f4.1,a)')'text 0.05 0.60 "x=0"'
-      write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.75 0.90 "'//cbim//'"' 
+      write(ifhi,'(a,f4.1,a,f4.1,a)')'text 0.75 0.90 "'//cbim//'"'
       write(ifhi,'(a)')  'txt  "xaxis y (fm)"'
       write(ifhi,'(a)')  'txt  "yaxis dE/d[c]dxdy "'
       write(ifhi,'(a)')       'array 2'
@@ -4729,9 +4729,9 @@ c-----------------------------------------------------------------------
           m=(routp+radmax)/delrad+1
           if(m.gt.mrr)m=mrr
           rr(m)=rr(m)+eco
-        endif          
-        endif          
-      enddo     
+        endif
+        endif
+      enddo
       write(ifhi,'(a)')'!---------------------------------------------'
       write(ifhi,'(a)')'!    corona segment energy per d[c]dxdy vs y  '
       write(ifhi,'(a)')'!   (same as histogram routp eco... in optns)  '
@@ -4743,7 +4743,7 @@ c-----------------------------------------------------------------------
         write(ifhi,'(2e11.3)')-radmax+(m-0.5)*delrad, rr(m)/4./delrad
       enddo
       write(ifhi,'(a)')  '  endarray closehisto plot 0-'
-      call xEiniY(1)     
+      call xEiniY(1)
       write(ifhi,'(a)')  'plot 0'
 
       end
@@ -4770,7 +4770,7 @@ c------------------------------------------------------------------------------
       enddo
       write(ifhi,'(a)') 'endarray closehisto '
       return
-      
+
       entry xEiniY(ii)
       write(ifhi,'(a)')    '!----------------------------------------'
       write(ifhi,'(a,i3)') '!        hydro initial energy vs y     '
@@ -4808,7 +4808,7 @@ c------------------------------------------------------------------------------
 c------------------------------------------------------------------------------
       subroutine hnbcor(mode)
 c------------------------------------------------------------------------------
-c determines(mode=1) and plots (mode=2) two particle  correlations 
+c determines(mode=1) and plots (mode=2) two particle  correlations
 c for the configurations /confg/
 c------------------------------------------------------------------------------
       include 'epos.inc'
@@ -4846,7 +4846,7 @@ c------------------------------------------------------------------------------
 
       if(abs(cs).gt.1.)then
       cs=aint(cs)
-      ang=acos(cs) 
+      ang=acos(cs)
       else
       ang=acos(cs)
       endif
@@ -4858,8 +4858,8 @@ c------------------------------------------------------------------------------
       nk=1
       nw=bns
       else
-      nw=1+aint(ang/pi*bns) 
-      nk=1+aint((cs+1.)/2.*bns) 
+      nw=1+aint(ang/pi*bns)
+      nk=1+aint((cs+1.)/2.*bns)
       endif
       nw=min(nw,bns)
       nk=min(nk,bns)
@@ -4926,7 +4926,7 @@ c sum_i log m_i*g_i*volu/4/pi**3/hquer**3/(n_l+1-i) -> flog
       flog=flog+alog(gg*am*volu/4/pi**3/hquer**3/(nlattc+1-i))
       enddo
       faclog=faclog+flog
-      
+
       return
       end
 
@@ -4963,7 +4963,7 @@ c----------------------------------------------------------------------
       end
 
 cc----------------------------------------------------------------------
-c      subroutine hnbids(jc,ids,iwts,i)  
+c      subroutine hnbids(jc,ids,iwts,i)
 cc----------------------------------------------------------------------
 cc  returns i id-codes ids() corr to jc  and their weights iwts()
 cc----------------------------------------------------------------------
@@ -4987,7 +4987,7 @@ c      enddo
 c      i=i+1
 c      ids(i)=0
 c      iwts(i)=iozero
-c    1 continue      
+c    1 continue
 c
 c           do j=1,nspecs
 c      do n=1,nflav
@@ -4996,7 +4996,7 @@ c      enddo
 c      i=i+1
 c      ids(i)=ispecs(j)
 c      iwts(i)=1
-c    2 continue      
+c    2 continue
 c           enddo
 c
 c      return
@@ -5006,7 +5006,7 @@ c----------------------------------------------------------------------
       subroutine hnbiiw(x,f,df)
 c----------------------------------------------------------------------
 c returns fctn value and first derivative at x of the
-c i-th integrated weight fctn minus random number  
+c i-th integrated weight fctn minus random number
 c for the asympotic phase space integral.
 c input:
 c   x:   x-value
@@ -5031,11 +5031,11 @@ c----------------------------------------------------------------------
       include 'epos.inc'
       parameter(maxp=500)
       common/confg/np,amass(maxp),ident(maxp),pcm(5,maxp),wtxlog,wtlog
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/crnoz/rnoz(maxp-1)
       common/citer/iter,itermx
-      common/cfact/faclog 
+      common/cfact/faclog
       common/chnbin/nump,ihadro(maxp)
       common /clatt/nlattc,npmax
       parameter(maxit=50000)
@@ -5076,7 +5076,7 @@ c----------------------------------------------------------------------
                       call hnbmin(keu,ked,kes,kec)
             elseif(tecm.lt.2.0.and.nk.ne.0)then
                       call hnbmin(keu,ked,kes,kec)
-            else 
+            else
                       call hgcaaa
                       call hgcnbi(iret)
                       if(iret.eq.1)then
@@ -5213,7 +5213,7 @@ c     *write(ifch,'(a,i7,3x,a,e13.6,3x,a,e13.6,3x,a,e13.6)')
 c     *'n:',n,'weight:',wt,'wts/n:',wts/n,'error:',wts/n/sqrt(1.*n)
 c           enddo
 c      return
-c      end 
+c      end
 cc----------------------------------------------------------------------
       subroutine hnbmet
 c----------------------------------------------------------------------
@@ -5227,11 +5227,11 @@ c----------------------------------------------------------------------
       common/confg/np,amass(maxp),ident(maxp),pcm(5,maxp),wtxlog,wtlog
       common/crnoz/rnoz(maxp-1)
       real rnozo(maxp-1)
-      common/cfact/faclog 
+      common/cfact/faclog
       dimension amasso(maxp),idento(maxp),pcmo(5,maxp)
       integer jc(nflav,2),jc1(nflav,2),jc2(nflav,2)
       common/citer/iter,itermx
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       parameter (literm=500)
       common/cmet/kspecs(mspecs),liter,lspecs(literm,mspecs)
@@ -5276,7 +5276,7 @@ c     ----------
       enddo
       call hnbzmu(-1)
            endif
-      
+
 c     remember old configuration
 c     --------------------------
       wtlo=wtlog
@@ -5407,7 +5407,7 @@ c     ------------------------------------------------------
      *call utstop('hnbmet: invalid particle species&')
            enddo
       keepr=0
-c-c   call hnbolo(1000) !instead of "call hnbody" for testing 
+c-c   call hnbolo(1000) !instead of "call hnbody" for testing
       keepr=1
       if(iocova.eq.1)call hnbody
       if(iocova.eq.2)call hnbodz
@@ -5431,7 +5431,7 @@ c     ----------------------------------------------
            if(wtlog-wtlo.lt.30.)then
       q=exp(wtlog-wtlo)*xba/xab
       r=rangen()
-      if(r.le.q)iacc=1 
+      if(r.le.q)iacc=1
       if(ish.ge.7)write(ifch,*)'new weight / old weight:',q,'    '
      *,'random number:',r
            else
@@ -5439,7 +5439,7 @@ c     ----------------------------------------------
       if(ish.ge.7)write(ifch,*)'log new weight / old weight:'
      *,wtlog-wtlo
            endif
-           if(iacc.eq.1)then 
+           if(iacc.eq.1)then
       if(ish.ge.7)write(ifch,*)'new configuration accepted'
       nacc=nacc+1
       naccit(iter)=1
@@ -5505,7 +5505,7 @@ c     iterc(liter)=iterc(liter-1)
 c     do j=1,nspecs
 c     lspecs(liter,j)=lspecs(liter-1,j)
 c     enddo
-c     endif      
+c     endif
       endif
            endif
       if(iter.le.iternc)return
@@ -5565,7 +5565,7 @@ c----------------------------------------------------------------------
       nump=0
       f1='(4i3,i7,i6)'
       ke=iabs(keux+kedx+kesx+kecx)
- 
+
       if(keux+kedx+kesx+kecx.ge.0)then
       keu=keux
       ked=kedx
@@ -5581,7 +5581,7 @@ c----------------------------------------------------------------------
       endif
       if(wri)write(ifch,'(4i3)')keux,kedx,kesx,kecx
       if(wri)write(ifch,'(4i3)')keu,ked,kes,kec
- 
+
 c get rid of anti-c and c (140, 240, -140, -240)
       if(kec.ne.0)then
    10 continue
@@ -5617,7 +5617,7 @@ c get rid of anti-c and c (140, 240, -140, -240)
       goto11
       endif
       endif
- 
+
 c get rid of anti-s (130,230)
     5 continue
       if(kes.lt.0)then
@@ -5636,7 +5636,7 @@ c get rid of anti-s (130,230)
       goto5
       endif
 
-c get rid of anti-d (120, -230)  
+c get rid of anti-d (120, -230)
    6  continue
       if(ked.lt.0)then
       ked=ked+1
@@ -5671,12 +5671,12 @@ c get rid of anti-u (-120, -130)
       endif
       goto7
       endif
- 
+
       if(keu+ked+kes+kec.ne.ke)call utstop('hnbmin: sum_kei /= ke&')
 
       keq=keu+ked
 
-c get rid of s (3331, x330, xx30) 
+c get rid of s (3331, x330, xx30)
       i=4
     2 i=i-1
     3 continue
@@ -5706,7 +5706,7 @@ c get rid of s (3331, x330, xx30)
 
       if(keu+ked.ne.keq)call utstop('hnbmin: keu+ked /= keq&')
 
-c get rid of d (2221, 1220, 1120) 
+c get rid of d (2221, 1220, 1120)
       i=4
    12 i=i-1
    13 continue
@@ -5731,7 +5731,7 @@ c get rid of d (2221, 1220, 1120)
 
       if(ked.ne.0)call utstop('hnbmin: ked .ne. 0&')
 
-c get rid of u (1111) 
+c get rid of u (1111)
     9 continue
       if(keu.gt.0)then
       keu=keu-3
@@ -5766,12 +5766,12 @@ c get rid of u (1111)
 
 c-------------------------------------------------------------
       subroutine hnbody
-c-------------------------------------------------------------  
+c-------------------------------------------------------------
 c   formerly subr genbod from genlib (cernlib).
 c   modified by K. Werner, march 94.
 c   subr to generate n-body event
 c   according to fermi lorentz-invariant phase space.
-c   the phase space integral is the sum over the weights wt divided 
+c   the phase space integral is the sum over the weights wt divided
 c   by the number of events (sum wt / n).
 c   adapted from fowl (cern w505) sept. 1974 by f. james.
 c   events are generated in their own center-of-mass,
@@ -5779,7 +5779,7 @@ c   but may be transformed to any frame using loren4.
 c
 c   input to and output from subr thru common block config.
 c   input:
-c             np=number of outgoing particles 
+c             np=number of outgoing particles
 c             tecm=total energy in center-of-mass
 c             amass(i)=mass of ith outgoing particle
 c   output:
@@ -5806,7 +5806,7 @@ c     !pcm1 is linear equiv. of pcm to avoid double indices
       external hnbiiw
 ctp060829      nas=5 !must be at least 3
       wri=.false.
-      if(ish.ge.7)wri=.true.  
+      if(ish.ge.7)wri=.true.
       if(wri)then
         write(ifch,*)('-',i=1,10)
      *,' entry sr hnbody ',('-',i=1,30)
@@ -5850,12 +5850,12 @@ c...fill rno with 3*nt-4 random numbers, the first nt-2 being ordered
       if(ntm2) 9,5,4
     4 continue
       call flpsore(rno,ntm2)
-    
+
 c...calculate emm().......M_i
 
       do 6 j=2,ntm1
     6 emm(j)=rno(j-1)*tecmtm+sm(j)
-    
+
 c...calculate wtlog
 
     5 continue
@@ -5906,7 +5906,7 @@ c...complete specification of event (raubold-lynch method)
             pcm(5,j)=sqrt(aa)
             pcm(4,j)=sqrt(aa+ems(j))
             call hnbrt2(c,s,cb,sb,pcm,j)
-          enddo        
+          enddo
         endif
       enddo
 
@@ -6003,11 +6003,11 @@ C
       R=J
       GO TO 20
    50 continue
-      
+
       do i=1,n-1
         if(a(i).gt.a(i+1))stop'FLPSORE: ERROR.                    '
-      enddo    
-        
+      enddo
+
       RETURN
       END
 
@@ -6017,7 +6017,7 @@ C
 
 c-------------------------------------------------------------
       subroutine hnbodz
-c-------------------------------------------------------------  
+c-------------------------------------------------------------
 c   subr to generate n-body event
 c   according to non-invariant phase space.
 c   the phase space integral is the sum over the weights exp(wtxlog)
@@ -6027,7 +6027,7 @@ c   events are generated in their own center-of-mass.
 c
 c   input to and output from subr is thru common block config.
 c   input:
-c             np=number of outgoing particles 
+c             np=number of outgoing particles
 c             tecm=total energy in center-of-mass
 c             amass(i)=mass of ith outgoing particle
 c   output:
@@ -6051,7 +6051,7 @@ c--------------------------------------------------------------
       if(ish.ge.6)write(ifch,1200)np,tecm
       if(ish.ge.6)write(ifch,*)'particle masses:'
       if(ish.ge.6)write(ifch,'(1x,10f6.3)')(amass(n),n=1,np)
-    
+
 c initialization ktnbod=1
       ktnbod=ktnbod + 1
       if(ktnbod.gt.1) goto 1
@@ -6061,7 +6061,7 @@ c     !ffqlog(n) = log{ (4*pi)**n  / (n-1)! }
       ffqlog(n)=ffqlog(n-1)+alog(4*pi/(n-1))
       enddo
     1 continue
-c set wtxlog -infinity for np<2 
+c set wtxlog -infinity for np<2
       if(np.lt.2) goto 1001
 c special treatment for np=2
       if(np.eq.2)then
@@ -6099,7 +6099,7 @@ c prefactor
       wtxlog=alog(tt)*(np-1) + ffqlog(np)
       if(ish.ge.7)
      *write(ifch,*)'wtxlog:',wtxlog,'   (prefactor)'
-c fill rnoz with np-1 random numbers 
+c fill rnoz with np-1 random numbers
       if(keepr.eq.0)then
       do 3 i= 1, np-1
     3 rnoz(i)=rangen()
@@ -6137,7 +6137,7 @@ c calculate t_i, e_i, p_i
       pcm(3,i)=0
       pcm(4,i)=ti(i)+amass(i)
       p52=ti(i)*(ti(i)+2*amass(i))
-      if(p52.gt.0)then 
+      if(p52.gt.0)then
       pcm(5,i)=sqrt(p52)
       else
       pcm(5,i)=ti(i)*sqrt(1+2*amass(i)/ti(i))
@@ -6172,7 +6172,7 @@ c print
       endif
       if(w.le.0.)goto1111
 c complete specification of event (random rotations and then deformations)
-      call hnbrot 
+      call hnbrot
       if(ish.ge.7)write(ifch,*)'momenta after rotations:'
       call hnbrop(96,0)
       call hnbrod
@@ -6216,15 +6216,15 @@ c-----------------------------------------------------------------------
       include 'epos.inc'
       parameter(maxp=500)
       common/confg/np,amass(maxp),ident(maxp),pcm(5,maxp),wtxlog,wtlog
-      a=0 
-      k=0 
+      a=0
+      k=0
       do j=1,loops
 c-c   if(mod(j,iterpr).eq.0)write(ifmt,*)'     iteration:',iter,j
       if(iocova.eq.1)call hnbody
       if(iocova.eq.2)call hnbodz
       if(ish.ge.8)write(ifch,*)'j:',j,'   wtxlog:',wtxlog
-           if(wtxlog.gt.-1e30)then 
-      k=k+1 
+           if(wtxlog.gt.-1e30)then
+      k=k+1
       if(k.eq.1)c=wtxlog
            if(a.gt.0.)then
       if(alog(a).lt.wtxlog-c-20)then
@@ -6232,12 +6232,12 @@ c-c   if(mod(j,iterpr).eq.0)write(ifmt,*)'     iteration:',iter,j
       c=wtxlog
       endif
            endif
-      a=a+exp(wtxlog-c) 
-           endif 
+      a=a+exp(wtxlog-c)
+           endif
       if(ish.ge.8)write(ifch,*)'k:',k,'   c:',c
-      enddo 
+      enddo
       a=a/loops
-      wtxlog=alog(a)+c 
+      wtxlog=alog(a)+c
       return
       end
 
@@ -6248,7 +6248,7 @@ c  formerly pdk from cernlib
 c  returns momentum p for twobody decay  a --> b + c
 c           a, b, c are the three masses
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c  this p is related to twobody phase space as R2 = pi * p /a  
+c  this p is related to twobody phase space as R2 = pi * p /a
 c-----------------------------------------------------------------------
       double precision aa,bb,cc,a2,b2,c2
       aa=a
@@ -6295,24 +6295,24 @@ c     ----------------------
       if(n2.lt.n1)then
       n1r=n1
       n1=n2
-      n2=n1r      
+      n2=n1r
       endif
       if(k.eq.2)then
       if(n1.eq.k1.or.n1.eq.k2.or.n2.eq.k1.or.n2.eq.k2)goto1
       endif
-      if(ident(n1).ne.0.and.ident(n2).ne.0)mm=1  ! hadron-hadron 
-      if(ident(n1).ne.0.and.ident(n2).eq.0)mm=2  ! hadron-empty 
-      if(ident(n1).eq.0.and.ident(n2).ne.0)mm=2  ! empty-hadron 
-      if(ident(n1).eq.0.and.ident(n2).eq.0)mm=3  ! empty-empty 
+      if(ident(n1).ne.0.and.ident(n2).ne.0)mm=1  ! hadron-hadron
+      if(ident(n1).ne.0.and.ident(n2).eq.0)mm=2  ! hadron-empty
+      if(ident(n1).eq.0.and.ident(n2).ne.0)mm=2  ! empty-hadron
+      if(ident(n1).eq.0.and.ident(n2).eq.0)mm=3  ! empty-empty
       if(ish.ge.7)then
         write(ifch,'(a,i2)')' mm:',mm
         write(ifch,*)'to be replaced:',n1,ident(n1)
         write(ifch,*)'to be replaced:',n2,ident(n2)
       endif
 
-c     flavour of n1+n2 --> jc      
+c     flavour of n1+n2 --> jc
 c     -----------------------
-           if(mm.eq.1)then 
+           if(mm.eq.1)then
       call idtr4(ident(n1),ic1)
       call iddeco(ic1,jc1)
       call idtr4(ident(n2),ic2)
@@ -6333,7 +6333,7 @@ c     -----------------------
       do j=1,2
       jc(i,j)=0
       enddo
-      enddo  
+      enddo
            endif
 
       if(k.eq.2)then
@@ -6347,11 +6347,11 @@ c     -----------------------
 c----------------------------------------------------------------------
       subroutine hnbpai(id1,id2,jc)
 c----------------------------------------------------------------------
-c  returns arbitrary hadron pair id1,id2, flavour written to jc  
+c  returns arbitrary hadron pair id1,id2, flavour written to jc
 c----------------------------------------------------------------------
       include 'epos.inc'
       integer jc(nflav,2),jc1(nflav,2),ic1(2),jc2(nflav,2),ic2(2)
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
 
 c     construct pair id1,id2
@@ -6439,7 +6439,7 @@ c     *call utstop('hnbpaj: nflav.gt.6: modify this routine&')
 
 c     construct possible pairs id1,id2
 c     --------------------------------
-     
+
       ipair=0
       iwpair=0
       idx=0
@@ -6562,17 +6562,17 @@ c-charm      if(jcmi(4).ne.0)stop'HNBPAJ: c not treated'
       if(abs(jcmi(1)).gt.3)goto3
       if(abs(jcmi(2)).gt.3)goto3
       if(abs(jcmi(3)).gt.3)goto3
-      if(abs(jcmi(4)).gt.3)goto3   !-charm  
+      if(abs(jcmi(4)).gt.3)goto3   !-charm
 
       if(jcmi(1).ne.0)goto111
       if(jcmi(2).ne.0)goto111
       if(jcmi(3).ne.0)goto111
-      if(jcmi(4).ne.0)goto111  !-charm  
+      if(jcmi(4).ne.0)goto111  !-charm
       nids=nids+1
       ids(nids)=0
       iwts(nids)=iozero
   111 continue
-  
+
       lkfok1=lkfok(1,jcmi(1),jcmi(2),jcmi(3),jcmi(4))
       if(lkfok1.gt.0)then
        nids=nids+1
@@ -6665,7 +6665,7 @@ c----------------------------------------------------------------------
       subroutine hnbpajini
 c----------------------------------------------------------------------
 c  initialize array to speed up hnbpaj calculation
-c  store sum of weights iwpair of possible pairs in an array 
+c  store sum of weights iwpair of possible pairs in an array
 c  for any combinations of quarks
 c----------------------------------------------------------------------
       include 'epos.inc'
@@ -6692,7 +6692,7 @@ c     --------------------------------
             do iqs=0,2
               do iqd=0,2
                 do iqu=0,2
-                 
+
       idx=idx+1
       idxpair(iqu,iqd,iqs,iaqu,iaqd,iaqs)=idx
 
@@ -6782,7 +6782,7 @@ c        endif
       ids(nids)=0
       iwts(nids)=iozero
   111 continue
-  
+
       lkfok1=lkfok(1,jcmi(1),jcmi(2),jcmi(3),jcmi(4))
       if(lkfok1.gt.0)then
        nids=nids+1
@@ -6859,7 +6859,7 @@ c phase space integral (see hagedorn, suppl nuov cim ix(x) (1958)646)
 c input: dimension np and momenta p_i=pcm(5,i) via /confg/
 c    1   < np <= npx : hagedorn method
 c    npx < np <= npy : integral method
-c    npy < np        : asymptotic method     
+c    npy < np        : asymptotic method
 c--------------------------------------------------------------------
       include 'epos.inc'
       parameter(maxp=500)
@@ -6867,7 +6867,7 @@ c--------------------------------------------------------------------
       integer ii(maxp),isi(maxp)
       double precision ppcm(maxp),ww,ppsum,ppmax
       external hnbrax
-      common/cepsr/nepsr 
+      common/cepsr/nepsr
       if(ish.ge.9)write(ifch,*)('-',i=1,10)
      *,' entry sr hnbraw ',('-',i=1,30)
 
@@ -6896,7 +6896,7 @@ c     ------------------------------
       if(ish.ge.7)write(ifch,'(1x,a,e12.5,4x)')
      *'sum p_i - 2*p_max not positive -->  w:',w
       goto1000
-      endif   
+      endif
 
 c     asymptotic method
 c     -----------------
@@ -6928,10 +6928,10 @@ c     ---------------
       if(ish.ge.9)write(ifch,*)'it:',it
       b=b*5./3.
       wio=win
-      call uttrap(hnbrax,0.,b,win) 
+      call uttrap(hnbrax,0.,b,win)
       iok=0
       if(abs(win-wio).le.epsr*abs((win+wio)/2))iok=1
-      if(it.eq.itmax)iok=1     
+      if(it.eq.itmax)iok=1
       if(ish.ge.8.or.ish.ge.7.and.iok.eq.1)
      *write(ifch,'(1x,2(a,e12.5,2x),a,i2,2x,a,i4)')
      *'integral method:   win:',win
@@ -7020,7 +7020,7 @@ c     ------------------------
       ww=ww*pmax/ppcm(i)/2./i
       enddo
       ww=-ww/pmax**3/pi/2.*np*(np-1)*(np-2)
-      whd=ww      
+      whd=ww
       if(ish.ge.7)write(ifch,'(1x,a,e12.5,4x,a)')
      *'hagedorn method:   whd:',whd,'double precision'
 
@@ -7060,7 +7060,7 @@ c----------------------------------------------------------------------
       parameter(maxp=500)
       common/confg/np,amass(maxp),ident(maxp),pcm(5,maxp),wtxlog,wtlog
 c      integer identx(maxp)
-      common /clatt/nlattc,npmax 
+      common /clatt/nlattc,npmax
       if(ish.ge.9)write(ifch,*)('-',i=1,10)
      *,' entry sr hnbrmz ',('-',i=1,30)
       if(np.eq.0)goto1000
@@ -7090,7 +7090,7 @@ c      npx=np
       endif
 
       if(i.eq.np+1)goto1000
-       
+
       ident(i)=ident(np)
       ident(np)=0
       goto1
@@ -7239,7 +7239,7 @@ c rotates momenta of /confg/ randomly
 c   input: pcm(5,i)
 c   output: pcm(1-3,i)
 c----------------------------------------------------------------------
-      common/cnsta/pi,pii,hquer,prom,piom,ainfin 
+      common/cnsta/pi,pii,hquer,prom,piom,ainfin
       parameter(maxp=500)
       common/confg/np,amass(maxp),ident(maxp),pcm(5,maxp),wtxlog,wtlog
       real u(3)
@@ -7260,7 +7260,7 @@ c----------------------------------------------------------------------
 cc-------------------------------------------------------------------
 c      subroutine hnbrt2old(c,s,c2,s2,pr,i)
 cc-------------------------------------------------------------------
-cc  formerly subr rotes2 from cernlib      
+cc  formerly subr rotes2 from cernlib
 cc  this subr now does two rotations (xy and xz)
 cc-------------------------------------------------------------------
 c      parameter(maxp=500)
@@ -7281,7 +7281,7 @@ c
 c-------------------------------------------------------------------
       subroutine hnbrt2(c,s,c2,s2,pr,i)
 c-------------------------------------------------------------------
-c  formerly subr rotes2 from cernlib      
+c  formerly subr rotes2 from cernlib
 c  this subr now does two rotations (xy and xz)
 c-------------------------------------------------------------------
       parameter(maxp=500)
@@ -7366,7 +7366,7 @@ c-----------------------------------------------------------------------
 c  defines particle species and masses and degeneracies.
 c  input:
 c    iopt=odd number: massless
-c    iopt=even number: same as iopt-1, but massive 
+c    iopt=even number: same as iopt-1, but massive
 c    iopt= 1: pi0 (massless)
 c    iopt= 2: pi0
 c    iopt= 3: pi-,pi0,pi+ (massless)
@@ -7377,18 +7377,18 @@ c    iopt= 7: 25 hadrons (massless)
 c    iopt= 8: 25 hadrons
 c    iopt= 9: 54 hadrons (massless)
 c    iopt=10: 54 hadrons
-c    iopt=11:  3 quarks  (massless) 
-c    iopt=12:  3 quarks 
-c    iopt=13:  54 hadrons + J/psi   (massless) 
-c    iopt=14:  54 hadrons + J/psi  
-c    iopt=15:  54 hadrons + J/psi + H  (massless) 
-c    iopt=16:  54 hadrons + J/psi + H 
+c    iopt=11:  3 quarks  (massless)
+c    iopt=12:  3 quarks
+c    iopt=13:  54 hadrons + J/psi   (massless)
+c    iopt=14:  54 hadrons + J/psi
+c    iopt=15:  54 hadrons + J/psi + H  (massless)
+c    iopt=16:  54 hadrons + J/psi + H
 c  output:
 c    nspecs: nr of species
 c    ispecs: id's
 c    aspecs: masses
 c-----------------------------------------------------------------------
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       parameter (nflav=6)
       integer jc(nflav,2),ic(2)
@@ -7403,11 +7403,11 @@ c-----------------------------------------------------------------------
       data jspe01/   110 /
       data jspe03/   110,  120, -120 /
       data jspe05/   110,  120, -120, 1120,-1120, 1220,-1220 /
-      data jspe07/  
+      data jspe07/
      *   110,  120, -120,  130, -130,  230, -230,  220,  330
      *, 1120,-1120, 1220,-1220, 1130,-1130, 2130,-2130
      *, 1230,-1230, 2230,-2230, 1330,-1330, 2330,-2330 /
-      data jspe09/  
+      data jspe09/
      *   110,  120, -120,  130, -130,  230, -230,  220,  330
      *,  111,  121, -121,  131, -131,  231, -231,  221,  331
      *, 1120,-1120, 1220,-1220, 1130,-1130, 2130,-2130
@@ -7416,7 +7416,7 @@ c-----------------------------------------------------------------------
      *, 1231,-1231, 2231,-2231, 1331,-1331, 2331,-2331, 3331,-3331 /
       data jspe11/
      *     1,   -1,    2,   -2,    3,   -3   /
-      data jspe13/  
+      data jspe13/
      *   110,  120, -120,  130, -130,  230, -230,  220,  330
      *,  111,  121, -121,  131, -131,  231, -231,  221,  331
      *, 1120,-1120, 1220,-1220, 1130,-1130, 2130,-2130
@@ -7424,7 +7424,7 @@ c-----------------------------------------------------------------------
      *, 1111,-1111, 1121,-1121, 1221,-1221, 2221,-2221, 1131,-1131
      *, 1231,-1231, 2231,-2231, 1331,-1331, 2331,-2331, 3331,-3331
      *, 441 /
-      data jspe15/  
+      data jspe15/
      *   110,  120, -120,  130, -130,  230, -230,  220,  330
      *,  111,  121, -121,  131, -131,  231, -231,  221,  331
      *, 1120,-1120, 1220,-1220, 1130,-1130, 2130,-2130
@@ -7445,11 +7445,11 @@ c-----------------------------------------------------------------------
       if(ioptx.eq.13)nspecs=nspe13
       if(ioptx.eq.15)nspecs=nspe15
            do i=1,nspecs
-      if(ioptx.eq.1)ispecs(i)=jspe01(i)      
-      if(ioptx.eq.3)ispecs(i)=jspe03(i)      
-      if(ioptx.eq.5)ispecs(i)=jspe05(i)      
-      if(ioptx.eq.7)ispecs(i)=jspe07(i)      
-      if(ioptx.eq.9)ispecs(i)=jspe09(i)      
+      if(ioptx.eq.1)ispecs(i)=jspe01(i)
+      if(ioptx.eq.3)ispecs(i)=jspe03(i)
+      if(ioptx.eq.5)ispecs(i)=jspe05(i)
+      if(ioptx.eq.7)ispecs(i)=jspe07(i)
+      if(ioptx.eq.9)ispecs(i)=jspe09(i)
       if(ioptx.eq.11)ispecs(i)=jspe11(i)
       if(ioptx.eq.13)ispecs(i)=jspe13(i)
       if(ioptx.eq.15)ispecs(i)=jspe15(i)
@@ -7515,7 +7515,7 @@ c     * id,iiu,iid,iis,(lkfok(iiu,iid,iis,kk),kk=1,7)
 
 c-------------------------------------------------------------
       subroutine hnbspf(ku,kd,ks,kc,kb,kt,j,n,spelog)
-c-------------------------------------------------------------  
+c-------------------------------------------------------------
 c  returns spelog = log of factor for consid. different species
 c  spelog is double precision
 c  option ioflac determines the method:
@@ -7523,13 +7523,13 @@ c     ioflac=1: ignore flavour conservation
 c     ioflac=2: flavour conservation implemented straightforward
 c                 (only for nspecs=3,7)
 c     ioflac=3: flavour conservation via generating fctn
-c  further input: 
+c  further input:
 c     ku,...,kt (integer) : flavour
-c     j (integer) : excluded species 
-c     n (integer) : multiplicity 
-c-------------------------------------------------------------  
+c     j (integer) : excluded species
+c     n (integer) : multiplicity
+c-------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cflac/ifok(nflav,mspecs),ifoa(nflav)
       integer m(7),l(7),ifot(nflav)
@@ -7576,7 +7576,7 @@ c      parameter(mxhh=200)
       n3=n-n1-n2
       do 5 nf=1,nflav
       if(ifoa(nf).eq.0.and.ifot(nf).eq.0)goto5
-      if(n1*ifok(nf,1)+n2*ifok(nf,2)+n3*ifok(nf,3).ne.ifot(nf))goto2       
+      if(n1*ifok(nf,1)+n2*ifok(nf,2)+n3*ifok(nf,3).ne.ifot(nf))goto2
     5 continue
       spe=spe+utgam2(1.d0+n)
      &/utgam2(1.d0+n1)/utgam2(1.d0+n2)/utgam2(1.d0+n3)
@@ -7627,7 +7627,7 @@ c      parameter(mxhh=200)
       do 15 nf=1,nflav
       if(ifoa(nf).eq.0.and.ifot(nf).eq.0)goto15
       if(n1*ifok(nf,1)+n2*ifok(nf,2)+n3*ifok(nf,3)+n4*ifok(nf,4)
-     *+n5*ifok(nf,5)+n6*ifok(nf,6)+n7*ifok(nf,7).ne.ifot(nf))goto12       
+     *+n5*ifok(nf,5)+n6*ifok(nf,6)+n7*ifok(nf,7).ne.ifot(nf))goto12
    15 continue
       spe=spe+1d0/faci(n)*faci(n1)*faci(n2)*faci(n3)*faci(n4)
      &*faci(n5)*faci(n6)*faci(n7)
@@ -7667,7 +7667,7 @@ c      parameter(mxhh=200)
       do 16 nf=1,nflav
       if(ifoa(nf).eq.0.and.ifot(nf).eq.0)goto16
       if(n1*ifok(nf,1)+n2*ifok(nf,2)+n3*ifok(nf,3)+n4*ifok(nf,4)
-     *+n5*ifok(nf,5)+n6*ifok(nf,6)+n7*ifok(nf,7).ne.ifot(nf))goto13       
+     *+n5*ifok(nf,5)+n6*ifok(nf,6)+n7*ifok(nf,7).ne.ifot(nf))goto13
    16 continue
       spe=spe+1d0/faci(n)*faci(n1)*faci(n2)*faci(n3)*faci(n4)
      &*faci(n5)*faci(n6)*faci(n7)
@@ -7700,7 +7700,7 @@ c      parameter(mxhh=200)
 
 c-------------------------------------------------------------
       subroutine hnbspg(ku,kd,ks,kc,kb,kt,j,n,spelog)
-c-------------------------------------------------------------  
+c-------------------------------------------------------------
       include 'epos.inc'
       double precision spelog,spalog
       if(ioflac.ne.0)return
@@ -7708,7 +7708,7 @@ c-------------------------------------------------------------
       call hnbspf(ku,kd,ks,kc,kb,kt,j,n,spalog)
       ioflac=3
       call hnbspf(ku,kd,ks,kc,kb,kt,j,n,spelog)
-      ioflac=0     
+      ioflac=0
       write(ifch,*)'ioflac=2/3:',spalog,spelog
       return
       end
@@ -7737,7 +7737,7 @@ c----------------------------------------------------------------------
      *, 8*2.
      *,10*4.
      *, 8*2.
-     *,10*4.   
+     *,10*4.
      *,1*3
      *,1*3/
       do i=1,nspec
@@ -7756,8 +7756,8 @@ c----------------------------------------------------------------------
           fac=fac*(1+facts)
         elseif(abs(id).lt.1000)then
           fac=fac*(1-facts)
-        endif  
-      endif        
+        endif
+      endif
       spideg=spideg*fac
       goto1
       endif
@@ -7793,7 +7793,7 @@ c----------------------------------------------------------------------
      *,' entry sr hnbtst ',('-',i=1,30)
       if(ish.ge.7)write(ifch,*)'configuration:'
       if(ish.ge.7)write(ifch,*)(ident(i),i=1,np)
-      if(ish.ge.7)write(ifch,*)'n_l:',nlattc,'   n_0:',nlattc-np   
+      if(ish.ge.7)write(ifch,*)'n_l:',nlattc,'   n_0:',nlattc-np
 
 c log of prod m_i*volu/4/pi**3/hquer**3 -> f5log
       f5log=0
@@ -7807,7 +7807,7 @@ c log f4log=0
       f4log=0
       if(ish.ge.7)write(ifch,*)'log(f4):',f4log
 
-c log of 1/prod n_alpha! -> f3log   
+c log of 1/prod n_alpha! -> f3log
       dbllog=0
       n1=1
       nx=1
@@ -7835,7 +7835,7 @@ c log of 1/prod n_alpha! -> f3log
 c log of f3 * f4 * f5
       f35log=f5log+f4log+f3log
       if(ish.ge.7)write(ifch,*)'log(f3*f4*f5):',f35log
-      
+
 c log of phase space integral --> psilog
            if(iocova.eq.1)then
       psilog=alog(2.*np*np*(np-1)/tecm**4/pi)
@@ -7885,7 +7885,7 @@ c log of macro/micro factor (f1*f2) --> f12log
 
       psulog=psilog
       wtulog=w35log
-   
+
       if(ish.ge.7)write(ifch,*)('-',i=1,30)
      *,' exit sr hnbtst ',('-',i=1,10)
       ish=ish0
@@ -7898,7 +7898,7 @@ cc----------------------------------------------------------------------
 cc  x --> x*10.**e with x.lt.10.**10.
 cc----------------------------------------------------------------------
 c           if(x.eq.0.)then
-c      e=0.      
+c      e=0.
 c           else
 c      e=int(alog10(abs(x)))/10*10
 c      x=x/10.**e
@@ -7958,7 +7958,7 @@ c for iii>0: filling histogram considering ptl iii
 c----------------------------------------------------------------------
       parameter(maxp=500)
       common/confg/np,amass(maxp),ident(maxp),pcm(5,maxp),wtxlog,wtlog
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       parameter (nhise=100)
       common/chise/hise(mspecs,nhise)
@@ -7997,7 +7997,7 @@ c for iii>0: filling histogram considering ptl iii
 c----------------------------------------------------------------------
       parameter(maxp=500)
       common/confg/np,amass(maxp),ident(maxp),pcm(5,maxp),wtxlog,wtlog
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       parameter (nhismu=500)
       common/chismu/hismu(mspecs,0:nhismu),hismus(nhismu)
@@ -8039,7 +8039,7 @@ c----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine xhgcam(amt,iii)
 c-----------------------------------------------------------------------
-c creates unnormalized histogram for total mass of grand 
+c creates unnormalized histogram for total mass of grand
 c canonically generated sample
 c xpar1: nr. of bins
 c xpar2: m_1 (lower boundary)
@@ -8053,11 +8053,11 @@ c-----------------------------------------------------------------------
       character cen*6,cvol*6
 
       if(iii.eq.0)then
-       
+
       am(nrclu)=amt
 
       return
- 
+
       elseif(iii.lt.0)then
 
       nbin=nint(xpar3)
@@ -8123,7 +8123,7 @@ c-----------------------------------------------------------------------
       parameter(mxclu=10000)
       common/cchi/chi2(mxclu)
       character cnu*2,cinco*1,cen*6,cvol*6
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
 
          if(chi.ge.0.0)then
@@ -8193,14 +8193,14 @@ c  xpar4 specifies line type : dashed (0), dotted (1), full (2) dado (3)
 c  xpar5 specifies statistics to be used ,(0) same as iostat
 c                                         (1) boltzmann
 c output:
-c  histo-file 
+c  histo-file
 c  newpage, zone and plot commands not included !!!
 c-----------------------------------------------------------------------
       include 'epos.inc'
       common/citer/iter,itermx
       parameter (nbin=200)
       real datx(nbin),daty(nbin)
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cbol/rmsbol(mspecs),ptlbol(mspecs),chebol(mspecs),tembol
@@ -8248,9 +8248,9 @@ c-----------------------------------------------------------------------
         endif
       daty(j)=daty(j)+dnde*gspecs(i)*volu/hquer**3/8./pi**3
 10    continue
-    
+
        else
- 
+
       dnde=0.0
         if(datx(j).ge.aspecs(id))then
       x=100.
@@ -8317,7 +8317,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine xhgcfl(u,d,s,iii)
 c-----------------------------------------------------------------------
-c creates unnormalized histogram for net flavor content of grand 
+c creates unnormalized histogram for net flavor content of grand
 c canonically generated sample
 c xpar1: specifies width of plot, netflavor centered
 c-----------------------------------------------------------------------
@@ -8330,13 +8330,13 @@ c-----------------------------------------------------------------------
       character cfl*3,cen*6,cvol*6
 
       if(iii.eq.0)then
-       
+
       ku(nrclu)=u
       kd(nrclu)=d
       ks(nrclu)=s
 
       return
- 
+
       elseif(iii.lt.0)then
 
       kwid=nint(xpar1)
@@ -8443,14 +8443,14 @@ c  xpar1 specifies particle species by paige id, 0 for all
 c  xpar2 and xpar3 specify xrange of plot
 c  xpar4 specifies line type : dashed (0), dotted (1), full (2)
 c output:
-c  histo-file 
+c  histo-file
 c  newpage, zone and plot commands not included !!!
 c-----------------------------------------------------------------------
       include 'epos.inc'
       common/citer/iter,itermx
       parameter (nbin=200)
       real datx(nbin),daty(nbin)
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       character cen*6,cvo*6,cit*5,ctem*5
@@ -8551,19 +8551,19 @@ c  xpar6 specifies line type : dashed (0), dotted (1), full (2)
 c  xpar7 specifies statistics : same as iostat (0)
 c                               boltzmann (1)
 c output:
-c  histo-file 
+c  histo-file
 c  newpage, zone and plot commands not included !!!
-c-----------------------------------------------------------------------  
+c-----------------------------------------------------------------------
       include 'epos.inc'
       parameter (nbin=200)
       real datx(nbin),daty(nbin)
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cbol/rmsbol(mspecs),ptlbol(mspecs),chebol(mspecs),tembol
       common/cgctot/rmstot,ptltot
       character cyield*8,cen*6,cvo*6,cinco*1
-      
+
 
       idpa=nint(xpar1)
       ixra=nint(xpar2)
@@ -8572,7 +8572,7 @@ c-----------------------------------------------------------------------
       ist=nint(xpar7)
       if(ist.eq.0.and.iostat.eq.1)ist=1
 
- 
+
       id=0
       jx=100
       ymin=1./nevent/10.
@@ -8580,7 +8580,7 @@ c-----------------------------------------------------------------------
       do i=1,nspecs
       if(ispecs(i).eq.idpa)id=i
       enddo
-   
+
        if(ixra.eq.1)then
       x1=anint(xpar3)
       x2=anint(xpar4)
@@ -8588,7 +8588,7 @@ c-----------------------------------------------------------------------
       if(id.eq.0)then
       x1=anint(ptltot-iwid*rmstot)
       x2=anint(ptltot+iwid*rmstot)
-      else 
+      else
       x1=anint(ptlngc(id)-iwid*rmsngc(id))
       x2=anint(ptlngc(id)+iwid*rmsngc(id))
       endif
@@ -8607,7 +8607,7 @@ c     total multiplicity
 c     ------------------
       x=100.
       if(rmstot.ge.1.e-10)x=(datx(j)-ptltot)**2/rmstot**2/2.
- 
+
        if(x.ge.60)then
       pn=0.0
        else
@@ -8617,9 +8617,9 @@ c     ------------------
       daty(j)=pn
 
          else
- 
+
 c     one species (specified by id)
-c     ------------------------------    
+c     ------------------------------
       x=100.
       if(rmsngc(id).ge.1.e-10.and.ist.eq.0)
      *x=(datx(j)-ptlngc(id))**2/rmsngc(id)**2/2.
@@ -8671,13 +8671,13 @@ c     ------------------------------
 
          do j=1,jx
       write(ifhi,'(2e12.4)')datx(j),daty(j)
-         enddo 
+         enddo
 
       write(ifhi,'(a)')    '  endarray'
       write(ifhi,'(a)')    'closehisto'
 
 
-      return 
+      return
       end
 
 
@@ -8695,19 +8695,19 @@ c  xpar6 specifies line type : dashed (0), dotted (1), full (2) dado (3)
 c  xpar7 specifies statistics : same as iostat (0)
 c                               boltzmann (1)
 c output:
-c  histo-file 
+c  histo-file
 c  newpage, zone and plot commands not included !!!
-c-----------------------------------------------------------------------  
+c-----------------------------------------------------------------------
       include 'epos.inc'
       parameter (nbin=200)
       real datx(nbin),daty(nbin)
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cbol/rmsbol(mspecs),ptlbol(mspecs),chebol(mspecs),tembol
       common/cgctot/rmstot,ptltot
       character cyield*8,cen*6,cvo*6,cinco*1
-      
+
 
       idpa=nint(xpar1)
       ixra=nint(xpar2)
@@ -8716,14 +8716,14 @@ c-----------------------------------------------------------------------
       ist=nint(xpar7)
       if(ist.eq.0.and.iostat.eq.1)ist=1
 
- 
+
       id=0
       ymin=1./nevent/10.
       if(nevent.le.10)ymin=ymin/10.
       do i=1,nspecs
       if(ispecs(i).eq.idpa)id=i
       enddo
-   
+
        if(ixra.eq.1)then
       n1=nint(xpar3)
       n2=nint(xpar4)
@@ -8731,7 +8731,7 @@ c-----------------------------------------------------------------------
       if(id.eq.0)then
       n1=nint(ptltot-iwid*rmstot)
       n2=nint(ptltot+iwid*rmstot)
-      else 
+      else
       n1=nint(ptlngc(id)-iwid*rmsngc(id))
       n2=nint(ptlngc(id)+iwid*rmsngc(id))
       endif
@@ -8757,9 +8757,9 @@ c     ------------------
       daty(j)=1./jf*ptltot**(j-1)*exp(-ptltot)
 
          else
- 
+
 c     one species (specified by id)
-c     ------------------------------    
+c     ------------------------------
 
       if(ist.eq.0)pn=1./jf*ptlngc(id)**(j-1)*exp(-ptlngc(id))
       if(ist.eq.1)pn=1./jf*ptlbol(id)**(j-1)*exp(-ptlbol(id))
@@ -8802,13 +8802,13 @@ c     ------------------------------
 
          do j=1,jx
       write(ifhi,'(2e12.4)')datx(j),daty(j)
-         enddo 
+         enddo
 
       write(ifhi,'(a)')    '  endarray'
       write(ifhi,'(a)')    'closehisto'
 
 
-      return 
+      return
       end
 
 c-----------------------------------------------------------------------
@@ -8822,14 +8822,14 @@ c  xpar2 rapidity window
 c  xpar3 and xpar4 specify xrange of plot
 c  xpar5 specifies line type : dashed (0), dotted (1), full (2)
 c output:
-c  histo-file 
+c  histo-file
 c  newpage, zone and plot commands not included !!!
 c-----------------------------------------------------------------------
       include 'epos.inc'
       common/citer/iter,itermx
       parameter (nbin=200)
       real datx(nbin),daty(nbin)
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       character crap*5,cen*6,cvo*6,cit*5
@@ -8929,13 +8929,13 @@ c  xpar1 specifies particle species by paige id, 0 for all
 c  xpar2 and xpar3 specify xrange of plot
 c  xpar4 specifies line type : dashed (0), dotted (1), full (2)
 c output:
-c  histo-file 
+c  histo-file
 c  newpage, zone and plot commands not included !!!
 c-----------------------------------------------------------------------
       include 'epos.inc'
       parameter (nbin=200)
       real datx(nbin),daty(nbin)
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       common/cgctot/rmstot,ptltot
@@ -8992,7 +8992,7 @@ c     if(che.le.60.0.and.che.ge.(-60.0))dndy=exp(che)
 
       daty(j)=daty(j)+dndy
 
-10    continue       
+10    continue
 
        else
 
@@ -9023,7 +9023,7 @@ c     if(che.le.60.0.and.che.ge.(-60.0))dndy=exp(che)
        endif
 
          enddo
-      
+
       write(cen,'(f6.1)')tecm
       write(cvo,'(f6.1)')volu
       if(id.eq.0)then
@@ -9072,7 +9072,7 @@ c xpar2: 1: actual spectrum 2: fit
 c xpar3: 1: de/d3p 2: ede/d3e
 c-----------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       parameter (nhise=100)
       common/chise/hise(mspecs,nhise)
@@ -9143,7 +9143,7 @@ c-c   if(e.lt.0.2)dats(i)=1e10
       write(ifhi,'(a,a)')  'text 0 0 "title id='//chid
      *                           ,'   N='//cyield//'   T='//ctem//'"'
       write(ifhi,'(a)')    'text 0 0 "xaxis energy (GeV)"'
-      write(ifhi,'(a)')    'text 0 0 "yaxis '//ch//' dn/d3p (GeV-3)"' 
+      write(ifhi,'(a)')    'text 0 0 "yaxis '//ch//' dn/d3p (GeV-3)"'
       write(ifhi,'(a)')    'array 2'
       do i=1,nhise
       if(mode.eq.1)write(ifhi,'(2e12.4)')datx(i),daty(i)
@@ -9169,7 +9169,7 @@ c xpar1: particle species (0=all, else venus id-code)
 c xpar2: 1:actual multiplicity 2:average multiplicity 3:grand canonical
 c-----------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       parameter (literm=500)
       common/cmet/kspecs(mspecs),liter,lspecs(literm,mspecs)
@@ -9270,7 +9270,7 @@ c xpar2: xrange automatic (0) or given via xpar3,4 (else)
 c xpar3,4: xrange
 c-----------------------------------------------------------------------
       include 'epos.inc'
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       parameter (nhismu=500)
       common/chismu/hismu(mspecs,0:nhismu),hismus(nhismu)
@@ -9337,7 +9337,7 @@ c-----------------------------------------------------------------------
      *                              ,cvolu//'"'
       write(ifhi,'(a)')       'text 0 0 "xaxis multiplicity n  "'
       write(ifhi,'(a)')       'text 0 0 "yaxis dN/dn"'
-      write(ifhi,'(a)')       'text 0.30 0.25 "N?MC!='//cyield//'"'   
+      write(ifhi,'(a)')       'text 0.30 0.25 "N?MC!='//cyield//'"'
       write(ifhi,'(a)')       'array 2'
       do i=1,jx
       write(ifhi,'(2e12.4)')   datx(i),daty(i)
@@ -9390,7 +9390,7 @@ c-----------------------------------------------------------------------
       write(ifhi,'(a)')       'text 0 0 "title id='//chid//'"'
       write(ifhi,'(a)')       'text 0 0 "xaxis multiplicity n  "'
       write(ifhi,'(a)')       'text 0 0 "yaxis dN/dn"'
-      write(ifhi,'(a)')       'text 0.30 0.25 "N?MC!='//cyield//'"'   
+      write(ifhi,'(a)')       'text 0.30 0.25 "N?MC!='//cyield//'"'
       write(ifhi,'(a)')       'array 2'
       do i=1,jx
       write(ifhi,'(2e12.4)')   datx(i),daty(i)
@@ -9409,7 +9409,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine xhnbmz
 c-----------------------------------------------------------------------
-c produces histogram of multiplicity distribution from droplet decay 
+c produces histogram of multiplicity distribution from droplet decay
 c or average multiplicity versus iterations
 c for massless hadrons
 c complete histogram: openhisto ... closehisto
@@ -9419,7 +9419,7 @@ c xpar2: lower limit multiplicity
 c xpar3: upper limit multiplicity
 c xpar4: lower limit total multiplicity   (also necc for xpar1.ne.0)
 c xpar5: upper limit  "      "            (also necc for xpar1.ne.0)
-c xpar6: sets htyp: 1->lfu, 2->ldo, 3->lda, 4->ldd 
+c xpar6: sets htyp: 1->lfu, 2->ldo, 3->lda, 4->ldd
 c xpar7: 0: multiplicity distribution
 c        >0: av multiplicity vs iterations (itermx=xpar7)
 c-----------------------------------------------------------------------
@@ -9427,7 +9427,7 @@ c-----------------------------------------------------------------------
       parameter(maxp=500)
       common/confg/np,amass(maxp),ident(maxp),pcm(5,maxp),wtxlog,wtlog
       common/ctst/psulog,wtulog
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       parameter (nhismu=500)
       common/cflac/ifok(nflav,mspecs),ifoa(nflav)
@@ -9463,7 +9463,7 @@ c-----------------------------------------------------------------------
       call hnbtst(0)
       wtzlog=wtulog
       if(ioflac.eq.0)call hnbspg(keu,ked,kes,kec,keb,ket,0,np,spelog)
-      if(ioflac.ne.0)call hnbspf(keu,ked,kes,kec,keb,ket,0,np,spelog)       
+      if(ioflac.ne.0)call hnbspf(keu,ked,kes,kec,keb,ket,0,np,spelog)
       wtulog=wtulog+spelog
       else
       wtzlog=-1000
@@ -9483,7 +9483,7 @@ c-----------------------------------------------------------------------
       datyu(l)=exp(datyu(l))
       else
       datyu(l)=exp(-50.)
-      endif  
+      endif
       yield=yield+i*datyu(l)
       su=su+datyu(l)
            enddo
@@ -9499,7 +9499,7 @@ c     ---
         if(idcode.eq.0.and.itmax.eq.0)then
       write(ifhi,'(a,2e11.3)')'openhisto xrange',x1,x2
       write(ifhi,'(a)')       'htyp '//htyp//' xmod lin ymod log'
-      write(ifhi,'(a)')       'text 0.30 0.15 "N?ana!='//cyieur//'"'   
+      write(ifhi,'(a)')       'text 0.30 0.15 "N?ana!='//cyieur//'"'
       write(ifhi,'(a)')       'array 2'
       do i=1,jx
       write(ifhi,'(2e12.4)')   datx(i),datyu(i)
@@ -9563,7 +9563,7 @@ c     ---
         if(itmax.eq.0)then
       write(ifhi,'(a,2e11.3)')'openhisto xrange',x1,x2
       write(ifhi,'(a)')       'htyp '//htyp//' xmod lin ymod log'
-      write(ifhi,'(a)')       'text 0.30 0.15 "N?ana!='//cyieur//'"'   
+      write(ifhi,'(a)')       'text 0.30 0.15 "N?ana!='//cyieur//'"'
       write(ifhi,'(a)')       'array 2'
       do i=1,jx
       write(ifhi,'(2e12.4)')   datx(i),datyu(i)
@@ -9596,7 +9596,7 @@ c fills histograms (iii>=0) or writes histogram to histo-file (iii<0)
 c regarding exponential autocorrelation time and acceptance rate
 c
 c input:
-c   requires complete run with application hadron (iappl=1) 
+c   requires complete run with application hadron (iappl=1)
 c   or application metropolis (iappl=4)
 c   ioceau=1 necessary
 c
@@ -9604,13 +9604,13 @@ c  output:
 c   for iii=0 (only valid for iappl=4):
 c     data(nrevt): nrevt  (event number)               /cdat/
 c     datb(nrevt): taui   (calculated corr time)       /cdat/
-c     datc(nrevt): accrat (acceptance rate)            /cdat/      
+c     datc(nrevt): accrat (acceptance rate)            /cdat/
 c     datd(nrevt): taue   (parametrized corr time)     /cdat/
 c   for iii>0 (only valid for iappl=1):
 c     nrclu=nrclu+1                                    /cnrclu/
 c     data(nrclu): nrclu  (droplet number)             /cdat/
 c     datb(nrclu): taui-taue (calc - param corr time)  /cdat/
-c     datc(nrclu): accrat (acceptance rate)            /cdat/   
+c     datc(nrclu): accrat (acceptance rate)            /cdat/
 c     datd(nrclu): avnp (average particle number)      /cdat/
 c   for iii<0:
 c     writes complete histogram (openhisto ... closehisto) to histofile
@@ -9625,7 +9625,7 @@ c-----------------------------------------------------------------------
       common/citer/iter,itermx
       common /clatt/nlattc,npmax
       common/cgctot/rmstot,ptltot
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       parameter (nbin=500)
@@ -9721,8 +9721,8 @@ c     -------------------
       datc(nrclu)=accrat
       datd(nrclu)=avnp
        endif
-          
-c          -----------------------------------  
+
+c          -----------------------------------
            elseif(iii.lt.0.and.iappl.eq.4)then
 c          -----------------------------------
 
@@ -9738,7 +9738,7 @@ c          -----------------------------------
        endif
       write(cvol,'(f7.3)')volu
       write(clatt,'(i3)')nlattc
-      write(cit,'(i5)')itermx     
+      write(cit,'(i5)')itermx
       if(ioobsv.eq.0)then
       write(cobs,'(a)')'all'
       else
@@ -9747,7 +9747,7 @@ c          -----------------------------------
       write(cnc,'(i5)')iternc
       if(iozevt.eq.0)write(czer,'(i5)')iozero
       if(iozevt.gt.0)write(cdz,'(i5)')iozinc
-                
+
       x1=1
       x2=nevent
 
@@ -9818,10 +9818,10 @@ c          -----------------------------------
 
       endif
 
-c          -----------------------------------  
+c          -----------------------------------
            elseif(iii.lt.0.and.iappl.eq.1)then
 c          -----------------------------------
-      
+
       if(ioobsv.eq.0)then
       write(cobs,'(a)')'all'
       else
@@ -9904,19 +9904,19 @@ c  output:
 c   for iii=0 (only valid for iappl=4):
 c     data(nrevt): nrevt (event number)              /cdat/
 c     datb(nrevt): tau   (calculated int corr time)  /cdat/
-c     datc(nrevt): stau  (variance tau)              /cdat/        
+c     datc(nrevt): stau  (variance tau)              /cdat/
 c     datd(nrevt): avnp  (multiplicity)              /cdat/
 c     date(nrevt): sobs  (variance multiplicity)     /cdat/
 c     datf(nrevt):       (gc multiplicity)           /cdat/
 c   for iii=0 and iosngl>0:
 c     writes complete set of histograms (newpage zone 1 3 1
 c     openhisto ... closehisto plot0 ... openhisto ... closehisto plot 0)
-c     concerning acceptance rate, rejection rate, correlation function 
+c     concerning acceptance rate, rejection rate, correlation function
 c     for specific event, specified by value of iosngl (=nrevt+1)
 c   for iii<0:
 c     writes complete histogram (openhisto ... closehisto) to histofile
-c       xpar1=1: (data,datb,datc)   
-c       xpar1=2: (data,datd,date,datf)   
+c       xpar1=1: (data,datb,datc)
+c       xpar1=2: (data,datd,date,datf)
 c------------------------------------------------------------------------
       include 'epos.inc'
       parameter(maxit=50000)
@@ -9926,7 +9926,7 @@ c------------------------------------------------------------------------
       common/confg/np,amass(maxp),ident(maxp),pcm(5,maxp),wtxlog,wtlog
       common /clatt/nlattc,npmax
       common/cgctot/rmstot,ptltot
-      parameter (mspecs=56)    
+      parameter (mspecs=56)
       common/cspecs/nspecs,ispecs(mspecs),aspecs(mspecs),gspecs(mspecs)
       common/cgchg/rmsngc(mspecs),ptlngc(mspecs),chemgc(mspecs),tem
       parameter (nbin=500)
@@ -9948,7 +9948,7 @@ c------------------------------------------------------------------------
 c          ----------------
            if(iii.eq.0)then
 c          ----------------
-      
+
 c     mean
 c     ----
       xnptot=nptot
@@ -10246,7 +10246,7 @@ c          --------------------
 
 c          -----
            endif
-c          -----     
+c          -----
 
-      return 
+      return
       end
