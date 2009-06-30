@@ -197,7 +197,7 @@ Int_t  AliTriggerRunScalers::FindNearestScalersRecord( const AliTimeStamp *stamp
    // is out of range return -1
 
    Int_t   base, position=-1, last, result = 0;
-   AliTimeStamp *op2 = NULL;
+   Int_t op2 = 0;
    
    //fScalersRecord.Sort();
 
@@ -208,15 +208,15 @@ Int_t  AliTriggerRunScalers::FindNearestScalersRecord( const AliTimeStamp *stamp
       position = (base+last) / 2;
       cout << "pos " <<   position<< " base " <<   base << "last " <<   last << endl;
       AliTriggerScalersRecord* rec = (AliTriggerScalersRecord*)fScalersRecord.At(position);
-      if( rec ) op2 = rec->GetTimeStamp();
-      if( op2 && (result = stamp->Compare(op2)) == 0  )
+      if( rec && rec->GetTimeStamp()) op2 = 1;
+      if( op2 && (result = stamp->Compare(rec->GetTimeStamp())) == 0  )
          return position;  // exact match
       cout << "result " <<   result << " op2 " << op2 << " rec "<< rec << endl;
       if (!op2 || result < 0)
          last = position-1;
       else
          base = position+1;
-      op2 = NULL;  
+      op2 = 0;  
    }
    if( (position == 0 && result < 0) || position >= fScalersRecord.GetEntriesFast() ) 
     return -1;  // out of range
