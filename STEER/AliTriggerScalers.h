@@ -45,6 +45,7 @@ public:
                UInt_t    GetL1CA() const { return fL1CA; }
                UInt_t    GetL2CB() const { return fL2CB; }
                UInt_t    GetL2CA() const { return fL2CA; }
+	         void    GetAllScalers(UInt_t *scalers) const;
               UChar_t    GetClassIndex() const { return fClassIndex; }
 private: 
    

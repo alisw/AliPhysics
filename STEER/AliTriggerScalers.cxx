@@ -74,7 +74,16 @@ Int_t  AliTriggerScalers::Compare( const TObject* obj ) const
   if( fClassIndex > ((AliTriggerScalers*)obj)->fClassIndex ) return 1;
   return 0;
 }
-
+//____________________________________________________________________________
+void AliTriggerScalers::GetAllScalers(UInt_t *scalers) const
+{
+ scalers[0]=fLOCB;
+ scalers[1]=fLOCA;
+ scalers[2]=fL1CB;
+ scalers[3]=fL1CA;
+ scalers[4]=fL2CB;
+ scalers[5]=fL2CA;
+}
 //_____________________________________________________________________________
 void AliTriggerScalers::Print( const Option_t* ) const
 {
