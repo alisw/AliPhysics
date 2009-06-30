@@ -131,6 +131,9 @@ public:
   ULong64_t GetTriggerMask() const {return fHeader->GetTriggerMask();}
   TString   GetFiredTriggerClasses() const {return fESDRun->GetFiredTriggerClasses(fHeader->GetTriggerMask());}
   Bool_t    IsTriggerClassFired(const char *name) const {return fESDRun->IsTriggerClassFired(fHeader->GetTriggerMask(),name);}
+  TObject*  GetHLTTriggerDecision() const;
+  TString   GetHLTTriggerDescription() const;
+  Bool_t    IsHLTTriggerFired(const char* name=NULL) const;
   UInt_t    GetOrbitNumber() const {return fHeader->GetOrbitNumber();}
   UInt_t    GetTimeStamp()  const { return fHeader->GetTimeStamp();}
   UInt_t    GetEventType()  const { return fHeader->GetEventType();}

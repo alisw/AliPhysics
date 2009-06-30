@@ -1512,5 +1512,46 @@ void AliESDEvent::CopyFromOldESD()
   }// if fesdold
 }
 
+TObject*  AliESDEvent::GetHLTTriggerDecision() const
+{
+  // get the HLT trigger decission object
+
+  // cast away const'nes because the FindListObject method
+  // is not const
+  AliESDEvent* pNonConst=const_cast<AliESDEvent*>(this);
+  return pNonConst->FindListObject("HLTGlobalTrigger");
+}
+
+TString   AliESDEvent::GetHLTTriggerDescription() const
+{
+  // get the HLT trigger decission description
+  TString description;
+  TObject* pDecision=GetHLTTriggerDecision();
+  if (pDecision) {
+    description=pDecision->GetTitle();
+  }
+
+  return description;
+}
+
+Bool_t    AliESDEvent::IsHLTTriggerFired(const char* name) const
+{
+  // get the HLT trigger decission description
+  TObject* pDecision=GetHLTTriggerDecision();
+  if (!pDecision) return kFALSE;
+
+  Option_t* option=pDecision->GetOption();
+  if (option==NULL || *option!='1') return kFALSE;
+
+  if (name) {
+    TString description=GetHLTTriggerDescription();
+    Int_t index=description.Index(name);
+    if (index<0) return kFALSE;
+    index+=strlen(name);
+    if (index>=description.Length()) return kFALSE;
+    if (description[index]!=0 && description[index]!=' ') return kFALSE;
+  }
+  return kTRUE;
+}
 
 
