@@ -79,7 +79,15 @@ void AliGenBox::Generate()
 
     for(i=0;i<fNpart;i++) {
 	Rndm(random,3);
-	theta=fThetaMin+random[0]*(fThetaMax-fThetaMin);
+	
+	if (TestBit(kThetaRange)) {
+	    theta = fThetaMin+random[0]*(fThetaMax-fThetaMin);
+	} else {
+	    Float_t eta = fEtaMin+random[0]*(fEtaMax-fEtaMin);
+	    theta = 2. * TMath::ATan(TMath::Exp(-eta));
+	}
+	    
+	    
 	if(TestBit(kMomentumRange)) {
 	    pmom=fPMin+random[1]*(fPMax-fPMin);
 	    pt=pmom*TMath::Sin(theta);
@@ -88,6 +96,7 @@ void AliGenBox::Generate()
 	    pt=fPtMin+random[1]*(fPtMax-fPtMin);
 	    pmom=pt/TMath::Sin(theta);
 	}
+
 	phi=fPhiMin+random[2]*(fPhiMax-fPhiMin);
 	p[0] = pt*TMath::Cos(phi);
 	p[1] = pt*TMath::Sin(phi);

@@ -21,12 +21,15 @@ class AliGenBox : public AliGenerator
   virtual ~AliGenBox() {}
   virtual void Generate();
   virtual void Init();
+  virtual void SetEtaRange(Float_t etamin, Float_t etamax);
   virtual void SetPart(Int_t part) {fIpart=part;}
+  virtual void SetParticleType(Int_t part) {SetPart(part);}
 protected:
 
   Int_t fIpart; // Particle type
-
-  ClassDef(AliGenBox,1) // Square box random generator
+  Float_t fEtaMin;  // Minimum eta 
+  Float_t fEtaMax;  // Maximum eta
+  ClassDef(AliGenBox,2) // Square box random generator
 };
 
 #endif
