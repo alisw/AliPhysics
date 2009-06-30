@@ -214,7 +214,7 @@ AliTracker* AliTOFReconstructor::CreateTracker() const
     tracker = new AliTOFtrackerMI();
   }
   // use V1 tracker if selected
-  if (selectedTracker.Contains("TrackerV1")) {
+  else if (selectedTracker.Contains("TrackerV1")) {
     tracker =  new AliTOFtrackerV1();
   }
   else {
