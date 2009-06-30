@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -28,6 +28,9 @@
 #include "AliHLTGlobalTrigger.h"
 #include "AliHLTGlobalTriggerConfig.h"
 #include "AliHLTTriggerMenu.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
 #include "TUUID.h"
 #include "TROOT.h"
 #include "TRegexp.h"
@@ -39,6 +42,8 @@
 #include <cerrno>
 
 ClassImp(AliHLTGlobalTriggerComponent)
+
+const char* AliHLTGlobalTriggerComponent::fgkTriggerMenuCDBPath = "HLT/ConfigHLT/HLTGlobalTrigger";
 
 
 AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
@@ -170,6 +175,40 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
     cmd += configFileName;
     gROOT->ProcessLine(cmd);
     menu = AliHLTGlobalTriggerConfig::Menu();
+  }
+  
+  // Try load the trigger menu from the CDB if it is not loaded yet with the
+  // -config option
+  if (menu == NULL and AliCDBManager::Instance() != NULL)
+  {
+    AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
+    if (store == NULL)
+    {
+      HLTError("Could not get the the default storage for the CDB.");
+      return -EIO;
+    }
+    Int_t version = store->GetLatestVersion(fgkTriggerMenuCDBPath, GetRunNo());
+    Int_t subVersion = store->GetLatestSubVersion(fgkTriggerMenuCDBPath, GetRunNo(), version);
+    AliCDBEntry* entry = AliCDBManager::Instance()->Get(fgkTriggerMenuCDBPath, GetRunNo(), version, subVersion);
+    if (entry == NULL)
+    {
+      HLTError("Could not get the CDB entry for \"%s\".", fgkTriggerMenuCDBPath);
+      return -EIO;
+    }
+    TObject* obj = entry->GetObject();
+    if (obj == NULL)
+    {
+      HLTError("Configuration object for \"%s\" is missing.", fgkTriggerMenuCDBPath);
+      return -ENOENT;
+    }
+    if (obj->IsA() != AliHLTTriggerMenu::Class())
+    {
+      HLTError("Wrong type for configuration object in \"%s\". Found a %s but we expect a AliHLTTriggerMenu.",
+               fgkTriggerMenuCDBPath, obj->ClassName()
+      );
+      return -EPROTO;
+    }
+    menu = dynamic_cast<AliHLTTriggerMenu*>(obj);
   }
   
   if (menu == NULL)
@@ -689,6 +728,7 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
   }
   
   TRegexp exp("[_a-zA-Z][_a-zA-Z0-9]*");
+  TRegexp hexexp("x[a-fA-F0-9]+");
   for (UInt_t i = 0; i < menu->NumberOfItems(); i++)
   {
     const AliHLTTriggerMenuItem* item = menu->Item(i);
@@ -699,8 +739,27 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
       Ssiz_t length = 0;
       Ssiz_t pos = exp.Index(str, &length, start);
       if (pos == kNPOS) break;
-      TString s = str(pos, length);
       start = pos+length;
+      
+      // Check if there is a numerical character before the found
+      // regular expression. If so, then the symbol is not a valid one
+      // and should be skipped.
+      if (pos > 0)
+      {
+        bool notValid = false;
+        switch (str[pos-1])
+        {
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+          notValid = true;
+          break;
+        default:
+          notValid = false;
+          break;
+        }
+        if (notValid) continue;
+      }
+      TString s = str(pos, length);
       
       if (s == "and" or s == "and_eq" or s == "bitand" or s == "bitor" or
           s == "compl" or s == "not" or s == "not_eq" or s == "or" or
@@ -711,7 +770,7 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
         // Ignore iso646.h and other keywords.
         continue;
       }
-      
+
       if (FindSymbol(s.Data(), list) == -1)
       {
         AliHLTTriggerMenuSymbol newSymbol;

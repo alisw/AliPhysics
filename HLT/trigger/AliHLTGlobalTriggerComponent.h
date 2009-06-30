@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id:$
+// $Id$
 #ifndef ALIHLTGLOBALTRIGGERCOMPONENT_H
 #define ALIHLTGLOBALTRIGGERCOMPONENT_H
 /* This file is property of and copyright by the ALICE HLT Project        *
@@ -58,16 +58,26 @@ class TClonesArray;
  * Configuration by component arguments.
  *
  * <h2>Default CDB entries:</h2>
- * TODO
+ * HLT/ConfigHLT/HLTGlobalTrigger - Contains the global trigger menu.
  *
  * <h2>Performance:</h2>
- * TODO
+ * This is a linear function of the number of input triggers (AliHLTTrigger) that
+ * need to be processed.
+ * For a modest trigger menu configurations the processing time per event should
+ * be on the order of a few milliseconds.
  *
  * <h2>Memory consumption:</h2>
- * TODO
+ * Memory consumption is minimal. It should be on the order of 2 or 3 MBytes.
  *
  * <h2>Output size:</h2>
- * TODO
+ * This will depend almost linearly on the number of intput triggers and summary
+ * data objects used. Thus, for every trigger (AliHLTTrigger object) specified
+ * in the trigger menu the output size will require about 1 kBytes.
+ * Then for every summary data object (i.e. TObject symbol defined in the trigger
+ * menu configuration) one will need an extra few kBytes, depending on the size
+ * of the summary objects.
+ * In total one would expect no more than a MByte output size for a large trigger
+ * configuration and typically only a few kBytes for a small or optimised one.
  *
  * \ingroup alihlt_trigger_components
  */
@@ -177,6 +187,8 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   
   AliHLTGlobalTrigger* fTrigger;  //! Trigger object which implements the global trigger menu.
   bool fDebugMode;  //! Indicates if the generated global trigger class should be in debug mode.
+  
+  static const char* fgkTriggerMenuCDBPath; //! The path string to read the trigger menu from the CDB.
   
   ClassDef(AliHLTGlobalTriggerComponent, 0) // Global HLT trigger component class which produces the final trigger decision and readout list.
 };
