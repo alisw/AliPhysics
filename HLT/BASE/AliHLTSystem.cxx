@@ -45,6 +45,7 @@ using namespace std;
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TStopwatch.h>
+#include <TList.h>
 //#include <TSystem.h>
 #include <TROOT.h>
 //#include <TInterpreter.h>
@@ -55,10 +56,11 @@ const char* AliHLTSystem::fgkHLTDefaultLibs[]= {
   "libAliHLTRCU.so", 
   "libAliHLTTPC.so", 
   //  "libAliHLTSample.so",
-  //"libAliHLTPHOS.so",
+  "libAliHLTPHOS.so",
   "libAliHLTMUON.so",
-  //"libAliHLTTRD.so",
+  "libAliHLTTRD.so",
   "libAliHLTITS.so",
+  "libAliHLTGlobal.so",
   "libAliHLTTrigger.so",
   NULL
 };
@@ -1224,22 +1226,72 @@ int AliHLTSystem::LoadConfigurations(AliRawReader* rawReader, AliRunLoader* runl
     return -EBUSY;
   }
   int iResult=0;
-  AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
+  AliHLTModuleAgent* pAgent=NULL;
+
+  // first check for the required libraries and load those
   TString extralibs;
-  while (pAgent && iResult>=0) {
+  for (pAgent=AliHLTModuleAgent::GetFirstAgent(); 
+       pAgent && iResult>=0;
+       pAgent=AliHLTModuleAgent::GetNextAgent()) {
     const char* deplibs=pAgent->GetRequiredComponentLibraries();
     if (deplibs) {
       HLTDebug("required libraries \'%s\' for agent %s (%p)", deplibs, pAgent->GetName(), pAgent);
       extralibs+=deplibs;
     }
-    if (iResult>=0) {
-      HLTDebug("load configurations for agent %s (%p)", pAgent->GetName(), pAgent);
-      pAgent->CreateConfigurations(fpConfigurationHandler, rawReader, runloader);
-      pAgent=AliHLTModuleAgent::GetNextAgent();
-    }
   }
   if (iResult>=0) {
     iResult=LoadComponentLibraries(extralibs.Data());
+  }
+
+  // in order to register the configurations in the correct sequence
+  // all agents need to be ordered with respect to the required
+  // libraries. Ordering relies on the naming convention
+  // libAliHLT<Module>.so
+  TList agents;
+  for (pAgent=AliHLTModuleAgent::GetFirstAgent(); 
+       pAgent && iResult>=0;
+       pAgent=AliHLTModuleAgent::GetNextAgent()) {
+    AliHLTModuleAgent* pPrevDep=NULL;
+    TString dependencies=pAgent->GetRequiredComponentLibraries();
+    TObjArray* pTokens=dependencies.Tokenize(" ");
+    if (pTokens) {
+      for (int n=0; n<pTokens->GetEntriesFast(); n++) {
+	TString module=((TObjString*)pTokens->At(n))->GetString();
+	HLTDebug("  checking %s", module.Data());
+	module.ReplaceAll("libAliHLT", "");
+	module.ReplaceAll(".so", "");
+	
+	for (AliHLTModuleAgent* pCurrent=dynamic_cast<AliHLTModuleAgent*>(pPrevDep==NULL?agents.First():agents.After(pPrevDep));
+	     pCurrent!=NULL; pCurrent=dynamic_cast<AliHLTModuleAgent*>(agents.After(pCurrent))) {
+	  HLTDebug("    checking %s == %s", module.Data(), pCurrent->GetModuleId());
+
+	  if (module.CompareTo(pCurrent->GetModuleId())==0) {
+	    pPrevDep=pCurrent;
+	    break;
+	  }
+	}
+      }
+      delete pTokens;
+    }
+
+    if (pPrevDep) {
+      // insert right after the last dependency
+      agents.AddAfter(pPrevDep, pAgent);
+      HLTDebug("insert %s after %s", pAgent->GetModuleId(), pPrevDep->GetModuleId());
+    } else {
+      // insert at the beginning
+      agents.AddFirst(pAgent);
+      HLTDebug("insert %s at beginning", pAgent->GetModuleId());
+    }
+  }
+
+  // now we load the configurations
+  if (agents.GetEntries()) {
+    TIter next(&agents);
+    while ((pAgent = dynamic_cast<AliHLTModuleAgent*>(next()))) {
+      HLTDebug("load configurations for agent %s (%p)", pAgent->GetName(), pAgent);
+      pAgent->CreateConfigurations(fpConfigurationHandler, rawReader, runloader);
+    }
   }
 
   return iResult;
