@@ -45,6 +45,9 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   Float_t GetY() const { return (GetYbin() * 160e-4); }
   Float_t GetZ() const { return fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRowPos( 4 * (fROB / 2) + fMCM / 4); }
 
+  Int_t GetQ0() const { return fQ0; }
+  Int_t GetQ1() const { return fQ1; }
+
   UInt_t GetTrackletWord() const { return fTrackletWord; }
   void SetTrackletWord(UInt_t trackletWord) { fTrackletWord = trackletWord; }
 
@@ -53,6 +56,8 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   void SetMCM(Int_t mcm) { fMCM = mcm; }
   void SetROB(Int_t rob) { fROB = rob; }
   void SetLabel(Int_t label) { fLabel = label; }
+  void SetQ0(Int_t charge) { fQ0 = charge; }
+  void SetQ1(Int_t charge) { fQ1 = charge; }
 
  protected:
   AliTRDgeometry *fGeo; //! TRD geometry
@@ -63,12 +68,15 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   Int_t fMCM; // MCM no. in which the tracklet was found
   Int_t fROB; // ROB no. on which the tracklet was found
 
+  Int_t fQ0; // accumulated charge in the first time window
+  Int_t fQ1; // accumulated charge in the second time window
+
   Int_t fLabel; // label for MC track
 
  private:
   AliTRDtrackletMCM& operator=(const AliTRDtrackletMCM &rhs);   // not implemented
 
-  ClassDef(AliTRDtrackletMCM, 1);
+  ClassDef(AliTRDtrackletMCM, 2);
 };
 
 #endif
