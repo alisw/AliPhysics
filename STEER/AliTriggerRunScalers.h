@@ -23,8 +23,7 @@ class AliTriggerRunScalers : public TObject {
 
 public:
                          AliTriggerRunScalers();
-              virtual   ~AliTriggerRunScalers() { fScalersRecord.SetOwner(); fScalersRecord.Delete(); }
-
+              virtual   ~AliTriggerRunScalers();
   //  Getters
                   Short_t    GetVersion()          const { return fVersion;       }            
                   ULong_t    GetRunNumber()        const { return fRunNumber;     }

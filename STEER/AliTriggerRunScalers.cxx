@@ -56,7 +56,15 @@ AliTriggerRunScalers::AliTriggerRunScalers():
 {
   // Default constructor
 }
-
+//______________________________________________________________________________
+AliTriggerRunScalers::~AliTriggerRunScalers() 
+{
+ // Destructor
+ fScalersRecord.SetOwner(); 
+ fScalersRecord.Delete(); 
+ fScalersRecordESD.SetOwner(); 
+ fScalersRecordESD.Delete(); 
+}
 //_____________________________________________________________________________
 void AliTriggerRunScalers::AddTriggerScalers( AliTriggerScalersRecord* scaler ) 
 { 
