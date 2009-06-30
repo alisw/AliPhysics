@@ -1,0 +1,15 @@
+# ttriggers used in 2008
+# even if they didn't follow the naming convention
+# one still wants to be able to reconstruction these
+# data correctly
+D0SCO
+C0SCO
+D0ASL
+C0ASL
+DEMPTY
+CEMPTY
+TRDBYTOF
+TOFTRD
+
+# Here is trigger classes list following the trigger
+# naming conventions
