@@ -178,7 +178,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      mcepValueNONAME[counter] = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
      mcepErrorNONAME[counter] = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(mcepValueNONAME[counter]>0.) // to be improved 
+     if(mcepValueNONAME[counter]>=0.) // to be improved 
      {
       if(mcepMaxValueNONAME < mcepValueNONAME[counter]) mcepMaxValueNONAME = mcepValueNONAME[counter]; 
       if(mcepMinValueNONAME > mcepValueNONAME[counter]) mcepMinValueNONAME = mcepValueNONAME[counter]; 
@@ -205,7 +205,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      spValueNONAME[counter] = (spCommonHistRes->GetHistIntFlow())->GetBinContent(1);
      spErrorNONAME[counter] = (spCommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(spValueNONAME[counter]>0.) // to be improved 
+     if(spValueNONAME[counter]>=0.) // to be improved 
      {
       if(spMaxValueNONAME < spValueNONAME[counter]) spMaxValueNONAME = spValueNONAME[counter]; 
       if(spMinValueNONAME > spValueNONAME[counter]) spMinValueNONAME = spValueNONAME[counter]; 
@@ -238,7 +238,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      gfc2ValueNONAME[counter] = (gfc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
      gfc2ErrorNONAME[counter] = (gfc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(gfc2ValueNONAME[counter]>0.) // to be improved 
+     if(gfc2ValueNONAME[counter]>=0.) // to be improved 
      {
       if(gfc2MaxValueNONAME < gfc2ValueNONAME[counter]) gfc2MaxValueNONAME = gfc2ValueNONAME[counter]; 
       if(gfc2MinValueNONAME > gfc2ValueNONAME[counter]) gfc2MinValueNONAME = gfc2ValueNONAME[counter]; 
@@ -248,7 +248,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      gfc4ValueNONAME[counter] = (gfc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
      gfc4ErrorNONAME[counter] = (gfc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(gfc4ValueNONAME[counter]>0.) // to be improved 
+     if(gfc4ValueNONAME[counter]>=0.) // to be improved 
      {
       if(gfc4MaxValueNONAME < gfc4ValueNONAME[counter]) gfc4MaxValueNONAME = gfc4ValueNONAME[counter]; 
       if(gfc4MinValueNONAME > gfc4ValueNONAME[counter]) gfc4MinValueNONAME = gfc4ValueNONAME[counter]; 
@@ -258,7 +258,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      gfc6ValueNONAME[counter] = (gfc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
      gfc6ErrorNONAME[counter] = (gfc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(gfc6ValueNONAME[counter]>0.) // to be improved 
+     if(gfc6ValueNONAME[counter]>=0.) // to be improved 
      {
       if(gfc6MaxValueNONAME < gfc6ValueNONAME[counter]) gfc6MaxValueNONAME = gfc6ValueNONAME[counter]; 
       if(gfc6MinValueNONAME > gfc6ValueNONAME[counter]) gfc6MinValueNONAME = gfc6ValueNONAME[counter]; 
@@ -268,7 +268,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      gfc8ValueNONAME[counter] = (gfc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
      gfc8ErrorNONAME[counter] = (gfc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(gfc8ValueNONAME[counter]>0.) // to be improved 
+     if(gfc8ValueNONAME[counter]>=0.) // to be improved 
      {
       if(gfc8MaxValueNONAME < gfc8ValueNONAME[counter]) gfc8MaxValueNONAME = gfc8ValueNONAME[counter]; 
       if(gfc8MinValueNONAME > gfc8ValueNONAME[counter]) gfc8MinValueNONAME = gfc8ValueNONAME[counter]; 
@@ -301,7 +301,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      qc2ValueNONAME[counter] = (qc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
      qc2ErrorNONAME[counter] = (qc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(qc2ValueNONAME[counter]>0.) // to be improved 
+     if(qc2ValueNONAME[counter]>=0.) // to be improved 
      {
       if(qc2MaxValueNONAME < qc2ValueNONAME[counter]) qc2MaxValueNONAME = qc2ValueNONAME[counter]; 
       if(qc2MinValueNONAME > qc2ValueNONAME[counter]) qc2MinValueNONAME = qc2ValueNONAME[counter]; 
@@ -311,7 +311,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      qc4ValueNONAME[counter] = (qc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
      qc4ErrorNONAME[counter] = (qc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(qc4ValueNONAME[counter]>0.) // to be improved 
+     if(qc4ValueNONAME[counter]>=0.) // to be improved 
      {
       if(qc4MaxValueNONAME < qc4ValueNONAME[counter]) qc4MaxValueNONAME = qc4ValueNONAME[counter]; 
       if(qc4MinValueNONAME > qc4ValueNONAME[counter]) qc4MinValueNONAME = qc4ValueNONAME[counter]; 
@@ -321,7 +321,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      qc6ValueNONAME[counter] = (qc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
      qc6ErrorNONAME[counter] = (qc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(qc6ValueNONAME[counter]>0.) // to be improved 
+     if(qc6ValueNONAME[counter]>=0.) // to be improved 
      {
       if(qc6MaxValueNONAME < qc6ValueNONAME[counter]) qc6MaxValueNONAME = qc6ValueNONAME[counter]; 
       if(qc6MinValueNONAME > qc6ValueNONAME[counter]) qc6MinValueNONAME = qc6ValueNONAME[counter]; 
@@ -331,7 +331,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      qc8ValueNONAME[counter] = (qc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
      qc8ErrorNONAME[counter] = (qc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(qc8ValueNONAME[counter]>0.) // to be improved 
+     if(qc8ValueNONAME[counter]>=0.) // to be improved 
      {
       if(qc8MaxValueNONAME < qc8ValueNONAME[counter]) qc8MaxValueNONAME = qc8ValueNONAME[counter]; 
       if(qc8MinValueNONAME > qc8ValueNONAME[counter]) qc8MinValueNONAME = qc8ValueNONAME[counter]; 
@@ -358,7 +358,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      fqdValueNONAME[counter] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
      fqdErrorNONAME[counter] = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(fqdValueNONAME[counter]>0.) // to be improved 
+     if(fqdValueNONAME[counter]>=0.) // to be improved 
      {
       if(fqdMaxValueNONAME < fqdValueNONAME[counter]) fqdMaxValueNONAME = fqdValueNONAME[counter]; 
       if(fqdMinValueNONAME > fqdValueNONAME[counter]) fqdMinValueNONAME = fqdValueNONAME[counter]; 
@@ -385,7 +385,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      lyz1sumValueNONAME[counter] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinContent(1);
      lyz1sumErrorNONAME[counter] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(lyz1sumValueNONAME[counter]>0.) // to be improved 
+     if(lyz1sumValueNONAME[counter]>=0.) // to be improved 
      {
       if(lyz1sumMaxValueNONAME < lyz1sumValueNONAME[counter]) lyz1sumMaxValueNONAME = lyz1sumValueNONAME[counter]; 
       if(lyz1sumMinValueNONAME > lyz1sumValueNONAME[counter]) lyz1sumMinValueNONAME = lyz1sumValueNONAME[counter]; 
@@ -412,7 +412,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
     {
      lyz1prodValueNONAME[counter] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinContent(1);
      lyz1prodErrorNONAME[counter] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(lyz1prodValueNONAME[counter]>0.) // to be improved 
+     if(lyz1prodValueNONAME[counter]>=0.) // to be improved 
      {
       if(lyz1prodMaxValueNONAME < lyz1prodValueNONAME[counter]) lyz1prodMaxValueNONAME = lyz1prodValueNONAME[counter]; 
       if(lyz1prodMinValueNONAME > lyz1prodValueNONAME[counter]) lyz1prodMinValueNONAME = lyz1prodValueNONAME[counter]; 
@@ -433,6 +433,8 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  TList *mergedOutputListMCEP = NULL;
  Double_t mergedValueMCEP = 0.;
  Double_t mergedErrorMCEP = 0.; 
+ Double_t mergedAvMMCEP = 0.; // average multiplicity 
+ Double_t mergedNMCEP = 0.;  // number of events
  if(gSystem->AccessPathName(mergedOutputFileNameMCEP.Data(),kFileExists))
  {
   cout<<"WARNING: You do not have a merged output file "<<mergedOutputFileNameMCEP.Data()<<endl;
@@ -452,6 +454,14 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
        mergedValueMCEP = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
        mergedErrorMCEP = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);
       } 
+      
+      AliFlowCommonHist *mcepCommonHist = dynamic_cast<AliFlowCommonHist*> 
+                                                    (mergedOutputListMCEP->FindObject("AliFlowCommonHistMCEP")); 
+      if(mcepCommonHist && mcepCommonHist->GetHistMultRP())
+      {
+       mergedAvMMCEP = (mcepCommonHist->GetHistMultRP())->GetMean();
+       mergedNMCEP = (mcepCommonHist->GetHistMultRP())->GetEntries();
+      }                                                                                                                                              
      }
     } // end of if(mergedOutputFileMCEP)
    } // end of else 
@@ -1183,7 +1193,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
   if(lyzepValueNONAME[i]>0.) lyzepCountRealNONAME++;
  }
 
- TPaveText *textDefaultNONAME = new TPaveText(0.05,0.67,0.95,0.90,"NDC");
+ TPaveText *textDefaultNONAME = new TPaveText(0.05,0.71,0.95,0.95,"NDC");
  textDefaultNONAME->SetTextFont(72);
  textDefaultNONAME->SetTextSize(0.08);
   
@@ -1199,8 +1209,22 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  textDefaultNONAME->AddText(entryDefaultTotalIndNONAME->Data());
  textDefaultNONAME->AddText(entryDefaultTotalSimNONAME->Data());
  
+ // average multiplicity and number of events: (to be improved)
+ TPaveText *textAvMNevtsNONAME = new TPaveText(0.05,0.05,0.95,0.14,"NDC");
+ textAvMNevtsNONAME->SetTextFont(72);
+ textAvMNevtsNONAME->SetTextSize(0.06);
+ 
+ TString *entryNevtsNONAME = new TString("MC .... nEvts = ");
+ TString *entryAvMNONAME   = new TString("MC .... AvM = ");
+ 
+ (*entryNevtsNONAME)+=(Long_t)mergedNMCEP;
+ (*entryAvMNONAME)+=(Long_t)mergedAvMMCEP;
+ 
+ textAvMNevtsNONAME->AddText(entryNevtsNONAME->Data());
+ textAvMNevtsNONAME->AddText(entryAvMNONAME->Data());
+ 
  // results:
- TPaveText *textResultsNONAME = new TPaveText(0.05,0.12,0.95,0.60,"NDC");
+ TPaveText *textResultsNONAME = new TPaveText(0.05,0.17,0.95,0.68,"NDC");
  textResultsNONAME->SetTextFont(72);
  textResultsNONAME->SetTextSize(0.06);
  
@@ -1334,6 +1358,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  
  if(textDefaultNONAME) textDefaultNONAME->Draw();
  if(textResultsNONAME) textResultsNONAME->Draw();
+ if(textAvMNevtsNONAME) textAvMNevtsNONAME->Draw();
  
 }
 
