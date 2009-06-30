@@ -280,15 +280,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   AliDebug(1,Form("Event Number = %d",ievt));
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   AliDebug(1,Form("Number of Particles = %d",nparticles));
-  //
-  // Ajay on 24th May 2009
-  //No of primary
-  Int_t nprimary   = fRunLoader->GetHeader()->GetNprimary();
-  Int_t  * mtraPid  = new Int_t [nprimary]; 
-  for(Int_t i = 0; i < nprimary; i++)
-    {
-      mtraPid[i] = -1; 
-    }
+
   //
 
   fRunLoader->GetEvent(ievt);
@@ -371,8 +363,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      mtrackno=trackno;
 	      trackpid=trackpidOld;
 	      trackno=tracknoOld;
-	      
-	      mtraPid[trackno] = mtrackpid;
 	      
 	      //-----------------end of modification----------------
 	      xPos = fPMDHit->X();
@@ -469,18 +459,19 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		    {
 		      deltaE = fPRE[ism][jrow][kcol];
 		      trno   = fPRETrackNo[ism][jrow][kcol];
-		      trpid  = mtraPid[trno]; // added
 		      detno = 0;
 		    }
 		  else if (idet == 1)
 		    {
 		      deltaE = fCPV[ism][jrow][kcol];
 		      trno   = fCPVTrackNo[ism][jrow][kcol];
-		      trpid  = mtraPid[trno]; // added
 		      detno = 1;
 		    }
 		  if (deltaE > 0.)
 		    {
+		      // Natasha
+		      TParticle *mparticle = gAlice->GetMCApp()->Particle(trno);
+		      trpid = mparticle->GetPdgCode();
 		      AddSDigit(trno,trpid,detno,ism,jrow,kcol,deltaE);
 		    }
 		}
@@ -491,7 +482,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
     }
   fPMDLoader->WriteSDigits("OVERWRITE");
   ResetCellADC();
-  delete [] mtraPid;
 }
 //____________________________________________________________________________
 
@@ -520,17 +510,6 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   AliDebug(1,Form("Event Number =  %d",ievt));
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   AliDebug(1,Form("Number of Particles = %d", nparticles));
-
-  //
-  // Ajay on 24th May 2009
-  //No of primary
-  Int_t nprimary   = fRunLoader->GetHeader()->GetNprimary();
-  Int_t  * mtraPid  = new Int_t [nprimary]; 
-  for(Int_t i = 0; i < nprimary; i++)
-    {
-      mtraPid[i] = -1; 
-    }
-  //
 
   fRunLoader->GetEvent(ievt);
   // ------------------------------------------------------- //
@@ -621,8 +600,6 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      mtrackno=trackno;
 	      trackpid=trackpidOld;
 	      trackno=tracknoOld;
-	      
-	      mtraPid[mtrackno] = mtrackpid;  // added by Ajay
 	      
 	      //-----------------end of modification----------------
 	      xPos = fPMDHit->X();
@@ -722,14 +699,12 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		  {
 		      deltaE = fPRE[ism][jrow][kcol];
 		      trno   = fPRETrackNo[ism][jrow][kcol];
-		      trpid  = mtraPid[trno];   // added
 		      detno  = 0;
 		  }
 		  else if (idet == 1)
 		  {
 		      deltaE = fCPV[ism][jrow][kcol];
 		      trno   = fCPVTrackNo[ism][jrow][kcol];
-		      trpid  = mtraPid[trno];   // added
 		      detno  = 1;
 		  }
 		  if (deltaE > 0.)
@@ -759,6 +734,10 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		      if (adc > 0.)
 		      {
 			  adc += (pedmean + 3.0*pedrms);
+			  TParticle *mparticle
+			    = gAlice->GetMCApp()->Particle(trno);
+			  trpid = mparticle->GetPdgCode();
+			  
 			  AddDigit(trno,trpid,detno,ism,jrow,kcol,adc);
 		      }
 		  }
@@ -772,7 +751,6 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   fPMDLoader->WriteDigits("OVERWRITE");
   ResetCellADC();
 
-  delete [] mtraPid;
 }
 //____________________________________________________________________________
 
