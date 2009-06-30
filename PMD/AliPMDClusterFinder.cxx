@@ -45,6 +45,7 @@
 #include "AliPMDCalibData.h"
 #include "AliPMDPedestal.h"
 #include "AliPMDddldata.h"
+#include "AliPMDHotData.h"
 #include "AliPMDRecoParam.h"
 #include "AliPMDReconstructor.h"
 
@@ -61,6 +62,7 @@ AliPMDClusterFinder::AliPMDClusterFinder():
   fPMDLoader(0),
   fCalibGain(GetCalibGain()),
   fCalibPed(GetCalibPed()),
+  fCalibHot(GetCalibHot()),
   fRecoParam(0x0),
   fTreeD(0),
   fTreeR(0),
@@ -82,6 +84,7 @@ AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
   fPMDLoader(runLoader->GetLoader("PMDLoader")),
   fCalibGain(GetCalibGain()),
   fCalibPed(GetCalibPed()),
+  fCalibHot(GetCalibHot()),
   fRecoParam(0x0),
   fTreeD(0),
   fTreeR(0),
@@ -104,6 +107,7 @@ AliPMDClusterFinder::AliPMDClusterFinder(const AliPMDClusterFinder & finder):
   fPMDLoader(0),
   fCalibGain(GetCalibGain()),
   fCalibPed(GetCalibPed()),
+  fCalibHot(GetCalibHot()),
   fRecoParam(0x0),
   fTreeD(0),
   fTreeR(0),
@@ -222,6 +226,10 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 			      xpos, ypos));
 	      continue; 
 	    }
+
+	  // Hot cell - set the cell adc = 0
+	  Float_t hotflag = fCalibHot->GetHotChannel(det,smn,xpos,ypos);
+	  if (hotflag == 1) adc = 0;
 	  // CALIBRATION
 	  Float_t gain = fCalibGain->GetGainFact(det,smn,xpos,ypos);
 	  // printf("adc = %d gain = %f\n",adc,gain);
@@ -395,6 +403,10 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 	  //printf("%f %f\n",pedmean, pedrms);
 
 	  Float_t adc1 = adc - (pedmean + 3.0*pedrms);
+
+	  // Hot cell - set the cell adc = 0
+	  Float_t hotflag = fCalibHot->GetHotChannel(det,smn,xpos,ypos);
+	  if (hotflag == 1) adc1 = 0;
 
 	  // CALIBRATION
 	  Float_t gain = fCalibGain->GetGainFact(det,smn,xpos,ypos);
@@ -632,6 +644,10 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
 	  // Float_t sig1 = (Float_t) sig;
 	  Float_t sig1 = (Float_t) sig - (pedmean + 3.0*pedrms);
+
+	  // Hot cell - set the cell adc = 0
+	  Float_t hotflag = fCalibHot->GetHotChannel(det,smn,row,col);
+	  if (hotflag == 1) sig1 = 0;
 
 	  // CALIBRATION
 	  Float_t gain = fCalibGain->GetGainFact(det,smn,row,col);
@@ -976,11 +992,13 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	  Int_t   pedrms1    = (Int_t) pedmeanrms%100;
 	  Float_t pedrms     = (Float_t)pedrms1/10.;
 	  Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
-
 	  //printf("%f %f\n",pedmean, pedrms);
-
-	  //Float_t sig1 = (Float_t) sig;
 	  Float_t sig1 = (Float_t) sig - (pedmean + 3.0*pedrms);
+
+	  // Hot cell - set the cell adc = 0
+	  Float_t hotflag = fCalibHot->GetHotChannel(det,smn,row,col);
+	  if (hotflag == 1) sig1 = 0;
+
 	  // CALIBRATION
 	  Float_t gain = fCalibGain->GetGainFact(det,smn,row,col);
 
@@ -1308,3 +1326,20 @@ AliPMDPedestal* AliPMDClusterFinder::GetCalibPed() const
   
   return pedestal;
 }
+//--------------------------------------------------------------------//
+AliPMDHotData* AliPMDClusterFinder::GetCalibHot() const
+{
+  // The run number will be centralized in AliCDBManager,
+  // you don't need to set it here!
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Hot");
+  
+  if(!entry) AliFatal("HotData object retrieval failed!");
+  
+  AliPMDHotData *hot = 0;
+  if (entry) hot = (AliPMDHotData*) entry->GetObject();
+  
+  if (!hot)  AliFatal("No hot data from  database !");
+  
+  return hot;
+}
+  

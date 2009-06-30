@@ -20,6 +20,7 @@ class AliRunLoader;
 class AliRawReader;
 class AliPMDCalibData;
 class AliPMDPedestal;
+class AliPMDHotData;
 class AliPMDRecoParam;
 
 class AliPMDClusterFinder : public TObject
@@ -51,6 +52,7 @@ class AliPMDClusterFinder : public TObject
 
   AliPMDCalibData *GetCalibGain() const;
   AliPMDPedestal  *GetCalibPed() const;
+  AliPMDHotData   *GetCalibHot() const;
 
  protected:
   AliRunLoader *fRunLoader; // Pointer to Run Loader
@@ -58,6 +60,7 @@ class AliPMDClusterFinder : public TObject
 
   AliPMDCalibData *fCalibGain;  //! Gain calibration data
   AliPMDPedestal  *fCalibPed;   //! Pedestal calibration data
+  AliPMDHotData   *fCalibHot;   //! Hot data
 
   const AliPMDRecoParam *fRecoParam; // reconstruction parameter
 
@@ -79,7 +82,7 @@ class AliPMDClusterFinder : public TObject
   Int_t    fCellTrack[fgkRow][fgkCol]; // Array containing individual cell tr
   Int_t    fCellPid[fgkRow][fgkCol]; // Array containing individual cell pid
 
-  ClassDef(AliPMDClusterFinder,15) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,16) // To run PMD clustering
 };
 #endif
 
