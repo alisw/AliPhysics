@@ -33,7 +33,7 @@ public:
           const TObjArray*   GetScalersRecords()   const { return &fScalersRecord; } 
   AliTriggerScalersRecord*   GetScalersRecord( Int_t index ) const { return (AliTriggerScalersRecord*)fScalersRecord.At(index); }
                     Int_t    FindNearestScalersRecord( const AliTimeStamp *stamp ) const;
-                   Bool_t    ConsistencyCheck();
+                   Bool_t    ConsistencyCheck() const;
   //  Setters
                      void    SetVersion( Short_t ver )       { fVersion = ver;   }            
                      void    SetRunNumber( ULong_t run )     { fRunNumber = run; }
@@ -41,22 +41,22 @@ public:
                      void    SetClass( UChar_t i, UChar_t index ) { fClassIndex[i]=index; }
                      void    AddTriggerScalers( AliTriggerScalersRecord* scal );
              virtual void    Print( const Option_t* opt ="" ) const;
-
+     AliTriggerRunScalers( const AliTriggerRunScalers &run );
+     AliTriggerRunScalers&    operator=(const AliTriggerRunScalers& run);
                                         
 static AliTriggerRunScalers*  ReadScalers( TString & filename );
                                       
-
 private:
                   Short_t    fVersion;            // Version
                   ULong_t    fRunNumber;          // Run number
                   UChar_t    fnClasses;           // Number of trigger classes
                   TArrayC    fClassIndex;         // list of classes used in this partition
                 TObjArray    fScalersRecord;      // Array of records (AliTriggerScalersRecord)
-    
-                        //     AliTriggerRunScalers( const AliTriggerRunScalers &run );
-    AliTriggerRunScalers&    operator=(const AliTriggerRunScalers& run);
+                TObjArray    fScalersRecordESD;   // Array of records with 64bit scalers (AliTriggerScalersRecordESD)
 
-   ClassDef( AliTriggerRunScalers, 1 )  // Define a Run Trigger Scalers (Scalers)
+    
+
+   ClassDef( AliTriggerRunScalers, 2 )  // Define a Run Trigger Scalers (Scalers)
 };
 
 #endif

@@ -51,7 +51,8 @@ AliTriggerRunScalers::AliTriggerRunScalers():
   fRunNumber(0),
   fnClasses(0),
   fClassIndex(),                    
-  fScalersRecord()
+  fScalersRecord(),
+  fScalersRecordESD()
 {
   // Default constructor
 }
@@ -64,7 +65,51 @@ void AliTriggerRunScalers::AddTriggerScalers( AliTriggerScalersRecord* scaler )
   if (!AliTriggerRunScalers::ConsistencyCheck()) AliErrorClass("Trigger counters not in the right order or decreasing!");
 //  fScalersRecord.Sort(); 
 }
+//_____________________________________________________________________________
 
+AliTriggerRunScalers::AliTriggerRunScalers(const AliTriggerRunScalers &run) :
+ TObject(),
+ fVersion(run.fVersion),
+ fRunNumber(run.fRunNumber),
+ fnClasses(run.fnClasses),
+ fClassIndex(),                    
+ fScalersRecord(),
+ fScalersRecordESD()
+{
+// copy constructor
+for (Int_t i = 0; i < run.fClassIndex.GetSize(); i++) {
+    if (run.fClassIndex[i]) fClassIndex.AddAt(run.fClassIndex[i], i);
+  }
+for (Int_t i = 0; i < run.fScalersRecord.GetEntriesFast(); i++) {
+    if (run.fScalersRecord[i]) fScalersRecord.Add(run.fScalersRecord[i]->Clone());
+  }
+for (Int_t i = 0; i < run.fScalersRecordESD.GetEntriesFast(); i++) {
+    if (run.fScalersRecordESD[i]) fScalersRecordESD.Add(run.fScalersRecordESD[i]->Clone());
+  }
+
+}
+//_____________________________________________________________________________
+AliTriggerRunScalers &AliTriggerRunScalers::operator=(const AliTriggerRunScalers& run)
+{
+// assignment operator
+if(&run == this) return *this;
+((TObject *)this)->operator=(run);
+
+fVersion = run.fVersion;
+fRunNumber = run.fRunNumber;
+fnClasses = run.fnClasses;
+
+for (Int_t i = 0; i < run.fClassIndex.GetSize(); i++) {
+    if (run.fClassIndex[i]) fClassIndex.AddAt(run.fClassIndex[i], i);
+  }
+for (Int_t i = 0; i < run.fScalersRecord.GetEntriesFast(); i++) {
+    if (run.fScalersRecord[i]) fScalersRecord.Add(run.fScalersRecord[i]->Clone());
+  }
+for (Int_t i = 0; i < run.fScalersRecordESD.GetEntriesFast(); i++) {
+    if (run.fScalersRecordESD[i]) fScalersRecordESD.Add(run.fScalersRecordESD[i]->Clone());
+  }
+return *this;
+} 
 //_____________________________________________________________________________
 AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
 {
@@ -224,7 +269,7 @@ Int_t  AliTriggerRunScalers::FindNearestScalersRecord( const AliTimeStamp *stamp
     return (result < 0 ) ? position-1 : position; // nearst < stamp   
 }
 //_____________________________________________________________________________
-Bool_t AliTriggerRunScalers::ConsistencyCheck()
+Bool_t AliTriggerRunScalers::ConsistencyCheck() const
 {
    //Check if counters are consistent(increase). Example: lOCB(n) < lOCB(n+1) and lOCB > lOCA
    UInt_t lOCBtwo, lOCAtwo, l1CBtwo, l1CAtwo, l2CBtwo, l2CAtwo, lOCBone, lOCAone, l1CBone, l1CAone, l2CBone, l2CAone;
