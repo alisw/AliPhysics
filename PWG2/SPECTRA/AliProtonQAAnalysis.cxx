@@ -2828,6 +2828,10 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
       Printf("ERROR: Could not receive track %d (mc loop)", iTracks);
       continue;
     }
+
+    Double_t vz = mcTrack->Zv();
+    if (TMath::Abs(vz) > 50.) continue;//exclude particles generated out of the acceptance
+
     if(TMath::Abs(mcTrack->Eta()) > 1.0) continue;//acceptance
     if((mcTrack->Pt() > fMaxPt)||(mcTrack->Pt() < fMinPt)) continue;
     if(fProtonAnalysisBase->GetEtaMode()) {
