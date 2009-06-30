@@ -70,7 +70,7 @@ void AliTriggerRunScalers::AddTriggerScalers( AliTriggerScalersRecord* scaler )
 { 
   // Add scaler and check consistency
   fScalersRecord.AddLast( scaler );
-  if (!AliTriggerRunScalers::ConsistencyCheck()) AliErrorClass("Trigger counters not in the right order or decreasing!");
+  if (AliTriggerRunScalers::ConsistencyCheck(0)) AliErrorClass("Trigger counters not in the right order or decreasing!");
 //  fScalersRecord.Sort(); 
 }
 //_____________________________________________________________________________
@@ -277,94 +277,51 @@ Int_t  AliTriggerRunScalers::FindNearestScalersRecord( const AliTimeStamp *stamp
     return (result < 0 ) ? position-1 : position; // nearst < stamp   
 }
 //_____________________________________________________________________________
-Bool_t AliTriggerRunScalers::ConsistencyCheck() const
+Int_t AliTriggerRunScalers::ConsistencyCheck(Bool_t* ovrflw) const
 {
    //Check if counters are consistent(increase). Example: lOCB(n) < lOCB(n+1) and lOCB > lOCA
-   UInt_t lOCBtwo, lOCAtwo, l1CBtwo, l1CAtwo, l2CBtwo, l2CAtwo, lOCBone, lOCAone, l1CBone, l1CAone, l2CBone, l2CAone;
-   Bool_t increase0B=0, increase0A=0, increase1B=0,  increase1A=0, increase2B=0, increase2A=0;
-   Bool_t overflow0B=0, overflow0A=0, overflow1B=0,  overflow1A=0, overflow2B=0, overflow2A=0;
+   // coding 0,1,2,3,4,5=0b,0a,1b,1a,2b,2a
+   // returns: 
+   //         1 = decresing time 
+   //         2 = too big jump in scalers, looks like some readings are missing
+   //         3 = (level+1) > (level)
+   UInt_t c2[6], c1[6];
+   Bool_t increase[6]; 
+   Bool_t overflow[6];  
+   for(Int_t i=0;i<6;i++){increase[i]=0;overflow[i]=0;}
    Int_t position = fScalersRecord.GetEntriesFast()-1;
    if (position == 0) return 1;
 
    AliTriggerScalersRecord* scalers2 = (AliTriggerScalersRecord*)fScalersRecord.At(position);
    AliTriggerScalersRecord* scalers1 = (AliTriggerScalersRecord*)fScalersRecord.At(position-1);
-   if (scalers2->Compare((AliTriggerScalersRecord*)fScalersRecord.At(position-1)) == -1) return 0;
+   if (scalers2->Compare((AliTriggerScalersRecord*)fScalersRecord.At(position-1)) == -1) return 1;
    else for( Int_t i=0; i<fnClasses; ++i ){
 
    TObjArray* scalersArray2 = (TObjArray*)scalers2->GetTriggerScalers();
    AliTriggerScalers* counters2 = (AliTriggerScalers*)scalersArray2->At(i);
-	lOCBtwo = counters2->GetLOCB();
-	lOCAtwo = counters2->GetLOCA();
-	l1CBtwo = counters2->GetL1CB();
-	l1CAtwo = counters2->GetL1CA();
-	l2CBtwo = counters2->GetL2CB();
-	l2CAtwo = counters2->GetL2CA();
-
+        counters2->GetAllScalers(c2);
    TObjArray* scalersArray1 = (TObjArray*)scalers1->GetTriggerScalers();
    AliTriggerScalers* counters1 = (AliTriggerScalers*)scalersArray1->At(i);
-	lOCBone = counters1->GetLOCB();
-	lOCAone = counters1->GetLOCA();
-	l1CBone = counters1->GetL1CB();
-	l1CAone = counters1->GetL1CA();
-	l2CBone = counters1->GetL2CB();
-	l2CAone = counters1->GetL2CA();
+        counters1->GetAllScalers(c1);
 
    UInt_t const max1 = 4294967295ul;  //32bit counters overflow after 4294967295
    UInt_t const max2 = 1000000000ul;  //when counters overflow they seem to be decreasing. Assume decrease cannot be smaller than max2.
 
-   if ( lOCBtwo > lOCBone ) increase0B=1;
-   else if ( lOCBtwo < lOCBone && (lOCBone - lOCBtwo) > max2) overflow0B=1;
-   else return 0;
-
-   if ( lOCAtwo > lOCAone ) increase0A=1;
-   else if ( lOCAtwo < lOCAone && (lOCAone - lOCAtwo) > max2) overflow0A=1;
-   else return 0;
-
-   if ( l1CBtwo > l1CBone ) increase1B=1;
-   else if ( l1CBtwo < l1CBone && (l1CBone - l1CBtwo) > max2) overflow1B=1;
-   else return 0;
-
-   if ( l1CAtwo > l1CAone ) increase1A=1;
-   else if ( l1CAtwo < l1CAone && (l1CAone - l1CAtwo) > max2) overflow1A=1;
-   else return 0;
-
-   if ( l2CBtwo > l2CBone ) increase2B=1;
-   else if ( l2CBtwo < l2CBone && (l2CBone - l2CBtwo) > max2) overflow2B=1;
-   else return 0;
-
-   if ( l2CAtwo > l2CAone ) increase2A=1;
-   else if ( l2CAtwo < l2CAone && (l2CAone - l2CAtwo) > max2) overflow2A=1;
-   else return 0;
-
-
-   if ( (lOCBtwo - lOCBone) < (lOCAtwo - lOCAone) && increase0B && increase0A ) return 0;
-   else if ( (max1 - lOCBone + lOCBtwo ) < (lOCAtwo - lOCAone) && overflow0B && increase0A ) return 0;
-   else if ( (lOCBtwo - lOCBone) < (max1 - lOCAone + lOCAtwo) && increase0B && overflow0A ) return 0;
-   else if ( (max1 - lOCBone + lOCBtwo ) < (max1 - lOCAone + lOCAtwo) && overflow0B && overflow0A ) return 0;
- 
-   if ( (lOCAtwo - lOCAone) < (l1CBtwo - l1CBone) && increase0A && increase1B ) return 0;
-   else if ( (max1 - lOCAone + lOCAtwo ) < (l1CBtwo - l1CBone) && overflow0A && increase1B ) return 0;
-   else if ( (lOCAtwo - lOCAone) < (max1 - l1CBone + l1CBtwo) && increase0A && overflow1B ) return 0;
-   else if ( (max1 - lOCAone + lOCAtwo ) < (max1 - l1CBone + l1CBtwo) && overflow0A && overflow1B ) return 0;
-
-   if ( (l1CBtwo - l1CBone) < (l1CAtwo - l1CAone) && increase1B && increase1A ) return 0;
-   else if ( (max1 - l1CBone + l1CBtwo ) < (l1CAtwo - l1CAone) && overflow1B && increase1A ) return 0;
-   else if ( (l1CBtwo - l1CBone) < (max1 - l1CAone + l1CAtwo) && increase1B && overflow1A ) return 0;
-   else if ( (max1 - l1CBone + l1CBtwo ) < (max1 - l1CAone + l1CAtwo) && overflow1B && overflow1A ) return 0;
-
-   if ( (l1CAtwo - l1CAone) < (l2CBtwo - l2CBone) && increase1A && increase2B ) return 0;
-   else if ( (max1 - l1CAone + l1CAtwo ) < (l2CBtwo - l2CBone) && overflow1A && increase2B ) return 0;
-   else if ( (l1CAtwo - l1CAone) < (max1 - l2CBone + l2CBtwo) && increase1A && overflow2B ) return 0;
-   else if ( (max1 - l1CAone + l1CAtwo ) < (max1 - l2CBone + l2CBtwo) && overflow1A && overflow2B ) return 0;
-
-   if ( (l2CBtwo - l2CBone) < (l2CAtwo - l2CAone) && increase2B && increase2A ) return 0;
-   else if ( (max1 - l2CBone + l2CBtwo ) < (l2CAtwo - l2CAone) && overflow2B && increase2A ) return 0;
-   else if ( (l2CBtwo - l2CBone) < (max1 - l2CAone + l2CAtwo) && increase2B && overflow2A ) return 0;
-   else if ( (max1 - l2CBone + l2CBtwo ) < (max1 - l2CAone + l2CAtwo) && overflow2B && overflow2A ) return 0;
-
+   for(Int_t i=0;i<6;i++){
+     if ( c2[i] > c1[i] ) increase[i]=1;
+     else if ( c2[i] < c1[i] && (c1[i] - c2[i]) > max2) overflow[i]=1;
+     else return 2;
    }
 
-   return 1;
+   for(Int_t i=0;i<5;i++){
+     if ((c2[i] - c1[i]) < (c2[i+1] - c1[i+1]) && increase[i] && increase[i+1] ) return 3;
+   else if ( (max1 - c1[i]+c2[i]  ) < (c2[i+1] - c1[i+1]) && overflow[i] && increase[i+1] ) return 3;
+   else if ( (c2[i] - c1[i]) < (max1 - c1[i+1] + c2[i+1]) && increase[i] && overflow[i+1] ) return 3;
+   else if ( (max1 - c1[i] + c2[i] ) < (max1 - c1[i+1] + c2[i+1]) && overflow[i] && overflow[i+1] ) return 3;
+   }
+ }
+ if(ovrflw)for(Int_t i=0;i<6;i++)ovrflw[i]=overflow[i];
+ return 0;
 }
 //_____________________________________________________________________________
 void AliTriggerRunScalers::Print( const Option_t* ) const

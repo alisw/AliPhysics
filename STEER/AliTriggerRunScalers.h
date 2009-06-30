@@ -32,7 +32,7 @@ public:
           const TObjArray*   GetScalersRecords()   const { return &fScalersRecord; } 
   AliTriggerScalersRecord*   GetScalersRecord( Int_t index ) const { return (AliTriggerScalersRecord*)fScalersRecord.At(index); }
                     Int_t    FindNearestScalersRecord( const AliTimeStamp *stamp ) const;
-                   Bool_t    ConsistencyCheck() const;
+                    Int_t    ConsistencyCheck(Bool_t* overflow) const;
   //  Setters
                      void    SetVersion( Short_t ver )       { fVersion = ver;   }            
                      void    SetRunNumber( ULong_t run )     { fRunNumber = run; }
