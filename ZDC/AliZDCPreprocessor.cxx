@@ -252,7 +252,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
    // --- Cheking if there is already the entry in the OCDB
    AliCDBEntry *cdbEnEntry = GetFromOCDB("Calib", "EnCalib");
    if(!cdbEnEntry){   
-     Log(Form(" ZDC/Calib/EnCalib entry will be created"));
+     Log(Form(" ZDC/Calib/EnergyCalib entry will be created"));
      // --- Initializing calibration object
      // 
      AliCDBMetaData metaData;
@@ -267,7 +267,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
    }
    else{ 
      // if entry exists it is still valid (=1 for all runs!)
-     Log(Form(" Valid ZDC/Calib/EnCalib object already existing in OCDB!!!"));
+     Log(Form(" Valid ZDC/Calib/EnergyCalib object already existing in OCDB!!!"));
      resEnCal = kTRUE;
    }
    //
@@ -293,7 +293,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
    }
    else{ 
      // if entry exists it is still valid (=1 for all runs!)
-     Log(Form(" Valid ZDC/Calib/TowCalib object already existing in OCDB!!!"));
+     Log(Form(" Valid ZDC/Calib/TowerCalib object already existing in OCDB!!!"));
      resTowCal = kTRUE;
    }
    
@@ -301,7 +301,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
    // --- Cheking if there is already the entry in the OCDB
    AliCDBEntry *cdbSEntry = GetFromOCDB("Calib", "TowCalib");
    if(!cdbSEntry){   
-     Log(Form(" ZDC/Calib/TOwCalib entry will be created"));
+     Log(Form(" ZDC/Calib/TowerCalib entry will be created"));
      // --- Initializing calibration object
      AliZDCTowerCalib *towCalib = new AliZDCTowerCalib("ZDC");
      //
@@ -322,7 +322,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
    }
    else{ 
      // if entry exists it is still valid (=1 for all runs!)
-     Log(Form(" Valid ZDC/Calib/TowCalib object already existing in OCDB!!!"));
+     Log(Form(" Valid ZDC/Calib/TowerCalib object already existing in OCDB!!!"));
      resEnCal = kTRUE;
    }
  }

@@ -142,7 +142,7 @@ void TestZDCPreprocessor(Int_t obj=0)
   else if(obj==2) chkEntry1 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
   			->Get("ZDC/Calib/LaserCalib", 0);
   else if(obj==3) chkEntry1 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/EnCalib", 0);
+  			->Get("ZDC/Calib/EnergyCalib", 0);
   
   
   if(!chkEntry0){
@@ -152,7 +152,7 @@ void TestZDCPreprocessor(Int_t obj=0)
   if(!chkEntry1){
     if(obj==1) printf("No file in ZDC/Calib/Pedestal\n");
     else if(obj==2) printf("No file in ZDC/Calib/LaserCalib\n");
-    else if(obj==3) printf("No file in ZDC/Calib/EnCalib\n");
+    else if(obj==3) printf("No file in ZDC/Calib/EnergyCalib\n");
     return;
   }
   

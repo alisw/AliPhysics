@@ -1185,7 +1185,7 @@ AliZDCEnCalib* AliZDCReconstructor::GetEnCalibData() const
 
   // Getting energy and equalization calibration object for ZDC set
 
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/EnCalib");
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/EnergyCalib");
   if(!entry) AliFatal("No calibration data loaded!");  
 
   AliZDCEnCalib *calibdata = dynamic_cast<AliZDCEnCalib*> (entry->GetObject());
@@ -1200,7 +1200,7 @@ AliZDCTowerCalib* AliZDCReconstructor::GetTowCalibData() const
 
   // Getting energy and equalization calibration object for ZDC set
 
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/TowCalib");
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/TowerCalib");
   if(!entry) AliFatal("No calibration data loaded!");  
 
   AliZDCTowerCalib *calibdata = dynamic_cast<AliZDCTowerCalib*> (entry->GetObject());
