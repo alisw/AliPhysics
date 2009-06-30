@@ -52,7 +52,7 @@ public:
   static Double_t SGetTPCDeltaXYZ(Int_t coord, Int_t volID, Int_t icoordsys, Double_t x, Double_t y, Double_t z);
   Double_t GetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID, Int_t icoordsys, Double_t x, Double_t y, Double_t z);
   static Double_t SGetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID, Int_t icoordsys, Double_t x, Double_t y, Double_t z);
-  void MakeTreeTrans(TTreeSRedirector *debug);
+  void MakeTreeTrans(TTreeSRedirector *debug, const char *treeName="all");
 
   AliTPCkalmanFit *Test(Int_t ntracks);
  public:

@@ -1132,12 +1132,12 @@ Double_t AliTPCkalmanFit::GetTPCDeltaXYZ(Int_t coord, Int_t volID, Int_t icoords
   Double_t dxdydz[6]={0,0,0,0,0,0};
   Double_t alpha;
   Double_t r;
-  if(icoordsys==0)alpha=TMath::ATan2(y,x); r =TMath::Sqrt(y*y+x*x);
-  if(icoordsys==1)alpha=y; r=x;
+  if(icoordsys==0){alpha=TMath::ATan2(y,x); r =TMath::Sqrt(y*y+x*x);}
+  if(icoordsys==1){alpha=y; r=x;}
   Double_t ca    = TMath::Cos(alpha);
   Double_t sa    = TMath::Sin(alpha);
-  if(icoordsys==0)xyz[0]=x; xyz[1]=y; xyz[2]=z;
-  if(icoordsys==1)xyz[0]=x*ca; xyz[1]=x*sa; xyz[2]=z;
+  if(icoordsys==0){xyz[0]=x; xyz[1]=y; xyz[2]=z;}
+  if(icoordsys==1){xyz[0]=x*ca; xyz[1]=x*sa; xyz[2]=z;}
   //
   if (volID<0){
     // Double_t alpha       = TMath::ATan2(y,x);
@@ -1184,8 +1184,8 @@ Double_t AliTPCkalmanFit::GetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID
   Double_t ca    = TMath::Cos(alpha);
   Double_t sa    = TMath::Sin(alpha);
   Double_t xyz[3];
-  if(icoordsys==0)xyz[0]=x;xyz[1]=y;xyz[2]=z; 
-  if(icoordsys==1)xyz[0]=x*ca; xyz[1]=x*sa; xyz[2]=z;
+  if(icoordsys==0){xyz[0]=x;xyz[1]=y;xyz[2]=z;} 
+  if(icoordsys==1){xyz[0]=x*ca; xyz[1]=x*sa; xyz[2]=z;}
   //xyz[3]=param; xyz[4]=volID;
 
   if (volID<0){
@@ -1213,7 +1213,7 @@ Double_t AliTPCkalmanFit::SGetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibI
 }
 
 
-void AliTPCkalmanFit::MakeTreeTrans(TTreeSRedirector *debug){
+void AliTPCkalmanFit::MakeTreeTrans(TTreeSRedirector *debug, const char *treeName){
   //
   // Make the Tree before and after current calibration
   //
@@ -1226,7 +1226,11 @@ void AliTPCkalmanFit::MakeTreeTrans(TTreeSRedirector *debug){
   //
   const Int_t ncalibs = fCalibration->GetEntries();
   TMatrixD dxdydz(ncalibs,5);
-
+  Double_t * adx    = new Double_t[ncalibs];
+  Double_t * ady    = new Double_t[ncalibs];
+  Double_t * adz    = new Double_t[ncalibs];
+  Double_t * adr    = new Double_t[ncalibs];
+  Double_t * adrphi = new Double_t[ncalibs];
 
   Double_t x[3];
   for (x[0]=-250.;x[0]<=250.;x[0]+=10.){
@@ -1245,6 +1249,17 @@ void AliTPCkalmanFit::MakeTreeTrans(TTreeSRedirector *debug){
 	Double_t dr=0;
 	Double_t rdphi=0;
 
+	Int_t volID= TMath::Nint(9*phi/TMath::Pi()-0.5);
+        if (volID<0) volID+=18;
+        if (x[2]<0) volID+=18; //C-side
+        if (r>120) volID+=36; //outer
+        Double_t volalpha=(volID+0.5)*TMath::Pi()/9;
+        Double_t cva=TMath::Cos(volalpha);
+        Double_t sva=TMath::Sin(volalpha);
+
+        Double_t lx=x[0]*cva+x[1]*sva;
+        Double_t ly=-x[0]*sva+x[1]*cva;
+
 
 	for(Int_t icalib=0;icalib<ncalibs;icalib++){
 	  for(Int_t icoord=0;icoord<5;icoord++){
@@ -1259,25 +1274,50 @@ void AliTPCkalmanFit::MakeTreeTrans(TTreeSRedirector *debug){
 
 
 	if(debug){
-	  (*debug)<<"positions"<<
+	  TTreeStream &cstream=
+	    (*debug)<<treeName<<
 	    "x="<<x[0]<<
 	    "y="<<x[1]<<
 	    "z="<<x[2]<<
 	    "r="<<r<<
 	    "ca="<<ca<<
 	    "sa="<<sa<<
-	    "phi="<<phi<<
+            "lx="<<lx<<
+            "ly="<<ly<<
+            "sector="<<volID<<
+ 	    "phi="<<phi<<
 	    "dx="<<dx<<
 	    "dy="<<dy<<
 	    "dz="<<dz<<
 	    "dr="<<dr<<
 	    "rdphi="<<rdphi<<
-	    "dxdydz.="<<&dxdydz<<
-	    "\n";
+	    "dxdydz.="<<&dxdydz;
+	    for (Int_t icalib=0;icalib<ncalibs;icalib++){
+	      AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(icalib);
+	      char tname[1000];
+	      //
+	      sprintf(tname,"dx%s=",transform->GetName());
+	      adx[icalib] =dxdydz(icalib,0); 
+	      cstream<<tname<<adx[icalib];
+	      sprintf(tname,"dy%s=",transform->GetName());
+	      ady[icalib] =dxdydz(icalib,1); 
+	      cstream<<tname<<ady[icalib];
+	      sprintf(tname,"dz%s=",transform->GetName());
+	      adz[icalib] =dxdydz(icalib,2); 
+	      cstream<<tname<<adz[icalib];
+	      //
+	      sprintf(tname,"dr%s=",transform->GetName());
+	      adr[icalib] =dxdydz(icalib,3); 
+	      cstream<<tname<<adr[icalib];
+	      sprintf(tname,"rdphi%s=",transform->GetName());
+	      adrphi[icalib] =dxdydz(icalib,4); 
+	      cstream<<tname<<adrphi[icalib];
+	    }
+	    cstream<<"\n";
 	}
       }
     }
     Printf("x0=%f finished",x[0]);
   }
-
+  
 }
