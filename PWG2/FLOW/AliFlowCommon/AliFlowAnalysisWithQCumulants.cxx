@@ -5190,6 +5190,14 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForNoNameIntegratedFlow
  //sixthOrderQCumulant = sixthOrderQCumulant - sixCorrection;
  //eightOrderQCumulant = eightOrderQCumulant - eightCorrection;
  
+ // errors: (to be improved i.e. reimplemented)
+ Double_t secondOrderError = 0;
+ if(two > 0. && !(useWeights))
+ { 
+  Double_t nEvtsNoName = (fCommonHists2nd->GetHistMultRP())->GetEntries(); 
+  if(nEvtsNoName>0) secondOrderError = (fQCorrelations->GetBinError(1)/(2.*pow(two,0.5)))/(pow(nEvtsNoName,0.5));
+ }
+ 
  if(useWeights) sixthOrderQCumulant = 0.; // to be removed (once 6th order with weights is calculated)
  if(useWeights) eightOrderQCumulant = 0.; // to be removed (once 8th order with weights is calculated)
  
@@ -5203,7 +5211,7 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForNoNameIntegratedFlow
   if(!(useWeights)) 
   { 
    fIntFlowResultsQC->SetBinContent(1,dVn2);
-   fIntFlowResultsQC->SetBinError(1,0.); // to be improved
+   fIntFlowResultsQC->SetBinError(1,secondOrderError); // to be improved
   }
   if(useWeights)
   { 
@@ -5212,7 +5220,7 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForNoNameIntegratedFlow
   }
   
   // fill common histogram:
-  fCommonHistsResults2nd->FillIntegratedFlow(dVn2, 0.); // to be improved 
+  fCommonHistsResults2nd->FillIntegratedFlow(dVn2,secondOrderError); // to be improved 
   
  } 
  if(fourthOrderQCumulant<0.)
