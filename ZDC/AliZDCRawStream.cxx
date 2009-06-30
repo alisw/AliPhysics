@@ -148,7 +148,7 @@ void AliZDCRawStream::ReadChMap()
   // Reading channel map
   printf("\n\t Reading ADC mapping from OCDB\n");
   AliZDCChMap * chMap = GetChMap();
-  chMap->Print("");
+  //chMap->Print("");
   for(Int_t i=0; i<fNChannelsOn; i++){
     fMapADC[i][0] = chMap->GetADCModule(i);
     fMapADC[i][1] = chMap->GetADCChannel(i);
@@ -415,7 +415,7 @@ Bool_t AliZDCRawStream::Next()
   }
   else if(fPosition==fDeadfaceOffset){
     if(fBuffer != 0xdeadface){
-      AliError(" NO deadface after DARC data");
+      AliWarning(" NO deadface after DARC data");
       fRawReader->AddMajorErrorLog(kDARCError);  
     }
     else{
@@ -433,7 +433,7 @@ Bool_t AliZDCRawStream::Next()
   }
   else if(fPosition==fDeadbeefOffset){
     if(fBuffer != 0xdeadbeef){
-      AliError(" NO deadbeef after DARC global data");
+      AliWarning(" NO deadbeef after DARC global data");
       fRawReader->AddMajorErrorLog(kDARCError);  
     }
     else{
@@ -526,20 +526,22 @@ Bool_t AliZDCRawStream::Next()
 	//  fADCModule,fADCChannel,fADCGain,fSector[0],fSector[1]);
 	
 	// Final checks
-	if(fSector[0]<1 || fSector[0]>5){
-          AliWarning(Form(" No valid detector assignment: %d",fSector[0]));
-          fRawReader->AddMajorErrorLog(kInvalidSector);
+	if(foundMapEntry==kTRUE){
+	  if(fSector[0]<1 || fSector[0]>5){
+            AliWarning(Form(" No valid detector assignment: %d",fSector[0]));
+            fRawReader->AddMajorErrorLog(kInvalidSector);
+	  }
+	  //
+	  if(fSector[1]<0 || fSector[1]>5){
+            AliWarning(Form(" No valid sector assignment: %d",fSector[1]));
+            fRawReader->AddMajorErrorLog(kInvalidSector);
+	  }
+	  //
+	  if(fADCModule<0 || fADCModule>3){
+            AliError(Form(" No valid ADC module: %d",fADCModule));
+            fRawReader->AddMajorErrorLog(kInvalidADCModule);
+          }
 	}
-	//
-	if(fSector[1]<0 || fSector[1]>5){
-          AliWarning(Form(" No valid sector assignment: %d",fSector[1]));
-          fRawReader->AddMajorErrorLog(kInvalidSector);
-	}
-	//
-	if(fADCModule<0 || fADCModule>3){
-          AliError(Form(" No valid ADC module: %d",fADCModule));
-          fRawReader->AddMajorErrorLog(kInvalidADCModule);
-        }
 
 	// Checking the underflow and overflow bits
         if(fBuffer & 0x1000)       fIsUnderflow = kTRUE;
