@@ -56,6 +56,8 @@ Revision 0.01  2008/05/10 A. De Caro
 #include "AliTOFdigit.h"
 #include "AliTOFDigitMap.h"
 #include "AliTOFrawData.h"
+#include "AliTOFReconstructor.h"
+#include "AliTOFRecoParam.h"
 
 ClassImp(AliTOFClusterFinderV1)
 
@@ -66,7 +68,7 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
   fNumberOfTofDigits(0),
-  fMaxDeltaTime(2),
+  fMaxDeltaTime(0),
   fVerbose(0),
   fDecoderVersion(0),
   fTOFcalib(calib),
@@ -78,7 +80,8 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
 //
 // Constructor
 //
-
+  const AliTOFRecoParam *recoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
+  fMaxDeltaTime = recoParam->GetMaxDeltaTime();
 }
 
 //_____________________________________________________________________________
@@ -88,7 +91,7 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcali
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
   fNumberOfTofDigits(0),
-  fMaxDeltaTime(2),
+  fMaxDeltaTime(0),
   fVerbose(0),
   fDecoderVersion(0),
   fTOFcalib(calib),
@@ -100,6 +103,8 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcali
 //
 // Constructor
 //
+  const AliTOFRecoParam *recoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
+  fMaxDeltaTime = recoParam->GetMaxDeltaTime();
 
 }
 //_____________________________________________________________________________
@@ -278,7 +283,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
   FillRecPoint();
   clusterTree->Fill();
 
-  AliInfo(Form("Number of found TOF clusters: %d", fNumberOfTofClusters));
+  AliInfo(Form("Number of found clusters: %d", fNumberOfTofClusters));
 
   ResetRecpoint();
 

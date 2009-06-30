@@ -12,6 +12,8 @@
 
 #include "AliDetectorRecoParam.h"
 
+#include "AliTOFGeometry.h"
+
 class AliTOFRecoParam : public AliDetectorRecoParam
 {
  public: 
@@ -36,9 +38,10 @@ class AliTOFRecoParam : public AliDetectorRecoParam
   Float_t  GetSensRadius()         const  { return fSensRadius;}
   Float_t  GetStepSize()           const  { return fStepSize;}
   Double_t  GetMaxChi2()           const  { return fMaxChi2;}
-  Double_t  GetMaxChi2TRD()           const  { return fMaxChi2TRD;}
+  Double_t  GetMaxChi2TRD()        const  { return fMaxChi2TRD;}
   Double_t  GetTimeResolution()    const  { return fTimeResolution;}
   Double_t  GetTimeNSigma()        const  { return fTimeNSigma;}
+  Int_t     GetMaxDeltaTime()      const  { return fMaxDeltaTime;}
 
   //Setters
 
@@ -58,10 +61,11 @@ class AliTOFRecoParam : public AliDetectorRecoParam
   void  SetMaxChi2TRD(Double_t in)  {fMaxChi2TRD=in;}
   void  SetTimeResolution(Double_t in)  {fTimeResolution=in;}
   void  SetTimeNSigma(Double_t in)  {fTimeNSigma=in;}
+  void  SetMaxDeltaTime(Int_t a)   {fMaxDeltaTime = a;}; // to set deltaTime [bin number]
+  void  SetMaxDeltaTime(Float_t a) {fMaxDeltaTime = (Int_t)(a/AliTOFGeometry::TdcBinWidth());}; // to set deltaTime [ps]
 
   static   AliTOFRecoParam *GetPbPbparam();       // reco param for PbPb.
   static   AliTOFRecoParam *GetPPparam();         // reco param for PP
-  static   AliTOFRecoParam *GetCosmicMuonParam(); // reco param for cosmic muons
  private:
 
   Bool_t fTimeZero; //use Time Zero info in Pid
@@ -80,8 +84,11 @@ class AliTOFRecoParam : public AliDetectorRecoParam
   Double_t fMaxChi2TRD;  // maximum X2 track-tof clusters (TRD)
   Double_t fTimeResolution;  // Time resolution for resp. function in PID (ps)
   Double_t fTimeNSigma;  // N-Sigma Range used for resp. function in PID 
+  Int_t    fMaxDeltaTime; // max time difference in between two tof
+                          // measurements for two neighbouring pads
+                          // [number of bins]
 
-  ClassDef(AliTOFRecoParam, 3)
+  ClassDef(AliTOFRecoParam, 4)
 };
 
 #endif

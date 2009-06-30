@@ -45,7 +45,8 @@ AliTOFRecoParam::AliTOFRecoParam():
   fMaxChi2(10.),
   fMaxChi2TRD(150.),
   fTimeResolution(80.),
-  fTimeNSigma(5.)
+  fTimeNSigma(5.),
+  fMaxDeltaTime(2)
 {
   //
   // constructor
@@ -69,7 +70,8 @@ AliTOFRecoParam::AliTOFRecoParam(const AliTOFRecoParam &p):
   fMaxChi2(p.fMaxChi2),
   fMaxChi2TRD(p.fMaxChi2TRD),
   fTimeResolution(p.fTimeResolution),
-  fTimeNSigma(p.fTimeNSigma)
+  fTimeNSigma(p.fTimeNSigma),
+  fMaxDeltaTime(p.fMaxDeltaTime)
  { 
   //copy Ctor
 
@@ -87,21 +89,22 @@ AliTOFRecoParam& AliTOFRecoParam::operator=(const AliTOFRecoParam &p)
   
   AliDetectorRecoParam::operator=(p);
   fTimeZero=p.fTimeZero;       
-   fTimeZerofromT0=p.fTimeZerofromT0;
-   fTimeZerofromTOF=p.fTimeZerofromTOF;       
-   fTimeWalkCorr=p.fTimeWalkCorr;       
-   fApplyPbPbCuts=p.fApplyPbPbCuts;       
-   fWindowSizeMaxY=p.fWindowSizeMaxY;
-   fWindowSizeMaxZ=p.fWindowSizeMaxZ;
-   fDistanceCut=p.fDistanceCut;
-   fWindowScaleFact=p.fWindowScaleFact;
-   fStepSize=p.fStepSize;
-   fSensRadius=p.fSensRadius;
-   fMaxChi2=p.fMaxChi2;
-   fMaxChi2TRD=p.fMaxChi2TRD;
-   fTimeResolution=p.fTimeResolution;
-   fTimeNSigma=p.fTimeNSigma;   
-   return *this;
+  fTimeZerofromT0=p.fTimeZerofromT0;
+  fTimeZerofromTOF=p.fTimeZerofromTOF;       
+  fTimeWalkCorr=p.fTimeWalkCorr;       
+  fApplyPbPbCuts=p.fApplyPbPbCuts;       
+  fWindowSizeMaxY=p.fWindowSizeMaxY;
+  fWindowSizeMaxZ=p.fWindowSizeMaxZ;
+  fDistanceCut=p.fDistanceCut;
+  fWindowScaleFact=p.fWindowScaleFact;
+  fStepSize=p.fStepSize;
+  fSensRadius=p.fSensRadius;
+  fMaxChi2=p.fMaxChi2;
+  fMaxChi2TRD=p.fMaxChi2TRD;
+  fTimeResolution=p.fTimeResolution;
+  fTimeNSigma=p.fTimeNSigma;   
+  fMaxDeltaTime=p.fMaxDeltaTime;
+  return *this;
 }
 //_____________________________________________________________________________
 AliTOFRecoParam::~AliTOFRecoParam() 
@@ -120,6 +123,7 @@ AliTOFRecoParam *AliTOFRecoParam::GetPbPbparam(){
   param->fApplyPbPbCuts = kTRUE;
   param->fWindowScaleFact = 5.;
   param->fDistanceCut = 3.;
+  param->fMaxDeltaTime = 2;
   return param;
 }
 
@@ -132,18 +136,7 @@ AliTOFRecoParam *AliTOFRecoParam::GetPPparam(){
   param->fApplyPbPbCuts = kFALSE;
   param->fWindowScaleFact = 5.;
   param->fDistanceCut = 10.;
-  return param;
-}
-
-//_____________________________________________________________________________
-AliTOFRecoParam *AliTOFRecoParam::GetCosmicMuonParam(){
-  //
-  // set default reconstruction parameters for cosmic muon run
-  //
-  AliTOFRecoParam *param = new AliTOFRecoParam();
-  param->fApplyPbPbCuts = kFALSE;
-  param->fWindowScaleFact = 5.;
-  param->fDistanceCut = 10.;
+  param->fMaxDeltaTime = 2;
   return param;
 }
 
@@ -174,7 +167,12 @@ void AliTOFRecoParam::PrintParameters() const
   AliInfo(Form(" Maximum X2 track-tof clusters (TRD): %f", fMaxChi2TRD));
   AliInfo(Form(" Time resolution for responce function in PID: %f ps",
 	       fTimeResolution));
-  AliInfo(Form("  N-Sigma Range used for responce function in PID: %f",
+  AliInfo(Form(" N-Sigma Range used for responce function in PID: %f",
 	       fTimeNSigma));
+  AliInfo(Form(" Max time difference between two (or more) time measurements"
+	       " coming from two (or more) neighbouring pads"
+	       " to define if they are coming from the same ionization event"
+	       " or not: %2d bins -> %f ps",
+	       fMaxDeltaTime, fMaxDeltaTime*AliTOFGeometry::TdcBinWidth()))
 
 }
