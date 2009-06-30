@@ -29,7 +29,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliESDtrack.h"
 #include "TVector3.h"
-#include "AliAODVertex.h"
+#include "AliVVertex.h"
 #include <TMath.h>
 #include <TMatrix.h>
 #include <TMatrixD.h>
@@ -137,11 +137,10 @@ void AliMixedEvent::ComputeVtx(TObjArray *vertices, Double_t *pos,Double_t *sig)
     Double_t sumsigma[6]={0.,0.,0.,0.,0.,0.};
     
     for(Int_t ivtx = 0; ivtx < nentries; ivtx++){
-	AliAODVertex *vtx=(AliAODVertex*)vertices->UncheckedAt(ivtx);
+	AliVVertex *vtx=(AliVVertex*)vertices->UncheckedAt(ivtx);
 	if(!vtx) return;
 	Double_t covariance[6];
-	vtx->GetCovMatrix(covariance);
-
+	vtx->GetCovarianceMatrix(covariance);
 	Double_t vtxPos[3];
 	vtx->GetXYZ(vtxPos);
 	if(covariance[0]==0) continue;
