@@ -67,7 +67,7 @@ void TestZDCPreprocessor(Int_t obj=0)
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASERDATA",   "LDC0", "ZDCLaserCalib.dat");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "LASERHISTOS", "LDC0", "ZDCLasHisto.root");
   //
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "ENERGYCALIB", "LDC0", "ZDCEnCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "ENERGYCALIB", "LDC0", "ZDCEnergyCalib.dat");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "TOWERCALIB", "LDC0", "ZDCTowerCalib.dat");
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PHYSICS", "LDC0", "ZDCChMapping.dat");

@@ -23,7 +23,7 @@ Trigger Types Used: Standalone Trigger
 */
 #define PEDDATA_FILE  "ZDCPedestal.dat"
 #define MAPDATA_FILE  "ZDCChMapping.dat"
-#define ENCALIBDATA_FILE   "ZDCEnCalib.dat"
+#define ENCALIBDATA_FILE   "ZDCEnergyCalib.dat"
 #define TOWCALIBDATA_FILE  "ZDCTowerCalib.dat"
 
 #include <stdio.h>
