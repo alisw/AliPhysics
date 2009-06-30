@@ -34,7 +34,9 @@
 #include "AliHLTITSCompressRawDataSDDComponent.h"
 #include "AliHLTITSClusterFinderSPDComponent.h"
 #include "AliHLTITSClusterFinderSSDComponent.h"
+#include "AliHLTITSClusterFinderSDDComponent.h"
 #include "AliHLTITSClusterHistoComponent.h"
+#include "AliHLTITSTrackerComponent.h"
 
 /** global instance for agent registration */
 AliHLTITSAgent gAliHLTITSAgent;
@@ -89,7 +91,9 @@ int AliHLTITSAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTITSCompressRawDataSDDComponent);
   pHandler->AddComponent(new AliHLTITSClusterFinderSPDComponent);
   pHandler->AddComponent(new AliHLTITSClusterFinderSSDComponent);
+  pHandler->AddComponent(new AliHLTITSClusterFinderSDDComponent);
   pHandler->AddComponent(new AliHLTITSClusterHistoComponent);
+  pHandler->AddComponent(new AliHLTITSTrackerComponent);
 
   return 0;
 }

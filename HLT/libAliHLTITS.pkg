@@ -8,6 +8,7 @@ CLASS_HDRS:=  	AliHLTITStrack.h \
 		AliHLTITSAgent.h\
 		AliHLTITSClusterFinderSPDComponent.h\
 		AliHLTITSClusterFinderSSDComponent.h\
+		AliHLTITSClusterFinderSDDComponent.h\
 		AliHLTITSClusterHistoComponent.h \
 		AliHLTITSCompressRawDataSDDComponent.h \
 		tracking/AliITStrackerHLT.h \
