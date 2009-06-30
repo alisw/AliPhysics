@@ -23,8 +23,7 @@
  *   alieve $ALICE_ROOT/EVE/alice-macros/event_next.C \
  *          $ALICE_ROOT/EVE/macros/alieve_init.C \
  *          $ALICE_ROOT/EVE/alice-macros/geom_simple.C \
- *          $ALICE_ROOT/EVE/alice-macros/esd_tracks.C \
- *          $ALICE_ROOT/HLT/TPCLib/EVE/macros/esd_hlt_tracks.C
+ *          $ALICE_ROOT/EVE/alice-macros/esd_hlt_tracks.C
  * </pre>
  * Display is changed to next event by executing event_next()
  * from the root prompt.
@@ -38,6 +37,17 @@
  */
 TEveTrackList* esd_hlt_tracks()
 {
+  TString macroPath=getenv("ALICE_ROOT");
+  macroPath+="/EVE/alice-macros/esd_tracks.C";
+  if (!gROOT->GetInterpreter()->IsLoaded(macroPath)) {
+    if (gSystem->AccessPathName(macroPath)) {
+      Error("hlt_tpc_clusters.C", "can not load %s, please load the esd_tracks.C macro before", macroPath.Data());
+      return NULL;
+    } else {
+      gROOT->GetInterpreter()->LoadMacro(macroPath);
+    }
+  }
+
   if (!TClass::GetClass("AliEveEventManager")) {
     Error("hlt_tpc_clusters.C", "EVE library not loaded, please start alieve correctly");
     return NULL;
@@ -73,7 +83,7 @@ TEveTrackList* esd_hlt_tracks()
   pHLTTree->GetEntry(eventId);
 
   TEveTrackList* cont = new TEveTrackList("HLT ESD Tracks");
-  cont->SetMainColor(7);
+  cont->SetMainColor(kCyan+3);
   esd_track_propagator_setup(cont->GetPropagator(),
 			     0.1*esd->GetMagneticField(), 520);
 
