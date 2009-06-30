@@ -30,9 +30,10 @@ public:
                     void    AddTriggerScalers( UChar_t classIndex, UInt_t LOCB, UInt_t LOCA,        
                                               UInt_t L1CB, UInt_t L1CA, UInt_t L2CB, UInt_t L2CA );
                             
-            AliTimeStamp*   GetTimeStamp() { return &fTimestamp; }
-               TObjArray*   GetTriggerScalers()  { return  &fScalers; }
-       AliTriggerScalers*   GetTriggerScalersForClass( Int_t classmask );       
+      const AliTimeStamp*   GetTimeStamp() const { return &fTimestamp; }
+         const TObjArray*   GetTriggerScalers()  const { return  &fScalers; }
+ const AliTriggerScalers*   GetTriggerScalersForClass( const Int_t classindex ) const;       
+       AliTriggerScalers*   GetTriggerScalersForClassBinary( const Int_t classindex ) ;       
           virtual Bool_t    IsSortable() const { return kTRUE; }
                                 
            virtual Int_t    Compare( const TObject* obj ) const;

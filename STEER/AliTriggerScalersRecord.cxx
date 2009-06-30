@@ -38,6 +38,7 @@ AliTriggerScalersRecord::AliTriggerScalersRecord():
   fTimestamp(),
   fScalers()
 {
+ //Default constructor
 }
 
 //_____________________________________________________________________________
@@ -59,6 +60,7 @@ void AliTriggerScalersRecord::AddTriggerScalers( UChar_t classIndex, UInt_t LOCB
                                          UInt_t L1CB, UInt_t L1CA, UInt_t L2CB, UInt_t L2CA )
 {
     AddTriggerScalers( new AliTriggerScalers( classIndex, LOCB, LOCA, L1CB, L1CA, L2CB, L2CA ) );
+    fScalers.Sort();
 } 
 
 //_____________________________________________________________________________
@@ -68,16 +70,33 @@ Int_t AliTriggerScalersRecord::Compare( const TObject* obj ) const
   
   return fTimestamp.Compare( &(((AliTriggerScalersRecord*)obj)->fTimestamp) );
 }
+//_____________________________________________________________________________
+const AliTriggerScalers* AliTriggerScalersRecord::GetTriggerScalersForClass( const Int_t classindex ) const
+{
+   // Find Trigger scaler with class ID = classindex using a brutal force 
+
+   Int_t   position, last;
+   AliTriggerScalers *op2 = 0;
+   position = 0;
+   last = fScalers.GetEntriesFast();
+   while (position < last) {
+      op2 = (AliTriggerScalers *)fScalers.At(position);
+      if( op2 && (op2->GetClassIndex() == classindex )) break;
+      op2=0;
+      position++;
+   }
+   return op2;   
+}
 
 //_____________________________________________________________________________
-AliTriggerScalers* AliTriggerScalersRecord::GetTriggerScalersForClass( Int_t classmask )
+AliTriggerScalers* AliTriggerScalersRecord::GetTriggerScalersForClassBinary( const Int_t classindex )
 {
-   // Find Trigger scaler with class ID = classmask using a binary search. 
+   // Find Trigger scaler with class ID = classindex using a binary search. 
 
    Int_t   base, position, last, result = 0;
    AliTriggerScalers *op2 = NULL;
    
-   fScalers.Sort();
+   fScalers.Sort(); 
    
    base = 0;
    last = fScalers.GetEntriesFast();
@@ -86,8 +105,8 @@ AliTriggerScalers* AliTriggerScalersRecord::GetTriggerScalersForClass( Int_t cla
       result = 0;
       position = (base+last) / 2;
       op2 = (AliTriggerScalers *)fScalers.At(position);
-      if( op2 && op2->GetClassIndex() > classmask ) result = -1;
-      if( op2 && op2->GetClassIndex() < classmask ) result = 1;
+      if( op2 && op2->GetClassIndex() > classindex ) result = -1;
+      if( op2 && op2->GetClassIndex() < classindex ) result = 1;
   
       if (op2 && result == 0)
          return op2;
