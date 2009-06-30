@@ -198,35 +198,34 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
   AliITSVertexer *vptr;
   Int_t vtxOpt = GetRecoParam()->GetVertexer();
   if(vtxOpt==3){
-    Info("CreateVertexer","a AliITSVertexerIons object has been selected\n");
+    AliInfo("AliITSVertexerIons has been selected");
     vptr =  new AliITSVertexerIons();
   }
   else if(vtxOpt==4){
     Double_t smear[3]={GetRecoParam()->GetVertexerFastSmearX(),
 		       GetRecoParam()->GetVertexerFastSmearY(),
 		       GetRecoParam()->GetVertexerFastSmearZ()};
-    Info("CreateVertexer","a AliITSVertexerFast object has been selected\n"); 
+    AliInfo("AliITSVertexerFast has been selected"); 
     vptr = new AliITSVertexerFast(smear);
   }
   else if(vtxOpt==1){
-    Info("CreateVertexer","a AliITSVertexerZ object has been selected\n");
+    AliInfo("AliITSVertexerZ has been selected");
     vptr =  new AliITSVertexerZ();
   }
   else if(vtxOpt==2){
-    Info("CreateVertexer","a AliITSVertexerCosmics object has been selected\n");
+    AliInfo("AliITSVertexerCosmics has been selected");
     vptr = new AliITSVertexerCosmics();
   }
   else if(vtxOpt==5){ 
-    Info("CreateVertexer","vertex is fixed in the position of the TDI\n");
+    AliInfo("Vertex is fixed in the position of the TDI\n");
     vptr = new AliITSVertexerFixed("TDI");
   }
   else if(vtxOpt==6){ 
-    Info("CreateVertexer","vertex is fixed in the position of the TED\n");
+    AliInfo("Vertex is fixed in the position of the TED\n");
     vptr = new AliITSVertexerFixed("TED");
   }
   else {
   // by default an AliITSVertexer3D object is instatiated
-    Info("CreateVertexer","a AliITSVertexer3D object has been selected\n");
     AliITSVertexer3D*  vtxr = new AliITSVertexer3D();
     Float_t dzw=GetRecoParam()->GetVertexer3DWideFiducialRegionZ();
     Float_t drw=GetRecoParam()->GetVertexer3DWideFiducialRegionR();
@@ -239,6 +238,9 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
     vtxr->SetDeltaPhiCuts(dphil,dphit);
     Float_t dcacut=GetRecoParam()->GetVertexer3DDCACut();
     vtxr->SetDCACut(dcacut);
+    Int_t pileupAlgo=GetRecoParam()->GetSPDVertexerPileupAlgo();
+    vtxr->SetPileupAlgo(pileupAlgo);
+    AliInfo(Form("AliITSVertexer3D with pileup algo %d has been selected",pileupAlgo));
     vptr = vtxr;
   }
   vptr->SetDetTypeRec(fDetTypeRec);

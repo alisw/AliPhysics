@@ -118,6 +118,10 @@ class AliITSRecoParam : public AliDetectorRecoParam
     SetVertexer3DDeltaPhiCuts();
     SetVertexer3DDCACut();    
   }
+  void SetSPDVertexerPileupAlgoZ(){fVtxr3DPileupAlgo=0;}
+  void SetSPDVertexerPileupAlgo3DTwoSteps(){fVtxr3DPileupAlgo=1;}
+  void SetSPDVertexerPileupAlgo3DOneShot(){fVtxr3DPileupAlgo=2;}
+  
 
   Float_t  GetVertexer3DWideFiducialRegionZ() const {return fVtxr3DZCutWide;}
   Float_t  GetVertexer3DWideFiducialRegionR() const {return fVtxr3DRCutWide;}
@@ -126,7 +130,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t  GetVertexer3DLooseDeltaPhiCut() const {return fVtxr3DPhiCutLoose;}
   Float_t  GetVertexer3DTightDeltaPhiCut() const {return fVtxr3DPhiCutTight;}
   Float_t  GetVertexer3DDCACut() const {return fVtxr3DDCACut;}
-  
+  Int_t    GetSPDVertexerPileupAlgo() const {return fVtxr3DPileupAlgo;}
 
   Double_t GetSigmaY2(Int_t i) const { return fSigmaY2[i]; }
   Double_t GetSigmaZ2(Int_t i) const { return fSigmaZ2[i]; }
@@ -409,6 +413,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Int_t  fPID;      // ITS PID method to be used (see AliITSReconstructor)
 
 
+  // SPD 3D Vertexer configuration
   Float_t fVtxr3DZCutWide;    // Z extension of the wide fiducial region for vertexer 3D
   Float_t fVtxr3DRCutWide;    // R extension of the wide fiducial region for vertexer 3D
   Float_t fVtxr3DZCutNarrow;  // Z extension of the narrow fiducial region for vertexer 3D
@@ -416,6 +421,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fVtxr3DPhiCutLoose; // loose deltaPhi cut to define tracklets in vertexer 3D
   Float_t fVtxr3DPhiCutTight; // tight deltaPhi cut to define tracklets in vertexer 3D
   Float_t fVtxr3DDCACut;      // cut on tracklet-to-tracklet DCA in vertexer3D
+  Int_t   fVtxr3DPileupAlgo;  // pileup algorithm (0 = VtxZ, 1 = 3D - 2 step, 2 = 3D all in once)
 
   Int_t fLayersToSkip[AliITSgeomTGeo::kNLayers]; // array with layers to skip (MI,SA)
 
@@ -576,7 +582,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t  fAlignFilterFillQANtuples;      // fill QA ntuples  
 
 
-  ClassDef(AliITSRecoParam,21) // ITS reco parameters
+  ClassDef(AliITSRecoParam,22) // ITS reco parameters
 };
 
 #endif
