@@ -2294,7 +2294,7 @@ void AliZDCv3::StepManager()
   //
   Int_t   j, vol[2]={0,0}, ibeta=0, ialfa=0, ibe=0, nphe=0;
   Float_t hits[13], x[3], xdet[3], um[3], ud[3];
-  Float_t m=0., ekin=0., destep=0., be=0., out=0.;
+  Float_t destep=0., be=0., out=0.;
   Double_t s[3], p[3];
   const char *knamed;
   //
@@ -2460,91 +2460,80 @@ void AliZDCv3::StepManager()
     //printf("\t *** det %d vol %d xdet(%f, %f)\n",vol[0], vol[1], xdet[0], xdet[1]);
     
     
-  // Store impact point and kinetic energy of the ENTERING particle
+    // Store impact point and kinetic energy of the ENTERING particle
     
-      if(gMC->IsTrackEntering()){
-        //Particle energy
-        gMC->TrackMomentum(p[0],p[1],p[2],p[3]);
-        hits[3] = p[3];
-        // Impact point on ZDC
-	// X takes into account the LHC x-axis sign
-	// which is opposite to positive x on detcetor front face
-	// for side A detectors (ZNA and ZPA)  
-        if(vol[0]==4 || vol[0]==5){
-	  hits[4] = -xdet[0];
-	}
-	else{
-	  hits[4] = xdet[0];
-        }
-	hits[5] = xdet[1];
-	hits[6] = 0;
-        hits[7] = 0;
-        hits[8] = 0;
-        hits[9] = 0;
-	//
-	Int_t curTrackN = gAlice->GetMCApp()->GetCurrentTrackNumber();
-        TParticle *part = gAlice->GetMCApp()->Particle(curTrackN);
-	hits[10] = part->GetPdgCode();
-	//printf("\t PDGCode = %d\n", part->GetPdgCode());
-	//
-        Int_t imo = part->GetFirstMother();
-	if(imo>0){
-          TParticle * pmot = gAlice->GetMCApp()->Particle(imo);
-          hits[11] = pmot->GetPdgCode();
-	}
-	else hits[11]=0;
-        //
-	hits[12] = 1.0e09*gMC->TrackTime(); // in ns!
-	//printf("\t TrackTime = %f\n", hits[12]);
+    if(gMC->IsTrackEntering()){
+      //Particle energy
+      gMC->TrackMomentum(p[0],p[1],p[2],p[3]);
+      hits[3] = p[3];
+      // Impact point on ZDC
+      // X takes into account the LHC x-axis sign
+      // which is opposite to positive x on detcetor front face
+      // for side A detectors (ZNA and ZPA)  
+      if(vol[0]==4 || vol[0]==5){
+        hits[4] = -xdet[0];
+      }
+      else{
+        hits[4] = xdet[0];
+      }
+      hits[5] = xdet[1];
+      hits[6] = 0;
+      hits[7] = 0;
+      hits[8] = 0;
+      hits[9] = 0;
+      //
+      Int_t curTrackN = gAlice->GetMCApp()->GetCurrentTrackNumber();
+      TParticle *part = gAlice->GetMCApp()->Particle(curTrackN);
+      hits[10] = part->GetPdgCode();
+      //printf("\t PDGCode = %d\n", part->GetPdgCode());
+      //
+      Int_t imo = part->GetFirstMother();
+      if(imo>0){
+    	TParticle * pmot = gAlice->GetMCApp()->Particle(imo);
+    	hits[11] = pmot->GetPdgCode();
+      }
+      else hits[11]=0;
+      //
+      hits[12] = 1.0e09*gMC->TrackTime(); // in ns!
+      //printf("\t TrackTime = %f\n", hits[12]);
 
-	AddHit(curTrackN, vol, hits);
-	
-	if(fNoShower==1){
-	  //printf("\t VolName %s -> det %d quad %d - x = %f, y = %f, z = %f\n", 
-	    //knamed, vol[0], vol[1], x[0], x[1], x[2]);
-	  if(vol[0]==1){
-	    fnDetectedC += 1;
-	    printf("	  # of particles in ZNC = %d\n\n",fnDetectedC);
-	  }
-	  else if(vol[0]==2){
-	    fpDetectedC += 1;
-	    printf("	  # of particles in ZPC = %d\n\n",fpDetectedC);
-	  }
-	  else if(vol[0]==4){
-	    fnDetectedA += 1;
-	    printf("	  # of particles in ZNA = %d\n\n",fnDetectedA);     
-	  }
-	  else if(vol[0]==5){
-	    fpDetectedA += 1;
-	    printf("	  # of particles in ZPA = %d\n\n",fpDetectedA);      
-	  }
-          //
-	  //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", 
-          //   gMC->TrackMass(), p[3], p[2], gMC->CurrentVolName());
-	  //
-	  gMC->StopTrack();
-	  return;
-	}
+      AddHit(curTrackN, vol, hits);
+
+      if(fNoShower==1){
+        //printf("\t VolName %s -> det %d quad %d - x = %f, y = %f, z = %f\n", 
+          //knamed, vol[0], vol[1], x[0], x[1], x[2]);
+        if(vol[0]==1){
+          fnDetectedC += 1;
+          printf("	# of particles in ZNC = %d\n\n",fnDetectedC);
+        }
+        else if(vol[0]==2){
+          fpDetectedC += 1;
+          printf("	# of particles in ZPC = %d\n\n",fpDetectedC);
+        }
+        else if(vol[0]==4){
+          fnDetectedA += 1;
+          printf("	# of particles in ZNA = %d\n\n",fnDetectedA);	  
+        }
+        else if(vol[0]==5){
+          fpDetectedA += 1;
+          printf("	# of particles in ZPA = %d\n\n",fpDetectedA);	   
+        }
+    	//
+        //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", 
+    	//   gMC->TrackMass(), p[3], p[2], gMC->CurrentVolName());
+        //
+        gMC->StopTrack();
+        return;
       }
-             
-      // Charged particles -> Energy loss
-      if((destep=gMC->Edep())){
-         if(gMC->IsTrackStop()){
-           gMC->TrackMomentum(p[0],p[1],p[2],p[3]);
-	   m = gMC->TrackMass();
-	   ekin = p[3]-m;
-	   hits[9] = ekin;
-	   hits[7] = 0.;
-	   hits[8] = 0.;
-	   AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
-	 }
-	 else{
-	   hits[9] = destep;
-	   hits[7] = 0.;
-	   hits[8] = 0.;
-	   AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
-	 }
-      }
+    }
+    	   
+    // Particle energy loss
+    if(gMC->Edep() != 0){
+      hits[9] = gMC->Edep();
+      hits[7] = 0.;
+      hits[8] = 0.;
+      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
+    }
   }
  
 
