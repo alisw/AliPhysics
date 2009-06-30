@@ -683,59 +683,128 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
   {
    if(fTrack->InRPSelection() && fTrack->InPOISelection())
    {
-    fPtBinPOINoOfParticles->Fill(fTrack->Pt(),fTrack->Pt(),1.);
-    fEtaBinPOINoOfParticles->Fill(fTrack->Eta(),fTrack->Eta(),1.);
+    // get azimuthal angle, momentum and pseudorapidity of a particle:
+    dPhi = fTrack->Phi();
+    dPt  = fTrack->Pt();
+    dEta = fTrack->Eta();
+    
+    fPtBinPOINoOfParticles->Fill(dPt,dPt,1.);
+    fEtaBinPOINoOfParticles->Fill(dEta,dEta,1.);
+    
+    // phi weights:
+    if(fUsePhiWeights) 
+    {
+     nBinsPhi = phiWeights->GetNbinsX();
+     if(nBinsPhi) 
+     {
+      wPhi = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())));
+     }
+    } 
+    // pt weights:
+    if(fUsePtWeights)
+    {          
+     if(fBinWidthPt) 
+     {
+      wPt = ptWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-fPtMin)/fBinWidthPt)));
+     }
+    }             
+    // eta weights:
+    if(fUseEtaWeights)
+    {    
+     if(fBinWidthEta)
+     {
+      wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fBinWidthEta))); 
+     }
+    }
+   
     for(Int_t p=0;p<fgkPmax;p++)
     {
      for(Int_t q=0;q<fgkQmax;q++)
      {
       //real part (Pt)
-      fDiffFlowPtPOIGenFunRe->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+      fDiffFlowPtPOIGenFunRe->Fill(dPt/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*dPhi)/(1.+wPhi*wPt*wEta*(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*dPhi-2.*q*TMath::Pi()/fgkQmax)),1.);
       //imaginary part (Pt)
-      fDiffFlowPtPOIGenFunIm->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
+      fDiffFlowPtPOIGenFunIm->Fill(dPt/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*dPhi)/(1.+wPhi*wPt*wEta*(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*dPhi-2.*q*TMath::Pi()/fgkQmax)),1.); 
       //real part (Eta)
-      fDiffFlowEtaPOIGenFunRe->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+      fDiffFlowEtaPOIGenFunRe->Fill(dEta/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*dPhi)/(1.+wPhi*wPt*wEta*(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*dPhi-2.*q*TMath::Pi()/fgkQmax)),1.);
       //imaginary part (Eta)
-      fDiffFlowEtaPOIGenFunIm->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
+      fDiffFlowEtaPOIGenFunIm->Fill(dEta/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*dPhi)/(1.+wPhi*wPt*wEta*(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*dPhi-2.*q*TMath::Pi()/fgkQmax)),1.); 
      }
     }
    } 
    else if(fTrack->InPOISelection() && !(fTrack->InRPSelection()))
    {
-    fPtBinPOINoOfParticles->Fill(fTrack->Pt(),fTrack->Pt(),1.);
-    fEtaBinPOINoOfParticles->Fill(fTrack->Eta(),fTrack->Eta(),1.);
+    // get azimuthal angle, momentum and pseudorapidity of a particle:
+    dPhi = fTrack->Phi();
+    dPt  = fTrack->Pt();
+    dEta = fTrack->Eta();
+   
+    fPtBinPOINoOfParticles->Fill(dPt,dPt,1.);
+    fEtaBinPOINoOfParticles->Fill(dEta,dEta,1.);
     for(Int_t p=0;p<fgkPmax;p++)
     {
      for(Int_t q=0;q<fgkQmax;q++)
      {
       //real part (Pt)
-      fDiffFlowPtPOIGenFunRe->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi()),1.);
+      fDiffFlowPtPOIGenFunRe->Fill(dPt/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*dPhi),1.);
       //imaginary part (Pt)
-      fDiffFlowPtPOIGenFunIm->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi()),1.); 
+      fDiffFlowPtPOIGenFunIm->Fill(dPt/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*dPhi),1.); 
       //real part (Eta)
-      fDiffFlowEtaPOIGenFunRe->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi()),1.);
+      fDiffFlowEtaPOIGenFunRe->Fill(dEta/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*dPhi),1.);
       //imaginary part (Eta)
-      fDiffFlowEtaPOIGenFunIm->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi()),1.);                     
+      fDiffFlowEtaPOIGenFunIm->Fill(dEta/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*dPhi),1.);                     
      } 
     }
    }
    //RP:
    if(fTrack->InRPSelection())       
    {
-    fPtBinRPNoOfParticles->Fill(fTrack->Pt(),fTrack->Pt(),1.);
-    fEtaBinRPNoOfParticles->Fill(fTrack->Eta(),fTrack->Eta(),1.);
+    // get azimuthal angle, momentum and pseudorapidity of a particle:
+    dPhi = fTrack->Phi();
+    dPt  = fTrack->Pt();
+    dEta = fTrack->Eta();
+   
+    fPtBinRPNoOfParticles->Fill(dPt,dPt,1.);
+    fEtaBinRPNoOfParticles->Fill(dEta,dEta,1.);
+    
+    // phi weights:
+    if(fUsePhiWeights) 
+    {
+     nBinsPhi = phiWeights->GetNbinsX();
+     if(nBinsPhi) 
+     {
+      wPhi = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())));
+     }
+    } 
+    // pt weights:
+    if(fUsePtWeights)
+    {          
+     if(fBinWidthPt) 
+     {
+      wPt = ptWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-fPtMin)/fBinWidthPt)));
+     }
+    }             
+    // eta weights:
+    if(fUseEtaWeights)
+    {    
+     if(fBinWidthEta)
+     {
+      wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fBinWidthEta))); 
+     }
+    }
+    
     for(Int_t p=0;p<fgkPmax;p++)
     {
      for(Int_t q=0;q<fgkQmax;q++)
      {
       //real part (Pt)
-      fDiffFlowPtRPGenFunRe->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+      fDiffFlowPtRPGenFunRe->Fill(dPt/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*dPhi)/(1.+wPhi*wPt*wEta*(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*dPhi-2.*q*TMath::Pi()/fgkQmax)),1.);
       //imaginary part (Pt)
-      fDiffFlowPtRPGenFunIm->Fill(fTrack->Pt()/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
+      fDiffFlowPtRPGenFunIm->Fill(dPt/fBinWidthPt,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*dPhi)/(1.+wPhi*wPt*wEta*(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*dPhi-2.*q*TMath::Pi()/fgkQmax)),1.); 
       //real part (Eta)
-      fDiffFlowEtaRPGenFunRe->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.);
+      fDiffFlowEtaRPGenFunRe->Fill(dEta/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*cos(fgkMltpl*fgkFlow*dPhi)/(1.+wPhi*wPt*wEta*(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*dPhi-2.*q*TMath::Pi()/fgkQmax)),1.);
       //imaginary part (Eta)
-      fDiffFlowEtaRPGenFunIm->Fill(fTrack->Eta()/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*fTrack->Phi())/(1.+(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*fTrack->Phi()-2.*q*TMath::Pi()/fgkQmax)),1.); 
+      fDiffFlowEtaRPGenFunIm->Fill(dEta/fBinWidthEta,(Double_t)p,(Double_t)q,genfunG[p][q]*sin(fgkMltpl*fgkFlow*dPhi)/(1.+wPhi*wPt*wEta*(2.*fR0*sqrt(p+1.)/nSelTracksRP)*cos(fgkFlow*dPhi-2.*q*TMath::Pi()/fgkQmax)),1.); 
      }
     }
    }//end of if(fTrack->InRPSelection())                   
@@ -1072,7 +1141,7 @@ void AliFlowAnalysisWithCumulants::Finish()
 
  AliCumulantsFunctions finalResults(fIntFlowGenFun,fIntFlowGenFun4,fIntFlowGenFun6,fIntFlowGenFun8,fIntFlowGenFun16,fAvMultIntFlow4GFC, fAvMultIntFlow6GFC,fAvMultIntFlow8GFC,fAvMultIntFlow16GFC,fDiffFlowPtRPGenFunRe,fDiffFlowPtRPGenFunIm,fPtBinRPNoOfParticles, fDiffFlowEtaRPGenFunRe,fDiffFlowEtaRPGenFunIm,fEtaBinRPNoOfParticles,fDiffFlowPtPOIGenFunRe,fDiffFlowPtPOIGenFunIm,fPtBinPOINoOfParticles, fDiffFlowEtaPOIGenFunRe,fDiffFlowEtaPOIGenFunIm,fEtaBinPOINoOfParticles,fIntFlowResultsGFC,fDiffFlowResults2ndOrderGFC,fDiffFlowResults4thOrderGFC,fDiffFlowResults6thOrderGFC,fDiffFlowResults8thOrderGFC, fAvMultIntFlowGFC,fQVectorComponentsGFC,fAverageOfSquaredWeight,fCommonHistsResults2nd, fCommonHistsResults4th,fCommonHistsResults6th,fCommonHistsResults8th,fCommonHists);
                            
- finalResults.Calculate();  
+ finalResults.Calculate();     
 }
 
 //================================================================================================================

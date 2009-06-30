@@ -345,7 +345,7 @@ void AliCumulantsFunctions::Calculate()
  { 
   if((dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(cumulant[0],(1./2.))*(dAvM/dAvw2),2.)>0.))       
   {
-   chiQ[0]=(dAvM*dV2)/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM,2.),0.5); // to be improved,  analogously for higher orders
+   chiQ[0]=(dAvM*dV2)/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV2*dAvM/dAvw2,2.),0.5); // to be improved,  analogously for higher orders
   } 
   if(chiQ[0])
   {  
@@ -376,7 +376,7 @@ void AliCumulantsFunctions::Calculate()
  {
   if((dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(-cumulant[1],(1./4.))*(dAvM/dAvw2),2.)>0.))
   {
-   chiQ[1]=(dAvM*dV4)/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM,2.),0.5);
+   chiQ[1]=(dAvM*dV4)/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV4*dAvM/dAvw2,2.),0.5);
   } 
   if(chiQ[1])
   {
@@ -407,7 +407,7 @@ void AliCumulantsFunctions::Calculate()
  {
   if((dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow((1./4.)*cumulant[2],(1./6.))*(dAvM/dAvw2),2.)>0.))
   {
-   chiQ[2]=(dAvM*dV6)/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV6*dAvM,2.),0.5);
+   chiQ[2]=(dAvM*dV6)/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV6*dAvM/dAvw2,2.),0.5);
   } 
   if(chiQ[2])
   {
@@ -439,7 +439,7 @@ void AliCumulantsFunctions::Calculate()
  { 
   if((dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(pow(-(1./33.)*cumulant[3],(1./8.))*(dAvM/dAvw2),2.)>0.))
   { 
-   chiQ[3]=(dAvM*dV8)/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV8*dAvM,2.),0.5);
+   chiQ[3]=(dAvM*dV8)/pow(dAvQ2x+dAvQ2y-pow(dAvQx,2.)-pow(dAvQy,2.)-pow(dV8*dAvM/dAvw2,2.),0.5);
   }
   if(chiQ[3])
   {
