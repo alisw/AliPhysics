@@ -30,8 +30,8 @@ public:
                     void    AddTriggerScalers( UChar_t classIndex, ULong64_t LOCB, ULong64_t LOCA,        
                                               ULong64_t L1CB, ULong64_t L1CA, ULong64_t L2CB, ULong64_t L2CA );
                             
-               TObjArray*   GetTriggerScalers()  { return  &fScalers; }
-    AliTriggerScalersESD*   GetTriggerScalersForClass( Int_t classindex );       
+         const TObjArray*   GetTriggerScalers()  const { return  &fScalers; }
+    const AliTriggerScalersESD*   GetTriggerScalersForClass( const Int_t classindex ) const;       
                                 
             virtual void    Print( const Option_t* opt ="" ) const;
                       

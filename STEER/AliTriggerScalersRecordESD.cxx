@@ -70,7 +70,7 @@ fScalers.Clear();
 } 
 
 //_____________________________________________________________________________
-AliTriggerScalersESD* AliTriggerScalersRecordESD::GetTriggerScalersForClass( Int_t classindex )
+const AliTriggerScalersESD* AliTriggerScalersRecordESD::GetTriggerScalersForClass( const Int_t classindex ) const
 {
    // Find Trigger scaler with class ID = classmask using a binary search. 
 
