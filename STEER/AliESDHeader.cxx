@@ -21,7 +21,8 @@
 //-------------------------------------------------------------------------
 
 #include "AliESDHeader.h"
-
+#include "AliTriggerScalersESD.h"
+#include "AliTriggerScalersRecordESD.h"
 
 ClassImp(AliESDHeader)
 
@@ -38,15 +39,13 @@ AliESDHeader::AliESDHeader() :
   fTriggerCluster(0),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
-  fL2TriggerInputs(0)
-//  fTriggerScalers(0x0)
+  fL2TriggerInputs(0),
+  fTriggerScalers()
 {
   // default constructor
 
   SetName("AliESDHeader");
 }
-
-
 AliESDHeader::~AliESDHeader() 
 {
   // destructor
@@ -65,8 +64,8 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fTriggerCluster(header.fTriggerCluster),
   fL0TriggerInputs(header.fL0TriggerInputs),
   fL1TriggerInputs(header.fL1TriggerInputs),
-  fL2TriggerInputs(header.fL2TriggerInputs)
-//  fTriggerScalers(header.fTriggerScalers),
+  fL2TriggerInputs(header.fL2TriggerInputs),
+  fTriggerScalers(header.fTriggerScalers)
 {
   // copy constructor
 
@@ -90,7 +89,8 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     fL0TriggerInputs = header.fL0TriggerInputs;
     fL1TriggerInputs = header.fL1TriggerInputs;
     fL2TriggerInputs = header.fL2TriggerInputs;
-//    fTriggerScalers = header.fTriggerScalers;
+    fTriggerScalers = header.fTriggerScalers;
+
     SetName(header.fName);
     SetTitle(header.fTitle);
 
@@ -98,8 +98,8 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
   return *this;
 }
 
-void AliESDHeader::Copy(TObject &obj) const {
-  
+void AliESDHeader::Copy(TObject &obj) const 
+{  
   // this overwrites the virtual TOBject::Copy()
   // to allow run time copying without casting
   // in AliESDEvent
@@ -110,9 +110,6 @@ void AliESDHeader::Copy(TObject &obj) const {
   *robj = *this;
 
 }
-
-
-
 //______________________________________________________________________________
 void AliESDHeader::Reset()
 {
@@ -128,7 +125,7 @@ void AliESDHeader::Reset()
   fL0TriggerInputs   = 0;
   fL1TriggerInputs   = 0;
   fL2TriggerInputs   = 0;
-//  fTriggerScalers    = 0;
+  fTriggerScalers.Reset();
 }
 
 //______________________________________________________________________________

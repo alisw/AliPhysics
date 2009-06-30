@@ -13,7 +13,11 @@
 //-------------------------------------------------------------------------
 
 #include "AliVHeader.h"
-//#include "AliTriggerScalersRecordESD.h"
+#include "AliTriggerScalersESD.h"
+#include "AliTriggerScalersRecordESD.h"
+
+class AliTriggerScalersESD;
+class AliTriggerScalersRecordESD;
 
 class AliESDHeader: public AliVHeader {
 public:
@@ -39,8 +43,8 @@ public:
   UInt_t      GetL0TriggerInputs() const {return fL0TriggerInputs;}  
   UInt_t      GetL1TriggerInputs() const {return fL1TriggerInputs;} 
   UShort_t    GetL2TriggerInputs() const {return fL2TriggerInputs;} 
-//  void SetTriggerScalersRecord(AliTriggerScalersESD *scalerRun) {fTRiggerScalers.Add(sacler) }
-//  AliTriggerScalersRecordESD *GetTriggerScalersRecord() {return fTriggerScalers; }
+  void SetTriggerScalersRecord(AliTriggerScalersESD *scalerRun) {fTriggerScalers.AddTriggerScalers(scalerRun); }
+  const AliTriggerScalersRecordESD* GetTriggerScalersRecord() const {return &fTriggerScalers; }
 //**************************************************************************
 
   ULong64_t GetTriggerMask() const {return fTriggerMask;}
@@ -68,9 +72,9 @@ private:
   UInt_t       fL0TriggerInputs;   //L0 Trigger Inputs 
   UInt_t       fL1TriggerInputs;   //L1 Trigger Inputs
   UShort_t     fL2TriggerInputs;   //L2 Trigger Inputs
-//  AliTriggerScalersRecordESD *fTriggerScalers;   //Object containing the L0, L1 and L2 trigger counters of triggered classes in event
+  AliTriggerScalersRecordESD fTriggerScalers;  //L0, L1 and L2 trigger counters of triggered classes in event
 
-  ClassDef(AliESDHeader,4)
+  ClassDef(AliESDHeader,5)
 };
 
 #endif
