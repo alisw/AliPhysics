@@ -32,7 +32,9 @@ void AliPMDHitsRead(Int_t nevt = 1)
     }
   
   fPMD  = (AliPMD*)gAlice->GetDetector("PMD");
+
   fPMDLoader = fRunLoader->GetLoader("PMDLoader");
+
   if (fPMDLoader == 0x0)
     {
       printf("Can not find PMDLoader\n");
@@ -85,7 +87,7 @@ void AliPMDHitsRead(Int_t nevt = 1)
       
       for (Int_t track=0; track<ntracks;track++) 
 	{
-	  gAlice->ResetHits();
+	  gAlice->GetMCApp()->ResetHits();
 	  treeH->GetEvent(track);
 	  if (fPMD) 
 	    {
@@ -98,7 +100,7 @@ void AliPMDHitsRead(Int_t nevt = 1)
 		  //fprintf(fpw,"trackno = %d\n",trackno);
 
 		  //  get kinematics of the particles
-		  
+
 		  TParticle* mparticle = gAlice->GetMCApp()->Particle(trackno);
 		  trackpid  = mparticle->GetPdgCode();
 		  
@@ -171,15 +173,22 @@ void AliPMDHitsRead(Int_t nevt = 1)
 		      mtrackpid = trackpidOld;
 		    }
 		  
+		  //printf("mtrackno = %d  mtrackpid = %d\n",mtrackno,mtrackpid);
+
 		  xPos = fPMDHit->X();
 		  yPos = fPMDHit->Y();
 		  zPos = fPMDHit->Z();
+
+		  Float_t time = fPMDHit->GetTime();
 		  
+		  printf("++++++++++ time = %f\n",time);
+
 		  edep       = fPMDHit->GetEnergy();
 		  Int_t vol1 = fPMDHit->GetVolume(1); // Column
 		  Int_t vol2 = fPMDHit->GetVolume(2); // Row
-		  Int_t vol3 = fPMDHit->GetVolume(7); // UnitModule
-		  Int_t vol6 = fPMDHit->GetVolume(8); // SuperModule
+
+		  Int_t vol3 = fPMDHit->GetVolume(4); // UnitModule
+
 		  
 		  // -----------------------------------------//
 		  // For Super Module 1 & 2                   //
@@ -188,11 +197,18 @@ void AliPMDHitsRead(Int_t nevt = 1)
 		  //  nrow = 48, ncol = 96                    //
 		  // -----------------------------------------//
 		  
-		  smnumber = (vol6-1)*6 + (vol3-1);
-		  
-		  xpad = vol1 - 1;
-		  ypad = vol2 - 1;
-		  
+		  if (vol3 < 24)
+		    {
+		      smnumber = vol3;
+		    }
+		  else
+		    {
+		      smnumber = vol3 - 24;
+		    }
+
+		  xpad = vol1;
+		  ypad = vol2;
+
 		  if(zPos > 361.5)
 		    {
 		      cc.RectGeomCellPos(smnumber,xpad,ypad,xx,yy);
