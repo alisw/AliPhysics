@@ -25,11 +25,45 @@
 
 /**
  * @class AliHLTITSClusterFinderSDDComponent
- * Component to run the offline clusterfinder.
+ * HLT Component to run the ITS offline clusterfinder for SDD.
+ *
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b ITSClusterFinderSDD                     <br>
+ * Library: \b libAliHLTITS.so                              <br>
+ * Input Data Types:                                        <br> 
+ *    kAliHLTDataTypeDDLRaw|kAliHLTDataOriginITSSDD         <br>
+ *      
+ * Output Data Types:                                       <br>
+ *    kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD       <br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ *
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -config1      <i> teststring   </i> <br>
+ *      a configuration argument with one parameter
+ * \li -config2                            <br>
+ *      a configuration argument without parameters
+ *
+ * <h2>Default CDB entries:</h2>
+ * TODO
+ *
+ * <h2>Performance:</h2>
+ * TODO
+ *
+ * <h2>Memory consumption:</h2>
+ * TODO
+ *
+ * <h2>Output size:</h2>
+ * TODO
  *
  * @ingroup alihlt_its_components
  */
-
 class AliHLTITSClusterFinderSDDComponent : public AliHLTProcessor
 {
  public:

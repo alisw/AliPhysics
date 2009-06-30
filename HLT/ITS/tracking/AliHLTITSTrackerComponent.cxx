@@ -1,4 +1,4 @@
-// @(#) $Id: AliHLTITSTrackerComponent.cxx 32659 2009-06-02 16:08:40Z sgorbuno $
+// $Id: AliHLTITSTrackerComponent.cxx 32659 2009-06-02 16:08:40Z sgorbuno $
 // **************************************************************************
 // This file is property of and copyright by the ALICE HLT Project          *
 // ALICE Experiment at CERN, All rights reserved.                           *
@@ -16,6 +16,11 @@
 // provided "as is" without express or implied warranty.                    *
 //                                                                          *
 //***************************************************************************
+
+///  @file   AliHLTITSTrackerComponent.cxx
+///  @author Sergey Gorbunov <sergey.gorbunov@kip.uni-heidelberg.de>
+///  @date   June 2009
+///  @brief  An ITS tracker processing component for the HLT
 
 
 /////////////////////////////////////////////////////
@@ -107,6 +112,7 @@ void AliHLTITSTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
   list.push_back( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD );
+  list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD );
 }
 
 AliHLTComponentDataType AliHLTITSTrackerComponent::GetOutputDataType()
@@ -308,9 +314,7 @@ int AliHLTITSTrackerComponent::DoEvent
   AliHLTUInt32_t maxBufferSize = size;
   size = 0; // output size
 
-  if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) ) {
-    return 0;
-  }
+  if (!IsDataEvent()) return 0;
 
   if ( evtData.fBlockCnt <= 0 ) {
     HLTWarning( "no blocks in event" );
@@ -356,7 +360,8 @@ int AliHLTITSTrackerComponent::DoEvent
     // Read ITS clusters
 
     if ( (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD) ) || 
-	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD) ) 
+	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD) ) ||
+	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD) ) 
 	 ){
 
       AliHLTITSClusterData *inPtr=reinterpret_cast<AliHLTITSClusterData*>( iter->fPtr );

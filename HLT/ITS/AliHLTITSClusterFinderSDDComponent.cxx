@@ -182,10 +182,6 @@ Int_t AliHLTITSClusterFinderSDDComponent::DoEvent( const AliHLTComponentEventDat
   // -- Iterator over Data Blocks --
   const AliHLTComponentBlockData* iter = NULL;
   
-  if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )){
-    return 0;
-  }
-
   if (!IsDataEvent()) return 0;
 
   if ( evtData.fBlockCnt<=0 )
