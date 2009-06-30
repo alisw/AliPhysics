@@ -25,8 +25,8 @@ struct AliHLTExternalTrackParam
       Float_t fX;
       Float_t fY;
       Float_t fZ;
-      Float_t fTgl;
       Float_t fSinPsi;
+      Float_t fTgl;
       Float_t fq1Pt;
       Float_t fC[15];
       Float_t fLastX;
