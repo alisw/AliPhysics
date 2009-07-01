@@ -268,7 +268,7 @@ AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manu
 
 {
   /// Calibrate one digit
-  
+  /// Return the digit charge, in fC
   
   AliMUONVCalibParam* pedestal = static_cast<AliMUONVCalibParam*>
   (fPedestals->FindObject(detElemId,manuId));
@@ -304,7 +304,9 @@ AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manu
 	Float_t a1(0);
 	Float_t adc2mv(0.61); // 1 ADC channel = 0.61 mV
 	Float_t injGain(4); // By default the gain is set to 4 mV/fC
-	
+  //
+  // Note that the ChargeMax (for one pad) is roughly 4096 * 0.61 mV/channel / 4 mV/fC = 625 fC
+
   if ( fApplyGains == fgkGain || fApplyGains == fgkInjectionGain ) 
   {
     Int_t serialNumber 
@@ -316,10 +318,15 @@ AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manu
     {
       capa = param->ValueAsFloat(manuChannel,0);
 			injGain = param->ValueAsFloat(manuChannel,1);
+      if ( injGain < 0 ) 
+      {
+        fLogger->Log(Form("injGain is %e < 0 for serialNumber=%d",injGain,serialNumber));
+        return 0.0;
+      }
     }
     else
     {
-      // If capa not found in the OCDB we use default value
+      // If capa not found in the OCDB we exit
 	    fLogger->Log(Form("No capa (injGain) found for serialNumber=%d",serialNumber));
 			return 0.0;
     }
