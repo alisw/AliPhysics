@@ -1004,6 +1004,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	// apply correction for material of the current layer
 	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
 	vtrack->SetNDeadZone(vtrack->GetNDeadZone()+1);
+	vtrack->SetDeadZoneProbability(ilayer,1.); // no penalty for missing cluster
 	vtrack->SetClIndex(ilayer,-1);
 	modstatus = (skip==1 ? 3 : 4); // skipped : out in z
 	if(LocalModuleCoord(ilayer,idet,vtrack,xloc,zloc)) { // local module coords
@@ -1084,7 +1085,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	  modstatus = 5; // no cls in road
 	} else if (dead==1) {
 	  modstatus = 7; // holes in z in SPD
-	} else if (dead==2 || dead==3) {
+	} else if (dead==2 || dead==3 || dead==4) {
 	  modstatus = 2; // dead from OCDB
 	}
 	updatetrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
@@ -1102,12 +1103,16 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	  }
 	  if (isPrim) updatetrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
 	}
+	updatetrack->SetNDeadZone(updatetrack->GetNDeadZone()+1);
 	if (dead) {
-	  updatetrack->SetNDeadZone(updatetrack->GetNDeadZone()+1);
 	  if (dead==1) { // dead zone at z=0,+-7cm in SPD
-	    updatetrack->SetDeadZoneProbability(GetSPDDeadZoneProbability(updatetrack->GetZ(),TMath::Sqrt(updatetrack->GetSigmaZ2())));
+	    updatetrack->SetDeadZoneProbability(ilayer,GetSPDDeadZoneProbability(updatetrack->GetZ(),TMath::Sqrt(updatetrack->GetSigmaZ2())));
 	    deadzoneSPD=kTRUE;
-	  }
+	  } else if (dead==2 || dead==3) { // dead module or chip from OCDB  
+	    updatetrack->SetDeadZoneProbability(ilayer,1.); 
+	  } else if (dead==4) { // at least a single dead channel from OCDB  
+	    updatetrack->SetDeadZoneProbability(ilayer,0.); 
+	  } 
 	}
 	ntracks[ilayer]++;
       }
@@ -1176,7 +1181,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	    modstatus = 1; // found
 	  } else {             // virtual cluster in dead zone
 	    updatetrack->SetNDeadZone(updatetrack->GetNDeadZone()+1);
-	    updatetrack->SetDeadZoneProbability(GetSPDDeadZoneProbability(updatetrack->GetZ(),TMath::Sqrt(updatetrack->GetSigmaZ2())));
+	    updatetrack->SetDeadZoneProbability(ilayer,GetSPDDeadZoneProbability(updatetrack->GetZ(),TMath::Sqrt(updatetrack->GetSigmaZ2())));
 	    modstatus = 7; // holes in z in SPD
 	  }
 
@@ -2286,7 +2291,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 	 dy = 0.5*(ymax-ymin);
 	 Int_t dead = CheckDeadZone(track,ilayer,idet,dz,dy,kTRUE);
 	 if (dead==1) modstatus = 7; // holes in z in SPD
-	 if (dead==2 || dead==3) modstatus = 2; // dead from OCDB
+	 if (dead==2 || dead==3 || dead==4) modstatus = 2; // dead from OCDB
        }
      }
      
@@ -2433,7 +2438,22 @@ Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackMI * track, Int_t mode)
     }
   }
   if (match<0) match=0;
-  Float_t deadzonefactor = (track->GetNDeadZone()>0) ? 3*(1.1-track->GetDeadZoneProbability()):0.;
+
+  // penalty factor for missing points (NDeadZone>0), but no penalty
+  // for layer with deadZoneProb close to 1 (either we wanted to skip layer
+  // or there is a dead from OCDB)
+  Float_t deadzonefactor = 0.; 
+  if (track->GetNDeadZone()>0.) {    
+    Float_t sumDeadZoneProbability=0; 
+    for(Int_t ilay=0;ilay<6;ilay++) sumDeadZoneProbability+=track->GetDeadZoneProbability(ilay);
+    Float_t nDeadZoneWithProbNot1=(Float_t)(track->GetNDeadZone())-sumDeadZoneProbability;
+    if(nDeadZoneWithProbNot1>0.) {
+      Float_t deadZoneProbability = sumDeadZoneProbability - (Float_t)((Int_t)sumDeadZoneProbability);
+      deadZoneProbability /= nDeadZoneWithProbNot1;
+      deadzonefactor = 3.*(1.1-deadZoneProbability);  
+    }
+  }  
+
   Double_t normchi2 = 2*track->GetNSkipped()+match+deadzonefactor+(1+(2*track->GetNSkipped()+deadzonefactor)/track->GetNumberOfClusters())*
     (chi2)/TMath::Max(double(sum-track->GetNSkipped()),
 				1./(1.+track->GetNSkipped()));     
@@ -4218,7 +4238,8 @@ Int_t AliITStrackerMI::CheckDeadZone(AliITStrackMI *track,
   // In this case the return value is > 0:
   // return 1: dead zone at z=0,+-7cm in SPD
   // return 2: all road is "bad" (dead or noisy) from the OCDB
-  // return 3: something "bad" (dead or noisy) from the OCDB
+  // return 3: at least a chip is "bad" (dead or noisy) from the OCDB
+  // return 4: at least a single channel is "bad" (dead or noisy) from the OCDB
   //-----------------------------------------------------------------
 
   // check dead zones at z=0,+-7cm in the SPD
@@ -4326,7 +4347,7 @@ Int_t AliITStrackerMI::CheckDeadZone(AliITStrackMI *track,
 
   if (fITSChannelStatus->AnyBadInRoad(idetInITS,zlocmin,zlocmax,xlocmin,xlocmax)) {
     AliDebug(2,Form("Bad channel in det %d of layer %d\n",idet,ilayer));
-    return 3;
+    return 4;
   }
   //if (fITSChannelStatus->FractionOfBadInRoad(idet,zlocmin,zlocmax,xlocmin,xlocmax) > AliITSReconstructor::GetRecoParam()->GetMinFractionOfBadInRoad()) return 3;
 

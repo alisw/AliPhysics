@@ -93,8 +93,8 @@ public:
   void SetGoldV0(Bool_t g) {fGoldV0=g;}
   Float_t GetChi22() const {return fChi22;}
   void SetChi22(Float_t c) {fChi22=c;}
-  Float_t GetDeadZoneProbability() const {return fDeadZoneProbability;}
-  void SetDeadZoneProbability(Float_t d) {fDeadZoneProbability=d;}
+  Float_t GetDeadZoneProbability(Int_t ilayer) const {return fDeadZoneProbability[ilayer];}
+  void SetDeadZoneProbability(Int_t ilayer,Float_t d) {fDeadZoneProbability[ilayer]=d;}
 
   Double_t GetPredictedChi2MI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz) const;
   Bool_t IsGoldPrimary();
@@ -103,7 +103,7 @@ protected:
   Float_t fNUsed;                          // number of shared clusters
   Float_t fNSkipped;                       // number of skipped clusters
   Float_t fNDeadZone;                     // number of clusters in dead zone
-  Float_t fDeadZoneProbability;          // probability to cross dead zone
+  Float_t fDeadZoneProbability[6];        // probability to cross dead zone
   Bool_t  fReconstructed;                 // reconstructed - accepted flag
   Float_t fChi2MIP[12];                   // MIP chi squres 
 
@@ -123,7 +123,7 @@ protected:
   Bool_t fConstrain;        //indication of the vertex constrain
   Int_t  fClIndex[6];       //cluster Index
   Bool_t fGoldV0;           //corresponding gold V0 found
-  ClassDef(AliITStrackMI,1)   //ITS reconstructed track
+  ClassDef(AliITStrackMI,2)   //ITS reconstructed track
 };
 
 #endif

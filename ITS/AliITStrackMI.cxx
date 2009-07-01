@@ -39,8 +39,7 @@ const Int_t kWARN=5;
 AliITStrackMI::AliITStrackMI():AliITStrackV2(),
 fNUsed(0),
 fNSkipped(0),
-fNDeadZone(0),
-fDeadZoneProbability(0),			       
+fNDeadZone(0),			       
 fReconstructed(kFALSE),
 fExpQ(40),
 fChi22(0),
@@ -50,7 +49,7 @@ fGoldV0(kFALSE)
 {
   //constructor
     for(Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fClIndex[i]=-1;
-    for(Int_t i=0; i<6; i++) { fNy[i]=0; fNz[i]=0; fNormQ[i]=0; fNormChi2[i]=1000;}
+    for(Int_t i=0; i<6; i++) { fNy[i]=0; fNz[i]=0; fNormQ[i]=0; fNormChi2[i]=1000; fDeadZoneProbability[i]=0;}
     for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fChi2MIP[i]=0;}
     fD[0]=0; fD[1]=0;
     fDnorm[0]=0; fDnorm[1]=0;
@@ -62,7 +61,6 @@ AliITStrackV2(t,c),
 fNUsed(0),
 fNSkipped(0),
 fNDeadZone(0),
-fDeadZoneProbability(0),			       
 fReconstructed(kFALSE),
 fExpQ(40),
 fChi22(0),
@@ -73,7 +71,7 @@ fGoldV0(kFALSE) {
   // Conversion ESD track -> ITS track.
   // If c==kTRUE, create the ITS track out of the constrained params.
   //------------------------------------------------------------------
-  for(Int_t i=0; i<6; i++) {fClIndex[i]=-1; fNy[i]=0; fNz[i]=0; fNormQ[i]=0; fNormChi2[i]=1000;}
+  for(Int_t i=0; i<6; i++) {fClIndex[i]=-1; fNy[i]=0; fNz[i]=0; fNormQ[i]=0; fNormChi2[i]=1000; fDeadZoneProbability[i]=0;}
   for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0;fChi2MIP[i]=0;}
   fD[0]=0; fD[1]=0;
   fDnorm[0]=0; fDnorm[1]=0;
@@ -86,7 +84,6 @@ AliITStrackMI::AliITStrackMI(const AliITStrackMI& t) : AliITStrackV2(t),
 fNUsed(t.fNUsed),
 fNSkipped(t.fNSkipped),
 fNDeadZone(t.fNDeadZone),
-fDeadZoneProbability(t.fDeadZoneProbability),			       
 fReconstructed(t.fReconstructed),
 fExpQ(t.fExpQ),
 fChi22(t.fChi22),
@@ -102,7 +99,7 @@ fGoldV0(t.fGoldV0) {
   fD[0]=t.fD[0]; fD[1]=t.fD[1];
   fDnorm[0] = t.fDnorm[0]; fDnorm[1]=t.fDnorm[1];
   for(Int_t i=0; i<6; i++) {
-    fClIndex[i]= t.fClIndex[i]; fNy[i]=t.fNy[i]; fNz[i]=t.fNz[i]; fNormQ[i]=t.fNormQ[i]; fNormChi2[i] = t.fNormChi2[i];
+    fClIndex[i]= t.fClIndex[i]; fNy[i]=t.fNy[i]; fNz[i]=t.fNz[i]; fNormQ[i]=t.fNormQ[i]; fNormChi2[i] = t.fNormChi2[i];  fDeadZoneProbability[i]=t.fDeadZoneProbability[i];
   }
   for(Int_t i=0; i<12; i++) {fDy[i]=t.fDy[i]; fDz[i]=t.fDz[i]; 
     fSigmaY[i]=t.fSigmaY[i]; fSigmaZ[i]=t.fSigmaZ[i];fChi2MIP[i]=t.fChi2MIP[i];}
