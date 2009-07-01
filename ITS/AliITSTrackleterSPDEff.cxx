@@ -124,7 +124,10 @@ fhDPhiVsDThetaInterpAcc(0),
 fhDPhiVsDZetaInterpAll(0),
 fhDPhiVsDZetaInterpAcc(0),
 fhetaClustersLay2(0),
-fhphiClustersLay2(0)
+fhphiClustersLay2(0),
+fhClustersInChip(0),
+fhClustersInModuleLay1(0),
+fhClustersInModuleLay2(0)
 {
    // default constructor
 // from AliITSMultReconstructor
@@ -233,7 +236,10 @@ fhDPhiVsDThetaInterpAcc(mr.fhDPhiVsDThetaInterpAcc),
 fhDPhiVsDZetaInterpAll(mr.fhDPhiVsDZetaInterpAll),
 fhDPhiVsDZetaInterpAcc(mr.fhDPhiVsDZetaInterpAcc),
 fhetaClustersLay2(mr.fhetaClustersLay2),
-fhphiClustersLay2(mr.fhphiClustersLay2)
+fhphiClustersLay2(mr.fhphiClustersLay2),
+fhClustersInChip(mr.fhClustersInChip),
+fhClustersInModuleLay1(mr.fhClustersInModuleLay1),
+fhClustersInModuleLay2(mr.fhClustersInModuleLay2)
 {
   // Copy constructor
 }
@@ -357,8 +363,9 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
       Float_t eta=fClustersLay1[iC1][0];
       eta= TMath::Tan(eta/2.);
       eta=-TMath::Log(eta);
-      fhetaClustersLay1->Fill(eta);    
+      fhetaClustersLay1->Fill(eta);
       fhphiClustersLay1->Fill(fClustersLay1[iC1][1]);
+      fhClustersInChip->Fill(fhClustersInChip->GetBinCenter(key+1)); // if found=kFALSE -> overflow
     }      
   }
   // Loop on layer 2 : finding theta, phi and r   
@@ -391,6 +398,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
       eta=-TMath::Log(eta);
       fhetaClustersLay2->Fill(eta);
       fhphiClustersLay2->Fill(fClustersLay2[iC2][1]);
+      fhClustersInChip->Fill(fhClustersInChip->GetBinCenter(key+1)); // if found=kFALSE -> overflow
     }
   }  
   
@@ -1628,6 +1636,13 @@ Bool_t AliITSTrackleterSPDEff::SaveHists() {
 
   fhetaClustersLay2->Write();
   fhphiClustersLay2->Write();
+  fhClustersInChip->Write();
+  for (Int_t nhist=0;nhist<80;nhist++){
+    fhClustersInModuleLay1[nhist]->Write(); 
+  }
+  for (Int_t nhist=0;nhist<160;nhist++){
+    fhClustersInModuleLay2[nhist]->Write(); 
+  }
   return kTRUE;
 }
 //__________________________________________________________
@@ -1719,6 +1734,45 @@ void AliITSTrackleterSPDEff::BookHistos() {
   fhetaClustersLay2->SetDirectory(0);
   fhphiClustersLay2  = new TH1F("phiClustersLay2", "phiCl2", 100, 0., 2*TMath::Pi());
   fhphiClustersLay2->SetDirectory(0);
+  fhClustersInChip = new TH1F("fhClustersInChip", "ClustersPerChip", 1200, -0.5, 1199.5);
+  fhClustersInChip->SetDirectory(0);
+// each chip is divided 8(z) x 4(y), i.e. in 32 squares, each containing 4 columns and 64 rows.
+  Float_t bz[160]; const Float_t kconv = 1.0E-04; // converts microns to cm.
+  for(Int_t i=0;i<160;i++) bz[i] = 425.0; // most are 425 microns except below
+  bz[ 31] = bz[ 32] = 625.0; // first chip boundry
+  bz[ 63] = bz[ 64] = 625.0; // first chip boundry
+  bz[ 95] = bz[ 96] = 625.0; // first chip boundry
+  bz[127] = bz[128] = 625.0; // first chip boundry
+  Double_t xbins[41]; // each bin in x (Z loc coordinate) includes 4 columns
+  //xbins[0]=0;
+  Float_t xmn,xmx,zmn,zmx;
+  if(!fPlaneEffSPD->GetBlockBoundaries(0,xmn,xmx,zmn,zmx)) AliWarning("Could not book histo properly");
+  xbins[0]=(Double_t)zmn;
+  for(Int_t i=0;i<40;i++) {
+   xbins[i+1]=xbins[i] + (bz[4*i]+bz[4*i+1]+bz[4*i+2]+bz[4*i+3])*kconv; 
+  }
+  TString histname="ClustersLay1_mod_",aux;
+  fhClustersInModuleLay1 =new TH2F*[80];
+  for (Int_t nhist=0;nhist<80;nhist++){
+    aux=histname;
+    aux+=nhist;
+    //  
+    fhClustersInModuleLay1[nhist]=new TH2F("histname","histname",40,xbins,4,(Double_t)xmn,(Double_t)xmx); 
+    fhClustersInModuleLay1[nhist]->SetName(aux.Data());
+    fhClustersInModuleLay1[nhist]->SetTitle(aux.Data());
+    fhClustersInModuleLay1[nhist]->SetDirectory(0);
+  }
+  histname="ClustersLay2_mod_";
+  fhClustersInModuleLay2 =new TH2F*[160];
+  for (Int_t nhist=0;nhist<160;nhist++){
+    aux=histname;
+    aux+=nhist;
+    fhClustersInModuleLay2[nhist]=new TH2F("histname","histname",40,xbins,4,(Double_t)xmn,(Double_t)xmx);
+    fhClustersInModuleLay2[nhist]->SetName(aux.Data());
+    fhClustersInModuleLay2[nhist]->SetTitle(aux.Data());
+    fhClustersInModuleLay2[nhist]->SetDirectory(0);
+  }
+//
   return;
 }
 //____________________________________________________________
@@ -1755,6 +1809,15 @@ void AliITSTrackleterSPDEff::DeleteHistos() {
     if(fhDPhiVsDZetaInterpAcc) {delete fhDPhiVsDZetaInterpAcc; fhDPhiVsDZetaInterpAcc=0;}
     if(fhetaClustersLay2) {delete fhetaClustersLay2; fhetaClustersLay2=0;}
     if(fhphiClustersLay2) {delete fhphiClustersLay2; fhphiClustersLay2=0;}
+    if(fhClustersInChip) {delete fhClustersInChip; fhClustersInChip=0;}
+    if(fhClustersInModuleLay1) {
+      for (Int_t i=0; i<80; i++ ) delete fhClustersInModuleLay1[i];
+      delete [] fhClustersInModuleLay1; fhClustersInModuleLay1=0;
+    }
+    if(fhClustersInModuleLay2) {
+      for (Int_t i=0; i<160; i++ ) delete fhClustersInModuleLay2[i];
+      delete [] fhClustersInModuleLay2; fhClustersInModuleLay2=0;
+    }
 }
 //_______________________________________________________________
 Bool_t AliITSTrackleterSPDEff::IsReconstructableAt(Int_t layer,Int_t iC,Int_t ipart,
@@ -1965,6 +2028,11 @@ AliITSTrackleterSPDEff::LoadClusterArrays(TTree* itsClusterTree) {
         for (Int_t i=0; i<3; i++)
                 fClustersLay1[fNClustersLay1][3+i] = cluster->GetLabel(i);
         fNClustersLay1++;
+        if(fHistOn) { 
+          Int_t det=cluster->GetDetectorIndex();
+          if(det<0 || det>79) {AliError("Cluster with det. index out of boundaries"); return;}
+          fhClustersInModuleLay1[det]->Fill((Double_t)cluster->GetDetLocalZ(),(Double_t)cluster->GetDetLocalX());
+        }
       }
       if (layer==1) {
         fClustersLay2[fNClustersLay2][0] = x;
@@ -1974,6 +2042,11 @@ AliITSTrackleterSPDEff::LoadClusterArrays(TTree* itsClusterTree) {
         for (Int_t i=0; i<3; i++)
                 fClustersLay2[fNClustersLay2][3+i] = cluster->GetLabel(i);
         fNClustersLay2++;
+        if(fHistOn) {
+          Int_t det=cluster->GetDetectorIndex();
+          if(det<0 || det>159) {AliError("Cluster with det. index out of boundaries"); return;}
+          fhClustersInModuleLay2[det]->Fill((Double_t)cluster->GetDetLocalZ(),(Double_t)cluster->GetDetLocalX());
+        }
       }
 
     }// end of cluster loop

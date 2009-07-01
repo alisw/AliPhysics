@@ -132,8 +132,8 @@ public:
        {return GetNonRecons(fPlaneEffSPD->GetKey(mod,chip));};
   // methods to write/reas cuts and MC statistics into/from file 
   // if filename contains  ".root", then data are stored into histograms (->root file). 
-  void SavePredictionMC(TString filename="TrackletsMCpred.txt") const;
-  void ReadPredictionMC(TString filename="TrackletsMCpred.txt");
+  void SavePredictionMC(TString filename="TrackletsMCpred.root") const;
+  void ReadPredictionMC(TString filename="TrackletsMCpred.root");
   // Print some class info in ascii form to stream (cut values and MC statistics)
   virtual void PrintAscii(ostream *os)const;
   // Read some class info in ascii form from stream (cut values and MC statistics)
@@ -151,11 +151,11 @@ protected:
 //
 //// From AliITSMultReconstructor
 //
-  Float_t**     fClustersLay1;               // clusters in the 1st layer of ITS
-  Float_t**     fClustersLay2;               // clusters in the 2nd layer of ITS
+  Float_t**     fClustersLay1;               //! clusters in the 1st layer of ITS
+  Float_t**     fClustersLay2;               //! clusters in the 2nd layer of ITS
 
-  Float_t**     fTracklets;            // tracklets
-  Bool_t*       fAssociationFlag;      // flag for the associations
+  Float_t**     fTracklets;            //! tracklets
+  Bool_t*       fAssociationFlag;      //! flag for the associations
 
   Int_t         fNClustersLay1;        // Number of clusters (Layer1)
   Int_t         fNClustersLay2;        // Number of clusters (Layer2)
@@ -170,28 +170,28 @@ protected:
 
   Bool_t        fHistOn;               // Option to define and fill the histograms
 
-  TH1F*         fhClustersDPhiAcc;     // Phi2 - Phi1 for tracklets
-  TH1F*         fhClustersDThetaAcc;   // Theta2 - Theta1 for tracklets
-  TH1F*         fhClustersDZetaAcc;    // z2 - z1projected for tracklets
-  TH1F*         fhClustersDPhiAll;     // Phi2 - Phi1 all the combinations
-  TH1F*         fhClustersDThetaAll;   // Theta2 - Theta1 all the combinations
-  TH1F*         fhClustersDZetaAll;    // z2 - z1projected all the combinations
+  TH1F*         fhClustersDPhiAcc;     //! Phi2 - Phi1 for tracklets
+  TH1F*         fhClustersDThetaAcc;   //! Theta2 - Theta1 for tracklets
+  TH1F*         fhClustersDZetaAcc;    //! z2 - z1projected for tracklets
+  TH1F*         fhClustersDPhiAll;     //! Phi2 - Phi1 all the combinations
+  TH1F*         fhClustersDThetaAll;   //! Theta2 - Theta1 all the combinations
+  TH1F*         fhClustersDZetaAll;    //! z2 - z1projected all the combinations
 
-  TH2F*         fhDPhiVsDThetaAll;     // 2D plot for all the combinations
-  TH2F*         fhDPhiVsDThetaAcc;     // same plot for tracklets
-  TH2F*         fhDPhiVsDZetaAll;      // 2d plot for all the combination
-  TH2F*         fhDPhiVsDZetaAcc;      // same plot for tracklets
+  TH2F*         fhDPhiVsDThetaAll;     //! 2D plot for all the combinations
+  TH2F*         fhDPhiVsDThetaAcc;     //! same plot for tracklets
+  TH2F*         fhDPhiVsDZetaAll;      //! 2d plot for all the combination
+  TH2F*         fhDPhiVsDZetaAcc;      //! same plot for tracklets
 
-  TH1F*         fhetaTracklets;        // Pseudorapidity distr. for tracklets
-  TH1F*         fhphiTracklets;        // Azimuthal (Phi) distr. for tracklets
-  TH1F*         fhetaClustersLay1;     // Pseudorapidity distr. for Clusters L. 1
-  TH1F*         fhphiClustersLay1;     // Azimuthal (Phi) distr. for Clusters L. 1
+  TH1F*         fhetaTracklets;        //! Pseudorapidity distr. for tracklets
+  TH1F*         fhphiTracklets;        //! Azimuthal (Phi) distr. for tracklets
+  TH1F*         fhetaClustersLay1;     //! Pseudorapidity distr. for Clusters L. 1
+  TH1F*         fhphiClustersLay1;     //! Azimuthal (Phi) distr. for Clusters L. 1
 //
 // 
-  Bool_t*       fAssociationFlag1;    // flag for the associations (Layer 1)
-  UInt_t*       fChipPredOnLay2;      // prediction for the chip traversed by the tracklet 
-                                      // based on vtx and ClusterLay1 (to be used in extrapolation)
-  UInt_t*       fChipPredOnLay1;      // prediction for the chip traversed by the tracklet 
+  Bool_t*       fAssociationFlag1;    //! flag for the associations (Layer 1)
+  UInt_t*       fChipPredOnLay2;      //! prediction for the chip traversed by the tracklet 
+                                      //  based on vtx and ClusterLay1 (to be used in extrapolation)
+  UInt_t*       fChipPredOnLay1;      //! prediction for the chip traversed by the tracklet 
                                       // based on vtx and ClusterLay2 (to be used in interpolation)
   Int_t         fNTracklets1;   // Number of tracklets layer 1
   // possible cuts :
@@ -201,9 +201,9 @@ protected:
   Bool_t        fUpdateOncePerEventPlaneEff;  //  If this is kTRUE, then you can update the chip efficiency only once
                                               //  per event in that chip. This to avoid double counting from the
                                               //  same tracklets which has two rec-points on one layer.
-  Bool_t*       fChipUpdatedInEvent;          //  boolean (chip by chip) to flag which chip has been updated its efficiency
+  Bool_t*       fChipUpdatedInEvent;          //!  boolean (chip by chip) to flag which chip has been updated its efficiency
                                               //  in that event
-  AliITSPlaneEffSPD* fPlaneEffSPD; // pointer to SPD plane efficiency class
+  AliITSPlaneEffSPD* fPlaneEffSPD; //! pointer to SPD plane efficiency class
   Bool_t   fReflectClusterAroundZAxisForLayer0;  // if kTRUE, then a 180degree rotation around Z is applied to all 
   Bool_t   fReflectClusterAroundZAxisForLayer1;  // clusters on that layer (x->-x; y->-y)
   Bool_t   fMC; // Boolean to access Kinematics (only for MC events )
@@ -215,31 +215,34 @@ protected:
                                       // (i.e. PP' or PS or SS') otherwise ignore the combination
   Bool_t   fUseOnlyStableParticle; // Only for MC: if this is kTRUE then method PrimaryTrackChecker return kTRUE only 
                                 //              for particles decaying (eventually) after pixel layers
-  Int_t *fPredictionPrimary;  // those for correction of bias from secondaries
-  Int_t *fPredictionSecondary; // chip_by_chip: number of Prediction built with primaries/secondaries
-  Int_t *fClusterPrimary;  //   number of clusters on a given chip fired by (at least) a primary
-  Int_t *fClusterSecondary; //  number of clusters on a given chip fired by (only) secondaries
-  Int_t *fSuccessPP;     // number of successes by using the same primary track (vs. chip of the success)
-  Int_t *fSuccessTT;     // number of successes by using the same track (either a primary or a secondary) (vs. chip of the success)
-  Int_t *fSuccessS;      // number of successes by using a secondary for the prediction (vs. chip of the success)
-  Int_t *fSuccessP;      // number of successes by using a primary for the prediction (vs. chip of the success)
-  Int_t *fFailureS;      // number of failures by using a secondary for the prediction (vs. chip of the failure)
-  Int_t *fFailureP;      // number of failures by using a primary for the prediction (vs. chip of the failure)
-  Int_t *fRecons;        // number of particle which can be reconstructed (only for MC from TrackRef)
-  Int_t *fNonRecons;     // unmber of particle which cannot be reconstructed (only for MC from TrackRef)
+  Int_t *fPredictionPrimary;  //! those for correction of bias from secondaries
+  Int_t *fPredictionSecondary; //! chip_by_chip: number of Prediction built with primaries/secondaries
+  Int_t *fClusterPrimary;  //!   number of clusters on a given chip fired by (at least) a primary
+  Int_t *fClusterSecondary; //!  number of clusters on a given chip fired by (only) secondaries
+  Int_t *fSuccessPP;     //! number of successes by using the same primary track (vs. chip of the success)
+  Int_t *fSuccessTT;     //! number of successes by using the same track (either a primary or a secondary) (vs. chip of the success)
+  Int_t *fSuccessS;      //! number of successes by using a secondary for the prediction (vs. chip of the success)
+  Int_t *fSuccessP;      //! number of successes by using a primary for the prediction (vs. chip of the success)
+  Int_t *fFailureS;      //! number of failures by using a secondary for the prediction (vs. chip of the failure)
+  Int_t *fFailureP;      //! number of failures by using a primary for the prediction (vs. chip of the failure)
+  Int_t *fRecons;        //! number of particle which can be reconstructed (only for MC from TrackRef)
+  Int_t *fNonRecons;     //! unmber of particle which cannot be reconstructed (only for MC from TrackRef)
  // extra histograms with respect to the base class AliITSMultReconstructor
-  TH1F*         fhClustersDPhiInterpAcc;   // Phi2 - Phi1 for tracklets (interpolation phase)
-  TH1F*         fhClustersDThetaInterpAcc; // Theta2 - Theta1 for tracklets (interpolation phase)
-  TH1F*         fhClustersDZetaInterpAcc;  // z2 - z1projected for tracklets (interpolation phase)
-  TH1F*         fhClustersDPhiInterpAll;   // Phi2 - Phi1 all the combinations (interpolation phase)
-  TH1F*         fhClustersDThetaInterpAll; // Theta2 - Theta1 all the combinations (interpolation phase)
-  TH1F*         fhClustersDZetaInterpAll;  // z2 - z1projected all the combinations (interpolation phase)
-  TH2F*         fhDPhiVsDThetaInterpAll; // 2D plot for all the combinations
-  TH2F*         fhDPhiVsDThetaInterpAcc; // same plot for tracklets
-  TH2F*         fhDPhiVsDZetaInterpAll;  // 2d plot for all the combination
-  TH2F*         fhDPhiVsDZetaInterpAcc;  // same plot for tracklets
-  TH1F*         fhetaClustersLay2; // Pseudorapidity distr. for Clusters L. 2
-  TH1F*         fhphiClustersLay2; // Azimuthal (Phi) distr. for Clusters L. 2
+  TH1F*         fhClustersDPhiInterpAcc;   //! Phi2 - Phi1 for tracklets (interpolation phase)
+  TH1F*         fhClustersDThetaInterpAcc; //! Theta2 - Theta1 for tracklets (interpolation phase)
+  TH1F*         fhClustersDZetaInterpAcc;  //! z2 - z1projected for tracklets (interpolation phase)
+  TH1F*         fhClustersDPhiInterpAll;   //! Phi2 - Phi1 all the combinations (interpolation phase)
+  TH1F*         fhClustersDThetaInterpAll; //! Theta2 - Theta1 all the combinations (interpolation phase)
+  TH1F*         fhClustersDZetaInterpAll;  //! z2 - z1projected all the combinations (interpolation phase)
+  TH2F*         fhDPhiVsDThetaInterpAll; //! 2D plot for all the combinations
+  TH2F*         fhDPhiVsDThetaInterpAcc; //! same plot for tracklets
+  TH2F*         fhDPhiVsDZetaInterpAll;  //! 2d plot for all the combination
+  TH2F*         fhDPhiVsDZetaInterpAcc;  //! same plot for tracklets
+  TH1F*         fhetaClustersLay2; //! Pseudorapidity distr. for Clusters L. 2
+  TH1F*         fhphiClustersLay2; //! Azimuthal (Phi) distr. for Clusters L. 2
+  TH1F*         fhClustersInChip; //! number of fired clusters versus chip number [0,1199]
+  TH2F**        fhClustersInModuleLay1; //! distribution of cluster in the module Lay 1 (sub-chip scale)
+  TH2F**        fhClustersInModuleLay2; //! distribution of cluster in the module Lay 2 (sub-chip scale)
 //
   Double_t GetRLayer(Int_t layer); // return average radius of layer (0,1) from Geometry
   Bool_t PrimaryTrackChecker(Int_t ipart,AliStack* stack=0x0);  // check if a MC particle is primary (need AliStack)
@@ -270,7 +273,7 @@ protected:
 
   void LoadClusterArrays(TTree* tree);
 
-  ClassDef(AliITSTrackleterSPDEff,3)
+  ClassDef(AliITSTrackleterSPDEff,4)
 };
 // Input and output function for standard C++ input/output (for the cut values and MC statistics).
 ostream &operator<<(ostream &os,const AliITSTrackleterSPDEff &s);
