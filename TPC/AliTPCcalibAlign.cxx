@@ -107,6 +107,7 @@
 #include "AliTPCcalibAlign.h"
 #include "AliTPCROC.h"
 #include "AliTPCPointCorrection.h"
+#include "AliTrackPointArray.h"
 
 #include "AliExternalTrackParam.h"
 #include "AliESDEvent.h"
@@ -193,7 +194,8 @@ AliTPCcalibAlign::AliTPCcalibAlign()
      fSectorParamA(0),     // Kalman parameter   for A side
      fSectorCovarA(0),     // Kalman covariance  for A side 
      fSectorParamC(0),     // Kalman parameter   for A side
-     fSectorCovarC(0)     // Kalman covariance  for A side 
+     fSectorCovarC(0),     // Kalman covariance  for A side 
+     fUseInnerOuter(kTRUE)// flag- use Inner Outer sector for left righ alignment
 {
   //
   // Constructor
@@ -239,7 +241,9 @@ AliTPCcalibAlign::AliTPCcalibAlign(const Text_t *name, const Text_t *title)
    fSectorParamA(0),     // Kalman parameter   for A side
    fSectorCovarA(0),     // Kalman covariance  for A side 
    fSectorParamC(0),     // Kalman parameter   for A side
-   fSectorCovarC(0)     // Kalman covariance  for A side 
+   fSectorCovarC(0),     // Kalman covariance  for A side      
+   fUseInnerOuter(kTRUE)// flag- use Inner Outer sector for left righ alignment
+
 {
   //
   // Constructor
@@ -289,8 +293,9 @@ AliTPCcalibAlign::AliTPCcalibAlign(const AliTPCcalibAlign &align)
    fSectorParamA(0),     // Kalman parameter   for A side
    fSectorCovarA(0),     // Kalman covariance  for A side 
    fSectorParamC(0),     // Kalman parameter   for A side
-   fSectorCovarC(0)      // Kalman covariance  for A side 
-
+   fSectorCovarC(0),      // Kalman covariance  for A side 
+  fUseInnerOuter(kTRUE)// flag- use Inner Outer sector for left righ alignment
+  
 {
   //
   // copy constructor - copy also the content
@@ -420,6 +425,7 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
   //
   // Process pairs of cosmic tracks
   //
+  ExportTrackPoints(event);  // export track points for external calibration 
   const Int_t kMaxTracks =50;
   const Int_t kminCl = 40;
   AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
@@ -486,8 +492,10 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
 	  Double_t parLine0[10];
 	  Double_t parLine1[10];
 	  TMatrixD par0(4,1),cov0(4,4),par1(4,1),cov1(4,4);
-	  Int_t nl0 = RefitLinear(seed0,s0, parLine0, s0,par0,cov0,fXIO,kFALSE);
-	  Int_t nl1 = RefitLinear(seed1,s1, parLine1, s0,par1,cov1,fXIO,kFALSE);
+	  Bool_t useInnerOuter = kFALSE;
+	  if (s1%36!=s0%36) useInnerOuter = fUseInnerOuter;  // for left - right alignment both sectors refit can be used if specified
+	  Int_t nl0 = RefitLinear(seed0,s0, parLine0, s0,par0,cov0,fXIO,useInnerOuter);
+	  Int_t nl1 = RefitLinear(seed1,s1, parLine1, s0,par1,cov1,fXIO,useInnerOuter);
 	  parLine0[0]=0;  // reference frame in IO boundary
 	  parLine1[0]=0;
 	  //      if (nl0<kminCl || nl1<kminCl) continue;
@@ -538,6 +546,138 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
       }
     }
   }
+}
+
+void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
+  //
+  // Export track points for alignment - calibration
+  // export space points for pairs of tracks if possible
+  //
+  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  if (!ESDfriend) return;
+  Int_t ntracks=event->GetNumberOfTracks();
+  //cuts
+  const Int_t kminCl     = 60;
+  const Int_t kminClSum  = 120;
+  //  const Double_t kDistY  = 5;
+  // const Double_t kDistZ  = 40;
+  const Double_t kDistTh = 0.05;
+  const Double_t kDist1Pt = 0.1;
+  //
+  Float_t dca0[2];
+  Float_t dca1[2];
+  Int_t index0=0,index1=0;
+  //
+  for (Int_t i0=0;i0<ntracks;++i0) {
+    AliESDtrack *track0 = event->GetTrack(i0);
+    if (!track0) continue;
+    if ((track0->GetStatus() & AliESDtrack::kTPCrefit)==0) continue;
+    if (track0->GetOuterParam()==0) continue;
+    AliESDtrack *track1P = 0;
+    if (track0->GetTPCNcls()<kminCl) continue;
+    track0->GetImpactParameters(dca0[0],dca0[1]);
+    index0=i0;
+    index1=-1;
+    //
+    for (Int_t i1=0;i1<ntracks;++i1) {
+      if (i0==i1) continue;
+      AliESDtrack *track1 = event->GetTrack(i1);
+      if (!track1) continue;
+      if ((track1->GetStatus() & AliESDtrack::kTPCrefit)==0) continue;
+      if (track1->GetOuterParam()==0) continue;
+      if (track1->GetTPCNcls()<kminCl) continue;
+      track1->GetImpactParameters(dca1[0],dca1[1]);
+      //if (TMath::Abs(dca1[0]-dca0[0])>kDistY) continue;
+      //if (TMath::Abs(dca1[1]-dca0[1])>kDistZ) continue;
+      if (TMath::Abs(track0->GetTgl()+track1->GetTgl())>kDistTh) continue;
+      if (TMath::Abs(track0->GetSigned1Pt()+track1->GetSigned1Pt())>kDist1Pt) continue;
+      track1P = track1;
+      index1=i1;
+    }
+    AliESDfriendTrack *friendTrack = 0;
+    TObject *calibObject=0;
+    AliTPCseed *seed0 = 0,*seed1=0;
+    //
+    friendTrack = (AliESDfriendTrack *)ESDfriend->GetTrack(index0);;
+    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
+      if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
+    }
+    if (index1>0){
+      friendTrack = (AliESDfriendTrack *)ESDfriend->GetTrack(index1);;
+      for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
+	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
+      }
+    }
+    //
+    Int_t npoints=0, ncont=0;
+    if (seed0) {npoints+=seed0->GetNumberOfClusters(); ncont++;}
+    if (seed1) {npoints+=seed1->GetNumberOfClusters(); ncont++;}
+    if (npoints<kminClSum) continue;    
+    Int_t cpoint=0;
+    AliTrackPointArray array(npoints);    
+    if (seed0) for (Int_t icl = 0; icl<160; icl++){
+      AliTPCclusterMI *cluster=seed0->GetClusterPointer(icl);
+      if (!cluster) continue;
+      Float_t xyz[3];
+      Float_t cov[6];
+      cluster->GetGlobalXYZ(xyz);
+      cluster->GetGlobalCov(cov);
+      AliTrackPoint point(xyz,cov,cluster->GetDetector());
+      array.AddPoint(npoints, &point);
+      if (cpoint>=npoints) continue;  //shoul not happen
+      array.AddPoint(cpoint, &point);
+      cpoint++;
+    }
+    if (seed1) for (Int_t icl = 0; icl<160; icl++){
+      AliTPCclusterMI *cluster=seed1->GetClusterPointer(icl);
+      if (!cluster) continue;
+      Float_t xyz[3];
+      Float_t cov[6];
+      cluster->GetGlobalXYZ(xyz);
+      cluster->GetGlobalCov(cov);
+      AliTrackPoint point(xyz,cov,cluster->GetDetector());
+      array.AddPoint(npoints, &point);
+      if (cpoint>=npoints) continue;  //shoul not happen
+      array.AddPoint(cpoint, &point);
+      cpoint++;
+    }
+    //
+    //
+    //
+    TTreeSRedirector *cstream = GetDebugStreamer();
+    if (cstream){
+      static AliExternalTrackParam dummy;
+      AliExternalTrackParam *p0In  = &dummy;
+      AliExternalTrackParam *p1In  = &dummy;
+      AliExternalTrackParam *p0Out = &dummy;
+      AliExternalTrackParam *p1Out = &dummy;
+      if (track0) {
+	p0In= new AliExternalTrackParam(*track0);
+	p0Out=new AliExternalTrackParam(*(track0->GetOuterParam()));
+      }
+      if (track1P) {
+	p1In= new AliExternalTrackParam(*track1P);
+	p1Out=new AliExternalTrackParam(*(track1P->GetOuterParam()));
+      }
+
+      (*cstream)<<"trackPoints"<<
+	"run="<<fRun<<              //  run number
+	"event="<<fEvent<<          //  event number
+	"time="<<fTime<<            //  time stamp of event
+	"trigger="<<fTrigger<<      //  trigger
+	"triggerClass="<<&fTriggerClass<<      //  trigger
+	"mag="<<fMagF<<             //  magnetic field
+	//
+	"ntracks="<<ntracks<<       // number of tracks
+	"ncont="<<ncont<<           // number of contributors
+	"p0In.="<<p0In<<              // track parameters0 
+	"p1In.="<<p1In<<              // track parameters1
+	"p0Out.="<<p0Out<<          // track parameters0
+	"p1Out.="<<p1Out<<          // track parameters0
+	"p.="<<&array<<
+	"\n";
+    }
+  }  
 }
 
 
@@ -661,8 +801,10 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   Double_t parLine1[10];
   Double_t parLine2[10];
   TMatrixD par1(4,1),cov1(4,4),par2(4,1),cov2(4,4);
-  Int_t nl1 = RefitLinear(seed,s1, parLine1, s1,par1,cov1,tp1.GetX(), kFALSE);
-  Int_t nl2 = RefitLinear(seed,s2, parLine2, s1,par2,cov2,tp1.GetX(), kFALSE);
+  Bool_t useInnerOuter = kFALSE;
+  if (s1%36!=s2%36) useInnerOuter = fUseInnerOuter;  // for left - right alignment bot sectors refit can be used if specified
+  Int_t nl1 = RefitLinear(seed,s1, parLine1, s1,par1,cov1,tp1.GetX(), useInnerOuter);
+  Int_t nl2 = RefitLinear(seed,s2, parLine2, s1,par2,cov2,tp1.GetX(), useInnerOuter);
   parLine1[0]=tp1.GetX()-fXIO;   // parameters in  IROC-OROC boundary
   parLine2[0]=tp1.GetX()-fXIO;   // parameters in  IROC-OROC boundary
   //
@@ -1337,7 +1479,7 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter6(Int_t s1,Int_t s2) {
   if (fitter) return fitter;
   //  fitter=new TLinearFitter(6,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
   fitter=new TLinearFitter(&f6,"");
-  fitter->StoreData(kTRUE);
+  fitter->StoreData(kFALSE);
   fFitterArray6.AddAt(fitter,GetIndex(s1,s2));
   counter6++;
   if (GetDebugLevel()>0) cerr<<"Creating fitter6 "<<s1<<","<<s2<<"  :  "<<counter6<<endl;
@@ -1410,6 +1552,7 @@ void AliTPCcalibAlign::FillHisto(const Double_t *t1,
 				 Int_t s1,Int_t s2) {
   //
   // Fill residual histograms
+  // Track2-Track1
   // Innner-Outer
   // Left right - x-y
   // A-C side

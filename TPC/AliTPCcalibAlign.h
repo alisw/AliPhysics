@@ -39,6 +39,7 @@ public:
   virtual void Analyze();
   virtual void Terminate();  
   virtual Long64_t Merge(TCollection* list);
+  void ExportTrackPoints(AliESDEvent *event);
   //
   //
   void MakeReportDy(TFile *output); 
@@ -178,13 +179,16 @@ public:
   TMatrixD  *fSectorCovarA;     // Kalman covariance  for A side 
   TMatrixD  *fSectorParamC;     // Kalman parameter   for A side
   TMatrixD  *fSectorCovarC;     // Kalman covariance  for A side 
-
-
+  //
+  //
+  //
+  Bool_t    fUseInnerOuter;         // flag- use Inner Outer sector for left righ alignment
+  
   static AliTPCcalibAlign*   fgInstance; //! Instance of this class (singleton implementation)
 private:
   AliTPCcalibAlign&  operator=(const AliTPCcalibAlign&);// not implemented
 
-  ClassDef(AliTPCcalibAlign,2)
+  ClassDef(AliTPCcalibAlign,3)
 };
 
 
