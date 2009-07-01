@@ -16,6 +16,7 @@
 
 #include <Riostream.h>
 #include <TObjArray.h>
+#include <AliTimeStamp.h>
 #include "AliLog.h"  
 #include "AliTriggerScalersESD.h"
 #include "AliTriggerScalersRecordESD.h"
@@ -24,6 +25,7 @@ ClassImp( AliTriggerScalersRecordESD )
 //_____________________________________________________________________________
 AliTriggerScalersRecordESD::AliTriggerScalersRecordESD():
 TObject(),
+fTimestamp(),
 fScalers()
 {
 }
@@ -44,8 +46,10 @@ void AliTriggerScalersRecordESD::AddTriggerScalers( UChar_t classIndex, ULong64_
 //_____________________________________________________________________________
 AliTriggerScalersRecordESD::AliTriggerScalersRecordESD( const AliTriggerScalersRecordESD &rec ) :
 TObject(rec),
+fTimestamp(rec.fTimestamp),
 fScalers()
 {
+//copy constructor
 for (Int_t i = 0; i < rec.fScalers.GetEntriesFast(); i++) {
     if (rec.fScalers[i]) fScalers.Add(rec.fScalers[i]->Clone());
   }
@@ -53,8 +57,10 @@ for (Int_t i = 0; i < rec.fScalers.GetEntriesFast(); i++) {
 //_____________________________________________________________________________
 AliTriggerScalersRecordESD& AliTriggerScalersRecordESD:: operator=(const AliTriggerScalersRecordESD& rec)
 {
+//asignment operator
 if(&rec == this) return *this;
 ((TObject *)this)->operator=(rec);
+fTimestamp=rec.fTimestamp;
 for (Int_t i = 0; i < rec.fScalers.GetEntriesFast(); i++) {
     if (rec.fScalers[i]) fScalers.Add(rec.fScalers[i]->Clone());
   }
