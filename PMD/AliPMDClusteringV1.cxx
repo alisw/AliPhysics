@@ -124,7 +124,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
 
   // call the isolated cell search method
 
-  CalculateIsoCell(idet, ismn, celladc, pmdisocell);
+  FindIsoCell(idet, ismn, celladc, pmdisocell);
 
   // ndimXr and ndimYr are different because of different module size
 
@@ -270,18 +270,37 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
 	  Int_t irow = celldataX[ihit];
 	  Int_t icol = celldataY[ihit];
 
-	  if ((irow >= 0 && irow < 48) && (icol >= 0 && icol < 96))
+	  if (ismn < 12)
 	    {
-	      celldataTr[ihit]  = celltrack[irow][icol];
-	      celldataPid[ihit] = cellpid[irow][icol];
-	      celldataAdc[ihit] = (Float_t) celladc[irow][icol];
+	      if ((irow >= 0 && irow < 96) && (icol >= 0 && icol < 48))
+		{
+		  celldataTr[ihit]  = celltrack[icol][irow];
+		  celldataPid[ihit] = cellpid[icol][irow];
+		  celldataAdc[ihit] = (Float_t) celladc[icol][irow];
+		}
+	      else
+		{
+		  celldataTr[ihit]  = -1;
+		  celldataPid[ihit] = -1;
+		  celldataAdc[ihit] = -1;
+		}
 	    }
-	  else
+	  else if (ismn >= 12 && ismn < 24)
 	    {
-	      celldataTr[ihit]  = -1;
-	      celldataPid[ihit] = -1;
-	      celldataAdc[ihit] = -1;
+	      if ((irow >= 0 && irow < 48) && (icol >= 0 && icol < 96))
+		{
+		  celldataTr[ihit]  = celltrack[irow][icol];
+		  celldataPid[ihit] = cellpid[irow][icol];
+		  celldataAdc[ihit] = (Float_t) celladc[irow][icol];
+		}
+	      else
+		{
+		  celldataTr[ihit]  = -1;
+		  celldataPid[ihit] = -1;
+		  celldataAdc[ihit] = -1;
+		}
 	    }
+	  
 	}
 
       pmdcl = new AliPMDcluster(idet, ismn, clusdata, celldataX, celldataY,
@@ -808,30 +827,16 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 		  		  
 		  cellCount[maxweight]++;
 		  
-		  for(Int_t kcl = 0; kcl <= ig; kcl++)
-		    {
-		      x2 = xc[kcl];
-		      y2 = yc[kcl];
-		      rr = Distance(x1,y1,x2,y2);
-		      t2 = tc[kcl];
-		      // For calculating weighted mean:
-		      // Weighted_mean = (\sum w_i x_i) / (\sum w_i)
-		      
-		      if(sumweight>0.)
-			{
-			  totaladc[kcl] = totaladc[kcl] + z1*(weight[kcl]/sumweight);
-			  ncell[kcl]    = ncell[kcl]    + (weight[kcl]/sumweight);	  
-			  ax[kcl]       = ax[kcl]       + (x1 * z1 *weight[kcl]/sumweight);
-			  ay[kcl]       = ay[kcl]       + (y1 * z1 *weight[kcl]/sumweight);
-			  
-			  // For calculating weighted sigma:
-			  // Wieghted_sigma= ((\sum w_i)/((\sum w_i)^2 - \sum (w_i^2))) \sum w_i (x_i - \Hat\mu)^2
-			  // I assume here x1,y1 are cluster centers, otherwise life becomes too difficult
-			  totaladc2[kcl] = totaladc2[kcl] +  pow((z1*(weight[kcl]/sumweight)),2);
-			  ax2[kcl] = ax2[kcl] + (z1 *weight[kcl]/sumweight) * pow((x1-x2),2);
-			  ay2[kcl] = ay2[kcl] + (z1 *weight[kcl]/sumweight) * pow((y1-y2),2);
-			}
-		    }
+		  x2 = xc[maxweight];
+		  y2 = yc[maxweight];
+		  totaladc[maxweight]  +=  z1;
+		  ax[maxweight]        +=  x1 * z1;
+		  ay[maxweight]        +=  y1 * z1;
+		  totaladc2[maxweight] +=  pow(z1,2);
+		  ax2[maxweight]       +=  z1 * pow((x1-x2),2);
+		  ay2[maxweight]       +=  z1 * pow((y1-y2),2);
+		  ncell[maxweight]++;
+
 		}
 	    }
 	  
@@ -922,7 +927,7 @@ Double_t AliPMDClusteringV1::Distance(Double_t x1, Double_t y1,
   return TMath::Sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
 }
 // ------------------------------------------------------------------------ //
-void AliPMDClusteringV1::CalculateIsoCell(Int_t idet, Int_t ismn, Double_t celladc[][96], TObjArray *pmdisocell)
+void AliPMDClusteringV1::FindIsoCell(Int_t idet, Int_t ismn, Double_t celladc[][96], TObjArray *pmdisocell)
 {
   // Does isolated cell search for offline calibration
 

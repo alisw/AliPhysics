@@ -39,8 +39,8 @@ class AliPMDClusteringV1: public AliPMDClustering
   void     RefClust(Int_t incr, Double_t edepcell[]);
   Double_t Distance(Double_t x1, Double_t y1,
 		    Double_t x2, Double_t y2);
-  void     CalculateIsoCell(Int_t idet, Int_t ism,
-			    Double_t celladc[][96], TObjArray *pmdisocell);
+  void     FindIsoCell(Int_t idet, Int_t ism,
+		       Double_t celladc[][96], TObjArray *pmdisocell);
   void     SetEdepCut(Float_t decut);
   
  protected:
@@ -64,6 +64,6 @@ class AliPMDClusteringV1: public AliPMDClustering
 
   Float_t  fCutoff; // Energy(ADC) cutoff per cell before clustering
 
-  ClassDef(AliPMDClusteringV1,6) // Does clustering for PMD
+  ClassDef(AliPMDClusteringV1,7) // Does clustering for PMD
 };
 #endif

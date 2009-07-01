@@ -117,7 +117,7 @@ void AliPMDClusteringV2::DoClust(Int_t idet, Int_t ismn,
 
   // call the isolated cell search method
 
-  CalculateIsoCell(idet, ismn, celladc, pmdisocell);
+  FindIsoCell(idet, ismn, celladc, pmdisocell);
 
 
 
@@ -1069,7 +1069,7 @@ Double_t AliPMDClusteringV2::Distance(Double_t x1, Double_t y1,
   return TMath::Sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
 }
 // ------------------------------------------------------------------------ //
-void AliPMDClusteringV2::CalculateIsoCell(Int_t idet, Int_t ismn, Double_t celladc[][96], TObjArray *pmdisocell)
+void AliPMDClusteringV2::FindIsoCell(Int_t idet, Int_t ismn, Double_t celladc[][96], TObjArray *pmdisocell)
 {
   // Does isolated cell search for offline calibration
 

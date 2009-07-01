@@ -170,7 +170,8 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
       return;
     }
   branch1->SetAddress(&fRechits);  
-  
+
+  Int_t ncrhit = 0;
   Int_t   nmodules = (Int_t) branch->GetEntries();
   
   AliDebug(1,Form("Number of modules filled in treeR = %d",nmodules));
@@ -180,8 +181,6 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
       Int_t nentries = fRecpoints->GetLast();
       AliDebug(2,Form("Number of clusters per modules filled in treeR = %d"
 		      ,nentries));
-
-      Int_t ncrhit = 0;
 
       for(Int_t ient = 0; ient < nentries+1; ient++)
 	{
@@ -195,7 +194,7 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 	  clusdata[4] = fPMDrecpoint->GetClusSigmaX();
 	  clusdata[5] = fPMDrecpoint->GetClusSigmaY();
 	  
-	  if (clusdata[4] != -99. && clusdata[5] != -99.)
+	  if (clusdata[4] < -90. && clusdata[5] < -90.)
 	    { 
 	      // extract the associated cell information
 	      branch1->GetEntry(ncrhit); 

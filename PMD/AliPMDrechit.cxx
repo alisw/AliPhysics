@@ -79,7 +79,7 @@ AliPMDrechit& AliPMDrechit::operator=(const AliPMDrechit& source)
       fYcell = source.fYcell;
       fTrcell = source.fTrcell;
       fPidcell = source.fPidcell;
-      fAdccell = source.fPidcell;
+      fAdccell = source.fAdccell;
     }
   return *this;
 }
