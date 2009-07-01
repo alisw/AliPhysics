@@ -63,6 +63,19 @@ AliTriggerScalersESD::AliTriggerScalersESD( UChar_t classIndex, ULong64_t LOCB, 
   // Default constructor
 }
 //_____________________________________________________________________________
+AliTriggerScalersESD::AliTriggerScalersESD(UChar_t classIndex,ULong64_t* s64):
+TObject(),
+fClassIndex( classIndex ),
+fLOCB(s64[0]),     
+fLOCA(s64[1]),     
+fL1CB(s64[2]),     
+fL1CA(s64[3]),     
+fL2CB(s64[4]),     
+fL2CA(s64[5])      
+{
+ // Construct from array
+}
+//_____________________________________________________________________________
 AliTriggerScalersESD::AliTriggerScalersESD(const AliTriggerScalersESD& scal ):   
   TObject(scal),
   fClassIndex( scal.fClassIndex ),
@@ -75,7 +88,6 @@ AliTriggerScalersESD::AliTriggerScalersESD(const AliTriggerScalersESD& scal ):
 {
   // Copy constructor
 }
-
 //_____________________________________________________________________________
 AliTriggerScalersESD& AliTriggerScalersESD::operator=(const AliTriggerScalersESD& scal)
 {
@@ -92,7 +104,16 @@ if(&scal == this) return *this;
 
 return *this;
 }
-
+//____________________________________________________________________________
+void AliTriggerScalersESD::GetAllScalers(ULong64_t *scalers) const
+{
+ scalers[0]=fLOCB;
+ scalers[1]=fLOCA;
+ scalers[2]=fL1CB;
+ scalers[3]=fL1CA;
+ scalers[4]=fL2CB;
+ scalers[5]=fL2CA;
+}
 //_____________________________________________________________________________
 void AliTriggerScalersESD::Print( const Option_t* ) const
 {
