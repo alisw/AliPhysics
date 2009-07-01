@@ -303,6 +303,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetUseUnfoldingInClusterFinderSSD(Bool_t use=kTRUE) { fUseUnfoldingInClusterFinderSSD=use; return; }
   Bool_t GetUseUnfoldingInClusterFinderSSD() const { return fUseUnfoldingInClusterFinderSSD; }
 
+  void   SetUseBadChannelsInClusterFinderSSD(Bool_t use=kFALSE) { fUseBadChannelsInClusterFinderSSD=use; return; }
+  Bool_t GetUseBadChannelsInClusterFinderSSD() const  { return fUseBadChannelsInClusterFinderSSD;  }   
+
   void   SetUseSDDCorrectionMaps(Bool_t use=kTRUE) {fUseSDDCorrectionMaps=use;}
   Bool_t GetUseSDDCorrectionMaps() const {return fUseSDDCorrectionMaps;}
   void   SetUseSDDClusterSizeSelection(Bool_t use=kTRUE) {fUseSDDClusterSizeSelection=use;}
@@ -540,6 +543,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseUnfoldingInClusterFinderSDD; // SDD
   Bool_t fUseUnfoldingInClusterFinderSSD; // SSD
 
+  Bool_t fUseBadChannelsInClusterFinderSSD; // flag to switch on bad channels in CF SSD
+
   Bool_t  fUseSDDCorrectionMaps; // flag for use of SDD maps in C.F.
   Bool_t  fUseSDDClusterSizeSelection; // cut on SDD cluster size
   Float_t fMinClusterChargeSDD; // cut on SDD cluster charge
@@ -582,7 +587,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t  fAlignFilterFillQANtuples;      // fill QA ntuples  
 
 
-  ClassDef(AliITSRecoParam,22) // ITS reco parameters
+  ClassDef(AliITSRecoParam,23) // ITS reco parameters
 };
 
 #endif

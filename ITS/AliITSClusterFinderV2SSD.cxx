@@ -744,6 +744,18 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 
   const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(fModule);
 
+  //---------------------------------------
+  // load recoparam
+  // 
+  static AliITSRecoParam *repa = NULL;  
+  if(!repa){
+    repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
+    if(!repa){
+      repa = AliITSRecoParam::GetHighFluxParam();
+      AliWarning("Using default AliITSRecoParam class");
+    }
+  }
+
   TClonesArray &cl=*clusters;
   
   AliITSsegmentationSSD *seg = dynamic_cast<AliITSsegmentationSSD*>(fDetTypeRec->GetSegmentationModel(2));
@@ -838,15 +850,6 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   Double_t ratio;
   
 
-  static AliITSRecoParam *repa = NULL;
-  if(!repa){
-    repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
-    if(!repa){
-      repa = AliITSRecoParam::GetHighFluxParam();
-      AliWarning("Using default AliITSRecoParam class");
-    }
-  }
-
   if(repa->GetUseChargeMatchingInClusterFinderSSD()==kTRUE) {
 
 
@@ -914,7 +917,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  lp[5]=-0.00006;
 	}
 	else {
-	  lp[3]=0.0093*0.0093;
+	  lp[3]=0.093*0.093;
 	  if (info[0]==1) { lp[5]=-0.00014;}
 	  else { lp[2]=0.0017*0.0017; lp[5]=-0.00004;}
 	}
@@ -1024,7 +1027,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  lp[5]=-0.00006;
 	}
 	else {
-	  lp[3]=0.0093*0.0093;
+	  lp[3]=0.093*0.093;
 	  if (info[0]==1) { lp[5]=-0.00014;}
 	  else { lp[2]=0.0017*0.0017; lp[5]=-0.00004;}
 	}
@@ -1100,7 +1103,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  lp[5]=-0.00006;
 	}
 	else {
-	  lp[3]=0.0093*0.0093;
+	  lp[3]=0.093*0.093;
 	  if (info[0]==1) { lp[5]=-0.00014;}
 	  else { lp[2]=0.0017*0.0017; lp[5]=-0.00004;}
 	}
@@ -1209,7 +1212,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  lp[5]=-0.00006;
 	}
 	else {
-	  lp[3]=0.0093*0.0093;
+	  lp[3]=0.093*0.093;
 	  if (info[0]==1) { lp[5]=-0.00014;}
 	  else { lp[2]=0.0017*0.0017; lp[5]=-0.00004;}
 	}
@@ -1285,7 +1288,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  lp[5]=-0.00006;
 	}
 	else {
-	  lp[3]=0.0093*0.0093;
+	  lp[3]=0.093*0.093;
 	  if (info[0]==1) { lp[5]=-0.00014;}
 	  else { lp[2]=0.0017*0.0017; lp[5]=-0.00004;}
 	}
@@ -1425,7 +1428,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  lp[5]=-0.00006;
 	}
 	else {
-	  lp[3]=0.0093*0.0093;
+	  lp[3]=0.093*0.093;
 	  if (info[0]==1) { lp[5]=-0.00014;}
 	  else { lp[2]=0.0017*0.0017; lp[5]=-0.00004;}
 	}
@@ -1557,7 +1560,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  lp[5]=-0.00006;
 	}
 	else {
-	  lp[3]=0.0093*0.0093;
+	  lp[3]=0.093*0.093;
 	  if (info[0]==1) { lp[5]=-0.00014;}
 	  else { lp[2]=0.0017*0.0017; lp[5]=-0.00004;}
 	}
@@ -1652,7 +1655,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  lp[5]=-0.00006;
 	}
 	else {
-	  lp[3]=0.0093*0.0093;
+	  lp[3]=0.093*0.093;
 	  if (info[0]==1) { lp[5]=-0.00014;}
 	  else { lp[2]=0.0017*0.0017; lp[5]=-0.00004;}
 	}
@@ -1684,233 +1687,238 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   }
 
 
-  //---------------------------------------------------------
-  // recover crosses of good 1D clusters with bad strips on the other side
-  // Note1: at first iteration skip modules with a bad side (or almost), (would produce too many fake!) 
-  // Note2: for modules with a bad side see below 
-  
-  AliITSCalibrationSSD* cal = (AliITSCalibrationSSD*)GetResp(fModule);
-  Int_t countPbad=0, countNbad=0;
-  for(Int_t ib=0; ib<768; ib++) {
-    if(cal->IsPChannelBad(ib)) countPbad++;
-    if(cal->IsNChannelBad(ib)) countNbad++;
-  }
-  //  AliInfo(Form("module %d has %d P- and %d N-bad strips",fModule,countPbad,countNbad));
 
-  if( (countPbad<100) && (countNbad<100) ) { // no bad side!!
+  if(repa->GetUseBadChannelsInClusterFinderSSD()==kTRUE) {
     
-    for (Int_t i=0; i<np; i++) { // loop over Nside 1Dclusters with no crosses
-      if(cnegative[i]) continue; // if intersecting Pside clusters continue;
+    //---------------------------------------------------------
+    // recover crosses of good 1D clusters with bad strips on the other side
+    // Note1: at first iteration skip modules with a bad side (or almost), (would produce too many fake!) 
+    // Note2: for modules with a bad side see below 
+    
+    AliITSCalibrationSSD* cal = (AliITSCalibrationSSD*)GetResp(fModule);
+    Int_t countPbad=0, countNbad=0;
+    for(Int_t ib=0; ib<768; ib++) {
+      if(cal->IsPChannelBad(ib)) countPbad++;
+      if(cal->IsNChannelBad(ib)) countNbad++;
+    }
+    //  AliInfo(Form("module %d has %d P- and %d N-bad strips",fModule,countPbad,countNbad));
+    
+    if( (countPbad<100) && (countNbad<100) ) { // no bad side!!
       
-      //      for(Int_t ib=0; ib<768; ib++) { // loop over all Pstrips
-      for(Int_t ib=15; ib<753; ib++) { // loop over all Pstrips
+      for (Int_t i=0; i<np; i++) { // loop over Nside 1Dclusters with no crosses
+	if(cnegative[i]) continue; // if intersecting Pside clusters continue;
 	
-	if(cal->IsPChannelBad(ib)) { // check if strips is bad
-	  Float_t yN=pos[i].GetY();	
-	  Float_t xt, zt;
-	  seg->GetPadCxz(1.*ib, yN, xt, zt);	
+	//      for(Int_t ib=0; ib<768; ib++) { // loop over all Pstrips
+	for(Int_t ib=15; ib<753; ib++) { // loop over all Pstrips
 	  
-	  //----------
-	  // bad Pstrip is crossing the Nside 1Dcluster -> create recpoint
-	  // 
-	  if ( (TMath::Abs(xt)<hwSSD+0.01) && (TMath::Abs(zt)<hlSSD+0.01) ) {
-	    Double_t loc[3]={xt,0.,zt},trk[3]={0.,0.,0.};
-	    mT2L->MasterToLocal(loc,trk);
-	    lp[0]=trk[1];
-	    lp[1]=trk[2];        
-	    lp[4]=pos[i].GetQ(); //Q
-	    for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
-	    for (Int_t ilab=0;ilab<3;ilab++) milab[ilab] = pos[i].GetLabel(ilab);	  
-	    CheckLabels2(milab);
-	    milab[3]=( (i<<10) << 10 ) + idet; // pos|neg|det
-	    Int_t info[3] = {pos[i].GetNd(),0,fNlayer[fModule]};
+	  if(cal->IsPChannelBad(ib)) { // check if strips is bad
+	    Float_t yN=pos[i].GetY();	
+	    Float_t xt, zt;
+	    seg->GetPadCxz(1.*ib, yN, xt, zt);	
 	    
-	    // out-of-diagonal element of covariance matrix
-	    if (info[0]==1) lp[5]=0.0065;
-	    else lp[5]=0.0093;
-
-	lp[2]=0.0022*0.0022;  //SigmaY2
-	lp[3]=0.110*0.110;  //SigmaZ2
-	lp[5]=-0.00012; // out-of-diagonal element of covariance matrix
- 	
-	    AliITSRecPoint * cl2;
-	    if(clusters){
-	      cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);	    
-	      cl2->SetChargeRatio(1.);
+	    //----------
+	    // bad Pstrip is crossing the Nside 1Dcluster -> create recpoint
+	    // 
+	    if ( (TMath::Abs(xt)<hwSSD+0.01) && (TMath::Abs(zt)<hlSSD+0.01) ) {
+	      Double_t loc[3]={xt,0.,zt},trk[3]={0.,0.,0.};
+	      mT2L->MasterToLocal(loc,trk);
+	      lp[0]=trk[1];
+	      lp[1]=trk[2];        
+	      lp[4]=pos[i].GetQ(); //Q
+	      for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	      for (Int_t ilab=0;ilab<3;ilab++) milab[ilab] = pos[i].GetLabel(ilab);	  
+	      CheckLabels2(milab);
+	      milab[3]=( (i<<10) << 10 ) + idet; // pos|neg|det
+	      Int_t info[3] = {pos[i].GetNd(),0,fNlayer[fModule]};
+	      
+	      // out-of-diagonal element of covariance matrix
+	      if (info[0]==1) lp[5]=0.0065;
+	      else lp[5]=0.0093;
+	      
+	      lp[2]=0.0022*0.0022;  //SigmaY2
+	      lp[3]=0.110*0.110;  //SigmaZ2
+	      lp[5]=-0.00012; // out-of-diagonal element of covariance matrix
+	      
+	      AliITSRecPoint * cl2;
+	      if(clusters){
+		cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);	    
+		cl2->SetChargeRatio(1.);
 	      cl2->SetType(50);	  
-	    }
-	    else{
-	      cl2 = new AliITSRecPoint(milab,lp,info);
-	      cl2->SetChargeRatio(1.);
-	      cl2->SetType(50);
-	      fDetTypeRec->AddRecPoint(*cl2);
-	    }
-	    ncl++;
-	  } // cross is within the detector
-	  //
-	  //--------------
+	      }
+	      else{
+		cl2 = new AliITSRecPoint(milab,lp,info);
+		cl2->SetChargeRatio(1.);
+		cl2->SetType(50);
+		fDetTypeRec->AddRecPoint(*cl2);
+	      }
+	      ncl++;
+	    } // cross is within the detector
+	    //
+	    //--------------
+	    
+	  } // bad Pstrip
 	  
-	} // bad Pstrip
+	} // end loop over Pstrips
 	
-      } // end loop over Pstrips
+      } // end loop over Nside 1D clusters
       
-    } // end loop over Nside 1D clusters
-    
-    for (Int_t j=0; j<nn; j++) { // loop over Pside 1D clusters with no crosses
-      if(cpositive[j]) continue;
-      
-      //      for(Int_t ib=0; ib<768; ib++) { // loop over all Nside strips
-      for(Int_t ib=15; ib<753; ib++) { // loop over all Nside strips
+      for (Int_t j=0; j<nn; j++) { // loop over Pside 1D clusters with no crosses
+	if(cpositive[j]) continue;
 	
-	if(cal->IsNChannelBad(ib)) { // check if strip is bad
-	  Float_t yP=neg[j].GetY();	
-	  Float_t xt, zt;
-	  seg->GetPadCxz(yP, 1.*ib, xt, zt);	
+	//      for(Int_t ib=0; ib<768; ib++) { // loop over all Nside strips
+	for(Int_t ib=15; ib<753; ib++) { // loop over all Nside strips
 	  
-	  //----------
-	  // bad Nstrip is crossing the Pside 1Dcluster -> create recpoint
-	  // 
-	  if ( (TMath::Abs(xt)<hwSSD+0.01) && (TMath::Abs(zt)<hlSSD+0.01) ) {
-	    Double_t loc[3]={xt,0.,zt},trk[3]={0.,0.,0.};
-	    mT2L->MasterToLocal(loc,trk);
-	    lp[0]=trk[1];
-	    lp[1]=trk[2];        
-	    lp[4]=neg[j].GetQ(); //Q
-	    for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
-	    for (Int_t ilab=0;ilab<3;ilab++) milab[ilab] = neg[j].GetLabel(ilab);	  
-	    CheckLabels2(milab);
-	    milab[3]=( j << 10 ) + idet; // pos|neg|det
-      	    Int_t info[3]={0,(Int_t)neg[j].GetNd(),fNlayer[fModule]};
-
-	    lp[2]=0.0022*0.0022;  //SigmaY2
-	    lp[3]=0.110*0.110;  //SigmaZ2
-	    lp[5]=-0.00012; // out-of-diagonal element of covariance matrix
- 	
-	    AliITSRecPoint * cl2;
-	    if(clusters){
-	      cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);	    
-	      cl2->SetChargeRatio(1.);
-	      cl2->SetType(60);	  
-	    }
-	    else{
-	      cl2 = new AliITSRecPoint(milab,lp,info);
-	      cl2->SetChargeRatio(1.);
-	      cl2->SetType(60);
-	      fDetTypeRec->AddRecPoint(*cl2);
-	    }
-	    ncl++;
-	  } // cross is within the detector
-	  //
-	  //--------------
+	  if(cal->IsNChannelBad(ib)) { // check if strip is bad
+	    Float_t yP=neg[j].GetY();	
+	    Float_t xt, zt;
+	    seg->GetPadCxz(yP, 1.*ib, xt, zt);	
+	    
+	    //----------
+	    // bad Nstrip is crossing the Pside 1Dcluster -> create recpoint
+	    // 
+	    if ( (TMath::Abs(xt)<hwSSD+0.01) && (TMath::Abs(zt)<hlSSD+0.01) ) {
+	      Double_t loc[3]={xt,0.,zt},trk[3]={0.,0.,0.};
+	      mT2L->MasterToLocal(loc,trk);
+	      lp[0]=trk[1];
+	      lp[1]=trk[2];        
+	      lp[4]=neg[j].GetQ(); //Q
+	      for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	      for (Int_t ilab=0;ilab<3;ilab++) milab[ilab] = neg[j].GetLabel(ilab);	  
+	      CheckLabels2(milab);
+	      milab[3]=( j << 10 ) + idet; // pos|neg|det
+	      Int_t info[3]={0,(Int_t)neg[j].GetNd(),fNlayer[fModule]};
+	      
+	      lp[2]=0.0022*0.0022;  //SigmaY2
+	      lp[3]=0.110*0.110;  //SigmaZ2
+	      lp[5]=-0.00012; // out-of-diagonal element of covariance matrix
+	      
+	      AliITSRecPoint * cl2;
+	      if(clusters){
+		cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);	    
+		cl2->SetChargeRatio(1.);
+		cl2->SetType(60);	  
+	      }
+	      else{
+		cl2 = new AliITSRecPoint(milab,lp,info);
+		cl2->SetChargeRatio(1.);
+		cl2->SetType(60);
+		fDetTypeRec->AddRecPoint(*cl2);
+	      }
+	      ncl++;
+	    } // cross is within the detector
+	    //
+	    //--------------
+	    
+	  } // bad Nstrip
+	} // end loop over Nstrips
+      } // end loop over Pside 1D clusters
+      
+    } // no bad sides 
+    
+    //---------------------------------------------------------
+    
+    else if( (countPbad>700) && (countNbad<100) ) { // bad Pside!!
+      
+      for (Int_t i=0; i<np; i++) { // loop over Nside 1Dclusters with no crosses
+	if(cnegative[i]) continue; // if intersecting Pside clusters continue;
+	
+	Float_t xt, zt;
+	Float_t yN=pos[i].GetY();	
+	Float_t yP=0.;
+	if (seg->GetLayer()==5) yP = yN + (7.6/1.9);
+	else yP = yN - (7.6/1.9);
+	seg->GetPadCxz(yP, yN, xt, zt);	
+	
+	if ( (TMath::Abs(xt)<hwSSD+0.01) && (TMath::Abs(zt)<hlSSD+0.01) ) {
+	  Double_t loc[3]={xt,0.,zt},trk[3]={0.,0.,0.};
+	  mT2L->MasterToLocal(loc,trk);
+	  lp[0]=trk[1];
+	  lp[1]=trk[2];        
+	  lp[4]=pos[i].GetQ(); //Q
+	  for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	  for (Int_t ilab=0;ilab<3;ilab++) milab[ilab] = pos[i].GetLabel(ilab);	  
+	  CheckLabels2(milab);
+	  milab[3]=( (i<<10) << 10 ) + idet; // pos|neg|det
+	  Int_t info[3] = {(Int_t)pos[i].GetNd(),0,fNlayer[fModule]};
 	  
-	} // bad Nstrip
-      } // end loop over Nstrips
-    } // end loop over Pside 1D clusters
-    
-  } // no bad sides 
-
-  //---------------------------------------------------------
-
-  else if( (countPbad>700) && (countNbad<100) ) { // bad Pside!!
-
-    for (Int_t i=0; i<np; i++) { // loop over Nside 1Dclusters with no crosses
-      if(cnegative[i]) continue; // if intersecting Pside clusters continue;
-      
-      Float_t xt, zt;
-      Float_t yN=pos[i].GetY();	
-      Float_t yP=0.;
-      if (seg->GetLayer()==5) yP = yN + (7.6/1.9);
-      else yP = yN - (7.6/1.9);
-      seg->GetPadCxz(yP, yN, xt, zt);	
+	  lp[2]=0.031*0.031;  //SigmaY2
+	  lp[3]=1.15*1.15;  //SigmaZ2
+	  lp[5]=-0.036;
 	  
-      if ( (TMath::Abs(xt)<hwSSD+0.01) && (TMath::Abs(zt)<hlSSD+0.01) ) {
-	Double_t loc[3]={xt,0.,zt},trk[3]={0.,0.,0.};
-	mT2L->MasterToLocal(loc,trk);
-	lp[0]=trk[1];
-	lp[1]=trk[2];        
-	lp[4]=pos[i].GetQ(); //Q
-	for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
-	for (Int_t ilab=0;ilab<3;ilab++) milab[ilab] = pos[i].GetLabel(ilab);	  
-	CheckLabels2(milab);
-	milab[3]=( (i<<10) << 10 ) + idet; // pos|neg|det
-	Int_t info[3] = {(Int_t)pos[i].GetNd(),0,fNlayer[fModule]};
-
-	lp[2]=0.031*0.031;  //SigmaY2
-	lp[3]=1.15*1.15;  //SigmaZ2
-	lp[5]=-0.036;
-
-	AliITSRecPoint * cl2;
-	if(clusters){
-	  cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);	    
-	  cl2->SetChargeRatio(1.);
-	  cl2->SetType(70);	  
-	}
-	else{
-	  cl2 = new AliITSRecPoint(milab,lp,info);
-	  cl2->SetChargeRatio(1.);
-	  cl2->SetType(70);
-	  fDetTypeRec->AddRecPoint(*cl2);
-	}
-	ncl++;
-      } // cross is within the detector
-      //
-      //--------------
+	  AliITSRecPoint * cl2;
+	  if(clusters){
+	    cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);	    
+	    cl2->SetChargeRatio(1.);
+	    cl2->SetType(70);	  
+	  }
+	  else{
+	    cl2 = new AliITSRecPoint(milab,lp,info);
+	    cl2->SetChargeRatio(1.);
+	    cl2->SetType(70);
+	    fDetTypeRec->AddRecPoint(*cl2);
+	  }
+	  ncl++;
+	} // cross is within the detector
+	//
+	//--------------
+	
+      } // end loop over Nside 1D clusters
       
-    } // end loop over Nside 1D clusters
+    } // bad Pside module
     
-  } // bad Pside module
-  
-  else if( (countNbad>700) && (countPbad<100) ) { // bad Nside!!
+    else if( (countNbad>700) && (countPbad<100) ) { // bad Nside!!
+      
+      for (Int_t j=0; j<nn; j++) { // loop over Pside 1D clusters with no crosses
+	if(cpositive[j]) continue;
+	
+	Float_t xt, zt;
+	Float_t yP=neg[j].GetY();	
+	Float_t yN=0.;
+	if (seg->GetLayer()==5) yN = yP - (7.6/1.9);
+	else yN = yP + (7.6/1.9);
+	seg->GetPadCxz(yP, yN, xt, zt);	
+	
+	if ( (TMath::Abs(xt)<hwSSD+0.01) && (TMath::Abs(zt)<hlSSD+0.01) ) {
+	  Double_t loc[3]={xt,0.,zt},trk[3]={0.,0.,0.};
+	  mT2L->MasterToLocal(loc,trk);
+	  lp[0]=trk[1];
+	  lp[1]=trk[2];        
+	  lp[4]=neg[j].GetQ(); //Q
+	  for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	  for (Int_t ilab=0;ilab<3;ilab++) milab[ilab] = neg[j].GetLabel(ilab);	  
+	  CheckLabels2(milab);
+	  milab[3]=( j << 10 ) + idet; // pos|neg|det
+	  Int_t info[3] = {0,(Int_t)neg[j].GetNd(),fNlayer[fModule]};
+	  
+	  lp[2]=0.0085*0.0085;  //SigmaY2
+	  lp[3]=1.15*1.15;  //SigmaZ2
+	  lp[5]=0.0093;
+	  
+	  AliITSRecPoint * cl2;
+	  if(clusters){
+	    cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);	    
+	    cl2->SetChargeRatio(1.);
+	    cl2->SetType(80);	  
+	  }
+	  else{
+	    cl2 = new AliITSRecPoint(milab,lp,info);
+	    cl2->SetChargeRatio(1.);
+	    cl2->SetType(80);
+	    fDetTypeRec->AddRecPoint(*cl2);
+	  }
+	  ncl++;
+	} // cross is within the detector
+	//
+	//--------------
+	
+      } // end loop over Pside 1D clusters
+      
+    } // bad Nside module
     
-    for (Int_t j=0; j<nn; j++) { // loop over Pside 1D clusters with no crosses
-      if(cpositive[j]) continue;
-      
-      Float_t xt, zt;
-      Float_t yP=neg[j].GetY();	
-      Float_t yN=0.;
-      if (seg->GetLayer()==5) yN = yP - (7.6/1.9);
-      else yN = yP + (7.6/1.9);
-      seg->GetPadCxz(yP, yN, xt, zt);	
-      
-      if ( (TMath::Abs(xt)<hwSSD+0.01) && (TMath::Abs(zt)<hlSSD+0.01) ) {
-	Double_t loc[3]={xt,0.,zt},trk[3]={0.,0.,0.};
-	mT2L->MasterToLocal(loc,trk);
-	lp[0]=trk[1];
-	lp[1]=trk[2];        
-	lp[4]=neg[j].GetQ(); //Q
-	for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
-	for (Int_t ilab=0;ilab<3;ilab++) milab[ilab] = neg[j].GetLabel(ilab);	  
-	CheckLabels2(milab);
-	milab[3]=( j << 10 ) + idet; // pos|neg|det
-	Int_t info[3] = {0,(Int_t)neg[j].GetNd(),fNlayer[fModule]};
-
-	lp[2]=0.0085*0.0085;  //SigmaY2
-	lp[3]=1.15*1.15;  //SigmaZ2
-	lp[5]=0.0093;
-
-	AliITSRecPoint * cl2;
-	if(clusters){
-	  cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);	    
-	  cl2->SetChargeRatio(1.);
-	  cl2->SetType(80);	  
-	}
-	else{
-	  cl2 = new AliITSRecPoint(milab,lp,info);
-	  cl2->SetChargeRatio(1.);
-	  cl2->SetType(80);
-	  fDetTypeRec->AddRecPoint(*cl2);
-	}
-	ncl++;
-      } // cross is within the detector
-      //
-      //--------------
-      
-    } // end loop over Pside 1D clusters
+    //---------------------------------------------------------
     
-  } // bad Nside module
-  
-  //---------------------------------------------------------
-  
+  } // use bad channels
+    
   //cout<<ncl<<" clusters for this module"<<endl;
 
   delete [] cnegative;
