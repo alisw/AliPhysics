@@ -1,13 +1,15 @@
+/////////////////////////////////////////////////////
+// AliAnalysisTaskFlowEvent:
+// analysis task to fill the flow event 
+// and make it available to the flow analysis methods.
+//////////////////////////////////////////////////////
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice */
 /* $Id: $ */
 
 #ifndef AliAnalysisTaskFlowEvent_H
 #define AliAnalysisTaskFlowEvent_H
-
-// AliAnalysisTaskFlowEvent:
-// analysis task to fill the flow event and make it available to the methods
-
 
 class AliESDEvent;
 class AliAODEvent;
@@ -33,6 +35,12 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
 
   void SetAnalysisType(TString type) { this->fAnalysisType = type; }
   TString GetAnalysisType() const    { return this->fAnalysisType; }
+
+  void    SetMinMult(Int_t multmin)    {this->fMinMult = multmin; }
+  Int_t   GetMinMult() const           {return this->fMinMult; }
+  void    SetMaxMult(Int_t multmax)    {this->fMaxMult = multmax; }
+  Int_t   GetMaxMult() const           {return this->fMaxMult; }
+  
 
   void          SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
   AliCFManager* GetCFManager1()           {return this->fCFManager1; }
@@ -72,6 +80,8 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTask {
   AliCFManager* fCFManager2;              // correction framework manager
   TList*        fQAInt;                   // QA histogram list
   TList*        fQADiff;                  // QA histogram list
+  Int_t         fMinMult;                 // Minimum multiplicity from tracks selected using CORRFW
+  Int_t         fMaxMult;                 // Maximum multiplicity from tracks selected using CORRFW 
   Bool_t fQA;                             // flag to set the filling of the QA hostograms
   // values afterburner
   Double_t  fMCReactionPlaneAngle;   // the angle of the reaction plane from the MC truth

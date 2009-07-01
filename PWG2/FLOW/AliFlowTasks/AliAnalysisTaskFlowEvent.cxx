@@ -13,6 +13,18 @@
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 
+////////////////////////////////////////////////////
+// AliAnalysisTaskFlowEvent:
+//
+// analysis task for filling the flow event
+// from MCEvent, ESD, AOD ....
+// and put it in an output stream so it can 
+// be used by the various flow analysis methods 
+// for cuts the correction framework is used
+// which also outputs QA histograms to view
+// the effects of the cuts
+////////////////////////////////////////////////////
+
 #include "Riostream.h" //needed as include
 #include "TChain.h"
 #include "TTree.h"
@@ -50,16 +62,6 @@ class AliAnalysisTask;
 
 #include "AliAnalysisTaskFlowEvent.h"
 
-// AliAnalysisTaskFlowEvent:
-//
-// analysis task for filling the flow event
-// from MCEvent, ESD, AOD ....
-// and put it in an output stream so it can 
-// be used by the various flow analysis methods 
-// for cuts the correction framework is used
-// which also outputs QA histrograms to view
-// the effects of the cuts
-
 
 ClassImp(AliAnalysisTaskFlowEvent)
   
@@ -75,6 +77,8 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on) 
   fCFManager2(NULL),
   fQAInt(NULL),
   fQADiff(NULL),
+  fMinMult(0),
+  fMaxMult(10000000),
   fQA(on),
   fMCReactionPlaneAngle(0.),
   fCount(0),
@@ -112,6 +116,8 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fCFManager2(NULL),
   fQAInt(NULL),
   fQADiff(NULL),
+  fMinMult(0),
+  fMaxMult(10000000),
   fQA(kFALSE),
   fMCReactionPlaneAngle(0.),
   fCount(0),
@@ -138,6 +144,8 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, 
   fCFManager2(NULL),
   fQAInt(NULL),
   fQADiff(NULL),
+  fMinMult(0),
+  fMaxMult(10000000),
   fQA(on),
   fMCReactionPlaneAngle(0.),
   fCount(0),
@@ -281,18 +289,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   //else {cout<<"No eventHandler!"<<endl; }
   
   // set the value of the monte carlo event plane for the flow event
-  //RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-  // paste setters from AliFlowEventSimpleMaker.cxx
-  //RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-//  TRandom3 random3Temp2; //init for manual settings (R.Rietkerk)
-//  TTimeStamp dt2;
-//  Int_t sseed2 = dt2.GetNanoSec()/1000;
-//  random3Temp2.SetSeed(sseed2);
-//  cout << "seed2   = " << sseed2 << endl;
-//  cout << "random2 = " << random3Temp2.Rndm() << endl;
-  //RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-  cout << "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR" << endl;
-  cout << "TaskFlowEvent.cxx" << endl;
+  cout << "settings for afterburner in TaskFlowEvent.cxx:" << endl;
   cout << "fCount" << fCount << endl;
   cout << "fNoOfLoops" << fNoOfLoops << endl;
   cout << "fEllipticFlowValue" << fEllipticFlowValue << endl;
@@ -300,7 +297,6 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   cout << "fMultiplicityOfEvent" << fMultiplicityOfEvent << endl;
   cout << "fSigmaMultiplicityOfEvent" << fSigmaMultiplicityOfEvent << endl;
   
-  cout << "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR" << endl;  
   Double_t xRPangle=TMath::TwoPi()*(fMyTRandom3->Rndm());
   Double_t xNewFlowValue = fMyTRandom3->Gaus(fEllipticFlowValue,fSigmaEllipticFlowValue);
   Int_t nNewMultOfEvent = fMyTRandom3->Gaus(fMultiplicityOfEvent,fSigmaMultiplicityOfEvent);
@@ -308,17 +304,20 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   cout << "xRPangle = " << xRPangle << endl;
   cout << "xNewFlowValue = " << xNewFlowValue << endl;
   cout << "nNewMultOfEvent = " << nNewMultOfEvent << endl;
-  cout << "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR" << endl;  
-  //Int_t nNewMultOfEvent = random3Temp.Gaus(nMultiplicityOfEvent,nSigmaMult);
-	//  cout << "new multiplicity: " << nNewMultOfEvent << endl;
- 	//Double_t xNewFlowValue = random3Temp.Gaus(xEllipticFlowValue,xSigmaFlow);
-	//  cout << "new flow value: " << xNewFlowValue << endl;
-  //fEventMaker->SetMCReactionPlaneAngle(fRP);  
-  fEventMaker->SetMCReactionPlaneAngle(xRPangle);
+  cout << "settings for after burner" << endl;  
+
+  fEventMaker->SetMCReactionPlaneAngle(fRP);
+  if (fEllipticFlowValue != 0.) {
+    fEventMaker->SetMCReactionPlaneAngle(xRPangle);
+  }  
   fEventMaker->SetNoOfLoops(fNoOfLoops);
-	fEventMaker->SetEllipticFlowValue(xNewFlowValue);
-	fEventMaker->SetMultiplicityOfEvent(nNewMultOfEvent);  
-  //RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+  fEventMaker->SetEllipticFlowValue(xNewFlowValue);
+  fEventMaker->SetMultiplicityOfEvent(nNewMultOfEvent);  
+  //end settings afterburner
+
+  //setting event cuts
+  fEventMaker->SetMinMult(fMinMult);
+  fEventMaker->SetMaxMult(fMaxMult);
   
   // Fill the FlowEventSimple for MC input          
   if (fAnalysisType == "MC") {
