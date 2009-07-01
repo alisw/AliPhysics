@@ -31,4 +31,6 @@
 #pragma link C++ class AliFemtoCorrFctnDirectYlm;
 #pragma link C++ class AliFemtoModelCorrFctnDirectYlm;
 #pragma link C++ class AliFemtoCorrFctnTPCNcls;
+#pragma link C++ class AliFemtoCorrFctnDEtaDPhi;
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDG;
+#pragma link C++ class AliFemtoCutMonitorParticleEtCorr;

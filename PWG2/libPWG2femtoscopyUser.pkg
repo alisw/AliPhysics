@@ -27,7 +27,9 @@ SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnDirectYlm.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnDirectYlm.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCutMonitorParticlePtPDG.cxx \
-      FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnTPCNcls.cxx
+      FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnTPCNcls.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnDEtaDPhi.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoCutMonitorParticleEtCorr.cxx
 
 #      FEMTOSCOPY/AliFemtoUser/AliFemtoEventReaderESDKine.cxx \
 #      FEMTOSCOPY/AliFemtoUser/AliFemtoEventReaderAllESDKine.cxx \
