@@ -226,10 +226,12 @@ delete stream;
 #include "AliTPCAltroMapping.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCRawStream.h"
+#include "AliTPCRawStreamV3.h"
 #include "AliTPCRecoParam.h"
 #include "AliTPCReconstructor.h"
 #include "AliRawReader.h"
 #include "AliTPCCalROC.h"
+#include "AliRawEventHeaderBase.h"
 
 ClassImp(AliTPCclustererKr)
 
@@ -260,7 +262,8 @@ AliTPCclustererKr::AliTPCclustererKr()
   fHistoRow(0),
   fHistoPad(0),
   fHistoTime(0),
-  fHistoRowPad(0)
+  fHistoRowPad(0),
+  fTimeStamp(0)
 {
 //
 // default constructor
@@ -293,7 +296,8 @@ AliTPCclustererKr::AliTPCclustererKr(const AliTPCclustererKr &param)
   fHistoRow(0),
   fHistoPad(0),
   fHistoTime(0),
-  fHistoRowPad(0)
+  fHistoRowPad(0),
+  fTimeStamp(0)
 {
 //
 // copy constructor
@@ -323,7 +327,7 @@ AliTPCclustererKr::AliTPCclustererKr(const AliTPCclustererKr &param)
   fHistoPad    = param.fHistoPad  ;
   fHistoTime   = param.fHistoTime;
   fHistoRowPad = param.fHistoRowPad;
-
+  fTimeStamp = param.fTimeStamp;
 
 } 
 
@@ -357,6 +361,7 @@ AliTPCclustererKr & AliTPCclustererKr::operator = (const AliTPCclustererKr & par
   fHistoPad    = param.fHistoPad  ;
   fHistoTime   = param.fHistoTime;
   fHistoRowPad = param.fHistoRowPad;
+  fTimeStamp = param.fTimeStamp;
   return (*this);
 }
 
@@ -427,39 +432,219 @@ Int_t AliTPCclustererKr::FinderIO()
   return 0;
 }
 
+
+
 Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
 {
   // Krypton cluster finder for the TPC raw data
-  //
+  // this method is unsing AliAltroRawStreamV3
   // fParam must be defined before
-
+  
   if(rawReader)fRawData=kTRUE; //set flag to data
-
+  
   if (!fOutput) {
     Error("Digits2Clusters", "output tree not initialised");
     return 11;
   }
-
+  
   fParam->SetMaxTBin(fRecoParam->GetLastBin());//set number of timebins from reco -> param
   //   used later for memory allocation
 
-  Bool_t isAltro=kFALSE;
+  AliRawEventHeaderBase* eventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
+  if (eventHeader){
+    fTimeStamp = eventHeader->Get("Timestamp");
+  }
 
+
+  Bool_t isAltro=kFALSE;
+  
+  AliTPCROC * roc = AliTPCROC::Instance();
+  AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
+  AliTPCAltroMapping** mapping =AliTPCcalibDB::Instance()->GetMapping();
+  //
+  AliTPCRawStreamV3 input(rawReader,(AliAltroMapping**)mapping);
+  
+  const Int_t kNIS = fParam->GetNInnerSector();//number of inner sectors
+  const Int_t kNOS = fParam->GetNOuterSector();//number of outer sectors
+  const Int_t kNS = kNIS + kNOS;//all sectors
+  
+  
+  //crate TPC view
+  AliTPCDigitsArray *digarr=new AliTPCDigitsArray(kFALSE);//data not sim
+  digarr->Setup(fParam);//as usually parameters
+  
+  for(Int_t iSec = 0; iSec < kNS; iSec++) {
+    AliTPCCalROC * noiseROC;
+    AliTPCCalROC noiseDummy(iSec);
+    if(noiseTPC==0x0){
+      noiseROC = &noiseDummy;//noise=0
+    }else{
+      noiseROC = noiseTPC->GetCalROC(iSec);  // noise per given sector
+    }
+    Int_t nRows = 0; //number of rows in sector
+    Int_t nDDLs = 0; //number of DDLs
+    Int_t indexDDL = 0; //DDL index
+    if (iSec < kNIS) {
+      nRows = fParam->GetNRowLow();
+      nDDLs = 2;
+      indexDDL = iSec * 2;
+    }else {
+      nRows = fParam->GetNRowUp();
+      nDDLs = 4;
+      indexDDL = (iSec-kNIS) * 4 + kNIS * 2;
+    }
+    
+    //
+    // Load the raw data for corresponding DDLs
+    //
+    rawReader->Reset();
+    rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
+      
+    
+    while (input.NextDDL()){
+      // Allocate memory for rows in sector (pads(depends on row) x timebins)
+      if (!digarr->GetRow(iSec,0)){
+        for(Int_t iRow = 0; iRow < nRows; iRow++) {
+          digarr->CreateRow(iSec,iRow);
+        }//end loop over rows
+      }
+      //loop over pads
+      while ( input.NextChannel() ) {
+        Int_t iRow = input.GetRow();
+        Int_t iPad = input.GetPad();
+        //check row consistency
+        if (iRow < 0 ) continue;
+        if (iRow < 0 || iRow >= nRows){
+          AliError(Form("Pad-row index (%d) outside the range (%d -> %d) !",
+                        iRow, 0, nRows -1));
+          continue;
+        }
+        
+      //check pad consistency
+        if (iPad < 0 || iPad >= (Int_t)(roc->GetNPads(iSec,iRow))) {
+          AliError(Form("Pad index (%d) outside the range (%d -> %d) !",
+                        iPad, 0, roc->GetNPads(iSec,iRow) ));
+          continue;
+        }
+        
+      //loop over bunches
+        while ( input.NextBunch() ){
+          Int_t  startTbin    = (Int_t)input.GetStartTimeBin();
+          Int_t  bunchlength  = (Int_t)input.GetBunchLength();
+          const UShort_t *sig = input.GetSignals();
+          isAltro=kTRUE;
+          for (Int_t iTime = 0; iTime<bunchlength; iTime++){
+            Int_t iTimeBin=startTbin-iTime;
+            //
+            if(fDebugLevel==72){
+              fHistoRow->Fill(iRow);
+              fHistoPad->Fill(iPad);
+              fHistoTime->Fill(iTimeBin);
+              fHistoRowPad->Fill(iPad,iRow);
+            }else if(fDebugLevel>=0&&fDebugLevel<72){
+              if(iSec==fDebugLevel){
+                fHistoRow->Fill(iRow);
+                fHistoPad->Fill(iPad);
+                fHistoTime->Fill(iTimeBin);
+                fHistoRowPad->Fill(iPad,iRow);
+              }
+            }else if(fDebugLevel==73){
+              if(iSec<36){
+                fHistoRow->Fill(iRow);
+                fHistoPad->Fill(iPad);
+                fHistoTime->Fill(iTimeBin);
+                fHistoRowPad->Fill(iPad,iRow);
+              }
+            }else if(fDebugLevel==74){
+              if(iSec>=36){
+                fHistoRow->Fill(iRow);
+                fHistoPad->Fill(iPad);
+                fHistoTime->Fill(iTimeBin);
+                fHistoRowPad->Fill(iPad,iRow);
+              }
+            }
+            
+            //check time consistency
+            if ( iTimeBin < fRecoParam->GetFirstBin() || iTimeBin >= fRecoParam->GetLastBin()){
+              //cout<<iTimeBin<<endl;
+              continue;
+              AliFatal(Form("Timebin index (%d) outside the range (%d -> %d) !",
+                            iTimeBin, 0, fRecoParam->GetLastBin() -1));
+            }
+            //signal
+            Float_t signal=(Float_t)sig[iTime];
+            if (signal <= fZeroSup ||
+                iTimeBin < fFirstBin ||
+                iTimeBin > fLastBin
+               ) {
+                 digarr->GetRow(iSec,iRow)->SetDigitFast(0,iTimeBin,iPad);
+                 continue;
+               }
+            if (!noiseROC) continue;
+            Double_t noiseOnPad = noiseROC->GetValue(iRow,iPad);//noise on given pad and row in sector
+            if (noiseOnPad > fMaxNoiseAbs){
+              digarr->GetRow(iSec,iRow)->SetDigitFast(0,iTimeBin,iPad);
+              continue; // consider noisy pad as dead
+            }
+            if(signal <= fMaxNoiseSigma * noiseOnPad){
+              digarr->GetRow(iSec,iRow)->SetDigitFast(0,iTimeBin,iPad);
+              continue;
+            }
+            digarr->GetRow(iSec,iRow)->SetDigitFast(TMath::Nint(signal),iTimeBin,iPad);
+          }// end loop signals in bunch
+        }// end loop bunches
+      } // end loop pads
+    }// end ddl loop
+  }// end sector loop
+  SetDigArr(digarr);
+  if(isAltro) FindClusterKrIO();
+  delete digarr;
+  
+  return 0;
+}
+
+
+
+
+
+Int_t AliTPCclustererKr::FinderIOold(AliRawReader* rawReader)
+{
+  // Krypton cluster finder for the TPC raw data
+  //
+  // fParam must be defined before
+  
+  if(rawReader)fRawData=kTRUE; //set flag to data
+  
+  if (!fOutput) {
+    Error("Digits2Clusters", "output tree not initialised");
+    return 11;
+  }
+  
+  fParam->SetMaxTBin(fRecoParam->GetLastBin());//set number of timebins from reco -> param
+  //   used later for memory allocation
+
+  AliRawEventHeaderBase* eventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
+  if (eventHeader){
+    fTimeStamp = eventHeader->Get("Timestamp");
+  }
+  
+  Bool_t isAltro=kFALSE;
+  
   AliTPCROC * roc = AliTPCROC::Instance();
   AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
   AliTPCAltroMapping** mapping =AliTPCcalibDB::Instance()->GetMapping();
   //
   AliTPCRawStream input(rawReader,(AliAltroMapping**)mapping);
-
+  
   const Int_t kNIS = fParam->GetNInnerSector();//number of inner sectors
   const Int_t kNOS = fParam->GetNOuterSector();//number of outer sectors
   const Int_t kNS = kNIS + kNOS;//all sectors
-
-
+  
+  
   //crate TPC view
   AliTPCDigitsArray *digarr=new AliTPCDigitsArray(kFALSE);//data not sim
   digarr->Setup(fParam);//as usually parameters
-
+  
   //
   // Loop over sectors
   //
@@ -483,23 +668,23 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
       nDDLs = 4;
       indexDDL = (iSec-kNIS) * 4 + kNIS * 2;
     }
-
+    
     //
     // Load the raw data for corresponding DDLs
     //
     rawReader->Reset();
     rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
-
+    
     if(input.Next()) {
       isAltro=kTRUE;
       // Allocate memory for rows in sector (pads(depends on row) x timebins)
       for(Int_t iRow = 0; iRow < nRows; iRow++) {
-	digarr->CreateRow(iSec,iRow); 
+        digarr->CreateRow(iSec,iRow);
       }//end loop over rows
     }
     rawReader->Reset();
     rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
-
+    
     //
     // Begin loop over altro data
     //
@@ -507,91 +692,91 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
       
       //check sector consistency
       if (input.GetSector() != iSec)
-	AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",iSec,input.GetSector()));
+        AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",iSec,input.GetSector()));
       
       Int_t iRow = input.GetRow();
       Int_t iPad = input.GetPad();
       Int_t iTimeBin = input.GetTime();
-
+      
       //
       if(fDebugLevel==72){
-	fHistoRow->Fill(iRow);
-	fHistoPad->Fill(iPad);
-	fHistoTime->Fill(iTimeBin);
-	fHistoRowPad->Fill(iPad,iRow);
+        fHistoRow->Fill(iRow);
+        fHistoPad->Fill(iPad);
+        fHistoTime->Fill(iTimeBin);
+        fHistoRowPad->Fill(iPad,iRow);
       }else if(fDebugLevel>=0&&fDebugLevel<72){
-	if(iSec==fDebugLevel){
-	  fHistoRow->Fill(iRow);
-	  fHistoPad->Fill(iPad);
-	  fHistoTime->Fill(iTimeBin);
-	  fHistoRowPad->Fill(iPad,iRow);
-	}
+        if(iSec==fDebugLevel){
+          fHistoRow->Fill(iRow);
+          fHistoPad->Fill(iPad);
+          fHistoTime->Fill(iTimeBin);
+          fHistoRowPad->Fill(iPad,iRow);
+        }
       }else if(fDebugLevel==73){
-	if(iSec<36){
-	  fHistoRow->Fill(iRow);
-	  fHistoPad->Fill(iPad);
-	  fHistoTime->Fill(iTimeBin);
-	  fHistoRowPad->Fill(iPad,iRow);
-	}
+        if(iSec<36){
+          fHistoRow->Fill(iRow);
+          fHistoPad->Fill(iPad);
+          fHistoTime->Fill(iTimeBin);
+          fHistoRowPad->Fill(iPad,iRow);
+        }
       }else if(fDebugLevel==74){
-	if(iSec>=36){
-	  fHistoRow->Fill(iRow);
-	  fHistoPad->Fill(iPad);
-	  fHistoTime->Fill(iTimeBin);
-	  fHistoRowPad->Fill(iPad,iRow);
-	}
+        if(iSec>=36){
+          fHistoRow->Fill(iRow);
+          fHistoPad->Fill(iPad);
+          fHistoTime->Fill(iTimeBin);
+          fHistoRowPad->Fill(iPad,iRow);
+        }
       }
-
+      
       //check row consistency
       if (iRow < 0 ) continue;
       if (iRow < 0 || iRow >= nRows){
-	AliError(Form("Pad-row index (%d) outside the range (%d -> %d) !",
-		      iRow, 0, nRows -1));
-	continue;
+        AliError(Form("Pad-row index (%d) outside the range (%d -> %d) !",
+                      iRow, 0, nRows -1));
+        continue;
       }
-
+      
       //check pad consistency
       if (iPad < 0 || iPad >= (Int_t)(roc->GetNPads(iSec,iRow))) {
-	AliError(Form("Pad index (%d) outside the range (%d -> %d) !",
-		      iPad, 0, roc->GetNPads(iSec,iRow) ));
-	continue;
+        AliError(Form("Pad index (%d) outside the range (%d -> %d) !",
+                      iPad, 0, roc->GetNPads(iSec,iRow) ));
+        continue;
       }
-
+      
       //check time consistency
       if ( iTimeBin < fRecoParam->GetFirstBin() || iTimeBin >= fRecoParam->GetLastBin()){
-	//cout<<iTimeBin<<endl;
-	continue;
-	AliFatal(Form("Timebin index (%d) outside the range (%d -> %d) !",
-		      iTimeBin, 0, fRecoParam->GetLastBin() -1));
+  //cout<<iTimeBin<<endl;
+        continue;
+        AliFatal(Form("Timebin index (%d) outside the range (%d -> %d) !",
+                      iTimeBin, 0, fRecoParam->GetLastBin() -1));
       }
-
+      
       //signal
       Int_t signal = input.GetSignal();
-      if (signal <= fZeroSup || 
-	  iTimeBin < fFirstBin ||
-	  iTimeBin > fLastBin
-	  ) {
-	digarr->GetRow(iSec,iRow)->SetDigitFast(0,iTimeBin,iPad);
-	continue;
-      }
+      if (signal <= fZeroSup ||
+          iTimeBin < fFirstBin ||
+          iTimeBin > fLastBin
+         ) {
+           digarr->GetRow(iSec,iRow)->SetDigitFast(0,iTimeBin,iPad);
+           continue;
+         }
       if (!noiseROC) continue;
       Double_t noiseOnPad = noiseROC->GetValue(iRow,iPad);//noise on given pad and row in sector
       if (noiseOnPad > fMaxNoiseAbs){
-	digarr->GetRow(iSec,iRow)->SetDigitFast(0,iTimeBin,iPad);
-	continue; // consider noisy pad as dead
+        digarr->GetRow(iSec,iRow)->SetDigitFast(0,iTimeBin,iPad);
+        continue; // consider noisy pad as dead
       }
       if(signal <= fMaxNoiseSigma * noiseOnPad){
-	digarr->GetRow(iSec,iRow)->SetDigitFast(0,iTimeBin,iPad);
-	continue;
+        digarr->GetRow(iSec,iRow)->SetDigitFast(0,iTimeBin,iPad);
+        continue;
       }
-      digarr->GetRow(iSec,iRow)->SetDigitFast(signal,iTimeBin,iPad);      
+      digarr->GetRow(iSec,iRow)->SetDigitFast(signal,iTimeBin,iPad);
     }//end of loop over altro data
   }//end of loop over sectors
   
   SetDigArr(digarr);
   if(isAltro) FindClusterKrIO();
   delete digarr;
-
+  
   return 0;
 }
 
@@ -906,6 +1091,8 @@ void AliTPCclustererKr::MakeClusters(TObjArray * maximaInSector, Int_t iSec, Int
     
     clusterKr.SetRMS();//Set pad,row,timebin RMS
     clusterKr.Set1D();//Set size in pads and timebins
+
+    clusterKr.SetTimeStamp(fTimeStamp);
 
     clusterCounter++;
     

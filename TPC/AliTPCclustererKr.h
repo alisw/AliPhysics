@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliTPCclusterKr.h,v 1.8 2008/02/07 16:07:15 matyja Exp $ */
+/* $Id: AliTPCclustererKr.h,v 1.8 2008/02/07 16:07:15 matyja Exp $ */
 
 //-------------------------------------------------------
 //                    TPC Kr Clusterer Class
@@ -38,6 +38,7 @@ class AliTPCReconstructor;
 class AliRawReader;
 class AliTPCCalROC;
 class TTreeSRedirector;
+class AliRawEventHeaderBase;
 //_____________________________________________________________________________
 class AliTPCclustererKr: public TObject{
 public:
@@ -49,6 +50,7 @@ public:
   //finders
   virtual Int_t FinderIO();//for MC
   virtual Int_t FinderIO(AliRawReader* rawReader);//for data
+  virtual Int_t FinderIOold(AliRawReader* rawReader);//for data
   virtual Int_t FindClusterKrIO();//main routine for finding clusters
   virtual void CleanSector(Int_t sector); // clean isolated digits
 
@@ -61,7 +63,7 @@ public:
   virtual void SetDigArr(AliTPCDigitsArray *digarr){fDigarr=digarr;}//set current array of digits
   virtual void SetRecoParam(AliTPCRecoParam *recoParam=0);//set reconstruction parameters
 
-
+  virtual void SetTimeStamp(UInt_t timestamp){ fTimeStamp = timestamp; }
 
   //setters for cluster finder parameters
   virtual void SetZeroSup(Int_t v){fZeroSup=v;}//set zero suppresion parameter
@@ -118,6 +120,8 @@ public:
   TH1F * GetHistoTime(){return fHistoTime;}
   TH2F * GetHistoRowPad(){return fHistoRowPad;}
 
+  UInt_t GetTimeStamp() const {return fTimeStamp;}
+
 private:
   void MakeClusters(TObjArray * maximaInSector, Int_t iSec, Int_t &clusterCounter);
   Bool_t fRawData; //flag =0 for MC =1 for real data
@@ -156,10 +160,9 @@ private:
   TH1F *fHistoTime;//!debug histo for timebins
   TH2F *fHistoRowPad;//!debug histo for rows and pads
 
-  ClassDef(AliTPCclustererKr,6)  // Time Projection Chamber Kr clusters
+  UInt_t fTimeStamp; //!time stamp from event header
+  ClassDef(AliTPCclustererKr,7)  // Time Projection Chamber Kr clusters
 };
 
 
 #endif
-
-
