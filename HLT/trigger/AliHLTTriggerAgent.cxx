@@ -24,10 +24,14 @@
 
 #include <cassert>
 #include "AliHLTTriggerAgent.h"
+#include "TObjString.h"
+#include "TObjArray.h"
 
 // header files of library components
 #include "AliHLTEventSummaryProducerComponent.h"
 #include "AliHLTRunSummaryProducerComponent.h"
+#include "AliHLTTriggerBarrelMultiplicity.h"
+#include "AliHLTTriggerBarrelCosmic.h"
 #include "AliHLTGlobalTriggerComponent.h"
 
 /** global instance for agent registration */
@@ -58,7 +62,82 @@ int AliHLTTriggerAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
   assert(pHandler);
   if (!pHandler) return -EINVAL;
   pHandler->AddComponent(new AliHLTGlobalTriggerComponent);
+  pHandler->AddComponent(new AliHLTTriggerBarrelMultiplicity);
+  pHandler->AddComponent(new AliHLTTriggerBarrelCosmic);
   return 0;
+}
+
+int AliHLTTriggerAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler,
+					    AliRawReader* /*rawReader*/,
+					    AliRunLoader* /*runloader*/) const
+{
+  // see header file for class documentation
+  if (!pHandler) return -EINVAL;
+
+  TString triggerInputs;
+  TString triggerOutputs;
+  TString configurationId;
+  /////////////////////////////////////////////////////////////////////////////////////
+  //
+  // a central barrel charged particle multiplicity trigger
+  configurationId="TRIGGER-Barrel-Multiplicity";
+
+  // define the inputsfor the BarrelMultiplicityTrigger
+  triggerInputs="GLOBAL-esd-converter";
+
+  // check for the availibility
+  TObjArray* pTokens=triggerInputs.Tokenize(" ");
+  triggerInputs="";
+  if (pTokens) {
+    for (int n=0; n<pTokens->GetEntriesFast(); n++) {
+      TString module=((TObjString*)pTokens->At(n))->GetString();
+      if (pHandler->FindConfiguration(module.Data())) {
+	triggerInputs+=module;
+	triggerInputs+=" ";
+      }
+    }
+    delete pTokens;
+  }
+
+  if (triggerInputs.Length()>0) {
+    HLTInfo("Configuring inputs for %s: %s", configurationId.Data(), triggerInputs.Data());
+    pHandler->CreateConfiguration(configurationId.Data(), "BarrelMultiplicityTrigger", triggerInputs.Data(), "");
+    if (triggerOutputs.Length()>0) triggerOutputs+=" ";
+    triggerOutputs+=configurationId;
+  } else {
+    HLTWarning("No inputs for %s found, skipping component", configurationId.Data());
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////
+  //
+  // the global trigger component
+  configurationId="GLOBAL-Trigger";
+  HLTInfo("setting inputs for %s: %s", configurationId.Data(), triggerOutputs.IsNull()?"none":triggerOutputs.Data());
+  pHandler->CreateConfiguration(configurationId.Data(), "HLTGlobalTrigger", triggerOutputs.Data(), "");
+  
+  return 0;
+}
+
+const char* AliHLTTriggerAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
+						    AliRunLoader* runloader) const
+{
+  // see header file for class documentation
+  if (runloader) {
+    // reconstruction chains for AliRoot simulation
+    // Note: run loader is only available while running embedded into
+    // AliRoot simulation
+
+    // currently disabled due to a problem compiling the runtime trigger library
+    //return "GLOBAL-Trigger";
+  }
+  return NULL;
+}
+
+const char* AliHLTTriggerAgent::GetRequiredComponentLibraries() const
+{
+  // see header file for class documentation
+
+  return "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so libAliHLTITS.so libAliHLTGlobal.so";
 }
 
 int AliHLTTriggerAgent::GetHandlerDescription(AliHLTComponentDataType dt,
