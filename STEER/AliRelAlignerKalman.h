@@ -68,6 +68,7 @@ public:
     TMatrixDSym* GetStateCov() const { return fPXcov; }
     void GetSeed( TVectorD& seed, TMatrixDSym& seedCov ) const { seed = *fPX; seedCov = *fPXcov; }
     void SetSeed( const TVectorD& seed, const TMatrixDSym& seedCov ) {*fPX = seed; *fPXcov = seedCov; }
+    Bool_t Merge( const AliRelAlignerKalman* al );
 
     //Expert methods:
     Bool_t AddESDevent( const AliESDEvent* pEvent );
@@ -111,11 +112,14 @@ public:
     static void RotMat( TMatrixD& R, const TVectorD& angles );
     static void TMatrixDSymFromTMatrixD( TMatrixDSym& matsym, const TMatrixD& mat );
     Bool_t IsPositiveDefinite( const TMatrixD& mat ) const;
+    void SetTimeStamp( const UInt_t ts ) { fTimeStamp = ts; }
+    UInt_t GetTimeStamp() const {return fTimeStamp;}
     
 protected:
     Bool_t UpdateEstimateKalman();
     Bool_t PrepareMeasurement();
     Bool_t PrepareSystemMatrix();
+    Bool_t PreparePrediction();
     Bool_t PredictMeasurement( TVectorD& z, const TVectorD& x );
     Bool_t IsOutlier( const TVectorD& update, const TMatrixDSym& covmatrix );
 
@@ -129,7 +133,7 @@ private:
     Double_t fLocalX;      //!local x coordinate of reference plane = r(global)
     AliExternalTrackParam* fPTrackParamArr1;   //!local track parameters
     AliExternalTrackParam* fPTrackParamArr2;   //!local track parameters
-    Double_t fMagField; //magnetic field
+    Double_t fMagField; //!magnetic field
 
     //Kalman filter related stuff
     TVectorD* fPX; //System (fit) parameters (phi, theta, psi, x, y, z, driftcorr, driftoffset )
@@ -138,20 +142,21 @@ private:
     Double_t fQ;        //!measure for system noise
     TVectorD* fPMeasurement; //!the measurement vec for Kalman filter (theta,phi,x,z)
     TMatrixDSym* fPMeasurementCov; //!measurement vec cvariance
+    TVectorD* fPMeasurementPrediction; //!prediction of the measurement
     Double_t fOutRejSigmas; //number of sigmas for outlier rejection
     Double_t* fDelta; //array with differentials for calculating derivatives for every parameter(see PrepareSystemMatrix())
 
     //Control
-    Bool_t fNumericalParanoia; //whether to perform additional checks for numerical stability
-    Bool_t fRejectOutliers; //whether to do outlier rejection in the Kalman filter
-    Bool_t fRequireMatchInTPC;  //when looking for a cosmic in event, require that TPC has 2 matching segments
-    Bool_t fCuts;    //track cuts?
-    Int_t fMinPointsVol1;   //mininum number of points in volume 1
-    Int_t fMinPointsVol2;   //mininum number of points in volume 2
-    Double_t fMinMom;       //min momentum of track for track cuts
-    Double_t fMaxMom;       //max momentum of track for track cuts
-    Double_t fMaxMatchingAngle; //cuts
-    Double_t fMaxMatchingDistance; //cuts
+    Bool_t fNumericalParanoia; //!whether to perform additional checks for numerical stability
+    Bool_t fRejectOutliers; //!whether to do outlier rejection in the Kalman filter
+    Bool_t fRequireMatchInTPC;  //!when looking for a cosmic in event, require that TPC has 2 matching segments
+    Bool_t fCuts;    //!track cuts?
+    Int_t fMinPointsVol1;   //!mininum number of points in volume 1
+    Int_t fMinPointsVol2;   //!mininum number of points in volume 2
+    Double_t fMinMom;       //!min momentum of track for track cuts
+    Double_t fMaxMom;       //!max momentum of track for track cuts
+    Double_t fMaxMatchingAngle; //!cuts
+    Double_t fMaxMatchingDistance; //!cuts
     Bool_t fCorrectionMode; //calculate corrective transform for TPC (or monitor actual TPC misal params)
     
     //Counters
@@ -161,7 +166,8 @@ private:
     Int_t fNMatchedCosmics; //number of cosmic events with matching tracklets (good cosmics)
     Int_t fNMatchedTPCtracklets;//number of cosmic events with 2 matching TPC tracklets
     Int_t fNProcessedEvents; //number of processed events
-    Int_t fTrackInBuffer; //number of tracks in buffer
+    Int_t fTrackInBuffer; //!number of tracks in buffer
+    UInt_t fTimeStamp;
 
     //TPC stuff
     Double_t fTPCvd; //TPC drift velocity

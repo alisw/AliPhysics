@@ -103,6 +103,7 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fQ(1.e-15),
     fPMeasurement(new TVectorD( fgkNMeasurementParams )),
     fPMeasurementCov(new TMatrixDSym( fgkNMeasurementParams )),
+    fPMeasurementPrediction(new TVectorD( fgkNMeasurementParams )),
     fOutRejSigmas(1.),
     fDelta(new Double_t[fgkNSystemParams]),
     fNumericalParanoia(kTRUE),
@@ -123,6 +124,7 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fNMatchedTPCtracklets(0),
     fNProcessedEvents(0),
     fTrackInBuffer(0),
+    fTimeStamp(0),
     fTPCvd(2.64),
     fTPCZLengthA(2.4972500e02),
     fTPCZLengthC(2.4969799e02)
@@ -147,6 +149,7 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
     fQ(a.fQ),
     fPMeasurement(new TVectorD( *a.fPMeasurement )),
     fPMeasurementCov(new TMatrixDSym( *a.fPMeasurementCov )),
+    fPMeasurementPrediction(new TVectorD( *a.fPMeasurement )),
     fOutRejSigmas(a.fOutRejSigmas),
     fDelta(new Double_t[fgkNSystemParams]),
     fNumericalParanoia(a.fNumericalParanoia),
@@ -167,6 +170,7 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
     fNMatchedTPCtracklets(a.fNMatchedTPCtracklets),
     fNProcessedEvents(a.fNProcessedEvents),
     fTrackInBuffer(a.fTrackInBuffer),
+    fTimeStamp(a.fTimeStamp),
     fTPCvd(a.fTPCvd),
     fTPCZLengthA(a.fTPCZLengthA),
     fTPCZLengthC(a.fTPCZLengthC)
@@ -223,6 +227,7 @@ AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a
   fNMatchedTPCtracklets=a.fNMatchedTPCtracklets;
   fNProcessedEvents=a.fNProcessedEvents;
   fTrackInBuffer=a.fTrackInBuffer;
+  fTimeStamp=a.fTimeStamp;
   //fApplyCovarianceCorrection=a.fApplyCovarianceCorrection;
   //fCalibrationMode=a.fCalibrationMode;
   //fFillHistograms=a.fFillHistograms;
@@ -288,33 +293,28 @@ Bool_t AliRelAlignerKalman::AddESDevent( const AliESDEvent* pEvent )
       success = ( AddESDtrack( track ) || success );
     }
   }
+  if (success) fTimeStamp = pEvent->GetTimeStamp();
   return success;
 }
 
 //______________________________________________________________________________
 Bool_t AliRelAlignerKalman::AddESDtrack( const AliESDtrack* pTrack )
 {
-  ////Adds a full track, returns true if results in a new estimate
+  //Adds a full track, returns true if results in a new estimate
+  //  gets the inner TPC parameters from AliESDTrack::GetInnerParam()
+  //  gets the outer ITS parameters from AliESDTrack::GetOuterParam()
 
-  //const AliExternalTrackParam* pconstparamsITS = pTrack->GetOuterParam();
-  //if (!pconstparamsITS) return kFALSE;
-  //const AliExternalTrackParam* pconstparamsTPC = pTrack->GetInnerParam();
-  //if (!pconstparamsTPC) return kFALSE;
-  //
-  ////TPC part
-  //AliExternalTrackParam paramsTPC = (*pconstparamsTPC);
-  //paramsTPC.Rotate(pconstparamsITS->GetAlpha());
-  //paramsTPC.PropagateTo(pconstparamsITS->GetX(), pconstparamsITS->GetAlpha());
-
-  //if (!SetTrackParams( pconstparamsITS, &paramsTPC )) return kFALSE;
-  //
-  ////do some accounting and update
-  //return (Update());
-
-  const AliESDtrack* p;
-  p=pTrack; //shuts up the compiler
+  const AliExternalTrackParam* pconstparamsITS = pTrack->GetOuterParam();
+  if (!pconstparamsITS) return kFALSE;
+  const AliExternalTrackParam* pconstparamsTPC = pTrack->GetInnerParam();
+  if (!pconstparamsTPC) return kFALSE;
   
-  return kFALSE;
+  //TPC part
+  AliExternalTrackParam paramsTPC = (*pconstparamsTPC);
+  paramsTPC.Rotate(pconstparamsITS->GetAlpha());
+  paramsTPC.PropagateTo(pconstparamsITS->GetX(), fMagField);
+
+  return (AddTrackParams(pconstparamsITS, &paramsTPC));
 }
 
 //______________________________________________________________________________
@@ -359,7 +359,7 @@ Bool_t AliRelAlignerKalman::AddCosmicEvent( const AliESDEvent* pEvent )
     if (!pconstparams2) continue;
     params2 = *pconstparams2; //make copy
     params2.Rotate(params1.GetAlpha());
-    params2.PropagateTo( params1.GetX(), params1.GetAlpha() );
+    params2.PropagateTo( params1.GetX(), fMagField );
 
     if (!SetTrackParams( &params1, &params2 )) continue;
     
@@ -369,6 +369,7 @@ Bool_t AliRelAlignerKalman::AddCosmicEvent( const AliESDEvent* pEvent )
     else
       continue;
   }
+  if (success) fTimeStamp=pEvent->GetTimeStamp();
   return success;
 }
 
@@ -453,6 +454,7 @@ Bool_t AliRelAlignerKalman::Update()
   //else return UpdateEstimateKalman();
   if (!PrepareMeasurement()) return kFALSE;
   if (!PrepareSystemMatrix()) return kFALSE;
+  if (!PreparePrediction()) return kFALSE;
   return UpdateEstimateKalman();
 }
 
@@ -566,6 +568,13 @@ Bool_t AliRelAlignerKalman::PrepareSystemMatrix()
 }
 
 //______________________________________________________________________________
+Bool_t AliRelAlignerKalman::PreparePrediction()
+{
+  //Prepare the prediction of the measurement using state vector
+  return PredictMeasurement( (*fPMeasurementPrediction), (*fPX) );
+}
+
+//______________________________________________________________________________
 Bool_t AliRelAlignerKalman::PredictMeasurement( TVectorD& pred, const TVectorD& state )
 {
   // Implements a system model for the Kalman fit
@@ -657,9 +666,7 @@ Bool_t AliRelAlignerKalman::UpdateEstimateKalman()
 
   // update the state and its covariance matrix
   TVectorD xupdate(fgkNSystemParams);
-  TVectorD hx(fgkNMeasurementParams);
-  PredictMeasurement( hx, (*fPX) );
-  xupdate = k*((*fPMeasurement)-hx);
+  xupdate = k*((*fPMeasurement)-(*fPMeasurementPrediction));
 
   //SIMPLE OUTLIER REJECTION
   if ( IsOutlier( xupdate, (*fPXcov) ) && fRejectOutliers )
@@ -1280,7 +1287,7 @@ void AliRelAlignerKalman::ResetTPCparamsCovariance( const Double_t number )
   {
     if (fgkNSystemParams>6) (*fPXcov)(6,6) = .1*.1;
     if (fgkNSystemParams>7) (*fPXcov)(7,7) = 1.*1.;
-    if (fgkNSystemParams>8) (*fPXcov)(8,8) = 1.*1.;
+    if (fgkNSystemParams>8) (*fPXcov)(8,8) = .1*.1;
   }
   else
   {
@@ -1299,6 +1306,52 @@ void AliRelAlignerKalman::ResetTPCparamsCovariance( const Double_t number )
       (*fPXcov)(j,i) = 0.;
     }
   }
+}
+
+Bool_t AliRelAlignerKalman::Merge( const AliRelAlignerKalman* al )
+{
+  //Merge two aligners
+  
+  if (!al) return kFALSE;
+  if (al->fgkNSystemParams != fgkNSystemParams) return kFALSE;
+  
+  //store the pointers to current stuff
+  TVectorD* pmes = fPMeasurement;
+  TMatrixDSym* pmescov = fPMeasurementCov;
+  TVectorD* pmespred = fPMeasurementPrediction;
+  TMatrixD* ph = fPH;
+
+  //make a unity system matrix
+  TMatrixD tmp(fgkNSystemParams,fgkNSystemParams);
+  fPH = new TMatrixD(TMatrixD::kUnit, tmp);
+
+  //mesurement is the state of the new aligner
+  fPMeasurement = al->fPX;
+  fPMeasurementCov = al->fPXcov;
+
+  //the mesurement prediction is the state
+  fPMeasurementPrediction = fPX; //this is safe as fPX doesn't change until end
+  
+  //do the merging
+  Bool_t success = UpdateEstimateKalman();
+  
+  //restore pointers to old stuff
+  fPMeasurement = pmes;
+  fPMeasurementCov = pmescov;
+  fPMeasurementPrediction = pmespred;
+  delete fPH;
+  fPH = ph;
+
+  //merge stats
+  fNProcessedEvents += al->fNProcessedEvents;
+  fNUpdates += al->fNUpdates;
+  fNOutliers += al->fNOutliers;
+  fNTracks += al->fNTracks;
+  fNMatchedTPCtracklets += al->fNMatchedTPCtracklets;
+  fNMatchedCosmics += al->fNMatchedCosmics;
+  if (fTimeStamp < al->fTimeStamp) fTimeStamp = al->fTimeStamp; //a bit arbitrary: take the older one
+
+  return success;
 }
 
 //______________________________________________________________________________
