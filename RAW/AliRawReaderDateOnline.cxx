@@ -162,3 +162,28 @@ AliRawReaderDateOnline::~AliRawReaderDateOnline()
   if (fEvent) free(fEvent);
 #endif
 }
+
+void AliRawReaderDateOnline::SelectEvents(Int_t type,
+  ULong64_t triggerMask,
+  const char *triggerExpr)
+{
+  // Select event by using DATE monitoring
+  // library
+#ifdef ALI_DATE
+  const Char_t* table[]  = {"ALL", "no", "*", "*",
+			    "PHY", "all","*", "*",
+			    NULL, NULL, NULL, NULL};
+  TString trSelection;
+  for (Int_t i = 0; i < 50; i++) {
+    if (triggerMask & (1ull << i)) {
+	if (!trSelection.IsNull()) trSelection += "+";
+	trSelection += Form("%d",i+1);
+    }
+  }
+  table[7] = trSelection.Data();
+
+  monitorDeclareTableExtended(const_cast<char**>(table));
+  
+#endif
+  AliRawReader::SelectEvents(type,triggerMask,triggerExpr);
+}

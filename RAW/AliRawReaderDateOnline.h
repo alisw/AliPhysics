@@ -33,6 +33,9 @@ class AliRawReaderDateOnline: public AliRawReaderDate {
     // activated only for AliRawReaderDateOnline.
     virtual Bool_t   UseAutoSaveESD() const { return kTRUE; }
 
+  protected:
+    virtual void     SelectEvents(Int_t type, ULong64_t triggerMask = 0, const char *triggerExpr = NULL);
+
   private:
     AliRawReaderDateOnline(const AliRawReaderDateOnline& rawReader);
     AliRawReaderDateOnline& operator = (const AliRawReaderDateOnline& rawReader);
