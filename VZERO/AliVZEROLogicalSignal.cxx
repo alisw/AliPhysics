@@ -13,9 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-//  Describes a logical signal
-// Used by AliVZEROTriggerSim class
+// 
+// Class AliVZEROLogicalSignal
+// ---------------------------
+// Describes a logical signal in the electronics. 
+// Use it to generate observation windows
+// which are used by AliVZEROTriggerSimulator class
 // 
 
 #include "AliLog.h"
@@ -26,16 +29,20 @@ ClassImp(AliVZEROLogicalSignal)
 //_____________________________________________________________________________
 AliVZEROLogicalSignal::AliVZEROLogicalSignal() : TObject(), fStart(0.), fStop(0.)
 {
+	// Default constructor
 }
 //_____________________________________________________________________________
 AliVZEROLogicalSignal::AliVZEROLogicalSignal(Float_t start, Float_t stop) : TObject(), fStart(start), fStop(stop)
 {
+	// Constructor using start and stop time
 	if(fStart>fStop) AliError("Logical Signal has a Start time AFTER the Stop time");
 	if(fStart==fStop) AliWarning("Logical Signal has a zero width");
 }
 //_____________________________________________________________________________
 AliVZEROLogicalSignal::AliVZEROLogicalSignal(UShort_t profilClock, UInt_t delay) : TObject(), fStart(0.), fStop(0.)
 {
+	// Constructor using the profilClock and delay parameters comming from the FEE
+	
 	Bool_t word;
 	Bool_t up=kFALSE;
 	Bool_t down=kFALSE;
@@ -66,12 +73,14 @@ AliVZEROLogicalSignal::AliVZEROLogicalSignal(const AliVZEROLogicalSignal &signal
 
 //_____________________________________________________________________________
 AliVZEROLogicalSignal::~AliVZEROLogicalSignal(){
+	// Destructor
 }
 
 //_____________________________________________________________________________
 AliVZEROLogicalSignal& AliVZEROLogicalSignal::operator = 
 (const AliVZEROLogicalSignal& signal)
 {
+	// Operator =
 	fStart = signal.fStart;
 	fStop  = signal.fStop;
 	return *this;
@@ -111,9 +120,11 @@ AliVZEROLogicalSignal AliVZEROLogicalSignal::operator&(const AliVZEROLogicalSign
 }
 
 //_____________________________________________________________________________
-Bool_t AliVZEROLogicalSignal::IsInCoincidence(Float_t time)
+Bool_t AliVZEROLogicalSignal::IsInCoincidence(Float_t time) const
 {
+	// Check if a signal arriving at the time "time" is in coincidence with the logical signal
 	Bool_t result = kFALSE;
 	if((time>fStart) && (time<fStop)) result = kTRUE;
 	return result;
 }
+

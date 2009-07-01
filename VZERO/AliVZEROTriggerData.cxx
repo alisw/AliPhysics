@@ -14,11 +14,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// Class AliVZEROTriggerData
+// -------------------------
+// Retrieves and hold the FEE parameters
+// The parameters are recieved from the shuttle 
+// AliVZEROTriggerData is then used in the AliVZEROTriggerSimulator
+//
 
-//  
-// 
-// 
 #include <TObjString.h>
+#include <TMap.h>
 
 #include "AliLog.h"
 #include "AliDCSValue.h"
@@ -49,6 +53,7 @@ AliVZEROTriggerData::AliVZEROTriggerData() :
 	fIsProcessed(kFALSE)	
 
 {
+	// default constructor
 	for(int i=0; i<kNCIUBoards ;i++) {
 		fClk1Win1[i] = fClk1Win2[i] = 0;
 		fDelayClk1Win1[i] = fDelayClk1Win2[i] = 0;
@@ -81,6 +86,7 @@ AliVZEROTriggerData::AliVZEROTriggerData(Int_t nRun, UInt_t startTime, UInt_t en
 	fEndTime(endTime),
 	fIsProcessed(kFALSE)
 {
+	// Constructor
 	for(int i=0; i<kNCIUBoards ;i++) {
 		fClk1Win1[i] = fClk1Win2[i] = 0;
 		fDelayClk1Win1[i] = fDelayClk1Win2[i] = 0;
@@ -98,9 +104,11 @@ AliVZEROTriggerData::AliVZEROTriggerData(Int_t nRun, UInt_t startTime, UInt_t en
 
 //________________________________________________________________
 AliVZEROTriggerData::~AliVZEROTriggerData(){
+	// destructor
 }
 //_____________________________________________________________________________
 void AliVZEROTriggerData::FillData(AliVZERODataFEE * data){
+	// Set all parameters from the data get by the shuttle
 	TMap * params = data->GetParameters();
 	TIter iter(params);	
 	TObjString* aliasName;
@@ -116,6 +124,8 @@ void AliVZEROTriggerData::FillData(AliVZERODataFEE * data){
 
 //_____________________________________________________________________________
 void AliVZEROTriggerData::SetParameter(TString name, Float_t val){
+	// Set given parameter
+	
 	Int_t iBoard = -1;
 	Int_t iChannel = -1;
 
@@ -169,6 +179,7 @@ void AliVZEROTriggerData::SetParameter(TString name, Float_t val){
 //________________________________________________________________
 void AliVZEROTriggerData::SetPedestalCut(UShort_t val,Int_t integrator, Int_t board, Int_t channel)
 {
+	// Set Pedestal Cut of individual channel 
 	if(board<kNCIUBoards && channel<kNChannels) {
 		if(integrator) fPedestalCutOdd[board][channel] = val;
 		else fPedestalCutEven[board][channel] = val;
@@ -177,6 +188,7 @@ void AliVZEROTriggerData::SetPedestalCut(UShort_t val,Int_t integrator, Int_t bo
 //________________________________________________________________
 UShort_t AliVZEROTriggerData::GetPedestalCut(Int_t integrator, Int_t board, Int_t channel)
 {
+	// Get Pedestal Cut of individual channel 
 	if(board<kNCIUBoards && channel<kNChannels) {
 		if(integrator) return(fPedestalCutOdd[board][channel]);
 		else return(fPedestalCutEven[board][channel]);
@@ -186,6 +198,7 @@ UShort_t AliVZEROTriggerData::GetPedestalCut(Int_t integrator, Int_t board, Int_
 //________________________________________________________________
 void AliVZEROTriggerData::SetPedestal(UShort_t val, Int_t integrator, Int_t board, Int_t channel)
 {
+	// Set Pedestal of individual channel 
 	if(board<kNCIUBoards && channel<kNChannels) {
 		if(integrator) fPedestalOdd[board][channel] = val;
 		else fPedestalEven[board][channel] = val;
@@ -194,6 +207,7 @@ void AliVZEROTriggerData::SetPedestal(UShort_t val, Int_t integrator, Int_t boar
 //________________________________________________________________
 UShort_t AliVZEROTriggerData::GetPedestal(Int_t integrator, Int_t board, Int_t channel)
 {
+	// Get Pedestal of individual channel 
 	if(board<kNCIUBoards && channel<kNChannels) {
 		if(integrator) return(fPedestalOdd[board][channel]);
 		else return(fPedestalEven[board][channel]);
@@ -203,12 +217,14 @@ UShort_t AliVZEROTriggerData::GetPedestal(Int_t integrator, Int_t board, Int_t c
 //________________________________________________________________
 void AliVZEROTriggerData::SetDelayHit(UShort_t val,Int_t board, Int_t channel)
 {
+	// Set Delay of individual channel 
 	if(board<kNCIUBoards && channel<kNChannels) fDelayHit[board][channel] = val;
 	else AliError(Form("Impossible to write at : Board %d ; Channel %d",board,channel));
 }
 //________________________________________________________________
 UShort_t AliVZEROTriggerData::GetDelayHit(Int_t board, Int_t channel)
 {
+	// Get Delay of individual channel 
 	if(board<kNCIUBoards && channel<kNChannels) return(fDelayHit[board][channel]);
 	else AliError(Form("Impossible to read at : Board %d ; Channel %d",board,channel));
 	return 0;
@@ -216,12 +232,14 @@ UShort_t AliVZEROTriggerData::GetDelayHit(Int_t board, Int_t channel)
 //________________________________________________________________
 void AliVZEROTriggerData::SetDiscriThr(UShort_t val,Int_t board, Int_t channel)
 {
+	// Set discriminator threshold
 	if(board<kNCIUBoards && channel<kNChannels) fDiscriThr[board][channel] = val;
 	else AliError(Form("Impossible to write at : Board %d ; Channel %d",board,channel));
 }
 //________________________________________________________________
 UShort_t AliVZEROTriggerData::GetDiscriThr(Int_t board, Int_t channel)
 {
+	// Get discriminator threshold
 	if(board<kNCIUBoards && channel<kNChannels) return(fDiscriThr[board][channel]);
 	else AliError(Form("Impossible to read at : Board %d ; Channel %d",board,channel));
 	return 0;
@@ -229,12 +247,14 @@ UShort_t AliVZEROTriggerData::GetDiscriThr(Int_t board, Int_t channel)
 //________________________________________________________________
 void AliVZEROTriggerData::SetEnableCharge(Bool_t val,Int_t board, Int_t channel)
 {
+	// Set the channels enabled for Charge triggers
 	if(board<kNCIUBoards && channel<kNChannels) fEnableCharge[board][channel] = val;
 	else AliError(Form("Impossible to write at : Board %d ; Channel %d",board,channel));
 }
 //________________________________________________________________
 Bool_t AliVZEROTriggerData::GetEnableCharge(Int_t board, Int_t channel)
 {
+	// Get the channels enabled for Charge triggers
 	if(board<kNCIUBoards && channel<kNChannels) return(fEnableCharge[board][channel]);
 	else AliError(Form("Impossible to read at : Board %d ; Channel %d",board,channel));
 	return kFALSE;
@@ -242,12 +262,14 @@ Bool_t AliVZEROTriggerData::GetEnableCharge(Int_t board, Int_t channel)
 //________________________________________________________________
 void AliVZEROTriggerData::SetEnableTiming(Bool_t val,Int_t board, Int_t channel)
 {
+	// Set the channels enabled for Timing triggers
 	if(board<kNCIUBoards && channel<kNChannels) fEnableTiming[board][channel] = val;
 	else AliError(Form("Impossible to write at : Board %d ; Channel %d",board,channel));
 }
 //________________________________________________________________
 Bool_t AliVZEROTriggerData::GetEnableTiming(Int_t board, Int_t channel)
 {
+	// Get the channels enabled for Timing triggers
 	if(board<kNCIUBoards && channel<kNChannels) return(fEnableTiming[board][channel]);
 	else AliError(Form("Impossible to read at : Board %d ; Channel %d",board,channel));
 	return kFALSE;
@@ -255,6 +277,7 @@ Bool_t AliVZEROTriggerData::GetEnableTiming(Int_t board, Int_t channel)
 //________________________________________________________________
 void AliVZEROTriggerData::SetTriggerSelected(UShort_t trigger, Int_t output)
 {
+	// Set the trigger selected on the outputs to CTP
 	if(output<kNTriggerOutputs) fTriggerSelected[output] = trigger;
 	else AliError(Form("Trigger output number %d not valid",output));
 }
@@ -262,60 +285,70 @@ void AliVZEROTriggerData::SetTriggerSelected(UShort_t trigger, Int_t output)
 //________________________________________________________________
 void AliVZEROTriggerData::SetClk1Win1(UShort_t* clks)
 {
+	// Set Win clock of BB
 	if(clks) for(int t=0; t<kNCIUBoards; t++) SetClk1Win1(clks[t],t);
 	else AliFatal("Profil Clock1 Win1 Not defined.");
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetClk2Win1(UShort_t* clks)
 {
+	// Set Win clock of BB
 	if(clks) for(int t=0; t<kNCIUBoards; t++) SetClk2Win1(clks[t],t);
 	else AliFatal("Profil Clock2 Win1 Not defined.");
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetClk1Win1(UShort_t clk, Int_t board)
 {
+	// Set Win clock of BB
 	if(IsClkValid(clk) && (board<kNCIUBoards)) fClk1Win1[board] = clk;
 	else AliError(Form("Profil Clock1 Win1 of board %d is not valid : %d",board,clk));
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetClk2Win1(UShort_t clk, Int_t board)
 {
+	// Set Win clock of BB
 	if(IsClkValid(clk) && (board<kNCIUBoards)) fClk2Win1[board] = clk;
 	else AliError(Form("Profil Clock2 Win1 of board %d is not valid",board));
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetClk1Win2(UShort_t* clks)
 {
+	// Set Win clock of BG
 	if(clks) for(int t=0; t<kNCIUBoards; t++) SetClk1Win2(clks[t],t);
 	else AliFatal("Profil Clock1 Win2 Not defined.");
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetClk2Win2(UShort_t* clks)
 {
+	// Set Win clock of BG
 	if(clks) for(int t=0; t<kNCIUBoards; t++) SetClk2Win2(clks[t],t);
 	else AliFatal("Profil Clock2 Win2 Not defined.");
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetClk1Win2(UShort_t clk, Int_t board)
 {
+	// Set Win clock of BG
 	if(IsClkValid(clk) && (board<kNCIUBoards)) fClk1Win2[board] = clk;
 	else AliError(Form("Profil Clock1 Win2 of board %d is not valid",board));
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetClk2Win2(UShort_t clk, Int_t board)
 {
+	// Set Win clock of BG
 	if(IsClkValid(clk) && (board<kNCIUBoards)) fClk2Win2[board] = clk;
 	else AliError(Form("Profil Clock2 Win2 of board %d is not valid",board));
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetDelayClk1Win1(UShort_t* delays)
 {
+	// Set Delay for Win clock of BB
 	if(delays) for(int t=0; t<kNCIUBoards; t++) SetDelayClk1Win1(delays[t],t);
 	else AliFatal("Profil Clock1 Win1 Delays Not defined.");
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetDelayClk1Win1(UShort_t delay, Int_t board)
 {
+	// Set Delay for Win clock of BB
 	if(delay>1023){
 		AliWarning(Form("Profil Clock1 Win1 Delay of board %d should be less 1023 is currently %d. Truncated to the first 10 bits",board, delay));
 		delay = delay & 0x3FF;
@@ -326,12 +359,14 @@ void AliVZEROTriggerData::SetDelayClk1Win1(UShort_t delay, Int_t board)
 //________________________________________________________________
 void AliVZEROTriggerData::SetDelayClk2Win1(UShort_t* delays)
 {
+	// Set Delay for Win clock of BB
 	if(delays) for(int t=0; t<kNCIUBoards; t++) SetDelayClk2Win1(delays[t],t);
 	else AliFatal("Profil Clock2 Win1 Delays Not defined.");
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetDelayClk2Win1(UShort_t delay, Int_t board)
 {
+	// Set Delay for Win clock of BB
 	if(delay>1023){
 		AliWarning(Form("Profil Clock2 Win1 Delay of board %d should be less 1023 is currently %d. Truncated to the first 10 bits",board, delay));
 		delay = delay & 0x3FF;
@@ -342,12 +377,14 @@ void AliVZEROTriggerData::SetDelayClk2Win1(UShort_t delay, Int_t board)
 //________________________________________________________________
 void AliVZEROTriggerData::SetDelayClk1Win2(UShort_t* delays)
 {
+	// Set Delay for Win clock of BG
 	if(delays) for(int t=0; t<kNCIUBoards; t++) SetDelayClk1Win2(delays[t],t);
 	else AliFatal("Profil Clock1 Win2 Delays Not defined.");
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetDelayClk1Win2(UShort_t delay, Int_t board)
 {
+	// Set Delay for Win clock of BG
 	if(delay>1023){
 		AliWarning(Form("Profil Clock1 Win2 Delay of board %d should be less 1023 is currently %d. Truncated to the first 10 bits",board, delay));
 		delay = delay & 0x3FF;
@@ -358,12 +395,14 @@ void AliVZEROTriggerData::SetDelayClk1Win2(UShort_t delay, Int_t board)
 //________________________________________________________________
 void AliVZEROTriggerData::SetDelayClk2Win2(UShort_t* delays)
 {
+	// Set Delay for Win clock of BG
 	if(delays) for(int t=0; t<kNCIUBoards; t++) SetDelayClk2Win2(delays[t],t);
 	else AliFatal("Profil Clock2 Win2 Delays Not defined.");
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetDelayClk2Win2(UShort_t delay, Int_t board)
 {
+	// Set Delay for Win clock of BG
 	if(delay>1023){
 		AliWarning(Form("Profil Clock2 Win2 Delay of board %d should be less 1023 is currently %d. Truncated to the first 10 bits",board, delay));
 		delay = delay & 0x3FF;
@@ -373,50 +412,59 @@ void AliVZEROTriggerData::SetDelayClk2Win2(UShort_t delay, Int_t board)
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetLatchWin1(UShort_t *latchs){
+	// Set Latch Win clock for BB
 	if(latchs) for(int t=0; t<kNCIUBoards; t++) SetLatchWin1(latchs[t],t);
 	else AliFatal("Latch Win1 profil Not defined.");
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetLatchWin1(UShort_t latch, Int_t board)
 {
+	// Set Latch Win clock for BB
 	if(IsClkValid(latch) && (board<kNCIUBoards)) fLatchWin1[board] = latch;
 	else AliError(Form("Latch Win1 profil of board %d is not valid",board));
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetLatchWin2(UShort_t *latchs){
+	// Set Latch Win clock for BG
 	if(latchs) for(int t=0; t<kNCIUBoards; t++) SetLatchWin2(latchs[t],t);
 	else AliFatal("Latch Win2 profil Not defined.");
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetLatchWin2(UShort_t latch, Int_t board)
 {
+	// Set Latch Win clock for BG
 	if(IsClkValid(latch) && (board<kNCIUBoards)) fLatchWin2[board] = latch;
 	else AliError(Form("Latch Win2 profil of board %d is not valid",board));
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetResetWin1(UShort_t *resets){
+	// Set Reset Win clock for BB
 	if(resets) for(int t=0; t<kNCIUBoards; t++) SetResetWin1(resets[t],t);
 	else AliFatal("Reset Win1 profil Not defined.");
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetResetWin1(UShort_t reset, Int_t board)
 {
+	// Set Reset Win clock for BB
 	if(IsClkValid(reset) && (board<kNCIUBoards)) fResetWin1[board] = reset;
 	else AliError(Form("Reset Win1 profil of board %d is not valid",board));
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetResetWin2(UShort_t *resets){
+	// Set Reset Win clock for BG
 	if(resets)  for(int t=0; t<kNCIUBoards; t++) SetResetWin2(resets[t],t);
 	else AliFatal("Reset Win2 profil Not defined.");
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetResetWin2(UShort_t reset, Int_t board)
 {
+	// Set Reset Win clock for BG
 	if(IsClkValid(reset) && (board<kNCIUBoards)) fResetWin2[board] = reset;
 	else AliError(Form("Reset Win2 profil of board %d is not valid",board));
 }
 //________________________________________________________________
 void AliVZEROTriggerData::SetPedestalSubtraction(Bool_t *peds){
+	// Set Pedestal Subtraction Parameter
 	if(peds)  for(int t=0; t<kNCIUBoards; t++) SetPedestalSubtraction(peds[t],t);
 	else AliFatal("Pedestal Subtraction Not defined.");
 	
@@ -424,31 +472,34 @@ void AliVZEROTriggerData::SetPedestalSubtraction(Bool_t *peds){
 //________________________________________________________________
 void AliVZEROTriggerData::SetPedestalSubtraction(Bool_t ped, Int_t board)
 {
+	// Set Pedestal Subtraction Parameter
 	if((board<kNCIUBoards)) fPedestalSubtraction[board] = ped;
 	else AliError(Form("Board %d is not valid",board));
 }
 
 //________________________________________________________________
-Bool_t	AliVZEROTriggerData::IsClkValid(UShort_t clock){
+Bool_t	AliVZEROTriggerData::IsClkValid(UShort_t clock) const {
+	// Check if the given clock has a valid profil.
 	Bool_t word[5];
 	Bool_t isValid = kTRUE;
-	Short_t RisingEdge = 0;
-	Short_t FallingEdge = 0;
+	Short_t risingEdge = 0;
+	Short_t fallingEdge = 0;
 	for(int i=0 ; i<5 ; i++) word[i] = (clock >> i) & 0x1;
 	
 	if(word[0] != word[4]){
-		if(word[4]) FallingEdge++;
-		else RisingEdge++;
+		if(word[4]) fallingEdge++;
+		else risingEdge++;
 	}	
 	for(int i=1 ; i<5 ; i++){
 		if(word[i] != word[i-1]) {
-			if(word[i-1]) FallingEdge++;
-			else RisingEdge++;
+			if(word[i-1]) fallingEdge++;
+			else risingEdge++;
 		}
 	}
-	if((FallingEdge>1)||(RisingEdge>1)) isValid = kFALSE;
-	if(((RisingEdge==0)&&(FallingEdge==0)) &&(!word[0]))  isValid = kFALSE;
+	if((fallingEdge>1)||(risingEdge>1)) isValid = kFALSE;
+	if(((risingEdge==0)&&(fallingEdge==0)) &&(!word[0]))  isValid = kFALSE;
 	return isValid;
 }
+
 
 

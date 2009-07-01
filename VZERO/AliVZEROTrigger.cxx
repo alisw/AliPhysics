@@ -12,8 +12,16 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
+// ---------------------
+// Class AliVZEROTrigger
+// ---------------------
+// Top class to simulate the VZERO trigger response
+// This class is only used for interface with AliTriggerDetector
+// Its create and Set  Inputs of the CTP
+// The Calculation of the trigger response is done into AliVZEROTriggerSimulator
+//
+
 
 #include <TClonesArray.h>
 
@@ -27,13 +35,6 @@
 
 //______________________________________________________________________
 ClassImp(AliVZEROTrigger)
-////////////////////////////////////////////////////////////////////////
-//
-// Version 1
-//
-// AliVZEROTrigger: 
-//
-////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________
 
@@ -125,5 +126,6 @@ void AliVZEROTrigger::Trigger()
 
   return;
 }
+
 
 

@@ -12,13 +12,16 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-
+// 
+// Class AliVZEROTriggerSimulator
+// ------------------------------
 //  Simulate the VZERO Trigger response
 // Use FEE parameters stored in Database
 // Can work on real data or in simulation
-#include "TTree.h"
-#include "TClonesArray.h"
+//
+
+#include <TTree.h>
+#include <TClonesArray.h>
 
 #include "AliLog.h"
 #include "AliCDBManager.h"
@@ -36,6 +39,7 @@ ClassImp(AliVZEROTriggerSimulator)
 AliVZEROTriggerSimulator::AliVZEROTriggerSimulator(TTree * digitsTree, TClonesArray* digits) : 
 TObject(),fTriggerData(NULL),fDigitsTree(digitsTree),fDigits(digits),fTriggerWord(0)
 {
+	// constructor
 	fTriggerData = LoadTriggerData();
 	
 	for(int i=0;i<64;i++) {
@@ -55,6 +59,7 @@ TObject(),fTriggerData(NULL),fDigitsTree(digitsTree),fDigits(digits),fTriggerWor
 AliVZEROTriggerSimulator::AliVZEROTriggerSimulator() : 
 TObject(),fTriggerData(NULL),fDigitsTree(NULL),fDigits(NULL),fTriggerWord(0)
 {
+	// Default constructor
 	fTriggerData = LoadTriggerData();
 
 	for(int i=0;i<64;i++) {
@@ -73,6 +78,7 @@ TObject(),fTriggerData(NULL),fDigitsTree(NULL),fDigits(NULL),fTriggerWord(0)
 
 //_____________________________________________________________________________
 AliVZEROTriggerSimulator::~AliVZEROTriggerSimulator(){
+// Destructor
 	if(fBBGate) delete [] fBBGate;
 	if(fBGGate) delete [] fBGGate;
 	if(fBBLatch) delete [] fBBLatch;
@@ -84,19 +90,21 @@ AliVZEROTriggerSimulator::~AliVZEROTriggerSimulator(){
 //_____________________________________________________________________________
 void AliVZEROTriggerSimulator::GenerateBBWindows() 
 {
+	// Generates the BB observation window
 	for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
-		AliVZEROLogicalSignal Clk1BB(fTriggerData->GetClk1Win1(i),fTriggerData->GetDelayClk1Win1(i));
-		AliVZEROLogicalSignal Clk2BB(fTriggerData->GetClk2Win1(i),fTriggerData->GetDelayClk2Win1(i));
-		fBBGate[i] = new AliVZEROLogicalSignal(Clk1BB & Clk2BB);
+		AliVZEROLogicalSignal clk1BB(fTriggerData->GetClk1Win1(i),fTriggerData->GetDelayClk1Win1(i));
+		AliVZEROLogicalSignal clk2BB(fTriggerData->GetClk2Win1(i),fTriggerData->GetDelayClk2Win1(i));
+		fBBGate[i] = new AliVZEROLogicalSignal(clk1BB & clk2BB);
 	}
 }
 //_____________________________________________________________________________
 void AliVZEROTriggerSimulator::GenerateBGWindows() 
 {
+	// Generates the BG observation window
 	for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
-		AliVZEROLogicalSignal Clk1BG(fTriggerData->GetClk1Win2(i),fTriggerData->GetDelayClk1Win2(i));
-		AliVZEROLogicalSignal Clk2BG(fTriggerData->GetClk2Win2(i),fTriggerData->GetDelayClk2Win2(i));
-		fBGGate[i] = new AliVZEROLogicalSignal(Clk1BG & Clk2BG);
+		AliVZEROLogicalSignal clk1BG(fTriggerData->GetClk1Win2(i),fTriggerData->GetDelayClk1Win2(i));
+		AliVZEROLogicalSignal clk2BG(fTriggerData->GetClk2Win2(i),fTriggerData->GetDelayClk2Win2(i));
+		fBGGate[i] = new AliVZEROLogicalSignal(clk1BG & clk2BG);
 	}
 }
 
@@ -150,12 +158,13 @@ void AliVZEROTriggerSimulator::Run() {
 			
 			if(fTriggerData->GetEnableCharge(board,channel)) {
 				fCharges[pmNumber] = digit->ADC();
-				if(fTriggerData->GetPedestalSubtraction(board)) 
+				if(fTriggerData->GetPedestalSubtraction(board)) {
 					if(fCharges[pmNumber]>=fTriggerData->GetPedestalCut(integrator,board,channel)){ 
 						fCharges[pmNumber] -= fTriggerData->GetPedestal(integrator,board,channel);
 					} else {
 						fCharges[pmNumber] = 0;
 					}
+				}
 			} else {
 				fCharges[pmNumber] = 0;
 			}
@@ -163,7 +172,7 @@ void AliVZEROTriggerSimulator::Run() {
 			Float_t time = (Float_t)digit->Time() / 10.; // digit->Time() in bin of 100 picoseconds. Divide by 10 to have it in nanoseconds
 			time += fTriggerData->GetDelayHit(board,channel);
 			
-			AliInfo(Form(" PM nb : %d ; ADC= %d ; TDC= %f  Enable Time %d charge %d",pmNumber,digit->ADC(),time,fTriggerData->GetEnableTiming(board,channel),fTriggerData->GetEnableCharge(board,channel)));
+			//AliInfo(Form(" PM nb : %d ; ADC= %d ; TDC= %f  Enable Time %d charge %d",pmNumber,digit->ADC(),time,fTriggerData->GetEnableTiming(board,channel),fTriggerData->GetEnableCharge(board,channel)));
 			fBBFlags[pmNumber] = fTriggerData->GetEnableTiming(board,channel) && fBBGate[board]->IsInCoincidence(time);
 			fBGFlags[pmNumber] = fTriggerData->GetEnableTiming(board,channel) && fBGGate[board]->IsInCoincidence(time);
 			
@@ -242,10 +251,11 @@ void AliVZEROTriggerSimulator::Run() {
 	// (BGA and BBC) or (BGC and BBA) (Beam Gas from one of the two sides)
 	if(GetBGAandBBC() || GetBGCandBBA()) SetBeamGas();
 
-	AliInfo(Form("BB Flags : V0A = %d  V0C = %d ",nBBflagsV0A, nBBflagsV0C )); 
-	AliInfo(Form("BG Flags : V0A = %d  V0C = %d ",nBGflagsV0A, nBGflagsV0C )); 
-	AliInfo(Form("Charges  : V0A = %d  V0C = %d ",chargeV0A, chargeV0C )); 
+//	AliInfo(Form("BB Flags : V0A = %d  V0C = %d ",nBBflagsV0A, nBBflagsV0C )); 
+//	AliInfo(Form("BG Flags : V0A = %d  V0C = %d ",nBGflagsV0A, nBGflagsV0C )); 
+//	AliInfo(Form("Charges  : V0A = %d  V0C = %d ",chargeV0A, chargeV0C )); 
 	
 }
+
 
 

@@ -6,6 +6,16 @@
  * See cxx source for full Copyright notice                               
  */
 
+
+// 
+// Class AliVZEROLogicalSignal
+// ---------------------------
+// Describes a logical signal in the electronics. 
+// Use it to generate observation windows
+// which are used by AliVZEROTriggerSimulator class
+// 
+
+
 #include <TObject.h>
 
 class AliVZEROLogicalSignal  : public TObject {
@@ -13,7 +23,7 @@ public:
 	AliVZEROLogicalSignal();
 	AliVZEROLogicalSignal(Float_t start, Float_t stop);
 	AliVZEROLogicalSignal(UShort_t profilClock, UInt_t delay);
-	~AliVZEROLogicalSignal();
+	virtual ~AliVZEROLogicalSignal();
 	AliVZEROLogicalSignal(const AliVZEROLogicalSignal &signal);
 	AliVZEROLogicalSignal& operator= (const AliVZEROLogicalSignal &signal);
 	AliVZEROLogicalSignal operator& (const AliVZEROLogicalSignal &signal) const;
@@ -28,7 +38,7 @@ public:
 	void SetStartTime(Float_t time){fStart = time;};
 	void SetStopTime(Float_t time){fStop = time;};
 	
-	Bool_t IsInCoincidence(Float_t time);
+	Bool_t IsInCoincidence(Float_t time) const;
 	
 private:
 	
@@ -41,4 +51,5 @@ private:
 };
 
 #endif // ALIVZEROLOGICALSIGNAL_H
+
 

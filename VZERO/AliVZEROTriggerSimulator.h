@@ -5,6 +5,13 @@
  *
  * See cxx source for full Copyright notice                               
  */
+// 
+// Class AliVZEROTriggerSimulator
+// ------------------------------
+//  Simulate the VZERO Trigger response
+// Use FEE parameters stored in Database
+// Can work on real data or in simulation
+//
 
 #include <TObject.h>
 
@@ -67,24 +74,24 @@ private:
 	void GenerateBGWindows();
 	
 	// Members
-	AliVZEROLogicalSignal * fBBGate[AliVZEROTriggerData::kNCIUBoards];
-	AliVZEROLogicalSignal * fBBLatch[AliVZEROTriggerData::kNCIUBoards];
-	AliVZEROLogicalSignal * fBBReset[AliVZEROTriggerData::kNCIUBoards];
+	AliVZEROLogicalSignal * fBBGate[AliVZEROTriggerData::kNCIUBoards];  // BB Observation window
+	AliVZEROLogicalSignal * fBBLatch[AliVZEROTriggerData::kNCIUBoards]; // BB Latch window
+	AliVZEROLogicalSignal * fBBReset[AliVZEROTriggerData::kNCIUBoards]; // BB Reset Window
 	
-	AliVZEROLogicalSignal * fBGGate[AliVZEROTriggerData::kNCIUBoards];
-	AliVZEROLogicalSignal * fBGLatch[AliVZEROTriggerData::kNCIUBoards];
-	AliVZEROLogicalSignal * fBGReset[AliVZEROTriggerData::kNCIUBoards];
+	AliVZEROLogicalSignal * fBGGate[AliVZEROTriggerData::kNCIUBoards];  // BG Observation window
+	AliVZEROLogicalSignal * fBGLatch[AliVZEROTriggerData::kNCIUBoards]; // BG Latch Window
+	AliVZEROLogicalSignal * fBGReset[AliVZEROTriggerData::kNCIUBoards]; // BG Reset Window
 
 	AliVZEROTriggerData *fTriggerData; // Object holding the trigger configuration parameters
 	
-	TTree* fDigitsTree;
-	TClonesArray* fDigits;
+	TTree* fDigitsTree; //Pointer to VZERO digit tree
+	TClonesArray* fDigits; //Pointer to VZERO digit array
 	
-	Bool_t fBBFlags[64];
-	Bool_t fBGFlags[64];
-	Int_t  fCharges[64];
+	Bool_t fBBFlags[64]; // Individual BB Flags
+	Bool_t fBGFlags[64]; // Individual BG Flags
+	Int_t  fCharges[64]; // Individual Charge
 	
-	UShort_t fTriggerWord;
+	UShort_t fTriggerWord; // Word holding the 16 triggers return by the FEE
 		
 	ClassDef( AliVZEROTriggerSimulator, 1 )  
 
@@ -92,4 +99,5 @@ private:
 
 
 #endif // ALIVZEROTRIGGERSIMULATOR_H
+
 

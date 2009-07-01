@@ -5,9 +5,18 @@
  *
  * See cxx source for full Copyright notice                               
  */
-#include "AliVZERODataFEE.h"
+
+// Class AliVZEROTriggerData
+// -------------------------
+// Retrieves and hold the FEE parameters
+// The parameters are recieved from the shuttle 
+// AliVZEROTriggerData is then used in the AliVZEROTriggerSimulator
+//
 
 #include <TNamed.h>
+
+#include "AliVZERODataFEE.h"
+
 
 class AliVZEROTriggerData : public TNamed {
 public:
@@ -202,7 +211,7 @@ private:
 	TString fAliasNames[kNAliases];	// aliases for DCS data
 	Bool_t fIsProcessed; // bool to know processing status
 	
-	Bool_t	IsClkValid(UShort_t clock);
+	Bool_t	IsClkValid(UShort_t clock) const;
 	void SetParameter(TString name, Float_t val);
 	
 	
@@ -211,4 +220,5 @@ private:
 };
 
 #endif // ALIVZEROTRIGGERDATA_H
+
 

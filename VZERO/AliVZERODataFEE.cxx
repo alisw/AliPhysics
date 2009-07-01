@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -13,19 +12,22 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+// ---------------------
+// Class AliVZERODataFEE
+// ---------------------
+// Used to process the TMap of DCS values comming from the shuttle.
+// It stores into a TMap the FEE parameters for the given run number
+//
 
-
-//  Simulate the VZERO Trigger response
-// Use FEE parameters stored in Database
-// Can work on real data or in simulation
 #include <TTimeStamp.h>
 #include <TObjString.h>
+#include <TMap.h>
 
 #include "AliDCSValue.h"
 #include "AliLog.h"
 #include "AliVZERODataFEE.h"
 
-//ClassImp(AliVZERODataFEE)
+ClassImp(AliVZERODataFEE)
 
 //_____________________________________________________________________________
 AliVZERODataFEE::AliVZERODataFEE() :
@@ -48,30 +50,12 @@ AliVZERODataFEE::AliVZERODataFEE(Int_t nRun, UInt_t startTime, UInt_t endTime) :
 	fIsProcessed(kFALSE),
 	fParameters(new TMap())
 {
+	// Constructor
 	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
 				 TTimeStamp(startTime).AsString(),
 				 TTimeStamp(endTime).AsString()));
 	fParameters->SetOwnerValue();
 	Init();
-}
-//________________________________________________________________
-AliVZERODataFEE::AliVZERODataFEE (const AliVZERODataFEE& ) :
-	TObject(),
-	fRun(0),
-	fStartTime(0),
-	fEndTime(0),
-	fIsProcessed(kFALSE),
-	fParameters(NULL)
-{
-
-	AliInfo("Not Implemented");
-
-}
-//________________________________________________________________
-AliVZERODataFEE &AliVZERODataFEE::operator= (const AliVZERODataFEE& ) 
-{
-	AliInfo("Not Implemented");
-	return *this;
 }
 
 //_____________________________________________________________________________
@@ -83,7 +67,7 @@ AliVZERODataFEE::~AliVZERODataFEE()
 
 //_____________________________________________________________________________
 void AliVZERODataFEE::Init(){
-	// initialization of DCS aliases
+	// Initialization of DCS aliases
 	int iAlias = 0;
 
 	// CCIU Parameters
@@ -137,7 +121,8 @@ void AliVZERODataFEE::Init(){
 }
 //_____________________________________________________________________________
 void AliVZERODataFEE::ProcessData(TMap& aliasMap){
-
+// Process the TMap of DCS data
+	
 	if(!(fAliasNames[0])) Init();
 	
 	TObjArray *aliasArr;
@@ -159,7 +144,7 @@ void AliVZERODataFEE::ProcessData(TMap& aliasMap){
 		
 		TIter iterarray(aliasArr);
 				
-		AliDCSValue * lastVal;
+		AliDCSValue * lastVal = NULL;
 		while((aValue = (AliDCSValue*) iterarray.Next())) lastVal = aValue; // Take only the last value
 		
 		//AliInfo(Form("%s %f",fAliasNames[iAlias].Data(), val));
@@ -177,37 +162,38 @@ void AliVZERODataFEE::ProcessData(TMap& aliasMap){
 
 TString AliVZERODataFEE::GetFEEParamName(Int_t iParam){
 // Return the name of the FEE Parameter iParam
-	TString Result;
+	TString result;
 	if(iParam>kNCIUParam + kNChannelParam -1) {
 		AliError(Form("Requesting FEE parameter number %d. Max parameter number is : %d",iParam,kNCIUParam + kNChannelParam-1));
-		return Result;
+		return result;
 	}
 	switch (iParam) {
-		case 0: Result = "Clk1Win1"; break;
-		case 1: Result = "Clk2Win1"; break;
-		case 2: Result = "Clk1Win2"; break;
-		case 3: Result = "Clk2Win2"; break;
-		case 4: Result = "DelayClk1Win1"; break;
-		case 5: Result = "DelayClk2Win1"; break;
-		case 6: Result = "DelayClk1Win2"; break;
-		case 7: Result = "DelayClk2Win2"; break;
-		case 8: Result = "LatchWin1"; break;
-		case 9: Result = "LatchWin2"; break;
-		case 10: Result = "ResetWin1"; break;
-		case 11: Result = "ResetWin2"; break;
-		case 12: Result = "PedestalSubtraction"; break;
-		case 13: Result = "EnableCharge"; break;
-		case 14: Result = "EnableTiming"; break;
-		case 15: Result = "PedEven"; break;
-		case 16: Result = "PedOdd"; break;
-		case 17: Result = "PedCutEven"; break;
-		case 18: Result = "PedCutOdd"; break;
-		case 19: Result = "DelayHit"; break;
-		case 20: Result = "DiscriThr"; break;
+		case 0: result = "Clk1Win1"; break;
+		case 1: result = "Clk2Win1"; break;
+		case 2: result = "Clk1Win2"; break;
+		case 3: result = "Clk2Win2"; break;
+		case 4: result = "DelayClk1Win1"; break;
+		case 5: result = "DelayClk2Win1"; break;
+		case 6: result = "DelayClk1Win2"; break;
+		case 7: result = "DelayClk2Win2"; break;
+		case 8: result = "LatchWin1"; break;
+		case 9: result = "LatchWin2"; break;
+		case 10: result = "ResetWin1"; break;
+		case 11: result = "ResetWin2"; break;
+		case 12: result = "PedestalSubtraction"; break;
+		case 13: result = "EnableCharge"; break;
+		case 14: result = "EnableTiming"; break;
+		case 15: result = "PedEven"; break;
+		case 16: result = "PedOdd"; break;
+		case 17: result = "PedCutEven"; break;
+		case 18: result = "PedCutOdd"; break;
+		case 19: result = "DelayHit"; break;
+		case 20: result = "DiscriThr"; break;
 	}
-	return Result;
+	return result;
 }
 
 void AliVZERODataFEE::PrintAliases(){
 	for(int i=0;i<kNAliases;i++) AliInfo(Form("%s",fAliasNames[i].Data()));
 }
+

@@ -1,10 +1,13 @@
 #ifndef ALIVZEROTrigger_H
 #define ALIVZEROTrigger_H
-
-///_________________________________________________________________________
-///
-///  Class for making  VZERO Trigger
-///_________________________________________________________________________   
+// ---------------------
+// Class AliVZEROTrigger
+// ---------------------
+// Top class to simulate the VZERO trigger response
+// This class is only used for interface with AliTriggerDetector
+// Its create and Set  Inputs of the CTP
+// The Calculation of the trigger response is done into AliVZEROTriggerSimulator
+//
 
 
 #include "AliTriggerDetector.h"
@@ -21,4 +24,5 @@ class AliVZEROTrigger : public AliTriggerDetector
 };
 
 #endif // AliVZEROTrigger_H
+
 
