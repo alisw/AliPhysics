@@ -1236,6 +1236,7 @@ int AliHLTSystem::LoadConfigurations(AliRawReader* rawReader, AliRunLoader* runl
     const char* deplibs=pAgent->GetRequiredComponentLibraries();
     if (deplibs) {
       HLTDebug("required libraries \'%s\' for agent %s (%p)", deplibs, pAgent->GetName(), pAgent);
+      extralibs+=" ";
       extralibs+=deplibs;
     }
   }
