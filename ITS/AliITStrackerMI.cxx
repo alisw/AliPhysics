@@ -658,7 +658,7 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
      t->SetExpQ(TMath::Max(0.8*t->GetESDtrack()->GetTPCsignal(),30.));
 
      ResetTrackToFollow(*t);
-
+     /*
      // propagate to vertex [SR, GSI 17.02.2003]
      // Start Time measurement [SR, GSI 17.02.2003], corrected by I.Belikov
      if (CorrectForPipeMaterial(&fTrackToFollow,"inward")) {
@@ -666,7 +666,17 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
 	 fTrackToFollow.StartTimeIntegral();
        // from vertex to outside pipe
        CorrectForPipeMaterial(&fTrackToFollow,"outward");
+       }*/
+     // Start time integral and add distance from current position to vertex 
+     Double_t xyzTrk[3],xyzVtx[3]={GetX(),GetY(),GetZ()};
+     fTrackToFollow.GetXYZ(xyzTrk);
+     Double_t dst2 = 0.;
+     for (Int_t icoord=0; icoord<3; icoord++) {  
+       Double_t di = xyzTrk[icoord] - xyzVtx[icoord];
+       dst2 += di*di; 
      }
+     fTrackToFollow.StartTimeIntegral();
+     fTrackToFollow.AddTimeStep(TMath::Sqrt(dst2));
 
      fTrackToFollow.ResetCovariance(10.); fTrackToFollow.ResetClusters();
      if (RefitAt(AliITSRecoParam::GetrInsideITSscreen(),&fTrackToFollow,t)) {
@@ -2220,6 +2230,11 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 
      Double_t oldGlobXYZ[3];
      if (!track->GetXYZ(oldGlobXYZ)) return kFALSE;
+
+     // continue if we are already beyond this layer
+     Double_t oldGlobR = TMath::Sqrt(oldGlobXYZ[0]*oldGlobXYZ[0]+oldGlobXYZ[1]*oldGlobXYZ[1]);
+     if(step>0 && oldGlobR > r) continue; // going outward
+     if(step<0 && oldGlobR < r) continue; // going inward
 
      Double_t phi,z;
      if (!track->GetPhiZat(r,phi,z)) return kFALSE;
@@ -3999,6 +4014,13 @@ Int_t AliITStrackerMI::CorrectForShieldMaterial(AliITStrackMI *t,
     Error("CorrectForShieldMaterial"," Wrong shield name\n");
     return 0;
   }
+
+  // do nothing if we are already beyond the shield
+  Double_t rTrack = TMath::Sqrt(t->GetX()*t->GetX()+t->GetY()*t->GetY());
+  if(dir<0 && rTrack > rToGo) return 1; // going outward
+  if(dir>0 && rTrack < rToGo) return 1; // going inward
+
+
   Double_t xToGo;
   if (!t->GetLocalXat(rToGo,xToGo)) return 0;
 
@@ -4648,4 +4670,3 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
   }
 return;
 }
-
