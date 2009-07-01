@@ -287,37 +287,47 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     
   }
   //else {cout<<"No eventHandler!"<<endl; }
-  
-  // set the value of the monte carlo event plane for the flow event
-  cout << "settings for afterburner in TaskFlowEvent.cxx:" << endl;
-  cout << "fCount" << fCount << endl;
-  cout << "fNoOfLoops" << fNoOfLoops << endl;
-  cout << "fEllipticFlowValue" << fEllipticFlowValue << endl;
-  cout << "fSigmaEllipticFlowValue" << fSigmaEllipticFlowValue << endl;
-  cout << "fMultiplicityOfEvent" << fMultiplicityOfEvent << endl;
-  cout << "fSigmaMultiplicityOfEvent" << fSigmaMultiplicityOfEvent << endl;
-  
-  Double_t xRPangle=TMath::TwoPi()*(fMyTRandom3->Rndm());
-  Double_t xNewFlowValue = fMyTRandom3->Gaus(fEllipticFlowValue,fSigmaEllipticFlowValue);
-  Int_t nNewMultOfEvent = fMyTRandom3->Gaus(fMultiplicityOfEvent,fSigmaMultiplicityOfEvent);
-  
-  cout << "xRPangle = " << xRPangle << endl;
-  cout << "xNewFlowValue = " << xNewFlowValue << endl;
-  cout << "nNewMultOfEvent = " << nNewMultOfEvent << endl;
-  cout << "settings for after burner" << endl;  
+
 
   fEventMaker->SetMCReactionPlaneAngle(fRP);
-  if (fEllipticFlowValue != 0.) {
-    fEventMaker->SetMCReactionPlaneAngle(xRPangle);
-  }  
-  fEventMaker->SetNoOfLoops(fNoOfLoops);
-  fEventMaker->SetEllipticFlowValue(xNewFlowValue);
-  fEventMaker->SetMultiplicityOfEvent(nNewMultOfEvent);  
-  //end settings afterburner
-
   //setting event cuts
   fEventMaker->SetMinMult(fMinMult);
   fEventMaker->SetMaxMult(fMaxMult);
+
+  if (fEllipticFlowValue != 0.) {  
+    // set the value of the monte carlo event plane for the flow event
+    cout << "settings for afterburner in TaskFlowEvent.cxx:" << endl;
+    cout << "fCount" << fCount << endl;
+    cout << "fNoOfLoops" << fNoOfLoops << endl;
+    cout << "fEllipticFlowValue" << fEllipticFlowValue << endl;
+    cout << "fSigmaEllipticFlowValue" << fSigmaEllipticFlowValue << endl;
+    cout << "fMultiplicityOfEvent" << fMultiplicityOfEvent << endl;
+    cout << "fSigmaMultiplicityOfEvent" << fSigmaMultiplicityOfEvent << endl;
+
+    Double_t xRPangle=0.;
+    Double_t xNewFlowValue = 0.;
+    Int_t nNewMultOfEvent = 100000000;
+
+    if (fMyTRandom3) {  
+      xRPangle = TMath::TwoPi()*(fMyTRandom3->Rndm());
+      xNewFlowValue = fMyTRandom3->Gaus(fEllipticFlowValue,fSigmaEllipticFlowValue);
+      nNewMultOfEvent = fMyTRandom3->Gaus(fMultiplicityOfEvent,fSigmaMultiplicityOfEvent);
+    }
+    else {
+      cout << "no random generator pointer initialized " << endl;
+    }
+    cout << "xRPangle = " << xRPangle << endl;
+    cout << "xNewFlowValue = " << xNewFlowValue << endl;
+    cout << "nNewMultOfEvent = " << nNewMultOfEvent << endl;
+    cout << "settings for after burner" << endl;  
+
+    fEventMaker->SetMCReactionPlaneAngle(xRPangle);
+    fEventMaker->SetNoOfLoops(fNoOfLoops);
+    fEventMaker->SetEllipticFlowValue(xNewFlowValue);
+    fEventMaker->SetMultiplicityOfEvent(nNewMultOfEvent);  
+    //end settings afterburner
+  }  
+
   
   // Fill the FlowEventSimple for MC input          
   if (fAnalysisType == "MC") {
