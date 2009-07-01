@@ -14,7 +14,6 @@ class AliTPCCalROC;
 class AliTPCRawStream;
 class AliTPCRawStreamFast;
 class AliRawReader;
-class AliTPCAltroMapping;
 class TMap;
 
 struct eventHeaderStruct;
@@ -32,9 +31,6 @@ public:
   virtual Int_t  Update(const Int_t isector, const Int_t iRow, const Int_t iPad,
 	        const Int_t iTimeBin, const Float_t signal);
   virtual void   Analyse();
-  //
-  AliTPCAltroMapping **GetAltroMapping() { return fMapping; };
-  void  SetAltroMapping(AliTPCAltroMapping **mapp) { fMapping = mapp; };
   //
   AliTPCCalROC* GetCalRocPedestal (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
   AliTPCCalROC* GetCalRocSigma(Int_t sector, Bool_t force=kFALSE);        // get calibration object - sector

@@ -52,6 +52,7 @@
 #pragma link C++ class AliTPCCalibPedestal+;
 #pragma link C++ class AliTPCCalibPulser+;
 #pragma link C++ class AliTPCCalibCE+;
+#pragma link C++ class AliTPCCalibRaw+;
 #pragma link C++ class AliTPCPreprocessor+;
 #pragma link C++ class AliTPCPreprocessorOnline+;
 #pragma link C++ class AliTPCCalibViewer+;

@@ -22,7 +22,6 @@ class AliTPCParam;
 class AliRawReader;
 class AliTPCRawStream;
 class AliTPCRawStreamFast;
-class AliTPCAltroMapping;
 class TMap;
 
 struct eventHeaderStruct;
