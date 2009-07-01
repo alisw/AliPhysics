@@ -49,6 +49,7 @@ fHistBackground(0),
 fVHF(0)
 {
   // Default constructor
+
 }
 
 //________________________________________________________________________
@@ -67,9 +68,9 @@ fVHF(0)
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
   // Output slot #2 writes into a TNtuple container
-  DefineOutput(2,TNtuple::Class());  //My private output
+  DefineOutput(2,TNtuple::Class());  //My private output //AD
   // Output slot #3 writes into a TNtuple container
-  DefineOutput(3,TNtuple::Class());  //My private output
+  DefineOutput(3,TNtuple::Class());  //My private output //AD
 }
 
 //________________________________________________________________________
@@ -134,7 +135,10 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 
   fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Ptpi:Ptpi2:PtK:PtRec:PtTrue:PointingAngle:DecLeng:VxTrue:VxRec:InvMass:sigvert");
   fNtupleDplusbackg = new TNtuple("fNtupleDplusbackg","D + backg","Ptpibkg:Ptpi2bkg:PtKbkg:PtRecbkg:PointingAnglebkg:DLbkg:VxRecbkg:InvMassbkg:sigvertbkg");
-  
+
+  //fOutput->Add(fNtupleDplus); // AD
+  //fOutput->Add(fNtupleDplusbackg); //AD
+
   return;
 }
 
@@ -188,36 +192,40 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	d->SetOwnPrimaryVtx(vtx1);
 	unsetvtx=kTRUE;
       }
-      if(d->SelectDplus(fVHF->GetDplusCuts())) {
+      if(d->SelectDplus(fVHF->GetDplusCuts()))
+	{
 	  
 	  
-	Int_t labDp = d->MatchToMC(411,arrayMC);
-    
-	if(labDp>=0) {
-	  AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
-	  Int_t pdgDp = TMath::Abs(partDp->GetPdgCode());
-	  if(pdgDp==411){
-	    
-	    fHistSignal->Fill(d->InvMassDplus());
-	    fHistMass->Fill(d->InvMassDplus());
-	    
-	    // Post the data already here
-	    PostData(1,fOutput);
-	    
-	    AliAODMCParticle *dg0 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(0));
-	    fNtupleDplus->Fill(pdgDp,partDp->Px()-d->Px(),partDp->Py()-d->Py(),partDp->Pz()-d->Pz(),d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),partDp->Pt(),d->CosPointingAngle(),d->DecayLength(),dg0->Xv(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());
-	    PostData(2,fNtupleDplus);
-	  }
-	} else {     
-	  fHistBackground->Fill(d->InvMassDplus());
-	  fNtupleDplusbackg->Fill(d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),d->CosPointingAngle(),d->DecayLength(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());	    
-	  PostData(3,fNtupleDplusbackg);
-	  fHistMass->Fill(d->InvMassDplus());
-	}
-	
-	
-      }
+	  Int_t labDp = d->MatchToMC(411,arrayMC);
+	  //  if(labDp>=0) {
+	    AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
+	    if(labDp>=0) {
+	      Int_t pdgDp = TMath::Abs(partDp->GetPdgCode());
+	      if(pdgDp==411){
 
+	  fHistSignal->Fill(d->InvMassDplus());
+	  fHistMass->Fill(d->InvMassDplus());
+	    
+	  // Post the data already here
+	  PostData(1,fOutput);
+
+	  fNtupleDplus->Fill(pdgDp,partDp->Px()-d->Px(),partDp->Py()-d->Py(),partDp->Pz()-d->Pz(),d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),partDp->Pt(),d->CosPointingAngle(),d->DecayLength(),partDp->Xv(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());
+	  PostData(2,fNtupleDplus); //AD
+	      }
+	    }	  
+else {     
+	    fHistBackground->Fill(d->InvMassDplus());
+	    fNtupleDplusbackg->Fill(d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),d->CosPointingAngle(),d->DecayLength(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());	    
+	    PostData(3,fNtupleDplusbackg); //AD
+
+	  fHistMass->Fill(d->InvMassDplus());
+ }
+	  
+	
+	}
+
+
+	
       if(unsetvtx) d->UnsetOwnPrimaryVtx();
 
     }
@@ -240,12 +248,16 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
     return;
   }
 
+  //fNtupleDplus = dynamic_cast<TNtuple*>(fOutput->FindObject("fNtupleDplus"));//AD
   fHistMass = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMass"));
   fHistSignal = dynamic_cast<TH1F*>(fOutput->FindObject("fHistSignal"));
   fHistBackground = dynamic_cast<TH1F*>(fOutput->FindObject("fHistBackground"));
-  fNtupleDplus = dynamic_cast<TNtuple*>(GetOutputData(2));
-  fNtupleDplusbackg = dynamic_cast<TNtuple*>(GetOutputData(3));
+  //fNtupleDplusbackg = dynamic_cast<TNtuple*>(fOutput->FindObject("fNtupleDplusbackg")); //AD
 
-  return;
+  fNtupleDplus = dynamic_cast<TNtuple*> (GetOutputData(2)); //AD
+  fNtupleDplusbackg = dynamic_cast<TNtuple*> (GetOutputData(3)); //AD
+
+
+    return;
 }
 
