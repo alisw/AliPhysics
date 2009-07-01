@@ -32,6 +32,7 @@
 #pragma link C++ class  AliTOFCableLengthMap+;
 #pragma link C++ class  AliTOFNoiseConfigHandler+;
 #pragma link C++ class  AliTOFcalibHisto+;
+#pragma link C++ class  AliTOFArray+;
 
 
 #endif
