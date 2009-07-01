@@ -36,6 +36,7 @@ using namespace std;
 #include "TObjectTable.h"
 #include "TClass.h"
 #include "TStopwatch.h"
+#include "TFormula.h"
 #include "AliHLTMemoryFile.h"
 #include "AliHLTMisc.h"
 #include <cassert>
@@ -90,6 +91,7 @@ AliHLTComponent::AliHLTComponent()
   fEventDoneDataSize(0),
   fCompressionLevel(ALIHLTCOMPONENT_DEFAULT_OBJECT_COMPRESSION)
   , fLastObjectSize(0)
+  , fpTriggerClasses(NULL)
 {
   // see header file for class documentation
   // or
@@ -130,6 +132,13 @@ AliHLTComponent::~AliHLTComponent()
   }
   if (fEventDoneData)
     delete [] reinterpret_cast<AliHLTUInt8_t*>( fEventDoneData );
+  fEventDoneData=NULL;
+
+  if (fpTriggerClasses) {
+    fpTriggerClasses->Delete();
+    delete fpTriggerClasses;
+  }
+  fpTriggerClasses=NULL;
 }
 
 AliHLTComponentHandler* AliHLTComponent::fgpComponentHandler=NULL;
@@ -264,11 +273,21 @@ int AliHLTComponent::Deinit()
   int iResult=0;
   iResult=DoDeinit();
   if (fpRunDesc) {
-    HLTWarning("did not receive EOR for run %d", fpRunDesc->fRunNo);
+    // TODO: the warning should be kept, but the condition is wrong since the
+    // AliHLTRunDesc is set before the SOR event in the SetRunDescription
+    // method. A couple of state flags should be defined but that is a bit more
+    // work to do. For the moment disable the warning (2009-07-01)
+    //HLTWarning("did not receive EOR for run %d", fpRunDesc->fRunNo);
     AliHLTRunDesc* pRunDesc=fpRunDesc;
     fpRunDesc=NULL;
     delete pRunDesc;
   }
+  if (fpTriggerClasses) {
+    fpTriggerClasses->Delete();
+    delete fpTriggerClasses;
+  }
+  fpTriggerClasses=NULL;
+
   fEventCount=0;
   return iResult;
 }
@@ -1454,6 +1473,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     int indexUpdtDCSEvent=-1;
     int indexSOREvent=-1;
     int indexEOREvent=-1;
+    int indexECSParamBlock=-1;
     for (unsigned int i=0; i<evtData.fBlockCnt && iResult>=0; i++) {
       if (fpInputBlocks[i].fDataType==kAliHLTDataTypeSOR) {
 	indexSOREvent=i;
@@ -1504,6 +1524,8 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeComponentTable) {
 	forwardedBlocks.push_back(fpInputBlocks[i]);
 	parentComponentTables.push_back(fpInputBlocks[i].fSpecification);
+      } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeECSParam) {
+	indexECSParamBlock=i;
       } else {
 	// the processing function is called if there is at least one
 	// non-steering data block. Steering blocks are not filtered out
@@ -1536,6 +1558,26 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	}
       } else {
 	iResult=-ENOMEM;
+      }
+
+      if (indexECSParamBlock>=0) {
+	if (fpInputBlocks[indexECSParamBlock].fSize>0) {
+	  const char* param=reinterpret_cast<const char*>(fpInputBlocks[indexECSParamBlock].fPtr);
+	  TString paramString;
+	  if (param[fpInputBlocks[indexECSParamBlock].fSize-1]!=0) {
+	    HLTWarning("ECS parameter string not terminated");
+	    paramString.Insert(0, param, fpInputBlocks[indexECSParamBlock].fSize);
+	    paramString+="";
+	  } else {
+	    paramString=param;
+	  }
+	  ScanECSParam(paramString.Data());
+	} else {
+	  HLTWarning("empty ECS parameter received");
+	}
+      } else {
+	// TODO: later on we might throw a warning here since the CTP trigger classes
+	// should be mandatory
       }
     }
     if (indexEOREvent>=0) {
@@ -2191,4 +2233,132 @@ int AliHLTComponent::LoggingVarargs(AliHLTComponentLogSeverity severity,
   va_end(args);
 
   return iResult;
+}
+
+int AliHLTComponent::ScanECSParam(const char* ecsParam)
+{
+  // see header file for function documentation
+
+  // format of the parameter string from ECS
+  // <command>;<parameterkey>=<parametervalue>;<parameterkey>=<parametervalue>;...
+  // search for a subset of the parameterkeys
+  int iResult=0;
+  TString string=ecsParam;
+  TObjArray* parameter=string.Tokenize(";");
+  if (parameter) {
+    for (int i=0; i<parameter->GetEntries(); i++) {
+      TString entry=((TObjString*)parameter->At(i))->GetString();
+      HLTDebug("scanning ECS entry: %s", entry.Data());
+      TObjArray* entryParams=entry.Tokenize("=");
+      if (entryParams) {
+	if (entryParams->GetEntries()>1) {
+	  if ((((TObjString*)entryParams->At(0))->GetString()).CompareTo("CTP_TRIGGER_CLASS")==0) {
+	    int result=InitCTPTriggerClasses((((TObjString*)entryParams->At(1))->GetString()).Data());
+	    if (iResult>=0 && result<0) iResult=result;
+	  } else {
+	    // TODO: scan the other parameters
+	    // e.g. consistency check of run number
+	  }
+	}
+	delete entryParams;
+      }
+    }
+    delete parameter;
+  }
+
+  return iResult;
+}
+
+int AliHLTComponent::InitCTPTriggerClasses(const char* ctpString)
+{
+  // see header file for function documentation
+  if (!ctpString) return -EINVAL;
+
+  if (fpTriggerClasses) {
+    fpTriggerClasses->Delete();
+  } else {
+    fpTriggerClasses=new TObjArray(gkNCTPTriggerClasses);
+  }
+  if (!fpTriggerClasses) return -ENOMEM;
+
+  // general format of the CTP_TRIGGER_CLASS parameter
+  // <bit position>:<Trigger class identifier string>:<detector-id-nr>-<detector-id-nr>-...,<bit position>:<Trigger class identifier string>:<detector-id-nr>-<detector-id-nr>-...,...
+  // the detector ids are ignored for the moment
+  HLTDebug(": %s", ctpString);
+  TString string=ctpString;
+  TObjArray* classEntries=string.Tokenize(",");
+  if (classEntries) {
+    for (int i=0; i<classEntries->GetEntries(); i++) {
+      TString entry=((TObjString*)classEntries->At(i))->GetString();
+      TObjArray* entryParams=entry.Tokenize(":");
+      if (entryParams) {
+	if (entryParams->GetEntries()==3 &&
+	    (((TObjString*)entryParams->At(0))->GetString()).IsDigit()) {
+	  int index=(((TObjString*)entryParams->At(0))->GetString()).Atoi();
+	  if (index<gkNCTPTriggerClasses) {
+	    fpTriggerClasses->AddAt(new TNamed("TriggerClass", (((TObjString*)entryParams->At(1))->GetString()).Data()), index);
+	  } else {
+	    // the trigger bitfield is fixed to 50 bits (gkNCTPTriggerClasses)
+	    HLTError("invalid trigger class entry %s, index width of trigger bitfield", entry.Data());
+	  }
+	} else {
+	  HLTError("invalid trigger class entry %s", entry.Data());
+	}
+	delete entryParams;
+      }
+    }
+    delete classEntries;
+  }
+  return 0;
+}
+
+bool AliHLTComponent::EvaluateCTPTriggerClass(const char* expression, AliHLTComponentTriggerData& trigData) const
+{
+  // see header file for function documentation
+  if (!fpTriggerClasses) {
+    HLTError("trigger classes not initialized");
+    return false;
+  }
+
+  if (trigData.fDataSize != sizeof(AliHLTEventTriggerData)) {
+    HLTError("invalid trigger data size: %d expected %d", trigData.fDataSize, sizeof(AliHLTEventTriggerData));
+    return false;
+  }
+
+  // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
+  AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
+  AliHLTUInt64_t triggerMask=evtData->fCommonHeader[6];
+  triggerMask<<=32;
+  triggerMask|=evtData->fCommonHeader[5];
+
+  // use a TFormula to interprete the expression
+  // all classname are replaced by '[n]' which means the n'th parameter in the formula
+  // the parameters are set to 0 or 1 depending on the bit in the trigger mask
+  //
+  // TODO: this will most likely fail for class names like 'base', 'baseA', 'baseB'
+  // the class names must be fully unique, none must be contained as substring in
+  // another class name. Probably not needed for the moment but needs to be extended.
+  vector<Double_t> par;
+  TString condition=expression;
+  for (int i=0; i<gkNCTPTriggerClasses; i++) {
+    if (fpTriggerClasses->At(i)) {
+      TString className=fpTriggerClasses->At(i)->GetTitle();
+      //HLTDebug("checking trigger class %s", className.Data());
+      if (condition.Contains(className)) {
+	TString replace; replace.Form("[%d]", par.size());
+	//HLTDebug("replacing %s with %s in \"%s\"", className.Data(), replace.Data(), condition.Data());
+	condition.ReplaceAll(className, replace);
+	if (triggerMask&((AliHLTUInt64_t)0x1<<i)) par.push_back(1.0);
+	else par.push_back(0.0);
+      }
+    }
+  }
+
+  TFormula form("trigger expression", condition);
+  if (form.Compile()!=0) {
+    HLTError("invalid expression %s", expression);
+    return false;
+  }
+  if (form.EvalPar(&par[0], &par[0])>0.5) return true;
+  return false;
 }

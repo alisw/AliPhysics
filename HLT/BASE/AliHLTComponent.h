@@ -1223,6 +1223,15 @@ class AliHLTComponent : public AliHLTLogging {
   const char* GetChainId() const {return fChainId.c_str();}
 
   /**
+   * Check whether a combination of trigger classes is fired.
+   * The expression can contain trigger class ids and logic operators
+   * like &&, ||, !, and ^, and may be grouped by parentheses.
+   * @param expression     a logic expression of trigger class ids
+   * @param trigData       the trigger data data
+   */
+  bool EvaluateCTPTriggerClass(const char* expression, AliHLTComponentTriggerData& trigData) const;
+
+  /**
    * Check whether the current event is a valid data event.
    * @param pTgt    optional pointer to get the event type
    * @return true if the current event is a real data event
@@ -1407,6 +1416,23 @@ class AliHLTComponent : public AliHLTLogging {
 			      AliHLTUInt32_t offset,
 			      const vector<AliHLTUInt32_t>& parents) const;
 
+  /**
+   * Scan the ECS parameter string.
+   * The framework provides both the parameters of CONFIGURE and ENGAGE
+   * in one string in a special data block kAliHLTDataTypeECSParam
+   * {ECSPARAM:PRIV}. The general format is
+   * <command>;<parameterkey>=<parametervalue>;<parameterkey>=<parametervalue>;...
+   */
+  int ScanECSParam(const char* ecsParam);
+
+  /**
+   * The trigger classes are determined from the trigger and propagated by
+   * ECS as part of the ENGAGE command parameter which is sent through the
+   * framework during the SOR event. This function treats the value of the
+   * parameter key CTP_TRIGGER_CLASS.
+   */
+  int InitCTPTriggerClasses(const char* ctpString);
+
   /** The global component handler instance */
   static AliHLTComponentHandler* fgpComponentHandler;              //! transient
 
@@ -1498,6 +1524,9 @@ class AliHLTComponent : public AliHLTLogging {
   /** size of last PushBack-serialized object */
   int fLastObjectSize;                                             //! transient
 
-  ClassDef(AliHLTComponent, 10)
+ /**  array of trigger class descriptors */
+  TObjArray* fpTriggerClasses;                                     //! transient
+
+  ClassDef(AliHLTComponent, 11)
 };
 #endif
