@@ -584,7 +584,7 @@ void AliMUONQADataMakerRec::InitRecPointsTracker()
     h1I = new TH1I(Form("hTrackerClusterMultiplicityForChamber%d",i+1), Form("cluster size distribution in chamber %d;size (n_{pads};Counts)",i+1), 100,0,100);
     Add2RecPointsList(h1I,kTrackerClusterMultiplicityPerChamber+i, expert, !image);
     
-    h1I = new TH1I(Form("hTrackerClusterChargeForChamber%d",i+1), Form("cluster charge distribution in chamber %d;charge (ADC counts);Counts",i+1), 500,0,5000);
+    h1I = new TH1I(Form("hTrackerClusterChargeForChamber%d",i+1), Form("cluster charge distribution in chamber %d;charge (fC);Counts",i+1), 100,0,1000);
     Add2RecPointsList(h1I,kTrackerClusterChargePerChamber+i, expert, !image);
     
     Float_t rMax = AliMUONConstants::Rmax(i/2);
@@ -608,13 +608,13 @@ void AliMUONQADataMakerRec::InitRecPointsTracker()
   h1F->SetMarkerColor(kRed);
   Add2RecPointsList(h1F, kTrackerClusterMultiplicityPerChSigma, !expert, image);
   
-  h1F = new TH1F("hTrackerClusterChargePerChMean", "cluster mean charge per chamber;chamber ID;<charge> (ADC counts)", nCh,-0.5,nCh-0.5);
+  h1F = new TH1F("hTrackerClusterChargePerChMean", "cluster mean charge per chamber;chamber ID;<charge> (fC)", nCh,-0.5,nCh-0.5);
   h1F->SetOption("P");
   h1F->SetMarkerStyle(kFullDotMedium);
   h1F->SetMarkerColor(kRed);
   Add2RecPointsList(h1F, kTrackerClusterChargePerChMean, !expert, image);
   
-  h1F = new TH1F("hTrackerClusterChargePerChSigma", "cluster charge dispersion per chamber;chamber ID;#sigma_{charge} (ADC counts)", nCh,-0.5,nCh-0.5);
+  h1F = new TH1F("hTrackerClusterChargePerChSigma", "cluster charge dispersion per chamber;chamber ID;#sigma_{charge} (fC)", nCh,-0.5,nCh-0.5);
   h1F->SetOption("P");
   h1F->SetMarkerStyle(kFullDotMedium);
   h1F->SetMarkerColor(kRed);
@@ -635,7 +635,7 @@ void AliMUONQADataMakerRec::InitRecPointsTracker()
       h1I = new TH1I(Form("hTrackerClusterMultiplicityForDE%04d",detElemId), Form("cluster size distribution in detection element %d;size (n_{pads})",detElemId), 100,0,100);
       Add2RecPointsList(h1I,kTrackerClusterMultiplicityPerDE+detElemId, expert, !image);
       
-      h1I = new TH1I(Form("hTrackerClusterChargeForDE%04d",detElemId), Form("cluster charge distribution in detection element %d;charge (ADC counts)",detElemId), 500,0,5000);
+      h1I = new TH1I(Form("hTrackerClusterChargeForDE%04d",detElemId), Form("cluster charge distribution in detection element %d;charge (fC)",detElemId), 100,0,1000);
       Add2RecPointsList(h1I,kTrackerClusterChargePerDE+detElemId, expert, !image);
     }
     
@@ -652,7 +652,7 @@ void AliMUONQADataMakerRec::InitRecPointsTracker()
   h1F->SetMarkerColor(kRed);
   Add2RecPointsList(h1F, kTrackerClusterMultiplicityPerDEMean, !expert, image);
   
-  h1F = new TH1F("hTrackerClusterChargePerDEMean", "cluster mean charge per DE;DetElem ID;<charge> (ADC counts)", ndes+1,-0.5,ndes+0.5);
+  h1F = new TH1F("hTrackerClusterChargePerDEMean", "cluster mean charge per DE;DetElem ID;<charge> (fC)", ndes+1,-0.5,ndes+0.5);
   h1F->SetOption("P");
   h1F->SetMarkerStyle(kFullDotMedium);
   h1F->SetMarkerColor(kRed);
@@ -779,23 +779,23 @@ void AliMUONQADataMakerRec::InitESDs()
   Add2ESDsList(hESDnClustersPerDE, kESDnClustersPerDE, !expert, image);
   
   for (Int_t i = 0; i < nCh; i++) {
-    TH1F* hESDClusterChargeInCh = new TH1F(Form("hESDClusterChargeInCh%d",i+1), Form("cluster charge distribution in chamber %d;charge (ADC counts)",i+1), 500, 0., 5000.);
+    TH1F* hESDClusterChargeInCh = new TH1F(Form("hESDClusterChargeInCh%d",i+1), Form("cluster charge distribution in chamber %d;charge (fC)",i+1), 100, 0., 1000.);
     Add2ESDsList(hESDClusterChargeInCh, kESDClusterChargeInCh+i, expert, !image);
   }
   
-  TH1F* hESDClusterChargePerChMean = new TH1F("hESDClusterChargePerChMean", "cluster mean charge per chamber;chamber ID;<charge> (ADC counts)", nCh, -0.5, nCh-0.5);
+  TH1F* hESDClusterChargePerChMean = new TH1F("hESDClusterChargePerChMean", "cluster mean charge per chamber;chamber ID;<charge> (fC)", nCh, -0.5, nCh-0.5);
   hESDClusterChargePerChMean->SetOption("P");
   hESDClusterChargePerChMean->SetMarkerStyle(kFullDotMedium);
   hESDClusterChargePerChMean->SetMarkerColor(kRed);
   Add2ESDsList(hESDClusterChargePerChMean, kESDClusterChargePerChMean, !expert, image);
   
-  TH1F* hESDClusterChargePerChSigma = new TH1F("hESDClusterChargePerChSigma", "cluster charge dispersion per chamber;chamber ID;#sigma_{charge} (ADC counts)", nCh, -0.5, nCh-0.5);
+  TH1F* hESDClusterChargePerChSigma = new TH1F("hESDClusterChargePerChSigma", "cluster charge dispersion per chamber;chamber ID;#sigma_{charge} (fC)", nCh, -0.5, nCh-0.5);
   hESDClusterChargePerChSigma->SetOption("P");
   hESDClusterChargePerChSigma->SetMarkerStyle(kFullDotMedium);
   hESDClusterChargePerChSigma->SetMarkerColor(kRed);
   Add2ESDsList(hESDClusterChargePerChSigma, kESDClusterChargePerChSigma, !expert, image);
   
-  TH1F* hESDClusterChargePerDE = new TH1F("hESDClusterChargePerDE", "cluster mean charge per DE;DetElem ID;<charge> (ADC counts)", nDE+1, -0.5, nDE+0.5);
+  TH1F* hESDClusterChargePerDE = new TH1F("hESDClusterChargePerDE", "cluster mean charge per DE;DetElem ID;<charge> (fC)", nDE+1, -0.5, nDE+0.5);
   hESDClusterChargePerDE->SetOption("P");
   hESDClusterChargePerDE->SetMarkerStyle(kFullDotMedium);
   hESDClusterChargePerDE->SetMarkerColor(kRed);
@@ -866,19 +866,19 @@ void AliMUONQADataMakerRec::InitESDs()
   hESDResidualYPerChSigma->SetMarkerColor(kRed);
   Add2ESDsList(hESDResidualYPerChSigma, kESDResidualYPerChSigma, !expert, image);
   
-  TH1F* hESDLocalChi2XPerChMean = new TH1F("hESDLocalChi2XPerChMean", "local chi2-X per Ch: mean;chamber ID;<local #chi^{2}_{X}>", nCh, -0.5, nCh-0.5);
+  TH1F* hESDLocalChi2XPerChMean = new TH1F("hESDLocalChi2XPerCh", "local chi2-X per Ch: mean;chamber ID;<local #chi^{2}_{X}>", nCh, -0.5, nCh-0.5);
   hESDLocalChi2XPerChMean->SetOption("P");
   hESDLocalChi2XPerChMean->SetMarkerStyle(kFullDotMedium);
   hESDLocalChi2XPerChMean->SetMarkerColor(kRed);
   Add2ESDsList(hESDLocalChi2XPerChMean, kESDLocalChi2XPerChMean, !expert, image);
   
-  TH1F* hESDLocalChi2YPerChMean = new TH1F("hESDLocalChi2YPerChMean", "local chi2-Y per Ch: mean;chamber ID;<local #chi^{2}_{Y}>", nCh, -0.5, nCh-0.5);
+  TH1F* hESDLocalChi2YPerChMean = new TH1F("hESDLocalChi2YPerCh", "local chi2-Y per Ch: mean;chamber ID;<local #chi^{2}_{Y}>", nCh, -0.5, nCh-0.5);
   hESDLocalChi2YPerChMean->SetOption("P");
   hESDLocalChi2YPerChMean->SetMarkerStyle(kFullDotMedium);
   hESDLocalChi2YPerChMean->SetMarkerColor(kRed);
   Add2ESDsList(hESDLocalChi2YPerChMean, kESDLocalChi2YPerChMean, !expert, image);
   
-  TH1F* hESDLocalChi2PerChMean = new TH1F("hESDLocalChi2PerChMean", "local chi2 (~0.5*(#chi^{2}_{X}+#chi^{2}_{Y})) per Ch: mean;chamber ID;<local #chi^{2}>", nCh, -0.5, nCh-0.5);
+  TH1F* hESDLocalChi2PerChMean = new TH1F("hESDLocalChi2PerCh", "local chi2 (~0.5*(#chi^{2}_{X}+#chi^{2}_{Y})) per Ch: mean;chamber ID;<local #chi^{2}>", nCh, -0.5, nCh-0.5);
   hESDLocalChi2PerChMean->SetOption("P");
   hESDLocalChi2PerChMean->SetMarkerStyle(kFullDotMedium);
   hESDLocalChi2PerChMean->SetMarkerColor(kRed);
@@ -908,19 +908,19 @@ void AliMUONQADataMakerRec::InitESDs()
   hESDResidualYPerDESigma->SetMarkerColor(kRed);
   Add2ESDsList(hESDResidualYPerDESigma, kESDResidualYPerDESigma, !expert, image);
   
-  TH1F* hESDLocalChi2XPerDEMean = new TH1F("hESDLocalChi2XPerDEMean", "local chi2-X per DE: mean;DetElem ID;<local #chi^{2}_{X}>", nDE+1, -0.5, nDE+0.5);
+  TH1F* hESDLocalChi2XPerDEMean = new TH1F("hESDLocalChi2XPerDE", "local chi2-X per DE: mean;DetElem ID;<local #chi^{2}_{X}>", nDE+1, -0.5, nDE+0.5);
   hESDLocalChi2XPerDEMean->SetOption("P");
   hESDLocalChi2XPerDEMean->SetMarkerStyle(kFullDotMedium);
   hESDLocalChi2XPerDEMean->SetMarkerColor(kRed);
   Add2ESDsList(hESDLocalChi2XPerDEMean, kESDLocalChi2XPerDEMean, !expert, image);
   
-  TH1F* hESDLocalChi2YPerDEMean = new TH1F("hESDLocalChi2YPerDEMean", "local chi2-Y per DE: mean;DetElem ID;<local #chi^{2}_{Y}>", nDE+1, -0.5, nDE+0.5);
+  TH1F* hESDLocalChi2YPerDEMean = new TH1F("hESDLocalChi2YPerDE", "local chi2-Y per DE: mean;DetElem ID;<local #chi^{2}_{Y}>", nDE+1, -0.5, nDE+0.5);
   hESDLocalChi2YPerDEMean->SetOption("P");
   hESDLocalChi2YPerDEMean->SetMarkerStyle(kFullDotMedium);
   hESDLocalChi2YPerDEMean->SetMarkerColor(kRed);
   Add2ESDsList(hESDLocalChi2YPerDEMean, kESDLocalChi2YPerDEMean, !expert, image);
   
-  TH1F* hESDLocalChi2PerDEMean = new TH1F("hESDLocalChi2PerDEMean", "local chi2 (~0.5*(#chi^{2}_{X}+#chi^{2}_{Y})) per DE: mean;DetElem ID;<local #chi^{2}>", nDE+1, -0.5, nDE+0.5);
+  TH1F* hESDLocalChi2PerDEMean = new TH1F("hESDLocalChi2PerDE", "local chi2 (~0.5*(#chi^{2}_{X}+#chi^{2}_{Y})) per DE: mean;DetElem ID;<local #chi^{2}>", nDE+1, -0.5, nDE+0.5);
   hESDLocalChi2PerDEMean->SetOption("P");
   hESDLocalChi2PerDEMean->SetMarkerStyle(kFullDotMedium);
   hESDLocalChi2PerDEMean->SetMarkerColor(kRed);
@@ -933,7 +933,7 @@ void AliMUONQADataMakerRec::InitESDs()
   Add2ESDsList(hESDnTotClustersPerDE, kESDnTotClustersPerDE, expert, !image);
   TH1F* hESDnTotFullClustersPerDE = new TH1F("hESDnTotFullClustersPerDE", "total number of associated clusters containing pad info per DE;DetElem ID;#Sigma(n_{full clusters})", nDE+1, -0.5, nDE+0.5);
   Add2ESDsList(hESDnTotFullClustersPerDE, kESDnTotFullClustersPerDE, expert, !image);
-  TH1F* hESDSumClusterChargePerDE = new TH1F("hESDSumClusterChargePerDE", "sum of cluster charge per DE;DetElem ID;#Sigma(charge) (ADC counts)", nDE+1, -0.5, nDE+0.5);
+  TH1F* hESDSumClusterChargePerDE = new TH1F("hESDSumClusterChargePerDE", "sum of cluster charge per DE;DetElem ID;#Sigma(charge) (fC)", nDE+1, -0.5, nDE+0.5);
   Add2ESDsList(hESDSumClusterChargePerDE, kESDSumClusterChargePerDE, expert, !image);
   TH1F* hESDSumClusterSizePerDE = new TH1F("hESDSumClusterSizePerDE", "sum of cluster size per DE;DetElem ID;#Sigma(size) (n_{pads})", nDE+1, -0.5, nDE+0.5);
   Add2ESDsList(hESDSumClusterSizePerDE, kESDSumClusterSizePerDE, expert, !image);
