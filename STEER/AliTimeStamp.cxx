@@ -47,6 +47,7 @@ AliTimeStamp::AliTimeStamp():
   fPeriod(0),        
   fBunchCross(0)
 {
+ // Default constructor
 }     
 
 //_____________________________________________________________________________
@@ -65,6 +66,26 @@ AliTimeStamp::AliTimeStamp( UInt_t orbit, UInt_t period,
   fBunchCross( (ULong64_t)((seconds*1000000.+microsecs)*1000./fNanosecPerBC+0.5) )
 {
 }     
+//___________________________________________________________________________
+AliTimeStamp::AliTimeStamp(const AliTimeStamp &stamp):
+ TObject(stamp),
+ fOrbit(stamp.fOrbit),
+ fPeriod(stamp.fPeriod),
+ fBunchCross(stamp.fBunchCross)
+{
+ // copy constructor
+}
+//_____________________________________________________________________________
+AliTimeStamp& AliTimeStamp::operator=(const AliTimeStamp &stamp)
+{
+ //assignment operator
+ if(this==&stamp) return *this;
+ ((TObject *)this)->operator=(stamp);
+ fOrbit=stamp.fOrbit;
+ fPeriod=stamp.fPeriod;
+ fBunchCross=stamp.fBunchCross;
+ return *this;
+}
 //_____________________________________________________________________________
 void AliTimeStamp::SetTimeStamp( UInt_t orbit, UInt_t period, 
                             ULong64_t bunchcross )

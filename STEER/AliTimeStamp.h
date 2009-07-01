@@ -29,6 +29,8 @@ public:
                          AliTimeStamp( UInt_t orbit, UInt_t period, 
                                        UInt_t seconds, UInt_t microsecs );   
               virtual   ~AliTimeStamp() {}
+                         AliTimeStamp( const AliTimeStamp &timestamp );
+         AliTimeStamp&   operator=(const AliTimeStamp& timestamp);
               
       // Getters
                UInt_t    GetOrbit()      const { return fOrbit;     }        
@@ -56,8 +58,6 @@ protected:
 //              UInt_t    fMicroSecs;     // Microsecs  
                          
 private:                         
-                         AliTimeStamp( const AliTimeStamp &timestamp );
-         AliTimeStamp&   operator=(const AliTimeStamp& clus);
 
    ClassDef( AliTimeStamp, 1 )  // Define a timestamp
 };                                                                         
