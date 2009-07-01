@@ -1,4 +1,20 @@
-Bool_t MakeCosmicTriggersEntry(const char *fileName)
+#include "ARVersion.h"
+#include <iostream>
+#include <fstream>
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBId.h"
+#include "AliCDBMetaData.h"
+#include <TROOT.h>
+#include <TSystem.h>
+#include <THashTable.h>
+#include <TString.h>
+#include <TError.h>
+#include <TObjString.h>
+#endif
+
+Bool_t MakeCosmicTriggersEntry(const char *fileName, const char* cdbUri)
 {
   const char* macroname = "MakeCosmicTriggersEntry.C";
 
@@ -35,24 +51,32 @@ Bool_t MakeCosmicTriggersEntry(const char *fileName)
   delete file;
 
 
-  // save in CDB storage
-  TString Storage = gSystem->Getenv("STORAGE");
+  // create OCDB storage
+  TString Storage(cdbUri);
   if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
     Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
-    return;
+    return kFALSE;
   }
-  Info(macroname,"Saving alignment objects in CDB storage %s",Storage.Data());
   AliCDBManager* cdb = AliCDBManager::Instance();
   AliCDBStorage* storage = cdb->GetStorage(Storage.Data());
   if(!storage){
     Error(macroname,"Unable to open storage %s\n",Storage.Data());
-    return;
+    return kFALSE;
   }
+
   AliCDBMetaData* md = new AliCDBMetaData();
   md->SetResponsible("Federico Antinori");
   md->SetComment("List of the defined cosmic triggers. It is used in order to steer the reconstruction, namely in the selection of the proper event specie. It is maintained and updated by the trigger coordinator.");
-  md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
+  // Get root and AliRoot versions and set them in the metadata
+  const char* rootv = gROOT->GetVersion();
+  TString av(ALIROOT_SVN_BRANCH);
+  Int_t revnum = ALIROOT_SVN_REVISION;
+  av+=" - revision: ";
+  av+=revnum;
+  md->SetAliRootVersion(av.Data());
+
   AliCDBId id("GRP/Calib/CosmicTriggers",0,AliCDBRunRange::Infinity());
+  Info(macroname,"Saving the list of defined cosmic triggers in the OCDB storage \"%s\"",Storage.Data());
   storage->Put(table,id,md);
 
   table->Delete();
