@@ -774,7 +774,7 @@ void AliZDC::SetTreeAddress(){
 }
 
 //_____________________________________________________________________________
-AliZDCChMap* AliZDCRawStream::GetChMap() const
+AliZDCChMap* AliZDC::GetChMap() const
 {
 
   // Getting calibration object for ZDC
