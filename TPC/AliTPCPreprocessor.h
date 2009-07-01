@@ -10,6 +10,7 @@ class AliTestDataDCS;
 class AliTPCSensorTempArray;
 class AliDCSSensorArray;
 class AliTPCROC;
+class AliTPCCalibRaw;
 class TEnv;
 
 class AliTPCPreprocessor : public AliPreprocessor
@@ -30,6 +31,7 @@ class AliTPCPreprocessor : public AliPreprocessor
     UInt_t  ExtractCE(Int_t sourceFXS);
     UInt_t  ExtractQA(Int_t sourceFXS);
     UInt_t  ExtractAltro(Int_t sourceFXS);
+    UInt_t  ExtractRaw(Int_t sourceFXS);
     AliTPCPreprocessor& operator = (const AliTPCPreprocessor& rhs);
 
   private:

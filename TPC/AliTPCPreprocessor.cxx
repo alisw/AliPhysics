@@ -27,6 +27,7 @@
 #include "AliTPCCalibPedestal.h"
 #include "AliTPCCalibPulser.h"
 #include "AliTPCCalibCE.h"
+#include "AliTPCCalibRaw.h"
 #include "AliTPCdataQA.h"
 #include "ARVersion.h"
 #include "TFile.h"
@@ -325,6 +326,35 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
      resultArray->Add(status);
     }
   }
+
+
+// raw calibration processing
+
+  if(runType == kPhysicsRunType) {
+    Int_t numSources = 1;
+    Int_t rawSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
+    TString source = fConfEnv->GetValue("Raw","DAQ");
+    source.ToUpper();
+    if ( source != "OFF") { 
+     if ( source == "HLT") rawSource[0] = AliShuttleInterface::kHLT;
+     if (!GetHLTStatus()) rawSource[0] = AliShuttleInterface::kDAQ;
+     if (source == "HLTDAQ" ) {
+         numSources=2;
+	 rawSource[0] = AliShuttleInterface::kHLT;
+ 	 rawSource[1] = AliShuttleInterface::kDAQ;
+     }
+     if (source == "DAQHLT" ) numSources=2;
+     UInt_t rawResult=0;
+     for (Int_t i=0; i<numSources; i++ ) {	
+       rawResult = ExtractRaw(rawSource[i]);
+       if ( rawResult == 0 ) break;
+     }
+     result += rawResult;
+     status = new TParameter<int>("rawResult",rawResult);
+     resultArray->Add(status);
+    }
+  }
+
 
   // Altro configuration
 
@@ -740,58 +770,101 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
   return result;
 }
 
+//______________________________________________________________________________________________
+
+
+UInt_t AliTPCPreprocessor::ExtractRaw(Int_t sourceFXS)
+{
+ //
+ //  Read Raw calibration file from file exchage server
+ //
+ 
+ UInt_t result=0;
+ AliTPCCalibRaw *calRaw;
+
+ TList* list = GetFileSources(sourceFXS,"AliTPCCalibRaw");
+ 
+ if (list && list->GetEntries()>0) {
+
+//  loop through all files
+
+    UInt_t index = 0;
+    while (list->At(index)!=NULL) {
+     TObjString* fileNameEntry = (TObjString*) list->At(index);
+     if (fileNameEntry!=NULL) {
+        TString fileName = GetFile(sourceFXS, "tpcCalibRaw",
+	                                 fileNameEntry->GetString().Data());
+        TFile *f = TFile::Open(fileName);
+        if (!f) {
+	  Log ("Error opening raw file.");
+	  result =2;
+	  break;
+	}
+	f->GetObject("tpcCalibRaw",calRaw);
+        if ( !calRaw ) {
+	  Log ("No raw calibration object in file.");
+	  result = 2;
+	  break;
+	}
+
+       f->Close();
+      }
+     ++index;
+    }  // while(list)
+//
+//  Store updated pedestal entry to OCDB
+//
+     AliCDBMetaData metaData;
+     metaData.SetBeamPeriod(0);
+     metaData.SetResponsible("Haavard Helstrup");
+     metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
+     metaData.SetComment("Preprocessor AliTPC data base entries.");
+
+     Bool_t storeOK = Store("Calib", "Raw", calRaw, &metaData, 0, kTRUE);
+     if ( !storeOK ) ++result;
+  } else {
+    Log ("Error: no entries in input file list!");
+    result = 1;
+  }
+
+  return result;
+}
+//______________________________________________________________________________________________
+
 UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
 {
  //
  //  Read Central Electrode file from file exchage server
- //  Keep original entry from OCDB in case no new CE calibration is available
+ //  
  //
- TObjArray    *ceObjects=0;
  AliTPCCalPad *ceTmean=0;
  AliTPCCalPad *ceTrms=0;
  AliTPCCalPad *ceQmean=0;
  TObjArray    *rocTtime=0;  
  TObjArray    *rocQtime=0;  
 
- AliCDBEntry* entry = GetFromOCDB("Calib", "CE");
- if (entry) ceObjects = (TObjArray*)entry->GetObject();
- if ( ceObjects==NULL ) {
-     Log("AliTPCPreprocsessor: No previous TPC central electrode entry available.\n");
-     ceObjects = new TObjArray;    
- }
+ TObjArray    *ceObjects= new TObjArray;
+  
 
  Int_t nSectors = fROC->GetNSectors();
 
- ceTmean = (AliTPCCalPad*)ceObjects->FindObject("CETmean");
- if ( !ceTmean ) {
-    ceTmean = new AliTPCCalPad("CETmean","CETmean");
-    ceObjects->Add(ceTmean);
- }
- ceTrms = (AliTPCCalPad*)ceObjects->FindObject("CETrms");
- if ( !ceTrms )  { 
-    ceTrms = new AliTPCCalPad("CETrms","CETrms");
-    ceObjects->Add(ceTrms);
- }
- ceQmean = (AliTPCCalPad*)ceObjects->FindObject("CEQmean");
- if ( !ceQmean )  { 
-    ceQmean = new AliTPCCalPad("CEQmean","CEQmean");
-    ceObjects->Add(ceQmean);
- }
- //!new from here please have a look!!!
- rocTtime = (TObjArray*)ceObjects->FindObject("rocTtime");
- if ( !rocTtime ) {
-     rocTtime = new TObjArray(nSectors);
-     rocTtime->SetName("rocTtime");
-     ceObjects->Add(rocTtime);
- }
- 
- rocQtime = (TObjArray*)ceObjects->FindObject("rocQtime");
- if ( !rocQtime ) {
-     rocQtime = new TObjArray(nSectors);
-     rocQtime->SetName("rocQtime");
-     ceObjects->Add(rocQtime);
- }
+ ceTmean = new AliTPCCalPad("CETmean","CETmean");
+ ceObjects->Add(ceTmean);
 
+ ceTrms = new AliTPCCalPad("CETrms","CETrms");
+ ceObjects->Add(ceTrms);
+
+ ceQmean = new AliTPCCalPad("CEQmean","CEQmean");
+ ceObjects->Add(ceQmean);
+ 
+ rocTtime = new TObjArray(nSectors+2);   // also make room for A and C side average
+ rocTtime->SetName("rocTtime");
+ ceObjects->Add(rocTtime);
+ 
+ rocQtime = new TObjArray(nSectors);
+ rocQtime->SetName("rocQtime");
+ ceObjects->Add(rocQtime);
+ 
 
  UInt_t result=0;
 
@@ -835,6 +908,13 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
 	   TGraph *grQ=calCE->MakeGraphTimeCE(sector,0,3); // Q time graph
            if ( grQ ) rocTtime->AddAt(grQ,sector);         
         }
+
+       TGraph *grT=calCE->MakeGraphTimeCE(-1,0,2); // A side average
+       if ( grT ) rocTtime->AddAt(grT,nSectors);         
+       grT=calCE->MakeGraphTimeCE(-2,0,2); // C side average
+       if ( grT ) rocTtime->AddAt(grT,nSectors+1);         
+
+
        delete calCE;
        f->Close();
       }
