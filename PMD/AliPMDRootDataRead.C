@@ -137,18 +137,9 @@ void AliPMDRootDataRead(Int_t NEVT = 10)
       pmdddlcont.Delete();
     }
 
-
+  }//event loop
   h2->Draw();
-
-  
-
-  }
-
-
-
   cc.SetWriteModule(1);
   cc.DrawPMDModule();
   gBenchmark->Show("");
-
-
 }
