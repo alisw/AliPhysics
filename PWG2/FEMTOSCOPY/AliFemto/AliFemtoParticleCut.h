@@ -31,8 +31,6 @@ public:
   double Mass(){return fMass;};       // mass of the particle being selected
   virtual void SetMass(const double& mass) {fMass = mass;};
 
-  virtual void EventBegin(const AliFemtoEvent* aEvent);
-  virtual void EventEnd(const AliFemtoEvent* aEvent);
   virtual AliFemtoParticleCut* Clone() { return 0;}
 
   virtual AliFemtoParticleType Type()=0;
@@ -68,7 +66,4 @@ inline AliFemtoParticleCut& AliFemtoParticleCut::operator=(const AliFemtoParticl
     return tListSetttings;
   }
   
-inline void AliFemtoParticleCut::EventBegin(const AliFemtoEvent* /* aEvent */) { /* no-op */ }
-inline void AliFemtoParticleCut::EventEnd(const AliFemtoEvent* /* aEvent */) { /* no-op */ }
-
 #endif

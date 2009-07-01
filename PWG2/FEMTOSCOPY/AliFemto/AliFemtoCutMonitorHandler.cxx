@@ -276,6 +276,42 @@ TList *AliFemtoCutMonitorHandler::GetOutputList()
 
   return tOutputList;
 }
+//_____________________________________________________________________________
+void AliFemtoCutMonitorHandler::EventBegin(const AliFemtoEvent* aEvent) 
+{ 
+  if (fCollectionsEmpty) return;
+
+  AliFemtoCutMonitorIterator iter;
+  AliFemtoCutMonitor* tCM;
+
+  for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
+    tCM = *iter;
+    tCM->EventBegin(aEvent);
+  }
+  
+  for (iter=fFailColl->begin(); iter!=fFailColl->end(); iter++){
+    tCM = *iter;
+    tCM->EventBegin(aEvent);
+  }
+}
+//_____________________________________________________________________________
+void AliFemtoCutMonitorHandler::EventEnd(const AliFemtoEvent* aEvent) 
+{ 
+  if (fCollectionsEmpty) return;
+
+  AliFemtoCutMonitorIterator iter;
+  AliFemtoCutMonitor* tCM;
+
+  for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
+    tCM = *iter;
+    tCM->EventEnd(aEvent);
+  }
+  
+  for (iter=fFailColl->begin(); iter!=fFailColl->end(); iter++){
+    tCM = *iter;
+    tCM->EventEnd(aEvent);
+  }
+}
 
 
  

@@ -44,6 +44,9 @@ class AliFemtoCutMonitorHandler{
   void Finish();
 
   virtual TList *GetOutputList();
+
+  virtual void EventBegin(const AliFemtoEvent* aEvent);
+  virtual void EventEnd(const AliFemtoEvent* aEvent);
   
  private:
   bool fCollectionsEmpty;                  // Are the collections empty?
