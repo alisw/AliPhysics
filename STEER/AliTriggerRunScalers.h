@@ -15,7 +15,9 @@
 //////////////////////////////////////////////////////////////////////////////
 class TObject;
 class AliTimeStamp;
+class AliTriggerScalersESD;
 class AliTriggerScalersRecord;
+class AliTriggerScalersRecordESD;
 
 #include "TArrayC.h"
 
@@ -30,9 +32,13 @@ public:
                   UChar_t    GetNumClasses()       const { return fnClasses;      }
                    Char_t    GetClass( Int_t i )   const { return fClassIndex[i]; }
           const TObjArray*   GetScalersRecords()   const { return &fScalersRecord; } 
+          const TObjArray*   GetScalersRecordsESD()   const { return &fScalersRecordESD; } 
   AliTriggerScalersRecord*   GetScalersRecord( Int_t index ) const { return (AliTriggerScalersRecord*)fScalersRecord.At(index); }
                     Int_t    FindNearestScalersRecord( const AliTimeStamp *stamp ) const;
-                    Int_t    ConsistencyCheck(Bool_t* overflow) const;
+     AliTriggerScalersESD*   GetScalersForEventClass(const AliTimeStamp* stamp,const Int_t classIndex) const;
+ // Analysis		    
+                    Int_t    ConsistencyCheck(Int_t position,Bool_t correctOverflow);
+		    Int_t    CorrectScalersOverflow();
   //  Setters
                      void    SetVersion( Short_t ver )       { fVersion = ver;   }            
                      void    SetRunNumber( ULong_t run )     { fRunNumber = run; }
