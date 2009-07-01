@@ -71,6 +71,7 @@ fSDDJitterError(fgkSDDJitterErrorDefault),
 fSDDDynamicRange(fgkSDDDynamicRangeDefault),
 fSDDMaxAdc(0.),
 fSDDChargeLoss(fgkSDDChargeLossDefault),
+fSDDRawFormat(7),
 fSSDCouplingPR(0),
 fSSDCouplingPL(0),
 fSSDCouplingNR(0),
@@ -116,6 +117,7 @@ fSDDJitterError(simpar.fSDDJitterError),
 fSDDDynamicRange(simpar.fSDDDynamicRange),
 fSDDMaxAdc(simpar.fSDDMaxAdc),
 fSDDChargeLoss(simpar.fSDDChargeLoss),
+fSDDRawFormat(simpar.fSDDRawFormat),
 fSSDCouplingPR(simpar.fSSDCouplingPR),
 fSSDCouplingPL(simpar.fSSDCouplingPL),
 fSSDCouplingNR(simpar.fSSDCouplingNR),
@@ -184,6 +186,7 @@ void AliITSSimuParam::PrintParameters() const{
   printf("Dynamic Range             = %f\n",fSDDDynamicRange);
   printf("Max. ADC                  = %f\n",fSDDMaxAdc);
   printf("Charge Loss               = %f\n",fSDDChargeLoss);  
+  printf("Raw Data Format           = %d\n",fSDDRawFormat);  
   printf("\n");
   printf("=====  SSD parameters  =====\n");
   printf("Coupling PR               = %f\n",fSSDCouplingPR);

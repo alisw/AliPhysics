@@ -24,6 +24,10 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     AliITSRawStreamSDD& operator=(const AliITSRawStreamSDD& rs);
     virtual ~AliITSRawStreamSDD();
 
+    static UChar_t ReadBlockAttributes(AliRawReader* rawReader);
+    static AliITSRawStream* CreateRawStreamSDD(AliRawReader* rawReader, UChar_t attributes);
+    static AliITSRawStream* CreateRawStreamSDD(AliRawReader* rawReader);
+
     virtual Bool_t   Next();
 
     virtual Int_t    GetAnode() const {return fCoord1;}

@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSRawStreamSDD.h"
+#include "AliITSRawStreamSDDCompressed.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
 
@@ -83,6 +84,39 @@ AliITSRawStreamSDD& AliITSRawStreamSDD::operator=(const AliITSRawStreamSDD& rs) 
 //______________________________________________________________________
 AliITSRawStreamSDD::~AliITSRawStreamSDD(){
   if(fDDLModuleMap) delete fDDLModuleMap;
+}
+//______________________________________________________________________
+UChar_t AliITSRawStreamSDD::ReadBlockAttributes(AliRawReader* rawReader){
+  // reads block attribuited from CDH
+  UChar_t *data;
+  rawReader->Reset();
+  rawReader->Select("ITSSDD");
+  do{
+    if(!rawReader->ReadNextData(data)) return 0x0;
+  }while(rawReader->GetDataSize()==0);
+  UChar_t attr=rawReader->GetBlockAttributes();
+  return attr;
+}
+//______________________________________________________________________
+AliITSRawStream* AliITSRawStreamSDD::CreateRawStreamSDD(AliRawReader* rawReader, UChar_t attributes){
+  // instantiates the proper raw stream from block attributes value
+
+  Int_t rawFormat=(attributes&0xE0)>>5;  
+  rawReader->Reset();
+  AliITSRawStream* inputSDD;
+  if(rawFormat==0){
+    inputSDD=new AliITSRawStreamSDDCompressed(rawReader);
+    inputSDD->SetADCEncoded(kTRUE);
+  }else{
+    inputSDD=new AliITSRawStreamSDD(rawReader);
+  }
+  return inputSDD;
+}
+//______________________________________________________________________
+AliITSRawStream* AliITSRawStreamSDD::CreateRawStreamSDD(AliRawReader* rawReader){
+  // reads the data format from CDH and instantiates the proper raw stream
+  UChar_t attr=ReadBlockAttributes(rawReader);
+  return CreateRawStreamSDD(rawReader,attr);
 }
 //______________________________________________________________________
 UInt_t AliITSRawStreamSDD::ReadBits()

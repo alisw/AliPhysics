@@ -1125,10 +1125,10 @@ void AliITS::Digits2Raw(){
   
   
   AliITSDDLModuleMapSDD* ddlsdd=fDetTypeSim->GetDDLModuleMapSDD();
-  Bool_t isHLTmodeC=fDetTypeSim->IsHLTmodeC();
+  Char_t rawSDD=fDetTypeSim->GetSimuParam()->GetSDDRawDataFormat();
   AliITSDDLRawData rawWriter;
-  if(isHLTmodeC) rawWriter.SetUseCompressedSDDFormat(kTRUE);
-  else rawWriter.SetUseCompressedSDDFormat(kFALSE);
+  
+  rawWriter.SetSDDRawFormat(rawSDD);
   //Verbose level
   // 0: Silent
   // 1: cout messages
@@ -1145,7 +1145,7 @@ void AliITS::Digits2Raw(){
   if(deleteFOsignalsLater) delete foSignals;
     
   //SILICON DRIFT DETECTOR
-  AliDebug(1,"Formatting raw data for SDD");
+  AliDebug(1,Form("Formatting raw data for SDD - Format code =%d",rawSDD));
   rawWriter.RawDataSDD(digits->GetBranch("ITSDigitsSDD"),ddlsdd);
     
   //SILICON STRIP DETECTOR

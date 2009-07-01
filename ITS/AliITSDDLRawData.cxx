@@ -46,7 +46,7 @@ AliITSDDLRawData::AliITSDDLRawData():
 fVerbose(0),
 fIndex(-1),
 fHalfStaveModule(-1),
-fUseCompressedSDDFormat(0){
+fSDDRawFormat(7){
   //Default constructor
 
 }
@@ -58,7 +58,7 @@ AliITSDDLRawData::AliITSDDLRawData(const AliITSDDLRawData &source) :
 fVerbose(source.fVerbose),
 fIndex(source.fIndex),
 fHalfStaveModule(source.fHalfStaveModule),
-fUseCompressedSDDFormat(source.fUseCompressedSDDFormat){
+fSDDRawFormat(source.fSDDRawFormat){
   //Copy Constructor
 }
 
@@ -69,7 +69,7 @@ AliITSDDLRawData& AliITSDDLRawData::operator=(const AliITSDDLRawData &source){
   this->fIndex=source.fIndex;
   this->fHalfStaveModule=source.fHalfStaveModule;
   this->fVerbose=source.fVerbose;
-  this->fUseCompressedSDDFormat=source.fUseCompressedSDDFormat;
+  this->fSDDRawFormat=source.fSDDRawFormat;
   return *this;
 }
 
@@ -151,7 +151,16 @@ void AliITSDDLRawData::GetDigitsSDDCompressed(TClonesArray *ITSdigits, Int_t mod
       dataWord+=sid<<26;
       dataWord+=iz<<18;
       dataWord+=ix<<10;
-      dataWord+=is;
+      UInt_t adcEncoded=0;
+      Int_t shift=0;
+      if(is < 8) shift=2;
+      else if(is<16) shift=3;
+      else if(is<32) shift=4;
+      else if(is<64) shift=5;
+      else if(is<128) shift=6;
+      else shift=7;
+      adcEncoded=shift+((is-(1<<shift))<<3);
+      dataWord+=adcEncoded;
       fIndex++;
       buf[fIndex]=dataWord;
     }
@@ -631,11 +640,18 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsd
   char fileName[15];
   AliFstream* outfile;             // logical name of the output file 
   AliRawDataHeaderSim header;
+  
+  if(fSDDRawFormat!=0){ 
+    for(Int_t ibit=0; ibit<8; ibit++) header.SetAttribute(ibit);
+  }else{
+    for(Int_t ibit=0; ibit<5; ibit++) header.SetAttribute(ibit);
+    for(Int_t ibit=5; ibit<8; ibit++) header.ResetAttribute(ibit);  
+  }
   UInt_t skippedword, carlosFooterWord,fifoFooterWord,jitterWord;
   Bool_t retcode;
   retcode = AliBitPacking::PackWord(0x3FFFFFFF,carlosFooterWord,0,31);
   retcode = AliBitPacking::PackWord(0x3F1F1F1F,fifoFooterWord,0,31);
-  if(!fUseCompressedSDDFormat) retcode = AliBitPacking::PackWord(0x7F000000,jitterWord,0,31);
+  if(fSDDRawFormat!=0) retcode = AliBitPacking::PackWord(0x7F000000,jitterWord,0,31);
   else retcode = AliBitPacking::PackWord(0x80000000,jitterWord,0,31);
  
   //loop over DDLs  
@@ -648,7 +664,7 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsd
 
 
     //first 1 "dummy" word to be skipped
-    if(!fUseCompressedSDDFormat){
+    if(fSDDRawFormat!=0){
       retcode = AliBitPacking::PackWord(0xFFFFFFFF,skippedword,0,31);
       outfile->WriteBuffer((char*)(&skippedword),sizeof(skippedword));
     }
@@ -663,7 +679,7 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsd
 	//For each Module, buf contains the array of data words in Binary format	  
 	//fIndex gives the number of 32 bits words in the buffer for each module
 	//	cout<<"MODULE NUMBER:"<<mapSDD[i][mod]<<endl;
-	if(fUseCompressedSDDFormat){
+	if(fSDDRawFormat==0){
 	  GetDigitsSDDCompressed(digits,mod,buf);
 	  outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
 	}else{
@@ -675,7 +691,7 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsd
       }//end if
     }//end for
     // 12 words with FIFO footers (=4 FIFO x 3 3F1F1F1F words per DDL)
-    if(!fUseCompressedSDDFormat){
+    if(fSDDRawFormat!=0){
       for(Int_t iw=0;iw<12;iw++) outfile->WriteBuffer((char*)(&fifoFooterWord),sizeof(fifoFooterWord));
     }
     outfile->WriteBuffer((char*)(&jitterWord),sizeof(jitterWord));      

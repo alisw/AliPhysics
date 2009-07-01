@@ -164,7 +164,9 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
   while(kTRUE){
     if (!fRawReader->ReadNextInt(fData)) return kFALSE;  // read next word
     UInt_t mostsigbits=fData>>28; 
-    if(mostsigbits==maskeom){
+    if(fData==0xFFFFFFFF){ 
+      // CarlosRX header do nothing
+    } else if(mostsigbits==maskeom){
       fCarlosId=fData&maskmod;
       fDDL=fRawReader->GetDDLID();
       fModuleID = GetModuleNumber(fDDL,fCarlosId);

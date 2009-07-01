@@ -93,6 +93,9 @@ class AliITSSimuParam : public TObject {
   void    SetSDDChargeLoss(Double_t p1) {fSDDChargeLoss=p1;}
   Float_t GetSDDChargeLoss() const {return fSDDChargeLoss;}
 
+  void    SetSDDRawDataFormatCarlos() {fSDDRawFormat=7;}
+  void    SetSDDRawDataFormatFixLen8bitEncoded() {fSDDRawFormat=0;}
+  Char_t  GetSDDRawDataFormat() const {return fSDDRawFormat;}
   Int_t GetSSDZSThreshold() const { // ZS threshold
     return fSSDZSThreshold; }
   virtual void SetSSDZSThreshold(Int_t zsth) { fSSDZSThreshold = zsth; }
@@ -222,6 +225,7 @@ class AliITSSimuParam : public TObject {
   Float_t  fSDDDynamicRange; // SDD Dynamic Range 
   Float_t  fSDDMaxAdc;       // SDD ADC saturation value
   Float_t  fSDDChargeLoss;   // Set Linear Coefficient for Charge Loss 
+  Char_t   fSDDRawFormat;    // Index for SDD RawFormat
   
   Double_t fSSDCouplingPR;  // SSD couplings
   Double_t fSSDCouplingPL;  // SSD couplings
@@ -237,6 +241,6 @@ class AliITSSimuParam : public TObject {
   Double_t fN;  // the impurity concentration of the material in #/cm^3  (NOT USED!)
   Float_t fT;   // The temperature of the Si in Degree K.
 
-  ClassDef(AliITSSimuParam,3);
+  ClassDef(AliITSSimuParam,4);
 };
 #endif

@@ -287,13 +287,9 @@ void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClones
     //------------------------------------------------------------
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
-  rawReader->Reset();
-  AliITSRawStream* inputSDD;
-  if(fDetTypeRec->IsHLTmodeC()==kTRUE){
-    inputSDD=new AliITSRawStreamSDDCompressed(rawReader);
-  }else{
-    inputSDD=new AliITSRawStreamSDD(rawReader);
-  }
+
+  AliITSRawStream* inputSDD=AliITSRawStreamSDD::CreateRawStreamSDD(rawReader);
+  AliDebug(1,Form("%s is used",inputSDD->ClassName()));
 
   AliITSDDLModuleMapSDD *ddlmap=(AliITSDDLModuleMapSDD*)fDetTypeRec->GetDDLModuleMapSDD();
   inputSDD->SetDDLModuleMap(ddlmap);
