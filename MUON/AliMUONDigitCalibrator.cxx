@@ -379,7 +379,7 @@ AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manu
     }
   }
   
-  return charge;
+  return ( charge > 0.0 ? charge : 0.0 );
 }
 
 //_____________________________________________________________________________
