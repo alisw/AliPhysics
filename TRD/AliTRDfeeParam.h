@@ -96,7 +96,8 @@ class AliTRDfeeParam : public TObject
           Float_t  GetTFc2()        const { return fTFc2;           }
 
  // for tracklets
-	  Bool_t   GetTracklet()         const { return fgkTracklet; } 
+	  Bool_t   GetTracklet()         const { return fgTracklet; } 
+  static  void     SetTracklet(Bool_t trackletSim = kTRUE) { fgTracklet = trackletSim; }
           Int_t    GetMaxNrOfTracklets() const { return fgkMaxNrOfTracklets; } 
 	  Bool_t    GetMCTrackletOutput() const { return fgkMCTrackletOutput; }
 
@@ -170,7 +171,7 @@ class AliTRDfeeParam : public TObject
                Int_t    fTFnExp;                            // Number of exponential for simType 0 and 1
 
  // Tracklet  processing on/off 
-  static const Bool_t   fgkTracklet         = kFALSE; // default should be kFALSE
+  static       Bool_t   fgTracklet; // tracklet processing
 
   // max. nr of tracklet words for one mcm
   static const Int_t    fgkMaxNrOfTracklets = 4; 

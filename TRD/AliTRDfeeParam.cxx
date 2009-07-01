@@ -44,6 +44,7 @@ ClassImp(AliTRDfeeParam)
 
 AliTRDfeeParam *AliTRDfeeParam::fgInstance   = 0;
 Bool_t          AliTRDfeeParam::fgTerminated = kFALSE;
+Bool_t          AliTRDfeeParam::fgTracklet = kFALSE;
 
 //_____________________________________________________________________________
 AliTRDfeeParam* AliTRDfeeParam::Instance()
