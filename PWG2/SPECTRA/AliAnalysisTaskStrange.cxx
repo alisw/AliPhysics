@@ -412,7 +412,7 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
 	// Selections:
 	if (fOption.Contains("yes")) {
 	  if ( (lDcaPosToPrimVertex      < 0.036 )||
-	       (lDcaPosToPrimVertex      < 0.036 )||
+	       (lDcaNegToPrimVertex      < 0.036 )||
 	       (lDcaV0Daughters          > 0.5 )  ||
 	       (lV0CosineOfPointingAngle < 0.99)     
 	       ) continue;
