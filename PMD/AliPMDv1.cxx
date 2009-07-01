@@ -852,8 +852,9 @@ void AliPMDv1::CreatePMD()
   xb1 = dboxSM2[0] - 0.1 - dboxUM2[0];
   xb2 = xb1 - dboxUM2[0] - 0.1 - dboxUM2[0];
   yb1 = dboxSM2[1] -  0.2 - dboxUM2[1];
-  yb2 = yb1 - dboxUM2[1] - 0.3 -  dboxUM2[1];
-  yb3 = yb2 - dboxUM2[1] - 0.3 -  dboxUM2[1];
+  yb2 = yb1 - dboxUM2[1] - 0.2 -  dboxUM2[1];
+  yb3 = yb2 - dboxUM2[1] - 0.3-  dboxUM2[1];
+
 
   // Create Volumes for Lead(Pb) Plates
 
@@ -1402,21 +1403,27 @@ void AliPMDv1::CreatePMD()
   gMC->Gspos("ECHB", 1, "EPM3", xchanepm31, ychanepm31, zchanPS, 0, "ONLY");
   gMC->Gspos("ECHB", 2, "EPM3", xchanepm31, ychanepm32, zchanPS, 0, "ONLY"); 
   gMC->Gspos("ECHB", 3, "EPM3", xchanepm31, ychanepm33, zchanPS, 0, "ONLY");
-  gMC->Gspos("ECHB", 4, "EPM3", xchanepm31, ychanepm34, zchanPS, 0, "ONLY"); 
+  gMC->Gspos("ECHB", 4, "EPM3", xchanepm31, ychanepm34 + 0.200005, zchanPS, 0, "ONLY"); 
+  // Because of overlaping a factor 0.200005 is added in ychanepm34
+  
   gMC->Gspos("ECHB", 5, "EPM3", xchanepm31, ychanepm31, zchanVeto, 0, "ONLY");
   gMC->Gspos("ECHB", 6, "EPM3", xchanepm31, ychanepm32, zchanVeto, 0, "ONLY"); 
   gMC->Gspos("ECHB", 7, "EPM3", xchanepm31, ychanepm33, zchanVeto, 0, "ONLY");
-  gMC->Gspos("ECHB", 8, "EPM3", xchanepm31, ychanepm34, zchanVeto, 0, "ONLY"); 
+  gMC->Gspos("ECHB", 8, "EPM3", xchanepm31, ychanepm34 + 0.200005, zchanVeto, 0, "ONLY"); 
+  // Because of overlaping a factor 0.200005 is added in ychanepm34
   
   gMC->Gspos("ECHB", 1, "EPM4", xchanepm41, ychanepm41, zchanPS, 0, "ONLY");
   gMC->Gspos("ECHB", 2, "EPM4", xchanepm41, ychanepm42, zchanPS, 0, "ONLY"); 
   gMC->Gspos("ECHB", 3, "EPM4", xchanepm41, ychanepm43, zchanPS, 0, "ONLY");
-  gMC->Gspos("ECHB", 4, "EPM4", xchanepm41, ychanepm44, zchanPS, 0, "ONLY"); 
+  gMC->Gspos("ECHB", 4, "EPM4", xchanepm41, ychanepm44 - 0.200002, zchanPS, 0, "ONLY"); 
+  // Because of overlaping a factor 0.200002 is subtracted in ychanepm44
+
   gMC->Gspos("ECHB", 5, "EPM4", xchanepm41, ychanepm41, zchanVeto, 0, "ONLY");
   gMC->Gspos("ECHB", 6, "EPM4", xchanepm41, ychanepm42, zchanVeto, 0, "ONLY"); 
   gMC->Gspos("ECHB", 7, "EPM4", xchanepm41, ychanepm43, zchanVeto, 0, "ONLY");
-  gMC->Gspos("ECHB", 8, "EPM4", xchanepm41, ychanepm44, zchanVeto, 0, "ONLY"); 
-  
+  gMC->Gspos("ECHB", 8, "EPM4", xchanepm41, ychanepm44 -0.200002, zchanVeto, 0, "ONLY"); 
+  // Because of overlaping a factor 0.200002 is subtracted in ychanepm44
+
   //================= Channel Placement Completed  ======================//
   //============ Now to Create Al Box and then LVDBs and Cables          //
   //             are Placed inside it                                    //
@@ -1456,10 +1463,11 @@ void AliPMDv1::CreatePMD()
   eairA1[2]= esvdA1[2] - 0.3;
 
   gMC->Gsvolu("EIR1", "BOX", idtmed[698], eairA1, 3);
+  gMC->Gsvolu("EIR2", "BOX", idtmed[698], eairA1, 3);
 
-  // Put air strip inside ESV1 & ESV2    
+  // Put air strips EIR1 & EIR2 inside ESV1 & ESV2 respectively    
   gMC->Gspos("EIR1", 1,  "ESV1", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("EIR1", 1,  "ESV2", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("EIR2", 1,  "ESV2", 0., 0., 0., 0, "ONLY");
   
 
   // For Short Type
@@ -1486,11 +1494,12 @@ void AliPMDv1::CreatePMD()
   eairA2[1]= esvdA2[1];
   eairA2[2]= esvdA2[2] - 0.3;
 
-  gMC->Gsvolu("EIR2", "BOX", idtmed[698], eairA2, 3);
+  gMC->Gsvolu("EIR3", "BOX", idtmed[698], eairA2, 3);
+  gMC->Gsvolu("EIR4", "BOX", idtmed[698], eairA2, 3);
   
-  // Put air strip inside ESV3 & ESV4    
-  gMC->Gspos("EIR2", 1,  "ESV3", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("EIR2", 1,  "ESV4", 0., 0., 0., 0, "ONLY");
+  // Put air strips EIR3 & EIR4 inside ESV3 & ESV4 respectively        
+  gMC->Gspos("EIR3", 1,  "ESV3", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("EIR4", 1,  "ESV4", 0., 0., 0., 0, "ONLY");
   
   
   // FOR VETO
@@ -1524,11 +1533,12 @@ void AliPMDv1::CreatePMD()
   eairB1[1]= esvdB1[1];
   eairB1[2]= esvdB1[2] - 0.3;
 
-  gMC->Gsvolu("EIR3", "BOX", idtmed[698], eairB1, 3);
+  gMC->Gsvolu("EIR5", "BOX", idtmed[698], eairB1, 3);
+  gMC->Gsvolu("EIR6", "BOX", idtmed[698], eairB1, 3);
  
-  // Put air strip inside EVV1 & EVV2    
-  gMC->Gspos("EIR3", 1,  "EVV1", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("EIR3", 1,  "EVV2", 0., 0., 0., 0, "ONLY");
+  // Put air strips EIR5 & EIR6 inside EVV1 & EVV2 respectively        
+  gMC->Gspos("EIR5", 1,  "EVV1", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("EIR6", 1,  "EVV2", 0., 0., 0., 0, "ONLY");
 
 
   // For Short Type
@@ -1557,11 +1567,12 @@ void AliPMDv1::CreatePMD()
   eairB2[1]= esvdB2[1];
   eairB2[2]= esvdB2[2] - 0.3;
   
-  gMC->Gsvolu("EIR4", "BOX", idtmed[698], eairB2, 3);
+  gMC->Gsvolu("EIR7", "BOX", idtmed[698], eairB2, 3);
+  gMC->Gsvolu("EIR8", "BOX", idtmed[698], eairB2, 3);
   
-  // Put air strip inside EVV3 & EVV4  
-  gMC->Gspos("EIR4", 1,  "EVV3", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("EIR4", 1,  "EVV4", 0., 0., 0., 0, "ONLY");
+  // Put air strips EIR7 & EIR8 inside EVV3 & EVV4 respectively      
+  gMC->Gspos("EIR7", 1,  "EVV3", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("EIR8", 1,  "EVV4", 0., 0., 0., 0, "ONLY");
   
   //------------ Al Boxes Completed ----------------------/
   
@@ -1580,14 +1591,15 @@ void AliPMDv1::CreatePMD()
   
   gMC->Gsvolu("ELVD", "BOX", idtmed[607], elvdb, 3);
   
-  // Put the LVDBs inside Al Boxes
+
+  // Put the LVDBs inside Air Boxes
   Float_t yesvd = dboxFea1[1] - 25.0 - 4.0;
   
   for(Int_t jj =1; jj<=6; jj++){
     
-    gMC->Gspos("ELVD", jj,  "ESV1", 0., yesvd, 0., 0, "ONLY");
-    gMC->Gspos("ELVD", jj,  "ESV2", 0., yesvd, 0., 0, "ONLY");
-    
+    gMC->Gspos("ELVD", jj,  "EIR1", 0., yesvd, 0., 0, "ONLY");
+    gMC->Gspos("ELVD", jj,  "EIR2", 0., yesvd, 0., 0, "ONLY");
+
     yesvd = yesvd -  4.0 - 0.5 - 4.0;
     
   }
@@ -1596,9 +1608,9 @@ void AliPMDv1::CreatePMD()
   
   for(Int_t jj =1; jj<=6; jj++){
     
-    gMC->Gspos("ELVD", jj,  "ESV3", 0., yesvd, 0., 0, "ONLY");
-    gMC->Gspos("ELVD", jj,  "ESV4", 0., yesvd, 0., 0, "ONLY");
-    
+    gMC->Gspos("ELVD", jj,  "EIR3", 0., yesvd, 0., 0, "ONLY");
+    gMC->Gspos("ELVD", jj,  "EIR4", 0., yesvd, 0., 0, "ONLY");
+
     yesvd = yesvd -  4.0 - 0.5 - 4.0;
   }
   
@@ -1606,9 +1618,9 @@ void AliPMDv1::CreatePMD()
   
   for(Int_t jj =1; jj<=6; jj++){
     
-    gMC->Gspos("ELVD", jj,  "EVV1", 0., yesvd, 0., 0, "ONLY");
-    gMC->Gspos("ELVD", jj,  "EVV2", 0., yesvd, 0., 0, "ONLY");
-    
+    gMC->Gspos("ELVD", jj,  "EIR5", 0., yesvd, 0., 0, "ONLY");
+    gMC->Gspos("ELVD", jj,  "EIR6", 0., yesvd, 0., 0, "ONLY");
+
     yesvd = yesvd -  4.0 - 0.5 - 4.0;
   }
   
@@ -1616,11 +1628,12 @@ void AliPMDv1::CreatePMD()
   
   for(Int_t jj =1; jj<=6; jj++){
     
-    gMC->Gspos("ELVD", jj,  "EVV3", 0., yesvd, 0., 0, "ONLY");
-    gMC->Gspos("ELVD", jj,  "EVV4", 0., yesvd, 0., 0, "ONLY");
-    
+    gMC->Gspos("ELVD", jj,  "EIR7", 0., yesvd, 0., 0, "ONLY");
+    gMC->Gspos("ELVD", jj,  "EIR8", 0., yesvd, 0., 0, "ONLY");
+
     yesvd = yesvd -  4.0 - 0.5 - 4.0;
   }
+
   
   //----------------- LVDBs Placement Completed--------------//
   
@@ -1699,33 +1712,35 @@ void AliPMDv1::CreatePMD()
   
   zcablePS   = -esvdA1[2] + 0.3 + cable1[2];
   zcableVeto =  esvdB1[2] - 0.3 - cable1[2];
+
+
+
+  // Placement of Cables in Air Boxes
+  gMC->Gspos("ECB2", 1,  "EIR1", xcable2pm1, ycable2pm1, zcablePS, 0, "ONLY");
+  gMC->Gspos("ECB3", 1,  "EIR1", xcable3pm1, ycable3pm1, zcablePS, 0, "ONLY");
+  gMC->Gspos("ECB2", 1,  "EIR5", xcable2pm1, ycable2pm1, zcableVeto, 0, "ONLY");
+  gMC->Gspos("ECB3", 1,  "EIR5", xcable3pm1, ycable3pm1, zcableVeto, 0, "ONLY");
   
+  gMC->Gspos("ECB1", 1,  "EIR2", xcable11pm2,    0.,     zcablePS, 0, "ONLY");
+  gMC->Gspos("ECB1", 2,  "EIR2", xcable12pm2,    0.,     zcablePS, 0, "ONLY");
+  gMC->Gspos("ECB2", 1,  "EIR2", xcable2pm2, ycable2pm2, zcablePS, 0, "ONLY");
+  gMC->Gspos("ECB1", 1,  "EIR6", xcable11pm2,    0.,     zcableVeto, 0, "ONLY");
+  gMC->Gspos("ECB1", 2,  "EIR6", xcable12pm2,    0.,     zcableVeto, 0, "ONLY");
+  gMC->Gspos("ECB2", 1,  "EIR6", xcable2pm2, ycable2pm2, zcableVeto, 0, "ONLY");
   
-  // Placement of Cables in Al Boxes
-  gMC->Gspos("ECB2", 1,  "ESV1", xcable2pm1, ycable2pm1, zcablePS, 0, "ONLY");
-  gMC->Gspos("ECB3", 1,  "ESV1", xcable3pm1, ycable3pm1, zcablePS, 0, "ONLY");
-  gMC->Gspos("ECB2", 1,  "EVV1", xcable2pm1, ycable2pm1, zcableVeto, 0, "ONLY");
-  gMC->Gspos("ECB3", 1,  "EVV1", xcable3pm1, ycable3pm1, zcableVeto, 0, "ONLY");
+  gMC->Gspos("ECB3", 1,  "EIR3", xcable3pm3, ycable3pm3, zcablePS, 0, "ONLY");
+  gMC->Gspos("ECB4", 1,  "EIR3", xcable4pm3, ycable4pm3, zcablePS, 0, "ONLY");
+  gMC->Gspos("ECB3", 1,  "EIR7", xcable3pm3, ycable3pm3, zcableVeto, 0, "ONLY");
+  gMC->Gspos("ECB4", 1,  "EIR7", xcable4pm3, ycable4pm3, zcableVeto, 0, "ONLY");
   
-  gMC->Gspos("ECB1", 1,  "ESV2", xcable11pm2,    0.,     zcablePS, 0, "ONLY");
-  gMC->Gspos("ECB1", 2,  "ESV2", xcable12pm2,    0.,     zcablePS, 0, "ONLY");
-  gMC->Gspos("ECB2", 1,  "ESV2", xcable2pm2, ycable2pm2, zcablePS, 0, "ONLY");
-  gMC->Gspos("ECB1", 1,  "EVV2", xcable11pm2,    0.,     zcableVeto, 0, "ONLY");
-  gMC->Gspos("ECB1", 2,  "EVV2", xcable12pm2,    0.,     zcableVeto, 0, "ONLY");
-  gMC->Gspos("ECB2", 1,  "EVV2", xcable2pm2, ycable2pm2, zcableVeto, 0, "ONLY");
-  
-  gMC->Gspos("ECB3", 1,  "ESV3", xcable3pm3, ycable3pm3, zcablePS, 0, "ONLY");
-  gMC->Gspos("ECB4", 1,  "ESV3", xcable4pm3, ycable4pm3, zcablePS, 0, "ONLY");
-  gMC->Gspos("ECB3", 1,  "EVV3", xcable3pm3, ycable3pm3, zcableVeto, 0, "ONLY");
-  gMC->Gspos("ECB4", 1,  "EVV3", xcable4pm3, ycable4pm3, zcableVeto, 0, "ONLY");
-  
-  gMC->Gspos("ECB2", 1,  "ESV4", xcable21pm4,    0.,     zcablePS, 0, "ONLY");
-  gMC->Gspos("ECB2", 2,  "ESV4", xcable22pm4,    0.,     zcablePS, 0, "ONLY");
-  gMC->Gspos("ECB3", 1,  "ESV4", xcable3pm4, ycable3pm4, zcablePS, 0, "ONLY");
-  gMC->Gspos("ECB2", 1,  "EVV4", xcable21pm4,    0.,     zcableVeto, 0, "ONLY");
-  gMC->Gspos("ECB2", 2,  "EVV4", xcable22pm4,    0.,     zcableVeto, 0, "ONLY");
-  gMC->Gspos("ECB3", 1,  "EVV4", xcable3pm4, ycable3pm4, zcableVeto, 0, "ONLY");
+  gMC->Gspos("ECB2", 1,  "EIR4", xcable21pm4,    0.,     zcablePS, 0, "ONLY");
+  gMC->Gspos("ECB2", 2,  "EIR4", xcable22pm4,    0.,     zcablePS, 0, "ONLY");
+  gMC->Gspos("ECB3", 1,  "EIR4", xcable3pm4, ycable3pm4, zcablePS, 0, "ONLY");
+  gMC->Gspos("ECB2", 1,  "EIR8", xcable21pm4,    0.,     zcableVeto, 0, "ONLY");
+  gMC->Gspos("ECB2", 2,  "EIR8", xcable22pm4,    0.,     zcableVeto, 0, "ONLY");
+  gMC->Gspos("ECB3", 1,  "EIR8", xcable3pm4, ycable3pm4, zcableVeto, 0, "ONLY");
      
+
 
   //=============== NOW POSITIONING THE Al Boxes IN EPM'S================//
   
@@ -1749,9 +1764,9 @@ void AliPMDv1::CreatePMD()
 
   // First to create Air Volume to place ELMBs
   Float_t xelmb[3];
-  xelmb[0] = 20.0/2.;
-  xelmb[1] = 8.0/2.;
-  xelmb[2] = 1.0/2.;
+  xelmb[0] = 10.0;
+  xelmb[1] = 4.0;
+  xelmb[2] = 0.5;
   
   gMC->Gsvolu("ELMB", "BOX", idtmed[698], xelmb, 3);
   
@@ -1760,16 +1775,16 @@ void AliPMDv1::CreatePMD()
   // ELM1 & ELM2
   
   Float_t xelmb1[3];
-  xelmb1[0] = 19.4/2.;
-  xelmb1[1] = 7.2/2.;
-  xelmb1[2] = 0.2/2.;
+  xelmb1[0] = 9.7;
+  xelmb1[1] = 3.6;
+  xelmb1[2] = 0.1;
   
   gMC->Gsvolu("ELM1", "BOX", idtmed[607], xelmb1, 3);
   
   Float_t xelmb2[3];
-  xelmb2[0] = 12.0/2.;
-  xelmb2[1] = 6.0/2.;
-  xelmb2[2] = 0.2/2.;
+  xelmb2[0] = 6.0;
+  xelmb2[1] = 3.0;
+  xelmb2[2] = 0.1;
   
   gMC->Gsvolu("ELM2", "BOX", idtmed[607], xelmb2, 3);
   
@@ -1875,15 +1890,15 @@ void AliPMDv1::CreatePMD()
   ycord[13] = yb1;
   ycord[14] = yb2;
   ycord[15] = yb2;
-  ycord[16] = yb3;
-  ycord[17] = yb3;
+  ycord[16] = yb3+0.100007; //Because of overlapping the factor 0.100007 
+  ycord[17] = yb3+0.100007; // is added
   ycord[18] = -yb1;
   ycord[19] = -yb1;
   ycord[20] = -yb2;
   ycord[21] = -yb2;
-  ycord[22] = -yb3;
-  ycord[23] = -yb3;
-
+  ycord[22] = -yb3-0.100004; //Because of overlapping the factor 0.100007 
+  ycord[23] = -yb3-0.100004; // is added
+ 
 
   // Placement of unit modules EUM1 & EUV1(long type)
   // and EUM2 & EUV2(short type)
@@ -1988,6 +2003,7 @@ void AliPMDv1::CreatePMD()
   
   gMC->Gspos("EPM1", 1, "ALIC",  xsm1,ysm1,zp, 0, "ONLY");
   gMC->Gspos("EPM2", 1, "ALIC",  xsm2,ysm2,zp, 0, "ONLY");
+ 
   gMC->Gspos("EPM3", 1, "ALIC",  xsm3,ysm3,zp, 0, "ONLY");
   gMC->Gspos("EPM4", 1, "ALIC",  xsm4,ysm4,zp, 0, "ONLY");
   
@@ -2281,7 +2297,7 @@ void AliPMDv1::StepManager()
   //
   
   Int_t   copy;
-  Float_t hits[4], destep;
+  Float_t hits[5], destep;
   Float_t center[3] = {0,0,0};
   Int_t   vol[6];
   //const char *namep;
@@ -2324,6 +2340,10 @@ void AliPMDv1::StepManager()
     
     gMC->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
+
+    // this is for pile-up events
+    hits[4] = gMC->TrackTime();
+
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 
     AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kPMD);

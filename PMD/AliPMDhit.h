@@ -19,9 +19,10 @@ class AliPMDhit : public AliHit {
   AliPMDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
   AliPMDhit(AliPMDhit* oldhit);
   virtual ~AliPMDhit() {}
-  Int_t GetVolume(Int_t i) const {return fVolume[i];}
+  Int_t   GetVolume(Int_t i) const {return fVolume[i];}
   Float_t GetEnergy() const {return fEnergy;}
-  int operator == (AliPMDhit &cell) const;
+  Float_t GetTime() const {return fTime;}
+  Int_t operator == (AliPMDhit &cell) const;
   AliPMDhit operator + (AliPMDhit &cell) {
     fEnergy+=cell.GetEnergy();
     return *this;
@@ -33,9 +34,10 @@ class AliPMDhit : public AliHit {
   }
   
  protected:
-  Int_t      fVolume[6];  //array of volumes
-  Float_t    fEnergy;      //Total energy deposited in eV
-  
-  ClassDef(AliPMDhit,5)  //Hits object for set:PMD
+  Int_t   fVolume[6];    //array of volumes
+  Float_t fEnergy;       //Total energy deposited in eV
+  Float_t fTime;         //time information for the event (pile-up cal)
+
+  ClassDef(AliPMDhit,6)  //Hits object for set:PMD
 };
 #endif

@@ -22,7 +22,8 @@ ClassImp(AliPMDhit)
   
 //_____________________________________________________________________________
 AliPMDhit::AliPMDhit():
-  fEnergy(0.)
+  fEnergy(0.),
+  fTime(0.)
 {
   for (Int_t i=0; i<6; i++)
     {
@@ -42,7 +43,7 @@ AliPMDhit::AliPMDhit(Int_t shunt,Int_t track, Int_t *vol, Float_t *hits):
   fX=hits[0];
   fY=hits[1];
   fZ=hits[2];
-
+  fTime = hits[3];
 }
 //_____________________________________________________________________________
 AliPMDhit::AliPMDhit(AliPMDhit* oldhit):
