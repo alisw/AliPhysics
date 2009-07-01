@@ -13,6 +13,8 @@ CLASS_HDRS:= \
                 AliHLTGlobalTrigger.h                       \
                 AliHLTGlobalTriggerConfig.h                 \
                 AliHLTGlobalTriggerComponent.h              \
+		AliHLTTriggerBarrelMultiplicity.h           \
+		AliHLTTriggerBarrelCosmic.h                 \
                 AliHLTTriggerAgent.h                        \
                 AliHLTEventSummary.h                        \
                 AliHLTEventSummaryProducerComponent.h       \

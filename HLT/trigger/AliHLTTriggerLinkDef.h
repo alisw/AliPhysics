@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 #ifdef __CINT__
 #pragma link off all globals;
 #pragma link off all classes;
@@ -7,6 +7,8 @@
 #pragma link C++ class AliHLTGlobalTrigger+;
 #pragma link C++ class AliHLTGlobalTriggerConfig+;
 #pragma link C++ class AliHLTGlobalTriggerComponent+;
+#pragma link C++ class AliHLTTriggerBarrelMultiplicity+;
+#pragma link C++ class AliHLTTriggerBarrelCosmic+;
 #pragma link C++ class AliHLTTriggerAgent+;
 #pragma link C++ class AliHLTEventSummary+;
 #pragma link C++ class AliHLTEventSummaryProducerComponent+;
