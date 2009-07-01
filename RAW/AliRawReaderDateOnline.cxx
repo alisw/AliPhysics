@@ -176,7 +176,7 @@ void AliRawReaderDateOnline::SelectEvents(Int_t type,
   TString trSelection;
   for (Int_t i = 0; i < 50; i++) {
     if (triggerMask & (1ull << i)) {
-	if (!trSelection.IsNull()) trSelection += "+";
+	if (!trSelection.IsNull()) trSelection += "&";
 	trSelection += Form("%d",i+1);
     }
   }
