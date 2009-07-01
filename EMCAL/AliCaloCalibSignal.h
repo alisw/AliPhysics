@@ -24,7 +24,7 @@
 
 #include "TString.h"
 #include "TTree.h"
-
+#include "AliEMCALGeoParams.h"
 class AliCaloRawStreamV3;
 class AliCaloAltroMapping;
 class AliRawReader;
@@ -178,25 +178,17 @@ class AliCaloCalibSignal : public TObject {
   int fNEvents; // # events processed
   int fNAcceptedEvents; // # events accepted
 
-  //Constants needed by the class
-  static const int fgkSampleMax = 1023; // highest possible sample value (10-bit = 0x3ff)
-  static const int fgkSampleMin = 0; // lowest possible sample value 
-  
+  //Constants needed by the class: EMCAL ones are kept in AliEMCALGeoParams.h
   static const int fgkPhosRows = 64; // number of rows per module for PHOS
   static const int fgkPhosCols = 56; // number of columns per module for PHOS
   static const int fgkPhosLEDRefs = 0; // no LED monitor channels for PHOS
   static const int fgkPhosModules = 5; // number of modules for PHOS
   
-  static const int fgkEmCalRows = 24; // number of rows per module for EMCAL
-  static const int fgkEmCalCols = 48; // number of columns per module for EMCAL
-  static const int fgkEmCalLEDRefs = 24; // number of LEDs (reference/monitors) per module for EMCAL; one per StripModule
-  static const int fgkEmCalModules = 12; // number of modules for EMCAL
-
   // From numbers above: PHOS has more possible towers (17920) than EMCAL (13824) 
   // so use PHOS numbers to set max. array sizes
   static const int fgkMaxTowers = 17920; // fgkPhosModules * fgkPhosCols * fgkPhosRows; 
   // for LED references; maximum from EMCAL
-  static const int fgkMaxRefs = 288; // fgkEmCalModules * fgkEmCalLEDRefs
+  static const int fgkMaxRefs = 288; // AliEMCALGeoParams::fgkEMCALModules * AliEMCALGeoParams::fgkEMCALLEDRefs
 
   static const int fgkNumSecInHr = 3600;  // number of seconds in an hour, for the fractional hour conversion on the time graph
   
@@ -211,7 +203,7 @@ class AliCaloCalibSignal : public TObject {
   int fNLowGain[fgkMaxTowers]; // same, for low gain
   int fNRef[fgkMaxRefs * 2]; // same, for LED refs; *2 for both gains
   
-  ClassDef(AliCaloCalibSignal, 3) // don't forget to change version if you change class member list..
+  ClassDef(AliCaloCalibSignal, 4) // don't forget to change version if you change class member list..
     
 };
     

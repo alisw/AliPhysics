@@ -26,6 +26,7 @@
 #include "TProfile2D.h"
 #include "TH2.h"
 #include "TObjArray.h"
+#include "AliEMCALGeoParams.h"
 class AliCaloRawStreamV3;
 class AliCaloAltroMapping;
 class AliRawReader;
@@ -45,10 +46,6 @@ class AliCaloCalibPedestal : public TObject {
   AliCaloCalibPedestal(const AliCaloCalibPedestal &ped); 
   AliCaloCalibPedestal& operator = (const  AliCaloCalibPedestal &source);
   
-  //Functions to ask for the constants (in case a GUI needs them, for an example
-  int GetSampleMax() const {return fgkSampleMax;};
-  int GetSampleMin() const {return fgkSampleMin;};
-
   // Event processing methods:  
   Bool_t ProcessEvent(AliRawReader *rawReader);
   Bool_t ProcessEvent(AliCaloRawStreamV3    *in);
@@ -182,19 +179,12 @@ class AliCaloCalibPedestal : public TObject {
   int fFirstPedestalSample; // first sample to use
   int fLastPedestalSample; // last sample to use
 
-  //Constants needed by the class
-  static const int fgkSampleMax = 1023; // highest possible sample value (10-bit = 0x3ff)
-  static const int fgkSampleMin = 0; // lowest possible sample value 
-  
+  //Constants needed by the class: EMCAL ones are kept in AliEMCALGeoParams.h
   static const int fgkPhosRows = 64; // number of rows per module for PHOS
   static const int fgkPhosCols = 56; // number of columns per module for PHOS
   static const int fgkPhosModules = 5; // number of modules for PHOS
   
-  static const int fgkEmCalRows = 24; // number of rows per module for EMCAL
-  static const int fgkEmCalCols = 48; // number of columns per module for EMCAL
-  static const int fgkEmCalModules = 12; // number of modules for EMCAL
-  
-  ClassDef(AliCaloCalibPedestal,3)
+  ClassDef(AliCaloCalibPedestal, 4)
 
 };
     

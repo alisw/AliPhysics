@@ -101,9 +101,9 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     //We'll just trust the enum to keep everything in line, so that if detectorType
     //isn't kPhos then it is kEmCal. Note, however, that this is not necessarily the
     //case, if someone intentionally gives another number
-    fColumns = fgkEmCalCols;
-    fRows = fgkEmCalRows;
-    fModules = fgkEmCalModules;
+    fColumns = AliEMCALGeoParams::fgkEMCALCols;
+    fRows = AliEMCALGeoParams::fgkEMCALRows;
+    fModules = AliEMCALGeoParams::fgkEMCALModules;
     fCaloString = "EMCAL";
     fRowMin = 0;
     fRowMax = fRows;
@@ -351,7 +351,7 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
     while (in->NextChannel()) {
 
       // counters
-      int max = fgkSampleMin, min = fgkSampleMax; // min and max sample values
+      int max = AliEMCALGeoParams::fgkSampleMin, min = AliEMCALGeoParams::fgkSampleMax; // min and max sample values
       
       // for the pedestal calculation
       int sampleSum = 0; // sum of samples

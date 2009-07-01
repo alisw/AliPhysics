@@ -91,10 +91,10 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
     //We'll just trust the enum to keep everything in line, so that if detectorType
     //isn't kPhos then it is kEmCal. Note, however, that this is not necessarily the
     //case, if someone intentionally gives another number
-    fColumns = fgkEmCalCols;
-    fRows = fgkEmCalRows;
-    fLEDRefs = fgkEmCalLEDRefs;
-    fModules = fgkEmCalModules;
+    fColumns = AliEMCALGeoParams::fgkEMCALCols;
+    fRows = AliEMCALGeoParams::fgkEMCALRows;
+    fLEDRefs = AliEMCALGeoParams::fgkEMCALLEDRefs;
+    fModules = AliEMCALGeoParams::fgkEMCALModules;
     fCaloString = "EMCAL";
   }
 
@@ -363,7 +363,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeade
     while (in->NextChannel()) {
 
       // counters
-      int max = fgkSampleMin, min = fgkSampleMax; // min and max sample values
+      int max = AliEMCALGeoParams::fgkSampleMin, min = AliEMCALGeoParams::fgkSampleMax; // min and max sample values
       
       while (in->NextBunch()) {
 	const UShort_t *sig = in->GetSignals();
