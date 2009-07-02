@@ -780,7 +780,7 @@ UInt_t AliTPCPreprocessor::ExtractRaw(Int_t sourceFXS)
  //
  
  UInt_t result=0;
- AliTPCCalibRaw *calRaw;
+ TObjArray *calRaw;
 
  TList* list = GetFileSources(sourceFXS,"AliTPCCalibRaw");
  
