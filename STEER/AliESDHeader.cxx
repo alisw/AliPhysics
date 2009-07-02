@@ -130,7 +130,12 @@ void AliESDHeader::Reset()
   fTriggerScalers.Reset();
   fIRArray.Clear();
 }
-
+//______________________________________________________________________________
+void AliESDHeader::AddTriggerIR(const AliTriggerIR* ir)
+{
+ // Adds trigger interaction record to array
+ new(fIRArray[fIRArray.GetEntriesFast()]) AliTriggerIR(*ir);
+}
 //______________________________________________________________________________
 void AliESDHeader::Print(const Option_t *) const
 {

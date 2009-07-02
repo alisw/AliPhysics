@@ -19,6 +19,7 @@
 
 class AliTriggerScalersESD;
 class AliTriggerScalersRecordESD;
+class AliTriggerIR;
 
 class AliESDHeader: public AliVHeader {
 public:
@@ -36,6 +37,7 @@ public:
   void      SetBunchCrossNumber(UShort_t n) {fBunchCrossNumber=n;}
   void      SetPeriodNumber(UInt_t n) {fPeriodNumber=n;}
   void      SetTriggerCluster(UChar_t n) {fTriggerCluster = n;}
+  void      AddTriggerIR(const AliTriggerIR* ir);
 
 //************Setters/Getters for Trigger Inputs and TriggerScalersRecordESD
   void SetL0TriggerInputs(UInt_t n) {fL0TriggerInputs=n;}
