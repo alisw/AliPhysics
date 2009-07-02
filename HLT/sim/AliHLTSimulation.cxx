@@ -350,7 +350,6 @@ int AliHLTSimulationSetup(AliHLTSimulation* /*pHLTSim*/, AliSimulation* pSim, co
   if (!pSim) return -EINVAL;
   const char* entries[]={
     "HLT/ConfigHLT/SolenoidBz",
-    "HLT/ConfigHLT/esdLayout",
     NULL
   };
 
