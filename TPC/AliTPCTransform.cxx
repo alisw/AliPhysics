@@ -170,7 +170,17 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   //
   // ExB correction
   //
-  calib->GetExB()->Correct(x,xx);
+  if(fCurrentRecoParam&&fCurrentRecoParam->GetUseExBCorrection()) {
+
+    calib->GetExB()->Correct(x,xx);
+
+  } else {
+
+    xx[0] = x[0];
+    xx[1] = x[1];
+    xx[2] = x[2];
+  }
+
   //
   // Time of flight correction
   // 
