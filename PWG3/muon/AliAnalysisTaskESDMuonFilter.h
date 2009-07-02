@@ -8,6 +8,7 @@
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisFilter;
+class AliStack;
 
 class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
 {
@@ -30,6 +31,7 @@ class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
  private:
     AliAnalysisTaskESDMuonFilter(const AliAnalysisTaskESDMuonFilter&);
     AliAnalysisTaskESDMuonFilter& operator=(const AliAnalysisTaskESDMuonFilter&);
+    void PrintMCInfo(AliStack *pStack,Int_t label); // for debugging
     AliAnalysisFilter* fTrackFilter; //  Track Filter
     ClassDef(AliAnalysisTaskESDMuonFilter, 1); // Analysis task for standard ESD filtering
 

@@ -18,6 +18,7 @@
 
 #include <TChain.h>
 #include <TFile.h>
+#include <TParticle.h>
 
 #include "AliAnalysisTaskESDMuonFilter.h"
 #include "AliAnalysisManager.h"
@@ -31,6 +32,10 @@
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
 #include "AliLog.h"
+#include "AliStack.h"
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
+#include "AliAODMCParticle.h"
 
 ClassImp(AliAnalysisTaskESDMuonFilter)
 
@@ -74,9 +79,18 @@ void AliAnalysisTaskESDMuonFilter::UserExec(Option_t */*option*/)
 
 void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD() 
 {
+  printf("sono in AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD\n");
   // ESD Muon Filter analysis task executed for each event
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   
+  // Fetch Stack for debuggging if available 
+  AliStack *pStack = 0;
+  AliMCEventHandler *mcH = 0;
+  if(MCEvent()){
+    pStack = MCEvent()->Stack();
+    mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()); 
+  }
+    
   // Define arrays for muons
   Double_t pos[3];
   Double_t p[3];
@@ -107,6 +121,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   Int_t nNegTracks = header->GetRefMultiplicityNeg();
   
   for (Int_t nMuTrack = 0; nMuTrack < nMuTracks; ++nMuTrack) {
+  printf("nMu=%d\n",nMuTrack);
     esdMuTrack = esd->GetMuonTrack(nMuTrack);
     
     if (!esdMuTrack->ContainTrackerData()) continue;
@@ -127,6 +142,8 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     pos[0] = esdMuTrack->GetNonBendingCoor(); 
     pos[1] = esdMuTrack->GetBendingCoor(); 
     pos[2] = esdMuTrack->GetZ();
+    
+    if(mcH)mcH->SelectParticle(esdMuTrack->GetLabel());
     
     aodTrack = new(tracks[jTracks++]) AliAODTrack(esdMuTrack->GetUniqueID(), // ID
 						  esdMuTrack->GetLabel(), // label
@@ -155,6 +172,8 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     
     primary->AddDaughter(aodTrack);
     
+    printf("PT=%f",aodTrack->Pt());
+    
     if (esdMuTrack->Charge() > 0) nPosTracks++;
     else nNegTracks++;
   }
@@ -171,3 +190,22 @@ void AliAnalysisTaskESDMuonFilter::Terminate(Option_t */*option*/)
   if (fDebug > 1) printf("AnalysisESDfilter: Terminate() \n");
 }
 
+void  AliAnalysisTaskESDMuonFilter::PrintMCInfo(AliStack *pStack,Int_t label){
+  if(!pStack)return;
+  label = TMath::Abs(label);
+  TParticle *part = pStack->Particle(label);
+  Printf("########################");
+  Printf("%s:%d %d UniqueID %d PDG %d P %3.3f",(char*)__FILE__,__LINE__,label,part->GetUniqueID(),part->GetPdgCode(),part->P());
+  part->Print();
+  TParticle* mother = part;
+  Int_t imo = part->GetFirstMother();
+  Int_t nprim = pStack->GetNprimary();
+  //  while((imo >= nprim) && (mother->GetUniqueID() == 4)) {
+  while((imo >= nprim)) {
+    mother =  pStack->Particle(imo);
+    Printf("Mother %s:%d Label %d UniqueID %d PDG %d P %3.3f",(char*)__FILE__,__LINE__,imo,mother->GetUniqueID(),mother->GetPdgCode(),mother->P());
+    mother->Print();
+    imo =  mother->GetFirstMother();
+  }
+  Printf("########################");
+}
