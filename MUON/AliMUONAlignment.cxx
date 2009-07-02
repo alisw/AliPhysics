@@ -55,7 +55,7 @@ ClassImp(AliMUONAlignment)
   Int_t AliMUONAlignment::fgNDetElem = 4*2+4*2+18*2+26*2+26*2;
   Int_t AliMUONAlignment::fgNDetElemCh[10] = {4,4,4,4,18,18,26,26,26,26};
   Int_t AliMUONAlignment::fgSNDetElemCh[10] = {4,8,12,16,34,52,78,104,130,156};
-  Int_t AliMUONAlignment::fgNParCh = 3;
+  Int_t AliMUONAlignment::fgNParCh = 4;
   Int_t AliMUONAlignment::fgNTrkMod = 16;
   Int_t AliMUONAlignment::fgNCh = 10;
   Int_t AliMUONAlignment::fgNSt = 5;
@@ -63,7 +63,7 @@ ClassImp(AliMUONAlignment)
 AliMUONAlignment::AliMUONAlignment() 
   : TObject(),
     fBFieldOn(kTRUE),
-    fStartFac(16.), 
+    fStartFac(256.), 
     fResCutInitial(100.), 
     fResCut(100.),
     fMillepede(0),
@@ -85,8 +85,8 @@ AliMUONAlignment::AliMUONAlignment()
   fSigma[0] = 1.0e-1;
   fSigma[1] = 1.0e-2;
 
-  fDoF[0] = kTRUE;  fDoF[1] = kTRUE;  fDoF[2] = kTRUE;
-  fAllowVar[0] = 0.05;  fAllowVar[1] = 0.05;  fAllowVar[2] = 0.001;
+  fDoF[0] = kTRUE;  fDoF[1] = kTRUE;  fDoF[2] = kTRUE;  fDoF[3] = kTRUE;
+  fAllowVar[0] = 0.05;  fAllowVar[1] = 0.05;  fAllowVar[2] = 0.001;  fAllowVar[3] = 0.5;
   
   AliInfo(Form("fAllowVar[0]: %f\t fAllowVar[1]: %f\t fPhi: %f\t fgNDetElem: %i\t fNGlobal: %i\t fNLocal: %i",fAllowVar[0],fAllowVar[1],fPhi,fgNDetElem,fNGlobal,fNLocal));
 
@@ -152,6 +152,7 @@ void AliMUONAlignment::FixStation(Int_t iSt){
     FixParameter(i*fgNParCh+0, 0.0);
     FixParameter(i*fgNParCh+1, 0.0);
     FixParameter(i*fgNParCh+2, 0.0);
+    FixParameter(i*fgNParCh+3, 0.0);
   }
 }
 
@@ -163,6 +164,27 @@ void AliMUONAlignment::FixChamber(Int_t iCh){
     FixParameter(i*fgNParCh+0, 0.0);
     FixParameter(i*fgNParCh+1, 0.0);
     FixParameter(i*fgNParCh+2, 0.0);
+    FixParameter(i*fgNParCh+3, 0.0);
+  }
+}
+
+void AliMUONAlignment::FixDetElem(Int_t iDetElemId, TString sVarXYT){
+  /// Fix a given detection element
+  Int_t iDetElemNumber = iDetElemId%100;
+  for (int iCh=0; iCh<iDetElemId/100-1; iCh++){
+    iDetElemNumber += fgNDetElemCh[iCh];
+  }
+  if (sVarXYT.Contains("X")) { // X constraint
+    FixParameter(iDetElemNumber*fgNParCh+0, 0.0);
+  }
+  if (sVarXYT.Contains("Y")) { // Y constraint
+    FixParameter(iDetElemNumber*fgNParCh+1, 0.0);
+  }
+  if (sVarXYT.Contains("T")) { // T constraint
+    FixParameter(iDetElemNumber*fgNParCh+2, 0.0);
+  }
+  if (sVarXYT.Contains("Z")) { // T constraint
+    FixParameter(iDetElemNumber*fgNParCh+3, 0.0);
   }
 }
 
@@ -180,11 +202,13 @@ void AliMUONAlignment::FixHalfSpectrometer(Bool_t *lChOnOff, Bool_t *lSpecLROnOf
 	  FixParameter(i*fgNParCh+0, 0.0);
 	  FixParameter(i*fgNParCh+1, 0.0);
 	  FixParameter(i*fgNParCh+2, 0.0);
+	  FixParameter(i*fgNParCh+3, 0.0);
 	}
 	if ((lDetElemNumber==0 || lDetElemNumber==3) && !lSpecLROnOff[1]){ // From track crossings
 	  FixParameter(i*fgNParCh+0, 0.0);
 	  FixParameter(i*fgNParCh+1, 0.0);
 	  FixParameter(i*fgNParCh+2, 0.0);
+	  FixParameter(i*fgNParCh+3, 0.0);
 	}
       }
       if (iCh>=5 && iCh<=6){
@@ -192,12 +216,14 @@ void AliMUONAlignment::FixHalfSpectrometer(Bool_t *lChOnOff, Bool_t *lSpecLROnOf
 	  FixParameter(i*fgNParCh+0, 0.0);
 	  FixParameter(i*fgNParCh+1, 0.0);
 	  FixParameter(i*fgNParCh+2, 0.0);
+	  FixParameter(i*fgNParCh+3, 0.0);
 	}
 	if (((lDetElemNumber>=0&&lDetElemNumber<=4) || 
 	     (lDetElemNumber>=14&&lDetElemNumber<=17)) && !lSpecLROnOff[1]){
 	  FixParameter(i*fgNParCh+0, 0.0);
 	  FixParameter(i*fgNParCh+1, 0.0);
 	  FixParameter(i*fgNParCh+2, 0.0);
+	  FixParameter(i*fgNParCh+3, 0.0);
 	}
       }
       if (iCh>=7 && iCh<=10){
@@ -205,12 +231,14 @@ void AliMUONAlignment::FixHalfSpectrometer(Bool_t *lChOnOff, Bool_t *lSpecLROnOf
 	  FixParameter(i*fgNParCh+0, 0.0);
 	  FixParameter(i*fgNParCh+1, 0.0);
 	  FixParameter(i*fgNParCh+2, 0.0);
+	  FixParameter(i*fgNParCh+3, 0.0);
 	}
 	if (((lDetElemNumber>=0&&lDetElemNumber<=6) || 
 	     (lDetElemNumber>=20&&lDetElemNumber<=25)) && !lSpecLROnOff[1]){
 	  FixParameter(i*fgNParCh+0, 0.0);
 	  FixParameter(i*fgNParCh+1, 0.0);
 	  FixParameter(i*fgNParCh+2, 0.0);
+	  FixParameter(i*fgNParCh+3, 0.0);
 	}
       }
     }
@@ -234,6 +262,9 @@ void AliMUONAlignment::SetNonLinear(Bool_t *lChOnOff,Bool_t *lVarXYT){
       if (lVarXYT[2]) { // T constraint
 	SetNonLinear(i*fgNParCh+2);
       }
+      if (lVarXYT[3]) { // Z constraint
+	SetNonLinear(i*fgNParCh+3);
+      }
     }
   }
 }
@@ -255,6 +286,9 @@ void AliMUONAlignment::AddConstraints(Bool_t *lChOnOff,Bool_t *lVarXYT){
       if (lVarXYT[2]) { // T constraint
 	fConstraintP[i*fgNParCh+2]=1.0;
       }
+//       if (lVarXYT[3]) { // Z constraint
+// 	fConstraintP[i*fgNParCh+3]=1.0;
+//       }
     }
   }
   if (lVarXYT[0]) { // X constraint
@@ -266,6 +300,9 @@ void AliMUONAlignment::AddConstraints(Bool_t *lChOnOff,Bool_t *lVarXYT){
   if (lVarXYT[2]) { // T constraint
     AddConstraint(fConstraintP,0.0);
   }
+//   if (lVarXYT[3]) { // Z constraint
+//     AddConstraint(fConstraintP,0.0);
+//   }
 }
 
 void AliMUONAlignment::AddConstraints(Bool_t *lChOnOff,Bool_t *lVarXYT, Bool_t *lDetTLBR, Bool_t *lSpecLROnOff){
@@ -760,6 +797,8 @@ void AliMUONAlignment::LocalEquationX() {
 			+fCosPhi*(fTrackPos0[1]+fTrackSlope0[1]*
 				  (fTrackPos[2]-fTrackPos0[2])-fDetElemPos[1]));
   }
+  SetGlobalDerivative(fDetElemNumber*fgNParCh+3, 
+		      fCosPhi*fTrackSlope0[0]+fSinPhi*fTrackSlope0[1]);
 
   fMillepede->SetLocalEquation(fGlobalDerivatives, fLocalDerivatives, fMeas[0], fSigma[0]);
 }
@@ -787,6 +826,8 @@ void AliMUONAlignment::LocalEquationY() {
 			-fSinPhi*(fTrackPos0[1]+fTrackSlope0[1]*
 				  (fTrackPos[2]-fTrackPos0[2])-fDetElemPos[1]));
   }
+  SetGlobalDerivative(fDetElemNumber*fgNParCh+3,
+		      -fSinPhi*fTrackSlope0[0]+fCosPhi*fTrackSlope0[1]);
 
   fMillepede->SetLocalEquation(fGlobalDerivatives, fLocalDerivatives, fMeas[1], fSigma[1]);
 }
@@ -933,9 +974,10 @@ TGeoCombiTrans AliMUONAlignment::ReAlign(const TGeoCombiTrans & transform, doubl
 //     rot = new TGeoRotation("rot");
 //   }			// default constructor.
 
-  cartMisAlig[0] = -lMisAlignment[0];
-  cartMisAlig[1] = -lMisAlignment[1];
-  angMisAlig[2] = -lMisAlignment[2]*180./TMath::Pi();
+  cartMisAlig[0] = -TMath::Sign(1.0,transform.GetRotationMatrix()[0])*lMisAlignment[0];
+  cartMisAlig[1] = -TMath::Sign(1.0,transform.GetRotationMatrix()[4])*lMisAlignment[1];
+  cartMisAlig[2] = -TMath::Sign(1.0,transform.GetRotationMatrix()[8])*lMisAlignment[3];
+  angMisAlig[2] = -TMath::Sign(1.0,transform.GetRotationMatrix()[0]*transform.GetRotationMatrix()[4])*lMisAlignment[2]*180./TMath::Pi();
 
   TGeoTranslation deltaTrans(cartMisAlig[0], cartMisAlig[1], cartMisAlig[2]);
   TGeoRotation deltaRot;
@@ -970,7 +1012,7 @@ AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
   // Returns the new geometry transformer
 
   Double_t lModuleMisAlignment[3] = {0.,0.,0.};
-  Double_t lDetElemMisAlignment[3] = {0.,0.,0.};
+  Double_t lDetElemMisAlignment[4] = {0.,0.,0.,0.};
   Int_t iDetElemId = 0;
   Int_t iDetElemNumber = 0;
 

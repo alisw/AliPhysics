@@ -12,6 +12,7 @@
 // Authors: Bruce Becker, Javier Castillo
 
 #include <TObject.h>
+#include <TString.h>
 
 class TGeoCombiTrans;
 class TClonesArray;
@@ -50,6 +51,7 @@ public:
   }
   void FixStation(Int_t iSt);
   void FixChamber(Int_t iCh);
+  void FixDetElem(Int_t iDetElemId, TString sVarXYT = "XYTZ");
   void FixHalfSpectrometer(Bool_t *bChOnOff, Bool_t *bSpecLROnOff);
   void AllowVariations(Bool_t *bChOnOff);
   void SetNonLinear(Bool_t *bChOnOff, Bool_t *bVarXYT);
@@ -102,8 +104,8 @@ public:
   Bool_t fBFieldOn;        ///< Flag for Magnetic filed On/Off
   Bool_t fChOnOff[10];     ///< Flags for chamber On/Off
   Bool_t fSpecLROnOff[2];  ///< Flags for left right On/Off		       	 		       	       		       
-  Bool_t fDoF[3];          ///< Flags degrees of freedom to align (x,y,phi)
-  Double_t fAllowVar[3];   ///< "Encouraged" variation for degrees of freedom 
+  Bool_t fDoF[4];          ///< Flags degrees of freedom to align (x,y,phi)
+  Double_t fAllowVar[4];   ///< "Encouraged" variation for degrees of freedom 
   Double_t fStartFac;      ///< Initial value for chi2 cut 
                            ///< if > 1 Iterations in AliMillepede are turned on
   Double_t fResCutInitial; ///< Cut on residual for first iteration
@@ -129,55 +131,55 @@ public:
   Double_t fMeas[2];        ///< Current measurement (depend on B field On/Off)  
   Double_t fSigma[2];       ///< Estimated resolution on measurement
 
-  Double_t fGlobalDerivatives[468]; ///< Array of global derivatives
+  Double_t fGlobalDerivatives[624]; ///< Array of global derivatives
   Double_t fLocalDerivatives[4];    ///< Array of local derivatives
 
-  Double_t fConstraintX[468];   ///< Array for constraint equation all X
-  Double_t fConstraintY[468];   ///< Array for constraint equation all Y
-  Double_t fConstraintP[468];   ///< Array for constraint equation all P
-  Double_t fConstraintXT[468];  ///< Array for constraint equation X Top half
-  Double_t fConstraintYT[468];  ///< Array for constraint equation Y Top half
-  Double_t fConstraintPT[468];  ///< Array for constraint equation P Top half
-  Double_t fConstraintXZT[468];  ///< Array for constraint equation X vs Z Top half
-  Double_t fConstraintYZT[468];  ///< Array for constraint equation Y vs Z Top half
-  Double_t fConstraintPZT[468];  ///< Array for constraint equation P vs Z Top half
-  Double_t fConstraintXYT[468];  ///< Array for constraint equation X vs Y Top half
-  Double_t fConstraintYYT[468];  ///< Array for constraint equation Y vs Y Top half
-  Double_t fConstraintPYT[468];  ///< Array for constraint equation P vs Y Top half
-  Double_t fConstraintXB[468];  ///< Array for constraint equation X Bottom half
-  Double_t fConstraintYB[468];  ///< Array for constraint equation Y Bottom half
-  Double_t fConstraintPB[468];  ///< Array for constraint equation P Bottom half
-  Double_t fConstraintXZB[468];  ///< Array for constraint equation X vs Z Bottom half
-  Double_t fConstraintYZB[468];  ///< Array for constraint equation Y vs Z Bottom half
-  Double_t fConstraintPZB[468];  ///< Array for constraint equation P vs Z Bottom half
-  Double_t fConstraintXYB[468];  ///< Array for constraint equation X vs Y Bottom half
-  Double_t fConstraintYYB[468];  ///< Array for constraint equation Y vs Y Bottom half
-  Double_t fConstraintPYB[468];  ///< Array for constraint equation P vs Y Bottom half
-  Double_t fConstraintXR[468];  ///< Array for constraint equation X Right half
-  Double_t fConstraintYR[468];  ///< Array for constraint equation Y Right half
-  Double_t fConstraintPR[468];  ///< Array for constraint equation P Right half
-  Double_t fConstraintXZR[468];  ///< Array for constraint equation X vs Z Right half
-  Double_t fConstraintYZR[468];  ///< Array for constraint equation Y vs Z Right half
-  Double_t fConstraintPZR[468];  ///< Array for constraint equation P vs Z Right half
-  Double_t fConstraintXYR[468];  ///< Array for constraint equation X vs Y Right half
-  Double_t fConstraintYYR[468];  ///< Array for constraint equation Y vs Y Right half
-  Double_t fConstraintPYR[468];  ///< Array for constraint equation P vs Y Right half
-  Double_t fConstraintXL[468];  ///< Array for constraint equation X Left half
-  Double_t fConstraintYL[468];  ///< Array for constraint equation Y Left half
-  Double_t fConstraintPL[468];  ///< Array for constraint equation P Left half
-  Double_t fConstraintXZL[468];  ///< Array for constraint equation X vs Z Left half
-  Double_t fConstraintYZL[468];  ///< Array for constraint equation Y vs Z Left half
-  Double_t fConstraintPZL[468];  ///< Array for constraint equation P vs Z Left half
-  Double_t fConstraintXYL[468];  ///< Array for constraint equation X vs Y Left half
-  Double_t fConstraintYYL[468];  ///< Array for constraint equation Y vs Y Left half
-  Double_t fConstraintPYL[468];  ///< Array for constraint equation P vs Y Left half
-  Double_t fConstraintX3[468];  ///< Array for constraint equation St3 X
-  Double_t fConstraintY3[468];  ///< Array for constraint equation St3 Y
-  Double_t fConstraintX4[468];  ///< Array for constraint equation St4 X
-  Double_t fConstraintY4[468];  ///< Array for constraint equation St4 Y
-  Double_t fConstraintP4[468];  ///< Array for constraint equation St4 P
-  Double_t fConstraintX5[468];  ///< Array for constraint equation St5 X
-  Double_t fConstraintY5[468];  ///< Array for constraint equation St5 Y
+  Double_t fConstraintX[624];   ///< Array for constraint equation all X
+  Double_t fConstraintY[624];   ///< Array for constraint equation all Y
+  Double_t fConstraintP[624];   ///< Array for constraint equation all P
+  Double_t fConstraintXT[624];  ///< Array for constraint equation X Top half
+  Double_t fConstraintYT[624];  ///< Array for constraint equation Y Top half
+  Double_t fConstraintPT[624];  ///< Array for constraint equation P Top half
+  Double_t fConstraintXZT[624];  ///< Array for constraint equation X vs Z Top half
+  Double_t fConstraintYZT[624];  ///< Array for constraint equation Y vs Z Top half
+  Double_t fConstraintPZT[624];  ///< Array for constraint equation P vs Z Top half
+  Double_t fConstraintXYT[624];  ///< Array for constraint equation X vs Y Top half
+  Double_t fConstraintYYT[624];  ///< Array for constraint equation Y vs Y Top half
+  Double_t fConstraintPYT[624];  ///< Array for constraint equation P vs Y Top half
+  Double_t fConstraintXB[624];  ///< Array for constraint equation X Bottom half
+  Double_t fConstraintYB[624];  ///< Array for constraint equation Y Bottom half
+  Double_t fConstraintPB[624];  ///< Array for constraint equation P Bottom half
+  Double_t fConstraintXZB[624];  ///< Array for constraint equation X vs Z Bottom half
+  Double_t fConstraintYZB[624];  ///< Array for constraint equation Y vs Z Bottom half
+  Double_t fConstraintPZB[624];  ///< Array for constraint equation P vs Z Bottom half
+  Double_t fConstraintXYB[624];  ///< Array for constraint equation X vs Y Bottom half
+  Double_t fConstraintYYB[624];  ///< Array for constraint equation Y vs Y Bottom half
+  Double_t fConstraintPYB[624];  ///< Array for constraint equation P vs Y Bottom half
+  Double_t fConstraintXR[624];  ///< Array for constraint equation X Right half
+  Double_t fConstraintYR[624];  ///< Array for constraint equation Y Right half
+  Double_t fConstraintPR[624];  ///< Array for constraint equation P Right half
+  Double_t fConstraintXZR[624];  ///< Array for constraint equation X vs Z Right half
+  Double_t fConstraintYZR[624];  ///< Array for constraint equation Y vs Z Right half
+  Double_t fConstraintPZR[624];  ///< Array for constraint equation P vs Z Right half
+  Double_t fConstraintXYR[624];  ///< Array for constraint equation X vs Y Right half
+  Double_t fConstraintYYR[624];  ///< Array for constraint equation Y vs Y Right half
+  Double_t fConstraintPYR[624];  ///< Array for constraint equation P vs Y Right half
+  Double_t fConstraintXL[624];  ///< Array for constraint equation X Left half
+  Double_t fConstraintYL[624];  ///< Array for constraint equation Y Left half
+  Double_t fConstraintPL[624];  ///< Array for constraint equation P Left half
+  Double_t fConstraintXZL[624];  ///< Array for constraint equation X vs Z Left half
+  Double_t fConstraintYZL[624];  ///< Array for constraint equation Y vs Z Left half
+  Double_t fConstraintPZL[624];  ///< Array for constraint equation P vs Z Left half
+  Double_t fConstraintXYL[624];  ///< Array for constraint equation X vs Y Left half
+  Double_t fConstraintYYL[624];  ///< Array for constraint equation Y vs Y Left half
+  Double_t fConstraintPYL[624];  ///< Array for constraint equation P vs Y Left half
+  Double_t fConstraintX3[624];  ///< Array for constraint equation St3 X
+  Double_t fConstraintY3[624];  ///< Array for constraint equation St3 Y
+  Double_t fConstraintX4[624];  ///< Array for constraint equation St4 X
+  Double_t fConstraintY4[624];  ///< Array for constraint equation St4 Y
+  Double_t fConstraintP4[624];  ///< Array for constraint equation St4 P
+  Double_t fConstraintX5[624];  ///< Array for constraint equation St5 X
+  Double_t fConstraintY5[624];  ///< Array for constraint equation St5 Y
 
   Int_t fDetElemId;        ///< Detection element id
   Int_t fDetElemNumber;    ///< Detection element number

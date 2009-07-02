@@ -83,16 +83,17 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   // waiting for mag field in CDB 
   if (!TGeoGlobalMagField::Instance()->GetField()) {
     printf("Loading field map...\n");
-    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+    //    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+    AliMagF* field = new AliMagF("Maps","Maps",2,0.,0., 10.,AliMagF::k5kG);
     TGeoGlobalMagField::Instance()->SetField(field);
   }
   // set the magnetic field for track extrapolations
   AliMUONTrackExtrap::SetField();
 
-  Double_t parameters[3*156];
-  Double_t errors[3*156];
-  Double_t pulls[3*156];
-  for(Int_t k=0;k<3*156;k++) {
+  Double_t parameters[4*156];
+  Double_t errors[4*156];
+  Double_t pulls[4*156];
+  for(Int_t k=0;k<4*156;k++) {
     parameters[k]=0.;
     errors[k]=0.;
     pulls[k]=0.;
@@ -151,10 +152,14 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   alig->SetChOnOff(bChOnOff);
   alig->SetSpecLROnOff(bChOnOff);
 
+  // Here we can fix some detection elements
+  alig->FixDetElem(908);
+  alig->FixDetElem(1020);
+
   // Set predifined global constrains: X, Y, P, XvsZ, YvsZ, PvsZ, XvsY, YvsY, PvsY
   Bool_t bVarXYT[9] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
   Bool_t bDetTLBR[4] = {kFALSE,kTRUE,kFALSE,kTRUE};
-  alig->AddConstraints(bChOnOff,bVarXYT,bDetTLBR,bSpecLROnOff);
+  //  alig->AddConstraints(bChOnOff,bVarXYT,bDetTLBR,bSpecLROnOff);
 
 
   char cFileName[100];  
@@ -176,7 +181,7 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
       sprintf(cFileName,esdFileName.Data());
       bKeepLoop = kFALSE;
     }
-    if (!strstr(cFileName,"AliESDs.root")) continue;      
+    if (!strstr(cFileName,"AliESDs")) continue;      
     cout << "Using file: " << cFileName << endl;
     
     // load ESD event
@@ -237,13 +242,13 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   Double_t DEid[156] = {0};
   Double_t MSDEx[156] = {0};
   Double_t MSDEy[156] = {0};
-  Double_t MSDExt[156] = {0};
-  Double_t MSDEyt[156] = {0};
+  Double_t MSDEz[156] = {0};
+  Double_t MSDEp[156] = {0};
   Double_t DEidErr[156] = {0};
   Double_t MSDExErr[156] = {0};
   Double_t MSDEyErr[156] = {0};
-  Double_t MSDExtErr[156] = {0};
-  Double_t MSDEytErr[156] = {0};
+  Double_t MSDEzErr[156] = {0};
+  Double_t MSDEpErr[156] = {0};
   Int_t lNDetElem = 4*2+4*2+18*2+26*2+26*2;
   Int_t lNDetElemCh[10] = {4,4,4,4,18,18,26,26,26,26};
   // Int_t lSNDetElemCh[10] = {4,8,12,16,34,52,78,104,130,156};
@@ -261,22 +266,22 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
 	DEid[iDE] -= lNDetElemCh[iCh];
       }
     }
-    MSDEx[iDE]=parameters[3*iDE+0];
-    MSDEy[iDE]=parameters[3*iDE+1];
-    MSDExt[iDE]=parameters[3*iDE+2];
-    MSDEyt[iDE]=parameters[3*iDE+2];
-    MSDExErr[iDE]=(Double_t)alig->GetParError(3*iDE+0);
-    MSDEyErr[iDE]=(Double_t)alig->GetParError(3*iDE+1);
-    MSDExtErr[iDE]=(Double_t)alig->GetParError(3*iDE+2);
-    MSDEytErr[iDE]=(Double_t)alig->GetParError(3*iDE+2);
+    MSDEx[iDE]=parameters[4*iDE+0];
+    MSDEy[iDE]=parameters[4*iDE+1];
+    MSDEz[iDE]=parameters[4*iDE+3];
+    MSDEp[iDE]=parameters[4*iDE+2];
+    MSDExErr[iDE]=(Double_t)alig->GetParError(4*iDE+0);
+    MSDEyErr[iDE]=(Double_t)alig->GetParError(4*iDE+1);
+    MSDEzErr[iDE]=(Double_t)alig->GetParError(4*iDE+3);
+    MSDEpErr[iDE]=(Double_t)alig->GetParError(4*iDE+2);
   }
 
   cout << "Let's create graphs ...  " << endl;
 
   TGraphErrors *gMSDEx = new TGraphErrors(lNDetElem,DEid,MSDEx,DEidErr,MSDExErr); 
   TGraphErrors *gMSDEy = new TGraphErrors(lNDetElem,DEid,MSDEy,DEidErr,MSDEyErr); 
-  TGraphErrors *gMSDExt = new TGraphErrors(lNDetElem,DEid,MSDExt,DEidErr,MSDExtErr); 
-  TGraphErrors *gMSDEyt = new TGraphErrors(lNDetElem,DEid,MSDEyt,DEidErr,MSDEytErr); 
+  TGraphErrors *gMSDEz = new TGraphErrors(lNDetElem,DEid,MSDEz,DEidErr,MSDEzErr); 
+  TGraphErrors *gMSDEp = new TGraphErrors(lNDetElem,DEid,MSDEp,DEidErr,MSDEpErr); 
 
   cout << "... graphs created, open file ...  " << endl;
 
@@ -286,8 +291,8 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
 
   gMSDEx->Write("gMSDEx");
   gMSDEy->Write("gMSDEy");
-  gMSDExt->Write("gMSDExt");
-  gMSDEyt->Write("gMSDEyt");
+  gMSDEz->Write("gMSDEz");
+  gMSDEp->Write("gMSDEp");
   fInvBenMom->Write();
   fBenMom->Write();
   hFile->Close();
