@@ -46,7 +46,7 @@ class AliTRDarrayADC: public TObject
   void    Reset();
   Short_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const;
   void    SetData(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value);
-  void    CreateLut(); 
+  static  void    CreateLut(); 
 
  protected:
 
@@ -57,7 +57,7 @@ class AliTRDarrayADC: public TObject
   Int_t fNtime;   //Number of time bins
   Int_t fNAdim;   //Dimension of the ADC array
   Short_t* fADC;  //[fNAdim]   //Pointer to adc values
-  Short_t *fLutPadNumbering;   //  [fNcol] Look Up Table
+  static Short_t *fLutPadNumbering;   //  [fNcol] Look Up Table
 
   ClassDef(AliTRDarrayADC,2) //ADC container class
     

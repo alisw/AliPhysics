@@ -30,6 +30,8 @@
 
 ClassImp(AliTRDarrayADC)
 
+Short_t *AliTRDarrayADC::fLutPadNumbering = 0x0;
+
 //____________________________________________________________________________________
 AliTRDarrayADC::AliTRDarrayADC()
                :TObject()
@@ -40,11 +42,12 @@ AliTRDarrayADC::AliTRDarrayADC()
                ,fNtime(0) 
                ,fNAdim(0)
                ,fADC(0)
-               ,fLutPadNumbering(0)
 {
   //
   // AliTRDarrayADC default constructor
   //
+
+  CreateLut();
 
 }
 
@@ -58,12 +61,12 @@ AliTRDarrayADC::AliTRDarrayADC(Int_t nrow, Int_t ncol, Int_t ntime)
                ,fNtime(0) 
                ,fNAdim(0)
                ,fADC(0)
-               ,fLutPadNumbering(0)
 {
   //
   // AliTRDarrayADC constructor
   //
 
+  CreateLut();
   Allocate(nrow,ncol,ntime);
 
 }
@@ -78,16 +81,13 @@ AliTRDarrayADC::AliTRDarrayADC(const AliTRDarrayADC &b)
                ,fNtime(b.fNtime) 
                ,fNAdim(b.fNAdim)
                ,fADC(0)	 
-	       ,fLutPadNumbering(0)
 {
   //
   // AliTRDarrayADC copy constructor
   //
 
   fADC =  new Short_t[fNAdim];
-  memcpy(fADC,b.fADC, fNAdim*sizeof(Short_t));
-  fLutPadNumbering = new Short_t[fNcol];
-  memcpy(fLutPadNumbering,b.fLutPadNumbering, fNcol*sizeof(Short_t));   
+  memcpy(fADC,b.fADC, fNAdim*sizeof(Short_t));  
 
 }
 
@@ -102,11 +102,6 @@ AliTRDarrayADC::~AliTRDarrayADC()
     {
       delete [] fADC;
       fADC=0;
-    }
-  if(fLutPadNumbering)
-    {
-      delete [] fLutPadNumbering;
-      fLutPadNumbering=0;
     }
 
 }
@@ -126,10 +121,6 @@ AliTRDarrayADC &AliTRDarrayADC::operator=(const AliTRDarrayADC &b)
     {
       delete [] fADC;
     }
-  if(fLutPadNumbering)
-    {
-      delete [] fLutPadNumbering;
-    }
   fNdet=b.fNdet;
   fNrow=b.fNrow;
   fNcol=b.fNcol;
@@ -138,8 +129,6 @@ AliTRDarrayADC &AliTRDarrayADC::operator=(const AliTRDarrayADC &b)
   fNAdim=b.fNAdim;
   fADC = new Short_t[fNAdim];
   memcpy(fADC,b.fADC, fNAdim*sizeof(Short_t));
-  fLutPadNumbering = new Short_t[fNcol];
-  memcpy(fLutPadNumbering,b.fLutPadNumbering, fNcol*sizeof(Short_t)); 
 
   return *this;
 
@@ -161,7 +150,6 @@ void AliTRDarrayADC::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
   Int_t numberofmcms = fNcol/padspermcm; 
   fNumberOfChannels = numberofmcms*adcchannelspermcm; 
   fNAdim=nrow*fNumberOfChannels*ntime;
-  CreateLut();
 
   if(fADC)
     {
@@ -618,13 +606,10 @@ void AliTRDarrayADC::CreateLut()
   // pad numbering and mcm channel numbering
   //
 
-  if(fLutPadNumbering)
-    {
-      delete [] fLutPadNumbering;
-    }
+  if(fLutPadNumbering)  return;
   
-   fLutPadNumbering = new Short_t[fNcol];
-   memset(fLutPadNumbering,0,sizeof(Short_t)*fNcol);
+   fLutPadNumbering = new Short_t[AliTRDfeeParam::GetNcol()];
+   memset(fLutPadNumbering,0,sizeof(Short_t)*AliTRDfeeParam::GetNcol());
 
   for(Int_t mcm=0; mcm<8; mcm++)
     {
@@ -637,4 +622,3 @@ void AliTRDarrayADC::CreateLut()
 	}
     }
 }
-
