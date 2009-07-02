@@ -88,6 +88,7 @@ class AliStack : public TVirtualMCStack
     // methods
     void  CleanParents();
     void  ResetArrays(Int_t size);
+    TParticle* GetParticleMapEntry(Int_t id) const;
     TParticle* GetNextParticle();
     Bool_t KeepPhysics(const TParticle* part);
     Bool_t IsStable(Int_t pdg) const;
@@ -130,5 +131,10 @@ inline Int_t AliStack::GetCurrentTrackNumber() const
 
 inline const TObjArray* AliStack::Particles() const
 { return &fParticleMap; }
+
+// inline protected
+
+inline TParticle* AliStack::GetParticleMapEntry(Int_t id) const
+{ return (TParticle*) fParticleMap.At(id); }
 
 #endif //ALI_STACK_H

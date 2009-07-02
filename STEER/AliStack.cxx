@@ -230,7 +230,7 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg,
   fParticleMap.AddAtAndExpand(particle, fNtrack);//CHECK!!
 
   if(parent>=0) {
-      particle = dynamic_cast<TParticle*>(fParticleMap.At(parent));
+      particle = GetParticleMapEntry(parent);
       if (particle) {
 	  particle->SetLastDaughter(fNtrack);
 	  if(particle->GetFirstDaughter()<0) particle->SetFirstDaughter(fNtrack);
@@ -309,7 +309,7 @@ Bool_t AliStack::PurifyKine()
       if(i<=fHgwmk) fTrackLabelMap[i]=i ; 
       else {
 	  fTrackLabelMap[i] = -99;
-	  if((part=dynamic_cast<TParticle*>(fParticleMap.At(i)))) {
+	  if((part=GetParticleMapEntry(i))) {
 //
 //        Check of this track should be kept for physics reasons 
 	      if (KeepPhysics(part)) KeepTrack(i);
@@ -323,7 +323,7 @@ Bool_t AliStack::PurifyKine()
   // Invalid daughter information for the parent of the first particle
   // generated. This may or may not be the current primary according to
   // whether decays have been recorded among the primaries
-  part = dynamic_cast<TParticle*>(fParticleMap.At(fHgwmk+1));
+  part = GetParticleMapEntry(fHgwmk+1);
   fParticleMap.At(part->GetFirstMother())->ResetBit(kDaughtersBit);
   // Second pass, build map between old and new numbering
   for(i=fHgwmk+1; i<fNtrack; i++) {
@@ -332,7 +332,7 @@ Bool_t AliStack::PurifyKine()
 	  fTrackLabelMap[i]=nkeep;
 	  // If old and new are different, have to move the pointer
 	  if(i!=nkeep) fParticleMap[nkeep]=fParticleMap.At(i);
-	  part = dynamic_cast<TParticle*>(fParticleMap.At(nkeep));
+	  part = GetParticleMapEntry(nkeep);
 	  // as the parent is always *before*, it must be already
 	  // in place. This is what we are checking anyway!
 	  if((parent=part->GetFirstMother())>fHgwmk) {
@@ -344,10 +344,10 @@ Bool_t AliStack::PurifyKine()
   
   // Fix daughters information
   for (i=fHgwmk+1; i<nkeep; i++) {
-      part = dynamic_cast<TParticle*>(fParticleMap.At(i));
+      part = GetParticleMapEntry(i);
       parent = part->GetFirstMother();
       if(parent>=0) {
-	  father = dynamic_cast<TParticle*>(fParticleMap.At(parent));
+	  father = GetParticleMapEntry(parent);
 	  if(father->TestBit(kDaughtersBit)) {
 	      
 	      if(i<father->GetFirstDaughter()) father->SetFirstDaughter(i);
@@ -364,7 +364,7 @@ Bool_t AliStack::PurifyKine()
   // Now the output bit, from fHgwmk to nkeep we write everything and we erase
   if(nkeep > fParticleFileMap.GetSize()) fParticleFileMap.Set(Int_t (nkeep*1.5));
   for (i=fHgwmk+1; i<nkeep; ++i) {
-      fParticleBuffer = dynamic_cast<TParticle*>(fParticleMap.At(i));
+      fParticleBuffer = GetParticleMapEntry(i);
       fParticleFileMap[i]=static_cast<Int_t>(TreeK()->GetEntries());
       TreeK()->Fill();
       fParticleMap[i]=fParticleBuffer=0;
@@ -404,7 +404,7 @@ Bool_t AliStack::ReorderKine()
       
       for (i = 0; i < nNew; i++) {
 	  if (fParticleMap.At(fHgwmk + 1 + i)) {
-	      tmp[i] = (TParticle*) (fParticleMap.At(fHgwmk + 1 + i));
+	      tmp[i] = GetParticleMapEntry(fHgwmk + 1 + i);
 	  } else {
 	      tmp[i] = 0x0;
 	  }
@@ -426,7 +426,7 @@ Bool_t AliStack::ReorderKine()
 	  TParticle* parP;
 	  if (i == -1) {
 	      ipa  = tmp[0]->GetFirstMother();
-	      parP =dynamic_cast<TParticle*>(fParticleMap.At(ipa));
+	      parP = GetParticleMapEntry(ipa);
 	  } else {
 	      ipa = (fHgwmk + 1 + i);
               // Skip deleted particles
@@ -495,7 +495,7 @@ Bool_t AliStack::KeepPhysics(const TParticle* part)
     //
     Int_t parent = part->GetFirstMother();
     if (parent >= 0 && parent <= fHgwmk) {
-	TParticle* father = dynamic_cast<TParticle*>(Particles()->At(parent));
+	TParticle* father = GetParticleMapEntry(parent);
 	Int_t kf = father->GetPdgCode();
 	kf = TMath::Abs(kf);
 	Int_t kfl = kf;
@@ -533,10 +533,10 @@ void AliStack::FinishEvent()
   }
 
   Bool_t allFilled = kFALSE;
-  TObject *part;
-  for(Int_t i=0; i<fHgwmk+1; ++i) 
-    if((part=fParticleMap.At(i))) {
-      fParticleBuffer = dynamic_cast<TParticle*>(part);
+  TParticle *part;
+  for(Int_t i=0; i<fHgwmk+1; ++i) {
+    if((part=GetParticleMapEntry(i))) {
+      fParticleBuffer = part;
       fParticleFileMap[i]= static_cast<Int_t>(TreeK()->GetEntries());
       TreeK()->Fill();
       fParticleBuffer=0;      
@@ -547,14 +547,15 @@ void AliStack::FinishEvent()
       if (allFilled) AliWarning(Form("Why != 0 part # %d?\n",i));
     }
     else 
-     {
+    {
       // // printf("Why = 0 part # %d?\n",i); => We know.
       // break;
       // we don't break now in order to be sure there is no
       // particle !=0 left.
       // To be removed later and replaced with break.
        if(!allFilled) allFilled = kTRUE;
-     } 
+    }
+  }
 } 
 //_____________________________________________________________________________
 
@@ -568,7 +569,7 @@ void AliStack::FlagTrack(Int_t track)
 
   Int_t curr=track;
   while(1) {
-    particle=dynamic_cast<TParticle*>(fParticleMap.At(curr));
+    particle = GetParticleMapEntry(curr);
     
     // If the particle is flagged the three from here upward is saved already
     if(particle->TestBit(kKeepBit)) return;
@@ -668,7 +669,7 @@ TParticle* AliStack::Particle(Int_t i)
     // Store a pointer in the TObjArray
     fParticleMap.AddAt(fParticles[nentries],i);
   }
-  return dynamic_cast<TParticle*>(fParticleMap.At(i));
+  return GetParticleMapEntry(i);
 }
 
 //_____________________________________________________________________________
@@ -714,7 +715,7 @@ Int_t AliStack::GetCurrentParentTrackNumber() const
   // Return number of the parent of the current track
   //
   
-  TParticle* current = (TParticle*)fParticleMap.At(fCurrent);
+  TParticle* current = GetParticleMapEntry(fCurrent);
 
   if (current) 
     return current->GetFirstMother();
@@ -747,7 +748,7 @@ void AliStack::DumpPart (Int_t i) const
   //
   // Dumps particle i in the stack
   //
-  dynamic_cast<TParticle*>(fParticleMap.At(i))->Print();
+  GetParticleMapEntry(i)->Print();
 }
 
 //_____________________________________________________________________________
@@ -792,7 +793,7 @@ void AliStack::DumpLoadedStack() const
 	 "\n\n=======================================================================\n");
   for (Int_t i=0;i<fNtrack;i++) 
     {
-      TParticle* particle = dynamic_cast<TParticle*>(fParticleMap[i]);
+      TParticle* particle = GetParticleMapEntry(i);
       if (particle) {
         printf("-> %d ",i); particle->Print();
         printf("--------------------------------------------------------------\n");
@@ -821,7 +822,7 @@ void AliStack::CleanParents()
   TParticle *part;
   int i;
   for(i=0; i<fHgwmk+1; i++) {
-    part = dynamic_cast<TParticle*>(fParticleMap.At(i));
+    part = GetParticleMapEntry(i);
     if(part) if(!part->TestBit(kDaughtersBit)) {
       part->SetFirstDaughter(-1);
       part->SetLastDaughter(-1);
@@ -841,7 +842,7 @@ TParticle* AliStack::GetNextParticle()
   // search secondaries
   //for(Int_t i=fNtrack-1; i>=0; i--) {
   for(Int_t i=fNtrack-1; i>fHgwmk; i--) {
-      particle = dynamic_cast<TParticle*>(fParticleMap.At(i));
+      particle = GetParticleMapEntry(i);
       if ((particle) && (!particle->TestBit(kDoneBit))) {
 	  fCurrent=i;    
 	  return particle;
@@ -851,7 +852,7 @@ TParticle* AliStack::GetNextParticle()
   // take next primary if all secondaries were done
   while (fCurrentPrimary>=0) {
       fCurrent = fCurrentPrimary;    
-      particle = dynamic_cast<TParticle*>(fParticleMap.At(fCurrentPrimary--));
+      particle = GetParticleMapEntry(fCurrentPrimary--);
       if ((particle) && (!particle->TestBit(kDoneBit))) {
 	  return particle;
       } 
