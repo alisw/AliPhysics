@@ -1,0 +1,15 @@
+#-*- Mode: Makefile -*-
+
+SRCS = omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
+      
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR:= PWG4omega3piLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice \
+                         -L$(shell root-config --libdir) -lEG
+endif
