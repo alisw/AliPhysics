@@ -182,6 +182,7 @@
 #include "AliTracker.h"
 #include "AliTriggerClass.h"
 #include "AliTriggerCluster.h"
+#include "AliTriggerIR.h"
 #include "AliTriggerConfiguration.h"
 #include "AliV0vertexer.h"
 #include "AliVertexer.h"
@@ -1387,6 +1388,13 @@ void AliReconstruction::Begin(TTree *)
   }
   AliSysInfo::AddStamp("LoadCDB");
 
+  if (!LoadTriggerScalersCDB()) {
+    Abort("LoadTriggerScalersCDB", TSelector::kAbortProcess);
+    return;
+  }
+  AliSysInfo::AddStamp("LoadTriggerScalersCDB");
+
+
   // Read the reconstruction parameters from OCDB
   if (!InitRecoParams()) {
     AliWarning("Not all detectors have correct RecoParam objects initialized");
@@ -2582,14 +2590,18 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
       esdheader->SetL0TriggerInputs(input.GetL0Inputs());
       esdheader->SetL1TriggerInputs(input.GetL1Inputs());
       esdheader->SetL2TriggerInputs(input.GetL2Inputs());
+      // IR
+      UInt_t orbit=input.GetOrbitID();
+       for(Int_t i=0 ; i<input.GetNIRs() ; i++ )
+          if(TMath::Abs(Int_t(orbit-(input.GetIR(i))->GetOrbit()))<=1){
+	     esdheader->AddTriggerIR(input.GetIR(i));
+	  }
     }
-
-  // Here one has to add the filling interaction records
   }
   //Scalers
   if(fRunScalers){
-     //AliTimeStamp* timestamp = new AliTimeStamp(esd->GetOrbitNumber(), esd->GetPeriodNumber(), esd->GetBunchCrossNumber());
-     AliTimeStamp* timestamp = new AliTimeStamp(14322992, 5, (ULong64_t)486238);
+     AliTimeStamp* timestamp = new AliTimeStamp(esd->GetOrbitNumber(), esd->GetPeriodNumber(), esd->GetBunchCrossNumber());
+     //AliTimeStamp* timestamp = new AliTimeStamp(14322992, 5, (ULong64_t)486238);
      AliESDHeader* esdheader = fesd->GetHeader();
      for(Int_t i=0;i<50;i++){
         if((1<<i) & esd->GetTriggerMask()){
