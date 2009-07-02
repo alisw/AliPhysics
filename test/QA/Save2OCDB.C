@@ -4,7 +4,7 @@ void Save2OCDB(Char_t * det, Int_t runNumber=0)
   const char * kYear = "09" ; 
   // where ? 
   //AliQA::SetQARefStorage(Form("%s%s/", AliQA::GetQARefDefaultStorage(), kYear)) ;
-  AliQAv1::SetQARefStorage(Form("local://$ALICE_ROOT/QAref/%s/QA", det)) ;
+  AliQAv1::SetQARefStorage(Form("local://$ALICE_ROOT/QAref/", det)) ;
   AliQAv1::SetQARefDataDirName(AliRecoParam::kLowMult) ; //Event Specie
   AliQAManager *qam = AliQAManager::QAManager("rec") ; 
   qam->Save2OCDB(runNumber, AliRecoParam::kLowMult, kYear, det) ; 
