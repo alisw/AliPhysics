@@ -25,9 +25,7 @@
 
 
 #include "AliMixedEvent.h"
-#include "AliESDVertex.h"
 #include "AliExternalTrackParam.h"
-#include "AliESDtrack.h"
 #include "TVector3.h"
 #include "AliVVertex.h"
 #include <TMath.h>
