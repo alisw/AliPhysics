@@ -23,8 +23,6 @@
 #pragma link C++ class AliMUONTriggerTrack+; 
 #pragma link C++ class AliMUONRecoTrack+; 
 #pragma link C++ class AliMUONAlignment+;
-#pragma link C++ class AliMUONAlignmentTask+;
-#pragma link C++ class AliMUONReAlignTask+;
 #pragma link C++ class AliMUONVClusterFinder+;
 #pragma link C++ class AliMUONPad+;
 #pragma link C++ class AliMUONCluster+;

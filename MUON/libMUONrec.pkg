@@ -15,8 +15,6 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONRecoTrack.cxx \
        AliMUONDigitCalibrator.cxx \
        AliMUONAlignment.cxx \
-       AliMUONAlignmentTask.cxx \
-       AliMUONReAlignTask.cxx \
        AliMUONVClusterFinder.cxx \
        AliMUONPreClusterFinder.cxx \
        AliMUONPreClusterFinderV2.cxx \
