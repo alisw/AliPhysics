@@ -201,6 +201,7 @@ public:
 
   void SetPrimaryVertexTracks(const AliESDVertex *vertex);
   const AliESDVertex *GetPrimaryVertexTracks() const {return fPrimaryVertex;}
+  AliESDVertex *PrimaryVertexTracksUnconstrained() const;
 
   const AliESDVertex *GetPrimaryVertex() const;
 

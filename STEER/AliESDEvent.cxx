@@ -49,6 +49,7 @@
 #include "AliESDPmdTrack.h"
 #include "AliESDTrdTrack.h"
 #include "AliESDVertex.h"
+#include "AliVertexerTracks.h"
 #include "AliESDcascade.h"
 #include "AliESDkink.h"
 #include "AliESDtrack.h"
@@ -991,6 +992,31 @@ const AliESDVertex * AliESDEvent::GetPrimaryVertex() const
   
   AliWarning("No primary vertex available. Returning the \"default\"...");
   return fSPDVertex;
+}
+
+AliESDVertex * AliESDEvent::PrimaryVertexTracksUnconstrained() const 
+{
+  //
+  // Removes diamond constraint from fPrimaryVertex (reconstructed with tracks)
+  // Returns a AliESDVertex which has to be deleted by the user
+  //
+  if(!fPrimaryVertex) {
+    AliWarning("No primary vertex from tracks available.");
+    return 0;
+  }
+  if(!fPrimaryVertex->GetStatus()) {
+    AliWarning("No primary vertex from tracks available.");
+    return 0;
+  }
+
+  AliVertexerTracks vertexer(GetMagneticField());
+  Float_t diamondxyz[3]={(Float_t)GetDiamondX(),(Float_t)GetDiamondY(),0.};
+  Float_t diamondcovxy[3]; GetDiamondCovXY(diamondcovxy);
+  Float_t diamondcov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,7.};
+  AliESDVertex *vertex = 
+    (AliESDVertex*)vertexer.RemoveConstraintFromVertex(fPrimaryVertex,diamondxyz,diamondcov);
+
+  return vertex;
 }
 
 void AliESDEvent::SetMultiplicity(const AliMultiplicity *mul) 
