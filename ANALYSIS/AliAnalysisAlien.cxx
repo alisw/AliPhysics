@@ -1937,7 +1937,7 @@ void AliAnalysisAlien::WriteExecutable()
 void AliAnalysisAlien::WriteProductionFile(const char *filename) const
 {
 // Write the production file to be submitted by LPM manager. The format is:
-// First line: full_path_to_jdl
+// First line: full_path_to_jdl estimated_no_subjobs_per_master
 // Next lines: full_path_to_dataset XXX (XXX is a string)
 // To submit, one has to: submit jdl XXX for all lines
    ofstream out;
@@ -1948,8 +1948,9 @@ void AliAnalysisAlien::WriteProductionFile(const char *filename) const
    }
    TString workdir = gGrid->GetHomeDirectory();
    workdir += fGridWorkingDir;
+   Int_t njobspermaster = 1000*fNrunsPerMaster/fSplitMaxInputFileNumber;
    TString locjdl = Form("%s/%s", workdir.Data(),fJDLName.Data());
-   out << locjdl << endl;
+   out << locjdl << " " << njobspermaster << endl;
    Int_t nmasterjobs = fInputFiles->GetEntries();
    for (Int_t i=0; i<nmasterjobs; i++) {
       out << Form("%s", fInputFiles->At(i)->GetName()) << " " << Form("%03d", i) << endl;
