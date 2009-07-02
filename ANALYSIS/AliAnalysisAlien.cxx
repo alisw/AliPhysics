@@ -912,7 +912,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
       Info("CreateJDL", "\n#####   Copying JDL file <%s> to your AliEn output directory", fJDLName.Data());
       TString locjdl = Form("%s/%s", fGridOutputDir.Data(),fJDLName.Data());
       if (TObject::TestBit(AliAnalysisGrid::kProductionMode))
-         locjdl = Form("%s/%s", fGridWorkingDir.Data(),fJDLName.Data());
+         locjdl = Form("%s/%s", workdir.Data(),fJDLName.Data());
       if (FileExists(locjdl)) gGrid->Rm(locjdl);
       TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s", locjdl.Data()));
    } 
@@ -1952,7 +1952,7 @@ void AliAnalysisAlien::WriteProductionFile(const char *filename) const
    out << locjdl << endl;
    Int_t nmasterjobs = fInputFiles->GetEntries();
    for (Int_t i=0; i<nmasterjobs; i++) {
-      out << Form("%s/%s", workdir.Data(), fInputFiles->At(i)->GetName()) << " " << Form("%03d", i) << endl;
+      out << Form("%s", fInputFiles->At(i)->GetName()) << " " << Form("%03d", i) << endl;
    }
    Info("WriteProductionFile", "\n#####   Copying production file <%s> to your work directory", filename);
    TFile::Cp(Form("file:%s",filename), Form("alien://%s/%s", workdir.Data(),filename));   
