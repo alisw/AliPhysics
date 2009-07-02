@@ -136,20 +136,39 @@ public:
  
   void SetOuterParam(const AliExternalTrackParam *p, ULong_t flags);
 
+  void SetOuterHmpParam(const AliExternalTrackParam *p, ULong_t flags);
+
   const AliExternalTrackParam * GetOuterParam() const { return fOp;}
+
+  const AliExternalTrackParam * GetOuterHmpParam() const { return fHMPIDp;}
+  
   Bool_t GetOuterPxPyPz(Double_t *p) const {
     if (!fOp) return kFALSE;
     return fOp->GetPxPyPz(p);
   }
+  Bool_t GetOuterHmpPxPyPz(Double_t *p) const {
+    if (!fHMPIDp) return kFALSE;
+    return fHMPIDp->GetPxPyPz(p);
+  }
+  
   Bool_t GetOuterXYZ(Double_t *r) const {
     if (!fOp) return kFALSE;
     return fOp->GetXYZ(r);
   }
+    Bool_t GetOuterHmpXYZ(Double_t *r) const {
+    if (!fHMPIDp) return kFALSE;
+    return fHMPIDp->GetXYZ(r);
+  }
+
   Bool_t GetOuterExternalParameters
         (Double_t &alpha, Double_t &x, Double_t p[5]) const;
   Bool_t GetOuterExternalCovariance(Double_t cov[15]) const;
 
+  Bool_t GetOuterHmpExternalParameters
+        (Double_t &alpha, Double_t &x, Double_t p[5]) const;
+  Bool_t GetOuterHmpExternalCovariance(Double_t cov[15]) const;
 
+  
   Int_t GetNcls(Int_t idet) const;
   Int_t GetClusters(Int_t idet, Int_t *idx) const;
  
@@ -332,6 +351,7 @@ protected:
   AliExternalTrackParam *fIp; // Track parameters estimated at the inner wall of TPC
   AliExternalTrackParam *fTPCInner; // Track parameters estimated at the inner wall of TPC using the TPC stand-alone 
   AliExternalTrackParam *fOp; // Track parameters estimated at the point of maximal radial coordinate reached during the tracking
+  AliExternalTrackParam *fHMPIDp; // Track parameters at HMPID
   AliESDfriendTrack *fFriendTrack; //! All the complementary information
 
   TBits    fTPCClusterMap; // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
@@ -432,7 +452,7 @@ protected:
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,51)  //ESDtrack 
+  ClassDef(AliESDtrack,52)  //ESDtrack 
 };
 
 

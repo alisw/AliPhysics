@@ -6,7 +6,8 @@
 #include "AliHMPIDRecon.h"       //Recon()
 #include "AliHMPIDReconHTA.h"    //ReconHTA()
 #include <AliESDEvent.h>         //PropagateBack(),Recon()  
-#include <AliESDtrack.h>         //Intersect()  
+#include <AliESDtrack.h>         //Intersect() 
+#include <AliTracker.h> 
 #include <AliRun.h>              //GetTrackPoint(),PropagateBack()  
 #include <AliTrackPointArray.h>  //GetTrackPoint()
 #include <AliAlignObj.h>         //GetTrackPoint()
@@ -129,7 +130,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
   AliHMPIDParam *pParam = AliHMPIDParam::Instance();                                             //Instance of AliHMPIDParam
   
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){                                        //loop on the ESD tracks in the event
-    
+           
 //    Double_t bestChi2=99999;chi2=99999;                                                          //init. track matching params
     Double_t dmin=999999,bz=0;
 
@@ -138,7 +139,12 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     Bool_t isMatched=kFALSE;
     
     AliHMPIDCluster *bestHmpCluster=0x0;                                                          //the best matching cluster
-    AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                     //get reconstructed track    
+    AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                     //get reconstructed track   
+    
+    if(!pTrk->IsOn(AliESDtrack::kTPCout)) continue;
+ 
+    if(pTrk->IsOn(AliESDtrack::kTPCrefit)) continue;
+ 
     AliHMPIDtrack *hmpTrk = new AliHMPIDtrack(*pTrk);                                             //create a hmpid track to be used for propagation and matching 
     bz=AliTracker::GetBz();  
 //initial flags for HMPID ESD infos    
@@ -214,7 +220,13 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       pTrk->SetHMPIDsignal(pParam->kMipQdcCut);
       continue;                                                                     
     }
+
+    Double_t radius = (pParam->Lors2Mars(ipCh,pParam->SizeAllX()/2,pParam->SizeAllY()/2)).Mag(); 
+    
+    if(!AliTracker::PropagateTrackTo(hmpTrk,radius,pTrk->GetMass(),1,kFALSE)) continue;
               
+    if(!hmpTrk->PropagateTo(bestHmpCluster)) continue;
+
     Int_t cluSiz = bestHmpCluster->Size();
     pTrk->SetHMPIDmip(bestHmpCluster->X(),bestHmpCluster->Y(),(Int_t)bestHmpCluster->Q(),0);  //store mip info in any case 
     pTrk->SetHMPIDcluIdx(ipCh,index+1000*cluSiz);                                             //set chamber, index of cluster + cluster size
@@ -233,7 +245,9 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 
     Bool_t isOk = hmpTrk->Update(bestHmpCluster,0.1,0);
     if(!isOk) continue;
-    pTrk->SetOuterParam(hmpTrk,AliESDtrack::kHMPIDout);                 
+    pTrk->SetOuterHmpParam(hmpTrk,AliESDtrack::kHMPIDout);                 
+
+    FillResiduals(hmpTrk,bestHmpCluster,kFALSE);
     
     /*    
     Int_t indexAll = 0;

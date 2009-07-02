@@ -161,6 +161,7 @@ AliESDtrack::AliESDtrack() :
   fIp(0),
   fTPCInner(0),
   fOp(0),
+  fHMPIDp(0),  
   fFriendTrack(new AliESDfriendTrack()),
   fTPCClusterMap(159),//number of padrows
   fTPCSharedMap(159),//number of padrows
@@ -250,6 +251,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fIp(0),
   fTPCInner(0),
   fOp(0),
+  fHMPIDp(0),  
   fFriendTrack(0),
   fTPCClusterMap(track.fTPCClusterMap),
   fTPCSharedMap(track.fTPCSharedMap),
@@ -340,7 +342,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   if (track.fIp) fIp=new AliExternalTrackParam(*track.fIp);
   if (track.fTPCInner) fTPCInner=new AliExternalTrackParam(*track.fTPCInner);
   if (track.fOp) fOp=new AliExternalTrackParam(*track.fOp);
-
+  if (track.fHMPIDp) fHMPIDp=new AliExternalTrackParam(*track.fHMPIDp);
+  
   if (track.fFriendTrack) fFriendTrack=new AliESDfriendTrack(*(track.fFriendTrack));
 }
 
@@ -351,6 +354,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fIp(0),
   fTPCInner(0),
   fOp(0),
+  fHMPIDp(0),  
   fFriendTrack(0),
   fTPCClusterMap(159),//number of padrows
   fTPCSharedMap(159),//number of padrows
@@ -471,6 +475,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fIp(0),
   fTPCInner(0),
   fOp(0),
+  fHMPIDp(0),  
   fFriendTrack(0),
   fTPCClusterMap(159),//number of padrows
   fTPCSharedMap(159),//number of padrows
@@ -652,6 +657,7 @@ AliESDtrack::~AliESDtrack(){
   delete fIp; 
   delete fTPCInner; 
   delete fOp;
+  delete fHMPIDp;
   delete fCp; 
   delete fFriendTrack;
   if(fTRDnSlices)
@@ -711,6 +717,19 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
     fOp = 0;
   }
 
+  
+  if(source.fHMPIDp){
+    // we have the trackparam: assign or copy construct
+    if(fOp) *fHMPIDp = *source.fHMPIDp;
+    else fHMPIDp = new AliExternalTrackParam(*source.fHMPIDp);
+  }
+  else{
+    // no track param delete the old one
+    if(fHMPIDp)delete fHMPIDp;
+    fHMPIDp = 0;
+  }
+
+  
   // copy also the friend track 
   // use copy constructor
   if(source.fFriendTrack){
@@ -968,6 +987,8 @@ void AliESDtrack::MakeMiniESDtrack(){
   delete fTPCInner;fTPCInner=0;
   // Reset track parameters at the inner wall of the TRD
   delete fOp;fOp = 0;
+  // Reset track parameters at the HMPID
+  delete fHMPIDp;fHMPIDp = 0;
 
 
   // Reset ITS track related information
@@ -1234,6 +1255,11 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     break;
   case kTRDStop:
     break;
+  case kHMPIDout:
+  if (!fHMPIDp) fHMPIDp=new AliExternalTrackParam(*t);
+    else 
+      fHMPIDp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
+    break;
   default: 
     AliError("Wrong flag !");
     return kFALSE;
@@ -1318,6 +1344,16 @@ AliESDtrack::SetOuterParam(const AliExternalTrackParam *p, ULong_t flags) {
   fOp=new AliExternalTrackParam(*p);
 }
 
+void 
+AliESDtrack::SetOuterHmpParam(const AliExternalTrackParam *p, ULong_t flags) {
+  //
+  // This is a direct setter for the outer track parameters
+  //
+  SetStatus(flags);
+  if (fHMPIDp) delete fHMPIDp;
+  fHMPIDp=new AliExternalTrackParam(*p);
+}
+
 Bool_t 
 AliESDtrack::GetOuterExternalParameters
                  (Double_t &alpha, Double_t &x, Double_t p[5]) const {
@@ -1333,6 +1369,20 @@ AliESDtrack::GetOuterExternalParameters
 }
 
 Bool_t 
+AliESDtrack::GetOuterHmpExternalParameters
+                 (Double_t &alpha, Double_t &x, Double_t p[5]) const {
+  //---------------------------------------------------------------------
+  // This function returns external representation of the track parameters 
+  // at the inner layer of TRD
+  //---------------------------------------------------------------------
+  if (!fHMPIDp) return kFALSE;
+  alpha=fHMPIDp->GetAlpha();
+  x=fHMPIDp->GetX();
+  for (Int_t i=0; i<5; i++) p[i]=fHMPIDp->GetParameter()[i];
+  return kTRUE;
+}
+
+Bool_t 
 AliESDtrack::GetOuterExternalCovariance(Double_t cov[15]) const {
  //---------------------------------------------------------------------
  // This function returns external representation of the cov. matrix 
@@ -1340,6 +1390,17 @@ AliESDtrack::GetOuterExternalCovariance(Double_t cov[15]) const {
  //---------------------------------------------------------------------
   if (!fOp) return kFALSE;
   for (Int_t i=0; i<15; i++) cov[i]=fOp->GetCovariance()[i];
+  return kTRUE;
+}
+
+Bool_t 
+AliESDtrack::GetOuterHmpExternalCovariance(Double_t cov[15]) const {
+ //---------------------------------------------------------------------
+ // This function returns external representation of the cov. matrix 
+ // at the inner layer of TRD
+ //---------------------------------------------------------------------
+  if (!fHMPIDp) return kFALSE;
+  for (Int_t i=0; i<15; i++) cov[i]=fHMPIDp->GetCovariance()[i];
   return kTRUE;
 }
 
@@ -1944,6 +2005,7 @@ void AliESDtrack::FillPolymarker(TPolyMarker3D *pol, Float_t magF, Float_t minR,
   arrayRef.AddLast(new AliExternalTrackParam(*this));
   if (fIp) arrayRef.AddLast(new AliExternalTrackParam(*fIp));
   if (fOp) arrayRef.AddLast(new AliExternalTrackParam(*fOp));
+  if (fHMPIDp) arrayRef.AddLast(new AliExternalTrackParam(*fHMPIDp));
   //
   Double_t mpos[3]={0,0,0};
   Int_t entries=arrayRef.GetEntries();
