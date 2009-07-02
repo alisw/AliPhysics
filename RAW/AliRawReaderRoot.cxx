@@ -402,6 +402,10 @@ Bool_t AliRawReaderRoot::ReadHeader()
 
       // get the next equipment and raw data
       fCount = 0;
+      if (fEquipmentIndex >= fSubEvent->GetNEquipments()) {
+	fEquipment = NULL;
+	continue;
+      }
       fEquipment = fSubEvent->GetEquipment(fEquipmentIndex++);
       if (!fEquipment) continue;
       if (!IsSelected()) {
@@ -619,6 +623,10 @@ Int_t AliRawReaderRoot::CheckData() const
     }
 
     // get the next equipment and raw data
+    if (equipmentIndex >= subEvent->GetNEquipments()) {
+      equipment = NULL;
+      continue;
+    }
     equipment = subEvent->GetEquipment(equipmentIndex++);
     if (!equipment) continue;
     AliRawData* rawData = equipment->GetRawData();
