@@ -106,7 +106,7 @@ TList* AliRsnPairManager::InitAllPairs()
   while ((pair = (AliRsnPair*)next())) {
     if (!pair) continue;
     AliDebug(AliLog::kDebug+1, Form("InitAllPairs of the PairManager(%s) [%d] ...", pair->GetPairName().Data(), i++));
-    list->Add(pair->GenerateHistograms(GetName()));
+    pair->GenerateHistograms(GetName(),list);
   }
 
   AliDebug(AliLog::kDebug+2, "->");

@@ -228,7 +228,7 @@ void AliRsnPair::LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEven
       if (!CutPass(&fPairParticle)) continue;
       AliDebug(AliLog::kDebug+1, "pairParticle cut passed");
 
-//       pairParticle.PrintInfo();
+//       fPairParticle.PrintInfo();
 
       // fill all histograms
       TObjArrayIter nextFcn(&fFunctions);
@@ -244,7 +244,7 @@ void AliRsnPair::LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEven
 }
 
 //_____________________________________________________________________________
-TList * AliRsnPair::GenerateHistograms(TString prefix)
+TList * AliRsnPair::GenerateHistograms(TString prefix,TList *list)
 {
 //
 // Generates needed histograms, giving them a name based on
@@ -254,9 +254,10 @@ TList * AliRsnPair::GenerateHistograms(TString prefix)
 // All generated histograms are stored into the output TList.
 //
   AliDebug(AliLog::kDebug+2,"<-");
-  TList *list = new TList();
-  list->SetName(GetPairHistName(0x0).Data());
-
+  if (!list){
+    TList *list = new TList();
+    list->SetName(GetPairHistName(0x0).Data());
+  }
   Char_t hName[255], hTitle[255];
   //AliRsnFunction *fcn = 0;
   AliRsnFunction *fcn = 0;

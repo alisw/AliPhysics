@@ -37,7 +37,9 @@
 ClassImp(AliRsnPIDDefESD)
 
 //_____________________________________________________________________________
-AliRsnPIDDefESD::AliRsnPIDDefESD() : fUseESDWeights(kTRUE) {
+AliRsnPIDDefESD::AliRsnPIDDefESD() :
+  fUseESDWeights(kTRUE)
+{
 //
 // Default constructor.
 // By default, it is set for using ESD weights,
@@ -54,8 +56,9 @@ AliRsnPIDDefESD::AliRsnPIDDefESD() : fUseESDWeights(kTRUE) {
 
 //_____________________________________________________________________________
 AliRsnPIDDefESD::AliRsnPIDDefESD(const AliRsnPIDDefESD& copy) :
-    TObject(copy),
-    fUseESDWeights(copy.fUseESDWeights) {
+  TObject(copy),
+  fUseESDWeights(copy.fUseESDWeights)
+{
 //
 // Copy constructor.
 // Implemented to manage passing of this object to functions
@@ -70,7 +73,8 @@ AliRsnPIDDefESD::AliRsnPIDDefESD(const AliRsnPIDDefESD& copy) :
 }
 
 //_____________________________________________________________________________
-void AliRsnPIDDefESD::SetScheme(EScheme scheme, Double_t divValue) {
+void AliRsnPIDDefESD::SetScheme(EScheme scheme, Double_t divValue)
+{
 //
 // Set one of the predefined schemes
 //
@@ -158,7 +162,8 @@ void AliRsnPIDDefESD::SetScheme(EScheme scheme, Double_t divValue) {
 }
 
 //_____________________________________________________________________________
-void AliRsnPIDDefESD::ComputeWeights(AliESDtrack *track, Double_t *weights) {
+void AliRsnPIDDefESD::ComputeWeights(AliESDtrack *track, Double_t *weights)
+{
 //
 // Computes the global PID weights using the given ranges
 //
@@ -192,7 +197,8 @@ void AliRsnPIDDefESD::ComputeWeights(AliESDtrack *track, Double_t *weights) {
 }
 
 //_____________________________________________________________________________
-void AliRsnPIDDefESD::PrintStatus() {
+void AliRsnPIDDefESD::PrintStatus()
+{
 //
 // Print informations about this object configurations
 //
@@ -214,7 +220,8 @@ void AliRsnPIDDefESD::PrintStatus() {
 }
 
 //_____________________________________________________________________________
-const char* AliRsnPIDDefESD::DetName(EDetector det) {
+const char* AliRsnPIDDefESD::DetName(EDetector det)
+{
 //
 // Detector name for messages
 //
@@ -230,7 +237,8 @@ const char* AliRsnPIDDefESD::DetName(EDetector det) {
 }
 
 //_____________________________________________________________________________
-const char* AliRsnPIDDefESD::SchemeName() {
+const char* AliRsnPIDDefESD::SchemeName()
+{
 //
 // Scheme name for messages
 //
@@ -250,7 +258,8 @@ const char* AliRsnPIDDefESD::SchemeName() {
 }
 
 //_____________________________________________________________________________
-void AliRsnPIDDefESD::SetDivValue(EDetector det, Double_t value, Bool_t userHigher) {
+void AliRsnPIDDefESD::SetDivValue(EDetector det, Double_t value, Bool_t userHigher)
+{
 //
 // Sets div.value properties for detector
 //
@@ -261,7 +270,8 @@ void AliRsnPIDDefESD::SetDivValue(EDetector det, Double_t value, Bool_t userHigh
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnPIDDefESD::CheckDivValue(EDetector det,Double_t value) {
+Bool_t AliRsnPIDDefESD::CheckDivValue(EDetector det,Double_t value)
+{
 //
 // Sets div.value properties for detector
 //

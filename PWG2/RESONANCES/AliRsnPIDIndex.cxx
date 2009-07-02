@@ -18,7 +18,7 @@
 ClassImp(AliRsnPIDIndex)
 
 //_____________________________________________________________________________
-AliRsnPIDIndex::AliRsnPIDIndex(Int_t num)
+AliRsnPIDIndex::AliRsnPIDIndex(Int_t num) : fPIDDef()
 {
 //
 // Default constructor
@@ -38,7 +38,8 @@ AliRsnPIDIndex::AliRsnPIDIndex(Int_t num)
 
 //_____________________________________________________________________________
 AliRsnPIDIndex::AliRsnPIDIndex(const AliRsnPIDIndex & copy)
-    : TObject(copy)
+    : TObject(copy),
+    fPIDDef(copy.fPIDDef)
 {
 //
 // Copy constructor.
@@ -254,7 +255,7 @@ void AliRsnPIDIndex::FillFromEvent(AliRsnEvent* event, AliESDtrackCuts *cuts)
       AliESDtrack *track = daughter.GetRefESD();
       if (track) if (!cuts->IsSelected(track)) continue;
     }
-    daughter.CombineWithPriors(fPrior);
+    daughter.CombineWithPriors(fPrior, &fPIDDef);
 //     daughter.Print("ALL");
 
     AddIndex(i,AliRsnDaughter::kNoPID,IndexCharge(daughter.Charge()),AliPID::kUnknown);

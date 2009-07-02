@@ -15,6 +15,9 @@
 #include "AliRsnAnalysisManager.h"
 #include "AliRsnPIDIndex.h"
 
+class AliRsnPIDDefESD;
+class AliRsnCutSet;
+
 class AliRsnAnalysisSE : public AliRsnVAnalysisTaskSE
 {
 
@@ -38,6 +41,12 @@ public:
     // ESD cuts
     void            SetESDtrackCuts(AliESDtrackCuts *cuts) {fESDCuts = cuts;}
 
+    // Indexer
+    AliRsnPIDIndex* GetPIDIndex() {return &fPIDIndex;}
+    AliRsnPIDDefESD* GetPIDDef() {return fPIDIndex.GetPIDDef();}
+    AliRsnCutSet* GetEventCuts() {return fEventCuts;}
+    void SetEventCuts(AliRsnCutSet *cuts) {fEventCuts = cuts;}
+
 private:
 
     AliRsnAnalysisSE& operator=(const AliRsnAnalysisSE& /*copy*/) {return *this;}
@@ -45,6 +54,7 @@ private:
     AliRsnAnalysisManager fRsnAnalysisManager;      // analysis main engine
     AliRsnPIDIndex        fPIDIndex;                // utility --> PID sorter
     AliRsnEvent           fEvent;                   // utility --> event interface
+    AliRsnCutSet         *fEventCuts;               // event cuts
 
     AliESDtrackCuts      *fESDCuts;                 // ESD track cuts
     Double_t              fPrior[AliPID::kSPECIES]; // prior probabilities

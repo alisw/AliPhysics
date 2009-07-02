@@ -42,7 +42,7 @@ AliRsnCutBetheBloch::AliRsnCutBetheBloch() :
 //_________________________________________________________________________________________________
 AliRsnCutBetheBloch::AliRsnCutBetheBloch
 (const char *name, Double_t fractionRange, AliPID::EParticleType type, Double_t mip, Bool_t correct) :
-  AliRsnCut(name, -fractionRange, fractionRange),
+  AliRsnCut(name, 0.0, fractionRange),
   fCorrect(correct),
   fMIP(mip),
   fType(type)
@@ -94,6 +94,20 @@ Double_t AliRsnCutBetheBloch::BetheBloch(AliRsnDaughter *track)
   return out * fMIP;
 }
 
+//_____________________________________________________________________________
+Double_t AliRsnCutBetheBloch::RelDiff(AliRsnDaughter *track)
+{
+//
+// Relative difference between BB value and TPC signal
+//
+
+  if (!track->GetRefESD()) return -99999.9;
+
+  // compute Bethe-Bloch with the given mass hypothesis
+  Double_t bb = BetheBloch(track);
+  return TMath::Abs((track->GetRefESD()->GetTPCsignal() - bb) / bb);
+}
+
 //_________________________________________________________________________________________________
 Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnDaughter *track)
 {
@@ -120,15 +134,12 @@ Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnDaughter *track)
     return kTRUE;
   }
 
-  // compute Bethe-Bloch with the given mass hypothesis
-  Double_t bb = BetheBloch(track);
-
   // the cut range is the relative fraction of the value:
   // BB*(1-fraction) < TPC < BB*(1+fraction)
   // which means:
   // -fraction < (TPC - BB)/BB < fraction
   // so we must compute the cut value accordingly
-  fCutValueD = (esd->GetTPCsignal() - bb) / bb;
+  fCutValueD = RelDiff(track);
 
   // then, this cut is checked inside the range
   return OkRange();

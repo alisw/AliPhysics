@@ -130,9 +130,9 @@ THnSparseD* AliRsnFunction::CreateHistogram(const char *histoName, const char *h
     return 0x0;
   }
 
-  static Int_t    *nbins = new Int_t[size];
-  static Double_t *min   = new Double_t[size];
-  static Double_t *max   = new Double_t[size];
+  Int_t    *nbins = new Int_t[size];
+  Double_t *min   = new Double_t[size];
+  Double_t *max   = new Double_t[size];
 
   // retrieve binnings for main and secondary axes
   AliRsnFunctionAxis *fcnAxis = 0;
@@ -168,7 +168,7 @@ Bool_t AliRsnFunction::Fill()
   AliDebug(AliLog::kDebug +2,"->");
 
   Int_t  i, nAxes = fAxisList.GetEntries();
-  static Double_t *values = new Double_t[nAxes];
+  Double_t *values = new Double_t[nAxes];
 
   AliRsnFunctionAxis *fcnAxis = 0;
   for (i = 0; i < nAxes; i++)
@@ -199,6 +199,7 @@ Bool_t AliRsnFunction::Fill()
     AliError("Histogram is not yet initialized");
     return kFALSE;
   }
+  //TArrayD val(values); val->Print();
   fHistogram->Fill(values);
 
   AliDebug(AliLog::kDebug +2,"->");
