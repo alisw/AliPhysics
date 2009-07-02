@@ -15,6 +15,7 @@
 #pragma link C++ class AliESDMuonTrackCuts+;
 #pragma link C++ class AliAnalysisTaskSingleMuESD+;
 #pragma link C++ class AliAnalysisTaskLinkToMC+;
+#pragma link C++ class AliCFMuonResTask1+;
 #endif
 
 
