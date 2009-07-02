@@ -1,0 +1,47 @@
+# this is the startup process for root
+Executable="ana.sh";
+Jobtag={"comment:omega(782) -> pi0 pi+ pi- analysis"};
+
+# we split per storage element
+Split="se";
+splitarguments="$1";
+
+# we want each job to read 50 input files
+SplitMaxInputFileNumber="50";
+
+# we need AliRoot and the API service configuration package.
+Packages={"VO_ALICE@APISCONFIG::V2.4","VO_ALICE@AliRoot::v4-17-01"};
+TTL = "18 hours";
+#Price = 10;
+User = "polishch";
+
+#ROOT will read this collection file to know, which files to analyze
+InputDataList="$1.xml";
+
+#ROOT requires the collection file in the xml-single format
+InputDataListFormat="xml-single";
+
+# this is our collection file containing the files to be analyzed
+InputDataCollection="LF:/alice/cern.ch/user/p/polishch/xml/$1.xml,nodownload";
+
+InputFile= {"LF:/alice/cern.ch/user/p/polishch/omega/AnaTaskOmega3pi.C"};
+            
+InputBox=  {"/alice/cern.ch/user/p/polishch/omega/AnaTaskOmega3pi.C"};
+
+# Output archive	    
+OutputArchive={"log_archive.zip:stdout,stderr@ALICE::NIHAM::FILE",
+		"root_archive.zip:*.root@ALICE::NIHAM::FILE"};
+
+# Output directory
+OutputDir="/alice/cern.ch/user/p/polishch/omega/output/$1/#alien_counter#";
+
+# Output files
+OutputFile={"histos.root"};
+
+# Merge the output
+Merge={"histos.root:/alice/cern.ch/user/p/polishch/omega/mergerootfile.jdl:histos_merged.root"};
+MergeOutputDir={"/alice/cern.ch/user/p/polishch/omega/output/$1"};
+
+# Validation
+Validationcommand ="/alice/cern.ch/user/p/polishch/bin/validate.sh";
+

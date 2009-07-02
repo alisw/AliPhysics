@@ -1,0 +1,16 @@
+How to run Omega(782) --> pi0 pi+ pi- analysis in the GRID:
+===========================================================
+
+1. Copy the content of this directory to your AliEn working directory
+(don't forget .rootrc file!). Edit Omega.jdl and replace the path to the 
+/alice/cern.ch/user/p/polishch/omega by the path to your working directory.
+
+2. Copy ana.sh to your ~/bin directory in AliEn.
+
+3. File list.txt contains the list of xml collections you want to analyze.
+This collections should be in your ~/xml directory (edit Omega.jdl properly!).
+
+4. From aliensh run: 
+   		     run submit.sh
+      		     
+The output files will reside in the directory output/{collection}/{job}/histos.root .
