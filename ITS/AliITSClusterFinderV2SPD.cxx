@@ -129,7 +129,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
   Int_t nclu=0;
   for(Int_t iBin =0; iBin < maxBins;iBin++){
     if(bins[iBin].IsUsed()) continue;
-    Int_t nBins = 0;
+    Int_t nBins = 0; 
     Int_t idxBins[200];
     FindCluster(iBin,nzbins,bins,nBins,idxBins);
     if (nBins == 200){
@@ -200,7 +200,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
       idy=ymax-ymin+1;
       idz=zmax-zmin+1;
     }
- 
+    
     for(Int_t iiz=zmin; iiz<=zmax;iiz+=idz){
       for(Int_t iiy=ymin;iiy<=ymax;iiy+=idy){
 
@@ -234,6 +234,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	  q+= qBin;	
 	}// for idx
 	if(ndigits==0) continue;
+         
 	y /= q;
 	z /= q;
 	y -= fHwSPD;
@@ -254,12 +255,15 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	Int_t info[3] = {ymax-ymin+1,zmax-zmin+1,fNlayer[iModule]};
 	if(!rawdata){
 	 AliITSRecPoint cl(milab,hit,info);
+         cl.SetType(nBins);
 	 fDetTypeRec->AddRecPoint(cl);
 	}
         else{
 	  Int_t label[4]={milab[0],milab[1],milab[2],milab[3]};
+          AliITSRecPoint cl(label, hit,info);
+          cl.SetType(nBins);
 	  new (clusters->AddrAt(nclu)) 
-		AliITSRecPoint(label, hit,info);
+	  AliITSRecPoint(cl);
 	} 
 	nclu++;
       }// for iiy

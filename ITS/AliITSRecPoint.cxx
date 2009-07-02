@@ -177,6 +177,18 @@ void AliITSRecPoint::Print(ostream *os){
     os->flags(fmt); // reset back to old formating.
     return;
 }
+
+//----------------------------------------------------------------------
+Int_t AliITSRecPoint::GetNpixels() const {
+//
+// returns the number of pixels used for the SPD clusters
+//
+
+ if(fLayer > 1) return -1;
+ else return fType;
+
+}
+
 //----------------------------------------------------------------------
 void AliITSRecPoint::Read(istream *is){
 ////////////////////////////////////////////////////////////////////////
