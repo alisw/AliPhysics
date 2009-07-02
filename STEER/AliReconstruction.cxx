@@ -230,6 +230,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fUseHLTData(),
   fRunInfo(NULL),
   fEventInfo(),
+  fRunScalers(NULL),
 
   fRunLoader(NULL),
   fRawReader(NULL),
@@ -326,6 +327,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fUseHLTData(rec.fUseHLTData),
   fRunInfo(NULL),
   fEventInfo(),
+  fRunScalers(NULL),
 
   fRunLoader(NULL),
   fRawReader(NULL),
@@ -444,6 +446,10 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
 
   fEventInfo                     = rec.fEventInfo;
 
+  delete fRunScalers; fRunScalers = NULL;
+  if (rec.fRunScalers) fRunScalers = new AliTriggerRunScalers(*rec.fRunScalers); 
+
+  
   fRunLoader       = NULL;
   fRawReader       = NULL;
   fParentRawReader = NULL;
@@ -518,6 +524,7 @@ AliReconstruction::~AliReconstruction()
     delete fListOfCosmicTriggers;
   }
   delete fGRPData;
+  delete fRunScalers;
   fOptions.Delete();
   if (fAlignObjArray) {
     fAlignObjArray->Delete();
@@ -1202,7 +1209,21 @@ Bool_t AliReconstruction::LoadCDB()
   }
   return kTRUE;
 }
+//_____________________________________________________________________________
+Bool_t AliReconstruction::LoadTriggerScalersCDB()
+{
+  AliCodeTimerAuto("");
 
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/Scalers");
+
+  if (entry) { 
+   
+       AliInfo("Found an AliTriggerRunScalers in GRP/CTP/Scalers, reading it");
+       fRunScalers = dynamic_cast<AliTriggerRunScalers*> (entry->GetObject());
+       entry->SetOwner(0);
+  }
+  return kTRUE;
+}
 //_____________________________________________________________________________
 Bool_t AliReconstruction::Run(const char* input)
 {
@@ -2564,6 +2585,18 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
     }
 
   // Here one has to add the filling interaction records
+  }
+  //Scalers
+  if(fRunScalers){
+     //AliTimeStamp* timestamp = new AliTimeStamp(esd->GetOrbitNumber(), esd->GetPeriodNumber(), esd->GetBunchCrossNumber());
+     AliTimeStamp* timestamp = new AliTimeStamp(14322992, 5, (ULong64_t)486238);
+     AliESDHeader* esdheader = fesd->GetHeader();
+     for(Int_t i=0;i<50;i++){
+        if((1<<i) & esd->GetTriggerMask()){
+          AliTriggerScalersESD* scalesd = fRunScalers->GetScalersForEventClass( timestamp, i);
+          esdheader->SetTriggerScalersRecord(scalesd);
+        }
+     }
   }
   return kTRUE;
 }
