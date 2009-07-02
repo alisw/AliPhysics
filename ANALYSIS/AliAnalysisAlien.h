@@ -64,21 +64,25 @@ public:
    virtual void        SetNtestFiles(Int_t nfiles)                       {fNtestFiles = nfiles;}
    virtual void        SetJDLName(const char *name="analysis.jdl")       {fJDLName = name;}
    virtual void        SetPreferedSE(const char *se)                     {fCloseSE = se;}
+   virtual void        SetProductionMode(Bool_t flag=kTRUE);
 
    TGridJDL           *GetGridJDL() {return fGridJDL;}
+   const char         *GetGridOutputDir() const                          {return fGridOutputDir;}
 //Utilities
    virtual Bool_t      CreateDataset(const char *pattern);
    virtual Bool_t      CreateJDL();
    virtual void        EnablePackage(const char *package);
+   static Bool_t       FileExists(const char *lfn);
    static  const char *GetJobStatus(Int_t jobidstart, Int_t lastid, Int_t &nrunning, Int_t &nwaiting, Int_t &nerror, Int_t &ndone);
    virtual Bool_t      MergeOutputs();
    virtual void        Print(Option_t *option="") const;
-   virtual void        StartAnalysis(Long64_t nentries=123456789, Long64_t firstentry=0);
+   virtual Bool_t      StartAnalysis(Long64_t nentries=123456789, Long64_t firstentry=0);
    virtual void        Submit();
    virtual void        WriteAnalysisFile();
    virtual void        WriteAnalysisMacro();
    virtual void        WriteExecutable();
-   Bool_t              WriteJDL(Bool_t copy);
+   virtual Bool_t      WriteJDL(Bool_t copy);
+   virtual void        WriteProductionFile(const char *filename) const;
    virtual void        WriteValidationScript();
 
 protected:
@@ -89,7 +93,6 @@ protected:
    virtual void        SetDefaults();  
    void                SubmitNext();
 
-   Bool_t              FileExists(const char *lfn) const;
    Bool_t              IsCollection(const char *lfn) const;
    Bool_t              IsUsingTags() const {return TObject::TestBit(AliAnalysisGrid::kUseTags);}
 

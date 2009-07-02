@@ -1063,7 +1063,10 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
       while ((task=(AliAnalysisTask*)nextTask())) {
          task->LocalInit();
       }
-      fGridHandler->StartAnalysis(nentries, firstentry);
+      if (!fGridHandler->StartAnalysis(nentries, firstentry)) {
+         Info("StartAnalysis", "Grid analysis was stopped and cannot be terminated");
+         return;
+      }   
 
       // Terminate grid analysis
       if (fSelector && fSelector->GetStatus() == -1) return;

@@ -722,7 +722,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
                Info("CreateJDL", "\n#####   Created alien output directory %s", fGridOutputDir.Data());
             } else {
                Error("CreateJDL", "Could not create alien output directory %s", fGridOutputDir.Data());
-               error = kTRUE;
+               // error = kTRUE;
             }
          }
          gGrid->Cd(workdir);
@@ -911,20 +911,19 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    } else {
       Info("CreateJDL", "\n#####   Copying JDL file <%s> to your AliEn output directory", fJDLName.Data());
       TString locjdl = Form("%s/%s", fGridOutputDir.Data(),fJDLName.Data());
+      if (TObject::TestBit(AliAnalysisGrid::kProductionMode))
+         locjdl = Form("%s/%s", fGridWorkingDir.Data(),fJDLName.Data());
       if (FileExists(locjdl)) gGrid->Rm(locjdl);
-      TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s/%s", fGridOutputDir.Data(), fJDLName.Data()));
+      TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s", locjdl.Data()));
    } 
    return kTRUE;
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisAlien::FileExists(const char *lfn) const
+Bool_t AliAnalysisAlien::FileExists(const char *lfn)
 {
 // Returns true if file exists.
-   if (!gGrid) {
-      Error("FileExists", "No connection to grid");
-      return kFALSE;
-   }
+   if (!gGrid) return kFALSE;
    TGridResult *res = gGrid->Ls(lfn);
    if (!res) return kFALSE;
    TMap *map = dynamic_cast<TMap*>(res->At(0));
@@ -1345,7 +1344,18 @@ void AliAnalysisAlien::SetDefaultOutputs(Bool_t flag)
 }
       
 //______________________________________________________________________________
-void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntry*/)
+void AliAnalysisAlien::SetProductionMode(Bool_t flag)
+{
+// If production mode is set, all required files are produced and copied to
+// AliEn but the master jobs are not submitted. A file .prod containing all
+// submit parameters is copied to the work directory.
+   if (flag && !TObject::TestBit(AliAnalysisGrid::kProductionMode))
+      Info("SetProductionMode", "Plugin in production mode. Jobs are not submitted.");
+   TObject::SetBit(AliAnalysisGrid::kProductionMode, flag);
+}
+
+//______________________________________________________________________________
+Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntry*/)
 {
 // Start remote grid analysis.
    
@@ -1354,7 +1364,7 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       if (!mgr || !mgr->IsInitialized()) {
          Error("StartAnalysis", "You need an initialized analysis manager for this");
-         return;
+         return kFALSE;
       }
       fOutputFiles = "";
       TIter next(mgr->GetOutputs());
@@ -1387,27 +1397,27 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
       \n                         space and job submitted.");
    } else if (TestBit(AliAnalysisGrid::kMerge)) {
       Info("StartAnalysis","\n##### MERGE MODE #####   The registered outputs of the analysis will be merged");
-      return;
+      return kTRUE;
    } else {
       Info("StartAnalysis","\n##### FULL ANALYSIS MODE ##### Producing needed files and submitting your analysis job...");   
    }   
       
    if (!Connect()) {
       Error("StartAnalysis", "Cannot start grid analysis without grid connection");
-      return;
+      return kFALSE;
    }
    Print();   
    if (!CheckInputData()) {
       Error("StartAnalysis", "There was an error in preprocessing your requested input data");
-      return;
+      return kFALSE;
    }   
    CreateDataset(fDataPattern);
    WriteAnalysisFile();   
    WriteAnalysisMacro();
    WriteExecutable();
    WriteValidationScript();
-   if (!CreateJDL()) return;
-   if (TestBit(AliAnalysisGrid::kOffline)) return;
+   if (!CreateJDL()) return kFALSE;
+   if (TestBit(AliAnalysisGrid::kOffline)) return kFALSE;
    if (TestBit(AliAnalysisGrid::kTest)) {
       // Locally testing the analysis
       Info("StartAnalysis", "\n_______________________________________________________________________ \
@@ -1427,8 +1437,16 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
       gSystem->Exec(Form("bash %s 2>stderr", fExecutable.Data()));
       gSystem->Exec("bash validate.sh");
 //      gSystem->Exec("cat stdout");
-      return;
+      return kFALSE;
    }
+   // Check if submitting is managed by LPM manager
+   if (TObject::TestBit(AliAnalysisGrid::kProductionMode)) {
+      TString prodfile = fJDLName;
+      prodfile.ReplaceAll(".jdl", ".prod");
+      WriteProductionFile(prodfile);
+      Info("StartAnalysis", "Job submitting is managed by LPM. Rerun in terminate mode after jobs finished.");
+      return kFALSE;
+   }   
    // Submit AliEn job(s)
    gGrid->Cd(fGridOutputDir);
    TGridResult *res;
@@ -1441,7 +1459,7 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
          const char *cjobId = res->GetKey(0,"jobId");
          if (!cjobId) {
             Error("StartAnalysis", "Your JDL %s could not be submitted", fJDLName.Data());
-            return;
+            return kFALSE;
          } else {
             Info("StartAnalysis", "\n_______________________________________________________________________ \
             \n#####   Your JDL %s was successfully submitted. \nTHE JOB ID IS: %s \
@@ -1460,6 +1478,7 @@ void AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntr
    \n You may exit at any time and terminate the job later using the option <terminate> \
    \n ##################################################################################", jobID.Data());
    gSystem->Exec("aliensh");
+   return kTRUE;
 }
 
 //______________________________________________________________________________
@@ -1877,7 +1896,7 @@ void AliAnalysisAlien::WriteExecutable()
       ofstream out;
       out.open(fExecutable.Data(), ios::out);
       if (out.bad()) {
-         Error("CreateJDL", "Bad file name for executable: %s", fExecutable.Data());
+         Error("WriteExecutable", "Bad file name for executable: %s", fExecutable.Data());
          return;
       }
       out << "#!/bin/bash" << endl;
@@ -1912,6 +1931,31 @@ void AliAnalysisAlien::WriteExecutable()
       Info("CreateJDL", "\n#####   Copying executable file <%s> to your AliEn bin directory", fExecutable.Data());
       TFile::Cp(Form("file:%s",fExecutable.Data()), Form("alien://%s", executable.Data()));
    } 
+}
+
+//______________________________________________________________________________
+void AliAnalysisAlien::WriteProductionFile(const char *filename) const
+{
+// Write the production file to be submitted by LPM manager. The format is:
+// First line: full_path_to_jdl
+// Next lines: full_path_to_dataset XXX (XXX is a string)
+// To submit, one has to: submit jdl XXX for all lines
+   ofstream out;
+   out.open(filename, ios::out);
+   if (out.bad()) {
+      Error("WriteProductionFile", "Bad file name: %s", filename);
+      return;
+   }
+   TString workdir = gGrid->GetHomeDirectory();
+   workdir += fGridWorkingDir;
+   TString locjdl = Form("%s/%s", workdir.Data(),fJDLName.Data());
+   out << locjdl << endl;
+   Int_t nmasterjobs = fInputFiles->GetEntries();
+   for (Int_t i=0; i<nmasterjobs; i++) {
+      out << Form("%s/%s", workdir.Data(), fInputFiles->At(i)->GetName()) << " " << Form("%03d", i) << endl;
+   }
+   Info("WriteProductionFile", "\n#####   Copying production file <%s> to your work directory", filename);
+   TFile::Cp(Form("file:%s",filename), Form("alien://%s/%s", workdir.Data(),filename));   
 }
 
 //______________________________________________________________________________
