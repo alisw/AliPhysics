@@ -51,6 +51,12 @@ public:
   void SetTimeRange(Float_t min=0.0, Float_t max=1.0e9)              {fTimeMin = min ; fTimeMax = max; }
   void SetClustSizeRange(Float_t min=0.0, Float_t max=1.0e9)         {fClustSizeMin = min ; fClustSizeMax = max; }
 
+  void SetTimebinRmsMin(Float_t iroc=0.0,Float_t oroc=0.0)           {fTimebinRmsIrocMin = iroc ; fTimebinRmsOrocMin = oroc; }
+  void SetPadRmsMin(Float_t iroc=0.0,Float_t oroc=0.0)               {fPadRmsIrocMin = iroc ; fPadRmsOrocMin = oroc; }
+  void SetRowRmsMin(Float_t iroc=0.0,Float_t oroc=0.0)               {fRowRmsIrocMin = iroc ; fRowRmsOrocMin = oroc; }
+  void SetClusterPadSize1DMax(Short_t iroc=200,Short_t oroc=200) {fClusterPadSize1DIrocMax = iroc ; fClusterPadSize1DOrocMax = oroc; }
+  void SetCurveCoefficient(Float_t iroc=1.0e9,Float_t oroc=1.0e9)    {fCurveCoefficientIroc = iroc ; fCurveCoefficientOroc = oroc; }
+
 private:
 
   Bool_t fASide;              //! Only A side
@@ -66,8 +72,21 @@ private:
   Float_t fClustSizeMin; // min cluster size
   Float_t fClustSizeMax; // max cluster size
 
+  Float_t fTimebinRmsIrocMin; // min Timebin RMS for IROCs
+  Float_t fPadRmsIrocMin; // min Pad RMS for IROCs
+  Float_t fRowRmsIrocMin; // min Row RMS for IROCs
+  Short_t fClusterPadSize1DIrocMax; // max size of cluster in pad dir. for IROCs 
+  Float_t fCurveCoefficientIroc; // A coefficient in curve function for IROCs
+
+  Float_t fTimebinRmsOrocMin; // min Timebin RMS for OROCs
+  Float_t fPadRmsOrocMin; // min Pad RMS for OROCs
+  Float_t fRowRmsOrocMin; // min Row RMS for OROCs
+  Short_t fClusterPadSize1DOrocMax; // max size of cluster in pad dir. for OROCs 
+  Float_t fCurveCoefficientOroc; // A coefficient in curve function for OROCs
+
+
 public:
-  ClassDef(AliTPCCalibKr, 1)  // Implementation of the TPC pedestal and noise calibration
+  ClassDef(AliTPCCalibKr, 2)  // Implementation of the TPC krypton calibration
 };
 
 #endif

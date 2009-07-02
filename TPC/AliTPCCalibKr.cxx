@@ -103,7 +103,17 @@ AliTPCCalibKr::AliTPCCalibKr() :
   fTimeMin(0.0),
   fTimeMax(1.0e9),
   fClustSizeMin(0.0),
-  fClustSizeMax(1.0e9)
+  fClustSizeMax(1.0e9),
+  fTimebinRmsIrocMin(0.0),
+  fPadRmsIrocMin(0.0),
+  fRowRmsIrocMin(0.0),
+  fClusterPadSize1DIrocMax(200),
+  fCurveCoefficientIroc(1.0e9),
+  fTimebinRmsOrocMin(0.0),
+  fPadRmsOrocMin(0.0),
+  fRowRmsOrocMin(0.0),
+  fClusterPadSize1DOrocMax(200),
+  fCurveCoefficientOroc(1.0e9)
 {
   //
   // default constructor
@@ -113,11 +123,18 @@ AliTPCCalibKr::AliTPCCalibKr() :
   fHistoKrArray.SetOwner(kTRUE); // is owner of histograms
   fHistoKrArray.Clear();
  
-  // init cuts
-  SetADCOverClustSizeRange(7,200);
-  SetMaxADCOverClustADCRange(0.01,0.4);
-  SetTimeRange(200,600);
-  SetClustSizeRange(6,200);
+  // init cuts (by Stefan)
+//  SetADCOverClustSizeRange(7,200);
+//  SetMaxADCOverClustADCRange(0.01,0.4);
+//  SetTimeRange(200,600);
+//  SetClustSizeRange(6,200);
+
+  //init  cuts (by Adam)
+  SetTimebinRmsMin(1.6,0.8);
+  SetPadRmsMin(0.825,0.55);
+  SetRowRmsMin(0.1,0.1);
+  SetClusterPadSize1DMax(15,11);
+  SetCurveCoefficient(1.,2.);
  
   // init histograms
   Init();
@@ -137,7 +154,17 @@ AliTPCCalibKr::AliTPCCalibKr(const AliTPCCalibKr& pad) :
   fTimeMin(pad.fTimeMin),
   fTimeMax(pad.fTimeMax),
   fClustSizeMin(pad.fClustSizeMin),
-  fClustSizeMax(pad.fClustSizeMax)
+  fClustSizeMax(pad.fClustSizeMax),
+  fTimebinRmsIrocMin(pad.fTimebinRmsIrocMin),
+  fPadRmsIrocMin(pad.fPadRmsIrocMin),
+  fRowRmsIrocMin(pad.fRowRmsIrocMin),
+  fClusterPadSize1DIrocMax(pad.fClusterPadSize1DIrocMax),
+  fCurveCoefficientIroc(pad.fCurveCoefficientIroc),
+  fTimebinRmsOrocMin(pad.fTimebinRmsOrocMin),
+  fPadRmsOrocMin(pad.fPadRmsOrocMin),
+  fRowRmsOrocMin(pad.fRowRmsOrocMin),
+  fClusterPadSize1DOrocMax(pad.fClusterPadSize1DOrocMax),
+  fCurveCoefficientOroc(pad.fCurveCoefficientOroc)
 {
   // copy constructor
  
@@ -332,6 +359,52 @@ Bool_t AliTPCCalibKr::Accept(AliTPCclusterKr  *cl){
   //S1
   if (cl->GetSize()>fClustSizeMax) return kFALSE;
   if (cl->GetSize()<fClustSizeMin)  return kFALSE;
+
+  //
+  // cuts by Adam
+  //
+  /*
+    TCut cutAI0("cutAI0","fTimebinRMS>1.6");
+    TCut cutAI1("cutAI1","fPadRMS>0.825");  
+    TCut cutAI2("cutAI2","fRowRMS>0.1");    
+    TCut cutAI3("cutAI3","fPads1D<15");  
+    TCut cutAI4("cutAI4","fTimebinRMS+11.9-2.15*TMath::Log(1.*fADCcluster)<0"); 
+
+    TCut cutAIAll = cutAI0+cutAI1+cutAI2+cutAI3+cutAI4;
+
+    TCut cutAO0("cutAO0","fTimebinRMS>0.8");
+    TCut cutAO1("cutAO1","fPadRMS>0.55");  
+    TCut cutAO2("cutAO2","fRowRMS>0.1");    
+    TCut cutAO3("cutAO3","fPads1D<11");  
+    TCut cutAO4("cutAO4","fTimebinRMS+11.9-2.15*TMath::Log(2.*fADCcluster)<0"); 
+
+    TCut cutAOAll = cutAO0+cutAO1+cutAO2+cutAO3+cutAO4;
+    TCut cutAll("cutAll","(fSec<36&&cutAIAll)||(fSec>=36&&cutAOAll)");
+
+  */
+  if(cl->GetSec()<36){  //IROCs
+    //AI0
+    if((float)cl->GetTimebinRMS() <= fTimebinRmsIrocMin) return kFALSE;
+    //AI1
+    if((float)cl->GetPadRMS() <= fPadRmsIrocMin) return kFALSE;
+    //AI2
+    if((float)cl->GetRowRMS() <= fRowRmsIrocMin) return kFALSE;
+    //AI3
+    if(cl->GetPads1D() >= fClusterPadSize1DIrocMax) return kFALSE;
+    //AI4
+    if((float)cl->GetTimebinRMS()+11.9-2.15*TMath::Log(fCurveCoefficientIroc*(float)cl->GetADCcluster()) >= 0) return kFALSE;
+  }else{  //OROCs
+    //AO0
+    if((float)cl->GetTimebinRMS() <= fTimebinRmsOrocMin) return kFALSE;
+    //AO1
+    if((float)cl->GetPadRMS() <= fPadRmsOrocMin) return kFALSE;
+    //AO2
+    if((float)cl->GetRowRMS() <= fRowRmsOrocMin) return kFALSE;
+    //AO3
+    if(cl->GetPads1D() >= fClusterPadSize1DOrocMax) return kFALSE;
+    //AO4
+    if((float)cl->GetTimebinRMS()+11.9-2.15*TMath::Log(fCurveCoefficientOroc*(float)cl->GetADCcluster()) >= 0) return kFALSE;
+  }
 
   return kTRUE;
 
