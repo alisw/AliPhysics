@@ -36,6 +36,8 @@ using namespace std;
 #include "AliHLTITSClusterDataFormat.h"
 #include <AliHLTDAQ.h>
 #include "AliGeomManager.h"
+#include "TTree.h"
+#include "TBranch.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -52,10 +54,8 @@ AliHLTITSClusterFinderSDDComponent::AliHLTITSClusterFinderSDDComponent()
   fClusterFinder(NULL),
   fRawReader(NULL),
   fDettype(NULL),
-  fClusters(NULL),
   fgeom(NULL),
-  fgeomInit(NULL),
-  fSeg(NULL)
+  fgeomInit(NULL)
 { 
   // see header file for class documentation
   // or
@@ -112,20 +112,16 @@ Int_t AliHLTITSClusterFinderSDDComponent::DoInit( int /*argc*/, const char** /*a
 
   if ( fClusterFinder )
     return -EINPROGRESS;
-
-  fClusters = new TClonesArray*[fNModules]; 
-  for (Int_t iModule = 0; iModule < fNModules; iModule++) {
-    fClusters[iModule] = NULL;
-  }
-
+  
   AliCDBManager* man = AliCDBManager::Instance();
-  AliGeomManager::LoadGeometry();
- 
   if (!man->IsDefaultStorageSet()){
     HLTError("Default CDB storage has not been set !");
     return -ENOENT;
   }
-
+  
+  if(AliGeomManager::GetGeometry()==NULL){
+    AliGeomManager::LoadGeometry();
+  }
   //fgeomInit = new AliITSInitGeometry(kvSPD02,2);
   fgeomInit = new AliITSInitGeometry(kvPPRasymmFMD,2);
   //fgeomInit->InitAliITSgeom(fgeom);
@@ -164,11 +160,6 @@ Int_t AliHLTITSClusterFinderSDDComponent::DoDeinit() {
     delete fDettype;
   fDettype = NULL;
 
-  for (Int_t iModule = 0; iModule < fNModules; iModule++) {
-    if (fClusters[iModule]) delete fClusters[iModule];
-    fClusters[iModule] = NULL;
-  }
-  
   if ( fgeomInit )
     delete fgeomInit;
   fgeomInit = NULL;
@@ -211,7 +202,7 @@ Int_t AliHLTITSClusterFinderSDDComponent::DoEvent( const AliHLTComponentEventDat
     }
 
     Int_t id = AliHLTDAQ::DdlIDOffset("ITSSDD");
-    
+
     for ( Int_t ii = 0; ii < AliHLTDAQ::NumberOfDdls("ITSSDD") ; ii++ ) {  
       if ( spec & 0x00000001 ) {
 	id += ii;
@@ -226,51 +217,53 @@ Int_t AliHLTITSClusterFinderSDDComponent::DoEvent( const AliHLTComponentEventDat
       HLTWarning("Could not add buffer");
     }
     
-    fClusterFinder->RawdataToClusters(fRawReader,fClusters);
- 
+    //fClusterFinder->RawdataToClusters(fRawReader,fClusters);
+    TTree *tree = new TTree();
+    fDettype->DigitsToRecPoints(fRawReader,tree,"SDD");
+
     UInt_t nClusters=0;
-    for(int i=0;i<fNModules;i++){
-      if(fClusters[i] != NULL){
-	nClusters += fClusters[i]->GetEntries(); 
-      }
+    TClonesArray *array=new TClonesArray("AliITSRecPoint",1000);
+    TBranch *branch = tree->GetBranch("ITSRecPoints");
+    branch->SetAddress(&array);
+    for(int ev=0;ev<branch->GetEntries();ev++){
+      branch->GetEntry(ev);
+      nClusters += array->GetEntries();
     }
     
     UInt_t bufferSize = nClusters * sizeof(AliHLTITSSpacePointData) + sizeof(AliHLTITSClusterData);
     AliHLTUInt8_t *buffer = new AliHLTUInt8_t[bufferSize];
     AliHLTITSClusterData *outputClusters = reinterpret_cast<AliHLTITSClusterData*>(buffer);
     outputClusters->fSpacePointCnt=nClusters;
-
+    
     int clustIdx=0;
-    for(int i=0;i<fNModules;i++){
-      if(fClusters[i] != NULL){
-	for(int j=0;j<fClusters[i]->GetEntries();j++){
-	  AliITSRecPoint *recpoint = (AliITSRecPoint*) fClusters[i]->At(j);
-	  outputClusters->fSpacePoints[clustIdx].fY=recpoint->GetY();
-	  outputClusters->fSpacePoints[clustIdx].fZ=recpoint->GetZ();
-	  outputClusters->fSpacePoints[clustIdx].fSigmaY2=recpoint->GetSigmaY2();
-	  outputClusters->fSpacePoints[clustIdx].fSigmaZ2=recpoint->GetSigmaZ2();
-	  outputClusters->fSpacePoints[clustIdx].fSigmaYZ=recpoint->GetSigmaYZ();
-	  outputClusters->fSpacePoints[clustIdx].fQ=recpoint->GetQ();
-	  outputClusters->fSpacePoints[clustIdx].fNy=recpoint->GetNy();
-	  outputClusters->fSpacePoints[clustIdx].fNz=recpoint->GetNz();
-	  outputClusters->fSpacePoints[clustIdx].fLayer=recpoint->GetLayer();
-	  outputClusters->fSpacePoints[clustIdx].fIndex=recpoint->GetDetectorIndex();// | recpoint->GetPindex() | recpoint->GetNindex();
-	  outputClusters->fSpacePoints[clustIdx].fTracks[0]=recpoint->GetLabel(0);
-	  outputClusters->fSpacePoints[clustIdx].fTracks[1]=recpoint->GetLabel(1);
-	  outputClusters->fSpacePoints[clustIdx].fTracks[2]=recpoint->GetLabel(2);
-
-	  clustIdx++;
-	}
+    for(int i=0;i<branch->GetEntries();i++){
+      branch->GetEntry(i);
+      for(int j=0;j<array->GetEntries();j++){
+	AliITSRecPoint *recpoint = (AliITSRecPoint*) array->At(j);
+	outputClusters->fSpacePoints[clustIdx].fY=recpoint->GetY();
+	outputClusters->fSpacePoints[clustIdx].fZ=recpoint->GetZ();
+	outputClusters->fSpacePoints[clustIdx].fSigmaY2=recpoint->GetSigmaY2();
+	outputClusters->fSpacePoints[clustIdx].fSigmaZ2=recpoint->GetSigmaZ2();
+	outputClusters->fSpacePoints[clustIdx].fSigmaYZ=recpoint->GetSigmaYZ();
+	outputClusters->fSpacePoints[clustIdx].fQ=recpoint->GetQ();
+	outputClusters->fSpacePoints[clustIdx].fNy=recpoint->GetNy();
+	outputClusters->fSpacePoints[clustIdx].fNz=recpoint->GetNz();
+	outputClusters->fSpacePoints[clustIdx].fLayer=recpoint->GetLayer();
+	outputClusters->fSpacePoints[clustIdx].fIndex=recpoint->GetDetectorIndex() | recpoint->GetPindex() | recpoint->GetNindex();
+	outputClusters->fSpacePoints[clustIdx].fTracks[0]=recpoint->GetLabel(0);
+	outputClusters->fSpacePoints[clustIdx].fTracks[1]=recpoint->GetLabel(1);
+	outputClusters->fSpacePoints[clustIdx].fTracks[2]=recpoint->GetLabel(2);
+	
+	clustIdx++;
       }
     }
-
+    
     PushBack(buffer,bufferSize,kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD,iter->fSpecification);
 
-    for (Int_t iModule = 0; iModule < fNModules; iModule++) {  
-      if(fClusters[iModule]){delete fClusters[iModule];}
-      fClusters[iModule] = NULL;
-    }
-    
+    array->Delete();
+    delete array;
+    delete tree;
+    delete buffer;
     fRawReader->ClearBuffers();
     
   } //  for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ ) {    

@@ -1,7 +1,7 @@
 // $Id$
 //aliroot -b -q rec-spd-cluster.C | tee rec-spd-cluster.log
 
-void rec_spd_cluster(const char* input="./", char* opt="")
+void rec_its_cluster(const char* input="./", char* opt="")
 {
 
   if(!gSystem->AccessPathName("galice.root")){
@@ -31,9 +31,13 @@ void rec_spd_cluster(const char* input="./", char* opt="")
   // define the analysis chain to be run
   //
     
-  int minddl=0;
-  int maxddl=19;
-  int spec=0x1;
+  //The spec starts from 0x1 in SPD, SDD and SSD. So 0x1 is ddl 0 for SPD, 0x10 is ddl 1, and so on
+  //in SDD 0x1 is ddl 256, 0x10 is ddl 257, and so on. This means that the spec has to be set to 0x1 
+  //before the loops over the clusterfinder
+
+  int minddl=0;          //min ddl number for SPD
+  int maxddl=19;         //max ddl number for SPD
+  int spec=0x1;          //spec for ddl's
   int ddlno=0;
 
   TString dummyInput="";
@@ -53,9 +57,46 @@ void rec_spd_cluster(const char* input="./", char* opt="")
     spec=spec<<1;
   }
 
-  //add dummy
-  //AliHLTConfiguration dummyconf("dummy", "Dummy", dummyInput.Data(), "-output_percentage 0");
-  //option+="dummy";
+  minddl=256;        //min ddl number for SDD    
+  maxddl=279;        //max ddl number for SDD
+  spec=0x1;          //spec for ddl's
+ 
+  for(ddlno=minddl;ddlno<=maxddl;ddlno++){  
+    TString arg, publisher, cf;
+    
+    arg.Form("-minid %d -datatype 'DDL_RAW ' 'ISDD ' -dataspec 0x%08x -verbose",ddlno, spec); 
+    publisher.Form("DP_%d", ddlno);
+    AliHLTConfiguration pubconf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+    
+    cf.Form("CF_%d",ddlno);
+    AliHLTConfiguration cfconf(cf.Data(), "ITSClusterFinderSDD", publisher.Data(), "");
+
+    if (dummyInput.Length()>0) dummyInput+=" ";
+    dummyInput+=cf;
+
+    spec=spec<<1;
+  }
+
+  minddl=512;      //min ddl number for SSD     
+  maxddl=527;      //max ddl number for SSD
+  spec=0x1;        //spec for ddl's
+  
+  for(ddlno=minddl;ddlno<=maxddl;ddlno++){  
+    TString arg, publisher, cf;
+    
+    arg.Form("-minid %d -datatype 'DDL_RAW ' 'ISSD ' -dataspec 0x%08x -verbose",ddlno, spec);
+    publisher.Form("DP_%d", ddlno);
+    AliHLTConfiguration pubconf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+    
+    cf.Form("CF_%d",ddlno);
+    AliHLTConfiguration cfconf(cf.Data(), "ITSClusterFinderSSD", publisher.Data(), "");
+
+    if (dummyInput.Length()>0) dummyInput+=" ";
+    dummyInput+=cf;
+
+    spec=spec<<1;
+  }
+
 
   AliHLTConfiguration cfconf("clusterHisto","ITSClusterHisto",dummyInput.Data(),"");
   AliHLTConfiguration fwconf("histFile","ROOTFileWriter", "clusterHisto","-datafile ClusterHisto -concatenate-events -overwrite");

@@ -16,12 +16,10 @@
 #include "AliHLTProcessor.h"
 #include "AliRawReaderMemory.h"
 #include "AliITSClusterFinderV2SPD.h"
-#include "TClonesArray.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSCalibrationSPD.h"
 #include "AliITSgeom.h"
 #include "AliITSInitGeometry.h"
-#include "AliITSsegmentationSSD.h"
 
 /**
  * @class AliHLTITSClusterFinderSPDComponent
@@ -152,14 +150,10 @@ class AliHLTITSClusterFinderSPDComponent : public AliHLTProcessor
 
   AliITSDetTypeRec* fDettype;                                 //!transient
 
-  TClonesArray** fClusters;                                   //!transient
-
   AliITSgeom* fgeom;                                          //!transient
 
   AliITSInitGeometry* fgeomInit;                              //!transient
 
-  AliITSsegmentationSSD* fSeg;                                //!transient
-  
   ClassDef(AliHLTITSClusterFinderSPDComponent, 1)
     
     };
