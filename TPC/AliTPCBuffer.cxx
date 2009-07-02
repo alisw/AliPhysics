@@ -149,7 +149,7 @@ void AliTPCBuffer::WriteRowBinary(Int_t eth,AliSimDigits *digrow,Int_t minPad,In
   data.Sec=sec;
   data.SubSec=SubSec;
   data.Row=row;
-  digrow->First();
+  if (!digrow->First()) return;
   Int_t padID=-1;
   Int_t ddlNumber=0;
   ofstream ftxt;
