@@ -23,7 +23,7 @@ void tpc_raw(Int_t mode = 3)
 
   AliRawReader *reader = AliEveEventManager::AssertRawReader();
   reader->Reset();
-  AliTPCRawStream input(reader);
+  AliTPCRawStreamV3 input(reader);
   reader->Select("TPC"); // ("TPC", firstRCU, lastRCU);
 
   AliEveTPCData *x = new AliEveTPCData;

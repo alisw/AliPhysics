@@ -13,7 +13,7 @@
 
 #include <AliSimDigits.h>
 #include <AliTPCParam.h>
-#include <AliTPCRawStream.h>
+#include <AliTPCRawStreamV3.h>
 #include <TTree.h>
 
 //==============================================================================
@@ -167,9 +167,9 @@ void AliEveTPCData::LoadDigits(TTree* tree, Bool_t spawnSectors)
   }
 }
 
-void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t warn)
+void AliEveTPCData::LoadRaw(AliTPCRawStreamV3& input, Bool_t spawnSectors, Bool_t warn)
 {
-  // Load data from AliTPCRawStream.
+  // Load data from AliTPCRawStreamV3.
   // If spawnSectors is false only sectors that have been created previously
   // via CreateSector() are loaded.
   // If spawnSectors is true sectors are created if data for them is encountered.
@@ -187,7 +187,7 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
 
   Short_t threshold = fLoadThreshold;
 
-  while (input.Next()) {
+  while (input.NextDDL()) {
     if (input.IsNewSector()) {
       if (inFill) {
 	secData->EndPad(fAutoPedestal, threshold);
@@ -205,58 +205,67 @@ void AliEveTPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t 
     if (secData == 0)
       continue;
 
-    if (input.IsNewPad()) {
-      if (inFill) {
-	secData->EndPad(fAutoPedestal, threshold);
-	inFill = kFALSE;
-      }
-      row = input.GetRow() + rowOffset;
-      pad = input.GetPad();
-
-      if (pad >= AliEveTPCSectorData::GetNPadsInRow(row) || pad < 0) {
-	if (warn) {
-	  Warning(kEH.Data(), "pad out of range (row=%d, pad=%d, maxpad=%d).",
-		  row, pad, AliEveTPCSectorData::GetNPadsInRow(row));
+    while (input.NextChannel()) {
+      if (input.IsNewPad()) {
+	if (inFill) {
+	  secData->EndPad(fAutoPedestal, threshold);
+	  inFill = kFALSE;
 	}
-	continue;
+	row = input.GetRow() + rowOffset;
+	pad = input.GetPad();
+
+	if (pad >= AliEveTPCSectorData::GetNPadsInRow(row) || pad < 0) {
+	  if (warn) {
+	    Warning(kEH.Data(), "pad out of range (row=%d, pad=%d, maxpad=%d).",
+		    row, pad, AliEveTPCSectorData::GetNPadsInRow(row));
+	  }
+	  continue;
+	}
+
+	threshold = fLoadThreshold;
+
+	secData->BeginPad(row, pad, kTRUE);
+	inFill   = kTRUE;
+	pdrwCnt  = 0;     pdrwCntWarn  = kFALSE;
+	lastTime = 1024;  lastTimeWarn = kFALSE;
       }
 
-      threshold = fLoadThreshold;
+      while (input.NextBunch()) {
+	const UShort_t *signalarr = input.GetSignals();
 
-      secData->BeginPad(row, pad, kTRUE);
-      inFill   = kTRUE;
-      pdrwCnt  = 0;     pdrwCntWarn  = kFALSE;
-      lastTime = 1024;  lastTimeWarn = kFALSE;
-    }
-
-    time   = input.GetTime();
-    signal = input.GetSignal();
-    ++pdrwCnt;
-    if (pdrwCnt > 1024) {
-      if (pdrwCntWarn == kFALSE) {
-        if (warn)
-	  Warning(kEH.Data(), "more than 1024 time-bins (row=%d, pad=%d, time=%d).\nFurther warnings of this type will be suppressed for this padrow.",
-		  row, pad, time);
-        pdrwCntWarn = kTRUE;
+	Int_t starttime = input.GetStartTimeBin();
+	for (Int_t i = 0; i < input.GetBunchLength(); i++) {
+	  time   = starttime--;;
+	  signal = signalarr[i];
+	  ++pdrwCnt;
+	  if (pdrwCnt > 1024) {
+	    if (pdrwCntWarn == kFALSE) {
+	      if (warn)
+		Warning(kEH.Data(), "more than 1024 time-bins (row=%d, pad=%d, time=%d).\nFurther warnings of this type will be suppressed for this padrow.",
+			row, pad, time);
+	      pdrwCntWarn = kTRUE;
+	    }
+	    continue;
+	  }
+	  if (time >= lastTime) {
+	    if (lastTimeWarn == kFALSE) {
+	      if (warn)
+		Warning(kEH.Data(), "time out of order (row=%d, pad=%d, time=%d, lastTime=%d).\nFurther warnings of this type will be suppressed for this padrow.",
+			row, pad, time, lastTime);
+	      lastTimeWarn = kTRUE;
+	    }
+	    continue;
+	  }
+	  lastTime = time;
+	  if (fAutoPedestal) {
+	    secData->RegisterData(time, signal);
+	  } else {
+	    signal -= fLoadPedestal;
+	    if (signal > threshold)
+	      secData->RegisterData(time, signal);
+	  }
+	}
       }
-      continue;
-    }
-    if (time >= lastTime) {
-      if (lastTimeWarn == kFALSE) {
-	if (warn)
-	  Warning(kEH.Data(), "time out of order (row=%d, pad=%d, time=%d, lastTime=%d).\nFurther warnings of this type will be suppressed for this padrow.",
-		  row, pad, time, lastTime);
-        lastTimeWarn = kTRUE;
-      }
-      continue;
-    }
-    lastTime = time;
-    if (fAutoPedestal) {
-      secData->RegisterData(time, signal);
-    } else {
-      signal -= fLoadPedestal;
-      if (signal > threshold)
-	secData->RegisterData(time, signal);
     }
   }
 

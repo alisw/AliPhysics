@@ -15,7 +15,7 @@
 #include <TEveGedEditor.h>
 
 #include <AliRawReaderRoot.h>
-#include <AliTPCRawStream.h>
+#include <AliTPCRawStreamV3.h>
 
 #include <TSystem.h>
 
@@ -137,7 +137,7 @@ void AliEveTPCLoader::LoadEvent()
 
   printf("Now loading event %d\n", fEvent);
   fReader->Reset();
-  AliTPCRawStream input(fReader);
+  AliTPCRawStreamV3 input(fReader);
   fReader->Select("TPC");
 
   fData->DropAllSectors();

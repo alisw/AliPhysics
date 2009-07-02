@@ -18,22 +18,17 @@
 
 #ifdef __CINT__
 
-class AliRawReaderRoot;
-
 class AliEveTPCData;
 class AliEveTPCSector2D;
 class AliEveTPCSector3D;
 
 #else
 
-#include <TEve.h>
 #include <TEveManager.h>
 #include <EveDet/AliEveTPCData.h>
 #include <EveDet/AliEveTPCSector2D.h>
 #include <EveDet/AliEveTPCSector3D.h>
-
-#include <RAW/AliRawReaderRoot.h>
-#include <TPC/AliTPCRawStream.h>
+#include <EveDet/AliEveTPCLoader.h>
 
 #include <TSystem.h>
 #include <TStyle.h>

@@ -17,8 +17,7 @@
 #include <vector>
 
 class TTree;
-class AliTPCRawStream;
-class AliTPCRawStreamOld;
+class AliTPCRawStreamV3;
 
 class AliEveTPCSectorData;
 
@@ -53,7 +52,7 @@ public:
   void   SetAutoPedestal(Bool_t ap)  { fAutoPedestal = ap; }
 
   void LoadDigits(TTree* tree, Bool_t spawnSectors=kTRUE);
-  void LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors=kTRUE, Bool_t warn=kFALSE);
+  void LoadRaw(AliTPCRawStreamV3& input, Bool_t spawnSectors=kTRUE, Bool_t warn=kFALSE);
 
 protected:
   std::vector<AliEveTPCSectorData*>  fSectors; // Vector of sector-data.
