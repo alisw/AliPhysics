@@ -5,7 +5,7 @@ void SETUP() {
   gROOT->ProcessLine(".include PWG2evchar/EVCHAR");
 
   // Set our location, so that other packages can find us
-  gSystem->Setenv("PWG2evchar_INCLUDE", "PWG2evchar");
+  gSystem->Setenv("PWG2evchar_INCLUDE", "PWG2evchar/EVCHAR");
 }
 
 Int_t CheckLoadLibrary(const char* library) {
