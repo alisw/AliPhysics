@@ -241,14 +241,14 @@ void AliMUONRecoParam::SetCosmicParam()
   fMinBendingMomentum = 1.;
   fMaxBendingMomentum = 10000000.;
   fMaxNonBendingSlope = 0.4;
-  fMaxBendingSlope = 0.5;
+  fMaxBendingSlope = 0.7;
   fSelectTrackOnSlope = kTRUE;
   fNonBendingVertexDispersion = 200.;
   fBendingVertexDispersion = 200.;
   fMaxNonBendingDistanceToTrack = 1.;
   fMaxBendingDistanceToTrack = 1.;
   fSigmaCutForTracking = 7.;
-  fSigmaCutForImprovement = 7.;
+  fSigmaCutForImprovement = 6.;
   fSigmaCutForTrigger = 8.;
   fStripCutForTrigger = 1.5;
   fMaxStripAreaForTrigger = 3.;
@@ -266,15 +266,20 @@ void AliMUONRecoParam::SetCosmicParam()
   fSaveFullClusterInESD = kTRUE;
   for (Int_t iCh = 0; iCh < 10; iCh++) {
     fUseChamber[iCh] = kTRUE;
-    fDefaultNonBendingReso[iCh] = 0.4;
-    fDefaultBendingReso[iCh] = 0.4;
+    fDefaultNonBendingReso[iCh] = 0.152;
+    fDefaultBendingReso[iCh] = 0.027;
   }
-  for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
+  fRequestStation[0] = kFALSE;
+  fRequestStation[1] = kFALSE;
+  fRequestStation[2] = kFALSE;
+  fRequestStation[3] = kTRUE;
+  fRequestStation[4] = kTRUE;
   fBypassSt45 = 0;
   fPadGoodnessMask = 0x400BE80; // Ped Mean is Zero | Ped Mean Too Low | Ped Mean Too High | Ped Sigma Too Low | Ped Sigma Too High | Ped is missing | HV is missing | manu occupancy too high
   fMaxTriggerTracks = 100;
   fMaxTrackCandidates = 10000;
-  SetManuOccupancyLimits(-1,0.5); // reject manu above occ=50%
+  SetPedMeanLimits(20, 700);
+  SetManuOccupancyLimits(-1.,0.01); // reject manu above occ=1%
   
 }
 
@@ -473,7 +478,7 @@ AliMUONRecoParam::SetDefaultLimits()
 	fHVSt345Limits[0]=1500;
 	fHVSt345Limits[1]=2000;
 
-	fPedMeanLimits[0] = 50;
+	fPedMeanLimits[0] = 20;
 	fPedMeanLimits[1] = 1024;
 	
 	fPedSigmaLimits[0] = 0.6;
