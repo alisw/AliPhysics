@@ -10,7 +10,8 @@ SRCS:=	 muon/AliAnalysisTaskESDMuonFilter.cxx \
                  muon/AliAODDimuon.cxx \
                  muon/AliAODEventInfo.cxx \
                  muon/AliESDMuonTrackCuts.cxx \
-                 muon/AliAnalysisTaskSingleMuESD.cxx
+                 muon/AliAnalysisTaskSingleMuESD.cxx \
+                 muon/AliCFMuonResTask1.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
