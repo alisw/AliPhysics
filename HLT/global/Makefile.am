@@ -34,8 +34,7 @@ pkginclude_HEADERS		= $(MODULE_HDRS)
 # additional link def file
 EXTRA_DIST			+=$(MODULE_DHDR)
 
-libAliHLTGlobal_la_LIBADD	= $(top_builddir)/TPCLib/libAliHLTTPC.la \
-				  $(top_builddir)/TRD/libAliHLTTRD.la
+libAliHLTGlobal_la_LIBADD	= $(top_builddir)/BASE/util/libAliHLTUtil.la
 # version info for the library
 libAliHLTGlobal_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \

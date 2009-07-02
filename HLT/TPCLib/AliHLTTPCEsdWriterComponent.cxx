@@ -43,7 +43,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTExternalTrackParam.h"
-#include "AliHLTKalmanTrack.h"
+#include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTTrackMCLabel.h"
 
 #include <vector>
@@ -214,7 +214,7 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
 	  AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
 
 	  for( int itr=0; itr<nTracks; itr++ ){
-	    AliHLTKalmanTrack t(*currOutTrack);
+	    AliHLTGlobalBarrelTrack t(*currOutTrack);
 	    Float_t points[4] = {currOutTrack->fX, currOutTrack->fY, currOutTrack->fLastX, currOutTrack->fLastY };
 	    
 	    Int_t mcLabel = -1;

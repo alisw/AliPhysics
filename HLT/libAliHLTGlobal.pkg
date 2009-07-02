@@ -1,10 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-CLASS_HDRS:=	AliHLTGlobalTrackMerger.h \
-		AliHLTGlobalTrackMergerComponent.h \
-		AliHLTGlobalEsdConverterComponent.h \
-		AliHLTGlobalBarrelTrack.h \
+CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
 		AliHLTGlobalAgent.h \
 		AliHLTVertexer.h
 
@@ -16,21 +13,14 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 MODULE_DHDR:= 
 
 EINCLUDE 	:= HLT/global \
-		   HLT/TPCLib \
-		   HLT/TPCLib/tracking \
-		   HLT/TPCLib/comp \
-		   HLT/TPCLib/tracking-ca \
-		   HLT/TPCLib/offline \
 		   HLT/BASE \
 		   HLT/BASE/util \
-		   HLT/RCU \
-		   HLT/TRD \
 		   TPC \
 		   RAW \
 		   TRD \
 		   STEER
 
-LIBRARY_DEP := -lHLTbase -lAliHLTRCU -lAliHLTUtil -lAliHLTTRD \
+LIBRARY_DEP := -lHLTbase -lAliHLTUtil \
                -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase \
                -lRAWDatarec -lRAWDatabase -lTRDbase \
                -L$(shell root-config --libdir) -lEG

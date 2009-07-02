@@ -47,7 +47,7 @@ using namespace std;
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTExternalTrackParam.h"
-#include "AliHLTKalmanTrack.h"
+#include "AliHLTGlobalBarrelTrack.h"
 
 
 
@@ -348,7 +348,7 @@ int AliHLTITSTrackerComponent::DoEvent
       int nTracks = dataPtr->fCount;
       AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
       for( int itr=0; itr<nTracks; itr++ ){
-	AliHLTKalmanTrack t(*currOutTrack);
+	AliHLTGlobalBarrelTrack t(*currOutTrack);
 	tracksTPC.push_back( t );
 	tracksTPCId.push_back( currOutTrack->fTrackID );
 	unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + currOutTrack->fNPoints * sizeof( unsigned int );
