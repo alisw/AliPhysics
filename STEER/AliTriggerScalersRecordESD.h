@@ -32,7 +32,7 @@ public:
            const TObjArray*   GetTriggerScalers()  const { return  &fScalers; }
 const AliTriggerScalersESD*   GetTriggerScalersForClass( const Int_t classindex ) const;       
         const AliTimeStamp*   GetTimeStamp() const {return &fTimestamp;};
-                       void   SetTimeStamp(AliTimeStamp stamp){fTimestamp = stamp;};  
+                       void   SetTimeStamp(const AliTimeStamp *stamp){fTimestamp = *stamp;};  
                virtual void   Print( const Option_t* opt ="" ) const;
                       
                            AliTriggerScalersRecordESD( const AliTriggerScalersRecordESD &rec );

@@ -305,8 +305,7 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
    AliTriggerScalersRecordESD* recESD = 0;
    if(correctOverflow){
      recESD = new AliTriggerScalersRecordESD();
-     AliTimeStamp stamp(*scalers2->GetTimeStamp());
-     recESD->SetTimeStamp(stamp);
+     recESD->SetTimeStamp(scalers2->GetTimeStamp());
    }
    for( Int_t ic=0; ic<fnClasses; ++ic ){
       TObjArray* scalersArray2 = (TObjArray*)scalers2->GetTriggerScalers();
