@@ -19,62 +19,84 @@ void runBatch() {
   int runEvChar = 1;
   int runKink = 1;
   int runUnicor = 1;
-  int runFMDanalysis = 1;
+  int runFMDanalysis = 0;
+  int runLRC = 1;
 
+  int useGeneralParFiles = 0;
+  int usePWG2ParFiles = 0;
+  
   //____________________________________________________//
   //_____________Setting up STEERBase.par_______________//
   //____________________________________________________//
-  //  setupPar("STEERBase");
+  if (useGeneralParFiles) {
+    setupPar("STEERBase");
+  }
   gSystem->Load("libSTEERBase.so");
 
   //____________________________________________________//
   //_____________Setting up ESD.par_____________________//
   //____________________________________________________//
-  //  setupPar("ESD");
+  if (useGeneralParFiles) {
+    setupPar("ESD");
+  }
   gSystem->Load("libVMC.so");
   gSystem->Load("libESD.so");
 
   //____________________________________________________//
   //_____________Setting up AOD.par_____________________//
   //____________________________________________________//
-  //  setupPar("AOD");
+  if (useGeneralParFiles) {
+    setupPar("AOD");
+  }
   gSystem->Load("libAOD.so");
 
   //_________________________________________________________//
   //_____________Setting up ANALYSIS.par_____________________//
   //_________________________________________________________//
-  //  setupPar("ANALYSIS");
+  if (useGeneralParFiles) {
+    setupPar("ANALYSIS");
+  }
   gSystem->Load("libANALYSIS.so");
 
   //_________________________________________________________//
   //_____________Setting up ANALYSISalice.par________________//
   //_________________________________________________________//
-  //  setupPar("ANALYSISalice");
+  if (useGeneralParFiles) {
+    setupPar("ANALYSISalice");
+  }
   gSystem->Load("libANALYSISalice.so");
 
   //____________________________________________________//
   //_____________Setting up CORRFW library______________//
   //____________________________________________________//
-  //  setupPar("CORRFW");
+  if (useGeneralParFiles) {
+    setupPar("CORRFW");
+  }
   gSystem->Load("libCORRFW.so");
   
   //____________________________________________________//
   //_____________Setting up PWG2AOD.par_________________//
   //____________________________________________________//
-  setupPar("PWG2AOD");
+  if (usePWG2ParFiles) {
+    setupPar("PWG2AOD");
+  }
   gSystem->Load("libPWG2AOD.so");
   
   if (runFemto) {
     //____________________________________________________//
     //_____________Setting up PWG2femtoscopy.par__________//
     //____________________________________________________//
-    setupPar("PWG2femtoscopy");
+    if (usePWG2ParFiles) {
+      setupPar("PWG2femtoscopy");
+    }
     gSystem->Load("libPWG2femtoscopy.so");
     
     //____________________________________________________//
     //_____________Setting up PWG2femtoscopyUser.par______//
     //____________________________________________________//
-    setupPar("PWG2femtoscopyUser");
+    if (usePWG2ParFiles) {
+      setupPar("PWG2femtoscopyUser");
+    }
     gSystem->Load("libPWG2femtoscopyUser.so");
   }
   
@@ -82,6 +104,9 @@ void runBatch() {
     //____________________________________________________//
     //_____________Setting up PWG2spectra library ________//
     //____________________________________________________//
+    if (usePWG2ParFiles) {
+      setupPar("PWG2spectra");
+    }
     gSystem->Load("libPWG2spectra.so");
   }
 
@@ -89,6 +114,9 @@ void runBatch() {
     //____________________________________________________//
     //_____________Setting up PWG2spectra library ________//
     //____________________________________________________//
+    if (usePWG2ParFiles) {
+      setupPar("PWG2spectra");
+    }
     gSystem->Load("libPWG2spectra.so");
   }
 
@@ -96,13 +124,17 @@ void runBatch() {
     //____________________________________________________//
     //_____________Setting up PWG2flowCommon.par__________//
     //____________________________________________________//
-    setupPar("PWG2flowCommon");
+    if (usePWG2ParFiles) {
+      setupPar("PWG2flowCommon");
+    }
     gSystem->Load("libPWG2flowCommon.so");
 
     //____________________________________________________//
     //_____________Setting up PWG2flowTasks.par___________//
     //____________________________________________________//
-    setupPar("PWG2flowTasks");
+    if (usePWG2ParFiles) {
+      setupPar("PWG2flowTasks");
+    }
     gSystem->Load("libPWG2flowTasks.so");
   }
 
@@ -110,7 +142,9 @@ void runBatch() {
     //____________________________________________________//
     //_____________Setting up PWG2resonances.par__________//
     //____________________________________________________//
-    setupPar("PWG2resonances");
+    if (usePWG2ParFiles) {
+      setupPar("PWG2resonances");
+    }
     gSystem->Load("libPWG2resonances.so");
   }
   
@@ -118,32 +152,48 @@ void runBatch() {
     //____________________________________________________//
     //_____________Setting up PWG2evchar library__________//
     //____________________________________________________//
-    setupPar("PWG2evchar");
+    if (usePWG2ParFiles) {
+      setupPar("PWG2evchar");
+    }
     gSystem->Load("libPWG2evchar.so");
   }
   
   if (runKink) {
     //____________________________________________________//
-    //_____________Setting up PWG2evchar library__________//
+    //_____________Setting up PWG2kink library____________//
     //____________________________________________________//
-    setupPar("PWG2kink");
+    if (usePWG2ParFiles) {
+      setupPar("PWG2kink");
+    }
     gSystem->Load("libPWG2kink.so");
   }
   
   if (runUnicor) {
     //____________________________________________________//
-    //_____________Setting up PWG2evchar library__________//
+    //_____________Setting up PWG2unicor library__________//
     //____________________________________________________//
-    setupPar("PWG2unicor");
+    if (usePWG2ParFiles) {
+      setupPar("PWG2unicor");
+    }
     gSystem->Load("libPWG2unicor.so");
   }
   
   if (runFMDanalysis) {
     //____________________________________________________//
-    //_____________Setting up PWG2evchar library__________//
+    //_____________Setting up FMD analysis library________//
     //____________________________________________________//
-    setupPar("FMDanalysis");
+    //    setupPar("FMDanalysis");
     gSystem->Load("libFMDanalysis.so");
+  }
+  
+  if (runLRC) {
+    //____________________________________________________//
+    //_____________Setting up PWG2ebye library____________//
+    //____________________________________________________//
+    if (usePWG2ParFiles) {
+      setupPar("PWG2ebye");
+    }
+    gSystem->Load("libPWG2ebye.so");
   }
   
   //ANALYSIS PART
@@ -188,16 +238,18 @@ void runBatch() {
     // 3rd task - FLOW
 
     // Flow analysis method can be:(set to kTRUE or kFALSE)
-    Bool_t SP     = kTRUE;
-    Bool_t LYZ1   = kTRUE;
-    Bool_t LYZ2   = kFALSE;
-    Bool_t LYZEP  = kFALSE;
-    Bool_t GFC    = kFALSE;
-    Bool_t QC     = kTRUE;
-    Bool_t FQD    = kTRUE;
-    Bool_t MCEP   = kTRUE;
+    Bool_t SP       = kTRUE;
+    Bool_t LYZ1SUM  = kTRUE;
+    Bool_t LYZ1PROD = kTRUE;
+    Bool_t LYZ2SUM  = kFALSE;
+    Bool_t LYZ2PROD = kFALSE;
+    Bool_t LYZEP    = kFALSE;
+    Bool_t GFC      = kTRUE;
+    Bool_t QC       = kTRUE;
+    Bool_t FQD      = kTRUE;
+    Bool_t MCEP     = kTRUE; //not for pp 
     
-    Bool_t METHODS[] = {SP,LYZ1,LYZ2,LYZEP,GFC,QC,FQD,MCEP};
+    Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP};
     
     // Analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
     const TString type = "ESD";
@@ -207,7 +259,7 @@ void runBatch() {
     
     // Boolean to use/not use weights for the Q vector
     Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
-
+    
     gROOT->LoadMacro("AddTaskFlow.C");
     AliAnalysisTaskFlowEvent* taskFE = AddTaskFlow(type,METHODS,QA,WEIGHTS);
   }
@@ -220,7 +272,8 @@ void runBatch() {
 
     gROOT->LoadMacro("AddAnalysisTaskRsn.C");
     //    AliAnalysisTaskFemto *taskfemto = AddTaskFemto();
-    AddAnalysisTaskRsn(AliLog::kInfo, "rsn.root", useMC);
+    //    AddAnalysisTaskRsn(AliLog::kInfo, kFALSE, "rsn.root", useMC);
+    AddAnalysisTaskRsn();
   }
 
   if (runEvChar) {
@@ -273,6 +326,14 @@ void runBatch() {
     // 13th task - FMD
     gROOT->LoadMacro("AddTaskFMD.C");
     AliFMDAnalysisTaskSE *taskfmd = AddTaskFMD();
+  }
+
+  if (runLRC) {
+    //____________________________________________//
+    // 13th task - FMD
+    gROOT->LoadMacro("AddTaskLRC.C");
+    //    AliFMDAnalysisTaskSE *taskfmd = AddTaskFMD();
+    TList *lrcasks = AddLRCTaskSet();
   }
 
   //____________________________________________//
