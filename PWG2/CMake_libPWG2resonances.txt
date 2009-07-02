@@ -4,8 +4,9 @@ set(SRCS  RESONANCES/AliRsnDaughter.cxx
     RESONANCES/AliRsnPairParticle.cxx
     RESONANCES/AliRsnCut.cxx
     RESONANCES/AliRsnCutStd.cxx
-    RESONANCES/AliRsnCutBetheBlock.cxx
+    RESONANCES/AliRsnCutBetheBloch.cxx
     RESONANCES/AliRsnCutESDPrimary.cxx
+    RESONANCES/AliRsnCutPrimaryVertex.cxx 
     RESONANCES/AliRsnCutSet.cxx
     RESONANCES/AliRsnCutMgr.cxx
     RESONANCES/AliRsnExpression.cxx

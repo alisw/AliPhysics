@@ -7,6 +7,7 @@
 #pragma link C++ class AliRsnCutStd+;
 #pragma link C++ class AliRsnCutBetheBloch+;
 #pragma link C++ class AliRsnCutESDPrimary+;
+#pragma link C++ class AliRsnCutPrimaryVertex+;
 #pragma link C++ class AliRsnCutSet+;
 #pragma link C++ class AliRsnCutMgr+;
 #pragma link C++ class AliRsnExpression+;

@@ -6,6 +6,7 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnCutStd.cxx \
       RESONANCES/AliRsnCutBetheBloch.cxx \
       RESONANCES/AliRsnCutESDPrimary.cxx \
+      RESONANCES/AliRsnCutPrimaryVertex.cxx \
       RESONANCES/AliRsnCutSet.cxx \
       RESONANCES/AliRsnCutMgr.cxx \
       RESONANCES/AliRsnExpression.cxx \
