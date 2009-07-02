@@ -71,7 +71,7 @@ Bool_t AliHMPIDtrack::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
   if (xk == GetX()) {
     return kTRUE;
   }
-  Double_t bz   = GetBz();
+  Double_t bz   = -GetBz();
   if (!AliExternalTrackParam::PropagateTo(xk,bz)) {
     return kFALSE;
   }
@@ -105,7 +105,7 @@ Int_t AliHMPIDtrack::GetProlongation(Double_t xk, Double_t &y, Double_t &z)
   // Return 0 if it does not exist
   //  
 
-  Double_t bz = GetBz();
+  Double_t bz = -GetBz();
 
   if (!AliExternalTrackParam::GetYAt(xk,bz,y)) {
     return 0;
@@ -190,7 +190,7 @@ Bool_t AliHMPIDtrack::PropagateTo(const AliCluster3D *c) {
   Double_t      p[3]={c->GetX(), c->GetY(), c->GetZ()};
   Double_t  covyz[3]={c->GetSigmaY2(), c->GetSigmaYZ(), c->GetSigmaZ2()};
   Double_t covxyz[3]={c->GetSigmaX2(), c->GetSigmaXY(), c->GetSigmaXZ()};
-  Double_t bz=GetBz();
+  Double_t bz=-GetBz();
   
   if(!AliExternalTrackParam::PropagateTo(p, covyz, covxyz, bz)) return kFALSE;
   if(IsStartedTimeIntegral()) 
@@ -244,7 +244,7 @@ void AliHMPIDtrack::Propagate(Double_t len, Double_t x[3],Double_t p[3]) const {
   GetXYZ(x);    
   Double_t bField[3];
   TGeoGlobalMagField::Instance()->Field(x,bField);
-  Double_t bz = bField[2];
+  Double_t bz = -bField[2];
   if (OneOverPt() < kAlmost0 || TMath::Abs(bz) < kAlmost0Field ){ //straight-line tracks
      Double_t unit[3]; GetDirection(unit);
      x[0]+=unit[0]*len;   
