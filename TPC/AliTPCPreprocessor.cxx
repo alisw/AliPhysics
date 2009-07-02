@@ -780,7 +780,7 @@ UInt_t AliTPCPreprocessor::ExtractRaw(Int_t sourceFXS)
  //
  
  UInt_t result=0;
- TObjArray *calRaw;
+ TObjArray* rawArray = new TObjArray;
 
  TList* list = GetFileSources(sourceFXS,"AliTPCCalibRaw");
  
@@ -800,13 +800,15 @@ UInt_t AliTPCPreprocessor::ExtractRaw(Int_t sourceFXS)
 	  result =2;
 	  break;
 	}
+        AliTPCCalibRaw *calRaw;
 	f->GetObject("tpcCalibRaw",calRaw);
         if ( !calRaw ) {
 	  Log ("No raw calibration object in file.");
 	  result = 2;
 	  break;
 	}
-
+       rawArray->Add(calRaw);
+       delete calRaw;
        f->Close();
       }
      ++index;
@@ -820,7 +822,7 @@ UInt_t AliTPCPreprocessor::ExtractRaw(Int_t sourceFXS)
      metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
      metaData.SetComment("Preprocessor AliTPC data base entries.");
 
-     Bool_t storeOK = Store("Calib", "Raw", calRaw, &metaData, 0, kTRUE);
+     Bool_t storeOK = Store("Calib", "Raw", rawArray, &metaData, 0, kTRUE);
      if ( !storeOK ) ++result;
   } else {
     Log ("Error: no entries in input file list!");
