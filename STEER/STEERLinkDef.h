@@ -159,5 +159,7 @@
 #pragma link C++ class AliRectMatrix+;
 
 #pragma link C++ class AliGRPManager+;
+#pragma link C++ class AliDCSArray+;
+#pragma link C++ class AliLHCReader+;
 
 #endif
