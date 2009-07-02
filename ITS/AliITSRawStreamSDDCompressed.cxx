@@ -188,7 +188,7 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
       Int_t sig8bit;
       if(fADCEncoded){
 	UInt_t code=fData&maskCode;
-	if (code < 2 || code > 7) AliError("Wrong ADC code value");
+	if (code < 2 || code > 7) AliError(Form("Wrong ADC code value %d",code));
 	UInt_t adcmask=(1<<code)-1;
 	sig8bit=((fData&(adcmask<<3))>>3) + (1<<code);
       }else{      

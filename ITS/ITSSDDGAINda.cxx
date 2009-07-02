@@ -79,37 +79,21 @@ int main(int argc, char **argv) {
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
   const Int_t kSides=2;
-  Int_t adcSamplFreq=40;
-  Bool_t readfeeconf=kFALSE;
-  Int_t dataformat=1;
+  UInt_t amSamplFreq=40;
+  UChar_t cdhAttr=0;
+
   gSystem->Exec("rm -f  SDDbase_LDC.tar");
-   if(gSystem->Getenv("DAQ_DETDB_LOCAL")!=NULL){
-    const char* dir=gSystem->Getenv("DAQ_DETDB_LOCAL");    
-    TString filnam=Form("%s/fee.conf",dir); 
-    FILE* feefil=fopen(filnam.Data(),"r"); 
-    if(feefil){
-      fscanf(feefil,"%d \n",&adcSamplFreq);
-      fscanf(feefil,"%d \n",&dataformat);
-      fclose(feefil);
-      TString shcomm=Form("tar -rf SDDbase_LDC.tar -C %s fee.conf",dir); 
-      gSystem->Exec(shcomm.Data());
-      readfeeconf=kTRUE;
-      printf("ADC sampling frequency = %d MHz dataformat code =%d \n",adcSamplFreq,dataformat);
-    }
-  }
-  if(!readfeeconf) printf("File fee.conf not found, sampling frequency set to 40 MHz and data format to 1\n");
 
   AliITSOnlineSDDTP **tpan=new AliITSOnlineSDDTP*[kTotDDL*kModPerDDL*kSides];
   TH2F **histo=new TH2F*[kTotDDL*kModPerDDL*kSides];
   Bool_t isFilled[kTotDDL*kModPerDDL*kSides];
+  Bool_t writtenoutput=kFALSE;
   Char_t hisnam[20];
   for(Int_t iddl=0; iddl<kTotDDL;iddl++){
     for(Int_t imod=0; imod<kModPerDDL;imod++){
       for(Int_t isid=0;isid<kSides;isid++){
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	tpan[index]=new AliITSOnlineSDDTP(iddl,imod,isid,100.);
-	if(adcSamplFreq==20) tpan[index]->SetLastGoodTB(126);
-	else tpan[index]->SetLastGoodTB(254);
 	sprintf(hisnam,"h%02dc%02ds%d",iddl,imod,isid);
 	histo[index]=new TH2F(hisnam,"",256,-0.5,255.5,256,-0.5,255.5);
 	isFilled[index]=0;
@@ -176,14 +160,15 @@ int main(int argc, char **argv) {
       case PHYSICS_EVENT: // uncomment this line for test raw data
 	printf(" event number = %i \n",iev);
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-
-	Int_t evtyp=0;
-	while(rawReader->ReadHeader()){
-	  const UInt_t *subev = rawReader->GetSubEventAttributes();
-	  if(subev[0]==0 && subev[1]==0 && subev[2]==0) evtyp=1; 
+	rawReader->Reset();
+	cdhAttr=AliITSRawStreamSDD::ReadBlockAttributes(rawReader);
+	amSamplFreq=AliITSRawStreamSDD::ReadAMSamplFreqFromCDH(cdhAttr);
+	AliITSRawStream* s=AliITSRawStreamSDD::CreateRawStreamSDD(rawReader,cdhAttr);
+	if(!writtenoutput){
+	  printf("Use %s raw stream, sampling frequency %d MHz\n",s->ClassName(),amSamplFreq);
+	  writtenoutput=kTRUE;
 	}
 
-	rawReader->Reset();
 	for(Int_t iddl=0; iddl<kTotDDL;iddl++){
 	  for(Int_t imod=0; imod<kModPerDDL;imod++){
 	    for(Int_t isid=0;isid<kSides;isid++){
@@ -192,14 +177,7 @@ int main(int argc, char **argv) {
 	    }
 	  }
 	}
-	AliITSRawStream* s;
-	if(dataformat==0){
-	  s=new AliITSRawStreamSDD(rawReader);
-	}else{
-	  s=new AliITSRawStreamSDDCompressed(rawReader);
-	  if(dataformat==1) s->SetADCEncoded(kTRUE);
-	}
-	
+
 	while(s->Next()){
 	  Int_t iDDL=rawReader->GetDDLID();
 	  Int_t iCarlos=s->GetCarlosId();
@@ -211,11 +189,14 @@ int main(int argc, char **argv) {
 	    isFilled[index]=1;
 	  }
 	}
+	delete s;
 	delete rawReader;
 	for(Int_t iddl=0; iddl<kTotDDL;iddl++){
 	  for(Int_t imod=0; imod<kModPerDDL;imod++){
 	    for(Int_t isid=0;isid<kSides;isid++){
 	      Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+	      if(amSamplFreq==20) tpan[index]->SetLastGoodTB(126);
+	      else tpan[index]->SetLastGoodTB(254);
 	      if(isFilled[index]) tpan[index]->AddEvent(histo[index]);    
 	    }
 	  }
@@ -247,6 +228,13 @@ int main(int argc, char **argv) {
     }  
   }
   fh->Close();
+
+  FILE *conffil=fopen("fee.conf","w");
+  fprintf(conffil,"%d\n",amSamplFreq);
+  fprintf(conffil,"%02X\n",cdhAttr);
+  fclose(conffil);
+  gSystem->Exec("tar -rf SDDbase_LDC.tar fee.conf");
+
 
   /* write report */
   printf("Run #%s, received %d calibration events\n",getenv("DATE_RUN_NUMBER"),iAnalyzedEv);

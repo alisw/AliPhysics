@@ -25,6 +25,10 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     virtual ~AliITSRawStreamSDD();
 
     static UChar_t ReadBlockAttributes(AliRawReader* rawReader);
+    static UInt_t  ReadAMSamplFreqFromCDH(UChar_t cdhAttr){
+      if(cdhAttr&0x10) return 40;
+      else return 20;
+    }
     static AliITSRawStream* CreateRawStreamSDD(AliRawReader* rawReader, UChar_t attributes);
     static AliITSRawStream* CreateRawStreamSDD(AliRawReader* rawReader);
 
