@@ -678,7 +678,7 @@ void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
 
 	// signal is converted in unit of ADC
 	signal = res->GetSSDDEvToADC(signal);
-	if(signal>4096.) signal = 4096.;//if exceeding, accumulate last one
+	if(signal>4095.) signal = 4095.;//if exceeding, accumulate last one
 
 	// threshold for zero suppression is set on the basis of the noise
 	// A good value is 3*sigma_noise

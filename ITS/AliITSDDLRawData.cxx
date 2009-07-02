@@ -98,7 +98,8 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
       ix=digs->GetCoord2();  // Strip Number
       is=digs->GetCompressedSignal();  // ADC Signal
       // cout<<" Module:"<<mod-500<<" N/P side:"<<iz<<" Strip Number:"<<ix<<" Amplidute:"<<is-1<<endl;
-      if(is<0) is = 4096 + is;
+      if(is<0) is = 0;
+      if(is>4095) is = 4095;
       if (fVerbose==2)
 	ftxt<<"DDL:"<<ddl<<" Mod: "<<modR<<" N/P: "<<iz<<" Strip: "<<ix<<" Value: "<<is-1<<endl;
 
@@ -758,3 +759,4 @@ void  AliITSDDLRawData::WriteHit(UInt_t *buf,Int_t RowAddr,Int_t HitAddr,UInt_t 
   }//end else
   return;
 }//end WriteHit
+
