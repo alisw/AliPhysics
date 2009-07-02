@@ -29,9 +29,11 @@ class AliGenPythiaEventHeader : public AliGenEventHeader
     void     UQJet(Int_t i, Float_t p[4]);
     Double_t GetXJet() {return fXJet;}
     Double_t GetYJet() {return fYJet;}
-    Double_t GetInMediumLength() {return fInMediumLength;}
+    Double_t GetInMediumLength()  {return fInMediumLength;}
+    Double_t GetImpactParameter() {return fImpactParameter;}
     void     SetXYJet(Double_t x, Double_t y);
-    void     SetInMediumLength(Double_t l) {fInMediumLength = l;}
+    void     SetImpactParameter(Double_t b) {fImpactParameter = b;}
+    void     SetInMe(Double_t l) {fInMediumLength = l;}
     void     SetZQuench(Double_t z[4]);
     void     GetZQuench(Double_t z[4]);
     void     SetPtHard(Float_t pthard) {fPtHard = pthard;}
@@ -46,11 +48,12 @@ protected:
     Double_t fXJet;                      // Jet production point (x)
     Double_t fYJet;                      // Jet production point (y)
     Double_t fInMediumLength;            // In medium length
+    Double_t fImpactParameter;           // Impact parameter for Q-Pythia
     Float_t  fJets[4][10];               // Trigger jets
     Float_t  fUQJets[4][10];             // Unquenched trigger jets
     Double_t fZquench[4];                // Quenching fraction
     Float_t  fPtHard;                    // pT hard
-    ClassDef(AliGenPythiaEventHeader,5)  // Event header for Pythia event
+    ClassDef(AliGenPythiaEventHeader,6)  // Event header for Pythia event
 };
 	
 	
