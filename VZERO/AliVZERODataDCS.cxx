@@ -19,11 +19,13 @@
 #include "AliDCSValue.h"
 #include "AliLog.h"
 
-#include "TGraph.h"
-#include "TAxis.h"
-#include "TCanvas.h"
-#include "TTimeStamp.h"
-#include "TMap.h"
+#include <TGraph.h>
+#include <TAxis.h>
+#include <TCanvas.h>
+#include <TTimeStamp.h>
+#include <TMap.h>
+#include <TString.h>
+#include <TH1F.h>
 
 class TH2;
 class AliCDBMetaData;
@@ -108,21 +110,21 @@ void AliVZERODataDCS::ProcessData(TMap& aliasMap){
     
     Int_t nentries = aliasArr->GetEntries();
     
-    Double_t *Times = new Double_t[nentries];
-    Double_t *Values = new Double_t[nentries];
+    Double_t *times = new Double_t[nentries];
+    Double_t *values = new Double_t[nentries];
 
     UInt_t iValue=0;
     while((aValue = (AliDCSValue*) iterarray.Next())) {
-   		Values[iValue] = aValue->GetFloat();
-   		Times[iValue] = (Double_t) (aValue->GetTimeStamp());
-		fHv[iAlias]->Fill(Values[iValue]);
-		printf("%s %f\n",fAliasNames[iAlias].Data(),Values[iValue]);
+   		values[iValue] = aValue->GetFloat();
+   		times[iValue] = (Double_t) (aValue->GetTimeStamp());
+		fHv[iAlias]->Fill(values[iValue]);
+		printf("%s %f\n",fAliasNames[iAlias].Data(),values[iValue]);
    		iValue++;
     }      
-    CreateGraph(iAlias, aliasArr->GetEntries(), Times, Values); // fill graphs 
+    CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs 
     
-    delete[] Values;
-    delete[] Times;	      
+    delete[] values;
+    delete[] times;	      
   }
   
   	// calculate mean and rms of the first two histos
@@ -200,16 +202,16 @@ void AliVZERODataDCS::Draw(const Option_t* /*option*/)
 
   if(fGraphs.GetEntries()==0)  return;
   
-  TString CanvasName;
+  TString canvasName;
   TCanvas *cHV[8];
   
   for(int iSide = 0 ;iSide<2;iSide++){
   	for(int iRing=0;iRing<4;iRing++){
-  		if(iSide == 0)  CanvasName = "V0A_Ring";
-  		else  CanvasName = "V0C_Ring";
-  		CanvasName += iRing;
+  		if(iSide == 0)  canvasName = "V0A_Ring";
+  		else  canvasName = "V0C_Ring";
+  		canvasName += iRing;
   		int iCanvas = iSide*4 + iRing;
-  		cHV[iCanvas] = new TCanvas(CanvasName,CanvasName);
+  		cHV[iCanvas] = new TCanvas(canvasName,canvasName);
   		cHV[iCanvas]->Divide(3,3);
   		for(int iSector=0;iSector<8;iSector++){
   			cHV[iCanvas]->cd(iSector+1);

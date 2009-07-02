@@ -4,16 +4,15 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include "TObject.h" 
-#include "TString.h"
-
+#include <TObject.h> 
 #include <TClonesArray.h>
-#include <TH1F.h>
 
 class TMap;
 class TH2F;
 class TGraph;
 class TF1;
+class TString;
+class TH1F;
 
 // AliVZERODataDCS class
 // main aim is to process DCS data
@@ -73,10 +72,10 @@ private:
   
   
   TString fAliasNames[kNAliases];        // aliases for DCS data
-  TClonesArray fGraphs;		// Array containing  graphics
-  TH1F *fHv[kNAliases];
-  Float_t fMeanHV[kNAliases]; 
-  Float_t fWidthHV[kNAliases];
+  TClonesArray fGraphs;		         // Array containing  graphics
+  TH1F *fHv[kNAliases];                  // High Voltage histograms
+  Float_t fMeanHV[kNAliases];            // High Voltage mean values
+  Float_t fWidthHV[kNAliases];           // High Voltage widths
  
   Bool_t fIsProcessed;                   // bool to know processing status
   
