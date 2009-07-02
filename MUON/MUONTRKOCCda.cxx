@@ -53,6 +53,9 @@
 
 #ifdef ALI_AMORE
 #include <AmoreDA.h>
+#include "TObjString.h"
+#include "TSystem.h"
+#include <sstream>
 #endif
 
 const char* OUTPUT_FILE = "mch.occupancy";
@@ -154,6 +157,9 @@ int main(int argc, char **argv)
     return -1;
   }
   
+#ifdef ALI_AMORE
+  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+#endif
   // needed for streamer application
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
                                         "*",
@@ -259,17 +265,13 @@ int main(int argc, char **argv)
   
   // Send occupancy store (as a big string) to the AMORE DB
   
-  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-  
   ostringstream str;
   
   GenerateOutputFile(accumulatedData,str,runNumber,numberOfUsedEvents);
-  
-  str.close();
-  
+    
   TObjString occupancyAsString(str.str().c_str());
   
-  Int_t status = amoreDA.Send("Occupancy",&occupanyAsString);
+  Int_t status = amoreDA.Send("Occupancy",&occupancyAsString);
   if ( status )
   {
     cerr << "ERROR : Failed to write occupancies in the AMORE database : " << status << endl;

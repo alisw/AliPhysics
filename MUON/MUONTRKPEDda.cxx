@@ -29,7 +29,7 @@ Run Type: PEDESTAL
 
 /*
 	-------------------------------------------------------------------------
-	2009-05-12 New version: MUONTRKPEDda.cxx,v 1.0
+        2009-06-18 New version: MUONTRKPEDda.cxx,v 1.2
 	-------------------------------------------------------------------------
 
 	Version for MUONTRKPEDda MUON tracking
@@ -82,12 +82,6 @@ extern "C" {
 #include "TObjString.h"
 #include "THashTable.h"
 #include <THashList.h>
-//
-//AMORE
-//
-#ifdef ALI_AMORE
-#include <AmoreDA.h>
-#endif
 
 #include "AliMUONPedestal.h"
 #include "AliMUONErrorCounter.h"
@@ -178,10 +172,10 @@ int main(Int_t argc, Char_t **argv)
 	  i++; 
 	  sscanf(argv[i],"%d",&maxEvents);
 	  break;
-	case 'p' : 
-	  i++;
-	  sscanf(argv[i],"%d",&recoverParityErrors);
-	  break;
+// 	case 'p' : 
+// 	  i++;
+// 	  sscanf(argv[i],"%d",&recoverParityErrors);
+// 	  break;
 	case 'h' :
 	  i++;
 	  printf("\n******************* %s usage **********************",argv[0]);
@@ -199,7 +193,7 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n-m <max date events>       (default = %d)",maxDateEvents);
 	  printf("\n-s <skip events>           (default = %d)",skipEvents);
 	  printf("\n-n <max events>            (default = %d)",maxEvents);
-	  printf("\n-p <Recover parity errors> (default = %d)",recoverParityErrors);
+// 	  printf("\n-p <Recover parity errors> (default = %d)",recoverParityErrors);
 
 	  printf("\n\n");
 	  exit(-1);
@@ -251,7 +245,7 @@ int main(Int_t argc, Char_t **argv)
       // Output log file initialisations
       if(nDateEvents==0)
 	{
-	  sprintf(flatFile,"%s_%d.log",prefixDA,runNumber);
+	  sprintf(flatFile,"%s.log",prefixDA);
 	  logOutputFile=flatFile;
 
 	  filcout.open(logOutputFile.Data());
@@ -399,7 +393,7 @@ int main(Int_t argc, Char_t **argv)
   delete rawReader;
   delete rawStream;
 
-  sprintf(flatFile,"%s_%d.ped",prefixDA,runNumber);
+  sprintf(flatFile,"%s.ped",prefixDA);
   if(shuttleFile.IsNull())shuttleFile=flatFile;
   muonPedestal->SetAliNEvents(nEvents);
   muonPedestal->SetAliRunNumber(runNumber);
@@ -425,28 +419,31 @@ int main(Int_t argc, Char_t **argv)
   filcout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
   filcout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
 
-
-  // Copying files to local DB folder defined by DAQ_DETDB_LOCAL
-  Char_t *dir;
-  dir= getenv("DAQ_DETDB_LOCAL");
-  unsigned int nLastVersions = 2;
-  cout << "\n *** Output files stored locally in " << dir << " (nb of previous versions = " << nLastVersions << ") ***" << endl;
-  filcout << "\n *** Output files stored locally in " << dir << " (nb of previous versions = " << nLastVersions << ") ***" << endl;
-
   // ouput files
   cout << endl;
   cout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
-  cout << prefixDA << " : Gain Histo file        : " << muonPedestal->GetHistoFileName() << endl;
-  cout << prefixDA << " : Gain file (to SHUTTLE) : " << shuttleFile << endl;   
+  cout << prefixDA << " : Pedestal Histo file    : " << muonPedestal->GetHistoFileName() << endl;
+  cout << prefixDA << " : Ped. file (to SHUTTLE) : " << shuttleFile << endl;   
 
   filcout << endl;
   filcout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
-  filcout << prefixDA << " : Gain Histo file        : " << muonPedestal->GetHistoFileName() << endl;
-  filcout << prefixDA << " : Gain file (to SHUTTLE) : " << shuttleFile << endl;   
+  filcout << prefixDA << " : Pedestal Histo file    : " << muonPedestal->GetHistoFileName() << endl;
+  filcout << prefixDA << " : Ped. file (to SHUTTLE) : " << shuttleFile << endl;   
 
+ // Copying files to local DB folder defined by DAQ_DETDB_LOCAL
+  Char_t *dir;
+  dir= getenv("DAQ_DETDB_LOCAL");
+  unsigned int nLastVersions=90;
+  cout << "\n ***  Local DataBase: " << dir << " (Max= " << nLastVersions << ") ***" << endl;
   status = daqDA_localDB_storeFile(muonPedestal->GetHistoFileName(),nLastVersions);
+  //  if (!status) printf(" Failed to store file : %s   status = %d\n",muonPedestal->GetHistoFileName(),status);
+  printf(" Store file : %s   status = %d\n",muonPedestal->GetHistoFileName(),status);
   status = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);
+  //  if (!status) printf(" Failed to store file : %s   status = %d\n",shuttleFile.Data(),status);
+  printf(" Store file : %s   status = %d\n",shuttleFile.Data(),status);
   status = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
+  //  if (!status) printf(" Failed to store file : %s   status = %d\n",logOutputFile.Data(),status);
+  printf(" Store file : %s   status = %d\n",logOutputFile.Data(),status);
 
   // Transferring to OCDB via the SHUTTLE
   printf("\n *****  STORE FILE in FES ****** \n");

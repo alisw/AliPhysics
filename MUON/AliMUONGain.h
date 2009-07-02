@@ -24,7 +24,7 @@ class AliMUONGain : public AliMUONPedestal
     virtual ~AliMUONGain();
 
     TString WriteGainData(Int_t bp, Int_t manu, Int_t ch, Double_t p1, Double_t p2, Int_t threshold, Int_t q);
-    TString WriteGainHeader();
+    TString WriteGainHeader(Int_t nInit, Int_t nEntries, Int_t nbpf2, Int_t *numrun, Double_t *injCharge);
     void MakePedStoreForGain(TString flatfile);
     void MakeGainStore(TString flatfile); 
     ///

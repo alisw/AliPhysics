@@ -23,6 +23,7 @@
 
 #include <TString.h>
 #include <THashTable.h>
+#include <THashList.h>
 #include <TTimeStamp.h>
 #include <TMath.h>
 #include <TTree.h>
@@ -31,6 +32,13 @@
 #include <Riostream.h>
 
 #include <sstream>
+//
+//AMORE
+//
+#ifdef ALI_AMORE
+#include <AmoreDA.h>
+#include "TSystem.h"
+#endif
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONPedestal
@@ -50,11 +58,13 @@ ClassImp(AliMUONPedestal)
 //______________________________________________________________________________
 AliMUONPedestal::AliMUONPedestal()
 : TObject(),
+fN(0),
 fNEvents(0),
 fRunNumber(0),
 fNChannel(0),
 fNManu(0),
 fErrorBuspatchTable(new THashTable(100,2)),
+fManuBuspatchTable(new THashTable(100,2)),
 fDate(new TTimeStamp()),
 fFilcout(0),
 fPedestalStore(new AliMUON2DMap(kFALSE)),
@@ -94,6 +104,22 @@ void AliMUONPedestal::MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, I
 
   ped->SetValueAsDouble(channelId, 0, pedMean);
   ped->SetValueAsDouble(channelId, 1, pedSigma);
+
+  char bpmanuname[256];
+  AliMUONErrorCounter* manuCounter;
+  sprintf(bpmanuname,"bp%dmanu%d",busPatchId,manuId);		
+  if (!(manuCounter = (AliMUONErrorCounter*)GetManuBuspatchTable()->FindObject(bpmanuname)))
+    {
+      // New (buspatch,manu)
+      manuCounter = new AliMUONErrorCounter(busPatchId,manuId);
+      manuCounter->SetName(bpmanuname);
+      GetManuBuspatchTable()->Add(manuCounter);
+    }
+  else
+    {
+      // Existing buspatch
+      manuCounter->Increment();
+    }	
 }
 
 //______________________________________________________________________________
@@ -166,16 +192,16 @@ void AliMUONPedestal::MakePedStore(TString shuttleFile_1 = "")
 
   if (fIndex<0) // Pedestal run (fIndex=-1)
   {
-    sprintf(fHistoFileName,"%s_%d.root",fprefixDA,fRunNumber);
+    sprintf(fHistoFileName,"%s.root",fprefixDA);
     histoFile = new TFile(fHistoFileName,"RECREATE","MUON Tracking pedestals");
 
     Char_t name[255];
     Char_t title[255];
     sprintf(name,"pedmean_allch");
     sprintf(title,"Pedestal mean all channels");
-    Int_t nx = 4096;
+    Int_t nx = kADCMax+1;
     Int_t xmin = 0;
-    Int_t xmax = 4095; 
+    Int_t xmax = kADCMax; 
     pedMeanHisto = new TH1F(name,title,nx,xmin,xmax);
     pedMeanHisto->SetDirectory(histoFile);
 
@@ -227,8 +253,12 @@ void AliMUONPedestal::MakePedStore(TString shuttleFile_1 = "")
   {
     busPatchId              = ped->ID0();
     manuId                  = ped->ID1();
+    if(manuId==0)
+      {
+	cout << " !!! BIG WARNING: ManuId = " << manuId << " !!! in  BP = " << busPatchId << endl;
+	(*fFilcout) << " !!! BIG WARNING: ManuId = " << manuId << " !!! in  BP = " << busPatchId << endl;
+      }
     Int_t eventCounter;
-
     // Correct the number of events for buspatch with errors
     char bpname[256];
     AliMUONErrorCounter* errorCounter;
@@ -242,21 +272,42 @@ void AliMUONPedestal::MakePedStore(TString shuttleFile_1 = "")
       eventCounter = fNEvents;
     }
 
+    Int_t occupancy;
+    // value of (buspatch, manu) occupancy
+    char bpmanuname[256];
+    AliMUONErrorCounter* manuCounter;
+    sprintf(bpmanuname,"bp%dmanu%d",busPatchId,manuId);
+    manuCounter = (AliMUONErrorCounter*)fManuBuspatchTable->FindObject(bpmanuname);
+    occupancy = manuCounter->Events()/64/eventCounter;
+    if(occupancy>1)
+      {
+ 	cout << " !!! BIG WARNING: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy << endl;
+	(*fFilcout) << " !!! BIG WARNING: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy <<endl;
+     }
+
     for (channelId = 0; channelId < ped->Size() ; ++channelId) {
       pedMean  = ped->ValueAsDouble(channelId, 0);
 
-      if (pedMean > 0) { // connected channels
+      if (pedMean > 0) // connected channels
+	{
+	  ped->SetValueAsDouble(channelId, 0, pedMean/(Double_t)eventCounter);
+	  pedMean  = ped->ValueAsDouble(channelId, 0);
+	  pedSigma = ped->ValueAsDouble(channelId, 1);
+	  ped->SetValueAsDouble(channelId, 1, TMath::Sqrt(TMath::Abs(pedSigma/(Double_t)eventCounter - pedMean*pedMean)));
+	  if(manuId == 0 || occupancy>1)
+	    {
+	      ped->SetValueAsDouble(channelId, 0, kADCMax);
+	      ped->SetValueAsDouble(channelId, 1, kADCMax);
+	    }
+        }
+      else
+	{
+	  ped->SetValueAsDouble(channelId, 0, kADCMax);
+	  ped->SetValueAsDouble(channelId, 1, kADCMax);
+	}
 
-        ped->SetValueAsDouble(channelId, 0, pedMean/(Double_t)eventCounter);
-
-        pedMean  = ped->ValueAsDouble(channelId, 0);
-        pedSigma = ped->ValueAsDouble(channelId, 1);
-
-        ped->SetValueAsDouble(channelId, 1, TMath::Sqrt(TMath::Abs(pedSigma/(Double_t)eventCounter - pedMean*pedMean)));
-
-        pedMean  = ped->ValueAsDouble(channelId, 0);
-        pedSigma = ped->ValueAsDouble(channelId, 1);
-
+      pedMean  = ped->ValueAsDouble(channelId, 0);
+      pedSigma = ped->ValueAsDouble(channelId, 1);
 
         if (!shuttleFile_1.IsNull()) {
           tempstring = WritePedData(busPatchId,manuId,channelId,pedMean,pedSigma);
@@ -271,7 +322,6 @@ void AliMUONPedestal::MakePedStore(TString shuttleFile_1 = "")
           pedSigmaHisto->Fill(pedSigma);
           tree->Fill();
         }
-      }
     }
   }
 
@@ -283,19 +333,16 @@ void AliMUONPedestal::MakePedStore(TString shuttleFile_1 = "")
   //
   //Send objects to the AMORE DB
   //
-  const char *role=gSystem->Getenv("AMORE_DA_NAME");
-  if ( role ){
     amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-//  TObjString peddata(stringout.str().c_str());
     TObjString peddata(stringout.str().c_str());
     Int_t status =0;
     status = amoreDA.Send("Pedestals",&peddata);
     if ( status )
       cout << "Warning: Failed to write Pedestals in the AMORE database : " << status << endl;
-  } 
-  else {
-    cout << "Warning: environment variable 'AMORE_DA_NAME' not set. Cannot write to the AMORE database" << endl;
-  }
+    else 
+      cout << "amoreDA.Send(Pedestals) ok" << endl;  
+#else
+  cout << "Warning: MCH DA not compiled with AMORE support" << endl;
 #endif
   if(fIndex<0) // Pedestal Run
   { 

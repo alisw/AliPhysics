@@ -29,7 +29,7 @@
 
 /*
  -------------------------------------------------------------------------
- 2009-05-18 New version: MUONTRKGAINda.cxx,v 1.0
+ 2009-05-18 New version: MUONTRKGAINda.cxx,v 1.1
  -------------------------------------------------------------------------
 
  Version for MUONTRKGAINda MUON tracking
@@ -126,7 +126,6 @@ int main(Int_t argc, Char_t **argv)
  Int_t nGlitchErrors= 0;
  Int_t nParityErrors= 0;
  Int_t nPaddingErrors= 0;
- Int_t recoverParityErrors = 1;
 
  TString logOutputFile;
 
@@ -141,8 +140,8 @@ int main(Int_t argc, Char_t **argv)
  Int_t nIndex = -1; 
 
  // For DA Gain
- Int_t printLevel  = 0;  // printout (up to 2)
- Int_t plotLevel  = 2;  // plotout (up to 2)
+ Int_t printLevel  = 0;  // printout (default=0, =1 =>.ped , => .peak & .param)
+ Int_t plotLevel  = 1;  // plotout (default=1 => tree , =2 tree+Tgraph+fit)
  Int_t injCharge; 
 
  Int_t nEntries = daqDA_ECS_getTotalIteration(); // usually = 11 = Nb of calibration runs
@@ -175,22 +174,22 @@ int main(Int_t argc, Char_t **argv)
 	  i++;
 	  shuttleFile = argv[i];
 	  break;
-	case 'd' :
-	  i++; 
-	  printLevel=atoi(argv[i]);
-	  break;
-	case 'g' :
-	  i++; 
-	  plotLevel=atoi(argv[i]);
-	  break;
-	case 'i' :
-	  i++; 
-	  nbpf1=atoi(argv[i]);
-	  break;
-	case 'j' :
-	  i++; 
-	  nInit=atoi(argv[i]);
-	  break;
+// 	case 'd' :
+// 	  i++; 
+// 	  printLevel=atoi(argv[i]);
+// 	  break;
+// 	case 'g' :
+// 	  i++; 
+// 	  plotLevel=atoi(argv[i]);
+// 	  break;
+// 	case 'i' :
+// 	  i++; 
+// 	  nbpf1=atoi(argv[i]);
+// 	  break;
+// 	case 'j' :
+// 	  i++; 
+// 	  nInit=atoi(argv[i]);
+// 	  break;
 	case 's' :
 	  i++; 
 	  skipEvents=atoi(argv[i]);
@@ -202,10 +201,6 @@ int main(Int_t argc, Char_t **argv)
 	case 'n' :
 	  i++; 
 	  sscanf(argv[i],"%d",&maxEvents);
-	  break;
-	case 'p' : 
-	  i++;
-	  sscanf(argv[i],"%d",&recoverParityErrors);
 	  break;
 	case 'h' :
 	  i++;
@@ -221,14 +216,13 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n-a <Flat ASCII file>       (default = %s)",shuttleFile.Data()); 
 	  printf("\n");
 	  printf("\n Options");
-	  printf("\n-d <print level>           (default = %d)",printLevel);
-	  printf("\n-g <plot level>            (default = %d)",plotLevel);
-	  printf("\n-i <nb linear points>      (default = %d)",nbpf1);
-	  printf("\n-j start point of fit      (default = %d)",nInit);
+// 	  printf("\n-d <print level>           (default = %d)",printLevel);
+// 	  printf("\n-g <plot level>            (default = %d)",plotLevel);
+// 	  printf("\n-i <nb linear points>      (default = %d)",nbpf1);
+// 	  printf("\n-j start point of fit      (default = %d)",nInit);
 	  printf("\n-m <max date events>       (default = %d)",maxDateEvents);
 	  printf("\n-s <skip events>           (default = %d)",skipEvents);
 	  printf("\n-n <max events>            (default = %d)",maxEvents);
-	  printf("\n-p <Recover parity errors> (default = %d)",recoverParityErrors);
 
 	  printf("\n\n");
 	  exit(-1);
@@ -243,8 +237,6 @@ int main(Int_t argc, Char_t **argv)
  AliMUONGain* muonGain = new AliMUONGain();
  muonGain->SetprefixDA(prefixDA);
  muonGain->SetAliRootDataFileName(); // MUONTRKGAINda_data.root  
- muonGain->SetAliPrintLevel(printLevel);
- muonGain->SetAliPlotLevel(plotLevel);
 
  // Reading current iteration
  nIndex = daqDA_ECS_getCurrentIteration();
@@ -263,6 +255,8 @@ int main(Int_t argc, Char_t **argv)
      sprintf(flatFile,"%s_data.par",prefixDA);
      if(shuttleFile.IsNull())shuttleFile=flatFile;
 
+     muonGain->SetAliPrintLevel(printLevel);
+     muonGain->SetAliPlotLevel(plotLevel);
      muonGain->SetAliIndex(nIndex); // fIndex 
      muonGain->SetAliInit(nInit); // fnInit
      muonGain->SetAliNbpf1(nbpf1); // fnbpf1
@@ -286,6 +280,13 @@ int main(Int_t argc, Char_t **argv)
      status=daqDA_DB_getFile(dbfile,dbfile);
      ifstream filein(dbfile,ios::in); Int_t k=0, kk;
      while (k<nEntries ) { filein >> kk >> vDAC[k] ; k++; }
+     filein >> nInit; // = 0 all DAC values fitted ; = 1 DAC=0 excluded (default=1)
+     filein >> nbpf1; // nb of points for linear fit (default=6) 
+     filein >> printLevel;  // printout (default=0, =1 =>.ped /run, =2 => .peak & .param)
+     filein >> plotLevel;  // plotout (default=1 => tree , =2 tree+Tgraph+fit)
+     cout << "nInit=" << nInit << " Nb linear pts=" << nbpf1 << "    Print level=" << printLevel << "	  Plot Level=" << plotLevel << endl;
+     muonGain->SetAliPrintLevel(printLevel);
+     muonGain->SetAliPlotLevel(plotLevel);
 		
      injCharge=vDAC[nIndex-1];
 
@@ -321,7 +322,7 @@ int main(Int_t argc, Char_t **argv)
 	  // Output log file initialisations
 	  if(nDateEvents==0)
 	    {
-	      sprintf(flatFile,"%s_%d.log",prefixDA,runNumber);
+	      sprintf(flatFile,"%s.log",prefixDA);
 	      logOutputFile=flatFile;
 
 	      filcout.open(logOutputFile.Data());
@@ -374,7 +375,7 @@ int main(Int_t argc, Char_t **argv)
 	  else
 	    {
 	      // Events with errors
-	      if (recoverParityErrors && eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
+	      if (eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
 		{
 		  // Recover parity errors -> compute pedestal for all good buspatches
 		  if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
@@ -436,7 +437,7 @@ int main(Int_t argc, Char_t **argv)
 		    } // end of while( (busPatch = (AliMUONRawStreamTrackerHP ...
 		  nEvents++;
 		  nEventsRecovered++;
-		} //end of if (recoverParityErrors && eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
+		} //end of if (eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
 	      else
 		{
 		  // Fatal errors reject the event
@@ -470,7 +471,7 @@ int main(Int_t argc, Char_t **argv)
      delete rawStream;
 
      // process and store mean peak values in .root file
-    sprintf(flatFile,"%s_%d.par",prefixDA,runNumber);
+    sprintf(flatFile,"%s.par",prefixDA);
      if(shuttleFile.IsNull())shuttleFile=flatFile;
      injCharge=vDAC[nIndex-1];
      muonGain->SetAliIndex(nIndex); // fIndex 
@@ -508,25 +509,31 @@ int main(Int_t argc, Char_t **argv)
      	  muonGain->MakeGainStore(shuttleFile);
 	}
 
-//       Copying files to local DB folder defined by DAQ_DETDB_LOCAL
-	Char_t *dir;
-      dir= getenv("DAQ_DETDB_LOCAL");
-      unsigned int nLastVersions = 2;
-      cout << "\n *** Output files stored locally in " << dir << " (nb of previous versions = " << nLastVersions << ") ***" << endl;
-      filcout << "\n *** Output files stored locally in " << dir << " (nb of previous versions = " << nLastVersions << ") ***" << endl;
-
+// ouput files
       filcout << endl;
       filcout << prefixDA << " : Root data file         : " << muonGain->GetRootDataFileName() << endl;
       filcout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
       filcout << prefixDA << " : Gain Histo file        : " << muonGain->GetHistoFileName() << endl;
       filcout << prefixDA << " : Gain file (to SHUTTLE) : " << shuttleFile << endl;
 
+//	 Copying files to local DB folder defined by DAQ_DETDB_LOCAL
+       Char_t *dir;
+      dir= getenv("DAQ_DETDB_LOCAL");
+      unsigned int nLastVersions = 99;
+      cout << "\n ***  Local DataBase: " << dir << " (Max= " << nLastVersions << ") ***" << endl;
       status = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
-      if(nIndex==nEntries)status = daqDA_localDB_storeFile(muonGain->GetRootDataFileName(),nLastVersions);
-      status = daqDA_localDB_storeFile(muonGain->GetHistoFileName(),nLastVersions);
-      status = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);
+      printf(" Store file : %s   status = %d\n",logOutputFile.Data(),status);
+      if(nIndex==nEntries)
+       {
+	 status = daqDA_localDB_storeFile(muonGain->GetRootDataFileName(),nLastVersions);
+	 printf(" Store file : %s   status = %d\n",muonGain->GetRootDataFileName(),status);
+	 status = daqDA_localDB_storeFile(muonGain->GetHistoFileName(),nLastVersions);
+	 printf(" Store file : %s   status = %d\n",muonGain->GetHistoFileName(),status);
+	 status = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);
+	 printf(" Store file : %s   status = %d\n",shuttleFile.Data(),status);
+       }      
 
-    }
+    } // end (nIndex>0)
 
 // ouput files
   cout << endl;
@@ -555,3 +562,4 @@ int main(Int_t argc, Char_t **argv)
   printf("\nExecution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
   return status;
 }
+

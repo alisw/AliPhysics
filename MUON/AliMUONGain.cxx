@@ -34,6 +34,13 @@
 #include <Riostream.h>
 
 #include <sstream>
+//
+//AMORE
+//
+#ifdef ALI_AMORE
+#include <AmoreDA.h>
+#include "TSystem.h"
+#endif
 
 #define  NFITPARAMS 4
 
@@ -163,7 +170,6 @@ void AliMUONGain::MakePedStoreForGain(TString shuttleFile)
   if(fPrintLevel>0)
     {
       // compute and store mean DAC values (like pedestals)
-//       sprintf(flatFile,"%s_%d_DAC_%d.ped",fprefixDA,fRunNumber,fInjCharge);
       sprintf(flatFile,"%s_%d.ped",fprefixDA,fRunNumber);
       outputFile=flatFile;
       cout << "\n" << fprefixDA << " : Flat file  generated  : " << flatFile << "\n";
@@ -205,7 +211,7 @@ void AliMUONGain::MakePedStoreForGain(TString shuttleFile)
 }
 
 //______________________________________________________________________________
-TString AliMUONGain::WriteGainHeader(void) 
+TString AliMUONGain::WriteGainHeader(Int_t nInit, Int_t nEntries, Int_t nbpf2, Int_t *numrun, Double_t *injCharge) 
 {
 ///
 
@@ -222,17 +228,15 @@ TString AliMUONGain::WriteGainHeader(void)
   stream<<"//   * # of channels : " << fNChannel << endl;
   stream<<"//-------------------------------------------------" << endl;
 
-//       if(fnInit==0)
-// 	stream<<"//  "<< fnEntries <<" DAC values  fit: "<< fnbpf1 << " pts (1st order) " << fnbpf2 << " pts (2nd order)" << endl;
-//       if(fnInit==1)
-// 	stream<<"//  "<< fnEntries <<" DAC values  fit: "<< fnbpf1 << " pts (1st order) " << fnbpf2 << " pts (2nd order) DAC=0 excluded" << endl;
+  if(nInit==0)
+    stream<<"//  "<< nEntries <<" DAC values  fit: "<< fnbpf1 << " pts (1st order) " << nbpf2 << " pts (2nd order)" << endl;
+  if(nInit==1)
+    stream<<"//  "<< nEntries <<" DAC values  fit: "<< fnbpf1 << " pts (1st order) " << nbpf2 << " pts (2nd order) DAC=0 excluded" << endl;
 
   stream<<"//   RUN     DAC   " << endl;
   stream<<"//-----------------" << endl;
-  for (Int_t i = 0; i < fnEntries; ++i) {
-// 	tree->SetBranchAddress("run",&run[i]);
-// 	fprintf(pfilew,"//   %d    %5.0f \n",numrun[i],injCharge[i]);
-	stream<<"// " << i << endl; 
+  for (Int_t i = 0; i < nEntries; ++i) {
+ 	stream<<Form("//   %d    %5.0f \n",numrun[i],injCharge[i]);
   }
   stream<<"//=======================================" << endl;
   stream<<"// BP MANU CH.   a1      a2     thres. q " << endl;
@@ -247,8 +251,7 @@ TString AliMUONGain::WriteGainData(Int_t BP, Int_t Manu, Int_t ch, Double_t p1, 
 ///
 
   ostringstream stream("");
-  stream << "\t" << BP << "\t" << Manu <<"\t"<< ch << "\t"
-         << p1 << "\t"<< p2 << "\t"<< threshold << "\t"<< q <<endl;
+  stream << Form("%4i %5i %2i %7.4f %10.3e %4i %2x\n",BP,Manu,ch,p1,p2,threshold,q);
   return TString(stream.str().c_str());
 
 }
@@ -350,40 +353,18 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
         fprintf(pfilen,"//===================================================================\n");
       }
 
-  //  Write Ascii file -> Shuttle
-  //     fileout.open(shuttleFile.Data());
-  //     tempstring = WriteGainHeader();
-  //     fileout << tempstring;
 
 
 
   //  Write Ascii file -> Shuttle
 
-  FILE *pfilew=0;
-  pfilew = fopen (shuttleFile,"w");
-
-  fprintf(pfilew,"//================================================\n");
-  fprintf(pfilew,"//  Calibration file calculated by MUONTRKGAINda \n");
-  fprintf(pfilew,"//=================================================\n");
-  fprintf(pfilew,"//   * Run           : %d \n",fRunNumber); 
-  fprintf(pfilew,"//   * Date          : %s \n",fDate->AsString("l"));
-  fprintf(pfilew,"//   * Statictics    : %d \n",fNEvents);
-  fprintf(pfilew,"//   * # of MANUS    : %d \n",fNManu);
-  fprintf(pfilew,"//   * # of channels : %d \n",fNChannel);
-  fprintf(pfilew,"//-------------------------------------------------\n");
-  if(fnInit==0)
-    fprintf(pfilew,"//   %d DAC values  fit:  %d pts (1st order) %d pts (2nd order) \n",nEntries,fnbpf1,nbpf2);
-  if(fnInit==1)
-    fprintf(pfilew,"//   %d DAC values  fit: %d pts (1st order) %d pts (2nd order) DAC=0 excluded\n",nEntries,fnbpf1,nbpf2);
-  fprintf(pfilew,"//   RUN     DAC   \n");
-  fprintf(pfilew,"//-----------------\n");
-  for (Int_t i = 0; i < nEntries; ++i) {
-    tree->SetBranchAddress("run",&run[i]);
-    fprintf(pfilew,"//   %d    %5.0f \n",numrun[i],injCharge[i]);
-  }
-  fprintf(pfilew,"//=======================================\n");
-  fprintf(pfilew,"// BP MANU CH.   a1      a2     thres. q\n");
-  fprintf(pfilew,"//=======================================\n");
+  ofstream pfilew;
+  pfilew.open(shuttleFile.Data());
+  pfilew << WriteGainHeader(fnInit,nEntries,nbpf2,numrun,injCharge);
+#ifdef ALI_AMORE
+  ostringstream stringout; // String to be sent to AMORE_DB
+  stringout << WriteGainHeader(fnInit,nEntries,nbpf2,numrun,injCharge);
+#endif
 
   // print mean and sigma values in file
   FILE *pfilep = 0;
@@ -590,8 +571,6 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	      par[2] = a2;
 	      par[3] = xLim;
 
-	      // 	      p1 = TMath::Nint(ceil(prChi2*14))+1;      // round up value : ceil (2.2)=3.
-	      // 	      p2 = TMath::Nint(ceil(prChi2P2*14))+1;
 	      if(prChi2>0.999999)prChi2=0.999999 ; if(prChi2P2>0.999999)prChi2P2=0.9999999; // avoiding Pr(Chi2)=1 value
 	      p1 = TMath::Nint(floor(prChi2*15))+1;    // round down value : floor(2.8)=2.
 	      p2 = TMath::Nint(floor(prChi2P2*15))+1;
@@ -619,7 +598,6 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	      nGoodChannel++;
 	      sumProbChi2   += prChi2;
 	      sumA1         += par[1];
-	      gain=1./(par[1]*capa);
 	      sumProbChi2P2   += prChi2P2;
 	      sumA2         += par[2];
 	    }
@@ -651,15 +629,16 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	      //			    uncalcounter->Print_uncal()
 	      uncalcountertotal ++;
 	    }
+	  gain=1./(par[1]*capa); // mv/fC
 
 	  if(fPlotLevel>0)
 	    {if(fPlotLevel>1)
 		{
 		  //		      if(q==0  and  nplot < 100)
 		  // 	  if(p1>1 && p2==0  and  nplot < 100)
-		  //	    if(p1>1 && p2>1  and  nplot < 100)
+		  	    if(p1>10 && p2>10  and  nplot < 100)
 		  //	if(p1>=1 and p1<=2  and  nplot < 100)
-		  if((p1==1 || p2==1) and  nplot < 100)
+//		  if((p1==1 || p2==1) and  nplot < 100)
 		    {
 		      nplot++;
 		      // 	      cout << " nplot = " << nplot << endl;
@@ -691,9 +670,11 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	    }
 
 
-	  // 	  tempstring = WriteGainData(busPatchId,manuId,channelId,par[1],par[2],threshold,q);
-	  // 	  fileout << tempstring;
-	  fprintf(pfilew,"%4i %5i %2i %7.4f %10.3e %4i %2x\n",busPatchId,manuId,channelId,par[1],par[2],threshold,q);
+	  tempstring = WriteGainData(busPatchId,manuId,channelId,par[1],par[2],threshold,q);
+	  pfilew << tempstring;
+#ifdef ALI_AMORE
+	  stringout << tempstring;
+#endif
 
 	}
       nmanu++;
@@ -750,7 +731,26 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   
   // file outputs for gain
 
-  fclose(pfilew);
+  pfilew.close();
+#ifdef ALI_AMORE
+  //
+  //Send objects to the AMORE DB
+  //
+  const char *role=gSystem->Getenv("AMORE_DA_NAME");
+  if ( role ){
+    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+//  TObjString peddata(stringout.str().c_str());
+    TObjString gaindata(stringout.str().c_str());
+    Int_t status =0;
+    status = amoreDA.Send("Pedestals",&gaindata);
+    if ( status )
+      cout << "Warning: Failed to write Pedestals in the AMORE database : " << status << endl;
+  } 
+  else {
+    cout << "Warning: environment variable 'AMORE_DA_NAME' not set. Cannot write to the AMORE database" << endl;
+  }
+#endif
+
   if(fPlotLevel>0){tg->Write();histoFile->Close();}
   if(fPrintLevel>1){fclose(pfilep); fclose(pfilen);}
 }
