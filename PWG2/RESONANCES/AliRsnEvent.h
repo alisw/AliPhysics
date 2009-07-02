@@ -35,8 +35,10 @@ class AliRsnEvent : public TObject
     AliRsnEvent& operator= (const AliRsnEvent& copy);
     virtual ~AliRsnEvent();
 
-    void SetRef(AliVEvent *event, AliMCEvent *mc = 0) {fRef = event; fRefMC = mc;}
-    void SetRefMC(AliMCEvent *mc) {fRefMC = mc;}
+    void        SetRef(AliVEvent *event, AliMCEvent *mc = 0) {fRef = event; fRefMC = mc;}
+    void        SetRefMC(AliMCEvent *mc) {fRefMC = mc;}
+    AliVEvent*  GetRef() {return fRef;}
+    AliMCEvent* GetRefMC() {return fRefMC;}
 
     void            SetDaughter(AliRsnDaughter &daughter, Int_t index);
     AliRsnDaughter  GetDaughter(Int_t i);

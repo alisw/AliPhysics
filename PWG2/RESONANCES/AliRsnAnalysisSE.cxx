@@ -6,7 +6,9 @@
 // authors: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //          Martin Vala (martin.vala@cern.ch)
 //
-
+#include "Riostream.h"
+#include "AliRsnCutSet.h"
+#include "AliRsnVATProcessInfo.h"
 #include "AliRsnAnalysisSE.h"
 
 ClassImp(AliRsnAnalysisSE)
@@ -17,6 +19,7 @@ AliRsnAnalysisSE::AliRsnAnalysisSE(const char *name) :
     fRsnAnalysisManager(),
     fPIDIndex(0),
     fEvent(),
+    fEventCuts(0x0),
     fESDCuts(0)
 {
 //
@@ -30,6 +33,7 @@ AliRsnAnalysisSE::AliRsnAnalysisSE(const AliRsnAnalysisSE& copy) : AliRsnVAnalys
     fRsnAnalysisManager(copy.fRsnAnalysisManager),
     fPIDIndex(copy.fPIDIndex),
     fEvent(copy.fEvent),
+    fEventCuts(copy.fEventCuts),
     fESDCuts(copy.fESDCuts)
 {
   AliDebug(AliLog::kDebug+2,"<-");
@@ -75,6 +79,23 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t* )
   else
     return;
   if (fEvent.GetMultiplicity()<2) return;
+  if (fEventCuts) {
+    if (!fEventCuts->IsSelected(AliRsnCut::kEvent, &fEvent)) {
+      fTaskInfo.SetNumberOfTracks(0);
+      return;
+    }
+    else {
+      if (fESDEvent) {
+        fTaskInfo.SetNumberOfTracks(fESDEvent->GetNumberOfTracks());
+      }
+      else if (fAODEventOut) {
+        fTaskInfo.SetNumberOfTracks(fAODEventOut->GetNumberOfTracks());
+      }
+      else if (fAODEventIn) {
+        fTaskInfo.SetNumberOfTracks(fAODEventIn->GetNumberOfTracks());
+      }
+    }
+  }
 
   // sort tracks w.r. to PID
   fPIDIndex.ResetAll(fEvent.GetMultiplicity());

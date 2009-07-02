@@ -45,8 +45,7 @@ class AliRsnPair : public TObject
     void    LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEvent *ev2 = 0);
     void    SetCutMgr(AliRsnCutMgr* theValue) { fCutMgr = theValue; }
     void    AddFunction(AliRsnFunction *fcn);
-    TList*  GenerateHistograms(TString prefix = "");
-    void    GenerateHistograms(TString prefix, TList *tgt);
+    TList*  GenerateHistograms(TString prefix = "", TList *list=0);
 
     Bool_t  IsMixed() {return fIsMixed;}
     Bool_t  IsPairEqual() {if (fPIDMethod == AliRsnDaughter::kNoPID) return (fPairDef->IsLikeSign());

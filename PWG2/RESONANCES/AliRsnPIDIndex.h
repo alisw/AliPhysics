@@ -15,6 +15,7 @@
 #include "AliRsnEvent.h"
 #include "AliAODTrack.h"
 #include "AliRsnDaughter.h"
+#include "AliRsnPIDDefESD.h"
 
 class AliESDtrackCuts;
 
@@ -45,6 +46,8 @@ class AliRsnPIDIndex : public TObject
     void            DumpPriors();
     void            GetPriorProbability(Double_t *out);
 
+    AliRsnPIDDefESD* GetPIDDef() {return &fPIDDef;}
+
   private:
 
     Int_t     ChargeIndex(Char_t sign) const;
@@ -53,7 +56,8 @@ class AliRsnPIDIndex : public TObject
     TArrayI   fIndex[AliRsnDaughter::kMethods][2][AliPID::kSPECIES + 1];       // index arrays of pos/neg particles of each PID
     Int_t     fNumOfIndex[AliRsnDaughter::kMethods][2][AliPID::kSPECIES + 1];  //! array size
     
-    Double_t  fPrior[AliPID::kSPECIES]; // prior probabilities
+    Double_t         fPrior[AliPID::kSPECIES]; // prior probabilities
+    AliRsnPIDDefESD  fPIDDef; // customization of weights
 
     ClassDef(AliRsnPIDIndex, 1);
 };

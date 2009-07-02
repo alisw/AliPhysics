@@ -258,6 +258,7 @@ void AliRsnVAnalysisTaskSE::FillInfo()
 //
 
   AliDebug(AliLog::kDebug+2, "<-");
+  /*
   if (fAODEventOut) {
     fTaskInfo.SetNumberOfTracks(fAODEventOut->GetNumberOfTracks());
   }
@@ -267,7 +268,7 @@ void AliRsnVAnalysisTaskSE::FillInfo()
   else if (fAODEventIn) {
     fTaskInfo.SetNumberOfTracks(fAODEventIn->GetNumberOfTracks());
   }
-
+  */
   fTaskInfo.FillInfo();
   AliDebug(AliLog::kDebug+2,"->");
 }

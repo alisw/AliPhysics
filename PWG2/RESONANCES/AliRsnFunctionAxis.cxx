@@ -70,6 +70,10 @@ const char* AliRsnFunctionAxis::GetName() const
 
   switch (fType)
   {
+    case kTrack1P:        return "P1";
+    case kTrack2P:        return "P2";
+    case kTrack1Pt:       return "PT1";
+    case kTrack2Pt:       return "PT2";
     case kPairInvMass:    return "IM";
     case kPairInvMassMC:  return "IMMC";
     case kPairInvMassRes: return "IMRES";
@@ -89,6 +93,10 @@ AliRsnFunctionAxis::EAxisObject AliRsnFunctionAxis::GetAxisObject()
 
   switch (fType)
   {
+    case kTrack1P:
+    case kTrack2P:
+    case kTrack1Pt:
+    case kTrack2Pt:
     case kPairInvMass:
     case kPairInvMassMC:
     case kPairInvMassRes:
@@ -165,6 +173,14 @@ Double_t AliRsnFunctionAxis::Eval(AliRsnPairParticle *pair, AliRsnPairDef *pairD
 
   switch (fType)
   {
+    case kTrack1P:
+      return pair->GetDaughter(0)->P();
+    case kTrack2P:
+      return pair->GetDaughter(1)->P();
+    case kTrack1Pt:
+      return pair->GetDaughter(0)->Pt();
+    case kTrack2Pt:
+      return pair->GetDaughter(1)->Pt();
     case kPairInvMass:
       return pair->GetInvMass(pairDef->GetMass(0), pairDef->GetMass(1));
     case kPairInvMassMC:

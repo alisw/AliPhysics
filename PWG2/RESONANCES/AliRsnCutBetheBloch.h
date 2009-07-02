@@ -26,6 +26,7 @@ class AliRsnCutBetheBloch : public AliRsnCut
   void           SetMIP(Double_t mip) {fMIP = mip;}
   void           SetCalibConstant(Int_t i, Double_t value) {if (i>=0&&i<5) fConst[i] = value;}
   Double_t       BetheBloch(AliRsnDaughter *track);
+  Double_t       RelDiff(AliRsnDaughter *track);
 
   virtual Bool_t IsSelected(ETarget tgt, AliRsnDaughter *daughter);
   virtual Bool_t IsSelected(ETarget tgt, AliRsnPairParticle *pair);

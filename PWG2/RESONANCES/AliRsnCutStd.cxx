@@ -318,6 +318,8 @@ Bool_t AliRsnCutStd::IsSelected(ETarget tgt, AliRsnPairParticle *pair)
     case kEta:
       fCutValueD = (fUseMC ? pair->GetEtaMC() : pair->GetEta());
       return OkRange();
+    case kSameLabel:
+      return pair->IsLabelEqual();
     case kTruePair:
       fCutValueI = pair->CommonMother();
       return OkValue();

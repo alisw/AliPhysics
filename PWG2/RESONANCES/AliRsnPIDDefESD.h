@@ -17,11 +17,12 @@
 
 class AliESDtrack;
 
-class AliRsnPIDDefESD : public TObject {
+class AliRsnPIDDefESD : public TObject
+{
   public:
 
     enum EDetector {
-      kITS,
+      kITS = 0,
       kTPC,
       kTRD,
       kTOF,

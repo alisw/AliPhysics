@@ -99,26 +99,28 @@ AliRsnPairManager* CreatePairs
 
   // === CUTS =====================================================================================
 
+  /*
   // cuts for tracks:
   // - probability to be a kaon (only for kaons)
-  AliRsnCut *cutAssignedKaon = new AliRsnCut("cutAssignedKaon", "", AliRsnCut::kAssignedPID, AliAODTrack::kKaon);
-  AliRsnCut *cutProbKaon = new AliRsnCut("cutProbKaon", "", AliRsnCut::kPIDProbForSpecies, (Int_t)AliAODTrack::kKaon);
+  AliRsnCutStd *cutAssignedKaon = new AliRsnCut("cutAssignedKaon", "", AliRsnCut::kAssignedPID, AliAODTrack::kKaon);
+  AliRsnCutStd *cutProbKaon = new AliRsnCut("cutProbKaon", "", AliRsnCut::kPIDProbForSpecies, (Int_t)AliAODTrack::kKaon);
   cutProbKaon->SetCutValues(AliRsnCut::kPIDProbForSpecies, 0.15, 1.0);
+  */
   AliRsnCutSet *cutSetTrack = new AliRsnCutSet("tracks");
-  cutSetTrack->AddCut(cutAssignedKaon);
-  cutSetTrack->AddCut(cutProbKaon);
-  cutSetTrack->SetCutScheme("(!cutAssignedKaon)|(cutAssignedKaon&cutProbKaon)");
+  //cutSetTrack->AddCut(cutAssignedKaon);
+  //cutSetTrack->AddCut(cutProbKaon);
+  //cutSetTrack->SetCutScheme("(!cutAssignedKaon)|(cutAssignedKaon&cutProbKaon)");
 
   // cuts on pairs:
   // - true daughters of the defined resonance (only for true pairs histogram)
-  AliRsnCut    *cutPairTrue    = new AliRsnCut("cutTrue", "", AliRsnCut::kIsTruePair, resonancePDG);
+  AliRsnCutStd *cutPairTrue    = new AliRsnCutStd("cutTrue", "", AliRsnCut::kTruePair, resonancePDG);
   AliRsnCutSet *cutSetPairTrue = new AliRsnCutSet("truePairs");
   cutSetPairTrue->AddCut(cutPairTrue);
   cutSetPairTrue->SetCutScheme("cutTrue");
 
   // cuts on events:
   // - multiplicity bin
-  AliRsnCut    *cutEventMult = new AliRsnCut("cutMult", "", AliRsnCut::kMultiplicity, multMin, multMax);
+  AliRsnCutStd *cutEventMult = new AliRsnCutStd("cutMult", "", AliRsnCut::kMultiplicity, multMin, multMax);
   AliRsnCutSet *cutSetEvent  = new AliRsnCutSet("multiplicity");
   cutSetEvent->AddCut(cutEventMult);
   cutSetEvent->SetCutScheme("cutMult");
