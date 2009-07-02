@@ -32,10 +32,18 @@ public:
   virtual   ~AliTriggerIR();
 
   //  Setters
-
+  void SetOrbit(UInt_t orbit) {fOrbit=orbit;}
+  void SetIncomplete(Bool_t flag) {fIncomplete=flag;}
+  void SetTransErr(Bool_t flag) {fTransErr=flag;}
 
   //  Getters
-
+  UInt_t GetOrbit() const {return fOrbit;}
+  UInt_t GetNWord() const {return fNWord;}
+  Bool_t* GetInt1s() const {return fInt1;}
+  Bool_t* GetInt2s() const {return fInt2;}
+  UShort_t* GetBCs() const {return fBC;}
+  Bool_t GetIncomplete() const {return fIncomplete;}
+  Bool_t GetTransErr() const {return fTransErr;}
   virtual void   Print( const Option_t* opt ="" ) const;
 
 private:
