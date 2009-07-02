@@ -35,7 +35,9 @@ ClassImp(AliGenBox)
 //_____________________________________________________________________________
 AliGenBox::AliGenBox()
     :AliGenerator(), 
-     fIpart(0)
+     fIpart(0),
+     fEtaMin(0),
+     fEtaMax(0)
 {
   //
   // Default constructor
@@ -45,7 +47,9 @@ AliGenBox::AliGenBox()
 //_____________________________________________________________________________
 AliGenBox::AliGenBox(Int_t npart)
     :AliGenerator(npart),
-     fIpart(kProton)
+     fIpart(kProton),
+     fEtaMin(0),
+     fEtaMax(0)
 {
   //
   // Standard constructor
