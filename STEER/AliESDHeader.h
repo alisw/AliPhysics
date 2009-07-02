@@ -12,6 +12,7 @@
 //   Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch 
 //-------------------------------------------------------------------------
 
+#include <TClonesArray.h>
 #include "AliVHeader.h"
 #include "AliTriggerScalersESD.h"
 #include "AliTriggerScalersRecordESD.h"
@@ -72,9 +73,10 @@ private:
   UInt_t       fL0TriggerInputs;   //L0 Trigger Inputs 
   UInt_t       fL1TriggerInputs;   //L1 Trigger Inputs
   UShort_t     fL2TriggerInputs;   //L2 Trigger Inputs
-  AliTriggerScalersRecordESD fTriggerScalers;  //L0, L1 and L2 trigger counters of triggered classes in event
+  AliTriggerScalersRecordESD fTriggerScalers;  //Trigger counters of triggered classes in event
+  TClonesArray     fIRArray;     // Array with trigger interaction records (3)
 
-  ClassDef(AliESDHeader,5)
+  ClassDef(AliESDHeader,6)
 };
 
 #endif

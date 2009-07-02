@@ -23,6 +23,7 @@
 #include "AliESDHeader.h"
 #include "AliTriggerScalersESD.h"
 #include "AliTriggerScalersRecordESD.h"
+#include "AliTriggerIR.h"
 
 ClassImp(AliESDHeader)
 
@@ -40,7 +41,8 @@ AliESDHeader::AliESDHeader() :
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
-  fTriggerScalers()
+  fTriggerScalers(),
+  fIRArray("AliTriggerIR",3)
 {
   // default constructor
 
@@ -65,10 +67,10 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fL0TriggerInputs(header.fL0TriggerInputs),
   fL1TriggerInputs(header.fL1TriggerInputs),
   fL2TriggerInputs(header.fL2TriggerInputs),
-  fTriggerScalers(header.fTriggerScalers)
+  fTriggerScalers(header.fTriggerScalers),
+  fIRArray(*((TClonesArray*)header.fIRArray.Clone()))
 {
   // copy constructor
-
   SetName(header.fName);
   SetTitle(header.fTitle);
 }
@@ -90,7 +92,7 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     fL1TriggerInputs = header.fL1TriggerInputs;
     fL2TriggerInputs = header.fL2TriggerInputs;
     fTriggerScalers = header.fTriggerScalers;
-
+    fIRArray = header.fIRArray;
     SetName(header.fName);
     SetTitle(header.fTitle);
 
@@ -126,6 +128,7 @@ void AliESDHeader::Reset()
   fL1TriggerInputs   = 0;
   fL2TriggerInputs   = 0;
   fTriggerScalers.Reset();
+  fIRArray.Clear();
 }
 
 //______________________________________________________________________________
