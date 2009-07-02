@@ -57,6 +57,8 @@ public:
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
   //
+  void SetBeamParameters(TVectorD& meanOffset, TVectorD& meanSlope,
+			 TVectorD& sectorArray, Int_t option);
 
   AliESDEvent  * fESD;             //! ESD event  - not OWNER
   AliESDfriend * fESDfriend;       //! ESD event  - not OWNER
@@ -80,6 +82,7 @@ public:
   TObjArray      fDeltaPhi;        //-> array of histograms of delta Phi for each track
   TObjArray      fDeltaPhiP;       //-> array of histograms of delta Phi direction for each track
   TObjArray      fSignals;         //->Array of dedx signals
+
   //
   // Refit residuals histogram
   //
@@ -133,6 +136,8 @@ public:
   TObjArray      fDeltaZres;       //-> array of histograms of delta z residuals for each track
   TObjArray      fDeltaYres2;       //-> array of histograms of delta y residuals for each track
   TObjArray      fDeltaZres2;       //-> array of histograms of delta z residuals for each track
+  TObjArray      fDeltaYresAbs; //-> array of histograms of absolute delta y residuals for each track
+  TObjArray      fDeltaZresAbs; //-> array of histograms of absolute delta z residuals for each track
   //  TObjArray      fDeltaYres3;       //-> array of histograms of delta y residuals for each track
   //TObjArray      fDeltaZres3;       //-> array of histograms of delta z residuals for each track
 
@@ -145,6 +150,17 @@ public:
   TVectorD       fEdgeYcuts;       //! cuts in local y direction; used in the refit of the laser tracks
   TVectorD       fNClCuts;         //! cuts on the number of clusters per tracklet; used in the refit of the laser tracks
   Int_t          fNcuts;           //! number of cuts
+  TVectorD       fBeamSectorOuter;  //! sector map for beams in outer sector
+  TVectorD       fBeamSectorInner;  //! sector map for beams in inner sector
+  TVectorD       fBeamOffsetYOuter; //! absolute y beam offset in outer sector
+  TVectorD       fBeamSlopeYOuter;  //! absolute y beam slope  in outer sector
+  TVectorD       fBeamOffsetYInner; //! absolute y beam offset in inner sector
+  TVectorD       fBeamSlopeYInner;  //! absolute y beam slope  in inner sector
+  TVectorD       fBeamOffsetZOuter; //! absolute z beam offset in outer sectror 
+  TVectorD       fBeamSlopeZOuter;  //! absolute z beam slope  in outer sector 
+  TVectorD       fBeamOffsetZInner; //! absolute z beam offset in inner sectror 
+  TVectorD       fBeamSlopeZInner;  //! absolute z beam slope  in inner sector
+  Bool_t         fInverseSlopeZ;    //! invert slope in z - mismatch between database and lasers
   //
 private:
   ClassDef(AliTPCcalibLaser,3)

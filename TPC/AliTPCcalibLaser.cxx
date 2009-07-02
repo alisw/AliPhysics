@@ -190,6 +190,8 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   fDeltaZres(336),   //->2D histo fo residuals
   fDeltaYres2(336),   //->2D histo of residuals
   fDeltaZres2(336),   //->2D histo fo residuals
+  fDeltaYresAbs(336),   //->2D histo of residuals
+  fDeltaZresAbs(336),   //->2D histo of residuals
   //fDeltaYres3(336),   //->2D histo of residuals
   //fDeltaZres3(336),   //->2D histo fo residuals
   fFitAside(new TVectorD(5)),
@@ -198,7 +200,18 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   fEdgeXcuts(3),    
   fEdgeYcuts(3),    
   fNClCuts(5),      
-  fNcuts(0)        
+  fNcuts(0),
+  fBeamSectorOuter(336),
+  fBeamSectorInner(336),
+  fBeamOffsetYOuter(336),
+  fBeamSlopeYOuter(336),
+  fBeamOffsetYInner(336),
+  fBeamSlopeYInner(336),
+  fBeamOffsetZOuter(336),
+  fBeamSlopeZOuter(336),
+  fBeamOffsetZInner(336),
+  fBeamSlopeZInner(336),
+  fInverseSlopeZ(kTRUE)
 {
   //
   // Constructor
@@ -274,6 +287,8 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title, Bool
   fDeltaZres(336),  
   fDeltaYres2(336),
   fDeltaZres2(336),  
+  fDeltaYresAbs(336),
+  fDeltaZresAbs(336),
   //  fDeltaYres3(336),
   //fDeltaZres3(336),  
   fFitAside(new TVectorD(5)),        // drift fit - A side
@@ -282,7 +297,18 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title, Bool
   fEdgeXcuts(3),       // cuts in local x direction; used in the refit of the laser tracks
   fEdgeYcuts(3),       // cuts in local y direction; used in the refit of the laser tracks
   fNClCuts(5),         // cuts on the number of clusters per tracklet; used in the refit of the laser tracks
-  fNcuts(0)           // number of cuts
+  fNcuts(0),           // number of cuts
+  fBeamSectorOuter(336),
+  fBeamSectorInner(336),
+  fBeamOffsetYOuter(336),
+  fBeamSlopeYOuter(336),
+  fBeamOffsetYInner(336),
+  fBeamSlopeYInner(336),
+  fBeamOffsetZOuter(336),
+  fBeamSlopeZOuter(336),
+  fBeamOffsetZInner(336),
+  fBeamSlopeZInner(336),
+  fInverseSlopeZ(kTRUE)
 {
   SetName(name);
   SetTitle(title);
@@ -359,6 +385,8 @@ AliTPCcalibLaser::AliTPCcalibLaser(const AliTPCcalibLaser& calibLaser):
   fDeltaZres(((calibLaser.fDeltaZres))),  
   fDeltaYres2(((calibLaser.fDeltaYres))),
   fDeltaZres2(((calibLaser.fDeltaZres))),  
+  fDeltaYresAbs(((calibLaser.fDeltaYresAbs))),
+  fDeltaZresAbs(((calibLaser.fDeltaZresAbs))),
   //  fDeltaYres3(((calibLaser.fDeltaYres))),
   //fDeltaZres3(((calibLaser.fDeltaZres))),  
   fFitAside(new TVectorD(5)),        // drift fit - A side
@@ -367,7 +395,19 @@ AliTPCcalibLaser::AliTPCcalibLaser(const AliTPCcalibLaser& calibLaser):
   fEdgeXcuts(3),       // cuts in local x direction; used in the refit of the laser tracks
   fEdgeYcuts(3),       // cuts in local y direction; used in the refit of the laser tracks
   fNClCuts(5),         // cuts on the number of clusters per tracklet; used in the refit of the laser tracks
-  fNcuts(0)           // number of cuts
+  fNcuts(0),           // number of cuts
+  fBeamSectorOuter(336),
+  fBeamSectorInner(336),
+  fBeamOffsetYOuter(336),
+  fBeamSlopeYOuter(336),
+  fBeamOffsetYInner(336),
+  fBeamSlopeYInner(336),
+  fBeamOffsetZOuter(336),
+  fBeamSlopeZOuter(336),
+  fBeamOffsetZInner(336),
+  fBeamSlopeZInner(336),
+  fInverseSlopeZ(calibLaser.fInverseSlopeZ)
+
 {
   //
   // copy constructor
@@ -464,7 +504,10 @@ AliTPCcalibLaser::~AliTPCcalibLaser() {
   fDeltaZres2.SetOwner();
   fDeltaZres2.Delete();
   
-
+  fDeltaYresAbs.SetOwner();
+  fDeltaYresAbs.Delete();
+  fDeltaZresAbs.SetOwner();
+  fDeltaZresAbs.Delete();
 }
 
 
@@ -1612,32 +1655,87 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       TH2F *profz = (TH2F*)fDeltaZres.UncheckedAt(id);
       TH2F *profy2 = (TH2F*)fDeltaYres2.UncheckedAt(id);
       TH2F *profz2 = (TH2F*)fDeltaZres2.UncheckedAt(id);
+      TH2F *profyabs = (TH2F*)fDeltaYresAbs.UncheckedAt(id);
+      TH2F *profzabs = (TH2F*)fDeltaZresAbs.UncheckedAt(id);
       //      TH2F *profy3 = (TH2F*)fDeltaYres3.UncheckedAt(id);
       //TH2F *profz3 = (TH2F*)fDeltaZres3.UncheckedAt(id);
       //
       for (Int_t irow=158;irow>-1;--irow) {
 	if (vecSec[irow]==-1)continue; // no cluster info
 	if (isReject[irow]>0.5) continue;  // 
-	//Double_t x    = vecX[irow];
 	Double_t ycl  = vecClY[irow];
 	Double_t yfit = vecY1[irow];
 	Double_t yfit2 = vecY2[irow];
+	Double_t x    = vecX[irow];
+	Double_t yabsbeam = -1000;
+	if(vecSec[irow]==outerSector && (outerSector%36)==fBeamSectorOuter[id])
+	  yabsbeam = fBeamSlopeYOuter[id]*x + fBeamOffsetYOuter[id];
+	else if((innerSector%36)==fBeamSectorInner[id])
+	  yabsbeam = fBeamSlopeYInner[id]*x + fBeamOffsetYInner[id];
+
 	//	Double_t yfit3 = vecY2[irow];
 	Double_t zcl  = vecClZ[irow];
 	Double_t zfit = vecZ1[irow];
  	Double_t zfit2 = vecZ2[irow];
 	//Double_t zfit3 = vecZ2[irow];
 
+	// dz abs 
+	// The expressions for zcorrected has been obtained by
+	// inverting the fits in the FitDriftV() method (ignoring the
+	// global y dependence for now):
+	// A side:
+	// 250 - zmeasured = [0] + [1]*(250 - zreal) + .... (yglobal)
+	// =>
+	// zreal = (zmeasured + [0] - (1-[1])*250.0)/[1]
+	// 
+	// C side:
+	// 250 + zmeasured  = [0] + [1]*(250+zreal) + .... (yglobal)
+	// =>
+	// zreal = (zmeasured - [0] + (1 - [1])*250.0)/[1]
+
+	Double_t dzabs = -1000;
+	if (ltrp->GetSide()==0){
+	  if ((*fFitAside)[1]>0.) { 
+	    // ignore global y dependence for now
+	    Double_t zcorrected = (zcl + (*fFitAside)[0] - 
+				   (1.0-(*fFitAside)[1])*250.0)/(*fFitAside)[1];
+	    //	    zcorrected = zcl;
+	    if(vecSec[irow]==outerSector && (outerSector%36)==fBeamSectorOuter[id])
+	      dzabs = zcorrected -fBeamSlopeZOuter[id]*x -fBeamOffsetZOuter[id];
+	    else if((innerSector%36)==fBeamSectorInner[id])
+	      dzabs = zcorrected -fBeamSlopeZInner[id]*x -fBeamOffsetZInner[id];
+	  }
+	} else {
+	  if ((*fFitCside)[1]>0.) {
+	    Double_t zcorrected = (zcl - (*fFitCside)[0] + 
+				   (1.0-(*fFitCside)[1])*250.0)/(*fFitCside)[1];
+	    //	    zcorrected = zcl;
+	    if(vecSec[irow]==outerSector && (outerSector%36)==fBeamSectorOuter[id])
+	      dzabs = zcorrected -fBeamSlopeZOuter[id]*x -fBeamOffsetZOuter[id];
+	    else if((innerSector%36)==fBeamSectorInner[id])
+	      dzabs = zcorrected -fBeamSlopeZInner[id]*x -fBeamOffsetZInner[id];
+	  }
+	}
+	
 	if (TMath::Abs(yfit-ycl)<2&&TMath::Abs(zfit-zcl)<2){
 	  if (profy){	    
 	      profy->Fill(irow,ycl-yfit);
 	      profy2->Fill(irow,ycl-yfit2);
+	      if(yabsbeam<-100)
+		profyabs->Fill(irow,-0.99);
+	      else
+		profyabs->Fill(irow,ycl-yabsbeam);
+
 	      //	      profy3->Fill(irow,ycl-yfit3);
 	  }
 	  if (profz) {
 	      profz->Fill(irow,zcl-zfit);
 	      profz2->Fill(irow,zcl-zfit2);
 	      //profz3->Fill(irow,zcl-zfit3);
+	      if(dzabs<-100)
+		profzabs->Fill(irow,-0.99);
+	      else
+		profzabs->Fill(irow,dzabs);
 	  }
 	}
       }
@@ -2384,6 +2482,15 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       h2m = (TH2F*)cal->fDeltaZres2.At(id);
       h2  = (TH2F*)fDeltaZres2.At(id);
       if (h2m&&h2) h2->Add(h2m);
+
+      // merge ProfileY histograms - abs
+      h2m = (TH2F*)cal->fDeltaYresAbs.At(id);
+      h2  = (TH2F*)fDeltaYresAbs.At(id);
+      if (h2m&&h2) h2->Add(h2m);
+
+      h2m = (TH2F*)cal->fDeltaZresAbs.At(id);
+      h2  = (TH2F*)fDeltaZresAbs.At(id);
+      if (h2m&&h2) h2->Add(h2m);
       // merge ProfileY histograms - 3
       //h2m = (TH2F*)cal->fDeltaYres3.At(id);
       //h2  = (TH2F*)fDeltaYres3.At(id);
@@ -2538,6 +2645,8 @@ void   AliTPCcalibLaser::MakeFitHistos(){
     TH2F *profz = (TH2F*)fDeltaZres.UncheckedAt(id);
     TH2F *profy2 = (TH2F*)fDeltaYres2.UncheckedAt(id);
     TH2F *profz2 = (TH2F*)fDeltaZres2.UncheckedAt(id);
+    TH2F *profyabs = (TH2F*)fDeltaYresAbs.UncheckedAt(id);
+    TH2F *profzabs = (TH2F*)fDeltaYresAbs.UncheckedAt(id);
     //    TH2F *profy3 = (TH2F*)fDeltaYres3.UncheckedAt(id);
     //TH2F *profz3 = (TH2F*)fDeltaZres3.UncheckedAt(id);
     if (!profy){
@@ -2547,6 +2656,9 @@ void   AliTPCcalibLaser::MakeFitHistos(){
       profy2=new TH2F(Form("pry%03d",id),Form("Y Residuals for Laser Beam %03d -Parabolic",id),160,0,160,50,-0.5,0.5);
       profy2->SetDirectory(0);
       fDeltaYres2.AddAt(profy2,id);
+      profyabs=new TH2F(Form("pryabs%03d",id),Form("Y Residuals for Laser Beam %03d -Absolute",id),160,0,160,100,-1.0,1.0); // has to be bigger based on earlier studies
+      profyabs->SetDirectory(0);
+      fDeltaYresAbs.AddAt(profyabs,id);
       //profy3=new TH2F(Form("pry%03d",id),Form("Y Residuals for Laser Beam %03d- Parabolic2",id),160,0,160,100,-0.5,0.5);
       //profy3->SetDirectory(0);
       //fDeltaYres3.AddAt(profy3,id);
@@ -2558,6 +2670,9 @@ void   AliTPCcalibLaser::MakeFitHistos(){
       profz2=new TH2F(Form("prz%03d",id),Form("Z Residuals for Laser Beam %03d - Parabolic",id),160,0,160,50,-0.5,0.5);
       profz2->SetDirectory(0);
       fDeltaZres2.AddAt(profz2,id);
+      profzabs=new TH2F(Form("przabs%03d",id),Form("Z Residuals for Laser Beam %03d -Absolute",id),160,0,160,100,-1.0,1.0); // has to be bigger based on earlier studies
+      profzabs->SetDirectory(0);
+      fDeltaZresAbs.AddAt(profzabs,id);
       //profz3=new TH2F(Form("prz%03d",id),Form("Z Residuals for Laser Beam %03d- Parabolic2",id),160,0,160,100,-0.5,0.5);
       //profz3->SetDirectory(0);
       //fDeltaZres3.AddAt(profz3,id);
@@ -2600,6 +2715,11 @@ void   AliTPCcalibLaser::MakeFitHistos(){
       fSignals.AddAt(hisSignal,id);
     }
   }
+
+  SetBeamParameters(fBeamOffsetZOuter, fBeamSlopeZOuter, fBeamSectorOuter,2);
+  SetBeamParameters(fBeamOffsetZInner, fBeamSlopeZInner, fBeamSectorInner,3);
+  SetBeamParameters(fBeamOffsetYOuter, fBeamSlopeYOuter, fBeamSectorOuter,0);
+  SetBeamParameters(fBeamOffsetYInner, fBeamSlopeYInner, fBeamSectorInner,1);
 }
 
 void AliTPCcalibLaser::MergeFitHistos(AliTPCcalibLaser * laser){
@@ -2932,6 +3052,83 @@ void AliTPCcalibLaser::DumpFitInfo(TTree * chainFit,Int_t id){
     
     delete pcstream;
   }
+}
+
+void AliTPCcalibLaser::SetBeamParameters(TVectorD& meanOffset,
+					 TVectorD& meanSlope,
+					 TVectorD& sectorArray,
+					 Int_t option)
+{
+  // This method should ideally go in AliTPCLaser
+  // option == 0 (pads outer - closest to beam)
+  // option == 1 (pads inner)
+  // option == 2 (time outer)
+  // option == 3 (time inner)
+  Int_t nFailures = 0;
+
+  for(Int_t id = 0; id < 336; id++) {
+    
+    if (!AliTPCLaserTrack::GetTracks()) 
+      AliTPCLaserTrack::LoadTracks();
+    AliTPCLaserTrack *ltrp =
+      (AliTPCLaserTrack*)AliTPCLaserTrack::GetTracks()->UncheckedAt(id);
+    
+    AliExternalTrackParam trackParam(*ltrp);
+    
+    Double_t deltaangle = 10.0; // sector is 1/2 a sector away from mirror
+    if((option==1 || option==3)&& (ltrp->GetBeam()<=1 || ltrp->GetBeam()>=5))
+      deltaangle = 30.0; // inner sector is 1 sector further away from mirror
+    
+    Double_t angle = trackParam.GetAlpha();
+    if(angle<0)
+      angle += 2*TMath::Pi();
+    if(trackParam.GetSnp()>0) // track points to sector "before"
+      angle -= deltaangle*TMath::DegToRad();
+    else // track points to sector "after"
+      angle += deltaangle*TMath::DegToRad();
+    
+    Bool_t success = trackParam.Rotate(angle);
+    
+    if(!success) {
+      //      cout << "WARNING: Rotate failed for ID: " << id << endl;
+      nFailures++;
+    }
+    
+    angle *= TMath::RadToDeg();
+    
+    Int_t sector = TMath::Nint((angle-10.0)/20.0);
+    if(sector<0)
+      sector += 18;
+    else if(sector>=18)
+      sector -= 18;
+    if(ltrp->GetSide()==1) // C side
+      sector += 18;
+    sectorArray[id] = sector;
+
+    const Double_t x0 = 0;
+    
+    Double_t slopey  = TMath::Tan(TMath::ASin(trackParam.GetSnp()));
+    Double_t slopez  = trackParam.GetTgl();
+    //  One needs a factor sqrt(1+slopey**2) to take into account the
+    //  longer path length
+    slopez *= TMath::Sqrt(1.0 + slopey*slopey);    
+    if(fInverseSlopeZ) // wrong sign in database, should be fixed there
+      slopez *= -1;
+    //    Double_t offsetz = trackParam.GetZ();
+    Double_t offsety = trackParam.GetY() + slopey*(x0-trackParam.GetX());
+    Double_t offsetz = trackParam.GetZ() + slopez*(x0-trackParam.GetX());
+    if(option==2 || option==3) {
+      meanOffset[id] = offsetz; meanSlope[id] = slopez;
+    } else {
+      meanOffset[id] = offsety; meanSlope[id] = slopey;
+    }
+  }
+
+  if(nFailures>0)
+    AliWarning(Form("Rotate method failed %d times", nFailures));
+}
+
+
   /*
     TFile f("vscan.root");
    */  
@@ -3019,8 +3216,6 @@ chainFit->Draw("yPol2In.fElements[2]:LTr.fId>>hisPy2In0(350,0,350,100,-0.002,0.0
 TH2 * phisPy2In = (TH2*) gROOT->FindObject("hisPy2In0")
 
 */
-
-}  
 
 
 

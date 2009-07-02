@@ -58,6 +58,7 @@
 
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
+#include "AliTPCRecoParam.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
 #include "AliTPCPointCorrection.h"
@@ -65,7 +66,14 @@
 ClassImp(AliTPCcalibCalib)
 
 AliTPCcalibCalib::AliTPCcalibCalib():
-    AliTPCcalibBase()
+AliTPCcalibBase(),
+  fApplyExBCorrection(1),      // apply ExB correction
+  fApplyTOFCorrection(1),      // apply TOF correction
+  fApplyPositionCorrection(1), // apply position correction
+  fApplySectorAlignment(1),    // apply sector alignment
+  fApplyRPhiCorrection(1),     // apply R-Phi correction
+  fApplyRCorrection(1)         // apply Radial correction
+
 {
   //
   // Constructor
@@ -74,7 +82,13 @@ AliTPCcalibCalib::AliTPCcalibCalib():
 
 
 AliTPCcalibCalib::AliTPCcalibCalib(const Text_t *name, const Text_t *title) 
-  :AliTPCcalibBase()
+  :AliTPCcalibBase(),
+  fApplyExBCorrection(1),      // apply ExB correction
+  fApplyTOFCorrection(1),      // apply TOF correction
+  fApplyPositionCorrection(1), // apply position correction
+  fApplySectorAlignment(1),    // apply sector alignment
+  fApplyRPhiCorrection(1),     // apply R-Phi correction
+  fApplyRCorrection(1)         // apply Radial correction
 {  
   SetName(name);
   SetTitle(title);
@@ -82,7 +96,14 @@ AliTPCcalibCalib::AliTPCcalibCalib(const Text_t *name, const Text_t *title)
 
 
 AliTPCcalibCalib::AliTPCcalibCalib(const AliTPCcalibCalib&calib):
-  AliTPCcalibBase(calib)
+  AliTPCcalibBase(calib),
+  fApplyExBCorrection(calib.GetApplyExBCorrection()),
+  fApplyTOFCorrection(calib.GetApplyTOFCorrection()),
+  fApplyPositionCorrection(calib.GetApplyPositionCorrection()),
+  fApplySectorAlignment(calib.GetApplySectorAlignment()),
+  fApplyRPhiCorrection(calib.GetApplyRPhiCorrection()),
+  fApplyRCorrection(calib.GetApplyRCorrection())
+
 {
   //
   // copy constructor
@@ -155,6 +176,15 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
   transform->SetCurrentRun(fRun);
   transform->SetCurrentTimeStamp((UInt_t)fTime);
+  if(!fApplyExBCorrection) { // disable ExB correction in transform
+    if(transform->GetCurrentRecoParam())
+      transform->GetCurrentRecoParamNonConst()->SetUseExBCorrection(0);
+  }
+  if(!fApplyTOFCorrection) { // disable TOF correction in transform
+    if(transform->GetCurrentRecoParam())
+      transform->GetCurrentRecoParamNonConst()->SetUseTOFCorrection(kFALSE);
+  }
+
   //
   // First apply calibration
   //
@@ -165,6 +195,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     AliTPCclusterMI cl0(*cluster);
     Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
     Int_t i[1]={cluster->GetDetector()};
+
     transform->Transform(x,i,0,1);
     //
     // get position correction
@@ -173,8 +204,10 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     if (cluster->GetDetector()>35) ipad=1;
     Float_t dy =AliTPCClusterParam::SPosCorrection(0,ipad,cluster->GetPad(),cluster->GetTimeBin(),cluster->GetZ(),cluster->GetSigmaY2(),cluster->GetSigmaZ2(),cluster->GetMax());
     Float_t dz =AliTPCClusterParam::SPosCorrection(1,ipad,cluster->GetPad(),cluster->GetTimeBin(),cluster->GetZ(),cluster->GetSigmaY2(),cluster->GetSigmaZ2(),cluster->GetMax());
+    // if(fApplyPositionCorrection) {
     //x[1]-=dy;
     //x[2]-=dz;
+    // }
     //
     // Apply sector alignment
     //
@@ -184,7 +217,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
 							       cluster->GetY(),cluster->GetZ());
     Double_t dzq = AliTPCPointCorrection::SGetCorrectionSector(2,cluster->GetDetector()%36,cluster->GetX(),
 							       cluster->GetY(),cluster->GetZ());
-    if (kTRUE){
+    if (fApplySectorAlignment){
       x[0]-=dxq;
       x[1]-=dyq;
       x[2]-=dzq;
@@ -198,9 +231,11 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     // R correction
     Double_t corrR   = corr->CorrectionOutR0(kFALSE,kFALSE,cluster->GetX(),cluster->GetY(),cluster->GetZ(),cluster->GetDetector());
 
-    if (kTRUE){
+    if (fApplyRPhiCorrection){
       if (cluster->GetY()>0) x[1]+=corrclY;  // rphi correction
       if (cluster->GetY()<0) x[1]-=corrclY;  // rphi correction
+    }
+    if (fApplyRCorrection){      
       x[0]+=corrR;                           // radial correction
     }
 
