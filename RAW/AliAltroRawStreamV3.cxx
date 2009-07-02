@@ -60,7 +60,8 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(AliRawReader* rawReader) :
   fActiveFECsB(0),
   fAltroCFG1(0),
   fAltroCFG2(0),
-  fOldStream(NULL)
+  fOldStream(NULL),
+  fCheckAltroPayload(kTRUE)
 {
   // Constructor
   // Create an object to read Altro raw digits in
@@ -103,7 +104,8 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(const AliAltroRawStreamV3& stream) :
   fActiveFECsB(stream.fActiveFECsB),
   fAltroCFG1(stream.fAltroCFG1),
   fAltroCFG2(stream.fAltroCFG2),
-  fOldStream(NULL)
+  fOldStream(NULL),
+  fCheckAltroPayload(stream.fCheckAltroPayload)
 {
   // Copy constructor
   // Copy the bunch data array
@@ -152,6 +154,8 @@ AliAltroRawStreamV3& AliAltroRawStreamV3::operator = (const AliAltroRawStreamV3&
     fOldStream = new AliAltroRawStream(stream.fRawReader);
     *fOldStream = *stream.fOldStream;
   }
+
+  fCheckAltroPayload = stream.fCheckAltroPayload;
 
   return *this;
 }
@@ -244,6 +248,7 @@ Bool_t AliAltroRawStreamV3::NextChannel()
   fCount = -1;
   fBadChannel = kFALSE;
   fBunchDataIndex = 0;
+  fBunchLength = -1;
 
   UInt_t word = 0;
   do {
@@ -299,12 +304,21 @@ Bool_t AliAltroRawStreamV3::NextBunch()
     return status;
   }
 
+  Int_t prevTimeBin = (fBunchLength > 0) ? fStartTimeBin-fBunchLength+1 : 1024;
   fBunchLength = fStartTimeBin = -1;
   fBunchDataPointer = NULL;
 
   if ((fBunchDataIndex >= fCount) || fBadChannel) return kFALSE;
 
   fBunchLength = fBunchData[fBunchDataIndex];
+  if (fBunchLength <= 2) {
+    // Invalid bunch size
+    AliWarning(Form("Too short bunch length (%d) in Address=0x%x !",
+		    fBunchLength,fHWAddress));
+    fRawReader->AddMinorErrorLog(kAltroBunchHeadErr,Form("hw=0x%x",fHWAddress));
+    fCount = fBunchLength = -1;
+    return kFALSE;
+  }
   if ((fBunchDataIndex + fBunchLength) > fCount) {
     // Too long bunch detected
     AliWarning(Form("Too long bunch detected in Address=0x%x ! Expected <= %d 10-bit words, found %d !",
@@ -317,6 +331,22 @@ Bool_t AliAltroRawStreamV3::NextBunch()
   fBunchLength -= 2;
 
   fStartTimeBin = fBunchData[fBunchDataIndex++];
+  if (fCheckAltroPayload) {
+    if ((fStartTimeBin-fBunchLength+1) < 0) {
+      AliWarning(Form("Invalid start time-bin in Address=0x%x ! (%d-%d+1) < 0",
+		      fHWAddress,fStartTimeBin,fBunchLength));
+      fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
+      fCount = fBunchLength = -1;
+      return kFALSE;
+    }
+    if (fStartTimeBin >= prevTimeBin) {
+      AliWarning(Form("Invalid start time-bin in Address=0x%x ! (%d>=%d)",
+		      fHWAddress,fStartTimeBin,prevTimeBin));
+      fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
+      fCount = fBunchLength = -1;
+      return kFALSE;
+    }
+  }
 
   fBunchDataPointer = &fBunchData[fBunchDataIndex];
 

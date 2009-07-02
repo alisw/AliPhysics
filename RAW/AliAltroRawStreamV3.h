@@ -89,6 +89,8 @@ class AliAltroRawStreamV3: public TObject {
  
     void  SetShortDataHeader(Bool_t flag) { fIsShortDataHeader = flag; } // Specify whenever to assume or not a short CDH format
 
+    void  SetCheckAltroPayload(Bool_t check) { fCheckAltroPayload = check; }
+
     enum EAltroRawStreamV3Error {
       kRCUTrailerErr = 1,
       kRCUVerErr = 2,
@@ -146,6 +148,8 @@ class AliAltroRawStreamV3: public TObject {
     UInt_t           fAltroCFG2;    // ALTROCFG2 and ALTROIF registers
 
     AliAltroRawStream* fOldStream;  // streamer for old altro format
+
+    Bool_t           fCheckAltroPayload; // check altro payload correctness or not?
 
     ClassDef(AliAltroRawStreamV3, 0)  // base class for reading Altro raw digits
 };
