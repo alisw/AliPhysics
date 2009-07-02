@@ -81,6 +81,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fBSpecialSeeding(kFALSE),
   fBKinkFinder(kTRUE),
   fLastSeedRowSec(120),
+  fUseTransformation(0),
   fUseFieldCorrection(0),      // use field correction
   fUseRPHICorrection(0),      // use rphi correction
   fUseRadialCorrection(0),    // use radial correction
@@ -89,6 +90,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fUseDriftCorrectionTime(0), // use drift correction time
   fUseDriftCorrectionGY(0),   // use drif correction global y
   fUseGainCorrectionTime(0),  // use gain correction time
+  fUseExBCorrection(1),  // use ExB correction
   fUseTOFCorrection(kTRUE)
 {
   //

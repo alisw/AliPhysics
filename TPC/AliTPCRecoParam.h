@@ -56,6 +56,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   // Correction setup
   //
+  void  SetUseTransformation(Int_t flag){fUseTransformation=flag;}
   void  SetUseFieldCorrection(Int_t flag){fUseFieldCorrection=flag;}
   void  SetUseRPHICorrection(Int_t flag){fUseRPHICorrection=flag;}
   void  SetUseRadialCorrection(Int_t flag){fUseRadialCorrection=flag;}
@@ -64,7 +65,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetUseDriftCorrectionTime(Int_t flag){fUseDriftCorrectionTime=flag;}
   void  SetUseDriftCorrectionGY(Int_t flag){fUseDriftCorrectionGY=flag;}
   void  SetUseGainCorrectionTime(Int_t flag){fUseGainCorrectionTime=flag;}
+  void  SetUseExBCorrection(Int_t flag){fUseExBCorrection=flag;}
+  void  SetUseTOFCorrection(Bool_t flag) {fUseTOFCorrection = flag;}
   //
+  Int_t GetUseTransformation() const {return fUseTransformation;}
   Int_t GetUseFieldCorrection() const {return fUseFieldCorrection;}
   Int_t GetUseRPHICorrection() const {return fUseRPHICorrection;}
   Int_t GetUseRadialCorrection() const {return fUseRadialCorrection;}
@@ -73,8 +77,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t GetUseDriftCorrectionTime() const {return fUseDriftCorrectionTime;}
   Int_t GetUseDriftCorrectionGY() const {return fUseDriftCorrectionGY;}
   Int_t GetUseGainCorrectionTime() const {return fUseGainCorrectionTime;}
+  Int_t GetUseExBCorrection() const {return fUseExBCorrection;}
   Bool_t   GetUseTOFCorrection() {return fUseTOFCorrection;}
-  //
+
   //
   void     SetSystematicError(Double_t *systematic){ for (Int_t i=0; i<5;i++) fSystematicErrors[i]=systematic[i];}
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
@@ -115,7 +120,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   // Correction switches
   //
-  Int_t fUseFieldCorrection;      // use rphi correction
+  Int_t fUseTransformation;      // use transformation 
+  Int_t fUseFieldCorrection;     // use field correction
   Int_t fUseRPHICorrection;      // use rphi correction
   Int_t fUseRadialCorrection;    // use radial correction
   Int_t fUseQuadrantAlignment;   // use quadrant alignment
@@ -123,6 +129,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t fUseDriftCorrectionTime; // use drift correction time
   Int_t fUseDriftCorrectionGY;   // use drif correction global y
   Int_t fUseGainCorrectionTime;  // use gain correction time
+  Int_t fUseExBCorrection;       // use ExB correction
   //
 
   Bool_t fUseTOFCorrection;  // switch - kTRUE use TOF correction kFALSE - do not use
@@ -130,7 +137,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //  misscalibration
   //
   Double_t fSystematicErrors[5];  //systematic errors in the track parameters - to be added to TPC covariance matrix    
-  ClassDef(AliTPCRecoParam, 5)
+  ClassDef(AliTPCRecoParam, 6)
 };
 
 
