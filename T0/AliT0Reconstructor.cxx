@@ -39,8 +39,6 @@
 ClassImp(AliT0Reconstructor)
 
   AliT0Reconstructor:: AliT0Reconstructor(): AliReconstructor(),
-                                             fRefAmp(1),
-                                             fRefPoint(0),
 					     fdZonA(0),
 					     fdZonC(0),
 					     fZposition(0),
@@ -69,16 +67,12 @@ ClassImp(AliT0Reconstructor)
   fdZonA = TMath::Abs(fParam->GetZPositionShift("T0/A/PMT15"));
 
   fCalib = new AliT0Calibrator();
-  Int_t fRefAmp = GetRecoParam()->GetRefAmp();
-  Int_t fRefPoint = GetRecoParam()->GetRefPoint();
 
 }
 //____________________________________________________________________
 
 AliT0Reconstructor::AliT0Reconstructor(const AliT0Reconstructor &r):
   AliReconstructor(r),
-                                             fRefAmp(1),
-                                             fRefPoint(0),
 					     fdZonA(0),
 	                                     fdZonC(0),
 					     fZposition(0),
@@ -114,6 +108,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   
 {
   // T0 digits reconstruction
+  Int_t refAmp = GetRecoParam()->GetRefAmp();
   
   TArrayI * timeCFD = new TArrayI(24); 
   TArrayI * timeLED = new TArrayI(24); 
@@ -167,7 +162,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       else
 	adc[ipmt] = 0;
       
-      time[ipmt] = fCalib-> WalkCorrection(fRefAmp, ipmt, adc[ipmt],  timeCFD->At(ipmt)) ;
+      time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, adc[ipmt],  timeCFD->At(ipmt)) ;
 	     
       Double_t sl = Double_t(timeLED->At(ipmt) - timeCFD->At(ipmt));
       //    time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt],"cosmic" ) ;
@@ -240,8 +235,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   //
   // reference amplitude and time ref. point from reco param
 
-  // Int_t refAmp = GetRecoParam()->GetRefAmp();
-  //Int_t refPoint = GetRecoParam()->GetRefPoint();
+  Int_t refAmp = GetRecoParam()->GetRefAmp();
+  Int_t refPoint = GetRecoParam()->GetRefPoint();
 
   Int_t allData[110][5];
   
@@ -282,7 +277,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  }
       }
     
-      Int_t ref = allData[fRefPoint][0]-5000.;
+      Int_t ref = allData[refPoint][0]-5000.;
       Float_t channelWidth = fParam->GetChannelWidth() ;  
       
       //       Int_t meanT0 = fParam->GetMeanT0();
@@ -328,7 +323,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     adc[ipmt] = 0;
 	   
 
-	   time[ipmt] = fCalib-> WalkCorrection(fRefAmp, ipmt, adc[ipmt], timeCFD[ipmt] ) ;
+	   time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, adc[ipmt], timeCFD[ipmt] ) ;
 	   
       	   Double_t sl = timeLED[ipmt] - timeCFD[ipmt];
 	     //    time[ipmt] = fCalib-> WalkCorrection( ipmt, Int_t(sl), timeCFD[ipmt] ) ;

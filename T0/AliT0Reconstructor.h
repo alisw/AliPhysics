@@ -36,8 +36,6 @@ class AliT0Reconstructor: public AliReconstructor {
    
  
  protected:
-  Int_t fRefAmp;         // amp. to equalise : from RecoParam 
-  Int_t fRefPoint;       // #channel will be RefPoint from RecoParam
   Float_t             fdZonA;             // Zideal - Zreal side A 
   Float_t             fdZonC;             // Zideal - Zreal side C
   Float_t             fZposition;        // vertex position
@@ -48,7 +46,7 @@ class AliT0Reconstructor: public AliReconstructor {
   TObjArray           fAmpLED;        // LED-CFD vs #MIPs
   AliT0Calibrator     *fCalib;           //pointer to T0 Calibrator     
 
-  ClassDef(AliT0Reconstructor, 4)   // class for the T0 reconstruction
+  ClassDef(AliT0Reconstructor, 5)   // class for the T0 reconstruction
 
 };
 
