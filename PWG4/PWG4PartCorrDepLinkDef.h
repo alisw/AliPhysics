@@ -18,5 +18,6 @@
 #pragma link C++ class AliAnaParticleJetLeadingConeCorrelation+;
 #pragma link C++ class AliAnaCalorimeterQA+;
 #pragma link C++ class AliAnaNeutralMeson+;
+#pragma link C++ class AliAnaElectron+;
 
 #endif

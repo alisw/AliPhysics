@@ -1,0 +1,104 @@
+#!/bin/bash
+
+#
+# Author: K. Read
+#
+# This script makes PAR files without requiring write access to $ALICE_ROOT.
+# Execute this script in your local area with write access.
+# Usage:
+# parmaker ANALYSIS
+# parmaker ANALYSIS remote
+# parmaker PWG4PartCorrDep
+# parmaker PWG4PartCorrDep remote
+#
+# So far only available for these par files:
+# ANALYSIS ANALYSISalice AOD ESD PWG4PartCorrBase PWG4PartCorrDep STEERBase
+#
+
+case $2 in
+
+  "remote")
+
+    case $1 in
+      "ANALYSIS")
+         parmaker_input_basedir="ANALYSIS"
+         parmaker_input_dir_subdir="ANALYSIS"
+         parmaker_output_dir_subdir="ANALYSIS"
+         ;;
+      "ANALYSISalice")
+         parmaker_input_basedir="ANALYSIS"
+         parmaker_input_dir_subdir="ANALYSIS"
+         parmaker_output_dir_subdir="ANALYSISalice"
+         ;;
+      "AOD")
+         parmaker_input_basedir="STEER"
+         parmaker_input_dir_subdir="STEER"
+         parmaker_output_dir_subdir="AOD"
+         ;;
+      "ESD")
+         parmaker_input_basedir="STEER"
+         parmaker_input_dir_subdir="STEER"
+         parmaker_output_dir_subdir="ESD"
+         ;;
+      "PWG4PartCorrBase")
+         parmaker_input_basedir="PWG4"
+         parmaker_input_dir_subdir="PWG4/PartCorrBase"
+         parmaker_output_dir_subdir="PWG4PartCorrBase/PartCorrBase"
+        ;;
+      "PWG4PartCorrDep")
+         parmaker_input_basedir="PWG4"
+         parmaker_input_dir_subdir="PWG4/PartCorrDep"
+         parmaker_output_dir_subdir="PWG4PartCorrDep/PartCorrDep"
+         ;;
+      "STEERBase")
+         parmaker_input_basedir="STEER"
+         parmaker_input_dir_subdir="STEER"
+         parmaker_output_dir_subdir="STEERBase"
+         ;;
+      *)
+        echo "parmaker: I'm sorry Dave, I'm afraid I can't do that."
+        exit
+    esac
+
+ 
+    echo "parmaker to use source $ALICE_ROOT/$parmaker_input_dir_subdir"
+    if [ -e "$ALICE_ROOT/$parmaker_input_dir_subdir" ]
+    then
+      echo "parmaker creating $1.par"
+      mkdir $1
+      if [ $parmaker_input_basedir != $parmaker_input_dir_subdir ]
+      then
+        mkdir $parmaker_output_dir_subdir
+      fi
+
+      list=`grep Ali ${ALICE_ROOT}/${parmaker_input_basedir}/lib${1}.pkg | sed -e 's:.cxx::g' -e 's:SRCS::' -e 's:=::' -e 's:+::' -e 's:\\\::'`
+      for i in $list; do
+        cp $ALICE_ROOT/$parmaker_input_basedir/$i.cxx $parmaker_output_dir_subdir
+        cp $ALICE_ROOT/$parmaker_input_basedir/$i.h   $parmaker_output_dir_subdir
+      done
+
+      mkdir $1/PROOF-INF
+      cp -r $ALICE_ROOT/$parmaker_input_basedir/PROOF-INF.$1/* $1/PROOF-INF
+      cp $ALICE_ROOT/$parmaker_input_basedir/${1}LinkDef.h $1
+      cp $ALICE_ROOT/$parmaker_input_basedir/lib${1}.pkg $1
+      cp $ROOTSYS/test/Makefile.arch $1
+      cp $ALICE_ROOT/$parmaker_input_basedir/Makefile $1/Makefiletemp
+      sed -e 's:include \$(ROOTSYS)\/test\/Makefile.arch:include Makefile.arch:' -e "s:PACKAGE = .*:PACKAGE = ${1}:" $1/Makefiletemp > $1/Makefile
+
+      /bin/rm $1/Makefiletemp
+      tar cfzh $1.par $1
+      /bin/rm -rf $1
+    fi
+    ;;
+
+  *)
+    echo "parmaker to use local source $1"
+    if [ -e "$1" ]
+    then
+      echo "parmaker creating $1.par"
+      tar cfzh $1.par $1
+    else
+      echo "local subdirectory $1 not found"
+    fi
+
+esac

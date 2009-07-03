@@ -31,7 +31,7 @@ public:
 	AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & g) ;//cpy assignment
 	virtual ~AliMCAnalysisUtils() ;//virtual dtor
 	
-	enum mcTypes {kMCPrompt, kMCFragmentation, kMCISR, kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCPi0, kMCEta, kMCElectron, kMCConversion, kMCUnknown};
+  enum mcTypes {kMCPrompt, kMCFragmentation, kMCISR, kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCPi0, kMCEta, kMCElectron, kMCConversion, kMCUnknown, kMCEFromCFromB, kMCEFromC, kMCEFromB,kMCZDecay,kMCWDecay};
 	
 	Int_t CheckOrigin(const Int_t label, AliStack *  stack) const ;
 	TList * GetJets(Int_t iEvent, AliStack *  stack, AliGenEventHeader * geh) ;
