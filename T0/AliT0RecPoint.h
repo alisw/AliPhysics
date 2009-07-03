@@ -39,6 +39,10 @@ class AliT0RecPoint: public TObject  {
     Float_t GetAmp (Int_t ipmt) const{ return fADC[ipmt];}
     void SetAmpLED (Int_t ipmt, Float_t adc) { fADCLED[ipmt] = adc;}
     Float_t AmpLED (Int_t ipmt) const{ return fADCLED[ipmt];}
+    
+    void SetT0clock (Int_t time) { fT0clock = time;}
+    Float_t GetT0clock () const{ return fT0clock;}
+
 
   private: 
     Int_t fTimeAverage;     // Average time
@@ -48,13 +52,14 @@ class AliT0RecPoint: public TObject  {
     Int_t fTimeBestC;    //TOF first particle on the C
     Int_t fMultC; // multiplicity on the 
     Int_t fMultA; // multiplicity on the 
+    Int_t fT0clock; // T0 with reference point
  
     Float_t fTime[24];    // array's TDC
     Float_t fADC[24];    // array's amplitude
     Float_t fADCLED[24];    // array's LED amplitude
 
 
-    ClassDef(AliT0RecPoint,4)  //Digit (Header) object for set:T0
+    ClassDef(AliT0RecPoint,5)  //Digit (Header) object for set:T0
 };
 
 typedef AliT0RecPoint AliSTARTRecPoint; // for backward compatibility
