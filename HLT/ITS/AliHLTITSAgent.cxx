@@ -62,8 +62,8 @@ AliHLTITSAgent::~AliHLTITSAgent()
 }
 
 int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
-					    AliRawReader* rawReader,
-					    AliRunLoader* /*runloader*/) const
+					 AliRawReader* rawReader,
+					 AliRunLoader* runloader) const
 {
   // see header file for class documentation
   int iResult=0;
@@ -74,24 +74,30 @@ int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
   //
   // ITS tracking is currently only working on raw data
   // to run on digits, a digit publisher needs to be implemented
-  if (rawReader) {
+
+  if (rawReader || !runloader) {
+    // AliSimulation: use the AliRawReaderPublisher if the raw reader is available
+    // Alireconstruction: indicated by runloader==NULL, run always on raw data
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //
-    // define the ITS cluster finder components
+    // define the ITS cluster finder configurations
     //
 
     TString trackerInput;
     for (int detectorId=0; detectorId<3; detectorId++) {
       iResult=CreateCFConfigurations(handler, detectorId, trackerInput);
     }
-    
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // define the ITS tracker configuration
+    //
     if (handler->FindConfiguration("TPC-globalmerger")) {
       trackerInput+=" TPC-globalmerger";
     }
     handler->CreateConfiguration("ITS-tracker","ITSTracker",trackerInput.Data(),"");
   }
-
   return 0;
 }
 

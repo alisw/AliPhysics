@@ -95,7 +95,7 @@ AliHLTTPCAgent::~AliHLTTPCAgent()
 
 int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 					 AliRawReader* rawReader,
-					 AliRunLoader* /*runloader*/) const
+					 AliRunLoader* runloader) const
 {
   // see header file for class documentation
   if (handler) {
@@ -131,15 +131,17 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
 	// digit publisher components
 	publisher.Form("TPC-DP_%02d_%d", slice, part);
-	if (!rawReader) {
-	  arg.Form("-slice %d -partition %d", slice, part);
-	  handler->CreateConfiguration(publisher.Data(), "TPCDigitPublisher", NULL , arg.Data());
-	} else {
+	if (rawReader || !runloader) {
+	  // AliSimulation: use the AliRawReaderPublisher if the raw reader is available
+	  // Alireconstruction: indicated by runloader==NULL, run always on raw data
 	  int ddlno=768;
 	  if (part>1) ddlno+=72+4*slice+(part-2);
 	  else ddlno+=2*slice+part;
 	  arg.Form("-minid %d -datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x -silent", ddlno, slice, slice, part, part);
 	  handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+	} else {
+	  arg.Form("-slice %d -partition %d", slice, part);
+	  handler->CreateConfiguration(publisher.Data(), "TPCDigitPublisher", NULL , arg.Data());
 	}
 
 	// cluster finder components
