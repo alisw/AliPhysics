@@ -6,13 +6,17 @@
 /* $Id$ */
 
 //This class produces PHOS digits of one event
-//using AliPHOSRawDecoder. See cxx source for use case.
+//using AliPHOSRawFitter. See cxx source for use case.
 
-class AliPHOSRawDecoder;
 class AliPHOSCalibData ;
 class AliPHOSDigit ;
 class AliPHOSGeometry ;
 class AliPHOSPulseGenerator;
+class AliRawReader;
+class AliCaloRawStreamV3;
+class AliPHOSRawFitterv0;
+
+#include "AliAltroMapping.h"
 #include "TObject.h"
 
 class AliPHOSRawDigiProducer: public TObject {
@@ -20,12 +24,13 @@ class AliPHOSRawDigiProducer: public TObject {
 public:
 
   AliPHOSRawDigiProducer() ;
+  AliPHOSRawDigiProducer(AliRawReader *rawReader, AliAltroMapping **mapping = NULL);
   AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp);
   AliPHOSRawDigiProducer& operator= (const AliPHOSRawDigiProducer &dp);
  
   virtual ~AliPHOSRawDigiProducer(); 
 
-  void MakeDigits(TClonesArray *digits, AliPHOSRawDecoder* decoder);
+  void MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0* fitter);
 
   void SetEmcMinAmp(Float_t emcMin) { fEmcMinE=emcMin; }
   void SetCpvMinAmp(Float_t cpvMin) { fCpvMinE=cpvMin; }
@@ -48,10 +53,12 @@ private:
   Float_t fSampleQualityCut;         // Cut on sample shapes: 0: no samples; 1: default parameterization; 999: accept even obviously bad
   Int_t fEmcCrystals ;               //  number of EMC crystals
   AliPHOSGeometry * fGeom ;          //! PHOS geometry
-  static AliPHOSCalibData * fgCalibData ;   //! Calibration database if avalable
-  AliPHOSPulseGenerator * fPulseGenerator ; //! Class with pulse shape parameters
+  static AliPHOSCalibData * fgCalibData ;     //! Calibration database if avalable
+  AliPHOSPulseGenerator   * fPulseGenerator ; //! Class with pulse shape parameters
+  AliRawReader            * fRawReader;       //! Raw data reader
+  AliCaloRawStreamV3      * fRawStream;       //! Calorimeter decoder of ALTRO format
 
-  ClassDef(AliPHOSRawDigiProducer,5)
+  ClassDef(AliPHOSRawDigiProducer,6)
 };
 
 #endif

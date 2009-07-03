@@ -94,8 +94,7 @@ class TFile;
 #include "AliPHOSCalibData.h"
 #include "AliPHOSPulseGenerator.h"
 #include "AliDAQ.h"
-#include "AliPHOSRawDecoder.h"
-#include "AliPHOSRawDecoderv1.h"
+#include "AliPHOSRawFitterv0.h"
 #include "AliPHOSCalibData.h"
 #include "AliPHOSRawDigiProducer.h"
 #include "AliPHOSQAChecker.h"
@@ -658,15 +657,15 @@ Bool_t AliPHOS::Raw2SDigits(AliRawReader* rawReader)
     mapping[i] = (AliAltroMapping*)maps->At(i);
   }
 
-  AliPHOSRawDecoderv1 dc(rawReader,mapping); 	 
+  AliPHOSRawFitterv0 fitter;
 
-  dc.SubtractPedestals(AliPHOSSimParam::GetInstance()->EMCSubtractPedestals());
-  dc.SetAmpOffset(AliPHOSSimParam::GetInstance()->GetGlobalAltroOffset());
-  dc.SetAmpThreshold(AliPHOSSimParam::GetInstance()->GetGlobalAltroThreshold());
+  fitter.SubtractPedestals(AliPHOSSimParam::GetInstance()->EMCSubtractPedestals());
+  fitter.SetAmpOffset(AliPHOSSimParam::GetInstance()->GetGlobalAltroOffset());
+  fitter.SetAmpThreshold(AliPHOSSimParam::GetInstance()->GetGlobalAltroThreshold());
 
-  AliPHOSRawDigiProducer pr;
+  AliPHOSRawDigiProducer pr(rawReader,mapping);
   pr.SetSampleQualityCut(AliPHOSSimParam::GetInstance()->GetEMCSampleQualityCut()); 	 
-  pr.MakeDigits(sdigits,&dc); 	 
+  pr.MakeDigits(sdigits,&fitter);
 	  	 
   Int_t bufferSize = 32000 ; 	 
   // TBranch * sdigitsBranch = tree->Branch("PHOS",&sdigits,bufferSize); 	 

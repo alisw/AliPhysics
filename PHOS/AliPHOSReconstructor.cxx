@@ -46,9 +46,9 @@
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSRecParticle.h"
-#include "AliPHOSRawDecoder.h"
-#include "AliPHOSRawDecoderv1.h"
-#include "AliPHOSRawDecoderv2.h"
+#include "AliPHOSRawFitterv0.h"
+#include "AliPHOSRawFitterv1.h"
+#include "AliPHOSRawFitterv2.h"
 #include "AliPHOSRawDigiProducer.h"
 #include "AliPHOSPulseGenerator.h"
 
@@ -343,7 +343,7 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   // Works on a single-event basis
   rawReader->Reset() ; 
 
-  AliPHOSRawDecoder * dc ;
+  AliPHOSRawFitterv0 * fitter ;
 
   const TObjArray* maps = AliPHOSRecoParam::GetMappings();
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
@@ -353,55 +353,54 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     mapping[i] = (AliAltroMapping*)maps->At(i);
   }
 
-  if      (strcmp(GetRecoParam()->EMCDecoderVersion(),"v1")==0) 
-    dc=new AliPHOSRawDecoderv1(rawReader,mapping);
-  else if (strcmp(GetRecoParam()->EMCDecoderVersion(),"v2")==0) 
-    dc=new AliPHOSRawDecoderv2(rawReader,mapping);
+  if      (strcmp(GetRecoParam()->EMCFitterVersion(),"v1")==0) 
+    fitter=new AliPHOSRawFitterv1();
+  else if (strcmp(GetRecoParam()->EMCFitterVersion(),"v2")==0) 
+    fitter=new AliPHOSRawFitterv2();
   else
-    dc=new AliPHOSRawDecoder(rawReader,mapping);
+    fitter=new AliPHOSRawFitterv0();
 
-  dc->SubtractPedestals(GetRecoParam()->EMCSubtractPedestals());
-  dc->SetAmpOffset(GetRecoParam()->GetGlobalAltroOffset());
-  dc->SetAmpThreshold(GetRecoParam()->GetGlobalAltroThreshold());
+  fitter->SubtractPedestals(GetRecoParam()->EMCSubtractPedestals());
+  fitter->SetAmpOffset     (GetRecoParam()->GetGlobalAltroOffset());
+  fitter->SetAmpThreshold  (GetRecoParam()->GetGlobalAltroThreshold());
 
   TClonesArray *digits = new TClonesArray("AliPHOSDigit",1);
   digits->SetName("DIGITS");
   Int_t bufsize = 32000;
   digitsTree->Branch("PHOS", &digits, bufsize);
 
-  //AliPHOSRawDigiProducer pr(GetRecoParam());
-  AliPHOSRawDigiProducer pr;
+  AliPHOSRawDigiProducer rdp(rawReader,mapping);
 
-  pr.SetEmcMinAmp(GetRecoParam()->GetEMCRawDigitThreshold()); // in ADC
-  pr.SetCpvMinAmp(GetRecoParam()->GetCPVMinE());
-  pr.SetSampleQualityCut(GetRecoParam()->GetEMCSampleQualityCut());
-  pr.MakeDigits(digits,dc);
+  rdp.SetEmcMinAmp(GetRecoParam()->GetEMCRawDigitThreshold()); // in ADC
+  rdp.SetCpvMinAmp(GetRecoParam()->GetCPVMinE());
+  rdp.SetSampleQualityCut(GetRecoParam()->GetEMCSampleQualityCut());
+  rdp.MakeDigits(digits,fitter);
 
-  delete dc ;
+  delete fitter ;
 
-  //!!!!for debug!!!
-/*
-  Int_t modMax=-111;
-  Int_t colMax=-111;
-  Int_t rowMax=-111;
-  Float_t eMax=-333;
-  //!!!for debug!!!
-
-  Int_t relId[4];
-  for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
-    AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(iDigit);
-    if(digit->GetEnergy()>eMax) {
-      fGeom->AbsToRelNumbering(digit->GetId(),relId);
-      eMax=digit->GetEnergy();
-      modMax=relId[0];
-      rowMax=relId[2];
-      colMax=relId[3];
+  if (AliLog::GetGlobalDebugLevel() == 1) {
+    Int_t modMax=-111;
+    Int_t colMax=-111;
+    Int_t rowMax=-111;
+    Float_t eMax=-333;
+    //!!!for debug!!!
+    
+    Int_t relId[4];
+    for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
+      AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(iDigit);
+      if(digit->GetEnergy()>eMax) {
+	fGeom->AbsToRelNumbering(digit->GetId(),relId);
+	eMax=digit->GetEnergy();
+	modMax=relId[0];
+	rowMax=relId[2];
+	colMax=relId[3];
+      }
     }
+    
+    AliDebug(1,Form("Digit with max. energy:  modMax %d colMax %d rowMax %d  eMax %f\n\n",
+		    modMax,colMax,rowMax,eMax));
   }
 
-  AliDebug(1,Form("Digit with max. energy:  modMax %d colMax %d rowMax %d  eMax %f\n\n",
-		  modMax,colMax,rowMax,eMax));
-*/
   digitsTree->Fill();
   digits->Delete();
   delete digits;

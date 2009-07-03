@@ -29,7 +29,7 @@ public:
   Bool_t  EMCEcore2ESD()              const { return fEMCEcore2ESD;            }
   Bool_t  EMCSubtractPedestals()      const { return fEMCSubtractPedestals;    }
   Bool_t  EMCToUnfold()               const { return fEMCUnfold;               }
-  const char* EMCDecoderVersion()     const { return fEMCDecoderVersion.Data();}
+  const char* EMCFitterVersion()      const { return fEMCFitterVersion.Data(); }
   Bool_t  GetEMCEnergyCorrectionOn()  const { return fEMCEnergyCorrectionOn;   }
   Int_t   GetGlobalAltroOffset()      const { return fGlobalAltroOffset ;      }
   Int_t   GetGlobalAltroThreshold()   const { return fGlobalAltroThreshold ;   }
@@ -49,7 +49,7 @@ public:
   void SetEMCEcoreRadius(Float_t rCore)              { fEMCEcoreRadius        =rCore;   }
   void SetEMCEcore2ESD(Bool_t ecore)                 { fEMCEcore2ESD          =ecore;   }
   void SetEMCSubtractPedestals(Bool_t subtract)      { fEMCSubtractPedestals  =subtract;} 
-  void SetEMCDecoderVersion(const char* version="v1"){ fEMCDecoderVersion     =version ;}
+  void SetEMCFitterVersion(const char* version="v1") { fEMCFitterVersion     =version ; }
   void SetEMCUnfolding(Bool_t toUnfold=kFALSE)       { fEMCUnfold             =toUnfold;}
   void SetEMCEnergyCorrectionOn(Bool_t on=kTRUE)     { fEMCEnergyCorrectionOn =on;      }
   void SetGlobalAltroOffset(Int_t offset=5)          { fGlobalAltroOffset     =offset ; }
@@ -79,7 +79,7 @@ protected:
   Bool_t  fEMCSubtractPedestals;   // EMC: true if pedestal should be subtracted (in non-ZS)
   Bool_t  fEMCUnfold;              // EMC: true if overlapped clusters should be unfolded
   Bool_t  fEMCEnergyCorrectionOn;  // EMC: if true do non-linear correction of cluster energy
-  TString fEMCDecoderVersion ;     // EMC: AliPHOSRawDecoder version
+  TString fEMCFitterVersion ;      // EMC: AliPHOSRawFitter version
   Int_t   fGlobalAltroOffset ;     // Offset used in ALTRO chips in SZ runs
   Int_t   fGlobalAltroThreshold ;  // Threshold used in ALTRO chips in SZ runs
 

@@ -12,9 +12,9 @@ set(SRCS
                  AliPHOSCpvCalibData.cxx
                  AliPHOSEmcCalibData.cxx
                  AliPHOSPulseGenerator.cxx
-                 AliPHOSRawDecoder.cxx
-                 AliPHOSRawDecoderv1.cxx
-                 AliPHOSRawDecoderv2.cxx
+                 AliPHOSRawFitter.cxx
+                 AliPHOSRawFitterv1.cxx
+                 AliPHOSRawFitterv2.cxx
                  AliPHOSRawDigiProducer.cxx
                  AliPHOSEmcBadChannelsMap.cxx
                  AliPHOSSurvey.cxx

@@ -43,7 +43,7 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
   fEMCSubtractPedestals(kTRUE),
   fEMCUnfold(kTRUE),
   fEMCEnergyCorrectionOn(kTRUE),
-  fEMCDecoderVersion(""),
+  fEMCFitterVersion(""),
   fGlobalAltroOffset(0),
   fGlobalAltroThreshold(0),
   fCPVClusteringThreshold(0.0),
@@ -69,7 +69,7 @@ AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& ):
   fEMCSubtractPedestals(kTRUE),
   fEMCUnfold(kTRUE),
   fEMCEnergyCorrectionOn(kTRUE),
-  fEMCDecoderVersion(""),
+  fEMCFitterVersion(""),
   fGlobalAltroOffset(0),
   fGlobalAltroThreshold(0),
   fCPVClusteringThreshold(0.0),
@@ -98,7 +98,7 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
     fEMCSubtractPedestals   = recoParam.fEMCSubtractPedestals;
     fEMCUnfold              = recoParam.fEMCUnfold;
     fEMCEnergyCorrectionOn  = recoParam.fEMCEnergyCorrectionOn;
-    fEMCDecoderVersion      = recoParam.fEMCDecoderVersion;
+    fEMCFitterVersion       = recoParam.fEMCFitterVersion;
     fGlobalAltroOffset      = recoParam.fGlobalAltroOffset;
     fGlobalAltroThreshold   = recoParam.fGlobalAltroThreshold;
     fCPVClusteringThreshold = recoParam.fCPVClusteringThreshold;
@@ -126,7 +126,7 @@ void AliPHOSRecoParam::Print(Option_t * /*option*/) const
 		  "\tEMCSubtractPedestals   = %d\n"
 		  "\tEMCUnfold              = %d\n"
 		  "\tEMCEnergyCorrectionOn  = %d\n"
-		  "\tEMCDecoderVersion      = \"%s\"\n"
+		  "\tEMCFitterVersion       = \"%s\"\n"
 		  "\tGlobalAltroOffset      = %d",
 		  "\tGlobalAltroThreshold   = %d",
 		  fEMCClusteringThreshold,
@@ -140,7 +140,7 @@ void AliPHOSRecoParam::Print(Option_t * /*option*/) const
 		  fEMCSubtractPedestals,
 		  fEMCUnfold,
 		  fEMCEnergyCorrectionOn,
-		  fEMCDecoderVersion.Data(),
+		  fEMCFitterVersion.Data(),
 		  fGlobalAltroOffset,
 		  fGlobalAltroThreshold));
 

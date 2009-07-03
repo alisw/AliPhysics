@@ -16,7 +16,7 @@
 /* $Id$ */
 
 //This class produces PHOS digits of one event
-//using AliPHOSRawDecoder. 
+//using AliPHOSRawFitter. 
 //
 //   For example:
 //   TClonesArray *digits = new TClonesArray("AliPHOSDigit",100);
@@ -34,11 +34,12 @@
 
 // --- AliRoot header files ---
 #include "AliPHOSRawDigiProducer.h"
-#include "AliPHOSRawDecoder.h"
+#include "AliPHOSRawFitterv0.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSCalibData.h"
 #include "AliPHOSPulseGenerator.h"
+#include "AliCaloRawStreamV3.h"
 #include "AliLog.h"
 
 ClassImp(AliPHOSRawDigiProducer)
@@ -53,7 +54,9 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer():
   fSampleQualityCut(1.),
   fEmcCrystals(0),
   fGeom(0),
-  fPulseGenerator(0)
+  fPulseGenerator(0),
+  fRawReader(0),
+  fRawStream(0)
 {
   // Default constructor
 
@@ -65,7 +68,32 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer():
   GetCalibrationParameters() ; 
 
 }
-//--------------------------------------------------------------------------------------           
+//--------------------------------------------------------------------------------------
+AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(AliRawReader *rawReader,
+					       AliAltroMapping **mapping):
+  TObject(),
+  fEmcMinE(0.),
+  fCpvMinE(0.),
+  fSampleQualityCut(1.),
+  fEmcCrystals(0),
+  fGeom(0),
+  fPulseGenerator(0),
+  fRawReader(rawReader),
+  fRawStream(0)
+{
+  // Default constructor
+
+  fGeom=AliPHOSGeometry::GetInstance() ;
+  if(!fGeom) fGeom = AliPHOSGeometry::GetInstance("IHEP");
+
+  fEmcCrystals=fGeom->GetNCristalsInModule()*fGeom->GetNModules() ;
+  fPulseGenerator = new AliPHOSPulseGenerator();
+  GetCalibrationParameters() ; 
+
+  fRawStream = new AliCaloRawStreamV3(rawReader,"PHOS",mapping);
+
+}
+//--------------------------------------------------------------------------------------
 AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp):
   TObject(),
   fEmcMinE(0.),
@@ -73,7 +101,9 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp)
   fSampleQualityCut(1.),
   fEmcCrystals(0),
   fGeom(0),
-  fPulseGenerator(0)
+  fPulseGenerator(0),
+  fRawReader(0),
+  fRawStream(0)
 {                                                          
   // Copy constructor
 
@@ -100,23 +130,24 @@ AliPHOSRawDigiProducer& AliPHOSRawDigiProducer::operator= (const AliPHOSRawDigiP
   fPulseGenerator = new AliPHOSPulseGenerator();
   return  *this;
 } 
-//--------------------------------------------------------------------------------------                                                   
+//--------------------------------------------------------------------------------------
 AliPHOSRawDigiProducer::~AliPHOSRawDigiProducer()
 {
-  // Desctructor
+  // Destructor
   if(fPulseGenerator) delete fPulseGenerator ;
   fPulseGenerator=0 ;
+  delete fRawStream;
 }
 //--------------------------------------------------------------------------------------
-void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder* decoder) 
+void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0* fitter) 
 {
   //Makes the job.
-  //TClonesArray *digits and raw data decoder should be provided by calling function.
+  //TClonesArray *digits and raw data fitter should be provided by calling function.
 
   digits->Clear();
  
-  Int_t    iDigit   = 0 ;
-  Int_t relId[4], absId =0;
+  Int_t iDigit=0 ;
+  Int_t relId[4], absId=-1, caloFlag=-1;
 
   const Double_t baseLine=1. ; //Minimal energy of digit in ADC ch. 
   const Double_t highLowDiff=2.; //Maximal difference between High and Low channels in LG adc channels 
@@ -125,95 +156,109 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
   TClonesArray tmpLG("AliPHOSDigit",10000) ;
   Int_t ilgDigit=0 ;
 
-  //Let decoder subtract pedestals in case of ZS
-  decoder->SetCalibData(fgCalibData) ;
+  //Let fitter subtract pedestals in case of ZS
+  fitter->SetCalibData(fgCalibData) ;
   
-  while (decoder->NextDigit()) {
+  while (fRawStream->NextDDL()) {
+    while (fRawStream->NextChannel()) {
+      relId[0] = fRawStream->GetModule();
+      relId[1] = 0;
+      relId[2] = fRawStream->GetCellX();
+      relId[3] = fRawStream->GetCellZ();
+      caloFlag = fRawStream->GetCaloFlag(); // 0=LG, 1=HG, 2=TRU
+      fGeom->RelToAbsNumbering(relId, absId);
 
-    Double_t energy=decoder->GetEnergy() ; 
-    if(energy<=baseLine) //in ADC channels
-      continue ;
+      Int_t nBunches = 0;
+      while (fRawStream->NextBunch()) {
+	nBunches++;
+	if (nBunches > 1) continue;
+	const UShort_t *sig = fRawStream->GetSignals();
+	Int_t sigStart  = fRawStream->GetStartTimeBin();
+	Int_t sigLength = fRawStream->GetBunchLength();
+	fitter->SetSamples(sig,sigStart,sigLength);
+      } // End of NextBunch()
 
-    //remove digits with bad shape. Decoder should calculate quality so that 
-    //in default case quality [0,1], while larger values of quality mean somehow 
-    //corrupted samples, 999 means obviously corrupted sample.
-    //It is difficult to fit samples with overflow (even setting cut on overflow values)
-    //because too few points are left to fit. So we do not evaluate samples with overflow
-    if(decoder->GetSampleQuality() > fSampleQualityCut && !(decoder->IsOverflow()))
-       continue ;
+      fitter->SetNBunches(nBunches);
+      fitter->SetChannelGeo(relId[0],relId[2],relId[3],caloFlag);
+      fitter->Eval();
+      
+      Double_t energy = fitter->GetEnergy() ; 
+      Double_t time   = fitter->GetTime() ;
+      if(energy<=baseLine) //in ADC channels
+	continue ;
 
-    Bool_t lowGainFlag = decoder->IsLowGain();
+      //remove digits with bad shape. Fitter should calculate quality so that 
+      //in default case quality [0,1], while larger values of quality mean somehow 
+      //corrupted samples, 999 means obviously corrupted sample.
+      //It is difficult to fit samples with overflow (even setting cut on overflow values)
+      //because too few points are left to fit. So we do not evaluate samples with overflow
 
-    relId[0] = decoder->GetModule();
-    relId[1] = 0;
-    relId[2] = decoder->GetRow();
-    relId[3] = decoder->GetColumn();
-    fGeom->RelToAbsNumbering(relId, absId);
+      if(fitter->GetSignalQuality() > fSampleQualityCut && !(fitter->IsOverflow()))
+	continue ;
+      
+//       energy = CalibrateE(energy,relId,lowGainFlag) ;
+//       time   = CalibrateT(time,relId,lowGainFlag) ;
+      
+      if(energy <= 0.) 
+	continue;
+      
+      if (caloFlag == AliCaloRawStreamV3::kLowGain) {
+	new(tmpLG[ilgDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);
+	ilgDigit++ ; 
+      }
+      else if (caloFlag == AliCaloRawStreamV3::kHighGain) {
+	if(fitter->IsOverflow()) //Keep this digit to replace it by Low Gain later.
+	  //If there is no LogGain it wil be removed by cut on Min E
+	  new((*digits)[iDigit]) AliPHOSDigit(-1,absId,-1.f,(Float_t)time);
+	else
+	  new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);
+	iDigit++;
+      }
+    } // End of NextChannel()
 
-    Double_t time = decoder->GetTime() ;
-    time = CalibrateT(time,relId,lowGainFlag) ;
-
-    energy = CalibrateE(energy,relId,lowGainFlag) ;
-
-    if(energy <= 0.) 
-       continue;
-
-    if(lowGainFlag){
-      new(tmpLG[ilgDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);
-      ilgDigit++ ; 
-    }
-    else{ 
-      if(decoder->IsOverflow()) //Keep this digit to replace it by Low Gain later.
-                                //If there is no LogGain it wil be removed by cut on Min E
-        new((*digits)[iDigit]) AliPHOSDigit(-1,absId,-1.f,(Float_t)time);
-      else
-        new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);
-      iDigit++;
-    }
-  }
-
-  //Now scan created LG and HG digits and keep only those which appeared in both lists 
-  //replace energy of HighGain digits only if there is overflow
-  //negative energy (overflow)
-  digits->Sort() ;
-  tmpLG.Sort() ;
-  Int_t iLG = 0;
-  Int_t nLG1 = tmpLG.GetEntriesFast()-1 ;
-
-  for(Int_t iDig=0 ; iDig < digits->GetEntriesFast() ; iDig++) { 
-    AliPHOSDigit * digHG = dynamic_cast<AliPHOSDigit*>(digits->At(iDig)) ;
-    if (!digHG) continue;
-    AliPHOSDigit * digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
-    while(digLG && iLG<nLG1 && digHG->GetId()> digLG->GetId()){
-      iLG++ ;
-      digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
-    }
-    absId=digHG->GetId() ;                                                                                                         
-    fGeom->AbsToRelNumbering(absId,relId) ;                                                                                              
+    //Now scan created LG and HG digits and keep only those which appeared in both lists 
+    //replace energy of HighGain digits only if there is overflow
+    //negative energy (overflow)
+    digits->Sort() ;
+    tmpLG.Sort() ;
+    Int_t iLG = 0;
+    Int_t nLG1 = tmpLG.GetEntriesFast()-1 ;
+    
+    for(Int_t iDig=0 ; iDig < digits->GetEntriesFast() ; iDig++) { 
+      AliPHOSDigit * digHG = dynamic_cast<AliPHOSDigit*>(digits->At(iDig)) ;
+      if (!digHG) continue;
+      AliPHOSDigit * digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
+      while(digLG && iLG<nLG1 && digHG->GetId()> digLG->GetId()){
+	iLG++ ;
+	digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
+      }
+      absId=digHG->GetId() ;
+      fGeom->AbsToRelNumbering(absId,relId) ;
  
-    if(digLG && digHG->GetId() == digLG->GetId()){ //we found pair
-      if(digHG->GetEnergy()<0.){ //This is overflow in HG
-        digHG->SetTime(digLG->GetTime()) ;
-        digHG->SetEnergy(digLG->GetEnergy()) ;
-      } 
-      else{ //Make approximate comparison of HG and LG energies
-        Double_t de = (digHG->GetEnergy()-digLG->GetEnergy()) ; 
-        if(TMath::Abs(de)>CalibrateE(double(highLowDiff),relId,1)){ //too strong difference, remove digit
-          digits->RemoveAt(iDig) ;
-        }
+      if(digLG && digHG->GetId() == digLG->GetId()){ //we found pair
+	if(digHG->GetEnergy()<0.){ //This is overflow in HG
+	  digHG->SetTime(digLG->GetTime()) ;
+	  digHG->SetEnergy(digLG->GetEnergy()) ;
+	}
+	else{ //Make approximate comparison of HG and LG energies
+	  Double_t de = (digHG->GetEnergy()-digLG->GetEnergy()) ; 
+	  if(TMath::Abs(de)>CalibrateE(double(highLowDiff),relId,1)){ //too strong difference, remove digit
+	    digits->RemoveAt(iDig) ;
+	  }
+	}
+      }
+      else{ //no pair - remove
+	// temporary fix for dead LG channels
+	if(relId[2]%2==1 && relId[3]%16==4) 
+	  continue ;
+	if(digHG->GetEnergy()>CalibrateE(double(5.),relId,1)) //One can not always find LG with Amp<5 ADC ch.
+	  digits->RemoveAt(iDig) ;                                                                                                            
       }
     }
-    else{ //no pair - remove
-      // temporary fix for dead LG channels
-      if(relId[2]%2==1 && relId[3]%16==4) 
-        continue ;
-      if(digHG->GetEnergy()>CalibrateE(double(5.),relId,1)) //One can not always find LG with Amp<5 ADC ch.
-        digits->RemoveAt(iDig) ;                                                                                                            
-    }
-  }
+  } // End of NextDDL()
 
   CleanDigits(digits) ;
-
+  
 }
 //____________________________________________________________________________
 Double_t AliPHOSRawDigiProducer::CalibrateE(Double_t amp, Int_t* relId, Bool_t isLowGain)

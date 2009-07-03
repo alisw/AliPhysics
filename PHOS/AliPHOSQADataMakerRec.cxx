@@ -33,20 +33,22 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliCaloRawStreamV3.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliPHOSQADataMakerRec.h"
-#include "AliQAChecker.h"
 #include "AliPHOSDigit.h" 
 #include "AliPHOSCpvRecPoint.h" 
 #include "AliPHOSEmcRecPoint.h" 
+#include "AliPHOSRawFitterv0.h"
+#include "AliPHOSRawFitterv1.h"
+#include "AliPHOSRawFitterv2.h"
+#include "AliPHOSReconstructor.h"
 #include "AliPHOSRecParticle.h" 
 #include "AliPHOSTrackSegment.h" 
-#include "AliPHOSRawDecoder.h"
-#include "AliPHOSRawDecoderv1.h"
-#include "AliPHOSRawDecoderv2.h"
-#include "AliPHOSReconstructor.h"
+#include "AliQAChecker.h"
+#include "AliRawReader.h"
 
 ClassImp(AliPHOSQADataMakerRec)
            
@@ -374,111 +376,153 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   //Fill prepared histograms with Raw digit properties
 
   rawReader->Reset() ;
-  AliPHOSRawDecoder * decoder ;
-  if(strcmp(GetRecoParam()->EMCDecoderVersion(),"v1")==0)
-    decoder=new AliPHOSRawDecoderv1(rawReader);
-  else
-    if(strcmp(GetRecoParam()->EMCDecoderVersion(),"v2")==0)
-      decoder=new AliPHOSRawDecoderv2(rawReader);
+
+  const TObjArray* maps = AliPHOSRecoParam::GetMappings();
+  if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
+
+  AliAltroMapping *mapping[4];
+  for(Int_t i = 0; i < 4; i++) {
+    mapping[i] = (AliAltroMapping*)maps->At(i);
+  }
+
+  AliCaloRawStreamV3 *fRawStream = new AliCaloRawStreamV3(rawReader,"PHOS",mapping);
+
+  AliPHOSRawFitterv0 * fitter ;
+  if     (strcmp(GetRecoParam()->EMCFitterVersion(),"v1")==0)
+    fitter=new AliPHOSRawFitterv1();
+  else if(strcmp(GetRecoParam()->EMCFitterVersion(),"v2")==0)
+      fitter=new AliPHOSRawFitterv2();
     else
-      decoder=new AliPHOSRawDecoder(rawReader);
-  //decoder->SubtractPedestals(GetRecoParam()->EMCSubtractPedestals());
-  decoder->SubtractPedestals(kTRUE);
+      fitter=new AliPHOSRawFitterv0();
+  fitter->SubtractPedestals(GetRecoParam()->EMCSubtractPedestals());
+//   fitter->SubtractPedestals(kTRUE);
   Double_t lgEtot=0. ;
   Double_t hgEtot=0. ;
-  Int_t lgNtot=0 ;
-  Int_t hgNtot=0 ;
+  Int_t    lgNtot=0 ;
+  Int_t    hgNtot=0 ;
 
-  while (decoder->NextDigit()) {
-   Int_t module  = decoder->GetModule() ;
-   Int_t row     = decoder->GetRow() ;
-   Int_t col     = decoder->GetColumn() ;
-   Double_t time = decoder->GetTime() ;
-   Double_t energy  = decoder->GetEnergy() ;
-   Bool_t lowGain = decoder->IsLowGain();
-   if (lowGain) {
-     //if(GetRecoParam()->EMCSubtractPedestals())
-       GetRawsData(kLGpedRMS)->Fill(decoder->GetPedestalRMS()) ;
-     if(energy<2.)
-       continue ;
-     switch(module){
-        case 1: GetRawsData(kLGmod1)->Fill(row-0.5,col-0.5) ; break ;
-        case 2: GetRawsData(kLGmod2)->Fill(row-0.5,col-0.5) ; break ;
-        case 3: GetRawsData(kLGmod3)->Fill(row-0.5,col-0.5) ; break ;
-        case 4: GetRawsData(kLGmod4)->Fill(row-0.5,col-0.5) ; break ;
-        case 5: GetRawsData(kLGmod5)->Fill(row-0.5,col-0.5) ; break ;
-     }
-     switch (module){
-        case 1: ((TH2F*)GetRawsData(kLGpedRMSMod1))->Fill(row-0.5,col-0.5,decoder->GetPedestalRMS()) ; break ;
-        case 2: ((TH2F*)GetRawsData(kLGpedRMSMod2))->Fill(row-0.5,col-0.5,decoder->GetPedestalRMS()) ; break ;
-        case 3: ((TH2F*)GetRawsData(kLGpedRMSMod3))->Fill(row-0.5,col-0.5,decoder->GetPedestalRMS()) ; break ;
-        case 4: ((TH2F*)GetRawsData(kLGpedRMSMod4))->Fill(row-0.5,col-0.5,decoder->GetPedestalRMS()) ; break ;
-        case 5: ((TH2F*)GetRawsData(kLGpedRMSMod5))->Fill(row-0.5,col-0.5,decoder->GetPedestalRMS()) ; break ;
-     }
-     //if quality was evaluated, fill histo
-     if(strcmp(GetRecoParam()->EMCDecoderVersion(),"v1")==0){
-       switch (module){
-         case 1: ((TH2F*)GetRawsData(kLGqualMod1))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
-         case 2: ((TH2F*)GetRawsData(kLGqualMod2))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
-         case 3: ((TH2F*)GetRawsData(kLGqualMod3))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
-         case 4: ((TH2F*)GetRawsData(kLGqualMod4))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
-         case 5: ((TH2F*)GetRawsData(kLGqualMod5))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
-       }
-     }                                  
-     GetRawsData(kNmodLG)->Fill(module) ;
-     GetRawsData(kLGtime)->Fill(time) ; 
-     GetRawsData(kSpecLG)->Fill(energy) ;    
-     lgEtot+=energy ;
-     lgNtot++ ;   
-   } else {        
-     //if this isnon-ZS run - fill pedestal RMS
-     //if(GetRecoParam()->EMCSubtractPedestals())
-       GetRawsData(kHGpedRMS)->Fill(decoder->GetPedestalRMS()) ;
-     if(energy<8.)
-       continue ;
-     switch (module){
-         case 1: GetRawsData(kHGmod1)->Fill(row-0.5,col-0.5) ; break ;
-         case 2: GetRawsData(kHGmod2)->Fill(row-0.5,col-0.5) ; break ;
-         case 3: GetRawsData(kHGmod3)->Fill(row-0.5,col-0.5) ; break ;
-         case 4: GetRawsData(kHGmod4)->Fill(row-0.5,col-0.5) ; break ;
-         case 5: GetRawsData(kHGmod5)->Fill(row-0.5,col-0.5) ; break ;
-     }
-     switch (module){
-         case 1: ((TH2F*)GetRawsData(kHGpedRMSMod1))->Fill(row-0.5,col-0.5,decoder->GetPedestalRMS()) ; break ;
-         case 2: ((TH2F*)GetRawsData(kHGpedRMSMod2))->Fill(row-0.5,col-0.5,decoder->GetPedestalRMS()) ; break ;
-         case 3: ((TH2F*)GetRawsData(kHGpedRMSMod3))->Fill(row-0.5,col-0.5,decoder->GetPedestalRMS()) ; break ;
-         case 4: ((TH2F*)GetRawsData(kHGpedRMSMod4))->Fill(row-0.5,col-0.5,decoder->GetPedestalRMS()) ; break ;
-         case 5: ((TH2F*)GetRawsData(kHGpedRMSMod5))->Fill(row-0.5,col-0.5,decoder->GetPedestalRMS()) ; break ;
-     }               
-     //if quality was evaluated, fill histo
-     if(strcmp(GetRecoParam()->EMCDecoderVersion(),"v1")==0){
-       switch (module){
-         case 1: ((TH2F*)GetRawsData(kHGqualMod1))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
-         case 2: ((TH2F*)GetRawsData(kHGqualMod2))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
-         case 3: ((TH2F*)GetRawsData(kHGqualMod3))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
-         case 4: ((TH2F*)GetRawsData(kHGqualMod4))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
-         case 5: ((TH2F*)GetRawsData(kHGqualMod5))->Fill(row-0.5,col-0.5,decoder->GetSampleQuality()) ; break ;
-       }
-     }
-     GetRawsData(kNmodHG)->Fill(module) ; 
-     GetRawsData(kHGtime)->Fill(time) ;  
-     GetRawsData(kSpecHG)->Fill(energy) ;
-     hgEtot+=energy ; 
-     hgNtot++ ;  
-   }                 
-  }                    
-  delete decoder;
+  while (fRawStream->NextDDL()) {   // !!!!!!!!!!! YK
+    while (fRawStream->NextChannel()) {
+      Int_t module   = fRawStream->GetModule();
+      Int_t cellX    = fRawStream->GetCellX();
+      Int_t cellZ    = fRawStream->GetCellZ();
+      Int_t caloFlag = fRawStream->GetCaloFlag(); // 0=LG, 1=HG, 2=TRU
+
+      Int_t nBunches = 0;
+      while (fRawStream->NextBunch()) {
+	nBunches++;
+	if (nBunches > 1) continue;
+	const UShort_t *sig = fRawStream->GetSignals();
+	Int_t sigStart      = fRawStream->GetStartTimeBin();
+	Int_t sigLength     = fRawStream->GetBunchLength();
+	fitter->SetSamples(sig,sigStart,sigLength);
+      } // End of NextBunch()
+
+      fitter->SetNBunches(nBunches);
+      fitter->SetChannelGeo(module,cellX,cellZ,caloFlag);
+      fitter->Eval();
+      
+      Double_t energy = fitter->GetEnergy() ; 
+      Double_t time   = fitter->GetTime() ;
+
+      if (caloFlag == 0) { // LG
+	//if(GetRecoParam()->EMCSubtractPedestals())
+	GetRawsData(kLGpedRMS)->Fill(fitter->GetPedestalRMS()) ;
+	if(energy<2.)
+	  continue ;
+	switch(module){
+        case 1: GetRawsData(kLGmod1)->Fill(cellX-0.5,cellZ-0.5) ; break ;
+        case 2: GetRawsData(kLGmod2)->Fill(cellX-0.5,cellZ-0.5) ; break ;
+        case 3: GetRawsData(kLGmod3)->Fill(cellX-0.5,cellZ-0.5) ; break ;
+        case 4: GetRawsData(kLGmod4)->Fill(cellX-0.5,cellZ-0.5) ; break ;
+        case 5: GetRawsData(kLGmod5)->Fill(cellX-0.5,cellZ-0.5) ; break ;
+	}
+	switch (module){
+        case 1: ((TH2F*)GetRawsData(kLGpedRMSMod1))->Fill(cellX-0.5,cellZ-0.5,fitter->GetPedestalRMS()) ; break ;
+        case 2: ((TH2F*)GetRawsData(kLGpedRMSMod2))->Fill(cellX-0.5,cellZ-0.5,fitter->GetPedestalRMS()) ; break ;
+        case 3: ((TH2F*)GetRawsData(kLGpedRMSMod3))->Fill(cellX-0.5,cellZ-0.5,fitter->GetPedestalRMS()) ; break ;
+        case 4: ((TH2F*)GetRawsData(kLGpedRMSMod4))->Fill(cellX-0.5,cellZ-0.5,fitter->GetPedestalRMS()) ; break ;
+        case 5: ((TH2F*)GetRawsData(kLGpedRMSMod5))->Fill(cellX-0.5,cellZ-0.5,fitter->GetPedestalRMS()) ; break ;
+	}
+	//if quality was evaluated, fill histo
+	if(strcmp(GetRecoParam()->EMCFitterVersion(),"v1")==0){
+	  switch (module){
+	  case 1: ((TH2F*)GetRawsData(kLGqualMod1))->Fill(cellX-0.5,cellZ-0.5,fitter->GetSignalQuality()) ; break ;
+	  case 2: ((TH2F*)GetRawsData(kLGqualMod2))->Fill(cellX-0.5,cellZ-0.5,fitter->GetSignalQuality()) ; break ;
+	  case 3: ((TH2F*)GetRawsData(kLGqualMod3))->Fill(cellX-0.5,cellZ-0.5,fitter->GetSignalQuality()) ; break ;
+	  case 4: ((TH2F*)GetRawsData(kLGqualMod4))->Fill(cellX-0.5,cellZ-0.5,fitter->GetSignalQuality()) ; break ;
+	  case 5: ((TH2F*)GetRawsData(kLGqualMod5))->Fill(cellX-0.5,cellZ-0.5,fitter->GetSignalQuality()) ; break ;
+	  }
+	}                                  
+	GetRawsData(kNmodLG)->Fill(module) ;
+	GetRawsData(kLGtime)->Fill(time) ; 
+	GetRawsData(kSpecLG)->Fill(energy) ;    
+	lgEtot+=energy ;
+	lgNtot++ ;   
+      } else if (caloFlag == 1) { // HG        
+	//if this isnon-ZS run - fill pedestal RMS
+	//if(GetRecoParam()->EMCSubtractPedestals())
+	GetRawsData(kHGpedRMS)->Fill(fitter->GetPedestalRMS()) ;
+	if(energy<8.)
+	  continue ;
+	switch (module){
+	case 1: GetRawsData(kHGmod1)->Fill(cellX-0.5,cellZ-0.5) ; break ;
+	case 2: GetRawsData(kHGmod2)->Fill(cellX-0.5,cellZ-0.5) ; break ;
+	case 3: GetRawsData(kHGmod3)->Fill(cellX-0.5,cellZ-0.5) ; break ;
+	case 4: GetRawsData(kHGmod4)->Fill(cellX-0.5,cellZ-0.5) ; break ;
+	case 5: GetRawsData(kHGmod5)->Fill(cellX-0.5,cellZ-0.5) ; break ;
+	}
+	switch (module){
+	case 1: ((TH2F*)GetRawsData(kHGpedRMSMod1))->Fill(cellX-0.5,cellZ-0.5,fitter->GetPedestalRMS()) ; break ;
+	case 2: ((TH2F*)GetRawsData(kHGpedRMSMod2))->Fill(cellX-0.5,cellZ-0.5,fitter->GetPedestalRMS()) ; break ;
+	case 3: ((TH2F*)GetRawsData(kHGpedRMSMod3))->Fill(cellX-0.5,cellZ-0.5,fitter->GetPedestalRMS()) ; break ;
+	case 4: ((TH2F*)GetRawsData(kHGpedRMSMod4))->Fill(cellX-0.5,cellZ-0.5,fitter->GetPedestalRMS()) ; break ;
+	case 5: ((TH2F*)GetRawsData(kHGpedRMSMod5))->Fill(cellX-0.5,cellZ-0.5,fitter->GetPedestalRMS()) ; break ;
+	}               
+	//if quality was evaluated, fill histo
+	if(strcmp(GetRecoParam()->EMCFitterVersion(),"v1")==0){
+	  switch (module){
+	  case 1: ((TH2F*)GetRawsData(kHGqualMod1))->Fill(cellX-0.5,cellZ-0.5,fitter->GetSignalQuality()) ; break ;
+	  case 2: ((TH2F*)GetRawsData(kHGqualMod2))->Fill(cellX-0.5,cellZ-0.5,fitter->GetSignalQuality()) ; break ;
+	  case 3: ((TH2F*)GetRawsData(kHGqualMod3))->Fill(cellX-0.5,cellZ-0.5,fitter->GetSignalQuality()) ; break ;
+	  case 4: ((TH2F*)GetRawsData(kHGqualMod4))->Fill(cellX-0.5,cellZ-0.5,fitter->GetSignalQuality()) ; break ;
+	  case 5: ((TH2F*)GetRawsData(kHGqualMod5))->Fill(cellX-0.5,cellZ-0.5,fitter->GetSignalQuality()) ; break ;
+	  }
+	}
+	GetRawsData(kNmodHG)->Fill(module) ; 
+	GetRawsData(kHGtime)->Fill(time) ;  
+	GetRawsData(kSpecHG)->Fill(energy) ;
+	hgEtot+=energy ; 
+	hgNtot++ ;  
+      }
+    }  // End of NextChannel
+  } // End of NextDDL
+  delete fitter;
+
   GetRawsData(kEtotLG)->Fill(lgEtot) ; 
-  TParameter<double> * p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kEtotLG)->GetName()))) ; 
+  TParameter<double> * p;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+					FindObject(Form("%s_%s_%s", GetName(), 
+							AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), 
+							GetRawsData(kEtotLG)->GetName()))) ; 
   if (p) p->SetVal(lgEtot) ; 
   GetRawsData(kEtotHG)->Fill(hgEtot) ;  
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kEtotHG)->GetName()))) ; 
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+					FindObject(Form("%s_%s_%s", GetName(), 
+							AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), 
+							GetRawsData(kEtotHG)->GetName()))) ; 
   if (p) p->SetVal(hgEtot) ; 
   GetRawsData(kNtotLG)->Fill(lgNtot) ;
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kNtotLG)->GetName()))) ; 
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+					FindObject(Form("%s_%s_%s", GetName(), 
+							AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), 
+							GetRawsData(kNtotLG)->GetName()))) ; 
   if (p) p->SetVal(lgNtot) ; 
   GetRawsData(kNtotHG)->Fill(hgNtot) ;
-  p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kNtotHG)->GetName()))) ; 
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+					FindObject(Form("%s_%s_%s", 
+							GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), 
+							GetRawsData(kNtotHG)->GetName()))) ; 
   if (p) p->SetVal(hgNtot) ; 
 }
 
