@@ -367,7 +367,7 @@ void AliQADataMakerRec::InitRecoParams()
     AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
     if(!entry) {
       fRecoParam = NULL ; 
-      AliWarning(Form("Couldn't find RecoParam entry in OCDB for detector %s",GetName()));
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("Couldn't find RecoParam entry in OCDB for detector %s",GetName()));
     }
     else {
       TObject * recoParamObj = entry->GetObject() ; 
