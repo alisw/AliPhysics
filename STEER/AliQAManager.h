@@ -52,12 +52,13 @@ public:
   const Char_t *   GetMode(){ return fMode.Data() ; }
   AliQAv1     *    GetQA(UInt_t run, UInt_t evt) ; 
 	AliQADataMaker * GetQADataMaker(const Int_t iDet) ; 
-	void             Increment() ;
+	void             Increment(const AliQAv1::TASKINDEX_t taskIndex = AliQAv1::kNULLTASKINDEX) ;
 	void             InitQADataMaker(UInt_t run, TObjArray * detArray=0x0) ;
 	Bool_t           Merge(Int_t runNumber = -1, const char *fileName = NULL) const ;  
   void             MergeCustom() const ;
   Bool_t           MergeXML(const Char_t * collection, const Char_t * subFile = 0, const Char_t * outFile = 0) ; 
   static           AliQAManager * QAManager(const Char_t * mode = "", TMap *entryCache = NULL, Int_t run = -1) ;
+  static           AliQAManager * QAManager(AliQAv1::TASKINDEX_t task) ;  
 	void             Reset(const Bool_t sameCycle = kFALSE) ;  
 	TString          Run(const Char_t * detectors, const AliQAv1::TASKINDEX_t taskIndex=AliQAv1::kNULLTASKINDEX, Bool_t const sameCycle = kFALSE, const Char_t * fileName = NULL) ; 
 	TString          Run(const Char_t * detectors, AliRawReader * rawReader, Bool_t const sameCycle = kFALSE) ; 

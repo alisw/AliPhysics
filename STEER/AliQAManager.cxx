@@ -312,9 +312,10 @@ Bool_t AliQAManager::DoIt(const AliQAv1::TASKINDEX_t taskIndex)
 				} //task switch
 			}
 		} // detector loop
-    Increment() ; 
+    Increment(taskIndex) ; 
 	} // event loop	
 	// Save QA data for all detectors
+
 	rv = Finish(taskIndex) ;
 	
 	if ( taskIndex == AliQAv1::kRAWS ) 
@@ -568,9 +569,14 @@ void  AliQAManager::EndOfCycle(TString detectors)
 }
 
 //_____________________________________________________________________________
-void AliQAManager::Increment()
+void AliQAManager::Increment(const AliQAv1::TASKINDEX_t taskIndex)
 {
   // Increments the cycle counter for all QA Data Makers
+  static AliQAv1::TASKINDEX_t currentTask = AliQAv1::kNTASKINDEX ; 
+  if (currentTask == taskIndex) 
+    return ; 
+  else 
+    currentTask = taskIndex ; 
  	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQAv1::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
@@ -1094,6 +1100,43 @@ AliQAManager * AliQAManager::QAManager(const Char_t * mode, TMap *entryCache, In
 		  fgQAInstance->InitFromCache(entryCache,run);
   }
 	return fgQAInstance;
+}
+
+//_____________________________________________________________________________
+AliQAManager * AliQAManager::QAManager(AliQAv1::TASKINDEX_t task) 
+{
+  // returns AliQAManager instance (singleton)
+  switch (task) {
+    case AliQAv1::kRAWS:
+      return QAManager("rec") ; 
+      break;
+    case AliQAv1::kHITS:
+      return QAManager("sim") ; 
+      break;
+    case AliQAv1::kSDIGITS:
+      return QAManager("sim") ; 
+      break;
+    case AliQAv1::kDIGITS:
+      return QAManager("sim") ; 
+      break;
+    case AliQAv1::kDIGITSR:
+      return QAManager("rec") ; 
+      break;
+    case AliQAv1::kRECPOINTS:
+      return QAManager("rec") ; 
+    case AliQAv1::kTRACKSEGMENTS:
+      return NULL ; 
+      break;
+    case AliQAv1::kRECPARTICLES:
+      return NULL ; 
+      break;
+    case AliQAv1::kESDS:
+      return QAManager("rec") ; 
+      break;
+    default:
+      return NULL ; 
+      break;
+  }
 }
 
 //_____________________________________________________________________________
