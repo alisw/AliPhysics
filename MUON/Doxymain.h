@@ -29,6 +29,7 @@ Currently there are the documentation pages on
 - \ref README_mchda 
 - \ref README_mtrda 
 - \ref README_calib 
+- \ref README_calign 
 - \ref README_geometry 
 - \ref README_trigger 
 - \ref README_shuttle 
