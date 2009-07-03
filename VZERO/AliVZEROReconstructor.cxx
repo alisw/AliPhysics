@@ -178,7 +178,6 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   TBranch* digitBranch = digitsTree->GetBranch("VZERODigit");
   digitBranch->SetAddress(&digitsArray);
 
-  Short_t Multiplicity[64];
   Float_t   mult[64];  
   Short_t    adc[64]; 
   Short_t   time[64]; 
@@ -225,10 +224,8 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
         } 	    
     } // end of loop over digits
   } // end of loop over events in digits tree
-  
-  for (Int_t j=0; j<64; j++) Multiplicity[j] = short(mult[j]+0.5); 
-        
-  fESDVZERO->SetMultiplicity(Multiplicity);
+         
+  fESDVZERO->SetMultiplicity(mult);
   fESDVZERO->SetADC(adc);
   fESDVZERO->SetTime(time);
   fESDVZERO->SetWidth(width);

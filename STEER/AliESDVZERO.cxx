@@ -13,7 +13,7 @@ AliESDVZERO::AliESDVZERO()
 {   
    // Default constructor 
    for(Int_t j=0; j<64; j++){ 
-      fMultiplicity[j] = 0;   
+      fMultiplicity[j] = 0.0;   
       fAdc[j]   = 0;   
       fTime[j]  = 0; 
       fWidth[j] = 0; 
@@ -44,7 +44,7 @@ AliESDVZERO::AliESDVZERO(const AliESDVZERO &o)
 //__________________________________________________________________________
 AliESDVZERO::AliESDVZERO(UInt_t BBtriggerV0A, UInt_t BGtriggerV0A,
 	      UInt_t BBtriggerV0C, UInt_t BGtriggerV0C,
-	      Short_t *Multiplicity, Short_t *Adc, 
+	      Float_t *Multiplicity, Short_t *Adc, 
 	      Short_t *Time, Short_t *Width, Bool_t *BBFlag, Bool_t *BGFlag)
   :TObject(),
    fBBtriggerV0A(BBtriggerV0A),
@@ -105,71 +105,71 @@ Short_t AliESDVZERO::GetNbPMV0C()
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetMTotV0A()
+Float_t AliESDVZERO::GetMTotV0A()
 {
-  Int_t n=0;
+  Float_t mul=0.0;
   for(Int_t i=32;i<64;i++) 
-    n+= (Int_t) fMultiplicity[i];
-  return n;
+    mul+= (Float_t) fMultiplicity[i];
+  return mul;
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetMTotV0C()
+Float_t AliESDVZERO::GetMTotV0C()
 {
-  Int_t n=0;
+  Float_t mul=0.0;
   for(Int_t i=0;i<32;i++) 
-    n+= (Int_t) fMultiplicity[i];
-  return n;
+    mul+= (Float_t) fMultiplicity[i];
+  return mul;
 }
 
 //__________________________________________________________________________
-Int_t* AliESDVZERO::GetMRingV0A()
+Float_t* AliESDVZERO::GetMRingV0A()
 {
 //  cout << "AliESDVZERO::GetMRingV0C() not supported any more" << endl;
 //  cout << "use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)" << endl;
   AliInfo("AliESDVZERO::GetMRingV0C() not supported any more");
-  AliInfo("use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)");
+  AliInfo("use Float_t AliESDVZERO::GetMRingV0C(Int_t ring)");
   return 0x0;
 }
 
 //__________________________________________________________________________
-Int_t* AliESDVZERO::GetMRingV0C()
+Float_t* AliESDVZERO::GetMRingV0C()
 {
 //  cout << "AliESDVZERO::GetMRingV0C() not supported any more" << endl;
 //  cout << "use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)" << endl;
   AliInfo("AliESDVZERO::GetMRingV0C() not supported any more");
-  AliInfo("use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)"); 
+  AliInfo("use Float_t AliESDVZERO::GetMRingV0C(Int_t ring)"); 
   return 0x0;
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetMRingV0A(Int_t ring)
+Float_t AliESDVZERO::GetMRingV0A(Int_t ring)
 { 
   if (OutOfRange(ring, "AliESDVZERO:::GetMRingV0A",4)) return -1;
-  Int_t n=0;
+  Float_t mul =0.0;
 
-  if (ring == 0) for(Int_t i=32;i<40;i++) n += (Int_t) fMultiplicity[i];
-  if (ring == 1) for(Int_t i=40;i<48;i++) n += (Int_t) fMultiplicity[i];
-  if (ring == 2) for(Int_t i=48;i<56;i++) n += (Int_t) fMultiplicity[i];
-  if (ring == 3) for(Int_t i=56;i<64;i++) n += (Int_t) fMultiplicity[i];
-  return n ;
+  if (ring == 0) for(Int_t i=32;i<40;i++) mul += (Float_t) fMultiplicity[i];
+  if (ring == 1) for(Int_t i=40;i<48;i++) mul += (Float_t) fMultiplicity[i];
+  if (ring == 2) for(Int_t i=48;i<56;i++) mul += (Float_t) fMultiplicity[i];
+  if (ring == 3) for(Int_t i=56;i<64;i++) mul += (Float_t) fMultiplicity[i];
+  return mul ;
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetMRingV0C(Int_t ring)
+Float_t AliESDVZERO::GetMRingV0C(Int_t ring)
 { 
   if (OutOfRange(ring, "AliESDVZERO:::GetMRingV0C",4)) return -1;
-  Int_t n=0;
+  Float_t mul =0.0;
 
-  if (ring == 0) for(Int_t i=0;i<8;i++)   n += (Int_t) fMultiplicity[i];
-  if (ring == 1) for(Int_t i=8;i<16;i++)  n += (Int_t) fMultiplicity[i];
-  if (ring == 2) for(Int_t i=16;i<24;i++) n += (Int_t) fMultiplicity[i];
-  if (ring == 3) for(Int_t i=24;i<32;i++) n += (Int_t) fMultiplicity[i];
-  return n ;
+  if (ring == 0) for(Int_t i=0;i<8;i++)   mul += (Float_t) fMultiplicity[i];
+  if (ring == 1) for(Int_t i=8;i<16;i++)  mul += (Float_t) fMultiplicity[i];
+  if (ring == 2) for(Int_t i=16;i<24;i++) mul += (Float_t) fMultiplicity[i];
+  if (ring == 3) for(Int_t i=24;i<32;i++) mul += (Float_t) fMultiplicity[i];
+  return mul ;
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetMultiplicity(Int_t i)
+Float_t AliESDVZERO::GetMultiplicity(Int_t i)
 
 {
   if (OutOfRange(i, "AliESDVZERO::GetMultiplicity:",64)) return -1;
@@ -177,7 +177,7 @@ Int_t AliESDVZERO::GetMultiplicity(Int_t i)
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetMultiplicityV0A(Int_t i)
+Float_t AliESDVZERO::GetMultiplicityV0A(Int_t i)
 
 {
   if (OutOfRange(i, "AliESDVZERO::GetMultiplicityV0A:",32)) return -1;
@@ -185,7 +185,7 @@ Int_t AliESDVZERO::GetMultiplicityV0A(Int_t i)
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetMultiplicityV0C(Int_t i)
+Float_t AliESDVZERO::GetMultiplicityV0C(Int_t i)
 
 {
   if (OutOfRange(i, "AliESDVZERO::GetMultiplicityV0C:",32)) return -1;
