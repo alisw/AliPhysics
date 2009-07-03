@@ -129,9 +129,9 @@ AliTriggerIR::~AliTriggerIR()
 {
   // Destructor
   //
-  if (fInt1) delete fInt1;
-  if (fInt2) delete fInt2;
-  if (fBC) delete fBC;
+  if (fInt1) delete [] fInt1;
+  if (fInt2) delete [] fInt2;
+  if (fBC) delete [] fBC;
 }
 
 //_____________________________________________________________________________
