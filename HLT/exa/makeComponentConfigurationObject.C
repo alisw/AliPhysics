@@ -67,7 +67,7 @@ void makeComponentConfigurationObject()
   cout << "usage: aliroot -b -q -l makeComponentConfigurationObject.C'(\"path\", \"param\", \"uri\", rangemin, rangemax)'" << endl << endl;
   cout << "  path           path of the entry within the OCDB" << endl;
   cout << "  param (opt)    string to be stored in the TObjSting, default empty" << endl;
-  cout << "  uri   (opt)    the OCDB URI, default $ALICE_ROOT   " << endl;
+  cout << "  uri   (opt)    the OCDB URI, default $ALICE_ROOT/OCDB   " << endl;
   cout << "  rangemin (opt) default 0" << endl;
   cout << "  rangemax (opt) default 999999999" << endl;
   cout << "===============================================================" << endl;
