@@ -11,9 +11,16 @@ void mlibs()
 
   // load Root libraries
   gSystem->Load("libPhysics"); 
+  gSystem->Load("libTree");
+  gSystem->Load("libVMC"); 
+  
+  // load AliRoot STEERbase
+  gSystem->Load("libSTEERBase"); 
   
   // load mapping library
+  gSystem->Load("libMUONcore"); 
   gSystem->Load("libMUONmapping"); 
+  gSystem->Load("libMUONmpgraphics"); 
 
   // set path to mapping data
   if (! gSystem->Getenv("MINSTALL")) {    
