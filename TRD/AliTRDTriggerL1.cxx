@@ -51,8 +51,8 @@ void AliTRDTriggerL1::CreateInputs()
   if (fInputs.GetEntriesFast() > 0)
     return;
 
-  fInputs.AddLast(new AliTriggerInput("TRD_HIGHPT_L1", "TRD", 1));
-  fInputs.AddLast(new AliTriggerInput("TRD_JET_L1", "TRD", 1));
+  fInputs.AddLast(new AliTriggerInput("1HSH", "TRD", 1));
+  fInputs.AddLast(new AliTriggerInput("1HJT", "TRD", 1));
 }
 
 void AliTRDTriggerL1::Trigger()
@@ -122,12 +122,12 @@ void AliTRDTriggerL1::Trigger()
 
   if (triggered_highpt) { 
     AliInfo("Fired high-pt trigger");
-    SetInput("TRD_HIGHPT_L1");
+    SetInput("1HSH");
   }
 
   if (triggered_jet) {
     AliInfo("Fired jet trigger");
-    SetInput("TRD_JET_L1");
+    SetInput("1HJT");
   }
 
   // cleaning up

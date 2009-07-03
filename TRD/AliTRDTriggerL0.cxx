@@ -48,7 +48,7 @@ void AliTRDTriggerL0::CreateInputs()
   if (fInputs.GetEntriesFast() > 0)
     return;
 
-  fInputs.AddLast(new AliTriggerInput("TRD_MB_L0", "TRD", 1)); // whatever should be there
+  fInputs.AddLast(new AliTriggerInput("0HMB", "TRD", 1)); // whatever should be there
 }
 
 void AliTRDTriggerL0::Trigger()
