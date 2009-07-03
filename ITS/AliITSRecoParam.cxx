@@ -198,6 +198,7 @@ fAlignFilterFillQANtuples(kTRUE)
   SetUseAmplitudeInfo(kTRUE);
   SetClusterErrorsParam(1);
   SetClusterMisalError(0.);
+  SetClusterMisalErrorBOn(0.);
   SetVertexer3DDefaults();
 
   for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) fAlignFilterUseLayer[i]=kTRUE;
@@ -422,12 +423,41 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
   // vertexer for cosmics
   param->SetVertexer(2);
 
+  param->SetClusterErrorsParam(2);
+  param->SetFindV0s(kFALSE);
+  param->SetAddVirtualClustersInDeadZone(kFALSE);
+  param->SetUseAmplitudeInfo(kFALSE);
+
+  // full use of bads from OCDB
+  param->SetUseBadZonesFromOCDB(kTRUE);
+  param->SetUseSingleBadChannelsFromOCDB(kTRUE);
+
   // find independently ITS SA tracks 
   param->SetSAUseAllClusters();
   param->SetOuterStartLayerSA(AliITSgeomTGeo::GetNLayers()-2);
 
+  //****** COSMICS 2009 (same as COSMICS 2008) *********************
+
+  // to maximize efficiency
+  param->SetAllowProlongationWithEmptyRoad();
+
   // larger seach windows for SA (in case of large misalignments)
-  param->SetFactorSAWindowSizes(3.); 
+  param->SetNLoopsSA(33);
+  param->SetFactorSAWindowSizes(20);
+
+  // additional error due to misal (B off)
+  param->SetClusterMisalErrorY(1.0,1.0,1.0,1.0,1.0,1.0); // [cm]
+  param->SetClusterMisalErrorZ(1.0,1.0,1.0,1.0,1.0,1.0); // [cm]
+  // additional error due to misal (B on)
+  param->SetClusterMisalErrorYBOn(0.0,0.0,0.1,0.1,0.1,0.1); // [cm]
+  param->SetClusterMisalErrorZBOn(0.1,0.1,0.1,0.1,0.1,0.1); // [cm]
+
+
+  // SDD configuration 
+  param->fUseSDDCorrectionMaps = kFALSE;
+  param->fUseSDDClusterSizeSelection=kTRUE;
+  param->fMinClusterChargeSDD=30.;
+  
 
   // alignment data filter
   param->SetAlignFilterCosmics(kTRUE);
@@ -441,6 +471,8 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
   param->SetAlignFilterMinPt(0.2);          
   param->SetAlignFilterMaxPt(1.e10);          
   param->SetAlignFilterFillQANtuples(kTRUE);    
+
+  //******************************************************************
 
   param->fMaxSnp = 0.95;
 
@@ -522,8 +554,6 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
   param->fSigmaZDeadZoneHit2 = 0.001/12.;
   param->fXPassDeadZoneHits = 0.018;
 
-  param->fUseSDDCorrectionMaps = kFALSE;
-  
   return param;
 }
 //_____________________________________________________________________________

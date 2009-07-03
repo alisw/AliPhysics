@@ -197,8 +197,11 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetClusterMisalErrorY(Float_t e0,Float_t e1,Float_t e2,Float_t e3,Float_t e4,Float_t e5) { fClusterMisalErrorY[0]=e0; fClusterMisalErrorY[1]=e1; fClusterMisalErrorY[2]=e2; fClusterMisalErrorY[3]=e3; fClusterMisalErrorY[4]=e4; fClusterMisalErrorY[5]=e5; return; }
   void   SetClusterMisalErrorZ(Float_t e0,Float_t e1,Float_t e2,Float_t e3,Float_t e4,Float_t e5) { fClusterMisalErrorZ[0]=e0; fClusterMisalErrorZ[1]=e1; fClusterMisalErrorZ[2]=e2; fClusterMisalErrorZ[3]=e3; fClusterMisalErrorZ[4]=e4; fClusterMisalErrorZ[5]=e5; return; }
   void   SetClusterMisalError(Float_t err=0.) { SetClusterMisalErrorY(err,err,err,err,err,err); SetClusterMisalErrorZ(err,err,err,err,err,err); }
-  Float_t GetClusterMisalErrorY(Int_t i) const { return fClusterMisalErrorY[i]; }
-  Float_t GetClusterMisalErrorZ(Int_t i) const { return fClusterMisalErrorZ[i]; }
+  void   SetClusterMisalErrorYBOn(Float_t e0,Float_t e1,Float_t e2,Float_t e3,Float_t e4,Float_t e5) { fClusterMisalErrorYBOn[0]=e0; fClusterMisalErrorYBOn[1]=e1; fClusterMisalErrorYBOn[2]=e2; fClusterMisalErrorYBOn[3]=e3; fClusterMisalErrorYBOn[4]=e4; fClusterMisalErrorYBOn[5]=e5; return; }
+  void   SetClusterMisalErrorZBOn(Float_t e0,Float_t e1,Float_t e2,Float_t e3,Float_t e4,Float_t e5) { fClusterMisalErrorZBOn[0]=e0; fClusterMisalErrorZBOn[1]=e1; fClusterMisalErrorZBOn[2]=e2; fClusterMisalErrorZBOn[3]=e3; fClusterMisalErrorZBOn[4]=e4; fClusterMisalErrorZBOn[5]=e5; return; }
+  void   SetClusterMisalErrorBOn(Float_t err=0.) { SetClusterMisalErrorYBOn(err,err,err,err,err,err); SetClusterMisalErrorZBOn(err,err,err,err,err,err); }
+  Float_t GetClusterMisalErrorY(Int_t i,Double_t b=0.) const { return (TMath::Abs(b)<0.0001 ? fClusterMisalErrorY[i] : fClusterMisalErrorYBOn[i]); }
+  Float_t GetClusterMisalErrorZ(Int_t i,Double_t b=0.) const { return (TMath::Abs(b)<0.0001 ? fClusterMisalErrorZ[i] : fClusterMisalErrorZBOn[i]); }
 
   void   SetUseAmplitudeInfo(Bool_t use=kTRUE) { for(Int_t i=0;i<AliITSgeomTGeo::kNLayers;i++) fUseAmplitudeInfo[i]=use; return; }
   void   SetUseAmplitudeInfo(Int_t ilay,Bool_t use) { fUseAmplitudeInfo[ilay]=use; return; }
@@ -494,6 +497,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Int_t fClusterErrorsParam; // parametrization for cluster errors (MI), see AliITSRecoParam::GetError()
   Float_t fClusterMisalErrorY[AliITSgeomTGeo::kNLayers]; // [cm] additional error on cluster Y pos. due to misalignment (MI,SA)
   Float_t fClusterMisalErrorZ[AliITSgeomTGeo::kNLayers]; // [cm] additional error on cluster Z pos. due to misalignment (MI,SA)
+  Float_t fClusterMisalErrorYBOn[AliITSgeomTGeo::kNLayers]; // [cm] additional error on cluster Y pos. due to misalignment (MI,SA)
+  Float_t fClusterMisalErrorZBOn[AliITSgeomTGeo::kNLayers]; // [cm] additional error on cluster Z pos. due to misalignment (MI,SA)
 
   Bool_t fUseAmplitudeInfo[AliITSgeomTGeo::kNLayers]; // use cluster charge in cluster-track matching (SDD,SSD) (MI)
 
@@ -587,7 +592,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t  fAlignFilterFillQANtuples;      // fill QA ntuples  
 
 
-  ClassDef(AliITSRecoParam,23) // ITS reco parameters
+  ClassDef(AliITSRecoParam,24) // ITS reco parameters
 };
 
 #endif
