@@ -63,7 +63,9 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
     fTree = tree;
     TIter next(fFriends);
     TNamed* obj;
-    
+ 
+    if (!fTree) return kFALSE;
+   
     while((obj = (TNamed*)next())) {
 	if (fTree->GetTree()) {
 	    (fTree->GetTree())->AddFriend("aodTree", obj->GetName());
@@ -71,8 +73,11 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 	    fTree->AddFriend("aodTree", obj->GetName());
 	}
     }
+ 
+
+    SwitchOffBranches();
+    SwitchOnBranches();
     
-    if (!fTree) return kFALSE;
     // Get pointer to AOD event
     if (fEvent) {
       delete fEvent;
