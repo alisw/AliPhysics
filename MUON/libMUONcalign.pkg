@@ -1,0 +1,19 @@
+#-*- Mode: Makefile -*-
+# $Id:$
+
+SRCS:=  AliMUONClusterInfo.cxx \
+        AliMUONPadInfo.cxx \
+        AliMUONAlignmentTask.cxx \
+        AliMUONReAlignTask.cxx \
+        AliMUONChamberCalibrationTask.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= MUONcalignLinkDef.h
+
+EINCLUDE:= MUON/mapping
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+              -lMUONmapping -lMUONgeometry -lMUONcore -lCDB -lSTEERBase -lRAWDatabase -lANALYSIS 
+endif
