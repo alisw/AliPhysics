@@ -274,8 +274,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     }
   }
 
-  std::vector<int> trackIdESD2TPCmap; // map esd index -> tpc index
-
+  // convert the TPC tracks to ESD tracks
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
     vector<AliHLTGlobalBarrelTrack> tracks;
@@ -309,54 +308,41 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     }
   }
 
-      // ITS updated tracks
-      /*
-      int nESDTracks = pESD->GetNumberOfTracks();
-
-      // create map of tpc->esd track indices
-
-      int *trackIdTPC2ESDmap = new int[ nTPCTracks ];
-      {
-	for( int i=0; i<nTPCTracks; i++ ) trackIdTPC2ESDmap[i] = -1;
-	for( unsigned int i=0; i<trackIdESD2TPCmap.size(); i++ ){
-	  int tpcId = trackIdESD2TPCmap[i];
-	  if( tpcId>=0 && tpcId<nTPCTracks ) trackIdTPC2ESDmap[tpcId] = i;
+  // now update ESD tracks with the ITS info
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
+       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    vector<AliHLTGlobalBarrelTrack> tracks;
+    if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
+      for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
+	   element!=tracks.end(); element++) {
+	int ncl=0;
+	const UInt_t* pointsArray=element->GetPoints();
+	for( unsigned il=0; il<element->GetNumberOfPoints(); il++ ){
+	  // TODO: check what needs to be done with the clusters
+	  if( pointsArray[il]<~(UInt_t)0 ) {/*tITS.SetClusterIndex(ncl,  tr.fClusterIds[il]);*/}
+	  ncl++;
 	}
+	//tITS.SetNumberOfClusters( ncl );
+	int tpcID=element->TrackID();
+	// the ITS tracker assigns the TPC track used as seed for a certain track to
+	// the trackID
+	if( tpcID<0 || tpcID>=pESD->GetNumberOfTracks()) continue;
+
+	AliESDtrack *tESD = pESD->GetTrack( tpcID );
+	if( tESD ) tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSin );
       }
-
-      for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
-	iter = blocks+ndx;
-	if(iter->fDataType == fgkITSTracksDataType ) {
-	  AliHLTITSTrackDataHeader *inPtr = reinterpret_cast<AliHLTITSTrackDataHeader*>( iter->fPtr );
-	  int nTracks = inPtr->fTrackletCnt;	  
-	  for( int itr=0; itr<nTracks; itr++ ){
-	    AliHLTITSTrackData &tr = inPtr->fTracks[itr];
-	    AliHLTITSTrack tITS( tr.fTrackParam );
-	    int ncl=0;
-	    for( int il=0; il<6; il++ ){
-	      if( tr.fClusterIds[il]>=0 ) tITS.SetClusterIndex(ncl++,  tr.fClusterIds[il]);
-	    }
-	    tITS.SetNumberOfClusters( ncl );
-	    int tpcId = tr.fTPCId;
-	    if( tpcId<0 || tpcId>=nTPCTracks ) continue;
-	    int esdID = trackIdTPC2ESDmap[tpcId];
-	    if( esdID<0 || esdID>=nESDTracks ) continue;
-	    AliESDtrack *tESD = pESD->GetTrack( esdID );
-	    if( tESD ) tESD->UpdateTrackParams( &tITS, AliESDtrack::kITSin );
-	  }
-	}
-      }   
-      delete[] trackIdTPC2ESDmap;
+    }
+  }
       
       // primary vertex & V0's 
-
+      /*
       //AliHLTVertexer vertexer;
       //vertexer.SetESD( pESD );
       //vertexer.FindPrimaryVertex();
       //vertexer.FindV0s();
       */
       if (iAddedDataBlocks>0 && pTree) {
-	pTree->Fill();
+       pTree->Fill();
       }
   
   if (iResult>=0) iResult=iAddedDataBlocks;
