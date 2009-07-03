@@ -63,11 +63,14 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fADCGain(-1),
   fIsUnderflow(kFALSE),
   fIsOverflow(kFALSE),
-  fScNWords(0),	  
   fScGeo(0),	  
-  fScTS(0),	  
+  fScNWords(0),	  
+  fScTriggerSource(0),	  
   fScTriggerNumber(0),
-  fIsScEventGood(kFALSE),
+  fIsScEventGood(kTRUE),
+  fIsScHeaderRead(kFALSE),
+  fScStartCounter(0),
+  fScEvCounter(0),
   fNChannelsOn(0),
   fNConnCh(-1),
   fCabledSignal(-1)
@@ -111,11 +114,14 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fADCGain(stream.GetADCGain()),
   fIsUnderflow(stream.fIsUnderflow),
   fIsOverflow(stream.fIsOverflow),
-  fScNWords(stream.GetScNWords()),	  
   fScGeo(stream.GetScGeo()),	  
-  fScTS(stream.GetScTS()),	  
+  fScNWords(stream.GetScNWords()),	  
+  fScTriggerSource(stream.GetScTriggerSource()),	  
   fScTriggerNumber(stream.fScTriggerNumber),
   fIsScEventGood(stream.fIsScEventGood),
+  fIsScHeaderRead(stream.fIsScHeaderRead),
+  fScStartCounter(stream.fScStartCounter),
+  fScEvCounter(stream.fScEvCounter),
   fNChannelsOn(stream.fNChannelsOn),
   fNConnCh(stream.fNConnCh),
   fCabledSignal(stream.GetCabledSignal())
@@ -215,24 +221,24 @@ void AliZDCRawStream::ReadCDHHeader()
     UInt_t status = header->GetStatus();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> status = %d\n",status);
     if((status & 0x000f) == 0x0001){
-      AliWarning("CDH -> DARC trg0 overlap error");
+      AliDebug(2,"CDH -> DARC trg0 overlap error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     if((status & 0x000f) == 0x0002){
-      AliWarning("CDH -> DARC trg0 missing error");
+      AliDebug(2,"CDH -> DARC trg0 missing error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     if((status & 0x000f) == 0x0004){
-      AliWarning("CDH -> DARC data parity error");
+      AliDebug(2,"CDH -> DARC data parity error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     if((status & 0x000f) == 0x0008){
-      AliWarning("CDH -> DARC ctrl parity error");
+      AliDebug(2,"CDH -> DARC ctrl parity error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     //
     if((status & 0x00f0) == 0x0010){
-      AliWarning("CDH -> DARC trg unavailable");
+      AliDebug(2,"CDH -> DARC trg unavailable");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     if((status & 0x00f0) == 0x0020){
@@ -241,7 +247,7 @@ void AliZDCRawStream::ReadCDHHeader()
     }
     //
     if((status & 0x0f00) == 0x0200){
-      AliWarning("CDH -> DARC L1 time violation");
+      AliDebug(2,"CDH -> DARC L1 time violation");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     if((status & 0x0f00) == 0x0400){
@@ -254,7 +260,7 @@ void AliZDCRawStream::ReadCDHHeader()
     }
     //
     if((status & 0xf000) == 0x1000){
-      AliWarning("CDH -> DARC other error");
+      AliDebug(2,"CDH -> DARC other error");
       fRawReader->AddMajorErrorLog(kDARCError);
     }
   }
@@ -343,7 +349,7 @@ Bool_t AliZDCRawStream::Next()
 	fModType = ((fBuffer & 0x7ff00)>>8);
 	fADCNChannels = (fBuffer & 0xff);
 	//
-	//printf("  ******** GEO %d, mod. type %d, #ch. %d\n",fADCModule,fModType,fADCNChannels);
+	printf("  ******** GEO %d, mod. type %d, #ch. %d\n",fADCModule,fModType,fADCNChannels);
       }
       else if(fModType==1 && (fBuffer&0x80000000)>>31 == 0){
         // Channel signal
@@ -496,14 +502,13 @@ Bool_t AliZDCRawStream::Next()
     }
      
     // Get geo address of current word to determine if:
-    // - it is a scaler word (geo address == kScalerAddress)
     // - it is an ADC word (geo address <= 3)
-    Int_t kScalerAddress=8;
-    fADCModule = ((fBuffer & 0xf8000000)>>27);
-    if(fADCModule == kScalerAddress){
-      DecodeScaler();
-    } 
-    else if(fADCModule>=0 && fADCModule<=3){//ADC modules (0,1,2,3)
+    // - it is a scaler word (geo address == kScalerAddress)
+    fADCModule = (Int_t) ((fBuffer & 0xf8000000)>>27);
+    //printf("  AliZDCRawStream -> fADCModule %d\n",fADCModule);
+    
+    // ****** ADC MODULES ******
+    if(fADCModule>=0 && fADCModule<=3 && fIsScHeaderRead==kFALSE){//ADC modules (0,1,2,3)
       // *** ADC header
       if((fBuffer & 0x07000000) == 0x02000000){
         fIsADCHeader = kTRUE;
@@ -579,40 +584,36 @@ Bool_t AliZDCRawStream::Next()
         fIsADCEOB = kTRUE;
     	//printf("  AliZDCRawStream -> EOB --------------------------\n");
       }
-     }//ADC module
-        
+    }//ADC module
+    // *** DECODING SCALER
+    else if(fADCModule == 8){
+      if(fBuffer & 0x04000000 && fIsScHeaderRead==kFALSE){ // *** Scaler header
+        fScGeo = (fBuffer & 0xf8000000)>>27;	   
+        fScNWords = (fBuffer & 0x00fc0000)>>18;	   
+        fScTriggerSource = (fBuffer & 0x00030000)>>16;	   
+        fScTriggerNumber = (fBuffer & 0x0000ffff);
+        fIsScHeaderRead = kTRUE; 
+	fScStartCounter = (Int_t) (fPosition);
+        //Ch. debug
+        //printf("  AliZDCRawStream -> SCALER HEADER: geo %d Nwords %d TS %d TN %d\n",
+        //   fScGeo,fScNWords,fScTriggerSource,fScTriggerNumber);
+      } 
+      else if(!(fBuffer & 0x04000000)){
+        fIsScEventGood = kFALSE;
+      }
+    }    
+    if(fIsScHeaderRead && fPosition>=fScStartCounter+1){ // *** Scaler word
+      fScEvCounter = fBuffer;
+      Int_t nWords = (Int_t) (fScNWords);
+      if(fPosition == fScStartCounter+nWords) fIsScHeaderRead = kFALSE;
+      //Ch. debug
+      //printf("  AliZDCRawStream -> scaler datum %d", fScEvCounter);
+    }
     
   }
   fPosition++;
 
   return kTRUE;
-}
-
-//_____________________________________________________________________________
-void AliZDCRawStream::DecodeScaler()
-{
-  // Decoding scaler event
-  
-  if(!fBuffer & 0x04000000){
-    AliWarning(" Scaler header corrupted");
-    fIsScEventGood = kFALSE; 
-  }
-  Int_t scNwords = (Int_t) fScNWords;
-  if(fPosition==scNwords && fBuffer != 0x0){
-    AliWarning(" Scaler trailer corrupted");
-    fIsScEventGood = kFALSE; 
-  }
-  fIsScEventGood = kTRUE;
-  
-  if(fPosition==0){
-    fScNWords = (fBuffer & 0x00fc0000)>>18;	   
-    fScGeo = (fBuffer & 0xf8000000)>>27;	   
-    fScTS = (fBuffer & 0x00030000)>>16;	   
-    fScTriggerNumber = (fBuffer & 0x0000ffff);
-  }
-   
-  fPosition++;
-  
 }
 
 //_____________________________________________________________________________

@@ -30,7 +30,6 @@ class AliZDCRawStream: public TObject {
     virtual void ReadChMap();
 
     virtual void ReadCDHHeader();
-    virtual void DecodeScaler();
 
     UInt_t GetRawBuffer()	const {return fBuffer;}
     
@@ -67,10 +66,11 @@ class AliZDCRawStream: public TObject {
     Bool_t IsUnderflow()   const {return fIsUnderflow;}
     Bool_t IsOverflow()    const {return fIsOverflow;}
     
-    UInt_t GetScNWords() const {return fScNWords;}	    
     UInt_t GetScGeo() const {return fScGeo;}	    
-    UInt_t GetScTS() const {return fScTS;}	    
+    UInt_t GetScNWords() const {return fScNWords;}	    
+    UInt_t GetScTriggerSource() const {return fScTriggerSource;}	    
     UInt_t GetTriggerNumber() const {return fScTriggerNumber;}
+    UInt_t GetTriggerCount() const {return fScEvCounter;}
     
     void SetNChannelsOn(Int_t val) {fNChannelsOn = val;}
     void SetSector(Int_t i, Int_t val) {fSector[i] = val;}
@@ -149,11 +149,14 @@ class AliZDCRawStream: public TObject {
     Bool_t fIsOverflow;   // ADC overflow
     
     // Scaler
-    UInt_t fScNWords;        // no. of words in scaler event
     UInt_t fScGeo;           // scaler GEO address
-    UInt_t fScTS;	     // ?!?
+    UInt_t fScNWords;        // no. of words in scaler event
+    UInt_t fScTriggerSource; // Trigger source 
     UInt_t fScTriggerNumber; // no. of triggers
-    Bool_t fIsScEventGood;   // true if scaler event is good
+    UInt_t fIsScEventGood;   // true if scaler event is good
+    UInt_t fIsScHeaderRead;  // true if scaler event is good
+    Int_t  fScStartCounter;  // position in the buffer where scaler data begins
+    UInt_t fScEvCounter;     // event counter
     
     // Channel mapping 
     Int_t  fNChannelsOn;   // No. of signals/ADC ch. used
@@ -161,7 +164,7 @@ class AliZDCRawStream: public TObject {
     Int_t  fCabledSignal;  // physics signal (from enum)
     Int_t  fMapADC[48][5]; // ADC map for the current run
         
-    ClassDef(AliZDCRawStream, 9)    // class for reading ZDC raw digits
+    ClassDef(AliZDCRawStream, 10)    // class for reading ZDC raw digits
 };
 
 #endif
