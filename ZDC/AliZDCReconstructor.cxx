@@ -61,7 +61,8 @@ AliZDCReconstructor:: AliZDCReconstructor() :
   fNRun(0),
   fIsCalibrationMB(kFALSE),
   fPedSubMode(0),
-  fRecoFlag(0x0)
+  fRecoFlag(0x0),
+  fSignalThreshold(0)
 {
   // **** Default constructor
 
@@ -162,7 +163,7 @@ void AliZDCReconstructor::Init()
 }
 
 //_____________________________________________________________________________
-void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
+void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
 {
   // *** Local ZDC reconstruction for digits
   // Works on the current event
@@ -310,6 +311,21 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
    printf("   LGChain -> RawDig %d DigCorr %1.2f\n", digit.GetADCValue(1), digit.GetADCValue(1)-ped2SubLg); 
    */
   }//digits loop
+ 
+  // Setting reco flags (part II)
+  Float_t sumZNAhg=0, sumZPAhg=0, sumZNChg=0, sumZPChg=0;
+  for(Int_t jj=0; jj<5; jj++){
+    sumZNAhg += tZN2Corr[jj];
+    sumZPAhg += tZP2Corr[jj];
+    sumZNChg += tZN1Corr[jj];
+    sumZPChg += tZP1Corr[jj];
+  }
+  if(sumZNAhg>fSignalThreshold)     fRecoFlag = 0x1;
+  if(sumZPAhg>fSignalThreshold)     fRecoFlag = 0x1 << 1;
+  if(dZEM1Corr[0]>fSignalThreshold) fRecoFlag = 0x1 << 2;
+  if(dZEM2Corr[0]>fSignalThreshold) fRecoFlag = 0x1 << 3;
+  if(sumZNChg>fSignalThreshold)     fRecoFlag = 0x1 << 4;
+  if(sumZPChg>fSignalThreshold)     fRecoFlag = 0x1 << 5;
   
   // If CALIBRATION_MB run build the RecoParam object 
   if(fIsCalibrationMB){
@@ -337,6 +353,8 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
 {
   // *** ZDC raw data reconstruction
   // Works on the current event
+  
+  Bool_t storeADC = kTRUE;
   
   // Retrieving calibration data  
   // Parameters for pedestal subtraction
@@ -379,30 +397,30 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   fNRun = (Int_t) rawReader->GetRunNumber();
   AliZDCRawStream rawData(rawReader);
   while(rawData.Next()){
-   // Do
-   Bool_t ch2process = kTRUE;
-   //
-   // Setting reco flags (part I)
-   if((rawData.IsADCDataWord()) && (rawData.IsUnderflow() == kTRUE)){
-     fRecoFlag = 0x1<< 8;
-     ch2process = kFALSE;
-   }
-   if((rawData.IsADCDataWord()) && (rawData.IsOverflow() == kTRUE)){
-     fRecoFlag = 0x1 << 7;
-     ch2process = kFALSE;
-   }
-   if(rawData.GetNChannelsOn() < 48 ) fRecoFlag = 0x1 << 6;
-   
-   if((rawData.IsADCDataWord()) && (ch2process == kTRUE)){
+   if(rawData.IsCalibration() == kFALSE){ // Reading scalers
+    Bool_t ch2process = kTRUE;
+    //
+    // Setting reco flags (part I)
+    if((rawData.IsADCDataWord()) && (rawData.IsUnderflow() == kTRUE)){
+      fRecoFlag = 0x1<< 8;
+      ch2process = kFALSE;
+    }
+    if((rawData.IsADCDataWord()) && (rawData.IsOverflow() == kTRUE)){
+      fRecoFlag = 0x1 << 7;
+      ch2process = kFALSE;
+    }
+    if(rawData.GetNChannelsOn() < 48 ) fRecoFlag = 0x1 << 6;
+    
+    if((rawData.IsADCDataWord()) && (ch2process == kTRUE)){
      
-     Int_t adcMod = rawData.GetADCModule();
-     Int_t det = rawData.GetSector(0);
-     Int_t quad = rawData.GetSector(1);
-     Int_t gain = rawData.GetADCGain();
-     Int_t pedindex=0;
-     //
-     // Mean pedestal value subtraction -------------------------------------------------------
-     if(fPedSubMode == 0){
+      Int_t adcMod = rawData.GetADCModule();
+      Int_t det = rawData.GetSector(0);
+      Int_t quad = rawData.GetSector(1);
+      Int_t gain = rawData.GetADCGain();
+      Int_t pedindex=0;
+      //
+      // Mean pedestal value subtraction -------------------------------------------------------
+      if(fPedSubMode == 0){
        // Not interested in o.o.t. signals (ADC modules 2, 3)
        if(adcMod == 2 || adcMod == 3) return;
        //
@@ -456,9 +474,9 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        printf(" -> AliZDCReconstructor: RawADC %1.0f ADCCorr %1.0f\n", 
          rawData.GetADCValue(), rawData.GetADCValue()-meanPed[pedindex]);*/
 	 
-     }// mean pedestal subtraction
-     // Pedestal subtraction from correlation ------------------------------------------------
-     else if(fPedSubMode == 1){
+      }// mean pedestal subtraction
+      // Pedestal subtraction from correlation ------------------------------------------------
+      else if(fPedSubMode == 1){
        // In time signals
        if(adcMod==0 || adcMod==1){
          if(quad != 5){ // signals from ZDCs
@@ -517,11 +535,14 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
             else pmRefootlg[quad-1] = rawData.GetADCValue();
 	 }
        }
-     } // pedestal subtraction from correlation
-	// Ch. debug
-        //printf("\t AliZDCReconstructor - det %d quad %d res %d -> Ped[%d] = %1.0f\n", 
-        //  det,quad,gain, pedindex, meanPed[pedindex]);
-   }//IsADCDataWord
+      } // pedestal subtraction from correlation
+      // Ch. debug
+      //printf("\t AliZDCReconstructor - det %d quad %d res %d -> Ped[%d] = %1.0f\n", 
+      //  det,quad,gain, pedindex, meanPed[pedindex]);
+    }//IsADCDataWord
+   }// Not raw data from calibration run!
+   else{
+   }
   }//loop on raw data
   
   if(fPedSubMode==1){
@@ -588,12 +609,12 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     sumZNChg += tZN1Corr[jj];
     sumZPChg += tZP1Corr[jj];
   }
-  if(sumZNAhg>0.)     fRecoFlag = 0x1;
-  if(sumZPAhg>0.)     fRecoFlag = 0x1 << 1;
-  if(dZEM1Corr[0]>0.) fRecoFlag = 0x1 << 2;
-  if(dZEM2Corr[0]>0.) fRecoFlag = 0x1 << 3;
-  if(sumZNChg>0.)     fRecoFlag = 0x1 << 4;
-  if(sumZPChg>0.)     fRecoFlag = 0x1 << 5;
+  if(sumZNAhg>fSignalThreshold)     fRecoFlag = 0x1;
+  if(sumZPAhg>fSignalThreshold)     fRecoFlag = 0x1 << 1;
+  if(dZEM1Corr[0]>fSignalThreshold) fRecoFlag = 0x1 << 2;
+  if(dZEM2Corr[0]>fSignalThreshold) fRecoFlag = 0x1 << 3;
+  if(sumZNChg>fSignalThreshold)     fRecoFlag = 0x1 << 4;
+  if(sumZPChg>fSignalThreshold)     fRecoFlag = 0x1 << 5;
     
   // If CALIBRATION_MB run build the RecoParam object 
   if(fIsCalibrationMB){

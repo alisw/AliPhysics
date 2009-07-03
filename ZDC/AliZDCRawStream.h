@@ -57,7 +57,8 @@ class AliZDCRawStream: public TObject {
     Int_t  GetADCSignFromMap(Int_t i)  const {return fMapADC[i][2];}
     Int_t  GetDetectorFromMap(Int_t i) const {return fMapADC[i][3];}
     Int_t  GetTowerFromMap(Int_t i)    const {return fMapADC[i][4];}
-
+    
+    Bool_t IsCalibration() const {return fIsCalib;}
     Bool_t IsDARCHeader()  const {return fIsDARCHeader;}
     Bool_t IsChMapping()   const {return fIsChMapping;}
     Bool_t IsADCDataWord() const {return fIsADCDataWord;}
