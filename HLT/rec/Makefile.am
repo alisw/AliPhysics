@@ -13,7 +13,7 @@ bin_SCRIPTS			= startAliEVE-barrel-tracks.sh
 lib_LTLIBRARIES			=  libHLTrec.la
 
 # version info for the library
-LIBRARY_VERSION			= "$(LIBHLTREC_VERSION):0:2"
+LIBRARY_VERSION			= "$(LIBHLTREC_VERSION):0:0"
 
 # MODDIR is set by the AliRoot build system and denotes the topdir
 # of the module, we must set it since the package definition libHLTrec.pkg

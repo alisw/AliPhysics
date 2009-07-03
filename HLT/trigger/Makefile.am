@@ -43,7 +43,7 @@ lib_LTLIBRARIES			=  libAliHLTTrigger.la
 #      increment age.
 #   6. If any interfaces have been removed since the last public release, then
 #      set age to 0. 
-LIBRARY_VERSION			= '0:0:0'
+LIBRARY_VERSION			= '1:0:0'
 
 # library sources
 # The source files are specified in libAliHLTTrigger.pkg

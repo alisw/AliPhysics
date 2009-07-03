@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-LIBHLTSIM_VERSION := 0
+LIBHLTSIM_VERSION := 1
 
 MODULE_SRCS= 	AliHLTSimulation.cxx \
 		AliHLTAgentSim.cxx \

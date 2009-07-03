@@ -9,7 +9,7 @@ EXTRA_DIST			=
 lib_LTLIBRARIES			= libAliHLTGlobal.la
 
 # version info for the library
-LIBRARY_VERSION			= '0:0:0'
+LIBRARY_VERSION			= '1:0:0'
 
 # MODDIR is set by the AliRoot build system and denotes the topdir
 # of the module, we must set it since the package definition libAliHLTGlobal.pkg
