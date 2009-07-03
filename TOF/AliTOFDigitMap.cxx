@@ -208,9 +208,10 @@ Int_t AliTOFDigitMap::GetDigitIndex(Int_t *vol, Int_t label) const
     return -1;
   }
 
-  if (CheckedIndex(vol)==-1) return -1;
+  Int_t ci = CheckedIndex(vol);
+  if (ci==-1) return -1;
   
-  Int_t dummy = fDigitMap[CheckedIndex(vol)][label];
+  Int_t dummy = fDigitMap[ci][label];
   
   if (dummy>0) return dummy-1;
   else return -1;
@@ -240,34 +241,21 @@ Int_t AliTOFDigitMap::GetFilledCellNumber() const
   // Returns the number of filled cells of the TOF digit map
   //
 
-  Int_t volume[5] = {-1, -1, -1, -1, -1};
   Int_t counter = 0;
 
-  Bool_t checkContent = kFALSE;
-
-  for (Int_t iSector=0; iSector<fNSector; iSector++)
-    for (Int_t iPlate=0; iPlate<fNplate; iPlate++)
-      for (Int_t iStrip=0; iStrip<fNstrip; iStrip++)
-	for (Int_t iPadX=0; iPadX<fNpx; iPadX++)
-	  for (Int_t iPadZ=0; iPadZ<fNpz; iPadZ++)
-	    {
-
-	      volume[0] = iSector;
-	      volume[1] = iPlate;
-	      volume[2] = iStrip;
-	      volume[3] = iPadX;
-	      volume[4] = iPadZ;
-
-	      checkContent = kFALSE;
-	      for (Int_t label=0; label<kMaxDigitsPerPad; label++)
-		checkContent = checkContent || (GetDigitIndex(volume, label)>=0);
-
-	      //if (CheckedIndex(volume)!=-1) counter++;
-	      if (checkContent) counter++;
-	    }
+  for (Int_t index = 0; index < fMaxIndex; ++index)
+  {
+    for (Int_t label = 0; label < kMaxDigitsPerPad; ++label)
+    {
+      if (fDigitMap[index][label] > 0)
+      {
+	++counter;
+	break;
+      }
+    }
+  }
 
   return counter;
-
 }
 
 ////////////////////////////////////////////////////////////////////////
