@@ -2,12 +2,15 @@
 #define ALI_VZERO_PREPROCESSOR_H
 
 #include "AliPreprocessor.h"
-#include "AliVZERODataDCS.h"
-#include "AliVZERODataFEE.h"
-#include "AliShuttleInterface.h"
 
-// VZERO PreProcessor  header 
+class  AliShuttleInterface;
+class  AliVZERODataFEE;
+class  AliVZERODataDCS;
 
+//  VZERO Preprocessor  header 
+
+//  1 calibration object from DCS and DAQ is written into  OCDB/VZERO/Calib/Data
+//  1 trigger-simulation object from DCS is written into OCDB/VZERO/Trigger/Data
 
 class AliVZEROPreprocessor : public AliPreprocessor
 {
@@ -20,7 +23,7 @@ class AliVZEROPreprocessor : public AliPreprocessor
     virtual UInt_t Process(TMap* dcsAliasMap);
 
     AliVZERODataDCS *fData;    // CDB class that stores the data for HV
-	AliVZERODataFEE *fFEEData; // CDB class that stores the data for FEE
+    AliVZERODataFEE *fFEEData; // CDB class that stores the data for FEE
 
 
  private:

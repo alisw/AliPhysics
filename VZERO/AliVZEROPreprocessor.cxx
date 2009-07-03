@@ -5,14 +5,26 @@
 #include "AliCDBEntry.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
+#include "AliShuttleInterface.h"
+#include "AliVZERODataFEE.h"
+#include "AliVZERODataDCS.h"
+
 #include <TFile.h>
 #include <TTimeStamp.h>
 #include <TObjString.h>
 #include <TSystem.h>
-#include <TList.h>
+
+
+class Tlist;
 
 //
-// This class is  a simple preprocessor for V0.
+//  This class is  a simple preprocessor for VZERO detector.
+//
+//  It gets High Voltage values for a given run from DCS and Pedestal values from DAQ 
+//  and writes them as Calibration MetaData into OCDB/VZERO/Calib/Data
+//  It also retrieves FEE parameters from DCS archive   
+//  and writes them as Trigger MetaData into OCDB/VZERO/Trigger/Data 
+//  (to be used for trigger simulation)
 //
 
 ClassImp(AliVZEROPreprocessor)
@@ -95,35 +107,35 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
     
    // *************** From DAQ ******************
    
-	TString SourcesId = "V00da_results";
+	TString sourcesId = "V00da_results";
 
-	TList* sourceList = GetFileSources(kDAQ, SourcesId.Data());
+	TList* sourceList = GetFileSources(kDAQ, sourcesId.Data());
   	if (!sourceList)  {
-		Log(Form("No sources found for id %s", SourcesId.Data()));      		
+		Log(Form("No sources found for id %s", sourcesId.Data()));      		
       		return 1; }
-	Log(Form("The following sources produced files with the id %s",SourcesId.Data()));
+	Log(Form("The following sources produced files with the id %s",sourcesId.Data()));
 	sourceList->Print();    
 
   	TIter iter(sourceList);
   	TObjString *source = 0;
 		
 	while((source=dynamic_cast<TObjString*> (iter.Next()))){
-  		fileName = GetFile(kDAQ, SourcesId.Data(), source->GetName());
+  		fileName = GetFile(kDAQ, sourcesId.Data(), source->GetName());
   		if (fileName.Length() > 0)
     		Log(Form("Got the file %s, now we can extract some values.", fileName.Data()));
 		FILE *file;
 		if((file = fopen(fileName.Data(),"r")) == NULL){
             	                   Log(Form("Cannot open file %s",fileName.Data()));
 	    	  	           return 1;}
-		Float_t PEDmean[128], PEDsigma[128], ADCmean[128], ADCsigma[128] ;
+		Float_t pedMean[128], pedSigma[128], adcMean[128], adcSigma[128] ;
 		for(Int_t j=0; j<128; j++)fscanf(file,"%f %f %f %f",
-			                  &PEDmean[j], &PEDsigma[j], &ADCmean[j], &ADCsigma[j]);
+			                  &pedMean[j], &pedSigma[j], &adcMean[j], &adcSigma[j]);
 		fclose(file);
 	    	
-		calibData->SetPedestal(PEDmean);
-		calibData->SetSigma(PEDsigma);			
-		calibData->SetGain(ADCmean); 
-		calibData->SetADCsigma(ADCsigma);
+		calibData->SetPedestal(pedMean);
+		calibData->SetSigma(pedSigma);			
+		calibData->SetGain(adcMean); 
+		calibData->SetADCsigma(adcSigma);
 		}				
 
 	delete source;      
@@ -131,9 +143,9 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
   // Check that everything was properly transmitted
 
 //   for(Int_t j=0; j<128; j++){printf("Pedestal[%d] -> %f \n",j,calibData->GetPedestal(j));}
-//   for(Int_t j=0; j<128; j++){printf("PedSigma[%d] -> %f \n",j,calibData->GetSigma(j));}
+//   for(Int_t j=0; j<128; j++){printf("pedSigma[%d] -> %f \n",j,calibData->GetSigma(j));}
 //   for(Int_t j=0; j<128; j++){printf("Gain[%d] -> %f \n",j,calibData->GetGain(j));}
-//   for(Int_t j=0; j<128; j++){printf("ADCsigma[%d] -> %f \n",j,calibData->GetADCsigma(j));}
+//   for(Int_t j=0; j<128; j++){printf("adcSigma[%d] -> %f \n",j,calibData->GetADCsigma(j));}
 //   for(Int_t j=0; j<64; j++){printf("MeanHV[%d] -> %f \n",j,calibData->GetMeanHV(j));}
 //   for(Int_t j=0; j<64; j++){printf("WidthHV[%d] -> %f \n",j,calibData->GetWidthHV(j));}
   
@@ -158,7 +170,7 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
   delete sourceList; 
 
  // -----------------------------------------------------------------------
- // Retrieve Front End Electronics Parameters from the DCS
+ // Retrieves Front End Electronics Parameters from  DCS archive
  // -----------------------------------------------------------------------
 	AliVZEROTriggerData *triggerData = new AliVZEROTriggerData();
 
@@ -168,7 +180,7 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 	// Writes VZERO FEE parameters values into VZERO  Trigger parametrization object
 	triggerData->FillData(fFEEData);
 
-	// Stores the VZERO Trigger Object into CalibrationDB
+	// Stores the VZERO Trigger Object into TriggerDB
 	
 	resECal=kTRUE;
 	
