@@ -54,7 +54,7 @@ public:
 			      Double_t threshold); 
   void MonitorOCDBObjects();
 
-  static const Int_t fgkNumOfLDCs = 3;      //number of SSD LDCs
+  static const Int_t fgkNumOfLDCs = 8;      //number of SSD LDCs
   static const Int_t fgkNumOfDDLs = 16;      //number of SSD DDLs
   static const Int_t fgkSSDMODULES = 1698;      //total number of SSD modules
   static const Int_t fgkSSDLADDERSLAYER5 = 34; //ladders on layer 5
