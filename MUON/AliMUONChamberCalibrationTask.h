@@ -9,7 +9,7 @@
 /// \ingroup calign
 /// \class  AliMUONChamberCalibrationTask
 /// \brief  Definition of the task to extract cluster information 
-///  from MCH tracks after applying the calibration on aligned ESD
+///  from MCH tracks after applying the calibration on an aligned ESD
 /// \author Andry Rakotozafindrabe CEA/IRFU/SPhN
 
 class AliMUONRecoParam;
@@ -32,7 +32,8 @@ class AliMUONChamberCalibrationTask : public AliAnalysisTaskSE
 
  public:
 
-  enum Calibration_t { NOGAIN, GAINCONSTANTCAPA, GAIN, INJECTIONGAIN };
+  // enumarate the list of the available modes for the calibration
+  enum Calibration_t { NOGAIN, GAINCONSTANTCAPA, GAIN, INJECTIONGAIN }; 
   typedef Calibration_t Calibration_t;
 
   // Constructors
@@ -58,18 +59,18 @@ class AliMUONChamberCalibrationTask : public AliAnalysisTaskSE
 
  private:
 
-  char* fOCDBPath; //!< default path to the condition database
-  Calibration_t fCalibChoice; //!< calibration option
-  TTree* fClusterInfoTree; //!< TTree filled with the cluster information
-  AliMUONRecoParam* fMuonRecoParam; //!< reconstruction parameters for track refitting
-  AliMUONClusterInfo* fClusterInfo; //!< the cluster info used to fill the output TTree
-  AliMUONCalibrationData* fCalibData; 
-  AliMUONESDInterface* fESDInterface;
-  AliMUONVDigitStore* fDigitStore;
+  char* fOCDBPath;                      //!< default path to the condition database
+  Calibration_t fCalibChoice;           //!< calibration option
+  TTree* fClusterInfoTree;              //!< TTree filled with the cluster information
+  AliMUONRecoParam* fMuonRecoParam;     //!< reconstruction parameters for track refitting
+  AliMUONClusterInfo* fClusterInfo;     //!< cluster info used to fill the output TTree
+  AliMUONCalibrationData* fCalibData;   //!< needed to access to the calibration data for each pad within each cluster
+  AliMUONESDInterface* fESDInterface;   //!< interface to easily access to the ESD content
+  AliMUONVDigitStore* fDigitStore;      //<! pointer to the digit stored for the current input ESD event 
   AliESDInputHandler* fESDInputHandler; //!< ESD input handler
-  AliESDEvent* fESDInputEvent; //!< pointer to the current input ESD event
+  AliESDEvent* fESDInputEvent;          //!< pointer to the current input ESD event
 
-  ClassDef( AliMUONChamberCalibrationTask, 1 ) //Task to extract cluster information after applying calibration
+  ClassDef( AliMUONChamberCalibrationTask, 1 ) // Task to extract cluster information after applying calibration
 
 };
 

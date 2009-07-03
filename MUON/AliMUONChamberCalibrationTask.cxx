@@ -240,17 +240,16 @@ void AliMUONChamberCalibrationTask::ConnectInputData( Option_t* /*option*/ )
 
       AliFatal( "Could not get input ESD event !!! ");
 
-    } else {
+    } 
+  } else {
 
       AliError( "Could not get input ESD handler !!!" );
       // If no input event handler we need to get the tree once
       // from input slot 0 for the chain
       tree = dynamic_cast<TTree*> (GetInputData(0));
       if ( tree ) tree->GetReadEntry();
-      else AliError( "Could not read tree from input slot 0 !!!" );
+      else AliFatal( "Could not read tree from input slot 0 !!!" );
     }
-  }
-
 }
 
 //______________________________________________________________
@@ -405,5 +404,9 @@ UInt_t AliMUONChamberCalibrationTask::BuildClusterMap( AliMUONTrack &track )
 //______________________________________________________________
 void AliMUONChamberCalibrationTask::Terminate( Option_t* /*option*/ )
 {
+  //
+  /// Called once per task on the client machine at the end of the analysis.
+  //
+
   AliDebug( 1, "" );
 }

@@ -38,7 +38,9 @@ void loadlibs ()
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libRAWDatarec");
   gSystem->Load("libCDB");
-  gSystem->Load("libSTEER"); 
+  gSystem->Load("libSTEER");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   
   gSystem->Load("libPhysics");
   gSystem->Load("libMUONcore");
@@ -60,6 +62,7 @@ void loadlibs ()
   gSystem->Load("libMUONsim");
   
   gSystem->Load("libMUONevaluation");
+  gSystem->Load("libMUONcalign");
   
   gSystem->Load("libMUONgraphics");
 }

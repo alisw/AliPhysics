@@ -3,6 +3,7 @@
 
 SRCS:=  AliMUONClusterInfo.cxx \
         AliMUONPadInfo.cxx \
+        AliMUONAlignment.cxx \
         AliMUONAlignmentTask.cxx \
         AliMUONReAlignTask.cxx \
         AliMUONChamberCalibrationTask.cxx
@@ -15,5 +16,5 @@ EINCLUDE:= MUON/mapping
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-              -lMUONmapping -lMUONgeometry -lMUONcore -lCDB -lSTEERBase -lRAWDatabase -lANALYSIS 
+              -lMUONmapping -lMUONgeometry -lMUONcore -lCDB -lSTEERBase -lRAWDatabase -lANALYSIS  -lANALYSISalice
 endif
