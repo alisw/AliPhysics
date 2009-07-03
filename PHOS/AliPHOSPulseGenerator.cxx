@@ -288,8 +288,8 @@ void AliPHOSPulseGenerator::Draw(Option_t* opt)
   }
   if (strstr(opt,"LG") == 0){
     graphHG->Draw("AP");
-    graphHG->GetHistogram()->SetTitleOffset(1.6,"Y");
-    graphHG->GetHistogram()->SetXTitle("time, #musec");
+    graphHG->GetHistogram()->SetTitleOffset(1.0,"Y");
+    graphHG->GetHistogram()->SetXTitle("time, sec");
     graphHG->GetHistogram()->SetYTitle("Amplitude, ADC counts");
   }
   if (strstr(opt,"all")){
@@ -298,8 +298,8 @@ void AliPHOSPulseGenerator::Draw(Option_t* opt)
   }
   if (strstr(opt,"HG") == 0){
     graphLG->Draw("AP");
-    graphLG->GetHistogram()->SetTitleOffset(1.6,"Y");
-    graphLG->GetHistogram()->SetXTitle("time, #musec");
+    graphLG->GetHistogram()->SetTitleOffset(1.0,"Y");
+    graphLG->GetHistogram()->SetXTitle("time, sec");
     graphLG->GetHistogram()->SetYTitle("Amplitude, ADC counts");
   }
   c1->Update();
