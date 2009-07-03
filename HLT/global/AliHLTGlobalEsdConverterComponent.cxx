@@ -140,7 +140,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
 AliHLTComponentDataType AliHLTGlobalEsdConverterComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTDataTypeESDObject|kAliHLTDataOriginHLT;
+  return kAliHLTDataTypeESDObject|kAliHLTDataOriginOut;
 }
 
 void AliHLTGlobalEsdConverterComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
@@ -230,9 +230,9 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
       // needed in te ReadFromTree method to read all objects correctly
       pTree->GetUserInfo()->Add(pESD);
       pESD->WriteToTree(pTree);
-      iResult=PushBack(pTree, kAliHLTDataTypeESDTree|kAliHLTDataOriginHLT, 0);
+      iResult=PushBack(pTree, kAliHLTDataTypeESDTree|kAliHLTDataOriginOut, 0);
     } else {
-      iResult=PushBack(pESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginHLT, 0);
+      iResult=PushBack(pESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
     }
   }
   if (pTree) {
