@@ -438,6 +438,17 @@ class AliHLTOUT {
   int ReleaseDataBuffer(const AliHLTUInt8_t* pBuffer);
 
   /**
+   * Get a TObject from the data buffer
+   * @return TObject pointer if data block is a streamed object
+   */
+  TObject* GetDataObject();
+
+  /**
+   * Release data object
+   */
+  int ReleaseDataObject(TObject* pObject);
+
+  /**
    * Add the current data block to the selection.
    * Note: enables also the block selection
    */
@@ -764,6 +775,11 @@ class AliHLTOUT {
   /** logging methods */
   AliHLTLogging fLog; //! transient
 
-  ClassDef(AliHLTOUT, 4)
+  /** current buffer converted to a TObject */
+  TObject* fpDataObject; //!
+  const AliHLTUInt8_t* fpObjectBuffer; //!
+  AliHLTUInt32_t fObjectBufferSize; //!
+
+  ClassDef(AliHLTOUT, 5)
 };
 #endif

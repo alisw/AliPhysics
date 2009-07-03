@@ -127,6 +127,18 @@ public:
    char    *CompBuffer() const { return fBufComp; }
    Int_t    CompLength() const { return (Int_t)(fBufCompCur - fBufComp); }
 
+   /**
+    * Helper function to stream an object into an AliHLTMessage
+    * The returned instance must be cleaned by the caller
+    */
+   static AliHLTMessage* Stream(TObject* pSrc, Int_t compression=1, unsigned verbosity=0);
+
+   /**
+    * Helper function to extract an object from a buffer.
+    * The returned object must be cleaned by the caller
+    */
+   static TObject* Extract(const void* pBuffer, unsigned bufferSize, unsigned verbosity=0);
+
 private:
    UInt_t   fWhat;        //!Message type
    TClass  *fClass;       //!If message is kMESS_OBJECT pointer to object's class

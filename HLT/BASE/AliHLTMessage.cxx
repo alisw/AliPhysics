@@ -31,6 +31,7 @@
 #include "AliHLTMessage.h"
 #include "Bytes.h"
 #include "TFile.h"
+#include "TClass.h"
 
 extern "C" void R__zip (Int_t cxlevel, Int_t *nin, char *bufin, Int_t *lout, char *bufout, Int_t *nout);
 extern "C" void R__unzip(Int_t *nin, UChar_t *bufin, Int_t *lout, char *bufout, Int_t *nout);
@@ -345,3 +346,79 @@ Int_t AliHLTMessage::Uncompress()
    return 0;
 }
 
+AliHLTMessage* AliHLTMessage::Stream(TObject* pSrc, Int_t compression, unsigned verbosity)
+{
+  /// Helper function to stream an object into an AliHLTMessage
+  /// The returned instance must be cleaned by the caller
+  ///
+  /// Get the data and data size from the message:
+  ///  first check
+  ///    pMsg->CompLength();
+  ///    pMsg->CompBuffer();
+  ///  if that is NULL
+  ///    pMsg->Length();
+  ///    pMsg->Buffer();
+  ///
+  /// Note: accessing scheme will be change din the future to just have the two
+  ///       latter ones.
+  if (!pSrc) return NULL;
+
+  AliHLTLogging log;
+  AliHLTMessage* pMsg=new AliHLTMessage(kMESS_OBJECT);
+  if (!pMsg) {
+    log.LoggingVarargs(kHLTLogError, "AliHLTMessage", "Stream" , __FILE__ , __LINE__ , "memory allocation failed");
+    return NULL;
+  }
+
+  pMsg->SetCompressionLevel(compression);
+  pMsg->WriteObject(pSrc);
+  if (pMsg->Length()>0) {
+    // Matthias Sep 2008
+    // NOTE: AliHLTMessage does implement it's own SetLength method
+    // which is not architecture independent. The original SetLength
+    // stores the size always in network byte order.
+    // I'm trying to remember the rational for that, might be that
+    // it was just some lack of knowledge. Want to change this, but
+    // has to be done carefully to be backward compatible.
+    pMsg->SetLength(); // sets the length to the first (reserved) word
+
+    // does nothing if the level is 0
+    pMsg->Compress();
+
+    if (pMsg->CompBuffer()) {
+      pMsg->SetLength(); // set once more to have the byte order
+      if (verbosity>0) log.LoggingVarargs(kHLTLogInfo, "AliHLTMessage", "Stream" , __FILE__ , __LINE__ , "object %p type %s streamed: size %d", pSrc, pSrc->GetName(), pMsg->CompLength());
+    } else {
+      if (verbosity>0) log.LoggingVarargs(kHLTLogInfo, "AliHLTMessage", "Stream" , __FILE__ , __LINE__ , "object %p type %s streamed: size %d", pSrc, pSrc->GetName(), pMsg->Length());
+    }
+  }
+  return pMsg;
+}
+
+TObject* AliHLTMessage::Extract(const void* pBuffer, unsigned bufferSize, unsigned verbosity)
+{
+   /// Helper function to extract an object from a buffer.
+   /// The returned object must be cleaned by the caller
+  AliHLTLogging log;
+  if (!pBuffer || bufferSize<sizeof(AliHLTUInt32_t)) {
+    if (verbosity>0) log.LoggingVarargs(kHLTLogWarning, "AliHLTMessage", "Extract" , __FILE__ , __LINE__ , "invalid input buffer %p %d", pBuffer, bufferSize);
+    return NULL;
+  }
+
+  AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)pBuffer);
+  if (firstWord==bufferSize-sizeof(AliHLTUInt32_t) &&
+      firstWord>=34 /*thats the minimum size of a streamed TObject*/) {
+    AliHLTMessage msg((AliHLTUInt8_t*)pBuffer, bufferSize);
+    TClass* objclass=msg.GetClass();
+    TObject* pObject=msg.ReadObject(objclass);
+    if (pObject && objclass) {
+      if (verbosity>0) log.LoggingVarargs(kHLTLogInfo, "AliHLTMessage", "Extract" , __FILE__ , __LINE__ , "object %p type %s created", pObject, objclass->GetName());
+      return pObject;
+    } else {
+      if (verbosity>0) log.LoggingVarargs(kHLTLogWarning, "AliHLTMessage", "Extract" , __FILE__ , __LINE__ , "failed to create object from buffer of size %d", bufferSize);
+    }
+  } else {
+    if (verbosity>0) log.LoggingVarargs(kHLTLogWarning, "AliHLTMessage", "Extract" , __FILE__ , __LINE__ , "not a streamed TObject: block size %d, indicated %d", bufferSize, firstWord+sizeof(AliHLTUInt32_t));
+  }
+  return NULL;
+}

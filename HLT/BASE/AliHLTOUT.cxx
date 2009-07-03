@@ -25,6 +25,7 @@
 #include <cerrno>
 #include <cassert>
 #include "AliHLTOUT.h"
+#include "AliHLTMessage.h"
 #include "TSystem.h"
 #include "TClass.h"
 #include "TROOT.h"
@@ -44,6 +45,9 @@ AliHLTOUT::AliHLTOUT()
   fDataHandlers(),
   fbVerbose(true),
   fLog()
+  , fpDataObject(NULL)
+  , fpObjectBuffer(NULL)
+  , fObjectBufferSize(0)
 {
   // see header file for class documentation
   // or
@@ -58,6 +62,11 @@ AliHLTOUT::~AliHLTOUT()
   if (CheckStatusFlag(kIsSubCollection)) {
     fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "~AliHLTOUT" , __FILE__ , __LINE__ , "severe internal error: collection has not been released, potential crash due to invalid pointer");
   }
+
+  if (fpDataObject) {
+    fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "GetDataObject" , __FILE__ , __LINE__ , "data object has not been released, potential memory leak");
+  }
+  fpDataObject=NULL;
 }
 AliHLTOUT* AliHLTOUT::fgGlobalInstance=NULL;
 
@@ -815,4 +824,42 @@ const AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTBlockDescriptor:
     }
   }
   return const_cast<AliHLTOUT::AliHLTOUTHandlerListEntry&>(AliHLTOUT::AliHLTOUTHandlerListEntry::fgkVoidHandlerListEntry);
+}
+
+TObject* AliHLTOUT::GetDataObject()
+{
+  // see header file for class documentation
+  if (fpDataObject) {
+    fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "GetDataObject" , __FILE__ , __LINE__ , "data object has not been released, potential memory leak");
+    ReleaseDataBuffer(fpObjectBuffer);
+  }
+  fpObjectBuffer=NULL;
+  fObjectBufferSize=0;
+  fpDataObject=NULL;
+
+  if (GetDataBuffer(fpObjectBuffer, fObjectBufferSize)>=0) {
+    fpDataObject=AliHLTMessage::Extract(fpObjectBuffer, fObjectBufferSize);
+  } else {
+    fLog.LoggingVarargs(kHLTLogError, "AliHLTOUT", "GetDataObject" , __FILE__ , __LINE__ , "can not fetch data buffer");    
+  }
+
+  return fpDataObject;
+}
+
+int AliHLTOUT::ReleaseDataObject(TObject* pObject)
+{
+  // see header file for class documentation
+  if (!pObject) return -EINVAL;
+  if (pObject!=fpDataObject) {
+    fLog.LoggingVarargs(kHLTLogError, "AliHLTOUT", "GetDataObject" , __FILE__ , __LINE__ , "attempt to release wrong data object %p, expected %p", pObject, fpDataObject);
+    return -EINVAL;
+  }
+
+  delete fpDataObject;
+  fpDataObject=NULL;
+  ReleaseDataBuffer(fpObjectBuffer);
+  fpObjectBuffer=NULL;
+  fObjectBufferSize=0;
+
+  return 0;
 }
