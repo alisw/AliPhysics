@@ -26,7 +26,7 @@
 #include "AliHLTITSAgent.h"
 #include "AliHLTConfiguration.h"
 #include "AliHLTOUT.h"
-//#include "AliDAQ.h"
+#include "AliHLTDAQ.h"
 
 // header files of library components
 
@@ -61,18 +61,53 @@ AliHLTITSAgent::~AliHLTITSAgent()
   // see header file for class documentation
 }
 
-int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* /*handler*/,
-					    AliRawReader* /*rawReader*/,
+int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
+					    AliRawReader* rawReader,
 					    AliRunLoader* /*runloader*/) const
 {
   // see header file for class documentation
+  int iResult=0;
+  if (!handler) return -EINVAL;
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // ITS tracking is currently only working on raw data
+  // to run on digits, a digit publisher needs to be implemented
+  if (rawReader) {
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // define the ITS cluster finder components
+    //
+
+    TString trackerInput;
+    for (int detectorId=0; detectorId<3; detectorId++) {
+      iResult=CreateCFConfigurations(handler, detectorId, trackerInput);
+    }
+    
+    if (handler->FindConfiguration("TPC-globalmerger")) {
+      trackerInput+=" TPC-globalmerger";
+    }
+    handler->CreateConfiguration("ITS-tracker","ITSTracker",trackerInput.Data(),"");
+  }
+
   return 0;
 }
 
 const char* AliHLTITSAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
-						       AliRunLoader* /*runloader*/) const
+						       AliRunLoader* runloader) const
 {
   // see header file for class documentation
+  if (runloader) {
+    // reconstruction chains for AliRoot simulation
+    // Note: run loader is only available while running embedded into
+    // AliRoot simulation
+
+    // the chain is just defined and can be used as input for subsequent
+    // components
+    //return "ITS-tracker";
+  }
 
   return "";
 }
@@ -80,7 +115,7 @@ const char* AliHLTITSAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
 const char* AliHLTITSAgent::GetRequiredComponentLibraries() const
 {
   // see header file for class documentation
-  return "";
+  return "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so";
 }
 
 int AliHLTITSAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
@@ -194,4 +229,54 @@ int AliHLTITSAgent::AliHLTOUTSDDRawDataHandler::ProcessData(AliHLTOUT* pData)
     }
   }
   return iResult;
+}
+
+int AliHLTITSAgent::CreateCFConfigurations(AliHLTConfigurationHandler* pHandler, int detectorId, TString& output) const
+{
+  // see header file for class documentation
+  if (!pHandler) return -EINVAL;
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // define the ITS cluster finder components
+  //
+    
+  //The spec starts from 0x1 in SPD, SDD and SSD. So 0x1 is ddl 0 for SPD, 0x10 is ddl 1, and so on
+  //in SDD 0x1 is ddl 256, 0x10 is ddl 257, and so on. This means that the spec has to be set to 0x1 
+  //before the loops over the clusterfinder
+
+  TString idString=AliHLTDAQ::DetectorName(detectorId);
+  if (idString.CompareTo("ITSSPD") &&
+      idString.CompareTo("ITSSDD") &&
+      idString.CompareTo("ITSSSD")) {
+    HLTError("invalid detector id %d does not describe any ITS detector", detectorId);
+    return -ENOENT;
+  }
+
+  int minddl=AliHLTDAQ::DdlIDOffset(detectorId);
+  int maxddl=minddl+=AliHLTDAQ::NumberOfDdls(detectorId);
+  int spec=0x1;
+  int ddlno=0;
+
+  TString origin=idString; origin.ReplaceAll("ITS", "I");
+  TString cfBase=idString; cfBase+="_CF";
+  TString componentId=idString; componentId.ReplaceAll("ITS", "ITSClusterFinder");
+  for(ddlno=minddl;ddlno<=maxddl;ddlno++){  
+    TString arg, publisher, cf;
+ 
+    // the HLT origin defines are 4 chars: ISPD, ISSD, ISDD respectively
+    arg.Form("-minid %d -datatype 'DDL_RAW ' '%s' -dataspec 0x%08x -verbose",ddlno, origin.Data(), spec);
+    publisher.Form("ITS-DP_%d", ddlno);
+    pHandler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+
+    cf.Form("%s_%d",cfBase.Data(), ddlno);
+    pHandler->CreateConfiguration(cf.Data(), componentId.Data(), publisher.Data(), "");
+
+    if (output.Length()>0) output+=" ";
+    output+=cf;
+
+    spec=spec<<1;
+  }
+  
+  return 0;
 }
