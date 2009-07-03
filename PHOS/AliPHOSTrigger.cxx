@@ -159,7 +159,7 @@ void AliPHOSTrigger::CreateInputs()
 
    TString name = GetName();
    
-   fInputs.AddLast( new AliTriggerInput( "PHOS_L0",       name, 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "0PH0",       name, 0 ) );
    fInputs.AddLast( new AliTriggerInput( "PHOS_JetHPt_L1",name, 1 ) );
    fInputs.AddLast( new AliTriggerInput( "PHOS_JetMPt_L1",name, 1 ) );
    fInputs.AddLast( new AliTriggerInput( "PHOS_JetLPt_L1",name, 1 ) );
@@ -501,7 +501,7 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
 	  fL0Threshold) ;  
   
   printf( "             Threshold for LO %10.2f\n", fL0Threshold) ;  
-  in = (AliTriggerInput*)fInputs.FindObject( "PHOS_L0" );
+  in = (AliTriggerInput*)fInputs.FindObject( "0PH0" );
   if(in->GetValue())
     printf( "             *** PHOS LO is set ***\n") ; 
   
@@ -593,7 +593,7 @@ void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD & ampmax2, con
     //Set L0
     for(Int_t i = 0 ; i < nTimeBins ; i++){
       if(fADCValuesHigh2x2[i] >= fL0Threshold || fADCValuesLow2x2[i] >= fL0Threshold) {
-	SetInput("PHOS_L0") ;
+	SetInput("0PH0") ;
 	break;
       }
     }
