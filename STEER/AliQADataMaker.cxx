@@ -220,7 +220,7 @@ TObject * AliQADataMaker::GetData(TObjArray ** list, const Int_t index)
       else if (arrName.Contains(AliQAv1::GetTaskName(AliQAv1::kDIGITS)))
         InitDigits() ; 
       else if (arrName.Contains(AliQAv1::GetTaskName(AliQAv1::kDIGITSR)))
-        InitSDigits() ; 
+        InitDigits() ; 
       else if (arrName.Contains(AliQAv1::GetTaskName(AliQAv1::kRECPOINTS)))
         InitRecPoints() ; 
       else if (arrName.Contains(AliQAv1::GetTaskName(AliQAv1::kESDS)))
