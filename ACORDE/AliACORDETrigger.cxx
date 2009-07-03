@@ -43,10 +43,10 @@ void AliACORDETrigger::CreateInputs()
 
   // two acorde triggers, single muon and multicoincidence
   fInputs.AddLast( new 
-		   AliTriggerInput( "ACORDE_SINGLE", 
+		   AliTriggerInput( "0ASL", 
 				    "ACORDE", 0 ) );
   fInputs.AddLast( new 
-		   AliTriggerInput( "ACORDE_MULTI",
+		   AliTriggerInput( "0AMU",
 				    "ACORDE", 0 ) );
 }
 
@@ -123,7 +123,7 @@ void AliACORDETrigger::Trigger()
        << " fMultiMuon " << fMultiMuon << endl;
   // 5.- Set the relevant trigger
   fSingleMuon = MinTimeModule;
-  SetInput( "ACORDE_SINGLE" );
-  if (fMultiMuon>=MultiMin) SetInput( "ACORDE_MULTI" );
+  SetInput( "0ASL" );
+  if (fMultiMuon>=MultiMin) SetInput( "0AMU" );
   return;
 }
