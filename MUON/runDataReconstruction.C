@@ -24,84 +24,35 @@
 /// \author Laurent Aphecetche, Nicole Bastid, Bogdan Vulpescu, ...
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include "AliMUONReconstructor.h"
-#include "AliMUONRecoParam.h"
-#include "AliRecoParam.h"
 #include "AliCDBManager.h"
-#include "AliMagF.h"
-#include "AliTracker.h"
 #include "AliReconstruction.h"
-#include <TRandom.h>
 #include <TGrid.h>
 #include <TSystem.h>
-//#include <TObjectTable.h>
 #endif
 
-TString caliboption1 = "NOGAIN";
-TString caliboption2 = "GAINCONSTANTCAPA";
-TString recoptions = "SAVEDIGITS";
-Int_t seed = 1234567;
-
-void runDataReconstruction(const char* input = "/Users/laurent/Alice/Data/Raw/09000067495031.10.root",
+void runDataReconstruction(const char* input = "alien:///alice/data/2009/LHC09a/000067138/raw/09000067138031.10.root",
                            const char* ocdbPath = "alien://folder=/alice/data/2009/OCDB",
-                           Int_t calib = 1)
+                           const char* recoptions="SAVEDIGITS")
 { 
   TGrid::Connect("alien://");
   
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdbPath);
 
-  gRandom->SetSeed(seed);
+  AliReconstruction MuonRec;
+  
+  MuonRec.SetInput(gSystem->ExpandPathName(input));
+  MuonRec.SetRunVertexFinder(kFALSE);
+  MuonRec.SetRunLocalReconstruction("MUON");
+  MuonRec.SetRunTracking("MUON");
+  MuonRec.SetFillESD(" ");
+  MuonRec.SetLoadAlignData("MUON");
+  MuonRec.SetNumberOfEventsPerFile(0);
+  MuonRec.SetOption("MUON",recoptions);  
+  MuonRec.SetRunQA("MUON:ALL");
+  MuonRec.SetQAWriteExpert(AliQAv1::kMUON);
 
-  TString socdb(ocdbPath);
-  if ( socdb.Contains("local://") )
-  {
-    // no magnetic field
-    AliMagF* field = new AliMagF("Maps","Maps",2,0.,0., 10.,AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
-    TGeoGlobalMagField::Instance()->Lock();
-  }
+  MuonRec.Run();
   
-  AliReconstruction *MuonRec = new AliReconstruction();
-  
-  MuonRec->SetInput(gSystem->ExpandPathName(input));
-  MuonRec->SetRunVertexFinder(kFALSE);
-  MuonRec->SetRunLocalReconstruction("MUON");
-  MuonRec->SetRunTracking("MUON");
-  MuonRec->SetFillESD(" ");
-  MuonRec->SetLoadAlignData("MUON");
-  MuonRec->SetNumberOfEventsPerFile(0);
-  MuonRec->SetOption("MUON",recoptions.Data());
-  
-  // reconstruction parameters
-  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetCosmicParam();
-  
-  // digit selection
-  TString caliboption = caliboption1;
-  if ( calib == 2 ) caliboption = caliboption2;
-  muonRecoParam->SetCalibrationMode(caliboption.Data());
-  
-  // cut on (non)bending slopes
-  muonRecoParam->SetMaxNonBendingSlope(0.4);
-  muonRecoParam->SetMaxBendingSlope(0.5);
-  
-  // tracking algorithm
-  muonRecoParam->MakeMoreTrackCandidates(kTRUE);
-  muonRecoParam->RequestStation(0, kFALSE);
-  muonRecoParam->RequestStation(2, kFALSE);
-  muonRecoParam->RequestStation(3, kFALSE);
-  muonRecoParam->RequestStation(4, kFALSE);
-  
-  muonRecoParam->Print("FULL");
-  
-  MuonRec->SetRecoParam("MUON",muonRecoParam);
-  
-  MuonRec->SetRunQA("MUON:ALL");
-
-  MuonRec->Run();
-  
-  delete MuonRec;
-  
-  //gObjectTable->Print();
 }
 
