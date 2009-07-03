@@ -27,8 +27,9 @@ extern "C" {
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliPHOSDA2.h"
-#include "AliPHOSRawDecoderv1.h"
+#include "AliPHOSRawFitterv1.h"
 #include "AliCaloAltroMapping.h"
+#include "AliCaloRawStreamV3.h"
 
 
 /* Main routine
@@ -110,10 +111,12 @@ int main(int argc, char **argv) {
   
   Float_t q[64][56][2];
 
-  Int_t gain = -1;
-  Int_t X = -1;
-  Int_t Z = -1;
-  Int_t nFired = -1;
+  Int_t gain     = -1;
+  Int_t cellX    = -1;
+  Int_t cellZ    = -1;
+  Int_t nBunches =  0;
+  Int_t nFired   = -1;
+  Int_t sigStart, sigLength;
 
   /* main loop (infinite) */
   for(;;) {
@@ -157,25 +160,40 @@ int main(int argc, char **argv) {
       nFired = 0;
 
       rawReader = new AliRawReaderDate((void*)event);
-      AliPHOSRawDecoderv1 dc(rawReader,mapping);
-      dc.SubtractPedestals(kTRUE);
+      AliCaloRawStreamV3 stream(rawReader,"PHOS",mapping);
+      AliPHOSRawFitterv0 fitter();
+      fitter.SubtractPedestals(kTRUE); // assume that data is non-ZS
       
-      while(dc.NextDigit()) {
+      while (stream.NextDDL()) {
+	while (stream.NextChannel()) {
 
-	X = dc.GetRow() - 1;
-	Z = dc.GetColumn() - 1;
+	  cellX    = stream.GetCellX();
+	  cellZ    = stream.GetCellZ();
+	  caloFlag = stream.GetCaloFlag();  // 0=LG, 1=HG, 2=TRU
 
-	if(dc.IsLowGain()) gain = 0;
-	else
-	  gain = 1;
-	
-	q[X][Z][gain] = dc.GetSampleQuality();
+	  // In case of oscillating signals with ZS, a channel can have several bunches
+	  nBunches = 0;
+	  while (stream.NextBunch()) {
+	    nBunches++;
+	    if (nBunches > 1) continue;
+	    sigStart  = fRawStream.GetStartTimeBin();
+	    sigLength = fRawStream.GetBunchLength();
+	    fitter.SetSamples(fRawStream->GetSignals(),sigStart,sigLength);
+	  } // End of NextBunch()
+	  
+	  fitter.SetNBunches(nBunches);
+	  fitter.SetChannelGeo(module,cellX,cellZ,caloFlag);
+	  fitter.Eval();
 
-	if(gain && dc.GetEnergy()>40)
-	  nFired++;
-	
+	  if (nBunches>1 || caloFlag!=0 || caloFlag!=1 || fitter.GetSignalQuality()>1) continue;
+	  
+	  q[cellX][cellZ][caloFlag] = fitter.GetSignalQuality();
+	  
+	  if(gain && dc.GetEnergy()>40)
+	    nFired++;
+	}
       }
-      
+	
       da2->FillQualityHistograms(q);
       da2->FillFiredCellsHistogram(nFired);
       //da1.UpdateHistoFile();

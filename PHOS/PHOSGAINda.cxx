@@ -27,8 +27,9 @@ extern "C" {
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliPHOSRcuDA1.h"
-#include "AliPHOSRawDecoder.h"
+#include "AliPHOSRawFitterv0.h"
 #include "AliCaloAltroMapping.h"
+#include "AliCaloRawStreamV3.h"
 
 
 /* Main routine
@@ -73,7 +74,6 @@ int main(int argc, char **argv) {
     mapping[i] = new AliCaloAltroMapping(path2.Data());
   }
   
-
   /* define data source : this is argument 1 */  
   status=monitorSetDataSource( argv[1] );
   if (status!=0) {
@@ -105,9 +105,11 @@ int main(int argc, char **argv) {
   Float_t e[64][56][2];
   Float_t t[64][56][2];
 
-  Int_t gain = -1;
-  Int_t X = -1;
-  Int_t Z = -1;
+  Int_t gain     = -1;
+  Int_t cellX    = -1;
+  Int_t cellZ    = -1;
+  Int_t nBunches =  0;
+  Int_t sigStart, sigLength;
 
   /* main loop (infinite) */
   for(;;) {
@@ -150,26 +152,40 @@ int main(int argc, char **argv) {
       }
 
       rawReader = new AliRawReaderDate((void*)event);
-//       AliPHOSRawDecoderv1 dc(rawReader,mapping);
-      AliPHOSRawDecoder dc(rawReader,mapping);
-      dc.SubtractPedestals(kTRUE);
+      AliCaloRawStreamV3 stream(rawReader,"PHOS",mapping);
+      AliPHOSRawFitterv0 fitter();
+      fitter.SubtractPedestals(kTRUE); // assume that data is non-ZS
       
-      while(dc.NextDigit()) {
+      while (stream.NextDDL()) {
+	while (stream.NextChannel()) {
 
-	X = dc.GetRow() - 1;
-	Z = dc.GetColumn() - 1;
+	  cellX    = stream.GetCellX();
+	  cellZ    = stream.GetCellZ();
+	  caloFlag = stream.GetCaloFlag();  // 0=LG, 1=HG, 2=TRU
 
-	if(dc.IsLowGain()) gain = 0;
-	else
-	  gain = 1;
-	
-	e[X][Z][gain] = dc.GetEnergy();
-	t[X][Z][gain] = dc.GetTime();
-	
+	  // In case of oscillating signals with ZS, a channel can have several bunches
+	  nBunches = 0;
+	  while (stream.NextBunch()) {
+	    nBunches++;
+	    if (nBunches > 1) continue;
+	    sigStart  = fRawStream.GetStartTimeBin();
+	    sigLength = fRawStream.GetBunchLength();
+	    fitter.SetSamples(fRawStream->GetSignals(),sigStart,sigLength);
+	  } // End of NextBunch()
+	  
+	  fitter.SetNBunches(nBunches);
+	  fitter.SetChannelGeo(module,cellX,cellZ,caloFlag);
+	  fitter.Eval();
+
+	  if (nBunches>1 || caloFlag!=0 || caloFlag!=1 || fitter.GetSignalQuality()>1) continue;
+	  
+	  e[cellX][cellZ][caloFlag] = fitter.GetEnergy();
+	  t[cellX][cellZ][caloFlag] = fitter.GetTime();
+	}
       }
 
       da1.FillHistograms(e,t);
-      //da1.UpdateHistoFile();
+    //da1.UpdateHistoFile();
       
       delete rawReader;     
       nevents_physics++;
