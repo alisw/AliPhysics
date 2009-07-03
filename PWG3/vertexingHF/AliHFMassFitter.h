@@ -54,6 +54,7 @@ class AliHFMassFitter : public TNamed {
   Int_t    GetReflectionSigmaFactor() const {return ffactor;} 
   Double_t GetMean() const {return fMass;}
   Double_t GetSigma()const {return fSigmaSgn;}
+  Double_t GetChiSquare() const;
 
   void     InitNtuParam(char *ntuname="ntupar");
   void     FillNtuParam();
@@ -71,7 +72,7 @@ class AliHFMassFitter : public TNamed {
   Double_t FitFunction4MassDistr (Double_t*, Double_t*);
   Double_t FitFunction4Sgn (Double_t*, Double_t*);
   Double_t FitFunction4Bkg (Double_t*, Double_t*);
-  void     MassFitter(Bool_t draw=kTRUE);
+  Bool_t   MassFitter(Bool_t draw=kTRUE);
   void     RebinMass(Int_t binground=1);
   
 
