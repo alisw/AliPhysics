@@ -181,7 +181,8 @@ fAlignFilterMaxMatchingAngle(0.085),
 fAlignFilterMinAngleWrtModulePlanes(0.52),
 fAlignFilterMinPt(0.),
 fAlignFilterMaxPt(1.e10),
-fAlignFilterFillQANtuples(kTRUE)
+fAlignFilterFillQANtuples(kTRUE),
+fESDV0Params(NULL)
 {
   //
   // constructor
@@ -203,6 +204,41 @@ fAlignFilterFillQANtuples(kTRUE)
   SetVertexer3DDefaults();
 
   for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) fAlignFilterUseLayer[i]=kTRUE;
+  fESDV0Params = new AliESDV0Params();
+  
+  fESDV0Params->SetMaxDist0(0.1);
+  fESDV0Params->SetMaxDist1(0.1);
+  fESDV0Params->SetMaxDist(1.);
+  fESDV0Params->SetMinPointAngle(0.85);
+  fESDV0Params->SetMinPointAngle2(0.99);
+  fESDV0Params->SetMinR(0.5);
+  fESDV0Params->SetMaxR(220.);
+  fESDV0Params->SetCausality0Cut(0.19);
+  fESDV0Params->SetLikelihood01Cut(0.45);
+  fESDV0Params->SetLikelihood1Cut(0.5);  
+  fESDV0Params->SetCombinedCut(0.55);
+  fESDV0Params->SetMinClFullTrk(5.0);
+  fESDV0Params->SetMinTgl0(1.05);
+  fESDV0Params->SetMinTPCdensity(0.6);
+  fESDV0Params->SetMinTgl1(1.1);
+  fESDV0Params->SetMinTgl2(1.0);
+  fESDV0Params->SetMinchi2before0(16.);
+  fESDV0Params->SetMinchi2before1(16.);
+  fESDV0Params->SetMinchi2after0(16.);
+  fESDV0Params->SetMinchi2after1(16.);
+  fESDV0Params->SetAddchi2SharedCl(18.);
+  fESDV0Params->SetAddchi2NegCl0(25.);
+  fESDV0Params->SetAddchi2NegCl1(30.);
+  fESDV0Params->SetSigp0Par0(0.0001);
+  fESDV0Params->SetSigp0Par1(0.001);
+  fESDV0Params->SetSigp0Par2(0.1);
+  fESDV0Params->SetSigpPar0(0.5);
+  fESDV0Params->SetSigpPar1(0.6);
+  fESDV0Params->SetSigpPar2(0.4);
+  fESDV0Params->SetStreamLevel(0);
+  fESDV0Params->SetChi2KF(100);
+  fESDV0Params->SetRobustChi2KF(100);
+  
 }
 //_____________________________________________________________________________
 AliITSRecoParam::~AliITSRecoParam() 
@@ -210,6 +246,10 @@ AliITSRecoParam::~AliITSRecoParam()
   //
   // destructor
   //  
+  if(fESDV0Params){
+    delete fESDV0Params;
+    fESDV0Params=NULL;
+  }
 }
 //_____________________________________________________________________________
 AliITSRecoParam *AliITSRecoParam::GetHighFluxParam() 

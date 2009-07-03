@@ -15,6 +15,7 @@
 
 #include "AliDetectorRecoParam.h"
 #include "AliITSgeomTGeo.h"
+#include "AliESDV0Params.h"
 
 class AliITSRecoParam : public AliDetectorRecoParam
 {
@@ -372,6 +373,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t GetAlignFilterMaxPt() const {return fAlignFilterMaxPt;}          
   Bool_t  GetAlignFilterFillQANtuples() const {return fAlignFilterFillQANtuples;}     
 
+  AliESDV0Params *GetESDV0Params() const {return fESDV0Params;}
 
 
   enum {fgkMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
@@ -594,6 +596,11 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fAlignFilterMaxPt;              // max pt
   Bool_t  fAlignFilterFillQANtuples;      // fill QA ntuples  
 
+ private:
+  AliESDV0Params * fESDV0Params;  // declare the AliESDV0Params to be able to used in AliITSV0Finder
+
+  AliITSRecoParam(const AliITSRecoParam & param);
+  AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
   ClassDef(AliITSRecoParam,25) // ITS reco parameters
 };

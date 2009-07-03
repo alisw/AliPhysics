@@ -24,7 +24,8 @@ public:
   AliITSV0Finder();
   //AliITSV0Finder(const AliITSV0Finder &/*v0Finder*/) {;}
   //AliITSV0Finder & operator=(const AliITSV0Finder &/*v0Finder*/) {;}
-  virtual ~AliITSV0Finder() {;}
+ 
+  virtual ~AliITSV0Finder();
 
   //try to find V0
   static void FindV02(AliESDEvent *event,AliITStrackerMI *tracker);  
@@ -32,8 +33,14 @@ public:
   static void RefitV02(const AliESDEvent *event,AliITStrackerMI *tracker);
   //try to update, or reject TPC  V0s
   static void UpdateTPCV0(const AliESDEvent *event,AliITStrackerMI *tracker);  
-private:
 
+  TTreeSRedirector *GetDebugStreamer() {return fDebugStreamer;}
+
+  TTreeSRedirector *fDebugStreamer;      //!debug streamer
+ 
+
+private:
+ 
   ClassDef(AliITSV0Finder,0)   // on-the-fly V0 finder for AliITStrackerMI
 };
 #endif

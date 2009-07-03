@@ -38,12 +38,19 @@
 #include "AliITSReconstructor.h"
 #include "AliITStrackerMI.h"
 #include "AliITSV0Finder.h"
+#include "AliKFParticle.h"
 
 ClassImp(AliITSV0Finder)
 
-AliITSV0Finder::AliITSV0Finder() {
+
+AliITSV0Finder::AliITSV0Finder():
+fDebugStreamer(0)
+ {
   //Default constructor
-}
+
+   fDebugStreamer = new TTreeSRedirector("ITSdebug.root");
+} 
+
 //------------------------------------------------------------------------
 void AliITSV0Finder::UpdateTPCV0(const AliESDEvent *event,
 				   AliITStrackerMI *tracker)
@@ -51,6 +58,8 @@ void AliITSV0Finder::UpdateTPCV0(const AliESDEvent *event,
   //
   //try to update, or reject TPC  V0s
   //
+  const Float_t kMinTgl2= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinTgl2();
+
   TObjArray *trackHypothesys = tracker->GetTrackHypothesys();
 
   Int_t nv0s = event->GetNumberOfV0s();
@@ -126,7 +135,7 @@ void AliITSV0Finder::UpdateTPCV0(const AliESDEvent *event,
     if (clayer < 5 ){ // calculate chi2 after vertex
       Float_t chi2p = 0, chi2m=0;  
       //
-      if (trackp&&TMath::Abs(trackp->GetTgl())<1.){
+      if (trackp&&TMath::Abs(trackp->GetTgl())<kMinTgl2){
 	for (Int_t ilayer=clayer;ilayer<6;ilayer++){
 	  if (trackp->GetClIndex(ilayer)>=0){
 	    chi2p+=trackp->GetDy(ilayer)*trackp->GetDy(ilayer)/(trackp->GetSigmaY(ilayer)*trackp->GetSigmaY(ilayer))+
@@ -140,7 +149,7 @@ void AliITSV0Finder::UpdateTPCV0(const AliESDEvent *event,
 	chi2p = 0;
       }
       //
-      if (trackm&&TMath::Abs(trackm->GetTgl())<1.){
+      if (trackm&&TMath::Abs(trackm->GetTgl())<kMinTgl2){
 	for (Int_t ilayer=clayer;ilayer<6;ilayer++){
 	  if (trackm->GetClIndex(ilayer)>=0){
 	    chi2m+=trackm->GetDy(ilayer)*trackm->GetDy(ilayer)/(trackm->GetSigmaY(ilayer)*trackm->GetSigmaY(ilayer))+
@@ -170,20 +179,38 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   //          max distance DCA between 2 tracks cut 
   //          maxDist = TMath::Min(kMaxDist,kMaxDist0+pvertex->GetRr()*kMaxDist);
   //
-  const Float_t kMaxDist0      = 0.1;    
-  const Float_t kMaxDist1      = 0.1;     
-  const Float_t kMaxDist       = 1;
-  const Float_t kMinPointAngle  = 0.85;
-  const Float_t kMinPointAngle2 = 0.99;
-  const Float_t kMinR           = 0.5;
-  const Float_t kMaxR           = 220;
-  //const Float_t kCausality0Cut   = 0.19;
-  //const Float_t kLikelihood01Cut = 0.25;
-  //const Float_t kPointAngleCut   = 0.9996;
-  const Float_t kCausality0Cut   = 0.19;
-  const Float_t kLikelihood01Cut = 0.45;
-  const Float_t kLikelihood1Cut  = 0.5;
-  const Float_t kCombinedCut     = 0.55;
+  const Float_t kMaxDist0 = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxDist0();
+  const Float_t kMaxDist1 = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxDist1();
+  const Float_t kMaxDist = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxDist();
+  const Float_t kMinPointAngle = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinPointAngle();
+  const Float_t kMinPointAngle2 = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinPointAngle2();
+  const Float_t kMinR = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinR();
+  const Float_t kMaxR = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxR();
+  const Float_t kCausality0Cut = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetCausality0Cut();
+  const Float_t kLikelihood01Cut = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetLikelihood01Cut();
+  const Float_t kLikelihood1Cut = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetLikelihood1Cut();
+  const Float_t kCombinedCut = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetCombinedCut();
+  const Float_t kMinClFullTrk= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinClFullTrk();
+  const Float_t kMinTgl0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinTgl0();
+  const Float_t kMinTPCdensity= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinTPCdensity();
+  const Float_t kMinTgl1= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinTgl1();
+
+  const Float_t kMinchi2before0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinchi2before0();
+  const Float_t kMinchi2before1= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinchi2before1();
+  const Float_t kMinchi2after0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinchi2after0();
+  const Float_t kMinchi2after1= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinchi2after1();
+  const Float_t kAddchi2SharedCl= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetAddchi2SharedCl();
+  const Float_t kAddchi2NegCl0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetAddchi2NegCl0();
+  const Float_t kAddchi2NegCl1= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetAddchi2NegCl1();
+
+  const Float_t kSigp0Par0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetSigp0Par0();
+  const Float_t kSigp0Par1= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetSigp0Par1();
+  const Float_t kSigp0Par2= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetSigp0Par2();
+
+  const Float_t kSigpPar0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetSigpPar0();
+  const Float_t kSigpPar1= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetSigpPar1();
+  const Float_t kSigpPar2= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetSigpPar2();
+ 
 
   TObjArray *trackHypothesys = tracker->GetTrackHypothesys();
   TObjArray *bestHypothesys  = tracker->GetBestHypothesys();
@@ -334,7 +361,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
 	normdist0[itsindex] = TMath::Abs(trackat0.GetY()/norm[itsindex]);
 	normdist1[itsindex] = TMath::Abs((trackat0.GetZ()-primvertex[2])/(ptfac*TMath::Sqrt(trackat0.GetSigmaZ2())));
 	normdist[itsindex]  = TMath::Sqrt(normdist0[itsindex]*normdist0[itsindex]+normdist1[itsindex]*normdist1[itsindex]);
-	if (TMath::Abs(trackat0.GetTgl())>1.05){
+	if (TMath::Abs(trackat0.GetTgl())>kMinTgl0){
 	  if (normdist[itsindex]<3) forbidden[itsindex]=kTRUE;
 	  if (normdist[itsindex]>3) {
 	    minr[itsindex] = TMath::Max(Float_t(40.),minr[itsindex]);
@@ -389,15 +416,15 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
     //
     // Causality cuts in TPC volume
     //
-    if (esdtrack->GetTPCdensity(0,10) >0.6)  maxr[itsindex] = TMath::Min(Float_t(110),maxr[itsindex]);
-    if (esdtrack->GetTPCdensity(10,30)>0.6)  maxr[itsindex] = TMath::Min(Float_t(120),maxr[itsindex]);
-    if (esdtrack->GetTPCdensity(20,40)>0.6)  maxr[itsindex] = TMath::Min(Float_t(130),maxr[itsindex]);
-    if (esdtrack->GetTPCdensity(30,50)>0.6)  maxr[itsindex] = TMath::Min(Float_t(140),maxr[itsindex]);
+    if (esdtrack->GetTPCdensity(0,10) >kMinTPCdensity)  maxr[itsindex] = TMath::Min(Float_t(110),maxr[itsindex]);
+    if (esdtrack->GetTPCdensity(10,30)>kMinTPCdensity)  maxr[itsindex] = TMath::Min(Float_t(120),maxr[itsindex]);
+    if (esdtrack->GetTPCdensity(20,40)>kMinTPCdensity)  maxr[itsindex] = TMath::Min(Float_t(130),maxr[itsindex]);
+    if (esdtrack->GetTPCdensity(30,50)>kMinTPCdensity)  maxr[itsindex] = TMath::Min(Float_t(140),maxr[itsindex]);
     //
     if (esdtrack->GetTPCdensity(0,60)<0.4&&bestLong->GetNumberOfClusters()<3) minr[itsindex]=100;    
     //
     //
-    if (kFALSE){
+    if (AliITSReconstructor::GetRecoParam()->GetESDV0Params()->StreamLevel()>0){
       cstream<<"Track"<<
 	"Tr0.="<<best<<
 	"Tr1.="<<((bestConst)? bestConst:dummy)<<
@@ -423,6 +450,9 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   //
   // first iterration of V0 finder
   //
+
+
+
   for (Int_t iesd0=0;iesd0<ntracks;iesd0++){
     Int_t itrack0 = itsmap[iesd0];
     if (forbidden[itrack0]) continue;
@@ -496,10 +526,20 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       }      
       //
       //
+      
+
+ 
       pvertex->SetParamN(*track0);
       pvertex->SetParamP(*track1);
       pvertex->Update(primvertex);
       pvertex->SetClusters(track0->ClIndex(),track1->ClIndex());  // register clusters
+
+      AliKFParticle negKF( *(pvertex->GetParamN()) ,11);
+      AliKFParticle posKF( *(pvertex->GetParamP()) ,-11);
+
+      AliKFParticle v0KF(negKF,posKF);
+      Float_t v0KFchi2= v0KF.GetChi2();
+
 
       if (pvertex->GetRr()<kMinR) continue;
       if (pvertex->GetRr()>kMaxR) continue;
@@ -517,12 +557,12 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       //
       //
       TObjArray * array0b     = (TObjArray*)bestHypothesys->At(itrack0);
-      if (!array0b&&pvertex->GetRr()<40 && TMath::Abs(track0->GetTgl())<1.1) {
+      if (!array0b&&pvertex->GetRr()<40 && TMath::Abs(track0->GetTgl())<kMinTgl1) {
 	tracker->SetCurrentEsdTrack(itrack0);
 	tracker->FollowProlongationTree((AliITStrackMI*)originalTracks->At(itrack0),itrack0, kFALSE);
       }
       TObjArray * array1b    = (TObjArray*)bestHypothesys->At(itrack1);
-      if (!array1b&&pvertex->GetRr()<40 && TMath::Abs(track1->GetTgl())<1.1) { 
+      if (!array1b&&pvertex->GetRr()<40 && TMath::Abs(track1->GetTgl())<kMinTgl1) { 
 	tracker->SetCurrentEsdTrack(itrack1);
 	tracker->FollowProlongationTree((AliITStrackMI*)originalTracks->At(itrack1),itrack1, kFALSE);
       }
@@ -532,10 +572,10 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       AliITStrackMI * track0l = (AliITStrackMI*)originalTracks->At(itrack0);
       AliITStrackMI * track1l = (AliITStrackMI*)originalTracks->At(itrack1);
       
-      Float_t minchi2before0=16;
-      Float_t minchi2before1=16;
-      Float_t minchi2after0 =16;
-      Float_t minchi2after1 =16;
+      Float_t minchi2before0=kMinchi2before0;
+      Float_t minchi2before1=kMinchi2before1;
+      Float_t minchi2after0 =kMinchi2after0;
+      Float_t minchi2after1 =kMinchi2after1;
       Double_t xrp[3]; pvertex->GetXYZ(xrp[0],xrp[1],xrp[2]);  //I.B.
       Int_t maxLayer = tracker->GetNearestLayer(xrp);                   //I.B.
       
@@ -560,14 +600,14 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
 	    for (Int_t ilayer=i;ilayer<maxLayer;ilayer++){
 	      sumn+=1.;	      
 	      if (btrack->GetClIndex(ilayer)<0){
-		sumchi2+=25;
+		sumchi2+=kAddchi2NegCl0;
 		continue;
 	      }else{
 		Int_t c=( btrack->GetClIndex(ilayer) & 0x0fffffff);
 		for (Int_t itrack=0;itrack<4;itrack++){
 		  AliITStrackerMI::AliITSlayer &layer=tracker->GetLayer(ilayer);
 		  if (layer.GetClusterTracks(itrack,c)>=0 && layer.GetClusterTracks(itrack,c)!=itrack0){
-		    sumchi2+=18.;  //shared cluster
+		    sumchi2+=kAddchi2SharedCl;  //shared cluster
 		    break;
 		  }
 		}
@@ -605,14 +645,14 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
 	    for (Int_t ilayer=i;ilayer<maxLayer;ilayer++){
 	      sumn+=1.;
 	      if (btrack->GetClIndex(ilayer)<0){
-		sumchi2+=30;
+		sumchi2+=kAddchi2NegCl1;
 		continue;
 	      }else{
 		Int_t c=( btrack->GetClIndex(ilayer) & 0x0fffffff);
 		for (Int_t itrack=0;itrack<4;itrack++){
 		  AliITStrackerMI::AliITSlayer &layer=tracker->GetLayer(ilayer);
 		  if (layer.GetClusterTracks(itrack,c)>=0 && layer.GetClusterTracks(itrack,c)!=itrack1){
-		    sumchi2+=18.;  //shared cluster
+		    sumchi2+=kAddchi2SharedCl;  //shared cluster
 		    break;
 		  }
 		}
@@ -705,8 +745,10 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       Float_t p12 = pvertex->GetParamP()->GetParameter()[4]*pvertex->GetParamP()->GetParameter()[4];
       p12        += pvertex->GetParamN()->GetParameter()[4]*pvertex->GetParamN()->GetParameter()[4];
       p12         = TMath::Sqrt(p12);                             // "mean" momenta
-      Float_t    sigmap0   = 0.0001+0.001/(0.1+pvertex->GetRr()); 
-      Float_t    sigmap    = 0.5*sigmap0*(0.6+0.4*p12);           // "resolution: of point angle - as a function of radius and momenta
+
+      Float_t    sigmap0   = kSigp0Par0+kSigp0Par1/(kSigp0Par2+pvertex->GetRr()); 
+      Float_t    sigmap    = kSigpPar0*sigmap0*(kSigpPar1+kSigpPar2*p12);           // "resolution: of point angle - as a function of radius and momenta
+
 
       Float_t causalityA  = (1.0-pvertex->GetCausalityP()[0])*(1.0-pvertex->GetCausalityP()[1]);
       Float_t causalityB  = TMath::Sqrt(TMath::Min(pvertex->GetCausalityP()[2],Double_t(0.7))*
@@ -728,11 +770,13 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       
       //
       //
-      if (kFALSE){	
+      if (AliITSReconstructor::GetRecoParam()->GetESDV0Params()->StreamLevel()>0){	
 	Bool_t gold = TMath::Abs(TMath::Abs(track0->GetLabel())-TMath::Abs(track1->GetLabel()))==1;
 	cstream<<"It0"<<
 	  "Tr0.="<<track0<<                       //best without constrain
 	  "Tr1.="<<track1<<                       //best without constrain  
+	  "posKF.="<<&posKF<<                       //KF from track0
+	  "negKF.="<<&negKF<<                       //KF from track1
 	  "Tr0B.="<<track0b<<                     //best without constrain  after vertex
 	  "Tr1B.="<<track1b<<                     //best without constrain  after vertex 
 	  "Tr0C.="<<htrackc0<<                    //best with constrain     if exist
@@ -743,6 +787,8 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
 	  "Esd1.="<<track1->GetESDtrack()<<           // esd track1 params
 	  "V0.="<<pvertex<<                       //vertex properties
 	  "V0b.="<<&vertex2<<                       //vertex properties at "best" track
+	  "v0KF.="<<&v0KF<<                          //KF from pvertex
+	  "chiKF.="<<v0KFchi2<<              // chi2 from KF
 	  "ND0="<<normdist[itrack0]<<             //normalize distance for track0
 	  "ND1="<<normdist[itrack1]<<             //normalize distance for track1
 	  "Gold="<<gold<<                         //
@@ -820,7 +866,7 @@ void AliITSV0Finder::RefitV02(const AliESDEvent *event,
 	v0temp.SetParamN(tpc0);
 	v0temp.SetParamP(tpc1);
 	v0temp.Update(primvertex);
-	if (kFALSE) cstream<<"Refit"<<
+	if (AliITSReconstructor::GetRecoParam()->GetESDV0Params()->StreamLevel()>0) cstream<<"Refit"<<
 	  "V0.="<<v0mi<<
 	  "V0refit.="<<&v0temp<<
 	  "Tr0.="<<&tpc0<<
@@ -842,7 +888,7 @@ void AliITSV0Finder::RefitV02(const AliESDEvent *event,
 	v0temp.SetParamN(tpc0);
 	v0temp.SetParamP(tpc1);
 	v0temp.Update(primvertex);
-	if (kFALSE) cstream<<"Refit"<<
+	if (AliITSReconstructor::GetRecoParam()->GetESDV0Params()->StreamLevel()>0) cstream<<"Refit"<<
 	  "V0.="<<v0mi<<
 	  "V0refit.="<<&v0temp<<
 	  "Tr0.="<<&tpc0<<
@@ -865,7 +911,7 @@ void AliITSV0Finder::RefitV02(const AliESDEvent *event,
       v0temp.SetParamN(tpc0);
       v0temp.SetParamP(tpc1);
       v0temp.Update(primvertex);
-      if (kFALSE) cstream<<"Refit"<<
+      if (AliITSReconstructor::GetRecoParam()->GetESDV0Params()->StreamLevel()>0) cstream<<"Refit"<<
 	"V0.="<<v0mi<<
 	"V0refit.="<<&v0temp<<
 	"Tr0.="<<&tpc0<<
@@ -881,3 +927,16 @@ void AliITSV0Finder::RefitV02(const AliESDEvent *event,
   }
 }
 //------------------------------------------------------------------------
+
+
+AliITSV0Finder::~AliITSV0Finder()
+{
+  //
+  //destructor
+  //
+  if (fDebugStreamer) {
+    //fDebugStreamer->Close();
+    delete fDebugStreamer;
+  }
+
+}
