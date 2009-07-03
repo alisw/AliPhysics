@@ -127,7 +127,7 @@ class AliHLTSimulation : public TObject {
 };
 
 #define ALIHLTSIMULATION_LIBRARY             "libHLTsim.so"
-#define ALIHLTSIMULATION_LIBRARY_VERSION     0
+#define ALIHLTSIMULATION_LIBRARY_VERSION     1
 #define ALIHLTSIMULATION_CREATE_INSTANCE     "AliHLTSimulationCreateInstance"
 #define ALIHLTSIMULATION_DELETE_INSTANCE     "AliHLTSimulationDeleteInstance"
 #define ALIHLTSIMULATION_SETUP               "AliHLTSimulationSetup"
