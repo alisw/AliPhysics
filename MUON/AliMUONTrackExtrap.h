@@ -114,8 +114,8 @@ class AliMUONTrackExtrap : public TObject
                                            Double_t &pathLength, Double_t &f0, Double_t &f1, Double_t &f2,
                                            Double_t &meanRho, Double_t &totalELoss, Double_t &sigmaELoss2);
   
-  static Double_t BetheBloch(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ);
-  static Double_t EnergyLossFluctuation2(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ);
+  static Double_t BetheBloch(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicZ, Double_t atomicZoverA);
+  static Double_t EnergyLossFluctuation2(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicZoverA);
   
   static void Cov2CovP(const TMatrixD &param, TMatrixD &cov);
   static void CovP2Cov(const TMatrixD &param, TMatrixD &cov);
