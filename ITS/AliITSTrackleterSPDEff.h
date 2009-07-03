@@ -55,8 +55,8 @@ public:
   }                                                                        // you remove all the true tracklets.
 
   void SetOnlyOneTrackletPerC2(Bool_t b = kTRUE) {fOnlyOneTrackletPerC2 = b;}
-  void SetPhiWindow(Float_t w=0.08) {fPhiWindow=w;}
-  void SetZetaWindow(Float_t w=1.) {fZetaWindow=w;}
+  void SetPhiWindowL2(Float_t w=0.08) {fPhiWindowL2=w;}
+  void SetZetaWindowL2(Float_t w=1.) {fZetaWindowL2=w;}
 
   void SetPhiWindowL1(Float_t w=0.08) {fPhiWindowL1=w;}  // method to set the cuts in the interpolation
   void SetZetaWindowL1(Float_t w=1.) {fZetaWindowL1=w;}  // phase; use method of the base class for extrap.
@@ -163,8 +163,8 @@ protected:
 
   // Following members are set via AliITSRecoParam
   Bool_t        fOnlyOneTrackletPerC2;         // Allow only one tracklet per cluster in the outer layer
-  Float_t       fPhiWindow;                    // Search window in phi
-  Float_t       fZetaWindow;                   // Search window in eta
+  Float_t       fPhiWindowL2;                    // Search window in phi
+  Float_t       fZetaWindowL2;                   // Search window in eta
   Float_t       fPhiOverlapCut;                // Fiducial window in phi for overlap cut
   Float_t       fZetaOverlapCut;               // Fiducial window in eta for overlap cut
 
@@ -273,7 +273,7 @@ protected:
 
   void LoadClusterArrays(TTree* tree);
 
-  ClassDef(AliITSTrackleterSPDEff,4)
+  ClassDef(AliITSTrackleterSPDEff,5)
 };
 // Input and output function for standard C++ input/output (for the cut values and MC statistics).
 ostream &operator<<(ostream &os,const AliITSTrackleterSPDEff &s);

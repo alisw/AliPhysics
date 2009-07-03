@@ -14,11 +14,9 @@
 //
 // A tracklet consist of two ITS clusters, one in the first pixel
 // layer and one in the second. The clusters are associates if the 
-// differencies in Phi (azimuth) and Zeta (longitudinal) are inside 
+// differencies in Phi (azimuth) and Theta (polar) are inside 
 // a fiducial volume. In case of multiple candidates it is selected the
 // candidate with minimum distance in Phi. 
-// The boolean fOnlyOneTrackletPerC2 allows to control if two clusters 
-// in layer 2 can be associated to the same cluster in layer 1 or not.
 //
 /////////////////////////////////////////////////////////////////////////
 
@@ -41,9 +39,8 @@ public:
   void FlagClustersInOverlapRegions(Int_t ic1,Int_t ic2);
 
   // Following members are set via AliITSRecoParam
-  void SetOnlyOneTrackletPerC2(Bool_t b = kTRUE) {fOnlyOneTrackletPerC2 = b;}
   void SetPhiWindow(Float_t w=0.08) {fPhiWindow=w;}
-  void SetZetaWindow(Float_t w=1.) {fZetaWindow=w;}
+  void SetThetaWindow(Float_t w=0.025) {fThetaWindow=w;}
   void SetRemoveClustersFromOverlaps(Bool_t b = kFALSE) {fRemoveClustersFromOverlaps = b;}
   void SetPhiOverlapCut(Float_t w=0.005) {fPhiOverlapCut=w;}
   void SetZetaOverlapCut(Float_t w=0.05) {fZetaOverlapCut=w;}
@@ -77,7 +74,6 @@ protected:
 
   Float_t**     fTracklets;            // tracklets 
   Float_t**     fSClusters;            // single clusters (unassociated)
-  Bool_t*       fAssociationFlag;      // flag for the associations 
   
   Int_t         fNClustersLay1;        // Number of clusters (Layer1)
   Int_t         fNClustersLay2;        // Number of clusters (Layer2)
@@ -86,9 +82,8 @@ protected:
   Short_t       fNFiredChips[2];       // Number of fired chips in the two SPD layers
  
   // Following members are set via AliITSRecoParam
-  Bool_t        fOnlyOneTrackletPerC2;         // Allow only one tracklet per cluster in the outer layer
   Float_t       fPhiWindow;                    // Search window in phi
-  Float_t       fZetaWindow;                   // Search window in eta
+  Float_t       fThetaWindow;                  // Search window in eta
   Bool_t        fRemoveClustersFromOverlaps;   // Option to skip clusters in the overlaps
   Float_t       fPhiOverlapCut;                // Fiducial window in phi for overlap cut
   Float_t       fZetaOverlapCut;               // Fiducial window in eta for overlap cut
@@ -97,15 +92,11 @@ protected:
 
   TH1F*         fhClustersDPhiAcc;     // Phi2 - Phi1 for tracklets 
   TH1F*         fhClustersDThetaAcc;   // Theta2 - Theta1 for tracklets 
-  TH1F*         fhClustersDZetaAcc;    // z2 - z1projected for tracklets 
   TH1F*         fhClustersDPhiAll;     // Phi2 - Phi1 all the combinations 
   TH1F*         fhClustersDThetaAll;   // Theta2 - Theta1 all the combinations
-  TH1F*         fhClustersDZetaAll;    // z2 - z1projected all the combinations
  
   TH2F*         fhDPhiVsDThetaAll;     // 2D plot for all the combinations  
   TH2F*         fhDPhiVsDThetaAcc;     // same plot for tracklets 
-  TH2F*         fhDPhiVsDZetaAll;      // 2d plot for all the combination 
-  TH2F*         fhDPhiVsDZetaAcc;      // same plot for tracklets 
 
   TH1F*         fhetaTracklets;        // Pseudorapidity distr. for tracklets 
   TH1F*         fhphiTracklets;        // Azimuthal (Phi) distr. for tracklets  
@@ -115,7 +106,7 @@ protected:
 
   void LoadClusterArrays(TTree* tree);
 
-  ClassDef(AliITSMultReconstructor,4)
+  ClassDef(AliITSMultReconstructor,5)
 };
 
 #endif

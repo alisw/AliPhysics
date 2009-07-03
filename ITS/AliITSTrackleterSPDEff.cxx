@@ -63,8 +63,8 @@ fNClustersLay1(0),
 fNClustersLay2(0),
 fNTracklets(0),
 fOnlyOneTrackletPerC2(0),
-fPhiWindow(0),
-fZetaWindow(0),
+fPhiWindowL2(0),
+fZetaWindowL2(0),
 fPhiOverlapCut(0),
 fZetaOverlapCut(0),
 fHistOn(0),
@@ -131,8 +131,8 @@ fhClustersInModuleLay2(0)
 {
    // default constructor
 // from AliITSMultReconstructor
-  SetPhiWindow();
-  SetZetaWindow();
+  SetPhiWindowL2();
+  SetZetaWindowL2();
   SetOnlyOneTrackletPerC2();
   fClustersLay1       = new Float_t*[300000];
   fClustersLay2       = new Float_t*[300000];
@@ -175,8 +175,8 @@ fNClustersLay1(mr.fNClustersLay1),
 fNClustersLay2(mr.fNClustersLay2),
 fNTracklets(mr.fNTracklets),
 fOnlyOneTrackletPerC2(mr.fOnlyOneTrackletPerC2),
-fPhiWindow(mr.fPhiWindow),
-fZetaWindow(mr.fZetaWindow),
+fPhiWindowL2(mr.fPhiWindowL2),
+fZetaWindowL2(mr.fZetaWindowL2),
 fPhiOverlapCut(mr.fPhiOverlapCut),
 fZetaOverlapCut(mr.fZetaOverlapCut),
 fHistOn(mr.fHistOn),
@@ -484,8 +484,8 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
 	}
 
 	// make "elliptical" cut in Phi and Zeta! 
-	Float_t d = TMath::Sqrt(dPhi*dPhi/fPhiWindow/fPhiWindow + 
-                                dZeta*dZeta/fZetaWindow/fZetaWindow);
+	Float_t d = TMath::Sqrt(dPhi*dPhi/fPhiWindowL2/fPhiWindowL2 + 
+                                dZeta*dZeta/fZetaWindowL2/fZetaWindowL2);
 
 	if (d>1) continue;      
 	
@@ -1344,7 +1344,7 @@ void AliITSTrackleterSPDEff::PrintAscii(ostream *os)const{
     //   none.
     // Return:
     //   none.
-    *os << fPhiWindowL1 <<" "<< fZetaWindowL1 << " " << fPhiWindow <<" "<< fZetaWindow 
+    *os << fPhiWindowL1 <<" "<< fZetaWindowL1 << " " << fPhiWindowL2 <<" "<< fZetaWindowL2 
         << " " << fOnlyOneTrackletPerC1 << " " << fOnlyOneTrackletPerC2 
         << " " << fUpdateOncePerEventPlaneEff << " " << fReflectClusterAroundZAxisForLayer0
         << " " << fReflectClusterAroundZAxisForLayer1;
@@ -1378,7 +1378,7 @@ void AliITSTrackleterSPDEff::ReadAscii(istream *is){
     //   none.
 
     Bool_t tmp= fMC;
-    *is >> fPhiWindowL1 >> fZetaWindowL1 >> fPhiWindow >> fZetaWindow 
+    *is >> fPhiWindowL1 >> fZetaWindowL1 >> fPhiWindowL2 >> fZetaWindowL2 
         >> fOnlyOneTrackletPerC1 >> fOnlyOneTrackletPerC2  
         >> fUpdateOncePerEventPlaneEff >> fReflectClusterAroundZAxisForLayer0
         >> fReflectClusterAroundZAxisForLayer1;
@@ -1457,8 +1457,8 @@ void AliITSTrackleterSPDEff::SavePredictionMC(TString filename) const {
     TH1F* cuts = new TH1F("cuts", "list of cuts", 10, 0, 10); // TH1I containing cuts 
     cuts->SetBinContent(1,fPhiWindowL1);
     cuts->SetBinContent(2,fZetaWindowL1);
-    cuts->SetBinContent(3,fPhiWindow);
-    cuts->SetBinContent(4,fZetaWindow);
+    cuts->SetBinContent(3,fPhiWindowL2);
+    cuts->SetBinContent(4,fZetaWindowL2);
     cuts->SetBinContent(5,fOnlyOneTrackletPerC1);
     cuts->SetBinContent(6,fOnlyOneTrackletPerC2);
     cuts->SetBinContent(7,fUpdateOncePerEventPlaneEff);
@@ -1548,8 +1548,8 @@ void AliITSTrackleterSPDEff::ReadPredictionMC(TString filename) {
     TH1F *cuts = (TH1F*)mcfile->Get("cuts"); 
     fPhiWindowL1=(Float_t)cuts->GetBinContent(1);
     fZetaWindowL1=(Float_t)cuts->GetBinContent(2);
-    fPhiWindow=(Float_t)cuts->GetBinContent(3);
-    fZetaWindow=(Float_t)cuts->GetBinContent(4);
+    fPhiWindowL2=(Float_t)cuts->GetBinContent(3);
+    fZetaWindowL2=(Float_t)cuts->GetBinContent(4);
     fOnlyOneTrackletPerC1=(Bool_t)cuts->GetBinContent(5);
     fOnlyOneTrackletPerC2=(Bool_t)cuts->GetBinContent(6);
     fUpdateOncePerEventPlaneEff=(Bool_t)cuts->GetBinContent(7);
@@ -1887,8 +1887,8 @@ for(Int_t iref=0;iref<nref;iref++) { // loop over all the refs of the matching t
     Float_t dZeta = TMath::Cos(fClustersLay1[iC][0])*r2 - trefLayExtr[2];
 
     // make "elliptical" cut in Phi and Zeta!
-    Float_t d = TMath::Sqrt(dPhi*dPhi/fPhiWindow/fPhiWindow +
-                              dZeta*dZeta/fZetaWindow/fZetaWindow);
+    Float_t d = TMath::Sqrt(dPhi*dPhi/fPhiWindowL2/fPhiWindowL2 +
+                              dZeta*dZeta/fZetaWindowL2/fZetaWindowL2);
     if (d<1) {ret=kTRUE; break;}
   }
   if(layer==0) { // try to see if it is reconstructable at the inner layer

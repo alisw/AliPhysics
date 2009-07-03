@@ -119,7 +119,9 @@ fUseTrackletsPlaneEff(kFALSE),
 fMCTrackletsPlaneEff(kFALSE),
 fBkgTrackletsPlaneEff(kFALSE),
 fTrackleterPhiWindowL1(0.10),
+fTrackleterPhiWindowL2(0.07),
 fTrackleterZetaWindowL1(0.6),
+fTrackleterZetaWindowL2(0.4),
 fUpdateOncePerEventPlaneEff(kTRUE),
 fMinContVtxPlaneEff(3),
 fIPlanePlaneEff(0),
@@ -157,9 +159,8 @@ fUseSDDCorrectionMaps(kTRUE),
 fUseSDDClusterSizeSelection(kFALSE),
 fMinClusterChargeSDD(0.),
 fUseChargeMatchingInClusterFinderSSD(kTRUE),
-fTrackleterOnlyOneTrackletPerC2(kTRUE),
 fTrackleterPhiWindow(0.08),
-fTrackleterZetaWindow(1.00),
+fTrackleterThetaWindow(0.025),
 fTrackleterRemoveClustersFromOverlaps(kFALSE),
 fTrackleterPhiOverlapCut(0.005),
 fTrackleterZetaOverlapCut(0.05),
@@ -606,8 +607,8 @@ AliITSRecoParam *AliITSRecoParam::GetPlaneEffParam(Int_t i)
     param->SetIPlanePlaneEff(i);
     param->SetComputePlaneEff(kTRUE,kFALSE);
     param->SetUseTrackletsPlaneEff(kTRUE);
-    param->SetTrackleterPhiWindow(0.07);
-    param->SetTrackleterZetaWindow(0.4);
+    param->SetTrackleterPhiWindowL2(0.07);
+    param->SetTrackleterZetaWindowL2(0.4);
     param->SetTrackleterPhiWindowL1(0.10);
     param->SetTrackleterZetaWindowL1(0.6);
     param->SetUpdateOncePerEventPlaneEff(kTRUE);

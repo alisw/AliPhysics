@@ -219,8 +219,12 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t  GetBkgTrackletsPlaneEff() const {return fBkgTrackletsPlaneEff;}
   void    SetTrackleterPhiWindowL1(Float_t w=0.10) {fTrackleterPhiWindowL1=w; return;}
   Float_t GetTrackleterPhiWindowL1() const {return fTrackleterPhiWindowL1;}
+  void    SetTrackleterPhiWindowL2(Float_t w=0.07) {fTrackleterPhiWindowL2=w; return;}
+  Float_t GetTrackleterPhiWindowL2() const {return fTrackleterPhiWindowL2;}
   void    SetTrackleterZetaWindowL1(Float_t w=0.6) {fTrackleterZetaWindowL1=w; return;}
   Float_t GetTrackleterZetaWindowL1() const {return fTrackleterZetaWindowL1;}
+  void    SetTrackleterZetaWindowL2(Float_t w=0.40) {fTrackleterZetaWindowL2=w; return;}
+  Float_t GetTrackleterZetaWindowL2() const {return fTrackleterZetaWindowL2;}
   void    SetUpdateOncePerEventPlaneEff(Bool_t use=kTRUE) {fUpdateOncePerEventPlaneEff=use; return;}
   Bool_t  GetUpdateOncePerEventPlaneEff() const {return fUpdateOncePerEventPlaneEff;}
   void    SetMinContVtxPlaneEff(Int_t n=3) {fMinContVtxPlaneEff=n; return;}
@@ -323,12 +327,10 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t GetUseCosmicRunShiftsSSD() const { return fUseCosmicRunShiftsSSD; }
 
   // SPD Tracklets (D. Elia)
-  void    SetTrackleterOnlyOneTrackletPerC2(Bool_t use= kTRUE) {fTrackleterOnlyOneTrackletPerC2=use; return; }
-  Bool_t  GetTrackleterOnlyOneTrackletPerC2() const { return fTrackleterOnlyOneTrackletPerC2; }
   void    SetTrackleterPhiWindow(Float_t w=0.08) {fTrackleterPhiWindow=w;}
-  void    SetTrackleterZetaWindow(Float_t w=1.) {fTrackleterZetaWindow=w;}
+  void    SetTrackleterThetaWindow(Float_t w=0.025) {fTrackleterThetaWindow=w;}
   Float_t GetTrackleterPhiWindow() const {return fTrackleterPhiWindow;}
-  Float_t GetTrackleterZetaWindow() const {return fTrackleterZetaWindow;}
+  Float_t GetTrackleterThetaWindow() const {return fTrackleterThetaWindow;}
   void    SetTrackleterRemoveClustersFromOverlaps(Bool_t use=kTRUE) { fTrackleterRemoveClustersFromOverlaps=use; return; }
   Bool_t  GetTrackleterRemoveClustersFromOverlaps() const { return fTrackleterRemoveClustersFromOverlaps; }
   void    SetTrackleterPhiOverlapCut(Float_t w=0.005) {fTrackleterPhiOverlapCut=w;}
@@ -509,7 +511,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fMCTrackletsPlaneEff; // flag to enable the use of MC info for corrections (SPD PlaneEff using tracklets)
   Bool_t fBkgTrackletsPlaneEff; // flag to evaluate background instead of normal use (SPD PlaneEff using tracklets)
   Float_t fTrackleterPhiWindowL1; // Search window in phi for inner layer (1) (SPD PlaneEff using tracklets)
+  Float_t fTrackleterPhiWindowL2; // Search window in phi for outer layer (2) (SPD PlaneEff using tracklets)
   Float_t fTrackleterZetaWindowL1; // Search window in zeta for inner layer (1) (SPD PlaneEff using tracklets)
+  Float_t fTrackleterZetaWindowL2; // Search window in zeta for outer layer (2) (SPD PlaneEff using tracklets)
   Bool_t fUpdateOncePerEventPlaneEff; // option to update chip efficiency once/event (to avoid doubles)
   Int_t  fMinContVtxPlaneEff; // min number of contributors to ESD vtx for SPD PlaneEff using tracklets
   Int_t  fIPlanePlaneEff; // index of the plane (in the range [-1,5]) to study the efficiency (-1 ->Tracklets)
@@ -557,9 +561,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fUseChargeMatchingInClusterFinderSSD; // SSD
 
   // SPD Tracklets (D. Elia)
-  Bool_t  fTrackleterOnlyOneTrackletPerC2;         // Allow only one tracklet per cluster in the outer layer
   Float_t fTrackleterPhiWindow;                    // Search window in phi
-  Float_t fTrackleterZetaWindow;                   // Search window in eta
+  Float_t fTrackleterThetaWindow;                   // Search window in eta
   Bool_t  fTrackleterRemoveClustersFromOverlaps;   // Option to skip clusters in the overlaps
   Float_t fTrackleterPhiOverlapCut;                // Fiducial window in phi for overlap cut
   Float_t fTrackleterZetaOverlapCut;               // Fiducial window in eta for overlap cut
@@ -592,7 +595,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t  fAlignFilterFillQANtuples;      // fill QA ntuples  
 
 
-  ClassDef(AliITSRecoParam,24) // ITS reco parameters
+  ClassDef(AliITSRecoParam,25) // ITS reco parameters
 };
 
 #endif

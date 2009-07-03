@@ -133,8 +133,8 @@ AliTracker* AliITSReconstructor::CreateTrackleter() const
   if(GetRecoParam()->GetBkgTrackletsPlaneEff()) spdtrackleter->SetReflectClusterAroundZAxisForLayer(1,kTRUE);
   if(GetRecoParam()->GetMCTrackletsPlaneEff()) spdtrackleter->SetMC();
   spdtrackleter->SetHistOn();
-  spdtrackleter->SetPhiWindow(GetRecoParam()->GetTrackleterPhiWindow());
-  spdtrackleter->SetZetaWindow(GetRecoParam()->GetTrackleterZetaWindow());
+  spdtrackleter->SetPhiWindowL2(GetRecoParam()->GetTrackleterPhiWindowL2());
+  spdtrackleter->SetZetaWindowL2(GetRecoParam()->GetTrackleterZetaWindowL2());
   spdtrackleter->SetPhiWindowL1(GetRecoParam()->GetTrackleterPhiWindowL1());
   spdtrackleter->SetZetaWindowL1(GetRecoParam()->GetTrackleterZetaWindowL1());
   if(GetRecoParam()->GetUpdateOncePerEventPlaneEff()) spdtrackleter->SetUpdateOncePerEventPlaneEff();
