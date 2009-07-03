@@ -6,8 +6,9 @@
 
 // $Id$
 
+/// \ingroup calign 
 /// \class AliMUONPadInfo
-/// \brief Class to summarize ESD data at cluster
+/// \brief Class to summarize ESD data at pad
 //  Author Philippe Pillot, Subatech
 
 
@@ -121,7 +122,7 @@ protected:
   Int_t      fGainThres;     ///< threshold of quadratic behaviour of gain
   Int_t      fGainQual;      ///< quality of gain parameters
   
-  ClassDef(AliMUONPadInfo, 2)
+  ClassDef(AliMUONPadInfo, 2) //Class to summarize ESD data at pad
 };
 
 #endif

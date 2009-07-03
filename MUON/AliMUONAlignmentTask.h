@@ -1,7 +1,11 @@
 #ifndef ALIMUONALIGNMENTTASK_H
 #define ALIMUONALIGNMENTTASK_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+* See cxx source for full Copyright notice                               */
 
-/// \ingroup ""
+// $Id$
+
+/// \ingroup calign
 /// \class AliMUONAlignmentTask
 /// \brief Task to align the muon spectrometer
 ///
@@ -11,7 +15,7 @@ class TList;
 class TGraphErrors;
 class AliESDEvent;
 class AliMUONAlignment;
-class AliMUONGeoemetryTransformer;
+class AliMUONGeometryTransformer;
 
 #include "AliAnalysisTask.h"
 
@@ -33,7 +37,7 @@ class AliMUONAlignmentTask : public AliAnalysisTask {
   AliESDEvent *fESD;                      //!< ESD object
 
   AliMUONAlignment *fAlign;               ///< The MUON alignment object
-    TString fGeoFilename;                 ///< Geometry file name
+  TString fGeoFilename;                   ///< Geometry file name
   AliMUONGeometryTransformer *fTransform; ///< MUON geometry transformer
     
   Int_t fTrackTot;             ///< Number of track read 
@@ -50,7 +54,7 @@ class AliMUONAlignmentTask : public AliAnalysisTask {
 
   TList   *fList;          ///< list of graphs
    
-  ClassDef(AliMUONAlignmentTask, 1); // example of analysis
+  ClassDef(AliMUONAlignmentTask, 1) // example of analysis
 };
 
 #endif

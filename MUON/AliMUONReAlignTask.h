@@ -1,7 +1,12 @@
 #ifndef ALIMUONREALIGNTASK_H
 #define ALIMUONREALIGNTASK_H
 
-/// \ingroup ""
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+* See cxx source for full Copyright notice                               */
+
+// $Id$
+
+/// \ingroup calign
 /// \class AliMUONReAlignTask
 /// \brief Task to refit ESD tracks with relaigned geometry
 ///
@@ -16,6 +21,7 @@ class AliMUONRefitter;
 class AliMUONRecoParam;
 class AliMUONGeoemetryTransformer;
 class AliMUONVStore;
+class AliMUONTrack;
 
 #include "AliAnalysisTask.h"
 
@@ -58,7 +64,7 @@ class AliMUONReAlignTask : public AliAnalysisTask {
   Int_t fPrintLevel;         //!< Print information
   Int_t fLastRun;            //!< Last run number
 
-  ClassDef(AliMUONReAlignTask, 1); // example of analysis
+  ClassDef(AliMUONReAlignTask, 1) // example of analysis
 };
 
 #endif

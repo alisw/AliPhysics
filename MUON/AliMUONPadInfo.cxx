@@ -16,7 +16,6 @@
 // $Id$
 
 //-----------------------------------------------------------------------------
-/// \ingroup evaluation
 /// \class AliMUONPadInfo
 ///
 /// Class to summarize ESD data at pad

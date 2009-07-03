@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup evaluation 
+/// \ingroup calign 
 /// \class AliMUONClusterInfo
 /// \brief Class to summarize ESD data at cluster
 //  Author Philippe Pillot, Subatech
@@ -201,7 +201,7 @@ protected:
   Int_t         fNPads; ///< nPads  
   TClonesArray* fPads;  ///< Array of pads attached to the cluster
     
-  ClassDef(AliMUONClusterInfo, 3)
+  ClassDef(AliMUONClusterInfo, 3) //Class to summarize ESD data at cluster
 };
 
 #endif

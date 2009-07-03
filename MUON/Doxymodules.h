@@ -148,6 +148,13 @@
  */
 /** @} */
 
+/** @defgroup calign calign
+ *  Category of basic classes for calibration and alignment tasks
+ *  @ingroup MUON
+ *  @{
+ */
+/** @} */
+
 /** @defgroup evaluation evaluation
  *  Category of classes for evaluation
  *  see more on the \ref README_evaluation page.
