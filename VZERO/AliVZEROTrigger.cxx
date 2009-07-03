@@ -52,26 +52,23 @@ void AliVZEROTrigger::CreateInputs()
 	fInputs.AddLast( new AliTriggerInput( "VZERO_BBA_AND_BBC", "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_BBA_OR_BBC","VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_BGA_AND_BBC",  "VZERO", 0 ) );
-	fInputs.AddLast( new AliTriggerInput( "VZERO_BGA",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "0VGA",   "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_BGC_AND_BBA", "VZERO", 0 ) );
-	fInputs.AddLast( new AliTriggerInput( "VZERO_BGC",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "0VGC",   "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_CTA1_AND_CTC1",   "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_CTA1_OR_CTC1",   "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_CTA2_AND_CTC2",   "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_CTA2_OR_CTC2",   "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_MTA_AND_MTC",   "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_MTA_OR_MTC",   "VZERO", 0 ) );
-	fInputs.AddLast( new AliTriggerInput( "VZERO_BBA",   "VZERO", 0 ) );
-	fInputs.AddLast( new AliTriggerInput( "VZERO_BBC",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "0VBA",   "VZERO", 0 ) );
+	fInputs.AddLast( new AliTriggerInput( "0VBC",   "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_BGA_OR_BGC",   "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_BEAMGAS",   "VZERO", 0 ) );
 
 	// The following are kept for compatibility with the CTP configuration file. Will have to be removed at some point
 	fInputs.AddLast( new AliTriggerInput( "VZERO_AND", "VZERO", 0 ) );
 	fInputs.AddLast( new AliTriggerInput( "VZERO_OR","VZERO", 0 ) );
-	fInputs.AddLast( new AliTriggerInput( "VZERO_LEFT",   "VZERO", 0 ) );
-	fInputs.AddLast( new AliTriggerInput( "VZERO_RIGHT",   "VZERO", 0 ) );
-
 }
 
 //______________________________________________________________________
@@ -104,25 +101,23 @@ void AliVZEROTrigger::Trigger()
 	if(triggerSimulator->GetBBAandBBC())	SetInput( "VZERO_BBA_AND_BBC" );
 	if(triggerSimulator->GetBBAorBBC())		SetInput( "VZERO_BBA_OR_BBC" );
 	if(triggerSimulator->GetBGAandBBC())	SetInput( "VZERO_BGA_AND_BBC" );
-	if(triggerSimulator->GetBGA())			SetInput( "VZERO_BGA" );
+	if(triggerSimulator->GetBGA())			SetInput( "0VGA" );
 	if(triggerSimulator->GetBGCandBBA())	SetInput( "VZERO_BGC_AND_BBA" );
-	if(triggerSimulator->GetBGC())			SetInput( "VZERO_BGC" );
+	if(triggerSimulator->GetBGC())			SetInput( "0VGC" );
 	if(triggerSimulator->GetCTA1andCTC1())	SetInput( "VZERO_CTA1_AND_CTC1" );
 	if(triggerSimulator->GetCTA1orCTC1())	SetInput( "VZERO_CTA1_OR_CTC1" );
 	if(triggerSimulator->GetCTA2andCTC2())	SetInput( "VZERO_CTA2_AND_CTC2" );
 	if(triggerSimulator->GetCTA1orCTC1())	SetInput( "VZERO_CTA1_OR_CTC1" );
  	if(triggerSimulator->GetMTAandMTC())	SetInput( "VZERO_MTA_AND_MTC" );
  	if(triggerSimulator->GetMTAorMTC())		SetInput( "VZERO_MTA_OR_MTC" );
- 	if(triggerSimulator->GetBBA())			SetInput( "VZERO_BBA" );
- 	if(triggerSimulator->GetBBC())			SetInput( "VZERO_BBC" );
+ 	if(triggerSimulator->GetBBA())			SetInput( "0VBA" );
+ 	if(triggerSimulator->GetBBC())			SetInput( "0VBC" );
  	if(triggerSimulator->GetBGAorBGC())		SetInput( "VZERO_BGA_OR_BGC" );
  	if(triggerSimulator->GetBeamGas())		SetInput( "VZERO_BEAMGAS" );
 
 	// The following are kept for compatibility with the CTP configuration file. Will have to be removed at some point
-	if(triggerSimulator->GetBBAandBBC())	SetInput( "VZERO_AND" );
-	if(triggerSimulator->GetBBAorBBC())		SetInput( "VZERO_OR" );
- 	if(triggerSimulator->GetBBA())			SetInput( "VZERO_LEFT" );
- 	if(triggerSimulator->GetBBC())			SetInput( "VZERO_RIGHT" );
+	if(triggerSimulator->GetBBAandBBC())    SetInput( "VZERO_AND" );
+	if(triggerSimulator->GetBBAorBBC())             SetInput( "VZERO_OR" );
 
   return;
 }
