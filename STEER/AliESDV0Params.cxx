@@ -31,6 +31,8 @@
 
 ClassImp(AliESDV0Params)
 
+Int_t    AliESDV0Params::fgStreamLevel     = 0;        // stream (debug) level
+
 
 AliESDV0Params::AliESDV0Params() :
   TObject(),
