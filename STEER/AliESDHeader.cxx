@@ -42,13 +42,11 @@ AliESDHeader::AliESDHeader() :
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
-  fTriggerScalers(),
-  fIRArray(0)
+  fTriggerScalers()
 {
   // default constructor
 
   SetName("AliESDHeader");
-  fIRArray = new AliTriggerIR *[kNMaxIR];
   for(Int_t i = 0; i<kNMaxIR ; i++) fIRArray[i] = 0;
 
 }
@@ -72,13 +70,11 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fL0TriggerInputs(header.fL0TriggerInputs),
   fL1TriggerInputs(header.fL1TriggerInputs),
   fL2TriggerInputs(header.fL2TriggerInputs),
-  fTriggerScalers(header.fTriggerScalers),
-  fIRArray(0)
+  fTriggerScalers(header.fTriggerScalers)
 {
   // copy constructor
   SetName(header.fName);
   SetTitle(header.fTitle);
-  fIRArray = new AliTriggerIR *[kNMaxIR];
   for(Int_t i = 0; i<kNMaxIR ; i++) {
     if(header.fIRArray[i])fIRArray[i] = new AliTriggerIR(*header.fIRArray[i]);
     else fIRArray[i]=0;
@@ -102,7 +98,6 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     fL1TriggerInputs = header.fL1TriggerInputs;
     fL2TriggerInputs = header.fL2TriggerInputs;
     fTriggerScalers = header.fTriggerScalers;
-    fIRArray = new AliTriggerIR *[kNMaxIR];
     for(Int_t i = 0; i<kNMaxIR ; i++) {
        if(header.fIRArray[i])fIRArray[i] = new AliTriggerIR(*header.fIRArray[i]);
        else fIRArray[i]=0;

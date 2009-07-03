@@ -76,8 +76,8 @@ private:
   UInt_t       fL1TriggerInputs;   //L1 Trigger Inputs
   UShort_t     fL2TriggerInputs;   //L2 Trigger Inputs
   AliTriggerScalersRecordESD fTriggerScalers;  //Trigger counters of triggered classes in event
-  enum {kNMaxIR = 3};            // Max number of interaction records (IR)
-  AliTriggerIR**  fIRArray;     // Array with trigger IRs 
+  enum {kNMaxIR = 3};              // Max number of interaction records (IR)
+  AliTriggerIR*  fIRArray[kNMaxIR];// Array with trigger IRs 
 
   ClassDef(AliESDHeader,6)
 };
