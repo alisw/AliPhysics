@@ -448,7 +448,7 @@ AliDCSSensor* AliDCSSensorArray::GetSensor(Int_t IdDCS)
 AliDCSSensor* AliDCSSensorArray::GetSensor(const TString& stringID)
 {
  //
- //  Return sensor information for sensor specified by IdDCS
+ //  Return sensor information for sensor specified by stringID
  //
  Int_t nsensors = fSensors->GetEntries();
  for (Int_t isensor=0; isensor<nsensors; isensor++) {
@@ -493,6 +493,33 @@ AliDCSSensor* AliDCSSensorArray::GetSensorNum(Int_t ind)
  return (AliDCSSensor*)fSensors->At(ind);
 }
 
+//_____________________________________________________________________________
+Int_t AliDCSSensorArray::SetSensor(const TString& stringID,
+                          const  AliDCSSensor& sensor)
+{
+ //
+ //  Update sensor information for sensor specified by stringID
+ //
+ Int_t nsensors = fSensors->GetEntries();
+ for (Int_t isensor=0; isensor<nsensors; isensor++) {
+   AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
+   if (entry->GetStringID() == stringID) 
+     {
+      new ((*fSensors)[isensor])AliDCSSensor(sensor);
+      return isensor;
+     }
+ }
+ return -1;
+}
+//_____________________________________________________________________________
+void AliDCSSensorArray::SetSensorNum(const Int_t ind, const AliDCSSensor& sensor)
+{
+ //
+ //  Update sensor information for sensor at index ind
+ //
+   new ((*fSensors)[ind])AliDCSSensor(sensor);
+   return;
+}
 //_____________________________________________________________________________
 void AliDCSSensorArray::RemoveSensorNum(Int_t ind)
 {

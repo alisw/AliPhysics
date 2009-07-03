@@ -54,15 +54,18 @@ AliDCSSensor::AliDCSSensor(const AliDCSSensor& source) :
    fStringID(source.fStringID),
    fStartTime(source.fStartTime),
    fEndTime(source.fEndTime),
-   fGraph(source.fGraph),
-   fFit(source.fFit),
+   fGraph(0),
+   fFit(0),
    fX(source.fX),
    fY(source.fY),
    fZ(source.fZ)
 //
 //  Copy constructor
 //
-{ }
+{ 
+   if (source.fGraph) fGraph = (TGraph*)source.fGraph->Clone();
+   if (source.fFit) fFit = (AliSplineFit*)source.fFit->Clone();
+}
 
 AliDCSSensor& AliDCSSensor::operator=(const AliDCSSensor& source){
 //

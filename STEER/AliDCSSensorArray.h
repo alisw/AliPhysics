@@ -63,6 +63,8 @@ class AliDCSSensorArray : public TNamed {
   AliDCSSensor* GetSensor (Double_t x, Double_t y, Double_t z);
   AliDCSSensor* GetSensor (const TString& stringID);
   AliDCSSensor* GetSensorNum (Int_t ind);
+  Int_t SetSensor (const TString& stringID, const AliDCSSensor& sensor);
+  void SetSensorNum (const Int_t ind, const AliDCSSensor& sensor);
   void RemoveSensorNum(Int_t ind);
   void RemoveSensor(Int_t IdDCS);
   void AddSensors(AliDCSSensorArray *sensors);
