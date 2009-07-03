@@ -58,6 +58,7 @@ public:
 	virtual TObjArray** Init(AliQAv1::TASKINDEX_t task, Int_t cycles = -1) ;
 	virtual void        Init(AliQAv1::TASKINDEX_t task, TObjArray ** list, Int_t run, Int_t cycles = -1) ;
 	virtual void        InitRaws() {AliInfo("To be implemented by detectors");}
+	virtual void        InitRecPoints()                     {AliInfo("To be implemented by detectors");}
 	virtual void        StartOfCycle(Int_t run = -1) ;
 	virtual void        StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const Bool_t sameCycle = kFALSE) ;
 	virtual void        SetRecoParam(const AliDetectorRecoParam *param) { fRecoParam = param; }
@@ -69,7 +70,6 @@ protected:
   virtual void   InitRecoParams() ; 
 	virtual void   InitHits()                          {AliWarning("Call not valid") ; }
 	//virtual void   InitRecParticles()                {AliInfo("To be implemented by detectors");}
-	virtual void   InitRecPoints()                     {AliInfo("To be implemented by detectors");}
 	virtual void   InitSDigits()                       {AliWarning("Call not valid") ; }
 	//virtual void   InitTrackSegments()               {AliInfo("To ne implemented by detectors");}
 	virtual void   MakeESDs(AliESDEvent * )            {AliInfo("To be implemented by detectors");} 
