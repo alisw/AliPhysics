@@ -54,7 +54,10 @@ void AliHLTTrigger::GetOutputDataSize(unsigned long& constBase, double& inputMul
   // Returns output data size estimate.
   // See header file for more details.
 
-  constBase = sizeof(AliHLTTriggerDecision);
+  // Matthias 2009-07-03 this is presumably to small as the streamed object might be
+  // bigger. This is actually the case in root v5-24-00
+  // Just take 2x the size of the object
+  constBase = 2*sizeof(AliHLTTriggerDecision);
   inputMultiplier = 1;
 }
 
