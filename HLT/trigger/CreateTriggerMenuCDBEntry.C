@@ -75,12 +75,22 @@ void CreateTriggerMenuCDBEntry(
 	
 	// Create the trigger menu.
 	AliHLTGlobalTriggerConfig config("Default Global Trigger Config");
-	config.AddSymbol("triggerClasses", "AliHLTUInt64_t", "this->GetTriggerClasses()", "0x0", "AliHLTEventSummary");
+	//config.AddSymbol("triggerClasses", "AliHLTUInt64_t", "this->GetTriggerClasses()", "0x0", "AliHLTEventSummary");
+	//config.AddItem("triggerClasses != 0x0", "domainAll", "CTP triggered");
+
 	config.AddSymbol("domainAll", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:***\")");
-	config.AddItem("triggerClasses != 0x0", "domainAll", "CTP triggered");
+	config.AddItem("BarrelMultiplicityTrigger", "BarrelMultiplicityTrigger", "charged barrel track multiplicity triggered");
+
+	// readout the output of the reconstruction
+	config.SetDefaultTriggerDescription("No HLT global trigger");
+	config.DefaultTriggerDomain().Add("*******", "HLT ");
+	AliHLTReadoutList readoutlist;
+	readoutlist.Enable(AliHLTReadoutList::kHLT);
+	config.DefaultTriggerDomain().Add(readoutlist);
+
 	TObject* menu = AliHLTGlobalTriggerConfig::Menu()->Clone();
 	menu->Print();
-	
+
 	// Write the trigger menu object to the CDB.
 	AliCDBId id("HLT/ConfigHLT/HLTGlobalTrigger", firstRun, lastRun, version);
 	AliCDBMetaData* metaData = new AliCDBMetaData();
