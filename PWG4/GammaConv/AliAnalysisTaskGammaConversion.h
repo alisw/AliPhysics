@@ -57,8 +57,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
  // for GammaJetAnalysis
   void ProcessGammasForGammaJetAnalysis();
   void CreateListOfChargedParticles();
-  Double_t GetMinimumDistanceToCharge(Int_t);
-  void CalculateJetCone(Int_t);
+  Double_t GetMinimumDistanceToCharge(Int_t indexHighestPtGamma);
+  void CalculateJetCone(Int_t gammaIndex);
   Int_t GetIndexHighestPtGamma();
   void SetESDtrackCuts();
   // end of Gamma Jet
@@ -95,18 +95,14 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   //////////////////Chi_c Analysis////////////////////////////
   void GetPID(AliESDtrack *track, Stat_t &pid, Stat_t &weight);	
   double GetSigmaToVertex(AliESDtrack* t);
-  void ElectronBackground(TString hBg, vector <TLorentzVector> e);
-  void FillAngle(TString histoName,vector <TLorentzVector> tlVeNeg, vector <TLorentzVector> tlVePos);
-  void FillElectronInvMass(TString histoName, vector <TLorentzVector> negativeElectron, 
-	vector <TLorentzVector> positiveElectron);
-  void FillGammaElectronInvMass(TString histoMass,TString histoDiff,vector <AliKFParticle> fKFGammas,
-        vector <TLorentzVector> tlVeNeg,vector<TLorentzVector> tlVePos);
-  void CleanWithAngleCuts(vector <AliESDtrack*> negativeElectrons,
-	vector <AliESDtrack*> positiveElectrons, vector <AliKFParticle> gammas);
-  vector <TLorentzVector> GetTLorentzVector(vector <AliESDtrack*> esdTrack);	
+  void ElectronBackground(TString hBg, TClonesArray e);
+  void FillAngle(TString histoName,TClonesArray const tlVeNeg, TClonesArray const tlVePos);
+  void FillElectronInvMass(TString histoName, TClonesArray const negativeElectron, TClonesArray const positiveElectron);
+  void FillGammaElectronInvMass(TString histoMass,TString histoDiff, TClonesArray const fKFGammas, TClonesArray const tlVeNeg,TClonesArray const tlVePos);
+  void CleanWithAngleCuts(TClonesArray const negativeElectrons, TClonesArray const positiveElectrons, TClonesArray const gammas);
+  TClonesArray GetTLorentzVector(TClonesArray* esdTrack);	
   void ProcessGammaElectronsForChicAnalysis();
   ///////////////////////////////////////////////////////////////
-
 
 
  private:
@@ -122,28 +118,27 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   AliGammaConversionHistograms *fHistograms; // Pointer to the histogram handling class
 
   Bool_t fDoMCTruth; // Flag to switch on/off MC truth 
-  Bool_t fDoNeutralMeson;
-  Bool_t fDoJet;
-  Bool_t fDoChic;
-    
-  vector<TParticle*> fMCAllGammas; // vector containing all MC gammas
-  vector<TParticle*> fMCPi0s; //vector containing all MC Pi0s
-  vector<TParticle*> fMCEtas; //vector containing all MC Etas
-  vector<TParticle*> fMCGammaChic; //vector containing all MC Chi_c's
+  Bool_t fDoNeutralMeson; // flag
+  Bool_t fDoJet; // flag
+  Bool_t fDoChic; // flag
 
-  vector<AliKFParticle> fKFReconstructedGammas; // vector containing all reconstructed gammas
-  vector<Bool_t> fIsTrueReconstructedGammas;    // vector containing information if this was a true gamma or not (follows the index of fKFReconstructedGammas)
+  TClonesArray * fKFReconstructedGammasTClone; //! transient
+  TClonesArray * fCurrentEventPosElectronTClone; //! transient
+  TClonesArray * fCurrentEventNegElectronTClone; //! transient
+  TClonesArray * fKFReconstructedGammasCutTClone; //! transient
+  TClonesArray * fPreviousEventTLVNegElectronTClone; //! transient
+  TClonesArray * fPreviousEventTLVPosElectronTClone; //! transient
+  
+  //  vector<AliKFParticle> fKFReconstructedGammas; // vector containing all reconstructed gammas
   vector<Int_t> fElectronv1; // vector containing index of electron 1
   vector<Int_t> fElectronv2; // vector containing index of electron 2
 
   ///////Chi_c Analysis///////////////////////////
-  vector<AliESDtrack*> fCurrentEventPosElectron;       // comment here
-  vector<AliESDtrack*> fPreviousEventPosElectron;      //comment here
-  vector<AliESDtrack*> fCurrentEventNegElectron;       //comment here
-  vector<AliESDtrack*> fPreviousEventNegElectron;      //comment here
-  vector<AliKFParticle> fKFReconstructedGammasCut;     //comment here
-  vector<TLorentzVector> fPreviousEventTLVNegElectron; //comment here
-  vector<TLorentzVector> fPreviousEventTLVPosElectron; //comment here
+  //  vector<AliESDtrack*> fCurrentEventPosElectron;       // comment here
+  //  vector<AliESDtrack*> fCurrentEventNegElectron;       // comment here
+  //  vector<AliKFParticle> fKFReconstructedGammasCut;     // comment here
+  //  vector<TLorentzVector> fPreviousEventTLVNegElectron; // comment here
+  //  vector<TLorentzVector> fPreviousEventTLVPosElectron; // comment here
   //////////////////////////////////////////////////	
 
   //mass defines
@@ -168,21 +163,21 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 
   Int_t fTotalNumberOfAddedNtupleEntries; // number of added ntuple entries
 
-  vector<AliESDtrack*> fChargedParticles;
-  vector<Int_t> fChargedParticlesId;
+  TClonesArray* fChargedParticles;  //! transient
+  vector<Int_t> fChargedParticlesId;  //! transient
 
-  Double_t fGammaPtHighest;
-  Double_t fMinPtForGammaJet;
-  Double_t fMinIsoConeSize;
-  Double_t fMinPtIsoCone;
-  Double_t fMinPtGamChargedCorr;
-  Double_t fMinPtJetCone;
-  Int_t    fLeadingChargedIndex;
+  Double_t fGammaPtHighest;  //! transient
+  Double_t fMinPtForGammaJet;  //! transient
+  Double_t fMinIsoConeSize; //! transient
+  Double_t fMinPtIsoCone; //! transient
+  Double_t fMinPtGamChargedCorr; //! transient
+  Double_t fMinPtJetCone; //! transient
+  Int_t    fLeadingChargedIndex; //! transient
 
   TClonesArray* fAODBranch ;        //! selected particles branch
   TString fAODBranchName; // New AOD branch name
   
-  vector<AliGammaConversionAODObject> fAODObjects;
+  //  TClonesArray *fAODObjects;
 
   ClassDef(AliAnalysisTaskGammaConversion, 4); // Analysis task for gamma conversions
 };

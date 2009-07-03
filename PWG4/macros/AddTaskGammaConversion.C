@@ -4,7 +4,5 @@ AliAnalysisTaskGammaConversion * AddTaskGammaConversion(TString arguments,AliAna
 
   gROOT->LoadMacro("./ConfigGammaConversion.C"); // load the CreateChain macro
 
-  ConfigGammaConversion(arguments,cin_esd);
-  
-  return NULL;
+  return ConfigGammaConversion(arguments,cin_esd);
 }
