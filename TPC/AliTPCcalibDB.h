@@ -39,6 +39,11 @@ class AliTPCcalibDB : public TObject
   virtual ~AliTPCcalibDB();
   static void Terminate();
   void   SetRun(Long64_t run);   
+  void   Update();  //update entries
+  void   UpdateRunInformations(Int_t run, Bool_t force=kFALSE);
+  //
+  //
+  //
   //
   AliTPCTransform* GetTransform() {return fTransform;}
   AliTPCExB*    GetExB() {return fExB;}
@@ -85,9 +90,7 @@ class AliTPCcalibDB : public TObject
   //
 protected:
   
-  void         Update();  //update entries
   AliCDBEntry* GetCDBEntry(const char* cdbPath);   
-  void GetRunInformations(Int_t run); // JUST FOR CALIBRATION STUDIES
   Long64_t        fRun;         // current run number
   AliTPCTransform *fTransform;      // object responsible for spacial corrections
   AliTPCExB *fExB;              // ExB correction factor
@@ -117,6 +120,8 @@ protected:
   TObjArray      fVoltageArray;					//! array of Chamber HV values -per run
   TObjArray      fTemperatureArray;			//! array of temperature sensors - per run
   TObjArray      fVdriftArray;					//! array of v drift interfaces
+  TObjArray      fDriftCorrectionArray;                //! array of drift correction
+
   TArrayI        fRunList;							//! run list - indicates try to get the run param
   //
   static AliTPCcalibDB* fgInstance;  // singleton control
