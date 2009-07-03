@@ -1,7 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS          =  \
-                 AliPHOSGeometry.cxx \
+SRCS          =  AliPHOSGeometry.cxx \
                  AliPHOSLoader.cxx \
                  AliPHOSHit.cxx AliPHOSTrackSegmentMaker.cxx  AliPHOSPID.cxx \
                  AliPHOSClusterizer.cxx \
