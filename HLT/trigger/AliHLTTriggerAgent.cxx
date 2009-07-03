@@ -24,8 +24,13 @@
 
 #include <cassert>
 #include "AliHLTTriggerAgent.h"
+#include "AliHLTTriggerDecision.h"
+#include "AliHLTOUT.h"
+#include "AliHLTMessage.h"
+#include "AliESDEvent.h"
 #include "TObjString.h"
 #include "TObjArray.h"
+#include "TArrayC.h"
 
 // header files of library components
 #include "AliHLTEventSummaryProducerComponent.h"
@@ -41,8 +46,8 @@ AliHLTTriggerAgent gAliHLTTriggerAgent;
 ClassImp(AliHLTTriggerAgent)
 
 AliHLTTriggerAgent::AliHLTTriggerAgent()
-  :
-  AliHLTModuleAgent("Trigger")
+  : AliHLTModuleAgent("Trigger")
+  , fTriggerDecisionHandler(NULL)
 {
   // see header file for class documentation
   // or
@@ -128,7 +133,7 @@ const char* AliHLTTriggerAgent::GetReconstructionChains(AliRawReader* /*rawReade
     // AliRoot simulation
 
     // currently disabled due to a problem compiling the runtime trigger library
-    //return "GLOBAL-Trigger";
+    return "GLOBAL-Trigger";
   }
   return NULL;
 }
@@ -146,6 +151,17 @@ int AliHLTTriggerAgent::GetHandlerDescription(AliHLTComponentDataType dt,
 {
   // see header file for class documentation
 
+  // handler of the trigger decisions {'ROOTTOBJ':'HLT '}
+  // currently stored as a TObject with the common data type and origin
+  // HLTOUT. However we might need a separate data type in order to
+  // avoid interference with other handlers
+  // the handler produces an ESD object in order to be merged to the
+  // hltEsd afterwards
+  if (dt==(kAliHLTDataTypeTObject|kAliHLTDataOriginOut)) {
+    desc=AliHLTOUTHandlerDesc(AliHLTModuleAgent::kEsd, dt, GetModuleId());
+    return 1;
+  }
+
   // handler for the HLT readou list and trigger data data blocks {'HLTRDLST':'HLT '}
   if (dt==AliHLTComponentDataTypeInitializer("HLTRDLST", kAliHLTDataOriginOut) ||
       dt==AliHLTComponentDataTypeInitializer("HLTTRGDT", kAliHLTDataOriginOut)) {
@@ -157,9 +173,17 @@ int AliHLTTriggerAgent::GetHandlerDescription(AliHLTComponentDataType dt,
 }
 
 AliHLTOUTHandler* AliHLTTriggerAgent::GetOutputHandler(AliHLTComponentDataType dt,
-						   AliHLTUInt32_t /*spec*/)
+						       AliHLTUInt32_t /*spec*/)
 {
   // see header file for class documentation
+
+  // raw data blocks to be fed into offline reconstruction
+  if (dt==(kAliHLTDataTypeTObject|kAliHLTDataOriginOut)) {
+    if (!fTriggerDecisionHandler) {
+      fTriggerDecisionHandler=new AliHLTTriggerAgent::AliHLTTriggerDecisionHandler;
+    }
+    return fTriggerDecisionHandler;
+  }
 
   // handler for the HLT readou list and trigger data data blocks {'HLTRDLST':'HLT '}
   if (dt==AliHLTComponentDataTypeInitializer("HLTRDLST", kAliHLTDataOriginOut) ||
@@ -175,5 +199,106 @@ int AliHLTTriggerAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
   // see header file for class documentation
   if (pInstance==NULL) return -EINVAL;
 
+  if (pInstance==fTriggerDecisionHandler) {
+    delete fTriggerDecisionHandler;
+    fTriggerDecisionHandler=NULL;
+  }
+
   return 0;
+}
+
+AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::AliHLTTriggerDecisionHandler()
+  : AliHLTOUTHandler() 
+  , fESD(NULL)
+  , fpData(NULL)
+  , fSize(0)
+{
+  // see header file for class documentation
+}
+
+AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::~AliHLTTriggerDecisionHandler()
+{
+  // see header file for class documentation
+  if (fESD) delete fESD;
+  fESD=NULL;
+
+  if (fpData) delete fpData;
+  fpData=NULL;
+  fSize=0;
+}
+
+int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::ProcessData(AliHLTOUT* pData)
+{
+  // see header file for class documentation
+  if (!pData) return -EINVAL;
+  AliHLTComponentDataType dt=kAliHLTVoidDataType;
+  AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+  int iResult=pData->GetDataBlockDescription(dt, spec);
+  if (iResult>=0) {
+    TObject* pObject=pData->GetDataObject();
+    if (pObject) {
+      AliHLTTriggerDecision* pDecission=dynamic_cast<AliHLTTriggerDecision*>(pObject);
+      if (pDecission) {
+	if (!fESD) {
+	  // create the ESD container, but without std content
+	  fESD = new AliESDEvent;
+	}
+	if (!fpData) fpData=new TArrayC;
+	if (fESD && fpData) {
+	  fESD->Reset();
+	  fESD->AddObject(pObject->Clone());
+	  AliHLTMessage* pMsg=AliHLTMessage::Stream(fESD);
+	  if (pMsg) {
+	    if (!pMsg->CompBuffer()) {
+	      fSize=pMsg->Length();
+	      fpData->Set(fSize, pMsg->Buffer());
+	    } else {
+	      fSize=pMsg->CompLength();
+	      fpData->Set(fSize, pMsg->CompBuffer());
+	    }
+	  } else {
+	    HLTError("streaming of objects failed");
+	  }
+	} else {
+	  HLTError("memory allocation failed");
+	  iResult=-ENOMEM;
+	}
+      } else {
+	HLTError("object %s is not an AliHLTTriggerDecision", pObject->GetName());
+	iResult=-ENODATA;
+      }
+      pData->ReleaseDataObject(pObject);
+      pObject=NULL;
+    } else {
+      HLTError("can not get TObject from HLTOUT buffer");
+      iResult=-ENODATA;
+    }
+  }
+  if (iResult>=0) return fSize;
+  fSize=0;
+  return iResult;
+}
+
+int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::GetProcessedData(const AliHLTUInt8_t* &pData)
+{
+  // see header file for class documentation
+  if (!fpData) {
+    pData=NULL;
+    return 0;
+  }
+
+  pData=reinterpret_cast<AliHLTUInt8_t*>(fpData->GetArray());
+  return fSize;
+}
+
+int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::ReleaseProcessedData(const AliHLTUInt8_t* pData, int size)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!fpData || size != fSize ||
+      const_cast<AliHLTUInt8_t*>(pData) != reinterpret_cast<AliHLTUInt8_t*>(fpData->GetArray())) {
+    HLTError("attempt to release to wrong data buffer %p size %d, expected %p size %d", pData, size, fpData?fpData->GetArray():NULL, fSize);
+  }
+  fSize=0;
+  return iResult;
 }

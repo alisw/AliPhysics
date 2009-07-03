@@ -651,6 +651,16 @@ int AliHLTEsdManagerImplementation::Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) 
   while ((pSrcObject=next())) {
     if(!pSrcObject->InheritsFrom("TCollection")){
       // simple objects
+      if(pSrcObject->InheritsFrom("AliHLTTriggerDecision")){
+	TObject* pTgtObject=pTgt->GetList()->FindObject(name);
+	if (pTgtObject) {
+	  pSrcObject->Copy(*pTgtObject);
+	} else {
+	  pTgt->AddObject(pSrcObject->Clone());
+	}
+      } else {
+	// TODO: implement the handling of other objects, some kind of mapping
+      }
     } else if(pSrcObject->InheritsFrom("TClonesArray")){
       TClonesArray* pTClA=dynamic_cast<TClonesArray*>(pSrcObject);
       if (pTClA!=NULL && pTClA->GetEntriesFast()>0) {

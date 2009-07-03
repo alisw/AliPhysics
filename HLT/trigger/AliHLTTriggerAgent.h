@@ -13,8 +13,10 @@
 */
 
 #include "AliHLTModuleAgent.h"
+#include "AliHLTOUTHandler.h"
 
-class AliHLTOUTHandler;
+class AliESDEvent;
+class TArrayC;
 
 /**
  * @class AliHLTTriggerAgent
@@ -78,6 +80,35 @@ class AliHLTTriggerAgent : public AliHLTModuleAgent {
 
   int DeleteOutputHandler(AliHLTOUTHandler* pInstance);
 
+  /**
+   * The handler for trigger decision blocks in the HLTOUT stream.
+   */
+  class AliHLTTriggerDecisionHandler : public AliHLTOUTHandler {
+  public:
+    /** constructor */
+    AliHLTTriggerDecisionHandler();
+    /** destructor */
+    ~AliHLTTriggerDecisionHandler();
+
+    /**
+     * Process a data block.
+     * Decode specification and return equipment id of the data block.
+     * The data itsself i untouched.
+     * @return equipment id the block should be used for.
+     */
+    int ProcessData(AliHLTOUT* pData);
+
+    /** inherited from AliHLTOUTHandler */
+    int GetProcessedData(const AliHLTUInt8_t* &pData);
+
+    /** inherited from AliHLTOUTHandler */
+    int ReleaseProcessedData(const AliHLTUInt8_t* pData, int size);
+
+  private:
+    AliESDEvent* fESD; //!
+    TArrayC* fpData;  //!
+    int fSize; //!
+  };
  protected:
 
  private:
@@ -86,7 +117,10 @@ class AliHLTTriggerAgent : public AliHLTModuleAgent {
   /** assignment operator prohibited */
   AliHLTTriggerAgent& operator=(const AliHLTTriggerAgent&);
 
-  ClassDef(AliHLTTriggerAgent, 0);
+  /** handler for trigger decision blocks */
+  AliHLTTriggerDecisionHandler* fTriggerDecisionHandler; //!
+
+  ClassDef(AliHLTTriggerAgent, 1);
 };
 
 #endif
