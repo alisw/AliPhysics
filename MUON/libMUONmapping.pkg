@@ -104,22 +104,6 @@ SRCS +=  \
          mapping/AliMpFastSegmentation.cxx \
          mapping/AliMpUID.cxx
 
-# Category graphics
-#
-SRCS +=  \
-	 mapping/AliMpGraphContext.cxx  \
-	 mapping/AliMpMotifPainter.cxx  \
-	 mapping/AliMpPCBPainter.cxx  \
-	 mapping/AliMpRowPainter.cxx  \
-	 mapping/AliMpRowSegmentPainter.cxx  \
-	 mapping/AliMpSectorPainter.cxx  \
-	 mapping/AliMpSlatPainter.cxx  \
-	 mapping/AliMpSubZonePainter.cxx  \
-	 mapping/AliMpVPainter.cxx  \
-	 mapping/AliMpZonePainter.cxx  \
-         mapping/AliMpDEVisu.cxx   \
-         mapping/AliMpIteratorPainter.cxx
-
 HDRS  = $(SRCS:.cxx=.h)
 
 DHDR := MUONmappingLinkDef.h

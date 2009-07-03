@@ -1,0 +1,34 @@
+#-*- Mode: Makefile -*-
+# $Id: libMUONmapping.pkg 31848 2009-04-06 20:04:49Z laphecet $
+
+#
+# mapping 
+#
+
+## Category graphics
+#
+SRCS +=  \
+	 mapping/AliMpGraphContext.cxx  \
+	 mapping/AliMpMotifPainter.cxx  \
+	 mapping/AliMpPCBPainter.cxx  \
+	 mapping/AliMpRowPainter.cxx  \
+	 mapping/AliMpRowSegmentPainter.cxx  \
+	 mapping/AliMpSectorPainter.cxx  \
+	 mapping/AliMpSlatPainter.cxx  \
+	 mapping/AliMpSubZonePainter.cxx  \
+	 mapping/AliMpVPainter.cxx  \
+	 mapping/AliMpZonePainter.cxx  \
+         mapping/AliMpDEVisu.cxx   \
+         mapping/AliMpIteratorPainter.cxx
+
+HDRS  = $(SRCS:.cxx=.h)
+
+DHDR := MUONmpgraphicsLinkDef.h
+
+EINCLUDE:= RAW MUON/mapping
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lCDB -lSTEERBase -lMUONcore -lRAWDatabase \
+                         -L$(shell root-config --libdir) -lGui
+endif
