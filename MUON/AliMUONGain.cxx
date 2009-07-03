@@ -170,7 +170,7 @@ void AliMUONGain::MakePedStoreForGain(TString shuttleFile)
   if(fPrintLevel>0)
     {
       // compute and store mean DAC values (like pedestals)
-      sprintf(flatFile,"%s_%d.ped",fprefixDA,fRunNumber);
+      sprintf(flatFile,"%s.ped",fprefixDA);
       outputFile=flatFile;
       cout << "\n" << fprefixDA << " : Flat file  generated  : " << flatFile << "\n";
       MakePedStore(outputFile);
@@ -256,7 +256,7 @@ TString AliMUONGain::WriteGainData(Int_t BP, Int_t Manu, Int_t ch, Double_t p1, 
 
 }
 
-//__________
+//_______________________________________________________________________________
 void AliMUONGain::MakeGainStore(TString shuttleFile)
 {
   /// Store gains in ASCII files
@@ -342,7 +342,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
     FILE *pfilen = 0;
     if(fPrintLevel>1)
       {
-        sprintf(filename,"%s_%d.param",fprefixDA,fRunNumber);
+        sprintf(filename,"%s.param",fprefixDA);
         cout << " Second fit parameter file        = " << filename << "\n";
         pfilen = fopen (filename,"w");
 
@@ -370,7 +370,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   FILE *pfilep = 0;
   if(fPrintLevel>1)
     {
-      sprintf(filename,"%s_%d.peak",fprefixDA,fRunNumber);
+      sprintf(filename,"%s.peak",fprefixDA);
       cout << " File containing Peak mean values = " << filename << "\n";
       pfilep = fopen (filename,"w");
 
@@ -405,7 +405,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   TTree* tg = 0x0;
   if(fPlotLevel>0)
     {
-      sprintf(fHistoFileName,"%s_%d.root",fprefixDA,fRunNumber);
+      sprintf(fHistoFileName,"%s.root",fprefixDA);
      gainFile = new TFile(fHistoFileName,"RECREATE","MUON Tracking gains");
       tg = new TTree("tg","TTree avec class Manu_DiMu");
 
@@ -502,7 +502,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	    {
 	      Int_t k = j + fnInit;
 	      x[j]    = pedMean[k];
-	      if(x[j]==0.)fitproceed=0;
+	      if(x[j]==0. || x[j]== kADCMax)fitproceed=0;
 	      xErr[j] = pedSigma[k];
 	      y[j]    = injCharge[k];
 	      yErr[j] = injChargeErr[k];
