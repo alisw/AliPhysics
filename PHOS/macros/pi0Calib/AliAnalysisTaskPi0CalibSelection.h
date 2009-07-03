@@ -11,12 +11,11 @@
 
 
 #include "AliAnalysisTaskSE.h"
-
-class TH1F;
-class AliPHOSRecoParam;
-class AliPHOSGeometry; 
-class AliESDCaloCluster;
-class AliESDCaloCells;
+#include "AliPHOSRecoParam.h"
+#include "AliPHOSGeometry.h"
+#include "AliESDCaloCluster.h"
+#include "AliESDCaloCells.h"
+#include "TH1.h"
 
 class AliAnalysisTaskPi0CalibSelection : public AliAnalysisTaskSE
 {

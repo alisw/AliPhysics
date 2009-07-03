@@ -13,8 +13,12 @@
  **************************************************************************/
 
 //---------------------------------------------------------------------------// 
-// Fill histograms with two-cluster invariant mass                           //
+//                                                                           //
+// Fill histograms (one per cell) with two-cluster invariant mass            //
 // using calibration coefficients of the previous iteration.                 //
+// Histogram for a given cell is filled if the most energy of one cluster    //
+// is deposited in this cell and the other cluster could be anywhere in PHOS.//
+//                                                                           //
 //---------------------------------------------------------------------------//
 
 #include "AliAnalysisTaskPi0CalibSelection.h"
@@ -24,19 +28,14 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliESDEvent.h"
-#include "AliESDCaloCluster.h"
-#include "AliESDCaloCells.h"
 #include "AliPHOSPIDv1.h"
-#include "AliPHOSRecoParam.h"
 #include "AliPHOSEsdCluster.h"
-#include "AliPHOSGeometry.h"
 #include "AliPHOSGeoUtils.h"
 #include "AliPHOSCalibData.h"
 #include "AliPHOSReconstructor.h"
 #include "AliPHOSPIDv1.h"
 #include "TRefArray.h"
 #include "TList.h"
-#include "TH1.h"
 
 ClassImp(AliAnalysisTaskPi0CalibSelection)
 
@@ -44,6 +43,8 @@ AliAnalysisTaskPi0CalibSelection::AliAnalysisTaskPi0CalibSelection() :
 AliAnalysisTaskSE(),fOutputContainer(0x0),fRecoParam(0x0),fPhosGeo(0x0),fHmgg(0x0),
   fEmin(0.)
 {
+  //Default constructor.
+
   for(Int_t iMod=0; iMod<5; iMod++) {
     for(Int_t iX=0; iX<64; iX++) {
       for(Int_t iZ=0; iZ<56; iZ++) {
@@ -58,8 +59,10 @@ AliAnalysisTaskPi0CalibSelection::AliAnalysisTaskPi0CalibSelection(const char* n
   AliAnalysisTaskSE(name),fOutputContainer(0x0),fRecoParam(0x0),fPhosGeo(0x0),fHmgg(0x0),
   fEmin(0.)
 {
+  //Named constructor which should be used.
+  
   DefineOutput(1,TList::Class());
-
+  
   for(Int_t iMod=0; iMod<5; iMod++) {
     for(Int_t iX=0; iX<64; iX++) {
       for(Int_t iZ=0; iZ<56; iZ++) {
@@ -72,9 +75,10 @@ AliAnalysisTaskPi0CalibSelection::AliAnalysisTaskPi0CalibSelection(const char* n
 
 AliAnalysisTaskPi0CalibSelection::~AliAnalysisTaskPi0CalibSelection()
 {
+  //Destructor.
   
   if(fOutputContainer){
-    fOutputContainer->Clear() ; 
+    fOutputContainer->Delete() ; 
     delete fOutputContainer ;
   }
 }
@@ -235,6 +239,8 @@ void AliAnalysisTaskPi0CalibSelection::UserExec(Option_t* /* option */)
 
 void AliAnalysisTaskPi0CalibSelection::MaxEnergyCellPos(AliESDCaloCells *cells, AliESDCaloCluster* clu, Int_t& maxId)
 {
+  //For a given CaloCluster calculates the absId of the cell 
+  //with maximum energy deposit.
   
   Double_t eMax = -111;
   
