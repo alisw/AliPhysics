@@ -27,7 +27,9 @@ public:
   void SetT0zVertex(Double_t z) {fT0zVertex=z;}
   Double_t GetT0() const {return fT0timeStart;}
   void SetT0(Double_t timeStart) {fT0timeStart = timeStart;}
-  const Double_t * GetT0time() const {return fT0time;}
+ Float_t GetT0clock() const {return fT0clock;}
+  void SetT0clock(Float_t timeStart) {fT0clock = timeStart;}
+   const Double_t * GetT0time() const {return fT0time;}
   void SetT0time(Float_t time[24]) {
     for (Int_t i=0; i<24; i++) fT0time[i] = time[i];
   }
@@ -41,12 +43,13 @@ public:
 
 private:
 
+  Float_t      fT0clock;     // interaction time with reference point(spectrum)
   Double32_t      fT0zVertex;       // vertex z position estimated by the T0
   Double32_t      fT0timeStart;     // interaction time estimated by the T0
   Double32_t      fT0time[24];      // best TOF on each T0 PMT
   Double32_t      fT0amplitude[24]; // number of particles(MIPs) on each T0 PMT
 
-  ClassDef(AliESDTZERO,2)
+  ClassDef(AliESDTZERO,3)
 };
 
 

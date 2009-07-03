@@ -171,6 +171,8 @@ public:
   void SetT0zVertex(Float_t z) {fESDTZERO->SetT0zVertex(z);}
   Double_t GetT0() const {return fESDTZERO->GetT0();}
   void SetT0(Float_t timeStart) {fESDTZERO->SetT0(timeStart);}
+  Float_t GetT0clock() const {return fESDTZERO->GetT0clock();}
+  void SetT0clock(Float_t timeStart) {fESDTZERO->SetT0clock(timeStart);}
   const Double_t * GetT0time() const {return fESDTZERO->GetT0time();}
   void SetT0time(Float_t time[24]) {fESDTZERO->SetT0time(time);}
   const Double_t * GetT0amplitude() const {return fESDTZERO->GetT0amplitude();}

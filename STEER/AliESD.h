@@ -199,6 +199,8 @@ public:
   void SetT0zVertex(Float_t z) {fT0zVertex=z;}
   Float_t GetT0() const {return fT0timeStart;}
   void SetT0(Float_t timeStart) {fT0timeStart = timeStart;}
+  Float_t GetT0clock() const {return fT0clock;}
+  void SetT0clock(Float_t timeStart) {fT0clock = timeStart;}
   const Float_t * GetT0time() const {return fT0time;}
   void SetT0time(Float_t time[24]) {
     for (Int_t i=0; i<24; i++) fT0time[i] = time[i];
@@ -207,7 +209,7 @@ public:
   void SetT0amplitude(Float_t amp[24]) {
     for (Int_t i=0; i<24; i++) fT0amplitude[i] = amp[i];
   }
-
+    
   Float_t GetZDCN1Energy() const {return fZDCN1Energy;}
   Float_t GetZDCP1Energy() const {return fZDCP1Energy;}
   Float_t GetZDCN2Energy() const {return fZDCN2Energy;}
@@ -272,6 +274,7 @@ protected:
   AliMultiplicity fSPDMult;      // SPD tracklet multiplicity
 
   Float_t      fT0timeStart;     // interaction time estimated by the T0
+  Float_t      fT0clock;     // interaction time with reference point(spectrum)
   Float_t      fT0time[24];      // best TOF on each T0 PMT
   Float_t      fT0amplitude[24]; // number of particles(MIPs) on each T0 PMT
 
@@ -301,7 +304,7 @@ protected:
 
   TClonesArray fErrorLogs;        // Raw-data reading error messages
 
-  ClassDef(AliESD,22)  //ESD class 
+  ClassDef(AliESD,23)  //ESD class 
 };
 #endif 
 
