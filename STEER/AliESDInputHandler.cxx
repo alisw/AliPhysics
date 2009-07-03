@@ -45,8 +45,6 @@ static Option_t *gESDDataType = "ESD";
 AliESDInputHandler::AliESDInputHandler() :
   AliInputEventHandler(),
   fEvent(0x0),
-  fBranches(""),
-  fBranchesOn(""),
   fAnalysisType(0),
   fNEvents(0),
   fUseTags(kFALSE),
@@ -66,7 +64,7 @@ AliESDInputHandler::~AliESDInputHandler()
 
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
-    AliInputEventHandler(name, title), fEvent(0x0), fBranches(""), fBranchesOn(""), fAnalysisType(0),
+    AliInputEventHandler(name, title), fEvent(0x0), fAnalysisType(0),
      fNEvents(0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0)
 {
     // Constructor
@@ -207,34 +205,6 @@ Bool_t AliESDInputHandler::Notify(const char* path)
 }
 
 
-void AliESDInputHandler::SwitchOffBranches() const {
-  //
-  // Switch of branches on user request
-    TObjArray * tokens = fBranches.Tokenize(" ");
-    Int_t ntok = tokens->GetEntries();
-    for (Int_t i = 0; i < ntok; i++)  {
-	TString str = ((TObjString*) tokens->At(i))->GetString();
-	if (str.Length() == 0)
-	    continue;
-	fTree->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 0);
-	AliInfo(Form("Branch %s switched off \n", str.Data()));
-    }
-}
-
-void AliESDInputHandler::SwitchOnBranches() const {
-  //
-  // Switch of branches on user request
-  TObjArray * tokens = fBranchesOn.Tokenize(" ");
-  Int_t ntok = tokens->GetEntries();
-
-  for (Int_t i = 0; i < ntok; i++)  {
-      TString str = ((TObjString*) tokens->At(i))->GetString();
-      if (str.Length() == 0)
-	  continue;
-      fTree->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 1);
-      AliInfo(Form("Branch %s switched on \n", str.Data()));
-  }
-}
 
 Option_t *AliESDInputHandler::GetDataType() const
 {

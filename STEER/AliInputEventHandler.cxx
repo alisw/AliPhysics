@@ -23,13 +23,16 @@
 
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
+#include "AliLog.h"
 
 ClassImp(AliInputEventHandler)
 
 //______________________________________________________________________________
 AliInputEventHandler::AliInputEventHandler() :
     AliVEventHandler(),
-    fTree(0)
+    fTree(0),
+    fBranches(""),
+    fBranchesOn("")
 {
   // default constructor
 }
@@ -43,7 +46,37 @@ AliInputEventHandler::~AliInputEventHandler()
 //______________________________________________________________________________
 AliInputEventHandler::AliInputEventHandler(const char* name, const char* title):
   AliVEventHandler(name, title),
-  fTree(0)
+  fTree(0),
+  fBranches(""),
+  fBranchesOn("")
 {
 }
 
+void AliInputEventHandler::SwitchOffBranches() const {
+  //
+  // Switch of branches on user request
+    TObjArray * tokens = fBranches.Tokenize(" ");
+    Int_t ntok = tokens->GetEntries();
+    for (Int_t i = 0; i < ntok; i++)  {
+	TString str = ((TObjString*) tokens->At(i))->GetString();
+	if (str.Length() == 0)
+	    continue;
+	fTree->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 0);
+	AliInfo(Form("Branch %s switched off \n", str.Data()));
+    }
+}
+
+void AliInputEventHandler::SwitchOnBranches() const {
+  //
+  // Switch of branches on user request
+  TObjArray * tokens = fBranchesOn.Tokenize(" ");
+  Int_t ntok = tokens->GetEntries();
+
+  for (Int_t i = 0; i < ntok; i++)  {
+      TString str = ((TObjString*) tokens->At(i))->GetString();
+      if (str.Length() == 0)
+	  continue;
+      fTree->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 1);
+      AliInfo(Form("Branch %s switched on \n", str.Data()));
+  }
+}

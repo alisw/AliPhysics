@@ -35,18 +35,26 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual Bool_t       TerminateIO()                                {return kTRUE;}
     // Setters
     virtual void         SetInputTree(TTree* tree)                    {fTree = tree;}
+    //
+    void SetInactiveBranches(const char* branches) {fBranches   = branches;}
+    void SetActiveBranches  (const char* branches) {fBranchesOn = branches;}
      // Getters
     virtual AliVEvent   *GetEvent()        const                      {return 0;}
     virtual AliRunTag   *GetRunTag()       const                      {return 0;}
     virtual Option_t    *GetAnalysisType() const                      {return 0;}
     virtual TTree       *GetTree( )        const                      {return fTree;}
     virtual Long64_t     GetReadEntry()    const                      {return fTree->GetReadEntry();}
+ protected:
+    void SwitchOffBranches() const;
+    void SwitchOnBranches()  const;
  private:
     AliInputEventHandler(const AliInputEventHandler& handler);             
     AliInputEventHandler& operator=(const AliInputEventHandler& handler);  
  protected:
-    TTree        *fTree;    //! Pointer to the tree
-    ClassDef(AliInputEventHandler, 1);
+    TTree          *fTree;         //! Pointer to the tree
+    TString         fBranches;     //  List of branches to be switched off (separated by space)
+    TString         fBranchesOn;   //  List of branches to be switched on  (separated by space)
+    ClassDef(AliInputEventHandler, 2);
 };
 
 #endif
