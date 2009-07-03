@@ -79,6 +79,7 @@
 
 #pragma link C++ class  AliTriggerScalersESD+;
 #pragma link C++ class  AliTriggerScalersRecordESD+;
+#pragma link C++ class  AliESDZDCScalers+;
   
 #endif
 
