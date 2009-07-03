@@ -37,7 +37,7 @@ public:
   void      SetBunchCrossNumber(UShort_t n) {fBunchCrossNumber=n;}
   void      SetPeriodNumber(UInt_t n) {fPeriodNumber=n;}
   void      SetTriggerCluster(UChar_t n) {fTriggerCluster = n;}
-  void      AddTriggerIR(const AliTriggerIR* ir);
+  Bool_t    AddTriggerIR(const AliTriggerIR* ir);
 
 //************Setters/Getters for Trigger Inputs and TriggerScalersRecordESD
   void SetL0TriggerInputs(UInt_t n) {fL0TriggerInputs=n;}
@@ -76,7 +76,8 @@ private:
   UInt_t       fL1TriggerInputs;   //L1 Trigger Inputs
   UShort_t     fL2TriggerInputs;   //L2 Trigger Inputs
   AliTriggerScalersRecordESD fTriggerScalers;  //Trigger counters of triggered classes in event
-  TClonesArray     fIRArray;     // Array with trigger interaction records (3)
+  enum {kNMaxIR = 3};            // Max number of interaction records (IR)
+  AliTriggerIR**  fIRArray;     // Array with trigger IRs 
 
   ClassDef(AliESDHeader,6)
 };

@@ -42,15 +42,19 @@ AliESDHeader::AliESDHeader() :
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
   fTriggerScalers(),
-  fIRArray("AliTriggerIR",3)
+  fIRArray(0)
 {
   // default constructor
 
   SetName("AliESDHeader");
+  fIRArray = new AliTriggerIR *[kNMaxIR];
+  for(Int_t i = 0; i<kNMaxIR ; i++) fIRArray[i] = 0;
+
 }
 AliESDHeader::~AliESDHeader() 
 {
   // destructor
+  for(Int_t i=0;i<kNMaxIR;i++)if(fIRArray[i])delete fIRArray[i];
 }
 
 
@@ -68,11 +72,16 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fL1TriggerInputs(header.fL1TriggerInputs),
   fL2TriggerInputs(header.fL2TriggerInputs),
   fTriggerScalers(header.fTriggerScalers),
-  fIRArray(*((TClonesArray*)header.fIRArray.Clone()))
+  fIRArray(0)
 {
   // copy constructor
   SetName(header.fName);
   SetTitle(header.fTitle);
+  fIRArray = new AliTriggerIR *[kNMaxIR];
+  for(Int_t i = 0; i<kNMaxIR ; i++) {
+    if(header.fIRArray[i])fIRArray[i] = new AliTriggerIR(*header.fIRArray[i]);
+    else fIRArray[i]=0;
+  }
 }
 
 AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
@@ -92,7 +101,11 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     fL1TriggerInputs = header.fL1TriggerInputs;
     fL2TriggerInputs = header.fL2TriggerInputs;
     fTriggerScalers = header.fTriggerScalers;
-    fIRArray = header.fIRArray;
+    fIRArray = new AliTriggerIR *[kNMaxIR];
+    for(Int_t i = 0; i<kNMaxIR ; i++) {
+       if(header.fIRArray[i])fIRArray[i] = new AliTriggerIR(*header.fIRArray[i]);
+       else fIRArray[i]=0;
+    }
     SetName(header.fName);
     SetTitle(header.fTitle);
 
@@ -128,13 +141,20 @@ void AliESDHeader::Reset()
   fL1TriggerInputs   = 0;
   fL2TriggerInputs   = 0;
   fTriggerScalers.Reset();
-  fIRArray.Clear();
+  for(Int_t i=0;i<kNMaxIR;i++)if(fIRArray[i]){
+   delete fIRArray[i];
+   fIRArray[i]=0;
+  }
 }
 //______________________________________________________________________________
-void AliESDHeader::AddTriggerIR(const AliTriggerIR* ir)
+Bool_t AliESDHeader::AddTriggerIR(const AliTriggerIR* ir)
 {
  // Adds trigger interaction record to array
- new(fIRArray[fIRArray.GetEntriesFast()]) AliTriggerIR(*ir);
+ for(Int_t i=0;i<kNMaxIR;i++){
+  if(!fIRArray[i])fIRArray[i]=const_cast<AliTriggerIR*>(ir);
+  return 0;
+ }
+ return 1;
 }
 //______________________________________________________________________________
 void AliESDHeader::Print(const Option_t *) const
