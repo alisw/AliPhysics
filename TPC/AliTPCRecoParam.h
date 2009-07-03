@@ -56,7 +56,6 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   // Correction setup
   //
-  void  SetUseTransformation(Int_t flag){fUseTransformation=flag;}
   void  SetUseFieldCorrection(Int_t flag){fUseFieldCorrection=flag;}
   void  SetUseRPHICorrection(Int_t flag){fUseRPHICorrection=flag;}
   void  SetUseRadialCorrection(Int_t flag){fUseRadialCorrection=flag;}
@@ -68,7 +67,6 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetUseExBCorrection(Int_t flag){fUseExBCorrection=flag;}
   void  SetUseTOFCorrection(Bool_t flag) {fUseTOFCorrection = flag;}
   //
-  Int_t GetUseTransformation() const {return fUseTransformation;}
   Int_t GetUseFieldCorrection() const {return fUseFieldCorrection;}
   Int_t GetUseRPHICorrection() const {return fUseRPHICorrection;}
   Int_t GetUseRadialCorrection() const {return fUseRadialCorrection;}
@@ -78,6 +76,11 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t GetUseDriftCorrectionGY() const {return fUseDriftCorrectionGY;}
   Int_t GetUseGainCorrectionTime() const {return fUseGainCorrectionTime;}
   Int_t GetUseExBCorrection() const {return fUseExBCorrection;}
+  //
+  Bool_t   GetUseTotCharge(){return fUseTotCharge;}          // switch use total or max charge
+  Float_t  GetMinFraction() {return fMinFraction;}           // truncated mean - lower threshold
+  Float_t  GetMaxFraction(){return fMaxFaction;}            // truncated mean - upper threshold
+
   Bool_t   GetUseTOFCorrection() {return fUseTOFCorrection;}
 
   //
@@ -120,7 +123,6 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   // Correction switches
   //
-  Int_t fUseTransformation;      // use transformation 
   Int_t fUseFieldCorrection;     // use field correction
   Int_t fUseRPHICorrection;      // use rphi correction
   Int_t fUseRadialCorrection;    // use radial correction
@@ -131,13 +133,18 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t fUseGainCorrectionTime;  // use gain correction time
   Int_t fUseExBCorrection;       // use ExB correction
   //
+  // dEdx switches
+  //
+  Bool_t   fUseTotCharge;          // switch use total or max charge
+  Float_t fMinFraction;           // truncated mean - lower threshold
+  Float_t fMaxFaction;            // truncated mean - upper threshold
 
   Bool_t fUseTOFCorrection;  // switch - kTRUE use TOF correction kFALSE - do not use
   //
   //  misscalibration
   //
   Double_t fSystematicErrors[5];  //systematic errors in the track parameters - to be added to TPC covariance matrix    
-  ClassDef(AliTPCRecoParam, 6)
+  ClassDef(AliTPCRecoParam, 7)
 };
 
 

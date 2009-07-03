@@ -81,7 +81,6 @@ AliTPCRecoParam::AliTPCRecoParam():
   fBSpecialSeeding(kFALSE),
   fBKinkFinder(kTRUE),
   fLastSeedRowSec(120),
-  fUseTransformation(0),
   fUseFieldCorrection(0),      // use field correction
   fUseRPHICorrection(0),      // use rphi correction
   fUseRadialCorrection(0),    // use radial correction
@@ -91,6 +90,10 @@ AliTPCRecoParam::AliTPCRecoParam():
   fUseDriftCorrectionGY(0),   // use drif correction global y
   fUseGainCorrectionTime(0),  // use gain correction time
   fUseExBCorrection(1),  // use ExB correction
+  //
+  fUseTotCharge(kTRUE),          // switch use total or max charge
+  fMinFraction(0.01),           // truncated mean - lower threshold
+  fMaxFaction(0.7),            // truncated mean - upper threshold
   fUseTOFCorrection(kTRUE)
 {
   //
@@ -133,6 +136,7 @@ AliTPCRecoParam *AliTPCRecoParam::GetHighFluxParam(){
   param->fCtgRange = 1.05;
   param->fFirstBin = 0;
   param->fLastBin  = 1000;  
+  param->fUseTotCharge=kFALSE;
   param->SetName("High Flux");
   param->SetTitle("High Flux");
   return param;
