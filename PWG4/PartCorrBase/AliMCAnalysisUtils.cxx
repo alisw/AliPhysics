@@ -113,8 +113,8 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
     else if(fDebug > 0 ) printf("AliMCAnalysisUtils::CheckOrigin: Parent with label %d\n",iParent);
     
     //return tag
-    if(mPdg == 22){
-      if(mStatus == 1){
+    if(mPdg == 22){ //photon
+      if(mStatus == 1){ //undecayed particle
 	if(fMCGenerator == "PYTHIA"){
 	  if(iParent < 8 && iParent > 5) {//outgoing partons
 	    if(pPdg == 22) return kMCPrompt;
@@ -163,20 +163,87 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
     }//Mother Photon
     else if(mPdg == 111)  return kMCPi0 ;
     else if(mPdg == 221)  return kMCEta ;
-    else if(mPdg ==11){
-//       if(pPdg !=22 &&mStatus == 0) {
-// 	printf("Origin electron, pT %f, status %d, parent %s, pstatus %d, vx %f, vy %f, vz %f\n",
-// 	       mom->Pt(),mStatus, parent->GetName(),pStatus,mom->Vx(),mom->Vy(), mom->Vz());
 
-//       }
+    //cluster's mother is an electron.  Where did that electron come from?
+    else if(mPdg == 11){ //electron
 
-      if(mStatus == 0) {
-	if(pPdg ==22) return kMCConversion ;
-	else if (pStatus == 0) return kMCConversion;
-	else return kMCElectron ;
-      }
-      else return kMCElectron ;
-    }
+      if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOrigin: Checking ancestors of electrons");
+
+      //check first for B and C ancestry, then other possibilities.
+      //An electron from a photon parent could have other particles in
+      //its history and we would want to know that, right?
+
+      if(mStatus == 1) { //electron from event generator
+	if      (pPdg == -1) return kMCElectron; //no parent
+	else if (pPdg == 23) return kMCZDecay;   //parent is Z-boson
+	else if (pPdg == 24) return kMCWDecay;   //parent is W-boson
+	else { //check the electron's ancestors for B/C contribution
+	  Bool_t BAncestor = kFALSE;
+	  Bool_t CAncestor = kFALSE;
+	  TParticle * ancestors = stack->Particle(label);
+	  Int_t aPdg = TMath::Abs(ancestors->GetPdgCode());
+	  //Int_t aStatus = ancestors->GetStatusCode();
+	  Int_t iAncestors = ancestors->GetFirstMother();
+	  if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOrigin: Scaning the decay chain for bottom/charm generated electron");
+	  while(ancestors->IsPrimary()){//searching for ancestors 
+	    if((499 < aPdg && aPdg < 600)||(4999 < aPdg && aPdg < 6000)) BAncestor = kTRUE;
+	    if((399 < aPdg && aPdg < 500)||(3999 < aPdg && aPdg < 5000)) CAncestor = kTRUE;
+	    if(BAncestor && CAncestor) break;
+	    iAncestors = ancestors->GetFirstMother();
+	    ancestors = stack->Particle(iAncestors);
+	    aPdg = ancestors->GetPdgCode();
+	  }//searching for ancestors
+	  if(BAncestor && CAncestor) return kMCEFromCFromB;//Decay chain has both B and C
+	  else if(BAncestor && !CAncestor) return kMCEFromB;//Decay chain has only B
+	  else if(!BAncestor && CAncestor) return kMCEFromC;//Decay chain has only C 
+	}
+	//if it is not from W,Z or B/C ancestor, where is it from?
+	if     (pPdg == 111) return kMCPi0Decay;//Pi0 Dalitz decay
+	else if(pPdg == 221) return kMCEtaDecay;//Eta Dalitz decay
+	else                 return kMCOtherDecay;
+
+      } else if (mStatus == 0) { //electron from GEANT
+
+	//Rewind ancestry and check for electron with status == 1
+	//if we find one, we'll assume that this object is from an
+	//electron but that it may have gone through some showering in
+	//material before the detector
+
+	//Not a double-counting problem because we are only accessing
+	//these histories for MC labels connected to a reco object.
+	//If you wanted to use this to sort through the kine stack
+	//directly, might it be a problem?
+	Bool_t EleFromEvGen = kFALSE;
+	Bool_t BAncestor = kFALSE;
+        Bool_t CAncestor = kFALSE;
+
+	TParticle * ancestors = stack->Particle(label);
+        Int_t aPdg = TMath::Abs(ancestors->GetPdgCode());
+        Int_t aStatus = ancestors->GetStatusCode();
+        Int_t iAncestors = ancestors->GetFirstMother();
+        if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOrigin: Scaning the decay chain for bottom/charm electrons");
+	while(ancestors->IsPrimary()){//searching for ancestors
+	  if(aStatus == 1 && aPdg == 11) EleFromEvGen = kTRUE;
+	  if(EleFromEvGen && aPdg == 23) return kMCZDecay;
+	  if(EleFromEvGen && aPdg == 24) return kMCWDecay;
+	  if(EleFromEvGen && ((499 < aPdg && aPdg < 600)||(4999 < aPdg && aPdg < 6000))) BAncestor = kTRUE;
+	  if(EleFromEvGen && ((399 < aPdg && aPdg < 500)||(3999 < aPdg && aPdg < 5000))) CAncestor = kTRUE;
+	  if(BAncestor && CAncestor) break;
+	  iAncestors = ancestors->GetFirstMother();
+          ancestors = stack->Particle(iAncestors);
+          aPdg = ancestors->GetPdgCode();
+        }//searching for ancestors
+	if(BAncestor && CAncestor) return kMCEFromCFromB;//Decay chain has both B and C
+	else if(BAncestor && !CAncestor) return kMCEFromB;//Decay chain has only B
+	else if(!BAncestor && CAncestor) return kMCEFromC;//Decay chain has only C
+	if(pPdg ==22 || pPdg ==11|| pPdg == 2112 ||  pPdg == 211 ||  
+	   pPdg == 321 ||  pPdg == 2212  ||  pPdg == 130  ||  pPdg == 13 ) 
+	  return kMCConversion ;
+	if(pPdg == 111) return kMCPi0Decay ;
+	else if (pPdg == 221)  return kMCEtaDecay ;
+	else  return kMCOtherDecay ;
+      } //GEANT check
+    }//electron check
     else return kMCUnknown;
   }//Good label value
   else{

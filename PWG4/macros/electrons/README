@@ -1,0 +1,538 @@
+29 May 2009
+
+This is a grand unified example of the ALICE Analysis Framework for
+EMCal analysis on Local, Local CAF, PROOF, GRID interactive, GRID
+batch, and AliEn PLUGIN.
+
+Notice: Everything is working today. Really!
+
+
+---------------------------------------------------------------------
+
+PAR files
+
+You can skip this PAR section for your first use of the example if you
+just want to see how things work. The PAR files in the example were
+built with ROOT v5-23-04 and AliRoot v4-16-Rev-11. See VM20090529.pdf
+file with updated build instructions for ROOT v5-23-04 and AliROOT
+v4-16-Rev-11. If you have write access to $ALICE_ROOT, you can install
+AliAnalysisTaskElectron.cxx and make a new PAR file as follows:
+
+edit $ALICE_ROOT/PWG4/PWG4PartCorrLinkDef.h to include AliAnalysisTaskElectron
+edit $ALICE_ROOT/PWG4/libPWG4PartCorr.pkg to include AliAnalysisTaskElectron
+edit $ALICE_ROOT/PWG4/CMake_libPWG4PartCorr.txt to include AliAnalysisTaskElectron
+cp <yourlocalarea>/AliAnalysisTaskElectron.cxx $ALICE_ROOT/PWG4/PartCorr
+cp <yourlocalarea>/AliAnalysisTaskElectron.h   $ALICE_ROOT/PWG4/PartCorr
+
+cd $ALICE_ROOT
+make
+make PWG4PartCorr.par
+mv PWG4PartCorr.par <your workarea>
+
+
+---------------------------------------------------------------------
+
+local usage (your laptop, workstation, PDSF account, etc.):
+
+For PDSF:
+ssh -X <username>@pdsf.nersc.gov
+cp ~kread/.chos $HOME/.chos (to invoke SciLinux 4.4)
+logout and log back in
+source /project/projectdirs/alice/alisetup.csh
+
+All of the files at /afs/cern.ch/user/k/kread/public/all/v416 need to be
+copied to your local workarea (except for README and PDF files).
+
+If not at PDSF, need a valid local matching ROOT and AliROOT installation. 
+(See /afs/cern.ch/user/k/kread/public/all/v416/VM20090529.pdf)
+
+cd <yourworkarea>
+
+Change this line in anaElectron.C to point to your local AliESDs.root
+data files:
+char * kInDir = "/afs/cern.ch/user/k/kread/PWG4/data/"
+
+root -b
+.L anaElectron.C
+anaElectron(0,"ConfigAnalysisElectron")
+.q
+
+
+---------------------------------------------------------------------
+
+CAF local usage (including for files on GRID):
+
+All of the files at /afs/cern.ch/user/k/kread/public/all/v416 need to be
+copied to your local workarea.
+
+Your valid public and private keys need to be properly located in
+/afs/cern.ch/user/<username>/.globus.
+
+ssh -X <username>@lxplus.cern.sh
+cd <yourworkarea>
+bash
+source /afs/cern.ch/alice/caf/caf-lxplus.sh -alien v4-16-Release 
+enter GRID password
+
+Edit ESDlist.txt to point to the location of your AliESDs.root files
+(including those on the GRID).
+
+root -b
+.L anaElectron.C
+anaElectron(1,"ConfigAnalysisElectron")
+.q
+
+
+---------------------------------------------------------------------
+
+PROOF usage within CERN:
+
+All of the files at /afs/cern.ch/user/k/kread/public/all/v416 need to be
+copied to your local workarea.
+
+The lines in anaElectron.C to need to look like this (which is the default):
+    char* myproofname = "alicecaf";
+    //char* myproofname = "kread@localhost";
+
+
+Your valid public and private keys need to be properly located in
+$HOME/.globus.
+
+ssh -X <username>@lxplus.cern.sh (or other computer at CERN)
+cd <yourworkarea>
+bash
+
+You need a valid matching local ROOT and AliROOT installation with ROOT
+v5-23-04 or higher.  (See
+/afs/cern.ch/user/k/kread/public/all/v416/VM20090529.pdf if necessary.)
+For instance:
+source /afs/cern.ch/alice/caf/caf-lxplus.sh -alien v4-16-Release
+enter GRID password
+
+Edit this line in anaElectron.C to point to the appropriate CAF
+dataset:
+char * kmydataset = "/COMMON/COMMON/LHC09a4_run8101X"
+
+To access files in AliEN, first type
+root -b
+gEnv->SetValue("XSec.GSI.DelegProxy","2")
+
+root -b
+.L anaElectron.C
+anaElectron(2,"ConfigAnalysisElectron")
+.q
+
+For instructions concerning how to stage data files to CAF and how
+to inspect what data is already staged, see:
+http://aliceinfo.cern.ch/Offline/Activities/Analysis/CAF/index.html
+
+If you do not use the provided PAR files, then you will need to add
+the following lines at the beginning of
+AliAnalysisTaskElectron::Terminate in AliAnalysisTaskElectron.cxx,
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (mgr->GetAnalysisType()==AliAnalysisManager::kProofAnalysis) return;
+
+These lines work for all modes of anaElectron.cxx. So, you can install
+a revised version of AliAnalysisTaskElectron.cxx at $ALICE_ROOT/PWG4/PartCorr .
+
+---------------------------------------------------------------------
+
+remote PROOF usage (not at CERN):
+
+This is a GREAT feature, but you will need a local installation with
+ROOT v5-23-04 built with --globus, AliROOT v4-16-Rev-nn, and probably
+write-access to $ALICE_ROOT. 
+(See /afs/cern.ch/user/k/kread/public/all/v416/VM20090529.pdf. Remote
+PROOF access is not possible without at least ROOT v5-23-02b.)  This
+requires some understanding of PAR file manipulation.  If you have
+already been using the example, first type this and be sure not to do it
+in the $ALICE_ROOT area:
+
+cd <your workarea>
+/bin/rm -rf ANALYSIS ANALYSISalice AOD ESD STEERBase PWG4PartCorr
+
+All of the files at /afs/cern.ch/user/k/kread/public/all/v416 need to
+be copied to your local workarea.  You should only have the (provided)
+PAR file versions (not untarred versions) of the AliRoot
+subdirectories present in your workarea.
+
+Modify these lines in anaElectron.C to look like this, replacing
+"kread" with your lxplus.cern.ch username:
+    //char* myproofname = "alicecaf";
+    char* myproofname = "kread@localhost";
+
+Your valid public and private keys need to be properly located in
+$HOME/.globus.
+
+ssh -L 1093:alicecaf.cern.ch:1093 -fN <username>@lxplus.cern.ch
+bash
+alien-token-init
+
+enter GRID password
+source /tmp/gclient_env_$UID
+export alien_CLOSE_SE="ALICE::CNAF::SE"
+export XrdSecGSISRVNAMES="lxfsrd0506.cern.ch"
+
+Edit this line in anaElectron.C to point to the appropriate CAF
+dataset:
+char * kmydataset = "/COMMON/COMMON/LHC09a4_run8101X"
+
+root -b
+.L anaElectron.C
+anaElectron(2,"ConfigAnalysisElectron")
+.q
+
+For instructions concerning how to stage data files to CAF and how
+to inspect what data is already staged, see:
+http://aliceinfo.cern.ch/Offline/Activities/Analysis/CAF/index.html .
+
+The macro will create PAR files in $HOME/.proof/packages.  If you have
+trouble you can look at what is there and also uncomment appropriate
+lines in anaElectron.C to ClearPackages.
+
+You can see PROOF slave log files by creating a file GetProofLogs.C with these
+lines:
+{
+ gEnv->SetValue("XSec.GSI.DelegProxy","2");
+ logs=TProof::Mgr("kread@localhost")->GetSessionLogs(0);
+ logs->Display();
+ //logs->Grep("segmentation violation");
+ logs->Save("*","logs.txt");
+}
+
+and then relaunching root and typing:
+
+root -b
+.x GetProofLogs.C
+
+
+If you do not use the provided PAR files, then you will need to add
+the following lines at the beginning of
+AliAnalysisTaskElectron::Terminate in AliAnalysisTaskElectron.cxx,
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (mgr->GetAnalysisType()==AliAnalysisManager::kProofAnalysis) return;
+
+These lines work for all modes of anaElectron.cxx. So, you can install
+a revised version of AliAnalysisTaskElectron.cxx at $ALICE_ROOT/PWG4/PartCorr .
+
+---------------------------------------------------------------------
+
+GRID usage:
+
+Copy all of the files at /afs/cern.ch/user/k/kread/public/all/v416 to your
+local workarea.
+
+Change all instances of username "kread" and to your username in
+anaElectron.jdl and mergeElectron.jdl.  Change email address in
+mergeElectron.jdl.  There is no need to change the jobid number inside
+mergeElectron.jdl.
+
+Need a valid local ROOT installation built with --enable-globus.
+Need a valid local alien grid shell installed.
+(If running locally and not at PDSF or lxplus, see
+/afs/cern.ch/user/k/kread/public/all/v416/VM20090529.pdf.)
+
+Your valid public and private keys need to be properly located in
+$HOME/.globus.
+
+bash
+alien-token-init
+enter GRID password
+source /tmp/gclient_env_$UID
+export alien_CLOSE_SE="ALICE::CNAF::SE"
+
+cd <local workarea>
+aliensh (to get to GRID home directory)
+
+Make the following directories (if not done already):
+cd $HOME
+mkdir bin
+mkdir work3
+mkdir work3/output
+mkdir work3/output/merge
+
+Need to upload files (including par and jdl files) to GRID.
+
+Can use:
+cp file:yourlocalfile.ext gridfile.ext (being sure to spell out the GRID
+file name.)
+Do not try:
+cp file:yourlocalfile.ext .
+
+Or, exit from aliensh and type locally:
+alien_cp localfile.ext alien://alice/cern.ch/user/<first-initial>/<username>/work3/gridfile.ext
+
+Do not try to skip the complete GRID file name like this:
+alien_cp localfile.ext alien://alice/cern.ch/user/<first-initial>/<username>/work3/
+
+anaElectron.sh needs to be uploaded to the GRID to $HOME/bin.
+anaElectron.sh sets the mode to GRID.
+
+To launch job:
+aliensh
+cd $HOME/work3
+submit anaElectron.jdl
+
+To change input data.
+aliensh
+cd $HOME/work3
+rm mycollect.xml (need to remove before uploading new version)
+Use the desired run number and pattern in the find command, perhaps using the -l switch:
+find -x mycollect /alice/sim/PDC_08b/LHC08d8/30009/0* AliESDs.root > mycollect.xml
+or
+find -x mycollect -l 200 /alice/sim/PDC_08b/LHC08d9/40010/* AliESDs.root > mycollect.xml
+exit
+alien_cp mycollect.xml alien://alice/cern.ch/user/<first-initial>/<username>/work3/mycollect.xml
+
+Then, relaunch.
+
+To monitor grid job:
+aliensh
+ps
+ps -trace <jobid>
+spy <jobid> stdout
+spy <jobid> stderr
+spy <jobid> anaElectron.log
+
+If job fails with status E or EV, then to obtain stdout and other output type:
+registerOutput <jobid>
+
+Available GRID productions monitored via MonaLisa are listed here:
+http://pcalimonitor.cern.ch/job_details.jsp
+
+The choice of $alien_CLOSE_SE is very important.  You can see the status of ALICE grid
+storage elements here:
+
+http://pcalimonitor.cern.ch/stats?page=SE/table
+
+
+---------------------------------------------------------------------
+
+Plugin usage:
+
+Copy all of the files at /afs/cern.ch/user/k/kread/public/all/v416 to your
+local workarea.
+
+Change all instances of username "kread" to your username in
+anaElectron.jdl and mergeElectron.jdl.  Change email address in
+mergeElectron.jdl.  There is no need to change the jobid number inside
+mergeElectron.jdl.
+
+Need a valid local ROOT installation built with --enable-globus.
+Need a valid local alien grid shell installed.
+(If running locally and not at PDSF or lxplus, see
+/afs/cern.ch/user/k/kread/public/all/v416/VM20090529.pdf.)
+
+Your valid public and private keys need to be properly located in
+$HOME/.globus.
+
+bash
+alien-token-init
+enter GRID password
+source /tmp/gclient_env_$UID
+export alien_CLOSE_SE="ALICE::CNAF::SE"
+
+Copy new xml file manually to AliEn (after deleting any existing copy in $HOME/work3) by typing
+alien_cp mycollect.xml alien://alice/cern.ch/user/<first-initial>/<username>/work3/mycollect.xml
+
+
+cd <local workarea>
+root -b
+.L anaElectron.C
+anaElectron(4,"ConfigAnalysisElectron")
+.q
+
+Ignore warning messages from plugin about missing myAnalysis.C and
+analysis.root which are not needed here.
+
+Files should be automatically uploaded to grid and job launched.
+aliensh is launched in order to monitor job.  Exiting aliensh after
+jobs are done will automatically invoke merge and copy merged output
+histograms to local workarea.
+
+Note that above we interactively submit the plugin job using mode=4.
+However, do not change the mode to 4 inside the file anaElectron.sh
+which is executed on each GRID compute node.  That needs to remain
+mode=3 (GRID).
+
+See GRID usage section above for more about copying to/from GRID and
+monitoring jobs.
+Make directories on the GRID (if not done already) as follows:
+
+aliensh
+cd $HOME
+mkdir bin
+mkdir work3
+mkdir work3/output
+mkdir work3/output/merge
+exit
+
+
+---------------------------------------------------------------------
+
+GRID via AliEn plugin for simpler macro
+
+An earlier, simpler, separate stand-alone example of EMCal analysis
+with the AliEn plugin is presently available at
+/afs/cern.ch/user/k/kread/public/plugin.
+
+Copy the tar file to your local workarea.
+Untar the file.
+tar -xvf plugin-example.tar
+
+Need a valid local ROOT installation built with --enable-globus.
+Need a valid local alien grid shell installed.
+(If running locally and not at PDSF or lxplus, see
+/afs/cern.ch/user/k/kread/public/all/v416/VM20090529.pdf.)
+
+Your valid public and private keys need to be properly located in
+$HOME/.globus.
+
+bash
+alien-token-init
+enter GRID password
+source /tmp/gclient_env_$UID
+export alien_CLOSE_SE="ALICE::CNAF::SE"
+
+cd <local workarea>
+root -b
+.x runGrid.C
+.q
+
+Edit CreateAlienHandler.C to select different input data available on GRID.
+See GRID section above for more about copying to/from GRID and monitoring jobs.
+1 June 2009
+
+These are the instructions for the anaElctron helper macro when used
+with AliRoot v4-17. All of the v416 files and instructions (located at
+/afs/cern.ch/user/k/kread/public/all/v416) are appropriate for use
+with AliRoot v4-17 except for the following which are different:
+
+anaElectron.C, anaElectron.jdl, and all of the *.par files.
+
+The PAR files in this subdirectory were built using ROOT v5-23-04 and
+AliRoot v4-17-03.
+
+The warnings about input and output containers being automatically created are
+normal.
+
+For remote PROOF, follow the usual instructions but set up two tunnels:
+ssh -L 1093:alicecaf.cern.ch:1093 -fN <username>@lxplus.cern.ch
+ssh -L 11094:alicecaf.cern.ch:11094 -fN <username>@lxplus.cern.ch
+
+As usual, for PROOF, if you don't use these PAR files, then you will need
+to add these lines at the beginning of AliAnalysisTaskElectron::Terminate in
+AliAnalysisTaskElectron.cxx:
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (mgr->GetAnalysisType()==AliAnalysisManager::kProofAnalysis) return;
+
+To build PWG4PartCorrDep.par:
+
+copy AliAnalysisTaskElectron.cxx and AliAnalysisTaskElectron.h to $ALICE_ROOT/PWG4/PartCorrDep
+edit $ALICE_ROOT/PWG4/PWG4PartCorrDepLinkDef.h to include AliAnalysisTaskElectron
+edit $ALICE_ROOT/PWG4/libPWG4PartCorrDep.pkg to include AliAnalysisTaskElectron
+edit $ALICE_ROOT/PWG4/CMake_libPWG4PartCorrDep.txt to include AliAnalysisTaskElectron
+
+For PLUGIN mode, we have to work around a new small bug in the AliEn
+plugin for v4-17-03.  Please, ignore the fact that an irrelevant xml
+file (30010.xml) is generated for PLUGIN mode and uploaded to the
+grid.  This satisfies some (uneccesary) requirements in the plugin for
+this release and will be fixed in the future.
+June 2009
+
+mylauncher.C is a robust file upload and grid submit helper.  Just
+edit the first few lines (after, of course, defining alien_CLOSE_SE
+and doing alien-token-init).  Adjust it as needed and you may
+prefer it to the plugin.  Even for manual grid submitters, it
+can really simplify uploading and make it more robust.
+
+The environment variable alien_CLOSE_SE needs to be defined locally,
+and be defined BEFORE you do alien-token-init.  (I will change the
+other READMEs to reflect this.) Then, and only then, you will find
+that it is listed in /tmp/gclient_env_$UID.  It needs to be there in
+order to be defined later within aliensh.  Within aliensh you can see if
+things are OK by typing echo $alien_CLOSE_SE.  And, of course, outside
+of aliensh, you can type echo $alien_CLOSE_SE.
+
+My recommendation to enforce this is either to put 
+export alien_CLOSE_SE="ALICE::CNAF::SE"
+
+in your login profile or initial setup script or to make the following local alias:
+
+alias myaliti='export alien_CLOSE_SE="ALICE::CNAF::SE";alien-token-init'
+
+For tcsh/csh, that would of course be
+
+alias myaliti 'setenv alien_CLOSE_SE "ALICE::CNAF::SE";alien-token-init'
+
+Then, by just typing "myaliti" (which means my alien token init),
+everything will be OK concerning alien_CLOSE_SE and you will never forget
+to set it.
+
+Next, people who use bash will continue to type "source
+/tmp/glient_env_$uid" after typing myaliti.
+
+However, they can to this in their login files 
+
+alias myalige='source /tmp/gclient_env_$UID'
+
+(That stands for my alien globus environment.)
+
+Then, they just always type
+
+myaliti
+myalige
+
+Tcsh/csh users never even need to type "bash" (since they can't source
+that bash file in the /tmp area) if they do the following.
+
+1. Prepare a new file in your util subdirectory and call it
+$HOME/util/gclient_env.csh.  It should be just like
+/tmp/gclient_env_$uid, except remove all the equal signs and change
+the word export to setenv everywhere. You only need to do that once.
+And you need to make two changes in the new file:
+
+a. Comment out one line and let the myaliti alias do it:
+#setenv alien_CLOSE_SE "ALICE::CNAF::SE"
+
+b. Replace the corresponding line about the volatile GBBOX_ENVFILE with this sed magic:
+
+setenv GBBOX_ENVFILE `grep ENVFILE /tmp/gclient_env_$uid | sed s/"export GBBOX_ENVFILE="/""/`
+
+
+2. Then, define:
+
+alias myalige 'source $HOME/util/gclient_env.csh'
+
+So, these users never need to type "bash", but also just always type
+
+myaliti 
+myalige
+
+
+The symmetry of myaliti, myalige is why I didn't put alien_CLOSE_SE
+in my login script.  By defining myaliti1, myaliti2, ... myaliti5
+with different, favored SE's in advance, then based on varying storage
+element health you can type
+
+myaliti3  (or 4 or 5 or whatever is best, and avoid mis-typing)
+myalige
+
+I like that.
+
+Next, note that interactive copying to your alien space does not allow
+graceful overwriting.  You need to delete any existing copy of a
+desired file before you copy a new one to the grid with that name.
+(mylauncher.C detects this and does it automatically.)
+
+
+
+--------------------------------------------------
+
+Note that mylauncher.C opens the way to arbitrary file upload,
+download, and copy, and multiple simultaneous, coordinated submits.
+That could be useful for systematic analyses involving scores or
+hundreds of jobs.
