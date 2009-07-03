@@ -1246,6 +1246,14 @@ Bool_t AliMUONTrackReconstructorK::RunSmoother(AliMUONTrack &track)
   // Save local chi2 at first cluster = last additional chi2 provided by Kalman
   previousTrackParam->SetLocalChi2(previousTrackParam->GetTrackChi2() - currentTrackParam->GetTrackChi2());
   
+  // if the track contains only 2 clusters simply copy the filtered parameters
+  if (track.GetNClusters() == 2) {
+    currentTrackParam->SetSmoothParameters(currentTrackParam->GetParameters());
+    currentTrackParam->SetSmoothCovariances(currentTrackParam->GetCovariances());
+    currentTrackParam->SetLocalChi2(currentTrackParam->GetTrackChi2());
+    return kTRUE;
+  }
+  
   while (currentTrackParam) {
     
     // Get variables
@@ -1430,7 +1438,8 @@ void AliMUONTrackReconstructorK::ImproveTrack(AliMUONTrack &track)
   AliDebug(1,"Enter ImproveTrack");
   
   Double_t localChi2, worstLocalChi2;
-  AliMUONTrackParam *trackParamAtCluster, *worstTrackParamAtCluster, *nextTrackParam;
+  AliMUONTrackParam *trackParamAtCluster, *worstTrackParamAtCluster, *nextTrackParam, *next2nextTrackParam;
+  Int_t nextChamber, next2nextChamber;
   Bool_t smoothed;
   Double_t sigmaCut2 = GetRecoParam()->GetSigmaCutForImprovement() *
                        GetRecoParam()->GetSigmaCutForImprovement();
@@ -1456,7 +1465,7 @@ void AliMUONTrackReconstructorK::ImproveTrack(AliMUONTrack &track)
     
     // Look for the cluster to remove
     worstTrackParamAtCluster = 0x0;
-    worstLocalChi2 = 0.;
+    worstLocalChi2 = -1.;
     trackParamAtCluster = (AliMUONTrackParam*)track.GetTrackParamAtCluster()->First();
     while (trackParamAtCluster) {
       
@@ -1476,12 +1485,6 @@ void AliMUONTrackReconstructorK::ImproveTrack(AliMUONTrack &track)
       trackParamAtCluster = (AliMUONTrackParam*)track.GetTrackParamAtCluster()->After(trackParamAtCluster);
     }
     
-    // Check if worst cluster found
-    if (!worstTrackParamAtCluster) {
-      AliWarning("Bad local chi2 values?");
-      break;
-    }
-    
     // Check whether the worst chi2 is under requirement or not
     if (worstLocalChi2 < 2. * sigmaCut2) { // 2 because 2 quantities in chi2
       track.SetImproved(kTRUE);
@@ -1489,7 +1492,11 @@ void AliMUONTrackReconstructorK::ImproveTrack(AliMUONTrack &track)
     }
     
     // if the worst cluster is not removable then stop improvement
-    if (!worstTrackParamAtCluster->IsRemovable()) break;
+    if (!worstTrackParamAtCluster->IsRemovable()) {
+      // restore the kalman parameters in case they have been lost
+      if (!smoothed) RetraceTrack(track,kTRUE);
+      break;
+    }
     
     // get track parameters at cluster next to the one to be removed
     nextTrackParam = (AliMUONTrackParam*) track.GetTrackParamAtCluster()->After(worstTrackParamAtCluster);
@@ -1500,9 +1507,22 @@ void AliMUONTrackReconstructorK::ImproveTrack(AliMUONTrack &track)
     // Re-calculate track parameters
     // - from the cluster immediately downstream the one suppressed
     // - or from the begining - if parameters have been re-computed using the standard method (kalman parameters have been lost)
-    //			- or if the removed cluster was the last one
-    if (smoothed && nextTrackParam) RetracePartialTrack(track,nextTrackParam);
-    else RetraceTrack(track,kTRUE);
+    //                        - or if the removed cluster was used to compute the tracking seed
+    if (smoothed && nextTrackParam) {
+      
+      nextChamber = nextTrackParam->GetClusterPtr()->GetChamberId();
+      next2nextTrackParam = nextTrackParam;
+      do {
+	
+	next2nextChamber = next2nextTrackParam->GetClusterPtr()->GetChamberId();
+	next2nextTrackParam = (AliMUONTrackParam*) track.GetTrackParamAtCluster()->After(next2nextTrackParam);
+	
+      } while (next2nextTrackParam && (next2nextChamber == nextChamber));
+      
+      if (next2nextChamber == nextChamber) RetraceTrack(track,kTRUE);
+      else RetracePartialTrack(track,nextTrackParam);
+      
+    } else RetraceTrack(track,kTRUE);
     
     // Printout for debuging
     if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructorK") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
@@ -1554,9 +1574,9 @@ Bool_t AliMUONTrackReconstructorK::RefitTrack(AliMUONTrack &track, Bool_t enable
   /// re-fit the given track
   AliDebug(1,"Enter RefitTrack");
   
-  // check validity of the track
-  if (track.GetNClusters() < 3) {
-    AliWarning("the track does not contain enough clusters --> unable to refit");
+  // check validity of the track (i.e. at least 2 chambers hit on stations 4 and 5)
+  if (!track.IsValid(0)) {
+    AliWarning("the track is not valid --> unable to refit");
     return kFALSE;
   }
   
