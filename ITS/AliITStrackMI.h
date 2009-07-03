@@ -68,8 +68,10 @@ public:
   void SetDnorm(Int_t i, Float_t d) {fDnorm[i]=d;}
   Float_t GetSigmaY(Int_t i) const {return fSigmaY[i];}
   Float_t GetSigmaZ(Int_t i) const {return fSigmaZ[i];}
+  Float_t GetSigmaYZ(Int_t i) const {return fSigmaYZ[i];}
   void SetSigmaY(Int_t i, Float_t s) {fSigmaY[i]=s;}
   void SetSigmaZ(Int_t i, Float_t s) {fSigmaZ[i]=s;}
+  void SetSigmaYZ(Int_t i, Float_t s) {fSigmaYZ[i]=s;}
   Float_t GetNDeadZone() const {return fNDeadZone;}
   void SetNDeadZone(Float_t d) {fNDeadZone=d;}
   Int_t* ClIndex() {return fClIndex;}
@@ -96,7 +98,7 @@ public:
   Float_t GetDeadZoneProbability(Int_t ilayer) const {return fDeadZoneProbability[ilayer];}
   void SetDeadZoneProbability(Int_t ilayer,Float_t d) {fDeadZoneProbability[ilayer]=d;}
 
-  Double_t GetPredictedChi2MI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz) const;
+  Double_t GetPredictedChi2MI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz, Double_t covyz=0.) const;
   Bool_t IsGoldPrimary();
 protected:
 
@@ -111,6 +113,7 @@ protected:
   Float_t fDz[12];           //dz in layer
   Float_t fSigmaY[12];       //sigma y 
   Float_t fSigmaZ[12];       //sigma z
+  Float_t fSigmaYZ[12];       //covariance of y and z
   Float_t fNy[6];              //expected size of cluster
   Float_t fNz[6];              //expected size of cluster
   Float_t fD[2];            //distance to the vertex
@@ -123,7 +126,7 @@ protected:
   Bool_t fConstrain;        //indication of the vertex constrain
   Int_t  fClIndex[6];       //cluster Index
   Bool_t fGoldV0;           //corresponding gold V0 found
-  ClassDef(AliITStrackMI,2)   //ITS reconstructed track
+  ClassDef(AliITStrackMI,3)   //ITS reconstructed track
 };
 
 #endif

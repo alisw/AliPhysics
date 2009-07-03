@@ -861,16 +861,16 @@ Bool_t AliITStrackerMI::GetTrackPointTrackingError(Int_t index,
   Float_t tgl = t->GetTgl(); // tgl about const along track
   Float_t expQ = TMath::Max(0.8*t->GetTPCsignal(),30.);
 
-  Float_t errlocalx,errlocalz;
+  Float_t errtrky,errtrkz,covyz;
   Bool_t addMisalErr=kFALSE;
-  AliITSClusterParam::GetError(l,cl,tgl,tgphi,expQ,errlocalx,errlocalz,addMisalErr);
+  AliITSClusterParam::GetError(l,cl,tgl,tgphi,expQ,errtrky,errtrkz,covyz,addMisalErr);
 
   Float_t xyz[3];
   Float_t cov[6];
   cl->GetGlobalXYZ(xyz);
   //  cl->GetGlobalCov(cov);
   Float_t pos[3] = {0.,0.,0.};
-  AliCluster tmpcl((UShort_t)cl->GetVolumeId(),pos[0],pos[1],pos[2],errlocalx*errlocalx,errlocalz*errlocalz,0);
+  AliCluster tmpcl((UShort_t)cl->GetVolumeId(),pos[0],pos[1],pos[2],errtrky*errtrky,errtrkz*errtrkz,covyz);
   tmpcl.GetGlobalCov(cov);
 
   p.SetXYZ(xyz, cov);
@@ -1428,6 +1428,7 @@ fYcs(0),
 fZcs(0),
 fNcs(0),
 fCurrentSlice(-1),
+fZmin(0),
 fZmax(0),
 fYmin(0),
 fYmax(0),
@@ -1435,7 +1436,11 @@ fI(0),
 fImax(0),
 fSkip(0),
 fAccepted(0),
-fRoad(0){
+fRoad(0),
+fMaxSigmaClY(0),
+fMaxSigmaClZ(0),
+fNMaxSigmaCl(3)
+{
   //--------------------------------------------------------------------
   //default AliITSlayer constructor
   //--------------------------------------------------------------------
@@ -1466,6 +1471,7 @@ fYcs(0),
 fZcs(0),
 fNcs(0),
 fCurrentSlice(-1),
+fZmin(0),
 fZmax(0),
 fYmin(0),
 fYmax(0),
@@ -1473,7 +1479,10 @@ fI(0),
 fImax(0),
 fSkip(0),
 fAccepted(0),
-fRoad(0) {
+fRoad(0),
+fMaxSigmaClY(0),
+fMaxSigmaClZ(0),
+fNMaxSigmaCl(3) {
   //--------------------------------------------------------------------
   //main AliITSlayer constructor
   //--------------------------------------------------------------------
@@ -1498,6 +1507,7 @@ fYcs(layer.fYcs),
 fZcs(layer.fZcs),
 fNcs(layer.fNcs),
 fCurrentSlice(layer.fCurrentSlice),
+fZmin(layer.fZmin),
 fZmax(layer.fZmax),
 fYmin(layer.fYmin),
 fYmax(layer.fYmax),
@@ -1505,7 +1515,11 @@ fI(layer.fI),
 fImax(layer.fImax),
 fSkip(layer.fSkip),
 fAccepted(layer.fAccepted),
-fRoad(layer.fRoad){
+fRoad(layer.fRoad),
+fMaxSigmaClY(layer.fMaxSigmaClY),
+fMaxSigmaClZ(layer.fMaxSigmaClZ),
+fNMaxSigmaCl(layer.fNMaxSigmaCl)
+{
   //Copy constructor
 }
 //------------------------------------------------------------------------
@@ -1582,11 +1596,20 @@ Int_t AliITStrackerMI::AliITSlayer::InsertCluster(AliITSRecPoint *cl) {
   fClusters[fN]=cl;
   fN++;
   AliITSdetector &det=GetDetector(cl->GetDetectorIndex());    
+  //AD
+  Double_t nSigmaY=fNMaxSigmaCl*TMath::Sqrt(cl->GetSigmaY2());
+  Double_t nSigmaZ=fNMaxSigmaCl*TMath::Sqrt(cl->GetSigmaZ2()); 
+  if (cl->GetY()-nSigmaY<det.GetYmin()) det.SetYmin(cl->GetY()-nSigmaY);
+  if (cl->GetY()+nSigmaY>det.GetYmax()) det.SetYmax(cl->GetY()+nSigmaY);
+  if (cl->GetZ()-nSigmaZ<det.GetZmin()) det.SetZmin(cl->GetZ()-nSigmaZ);
+  if (cl->GetZ()+nSigmaZ>det.GetZmax()) det.SetZmax(cl->GetZ()+nSigmaZ);
+  //AD		     
+  /*
   if (cl->GetY()<det.GetYmin()) det.SetYmin(cl->GetY());
   if (cl->GetY()>det.GetYmax()) det.SetYmax(cl->GetY());
   if (cl->GetZ()<det.GetZmin()) det.SetZmin(cl->GetZ());
   if (cl->GetZ()>det.GetZmax()) det.SetZmax(cl->GetZ());
-			     
+  */		     
   return 0;
 }
 //------------------------------------------------------------------------
@@ -1599,8 +1622,14 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
   Float_t *z                = new Float_t[fN];
   Int_t   * index           = new Int_t[fN];
   //
+  fMaxSigmaClY=0.; //AD
+  fMaxSigmaClZ=0.; //AD
+
   for (Int_t i=0;i<fN;i++){
     z[i] = fClusters[i]->GetZ();
+    // save largest errors in y and z for this layer
+    fMaxSigmaClY=TMath::Max(fMaxSigmaClY,TMath::Sqrt(fClusters[i]->GetSigmaY2()));
+    fMaxSigmaClZ=TMath::Max(fMaxSigmaClZ,TMath::Sqrt(fClusters[i]->GetSigmaZ2()));
   }
   TMath::Sort(fN,z,index,kFALSE);
   for (Int_t i=0;i<fN;i++){
@@ -1779,7 +1808,17 @@ SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin, Double_t ymax) {
   //--------------------------------------------------------------------
  
   Double_t circle=2*TMath::Pi()*fR;
-  fYmin = ymin; fYmax =ymax;
+  fYmin = ymin; 
+  fYmax = ymax;
+  fZmin = zmin;
+  fZmax = zmax;
+  // AD
+  // enlarge road in y by maximum cluster error on this layer (3 sigma)
+  fYmin -= fNMaxSigmaCl*fMaxSigmaClY;
+  fYmax += fNMaxSigmaCl*fMaxSigmaClY;
+  fZmin -= fNMaxSigmaCl*fMaxSigmaClZ;
+  fZmax += fNMaxSigmaCl*fMaxSigmaClZ;
+
   Float_t ymiddle = (fYmin+fYmax)*0.5;
   if (ymiddle<fYB[0]) {
     fYmin+=circle; fYmax+=circle; ymiddle+=circle;
@@ -1844,10 +1883,10 @@ SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin, Double_t ymax) {
     }
   }  
   //  
-  fI=FindClusterIndex(zmin); fZmax=zmax;
-  fImax = TMath::Min(FindClusterIndex(zmax)+1,fNcs);
-  fSkip = 0;
-  fAccepted =0;
+  fI        = FindClusterIndex(fZmin); 
+  fImax     = TMath::Min(FindClusterIndex(fZmax)+1,fNcs);
+  fSkip     = 0;
+  fAccepted = 0;
 
   return;
 }
@@ -1901,10 +1940,17 @@ const AliITSRecPoint *AliITStrackerMI::AliITSlayer::GetNextCluster(Int_t &ci,Boo
     Double_t rpi2 = 2.*fR*TMath::Pi();
     for (Int_t i=fI; i<fImax; i++) {
       Double_t y = fY[i];
+      Double_t z = fZ[i];
       if (fYmax<y) y -= rpi2;
       if (fYmin>y) y += rpi2;
       if (y<fYmin) continue;
       if (y>fYmax) continue;
+      // AD
+      // skip clusters that are in "extended" road but they 
+      // 3sigma error does not touch the original road
+      if (z+fNMaxSigmaCl*TMath::Sqrt(fClusters[i]->GetSigmaZ2())<fZmin+fNMaxSigmaCl*fMaxSigmaClZ) continue;
+      if (z-fNMaxSigmaCl*TMath::Sqrt(fClusters[i]->GetSigmaZ2())>fZmax-fNMaxSigmaCl*fMaxSigmaClZ) continue;
+      //
       if (fClusters[i]->GetQ()==0&&fSkip==2) continue;
       ci=i;
       if (!test) fI=i+1;
@@ -3621,17 +3667,17 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSR
   //
   // Compute predicted chi2
   //
-  Float_t erry,errz;
+  Float_t erry,errz,covyz;
   Float_t theta = track->GetTgl();
   Float_t phi   = track->GetSnp();
   phi = TMath::Abs(phi)*TMath::Sqrt(1./((1.-phi)*(1.+phi)));
-  AliITSClusterParam::GetError(layer,cluster,theta,phi,track->GetExpQ(),erry,errz);
+  AliITSClusterParam::GetError(layer,cluster,theta,phi,track->GetExpQ(),erry,errz,covyz);
   AliDebug(2,Form(" chi2: tr-cl   %f  %f   tr X %f cl X %f",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX()));
   // Take into account the mis-alignment (bring track to cluster plane)
   Double_t xTrOrig=track->GetX();
   if (!track->Propagate(xTrOrig+cluster->GetX())) return 1000.;
   AliDebug(2,Form(" chi2: tr-cl   %f  %f   tr X %f cl X %f",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX()));
-  Double_t chi2 = track->GetPredictedChi2MI(cluster->GetY(),cluster->GetZ(),erry,errz);
+  Double_t chi2 = track->GetPredictedChi2MI(cluster->GetY(),cluster->GetZ(),erry,errz,covyz);
   // Bring the track back to detector plane in ideal geometry
   // [mis-alignment will be accounted for in UpdateMI()]
   if (!track->Propagate(xTrOrig)) return 1000.;
@@ -3647,6 +3693,7 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSR
   track->SetNz(layer,nz);
   track->SetSigmaY(layer,erry);
   track->SetSigmaZ(layer, errz);
+  track->SetSigmaYZ(layer,covyz);
   //track->fNormQ[layer] = cluster->GetQ()/TMath::Sqrt(1+theta*theta+phi*phi);
   track->SetNormQ(layer,cluster->GetQ()/TMath::Sqrt((1.+ track->GetTgl()*track->GetTgl())/((1.-track->GetSnp())*(1.+track->GetSnp()))));
   return chi2;
@@ -3678,18 +3725,17 @@ Int_t AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,D
   AliDebug(2,Form(" xtr %f  xcl %f",track->GetX(),cl->GetX()));
 
   if (!track->Propagate(xTrOrig+cl->GetX())) return 0;
-
   
   AliCluster c(*cl);
   c.SetSigmaY2(track->GetSigmaY(layer)*track->GetSigmaY(layer));
   c.SetSigmaZ2(track->GetSigmaZ(layer)*track->GetSigmaZ(layer));
+  c.SetSigmaYZ(track->GetSigmaYZ(layer));
 
 
   Int_t updated = track->UpdateMI(&c,chi2,index);
-
   // Bring the track back to detector plane in ideal geometry
   if (!track->Propagate(xTrOrig)) return 0;
-
+ 
   if(!updated) AliDebug(2,"update failed");
   return updated;
 }

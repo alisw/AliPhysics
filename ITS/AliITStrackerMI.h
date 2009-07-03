@@ -194,6 +194,7 @@ public:
     //
     Float_t  fClusterWeight[AliITSRecoParam::fgkMaxClusterPerLayer]; // probabilistic weight of the cluster
     Int_t    fClusterTracks[4][AliITSRecoParam::fgkMaxClusterPerLayer]; //tracks registered to given cluster
+    Float_t fZmin;      //    the
     Float_t fZmax;      //    edges
     Float_t fYmin;      //   of  the
     Float_t fYmax;      //   "window"
@@ -202,6 +203,9 @@ public:
     Int_t fSkip;     // indicates possibility to skip cluster
     Int_t fAccepted;     // accept indicator 
     Double_t fRoad;      // road defined by the cluster density
+    Double_t fMaxSigmaClY; // maximum cluster error Y (to enlarge road)
+    Double_t fMaxSigmaClZ; // maximum cluster error Z (to enlarge road)
+    Double_t fNMaxSigmaCl; // number of sigma for road enlargement
   };
   AliITStrackerMI::AliITSlayer    & GetLayer(Int_t layer) const;
   AliITStrackerMI::AliITSdetector & GetDetector(Int_t layer, Int_t n) const {return GetLayer(layer).GetDetector(n); }
@@ -304,7 +308,7 @@ protected:
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
-  ClassDef(AliITStrackerMI,7)   //ITS tracker MI
+  ClassDef(AliITStrackerMI,8)   //ITS tracker MI
 };
 
 

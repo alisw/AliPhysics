@@ -29,6 +29,7 @@
 //#include <TProfile2D.h>
 #include <TVector3.h>
 #include "TMath.h"
+#include "AliTracker.h"
 #include "AliGeomManager.h"
 #include "AliITSRecPoint.h"
 #include "AliITSClusterParam.h"
@@ -112,16 +113,17 @@ void AliITSClusterParam::GetNTeor(Int_t layer,const AliITSRecPoint* /*cl*/,
 Int_t AliITSClusterParam::GetError(Int_t layer,
 				   const AliITSRecPoint *cl,
 				   Float_t tgl,Float_t tgphitr,Float_t expQ,
-				   Float_t &erry,Float_t &errz,
+				   Float_t &erry,Float_t &errz,Float_t &covyz,
 				   Bool_t addMisalErr)
 {
   //
   // Calculate cluster position error
   //
   Int_t retval=0;
+  covyz=0.;
   switch(AliITSReconstructor::GetRecoParam()->GetClusterErrorsParam()) {
   case 0: 
-    retval = GetErrorOrigRecPoint(cl,erry,errz);
+    retval = GetErrorOrigRecPoint(cl,erry,errz,covyz);
     break;
   case 1: 
     retval = GetErrorParamMI(layer,cl,tgl,tgphitr,expQ,erry,errz);
@@ -134,12 +136,21 @@ Int_t AliITSClusterParam::GetError(Int_t layer,
     break;
   }
 
+  // for SSD use the error provided by the cluster finder 
+  // if single-sided clusters are enabled
+  if(layer>=4 && AliITSReconstructor::GetRecoParam()->GetUseBadChannelsInClusterFinderSSD()) { 
+    //printf("error 1 erry errz covyz %10.7f %10.7f %15.13f\n",erry,errz,covyz);
+    retval = GetErrorOrigRecPoint(cl,erry,errz,covyz);
+    //printf("type %d erry errz covyz %10.7f %10.7f %15.13f\n",cl->GetType(),erry,errz,covyz);
+  }
+  
   if(addMisalErr) {
+    Double_t bz = (Double_t)AliTracker::GetBz();
     // add error due to misalignment (to be improved)
-    Float_t errmisalY2 = AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(layer)
-      *AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(layer);
-    Float_t errmisalZ2 = AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorZ(layer)
-      *AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorZ(layer);
+    Float_t errmisalY2 = AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(layer,bz)
+      *AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(layer,bz);
+    Float_t errmisalZ2 = AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorZ(layer,bz)
+      *AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorZ(layer,bz);
     erry = TMath::Sqrt(erry*erry+errmisalY2);
     errz = TMath::Sqrt(errz*errz+errmisalZ2);
   }
@@ -149,13 +160,14 @@ Int_t AliITSClusterParam::GetError(Int_t layer,
 }
 //--------------------------------------------------------------------------
 Int_t AliITSClusterParam::GetErrorOrigRecPoint(const AliITSRecPoint*cl,
-				   Float_t &erry,Float_t &errz)
+				   Float_t &erry,Float_t &errz,Float_t &covyz)
 {
   //
   // Calculate cluster position error (just take error from AliITSRecPoint)
   //
   erry   = TMath::Sqrt(cl->GetSigmaY2()); 
   errz   = TMath::Sqrt(cl->GetSigmaZ2()); 
+  covyz  = cl->GetSigmaYZ();
 
   return 1;
 }

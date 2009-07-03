@@ -50,7 +50,7 @@ fGoldV0(kFALSE)
   //constructor
     for(Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fClIndex[i]=-1;
     for(Int_t i=0; i<6; i++) { fNy[i]=0; fNz[i]=0; fNormQ[i]=0; fNormChi2[i]=1000; fDeadZoneProbability[i]=0;}
-    for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fChi2MIP[i]=0;}
+    for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fSigmaYZ[i]=0; fChi2MIP[i]=0;}
     fD[0]=0; fD[1]=0;
     fDnorm[0]=0; fDnorm[1]=0;
 }
@@ -72,7 +72,7 @@ fGoldV0(kFALSE) {
   // If c==kTRUE, create the ITS track out of the constrained params.
   //------------------------------------------------------------------
   for(Int_t i=0; i<6; i++) {fClIndex[i]=-1; fNy[i]=0; fNz[i]=0; fNormQ[i]=0; fNormChi2[i]=1000; fDeadZoneProbability[i]=0;}
-  for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0;fChi2MIP[i]=0;}
+  for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fSigmaYZ[i]=0; fChi2MIP[i]=0;}
   fD[0]=0; fD[1]=0;
   fDnorm[0]=0; fDnorm[1]=0;
   //if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
@@ -102,7 +102,7 @@ fGoldV0(t.fGoldV0) {
     fClIndex[i]= t.fClIndex[i]; fNy[i]=t.fNy[i]; fNz[i]=t.fNz[i]; fNormQ[i]=t.fNormQ[i]; fNormChi2[i] = t.fNormChi2[i];  fDeadZoneProbability[i]=t.fDeadZoneProbability[i];
   }
   for(Int_t i=0; i<12; i++) {fDy[i]=t.fDy[i]; fDz[i]=t.fDz[i]; 
-    fSigmaY[i]=t.fSigmaY[i]; fSigmaZ[i]=t.fSigmaZ[i];fChi2MIP[i]=t.fChi2MIP[i];}
+    fSigmaY[i]=t.fSigmaY[i]; fSigmaZ[i]=t.fSigmaZ[i]; fSigmaYZ[i]=t.fSigmaYZ[i]; fChi2MIP[i]=t.fChi2MIP[i];}
   //memcpy(fDy,t.fDy,6*sizeof(Float_t));
   //memcpy(fDz,t.fDz,6*sizeof(Float_t));
   //memcpy(fSigmaY,t.fSigmaY,6*sizeof(Float_t));
@@ -126,13 +126,13 @@ Int_t AliITStrackMI::Compare(const TObject *o) const {
 }
 
 
-Double_t AliITStrackMI::GetPredictedChi2MI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz) const
+Double_t AliITStrackMI::GetPredictedChi2MI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz, Double_t covyz) const
 {
   //-----------------------------------------------------------------
   // This function calculates a predicted chi2 increment.
   //-----------------------------------------------------------------
   Double_t p[2]={cy, cz};
-  Double_t cov[3]={cerry*cerry, 0., cerrz*cerrz};
+  Double_t cov[3]={cerry*cerry, covyz, cerrz*cerrz};
   return AliExternalTrackParam::GetPredictedChi2(p,cov);
 }
 
@@ -147,6 +147,8 @@ Bool_t AliITStrackMI::UpdateMI(const AliCluster *c, Double_t chi2, Int_t index) 
   fDz[layer] = dz;
   fSigmaY[layer] = TMath::Sqrt(c->GetSigmaY2()+GetSigmaY2());
   fSigmaZ[layer] = TMath::Sqrt(c->GetSigmaZ2()+GetSigmaZ2());
+  fSigmaYZ[layer] = c->GetSigmaYZ()+GetSigmaZY();
+
 
   return Update(c,chi2,index);
 }

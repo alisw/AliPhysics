@@ -244,7 +244,7 @@ Bool_t AliITStrackV2::Update(const AliCluster* c, Double_t chi2, Int_t index)
   //This function updates track parameters
   //------------------------------------------------------------------
   Double_t p[2]={c->GetY(), c->GetZ()};
-  Double_t cov[3]={c->GetSigmaY2(), 0., c->GetSigmaZ2()};
+  Double_t cov[3]={c->GetSigmaY2(), c->GetSigmaYZ(), c->GetSigmaZ2()};
 
   if (!AliExternalTrackParam::Update(p,cov)) return kFALSE;
 
@@ -279,8 +279,8 @@ Bool_t AliITStrackV2::Invariant() const {
   // take into account the misalignment error
   Float_t maxMisalErrY2=0,maxMisalErrZ2=0;
   for (Int_t lay=0; lay<AliITSgeomTGeo::kNLayers; lay++) {
-    maxMisalErrY2 = TMath::Max(maxMisalErrY2,AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(lay));
-    maxMisalErrZ2 = TMath::Max(maxMisalErrZ2,AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorZ(lay));
+    maxMisalErrY2 = TMath::Max(maxMisalErrY2,AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(lay,GetBz()));
+    maxMisalErrZ2 = TMath::Max(maxMisalErrZ2,AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorZ(lay,GetBz()));
   }
   maxMisalErrY2 *= maxMisalErrY2;
   maxMisalErrZ2 *= maxMisalErrZ2;

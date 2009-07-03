@@ -30,15 +30,22 @@ class AliITSClusterParam : public TObject {
 		       Float_t &ny,Float_t &nz);
   static Int_t GetError(Int_t layer,const AliITSRecPoint*cl,
 			Float_t tgl,Float_t tgphitr,Float_t expQ,
-			Float_t &erry,Float_t &errz,
+			Float_t &erry,Float_t &errz,Float_t &covyz,
 			Bool_t addMisalErr=kTRUE);
+  static Int_t GetError(Int_t layer,const AliITSRecPoint*cl,
+			Float_t tgl,Float_t tgphitr,Float_t expQ,
+			Float_t &erry,Float_t &errz,
+			Bool_t addMisalErr=kTRUE) {
+                                  Float_t covyz;
+    return GetError(layer,cl,tgl,tgphitr,expQ,erry,errz,covyz,addMisalErr);
+  }
 
   //void FitData(TTree * tree);
   //
  protected:
   static AliITSClusterParam*   fgInstance; //! Instance of this class (singleton implementation)
   static Int_t GetErrorOrigRecPoint(const AliITSRecPoint*cl,
-				    Float_t &erry,Float_t &errz);
+				    Float_t &erry,Float_t &errz,Float_t &covyz);
   static Int_t GetErrorParamMI(Int_t layer,const AliITSRecPoint*cl,
 			       Float_t tgl,Float_t tgphitr,Float_t expQ,
 			       Float_t &erry,Float_t &errz);
