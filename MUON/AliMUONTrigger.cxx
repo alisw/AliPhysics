@@ -67,14 +67,14 @@ void AliMUONTrigger::CreateInputs()
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
    
-   fInputs.AddLast( new AliTriggerInput( "MUON_Single_LPt_L0", "MUONTRG",  0 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_Single_HPt_L0", "MUONTRG", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "0MSL", "MUONTRG",  0 ) );
+   fInputs.AddLast( new AliTriggerInput( "0MSH", "MUONTRG", 0 ) );
 
-   fInputs.AddLast( new AliTriggerInput( "MUON_Unlike_LPt_L0", "MUONTRG",  0 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_Unlike_HPt_L0", "MUONTRG", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "0MUL", "MUONTRG",  0 ) );
+   fInputs.AddLast( new AliTriggerInput( "0MUH", "MUONTRG", 0 ) );
 
-   fInputs.AddLast( new AliTriggerInput( "MUON_Like_LPt_L0", "MUONTRG",  0 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_Like_HPt_L0", "MUONTRG", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "0MLL", "MUONTRG",  0 ) );
+   fInputs.AddLast( new AliTriggerInput( "0MLH", "MUONTRG", 0 ) );
 }
 
 //----------------------------------------------------------------------
@@ -123,14 +123,14 @@ void AliMUONTrigger::Trigger()
    else
    {
      // set CTP
-     if (globalTrigger->SingleLpt())      SetInput("MUON_Single_LPt_L0");
-     if (globalTrigger->SingleHpt())      SetInput("MUON_Single_HPt_L0");
+     if (globalTrigger->SingleLpt())      SetInput("0MSL");
+     if (globalTrigger->SingleHpt())      SetInput("0MSH");
      
-     if (globalTrigger->PairUnlikeLpt())  SetInput("MUON_Unlike_LPt_L0");
-     if (globalTrigger->PairUnlikeHpt())  SetInput("MUON_Unlike_HPt_L0");
+     if (globalTrigger->PairUnlikeLpt())  SetInput("0MUL");
+     if (globalTrigger->PairUnlikeHpt())  SetInput("0MUH");
      
-     if (globalTrigger->PairLikeLpt())    SetInput("MUON_Like_LPt_L0");
-     if (globalTrigger->PairLikeHpt())    SetInput("MUON_Like_HPt_L0");
+     if (globalTrigger->PairLikeLpt())    SetInput("0MLL");
+     if (globalTrigger->PairLikeHpt())    SetInput("0MLH");
    }
    muonLoader->UnloadDigits();
    fTriggerStore->Clear();
