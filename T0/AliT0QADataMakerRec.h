@@ -49,9 +49,10 @@ private:
   Int_t fnEvent; 
   Int_t feffC[24]; 
   Int_t feffA[24]; 
+  Int_t feffqtc[24]; 
 
 
-  ClassDef(AliT0QADataMakerRec,3)  // description 
+  ClassDef(AliT0QADataMakerRec,4)  // description 
 
 };
 
