@@ -343,10 +343,13 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fHistList = new TList();
  fDiffFlowList = new TList(); 
  fDiffFlowList->SetName("DifferentialFlow"); 
+ fDiffFlowList->SetOwner(kTRUE);
  fWeightsList = new TList();
  fWeightsList->SetName("Weights");
+ fWeightsList->SetOwner(kTRUE); 
  fResultsList = new TList();
  fResultsList->SetName("Results");
+ fResultsList->SetOwner(kTRUE); 
   
  fnBinsPt = AliFlowCommonConstants::GetNbinsPt();
  fPtMin   = AliFlowCommonConstants::GetPtMin();	     
@@ -6140,6 +6143,7 @@ void AliFlowAnalysisWithQCumulants::WriteHistograms(TString outputFileName)
  TFile *output = new TFile(outputFileName.Data(),"RECREATE");
  //output->WriteObject(fHistList, "cobjQC","SingleKey");
  fHistList->SetName("cobjQC");
+ fHistList->SetOwner(kTRUE);
  fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
  delete output;
 }
