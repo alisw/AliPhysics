@@ -657,22 +657,38 @@ int AliHLTOUT::SelectDataBlock()
   return iResult;
 }
 
-int AliHLTOUT::SelectDataBlocks(const AliHLTOUTHandlerListEntry* pHandlerDesc)
+int AliHLTOUT::SelectDataBlocks(const AliHLTOUTHandlerListEntry* pHandlerEntry)
 {
   // see header file for class documentation
   int iResult=0;
-  if (!pHandlerDesc) return 0;
+  if (!pHandlerEntry) return 0;
 
+  AliHLTModuleAgent* pAgent=*pHandlerEntry;
+  AliHLTLogging log;
+  log.Logging(kHLTLogDebug, "AliHLTOUT::SelectDataBlocks", "HLTOUT handling", "selecting blocks for handler %s", pAgent->GetModuleId());
   AliHLTOUTBlockDescriptorVector::iterator element;
   for (AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
        block!=fBlockDescList.end();
        block++) {
-    if (block->GetHandlerDesc()==*pHandlerDesc && pHandlerDesc->HasIndex(block->GetIndex()))
+    if (block->GetHandlerDesc()==*pHandlerEntry && pHandlerEntry->HasIndex(block->GetIndex())) {
       block->Select(true);
-    else
+      log.Logging(kHLTLogDebug, "AliHLTOUT::SelectDataBlocks", "HLTOUT handling", "   select block %s", AliHLTComponent::DataType2Text(*block).c_str());
+    } else {
+      log.Logging(kHLTLogDebug, "AliHLTOUT::SelectDataBlocks", "HLTOUT handling", "   skip block %s", AliHLTComponent::DataType2Text(*block).c_str());
       block->Select(false);
+    }
   }
   EnableBlockSelection();
+
+  // Matthias 2009-07-03 bugfix: the fCurrent position was not reset at that
+  // place. Also I think the data type and specification must be set in order
+  // to make SelectFirst/NextDataBlock working on the selected collection
+  // of data blocks
+  AliHLTModuleAgent::AliHLTOUTHandlerDesc pHandlerDesc=*pHandlerEntry; 
+  fSearchDataType=pHandlerDesc;
+  fSearchSpecification=kAliHLTVoidDataSpec;
+  fSearchHandlerType=pHandlerDesc;
+  fCurrent=0;
   
   return iResult;
 }

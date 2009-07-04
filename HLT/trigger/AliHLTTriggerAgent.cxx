@@ -231,6 +231,7 @@ int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::ProcessData(AliHLTOUT* pDa
 {
   // see header file for class documentation
   if (!pData) return -EINVAL;
+  pData->SelectFirstDataBlock();
   AliHLTComponentDataType dt=kAliHLTVoidDataType;
   AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
   int iResult=pData->GetDataBlockDescription(dt, spec);
@@ -239,6 +240,7 @@ int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::ProcessData(AliHLTOUT* pDa
     if (pObject) {
       AliHLTTriggerDecision* pDecission=dynamic_cast<AliHLTTriggerDecision*>(pObject);
       if (pDecission) {
+	//pDecision->Print();
 	if (!fESD) {
 	  // create the ESD container, but without std content
 	  fESD = new AliESDEvent;
@@ -274,7 +276,12 @@ int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::ProcessData(AliHLTOUT* pDa
       iResult=-ENODATA;
     }
   }
-  if (iResult>=0) return fSize;
+  if (iResult>=0) {
+    if (pData->SelectNextDataBlock()>=0) {
+      HLTWarning("current implementation of trigger decision handler can only handle one block");
+    }
+    return fSize;
+  }
   fSize=0;
   return iResult;
 }

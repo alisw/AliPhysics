@@ -652,11 +652,14 @@ int AliHLTEsdManagerImplementation::Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) 
     if(!pSrcObject->InheritsFrom("TCollection")){
       // simple objects
       if(pSrcObject->InheritsFrom("AliHLTTriggerDecision")){
+	//pSrcObject->Print();
+	// Matthias 2009-07-3: there is a problem with the additional object
+	// in the ESD when the tree is filled
 	TObject* pTgtObject=pTgt->GetList()->FindObject(name);
 	if (pTgtObject) {
-	  pSrcObject->Copy(*pTgtObject);
+	  //pSrcObject->Copy(*pTgtObject);
 	} else {
-	  pTgt->AddObject(pSrcObject->Clone());
+	  //pTgt->AddObject(pSrcObject->Clone());
 	}
       } else {
 	// TODO: implement the handling of other objects, some kind of mapping
