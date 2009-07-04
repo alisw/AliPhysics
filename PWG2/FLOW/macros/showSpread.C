@@ -1,11 +1,9 @@
 enum libModes {mLocal,mLocalSource};
 
-void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
+void showSpread(TString type="", Int_t mode=mLocal)
 {
  // type:  type of analysis can be ESD, AOD, MC, ESDMC0, ESDMC1
  //        (if type="" output files are from MC simulation (default))
- // nRuns: specify here from how many small statistics output .root files          
- //        flow estimates will be shown (if nRuns = -1 all of them will be shown)
  // mode:  if mode=mLocal analyze data on your computer using aliroot
  //        if mode=mLocalSource analyze data on your computer using root + source files
  
@@ -23,7 +21,8 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  Int_t nDirs = dirList->GetEntries();
  gSystem->cd(execDir);
  
- Int_t countDirectories = 0;
+ Int_t countDirectories = 0; // count all directories except the ones with merged results
+ Int_t countMergedSubsets = 0; // count only directories with merged results (name is subset*)
  if(dirList)
  {
   for(Int_t i=0;i<nDirs;i++)
@@ -32,10 +31,19 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
       !(strcmp((dirList->At(i))->GetName(),".") == 0 ) &&  
       !(strcmp((dirList->At(i))->GetName(),"..") == 0 )) 
    {
-    countDirectories++;
+    TSystemFile *presentFile = (TSystemFile*)dirList->At(i);
+    TString presentFileName(gSystem->pwd());
+    (presentFileName+="/")+=presentFile->GetName(); 
+    if(presentFileName.Contains("subset"))
+    {
+     countMergedSubsets++;
+    } else 
+      {
+       countDirectories++;
+      } 
    } 
-  }
- }   
+  } // end of for(Int_t i=0;i<nDirs;i++)
+ } // end of if(dirList)  
  
  // assigning bin numbers to methods:
  Int_t binMCEP = 1; 
@@ -53,377 +61,790 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  Int_t binLYZ1PROD = 13;
  Int_t binLYZEP = 14;
  
- // one subdirectory gives one estimate for each method: 
+ // option A: one subdirectory gives one estimate for each method (merged subsets ignored): 
  const Int_t nEstimates = countDirectories;
  
- // arrays to store estimates and errors of each method from different small statistics runs:
- // MCEP:
- Double_t mcepValueNONAME[nEstimates] = {0.}; 
- Double_t mcepErrorNONAME[nEstimates] = {0.}; 
- Double_t mcepMaxValueNONAME = 0.; // to be improved      
- Double_t mcepMinValueNONAME = 1000.; // to be improved
- 
- // SP:
- Double_t spValueNONAME[nEstimates] = {0.}; 
- Double_t spErrorNONAME[nEstimates] = {0.}; 
- Double_t spMaxValueNONAME = 0.; // to be improved      
- Double_t spMinValueNONAME = 1000.; // to be improved
- 
- // GFC{2}:
- Double_t gfc2ValueNONAME[nEstimates] = {0.}; 
- Double_t gfc2ErrorNONAME[nEstimates] = {0.}; 
- Double_t gfc2MaxValueNONAME = 0.; // to be improved      
- Double_t gfc2MinValueNONAME = 1000.; // to be improved
- 
- // GFC{4}:
- Double_t gfc4ValueNONAME[nEstimates] = {0.}; 
- Double_t gfc4ErrorNONAME[nEstimates] = {0.}; 
- Double_t gfc4MaxValueNONAME = 0.; // to be improved      
- Double_t gfc4MinValueNONAME = 1000.; // to be improved
-    
- // GFC{6}:
- Double_t gfc6ValueNONAME[nEstimates] = {0.}; 
- Double_t gfc6ErrorNONAME[nEstimates] = {0.}; 
- Double_t gfc6MaxValueNONAME = 0.; // to be improved      
- Double_t gfc6MinValueNONAME = 1000.; // to be improved
+ // option B: one merged subset give one estimate for each method
+ const Int_t nSubsets = countMergedSubsets;
 
- // GFC{8}:
- Double_t gfc8ValueNONAME[nEstimates] = {0.}; 
- Double_t gfc8ErrorNONAME[nEstimates] = {0.}; 
- Double_t gfc8MaxValueNONAME = 0.; // to be improved      
- Double_t gfc8MinValueNONAME = 1000.; // to be improved
- 
- // QC{2}:
- Double_t qc2ValueNONAME[nEstimates] = {0.}; 
- Double_t qc2ErrorNONAME[nEstimates] = {0.}; 
- Double_t qc2MaxValueNONAME = 0.; // to be improved      
- Double_t qc2MinValueNONAME = 1000.; // to be improved
- 
- // QC{4}:
- Double_t qc4ValueNONAME[nEstimates] = {0.}; 
- Double_t qc4ErrorNONAME[nEstimates] = {0.}; 
- Double_t qc4MaxValueNONAME = 0.; // to be improved      
- Double_t qc4MinValueNONAME = 1000.; // to be improved
-    
- // QC{6}:
- Double_t qc6ValueNONAME[nEstimates] = {0.}; 
- Double_t qc6ErrorNONAME[nEstimates] = {0.}; 
- Double_t qc6MaxValueNONAME = 0.; // to be improved      
- Double_t qc6MinValueNONAME = 1000.; // to be improved
-
- // QC{8}:
- Double_t qc8ValueNONAME[nEstimates] = {0.}; 
- Double_t qc8ErrorNONAME[nEstimates] = {0.}; 
- Double_t qc8MaxValueNONAME = 0.; // to be improved      
- Double_t qc8MinValueNONAME = 1000.; // to be improved
- 
- // FQD:
- Double_t fqdValueNONAME[nEstimates] = {0.}; 
- Double_t fqdErrorNONAME[nEstimates] = {0.}; 
- Double_t fqdMaxValueNONAME = 0.; // to be improved      
- Double_t fqdMinValueNONAME = 1000.; // to be improved
-       
- // LYZ1SUM:
- Double_t lyz1sumValueNONAME[nEstimates] = {0.}; 
- Double_t lyz1sumErrorNONAME[nEstimates] = {0.}; 
- Double_t lyz1sumMaxValueNONAME = 0.; // to be improved      
- Double_t lyz1sumMinValueNONAME = 1000.; // to be improved
- 
- // LYZ1PROD:
- Double_t lyz1prodValueNONAME[nEstimates] = {0.}; 
- Double_t lyz1prodErrorNONAME[nEstimates] = {0.}; 
- Double_t lyz1prodMaxValueNONAME = 0.; // to be improved      
- Double_t lyz1prodMinValueNONAME = 1000.; // to be improved
-             
- // LYZEP:
- Double_t lyzepValueNONAME[nEstimates] = {0.}; 
- Double_t lyzepErrorNONAME[nEstimates] = {0.}; 
- Double_t lyzepMaxValueNONAME = 0.; // to be improved      
- Double_t lyzepMinValueNONAME = 1000.; // to be improved        
-             
- Int_t counter = 0;
-  
- for(Int_t iDir=0;iDir<nDirs;++iDir)
+ if(nSubsets == 0)
  {
-  TSystemFile* presentDir = (TSystemFile*)dirList->At(iDir);
-  if(!presentDir || !presentDir->IsDirectory() || strcmp(presentDir->GetName(), ".") == 0 || 
+  // arrays to store estimates and errors of each method from different small statistics runs:
+  // MCEP:
+  Double_t mcepValueNONAME[nEstimates] = {0.}; 
+  Double_t mcepErrorNONAME[nEstimates] = {0.}; 
+  Double_t mcepMaxValueNONAME = 0.; // to be improved      
+  Double_t mcepMinValueNONAME = 1000.; // to be improved
+ 
+  // SP:
+  Double_t spValueNONAME[nEstimates] = {0.}; 
+  Double_t spErrorNONAME[nEstimates] = {0.}; 
+  Double_t spMaxValueNONAME = 0.; // to be improved      
+  Double_t spMinValueNONAME = 1000.; // to be improved
+ 
+  // GFC{2}:
+  Double_t gfc2ValueNONAME[nEstimates] = {0.}; 
+  Double_t gfc2ErrorNONAME[nEstimates] = {0.}; 
+  Double_t gfc2MaxValueNONAME = 0.; // to be improved      
+  Double_t gfc2MinValueNONAME = 1000.; // to be improved
+ 
+  // GFC{4}:
+  Double_t gfc4ValueNONAME[nEstimates] = {0.}; 
+  Double_t gfc4ErrorNONAME[nEstimates] = {0.}; 
+  Double_t gfc4MaxValueNONAME = 0.; // to be improved      
+  Double_t gfc4MinValueNONAME = 1000.; // to be improved
+    
+  // GFC{6}:
+  Double_t gfc6ValueNONAME[nEstimates] = {0.}; 
+  Double_t gfc6ErrorNONAME[nEstimates] = {0.}; 
+  Double_t gfc6MaxValueNONAME = 0.; // to be improved      
+  Double_t gfc6MinValueNONAME = 1000.; // to be improved
+ 
+  // GFC{8}:
+  Double_t gfc8ValueNONAME[nEstimates] = {0.}; 
+  Double_t gfc8ErrorNONAME[nEstimates] = {0.}; 
+  Double_t gfc8MaxValueNONAME = 0.; // to be improved      
+  Double_t gfc8MinValueNONAME = 1000.; // to be improved
+ 
+  // QC{2}:
+  Double_t qc2ValueNONAME[nEstimates] = {0.}; 
+  Double_t qc2ErrorNONAME[nEstimates] = {0.}; 
+  Double_t qc2MaxValueNONAME = 0.; // to be improved      
+  Double_t qc2MinValueNONAME = 1000.; // to be improved
+ 
+  // QC{4}:
+  Double_t qc4ValueNONAME[nEstimates] = {0.}; 
+  Double_t qc4ErrorNONAME[nEstimates] = {0.}; 
+  Double_t qc4MaxValueNONAME = 0.; // to be improved      
+  Double_t qc4MinValueNONAME = 1000.; // to be improved
+    
+  // QC{6}:
+  Double_t qc6ValueNONAME[nEstimates] = {0.}; 
+  Double_t qc6ErrorNONAME[nEstimates] = {0.}; 
+  Double_t qc6MaxValueNONAME = 0.; // to be improved      
+  Double_t qc6MinValueNONAME = 1000.; // to be improved
+
+  // QC{8}:
+  Double_t qc8ValueNONAME[nEstimates] = {0.}; 
+  Double_t qc8ErrorNONAME[nEstimates] = {0.}; 
+  Double_t qc8MaxValueNONAME = 0.; // to be improved      
+  Double_t qc8MinValueNONAME = 1000.; // to be improved
+ 
+  // FQD:
+  Double_t fqdValueNONAME[nEstimates] = {0.}; 
+  Double_t fqdErrorNONAME[nEstimates] = {0.}; 
+  Double_t fqdMaxValueNONAME = 0.; // to be improved      
+  Double_t fqdMinValueNONAME = 1000.; // to be improved
+       
+  // LYZ1SUM:
+  Double_t lyz1sumValueNONAME[nEstimates] = {0.}; 
+  Double_t lyz1sumErrorNONAME[nEstimates] = {0.}; 
+  Double_t lyz1sumMaxValueNONAME = 0.; // to be improved      
+  Double_t lyz1sumMinValueNONAME = 1000.; // to be improved
+ 
+  // LYZ1PROD:
+  Double_t lyz1prodValueNONAME[nEstimates] = {0.}; 
+  Double_t lyz1prodErrorNONAME[nEstimates] = {0.}; 
+  Double_t lyz1prodMaxValueNONAME = 0.; // to be improved      
+  Double_t lyz1prodMinValueNONAME = 1000.; // to be improved
+             
+  // LYZEP:
+  Double_t lyzepValueNONAME[nEstimates] = {0.}; 
+  Double_t lyzepErrorNONAME[nEstimates] = {0.}; 
+  Double_t lyzepMaxValueNONAME = 0.; // to be improved      
+  Double_t lyzepMinValueNONAME = 1000.; // to be improved        
+             
+  Int_t countFilesMCEP = 0;
+  Int_t countFilesSP = 0;
+  Int_t countFilesGFC = 0;
+  Int_t countFilesQC = 0;
+  Int_t countFilesFQD = 0;
+  Int_t countFilesLYZ1SUM = 0;
+  Int_t countFilesLYZ1PROD = 0;
+  Int_t countFilesLYZEP = 0;
+  
+  for(Int_t iDir=0;iDir<nDirs;++iDir)
+  { 
+   TSystemFile* presentDir = (TSystemFile*)dirList->At(iDir);
+   if(!presentDir || !presentDir->IsDirectory() || strcmp(presentDir->GetName(), ".") == 0 || 
      strcmp(presentDir->GetName(), "..") == 0) continue; 
+                                     
+   TString presentDirName(gSystem->pwd()); 
+   presentDirName += "/";
+   presentDirName += presentDir->GetName();
+   presentDirName += "/";
+    
+   // accessing the small statistics output .root files for each method:
+   // MCEP:     
+   TString fileNameMCEP = presentDirName;   
+   fileNameMCEP+="outputMCEPanalysis";
+   (fileNameMCEP+=type.Data())+=".root";
+   TFile *fileMCEP = TFile::Open(fileNameMCEP.Data(), "READ");      
+   if(fileMCEP) 
+   {
+    TList *listMCEP = NULL;
+    AliFlowCommonHistResults *mcepCommonHistRes = NULL; 
+    fileMCEP->GetObject("cobjMCEP",listMCEP); 
+    fileMCEP->Close();
+    if(listMCEP) 
+    {
+     mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listMCEP->FindObject("AliFlowCommonHistResultsMCEP")); 
+     if(mcepCommonHistRes && mcepCommonHistRes->GetHistIntFlow())
+     {
+      mcepValueNONAME[countFilesMCEP] = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      mcepErrorNONAME[countFilesMCEP] = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(mcepValueNONAME[countFilesMCEP]>=0.) // to be improved 
+      {
+       if(mcepMaxValueNONAME < mcepValueNONAME[countFilesMCEP]) mcepMaxValueNONAME = mcepValueNONAME[countFilesMCEP]; 
+       if(mcepMinValueNONAME > mcepValueNONAME[countFilesMCEP]) mcepMinValueNONAME = mcepValueNONAME[countFilesMCEP]; 
+      } 
+     }
+     countFilesMCEP++;
+    } // end of if(listMCEP)
+   } // end of if(fileMCEP) 
   
-  if(!(nRuns == -1))
-  {                
-   if (counter >= nRuns) break;       
-  }
-                                            
-  TString presentDirName(gSystem->pwd()); 
-  presentDirName += "/";
-  presentDirName += presentDir->GetName();
-  presentDirName += "/";
+   // SP:     
+   TString fileNameSP = presentDirName;   
+   fileNameSP+="outputSPanalysis";
+   (fileNameSP+=type.Data())+=".root";
+   TFile *fileSP = TFile::Open(fileNameSP.Data(), "READ");      
+   if(fileSP) 
+   {
+    TList *listSP = NULL;
+    AliFlowCommonHistResults *spCommonHistRes = NULL; 
+    fileSP->GetObject("cobjSP",listSP); 
+    fileSP->Close();
+    if(listSP) 
+    {
+     spCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listSP->FindObject("AliFlowCommonHistResultsSP")); 
+     if(spCommonHistRes && spCommonHistRes->GetHistIntFlow())
+     {
+      spValueNONAME[countFilesSP] = (spCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      spErrorNONAME[countFilesSP] = (spCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(spValueNONAME[countFilesSP]>=0.) // to be improved 
+      {
+       if(spMaxValueNONAME < spValueNONAME[countFilesSP]) spMaxValueNONAME = spValueNONAME[countFilesSP]; 
+       if(spMinValueNONAME > spValueNONAME[countFilesSP]) spMinValueNONAME = spValueNONAME[countFilesSP]; 
+      } 
+     }
+     countFilesSP++;
+    } // end of if(listSP)
+   } // end of if(fileSP) 
    
-  // accessing the small statistics output .root files for each method:
-  // MCEP:     
-  TString fileNameMCEP = presentDirName;   
-  fileNameMCEP+="outputMCEPanalysis";
-  (fileNameMCEP+=type.Data())+=".root";
-  TFile *fileMCEP = TFile::Open(fileNameMCEP.Data(), "READ");      
-  if(fileMCEP) 
-  {
-   TList *listMCEP = NULL;
-   AliFlowCommonHistResults *mcepCommonHistRes = NULL; 
-   fileMCEP->GetObject("cobjMCEP",listMCEP); 
-   fileMCEP->Close();
-   if(listMCEP) 
+   // GFC:     
+   TString fileNameGFC = presentDirName;   
+   fileNameGFC+="outputGFCanalysis";
+   (fileNameGFC+=type.Data())+=".root";
+   TFile *fileGFC = TFile::Open(fileNameGFC.Data(), "READ");      
+   if(fileGFC) 
    {
-    mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listMCEP->FindObject("AliFlowCommonHistResultsMCEP")); 
-    if(mcepCommonHistRes && mcepCommonHistRes->GetHistIntFlow())
+    TList *listGFC = NULL;
+    AliFlowCommonHistResults *gfc2CommonHistRes = NULL; 
+    AliFlowCommonHistResults *gfc4CommonHistRes = NULL; 
+    AliFlowCommonHistResults *gfc6CommonHistRes = NULL; 
+    AliFlowCommonHistResults *gfc8CommonHistRes = NULL; 
+    fileGFC->GetObject("cobjGFC",listGFC); 
+    fileGFC->Close();
+    if(listGFC) 
     {
-     mcepValueNONAME[counter] = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     mcepErrorNONAME[counter] = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(mcepValueNONAME[counter]>=0.) // to be improved 
+     gfc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC"));
+     gfc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults4thOrderGFC"));
+     gfc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults6thOrderGFC"));
+     gfc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults8thOrderGFC")); 
+     if(gfc2CommonHistRes && gfc2CommonHistRes->GetHistIntFlow())
      {
-      if(mcepMaxValueNONAME < mcepValueNONAME[counter]) mcepMaxValueNONAME = mcepValueNONAME[counter]; 
-      if(mcepMinValueNONAME > mcepValueNONAME[counter]) mcepMinValueNONAME = mcepValueNONAME[counter]; 
-     } 
-    }
-   } // end of if(listMCEP)
-  } // end of if(fileMCEP) 
+      gfc2ValueNONAME[countFilesGFC] = (gfc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      gfc2ErrorNONAME[countFilesGFC] = (gfc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(gfc2ValueNONAME[countFilesGFC]>=0.) // to be improved 
+      {
+       if(gfc2MaxValueNONAME < gfc2ValueNONAME[countFilesGFC]) gfc2MaxValueNONAME = gfc2ValueNONAME[countFilesGFC]; 
+       if(gfc2MinValueNONAME > gfc2ValueNONAME[countFilesGFC]) gfc2MinValueNONAME = gfc2ValueNONAME[countFilesGFC]; 
+      } 
+     }
+     if(gfc4CommonHistRes && gfc4CommonHistRes->GetHistIntFlow())
+     {
+      gfc4ValueNONAME[countFilesGFC] = (gfc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      gfc4ErrorNONAME[countFilesGFC] = (gfc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(gfc4ValueNONAME[countFilesGFC]>=0.) // to be improved 
+      {
+       if(gfc4MaxValueNONAME < gfc4ValueNONAME[countFilesGFC]) gfc4MaxValueNONAME = gfc4ValueNONAME[countFilesGFC]; 
+       if(gfc4MinValueNONAME > gfc4ValueNONAME[countFilesGFC]) gfc4MinValueNONAME = gfc4ValueNONAME[countFilesGFC]; 
+      } 
+     }
+     if(gfc6CommonHistRes && gfc6CommonHistRes->GetHistIntFlow())
+     {
+      gfc6ValueNONAME[countFilesGFC] = (gfc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      gfc6ErrorNONAME[countFilesGFC] = (gfc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(gfc6ValueNONAME[countFilesGFC]>=0.) // to be improved 
+      {
+       if(gfc6MaxValueNONAME < gfc6ValueNONAME[countFilesGFC]) gfc6MaxValueNONAME = gfc6ValueNONAME[countFilesGFC]; 
+       if(gfc6MinValueNONAME > gfc6ValueNONAME[countFilesGFC]) gfc6MinValueNONAME = gfc6ValueNONAME[countFilesGFC]; 
+      } 
+     }
+     if(gfc8CommonHistRes && gfc8CommonHistRes->GetHistIntFlow())
+     {
+      gfc8ValueNONAME[countFilesGFC] = (gfc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      gfc8ErrorNONAME[countFilesGFC] = (gfc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(gfc8ValueNONAME[countFilesGFC]>=0.) // to be improved 
+      {
+       if(gfc8MaxValueNONAME < gfc8ValueNONAME[countFilesGFC]) gfc8MaxValueNONAME = gfc8ValueNONAME[countFilesGFC]; 
+       if(gfc8MinValueNONAME > gfc8ValueNONAME[countFilesGFC]) gfc8MinValueNONAME = gfc8ValueNONAME[countFilesGFC]; 
+      } 
+     }
+     countFilesGFC++;
+    } // end of if(listGFC)
+   } // end of if(fileGFC) 
+   
+   // QC:     
+   TString fileNameQC = presentDirName;   
+   fileNameQC+="outputQCanalysis";
+   (fileNameQC+=type.Data())+=".root";
+   TFile *fileQC = TFile::Open(fileNameQC.Data(), "READ");      
+   if(fileQC) 
+   {
+    TList *listQC = NULL;
+    AliFlowCommonHistResults *qc2CommonHistRes = NULL; 
+    AliFlowCommonHistResults *qc4CommonHistRes = NULL;     
+    AliFlowCommonHistResults *qc6CommonHistRes = NULL; 
+    AliFlowCommonHistResults *qc8CommonHistRes = NULL; 
+    fileQC->GetObject("cobjQC",listQC); 
+    fileQC->Close();
+    if(listQC) 
+    {
+     qc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults2ndOrderQC"));
+     qc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults4thOrderQC"));
+     qc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults6thOrderQC"));
+     qc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults8thOrderQC")); 
+     if(qc2CommonHistRes && qc2CommonHistRes->GetHistIntFlow())
+     {
+      qc2ValueNONAME[countFilesQC] = (qc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      qc2ErrorNONAME[countFilesQC] = (qc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(qc2ValueNONAME[countFilesQC]>=0.) // to be improved 
+      {
+       if(qc2MaxValueNONAME < qc2ValueNONAME[countFilesQC]) qc2MaxValueNONAME = qc2ValueNONAME[countFilesQC]; 
+       if(qc2MinValueNONAME > qc2ValueNONAME[countFilesQC]) qc2MinValueNONAME = qc2ValueNONAME[countFilesQC]; 
+      } 
+     }
+     if(qc4CommonHistRes && qc4CommonHistRes->GetHistIntFlow())
+     {
+      qc4ValueNONAME[countFilesQC] = (qc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      qc4ErrorNONAME[countFilesQC] = (qc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(qc4ValueNONAME[countFilesQC]>=0.) // to be improved 
+      {
+       if(qc4MaxValueNONAME < qc4ValueNONAME[countFilesQC]) qc4MaxValueNONAME = qc4ValueNONAME[countFilesQC]; 
+       if(qc4MinValueNONAME > qc4ValueNONAME[countFilesQC]) qc4MinValueNONAME = qc4ValueNONAME[countFilesQC]; 
+      } 
+     }
+     if(qc6CommonHistRes && qc6CommonHistRes->GetHistIntFlow())
+     {
+      qc6ValueNONAME[countFilesQC] = (qc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      qc6ErrorNONAME[countFilesQC] = (qc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(qc6ValueNONAME[countFilesQC]>=0.) // to be improved 
+      {
+       if(qc6MaxValueNONAME < qc6ValueNONAME[countFilesQC]) qc6MaxValueNONAME = qc6ValueNONAME[countFilesQC]; 
+       if(qc6MinValueNONAME > qc6ValueNONAME[countFilesQC]) qc6MinValueNONAME = qc6ValueNONAME[countFilesQC]; 
+      } 
+     }
+     if(qc8CommonHistRes && qc8CommonHistRes->GetHistIntFlow())
+     {
+      qc8ValueNONAME[countFilesQC] = (qc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      qc8ErrorNONAME[countFilesQC] = (qc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(qc8ValueNONAME[countFilesQC]>=0.) // to be improved 
+      {
+       if(qc8MaxValueNONAME < qc8ValueNONAME[countFilesQC]) qc8MaxValueNONAME = qc8ValueNONAME[countFilesQC]; 
+       if(qc8MinValueNONAME > qc8ValueNONAME[countFilesQC]) qc8MinValueNONAME = qc8ValueNONAME[countFilesQC]; 
+      } 
+     }
+     countFilesQC++;
+    } // end of if(listQC)
+   } // end of if(fileQC) 
   
-  // SP:     
-  TString fileNameSP = presentDirName;   
-  fileNameSP+="outputSPanalysis";
-  (fileNameSP+=type.Data())+=".root";
-  TFile *fileSP = TFile::Open(fileNameSP.Data(), "READ");      
-  if(fileSP) 
-  {
-   TList *listSP = NULL;
-   AliFlowCommonHistResults *spCommonHistRes = NULL; 
-   fileSP->GetObject("cobjSP",listSP); 
-   fileSP->Close();
-   if(listSP) 
+   // FQD:     
+   TString fileNameFQD = presentDirName;   
+   fileNameFQD+="outputFQDanalysis";
+   (fileNameFQD+=type.Data())+=".root";
+   TFile *fileFQD = TFile::Open(fileNameFQD.Data(), "READ");      
+   if(fileFQD) 
    {
-    spCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listSP->FindObject("AliFlowCommonHistResultsSP")); 
-    if(spCommonHistRes && spCommonHistRes->GetHistIntFlow())
+    TList *listFQD = NULL;
+    AliFlowCommonHistResults *fqdCommonHistRes = NULL; 
+    fileFQD->GetObject("cobjFQD",listFQD); 
+    fileFQD->Close();
+    if(listFQD) 
     {
-     spValueNONAME[counter] = (spCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     spErrorNONAME[counter] = (spCommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(spValueNONAME[counter]>=0.) // to be improved 
+     fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listFQD->FindObject("AliFlowCommonHistResultsFQD")); 
+     if(fqdCommonHistRes && fqdCommonHistRes->GetHistIntFlow())
      {
-      if(spMaxValueNONAME < spValueNONAME[counter]) spMaxValueNONAME = spValueNONAME[counter]; 
-      if(spMinValueNONAME > spValueNONAME[counter]) spMinValueNONAME = spValueNONAME[counter]; 
-     } 
-    }
-   } // end of if(listSP)
-  } // end of if(fileSP) 
+      fqdValueNONAME[countFilesFQD] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      fqdErrorNONAME[countFilesFQD] = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(fqdValueNONAME[countFilesFQD]>=0.) // to be improved 
+      {
+       if(fqdMaxValueNONAME < fqdValueNONAME[countFilesFQD]) fqdMaxValueNONAME = fqdValueNONAME[countFilesFQD]; 
+       if(fqdMinValueNONAME > fqdValueNONAME[countFilesFQD]) fqdMinValueNONAME = fqdValueNONAME[countFilesFQD]; 
+      } 
+     }
+     countFilesFQD++;
+    } // end of if(listFQD)
+   } // end of if(fileFQD)   
   
-  // GFC:     
-  TString fileNameGFC = presentDirName;   
-  fileNameGFC+="outputGFCanalysis";
-  (fileNameGFC+=type.Data())+=".root";
-  TFile *fileGFC = TFile::Open(fileNameGFC.Data(), "READ");      
-  if(fileGFC) 
-  {
-   TList *listGFC = NULL;
-   AliFlowCommonHistResults *gfc2CommonHistRes = NULL; 
-   AliFlowCommonHistResults *gfc4CommonHistRes = NULL; 
-   AliFlowCommonHistResults *gfc6CommonHistRes = NULL; 
-   AliFlowCommonHistResults *gfc8CommonHistRes = NULL; 
-   fileGFC->GetObject("cobjGFC",listGFC); 
-   fileGFC->Close();
-   if(listGFC) 
+   // LYZ1SUM:     
+   TString fileNameLYZ1SUM = presentDirName;   
+   fileNameLYZ1SUM+="outputLYZ1SUManalysis";
+   (fileNameLYZ1SUM+=type.Data())+=".root";
+   TFile *fileLYZ1SUM = TFile::Open(fileNameLYZ1SUM.Data(), "READ");      
+   if(fileLYZ1SUM) 
    {
-    gfc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC"));
-    gfc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults4thOrderGFC"));
-    gfc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults6thOrderGFC"));
-    gfc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults8thOrderGFC")); 
-    if(gfc2CommonHistRes && gfc2CommonHistRes->GetHistIntFlow())
+    TList *listLYZ1SUM = NULL;
+    AliFlowCommonHistResults *lyz1sumCommonHistRes = NULL; 
+    fileLYZ1SUM->GetObject("cobjLYZ1SUM",listLYZ1SUM); 
+    fileLYZ1SUM->Close();
+    if(listLYZ1SUM) 
     {
-     gfc2ValueNONAME[counter] = (gfc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     gfc2ErrorNONAME[counter] = (gfc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(gfc2ValueNONAME[counter]>=0.) // to be improved 
+     lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1SUM")); 
+     if(lyz1sumCommonHistRes && lyz1sumCommonHistRes->GetHistIntFlow())
      {
-      if(gfc2MaxValueNONAME < gfc2ValueNONAME[counter]) gfc2MaxValueNONAME = gfc2ValueNONAME[counter]; 
-      if(gfc2MinValueNONAME > gfc2ValueNONAME[counter]) gfc2MinValueNONAME = gfc2ValueNONAME[counter]; 
-     } 
-    }
-    if(gfc4CommonHistRes && gfc4CommonHistRes->GetHistIntFlow())
-    {
-     gfc4ValueNONAME[counter] = (gfc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     gfc4ErrorNONAME[counter] = (gfc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(gfc4ValueNONAME[counter]>=0.) // to be improved 
-     {
-      if(gfc4MaxValueNONAME < gfc4ValueNONAME[counter]) gfc4MaxValueNONAME = gfc4ValueNONAME[counter]; 
-      if(gfc4MinValueNONAME > gfc4ValueNONAME[counter]) gfc4MinValueNONAME = gfc4ValueNONAME[counter]; 
-     } 
-    }
-    if(gfc6CommonHistRes && gfc6CommonHistRes->GetHistIntFlow())
-    {
-     gfc6ValueNONAME[counter] = (gfc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     gfc6ErrorNONAME[counter] = (gfc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(gfc6ValueNONAME[counter]>=0.) // to be improved 
-     {
-      if(gfc6MaxValueNONAME < gfc6ValueNONAME[counter]) gfc6MaxValueNONAME = gfc6ValueNONAME[counter]; 
-      if(gfc6MinValueNONAME > gfc6ValueNONAME[counter]) gfc6MinValueNONAME = gfc6ValueNONAME[counter]; 
-     } 
-    }
-    if(gfc8CommonHistRes && gfc8CommonHistRes->GetHistIntFlow())
-    {
-     gfc8ValueNONAME[counter] = (gfc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     gfc8ErrorNONAME[counter] = (gfc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(gfc8ValueNONAME[counter]>=0.) // to be improved 
-     {
-      if(gfc8MaxValueNONAME < gfc8ValueNONAME[counter]) gfc8MaxValueNONAME = gfc8ValueNONAME[counter]; 
-      if(gfc8MinValueNONAME > gfc8ValueNONAME[counter]) gfc8MinValueNONAME = gfc8ValueNONAME[counter]; 
-     } 
-    }
-   } // end of if(listGFC)
-  } // end of if(fileGFC) 
+      lyz1sumValueNONAME[countFilesLYZ1SUM] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      lyz1sumErrorNONAME[countFilesLYZ1SUM] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(lyz1sumValueNONAME[countFilesLYZ1SUM]>=0.) // to be improved 
+      {
+       if(lyz1sumMaxValueNONAME < lyz1sumValueNONAME[countFilesLYZ1SUM]) lyz1sumMaxValueNONAME = lyz1sumValueNONAME[countFilesLYZ1SUM]; 
+       if(lyz1sumMinValueNONAME > lyz1sumValueNONAME[countFilesLYZ1SUM]) lyz1sumMinValueNONAME = lyz1sumValueNONAME[countFilesLYZ1SUM]; 
+      } 
+     }
+     countFilesLYZ1SUM++;
+    } // end of if(listLYZ1SUM)
+   } // end of if(fileLYZ1SUM)   
   
-  // QC:     
-  TString fileNameQC = presentDirName;   
-  fileNameQC+="outputQCanalysis";
-  (fileNameQC+=type.Data())+=".root";
-  TFile *fileQC = TFile::Open(fileNameQC.Data(), "READ");      
-  if(fileQC) 
-  {
-   TList *listQC = NULL;
-   AliFlowCommonHistResults *qc2CommonHistRes = NULL; 
-   AliFlowCommonHistResults *qc4CommonHistRes = NULL; 
-   AliFlowCommonHistResults *qc6CommonHistRes = NULL; 
-   AliFlowCommonHistResults *qc8CommonHistRes = NULL; 
-   fileQC->GetObject("cobjQC",listQC); 
-   fileQC->Close();
-   if(listQC) 
+   // LYZ1PROD:     
+   TString fileNameLYZ1PROD = presentDirName;   
+   fileNameLYZ1PROD+="outputLYZ1PRODanalysis";
+   (fileNameLYZ1PROD+=type.Data())+=".root";
+   TFile *fileLYZ1PROD = TFile::Open(fileNameLYZ1PROD.Data(), "READ");      
+   if(fileLYZ1PROD) 
    {
-    qc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults2ndOrderQC"));
-    qc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults4thOrderQC"));
-    qc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults6thOrderQC"));
-    qc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults8thOrderQC")); 
-    if(qc2CommonHistRes && qc2CommonHistRes->GetHistIntFlow())
+    TList *listLYZ1PROD = NULL;
+    AliFlowCommonHistResults *lyz1prodCommonHistRes = NULL; 
+    fileLYZ1PROD->GetObject("cobjLYZ1PROD",listLYZ1PROD); 
+    fileLYZ1PROD->Close();
+    if(listLYZ1PROD) 
     {
-     qc2ValueNONAME[counter] = (qc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     qc2ErrorNONAME[counter] = (qc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(qc2ValueNONAME[counter]>=0.) // to be improved 
+     lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1PROD")); 
+     if(lyz1prodCommonHistRes && lyz1prodCommonHistRes->GetHistIntFlow())
      {
-      if(qc2MaxValueNONAME < qc2ValueNONAME[counter]) qc2MaxValueNONAME = qc2ValueNONAME[counter]; 
-      if(qc2MinValueNONAME > qc2ValueNONAME[counter]) qc2MinValueNONAME = qc2ValueNONAME[counter]; 
-     } 
-    }
-    if(qc4CommonHistRes && qc4CommonHistRes->GetHistIntFlow())
-    {
-     qc4ValueNONAME[counter] = (qc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     qc4ErrorNONAME[counter] = (qc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(qc4ValueNONAME[counter]>=0.) // to be improved 
-     {
-      if(qc4MaxValueNONAME < qc4ValueNONAME[counter]) qc4MaxValueNONAME = qc4ValueNONAME[counter]; 
-      if(qc4MinValueNONAME > qc4ValueNONAME[counter]) qc4MinValueNONAME = qc4ValueNONAME[counter]; 
-     } 
-    }
-    if(qc6CommonHistRes && qc6CommonHistRes->GetHistIntFlow())
-    {
-     qc6ValueNONAME[counter] = (qc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     qc6ErrorNONAME[counter] = (qc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(qc6ValueNONAME[counter]>=0.) // to be improved 
-     {
-      if(qc6MaxValueNONAME < qc6ValueNONAME[counter]) qc6MaxValueNONAME = qc6ValueNONAME[counter]; 
-      if(qc6MinValueNONAME > qc6ValueNONAME[counter]) qc6MinValueNONAME = qc6ValueNONAME[counter]; 
-     } 
-    }
-    if(qc8CommonHistRes && qc8CommonHistRes->GetHistIntFlow())
-    {
-     qc8ValueNONAME[counter] = (qc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     qc8ErrorNONAME[counter] = (qc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(qc8ValueNONAME[counter]>=0.) // to be improved 
-     {
-      if(qc8MaxValueNONAME < qc8ValueNONAME[counter]) qc8MaxValueNONAME = qc8ValueNONAME[counter]; 
-      if(qc8MinValueNONAME > qc8ValueNONAME[counter]) qc8MinValueNONAME = qc8ValueNONAME[counter]; 
-     } 
-    }
-   } // end of if(listQC)
-  } // end of if(fileQC) 
+      lyz1prodValueNONAME[countFilesLYZ1PROD] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinContent(1); 
+      lyz1prodErrorNONAME[countFilesLYZ1PROD] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(lyz1prodValueNONAME[countFilesLYZ1PROD]>=0.) // to be improved 
+      {
+       if(lyz1prodMaxValueNONAME < lyz1prodValueNONAME[countFilesLYZ1PROD]) lyz1prodMaxValueNONAME = lyz1prodValueNONAME[countFilesLYZ1PROD]; 
+       if(lyz1prodMinValueNONAME > lyz1prodValueNONAME[countFilesLYZ1PROD]) lyz1prodMinValueNONAME = lyz1prodValueNONAME[countFilesLYZ1PROD]; 
+      } 
+     }
+     countFilesLYZ1PROD++;
+    } // end of if(listLYZ1PROD)
+   } // end of if(fileLYZ1PROD)   
+   
+  } // end of for(Int_t iDir=0;iDir<nDirs;++iDir)
+ } else if(nSubsets > 0)
+ {
+  // arrays to store estimates and errors of each method from merged subsets:
+  // MCEP:
+  Double_t mcepValueNONAME[nSubsets] = {0.}; 
+  Double_t mcepErrorNONAME[nSubsets] = {0.}; 
+  Double_t mcepMaxValueNONAME = 0.; // to be improved      
+  Double_t mcepMinValueNONAME = 1000.; // to be improved
  
-  // FQD:     
-  TString fileNameFQD = presentDirName;   
-  fileNameFQD+="outputFQDanalysis";
-  (fileNameFQD+=type.Data())+=".root";
-  TFile *fileFQD = TFile::Open(fileNameFQD.Data(), "READ");      
-  if(fileFQD) 
-  {
-   TList *listFQD = NULL;
-   AliFlowCommonHistResults *fqdCommonHistRes = NULL; 
-   fileFQD->GetObject("cobjFQD",listFQD); 
-   fileFQD->Close();
-   if(listFQD) 
-   {
-    fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listFQD->FindObject("AliFlowCommonHistResultsFQD")); 
-    if(fqdCommonHistRes && fqdCommonHistRes->GetHistIntFlow())
-    {
-     fqdValueNONAME[counter] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     fqdErrorNONAME[counter] = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(fqdValueNONAME[counter]>=0.) // to be improved 
-     {
-      if(fqdMaxValueNONAME < fqdValueNONAME[counter]) fqdMaxValueNONAME = fqdValueNONAME[counter]; 
-      if(fqdMinValueNONAME > fqdValueNONAME[counter]) fqdMinValueNONAME = fqdValueNONAME[counter]; 
-     } 
-    }
-   } // end of if(listFQD)
-  } // end of if(fileFQD)   
-  
-  // LYZ1SUM:     
-  TString fileNameLYZ1SUM = presentDirName;   
-  fileNameLYZ1SUM+="outputLYZ1SUManalysis";
-  (fileNameLYZ1SUM+=type.Data())+=".root";
-  TFile *fileLYZ1SUM = TFile::Open(fileNameLYZ1SUM.Data(), "READ");      
-  if(fileLYZ1SUM) 
-  {
-   TList *listLYZ1SUM = NULL;
-   AliFlowCommonHistResults *lyz1sumCommonHistRes = NULL; 
-   fileLYZ1SUM->GetObject("cobjLYZ1SUM",listLYZ1SUM); 
-   fileLYZ1SUM->Close();
-   if(listLYZ1SUM) 
-   {
-    lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1SUM")); 
-    if(lyz1sumCommonHistRes && lyz1sumCommonHistRes->GetHistIntFlow())
-    {
-     lyz1sumValueNONAME[counter] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     lyz1sumErrorNONAME[counter] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(lyz1sumValueNONAME[counter]>=0.) // to be improved 
-     {
-      if(lyz1sumMaxValueNONAME < lyz1sumValueNONAME[counter]) lyz1sumMaxValueNONAME = lyz1sumValueNONAME[counter]; 
-      if(lyz1sumMinValueNONAME > lyz1sumValueNONAME[counter]) lyz1sumMinValueNONAME = lyz1sumValueNONAME[counter]; 
-     } 
-    }
-   } // end of if(listLYZ1SUM)
-  } // end of if(fileLYZ1SUM)   
-  
-  // LYZ1PROD:     
-  TString fileNameLYZ1PROD = presentDirName;   
-  fileNameLYZ1PROD+="outputLYZ1PRODanalysis";
-  (fileNameLYZ1PROD+=type.Data())+=".root";
-  TFile *fileLYZ1PROD = TFile::Open(fileNameLYZ1PROD.Data(), "READ");      
-  if(fileLYZ1PROD) 
-  {
-   TList *listLYZ1PROD = NULL;
-   AliFlowCommonHistResults *lyz1prodCommonHistRes = NULL; 
-   fileLYZ1PROD->GetObject("cobjLYZ1PROD",listLYZ1PROD); 
-   fileLYZ1PROD->Close();
-   if(listLYZ1PROD) 
-   {
-    lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1PROD")); 
-    if(lyz1prodCommonHistRes && lyz1prodCommonHistRes->GetHistIntFlow())
-    {
-     lyz1prodValueNONAME[counter] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinContent(1);
-     lyz1prodErrorNONAME[counter] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinError(1);
-     if(lyz1prodValueNONAME[counter]>=0.) // to be improved 
-     {
-      if(lyz1prodMaxValueNONAME < lyz1prodValueNONAME[counter]) lyz1prodMaxValueNONAME = lyz1prodValueNONAME[counter]; 
-      if(lyz1prodMinValueNONAME > lyz1prodValueNONAME[counter]) lyz1prodMinValueNONAME = lyz1prodValueNONAME[counter]; 
-     } 
-    }
-   } // end of if(listLYZ1PROD)
-  } // end of if(fileLYZ1PROD)   
+  // SP:
+  Double_t spValueNONAME[nSubsets] = {0.}; 
+  Double_t spErrorNONAME[nSubsets] = {0.}; 
+  Double_t spMaxValueNONAME = 0.; // to be improved      
+  Double_t spMinValueNONAME = 1000.; // to be improved
  
-  counter++;
+  // GFC{2}:
+  Double_t gfc2ValueNONAME[nSubsets] = {0.}; 
+  Double_t gfc2ErrorNONAME[nSubsets] = {0.}; 
+  Double_t gfc2MaxValueNONAME = 0.; // to be improved      
+  Double_t gfc2MinValueNONAME = 1000.; // to be improved
+ 
+  // GFC{4}:
+  Double_t gfc4ValueNONAME[nSubsets] = {0.}; 
+  Double_t gfc4ErrorNONAME[nSubsets] = {0.}; 
+  Double_t gfc4MaxValueNONAME = 0.; // to be improved      
+  Double_t gfc4MinValueNONAME = 1000.; // to be improved
+    
+  // GFC{6}:
+  Double_t gfc6ValueNONAME[nSubsets] = {0.}; 
+  Double_t gfc6ErrorNONAME[nSubsets] = {0.}; 
+  Double_t gfc6MaxValueNONAME = 0.; // to be improved      
+  Double_t gfc6MinValueNONAME = 1000.; // to be improved
+ 
+  // GFC{8}:
+  Double_t gfc8ValueNONAME[nSubsets] = {0.}; 
+  Double_t gfc8ErrorNONAME[nSubsets] = {0.}; 
+  Double_t gfc8MaxValueNONAME = 0.; // to be improved      
+  Double_t gfc8MinValueNONAME = 1000.; // to be improved
+ 
+  // QC{2}:
+  Double_t qc2ValueNONAME[nSubsets] = {0.}; 
+  Double_t qc2ErrorNONAME[nSubsets] = {0.}; 
+  Double_t qc2MaxValueNONAME = 0.; // to be improved      
+  Double_t qc2MinValueNONAME = 1000.; // to be improved
+ 
+  // QC{4}:
+  Double_t qc4ValueNONAME[nSubsets] = {0.}; 
+  Double_t qc4ErrorNONAME[nSubsets] = {0.}; 
+  Double_t qc4MaxValueNONAME = 0.; // to be improved      
+  Double_t qc4MinValueNONAME = 1000.; // to be improved
+    
+  // QC{6}:
+  Double_t qc6ValueNONAME[nSubsets] = {0.}; 
+  Double_t qc6ErrorNONAME[nSubsets] = {0.}; 
+  Double_t qc6MaxValueNONAME = 0.; // to be improved      
+  Double_t qc6MinValueNONAME = 1000.; // to be improved
+
+  // QC{8}:
+  Double_t qc8ValueNONAME[nSubsets] = {0.}; 
+  Double_t qc8ErrorNONAME[nSubsets] = {0.}; 
+  Double_t qc8MaxValueNONAME = 0.; // to be improved      
+  Double_t qc8MinValueNONAME = 1000.; // to be improved
+ 
+  // FQD:
+  Double_t fqdValueNONAME[nSubsets] = {0.}; 
+  Double_t fqdErrorNONAME[nSubsets] = {0.}; 
+  Double_t fqdMaxValueNONAME = 0.; // to be improved      
+  Double_t fqdMinValueNONAME = 1000.; // to be improved
+       
+  // LYZ1SUM:
+  Double_t lyz1sumValueNONAME[nSubsets] = {0.}; 
+  Double_t lyz1sumErrorNONAME[nSubsets] = {0.}; 
+  Double_t lyz1sumMaxValueNONAME = 0.; // to be improved      
+  Double_t lyz1sumMinValueNONAME = 1000.; // to be improved
+ 
+  // LYZ1PROD:
+  Double_t lyz1prodValueNONAME[nSubsets] = {0.}; 
+  Double_t lyz1prodErrorNONAME[nSubsets] = {0.}; 
+  Double_t lyz1prodMaxValueNONAME = 0.; // to be improved      
+  Double_t lyz1prodMinValueNONAME = 1000.; // to be improved
+             
+  // LYZEP:
+  Double_t lyzepValueNONAME[nSubsets] = {0.}; 
+  Double_t lyzepErrorNONAME[nSubsets] = {0.}; 
+  Double_t lyzepMaxValueNONAME = 0.; // to be improved      
+  Double_t lyzepMinValueNONAME = 1000.; // to be improved        
+             
+  Int_t countFilesMCEP = 0;
+  Int_t countFilesSP = 0;
+  Int_t countFilesGFC = 0;
+  Int_t countFilesQC = 0;
+  Int_t countFilesFQD = 0;
+  Int_t countFilesLYZ1SUM = 0;
+  Int_t countFilesLYZ1PROD = 0;          
+  Int_t countFilesLYZEP = 0; 
+ 
+  for(Int_t iDir=0;iDir<nDirs;iDir++)
+  { 
+   TSystemFile* presentDir = (TSystemFile*)dirList->At(iDir);
+   if(!presentDir || !presentDir->IsDirectory() || strcmp(presentDir->GetName(), ".") == 0 || 
+     strcmp(presentDir->GetName(), "..") == 0) continue; 
+                                                         
+   TString presentDirName(gSystem->pwd()); 
+   presentDirName += "/";
+   presentDirName += presentDir->GetName();
+   presentDirName += "/";
+   
+   if(!(presentDirName.Contains("subset"))) continue;
   
- } // end of for(Int_t iDir=0;iDir<nDirs;++iDir)
+   // accessing the output *.root files from merged subsets for each method:
+   // MCEP:     
+   TString fileNameMCEP = gSystem->pwd();
+   fileNameMCEP+="/";
+   fileNameMCEP+=presentDir->GetName();
+   fileNameMCEP+="/";
+   fileNameMCEP+="outputMCEPanalysis";
+   (fileNameMCEP+=type.Data())+=".root";
+   TFile *fileMCEP = TFile::Open(fileNameMCEP.Data(), "READ");      
+   if(fileMCEP) 
+   {
+    TList *listMCEP = NULL;
+    AliFlowCommonHistResults *mcepCommonHistRes = NULL; 
+    fileMCEP->GetObject("cobjMCEP",listMCEP); 
+    fileMCEP->Close();
+    if(listMCEP) 
+    {
+     mcepCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listMCEP->FindObject("AliFlowCommonHistResultsMCEP")); 
+     if(mcepCommonHistRes && mcepCommonHistRes->GetHistIntFlow())
+     {
+      mcepValueNONAME[countFilesMCEP] = (mcepCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      mcepErrorNONAME[countFilesMCEP] = (mcepCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(mcepValueNONAME[countFilesMCEP]>=0.) // to be improved 
+      {
+       if(mcepMaxValueNONAME < mcepValueNONAME[countFilesMCEP]) mcepMaxValueNONAME = mcepValueNONAME[countFilesMCEP]; 
+       if(mcepMinValueNONAME > mcepValueNONAME[countFilesMCEP]) mcepMinValueNONAME = mcepValueNONAME[countFilesMCEP]; 
+      } 
+       countFilesMCEP++;
+     }
+    } // end of if(listMCEP)
+   } // end of if(fileMCEP) 
+  
+   // SP:     
+   TString fileNameSP = gSystem->pwd();
+   fileNameSP+="/";
+   fileNameSP+=presentDir->GetName();
+   fileNameSP+="/";
+   fileNameSP+="outputSPanalysis";
+   (fileNameSP+=type.Data())+=".root";
+   TFile *fileSP = TFile::Open(fileNameSP.Data(), "READ");      
+   if(fileSP) 
+   {
+    TList *listSP = NULL;
+    AliFlowCommonHistResults *spCommonHistRes = NULL; 
+    fileSP->GetObject("cobjSP",listSP); 
+    fileSP->Close();
+    if(listSP) 
+    {
+     spCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listSP->FindObject("AliFlowCommonHistResultsSP")); 
+     if(spCommonHistRes && spCommonHistRes->GetHistIntFlow())
+     {
+      spValueNONAME[countFilesSP] = (spCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      spErrorNONAME[countFilesSP] = (spCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(spValueNONAME[countFilesSP]>=0.) // to be improved 
+      {
+       if(spMaxValueNONAME < spValueNONAME[countFilesSP]) spMaxValueNONAME = spValueNONAME[countFilesSP]; 
+       if(spMinValueNONAME > spValueNONAME[countFilesSP]) spMinValueNONAME = spValueNONAME[countFilesSP]; 
+      } 
+      countFilesSP++;     
+     }
+    } // end of if(listSP)
+   } // end of if(fileSP) 
+   
+   // GFC:     
+   TString fileNameGFC = gSystem->pwd();
+   fileNameGFC+="/";
+   fileNameGFC+=presentDir->GetName();
+   fileNameGFC+="/";
+   fileNameGFC+="outputGFCanalysis";
+   (fileNameGFC+=type.Data())+=".root";
+   TFile *fileGFC = TFile::Open(fileNameGFC.Data(), "READ");      
+   if(fileGFC) 
+   {
+    TList *listGFC = NULL;
+    AliFlowCommonHistResults *gfc2CommonHistRes = NULL; 
+    AliFlowCommonHistResults *gfc4CommonHistRes = NULL; 
+    AliFlowCommonHistResults *gfc6CommonHistRes = NULL; 
+    AliFlowCommonHistResults *gfc8CommonHistRes = NULL; 
+    fileGFC->GetObject("cobjGFC",listGFC); 
+    fileGFC->Close();
+    if(listGFC) 
+    {
+     gfc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults2ndOrderGFC"));
+     gfc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults4thOrderGFC"));
+     gfc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults6thOrderGFC"));
+     gfc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listGFC->FindObject("AliFlowCommonHistResults8thOrderGFC")); 
+     if(gfc2CommonHistRes && gfc2CommonHistRes->GetHistIntFlow())
+     {
+      gfc2ValueNONAME[countFilesGFC] = (gfc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      gfc2ErrorNONAME[countFilesGFC] = (gfc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(gfc2ValueNONAME[countFilesGFC]>=0.) // to be improved 
+      {
+       if(gfc2MaxValueNONAME < gfc2ValueNONAME[countFilesGFC]) gfc2MaxValueNONAME = gfc2ValueNONAME[countFilesGFC]; 
+       if(gfc2MinValueNONAME > gfc2ValueNONAME[countFilesGFC]) gfc2MinValueNONAME = gfc2ValueNONAME[countFilesGFC]; 
+      } 
+     }
+     if(gfc4CommonHistRes && gfc4CommonHistRes->GetHistIntFlow())
+     {
+      gfc4ValueNONAME[countFilesGFC] = (gfc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      gfc4ErrorNONAME[countFilesGFC] = (gfc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(gfc4ValueNONAME[countFilesGFC]>=0.) // to be improved 
+      {
+       if(gfc4MaxValueNONAME < gfc4ValueNONAME[countFilesGFC]) gfc4MaxValueNONAME = gfc4ValueNONAME[countFilesGFC]; 
+       if(gfc4MinValueNONAME > gfc4ValueNONAME[countFilesGFC]) gfc4MinValueNONAME = gfc4ValueNONAME[countFilesGFC]; 
+      } 
+     }
+     if(gfc6CommonHistRes && gfc6CommonHistRes->GetHistIntFlow())
+     {
+      gfc6ValueNONAME[countFilesGFC] = (gfc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      gfc6ErrorNONAME[countFilesGFC] = (gfc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(gfc6ValueNONAME[countFilesGFC]>=0.) // to be improved 
+      {
+       if(gfc6MaxValueNONAME < gfc6ValueNONAME[countFilesGFC]) gfc6MaxValueNONAME = gfc6ValueNONAME[countFilesGFC]; 
+       if(gfc6MinValueNONAME > gfc6ValueNONAME[countFilesGFC]) gfc6MinValueNONAME = gfc6ValueNONAME[countFilesGFC]; 
+      } 
+     }
+     if(gfc8CommonHistRes && gfc8CommonHistRes->GetHistIntFlow())
+     {
+      gfc8ValueNONAME[countFilesGFC] = (gfc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      gfc8ErrorNONAME[countFilesGFC] = (gfc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(gfc8ValueNONAME[countFilesGFC]>=0.) // to be improved 
+      {
+       if(gfc8MaxValueNONAME < gfc8ValueNONAME[countFilesGFC]) gfc8MaxValueNONAME = gfc8ValueNONAME[countFilesGFC]; 
+       if(gfc8MinValueNONAME > gfc8ValueNONAME[countFilesGFC]) gfc8MinValueNONAME = gfc8ValueNONAME[countFilesGFC]; 
+      }
+      countFilesGFC++; 
+     }
+    } // end of if(listGFC)
+   } // end of if(fileGFC) 
+   
+   // QC:     
+   TString fileNameQC = gSystem->pwd();
+   fileNameQC+="/";
+   fileNameQC+=presentDir->GetName();
+   fileNameQC+="/";
+   fileNameQC+="outputQCanalysis";
+   (fileNameQC+=type.Data())+=".root";
+   TFile *fileQC = TFile::Open(fileNameQC.Data(), "READ");      
+   if(fileQC) 
+   {
+    TList *listQC = NULL;
+    AliFlowCommonHistResults *qc2CommonHistRes = NULL; 
+    AliFlowCommonHistResults *qc4CommonHistRes = NULL;     
+    AliFlowCommonHistResults *qc6CommonHistRes = NULL; 
+    AliFlowCommonHistResults *qc8CommonHistRes = NULL; 
+    fileQC->GetObject("cobjQC",listQC); 
+    fileQC->Close();
+    if(listQC) 
+    {
+     qc2CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults2ndOrderQC"));
+     qc4CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults4thOrderQC"));
+     qc6CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults6thOrderQC"));
+     qc8CommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listQC->FindObject("AliFlowCommonHistResults8thOrderQC")); 
+     if(qc2CommonHistRes && qc2CommonHistRes->GetHistIntFlow())
+     {
+      qc2ValueNONAME[countFilesQC] = (qc2CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      qc2ErrorNONAME[countFilesQC] = (qc2CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(qc2ValueNONAME[countFilesQC]>=0.) // to be improved 
+      {
+       if(qc2MaxValueNONAME < qc2ValueNONAME[countFilesQC]) qc2MaxValueNONAME = qc2ValueNONAME[countFilesQC]; 
+       if(qc2MinValueNONAME > qc2ValueNONAME[countFilesQC]) qc2MinValueNONAME = qc2ValueNONAME[countFilesQC]; 
+      } 
+     }
+     if(qc4CommonHistRes && qc4CommonHistRes->GetHistIntFlow())
+     {
+      qc4ValueNONAME[countFilesQC] = (qc4CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      qc4ErrorNONAME[countFilesQC] = (qc4CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(qc4ValueNONAME[countFilesQC]>=0.) // to be improved 
+      {
+       if(qc4MaxValueNONAME < qc4ValueNONAME[countFilesQC]) qc4MaxValueNONAME = qc4ValueNONAME[countFilesQC]; 
+       if(qc4MinValueNONAME > qc4ValueNONAME[countFilesQC]) qc4MinValueNONAME = qc4ValueNONAME[countFilesQC]; 
+      } 
+     }
+     if(qc6CommonHistRes && qc6CommonHistRes->GetHistIntFlow())
+     {
+      qc6ValueNONAME[countFilesQC] = (qc6CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      qc6ErrorNONAME[countFilesQC] = (qc6CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(qc6ValueNONAME[countFilesQC]>=0.) // to be improved 
+      {
+       if(qc6MaxValueNONAME < qc6ValueNONAME[countFilesQC]) qc6MaxValueNONAME = qc6ValueNONAME[countFilesQC]; 
+       if(qc6MinValueNONAME > qc6ValueNONAME[countFilesQC]) qc6MinValueNONAME = qc6ValueNONAME[countFilesQC]; 
+      } 
+     }
+     if(qc8CommonHistRes && qc8CommonHistRes->GetHistIntFlow())
+     {
+      qc8ValueNONAME[countFilesQC] = (qc8CommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      qc8ErrorNONAME[countFilesQC] = (qc8CommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(qc8ValueNONAME[countFilesQC]>=0.) // to be improved 
+      {
+       if(qc8MaxValueNONAME < qc8ValueNONAME[countFilesQC]) qc8MaxValueNONAME = qc8ValueNONAME[countFilesQC]; 
+       if(qc8MinValueNONAME > qc8ValueNONAME[countFilesQC]) qc8MinValueNONAME = qc8ValueNONAME[countFilesQC]; 
+      } 
+      countFilesQC++;
+     }
+    } // end of if(listQC)
+   } // end of if(fileQC) 
+  
+   // FQD:     
+   TString fileNameFQD = gSystem->pwd();
+   fileNameFQD+="/";
+   fileNameFQD+=presentDir->GetName();
+   fileNameFQD+="/";
+   fileNameFQD+="outputFQDanalysis";
+   (fileNameFQD+=type.Data())+=".root";
+   TFile *fileFQD = TFile::Open(fileNameFQD.Data(), "READ");      
+   if(fileFQD) 
+   {
+    TList *listFQD = NULL;
+    AliFlowCommonHistResults *fqdCommonHistRes = NULL; 
+    fileFQD->GetObject("cobjFQD",listFQD); 
+    fileFQD->Close();
+    if(listFQD) 
+    {
+     fqdCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listFQD->FindObject("AliFlowCommonHistResultsFQD")); 
+     if(fqdCommonHistRes && fqdCommonHistRes->GetHistIntFlow())
+     {
+      fqdValueNONAME[countFilesFQD] = (fqdCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      fqdErrorNONAME[countFilesFQD] = (fqdCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(fqdValueNONAME[countFilesFQD]>=0.) // to be improved 
+      {
+       if(fqdMaxValueNONAME < fqdValueNONAME[countFilesFQD]) fqdMaxValueNONAME = fqdValueNONAME[countFilesFQD]; 
+       if(fqdMinValueNONAME > fqdValueNONAME[countFilesFQD]) fqdMinValueNONAME = fqdValueNONAME[countFilesFQD]; 
+      } 
+      countFilesFQD++;
+     }     
+    } // end of if(listFQD)
+   } // end of if(fileFQD)   
+  
+   // LYZ1SUM:     
+   TString fileNameLYZ1SUM = gSystem->pwd();
+   fileNameLYZ1SUM+="/";
+   fileNameLYZ1SUM+=presentDir->GetName();
+   fileNameLYZ1SUM+="/";
+   fileNameLYZ1SUM+="outputLYZ1SUManalysis";
+   (fileNameLYZ1SUM+=type.Data())+=".root";
+   TFile *fileLYZ1SUM = TFile::Open(fileNameLYZ1SUM.Data(), "READ");      
+   if(fileLYZ1SUM) 
+   {
+    TList *listLYZ1SUM = NULL;
+    AliFlowCommonHistResults *lyz1sumCommonHistRes = NULL; 
+    fileLYZ1SUM->GetObject("cobjLYZ1SUM",listLYZ1SUM); 
+    fileLYZ1SUM->Close();
+    if(listLYZ1SUM) 
+    {
+     lyz1sumCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1SUM->FindObject("AliFlowCommonHistResultsLYZ1SUM")); 
+     if(lyz1sumCommonHistRes && lyz1sumCommonHistRes->GetHistIntFlow())
+     {
+      lyz1sumValueNONAME[countFilesLYZ1SUM] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinContent(1);
+      lyz1sumErrorNONAME[countFilesLYZ1SUM] = (lyz1sumCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(lyz1sumValueNONAME[countFilesLYZ1SUM]>=0.) // to be improved 
+      {
+       if(lyz1sumMaxValueNONAME < lyz1sumValueNONAME[countFilesLYZ1SUM]) lyz1sumMaxValueNONAME = lyz1sumValueNONAME[countFilesLYZ1SUM]; 
+       if(lyz1sumMinValueNONAME > lyz1sumValueNONAME[countFilesLYZ1SUM]) lyz1sumMinValueNONAME = lyz1sumValueNONAME[countFilesLYZ1SUM]; 
+      } 
+      countFilesLYZ1SUM++;
+     }
+    } // end of if(listLYZ1SUM)
+   } // end of if(fileLYZ1SUM)   
+  
+   // LYZ1PROD:     
+   TString fileNameLYZ1PROD = gSystem->pwd();
+   fileNameLYZ1PROD+="/";
+   fileNameLYZ1PROD+=presentDir->GetName();
+   fileNameLYZ1PROD+="/";
+   fileNameLYZ1PROD+="outputLYZ1PRODanalysis";
+   (fileNameLYZ1PROD+=type.Data())+=".root";
+   TFile *fileLYZ1PROD = TFile::Open(fileNameLYZ1PROD.Data(), "READ");      
+   if(fileLYZ1PROD) 
+   {
+    TList *listLYZ1PROD = NULL;
+    AliFlowCommonHistResults *lyz1prodCommonHistRes = NULL; 
+    fileLYZ1PROD->GetObject("cobjLYZ1PROD",listLYZ1PROD); 
+    fileLYZ1PROD->Close();
+    if(listLYZ1PROD) 
+    {
+     lyz1prodCommonHistRes = dynamic_cast<AliFlowCommonHistResults*> (listLYZ1PROD->FindObject("AliFlowCommonHistResultsLYZ1PROD")); 
+     if(lyz1prodCommonHistRes && lyz1prodCommonHistRes->GetHistIntFlow())
+     {
+      lyz1prodValueNONAME[countFilesLYZ1PROD] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinContent(1); 
+      lyz1prodErrorNONAME[countFilesLYZ1PROD] = (lyz1prodCommonHistRes->GetHistIntFlow())->GetBinError(1);
+      if(lyz1prodValueNONAME[countFilesLYZ1PROD]>=0.) // to be improved 
+      {
+       if(lyz1prodMaxValueNONAME < lyz1prodValueNONAME[countFilesLYZ1PROD]) lyz1prodMaxValueNONAME = lyz1prodValueNONAME[countFilesLYZ1PROD]; 
+       if(lyz1prodMinValueNONAME > lyz1prodValueNONAME[countFilesLYZ1PROD]) lyz1prodMinValueNONAME = lyz1prodValueNONAME[countFilesLYZ1PROD]; 
+      } 
+      countFilesLYZ1PROD++;
+     }
+    } // end of if(listLYZ1PROD)
+   } // end of if(fileLYZ1PROD)    
+  } // end of for(Int_t iDir=0;iDir<nDirs;++iDir)  
+ } // end of else if(nSubsets > 0)
+ 
  
  // accessing the large statistics merged output .root files for each method:
  // MCEP:
@@ -711,8 +1132,15 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  const Int_t nMethods = 14;
  
  // the number of small statistics runs:
- const Int_t nPoints = counter;
-   
+ const Int_t nPointsMCEP = countFilesMCEP;
+ const Int_t nPointsSP = countFilesSP;
+ const Int_t nPointsGFC = countFilesGFC;
+ const Int_t nPointsQC = countFilesQC;
+ const Int_t nPointsFQD = countFilesFQD;
+ const Int_t nPointsLYZ1SUM = countFilesLYZ1SUM;   
+ const Int_t nPointsLYZ1PROD = countFilesLYZ1PROD; 
+ const Int_t nPointsLYZEP = countFilesLYZEP;    
+ 
  // booking the style histogram for the integrated flow results from all methods for NONAME, RPs and POIs:
  TH1D* intFlowAll = new TH1D("intFlowAll","Integrated Flow",nMethods,0,nMethods);      
  //intFlowAll->SetLabelSize(0.036,"X");
@@ -741,38 +1169,59 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
    
  TH1D *intFlowNONAME = new TH1D(*intFlowAll); 
  
- Double_t mcepNONAME[nPoints] = {0.};  
- Double_t spNONAME[nPoints] = {0.}; 
- Double_t gfc2NONAME[nPoints] = {0.};
- Double_t gfc4NONAME[nPoints] = {0.};
- Double_t gfc6NONAME[nPoints] = {0.};
- Double_t gfc8NONAME[nPoints] = {0.};
- Double_t qc2NONAME[nPoints] = {0.};
- Double_t qc4NONAME[nPoints] = {0.};
- Double_t qc6NONAME[nPoints] = {0.};
- Double_t qc8NONAME[nPoints] = {0.};
- Double_t fqdNONAME[nPoints] = {0.}; 
- Double_t lyz1sumNONAME[nPoints] = {0.}; 
- Double_t lyz1prodNONAME[nPoints] = {0.}; 
- Double_t lyzepNONAME[nPoints] = {0.}; 
+ Double_t mcepNONAME[nPointsMCEP];  
+ Double_t spNONAME[nPointsSP]; 
+ Double_t gfc2NONAME[nPointsGFC];
+ Double_t gfc4NONAME[nPointsGFC];
+ Double_t gfc6NONAME[nPointsGFC];
+ Double_t gfc8NONAME[nPointsGFC];
+ Double_t qc2NONAME[nPointsQC];
+ Double_t qc4NONAME[nPointsQC];
+ Double_t qc6NONAME[nPointsQC];
+ Double_t qc8NONAME[nPointsQC];
+ Double_t fqdNONAME[nPointsFQD]; 
+ Double_t lyz1sumNONAME[nPointsLYZ1SUM]; 
+ Double_t lyz1prodNONAME[nPointsLYZ1PROD]; 
+ Double_t lyzepNONAME[nPointsLYZEP];
  
- for(Int_t i=0;i<nPoints;i++)
+ for(Int_t i=0;i<nPointsMCEP;i++)
  {
   mcepNONAME[i]=binMCEP-0.5;
+ } 
+ for(Int_t i=0;i<nPointsSP;i++)
+ {
   spNONAME[i]=binSP-0.5;
+ } 
+ for(Int_t i=0;i<nPointsGFC;i++)
+ {
   gfc2NONAME[i]=binGFC2-0.5;
   gfc4NONAME[i]=binGFC4-0.5;
   gfc6NONAME[i]=binGFC6-0.5;
   gfc8NONAME[i]=binGFC8-0.5;
+ } 
+ for(Int_t i=0;i<nPointsQC;i++)
+ {
   qc2NONAME[i]=binQC2-0.5;
   qc4NONAME[i]=binQC4-0.5;
   qc6NONAME[i]=binQC6-0.5;
   qc8NONAME[i]=binQC8-0.5;
+ }  
+ for(Int_t i=0;i<nPointsFQD;i++)
+ {
   fqdNONAME[i]=binFQD-0.5;
+ } 
+ for(Int_t i=0;i<nPointsLYZ1SUM;i++)
+ {
   lyz1sumNONAME[i]=binLYZ1SUM-0.5;
+ }  
+ for(Int_t i=0;i<nPointsLYZ1PROD;i++)
+ {
   lyz1prodNONAME[i]=binLYZ1PROD-0.5;
+ }  
+ for(Int_t i=0;i<nPointsLYZEP;i++)
+ {
   lyzepNONAME[i]=binLYZEP-0.5;
- }
+ }  
  
  // MCEP:
  TGraphErrors *mcepMeanNONAME = new TGraphErrors(1);    
@@ -783,10 +1232,14 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  mcepMeanNONAME->SetLineColor(kBlack);
  mcepMeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* mcepTGraphNONAME = new TGraph(nPoints, mcepNONAME, mcepValueNONAME);
- mcepTGraphNONAME->SetMarkerStyle(21);
- mcepTGraphNONAME->SetMarkerColor(kGray+1); 
- mcepTGraphNONAME->SetMarkerSize(0.75); 
+ TGraph *mcepTGraphNONAME = NULL;
+ if(nPointsMCEP>0)
+ {
+  mcepTGraphNONAME = new TGraph(nPointsMCEP, mcepNONAME, mcepValueNONAME);
+  mcepTGraphNONAME->SetMarkerStyle(21);
+  mcepTGraphNONAME->SetMarkerColor(kGray+1); 
+  mcepTGraphNONAME->SetMarkerSize(0.75); 
+ }
  
  TGraph *mcepBoxNONAME = new TGraph(5);
  mcepBoxNONAME->SetPoint(0,(binMCEP-0.5)-boxWidth,mcepMinValueNONAME);
@@ -806,10 +1259,14 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  spMeanNONAME->SetLineColor(kBlack);
  spMeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* spTGraphNONAME = new TGraph(nPoints, spNONAME, spValueNONAME);
- spTGraphNONAME->SetMarkerStyle(21);
- spTGraphNONAME->SetMarkerColor(kViolet-8); 
- spTGraphNONAME->SetMarkerSize(0.75); 
+ TGraph *spTGraphNONAME = NULL;
+ if(nPointsSP>0)
+ {
+  spTGraphNONAME = new TGraph(nPointsSP, spNONAME, spValueNONAME);
+  spTGraphNONAME->SetMarkerStyle(21);
+  spTGraphNONAME->SetMarkerColor(kViolet-8); 
+  spTGraphNONAME->SetMarkerSize(0.75); 
+ }
  
  TGraph *spBoxNONAME = new TGraph(5);
  spBoxNONAME->SetPoint(0,(binSP-0.5)-boxWidth,spMinValueNONAME);
@@ -829,10 +1286,15 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  gfc2MeanNONAME->SetLineColor(kBlack);
  gfc2MeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* gfc2TGraphNONAME = new TGraph(nPoints, gfc2NONAME, gfc2ValueNONAME);
- gfc2TGraphNONAME->SetMarkerStyle(21);
- gfc2TGraphNONAME->SetMarkerColor(kBlue-9); 
- gfc2TGraphNONAME->SetMarkerSize(0.75); 
+ 
+ TGraph *gfc2TGraphNONAME = NULL;
+ if(nPointsGFC>0)
+ {
+  gfc2TGraphNONAME = new TGraph(nPointsGFC, gfc2NONAME, gfc2ValueNONAME);
+  gfc2TGraphNONAME->SetMarkerStyle(21);
+  gfc2TGraphNONAME->SetMarkerColor(kBlue-9); 
+  gfc2TGraphNONAME->SetMarkerSize(0.75); 
+ }
  
  TGraph *gfc2BoxNONAME = new TGraph(5);
  gfc2BoxNONAME->SetPoint(0,(binGFC2-0.5)-boxWidth,gfc2MinValueNONAME);
@@ -852,10 +1314,14 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  gfc4MeanNONAME->SetLineColor(kBlack);
  gfc4MeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* gfc4TGraphNONAME = new TGraph(nPoints, gfc4NONAME, gfc4ValueNONAME);
- gfc4TGraphNONAME->SetMarkerStyle(21);
- gfc4TGraphNONAME->SetMarkerColor(kBlue-9); 
- gfc4TGraphNONAME->SetMarkerSize(0.75); 
+ TGraph *gfc4TGraphNONAME = NULL;
+ if(nPointsGFC>0)
+ { 
+  gfc4TGraphNONAME = new TGraph(nPointsGFC, gfc4NONAME, gfc4ValueNONAME);
+  gfc4TGraphNONAME->SetMarkerStyle(21);
+  gfc4TGraphNONAME->SetMarkerColor(kBlue-9); 
+  gfc4TGraphNONAME->SetMarkerSize(0.75); 
+ }
  
  TGraph *gfc4BoxNONAME = new TGraph(5);
  gfc4BoxNONAME->SetPoint(0,(binGFC4-0.5)-boxWidth,gfc4MinValueNONAME);
@@ -875,10 +1341,14 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  gfc6MeanNONAME->SetLineColor(kBlack);
  gfc6MeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* gfc6TGraphNONAME = new TGraph(nPoints, gfc6NONAME, gfc6ValueNONAME);
- gfc6TGraphNONAME->SetMarkerStyle(21);
- gfc6TGraphNONAME->SetMarkerColor(kBlue-9); 
- gfc6TGraphNONAME->SetMarkerSize(0.75); 
+ TGraph *gfc6TGraphNONAME = NULL;
+ if(nPointsGFC>0)
+ { 
+  gfc6TGraphNONAME = new TGraph(nPointsGFC, gfc6NONAME, gfc6ValueNONAME);
+  gfc6TGraphNONAME->SetMarkerStyle(21);
+  gfc6TGraphNONAME->SetMarkerColor(kBlue-9); 
+  gfc6TGraphNONAME->SetMarkerSize(0.75); 
+ }
  
  TGraph *gfc6BoxNONAME = new TGraph(5);
  gfc6BoxNONAME->SetPoint(0,(binGFC6-0.5)-boxWidth,gfc6MinValueNONAME);
@@ -898,10 +1368,14 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  gfc8MeanNONAME->SetLineColor(kBlack);
  gfc8MeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* gfc8TGraphNONAME = new TGraph(nPoints, gfc8NONAME, gfc8ValueNONAME);
- gfc8TGraphNONAME->SetMarkerStyle(21);
- gfc8TGraphNONAME->SetMarkerColor(kBlue-9); 
- gfc8TGraphNONAME->SetMarkerSize(0.75); 
+ TGraph *gfc8TGraphNONAME = NULL;
+ if(nPointsGFC>0)
+ { 
+  gfc8TGraphNONAME = new TGraph(nPointsGFC, gfc8NONAME, gfc8ValueNONAME);
+  gfc8TGraphNONAME->SetMarkerStyle(21);
+  gfc8TGraphNONAME->SetMarkerColor(kBlue-9); 
+  gfc8TGraphNONAME->SetMarkerSize(0.75); 
+ }
  
  TGraph *gfc8BoxNONAME = new TGraph(5);
  gfc8BoxNONAME->SetPoint(0,(binGFC8-0.5)-boxWidth,gfc8MinValueNONAME);
@@ -921,10 +1395,14 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  qc2MeanNONAME->SetLineColor(kBlack);
  qc2MeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* qc2TGraphNONAME = new TGraph(nPoints, qc2NONAME, qc2ValueNONAME);
- qc2TGraphNONAME->SetMarkerStyle(21);
- qc2TGraphNONAME->SetMarkerColor(kRed-7); 
- qc2TGraphNONAME->SetMarkerSize(0.75); 
+ TGraph *qc2TGraphNONAME = NULL;
+ if(nPointsQC>0)
+ {  
+  qc2TGraphNONAME = new TGraph(nPointsQC, qc2NONAME, qc2ValueNONAME);
+  qc2TGraphNONAME->SetMarkerStyle(21);
+  qc2TGraphNONAME->SetMarkerColor(kRed-7); 
+  qc2TGraphNONAME->SetMarkerSize(0.75); 
+ }
  
  TGraph *qc2BoxNONAME = new TGraph(5);
  qc2BoxNONAME->SetPoint(0,(binQC2-0.5)-boxWidth,qc2MinValueNONAME);
@@ -944,11 +1422,15 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  qc4MeanNONAME->SetLineColor(kBlack);
  qc4MeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* qc4TGraphNONAME = new TGraph(nPoints, qc4NONAME, qc4ValueNONAME);
- qc4TGraphNONAME->SetMarkerStyle(21);
- qc4TGraphNONAME->SetMarkerColor(kRed-7); 
- qc4TGraphNONAME->SetMarkerSize(0.75); 
- 
+ TGraph *qc4TGraphNONAME = NULL;
+ if(nPointsQC>0)
+ {   
+  qc4TGraphNONAME = new TGraph(nPointsQC, qc4NONAME, qc4ValueNONAME);
+  qc4TGraphNONAME->SetMarkerStyle(21);
+  qc4TGraphNONAME->SetMarkerColor(kRed-7); 
+  qc4TGraphNONAME->SetMarkerSize(0.75); 
+ }
+  
  TGraph *qc4BoxNONAME = new TGraph(5);
  qc4BoxNONAME->SetPoint(0,(binQC4-0.5)-boxWidth,qc4MinValueNONAME);
  qc4BoxNONAME->SetPoint(1,(binQC4-0.5)+boxWidth,qc4MinValueNONAME);
@@ -967,10 +1449,14 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  qc6MeanNONAME->SetLineColor(kBlack);
  qc6MeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* qc6TGraphNONAME = new TGraph(nPoints, qc6NONAME, qc6ValueNONAME);
- qc6TGraphNONAME->SetMarkerStyle(21);
- qc6TGraphNONAME->SetMarkerColor(kRed-7);
- qc6TGraphNONAME->SetMarkerSize(0.75); 
+ TGraph *qc6TGraphNONAME = NULL;
+ if(nPointsQC>0)
+ {   
+  qc6TGraphNONAME = new TGraph(nPointsQC, qc6NONAME, qc6ValueNONAME);
+  qc6TGraphNONAME->SetMarkerStyle(21);
+  qc6TGraphNONAME->SetMarkerColor(kRed-7);
+  qc6TGraphNONAME->SetMarkerSize(0.75); 
+ }
  
  TGraph *qc6BoxNONAME = new TGraph(5);
  qc6BoxNONAME->SetPoint(0,(binQC6-0.5)-boxWidth,qc6MinValueNONAME);
@@ -990,11 +1476,15 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  qc8MeanNONAME->SetLineColor(kBlack); 
  qc8MeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* qc8TGraphNONAME = new TGraph(nPoints, qc8NONAME, qc8ValueNONAME);
- qc8TGraphNONAME->SetMarkerStyle(21);
- qc8TGraphNONAME->SetMarkerColor(kRed-7); 
- qc8TGraphNONAME->SetMarkerSize(0.75); 
- 
+ TGraph *qc8TGraphNONAME = NULL;
+ if(nPointsQC>0)
+ {   
+  qc8TGraphNONAME = new TGraph(nPointsQC, qc8NONAME, qc8ValueNONAME);
+  qc8TGraphNONAME->SetMarkerStyle(21);
+  qc8TGraphNONAME->SetMarkerColor(kRed-7); 
+  qc8TGraphNONAME->SetMarkerSize(0.75); 
+ }
+  
  TGraph *qc8BoxNONAME = new TGraph(5);
  qc8BoxNONAME->SetPoint(0,(binQC8-0.5)-boxWidth,qc8MinValueNONAME);
  qc8BoxNONAME->SetPoint(1,(binQC8-0.5)+boxWidth,qc8MinValueNONAME);
@@ -1013,10 +1503,14 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  fqdMeanNONAME->SetLineColor(kBlack);
  fqdMeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* fqdTGraphNONAME = new TGraph(nPoints, fqdNONAME, fqdValueNONAME);
- fqdTGraphNONAME->SetMarkerStyle(21);
- fqdTGraphNONAME->SetMarkerColor(kOrange-8); 
- fqdTGraphNONAME->SetMarkerSize(0.75); 
+ TGraph *fqdTGraphNONAME = NULL;
+ if(nPointsFQD>0)
+ {  
+  fqdTGraphNONAME = new TGraph(nPointsFQD, fqdNONAME, fqdValueNONAME);
+  fqdTGraphNONAME->SetMarkerStyle(21);
+  fqdTGraphNONAME->SetMarkerColor(kOrange-8); 
+  fqdTGraphNONAME->SetMarkerSize(0.75); 
+ }
  
  TGraph *fqdBoxNONAME = new TGraph(5);
  fqdBoxNONAME->SetPoint(0,(binFQD-0.5)-boxWidth,fqdMinValueNONAME);
@@ -1036,10 +1530,14 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  lyz1sumMeanNONAME->SetLineColor(kBlack);
  lyz1sumMeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* lyz1sumTGraphNONAME = new TGraph(nPoints, lyz1sumNONAME, lyz1sumValueNONAME);
- lyz1sumTGraphNONAME->SetMarkerStyle(21);
- lyz1sumTGraphNONAME->SetMarkerColor(kYellow-5); 
- lyz1sumTGraphNONAME->SetMarkerSize(0.75); 
+ TGraph *lyz1sumTGraphNONAME = NULL;
+ if(nPointsLYZ1SUM>0)
+ { 
+  lyz1sumTGraphNONAME = new TGraph(nPointsLYZ1SUM, lyz1sumNONAME, lyz1sumValueNONAME);
+  lyz1sumTGraphNONAME->SetMarkerStyle(21);
+  lyz1sumTGraphNONAME->SetMarkerColor(kYellow-5); 
+  lyz1sumTGraphNONAME->SetMarkerSize(0.75); 
+ }
  
  TGraph *lyz1sumBoxNONAME = new TGraph(5);
  lyz1sumBoxNONAME->SetPoint(0,(binLYZ1SUM-0.5)-boxWidth,lyz1sumMinValueNONAME);
@@ -1059,10 +1557,14 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  lyz1prodMeanNONAME->SetLineColor(kBlack);
  lyz1prodMeanNONAME->SetMarkerSize(1.25); 
  
- TGraph* lyz1prodTGraphNONAME = new TGraph(nPoints, lyz1prodNONAME, lyz1prodValueNONAME);
- lyz1prodTGraphNONAME->SetMarkerStyle(21);
- lyz1prodTGraphNONAME->SetMarkerColor(kYellow-2); 
- lyz1prodTGraphNONAME->SetMarkerSize(0.75); 
+ TGraph *lyz1prodTGraphNONAME = NULL;
+ if(nPointsLYZ1PROD>0)
+ {  
+  lyz1prodTGraphNONAME = new TGraph(nPointsLYZ1PROD, lyz1prodNONAME, lyz1prodValueNONAME);
+  lyz1prodTGraphNONAME->SetMarkerStyle(21);
+  lyz1prodTGraphNONAME->SetMarkerColor(kYellow-2); 
+  lyz1prodTGraphNONAME->SetMarkerSize(0.75); 
+ }
  
  TGraph *lyz1prodBoxNONAME = new TGraph(5);
  lyz1prodBoxNONAME->SetPoint(0,(binLYZ1PROD-0.5)-boxWidth,lyz1prodMinValueNONAME);
@@ -1080,11 +1582,35 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  // 1st pad is for plot:
  (intFlowCanvasNONAME->cd(1))->SetPad(0.0,0.0,0.75,1.0);
  
- 
  if(intFlowNONAME) 
  {
   TString intFlowNameNONAME("Superimposing ");
-  intFlowNameNONAME+=counter;
+  if(nPointsMCEP != 0) // to be improved
+  {
+   intFlowNameNONAME+=nPointsMCEP;
+  } else if (nPointsSP != 0)  
+    {
+     intFlowNameNONAME+=nPointsSP;
+    } else if (nPointsGFC != 0)  
+      {
+       intFlowNameNONAME+=nPointsGFC;
+      } else if (nPointsQC != 0)  
+        {
+         intFlowNameNONAME+=nPointsQC;
+        } else if (nPointsFQD != 0)  
+          {
+           intFlowNameNONAME+=nPointsFQD;
+          } else if (nPointsLYZ1SUM != 0)  
+            {
+             intFlowNameNONAME+=nPointsLYZ1SUM;
+            } else if (nPointsLYZ1PROD != 0)  
+              {
+               intFlowNameNONAME+=nPointsLYZ1PROD;
+              } else if (nPointsLYZEP != 0)  
+                {
+                 intFlowNameNONAME+=nPointsLYZEP;
+                }
+       
   intFlowNameNONAME+=" independent runs";
   intFlowNONAME->SetTitle(intFlowNameNONAME.Data());
   (intFlowNONAME->GetYaxis())->SetRangeUser(0,0.20);
@@ -1175,7 +1701,16 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  Int_t lyz1prodCountRealNONAME = 0;
  Int_t lyzepCountRealNONAME = 0;
  
- for(Int_t i=0;i<nEstimates;i++)
+ Int_t N = 0;
+ if(nSubsets > 0)
+ {
+  N = nSubsets;
+ } else
+   {
+    N = nEstimates;
+   }
+   
+ for(Int_t i=0;i<N;i++)
  {
   if(mcepValueNONAME[i]>0.) mcepCountRealNONAME++; 
   if(spValueNONAME[i]>0.) spCountRealNONAME++; 
@@ -1248,7 +1783,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowMCNONAME)+=(Long_t)mcepCountRealNONAME;
   entryIntFlowMCNONAME->Append(" out of ");
-  (*entryIntFlowMCNONAME)+=(Long_t)counter;
+  (*entryIntFlowMCNONAME)+=(Long_t)nPointsMCEP;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowMCNONAME->Data());
  }
  
@@ -1256,7 +1791,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowSPNONAME)+=(Long_t)spCountRealNONAME;
   entryIntFlowSPNONAME->Append(" out of ");
-  (*entryIntFlowSPNONAME)+=(Long_t)counter;
+  (*entryIntFlowSPNONAME)+=(Long_t)nPointsSP;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowSPNONAME->Data());
  }
  
@@ -1264,7 +1799,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowGFC2NONAME)+=(Long_t)gfc2CountRealNONAME;
   entryIntFlowGFC2NONAME->Append(" out of ");
-  (*entryIntFlowGFC2NONAME)+=(Long_t)counter;
+  (*entryIntFlowGFC2NONAME)+=(Long_t)nPointsGFC;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowGFC2NONAME->Data());
  }
  
@@ -1272,7 +1807,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowGFC4NONAME)+=(Long_t)gfc4CountRealNONAME;
   entryIntFlowGFC4NONAME->Append(" out of ");
-  (*entryIntFlowGFC4NONAME)+=(Long_t)counter;
+  (*entryIntFlowGFC4NONAME)+=(Long_t)nPointsGFC;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowGFC4NONAME->Data());
  }
 
@@ -1280,7 +1815,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowGFC6NONAME)+=(Long_t)gfc6CountRealNONAME;
   entryIntFlowGFC6NONAME->Append(" out of ");
-  (*entryIntFlowGFC6NONAME)+=(Long_t)counter;
+  (*entryIntFlowGFC6NONAME)+=(Long_t)nPointsGFC;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowGFC6NONAME->Data());
  }
 
@@ -1288,7 +1823,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowGFC8NONAME)+=(Long_t)gfc8CountRealNONAME;
   entryIntFlowGFC8NONAME->Append(" out of ");
-  (*entryIntFlowGFC8NONAME)+=(Long_t)counter;
+  (*entryIntFlowGFC8NONAME)+=(Long_t)nPointsGFC;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowGFC8NONAME->Data());
  }
  
@@ -1296,7 +1831,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowQC2NONAME)+=(Long_t)qc2CountRealNONAME;
   entryIntFlowQC2NONAME->Append(" out of ");
-  (*entryIntFlowQC2NONAME)+=(Long_t)counter;
+  (*entryIntFlowQC2NONAME)+=(Long_t)nPointsQC;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowQC2NONAME->Data());
  }
  
@@ -1304,7 +1839,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowQC4NONAME)+=(Long_t)qc4CountRealNONAME;
   entryIntFlowQC4NONAME->Append(" out of ");
-  (*entryIntFlowQC4NONAME)+=(Long_t)counter;
+  (*entryIntFlowQC4NONAME)+=(Long_t)nPointsQC;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowQC4NONAME->Data());
  }
 
@@ -1312,7 +1847,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowQC6NONAME)+=(Long_t)qc6CountRealNONAME;
   entryIntFlowQC6NONAME->Append(" out of ");
-  (*entryIntFlowQC6NONAME)+=(Long_t)counter;
+  (*entryIntFlowQC6NONAME)+=(Long_t)nPointsQC;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowQC6NONAME->Data());
  }
 
@@ -1320,7 +1855,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowQC8NONAME)+=(Long_t)qc8CountRealNONAME;
   entryIntFlowQC8NONAME->Append(" out of ");
-  (*entryIntFlowQC8NONAME)+=(Long_t)counter;
+  (*entryIntFlowQC8NONAME)+=(Long_t)nPointsQC;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowQC8NONAME->Data());
  }
  
@@ -1328,7 +1863,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowFQDNONAME)+=(Long_t)fqdCountRealNONAME;
   entryIntFlowFQDNONAME->Append(" out of ");
-  (*entryIntFlowFQDNONAME)+=(Long_t)counter;
+  (*entryIntFlowFQDNONAME)+=(Long_t)nPointsFQD;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowFQDNONAME->Data());
  }
  
@@ -1336,7 +1871,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowLYZ1SUMNONAME)+=(Long_t)lyz1sumCountRealNONAME;
   entryIntFlowLYZ1SUMNONAME->Append(" out of ");
-  (*entryIntFlowLYZ1SUMNONAME)+=(Long_t)counter;
+  (*entryIntFlowLYZ1SUMNONAME)+=(Long_t)nPointsLYZ1SUM;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowLYZ1SUMNONAME->Data());
  }
  
@@ -1344,7 +1879,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowLYZ1PRODNONAME)+=(Long_t)lyz1prodCountRealNONAME;
   entryIntFlowLYZ1PRODNONAME->Append(" out of ");
-  (*entryIntFlowLYZ1PRODNONAME)+=(Long_t)counter;
+  (*entryIntFlowLYZ1PRODNONAME)+=(Long_t)nPointsLYZ1PROD;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowLYZ1PRODNONAME->Data());
  }
  
@@ -1352,7 +1887,7 @@ void showSpread(TString type="", const Int_t nRuns=-1, Int_t mode=mLocal)
  { 
   (*entryIntFlowLYZEPNONAME)+=(Long_t)lyzepCountRealNONAME;
   entryIntFlowLYZEPNONAME->Append(" out of ");
-  (*entryIntFlowLYZEPNONAME)+=(Long_t)counter;
+  (*entryIntFlowLYZEPNONAME)+=(Long_t)nPointsLYZEP;
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowLYZEPNONAME->Data());
  }
  

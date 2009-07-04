@@ -136,6 +136,7 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fHistList = new TList();
  fWeightsList = new TList();
  fWeightsList->SetName("Weights");
+ fWeightsList->SetOwner(kTRUE);
  fR0=AliFlowCumuConstants::fgR0;
  //Pt:
  fPtMax=AliFlowCommonConstants::GetPtMax(); 
@@ -1152,6 +1153,7 @@ void AliFlowAnalysisWithCumulants::WriteHistograms(TString* outputFileName)
  TFile *output = new TFile(outputFileName->Data(),"RECREATE");
  //output->WriteObject(fHistList, "cobjGFC","SingleKey");
  fHistList->SetName("cobjGFC");
+ fHistList->SetOwner(kTRUE);
  fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
  delete output;
 }
@@ -1166,6 +1168,7 @@ void AliFlowAnalysisWithCumulants::WriteHistograms(TString outputFileName)
  TFile *output = new TFile(outputFileName.Data(),"RECREATE");
  //output->WriteObject(fHistList, "cobjGFC","SingleKey");
  fHistList->SetName("cobjGFC");
+ fHistList->SetOwner(kTRUE);
  fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
  delete output;
 }

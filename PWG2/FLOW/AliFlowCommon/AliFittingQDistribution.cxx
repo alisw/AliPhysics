@@ -212,6 +212,7 @@ void AliFittingQDistribution::WriteHistograms(TString* outputFileName)
  TFile *output = new TFile(outputFileName->Data(),"RECREATE");
  //output->WriteObject(fHistList, "cobjFQD","SingleKey");
  fHistList->SetName("cobjFQD");
+ fHistList->SetOwner(kTRUE);
  fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
  delete output;
 }
@@ -224,6 +225,7 @@ void AliFittingQDistribution::WriteHistograms(TString outputFileName)
  TFile *output = new TFile(outputFileName.Data(),"RECREATE");
  //output->WriteObject(fHistList, "cobjFQD","SingleKey");
  fHistList->SetName("cobjFQD");
+ fHistList->SetOwner(kTRUE);
  fHistList->Write(fHistList->GetName(), TObject::kSingleKey); 
  delete output;
 }

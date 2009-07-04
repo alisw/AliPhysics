@@ -118,12 +118,14 @@ void AliFlowAnalysisWithLeeYangZeros::WriteHistograms(TString* outputFileName)
     //output->WriteObject(fHistList, "cobjLYZ1","SingleKey");
     if (fUseSum) { fHistList->SetName("cobjLYZ1SUM");}
     else {fHistList->SetName("cobjLYZ1PROD");}
+    fHistList->SetOwner(kTRUE);
     fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   }
   else {
     //output->WriteObject(fHistList, "cobjLYZ2","SingleKey");
     if (fUseSum) { fHistList->SetName("cobjLYZ2SUM"); }
     else { fHistList->SetName("cobjLYZ2PROD"); }
+    fHistList->SetOwner(kTRUE);
     fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   }
   delete output;
@@ -140,12 +142,14 @@ void AliFlowAnalysisWithLeeYangZeros::WriteHistograms(TString outputFileName)
     //output->WriteObject(fHistList, "cobjLYZ1","SingleKey");
     if (fUseSum) { fHistList->SetName("cobjLYZ1SUM");}
     else {fHistList->SetName("cobjLYZ1PROD");}
+    fHistList->SetOwner(kTRUE);
     fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   }
   else {
     //output->WriteObject(fHistList, "cobjLYZ2","SingleKey");
     if (fUseSum) { fHistList->SetName("cobjLYZ2SUM"); }
     else { fHistList->SetName("cobjLYZ2PROD"); }
+    fHistList->SetOwner(kTRUE);
     fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
   }
   delete output;

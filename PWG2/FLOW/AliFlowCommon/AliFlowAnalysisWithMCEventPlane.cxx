@@ -87,6 +87,7 @@ void AliFlowAnalysisWithMCEventPlane::WriteHistograms(TString* outputFileName)
  TFile *output = new TFile(outputFileName->Data(),"RECREATE");
  //output->WriteObject(fHistList, "cobjMCEP","SingleKey");
  fHistList->SetName("cobjMCEP");
+ fHistList->SetOwner(kTRUE);
  fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
  delete output;
 }
@@ -99,6 +100,7 @@ void AliFlowAnalysisWithMCEventPlane::WriteHistograms(TString outputFileName)
  TFile *output = new TFile(outputFileName.Data(),"RECREATE");
  //output->WriteObject(fHistList, "cobjMCEP","SingleKey");
  fHistList->SetName("cobjMCEP");
+ fHistList->SetOwner(kTRUE);
  fHistList->Write(fHistList->GetName(), TObject::kSingleKey);
  delete output;
 }
