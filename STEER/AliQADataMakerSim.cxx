@@ -24,7 +24,6 @@
 //
 
 // --- ROOT system ---
-#include <TCanvas.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TClonesArray.h>
@@ -167,8 +166,6 @@ void AliQADataMakerSim::EndOfCycle(AliQAv1::TASKINDEX_t task)
     }
     fOutput->Save() ; 
   }
-  if (fPrintImage) 
-    MakeImage(task) ; 
 }
 
 //____________________________________________________________________________
@@ -210,45 +207,6 @@ void AliQADataMakerSim::Exec(AliQAv1::TASKINDEX_t task, TObject * data)
       AliWarning("data are neither a TClonesArray nor a TTree") ; 
     }
   }
-}
-
-//____________________________________________________________________________ 
-void AliQADataMakerSim::MakeImage(AliQAv1::TASKINDEX_t task)
-{
-  // create a drawing of detetor defined histograms
-  TObjArray ** list = NULL ;  
-  switch (task) {
-    case AliQAv1::kRAWS:
-      break;
-    case AliQAv1::kHITS:
-      list = fHitsQAList ;
-      break;
-    case AliQAv1::kSDIGITS:
-      list = fSDigitsQAList ;
-      break;  
-    case AliQAv1::kDIGITS:
-      list = fDigitsQAList ;
-      break;  
-    case AliQAv1::kDIGITSR:
-      break;
-    case AliQAv1::kRECPOINTS:
-      break;
-    case AliQAv1::kTRACKSEGMENTS:
-      break;
-    case AliQAv1::kRECPARTICLES:
-      break;
-    case AliQAv1::kESDS:
-      break;
-    case AliQAv1::kNTASKINDEX:
-      break;
-    default:
-    break;
-  }
-  if ( !list) {
-    AliFatal("data not initialized, call AliQADataMaker::Init"); 
-  return ; 
-  }
-  MakeTheImage(list, task, "Sim") ; 
 }
 
 //____________________________________________________________________________ 

@@ -28,6 +28,7 @@ public:
     kNULLBit=-1, kINFO, kWARNING, kERROR, kFATAL, kNBIT };
   enum TASKINDEX_t {
     kNULLTASKINDEX=-1, kRAWS, kHITS, kSDIGITS, kDIGITS, kDIGITSR, kRECPOINTS, kTRACKSEGMENTS, kRECPARTICLES, kESDS, kNTASKINDEX };
+  enum MODE_t {kNULLMODE=0, kSIMMODE, kRECMODE};
   
   // Creators - destructors
   AliQAv1(); // beware singleton, not to be used
@@ -79,6 +80,7 @@ public:
   static const char  *   GetRefDataDirName() { return fgRefDataDirName.Data() ; }
   static     TASKINDEX_t GetTaskIndex(const char * name) ; 
   static       TString   GetTaskName(UInt_t tsk) { return fgTaskNames[tsk] ; }
+  static const char *    GetModeName(MODE_t mode) { return (mode == kSIMMODE || mode == kRECMODE) ? (fgModeNames[mode]).Data() : "" ; }
   Bool_t                 IsEventSpecieSet(AliRecoParam::EventSpecie_t es) const 
   {Int_t ibit=0; while(es!=1<<ibit) ++ibit; return fEventSpecies[ibit];}
   Bool_t                 IsEventSpecieSet(Int_t es) const { return fEventSpecies[es] ; }
@@ -87,6 +89,7 @@ public:
   Bool_t                 IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es) const ;
   Bool_t                 IsSetAny(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es) const ;
   void                   Merge(TCollection * list) ; 
+  static MODE_t          Mode(TASKINDEX_t task) ;
   void                   Set(QABIT_t bit, AliRecoParam::EventSpecie_t es) ;
   void                   Set(QABIT_t bit, Int_t es) ;
   void                   SetEventSpecie(AliRecoParam::EventSpecie_t es) 
@@ -140,6 +143,7 @@ private:
   static TString        fgQAResultFileName     ; //! the output file where the QA results are stored  
   static TString        fgRTNames[]	           ; //! list of Run Type names   
   static TString        fgTaskNames[]	         ; //! list of tasks names   
+  static TString        fgModeNames[]	         ; //! list of mode names   
   static const TString  fgkExpert              ; //! name for the expert directory
   static const UInt_t   fgkExpertBit           ; //! TObject bit identifing the object as "expert"
   static const UInt_t   fgkImageBit            ; //! TObject bit identifing the object to be plotted on the QA image

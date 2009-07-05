@@ -30,20 +30,21 @@ public:
 		    const char* title = "Quality Assurance checker for Raws, Hits, Digits and ESDs");
   AliQAChecker(const AliQAChecker& qac);
   AliQAChecker& operator = (const AliQAChecker& qac);
-  virtual ~AliQAChecker();
+  virtual  ~AliQAChecker();
 
-  static  AliQAChecker * Instance() ;
-  AliQACheckerBase *     GetDetQAChecker(Int_t det) ; 
-  void                   GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray **& dirOCDB) ;
+  static  AliQAChecker *     Instance() ;
+  AliQACheckerBase *         GetDetQAChecker(Int_t det) ; 
+  void                       GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray **& dirOCDB) ;
 //  static TFile *         GetQAResultFile() ;
 //  static const char *    GetQAResultFileName() { return fgQAResultFileName.Data() ; }
 //  void                   SetQAResultDirName(const char * name) ; 
 //  void                   SetRefDirName(const char * name) ; 
-
-  virtual Bool_t Run(const char * fileName = NULL) ;
-  virtual Bool_t Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TObjArray ** list);
-  virtual Bool_t Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TNtupleD ** list);
-  void SetRunInfo(AliRunInfo * ei) {fRunInfo = ei;}
+  Bool_t Run(const char * fileName = NULL) ;
+  Bool_t Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TObjArray ** list);
+  Bool_t Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TNtupleD ** list);
+  void   SetRunInfo(AliRunInfo * ei) {fRunInfo = ei;}
+  Int_t  GetRunNumber() { return fRun ; } 
+  void   SetRunNumber(Int_t run) { fRun = run ; } 
 
 private:
 
@@ -57,6 +58,7 @@ private:
   TString                     fFoundDetectors ;         //! detectors for which the Quality assurance could be done
   AliQACheckerBase *          fCheckers[AliQAv1::kNDET] ; //! list of detectors checkers
   AliRecoParam::EventSpecie_t fEventSpecie ;            //! event specie deduced from the GRP data
+	Int_t                       fRun ;                    //! run number
   ClassDef(AliQAChecker, 1)  // class for running generation, simulation and digitization
 };
 #endif

@@ -18,7 +18,7 @@
 #include <TH1.h>
 #include <TObjArray.h>
 #include <TNamed.h>  
-class TCanvas ; 
+//class TCanvas ; 
 class TClonesArray;
 class TDirectory;
 class TFile;  
@@ -55,8 +55,6 @@ public:
 	virtual TH1 *       GetDigitsData(const Int_t index)                       = 0 ; 
 	virtual TH1 *       GetESDsData(const Int_t index)                         = 0 ; 
 	virtual TH1 *       GetHitsData(const Int_t index)                         = 0 ; 
-  TCanvas **          GetImage() { return fImage ; }
-  TCanvas *           GetImage(AliRecoParam::EventSpecie_t es) { return fImage[AliRecoParam::AConvert(es)] ; }
 	virtual TH1 *       GetRecPointsData(const Int_t index)                    = 0 ; 
 	virtual TH1 *       GetRawsData(const Int_t index)                         = 0 ; 
 	virtual TH1 *       GetSDigitsData(const Int_t index)                      = 0 ; 
@@ -71,7 +69,6 @@ public:
   virtual void        InitRecPoints()     = 0 ; 
   Bool_t              IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
   Bool_t              IsValidEventSpecie(Int_t eventSpecieIndex, TObjArray ** list) ; 
-  virtual void        MakeImage(AliQAv1::TASKINDEX_t task) = 0 ; 
 	void                Reset() { fCycleCounter = 0 ; }
 	void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
   void                SetWriteExpert() { fWriteExpert = kTRUE ; }
@@ -81,7 +78,6 @@ public:
   Bool_t              WriteExpert() { return fWriteExpert ; }
   void                SetEventSpecie(AliRecoParam::EventSpecie_t es) { fEventSpecie = es ; }
   void                SetEventSpecie(Int_t es) { fEventSpecie = AliRecoParam::Convert(es) ; }
-  void                SetPrintImage(Bool_t opt = kTRUE) { fPrintImage = opt ; }
   virtual void        SetRecoParam(const AliDetectorRecoParam *) {;}
 
   virtual void        InitRecPointsForTracker() {;} // needed by AliGlobalQADataMaker
@@ -110,7 +106,6 @@ protected:
 	virtual void   MakeSDigits()      = 0 ;  
 	virtual void   MakeSDigits(TTree * )             = 0 ;  
   //virtual void   MakeTrackSegments(TTree * )		 = 0 ;  
-  virtual void   MakeTheImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, const Char_t * mode) ; 
 	void           ResetCycle() { fCurrentCycle++ ; fCycleCounter = 0 ; } 
 	virtual void   StartOfDetectorCycle()            = 0 ;
 	
@@ -124,8 +119,6 @@ protected:
   TList **       fParameterList ;   //! list of QA data parameters
 	Int_t          fRun ;             //! run number
   AliRecoParam::EventSpecie_t fEventSpecie ; //! event specie, see AliRecoParam
-  TCanvas **     fImage ;           //[AliRecoParam::kNSpecies] 
-  Bool_t         fPrintImage ;      //! flag to print the images or not
   TClonesArray * fDigitsArray ;    //! array to hold the sdigits
   
 private:

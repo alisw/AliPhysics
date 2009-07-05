@@ -55,7 +55,6 @@ public:
 	virtual void        Init(AliQAv1::TASKINDEX_t task, TObjArray ** list, Int_t run, Int_t cycles = -1) ;
   virtual void        InitRaws() {AliWarning("Call not valid") ; }
 	virtual void        InitRecPoints()                  {AliWarning("Call not valid") ; } 
-  virtual void        MakeImage(AliQAv1::TASKINDEX_t task) ; 
 	virtual void        StartOfCycle(Int_t run = -1) ;
 	virtual void        StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const Bool_t sameCycle = kFALSE) ;
 

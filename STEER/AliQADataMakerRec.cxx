@@ -24,7 +24,6 @@
 //
 
 // --- ROOT system ---
-#include <TCanvas.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TNtupleD.h>
@@ -206,47 +205,6 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
     }
     fOutput->Save() ; 
   }
-  MakeImage(task) ; 
-}
-
-//____________________________________________________________________________ 
-void AliQADataMakerRec::MakeImage(AliQAv1::TASKINDEX_t task)
-{
-  // create a drawing of detetor defined histograms
-  TObjArray ** list = NULL ;  
-  switch (task) {
-    case AliQAv1::kRAWS:
-      list = fRawsQAList ; 
-      break;
-    case AliQAv1::kHITS:
-      break;
-    case AliQAv1::kSDIGITS:
-      break;  
-    case AliQAv1::kDIGITS:
-      break;  
-    case AliQAv1::kDIGITSR:
-      list = fDigitsQAList ; 
-      break;  
-    case AliQAv1::kRECPOINTS:
-      list = fRecPointsQAList ; 
-      break;
-    case AliQAv1::kTRACKSEGMENTS:
-      break;
-    case AliQAv1::kRECPARTICLES:
-      break;
-    case AliQAv1::kESDS:
-      list = fESDsQAList ; 
-      break;
-    case AliQAv1::kNTASKINDEX:
-      break;
-    default:
-      break;
-  }
-  if ( !list) {
-    AliError("data not initialized, call AliQADataMaker::Init"); 
-    return ; 
-  }
-  MakeTheImage(list, task, "Rec") ; 
 }
 
 //____________________________________________________________________________

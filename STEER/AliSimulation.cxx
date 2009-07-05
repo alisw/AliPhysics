@@ -204,7 +204,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   SetGAliceFile("galice.root");
   
 // for QA
-	AliQAManager * qam = AliQAManager::QAManager("sim") ; 
+	AliQAManager * qam = AliQAManager::QAManager(AliQAv1::kSIMMODE) ; 
 	qam->SetActiveDetectors(fQADetectors) ; 
 	fQATasks = Form("%d %d %d", AliQAv1::kHITS, AliQAv1::kSDIGITS, AliQAv1::kDIGITS) ; 
 	qam->SetTasks(fQATasks) ; 	
@@ -251,7 +251,7 @@ void AliSimulation::InitQA()
   if (fInitCDBCalled) return;
   fInitCDBCalled = kTRUE;
 
-  AliQAManager * qam = AliQAManager::QAManager("sim") ; 
+  AliQAManager * qam = AliQAManager::QAManager(AliQAv1::kSIMMODE) ; 
   qam->SetActiveDetectors(fQADetectors) ; 
   fQATasks = Form("%d %d %d", AliQAv1::kHITS, AliQAv1::kSDIGITS, AliQAv1::kDIGITS) ; 
   qam->SetTasks(fQATasks) ;

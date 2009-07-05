@@ -60,6 +60,7 @@ TString        AliQAv1::fgDetNames[]           = {"ITS", "TPC", "TRD", "TOF", "P
                                                   "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global", "CORR"} ;   
 TString        AliQAv1::fgGRPPath              = "GRP/GRP/Data" ; 
 TString        AliQAv1::fgTaskNames[]          = {"Raws", "Hits", "SDigits", "Digits", "DigitsR", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
+TString        AliQAv1::fgModeNames[]          = {"", "Sim", "Rec"} ;   
 const TString  AliQAv1::fgkLabLocalFile        = "file://"  ; 
 const TString  AliQAv1::fgkLabLocalOCDB        = "local://" ;  
 const TString  AliQAv1::fgkLabAliEnOCDB        = "alien://" ;  
@@ -391,6 +392,43 @@ TFile * AliQAv1::GetQADataFile(const char * name, Int_t run)
   }
 	return fgQADataFile ;
 } 
+
+//_____________________________________________________________________________
+AliQAv1::MODE_t AliQAv1::Mode(TASKINDEX_t task) {
+  // return "rec" or "sim" depending on the task
+  
+  switch (task) {
+    case AliQAv1::kRAWS:
+      return kRECMODE ; 
+      break;
+    case AliQAv1::kHITS:
+      return kSIMMODE ; 
+      break;
+    case AliQAv1::kSDIGITS:
+      return kSIMMODE ; 
+      break;
+    case AliQAv1::kDIGITS:
+      return kSIMMODE ; 
+      break;
+    case AliQAv1::kDIGITSR:
+      return kRECMODE ; 
+      break;
+    case AliQAv1::kRECPOINTS:
+      return kRECMODE ; 
+      break ; 
+    case AliQAv1::kTRACKSEGMENTS:
+      return kRECMODE ; 
+      break;
+    case AliQAv1::kRECPARTICLES:
+      return kRECMODE ; 
+      break;
+    case AliQAv1::kESDS:
+      return kRECMODE ; 
+      break;
+    default:
+      break;
+  }
+}
 
 //_____________________________________________________________________________
 TFile * AliQAv1::GetQADataFile(const char * fileName)

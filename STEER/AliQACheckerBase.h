@@ -16,6 +16,7 @@
 // --- ROOT system ---
 #include <TNamed.h>
 #include "AliQAv1.h"
+class TCanvas ; 
 class TFile ; 
 class TH1 ; 
 class TObjArray ; 
@@ -34,10 +35,14 @@ public:
   AliQACheckerBase& operator = (const AliQACheckerBase& qac) ;
   virtual ~AliQACheckerBase() ; // dtor
 
+  TCanvas **     GetImage() { return fImage ; }
+  TCanvas *      GetImage(AliRecoParam::EventSpecie_t es) { return fImage[AliRecoParam::AConvert(es)] ; }
   virtual void   Init(const AliQAv1::DETECTORINDEX_t det)   { AliQAv1::Instance(det) ; }
+  virtual void   MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ; 
   void           Run(AliQAv1::ALITASK_t tsk, TObjArray ** list = NULL); 
   void           Run(AliQAv1::ALITASK_t /*tsk*/, TNtupleD ** /*nt*/) {;} 
   void           SetHiLo(Float_t * hiValue, Float_t * lowValue) ; 
+  void           SetPrintImage(Bool_t opt = kTRUE) { fPrintImage = opt ; }
   void           SetRefandData(TDirectory * ref, TObjArray ** refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
 
 protected:
@@ -54,8 +59,10 @@ protected:
   TObjArray   ** fRefOCDBSubDir ; //! Entry in OCDB for the current detector 
   Float_t     * fLowTestValue   ; // array of lower bounds for INFO, WARNING, ERROR, FATAL   
   Float_t     * fUpTestValue    ; // array of upper bounds for INFO, WARNING, ERROR, FATAL   
+  TCanvas **    fImage          ;//[AliRecoParam::kNSpecies] 
+  Bool_t        fPrintImage     ;//! flag to print the images or not
 
-  ClassDef(AliQACheckerBase,1)  // description 
+  ClassDef(AliQACheckerBase,2)  // description 
 
 };
 

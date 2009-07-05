@@ -545,7 +545,7 @@ void AliReconstruction::InitQA()
   if (fInitQACalled) return;
   fInitQACalled = kTRUE;
   
-  AliQAManager * qam = AliQAManager::QAManager("rec") ; 
+  AliQAManager * qam = AliQAManager::QAManager(AliQAv1::kRECMODE) ; 
   if (fWriteQAExpertData)
     qam->SetWriteExpert() ; 
  

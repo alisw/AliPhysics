@@ -54,6 +54,8 @@
 #include "AliLog.h"
 #include "AliModule.h"
 #include "AliQAv1.h"
+#include "AliQAChecker.h"
+#include "AliQACheckerBase.h"
 #include "AliQADataMakerRec.h"
 #include "AliQADataMakerSim.h"
 #include "AliQAManager.h" 
@@ -103,7 +105,7 @@ AliQAManager::AliQAManager() :
 }
 
 //_____________________________________________________________________________
-AliQAManager::AliQAManager(const Char_t * mode, const Char_t* gAliceFilename) :
+AliQAManager::AliQAManager(AliQAv1::MODE_t mode, const Char_t* gAliceFilename) :
   AliCDBManager(), 
   fCurrentEvent(0),  
 	fCycleSame(kFALSE),
@@ -114,7 +116,7 @@ AliQAManager::AliQAManager(const Char_t * mode, const Char_t* gAliceFilename) :
 	fGAliceFileName(gAliceFilename), 
 	fFirstEvent(0),        
 	fMaxEvents(0),   
-  fMode(mode), 
+  fMode(AliQAv1::GetModeName(mode)), 
 	fNumberOfEvents(999999), 
   fRecoParam(),
 	fRunNumber(0), 
@@ -135,11 +137,6 @@ AliQAManager::AliQAManager(const Char_t * mode, const Char_t* gAliceFilename) :
     }
   }
   SetWriteExpert() ; 
-  fMode.ToLower() ; 
-  if (fMode.Contains("sim")) 
-		fMode.ReplaceAll("s", "S") ; 
-  else if (fMode.Contains("rec")) 
-    fMode.ReplaceAll("r", "R") ; 
 }
 
 //_____________________________________________________________________________
@@ -369,8 +366,8 @@ TCanvas ** AliQAManager::GetImage(Char_t * detName)
   // retrieves QA Image for the given detector
   TCanvas ** rv = NULL ; 
   Int_t detIndex = AliQAv1::GetDetIndex(detName) ; 
-  AliQADataMaker * qadm = GetQADataMaker(detIndex) ; 
-  rv = qadm->GetImage() ;
+  AliQACheckerBase * qac = AliQAChecker::Instance()->GetDetQAChecker(detIndex) ; 
+  rv = qac->GetImage() ;
   return rv ; 
 }
 
@@ -522,6 +519,7 @@ void  AliQAManager::EndOfCycle(TObjArray * detArray)
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQAv1::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
+			AliQACheckerBase * qac = AliQAChecker::Instance()->GetDetQAChecker(iDet) ;
 			if (!qadm) 
 				continue ;	
 			// skip non active detectors
@@ -530,7 +528,7 @@ void  AliQAManager::EndOfCycle(TObjArray * detArray)
 				if (!det || !det->IsActive())  
 					continue ;
 			}
-      qadm->SetPrintImage(fPrintImage) ;
+      qac->SetPrintImage(fPrintImage) ;
       
 			for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
 				if ( fTasks.Contains(Form("%d", taskIndex)) ) 
@@ -546,6 +544,7 @@ void  AliQAManager::EndOfCycle(TString detectors)
 {
 	// End of cycle QADataMakers 
 	
+  AliQAChecker::Instance()->SetRunNumber(fRunNumber) ; 
   if (fPrintImage) {
     TCanvas fakeCanvas ; 
     fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat())) ; 
@@ -553,12 +552,13 @@ void  AliQAManager::EndOfCycle(TString detectors)
   for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQAv1::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
+      AliQACheckerBase * qac = AliQAChecker::Instance()->GetDetQAChecker(iDet) ;
 			if (!qadm) 
 				continue ;	
 			// skip non active detectors
       if (!detectors.Contains(AliQAv1::GetDetName(iDet))) 
         continue ;
-      qadm->SetPrintImage(fPrintImage) ;
+      qac->SetPrintImage(fPrintImage) ;
    		for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
 				if ( fTasks.Contains(Form("%d", taskIndex)) ) 
 					qadm->EndOfCycle(AliQAv1::GetTaskIndex(AliQAv1::GetTaskName(taskIndex))) ;
@@ -1084,13 +1084,13 @@ void AliQAManager::Reset(const Bool_t sameCycle)
 }
 
 //_____________________________________________________________________________
-AliQAManager * AliQAManager::QAManager(const Char_t * mode, TMap *entryCache, Int_t run) 
+AliQAManager * AliQAManager::QAManager(AliQAv1::MODE_t mode, TMap *entryCache, Int_t run) 
 {
   // returns AliQAManager instance (singleton)
   
 	if (!fgQAInstance) {
-    if ( (strcmp(mode, "sim") != 0) && (strcmp(mode, "rec") != 0) ) {
-      AliErrorClass("You must specify sim or rec") ; 
+    if ( (mode != AliQAv1::kSIMMODE) && (mode != AliQAv1::kRECMODE) ) {
+      AliErrorClass("You must specify kSIMMODE or kRECMODE") ; 
       return NULL ; 
     }
     fgQAInstance = new AliQAManager(mode) ;  
@@ -1106,37 +1106,7 @@ AliQAManager * AliQAManager::QAManager(const Char_t * mode, TMap *entryCache, In
 AliQAManager * AliQAManager::QAManager(AliQAv1::TASKINDEX_t task) 
 {
   // returns AliQAManager instance (singleton)
-  switch (task) {
-    case AliQAv1::kRAWS:
-      return QAManager("rec") ; 
-      break;
-    case AliQAv1::kHITS:
-      return QAManager("sim") ; 
-      break;
-    case AliQAv1::kSDIGITS:
-      return QAManager("sim") ; 
-      break;
-    case AliQAv1::kDIGITS:
-      return QAManager("sim") ; 
-      break;
-    case AliQAv1::kDIGITSR:
-      return QAManager("rec") ; 
-      break;
-    case AliQAv1::kRECPOINTS:
-      return QAManager("rec") ; 
-    case AliQAv1::kTRACKSEGMENTS:
-      return NULL ; 
-      break;
-    case AliQAv1::kRECPARTICLES:
-      return NULL ; 
-      break;
-    case AliQAv1::kESDS:
-      return QAManager("rec") ; 
-      break;
-    default:
-      return NULL ; 
-      break;
-  }
+  return QAManager(AliQAv1::Mode(task)) ; 
 }
 
 //_____________________________________________________________________________

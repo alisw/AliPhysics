@@ -56,7 +56,8 @@ AliQAChecker::AliQAChecker(const char* name, const char* title) :
   fRunInfoOwner(kFALSE), 
   fRefFile(0x0), 
   fFoundDetectors("."), 
-  fEventSpecie(AliRecoParam::kDefault) 
+  fEventSpecie(AliRecoParam::kDefault), 
+  fRun(0)
 {
   // ctor: initialise checkers and open the data file   
   for (Int_t det = 0 ; det < AliQAv1::kNDET ; det++) 
@@ -71,7 +72,8 @@ AliQAChecker::AliQAChecker(const AliQAChecker& qac) :
   fRunInfoOwner(kFALSE),   
   fRefFile(qac.fRefFile), 
   fFoundDetectors(qac.fFoundDetectors),
-  fEventSpecie(qac.fEventSpecie)
+  fEventSpecie(qac.fEventSpecie),
+  fRun(qac.fRun)
 {
   // copy constructor
   
@@ -116,7 +118,7 @@ AliQAChecker::~AliQAChecker()
 	} else if (det == AliQAv1::kCORR) {
 		qac = new AliCorrQAChecker() ; 
 	} else {
-		AliDebug(AliQAv1::GetQADebugLevel(), Form("Retrieving QA checker for %s", detName.Data())) ; 
+		AliDebugClass(AliQAv1::GetQADebugLevel(), Form("Retrieving QA checker for %s", detName.Data())) ; 
 		TPluginManager* pluginManager = gROOT->GetPluginManager() ;
 		TString qacName = "Ali" + detName + "QAChecker" ;
 
@@ -175,7 +177,7 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
     AliError(Form("%s is not a valid location for reference data", refStorage.Data())) ; 
     return ; 
   } else {
-    AliQAManager* manQA = AliQAManager::QAManager() ;
+    AliQAManager* manQA = AliQAManager::QAManager(AliQAv1::GetTaskIndex(task)) ;
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
         continue ; 
@@ -428,6 +430,10 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
   GetRefSubDir(AliQAv1::GetDetName(det), AliQAv1::GetTaskName(task), refDir, refOCDBDir) ;
   qac->SetRefandData(refDir, refOCDBDir) ; 
   qac->Run(index, list) ; 
+  
+  // make the image 
+  qac->MakeImage(list, task, AliQAv1::Mode(task)) ; 
+  
 	return kTRUE ; 
 }
 
@@ -468,5 +474,6 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
   GetRefSubDir(AliQAv1::GetDetName(det), AliQAv1::GetTaskName(task), refDir, refOCDBDir) ;
   qac->SetRefandData(refDir, refOCDBDir) ; 
   qac->Run(index, list) ; 
+
   return kTRUE ; 
 }

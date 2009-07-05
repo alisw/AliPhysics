@@ -54,7 +54,6 @@ public:
 	virtual TH1 *       GetRecPointsData(const Int_t index)  { return dynamic_cast<TH1 *>(GetData(fRecPointsQAList, index)) ; }
 	virtual TH1 *       GetRawsData(const Int_t index)       { return dynamic_cast<TH1 *>(GetData(fRawsQAList, index))  ; }
  	virtual TH1 *       GetSDigitsData(const Int_t /*index*/)   { return NULL ; }  
-  virtual void        MakeImage(AliQAv1::TASKINDEX_t task) ; 
 	virtual TObjArray** Init(AliQAv1::TASKINDEX_t task, Int_t cycles = -1) ;
 	virtual void        Init(AliQAv1::TASKINDEX_t task, TObjArray ** list, Int_t run, Int_t cycles = -1) ;
 	virtual void        InitRaws() {AliInfo("To be implemented by detectors");}
