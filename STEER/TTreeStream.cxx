@@ -325,7 +325,8 @@ Int_t TTreeStream::CheckIn(Char_t type, void *pointer)
   //
   // Insert object of given type
   //
-  if (!fElements) fElements = new TObjArray(1000);
+  if (!fElements) fElements = new TObjArray(10000);
+  if (fElements->GetSize()<=fCurrentIndex) fElements->Expand(fCurrentIndex*2);
   TTreeDataElement* element = (TTreeDataElement*)fElements->At(fCurrentIndex);
   if (!element) {
     element = new TTreeDataElement(type);
