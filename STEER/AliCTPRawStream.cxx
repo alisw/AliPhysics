@@ -172,7 +172,7 @@ Bool_t AliCTPRawStream::Next()
   if (fRawReader->GetDataSize() == 52) {
     AliDebug(1,"No interaction records found");
     fRawReader->RequireHeader(kTRUE);
-    return kFALSE;
+    return kTRUE;
   }
 
   // Read IRs
