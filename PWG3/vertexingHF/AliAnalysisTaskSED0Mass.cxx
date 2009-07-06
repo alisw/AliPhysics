@@ -47,10 +47,6 @@ ClassImp(AliAnalysisTaskSED0Mass)
 AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
 AliAnalysisTaskSE(),
 fOutput(0), 
-//fNtupleD0Cmp(0),
-fhistMass(0),
-fhistSgn(0),
-fhistBkg(0),
 fVHF(0)
 {
   // Default constructor
@@ -60,10 +56,6 @@ fVHF(0)
 AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name):
 AliAnalysisTaskSE(name),
 fOutput(0), 
-//fNtupleD0Cmp(0),
-fhistMass(0),
-fhistSgn(0),
-fhistBkg(0),
 fVHF(0)
 {
   // Default constructor
@@ -76,22 +68,6 @@ fVHF(0)
 AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
 {
   // Destructor
-
-  if (fhistMass){
-    delete fhistMass;
-    fhistMass=0;
-  }
-
-  if (fhistSgn){
-    delete fhistSgn;
-    fhistSgn=0;
-  }
-
-  if (fhistBkg){
-    delete fhistBkg;
-    fhistBkg=0;
-  }
-
   if (fOutput) {
     delete fOutput;
     fOutput = 0;
@@ -133,33 +109,26 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fOutput->SetOwner();
 
   const Int_t nhist=3;
-  fhistMass=new TClonesArray("TH1F",nhist);
-  fhistMass->SetName("fhistMass");
-  fhistSgn =new TClonesArray("TH1F",nhist);
-  fhistSgn->SetName("fhistSgn");
-  fhistBkg =new TClonesArray("TH1F",nhist);
-  fhistBkg->SetName("fhistBkg");
-
   TString nameMass, nameSgn, nameBkg;
 
   for(Int_t i=0;i<nhist;i++){
-    nameMass="fhistMass_";
+    nameMass="histMass_";
     nameMass+=i+1;
-    cout<<"Creating TH1F with name "<<nameMass<<endl;
-    new ((*fhistMass)[i]) TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",200,1.765,1.965);
-    nameSgn="fhistSgn_";
+    TH1F* tmpM = new TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",200,1.765,1.965);
+    nameSgn="histSgn_";
     nameSgn+=i+1;
-    new ((*fhistSgn)[i]) TH1F(nameSgn.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
-    nameBkg="fhistBkg_";
+    TH1F* tmpS = new TH1F(nameSgn.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
+    nameBkg="histBkg_";
     nameBkg+=i+1;
-    new ((*fhistBkg)[i]) TH1F(nameBkg.Data(), "Background invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
-    printf("Created histograms %s\t%s\t%s\n",fhistMass->UncheckedAt(i)->GetName(),fhistSgn->UncheckedAt(i)->GetName(),fhistBkg->UncheckedAt(i)->GetName());
-  }
- 
-  fOutput->Add(fhistMass);
-  fOutput->Add(fhistSgn);
-  fOutput->Add(fhistBkg);
+    TH1F* tmpB = new TH1F(nameBkg.Data(), "Background invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
+    printf("Created histograms %s\t%s\t%s\n",tmpM->GetName(),tmpS->GetName(),tmpB->GetName());
 
+    fOutput->Add(tmpM);
+    fOutput->Add(tmpS);
+    fOutput->Add(tmpB);
+
+  }
+  fOutput->ls();
   return;
 }
 
@@ -274,31 +243,44 @@ void AliAnalysisTaskSED0Mass::FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *pa
       Int_t pdgD0 = partD0->GetPdgCode();
       
       //printf(" pdgD0 %d\n",pdgD0);
-      
+      TString fillthis="histSgn_";
+      fillthis+=ptbin;
+      cout<<"Filling "<<fillthis<<endl;
+
       if (pdgD0==421){ //D0
 	//cout<<"Fill S with D0"<<endl;
-	((TH1F*)(fhistSgn->UncheckedAt(ptbin-1)))->Fill(invmassD0);
+	((TH1F*)(fOutput->FindObject(fillthis)))->Fill(invmassD0);
+	//cout<<"Address "<<fOutput->FindObject(fillthis)<<endl;
+	//cout<<"Name "<<(fOutput->FindObject(fillthis))->GetName()<<endl;
       }
       else {//D0bar  
 	//printf("Fill S with D0bar");
-	((TH1F*)(fhistSgn->UncheckedAt(ptbin-1)))->Fill(invmassD0bar);
+	((TH1F*)(fOutput->FindObject(fillthis)))->Fill(invmassD0bar);
       }
 
     }
     else {//background
+      TString fillthis="histBkg_";
+      fillthis+=ptbin;
+      //cout<<"Filling "<<fillthis<<endl;
+
 	  //printf("Fill background");
-      ((TH1F*)(fhistBkg->UncheckedAt(ptbin-1)))->Fill(invmassD0);
-      ((TH1F*)(fhistBkg->UncheckedAt(ptbin-1)))->Fill(invmassD0bar);
+      ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(invmassD0);
+      ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(invmassD0bar);
     }
     
     //no MC info, just cut selection
+    TString fillthis="histMass_";
+    fillthis+=ptbin;
+    cout<<"Filling "<<fillthis<<endl;
+    
     if (okD0==1) {
       //printf("Fill mass with D0");
-      ((TH1F*)(fhistMass->UncheckedAt(ptbin-1)))->Fill(invmassD0);
+      ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(invmassD0);
       
     }
     if (okD0bar==1) {
-      ((TH1F*)fhistMass->UncheckedAt(ptbin-1))->Fill(invmassD0bar);
+      ((TH1F*)fOutput->FindObject(fillthis))->Fill(invmassD0bar);
       //printf("Fill mass with D0bar");
     }
       
@@ -318,11 +300,6 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
     return;
   }
 
-  
-  fhistMass = dynamic_cast<TClonesArray*>(fOutput->FindObject("fhistMass"));
-  fhistSgn = dynamic_cast<TClonesArray*>(fOutput->FindObject("fhistSgn"));
-  fhistBkg = dynamic_cast<TClonesArray*>(fOutput->FindObject("fhistBkg"));
- 
   return;
 }
 
