@@ -43,14 +43,10 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   AliAnalysisTaskSED0Mass& operator=(const AliAnalysisTaskSED0Mass& source); 
   void    FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC);
   TList   *fOutput; //! list send on output slot 0
-  //TNtuple *fNtupleD0Cmp; // output ntuple
-  TClonesArray    *fhistMass;  // output total invariant mass histogram - no MC truth
-  TClonesArray    *fhistSgn;  // output signal invariant mass histogram - use cuts
-  TClonesArray    *fhistBkg;  // output background invariant mass histogram - use cuts
 
   AliAnalysisVertexingHF *fVHF;  // Vertexer heavy flavour (used to pass the cuts)
   
-  ClassDef(AliAnalysisTaskSED0Mass,1); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSED0Mass,2); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
