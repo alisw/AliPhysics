@@ -15,6 +15,7 @@ class TNamed;
 class TString;
 
 class AliESDEvent; 
+class AliESDfriend; 
 class AliMCEvent;
 class AliESDtrack;
 class AliStack; 
@@ -34,7 +35,7 @@ public :
   virtual void Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, const Bool_t bUseMC);
+  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list);
