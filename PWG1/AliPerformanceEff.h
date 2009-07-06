@@ -15,6 +15,7 @@ class TNamed;
 class AliMCInfo;
 class AliESDRecInfo;
 class AliESDEvent; 
+class AliESDfriend; 
 class AliMCEvent; 
 class AliESDEvent; 
 class AliMCParticle; 
@@ -37,7 +38,7 @@ public :
   virtual void Init();
 
   // Execute analysis 
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, const Bool_t bUseMC);
+  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list);
@@ -58,6 +59,7 @@ public :
   void ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent);
   void ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent);
   void ProcessConstrained(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent);
+  void ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent);
 
   Bool_t IsRecTPC(AliESDtrack *track);
   Bool_t IsRecTPCITS(AliESDtrack *track);
@@ -75,11 +77,13 @@ public :
   AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
 
   THnSparseF* GetEffHisto() const {return fEffHisto;}
+  THnSparseF* GetEffSecHisto() const {return fEffSecHisto;}
 
 private:
 
   // Control histograms
   THnSparseF *fEffHisto; //-> mceta:mcphi:mcpt:pid:isPrim:recStatus:findable
+  THnSparseF *fEffSecHisto; //-> mceta:mcphi:mcpt:pid:isPrim:recStatus:findable:mcR:mother_phi:mother_eta
 
   // Global cuts objects
   AliRecInfoCuts* fCutsRC;     // selection cuts for reconstructed tracks
