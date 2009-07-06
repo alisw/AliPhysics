@@ -15,6 +15,7 @@ class AliMCEvent;
 class AliESDEvent;
 class AliRecInfoCuts;
 class AliMCInfoCuts;
+class AliESDfriend;
 
 class AliPerformanceObject : public TNamed {
 public :
@@ -28,7 +29,7 @@ public :
 
   // Execute analysis
   // call in the event loop 
-  virtual void Exec(AliMCEvent* const infoMC=0, AliESDEvent* const infoRC=0, const Bool_t bUseMC=kFALSE) = 0;
+  virtual void Exec(AliMCEvent* const infoMC=0, AliESDEvent* const infoRC=0, AliESDfriend* const infoFriend=0, const Bool_t bUseMC=kFALSE, const Bool_t bUseESDfriend=kFALSE) = 0;
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list=0) = 0;
@@ -60,7 +61,7 @@ public :
 protected: 
 
  // analysis mode
- Int_t fAnalysisMode;  // 0-TPC, 1-TPCITS, 2-Constrained, 3 - TPC inner wall
+ Int_t fAnalysisMode;  // 0-TPC, 1-TPCITS, 2-Constrained, 3-TPC inner wall, 4-TPC outer wall
 
  // hpt generator
  Bool_t fHptGenerator; // hpt event generator
