@@ -29,6 +29,7 @@ SRCS:= 	AliTreeDraw.cxx \
 	AliPerformanceDEdx.cxx \
 	AliPerformanceDCA.cxx \
 	AliPerformanceTPC.cxx \
+	AliPerformanceMC.cxx \
 	AliAlignmentDataFilterITS.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
