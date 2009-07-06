@@ -20,6 +20,8 @@ class AliMCEvent;
 class AliStack;
 class AliTrackReference;
 class AliESDEvent; 
+class AliESDfriend; 
+class AliESDfriendTrack; 
 class AliMCEvent;
 class AliMCParticle;
 class AliMCInfoCuts;
@@ -38,7 +40,7 @@ public :
   virtual void  Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, const Bool_t bUseMC);
+  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list);
@@ -54,8 +56,10 @@ public :
   void ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack);
   void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack);
   void ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack);
+  void ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
 
   AliTrackReference *GetFirstTPCTrackRef(AliMCParticle *mcParticle); 
+  AliTrackReference *GetLastTPCTrackRef(AliMCParticle *mcParticle); 
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderRes",TString title = "Analysed Resolution histograms");
