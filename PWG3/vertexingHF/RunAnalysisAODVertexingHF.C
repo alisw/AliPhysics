@@ -196,6 +196,15 @@ void RunAnalysisAODVertexingHF()
   AliAnalysisTaskCharmFraction *cFractTaskPureBack = AddTaskCharmFraction("d0D0_PureBack.root",kFALSE,kTRUE,kTRUE,kTRUE,kFALSE,kTRUE,kTRUE,kTRUE,kTRUE);
   AliAnalysisTaskCharmFraction *cFractTaskFromB    = AddTaskCharmFraction("d0D0_FromB.root",kFALSE,kTRUE,kTRUE,kFALSE,kTRUE);
 
+  // attach a private task (not committed)
+  // (the files MyTask.h MyTask.cxx AddMyTask.C have to be declared in plugin
+  // configuration, see below)
+  /*
+    gROOT->LoadMacro("MyTask.cxx++");
+    gROOT->LoadMacro("AddMyTask.C");
+    MyTask *myTask = AddMyTask();
+  */
+
   //-------------------------------------------------------------------
 
   //
@@ -251,10 +260,10 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
    // Declare the analysis source files names separated by blancs. To be compiled runtime
    // using ACLiC on the worker nodes.
-   //plugin->SetAnalysisSource("$ALICE_ROOT/PWG3/vertexingHF/AliAnalysisTaskSECompareHF.cxx");
+   //plugin->SetAnalysisSource("MyTask.cxx");
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->SetAdditionalLibs("libPWG3vertexingHF.so libPWG3base.so libPWG3muon.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so MakeAODInputChain.C");
+   plugin->SetAdditionalLibs("libPWG3vertexingHF.so libPWG3base.so libPWG3muon.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so MakeAODInputChain.C"/* MyTask.cxx MyTask.h" */);
    // use par files
    if(useParFiles) {
      plugin->EnablePackage("STEERBase.par");
