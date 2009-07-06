@@ -208,7 +208,7 @@ void AliPerformanceTPC::ProcessConstrained(AliStack* const /*stack*/, AliESDtrac
 }
  
 //_____________________________________________________________________________
-void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent* const esdEvent, const Bool_t bUseMC)
+void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend)
 {
   // Process comparison information 
   //
@@ -251,6 +251,17 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent* const esdEv
     genHeader->PrimaryVertex(vtxMC);
 
   } // end bUseMC
+
+  // use ESD friends
+  if(bUseESDfriend) {
+    if(!esdFriend) {
+      AliDebug(AliLog::kError, "esdFriend not available");
+      return;
+    }
+  }
+
+
+
 
   //  Process events
   for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
