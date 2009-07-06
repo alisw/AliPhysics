@@ -40,6 +40,7 @@
 #pragma link C++ class AliPerformanceDEdx+;
 #pragma link C++ class AliPerformanceDCA+;
 #pragma link C++ class AliPerformanceTPC+;
+#pragma link C++ class AliPerformanceMC+;
 
 #pragma link C++ class AliAlignmentDataFilterITS+;
 
