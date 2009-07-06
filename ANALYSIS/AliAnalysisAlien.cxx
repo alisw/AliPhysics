@@ -731,8 +731,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
       if (error) return kFALSE;   
       // Set JDL fields
       fGridJDL->SetValue("User", Form("\"%s\"", fUser.Data()));
-      TString executable = Form("%s/bin/%s", gGrid->GetHomeDirectory(), fExecutable.Data());
-      fGridJDL->SetExecutable(executable);
+      fGridJDL->SetExecutable(fExecutable);
 //      fGridJDL->SetTTL((UInt_t)fTTL);
       fGridJDL->SetValue("TTL", Form("\"%d\"", fTTL));
       if (fMaxInitFailed > 0) 
