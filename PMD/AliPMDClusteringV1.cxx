@@ -246,7 +246,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
       clusdata[3]     = cluCELLS;
       clusdata[4]     = cluSIGX;
       clusdata[5]     = cluSIGY;
-      
+
       //
       // Cells associated with a cluster
       //
@@ -292,6 +292,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
 		  celldataTr[ihit]  = celltrack[irow][icol];
 		  celldataPid[ihit] = cellpid[irow][icol];
 		  celldataAdc[ihit] = (Float_t) celladc[irow][icol];
+
 		}
 	      else
 		{
@@ -302,7 +303,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
 	    }
 	  
 	}
-
+      
       pmdcl = new AliPMDcluster(idet, ismn, clusdata, celldataX, celldataY,
 				celldataTr, celldataPid, celldataAdc);
       pmdcont->Add(pmdcl);
@@ -527,6 +528,7 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	    {
 	      clxy[icltr] = -1;
 	    }
+
 	  pmdcludata  = new AliPMDcludata(clusdata,clxy);
 	  fPMDclucont->Add(pmdcludata);
 	}
@@ -847,10 +849,19 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 		if(totaladc[kcl]>0.)xclust[kcl] = (ax[kcl])/ totaladc[kcl];
 		if(totaladc[kcl]>0.)yclust[kcl] = (ay[kcl])/ totaladc[kcl];
 		
-		if(totaladc[kcl]>0.)sigxclust[kcl] = (totaladc[kcl]/(pow(totaladc[kcl],2)-totaladc2[kcl]))*ax2[kcl];
-		if(totaladc[kcl]>0.)sigyclust[kcl] = (totaladc[kcl]/(pow(totaladc[kcl],2)-totaladc2[kcl]))*ay2[kcl];
-	      }	
-	    
+		//natasha
+		if(totaladc2[kcl] >= pow(totaladc[kcl],2))
+		  {
+		    sigxclust[kcl] = 0.25;
+		    sigyclust[kcl] = 0.25;
+		  }
+		else
+		  {
+		    sigxclust[kcl] = (totaladc[kcl]/(pow(totaladc[kcl],2)-totaladc2[kcl]))*ax2[kcl];
+		    sigyclust[kcl] = (totaladc[kcl]/(pow(totaladc[kcl],2)-totaladc2[kcl]))*ay2[kcl];
+		  }	
+	      }
+	      
 	      for(j = 0; j < cellCount[kcl]; j++) clno++; 
 	      
 	      if (clno >= 4608) 
@@ -862,6 +873,8 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	      clusdata[1] = yclust[kcl];
 	      clusdata[2] = totaladc[kcl];
 	      clusdata[3] = ncell[kcl];
+
+
 	      if(sigxclust[kcl] > sigyclust[kcl]) 
 		{
 		  clusdata[4] = pow(sigxclust[kcl],0.5);
@@ -872,7 +885,7 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 		  clusdata[4] = pow(sigyclust[kcl],0.5);
 		  clusdata[5] = pow(sigxclust[kcl],0.5);
 		}
-
+	      
 	      clxy[0] = tc[kcl];
 
 	      Int_t Ncell=1;

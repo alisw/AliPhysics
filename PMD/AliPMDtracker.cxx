@@ -194,7 +194,7 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 	  clusdata[4] = fPMDrecpoint->GetClusSigmaX();
 	  clusdata[5] = fPMDrecpoint->GetClusSigmaY();
 	  
-	  if (clusdata[4] < -90. && clusdata[5] < -90.)
+	  if (clusdata[4] >= 0. && clusdata[5] >= 0.)
 	    { 
 	      // extract the associated cell information
 	      branch1->GetEntry(ncrhit); 
