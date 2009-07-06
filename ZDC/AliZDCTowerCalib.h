@@ -49,7 +49,7 @@ class AliZDCTowerCalib: public TNamed {
   Float_t  fZN2EqualCoeff[5];	 // Equalization coefficients for ZN1 PTMs
   Float_t  fZP2EqualCoeff[5];	 // Equalization coefficients for ZN1 PTMs
   //
-  ClassDef(AliZDCTowerCalib,2)    // ZDC calibration calibration data
+  ClassDef(AliZDCTowerCalib,3)    // ZDC calibration calibration data
 };
 
 #endif

@@ -250,7 +250,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
  
    // *********** Energy calibration
    // --- Cheking if there is already the entry in the OCDB
-   AliCDBEntry *cdbEnEntry = GetFromOCDB("Calib", "EnCalib");
+   AliCDBEntry *cdbEnEntry = GetFromOCDB("Calib", "EnergyCalib");
    if(!cdbEnEntry){   
      Log(Form(" ZDC/Calib/EnergyCalib entry will be created"));
      // --- Initializing calibration object
@@ -263,7 +263,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
      for(Int_t j=0; j<6; j++) eCalib->SetEnCalib(j,1.);
      metaData.SetComment("AliZDCEnCalib object");  
      //eCalib->Print("");
-     resEnCal = Store("Calib", "EnCalib", eCalib, &metaData, 0, 1);
+     resEnCal = Store("Calib", "EnergyCalib", eCalib, &metaData, 0, 1);
    }
    else{ 
      // if entry exists it is still valid (=1 for all runs!)
@@ -273,7 +273,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
    //
    // *********** Tower inter-calibration
    // --- Cheking if there is already the entry in the OCDB
-   AliCDBEntry *cdbTowEntry = GetFromOCDB("Calib", "TowCalib");
+   AliCDBEntry *cdbTowEntry = GetFromOCDB("Calib", "TowerCalib");
    if(!cdbTowEntry){   
      AliZDCTowerCalib *towCalib = new AliZDCTowerCalib("ZDC");
      for(Int_t j=0; j<5; j++){  
@@ -289,7 +289,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
      metaData.SetResponsible("Chiara Oppedisano");
      metaData.SetComment("AliZDCTowerCalib object");  
      //
-     resTowCal = Store("Calib", "TowCalib", towCalib, &metaData, 0, 1);
+     resTowCal = Store("Calib", "TowerCalib", towCalib, &metaData, 0, 1);
    }
    else{ 
      // if entry exists it is still valid (=1 for all runs!)
@@ -299,7 +299,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
    
    // *********** Tower relative calibration
    // --- Cheking if there is already the entry in the OCDB
-   AliCDBEntry *cdbSEntry = GetFromOCDB("Calib", "TowCalib");
+   AliCDBEntry *cdbSEntry = GetFromOCDB("Calib", "TowerCalib");
    if(!cdbSEntry){   
      Log(Form(" ZDC/Calib/TowerCalib entry will be created"));
      // --- Initializing calibration object
@@ -318,7 +318,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
      metaData.SetResponsible("Chiara Oppedisano");
      metaData.SetComment("AliZDCTowerCalib object");  
      //
-     resTowCal = Store("Calib", "TowCalib", towCalib, &metaData, 0, 1);
+     resTowCal = Store("Calib", "TowerCalib", towCalib, &metaData, 0, 1);
    }
    else{ 
      // if entry exists it is still valid (=1 for all runs!)
@@ -570,7 +570,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
     metaData.SetResponsible("Chiara Oppedisano");
     metaData.SetComment("Filling AliZDCEnCalib object");  
     //
-    resEnCal = Store("Calib","EnCalib",eCalib, &metaData, 0, 1);
+    resEnCal = Store("Calib","EnergyCalib",eCalib, &metaData, 0, 1);
   }
   delete daqSources; daqSources = 0;
   //
@@ -628,7 +628,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
     metaData.SetResponsible("Chiara Oppedisano");
     metaData.SetComment("Filling AliZDCTowerCalib object");  
     //
-    resTowCal = Store("Calib","TowCalib",towCalib, &metaData, 0, 1);
+    resTowCal = Store("Calib","TowerCalib",towCalib, &metaData, 0, 1);
   }
   delete daqSources; daqSources = 0;
  }//Pb-Pb if

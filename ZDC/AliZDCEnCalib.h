@@ -34,7 +34,7 @@ class AliZDCEnCalib: public TNamed {
   // --- E calibration
   Float_t  fEnCalibration[6];	 // Coeff. for energy calibration
   //
-  ClassDef(AliZDCEnCalib,2)    // ZDC calibration calibration data
+  ClassDef(AliZDCEnCalib,3)    // ZDC calibration calibration data
 };
 
 #endif
