@@ -8,6 +8,7 @@
 //------------------------------------------------------------------------------
 
 class AliESDEvent;
+class AliESDfriend;
 class AliMCEvent;
 class AliPerformanceObject;
 class AliMagF;
@@ -33,8 +34,12 @@ class AliPerformanceTask : public AliAnalysisTask {
   // Use MC
   void SetUseMCInfo(Bool_t useMCInfo = kFALSE) {fUseMCInfo = useMCInfo;}
 
+  // Use ESD friend
+  void SetUseESDfriend(Bool_t useESDFriend = kFALSE) {fUseESDfriend = useESDFriend;}
+
  private:
   AliESDEvent *fESD;   //! ESD event
+  AliESDfriend *fESDfriend; //! ESD friend event
   AliMCEvent *fMC;    //! MC event
 
   TList *fOutput;             //! list send on output slot 0
@@ -42,6 +47,7 @@ class AliPerformanceTask : public AliAnalysisTask {
   TList *fCompList;           // list of comparison objects
 
   Bool_t fUseMCInfo;          // use MC information
+  Bool_t fUseESDfriend;       // use ESD friend
 
   AliPerformanceTask(const AliPerformanceTask&); // not implemented
   AliPerformanceTask& operator=(const AliPerformanceTask&); // not implemented

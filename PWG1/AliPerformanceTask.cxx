@@ -37,6 +37,7 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
+#include "AliESDfriend.h"
 #include "AliMCEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliMCEventHandler.h"
@@ -65,11 +66,13 @@ ClassImp(AliPerformanceTask)
 AliPerformanceTask::AliPerformanceTask() 
   : AliAnalysisTask("Performance","Detector Performance")
   , fESD(0)
+  , fESDfriend(0)
   , fMC(0)
   , fOutput(0)
   , fPitList(0)
   , fCompList(0)
   , fUseMCInfo(kFALSE)
+  , fUseESDfriend(kFALSE)
 {
   // Dummy Constructor
   // should not be used
@@ -79,11 +82,13 @@ AliPerformanceTask::AliPerformanceTask()
 AliPerformanceTask::AliPerformanceTask(const char *name, const char *title) 
   : AliAnalysisTask(name, title)
   , fESD(0)
+  , fESDfriend(0)
   , fMC(0)
   , fOutput(0)
   , fPitList(0)
   , fCompList(0)
   , fUseMCInfo(kFALSE)
+  , fUseESDfriend(kFALSE)
 {
   // Constructor
 
@@ -119,9 +124,6 @@ void AliPerformanceTask::ConnectInputData(Option_t *)
     Printf("ERROR: Could not get ESDInputHandler");
   } else {
     fESD = esdH->GetEvent();
-
-    // Enable only the needed branches
-    //esdH->SetActiveBranches("AliESDHeader Vertex Tracks");
   }
 
   // use MC information
@@ -191,10 +193,19 @@ void AliPerformanceTask::Exec(Option_t *)
     return;
   }
 
+  if(fUseESDfriend)
+  {
+    fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+    if(!fESDfriend) {
+      Printf("ERROR: ESD friends not available");
+      return;
+    }
+  }
+
   // Process comparison
   fPitList->Reset();
   while(( pObj = (AliPerformanceObject *)fPitList->Next()) != NULL) {
-    pObj->Exec(fMC,fESD,fUseMCInfo);
+    pObj->Exec(fMC,fESD,fESDfriend,fUseMCInfo,fUseESDfriend);
   }
 
   // Post output data.
