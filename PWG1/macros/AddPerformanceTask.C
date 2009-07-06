@@ -1,22 +1,49 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Macro to setup AliPerformanceTask for 
 // TPC performance to be run on QA train
-// 24.04.2009 -  J.Otwinowski@gsi.de
+//
+// By default 6 performance components are added to 
+// the output: 
+// 1. AliPerformanceRes (TPC track resolution at DCA)
+// 2. AliPerformanceResTPCInner (TPC track resolution at inner TPC wall)
+// 3. AliPerformanceEff (TPC track reconstruction efficieny)
+// 4. AliPerformanceDEdxTPCInner (TPC dEdx response - track parameters at TPC inner wall)
+// 5. AliPerformanceDCA (TPC impact parameter resolution at DCA)
+// 6. AliPerformanceTPC (TPC cluster and track information)
+//
+//
+// To use these components one needs to have access to ESD and MC events 
+// and track references.
+//
+// Usage on the analysis train:
+// #include "AddPerformanceTask.h"
+// #include "PWG1/macros/AddPerformanceTask.C"
+//
+// gSystem->Load("libPWG1.so");
+//
+// AliAnalysisManager *mgr = new AliAnalysisManager("Post Reconstruction QA");
+// gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddPerformanceTask.C")
+// AddPerformanceTask(mgr,"ALL");
+// 
+// 
+// Output:
+// TPC.PerformanceTask.root file with performance components is created.
+//
+// Each of the components contains THnSparse generic histograms which 
+// have to be analysed by using Analyse() function. Each component contains such function.
+//
+//24.04.2009 -  J.Otwinowski@gsi.de
 ///////////////////////////////////////////////////////////////////////////////
+
 #if ! defined (__CINT__) || defined (__MAKECINT__)
 #include <Riostream.h>
 
 #include "TROOT.h"
 #include "TClass.h"
-//#include "TSystem.h"
 #include "TError.h"
 
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
-//#include "AliAnalysisDataContainer.h"
-//#include "AliMCEventHandler.h"
-//#include "AliESDInputHandler.h"
-
 #include "PWG1/AliPerformanceTask.h"
 #include "PWG1/AliPerformanceObject.h"
 #include "PWG1/AliPerformanceEff.h"
@@ -59,7 +86,7 @@ void AddPerformanceTask(AliAnalysisManager *mgr=0, Char_t *tpc="ALL")
   // Create TPC-MC track reconstruction cuts
   AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts();
   if(pMCInfoCuts) {
-    pMCInfoCuts->SetMinTrackLength(70);
+    pMCInfoCuts->SetMinTrackLength(50);
   }
 
   //
@@ -84,13 +111,6 @@ void AddPerformanceTask(AliAnalysisManager *mgr=0, Char_t *tpc="ALL")
     }
     perf->SetAliMCInfoCuts(pMCInfoCuts);
     perf->SetAliRecInfoCuts(pRecInfoCuts);
-
-    /*
-    new(&ctask) TClass(fgkTPCtaskClassName[icomp]);
-    task->AddPerformanceObject((perf = (AliPerformanceObject*)ctask.New()));
-    perf->SetAnalysisMode(kTPCMode);
-    perf->SetHptGenerator(fHpt);
-    */
   }
 
   // TPC at inner wall
