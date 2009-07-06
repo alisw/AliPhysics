@@ -31,14 +31,15 @@ TString     proof_outdir       = "";
 // ### Settings that make sense when using the Alien plugin
 //==============================================================================
 Bool_t      usePLUGIN          = kTRUE;   // do not change
+Bool_t      useProductionMode  = kTRUE;   // use the plugin in production mode
 // Usage of par files ONLY in grid mode and ONLY if the code is not available
 // in the deployed AliRoot versions. Par file search path: local dir, if not there $ALICE_ROOT.
 // To refresh par files, remove the ones in the workdir, then do "make <target.par>" in 
 // AliRoot.
 Bool_t      usePAR             = kFALSE;  // use par files for extra libs
 Bool_t      useCPAR            = kFALSE;  // use par files for common libs
-TString     root_version       = "v5-23-04";
-TString     aliroot_version    = "v4-17-03";
+TString     root_version       = "v20090623";                                           
+TString     aliroot_version    = "v4-17-05";                                            
 // Change production base directory here
 TString     alien_datadir      = "/alice/sim/PDC_09/LHC09a5/";
 // AliEn output directory. If blank will become output_<train_name>
@@ -50,7 +51,7 @@ TString     mergeExclude       = "AliAOD.root AliAOD.VertexingHF.root AOD.tag.ro
 // Number of runs per master job
 Int_t       nRunsPerMaster     = 10;
 // Maximum number of files per job (gives size of AOD)
-Int_t       nFilesPerJob       = 100;
+Int_t       nFilesPerJob       = 200;
 // Set the run range
 Int_t       run_range[2]       =  {90000, 90040};
 // ### Settings that make sense only for local analysis
@@ -80,11 +81,12 @@ Int_t       iMUONcopyAOD       = 0;      // Task that copies only muon events in
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4) - needs ESD filter
 Int_t       iPWG4partcorr      = 1;      // Gamma-hadron correlations task (PWG4)
 Int_t       iPWG4gammaconv     = 0;      // Gamma conversion analysis (PWG4)
+Int_t       iPWG4omega3pi      = 1;      // Omega to 3 pi analysis (PWG4)
 Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
 Int_t       iPWG2femto         = 1;      // Femtoscopy task (PWG2)
 Int_t       iPWG2spectra       = 1;      // Spectra PWG2 tasks (protons, cascades, V0 check, strange)
 Int_t       iPWG2flow          = 1;      // Flow analysis task (PWG2)
-Int_t       iPWG2res           = 0;      // Resonances task (PWG2)
+Int_t       iPWG2res           = 1;      // Resonances task (PWG2)
 Int_t       iPWG2kink          = 1;      // Kink analysis task (PWG2)
 Int_t       iPWG2evchar        = 1;      // Event characteristics (PWG2)
 Int_t       iPWG2unicor        = 1;      // Unicor analysis (PWG2)
@@ -93,7 +95,7 @@ Int_t       iPWG2unicor        = 1;      // Unicor analysis (PWG2)
 TString anaPars = "";
 TString anaLibs = "";
 // Function signatures
-class AliAnalysisGrid;
+class AliAnalysisAlien;
 
 //______________________________________________________________________________
 void AnalysisTrainNew(const char *analysis_mode="grid", 
@@ -128,6 +130,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    if (iPWG3vertexing) printf("=  PWG3 vertexing                                            =\n");
    if (iPWG4partcorr)  printf("=  PWG4 gamma-hadron, pi0 and gamma-jet correlations         =\n");
    if (iPWG4gammaconv) printf("=  PWG4 gamma conversion                                     =\n");
+   if (iPWG4omega3pi)  printf("=  PWG4 omega to 3 pions                                     =\n");
    printf("==================================================================\n");
    printf(":: use MC truth      %d\n", (UInt_t)useMC);
    printf(":: use KINE filter   %d\n", (UInt_t)useKFILTER);
@@ -349,6 +352,14 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       AliAnalysisTaskGammaConversion * taskGammaConversion = AddTaskGammaConversion(arguments,mgr->GetCommonInputContainer());
       if (!taskGammaConversion) ::Warning("AnalysisTrainNew", "AliAnalysisTaskGammaConversion cannot run for these train conditions - EXCLUDED");
    }   
+
+   // PWG4 omega to 3 pions analysis
+   if (iPWG4omega3pi) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskomega3pi.C");
+      AliAnalysisTaskOmegaPi0PiPi *taskomega3pi = AddTaskomega3pi();
+      if (!taskomega3pi) ::Warning("AnalysisTrainNew", "AliAnalysisTaskomega3pi cannot run for these train conditions - EXCLUDED");
+   }   
+
    //==========================================================================
    // FOR THE REST OF THE TASKS THE MACRO AddTaskXXX() is not yet implemented/
    // Run the analysis
@@ -358,8 +369,12 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       if (saveTrain || strlen(config_file)) gSystem->ChangeDirectory(train_name);
       StartAnalysis(smode, chain);
       if (saveTrain && smode=="GRID") {
+         AliAnalysisAlien *gridhandler = (AliAnalysisAlien*)mgr->GetGridHandler();
+         alien_outdir = gridhandler->GetGridOutputDir();
          printf("=== Registering ConfigTrain.C in the output directory <%s> ===\n",
                 alien_outdir.Data());
+         if (AliAnalysisAlien::FileExists(Form("/%s/ConfigTrain.C", alien_outdir.Data())))
+            gGrid->Rm(Form("/%s/ConfigTrain.C", alien_outdir.Data()));
          TFile::Cp("file:ConfigTrain.C", Form("alien://%s/ConfigTrain.C", alien_outdir.Data()));
       }
    }
@@ -438,6 +453,7 @@ void CheckModuleFlags(const char *mode) {
          iJETAN = 0;
          if (iPWG4gammaconv)
             ::Info("AnalysisTrainNew.C::CheckModuleFlags", "iPWG4gammaconv disabled on AOD's");
+         iPWG4gammaconv = 0;   
       }
       // Disable tasks that do not work yet on AOD data
       if (iPWG2kink)         
@@ -446,6 +462,9 @@ void CheckModuleFlags(const char *mode) {
       if (iPWG2unicor)         
          ::Info("AnalysisTrainNew.C::CheckModuleFlags", "PWG2unicor disabled in analysis on AOD's");
          iPWG2unicor = 0;
+      if (iPWG4omega3pi)
+         ::Info("AnalysisTrainNew.C::CheckModuleFlags", "iPWG4omega3pi disabled on AOD's");
+         iPWG4omega3pi = 0;
    } else {   
    // ESD analysis
       iMUONcopyAOD = 0;
@@ -624,6 +643,10 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    // PWG4 gamma conversion
    if (iPWG4gammaconv) {
       if (!LoadLibrary("PWG4GammaConv", mode, kTRUE)) return kFALSE;
+   }      
+   // PWG4 omega to 3 pions
+   if (iPWG4omega3pi) {
+      if (!LoadLibrary("PWG4omega3pi", mode, kTRUE)) return kFALSE;
    }      
    // PWG2 task protons 
    if (iPWG2spectra) {
@@ -853,7 +876,7 @@ Int_t SetupPar(char* pararchivename)
 }
 
 //______________________________________________________________________________
-AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
+AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 {
 // Check if user has a valid token, otherwise make one. This has limitations.
 // One can always follow the standard procedure of calling alien-token-init then
@@ -862,6 +885,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode)
    AliAnalysisAlien *plugin = new AliAnalysisAlien();
 // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode(plugin_mode);
+   if (useProductionMode) plugin->SetProductionMode();
    plugin->SetNtestFiles(1);
    plugin->SetPreferedSE("ALICE::Legnaro::SE");
 // Set versions of used packages
@@ -1017,6 +1041,7 @@ void WriteConfig()
    out << "   iJETAN          = " << iJETAN << ";" << endl;
    out << "   iPWG4partcorr   = " << iPWG4partcorr << ";" << endl;
    out << "   iPWG4gammaconv  = " << iPWG4gammaconv << ";" << endl;
+   out << "   iPWG4omega3pi   = " << iPWG4omega3pi << ";" << endl;
    out << "   iPWG2femto      = " << iPWG2femto << ";" << endl;
    out << "   iPWG2spectra    = " << iPWG2spectra << ";" << endl;
    out << "   iPWG2flow       = " << iPWG2flow << ";" << endl;
