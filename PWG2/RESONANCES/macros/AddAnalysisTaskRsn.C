@@ -20,7 +20,7 @@ Bool_t AddAnalysisTaskRsn
   AliLog::EType_t  debugType  = AliLog::kInfo, // debug depth for some classes
   Bool_t           useTPCOnly = kFALSE,        // use TPC only PID
   const char      *outFile    = "rsn.root",    // output file name
-  Bool_t           sourceESD  = kTRUE,         // if true, the source of data is ESD, otherwise is AOD from filter task
+  Bool_t           sourceESD  = kTRUE          // if true, the source of data is ESD, otherwise is AOD from filter task
 )
 {
   // retrieve analysis manager
