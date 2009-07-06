@@ -1,4 +1,12 @@
 // Macro to run TPC performance
+// By default 6 performance components are added to 
+// the output: 
+// 1. AliPerformanceRes (TPC track resolution at DCA)
+// 2. AliPerformanceResTPCInner (TPC track resolution at inner TPC wall)
+// 3. AliPerformanceEff (TPC track reconstruction efficieny)
+// 4. AliPerformanceDEdxTPCInner (TPC dEdxresponse - track parameters at TPC inner wall)
+// 5. AliPerformanceDCA (TPC impact parameter resolution at DCA)
+// 6. AliPerformanceTPC (TPC cluster and track information)
 
 /*
   //1. Run locally e.g.
@@ -6,11 +14,14 @@
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/LoadMyLibs.C");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-  TChain* chain = CreateESDChain("esd_v4-16-Rev-08-grid.txt", 10, 0);
+  TChain* chain = CreateESDChain("list_PbPb_EMCAL.txt", 1, 0);
   chain->Lookup();
 
+  // set magnetic field
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
+
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/RunPerformanceTask.C");
-  RunPerformanceTask(chain, kTRUE, kFALSE);
+  RunPerformanceTask(chain, kTRUE, kFALSE, kFALSE);
 
   //2. Run on PROOF Lite e.g.
 
@@ -20,19 +31,21 @@
   ProofEnableAliRoot("/u/jacek/alice/AliRoot/HEAD/");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-  TChain* chain = CreateESDChain("esd_v4-16-Rev-08-grid.txt", 500, 0);
-  //TChain* chain = CreateESDChain("esd_TRUNK_flat_ideal_geom.txt", 50, 0);
+  TChain* chain = CreateESDChain("list_PbPb_EMCAL.txt",20, 0);
   chain->Lookup();
 
+  // set magnetic field
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
+
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/RunPerformanceTask.C");
-  RunPerformanceTask(chain, kTRUE, kTRUE); 
+  RunPerformanceTask(chain, kTRUE, kFALSE, kTRUE);
 
 
   //3. Run only on static PROOF at GSI e.g.
 
   TProof::Reset("jacek@lxgrid5.gsi.de");
   TProofMgr * proofmgr = TProof::Mgr("jacek@lxgrid5.gsi.de");
-  proofmgr->SetROOTVersion("523-02");
+  proofmgr->SetROOTVersion("523-04");
   TProof * proof = proofmgr->CreateSession();
   proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)10000);
 
@@ -43,27 +56,31 @@
   TChain* chain = CreateESDChain("esd_v4-16-Rev-08-grid.txt", 200, 0);
   chain->Lookup();
 
+  // set magnetic field
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
+
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/RunPerformanceTask.C");
-  RunPerformanceTask(chain, kTRUE, kTRUE); 
+  RunPerformanceTask(chain, kTRUE, kFALSE, kTRUE); 
 
   //4. Make final spectra and store them in the
   // output folder and generate control pictures e.g.
 
   TFile f("TPC.Performance.root");
-  AliPerformanceRes * compObjRes = (AliPerformanceRes*)coutput->FindObject("AliPerformanceResTPCInner");
-  compObjRes->Analyse();
-  compObjRes->GetAnalysisFolder()->ls("*");
-  compObjRes->PrintHisto(kTRUE,"PerformanceResTPCInnerQA.ps");
-  TFile fout("AnalysedResTPCInner.root","recreate");
-  compObjRes->GetAnalysisFolder()->Write();
+  AliPerformanceEff * compObjEff = (AliPerformanceEff*)coutput->FindObject("AliPerformanceEff");
+  compObjEff->Analyse();
+  compObjEff->GetAnalysisFolder()->ls("*");
+  // create pictures
+  compObjEff->PrintHisto(kTRUE,"PerformanceEffQA.ps");
+  // store output QA histograms in file
+  TFile fout("PerformanceEffQAHisto.root","recreate");
+  compObjEff->GetAnalysisFolder()->Write();
   fout.Close();
   f.Close();
-
 
 */
 
 //_____________________________________________________________________________
-void RunPerformanceTask(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bProof=kTRUE)
+void RunPerformanceTask(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseFriend=kTRUE,  Bool_t bProof=kTRUE)
 {
   if(!chain) 
   {
@@ -78,21 +95,17 @@ void RunPerformanceTask(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bProof=kT
     // ONLY FOR GSI
     TProof::Reset("jacek@lxgrid5.gsi.de");
     TProofMgr * proofmgr = TProof::Mgr("jacek@lxgrid5.gsi.de");
-    proofmgr->SetROOTVersion("523-02");
+    proofmgr->SetROOTVersion("523-04");
     TProof * proof = proofmgr->CreateSession();
     proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)10000);
     */
 
-    /*
     //cout << "*** START PROOF Lite SESSION ***" << endl;
     TProof::Open(""); 
     gROOT->LoadMacro("ProofEnableAliRoot.C");
     ProofEnableAliRoot("/u/jacek/alice/AliRoot/HEAD/");
-    */
 
   }
-  // set magnetic field
-  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
 
   //
   // Create global cuts objects 
@@ -113,7 +126,7 @@ void RunPerformanceTask(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bProof=kT
   // Create MC track reconstruction cuts
   AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts();
   if(pMCInfoCuts) {
-    pMCInfoCuts->SetMinTrackLength(70);
+    pMCInfoCuts->SetMinTrackLength(50);
   } else {
     AliDebug(AliLog::kError, "ERROR: Cannot AliMCInfoCuts object");
   }
@@ -121,7 +134,7 @@ void RunPerformanceTask(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bProof=kT
   //
   // Create performance objects and set cuts 
   //
-  const Int_t kTPC = 0; const Int_t kTPCITS = 1; const Int_t kConstrained = 2; const Int_t kTPCInner = 3;
+  enum { kTPC = 0, kTPCITS, kConstrained, kTPCInner, kTPCOuter, kTPCSec };
 
   //
   // Resolution
@@ -139,6 +152,14 @@ void RunPerformanceTask(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bProof=kT
   }
   pCompRes3->SetAliRecInfoCuts(pRecInfoCuts);
   pCompRes3->SetAliMCInfoCuts(pMCInfoCuts);
+
+  AliPerformanceRes *pCompRes4 = new AliPerformanceRes("AliPerformanceResTPCOuter","AliPerformanceResTPCOuter",kTPCOuter,kFALSE); 
+  if(!pCompRes4) {
+    AliDebug(AliLog::kError, "ERROR: Cannot create AliPerformanceResOuterTPC object");
+  }
+  pCompRes4->SetAliRecInfoCuts(pRecInfoCuts);
+  pCompRes4->SetAliMCInfoCuts(pMCInfoCuts);
+
   //
   // Efficiency
   //
@@ -185,8 +206,10 @@ void RunPerformanceTask(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bProof=kT
   // Create task
   AliPerformanceTask *task = new AliPerformanceTask("Performance","TPC Performance");
   if (bUseMCInfo) task->SetUseMCInfo(kTRUE);
+  if (bUseFriend) task->SetUseESDfriend(kTRUE);
   task->AddPerformanceObject( pCompRes0 );
   task->AddPerformanceObject( pCompRes3 );
+  if(bUseFriend) task->AddPerformanceObject( pCompRes4 );
   task->AddPerformanceObject( pCompEff0 );
   task->AddPerformanceObject( pCompDEdx3 );
   task->AddPerformanceObject( pCompDCA0 );
@@ -197,27 +220,16 @@ void RunPerformanceTask(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bProof=kT
 
   // Add ESD handler
   AliESDInputHandler* esdH = new AliESDInputHandler;
-  //esdH->SetInactiveBranches("*");
   mgr->SetInputEventHandler(esdH);
 
   if(bUseMCInfo) {
   // Enable MC event handler
     AliMCEventHandler* handler = new AliMCEventHandler;
-    //handler->SetReadTR(kFALSE);
     handler->SetReadTR(kTRUE);
     mgr->SetMCtruthEventHandler(handler);
   }
-
-  // Create input chain
-  //gROOT->LoadMacro("CreateESDChain.C");
-  //TChain* chain = CreateESDChain(fileList, NumberOfFiles, fromFile);
-  //if(!chain) {
-  //  printf("ERROR: chain cannot be created\n");
-  //  return;
-  //}
-
+ 
   // Create containers for input
-  //AliAnalysisDataContainer *cinput = mgr->CreateContainer("cchain", TChain::Class(), AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 
