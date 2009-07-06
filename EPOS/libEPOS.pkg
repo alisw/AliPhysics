@@ -65,20 +65,6 @@ epos167/4flav/epos.param  \
 EPOScommon.h eposproc.h  \
 epos167/epostimer.h
 
-ifeq (g95,$(F77))
-SHLIB += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
-else
-ifeq (gfortran,$(F77))
-SHLIB := $(shell gfortran -print-file-name=libgfortran.so)
-SHLIB += $(shell gfortran -print-file-name=libgfortranbegin.a)
-else
-SHLIB         = -lg2c
-SYSLIBS +=  -lg2c
-endif
-endif
-
-SOFLAGS+= $(SHLIB)
-
 
 ifeq (macosxicc,$(ALICE_TARGET))
 PACKFFLAGS      := $(filter-out -O%,$(FFLAGS))
