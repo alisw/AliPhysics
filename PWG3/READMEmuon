@@ -9,11 +9,38 @@ The following filter is used in the official analysis train, in order to copy th
 1) AliAnalysisTaskESDMuonFilter.h  --> analysis task to copy the muon information from the ESD to the standard AOD
 2) AliAnalysisTaskESDMuonFilter.cxx --> analysis task to copy the muon information from the ESD to the standard AOD
 
-In order to test locally the analysis train from the ESD to the Standard AOD production, the following macro is provided
+In order to test the analysis train from the ESD to the Standard AOD production, the following macro is provided:
 
-1) AnalysisTrainMuonLocal.C 
-   - The input file is the ESD
-   - The outputs are the standard AOD and the AOD tag file
+  AnalysisTrainFromESDToAOD.C
+
+Input file: ESD
+Output files: standard AOD (+AOD tags)
+
+Two wagons are attached to the analysis train: 
+   1) $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C 
+   2) $ALICE_ROOT/PWG3/muon/AddTaskTagCreation.C 
+
+Several flags can be activated: 
+   1) iESDfilter: to activate, using AddTaskESDFilter.C, the copy of the ESD information into the AOD.
+      In AddTaskESDFilter.C there is the possibility to apply cuts on the tracks and muon tracks in order
+      to reject them before filling the AOD. 
+   2) iAODAddMCBranch: to activate the inclusion of the MC branch (containing Kinematics info) into a branch of the AOD 
+   3) iAODTagCreation: to activate, using AddTaskTagCreation.C, the AOD tag creation
+      
+Runninng options tested: 
+   1) GRID (with/without AliEn plugin)
+   2) LOCAL 
+
+If the AliEn plugin is required, the macro 
+   CreateAlienHandler_FromESDToAOD.C
+can be used, in order to configure the jdl.
+
+AnalysisTrainFromESDToAOD.C is an updated version of the macro AnalysisTrainMuonLocal.C 
+(input file: ESD, output files standard AOD and the AOD tag file)
+The main differences are related to implementations to be compliant with the analysis framework,
+possibility to run on the grid with/without the Alien Plugin and possibility of adding the MC truth in a branch of the AOD.
+
+The macro ReadAOD_MCBranch.C is an example on how to access MC information stored in the AOD.
    
 ===================================================
   Creation of the MUON-AOD from the standard AOD
