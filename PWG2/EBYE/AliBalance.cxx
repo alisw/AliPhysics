@@ -181,6 +181,43 @@ void AliBalance::SetAnalysisType(Int_t iType) {
 }
 
 //____________________________________________________________________//
+const char* AliBalance::GetAnalysisType() {
+  //0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
+  TString analysisType;
+  switch(fAnalysisType) {
+  case 0:
+    analysisType = "Rapidity"; 
+    break;
+  case 1:
+    analysisType = "Pseudo-rapidity"; 
+    break;
+  case 2:
+    analysisType = "Qlong"; 
+    break;
+  case 3:
+    analysisType = "Qout"; 
+    break;
+  case 4:
+    analysisType = "Qside"; 
+    break;
+  case 5:
+    analysisType = "Qinv"; 
+    break;
+  case 6:
+    analysisType = "Phi"; 
+    break;
+  default:
+    break;
+  }
+  analysisType += "\nInterval: ";
+  analysisType += fP2Start; analysisType += " - "; analysisType += fP2Stop;
+  analysisType += "\nSteps: "; analysisType += fP2Step;
+  analysisType += "\nBins: "; analysisType += fNumberOfBins;
+
+  return analysisType.Data();
+}
+
+//____________________________________________________________________//
 void AliBalance::SetParticles(TLorentzVector *P, Double_t *charge, Int_t dim) {
   // Sets a new particle with given 4-momentum and charge.
   // dim is the size of the array of charges and corresponds
@@ -439,4 +476,16 @@ TGraphErrors *AliBalance::DrawBalance() {
   }
 
   return gr;
+}
+
+//____________________________________________________________________//
+void AliBalance::Merge(AliBalance *b) {
+  //Merging function to be used for proof and grid
+  fNp += b->GetNp();
+  fNn += b->GetNn();
+  for(Int_t i = 0; i < fNumberOfBins; i++) {
+    fNnn[i] += b->GetNnn(i);
+    fNpp[i] += b->GetNpp(i);
+    fNpn[i] += b->GetNpn(i);
+  }
 }

@@ -32,6 +32,9 @@ class AliBalance : public TObject
   void SetAnalysisType(Int_t iType);
   void SetInterval(Double_t p2Start, Double_t p2Stop);
 
+  Int_t GetNumberOfBins() {return fNumberOfBins;}
+  const char* GetAnalysisType();
+
   void SetNp(Int_t np) {fNp = np;}
   void SetNn(Int_t nn) {fNn = nn;}
   void SetNnn(Double_t *nn);
@@ -51,6 +54,8 @@ class AliBalance : public TObject
 
   TGraphErrors *DrawBalance();
   void PrintResults();
+
+  void Merge(AliBalance *b);
 
  private:
   Double_t *fCharge; //matrix with the charge of each track
