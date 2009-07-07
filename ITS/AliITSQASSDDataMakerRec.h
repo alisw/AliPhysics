@@ -42,7 +42,7 @@ public:
   virtual ~AliITSQASSDDataMakerRec(); // dtor
 
   Int_t GetOffset(AliQAv1::TASKINDEX_t task);
-  void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset);
+  void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset, Int_t specie = 0);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
 
  private:
@@ -76,15 +76,15 @@ public:
   Int_t   fSSDhRawsTask;                        //number of histo booked for the raws SSD task 
   Int_t   fSSDhDigitsTask;                      //number of histo booked for the recpoints SSD task
   Int_t   fSSDhRecPointsTask;                   //number of histo booked for the recpoints SSD task
-  Int_t   fGenRawsOffset;                       //qachecking raws       offset
+  Int_t   *fGenRawsOffset;                       //qachecking raws       offset
   Int_t   fGenDigitsOffset;                     //qachecking recpoints  offset
-  Int_t   fGenRecPointsOffset;                  //qachecking recpoints  offset
+  Int_t   *fGenRecPointsOffset;                  //qachecking recpoints  offset
   TH1D   *fHistSSDRawSignalModule[fgkSSDMODULES]; //raw signal vs strip number - SSD                   
   Int_t   fOccupancyMatrix[fgkSSDMODULES][2*fgkNumberOfPSideStrips]; //occupancy values per strip
 
   AliCDBManager *fCDBManager; //CDB manager
 
-  ClassDef(AliITSQASSDDataMakerRec,5)           // description 
+  ClassDef(AliITSQASSDDataMakerRec,6)           // description 
 };
 
 #endif

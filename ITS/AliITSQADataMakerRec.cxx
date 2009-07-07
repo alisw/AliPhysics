@@ -37,11 +37,13 @@
 #include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliITSQAChecker.h"
+#include "AliITSRecPoint.h"
 #include "AliRawReader.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
+#include "AliITSgeomTGeo.h"
 
 ClassImp(AliITSQADataMakerRec)
 
@@ -49,7 +51,6 @@ ClassImp(AliITSQADataMakerRec)
 AliITSQADataMakerRec::AliITSQADataMakerRec(Bool_t kMode, Short_t subDet, Short_t ldc) :
 AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kITS), "ITS Quality Assurance Data Maker"),
 fkOnline(kMode),
-fHLTMode(0),
 fSubDetector(subDet),
 fLDC(ldc),
 fSPDDataMaker(NULL),
@@ -69,7 +70,6 @@ fSSDDataMaker(NULL)
   if(fSubDetector == 0 || fSubDetector == 2) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Create SDD DataMakerRec\n");
 	fSDDDataMaker = new AliITSQASDDDataMakerRec(this,fkOnline);
-	if(fkOnline){SetHLTMode(fSDDDataMaker->GetHLTMode()); }
   }
   if(fSubDetector == 0 || fSubDetector == 3) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Create SSD DataMakerRec\n");
@@ -89,7 +89,6 @@ AliITSQADataMakerRec::~AliITSQADataMakerRec(){
 AliITSQADataMakerRec::AliITSQADataMakerRec(const AliITSQADataMakerRec& qadm) :
 AliQADataMakerRec(),
 fkOnline(qadm.fkOnline),
-fHLTMode(qadm.fHLTMode),
 fSubDetector(qadm.fSubDetector),
 fLDC(qadm.fLDC),
 fSPDDataMaker(NULL),
@@ -162,18 +161,25 @@ void AliITSQADataMakerRec::EndOfDetectorCycle(const char * /*fgDataName*/)
 void AliITSQADataMakerRec::InitRaws()
 {  
 
-  // Initialization for RAW data 
+	if(fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()) return;
+	Int_t rv = 0;
+	//AliInfo(Form("Start InitRaws on specie %d\n",AliRecoParam::AConvert(fEventSpecie)));
+	//AliInfo(Form("fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries() %d\n",fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()));
 	if(fSubDetector == 0 || fSubDetector == 1) {
 	  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitRaws\n");
-	  fSPDDataMaker->InitRaws();
+	    rv = fSPDDataMaker->InitRaws();
 	}
 	if(fSubDetector == 0 || fSubDetector == 2) {
  	  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SDD InitRaws\n");
-	  fSDDDataMaker->InitRaws();
+		//AliInfo(Form("set offset to %d\n",fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()));
+      fSDDDataMaker->SetOffset(AliQAv1::kRAWS, fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries(),AliRecoParam::AConvert(fEventSpecie));
+	    rv = fSDDDataMaker->InitRaws();
 	}
 	if(fSubDetector == 0 || fSubDetector == 3) {
 	  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SSD InitRaws\n");
-	  fSSDDataMaker->InitRaws();
+		//AliInfo(Form("set offset to %d\n",fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()));
+      fSSDDataMaker->SetOffset(AliQAv1::kRAWS, fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries(),AliRecoParam::AConvert(fEventSpecie));
+	  rv = fSSDDataMaker->InitRaws();
 	}
 }
 
@@ -183,19 +189,18 @@ void AliITSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // Fill QA for RAW   
   //return ; 
 
+  //AliInfo(Form("fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries() %d\n",fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()));
   if(fSubDetector == 0 || fSubDetector == 1)  {
-    Int_t rv = fSPDDataMaker->MakeRaws(rawReader) ; 
-    if ( rv != 0 )
-      fSDDDataMaker->SetOffset(AliQAv1::kRAWS, fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+    fSPDDataMaker->MakeRaws(rawReader) ; 
   }
+  //AliInfo(Form("fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries() %d\n",fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()));
   
   if(fSubDetector == 0 || fSubDetector == 2) {
-    Int_t rv = fSDDDataMaker->MakeRaws(rawReader) ; 
-    if ( rv != 0 )
-      fSSDDataMaker->SetOffset(AliQAv1::kRAWS, fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+    fSDDDataMaker->MakeRaws(rawReader) ; 
   }
-
+  //AliInfo(Form("fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries() %d\n",fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()));
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeRaws(rawReader);
+  //AliInfo(Form("fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries() %d\n",fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()));
 }
 
 //____________________________________________________________________________ 
@@ -242,18 +247,45 @@ void AliITSQADataMakerRec::InitRecPoints()
 {
 
   // Initialization for RECPOINTS
-  if(fSubDetector == 0 || fSubDetector == 1) {
-    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitRecPoints\n");
-    fSPDDataMaker->InitRecPoints();
-  }
-  if(fSubDetector == 0 || fSubDetector == 2) {
-    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SDD InitRecPoints\n");
-	fSDDDataMaker->InitRecPoints();
-  }
-  if(fSubDetector == 0 || fSubDetector == 3) {
-    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SSD InitRecPoints\n");
-	fSSDDataMaker->InitRecPoints();
-  }
+
+  //AliInfo(Form("AliRecoParam::AConvert(fEventSpecie) %d\n",AliRecoParam::AConvert(fEventSpecie)));
+	//AliInfo(Form("fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries() %d\n",fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()));
+	if(fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()) return;
+	if(fSubDetector == 0 || fSubDetector == 1) {
+		AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitRecPoints\n");
+		fSPDDataMaker->InitRecPoints();
+	}
+	if(fSubDetector == 0 || fSubDetector == 2) {
+		AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SDD InitRecPoints\n");
+		//AliInfo(Form("set offset to %d\n",fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()));
+		fSDDDataMaker->SetOffset(AliQAv1::kRECPOINTS, fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries(),AliRecoParam::AConvert(fEventSpecie));
+		fSDDDataMaker->InitRecPoints();
+	}
+	if(fSubDetector == 0 || fSubDetector == 3) {
+		AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SSD InitRecPoints\n");
+		//AliInfo(Form("set offset to %d\n",fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()));
+		fSSDDataMaker->SetOffset(AliQAv1::kRECPOINTS, fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries(),AliRecoParam::AConvert(fEventSpecie));
+		fSSDDataMaker->InitRecPoints();
+	}
+	//AliInfo(Form("fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries() %d\n",fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()));
+
+	Int_t offset = fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries();
+	const Bool_t expert   = kTRUE ; 
+	const Bool_t image    = kTRUE ; 
+	Char_t name[50];
+	Char_t title[50];
+	TH2F**hPhiEta = new TH2F*[6];
+	for (Int_t iLay=0;iLay<6;iLay++) {
+		sprintf(name,"Phi_vs_Eta_ITS_Layer%d",iLay+1);
+		sprintf(title,"Phi vs Eta - ITS Layer %d",iLay+1);
+		hPhiEta[iLay]=new TH2F(name,title,30,-1.5,1.5,200,0.,2*TMath::Pi());
+		hPhiEta[iLay]->GetXaxis()->SetTitle("Pseudorapidity");
+		hPhiEta[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
+		Add2RecPointsList((new TH2F(*hPhiEta[iLay])), iLay + offset, !expert, image);
+		//AliInfo(Form("Added histo phi vs eta at position %d\n", iLay + offset));
+		delete hPhiEta[iLay];
+ 	}
+	//AliInfo(Form("fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries() %d\n",fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()));
 }
 
 //____________________________________________________________________________ 
@@ -262,20 +294,72 @@ void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
  
   // Fill QA for recpoints
   if(fSubDetector == 0 || fSubDetector == 1) {
-    Int_t rv = fSPDDataMaker->MakeRecPoints(clustersTree) ; 
-    if ( rv != 0 )
-      fSDDDataMaker->SetOffset(AliQAv1::kRECPOINTS, fRecPointsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+    fSPDDataMaker->MakeRecPoints(clustersTree) ; 
   }
-  
+    
   if(fSubDetector == 0 || fSubDetector == 2) {
-    Int_t rv = fSDDDataMaker->MakeRecPoints(clustersTree) ; 
-    if ( rv != 0 )
-      fSSDDataMaker->SetOffset(AliQAv1::kRECPOINTS, fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries());
+    fSDDDataMaker->MakeRecPoints(clustersTree) ; 
   }
   
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeRecPoints(clustersTree);
+
+	// Check id histograms already created for this Event Specie
+	TBranch *branchRecP = clustersTree->GetBranch("ITSRecPoints");
+	if (!branchRecP) {
+		AliError("can't get the branch with the ITS clusters !");
+		return;
+	}
+
+	Int_t offset = fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries();
+	Float_t cluGlo[3] = {0.,0.,0.};
+	Int_t lay, lad, det; 
+	static TClonesArray statRecpoints("AliITSRecPoint") ;
+	TClonesArray *recpoints = &statRecpoints;
+	branchRecP->SetAddress(&recpoints);
+	// Fill QA for recpoints
+	for(Int_t module=0; module<clustersTree->GetEntries();module++){
+		branchRecP->GetEvent(module);
+		AliITSgeomTGeo::GetModuleId(module, lay, lad, det);
+		for(Int_t j=0;j<recpoints->GetEntries();j++){
+			AliITSRecPoint *rcp = (AliITSRecPoint*)recpoints->At(j);    
+			// Check id histograms already created for this Event Specie
+			rcp->GetGlobalXYZ(cluGlo);
+			Double_t rad=TMath::Sqrt(cluGlo[0]*cluGlo[0]+cluGlo[1]*cluGlo[1]);
+			Double_t phi= TMath::Pi() + TMath::ATan2(-cluGlo[1],-cluGlo[0]);
+			Double_t theta = TMath::ACos(cluGlo[2]/rad);
+			Double_t eta = 100.;
+			if(rad != 0) eta = -TMath::Log(TMath::Tan(theta/2.));
+			(GetRecPointsData( rcp->GetLayer() + offset - 6))->Fill(eta,phi);
+		}
+	}
+
+
 }
 
+//____________________________________________________________________________ 
+void AliITSQADataMakerRec::FillRecPoint(AliITSRecPoint rcp)
+{
+
+	// Fill QA for recpoints
+	Float_t cluGlo[3] = {0.,0.,0.};
+	Int_t offset = fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries();
+  // Check id histograms already created for this Event Specie
+	rcp.GetGlobalXYZ(cluGlo);
+	Double_t rad=TMath::Sqrt(cluGlo[0]*cluGlo[0]+cluGlo[1]*cluGlo[1]);
+	Double_t phi= TMath::Pi() + TMath::ATan2(-cluGlo[1],-cluGlo[0]);
+	Double_t theta = TMath::ACos(cluGlo[2]/rad);
+	Double_t eta = 100.;
+	if(rad != 0) eta = -TMath::Log(TMath::Tan(theta/2.));
+	(GetRecPointsData( rcp.GetLayer() + offset - 6))->Fill(eta,phi);
+}
+
+//____________________________________________________________________________ 
+TH2F *AliITSQADataMakerRec::GetITSGlobalHisto(Int_t layer)
+{
+
+	Int_t offset = fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries();
+	return ((TH2F *) GetRecPointsData( layer + offset - 6));//local distribution
+}
 
 //____________________________________________________________________________ 
 void AliITSQADataMakerRec::InitESDs()
@@ -435,8 +519,8 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
   // Make QA data from ESDs
 
   // Check id histograms already created for this Event Specie
-  if ( ! GetESDsData(0) )
-    InitESDs() ;
+//  if ( ! GetESDsData(0) )
+//    InitESDs() ;
   
   const Int_t nESDTracks = esd->GetNumberOfTracks();
   Int_t nITSrefit5 = 0; 

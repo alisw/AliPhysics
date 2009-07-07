@@ -10,7 +10,6 @@
 //
 //
 //  W. Ferrarese + P. Cerello Feb 2008
-//  M.Siciliano Aug 2008 QA RecPoints and HLT mode
 
 /* $Id$ */
 
@@ -19,7 +18,6 @@
 
 class TObjArray;
 class AliITSDDLModuleMapSDD;
-class AliITSHLTforSDD;
 class AliITSQASDDDataMakerRec: public TObject {
 
 public:
@@ -39,15 +37,15 @@ public:
 
   virtual ~AliITSQASDDDataMakerRec(); // dtor
   Int_t GetOffset(AliQAv1::TASKINDEX_t task);
-  void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset);
+  void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset, Int_t specie = 0);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
-
-  void SetHLTMode(Bool_t khltmode=kFALSE){fHLTMode=khltmode;};
-  Bool_t GetHLTMode(){return fHLTMode;};
-  void SetHLTModeFromEnvironment();
 
 private:
 
+	void AnalyseBNG();                       // Analyse ROOT files with baselines, noise, gains
+	void AnalyseINJ();						// Analyse ROOT files with drift speed
+	void AnodeStatus();						// Check Anode Status changes (0 = bad, 1 = good)
+	void AnalyseHistos(Int_t type);				// Analyse Histos type: 1 = Baseline, 2 = Noise (Uncorrected), 3 = Noise (Common Mode), 4 = Noise (Corrected), 5 = Gain, 6 = Drift Speed
   static const Int_t fgknSDDmodules = 260; // number of SDD modules
   static const Int_t fgkmodoffset = 240;   // number of SPD modules
   static const Int_t fgknAnode = 256;      // anode per half-module
@@ -62,15 +60,18 @@ private:
   Int_t   fSDDhRawsTask;                      // number of histo booked for each the Raws Task SDD
   Int_t   fSDDhDigitsTask;                    // number of histo booked for each the RecPoints Task SDD
   Int_t   fSDDhRecPointsTask;                 // number of histo booked for each the RecPoints Task SDD
-  Int_t   fGenRawsOffset;                     // QAchecking Raws offset       
+  Int_t   *fGenRawsOffset;                     // QAchecking Raws offset       
   Int_t   fGenDigitsOffset;                   // QAchecking RecPoints offset       
-  Int_t   fGenRecPointsOffset;                // QAchecking RecPoints offset       
+  Int_t   *fGenRecPointsOffset;                // QAchecking RecPoints offset       
   Int_t   fTimeBinSize;			      // time bin width in number of clocks
   AliITSDDLModuleMapSDD  *fDDLModuleMap;      // SDD Detector configuration for the decoding
-  Bool_t fHLTMode;                            // kTRUE mode C kFALSE mode A 
-                                              // Used in online mode only
-  AliITSHLTforSDD *fHLTSDD;                   // used for offline QA as the HLT mode flag
-  ClassDef(AliITSQASDDDataMakerRec,7)         // description 
+
+  Bool_t fAnodeMap[fgknSDDmodules][fgknSide][fgknAnode];  // Array of anode status 1 = ok, 0 = bad
+  Int_t   fGoodAnodes;
+  Int_t   fBadAnodes;
+  Int_t   fGoodAnodesCurrent;
+  Int_t   fBadAnodesCurrent;
+  ClassDef(AliITSQASDDDataMakerRec,8)         // description 
 
 };
 

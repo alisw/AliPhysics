@@ -39,7 +39,7 @@ public:
   virtual void  EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASPDDataMakerRec();   // dtor
   Int_t GetOffset(AliQAv1::TASKINDEX_t task);
-  void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset);
+  void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset, Int_t specie = 0);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
 
 private: 
@@ -54,12 +54,12 @@ private:
   Int_t   fSPDhRawsTask;                      // number of booked SPD histograms for the Raws Task
   Int_t   fSPDhDigitsTask;                    // number of booked SPD histograms for the RecPoints Task
   Int_t   fSPDhRecPointsTask;                 // number of booked SPD histograms for the RecPoints Task
-  Int_t   fGenRawsOffset;                     // QAchecking Raws offset
+  Int_t   *fGenRawsOffset;                     // QAchecking Raws offset
   Int_t   fGenDigitsOffset;                   // QAchecking Digits offset
-  Int_t   fGenRecPointsOffset;                // QAchecking RecPoints offset
+  Int_t   *fGenRecPointsOffset;                // QAchecking RecPoints offset
   AliITSRawStreamSPDErrorLog *fAdvLogger;  // pointer to special error logger object
 
-  ClassDef(AliITSQASPDDataMakerRec,4)      // description 
+  ClassDef(AliITSQASPDDataMakerRec,5)      // description 
 
 };
 
