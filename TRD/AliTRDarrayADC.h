@@ -59,7 +59,7 @@ class AliTRDarrayADC: public TObject
   Short_t* fADC;  //[fNAdim]   //Pointer to adc values
   static Short_t *fLutPadNumbering;   //  [fNcol] Look Up Table
 
-  ClassDef(AliTRDarrayADC,2) //ADC container class
+  ClassDef(AliTRDarrayADC,3) //ADC container class
     
 };
 
