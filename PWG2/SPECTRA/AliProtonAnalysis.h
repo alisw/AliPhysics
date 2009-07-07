@@ -39,6 +39,8 @@ class AliProtonAnalysis : public TObject {
   AliProtonAnalysis();
   AliProtonAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY,
 		    Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
+  AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
+		    Int_t nbinsPt, Double_t *gPt);
   virtual ~AliProtonAnalysis();
 
   void SetBaseAnalysis(AliProtonAnalysisBase * const baseAnalysis) {
@@ -48,6 +50,8 @@ class AliProtonAnalysis : public TObject {
 
   void InitAnalysisHistograms(Int_t nbinsY, Float_t fLowY, Float_t fHighY,
 			      Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
+  void InitAnalysisHistograms(Int_t nbinsY, Double_t *gY,
+			      Int_t nbinsPt, Double_t *gPt);
   Bool_t ReadFromFile(const char* filename);
   void Analyze(AliESDEvent *fESD, 
 	       const AliESDVertex *vertex);

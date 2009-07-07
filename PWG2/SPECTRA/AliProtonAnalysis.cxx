@@ -125,6 +125,58 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
 } 
 
 //____________________________________________________________________//
+AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
+				     Int_t nbinsPt,Double_t *gPt) : 
+  TObject(), fProtonAnalysisBase(0),
+  fNBinsY(nbinsY), fMinY(gY[0]), fMaxY(gY[nbinsY]),
+  fNBinsPt(nbinsPt), fMinPt(gPt[0]), fMaxPt(gPt[nbinsPt]),
+  fProtonContainer(0), fAntiProtonContainer(0),
+  fHistEvents(0), fHistYPtProtons(0), fHistYPtAntiProtons(0),
+  fEffGridListProtons(0), fCorrectionListProtons2D(0), 
+  fEfficiencyListProtons1D(0), fCorrectionListProtons1D(0),
+  fEffGridListAntiProtons(0), fCorrectionListAntiProtons2D(0), 
+  fEfficiencyListAntiProtons1D(0), fCorrectionListAntiProtons1D(0),
+  fCorrectProtons(0), fCorrectAntiProtons(0){
+  //Default constructor
+  fHistEvents = new TH1I("fHistEvents","Analyzed events",1,0,1);
+
+  fHistYPtProtons = new TH2D("fHistYPtProtons","Protons",
+			     fNBinsY,gY,fNBinsPt,gPt);
+  fHistYPtProtons->SetStats(kTRUE);
+  fHistYPtProtons->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+  if(fProtonAnalysisBase->GetEtaMode())
+    fHistYPtProtons->GetXaxis()->SetTitle("#eta");
+  else
+    fHistYPtProtons->GetXaxis()->SetTitle("y");
+  fHistYPtProtons->GetXaxis()->SetTitleColor(1);
+
+  fHistYPtAntiProtons = new TH2D("fHistYPtAntiProtons","Antiprotons",
+				 fNBinsY,gY,fNBinsPt,gPt);
+  fHistYPtAntiProtons->SetStats(kTRUE);
+  fHistYPtAntiProtons->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+  if(fProtonAnalysisBase->GetEtaMode())
+    fHistYPtAntiProtons->GetXaxis()->SetTitle("#eta");
+  else
+    fHistYPtAntiProtons->GetXaxis()->SetTitle("y");
+  fHistYPtAntiProtons->GetXaxis()->SetTitleColor(1);
+
+  //setting up the containers
+  Int_t iBin[2];
+  iBin[0] = nbinsY;
+  iBin[1] = nbinsPt;
+  fProtonContainer = new AliCFContainer("containerProtons",
+					"container for protons",
+					1,2,iBin);
+  fProtonContainer->SetBinLimits(0,gY); //rapidity or eta
+  fProtonContainer->SetBinLimits(1,gPt); //pT
+  fAntiProtonContainer = new AliCFContainer("containerAntiProtons",
+					    "container for antiprotons",
+					    1,2,iBin);
+  fAntiProtonContainer->SetBinLimits(0,gY); //rapidity or eta
+  fAntiProtonContainer->SetBinLimits(1,gPt); //pT
+} 
+
+//____________________________________________________________________//
 AliProtonAnalysis::~AliProtonAnalysis() {
   //Default destructor
   if(fProtonAnalysisBase) delete fProtonAnalysisBase;
@@ -206,6 +258,56 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY,
 					    1,2,iBin);
   fAntiProtonContainer->SetBinLimits(0,binLimY); //rapidity
   fAntiProtonContainer->SetBinLimits(1,binLimPt); //pT
+}
+
+//____________________________________________________________________//
+void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY, Double_t *gY, 
+					       Int_t nbinsPt, Double_t *gPt) {
+  //Initializes the histograms using asymmetric values - global tracking
+  fNBinsY = nbinsY;
+  fMinY = gY[0];
+  fMaxY = gY[nbinsY];
+  fNBinsPt = nbinsPt;
+  fMinPt = gPt[0];
+  fMaxPt = gPt[nbinsPt];
+
+  fHistEvents = new TH1I("fHistEvents","Analyzed events",1,0,1);
+
+  fHistYPtProtons = new TH2D("fHistYPtProtons","Protons",
+			     fNBinsY,gY,fNBinsPt,gPt);
+  fHistYPtProtons->SetStats(kTRUE);
+  fHistYPtProtons->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+  if(fProtonAnalysisBase->GetEtaMode())
+    fHistYPtProtons->GetXaxis()->SetTitle("#eta");
+  else
+    fHistYPtProtons->GetXaxis()->SetTitle("y");
+  fHistYPtProtons->GetXaxis()->SetTitleColor(1);
+
+  fHistYPtAntiProtons = new TH2D("fHistYPtAntiProtons","Antiprotons",
+				 fNBinsY,gY,fNBinsPt,gPt);
+  fHistYPtAntiProtons->SetStats(kTRUE);
+  fHistYPtAntiProtons->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+  if(fProtonAnalysisBase->GetEtaMode())
+    fHistYPtAntiProtons->GetXaxis()->SetTitle("#eta");
+  else
+    fHistYPtAntiProtons->GetXaxis()->SetTitle("y");
+  fHistYPtAntiProtons->GetXaxis()->SetTitleColor(1);
+
+  //setting up the containers
+  Int_t iBin[2];
+  iBin[0] = nbinsY;
+  iBin[1] = nbinsPt;
+
+  fProtonContainer = new AliCFContainer("containerProtons",
+					"container for protons",
+					1,2,iBin);
+  fProtonContainer->SetBinLimits(0,gY); //rapidity
+  fProtonContainer->SetBinLimits(1,gPt); //pT
+  fAntiProtonContainer = new AliCFContainer("containerAntiProtons",
+					    "container for antiprotons",
+					    1,2,iBin);
+  fAntiProtonContainer->SetBinLimits(0,gY); //rapidity
+  fAntiProtonContainer->SetBinLimits(1,gPt); //pT
 }
 
 //____________________________________________________________________//

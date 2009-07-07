@@ -46,6 +46,8 @@ class AliProtonQAAnalysis : public TObject {
   TList *GetVertexQAList() const {return fQAVertexList;}
 
   //QA histograms
+  void SetQAYPtBins(Int_t nbinsY, Double_t *gY,
+		    Int_t nbinsPt, Double_t *gPt);
   void SetQAYPtBins(Int_t nbinsY, Double_t minY, Double_t maxY,
 		    Int_t nbinsPt, Double_t minPt, Double_t maxPt);
   void RunQAAnalysis(AliStack *stack, 
@@ -110,9 +112,12 @@ class AliProtonQAAnalysis : public TObject {
 
   Int_t fNBinsY; //number of bins in eta or y
   Float_t fMinY, fMaxY; //min & max value of eta or y
+  Double_t *fY; //table of y or eta values - asymmetric
   Int_t fNBinsPt;  //number of bins in pT
   Float_t fMinPt, fMaxPt; //min & max value of pT
-  
+  Double_t *fPt; //table of pT values - asymmetric
+  Bool_t fUseAsymmetricBinning; //Flag showing if the asymmetric binning is used
+
   //QA histograms
   //Bool_t fQAHistograms; //Boolean to activate the QA histograms
   TList *fGlobalQAList; //TList storing the directories for the QA histograms
