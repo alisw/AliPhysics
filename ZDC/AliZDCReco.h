@@ -21,7 +21,8 @@ public:
 	     Int_t detspnSideC, Int_t detsppSideC,  
 	     Int_t trsp, Int_t trspSideA, Int_t trspSideC,
 	     Int_t npart, Int_t npartSideA, Int_t npartSideC, 
-	     Float_t b, Float_t bSideA, Float_t bSideC);
+	     Float_t b, Float_t bSideA, Float_t bSideC,
+	     UInt_t recoFlag);
 
   AliZDCReco(const AliZDCReco &oldreco);
   virtual ~AliZDCReco() {}
@@ -70,6 +71,12 @@ public:
   virtual Float_t GetImpParameter()    const {return fImpParameter;}
   virtual Float_t GetImpParSideA()     const {return fImpParSideA;}
   virtual Float_t GetImpParSideC()     const {return fImpParSideC;}
+  //
+  virtual UInt_t  GetRecoFlag()      const {return fRecoFlag;}
+  virtual UInt_t  GetZDCPattern()    const {return (fRecoFlag & 0x0000003f);}
+  virtual UInt_t  GetChOnFlag()      const {return (fRecoFlag & 0x00000100);}
+  virtual UInt_t  GetChOvflwFlag()   const {return (fRecoFlag & 0x00000200);}
+  virtual UInt_t  GetChUndflwFlag()  const {return (fRecoFlag & 0x00000400);}
 
   // Print method
   virtual void Print(Option_t *) const;
@@ -105,9 +112,10 @@ private:
   Float_t fImpParameter;   // Estimate of the impact parameter
   Float_t fImpParSideA;	   // Estimate of the impact parameter side A
   Float_t fImpParSideC;	   // Estimate of the impact parameter side B
+  //
+  UInt_t  fRecoFlag;       // Reconstruction flag
 
-
-  ClassDef(AliZDCReco,6)  // RecPoints for the Zero Degree Calorimeters
+  ClassDef(AliZDCReco,7)  // RecPoints for the Zero Degree Calorimeters
 };
  
 #endif

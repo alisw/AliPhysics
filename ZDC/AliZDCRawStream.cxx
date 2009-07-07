@@ -155,7 +155,7 @@ void AliZDCRawStream::ReadChMap()
 {
   // Reading channel map
   const int kNch = 48;
-  printf("\n\t Reading ZDC ADC mapping from OCDB\n");
+  //printf("\t Reading ZDC ADC mapping from OCDB\n");
   AliZDCChMap * chMap = GetChMap();
   //chMap->Print("");
   for(Int_t i=0; i<kNch; i++){

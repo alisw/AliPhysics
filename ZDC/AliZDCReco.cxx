@@ -45,7 +45,8 @@ AliZDCReco::AliZDCReco() :
   fNPartSideC(0),
   fImpParameter(0),
   fImpParSideA(0),
-  fImpParSideC(0)
+  fImpParSideC(0),
+  fRecoFlag(0x0)
 
 { 
   //
@@ -71,7 +72,8 @@ AliZDCReco::AliZDCReco(
      Int_t detspnSideA,  Int_t detsppSideA, Int_t detspnSideC, Int_t detsppSideC,  
      Int_t trsp, Int_t trspSideA,Int_t trspSideC,
      Int_t npart, Int_t npartSideA, Int_t npartSideC, 
-     Float_t b, Float_t bSideA, Float_t bSideC) :
+     Float_t b, Float_t bSideA, Float_t bSideC,
+     UInt_t recoFlag) :
 	
   TObject(),
   //
@@ -87,7 +89,8 @@ AliZDCReco::AliZDCReco(
   fNPartSideC(npartSideC),
   fImpParameter(b),
   fImpParSideA(bSideA),
-  fImpParSideC(bSideC)
+  fImpParSideC(bSideC),
+  fRecoFlag(recoFlag)
 
 { 
   //
@@ -127,7 +130,8 @@ fNPartSideA(oldreco.GetNPartSideA()),
 fNPartSideC(oldreco.GetNPartSideC()),  		       
 fImpParameter(oldreco.GetImpParameter()),      
 fImpParSideA(oldreco.GetImpParSideA()),      
-fImpParSideC(oldreco.GetImpParSideC())      
+fImpParSideC(oldreco.GetImpParSideC()),
+fRecoFlag(oldreco.GetRecoFlag())    
 {
   // Copy constructor
 

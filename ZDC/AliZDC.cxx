@@ -649,16 +649,16 @@ void AliZDC::Digits2Raw()
   file->WriteBuffer((char*)(&header), sizeof(header));
   // write the raw data and close the file
   file->WriteBuffer((char*) &lADCHeader1,  sizeof (lADCHeader1));
-//  file->WriteBuffer((char*) &lADCData1,   sizeof(lADCData1));
+  file->WriteBuffer((char*) &lADCData1,   sizeof(lADCData1));
   file->WriteBuffer((char*) &lADCEndBlock, sizeof(lADCEndBlock));
   file->WriteBuffer((char*) &lADCHeader2,  sizeof (lADCHeader2));
-//  file->WriteBuffer((char*) (lADCData2),   sizeof(lADCData2));
+  file->WriteBuffer((char*) (lADCData2),   sizeof(lADCData2));
   file->WriteBuffer((char*) &lADCEndBlock, sizeof(lADCEndBlock));
   file->WriteBuffer((char*) &lADCHeader3,  sizeof (lADCHeader3));
-//  file->WriteBuffer((char*) (lADCData3),   sizeof(lADCData3));
+  file->WriteBuffer((char*) (lADCData3),   sizeof(lADCData3));
   file->WriteBuffer((char*) &lADCEndBlock, sizeof(lADCEndBlock));
   file->WriteBuffer((char*) &lADCHeader4,  sizeof (lADCHeader4));
-//  file->WriteBuffer((char*) (lADCData4),   sizeof(lADCData4));
+  file->WriteBuffer((char*) (lADCData4),   sizeof(lADCData4));
   file->WriteBuffer((char*) &lADCEndBlock, sizeof(lADCEndBlock));
   delete file;
 

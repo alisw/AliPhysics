@@ -53,15 +53,14 @@ AliZDCRecoParam *AliZDCReconstructor::fRecoParam=0;  //reconstruction parameters
 
 //_____________________________________________________________________________
 AliZDCReconstructor:: AliZDCReconstructor() :
-  fPedData(GetPedData()),
-  fEnCalibData(GetEnCalibData()),
-  fTowCalibData(GetTowCalibData()),
+  fPedData(GetPedestalData()),
+  fEnCalibData(GetEnergyCalibData()),
+  fTowCalibData(GetTowerCalibData()),
   fRecoMode(0),
   fBeamEnergy(0.),
   fNRun(0),
   fIsCalibrationMB(kFALSE),
   fPedSubMode(0),
-  fRecoFlag(0x0),
   fSignalThreshold(0)
 {
   // **** Default constructor
@@ -92,7 +91,7 @@ void AliZDCReconstructor::Init()
     if(entry){
       TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
       if(m){
-        m->Print();
+        //m->Print();
         grpData = new AliGRPObject();
         grpData->ReadValuesFromMap(m);
       }
@@ -111,20 +110,6 @@ void AliZDCReconstructor::Init()
     }
     if((runType.CompareTo("CALIBRATION_MB")) == 0){
       fIsCalibrationMB = kTRUE;
-      //
-      fRecoParam = new AliZDCRecoParamPbPb();
-      //
-      TH2F* hZDCvsZEM = new TH2F("hZDCvsZEM","hZDCvsZEM",100,0.,10.,100,0.,1000.);
-      hZDCvsZEM->SetXTitle("E_{ZEM} (TeV)"); hZDCvsZEM->SetYTitle("E_{ZDC} (TeV)");
-      fRecoParam->SetZDCvsZEM(hZDCvsZEM);
-      //
-      TH2F* hZDCCvsZEM = new TH2F("hZDCCvsZEM","hZDCCvsZEM",100,0.,10.,100,0.,500.);
-      hZDCCvsZEM->SetXTitle("E_{ZEM} (TeV)"); hZDCCvsZEM->SetYTitle("E_{ZDCC} (TeV)");
-      fRecoParam->SetZDCCvsZEM(hZDCCvsZEM);
-      //
-      TH2F* hZDCAvsZEM = new TH2F("hZDCAvsZEM","hZDCAvsZEM",100,0.,10.,100,0.,500.);
-      hZDCAvsZEM->SetXTitle("E_{ZEM} (TeV)"); hZDCAvsZEM->SetYTitle("E_{ZDCA} (TeV)"); 
-      fRecoParam->SetZDCAvsZEM(hZDCAvsZEM);
     }
     
     TString beamType = grpData->GetBeamType();
@@ -133,14 +118,34 @@ void AliZDCReconstructor::Init()
       AliError("\t ZDC does not reconstruct event 4 UNKNOWN beam type\n");
       return;
     }
-    if((beamType.CompareTo("p-p")) == 0){
+    if((beamType.CompareTo("P-P")) == 0){
       fRecoMode=1;
       fRecoParam = (AliZDCRecoParampp*) GetppRecoParamFromOCDB();
+      AliInfo(" Getting AliZDCRecoParampp object from OCDB \n");
     }
     else if((beamType.CompareTo("A-A")) == 0){
       fRecoMode=2;
-      if(fIsCalibrationMB == kFALSE) 
+      if(fIsCalibrationMB == kFALSE){ 
          fRecoParam = (AliZDCRecoParamPbPb*) GetPbPbRecoParamFromOCDB();
+         AliInfo(" Getting AliZDCRecoParamPbPb object from OCDB\n");
+      }
+      else{
+        fRecoParam = new AliZDCRecoParamPbPb();
+        //
+        TH2F* hZDCvsZEM = new TH2F("hZDCvsZEM","hZDCvsZEM",100,0.,10.,100,0.,1000.);
+        hZDCvsZEM->SetXTitle("E_{ZEM} (TeV)"); hZDCvsZEM->SetYTitle("E_{ZDC} (TeV)");
+        fRecoParam->SetZDCvsZEM(hZDCvsZEM);
+        //
+        TH2F* hZDCCvsZEM = new TH2F("hZDCCvsZEM","hZDCCvsZEM",100,0.,10.,100,0.,500.);
+        hZDCCvsZEM->SetXTitle("E_{ZEM} (TeV)"); hZDCCvsZEM->SetYTitle("E_{ZDCC} (TeV)");
+        fRecoParam->SetZDCCvsZEM(hZDCCvsZEM);
+        //
+        TH2F* hZDCAvsZEM = new TH2F("hZDCAvsZEM","hZDCAvsZEM",100,0.,10.,100,0.,500.);
+        hZDCAvsZEM->SetXTitle("E_{ZEM} (TeV)"); hZDCAvsZEM->SetYTitle("E_{ZDCA} (TeV)"); 
+        fRecoParam->SetZDCAvsZEM(hZDCAvsZEM);
+        //
+	AliInfo("\n ***** CALIBRATION_MB data -> building AliZDCRecoParamPbPb object *****");
+      }
     }
     
     fBeamEnergy = grpData->GetBeamEnergy();
@@ -149,12 +154,8 @@ void AliZDCReconstructor::Init()
       fBeamEnergy = 0.;
     }
     
-    if(fIsCalibrationMB==kTRUE){
-      AliInfo("\n ***** CALIBRATION_MB data -> building AliZDCRecoParamPbPb object *****");
-    }
-    else{ 
-      AliInfo(Form("\n\n ***** ZDC reconstruction initialized for %s @ %1.3f GeV *****\n",beamType.Data(), fBeamEnergy));
-    }
+    if(fIsCalibrationMB==kFALSE)  
+      AliInfo(Form("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f GeV *****\n",beamType.Data(), fBeamEnergy));
   }
   else{
     AliError(" ATTENTION!!!!!! No beam type nor beam energy has been set!!!!!!\n");
@@ -163,7 +164,7 @@ void AliZDCReconstructor::Init()
 }
 
 //_____________________________________________________________________________
-void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
+void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
 {
   // *** Local ZDC reconstruction for digits
   // Works on the current event
@@ -312,20 +313,6 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree)
    */
   }//digits loop
  
-  // Setting reco flags (part II)
-  Float_t sumZNAhg=0, sumZPAhg=0, sumZNChg=0, sumZPChg=0;
-  for(Int_t jj=0; jj<5; jj++){
-    sumZNAhg += tZN2Corr[jj];
-    sumZPAhg += tZP2Corr[jj];
-    sumZNChg += tZN1Corr[jj];
-    sumZPChg += tZP1Corr[jj];
-  }
-  if(sumZNAhg>fSignalThreshold)     fRecoFlag = 0x1;
-  if(sumZPAhg>fSignalThreshold)     fRecoFlag = 0x1 << 1;
-  if(dZEM1Corr[0]>fSignalThreshold) fRecoFlag = 0x1 << 2;
-  if(dZEM2Corr[0]>fSignalThreshold) fRecoFlag = 0x1 << 3;
-  if(sumZNChg>fSignalThreshold)     fRecoFlag = 0x1 << 4;
-  if(sumZPChg>fSignalThreshold)     fRecoFlag = 0x1 << 5;
   
   // If CALIBRATION_MB run build the RecoParam object 
   if(fIsCalibrationMB){
@@ -336,25 +323,23 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree)
        ZDCA += tZN2Corr[jkl] + tZP2Corr[jkl];
     }
     // Using energies in TeV in fRecoParam object
-    BuildRecoParam(fRecoParam->GethZDCvsZEM(), fRecoParam->GethZDCCvsZEM(), 
-    		   fRecoParam->GethZDCAvsZEM(), ZDCC/1000., ZDCA/1000., ZEM/1000.);
+    BuildRecoParam(ZDCC/1000., ZDCA/1000., ZEM/1000.);
   }
+  Bool_t recFlag1 = kFALSE, recFlag2 = kFALSE, recFlag3 = kFALSE;
   // reconstruct the event
   if(fRecoMode==1)
     ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
-      dZEM1Corr, dZEM2Corr, sPMRef1, sPMRef2);
+      dZEM1Corr, dZEM2Corr, sPMRef1, sPMRef2, recFlag1, recFlag2, recFlag3);
   else if(fRecoMode==2)
     ReconstructEventPbPb(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
-      dZEM1Corr, dZEM2Corr, sPMRef1, sPMRef2);
+      dZEM1Corr, dZEM2Corr, sPMRef1, sPMRef2, recFlag1, recFlag2, recFlag3);
 }
 
 //_____________________________________________________________________________
-void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTree) 
+void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const
 {
   // *** ZDC raw data reconstruction
   // Works on the current event
-  
-  Bool_t storeADC = kTRUE;
   
   // Retrieving calibration data  
   // Parameters for pedestal subtraction
@@ -392,26 +377,21 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
      tZN1Corr[i] = tZP1Corr[i] = tZN2Corr[i] = tZP2Corr[i] = 0.;
      if(i<2) dZEM1Corr[i] = dZEM2Corr[i] = sPMRef1[i] = sPMRef2[i] = 0.;
   }  
+
+  //fNRun = (Int_t) rawReader->GetRunNumber();
+  Bool_t chOff=kFALSE, isUndflw=kFALSE, isOvflw=kFALSE;
   //
   rawReader->Reset();
-  fNRun = (Int_t) rawReader->GetRunNumber();
   AliZDCRawStream rawData(rawReader);
   while(rawData.Next()){
-   if(rawData.IsCalibration() == kFALSE){ // Reading scalers
-    Bool_t ch2process = kTRUE;
+   if(rawData.IsCalibration() == kFALSE){ // Reading ADCs
+    //printf(" **** Reading ADC raw data **** \n");
     //
-    // Setting reco flags (part I)
-    if((rawData.IsADCDataWord()) && (rawData.IsUnderflow() == kTRUE)){
-      fRecoFlag = 0x1<< 8;
-      ch2process = kFALSE;
-    }
-    if((rawData.IsADCDataWord()) && (rawData.IsOverflow() == kTRUE)){
-      fRecoFlag = 0x1 << 7;
-      ch2process = kFALSE;
-    }
-    if(rawData.GetNChannelsOn() < 48 ) fRecoFlag = 0x1 << 6;
-    
-    if((rawData.IsADCDataWord()) && (ch2process == kTRUE)){
+    if(rawData.GetNChannelsOn() < 48 ) chOff=kTRUE;
+    if((rawData.IsADCDataWord()) && (rawData.IsOverflow() == kTRUE))  isUndflw=kTRUE;
+    if((rawData.IsADCDataWord()) && (rawData.IsUnderflow() == kTRUE)) isOvflw=kTRUE;
+
+    if((rawData.IsADCDataWord()) && (isUndflw==kFALSE) && (isOvflw==kFALSE)){
      
       Int_t adcMod = rawData.GetADCModule();
       Int_t det = rawData.GetSector(0);
@@ -422,7 +402,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
       // Mean pedestal value subtraction -------------------------------------------------------
       if(fPedSubMode == 0){
        // Not interested in o.o.t. signals (ADC modules 2, 3)
-       if(adcMod == 2 || adcMod == 3) return;
+       if(adcMod == 2 || adcMod == 3) continue;
        //
        if(quad != 5){ // ZDCs (not reference PTMs)
         if(det == 1){    
@@ -601,20 +581,6 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     sPMRef2[0] = pmRef[0]   - (corrCoeff1[23]*pmRefoot[1]+corrCoeff0[23]);
     sPMRef2[1] = pmReflg[0] - (corrCoeff1[23+kNch]*pmRefootlg[1]+corrCoeff0[23+kNch]);
   }
-  // Setting reco flags (part II)
-  Float_t sumZNAhg=0, sumZPAhg=0, sumZNChg=0, sumZPChg=0;
-  for(Int_t jj=0; jj<5; jj++){
-    sumZNAhg += tZN2Corr[jj];
-    sumZPAhg += tZP2Corr[jj];
-    sumZNChg += tZN1Corr[jj];
-    sumZPChg += tZP1Corr[jj];
-  }
-  if(sumZNAhg>fSignalThreshold)     fRecoFlag = 0x1;
-  if(sumZPAhg>fSignalThreshold)     fRecoFlag = 0x1 << 1;
-  if(dZEM1Corr[0]>fSignalThreshold) fRecoFlag = 0x1 << 2;
-  if(dZEM2Corr[0]>fSignalThreshold) fRecoFlag = 0x1 << 3;
-  if(sumZNChg>fSignalThreshold)     fRecoFlag = 0x1 << 4;
-  if(sumZPChg>fSignalThreshold)     fRecoFlag = 0x1 << 5;
     
   // If CALIBRATION_MB run build the RecoParam object 
   if(fIsCalibrationMB){
@@ -624,27 +590,47 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        ZDCC += tZN1Corr[jkl] + tZP1Corr[jkl];
        ZDCA += tZN2Corr[jkl] + tZP2Corr[jkl];
     }
-    BuildRecoParam(fRecoParam->GethZDCvsZEM(), fRecoParam->GethZDCCvsZEM(), 
-    		   fRecoParam->GethZDCAvsZEM(), ZDCC/100., ZDCA/100., ZEM/100.);
+    BuildRecoParam(ZDCC/100., ZDCA/100., ZEM/100.);
   }
   // reconstruct the event
   else{
     if(fRecoMode==1) // p-p data
       ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
-        dZEM1Corr, dZEM2Corr, sPMRef1, sPMRef2);
+        dZEM1Corr, dZEM2Corr, sPMRef1, sPMRef2, chOff, isUndflw, isOvflw);
     else if(fRecoMode==2) // Pb-Pb data
       ReconstructEventPbPb(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
-        dZEM1Corr, dZEM2Corr, sPMRef1, sPMRef2);
+        dZEM1Corr, dZEM2Corr, sPMRef1, sPMRef2, chOff, isUndflw, isOvflw);
   }
 }
 
 //_____________________________________________________________________________
 void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrADCZN1, 
 	Float_t* corrADCZP1, Float_t* corrADCZN2, Float_t* corrADCZP2,
-	Float_t* corrADCZEM1, Float_t* corrADCZEM2, Float_t* sPMRef1, Float_t* sPMRef2) const
+	Float_t* corrADCZEM1, Float_t* corrADCZEM2, Float_t* sPMRef1, Float_t* sPMRef2,
+	Bool_t channelsOff, Bool_t chUnderflow, Bool_t chOverflow) const
 {
   // ****************** Reconstruct one event ******************
-  				
+    
+  // ---- Setting reco flags
+  UInt_t recoFlag;
+  Float_t sumZNAhg=0, sumZPAhg=0, sumZNChg=0, sumZPChg=0;
+  for(Int_t jj=0; jj<5; jj++){
+    sumZNAhg += corrADCZN2[jj];
+    sumZPAhg += corrADCZP2[jj];
+    sumZNChg += corrADCZN1[jj];
+    sumZPChg += corrADCZP1[jj];
+  }
+  if(sumZNAhg>fSignalThreshold)       recoFlag = 0x1;
+  if(sumZPAhg>fSignalThreshold)       recoFlag = 0x1 << 1;
+  if(corrADCZEM1[0]>fSignalThreshold) recoFlag = 0x1 << 2;
+  if(corrADCZEM2[0]>fSignalThreshold) recoFlag = 0x1 << 3;
+  if(sumZNChg>fSignalThreshold)       recoFlag = 0x1 << 4;
+  if(sumZPChg>fSignalThreshold)       recoFlag = 0x1 << 5;
+  //
+  if(channelsOff==kTRUE)   recoFlag = 0x1 << 8;
+  if(chUnderflow == kTRUE) recoFlag = 0x1 << 9;
+  if(chOverflow==kTRUE)    recoFlag = 0x1 << 10;
+
   // ******	Retrieving calibration data 
   // --- Equalization coefficients ---------------------------------------------
   Float_t equalCoeffZN1[5], equalCoeffZP1[5], equalCoeffZN2[5], equalCoeffZP2[5];
@@ -724,28 +710,51 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrA
   Double_t impPar=0., impPar1=0., impPar2=0.;
   
   // create the output tree
-  AliZDCReco reco(calibSumZN1, calibSumZP1, calibSumZN2, calibSumZP2, 
-  		  calibTowZN1, calibTowZP1, calibTowZN2, calibTowZP2, 
-		  calibZEM1, calibZEM2, sPMRef1, sPMRef2,
-		  nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
-		  nGenSpec, nGenSpecLeft, nGenSpecRight, 
-		  nPart, nPartTotLeft, nPartTotRight, 
-		  impPar, impPar1, impPar2);
+  AliZDCReco* reco = new AliZDCReco(calibSumZN1, calibSumZP1, calibSumZN2, calibSumZP2, 
+  		   calibTowZN1, calibTowZP1, calibTowZN2, calibTowZP2, 
+		   calibZEM1, calibZEM2, sPMRef1, sPMRef2,
+		   nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
+		   nGenSpec, nGenSpecLeft, nGenSpecRight, 
+		   nPart, nPartTotLeft, nPartTotRight, 
+		   impPar, impPar1, impPar2,
+		   recoFlag);
 		  
-  AliZDCReco* preco = &reco;
-  const Int_t kBufferSize = 4000;
-  clustersTree->Branch("ZDC", "AliZDCReco", &preco, kBufferSize);
-
+  //AliZDCReco* preco = &reco;
+  const Int_t kBufferSize = 8000;
+  clustersTree->Branch("ZDC", "AliZDCReco", &reco, kBufferSize);
+  
   // write the output tree
   clustersTree->Fill();
+  delete reco;
 }
 
 //_____________________________________________________________________________
 void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree, 
 	Float_t* corrADCZN1, Float_t* corrADCZP1, Float_t* corrADCZN2, Float_t* corrADCZP2,
-	Float_t* corrADCZEM1, Float_t* corrADCZEM2, Float_t* sPMRef1, Float_t* sPMRef2) const
+	Float_t* corrADCZEM1, Float_t* corrADCZEM2, Float_t* sPMRef1, Float_t* sPMRef2,
+	Bool_t channelsOff, Bool_t chUnderflow, Bool_t chOverflow) const 
 {
   // ****************** Reconstruct one event ******************
+  
+  // Setting reco flags (part II)
+  UInt_t recoFlag;
+  Float_t sumZNAhg=0, sumZPAhg=0, sumZNChg=0, sumZPChg=0;
+  for(Int_t jj=0; jj<5; jj++){
+    sumZNAhg += corrADCZN2[jj];
+    sumZPAhg += corrADCZP2[jj];
+    sumZNChg += corrADCZN1[jj];
+    sumZPChg += corrADCZP1[jj];
+  }
+  if(sumZNAhg>fSignalThreshold)       recoFlag = 0x1;
+  if(sumZPAhg>fSignalThreshold)       recoFlag = 0x1 << 1;
+  if(corrADCZEM1[0]>fSignalThreshold) recoFlag = 0x1 << 2;
+  if(corrADCZEM2[0]>fSignalThreshold) recoFlag = 0x1 << 3;
+  if(sumZNChg>fSignalThreshold)       recoFlag = 0x1 << 4;
+  if(sumZPChg>fSignalThreshold)       recoFlag = 0x1 << 5;
+  //
+  if(channelsOff==kTRUE)   recoFlag = 0x1 << 8;
+  if(chUnderflow == kTRUE) recoFlag = 0x1 << 9;
+  if(chOverflow==kTRUE)    recoFlag = 0x1 << 10;
 
   // ******	Retrieving calibration data 
   // --- Equalization coefficients ---------------------------------------------
@@ -835,6 +844,10 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     " nDetSpecNRight %d, nDetSpecPRight %d\n",nDetSpecNLeft, nDetSpecPLeft, 
     nDetSpecNRight, nDetSpecPRight);*/
   
+  Int_t nGenSpec=0, nGenSpecA=0, nGenSpecC=0;
+  Int_t nPart=0, nPartA=0, nPartC=0;
+  Double_t b=0., bA=0., bC=0.;
+  
   if(fIsCalibrationMB == kFALSE){
     // ******	Reconstruction parameters ------------------ 
     // Ch. debug
@@ -850,7 +863,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     Double_t xHighEdge = hZDCvsZEM->GetXaxis()->GetXmax();
     Double_t origin = xHighEdge*ClkCenter;
     // Ch. debug
-    printf("\n\n  xHighEdge %1.2f, origin %1.4f \n", xHighEdge, origin);
+    //printf("\n\n  xHighEdge %1.2f, origin %1.4f \n", xHighEdge, origin);
     //
     // ====> Summed ZDC info (sideA+side C)
     TF1 *line = new TF1("line","[0]*x+[1]",0.,xHighEdge);
@@ -859,8 +872,8 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     line->SetParameter(0, y/(x-origin));
     line->SetParameter(1, -origin*y/(x-origin));
     // Ch. debug
-    printf("  ***************** Summed ZDC info (sideA+side C) \n");
-    printf("  E_{ZEM} %1.4f, E_{ZDC} %1.2f, TF1: %1.2f*x + %1.2f   ", x, y,y/(x-origin),-origin*y/(x-origin));
+    //printf("  ***************** Summed ZDC info (sideA+side C) \n");
+    //printf("  E_{ZEM} %1.4f, E_{ZDC} %1.2f, TF1: %1.2f*x + %1.2f   ", x, y,y/(x-origin),-origin*y/(x-origin));
     //
     Double_t countPerc=0;
     Double_t xBinCenter=0, yBinCenter=0;
@@ -1060,51 +1073,32 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     printf("\t AliZDCReconstructor ->  NpartL %d,  NpartR %d,  b %1.2f fm\n\n",nPartTotLeft, nPartTotRight, impPar);
     */
   
-    // create the output tree
-    AliZDCReco reco(calibSumZN1, calibSumZP1, calibSumZN2, calibSumZP2, 
-  	  	    calibTowZN1, calibTowZP1, calibTowZN2, calibTowZP2, 
-		    calibZEM1, calibZEM2, sPMRef1, sPMRef2,
-		    nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
-		    nGenSpec, nGenSpecA, nGenSpecC, 
-		    nPart, nPartA, nPartC, b, bA, bC);
-		  
-    AliZDCReco* preco = &reco;
-    const Int_t kBufferSize = 4000;
-    clustersTree->Branch("ZDC", "AliZDCReco", &preco, kBufferSize);
-    // write the output tree
-    clustersTree->Fill();
-  
     delete lineC;  delete lineA;
+
   } // ONLY IF fIsCalibrationMB==kFALSE
-  else{
-    // create the output tree
-    AliZDCReco reco(calibSumZN1, calibSumZP1, calibSumZN2, calibSumZP2, 
-  	  	    calibTowZN1, calibTowZP1, calibTowZN2, calibTowZP2, 
-		    calibZEM1, calibZEM2, sPMRef1, sPMRef2,
-		    nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
-		    0, 0, 0, 
-		    0, 0, 0, 0., 0., 0.);
-		  
-    AliZDCReco* preco = &reco;
-    const Int_t kBufferSize = 4000;
-    clustersTree->Branch("ZDC", "AliZDCReco", &preco, kBufferSize);
-    // write the output tree
-    clustersTree->Fill();
-  }
+  
+  AliZDCReco* reco = new AliZDCReco(calibSumZN1, calibSumZP1, calibSumZN2, calibSumZP2, 
+  	  	  calibTowZN1, calibTowZP1, calibTowZN2, calibTowZP2, 
+		  calibZEM1, calibZEM2, sPMRef1, sPMRef2,
+		  nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
+		  nGenSpec, nGenSpecA, nGenSpecC, 
+		  nPart, nPartA, nPartC, b, bA, bC,
+		  recoFlag);
+		    
+  const Int_t kBufferSize = 4000;
+  clustersTree->Branch("ZDC", "AliZDCReco", &reco, kBufferSize);
+  // write the output tree
+  clustersTree->Fill();
+  delete reco;
 }
 
 //_____________________________________________________________________________
-void AliZDCReconstructor::BuildRecoParam(TH2F* hCorr, TH2F* hCorrC, TH2F* hCorrA,
-     			Float_t ZDCC, Float_t ZDCA, Float_t ZEM) const
+void AliZDCReconstructor::BuildRecoParam(Float_t ZDCC, Float_t ZDCA, Float_t ZEM) const
 {
   // Calculate RecoParam object for Pb-Pb data
-  hCorr->Fill(ZDCC+ZDCA, ZEM);
-  hCorrC->Fill(ZDCC, ZEM);
-  hCorrA->Fill(ZDCA, ZEM);
-  //
-  /*TH1D*	hNpartDist;
-  TH1D*	hbDist;    
-  Float_t clkCenter;*/   
+  (fRecoParam->GethZDCvsZEM())->Fill(ZDCC+ZDCA, ZEM);
+  (fRecoParam->GethZDCCvsZEM())->Fill(ZDCC, ZEM);
+  (fRecoParam->GethZDCAvsZEM())->Fill(ZDCA, ZEM);
  
 }
 
@@ -1152,10 +1146,11 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   Double_t b  = reco.GetImpParameter();
   Double_t bA = reco.GetImpParSideA();
   Double_t bC = reco.GetImpParSideC();
- //
+  UInt_t recoFlag = reco.GetRecoFlag();
+  //
   esd->SetZDC(reco.GetZN1HREnergy(), reco.GetZP1HREnergy(), reco.GetZEM1HRsignal(), 
   	      reco.GetZEM2HRsignal(), reco.GetZN2HREnergy(), reco.GetZP2HREnergy(), 
-	      nPart, nPartA, nPartC, b, bA, bC, fRecoFlag);
+	      nPart, nPartA, nPartC, b, bA, bC, recoFlag);
   
 }
 
@@ -1186,7 +1181,7 @@ AliCDBStorage* AliZDCReconstructor::SetStorage(const char *uri)
 }
 
 //_____________________________________________________________________________
-AliZDCPedestals* AliZDCReconstructor::GetPedData() const
+AliZDCPedestals* AliZDCReconstructor::GetPedestalData() const
 {
 
   // Getting pedestal calibration object for ZDC set
@@ -1201,7 +1196,7 @@ AliZDCPedestals* AliZDCReconstructor::GetPedData() const
 }
 
 //_____________________________________________________________________________
-AliZDCEnCalib* AliZDCReconstructor::GetEnCalibData() const
+AliZDCEnCalib* AliZDCReconstructor::GetEnergyCalibData() const
 {
 
   // Getting energy and equalization calibration object for ZDC set
@@ -1216,7 +1211,7 @@ AliZDCEnCalib* AliZDCReconstructor::GetEnCalibData() const
 }
 
 //_____________________________________________________________________________
-AliZDCTowerCalib* AliZDCReconstructor::GetTowCalibData() const
+AliZDCTowerCalib* AliZDCReconstructor::GetTowerCalibData() const
 {
 
   // Getting energy and equalization calibration object for ZDC set

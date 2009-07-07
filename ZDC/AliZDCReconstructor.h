@@ -32,8 +32,8 @@ public:
   virtual void   Init();
   virtual Bool_t HasDigitConversion() const {return kFALSE;};
   
-  virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree); 
-  virtual void Reconstruct(AliRawReader* rawReader, TTree* clustersTree);
+  virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const; 
+  virtual void Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
 
   virtual void FillESD(TTree* /*digitsTree*/, TTree* clustersTree, AliESDEvent* esd) const 
   	        {FillZDCintoESD(clustersTree, esd);}
@@ -57,10 +57,10 @@ public:
   Float_t GetSignalThreshold() {return fSignalThreshold;}
   
   // OCDB objects for reconstruction
-  AliCDBStorage   *SetStorage(const char* uri);
-  AliZDCPedestals *GetPedData() const; 
-  AliZDCEnCalib   *GetEnCalibData() const; 
-  AliZDCTowerCalib  *GetTowCalibData() const; 
+  AliCDBStorage       *SetStorage(const char* uri);
+  AliZDCPedestals     *GetPedestalData() const; 
+  AliZDCEnCalib       *GetEnergyCalibData() const; 
+  AliZDCTowerCalib    *GetTowerCalibData() const; 
   AliZDCRecoParampp   *GetppRecoParamFromOCDB() const;  
   AliZDCRecoParamPbPb *GetPbPbRecoParamFromOCDB() const;  
   
@@ -72,13 +72,14 @@ private:
 
   void   ReconstructEventpp(TTree *clustersTree, 
   	    Float_t* ZN1ADCCorr, Float_t* ZP1ADCCorr, Float_t* ZN2ADCCorr, Float_t* ZP2ADCCorr,
-	    Float_t* ZEM1ADCCorr, Float_t* ZEM2ADCCorr, Float_t* PMRef1, Float_t* PMRef2) const;
+	    Float_t* ZEM1ADCCorr, Float_t* ZEM2ADCCorr, Float_t* PMRef1, Float_t* PMRef2,
+	    Bool_t channelsOff, Bool_t chUnderflow, Bool_t chOverflow) const;
   void   ReconstructEventPbPb(TTree *clustersTree, 
   	    Float_t* ZN1ADCCorr, Float_t* ZP1ADCCorr, Float_t* ZN2ADCCorr, Float_t* ZP2ADCCorr,
-	    Float_t* ZEM1ADCCorr, Float_t* ZEM2ADCCorr, Float_t* PMRef1, Float_t* PMRef2) const;
-  void   BuildRecoParam(TH2F* hCorr, TH2F* hCorrC, TH2F* hCorrA,
-     			Float_t ZDCC, Float_t ZDCA, Float_t ZEM) const;
-
+	    Float_t* ZEM1ADCCorr, Float_t* ZEM2ADCCorr, Float_t* PMRef1, Float_t* PMRef2,
+	    Bool_t channelsOff, Bool_t chUnderflow, Bool_t chOverflow) const;
+  void   BuildRecoParam(Float_t ZDCC, Float_t ZDCA, Float_t ZEM) const;
+  
   void   FillZDCintoESD(TTree *clustersTree, AliESDEvent*esd) const;
 
 
@@ -93,10 +94,9 @@ private:
   Int_t	  fNRun;	    // Run Number (from raw data)
   Bool_t  fIsCalibrationMB; // true if run type = "CALIBRATION_MB"
   Int_t   fPedSubMode;	    // =0->mean values, =1->from correlations
-  UInt_t  fRecoFlag;        // flag indicating problems in reco
   Float_t fSignalThreshold; // Threshold value for "triggering" in p-p
 
-  ClassDef(AliZDCReconstructor, 8)   // class for the ZDC reconstruction
+  ClassDef(AliZDCReconstructor, 9)   // class for the ZDC reconstruction
 };
 
 #endif
