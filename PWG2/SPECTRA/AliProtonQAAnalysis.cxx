@@ -44,8 +44,8 @@ ClassImp(AliProtonQAAnalysis)
 //____________________________________________________________________//
 AliProtonQAAnalysis::AliProtonQAAnalysis() : 
   TObject(), fProtonAnalysisBase(0),
-  fNBinsY(0), fMinY(0), fMaxY(0),
-  fNBinsPt(0), fMinPt(0), fMaxPt(0),
+  fNBinsY(0), fMinY(0), fMaxY(0), fY(0),
+  fNBinsPt(0), fMinPt(0), fMaxPt(0), fPt(0), fUseAsymmetricBinning(kFALSE),
   fGlobalQAList(0), fQAVertexList(0), fQA2DList(0),
   fQAPrimaryProtonsAcceptedList(0),
   fQAPrimaryProtonsRejectedList(0),
@@ -1006,16 +1006,40 @@ void AliProtonQAAnalysis::SetQAYPtBins(Int_t nbinsY,
 }
 
 //____________________________________________________________________//
+void AliProtonQAAnalysis::SetQAYPtBins(Int_t nbinsY, Double_t *gY,
+				       Int_t nbinsPt, Double_t *gPt) {
+  //Initializes the QA binning - asymmetric binning case
+  fUseAsymmetricBinning = kTRUE;
+  fNBinsY = nbinsY;
+  for(Int_t i = 0; i < nbinsY; i++) fY[i] = gY[i];
+  fMinY = gY[0]; fMaxY = gY[nbinsPt];
+  fNBinsPt = nbinsPt;
+  for(Int_t i = 0; i < nbinsPt; i++) fPt[i] = gPt[i];
+  fMinPt = gPt[0]; fMaxPt = gPt[nbinsPt];
+  InitQA();
+  InitCutLists();
+  InitVertexQA();
+  if(fRunMCAnalysis) InitMCAnalysis();
+  if(fRunEfficiencyAnalysis) InitEfficiencyAnalysis();
+}
+
+//____________________________________________________________________//
 void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   //Initialization of the efficiency list - reconstruction & PID efficiency
   //Adding each monitored object in the list
   fEfficiencyList = new TList();
 
   //MC primary protons and antiprotons for the reconstruction efficiency
-  TH2D *gHistMCYPtProtons = new TH2D("gHistMCYPtProtons",
-				     ";;P_{T} [GeV/c]",
-				     fNBinsY,fMinY,fMaxY,
-				     fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistMCYPtProtons = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistMCYPtProtons = new TH2D("gHistMCYPtProtons",
+				 ";;P_{T} [GeV/c]",
+				 fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistMCYPtProtons = new TH2D("gHistMCYPtProtons",
+				 ";;P_{T} [GeV/c]",
+				 fNBinsY,fMinY,fMaxY,
+				 fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistMCYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1023,10 +1047,16 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   gHistMCYPtProtons->SetStats(kTRUE);
   gHistMCYPtProtons->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistMCYPtProtons);
-  TH2D *gHistMCYPtAntiProtons = new TH2D("gHistMCYPtAntiProtons",
-					 ";y;P_{T} [GeV/c]",
-					 fNBinsY,fMinY,fMaxY,
-					 fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistMCYPtAntiProtons = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistMCYPtAntiProtons = new TH2D("gHistMCYPtAntiProtons",
+				     ";;P_{T} [GeV/c]",
+				     fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistMCYPtAntiProtons = new TH2D("gHistMCYPtAntiProtons",
+				     ";y;P_{T} [GeV/c]",
+				     fNBinsY,fMinY,fMaxY,
+				     fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistMCYPtAntiProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1036,10 +1066,16 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   fEfficiencyList->Add(gHistMCYPtAntiProtons);
 
   //MC secondary protons and antiprotons that come from weak decay for the reconstruction efficiency
-  TH2D *gHistMCYPtProtonsFromWeak = new TH2D("gHistMCYPtProtonsFromWeak",
-					     ";;P_{T} [GeV/c]",
-					     fNBinsY,fMinY,fMaxY,
-					     fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistMCYPtProtonsFromWeak = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistMCYPtProtonsFromWeak = new TH2D("gHistMCYPtProtonsFromWeak",
+					 ";;P_{T} [GeV/c]",
+					 fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistMCYPtProtonsFromWeak = new TH2D("gHistMCYPtProtonsFromWeak",
+					 ";;P_{T} [GeV/c]",
+					 fNBinsY,fMinY,fMaxY,
+					 fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistMCYPtProtonsFromWeak->GetXaxis()->SetTitle("#eta");
   else 
@@ -1047,10 +1083,16 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   gHistMCYPtProtonsFromWeak->SetStats(kTRUE);
   gHistMCYPtProtonsFromWeak->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistMCYPtProtonsFromWeak);
-  TH2D *gHistMCYPtAntiProtonsFromWeak = new TH2D("gHistMCYPtAntiProtonsFromWeak",
-						 ";y;P_{T} [GeV/c]",
-						 fNBinsY,fMinY,fMaxY,
-						 fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistMCYPtAntiProtonsFromWeak = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistMCYPtAntiProtonsFromWeak = new TH2D("gHistMCYPtAntiProtonsFromWeak",
+					     ";;P_{T} [GeV/c]",
+					     fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistMCYPtAntiProtonsFromWeak = new TH2D("gHistMCYPtAntiProtonsFromWeak",
+					     ";y;P_{T} [GeV/c]",
+					     fNBinsY,fMinY,fMaxY,
+					     fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistMCYPtAntiProtonsFromWeak->GetXaxis()->SetTitle("#eta");
   else 
@@ -1060,10 +1102,16 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   fEfficiencyList->Add(gHistMCYPtAntiProtonsFromWeak);
 
   //MC secondary protons and antiprotons that come from hadronic interactions for the reconstruction efficiency
-  TH2D *gHistMCYPtProtonsFromHadronic = new TH2D("gHistMCYPtProtonsFromHadronic",
-						 ";;P_{T} [GeV/c]",
-						 fNBinsY,fMinY,fMaxY,
-						 fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistMCYPtProtonsFromHadronic = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistMCYPtProtonsFromHadronic = new TH2D("gHistMCYPtProtonsFromHadronic",
+					     ";;P_{T} [GeV/c]",
+					     fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistMCYPtProtonsFromHadronic = new TH2D("gHistMCYPtProtonsFromHadronic",
+					     ";;P_{T} [GeV/c]",
+					     fNBinsY,fMinY,fMaxY,
+					     fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistMCYPtProtonsFromHadronic->GetXaxis()->SetTitle("#eta");
   else 
@@ -1071,10 +1119,16 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   gHistMCYPtProtonsFromHadronic->SetStats(kTRUE);
   gHistMCYPtProtonsFromHadronic->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistMCYPtProtonsFromHadronic);
-  TH2D *gHistMCYPtAntiProtonsFromHadronic = new TH2D("gHistMCYPtAntiProtonsFromHadronic",
-						     ";y;P_{T} [GeV/c]",
-						     fNBinsY,fMinY,fMaxY,
-						     fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistMCYPtAntiProtonsFromHadronic = 0x0;
+  if(fUseAsymmetricBinning)
+  gHistMCYPtAntiProtonsFromHadronic = new TH2D("gHistMCYPtAntiProtonsFromHadronic",
+					       ";;P_{T} [GeV/c]",
+					       fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistMCYPtAntiProtonsFromHadronic = new TH2D("gHistMCYPtAntiProtonsFromHadronic",
+						 ";y;P_{T} [GeV/c]",
+						 fNBinsY,fMinY,fMaxY,
+						 fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistMCYPtAntiProtonsFromHadronic->GetXaxis()->SetTitle("#eta");
   else 
@@ -1084,10 +1138,16 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   fEfficiencyList->Add(gHistMCYPtAntiProtonsFromHadronic);
   
   //ESD primary protons and antiprotons for the reconstruction efficiency
-  TH2D *gHistESDYPtProtons = new TH2D("gHistESDYPtProtons",
-				      ";;P_{T} [GeV/c]",
-				      fNBinsY,fMinY,fMaxY,
-				      fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistESDYPtProtons = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistESDYPtProtons = new TH2D("gHistESDYPtProtons",
+				  ";;P_{T} [GeV/c]",
+				  fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistESDYPtProtons = new TH2D("gHistESDYPtProtons",
+				  ";;P_{T} [GeV/c]",
+				  fNBinsY,fMinY,fMaxY,
+				  fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1095,10 +1155,16 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   gHistESDYPtProtons->SetStats(kTRUE);
   gHistESDYPtProtons->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistESDYPtProtons);
-  TH2D *gHistESDYPtAntiProtons = new TH2D("gHistESDYPtAntiProtons",
-					  ";;P_{T} [GeV/c]",
-					  fNBinsY,fMinY,fMaxY,
-					  fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistESDYPtAntiProtons = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistESDYPtAntiProtons = new TH2D("gHistESDYPtAntiProtons",
+				      ";;P_{T} [GeV/c]",
+				      fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistESDYPtAntiProtons = new TH2D("gHistESDYPtAntiProtons",
+				      ";;P_{T} [GeV/c]",
+				      fNBinsY,fMinY,fMaxY,
+				      fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDYPtAntiProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1108,10 +1174,16 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   fEfficiencyList->Add(gHistESDYPtAntiProtons);
 
   //ESD (anti)protons from weak decays for the reconstruction efficiency
-  TH2D *gHistESDYPtProtonsFromWeak = new TH2D("gHistESDYPtProtonsFromWeak",
-					      ";;P_{T} [GeV/c]",
-					      fNBinsY,fMinY,fMaxY,
-					      fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistESDYPtProtonsFromWeak = 0x0;
+  if(fUseAsymmetricBinning)
+  gHistESDYPtProtonsFromWeak = new TH2D("gHistESDYPtProtonsFromWeak",
+					";;P_{T} [GeV/c]",
+					fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistESDYPtProtonsFromWeak = new TH2D("gHistESDYPtProtonsFromWeak",
+					  ";;P_{T} [GeV/c]",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDYPtProtonsFromWeak->GetXaxis()->SetTitle("#eta");
   else 
@@ -1119,10 +1191,16 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   gHistESDYPtProtonsFromWeak->SetStats(kTRUE);
   gHistESDYPtProtonsFromWeak->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistESDYPtProtonsFromWeak);
-  TH2D *gHistESDYPtAntiProtonsFromWeak = new TH2D("gHistESDYPtAntiProtonsFromWeak",
-						  ";;P_{T} [GeV/c]",
-						  fNBinsY,fMinY,fMaxY,
-						  fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistESDYPtAntiProtonsFromWeak = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistESDYPtAntiProtonsFromWeak = new TH2D("gHistESDYPtAntiProtonsFromWeak",
+					      ";;P_{T} [GeV/c]",
+					      fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistESDYPtAntiProtonsFromWeak = new TH2D("gHistESDYPtAntiProtonsFromWeak",
+					      ";;P_{T} [GeV/c]",
+					      fNBinsY,fMinY,fMaxY,
+					      fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDYPtAntiProtonsFromWeak->GetXaxis()->SetTitle("#eta");
   else 
@@ -1132,10 +1210,16 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   fEfficiencyList->Add(gHistESDYPtAntiProtonsFromWeak);
 
   //ESD (anti)protons from hadronic interactions for the reconstruction efficiency
-  TH2D *gHistESDYPtProtonsFromHadronic = new TH2D("gHistESDYPtProtonsFromHadronic",
-						  ";;P_{T} [GeV/c]",
-						  fNBinsY,fMinY,fMaxY,
-						  fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistESDYPtProtonsFromHadronic = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistESDYPtProtonsFromHadronic = new TH2D("gHistESDYPtProtonsFromHadronic",
+					      ";;P_{T} [GeV/c]",
+					      fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistESDYPtProtonsFromHadronic = new TH2D("gHistESDYPtProtonsFromHadronic",
+					      ";;P_{T} [GeV/c]",
+					      fNBinsY,fMinY,fMaxY,
+					      fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDYPtProtonsFromHadronic->GetXaxis()->SetTitle("#eta");
   else 
@@ -1143,10 +1227,16 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   gHistESDYPtProtonsFromHadronic->SetStats(kTRUE);
   gHistESDYPtProtonsFromHadronic->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistESDYPtProtonsFromHadronic);
-  TH2D *gHistESDYPtAntiProtonsFromHadronic = new TH2D("gHistESDYPtAntiProtonsFromHadronic",
-						      ";;P_{T} [GeV/c]",
-						      fNBinsY,fMinY,fMaxY,
-						      fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistESDYPtAntiProtonsFromHadronic = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistESDYPtAntiProtonsFromHadronic = new TH2D("gHistESDYPtAntiProtonsFromHadronic",
+						  ";;P_{T} [GeV/c]",
+						  fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistESDYPtAntiProtonsFromHadronic = new TH2D("gHistESDYPtAntiProtonsFromHadronic",
+						  ";;P_{T} [GeV/c]",
+						  fNBinsY,fMinY,fMaxY,
+						  fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDYPtAntiProtonsFromHadronic->GetXaxis()->SetTitle("#eta");
   else 
@@ -1155,13 +1245,22 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   gHistESDYPtAntiProtonsFromHadronic->GetXaxis()->SetTitleColor(1);
   fEfficiencyList->Add(gHistESDYPtAntiProtonsFromHadronic);
   
-  
   //ESD reconstructed tracks that were initially protons for the PID efficiency
-  TH3D *gHistESDInitYPtProtons = new TH3D("gHistESDInitYPtProtons",
-					  ";;P_{T} [GeV/c];N_{points}",
-					  fNBinsY,fMinY,fMaxY,
-					  fNBinsPt,fMinPt,fMaxPt,
-					  50,0,200);
+  TH3D *gHistESDInitYPtProtons = 0x0;
+  if(fUseAsymmetricBinning) {
+    Double_t gNPoints[51];
+    for(Int_t i = 0; i < 51; i++)
+      gNPoints[i] = i*4; 
+  gHistESDInitYPtProtons = new TH3D("gHistESDInitYPtProtons",
+				    ";;P_{T} [GeV/c];N_{points}",
+				    fNBinsY,fY,fNBinsPt,fPt,50,gNPoints);
+  }
+  else
+    gHistESDInitYPtProtons = new TH3D("gHistESDInitYPtProtons",
+				      ";;P_{T} [GeV/c];N_{points}",
+				      fNBinsY,fMinY,fMaxY,
+				      fNBinsPt,fMinPt,fMaxPt,
+				      50,0,200);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDInitYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1171,11 +1270,21 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   fEfficiencyList->Add(gHistESDInitYPtProtons);
   
   //ESD reconstructed tracks that were initially protons and were identified as protons for the PID efficiency
-  TH3D *gHistESDIdYPtProtons = new TH3D("gHistESDIdYPtProtons",
-					";;P_{T} [GeV/c];N_{points}",
-					fNBinsY,fMinY,fMaxY,
-					fNBinsPt,fMinPt,fMaxPt,
-					50,0,200);
+  TH3D *gHistESDIdYPtProtons = 0x0;
+  if(fUseAsymmetricBinning) {
+    Double_t gNPoints[51];
+    for(Int_t i = 0; i < 51; i++)
+      gNPoints[i] = i*4; 
+    gHistESDIdYPtProtons = new TH3D("gHistESDIdYPtProtons",
+				    ";;P_{T} [GeV/c];N_{points}",
+				    fNBinsY,fY,fNBinsPt,fPt,50,gNPoints);
+  }
+  else
+    gHistESDIdYPtProtons = new TH3D("gHistESDIdYPtProtons",
+				    ";;P_{T} [GeV/c];N_{points}",
+				    fNBinsY,fMinY,fMaxY,
+				    fNBinsPt,fMinPt,fMaxPt,
+				    50,0,200);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDIdYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1185,11 +1294,21 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   fEfficiencyList->Add(gHistESDIdYPtProtons);
  
   //ESD reconstructed tracks that were identified as protons for the PID contamination
-  TH3D *gHistESDRecIdYPtProtons = new TH3D("gHistESDRecIdYPtProtons",
-					   ";;P_{T} [GeV/c];N_{points}",
-					   fNBinsY,fMinY,fMaxY,
-					   fNBinsPt,fMinPt,fMaxPt,
-					   50,0,200);
+  TH3D *gHistESDRecIdYPtProtons = 0x0;
+  if(fUseAsymmetricBinning) {
+    Double_t gNPoints[51];
+    for(Int_t i = 0; i < 51; i++)
+      gNPoints[i] = i*4; 
+    gHistESDRecIdYPtProtons = new TH3D("gHistESDRecIdYPtProtons",
+				       ";;P_{T} [GeV/c];N_{points}",
+				       fNBinsY,fY,fNBinsPt,fPt,50,gNPoints);
+  }
+  else
+    gHistESDRecIdYPtProtons = new TH3D("gHistESDRecIdYPtProtons",
+				       ";;P_{T} [GeV/c];N_{points}",
+				       fNBinsY,fMinY,fMaxY,
+				       fNBinsPt,fMinPt,fMaxPt,
+				       50,0,200);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDRecIdYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1199,11 +1318,21 @@ void AliProtonQAAnalysis::InitEfficiencyAnalysis() {
   fEfficiencyList->Add(gHistESDRecIdYPtProtons);
 
   //ESD reconstructed tracks that were identified as protons but were initially not protons for the PID contamination
-  TH3D *gHistESDContamYPtProtons = new TH3D("gHistESDContamYPtProtons",
-					    ";;P_{T} [GeV/c];N_{points}",
-					    fNBinsY,fMinY,fMaxY,
-					    fNBinsPt,fMinPt,fMaxPt,
-					    50,0,200);
+  TH3D *gHistESDContamYPtProtons = 0x0;
+  if(fUseAsymmetricBinning) {
+    Double_t gNPoints[51];
+    for(Int_t i = 0; i < 51; i++)
+      gNPoints[i] = i*4; 
+    gHistESDContamYPtProtons = new TH3D("gHistESDContamYPtProtons",
+					";;P_{T} [GeV/c];N_{points}",
+					fNBinsY,fY,fNBinsPt,fPt,50,gNPoints);
+  }
+  else
+    gHistESDContamYPtProtons = new TH3D("gHistESDContamYPtProtons",
+					";;P_{T} [GeV/c];N_{points}",
+					fNBinsY,fMinY,fMaxY,
+					fNBinsPt,fMinPt,fMaxPt,
+					50,0,200);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistESDContamYPtProtons->GetXaxis()->SetTitle("#eta");
   else 
@@ -1835,10 +1964,16 @@ void AliProtonQAAnalysis::InitQA() {
   //2D histograms
   //TDirectory *dir2D = gDirectory->mkdir("2D");
   //fGlobalQAList->Add(dir2D); dir2D->cd();
-  TH2D *gHistYPtPrimaryProtonsPass = new TH2D("gHistYPtPrimaryProtonsPass",
-					      ";;P_{T} [GeV/c]",
-					      fNBinsY,fMinY,fMaxY,
-					      fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistYPtPrimaryProtonsPass = 0x0;
+  if(fUseAsymmetricBinning)
+  gHistYPtPrimaryProtonsPass = new TH2D("gHistYPtPrimaryProtonsPass",
+					";;P_{T} [GeV/c]",
+					fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistYPtPrimaryProtonsPass = new TH2D("gHistYPtPrimaryProtonsPass",
+					  ";;P_{T} [GeV/c]",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtPrimaryProtonsPass->GetXaxis()->SetTitle("#eta");
   else 
@@ -1846,10 +1981,16 @@ void AliProtonQAAnalysis::InitQA() {
   gHistYPtPrimaryProtonsPass->SetStats(kTRUE);
   gHistYPtPrimaryProtonsPass->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtPrimaryProtonsPass);//y-pT of primary accepted ESD protons
-  TH2D *gHistYPtPrimaryProtonsReject = new TH2D("gHistYPtPrimaryProtonsReject",
-						";;P_{T} [GeV/c]",
-						fNBinsY,fMinY,fMaxY,
-						fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistYPtPrimaryProtonsReject = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistYPtPrimaryProtonsReject = new TH2D("gHistYPtPrimaryProtonsReject",
+					    ";;P_{T} [GeV/c]",
+					    fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistYPtPrimaryProtonsReject = new TH2D("gHistYPtPrimaryProtonsReject",
+					    ";;P_{T} [GeV/c]",
+					    fNBinsY,fMinY,fMaxY,
+					    fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtPrimaryProtonsReject->GetXaxis()->SetTitle("#eta");
   else 
@@ -1858,10 +1999,16 @@ void AliProtonQAAnalysis::InitQA() {
   gHistYPtPrimaryProtonsReject->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtPrimaryProtonsReject);//y-pT of primary rejected ESD protons
 
-  TH2D *gHistYPtSecondaryProtonsPass = new TH2D("gHistYPtSecondaryProtonsPass",
-						";;P_{T} [GeV/c]",
-						fNBinsY,fMinY,fMaxY,
-						fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistYPtSecondaryProtonsPass = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistYPtSecondaryProtonsPass = new TH2D("gHistYPtSecondaryProtonsPass",
+					    ";;P_{T} [GeV/c]",
+					    fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistYPtSecondaryProtonsPass = new TH2D("gHistYPtSecondaryProtonsPass",
+					    ";;P_{T} [GeV/c]",
+					    fNBinsY,fMinY,fMaxY,
+					    fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtSecondaryProtonsPass->GetXaxis()->SetTitle("#eta");
   else 
@@ -1869,10 +2016,16 @@ void AliProtonQAAnalysis::InitQA() {
   gHistYPtSecondaryProtonsPass->SetStats(kTRUE);
   gHistYPtSecondaryProtonsPass->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtSecondaryProtonsPass);//y-pT of secondary accepted ESD protons
-  TH2D *gHistYPtSecondaryProtonsReject = new TH2D("gHistYPtSecondaryProtonsReject",
-						  ";;P_{T} [GeV/c]",
-						  fNBinsY,fMinY,fMaxY,
-						  fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistYPtSecondaryProtonsReject = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistYPtSecondaryProtonsReject = new TH2D("gHistYPtSecondaryProtonsReject",
+					      ";;P_{T} [GeV/c]",
+					      fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistYPtSecondaryProtonsReject = new TH2D("gHistYPtSecondaryProtonsReject",
+					      ";;P_{T} [GeV/c]",
+					      fNBinsY,fMinY,fMaxY,
+					      fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtSecondaryProtonsReject->GetXaxis()->SetTitle("#eta");
   else 
@@ -1881,10 +2034,16 @@ void AliProtonQAAnalysis::InitQA() {
   gHistYPtSecondaryProtonsReject->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtSecondaryProtonsReject);//y-pT of secondary rejected ESD protons
 
-  TH2D *gHistYPtPrimaryAntiProtonsPass = new TH2D("gHistYPtPrimaryAntiProtonsPass",
-						  ";;P_{T} [GeV/c]",
-						  fNBinsY,fMinY,fMaxY,
-						  fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistYPtPrimaryAntiProtonsPass = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistYPtPrimaryAntiProtonsPass = new TH2D("gHistYPtPrimaryAntiProtonsPass",
+					      ";;P_{T} [GeV/c]",
+					      fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistYPtPrimaryAntiProtonsPass = new TH2D("gHistYPtPrimaryAntiProtonsPass",
+					      ";;P_{T} [GeV/c]",
+					      fNBinsY,fMinY,fMaxY,
+					      fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtPrimaryAntiProtonsPass->GetXaxis()->SetTitle("#eta");
   else 
@@ -1892,10 +2051,16 @@ void AliProtonQAAnalysis::InitQA() {
   gHistYPtPrimaryAntiProtonsPass->SetStats(kTRUE);
   gHistYPtPrimaryAntiProtonsPass->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtPrimaryAntiProtonsPass);//y-pT of primary accepted ESD antiprotons
-  TH2D *gHistYPtPrimaryAntiProtonsReject = new TH2D("gHistYPtPrimaryAntiProtonsReject",
-						    ";;P_{T} [GeV/c]",
-						    fNBinsY,fMinY,fMaxY,
-						    fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistYPtPrimaryAntiProtonsReject = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistYPtPrimaryAntiProtonsReject = new TH2D("gHistYPtPrimaryAntiProtonsReject",
+						";;P_{T} [GeV/c]",
+						fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistYPtPrimaryAntiProtonsReject = new TH2D("gHistYPtPrimaryAntiProtonsReject",
+						";;P_{T} [GeV/c]",
+						fNBinsY,fMinY,fMaxY,
+						fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtPrimaryAntiProtonsReject->GetXaxis()->SetTitle("#eta");
   else 
@@ -1904,10 +2069,16 @@ void AliProtonQAAnalysis::InitQA() {
   gHistYPtPrimaryAntiProtonsReject->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtPrimaryAntiProtonsReject);//y-pT of primary rejected ESD antiprotons
 
-  TH2D *gHistYPtSecondaryAntiProtonsPass = new TH2D("gHistYPtSecondaryAntiProtonsPass",
-						    ";;P_{T} [GeV/c]",
-						    fNBinsY,fMinY,fMaxY,
-						    fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistYPtSecondaryAntiProtonsPass = 0x0;
+  if(fUseAsymmetricBinning)
+  gHistYPtSecondaryAntiProtonsPass = new TH2D("gHistYPtSecondaryAntiProtonsPass",
+					      ";;P_{T} [GeV/c]",
+					      fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistYPtSecondaryAntiProtonsPass = new TH2D("gHistYPtSecondaryAntiProtonsPass",
+						";;P_{T} [GeV/c]",
+						fNBinsY,fMinY,fMaxY,
+						fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtSecondaryAntiProtonsPass->GetXaxis()->SetTitle("#eta");
   else 
@@ -1915,10 +2086,16 @@ void AliProtonQAAnalysis::InitQA() {
   gHistYPtSecondaryAntiProtonsPass->SetStats(kTRUE);
   gHistYPtSecondaryAntiProtonsPass->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtSecondaryAntiProtonsPass);//y-pT of secondary accepted ESD antiprotons
-  TH2D *gHistYPtSecondaryAntiProtonsReject = new TH2D("gHistYPtSecondaryAntiProtonsReject",
-						      ";;P_{T} [GeV/c]",
-						      fNBinsY,fMinY,fMaxY,
-						      fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistYPtSecondaryAntiProtonsReject = 0x0;
+  if(fUseAsymmetricBinning)
+  gHistYPtSecondaryAntiProtonsReject = new TH2D("gHistYPtSecondaryAntiProtonsReject",
+						";;P_{T} [GeV/c]",
+						fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistYPtSecondaryAntiProtonsReject = new TH2D("gHistYPtSecondaryAntiProtonsReject",
+						  ";;P_{T} [GeV/c]",
+						  fNBinsY,fMinY,fMaxY,
+						  fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtSecondaryAntiProtonsReject->GetXaxis()->SetTitle("#eta");
   else 
@@ -1927,10 +2104,16 @@ void AliProtonQAAnalysis::InitQA() {
   gHistYPtSecondaryAntiProtonsReject->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtSecondaryAntiProtonsReject);//y-pT of secondary rejected ESD antiprotons
 
-  TH2D *gHistYPtPrimaryProtonsMC = new TH2D("gHistYPtPrimaryProtonsMC",
-					    ";;P_{T} [GeV/c]",
-					    fNBinsY,fMinY,fMaxY,
-					    fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistYPtPrimaryProtonsMC = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistYPtPrimaryProtonsMC = new TH2D("gHistYPtPrimaryProtonsMC",
+					";;P_{T} [GeV/c]",
+					fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistYPtPrimaryProtonsMC = new TH2D("gHistYPtPrimaryProtonsMC",
+					";;P_{T} [GeV/c]",
+					fNBinsY,fMinY,fMaxY,
+					fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtPrimaryProtonsMC->GetXaxis()->SetTitle("#eta");
   else 
@@ -1938,10 +2121,16 @@ void AliProtonQAAnalysis::InitQA() {
   gHistYPtPrimaryProtonsMC->SetStats(kTRUE);
   gHistYPtPrimaryProtonsMC->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtPrimaryProtonsMC);//y-pT of primary MC protons
-  TH2D *gHistYPtPrimaryAntiProtonsMC = new TH2D("gHistYPtPrimaryAntiProtonsMC",
-						";;P_{T} [GeV/c]",
-						fNBinsY,fMinY,fMaxY,
-						fNBinsPt,fMinPt,fMaxPt);
+  TH2D *gHistYPtPrimaryAntiProtonsMC = 0x0;
+  if(fUseAsymmetricBinning)
+    gHistYPtPrimaryAntiProtonsMC = new TH2D("gHistYPtPrimaryAntiProtonsMC",
+					    ";;P_{T} [GeV/c]",
+					    fNBinsY,fY,fNBinsPt,fPt);
+  else
+    gHistYPtPrimaryAntiProtonsMC = new TH2D("gHistYPtPrimaryAntiProtonsMC",
+					    ";;P_{T} [GeV/c]",
+					    fNBinsY,fMinY,fMaxY,
+					    fNBinsPt,fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtPrimaryAntiProtonsMC->GetXaxis()->SetTitle("#eta");
   else 
@@ -1950,21 +2139,37 @@ void AliProtonQAAnalysis::InitQA() {
   gHistYPtPrimaryAntiProtonsMC->GetXaxis()->SetTitleColor(1);
   fQA2DList->Add(gHistYPtPrimaryAntiProtonsMC);//y-pT of primary MC antiprotons
 
-  TH3F *gHistYPtPDGProtonsPass = new TH3F("gHistYPtPDGProtonsPass",
-					  ";;P_{T} [GeV/c];PDG",
-					  fNBinsY,fMinY,fMaxY,
-					  fNBinsPt,fMinPt,fMaxPt,
-					  14,-0.5,13.5);
+  TH3F *gHistYPtPDGProtonsPass = 0x0;
+  if(fUseAsymmetricBinning) {
+    Double_t gPDG[15] = {-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5};
+    gHistYPtPDGProtonsPass = new TH3F("gHistYPtPDGProtonsPass",
+				      ";;P_{T} [GeV/c];PDG",
+				      fNBinsY,fY,fNBinsPt,fPt,14,gPDG);
+  }
+  else
+    gHistYPtPDGProtonsPass = new TH3F("gHistYPtPDGProtonsPass",
+				      ";;P_{T} [GeV/c];PDG",
+				      fNBinsY,fMinY,fMaxY,
+				      fNBinsPt,fMinPt,fMaxPt,
+				      14,-0.5,13.5);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtPDGProtonsPass->GetXaxis()->SetTitle("#eta");
   else 
     gHistYPtPDGProtonsPass->GetXaxis()->SetTitle("y");
   fQA2DList->Add(gHistYPtPDGProtonsPass);//composition of secondary protons
-  TH3F *gHistYPtPDGAntiProtonsPass = new TH3F("gHistYPtPDGAntiProtonsPass",
-					      ";;P_{T} [GeV/c];PDG",
-					      fNBinsY,fMinY,fMaxY,
-					      fNBinsPt,fMinPt,fMaxPt,
-					      14,-0.5,13.5);
+  TH3F *gHistYPtPDGAntiProtonsPass = 0x0;
+  if(fUseAsymmetricBinning) {
+    Double_t gPDG[15] = {-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5};
+    gHistYPtPDGAntiProtonsPass = new TH3F("gHistYPtPDGAntiProtonsPass",
+					  ";;P_{T} [GeV/c];PDG",
+					  fNBinsY,fY,fNBinsPt,fPt,14,gPDG);
+  }
+  else
+    gHistYPtPDGAntiProtonsPass = new TH3F("gHistYPtPDGAntiProtonsPass",
+					  ";;P_{T} [GeV/c];PDG",
+					  fNBinsY,fMinY,fMaxY,
+					  fNBinsPt,fMinPt,fMaxPt,
+					  14,-0.5,13.5);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtPDGAntiProtonsPass->GetXaxis()->SetTitle("#eta");
   else 
@@ -4324,21 +4529,37 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
 void AliProtonQAAnalysis::InitMCAnalysis() {
   //MC analysis - 3D histograms: y-pT-pdg
   fPDGList = new TList();
-  TH3F *gHistYPtPDGProtons = new TH3F("gHistYPtPDGProtons",
-				      ";;P_{T} [GeV/c];PDG",
-				      fNBinsY,fMinY,fMaxY,
-				      fNBinsPt,fMinPt,fMaxPt,
-				      14,-0.5,13.5);
+  TH3F *gHistYPtPDGProtons = 0x0;
+  if(fUseAsymmetricBinning) {
+    Double_t gPDG[15] = {-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5};
+  gHistYPtPDGProtons = new TH3F("gHistYPtPDGProtons",
+				";;P_{T} [GeV/c];PDG",
+				fNBinsY,fY,fNBinsPt,fPt,14,gPDG);
+  }
+  else
+    gHistYPtPDGProtons = new TH3F("gHistYPtPDGProtons",
+				  ";;P_{T} [GeV/c];PDG",
+				  fNBinsY,fMinY,fMaxY,
+				  fNBinsPt,fMinPt,fMaxPt,
+				  14,-0.5,13.5);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtPDGProtons->GetXaxis()->SetTitle("#eta");
   else 
     gHistYPtPDGProtons->GetXaxis()->SetTitle("y");
   fPDGList->Add(gHistYPtPDGProtons);
-  TH3F *gHistYPtPDGAntiProtons = new TH3F("gHistYPtPDGAntiProtons",
-					  ";;P_{T} [GeV/c];PDG",
-					  fNBinsY,fMinY,fMaxY,
-					  fNBinsPt,fMinPt,fMaxPt,
-					  14,-0.5,13.5);
+  TH3F *gHistYPtPDGAntiProtons = 0x0;
+  if(fUseAsymmetricBinning) {
+    Double_t gPDG[15] = {-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5};
+    gHistYPtPDGAntiProtons = new TH3F("gHistYPtPDGAntiProtons",
+				      ";;P_{T} [GeV/c];PDG",
+				      fNBinsY,fY,fNBinsPt,fPt,14,gPDG);
+  }
+  else
+    gHistYPtPDGAntiProtons = new TH3F("gHistYPtPDGAntiProtons",
+				      ";;P_{T} [GeV/c];PDG",
+				      fNBinsY,fMinY,fMaxY,
+				      fNBinsPt,fMinPt,fMaxPt,
+				      14,-0.5,13.5);
   if(fProtonAnalysisBase->GetEtaMode()) 
     gHistYPtPDGAntiProtons->GetXaxis()->SetTitle("#eta");
   else 
