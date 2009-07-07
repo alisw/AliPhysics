@@ -31,7 +31,7 @@ class match_t
 //
 // Read AliESDs.root file and saves all true pairs of trak-cluster.
 //
-void SaveTrueMatchesSimple_compiled(const char *outFileName)
+void SaveTrueMatchesSimple(const char *outFileName="true-matches.root")
 {
 	//
 	// open ESD file, retrieve tree and link to branch cursor
@@ -40,8 +40,9 @@ void SaveTrueMatchesSimple_compiled(const char *outFileName)
 	if (!srcFile) return;
 	TTree *srcTree = (TTree*)srcFile->Get("esdTree");
 	if (!srcTree) return;
-	AliESD *esd = 0;
-	srcTree->SetBranchAddress("ESD", &esd);
+	
+	AliESDEvent* esd = new AliESDEvent();
+	esd->ReadFromTree(srcTree);	
 	Long64_t nEvents = srcTree->GetEntries();
 	
 	//
@@ -61,8 +62,8 @@ void SaveTrueMatchesSimple_compiled(const char *outFileName)
 		cout << "Event " << iev + 1 << " of " << nEvents << ": " << endl;
 		
 		nTracks = esd->GetNumberOfTracks();
-		firstCluster = esd->GetFirstEMCALCluster();
-		lastCluster = esd->GetFirstEMCALCluster() + esd->GetNumberOfEMCALClusters();
+		firstCluster = 0;
+		lastCluster  = esd->GetNumberOfCaloClusters();
 		cout << "Tracks found      : " << nTracks << endl;
 		cout << "EMC clusters found: " << lastCluster - firstCluster << endl;
 		
@@ -101,9 +102,8 @@ void SaveTrueMatchesSimple_compiled(const char *outFileName)
 			count = 0;
 			for (Int_t ic = firstCluster; ic < lastCluster; ic++) {
 				AliESDCaloCluster *cl = esd->GetCaloCluster(ic);
-				// reject pseudo-clusters & unmatched clusters
-				if (cl->GetClusterType() != AliESDCaloCluster::kClusterv1) continue;
-				if (cl->GetPrimaryIndex() != label) continue;
+				if (!cl->IsEMCAL()) continue;
+				if (cl->GetLabel() != label) continue;
 				// if the method reaches this point, we
 				// have found a match to be stored
 				match.label = label;

@@ -155,7 +155,8 @@ void AliEMCALTracker::InitParameters()
 	//
 	
   // Check if the instance of AliEMCALRecParam exists, 
-  const AliEMCALRecParam* recParam = AliEMCALReconstructor::GetRecParam();
+  const AliEMCALRecParam* recParam = new AliEMCALRecParam();
+
   if(!recParam){
     AliFatal("Reconstruction parameters for EMCAL not set!");
   }
@@ -305,8 +306,8 @@ Int_t AliEMCALTracker::LoadClusters(AliESDEvent *esd)
 	// make sure that tracks/clusters collections are empty
 	Clear("CLUSTERS");
 	
-	Int_t start = esd->GetFirstEMCALCluster();
-	Int_t nClustersEMC = esd->GetNumberOfEMCALClusters();
+	Int_t start = 0;
+	Int_t nClustersEMC = esd->GetNumberOfCaloClusters();
 	Int_t end = start + nClustersEMC;
 	
 	fClusters = new TObjArray(0);
@@ -315,7 +316,7 @@ Int_t AliEMCALTracker::LoadClusters(AliESDEvent *esd)
 	for (i = start; i < end; i++) {
 		AliESDCaloCluster *cluster = esd->GetCaloCluster(i);
 		if (!cluster) continue;
-		if (cluster->GetClusterType() != AliESDCaloCluster::kEMCALClusterv1) continue;
+        if (!cluster->IsEMCAL()) continue ; 
 		AliEMCALMatchCluster *matchCluster = new AliEMCALMatchCluster(i, cluster);
 		fClusters->AddLast(matchCluster);
 	}

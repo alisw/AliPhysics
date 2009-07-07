@@ -167,12 +167,13 @@ void AliEMCALPID::RunPID(AliESDEvent *esd)
     return ;
   }
 
-  Int_t nClusters = esd->GetNumberOfEMCALClusters();
-  Int_t firstCluster = esd->GetFirstEMCALCluster();
+  Int_t nClusters = esd->GetNumberOfCaloClusters();
+  Int_t firstCluster = 0;
   Double_t energy, lambda0;
   for (Int_t iCluster = firstCluster; iCluster < (nClusters + firstCluster); iCluster++) {
 
     AliESDCaloCluster *clust = esd->GetCaloCluster(iCluster);
+	if (!clust->IsEMCAL()) continue ; 
     energy = clust->E();
     lambda0 = clust->GetM02();
     // verify cluster type

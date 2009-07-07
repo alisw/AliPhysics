@@ -25,17 +25,19 @@ void FindMatches(const char *fileOut = "matchESD.root")
 	if (!rl) return;
 	rl->LoadgAlice();
 	gAlice = rl->GetAliRun();
-	AliMagF *magf = gAlice->Field();
-	Bool_t constField = (magf->Type() == 1);
-	AliTracker::SetFieldMap(magf, constField);
 	
+  	//AliMagF *magf = new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG);
+  	AliMagF *magf = new AliMagF("Maps","Maps", 2, 1., 1.);
+ 	
 	//
 	// Open ESD file and recoveries TTree of ESD objects.
 	//
 	TFile *esdFile = new TFile("AliESDs.root");
 	TTree *esdTree = (TTree*)esdFile->Get("esdTree");
-	AliESD *esd = 0;
-	esdTree->SetBranchAddress("ESD", &esd);
+	AliESDEvent* esd = new AliESDEvent();
+	esd->ReadFromTree(esdTree);
+	if (!esd) {cerr<<"no AliESDEvent"; return 1;};
+	
 	Long64_t nEvents = esdTree->GetEntries();
 	
 	//
@@ -79,7 +81,8 @@ void FindMatches(const char *fileOut = "matchESD.root")
 	//
 	TFile *outFile = TFile::Open(fileOut, "RECREATE");
 	TTree *outTree = new TTree("esdTree", "ESD with matched clusters");
-	outTree->Branch("ESD", "AliESD", &esd);
+	//outTree->Branch("ESD", "AliESD", &esd);
+	esd->WriteToTree(outTree);
 	
 	//
 	// Loop on events.

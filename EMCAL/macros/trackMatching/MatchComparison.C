@@ -25,10 +25,6 @@ void MatchComparison()
 	//
 	// Initialize AliRun manager
 	//
-	if (gAlice) {
-		delete gAlice;
-		gAlice = 0;
-	}
 	
 	//
 	// Initialize run loader and load Kinematics
@@ -42,10 +38,10 @@ void MatchComparison()
 	//
 	// Initialize histograms with their error computation
 	//
-	TH1D *hgood = new TH1D("hgood", "Well matched tracks", 20, 0.0,  10.0);
-	TH1D *hfake = new TH1D("hfake", "Fake matched tracks", 20, 0.0,  10.0);
-	TH1D *htrue = new TH1D("htrue", "True matches", 20, 0.0,  10.0);
-	TH1D *hfound = new TH1D("hfound", "Found matches", 20, 0.0,  10.0);
+	TH1D *hgood  = new TH1D("hgood", "Well matched tracks", 40, 0.0,  40.0);
+	TH1D *hfake  = new TH1D("hfake", "Fake matched tracks", 40, 0.0,  40.0);
+	TH1D *htrue  = new TH1D("htrue", "True matches"       , 40, 0.0,  40.0);
+	TH1D *hfound = new TH1D("hfound","Found matches"      , 40, 0.0,  40.0);
 	hgood->Sumw2();
 	hfake->Sumw2();
 	htrue->Sumw2();
@@ -64,8 +60,8 @@ void MatchComparison()
 	//
 	TFile *fileFound = TFile::Open("matchESD.root");
 	TTree *treeFound = (TTree*)fileFound->Get("esdTree");
-	AliESD *esd = 0;
-	treeFound->SetBranchAddress("ESD", &esd);
+	AliESDEvent* esd = new AliESDEvent();
+	esd->ReadFromTree(treeFound);
 	Long64_t nEvents = treeFound->GetEntries();
 	
 	//
@@ -90,9 +86,12 @@ void MatchComparison()
 		for (im = 0; im < nTrueMatches; im++) {
 			treeTrue->GetEntry(im);
 			AliESDtrack *track = esd->GetTrack(trueMatch.indexT);
+			if (!track) continue;
+			
 			label = TMath::Abs(track->GetLabel());
 			TParticle *p = stack->Particle(label);
 			htrue->Fill(p->Pt());
+			cout <<"filling true"<< endl;
 		}
 		
 		// compare found matches
@@ -103,17 +102,20 @@ void MatchComparison()
 			ic = TMath::Abs(ic);
 			AliESDCaloCluster *cl = esd->GetCaloCluster(ic);
 			if (!cl) continue;
+			if (!cl->IsEMCAL()) continue ;
 			trkLabel = TMath::Abs(track->GetLabel());
-			cluLabel = cl->GetPrimaryIndex();
+			cluLabel = cl->GetLabel();
 			if (trkLabel == cluLabel && trkLabel >= 0) {
 				TParticle *p = stack->Particle(TMath::Abs(trkLabel));
 				hgood->Fill(p->Pt());
 				hfound->Fill(p->Pt());
+				cout <<"filling GOOD, pt:" << p->Pt()<< endl;
 			}
 			else  {
 				TParticle *p = stack->Particle(TMath::Abs(trkLabel));
 				hfake->Fill(p->Pt());
 				hfound->Fill(p->Pt());
+				cout <<"filling FAKE" << endl;
 			}
 		}
 	}
