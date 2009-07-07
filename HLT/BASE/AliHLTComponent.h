@@ -121,6 +121,9 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  *   If the component has multiple output data types @ref GetOutputDataType
  *   should return @ref kAliHLTMultipleDataType. The framework will invoke
  *   @ref GetOutputDataTypes, a list can be filled.
+ * - @ref Reconfigure
+ *   This function is invoked by the framework on a special event which
+ *   triggers the reconfiguration of the component.
  *
  * @subsection alihltcomponent-processing-mehods Data processing
  * 
@@ -180,7 +183,7 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  * framework will allocate a buffer of appropriate size and call the processing
  * again.
  *
- * @subsection alihltcomponent-error-codes Data processing
+ * @subsection alihltcomponent-error-codes Return values/Error codes
  * For return codes, the following scheme applies:
  * - The data processing methods have to indicate error conditions by a negative
  * error/return code. Preferably the system error codes are used like
@@ -188,6 +191,8 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  * <pre>
  * \#include \<cerrno\>
  * </pre>
+ * This schema aplies to all interface functions of the component base class.
+ * For data processing it is as follows:
  * - If no suitable input block could be found (e.g. no clusters for the TPC cluster
  * finder) set size to 0, block list is empty, return 0
  * - If no ususable or significant signal could be found in the input blocks
@@ -252,15 +257,91 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  * - @ref AliHLTDataSource::GetEvent
  * - @ref AliHLTDataSink::DumpEvent
  * 
- * 
+ * The base class passes all relevant parameters for data access directly on to the
+ * component. Input blocks can be accessed by means of the array <tt> blocks </tt>.
+ * Output data are written directly to shared memory provided by the pointer
+ * <tt> outputPtr </tt> and output block descriptors are inserted directly to the
+ * list <tt> outputBlocks </tt>.
+ *
+ * \b NOTE: The high-level input data access methods can be used also from the low
+ * level interface. Also the PushBack functions can be used BUT ONLY if no data is
+ * written to the output buffer and no data block descriptors are inserted into the
+ * output block list.
+ *
+ * @section alihltcomponent-initialization Component initialization and configuration
+ * The component interface provides two optional methods for component initialization
+ * and configuration. The @ref DoInit function is called once before the processing.
+ * During the event processing, a special event can trigger a reconfiguration and the
+ * @ref Reconfigure method is called. There are three possible options of initialization
+ * and configuration:
+ * - default values: set directly in the source code
+ * - OCDB objects: all necessary information must be loaded from OCDB objects. The
+ *   Offline Conditions Data Base stores objects specifically valid for individual runs
+ *   or run ranges.
+ * - Component arguments: can be specified for every component in the chain
+ *   configuration. The arguments can be used to override specific parameters of the
+ *   component.
+ *
+ * As a general rule, the three options should be processed in that sequence, i.e
+ * default parameters might be overridden by OCDB configuration, and the latter one
+ * by component arguments.
+ *
+ * @subsection alihltcomponent-initialization-arguments Component arguments
+ * In normal operation, components are supposed to run without any additional argument,
+ * however such arguments can be useful for testing and debugging. The idea follows
+ * the format of command line arguments. A keyword is indicated by a dash and an
+ * optional argument might follow, e.g.:
+ * <pre>
+ * -argument1 0.5 -argument2
+ * </pre>
+ * In this case argument1 requires an additional parameter whereas argument2 does not.
+ * The arguments will be provided as an array of separated arguments.
+ *
+ * Component arguments can be classified into initialization arguments and configuration
+ * arguments. The latter are applicable for both the @ref DoInit and @ref Reconfigure
+ * method whereas initialization arguments are not applicable after DoInit.
+ *
+ * @subsection alihltcomponent-initialization-ocdb OCDB objects
+ * OCDB objects are ROOT <tt>TObjects</tt> and can be of any type. This is in particular
+ * useful for complex parameter sets. However in most cases, a simple approach of human
+ * readable command line arguments is appropriate. Such a string can be simply stored
+ * in a TObjString (take note that the TString does not derive from TObject). The
+ * same arguments as for the command line can be used. Take note that in the TObjString
+ * all arguments are separated by blanks, instead of being in an array of separate
+ * strings.
+ *
+ * The base class provides two functions regarding OCDB objects: 
+ * - LoadAndExtractOCDBObject() loads the OCDB entry for the specified path and extracts
+ *                              the TObject from it.
+ * - ConfigureFromCDBTObjString() can load a number of OCDB objects and calls the
+ *                              argument parsing ConfigureFromArgumentString
+ *
+ *
+ * @subsection alihltcomponent-initialization-sequence Initialization sequence
+ * Using the approach of <tt>TObjString</tt>-type configuration objects allows to treat
+ * configuration from both @ref DoInit and @ref Reconfigure in the same way.
+ *
+ * The base class provides the function ConfigureFromArgumentString() which loops over
+ * all arguments and calls the child's method ScanConfigurationArgument(). Here the
+ * actual treatment of the argument and its parameters needs to be implemented.
+ * ConfigureFromArgumentString() can treat both arrays of arguments and arguments in
+ * one single string separated by blanks. The two options can be mixed.
+ *
+ * A second bas class function ConfigureFromCDBTObjString() allows to configure
+ * directly from a number of OCDB objects. This requires the entries to be of
+ * type TObjString and the child implementation of ScanConfigurationArgument().
+ *
  * @section alihltcomponent-handling Component handling 
  * The handling of HLT analysis components is carried out by the AliHLTComponentHandler.
  * Component are registered automatically at load-time of the component shared library
  * under the following suppositions:
  * - the component library has to be loaded from the AliHLTComponentHandler using the
  *   @ref AliHLTComponentHandler::LoadLibrary method.
+ * - the library defines an AliHLTModuleAgent which registers all components.
+ *   See AliHLTModuleAgent::RegisterComponents                               <br>
+ *     or                                                                    <br>
  * - the component implementation defines one global object (which is generated
- *   when the library is loaded)
+ *   when the library is loaded)                                             <br>
  *
  * @subsection alihltcomponent-design-rules General design considerations
  * The analysis code should be implemented in one or more destict class(es). A 
@@ -278,6 +359,8 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  *
  * Further rules:
  * - avoid big static arrays in the component, allocate the memory at runtime
+ * - allocate all kind of complex data members (like classes, ROOT TObjects of
+ *   any kind) dynamically in DoInit and clean up in DoDeinit
  *
  * @section alihlt_component_arguments Default arguments
  * The component base class provides some default arguments:
@@ -735,6 +818,11 @@ class AliHLTComponent : public AliHLTLogging {
    * leading absolute path of the CDB location. The framework might also
    * provide the id of the component in the analysis chain.
    *
+   * The actual sequence of configuration depends on the component. As a
+   * general rule, the component should load the specific OCDB object if
+   * provided as parameter, and load the default objects if the parameter
+   * is NULL. However, other schemes are possible. See @ref 
+   *
    * \b Note: The CDB will be initialized by the framework, either already set
    * from AliRoot or from the wrapper interface during initialization.
    *
@@ -759,6 +847,23 @@ class AliHLTComponent : public AliHLTLogging {
    * @return neg. error code if failed
    */
   virtual int ReadPreprocessorValues(const char* modules);
+
+  /**
+   * Child implementation to scan a number of configuration arguments.
+   * The method is invoked by the framework in conjunction with the
+   * common framework functions ConfigureFromArgumentString and
+   * ConfigureFromCDBTObjString.
+   * Function needs to scan the argument and optional additional
+   * parameters and returns the number of elements in the array which
+   * have been treated.
+   * @param argc
+   * @param argv
+   * @return number of arguments which have been scanned or neg error
+   *         code if failed                                              <br>
+   *         \li -EINVAL      unknown argument
+   *         \li -EPROTO      protocol error, e.g. missing parameter
+   */
+  virtual int ScanConfigurationArgument(int argc, const char** argv);
 
   /**
    * Custom handler for the SOR event.
@@ -862,6 +967,34 @@ class AliHLTComponent : public AliHLTLogging {
    * Helper function to convert the data type to a string.
    */
   void DataType2Text(const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2]) const;
+
+  /**
+   * Loop through a list of component arguments.
+   * The list can be either an array of separated strings or one single
+   * string containing blank separated arguments, or both mixed.
+   * ScanConfigurationArgument() is called to allow the component to treat
+   * the individual arguments.
+   * @return neg. error code if failed
+   */
+  int ConfigureFromArgumentString(int argc, const char** argv);
+
+  /**
+   * Read configuration objects from OCDB and configure from
+   * the content of TObjString entries.
+   * @param entries   blank separated list of OCDB paths
+   * @return neg. error code if failed
+   */
+  int ConfigureFromCDBTObjString(const char* entries);
+
+  /**
+   * Load specified entry from the OCDB and extract the object.
+   * The entry is explicitely unloaded from the cache before it is loaded.
+   * @param path      path of the entry under to root of the OCDB
+   * @param version   version of the entry
+   * @param subVersion  subversion of the entry
+   */
+  TObject* LoadAndExtractOCDBObject(const char* path, int version = -1, int subVersion = -1);
+
 
   /**
    * Get event number.

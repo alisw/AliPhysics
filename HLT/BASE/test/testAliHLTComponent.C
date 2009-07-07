@@ -19,7 +19,7 @@
 /** @file   testAliHLTComponent_CTPTrigger.C
     @author Matthias Richter
     @date   
-    @brief  Test program for default data types
+    @brief  Test program for the AliHLTComponent base class
  */
 
 #ifndef __CINT__
@@ -27,12 +27,22 @@
 #include "TRandom.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTProcessor.h"
+#include "algorithm"
+#include "TObjArray.h"
+#include "TObjString.h"
+#include "TString.h"
 #endif
+
+using namespace std;
 
 class AliHLTTestComponent : public AliHLTProcessor
 {
 public:
-  AliHLTTestComponent() {}
+  AliHLTTestComponent() :
+    fArguments(),
+    fCurrentArgument(fArguments.begin())
+  {}
+
   ~AliHLTTestComponent() {}
 
   const char* GetComponentID() {return "TestComponent";};
@@ -41,12 +51,194 @@ public:
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier) {constBase=0; inputMultiplier=0;}
   AliHLTComponent* Spawn() {return new AliHLTTestComponent;}
 
-  int InitTest(const char* param) {
-    return ScanECSParam(param);
-    //return InitCTPTriggerClasses(param);
+  class AliHLTConfigurationArgument {
+  public:
+    AliHLTConfigurationArgument(const char* argument) :
+      fElements(NULL)
+    {
+      TString work=argument;
+      fElements=work.Tokenize(" ");
+    }
+
+    AliHLTConfigurationArgument(const AliHLTConfigurationArgument& src) :
+      fElements(NULL)
+    {
+      if (src.fElements) {
+	fElements=dynamic_cast<TObjArray*>(src.fElements->Clone());
+      }
+    }
+
+    ~AliHLTConfigurationArgument() {
+      if (fElements) delete fElements;
+    }
+
+    AliHLTConfigurationArgument& operator=(const AliHLTConfigurationArgument& src) {
+      delete fElements;
+      if (src.fElements) {
+	fElements=dynamic_cast<TObjArray*>(src.fElements->Clone());
+      }
+      return *this;
+    }
+
+    const char* Argument() {
+      if (!fElements) return NULL;
+      return ((TObjString*)fElements->At(0))->GetString().Data();
+    }
+
+    int NofParameters() {
+      if (!fElements) return 0;
+      return fElements->GetEntriesFast()-1;
+    }
+
+    const char* Parameter(int i) {
+      if (!fElements ||
+	  fElements->GetEntriesFast()<=i+1) return NULL;
+      return ((TObjString*)fElements->At(i+1))->GetString().Data();      
+    }
+
+    bool operator==(const char* string) {
+      if (!fElements) return 0;
+      return (((TObjString*)fElements->At(0))->GetString().CompareTo(string))==0;
+    }
+
+    bool operator!=(const char* string) {
+      return !operator==(string);
+    }
+
+    void Print() {
+      if (!fElements) {
+	cout << "#############  empty ############" << endl;
+	return;
+      }
+      cout << "   Print: " << Argument() << " with " << NofParameters() << " parameter(s)";
+      for (int n=0; n<NofParameters(); n++) cout << " " << Parameter(n);
+      cout << endl;
+    }
+
+  private:
+    TObjArray* fElements;
+  };
+
+  int ScanConfigurationArgument(int argc, const char** argv) {
+    if (fCurrentArgument==fArguments.end()) return 0;
+    int count=0;
+
+    // check whether it is an argument at all
+    if (*(argv[count])!='-') {
+      cerr << "not a recognized argument: " << argv[count] << endl;
+      return -EINVAL;
+    }
+
+    // check whether the argument matches
+    //fCurrentArgument->Print();
+    if (*fCurrentArgument!=argv[count]) {
+      cerr << "argument sequence does not match: got " << argv[count] << "  expected " << fCurrentArgument->Argument() << endl;
+      return -EINVAL;
+    }
+
+    count++;
+    // read parameters
+    if (fCurrentArgument->NofParameters()>0) {
+      if (argc<=count) {
+	cerr << "missing parameter" << endl;
+	return -EPROTO;
+      }
+
+      // implement more checks here
+      count+=fCurrentArgument->NofParameters();
+    }
+    fCurrentArgument++;
+    return count;
   }
 
-  bool Check(const char* expression, AliHLTComponentTriggerData* data) {
+  int FillArgumentVector(const char** arguments, vector<AliHLTConfigurationArgument>& list) {
+    list.clear();
+    for (const char** iter=arguments; *iter!=NULL; iter++) {
+      list.push_back(AliHLTConfigurationArgument(*iter));
+    }
+    return list.size();
+  }
+
+  int FillArgv(vector<AliHLTConfigurationArgument>& list, vector<const char*>& argv) {
+    argv.clear();
+    for (vector<AliHLTConfigurationArgument>::iterator argument=list.begin();
+	 argument!=list.end(); argument++) {
+      argv.push_back(argument->Argument());
+      for (int n=0; n<argument->NofParameters(); n++) {
+	argv.push_back(argument->Parameter(n));
+      }
+    }
+    return argv.size();
+  }
+
+  void PrintArgv(int argc, const char** argv) {
+    for (int n=0; n<argc; n++) {
+      cout << "   " << n << " : " << argv[n] << endl;
+    }
+  }
+
+  int CheckSequence(const char* sequence[], int mode=0) {
+    int iResult=0;
+    if ((iResult=FillArgumentVector(sequence, fArguments))<0) {
+      cerr << "failed to fill argument vector" << endl;
+      return iResult;
+    }
+    vector<const char*> argv;
+    if (mode==0) {
+      if ((iResult=FillArgv(fArguments, argv))<0) {
+	cerr << "failed to fill argument array" << endl;
+	return iResult;
+      }
+    } else {
+      for (const char** element=sequence; *element!=NULL; element++)
+	argv.push_back(*element);
+    }
+    fCurrentArgument=fArguments.begin();
+    //PrintArgv(argv.size(), &argv[0]);
+    if ((iResult=ConfigureFromArgumentString(argv.size(), &argv[0]))<0) {
+      cerr << "ConfigureFromArgumentString failed " << endl;
+      return iResult;
+    }
+
+    return iResult;
+  }
+
+  int CheckConfigure() {
+    int iResult=0;
+    const char* sequence1[]={"-sequence1","-argument2 5", NULL};
+    if ((iResult=CheckSequence(sequence1))<0) {
+      cerr << "failed checking sequence " << sequence1[0] << endl;
+      return iResult;
+    }
+
+    const char* sequence2[]={"-sequence2","-argument2 5 8", "-argument3 test", NULL};
+    if ((iResult=CheckSequence(sequence2))<0) {
+      cerr << "failed checking sequence in mode 0: " << sequence2[0] << endl;
+      return iResult;
+    }
+
+    if ((iResult=CheckSequence(sequence2, 1))<0) {
+      cerr << "failed checking sequence in mode 1: " << sequence2[0] << endl;
+      return iResult;
+    }
+
+    const char* sequence3[]={"-solenoidBz 5", NULL};
+    if ((iResult=CheckSequence(sequence3))<0) {
+      cerr << "failed checking sequence " << sequence3[0] << endl;
+      return iResult;
+    }
+    return iResult;
+  }
+
+  int InitCTPTest(const char* param) {
+    // this quick test needs to be the functions of the base class to be
+    // defined 'protected'
+    //return ScanECSParam(param);
+    //return InitCTPTriggerClasses(param);
+    return -ENOSYS;
+  }
+
+  bool CheckCTP(const char* expression, AliHLTComponentTriggerData* data) {
     return EvaluateCTPTriggerClass(expression, *data);
   }
 
@@ -80,6 +272,9 @@ protected:
 	       AliHLTComponentTriggerData& /*trigData*/) {
     return 0;
   }
+private:
+  vector<AliHLTConfigurationArgument> fArguments;
+  vector<AliHLTConfigurationArgument>::iterator fCurrentArgument;
 };
 
 class AliHLTTriggerDataAccess
@@ -172,6 +367,11 @@ private:
   Byte_t*                     fMine;
 };
 
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+//
+// setup of the CTP test
+
 /**
  * Get a random number in the given range.
  */
@@ -223,8 +423,15 @@ int GenerateTriggerClasses(int size, vector<AliHLTTestComponent::AliHLTCTPTrigge
   return classes.size();
 }
 
-int testAliHLTComponent_CTPTrigger()
+/**
+ * Test the CTP trigger tools
+ * The base class is initialized with an ECS string of randomly defined trigger
+ * classes consisting of random bits and names. Than a couple of expressions is
+ * test for various random bit patterns.
+ */
+int testCTPTrigger()
 {
+  cout << "checking CTP functionality of the base class" << endl;
   int iResult=0;
   vector<AliHLTTestComponent::AliHLTCTPTriggerClass> triggerClasses;
   if (GenerateTriggerClasses(GetRandom(5,gkNCTPTriggerClasses), triggerClasses)<=0) {
@@ -248,7 +455,10 @@ int testAliHLTComponent_CTPTrigger()
 
   AliHLTTestComponent component;
   component.SetGlobalLoggingLevel(kHLTLogDefault);
-  if ((iResult=component.InitTest(parameter.Data()))<0) return iResult;
+  if ((iResult=component.InitCTPTest(parameter.Data()))<0) {
+    cerr << "InitCTPTest failed :" << iResult << endl;
+    return iResult;
+  }
 
   AliHLTTriggerDataAccess trigData;
   for (int cycle=0; cycle<500 && iResult>=0; cycle++) {
@@ -278,7 +488,7 @@ int testAliHLTComponent_CTPTrigger()
 	// is
 	result=element->Trigger();
 	expression=element->ClassName();
-	trigger=component.Check(expression.Data(), trigData.Data());
+	trigger=component.CheckCTP(expression.Data(), trigData.Data());
 	if (trigger!=result) {
 	  cout << expression << ": " << element->Trigger()
 	       << "->" << trigger 
@@ -293,7 +503,7 @@ int testAliHLTComponent_CTPTrigger()
 	expression="!";
 	expression+=element->ClassName();
 	result=!result;
-	trigger=component.Check(expression.Data(), trigData.Data());
+	trigger=component.CheckCTP(expression.Data(), trigData.Data());
 	if (trigger!=result) {
 	  cout << expression << ": " << element->Trigger()
 	       << "->" << trigger 
@@ -309,7 +519,7 @@ int testAliHLTComponent_CTPTrigger()
       result=shuffle[0].Trigger() || shuffle[1].Trigger() || shuffle[2].Trigger();
       expression.Form("%s || %s || %s",
 		      shuffle[0].ClassName(), shuffle[1].ClassName(), shuffle[2].ClassName());
-      trigger=component.Check(expression.Data(), trigData.Data());
+      trigger=component.CheckCTP(expression.Data(), trigData.Data());
       if (trigger!=result) {
 	cout << expression << ": " << shuffle[0].Trigger() << shuffle[1].Trigger() << shuffle[2].Trigger() 
 	     << "->" << trigger 
@@ -325,7 +535,7 @@ int testAliHLTComponent_CTPTrigger()
       expression.Form("%s && %s && %s",
 		      shuffle[0].ClassName(), shuffle[1].ClassName(), shuffle[2].ClassName());
 
-      trigger=component.Check(expression.Data(), trigData.Data());
+      trigger=component.CheckCTP(expression.Data(), trigData.Data());
       if (trigger!=result) {
 	cout << expression << ": " << shuffle[0].Trigger() << shuffle[1].Trigger() << shuffle[2].Trigger() 
 	     << "->" << trigger 
@@ -341,7 +551,7 @@ int testAliHLTComponent_CTPTrigger()
       expression.Form("%s && (%s || %s)",
 		      shuffle[0].ClassName(), shuffle[1].ClassName(), shuffle[2].ClassName());
 
-      trigger=component.Check(expression.Data(), trigData.Data());
+      trigger=component.CheckCTP(expression.Data(), trigData.Data());
       if (trigger!=result) {
 	cout << expression << ": " << shuffle[0].Trigger() << shuffle[1].Trigger() << shuffle[2].Trigger() 
 	     << "->" << trigger 
@@ -364,9 +574,33 @@ int testAliHLTComponent_CTPTrigger()
   return iResult;
 }
 
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+//
+// setup of the Configure test
+int testConfigure() 
+{
+  cout << "checking common configuration tools of the base class" << endl;
+  AliHLTTestComponent component;
+  return component.CheckConfigure();
+}
+
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+//
+// main functions
+
+int testAliHLTComponent()
+{
+  int iResult=0;
+  //if ((iResult=testCTPTrigger())<0) return iResult;
+  if ((iResult=testConfigure())<0) return iResult;
+  return iResult;
+}
+
 int main(int /*argc*/, const char** /*argv*/)
 {
   int iResult=0;
-  iResult=testAliHLTComponent_CTPTrigger();
+  iResult=testAliHLTComponent();
   return iResult;
 }

@@ -396,6 +396,99 @@ int AliHLTComponent::SetComponentDescription(const char* desc)
   return iResult;
 }
 
+int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
+{
+  // see header file for function documentation
+  int iResult=0;
+  vector<const char*> array;
+  TObjArray choppedArguments;
+  TString argument="";
+  int i=0;
+  for (i=0; i<argc && iResult>=0; i++) {
+    argument=argv[i];
+    if (argument.IsNull()) continue;
+    TObjArray* pTokens=argument.Tokenize(" ");
+    if (pTokens) {
+      if (pTokens->GetEntriesFast()<2) {
+	array.push_back(argv[i]);
+      } else {
+	for (int n=0; n<pTokens->GetEntriesFast(); n++) {
+	  choppedArguments.AddLast(pTokens->At(n));
+	  array.push_back(((TObjString*)pTokens->At(n))->GetString().Data());
+	}
+	pTokens->SetOwner(kFALSE);
+      }
+      delete pTokens;
+    }
+  }
+
+  for (i=0; (unsigned)i<array.size() && iResult>=0;) {
+    int result=ScanConfigurationArgument(array.size()-i, &array[i]);
+    if (result==0) {
+      HLTWarning("unknown component argument %s", array[i]);
+      i++;
+    } else if (result>0) {
+      i+=result;
+    } else {
+      iResult=result;
+      if (iResult==-EINVAL) {
+	HLTError("unknown argument %s", array[i]);
+      } else if (iResult==-EPROTO) {
+	HLTError("missing/wrong parameter for argument %s (%s)", array[i], array.size()>(unsigned)i+1)?array[i+1]:"missing";
+      } else {
+	HLTError("scan of argument %s failed (%d)", array[i], iResult);
+      }
+    }
+  }
+
+  return iResult;
+}
+
+int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries)
+{
+  // see header file for function documentation
+  int iResult=0;
+  TString arguments;
+  TString confEntries=entries;
+  TObjArray* pTokens=confEntries.Tokenize(" ");
+  if (pTokens) {
+    for (int n=0; n<pTokens->GetEntriesFast(); n++) {
+      const char* path=((TObjString*)pTokens->At(n))->GetString().Data();
+      const char* chainId=GetChainId();
+      HLTInfo("configure from entry %s, chain id %s", path, (chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+      TObject* pOCDBObject = LoadAndExtractOCDBObject(path);
+      if (pOCDBObject) {
+	TObjString* pString=dynamic_cast<TObjString*>(pOCDBObject);
+	if (pString) {
+	  HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
+	  arguments+=pString->GetString().Data();
+	  arguments+=" ";
+	} else {
+	  HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
+	  iResult=-EINVAL;
+	}
+      } else {
+	HLTError("can not fetch object \"%s\" from OCDB", path);
+	iResult=-ENOENT;
+      }
+    }
+    delete pTokens;
+  }
+  if (iResult>=0 && !arguments.IsNull())  {
+    const char* array=arguments.Data();
+    iResult=ConfigureFromArgumentString(1, &array);
+  }
+  return iResult;
+}
+
+TObject* AliHLTComponent::LoadAndExtractOCDBObject(const char* path, int version, int subVersion)
+{
+  // see header file for function documentation
+  AliCDBEntry* pEntry=AliHLTMisc::Instance().LoadOCDBEntry(path, GetRunNo(), version, subVersion);
+  if (!pEntry) return NULL;
+  return AliHLTMisc::Instance().ExtractObject(pEntry);
+}
+
 int AliHLTComponent::DoInit( int /*argc*/, const char** /*argv*/)
 {
   // default implementation, childs can overload
@@ -421,6 +514,14 @@ int AliHLTComponent::ReadPreprocessorValues(const char* /*modules*/)
 {
   // default implementation, childs can overload
   HLTLogKeyword("dummy");
+  return 0;
+}
+
+int AliHLTComponent::ScanConfigurationArgument(int /*argc*/, const char** /*argv*/)
+{
+  // default implementation, childs can overload
+  HLTLogKeyword("dummy");
+  HLTWarning("The function needs to be implemented by the component");
   return 0;
 }
 

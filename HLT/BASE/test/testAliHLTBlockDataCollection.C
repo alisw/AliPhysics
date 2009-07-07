@@ -77,7 +77,7 @@ int InitCollection(AliHLTBlockDataCollection& collection, const char* init)
   int iStart=0;
   for (;arguments[i]!=0; i++) {
     if (arguments[i]=='\'') {
-      if (bQuote=!bQuote) {
+      if (bQuote=(!bQuote)) {
 	// opening quote, set start
       } else {
 	// closing quote, add argument
