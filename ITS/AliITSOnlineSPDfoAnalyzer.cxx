@@ -546,7 +546,7 @@ Bool_t AliITSOnlineSPDfoAnalyzer::CorrectPreVTHChioce(const TH1D *h,Int_t &bin) 
   //
   
   
-  Int_t maxbin = h->GetMaximum();
+  Int_t maxbin = (Int_t)h->GetMaximum();
   Double_t maxentries = h->GetBinContent(maxbin);
   
   Int_t counts =0;
