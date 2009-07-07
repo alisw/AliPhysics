@@ -72,8 +72,11 @@ void AliTriggerRunScalers::AddTriggerScalers( AliTriggerScalersRecord* scaler )
 { 
   // Add scaler and check consistency
   fScalersRecord.AddLast( scaler );
-  if (AliTriggerRunScalers::ConsistencyCheck(fScalersRecord.GetEntriesFast()-1,kFALSE)) AliErrorClass("Trigger counters not in the right order or decreasing!");
-//  fScalersRecord.Sort(); 
+  if (AliTriggerRunScalers::ConsistencyCheck(fScalersRecord.GetEntriesFast()-1,kFALSE)){
+   AliErrorClass("Trigger counters not in the right order or decreasing!");
+  //  scaler->Print();
+  //  fScalersRecord.Sort(); 
+ }
 }
 //_____________________________________________________________________________
 
@@ -288,9 +291,11 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
    //         2 = too big jump in scalers, looks like some readings are missing
    //         3 = (level+1) > (level)
    if (position == 0){
-      AliErrorClass("position=0\n");
-      return 1;
-   }
+      if(correctOverflow){
+        AliErrorClass("position=0\n");
+        return 1;
+      }else return 0; // to work correctlu in AddScalers
+   };
    UInt_t c2[6], c1[6];
    ULong64_t c64[6]; 
    Bool_t increase[6], overflow[6];  
@@ -314,23 +319,31 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
       TObjArray* scalersArray1 = (TObjArray*)scalers1->GetTriggerScalers();
       AliTriggerScalers* counters1 = (AliTriggerScalers*)scalersArray1->At(ic);
       counters1->GetAllScalers(c1);
-
-      for(Int_t i=0;i<6;i++){
-         if ( c2[i] > c1[i] ) increase[i]=1;
+      for(Int_t i=0;i<5;i++){
+         if ( c2[i] >= c1[i] ) increase[i]=1;
          else if ( c2[i] < c1[i] && (c1[i] - c2[i]) > max2) overflow[i]=1;
          else return 2;
       }
       for(Int_t i=0;i<5;i++){
-         if ((c2[i] - c1[i]) < (c2[i+1] - c1[i+1]) && increase[i] && increase[i+1] ) return 3;
-         else if ( (max1 - c1[i]+c2[i]  ) < (c2[i+1] - c1[i+1]) && overflow[i] && increase[i+1] ) return 3;
-         else if ( (c2[i] - c1[i]) < (max1 - c1[i+1] + c2[i+1]) && increase[i] && overflow[i+1] ) return 3;
-         else if ( (max1 - c1[i] + c2[i] ) < (max1 - c1[i+1] + c2[i+1]) && overflow[i] && overflow[i+1] ) return 3;
+         if ((c2[i] - c1[i]) < (c2[i+1] - c1[i+1]) && increase[i] && increase[i+1] ) {
+                 if ( ((c2[i+1] - c1[i+1]) - (c2[i] - c1[i])) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
+                 else return 3; }
+         else if ( (max1 - c1[i]+c2[i]) < (c2[i+1] - c1[i+1]) && overflow[i] && increase[i+1] ) {
+                 if ( ((c2[i+1] - c1[i+1]) - (max1 - c1[i]+c2[i])) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
+                 else return 3; }
+         else if ( (c2[i] - c1[i]) < (max1 - c1[i+1] + c2[i+1]) && increase[i] && overflow[i+1] ) {
+                 if ( ((max1 - c1[i+1] + c2[i+1]) - (c2[i] - c1[i])) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
+                 else return 3; }
+         else if ( (max1 - c1[i] + c2[i] ) < (max1 - c1[i+1] + c2[i+1]) && overflow[i] && overflow[i+1] ) {
+                 if ( ((max1 - c1[i+1] + c2[i+1]) - (max1 - c1[i] + c2[i] )) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
+                 else return 3; }
       }
-      if(correctOverflow)for(Int_t i=0;i<6;i++){
-        c64[i]=c2[i]+max1*overflow[i];
-        AliTriggerScalersESD* s= new AliTriggerScalersESD(ic,c64);
+      if(correctOverflow){ 
+        for(Int_t i=0;i<6;i++){ c64[i]=c2[i]+max1*overflow[i]; }
+        AliTriggerScalersESD* s= new AliTriggerScalersESD(fClassIndex[ic],c64);
         recESD->AddTriggerScalers(s);
-     }
+         }
+
  }
  if(correctOverflow)fScalersRecordESD.AddLast(recESD);
  return 0;
@@ -350,12 +363,14 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
     AliTriggerScalers* counters = (AliTriggerScalers*)scalersArray->At(ic);
     counters->GetAllScalers(c1);
     for(Int_t i=0; i<6; i++)c64[i]=c1[i];
-    AliTriggerScalersESD* s= new AliTriggerScalersESD(ic,c64);
+    AliTriggerScalersESD* s= new AliTriggerScalersESD(fClassIndex[ic],c64);
     recESD->AddTriggerScalers(s);
  }
  fScalersRecordESD.AddLast(recESD);
  for(Int_t i=1;i<fScalersRecord.GetEntriesFast(); i++){
   if(ConsistencyCheck(i,kTRUE)){
+    fScalersRecord.At(i)->Print();
+    fScalersRecord.At(i-1)->Print();
     fScalersRecordESD.SetOwner(); 
     fScalersRecordESD.Delete(); 
     AliErrorClass("Inconsistent scalers, they will not be provided.\n");
@@ -383,14 +398,18 @@ AliTriggerScalersESD* AliTriggerRunScalers::GetScalersForEventClass(const AliTim
  AliTriggerScalersRecordESD* scalrec2 = (AliTriggerScalersRecordESD*)fScalersRecordESD.At(position+1);
  TObjArray* scalers1 = (TObjArray*)scalrec1->GetTriggerScalers();
  TObjArray* scalers2 = (TObjArray*)scalrec2->GetTriggerScalers();
+ cout << " Position = " << position << endl;
  if(scalers1->GetEntriesFast() != fnClasses){
   AliErrorClass("Internal error: #classes in RecordESD != fnClasses\n");
   return 0; 
  }
+
  AliTriggerScalersESD *s1,*s2;
- for ( Int_t ic=0; ic < fnClasses; ++ic ){
+ for ( Int_t ic=0; ic < (Int_t)fnClasses; ++ic ){
+
       s1 = (AliTriggerScalersESD*)scalers1->At(ic);
       s2 = (AliTriggerScalersESD*)scalers2->At(ic);
+
       Bool_t classfound = (s1->GetClassIndex() == classIndex) && (s2->GetClassIndex() == classIndex);
       if(classfound){
         ULong64_t max = 4294967295ul;

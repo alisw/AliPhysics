@@ -39,6 +39,7 @@ public:
  // Analysis		    
                     Int_t    ConsistencyCheck(Int_t position,Bool_t correctOverflow);
 		    Int_t    CorrectScalersOverflow();
+		    Int_t    CheckRunScalers(){return (fScalersRecord.GetEntriesFast()==fScalersRecordESD.GetEntriesFast());}
   //  Setters
                      void    SetVersion( Short_t ver )       { fVersion = ver;   }            
                      void    SetRunNumber( ULong_t run )     { fRunNumber = run; }
