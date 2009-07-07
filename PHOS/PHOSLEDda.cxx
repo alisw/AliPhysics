@@ -98,21 +98,24 @@ int main(int argc, char **argv) {
    /* init some counters */
   int nevents_physics=0;
   int nevents_total=0;
-
-  Int_t fMod = 2; // module 2!
-  AliRawReader *rawReader = NULL;
-
-  AliPHOSRcuDA1 da1(fMod,-1,0); // DA1 for module2, no input/output file
   
+  AliRawReader *rawReader = NULL;
+  AliPHOSRcuDA1* dAs[5];
+  
+  for(Int_t iMod=0; iMod<5; iMod++) {
+    dAs[iMod] = 0;
+  }
+
   Float_t e[64][56][2];
   Float_t t[64][56][2];
 
-  Int_t gain     = -1;
   Int_t cellX    = -1;
   Int_t cellZ    = -1;
   Int_t nBunches =  0;
   Int_t nFired   = -1;
   Int_t sigStart, sigLength;
+  Int_t caloFlag;
+  
 
   TH1I fFiredCells("fFiredCells","Number of fired cells per event",100,0,1000);
 
@@ -147,57 +150,62 @@ int main(int argc, char **argv) {
     
     if (eventT==PHYSICS_EVENT) {
       
-      for(Int_t iX=0; iX<64; iX++) {
-	for(Int_t iZ=0; iZ<56; iZ++) {
-	  for(Int_t iGain=0; iGain<2; iGain++) {
-	    e[iX][iZ][iGain] = 0.;
-	    t[iX][iZ][iGain] = 0.;
-	  }
-	}
-      }
-
       nFired = 0;
-
+      
       rawReader = new AliRawReaderDate((void*)event);
       AliCaloRawStreamV3 stream(rawReader,"PHOS",mapping);
-      AliPHOSRawFitterv0 fitter();
+      AliPHOSRawFitterv0 fitter;
       fitter.SubtractPedestals(kTRUE); // assume that data is non-ZS
       
       while (stream.NextDDL()) {
 	while (stream.NextChannel()) {
-
+	  
 	  cellX    = stream.GetCellX();
 	  cellZ    = stream.GetCellZ();
 	  caloFlag = stream.GetCaloFlag();  // 0=LG, 1=HG, 2=TRU
-
+	  
 	  // In case of oscillating signals with ZS, a channel can have several bunches
 	  nBunches = 0;
 	  while (stream.NextBunch()) {
 	    nBunches++;
 	    if (nBunches > 1) continue;
-	    sigStart  = fRawStream.GetStartTimeBin();
-	    sigLength = fRawStream.GetBunchLength();
-	    fitter.SetSamples(fRawStream->GetSignals(),sigStart,sigLength);
+	    sigStart  = stream.GetStartTimeBin();
+	    sigLength = stream.GetBunchLength();
+	    fitter.SetSamples(stream.GetSignals(),sigStart,sigLength);
 	  } // End of NextBunch()
 	  
 	  fitter.SetNBunches(nBunches);
-	  fitter.SetChannelGeo(module,cellX,cellZ,caloFlag);
+	  fitter.SetChannelGeo(stream.GetModule(),cellX,cellZ,caloFlag);
 	  fitter.Eval();
-
-	  if (nBunches>1 || caloFlag!=0 || caloFlag!=1 || fitter.GetSignalQuality()>1) continue;
+	  
+	  if(nBunches>1) continue;
+// 	  if (nBunches>1 || caloFlag!=0 || caloFlag!=1 || fitter.GetSignalQuality()>1) continue;
 	  
 	  e[cellX][cellZ][caloFlag] = fitter.GetEnergy();
 	  t[cellX][cellZ][caloFlag] = fitter.GetTime();
-
+	  
 	  if(caloFlag==1 && fitter.GetEnergy()>40)
 	    nFired++;
 	}
+	
+	if(dAs[stream.GetModule()])
+	  dAs[stream.GetModule()]->FillHistograms(e,t);
+	else
+	  dAs[stream.GetModule()] = new AliPHOSRcuDA1(stream.GetModule(),-1,0);
+	
+	for(Int_t iX=0; iX<64; iX++) {
+	  for(Int_t iZ=0; iZ<56; iZ++) {
+	    for(Int_t iGain=0; iGain<2; iGain++) {
+	      e[iX][iZ][iGain] = 0.;
+	      t[iX][iZ][iGain] = 0.;
+	    }
+	  }
+	}
+	
       }
-
-
-      da1.FillHistograms(e,t);
+      
       fFiredCells.Fill(nFired);
-
+      
       delete rawReader;     
       nevents_physics++;
     }
@@ -217,46 +225,54 @@ int main(int argc, char **argv) {
   for(Int_t i = 0; i < 4; i++) delete mapping[i];  
   
   /* Be sure that all histograms are saved */
-
-  char localfile[128];
-  sprintf(localfile,"PHOS_Module%d_LED.root",fMod);
-  TFile* f = new TFile(localfile,"recreate");
   
   const TH2F* h2=0;
   const TH1F* h1=0;
+  char localfile[128];
 
   Int_t nGood=0;    // >10 entries in peak
   Int_t nMax=-111;  // max. number of entries in peak
   Int_t iXmax=-1;
   Int_t iZmax=-1;
-
-  for(Int_t iX=0; iX<64; iX++) {
-    for(Int_t iZ=0; iZ<56; iZ++) {
+  Int_t iModMax=-1;
+  
+  for(Int_t iMod=0; iMod<5; iMod++) {
+    if(!dAs[iMod]) continue;
+  
+    printf("DA1 for module %d detected.\n",iMod);
+    sprintf(localfile,"PHOS_Module%d_LED.root",iMod);
+    TFile* f = new TFile(localfile,"recreate");
+    
+    for(Int_t iX=0; iX<64; iX++) {
+      for(Int_t iZ=0; iZ<56; iZ++) {
+	
+	h1 = dAs[iMod]->GetHgLgRatioHistogram(iX,iZ); // High Gain/Low Gain ratio
+	if(h1) {
+	  if(h1->GetMaximum()>10.) nGood++;
+	  if(h1->GetMaximum()>nMax) {
+	    nMax = (Int_t)h1->GetMaximum(); iXmax=iX; iZmax=iZ; iModMax=iMod;
+	  }
+	  h1->Write(); 
+	}
       
-      h1 = da1.GetHgLgRatioHistogram(iX,iZ); // High Gain/Low Gain ratio
-      if(h1) {
-	if(h1->GetMaximum()>10.) nGood++;
-	if(h1->GetMaximum()>nMax) {nMax = (Int_t)h1->GetMaximum(); iXmax=iX; iZmax=iZ;}
-	h1->Write(); 
+	for(Int_t iGain=0; iGain<2; iGain++) {
+	  h2 = dAs[iMod]->GetTimeEnergyHistogram(iX,iZ,iGain); // Time vs Energy
+	  if(h2) h2->Write();
+	}
+      
       }
-      
-      for(Int_t iGain=0; iGain<2; iGain++) {
-	h2 = da1.GetTimeEnergyHistogram(iX,iZ,iGain); // Time vs Energy
-	if(h2) h2->Write();
-      }
-      
     }
+    
+    fFiredCells.Write();
+    f->Close();
+    
+    /* Store output files to the File Exchange Server */
+    daqDA_FES_storeFile(localfile,"LED");
   }
-  
-  fFiredCells.Write();
-  f->Close();
-  
-  /* Store output files to the File Exchange Server */
-  daqDA_FES_storeFile("PHOS_Module2_LED.root","LED");
   
   printf("%d physics events of %d total processed.\n",nevents_physics,nevents_total);
   printf("%d histograms has >10 entries in maximum, max. is %d entries ",nGood,nMax);
-  printf("(module,iX,iZ)=(%d,%d,%d)",fMod,iXmax,iZmax);
+  printf("(module,iX,iZ)=(%d,%d,%d)",iModMax,iXmax,iZmax);
   printf("\n");
 
   return status;
