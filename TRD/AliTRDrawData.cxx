@@ -51,9 +51,12 @@ Int_t AliTRDrawData::fgDataSuppressionLevel = 1;
 //_____________________________________________________________________________
 AliTRDrawData::AliTRDrawData()
   :TObject()
+  ,fRunLoader(NULL)
   ,fGeo(NULL)
   ,fFee(NULL)
   ,fNumberOfDDLs(0)
+  ,fTrackletTree(NULL)
+  ,fTrackletContainer(NULL)
   ,fSMindexPos(0)
   ,fStackindexPos(0)
   ,fEventCounter(0)
@@ -70,9 +73,12 @@ AliTRDrawData::AliTRDrawData()
 //_____________________________________________________________________________
 AliTRDrawData::AliTRDrawData(const AliTRDrawData &r)
   :TObject(r)
+  ,fRunLoader(NULL)
   ,fGeo(NULL)
   ,fFee(NULL)
   ,fNumberOfDDLs(0)
+  ,fTrackletTree(NULL)
+  ,fTrackletContainer(NULL)
   ,fSMindexPos(0)
   ,fStackindexPos(0)
   ,fEventCounter(0)
@@ -92,6 +98,11 @@ AliTRDrawData::~AliTRDrawData()
   //
   // Destructor
   //
+
+  if (fTrackletContainer){
+    delete fTrackletContainer;
+    fTrackletContainer = NULL;
+  }
 
 }
 
@@ -955,6 +966,15 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
   AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
   digitsManager->CreateArrays();
 
+  if (!fTrackletContainer) {
+  //if (!fTrackletContainer && ( fReconstructor->IsWritingTracklets() || fReconstructor->IsProcessingTracklets() )) {
+    // maximum tracklets for one HC
+    const Int_t kTrackletChmb=256;
+    fTrackletContainer = new UInt_t *[2];
+    fTrackletContainer[0] = new UInt_t[kTrackletChmb];
+    fTrackletContainer[1] = new UInt_t[kTrackletChmb];
+  }
+
   AliTRDrawStreamBase *pinput = AliTRDrawStreamBase::GetRawStream(rawReader);
   AliTRDrawStreamBase &input = *pinput;
   input.SetRawVersion( fFee->GetRAWversion() ); //<= ADDED by MinJung
@@ -966,7 +986,12 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 
   while (det >= 0)
     {
-      det = input.NextChamber(digitsManager);
+      //det = input.NextChamber(digitsManager);
+      det = input.NextChamber(digitsManager,fTrackletContainer);
+
+    //if (!fReconstructor->IsWritingTracklets()) continue;
+    if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det);
+
       if (det >= 0)
 	{
 	  // get...
@@ -981,6 +1006,13 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
  	  if (track2) track2->Compress();
 	}
     }
+
+  if (fTrackletContainer){
+    delete [] fTrackletContainer[0];
+    delete [] fTrackletContainer[1];
+    delete [] fTrackletContainer;
+    fTrackletContainer = NULL;
+  }
 
   delete pinput;
   pinput = NULL;
@@ -1193,5 +1225,93 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsOLD(AliRawReader *rawReader)
   return digitsManager;
 
 }
+
+//_____________________________________________________________________________
+Bool_t AliTRDrawData::WriteTracklets(Int_t det)
+{
+  //
+  // Write the raw data tracklets into seperate file
+  //
+
+  UInt_t **leaves = new UInt_t *[2];
+  for (Int_t i=0; i<2 ;i++){
+    leaves[i] = new UInt_t[258];
+    leaves[i][0] = det; // det
+    leaves[i][1] = i;   // side
+    memcpy(leaves[i]+2, fTrackletContainer[i], sizeof(UInt_t) * 256);
+  }
+
+  if (!fTrackletTree){
+    AliDataLoader *dl = fRunLoader->GetLoader("TRDLoader")->GetDataLoader("tracklets");
+    dl->MakeTree();
+    fTrackletTree = dl->Tree();
+  }
+
+  TBranch *trkbranch = fTrackletTree->GetBranch("trkbranch");
+  if (!trkbranch) {
+    trkbranch = fTrackletTree->Branch("trkbranch",leaves[0],"det/i:side/i:tracklets[256]/i");
+  }
+
+  for (Int_t i=0; i<2; i++){
+    if (leaves[i][2]>0) {
+      trkbranch->SetAddress(leaves[i]);
+      fTrackletTree->Fill();
+    }
+  }
+
+  AliDataLoader *dl = fRunLoader->GetLoader("TRDLoader")->GetDataLoader("tracklets");
+  dl->WriteData("OVERWRITE");
+  //dl->Unload();
+  delete [] leaves;
+
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDrawData::OpenOutput()
+{
+  //
+  // Connect the output tree
+  //
+
+  // tracklet writing
+  if (1){
+  //if (fReconstructor->IsWritingTracklets()){
+    TString evfoldname = AliConfig::GetDefaultEventFolderName();
+    fRunLoader         = AliRunLoader::GetRunLoader(evfoldname);
+
+    if (!fRunLoader) {
+      fRunLoader = AliRunLoader::Open("galice.root");
+    }
+    if (!fRunLoader) {
+      AliError(Form("Can not open session for file galice.root."));
+      return kFALSE;
+    }
+
+    UInt_t **leaves = new UInt_t *[2];
+    AliDataLoader *dl = fRunLoader->GetLoader("TRDLoader")->GetDataLoader("tracklets");
+    if (!dl) {
+      AliError("Could not get the tracklets data loader!");
+      dl = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
+      fRunLoader->GetLoader("TRDLoader")->AddDataLoader(dl);
+    }
+    else {
+      fTrackletTree = dl->Tree();
+      if (!fTrackletTree)
+        {
+        dl->MakeTree();
+        fTrackletTree = dl->Tree();
+        }
+      TBranch *trkbranch = fTrackletTree->GetBranch("trkbranch");
+      if (!trkbranch)
+        fTrackletTree->Branch("trkbranch",leaves[0],"det/i:side/i:tracklets[256]/i");
+    }
+  }
+  return kTRUE;
+
+}
+
+
 
 

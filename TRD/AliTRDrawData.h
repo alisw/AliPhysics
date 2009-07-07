@@ -15,6 +15,8 @@
 
 class TTree;
 
+class AliRunLoader;
+
 class AliRawReader;
 
 class AliTRDdigitsManager;
@@ -38,6 +40,8 @@ class AliTRDrawData : public TObject {
   virtual AliTRDdigitsManager *Raw2DigitsOLD(AliRawReader *rawReader);
   static void SetRawFormatVersion(Int_t iver){ fgRawFormatVersion=iver; };
   static void SetSuppressionLevel(Int_t ilevel){ fgDataSuppressionLevel=ilevel; };
+  Bool_t WriteTracklets(Int_t det);
+  Bool_t OpenOutput();
 
   enum FORMATTYPE
     {
@@ -60,9 +64,12 @@ class AliTRDrawData : public TObject {
           Int_t        AddStackIndexWords(UInt_t *buf, Int_t nStack, Int_t nMax);   // add stack index words and stack header when there is no data for the stack 
           Bool_t       ShiftWords(UInt_t *buf, Int_t nStart, Int_t nWords, Int_t nMax); // shifts n words
   
+  AliRunLoader        *fRunLoader;      //! Run Loader
   AliTRDgeometry      *fGeo;            //! Geometry
   AliTRDfeeParam      *fFee;            //! Fee Parameters
   Int_t                fNumberOfDDLs;   //  Number of DDLs
+  TTree               *fTrackletTree;        //! Tree for tracklets
+  UInt_t              **fTrackletContainer;  //! tracklet container
 
   ClassDef(AliTRDrawData,5)             //  TRD raw data class
 
