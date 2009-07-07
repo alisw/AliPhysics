@@ -313,10 +313,10 @@ public:
   void AddEMCALTriggerAmplitudes(TArrayF array){ fEMCALTrigger->AddTriggerAmplitudes(array); }
 
   Int_t GetNumberOfPileupVerticesSPD() const {
-     return fSPDPileupVertices->GetEntriesFast();
+    return (fSPDPileupVertices?fSPDPileupVertices->GetEntriesFast():0);
   }
   Int_t GetNumberOfPileupVerticesTracks() const {
-     return fTrkPileupVertices->GetEntriesFast();
+    return (fTrkPileupVertices?fTrkPileupVertices->GetEntriesFast():0);
   }
   Int_t GetNumberOfTracks()     const {return fTracks->GetEntriesFast();}
   Int_t GetNumberOfHLTConfMapTracks()     const {return 0;} 
