@@ -28,11 +28,81 @@
 // Created Mon Nov  8 12:51:51 2004 by Christian Holm Christensen
 // 
 #include "AliFMDFloatMap.h"	//ALIFMDFLOATMAP_H
+namespace {
+  class Printer : public AliFMDMap::ForOne
+  {
+  public:
+    Printer(const char* format) 
+      : fFormat(format), fOldD(0), fOldR('-'), fOldS(1024) {}
+    Bool_t operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
+		      Float_t m)
+    {
+      if (d != fOldD) { 
+	fOldD = d;
+	fOldR = '-';
+	if (d != 0) printf("\n");
+	printf("FMD%d", fOldD);
+      }
+      if (r != fOldR) {
+	fOldR = r;
+	fOldS = 1024;
+	printf("\n %s ring", (r == 'I' ? "Inner" : "Outer"));
+      }
+      if (s != fOldS) { 
+	fOldS = s;
+	printf("\n  Sector %2d", fOldS);
+      }
+      if (t % 4 == 0) printf("\n   %3d-%3d ", t, t+3);
+      printf(fFormat, m);
+      // if (t % 4 == 3) printf("\n");
+
+      return kTRUE;
+    }
+    Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, Int_t)
+    {
+      return kTRUE;
+    }
+    Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, UShort_t)
+    {
+      return kTRUE;
+    }
+    Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, Bool_t)
+    {
+      return kTRUE;
+    }
+  private:
+    Printer(const Printer& p) 
+      : fFormat(p.fFormat), 
+	fOldD(p.fOldD), 
+	fOldR(p.fOldR), 
+	fOldS(p.fOldS) 
+    {}
+    Printer& operator=(const Printer&) { return *this; }
+    const char* fFormat;
+    UShort_t    fOldD;
+    Char_t      fOldR;
+    UShort_t    fOldS;
+  };
+}
 //__________________________________________________________
 ClassImp(AliFMDFloatMap)
 #if 0
   ; // This is here to keep Emacs for indenting the next line
 #endif
+
+//__________________________________________________________
+AliFMDFloatMap::AliFMDFloatMap(const AliFMDMap& other)
+  : AliFMDMap(other),
+    fTotal(fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips),
+    fData(0)
+{
+  if (fTotal == 0) fTotal = 51200;
+  fData = new Float_t[fTotal];
+  // Copy constructor
+  if (!other.IsFloat()) return;
+  for (Int_t i = 0; i < fTotal; i++) fData[i] = other.AtAsFloat(i);
+}
+
 //__________________________________________________________
 AliFMDFloatMap::AliFMDFloatMap(const AliFMDFloatMap& other)
   : AliFMDMap(other.fMaxDetectors,
@@ -40,11 +110,24 @@ AliFMDFloatMap::AliFMDFloatMap(const AliFMDFloatMap& other)
               other.fMaxSectors,
               other.fMaxStrips),
     fTotal(fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips),
-    fData(new Float_t[fTotal])
+    fData(0)
 {
+  if (fTotal == 0) fTotal = 51200;
+  fData = new Float_t[fTotal];
   // Copy constructor
   for (Int_t i = 0; i < fTotal; i++)
     fData[i] = other.fData[i];
+}
+
+//__________________________________________________________
+AliFMDFloatMap::AliFMDFloatMap()
+  : AliFMDMap(),
+    fTotal(0),
+    fData(0)
+{
+  // Constructor.
+  // Parameters:
+  //	None
 }
 
 //__________________________________________________________
@@ -54,7 +137,7 @@ AliFMDFloatMap::AliFMDFloatMap(Int_t maxDet,
 			       Int_t maxStr)
   : AliFMDMap(maxDet, maxRing, maxSec, maxStr),
     fTotal(fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips),
-    fData(new Float_t[fTotal])
+    fData(0)
 {
   // Constructor.
   // Parameters:
@@ -62,6 +145,8 @@ AliFMDFloatMap::AliFMDFloatMap(Int_t maxDet,
   //	maxRing	Maximum number of rings per detector
   //	maxSec	Maximum number of sectors per ring
   //	maxStr	Maximum number of strips per sector
+  if (fTotal == 0) fTotal = 51200;
+  fData = new Float_t[fTotal];
   Reset(0);
 }
 
@@ -81,6 +166,7 @@ AliFMDFloatMap::operator=(const AliFMDFloatMap& other)
       fMaxSectors   = other.fMaxSectors;
       fMaxStrips    = other.fMaxStrips;
       fTotal        = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+      if (fTotal == 0) fTotal = 51200;
       if (fData) delete [] fData;
       fData = new Float_t[fTotal];
     }
@@ -88,6 +174,7 @@ AliFMDFloatMap::operator=(const AliFMDFloatMap& other)
   }
   return *this;
 }
+
 
 //__________________________________________________________
 void
@@ -97,6 +184,16 @@ AliFMDFloatMap::Reset(const Float_t& val)
   for (Int_t i = 0; i < fTotal; i++) fData[i] = val;
 }
 
+//__________________________________________________________
+void
+AliFMDFloatMap::Print(Option_t* option) const
+{
+  // Print contents of map
+  if (!option || option[0] == '\0') TObject::Print();
+  Printer p(option);
+  ForEach(p);
+  printf("\n");
+}
 //__________________________________________________________
 Float_t&
 AliFMDFloatMap::operator()(UShort_t det, 

@@ -35,7 +35,7 @@ ClassImp(AliFMDCalibGain)
 
 //____________________________________________________________________
 AliFMDCalibGain::AliFMDCalibGain()
-  : fValue(),
+  : fValue(0), // nDet == 0 mean 51200 slots
     fThreshold(-1.)
 {
   // CTOR

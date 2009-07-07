@@ -55,7 +55,7 @@ AliFMDUShortMap::AliFMDUShortMap(UShort_t maxDet,
 				 UShort_t maxSec, 
 				 UShort_t maxStr)
   : AliFMDMap(maxDet, maxRing, maxSec, maxStr), 
-    fTotal(0),
+    fTotal(fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips),
     fData(0)
 {
   // Construct a map
@@ -65,8 +65,20 @@ AliFMDUShortMap::AliFMDUShortMap(UShort_t maxDet,
   //     maxRinf      Maximum # of rings
   //     maxSec       Maximum # of sectors
   //     maxStr       Maximum # of strips
-  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  if (fTotal == 0) fTotal = 51200;
   fData  = new UShort_t[fTotal];
+}
+
+//____________________________________________________________________
+AliFMDUShortMap::AliFMDUShortMap()
+  : AliFMDMap(), 
+    fTotal(0),
+    fData(0)
+{
+  // Construct a map
+  //
+  // Parameters:
+  //     None
 }
 
 //____________________________________________________________________

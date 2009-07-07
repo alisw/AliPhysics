@@ -15,12 +15,6 @@
 #ifndef ALIALTROMAPPING_H
 # include <AliAltroMapping.h>
 #endif
-#ifndef ALIFMDUSHORTMAP_H
-# include "AliFMDUShortMap.h"
-#endif
-#ifndef ROOT_TArrayI
-# include <TArrayI.h>
-#endif
 //
 // Map hardware address to detector coordinates. 
 //
@@ -90,44 +84,9 @@ public:
 		     UShort_t preSamples, UShort_t  sampleRate, 
 		     Short_t& strip,      UShort_t& sample) const;
 
-#if 0  
-  /** Map a hardware address into a detector index. 
-      @param hwaddr Hardware address.  
-      @param ring   On return, the ring ID
-      @param sec    On return, the sector #
-      @param str    On return, the base of strip #
-      @return @c true on success, false otherwise */
-  Bool_t Hardware2Detector(UInt_t    hwaddr, 
-			   Char_t&   ring, UShort_t& sec, Short_t& str) const;
   /** Map a hardware address into a detector index. 
       @param ddl    Hardware DDL number 
       @param hwaddr Hardware address.  
-      @param det    On return, the detector #
-      @param ring   On return, the ring ID
-      @param sec    On return, the sector #
-      @param str    On return, the base of strip #
-      @return @c true on success, false otherwise */
-  Bool_t Hardware2Detector(UInt_t    ddl, UInt_t    hwaddr, 
-			   UShort_t& det, Char_t&   ring, 
-			   UShort_t& sec, Short_t& str) const;
-  /** Map a hardware address into a detector index. 
-      @param ddl     Hardware DDL number 
-      @param board   FEC number
-      @param altro   ALTRO number 
-      @param channel Channel number 
-      @param det     On return, the detector #
-      @param ring    On return, the ring ID
-      @param sec     On return, the sector #
-      @param str     On return, the base of strip #
-      @return @c true on success, false otherwise */
-  Bool_t Hardware2Detector(UInt_t    ddl,   UInt_t    board, 
-			   UInt_t    altro, UInt_t    channel,
-			   UShort_t& det,   Char_t&   ring, 
-			   UShort_t& sec,   Short_t&  str) const;
-#endif
-  /** Map a hardware address into a detector index. 
-      @param ddl        Hardware DDL number 
-      @param hwaddr     Hardware address.  
       @param timebin    Timebin 
       @param preSamples # of pre samples 
       @param sampleRate Over sampling rate 
@@ -198,38 +157,11 @@ public:
 			 UShort_t sam, UShort_t preSamples, 
 			 UShort_t sampleRate) const;
   
-#if 0  
   /** Map a detector index into a hardware address. 
       @param det     The detector #
       @param ring    The ring ID
       @param sec     The sector #
       @param str     The strip #
-      @param ddl     On return, hardware DDL number 
-      @param board   On return, the FEC board address (local to DDL)
-      @param altro   On return, the ALTRO number (local to FEC)
-      @param channel On return, the channel number (local to ALTRO)
-      @return @c true on success, false otherwise */
-  Bool_t Detector2Hardware(UShort_t  det,   Char_t    ring, 
-			   UShort_t  sec,   UShort_t  str,
-			   UShort_t& ddl,   UShort_t& board, 
-			   UShort_t& altro, UShort_t& channel) const;
-  /** Map a detector index into a hardware address. 
-      @param det    The detector #
-      @param ring   The ring ID
-      @param sec    The sector #
-      @param str    The strip #
-      @param ddl    On return, hardware DDL number 
-      @param hwaddr On return, hardware address.  
-      @return @c true on success, false otherwise */
-  Bool_t Detector2Hardware(UShort_t  det, Char_t    ring, 
-			   UShort_t  sec, UShort_t  str,
-			   UShort_t& ddl, UShort_t&   hwaddr) const;
-#endif
-  /** Map a detector index into a hardware address. 
-      @param det         The detector #
-      @param ring        The ring ID
-      @param sec         The sector #
-      @param str         The strip #
       @param sam         The sample number 
       @param preSamples  Number of pre-samples
       @param sampleRate  The oversampling rate 

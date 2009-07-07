@@ -242,10 +242,7 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(AliRunDigitizer* manager)
   : AliDigitizer(manager, "AliFMDBaseDigitizer", "FMD Digitizer base class"), 
     fFMD(0),
     fRunLoader(0),
-    fEdep(AliFMDMap::kMaxDetectors, 
-	  AliFMDMap::kMaxRings, 
-	  AliFMDMap::kMaxSectors, 
-	  AliFMDMap::kMaxStrips), 
+    fEdep(0),        // nDet==0 means 51200 slots
     fShapingTime(6),
     fStoreTrackRefs(kTRUE)
 {
@@ -260,10 +257,7 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(const Char_t* name,
   : AliDigitizer(name, title),
     fFMD(0),
     fRunLoader(0),
-    fEdep(AliFMDMap::kMaxDetectors, 
-	  AliFMDMap::kMaxRings, 
-	  AliFMDMap::kMaxSectors, 
-	  AliFMDMap::kMaxStrips),
+    fEdep(0),        // nDet==0 means 51200 slots
     fShapingTime(6),
     fStoreTrackRefs(kTRUE)
 {

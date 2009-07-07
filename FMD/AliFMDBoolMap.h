@@ -32,17 +32,21 @@ public:
   /** Copy constructor 
       @param other Object to copy from. */
   AliFMDBoolMap(const AliFMDBoolMap& other);
+  /** 
+   * Constructor 
+   */
+  AliFMDBoolMap();
   /** Constructor 
       @param maxDet  Number of detectors (3)
       @param maxRing Number of rings (2)
       @param maxSec  Number of sectors (40)
       @param maxStr  Number of strips (20) */
-  AliFMDBoolMap(UShort_t maxDet  = kMaxDetectors,
-		UShort_t maxRing = kMaxRings,
-		UShort_t maxSec  = kMaxSectors,
-		UShort_t maxStr  = kMaxStrips);
+  AliFMDBoolMap(UShort_t maxDet,
+		UShort_t maxRing = 0,
+		UShort_t maxSec  = 0,
+		UShort_t maxStr  = 0);
   /** Destructor */
-  virtual ~AliFMDBoolMap() { delete [] fData; }
+  virtual ~AliFMDBoolMap() { if (fData) delete [] fData; }
   /** Assignment operator 
       @param other Object to assign from 
       @return reference to this object.  */
@@ -71,6 +75,16 @@ public:
 				   UShort_t sec,
 				   UShort_t str) const;
 protected:
+  Int_t     MaxIndex()            const { return fTotal; }
+  Bool_t    AtAsBool(Int_t idx)   const { return fData[idx]; }
+  Bool_t&   AtAsBool(Int_t idx)         { return fData[idx]; }
+  Bool_t    IsBool()              const { return kTRUE; }  
+  Int_t     AtAsInt(Int_t idx)    const { return fData[idx] ? 1   : 0;   }
+  Float_t   AtAsFloat(Int_t idx)  const { return fData[idx] ? 1.F : 0.F; }
+  UShort_t  AtAsUShort(Int_t idx) const { return fData[idx] ? 1   : 0;   }
+  Int_t&    AtAsInt(Int_t idx)          { return AliFMDMap::AtAsInt(idx);    }
+  Float_t&  AtAsFloat(Int_t idx)        { return AliFMDMap::AtAsFloat(idx);  }
+  UShort_t& AtAsUShort(Int_t idx)       { return AliFMDMap::AtAsUShort(idx); }
   Int_t  fTotal; // Total number of entries 
   Bool_t* fData;  // [fTotal] The Data
   ClassDef(AliFMDBoolMap,3) // Map of Bool_t data per strip

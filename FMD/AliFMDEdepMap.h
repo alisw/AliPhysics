@@ -37,15 +37,17 @@ public:
       @param other Object to copy from. 
       @return  */
   AliFMDEdepMap(const AliFMDEdepMap& other);
+  /** Constructor */
+  AliFMDEdepMap();
   /** Constructor 
       @param maxDet  Number of detectors (3)
       @param maxRing Number of rings (2)
       @param maxSec  Number of sectors (40)
       @param maxStr  Number of strips (20) */
-  AliFMDEdepMap(UShort_t maxDet = kMaxDetectors, 
-		UShort_t maxRing= kMaxRings, 
-		UShort_t maxSec = kMaxSectors, 
-		UShort_t maxStr = kMaxStrips);
+  AliFMDEdepMap(UShort_t maxDet, 
+		UShort_t maxRing= 0, 
+		UShort_t maxSec = 0, 
+		UShort_t maxStr = 0);
   /** DTOR */
   virtual ~AliFMDEdepMap() { delete [] fData; }
   AliFMDEdepMap& operator=(const AliFMDEdepMap& other);
@@ -75,6 +77,17 @@ public:
 					      UShort_t sector, 
 					      UShort_t strip) const;
 protected:
+  Int_t     MaxIndex()            const { return fTotal; }
+  Int_t     AtAsInt(Int_t idx)    const { return fData[idx].fN; }
+  Int_t&    AtAsInt(Int_t idx)          { return AliFMDMap::AtAsInt(idx); }
+  Bool_t    AtAsBool(Int_t idx)   const { return fData[idx].fEdep > 0; }
+  Bool_t&   AtAsBool(Int_t idx)         { return AliFMDMap::AtAsBool(idx); }
+  Float_t   AtAsFloat(Int_t idx)  const { return fData[idx].fEdep; }
+  Float_t&  AtAsFloat(Int_t idx)        { return fData[idx].fEdep; }
+  UShort_t  AtAsUShort(Int_t idx) const { return fData[idx].fN; }
+  UShort_t& AtAsUShort(Int_t idx)       { return fData[idx].fN; }
+  Bool_t    IsUShort()            const { return kTRUE; }  
+  Bool_t    IsFloat()             const { return kTRUE; }  
   Int_t             fTotal; //  Total number of entries
   AliFMDEdepHitPair* fData;  //[fTotal] The data 
   ClassDef(AliFMDEdepMap, 3) // Cache of edep,hit information per strip

@@ -36,8 +36,8 @@ ClassImp(AliFMDCalibPedestal)
 
 //____________________________________________________________________
 AliFMDCalibPedestal::AliFMDCalibPedestal()
-  : fValue(), 
-    fWidth()
+  : fValue(0), // nDet == 0 mean 51200 entries 
+    fWidth(0)  // nDet == 0 mean 51200 entries
 {
   // CTOR 
   fValue.Reset(-1.);

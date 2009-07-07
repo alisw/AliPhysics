@@ -40,13 +40,24 @@ AliFMDBoolMap::AliFMDBoolMap(const AliFMDBoolMap& other)
               other.fMaxRings,
               other.fMaxSectors,
               other.fMaxStrips),
-    fTotal(0),
+    fTotal(fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips),
     fData(0)
 {
   // Copy constructor
-  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  if (fTotal == 0) fTotal = 51200;
   fData  = new Bool_t[fTotal];
   for (Int_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
+}
+
+//__________________________________________________________
+AliFMDBoolMap::AliFMDBoolMap()
+  : AliFMDMap(),
+    fTotal(0),
+    fData(0)
+{
+  // Constructor.
+  // Parameters:
+  //   None
 }
 
 //__________________________________________________________
@@ -55,7 +66,7 @@ AliFMDBoolMap::AliFMDBoolMap(UShort_t maxDet,
                          UShort_t maxSec,
                          UShort_t maxStr)
   : AliFMDMap(maxDet, maxRing, maxSec, maxStr),
-    fTotal(0),
+    fTotal(fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips),
     fData(0)
 {
   // Constructor.
@@ -64,7 +75,7 @@ AliFMDBoolMap::AliFMDBoolMap(UShort_t maxDet,
   //	maxRing	Maximum number of rings per detector
   //	maxSec	Maximum number of sectors per ring
   //	maxStr	Maximum number of strips per sector
-  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  if (fTotal == 0) fTotal = 51200;
   fData  = new Bool_t[fTotal];
   Reset();
 }
@@ -80,6 +91,7 @@ AliFMDBoolMap::operator=(const AliFMDBoolMap& other)
   fMaxStrips    = other.fMaxStrips;
   if (fData) delete [] fData;
   fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  if (fTotal == 0) fTotal = 51200;
   fData  = new Bool_t[fTotal];
   for (Int_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
   return *this;

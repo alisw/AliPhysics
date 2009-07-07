@@ -20,10 +20,12 @@
 class AliFMDFloatMap : public AliFMDMap
 {
 public:
-  AliFMDFloatMap(Int_t  maxDet = kMaxDetectors, 
-		 Int_t  maxRing= kMaxRings, 
-		 Int_t  maxSec = kMaxSectors, 
-		 Int_t  maxStr = kMaxStrips);
+  AliFMDFloatMap();
+  AliFMDFloatMap(Int_t  maxDet, 
+		 Int_t  maxRing= 0, 
+		 Int_t  maxSec = 0, 
+		 Int_t  maxStr = 0);
+  AliFMDFloatMap(const AliFMDMap& o);
   AliFMDFloatMap(const AliFMDFloatMap& o);
   virtual ~AliFMDFloatMap() { delete [] fData;fData = 0; }
   AliFMDFloatMap& operator=(const AliFMDFloatMap& o);
@@ -37,11 +39,46 @@ public:
 				    UShort_t sec,
 				    UShort_t str) const;
   Float_t* Data() const { return fData; }
+  void Print(Option_t* option="%8.4f") const;
 protected:
+  Int_t    MaxIndex() const { return fTotal; }
+  Float_t  AtAsFloat(Int_t i) const { return fData[i]; } 
+  Float_t& AtAsFloat(Int_t i)       { return fData[i]; } 
+  Bool_t   IsFloat() const { return kTRUE; }
+
   Int_t   fTotal;  // Total number of entries
   Float_t* fData;   //[fTotal]
-  ClassDef(AliFMDFloatMap,2) // Map of floats
+  ClassDef(AliFMDFloatMap,3) // Map of floats
 };
+
+inline AliFMDFloatMap
+operator*(const AliFMDMap& lhs, const AliFMDMap& rhs)
+{
+  AliFMDFloatMap r(lhs);
+  r *= rhs;
+  return r;
+}
+inline AliFMDFloatMap
+operator/(const AliFMDMap& lhs, const AliFMDMap& rhs)
+{
+  AliFMDFloatMap r(lhs);
+  r /= rhs;
+  return r;
+}
+inline AliFMDFloatMap
+operator+(const AliFMDMap& lhs, const AliFMDMap& rhs)
+{
+  AliFMDFloatMap r(lhs);
+  r += rhs;
+  return r;
+}
+inline AliFMDFloatMap
+operator-(const AliFMDMap& lhs, const AliFMDMap& rhs)
+{
+  AliFMDFloatMap r(lhs);
+  r -= rhs;
+  return r;
+}
 
 #endif
 //____________________________________________________________________

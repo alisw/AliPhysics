@@ -58,6 +58,17 @@ AliFMDMap::AliFMDMap(UShort_t maxDet,
 }
 
 //____________________________________________________________________
+AliFMDMap::AliFMDMap(const AliFMDMap& other)
+  : TObject(other), 
+    fMaxDetectors(other.fMaxDetectors), 
+    fMaxRings(other.fMaxRings),
+    fMaxSectors(other.fMaxSectors),
+    fMaxStrips(other.fMaxStrips)
+{
+  SetBit(kNeedUShort, other.TestBit(kNeedUShort));
+}
+
+//____________________________________________________________________
 void
 AliFMDMap::CheckNeedUShort(TFile* file) 
 {
@@ -68,8 +79,60 @@ AliFMDMap::CheckNeedUShort(TFile* file)
   if (info->GetClassVersion() == 2) SetBit(kNeedUShort);
 }
 //____________________________________________________________________
+void
+AliFMDMap::Index2CoordsOld(Int_t     idx, 
+			   UShort_t& det, 
+			   Char_t&   ring, 
+			   UShort_t& sec, 
+			   UShort_t& str) const
+{
+  UShort_t rng;
+  str  = idx % fMaxStrips;
+  sec  = (idx / fMaxStrips) % fMaxSectors;
+  rng  = (idx / fMaxStrips / fMaxSectors) % fMaxRings;
+  det  = (idx / fMaxStrips / fMaxSectors / fMaxRings) % fMaxDetectors + 1;
+  ring = (rng == 0 ? 'I' : 'O');
+}
+
+//____________________________________________________________________
+void
+AliFMDMap::Index2Coords(Int_t     idx, 
+			UShort_t& det, 
+			Char_t&   ring, 
+			UShort_t& sec, 
+			UShort_t& str) const
+{
+  UShort_t nStr;
+  Int_t    i   = idx;
+  if      (i >= kFMD3Base)  { det  = 3;  i -= kFMD3Base; }
+  else if (i >= kFMD2Base)  { det  = 2;  i -= kFMD2Base; }
+  else                      { det  = 1;  i -= kFMD1Base; } 
+  if      (i >= kBaseOuter) { ring = 'O';i -= kBaseOuter; nStr = kNStripOuter; }
+  else                      { ring = 'I';                 nStr = kNStripInner; }
+  sec  = i / nStr;
+  str  = i % nStr;
+}
+
+//____________________________________________________________________
+void
+AliFMDMap::CalcCoords(Int_t     idx, 
+		      UShort_t& det, 
+		      Char_t&   ring, 
+		      UShort_t& sec, 
+		      UShort_t& str) const
+{
+  if (fMaxDetectors == 0) {
+    Index2Coords(idx, det, ring, sec, str);
+  }
+  else {
+    Index2CoordsOld(idx, det, ring, sec, str);
+  }
+}
+
+//____________________________________________________________________
 Int_t 
-AliFMDMap::CheckIndex(UShort_t det, Char_t ring, UShort_t sec, UShort_t str) const
+AliFMDMap::Coords2IndexOld(UShort_t det, Char_t ring, UShort_t sec, 
+			   UShort_t str) const
 {
   // Check that the index supplied is OK.   Returns true index, or -1
   // on error. 
@@ -82,6 +145,46 @@ AliFMDMap::CheckIndex(UShort_t det, Char_t ring, UShort_t sec, UShort_t str) con
     return -1;
   return idx;
 }
+
+//____________________________________________________________________
+Int_t 
+AliFMDMap::Coords2Index(UShort_t det, Char_t ring, UShort_t sec, 
+			UShort_t str) const
+{
+  // Check that the index supplied is OK.   Returns true index, or -1
+  // on error. 
+  UShort_t irg  = (ring == 'I' || ring == 'i' ? kInner : 
+		   (ring == 'O' || ring == 'o' ? kOuter  : kOuter+1));
+  if (irg > kOuter) return -1;
+    
+  Int_t idx = 0;
+  switch (det) { 
+  case 1: idx = kFMD1Base;  if (irg > 0) return -1; break;
+  case 2: idx = kFMD2Base + irg * kBaseOuter; break;
+  case 3: idx = kFMD3Base + irg * kBaseOuter; break;
+  default: return -1;
+  }
+  UShort_t nSec = (irg == 0 ?  kNSectorInner :  kNSectorOuter);
+  if (sec >= nSec) return -1;
+  UShort_t nStr = (irg == 0 ? kNStripInner : kNStripOuter);
+  if (str >= nStr) return -1;
+  idx += nStr * sec + str;
+
+  return idx;
+}
+
+//____________________________________________________________________
+Int_t 
+AliFMDMap::CheckIndex(UShort_t det, Char_t ring, UShort_t sec, 
+		      UShort_t str) const
+{
+  // Check that the index supplied is OK.   Returns true index, or -1
+  // on error. 
+  if (fMaxDetectors == 0)
+    return Coords2Index(det, ring, sec, str);
+  return Coords2IndexOld(det, ring, sec, str);
+}
+
 
     
 //____________________________________________________________________
@@ -100,8 +203,9 @@ AliFMDMap::CalcIndex(UShort_t det, Char_t ring, UShort_t sec, UShort_t str) cons
   //
   Int_t idx = CheckIndex(det, ring, sec, str);
   if (idx < 0) {
-    UShort_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 1);
-    AliFatal(Form("Index (%d,'%c',%d,%d) out of bounds, "
+    UShort_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 
+		      (ring == 'O' || ring == 'o' ? 1 : 2));
+    AliFatal(Form("Index FMD%d%c[%2d,%3d] out of bounds, "
 		  "in particular the %s index ", 
 		  det, ring, sec, str, 
 		  (det > fMaxDetectors ? "Detector" : 
@@ -110,6 +214,147 @@ AliFMDMap::CalcIndex(UShort_t det, Char_t ring, UShort_t sec, UShort_t str) cons
     return 0;
   }
   return idx;
+}
+
+#define INCOMP_OP(self, other, OP) do {					\
+  AliWarning("Incompatible sized AliFMDMap");				\
+  UShort_t maxDet = TMath::Min(self->MaxDetectors(), other.MaxDetectors()); \
+  UShort_t maxRng = TMath::Min(self->MaxRings(),     other.MaxRings());	\
+  UShort_t maxSec = TMath::Min(self->MaxSectors(),   other.MaxSectors()); \
+  UShort_t maxStr = TMath::Min(self->MaxStrips(),    other.MaxStrips()); \
+  for (UShort_t d = 1; d <= maxDet; d++) {				\
+    UShort_t nRng = TMath::Min(UShort_t(d == 1 ? 1 : 2), maxRng);	\
+    for (UShort_t q = 0; q < nRng; q++) {                               \
+      Char_t   r    = (q == 0 ? 'I' : 'O');                             \
+      UShort_t nSec = TMath::Min(UShort_t(q == 0 ?  20 :  40), maxSec);	\
+      UShort_t nStr = TMath::Min(UShort_t(q == 0 ? 512 : 256), maxStr);	\
+      for (UShort_t s = 0; s < nSec; s++) {				\
+        for (UShort_t t = 0; t < nStr; t++) {				\
+	  Int_t idx1 = self->CalcIndex(d, r, s, t);			\
+	  Int_t idx2 = other.CalcIndex(d, r, s, t);			\
+	  if (idx1 < 0 || idx2 < 0) {					\
+	    AliWarning("Index out of bounds");				\
+	    continue;							\
+	  }								\
+	  if (self->IsFloat())						\
+	    self->AtAsFloat(idx1) OP other.AtAsFloat(idx2);		\
+	  else if (self->IsInt())					\
+	    self->AtAsInt(idx1) OP other.AtAsInt(idx2);			\
+	  else if (self->IsUShort())					\
+	    self->AtAsUShort(idx1) OP other.AtAsUShort(idx2);		\
+	  else if (self->IsBool())					\
+	    self->AtAsBool(idx1) OP other.AtAsBool(idx2);		\
+	}								\
+      }									\
+    }									\
+  }									\
+  } while (false)
+
+#define COMP_OP(self,other,OP) do {					\
+    for (Int_t i = 0; i < self->MaxIndex(); i++) {			\
+      if (self->IsFloat())						\
+	self->AtAsFloat(i) OP other.AtAsFloat(i);			\
+      else if (self->IsInt())						\
+	self->AtAsInt(i) OP other.AtAsInt(i);				\
+      else if (self->IsUShort())					\
+	self->AtAsUShort(i) OP other.AtAsUShort(i);			\
+      else if (self->IsBool())						\
+	self->AtAsBool(i) OP other.AtAsBool(i);				\
+    } } while (false)
+
+//__________________________________________________________
+AliFMDMap&
+AliFMDMap::operator*=(const AliFMDMap& other)
+{
+  // Right multiplication assignment operator 
+  if(fMaxDetectors!= other.fMaxDetectors||
+     fMaxRings    != other.fMaxRings    ||
+     fMaxSectors  != other.fMaxSectors  ||
+     fMaxStrips   != other.fMaxStrips   ||
+     MaxIndex()   != other.MaxIndex()) {
+    INCOMP_OP(this, other, *=);
+    return *this;
+  }
+  COMP_OP(this, other, *=);
+  return *this;
+}
+
+//__________________________________________________________
+AliFMDMap&
+AliFMDMap::operator/=(const AliFMDMap& other)
+{
+  // Right division assignment operator 
+  if(fMaxDetectors!= other.fMaxDetectors||
+     fMaxRings    != other.fMaxRings    ||
+     fMaxSectors  != other.fMaxSectors  ||
+     fMaxStrips   != other.fMaxStrips   ||
+     MaxIndex()   != other.MaxIndex()) {
+    INCOMP_OP(this, other, /=);
+    return *this;
+  }
+  COMP_OP(this, other, /=);
+  return *this;
+}
+
+//__________________________________________________________
+AliFMDMap&
+AliFMDMap::operator+=(const AliFMDMap& other)
+{
+  // Right addition assignment operator 
+  if(fMaxDetectors!= other.fMaxDetectors||
+     fMaxRings    != other.fMaxRings    ||
+     fMaxSectors  != other.fMaxSectors  ||
+     fMaxStrips   != other.fMaxStrips   ||
+     MaxIndex()   != other.MaxIndex()) {
+    INCOMP_OP(this, other, +=);
+    return *this;
+  }
+  COMP_OP(this, other, +=);
+  return *this;
+}
+
+//__________________________________________________________
+AliFMDMap&
+AliFMDMap::operator-=(const AliFMDMap& other)
+{
+  // Right subtraction assignment operator 
+  if(fMaxDetectors!= other.fMaxDetectors||
+     fMaxRings    != other.fMaxRings    ||
+     fMaxSectors  != other.fMaxSectors  ||
+     fMaxStrips   != other.fMaxStrips   ||
+     MaxIndex()   != other.MaxIndex()) {
+    INCOMP_OP(this, other, +=);
+    return *this;
+  }
+  COMP_OP(this, other, +=);
+  return *this;
+}
+
+//__________________________________________________________
+Bool_t
+AliFMDMap::ForEach(ForOne& algo) const
+{
+  // Assignment operator 
+  Bool_t ret = kTRUE;
+  for (Int_t i = 0; i < this->MaxIndex(); i++) { 
+    UShort_t d, s, t;
+    Char_t r;
+    CalcCoords(i, d, r, s, t);
+    Bool_t rr = kTRUE;
+    if (IsFloat()) 
+      rr = algo.operator()(d, r, s, t, this->AtAsFloat(i));
+    else if (IsInt()) 
+      rr = algo.operator()(d, r, s, t, this->AtAsInt(i));
+    else if (IsUShort()) 
+      rr = algo.operator()(d, r, s, t, this->AtAsUShort(i));
+    else if (IsBool()) 
+      rr = algo.operator()(d, r, s, t, this->AtAsBool(i));
+    if (!rr) {
+      ret = kFALSE;
+      break;
+    }
+  }
+  return ret;
 }
 
 #if 0

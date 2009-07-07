@@ -40,16 +40,27 @@ ClassImp(AliFMDEdepMap)
 AliFMDEdepMap::AliFMDEdepMap(const AliFMDEdepMap& other)
   : AliFMDMap(other.fMaxDetectors, other.fMaxRings, other.fMaxSectors, 
 	      other.fMaxStrips), 
-    fTotal(0),
+    fTotal(fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips),
     fData(0)
 {
   // Copy constructor 
-  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  if (fTotal == 0) fTotal = 51200;
   fData  = new AliFMDEdepHitPair[fTotal];
   for (Int_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
 }
 
   
+//____________________________________________________________________
+AliFMDEdepMap::AliFMDEdepMap()
+  : AliFMDMap(), 
+    fTotal(0),
+    fData(0)
+{
+  // Construct a map
+  //
+  // Parameters:
+  //   None
+}
 
 //____________________________________________________________________
 AliFMDEdepMap::AliFMDEdepMap(UShort_t maxDet, 
@@ -57,7 +68,7 @@ AliFMDEdepMap::AliFMDEdepMap(UShort_t maxDet,
 			     UShort_t maxSec, 
 			     UShort_t maxStr)
   : AliFMDMap(maxDet, maxRing, maxSec, maxStr), 
-    fTotal(0),
+    fTotal(fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips),
     fData(0)
 {
   // Construct a map
@@ -67,7 +78,7 @@ AliFMDEdepMap::AliFMDEdepMap(UShort_t maxDet,
   //     maxRinf      Maximum # of rings
   //     maxSec       Maximum # of sectors
   //     maxStr       Maximum # of strips
-  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  if (fTotal == 0) fTotal = 51200;
   fData  = new AliFMDEdepHitPair[fTotal];
 }
 
@@ -82,6 +93,7 @@ AliFMDEdepMap::operator=(const AliFMDEdepMap& other)
   fMaxStrips    = other.fMaxStrips;
   if (fData) delete [] fData;
   fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  if (fTotal == 0) fTotal = 51200;
   fData  = new AliFMDEdepHitPair[fTotal];
   for (Int_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
   return *this;
