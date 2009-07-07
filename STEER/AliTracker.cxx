@@ -95,6 +95,28 @@ Double_t AliTracker::GetBz(const Double_t *r) {
 }
 
 //__________________________________________________________________________
+void AliTracker::GetBxByBz(const Double_t r[3], Double_t b[3]) {
+  //------------------------------------------------------------------
+  // Returns Bx, By and Bz (kG) at the point "r" .
+  //------------------------------------------------------------------
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!fld) {
+     b[0] = b[1] = 0.;
+     b[2] = 0.5*kAlmost0Field;
+     return;
+  }
+
+  if (fld->IsUniform()) {
+     b[0] = b[1] = 0.;
+     b[2] = fld->SolenoidField();
+  }  else {
+     fld->Field(r,b);
+  }
+  b[2] = (TMath::Sign(0.5*kAlmost0Field,b[2]) + b[2]);
+  return;
+}
+
+//__________________________________________________________________________
 void AliTracker::FillClusterArray(TObjArray* /*array*/) const
 {
   // Publishes all pointers to clusters known to the tracker into the
@@ -350,6 +372,61 @@ Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp){
 
     if (TMath::Abs(track->GetSnpAt(x,bz)) >= maxSnp) return kFALSE;
     if (!track->PropagateTo(x,bz))  return kFALSE;
+
+    MeanMaterialBudget(xyz0,xyz1,param);	
+    Double_t xrho=param[0]*param[4], xx0=param[1];
+
+    if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
+    if (rotateTo){
+      if (TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
+      track->GetXYZ(xyz0);   // global position
+      Double_t alphan = TMath::ATan2(xyz0[1], xyz0[0]); 
+      //
+      Double_t ca=TMath::Cos(alphan-track->GetAlpha()), 
+               sa=TMath::Sin(alphan-track->GetAlpha());
+      Double_t sf=track->GetSnp(), cf=TMath::Sqrt((1.-sf)*(1.+sf));
+      Double_t sinNew =  sf*ca - cf*sa;
+      if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
+      if (!track->Rotate(alphan)) return kFALSE;
+    }
+    xpos = track->GetX();
+  }
+  return kTRUE;
+}
+
+Bool_t 
+AliTracker::PropagateTrackToBxByBz(AliExternalTrackParam *track,
+Double_t xToGo, 
+Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp){
+  //----------------------------------------------------------------
+  //
+  // Propagates the track to the plane X=xk (cm)
+  // taking into account all the three components of the magnetic field 
+  // and correcting for the crossed material.
+  //
+  // mass     - mass used in propagation - used for energy loss correction
+  // maxStep  - maximal step for propagation
+  //
+  //  Origin: Marian Ivanov,  Marian.Ivanov@cern.ch
+  //
+  //----------------------------------------------------------------
+  const Double_t kEpsilon = 0.00001;
+  Double_t xpos     = track->GetX();
+  Double_t dir      = (xpos<xToGo) ? 1.:-1.;
+  //
+  while ( (xToGo-xpos)*dir > kEpsilon){
+    Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
+    Double_t x    = xpos+step;
+    Double_t xyz0[3],xyz1[3],param[7];
+    track->GetXYZ(xyz0);   //starting global position
+
+    Double_t b[3]; GetBxByBz(xyz0,b); // getting the local Bx, By and Bz
+
+    if (!track->GetXYZAt(x,b[2],xyz1)) return kFALSE;   // no prolongation
+    xyz1[2]+=kEpsilon; // waiting for bug correction in geo
+
+    if (TMath::Abs(track->GetSnpAt(x,b[2])) >= maxSnp) return kFALSE;
+    if (!track->PropagateToBxByBz(x,b))  return kFALSE;
 
     MeanMaterialBudget(xyz0,xyz1,param);	
     Double_t xrho=param[0]*param[4], xx0=param[1];

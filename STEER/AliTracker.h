@@ -61,8 +61,12 @@ public:
   static
   Bool_t PropagateTrackTo(AliExternalTrackParam *track, Double_t x, Double_t m,
 	 Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8);  
+  Bool_t PropagateTrackToBxByBz(AliExternalTrackParam *track, Double_t x, 
+         Double_t m,
+	 Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8);  
   //
   static Double_t GetBz(const Double_t *r);
+  static void GetBxByBz(const Double_t r[3], Double_t b[3]);
   static Double_t GetBz();
   static Bool_t   UniformField();
   //
