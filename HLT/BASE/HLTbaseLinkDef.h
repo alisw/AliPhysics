@@ -51,6 +51,7 @@
 #pragma link C++ class AliHLTTriggerMenuItem+;
 #pragma link C++ class AliHLTTriggerMenuSymbol+;
 #pragma link C++ class AliHLTRunStatistics+;
+#pragma link C++ class AliHLTMisc+;
 #pragma link C++ struct AliHLTComponentDataType+;
 #pragma link C++ struct AliHLTEventDDL+;
 #endif

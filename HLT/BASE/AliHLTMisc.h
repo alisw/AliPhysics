@@ -1,4 +1,5 @@
-// @(#) $Id$
+//-*- Mode: C++ -*-
+// $Id$
 
 #ifndef ALIHLTMISC_H
 #define ALIHLTMISC_H
@@ -6,12 +7,40 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTMisc.h
-    @author Matthias Richter
-    @date   
-    @brief  Definition of various glue functions implemented in dynamically
-            loaded libraries
-*/
+/// @file   AliHLTMisc.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  Definition of various glue functions implemented in dynamically
+///         loaded libraries
+
+#include "TObject.h"
+
+class AliCDBManager;
+class AliCDBEntry;
+
+class AliHLTMisc : public TObject {
+ public:
+  AliHLTMisc();
+  ~AliHLTMisc();
+
+  template<class T>
+  static T* LoadInstance(const T* dummy, const char* classname, const char* library);
+
+  static AliHLTMisc& Instance();
+
+  virtual int InitCDB(const char* cdbpath);
+
+  virtual int SetCDBRunNo(int runNo);
+
+  virtual AliCDBEntry* LoadOCDBEntry(const char* path, int runNo=-1, int version = -1, int subVersion = -1);
+
+  virtual TObject* ExtractObject(AliCDBEntry* entry);
+
+ private:
+  static AliHLTMisc* fgInstance;
+
+  ClassDef(AliHLTMisc, 0)
+};
 
 #define ALIHLTMISC_LIBRARY "libHLTrec.so"
 #define ALIHLTMISC_INIT_CDB "AliHLTMiscInitCDB"

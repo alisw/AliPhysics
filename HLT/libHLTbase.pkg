@@ -5,6 +5,7 @@ include $(MODDIR)/hlt.conf
 
 CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTComponentHandler.h \
+		AliHLTMisc.h \
 		AliHLTSystem.h \
 		AliHLTReconstructorBase.h \
 		AliHLTPluginBase.h \
@@ -62,7 +63,6 @@ MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTDataTypes.h \
 		AliHLTExternalTrackParam.h \
 		AliHLTCommonCDBEntries.h \
-		AliHLTMisc.h \
 		AliHLT_C_Component_WrapperInterface.h \
 		AliHLTDefinitions.h \
 		AliHLTStdIncludes.h
