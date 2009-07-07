@@ -82,6 +82,12 @@ extern "C" {
 #include "TObjString.h"
 #include "THashTable.h"
 #include <THashList.h>
+//
+//AMORE
+//
+#ifdef ALI_AMORE
+#include <AmoreDA.h>
+#endif
 
 #include "AliMUONPedestal.h"
 #include "AliMUONErrorCounter.h"
@@ -398,7 +404,34 @@ int main(Int_t argc, Char_t **argv)
   muonPedestal->SetAliNEvents(nEvents);
   muonPedestal->SetAliRunNumber(runNumber);
   muonPedestal->SetAliNChannel(nChannel);
-  muonPedestal->MakePedStore(shuttleFile);
+  
+  muonPedestal->Finalize();  
+  muonPedestal->MakeControlHistos();  
+  if (!shuttleFile.IsNull())  
+  {
+    ofstream out(shuttleFile.Data());  
+    muonPedestal->MakeASCIIoutput(out);
+    out.close();
+#ifdef ALI_AMORE
+  //
+  //Send objects to the AMORE DB
+  //
+    ostringstream stringout;
+    muonPedestal->MakeASCIIoutput(stringout);
+    
+    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+    TObjString peddata(stringout.str().c_str());
+    Int_t status =0;
+    status = amoreDA.Send("Pedestals",&peddata);
+    if ( status )
+      cout << "Warning: Failed to write Pedestals in the AMORE database : " << status << endl;
+    else 
+      cout << "amoreDA.Send(Pedestals) ok" << endl;  
+#else
+    cout << "Warning: MCH DA not compiled with AMORE support" << endl;
+#endif
+    
+  }
 
   // writing some counters
   cout << endl;

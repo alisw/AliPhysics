@@ -34,13 +34,6 @@
 #include <Riostream.h>
 
 #include <sstream>
-//
-//AMORE
-//
-#ifdef ALI_AMORE
-#include <AmoreDA.h>
-#include "TSystem.h"
-#endif
 
 #define  NFITPARAMS 4
 
@@ -167,16 +160,21 @@ void AliMUONGain::MakePedStoreForGain(TString shuttleFile)
 
 
 
+  Finalize();
+  MakeControlHistos();
   if(fPrintLevel>0)
     {
       // compute and store mean DAC values (like pedestals)
       sprintf(flatFile,"%s.ped",fprefixDA);
       outputFile=flatFile;
       cout << "\n" << fprefixDA << " : Flat file  generated  : " << flatFile << "\n";
-      MakePedStore(outputFile);
+      if (!outputFile.IsNull())  
+      {
+        ofstream out(outputFile.Data());
+	MakeASCIIoutput(out);
+	out.close();
+      }      
     }
-  else
-    MakePedStore("");
 
   TString mode("UPDATE");
 
@@ -354,17 +352,12 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
       }
 
 
-
-
-  //  Write Ascii file -> Shuttle
+  // file outputs for gain
 
   ofstream pfilew;
   pfilew.open(shuttleFile.Data());
+  // Write Header Data of the .par file
   pfilew << WriteGainHeader(fnInit,nEntries,nbpf2,numrun,injCharge);
-#ifdef ALI_AMORE
-  ostringstream stringout; // String to be sent to AMORE_DB
-  stringout << WriteGainHeader(fnInit,nEntries,nbpf2,numrun,injCharge);
-#endif
 
   // print mean and sigma values in file
   FILE *pfilep = 0;
@@ -670,12 +663,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	    }
 
 
-	  tempstring = WriteGainData(busPatchId,manuId,channelId,par[1],par[2],threshold,q);
-	  pfilew << tempstring;
-#ifdef ALI_AMORE
-	  stringout << tempstring;
-#endif
-
+	  pfilew << WriteGainData(busPatchId,manuId,channelId,par[1],par[2],threshold,q);
 	}
       nmanu++;
       if(nmanu % 500 == 0)std::cout << " Nb manu = " << nmanu << std::endl;
@@ -729,27 +717,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
        << " mV/fC (capa= " << capaManu << " pF)" 
        <<  "  Prob(chi2)>  = " <<  meanProbChi2 << endl;
   
-  // file outputs for gain
-
   pfilew.close();
-#ifdef ALI_AMORE
-  //
-  //Send objects to the AMORE DB
-  //
-  const char *role=gSystem->Getenv("AMORE_DA_NAME");
-  if ( role ){
-    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-//  TObjString peddata(stringout.str().c_str());
-    TObjString gaindata(stringout.str().c_str());
-    Int_t status =0;
-    status = amoreDA.Send("Pedestals",&gaindata);
-    if ( status )
-      cout << "Warning: Failed to write Pedestals in the AMORE database : " << status << endl;
-  } 
-  else {
-    cout << "Warning: environment variable 'AMORE_DA_NAME' not set. Cannot write to the AMORE database" << endl;
-  }
-#endif
 
   if(fPlotLevel>0){tg->Write();histoFile->Close();}
   if(fPrintLevel>1){fclose(pfilep); fclose(pfilen);}

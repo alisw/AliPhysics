@@ -48,14 +48,17 @@ class AliMUONPedestal : public TObject
     /// return the name of DAPedestal .root file
     Char_t* GetHistoFileName() {return fHistoFileName;}
     void MakePed(Int_t bp,Int_t manu,Int_t ch,Int_t charge);
-    void MakePedStore(TString flatfile);
-    TString WritePedData(Int_t bp, Int_t manu, Int_t ch, Double_t mean, Double_t sigma);
-    TString WritePedHeader();
 
     /// set specific  DA prefixname
     void SetprefixDA(char* folder) {sprintf(fprefixDA,"%s",folder);}
     /// set the index of calibration runs
     void SetAliIndex(Int_t ind) {fIndex = ind;}
+    /// Compute the pedestal data (mean, sigma)
+    void Finalize();
+    /// Create String to be put into file or AMORE DB
+    void MakeASCIIoutput(ostream& out) const;
+    /// Fill Histograms
+    void MakeControlHistos();
 
   protected:
     Int_t fN; ///<

@@ -261,6 +261,24 @@ int main(Int_t argc, Char_t **argv)
      muonGain->SetAliInit(nInit); // fnInit
      muonGain->SetAliNbpf1(nbpf1); // fnbpf1
      muonGain->MakeGainStore(shuttleFile);
+#ifdef ALI_AMORE
+     std::ifstream in(shuttleFile.Data());
+     ostringstream stringout;
+     char line[1024];
+     while ( in.getline(line,1024) )
+       stringout << line << "\n";  
+     in.close();
+
+     amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+     TObjString gaindata(stringout.str().c_str());
+     status = amoreDA.Send("Gains",&gaindata);
+     if ( status )
+       cout << "Warning: Failed to write Pedestals in the AMORE database : " << status << endl;
+     else 
+       cout << "amoreDA.Send(Gains) ok" << endl;  
+#else
+     cout << "Warning: MCH DA not compiled with AMORE support" << endl;
+#endif
    }
 
 
@@ -480,6 +498,7 @@ int main(Int_t argc, Char_t **argv)
      muonGain->SetAliRunNumber(runNumber);
      muonGain->SetAliNChannel(nChannel);
      muonGain->MakePedStoreForGain(shuttleFile);
+     
 
      // writing some counters
      cout << endl;
@@ -507,6 +526,24 @@ int main(Int_t argc, Char_t **argv)
 	  muonGain->SetAliEntries(nEntries); // fnEntries
 	  muonGain->SetAliNbpf1(nbpf1); // fnbpf1
      	  muonGain->MakeGainStore(shuttleFile);
+#ifdef ALI_AMORE  
+          std::ifstream in(shuttleFile.Data());
+          ostringstream stringout;
+          char line[1024];
+          while ( in.getline(line,1024) )
+  	    stringout << line << "\n";  
+          in.close();
+	  
+          amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+          TObjString gaindata(stringout.str().c_str());
+          status = amoreDA.Send("Gains",&gaindata);
+          if ( status )
+            cout << "Warning: Failed to write Pedestals in the AMORE database : " << status << endl;
+          else 
+            cout << "amoreDA.Send(Gains) ok" << endl;  
+#else
+          cout << "Warning: MCH DA not compiled with AMORE support" << endl;
+#endif
 	}
 
 // ouput files
