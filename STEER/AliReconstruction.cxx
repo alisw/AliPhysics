@@ -1222,6 +1222,8 @@ Bool_t AliReconstruction::LoadTriggerScalersCDB()
        AliInfo("Found an AliTriggerRunScalers in GRP/CTP/Scalers, reading it");
        fRunScalers = dynamic_cast<AliTriggerRunScalers*> (entry->GetObject());
        entry->SetOwner(0);
+       if (fRunScalers->CorrectScalersOverflow() == 0) AliInfo("32bit Trigger counters corrected for overflow");
+
   }
   return kTRUE;
 }
@@ -2599,14 +2601,15 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
     }
   }
   //Scalers
-  if(fRunScalers){
+  //fRunScalers->Print();
+  if(fRunScalers && fRunScalers->CheckRunScalers()){
      AliTimeStamp* timestamp = new AliTimeStamp(esd->GetOrbitNumber(), esd->GetPeriodNumber(), esd->GetBunchCrossNumber());
-     //AliTimeStamp* timestamp = new AliTimeStamp(14322992, 5, (ULong64_t)486238);
+     //AliTimeStamp* timestamp = new AliTimeStamp(10308000, 0, (ULong64_t)486238);
      AliESDHeader* esdheader = fesd->GetHeader();
      for(Int_t i=0;i<50;i++){
-        if((1<<i) & esd->GetTriggerMask()){
+          if((1<<i) & esd->GetTriggerMask()){
           AliTriggerScalersESD* scalesd = fRunScalers->GetScalersForEventClass( timestamp, i);
-          esdheader->SetTriggerScalersRecord(scalesd);
+          if(scalesd)esdheader->SetTriggerScalersRecord(scalesd);
         }
      }
   }
