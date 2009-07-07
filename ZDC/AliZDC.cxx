@@ -520,55 +520,43 @@ void AliZDC::Digits2Raw()
     // *** ADC data
     // Scan of the map to assign the correct ADC module-channel
     for(Int_t k=0; k<nCh; k++){
+      if(iDigit<knADCData1+knADCData2){ 
        if(digit.GetSector(0)==mapADC[k][2] && digit.GetSector(1)==mapADC[k][3]){
     	 lADCDataGEO = (UInt_t) mapADC[k][0];
     	 lADCDataChannel = (UInt_t) mapADC[k][1];
     	 break;
        } 
+      }
+      else{
+       if(digit.GetSector(0)==mapADC[k][2] && digit.GetSector(1)==mapADC[k][3]){
+    	 lADCDataGEO = (UInt_t) mapADC[k][0];
+    	 lADCDataChannel = (UInt_t) mapADC[k][1];
+    	 if(k>knADCData1+knADCData2) break;
+       } 
+      }
     }
     // Ch. debug
     //printf(" det %d sec %d -> lADCDataGEO %d  lADCDataChannel %d\n",
     //	digit.GetSector(0),digit.GetSector(1),lADCDataGEO,lADCDataChannel);
      
     if(lADCDataGEO==0){ 
-      if(iDigit<knADCData1){ // *** In-time signals - 1st ADC module
-        Int_t indHG = iDigit;
-	Int_t indLG = indHG+knADCData1;
-        // High gain ADC ch.       
-        if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
-        lADCDataValue1[indHG] = digit.GetADCValue(0);    
-        lADCData1[indHG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 
-    		      lADCDataOvFlwHG << 12 | (lADCDataValue1[indHG] & 0xfff); 
-        // Low gain ADC ch.
-        if(digit.GetADCValue(1) > 2047) lADCDataOvFlwLG = 1; 
-        lADCDataValue1[indLG] = digit.GetADCValue(1); 
-        lADCData1[indLG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 0x1 << 16 |
-    		      lADCDataOvFlwLG << 12 | (lADCDataValue1[indLG] & 0xfff);  
-        // Ch. debug
-        //printf(" lADCDataGEO %d lADCDataValue1[%d] = %d  lADCDataValue1[%d] = %d\n", 
-        //  lADCDataGEO,iDigit,lADCDataValue1[indLG],indLG,lADCDataValue1[indLG]);
-      }
-      else{ // *** Out-of-time signals - 3rd ADC module
-        lADCDataGEO=2;
-        Int_t indHG = iDigit-knADCData1-knADCData2;
-	Int_t indLG = indHG+knADCData3;
-	// High gain ADC ch.       
-        if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
-        lADCDataValue3[indHG] = digit.GetADCValue(0);    
-        lADCData3[indHG] = lADCDataGEO << 27 | lADCDataChannel << 17 | 
-    		      lADCDataOvFlwHG << 12 | (lADCDataValue3[indHG] & 0xfff); 
-        // Low gain ADC ch.
-        if(digit.GetADCValue(1) > 2047) lADCDataOvFlwLG = 1; 
-        lADCDataValue3[indLG] = digit.GetADCValue(1); 
-        lADCData3[indLG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 0x1 << 16 |
-     		      lADCDataOvFlwLG << 12 | (lADCDataValue3[indLG] & 0xfff);  
-        //Ch. debug
-        //printf(" lADCDataGEO %d   lADCDataValue3[%d] = %d  lADCDataValue3[%d] = %d\n", 
-        //  lADCDataGEO,indHG,lADCDataValue3[indHG],indLG,lADCDataValue3[indLG]);
-      }
+      Int_t indHG = iDigit;
+      Int_t indLG = indHG+knADCData1;
+      // High gain ADC ch.	 
+      if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
+      lADCDataValue1[indHG] = digit.GetADCValue(0);    
+      lADCData1[indHG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 
+        	    lADCDataOvFlwHG << 12 | (lADCDataValue1[indHG] & 0xfff); 
+      // Low gain ADC ch.
+      if(digit.GetADCValue(1) > 2047) lADCDataOvFlwLG = 1; 
+      lADCDataValue1[indLG] = digit.GetADCValue(1); 
+      lADCData1[indLG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 0x1 << 16 |
+        	    lADCDataOvFlwLG << 12 | (lADCDataValue1[indLG] & 0xfff);  
+      // Ch. debug
+      //printf(" lADCDataGEO %d lADCDataValue1[%d] = %d  lADCDataValue1[%d] = %d\n", 
+      //  lADCDataGEO,iDigit,lADCDataValue1[indLG],indLG,lADCDataValue1[indLG]);
     }
     else if(lADCDataGEO==1){ 
-      if(iDigit<knADCData1+knADCData2){// *** In-time signals - 2nd ADC module
         Int_t indHG = iDigit-knADCData1;
 	Int_t indLG = indHG+knADCData2;
         // High gain ADC ch.       
@@ -584,9 +572,25 @@ void AliZDC::Digits2Raw()
         //Ch. debug
         //printf(" lADCDataGEO %d  lADCDataValue2[%d] = %d  lADCDataValue2[%d] = %d\n", 
         //  lADCDataGEO,indHG,lADCDataValue2[indHG],indLG,lADCDataValue2[indLG]);
-      }
-      else{ // *** Out-of-time signals - 4rth ADC
-        lADCDataGEO=3;
+    }
+    else if(lADCDataGEO==2){ 
+        Int_t indHG = iDigit-knADCData1-knADCData2;
+	Int_t indLG = indHG+knADCData3;
+	// High gain ADC ch.       
+        if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
+        lADCDataValue3[indHG] = digit.GetADCValue(0);    
+        lADCData3[indHG] = lADCDataGEO << 27 | lADCDataChannel << 17 | 
+    		      lADCDataOvFlwHG << 12 | (lADCDataValue3[indHG] & 0xfff); 
+        // Low gain ADC ch.
+        if(digit.GetADCValue(1) > 2047) lADCDataOvFlwLG = 1; 
+        lADCDataValue3[indLG] = digit.GetADCValue(1); 
+        lADCData3[indLG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 0x1 << 16 |
+     		      lADCDataOvFlwLG << 12 | (lADCDataValue3[indLG] & 0xfff);  
+        //Ch. debug
+        //printf(" lADCDataGEO %d   lADCDataValue3[%d] = %d  lADCDataValue3[%d] = %d\n", 
+        //  lADCDataGEO,indHG,lADCDataValue3[indHG],indLG,lADCDataValue3[indLG]);
+    }
+    else if(lADCDataGEO==3){ 
         Int_t indHG = iDigit-knADCData1-knADCData2-knADCData3;
 	Int_t indLG = indHG+knADCData4;
 	// High gain ADC ch.       
@@ -602,7 +606,6 @@ void AliZDC::Digits2Raw()
         // Ch. debug
         //printf(" lADCDataGEO %d lADCDataValue4[%d] = %d  lADCDataValue4[%d] = %d\n", 
         //  lADCDataGEO,indHG,lADCDataValue4[indHG],indLG,lADCDataValue4[indLG]);
-      }  	       
     }		  
 
   }
@@ -636,14 +639,14 @@ void AliZDC::Digits2Raw()
                  sizeof(lADCHeader3) + sizeof(lADCData3) + sizeof(lADCEndBlock) +
   		 sizeof(lADCHeader4) + sizeof(lADCData4) + sizeof(lADCEndBlock);
   //
-  printf("sizeof header = %d, ADCHeader1 = %d, ADCData1 = %d, ADCEndBlock = %d\n",
+  /*printf("sizeof header = %d, ADCHeader1 = %d, ADCData1 = %d, ADCEndBlock = %d\n",
           sizeof(header),sizeof(lADCHeader1),sizeof(lADCData1),sizeof(lADCEndBlock));
   printf("sizeof header = %d, ADCHeader2 = %d, ADCData2 = %d, ADCEndBlock = %d\n",
           sizeof(header),sizeof(lADCHeader2),sizeof(lADCData2),sizeof(lADCEndBlock));
   printf("sizeof header = %d, ADCHeader3 = %d, ADCData3 = %d, ADCEndBlock = %d\n",
           sizeof(header),sizeof(lADCHeader1),sizeof(lADCData1),sizeof(lADCEndBlock));
   printf("sizeof header = %d, ADCHeader4 = %d, ADCData4 = %d, ADCEndBlock = %d\n",
-          sizeof(header),sizeof(lADCHeader2),sizeof(lADCData2),sizeof(lADCEndBlock));
+          sizeof(header),sizeof(lADCHeader2),sizeof(lADCData2),sizeof(lADCEndBlock));*/
   
   header.SetAttribute(0);  // valid data
   file->WriteBuffer((char*)(&header), sizeof(header));
