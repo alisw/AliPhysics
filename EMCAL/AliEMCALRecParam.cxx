@@ -258,6 +258,35 @@ AliEMCALRecParam* AliEMCALRecParam::GetDefaultParameters()
 
 }
 
+//-----------------------------------------------------------------------------
+AliEMCALRecParam* AliEMCALRecParam::GetCalibParam()
+{
+	//parameters for the reconstruction of calibration runs
+	AliEMCALRecParam* params = new AliEMCALRecParam();
+	params->SetClusteringThreshold(0.2); // 200 MeV                                             
+	params->SetMinECut(0.01);  //10 MeV       
+	params->SetName("Calibration - LED");
+	params->SetTitle("Calibration - LED");
+	params->SetEventSpecie(AliRecoParam::kCalib);
+	
+	return params;
+	
+}
+
+//-----------------------------------------------------------------------------
+AliEMCALRecParam* AliEMCALRecParam::GetCosmicParam()
+{
+	//parameters for the reconstruction of cosmic runs
+	AliEMCALRecParam* params = new AliEMCALRecParam();
+	params->SetClusteringThreshold(0.2); // 200 MeV                                             
+	params->SetMinECut(0.01);  //10 MeV       
+	params->SetName("Cosmic");
+	params->SetTitle("Cosmic");
+	params->SetEventSpecie(AliRecoParam::kCosmic);
+	
+	return params;
+	
+}
 
 //-----------------------------------------------------------------------------
 AliEMCALRecParam* AliEMCALRecParam::GetLowFluxParam()

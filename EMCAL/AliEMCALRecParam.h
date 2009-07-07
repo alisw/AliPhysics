@@ -93,6 +93,8 @@ public:
   static AliEMCALRecParam* GetDefaultParameters();
   static AliEMCALRecParam* GetLowFluxParam();
   static AliEMCALRecParam* GetHighFluxParam();
+  static AliEMCALRecParam* GetCalibParam();
+  static AliEMCALRecParam* GetCosmicParam();
 
   static const  TObjArray* GetMappings();
 

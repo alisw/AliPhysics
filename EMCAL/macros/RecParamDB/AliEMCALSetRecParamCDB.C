@@ -167,6 +167,9 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
     recParamDB->SetNoiseThreshold(3);
     recParamDB->SetNPedSamples(5);
 
+	recParamDB->SetName("Default - Pb+Pb");
+	recParamDB->SetTitle("Default - Pb+Pb");
+
     //Add to the recParamArray
     recParamDB->SetEventSpecie(AliRecoParam::kDefault);
     recParamArray->AddLast(recParamDB);
@@ -181,11 +184,11 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
     //For now, default is Pb+Pb, but let's add it again as
     //the "high mult" version too...
     AliEMCALRecParam *recParamDB = AliEMCALRecParam::GetDefaultParameters();
-
+	recParamDB->SetName("High Flux - Pb+Pb");
+	recParamDB->SetTitle("High Flux - Pb+Pb");
     recParamDB->SetEventSpecie(AliRecoParam::kHighMult);
     recParamArray->AddLast(recParamDB);
   }
-
 
   {
     //Low multiplicity parameter modifications:
@@ -193,11 +196,38 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
 
     recParamDB->SetClusteringThreshold(0.2); // 200 MeV
     recParamDB->SetMinECut(0.01);  //10 MeV
+	recParamDB->SetName("Low Flux - p+p");
+	recParamDB->SetTitle("Low Flux - p+p");
     recParamDB->SetEventSpecie(AliRecoParam::kLowMult);
     recParamArray->AddLast(recParamDB);
     
   }
 
+  {
+	//Cosmic parameter modifications (same as low multiplicity):
+	AliEMCALRecParam *recParamDB = AliEMCALRecParam::GetDefaultParameters();
+		
+	recParamDB->SetClusteringThreshold(0.2); // 200 MeV
+	recParamDB->SetMinECut(0.01);  //10 MeV
+	recParamDB->SetName("Cosmic");
+	recParamDB->SetTitle("Cosmic");
+	recParamDB->SetEventSpecie(AliRecoParam::kCosmic);
+	recParamArray->AddLast(recParamDB);
+		
+  }
+	
+  {
+	//Calib parameter modifications (same as low multiplicity):
+	AliEMCALRecParam *recParamDB = AliEMCALRecParam::GetDefaultParameters();
+		
+	recParamDB->SetClusteringThreshold(0.2); // 200 MeV
+	recParamDB->SetMinECut(0.01);  //10 MeV
+	recParamDB->SetName("Calibration - LED");
+	recParamDB->SetTitle("Calibration - LED");
+	recParamDB->SetEventSpecie(AliRecoParam::kCalib);
+	recParamArray->AddLast(recParamDB);
+		
+	}
 
   //Set the default version in the array
   Bool_t defaultIsSet = kFALSE;
