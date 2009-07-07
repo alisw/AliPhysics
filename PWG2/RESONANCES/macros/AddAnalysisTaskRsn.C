@@ -230,13 +230,13 @@ AliRsnPairManager* CreatePairsNoPID
 
   // cut set definition for all pairs
   AliRsnCutSet *cutSetParticle = new AliRsnCutSet("trackCuts");
-  cutSetParticle->AddCut(cutKaonBB);
-  cutSetParticle->SetCutScheme("cutKaonBB");
+  //cutSetParticle->AddCut(cutKaonBB);
+  //cutSetParticle->SetCutScheme("cutKaonBB");
 
   // cut set definition for true pairs
   AliRsnCutSet *cutSetPairTrue = new AliRsnCutSet("truePairs");
-  cutSetPairTrue->AddCut(cutTruePair);
-  cutSetPairTrue->SetCutScheme("cutTrue");
+  //cutSetPairTrue->AddCut(cutTruePair);
+  //cutSetPairTrue->SetCutScheme("cutTrue");
 
   // cut manager for all pairs
   AliRsnCutMgr *cutMgrAll = new AliRsnCutMgr("std", "All");
@@ -248,7 +248,8 @@ AliRsnPairManager* CreatePairsNoPID
   cutMgrTrue->SetCutSet(AliRsnCut::kPair, cutSetPairTrue);
 
   for (i = 0; i < nArray; i++) {
-    noPID[i][0]->SetCutMgr(cutMgrTrue);
+    //noPID[i][0]->SetCutMgr(cutMgrTrue);
+    noPID[i][0]->SetCutMgr(cutMgrAll);
     for (j = 1; j < 4; j++) {
       noPID[i][j]->SetCutMgr(cutMgrAll);
     }
