@@ -64,7 +64,7 @@ public:
    virtual void        SetNtestFiles(Int_t nfiles)                       {fNtestFiles = nfiles;}
    virtual void        SetJDLName(const char *name="analysis.jdl")       {fJDLName = name;}
    virtual void        SetPreferedSE(const char *se)                     {fCloseSE = se;}
-   virtual void        SetProductionMode(Bool_t flag=kTRUE);
+   virtual void        SetProductionMode(Int_t mode=1)                   {fProductionMode = mode;}
 
    TGridJDL           *GetGridJDL() {return fGridJDL;}
    const char         *GetGridOutputDir() const                          {return fGridOutputDir;}
@@ -108,6 +108,7 @@ private:
    Int_t            fNrunsPerMaster;  // Number of runs per masterjob
    Int_t            fMaxMergeFiles;   // Maximum number of files to be merged in one chunk
    Int_t            fNsubmitted;      // Number of jobs submitted
+   Int_t            fProductionMode;  // Production mode (0-off, 1-on)
    TString          fRunNumbers;      // List of runs to be processed
    TString          fExecutable;      // Executable script for AliEn job
    TString          fArguments;       // Arguments for the executable script
@@ -135,6 +136,6 @@ private:
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 5)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 6)   // Class providing some AliEn utilities
 };
 #endif

@@ -29,8 +29,7 @@ enum EPluginRunMode {
    kUseAOD   = BIT(20),
    kUseMC    = BIT(21),
    kUsePars  = BIT(22),
-   kDefaultOutputs = BIT(23),
-   kProductionMode = BIT(24)
+   kDefaultOutputs = BIT(23)
 };   
 
    AliAnalysisGrid() {}

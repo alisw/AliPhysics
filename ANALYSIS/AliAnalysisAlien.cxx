@@ -53,6 +53,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fNrunsPerMaster(0),
                   fMaxMergeFiles(0),
                   fNsubmitted(0),
+                  fProductionMode(0),
                   fRunNumbers(),
                   fExecutable(),
                   fArguments(),
@@ -97,6 +98,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fNrunsPerMaster(0),
                   fMaxMergeFiles(0),
                   fNsubmitted(0),
+                  fProductionMode(0),
                   fRunNumbers(),
                   fExecutable(),
                   fArguments(),
@@ -141,6 +143,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fNrunsPerMaster(other.fNrunsPerMaster),
                   fMaxMergeFiles(other.fMaxMergeFiles),
                   fNsubmitted(other.fNsubmitted),
+                  fProductionMode(other.fProductionMode),
                   fRunNumbers(other.fRunNumbers),
                   fExecutable(other.fExecutable),
                   fArguments(other.fArguments),
@@ -210,6 +213,10 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fMaxInitFailed           = other.fMaxInitFailed;
       fMasterResubmitThreshold = other.fMasterResubmitThreshold;
       fNtestFiles              = other.fNtestFiles;
+      fNrunsPerMaster          = other.fNrunsPerMaster;
+      fMaxMergeFiles           = other.fMaxMergeFiles;
+      fNsubmitted              = other.fNsubmitted;
+      fProductionMode          = other.fProductionMode;
       fRunNumbers              = other.fRunNumbers;
       fExecutable              = other.fExecutable;
       fArguments               = other.fArguments;
@@ -911,7 +918,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    } else {
       Info("CreateJDL", "\n#####   Copying JDL file <%s> to your AliEn output directory", fJDLName.Data());
       TString locjdl = Form("%s/%s", fGridOutputDir.Data(),fJDLName.Data());
-      if (TObject::TestBit(AliAnalysisGrid::kProductionMode))
+      if (fProductionMode)
          locjdl = Form("%s/%s", workdir.Data(),fJDLName.Data());
       if (FileExists(locjdl)) gGrid->Rm(locjdl);
       TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s", locjdl.Data()));
@@ -1098,6 +1105,7 @@ void AliAnalysisAlien::Print(Option_t *) const
 {
 // Print current plugin settings.
    printf("### AliEn analysis plugin current settings ###\n");
+   printf("=   Production mode:______________________________ %d\n", fProductionMode);
    printf("=   Version of API requested: ____________________ %s\n", fAPIVersion.Data());
    printf("=   Version of ROOT requested: ___________________ %s\n", fROOTVersion.Data());
    printf("=   Version of AliRoot requested: ________________ %s\n", fAliROOTVersion.Data());
@@ -1344,17 +1352,6 @@ void AliAnalysisAlien::SetDefaultOutputs(Bool_t flag)
 }
       
 //______________________________________________________________________________
-void AliAnalysisAlien::SetProductionMode(Bool_t flag)
-{
-// If production mode is set, all required files are produced and copied to
-// AliEn but the master jobs are not submitted. A file .prod containing all
-// submit parameters is copied to the work directory.
-   if (flag && !TObject::TestBit(AliAnalysisGrid::kProductionMode))
-      Info("SetProductionMode", "Plugin in production mode. Jobs are not submitted.");
-   TObject::SetBit(AliAnalysisGrid::kProductionMode, flag);
-}
-
-//______________________________________________________________________________
 Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntry*/)
 {
 // Start remote grid analysis.
@@ -1440,7 +1437,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       return kFALSE;
    }
    // Check if submitting is managed by LPM manager
-   if (TObject::TestBit(AliAnalysisGrid::kProductionMode)) {
+   if (fProductionMode) {
       TString prodfile = fJDLName;
       prodfile.ReplaceAll(".jdl", ".prod");
       WriteProductionFile(prodfile);
