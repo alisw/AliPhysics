@@ -33,7 +33,7 @@ Trigger types used: PHYSICS_EVENT
 #include <AliDAQ.h>
 #include <AliTOFHitData.h>
 #include <AliTOFHitDataBuffer.h>
-#include <AliTOFNoiseConfigHandler.h>
+#include <AliTOFDaConfigHandler.h>
 
 //ROOT
 #include <TFile.h>
@@ -82,22 +82,24 @@ int main(int argc, char **argv) {
   }
 
   /* retrieve config file */
-  int getConfigFile = daqDA_DB_getFile("TOFNoiseConfig.xml","TOFNoiseConfig.xml");
+  int getConfigFile = daqDA_DB_getFile("TOFPhysicsConfig.xml","TOFPhysicsConfig.xml");
   if (getConfigFile != 0){
     printf("Failed to retrieve config file from DB! returning...\n");
     return -1;
   }
 
-  AliTOFNoiseConfigHandler* tofHandler = new AliTOFNoiseConfigHandler();
+  AliTOFDaConfigHandler* tofHandler = new AliTOFDaConfigHandler();
   TSAXParser *parser = new TSAXParser();
-  parser->ConnectToHandler("AliTOFNoiseConfigHandler", tofHandler);  
-  if (parser->ParseFile("./TOFNoiseConfig.xml") != 0) {
+  parser->ConnectToHandler("AliTOFDaConfigHandler", tofHandler);  
+  if (parser->ParseFile("./TOFPhysicsConfig.xml") != 0) {
     printf("Failed parsing config file! retunring... \n");
     return -1;
   }
 
   Int_t debugFlag = tofHandler->GetDebugFlag();
   printf("the debug flag is %i\n",debugFlag);
+  Int_t t0Flag = tofHandler->GetT0Flag();
+  printf("the debug flag is %i\n",t0Flag);
 
   /* init some counters */
   int nevents_physics=0;
@@ -197,7 +199,10 @@ int main(int argc, char **argv) {
 	*/
         //meantime = rawReaderT0->GetData(49,0); //OLD
         meantime = (Int_t)((rawReaderT0->GetData(51,0)+rawReaderT0->GetData(52,0))/2.); //Alla
-	//        printf("time zero (ns) = %i (%f) \n", meantime, (meantime*24.4-200)*1E-3);   // debugging purpose
+	if (debugFlag > 0) {
+		printf("time zero = %i (TDC bin)\n", meantime);   // debugging purpose
+		printf("time zero (ns) = %i (%f) \n", meantime, (meantime*24.4-200)*1E-3);   // debugging purpose
+	}
       }
       
       delete rawReaderT0;
@@ -248,7 +253,10 @@ int main(int argc, char **argv) {
 	    dummy = Volume[3];
 	    Volume[3] = Volume[4];
 	    Volume[4] = dummy;
-	    Int_t tof = (Int_t)((Double_t)HitData->GetTime()*1E3/AliTOFGeometry::TdcBinWidth());
+	    Int_t tofRaw = (Int_t)((Double_t)HitData->GetTime()*1E3/AliTOFGeometry::TdcBinWidth());
+	    Int_t tof;
+	    if (!t0Flag) tof = tofRaw;
+	    else tof = tofRaw - meantime;
 	    Int_t index = geom->GetIndex(Volume);
 	    Float_t pos[3];
 	    geom->GetPosPar(Volume,pos);
@@ -257,14 +265,17 @@ int main(int argc, char **argv) {
 	    Int_t deltabin = tof-TMath::Nint(texpBin);   //to be used with real data; rounding expected time to Int_t
 	    htofPartial->Fill(index,deltabin); //channel index start from 0, bin index from 1
 	    //debugging printings
-	    //if (debugFlag) {
- 	    //  printf("sector %2d, plate %1d, strip %2d, padz %1d, padx %2d \n",Volume[0],Volume[1],Volume[2],Volume[3],Volume[4]); // too verbose
-	    //  printf("pos x = %f, pos y = %f, pos z = %f \n",pos[0],pos[1],pos[2]); // too verbose
-	    //  printf("expected time = %f (ns)\n",texp); // too verbose
-	    //  printf("expected time bin = %f (TDC bin)\n",texpBin); // too verbose
-	    //  printf("measured time bin = %i (TDC bin) with %f (ns) and ACQ bit = %i \n",tof, HitData->GetTime(), HitData->GetACQ()); // too verbose
-	    //  printf("index = %6d, deltabin = %d , filling index = %6d, and bin = %d\n",index, deltabin, index, deltabin); // too verbose
-	    //}
+	    if (debugFlag > 1) {
+		    printf("tofRaw = %i, tof = %i \n",tofRaw,tof);
+	    }
+	    if (debugFlag > 2) {
+		    printf("sector %2d, plate %1d, strip %2d, padz %1d, padx %2d \n",Volume[0],Volume[1],Volume[2],Volume[3],Volume[4]); // too verbose
+		    printf("pos x = %f, pos y = %f, pos z = %f \n",pos[0],pos[1],pos[2]); // too verbose
+		    printf("expected time = %f (ns)\n",texp); // too verbose
+		    printf("expected time bin = %f (TDC bin)\n",texpBin); // too verbose
+		    printf("measured time bin = %i (TDC bin) with %f (ns) and ACQ bit = %i \n",tof, HitData->GetTime(), HitData->GetACQ()); // too verbose
+		    printf("index = %6d, deltabin = %d , filling index = %6d, and bin = %d\n",index, deltabin, index, deltabin); // too verbose
+	    }
 
 	  }
 	  /* reset buffer */
