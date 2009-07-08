@@ -28,7 +28,8 @@
 // At each iteration, an inverse response matrix is calculated, given  //
 // the measured spectrum, the a priori (guessed) spectrum,             //
 // the efficiency spectrum and the response matrix.                    //
-// For each iteration, the unfolded spectrum is calculated using       //
+//                                                                     //
+// Then at each iteration, the unfolded spectrum is calculated using   //
 // the inverse response : the goal is to get an unfolded spectrum      //
 // similar (according to some criterion) to the a priori one.          //
 // If the difference is too big, another iteration is performed :      //
@@ -51,6 +52,20 @@
 // This is possible calling the function ::UseSmoothing                //
 // If no argument is passed to this function, then the second option   //
 // is used.                                                            //
+//                                                                     //
+// IMPORTANT:                                                          //
+//-----------                                                          //
+// With this approach, the efficiency map must be calculated           //
+// with *simulated* values only, otherwise the method won't work.      //
+//                                                                     //
+// ex: efficiency(bin_pt) = number_rec(bin_pt) / number_sim(bin_pt)    //
+//                                                                     //
+// the pt bin "bin_pt" must always be the same in both the efficiency  //
+// numerator and denominator.                                          //
+// This is why the efficiency map has to be created by a method        //
+// from which both reconstructed and simulated values are accessible   //
+// simultaneously.                                                     //
+//                                                                     //
 //                                                                     //
 //---------------------------------------------------------------------//
 // Author : renaud.vernet@cern.ch                                      //
