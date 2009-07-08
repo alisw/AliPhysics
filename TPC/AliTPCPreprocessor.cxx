@@ -782,7 +782,7 @@ UInt_t AliTPCPreprocessor::ExtractRaw(Int_t sourceFXS)
  UInt_t result=0;
  TObjArray* rawArray = new TObjArray;
 
- TList* list = GetFileSources(sourceFXS,"AliTPCCalibRaw");
+ TList* list = GetFileSources(sourceFXS,"tpcCalibRaw");
  
  if (list && list->GetEntries()>0) {
 
