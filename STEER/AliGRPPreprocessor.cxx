@@ -202,6 +202,8 @@ AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
 	AddRunType("PEDESTAL");
 	AddRunType("STANDALONE");
 	AddRunType("GAIN");
+	AddRunType("NOISE");
+	AddRunType("PULSER");
 }
 
 //_______________________________________________________________
