@@ -33,6 +33,7 @@
 #include "AliCDBEntry.h"
 #include "TUUID.h"
 #include "TROOT.h"
+#include "TSystem.h"
 #include "TRegexp.h"
 #include "TClonesArray.h"
 #include "TObjString.h"
@@ -49,7 +50,8 @@ const char* AliHLTGlobalTriggerComponent::fgkTriggerMenuCDBPath = "HLT/ConfigHLT
 AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
 	AliHLTTrigger(),
 	fTrigger(NULL),
-	fDebugMode(false)
+	fDebugMode(false),
+	fCodeFileName()
 {
   // Default constructor.
   
@@ -257,6 +259,11 @@ Int_t AliHLTGlobalTriggerComponent::DoDeinit()
     delete fTrigger;
     fTrigger = NULL;
   }
+
+  if (!fCodeFileName.IsNull() && gSystem->AccessPathName(fCodeFileName)==0) {
+    TString command="rm "; command+=fCodeFileName;
+    gSystem->Exec(command);
+  }
   
   return 0;
 }
@@ -345,13 +352,13 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   // Create the name of the new class.
   name = "AliHLTGlobalTriggerImpl_";
   name += uuidstr;
-  TString filename = name + ".cxx";
+  fCodeFileName = name + ".cxx";
   
   // Open a text file to write the code and generate the new class.
-  fstream code(filename.Data(), ios_base::out | ios_base::trunc);
+  fstream code(fCodeFileName.Data(), ios_base::out | ios_base::trunc);
   if (not code.good())
   {
-    HLTError("Could not open file '%s' for writing.", filename.Data());
+    HLTError("Could not open file '%s' for writing.", fCodeFileName.Data());
     return -EIO;
   }
   
@@ -633,7 +640,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   code.close();
   
   // Now we need to compile and load the new class.
-  result = LoadTriggerClass(filename, includePaths);
+  result = LoadTriggerClass(fCodeFileName, includePaths);
   return result;
 }
 

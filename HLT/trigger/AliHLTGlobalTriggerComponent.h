@@ -187,6 +187,7 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   
   AliHLTGlobalTrigger* fTrigger;  //! Trigger object which implements the global trigger menu.
   bool fDebugMode;  //! Indicates if the generated global trigger class should be in debug mode.
+  TString fCodeFileName; //! base file name of the generated code for the global trigger
   
   static const char* fgkTriggerMenuCDBPath; //! The path string to read the trigger menu from the CDB.
   
