@@ -39,7 +39,7 @@ public:
   AliITSQADataMakerRec(Bool_t kMode = kFALSE, Short_t subDet = 0, Short_t ldc = 0); // kMode = kFALSE (offline), kTRUE (online); subDet = 0 (ALL), 1 (SPD), 2 (SDD), 3 (SSD)
   AliITSQADataMakerRec(const AliITSQADataMakerRec& qadm);
   AliITSQADataMakerRec& operator = (const AliITSQADataMakerRec& qac);
-  virtual Int_t GetEventSpecie() const { return AliReconstructor::GetRecoParam(0)->GetEventSpecie(); }
+  virtual Int_t GetEventSpecie() const { return AliRecoParam::AConvert(fEventSpecie); }
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list);
   virtual void EndOfDetectorCycle(const char *fgDataName);
