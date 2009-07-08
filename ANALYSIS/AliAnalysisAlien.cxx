@@ -1724,7 +1724,17 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       if (IsUsingTags()) {
          out << "   TChain *chain = CreateChainFromTags(\"wn.xml\", anatype);" << endl << endl;
       } else {
-         out << "   TChain *chain = CreateChain(\"wn.xml\", anatype);" << endl << endl;      
+         if(fFriendChainName!="AliAOD.VertexingHF.root") {
+            out << "   TChain *chain = CreateChain(\"wn.xml\", anatype);" << endl << endl;    
+         } else {
+            out << "   // Check if the macro to create the chain was provided" << endl;
+            out << "   if (gSystem->AccessPathName(\"MakeAODInputChain.C\")) {" << endl;
+            out << "      ::Error(\"" << func.Data() << "\", \"File MakeAODInputChain.C not provided. Aborting.\");" << endl;
+            out << "      return;" << endl;
+            out << "   }" << endl;
+            out << "   gROOT->LoadMacro(\"MakeAODInputChain.C\");" << endl;
+            out << "   TChain *chain = MakeAODInputChain(\"wn.xml\",\"none\");" << endl << endl;
+         }  
       }   
       out << "// read the analysis manager from file" << endl;
       out << "   TFile *file = TFile::Open(\"analysis.root\");" << endl;
