@@ -31,6 +31,7 @@
 #include "AliFMDRawReader.h"
 #include "AliRawReader.h"
 #include "AliFMDAltroMapping.h"
+#include "AliFMDDebug.h"
 
 //_____________________________________________________________________
 // This is the class that collects the QA data for the FMD during
@@ -185,11 +186,15 @@ void AliFMDQADataMakerRec::MakeESDs(AliESDEvent * esd)
     AliError("FMD ESD object not found!!") ; 
     return;
   }
+  AliFMDDebug(2, ("Will loop over ESD data and fill histogram"));
+
   AliESDFMD* fmd = esd->GetFMDData();
   if (!fmd) return;
-  
+
+  // FIXME - we should use AliESDFMD::ForOne subclass to do this!
   for(UShort_t det=1;det<=3;det++) {
-    for (UShort_t ir = 0; ir < 2; ir++) {
+    UShort_t nrng = (det == 1 ? 1 : 2);
+    for (UShort_t ir = 0; ir < nrng; ir++) {
       Char_t   ring = (ir == 0 ? 'I' : 'O');
       UShort_t nsec = (ir == 0 ? 20  : 40);
       UShort_t nstr = (ir == 0 ? 512 : 256);
