@@ -200,6 +200,8 @@ AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
 	AddRunType("CALIBRATION_SEMICENTRAL");
 	AddRunType("CALIBRATION");
 	AddRunType("PEDESTAL");
+	AddRunType("STANDALONE");
+	AddRunType("GAIN");
 }
 
 //_______________________________________________________________
