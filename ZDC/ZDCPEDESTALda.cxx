@@ -264,8 +264,8 @@ int main(int argc, char **argv) {
             //printf("\t STANDALONE_PEDESTAL RUN raw data found\n");
          }
          else{
-            printf("ZDCPEDESTALda.cxx -> NO STANDALONE_PEDESTAL RUN raw data found\n");
-            return -1;
+            //printf("ZDCPEDESTALda.cxx -> NO STANDALONE_PEDESTAL RUN raw data found\n");
+            //return -1;
          }
         }
         else{
@@ -403,6 +403,10 @@ int main(int argc, char **argv) {
   // --- Out-of-time pedestals
   TF1 *ADCootfunchg[kNChannels];
   for(Int_t i=0; i<kNChannels; i++){
+     if(hPedOutOfTimehg[i]->GetEntries() == 0){
+       printf("\n WARNING! Empty histos -> ending DA WITHOUT writing output\n\n");
+       return -1;
+     } 
      hPedOutOfTimehg[i]->Fit("gaus","Q");
      ADCootfunchg[i] = hPedOutOfTimehg[i]->GetFunction("gaus");
      MeanPedOOT[i] = (Double_t)  ADCootfunchg[i]->GetParameter(1);
