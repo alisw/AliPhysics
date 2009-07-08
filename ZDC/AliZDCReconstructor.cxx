@@ -612,7 +612,9 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrA
   // ****************** Reconstruct one event ******************
     
   // ---- Setting reco flags
-  UInt_t recoFlag;
+  UInt_t recoFlag=0;
+  UInt_t rFlags[32];
+  for(Int_t ifl=0; ifl<32; ifl++) rFlags[ifl]=0;
   Float_t sumZNAhg=0, sumZPAhg=0, sumZNChg=0, sumZPChg=0;
   for(Int_t jj=0; jj<5; jj++){
     sumZNAhg += corrADCZN2[jj];
@@ -620,16 +622,19 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrA
     sumZNChg += corrADCZN1[jj];
     sumZPChg += corrADCZP1[jj];
   }
-  if(sumZNAhg>fSignalThreshold)       recoFlag = 0x1;
-  if(sumZPAhg>fSignalThreshold)       recoFlag = 0x1 << 1;
-  if(corrADCZEM1[0]>fSignalThreshold) recoFlag = 0x1 << 2;
-  if(corrADCZEM2[0]>fSignalThreshold) recoFlag = 0x1 << 3;
-  if(sumZNChg>fSignalThreshold)       recoFlag = 0x1 << 4;
-  if(sumZPChg>fSignalThreshold)       recoFlag = 0x1 << 5;
+  if(sumZNAhg>fSignalThreshold)       rFlags[0] = 0x1;
+  if(sumZPAhg>fSignalThreshold)       rFlags[1] = 0x1;
+  if(corrADCZEM1[0]>fSignalThreshold) rFlags[2] = 0x1;
+  if(corrADCZEM2[0]>fSignalThreshold) rFlags[3] = 0x1;
+  if(sumZNChg>fSignalThreshold)       rFlags[4] = 0x1;
+  if(sumZPChg>fSignalThreshold)       rFlags[5] = 0x1;
   //
-  if(channelsOff==kTRUE)   recoFlag = 0x1 << 8;
-  if(chUnderflow == kTRUE) recoFlag = 0x1 << 9;
-  if(chOverflow==kTRUE)    recoFlag = 0x1 << 10;
+  if(channelsOff==kTRUE)   rFlags[8] = 0x1;
+  if(chUnderflow == kTRUE) rFlags[9] = 0x1;
+  if(chOverflow==kTRUE)    rFlags[10] = 0x1;
+  recoFlag = rFlags[10] << 10 | rFlags[9] << 9 | rFlags[8] << 8 |
+             rFlags[5] << 5 | rFlags[4] << 4 | rFlags[3] << 3 |
+             rFlags[2] << 2 | rFlags[1] << 1 | rFlags[0];
 
   // ******	Retrieving calibration data 
   // --- Equalization coefficients ---------------------------------------------
@@ -736,8 +741,10 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
 {
   // ****************** Reconstruct one event ******************
   
-  // Setting reco flags (part II)
-  UInt_t recoFlag;
+  // ---- Setting reco flags
+  UInt_t recoFlag=0;
+  UInt_t rFlags[32];
+  for(Int_t ifl=0; ifl<32; ifl++) rFlags[ifl]=0;
   Float_t sumZNAhg=0, sumZPAhg=0, sumZNChg=0, sumZPChg=0;
   for(Int_t jj=0; jj<5; jj++){
     sumZNAhg += corrADCZN2[jj];
@@ -745,16 +752,19 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     sumZNChg += corrADCZN1[jj];
     sumZPChg += corrADCZP1[jj];
   }
-  if(sumZNAhg>fSignalThreshold)       recoFlag = 0x1;
-  if(sumZPAhg>fSignalThreshold)       recoFlag = 0x1 << 1;
-  if(corrADCZEM1[0]>fSignalThreshold) recoFlag = 0x1 << 2;
-  if(corrADCZEM2[0]>fSignalThreshold) recoFlag = 0x1 << 3;
-  if(sumZNChg>fSignalThreshold)       recoFlag = 0x1 << 4;
-  if(sumZPChg>fSignalThreshold)       recoFlag = 0x1 << 5;
+  if(sumZNAhg>fSignalThreshold)       rFlags[0] = 0x1;
+  if(sumZPAhg>fSignalThreshold)       rFlags[1] = 0x1;
+  if(corrADCZEM1[0]>fSignalThreshold) rFlags[2] = 0x1;
+  if(corrADCZEM2[0]>fSignalThreshold) rFlags[3] = 0x1;
+  if(sumZNChg>fSignalThreshold)       rFlags[4] = 0x1;
+  if(sumZPChg>fSignalThreshold)       rFlags[5] = 0x1;
   //
-  if(channelsOff==kTRUE)   recoFlag = 0x1 << 8;
-  if(chUnderflow == kTRUE) recoFlag = 0x1 << 9;
-  if(chOverflow==kTRUE)    recoFlag = 0x1 << 10;
+  if(channelsOff==kTRUE)   rFlags[8] = 0x1;
+  if(chUnderflow == kTRUE) rFlags[9] = 0x1;
+  if(chOverflow==kTRUE)    rFlags[10] = 0x1;
+  recoFlag = rFlags[10] << 10 | rFlags[9] << 9 | rFlags[8] << 8 |
+             rFlags[5] << 5 | rFlags[4] << 4 | rFlags[3] << 3 |
+             rFlags[2] << 2 | rFlags[1] << 1 | rFlags[0];
 
   // ******	Retrieving calibration data 
   // --- Equalization coefficients ---------------------------------------------
