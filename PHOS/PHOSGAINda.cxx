@@ -50,10 +50,21 @@ int main(int argc, char **argv) {
     printf("Wrong number of arguments\n");
     return -1;
   }
-
+  
+  /* Retrieve ZS parameters from DAQ DB */
+  const char* zsfile = "zs.txt";
+  int failZS = daqDA_DB_getFile(zsfile, zsfile);
+  
+  Int_t offset,threshold;
+  
+  if(!failZS) {
+    FILE *f = fopen(zsfile,"r");
+    int scan = fscanf(f,"%d %d",&offset,&threshold);
+  }
+  
   /* Retrieve mapping files from DAQ DB */ 
   const char* mapFiles[4] = {"RCU0.data","RCU1.data","RCU2.data","RCU3.data"};
-
+  
   for(Int_t iFile=0; iFile<4; iFile++) {
     int failed = daqDA_DB_getFile(mapFiles[iFile], mapFiles[iFile]);
     if(failed) { 
@@ -99,17 +110,29 @@ int main(int argc, char **argv) {
   int nevents_total=0;
 
   AliRawReader *rawReader = NULL;
+  AliPHOSRcuDA1* dAs[5];
 
-  AliPHOSRcuDA1 da1(2,-1); // DA1 (Calibration DA) for module2
+  for(Int_t iMod=0; iMod<5; iMod++) {
+    dAs[iMod] = 0;
+  }
   
   Float_t e[64][56][2];
   Float_t t[64][56][2];
 
-  Int_t gain     = -1;
+  for(Int_t iX=0; iX<64; iX++) {
+    for(Int_t iZ=0; iZ<56; iZ++) {
+      for(Int_t iGain=0; iGain<2; iGain++) {
+	e[iX][iZ][iGain] = 0.;
+	t[iX][iZ][iGain] = 0.;
+      }
+    }
+  }
+  
   Int_t cellX    = -1;
   Int_t cellZ    = -1;
   Int_t nBunches =  0;
   Int_t sigStart, sigLength;
+  Int_t caloFlag;
 
   /* main loop (infinite) */
   for(;;) {
@@ -142,19 +165,16 @@ int main(int argc, char **argv) {
     
     if (eventT==PHYSICS_EVENT) {
       
-      for(Int_t iX=0; iX<64; iX++) {
-	for(Int_t iZ=0; iZ<56; iZ++) {
-	  for(Int_t iGain=0; iGain<2; iGain++) {
-	    e[iX][iZ][iGain] = 0.;
-	    t[iX][iZ][iGain] = 0.;
-	  }
-	}
-      }
-
       rawReader = new AliRawReaderDate((void*)event);
       AliCaloRawStreamV3 stream(rawReader,"PHOS",mapping);
-      AliPHOSRawFitterv0 fitter();
+      AliPHOSRawFitterv0 fitter;
       fitter.SubtractPedestals(kTRUE); // assume that data is non-ZS
+      
+      if(!failZS) {
+	fitter.SubtractPedestals(kFALSE);
+	fitter.SetAmpOffset(offset);
+	fitter.SetAmpThreshold(threshold);
+      }
       
       while (stream.NextDDL()) {
 	while (stream.NextChannel()) {
@@ -163,32 +183,49 @@ int main(int argc, char **argv) {
 	  cellZ    = stream.GetCellZ();
 	  caloFlag = stream.GetCaloFlag();  // 0=LG, 1=HG, 2=TRU
 
-	  // In case of oscillating signals with ZS, a channel can have several bunches
+	  // In case of oscillating signals with ZS, 
+	  //a channel can have several bunches.
+	  
 	  nBunches = 0;
 	  while (stream.NextBunch()) {
 	    nBunches++;
 	    if (nBunches > 1) continue;
-	    sigStart  = fRawStream.GetStartTimeBin();
-	    sigLength = fRawStream.GetBunchLength();
-	    fitter.SetSamples(fRawStream->GetSignals(),sigStart,sigLength);
+	    sigStart  = stream.GetStartTimeBin();
+	    sigLength = stream.GetBunchLength();
+	    fitter.SetSamples(stream.GetSignals(),sigStart,sigLength);
 	  } // End of NextBunch()
 	  
 	  fitter.SetNBunches(nBunches);
-	  fitter.SetChannelGeo(module,cellX,cellZ,caloFlag);
+	  fitter.SetChannelGeo(stream.GetModule(),cellX,cellZ,caloFlag);
 	  fitter.Eval();
-
-	  if (nBunches>1 || caloFlag!=0 || caloFlag!=1 || fitter.GetSignalQuality()>1) continue;
+	  
+	  if (nBunches>1) continue;
 	  
 	  e[cellX][cellZ][caloFlag] = fitter.GetEnergy();
 	  t[cellX][cellZ][caloFlag] = fitter.GetTime();
 	}
+
+	if(dAs[stream.GetModule()])
+	  dAs[stream.GetModule()]->FillHistograms(e,t);
+	else
+	  dAs[stream.GetModule()] = new AliPHOSRcuDA1(stream.GetModule(),-1);
+	
+	for(Int_t iX=0; iX<64; iX++) {
+	  for(Int_t iZ=0; iZ<56; iZ++) {
+	    for(Int_t iGain=0; iGain<2; iGain++) {
+	      e[iX][iZ][iGain] = 0.;
+	      t[iX][iZ][iGain] = 0.;
+	    }
+	  }
+	}
+
       }
 
-      da1.FillHistograms(e,t);
-    //da1.UpdateHistoFile();
+//       da1.FillHistograms(e,t);
+//     //da1.UpdateHistoFile();
       
-      delete rawReader;     
-      nevents_physics++;
+	delete rawReader;     
+	nevents_physics++;
     }
     
     nevents_total++;
@@ -206,14 +243,16 @@ int main(int argc, char **argv) {
   for(Int_t i = 0; i < 4; i++) delete mapping[i];  
   
   /* Be sure that all histograms are saved */
-
-  da1.UpdateHistoFile();
-  da1.SetWriteToFile(kFALSE);
   
-  /* Store output files to the File Exchange Server */
   char localfile[128];
   
   for(Int_t iMod=0; iMod<5; iMod++) {
+    if(!dAs[iMod]) continue;
+    
+    dAs[iMod]->UpdateHistoFile();
+    dAs[iMod]->SetWriteToFile(kFALSE);    
+    
+    /* Store output files to the File Exchange Server */
     sprintf(localfile,"PHOS_Module%d_Calib.root",iMod);
     daqDA_FES_storeFile(localfile,"AMPLITUDES");
   }
