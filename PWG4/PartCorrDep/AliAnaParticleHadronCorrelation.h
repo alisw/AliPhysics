@@ -31,7 +31,15 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   Double_t GetDeltaPhiMinCut() const {return fDeltaPhiMinCut ; }
   void SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
   {fDeltaPhiMaxCut =phimax;  fDeltaPhiMinCut =phimin;}
-  
+
+  Double_t GetUeDeltaPhiMaxCut() const {return fUeDeltaPhiMaxCut ; }
+  Double_t GetUeDeltaPhiMinCut() const {return fUeDeltaPhiMinCut ; }
+  void SetUeDeltaPhiCutRange(Double_t uephimin, Double_t uephimax)
+  {fUeDeltaPhiMaxCut =uephimax;  fUeDeltaPhiMinCut =uephimin;}
+  Bool_t IsSeveralUEOn() const {return fMakeSeveralUE ; }
+  void SwitchOnSeveralUECalculation()  { fMakeSeveralUE = kTRUE;}
+  void SwitchOffSeveralUECalculation() { fMakeSeveralUE = kFALSE;}
+
   Bool_t OnlyIsolated() const {return fSelectIsolated ; }
   void SelectIsolated(Bool_t select) {fSelectIsolated = select ; }
   
@@ -53,6 +61,10 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   Double_t   fDeltaPhiMaxCut ;      // Minimum Delta Phi Gamma-Hadron
   Double_t   fDeltaPhiMinCut ;      // Maximum Delta Phi Gamma-Hadron
   Bool_t     fSelectIsolated ;      // Select only trigger particles isolated
+  Bool_t   fMakeSeveralUE ; // Do analysis for several underlying events contribution
+  Double_t   fUeDeltaPhiMaxCut ;      // Minimum Delta Phi Gamma-Underlying Hadron
+  Double_t   fUeDeltaPhiMinCut ;      // Maximum Delta Phi Gamma-Underlying Hadron
+
   
   //Histograms
   TH2F * fhPhiCharged  ; //! Phi distribution of selected charged particles
@@ -65,10 +77,18 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F * fhDeltaEtaNeutral  ;  //! Difference of neutral particle eta and trigger particle  eta as function of  trigger particle pT
   TH2F * fhDeltaPhiChargedPt  ;  //! Difference of charged particle phi and trigger particle  phi as function of charged particle pT
   TH2F * fhDeltaPhiNeutralPt  ;  //! Difference of neutral particle phi and trigger particle  phi as function of neutral particle particle pT
+  TH2F * fhDeltaPhiUeChargedPt  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
 
   TH2F * fhPtImbalanceNeutral  ; //! Trigger particle - neutral hadron momentum imbalance histogram 
   TH2F * fhPtImbalanceCharged  ; //! Trigger particle -charged hadron momentim imbalance histogram
-  
+  TH2F * fhPtImbalanceUeCharged  ; //! Trigger particle -underlying charged hadron momentim imbalance histogram  
+
+//if several UE calculation is on, most useful for jet-jet events contribution
+  TH2F * fhDeltaPhiUeLeft  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
+  TH2F * fhDeltaPhiUeRight  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
+  TH2F * fhPtImbalanceUeLeftCharged  ; //! Trigger particle -underlying charged hadron momentim imbalance histogram 
+  TH2F * fhPtImbalanceUeRightCharged  ; //! Trigger particle -underlying charged hadron momentim imbalance histogram  
+
   ClassDef(AliAnaParticleHadronCorrelation,1)
 } ;
  

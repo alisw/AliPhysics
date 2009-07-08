@@ -294,7 +294,7 @@ void AliCaloTrackESDReader::FillInputPHOS() {
     AliAODCaloCluster * clus =  (AliAODCaloCluster*) (fOutputEvent->GetCaloClusters())->At(iclus);	
     fAODPHOS->Add(clus);				
   }	
-  if(fDebug > 1) printf("FillInputPHOS():: aod entries %d\n", fAODPHOS->GetEntriesFast());
+  if(fDebug > 1) printf("AliCaloTrackESDReader::FillInputPHOS() - aod entries %d\n", fAODPHOS->GetEntriesFast());
   
 }
 
