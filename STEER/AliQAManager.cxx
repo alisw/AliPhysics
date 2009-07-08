@@ -325,6 +325,9 @@ Bool_t AliQAManager::DoIt(const AliQAv1::TASKINDEX_t taskIndex)
 Bool_t AliQAManager::Finish(const AliQAv1::TASKINDEX_t taskIndex) 
 {
 	// write output to file for all detectors
+  
+  AliQAChecker::Instance()->SetRunNumber(fRunNumber) ; 
+
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		if (IsSelected(AliQAv1::GetDetName(iDet))) {
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
@@ -512,7 +515,8 @@ void  AliQAManager::EndOfCycle(TObjArray * detArray)
 {
 	// End of cycle QADataMakers 
 	
-  if (fPrintImage) {
+  AliQAChecker::Instance()->SetRunNumber(fRunNumber) ; 
+ if (fPrintImage) {
     TCanvas fakeCanvas ; 
     fakeCanvas.Print(Form("%s%s%d.%s[", AliQAv1::GetImageFileName(), GetMode(), fRunNumber, AliQAv1::GetImageFileFormat())) ; 
   }
