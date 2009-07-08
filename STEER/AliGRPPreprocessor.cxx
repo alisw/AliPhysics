@@ -276,7 +276,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	Log(Form("Starting DCS Query at %d and finishing at %d",GetStartTimeDCSQuery(),GetEndTimeDCSQuery()));
 	Int_t entries = ProcessDcsDPs( valueMap, grpobj );
 	Log(Form("entries found = %d",entries));
-	if( entries < fgknDCSDP-7 ) { // FIXME (!= ) LHState and pressure map are not working yet... and removing the 4 values for the missing HP 
+	if( entries < fgknDCSDP-4 ) { // FIXME (!= ) LHState, LHCLuminosity, BeamIntensity, LH3_BSF4_H3 are not working yet...  
 		Log(Form("Problem with the DCS data points!!!"));
 		error |= 8;
 	} else  Log(Form("DCS data points, successful!"));
