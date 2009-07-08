@@ -169,7 +169,10 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
          //delete(fClustersArray[minSlice][minPartition]);
          fClustersArray[minSlice][minPartition] = NULL;
       }
-    
+      
+      // fill the array with AliHLTTPCSpacePointData pointers
+      // it will be used in the track loop to access information
+      // for the used clusters only
       fClustersArray[minSlice][minPartition] = clusters;
       fNSpacePoints[minSlice][minPartition]  = nSpacepoint;
       
@@ -180,13 +183,13 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
   HLTDebug("Total space points: %d", totalSpacePoints);
    
   
-  //------------------ Access to tracks --------------------//
+  //------------------ Access to track data blocks --------------------//
   
-  TObjArray *offClusterArray = new TObjArray;
+  //TObjArray *offClusterArray = new TObjArray;
   TObjArray *seedArray       = new TObjArray;
-  offClusterArray->SetOwner(kTRUE);
+  //offClusterArray->SetOwner(kTRUE);
   seedArray->SetOwner(kTRUE);
-  offClusterArray->Clear();
+  //offClusterArray->Clear();
   seedArray->Clear();
   
   for(iter = GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){  
@@ -200,10 +203,13 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
       if( slice     > fMaxSlice )     fMaxSlice     = slice;
       if( partition < fMinPartition ) fMinPartition = partition;
       if( partition > fMaxPartition ) fMaxPartition = partition;
-
+      
+      
+      // create a vector of AliHLTGlobalBarrelTrack tracks from AliHLTTracksData
       vector<AliHLTGlobalBarrelTrack> tracks;
       AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(iter->fPtr), iter->fSize, tracks);      
     
+      // loop over the elements of the AliHLTGlobalBarrelTrack vector
       for(vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();  element!=tracks.end(); element++){
           
 	  AliRieman rieman(1000);
@@ -227,36 +233,46 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
     	  Double_t angle_shift_in  = fTPCGeomParam->GetInnerAngleShift();
     	  Double_t angle_out       = fTPCGeomParam->GetOuterAngle();
     	  Double_t angle_shift_out = fTPCGeomParam->GetOuterAngleShift();
-	
-	  const UInt_t *hitnum = element->GetPoints();      
+   	  
+	  //offClusterArray->Clear();
+	  
+	  const UInt_t *hitnum = element->GetPoints(); // store the clusters on each track in an array and loop over them
           for(UInt_t i=0; i<element->GetNumberOfPoints(); i++){
-                        
+              
+	      // the id of the cluster contains information about the slice and partition it belongs too
+	      // as well as its index (pos)          
               UInt_t idTrack   = hitnum[i];
               Int_t sliceTrack = (idTrack>>25) & 0x7f;
               Int_t patchTrack = (idTrack>>22) & 0x7;
               UInt_t pos       = idTrack&0x3fffff;
 	      
+	      // use the fClustersArray that was filled in the cluster loop
 	      if( !fClustersArray[sliceTrack][patchTrack]    ) continue;
     	      if(  fNSpacePoints[sliceTrack][patchTrack]<pos ) HLTError("Space point array out of boundaries!");
 	      
+	      // get the sector(detector) information
 	      Int_t sector, row = -99;
 	      AliHLTTPCTransform::Slice2Sector(sliceTrack, (fClustersArray[sliceTrack][patchTrack])[pos].fPadRow, sector, row);
 	      
 	      //HLTInfo("slice: %d, row: %d, sector: %d, new row :%d",sliceTrack, (fClustersArray[sliceTrack][patchTrack])[pos].fPadRow, sector, row);
            
 	      // the clusters from the HLT cluster finder output are in the slice coordinate system
-	      // next line recalculates rows in the sector(ROC) system for clusters of the outer partitions
+	      // next line recalculates rows in the sector(ROC) system to convert clusters to the sector system
 	      if(patchTrack>1) (fClustersArray[sliceTrack][patchTrack])[pos].fPadRow -= (Int_t)AliHLTTPCTransform::GetFirstRow(2);              
 	      HLTDebug("slice %d, partition :%d, sector row: %d", sliceTrack, patchTrack, (fClustersArray[sliceTrack][patchTrack])[pos].fPadRow);
-	          	      
+	      
+	      // convert the HTL clusters to AliTPCclusterMI    	      
     	      AliHLTTPCOfflineCluster pConv;
     	      AliTPCclusterMI *offClus = pConv.ConvertHLTToOffline((fClustersArray[sliceTrack][patchTrack])[pos]);	      
     	      offClus->IsUsed(1);
 	      offClus->SetDetector(sector);
 	      usedSpacePoints++;
 	      
-	      offClusterArray->Add(offClus);
+	      //offClusterArray->Add(offClus);
 	      
+	      
+	      // the clusters are not sorted from max to min X
+	      // errors will have to be revisited
 	      rieman.AddPoint( offClus->GetX(),offClus->GetY(),offClus->GetZ(),TMath::Sqrt(offClus->GetSigmaY2()),TMath::Sqrt(offClus->GetSigmaZ2()) );    
 	      
 	      if(sector<36){ 
@@ -266,14 +282,25 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
                  xmin = TMath::Min(xmin,xrow[nrowlow+offClus->GetRow()]); // min pad-row radius
                  alpha = angle_shift_out+angle_out*(sector%18);
               }
-              //if(sector<36) HLTDebug("detector: %d, row: %d, xrow[row]: %f", sector, offClus->GetRow(), xrow[offClus->GetRow()]);
-              //else          HLTDebug("detector: %d, row: %d, xrow[row]: %f", sector, offClus->GetRow(), xrow[nrowlow+offClus->GetRow()]);
+              //if(sector<36) HLTInfo("detector: %d, row: %d, xrow[row]: %f", sector, offClus->GetRow(), xrow[offClus->GetRow()]);
+              //else          HLTInfo("detector: %d, row: %d, xrow[row]: %f", sector, offClus->GetRow(), xrow[nrowlow+offClus->GetRow()]);
           } // end of cluster loop
 
+          //HLTInfo("------------- xmin: %f", xmin);
+
+          // creation of AliTPCseed by means of a Riemann fit
           rieman.Update();
           rieman.GetExternalParameters(xmin,param,cov);  
 	  seed = new AliTPCseed(xmin,alpha,param,cov,0);
-          HLTDebug("External track parameters: seed: 0x%08x, xmin: %f, alpha: %f, param[0]: %f, cov[0]: %f", seed, xmin, alpha, param[0], cov[0]);
+	 
+	  // is it necessay to set the cluster pointers inside the seed??
+// 	  for(Int_t j=0; j<offClusterArray->GetEntries(); j++)  { 
+//                AliTPCclusterMI *cl = (AliTPCclusterMI*)offClusterArray->At(j);
+//                if(cl) seed->SetClusterPointer(cl->GetRow(),cl);
+//            }
+
+
+          HLTInfo("External track parameters: seed: 0x%08x, xmin: %f, alpha: %f, param[0]: %f, cov[0]: %f", seed, xmin, alpha, param[0], cov[0]);
 	  seedArray->Add(seed);
 
       }// end of vector track loop        
@@ -284,7 +311,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
 
 
   fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( fMinSlice, fMaxSlice, fMinPartition, fMaxPartition );
-  PushBack((TObject*)offClusterArray, kAliHLTDataTypeTObjArray, fSpecification);
+  //PushBack((TObject*)offClusterArray, kAliHLTDataTypeTObjArray, fSpecification);
   PushBack((TObject*)seedArray,       kAliHLTDataTypeTObjArray, fSpecification);
  
   return 0;

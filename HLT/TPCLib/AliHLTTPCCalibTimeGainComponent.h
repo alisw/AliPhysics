@@ -22,8 +22,9 @@
 #include "AliHLTCalibrationProcessor.h"
 
 class AliTPCcalibTimeGain;
-class AliExternalTrackParam;
+//class AliExternalTrackParam;
 class AliESDEvent;
+class TObjArray;
 
 /**
  * @class AliHLTTPCCalibTimeGainComponent
@@ -75,6 +76,7 @@ class AliHLTTPCCalibTimeGainComponent : public AliHLTCalibrationProcessor
 
       AliTPCcalibTimeGain *fCalibTimeGain; //!transient
       AliESDEvent         *fESDEvent;      //!transient
+      TObjArray           *fSeedArray;     //!transient
       
       AliHLTUInt8_t  fMinPartition;   // see above
       AliHLTUInt8_t  fMaxPartition;   // see above

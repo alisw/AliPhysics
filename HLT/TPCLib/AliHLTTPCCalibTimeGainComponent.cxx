@@ -35,10 +35,11 @@ using namespace std;
 
 #include "AliHLTTPCDefinitions.h"
 #include "AliTPCcalibTimeGain.h"
-
+#include "AliESDEvent.h"
 #include <cstdlib>
 #include <cerrno>
 #include "TString.h"
+#include "TObjArray.h"
 
 ClassImp(AliHLTTPCCalibTimeGainComponent) // ROOT macro for the implementation of ROOT specific class methods
 
@@ -46,6 +47,7 @@ AliHLTTPCCalibTimeGainComponent::AliHLTTPCCalibTimeGainComponent()
   :
   fCalibTimeGain(NULL),
   fESDEvent(NULL),
+  fSeedArray(NULL),
   fMinPartition(5),
   fMaxPartition(0),
   fMinSlice(35),
@@ -75,7 +77,7 @@ void AliHLTTPCCalibTimeGainComponent::GetInputDataTypes( vector<AliHLTComponentD
 
   list.clear();   
   list.push_back( kAliHLTDataTypeTObjArray ); // output of TPCCalibSeedMaker
-  list.push_back( kAliHLTDataTypeESDTree ); // output of global merger 
+  list.push_back( kAliHLTDataTypeESDObject ); // output of TPCEsdConverter 
 }
 
 AliHLTComponentDataType AliHLTTPCCalibTimeGainComponent::GetOutputDataType() {
@@ -126,7 +128,7 @@ Int_t AliHLTTPCCalibTimeGainComponent::InitCalibration() {
 // see header file for class documentation
     
   if(fCalibTimeGain) return EINPROGRESS;
-  fCalibTimeGain = new AliTPCcalibTimeGain(); // KK
+  fCalibTimeGain = new AliTPCcalibTimeGain();
   //AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeGain)
   return 0;
 }
@@ -145,28 +147,38 @@ Int_t AliHLTTPCCalibTimeGainComponent::ProcessCalibration( const AliHLTComponent
   
   if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )) return 0;
 
-  const AliHLTComponentBlockData *iter = NULL;
-   
-  for(iter = GetFirstInputBlock(kAliHLTDataTypeESDTree|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){
-      
-      if(iter->fDataType != (kAliHLTDataTypeESDTree | kAliHLTDataOriginTPC)) continue; 
-        
-      AliHLTUInt8_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(*iter); 
-      AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
+  TObject *iterESD, *iterSEED = NULL;
+
+  //----------- loop over output of TPCEsdConverter ----------------//
+  
+  for(iterESD = (TObject*)GetFirstInputObject(kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC); iterESD != NULL; iterESD = (TObject*)GetNextInputObject()){   
+       
+      if(GetDataType(iterSEED) != (kAliHLTDataTypeESDObject | kAliHLTDataOriginTPC)) continue;
+  
+      AliHLTUInt8_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(iterESD)); 
+      AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(GetSpecification(iterESD));
       
       if( partition < fMinPartition ) fMinPartition = partition;
       if( partition > fMaxPartition ) fMaxPartition = partition;
       if( slice < fMinSlice ) fMinSlice = slice;
       if( slice > fMaxSlice ) fMaxSlice = slice;
-
-      //fESDEvent = (AliESDEvent*)iter;
-  
+      
+      fESDEvent = dynamic_cast<AliESDEvent*>(iterESD);
+      fESDEvent->CreateStdContent();
   } 
+
+ 
+  //--------------- output over TObjArray of AliTPCseed objects (output of TPCSeedMaker) -------------------//
   
-  // loop over TObjArray of seeds missing
-  
-  //fCalibTimeGain->Process(fESDEvent); 
-  
+  for(iterSEED = (TObject*)GetFirstInputObject(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC); iterSEED != NULL; iterSEED = (TObject*)GetNextInputObject()){  
+              
+       if(GetDataType(iterSEED) != (kAliHLTDataTypeTObjArray | kAliHLTDataOriginTPC)) continue;
+
+       fSeedArray = dynamic_cast<TObjArray*>(iterSEED); 
+  }
+ 
+  fCalibTimeGain->Process(fESDEvent);
+
   fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( fMinSlice, fMaxSlice, fMinPartition, fMaxPartition );
   PushBack( (TObject*) fCalibTimeGain, AliHLTTPCDefinitions::fgkCalibCEDataType, fSpecification);
   
@@ -176,8 +188,7 @@ Int_t AliHLTTPCCalibTimeGainComponent::ProcessCalibration( const AliHLTComponent
 Int_t AliHLTTPCCalibTimeGainComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/,  AliHLTComponentTriggerData& /*trigData*/ ){
   // see header file for class documentation
     
-  if(fEnableAnalysis) fCalibTimeGain->Analyze();
-  
+  if(fEnableAnalysis) fCalibTimeGain->Analyze();  
   PushToFXS( (TObject*) fCalibTimeGain, "TPC", "TimeGain" ) ;
   
   return 0;

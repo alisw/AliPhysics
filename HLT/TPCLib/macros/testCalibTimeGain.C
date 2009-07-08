@@ -200,16 +200,7 @@ testCalibTimeGain(const char* options="CA")
 
   // seed maker from the used clusters of the reconstructed tracks
   AliHLTConfiguration seedconf("seeds","TPCCalibSeedMaker",seedMakerInput.Data(),"");
-  
-  TString calibTimeGainInput;
-  if (calibTimeGainInput.Length()>0) calibTimeGainInput+=" ";
-  calibTimeGainInput+="globalmerger";
-  calibTimeGainInput+=" ";
-  calibTimeGainInput+="seeds";
-
-  // calibration component
-  AliHLTConfiguration calibtimeconf("calibTimeGain","TPCCalibTimeGain",calibTimeGainInput.Data(),"");
-    
+   
 
 
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -232,6 +223,17 @@ testCalibTimeGain(const char* options="CA")
 
   // the esd converter configuration
   AliHLTConfiguration sink3("sink-esd", "TPCEsdConverter"   , converterInput.Data(), "");
+
+  TString calibTimeGainInput;
+  if (calibTimeGainInput.Length()>0) calibTimeGainInput+=" ";
+  calibTimeGainInput+="sink-esd";
+  calibTimeGainInput+=" ";
+  calibTimeGainInput+="seeds";
+
+  // calibration component
+  AliHLTConfiguration calibtimeconf("calibTimeGain","TPCCalibTimeGain",calibTimeGainInput.Data(),"");
+
+
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // sink4: id=sink-clusters add cluster data blocks to HLTOUT

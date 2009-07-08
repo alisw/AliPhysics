@@ -24,6 +24,7 @@
 class AliTPCcalibTime;
 class AliExternalTrackParam;
 class AliESDEvent;
+class TObjArray;
 
 /**
  * @class AliHLTTPCCalibTimeComponent
@@ -80,6 +81,7 @@ class AliHLTTPCCalibTimeComponent : public AliHLTCalibrationProcessor
 
       AliTPCcalibTime *fCalibTime; //!transient
       AliESDEvent     *fESDEvent;  //!transient
+      TObjArray       *fSeedArray; //!transient
       
       AliHLTUInt8_t  fMinPartition;  // see above
       AliHLTUInt8_t  fMaxPartition;  // see above

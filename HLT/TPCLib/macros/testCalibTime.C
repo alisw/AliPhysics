@@ -201,15 +201,6 @@ testCalibTime(const char* options="CA")
   // seed maker from the used clusters of the reconstructed tracks
   AliHLTConfiguration seedconf("seeds","TPCCalibSeedMaker",seedMakerInput.Data(),"");
   
-  TString calibTimeInput;
-  if (calibTimeInput.Length()>0) calibTimeInput+=" ";
-  calibTimeInput+="globalmerger";
-  calibTimeInput+=" ";
-  calibTimeInput+="seeds";
-
-  // calibration component
-  AliHLTConfiguration calibtimeconf("calibTime","TPCCalibTime",calibTimeInput.Data(),"");
-    
 
 
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -224,7 +215,7 @@ testCalibTime(const char* options="CA")
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // sink2: id=sink-esd-file write ESD using the TPCEsdWriter
-  AliHLTConfiguration sink2("sink-esd-file", "TPCEsdWriter"   , converterInput.Data(), "-datafile AliHLTESDs.root");
+  //AliHLTConfiguration sink2("sink-esd-file", "TPCEsdWriter"   , converterInput.Data(), "-datafile AliHLTESDs.root");
 
 
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -233,9 +224,22 @@ testCalibTime(const char* options="CA")
   // the esd converter configuration
   AliHLTConfiguration sink3("sink-esd", "TPCEsdConverter"   , converterInput.Data(), "");
 
+
+  TString calibTimeInput;
+  if (calibTimeInput.Length()>0) calibTimeInput+=" ";
+  calibTimeInput+="sink-esd";
+  calibTimeInput+=" ";
+  calibTimeInput+="seeds";
+
+
+  // calibration component
+  AliHLTConfiguration calibtimeconf("calibTime","TPCCalibTime",calibTimeInput.Data(),"");
+
+
+
   //////////////////////////////////////////////////////////////////////////////////////////
   // sink4: id=sink-clusters add cluster data blocks to HLTOUT
-  AliHLTConfiguration sink4("sink-clusters", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLUSTERS' 'TPC '");
+  //AliHLTConfiguration sink4("sink-clusters", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLUSTERS' 'TPC '");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,6 +275,6 @@ testCalibTime(const char* options="CA")
 
   // set the options for the HLT simulation
   sim.SetRunHLT("libAliHLTUtil.so libAliHLTTPC.so loglevel=0x7c "
-		"chains=sink-esd,sink-clusters,calibTime");
+		"chains=calibTime");
   sim.Run();
 }
