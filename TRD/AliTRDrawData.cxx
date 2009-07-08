@@ -1296,17 +1296,15 @@ Bool_t AliTRDrawData::OpenOutput()
       dl = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
       fRunLoader->GetLoader("TRDLoader")->AddDataLoader(dl);
     }
-    else {
-      fTrackletTree = dl->Tree();
-      if (!fTrackletTree)
-        {
-        dl->MakeTree();
-        fTrackletTree = dl->Tree();
-        }
-      TBranch *trkbranch = fTrackletTree->GetBranch("trkbranch");
-      if (!trkbranch)
-        fTrackletTree->Branch("trkbranch",leaves[0],"det/i:side/i:tracklets[256]/i");
-    }
+    fTrackletTree = dl->Tree();
+    if (!fTrackletTree)
+      {
+       dl->MakeTree();
+       fTrackletTree = dl->Tree();
+      }
+    TBranch *trkbranch = fTrackletTree->GetBranch("trkbranch");
+    if (!trkbranch)
+      fTrackletTree->Branch("trkbranch",leaves[0],"det/i:side/i:tracklets[256]/i");
   }
   return kTRUE;
 

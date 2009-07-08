@@ -360,8 +360,16 @@ Bool_t AliTRDclusterizer::OpenOutput(TTree *clusterTree)
     fClusterTree = clusterTree;
     fClusterTree->Branch("TRDcluster", "TObjArray", &ioArray, 32000, 0);
   }
+  return kTRUE;
+}
 
-  // tracklet writing
+//_____________________________________________________________________________
+Bool_t AliTRDclusterizer::OpenTrackletOutput()
+{
+  //
+  // Tracklet writing
+  //
+
   if (fReconstructor->IsWritingTracklets()){
     TString evfoldname = AliConfig::GetDefaultEventFolderName();
     fRunLoader         = AliRunLoader::GetRunLoader(evfoldname);
@@ -381,21 +389,18 @@ Bool_t AliTRDclusterizer::OpenOutput(TTree *clusterTree)
       dl = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
       fRunLoader->GetLoader("TRDLoader")->AddDataLoader(dl);
     }
-    else {
-      fTrackletTree = dl->Tree();
-      if (!fTrackletTree)
-        {
-        dl->MakeTree();
-        fTrackletTree = dl->Tree();
-        }
-      TBranch *trkbranch = fTrackletTree->GetBranch("trkbranch");
-      if (!trkbranch)
-        fTrackletTree->Branch("trkbranch",leaves[0],"det/i:side/i:tracklets[256]/i");
-    }
+    fTrackletTree = dl->Tree();
+    if (!fTrackletTree)
+      {
+       dl->MakeTree();
+       fTrackletTree = dl->Tree();
+      }
+    TBranch *trkbranch = fTrackletTree->GetBranch("trkbranch");
+    if (!trkbranch)
+      fTrackletTree->Branch("trkbranch",leaves[0],"det/i:side/i:tracklets[256]/i");
   }
 
   return kTRUE;
-
 }
 
 //_____________________________________________________________________________
