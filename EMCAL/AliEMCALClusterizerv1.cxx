@@ -326,7 +326,7 @@ void AliEMCALClusterizerv1::GetCalibrationParameters()
 
   //Check if calibration is stored in data base
 
-  if(!fCalibData && (AliCDBManager::Instance()->IsDefaultStorageSet()))
+  if(!fCalibData)
     {
       AliCDBEntry *entry = (AliCDBEntry*) 
 	AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
