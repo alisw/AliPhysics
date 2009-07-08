@@ -39,7 +39,17 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
    * Default destructor.
    */
   virtual ~AliHLTGlobalTriggerDecision();
-  
+
+  /**
+   * Copy constructor
+   */
+  AliHLTGlobalTriggerDecision(const AliHLTGlobalTriggerDecision& src);  
+
+  /**
+   * Assignment operator
+   */
+  AliHLTGlobalTriggerDecision& operator=(const AliHLTGlobalTriggerDecision& src);  
+
   /**
    * Inherited from TObject, this prints the contents of the trigger decision.
    * \param option  Can be "short" which will print the short format or "counters"

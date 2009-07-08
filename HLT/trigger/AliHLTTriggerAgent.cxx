@@ -238,9 +238,10 @@ int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::ProcessData(AliHLTOUT* pDa
   if (iResult>=0) {
     TObject* pObject=pData->GetDataObject();
     if (pObject) {
-      AliHLTTriggerDecision* pDecission=dynamic_cast<AliHLTTriggerDecision*>(pObject);
-      if (pDecission) {
+      AliHLTTriggerDecision* pDecision=dynamic_cast<AliHLTTriggerDecision*>(pObject);
+      if (pDecision) {
 	//pDecision->Print();
+	HLTDebug("extracted %s", pDecision->GetName());
 	if (!fESD) {
 	  // create the ESD container, but without std content
 	  fESD = new AliESDEvent;
@@ -248,7 +249,14 @@ int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::ProcessData(AliHLTOUT* pDa
 	if (!fpData) fpData=new TArrayC;
 	if (fESD && fpData) {
 	  fESD->Reset();
-	  fESD->AddObject(pObject->Clone());
+	  TObject* pESDObject=fESD->FindListObject("HLTGlobalTrigger");
+	  if (pESDObject) {
+	    // copy the content to the already existing object
+	    pObject->Copy(*pESDObject);
+	  } else {
+	    // add a new object
+	    fESD->AddObject(pObject->Clone());
+	  }
 	  AliHLTMessage* pMsg=AliHLTMessage::Stream(fESD);
 	  if (pMsg) {
 	    if (!pMsg->CompBuffer()) {

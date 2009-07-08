@@ -29,7 +29,7 @@ ClassImp(AliHLTGlobalTriggerDecision)
 
 
 AliHLTGlobalTriggerDecision::AliHLTGlobalTriggerDecision() :
-  AliHLTTriggerDecision(),
+AliHLTTriggerDecision(0, "HLTGlobalTrigger"),
   fContributingTriggers(AliHLTTriggerDecision::Class()),
   fInputObjects(),
   fCounters()
@@ -142,7 +142,6 @@ void AliHLTGlobalTriggerDecision::Copy(TObject &object) const
     // copy members if target is a AliHLTGlobalTriggerDecision
     *pDecision=*this;
   }
-
   // copy the base class
   AliHLTTriggerDecision::Copy(object);
 }
@@ -152,4 +151,47 @@ TObject *AliHLTGlobalTriggerDecision::Clone(const char */*newname*/) const
   // create a new clone, classname is ignored
 
   return new AliHLTGlobalTriggerDecision(*this);
+}
+
+AliHLTGlobalTriggerDecision::AliHLTGlobalTriggerDecision(const AliHLTGlobalTriggerDecision& src) :
+  AliHLTTriggerDecision(src),
+  fContributingTriggers(AliHLTTriggerDecision::Class()),
+  fInputObjects(),
+  fCounters()
+{
+  // copy constructor
+  *this=src;
+}
+
+AliHLTGlobalTriggerDecision& AliHLTGlobalTriggerDecision::operator=(const AliHLTGlobalTriggerDecision& src)
+{
+  // assignment operator
+
+  fContributingTriggers.Delete();
+  for (int triggerInput=0; triggerInput<src.NumberOfTriggerInputs(); triggerInput++) {
+    const AliHLTTriggerDecision* pTriggerObject=src.TriggerInput(triggerInput);
+    if (pTriggerObject) {
+      // the AddTriggerInput function uses the copy constructor and
+      // makes a new object from the reference
+      AddTriggerInput(*pTriggerObject);
+    } else {
+      //Error("failed to get trigger input #%d", triggerInput);
+    }
+  }
+
+  fInputObjects.Delete();
+  for (int inputObject=0; inputObject<src.NumberOfTriggerInputs(); inputObject++) {
+    const TObject* pInputObject=src.InputObject(inputObject);
+    if (pInputObject) {
+      // the AddInputObject function uses Clone() and
+      // makes a new object from the reference
+      AddInputObject(pInputObject);
+    } else {
+      //Error("failed to get trigger input #%d", inputObject);
+    }
+  }
+  
+  SetCounters(src.Counters());
+
+  return *this;
 }

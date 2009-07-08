@@ -646,20 +646,18 @@ int AliHLTEsdManagerImplementation::Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) 
 
   TIter next(pSrc->GetList());
   TObject* pSrcObject=NULL;
-  TString name;
   static int warningCount=0;
   while ((pSrcObject=next())) {
     if(!pSrcObject->InheritsFrom("TCollection")){
       // simple objects
+      TString name=pSrcObject->GetName();
       if(pSrcObject->InheritsFrom("AliHLTTriggerDecision")){
 	//pSrcObject->Print();
-	// Matthias 2009-07-3: there is a problem with the additional object
-	// in the ESD when the tree is filled
-	TObject* pTgtObject=pTgt->GetList()->FindObject(name);
+	TObject* pTgtObject=pTgt->FindListObject(name);
 	if (pTgtObject) {
-	  //pSrcObject->Copy(*pTgtObject);
+	  pSrcObject->Copy(*pTgtObject);
 	} else {
-	  //pTgt->AddObject(pSrcObject->Clone());
+	  pTgt->AddObject(pSrcObject->Clone());
 	}
       } else {
 	// TODO: implement the handling of other objects, some kind of mapping
@@ -667,7 +665,7 @@ int AliHLTEsdManagerImplementation::Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) 
     } else if(pSrcObject->InheritsFrom("TClonesArray")){
       TClonesArray* pTClA=dynamic_cast<TClonesArray*>(pSrcObject);
       if (pTClA!=NULL && pTClA->GetEntriesFast()>0) {
-	name=pTClA->GetName();
+	TString name=pTClA->GetName();
 	TObject* pTgtObject=pTgt->GetList()->FindObject(name);
 	TClonesArray* pTgtArray=NULL;
 	if (pTgtObject!=NULL && pTgtObject->InheritsFrom("TClonesArray")){
