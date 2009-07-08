@@ -65,6 +65,8 @@ AliTPCclusterMI* AliHLTTPCOfflineCluster::ConvertHLTToOffline(AliHLTTPCSpacePoin
    offCluster->SetTimeBin(spacePoint.fZ);         // time bin
    offCluster->SetQ(spacePoint.fCharge);     	  // charge
    offCluster->SetMax(spacePoint.fQMax);     	  // max Q (amplitude)
+   offCluster->SetSigmaY2(spacePoint.fSigmaY2);   // error in Y direction
+   offCluster->SetSigmaZ2(spacePoint.fSigmaZ2);   // error in Z direction
    //offCluster->SetDetector(0);	     	  // detector/slice
    //offCluster->SetType(0);		     	  // default from constructor
    //offCluster->IsUsed(0);		     	  // default from constructor
@@ -79,11 +81,13 @@ AliHLTTPCSpacePointData AliHLTTPCOfflineCluster::ConvertOfflineToHLT(AliTPCclust
      
    AliHLTTPCSpacePointData spacePoint = { 0.,0.,0.,0,0,0.,0.,0,0,kFALSE,0 };
        
-   spacePoint.fX      = offCluster->GetPad();
-   spacePoint.fPadRow = offCluster->GetRow();
-   spacePoint.fZ      = offCluster->GetTimeBin();
-   spacePoint.fCharge = (UInt_t)offCluster->GetQ();
-   spacePoint.fQMax   = (UInt_t)offCluster->GetMax();
+   spacePoint.fX       = offCluster->GetPad();
+   spacePoint.fPadRow  = offCluster->GetRow();
+   spacePoint.fZ       = offCluster->GetTimeBin();
+   spacePoint.fCharge  = (UInt_t)offCluster->GetQ();
+   spacePoint.fQMax    = (UInt_t)offCluster->GetMax();
+   spacePoint.fSigmaY2 = offCluster->GetSigmaY2();
+   spacePoint.fSigmaZ2 = offCluster->GetSigmaZ2();
 
    return spacePoint;
    

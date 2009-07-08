@@ -106,7 +106,10 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCClusterDumpComponent.h \
 		AliHLTTPCCalibTracksComponent.h \
 		AliHLTTPCHWCFDataReverterComponent.h \
-		AliHLTTPCTrackMCMarkerComponent.h
+		AliHLTTPCTrackMCMarkerComponent.h \
+		AliHLTTPCCalibSeedMakerComponent.h \
+		AliHLTTPCCalibTimeComponent.h \
+		AliHLTTPCCalibTimeGainComponent.h
 
 
 
