@@ -63,12 +63,16 @@ ClassImp(AliAnaParticleJetLeadingConeCorrelation)
     fSelectIsolated(0),	
     //Histograms
     fOutCont(0x0),
+    //Leading
     fhChargedLeadingPt(0),fhChargedLeadingPhi(0),fhChargedLeadingEta(0),
     fhChargedLeadingDeltaPt(0),fhChargedLeadingDeltaPhi(0),fhChargedLeadingDeltaEta(0),
     fhChargedLeadingRatioPt(0),
     fhNeutralLeadingPt(0),fhNeutralLeadingPhi(0),fhNeutralLeadingEta(0),
     fhNeutralLeadingDeltaPt(0),fhNeutralLeadingDeltaPhi(0),fhNeutralLeadingDeltaEta(0),
     fhNeutralLeadingRatioPt(0),fhChargedLeadingXi(0), fhNeutralLeadingXi(0),
+	fhChargedLeadingDeltaPhiRatioPt30(0), fhNeutralLeadingDeltaPhiRatioPt30(0),
+	fhChargedLeadingDeltaPhiRatioPt50(0), fhNeutralLeadingDeltaPhiRatioPt50(0),
+    //Jet
     fhJetPt(0),fhJetRatioPt(0),fhJetDeltaPhi(0), fhJetDeltaEta(0),
     fhJetLeadingRatioPt(0),fhJetLeadingDeltaPhi(0),fhJetLeadingDeltaEta(0),
     fhJetFFz(0),fhJetFFxi(0),fhJetFFpt(0),fhJetNTracksInCone(0),
@@ -153,6 +157,7 @@ AliAnaParticleJetLeadingConeCorrelation::AliAnaParticleJetLeadingConeCorrelation
   fSelectIsolated(jetlc.fSelectIsolated),    
   //Histograms
   fOutCont(jetlc. fOutCont),
+  //Leading
   fhChargedLeadingPt(jetlc.fhChargedLeadingPt), fhChargedLeadingPhi(jetlc.fhChargedLeadingPhi),
   fhChargedLeadingEta(jetlc.fhChargedLeadingEta), fhChargedLeadingDeltaPt(jetlc.fhChargedLeadingDeltaPt),
   fhChargedLeadingDeltaPhi(jetlc.fhChargedLeadingDeltaPhi),fhChargedLeadingDeltaEta(jetlc.fhChargedLeadingDeltaEta),
@@ -162,6 +167,9 @@ AliAnaParticleJetLeadingConeCorrelation::AliAnaParticleJetLeadingConeCorrelation
   fhNeutralLeadingDeltaPhi(jetlc.fhNeutralLeadingDeltaPhi),fhNeutralLeadingDeltaEta(jetlc.fhNeutralLeadingDeltaEta),
   fhNeutralLeadingRatioPt(jetlc.fhNeutralLeadingRatioPt),
   fhChargedLeadingXi(jetlc.fhChargedLeadingXi), fhNeutralLeadingXi(jetlc.fhNeutralLeadingXi),
+  fhChargedLeadingDeltaPhiRatioPt30(jetlc.fhChargedLeadingDeltaPhiRatioPt30), fhNeutralLeadingDeltaPhiRatioPt30(jetlc.fhNeutralLeadingDeltaPhiRatioPt30),
+  fhChargedLeadingDeltaPhiRatioPt50(jetlc.fhChargedLeadingDeltaPhiRatioPt50), fhNeutralLeadingDeltaPhiRatioPt50(jetlc.fhNeutralLeadingDeltaPhiRatioPt50),
+  //Jet
   fhJetPt(jetlc.fhJetPt),fhJetRatioPt(jetlc.fhJetRatioPt),fhJetDeltaPhi(jetlc.fhJetDeltaPhi), 
   fhJetDeltaEta(jetlc.fhJetDeltaEta), fhJetLeadingRatioPt(jetlc.fhJetLeadingRatioPt),
   fhJetLeadingDeltaPhi(jetlc.fhJetLeadingDeltaPhi),fhJetLeadingDeltaEta(jetlc.fhJetLeadingDeltaEta),
@@ -289,6 +297,10 @@ AliAnaParticleJetLeadingConeCorrelation & AliAnaParticleJetLeadingConeCorrelatio
   fhChargedLeadingXi = jetlc.fhChargedLeadingXi; 
   fhNeutralLeadingXi = jetlc.fhNeutralLeadingXi;
 
+  fhChargedLeadingDeltaPhiRatioPt30 = jetlc.fhChargedLeadingDeltaPhiRatioPt30; 
+  fhNeutralLeadingDeltaPhiRatioPt30 = jetlc.fhNeutralLeadingDeltaPhiRatioPt30;
+  fhChargedLeadingDeltaPhiRatioPt50 = jetlc.fhChargedLeadingDeltaPhiRatioPt50; 
+  fhNeutralLeadingDeltaPhiRatioPt50 = jetlc.fhNeutralLeadingDeltaPhiRatioPt50;	
 	
   fhJetPt = jetlc.fhJetPt;fhJetRatioPt = jetlc.fhJetRatioPt;fhJetDeltaPhi = jetlc.fhJetDeltaPhi; 
   fhJetDeltaEta = jetlc.fhJetDeltaEta; fhJetLeadingRatioPt = jetlc.fhJetLeadingRatioPt;
@@ -514,6 +526,17 @@ TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
   fOutCont->Add(fhChargedLeadingRatioPt) ;
   fOutCont->Add(fhChargedLeadingXi) ;
 	
+  fhChargedLeadingDeltaPhiRatioPt30  = new TH2F("ChargedLeadingDeltaPhiRatioPt30","#phi_{trigger} - #phi_{#pi^{0}} vs p_{T leading}/p_{T trigger}, charged leading, p_{T trigger} > 30 GeV/c",120,0,TMath::TwoPi(),nptbins,0,1); 
+  fhChargedLeadingDeltaPhiRatioPt30->SetXTitle("#Delta #phi (rad)");
+  fhChargedLeadingDeltaPhiRatioPt30->SetYTitle("p_{T leading} / p_{T trigger}");	
+	
+  fhChargedLeadingDeltaPhiRatioPt50  = new TH2F("ChargedLeadingDeltaPhiRatioPt50","#phi_{trigger} - #phi_{#pi^{0}} vs p_{T leading}/p_{T trigger}, charged leading, p_{T trigger} > 50 GeV/c",120,0,TMath::TwoPi(),nptbins,0,1); 
+  fhChargedLeadingDeltaPhiRatioPt50->SetXTitle("#Delta #phi (rad)");
+  fhChargedLeadingDeltaPhiRatioPt50->SetYTitle("p_{T leading} / p_{T trigger}");	  
+	
+  fOutCont->Add(fhChargedLeadingDeltaPhiRatioPt30) ; 
+  fOutCont->Add(fhChargedLeadingDeltaPhiRatioPt50) ; 
+	
   if(!fJetsOnlyInCTS){
     
     fhNeutralLeadingPt  = new TH2F("NeutralLeadingPt","p_{T leading #pi^{0}} vs p_{T trigger}",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
@@ -556,6 +579,17 @@ TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
     fOutCont->Add(fhNeutralLeadingDeltaEta) ; 
     fOutCont->Add(fhNeutralLeadingRatioPt) ;
     fOutCont->Add(fhNeutralLeadingXi) ;
+	  
+	fhNeutralLeadingDeltaPhiRatioPt30  = new TH2F("NeutralLeadingDeltaPhiRatioPt30","#phi_{trigger} - #phi_{#pi^{0}} vs p_{T leading}/p_{T trigger}, neutral leading, p_{T trigger} > 30 GeV/c",120,0,TMath::TwoPi(),nptbins,0,1); 
+	fhNeutralLeadingDeltaPhiRatioPt30->SetXTitle("#Delta #phi (rad)");
+	fhNeutralLeadingDeltaPhiRatioPt30->SetYTitle("p_{T leading} / p_{T trigger}");
+	  
+	fhNeutralLeadingDeltaPhiRatioPt50  = new TH2F("NeutralLeadingDeltaPhiRatioPt50","#phi_{trigger} - #phi_{#pi^{0}} vs p_{T leading}/p_{T trigger}, neutral leading, p_{T trigger} > 50 GeV/c",120,0,TMath::TwoPi(),nptbins,0,1); 
+	fhNeutralLeadingDeltaPhiRatioPt50->SetXTitle("#Delta #phi (rad)");
+	fhNeutralLeadingDeltaPhiRatioPt50->SetYTitle("p_{T leading} / p_{T trigger}");
+	fOutCont->Add(fhNeutralLeadingDeltaPhiRatioPt30) ; 
+	fOutCont->Add(fhNeutralLeadingDeltaPhiRatioPt50) ; 
+
   }
   
   if(!fSeveralConeAndPtCuts){// not several cones
@@ -1322,6 +1356,8 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms()
 	fhChargedLeadingDeltaEta->Fill(pt,eta-etaL);
 	fhChargedLeadingRatioPt->Fill(pt,ptL/pt);
 	fhChargedLeadingXi->Fill(pt,TMath::Log(pt/ptL));
+	if(pt > 30) fhChargedLeadingDeltaPhiRatioPt30->Fill(TMath::Abs(phi-phiL),ptL/pt);
+	if(pt > 50) fhChargedLeadingDeltaPhiRatioPt50->Fill(TMath::Abs(phi-phiL),ptL/pt);
       }
       else if(det== "EMCAL"){
 	fhNeutralLeadingPt->Fill(pt,ptL);
@@ -1332,6 +1368,9 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms()
 	fhNeutralLeadingDeltaEta->Fill(pt,eta-etaL);
 	fhNeutralLeadingRatioPt->Fill(pt,ptL/pt);
 	fhNeutralLeadingXi->Fill(pt,TMath::Log(pt/ptL));
+	if(pt > 30) fhNeutralLeadingDeltaPhiRatioPt30->Fill(TMath::Abs(phi-phiL),ptL/pt);
+	if(pt > 50) fhNeutralLeadingDeltaPhiRatioPt50->Fill(TMath::Abs(phi-phiL),ptL/pt);
+
       }
       
       //Fill Jet histograms

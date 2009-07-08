@@ -718,9 +718,9 @@ void  AliAnaElectron::Terminate(TList* outputList)
   //Do some plots to end
   //Recover histograms from output histograms list, needed for
   //distributed analysis.                
-  //  ReadHistograms(outputList);
+  //ReadHistograms(outputList);
 
-  printf(" AliAnaElectron::Terminate()  *** %s Report:", GetName()) ;
+  printf(" AliAnaElectron::Terminate()  *** %s Report: %d outputs", GetName(), outputList->GetEntries()) ;
 
 }
 
