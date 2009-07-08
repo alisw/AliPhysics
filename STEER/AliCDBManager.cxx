@@ -1097,7 +1097,7 @@ void AliCDBManager::UnloadFromCache(const char* path){
 			AliDebug(2, Form("Unloading object \"%s\" from cache", path));
 			TObjString pathStr(path);
 			AliCDBEntry *entry = dynamic_cast<AliCDBEntry*> (fEntryCache.GetValue(&pathStr));
-			if(entry) delete entry;
+			if(entry && !fEntryCache.IsOwnerValue()) delete entry;
 			delete fEntryCache.Remove(&pathStr);
 		} else {
 			AliError(Form("Cache does not contain object \"%s\"!", path))
@@ -1116,7 +1116,7 @@ void AliCDBManager::UnloadFromCache(const char* path){
 			AliDebug(2, Form("Unloading object \"%s\" from cache", entryPath.GetPath().Data()));
 			TObjString pathStr(entryPath.GetPath().Data());
 			AliCDBEntry *entry = dynamic_cast<AliCDBEntry*> (fEntryCache.GetValue(&pathStr));
-			if(entry) delete entry;
+			if(entry && !fEntryCache.IsOwnerValue()) delete entry;
 			delete fEntryCache.Remove(&pathStr);
 		}
 	}
