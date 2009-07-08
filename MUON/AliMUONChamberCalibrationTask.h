@@ -58,6 +58,10 @@ class AliMUONChamberCalibrationTask : public AliAnalysisTaskSE
   UInt_t BuildClusterMap( AliMUONTrack &track );
 
  private:
+  /// Not implemented
+  AliMUONChamberCalibrationTask(const AliMUONChamberCalibrationTask& right);
+  /// Not implemented
+  AliMUONChamberCalibrationTask&  operator = (const AliMUONChamberCalibrationTask& right);
 
   char* fOCDBPath;                      //!< default path to the condition database
   Calibration_t fCalibChoice;           //!< calibration option

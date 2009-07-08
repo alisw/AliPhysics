@@ -76,14 +76,16 @@ ClassImp( AliMUONChamberCalibrationTask )
 //______________________________________________________________
 AliMUONChamberCalibrationTask::AliMUONChamberCalibrationTask():
   AliAnalysisTaskSE( "AliMUONChamberCalibrationTask" ),
+  fOCDBPath( "local://$ALICE_ROOT/OCDB" ),
   fCalibChoice(NOGAIN),
-  fCalibData(0x0),
   fClusterInfoTree(0x0),
+  fMuonRecoParam(0x0),
+  fClusterInfo(0x0),
+  fCalibData(0x0),
+  fESDInterface(0x0),
   fDigitStore(0x0),
   fESDInputHandler(0x0),
-  fESDInputEvent(0x0),
-  fMuonRecoParam(0x0),
-  fOCDBPath( "local://$ALICE_ROOT/OCDB" )
+  fESDInputEvent(0x0)
 {
   //
   /// Default constructor
@@ -99,12 +101,16 @@ AliMUONChamberCalibrationTask::AliMUONChamberCalibrationTask( const char* name,
 							      char* ocdbpath,
 							      const Int_t my_calib_option ):
   AliAnalysisTaskSE( name ),
-  fCalibData(0x0),
+  fOCDBPath( "local://$ALICE_ROOT/OCDB" ),
+  fCalibChoice(NOGAIN),
   fClusterInfoTree(0x0),
+  fMuonRecoParam(0x0),
+  fClusterInfo(0x0),
+  fCalibData(0x0),
+  fESDInterface(0x0),
   fDigitStore(0x0),
   fESDInputHandler(0x0),
-  fESDInputEvent(0x0),
-  fMuonRecoParam(0x0)
+  fESDInputEvent(0x0)
 {
   //
   /// constructor
@@ -129,9 +135,9 @@ AliMUONChamberCalibrationTask::~AliMUONChamberCalibrationTask()
   /// destructor
   //
 
-  if ( fMuonRecoParam ) delete fMuonRecoParam;
-  if ( fClusterInfo ) delete fClusterInfo;
-  if ( fESDInterface ) delete fESDInterface;
+  delete fMuonRecoParam;
+  delete fClusterInfo;
+  delete fESDInterface;
 
 }
 //______________________________________________________________
