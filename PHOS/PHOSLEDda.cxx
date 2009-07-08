@@ -51,6 +51,17 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+  /* Retrieve ZS parameters from DAQ DB */
+  const char* zsfile = "zs.txt";
+  int failZS = daqDA_DB_getFile(zsfile, zsfile);
+  
+  Int_t offset,threshold;
+  
+  if(!failZS) {
+    FILE *f = fopen(zsfile,"r");
+    int scan = fscanf(f,"%d %d",&offset,&threshold);
+  }
+
   /* Retrieve mapping files from DAQ DB */ 
   const char* mapFiles[4] = {"RCU0.data","RCU1.data","RCU2.data","RCU3.data"};
 
@@ -156,6 +167,12 @@ int main(int argc, char **argv) {
       AliCaloRawStreamV3 stream(rawReader,"PHOS",mapping);
       AliPHOSRawFitterv0 fitter;
       fitter.SubtractPedestals(kTRUE); // assume that data is non-ZS
+
+      if(!failZS) {
+	fitter.SubtractPedestals(kFALSE);
+	fitter.SetAmpOffset(offset);
+	fitter.SetAmpThreshold(threshold);
+      }
       
       while (stream.NextDDL()) {
 	while (stream.NextChannel()) {
