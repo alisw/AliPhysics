@@ -466,11 +466,6 @@ void AliMUONQADataMakerRec::InitRaws()
  
   TString boardName = "Local board Id";
   
-	if ( ! AliCDBManager::Instance()->GetDefaultStorage() )
-	{
-		AliError("CDB default storage not set. Cannot work.");
-	}
-	
 	TH3F* h3 = new TH3F("hTriggerScalersBendPlane", "Trigger scaler counts in bending plane",
 			    4, 10.5, 14.5,
 			    234, 0.5, 234.5,
@@ -528,7 +523,7 @@ void AliMUONQADataMakerRec::InitRaws()
   fTrackerDataMaker = new AliMUONTrackerDataMaker(GetMUONRecoParam(),
                                                   AliCDBManager::Instance()->GetRun(),
                                                   0x0,
-                                                  AliCDBManager::Instance()->GetDefaultStorage()->GetURI(),
+                                                  "",
                                                   "NOGAIN",
                                                   histogram,
                                                   0.0,0.0);

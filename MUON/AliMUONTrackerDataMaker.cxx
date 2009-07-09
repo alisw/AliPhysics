@@ -211,12 +211,17 @@ AliMUONTrackerDataMaker::Ctor(const AliMUONRecoParam* recoParam,
     // out of sync)
     // But with the current CDBManager implementation, I don't know how to solve
     // this better (e.g. to avoid clearing cache messages and so on).
+
+    AliCDBStorage* storage(0x0);
     
-    AliCDBStorage* storage = AliCDBManager::Instance()->GetDefaultStorage();
-    
-    if ( storage->GetURI() != fOCDBPath.Data() ) 
+    if ( fOCDBPath.Length() > 0 )
     {
-      AliCDBManager::Instance()->SetDefaultStorage(fOCDBPath.Data());
+      storage = AliCDBManager::Instance()->GetDefaultStorage();
+
+      if ( storage && ( storage->GetURI() != fOCDBPath.Data() ) )
+      {
+        AliCDBManager::Instance()->SetDefaultStorage(fOCDBPath.Data());
+      }
     }
     
     fCalibrationData->Pedestals();
@@ -225,7 +230,7 @@ AliMUONTrackerDataMaker::Ctor(const AliMUONRecoParam* recoParam,
     fCalibrationData->HV();
     fCalibrationData->Capacitances();
     
-    if ( storage->GetURI() != fOCDBPath.Data() ) 
+    if ( storage && ( storage->GetURI() != fOCDBPath.Data() ) )
     {
       AliCDBManager::Instance()->SetDefaultStorage(storage);
     }
