@@ -377,7 +377,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
           }
           if(k<knZDCch){
             pedCalib->SetMeanPed(k,pedVal[k][0]);
-            pedCalib->SetMeanPedWidth(i,pedVal[k][1]);
+            pedCalib->SetMeanPedWidth(k,pedVal[k][1]);
           }
           else if(k>=knZDCch && k<(2*knZDCch)){
             pedCalib->SetOOTPed(k-knZDCch,pedVal[k][0]);
