@@ -153,11 +153,17 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	if (pTPCParam) {
 	  arg+=" -timebins "; arg+=pTPCParam->GetMaxTBin()+1;
 	}
-	if (!rawReader) {
+	if (!rawReader && runloader) {
 	  arg+=" -do-mc";
 	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), arg.Data());
 	} else {
+#ifndef HAVE_NOT_ALTRORAWSTREAMV3
+	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinder32Bit", publisher.Data(), arg.Data());
+#else
+	  // using the AltroDecoder if the official V3 decoder is not
+	  // available in the offline code
 	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderDecoder", publisher.Data(), arg.Data());
+#endif 
 	}
 	if (trackerInput.Length()>0) trackerInput+=" ";
 	trackerInput+=cf;
@@ -179,7 +185,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     // the esd converter configuration
     TString converterInput="TPC-globalmerger";
-    if (!rawReader) {
+    if (!rawReader && runloader) {
       // propagate cluster info to the esd converter in order to fill the MC information
       handler->CreateConfiguration("TPC-clustermc-info", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLMCINFO' 'TPC '");  
       handler->CreateConfiguration("TPC-mcTrackMarker","TPCTrackMCMarker","TPC-globalmerger TPC-clustermc-info","" );
@@ -241,7 +247,7 @@ const char* AliHLTTPCAgent::GetRequiredComponentLibraries() const
   // actually, the TPC library has dependencies to Util and RCU
   // so the two has to be loaded anyhow before we get here
   //return "libAliHLTUtil.so libAliHLTRCU.so";
-  return NULL;
+  return "libAliHLTUtil.so";
 }
 
 int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
