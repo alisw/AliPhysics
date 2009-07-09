@@ -57,7 +57,8 @@ public:
   virtual ~AliITSQADataMakerRec(); // dtor
  Short_t GetSubDet(){return fSubDetector;};
  Int_t GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task);
-	TH2F *GetITSGlobalHisto(Int_t layer);
+ TH2F *GetITSGlobalHisto(Int_t layer);
+ static Bool_t IsEqual(Double_t a1, Double_t a2);
 
 
 private:

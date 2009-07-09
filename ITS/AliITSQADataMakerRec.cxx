@@ -303,6 +303,9 @@ void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeRecPoints(clustersTree);
 
+
+
+
 	// Check id histograms already created for this Event Specie
 	TBranch *branchRecP = clustersTree->GetBranch("ITSRecPoints");
 	if (!branchRecP) {
@@ -322,13 +325,16 @@ void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 		AliITSgeomTGeo::GetModuleId(module, lay, lad, det);
 		for(Int_t j=0;j<recpoints->GetEntries();j++){
 			AliITSRecPoint *rcp = (AliITSRecPoint*)recpoints->At(j);    
-			// Check id histograms already created for this Event Specie
+			//Check id histograms already created for this Event Specie
 			rcp->GetGlobalXYZ(cluGlo);
 			Double_t rad=TMath::Sqrt(cluGlo[0]*cluGlo[0]+cluGlo[1]*cluGlo[1]);
 			Double_t phi= TMath::Pi() + TMath::ATan2(-cluGlo[1],-cluGlo[0]);
 			Double_t theta = TMath::ACos(cluGlo[2]/rad);
 			Double_t eta = 100.;
-			if(rad != 0) eta = -TMath::Log(TMath::Tan(theta/2.));
+			if(IsEqual(rad,0.) == kFALSE) {
+			  if(theta<=1.e-14){ eta=30.; }
+			  else { eta = -TMath::Log(TMath::Tan(theta/2.));}
+			}
 			(GetRecPointsData( rcp->GetLayer() + offset - 6))->Fill(eta,phi);
 		}
 	}
@@ -349,8 +355,15 @@ void AliITSQADataMakerRec::FillRecPoint(AliITSRecPoint rcp)
 	Double_t phi= TMath::Pi() + TMath::ATan2(-cluGlo[1],-cluGlo[0]);
 	Double_t theta = TMath::ACos(cluGlo[2]/rad);
 	Double_t eta = 100.;
+	if(IsEqual(rad,0.)==kFALSE) {
+	  if(theta<=1.e-14){eta=30.;}
+	  else    {eta = -TMath::Log(TMath::Tan(theta/2.));}
+	}
+	(GetRecPointsData( rcp.GetLayer() + offset - 6))->Fill(eta,phi);	
+	/*
 	if(rad != 0) eta = -TMath::Log(TMath::Tan(theta/2.));
 	(GetRecPointsData( rcp.GetLayer() + offset - 6))->Fill(eta,phi);
+	*/
 }
 
 //____________________________________________________________________________ 
@@ -641,3 +654,12 @@ Int_t AliITSQADataMakerRec::GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t t
     }
   //return offset;
 }
+
+//____________________________________________________________________
+
+Bool_t AliITSQADataMakerRec::IsEqual(Double_t a1,Double_t a2)
+{
+  const Double_t kEpsilon= 0.000000001;
+  return TMath::Abs(a1-a2)<=kEpsilon*TMath::Abs(a1);      
+}
+

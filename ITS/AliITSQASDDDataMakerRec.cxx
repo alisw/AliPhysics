@@ -143,11 +143,13 @@ void AliITSQASDDDataMakerRec::StartOfDetectorCycle()
 //____________________________________________________________________________ 
 void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t /*task*/, TObjArray* /*list*/)
 {
+  
   // launch the QA checking
 	if(fkOnline) {
 		AnalyseBNG(); // Analyse Baseline, Noise, Gain
 		AnalyseINJ(); // Analyse Injectors
 	}
+  
 	AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
 }
 
@@ -198,14 +200,14 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   TH2D *hphil3 = new TH2D("SDDphizL3","SDD #varphiz Layer3 ",6,0.5,6.5,14,0.5,14.5);
   hphil3->GetXaxis()->SetTitle("z[#Module L3 ]");
   hphil3->GetYaxis()->SetTitle("#varphi[#Ladder L3]");
-   rv = fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hphil3)),1+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, image, saveCorr); 
+   rv = fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hphil3)),1+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, saveCorr); 
   delete hphil3;
   fSDDhRawsTask++;
   
   TH2D *hphil4 = new TH2D("SDDphizL4","SDD #varphiz Layer4 ",8,0.5,8.5,22,0.5,22.5); 
   hphil4->GetXaxis()->SetTitle("z[#Module L4]");
   hphil4->GetYaxis()->SetTitle("#varphi[#Ladder L4]");
-   rv = fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hphil4)),2+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, image, saveCorr); 
+   rv = fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hphil4)),2+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, saveCorr); 
   delete hphil4;
   fSDDhRawsTask++;
   
