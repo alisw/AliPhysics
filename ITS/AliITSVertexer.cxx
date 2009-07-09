@@ -86,7 +86,7 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
     multReco.LoadClusterFiredChips(itsClusterTree);
     Short_t nfcL1 = multReco.GetNFiredChips(0);
     Short_t nfcL2 = multReco.GetNFiredChips(1);
-    fMult = new AliMultiplicity(0,0,0,0,0,0,0,0,0,nfcL1,nfcL2,fastOrFiredMap);
+    fMult = new AliMultiplicity(0,0,0,0,0,0,0,0,0,0,nfcL1,nfcL2,fastOrFiredMap);
     return;
   }
 
@@ -103,15 +103,17 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   Int_t notracks=multReco.GetNTracklets();
   Float_t *tht = new Float_t [notracks];
   Float_t *phi = new Float_t [notracks];
+  Float_t *dtht = new Float_t [notracks];
   Float_t *dphi = new Float_t [notracks];
   Int_t *labels = new Int_t[notracks];
   Int_t *labelsL2 = new Int_t[notracks];
   for(Int_t i=0;i<multReco.GetNTracklets();i++){
     tht[i] = multReco.GetTracklet(i)[0];
     phi[i] =  multReco.GetTracklet(i)[1];
+    dtht[i] = multReco.GetTracklet(i)[3];
     dphi[i] = multReco.GetTracklet(i)[2];
-    labels[i] = static_cast<Int_t>(multReco.GetTracklet(i)[3]);
-    labelsL2[i] = static_cast<Int_t>(multReco.GetTracklet(i)[4]);
+    labels[i] = static_cast<Int_t>(multReco.GetTracklet(i)[4]);
+    labelsL2[i] = static_cast<Int_t>(multReco.GetTracklet(i)[5]);
   }
   Int_t nosingleclus=multReco.GetNSingleClusters();
   Float_t *ths = new Float_t [nosingleclus];
@@ -122,10 +124,11 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   }
   Short_t nfcL1 = multReco.GetNFiredChips(0);
   Short_t nfcL2 = multReco.GetNFiredChips(1);
-  fMult = new AliMultiplicity(notracks,tht,phi,dphi,labels,labelsL2,nosingleclus,ths,phs,nfcL1,nfcL2,fastOrFiredMap);
+  fMult = new AliMultiplicity(notracks,tht,phi,dtht,dphi,labels,labelsL2,nosingleclus,ths,phs,nfcL1,nfcL2,fastOrFiredMap);
 
   delete [] tht;
   delete [] phi;
+  delete [] dtht;
   delete [] dphi;
   delete [] ths;
   delete [] phs;

@@ -12,6 +12,7 @@ AliMultiplicity::AliMultiplicity():
   fLabelsL2(0),
   fTh(0),
   fPhi(0),
+  fDeltTh(0),
   fDeltPhi(0),
   fThsingle(0),
   fPhisingle(0),
@@ -23,7 +24,7 @@ AliMultiplicity::AliMultiplicity():
 }
 
 //______________________________________________________________________
-AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *df, Int_t *labels, Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2, TBits fFastOr):
+AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *dth, Float_t *dph, Int_t *labels, Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2, TBits fFastOr):
   TObject(),
   fNtracks(ntr),
   fNsingle(ns),
@@ -31,6 +32,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *d
   fLabelsL2(0),
   fTh(0),
   fPhi(0),
+  fDeltTh(0),
   fDeltPhi(0),
   fThsingle(0),
   fPhisingle(0),
@@ -42,11 +44,13 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *d
     fLabelsL2 = new Int_t[ntr];
     fTh = new Double_t [ntr];
     fPhi = new Double_t [ntr];
+    fDeltTh = new Double_t [ntr];
     fDeltPhi = new Double_t [ntr];
     for(Int_t i=0;i<fNtracks;i++){
-      fTh[i]=t[i];
+      fTh[i]=th[i];
       fPhi[i]=ph[i];
-      fDeltPhi[i]=df[i];
+      fDeltTh[i]=dth[i];
+      fDeltPhi[i]=dph[i];
       fLabels[i] = labels[i];
       fLabelsL2[i] = labelsL2[i];
     }
@@ -73,6 +77,7 @@ AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
   fLabelsL2(0),
   fTh(0),
   fPhi(0),
+  fDeltTh(0),
   fDeltPhi(0),
   fThsingle(0),
   fPhisingle(0),
@@ -90,6 +95,7 @@ AliMultiplicity &AliMultiplicity::operator=(const AliMultiplicity& m){
 
   if(fTh)delete [] fTh;fTh = 0;
   if(fPhi)delete [] fPhi;fPhi = 0; 
+  if(fDeltTh)delete [] fDeltTh;fDeltTh= 0; 
   if(fDeltPhi)delete [] fDeltPhi;fDeltPhi = 0; 
   if(fLabels)delete [] fLabels;fLabels = 0;
   if(fLabelsL2)delete [] fLabelsL2;fLabelsL2 = 0;
@@ -121,6 +127,7 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   if(fNtracks>0){
     fTh = new Double_t[fNtracks];
     fPhi = new Double_t[fNtracks];
+    fDeltTh = new Double_t[fNtracks];
     fDeltPhi = new Double_t[fNtracks];
     fLabels = new Int_t[fNtracks];
     fLabelsL2 = new Int_t[fNtracks];
@@ -128,6 +135,7 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   else {
     fTh = 0;
     fPhi = 0;
+    fDeltTh = 0;
     fDeltPhi = 0;
     fLabels = 0;
     fLabelsL2 = 0;
@@ -143,6 +151,7 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   }
   if(m.fTh)memcpy(fTh,m.fTh,fNtracks*sizeof(Double_t));
   if(m.fPhi)memcpy(fPhi,m.fPhi,fNtracks*sizeof(Double_t));
+  if(m.fDeltTh)memcpy(fDeltTh,m.fDeltTh,fNtracks*sizeof(Double_t));
   if(m.fDeltPhi)memcpy(fDeltPhi,m.fDeltPhi,fNtracks*sizeof(Double_t));
   if(m.fLabels)memcpy(fLabels,m.fLabels,fNtracks*sizeof(Int_t));
   if(m.fLabelsL2)memcpy(fLabelsL2,m.fLabelsL2,fNtracks*sizeof(Int_t));
@@ -160,6 +169,7 @@ AliMultiplicity::~AliMultiplicity(){
   // Destructor
   if(fTh)delete [] fTh;fTh = 0;
   if(fPhi)delete [] fPhi;fPhi = 0; 
+  if(fDeltTh)delete [] fDeltTh;fDeltTh = 0; 
   if(fDeltPhi)delete [] fDeltPhi;fDeltPhi = 0; 
   if(fLabels)delete [] fLabels;fLabels = 0;
   if(fLabelsL2)delete [] fLabelsL2;fLabelsL2 = 0;

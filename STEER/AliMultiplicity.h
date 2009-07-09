@@ -16,7 +16,7 @@ class AliMultiplicity : public TObject {
 
   AliMultiplicity();               // default constructor
   // standard constructor
-  AliMultiplicity(Int_t ntr,Float_t *t, Float_t *ph, Float_t *df, Int_t *labels,
+  AliMultiplicity(Int_t ntr,Float_t *th, Float_t *ph, Float_t *dth, Float_t *dph, Int_t *labels,
          Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2, TBits fFastOrFiredChips);
   AliMultiplicity(const AliMultiplicity& m);
   AliMultiplicity& operator=(const AliMultiplicity& m);
@@ -27,9 +27,11 @@ class AliMultiplicity : public TObject {
   Double_t GetTheta(Int_t i) const { if(i>=0 && i<fNtracks) {return fTh[i];}
   else {Error("GetTheta","Invalid track number %d",i); return -9999.;}}
   Double_t GetEta(Int_t i) const { if(i>=0 && i<fNtracks) {return -TMath::Log(TMath::Tan(fTh[i]/2.));}
-  else {Error("GetTheta","Invalid track number %d",i); return -9999.;}}
+  else {Error("GetEta","Invalid track number %d",i); return -9999.;}}
   Double_t GetPhi(Int_t i) const { if(i>=0 && i<fNtracks) {return fPhi[i];}
   else {Error("GetPhi","Invalid track number %d",i); return -9999.;}}
+  Double_t GetDeltaTheta(Int_t i) const {if(i>=0 && i<fNtracks) {return fDeltTh[i];}
+  else {Error("GetDeltaTheta","Invalid track number %d",i); return -9999.;}}
   Double_t GetDeltaPhi(Int_t i) const {if(i>=0 && i<fNtracks) {return fDeltPhi[i];}
   else {Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;}}
 
@@ -59,6 +61,7 @@ class AliMultiplicity : public TObject {
   Int_t *fLabelsL2;          //[fNtracks] array with labels of cluster in L2 used for tracklet
   Double32_t *fTh;           //[fNtracks] array with theta values
   Double32_t *fPhi;          //[fNtracks] array with phi values
+  Double32_t *fDeltTh;       //[fNtracks] array with delta theta values
   Double32_t *fDeltPhi;      //[fNtracks] array with delta phi values
   Double32_t *fThsingle;     //[fNsingle] array with theta values of L1 clusters
   Double32_t *fPhisingle;    //[fNsingle] array with phi values of L2 clusters
@@ -66,7 +69,7 @@ class AliMultiplicity : public TObject {
 
   TBits fFastOrFiredChips;   // Map of FastOr fired chips
 
-  ClassDef(AliMultiplicity,8);
+  ClassDef(AliMultiplicity,9);
 };
 
 inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const

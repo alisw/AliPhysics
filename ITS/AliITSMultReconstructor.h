@@ -5,20 +5,19 @@
 
 /* $Id$ */
 
-/////////////////////////////////////////////////////////////////////////
+//_________________________________________________________________________
 // 
-// AliITSMultReconstructor - find clusters in the pixels (theta and
-// phi) and tracklets.
-// 
-// These can be used to extract charged particles multiplcicity from the ITS.
+//        Implementation of the ITS-SPD trackleter class
 //
-// A tracklet consist of two ITS clusters, one in the first pixel
-// layer and one in the second. The clusters are associates if the 
-// differencies in Phi (azimuth) and Theta (polar) are inside 
-// a fiducial volume. In case of multiple candidates it is selected the
-// candidate with minimum distance in Phi. 
+// It retrieves clusters in the pixels (theta and phi) and finds tracklets.
+// These can be used to extract charged particle multiplicity from the ITS.
 //
-/////////////////////////////////////////////////////////////////////////
+// A tracklet consists of two ITS clusters, one in the first pixel layer and 
+// one in the second. The clusters are associated if the differences in 
+// Phi (azimuth) and Theta (polar angle) are within fiducial windows.
+// In case of multiple candidates the candidate with minimum
+// distance is selected. 
+//_________________________________________________________________________
 
 #include "TObject.h"
 
@@ -41,6 +40,7 @@ public:
   // Following members are set via AliITSRecoParam
   void SetPhiWindow(Float_t w=0.08) {fPhiWindow=w;}
   void SetThetaWindow(Float_t w=0.025) {fThetaWindow=w;}
+  void SetPhiShift(Float_t w=0.0045) {fPhiShift=w;}
   void SetRemoveClustersFromOverlaps(Bool_t b = kFALSE) {fRemoveClustersFromOverlaps = b;}
   void SetPhiOverlapCut(Float_t w=0.005) {fPhiOverlapCut=w;}
   void SetZetaOverlapCut(Float_t w=0.05) {fZetaOverlapCut=w;}
@@ -83,7 +83,8 @@ protected:
  
   // Following members are set via AliITSRecoParam
   Float_t       fPhiWindow;                    // Search window in phi
-  Float_t       fThetaWindow;                  // Search window in eta
+  Float_t       fThetaWindow;                  // Search window in theta
+  Float_t       fPhiShift;                     // Phi shift reference value (at 0.5 T) 
   Bool_t        fRemoveClustersFromOverlaps;   // Option to skip clusters in the overlaps
   Float_t       fPhiOverlapCut;                // Fiducial window in phi for overlap cut
   Float_t       fZetaOverlapCut;               // Fiducial window in eta for overlap cut
@@ -106,7 +107,7 @@ protected:
 
   void LoadClusterArrays(TTree* tree);
 
-  ClassDef(AliITSMultReconstructor,5)
+  ClassDef(AliITSMultReconstructor,6)
 };
 
 #endif

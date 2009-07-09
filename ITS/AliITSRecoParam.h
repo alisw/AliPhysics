@@ -330,8 +330,10 @@ class AliITSRecoParam : public AliDetectorRecoParam
   // SPD Tracklets (D. Elia)
   void    SetTrackleterPhiWindow(Float_t w=0.08) {fTrackleterPhiWindow=w;}
   void    SetTrackleterThetaWindow(Float_t w=0.025) {fTrackleterThetaWindow=w;}
+  void    SetTrackleterPhiShift(Float_t w=0.0045) {fTrackleterPhiShift=w;}
   Float_t GetTrackleterPhiWindow() const {return fTrackleterPhiWindow;}
   Float_t GetTrackleterThetaWindow() const {return fTrackleterThetaWindow;}
+  Float_t GetTrackleterPhiShift() const {return fTrackleterPhiShift;}
   void    SetTrackleterRemoveClustersFromOverlaps(Bool_t use=kTRUE) { fTrackleterRemoveClustersFromOverlaps=use; return; }
   Bool_t  GetTrackleterRemoveClustersFromOverlaps() const { return fTrackleterRemoveClustersFromOverlaps; }
   void    SetTrackleterPhiOverlapCut(Float_t w=0.005) {fTrackleterPhiOverlapCut=w;}
@@ -564,7 +566,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   // SPD Tracklets (D. Elia)
   Float_t fTrackleterPhiWindow;                    // Search window in phi
-  Float_t fTrackleterThetaWindow;                   // Search window in eta
+  Float_t fTrackleterThetaWindow;                   // Search window in theta
+  Float_t fTrackleterPhiShift;                     // Phi shift reference value (at 0.5 T) 
   Bool_t  fTrackleterRemoveClustersFromOverlaps;   // Option to skip clusters in the overlaps
   Float_t fTrackleterPhiOverlapCut;                // Fiducial window in phi for overlap cut
   Float_t fTrackleterZetaOverlapCut;               // Fiducial window in eta for overlap cut
@@ -602,7 +605,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,25) // ITS reco parameters
+  ClassDef(AliITSRecoParam,26) // ITS reco parameters
 };
 
 #endif

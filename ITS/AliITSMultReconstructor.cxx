@@ -19,16 +19,16 @@
 // 
 //        Implementation of the ITS-SPD trackleter class
 //
-// Retrieves clusters in the pixels (theta and phi) and tracklets.
-// These can be used to extract charged particle multiplcicity from the ITS.
+// It retrieves clusters in the pixels (theta and phi) and finds tracklets.
+// These can be used to extract charged particle multiplicity from the ITS.
 //
-// A tracklet consist of two ITS clusters, one in the first pixel layer and 
-// one in the second. The clusters are associates if the differencies in 
-// Phi (azimuth) and Theta (polar) are within fiducial values.
-// In case of multiple candidates it is selected the candidate with minimum
-// distance. 
+// A tracklet consists of two ITS clusters, one in the first pixel layer and 
+// one in the second. The clusters are associated if the differences in 
+// Phi (azimuth) and Theta (polar angle) are within fiducial windows.
+// In case of multiple candidates the candidate with minimum
+// distance is selected. 
 //
-// Two methods return the number of traklets and the number of unassociated 
+// Two methods return the number of tracklets and the number of unassociated 
 // clusters (i.e. not used in any tracklet) in the first SPD layer
 // (GetNTracklets and GetNSingleClusters)
 //
@@ -48,10 +48,12 @@
 //     - cluster coordinates taken with GetGlobalXYZ()
 //     - fGeometry removed
 //     - number of fired chips on the two layers
-//     - option to avoid duplicates in the overlaps (fRemoveClustersFromOverlaps)
+//     - option to cut duplicates in the overlaps
 //     - options and fiducial cuts via AliITSRecoParam
-//     - move from DeltaZeta to DeltaTheta cut (M. Nicassio)
-//     - update to the new algo (M. Nicassio, J.F.Grosse-Oetringhaus)
+//     - move from DeltaZeta to DeltaTheta cut
+//     - update to the new algorithm by Mariella and Jan Fiete
+//     - store also DeltaTheta in the ESD 
+//     - less new and delete calls when creating the needed arrays
 //_________________________________________________________________________
 
 #include <TClonesArray.h>
@@ -66,8 +68,8 @@
 #include "AliITSRecPoint.h"
 #include "AliITSgeom.h"
 #include "AliLog.h"
-//#include "TGeoGlobalMagField.h"
-//#include "AliMagF.h"
+#include "TGeoGlobalMagField.h"
+#include "AliMagF.h"
 
 //____________________________________________________________________
 ClassImp(AliITSMultReconstructor)
@@ -90,6 +92,7 @@ fNTracklets(0),
 fNSingleCluster(0),
 fPhiWindow(0),
 fThetaWindow(0),
+fPhiShift(0),
 fRemoveClustersFromOverlaps(0),
 fPhiOverlapCut(0),
 fZetaOverlapCut(0),
@@ -117,61 +120,49 @@ fhphiClustersLay1(0){
   if(AliITSReconstructor::GetRecoParam()) { 
     SetPhiWindow(AliITSReconstructor::GetRecoParam()->GetTrackleterPhiWindow());
     SetThetaWindow(AliITSReconstructor::GetRecoParam()->GetTrackleterThetaWindow());
+    SetPhiShift(AliITSReconstructor::GetRecoParam()->GetTrackleterPhiShift());
     SetRemoveClustersFromOverlaps(AliITSReconstructor::GetRecoParam()->GetTrackleterRemoveClustersFromOverlaps());
     SetPhiOverlapCut(AliITSReconstructor::GetRecoParam()->GetTrackleterPhiOverlapCut());
     SetZetaOverlapCut(AliITSReconstructor::GetRecoParam()->GetTrackleterZetaOverlapCut());
   } else {
     SetPhiWindow();
     SetThetaWindow();
+    SetPhiShift();
     SetRemoveClustersFromOverlaps();
     SetPhiOverlapCut();
     SetZetaOverlapCut();
   } 
   
 
-  fClustersLay1              = new Float_t*[300000];
-  fClustersLay2              = new Float_t*[300000];
-  fDetectorIndexClustersLay1 = new Int_t[300000];
-  fDetectorIndexClustersLay2 = new Int_t[300000];
-  fOverlapFlagClustersLay1   = new Bool_t[300000];
-  fOverlapFlagClustersLay2   = new Bool_t[300000];
-  fTracklets                 = new Float_t*[300000];
-  fSClusters                 = new Float_t*[300000];
-
-  for(Int_t i=0; i<300000; i++) {
-    fClustersLay1[i]       = new Float_t[6];
-    fClustersLay2[i]       = new Float_t[6];
-    fTracklets[i]          = new Float_t[6];
-    fSClusters[i]           = new Float_t[2];
-    fOverlapFlagClustersLay1[i]   = kFALSE;
-    fOverlapFlagClustersLay2[i]   = kFALSE;
-  }
+  fClustersLay1              = 0;
+  fClustersLay2              = 0;
+  fDetectorIndexClustersLay1 = 0;
+  fDetectorIndexClustersLay2 = 0;
+  fOverlapFlagClustersLay1   = 0;
+  fOverlapFlagClustersLay2   = 0;
+  fTracklets                 = 0;
+  fSClusters                 = 0;
 
   // definition of histograms
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  
   fhClustersDPhiAcc   = new TH1F("dphiacc",  "dphi",  100,-0.1,0.1);
-  fhClustersDPhiAcc->SetDirectory(0);
   fhClustersDThetaAcc = new TH1F("dthetaacc","dtheta",100,-0.1,0.1);
-  fhClustersDThetaAcc->SetDirectory(0);
 
   fhDPhiVsDThetaAcc = new TH2F("dphiVsDthetaAcc","",100,-0.1,0.1,100,-0.1,0.1);
-  fhDPhiVsDThetaAcc->SetDirectory(0);
 
   fhClustersDPhiAll   = new TH1F("dphiall",  "dphi",  100,0.0,0.5);
-  fhClustersDPhiAll->SetDirectory(0);
   fhClustersDThetaAll = new TH1F("dthetaall","dtheta",100,0.0,0.5);
-  fhClustersDThetaAll->SetDirectory(0);
 
   fhDPhiVsDThetaAll = new TH2F("dphiVsDthetaAll","",100,0.,0.5,100,0.,0.5);
-  fhDPhiVsDThetaAll->SetDirectory(0);
 
   fhetaTracklets  = new TH1F("etaTracklets",  "eta",  100,-2.,2.);
-  fhetaTracklets->SetDirectory(0);
   fhphiTracklets  = new TH1F("phiTracklets",  "phi",  100, 0., 2*TMath::Pi());
-  fhphiTracklets->SetDirectory(0);
   fhetaClustersLay1  = new TH1F("etaClustersLay1",  "etaCl1",  100,-2.,2.);
-  fhetaClustersLay1->SetDirectory(0);
   fhphiClustersLay1  = new TH1F("phiClustersLay1", "phiCl1", 100, 0., 2*TMath::Pi());
-  fhphiClustersLay1->SetDirectory(0);
+  
+  TH1::AddDirectory(oldStatus);
 }
 
 //______________________________________________________________________
@@ -190,6 +181,7 @@ fNTracklets(mr.fNTracklets),
 fNSingleCluster(mr.fNSingleCluster),
 fPhiWindow(mr.fPhiWindow),
 fThetaWindow(mr.fThetaWindow),
+fPhiShift(mr.fPhiShift),
 fRemoveClustersFromOverlaps(mr.fRemoveClustersFromOverlaps),
 fPhiOverlapCut(mr.fPhiOverlapCut),
 fZetaOverlapCut(mr.fZetaOverlapCut),
@@ -233,12 +225,18 @@ AliITSMultReconstructor::~AliITSMultReconstructor(){
   delete fhphiClustersLay1;
 
   // delete arrays
-  for(Int_t i=0; i<300000; i++) {
+  for(Int_t i=0; i<fNClustersLay1; i++)
     delete [] fClustersLay1[i];
+    
+  for(Int_t i=0; i<fNClustersLay2; i++)
     delete [] fClustersLay2[i];
+    
+  for(Int_t i=0; i<fNTracklets; i++)
     delete [] fTracklets[i];
+    
+  for(Int_t i=0; i<fNSingleCluster; i++)
     delete [] fSClusters[i];
-  }
+    
   delete [] fClustersLay1;
   delete [] fClustersLay2;
   delete [] fDetectorIndexClustersLay1;
@@ -271,6 +269,26 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
   LoadClusterArrays(clusterTree);
 
   const Double_t pi = TMath::Pi();
+  
+  // dPhi shift is field dependent
+  // get average magnetic field
+  Float_t bz = 0;
+  AliMagF* field = 0;
+  if (TGeoGlobalMagField::Instance())
+    field = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
+  if (!field)
+  {
+    AliError("Could not retrieve magnetic field. Assuming no field. Delta Phi shift will be deactivated in AliITSMultReconstructor.")
+  }
+  else
+    bz = TMath::Abs(field->SolenoidField());
+  
+  const Double_t dPhiShift = fPhiShift / 5 * bz; 
+  AliDebug(1, Form("Using phi shift of %f", dPhiShift));
+  
+  const Double_t dPhiWindow2 = fPhiWindow * fPhiWindow;
+  const Double_t dThetaWindow2 = fThetaWindow * fThetaWindow;
+  
   Int_t* partners = new Int_t[fNClustersLay2];
   Float_t* minDists = new Float_t[fNClustersLay2];
   Int_t* associatedLay1 = new Int_t[fNClustersLay1];
@@ -287,7 +305,7 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
 
   // find the tracklets
   AliDebug(1,"Looking for tracklets... ");  
-
+  
   //###########################################################
   // Loop on layer 1 : finding theta, phi and z 
   for (Int_t iC1=0; iC1<fNClustersLay1; iC1++) {    
@@ -295,13 +313,11 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
     Float_t y = fClustersLay1[iC1][1] - vtx[1];
     Float_t z = fClustersLay1[iC1][2] - vtx[2];
 
-    Float_t r    = TMath::Sqrt(TMath::Power(x,2) +
-			       TMath::Power(y,2) +
-			       TMath::Power(z,2));
+    Float_t r    = TMath::Sqrt(x*x + y*y + z*z);
     
     fClustersLay1[iC1][0] = TMath::ACos(z/r);                   // Store Theta
     fClustersLay1[iC1][1] = TMath::Pi() + TMath::ATan2(-y,-x);  // Store Phi
- 
+    
     if (fHistOn) {
       Float_t eta=fClustersLay1[iC1][0];
       eta= TMath::Tan(eta/2.);
@@ -317,9 +333,7 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
     Float_t y = fClustersLay2[iC2][1] - vtx[1];
     Float_t z = fClustersLay2[iC2][2] - vtx[2];
    
-    Float_t r    = TMath::Sqrt(TMath::Power(x,2) +
-			       TMath::Power(y,2) +
-			       TMath::Power(z,2));
+    Float_t r    = TMath::Sqrt(x*x + y*y + z*z);
     
     fClustersLay2[iC2][0] = TMath::ACos(z/r);                   // Store Theta
     fClustersLay2[iC2][1] = TMath::Pi() + TMath::ATan2(-y,-x);  // Store Phi
@@ -328,7 +342,6 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
   //###########################################################
   Int_t found = 1;
   while (found > 0) {
-    //Printf("Iteration...");
     found = 0;
 
     // Step1: find all tracklets allowing double assocation
@@ -366,23 +379,20 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
 	Double_t dPhi  = TMath::Abs(fClustersLay2[iC2][1] - fClustersLay1[iC1][1]);
         // take into account boundary condition
         if (dPhi>pi) dPhi=2.*pi-dPhi;
-
-        // Account for B-field shifting dphi ? ...
-        // Double_t pos[3]={0.,0.,0.};
-        // Double_t B[3]={0.,0.,0.};
-        // TGeoGlobalMagField::Instance()->Field(pos,B);
-        // if (B[2]=!0) dPhi-=0.005; // field dependent
-
+        
  	if (fHistOn) {
 	  fhClustersDPhiAll->Fill(dPhi);
 	  fhClustersDThetaAll->Fill(dTheta);    
 	  fhDPhiVsDThetaAll->Fill(dTheta, dPhi);
 	}
+        
+        dPhi -= dPhiShift;
+                
 	// make "elliptical" cut in Phi and Theta! 
-	Float_t d = TMath::Power(dPhi/fPhiWindow,2) + TMath::Power(dTheta/fThetaWindow,2);
+	Float_t d = dPhi*dPhi/dPhiWindow2 + dTheta*dTheta/dThetaWindow2;
 
 	// look for the minimum distance: the minimum is in iC2WithBestDist
-       	if (d<1 && d<minDist ) {
+       	if (d<1 && d<minDist) {
 	  minDist=d;
 	  iC2WithBestDist = iC2;
 	}
@@ -399,7 +409,7 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
           associatedLay1[iC1] = 1;
           
           if (oldPartner != -1) {
-            // redo partner search for cluster in L0 (oldPartner), putting this one (best1) on its blacklist
+            // redo partner search for cluster in L0 (oldPartner), putting this one (iC2WithBestDist) on its blacklist
             if (blacklist[oldPartner] == 0) {
               blacklist[oldPartner] = new TArrayI(1);
             } else blacklist[oldPartner]->Set(blacklist[oldPartner]->GetSize()+1);
@@ -407,14 +417,15 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
             blacklist[oldPartner]->AddAt(iC2WithBestDist, blacklist[oldPartner]->GetSize()-1);
 
             // mark as free
-            associatedLay1[iC1] = 0;
+            associatedLay1[oldPartner] = 0;
           }
         } else {
           // try again to find a cluster without considering iC2WithBestDist 
           if (blacklist[iC1] == 0) {
             blacklist[iC1] = new TArrayI(1);
           }
-          else blacklist[iC1]->Set(blacklist[iC1]->GetSize()+1);
+          else 
+            blacklist[iC1]->Set(blacklist[iC1]->GetSize()+1);
    
           blacklist[iC1]->AddAt(iC2WithBestDist, blacklist[iC1]->GetSize()-1);
         } 
@@ -429,12 +440,11 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
 
     if (partners[iC2] == -1) continue;
 
-    //Printf("Tracklet7: %d %d %f %d %d %f %f %f", partners[iC2], iC2, minDists[iC2], (Int_t) fClustersLay1[partners[iC2]][3], (Int_t) fClustersLay2[iC2][3], fClustersLay1[partners[iC2]][0], fClustersLay2[iC2][0], fClustersLay1[partners[iC2]][1]);
- 
-
     if (fOverlapFlagClustersLay1[partners[iC2]] || fOverlapFlagClustersLay2[iC2]) continue;
     if (fRemoveClustersFromOverlaps) FlagClustersInOverlapRegions (partners[iC2],iC2);
 
+    fTracklets[fNTracklets] = new Float_t[6];
+  
     // use the theta from the clusters in the first layer
     fTracklets[fNTracklets][0] = fClustersLay1[partners[iC2]][0];
     // use the phi from the clusters in the first layer
@@ -500,6 +510,7 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
   // store the cluster
   for (Int_t iC1=0; iC1<fNClustersLay1; iC1++) {
     if (associatedLay1[iC1]==2||associatedLay1[iC1]==0) { 
+      fSClusters[fNSingleCluster] = new Float_t[2];
       fSClusters[fNSingleCluster][0] = fClustersLay1[iC1][0];
       fSClusters[fNSingleCluster][1] = fClustersLay1[iC1][1];
       AliDebug(1,Form(" Adding a single cluster %d (cluster %d  of layer 1)",
@@ -515,7 +526,6 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
     if (blacklist[i])
       delete blacklist[i];
   delete[] blacklist;
-
 
   AliDebug(1,Form("%d tracklets found", fNTracklets));
 }
@@ -546,7 +556,57 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
   Int_t nItsSubs = (Int_t)itsClusterTree->GetEntries();  
   Float_t cluGlo[3]={0.,0.,0.};
  
+
+  // count clusters
   // loop over the its subdetectors
+  for (Int_t iIts=0; iIts < nItsSubs; iIts++) {
+    if (!itsClusterTree->GetEvent(iIts)) 
+      continue;
+    
+    Int_t nClusters = itsClusters->GetEntriesFast();
+    // loop over clusters
+    while(nClusters--) {
+      AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);
+      
+      Int_t layer = cluster->GetLayer();
+      if (layer == 0)
+        fNClustersLay1++;
+      else if (layer == 1)
+        fNClustersLay2++;
+    }
+  }
+  
+  // create arrays
+  fClustersLay1              = new Float_t*[fNClustersLay1];
+  fDetectorIndexClustersLay1 = new Int_t[fNClustersLay1];
+  fOverlapFlagClustersLay1   = new Bool_t[fNClustersLay1];
+  
+  fClustersLay2              = new Float_t*[fNClustersLay2];
+  fDetectorIndexClustersLay2 = new Int_t[fNClustersLay2];
+  fOverlapFlagClustersLay2   = new Bool_t[fNClustersLay2];
+  
+  // no double association allowed
+  fTracklets                 = new Float_t*[TMath::Min(fNClustersLay1, fNClustersLay2)];
+  fSClusters                 = new Float_t*[fNClustersLay1];
+  
+  for (Int_t i=0; i<fNClustersLay1; i++) {
+    fClustersLay1[i]       = new Float_t[6];
+    fOverlapFlagClustersLay1[i]   = kFALSE;
+    fSClusters[i] = 0;
+  } 
+ 
+  for (Int_t i=0; i<fNClustersLay2; i++) {
+    fClustersLay2[i]       = new Float_t[6];
+    fOverlapFlagClustersLay2[i]   = kFALSE;
+  } 
+ 
+  for (Int_t i=0; i<TMath::Min(fNClustersLay1, fNClustersLay2); i++)
+    fTracklets[i] = 0;
+    
+  // fill clusters
+  // loop over the its subdetectors
+  fNClustersLay1 = 0; // reset to 0
+  fNClustersLay2 = 0;
   for (Int_t iIts=0; iIts < nItsSubs; iIts++) {
     
     if (!itsClusterTree->GetEvent(iIts)) 
