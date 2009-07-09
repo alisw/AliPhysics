@@ -592,10 +592,12 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * /*matrix*/, Int
   //
   //
   //
+  
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
   if (!transform) {
-    AliFatal("Tranformations not in calibDB");
+    AliFatal("Tranformations not in calibDB");    
   }
+  transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
   Double_t x[3]={c.GetRow(),c.GetPad(),c.GetTimeBin()};
   Int_t i[1]={fSector};
   transform->Transform(x,i,0,1);

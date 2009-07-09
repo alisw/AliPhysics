@@ -1324,6 +1324,7 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   if (!transform) {
     AliFatal("Tranformations not in calibDB");
   }
+  transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
   Int_t i[1]={cluster->GetDetector()};
   transform->Transform(x,i,0,1);  
