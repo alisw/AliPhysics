@@ -81,7 +81,7 @@ AliFMDRawReader::AliFMDRawReader(AliRawReader* reader, TTree* tree)
     // fSampleRate(1),
     fData(0),
     fNbytes(0), 
-    fSeen()
+    fSeen(0)
 {
   // Default CTOR
   for (Int_t i = 0; i < 3; i++) { 

@@ -159,7 +159,7 @@ protected:
       fReader(0), 
       fData(0),
       fNbytes(0), 
-      fSeen()
+      fSeen(0)
   {}
   AliFMDRawReader& operator=(const AliFMDRawReader&) { return *this; }
   ULong_t GetNwords() const {return fNbytes / 4;}
