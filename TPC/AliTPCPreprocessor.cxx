@@ -1012,7 +1012,7 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS)
  AliTPCCalPad *FPED=0;
  AliTPCCalPad *masked=0;
 
- AliCDBEntry* entry = GetFromOCDB("Calib", "Altro");
+ AliCDBEntry* entry = GetFromOCDB("Calib", "AltroConfig");
  if (entry) altroObjects = (TObjArray*)entry->GetObject();
  if ( altroObjects==NULL ) {
      Log("AliTPCPreprocsessor: No previous TPC altro calibration entry available.\n");
