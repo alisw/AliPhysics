@@ -808,7 +808,6 @@ UInt_t AliTPCPreprocessor::ExtractRaw(Int_t sourceFXS)
 	  break;
 	}
        rawArray->Add(calRaw);
-       delete calRaw;
        f->Close();
       }
      ++index;
