@@ -135,14 +135,14 @@ void TestZDCPreprocessor(Int_t obj=0)
   //
   // Check the file which should have been created
   AliCDBEntry* chkEntry0 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/ChMap", 0);
+  			->Get("Calib/ChMap", 0);
   AliCDBEntry* chkEntry1;
   if(obj==1) chkEntry1 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/Pedestals", 0);
+  			->Get("Calib/Pedestals", 0);
   else if(obj==2) chkEntry1 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/LaserCalib", 0);
+  			->Get("Calib/LaserCalib", 0);
   else if(obj==3) chkEntry1 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/EnergyCalib", 0);
+  			->Get("Calib/EnergyCalib", 0);
   
   
   if(!chkEntry0){
