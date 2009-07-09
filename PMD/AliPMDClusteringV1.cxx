@@ -119,7 +119,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
   Double_t edepcell[kNMX];
   
   
-  Double_t *cellenergy = new Double_t [11424];
+  Double_t cellenergy[11424];
   
 
   // call the isolated cell search method
@@ -178,11 +178,9 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
     }
   
   for (i = 0; i < kNMX; i++)
-  {
-    edepcell[i] = cellenergy[i];
-  }
-
-  delete [] cellenergy;
+    {
+      edepcell[i] = cellenergy[i];
+    }
 
   Int_t iord1[kNMX];
   TMath::Sort((Int_t)kNMX,edepcell,iord1);// order the data
@@ -784,14 +782,14 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 		  
 		  if(rr==0)
 		    {
-		      ncell[kcl] = 1.;
+		      ncell[kcl]     = 1.;
 		      totaladc[kcl]  = z1;
-		      totaladc2[kcl]  = pow(z1,2);
-		      ax[kcl] =  x1 * z1;
-		      ay[kcl] =  y1 * z1;
-		      ax2[kcl]=  0.;
-		      ay2[kcl]=  0.;
-		      status[j] = 1;
+		      totaladc2[kcl] = z1*z1;
+		      ax[kcl]        = x1 * z1;
+		      ay[kcl]        = y1 * z1;
+		      ax2[kcl]       = 0.;
+		      ay2[kcl]       = 0.;
+		      status[j]      = 1;
 		    }
 		}
 	    }
@@ -832,11 +830,11 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 		  x2 = xc[maxweight];
 		  y2 = yc[maxweight];
 		  totaladc[maxweight]  +=  z1;
-		  ax[maxweight]        +=  x1 * z1;
-		  ay[maxweight]        +=  y1 * z1;
-		  totaladc2[maxweight] +=  pow(z1,2);
-		  ax2[maxweight]       +=  z1 * pow((x1-x2),2);
-		  ay2[maxweight]       +=  z1 * pow((y1-y2),2);
+		  ax[maxweight]        +=  x1*z1;
+		  ay[maxweight]        +=  y1*z1;
+		  totaladc2[maxweight] +=  z1*z1;
+		  ax2[maxweight]       +=  z1*(x1-x2)*(x1-x2);
+		  ay2[maxweight]       +=  z1*(y1-y2)*(y1-y2);
 		  ncell[maxweight]++;
 
 		}
@@ -844,23 +842,25 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	  
 	  for(Int_t kcl = 0; kcl <= ig; kcl++)
 	    {
-
-	      if(totaladc[kcl]>0){
-		if(totaladc[kcl]>0.)xclust[kcl] = (ax[kcl])/ totaladc[kcl];
-		if(totaladc[kcl]>0.)yclust[kcl] = (ay[kcl])/ totaladc[kcl];
-		
-		//natasha
-		if(totaladc2[kcl] >= pow(totaladc[kcl],2))
-		  {
-		    sigxclust[kcl] = 0.25;
-		    sigyclust[kcl] = 0.25;
-		  }
-		else
-		  {
-		    sigxclust[kcl] = (totaladc[kcl]/(pow(totaladc[kcl],2)-totaladc2[kcl]))*ax2[kcl];
-		    sigyclust[kcl] = (totaladc[kcl]/(pow(totaladc[kcl],2)-totaladc2[kcl]))*ay2[kcl];
-		  }	
-	      }
+	      
+	      if(totaladc[kcl] > 0.)
+		{
+		  xclust[kcl] = (ax[kcl])/ totaladc[kcl];
+		  yclust[kcl] = (ay[kcl])/ totaladc[kcl];
+		  
+		  //natasha
+		  Float_t sqtotadc = totaladc[kcl]*totaladc[kcl];
+		  if(totaladc2[kcl] >= sqtotadc)
+		    {
+		      sigxclust[kcl] = 0.25;
+		      sigyclust[kcl] = 0.25;
+		    }
+		  else
+		    {
+		      sigxclust[kcl] = (totaladc[kcl]/(sqtotadc-totaladc2[kcl]))*ax2[kcl];
+		      sigyclust[kcl] = (totaladc[kcl]/(sqtotadc-totaladc2[kcl]))*ay2[kcl];
+		    }	
+		}
 	      
 	      for(j = 0; j < cellCount[kcl]; j++) clno++; 
 	      
@@ -873,21 +873,21 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 	      clusdata[1] = yclust[kcl];
 	      clusdata[2] = totaladc[kcl];
 	      clusdata[3] = ncell[kcl];
-
-
+	      
+	      
 	      if(sigxclust[kcl] > sigyclust[kcl]) 
 		{
-		  clusdata[4] = pow(sigxclust[kcl],0.5);
-		  clusdata[5] = pow(sigyclust[kcl],0.5);
+		  clusdata[4] = TMath::Sqrt(sigxclust[kcl]);
+		  clusdata[5] = TMath::Sqrt(sigyclust[kcl]);
 		}
 	      else
 		{
-		  clusdata[4] = pow(sigyclust[kcl],0.5);
-		  clusdata[5] = pow(sigxclust[kcl],0.5);
+		  clusdata[4] = TMath::Sqrt(sigyclust[kcl]);
+		  clusdata[5] = TMath::Sqrt(sigxclust[kcl]);
 		}
 	      
 	      clxy[0] = tc[kcl];
-
+	      
 	      Int_t Ncell=1;
 	      for (Int_t ii = 0; ii < cellCount[kcl]; ii++)
 		{
@@ -897,7 +897,7 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
 		      Ncell++;
 		    }
 		} 
-
+	      
 	      pmdcludata = new AliPMDcludata(clusdata,clxy);
 	      fPMDclucont->Add(pmdcludata);
 	    }
