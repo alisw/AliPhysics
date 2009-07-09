@@ -1959,8 +1959,7 @@ Bool_t AliSimulation::CreateHLT()
     return kFALSE;
   }
   if (fctVersion()!= ALIHLTSIMULATION_LIBRARY_VERSION) {
-    AliError(Form("%s version does not match: compiled for version %d, loaded %d", ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_LIBRARY_VERSION, fctVersion()));
-    return kFALSE;
+    AliWarning(Form("%s version does not match: compiled for version %d, loaded %d", ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_LIBRARY_VERSION, fctVersion()));
   }
 
   // print compile info
