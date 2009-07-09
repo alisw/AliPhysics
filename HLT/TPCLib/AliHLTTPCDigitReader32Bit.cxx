@@ -126,7 +126,7 @@ int AliHLTTPCDigitReader32Bit::InitBlock(void* ptr,unsigned long size, Int_t pat
 int AliHLTTPCDigitReader32Bit::Reset()
 {
   // see header file for class documentation
-  fRawReaderMemory->Reset();
+  fRawReaderMemory->ClearBuffers();
   return 0;
 }
 
