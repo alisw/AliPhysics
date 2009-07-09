@@ -304,6 +304,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 					      vector<AliHLTComponentBlockData>& outputBlocks )
 {
   // see header file for class documentation
+  int iResult=0;
 
   if(fReader == NULL){
     HLTFatal("Digit reader not initialized, skipping HLT TPC cluster reconstruction.");
@@ -398,6 +399,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	fClusterFinder->Read(iter->fPtr, iter->fSize );
 	fClusterFinder->ProcessDigits();
       }
+      fReader->Reset();
 
       realPoints = fClusterFinder->GetNumberOfClusters();
 	
@@ -426,7 +428,8 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	  Logging( kHLTLogFatal, "HLT::TPCClusterFinder::DoEvent", "Too much data", 
 		   "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.",
 		   tSize, size );
-	  return -ENOSPC;
+	  iResult=-ENOSPC;
+	  break;
 	}
 	
       if(fUnsorted && fGetActivePads){
@@ -461,13 +464,12 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	tSize+=nMCInfo*sizeof(AliHLTTPCClusterFinder::ClusterMCInfo);
 
       }
-
-      fReader->Reset();
     }
-    
-  size = tSize;
 
-  return 0;
+  if (iResult>=0)
+    size = tSize;
+
+  return iResult;
 }
 
 int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
