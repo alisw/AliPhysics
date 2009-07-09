@@ -61,7 +61,8 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   //
   // Setting up which output to give
   //
-  Bool_t bUseClusterFinderDecoder=kTRUE;
+  bool bUseClusterFinderDecoder=true;
+  bool bUseCA=true;   // use the CA tracker and merger
   TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=";
   Bool_t esdout=kFALSE, dumpout=kFALSE, histout=kFALSE, chout=kFALSE, cdout=kFALSE;
   TString allArgs=opt;
@@ -82,6 +83,14 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
 	  if (option.Length()>0) option+=",";
 	  option+="statraw";
 	}
+	continue;
+      }
+      if (argument.CompareTo("ca", TString::kIgnoreCase)==0) {
+	bUseCA=true;
+	continue;
+      } 
+      if (argument.CompareTo("cm", TString::kIgnoreCase)==0) {
+	bUseCA=false;
 	continue;
       }
       if (argument.CompareTo("decoder",TString::kIgnoreCase)==0) {
@@ -107,9 +116,15 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
       if (argument.CompareTo("esd",TString::kIgnoreCase)==0) {
 	esdout = kTRUE;
 	if (option.Length()>0) option+=",";
-	option+="sink1";
+	option+="esd-converter";
 	continue;
-      }      
+      }
+      if (argument.CompareTo("esdwrite",TString::kIgnoreCase)==0) {
+	esdout = kTRUE;
+	if (option.Length()>0) option+=",";
+	option+="esdfile";
+	continue;
+      }
       if (argument.CompareTo("clusterdump",TString::kIgnoreCase)==0) {
 	cdout = kTRUE;
 	if (option.Length()>0) option+=",";
@@ -129,7 +144,7 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
 	chout = kTRUE;
 	cdout = kTRUE;
 	if (option.Length()>0) option+=",";
-	option+="sink1,histFile,dump,cdump,chhisto";
+	option+="esd-converter,histFile,dump,cdump,chhisto";
 	continue;
       }
       else {
@@ -195,9 +210,14 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
       }
     }
     TString tracker;
-    // tracker finder components
+    // tracker components
     tracker.Form("TR_%02d", slice);
-    AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run -solenoidBz 0.5");
+    if (bUseCA) {
+      AliHLTConfiguration trackerconf(tracker.Data(), "TPCCATracker", trackerInput.Data(), "");
+    } else {
+      AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "-pp-run");
+    }
+
     if (writerInput.Length()>0) writerInput+=" ";
     writerInput+=tracker;
     if (mergerInput.Length()>0) mergerInput+=" ";
@@ -208,7 +228,11 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   }
 
   // GlobalMerger component
-  AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
+  if (bUseCA) {
+    AliHLTConfiguration mergerconf("globalmerger","TPCCAGlobalMerger",mergerInput.Data(),"");
+  } else {
+    AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
+  }
   
   //add all global tracks to histo input
   if (histoInput.Length()>0) histoInput+=" ";
@@ -221,16 +245,14 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   if(esdout){
     if (writeBlocks) {
       // the writer configuration
-      AliHLTConfiguration fwconf("sink1", "FileWriter"   , writerInput.Data(), "-specfmt=_%d -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+      AliHLTConfiguration fwconf("esdfile", "FileWriter"   , writerInput.Data(), "-specfmt=_%d -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
     } else {
            
-      //AliHLTConfiguration sink("sink1", "TPCEsdWriter"   , "globalmerger", "-datafile AliHLTESDs.root");
-      
       // the esd converter configuration
       AliHLTConfiguration esdcconf("esd-converter", "TPCEsdConverter"   , "globalmerger", "");
       
       // the root file writer configuration
-      AliHLTConfiguration sink("sink1", "EsdCollector"   , "esd-converter", "-directory hlt-tpc-esd");
+      AliHLTConfiguration sink("esdfile", "EsdCollector"   , "esd-converter", "-directory hlt-tpc-esd");
 
       // optional component statistics
       AliHLTConfiguration statroot("statroot", "StatisticsCollector"   , "esd-converter", "-file HLT.statistics.root -publish 0");
