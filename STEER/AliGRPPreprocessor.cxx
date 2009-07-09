@@ -541,7 +541,7 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs()
 		// Get the CTP counters information
 		TList* list = GetFileSources(kDCS,"CTP_xcounters");  
 		if (!list) {
-			Log("No CTP counters file: connection problems with DAQ FXS logbook!");
+			Log("No CTP counters file: connection problems with DCS FXS logbook!");
 			return 1;
 		}
 		
