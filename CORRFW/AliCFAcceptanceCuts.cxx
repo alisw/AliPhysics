@@ -246,7 +246,7 @@ void AliCFAcceptanceCuts::DefineHistograms() {
     else sprintf(str,"_cut");
     fhQA[kCutHitsITS] [i] = new TH1F(Form("%s_HitsITS%s"  ,GetName(),str),"",10,0,10);
     fhQA[kCutHitsTPC] [i] = new TH1F(Form("%s_HitsTPC%s"  ,GetName(),str),"",5,0,5);
-    fhQA[kCutHitsTRD] [i] = new TH1F(Form("%s_HitsTRD%s"  ,GetName(),str),"",10,0,10);
+    fhQA[kCutHitsTRD] [i] = new TH1F(Form("%s_HitsTRD%s"  ,GetName(),str),"",20,0,20);
     fhQA[kCutHitsTOF] [i] = new TH1F(Form("%s_HitsTOF%s"  ,GetName(),str),"",5,0,5);
     fhQA[kCutHitsMUON][i] = new TH1F(Form("%s_HitsMUON%s" ,GetName(),str),"",5,0,5);
   }
