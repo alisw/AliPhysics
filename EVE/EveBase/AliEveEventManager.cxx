@@ -1006,6 +1006,14 @@ AliMagF* AliEveEventManager::AssertMagField()
   if (fgMagField)
     return fgMagField;
 
+  if (TGeoGlobalMagField::Instance()->GetField())
+  {
+    fgMagField = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
+    if (fgMagField == 0)
+      throw kEH + "Global field set, but it is not AliMagF.";
+    return fgMagField;
+  }
+
   if (!fgGRPLoaded)
   {
     InitGRP();
