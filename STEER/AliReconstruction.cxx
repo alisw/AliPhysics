@@ -1012,7 +1012,11 @@ Bool_t AliReconstruction::InitGRP() {
        entry->SetOwner(0);
     }
 
-    AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
+    //    FIX ME: The unloading of GRP entry is temporarily disabled
+    //    because ZDC and VZERO are using it in order to initialize
+    //    their reconstructor objects. In the future one has to think
+    //    of propagating AliRunInfo to the reconstructors.
+    //    AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
   }
 
   if (!fGRPData) {
@@ -3251,7 +3255,11 @@ Bool_t AliReconstruction::InitRecoParams()
 	isOK = kFALSE;
       }
       entry->SetOwner(0);
-      AliCDBManager::Instance()->UnloadFromCache(path.GetPath());
+      //      FIX ME: We have to disable the unloading of reco-param CDB
+      //      entries because QA framework is using them. Has to be fix in
+      //      a way that the QA takes the objects already constructed in
+      //      this method.
+      //      AliCDBManager::Instance()->UnloadFromCache(path.GetPath());
     }
   }
 
