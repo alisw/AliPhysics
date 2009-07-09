@@ -77,7 +77,7 @@ fDriftTime(0.)
     Double_t lxyz[3] = {0, 0, 0};
     GetTracking2LocalMatrix()->LocalToMaster(txyz,lxyz);
     fXloc = lxyz[0]; fZloc = lxyz[2];
-    if(fLayer==5) hit[5]=-hit[5];
+    if(fLayer==4) hit[5]=-hit[5];
     if( (fLayer==4) || (fLayer==5) ) SetSigmaYZ(hit[5]); 
   }
   else {
