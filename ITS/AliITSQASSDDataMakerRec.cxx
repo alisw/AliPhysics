@@ -325,7 +325,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
   TH1D *fHistSSDDataSize = new TH1D("fHistSSDDataSize",
 				    "SSD Data Size;(SSD data size) [KB];Events",
 				    1000,0,500);
-  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDEventType)), 
+  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSize)), 
 				      fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+fSSDRawsOffset, expert, !image, !saveCorr);
 	delete fHistSSDDataSize;
   fSSDRawsOffset += 1;
