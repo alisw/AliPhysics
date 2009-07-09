@@ -37,9 +37,6 @@ TEveElementList* trd_detectors(Int_t sector = -1, TEveElement *cont = 0)
   // define EVE containers
   TEveElementList *list = new TEveElementList("TRD Detectors");
   
-  AliTRDgeometry *geo = new AliTRDgeometry();
-  //geo->CreateClusterMatrixArray();
-  
   AliEveTRDNode *sm = 0x0, *stk = 0x0; 
   AliEveTRDChamber *chm=0x0;
 
@@ -47,12 +44,16 @@ TEveElementList* trd_detectors(Int_t sector = -1, TEveElement *cont = 0)
   TObjArray *clusters = 0x0;
   rl->LoadRecPoints("TRD");
   TTree *tR = rl->GetTreeR("TRD", kFALSE);
+  if (!tR) return 0;
   tR->SetBranchAddress("TRDcluster", &clusters);
 
   rl->LoadDigits("TRD");
   TTree *tD = rl->GetTreeD("TRD", kFALSE);
+  if (!tD) return 0;
   AliTRDdigitsManager dm; dm.ReadDigits(tD);
 
+  AliTRDgeometry *geo = new AliTRDgeometry();
+  
   for(Int_t i=0; i<tR->GetEntries(); i++) {
     if (!tR->GetEvent(i)) continue;
     if(!clusters->GetEntries()) continue;
