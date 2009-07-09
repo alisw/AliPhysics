@@ -94,6 +94,7 @@ void AliCDBManager::InitFromCache(TMap *entryCache, Int_t run) {
   }
   // fEntry is the new owner of the cache
   fEntryCache.SetOwnerKeyValue(kTRUE,kTRUE);
+  entryCache->SetOwnerKeyValue(kFALSE,kFALSE);
   AliInfo(Form("%d cache entries have been loaded",fEntryCache.GetEntries()));
 }
 
@@ -135,7 +136,7 @@ AliCDBManager::AliCDBManager():
 	fActiveStorages.SetOwner(1);
 	fSpecificStorages.SetOwner(1);
 	fEntryCache.SetName("CDBEntryCache");
-	fEntryCache.SetOwner(1);
+	fEntryCache.SetOwnerKeyValue(kTRUE,kTRUE);
 
 	fStorageMap = new TMap();
 	fStorageMap->SetOwner(1);
@@ -1096,8 +1097,6 @@ void AliCDBManager::UnloadFromCache(const char* path){
 		if(fEntryCache.Contains(path)){
 			AliDebug(2, Form("Unloading object \"%s\" from cache", path));
 			TObjString pathStr(path);
-			AliCDBEntry *entry = dynamic_cast<AliCDBEntry*> (fEntryCache.GetValue(&pathStr));
-			if(entry && !fEntryCache.IsOwnerValue()) delete entry;
 			delete fEntryCache.Remove(&pathStr);
 		} else {
 			AliError(Form("Cache does not contain object \"%s\"!", path))
@@ -1115,8 +1114,6 @@ void AliCDBManager::UnloadFromCache(const char* path){
 		if(queryPath.Comprises(entryPath)) {
 			AliDebug(2, Form("Unloading object \"%s\" from cache", entryPath.GetPath().Data()));
 			TObjString pathStr(entryPath.GetPath().Data());
-			AliCDBEntry *entry = dynamic_cast<AliCDBEntry*> (fEntryCache.GetValue(&pathStr));
-			if(entry && !fEntryCache.IsOwnerValue()) delete entry;
 			delete fEntryCache.Remove(&pathStr);
 		}
 	}
