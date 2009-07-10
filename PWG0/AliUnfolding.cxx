@@ -47,7 +47,7 @@ Float_t AliUnfolding::fgMinuitStepSize = 0.1;                 // (usually not ne
 Bool_t AliUnfolding::fgNormalizeInput = kFALSE;                  // normalize input spectrum
 
 Float_t AliUnfolding::fgBayesianSmoothing  = 1;           // smoothing parameter (0 = no smoothing)
-Int_t   AliUnfolding::fgBayesianIterations = 10;         // number of iterations in Bayesian method
+Int_t   AliUnfolding::fgBayesianIterations = 10;          // number of iterations in Bayesian method
 
 Bool_t AliUnfolding::fgDebug = kFALSE;
 
@@ -407,7 +407,7 @@ Int_t AliUnfolding::UnfoldWithBayesian(TH2* correlation, TH1* aEfficiency, TH1* 
 
   for (Int_t t=0; t<kMaxT; t++)
   {
-    if (efficiency)
+    if (aEfficiency)
     {
       efficiency[t] = aEfficiency->GetBinContent(t+1);
     }
