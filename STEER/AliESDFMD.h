@@ -271,7 +271,7 @@ public:
   /** 
    * @return constant reference to pseudo-rapidity map 
    */
-  const AliFMDFloatMap& EtaMap() const { return fMultiplicity; }
+  const AliFMDFloatMap& EtaMap() const { return fEta; }
 protected:
   AliFMDFloatMap fMultiplicity;   // Psuedo multplicity per strip
   AliFMDFloatMap fEta;            // Psuedo-rapidity per strip
