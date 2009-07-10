@@ -131,7 +131,7 @@ void AliPHOSRawFitterv0::SetChannelGeo(const Int_t module, const Int_t cellX,
 }
 //-----------------------------------------------------------------------------
 
-Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t sigStart, Int_t sigLength)
+Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t /*sigStart*/, Int_t sigLength)
 {
   // Calculate signal parameters (energy, time, quality) from array of samples
   // Energy is a maximum sample minus pedestal 9
@@ -168,7 +168,7 @@ Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
     else //ZS
       if( (signal[i]-(Float_t)fAmpOffset    ) >kBaseLine ) fTime = (Double_t)i;
   }
-  fTime += sigStart;
+//   fTime += sigStart;
   
   fEnergy = (Double_t)maxSample;
   if (maxSample > 900 && nMax > 2) fOverflow = kTRUE;
