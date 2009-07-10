@@ -106,8 +106,8 @@ class AliEventTag : public TObject {
   void SetNumberOfFiredChipsLayer2(Int_t n) {fNumberOfFiredChipsLayer2 = n;}
   void SetNumberOfSPDTracklets(Int_t n) {fNumberOfSPDTracklets = n;}
 
-  void SetMTotV0A(Int_t mult) {fMTotV0A = mult;}
-  void SetMTotV0C(Int_t mult) {fMTotV0C = mult;}
+  void SetMTotV0A(Float_t mult) {fMTotV0A = mult;}
+  void SetMTotV0C(Float_t mult) {fMTotV0C = mult;}
   void SetNbPMV0A(Short_t npmt) {fNbPMV0A = npmt;}
   void SetNbPMV0C(Short_t npmt) {fNbPMV0C = npmt;}
   void SetEventId(Int_t /*id*/) {;}
@@ -191,8 +191,8 @@ class AliEventTag : public TObject {
   Int_t GetNumberOfFiredChipsLayer2() const {return fNumberOfFiredChipsLayer2;}
   Int_t GetNumberOfSPDTracklets() const {return fNumberOfSPDTracklets;}
 
-  Int_t GetMTotV0A() const {return fMTotV0A;}
-  Int_t GetMTotV0C() const {return fMTotV0C;}
+  Float_t GetMTotV0A() const {return fMTotV0A;}
+  Float_t GetMTotV0C() const {return fMTotV0C;}
   Short_t GetNbPMV0A() const {return fNbPMV0A;}
   Short_t GetNbPMV0C() const {return fNbPMV0C;}
 
@@ -276,12 +276,12 @@ class AliEventTag : public TObject {
   Int_t     fNumberOfFiredChipsLayer2;      //number of fired chips - layer 2
   Int_t     fNumberOfSPDTracklets;          //number of SPD tracklets
 
-  Int_t     fMTotV0A;                       //Total multiplicity in V0 A side
-  Int_t     fMTotV0C;                       //Total multiplicity in V0 C side
+  Float_t     fMTotV0A;                     //Total multiplicity in V0 A side
+  Float_t     fMTotV0C;                     //Total multiplicity in V0 C side
   Short_t   fNbPMV0A;                       //Total number of fired channels in V0 A side
   Short_t   fNbPMV0C;                       //Total number of fired channels in V0 C side
 
-  ClassDef(AliEventTag,13)  //(ClassName, ClassVersion)
+  ClassDef(AliEventTag,14)  //(ClassName, ClassVersion)
       };
 //___________________________________________________________________________
 
