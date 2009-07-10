@@ -22,11 +22,9 @@
 // of bunches in the signal.
 // 
 //     AliPHOSRawFitterv0 *fitterv0=new AliPHOSRawFitterv0();
-//     fitterv0->SetSamples(sig,sigStart,sigLength);
-//     fitterv0->SetNBunches(nBunches);
 //     fitterv0->SetChannelGeo(module,cellX,cellZ,caloFlag);
 //     fitterv0->SetCalibData(fgCalibData) ;
-//     fitterv0->Eval();
+//     fitterv0->Eval(sig,sigStart,sigLength);
 //     Double_t amplitude = fitterv0.GetEnergy();
 //     Double_t time      = fitterv0.GetTime();
 //     Bool_t   isLowGain = fitterv0.GetCaloFlag()==0;
@@ -120,20 +118,6 @@ AliPHOSRawFitterv0& AliPHOSRawFitterv0::operator = (const AliPHOSRawFitterv0 &ph
 
 //-----------------------------------------------------------------------------
 
-void AliPHOSRawFitterv0::SetSamples(const UShort_t *sig, Int_t sigStart, Int_t sigLength)
-{
-  // Set the sample array, its start and length in time bin units
-
-//   fStart   = sigStart;
-//   fLength  = sigLength;
-//   fSignal  = sig;
-//   fSignal  = new UShort_t[fLength];
-//   for (Int_t i=0; i<fLength; i++) {
-//     fSignal[i] = sig[i];
-//   }
-}
-//-----------------------------------------------------------------------------
-
 void AliPHOSRawFitterv0::SetChannelGeo(const Int_t module, const Int_t cellX,
 				     const Int_t cellZ,  const Int_t caloFlag)
 {
@@ -184,6 +168,7 @@ Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
     else //ZS
       if( (signal[i]-(Float_t)fAmpOffset    ) >kBaseLine ) fTime = (Double_t)i;
   }
+  fTime += sigStart;
   
   fEnergy = (Double_t)maxSample;
   if (maxSample > 900 && nMax > 2) fOverflow = kTRUE;

@@ -21,11 +21,9 @@
 // 
 // Typical use case:
 //     AliPHOSRawFitter *fitter=new AliPHOSRawFitter();
-//     fitter->SetSamples(sig,sigStart,sigLength);
-//     fitter->SetNBunches(nBunches);
 //     fitter->SetChannelGeo(module,cellX,cellZ,caloFlag);
 //     fitter->SetCalibData(fgCalibData) ;
-//     fitter->Eval();
+//     fitter->Eval(sig,sigStart,sigLength);
 //     Double_t amplitude = fitter.GetEnergy();
 //     Double_t time      = fitter.GetTime();
 //     Bool_t   isLowGain = fitter.GetCaloFlag()==0;

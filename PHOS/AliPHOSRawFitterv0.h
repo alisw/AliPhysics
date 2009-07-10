@@ -25,7 +25,6 @@ public:
   void SubtractPedestals(Bool_t subtract) {fPedSubtract  = subtract;}
   void SetAmpOffset     (Int_t extPed=5)  {fAmpOffset    = extPed ;}
   void SetAmpThreshold  (Int_t thr=5)     {fAmpThreshold = thr ;}
-  void SetSamples(const UShort_t *sig, Int_t sigStart, Int_t sigLength);
   void SetNBunches(const Int_t nBunches) { fNBunches = nBunches; }
   void SetChannelGeo(const Int_t module, const Int_t cellX,
 		     const Int_t cellZ,  const Int_t caloFlag);
@@ -45,13 +44,10 @@ public:
 
 protected:   
   
-//   UShort_t *fSignal;        // array of samples
   Int_t    fModule;         // PHOS module number
   Int_t    fCellX;          // cell number along X-axis
   Int_t    fCellZ;          // cell number along Z-axis
   Int_t    fCaloFlag;       // 0=LG, 1=HG, 2=TRU
-//   Int_t    fStart;          // time bin of start signal
-//   Int_t    fLength;         // signal length in time bins
   Int_t    fNBunches;       // number of bunches in a signal
   Bool_t   fPedSubtract;    // pedestals subtraction (kTRUE="yes")
   Double_t fEnergy;         // "digit" energy
