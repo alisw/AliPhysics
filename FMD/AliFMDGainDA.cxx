@@ -214,13 +214,13 @@ void AliFMDGainDA::Analyse(UShort_t det,
 	      << chi2ndf                     <<"\n";
   
   //due to RCU trouble, first strips on VAs are excluded
-  if(strip%128 != 0) {
+  // if(strip%128 != 0) {
     
-    fSummaryGains.SetBinContent(fCurrentSummaryStrip,fitFunc.GetParameter(1));
-    fSummaryGains.SetBinError(fCurrentSummaryStrip,fitFunc.GetParError(1));
-    
-    fCurrentSummaryStrip++;
-  }
+  fSummaryGains.SetBinContent(fCurrentSummaryStrip,fitFunc.GetParameter(1));
+  fSummaryGains.SetBinError(fCurrentSummaryStrip,fitFunc.GetParError(1));
+  
+  fCurrentSummaryStrip++;
+    // }
   if(fSaveHistograms) {
     gDirectory->cd(GetSectorPath(det,ring, sec, kTRUE));
     

@@ -34,6 +34,34 @@ int main(int argc, char **argv)
 					"TStreamerInfo",
 					"RIO",
 					"TStreamerInfo()");
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", "Minuit", 
+					"TMinuitMinimizer",
+					"Minuit", 
+					"TMinuitMinimizer(const char *)");
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", 
+					"GSLMultiMin", 
+					"ROOT::Math::GSLMinimizer",
+					"MathMore", 
+					"GSLMinimizer(const char *)");
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", 
+					"GSLMultiFit", 
+					"ROOT::Math::GSLNLSMinimizer",
+					"MathMore", "GSLNLSMinimizer(int)");
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", 
+					"GSLSimAn", 
+					"ROOT::Math::GSLSimAnMinimizer",
+					"MathMore", 
+					"GSLSimAnMinimizer(int)");
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", 
+					"Linear", 
+					"TLinearMinimizer",
+					"Minuit", 
+					"TLinearMinimizer(const char *)");
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", 
+					"Fumili", 
+					"TFumiliMinimizer",
+					"Fumili", 
+					"TFumiliMinimizer(int)");
   
   
   Bool_t diagnostics = kFALSE;

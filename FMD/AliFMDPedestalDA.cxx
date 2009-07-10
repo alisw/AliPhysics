@@ -209,7 +209,7 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
 	    << channel << ',' 
 	    << timebin << ','
 	    << mean    << ',' 
-	    << rms     << "\n"; break;
+	    << rms     << "\n";
     
     Float_t chi2ndf = 0;
     
@@ -293,10 +293,13 @@ void AliFMDPedestalDA::Terminate(TFile* diagFile)
     fNoiseSummary.Write();
   }
   AliFMDAltroMapping* map = AliFMDParameters::Instance()->GetAltroMap();
-  if(fZSfileFMD1.is_open()) FillinTimebins(fZSfileFMD1, map->Detector2DDL(1));
-  if(fZSfileFMD2.is_open()) FillinTimebins(fZSfileFMD2, map->Detector2DDL(2));
-  if(fZSfileFMD3.is_open()) FillinTimebins(fZSfileFMD3, map->Detector2DDL(3));
-  for (Int_t i = 0; i < 3; i++) {
+  for (Int_t i = 0; i < 3; i++) { 
+    std::ofstream& out = (i == 0 ? fZSfileFMD1 : 
+			  i == 1 ? fZSfileFMD2 : 
+			  fZSfileFMD3);
+    if (out.is_open() && fSeenDetectors[i]) { 
+      FillinTimebins(out, map->Detector2DDL(i+1));
+    }
     if (!fSeenDetectors[i]) {
       TString n(Form("ddl%d.csv",3072+map->Detector2DDL(i+1)));
       gSystem->Unlink(n.Data());

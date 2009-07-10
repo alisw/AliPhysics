@@ -34,10 +34,52 @@ int main(int argc, char **argv)
 					"TStreamerInfo",
 					"RIO",
 					"TStreamerInfo()");
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", "Minuit", 
+					"TMinuitMinimizer",
+					"Minuit", 
+					"TMinuitMinimizer(const char *)");
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", 
+					"GSLMultiMin", 
+					"ROOT::Math::GSLMinimizer",
+					"MathMore", 
+					"GSLMinimizer(const char *)");
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", 
+					"GSLMultiFit", 
+					"ROOT::Math::GSLNLSMinimizer",
+					"MathMore", "GSLNLSMinimizer(int)");
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", 
+					"GSLSimAn", 
+					"ROOT::Math::GSLSimAnMinimizer",
+					"MathMore", 
+					"GSLSimAnMinimizer(int)");
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", 
+					"Linear", 
+					"TLinearMinimizer",
+					"Minuit", 
+					"TLinearMinimizer(const char *)");
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", 
+					"Fumili", 
+					"TFumiliMinimizer",
+					"Fumili", 
+					"TFumiliMinimizer(int)");
+
+
   
   
   Bool_t diagnostics = kFALSE;
-  Char_t* fileName = argv[1];
+  if (argc < 2) { 
+    std::cerr << "No input file given" << std::endl;
+    return 1;
+  }
+  TString fileName(argv[1]);
+  if (fileName.Contains("--help")) { 
+    std::cout << "Usage: " << argv[0] << " FILENAME [OPTIONS]\n\n"
+	      << "Options:\n" 
+	      << "    --diagnostics=BOOL Make diagnostics ROOT file\n"
+	      << std::endl;
+    return 0;
+  }
+      
   for (int i = 2; i < argc; i++) { 
     TString arg(argv[i]);
     if      (arg.Contains("--diagnostics=true")) diagnostics = kTRUE;
@@ -61,11 +103,12 @@ int main(int argc, char **argv)
   AliFMDParameters::Instance()->UseCompleteHeader(old);
 
   AliRawReader *reader = 0;
-  TString fileNam(fileName);
-  if (fileNam.EndsWith(".root")) reader = new AliRawReaderRoot(fileName);
-  else reader = new AliRawReaderDate(fileName);
+  if (fileName.EndsWith(".root")) 
+    reader = new AliRawReaderRoot(fileName.Data());
+  else 
+    reader = new AliRawReaderDate(fileName.Data());
   if (!reader) { 
-    std::cerr << "Don't know how to make reader for " << fileNam 
+    std::cerr << "Don't know how to make reader for " << fileName
 	      << std::endl;
     return -2;
   }
