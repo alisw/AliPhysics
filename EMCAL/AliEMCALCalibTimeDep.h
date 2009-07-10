@@ -13,6 +13,11 @@
 #include "TObject.h"
 
 class AliEMCALSensorTempArray;
+class AliCaloCalibSignal;
+class AliEMCALBiasAPD;
+class AliEMCALCalibMapAPD;
+class AliEMCALCalibAbs; // absolute = time-independent
+class AliEMCALCalibTimeDepCorrection; 
 
 class AliEMCALCalibTimeDep : public TObject {
 
@@ -25,50 +30,89 @@ class AliEMCALCalibTimeDep : public TObject {
 
   void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);//!
 
+  // simple getters
+  Int_t GetRunNumber() const { return fRun; } //
+  Int_t GetStartTime() const { return fStartTime; } // 
+  Int_t GetEndTime() const { return fEndTime; } // 
+  Double_t GetLengthOfRunInHours() const; // 
+  Double_t GetLengthOfRunInBins() const; // 
+
+  // Temperature Section
   // access pointer to the basic temperature object: AliEMCALSensorTempArray 
   AliEMCALSensorTempArray  * GetTempArray() const { return fTempArray; } //
 
-  // simple getters
-  int GetRunNumber() const { return fRun; } //
-  int GetStartTime() const { return fStartTime; } // 
-  int GetEndTime() const { return fEndTime; } // 
-  double GetLengthOfRunInHours() const; // 
-
   // range of temperature readings/values during the run 
-  double GetMinTemp() const { return fMinTemp; } // 
-  double GetMaxTemp() const { return fMaxTemp; } // 
-  int GetMinTime() const { return fMinTime; } // 
-  int GetMaxTime() const { return fMaxTime; } // 
-  double GetRangeOfTempMeasureInHours() const; // 
-  double GetRangeOfTempMeasureInDegrees() const; // 
-
-  // reference temperature, that we normalize to
-  double GetRefTemp() const { return fRefTemp; } //
-  void SetRefTemp(double refTemp) { fRefTemp = refTemp; } //
+  Int_t ScanTemperatureInfo(); // go through the temperature info
+  Double_t GetMinTemp() const { return fMinTemp; } // 
+  Double_t GetMaxTemp() const { return fMaxTemp; } // 
+  UInt_t GetMinTime() const { return fMinTime; } // 
+  UInt_t GetMaxTime() const { return fMaxTime; } // 
+  Double_t GetRangeOfTempMeasureInHours() const; // 
+  Double_t GetRangeOfTempMeasureInDegrees() const; // 
 
   // basic calibration info
-  double GetTemperature(UInt_t timeStamp) const; // for all sensors, all SuperModules
-  double GetTemperatureSM(int imod, UInt_t timeStamp) const; // for all sensors, in a SuperModule
-  double GetTemperatureSMSensor(int imod, int isens, UInt_t timeStamp) const; // for a sensor, in a SuperModule
-  double GetCorrection(double temperature) const; //
+  Double_t GetTemperature(UInt_t timeStamp) const; // for all sensors, all SuperModules
+  Double_t GetTemperatureSM(int imod, UInt_t timeStamp) const; // for all sensors, in a SuperModule
+  Double_t GetTemperatureSMSensor(int imod, int isens, UInt_t timeStamp) const; // for a sensor, in a SuperModule
+  // End of Temperature Section
+
+  // control parameters
+  void SetTemperatureResolution(Double_t d) { fTemperatureResolution = d; } // value for checking at which level we care about temperature differences
+  void SetTimeBinsPerHour(Int_t i) { fTimeBinsPerHour = i; } // size of the time-bins we use for corrections
+  Double_t GetTemperatureResolution() const { return fTemperatureResolution; } // value for checking at which level we care about temperature differences
+  Int_t GetTimeBinsPerHour() const { return fTimeBinsPerHour; } // size of the time-bins we use foc corrections
+
+  // access to other pointers
+  AliCaloCalibSignal  * GetCalibSignal() const { return fCalibSignal; } //
+  AliEMCALBiasAPD  * GetBiasAPD() const { return fBiasAPD; } //
+  AliEMCALCalibMapAPD  * GetCalibMapAPD() const { return fCalibMapAPD; } //
+  AliEMCALCalibAbs  * GetCalibAbs() const { return fCalibAbs; } //
+  AliEMCALCalibTimeDepCorrection  * GetCalibTimeDepCorrection() const { return fCalibTimeDepCorrection; } //
+
+  // storage and access of the correction info
+  Int_t CalcCorrection(); //
+  AliEMCALCalibTimeDepCorrection  * GetTimeDepCorrection() 
+    const { return fCalibTimeDepCorrection; } //
+
+  Double_t GetTempCoeff(Double_t IDark, Double_t M) const; //
 
  private:
 
-  void Reset();
+  void Reset(); //
+
   void GetTemperatureInfo(); // pick up Preprocessor output
+  void GetCalibSignalInfo(); // pick up Preprocessor output
+  void GetBiasAPDInfo(); // pick up OCDB info
+  void GetCalibMapAPDInfo(); // pick up OCDB info
+  void GetCalibAbsInfo(); // pick up OCDB info
+
+  Int_t CalcLEDCorrection(Int_t nSM, Int_t nBins); // based on LED signals, and reference photodiodes
+  Int_t CalcLEDCorrectionStripBasis(Int_t nSM, Int_t nBins); // based on LED signals, and reference photodiodes
+  Int_t CalcTemperatureCorrection(Int_t nSM, Int_t nBins); // based on temperetare info
+
   //
-  int fRun;
-  int fStartTime;
-  int fEndTime;
-  double fMinTemp;
-  double fMaxTemp;
-  int fMinTime;
-  int fMaxTime;
-  double fRefTemp;
+  Int_t fRun;
+  UInt_t fStartTime;
+  UInt_t fEndTime;
+  // temperature stuff
+  Double_t fMinTemp;
+  Double_t fMaxTemp;
+  UInt_t fMinTime;
+  UInt_t fMaxTime;
   //
+  Double_t fTemperatureResolution; // value for checking at which level we care about temperature differences
+  Int_t fTimeBinsPerHour; // size of the time-bins we use for corrections
+
+  // pointers to the different used classes
   AliEMCALSensorTempArray  *fTempArray;     // CDB class for temperature sensors
+  AliCaloCalibSignal *fCalibSignal; //
+  AliEMCALBiasAPD *fBiasAPD; //
+  AliEMCALCalibMapAPD *fCalibMapAPD; //
+  AliEMCALCalibAbs *fCalibAbs; // absolute = time-independent
+  AliEMCALCalibTimeDepCorrection *fCalibTimeDepCorrection; // 
+
   //
-  ClassDef(AliEMCALCalibTimeDep,1)    // EMCAL Calibration data
+  ClassDef(AliEMCALCalibTimeDep,2)    // EMCAL Calibration data
 };
 
 #endif

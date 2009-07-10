@@ -25,6 +25,10 @@ AliEMCALRecParam.cxx \
 AliEMCALQAChecker.cxx \
 AliEMCALSpaceFrame.cxx \
 AliEMCALSTURawStream.cxx \
+AliEMCALBiasAPD.cxx \
+AliEMCALCalibMapAPD.cxx \
+AliEMCALCalibAbs.cxx \
+AliEMCALCalibTimeDepCorrection.cxx \
 SMcalib/AliEMCALCCUSBRawStream.cxx 
 
 
