@@ -61,7 +61,7 @@ AliZDCReconstructor:: AliZDCReconstructor() :
   fNRun(0),
   fIsCalibrationMB(kFALSE),
   fPedSubMode(0),
-  fSignalThreshold(0)
+  fSignalThreshold(7)
 {
   // **** Default constructor
 
@@ -615,19 +615,13 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrA
   UInt_t recoFlag=0;
   UInt_t rFlags[32];
   for(Int_t ifl=0; ifl<32; ifl++) rFlags[ifl]=0;
-  Float_t sumZNAhg=0, sumZPAhg=0, sumZNChg=0, sumZPChg=0;
-  for(Int_t jj=0; jj<5; jj++){
-    sumZNAhg += corrADCZN2[jj];
-    sumZPAhg += corrADCZP2[jj];
-    sumZNChg += corrADCZN1[jj];
-    sumZPChg += corrADCZP1[jj];
-  }
-  if(sumZNAhg>fSignalThreshold)       rFlags[0] = 0x1;
-  if(sumZPAhg>fSignalThreshold)       rFlags[1] = 0x1;
+
+  if(corrADCZN2[0]>fSignalThreshold)  rFlags[0] = 0x1;
+  if(corrADCZP2[0]>fSignalThreshold)  rFlags[1] = 0x1;
   if(corrADCZEM1[0]>fSignalThreshold) rFlags[2] = 0x1;
   if(corrADCZEM2[0]>fSignalThreshold) rFlags[3] = 0x1;
-  if(sumZNChg>fSignalThreshold)       rFlags[4] = 0x1;
-  if(sumZPChg>fSignalThreshold)       rFlags[5] = 0x1;
+  if(corrADCZN1[0]>fSignalThreshold)  rFlags[4] = 0x1;
+  if(corrADCZP1[0]>fSignalThreshold)  rFlags[5] = 0x1;
   //
   if(channelsOff==kTRUE)   rFlags[8] = 0x1;
   if(chUnderflow == kTRUE) rFlags[9] = 0x1;
@@ -745,19 +739,13 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   UInt_t recoFlag=0;
   UInt_t rFlags[32];
   for(Int_t ifl=0; ifl<32; ifl++) rFlags[ifl]=0;
-  Float_t sumZNAhg=0, sumZPAhg=0, sumZNChg=0, sumZPChg=0;
-  for(Int_t jj=0; jj<5; jj++){
-    sumZNAhg += corrADCZN2[jj];
-    sumZPAhg += corrADCZP2[jj];
-    sumZNChg += corrADCZN1[jj];
-    sumZPChg += corrADCZP1[jj];
-  }
-  if(sumZNAhg>fSignalThreshold)       rFlags[0] = 0x1;
-  if(sumZPAhg>fSignalThreshold)       rFlags[1] = 0x1;
+
+  if(corrADCZN2[0]>fSignalThreshold)  rFlags[0] = 0x1;
+  if(corrADCZP2[0]>fSignalThreshold)  rFlags[1] = 0x1;
   if(corrADCZEM1[0]>fSignalThreshold) rFlags[2] = 0x1;
   if(corrADCZEM2[0]>fSignalThreshold) rFlags[3] = 0x1;
-  if(sumZNChg>fSignalThreshold)       rFlags[4] = 0x1;
-  if(sumZPChg>fSignalThreshold)       rFlags[5] = 0x1;
+  if(corrADCZN1[0]>fSignalThreshold)  rFlags[4] = 0x1;
+  if(corrADCZP1[0]>fSignalThreshold)  rFlags[5] = 0x1;
   //
   if(channelsOff==kTRUE)   rFlags[8] = 0x1;
   if(chUnderflow == kTRUE) rFlags[9] = 0x1;

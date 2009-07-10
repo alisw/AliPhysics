@@ -36,6 +36,7 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
+#include "AliGRPObject.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliZDCSDigit.h"
@@ -110,21 +111,68 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
   }
   for(Int_t i=0; i<2; i++) fADCRes[i] = digitizer.fADCRes[i];
 
+
 }
 
 //____________________________________________________________________________
 Bool_t AliZDCDigitizer::Init()
 {
   // Initialize the digitizer
-  // NB -> PM gain vs. HV & ADC resolutions will move to DCDB ***************
-   for(Int_t j = 0; j < 5; j++){
-     fPMGain[0][j] = 50000.;
-     fPMGain[1][j] = 100000.;
-     fPMGain[2][j] = 100000.;
-     fPMGain[3][j] = 50000.;
-     fPMGain[4][j] = 100000.;
-     fPMGain[5][j] = 100000.;
-   }
+  
+  AliCDBEntry*  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliGRPObject* grpData = 0x0;
+  if(entry){
+    TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
+    if(m){
+      //m->Print();
+      grpData = new AliGRPObject();
+      grpData->ReadValuesFromMap(m);
+    }
+    else{
+      grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
+    }
+    entry->SetOwner(0);
+    AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
+  }
+  if(!grpData) AliError("No GRP entry found in OCDB!");
+  
+  TString beamType = grpData->GetBeamType();
+  if(beamType==AliGRPObject::GetInvalidString()){
+    AliError("\t UNKNOWN beam type from GRP obj -> PMT gains not set in ZDC digitizer!!!\n");
+  }
+  
+  Float_t beamEnergy = grpData->GetBeamEnergy();
+  if(beamEnergy==AliGRPObject::GetInvalidFloat()){
+    AliWarning("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0.");
+    AliError("\t UNKNOWN beam type from GRP obj -> PMT gains not set in ZDC digitizer!!!\n");
+    beamEnergy = 0.;
+  }
+  
+  if((beamType.CompareTo("P-P")) == 0){
+    //PTM gains rescaled to beam energy for p-p
+    if(beamEnergy != 0){
+      for(Int_t j = 0; j < 5; j++){
+        fPMGain[0][j] = 661.444/beamEnergy+0.000740671;
+        fPMGain[1][j] = 864.350/beamEnergy+0.002344;
+        fPMGain[3][j] = 1.32312-0.000101515*beamEnergy;
+        fPMGain[4][j] = fPMGain[0][j];
+        fPMGain[5][j] = fPMGain[1][j] ;
+      }
+    }
+  }
+  else if((beamType.CompareTo("A-A")) == 0){
+    // PTM gains for Pb-Pb @ 2.7_2.7 A TeV ***************
+    for(Int_t j = 0; j < 5; j++){
+      fPMGain[0][j] = 50000.;
+      fPMGain[1][j] = 100000.;
+      fPMGain[2][j] = 100000.;
+      fPMGain[3][j] = 50000.;
+      fPMGain[4][j] = 100000.;
+      fPMGain[5][j] = 100000.;
+    }
+  }
+  
+  
    // ADC Caen V965
   fADCRes[0] = 0.0000008; // ADC Resolution high gain: 200 fC/adcCh
   fADCRes[1] = 0.0000064; // ADC Resolution low gain:  25  fC/adcCh
