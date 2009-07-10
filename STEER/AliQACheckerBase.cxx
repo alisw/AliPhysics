@@ -296,7 +296,7 @@ void AliQACheckerBase::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, 
     TH1 * hdata = NULL ; 
     while ( (hdata=static_cast<TH1 *>(next())) ) {
       TString cln(hdata->ClassName()) ; 
-      if ( ! cln.Contains("TH1") )
+      if ( ! cln.Contains("TH") )
         continue ; 
       if ( hdata->TestBit(AliQAv1::GetImageBit()) )
         nImages++; 
@@ -324,8 +324,9 @@ void AliQACheckerBase::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, 
       fImage[esIndex]->Clear() ; 
       Int_t nx = TMath::Sqrt(nImages) ; 
       Int_t ny = nx  ; 
-      if ( nx < TMath::Sqrt(nImages)) 
+      while ( nx*ny <= nImages) 
         ny++ ; 
+      
       fImage[esIndex]->Divide(nx, ny) ; 
       TIter nexthist(list[esIndex]) ; 
       TH1* hist = NULL ;
@@ -333,7 +334,7 @@ void AliQACheckerBase::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, 
       fImage[esIndex]->cd(npad) ; 
       while ( (hist=static_cast<TH1*>(nexthist())) ) {
         TString cln(hist->ClassName()) ; 
-        if ( ! cln.Contains("TH1") )
+        if ( ! cln.Contains("TH") )
           continue ; 
         if(hist->TestBit(AliQAv1::GetImageBit())) {
           hist->Draw() ; 
