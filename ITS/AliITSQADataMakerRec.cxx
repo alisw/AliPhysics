@@ -327,7 +327,7 @@ void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 			AliITSRecPoint *rcp = (AliITSRecPoint*)recpoints->At(j);    
 			//Check id histograms already created for this Event Specie
 			rcp->GetGlobalXYZ(cluGlo);
-			Double_t rad=TMath::Sqrt(cluGlo[0]*cluGlo[0]+cluGlo[1]*cluGlo[1]);
+			Double_t rad=TMath::Sqrt(cluGlo[0]*cluGlo[0]+cluGlo[1]*cluGlo[1]+cluGlo[2]*cluGlo[2]);
 			Double_t phi= TMath::Pi() + TMath::ATan2(-cluGlo[1],-cluGlo[0]);
 			Double_t theta = TMath::ACos(cluGlo[2]/rad);
 			Double_t eta = 100.;
