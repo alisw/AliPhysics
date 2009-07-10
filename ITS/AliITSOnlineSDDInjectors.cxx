@@ -528,6 +528,22 @@ void AliITSOnlineSDDInjectors::WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_
   fclose(outf);  
 }
 //______________________________________________________________________
+TH1F* AliITSOnlineSDDInjectors::GetMeanDriftSpeedVsPadHisto() const{
+  Char_t hisnam[20];
+  sprintf(hisnam,"hdrsp%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F* h=new TH1F(hisnam,"",kInjPads,-0.5,kInjPads-0.5);
+  if(fNEvents>0){
+    for(Int_t i=0;i<kInjPads;i++){ 
+      h->SetBinContent(i+1,GetMeanDriftSpeed(i));    
+      Double_t rms=GetRMSDriftSpeed(i);
+      Double_t err=0.;
+      if(rms>0.) err=rms/TMath::Sqrt(fNEvents);
+      h->SetBinError(i+1,err);
+    }
+  }
+  return h;
+}
+//______________________________________________________________________
 Bool_t AliITSOnlineSDDInjectors::WriteToROOT(TFile *fil) const {
   //
   if(fil==0){ 

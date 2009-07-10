@@ -3,7 +3,7 @@
 - Link: - http://www.to.infn.it/~prino/alice/RawData/run11161.date
 - Run Type: - PEDESTAL_RUN
 - DA Type: - LDC
-- Number of events needed: 100
+- Number of events needed: > 10
 - Input Files: - 
 - Output Files: - SDDbase_step1_ddl*c*_sid*.data SDDbase_step2_ddl*c*_sid*.data
 - Trigger types used: 
@@ -45,6 +45,9 @@ extern "C" {
 #include <TH2F.h>
 #include <TROOT.h>
 #include <TPluginManager.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TDatime.h>
 
 // AliRoot includes
 #include "AliRawReaderDate.h"
@@ -52,6 +55,11 @@ extern "C" {
 #include "AliITSOnlineSDDCMN.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSDDCompressed.h"
+
+#ifdef ALI_AMORE
+#include <AmoreDA.h>
+#endif
+
 /* Main routine
       Arguments: list of DATE raw data files
 */
@@ -253,15 +261,21 @@ int main(int argc, char **argv) {
   }
 
   /* write report */
-  printf("Run #%s, received %d calibration events\n",getenv("DATE_RUN_NUMBER"),ievPed);
+  TDatime time;
+  TObjString timeinfo(Form("%02d%02d%02d%02d%02d%02d",time.GetYear()-2000,time.GetMonth(),time.GetDay(),time.GetHour(),time.GetMinute(),time.GetSecond()));
+  printf("Run #%s, received %d calibration events, time %s\n",getenv("DATE_RUN_NUMBER"),ievPed,timeinfo.GetString().Data());
 
   /* report progress */
   daqDA_progressReport(90);
 
+  TObjArray* basHistos=new TObjArray();
+  TObjArray* noiseHistos=new TObjArray();
+  TObjArray* cmnHistos=new TObjArray();
+  TObjArray* corrnHistos=new TObjArray();
+  TObjArray* statusHistos=new TObjArray();
 
 
   Char_t filnam[100],command[150];
-  TFile *fh=new TFile("SDDbaseHistos.root","RECREATE");
   for(Int_t iddl=0; iddl<kTotDDL;iddl++){
     for(Int_t imod=0; imod<kModPerDDL;imod++){
       for(Int_t isid=0;isid<kSides;isid++){
@@ -269,7 +283,11 @@ int main(int argc, char **argv) {
 	corr[index]->ValidateAnodes();
 	corr[index]->WriteToASCII();
 	if(isFilled[index]){
-	  corr[index]->WriteToROOT(fh);
+	  basHistos->AddLast(corr[index]->GetBaselineAnodeHisto());
+	  noiseHistos->AddLast(corr[index]->GetRawNoiseAnodeHisto());
+	  cmnHistos->AddLast(corr[index]->GetCMNCoefAnodeHisto());
+	  corrnHistos->AddLast(corr[index]->GetCorrNoiseAnodeHisto());
+	  statusHistos->AddLast(corr[index]->GetStatusAnodeHisto());
 	  sprintf(filnam,"SDDbase_step2_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
 	  sprintf(command,"tar -rf SDDbase_step2_LDC.tar %s",filnam);
 	  gSystem->Exec(command);
@@ -277,8 +295,32 @@ int main(int argc, char **argv) {
       }
     }
   }
-  fh->Close();
 
+#ifdef ALI_AMORE
+  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+  Int_t status =0;
+  status += amoreDA.Send("TimeInfo",&timeinfo);
+  status += amoreDA.Send("Baselines",basHistos);
+  status += amoreDA.Send("RawNoise",noiseHistos);
+  status += amoreDA.Send("CommonMode",cmnHistos);
+  status += amoreDA.Send("CorrectedNoise",corrnHistos);
+  status += amoreDA.Send("NoisyChannels",statusHistos);
+  if ( status )
+    printf("Warning: Failed to write Arrays in the AMORE database\n");
+  else 
+    printf("amoreDA.Send() OK\n");
+#else
+  printf("Warning: SDDBAS DA not compiled with AMORE support\n");
+#endif
+    
+    
+  TFile *fh=new TFile("SDDbaseHistos.root","RECREATE");
+  basHistos->Write();
+  noiseHistos->Write();
+  cmnHistos->Write();
+  corrnHistos->Write();
+  statusHistos->Write();
+  fh->Close();
 
   /* report progress */
   daqDA_progressReport(100);

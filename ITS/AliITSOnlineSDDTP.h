@@ -11,6 +11,7 @@
 
 #include "AliITSOnlineSDD.h"
 
+class TH1F;
 class TH2F;
 class AliITSOnlineSDDTP : public AliITSOnlineSDD {
 
@@ -45,6 +46,13 @@ class AliITSOnlineSDDTP : public AliITSOnlineSDD {
   void StatGain(Float_t &mean, Float_t  &rms);
   void WriteToASCII();
   Bool_t WriteToROOT(TFile *fil);
+
+  TH1F* GetBaselineAnodeHisto() const;
+  TH1F* GetRawNoiseAnodeHisto() const;
+  TH1F* GetCorrNoiseAnodeHisto() const;
+  TH1F* GetCMNCoefAnodeHisto() const;
+  TH1F* GetGainAnodeHisto() const;
+  TH1F* GetStatusAnodeHisto() const;
 
  protected:
 

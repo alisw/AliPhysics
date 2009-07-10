@@ -1,9 +1,9 @@
 /*
 - Contact: - prino@to.infn.it
 - Link: -
-- Run Type: - PHYSICS
+- Run Type: - INJECTOR
 - DA Type: - LDC
-- Number of events needed: 
+- Number of events needed: >20
 - Input Files: - 
 - Output Files: - SDDinj_ddl*c*_sid*.data
 - Trigger types used: 
@@ -42,6 +42,9 @@ extern "C" {
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TPluginManager.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TDatime.h>
 
 
 // AliRoot includes
@@ -49,6 +52,11 @@ extern "C" {
 #include "AliITSOnlineSDDInjectors.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSDDCompressed.h"
+
+#ifdef ALI_AMORE
+#include <AmoreDA.h>
+#endif
+
 /* Main routine
       Arguments: list of DATE raw data files
 */
@@ -75,7 +83,7 @@ int main(int argc, char **argv) {
   }
 
 
-  Int_t maxNEvents=10; // maximum number of events to be analyzed
+  Int_t maxNEvents=20; // maximum number of events to be analyzed
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
   const Int_t kSides=2;
@@ -91,7 +99,7 @@ int main(int argc, char **argv) {
   Int_t nWrittenEv[kTotDDL*kModPerDDL*kSides];
   Bool_t isFilled[kTotDDL*kModPerDDL*kSides];
   Bool_t writtenoutput=kFALSE;
-
+  UInt_t timeSt=0;
   Char_t hisnam[20];
   for(Int_t iddl=0; iddl<kTotDDL;iddl++){
     for(Int_t imod=0; imod<kModPerDDL;imod++){
@@ -165,7 +173,7 @@ int main(int argc, char **argv) {
 	printf(" event number = %i \n",iev);
 	ievInj++; 
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-	UInt_t timeSt=rawReader->GetTimestamp();
+	timeSt=rawReader->GetTimestamp();
 	rawReader->Reset();
 	UChar_t cdhAttr=AliITSRawStreamSDD::ReadBlockAttributes(rawReader);
 	amSamplFreq=AliITSRawStreamSDD::ReadAMSamplFreqFromCDH(cdhAttr);
@@ -204,9 +212,8 @@ int main(int argc, char **argv) {
 	      if(isFilled[index]){
 		if(amSamplFreq==20) injan[index]->Set20MHzConfig();
 		else injan[index]->Set40MHzConfig();
-		injan[index]->Reset();
-		injan[index]->AnalyzeEvent(histo[index]);    
-		injan[index]->WriteToASCII(iev,timeSt,nWrittenEv[index]);
+		injan[index]->AddEvent(histo[index]);    
+		//		injan[index]->WriteToASCII(iev,timeSt,nWrittenEv[index]);
 		nWrittenEv[index]++;
 	      }
 	    }
@@ -220,16 +227,24 @@ int main(int argc, char **argv) {
   }
 
   /* write report */
-  printf("Run #%s, received %d injector events\n",getenv("DATE_RUN_NUMBER"),ievInj);
+  TDatime time;
+  TObjString timeinfo(Form("%02d%02d%02d%02d%02d%02d",time.GetYear()-2000,time.GetMonth(),time.GetDay(),time.GetHour(),time.GetMinute(),time.GetSecond()));
+  printf("Run #%s, received %d calibration events, time %s\n",getenv("DATE_RUN_NUMBER"),ievInj,timeinfo.GetString().Data());
 
+  /* report progress */
+  daqDA_progressReport(90);
+  TObjArray* dspHistos=new TObjArray();
+
+  
   Char_t filnam[100],command[120];
-  TFile *fh=new TFile("SDDinjectHistos.root","RECREATE");
   for(Int_t iddl=0; iddl<kTotDDL;iddl++){
     for(Int_t imod=0; imod<kModPerDDL;imod++){
       for(Int_t isid=0;isid<kSides;isid++){
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	if(nWrittenEv[index]>0){
-	  injan[index]->WriteToROOT(fh);
+	  injan[index]->FitMeanDriftSpeedVsAnode();
+	  injan[index]->WriteToASCII(0,timeSt,0);
+	  dspHistos->AddLast(injan[index]->GetMeanDriftSpeedVsPadHisto());
 	  sprintf(filnam,"SDDinj_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
 	  sprintf(command,"tar -rf SDDinj_LDC.tar %s",filnam);
 	  gSystem->Exec(command);
@@ -237,13 +252,26 @@ int main(int argc, char **argv) {
       }  
     }
   }
+  status=daqDA_FES_storeFile("./SDDinj_LDC.tar","SDD_Injec");
+
+
+#ifdef ALI_AMORE
+  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+  Int_t status =0;
+  status += amoreDA.Send("TimeInfo",&timeinfo);
+  status += amoreDA.Send("DriftSpeed",dspHistos);
+  if ( status )
+    printf("Warning: Failed to write Arrays in the AMORE database\n");
+  else 
+    printf("amoreDA.Send() OK\n");
+#else
+  printf("Warning: SDDINJ DA not compiled with AMORE support\n");
+#endif
+
+  TFile *fh=new TFile("SDDinjectHistos.root","RECREATE");
+  dspHistos->Write();
   fh->Close();
 
-  /* report progress */
-  daqDA_progressReport(90);
-
-
-  status=daqDA_FES_storeFile("./SDDinj_LDC.tar","SDD_Injec");
 
   /* report progress */
   daqDA_progressReport(100);

@@ -183,7 +183,7 @@ void AliITSOnlineSDDCMN::WriteToASCII(){
 TH1F* AliITSOnlineSDDCMN::GetBaselineAnodeHisto() const {
   //
   Char_t hisnam[20];  
-  sprintf(hisnam,"hbd%02dc%02ds%d",fDDL,fCarlos,fSide);
+  sprintf(hisnam,"hbase%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam,"",256,-0.5,255.5);
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     h->SetBinContent(ian+1,GetAnodeBaseline(ian));
@@ -194,7 +194,7 @@ TH1F* AliITSOnlineSDDCMN::GetBaselineAnodeHisto() const {
 TH1F* AliITSOnlineSDDCMN::GetRawNoiseAnodeHisto() const {
   //
   Char_t hisnam[20];  
-  sprintf(hisnam,"hnd%02dc%02ds%d",fDDL,fCarlos,fSide);
+  sprintf(hisnam,"hnois%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam,"",256,-0.5,255.5);
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     h->SetBinContent(ian+1,GetAnodeRawNoise(ian));
@@ -205,10 +205,32 @@ TH1F* AliITSOnlineSDDCMN::GetRawNoiseAnodeHisto() const {
 TH1F* AliITSOnlineSDDCMN::GetCorrNoiseAnodeHisto() const {
   //
   Char_t hisnam[20];  
-  sprintf(hisnam,"hcd%02dc%02ds%d",fDDL,fCarlos,fSide);
+  sprintf(hisnam,"hcorn%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam,"",256,-0.5,255.5);
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     h->SetBinContent(ian+1,GetAnodeCorrNoise(ian));
+  }
+  return h;
+}
+//______________________________________________________________________
+TH1F* AliITSOnlineSDDCMN::GetCMNCoefAnodeHisto() const {
+//
+  Char_t hisnam[20];  
+  sprintf(hisnam,"hcmn%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F* h=new TH1F(hisnam,"",256,-0.5,255.5);
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    h->SetBinContent(ian+1,GetAnodeCommonMode(ian));
+  }
+  return h;
+}
+//______________________________________________________________________
+TH1F* AliITSOnlineSDDCMN::GetStatusAnodeHisto() const {
+//
+  Char_t hisnam[20];  
+  sprintf(hisnam,"hgood%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F* h=new TH1F(hisnam,"",256,-0.5,255.5);
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    h->SetBinContent(ian+1,float(IsAnodeGood(ian)));
   }
   return h;
 }

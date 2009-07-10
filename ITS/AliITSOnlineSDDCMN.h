@@ -45,6 +45,8 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
   TH1F* GetBaselineAnodeHisto() const;
   TH1F* GetRawNoiseAnodeHisto() const;
   TH1F* GetCorrNoiseAnodeHisto() const;
+  TH1F* GetCMNCoefAnodeHisto() const;
+  TH1F* GetStatusAnodeHisto() const;
   TH1F* GetBaselineHisto() const;
   TH1F* GetRawNoiseHisto() const;
   TH1F* GetCorrNoiseHisto() const;

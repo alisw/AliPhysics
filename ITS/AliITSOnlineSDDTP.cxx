@@ -184,6 +184,72 @@ void AliITSOnlineSDDTP::WriteToASCII(){
   fclose(outf);  
 }
 //______________________________________________________________________
+TH1F* AliITSOnlineSDDTP::GetBaselineAnodeHisto() const {
+  //
+  Char_t hisnam[20];  
+  sprintf(hisnam,"hbase%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F* h=new TH1F(hisnam,"",256,-0.5,255.5);
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    h->SetBinContent(ian+1,GetAnodeBaseline(ian));
+  }
+  return h;
+}
+//______________________________________________________________________
+TH1F* AliITSOnlineSDDTP::GetRawNoiseAnodeHisto() const {
+  //
+  Char_t hisnam[20];  
+  sprintf(hisnam,"hnois%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F* h=new TH1F(hisnam,"",256,-0.5,255.5);
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    h->SetBinContent(ian+1,GetAnodeRawNoise(ian));
+  }
+  return h;
+}
+//______________________________________________________________________
+TH1F* AliITSOnlineSDDTP::GetCorrNoiseAnodeHisto() const {
+  //
+  Char_t hisnam[20];  
+  sprintf(hisnam,"hcorn%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F* h=new TH1F(hisnam,"",256,-0.5,255.5);
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    h->SetBinContent(ian+1,GetAnodeCorrNoise(ian));
+  }
+  return h;
+}
+//______________________________________________________________________
+TH1F* AliITSOnlineSDDTP::GetCMNCoefAnodeHisto() const {
+//
+  Char_t hisnam[20];  
+  sprintf(hisnam,"hcmn%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F* h=new TH1F(hisnam,"",256,-0.5,255.5);
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    h->SetBinContent(ian+1,GetAnodeCommonMode(ian));
+  }
+  return h;
+}
+//______________________________________________________________________
+TH1F* AliITSOnlineSDDTP::GetStatusAnodeHisto() const {
+//
+  Char_t hisnam[20];  
+  sprintf(hisnam,"hgood%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F* h=new TH1F(hisnam,"",256,-0.5,255.5);
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    h->SetBinContent(ian+1,float(IsAnodeGood(ian)));
+  }
+  return h;
+}
+//______________________________________________________________________
+TH1F* AliITSOnlineSDDTP::GetGainAnodeHisto() const {
+//
+  Char_t hisnam[20];  
+  sprintf(hisnam,"hgain%02dc%02ds%d",fDDL,fCarlos,fSide);
+  TH1F* h=new TH1F(hisnam,"",256,-0.5,255.5);
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    h->SetBinContent(ian+1,GetChannelGain(ian));
+  }
+  return h;
+}
+//______________________________________________________________________
 Bool_t AliITSOnlineSDDTP::WriteToROOT(TFile *fil){
   //
   if(fil==0){ 

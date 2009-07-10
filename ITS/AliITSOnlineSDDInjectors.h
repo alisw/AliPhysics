@@ -14,6 +14,7 @@
 #include "AliITSOnlineSDD.h"
 
 
+class TH1F;
 class TH2F;
 class TGraphErrors;
 class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
@@ -64,6 +65,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   void SetUseTimeZeroSignal(Bool_t useTZ=kTRUE){
     fUseTimeZeroSignal=useTZ;
   }
+  TH1F* GetMeanDriftSpeedVsPadHisto() const;
   TGraphErrors* GetTimeVsDistGraph(Int_t jpad) const;
   TGraphErrors* GetDriftSpeedGraph() const;
   TGraphErrors* GetSelectedDriftSpeedGraph(Int_t minAcceptStatus) const;

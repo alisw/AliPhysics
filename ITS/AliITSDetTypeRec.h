@@ -61,8 +61,6 @@ class AliITSDetTypeRec : public TObject {
     virtual AliITSClusterFinder* GetReconstructionModel(Int_t dettype) const;
     virtual AliITSDDLModuleMapSDD* GetDDLModuleMapSDD() const { return fDDLMapSDD;}
     virtual AliITSresponseSDD* GetResponseSDD() const { return fRespSDD;}
-    virtual Bool_t IsHLTmodeC() const {return fIsHLTmodeC;}
-    virtual void SetHLTmodeC(Bool_t ishltc){fIsHLTmodeC=ishltc;}
     virtual Float_t GetAverageGainSDD() const {
       if(fAveGainSDD>0.) return fAveGainSDD;
       else return 1.;
@@ -135,7 +133,6 @@ class AliITSDetTypeRec : public TObject {
     AliITSDDLModuleMapSDD *fDDLMapSDD; //! mapping DDL/module -> SDD module number
     AliITSresponseSDD *fRespSDD;  //! SDD response parameters 
     Float_t       fAveGainSDD;    //! Average gain of SDD good anodes
-    Bool_t        fIsHLTmodeC;    //! flag for HLT mode C status (used by SDD)
     const Char_t*       fkDigClassName[3];     //! String with digit class name.
 
 
@@ -147,7 +144,7 @@ class AliITSDetTypeRec : public TObject {
 
     TBits fFastOrFiredMap;     //! Map of FastOr fired chips (after processing of raw signals)
 
-    ClassDef(AliITSDetTypeRec,18) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,19) // ITS Reconstruction structure
 };
 
 #endif

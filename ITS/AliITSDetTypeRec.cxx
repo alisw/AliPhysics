@@ -36,7 +36,6 @@
 #include "AliITSRecPoint.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSMapSDD.h"
-#include "AliITSHLTforSDD.h"
 #include "AliITSCalibrationSSD.h"
 #include "AliITSNoiseSSDv2.h"
 #include "AliITSGainSSDv2.h"
@@ -82,7 +81,6 @@ fFOSignals(0),
 fDDLMapSDD(0),
 fRespSDD(0),
 fAveGainSDD(0),
-fIsHLTmodeC(0),
 fRecPoints(0),
 fNRecPoints(0),
 fFirstcall(kTRUE),
@@ -127,7 +125,6 @@ fFOSignals(rec.fFOSignals),
 fDDLMapSDD(rec.fDDLMapSDD),
 fRespSDD(rec.fRespSDD),
 fAveGainSDD(rec.fAveGainSDD),
-fIsHLTmodeC(rec.fIsHLTmodeC),
 fRecPoints(rec.fRecPoints),
 fNRecPoints(rec.fNRecPoints),
 fFirstcall(rec.fFirstcall),
@@ -499,11 +496,10 @@ Bool_t AliITSDetTypeRec::GetCalibrationSDD(Bool_t cacheStatus) {
   AliCDBEntry *entry2SDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD");
   AliCDBEntry *drSpSDD = AliCDBManager::Instance()->Get("ITS/Calib/DriftSpeedSDD");
   AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD");
-  AliCDBEntry *hltforSDD = AliCDBManager::Instance()->Get("ITS/Calib/HLTforSDD");
   //   AliCDBEntry *mapASDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsAnodeSDD");
   AliCDBEntry *mapTSDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsTimeSDD");
 
-  if(!entrySDD || !entry2SDD || !drSpSDD || !ddlMapSDD || !hltforSDD || !mapTSDD ){
+  if(!entrySDD || !entry2SDD || !drSpSDD || !ddlMapSDD || !mapTSDD ){
     AliFatal("SDD Calibration object retrieval failed! ");
     return kFALSE;
   }  	
@@ -526,10 +522,6 @@ Bool_t AliITSDetTypeRec::GetCalibrationSDD(Bool_t cacheStatus) {
   if(!cacheStatus)ddlMapSDD->SetObject(NULL);
   ddlMapSDD->SetOwner(kTRUE);
 
-  AliITSHLTforSDD* hltsdd=(AliITSHLTforSDD*)hltforSDD->GetObject();
-  if(!cacheStatus)hltforSDD->SetObject(NULL);
-  hltforSDD->SetOwner(kTRUE);
-  
 //   TObjArray *mapAn = (TObjArray *)mapASDD->GetObject();
 //   if(!cacheStatus)mapASDD->SetObject(NULL);
 //   mapASDD->SetOwner(kTRUE);
@@ -544,13 +536,12 @@ Bool_t AliITSDetTypeRec::GetCalibrationSDD(Bool_t cacheStatus) {
     delete entrySDD;
     delete entry2SDD;
     //delete mapASDD;
-    delete hltforSDD;
     delete mapTSDD;
     delete drSpSDD;
     delete ddlMapSDD;
   }
 
-  if ((!pSDD)||(!calSDD) || (!drSp) || (!ddlsdd) || (!hltsdd) || (!mapT) ){
+  if ((!pSDD)||(!calSDD) || (!drSp) || (!ddlsdd) || (!mapT) ){
     AliWarning("Can not get SDD calibration from calibration database !");
     return kFALSE;
   }
@@ -559,7 +550,6 @@ Bool_t AliITSDetTypeRec::GetCalibrationSDD(Bool_t cacheStatus) {
 
   fDDLMapSDD=ddlsdd;
   fRespSDD=pSDD;
-  fIsHLTmodeC=hltsdd->IsHLTmodeC();
   AliITSCalibration* cal;
   Float_t avegain=0.;
   Float_t nGdAnodes=0;

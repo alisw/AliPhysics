@@ -30,15 +30,16 @@
 void AnalyzeSDDInjectorsAllMod(Char_t *datafil, 
 			       Int_t adcfreq=20, 
 			       Int_t nDDL=0, 
-			       Int_t firstEv=10, 
-			       Int_t lastEv=15,
+			       Int_t firstEv=18, 
+			       Int_t lastEv=20,
 			       Int_t jpad=20, 
-			       Int_t statuscut=7, 
-			       Int_t dataformat=1){
+			       Int_t statuscut=7){
+
 
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
   const Int_t kSides=2;
+  Bool_t writtenoutput=kFALSE;
 
   AliITSDDLModuleMapSDD* dmap=new AliITSDDLModuleMapSDD();
   dmap->SetJun08Map();
@@ -83,6 +84,7 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
   gStyle->SetPalette(1);
   TCanvas* c1 = new TCanvas("c1","Drift Speed vs. anode",900,900);
   Char_t text[50];
+  UInt_t timeSt=0;
 
   Int_t iev=firstEv;
   AliRawReader *rd; 
@@ -105,7 +107,7 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
     c1->Clear();
     c1->Divide(4,6,0.001,0.001);
     printf("Event # %d\n",iev);
-    UInt_t timeSt=rd->GetTimestamp();
+    timeSt=rd->GetTimestamp();
     rd->Reset();
     for(Int_t iddl=0; iddl<kTotDDL;iddl++){
       for(Int_t imod=0; imod<kModPerDDL;imod++){
@@ -116,12 +118,13 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
       }
     }
 
-    AliITSRawStream* s;
-    if(dataformat==0){
-      s=new AliITSRawStreamSDD(rd);
-    }else{
-      s=new AliITSRawStreamSDDCompressed(rd);
-      if(dataformat==1) s->SetADCEncoded(kTRUE);
+
+    UChar_t cdhAttr=AliITSRawStreamSDD::ReadBlockAttributes(rd);
+    UInt_t amSamplFreq=AliITSRawStreamSDD::ReadAMSamplFreqFromCDH(cdhAttr);
+    AliITSRawStream* s=AliITSRawStreamSDD::CreateRawStreamSDD(rd,cdhAttr);
+    if(!writtenoutput){
+      printf("Use %s raw stream, sampling frequency %d MHz\n",s->ClassName(),amSamplFreq);
+      writtenoutput=kTRUE;
     }
     while(s->Next()){
       Int_t iDDL=rd->GetDDLID();
@@ -139,7 +142,6 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
 	for(Int_t isid=0;isid<kSides;isid++){
 	  Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	  anal[index]->AnalyzeEvent(histo[index]); 
-	  anal[index]->WriteToASCII(iev,timeSt,nWrittenEv[index]);
 	  nWrittenEv[index]++;
 	  Int_t iMod=dmap->GetModuleNumber(iddl,imod);
 	  if(iMod!=-1){
@@ -209,6 +211,8 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
     for(Int_t imod=0; imod<kModPerDDL;imod++){
       for(Int_t isid=0;isid<kSides;isid++){
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
+	anal[index]->FitMeanDriftSpeedVsAnode();
+	anal[index]->WriteToASCII(0,timeSt,0);
 	anal[index]->WriteToROOT(outfil1);
       }
     }
@@ -336,20 +340,19 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
 
 }
 
-void AnalyzeSDDInjectorsAllMod(Int_t nrun, Int_t n2, Char_t* dir="LHC08d_SDD", 
+void AnalyzeSDDInjectorsAllMod(Int_t nrun, Int_t n2, Int_t year=2009, Char_t* dir="LHC09b_SDD",
 			       Int_t adcfreq=20, 
 			       Int_t nDDL=0, 
-			       Int_t firstEv=15, 
-			       Int_t lastEv=15,
+			       Int_t firstEv=18, 
+			       Int_t lastEv=20,
 			       Int_t jpad=20, 
-			       Int_t statuscut=7, 
-			       Int_t dataformat=1){
+			       Int_t statuscut=7){
 
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
-  sprintf(filnam,"alien:///alice/data/2008/%s/%09d/raw/08%09d%03d.10.root",dir,nrun,nrun,n2);
+  sprintf(filnam,"alien:///alice/data/%d/%s/%09d/raw/%02d%09d%03d.10.root",year,dir,nrun,year-2000,nrun,n2);
   printf("Open file %s\n",filnam);
-  AnalyzeSDDInjectorsAllMod(filnam,adcfreq,nDDL,firstEv,lastEv,jpad,statuscut,dataformat);
+  AnalyzeSDDInjectorsAllMod(filnam,adcfreq,nDDL,firstEv,lastEv,jpad,statuscut);
 }
 
 

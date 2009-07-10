@@ -3,7 +3,7 @@
 - Link: - http://www.to.infn.it/~prino/alice/RawData/run11173.date
 - Run Type: - PULSER_RUN
 - DA Type: - LDC
-- Number of events needed: 100
+- Number of events needed: >15
 - Input Files: - SDDbase_step1_ddl*c*_sid*.data
 - Output Files: - SDDbase_ddl*c*_sid*.data
 - Trigger types used: 
@@ -44,12 +44,19 @@ extern "C" {
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TPluginManager.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TDatime.h>
 
 // AliRoot includes
 #include "AliRawReaderDate.h"
 #include "AliITSOnlineSDDTP.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSDDCompressed.h"
+
+#ifdef ALI_AMORE
+#include <AmoreDA.h>
+#endif
 /* Main routine
       Arguments: list of DATE raw data files
 */
@@ -210,7 +217,17 @@ int main(int argc, char **argv) {
     
   }
     
-  TFile *fh=new TFile("SDDgainHistos.root","RECREATE");
+  /* write report */
+  TDatime time;
+  TObjString timeinfo(Form("%02d%02d%02d%02d%02d%02d",time.GetYear()-2000,time.GetMonth(),time.GetDay(),time.GetHour(),time.GetMinute(),time.GetSecond()));
+  printf("Run #%s, received %d calibration events, time %s\n",getenv("DATE_RUN_NUMBER"),iAnalyzedEv,timeinfo.GetString().Data());
+
+  /* report progress */
+  daqDA_progressReport(90);
+
+  TObjArray* gainHistos=new TObjArray();
+  TObjArray* statusHistos=new TObjArray();
+  
   Char_t filnam[100],command[120];
   for(Int_t iddl=0; iddl<kTotDDL;iddl++){
     for(Int_t imod=0; imod<kModPerDDL;imod++){
@@ -219,7 +236,8 @@ int main(int argc, char **argv) {
 	if(isFilled[index]){
 	  tpan[index]->ValidateAnodes();
 	  tpan[index]->WriteToASCII();
-	  tpan[index]->WriteToROOT(fh);
+	  gainHistos->AddLast(tpan[index]->GetGainAnodeHisto());
+	  statusHistos->AddLast(tpan[index]->GetStatusAnodeHisto());
 	  sprintf(filnam,"SDDbase_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
 	  sprintf(command,"tar -rf SDDbase_LDC.tar %s",filnam);
 	  gSystem->Exec(command);
@@ -227,28 +245,36 @@ int main(int argc, char **argv) {
       }
     }  
   }
-  fh->Close();
+
 
   FILE *conffil=fopen("fee.conf","w");
   fprintf(conffil,"%d\n",amSamplFreq);
   fprintf(conffil,"%02X\n",cdhAttr);
   fclose(conffil);
   gSystem->Exec("tar -rf SDDbase_LDC.tar fee.conf");
+  status=daqDA_FES_storeFile("./SDDbase_LDC.tar","SDD_Calib");
 
 
-  /* write report */
-  printf("Run #%s, received %d calibration events\n",getenv("DATE_RUN_NUMBER"),iAnalyzedEv);
-
-  /* report progress */
-  daqDA_progressReport(90);
-
-
-
+#ifdef ALI_AMORE
+  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+  Int_t status =0;
+  status += amoreDA.Send("TimeInfo",&timeinfo);
+  status += amoreDA.Send("Gain",gainHistos);
+  status += amoreDA.Send("BadChannels",corrnHistos);
+  if ( status )
+    printf("Warning: Failed to write Arrays in the AMORE database\n");
+  else 
+    printf("amoreDA.Send() OK\n");
+#else
+  printf("Warning: SDDGAIN DA not compiled with AMORE support\n");
+#endif
+    
+ 
+  TFile *fh=new TFile("SDDgainHistos.root","RECREATE");
+  gainHistos->Write();
+  statusHistos->Write();
   fh->Close();
 
-
-
-  status=daqDA_FES_storeFile("./SDDbase_LDC.tar","SDD_Calib");
 
   /* report progress */
   daqDA_progressReport(100);
