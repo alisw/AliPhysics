@@ -105,6 +105,11 @@ class AliHLTTriggerAgent : public AliHLTModuleAgent {
     int ReleaseProcessedData(const AliHLTUInt8_t* pData, int size);
 
   private:
+    /** copy constructor forbidden */
+    AliHLTTriggerDecisionHandler(const AliHLTTriggerDecisionHandler&);
+    /** assignment operator forbidden */
+    AliHLTTriggerDecisionHandler& operator=(const AliHLTTriggerDecisionHandler&);
+
     AliESDEvent* fESD; //!
     TArrayC* fpData;  //!
     int fSize; //!

@@ -31,6 +31,7 @@
 #include "AliESDEvent.h"
 #include "AliHLTTriggerDecision.h"
 #include "AliHLTDomainEntry.h"
+#include "AliHLTGlobalBarrelTrack.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTriggerBarrelMultiplicity)
@@ -47,6 +48,8 @@ AliHLTTriggerBarrelMultiplicity::AliHLTTriggerBarrelMultiplicity()
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
+
+const char* AliHLTTriggerBarrelMultiplicity::fgkOCDBEntry="HLT/ConfigHLT/BarrelMultiplicityTrigger";
 
 AliHLTTriggerBarrelMultiplicity::~AliHLTTriggerBarrelMultiplicity()
 {
@@ -68,22 +71,41 @@ AliHLTComponent* AliHLTTriggerBarrelMultiplicity::Spawn()
 int AliHLTTriggerBarrelMultiplicity::DoTrigger()
 {
   // see header file for class documentation
+  int iResult=0;
+  int numberOfTracks=-1;
+
+  // try the ESD as input
   const TObject* obj = GetFirstInputObject(kAliHLTAllDataTypes, "AliESDEvent");
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
   TString description;
   TString ptcut;
   if (esd != NULL) {
+    numberOfTracks=0;
     esd->GetStdContent();
     
-    unsigned int numberOfTracks=0;
     for (Int_t i = 0; i < esd->GetNumberOfTracks(); i++) {
-      AliESDtrack* track = esd->GetTrack(i);
-      if (track && track->Pt() >= fPtMin &&
-	  (fPtMax<=fPtMin || track->Pt() < fPtMax)) {
-	numberOfTracks++;
+      if (CheckCondition(esd->GetTrack(i))) numberOfTracks++;
+    }
+  }
+
+  // try the AliHLTExternal track data as input
+  if (iResult>=0 && numberOfTracks<0) {
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack);
+	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
+      vector<AliHLTGlobalBarrelTrack> tracks;
+      if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
+	for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
+	     element!=tracks.end(); element++) {
+	  if (CheckCondition(&(*element))) numberOfTracks++;
+	}
+      } else if (iResult<0) {
+	HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d", 
+		 DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);
       }
     }
+  }
 
+  if (iResult>=0 && numberOfTracks>=0) {
     if (fPtMax>fPtMin) {
       ptcut.Form(" %.02f GeV/c <= pt < %.02f GeV/c", fPtMin, fPtMax);
     } else {
@@ -109,10 +131,88 @@ int AliHLTTriggerBarrelMultiplicity::DoTrigger()
       TriggerEvent(true);
       return 0;
     }
+    description.Form("No tracks matching the tresholds found in the central barrel (min tracks %d, %s)",
+		     fMinTracks, ptcut.Data());
+  } else {
+    description.Form("No input blocks found");
   }
-  description.Form("No tracks matching the tresholds found in the central barrel (min tracks %d, %s)",
-		   fMinTracks, ptcut.Data());
   SetDescription(description.Data());
   TriggerEvent(false);
+  return iResult;
+}
+
+template<class T>
+bool AliHLTTriggerBarrelMultiplicity::CheckCondition(T* track)
+{
+  // see header file for class documentation
+  if (track && track->Pt() >= fPtMin &&
+      (fPtMax<=fPtMin || track->Pt() < fPtMax)) {
+    return true;
+  }
+  return false;
+}
+
+int AliHLTTriggerBarrelMultiplicity::DoInit(int argc, const char** argv)
+{
+  // see header file for class documentation
+
+  // first configure the default
+  int iResult=ConfigureFromCDBTObjString(fgkOCDBEntry);
+
+  // configure from the command line parameters if specified
+  if (iResult>=0 && argc>0)
+    iResult=ConfigureFromArgumentString(argc, argv);
+  return iResult;
+}
+
+int AliHLTTriggerBarrelMultiplicity::DoDeinit()
+{
+  // see header file for class documentation
   return 0;
+}
+
+int AliHLTTriggerBarrelMultiplicity::Reconfigure(const char* cdbEntry, const char* /*chainId*/)
+{
+  // see header file for class documentation
+
+  // configure from the specified antry or the default one
+  const char* entry=cdbEntry;
+  if (!entry || entry[0]==0) entry=fgkOCDBEntry;
+
+  return ConfigureFromCDBTObjString(entry);
+}
+
+int AliHLTTriggerBarrelMultiplicity::ScanConfigurationArgument(int argc, const char** argv)
+{
+  // see header file for class documentation
+  if (argc<=0) return 0;
+  int i=0;
+  TString argument=argv[i];
+
+  // -maxpt
+  if (argument.CompareTo("-maxpt")==0) {
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fPtMax=argument.Atof();
+    return 2;
+  }    
+
+  // -minpt
+  if (argument.CompareTo("-minpt")==0) {
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fPtMin=argument.Atof();
+    return 2;
+  }    
+
+  // -mintracks
+  if (argument.CompareTo("-mintracks")==0) {
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fMinTracks=argument.Atoi();
+    return 2;
+  }    
+  
+  // unknown argument
+  return -EINVAL;
 }

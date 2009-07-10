@@ -44,7 +44,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # enable automatic generation. 
 MODULE_DHDR:= 	AliHLTTriggerLinkDef.h
 
-EINCLUDE := HLT/BASE HLT/trigger HLT/TPCLib
+EINCLUDE := HLT/BASE HLT/BASE/util HLT/trigger HLT/TPCLib
 
 LIBRARY_DEP := -lHLTbase
 

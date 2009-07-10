@@ -74,7 +74,7 @@ AM_CPPFLAGS			= -DMODULE=$(MODULE) \
 # using external modules. The AliRoot, ROOT and HLT base libraries
 # are added by default.
 # Also the version of the library 
-#libAliHLTTPC_la_LIBADD		= $(top_builddir)/BASE/TPCLib/libAliHLTTPC.la
+libAliHLTTrigger_la_LIBADD	= $(top_builddir)/BASE/util/libAliHLTUtil.la
 libAliHLTTrigger_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @HLTBASE_LDFLAGS@ \
