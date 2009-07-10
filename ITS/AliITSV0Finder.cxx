@@ -190,7 +190,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   const Float_t kLikelihood01Cut = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetLikelihood01Cut();
   const Float_t kLikelihood1Cut = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetLikelihood1Cut();
   const Float_t kCombinedCut = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetCombinedCut();
-  //  const Float_t kMinClFullTrk= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinClFullTrk();
+  const Float_t kMinClFullTrk= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinClFullTrk();
   const Float_t kMinTgl0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinTgl0();
   const Float_t kMinTPCdensity= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinTPCdensity();
   const Float_t kMinTgl1= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinTgl1();
@@ -298,7 +298,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       AliITStrackMI * trackh = (AliITStrackMI*)array->At(ih);
       if (!trackh->GetConstrain()) continue;
       if (!bestConst) bestConst = trackh;
-      if (trackh->GetNumberOfClusters()>5.0){
+      if (trackh->GetNumberOfClusters()>kMinClFullTrk){
 	bestConst  = trackh;                         // full track -  with minimal chi2
 	break;
       }
@@ -312,7 +312,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       if (trackh->GetConstrain()) continue;
       if (!best)     best     = trackh;
       if (!bestLong) bestLong = trackh;
-      if (trackh->GetNumberOfClusters()>5.0){
+      if (trackh->GetNumberOfClusters()>kMinClFullTrk){
 	bestLong  = trackh;                         // full track -  with minimal chi2
 	break;
       }
