@@ -22,7 +22,7 @@ public:
   AliPHOSRawFitterv1& operator = (const AliPHOSRawFitterv1& rawFitter);
   virtual ~AliPHOSRawFitterv1();
 
-  virtual Bool_t Eval();
+  virtual Bool_t Eval(const UShort_t *signal, Int_t sigStart, Int_t sigLength);
 
   static Double_t Gamma2(Double_t dt,Double_t en,Double_t b,TArrayD * fitparams) ; // Shape of correct sample
                                                  //class member function (not object member function)

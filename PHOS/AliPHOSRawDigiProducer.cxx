@@ -175,12 +175,11 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
 	const UShort_t *sig = fRawStream->GetSignals();
 	Int_t sigStart  = fRawStream->GetStartTimeBin();
 	Int_t sigLength = fRawStream->GetBunchLength();
-	fitter->SetSamples(sig,sigStart,sigLength);
+	fitter->SetChannelGeo(relId[0],relId[2],relId[3],caloFlag);
+	fitter->Eval(sig,sigStart,sigLength);
       } // End of NextBunch()
 
       fitter->SetNBunches(nBunches);
-      fitter->SetChannelGeo(relId[0],relId[2],relId[3],caloFlag);
-      fitter->Eval();
       
       Double_t energy = fitter->GetEnergy() ; 
       Double_t time   = fitter->GetTime() ;

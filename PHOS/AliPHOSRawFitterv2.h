@@ -21,7 +21,7 @@ public:
   AliPHOSRawFitterv2& operator = (const AliPHOSRawFitterv2& rawFitter);
   virtual ~AliPHOSRawFitterv2();
 
-  virtual Bool_t Eval();
+  virtual Bool_t Eval(const UShort_t *signal, Int_t sigStart, Int_t sigLength);
 
   void SetNTimeSamples(Short_t n=25)     { fNtimeSamples=n ;}
   void SetLowGainTParams (Double_t *pars){ for(Int_t i=0;i<3;i++) fLGpar[i]=pars[i] ;}

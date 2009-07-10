@@ -48,13 +48,10 @@ ClassImp(AliPHOSRawFitterv0)
 //-----------------------------------------------------------------------------
 AliPHOSRawFitterv0::AliPHOSRawFitterv0():
   TObject(),
-  fSignal(0),
   fModule(0),
   fCellX(0),
   fCellZ(0),
   fCaloFlag(0),
-  fStart(0),
-  fLength(0),
   fNBunches(0),
   fPedSubtract(kFALSE),
   fEnergy(-111),
@@ -73,19 +70,15 @@ AliPHOSRawFitterv0::AliPHOSRawFitterv0():
 AliPHOSRawFitterv0::~AliPHOSRawFitterv0()
 {
   //Destructor
-  delete [] fSignal;
 }
 
 //-----------------------------------------------------------------------------
 AliPHOSRawFitterv0::AliPHOSRawFitterv0(const AliPHOSRawFitterv0 &phosFitter ):
   TObject(),
-  fSignal      (phosFitter.fSignal),
   fModule      (phosFitter.fModule),
   fCellX       (phosFitter.fCellX),
   fCellZ       (phosFitter.fCellZ),
   fCaloFlag    (phosFitter.fCaloFlag),
-  fStart       (phosFitter.fStart),
-  fLength      (phosFitter.fLength),
   fNBunches    (phosFitter.fNBunches),
   fPedSubtract (phosFitter.fPedSubtract),
   fEnergy      (phosFitter.fEnergy),
@@ -106,13 +99,10 @@ AliPHOSRawFitterv0& AliPHOSRawFitterv0::operator = (const AliPHOSRawFitterv0 &ph
   //Assignment operator.
 
   if(this != &phosFitter) {
-    fSignal       = phosFitter.fSignal;
     fModule       = phosFitter.fModule;
     fCellX        = phosFitter.fCellX;
     fCellZ        = phosFitter.fCellZ;
     fCaloFlag     = phosFitter.fCaloFlag;
-    fStart        = phosFitter.fStart;
-    fLength       = phosFitter.fLength;
     fNBunches     = phosFitter.fNBunches;
     fPedSubtract  = phosFitter.fPedSubtract;
     fEnergy       = phosFitter.fEnergy;
@@ -134,12 +124,13 @@ void AliPHOSRawFitterv0::SetSamples(const UShort_t *sig, Int_t sigStart, Int_t s
 {
   // Set the sample array, its start and length in time bin units
 
-  fStart   = sigStart;
-  fLength  = sigLength;
-  fSignal  = new UShort_t[fLength];
-  for (Int_t i=0; i<fLength; i++) {
-    fSignal[i] = sig[i];
-  }
+//   fStart   = sigStart;
+//   fLength  = sigLength;
+//   fSignal  = sig;
+//   fSignal  = new UShort_t[fLength];
+//   for (Int_t i=0; i<fLength; i++) {
+//     fSignal[i] = sig[i];
+//   }
 }
 //-----------------------------------------------------------------------------
 
@@ -156,7 +147,7 @@ void AliPHOSRawFitterv0::SetChannelGeo(const Int_t module, const Int_t cellX,
 }
 //-----------------------------------------------------------------------------
 
-Bool_t AliPHOSRawFitterv0::Eval()
+Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t sigStart, Int_t sigLength)
 {
   // Calculate signal parameters (energy, time, quality) from array of samples
   // Energy is a maximum sample minus pedestal 9
@@ -178,21 +169,20 @@ Bool_t AliPHOSRawFitterv0::Eval()
   UShort_t maxSample = 0;
   Int_t    nMax      = 0;
 
-  for (Int_t i=0; i<fLength; i++) {
+  for (Int_t i=0; i<sigLength; i++) {
     if (i<kPreSamples) {
       nPed++;
-      pedMean += fSignal[i];
-      pedRMS  += fSignal[i]*fSignal[i] ;
+      pedMean += signal[i];
+      pedRMS  += signal[i]*signal[i] ;
     }
-    
-    if(fSignal[i] > maxSample) maxSample = fSignal[i];
-    if(fSignal[i] == maxSample) nMax++;
+    if(signal[i] >  maxSample) maxSample = signal[i];
+    if(signal[i] == maxSample) nMax++;
 
     if(fPedSubtract) {
-      if( (fSignal[i]-(Float_t)(pedMean/nPed)) >kBaseLine ) fTime = (Double_t)i;
+      if( (signal[i]-(Float_t)(pedMean/nPed)) >kBaseLine ) fTime = (Double_t)i;
     }
     else //ZS
-      if( (fSignal[i]-(Float_t)fAmpOffset) >kBaseLine ) fTime = (Double_t)i;
+      if( (signal[i]-(Float_t)fAmpOffset    ) >kBaseLine ) fTime = (Double_t)i;
   }
   
   fEnergy = (Double_t)maxSample;

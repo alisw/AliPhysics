@@ -100,7 +100,7 @@ AliPHOSRawFitterv2& AliPHOSRawFitterv2::operator = (const AliPHOSRawFitterv2 &ph
 }
 
 //-----------------------------------------------------------------------------
-Bool_t AliPHOSRawFitterv2::Eval()
+Bool_t AliPHOSRawFitterv2::Eval(const UShort_t *signal, Int_t sigStart, Int_t sigLength)
 {
   //Extract an energy deposited in the crystal,
   //crystal' position (module,column,row),
@@ -131,15 +131,15 @@ Bool_t AliPHOSRawFitterv2::Eval()
   if(!h) h = new TH1D("hSample","",200,0.,200.) ;
 
   Double_t pedestal = 0;
-  for (Int_t i=0; i<fLength; i++) {
+  for (Int_t i=0; i<sigLength; i++) {
     if (i<kPreSamples) {
       nPed++;
-      pedMean += fSignal[i];
-      pedRMS  += fSignal[i]*fSignal[i] ;
+      pedMean += signal[i];
+      pedRMS  += signal[i]*signal[i] ;
     }
-    if(fSignal[i] > maxSample) maxSample = fSignal[i];
-    if(fSignal[i] == maxSample) nMax++;
-    h->SetBinContent(i+1,fSignal[i]) ;
+    if(signal[i] > maxSample) maxSample = signal[i];
+    if(signal[i] == maxSample) nMax++;
+    h->SetBinContent(i+1,signal[i]) ;
   }
   fEnergy = (Double_t)maxSample;
   if (maxSample > 900 && nMax > 2) fOverflow = kTRUE;
@@ -193,14 +193,14 @@ Bool_t AliPHOSRawFitterv2::Eval()
 
   fQuality = 0. ;
   
-  for(Int_t i=1; i<fLength && cnts<fNtimeSamples; i++){
-    if(fSignal[i] < pedestal)
+  for(Int_t i=1; i<sigLength && cnts<fNtimeSamples; i++){
+    if(signal[i] < pedestal)
       continue ;
-    Double_t de = fSignal[i]   - pedestal ;
-    Double_t av = fSignal[i-1] - pedestal + de;
+    Double_t de = signal[i]   - pedestal ;
+    Double_t av = signal[i-1] - pedestal + de;
     if(av<=0.) //this is fluctuation around pedestal, skip it
       continue ;
-    Double_t ds = fSignal[i] - fSignal[i-1] ;
+    Double_t ds = signal[i] - signal[i-1] ;
     Double_t ti = ds/av ;       // calculate log. derivative
     ti = a/(ti+b)-c*ti ;        // and compare with parameterization
     ti = i - ti ; 
@@ -214,6 +214,7 @@ Bool_t AliPHOSRawFitterv2::Eval()
   if(tW>0.){
     fTime/=tW ;
     fQuality = tRMS/tW-fTime*fTime ;
+    fTime+=sigStart;
   }
   else{
     fTime=-999. ;
@@ -221,8 +222,8 @@ Bool_t AliPHOSRawFitterv2::Eval()
   }
 
   Bool_t isBad = 0 ;
-  for(Int_t i=1; i<fLength-1&&!isBad; i++){
-    if(fSignal[i] > fSignal[i-1]+5 && fSignal[i] > fSignal[i+1]+5) { //single jump
+  for(Int_t i=1; i<sigLength-1&&!isBad; i++){
+    if(signal[i] > signal[i-1]+5 && signal[i] > signal[i+1]+5) { //single jump
       isBad=1 ;
     }
   }
@@ -232,8 +233,8 @@ Bool_t AliPHOSRawFitterv2::Eval()
   if(fPedestalRMS > 0.1)
     isBad=1 ;
   
-  for(Int_t i=1; i<fLength-1&&!isBad; i++){
-    if(fSignal[i] < pedestal-1)
+  for(Int_t i=1; i<sigLength-1&&!isBad; i++){
+    if(signal[i] < pedestal-1)
       isBad=1 ;
   }
   

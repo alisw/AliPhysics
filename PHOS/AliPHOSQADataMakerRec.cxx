@@ -416,11 +416,11 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	Int_t sigStart      = fRawStream->GetStartTimeBin();
 	Int_t sigLength     = fRawStream->GetBunchLength();
 	fitter->SetSamples(sig,sigStart,sigLength);
+	fitter->SetChannelGeo(module,cellX,cellZ,caloFlag);
+	fitter->Eval(sig,sigStart,sigLength);
       } // End of NextBunch()
 
       fitter->SetNBunches(nBunches);
-      fitter->SetChannelGeo(module,cellX,cellZ,caloFlag);
-      fitter->Eval();
       
       Double_t energy = fitter->GetEnergy() ; 
       Double_t time   = fitter->GetTime() ;

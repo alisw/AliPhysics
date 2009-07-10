@@ -125,7 +125,7 @@ AliPHOSRawFitterv1& AliPHOSRawFitterv1::operator = (const AliPHOSRawFitterv1 &ph
 }
 
 //-----------------------------------------------------------------------------
-Bool_t AliPHOSRawFitterv1::Eval()
+Bool_t AliPHOSRawFitterv1::Eval(const UShort_t *signal, Int_t sigStart, Int_t sigLength)
 {
   //Extract an energy deposited in the crystal,
   //crystal' position (module,column,row),
@@ -134,7 +134,7 @@ Bool_t AliPHOSRawFitterv1::Eval()
   //reasonable shape, fits it with Gamma2 function and extracts 
   //energy and time.
 
-  if (fNBunches > 1) {
+  if (fCaloFlag == 2 || fNBunches > 1) {
     fQuality = 1000;
     return kTRUE;
   }
@@ -145,19 +145,18 @@ Bool_t AliPHOSRawFitterv1::Eval()
   const Float_t kBaseLine   = 1.0;
   const Int_t   kPreSamples = 10;
   
-  TArrayI *fSamples = new TArrayI(fLength); // array of samples
-  TArrayI *fTimes   = new TArrayI(fLength); // array of times corresponding to samples
-  for (Int_t i=0; i<fLength; i++) {
+  TArrayI *fSamples = new TArrayI(sigLength); // array of sample amplitudes
+  TArrayI *fTimes   = new TArrayI(sigLength); // array of sample time stamps
+  for (Int_t i=0; i<sigLength; i++) {
     if (i<kPreSamples) {
       nPed++;
-      pedMean += fSignal[i];
-      pedRMS  += fSignal[i]*fSignal[i] ;
+      pedMean += signal[i];
+      pedRMS  += signal[i]*signal[i] ;
     }
-    fSamples->AddAt(fSignal[i],i);
-    fTimes  ->AddAt(        i ,i);
+    fSamples->AddAt(signal[i],i);
+    fTimes  ->AddAt(       i ,i);
   }
 
-  Int_t    iBin     = fSamples->GetSize() ;
   fEnergy = -111;
   fQuality= 999. ;
   const Float_t sampleMaxHG=102.332 ;  //maximal height of HG sample with given parameterization
@@ -192,61 +191,64 @@ Bool_t AliPHOSRawFitterv1::Eval()
   if (fEnergy < kBaseLine) fEnergy = 0;
   
   //calculate time and energy
-  Int_t maxBin=0 ;
-  Int_t maxAmp=0 ;
-  Double_t aMean=0. ;
-  Double_t aRMS=0. ;
-  Double_t wts=0 ;
-  Int_t tStart = 0 ;
-  for(Int_t i=0; i<fSamples->GetSize(); i++){
-    if(fSamples->At(i) > pedestal){
-      Double_t de=fSamples->At(i)-pedestal ;
-      if(de>1.){
-	aMean+=de*i ;
-	aRMS+=de*i*i ;
-	wts+=de; 
+  Int_t    maxBin=0 ;
+  Int_t    maxAmp=0 ;
+  Double_t aMean =0. ;
+  Double_t aRMS  =0. ;
+  Double_t wts   =0 ;
+  Int_t    tStart=0 ;
+
+  for (Int_t i=0; i<sigLength; i++){
+    if(signal[i] > pedestal){
+      Double_t de = signal[i] - pedestal ;
+      if(de > 1.) {
+	aMean += de*i ;
+	aRMS  += de*i*i ;
+	wts   += de; 
       }
-      if(de>2 && tStart==0) 
-	tStart=i ;
-      if(maxAmp<fSamples->At(i)){
-	maxBin=i ;
-	maxAmp=fSamples->At(i) ;
+      if(de > 2 && tStart==0) 
+	tStart = i ;
+      if(maxAmp < signal[i]){
+	maxBin = i ;
+	maxAmp = signal[i] ;
       }
     }
   }
-  if(maxBin==fSamples->GetSize()-1){//bad "rising" sample
-    fEnergy=0. ;
-    fTime=-999.;
-    fQuality= 999. ;
+
+  if (maxBin==sigLength-1){//bad "rising" sample
+    fEnergy =    0. ;
+    fTime   = -999. ;
+    fQuality=  999. ;
     return kTRUE ;
   }
+
   fEnergy=Double_t(maxAmp)-pedestal ;
   fOverflow =0 ;  //look for plato on the top of sample
-  if(fEnergy>500 &&  //this is not fluctuation of soft sample
-     maxBin<fSamples->GetSize()-1 && fSamples->At(maxBin+1)==maxAmp){ //and there is a plato
+  if (fEnergy>500 &&  //this is not fluctuation of soft sample
+     maxBin<sigLength-1 && fSamples->At(maxBin+1)==maxAmp){ //and there is a plato
     fOverflow = kTRUE ;
   }
-      
-  if(wts>0){
-    aMean/=wts; 
-    aRMS=aRMS/wts-aMean*aMean;
+  
+  if (wts > 0) {
+    aMean /= wts; 
+    aRMS   = aRMS/wts - aMean*aMean;
   }
 
   //do not take too small energies
-  if(fEnergy < kBaseLine) 
+  if (fEnergy < kBaseLine) 
     fEnergy = 0;
   
   //do not test quality of too soft samples
-  if(fEnergy<maxEtoFit){
-    fTime=fTimes->At(tStart);
-    if(aRMS<2.) //sigle peak
-      fQuality=999. ;
+  if (fEnergy < maxEtoFit){
+    fTime = tStart;
+    if (aRMS < 2.) //sigle peak
+      fQuality = 999. ;
     else
-      fQuality= 0. ;
+      fQuality =   0. ;
     return kTRUE ;
   }
       
-  //IF sample has reasonable mean and RMS, try to fit it with gamma2
+  // if sample has reasonable mean and RMS, try to fit it with gamma2
   
   gMinuit->mncler();                     // Reset Minuit's list of paramters
   gMinuit->SetPrintLevel(-1) ;           // No Printout
@@ -255,25 +257,25 @@ Bool_t AliPHOSRawFitterv1::Eval()
   
   fToFit->Clear("nodelete") ;
   Double_t b=0,bmin=0,bmax=0 ;
-  if(fCaloFlag == 0){ // Low gain
+  if      (fCaloFlag == 0){ // Low gain
     fSampleParamsLow->AddAt(pedestal,4) ;
-    if(fOverflow)
+    if (fOverflow)
       fSampleParamsLow->AddAt(double(maxAmp),5) ;
     else
       fSampleParamsLow->AddAt(double(1023),5) ;
-    fSampleParamsLow->AddAt(double(iBin),6) ;
+    fSampleParamsLow->AddAt(double(sigLength),6) ;
     fToFit->AddFirst((TObject*)fSampleParamsLow) ; 
     b=fSampleParamsLow->At(2) ;
     bmin=0.5 ;
     bmax=10. ;
   }
-  else if(fCaloFlag == 1){ // High gain
+  else if (fCaloFlag == 1){ // High gain
     fSampleParamsHigh->AddAt(pedestal,4) ;
-    if(fOverflow)
+    if (fOverflow)
       fSampleParamsHigh->AddAt(double(maxAmp),5) ;
     else
       fSampleParamsHigh->AddAt(double(1023),5);
-    fSampleParamsHigh->AddAt(double(iBin),6);
+    fSampleParamsHigh->AddAt(double(sigLength),6);
     fToFit->AddFirst((TObject*)fSampleParamsHigh) ; 
     b=fSampleParamsHigh->At(2) ;
     bmin=0.05 ;
@@ -287,35 +289,34 @@ Bool_t AliPHOSRawFitterv1::Eval()
   gMinuit->mnparm(0, "t0",  1.*tStart, 0.01, -500., 500., ierflg) ;
   if(ierflg != 0){
     //	  AliWarning(Form("Unable to set initial value for fit procedure : t0=%e\n",1.*tStart) ) ;
-    fEnergy=0. ;
-    fTime=-999. ;
-    fQuality=999 ;
+    fEnergy =   0. ;
+    fTime   =-999. ;
+    fQuality= 999. ;
     return kTRUE ; //will scan further
   }
   Double_t amp0=0; 
-  if(fCaloFlag == 0) // Low gain
-    amp0=fEnergy/sampleMaxLG;
-  else if(fCaloFlag == 1) // High gain
-    amp0=fEnergy/sampleMaxHG;
+  if      (fCaloFlag == 0) // Low gain
+    amp0 = fEnergy/sampleMaxLG;
+  else if (fCaloFlag == 1) // High gain
+    amp0 = fEnergy/sampleMaxHG;
   
   gMinuit->mnparm(1, "Energy", amp0 , 0.01*amp0, 0, 0, ierflg) ;
   if(ierflg != 0){
     //	  AliWarning(Form("Unable to set initial value for fit procedure : E=%e\n", amp0)) ;
-    fEnergy=0. ;
-    fTime=-999. ;
-    fQuality=999 ;
+    fEnergy =   0. ;
+    fTime   =-999. ;
+    fQuality= 999. ;
     return kTRUE ; //will scan further
   }
   
   gMinuit->mnparm(2, "p2", b, 0.01*b, bmin, bmax, ierflg) ;
   if(ierflg != 0){                                         
     //        AliWarning(Form("Unable to set initial value for fit procedure : E=%e\n", amp0)) ;  
-    fEnergy=0. ;           
-    fTime=-999. ;         
-    fQuality=999 ;       
+    fEnergy =   0. ;
+    fTime   =-999. ;
+    fQuality= 999. ;
     return kTRUE ; //will scan further  
   }             
-  
   
   Double_t p0 = 0.0001 ; // "Tolerance" Evaluation stops when EDM = 0.0001*p0 ; The number of function call slightly
   //  depends on it. 
@@ -330,23 +331,23 @@ Bool_t AliPHOSRawFitterv1::Eval()
   
   Double_t err,t0err ;
   Double_t t0,efit ;
-  gMinuit->GetParameter(0,t0, t0err) ;    
-  gMinuit->GetParameter(1,efit, err) ;    
+  gMinuit->GetParameter(0,t0, t0err) ;
+  gMinuit->GetParameter(1,efit, err) ;
   
   Double_t bfit, berr ;
   gMinuit->GetParameter(2,bfit,berr) ;
   
   //Calculate total energy
-  //this isparameterization of depetendence of pulse height on parameter b
+  //this is parameterization of dependence of pulse height on parameter b
   if(fCaloFlag == 0) // Low gain
-    efit*=99.54910 + 78.65038*bfit ;
+    efit *= 99.54910 + 78.65038*bfit ;
   else if(fCaloFlag == 1) // High gain
-    efit*=80.33109+128.6433*bfit ;
+    efit *= 80.33109 + 128.6433*bfit ;
   
-  if(efit<0. || efit > 10000.){
+  if(efit < 0. || efit > 10000.){
     //set energy to previously found max
-    fTime=-999.;                                                                
-    fQuality=999 ;                                                              
+    fTime   =-999.;
+    fQuality= 999 ;
     return kTRUE;
   }                                                                             
   
@@ -354,15 +355,16 @@ Bool_t AliPHOSRawFitterv1::Eval()
   Double_t fmin,fedm,errdef ;
   Int_t npari,nparx,istat;
   gMinuit->mnstat(fmin,fedm,errdef,npari,nparx,istat) ;
-  fQuality=fmin/(fSamples->GetSize()-iBin) ;
+  fQuality = fmin/sigLength ;
   //compare quality with some parameterization
-  if(fCaloFlag == 0) // Low gain
-    fQuality/=2.+0.002*fEnergy ;
-  else if(fCaloFlag == 1) // High gain
-    fQuality/=0.75+0.0025*fEnergy ;
+  if      (fCaloFlag == 0) // Low gain
+    fQuality /= 2.00 + 0.0020*fEnergy ;
+  else if (fCaloFlag == 1) // High gain
+    fQuality /= 0.75 + 0.0025*fEnergy ;
   
-  fEnergy=efit ;
-  fTime=t0-4.024*bfit ; //-10.402*bfit+4.669*bfit*bfit ; //Correction for 70 samples
+  fEnergy = efit ;
+  fTime   = t0 - 4.024*bfit ; //-10.402*bfit+4.669*bfit*bfit ; //Correction for 70 samples
+  fTime  += sigStart;
   
   delete fSamples ;
   delete fTimes ;

@@ -192,12 +192,9 @@ int main(int argc, char **argv) {
 	    if (nBunches > 1) continue;
 	    sigStart  = stream.GetStartTimeBin();
 	    sigLength = stream.GetBunchLength();
-	    fitter.SetSamples(stream.GetSignals(),sigStart,sigLength);
+	    fitter.SetChannelGeo(stream.GetModule(),cellX,cellZ,caloFlag);
+	    fitter.Eval(stream.GetSignals(),sigStart,sigLength);
 	  } // End of NextBunch()
-	  
-	  fitter.SetNBunches(nBunches);
-	  fitter.SetChannelGeo(stream.GetModule(),cellX,cellZ,caloFlag);
-	  fitter.Eval();
 	  
 	  if (nBunches>1) continue;
 	  
