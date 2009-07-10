@@ -172,7 +172,7 @@ void AliPHOSRcuDA1::FillHistograms(Float_t e[64][56][2], Float_t t[64][56][2])
 	else {
 	  sprintf(hname,"%d_%d_%d_%d",fMod,iX,iZ,iGain);
 	  sprintf(htitl,"Energy vs TOF for crystal %d_%d_%d and gain %d",fMod,iX,iZ,iGain);
-	  fTimeEnergy[iX][iZ][iGain] = new TH2F(hname,htitl,1024,0.,1024.,100,0.,100);
+	  fTimeEnergy[iX][iZ][iGain] = new TH2F(hname,htitl,100,0.,1024.,100,0.,100);
 	  fTimeEnergy[iX][iZ][iGain]->Fill(e[iX][iZ][iGain],t[iX][iZ][iGain]);
 	  fHistoArray.Add(fTimeEnergy[iX][iZ][iGain]);
 	}
