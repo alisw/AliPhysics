@@ -62,7 +62,8 @@ AliHLTTPCCalibSeedMakerComponent::AliHLTTPCCalibSeedMakerComponent()
     fMaxSlice(0),
     fMinPartition(5),
     fMaxPartition(0),
-    fTPCGeomParam(0)   
+    fTPCGeomParam(0),
+    fSeedArray(0)
 {
   // see header file for class documentation
   // or
@@ -128,14 +129,19 @@ int AliHLTTPCCalibSeedMakerComponent::DoInit( int /*argc*/, const char** /*argv*
 // see header file for class documentation
  
   fTPCGeomParam = new AliTPCParamSR;
-  if(fTPCGeomParam) fTPCGeomParam->ReadGeoMatrices();
+  if(fTPCGeomParam) fTPCGeomParam->ReadGeoMatrices();  
+  
+  fSeedArray = new TObjArray;
+  fSeedArray->SetOwner(kTRUE);
   return 0;
 
 } // end DoInit()
 
 int AliHLTTPCCalibSeedMakerComponent::DoDeinit() { 
 // see header file for class documentation  
-         
+  
+  if(fTPCGeomParam) delete fTPCGeomParam; fTPCGeomParam = NULL;          
+  if(fSeedArray)    delete fSeedArray;    fSeedArray    = NULL;          
   return 0;
 }
 
@@ -186,11 +192,10 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
   //------------------ Access to track data blocks --------------------//
   
   //TObjArray *offClusterArray = new TObjArray;
-  TObjArray *seedArray       = new TObjArray;
   //offClusterArray->SetOwner(kTRUE);
-  seedArray->SetOwner(kTRUE);
   //offClusterArray->Clear();
-  seedArray->Clear();
+  
+  fSeedArray->Clear();
   
   for(iter = GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){  
  
@@ -209,7 +214,8 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
       vector<AliHLTGlobalBarrelTrack> tracks;
       AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(iter->fPtr), iter->fSize, tracks);      
     
-      // loop over the elements of the AliHLTGlobalBarrelTrack vector
+      // loop over the elements(tracks) of the AliHLTGlobalBarrelTrack vector
+
       for(vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();  element!=tracks.end(); element++){
           
 	  AliRieman rieman(1000);
@@ -301,18 +307,18 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
 
 
           HLTInfo("External track parameters: seed: 0x%08x, xmin: %f, alpha: %f, param[0]: %f, cov[0]: %f", seed, xmin, alpha, param[0], cov[0]);
-	  seedArray->Add(seed);
+	  fSeedArray->Add(seed);
 
       }// end of vector track loop        
   } // end of loop over blocks of merged tracks  
   
   HLTDebug("Used space points: %d", usedSpacePoints);
-  HLTDebug("Number of entries in seedArray: %d", seedArray->GetEntries());
+  HLTDebug("Number of entries in fSeedArray: %d", fSeedArray->GetEntries());
 
 
   fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( fMinSlice, fMaxSlice, fMinPartition, fMaxPartition );
   //PushBack((TObject*)offClusterArray, kAliHLTDataTypeTObjArray, fSpecification);
-  PushBack((TObject*)seedArray,       kAliHLTDataTypeTObjArray, fSpecification);
+  PushBack((TObject*)fSeedArray,       kAliHLTDataTypeTObjArray, fSpecification);
  
   return 0;
 } // end DoEvent()
