@@ -140,16 +140,17 @@ void AliTOFTrigger::CreateInputs()
    if( fInputs.GetEntriesFast() > 0 ) return;
    
    fInputs.AddLast(new AliTriggerInput("TOF_Cosmic_MultiMuon_L0","TOF",0));
-   fInputs.AddLast(new AliTriggerInput("TOF_pp_MB_L0","TOF",0));
-   fInputs.AddLast(new AliTriggerInput("TOF_UltraPer_Coll_L0","TOF",0));
+   fInputs.AddLast(new AliTriggerInput("0OIN","TOF",0)); // was "TOF_pp_MB_L0"
+   fInputs.AddLast(new AliTriggerInput("0OX1","TOF",0)); // was "TOF_UltraPer_Coll_L0"
 
-   fInputs.AddLast(new AliTriggerInput("TOF_High_Mult_L0","TOF",0));
+   fInputs.AddLast(new AliTriggerInput("0OHM","TOF",0)); // was "TOF_High_Mult_L0"
    fInputs.AddLast(new AliTriggerInput("TOF_Jet_L1","TOF",0));
 }
 
 //----------------------------------------------------------------------
 void AliTOFTrigger::Trigger(){
   //triggering method
+
   CreateLTMMatrix();
   Int_t nchonFront = 0;
   Int_t nchonBack = 0;
@@ -186,12 +187,12 @@ void AliTOFTrigger::Trigger(){
 
   //pp Minimum Bias Trigger
   if (nchonTot >= fppMBTh) {
-    SetInput("TOF_pp_MB_L0");
+    SetInput("0OIN");
   }
 
   //High Multiplicity Trigger
   if (nchonTot >= fHighMultTh) {
-    SetInput("TOF_High_Mult_L0");
+    SetInput("0OHM");
   }
 
   
@@ -305,7 +306,7 @@ void AliTOFTrigger::Trigger(){
 	  for (Int_t i2=minipsi;i2<=maxipsi;i2++){
 	    for (Int_t j2 = j2min;j2<=j2max;j2++){
 	      if (fCTTMmatrixFront[i2][j2]) {
-		SetInput("TOF_UltraPer_Coll_L0");
+		SetInput("0OX1");
 		boolpsi = kTRUE;
 		//exiting loops
 		j2 = j2max+1;
@@ -319,7 +320,7 @@ void AliTOFTrigger::Trigger(){
 	    for (Int_t i2=miniro;i2<=maxiro;i2++){
 	      for (Int_t j2 = j2min;j2<=j2max;j2++){
 		if (fCTTMmatrixFront[i2][j2]) {
-		  SetInput("TOF_UltraPer_Coll_L0");
+		  SetInput("0OX1");
 		  boolro = kTRUE;
 		  //exiting loops
 		  j2 = j2max+1;
@@ -336,7 +337,7 @@ void AliTOFTrigger::Trigger(){
 	  for (Int_t i2=minipsi;i2<=maxipsi;i2++){
 	    for (Int_t j2 = j2min;j2<=j2max;j2++){
 	      if (fCTTMmatrixBack[i2][j2]) {
-		SetInput("TOF_UltraPer_Coll_L0");
+		SetInput("0OX1");
 		boolpsi = kTRUE;
 		//exiting loops
 		j2 = j2max+1;
@@ -350,7 +351,7 @@ void AliTOFTrigger::Trigger(){
 	    for (Int_t i2=miniro;i2<=maxiro;i2++){
 	      for (Int_t j2 = j2min;j2<=j2max;j2++){
 		if (fCTTMmatrixBack[i2][j2]) {
-		  SetInput("TOF_UltraPer_Coll_L0");
+		  SetInput("0OX1");
 		  boolro = kTRUE;
 		  //exiting loops
 		  j2 = j2max+1;
