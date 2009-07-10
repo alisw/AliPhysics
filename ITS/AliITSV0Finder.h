@@ -21,10 +21,7 @@ class AliITStrackerMI;
 //-------------------------------------------------------------------------
 class AliITSV0Finder : public TObject {
 public:
-  AliITSV0Finder();
-  //AliITSV0Finder(const AliITSV0Finder &/*v0Finder*/) {;}
-  //AliITSV0Finder & operator=(const AliITSV0Finder &/*v0Finder*/) {;}
- 
+  AliITSV0Finder(); 
   virtual ~AliITSV0Finder();
 
   //try to find V0
@@ -40,7 +37,10 @@ public:
  
 
 private:
- 
+
+  AliITSV0Finder(const AliITSV0Finder & itsV0finder);
+  AliITSV0Finder & operator=(const AliITSV0Finder & itsV0finder);
+  
   ClassDef(AliITSV0Finder,0)   // on-the-fly V0 finder for AliITStrackerMI
 };
 #endif
