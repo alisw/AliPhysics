@@ -412,7 +412,8 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeade
 	  nHighChan++;
 	}//end if gain
       } // regular tower
-      else if ( in->IsLEDMonData() ) { // LED ref.
+      else if ( in->IsLEDMonData() ) { // LED ref.; 
+	// strip # is coded is 'column' in the channel maps 
 	RefNum = GetRefNum(arrayPos, in->GetColumn(), gain); 
 	LEDAmpVal[RefNum] = max - min;
       } // end of LED ref

@@ -20,9 +20,15 @@ public:
   static const int fgkEMCALCols = 48; // number of columns per module for EMCAL
 
   static const int fgkEMCALLEDRefs = 24; // number of LEDs (reference/monitors) per module for EMCAL; one per StripModule
+  static const int fgkEMCALTempSensors = 8; // number Temperature sensors per module for EMCAL
+
+  Int_t GetStripModule(Int_t iSM, Int_t iCol) const
+    // Strip 0 is the one closest to the FEE crates; different for A (iColumn/2) and C sides
+    { return ( (iSM%2==0) ? iCol/2 : AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - iCol/2 ); }
 
   // also a few readout related variables:
   static const int fgkSampleMax = 1023; // highest possible sample value (10-bit = 0x3ff)
+  static const int fgkOverflowCut = 950; // saturation starts around here; also exist as private constant in AliEMCALRawUtils, should probably be replaced
   static const int fgkSampleMin = 0; // lowest possible sample value 
   
   // RAW/AliCaloAltroMapping provides the correspondence information between
