@@ -50,7 +50,7 @@ class AliGRPObject : public TObject {
 	Float_t   GetBeamEnergy() const {return fBeamEnergy;}
 	TString   GetBeamType() const {return fBeamType;}
 	Char_t    GetNumberOfDetectors() const {return fNumberOfDetectors;}
-	UInt_t     GetDetectorMask() const {return fDetectorMask;}
+	UInt_t    GetDetectorMask() const {return fDetectorMask;}
 	TString   GetLHCPeriod() const {return fLHCPeriod;}
 	TString   GetRunType() const {return fRunType;}
 	TString   GetLHCState() const {return fLHCState;}
@@ -68,12 +68,10 @@ class AliGRPObject : public TObject {
 	Float_t   GetDipoleCurrent(Stats stat) const {return fDipoleCurrent[stat];}
 	Float_t*  GetCavernTemperature() const {return fCavernTemperature;}
 	Float_t   GetCavernTemperature(Stats stat) const {return fCavernTemperature[stat];}
-	//	Float_t*  GetCavernAtmosPressure() {return fCavernAtmosPressure;}
-	//Float_t   GetCavernAtmosPressure(Stats stat) const {return fCavernAtmosPressure[stat];}
 	AliDCSSensor*   GetCavernAtmosPressure() const {return fCavernAtmosPressure;}
 	AliDCSSensor*   GetSurfaceAtmosPressure() const {return fSurfaceAtmosPressure;}
 
-	Float_t* GetHallProbes(DP_HallProbes hp) const;
+	Float_t*  GetHallProbes(DP_HallProbes hp) const;
 	Float_t   GetHallProbes(Int_t hp) const {return fHallProbes[hp];}
 	Float_t   GetHallProbes(DP_HallProbes hp, Stats stat) const {return fHallProbes[hp*fPoints+stat];}
 
@@ -115,10 +113,6 @@ class AliGRPObject : public TObject {
   		for (Int_t i = 0;i<fPoints;i++) fCavernTemperature[i] = cavernTemperature[i];
 	}
 	void SetCavernTemperature(Float_t cavernTemperature, Stats stat)  {fCavernTemperature[stat] = cavernTemperature;}
-	//	void SetCavernAtmosPressure(Float_t* cavernAtmosPressure)  {
-	//		for (Int_t i = 0;i<fPoints;i++) fCavernAtmosPressure[i] = cavernAtmosPressure[i];
-	//}
-//	void SetCavernAtmosPressure(Float_t cavernAtmosPressure, Stats stat)  {fCavernAtmosPressure[stat] = cavernAtmosPressure;}
 	void SetCavernAtmosPressure(AliDCSSensor* const cavernAtmosPressure)  {fCavernAtmosPressure = cavernAtmosPressure;}
 	void SetSurfaceAtmosPressure(AliDCSSensor* const surfacePressure)  {fSurfaceAtmosPressure = surfacePressure;}
 
@@ -180,8 +174,6 @@ class AliGRPObject : public TObject {
                                           // DipoleCurrent entry from DCS DB
 	Float_t*  fCavernTemperature;     // [fPoints]
                                           // CavernTemperature entry from DCS DB
-	//	Float_t*  fCavernAtmosPressure;   // [fPoints]
-                                          // CavernAtmosPressure entry from DCS DB
 	AliDCSSensor*  fCavernAtmosPressure;    // CavernAtmosPressure entry from DCS DB
 	AliDCSSensor*  fSurfaceAtmosPressure;   // SurfaceAtmosPressure entry from DCS DB
 

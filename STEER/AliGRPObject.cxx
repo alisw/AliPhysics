@@ -155,7 +155,6 @@ AliGRPObject::AliGRPObject(const AliGRPObject &obj):
 	fL3Current(new Float_t[fPoints]),
 	fDipoleCurrent(new Float_t[fPoints]),
 	fCavernTemperature(new Float_t[fPoints]),
-	//fCavernAtmosPressure(new Float_t[fPoints]),
 	fCavernAtmosPressure(obj.fCavernAtmosPressure),
 	fSurfaceAtmosPressure(obj.fSurfaceAtmosPressure),
 	fHallProbes(0x0)
@@ -176,8 +175,7 @@ AliGRPObject::AliGRPObject(const AliGRPObject &obj):
 		fBeamIntensity[i] = obj.fBeamIntensity[i];
 		fL3Current[i] = obj.fL3Current[i];
 		fDipoleCurrent[i] = obj.fDipoleCurrent[i];
-		//fCavernTemperature[i] = obj.fCavernTemperature[i];
-		fCavernAtmosPressure[i] = obj.fCavernAtmosPressure[i];
+		fCavernTemperature[i] = obj.fCavernTemperature[i];
 	}
 }
 
@@ -213,7 +211,6 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 	this->fL3Current = new Float_t[fPoints];
 	this->fDipoleCurrent = new Float_t[fPoints];
 	this->fCavernTemperature = new Float_t[fPoints];
-	//this->fCavernAtmosPressure = new Float_t[fPoints];
 	
 	for (Int_t nhp=0; nhp< fDimension; nhp++){
 		this->fHallProbes[nhp] = obj.GetHallProbes(nhp);
@@ -221,13 +218,11 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 	}
 	for (Int_t i = 0; i < fPoints; i++){
 
-		//		this->fBeamEnergy[i] = obj.GetBeamEnergy((Stats)i);
 		this->fLHCLuminosity[i] = obj.GetLHCLuminosity((Stats)i);
 		this->fBeamIntensity[i] = obj.GetBeamIntensity((Stats)i);
 		this->fL3Current[i] = obj.GetL3Current((Stats)i);
 		this->fDipoleCurrent[i] = obj.GetDipoleCurrent((Stats)i);
 		this->fCavernTemperature[i] = obj.GetCavernTemperature((Stats)i);
-		//		this->fCavernAtmosPressure[i] = obj.GetCavernAtmosPressure((Stats)i);
 	}
 
 	return *this;
@@ -417,14 +412,6 @@ void AliGRPObject::ReadValuesFromMap(const TMap* mapGRP){
 	else { 
 		AliError(Form("No fCavernTemperature value found in GRP map!"));
 	}
-	/*
-	if(mapGRP->GetValue("fCavernAtmosPressure")){
-		SetCavernAtmosPressure((Float_t)(((TObjString*)(mapGRP->GetValue("fCavernAtmosPressure")))->GetString()).Atof(),(Stats)0);
-	}	
-	else { 
-		AliError(Form("No fCavernAtmosPressure value found in GRP map!"));
-	}
-	*/
 	if(mapGRP->GetValue("fCavernAtmosPressure")){
 		AliInfo(Form("fCavernAtmosPressure found, but not ported to the new object since of a different type"));
 	}	
