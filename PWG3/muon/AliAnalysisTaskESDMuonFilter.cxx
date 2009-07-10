@@ -79,7 +79,6 @@ void AliAnalysisTaskESDMuonFilter::UserExec(Option_t */*option*/)
 
 void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD() 
 {
-  printf("sono in AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD\n");
   // ESD Muon Filter analysis task executed for each event
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   
@@ -114,14 +113,12 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   
   // Loop on muon tracks to fill the AOD track branch
   Int_t nMuTracks = esd->GetNumberOfMuonTracks();
-  printf("Number of Muon Tracks=%d\n",nMuTracks);
   
   // Update number of positive and negative tracks from AOD event (M.G.)
   Int_t nPosTracks = header->GetRefMultiplicityPos();
   Int_t nNegTracks = header->GetRefMultiplicityNeg();
   
   for (Int_t nMuTrack = 0; nMuTrack < nMuTracks; ++nMuTrack) {
-  printf("nMu=%d\n",nMuTrack);
     esdMuTrack = esd->GetMuonTrack(nMuTrack);
     
     if (!esdMuTrack->ContainTrackerData()) continue;
@@ -171,8 +168,6 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     aodTrack->SetMatchTrigger(esdMuTrack->GetMatchTrigger());
     
     primary->AddDaughter(aodTrack);
-    
-    printf("PT=%f",aodTrack->Pt());
     
     if (esdMuTrack->Charge() > 0) nPosTracks++;
     else nNegTracks++;
