@@ -45,10 +45,11 @@ class AliZDCRawStream: public TObject {
     Int_t  GetADCValue()      const {return fADCValue;}
     Int_t  GetADCGain()       const {return fADCGain;}
     
-    // Map from OCDB
     AliCDBStorage *SetStorage(const char* uri);
+
+    // Map from OCDB
     AliZDCChMap   *GetChMap() const;
-    
+    //  ADC map
     Int_t  GetNChannelsOn()	       const {return fNChannelsOn;}
     Int_t  GetCabledSignal()           const {return fCabledSignal;}
     Int_t  GetADCModFromMap(Int_t i)   const {return fMapADC[i][0];}
@@ -56,21 +57,32 @@ class AliZDCRawStream: public TObject {
     Int_t  GetADCSignFromMap(Int_t i)  const {return fMapADC[i][2];}
     Int_t  GetDetectorFromMap(Int_t i) const {return fMapADC[i][3];}
     Int_t  GetTowerFromMap(Int_t i)    const {return fMapADC[i][4];}
+    //  Scaler map
+    Int_t  GetScalerModFromMap(Int_t i)  const {return fScalerMap[i][0];}
+    Int_t  GetScalerChFromMap(Int_t i)   const {return fScalerMap[i][1];}
+    Int_t  GetScalerSignFromMap(Int_t i) const {return fScalerMap[i][2];}
+    Int_t  GetScDetectorFromMap(Int_t i) const {return fScalerMap[i][3];}
+    Int_t  GetScTowerFromMap(Int_t i)    const {return fScalerMap[i][4];}
     
-    Bool_t IsCalibration() const {return fIsCalib;}
-    Bool_t IsDARCHeader()  const {return fIsDARCHeader;}
-    Bool_t IsChMapping()   const {return fIsChMapping;}
-    Bool_t IsADCDataWord() const {return fIsADCDataWord;}
-    Bool_t IsADCHeader()   const {return fIsADCHeader;}
-    Bool_t IsADCEOB()	   const {return fIsADCEOB;}
-    Bool_t IsUnderflow()   const {return fIsUnderflow;}
-    Bool_t IsOverflow()    const {return fIsOverflow;}
+    Bool_t IsCalibration()   const {return fIsCalib;}
+    Bool_t IsDARCHeader()    const {return fIsDARCHeader;}
+    Bool_t IsHeaderMapping() const {return fIsHeaderMapping;}
+    Bool_t IsChMapping()     const {return fIsChMapping;}
+    Bool_t IsADCDataWord()   const {return fIsADCDataWord;}
+    Bool_t IsADCHeader()     const {return fIsADCHeader;}
+    Bool_t IsADCEOB()	     const {return fIsADCEOB;}
+    Bool_t IsUnderflow()     const {return fIsUnderflow;}
+    Bool_t IsOverflow()      const {return fIsOverflow;}
     
     UInt_t GetScGeo() const {return fScGeo;}	    
     UInt_t GetScNWords() const {return fScNWords;}	    
     UInt_t GetScTriggerSource() const {return fScTriggerSource;}	    
     UInt_t GetTriggerNumber() const {return fScTriggerNumber;}
     UInt_t GetTriggerCount() const {return fScEvCounter;}
+
+    Bool_t IsEventGood() const {return fIsEventGood;} 
+    Bool_t IsL0BitSet() const {return fIsL0BitSet;}  
+    Bool_t IsPileUpOff() const {return fIsPileUpOff;} 
     
     void SetNChannelsOn(Int_t val) {fNChannelsOn = val;}
     void SetSector(Int_t i, Int_t val) {fSector[i] = val;}
@@ -90,6 +102,9 @@ class AliZDCRawStream: public TObject {
        kInvalidADCModule = 4,
        kInvalidSector = 5};
     
+    // Module type codes
+    enum{kV965=1, kV830=2, kTRG=3, kTRGI=4, kPU=5}; 
+    
     // Signal codes for ZDC 
     // Same codes used in DAQ configuration file
     // To be changed ONLY IF this file is changed!!! 
@@ -106,7 +121,10 @@ class AliZDCRawStream: public TObject {
 	 kZNCCoot=36, kZNC1oot=37, kZNC2oot=38, kZNC3oot=39, kZNC4oot=40,
 	 kZPCCoot=41, kZPC1oot=42, kZPC2oot=43, kZPC3oot=44, kZPC4oot=45,
 	 kZEM1oot=46, kZEM2oot=47,
-	 kZDCAMonoot=48, kZDCCMonoot=49};
+	 kZDCAMonoot=48, kZDCCMonoot=49,
+	 kL1MBI=50, kL1CNI=51, kL1SCI=52, kL1EMDI=53, kL0I=54, 
+	 kL1MBO=55, kL1CNO=56, kL1SCO=57, kL1EMDO=58, 
+	 kHMBCN=59, kHSCEMD=60};
     
   private :
     AliZDCRawStream(const AliZDCRawStream& stream);
@@ -122,6 +140,7 @@ class AliZDCRawStream: public TObject {
     // Boolean variables indicating data type
     Bool_t fIsCalib;	      // True when calibration run
     Bool_t fIsDARCHeader;     // True when DARC header
+    Bool_t fIsHeaderMapping;  // True when reading header mapping
     Bool_t fIsChMapping;      // True when reading ch. mapping
     Bool_t fIsADCDataWord;    // True when data word
     Bool_t fIsADCHeader;      // True when ADC header
@@ -140,9 +159,9 @@ class AliZDCRawStream: public TObject {
     // ADC signal
     Int_t  fSector[2];    // [detector, sector]
     Int_t  fModType;	  // Module type
-    Int_t  fADCModule;    // ADC module
+    Int_t  fADCModule;    // ADC module = GEO address for scaler, trigger card, P.U.
     Int_t  fADCNChannels; // number of ADC ch.
-    Int_t  fADCChannel;   // ADC channel
+    Int_t  fADCChannel;   // ADC channel = ch. for scaler, trigger card, P.U.
     Int_t  fADCValue;	  // ADC channel
     Int_t  fADCGain;	  // ADC gain (0=high range; 1=low range)
     Bool_t fIsUnderflow;  // ADC underflow
@@ -159,12 +178,19 @@ class AliZDCRawStream: public TObject {
     UInt_t fScEvCounter;     // event counter
     
     // Channel mapping 
-    Int_t  fNChannelsOn;   // No. of signals/ADC ch. used
-    Int_t  fNConnCh;       // current mapped ch.
-    Int_t  fCabledSignal;  // physics signal (from enum)
-    Int_t  fMapADC[48][5]; // ADC map for the current run
-        
-    ClassDef(AliZDCRawStream, 10)    // class for reading ZDC raw digits
+    Int_t fNChannelsOn;      // No. of signals/ADC ch. used
+    Int_t fCurrentCh;	     // current mapped ADC ch.
+    Int_t fCabledSignal;     // physics signal (from enum)
+    Int_t fMapADC[48][5];    // ADC map {ADC mod., ch., signal, det., sec.}
+    Int_t fCurrScCh;	     // current mapped scaler ch.
+    Int_t fScalerMap[32][5]; // Scaler map {Scaler mod., ch., signal, det., sec.}
+    
+    // Checks over raw data event quality
+    Bool_t fIsEventGood; // true if not valid datum not corrupted
+    Bool_t fIsL0BitSet;  // true if L0 bit in history words = 1 
+    Bool_t fIsPileUpOff; // true if pile up bits in history words = 0
+    
+    ClassDef(AliZDCRawStream, 11)    // class for reading ZDC raw data
 };
 
 #endif
