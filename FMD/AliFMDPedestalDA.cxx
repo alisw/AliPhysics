@@ -29,12 +29,13 @@
 
 #include "AliFMDPedestalDA.h"
 #include "AliFMDAltroMapping.h"
-#include "iostream"
-#include "fstream"
+#include <iostream>
+#include <fstream>
 #include "AliLog.h"
 #include "TF1.h"
 #include "TObject.h"
 #include "TMath.h"
+#include <TSystem.h>
 
 //_____________________________________________________________________
 ClassImp(AliFMDPedestalDA)
@@ -295,6 +296,12 @@ void AliFMDPedestalDA::Terminate(TFile* diagFile)
   if(fZSfileFMD1.is_open()) FillinTimebins(fZSfileFMD1, map->Detector2DDL(1));
   if(fZSfileFMD2.is_open()) FillinTimebins(fZSfileFMD2, map->Detector2DDL(2));
   if(fZSfileFMD3.is_open()) FillinTimebins(fZSfileFMD3, map->Detector2DDL(3));
+  for (Int_t i = 0; i < 3; i++) {
+    if (!fSeenDetectors[i]) {
+      TString n(Form("ddl%d.csv",3072+map->Detector2DDL(i+1)));
+      gSystem->Unlink(n.Data());
+    }
+  }
   
 }
 

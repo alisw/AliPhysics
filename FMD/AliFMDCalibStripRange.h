@@ -19,9 +19,7 @@
     @brief   Per digitizer card pulser calibration
     @ingroup FMD_base
 */
-#ifndef FSTREAM
-# include <fstream>
-#endif
+#include <iosfwd>
 #ifndef ROOT_TObject
 # include <TObject.h>
 #endif
@@ -75,12 +73,12 @@ public:
      Dump stored strip ranges to file passed as ofstream
      @param outFile Outputfile
   */
-  void WriteToFile(ofstream &);
+  void WriteToFile(std::ostream &, Bool_t* detectors=0);
   /**
      Read information from file and set values
      @param inFile inputFile
    */
-  void ReadFromFile(ifstream &);
+  void ReadFromFile(std::istream &);
   
 protected:
   // TArrayI fRates; // Sample rates 

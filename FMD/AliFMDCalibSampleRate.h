@@ -20,9 +20,7 @@
     @ingroup FMD_base    
 */
 
-#ifndef FSTREAM
-# include <fstream>
-#endif
+#include <iosfwd>
 #ifndef ROOT_TObject
 # include <TObject.h>
 #endif
@@ -66,11 +64,11 @@ public:
   /** Write stored samplerates to file
       @param outFile Output file stream
    */
-  void WriteToFile(ofstream &);
+  void WriteToFile(std::ostream & outFile, Bool_t* detectors=0);
   /** Read information from file and set sample rates
       @param inFile input file stream
    */
-  void ReadFromFile(ifstream &);
+  void ReadFromFile(std::istream & inFile);
 protected:
   // TArrayI fRates; // Sample rates 
   AliFMDUShortMap fRates; // Sample rates

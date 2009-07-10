@@ -26,7 +26,7 @@
 // strips, and dead areas can be handled off-line. 
 // This information comes from DCS or the like.
 //
-#include "iostream"
+#include <iostream>
 #include "AliFMDCalibStripRange.h"	// ALIFMDCALIBGAIN_H
 #include "TString.h"
 // #include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
@@ -98,10 +98,13 @@ AliFMDCalibStripRange::Max(UShort_t det, Char_t ring,
 }
 //____________________________________________________________________
 void 
-AliFMDCalibStripRange::WriteToFile(ofstream &outFile)
+AliFMDCalibStripRange::WriteToFile(std::ostream &outFile, Bool_t* detectors)
 {
   outFile.write("# StripRange \n",14);
   for(Int_t det=1;det<=3;det++) {
+    if (detectors && !detectors[det-1]) { 
+      continue;
+    }
     UShort_t FirstRing = (det == 1 ? 1 : 0);
     for (UShort_t ir = FirstRing; ir < 2; ir++) {
       Char_t   ring = (ir == 0 ? 'O' : 'I');
@@ -121,7 +124,7 @@ AliFMDCalibStripRange::WriteToFile(ofstream &outFile)
 }
 //____________________________________________________________________
 void 
-AliFMDCalibStripRange::ReadFromFile(ifstream &inFile)
+AliFMDCalibStripRange::ReadFromFile(std::istream &inFile)
 {
   TString line;
   Bool_t readData=kFALSE;

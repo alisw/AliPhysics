@@ -40,19 +40,23 @@ int main(int argc, char **argv)
   Char_t* fileName = argv[1];
   TString secondArgument(argv[2]);
   
-  if(secondArgument.Contains("--diagnostics=true"))
-    diagnostics = kTRUE;
-  if(secondArgument.Contains("--help")) {
-    std::cout<<"Usage: filename --diagnostics=true/false . --help this help"<<std::endl;
-    return 0;
+  for (int i = 2; i < argc; i++) { 
+    TString arg(argv[i]);
+    if      (arg.Contains("--diagnostics=true")) diagnostics = kTRUE;
+    else if (arg.Contains("--help")) { 
+      std::cout << "Usage: " << argv[0] << " FILENAME [OPTIONS]\n\n"
+		<< "Options:\n" 
+		<< "    --diagnostics=BOOL Make diagnostics ROOT file\n"
+		<< std::endl;
+      return 0;
+    }
+    else { 
+      std::cerr << "Unknown option: " << arg << "\n"
+		<< "Try '" << argv[0] << " --help" << std::endl;
+      return 1;
+    }
   }
-  if(!secondArgument.IsWhitespace()&& !secondArgument.Contains("--help") 
-     && !secondArgument.Contains("--diagnostics=true")) {
-    std::cout<<"Second argument wrong. Use --help"<<std::endl;
-    return -1;
-  }
-    
-    Bool_t old = kTRUE;
+  Bool_t old = kTRUE;
     
   AliFMDParameters::Instance()->Init(kFALSE,0);
 

@@ -89,7 +89,8 @@ public:
   virtual Bool_t ReadSODevent(AliFMDCalibSampleRate* samplerate, 
 			      AliFMDCalibStripRange* striprange, 
 			      TArrayS &pulseSize, 
-			      TArrayS &pulseLength);
+			      TArrayS &pulseLength, 
+			      Bool_t* detectors=0);
   /** 
    * Check of the data from DDL @a ddl is zero-suppressed
    * 

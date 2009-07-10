@@ -54,17 +54,17 @@ public:
    * @param inFile        Whether an input file is specified
    * @param infilename    Input file name
    */
-  void GenerateBackgroundCorrection(Bool_t from_hits=kFALSE,
-				    Int_t nvtxbins=10,
-				    Float_t zvtxcut=10,
-				    Int_t nBinsEta=100, 
-				    Bool_t storeInAlien = kFALSE, 
-				    Int_t runNo =0, 
-				    Int_t endRunNo=999999999, 
-				    const Char_t* filename="background.root", 
-				    Bool_t simulate = kFALSE, 
-				    Int_t nEvents=10,
-				    Bool_t inFile = kFALSE,
+  void GenerateBackgroundCorrection(Bool_t        from_hits    = kFALSE,
+				    Int_t         nvtxbins     = 10,
+				    Float_t       zvtxcut      = 10,
+				    Int_t         nBinsEta     = 100, 
+				    Bool_t        storeInAlien = kFALSE, 
+				    Int_t         runNo        = 0, 
+				    Int_t         endRunNo     = 999999999, 
+				    const Char_t* filename  ="background.root", 
+				    Bool_t        simulate     = kFALSE, 
+				    Int_t         nEvents      = 10,
+				    Bool_t        inFile       = kFALSE,
 				    const Char_t* infilename="");
   /** 
    * Nested class that derives from AliFMDInput to do the actual
@@ -72,7 +72,7 @@ public:
    */  
   class AliFMDInputBG : public AliFMDInput 
   {
-  
+    
   public :
     //AliFMDInputBG() ; 
     /** 
@@ -88,7 +88,7 @@ public:
      * @return @c true on success.
      */
     Bool_t Init();
-    
+
     /** 
      * Get number of primaries seen
      * 

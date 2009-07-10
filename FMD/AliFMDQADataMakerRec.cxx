@@ -179,6 +179,24 @@ void AliFMDQADataMakerRec::InitRaws()
   }
 }
 
+#if 0
+struct FillESDHist : public AliESDFMD::ForOne
+{
+  FillESDHist(AliFMDQADataMakerRec* m) : fM(m) {}
+  FillESDHist(const FillESDHist& o) : fM(o.fM) {}
+  FillESDHist& operator=(const FillESDHist& o) { fM = o.fM; return *this;  }
+  Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, Float_t m, Float_t) 
+  {
+    // Float_t mult = fmd->Multiplicity(det,ring,sec,strip);
+    if(m == AliESDFMD::kInvalidMult) return true;
+    
+    fM->GetESDsData(0)->Fill(m);    
+    return true;
+  }
+  AliFMDQADataMakerRec* fM;
+};
+#endif
+
 //_____________________________________________________________________
 void AliFMDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
@@ -190,6 +208,13 @@ void AliFMDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 
   AliESDFMD* fmd = esd->GetFMDData();
   if (!fmd) return;
+
+#if 0
+  FillESDHist f(this);
+  fmd->ForEach(f);
+#else
+
+
 
   // FIXME - we should use AliESDFMD::ForOne subclass to do this!
   for(UShort_t det=1;det<=3;det++) {
@@ -208,6 +233,7 @@ void AliFMDQADataMakerRec::MakeESDs(AliESDEvent * esd)
       }
     }
   }
+#endif
 }
 
 

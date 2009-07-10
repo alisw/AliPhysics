@@ -88,6 +88,7 @@ protected:
   TArrayS fPulseSize;
   TArrayS fPulseLength;
 
+  Bool_t  fSeenDetectors[3];
 private:
  
   void WriteConditionsData(AliFMDRawReader* fmdReader);

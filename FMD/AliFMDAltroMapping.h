@@ -85,8 +85,8 @@ public:
 		     Short_t& strip,      UShort_t& sample) const;
 
   /** Map a hardware address into a detector index. 
-      @param ddl    Hardware DDL number 
-      @param hwaddr Hardware address.  
+      @param ddl        Hardware DDL number 
+      @param hwaddr     Hardware address.  
       @param timebin    Timebin 
       @param preSamples # of pre samples 
       @param sampleRate Over sampling rate 
@@ -158,10 +158,10 @@ public:
 			 UShort_t sampleRate) const;
   
   /** Map a detector index into a hardware address. 
-      @param det     The detector #
-      @param ring    The ring ID
-      @param sec     The sector #
-      @param str     The strip #
+      @param det         The detector #
+      @param ring        The ring ID
+      @param sec         The sector #
+      @param str         The strip #
       @param sam         The sample number 
       @param preSamples  Number of pre-samples
       @param sampleRate  The oversampling rate 

@@ -650,7 +650,8 @@ AliFMDRawReader::Exec(Option_t*)
 Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate, 
 				     AliFMDCalibStripRange* stripRange, 
 				     TArrayS &pulseSize, 
-				     TArrayS &pulseLength) 
+				     TArrayS &pulseLength, 
+				     Bool_t* detectors) 
 {
 
   AliFMDDebug(0, ("Start of SOD/EOD"));
@@ -668,6 +669,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
     
     Int_t ddl   = fReader->GetDDLID();
     Int_t detID = fReader->GetDetectorID();
+    if (detectors) detectors[map->DDL2Detector(ddl)-1] = kTRUE;
     AliFMDDebug(0, (" From reader: DDL number is %d , det ID is %d",ddl,detID));
     
     fNbytes = fReader->GetDataSize();

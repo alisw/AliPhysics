@@ -50,6 +50,10 @@ int main(int argc, char **argv)
   struct eventHeaderStruct *event;
   int status;
   /* define data source : this is argument 1 */  
+  if (argc < 2) { 
+    std::cout << "No monitor source set" << std::endl;
+    return -1;
+  }
   status=monitorSetDataSource( argv[1] );
   if (status!=0) {
     printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));

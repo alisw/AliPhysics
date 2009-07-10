@@ -96,6 +96,7 @@ AliFMDBaseDA::AliFMDBaseDA() :
   fRequiredEvents(0),
   fCurrentEvent(0)
  {
+   fSeenDetectors[0] = fSeenDetectors[1] = fSeenDetectors[2] = kFALSE;
   fDetectorArray.SetOwner();
   fConditionsFile.open("conditions.csv");
 }
@@ -112,6 +113,10 @@ AliFMDBaseDA::AliFMDBaseDA(const AliFMDBaseDA & baseDA) :
   fRequiredEvents(baseDA.fRequiredEvents),
   fCurrentEvent(baseDA.fCurrentEvent)
 {
+  fSeenDetectors[0] = baseDA.fSeenDetectors[0];
+  fSeenDetectors[1] = baseDA.fSeenDetectors[1];
+  fSeenDetectors[2] = baseDA.fSeenDetectors[2];
+
   fDetectorArray.SetOwner();
   
 }
@@ -170,12 +175,9 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
     digitArray->Clear();
     fmdReader->ReadAdcs(digitArray);
     
-    //std::cout<<"in event "<<*(reader->GetEventId())<<"   "<<n<<std::endl;
-    //AliDebug(5, Form("In event # %d with %d entries", 
-    //		     *(reader->GetEventId()), digitArray->GetEntriesFast()));
-    
     for(Int_t i = 0; i<digitArray->GetEntriesFast();i++) {
       AliFMDDigit* digit = static_cast<AliFMDDigit*>(digitArray->At(i));
+      fSeenDetectors[digit->Detector()-1] = kTRUE;
       FillChannels(digit);
     }
     
@@ -193,6 +195,7 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   WriteHeaderToFile();
   
   for(UShort_t det=1;det<=3;det++) {
+    if (!fSeenDetectors[det-1]) continue;
     std::cout << "FMD" << det << std::endl;
     UShort_t FirstRing = (det == 1 ? 1 : 0);
     for (UShort_t ir = FirstRing; ir < 2; ir++) {
@@ -300,41 +303,11 @@ void AliFMDBaseDA::WriteConditionsData(AliFMDRawReader* fmdReader)
   AliFMDCalibSampleRate* sampleRate = new AliFMDCalibSampleRate();
   AliFMDCalibStripRange* stripRange = new AliFMDCalibStripRange();
   
-  fmdReader->ReadSODevent(sampleRate,stripRange,fPulseSize,fPulseLength);
-  
-  // Sample Rate
-  /*
-    UShort_t defSampleRate = 4;
-    UShort_t sampleRateFromSOD;
-    
-  AliFMDCalibSampleRate* sampleRate = new AliFMDCalibSampleRate();
+  fmdReader->ReadSODevent(sampleRate,stripRange,fPulseSize,fPulseLength,
+			  fSeenDetectors);
 
-  UShort_t firstStrip = 0;
-  UShort_t lastStrip  = 127;
-  UShort_t firstStripSOD;
-  UShort_t lastStripSOD;
-  AliFMDCalibStripRange* stripRange = new AliFMDCalibStripRange();
-  
-  for(Int_t det=1;det<=3;det++) {
-    UShort_t FirstRing = (det == 1 ? 1 : 0);
-    for (UShort_t ir = FirstRing; ir < 2; ir++) {
-      Char_t   ring = (ir == 0 ? 'O' : 'I');
-      UShort_t nsec = (ir == 0 ? 40  : 20);
-      for(UShort_t sec =0; sec < nsec;  sec++)  {
-	sampleRateFromSOD = defSampleRate;
-	sampleRate->Set(det,ring,sec,0,sampleRateFromSOD);
-	firstStripSOD = firstStrip;
-	lastStripSOD  = lastStrip;
-	stripRange->Set(det,ring,sec,0,firstStripSOD,lastStripSOD);
-	
-      }
-    }
-  }
-  */
-  sampleRate->WriteToFile(fConditionsFile);
-  stripRange->WriteToFile(fConditionsFile);
-  //pars->SetSampleRate(sampleRate);
-  //pars->SetStripRange(stripRange);
+  sampleRate->WriteToFile(fConditionsFile, fSeenDetectors);
+  stripRange->WriteToFile(fConditionsFile, fSeenDetectors);
 
  
   // Zero Suppresion
@@ -344,6 +317,9 @@ void AliFMDBaseDA::WriteConditionsData(AliFMDRawReader* fmdReader)
   fConditionsFile.write("# Gain Events \n",15);
   
   for(UShort_t det=1; det<=3;det++) {
+    if (!fSeenDetectors[det-1]) { 
+      continue;
+    }
     UShort_t firstring = (det == 1 ? 1 : 0);
     for(UShort_t iring = firstring; iring <=1;iring++) {
       Char_t ring = (iring == 1 ? 'I' : 'O');
@@ -363,6 +339,9 @@ void AliFMDBaseDA::WriteConditionsData(AliFMDRawReader* fmdReader)
   fConditionsFile.write("# Gain Pulse \n",14);
   
   for(UShort_t det=1; det<=3;det++) {
+    if (!fSeenDetectors[det-1]) { 
+      continue;
+    }
     UShort_t firstring = (det == 1 ? 1 : 0);
     for(UShort_t iring = firstring; iring <=1;iring++) {
       Char_t ring = (iring == 1 ? 'I' : 'O');
@@ -378,33 +357,6 @@ void AliFMDBaseDA::WriteConditionsData(AliFMDRawReader* fmdReader)
       }
     }
   }
-  
-  
-
-  // Gain Relevant stuff
-  /*
-  UShort_t defPulseSize = 32 ; 
-  UShort_t defPulseLength = 100 ; 
-  UShort_t pulseSizeFromSOD;
-  UShort_t pulseLengthFromSOD;  
-  
-  fPulseSize.Reset(defPulseSize);
-  fPulseLength.Reset(defPulseLength);
-  
-  for(UShort_t det=1;det<=3;det++)
-    for(UShort_t iring=0;iring<=1;iring++)
-      for(UShort_t board=0;board<=1;board++) {
-	pulseSizeFromSOD = defPulseSize;
-	pulseLengthFromSOD = defPulseLength;
-
-	fPulseSize.AddAt(pulseSizeFromSOD,GetHalfringIndex(det,iring,board));
-	fPulseLength.AddAt(pulseLengthFromSOD,GetHalfringIndex(det,iring,board));
-      }
-	  
-  
-  //  fConditionsFile     << defSampleRate   << ',' 
-  //		      << timebins     <<"\n";
-  */
   if(fConditionsFile.is_open()) {
     
     fConditionsFile.write("# EOF\n",6);

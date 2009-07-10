@@ -62,9 +62,9 @@ AliFMDBoolMap::AliFMDBoolMap()
 
 //__________________________________________________________
 AliFMDBoolMap::AliFMDBoolMap(UShort_t maxDet,
-                         UShort_t maxRing,
-                         UShort_t maxSec,
-                         UShort_t maxStr)
+			     UShort_t maxRing,
+			     UShort_t maxSec,
+			     UShort_t maxStr)
   : AliFMDMap(maxDet, maxRing, maxSec, maxStr),
     fTotal(fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips),
     fData(0)

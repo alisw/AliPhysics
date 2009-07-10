@@ -88,7 +88,7 @@ protected:
   UShort_t& AtAsUShort(Int_t idx)       { return fData[idx].fN; }
   Bool_t    IsUShort()            const { return kTRUE; }  
   Bool_t    IsFloat()             const { return kTRUE; }  
-  Int_t             fTotal; //  Total number of entries
+  Int_t              fTotal; //  Total number of entries
   AliFMDEdepHitPair* fData;  //[fTotal] The data 
   ClassDef(AliFMDEdepMap, 3) // Cache of edep,hit information per strip
 };
