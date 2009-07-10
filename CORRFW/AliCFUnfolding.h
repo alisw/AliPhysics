@@ -5,9 +5,7 @@
 //--------------------------------------------------------------------//
 //                                                                    //
 // AliCFUnfolding Class                                               //
-// Class to handle general unfolding procedure                        // 
-// For the moment only bayesian unfolding is supported                //
-// The next steps are to add chi2 minimisation and weighting methods  //
+// Class to handle general unfolding procedure using bayesian method  //
 //                                                                    //
 // Author : renaud.vernet@cern.ch                                     //
 //--------------------------------------------------------------------//

@@ -1,6 +1,12 @@
 
 void testUnfolding() {
+  TBenchmark b;
+
+  b.Start("init");
+
   Load();
+
+  AliLog::SetGlobalDebugLevel(0);
 
   // get the essential
   AliCFDataGrid *measured    = (AliCFDataGrid*) GetMeasuredSpectrum();
@@ -11,50 +17,71 @@ void testUnfolding() {
   // create a guessed "a priori" distribution using binning of MC
   THnSparse* guessed = CreateGuessed(((AliCFGridSparse*)generated->GetData())->GetGrid()) ;
   //----
-  AliCFUnfolding unfolding("unfolding","",2,response,efficiency->GetGrid(),((AliCFGridSparse*)measured->GetData())->GetGrid(),guessed);
+
+  TF2* fit2D = new TF2("fit2D","[0]*([2]+[3]*y+[4]*y*y)*x*TMath::Exp(-x/[1])",0.1,0.8,-1.5,1.5);
+  fit2D->SetParameter(0,1);
+  fit2D->SetParameter(1,1);
+  fit2D->SetParameter(2,1);
+  fit2D->SetParameter(3,1);
+  fit2D->SetParameter(4,1);
+  fit2D->SetParLimits(1,0,1);
+
+  AliCFUnfolding unfolding("unfolding","",2,response,efficiency->GetGrid(),((AliCFGridSparse*)measured->GetData())->GetGrid()/*,guessed*/);
   unfolding.SetMaxNumberOfIterations(100);
   unfolding.SetMaxChi2PerDOF(1.e-07);
+  unfolding.UseSmoothing(fit2D,"ren");
   //unfolding.UseSmoothing();
-  unfolding.Unfold();
-
-  THnSparse* result = unfolding.GetUnfolded();
-  //----
   
-  TCanvas * canvas = new TCanvas("canvas","",1000,700);
-  canvas->Divide(3,3);
+  b.Stop("init");
+  b.Start("unfolding");
+  unfolding.Unfold();
+  b.Stop("unfolding");
+  b.Start("finish");
 
-  canvas->cd(1);
+  canvas->cd();
+
   TH2D* h_gen = generated->Project(0,1);
   h_gen->SetTitle("generated");
   h_gen->Draw("lego2");
+  canvas->SaveAs("/tmp/generated.eps");
+  canvas->SaveAs("/tmp/generated.gif");
 
-  canvas->cd(2);
   TH2D* h_meas = measured->Project(0,1);
   h_meas->SetTitle("measured");
   h_meas->Draw("lego2");
-  
-  canvas->cd(3);
-  TH2D* h_guessed = guessed->Projection(1,0);
+  canvas->SaveAs("/tmp/measured.eps");
+  canvas->SaveAs("/tmp/measured.gif");
+
+  TH2D* h_guessed = unfolding.GetOriginalPrior()->Projection(1,0);
   h_guessed->SetTitle("a priori");
   h_guessed->Draw("lego2");
+  canvas->SaveAs("/tmp/apriori.eps");
+  canvas->SaveAs("/tmp/apriori.gif");
 
-  canvas->cd(4);
   TH2D* h_eff = efficiency->Project(0,1);
   h_eff->SetTitle("efficiency");
-  h_eff->Draw("lego2");
+  h_eff->Draw("e");
 
-  canvas->cd(5);
-  TH2D* h_unf = result->Projection(1,0);
+  TH2D* h_unf = unfolding.GetUnfolded()->Projection(1,0);
   h_unf->SetTitle("unfolded");
   h_unf->Draw("lego2");
+  fit2D->Draw("surf same");
+  return;
+  canvas->SaveAs("/tmp/unfolded.eps");
+  canvas->SaveAs("/tmp/unfolded.gif");
 
-  canvas->cd(6);
+
   TH2D* ratio = (TH2D*)h_unf->Clone();
   ratio->SetTitle("unfolded / generated");
   ratio->Divide(h_unf,h_gen,1,1);
-//   ratio->Draw("cont4z");
-//   ratio->Draw("surf2");
+  ratio->GetZaxis()->SetRangeUser(0.5,1.5);
+  //ratio->Draw("cont4z");
   ratio->Draw("lego2");
+  //ratio->Draw("e");
+//   ratio->ProjectionY()->Draw();
+  canvas->SaveAs("/tmp/ratio.eps");
+  canvas->SaveAs("/tmp/ratio.gif");
+   
 
   canvas->cd(7);
   TH2* orig = unfolding.GetOriginalPrior()->Projection(1,0);
@@ -62,19 +89,25 @@ void testUnfolding() {
   orig->Draw("lego2");
 
   canvas->cd(8);
-  AliCFDataGrid* corrected = (AliCFDataGrid*)measured->Clone();
-  corrected->ApplyEffCorrection(*efficiency);
-  TH2D* corr = corrected->Project(0,1);
-  corr->SetTitle("simple correction");
-  corr->Draw("lego2");
+  TH2D* h_est = (TH2D*) unfolding.GetEstMeasured()->Projection(1,0);
+  h_est->SetTitle("est. measured");
+  h_est->Draw("e");
 
   canvas->cd(9);
-  TH2D* ratio2 = (TH2D*) corr->Clone();
-  ratio2->Divide(corr,h_gen,1,1);
-  ratio2->SetTitle("simple correction / generated");
-  ratio2->Draw("cont4z");
+  unfolding.GetUnfolded()->Projection(0)->Draw();
 
-  return;
+  canvas->cd(10);
+  unfolding.GetUnfolded()->Projection(1)->Draw();
+
+  canvas->cd(11);
+  h_gen->ProjectionX()->Draw();
+
+  canvas->cd(12);
+  h_gen->ProjectionY()->Draw();
+
+  b.Stop("finish");
+  Float_t x,y;
+  b.Summary(x,y);
 }
 
 // ====================================================================
@@ -85,6 +118,9 @@ void Load(){
   gSystem->Load("libCORRFW");
   gStyle->SetPalette(1);
   gStyle->SetOptStat(0);
+  TCanvas * canvas = new TCanvas("canvas","",600,400);
+  canvas->SetFillColor(10);
+  canvas->SetFrameFillColor(10);
 }
 
 TObject* GetMeasuredSpectrum() {

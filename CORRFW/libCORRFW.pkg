@@ -1,8 +1,6 @@
 #-*- Mode: Makefile -*-
 
 SRCS = AliCFFrame.cxx \
-       AliCFVGrid.cxx \
-       AliCFGrid.cxx \
        AliCFGridSparse.cxx \
        AliCFEffGrid.cxx \
        AliCFDataGrid.cxx \

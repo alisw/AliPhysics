@@ -48,11 +48,13 @@ Bool_t AliCFRsnTask(
     //here put your input data path
     if (readAOD) {
       analysisChain = new TChain("aodTree");
-      analysisChain->Add("AliAOD.root");
+      analysisChain->Add("your_data_path/001/AliAOD.root");
+      analysisChain->Add("your_data_path/002/AliAOD.root");
     }
     else {
       analysisChain = new TChain("esdTree");
-      analysisChain->Add("AliESDs.root");
+      analysisChain->Add("your_data_path/001/AliESDs.root");
+      analysisChain->Add("your_data_path/002/AliESDs.root");
     }
   }
   

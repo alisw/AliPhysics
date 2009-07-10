@@ -5,8 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class  AliCFFrame+;
-#pragma link C++ class  AliCFVGrid+;
-#pragma link C++ class  AliCFGrid+;
 #pragma link C++ class  AliCFGridSparse+;
 #pragma link C++ class  AliCFEffGrid+;
 #pragma link C++ class  AliCFDataGrid+;

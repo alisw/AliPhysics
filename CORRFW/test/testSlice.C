@@ -2,6 +2,7 @@
 void testSlice() {
   
   gStyle->SetPalette(1);
+  gStyle->SetOptStat(1111111);
 
   gSystem->Load("libANALYSIS");
   gSystem->Load("libCORRFW");
@@ -37,8 +38,8 @@ void testSlice() {
 
   Double_t epsilon=1.e-07;
 
-  Double_t varMin[2]={0.0 ,            0.0  };
-  Double_t varMax[2]={2.0 - epsilon ,  1.0  };
+  Double_t varMin[2]={0.0  ,  -1.0-epsilon  };
+  Double_t varMax[2]={8.0  ,   1.0-epsilon  };
 
 
   can->cd(iCan++);
@@ -73,6 +74,7 @@ void testSlice() {
   printf("====\n");
   printf("efficiency map properties\n");
   printf("nvar=%d\t nbins[0]=%d\n",eff->GetNVar(),eff->GetNBins(0));
+  printf("range = %d  -> %d\n",((AliCFGridSparse*)eff->GetNum())->GetGrid()->GetAxis(0)->GetFirst(),((AliCFGridSparse*)eff->GetNum())->GetGrid()->GetAxis(0)->GetLast());
   printf("====\n");
   
   can->cd(iCan++);

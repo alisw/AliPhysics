@@ -19,18 +19,18 @@ class AliCFDataGrid : public AliCFGridSparse
  public:
   AliCFDataGrid();
   AliCFDataGrid(const Char_t* name,const Char_t* title);
-  AliCFDataGrid(const Char_t* name,const Char_t* title, const Int_t nVarIn, const Int_t* nBinIn, const Double_t  *binLimitsIn=0);
-  AliCFDataGrid(const Char_t* name,const Char_t* title,const AliCFContainer &c);
+  AliCFDataGrid(const Char_t* name,const Char_t* title, const AliCFContainer &c);
+  AliCFDataGrid(const Char_t* name,const Char_t* title, const Int_t nVarIn, const Int_t* nBinIn);
   AliCFDataGrid(const AliCFDataGrid& c);
-  
-  virtual ~AliCFDataGrid();
   AliCFDataGrid& operator=(const AliCFDataGrid& c);
+  virtual ~AliCFDataGrid();
+
   virtual Int_t GetSelDataStep() const {return fSelData;};
 
   // Methods for handling/correcting data 
 
   virtual void  SetMeasured(Int_t istep);
-  virtual const AliCFVGrid*  GetData() {return (AliCFVGrid*)fContainer->GetGrid(fSelData);};
+  virtual const AliCFGridSparse*  GetData() {return fContainer->GetGrid(fSelData);};
   virtual void  ApplyEffCorrection(const AliCFEffGrid &eff);
   virtual void  ApplyBGCorrection(const AliCFDataGrid &c);
   virtual void  SetContainer(const AliCFContainer &c) {fContainer=&c;};
@@ -45,4 +45,3 @@ class AliCFDataGrid : public AliCFGridSparse
 };
     
 #endif
-

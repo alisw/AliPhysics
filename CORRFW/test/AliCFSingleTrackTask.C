@@ -55,11 +55,13 @@ Bool_t AliCFSingleTrackTask(
 
     if (readAOD) {
       analysisChain = new TChain("aodTree");
-      analysisChain->Add("AliAOD.root");
+      analysisChain->Add("your_data_path/001/AliAOD.root");
+      analysisChain->Add("your_data_path/002/AliAOD.root");
     }
     else {
       analysisChain = new TChain("esdTree");
-      analysisChain->Add("AliESDs.root");
+      analysisChain->Add("your_data_path/001/AliESDs.root");
+      analysisChain->Add("your_data_path/002/AliESDs.root");
     }
   }
   
@@ -94,12 +96,24 @@ Bool_t AliCFSingleTrackTask(
   //setting the bin limits
   container -> SetBinLimits(ipt,binLim1);
   container -> SetBinLimits(iy,binLim2);
-
+  container -> SetVarTitle(ipt,"pt");
+  container -> SetVarTitle(iy, "y");
+  container -> SetStepTitle(0, "generated");
+  container -> SetStepTitle(1, "in acceptance");
+  container -> SetStepTitle(2, "reconstructed");
+  container -> SetStepTitle(3, "after PID");
 
   // SET TLIST FOR QA HISTOS
   TList* qaList = new TList();
 
   //CREATE THE  CUTS -----------------------------------------------
+
+  //Event-level cuts:
+  AliCFEventRecCuts* evtRecCuts = new AliCFEventRecCuts("evtRecCuts","Rec-event cuts");
+//   evtRecCuts->SetUseTPCVertex();
+//   evtRecCuts->SetRequireVtxCuts(kTRUE);
+//   evtRecCuts->SetVertexNContributors(-2,5);
+  evtRecCuts->SetQAOn(qaList);
 
   // Gen-Level kinematic cuts
   AliCFTrackKineCuts *mcKineCuts = new AliCFTrackKineCuts("mcKineCuts","MC-level kinematic cuts");
@@ -111,7 +125,7 @@ Bool_t AliCFSingleTrackTask(
   //Particle-Level cuts:  
   AliCFParticleGenCuts* mcGenCuts = new AliCFParticleGenCuts("mcGenCuts","MC particle generation cuts");
   mcGenCuts->SetRequireIsPrimary();
-  mcGenCuts->SetRequirePdgCode(PDG);
+  mcGenCuts->SetRequirePdgCode(PDG,/*absolute=*/kTRUE);
   mcGenCuts->SetQAOn(qaList);
 
   //Acceptance Cuts
@@ -128,8 +142,11 @@ Bool_t AliCFSingleTrackTask(
   recKineCuts->SetQAOn(qaList);
 
   AliCFTrackQualityCuts *recQualityCuts = new AliCFTrackQualityCuts("recQualityCuts","rec-level quality cuts");
-  if (!readAOD)       recQualityCuts->SetMinNClusterTPC(minclustersTPC);
-  if (!readTPCTracks) recQualityCuts->SetStatus(AliESDtrack::kITSrefit);
+  if (!readAOD)       {
+//     recQualityCuts->SetMinNClusterTRD(0);
+//     recQualityCuts->SetMaxChi2PerClusterTRD(10.);
+  }
+  recQualityCuts->SetStatus(AliESDtrack::kTPCrefit);
   recQualityCuts->SetQAOn(qaList);
 
   AliCFTrackIsPrimaryCuts *recIsPrimaryCuts = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts","rec-level isPrimary cuts");
@@ -163,6 +180,10 @@ Bool_t AliCFSingleTrackTask(
   }
   cutPID->SetQAOn(qaList);
 
+  printf("CREATE EVENT LEVEL CUTS\n");
+  TObjArray* evtList = new TObjArray(0) ;
+//   evtList->AddLast(evtRecCuts);
+  
   printf("CREATE MC KINE CUTS\n");
   TObjArray* mcList = new TObjArray(0) ;
   mcList->AddLast(mcKineCuts);
@@ -185,11 +206,15 @@ Bool_t AliCFSingleTrackTask(
   //CREATE THE INTERFACE TO CORRECTION FRAMEWORK USED IN THE TASK
   printf("CREATE INTERFACE AND CUTS\n");
   AliCFManager* man = new AliCFManager() ;
-  man->SetParticleContainer     (container);
-  man->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList);
-  man->SetParticleCutsList(AliCFManager::kPartAccCuts,accList);
-  man->SetParticleCutsList(AliCFManager::kPartRecCuts,recList);
-  man->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList);
+
+  man->SetNStepEvent(1);
+  man->SetEventCutsList(0,evtList);
+
+  man->SetParticleContainer(container);
+  man->SetParticleCutsList(0,mcList);
+  man->SetParticleCutsList(1,accList);
+  man->SetParticleCutsList(2,recList);
+  man->SetParticleCutsList(3,fPIDCutList);
 
 
   //CREATE THE TASK
@@ -269,5 +294,5 @@ void Load() {
 
   //compile online the task class
   gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include");
-  gROOT->LoadMacro("./AliCFSingleTrackTask.cxx+");
+  gROOT->LoadMacro("./AliCFSingleTrackTask.cxx++g");
 }

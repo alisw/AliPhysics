@@ -54,8 +54,8 @@ class AliCFTaskForUnfolding : public AliAnalysisTaskSE {
 
   // Histograms
   //Number of events
-  TH1I  *fHistEventsProcessed; // simple histo for monitoring the number of events processed
-  THnSparse* fCorrelation;          //response matrix for unfolding  
+  TH1I       *fHistEventsProcessed; // simple histo for monitoring the number of events processed
+  THnSparse  *fCorrelation;         //response matrix for unfolding  
   ClassDef(AliCFTaskForUnfolding,0);
 };
 

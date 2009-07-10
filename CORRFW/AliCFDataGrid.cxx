@@ -55,8 +55,8 @@ AliCFDataGrid::AliCFDataGrid(const Char_t* name,const Char_t* title) :
 }
 
 //____________________________________________________________________
-AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn, const Double_t *binLimitsIn) :  
-  AliCFGridSparse(name,title,nVarIn,nBinIn,binLimitsIn),
+AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn) :
+  AliCFGridSparse(name,title,nVarIn,nBinIn),
   fSelData(-1),
   fContainer(0x0)
 {
@@ -65,22 +65,21 @@ AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const Int_
   //
   SumW2();// errors saved
 }
+
 //____________________________________________________________________
 AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const AliCFContainer &c) :  
   AliCFGridSparse(name,title),
   fSelData(-1),
-  fContainer(0x0)
+  fContainer(&c)
 {
   //
   // main constructor
   //
-
-  //assign the container;
-  fContainer=&c;
-  fNVar = c.GetNVar();
 }
+
 //____________________________________________________________________
-AliCFDataGrid::AliCFDataGrid(const AliCFDataGrid& data) :   AliCFGridSparse(),
+AliCFDataGrid::AliCFDataGrid(const AliCFDataGrid& data) : 
+  AliCFGridSparse(data),
   fSelData(-1),
   fContainer(0x0)
 {
@@ -97,18 +96,18 @@ AliCFDataGrid::~AliCFDataGrid()
   // destructor
   //
 }
+
 //____________________________________________________________________
 AliCFDataGrid &AliCFDataGrid::operator=(const AliCFDataGrid &c)
 {
   //
   // assigment operator
   //
-  if (this != &c)
-    ((AliCFDataGrid &) c).Copy(*this);
+  if (this != &c) c.Copy(*this);
   return *this;
 } 
-//____________________________________________________________________
 
+//____________________________________________________________________
 void AliCFDataGrid::SetMeasured(Int_t istep)
 {
   //
@@ -117,7 +116,7 @@ void AliCFDataGrid::SetMeasured(Int_t istep)
   
   fSelData = istep ;
   //simply clones the container's data at specified step
-  fData = (THnSparse*) ((AliCFGridSparse*)fContainer->GetGrid(istep))->GetGrid()->Clone();
+  fData = (THnSparse*) fContainer->GetGrid(istep)->GetGrid()->Clone();
   SumW2();
   AliInfo(Form("retrieving measured data from Container %s at selection step %i.",fContainer->GetName(),fSelData));
 } 
@@ -128,7 +127,7 @@ void AliCFDataGrid::ApplyEffCorrection(const AliCFEffGrid &c)
   //
   // Apply the efficiency correction
   //
-  if(c.GetNVar()!=fNVar){
+  if (c.GetNVar()!=GetNVar()) {
     AliInfo("Different number of variables, cannot apply correction");
     return;
   }
@@ -142,21 +141,20 @@ void AliCFDataGrid::ApplyBGCorrection(const AliCFDataGrid &c)
   //
   // Apply correction for background
   //
-  if(c.GetNVar()!=fNVar){
+  if (c.GetNVar()!=GetNVar()) {
     AliInfo("Different number of variables, cannot apply correction");
     return;
   }
   Add(&c);
   AliInfo(Form("background %s subtracted from data %s.",c.GetName(),GetName()));
 }
+
 //____________________________________________________________________
 void AliCFDataGrid::Copy(TObject& c) const
 {
   // copy function
-
   Copy(c);
   AliCFDataGrid& target = (AliCFDataGrid &) c;
   target.fContainer=fContainer;
   target.fSelData=fSelData;
-
 }

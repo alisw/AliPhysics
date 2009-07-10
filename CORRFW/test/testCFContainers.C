@@ -20,9 +20,8 @@ void testCFContainers(){
   gStyle->SetCanvasColor(0);
   gStyle->SetFrameFillColor(0);
 
-  gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include  -I$ROOTSYS/include");
   gSystem->Load("libANALYSIS.so");
-  gSystem->Load("$ALICE_ROOT/CORRFW/libCORRFW.so") ;
+  gSystem->Load("libCORRFW.so") ;
  
   //Setting up the container grid... 
 
@@ -86,7 +85,7 @@ void testCFContainers(){
   //Start filling the mc and the data
 
   //data sample (1M tracks)
-  Int_t nev=1000000;
+  Int_t nev=100000;
   Int_t seed =1234;
   gRandom->SetSeed(seed);
   Double_t Value[nvar];
@@ -108,7 +107,7 @@ void testCFContainers(){
     }		
   }   
 
-// Save it to a file
+  //   Save it to a file
    cont->Save("container.root");
   //delete it
    delete cont;
@@ -119,25 +118,25 @@ void testCFContainers(){
 
   // Make some 1 & 2-D projections..
   // pt and vertex, generator and reconstructed level
-  TCanvas *cmc =new TCanvas("cmc","The  distributions",0,300,900,900);
-  cmc->Divide(2,2);
-  cmc->cd(1);
-  TH1D *hpt1a = data->ShowProjection(ipt, stepGen);
-  hpt1a->SetMinimum(0.01);
-  hpt1a->Draw();
-  cmc->cd(2);
-  TH1D *hpt1b = data->ShowProjection(ipt, stepRec);
-  hpt1b->SetMinimum(0.01);
-  hpt1b->Draw();
-  cmc->cd(3);
-  TH2D *hptvtx1a = data->ShowProjection(ipt,ivtx, stepGen);
-  hptvtx1a->SetMinimum(0.01);
-  hptvtx1a->Draw("lego");
-  cmc->cd(4);
-  TH2D *hptvtx1b = data->ShowProjection(ipt,ivtx, stepRec);
-  hptvtx1b->SetMinimum(0.01);
-  hptvtx1b->Draw("lego");
-  cmc->Print("data.gif");
+//   TCanvas *cmc =new TCanvas("cmc","The  distributions",0,300,900,900);
+//   cmc->Divide(2,2);
+//   cmc->cd(1);
+//   TH1D *hpt1a = data->ShowProjection(ipt, stepGen);
+//   hpt1a->SetMinimum(0.01);
+//   hpt1a->Draw();
+//   cmc->cd(2);
+//   TH1D *hpt1b = data->ShowProjection(ipt, stepRec);
+//   hpt1b->SetMinimum(0.01);
+//   hpt1b->Draw();
+//   cmc->cd(3);
+//   TH2D *hptvtx1a = data->ShowProjection(ipt,ivtx, stepGen);
+//   hptvtx1a->SetMinimum(0.01);
+//   hptvtx1a->Draw("lego");
+//   cmc->cd(4);
+//   TH2D *hptvtx1b = data->ShowProjection(ipt,ivtx, stepRec);
+//   hptvtx1b->SetMinimum(0.01);
+//   hptvtx1b->Draw("lego");
+//   cmc->Print("data.gif");
 
  
   //construct the efficiency grid from the data container 
