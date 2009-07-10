@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <TNamed.h>
+#include <TGeoMatrix.h>
 
 #include "AliESDRun.h"
 #include "AliESDVertex.h"
@@ -40,6 +41,7 @@ AliESDRun::AliESDRun() :
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
   fDiamondCovXY[1]=0.;
   fTriggerClasses.SetOwner(kTRUE);
+  for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
 }
 
 //______________________________________________________________________________
@@ -59,6 +61,13 @@ AliESDRun::AliESDRun(const AliESDRun &esd) :
     TNamed *str = (TNamed *)((esd.fTriggerClasses).At(i));
     if (str) fTriggerClasses.AddAt(new TNamed(*str),i);
   }
+
+  for(Int_t m=0; m<kNPHOSMatrix; m++){
+    if(esd.fPHOSMatrix[m])
+      fPHOSMatrix[m]=new TGeoHMatrix(*(esd.fPHOSMatrix[m])) ;
+    else
+      fPHOSMatrix[m]=NULL;
+  }
 }
 
 //______________________________________________________________________________
@@ -68,17 +77,23 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
   if(this!=&esd) {
     TObject::operator=(esd);
     fRunNumber=esd.fRunNumber;
-  fPeriodNumber=esd.fPeriodNumber;
-  fRecoVersion=esd.fRecoVersion;
-  fMagneticField=esd.fMagneticField;
-  for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
-  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
-  fTriggerClasses.Clear();
-  for(Int_t i = 0; i < kNTriggerClasses; i++) {
-    TNamed *str = (TNamed *)((esd.fTriggerClasses).At(i));
-    if (str) fTriggerClasses.AddAt(new TNamed(*str),i);
-  }
-    
+    fPeriodNumber=esd.fPeriodNumber;
+    fRecoVersion=esd.fRecoVersion;
+    fMagneticField=esd.fMagneticField;
+    for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
+    for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
+    fTriggerClasses.Clear();
+    for(Int_t i = 0; i < kNTriggerClasses; i++) {
+      TNamed *str = (TNamed *)((esd.fTriggerClasses).At(i));
+      if (str) fTriggerClasses.AddAt(new TNamed(*str),i);
+    }
+
+    for(Int_t m=0; m<kNPHOSMatrix; m++){
+      if(esd.fPHOSMatrix[m])
+	fPHOSMatrix[m]=new TGeoHMatrix(*(esd.fPHOSMatrix[m])) ;
+      else
+	fPHOSMatrix[m]=0;
+    }
   } 
   return *this;
 }
@@ -94,6 +109,16 @@ void AliESDRun::Copy(TObject &obj) const{
   if(!robj)return; // not an aliesdrun
   *robj = *this;
 
+}
+
+//______________________________________________________________________________
+AliESDRun::~AliESDRun() {
+  // Destructor
+  // Delete PHOS position matrices
+  for(Int_t m=0; m<kNPHOSMatrix; m++) {
+    if(fPHOSMatrix[m]) delete fPHOSMatrix[m] ;
+    fPHOSMatrix[m] = NULL;
+  }
 }
 
 void AliESDRun::SetDiamond(const AliESDVertex *vertex) {

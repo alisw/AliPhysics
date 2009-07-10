@@ -15,6 +15,7 @@
 #include <TObjArray.h>
 #include <TString.h>
 
+class TGeoHMatrix;
 class AliESDVertex;
 
 class AliESDRun: public TObject {
@@ -24,6 +25,7 @@ public:
   AliESDRun(const AliESDRun& esd);
   AliESDRun& operator=(const AliESDRun& esd);
   virtual void Copy(TObject &obj) const; // Interface for using TOBject::Copy()
+  virtual ~AliESDRun();
 
   Int_t   GetRunNumber() const {return fRunNumber;}
   void    SetRunNumber(Int_t n) {fRunNumber=n;}
@@ -48,7 +50,15 @@ public:
   TString     GetFiredTriggerClasses(ULong64_t mask) const;
   Bool_t      IsTriggerClassFired(ULong64_t mask, const char *name) const;
 
+  void    SetPHOSMatrix(TGeoHMatrix*matrix, Int_t i) {
+    if ((i >= 0) && (i < kNPHOSMatrix)) fPHOSMatrix[i] = matrix;
+  }
+  const TGeoHMatrix* GetPHOSMatrix(Int_t i) const {
+    return ((i >= 0) && (i < kNPHOSMatrix)) ? fPHOSMatrix[i] : NULL;
+  }
+
   enum {kNTriggerClasses = 50};
+  enum {kNPHOSMatrix = 5};
 
 private:
   Double32_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
@@ -58,9 +68,9 @@ private:
   Int_t           fRunNumber;       // Run Number
   Int_t           fRecoVersion;     // Version of reconstruction 
   TObjArray       fTriggerClasses;  // array of TNamed containing the names of the active trigger classes
+  TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix]; //PHOS module position and orientation matrices
 
-
-  ClassDef(AliESDRun,3)
+  ClassDef(AliESDRun,4)
 };
 
 #endif 
