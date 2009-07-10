@@ -409,12 +409,13 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
     if (argument.IsNull()) continue;
     TObjArray* pTokens=argument.Tokenize(" ");
     if (pTokens) {
-      if (pTokens->GetEntriesFast()<2) {
-	array.push_back(argv[i]);
-      } else {
+      if (pTokens->GetEntriesFast()>0) {
 	for (int n=0; n<pTokens->GetEntriesFast(); n++) {
 	  choppedArguments.AddLast(pTokens->At(n));
-	  array.push_back(((TObjString*)pTokens->At(n))->GetString().Data());
+	  TString data=((TObjString*)pTokens->At(n))->GetString();
+	  if (!data.IsNull()) {
+	    array.push_back(data.Data());
+	  }
 	}
 	pTokens->SetOwner(kFALSE);
       }
@@ -434,7 +435,7 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
       if (iResult==-EINVAL) {
 	HLTError("unknown argument %s", array[i]);
       } else if (iResult==-EPROTO) {
-	HLTError("missing/wrong parameter for argument %s (%s)", array[i], array.size()>(unsigned)i+1)?array[i+1]:"missing";
+	HLTError("missing/wrong parameter for argument %s (%s)", array[i], (array.size()>(unsigned)i+1)?array[i+1]:"missing");
       } else {
 	HLTError("scan of argument %s failed (%d)", array[i], iResult);
       }
