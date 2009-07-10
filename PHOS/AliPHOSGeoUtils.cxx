@@ -16,11 +16,10 @@
 /* $Id: AliPHOSGeometry.cxx 25590 2008-05-06 07:09:11Z prsnko $ */
 
 //_________________________________________________________________________
-// Geometry class  for PHOS : singleton  
+// Geometry class  for PHOS 
 // PHOS consists of the electromagnetic calorimeter (EMCA)
-// and a charged particle veto either in the Subatech's version (PPSD)
-// or in the IHEP's one (CPV).
-// The EMCA/PPSD/CPV modules are parametrized so that any configuration
+// and a charged particle veto (CPV)
+// The EMCA/CPV modules are parametrized so that any configuration
 // can be easily implemented 
 // The title is used to identify the version of CPV used.
 //                  
@@ -28,6 +27,7 @@
 
 // --- ROOT system ---
 
+#include "TClonesArray.h"
 #include "TVector3.h"
 #include "TParticle.h"
 #include <TGeoManager.h>
@@ -49,8 +49,8 @@ AliPHOSGeoUtils::AliPHOSGeoUtils():
   fNModules(0),fNCristalsInModule(0),fNPhi(0),fNZ(0),
   fNumberOfCPVPadsPhi(0),fNumberOfCPVPadsZ(0),
   fNCellsXInStrip(0),fNCellsZInStrip(0),fNStripZ(0),
-  fCrystalShift(0.),fCryCellShift(0.),fCellStep(0.),
-  fPadSizePhi(0.),fPadSizeZ(0.),fCPVBoxSizeY(0.)
+  fCrystalShift(0.),fCryCellShift(0.),fCryStripShift(0.),fCellStep(0.),
+  fPadSizePhi(0.),fPadSizeZ(0.),fCPVBoxSizeY(0.),fMisalArray(0x0)
  
 {
     // default ctor 
@@ -64,8 +64,8 @@ AliPHOSGeoUtils::AliPHOSGeoUtils(const AliPHOSGeoUtils & rhs)
   fNModules(0),fNCristalsInModule(0),fNPhi(0),fNZ(0),
   fNumberOfCPVPadsPhi(0),fNumberOfCPVPadsZ(0),
   fNCellsXInStrip(0),fNCellsZInStrip(0),fNStripZ(0),
-  fCrystalShift(0.),fCryCellShift(0.),fCellStep(0.),
-  fPadSizePhi(0.),fPadSizeZ(0.),fCPVBoxSizeY(0.)
+  fCrystalShift(0.),fCryCellShift(0.),fCryStripShift(0.),fCellStep(0.),
+  fPadSizePhi(0.),fPadSizeZ(0.),fCPVBoxSizeY(0.),fMisalArray(0x0)
 {
   Fatal("cpy ctor", "not implemented") ; 
 }
@@ -77,8 +77,8 @@ AliPHOSGeoUtils::AliPHOSGeoUtils(const Text_t* name, const Text_t* title)
   fNModules(0),fNCristalsInModule(0),fNPhi(0),fNZ(0),
   fNumberOfCPVPadsPhi(0),fNumberOfCPVPadsZ(0),
   fNCellsXInStrip(0),fNCellsZInStrip(0),fNStripZ(0),
-  fCrystalShift(0.),fCryCellShift(0.),fCellStep(0.),
-  fPadSizePhi(0.),fPadSizeZ(0.),fCPVBoxSizeY(0.)
+  fCrystalShift(0.),fCryCellShift(0.),fCryStripShift(0.),fCellStep(0.),
+  fPadSizePhi(0.),fPadSizeZ(0.),fCPVBoxSizeY(0.),fMisalArray(0x0)
 { 
   // ctor only for normal usage 
 
@@ -106,14 +106,23 @@ AliPHOSGeoUtils::AliPHOSGeoUtils(const Text_t* name, const Text_t* title)
   const Float_t * preamp   = fGeometryEMCA->GetPreampHalfSize() ;
   fCrystalShift=-inthermo[1]+strip[1]+splate[1]+crystal[1]-fGeometryEMCA->GetAirGapLed()/2.+pin[1]+preamp[1] ;
   fCryCellShift=crystal[1]-(fGeometryEMCA->GetAirGapLed()-2*pin[1]-2*preamp[1])/2;
+  fCryStripShift=fCryCellShift+splate[1] ;
   fCellStep = 2.*fGeometryEMCA->GetAirCellHalfSize()[0] ;
-
 
   fNumberOfCPVPadsPhi = fGeometryCPV->GetNumberOfCPVPadsPhi() ;
   fNumberOfCPVPadsZ   = fGeometryCPV->GetNumberOfCPVPadsZ() ;
   fPadSizePhi = fGeometryCPV->GetCPVPadSizePhi() ;
   fPadSizeZ   = fGeometryCPV->GetCPVPadSizeZ() ; 
   fCPVBoxSizeY= fGeometryCPV->GetCPVBoxSize(1) ;
+
+  for(Int_t mod=0; mod<5; mod++){
+    fEMCMatrix[mod]=0 ;
+    for(Int_t istrip=0; istrip<224; istrip++)
+      fStripMatrix[mod][istrip]=0 ;
+    fCPVMatrix[mod]=0;
+    fPHOSMatrix[mod]=0 ;
+  }
+ 
 }
 
 //____________________________________________________________________________
@@ -136,7 +145,9 @@ AliPHOSGeoUtils::~AliPHOSGeoUtils(void)
   if(fGeometrySUPP){
     delete fGeometrySUPP ; fGeometrySUPP=0 ;
   }
-
+  if(fMisalArray){
+    delete fMisalArray; fMisalArray=0 ;
+  }
 }
 //____________________________________________________________________________
 Bool_t AliPHOSGeoUtils::AbsToRelNumbering(Int_t absId, Int_t * relid) const
@@ -203,12 +214,6 @@ void AliPHOSGeoUtils::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
 {
   // Converts the relative numbering into the local PHOS-module (x, z) coordinates
 
-  if (!gGeoManager){
-    printf("Geo manager not initialized\n");
-    abort() ;
-  }
-  //construct module name
-  char path[100] ;
   if(relid[1]==0){ //this is PHOS
 
     Double_t pos[3]= {0.0,-fCryCellShift,0.}; //Position incide the crystal 
@@ -217,37 +222,19 @@ void AliPHOSGeoUtils::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
     //Shift and possibly apply misalignment corrections
     Int_t strip=1+((Int_t) TMath::Ceil((Double_t)relid[2]/fNCellsXInStrip))*fNStripZ-
                 (Int_t) TMath::Ceil((Double_t)relid[3]/fNCellsZInStrip) ;
-    Int_t cellraw= relid[3]%fNCellsZInStrip ;
-    if(cellraw==0)cellraw=fNCellsZInStrip ;
-    Int_t cell= ((relid[2]-1)%fNCellsXInStrip)*fNCellsZInStrip + cellraw ; 
-    sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_%d/PCEL_%d",
-            relid[0],strip,cell) ;
-    if (!gGeoManager->cd(path)){
-      printf("Geo manager can not find path \n");
-      abort() ;
-    }
-    TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
-    if (m) m->LocalToMaster(pos,posC);
-    else{
-      printf("Geo matrixes are not loaded \n") ;
-      abort() ;
-    }
+    pos[0]=((relid[2]-1)%fNCellsXInStrip-fNCellsXInStrip/2+0.5)*fCellStep ;
+    pos[2]=(-(relid[3]-1)%fNCellsZInStrip+fNCellsZInStrip/2-0.5)*fCellStep ;
+
+    Int_t mod = relid[0] ;
+    TGeoHMatrix * m2 = GetMatrixForStrip(mod, strip) ;
+    m2->LocalToMaster(pos,posC);
+
     //Return to PHOS local system  
-    Double_t posL[3]={posC[0],posC[1],posC[2]};
-    sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",relid[0]) ;
-    //    sprintf(path,"/ALIC_1/PHOS_%d",relid[0]) ;
-    if (!gGeoManager->cd(path)){
-      printf("Geo manager can not find path \n");
-      abort();
-    }
-    TGeoHMatrix *mPHOS = gGeoManager->GetCurrentMatrix();
-    if (mPHOS) mPHOS->MasterToLocal(posC,posL);
-    else{
-      printf("Geo matrixes are not loaded \n") ;
-      abort() ;
-    }
-    x=posL[0] ;
-    z=-posL[2];
+    Double_t posL2[3]={posC[0],posC[1],posC[2]};
+    TGeoHMatrix *mPHOS2 = GetMatrixForModule(mod) ;
+    mPHOS2->MasterToLocal(posC,posL2);
+    x=posL2[0] ;
+    z=-posL2[2];
     return ;
   }
   else{//CPV
@@ -260,30 +247,12 @@ void AliPHOSGeoUtils::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
     pos[2] = - ( fNumberOfCPVPadsZ  /2. - column - 0.5 ) * fPadSizeZ  ; // of center of PHOS module
 
     //now apply possible shifts and rotations
-    sprintf(path,"/ALIC_1/PHOS_%d/PCPV_1",relid[0]) ;
-    if (!gGeoManager->cd(path)){
-      printf("Geo manager can not find path \n");
-      abort() ;
-    }
-    TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
-    if (m) m->LocalToMaster(pos,posC);
-    else{
-      printf("Geo matrixes are not loaded \n") ;
-      abort() ;
-    }
+    TGeoHMatrix *m = GetMatrixForCPV(relid[0]) ;
+    m->LocalToMaster(pos,posC);
     //Return to PHOS local system
     Double_t posL[3]={0.,0.,0.,} ;
-    sprintf(path,"/ALIC_1/PHOS_%d",relid[0]) ;
-    if (!gGeoManager->cd(path)){
-      printf("Geo manager can not find path \n");
-      abort() ;
-    }
-    TGeoHMatrix *mPHOS = gGeoManager->GetCurrentMatrix();
-    if (mPHOS) mPHOS->MasterToLocal(posC,posL);
-    else{
-      printf("Geo matrixes are not loaded \n") ;
-      abort() ;
-    }
+    TGeoHMatrix *mPHOS = GetMatrixForPHOS(relid[0]) ;
+    mPHOS->MasterToLocal(posC,posL);
     x=posL[0] ;
     z=posL[1];
     return ;
@@ -296,6 +265,18 @@ void AliPHOSGeoUtils::RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t 
 {
   // converts local PHOS-module (x, z) coordinates to absId 
 
+  //Calculate AbsId using ideal geometry. Should be sufficient for primary particles calculation
+  //(the only place where this method used currently)
+  Int_t relid[4]={module,0,1,1} ;
+  relid[2] = static_cast<Int_t>(TMath::Ceil( x/ fCellStep + fNPhi / 2.) );
+  relid[3] = static_cast<Int_t>(TMath::Ceil(-z/ fCellStep + fNZ   / 2.) ) ;
+  if(relid[2]<1)relid[2]=1 ;
+  if(relid[3]<1)relid[3]=1 ;
+  if(relid[2]>fNPhi)relid[2]=fNPhi ;
+  if(relid[3]>fNZ)relid[3]=fNZ ;
+  RelToAbsNumbering(relid,absId) ;
+
+/*
   //find Global position
   if (!gGeoManager){
     printf("Geo manager not initialized\n");
@@ -353,6 +334,7 @@ void AliPHOSGeoUtils::RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t 
                   row * 2 + (col*fNCellsXInStrip + (icell - 1) / 2)*fNZ - (icell & 1 ? 1 : 0);
  
   }
+*/
  
 }
 
@@ -381,31 +363,22 @@ void AliPHOSGeoUtils::RelPosInAlice(Int_t id, TVector3 & pos ) const
   AbsToRelNumbering(id , relid) ;
     
   //construct module name
-  char path[100] ;
   if(relid[1]==0){ //this is EMC
  
-    Double_t ps[3]= {0.0,-fCryCellShift,0.}; //Position incide the crystal 
+    Double_t ps[3]= {0.0,-fCryStripShift,0.}; //Position incide the crystal
     Double_t psC[3]={0.0,0.0,0.}; //Global position
  
     //Shift and possibly apply misalignment corrections
     Int_t strip=1+((Int_t) TMath::Ceil((Double_t)relid[2]/fNCellsXInStrip))*fNStripZ-
                 (Int_t) TMath::Ceil((Double_t)relid[3]/fNCellsZInStrip) ;
-    Int_t cellraw= relid[3]%fNCellsZInStrip ;
-    if(cellraw==0)cellraw=fNCellsZInStrip ;
-    Int_t cell= ((relid[2]-1)%fNCellsXInStrip)*fNCellsZInStrip + cellraw ;
-    sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_%d/PCEL_%d",
-            relid[0],strip,cell) ;
-    if (!gGeoManager->cd(path)){
-      printf("Geo manager can not find path \n");
-      abort() ;
-    }
-    TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
-    if (m) m->LocalToMaster(ps,psC);
-    else{
-      printf("Geo matrixes are not loaded \n") ;
-      abort() ;
-    }
+    ps[0]=((relid[2]-1)%fNCellsXInStrip-fNCellsXInStrip/2+0.5)*fCellStep ;
+    ps[2]=(-(relid[3]-1)%fNCellsZInStrip+fNCellsZInStrip/2-0.5)*fCellStep ;
+ 
+    Int_t mod = relid[0] ;
+    TGeoHMatrix * m2 = GetMatrixForStrip(mod, strip) ;
+    m2->LocalToMaster(ps,psC);
     pos.SetXYZ(psC[0],psC[1],psC[2]) ; 
+ 
   }
   else{
     //first calculate position with respect to CPV plain
@@ -417,17 +390,8 @@ void AliPHOSGeoUtils::RelPosInAlice(Int_t id, TVector3 & pos ) const
     pos[2] = - ( fNumberOfCPVPadsZ  /2. - column - 0.5 ) * fPadSizeZ  ; // of center of PHOS module
  
     //now apply possible shifts and rotations
-    sprintf(path,"/ALIC_1/PHOS_%d/PCPV_1",relid[0]) ;
-    if (!gGeoManager->cd(path)){
-      printf("Geo manager can not find path \n");
-      abort();
-    }
-    TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
-    if (m) m->LocalToMaster(ps,psC);
-    else{
-      printf("Geo matrixes are not loaded \n") ;
-      abort() ;
-    }
+    TGeoHMatrix *m = GetMatrixForCPV(relid[0]) ;
+    m->LocalToMaster(ps,psC);
     pos.SetXYZ(psC[0],psC[1],-psC[2]) ; 
   }
 } 
@@ -436,22 +400,10 @@ void AliPHOSGeoUtils::RelPosInAlice(Int_t id, TVector3 & pos ) const
 void AliPHOSGeoUtils::Local2Global(Int_t mod, Float_t x, Float_t z,
 				   TVector3& globalPosition) const 
 {
-  char path[100] ;
-  sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",mod) ;
-  if (!gGeoManager->cd(path)){
-    printf("Geo manager can not find path \n");
-    abort() ;
-  }
   Double_t posL[3]={x,-fCrystalShift,-z} ; //Only for EMC!!!
   Double_t posG[3] ;
-  TGeoHMatrix *mPHOS = gGeoManager->GetCurrentMatrix();
-  if (mPHOS){
-     mPHOS->LocalToMaster(posL,posG);
-  }    
-  else{
-    printf("Geo matrixes are not loaded \n") ;
-    abort() ;
-  }
+  TGeoHMatrix *mPHOS = GetMatrixForModule(mod) ;
+  mPHOS->LocalToMaster(posL,posG);
   globalPosition.SetXYZ(posG[0],posG[1],posG[2]) ;
 }
 //____________________________________________________________________________
@@ -464,18 +416,8 @@ void AliPHOSGeoUtils::Global2Local(TVector3& localPosition,
   //Return to PHOS local system
   Double_t posG[3]={globalPosition.X(),globalPosition.Y(),globalPosition.Z()} ;
   Double_t posL[3]={0.,0.,0.} ;
-  char path[100] ;
-  sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",module) ;
-  if (!gGeoManager->cd(path)){
-    printf("Geo manager can not find path \n");
-    abort() ;
-  }
-  TGeoHMatrix *mPHOS = gGeoManager->GetCurrentMatrix();
-  if (mPHOS) mPHOS->MasterToLocal(posG,posL);
-  else{
-    printf("Geo matrixes are not loaded \n") ;
-    abort() ;
-  }
+  TGeoHMatrix *mPHOS = GetMatrixForModule(module) ;
+  mPHOS->MasterToLocal(posG,posL);
   localPosition.SetXYZ(posL[0],posL[1]+fCrystalShift,-posL[2]) ;  
  
 }
@@ -523,24 +465,13 @@ Bool_t AliPHOSGeoUtils::ImpactOnEmc(const Double_t * vtx, const TVector3 &p,
   // emitted in the vertex vtx[3] with direction theta and phi in the ALICE global coordinate system
   TVector3 v(vtx[0],vtx[1],vtx[2]) ;
 
-  if (!gGeoManager){
-    printf("Geo manager not initialized\n");
-    abort() ;
-    return kFALSE ;
-  }
- 
   for(Int_t imod=1; imod<=fNModules ; imod++){
     //create vector from (0,0,0) to center of crystal surface of imod module
     Double_t tmp[3]={0.,-fCrystalShift,0.} ;
  
-    char path[100] ;
-    sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",imod) ;
-    if (!gGeoManager->cd(path)){ //Module does not present
-      continue ;
-    }
-    TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
+    TGeoHMatrix *m = GetMatrixForModule(imod) ;
     Double_t posG[3]={0.,0.,0.} ;
-    if (m) m->LocalToMaster(tmp,posG);
+    m->LocalToMaster(tmp,posG);
     TVector3 n(posG[0],posG[1],posG[2]) ; 
     Double_t direction=n.Dot(p) ;
     if(direction<=0.)
@@ -572,4 +503,183 @@ void AliPHOSGeoUtils::GetIncidentVector(const TVector3 &vtx, Int_t module, Float
   Global2Local(vInc,vtx,module) ; 
   vInc.SetXYZ(vInc.X()+x,vInc.Y(),vInc.Z()+z) ;
 }
+//____________________________________________________________________________
+TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
+  //Provides shift-rotation matrix for module mod
 
+  //If GeoManager exists, take matrixes from it
+  if(gGeoManager){
+    char path[255] ;
+    sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",mod) ;
+    //    sprintf(path,"/ALIC_1/PHOS_%d",relid[0]) ;
+    if (!gGeoManager->cd(path)){
+      printf("Geo manager can not find path \n");
+      abort();
+    }
+    return gGeoManager->GetCurrentMatrix();
+  }
+  if(fEMCMatrix[mod-1]){
+    return fEMCMatrix[mod-1] ;
+  }
+  else{
+    printf("Can not find PHOS misalignment matrixes\n") ;
+    printf("Either import TGeoManager from geometry.root or \n");
+    printf("read stored matrixes from AliESD Header: \n") ;
+    printf("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ; 
+    abort() ;
+  }
+  return 0 ;
+}
+//____________________________________________________________________________
+TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForStrip(Int_t mod, Int_t strip)const {
+  //Provides shift-rotation matrix for strip unit of the module mod
+
+  //If GeoManager exists, take matrixes from it
+  if(gGeoManager){
+    char path[255] ;
+    sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_%d",mod,strip) ;
+    if (!gGeoManager->cd(path)){
+      printf("Geo manager can not find path \n");
+      abort() ;
+    }
+    return gGeoManager->GetCurrentMatrix();
+  } 
+  if(fStripMatrix[mod-1][strip-1]){
+    return fStripMatrix[mod-1][strip-1] ;
+  }
+  else{
+    printf("Can not find PHOS misalignment matrixes\n") ;
+    printf("Either import TGeoManager from geometry.root or \n");
+    printf("read stored matrixes from AliESD Header: \n") ; 
+    printf("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ;
+    abort() ;
+  } 
+  return 0 ;
+}
+//____________________________________________________________________________
+TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
+  //Provides shift-rotation matrix for CPV of the module mod
+
+  //If GeoManager exists, take matrixes from it
+  if(gGeoManager){ 
+    char path[255] ;
+    //now apply possible shifts and rotations
+    sprintf(path,"/ALIC_1/PHOS_%d/PCPV_1",mod) ;
+    if (!gGeoManager->cd(path)){
+      printf("Geo manager can not find path \n");
+      abort() ;
+    }
+    return gGeoManager->GetCurrentMatrix();
+  }
+  if(fCPVMatrix[mod-1]){
+    return fCPVMatrix[mod-1] ;
+  }
+  else{
+    printf("Can not find PHOS misalignment matrixes\n") ;
+    printf("Either import TGeoManager from geometry.root or \n");
+    printf("read stored matrixes from AliESD Header: \n") ;  
+    printf("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ;
+    abort() ;
+  }
+  return 0 ;
+} 
+//____________________________________________________________________________
+TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
+  //Provides shift-rotation matrix for PHOS (EMC+CPV) 
+
+  //If GeoManager exists, take matrixes from it
+  if(gGeoManager){
+    char path[255] ;
+    sprintf(path,"/ALIC_1/PHOS_%d",mod) ;
+    if (!gGeoManager->cd(path)){
+      printf("Geo manager can not find path \n");
+      abort() ;
+    }
+    return gGeoManager->GetCurrentMatrix();
+  }
+  if(fPHOSMatrix[mod-1]){
+    return fPHOSMatrix[mod-1] ;
+  }
+  else{
+    printf("Can not find PHOS misalignment matrixes\n") ;
+    printf("Either import TGeoManager from geometry.root or \n");
+    printf("read stored matrixes from AliESD Header:  \n") ;   
+    printf("AliPHOSGeoUtils::SetMisalMatrixes(header->GetPHOSMisalMatrix()) \n") ;
+    abort() ;
+  }
+  return 0 ;
+}
+//____________________________________________________________________________
+void AliPHOSGeoUtils::SetMisalMatrix(TGeoHMatrix * m, Int_t mod){
+  //Fills pointers to geo matrixes
+ 
+  fPHOSMatrix[mod]=m ;
+  //If modules does not exist, make sure all its matrixes are zero
+  if(m==NULL){
+    fEMCMatrix[mod]=NULL ;
+    Int_t istrip=0 ;
+    for(Int_t irow = 0; irow < fGeometryEMCA->GetNStripX(); irow ++){
+      for(Int_t icol = 0; icol < fGeometryEMCA->GetNStripZ(); icol ++){
+        fStripMatrix[mod][istrip]=NULL ;
+      }
+    } 
+    fCPVMatrix[mod]=NULL ;
+    return ;
+  }
+
+  //Calculate maxtrixes for PTII
+  if(!fMisalArray)
+    fMisalArray = new TClonesArray("TGeoHMatrix",1120+10) ;
+  Int_t nr = fMisalArray->GetEntriesFast() ;
+  Double_t rotEMC[9]={1.,0.,0.,0.,0.,-1.,0.,1.,0.} ;
+  const Float_t * inthermo = fGeometryEMCA->GetInnerThermoHalfSize() ;
+  const Float_t * strip    = fGeometryEMCA->GetStripHalfSize() ;
+  const Float_t * covparams = fGeometryEMCA->GetAlCoverParams() ;
+  const Float_t * warmcov = fGeometryEMCA->GetWarmAlCoverHalfSize() ;
+  Float_t z = fGeometryCPV->GetCPVBoxSize(1) / 2. - warmcov[2] + covparams[3]-inthermo[1] ;
+  Double_t locTII[3]={0.,0.,z} ; 
+  Double_t globTII[3] ;
+
+  TGeoHMatrix * mTII = new((*fMisalArray)[nr])TGeoHMatrix() ;
+  mTII->SetRotation(rotEMC) ;
+  mTII->MultiplyLeft(fPHOSMatrix[mod]) ;
+  fPHOSMatrix[mod]->LocalToMaster(locTII,globTII) ;
+  mTII->SetTranslation(globTII) ;
+  fEMCMatrix[mod]=mTII ;
+ 
+  //Now calculate ideal matrixes for strip misalignment.
+  //For the moment we can not store them in ESDHeader
+
+  Double_t loc[3]={0.,inthermo[1] - strip[1],0.} ; 
+  Double_t glob[3] ;
+
+  Int_t istrip=0 ;
+  for(Int_t irow = 0; irow < fGeometryEMCA->GetNStripX(); irow ++){
+    loc[0] = (2*irow + 1 - fGeometryEMCA->GetNStripX())* strip[0] ;
+    for(Int_t icol = 0; icol < fGeometryEMCA->GetNStripZ(); icol ++){
+      loc[2] = (2*icol + 1 - fGeometryEMCA->GetNStripZ()) * strip[2] ;
+      fEMCMatrix[mod]->LocalToMaster(loc,glob) ;
+      TGeoHMatrix * mSTR = new((*fMisalArray)[nr])TGeoHMatrix(*(fEMCMatrix[mod])) ; //Use same rotation as PHOS module
+      mSTR->SetTranslation(glob) ;
+      fStripMatrix[mod][istrip]=mSTR ;
+      nr++ ;
+      istrip++;
+    }
+  }
+ 
+  //Now calculate CPV matrixes
+  const Float_t * emcParams = fGeometryEMCA->GetEMCParams() ;
+  Double_t globCPV[3] ;
+  Double_t locCPV[3]={0.,0.,- emcParams[3]} ;
+  Double_t rot[9]={1.,0.,0.,0.,0.,1.,0.,-1.,0.} ;
+
+  TGeoHMatrix * mCPV = new((*fMisalArray)[nr])TGeoHMatrix() ;
+  mCPV->SetRotation(rot) ;
+  mCPV->MultiplyLeft(fPHOSMatrix[mod]) ;
+  mCPV->ReflectY(kFALSE) ;
+  fPHOSMatrix[mod]->LocalToMaster(locCPV,globCPV) ;
+  mCPV->SetTranslation(globCPV) ;
+  fCPVMatrix[mod]=mCPV ;
+
+}
+ 

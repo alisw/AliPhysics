@@ -22,6 +22,8 @@
 // derived from STEER/AliReconstructor. 
 // 
 // --- ROOT system ---
+#include "TGeoManager.h"
+#include "TGeoMatrix.h"
 
 // --- Standard library ---
 
@@ -326,6 +328,10 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   fgDigitsArray ->Delete();
   fgEMCRecPoints->Delete();
   recParticles  ->Delete();
+
+  //Store PHOS misalignment matrixes
+  FillMisalMatrixes(esd) ;
+
 }
 
 //____________________________________________________________________________
@@ -425,6 +431,36 @@ Float_t AliPHOSReconstructor::Calibrate(Float_t amp, Int_t absId)const{
     Float_t calibration = fgCalibData->GetADCchannelEmc(module,column,row);
     return amp*calibration ;
   }
+}
+//==================================================================================
+void AliPHOSReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
+  //Store PHOS matrixes in ESD Header
+
+  //Check, if matrixes was already stored
+  for(Int_t mod=0 ;mod<5; mod++){
+    if(esd->GetPHOSMatrix(mod)!=0)
+      return ;
+  }
+
+  //Create and store matrixes
+  if(!gGeoManager){
+    AliError("Can not store misal. matrixes: no gGeoManager! \n") ;
+    return ;
+  }
+  //Note, that owner of copied marixes will be header
+  char path[255] ;
+  TGeoHMatrix * m ;
+  for(Int_t mod=0; mod<5; mod++){
+    sprintf(path,"/ALIC_1/PHOS_%d",mod+1) ; //In Geometry modules numbered 1,2,.,5
+    if (gGeoManager->cd(path)){
+      m = gGeoManager->GetCurrentMatrix() ;
+      esd->SetPHOSMatrix(new TGeoHMatrix(*m),mod) ;
+    }
+    else{
+      esd->SetPHOSMatrix(NULL,mod) ;
+    }
+  }
+
 }
 
 

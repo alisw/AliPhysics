@@ -17,6 +17,7 @@
 
 // --- AliRoot header files ---
 
+class TGeoHMatrix ;
 class TVector3;
 class TParticle ;
 class AliPHOSEMCAGeometry;
@@ -72,6 +73,15 @@ public:
 
   Bool_t IsInEMC(Int_t id) const { if (id > fNModules *  fNCristalsInModule ) return kFALSE; return kTRUE; } 
 
+  //Method to set shift-rotational matrixes from ESDHeader
+  void SetMisalMatrix(TGeoHMatrix * m, Int_t mod) ;
+
+protected:
+  //Returns shift-rotational matrixes for different volumes
+  TGeoHMatrix * GetMatrixForModule(Int_t mod)const ;
+  TGeoHMatrix * GetMatrixForStrip(Int_t mod, Int_t strip)const ;
+  TGeoHMatrix * GetMatrixForCPV(Int_t mod)const ;
+  TGeoHMatrix * GetMatrixForPHOS(Int_t mod)const ;
 
 protected:
 
@@ -93,10 +103,18 @@ protected:
   Float_t fCrystalShift ;    //Distance between center of module and crystal surface
   Float_t fXtlArrSize[3] ;   //Total size of cristals array
   Float_t fCryCellShift ; 
+  Float_t fCryStripShift ;
   Float_t fCellStep ; 
   Float_t fPadSizePhi ;      //Size of CPV pad in Phi direction
   Float_t fPadSizeZ ;        //Size of CPV pad in Z direction
   Float_t fCPVBoxSizeY ;
+
+  TGeoHMatrix* fEMCMatrix[5] ; //Orientations of crystalls array in modules
+  TGeoHMatrix* fStripMatrix[5][224];  //Orientations of strip units
+  TGeoHMatrix* fCPVMatrix[5] ; //Orientations of CPV
+  TGeoHMatrix* fPHOSMatrix[5] ; //Orientations of PHOS modules
+
+  TClonesArray * fMisalArray ;
 
   ClassDef(AliPHOSGeoUtils,2)       // PHOS geometry class 
 

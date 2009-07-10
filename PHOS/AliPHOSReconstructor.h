@@ -96,6 +96,8 @@ public:
   virtual void               ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
   virtual Float_t            Calibrate(Float_t amp, Int_t absId) const ;
 
+  void FillMisalMatrixes(AliESDEvent* esd)const ;
+
   AliPHOSReconstructor & operator = (const AliPHOSReconstructor & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ;
