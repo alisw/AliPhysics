@@ -204,6 +204,13 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
     return;
   }
 
+  // Special DAQ events considered as calibration events
+  if (evInfo.GetEventType() != 7) {
+    // START_OF_*, END_OF_*, CALIBRATION etc events
+    fEventSpecie = kCalib;
+    return;
+  }
+
   if (strcmp(runInfo->GetLHCState(),"STABLE_BEAMS") == 0) {
     // In case of stable beams
     if ((strcmp(runInfo->GetBeamType(),"A-A") == 0) ||
@@ -233,14 +240,7 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
 
     // Now we look into the trigger type in order to decide
     // on the remaining cases (cosmic event within LHC run,
-    // calibration, for example TPC laser, triggers within physics run,
-    // special DAQ events considered as calibration etc...)
-    if (evInfo.GetEventType() != 7) {
-      // START_OF_*, END_OF_*, CALIBRATION etc events
-      fEventSpecie = kCalib;
-      return;
-    }
-
+    // calibration, for example TPC laser, triggers within physics run
     TString triggerClasses = evInfo.GetTriggerClasses();
     TObjArray* trClassArray = triggerClasses.Tokenize(" ");
     Int_t nTrClasses = trClassArray->GetEntriesFast();
