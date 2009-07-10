@@ -56,7 +56,7 @@ AliHelix::AliHelix(const AliKalmanTrack &t)
   //circle parameters
   //PH Sometimes fP4 and fHelix[4] are very big and the calculation
   //PH of the Sqrt cannot be done. To be investigated...
-  fHelix[4]=fHelix[4]/(1000/0.299792458/AliTracker::GetBz());    // C
+  fHelix[4]=fHelix[4]/(-1000/0.299792458/AliTracker::GetBz());    // C
   cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
 
   Double_t xc, yc, rc;
@@ -101,7 +101,7 @@ AliHelix::AliHelix(const AliExternalTrackParam &t)
   //circle parameters
   //PH Sometimes fP4 and fHelix[4] are very big and the calculation
   //PH of the Sqrt cannot be done. To be investigated...
-  fHelix[4]=fHelix[4]/(1000/0.299792458/AliTracker::GetBz());    // C
+  fHelix[4]=fHelix[4]/(-1000/0.299792458/AliTracker::GetBz());    // C
   cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
 
   Double_t xc, yc, rc;
@@ -137,7 +137,7 @@ AliHelix::AliHelix(Double_t x[3], Double_t p[3], Double_t charge, Double_t conve
   //
   Double_t pt = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
   if (TMath::Abs(conversion)<0.00000001) 
-    conversion = 1000/0.299792458/AliTracker::GetBz();
+    conversion = -1000/0.299792458/AliTracker::GetBz();
   //
   //  
   fHelix[4] = charge/(conversion*pt); // C
@@ -175,7 +175,7 @@ void  AliHelix::GetMomentum(Double_t phase, Double_t p[4],Double_t conversion, D
   // return  momentum at given phase
   Double_t x[3],g[3],gg[3];
   Evaluate(phase,x,g,gg);
-  if (TMath::Abs(conversion)<0.0001) conversion = 1000/0.299792458/AliTracker::GetBz();
+  if (TMath::Abs(conversion)<0.0001) conversion = -1000/0.299792458/AliTracker::GetBz();
   Double_t mt = TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
   p[0] = fHelix[8]*g[0]/(mt*conversion);
   p[1] = fHelix[8]*g[1]/(mt*conversion);
