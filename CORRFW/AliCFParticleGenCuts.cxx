@@ -51,6 +51,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts() :
   fRequireIsSecondary(0),
   fRequirePdgCode(0),
   fRequireAbsolutePdg(0),
+  fProdVtxRange2D(0),
   fPdgCode(0),
   fProdVtxXMin (-1.e+09),
   fProdVtxYMin (-1.e+09),
@@ -80,6 +81,9 @@ AliCFParticleGenCuts::AliCFParticleGenCuts() :
   for (int i=0; i<kNCuts; i++) 
     for (int j=0; j<kNStepQA; j++) 
       fhQA[i][j]=0x0;
+
+  for (int j=0; j<kNStepQA; j++)
+    fhProdVtxXY[j]=0x0;
 }
 
 //______________________________
@@ -93,6 +97,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const Char_t* name, const Char_t* tit
   fRequireIsSecondary(0),
   fRequirePdgCode(0),
   fRequireAbsolutePdg(0),
+  fProdVtxRange2D(0),
   fPdgCode(0),
   fProdVtxXMin (-1.e+09),
   fProdVtxYMin (-1.e+09),
@@ -122,6 +127,9 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const Char_t* name, const Char_t* tit
   for (int i=0; i<kNCuts; i++) 
     for (int j=0; j<kNStepQA; j++) 
       fhQA[i][j]=0x0;
+
+  for (int j=0; j<kNStepQA; j++)
+    fhProdVtxXY[j]=0x0;
 }
 
 //______________________________
@@ -135,6 +143,7 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const AliCFParticleGenCuts& c) :
   fRequireIsSecondary(c.fRequireIsSecondary),
   fRequirePdgCode(c.fRequirePdgCode),
   fRequireAbsolutePdg(c.fRequireAbsolutePdg),
+  fProdVtxRange2D(c.fProdVtxRange2D),
   fPdgCode(c.fPdgCode),
   fProdVtxXMin (c.fProdVtxXMin),
   fProdVtxYMin (c.fProdVtxYMin),
@@ -164,6 +173,9 @@ AliCFParticleGenCuts::AliCFParticleGenCuts(const AliCFParticleGenCuts& c) :
   for (int i=0; i<kNCuts; i++)
     for (int j=0; j<kNStepQA; j++)
       fhQA[i][j]=(TH1F*)c.fhQA[i][j]->Clone();
+
+  for (int j=0; j<kNStepQA; j++)
+    fhProdVtxXY[j]=(TH2F*)c.fhProdVtxXY[j]->Clone();
 }
 
 //______________________________
@@ -182,6 +194,7 @@ AliCFParticleGenCuts& AliCFParticleGenCuts::operator=(const AliCFParticleGenCuts
     fRequireIsSecondary=c.fRequireIsSecondary;
     fRequirePdgCode=c.fRequirePdgCode;
     fRequireAbsolutePdg=c.fRequireAbsolutePdg;
+    fProdVtxRange2D=c.fProdVtxRange2D;
     fPdgCode=c.fPdgCode;
     fProdVtxXMin=c.fProdVtxXMin;
     fProdVtxYMin=c.fProdVtxYMin;
@@ -209,6 +222,9 @@ AliCFParticleGenCuts& AliCFParticleGenCuts::operator=(const AliCFParticleGenCuts
     for (int i=0; i<kNCuts; i++)
       for (int j=0; j<kNStepQA; j++)
 	fhQA[i][j]=(TH1F*)c.fhQA[i][j]->Clone();
+
+    for (int j=0; j<kNStepQA; j++)
+	fhProdVtxXY[j]=(TH2F*)c.fhProdVtxXY[j]->Clone();
   }
   return *this ;
 }
@@ -251,6 +267,10 @@ void AliCFParticleGenCuts::SelectionBitMap(AliMCParticle* mcPart)
   Double32_t partVx=(Double32_t)mcPart->Xv();
   Double32_t partVy=(Double32_t)mcPart->Yv();
   Double32_t partVz=(Double32_t)mcPart->Zv();
+
+  // calculate the production vertex ellipse
+  Double32_t prodVtxXYmin = partVx*partVx/(fProdVtxXMin*fProdVtxXMin) + partVy*partVy/(fProdVtxYMin*fProdVtxYMin);
+  Double32_t prodVtxXYmax = partVx*partVx/(fProdVtxXMax*fProdVtxXMax) + partVy*partVy/(fProdVtxYMax*fProdVtxYMax);
 
   Double32_t decayVx=0.;
   Double32_t decayVy=0.;
@@ -358,10 +378,23 @@ void AliCFParticleGenCuts::SelectionBitMap(AliMCParticle* mcPart)
   if ( fCutValues->At(++iCutBit) !=0 )              fBitmap->SetBitNumber(iCutBit,kTRUE);
   if ( fCutValues->At(++iCutBit) !=0 )              fBitmap->SetBitNumber(iCutBit,kTRUE);
   if ( fCutValues->At(++iCutBit) !=0 )              fBitmap->SetBitNumber(iCutBit,kTRUE);
-  if ( fCutValues->At(++iCutBit) > fProdVtxXMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
-  if ( fCutValues->At(++iCutBit) < fProdVtxXMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
-  if ( fCutValues->At(++iCutBit) > fProdVtxYMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
-  if ( fCutValues->At(++iCutBit) < fProdVtxYMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+
+  ++iCutBit;
+  if ( (!fProdVtxRange2D && fCutValues->At(iCutBit) > fProdVtxXMin)
+    || ( fProdVtxRange2D && prodVtxXYmin >= 1))     fBitmap->SetBitNumber(iCutBit,kTRUE);
+
+  ++iCutBit;
+  if ( (!fProdVtxRange2D && fCutValues->At(iCutBit) < fProdVtxXMax)
+    || ( fProdVtxRange2D && prodVtxXYmax <= 1))     fBitmap->SetBitNumber(iCutBit,kTRUE);
+
+  ++iCutBit;
+  if ( (!fProdVtxRange2D && fCutValues->At(iCutBit) > fProdVtxYMin)
+    || ( fProdVtxRange2D && prodVtxXYmin >= 1))     fBitmap->SetBitNumber(iCutBit,kTRUE);
+
+  ++iCutBit;
+  if ( (!fProdVtxRange2D && fCutValues->At(iCutBit) < fProdVtxYMax)
+    || ( fProdVtxRange2D && prodVtxXYmax <= 1))     fBitmap->SetBitNumber(iCutBit,kTRUE);
+
   if ( fCutValues->At(++iCutBit) > fProdVtxZMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
   if ( fCutValues->At(++iCutBit) < fProdVtxZMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
   if ( fCutValues->At(++iCutBit) > fDecayVtxXMin)   fBitmap->SetBitNumber(iCutBit,kTRUE);
@@ -394,6 +427,10 @@ void AliCFParticleGenCuts::SelectionBitMap(AliAODMCParticle* mcPart)
   Double32_t partVx=(Double32_t)mcPart->Xv();
   Double32_t partVy=(Double32_t)mcPart->Yv();
   Double32_t partVz=(Double32_t)mcPart->Zv();
+
+  // calculate the production vertex ellipse
+  Double32_t prodVtxXYmin = partVx*partVx/(fProdVtxXMin*fProdVtxXMin) + partVy*partVy/(fProdVtxYMin*fProdVtxYMin);
+  Double32_t prodVtxXYmax = partVx*partVx/(fProdVtxXMax*fProdVtxXMax) + partVy*partVy/(fProdVtxYMax*fProdVtxYMax);
 
   Double32_t decayVx=0.;
   Double32_t decayVy=0.;
@@ -488,10 +525,23 @@ void AliCFParticleGenCuts::SelectionBitMap(AliAODMCParticle* mcPart)
   if ( fCutValues->At(++iCutBit) !=0 )              fBitmap->SetBitNumber(iCutBit,kTRUE);
   if ( fCutValues->At(++iCutBit) !=0 )              fBitmap->SetBitNumber(iCutBit,kTRUE);
   if ( fCutValues->At(++iCutBit) !=0 )              fBitmap->SetBitNumber(iCutBit,kTRUE);
-  if ( fCutValues->At(++iCutBit) > fProdVtxXMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
-  if ( fCutValues->At(++iCutBit) < fProdVtxXMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
-  if ( fCutValues->At(++iCutBit) > fProdVtxYMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
-  if ( fCutValues->At(++iCutBit) < fProdVtxYMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
+
+  ++iCutBit;
+  if ( (!fProdVtxRange2D && fCutValues->At(iCutBit) > fProdVtxXMin)
+    || ( fProdVtxRange2D && prodVtxXYmin >= 1))     fBitmap->SetBitNumber(iCutBit,kTRUE);
+
+  ++iCutBit;
+  if ( (!fProdVtxRange2D && fCutValues->At(iCutBit) < fProdVtxXMax)
+    || ( fProdVtxRange2D && prodVtxXYmax <= 1))     fBitmap->SetBitNumber(iCutBit,kTRUE);
+
+  ++iCutBit;
+  if ( (!fProdVtxRange2D && fCutValues->At(iCutBit) > fProdVtxYMin)
+    || ( fProdVtxRange2D && prodVtxXYmin >= 1))     fBitmap->SetBitNumber(iCutBit,kTRUE);
+
+  ++iCutBit;
+  if ( (!fProdVtxRange2D && fCutValues->At(iCutBit) < fProdVtxYMax)
+    || ( fProdVtxRange2D && prodVtxXYmax <= 1))     fBitmap->SetBitNumber(iCutBit,kTRUE);
+
   if ( fCutValues->At(++iCutBit) > fProdVtxZMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
   if ( fCutValues->At(++iCutBit) < fProdVtxZMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
   if ( fCutValues->At(++iCutBit) > fDecayVtxXMin)   fBitmap->SetBitNumber(iCutBit,kTRUE);
@@ -517,6 +567,8 @@ void AliCFParticleGenCuts::FillHistograms(TObject* /*obj*/, Bool_t afterCuts)
 
   for (int iCutNumber = 0; iCutNumber < kNCuts; iCutNumber++) 
     fhQA[iCutNumber][afterCuts]->Fill(fCutValues->At(iCutNumber));
+
+  fhProdVtxXY[afterCuts]->Fill(fCutValues->At(4),fCutValues->At(5));
 
   // fill cut statistics and cut correlation histograms with information from the bitmap
   if (afterCuts) return;
@@ -546,6 +598,7 @@ void AliCFParticleGenCuts::AddQAHistograms(TList *qaList) {
   qaList->Add(fhCutCorrelation);
 
   for (Int_t j=0; j<kNStepQA; j++) {
+    qaList->Add(fhProdVtxXY[j]);
     for(Int_t i=0; i<kNCuts; i++)
       qaList->Add(fhQA[i][j]);
   }
@@ -615,6 +668,11 @@ void AliCFParticleGenCuts::DefineHistograms() {
     fhQA[kCutDecRxyMin]   [i] = new TH1F(Form("%s_decRxyMin%s"   ,GetName(),str),"",100,0,10);
     fhQA[kCutDecRxyMax]   [i] = new TH1F(Form("%s_decRxyMax%s"   ,GetName(),str),"",100,0,10);
     fhQA[kCutDecayChannel][i] = new TH1F(Form("%s_decayChannel%s",GetName(),str),"",2,0,2);
+    fhProdVtxXY		  [i] = new TH2F(Form("%s_prodVtxXY%s"   ,GetName(),str),"",100,0,10,100,0,10);
+    fhProdVtxXY		  [i] ->GetXaxis()->SetTitle("x_{production vertex}");
+    fhProdVtxXY		  [i] ->GetYaxis()->SetTitle("y_{production vertex}");
+    fhQA[kCutProdVtxXMax] [i] ->GetXaxis()->SetTitle("x_{production vertex}");
+    fhQA[kCutProdVtxYMax] [i] ->GetXaxis()->SetTitle("y_{production vertex}");
   }
   for(Int_t i=0; i<kNCuts; i++) fhQA[i][1]->SetLineColor(color);
 }

@@ -78,6 +78,7 @@ class AliCFParticleGenCuts : public AliCFCutBase
   void SetProdVtxRangeX    (Double32_t xmin, Double32_t xmax) {fProdVtxXMin   =xmin; fProdVtxXMax   =xmax;}
   void SetProdVtxRangeY    (Double32_t ymin, Double32_t ymax) {fProdVtxYMin   =ymin; fProdVtxYMax   =ymax;}
   void SetProdVtxRangeZ    (Double32_t zmin, Double32_t zmax) {fProdVtxZMin   =zmin; fProdVtxZMax   =zmax;}
+  void SetProdVtxRange2D   (Bool_t b=kFALSE)		      {fProdVtxRange2D = b;}
   void SetDecayVtxRangeX   (Double32_t xmin, Double32_t xmax) {fDecayVtxXMin  =xmin; fDecayVtxXMax  =xmax;}
   void SetDecayVtxRangeY   (Double32_t ymin, Double32_t ymax) {fDecayVtxYMin  =ymin; fDecayVtxYMax  =ymax;}
   void SetDecayVtxRangeZ   (Double32_t zmin, Double32_t zmax) {fDecayVtxZMin  =zmin; fDecayVtxZMax  =zmax;}
@@ -119,6 +120,7 @@ class AliCFParticleGenCuts : public AliCFCutBase
   Bool_t     fRequireIsSecondary; // require secondary particle
   Bool_t     fRequirePdgCode;     // require check of the PDG code
   Bool_t     fRequireAbsolutePdg; // use the PDG code absolute value, used also for the decay channel
+  Bool_t     fProdVtxRange2D;     // cut an ellipse in xy plane
   Int_t      fPdgCode ;           // particle PDG code
   Double32_t fProdVtxXMin;        // min X of particle production vertex
   Double32_t fProdVtxYMin;        // min Y of particle production vertex
@@ -142,6 +144,7 @@ class AliCFParticleGenCuts : public AliCFCutBase
   TH1F*    fhCutStatistics;        // Histogram: statistics of what cuts the tracks did not survive
   TH2F*    fhCutCorrelation;	   // Histogram: 2d statistics plot
   TH1F*    fhQA[kNCuts][kNStepQA]; // QA Histograms
+  TH2F*    fhProdVtxXY[2];	   // Histogram: production vertex in tranzverse plane
   TArrayF* fCutValues;             // array of cut values
   TBits* fBitmap ;                 // stores single selection decisions
 
