@@ -198,8 +198,8 @@ AliRawReader* AliRawReader::Create(const char *uri)
   TString &fileURI = ((TObjString*)fields->At(0))->String();
 
   AliRawReader *rawReader = NULL;
-  if (fileURI.BeginsWith("mem://")) {
-    fileURI.ReplaceAll("mem://","");
+  if (fileURI.BeginsWith("mem://") || fileURI.BeginsWith("^")) {
+    if (fileURI.BeginsWith("mem://")) fileURI.ReplaceAll("mem://","");
     AliInfoClass(Form("Creating raw-reader in order to read events in shared memory (option=%s)",fileURI.Data()));
 
     TPluginManager* pluginManager = gROOT->GetPluginManager();
