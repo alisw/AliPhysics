@@ -3,6 +3,7 @@ objectClass: detectorConfig
 det: TPC
 strictRunOrder: 0
 responsible: Haavard.Helstrup@cern.ch
+responsible: Marian.Ivanov@cern.ch
 
 dn: dcsHost=alidcsamanda.cern.ch,det=TPC,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
@@ -87,4 +88,22 @@ dcsAlias: TPC_SKIRT_A_IMEAS
 dcsAlias: TPC_SKIRT_A_VMEAS
 dcsAlias: TPC_SKIRT_C_IMEAS
 dcsAlias: TPC_SKIRT_C_VMEAS
+dcsAlias: TPC_DVM_CO2
+dcsAlias: TPC_DVM_DriftVelocity
+dcsAlias: TPC_DVM_FCageHV
+dcsAlias: TPC_DVM_GainFar
+dcsAlias: TPC_DVM_GainNear
+dcsAlias: TPC_DVM_N2
+dcsAlias: TPC_DVM_NumberOfSparks
+dcsAlias: TPC_DVM_PeakAreaFar
+dcsAlias: TPC_DVM_PeakAreaNear
+dcsAlias: TPC_DVM_PeakPosFar
+dcsAlias: TPC_DVM_PeakPosNear
+dcsAlias: TPC_DVM_PickupHV
+dcsAlias: TPC_DVM_Pressure
+dcsAlias: TPC_DVM_T1_Over_P
+dcsAlias: TPC_DVM_T2_Over_P
+dcsAlias: TPC_DVM_T_Over_P
+dcsAlias: TPC_DVM_TemperatureS1
+dcsAlias: TPC_DVM_TemperatureS2
 
