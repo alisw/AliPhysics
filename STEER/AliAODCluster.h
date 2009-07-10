@@ -101,6 +101,8 @@ class AliAODCluster : public TObject {
   void  Print(const Option_t *opt = "") const;
 
   // setters
+  void SetE(Double32_t energy) {fEnergy = energy ; }
+  void SetPosition(Int_t ipos, Double32_t pos) {fPosition[ipos] = pos ;}
   void SetID(Int_t id) { fID = id; }
   void SetType(AODClu_t ttype) { fType=ttype; }
   void SetLabel(Int_t *label, UInt_t size);  
