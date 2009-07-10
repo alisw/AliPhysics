@@ -169,7 +169,8 @@ AliMUONTrackerDataMaker::Ctor(const AliMUONRecoParam* recoParam,
                               Double_t xmin, Double_t xmax)
 {
   /// "designated constructor"
-  Bool_t calibrate = ( fOCDBPath.Length() > 0 );
+
+  Bool_t calibrate = ( strlen(calibMode) > 0 );
   
   TString name;
   TString type("RAW");
