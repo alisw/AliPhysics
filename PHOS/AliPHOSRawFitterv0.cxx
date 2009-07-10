@@ -184,9 +184,17 @@ Bool_t AliPHOSRawFitterv0::Eval()
       pedMean += fSignal[i];
       pedRMS  += fSignal[i]*fSignal[i] ;
     }
+    
     if(fSignal[i] > maxSample) maxSample = fSignal[i];
     if(fSignal[i] == maxSample) nMax++;
+
+    if(fPedSubtract) {
+      if( (fSignal[i]-(Float_t)(pedMean/nPed)) >kBaseLine ) fTime = (Double_t)i;
+    }
+    else //ZS
+      if( (fSignal[i]-(Float_t)fAmpOffset) >kBaseLine ) fTime = (Double_t)i;
   }
+  
   fEnergy = (Double_t)maxSample;
   if (maxSample > 900 && nMax > 2) fOverflow = kTRUE;
 
