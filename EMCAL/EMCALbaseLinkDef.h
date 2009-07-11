@@ -28,6 +28,9 @@
 #pragma link C++ class AliEMCALQAChecker+;
 #pragma link C++ class AliEMCALSpaceFrame+;
 #pragma link C++ class AliEMCALSTURawStream+;
+#pragma link C++ class AliEMCALBiasAPD+;
+#pragma link C++ class AliEMCALCalibMapAPD+;
+#pragma link C++ class AliEMCALCalibAbs+;
+#pragma link C++ class AliEMCALCalibTimeDepCorrection+;
 #pragma link C++ class AliEMCALCCUSBRawStream+;
-
 #endif
