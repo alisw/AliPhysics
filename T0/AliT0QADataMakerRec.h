@@ -7,10 +7,8 @@
 /* $Id$ */
 
 //
-//  Produces the data needed to calculate the quality assurance. 
-//  All data must be mergeable objects.
-//  A. Mastroserio
-
+// Alla.Maevskaya@cern.ch
+// 
 
 
 // --- ROOT system ---
@@ -21,6 +19,7 @@
 // --- AliRoot header files ---
 
 #include "AliQADataMakerRec.h"
+#include "AliT0RecoParam.h" 
 
 class AliT0QADataMakerRec: public AliQADataMakerRec {
 
@@ -43,16 +42,20 @@ private:
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
   virtual void   StartOfDetectorCycle() ;
 
+  const AliT0RecoParam* GetRecoParam() { return dynamic_cast<const AliT0RecoParam*>(fRecoParam);}
   Int_t fNumTriggers[6];  //number of trigger signals;
   Int_t fNumTriggersCal[6];  //number of calibration  trigger signals;
 
-  Int_t fnEvent; 
+  Int_t fnEventCal; 
+  Int_t fnEventPhys; 
   Int_t feffC[24]; 
   Int_t feffA[24]; 
   Int_t feffqtc[24]; 
+  Float_t fTrEffCal[6];
+  Float_t fTrEffPhys[6];
 
 
-  ClassDef(AliT0QADataMakerRec,4)  // description 
+  ClassDef(AliT0QADataMakerRec,5)  // description 
 
 };
 

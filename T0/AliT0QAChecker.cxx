@@ -81,14 +81,14 @@ Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index,TObjArray ** list)
    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
     test[specie]    = 10.0 ; 
 
-  Double_t nent[250];
-  TString hname[250];
+  Double_t nent[500];
+  TString hname[500];
   const char *cname;
-  memset(nent,0,250*sizeof(Double_t));
-  Double_t w[250];
-  memset(w,1,250*sizeof(Double_t));
+  memset(nent,0,500*sizeof(Double_t));
+  Double_t w[500];
+  memset(w,1,500*sizeof(Double_t));
   TH2 *fhRecDiff[3];  
-  TH2 *fhRawEff[250];
+  TH1 *fhRawEff[500];
   TH1 *fhESD[2];
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
@@ -105,15 +105,15 @@ Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index,TObjArray ** list)
     for (Int_t ir=0; ir<list[specie]->GetEntries(); ir++) {
       //raw
       if(index==0 ){
-        if(ir > 204 ) {
+        if(ir > 204 && ir<208 ) {
           //	  else{
-          h = (TH2*) list[specie]->UncheckedAt(ir);
+          hdata = (TH1*) list[specie]->UncheckedAt(ir);
           AliDebug(AliQAv1::GetQADebugLevel(), Form(" index %i ir %i \n", index,ir));
-          if(h) {
-            cname = h->GetName();
+          if(hdata) {
+            cname = hdata->GetName();
             hname[ir] = cname;
             AliDebug(AliQAv1::GetQADebugLevel(),Form("count %i %s \n",ir, hname[ir].Data())) ;
-            fhRawEff[ir] = h;
+            fhRawEff[ir] = hdata;
           }
         }
      }
@@ -196,7 +196,7 @@ Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index,TObjArray ** list)
 Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec /*, TObjArray *listref*/) const
 {
   
-  TH2 *fhRawEff;
+  TH1 *fhRawEff;
   // TH2 *fhRawRef;
   // TIter next(listref) ;
   // Int_t counter=0;
@@ -223,22 +223,18 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec /*, TObjArray *listref*/) c
      cout<<" !!!!! reference "<<counter<<" "<<refmean[counter]<<" "<<refrms[counter]<<endl;
   }
   */
-  for (Int_t icase=205; icase<207; icase++) {
-    fhRawEff = (TH2*) listrec->At(icase);
+  
+  for (Int_t icase=205; icase<208; icase++) {
+    fhRawEff = (TH1*) listrec->At(icase);
     for (Int_t idet=0; idet<24; idet++) {
-      Double_t mean = fhRawEff->
-	ProjectionY(Form("%s_py_%i_%i",                                                              fhRawEff->GetName(), idet,icase),
-		    idet,idet+1)->GetMean();
-      Double_t rms= fhRawEff->
-	ProjectionY(Form("%s_py%i_%i", 
-			 fhRawEff->GetName(), idet,icase),
-		    idet,idet+1)->GetRMS();
-       AliDebug(AliQAv1::GetQADebugLevel(), 
-		Form("name %s icase %i idet %i mean %f, rms %f\n",
-		     fhRawEff->GetName(), icase, idet, mean,rms));
+      Double_t mean = fhRawEff->GetBinContent(idet);
+      AliDebug(AliQAv1::GetQADebugLevel(), 
+	       Form("name %s icase %i idet %i mean %f \n",
+		    fhRawEff->GetName(), icase, idet, mean));
+       
       if (mean<1.2 && mean> 0.8 ) {
 	checkr = 1;
-	AliDebug(AliQAv1::GetQADebugLevel(), Form("All channels works meane efficieny %f with rms %f test %f",  mean, rms, checkr)) ; 
+	AliDebug(AliQAv1::GetQADebugLevel(), Form("All channels works meane efficieny %f with  test %f",  mean, checkr)) ; 
       }
       if (mean<=0.8 && mean>= 0.5 ){
 	checkr = 0.5;
@@ -254,6 +250,7 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec /*, TObjArray *listref*/) c
      }
     }
   }
+  /*  
   for (Int_t icase=208; icase<210; icase++) {
    fhRawEff = (TH2*) listrec->At(icase);
    
@@ -271,14 +268,11 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec /*, TObjArray *listref*/) c
      AliDebug(AliQAv1::GetQADebugLevel(), 
 	      Form("name %s icase %i idet %i mean %f, rms %f\n",
 		   fhRawEff->GetName(), icase, idet, mean,rms));
-     
-   
-
-
+  
    }
 
   }
- 
+  */
   return checkr;
 }
 
