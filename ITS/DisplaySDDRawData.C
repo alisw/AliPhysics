@@ -13,9 +13,10 @@
 // Macro for a z-phi event display of the SDD Raw Data
 // Origin: F. Prino,   prino@to.infn.it
 
-void DisplaySDDRawData(Char_t *datafil, Int_t firstEv=0, Int_t lastEv=5){
+void DisplaySDDRawData(TString filename, Int_t firstEv=0, Int_t lastEv=5){
 
 
+  Bool_t writtenoutput=kFALSE;
   AliITSDDLModuleMapSDD* ddlmap=new AliITSDDLModuleMapSDD();
   ddlmap->SetJun08Map();
 
@@ -53,15 +54,15 @@ void DisplaySDDRawData(Char_t *datafil, Int_t firstEv=0, Int_t lastEv=5){
 
   Int_t iev=firstEv;
   AliRawReader *rd; 
-  if(strstr(datafil,".root")!=0){
-    rd=new AliRawReaderRoot(datafil,iev);
+  if(filename.Contains(".root")){
+    rd=new AliRawReaderRoot(filename.Data(),iev);
   }else{
-    rd=new AliRawReaderDate(datafil,iev);
+    rd=new AliRawReaderDate(filename.Data(),iev);
   }
+
   TStopwatch *evtime=new TStopwatch();
   TCanvas* c0 = new TCanvas("cd0","c0",800,800);
   gStyle->SetPalette(1);
-  Int_t idev;
   do{
     c0->Clear();				
     c0->Divide(1,2,0.001,0.001);
@@ -71,27 +72,33 @@ void DisplaySDDRawData(Char_t *datafil, Int_t firstEv=0, Int_t lastEv=5){
     rd->Reset();
     hzphi3->Reset();
     hzphi4->Reset();
-    AliITSRawStreamSDD s(rd);
-    Int_t iCountNext=0;    
-    while(s.Next()){
-      iCountNext++;
+
+    UChar_t cdhAttr=AliITSRawStreamSDD::ReadBlockAttributes(rd);
+    UInt_t amSamplFreq=AliITSRawStreamSDD::ReadAMSamplFreqFromCDH(cdhAttr);
+    AliITSRawStream* s=AliITSRawStreamSDD::CreateRawStreamSDD(rd,cdhAttr);
+    if(!writtenoutput){
+      printf("Use %s raw stream, sampling frequency %d MHz\n",s->ClassName(),amSamplFreq);
+      writtenoutput=kTRUE;
+
+    }
+
+    while(s->Next()){
       
-      if(s.IsCompletedModule()==kFALSE && s.IsCompletedDDL()==kFALSE){
+      if(s->IsCompletedModule()==kFALSE && s->IsCompletedDDL()==kFALSE){
 	Int_t lay,lad,det;
-	Int_t modID=ddlmap->GetModuleNumber(rd->GetDDLID(),s.GetCarlosId());
+	Int_t modID=ddlmap->GetModuleNumber(rd->GetDDLID(),s->GetCarlosId());
 	AliITSgeomTGeo::GetModuleId(modID,lay,lad,det);
-	Int_t iz=s.GetCoord1()+256*(det-1);
-	Int_t iphi=s.GetCoord2()+256*(lad-1)+128*s.GetChannel();
+	Int_t iz=s->GetCoord1()+256*(det-1);
+	Int_t iphi=s->GetCoord2()+256*(lad-1)+128*s->GetChannel();
 	if(lay==3){
-	  hzphi3->SetBinContent(iz+1,iphi+1,s.GetSignal());
+	  hzphi3->SetBinContent(iz+1,iphi+1,s->GetSignal());
 	}else if(lay==4){
-	  hzphi4->SetBinContent(iz+1,iphi+1,s.GetSignal());
+	  hzphi4->SetBinContent(iz+1,iphi+1,s->GetSignal());
 	}
       }
     }
-    idev=s.GetEventId();
     evtime->Stop();
-    printf("**** Event=%d  ID=%d\n",iev,idev);
+    printf("**** Event=%d \n",iev);
     evtime->Print("u");
     evtime->Reset();
     iev++;
@@ -114,11 +121,12 @@ void DisplaySDDRawData(Char_t *datafil, Int_t firstEv=0, Int_t lastEv=5){
 
 }
 
-void DisplaySDDRawData(Int_t nrun, Int_t n2, Int_t nchunk=10, Int_t firstEv=1, Int_t lastEv=20){  
+void DisplaySDDRawData(Int_t nrun, Int_t n2, Int_t chunk=10, Int_t year=2009, Char_t* dir="LHC09b", 
+		       Int_t firstEv=21*3, 
+		       Int_t lastEv=21*3+1){  
   TGrid::Connect("alien:",0,0,"t");
-  Char_t filnam[200];
-  sprintf(filnam,"alien:///alice/data/2008/LHC08c/%09d/raw/08%09d%03d.%02d.root",nrun,nrun,n2,nchunk);
-  printf("Open file %s\n",filnam);
+  TString filnam(Form("alien:///alice/data/%d/%s/%09d/raw/%02d%09d%03d.%02d.root",year,dir,nrun,year-2000,nrun,n2,chunk));
+  printf("Open file %s\n",filnam.Data());
   DisplaySDDRawData(filnam,firstEv,lastEv);
 }
 
