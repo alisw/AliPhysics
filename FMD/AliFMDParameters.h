@@ -166,6 +166,8 @@ public:
   void SetSampleRate(AliFMDCalibSampleRate* r) { fSampleRate = r; }
   /** @param p Pedestal value in ADC counts */
   void SetPedestal(Float_t p=10)              { fFixedPedestal = p; }
+  /** @param p Pedestal map */
+  void SetPedestal(AliFMDCalibPedestal* p) { fPedestal = p; }
   /** @param w Pedestal width in ADC counts */
   void SetPedestalWidth(Float_t w=1)          { fFixedPedestalWidth = w; }
   /** @param t Threshold used for 1 MIP acceptance. */
@@ -179,6 +181,8 @@ public:
       the older invalid format (7 32bit words with bogus entries)
       @param yes if true the raw data has complete data header */ 
   void UseCompleteHeader(Bool_t yes=kTRUE) { fHasCompleteHeader = yes; } 
+  /** @param g Gain map */
+  void SetGain(AliFMDCalibGain* g) { fPulseGain = g; }
   /** @} */
 
   /** @{ */

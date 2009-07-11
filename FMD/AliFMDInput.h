@@ -115,7 +115,8 @@ public:
     kRaw,             // Read raw data 
     kGeometry,        // Not really a tree 
     kTracks,	      // Hits and tracs - for BG study	
-    kTrackRefs        // Track references - also for BG study
+    kTrackRefs,       // Track references - also for BG study
+    kRawCalib         // Read raws and calibrate them
   };
   /** CTOR  */
   AliFMDInput();
@@ -182,6 +183,10 @@ public:
       ProcessRawDigit for each digit. 
       @return @c false on error  */
   virtual Bool_t ProcessRawDigits();
+  /** Loop over all digits read from raw data files, and call
+      ProcessRawDigit for each digit. 
+      @return @c false on error  */
+  virtual Bool_t ProcessRawCalibDigits();
   /** Loop over all reconstructed points, and call ProcessRecPoint for
       each reconstructed point. 
       @return @c false on error  */
@@ -224,6 +229,11 @@ public:
       @param digit Raw digit
       @return  @c false on error   */
   virtual Bool_t ProcessRawDigit(AliFMDDigit* digit);
+  /** Process one digit from raw data files.  Users should over this
+      to process each raw digit.  
+      @param digit Raw digit
+      @return  @c false on error   */
+  virtual Bool_t ProcessRawCalibDigit(AliFMDDigit* digit);
   /** Process one reconstructed point.  Users should over this to
       process each reconstructed point.  
       @param point Reconstructed point 
@@ -334,6 +344,7 @@ inline Bool_t AliFMDInput::ProcessTrack(Int_t,TParticle*,
 inline Bool_t AliFMDInput::ProcessDigit(AliFMDDigit*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessSDigit(AliFMDSDigit*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessRawDigit(AliFMDDigit*) { return kTRUE; }
+inline Bool_t AliFMDInput::ProcessRawCalibDigit(AliFMDDigit*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessRecPoint(AliFMDRecPoint*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessESD(UShort_t,Char_t,UShort_t,UShort_t,
 				      Float_t,Float_t) { return kTRUE; }

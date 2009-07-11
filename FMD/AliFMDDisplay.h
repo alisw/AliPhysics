@@ -102,6 +102,10 @@ public:
       @param digit Raw digit.
       @return @c false on error  */
   virtual Bool_t ProcessRawDigit(AliFMDDigit* digit);
+  /** Visualize a raw digit
+      @param digit Raw digit.
+      @return @c false on error  */
+  virtual Bool_t ProcessRawCalibDigit(AliFMDDigit* digit);
   /** Visualize a reconstructed point.
       @param recpoint Reconstructed point
       @return @c false on error  */
@@ -190,6 +194,8 @@ protected:
   virtual void AtEnd();
   virtual Bool_t InsideCut(Float_t v, const Float_t& min, 
 			 const Float_t& max) const;
+  virtual Double_t GetADCThreshold(UShort_t d, Char_t r, 
+				   UShort_t s, UShort_t t) const;
   
   static AliFMDDisplay* fgInstance; // Static instance 
   Bool_t                fWait;      // Wait until user presses `Continue'

@@ -164,6 +164,10 @@ public:
   TLine  fLine;		// Just a line 
   TLatex fTotal;	// Total in FMD
 
+  Double_t fFMD1Area;   // 
+  Double_t fFMD2Area;   // 
+  Double_t fFMD3Area;   // 
+
   ClassDef(AliFMDPattern,0) // Display FMD data as hit-patterns. 
 };
 

@@ -21,6 +21,8 @@
 #ifndef ALIFMDFLOATMAP_H
 # include <AliFMDFloatMap.h>
 #endif
+#include <iosfwd>
+
 //____________________________________________________________________
 /** @brief Pedestal value and width for each strip in the FMD 
     @ingroup FMD_base
@@ -62,6 +64,13 @@ public:
       @param str  Strip
       @return Pedestal width for strip */  
   Float_t Width(UShort_t det, Char_t ring, UShort_t sec, UShort_t str);
+
+  /**
+     Read information from file and set values
+     @param inFile inputFile
+   */
+  Bool_t ReadFromFile(std::istream & inFile);
+
 private:
   AliFMDFloatMap fValue; /** Pedestal */
   AliFMDFloatMap fWidth; /** Pedestal width */

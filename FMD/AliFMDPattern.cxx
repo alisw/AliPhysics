@@ -29,7 +29,7 @@
 // Latest changes by Christian Holm Christensen
 //
 
-// #include <iostream>
+#include <iostream>
 
 // #include <TApplication.h>
 // #include <TButton.h>
@@ -252,6 +252,12 @@ AliFMDPattern::AliFMDPatternDetector::AddMarker(Double_t x,
       this a usage of the TMath namespace declaration! Idiot */
   Int_t i = TMath::Min(Int_t(fCounts.fN * s / max),  
 		       Int_t(fGraphs.GetEntries()-1));
+  if (i < 0 || i >= fCounts.fN) { 
+    std::cerr << "Graph index " << i << " out of bounds [0," 
+	      << fCounts.fN << ") - " 
+	      << fCounts.fN << " * " << s << " / " << max << std::endl;
+    return;
+  }
   TGraph* g = static_cast<TGraph*>(fGraphs.At(i));
   if (!g) return;
   g->SetPoint(fCounts[i]++, x, y);
@@ -277,7 +283,10 @@ AliFMDPattern::AliFMDPattern(const char* gAliceFile)
     fFMD2Sum(.2, .6, "# in FMD2: "),
     fFMD3Sum(.2, .5, "# in FMD3: "),
     fLine(.15, .47, .85, .47),
-    fTotal(.2, .35, "Total:   ")
+    fTotal(.2, .35, "Total:   "), 
+    fFMD1Area(0),
+    fFMD2Area(0),
+    fFMD3Area(0)
 {
   // Constructor. 
   // 
@@ -321,11 +330,26 @@ AliFMDPattern::Init()
   geom->Init();
   geom->InitTransformations();
   
+  fFMD1Area = 0;
+  fFMD2Area = 0;
+  fFMD3Area = 0;
+
+  Double_t innerArea = 0;
+  Double_t outerArea = 0;
+
   Char_t rs[] = { 'I' , 'O', '\0' };
   Char_t *r   = rs;
   do {
     AliFMDRing* ring = geom->GetRing(*r);
     if (!ring) continue;
+
+    Double_t rl   = ring->GetMinR();
+    Double_t rh   = ring->GetMaxR();
+    Double_t area = rh * rh * TMath::Pi() - rl * rl * TMath::Pi();
+    if (*r == 'I') innerArea = area;
+    else           outerArea = area;
+      
+
     const TObjArray& vs = ring->GetVerticies();
     TObjArray&       gs = (*r == 'I' ? fInners   : fOuters);
     Float_t&         mr = (*r == 'I' ? fInnerMax : fOuterMax);
@@ -363,7 +387,11 @@ AliFMDPattern::Init()
       g->SetLineStyle(2);
     }
   } while (*(++r));
-    
+
+  fFMD1Area = innerArea;
+  fFMD2Area = innerArea + outerArea;
+  fFMD3Area = innerArea + outerArea;
+  
   return kTRUE;
 }
 
@@ -449,17 +477,20 @@ AliFMDPattern::AtEnd()
   
   fFMD1.End();
   fFMD1Pad->Modified();
-  fFMD1Sum.SetTitle(Form("# hits in FMD1: %5d", fFMD1.Total()));
+  fFMD1Sum.SetTitle(Form("# hits in FMD1: %5d (%7.5f /cm^{2})", 
+			 fFMD1.Total(), fFMD1.Total()/fFMD1Area));
   total += fFMD1.Total();
 
   fFMD2.End();
   fFMD2Pad->Modified();
-  fFMD2Sum.SetTitle(Form("# hits in FMD2: %5d", fFMD2.Total()));
+  fFMD2Sum.SetTitle(Form("# hits in FMD2: %5d (%7.5f /cm^{2})", 
+			 fFMD2.Total(), fFMD2.Total()/fFMD2Area));
   total += fFMD2.Total();
 
   fFMD3.End();
   fFMD3Pad->Modified();
-  fFMD3Sum.SetTitle(Form("# hits in FMD3: %5d", fFMD3.Total()));
+  fFMD3Sum.SetTitle(Form("# hits in FMD3: %5d (%7.5f /cm^{2})", 
+			 fFMD3.Total(), fFMD3.Total()/fFMD3Area));
   total += fFMD3.Total();
 
   fTotal.SetTitle(Form("Total:    %5d/51200 (%3d%%)", 

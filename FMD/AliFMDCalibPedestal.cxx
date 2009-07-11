@@ -28,6 +28,10 @@
 // Need to make algorithm that makes this data
 //
 #include "AliFMDCalibPedestal.h"	// ALIFMDCALIBPEDESTAL_H
+#include <iostream>
+#include <TString.h>
+#include <AliLog.h>
+
 //____________________________________________________________________
 ClassImp(AliFMDCalibPedestal)
 #if 0
@@ -92,6 +96,49 @@ AliFMDCalibPedestal::Width(UShort_t det, Char_t ring, UShort_t sec,
   return fWidth(det, ring, sec, str);
 }
 
+//____________________________________________________________________
+Bool_t
+AliFMDCalibPedestal::ReadFromFile(std::istream& in)
+{
+  // Get header (how long is it ?)
+  TString header;
+  header.ReadLine(in);
+  header.ToLower();
+  if(!header.Contains("pedestals")) {
+    AliError("File does not contain pedestals!");
+    return kFALSE;
+  }
+    
+  // Read columns line
+  int lineno = 2;
+  header.ReadLine(in);
+    
+  // Loop until EOF
+  while(in.peek()!=EOF) {
+    if(in.bad()) { 
+      AliError(Form("Bad read at line %d in input", lineno));
+      break;
+    }
+    UShort_t det, sec, strip;
+    Char_t ring;
+    Float_t ped, noise, mu, sigma, chi2ndf;
+    Char_t c[8];
+	  
+    in >> det      >> c[0] 
+       >> ring     >> c[1]
+       >> sec      >> c[2]
+       >> strip    >> c[3]
+       >> ped      >> c[4]
+       >> noise    >> c[5]
+       >> mu       >> c[6]
+       >> sigma    >> c[7]
+       >> chi2ndf;
+    lineno++;
+      
+    Set(det,ring,sec,strip,ped,noise);
+  }
+  return kTRUE;
+}
 //____________________________________________________________________
 //
 // EOF

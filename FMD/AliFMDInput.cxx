@@ -161,7 +161,8 @@ Int_t
 AliFMDInput::NEvents() const 
 {
   // Get number of events
-  if (TESTBIT(fTreeMask, kRaw)) return fReader->GetNumberOfEvents();
+  if (TESTBIT(fTreeMask, kRaw) || 
+      TESTBIT(fTreeMask, kRawCalib)) return fReader->GetNumberOfEvents();
   if (fChainE) return fChainE->GetEntriesFast();
   if (fTreeE) return fTreeE->GetEntries();
   return -1;
@@ -187,6 +188,7 @@ AliFMDInput::Init()
        "\tRecPoints:     %d\n"
        "\tESD:           %d\n"
        "\tRaw:           %d\n"
+       "\tRawCalib:      %d\n"
        "\tGeometry:      %d\n"
        "\tTracks:        %d\n"
        "\tTracksRefs:    %d",
@@ -199,6 +201,7 @@ AliFMDInput::Init()
        TESTBIT(fTreeMask, kRecPoints),
        TESTBIT(fTreeMask, kESD),
        TESTBIT(fTreeMask, kRaw),
+       TESTBIT(fTreeMask, kRawCalib),
        TESTBIT(fTreeMask, kGeometry),
        TESTBIT(fTreeMask, kTracks),
        TESTBIT(fTreeMask, kTrackRefs));
@@ -267,7 +270,8 @@ AliFMDInput::Init()
     
   }
     
-  if (TESTBIT(fTreeMask, kRaw)) {
+  if (TESTBIT(fTreeMask, kRaw) || 
+      TESTBIT(fTreeMask, kRawCalib)) {
     AliInfo("Getting FMD raw data digits");
     fArrayA = new TClonesArray("AliFMDDigit");
 #if 0
@@ -436,8 +440,9 @@ AliFMDInput::Begin(Int_t event)
   }
 
   // Possibly load FMD Digit information 
-  if (TESTBIT(fTreeMask, kRaw)) {
+  if (TESTBIT(fTreeMask, kRaw) || TESTBIT(fTreeMask, kRawCalib)) {
     // AliInfo("Getting FMD raw data digits");
+    std::cout << "Waiting for event ..." << std::endl;
     if (!fReader->NextEvent()) return kFALSE;
     // AliFMDRawReader r(fReader, 0);
     fArrayA->Clear();
@@ -473,6 +478,8 @@ AliFMDInput::Event()
     if (!ProcessDigits()) return kFALSE;
   if (TESTBIT(fTreeMask, kRaw)) 
     if (!ProcessRawDigits()) return kFALSE;
+  if (TESTBIT(fTreeMask, kRawCalib)) 
+    if (!ProcessRawCalibDigits()) return kFALSE;
   if (TESTBIT(fTreeMask, kRecPoints)) 
     if (!ProcessRecPoints()) return kFALSE;
   if (TESTBIT(fTreeMask, kESD))
@@ -681,6 +688,29 @@ AliFMDInput::ProcessRawDigits()
     if (AliLog::GetDebugLevel("FMD","") >= 40 && j < 30) 
       digit->Print();
     if (!ProcessRawDigit(digit)) return kFALSE;
+  }    
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDInput::ProcessRawCalibDigits()
+{
+  // Read the digit tree, and pass each digit to the member function
+  // ProcessDigit.
+  if (!fArrayA) {
+    AliError("No raw digit array defined");
+    return kFALSE;
+  }
+
+  Int_t nDigit = fArrayA->GetEntries();
+  if (nDigit <= 0) return kTRUE;
+  for (Int_t j = 0; j < nDigit; j++) {
+    AliFMDDigit* digit = static_cast<AliFMDDigit*>(fArrayA->At(j));
+    if (!digit) continue;
+    if (AliLog::GetDebugLevel("FMD","") >= 40 && j < 30) 
+      digit->Print();
+    if (!ProcessRawCalibDigit(digit)) return kFALSE;
   }    
   return kTRUE;
 }

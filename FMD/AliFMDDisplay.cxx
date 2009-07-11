@@ -175,6 +175,7 @@ AliFMDDisplay::MakeCanvas(const char** which)
   Double_t xb = 1;
   fCanvas->cd();
   if (TESTBIT(fTreeMask, kDigits) || 
+      TESTBIT(fTreeMask, kRawCalib) || 
       TESTBIT(fTreeMask, kRaw)) { 
     yb = .05;
     xb = .66;
@@ -194,7 +195,8 @@ AliFMDDisplay::MakeCanvas(const char** which)
       TESTBIT(fTreeMask, kESD)     || 
       TESTBIT(fTreeMask, kDigits)  || 
       TESTBIT(fTreeMask, kSDigits) || 
-      TESTBIT(fTreeMask, kRaw)) {
+      TESTBIT(fTreeMask, kRaw)     ||
+      TESTBIT(fTreeMask, kRawCalib)) {
     yb = .05;
     fSlider = new TSlider("genCut", "Multiplicity cut", 0, 0, xb, yb);
     fSlider->SetMethod("AliFMDDisplay::Instance()->ChangeCut()");
@@ -384,6 +386,7 @@ AliFMDDisplay::MakeAux()
   // etc, 
   const Range_t* range = 0;
   if      (TESTBIT(fTreeMask, kESD))      range = &fgkMultRange;
+  else if (TESTBIT(fTreeMask, kRawCalib)) range = &fgkMultRange;
   else if (TESTBIT(fTreeMask, kDigits))   range = &fgkAdcRange;
   else if (TESTBIT(fTreeMask, kSDigits))  range = &fgkAdcRange;
   else if (TESTBIT(fTreeMask, kRaw))      range = &fgkAdcRange;
@@ -558,10 +561,11 @@ AliFMDDisplay::ChangeCut()
   // drawn in the AUX canvas
   AliInfo(Form("Range is now %7.5f - %7.5f", fSlider->GetMinimum(), 
 	       fSlider->GetMaximum()));
-  if ((TESTBIT(fTreeMask, kESD) || 
-       TESTBIT(fTreeMask, kDigits) || 
+  if ((TESTBIT(fTreeMask, kESD)     || 
+       TESTBIT(fTreeMask, kDigits)  || 
        TESTBIT(fTreeMask, kSDigits) || 
-       TESTBIT(fTreeMask, kRaw))) {
+       TESTBIT(fTreeMask, kRaw)     ||
+       TESTBIT(fTreeMask, kRawCalib))) {
     Float_t l = fSlider->GetMinimum();
     Float_t h = fSlider->GetMaximum();
     l         = 1024 * l + 0;
@@ -577,9 +581,7 @@ AliFMDDisplay::ChangeFactor()
   // Change the cut on the slider. 
   // The factor depends on what is 
   // drawn in the AUX canvas
-  AliInfo(Form("Noise factor is now %4.1f, pedestal factor %3.1f", 
-	       10 * fFactor->GetMinimum(),
-	       (fFactor->GetMaximum()-fFactor->GetMaximum())));
+  AliInfo(Form("Noise factor is now %4.1f", 10 * fFactor->GetMinimum()));
   Redisplay();
 }
 
@@ -676,7 +678,11 @@ AliFMDDisplay::InsideCut(Float_t val, const Float_t& min,
   Float_t l = fSlider->GetMinimum();
   Float_t h = fSlider->GetMaximum();
   if (l == h) { l = 0; h = 1; }
-  if (val < r * l + min || val > r * h + min) return kFALSE;
+  if (val < r * l + min || val > r * h + min) { 
+    AliFMDDebug(1, ("Value %f is outside cut %f - %f (range %f - %f)", 
+		    val, min+r*l, min+r*h, min, max));
+    return kFALSE;
+  }
   return kTRUE;
 }
 
@@ -716,21 +722,13 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
 
   if (!digit) { AliError("No digit");   return kFALSE; }
 
-  AliFMDParameters* parm = AliFMDParameters::Instance();
   UShort_t det           =  digit->Detector();
   Char_t   ring          =  digit->Ring();
   UShort_t sec           =  digit->Sector();
   UShort_t str           =  digit->Strip();
-  Double_t ped           =  parm->GetPedestal(det,ring, sec, str);
-  Double_t pedW          =  parm->GetPedestalWidth(det,ring, sec, str);
-  Double_t threshold     =  ((fFMDReader && fFMDReader->IsZeroSuppressed(det-1)
-			      ? 0 : (ped * (fFactor->GetMaximum()
-					    -fFactor->GetMinimum())))
-			     + pedW * 10 * fFactor->GetMinimum());
-  if (threshold > fgkAdcRange.fHigh) threshold = fgkAdcRange.fHigh;
+  Double_t threshold     =  GetADCThreshold(det, ring, sec, str);
   Float_t  counts        =  digit->Counts();
-  if (fFMDReader && fFMDReader->IsZeroSuppressed(det-1) && counts > 0)
-    counts += fFMDReader->NoiseFactor(det-1) * pedW;
+  if (threshold < 0) { counts += -threshold; threshold = 0; }
 
   AliFMDDebug(10, ("FMD%d%c[%02d,%03d] counts %4d threshold %4d", 
 		   det, ring, sec, str, Int_t(counts), Int_t(threshold)));
@@ -787,6 +785,50 @@ AliFMDDisplay::ProcessRawDigit(AliFMDDigit* digit)
 
 //____________________________________________________________________
 Bool_t 
+AliFMDDisplay::ProcessRawCalibDigit(AliFMDDigit* digit)
+{
+  // Process a digit 
+  // Parameters: 
+  //   digit Digit information 
+  static const Float_t rMin  = fgkMultRange.fLow;
+  static const Float_t rMax  = fgkMultRange.fHigh;
+  static const Float_t aMin  = fgkAdcRange.fLow;
+  static const Float_t aMax  = fgkAdcRange.fHigh;
+
+  if (!digit) { AliError("No digit");   return kFALSE; }
+
+  AliFMDParameters* parm = AliFMDParameters::Instance();
+  UShort_t det           =  digit->Detector();
+  Char_t   ring          =  digit->Ring();
+  UShort_t sec           =  digit->Sector();
+  UShort_t str           =  digit->Strip();
+  Double_t gain          =  parm->GetPulseGain(det, ring, sec, str);
+  Double_t ped           =  parm->GetPedestal(det, ring, sec, str);
+  Double_t threshold     =  GetADCThreshold(det, ring, sec, str);
+  Float_t  counts        =  digit->Counts();
+  if (threshold < 0) { counts += -threshold; threshold = 0; ped = 0; }
+
+  //   Double_t edep = ((counts * parm->GetEdepMip() / 
+  // 		    (gain * parm->GetDACPerMIP()));
+  Double_t mult = (counts-ped) / (gain * parm->GetDACPerMIP());
+  
+
+  AliFMDDebug(10, ("FMD%d%c[%02d,%03d] adc %4d "
+		   "(threshold %4d, gain %6.3f) -> mult %7.4f", 
+		   det, ring, sec, str, int(counts), int(threshold), 
+		   gain, mult));
+  if (fHits)                                    fHits->Add(digit);
+  if (fSpec)                                    fSpec->Fill(mult);
+  if (!InsideCut(counts-threshold, aMin, aMax)) return kTRUE;
+  if (fSpecCut)                                 fSpecCut->Fill(mult);
+  
+  if (mult >= 0) 
+    AddMarker(det, ring, sec, str, digit, mult, rMin, rMax);
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
 AliFMDDisplay::ProcessRecPoint(AliFMDRecPoint* recpoint)
 {
   // Process reconstructed point 
@@ -828,6 +870,25 @@ AliFMDDisplay::ProcessESD(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
   if (fSpecCut) fSpecCut->Fill(cmult);
 
   return kTRUE;
+}
+
+Double_t
+AliFMDDisplay::GetADCThreshold(UShort_t d, Char_t r, 
+			       UShort_t s, UShort_t t) const
+{
+  AliFMDParameters* parm = AliFMDParameters::Instance();
+  Double_t ped           =  parm->GetPedestal(d,r, s, t);
+  Double_t pedW          =  parm->GetPedestalWidth(d,r, s, t);
+  Double_t threshold     = 0;
+  if (fFMDReader && fFMDReader->IsZeroSuppressed(d-1))
+    threshold = - fFMDReader->NoiseFactor(d-1) * pedW;
+  else 
+    threshold = ped + pedW * 10 * fFactor->GetMinimum();
+  AliFMDDebug(10, ("FMD%d%c[%2d,%3d] ped: %f +/- %f [factor: %f-%f]", 
+		   d, r, s, t, ped, pedW, 
+		   fFactor->GetMinimum(), fFactor->GetMaximum()));
+  if (threshold > fgkAdcRange.fHigh) threshold = fgkAdcRange.fHigh;
+  return threshold;
 }
 
 //____________________________________________________________________

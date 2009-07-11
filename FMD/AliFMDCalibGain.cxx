@@ -27,6 +27,10 @@
 // Gnus
 //
 #include "AliFMDCalibGain.h"	// ALIFMDCALIBGAIN_H
+#include <iostream>
+#include <TString.h>
+#include <AliLog.h>
+
 //____________________________________________________________________
 ClassImp(AliFMDCalibGain)
 #if 0
@@ -81,6 +85,47 @@ AliFMDCalibGain::Value(UShort_t det, Char_t ring, UShort_t sec,
   return fValue(det, ring, sec, str);
 }
 
+//____________________________________________________________________
+Bool_t
+AliFMDCalibGain::ReadFromFile(std::istream& in)
+{
+  //Get header (how long is it ?)
+  TString header;
+  header.ReadLine(in);
+  header.ToLower();
+  if(!header.Contains("gains")) {
+    AliError("File does not contain gains!");
+    return kFALSE;;
+  }
+
+  // Read column headers
+  header.ReadLine(in);
+  
+  int lineno  = 2;
+  // Read until EOF 
+  while(in.peek()!=EOF) {
+    if(in.bad()) { 
+      AliError(Form("Bad read at line %d of input", lineno));
+      break;
+    }
+    UShort_t det, sec, strip;
+    Char_t ring;
+    
+    Float_t gain,error,  chi2ndf;
+    Char_t c[6];
+    
+    in >> det      >> c[0] 
+       >> ring     >> c[1]
+       >> sec      >> c[2]
+       >> strip    >> c[3]
+       >> gain     >> c[4]
+       >> error    >> c[5]
+       >> chi2ndf;
+    lineno++;
+    Set(det,ring,sec,strip,gain);
+  }
+  return kTRUE;
+}
 //____________________________________________________________________
 //
 // EOF
