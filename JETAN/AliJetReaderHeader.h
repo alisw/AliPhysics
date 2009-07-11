@@ -37,7 +37,7 @@ class AliJetReaderHeader : public TNamed
   Int_t   GetDetector()    const {return fOption;}
   Int_t   GetCluster()     const {return fCluster;}
   Bool_t  GetDZ()          const {return fDZ;}
-  Int_t   GetDebug()       const {cout << "coucou" << endl; return fDebug;}
+  Int_t   GetDebug()       const {return fDebug;}
   Int_t   GetSignalPerBg() const {return fSignalPerBg;}
   	  
   // Setters
