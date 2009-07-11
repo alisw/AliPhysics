@@ -152,9 +152,9 @@ Bool_t AliZDCDigitizer::Init()
     //PTM gains rescaled to beam energy for p-p
     if(beamEnergy != 0){
       for(Int_t j = 0; j < 5; j++){
-        fPMGain[0][j] = 661.444/beamEnergy+0.000740671;
-        fPMGain[1][j] = 864.350/beamEnergy+0.002344;
-        fPMGain[3][j] = 1.32312-0.000101515*beamEnergy;
+        fPMGain[0][j] = (661.444/beamEnergy+0.000740671)*10000000;
+        fPMGain[1][j] = (864.350/beamEnergy+0.002344)*10000000;
+        fPMGain[3][j] = (1.32312-0.000101515*beamEnergy)*10000000;
         fPMGain[4][j] = fPMGain[0][j];
         fPMGain[5][j] = fPMGain[1][j] ;
       }
