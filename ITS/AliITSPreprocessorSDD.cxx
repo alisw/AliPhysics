@@ -266,6 +266,7 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 	    modSet[2*modID+isid]=1;
 	  }
 	}
+	fclose(injFil);
 	Log(Form("Put calib obj for hybrid %d (DDL %d  Carlos %d)",2*modID+isid,iddl,imod));
 	if(modSet[2*modID+isid]) vdrift.AddAt(arr,2*modID+isid);
       }
