@@ -92,6 +92,7 @@ int AliHLTTriggerBarrelMultiplicity::DoTrigger()
   if (iResult>=0 && numberOfTracks<0) {
     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack);
 	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
+      if (numberOfTracks<0) numberOfTracks=0;
       vector<AliHLTGlobalBarrelTrack> tracks;
       if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
 	for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
