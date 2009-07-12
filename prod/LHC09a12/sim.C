@@ -12,7 +12,7 @@ void sim(Int_t nev=50) {
   
   // QA reference
   MuonSim.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
-
+  
   // HLT
   MuonSim.SetSpecificStorage("HLT/ConfigMUON/DecisionComponent","alien://Folder=/alice/cern.ch/user/b/bogdan/prod2009/cdb");
   MuonSim.SetSpecificStorage("HLT/ConfigMUON/HitReconstructor","alien://Folder=/alice/cern.ch/user/b/bogdan/prod2009/cdb");
@@ -23,16 +23,8 @@ void sim(Int_t nev=50) {
   MuonSim.SetSpecificStorage("GRP/CTP/Config","alien://Folder=/alice/cern.ch/user/b/bogdan/prod2009/cdb");
   
   // alignment
-  MuonSim.SetSpecificStorage("MUON/Align/Data","alien://Folder=/alice/simulation/2008/v4-15-Release/Full");
+  MuonSim.SetSpecificStorage("MUON/Align/Data","alien://Folder=/alice/simulation/2008/v4-15-Release/Residual");
   
-  // trigger masks
-  MuonSim.SetSpecificStorage("MUON/Calib/GlobalTriggerCrateConfig","alien://Folder=/alice/cern.ch/user/b/bogdan/prod2009/cdb");
-  MuonSim.SetSpecificStorage("MUON/Calib/LocalTriggerBoardMasks","alien://Folder=/alice/cern.ch/user/b/bogdan/prod2009/cdb");
- 
-  // tracker masks
-  MuonSim.SetSpecificStorage("MUON/Calib/Gains","alien://Folder=/alice/cern.ch/user/b/bogdan/prod2009/cdb/sim");
-  MuonSim.SetSpecificStorage("MUON/Calib/Pedestals","alien://Folder=/alice/cern.ch/user/b/bogdan/prod2009/cdb/sim");
-
   TStopwatch timer;
   timer.Start();
   

@@ -1,4 +1,4 @@
-void sim(Int_t nev=50) {
+void sim(Int_t nev=200) {
 
   AliSimulation MuonSim;
   MuonSim.SetMakeTrigger("MUON");

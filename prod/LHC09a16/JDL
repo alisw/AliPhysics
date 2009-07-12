@@ -1,0 +1,28 @@
+Executable = "aliroot_new";
+Jobtag={"comment: MUON Cocktail pp, MB, residual misalignment"};
+
+Packages={"VO_ALICE@AliRoot::v4-17-Rev-01","VO_ALICE@GEANT3::v1-10-1","VO_ALICE@ROOT::v5-23-04","VO_ALICE@APISCONFIG::V2.4"};
+
+TTL = "72000";
+
+Validationcommand ="/alice/cern.ch/user/a/aliprod/prod2007/configs_pbpb_hijing/validation.sh";
+
+InputFile= {"LF:/alice/cern.ch/user/a/aliprod/LHC09a16/Config.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a16/simrun.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a16/sim.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a16/rec.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a16/tag.C",
+            "LF:/alice/cern.ch/user/a/aliprod/LHC09a16/CheckESD.C"};
+
+OutputArchive={"log_archive:stdout,stderr,*.log@ALICE::FZK::SE","root_archive.zip:galice.root,Kinematics.root,TrackRefs.root,AliESDs.root,dHLTRawData.root,Trigger.root,MUON.RecPoints.root,geometry.root,check.root@ALICE::FZK::SE"};
+OutputFile={"Run*.root@ALICE::FZK::SE"};
+
+OutputDir="/alice/sim/PDC_09/LHC09a16/$1/#alien_counter_03i#";
+
+JDLVariables={"Packages", "OutputDir"};
+GUIDFILE="guid.txt";
+
+splitarguments="simrun.C --run $1 --event #alien_counter# --type ppMBias";
+split="production:1-1000";
+
+Workdirectorysize={"4000MB"};

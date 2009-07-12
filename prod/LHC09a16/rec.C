@@ -3,10 +3,10 @@ void rec() {
   AliReconstruction MuonRec;
 
   MuonRec.SetInput("raw.root");
-  MuonRec.SetRunLocalReconstruction("MUON ITS VZERO");
-  MuonRec.SetRunTracking("MUON ITS VZERO");
+  MuonRec.SetRunLocalReconstruction("MUON ITS VZERO FMD");
+  MuonRec.SetRunTracking("MUON ITS VZERO FMD");
   MuonRec.SetRunVertexFinder(kTRUE);
-  MuonRec.SetFillESD("MUON VZERO HLT");
+  MuonRec.SetFillESD("MUON VZERO FMD HLT");
   MuonRec.SetRunQA("MUON:ALL");
   
   MuonRec.SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-15-Release/Ideal/");
@@ -22,18 +22,10 @@ void rec() {
   
   // CTP
   MuonRec.SetSpecificStorage("GRP/CTP/Config","alien://Folder=/alice/cern.ch/user/b/bogdan/prod2009/cdb");
-  
-  // tracker masks
-  MuonRec.SetSpecificStorage("MUON/Calib/Gains","alien://Folder=/alice/cern.ch/user/b/bogdan/prod2009/cdb/rec");
-  MuonRec.SetSpecificStorage("MUON/Calib/Pedestals","alien://Folder=/alice/cern.ch/user/b/bogdan/prod2009/cdb/rec");
-
+    
   // reconstruction parameters
   AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
   muonRecoParam->SaveFullClusterInESD(kTRUE,100.);
-  for (Int_t i = 0; i < 10; i++) {
-    muonRecoParam->SetDefaultNonBendingReso(i, 0.1524);
-    muonRecoParam->SetDefaultBendingReso(i, 0.05099);
-  }
   //muonRecoParam->Print("FULL");
   MuonRec.SetRecoParam("MUON",muonRecoParam);
 
