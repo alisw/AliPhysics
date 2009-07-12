@@ -648,10 +648,18 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrA
   // ******	Equalization of detector responses
   Float_t equalTowZN1[10], equalTowZN2[10], equalTowZP1[10], equalTowZP2[10];
   for(Int_t gi=0; gi<10; gi++){
-     equalTowZN1[gi] = corrADCZN1[gi]*equalCoeffZN1[gi];
-     equalTowZP1[gi] = corrADCZP1[gi]*equalCoeffZP1[gi];
-     equalTowZN2[gi] = corrADCZN2[gi]*equalCoeffZN2[gi];
-     equalTowZP2[gi] = corrADCZP2[gi]*equalCoeffZP2[gi];
+     if(gi<5){
+       equalTowZN1[gi] = corrADCZN1[gi]*equalCoeffZN1[gi];
+       equalTowZP1[gi] = corrADCZP1[gi]*equalCoeffZP1[gi];
+       equalTowZN2[gi] = corrADCZN2[gi]*equalCoeffZN2[gi];
+       equalTowZP2[gi] = corrADCZP2[gi]*equalCoeffZP2[gi];
+     }
+     else{
+       equalTowZN1[gi] = corrADCZN1[gi]*equalCoeffZN1[gi-5];
+       equalTowZP1[gi] = corrADCZP1[gi]*equalCoeffZP1[gi-5];
+       equalTowZN2[gi] = corrADCZN2[gi]*equalCoeffZN2[gi-5];
+       equalTowZP2[gi] = corrADCZP2[gi]*equalCoeffZP2[gi-5];
+     }
   }
   
   // ******	Summed response for hadronic calorimeter (SUMMED and then CALIBRATED!)
@@ -777,10 +785,18 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   // ******	Equalization of detector responses
   Float_t equalTowZN1[10], equalTowZN2[10], equalTowZP1[10], equalTowZP2[10];
   for(Int_t gi=0; gi<10; gi++){
-     equalTowZN1[gi] = corrADCZN1[gi]*equalCoeffZN1[gi];
-     equalTowZP1[gi] = corrADCZP1[gi]*equalCoeffZP1[gi];
-     equalTowZN2[gi] = corrADCZN2[gi]*equalCoeffZN2[gi];
-     equalTowZP2[gi] = corrADCZP2[gi]*equalCoeffZP2[gi];
+     if(gi<5){
+       equalTowZN1[gi] = corrADCZN1[gi]*equalCoeffZN1[gi];
+       equalTowZP1[gi] = corrADCZP1[gi]*equalCoeffZP1[gi];
+       equalTowZN2[gi] = corrADCZN2[gi]*equalCoeffZN2[gi];
+       equalTowZP2[gi] = corrADCZP2[gi]*equalCoeffZP2[gi];
+     }
+     else{
+       equalTowZN1[gi] = corrADCZN1[gi]*equalCoeffZN1[gi-5];
+       equalTowZP1[gi] = corrADCZP1[gi]*equalCoeffZP1[gi-5];
+       equalTowZN2[gi] = corrADCZN2[gi]*equalCoeffZN2[gi-5];
+       equalTowZP2[gi] = corrADCZP2[gi]*equalCoeffZP2[gi-5];
+     }
   }
   
   // ******	Summed response for hadronic calorimeter (SUMMED and then CALIBRATED!)
