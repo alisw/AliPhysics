@@ -58,7 +58,7 @@ class AliZDCPedestals: public TNamed {
   Float_t  fOOTPedWidth[48];	 // "Out of Time" pedestal widths
   Float_t  fPedCorrCoeff[2][48]; // Fit of correlation in-time vs. out-of-time
   //
-  ClassDef(AliZDCPedestals,1)    // ZDC pedestal calibration data
+  ClassDef(AliZDCPedestals,2)    // ZDC pedestal calibration data
 };
 
 #endif
