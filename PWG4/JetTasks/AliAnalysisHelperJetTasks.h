@@ -4,6 +4,7 @@
 
 #include "TObject.h"
 class AliMCEvent;
+class AliAODJet;
 class AliGenPythiaEventHeader;
 
 // Helper Class that contains a lot of usefull static functions (i.e. for Flavor selection.
@@ -15,6 +16,13 @@ class AliAnalysisHelperJetTasks : public TObject {
   
   static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
   static void PrintStack(AliMCEvent *mcEvent,Int_t iFirst = 0,Int_t iLast = 0,Int_t iMaxPrint = 10);
+  static void GetClosestJets(AliAODJet *genJets,
+			     const Int_t &nGenJets,
+			     AliAODJet *recJets,
+			     const Int_t &nRecJets,
+			     Int_t *iGenIndex,
+			     Int_t *iRecIndex,
+			     Int_t iDebug, Float_t maxDist = 0.5);
   
 
   private:
