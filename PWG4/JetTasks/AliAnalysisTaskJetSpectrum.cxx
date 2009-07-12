@@ -56,6 +56,7 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliInputEventHandler.h"
 
+
 #include "AliAnalysisHelperJetTasks.h"
 
 ClassImp(AliAnalysisTaskJetSpectrum)
@@ -67,9 +68,7 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(): AliAnalysisTaskSE(),
   fJetHeaderGen(0x0),
   fAOD(0x0),
   fBranchRec("jets"),
-  fConfigRec("ConfigJets.C"),
   fBranchGen(""),
-  fConfigGen(""),
   fUseAODInput(kFALSE),
   fUseExternalWeightOnly(kFALSE),
   fLimitGenJetEta(kFALSE),
@@ -83,7 +82,7 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(): AliAnalysisTaskSE(),
   fh1PtHardTrials(0x0),
   fh1NGenJets(0x0),
   fh1NRecJets(0x0),
-  fHistList(0x0) , 
+  fHistList(0x0) ,
   ////////////////
   fh1JetMultiplicity(0x0) ,     
   fh2ERecZRec(0x0) ,
@@ -110,9 +109,7 @@ AliAnalysisTaskJetSpectrum::AliAnalysisTaskJetSpectrum(const char* name):
   fJetHeaderGen(0x0),
   fAOD(0x0),
   fBranchRec("jets"),
-  fConfigRec("ConfigJets.C"),
   fBranchGen(""),
-  fConfigGen(""),
   fUseAODInput(kFALSE),
   fUseExternalWeightOnly(kFALSE),
   fLimitGenJetEta(kFALSE),
@@ -656,7 +653,7 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
   }
 
 
-  GetClosestJets(genJets,nGenJets,recJets,nRecJets,
+  AliAnalysisHelperJetTasks::GetClosestJets(genJets,nGenJets,recJets,nRecJets,
 		 iGenIndex,iRecIndex,fDebug);
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
 
@@ -810,118 +807,3 @@ void AliAnalysisTaskJetSpectrum::Terminate(Option_t */*option*/)
 //
     if (fDebug > 1) printf("AnalysisJetSpectrum: Terminate() \n");
 }
-
-
-void AliAnalysisTaskJetSpectrum::GetClosestJets(AliAODJet *genJets,const Int_t &nGenJets,
-						AliAODJet *recJets,const Int_t &nRecJets,
-						Int_t *iGenIndex,Int_t *iRecIndex,Int_t iDebug){
-
-  //
-  // Relate the two input jet Arrays
-  //
-
-  //
-  // The association has to be unique
-  // So check in two directions
-  // find the closest rec to a gen
-  // and check if there is no other rec which is closer
-  // Caveat: Close low energy/split jets may disturb this correlation
-
-  // Idea: search in two directions generated e.g (a--e) and rec (1--3)
-  // Fill a matrix with Flags (1 for closest rec jet, 2 for closest rec jet
-  // in the end we have something like this
-  //    1   2   3
-  // ------------
-  // a| 3   2   0
-  // b| 0   1   0
-  // c| 0   0   3
-  // d| 0   0   1
-  // e| 0   0   1
-  // Topology
-  //   1     2
-  //     a         b        
-  //
-  //  d      c
-  //        3     e
-  // Only entries with "3" match from both sides
-  
-  const int kMode = 3;
-
-  Int_t iFlag[kMaxJets][kMaxJets];
-
-
-
-  for(int i = 0;i < kMaxJets;++i){
-    iRecIndex[i] = -1;
-    iGenIndex[i] = -1;
-    for(int j = 0;j < kMaxJets;++j)iFlag[i][j] = 0;
-  }
-
-  if(nRecJets==0)return;
-  if(nGenJets==0)return;
-
-  const Float_t maxDist = 0.5;
-  // find the closest distance to the generated
-  for(int ig = 0;ig<nGenJets;++ig){
-    Float_t dist = maxDist;
-    if(iDebug>1)Printf("Gen (%d) p_T %3.3f eta %3.3f ph %3.3f ",ig,genJets[ig].Pt(),genJets[ig].Eta(),genJets[ig].Phi());
-    for(int ir = 0;ir<nRecJets;++ir){
-      Double_t dR = genJets[ig].DeltaR(&recJets[ir]);
-      if(iDebug>1)Printf("Rec (%d) p_T %3.3f eta %3.3f ph %3.3f ",ir,recJets[ir].Pt(),recJets[ir].Eta(),recJets[ir].Phi());
-      if(iDebug>1)Printf("Distance (%d)--(%d) %3.3f ",ig,ir,dR);
-      if(dR<dist){
-	iRecIndex[ig] = ir;
-	dist = dR;
-      }	
-    }
-    if(iRecIndex[ig]>=0)iFlag[ig][iRecIndex[ig]]+=1;
-    // reset...
-    iRecIndex[ig] = -1;
-  }
-  // other way around
-  for(int ir = 0;ir<nRecJets;++ir){
-    Float_t dist = maxDist;
-    for(int ig = 0;ig<nGenJets;++ig){
-      Double_t dR = genJets[ig].DeltaR(&recJets[ir]);
-      if(dR<dist){
-	iGenIndex[ir] = ig;
-	dist = dR;
-      }	
-    }
-    if(iGenIndex[ir]>=0)iFlag[iGenIndex[ir]][ir]+=2;
-    // reset...
-    iGenIndex[ir] = -1;
-  }
-
-  // check for "true" correlations
-
-  if(iDebug>1)Printf(">>>>>> Matrix");
-
-  for(int ig = 0;ig<nGenJets;++ig){
-    for(int ir = 0;ir<nRecJets;++ir){
-      // Print
-      if(iDebug>1)printf("XFL %d ",iFlag[ig][ir]);
-
-      if(kMode==3){
-	// we have a uniqie correlation
-	if(iFlag[ig][ir]==3){
-	  iGenIndex[ir] = ig;
-	  iRecIndex[ig] = ir;
-	}
-      }
-      else{
-	// we just take the correlation from on side
-	if((iFlag[ig][ir]&2)==2){
-	  iGenIndex[ir] = ig;
-	}
-	if((iFlag[ig][ir]&1)==1){
-	  iRecIndex[ig] = ir;
-	}
-      }
-    }
-    if(iDebug>1)printf("\n");
-  }
-}
-
-
-

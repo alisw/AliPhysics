@@ -52,11 +52,7 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     virtual void SetBranchRec(const char* c){fBranchRec = c;}
 
     // Helper
-    static void GetClosestJets(AliAODJet *genJets,const Int_t &nGenJets,
-			       AliAODJet *recJets,const Int_t &nRecJets,
-			       Int_t *iGenIndex,Int_t *iRecIndex,Int_t iDebug = 0);
-
-  //
+    //
 
     enum {kAnaMC =  0x1};
     enum {kMaxJets =  4};
@@ -75,9 +71,7 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     AliAODEvent  *fAOD; // where we take the jets from can be input or output AOD
 
     TString       fBranchRec;  // AOD branch name for reconstructed
-    TString       fConfigRec;  // Name of the Config file 
     TString       fBranchGen;  // AOD brnach for genereated
-    TString       fConfigGen;  // Name of the Config file (if any)
 
     Bool_t        fUseAODInput;           // use AOD input
     Bool_t        fUseExternalWeightOnly; // use only external weight
@@ -136,7 +130,7 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     ///////////////////////////////////////////////////////
 
 
-    ClassDef(AliAnalysisTaskJetSpectrum, 1) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum, 2) // Analysis task for standard jet analysis
 };
  
 #endif
