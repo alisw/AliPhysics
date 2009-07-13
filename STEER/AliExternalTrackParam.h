@@ -151,6 +151,9 @@ class AliExternalTrackParam: public AliVTrack {
 
   Double_t 
     GetPredictedChi2(Double_t p[3],Double_t covyz[3],Double_t covxyz[3]) const;
+
+  Double_t GetPredictedChi2(const AliExternalTrackParam *t) const;
+
   Bool_t 
     PropagateTo(Double_t p[3],Double_t covyz[3],Double_t covxyz[3],Double_t b);
 

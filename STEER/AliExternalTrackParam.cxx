@@ -869,8 +869,60 @@ GetPredictedChi2(Double_t p[3],Double_t covyz[3],Double_t covxyz[3]) const {
     for (Int_t j = 0; j < 3; j++) chi2 += res[i]*res[j]*v(i,j);
 
   return chi2;  
+}
+
+Double_t AliExternalTrackParam::
+GetPredictedChi2(const AliExternalTrackParam *t) const {
+  //----------------------------------------------------------------
+  // Estimate the chi2 (5 dof) of this track with respect to the track
+  // given by the argument.
+  // The two tracks must be in the same reference system 
+  // and estimated at the same reference plane.
+  //----------------------------------------------------------------
+
+  if (TMath::Abs(1. - t->GetAlpha()/GetAlpha()) > FLT_EPSILON) {
+      AliError("The reference systems of the tracks differ !");
+      return kVeryBig;
+  }
+  if (TMath::Abs(1. - t->GetX()/GetX()) > FLT_EPSILON) {
+      AliError("The reference of the tracks planes differ !");
+      return kVeryBig;
+  }
+
+  TMatrixDSym c(5);
+    c(0,0)=GetSigmaY2(); 
+    c(1,0)=GetSigmaZY();   c(1,1)=GetSigmaZ2();
+    c(2,0)=GetSigmaSnpY(); c(2,1)=GetSigmaSnpZ(); c(2,2)=GetSigmaSnp2();
+    c(3,0)=GetSigmaTglY(); c(3,1)=GetSigmaTglZ(); c(3,2)=GetSigmaTglSnp(); c(3,3)=GetSigmaTgl2();
+    c(4,0)=GetSigma1PtY(); c(4,1)=GetSigma1PtZ(); c(4,2)=GetSigma1PtSnp(); c(4,3)=GetSigma1PtTgl(); c(4,4)=GetSigma1Pt2();
+
+    c(0,0)+=t->GetSigmaY2(); 
+    c(1,0)+=t->GetSigmaZY();  c(1,1)+=t->GetSigmaZ2();
+    c(2,0)+=t->GetSigmaSnpY();c(2,1)+=t->GetSigmaSnpZ();c(2,2)+=t->GetSigmaSnp2();
+    c(3,0)+=t->GetSigmaTglY();c(3,1)+=t->GetSigmaTglZ();c(3,2)+=t->GetSigmaTglSnp();c(3,3)+=t->GetSigmaTgl2();
+    c(4,0)+=t->GetSigma1PtY();c(4,1)+=t->GetSigma1PtZ();c(4,2)+=t->GetSigma1PtSnp();c(4,3)+=t->GetSigma1PtTgl();c(4,4)+=t->GetSigma1Pt2();
+    c(0,1)=c(1,0);
+    c(0,2)=c(2,0); c(1,2)=c(2,1);
+    c(0,3)=c(3,0); c(1,3)=c(3,1); c(2,3)=c(3,2);
+    c(0,4)=c(4,0); c(1,4)=c(4,1); c(2,4)=c(4,2); c(3,4)=c(4,3);
+
+  c.Invert();
+  if (!c.IsValid()) return kVeryBig;
 
 
+  Double_t res[5] = {
+    GetY()   - t->GetY(),
+    GetZ()   - t->GetZ(),
+    GetSnp() - t->GetSnp(),
+    GetTgl() - t->GetTgl(),
+    GetSigned1Pt() - t->GetSigned1Pt()
+  };
+
+  Double_t chi2=0.;
+  for (Int_t i = 0; i < 5; i++)
+    for (Int_t j = 0; j < 5; j++) chi2 += res[i]*res[j]*c(i,j);
+
+  return chi2;  
 }
 
 Bool_t AliExternalTrackParam::
