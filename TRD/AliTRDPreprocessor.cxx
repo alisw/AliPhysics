@@ -108,7 +108,7 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
   Log(Form("runtype %s\n",runType.Data()));
   
   // always process the configuration data
-  /*  Int_t resultDCSC = */ProcessDCSConfigData(); // for testing!
+ if(ProcessDCSConfigData()) return 1; 
   
   if (runType=="PEDESTAL"){
     if(ExtractPedestals()) return 1;
@@ -117,17 +117,17 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
 
   if ((runType=="PHYSICS") || (runType=="STANDALONE") || (runType=="DAQ")){
     // DCS
-    /*if(*/ProcessDCS(dcsAliasMap)/*) return 1*/; // for testing!
+    if(ProcessDCS(dcsAliasMap)) return 1; 
     if(runType=="PHYSICS"){
       // HLT if On
       //TString runPar = GetRunParameter("HLTStatus");
       //if(runPar=="1") {
       if(GetHLTStatus()) {
-	/*if(*/ExtractHLT()/*) return 1*/; // for testing!
+	if(ExtractHLT()) return 1; // for testing!
       } 
       // DAQ if HLT failed
       if(!fVdriftHLT) {
-	/*if(*/ExtractDriftVelocityDAQ()/*) return 1*/; // for testing!
+	if(ExtractDriftVelocityDAQ()) return 1; // for testing!
       }
     }
   }
@@ -1017,4 +1017,3 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   Log("Processing of the DCS config summary file DONE.");  
   return 0;
 }
-
