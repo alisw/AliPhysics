@@ -51,7 +51,7 @@ AliQACheckerBase::AliQACheckerBase(const char * name, const char * title) :
   TNamed(name, title), 
   fDataSubDir(0x0),
   fRefSubDir(0x0), 
-  fRefOCDBSubDir(0x0), 
+  fRefOCDBSubDir(new TObjArray*[AliRecoParam::kNSpecies]), 
   fLowTestValue(0x0),
   fUpTestValue(0x0),
   fImage(new TCanvas*[AliRecoParam::kNSpecies]), 
@@ -79,8 +79,10 @@ AliQACheckerBase::AliQACheckerBase(const char * name, const char * title) :
     AliInfo(Form("%s", text)) ; 
   }
   
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     fImage[specie] = NULL ; 
+    fRefOCDBSubDir[specie] = NULL ;
+  }
 }
 
 //____________________________________________________________________________ 
@@ -99,8 +101,10 @@ AliQACheckerBase::AliQACheckerBase(const AliQACheckerBase& qac) :
     fLowTestValue[index]  = qac.fLowTestValue[index] ; 
     fUpTestValue[index] = qac.fUpTestValue[index] ; 
   }
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    fImage[specie] = qac.fImage[specie] ; 
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      fImage[specie] = qac.fImage[specie] ; 
+      fRefOCDBSubDir[specie] = qac.fRefOCDBSubDir[specie] ; 
+    }
 }
 
 //____________________________________________________________________________
@@ -120,8 +124,11 @@ AliQACheckerBase::~AliQACheckerBase()
   for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
     if ( fImage[esIndex] ) 
       delete fImage[esIndex] ;
+    if ( fRefOCDBSubDir[esIndex] ) 
+      delete fRefOCDBSubDir[esIndex] ; 
   }
   delete[] fImage ; 
+  delete[] fRefOCDBSubDir ; 
 }
 
 //____________________________________________________________________________
