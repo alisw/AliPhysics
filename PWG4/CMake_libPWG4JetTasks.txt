@@ -3,6 +3,7 @@
 set(SRCS
        JetTasks/AliAnalysisTaskUE.cxx
        JetTasks/AliAnalysisTaskJetSpectrum.cxx
+       JetTasks/AliAnalysisTaskJFSystematics.cxx
        JetTasks/AliAnalysisHelperJetTasks.cxx
        JetTasks/AliAnaESDSpectraQA.cxx
        JetTasks/AliAnalysisTaskPWG4PidDetEx.cxx
