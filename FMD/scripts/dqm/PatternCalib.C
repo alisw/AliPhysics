@@ -82,6 +82,8 @@ PatternCalib(const char* file="raw.root", Int_t runno=0)
   d->SetRawFile(file);
   d->SetName("rawCalib");
   d->SetTitle("Calibrated Raw");
+  d->SetFactor(5);
+  d->SetCut(0.02, 1);
   d->Run();
 }
 

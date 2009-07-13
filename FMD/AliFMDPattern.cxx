@@ -477,19 +477,19 @@ AliFMDPattern::AtEnd()
   
   fFMD1.End();
   fFMD1Pad->Modified();
-  fFMD1Sum.SetTitle(Form("# hits in FMD1: %5d (%7.5f /cm^{2})", 
+  fFMD1Sum.SetTitle(Form("# hits in FMD1: %5d   (%4.2f /cm^{2})", 
 			 fFMD1.Total(), fFMD1.Total()/fFMD1Area));
   total += fFMD1.Total();
 
   fFMD2.End();
   fFMD2Pad->Modified();
-  fFMD2Sum.SetTitle(Form("# hits in FMD2: %5d (%7.5f /cm^{2})", 
+  fFMD2Sum.SetTitle(Form("# hits in FMD2: %5d   (%4.2f /cm^{2})", 
 			 fFMD2.Total(), fFMD2.Total()/fFMD2Area));
   total += fFMD2.Total();
 
   fFMD3.End();
   fFMD3Pad->Modified();
-  fFMD3Sum.SetTitle(Form("# hits in FMD3: %5d (%7.5f /cm^{2})", 
+  fFMD3Sum.SetTitle(Form("# hits in FMD3: %5d   (%4.2f /cm^{2})", 
 			 fFMD3.Total(), fFMD3.Total()/fFMD3Area));
   total += fFMD3.Total();
 

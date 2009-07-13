@@ -37,6 +37,7 @@
 #include "AliRawReaderFile.h"   // ALIRAWREADERFILE_H
 #include "AliRawReaderRoot.h"   // ALIRAWREADERROOT_H
 #include "AliRawReaderDate.h"   // ALIRAWREADERDATE_H
+#include "AliRawEventHeaderBase.h" 
 #include "AliFMD.h"             // ALIFMD_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
 #include "AliFMDDigit.h"	// ALIFMDDigit_H
@@ -443,7 +444,19 @@ AliFMDInput::Begin(Int_t event)
   if (TESTBIT(fTreeMask, kRaw) || TESTBIT(fTreeMask, kRawCalib)) {
     // AliInfo("Getting FMD raw data digits");
     std::cout << "Waiting for event ..." << std::endl;
-    if (!fReader->NextEvent()) return kFALSE;
+    do { 
+      if (!fReader->NextEvent()) { 
+	if (fRawFile.Contains("mem://")) { 
+	  gSystem->Sleep(3);
+	  continue;
+	}
+	return kFALSE;
+      }
+      UInt_t eventType = fReader->GetType();
+      if(eventType == AliRawEventHeaderBase::kPhysicsEvent ||
+	 eventType == AliRawEventHeaderBase::kCalibrationEvent) 
+	break;
+    } while (true);
     // AliFMDRawReader r(fReader, 0);
     fArrayA->Clear();
     fFMDReader->ReadAdcs(fArrayA);

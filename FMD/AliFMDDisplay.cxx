@@ -131,7 +131,10 @@ AliFMDDisplay::AliFMDDisplay(Bool_t onlyFMD, const char* gAliceFile)
     fAux(0), 
     fReturn(kFALSE), 
     fContinous(kFALSE),
-    fTimeout("gApplication->StopIdleing()", 10)
+    fTimeout("gApplication->StopIdleing()", 10), 
+    fInitialMin(0), 
+    fInitialMax(1), 
+    fInitialFactor(3/10.)
 {
   // Constructor of an FMD display object. 
   // Must be called 
@@ -181,8 +184,9 @@ AliFMDDisplay::MakeCanvas(const char** which)
     xb = .66;
     fFactor = new TSlider("pedFactor", "Pedestal Factor", xb+.01, 0, 1, yb);
     fFactor->SetMethod("AliFMDDisplay::Instance()->ChangeFactor()");
-    fFactor->SetRange(3./10, 1);
+    fFactor->SetRange(fInitialFactor, 1);
     fFactor->Draw();
+    fFactor->SetMinimum(fInitialFactor);
     TSliderBox *sbox = 
       static_cast<TSliderBox*>(fFactor->GetListOfPrimitives()->
 			       FindObject("TSliderBox"));
@@ -200,7 +204,7 @@ AliFMDDisplay::MakeCanvas(const char** which)
     yb = .05;
     fSlider = new TSlider("genCut", "Multiplicity cut", 0, 0, xb, yb);
     fSlider->SetMethod("AliFMDDisplay::Instance()->ChangeCut()");
-    fSlider->SetRange(0,1);
+    fSlider->SetRange(fInitialMin,fInitialMax);
     fSlider->Draw();
     TSliderBox *sbox = 
       static_cast<TSliderBox*>(fSlider->GetListOfPrimitives()->
@@ -209,6 +213,9 @@ AliFMDDisplay::MakeCanvas(const char** which)
       sbox->SetToolTipText("Adjust lower and upper limit on data signal");
     }
   }
+  // fCanvas->Modified();
+  // fCanvas->Update();
+  // fCanvas->cd();
   Float_t      x0 = 0;
   Float_t      dx = 1. / n;
   p               = which;
@@ -394,7 +401,8 @@ AliFMDDisplay::MakeAux()
   if (!range) return;
   
   if (!fAux) {
-    fAux = new TCanvas("aux", "Aux");
+    fAux = new TCanvas(Form("aux_%s", GetName()), 
+		       Form("Aux - %s", GetTitle()));
     fAux->SetLogy();
     fAux->SetFillColor(kWhite);
     fAux->SetBorderMode(0);
@@ -403,11 +411,17 @@ AliFMDDisplay::MakeAux()
     fSpec = new TH1D("spec", "Spectra", range->fNbins, 
 		     range->fLow-dBin/2, range->fHigh+dBin/2);
     fSpecCut = static_cast<TH1*>(fSpec->Clone("specCut"));
-    fSpec->SetXTitle("signal");
+    TString xTitle((TESTBIT(fTreeMask, kRawCalib) || 
+		    TESTBIT(fTreeMask, kESD)) ? "#Delta E/#Delta E_{mip}" :
+		   (TESTBIT(fTreeMask, kDigits) ||
+		    TESTBIT(fTreeMask, kSDigits) || 
+		    TESTBIT(fTreeMask, kRaw)) ? "ADC [counts]" :
+		   TESTBIT(fTreeMask, kHits) ? "Hits" : "signal");
+    fSpec->SetXTitle(xTitle.Data());
     fSpec->SetYTitle("events");
     fSpec->SetFillColor(2);
     fSpec->SetFillStyle(3001);
-    fSpecCut->SetXTitle("signal");
+    fSpecCut->SetXTitle(xTitle.Data());
     fSpecCut->SetYTitle("events");
     fSpecCut->SetFillColor(4);
     fSpecCut->SetFillStyle(3001);
@@ -547,9 +561,23 @@ void
 AliFMDDisplay::SetCut(Float_t l, Float_t h) 
 {
   // Change the cut on the slider. 
-  fSlider->SetMinimum(l);
-  fSlider->SetMaximum(h);
+  fInitialMin = l;
+  fInitialMax = h;
+  if (!fSlider) return;
+  fSlider->SetMinimum(fInitialMin);
+  fSlider->SetMaximum(fInitialMax);
   ChangeCut();
+}
+
+//____________________________________________________________________
+void
+AliFMDDisplay::SetFactor(Float_t f) 
+{
+  // Change the cut on the slider. 
+  fInitialFactor = f / 10;
+  if (!fFactor) return;
+  fFactor->SetMinimum(fInitialFactor);
+  ChangeFactor();
 }
 
 //____________________________________________________________________
@@ -811,6 +839,7 @@ AliFMDDisplay::ProcessRawCalibDigit(AliFMDDigit* digit)
   //   Double_t edep = ((counts * parm->GetEdepMip() / 
   // 		    (gain * parm->GetDACPerMIP()));
   Double_t mult = (counts-ped) / (gain * parm->GetDACPerMIP());
+  if (gain < 0.1 || gain > 10) mult = 0;
   
 
   AliFMDDebug(10, ("FMD%d%c[%02d,%03d] adc %4d "

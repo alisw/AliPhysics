@@ -130,6 +130,7 @@ public:
 
   /** Set range of displayed values */
   virtual void SetCut(Float_t l=0., Float_t h=1.); //*MENU*
+  virtual void SetFactor(Float_t f=1);
 protected:
   /** Copy constructor 
       @param o Object to copy from  */
@@ -159,7 +160,10 @@ protected:
       fAux(0),
       fReturn(kFALSE),
       fContinous(kFALSE), 
-      fTimeout()
+      fTimeout(), 
+      fInitialMin(0), 
+      fInitialMax(1), 
+      fInitialFactor(3./10)
   { } 
   /** Assignment operator 
       @return Reference to this object */
@@ -223,7 +227,9 @@ protected:
   Bool_t                fReturn;    // Stop 
   Bool_t                fContinous;
   TTimer                fTimeout;
-  
+  Float_t               fInitialMin;
+  Float_t               fInitialMax;
+  Float_t               fInitialFactor;
 
   struct Range_t { 
     UInt_t  fNbins;
