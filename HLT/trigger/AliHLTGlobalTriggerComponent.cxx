@@ -381,7 +381,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   // Add any include files that were specified on the command line.
   for (Int_t i = 0; i < includeFiles.GetEntriesFast(); i++)
   {
-    TString file = static_cast<const TObjString*>(includeFiles.UncheckedAt(i))->String();
+    TString file = static_cast<TObjString*>(includeFiles.UncheckedAt(i))->String();
     code << "#include \"" << file.Data() << "\"" << endl;
   }
   
@@ -658,7 +658,7 @@ int AliHLTGlobalTriggerComponent::LoadTriggerClass(
     // Add any include paths that were specified on the command line.
     for (Int_t i = 0; i < includePaths.GetEntriesFast(); i++)
     {
-      TString path = static_cast<const TObjString*>(includePaths.UncheckedAt(i))->String();
+      TString path = static_cast<TObjString*>(includePaths.UncheckedAt(i))->String();
       includePath += " ";
       includePath += path;
     }

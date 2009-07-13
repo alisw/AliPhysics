@@ -20,10 +20,10 @@ ICC_MINOR    := $(shell $(CXX) -V 2>&1 | awk '{ if (NR==1) print $$8 }' | \
 OPT           = -O -ip
 NOOPT         = -O0
 
-CXXOPT        = $(OPT)
-CXXNOOPT      = $(NOOPT)
-COPT          = $(OPT)
-FOPT          = $(OPT)
+CXXOPT        = $(OPT) -fPIC
+CXXNOOPT      = $(NOOPT) -fPIC
+COPT          = $(OPT) -fPIC
+FOPT          = $(OPT) -fPIC
 
 # CERNLIB defines
 CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
@@ -46,7 +46,7 @@ LD            = $(shell root-config --ld)
 LDFLAGS       = $(OPT)
 
 SHLD          = $(LD)
-SOFLAGS       = -Wl,-soname,$$TMPLIB -shared $(OPT)
+SOFLAGS       = -shared
 SHLIB         =
 SOEXT 	      = so
 
@@ -61,5 +61,5 @@ LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {
 
 #System libraries
 SYSLIBS      := -lcrypt -L/usr/X11R6/lib -lX11 $(LIBNOVER) -L/usr/local/lib \
-                -lXt -L$(shell which ifort | sed -e 's|bin/ifort|lib|') \
+                -lXt -L$(shell which ifort | sed -e 's|bin|lib|' | sed -e 's|ifort||') \
                 -lifcore -lifport

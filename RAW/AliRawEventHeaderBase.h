@@ -12,9 +12,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-//#ifndef ROOT_TObject
-//#include <TObject.h>
-//#endif
+#include <TObject.h>
 
 class AliRawEventHeaderBase : public TObject {
 
