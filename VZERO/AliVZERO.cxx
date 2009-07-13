@@ -303,6 +303,7 @@ void AliVZERO::Digits2Raw()
    UInt_t ADC[64];
    Int_t PMNumber[64];
    UInt_t Time[64];
+   Bool_t Integrator[64];
   
    for (Int_t i = 0; i < nEntries; i++) {
      fVZERO->ResetDigits();
@@ -318,6 +319,7 @@ void AliVZERO::Digits2Raw()
 	 ADC[iChannel]       = (UInt_t) fVZERODigit->ADC();
 	 PMNumber[iChannel]  = fVZERODigit->PMNumber();
 	 Time[iChannel]      = (UInt_t) fVZERODigit->Time();
+	 Integrator[iChannel]= fVZERODigit->Integrator(); 
          if(verbose == 1) { cout <<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
 	                    <<PMNumber[k]<<"\tADC: "<< ADC[k] << "\tTime: "<< Time[k] << endl;} 
 	 if(verbose == 2) {
@@ -337,7 +339,7 @@ void AliVZERO::Digits2Raw()
   
       for(Int_t iChannel_Offset = iCIU*8; iChannel_Offset < (iCIU*8)+8; iChannel_Offset=iChannel_Offset+4) { 
          for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
-             buffer->WriteChannel(iChannel, ADC[iChannel], Time[iChannel]);       
+             buffer->WriteChannel(iChannel, ADC[iChannel], Time[iChannel], Integrator[iChannel]);       
          }
          buffer->WriteBeamFlags(); 
          buffer->WriteMBInfo(); 

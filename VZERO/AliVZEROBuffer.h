@@ -26,7 +26,7 @@ public:
   void    WriteTriggerInfo(UInt_t trigger);
   void    WriteTriggerScalers();
   void    WriteBunchNumbers();  
-  void    WriteChannel(Int_t cell,UInt_t ADC, UInt_t Time);
+  void    WriteChannel(Int_t cell,UInt_t ADC, UInt_t Time, Bool_t integrator);
   void    WriteBeamFlags();
   void    WriteMBInfo();
   void    WriteMBFlags();  

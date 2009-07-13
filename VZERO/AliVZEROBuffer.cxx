@@ -131,7 +131,7 @@ void AliVZEROBuffer::WriteBunchNumbers() {
 }
 
 //_____________________________________________________________________________
-void AliVZEROBuffer::WriteChannel(Int_t cell, UInt_t ADC, UInt_t /*Time*/){
+void AliVZEROBuffer::WriteChannel(Int_t cell, UInt_t ADC, UInt_t /*Time*/, Bool_t integrator){
   // It writes VZERO charge information into a raw data file. 
   // Being called by Digits2Raw
   
@@ -149,7 +149,8 @@ void AliVZEROBuffer::WriteChannel(Int_t cell, UInt_t ADC, UInt_t /*Time*/){
     { for(Int_t i = 0; i < 5; i++)
          { data = 0; 
            f->WriteBuffer((char*)&data,sizeof(data)); }      
-      data = ADC | 0x400; 
+      data = ADC & 0x3ff;
+      data |= (integrator & 0x1) << 10; 
       f->WriteBuffer((char*)&data,sizeof(data)); }
   else
   // Information about previous 10 interaction 
@@ -157,7 +158,8 @@ void AliVZEROBuffer::WriteChannel(Int_t cell, UInt_t ADC, UInt_t /*Time*/){
     { for(Int_t i = 0; i < 4; i++)
          { data = 0;
            f->WriteBuffer((char*)&data,sizeof(data)); }       	   
-      data |= (ADC & 0x3ff) << 16;
+      data = (ADC & 0x3ff) << 16;
+      data |= (integrator & 0x1) << 26;
       f->WriteBuffer((char*)&data,sizeof(data)); }
     
   data = 0;
