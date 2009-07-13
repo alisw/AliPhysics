@@ -15,10 +15,15 @@
 
 // --- ROOT system ---
 class TH2F ;
+class TH1F;
 class TString ;
 
 // --- ANALYSIS system ---
 #include "AliAnaPartCorrBaseClass.h"
+//#include "AliStack.h"
+//#include "TParticle.h"
+class AliStack;
+class TParticle;
 
 class TList ;
 
@@ -70,6 +75,13 @@ public:
   TH2F * fhEtaPhoton  ; //! Pseudorapidity of identified  photon vs transerse momentum 
   		
   //MC
+  TH1F * fhDeltaE  ; //! MC-Reco E distribution      
+  TH1F * fhDeltaPt ; //! MC-Reco pT distribution
+  TH1F * fhRatioE  ; //! Reco/MC E distribution      
+  TH1F * fhRatioPt ; //! Reco/MC pT distribution
+  TH2F * fh2E  ; //! E distribution, Reco vs MC
+  TH2F * fh2Pt ; //! pT distribution, Reco vs MC
+  
   TH1F * fhPtPrompt;   //! Number of identified prompt gamma 
   TH2F * fhPhiPrompt;  //! Phi of identified  prompt gamma
   TH2F * fhEtaPrompt;  //! eta of identified  prompt gamma
@@ -98,7 +110,7 @@ public:
   TH2F * fhPhiUnknown;  //! Phi of identified  Unknown gamma
   TH2F * fhEtaUnknown;  //! eta of identified  Unknown gamma
 
-  ClassDef(AliAnaPhoton,3)
+   ClassDef(AliAnaPhoton,4)
 
 } ;
  

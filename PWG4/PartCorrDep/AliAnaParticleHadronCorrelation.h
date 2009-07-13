@@ -78,18 +78,23 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F * fhDeltaPhiChargedPt  ;  //! Difference of charged particle phi and trigger particle  phi as function of charged particle pT
   TH2F * fhDeltaPhiNeutralPt  ;  //! Difference of neutral particle phi and trigger particle  phi as function of neutral particle particle pT
   TH2F * fhDeltaPhiUeChargedPt  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
+  TH2F * fhDeltaPhiUeNeutralPt  ;  //! Difference of neutral particle phi and trigger particle  phi as function of neutral particle particle pT
 
   TH2F * fhPtImbalanceNeutral  ; //! Trigger particle - neutral hadron momentum imbalance histogram 
   TH2F * fhPtImbalanceCharged  ; //! Trigger particle -charged hadron momentim imbalance histogram
   TH2F * fhPtImbalanceUeCharged  ; //! Trigger particle -underlying charged hadron momentim imbalance histogram  
+  TH2F * fhPtImbalanceUeNeutral  ; //! Trigger particle - neutral hadron momentum imbalance histogram 
 
 //if several UE calculation is on, most useful for jet-jet events contribution
-  TH2F * fhDeltaPhiUeLeft  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
-  TH2F * fhDeltaPhiUeRight  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
+  TH2F * fhDeltaPhiUeLeftCharged  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
+  TH2F * fhDeltaPhiUeRightCharged  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi 
+  TH2F * fhDeltaPhiUeLeftNeutral  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi as function of neutral particle pT
+  TH2F * fhDeltaPhiUeRightNeutral  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi 
   TH2F * fhPtImbalanceUeLeftCharged  ; //! Trigger particle -underlying charged hadron momentim imbalance histogram 
   TH2F * fhPtImbalanceUeRightCharged  ; //! Trigger particle -underlying charged hadron momentim imbalance histogram  
-
-  ClassDef(AliAnaParticleHadronCorrelation,1)
+  TH2F * fhPtImbalanceUeLeftNeutral  ; //! Trigger particle -underlying neutral hadron momentim imbalance histogram 
+  TH2F * fhPtImbalanceUeRightNeutral  ; //! Trigger particle -underlying neutral hadron momentim imbalance histogram  
+  ClassDef(AliAnaParticleHadronCorrelation,2)
 } ;
  
 
