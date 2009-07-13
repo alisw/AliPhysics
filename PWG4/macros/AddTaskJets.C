@@ -1,10 +1,9 @@
 AliJetReader *CreateJetReader(Char_t *jr); // Common config
-AliJetFinder *CreateJetFinder(Char_t *jf);
+AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius = -1);
 
-AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf); // for the new AF
-AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf,AliAnalysisManager* mgr,AliAnalysisDataContainer *cinput); // for the old AF
+AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf,Float_t radius = -1); // for the new AF
 
-AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf)
+AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius)
 {
   // Creates a jet finder task, configures it and adds it to the analysis manager.
 
@@ -28,15 +27,18 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf)
    AliAnalysisTaskJets *jetana;
    AliJetReader *er = CreateJetReader(jr);
     // Define jet header and jet finder
-   AliJetFinder *jetFinder = CreateJetFinder(jf);
+   AliJetFinder *jetFinder = CreateJetFinder(jf,radius);
 
    if (jetFinder){
        if (er) jetFinder->SetJetReader(er);
    }
 
-   jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s%s",jr,jf));
-   AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist%s%s",jr,jf), TList::Class(),
-							      AliAnalysisManager::kOutputContainer, Form("jethist%s_%s.root",jr,jf));
+   char *cRadius = "";
+   if(radius>0)cRadius = Form("%02d",(int)(radius*10));
+
+   jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s%s%s",jr,jf,cRadius));
+   AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist%s%s%s",jr,jf,cRadius), TList::Class(),
+							     AliAnalysisManager::kOutputContainer, Form("jethist%s_%s%s.root",jr,jf,cRadius));
    // Connect jet finder to task.
    jetana->SetJetFinder(jetFinder);
    jetana->SetConfigFile("");
@@ -54,62 +56,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf)
    return jetana;
 }
 
-AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf,AliAnalysisManager* mgr,AliAnalysisDataContainer *cinput)
-{
-  // This is only for running on PROOF with the old root version 5-22-00 
-  // and the older version of the AF
-
-  // Creates a jet fider task, configures it and adds it to the analysis manager.
-  // Get the pointer to the existing analysis manager via the static access method.
-  //==============================================================================
-
-  if (!mgr) {
-    ::Error("AddTaskJets", "No analysis manager to connect to.");
-    return NULL;
-  }  
-   
-   // Check the analysis type using the event handlers connected to the analysis manager.
-   //==============================================================================
-   if (!mgr->GetInputEventHandler()) {
-      ::Error("AddTaskJets", "This task requires an input event handler");
-      return NULL;
-   }
-
-   // Create the task and configure it.
-   //===========================================================================
-   AliAnalysisTaskJets *jetana;
-   AliJetReader *er = CreateJetReader(jr);
-
-    // Define jet header and jet finder
-   AliJetFinder *jetFinder = CreateJetFinder(jf);
-
-   if (jetFinder){
-       if (er) jetFinder->SetJetReader(er);
-   }
-
-   jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s%s",jr,jf));
-   AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist%s%s",jr,jf), TList::Class(),AliAnalysisManager::kOutputContainer, Form("jethist%s_%s.root",jr,jf));
-   // Connect jet finder to task.
-   jetana->SetJetFinder(jetFinder);
-   jetana->SetConfigFile("");
-   jetana->SetDebugLevel(10);
-   mgr->AddTask(jetana);
-
-   // Create the output containers for the data produced by the task.
-   //==============================================================================
-   // AOD output slot will be used in a different way in future
-   // we need to have different names for each usage
-   c_aodjet = mgr->CreateContainer(Form("cAODjet%s%s",jr,jf), TTree::Class(),
-				   AliAnalysisManager::kExchangeContainer);
-   // Connect to data containers
-   mgr->ConnectInput (jetana,0, cinput );
-   mgr->ConnectOutput (jetana,0, c_aodjet );
-   mgr->ConnectOutput (jetana, 1, cout_jet);
-   
-   return jetana;
-}
-
-AliJetFinder *CreateJetFinder(Char_t *jf){
+AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
 
   switch (jf) {
   case "CDF":
@@ -146,6 +93,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf){
     jh->SetComment("UA1 jet code with default parameters");
     jh->BackgMode(0);
     jh->SetRadius(0.4);
+    if(radius>0)jh->SetRadius(radius);
     jh->SetEtSeed(4.);
     jh->SetLegoNbinPhi(432);
     jh->SetLegoNbinEta(274);
@@ -164,6 +112,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf){
     jh->SetComment("UA1 jet code with default MC parameters");
     jh->BackgMode(0);
     jh->SetRadius(1.0);
+    if(radius>0)jh->SetRadius(radius);
     jh->SetEtSeed(4.);
     jh->SetLegoNbinPhi(432);
     jh->SetLegoNbinEta(274);

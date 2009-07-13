@@ -1,46 +1,44 @@
-AliAnalysisTaskJetSpectrum *AddTaskJetSpectrum()
+AliAnalysisTaskJFSystematics *AddTaskJFSystematics(char *jf1 = "jetsMC",char *jf2 = "jets")
 {
-// Creates a jet fider task, configures it and adds it to the analysis manager.
 
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddTaskJetSpectrum", "No analysis manager to connect to.");
+      ::Error("AddTaskJFSystematics", "No analysis manager to connect to.");
       return NULL;
    }  
    
    // Check the analysis type using the event handlers connected to the analysis manager.
    //==============================================================================
    if (!mgr->GetInputEventHandler()) {
-      ::Error("AddTaskJetSpectrum", "This task requires an input event handler");
+      ::Error("AddTaskJFSystematics", "This task requires an input event handler");
       return NULL;
    }
 
    // Create the task and configure it.
    //===========================================================================
    
-   AliAnalysisTaskJetSpectrum* pwg4spec = new  AliAnalysisTaskJetSpectrum("Jet Spectrum");
+   AliAnalysisTaskJFSystematics* pwg4jfs = new  AliAnalysisTaskJFSystematics("Jet Spectrum");
       
    // or a config file
-   pwg4spec->SetAnalysisType(AliAnalysisTaskJetSpectrum::kAnaMC);
+   pwg4jfs->SetAnalysisType(AliAnalysisTaskJFSystematics::kSysJetOrder);
    //      if(iAODanalysis)pwg4spec->SetAODInput(kTRUE);
    // pwg4spec->SetDebugLevel(11); 
-   pwg4spec->SetBranchGen("jetsMC"); 
-   pwg4spec->SetBranchRec("jets"); 
-   mgr->AddTask(pwg4spec);
-
-
-
+   pwg4jfs->SetBranchGen(jf1); 
+   pwg4jfs->SetBranchRec(jf2); 
+   mgr->AddTask(pwg4jfs);
       
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer("pwg4spec", TList::Class(),AliAnalysisManager::kOutputContainer,"pwg4spec.root");
+   AliAnalysisDataContainer *coutput1_jfs = mgr->CreateContainer(Form("pwg4jfs_%s_%s",jf1,jf2), 
+								 TList::Class(),AliAnalysisManager::kOutputContainer,
+								 Form("pwg4jfs_%s_%s.root",jf1,jf2));
 
-   mgr->ConnectInput  (pwg4spec, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput (pwg4spec, 0, mgr->GetCommonOutputContainer());
-   mgr->ConnectOutput (pwg4spec,  1, coutput1_Spec );
+   mgr->ConnectInput  (pwg4jfs, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectOutput (pwg4jfs, 0, mgr->GetCommonOutputContainer());
+   mgr->ConnectOutput (pwg4jfs,  1, coutput1_jfs );
    
-   return pwg4spec;
+   return pwg4jfs;
 }

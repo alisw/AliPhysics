@@ -61,44 +61,6 @@ AliAnalysisTaskESDfilter *AddTaskESDfilter(bool bUseKineFilter = true)
    return esdfilter;
 }
 
-AliAnalysisTaskESDfilter *AddTaskESDfilter(AliAnalysisManager* mgr,AliAnalysisDataContainer *cinput, AliAnalysisDataContainer *cout_aod)
-{
-  // This is only for running on PROOF with the old root version 5-22-00 
-  // and the older version of the AF
-
-   // Get the pointer to the existing analysis manager via the static access method.
-   //==============================================================================
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if (!mgr) {
-      ::Error("AddTaskESDFilter", "No analysis manager to connect to.");
-      return NULL;
-   }  
-   
-   // Check the analysis type using the event handlers connected to the analysis manager.
-   //==============================================================================
-   if (!mgr->GetInputEventHandler()) {
-      ::Error("AddTaskESDFilter", "This task requires an input event handler");
-      return NULL;
-   }
-
-   // Create the task and configure it.
-   //===========================================================================
-   AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
-   trackFilter->AddCuts(CreateCuts(0));
-   //
-   // ESD filter task putting standard info to output AOD (with cuts)
-   AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter");
-   esdfilter->SetTrackFilter(trackFilter);
-   mgr->AddTask(esdfilter);
-
-   // Connect to data containers
-   mgr->ConnectInput  (esdfilter,  0, cinput  );
-   mgr->ConnectOutput (esdfilter,  0, cout_aod );
-
-   return esdfilter;
-
-}  
-
 AliESDtrackCuts *CreateCuts(Int_t iCut){
   AliESDtrackCuts* esdTrackCuts = 0;  
   if(iCut == 0){

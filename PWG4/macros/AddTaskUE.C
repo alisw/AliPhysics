@@ -38,42 +38,6 @@ AliAnalysisTaskUE *AddTaskUE()
    return ueana;
 }
 
-AliAnalysisTaskUE *AddTaskUE(AliAnalysisManager* mgr,AliAnalysisDataContainer *cinput)
-{
-  // This is only for running on PROOF with the old root version 5-22-00 
-  // and the older version of the AF
-
-   // Get the pointer to the existing analysis manager via the static access method.
-   //==============================================================================
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if (!mgr) {
-      ::Error("AddTaskJets", "No analysis manager to connect to.");
-      return NULL;
-   }  
-   
-   // Check the analysis type using the event handlers connected to the analysis manager.
-   //==============================================================================
-   if (!mgr->GetInputEventHandler()) {
-      ::Error("AddTaskUE", "This task requires an input event handler");
-      return NULL;
-   }
-
-   // Create the task and configure it.
-   //===========================================================================
- 
-   AliAnalysisTaskUE* ueana = new  AliAnalysisTaskUE("Underlying Event");
-   ConfigTaskUE(ueana);
-   
-   AliAnalysisDataContainer *coutput1_UE = mgr->CreateContainer("histosUE", TList::Class(),AliAnalysisManager::kOutputContainer,"pwg4UE.root");
-   
-
-   mgr->ConnectInput  (ueana,  0, cinput);    
-   mgr->ConnectOutput (ueana,     0, coutput1_UE );
-   
-   return ueana;
-
-}  
-
 void ConfigTaskUE(AliAnalysisTaskUE * ueana){
   // common config, extend with different cases
   Int_t anaType =1; 
