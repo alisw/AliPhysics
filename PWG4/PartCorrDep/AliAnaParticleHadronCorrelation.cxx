@@ -50,11 +50,14 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhPhiCharged(0), fhPhiNeutral(0), fhEtaCharged(0), fhEtaNeutral(0), 
     fhDeltaPhiCharged(0), fhDeltaPhiNeutral(0), 
     fhDeltaEtaCharged(0), fhDeltaEtaNeutral(0),
-    fhDeltaPhiChargedPt(0), fhDeltaPhiNeutralPt(0), fhDeltaPhiUeChargedPt(0), 
+    fhDeltaPhiChargedPt(0), fhDeltaPhiNeutralPt(0), 
+    fhDeltaPhiUeChargedPt(0), fhDeltaPhiUeNeutralPt(0), 
     fhPtImbalanceNeutral(0), fhPtImbalanceCharged(0), 
-    fhPtImbalanceUeCharged(0),
-    fhDeltaPhiUeLeft(0),fhDeltaPhiUeRight(0),
-    fhPtImbalanceUeLeftCharged(0),fhPtImbalanceUeRightCharged(0)
+    fhPtImbalanceUeCharged(0),fhPtImbalanceUeNeutral(0),
+    fhDeltaPhiUeLeftCharged(0),fhDeltaPhiUeRightCharged(0),
+    fhDeltaPhiUeLeftNeutral(0),fhDeltaPhiUeRightNeutral(0),
+    fhPtImbalanceUeLeftCharged(0),fhPtImbalanceUeRightCharged(0),
+    fhPtImbalanceUeLeftNeutral(0),fhPtImbalanceUeRightNeutral(0)
 {
   //Default Ctor
   
@@ -78,12 +81,19 @@ AliAnaParticleHadronCorrelation::AliAnaParticleHadronCorrelation(const AliAnaPar
   fhDeltaPhiChargedPt(g.fhDeltaPhiChargedPt),
   fhDeltaPhiNeutralPt(g.fhDeltaPhiNeutralPt), 
   fhDeltaPhiUeChargedPt(g.fhDeltaPhiUeChargedPt), 
+  fhDeltaPhiUeNeutralPt(g.fhDeltaPhiUeNeutralPt), 
   fhPtImbalanceNeutral(g.fhPtImbalanceNeutral), 
   fhPtImbalanceCharged(g.fhPtImbalanceCharged),
   fhPtImbalanceUeCharged(g.fhPtImbalanceUeCharged),
-  fhDeltaPhiUeLeft(g.fhDeltaPhiUeLeft),fhDeltaPhiUeRight(g.fhDeltaPhiUeRight),
+  fhPtImbalanceUeNeutral(g.fhPtImbalanceUeNeutral), 
+  fhDeltaPhiUeLeftCharged(g.fhDeltaPhiUeLeftCharged),
+  fhDeltaPhiUeRightCharged(g.fhDeltaPhiUeRightCharged),
+  fhDeltaPhiUeLeftNeutral(g.fhDeltaPhiUeLeftNeutral),
+  fhDeltaPhiUeRightNeutral(g.fhDeltaPhiUeRightNeutral),
   fhPtImbalanceUeLeftCharged(g.fhPtImbalanceUeLeftCharged),
-  fhPtImbalanceUeRightCharged(g.fhPtImbalanceUeRightCharged)
+  fhPtImbalanceUeRightCharged(g.fhPtImbalanceUeRightCharged),
+  fhPtImbalanceUeLeftNeutral(g.fhPtImbalanceUeLeftNeutral),
+  fhPtImbalanceUeRightNeutral(g.fhPtImbalanceUeRightNeutral)
 {
   // cpy ctor
   
@@ -112,13 +122,19 @@ AliAnaParticleHadronCorrelation & AliAnaParticleHadronCorrelation::operator = (c
   fhDeltaPhiChargedPt = source.fhDeltaPhiChargedPt ;
   fhDeltaPhiNeutralPt = source.fhDeltaPhiNeutralPt ; 
   fhDeltaPhiUeChargedPt = source.fhDeltaPhiUeChargedPt ; 
+  fhDeltaPhiUeNeutralPt = source.fhDeltaPhiUeNeutralPt ; 
   fhPtImbalanceNeutral = source.fhPtImbalanceNeutral ; 
   fhPtImbalanceCharged = source.fhPtImbalanceCharged ; 
   fhPtImbalanceUeCharged = source.fhPtImbalanceUeCharged ; 
-  fhDeltaPhiUeLeft = source.fhDeltaPhiUeLeft ;
-  fhDeltaPhiUeRight = source.fhDeltaPhiUeRight ;
+  fhPtImbalanceUeNeutral = source.fhPtImbalanceUeNeutral ; 
+  fhDeltaPhiUeLeftCharged = source.fhDeltaPhiUeLeftCharged ;
+  fhDeltaPhiUeRightCharged = source.fhDeltaPhiUeRightCharged ;
+  fhDeltaPhiUeLeftNeutral = source.fhDeltaPhiUeLeftNeutral ;
+  fhDeltaPhiUeRightNeutral = source.fhDeltaPhiUeRightNeutral ;
   fhPtImbalanceUeLeftCharged = source.fhPtImbalanceUeLeftCharged ;
   fhPtImbalanceUeRightCharged = source.fhPtImbalanceUeRightCharged ;
+  fhPtImbalanceUeLeftNeutral = source.fhPtImbalanceUeLeftNeutral ;
+  fhPtImbalanceUeRightNeutral = source.fhPtImbalanceUeRightNeutral ;
   return *this;
 
 }
@@ -202,19 +218,19 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhPtImbalanceUeCharged) ;
 
     if(fMakeSeveralUE){ 
-      fhDeltaPhiUeLeft  = new TH2F
+      fhDeltaPhiUeLeftCharged  = new TH2F
 	("DeltaPhiUeLeftChargedPt","#phi_{trigger} - #phi_{#Ueh^{#pm}} vs p_{T Ueh^{#pm}} with UE left side range of trigger particles",
 	 nptbins,ptmin,ptmax,700,-2.,5.);
-      fhDeltaPhiUeLeft->SetYTitle("#Delta #phi");
-      fhDeltaPhiUeLeft->SetXTitle("p_{T h^{#pm}} (GeV/c)");
-      outputContainer->Add(fhDeltaPhiUeLeft) ;
+      fhDeltaPhiUeLeftCharged->SetYTitle("#Delta #phi");
+      fhDeltaPhiUeLeftCharged->SetXTitle("p_{T h^{#pm}} (GeV/c)");
+      outputContainer->Add(fhDeltaPhiUeLeftCharged) ;
 
-      fhDeltaPhiUeRight  = new TH2F
+      fhDeltaPhiUeRightCharged  = new TH2F
 	("DeltaPhiUeRightChargedPt","#phi_{trigger} - #phi_{#Ueh^{#pm}} vs p_{T Ueh^{#pm}} with UE right side range of trigger particles",
 	 nptbins,ptmin,ptmax,700,-2.,5.);
-      fhDeltaPhiUeRight->SetYTitle("#Delta #phi");
-      fhDeltaPhiUeRight->SetXTitle("p_{T h^{#pm}} (GeV/c)");
-      outputContainer->Add(fhDeltaPhiUeRight) ;
+      fhDeltaPhiUeRightCharged->SetYTitle("#Delta #phi");
+      fhDeltaPhiUeRightCharged->SetXTitle("p_{T h^{#pm}} (GeV/c)");
+      outputContainer->Add(fhDeltaPhiUeRightCharged) ;
       
       fhPtImbalanceUeLeftCharged  = 
 	new TH2F("CorrelationUeChargedLeft","z_{trigger h^{#pm}} = p_{T Ueh^{#pm}} / p_{T trigger} with UE left side of trigger",
@@ -257,7 +273,13 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       ("DeltaPhiNeutralPt","#phi_{trigger} - #phi_{#pi^{0}} vs p_{T #pi^{0}}}",
        nptbins,ptmin,ptmax,700,-2.,5.); 
     fhDeltaPhiNeutralPt->SetYTitle("#Delta #phi");
-    fhDeltaPhiNeutralPt->SetXTitle("p_{T trigger} (GeV/c)");
+    fhDeltaPhiNeutralPt->SetXTitle("p_{T h^{0} (GeV/c)");
+
+    fhDeltaPhiUeNeutralPt  = new TH2F
+      ("DeltaPhiUeNeutralPt","#phi_{trigger} - #phi_{#pi^{0}} vs p_{T #pi^{0}}}",
+       nptbins,ptmin,ptmax,700,-2.,5.); 
+    fhDeltaPhiUeNeutralPt->SetYTitle("#Delta #phi");
+    fhDeltaPhiUeNeutralPt->SetXTitle("p_{T h^{0} (GeV/c)");
     
     fhDeltaEtaNeutral  = new TH2F
       ("DeltaEtaNeutral","#eta_{trigger} - #eta_{#pi^{0}} vs p_{T trigger}",
@@ -270,14 +292,52 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
 	       nptbins,ptmin,ptmax,1000,0.,2.); 
     fhPtImbalanceNeutral->SetYTitle("z_{trigger #pi^{0}}");
     fhPtImbalanceNeutral->SetXTitle("p_{T trigger}");
-    
+ 
+    fhPtImbalanceUeNeutral  = 
+      new TH2F("CorrelationUeNeutral","z_{trigger #pi} = p_{T #pi^{0}} / p_{T trigger}",
+	       nptbins,ptmin,ptmax,1000,0.,2.); 
+    fhPtImbalanceUeNeutral->SetYTitle("z_{trigger #pi^{0}}");
+    fhPtImbalanceUeNeutral->SetXTitle("p_{T trigger}");
+   
     outputContainer->Add(fhPhiNeutral) ;  
     outputContainer->Add(fhEtaNeutral) ;   
     outputContainer->Add(fhDeltaPhiNeutral) ; 
+    outputContainer->Add(fhDeltaPhiNeutralPt) ; 
+    outputContainer->Add(fhDeltaPhiUeNeutralPt) ; 
     outputContainer->Add(fhDeltaEtaNeutral) ; 
     outputContainer->Add(fhPtImbalanceNeutral) ;
-    
-    
+    outputContainer->Add(fhPtImbalanceUeNeutral) ;    
+ 
+    if(fMakeSeveralUE){ 
+      fhDeltaPhiUeLeftNeutral  = new TH2F
+	("DeltaPhiUeLeftNeutralPt","#phi_{trigger} - #phi_{#Ueh^{0}} vs p_{T h^{0}} with UE left side range of trigger particles",
+	 nptbins,ptmin,ptmax,700,-2.,5.);
+      fhDeltaPhiUeLeftNeutral->SetYTitle("#Delta #phi");
+      fhDeltaPhiUeLeftNeutral->SetXTitle("p_{T h^{0}} (GeV/c)");
+      outputContainer->Add(fhDeltaPhiUeLeftNeutral) ;
+
+      fhDeltaPhiUeRightNeutral  = new TH2F
+	("DeltaPhiUeRightNeutralPt","#phi_{trigger} - #phi_{#Ueh^{0}} vs p_{T Ueh^{0}} with UE right side range of trigger particles",
+	 nptbins,ptmin,ptmax,700,-2.,5.);
+      fhDeltaPhiUeRightNeutral->SetYTitle("#Delta #phi");
+      fhDeltaPhiUeRightNeutral->SetXTitle("p_{T h^{0}} (GeV/c)");
+      outputContainer->Add(fhDeltaPhiUeRightNeutral) ;
+      
+      fhPtImbalanceUeLeftNeutral  = 
+	new TH2F("CorrelationUeNeutralLeft","z_{trigger h^{0}} = p_{T Ueh^{0}} / p_{T trigger} with UE left side of trigger",
+		 nptbins,ptmin,ptmax,1000,0.,2.); 
+      fhPtImbalanceUeLeftNeutral->SetYTitle("z_{trigger Ueh^{0}}");
+      fhPtImbalanceUeLeftNeutral->SetXTitle("p_{T trigger}");
+      outputContainer->Add(fhPtImbalanceUeLeftNeutral) ;
+      
+      fhPtImbalanceUeRightNeutral  = 
+	new TH2F("CorrelationUeNeutralRight","z_{trigger h^{0}} = p_{T Ueh^{0}} / p_{T trigger} with UE right side of trigger",
+		 nptbins,ptmin,ptmax,1000,0.,2.); 
+      fhPtImbalanceUeRightNeutral->SetYTitle("z_{trigger Ueh^{0}}");
+      fhPtImbalanceUeRightNeutral->SetXTitle("p_{T trigger}");
+      outputContainer->Add(fhPtImbalanceUeRightNeutral) ;
+    }  
+   
     //Keep neutral meson selection histograms if requiered
     //Setting done in AliNeutralMesonSelection
     if(GetNeutralMesonSelection()){
@@ -484,28 +544,28 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
        fhDeltaPhiCharged->Fill(ptTrig, deltaphi);
 
        if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Selected charge for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f \n",pt,phi,eta);
-
+       
+       //delta phi cut for correlation
+       if( (deltaphi > fDeltaPhiMinCut) && ( deltaphi < fDeltaPhiMaxCut) ) {
+	 fhDeltaPhiChargedPt->Fill(pt,deltaphi);
+	 fhPtImbalanceCharged->Fill(ptTrig,rat); 
+       }
+      else {
+	fhDeltaPhiUeChargedPt->Fill(pt,deltaphi);
+	fhPtImbalanceUeCharged->Fill(ptTrig,rat);
+      }
        //several UE calculation 
       if(fMakeSeveralUE){
 	 if((deltaphi<-fUeDeltaPhiMinCut) && (deltaphi >-fUeDeltaPhiMaxCut)){  
-	   fhDeltaPhiUeLeft->Fill(pt,deltaphi);
+	   fhDeltaPhiUeLeftCharged->Fill(pt,deltaphi);
 	   fhPtImbalanceUeLeftCharged->Fill(ptTrig,rat);
 	}
 	 if((deltaphi>fUeDeltaPhiMinCut) && (deltaphi <fUeDeltaPhiMaxCut)){  
-	   fhDeltaPhiUeRight->Fill(pt,deltaphi);
+	   fhDeltaPhiUeRightCharged->Fill(pt,deltaphi);
 	   fhPtImbalanceUeRightCharged->Fill(ptTrig,rat);
 	 }
       } //several UE calculation
 
-       if( (deltaphi < fDeltaPhiMinCut) || ( deltaphi > fDeltaPhiMaxCut) ) {
-      fhDeltaPhiUeChargedPt->Fill(pt,deltaphi);
-      fhPtImbalanceUeCharged->Fill(ptTrig,rat);
-
-       }
-       else {
- 	fhDeltaPhiChargedPt->Fill(pt,deltaphi);
- 	fhPtImbalanceCharged->Fill(ptTrig,rat);
-       }
      }
      else{
        //Fill AODs
@@ -710,11 +770,28 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillHistograms(AliA
     fhPhiNeutral->Fill(ptTrig,phi);
     fhDeltaEtaNeutral->Fill(ptTrig,etaTrig-eta);
     fhDeltaPhiNeutral->Fill(ptTrig,deltaphi);
-	  
-	if( (deltaphi > fDeltaPhiMinCut) && ( deltaphi < fDeltaPhiMaxCut) ) {
-		fhDeltaPhiNeutralPt->Fill(pt,deltaphi);
-		fhPtImbalanceNeutral->Fill(ptTrig,rat);
+
+       //delta phi cut for correlation
+       if( (deltaphi > fDeltaPhiMinCut) && ( deltaphi < fDeltaPhiMaxCut) ) {
+	 fhDeltaPhiNeutralPt->Fill(pt,deltaphi);
+	 fhPtImbalanceNeutral->Fill(ptTrig,rat); 
+       }
+      else {
+	fhDeltaPhiUeNeutralPt->Fill(pt,deltaphi);
+	fhPtImbalanceUeNeutral->Fill(ptTrig,rat);
+      }
+       //several UE calculation 
+      if(fMakeSeveralUE){
+	 if((deltaphi<-fUeDeltaPhiMinCut) && (deltaphi >-fUeDeltaPhiMaxCut)){  
+	   fhDeltaPhiUeLeftNeutral->Fill(pt,deltaphi);
+	   fhPtImbalanceUeLeftNeutral->Fill(ptTrig,rat);
 	}
+	 if((deltaphi>fUeDeltaPhiMinCut) && (deltaphi <fUeDeltaPhiMaxCut)){  
+	   fhDeltaPhiUeRightNeutral->Fill(pt,deltaphi);
+	   fhPtImbalanceUeRightNeutral->Fill(ptTrig,rat);
+	 }
+      } //several UE calculation
+	  
 	  
     if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelation() - Selected neutral for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f \n",pt,phi,eta);
     
