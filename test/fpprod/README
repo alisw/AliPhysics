@@ -1,4 +1,4 @@
-Productions for the first physics studies (25/04/2008):
+Productions for the first physics studies (25/04/2008, updated 13/07/2009):
 Each run contains 300000 events, 200000 for calculation of the correction maps, 100000 used as "real" data
 
 Configurations:
@@ -11,12 +11,13 @@ Configurations:
   - Pythia
   - Phojet
 
-
-
 900 GeV:
 - field 0T
-  - Pythia: ATLAS or default tuning (to be investigated)
+  - Pythia: min. bias ATLAS tuning
+  - Phojet
 - field 0.5T
+  - Pythia
+  - Pjojet
 
 Beam parameters:
 - energy: 900 GeV, 10 TeV
@@ -28,19 +29,21 @@ Field:
 Detectors:
 - ITS: v11Hybrid
 - TPC
-- TRD: modules 0,8,9,17 (around 3h and 9h). Enumerated from X in positive direction
-  - Pythia
+- TRD: modules 0,(1),(7),8,9,(16),17 (around 3h and 9h). 
+       Enumerated from X in positive direction.
+       The modules in brackets are added in 2009.
 - TOF: full
 - HMPID
-- PHOS: one module/all modules -> no possibility for one module, to be implemented.
-- EMCAL: no EMCAL
+- PHOS: all modules, the missing ones to be treated in the analysis
+- EMCAL: no EMCAL in 2008, full EMCAL in 2009. The missing modules will be
+         switched off in the analysis 
 - MUON
 - T0
 - VZERO
 - FMD
-- PMD: 6 out of 26 modules -> switch off in the first run
-- ZDC
-- ACORDE
+- PMD: 6 out of 26 modules -> switch off in the first run 2008. In 2009 - full PMD
+- ZDC: set the beam energy in AliMagF
+- ACORDE: off
 
 Simulation/reconstruction
 -------------------------

@@ -221,10 +221,14 @@ void Config()
   AliMagF* field = 0x0;
   if (mag == kNoField) {
     comment = comment.Append(" | L3 field 0.0 T");
-    field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k2kG);
+    field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k2kG,
+			"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root",
+			AliMagF::kBeamTypepp, energy/2.0);
   } else if (mag == k5kG) {
     comment = comment.Append(" | L3 field 0.5 T");
-    field = new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG);
+    field = new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG,
+			"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root",
+			AliMagF::kBeamTypepp, energy/2.0);
   }
   printf("\n \n Comment: %s \n \n", comment.Data());
 
@@ -235,7 +239,7 @@ void Config()
   Int_t iABSO  = 1;
   Int_t iACORDE= 0;
   Int_t iDIPO  = 1;
-  Int_t iEMCAL = 0;
+  Int_t iEMCAL = 1;
   Int_t iFMD   = 1;
   Int_t iFRAME = 1;
   Int_t iHALL  = 1;
@@ -244,7 +248,7 @@ void Config()
   Int_t iMUON  = 1;
   Int_t iPHOS  = 1;
   Int_t iPIPE  = 1;
-  Int_t iPMD   = 0;
+  Int_t iPMD   = 1;
   Int_t iHMPID = 1;
   Int_t iSHIL  = 1;
   Int_t iT0    = 1;
@@ -356,22 +360,19 @@ void Config()
 
         AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
         AliTRDgeometry *geoTRD = TRD->GetGeometry();
-	// Partial geometry: modules at 0,8,9,17
+	// Partial geometry: modules at 0,1,7,8,9,16,17
 	// starting at 3h in positive direction
-        geoTRD->SetSMstatus(1,0);
 	geoTRD->SetSMstatus(2,0);
 	geoTRD->SetSMstatus(3,0);
 	geoTRD->SetSMstatus(4,0);
         geoTRD->SetSMstatus(5,0);
 	geoTRD->SetSMstatus(6,0);
-        geoTRD->SetSMstatus(7,0);
         geoTRD->SetSMstatus(10,0);
         geoTRD->SetSMstatus(11,0);
         geoTRD->SetSMstatus(12,0);
         geoTRD->SetSMstatus(13,0);
         geoTRD->SetSMstatus(14,0);
         geoTRD->SetSMstatus(15,0);
-        geoTRD->SetSMstatus(16,0);
     }
 
     if (iFMD)
