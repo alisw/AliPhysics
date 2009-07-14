@@ -55,11 +55,11 @@ private:
   Int_t   fSPDhDigitsTask;                    // number of booked SPD histograms for the RecPoints Task
   Int_t   fSPDhRecPointsTask;                 // number of booked SPD histograms for the RecPoints Task
   Int_t   *fGenRawsOffset;                     // QAchecking Raws offset
-  Int_t   fGenDigitsOffset;                   // QAchecking Digits offset
+  Int_t   *fGenDigitsOffset;                   // QAchecking Digits offset
   Int_t   *fGenRecPointsOffset;                // QAchecking RecPoints offset
   AliITSRawStreamSPDErrorLog *fAdvLogger;  // pointer to special error logger object
 
-  ClassDef(AliITSQASPDDataMakerRec,5)      // description 
+  ClassDef(AliITSQASPDDataMakerRec,6)      // description 
 
 };
 

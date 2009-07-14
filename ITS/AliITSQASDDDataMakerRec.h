@@ -61,7 +61,7 @@ private:
   Int_t   fSDDhDigitsTask;                    // number of histo booked for each the RecPoints Task SDD
   Int_t   fSDDhRecPointsTask;                 // number of histo booked for each the RecPoints Task SDD
   Int_t   *fGenRawsOffset;                     // QAchecking Raws offset       
-  Int_t   fGenDigitsOffset;                   // QAchecking RecPoints offset       
+  Int_t   *fGenDigitsOffset;                   // QAchecking RecPoints offset       
   Int_t   *fGenRecPointsOffset;                // QAchecking RecPoints offset       
   Int_t   fTimeBinSize;			      // time bin width in number of clocks
   AliITSDDLModuleMapSDD  *fDDLModuleMap;      // SDD Detector configuration for the decoding
@@ -71,7 +71,7 @@ private:
   Int_t   fBadAnodes;
   Int_t   fGoodAnodesCurrent;
   Int_t   fBadAnodesCurrent;
-  ClassDef(AliITSQASDDDataMakerRec,8)         // description 
+  ClassDef(AliITSQASDDDataMakerRec,9)         // description 
 
 };
 

@@ -77,14 +77,14 @@ public:
   Int_t   fSSDhDigitsTask;                      //number of histo booked for the recpoints SSD task
   Int_t   fSSDhRecPointsTask;                   //number of histo booked for the recpoints SSD task
   Int_t   *fGenRawsOffset;                       //qachecking raws       offset
-  Int_t   fGenDigitsOffset;                     //qachecking recpoints  offset
+  Int_t   *fGenDigitsOffset;                     //qachecking recpoints  offset
   Int_t   *fGenRecPointsOffset;                  //qachecking recpoints  offset
   TH1D   *fHistSSDRawSignalModule[fgkSSDMODULES]; //raw signal vs strip number - SSD                   
   Int_t   fOccupancyMatrix[fgkSSDMODULES][2*fgkNumberOfPSideStrips]; //occupancy values per strip
 
   AliCDBManager *fCDBManager; //CDB manager
 
-  ClassDef(AliITSQASSDDataMakerRec,6)           // description 
+  ClassDef(AliITSQASSDDataMakerRec,7)           // description 
 };
 
 #endif

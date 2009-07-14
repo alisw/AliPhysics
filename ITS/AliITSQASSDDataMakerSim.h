@@ -39,7 +39,7 @@ public:
   virtual Int_t MakeSDigits(TTree * sdigits);
   virtual Int_t MakeHits(TTree * hits);
   Int_t GetOffset(AliQAv1::TASKINDEX_t task);
-  void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset);
+  void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset,Int_t specie = 0);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
 
 private:
@@ -49,13 +49,13 @@ private:
   Int_t   fSSDhHTask;   //number of booked SSD histograms for the hit task;
   Int_t   fSSDhSTask;   //number of booked SSD histograms for the sdigits task;
   Int_t   fSSDhDTask;   //number of booked SSD histograms for the digit task;
-  Int_t   fGenOffsetH;                         // qachecking offset hits
-  Int_t   fGenOffsetS;                         // qachecking offset sdigits
-  Int_t   fGenOffsetD;                         // qachecking offset digits
+  Int_t   *fGenOffsetH;                         // qachecking offset hits
+  Int_t   *fGenOffsetS;                         // qachecking offset sdigits
+  Int_t   *fGenOffsetD;                         // qachecking offset digits
 
   static const Int_t fgkNumberOfPSideStrips = 768; //number of P-side strips
 
-  ClassDef(AliITSQASSDDataMakerSim,2)      // description 
+  ClassDef(AliITSQASSDDataMakerSim,3)      // description 
 };
 
 #endif

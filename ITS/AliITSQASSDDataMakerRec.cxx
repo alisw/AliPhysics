@@ -70,9 +70,11 @@ fCDBManager(0) {
   //initilize the raw signal vs strip number histograms
 	fGenRawsOffset = new Int_t[AliRecoParam::kNSpecies];
 	fGenRecPointsOffset = new Int_t[AliRecoParam::kNSpecies];
+	fGenDigitsOffset = new Int_t[AliRecoParam::kNSpecies];
 	for(Int_t i=0; i<AliRecoParam::kNSpecies; i++) {
 		fGenRawsOffset[i] = 0;
 		fGenRecPointsOffset[i] = 0;
+		fGenDigitsOffset[i]=0;
 	}
   if(fkOnline) {
     fCDBManager = AliCDBManager::Instance();
@@ -153,40 +155,41 @@ AliITSQASSDDataMakerRec::~AliITSQASSDDataMakerRec() {
 void AliITSQASSDDataMakerRec::StartOfDetectorCycle()
 {
 
-  if (  fAliITSQADataMakerRec->GetRawsData(0) == NULL ) // Raws not defined
-    return ; 
-
-  //Detector specific actions at start of cycle
-  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of SSD Cycle\n");    
-
-  //Data size per DDL
-  ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+4)))->Reset();
-  //Data size per LDC
-  ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+22)))->Reset();
-
-  //online part
-  if(fkOnline) {
-    for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
-      for(Int_t iStrip = 0; iStrip < 2*fgkNumberOfPSideStrips; iStrip++)
-	fOccupancyMatrix[iModule-500][iStrip] = 0; 
-    }//module loop
-
-    Int_t gHistPositionOccupancyPerLadder = 0;
-    Int_t gLayer = 0, gLadder = 0, gModule = 0;
-    for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
-      AliITSgeomTGeo::GetModuleId(iModule+500,gLayer,gLadder,gModule);
-      
-      gHistPositionOccupancyPerLadder = (gLayer == 5) ? 2*(gLadder - 1) : 2*(gLadder - 1 + fgkSSDLADDERSLAYER5);
-      
-      //P-SIDE OCCUPANCY
-      fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder)->Reset();
-      //N-SIDE OCCUPANCY
-      fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder+1)->Reset();
-
-      ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->Reset();
-      ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->Reset();
-    }//module loop
-  }//online flag
+ if ( fAliITSQADataMakerRec->GetRawsData(0) == NULL ) // Raws not defined
+ 	return ;
+ 	
+ //Detector specific actions at start of cycle
+ AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of SSD Cycle\n");
+ 
+ //Data size per DDL
+ ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+4)))->Reset();
+ //Data size per LDC
+ ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+22)))->Reset();
+ 
+ 	//online part
+ if(fkOnline) {
+   for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
+     for(Int_t iStrip = 0; iStrip < 2*fgkNumberOfPSideStrips; iStrip++)
+       fOccupancyMatrix[iModule-500][iStrip] = 0;
+   }//module loop
+   
+   Int_t gHistPositionOccupancyPerLadder = 0;
+   Int_t gLayer = 0, gLadder = 0, gModule = 0;
+   for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
+     AliITSgeomTGeo::GetModuleId(iModule+500,gLayer,gLadder,gModule);
+     
+     gHistPositionOccupancyPerLadder = (gLayer == 5) ? 2*(gLadder - 1) : 2*(gLadder - 1 + fgkSSDLADDERSLAYER5);
+     
+     //P-SIDE OCCUPANCY
+     fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder)->Reset();
+	//N-SIDE OCCUPANCY
+     fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder+1)->Reset();
+     
+     ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->Reset();
+     ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->Reset();
+   }//module loop
+ }//online flag
+ 
 }
 
 //____________________________________________________________________________ 
@@ -936,13 +939,13 @@ Int_t AliITSQASSDDataMakerRec::InitDigits() {
                                   ";SSD Module Number;N_{DIGITS}",
                                   1698,499.5,2197.5);  
  rv =  fAliITSQADataMakerRec->Add2DigitsList(fHistSSDModule,
-                                        fGenDigitsOffset + 0, !expert, image);
+                                        fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()] + 0, !expert, image);
   fSSDhDigitsTask += 1;
   TH2F *fHistSSDModuleStrip = new TH2F("fHistSSDDigitsModuleStrip",
                                        ";N_{Strip};N_{Module}",
                                        1540,0,1540,1698,499.5,2197.5);  
   rv = fAliITSQADataMakerRec->Add2DigitsList(fHistSSDModuleStrip,
-                                        fGenDigitsOffset + 1, !expert, image);
+                                        fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()] + 1, !expert, image);
   fSSDhDigitsTask += 1;
   
   AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SSD Digits histograms booked\n",fSSDhDigitsTask));
@@ -969,14 +972,15 @@ Int_t AliITSQASSDDataMakerRec::MakeDigits(TTree *digits) {
     iSSDdigits->Clear();
     digits->GetEvent(iModule);    
     Int_t ndigits = iSSDdigits->GetEntries();
-    fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset + 0)->Fill(iModule,ndigits);
+    //printf("Module = %i \t ndigits = %i\t offset = %i \n",iModule,ndigits,fAliITSQADataMakerRec->GetEventSpecie() );
+    fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()] + 0)->Fill(iModule,ndigits);
     if(ndigits != 0)
       AliDebug(AliQAv1::GetQADebugLevel(),Form("Module: %d - Digits: %d",iModule,ndigits));
     
     for (Int_t iDigit = 0; iDigit < ndigits; iDigit++) {
       AliITSdigit *dig = (AliITSdigit*)iSSDdigits->UncheckedAt(iDigit);
       Int_t fStripNumber = (dig->GetCoord1() == 0) ? dig->GetCoord2() : dig->GetCoord2() + fgkNumberOfPSideStrips;
-      ((TH2F *)fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset + 1))->Fill(fStripNumber,iModule,dig->GetSignal());
+      ((TH2F *)fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()] + 1))->Fill(fStripNumber,iModule,dig->GetSignal());
     }//digit loop
   }//module loop
   return rv ; 
@@ -1371,7 +1375,7 @@ Int_t AliITSQASSDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task) {
     offset=fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()];  
   }
   else if( task == AliQAv1::kDIGITSR ) {
-    offset=fGenDigitsOffset;   
+    offset=fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()];   
   }
   else if( task == AliQAv1::kRECPOINTS ) {
     offset=fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()];   
@@ -1388,7 +1392,7 @@ void AliITSQASSDDataMakerRec::SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset,
     fGenRawsOffset[specie]=offset;
   }
   else if( task == AliQAv1::kDIGITSR ) {
-    fGenDigitsOffset=offset;
+    fGenDigitsOffset[specie]=offset;
   }
   else if( task == AliQAv1::kRECPOINTS ) {
     fGenRecPointsOffset[specie]=offset;

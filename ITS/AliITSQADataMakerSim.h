@@ -44,6 +44,7 @@ public:
   virtual ~AliITSQADataMakerSim(); // dtor
   Short_t GetSubDet(){return fSubDetector;};
   Int_t GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task);
+  virtual Int_t GetEventSpecie() const { return AliRecoParam::AConvert(fEventSpecie); }
 
 private:
 

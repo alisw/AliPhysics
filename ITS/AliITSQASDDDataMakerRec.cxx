@@ -89,9 +89,11 @@ fBadAnodesCurrent(0)
   }
 	fGenRawsOffset = new Int_t[AliRecoParam::kNSpecies];
 	fGenRecPointsOffset = new Int_t[AliRecoParam::kNSpecies];
+	fGenDigitsOffset = new Int_t[AliRecoParam::kNSpecies];
 	for(Int_t i=0; i<AliRecoParam::kNSpecies; i++) {
 		fGenRawsOffset[i] = 0;
 		fGenRecPointsOffset[i] = 0;
+		fGenDigitsOffset[i]=0;
 	}
 }
 
@@ -394,23 +396,27 @@ Int_t AliITSQASDDDataMakerRec::InitDigits()
   TH1F* h0=new TH1F("SDD DIGITS Module Pattern","SDD DIGITS Module Pattern",260,239.5,499.5);       //hmod
   h0->GetXaxis()->SetTitle("SDD Module Number");
   h0->GetYaxis()->SetTitle("# DIGITS");
-  rv = fAliITSQADataMakerRec->Add2DigitsList(h0,fGenDigitsOffset, !expert, image);
+  rv = fAliITSQADataMakerRec->Add2DigitsList(h0,fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
   fSDDhDigitsTask ++;
+  // printf("Add %s \t the task offset is %i\n",fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->GetName() , fSDDhDigitsTask );
   TH1F* h1=new TH1F("SDD Anode Distribution","DIGITS Anode Distribution",512,-0.5,511.5);      //hanocc
   h1->GetXaxis()->SetTitle("Anode Number");
   h1->GetYaxis()->SetTitle("# DIGITS");
-  rv = fAliITSQADataMakerRec->Add2DigitsList(h1,1+fGenDigitsOffset, !expert, image);
+  rv = fAliITSQADataMakerRec->Add2DigitsList(h1,1+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
   fSDDhDigitsTask ++;
+  //printf("Add %s \t the task offset is %i\n",fAliITSQADataMakerRec->GetDigitsData(1+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->GetName() , fSDDhDigitsTask );
   TH1F* h2=new TH1F("SDD Tbin Distribution","DIGITS Tbin Distribution",256,-0.5,255.5);      //htbocc
   h2->GetXaxis()->SetTitle("Tbin Number");
   h2->GetYaxis()->SetTitle("# DIGITS");
-  rv = fAliITSQADataMakerRec->Add2DigitsList(h2,2+fGenDigitsOffset, !expert, image);
+  rv = fAliITSQADataMakerRec->Add2DigitsList(h2,2+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
   fSDDhDigitsTask ++;
+  //printf("Add %s \t the task offset is %i\n",fAliITSQADataMakerRec->GetDigitsData(2+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->GetName() , fSDDhDigitsTask );
   TH1F* h3=new TH1F("SDD ADC Counts Distribution","DIGITS ADC Counts Distribution",200,0.,1024.);          //hsig
   h3->GetXaxis()->SetTitle("ADC Value");
   h3->GetYaxis()->SetTitle("# DIGITS");
-  rv = fAliITSQADataMakerRec->Add2DigitsList(h3,3+fGenDigitsOffset, !expert, image);
+  rv = fAliITSQADataMakerRec->Add2DigitsList(h3,3+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
   fSDDhDigitsTask ++;
+  //printf("Add %s \t the task offset is %i\n",fAliITSQADataMakerRec->GetDigitsData(3+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->GetName() , fSDDhDigitsTask );
   AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SDD Digits histograms booked\n",fSDDhDigitsTask));
   return rv ; 
 }
@@ -445,16 +451,16 @@ Int_t AliITSQASDDDataMakerRec::MakeDigits(TTree * digits)
     Int_t nmod=i+240;
     digits->GetEvent(nmod);
     Int_t ndigits = iITSdigits->GetEntries();
-    fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset)->Fill(nmod,ndigits);
+    fAliITSQADataMakerRec->GetDigitsData(fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(nmod,ndigits);
 
     for (Int_t idig=0; idig<ndigits; idig++) {
       AliITSdigit *dig=(AliITSdigit*)iITSdigits->UncheckedAt(idig);
       Int_t iz=dig->GetCoord1();  // cell number z
       Int_t ix=dig->GetCoord2();  // cell number x
       Int_t sig=dig->GetSignal();
-      fAliITSQADataMakerRec->GetDigitsData(1+fGenDigitsOffset)->Fill(iz);
-      fAliITSQADataMakerRec->GetDigitsData(2+fGenDigitsOffset)->Fill(ix);
-      fAliITSQADataMakerRec->GetDigitsData(3+fGenDigitsOffset)->Fill(sig);
+      fAliITSQADataMakerRec->GetDigitsData(1+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(iz);
+      fAliITSQADataMakerRec->GetDigitsData(2+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(ix);
+      fAliITSQADataMakerRec->GetDigitsData(3+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(sig);
     }
   }
   return rv ; 
@@ -691,7 +697,7 @@ Int_t AliITSQASDDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task)
     }
   else if(task == AliQAv1::kDIGITSR )
     {
-      offset=fGenDigitsOffset;
+      offset=fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()];
     }
   else if( task == AliQAv1::kRECPOINTS )
     {
@@ -708,7 +714,7 @@ void AliITSQASDDDataMakerRec::SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset,
     fGenRawsOffset[specie]=offset;
   }
   else if( task == AliQAv1::kDIGITSR ) {
-    fGenDigitsOffset=offset;
+    fGenDigitsOffset[specie]=offset;
   }
   else if( task == AliQAv1::kRECPOINTS ) {
     fGenRecPointsOffset[specie]=offset;
