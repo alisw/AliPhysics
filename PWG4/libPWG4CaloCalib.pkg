@@ -1,0 +1,17 @@
+#-*- Mode: Makefile -*-
+
+SRCS = CaloCalib/AliAnalysisTaskPHOSPi0CalibSelection.cxx
+      
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR:= PWG4CaloCalibLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
+
+EINCLUDE= PHOS
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice -lPHOSbase \
+                         -L$(shell root-config --libdir) -lEG
+endif
