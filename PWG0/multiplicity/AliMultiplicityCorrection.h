@@ -50,7 +50,7 @@ class AliMultiplicityCorrection : public TNamed {
     Bool_t LoadHistograms(const Char_t* dir = 0);
     void SaveHistograms(const char* dir = 0);
     void DrawHistograms();
-    void DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t normalizeESD, TH1* mcHist, Bool_t simple = kFALSE);
+    void DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t normalizeESD, TH1* mcHist, Bool_t simple = kFALSE, EventType eventType = kTrVtx);
 
     Int_t ApplyMinuitFit(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t check = kFALSE, TH1* initialConditions = 0);
 

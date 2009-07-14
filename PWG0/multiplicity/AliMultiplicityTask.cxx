@@ -215,6 +215,7 @@ void AliMultiplicityTask::Exec(Option_t*)
   }
 
   Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD, fTrigger);
+  //Printf("%lld", fESD->GetTriggerMask());
 
   const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
   Bool_t eventVertex = (vtxESD != 0);
@@ -839,5 +840,5 @@ void AliMultiplicityTask::Terminate(Option_t *)
 
   file->Close();
 
-  Printf("Writting result to multiplicity.root");
+  Printf("Written result to multiplicity.root");
 }

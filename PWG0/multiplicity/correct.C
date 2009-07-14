@@ -74,7 +74,7 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
     TH2F* hist = esd->GetMultiplicityESD(hID);
     TH2F* hist2 = esd->GetMultiplicityMC(hID, eventType);
   
-    mult->SetMultiplicityESD(histID, hist);
+    mult->SetMultiplicityESD(hID, hist);
   
     // small hack to get around charge conservation for full phase space ;-)
     if (fullPhaseSpace)
