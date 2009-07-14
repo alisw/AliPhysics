@@ -164,9 +164,8 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
     return;
   }
 
-  AliStack* stack = mcE->Stack();
   Int_t np    = mcE->GetNumberOfTracks();
-  Int_t nprim = stack->GetNprimary();
+  Int_t nprim = mcE->GetNumberOfPrimaries();
   // TODO ADD MC VERTEX
   
   // We take all real primaries
@@ -189,30 +188,30 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
     } else if (part->GetUniqueID() == 4) {
       // Particles from decay
       // Check that the decay chain ends at a primary particle
-      TParticle* mother = part;
-      Int_t imo = part->GetFirstMother();
+      AliMCParticle* mother = mcpart;
+      Int_t imo = mcpart->GetMother();
       while((imo >= nprim) && (mother->GetUniqueID() == 4)) {
-	mother =  mcE->Stack()->Particle(imo);
-	imo =  mother->GetFirstMother();
+	mother = mcE->GetTrack(imo);
+	imo =  mother->GetMother();
       }
       // Select according to pseudorapidity and production point of primary ancestor
-      if (imo < nprim && Select(mcE->Stack()->Particle(imo), rv, zv))write = kTRUE;         
+      if (imo < nprim && Select(mcE->GetTrack(imo)->Particle(), rv, zv))write = kTRUE;         
     } else if (part->GetUniqueID() == 5) {
       // Now look for pair production
-      Int_t imo = part->GetFirstMother();
+      Int_t imo = mcpart->GetMother();
       if (imo < nprim) {
 	// Select, if the gamma is a primary
 	write = kTRUE;
       } else {
 	// Check if the gamma comes from the decay chain of a primary particle
-	TParticle* mother = mcE->Stack()->Particle(imo);
-	imo = mother->GetFirstMother();
+	AliMCParticle* mother = mcE->GetTrack(imo);
+	imo = mother->GetMother();
 	while((imo >= nprim) && (mother->GetUniqueID() == 4)) {
-	  mother =  mcE->Stack()->Particle(imo);
-	  imo =  mother->GetFirstMother();
+	  mother =  mcE->GetTrack(imo);
+	  imo =  mother->GetMother();
 	}
 	// Select according to pseudorapidity and production point 
-	if (imo < nprim && Select(mother, rv, zv)) 
+	if (imo < nprim && Select(mother->Particle(), rv, zv)) 
 	  write = kTRUE;
       }
     }
@@ -251,12 +250,12 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
       // cases 
       iCharm++;
       Printf("Decay Mother %s",part->GetPDG()->GetName());
-      Int_t d0 =  part->GetFirstDaughter();
-      Int_t d1 =  part->GetLastDaughter();
+      Int_t d0 =  mcpart->GetFirstDaughter();
+      Int_t d1 =  mcpart->GetLastDaughter();
       if(d0>0&&d1>0){
 	for(int id = d0;id <= d1;id++){
-	  TParticle* daughter =  mcE->Stack()->Particle(id);
-	  Printf("Decay Daughter %s",daughter->GetPDG()->GetName());
+	  AliMCParticle* daughter =  mcE->GetTrack(id);
+	  Printf("Decay Daughter %s",daughter->Particle()->GetPDG()->GetName());
 	  iAll++;
 	  if(mcH->IsParticleSelected(id))iTaken++;
 	}

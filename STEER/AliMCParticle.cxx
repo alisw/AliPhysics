@@ -34,7 +34,10 @@ AliMCParticle::AliMCParticle():
     fParticle(0),
     fTrackReferences(0),
     fNTrackRef(0),
-    fLabel(-1)
+    fLabel(-1),
+    fMother(-1),
+    fFirstDaughter(-1),
+    fLastDaughter(-1)
 {
     // Constructor
 }
@@ -45,7 +48,10 @@ AliMCParticle::AliMCParticle(TParticle* part, TRefArray* rarray, Int_t index):
     fParticle(part),
     fTrackReferences(rarray),
     fNTrackRef(0),
-    fLabel(index)
+    fLabel(index),
+    fMother(-1),
+    fFirstDaughter(-1),
+    fLastDaughter(-1)
 {
     // Constructor
     if (rarray != 0) {
@@ -59,7 +65,10 @@ AliMCParticle::AliMCParticle(const AliMCParticle& mcPart) :
     fParticle(0),    
     fTrackReferences(0),
     fNTrackRef(0),
-    fLabel(-1)
+    fLabel(-1),
+    fMother(-1),
+    fFirstDaughter(-1),
+    fLastDaughter(-1)
 {
 // Copy constructor
 }

@@ -53,24 +53,24 @@ AliVParticle(),
 }
 
     
-AliAODMCParticle::AliAODMCParticle(TParticle* part, Int_t label,Int_t flag):
+AliAODMCParticle::AliAODMCParticle(AliMCParticle* mcpart, Int_t label,Int_t flag):
     AliVParticle(),
-    fPdgCode(part->GetPdgCode()),
+    fPdgCode(mcpart->Particle()->GetPdgCode()),
     fFlag(flag),
     fLabel(label),
-    fMother(part->GetMother(0)),
-    fPx(part->Px()),
-    fPy(part->Py()),
-    fPz(part->Pz()),
-    fE(part->Energy()),
-    fVx(part->Vx()),
-    fVy(part->Vy()),
-    fVz(part->Vz())
+    fMother(mcpart->GetMother()),
+    fPx(mcpart->Particle()->Px()),
+    fPy(mcpart->Particle()->Py()),
+    fPz(mcpart->Particle()->Pz()),
+    fE(mcpart->Particle()->Energy()),
+    fVx(mcpart->Particle()->Vx()),
+    fVy(mcpart->Particle()->Vy()),
+    fVz(mcpart->Particle()->Vz())
 {
-  fDaughter[0] =  part->GetDaughter(0); 
-  fDaughter[1] =  part->GetDaughter(1);
+  fDaughter[0] =  mcpart->GetFirstDaughter(); 
+  fDaughter[1] =  mcpart->GetLastDaughter();
   // Set unique id
-  TObject::SetUniqueID(part->GetUniqueID());
+  TObject::SetUniqueID(mcpart->Particle()->GetUniqueID());
 }
     
     

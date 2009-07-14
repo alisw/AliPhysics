@@ -27,6 +27,7 @@
 #include <TParticle.h>
 #include <TClonesArray.h>
 #include <TRefArray.h>
+#include <TList.h>
 
 #include "AliLog.h"
 #include "AliMCEvent.h"
@@ -34,6 +35,9 @@
 #include "AliTrackReference.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
+
+
+Int_t AliMCEvent::fgkBgLabelOffset(10000000);
 
 
 AliMCEvent::AliMCEvent():
@@ -48,24 +52,30 @@ AliMCEvent::AliMCEvent():
     fTmpTreeTR(0),
     fTmpFileTR(0),
     fNprimaries(-1),
-    fNparticles(-1)
+    fNparticles(-1),
+    fSubsidiaryEvents(0),
+    fPrimaryOffset(0),
+    fSecondaryOffset(0)
 {
     // Default constructor
 }
 
 AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
     AliVEvent(mcEvnt),
-    fStack(0),
-    fMCParticles(0),
-    fMCParticleMap(0),
-    fHeader(new AliHeader()),
-    fTRBuffer(0),
-    fTrackReferences(0),
-    fTreeTR(0),
-    fTmpTreeTR(0),
-    fTmpFileTR(0),
-    fNprimaries(-1),
-    fNparticles(-1)
+    fStack(mcEvnt.fStack),
+    fMCParticles(mcEvnt.fMCParticles),
+    fMCParticleMap(mcEvnt.fMCParticleMap),
+    fHeader(mcEvnt.fHeader),
+    fTRBuffer(mcEvnt.fTRBuffer),
+    fTrackReferences(mcEvnt.fTrackReferences),
+    fTreeTR(mcEvnt.fTreeTR),
+    fTmpTreeTR(mcEvnt.fTmpTreeTR),
+    fTmpFileTR(mcEvnt.fTmpFileTR),
+    fNprimaries(mcEvnt.fNprimaries),
+    fNparticles(mcEvnt.fNparticles),
+    fSubsidiaryEvents(0),
+    fPrimaryOffset(0),
+    fSecondaryOffset(0)
 { 
 // Copy constructor
 }
@@ -183,7 +193,8 @@ void AliMCEvent::FinishEvent()
     fNparticles = -1;
     fNprimaries = -1;    
     fStack      =  0;
-    
+//    fSubsidiaryEvents->Clear();
+    fSubsidiaryEvents = 0;
 }
 
 
@@ -446,21 +457,43 @@ void AliMCEvent::ReorderAndExpandTreeTR()
 AliMCParticle* AliMCEvent::GetTrack(Int_t i) const
 {
     // Get MC Particle i
+    //
+    //
+    // Check first if this explicitely accesses the subsidiary event
+    if (i >= BgLabelOffset()) {
+	if (fSubsidiaryEvents) {
+	    AliMCEvent* bgEvent = (AliMCEvent*) (fSubsidiaryEvents->At(1));
+	    return (bgEvent->GetTrack(i - BgLabelOffset()));
+	} else {
+	    return 0;
+	}
+    }
+    
+    //
     AliMCParticle *mcParticle = 0;
     TParticle     *particle   = 0;
     TClonesArray  *trefs      = 0;
     Int_t          ntref      = 0;
     TRefArray     *rarray     = 0;
+
+
+
     // Out of range check
     if (i < 0 || i >= fNparticles) {
 	AliWarning(Form("AliMCEvent::GetEntry: Index out of range"));
 	mcParticle = 0;
 	return (mcParticle);
     }
+
     
+    if (fSubsidiaryEvents) {
+	AliMCEvent*   mc;
+	Int_t idx = FindIndexAndEvent(i, mc);
+	return (mc->GetTrack(idx));
+    } 
 
     //
-    // First check of the MC Particle has been already cached
+    // First check If the MC Particle has been already cached
     if(!fMCParticleMap->At(i)) {
 	// Get particle from the stack
 	particle   = fStack->Particle(i);
@@ -484,12 +517,138 @@ AliMCParticle* AliMCEvent::GetTrack(Int_t i) const
 	new ((*fMCParticles)[nentries]) AliMCParticle(particle, rarray, i);
 	mcParticle = dynamic_cast<AliMCParticle*>((*fMCParticles)[nentries]);
 	fMCParticleMap->AddAt(mcParticle, i);
+
+	TParticle* part = mcParticle->Particle();
+	Int_t imo  = part->GetFirstMother();
+	Int_t id1  = part->GetFirstDaughter();
+	Int_t id2  = part->GetLastDaughter();
+	if (fPrimaryOffset > 0 || fSecondaryOffset > 0) {
+	    // Remapping of the mother and daughter indices
+	    if (imo < fNprimaries) {
+		mcParticle->SetMother(imo + fPrimaryOffset);
+	    } else {
+		mcParticle->SetMother(imo + fSecondaryOffset - fNprimaries);
+	    }
+
+	    if (id1 < fNprimaries) {
+		mcParticle->SetFirstDaughter(id1 + fPrimaryOffset);
+		mcParticle->SetLastDaughter (id2 + fPrimaryOffset);
+	    } else {
+		mcParticle->SetFirstDaughter(id1 + fSecondaryOffset - fNprimaries);
+		mcParticle->SetLastDaughter (id2 + fSecondaryOffset - fNprimaries);
+	    }
+
+	    
+	    if (i > fNprimaries) {
+		mcParticle->SetLabel(i + fPrimaryOffset);
+	    } else {
+		mcParticle->SetLabel(i + fSecondaryOffset - fNprimaries);
+	    }
+	    
+	    
+	} else {
+	    mcParticle->SetFirstDaughter(id1);
+	    mcParticle->SetLastDaughter (id2);
+	    mcParticle->SetMother       (imo);
+	}
+
     } else {
 	mcParticle = dynamic_cast<AliMCParticle*>(fMCParticleMap->At(i));
     }
+    
+    
     return mcParticle;
 }
 
- AliGenEventHeader* AliMCEvent::GenEventHeader() {return (fHeader->GenEventHeader());}
+    AliGenEventHeader* AliMCEvent::GenEventHeader() {return (fHeader->GenEventHeader());}
+
+
+void AliMCEvent::AddSubsidiaryEvent(AliMCEvent* event) 
+{
+    // Add a subsidiary event to the list; for example merged background event.
+    if (!fSubsidiaryEvents) {
+	TList* events = new TList();
+	events->Add(new AliMCEvent(*this));
+	fSubsidiaryEvents = events;
+    }
+    
+    fSubsidiaryEvents->Add(event);
+}
+
+Int_t AliMCEvent::FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const
+{
+    // Find the index and event in case of composed events like signal + background
+    TIter next(fSubsidiaryEvents);
+    next.Reset();
+     if (oldidx < fNprimaries) {
+	while((event = (AliMCEvent*)next())) {
+	    if (oldidx < (event->GetPrimaryOffset() + event->GetNumberOfPrimaries())) break;
+	}
+	return (oldidx - event->GetPrimaryOffset());
+    } else {
+	while((event = (AliMCEvent*)next())) {
+	    if (oldidx < (event->GetSecondaryOffset() + (event->GetNumberOfTracks() - event->GetNumberOfPrimaries()))) break;
+	}
+	return (oldidx - event->GetSecondaryOffset() + event->GetNumberOfPrimaries());
+    }
+}
+
+Int_t AliMCEvent::BgLabelToIndex(Int_t label)
+{
+    // Convert a background label to an absolute index
+    if (fSubsidiaryEvents) {
+	AliMCEvent* bgEvent = (AliMCEvent*) (fSubsidiaryEvents->At(1));
+	label -= BgLabelOffset();
+	if (label < bgEvent->GetNumberOfPrimaries()) {
+	    label += bgEvent->GetPrimaryOffset();
+	} else {
+	    label += (bgEvent->GetSecondaryOffset() - fNprimaries);
+	}
+    }
+    return (label);
+}
+
+
+Bool_t AliMCEvent::IsPhysicalPrimary(Int_t i) 
+{
+//
+// Delegate to subevent if necesarry 
+
+    
+    if (!fSubsidiaryEvents) {
+	return fStack->IsPhysicalPrimary(i);
+    } else {
+	AliMCEvent* evt = 0;
+	Int_t idx = FindIndexAndEvent(i, evt);
+	return (evt->IsPhysicalPrimary(idx));
+    }
+}
+
+void AliMCEvent::InitEvent()
+{
+    if (fSubsidiaryEvents) {
+	TIter next(fSubsidiaryEvents);
+	AliMCEvent* evt;
+	fNprimaries = 0;
+	fNparticles = 0;
+	
+	while((evt = (AliMCEvent*)next())) {
+	    fNprimaries += evt->GetNumberOfPrimaries();	
+	    fNparticles += evt->GetNumberOfTracks();    
+	}
+	
+	Int_t ioffp = 0;
+	Int_t ioffs = fNprimaries;
+	next.Reset();
+	
+	while((evt = (AliMCEvent*)next())) {
+	    evt->SetPrimaryOffset(ioffp);
+	    evt->SetSecondaryOffset(ioffs);
+	    ioffp += evt->GetNumberOfPrimaries();
+	    ioffs += (evt->GetNumberOfTracks() - evt->GetNumberOfPrimaries());	    
+	}
+    }
+}
+
 
 ClassImp(AliMCEvent)

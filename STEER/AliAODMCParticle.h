@@ -18,6 +18,7 @@
 
 #include "AliTrackReference.h"
 #include "AliVParticle.h"
+#include "AliMCParticle.h"
 
 class AliAODEvent;
 class TParticle;
@@ -26,7 +27,7 @@ class TClonesArray;
 class AliAODMCParticle: public AliVParticle {
  public:
   AliAODMCParticle();
-  AliAODMCParticle(TParticle* part, Int_t label=0,Int_t flag = 0);
+  AliAODMCParticle(AliMCParticle* part, Int_t label=0,Int_t flag = 0);
   virtual ~AliAODMCParticle(){};
   AliAODMCParticle(const AliAODMCParticle& mcPart); 
   AliAODMCParticle& operator=(const AliAODMCParticle& mcPart);

@@ -1,4 +1,5 @@
-/************************************************************************* * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved *
+/************************************************************************** 
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved  *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -26,6 +27,7 @@
 
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliMCParticle.h"
 #include "AliPDG.h"
 #include "AliTrackReference.h"
 #include "AliHeader.h"
@@ -34,6 +36,7 @@
 
 #include <TTree.h>
 #include <TFile.h>
+#include <TList.h>
 #include <TParticle.h>
 #include <TString.h>
 #include <TClonesArray.h>
@@ -61,7 +64,9 @@ AliMCEventHandler::AliMCEventHandler() :
     fFileNumber(0),
     fEventsPerFile(0),
     fReadTR(kTRUE),
-    fInitOk(kFALSE)
+    fInitOk(kFALSE),
+    fSubsidiaryHandlers(0),
+    fEventsInContainer(0)
 {
   //
   // Default constructor
@@ -90,7 +95,9 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fFileNumber(0),
     fEventsPerFile(0),
     fReadTR(kTRUE),
-    fInitOk(kFALSE)
+    fInitOk(kFALSE),
+    fSubsidiaryHandlers(0),
+    fEventsInContainer(0)
 {
   //
   // Constructor
@@ -152,6 +159,17 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
     fFileNumber =  0;
     AliInfo(Form("Number of events in this directory %5d \n", fNEvent));
     fInitOk = kTRUE;
+
+
+    if (fSubsidiaryHandlers) {
+	TIter next(fSubsidiaryHandlers);
+	AliMCEventHandler *handler;
+	while((handler = (AliMCEventHandler*)next())) {
+	    handler->Init(opt);
+	    handler->SetNumberOfEventsInContainer(fNEvent);
+	}
+    }
+
     return kTRUE;
 }
 
@@ -193,6 +211,7 @@ Bool_t AliMCEventHandler::GetEvent(Int_t iev)
 	// Connect TR to MCEvent
 	fMCEvent->ConnectTreeTR(fTreeTR);
     }
+
     //
     return kTRUE;
 }
@@ -226,6 +245,7 @@ Bool_t AliMCEventHandler::OpenFile(Int_t i)
     }
     
     fInitOk = kTRUE;
+
     return kTRUE;
 }
 
@@ -234,6 +254,12 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
     fParticleSelected.Delete();
     fLabelMap.Delete();
     // Read the next event
+
+    if (fEventsInContainer != 0) {
+	entry = (Long64_t) entry * Float_t(fNEvent) / Float_t (fEventsInContainer);
+    }
+
+
     if (entry == -1) {
 	fEvent++;
 	entry = fEvent;
@@ -242,17 +268,34 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
     }
 
     if (entry >= fNEvent) {
-	AliWarning(Form("AliMCEventHandler: Event number out of range %5d %5d\n", entry,fNEvent));
+	AliWarning(Form("AliMCEventHandler: Event number out of range %5d %5d\n", entry, fNEvent));
 	return kFALSE;
     }
-    return GetEvent(entry);
+    
+    Bool_t result = GetEvent(entry);
+
+    if (fSubsidiaryHandlers) {
+	TIter next(fSubsidiaryHandlers);
+	AliMCEventHandler *handler;
+	while((handler = (AliMCEventHandler*)next())) {
+	    handler->BeginEvent(entry);
+	}
+	next.Reset();
+	while((handler = (AliMCEventHandler*)next())) {
+	    fMCEvent->AddSubsidiaryEvent(handler->MCEvent());
+	}
+	fMCEvent->InitEvent();
+    }
+    return result;
+    
 }
 
 void AliMCEventHandler::SelectParticle(Int_t i){
   // taking the absolute values here, need to take care 
   // of negative daughter and mother
   // IDs when setting!
-  if(!IsParticleSelected(TMath::Abs(i)))fParticleSelected.Add(TMath::Abs(i),1);
+    if (TMath::Abs(i) >= AliMCEvent::BgLabelOffset()) i =  fMCEvent->BgLabelToIndex(TMath::Abs(i));
+    if(!IsParticleSelected(TMath::Abs(i)))fParticleSelected.Add(TMath::Abs(i),1);
 }
 
 Bool_t AliMCEventHandler::IsParticleSelected(Int_t i)  {
@@ -276,10 +319,9 @@ void AliMCEventHandler::CreateLabelMap(){
   }
 
   VerifySelectedParticles();
-  AliStack *pStack = fMCEvent->Stack();
 
   Int_t iNew = 0;
-  for(int i = 0;i < pStack->GetNtrack();++i){
+  for(int i = 0;i < fMCEvent->GetNumberOfTracks();++i){
     if(IsParticleSelected(i)){
       fLabelMap.Add(i,iNew);
       iNew++;
@@ -288,7 +330,7 @@ void AliMCEventHandler::CreateLabelMap(){
 }
 
 Int_t AliMCEventHandler::GetNewLabel(Int_t i) {
-  // Gets the labe from the new created Map
+  // Gets the label from the new created Map
   // Call CreatLabelMap before
   // otherwise only 0 returned
   return fLabelMap.GetValue(TMath::Abs(i));
@@ -302,28 +344,29 @@ void  AliMCEventHandler::VerifySelectedParticles(){
   // Private, should be only called by CreateLabelMap
 
   if(!fMCEvent){
-    fParticleSelected.Delete();
-    return;
+      fParticleSelected.Delete();
+      return;
   }
-  AliStack *pStack = fMCEvent->Stack();
 
-  Int_t nprim = pStack->GetNprimary();
+  Int_t nprim = fMCEvent->GetNumberOfPrimaries();
 
-  for(int i = 0;i < pStack->GetNtrack();++i){
-    if(i<nprim){
-      SelectParticle(i);// take all primaries
-      continue;
-    }
-    if(!IsParticleSelected(i))continue;
-    TParticle *part = pStack->Particle(i);
-    Int_t imo = part->GetFirstMother();
-    while((imo >= nprim)&&!IsParticleSelected(imo)){
-      // Mother not yet selected
-      SelectParticle(imo);
-      TParticle *mother = pStack->Particle(imo);
-      imo = mother->GetFirstMother();
-    }
-    // after last step we may have a unselected primary
+  for(int i = 0;i < fMCEvent->GetNumberOfTracks(); ++i){
+      if(i < nprim){
+	  SelectParticle(i);// take all primaries
+	  continue;
+      }
+
+      if(!IsParticleSelected(i))continue;
+
+      AliMCParticle* mcpart = fMCEvent->GetTrack(i);
+      Int_t imo = mcpart->GetMother();
+      while((imo >= nprim)&&!IsParticleSelected(imo)){
+	  // Mother not yet selected
+	  SelectParticle(imo);
+	  AliMCParticle* mcpart = fMCEvent->GetTrack(imo);
+	  imo = mcpart->GetMother();
+      }
+    // after last step we may have an unselected primary
     // mother
     if(imo>=0){
       if(!IsParticleSelected(imo))
@@ -367,12 +410,29 @@ Bool_t AliMCEventHandler::Notify(const char *path)
     else if (fileName.BeginsWith("root:")) {
       fileName.Append("?ZIP=");
     }
+
     *fPathName = fileName;
-    AliInfo(Form("Notify() Path: %s\n", fPathName->Data()));
+    AliInfo(Form("Path: -%s-\n", fPathName->Data()));
     
     ResetIO();
     InitIO("");
 
+// Handle subsidiary handlers
+    if (fSubsidiaryHandlers) {
+	TIter next(fSubsidiaryHandlers);
+	AliMCEventHandler *handler;
+	while((handler = (AliMCEventHandler*) next())) {
+	    TString* spath = handler->GetInputPath();
+	    if (spath->Contains("merged")) {
+		if (! fPathName->IsNull()) {
+		    handler->Notify(Form("%s/../.", fPathName->Data()));
+		} else {
+		    handler->Notify("../");
+		}
+	    }
+	}
+    }
+    
     return kTRUE;
 }
 
@@ -391,6 +451,15 @@ void AliMCEventHandler::ResetIO()
     if (fFileTR) {delete fFileTR; fFileTR = 0;}
     fExtension="";
     fInitOk = kFALSE;
+
+    if (fSubsidiaryHandlers) {
+	TIter next(fSubsidiaryHandlers);
+	AliMCEventHandler *handler;
+	while((handler = (AliMCEventHandler*)next())) {
+	    handler->ResetIO();
+	}
+    }
+
 }
 
 			    
@@ -400,6 +469,15 @@ Bool_t AliMCEventHandler::FinishEvent()
     delete fDirTR;  fDirTR = 0;
     delete fDirK;   fDirK  = 0;    
     if (fInitOk) fMCEvent->FinishEvent();
+
+    if (fSubsidiaryHandlers) {
+	TIter next(fSubsidiaryHandlers);
+	AliMCEventHandler *handler;
+	while((handler = (AliMCEventHandler*)next())) {
+	    handler->FinishEvent();
+	}
+    }
+
     return kTRUE;
 }
 
@@ -421,4 +499,12 @@ void AliMCEventHandler::SetInputPath(const char* fname)
     // Set the input path name
     delete fPathName;
     fPathName = new TString(fname);
+}
+
+void AliMCEventHandler::AddSubsidiaryHandler(AliMCEventHandler* handler)
+{
+    // Add a subsidiary handler. For example for background events
+
+    if (!fSubsidiaryHandlers) fSubsidiaryHandlers = new TList();
+    fSubsidiaryHandlers->Add(handler);
 }

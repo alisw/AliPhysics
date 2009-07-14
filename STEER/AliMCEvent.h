@@ -26,6 +26,7 @@ class AliHeader;
 class AliGenEventHeader;
 
 class TClonesArray;
+class TList;
 
 class AliMCEvent : public AliVEvent {
 
@@ -103,24 +104,39 @@ public:
     virtual void      ConnectTreeK (TTree* tree);
     virtual void      ConnectTreeTR(TTree* tree);
     virtual void      Clean();
+    virtual void      InitEvent();
     virtual void      FinishEvent();
     virtual Int_t     GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
     virtual void      DrawCheck(Int_t i, Int_t search);
+    virtual void      AddSubsidiaryEvent(AliMCEvent* event);
+    virtual Int_t     GetNumberOfPrimaries() {return fNprimaries;}
+    virtual Int_t     GetPrimaryOffset()    const {return fPrimaryOffset;}
+    virtual Int_t     GetSecondaryOffset()  const {return fSecondaryOffset;}    
+    virtual void      SetPrimaryOffset(Int_t ioff)    {fPrimaryOffset = ioff;}
+    virtual void      SetSecondaryOffset(Int_t ioff)  {fSecondaryOffset = ioff;}    
+    virtual Bool_t    IsPhysicalPrimary(Int_t i);
+    virtual Int_t     BgLabelToIndex(Int_t label);
+    static  Int_t     BgLabelOffset() {return fgkBgLabelOffset;}
+
 private:
     virtual void      ReorderAndExpandTreeTR();
-    
-private:
-    AliStack         *fStack;           // Current pointer to stack
-    TClonesArray     *fMCParticles;     // Pointer to list of particles
-    TRefArray        *fMCParticleMap;   // Map of MC Particles
-    AliHeader        *fHeader;          // Current pointer to header
-    TClonesArray     *fTRBuffer;        // Track reference buffer    
-    TClonesArray     *fTrackReferences; // Array of track references
-    TTree            *fTreeTR;          // Pointer to Track Reference Tree
-    TTree            *fTmpTreeTR;       // Temporary tree TR to read old format
-    TFile            *fTmpFileTR;       // Temporary file with TreeTR to read old format
-    Int_t             fNprimaries;      // Number of primaries
-    Int_t             fNparticles;      // Number of particles
+    virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const;
+private: 
+    AliStack         *fStack;            // Current pointer to stack
+    TClonesArray     *fMCParticles;      // Pointer to list of particles
+    TRefArray        *fMCParticleMap;    // Map of MC Particles
+    AliHeader        *fHeader;           // Current pointer to header
+    TClonesArray     *fTRBuffer;         // Track reference buffer    
+    TClonesArray     *fTrackReferences;  // Array of track references
+    TTree            *fTreeTR;           // Pointer to Track Reference Tree
+    TTree            *fTmpTreeTR;        // Temporary tree TR to read old format
+    TFile            *fTmpFileTR;        // Temporary file with TreeTR to read old format
+    Int_t             fNprimaries;       // Number of primaries
+    Int_t             fNparticles;       // Number of particles
+    TList            *fSubsidiaryEvents; // List of possible subsidiary events (for example merged underlying event) 
+    Int_t             fPrimaryOffset;    // Offset for primaries
+    Int_t             fSecondaryOffset;  // Offset for secondaries
+    static Int_t      fgkBgLabelOffset;  // Standard branch name    
     ClassDef(AliMCEvent, 1)  // AliVEvent realisation for MC data
 };
 

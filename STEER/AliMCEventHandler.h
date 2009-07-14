@@ -21,6 +21,8 @@
 
 class TFile;
 class TTree;
+class TList;
+
 class TParticle;
 class TString;
 class TClonesArray;
@@ -53,6 +55,8 @@ public:
     virtual void         ResetIO();
     virtual Bool_t       GetEvent(Int_t iev);
     virtual void         SetReadTR(Bool_t flag) { fReadTR = flag; }
+    virtual void         AddSubsidiaryHandler(AliMCEventHandler* handler);
+    virtual void         SetNumberOfEventsInContainer(Int_t nev) {fEventsInContainer = nev;}
     //
     AliMCEvent* MCEvent() const {return fMCEvent;} 
     TTree*      TreeTR()  const {return fTreeTR;}
@@ -72,25 +76,27 @@ private:
     AliMCEventHandler(const AliMCEventHandler& handler);             
     AliMCEventHandler& operator=(const AliMCEventHandler& handler);  
 private:
-    AliMCEvent       *fMCEvent;          //! MC Event
-    TFile            *fFileE;            //! File with TreeE
-    TFile            *fFileK;            //! File with TreeK
-    TFile            *fFileTR;           //! File with TreeTR
-    TTree            *fTreeE;            //! TreeE  (Event Headers)
-    TTree            *fTreeK;            //! TreeK  (kinematics tree)
-    TTree            *fTreeTR;           //! TreeTR (track references tree)
-    TDirectoryFile   *fDirK;             //! Directory for Kine Tree
-    TDirectoryFile   *fDirTR;            //! Directory for TR Tree
-    TExMap            fParticleSelected; //! List of selected MC particles for t
-    TExMap            fLabelMap;         //! Stores the Map of MC (ESDLabel,AODlabel)  
-    Int_t             fNEvent;           //! Number of events
-    Int_t             fEvent;            //! Current event
-    TString          *fPathName;         //! Input file path 
-    const Char_t     *fExtension;        //! File name extension 
-    Int_t             fFileNumber;       //! Input file number
-    Int_t             fEventsPerFile;    //! Number of events per file
-    Bool_t            fReadTR;           // determines if TR shall be read
-    Bool_t            fInitOk;           // Initialization ok
+    AliMCEvent            *fMCEvent;            //! MC Event
+    TFile                 *fFileE;              //! File with TreeE
+    TFile                 *fFileK;              //! File with TreeK
+    TFile                 *fFileTR;             //! File with TreeTR
+    TTree                 *fTreeE;              //! TreeE  (Event Headers)
+    TTree                 *fTreeK;              //! TreeK  (kinematics tree)
+    TTree                 *fTreeTR;             //! TreeTR (track references tree)
+    TDirectoryFile        *fDirK;               //! Directory for Kine Tree
+    TDirectoryFile        *fDirTR;              //! Directory for TR Tree
+    TExMap                 fParticleSelected;   //! List of selected MC particles for t
+    TExMap                 fLabelMap;           //! Stores the Map of MC (ESDLabel,AODlabel)  
+    Int_t                  fNEvent;             //! Number of events
+    Int_t                  fEvent;              //! Current event
+    TString               *fPathName;           //! Input file path 
+    const Char_t          *fExtension;          //! File name extension 
+    Int_t                  fFileNumber;         //! Input file number
+    Int_t                  fEventsPerFile;      //! Number of events per file
+    Bool_t                 fReadTR;             // determines if TR shall be read
+    Bool_t                 fInitOk;             // Initialization ok
+    TList                 *fSubsidiaryHandlers; //! List of subsidiary MC handlers (for example for Background)
+    Int_t                  fEventsInContainer;  //! Number of events in container class 
     ClassDef(AliMCEventHandler,1)  //MC Truth EventHandler class
 };
 #endif 
