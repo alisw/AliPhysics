@@ -319,8 +319,12 @@ Int_t AliEMCALCalibTimeDep::CalcCorrection()
   Int_t nSM = fCalibAbs->GetNSuperModule();
   // how many time-bins should we have for this run?
   Int_t nBins = (Int_t) GetLengthOfRunInBins(); // round-down (from double to int)
+  Int_t binSize = (Int_t) (3600/fTimeBinsPerHour); // in seconds
   // set up a reasonable default (correction = 1.0)
   fCalibTimeDepCorrection->InitCorrection(nSM, nBins, 1.0);
+  fCalibTimeDepCorrection->SetStartTime(fStartTime);
+  fCalibTimeDepCorrection->SetNTimeBins(nBins);
+  fCalibTimeDepCorrection->SetTimeBinSize(binSize);
 
   // 1+2: try with LED corrections
   Int_t nRemaining = CalcLEDCorrection(nSM, nBins);
@@ -803,7 +807,7 @@ Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins)
   memset(TempCoeff, 0, sizeof(TempCoeff));
   Float_t MGain = 0; 
   Double_t correction = 0;
-  Double_t secondsPerBin = (1/fkSecToHour)*(1/fTimeBinsPerHour);
+  Double_t secondsPerBin = (3600/fTimeBinsPerHour);
 
   for (int i = 0; i < nSM; i++) {
     iSM = CalibTimeDepCorrectionData[i].fSuperModuleNum;

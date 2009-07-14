@@ -49,6 +49,14 @@ public:
   // - or via the actual SM number
   virtual AliEMCALSuperModuleCalibTimeDepCorrection GetSuperModuleCalibTimeDepCorrectionNum(Int_t smNum) const;
 
+  void SetStartTime(UInt_t ui) { fStartTime = ui; } //
+  void SetNTimeBins(Int_t i) { fNTimeBins = i; } // 
+  void SetTimeBinSize(Int_t i) { fTimeBinSize = i; } // 
+
+  Int_t GetStartTime() const { return fStartTime; } //
+  Int_t GetNTimeBins() const { return fNTimeBins; } // 
+  Int_t GetTimeBinSize() const { return fTimeBinSize; } // 
+
 protected:
 
   Int_t 	  fNSuperModule; // Number of supermodules.
@@ -59,7 +67,11 @@ private:
   AliEMCALCalibTimeDepCorrection(const AliEMCALCalibTimeDepCorrection &);
   AliEMCALCalibTimeDepCorrection &operator = (const AliEMCALCalibTimeDepCorrection &);
 
-  ClassDef(AliEMCALCalibTimeDepCorrection, 1) //
+  UInt_t fStartTime; // timestamp for start of run/first bin
+  Int_t fNTimeBins; // how many timestamp bins do we have
+  Int_t fTimeBinSize; // seconds per time-bin
+
+  ClassDef(AliEMCALCalibTimeDepCorrection, 2) //
 };
 
 #endif

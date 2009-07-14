@@ -31,7 +31,10 @@ ClassImp(AliEMCALCalibTimeDepCorrection)
 //____________________________________________________________________________
 AliEMCALCalibTimeDepCorrection::AliEMCALCalibTimeDepCorrection() : 
   fNSuperModule(0),
-  fSuperModuleData(0)
+  fSuperModuleData(0),
+  fStartTime(0),
+  fNTimeBins(0),
+  fTimeBinSize(0)
 {
   //Default constructor.
 }
