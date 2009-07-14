@@ -178,7 +178,9 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
     return ; 
   } else {
     AliQAManager* manQA = AliQAManager::QAManager(AliQAv1::GetTaskIndex(task)) ;
+    dirOCDB = new TObjArray*[AliRecoParam::kNSpecies] ;	
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      dirOCDB[specie] = NULL ; 
       if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
         continue ; 
       //if ( strcmp(AliQAv1::GetRefDataDirName(), "") == 0 ) { // the name of the last level of the directory is not set (EventSpecie)
@@ -196,7 +198,6 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
       char * detOCDBDir = Form("%s/%s/%s", det, AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
       AliCDBEntry * entry = manQA->Get(detOCDBDir, manQA->GetRun()) ;
       if (entry) {
-        dirOCDB = new TObjArray*[AliRecoParam::kNSpecies] ;	
         TList * listDetQAD =static_cast<TList *>(entry->GetObject()) ;
         if ( strcmp(listDetQAD->ClassName(), "TList") != 0 ) {
           AliError(Form("Expected a Tlist and found a %s for detector %s", listDetQAD->ClassName(), det)) ; 
@@ -204,9 +205,9 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
         }       
         TIter next(listDetQAD) ;
         TObjArray * ar ; 
-        while ( (ar = (TObjArray*)next()) )
+        while ( (ar = (TObjArray*)next()) ) 
           if ( listDetQAD ) 
-          dirOCDB[specie] = static_cast<TObjArray *>(listDetQAD->FindObject(Form("%s/%s", task, AliRecoParam::GetEventSpecieName(specie)))) ; 
+            dirOCDB[specie] = static_cast<TObjArray *>(listDetQAD->FindObject(Form("%s/%s", task, AliRecoParam::GetEventSpecieName(specie)))) ;             
       }
     }
   }
