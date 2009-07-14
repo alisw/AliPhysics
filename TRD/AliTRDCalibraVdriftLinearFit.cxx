@@ -221,7 +221,7 @@ TH2F* AliTRDCalibraVdriftLinearFit::GetLinearFitterHisto(Int_t detector, Bool_t 
     name +=  fVersion;
     
     TH2F *lfdv = new TH2F((const Char_t *)name,(const Char_t *) name
-			  ,100,-1.0,1.0,100
+			  ,40,-1.0,1.0,50
 			  ,-2.0,2.0);
     lfdv->SetXTitle("tan(phi_{track})");
     lfdv->SetYTitle("dy/dt");
@@ -337,3 +337,4 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
   }
    
 }
+
