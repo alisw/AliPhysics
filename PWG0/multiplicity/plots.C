@@ -2907,6 +2907,11 @@ TH1* SystematicsSummary(Bool_t tpc = 0, Bool_t nsd = kTRUE)
   legend->Draw();
 
   canvas->SaveAs(canvas->GetName());
+  
+  file = TFile::Open(Form("%s_syst_error.root", (tpc) ? "tpc" : "spd"), "RECREATE");
+  totalINEL->Write("inel_1");
+  totalNSD->Write("nsd_1");
+  file->Close();
 
   return (nsd) ? totalNSD : totalINEL;
 }
@@ -3060,6 +3065,11 @@ void finalPlot2(Bool_t tpc = 0)
   
   TList list;
   
+  // get syst error
+  file = TFile::Open(Form("%s_syst_error.root", (tpc) ? "tpc" : "spd"));
+  TH1* totalINEL = (TH1*) file->Get("inel_1");
+  TH1* totalNSD = (TH1*) file->Get("nsd_1");
+  
   Int_t count = 0;
   for (AliMultiplicityCorrection::EventType eventType = AliMultiplicityCorrection::kINEL; eventType <= AliMultiplicityCorrection::kNSD; eventType++)
   {
@@ -3084,7 +3094,8 @@ void finalPlot2(Bool_t tpc = 0)
       //result->SetStats(kFALSE);
     
       // systematic error
-      TH1* error = SystematicsSummary(tpc, (eventType == AliMultiplicityCorrection::kNSD));
+      //TH1* error = SystematicsSummary(tpc, (eventType == AliMultiplicityCorrection::kNSD));
+      TH1* error = (eventType == AliMultiplicityCorrection::kNSD) ? totalNSD : totalINEL;
       
       TH1* systError = (TH1*) result->Clone("systError");
       // small hack until we have syst. errors for all eta ranges

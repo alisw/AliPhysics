@@ -720,7 +720,7 @@ void AliMultiplicityCorrection::DrawHistograms()
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t /*normalizeESD*/, TH1* mcHist, Bool_t simple)
+void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t /*normalizeESD*/, TH1* mcHist, Bool_t simple, EventType eventType)
 {
   // draw comparison plots
 
@@ -780,7 +780,11 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
   // for that we convolute the response matrix with the gathered result
   // if normalizeESD is not set, the histogram is already normalized, this needs to be passed to CalculateMultiplicityESD
   TH1* tmpESDEfficiencyRecorrected = (TH1*) fMultiplicityESDCorrected[esdCorrId]->Clone("tmpESDEfficiencyRecorrected");
+  
+  // undo trigger, vertex efficiency correction
+  fCurrentEfficiency = GetEfficiency(inputRange, eventType);
   tmpESDEfficiencyRecorrected->Multiply(fCurrentEfficiency);
+  
   TH2* convoluted = CalculateMultiplicityESD(tmpESDEfficiencyRecorrected, esdCorrId);
   TH1* convolutedProj = convoluted->ProjectionY("convolutedProj", -1, -1, "e");
   if (convolutedProj->Integral() > 0)
