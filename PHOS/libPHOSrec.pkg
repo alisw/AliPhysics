@@ -13,7 +13,7 @@ SRCS          =  \
                  AliPHOSClusterizerv2.cxx AliPHOSPIDv1.cxx \
 		 AliPHOSGridFile.cxx \
 		 AliPHOSTracker.cxx \
-		 AliPHOSEsdCluster.cxx \
+		 AliPHOSEsdCluster.cxx  AliPHOSAodCluster.cxx \
 		 AliPHOSQADataMakerRec.cxx AliPHOSReconstructor.cxx 
                 
            

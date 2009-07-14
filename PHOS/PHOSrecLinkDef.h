@@ -20,6 +20,7 @@
 #pragma link C++ class AliPHOSGridFile+;
 #pragma link C++ class AliPHOSTracker+;
 #pragma link C++ class AliPHOSEsdCluster+;
+#pragma link C++ class AliPHOSAodCluster+;
 #pragma link C++ class AliPHOSQADataMakerRec+;
 
 #pragma link C++ class AliPHOSReconstructor+;
