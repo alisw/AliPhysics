@@ -27,26 +27,30 @@ class AliTRDarrayDictionary: public TObject
   void  Allocate(Int_t nrow, Int_t ncol, Int_t ntime);
   void  SetNdet(Int_t ndet) {fNdet=ndet;};  
   Int_t GetNdet()  const {return fNdet;};
-  void  SetData(Int_t nrow, Int_t ncol, Int_t ntime, Int_t value)
-               { fDictionary[(nrow*fNcol+ncol)*fNtime+ntime]=value; };
-  Int_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const
-               { return fDictionary[(nrow*fNcol+ncol)*fNtime+ntime]; };
+  void  SetDataByAdcCol(Int_t nrow, Int_t ncol, Int_t ntime, Int_t value)
+                       {fDictionary[(nrow*fNumberOfChannels+ncol)*fNtime+ntime]=value;};
+  Int_t GetDataByAdcCol(Int_t nrow, Int_t ncol, Int_t ntime) const
+               {return fDictionary[(nrow*fNumberOfChannels+ncol)*fNtime+ntime];};
   Int_t GetDim() const {return fNDdim;};
   void  Compress();
   void  Expand();
   void  Reset();
+  Int_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const;
+  void  SetData(Int_t nrow, Int_t ncol, Int_t ntime, Int_t value);
+  static  void    CreateLut(); 
 
  protected:
 
   Int_t   fNdet;        //ID number of the chamber
   Int_t   fNrow;        //Number of rows
   Int_t   fNcol;        //Number of columns
+  Int_t   fNumberOfChannels;  //  Number of MCM channels per row
   Int_t   fNtime;       //Number of time bins
   Int_t   fNDdim;       //Dimension of the Dictionary array
   Int_t*  fDictionary;  //[fNDdim]  //Pointer to integers array
+  static Short_t *fLutPadNumbering;   //  [fNcol] Look Up Table
 
-
-  ClassDef(AliTRDarrayDictionary,1) //Dictionary container class
+  ClassDef(AliTRDarrayDictionary,2) //Dictionary container class
     
 };
 #endif

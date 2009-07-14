@@ -27,8 +27,11 @@
 #include "AliTRDarraySignal.h"
 //#include "AliLog.h"
 #include "TArray.h" //for memset
+#include "AliTRDfeeParam.h"
 
 ClassImp(AliTRDarraySignal)
+
+Short_t *AliTRDarraySignal::fLutPadNumbering = 0x0;
 
 //_______________________________________________________________________
 AliTRDarraySignal::AliTRDarraySignal()
@@ -36,6 +39,7 @@ AliTRDarraySignal::AliTRDarraySignal()
                   ,fNdet(0)
                   ,fNrow(0)
                   ,fNcol(0)
+         	  ,fNumberOfChannels(0)
                   ,fNtime(0)
                   ,fNdim(0)  
                   ,fSignal(0)
@@ -44,6 +48,8 @@ AliTRDarraySignal::AliTRDarraySignal()
   //
   // AliTRDarraySignal default constructor
   //
+
+  CreateLut();
 	   
 }
 
@@ -53,6 +59,7 @@ AliTRDarraySignal::AliTRDarraySignal(Int_t nrow, Int_t ncol,Int_t ntime)
                   ,fNdet(0)
                   ,fNrow(0)
                   ,fNcol(0)
+	          ,fNumberOfChannels(0)
                   ,fNtime(0)
                   ,fNdim(0)
                   ,fSignal(0)
@@ -60,7 +67,8 @@ AliTRDarraySignal::AliTRDarraySignal(Int_t nrow, Int_t ncol,Int_t ntime)
   //
   // AliTRDarraySignal constructor
   //
- 
+
+  CreateLut(); 
   Allocate(nrow,ncol,ntime);
 
 }
@@ -71,6 +79,7 @@ AliTRDarraySignal::AliTRDarraySignal(const AliTRDarraySignal &d)
 		  ,fNdet(d.fNdet)
 		  ,fNrow(d.fNrow)
 		  ,fNcol(d.fNcol)
+                  ,fNumberOfChannels(d.fNumberOfChannels)
 		  ,fNtime(d.fNtime)
 		  ,fNdim(d.fNdim)
 		  ,fSignal(0)
@@ -118,6 +127,7 @@ AliTRDarraySignal &AliTRDarraySignal::operator=(const AliTRDarraySignal &d)
   fNdet=d.fNdet;
   fNrow=d.fNrow;
   fNcol=d.fNcol;
+  fNumberOfChannels = d.fNumberOfChannels;
   fNtime=d.fNtime;
   fNdim=d.fNdim;
   fSignal = new Float_t[fNdim];
@@ -132,13 +142,18 @@ void AliTRDarraySignal::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
 {
   //
   // Allocates memory for an AliTRDarraySignal object with dimensions 
-  // Row*Col*Time
+  // Row*NumberOfNecessaryMCMs*ADCchannelsInMCM*Time
+  // To be consistent with AliTRDarrayADC
   //
 
   fNrow=nrow;
   fNcol=ncol;
   fNtime=ntime;
-  fNdim = nrow*ncol*ntime;
+  Int_t adcchannelspermcm = AliTRDfeeParam::GetNadcMcm(); 
+  Int_t padspermcm = AliTRDfeeParam::GetNcolMcm(); 
+  Int_t numberofmcms = fNcol/padspermcm; 
+  fNumberOfChannels = numberofmcms*adcchannelspermcm;
+  fNdim = nrow*fNumberOfChannels*ntime;
   if (fSignal)   
     {
       delete [] fSignal;
@@ -366,4 +381,57 @@ void AliTRDarraySignal::Reset()
 
   memset(fSignal,0,sizeof(Float_t)*fNdim);
 
+}
+//________________________________________________________________________________
+Float_t AliTRDarraySignal::GetData(Int_t nrow, Int_t ncol, Int_t ntime) const
+{
+  //
+  // Get the data using the pad numbering.
+  // To access data using the mcm scheme use instead
+  // the method GetDataByAdcCol
+  //
+
+  Int_t corrcolumn = fLutPadNumbering[ncol];
+
+  return fSignal[(nrow*fNumberOfChannels+corrcolumn)*fNtime+ntime];
+
+}
+//________________________________________________________________________________
+void AliTRDarraySignal::SetData(Int_t nrow, Int_t ncol, Int_t ntime, Float_t value)
+{
+  //
+  // Set the data using the pad numbering.
+  // To write data using the mcm scheme use instead
+  // the method SetDataByAdcCol
+  //
+
+  Int_t colnumb = fLutPadNumbering[ncol];
+
+  fSignal[(nrow*fNumberOfChannels+colnumb)*fNtime+ntime]=value;
+
+}
+
+//________________________________________________________________________________
+void AliTRDarraySignal::CreateLut()
+{
+  //
+  // Initializes the Look Up Table to relate
+  // pad numbering and mcm channel numbering
+  //
+
+  if(fLutPadNumbering)  return;
+  
+   fLutPadNumbering = new Short_t[AliTRDfeeParam::GetNcol()];
+   memset(fLutPadNumbering,0,sizeof(Short_t)*AliTRDfeeParam::GetNcol());
+
+  for(Int_t mcm=0; mcm<8; mcm++)
+    {
+      Int_t lowerlimit=0+mcm*18;
+      Int_t upperlimit=18+mcm*18;
+      Int_t shiftposition = 1+3*mcm;
+      for(Int_t index=lowerlimit;index<upperlimit;index++)
+	{
+	  fLutPadNumbering[index]=index+shiftposition;
+	}
+    }
 }

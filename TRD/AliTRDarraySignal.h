@@ -30,27 +30,32 @@ class AliTRDarraySignal: public TObject
   Int_t   GetNrow()  const {return fNrow;};
   Int_t   GetNcol()  const {return fNcol;};
   Int_t   GetNtime() const {return fNtime;};
-  Float_t GetData(Int_t row, Int_t col, Int_t time) const
-               {return fSignal[(row*fNcol+col)*fNtime+time];};
-  void    SetData(Int_t row, Int_t col, Int_t time, Float_t value)
-              {fSignal[(row*fNcol+col)*fNtime+time]=value;};
+  Float_t GetDataByAdcCol(Int_t row, Int_t col, Int_t time) const
+               {return fSignal[(row*fNumberOfChannels+col)*fNtime+time];};
+  void    SetDataByAdcCol(Int_t row, Int_t col, Int_t time, Float_t value)
+              {fSignal[(row*fNumberOfChannels+col)*fNtime+time]=value;};
   Bool_t  HasData() const {return fNtime ? 1 : 0;};
   Int_t   GetDim() const {return fNdim;};
   Int_t   GetOverThreshold(Float_t threshold);
   void    Compress(Float_t minval);
   void    Expand();
   void    Reset();
+  Float_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const;
+  void    SetData(Int_t nrow, Int_t ncol, Int_t ntime, Float_t value);
+  static  void    CreateLut(); 
 
  protected:
 
   Int_t    fNdet;      //ID number of the chamber
   Int_t    fNrow;      //Number of rows of the chamber
   Int_t    fNcol;      //Number of columns of the chamber
+  Int_t    fNumberOfChannels;  //  Number of MCM channels per row
   Int_t    fNtime;     //Number of time bins
   Int_t    fNdim;      //Dimension of the array
-  Float_t *fSignal;    //[fNdim]  //Pointer to signals 
+  Float_t *fSignal;    //[fNdim]  //Pointer to signals
+  static Short_t *fLutPadNumbering;   //  [fNcol] Look Up Table 
 
-  ClassDef(AliTRDarraySignal,1)  //Signal container class
+  ClassDef(AliTRDarraySignal,2)  //Signal container class
     
 };
 #endif
