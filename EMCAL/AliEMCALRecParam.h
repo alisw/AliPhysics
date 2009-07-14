@@ -22,36 +22,44 @@
 
 class AliEMCALRecParam : public AliDetectorRecoParam
 {
-public:
+ public:
   
   AliEMCALRecParam() ;
   AliEMCALRecParam(const AliEMCALRecParam& recParam);
   AliEMCALRecParam& operator = (const AliEMCALRecParam& recParam);
   virtual ~AliEMCALRecParam() {}
- 
+  
   //Clustering (Unfolding : Cynthia)
-  Float_t GetClusteringThreshold() const     {return fClusteringThreshold;}
-  Float_t GetW0                 () const     {return fW0                 ;}
-  Float_t GetMinECut            () const     {return fMinECut            ;}
-  Float_t GetLocMaxCut          () const     {return fLocMaxCut            ;}
-  Bool_t  GetUnfold             () const     {return fUnfold            ;}
-  void SetClusteringThreshold(Float_t thrsh)   {fClusteringThreshold = thrsh;}
-  void SetW0                 (Float_t w0)      {fW0 = w0                    ;}
-  void SetMinECut            (Float_t minEcut) {fMinECut = minEcut          ;}
-  void SetLocMaxCut          (Float_t locMaxCut) {fLocMaxCut = locMaxCut    ;}
-  void SetUnfold             (Bool_t unfold)     {fUnfold = unfold          ; if(fUnfold) AliWarning("Cluster Unfolding ON. Implementing only for eta=0 case!!!");}
-
+  Float_t GetClusteringThreshold() const     {return fClusteringThreshold ;}
+  Float_t GetW0                 () const     {return fW0                  ;}
+  Float_t GetMinECut            () const     {return fMinECut             ;}
+  Float_t GetLocMaxCut          () const     {return fLocMaxCut           ;}
+  Bool_t  GetUnfold             () const     {return fUnfold              ;}
+  void SetClusteringThreshold(Float_t thrsh)     {fClusteringThreshold = thrsh;}
+  void SetW0                 (Float_t w0)        {fW0 = w0                ;}
+  void SetMinECut            (Float_t minEcut)   {fMinECut = minEcut      ;}
+  void SetLocMaxCut          (Float_t locMaxCut) {fLocMaxCut = locMaxCut  ;}
+  void SetUnfold             (Bool_t unfold)     {fUnfold = unfold ; if(fUnfold) AliWarning("Cluster Unfolding ON. Implementing only for eta=0 case!!!");}
+  
   //PID (Guenole)
-  Double_t GetGamma(Int_t i, Int_t j) const    {return fGamma[i][j];} 
-  Double_t GetHadron(Int_t i, Int_t j) const    {return fHadron[i][j];}
-  Double_t GetPiZero5to10(Int_t i, Int_t j) const    {return fPiZero5to10[i][j];}
-  Double_t GetPiZero10to60(Int_t i, Int_t j) const    {return fPiZero10to60[i][j];}
-
-  void SetGamma(Int_t i, Int_t j,Double_t param )   {fGamma[i][j]=param;}
-  void SetHadron(Int_t i, Int_t j,Double_t param )   {fHadron[i][j]=param;}
-  void SetPiZero5to10(Int_t i, Int_t j,Double_t param)   {fPiZero5to10[i][j]=param;}
-  void SetPiZero10to60(Int_t i, Int_t j,Double_t param)   {fPiZero10to60[i][j]=param;}
-
+  Double_t GetGamma(Int_t i, Int_t j) const       {return fGamma[i][j];} 
+  Double_t GetGammaEnergyProb(Int_t i) const      {return fGammaEnergyProb[i];} 
+  Double_t GetGamma1to10(Int_t i, Int_t j) const  {return fGamma1to10[i][j];}   // not used
+  Double_t GetHadron(Int_t i, Int_t j) const      {return fHadron[i][j];}
+  Double_t GetHadron1to10(Int_t i, Int_t j) const {return fHadron1to10[i][j];}   // not used
+  Double_t GetHadronEnergyProb(Int_t i) const     {return fHadronEnergyProb[i];}
+  Double_t GetPiZero(Int_t i, Int_t j) const      {return fPiZero[i][j];}
+  Double_t GetPiZeroEnergyProb(Int_t i) const     {return fPiZeroEnergyProb[i];}
+  
+  void SetGamma(Int_t i, Int_t j,Double_t param )       {fGamma[i][j]=param;}
+  void SetGammaEnergyProb(Int_t i, Double_t param )     {fGammaEnergyProb[i]=param;}
+  void SetGamma1to10(Int_t i, Int_t j,Double_t param )  {fGamma1to10[i][j]=param;}
+  void SetHadron(Int_t i, Int_t j,Double_t param )      {fHadron[i][j]=param;}
+  void SetHadron1to10(Int_t i, Int_t j,Double_t param ) {fHadron1to10[i][j]=param;}
+  void SetHadronEnergyProb(Int_t i,Double_t param )     {fHadronEnergyProb[i]=param;}
+  void SetPiZero(Int_t i, Int_t j,Double_t param)       {fPiZero[i][j]=param;}
+  void SetPiZeroEnergyProb(Int_t i,Double_t param)      {fPiZeroEnergyProb[i]=param;}
+  
   //Track Matching (Alberto)
   /* track matching cut setters */
   void SetTrkCutX(Double_t value)        {fTrkCutX = value;}
@@ -61,8 +69,8 @@ public:
   void SetTrkCutAlphaMin(Double_t value) {fTrkCutAlphaMin = value;}
   void SetTrkCutAlphaMax(Double_t value) {fTrkCutAlphaMax = value;}
   void SetTrkCutAngle(Double_t value)    {fTrkCutAngle = value;}
-  void SetTrkCutNITS(Double_t value)        {fTrkCutNITS = value;}
-  void SetTrkCutNTPC(Double_t value)        {fTrkCutNTPC = value;}
+  void SetTrkCutNITS(Double_t value)     {fTrkCutNITS = value;}
+  void SetTrkCutNTPC(Double_t value)     {fTrkCutNTPC = value;}
   /* track matching cut getters */
   Double_t GetTrkCutX() const        {return fTrkCutX;}
   Double_t GetTrkCutY() const        {return fTrkCutY;}
@@ -71,9 +79,9 @@ public:
   Double_t GetTrkCutAlphaMin() const {return fTrkCutAlphaMin;}
   Double_t GetTrkCutAlphaMax() const {return fTrkCutAlphaMax;}
   Double_t GetTrkCutAngle() const    {return fTrkCutAngle;}
-  Double_t GetTrkCutNITS() const        {return fTrkCutNITS;}
-  Double_t GetTrkCutNTPC() const        {return fTrkCutNTPC;}
-
+  Double_t GetTrkCutNITS() const     {return fTrkCutNITS;}
+  Double_t GetTrkCutNTPC() const     {return fTrkCutNTPC;}
+  
   //Raw signal fitting (Jenn)
   /* raw signal setters */
   void SetHighLowGainFactor(Double_t value) {fHighLowGainFactor = value;}
@@ -87,31 +95,36 @@ public:
   Double_t GetTau()               const {return fTau;}
   Int_t    GetNoiseThreshold()    const {return fNoiseThreshold;}
   Int_t    GetNPedSamples()       const {return fNPedSamples;}
- 
+  
   virtual void Print(Option_t * option="") const ;
-
+  
   static AliEMCALRecParam* GetDefaultParameters();
   static AliEMCALRecParam* GetLowFluxParam();
   static AliEMCALRecParam* GetHighFluxParam();
   static AliEMCALRecParam* GetCalibParam();
   static AliEMCALRecParam* GetCosmicParam();
-
+  
   static const  TObjArray* GetMappings();
-
-private:
+  
+ private:
   //Clustering
   Float_t fClusteringThreshold ; // minimum energy to seed a EC digit in a cluster
   Float_t fW0 ;                  // logarithmic weight for the cluster center of gravity calculation
   Float_t fMinECut;              // Minimum energy for a digit to be a member of a cluster
-  Bool_t fUnfold;               // flag to perform cluster unfolding
+  Bool_t fUnfold;                // flag to perform cluster unfolding
   Float_t fLocMaxCut;            // minimum energy difference to consider local maxima in a cluster
-
+  
   //PID (Guenole)
-  Double_t fGamma[6][6];        // Parameter to Compute PID      
-  Double_t fHadron[6][6]; 	// Parameter to Compute PID   	 
-  Double_t fPiZero5to10[6][6];  // Parameter to Compute PID   	 
-  Double_t fPiZero10to60[6][6]; // Parameter to Compute PID   	 
-
+  Double_t fGamma[6][6];         // Parameter to Compute PID for photons     
+  Double_t fGamma1to10[6][6];    // Parameter to Compute PID not used
+  Double_t fHadron[6][6]; 	     // Parameter to Compute PID for hadrons  	 
+  Double_t fHadron1to10[6][6]; 	 // Parameter to Compute PID for hadrons between 1 and 10 GeV  	 
+  Double_t fHadronEnergyProb[6]; // Parameter to Compute PID for energy ponderation for hadrons  	 
+  Double_t fPiZeroEnergyProb[6]; // Parameter to Compute PID for energy ponderation for Pi0  	 
+  Double_t fGammaEnergyProb[6];  // Parameter to Compute PID for energy ponderation for gamma  	 
+  Double_t fPiZero[6][6];        // Parameter to Compute PID for pi0  	 
+  
+  
   //Track-Matching (Alberto)
   Double_t  fTrkCutX;              // X-difference cut for track matching
   Double_t  fTrkCutY;              // Y-difference cut for track matching
@@ -120,21 +133,21 @@ private:
   Double_t  fTrkCutAlphaMin;       // cut on 'alpha' parameter for track matching (min)
   Double_t  fTrkCutAlphaMax;       // cut on 'alpha' parameter for track matching (min)
   Double_t  fTrkCutAngle;          // cut on relative angle between different track points for track matching
-  Double_t  fTrkCutNITS;              // Number of ITS hits for track matching
-  Double_t  fTrkCutNTPC;              // Number of TPC hits for track matching
- 
+  Double_t  fTrkCutNITS;           // Number of ITS hits for track matching
+  Double_t  fTrkCutNTPC;           // Number of TPC hits for track matching
+  
   //Raw signal fitting parameters (Jenn)
   Double_t fHighLowGainFactor;     //gain factor to convert between high and low gain
   Int_t    fOrderParameter;        //order parameter for raw signal fit
   Double_t fTau;                   //decay constant for raw signal fit
   Int_t    fNoiseThreshold;        //threshold to consider signal or noise
   Int_t    fNPedSamples;           //number of time samples to use in pedestal calculation
-
+  
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
-
-  ClassDef(AliEMCALRecParam,6)   // Reconstruction parameters
-
-} ;
+  
+  ClassDef(AliEMCALRecParam,7)     // Reconstruction parameters
+    
+    } ;
 
 #endif //  ALIEMCALRECPARAM_H
 
