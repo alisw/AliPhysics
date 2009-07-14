@@ -2612,18 +2612,13 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
      AliESDHeader* esdheader = fesd->GetHeader();
      for(Int_t i=0;i<50;i++){
           if((1<<i) & esd->GetTriggerMask()){
-          AliTriggerScalersESD* scalesd = fRunScalers->GetScalersForEventClass( timestamp, i);
+          AliTriggerScalersESD* scalesd = fRunScalers->GetScalersForEventClass( timestamp, i+1);
           if(scalesd)esdheader->SetTriggerScalersRecord(scalesd);
         }
      }
   }
   return kTRUE;
 }
-
-
-
-
-
 //_____________________________________________________________________________
 Bool_t AliReconstruction::FillRawEventHeaderESD(AliESDEvent*& esd)
 {
