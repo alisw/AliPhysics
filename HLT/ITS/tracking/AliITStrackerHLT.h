@@ -53,8 +53,7 @@ public:
   Int_t Clusters2Tracks(AliESDEvent *event);
   Int_t PropagateBack(AliESDEvent *event);
   Int_t RefitInward(AliESDEvent *event);
-
-  void SetLayersNotToSkip(const Int_t *l);
+  
 
   Double_t GetPredictedChi2MI(AliHLTITSTrack* track, const AliITSRecPoint *cluster,Int_t layer);
   Int_t UpdateMI(AliHLTITSTrack* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;  

@@ -1635,7 +1635,3 @@ Bool_t AliITStrackerHLT::ComputeRoad(AliHLTITSTrack* track,Int_t ilayer,Int_t id
   return kTRUE;
 }
 
-void AliITStrackerHLT::SetLayersNotToSkip(const Int_t */*l*/)
-{
-  Error("AliITStrackerHLT::SetLayersNotToSkip", "Function not implemented");
-}
