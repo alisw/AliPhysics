@@ -3482,7 +3482,7 @@ Bool_t AliShuttle::TouchFile()
 		return kFALSE;
 	}
 	TObjString *valueLsPath = dynamic_cast<TObjString*>(mapLs->GetValue("path"));
-	if (!valueLsPath || (TString)(valueLsPath->GetString()).CompareTo(dir)!=1){ 
+	if (!valueLsPath || (valueLsPath->GetString()).CompareTo(dir)!=1){ 
 		Log("SHUTTLE",Form("No directory %s found, creating it",dir.Data()));
 
 		// creating the directory
