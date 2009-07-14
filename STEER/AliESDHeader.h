@@ -48,6 +48,7 @@ public:
   UShort_t    GetL2TriggerInputs() const {return fL2TriggerInputs;} 
   void SetTriggerScalersRecord(AliTriggerScalersESD *scalerRun) {fTriggerScalers.AddTriggerScalers(scalerRun); }
   const AliTriggerScalersRecordESD* GetTriggerScalersRecord() const {return &fTriggerScalers; }
+  const AliTriggerIR* GetTriggerIR(Int_t i) const { return fIRArray[i]; }
 //**************************************************************************
 
   ULong64_t GetTriggerMask() const {return fTriggerMask;}
