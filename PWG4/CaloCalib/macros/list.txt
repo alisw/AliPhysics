@@ -1,0 +1,15 @@
+/Users/Gustavo/Work/data/BJ/72_86GeV/0/AliESDs.root 
+/Users/Gustavo/Work/data/BJ/72_86GeV/3/AliESDs.root 
+/Users/Gustavo/Work/data/GJ/50_60GeV/1/AliESDs.root 
+/Users/Gustavo/Work/data/GJ/50_60GeV/4/AliESDs.root 
+/Users/Gustavo/Work/data/JJ/72_86GeV/2/AliESDs.root
+/Users/Gustavo/Work/data/BJ/72_86GeV/1/AliESDs.root 
+/Users/Gustavo/Work/data/BJ/72_86GeV/4/AliESDs.root 
+/Users/Gustavo/Work/data/GJ/50_60GeV/2/AliESDs.root 
+/Users/Gustavo/Work/data/JJ/72_86GeV/0/AliESDs.root 
+/Users/Gustavo/Work/data/JJ/72_86GeV/3/AliESDs.root
+/Users/Gustavo/Work/data/BJ/72_86GeV/2/AliESDs.root 
+/Users/Gustavo/Work/data/GJ/50_60GeV/0/AliESDs.root 
+/Users/Gustavo/Work/data/GJ/50_60GeV/3/AliESDs.root 
+/Users/Gustavo/Work/data/JJ/72_86GeV/1/AliESDs.root 
+/Users/Gustavo/Work/data/JJ/72_86GeV/4/AliESDs.root

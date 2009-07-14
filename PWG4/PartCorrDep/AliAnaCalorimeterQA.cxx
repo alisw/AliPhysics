@@ -927,7 +927,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 				continue ;
 	        }
 			
-	        //cout<<"LABEL > "<<label<<endl;
+	        //cout<<"LABEL  "<<label<<endl;
 	        primary = GetMCStack()->Particle(label);
 
 		    Int_t pdg = primary->GetPdgCode();
@@ -940,18 +940,16 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 				fhEMR      ->Fill(e,r);
 		    }
 		    
-		    //			printf("reco e %f, pt %f, phi %f, eta %f \n", e, pt, phi, eta);
-		    //			printf("prim e %f, pt %f, phi %f, eta %f \n", primary->Energy(),primary->Pt() ,primary->Phi() ,primary->Eta() );
-		    //			printf("vertex: vx %f, vy %f, vz %f, r %f \n", vx, vy, vz, r);
+		    //printf("reco e %f, pt %f, phi %f, eta %f \n", e, pt, phi, eta);
+		    //printf("prim e %f, pt %f, phi %f, eta %f \n", primary->Energy(),primary->Pt() ,primary->Phi() ,primary->Eta() );
+		    //printf("vertex: vx %f, vy %f, vz %f, r %f \n", vx, vy, vz, r);
 		    
 		    //Get final particle, no conversion products
 		    Int_t status =  primary->GetStatusCode();
 		    Int_t mother= primary->GetFirstMother();
-		    Int_t finallabel = -1;
 		    if(status == 0){
 				while(mother >= 0){
 					primary = GetMCStack()->Particle(mother);
-					finallabel = mother;
 					status = primary->GetStatusCode();
 					mother= primary->GetFirstMother();
 					if(status == 1) break;		   
@@ -974,7 +972,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			
 		    //cout<<"Final Label "<<finallabel<<" mother "<<mother<<endl;
 		    pdg = primary->GetPdgCode();
-			Double_t  charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+	            Double_t  charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
 			
 		    if(pdg == 22){
 				//cout<<"pdg "<<pdg<<" status "<<status<<" "<<primary->GetStatusCode()<<endl;	
@@ -993,15 +991,21 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 						while(mother >= 0){
 							pi0 = GetMCStack()->Particle(mother);
 							pdgpi0 = pi0->GetPdgCode();
-							if(pdgpi0 == 111) break;
+							if(pdgpi0 == 111) {
+							  //cout<<"pi0!!!"<<endl;
+							  break;
+							}
 							mother= pi0->GetFirstMother();
 							//printf("mother %d\n",mother);
 						}
 					}
 					else   pi0 = primary;
-					//cout<<"MOTHER PI0 LABEL "<<mother<<" pt" << pi0->Pt()<<endl;
+				
+					if(!pi0 || mother < 0 ) continue ;
+					cout<<"pi0 pointer "<<pi0<<" pdg "<<pdgpi0<<" "<<pi0->GetPdgCode()<<endl;
+					cout<<"MOTHER PI0 LABEL "<<mother<<" pt" << pi0->Pt()<<" status "<<pi0->GetStatusCode()<<endl;
 					if(pi0->GetNDaughters() == 2){
-						//  cout<<"pi0, 2 daughters "<<endl;
+					  cout<<"pi0, 2 daughters "<<endl;
 						Int_t id1 = pi0->GetFirstDaughter();
 						Int_t id2 = pi0->GetFirstDaughter()+1;
 						p1=GetMCStack()->Particle(id1);
@@ -1238,7 +1242,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	fhNCells->Fill(ncells) ;
 	
 	for (Int_t iCell = 0; iCell < ncells; iCell++) {      
-		if(GetDebug() > 2)  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
+		if(GetDebug() > 10)  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
 		fhAmplitude->Fill(cell->GetAmplitude(iCell));
 	}
 	
