@@ -173,11 +173,11 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) { // skip Default
     if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) || AliRecoParam::ConvertIndex(specie) == AliRecoParam::kDefault) 
       continue ; 
-    TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(specie)) ;
-    if (!eventSpecieDir) 
-      eventSpecieDir = subDir->mkdir(AliRecoParam::GetEventSpecieName(specie)) ; 
-    eventSpecieDir->cd() ;    
-    if (list[specie]) {
+    if (list[specie]->GetEntries() != 0) {
+      TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(specie)) ;
+      if (!eventSpecieDir) 
+        eventSpecieDir = subDir->mkdir(AliRecoParam::GetEventSpecieName(specie)) ; 
+      eventSpecieDir->cd() ;    
       TIter next(list[specie]) ; 
       TObject * obj ; 
       while( (obj = next()) ) {
@@ -196,12 +196,12 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
           obj->Write() ;
         }      
       }
-    }
-    if ( !fCorrNt )
-      continue ; 
-    if (fCorrNt[specie] && AliQAv1::GetDetIndex(GetName()) == AliQAv1::kCORR) {
-      eventSpecieDir->cd() ; 
-      fCorrNt[specie]->Write() ; 
+      if ( !fCorrNt )
+        continue ; 
+      if (fCorrNt[specie] && AliQAv1::GetDetIndex(GetName()) == AliQAv1::kCORR) {
+        eventSpecieDir->cd() ; 
+        fCorrNt[specie]->Write() ; 
+      }
     }
     fOutput->Save() ; 
   }

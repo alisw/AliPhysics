@@ -142,27 +142,29 @@ void AliQADataMakerSim::EndOfCycle(AliQAv1::TASKINDEX_t task)
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
       continue ;
-    TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(specie)) ;
-    if (!eventSpecieDir) 
-      eventSpecieDir = subDir->mkdir(AliRecoParam::GetEventSpecieName(specie)) ; 
-    eventSpecieDir->cd() ; 
-    TIter next(list[specie]) ; 
-    TObject * obj ; 
-    while ( (obj = next()) )  {
-      if (!obj->TestBit(AliQAv1::GetExpertBit()))
-        obj->Write() ;
-    }
-    if (WriteExpert()) {
-      TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQAv1::GetExpert()) ; 
-      if (!expertDir) 
-        expertDir = eventSpecieDir->mkdir(AliQAv1::GetExpert()) ; 
-      expertDir->cd() ;
-      next.Reset() ; 
-      while ( (obj = next()) ) {
+    if (list[specie]->GetEntries() != 0 ) {
+      TDirectory * eventSpecieDir = subDir->GetDirectory(AliRecoParam::GetEventSpecieName(specie)) ;
+      if (!eventSpecieDir) 
+        eventSpecieDir = subDir->mkdir(AliRecoParam::GetEventSpecieName(specie)) ; 
+      eventSpecieDir->cd() ; 
+      TIter next(list[specie]) ; 
+      TObject * obj ; 
+      while ( (obj = next()) )  {
         if (!obj->TestBit(AliQAv1::GetExpertBit()))
-          continue ; 
-        obj->Write() ;
-      }      
+          obj->Write() ;
+      }
+      if (WriteExpert()) {
+        TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQAv1::GetExpert()) ; 
+        if (!expertDir) 
+          expertDir = eventSpecieDir->mkdir(AliQAv1::GetExpert()) ; 
+        expertDir->cd() ;
+        next.Reset() ; 
+        while ( (obj = next()) ) {
+          if (!obj->TestBit(AliQAv1::GetExpertBit()))
+            continue ; 
+          obj->Write() ;
+        }      
+      }
     }
     fOutput->Save() ; 
   }
