@@ -460,6 +460,7 @@ class AliTRDtrapConfig : public TObject
   Bool_t SetTrapReg(TrapReg_t reg, Int_t value, Int_t det);
   Bool_t SetTrapReg(TrapReg_t reg, Int_t value, Int_t det, Int_t rob, Int_t mcm);
 
+  void InitRegs();
   void ResetRegs();
 
   Bool_t LoadConfig();

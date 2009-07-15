@@ -453,7 +453,7 @@ AliTRDtrapConfig::AliTRDtrapConfig() :
   fRegs[kDMDELA]  =   SimpleReg_t("DMDELA",      0xD002, 4,      0x8        );
   fRegs[kDMDELS]  =   SimpleReg_t("DMDELS",      0xD003, 4,      0x8        );
 
-  ResetRegs();
+  InitRegs();
 }
 
 
@@ -470,13 +470,29 @@ AliTRDtrapConfig* AliTRDtrapConfig::Instance()
 }
 
 
+void AliTRDtrapConfig::InitRegs(void)
+{
+   // Reset the content of all TRAP registers to the reset values (see TRAP User Manual)
+
+   for (Int_t iReg = 0; iReg < kLastReg; iReg++) {
+
+     fRegisterValue[iReg].individualValue = 0x0;
+
+     fRegisterValue[iReg].globalValue = GetRegResetValue((TrapReg_t) iReg);
+     fRegisterValue[iReg].state = RegValue_t::kGlobal;
+   }
+}
+
 void AliTRDtrapConfig::ResetRegs(void)
 {
    // Reset the content of all TRAP registers to the reset values (see TRAP User Manual)
 
    for (Int_t iReg = 0; iReg < kLastReg; iReg++) {
       if(fRegisterValue[iReg].state == RegValue_t::kIndividual) {
-	 delete [] fRegisterValue[iReg].individualValue;
+	if (fRegisterValue[iReg].individualValue) {
+	  delete [] fRegisterValue[iReg].individualValue;
+	  fRegisterValue[iReg].individualValue = 0x0;
+	}
       }
 
       fRegisterValue[iReg].globalValue = GetRegResetValue((TrapReg_t) iReg);
