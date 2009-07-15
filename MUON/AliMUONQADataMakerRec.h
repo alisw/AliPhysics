@@ -53,23 +53,21 @@ protected:
 private:
   /// Raw histograms indices
   enum ERaw { 
-    kTrackerData           = 3,  ///< Accumulated data
+    kTrackerData              = 3,  ///< Accumulated data
     kTrackerBusPatchOccupancy = 4, ///< Bus patch occupancies
-    kTriggerScalersBP      = 22, ///< Trigger scalers on BP histogram per chamber index
-    kTriggerScalersNBP     = 23, ///< Trigger scalers on NBP histogram per chamber index
-    kTriggerScalersDisplay = 24, ///< Trigger scalers display histogram per chamber index
-    kTriggerScalersTime    = 32  ///< Trigger scalers acquisition time index
+    kTriggerScalers           = 22, ///< Trigger scalers histogram per plane index
+    kTriggerScalersDisplay    = 30, ///< Trigger scalers display histogram per plane index
+    kTriggerScalersTime       = 38, ///< Trigger scalers acquisition time index
+    kTriggerRPCi              = 39, ///< Trigger chamber currents index
+    kTriggerRPChv             = 43  ///< Trigger chamber HV index
   };
          
   /// Rec points histograms indices
   enum ERecPoints { 
-    kTriggerDigitsBendPlane    = 0,  ///< Trigger digits on BP histogram index
-    kTriggerDigitsNonBendPlane = 1,  ///< Trigger digits on NBP histogram index
-    kTriggeredBoards           = 2,  ///< Triggered boards histogram index
-    kTriggerDigitsDisplay      = 3,  ///< Trigger digits display histogram per plane index
-    kTriggerBoardsDisplay      = 11, ///< Triggered boards display histogram index
-    kTriggerRPCi               = 12, ///< Trigger chamber currents index
-    kTriggerRPChv              = 16, ///< Trigger chamber HV index
+    kTriggerDigits             = 0,  ///< Trigger digits histogram per plane index
+    kTriggeredBoards           = 8,  ///< Triggered boards histogram index
+    kTriggerDigitsDisplay      = 9,  ///< Trigger digits display histogram per plane index
+    kTriggerBoardsDisplay      = 17, ///< Triggered boards display histogram index
 
     kNAnalyzedEvents           = 90, ///< Number of analyzed events per event specie
     

@@ -72,7 +72,6 @@
 #include <TH1F.h> 
 #include <TH1I.h> 
 #include <TH2F.h>
-#include <TH3F.h> 
 #include <Riostream.h>
 
 //-----------------------------------------------------------------------------
@@ -171,10 +170,7 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
   ///Detector specific actions at end of cycle
   
   AliCodeTimerAuto("");
-  
-  // Display trigger histos in a more user friendly way
-  DisplayTriggerInfo(task);
-  
+
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
   {
     if (! IsValidEventSpecie(specie, list)  ) 
@@ -466,32 +462,26 @@ void AliMUONQADataMakerRec::InitRaws()
  
   TString boardName = "Local board Id";
   
-	TH3F* h3 = new TH3F("hTriggerScalersBendPlane", "Trigger scaler counts in bending plane",
-			    4, 10.5, 14.5,
-			    234, 0.5, 234.5,
-			    16, -0.5, 15.5);
-	h3->GetXaxis()->SetTitle("Chamber");
-	h3->GetXaxis()->SetNdivisions(4);
-	h3->GetYaxis()->SetTitle(boardName.Data());
-	h3->GetZaxis()->SetTitle("Strip");
-	Add2RawsList(h3, kTriggerScalersBP, expert, !image, !saveCorr);
-	
-	TH3F* h4 = new TH3F("hTriggerScalersNonBendPlane", "Trigger scaler counts in non-bending plane",
-			    4, 10.5, 14.5,
-			    234, 0.5, 234.5,
-			    16, -0.5, 15.5);
-	h4->GetXaxis()->SetTitle("Chamber");
-	h4->GetXaxis()->SetNdivisions(4);
-	h4->GetYaxis()->SetTitle(boardName.Data());
-	h4->GetZaxis()->SetTitle("Strip");
-	Add2RawsList(h4, kTriggerScalersNBP, expert, !image, !saveCorr);
+  TString histoName, histoTitle;
+  for(Int_t iCath=0; iCath<AliMpConstants::NofCathodes(); iCath++){
+    TString cathName = ( iCath==0 ) ? "BendPlane" : "NonBendPlane";
+    for(Int_t iChamber=0; iChamber<AliMpConstants::NofTriggerChambers(); iChamber++){
+      histoName = Form("hTriggerScalers%sChamber%i", cathName.Data(), 11+iChamber);
+      histoTitle = Form("Chamber %i - %s: trigger scaler counts", 11+iChamber, cathName.Data());
+      TH2F* h3 = new TH2F(histoName.Data(), histoTitle.Data(),
+			  234, 0.5, 234.5,
+			  16, -0.5, 15.5);
+      h3->GetXaxis()->SetTitle(boardName.Data());
+      h3->GetYaxis()->SetTitle("Strip");	
+      Add2RawsList(h3, kTriggerScalers + AliMpConstants::NofTriggerChambers()*iCath + iChamber, expert, !image, !saveCorr);
+    }
+  }
 	
 	AliMUONTriggerDisplay triggerDisplay;
-	TString histoName, histoTitle;
 	for(Int_t iCath=0; iCath<AliMpConstants::NofCathodes(); iCath++){
 		TString cathName = ( iCath==0 ) ? "BendPlane" : "NonBendPlane";
 		for(Int_t iChamber=0; iChamber<AliMpConstants::NofTriggerChambers(); iChamber++){
-			histoName = Form("hScalers%sChamber%i", cathName.Data(), 11+iChamber);
+			histoName = Form("hScalersDisplay%sChamber%i", cathName.Data(), 11+iChamber);
 			histoTitle = Form("Chamber %i - %s: Hit rate from scalers (Hz/cm^{2})", 11+iChamber, cathName.Data());
 			TH2F* h5 = (TH2F*)triggerDisplay.GetEmptyDisplayHisto(histoName, AliMUONTriggerDisplay::kDisplayStrips, 
 									      iCath, iChamber, histoTitle);
@@ -664,36 +654,30 @@ void AliMUONQADataMakerRec::InitRecPointsTrigger()
   const Bool_t image    = kTRUE ; 
 
   TString boardName = "Local board Id";
-  
-    TH3F* h0 = new TH3F("hTriggerDigitsBendPlane", "Counts per strip in bending plane",
-			4, 10.5, 14.5,
-			234, 0.5, 234.5,
-			16, -0.5, 15.5);
-    h0->GetXaxis()->SetTitle("Chamber");
-    h0->GetXaxis()->SetNdivisions(4);
-    h0->GetYaxis()->SetTitle(boardName.Data());
-    h0->GetZaxis()->SetTitle("Strip");
-    Add2RecPointsList(h0, kTriggerDigitsBendPlane, expert, !image);
 
-    TH3F* h1 = new TH3F("hTriggerDigitsNonBendPlane", "Counts per strip in non-bending plane",
-			4, 10.5, 14.5,
-			234, 0.5, 234.5,
-			16, -0.5, 15.5);
-    h1->GetXaxis()->SetTitle("Chamber");
-    h1->GetXaxis()->SetNdivisions(4);
-    h1->GetYaxis()->SetTitle(boardName.Data());
-    h1->GetZaxis()->SetTitle("Strip");
-    Add2RecPointsList(h1, kTriggerDigitsNonBendPlane, expert, !image);
+  TString histoName, histoTitle;
+  for(Int_t iCath=0; iCath<AliMpConstants::NofCathodes(); iCath++){
+    TString cathName = ( iCath==0 ) ? "BendPlane" : "NonBendPlane";
+    for(Int_t iChamber=0; iChamber<AliMpConstants::NofTriggerChambers(); iChamber++){
+      histoName = Form("hTriggerDigits%sChamber%i", cathName.Data(), 11+iChamber);
+      histoTitle = Form("Chamber %i - %s: counts per strip", 11+iChamber, cathName.Data());
+      TH2F* h0 = new TH2F(histoName.Data(), histoTitle.Data(),
+			  234, 0.5, 234.5,
+			  16, -0.5, 15.5);
+      h0->GetXaxis()->SetTitle(boardName.Data());
+      h0->GetYaxis()->SetTitle("Strip");
+      Add2RecPointsList(h0, kTriggerDigits + AliMpConstants::NofTriggerChambers()*iCath + iChamber, expert, !image);
+    }
+  }
 
     TH1F* h2 = new TH1F("hTriggeredBoards", "Triggered boards", 234, 0.5, 234.5);
     Add2RecPointsList(h2, kTriggeredBoards, expert, !image);
 
     AliMUONTriggerDisplay triggerDisplay;
-    TString histoName, histoTitle;
     for(Int_t iCath=0; iCath<AliMpConstants::NofCathodes(); iCath++){
       TString cathName = ( iCath==0 ) ? "BendPlane" : "NonBendPlane";
       for(Int_t iChamber=0; iChamber<AliMpConstants::NofTriggerChambers(); iChamber++){
-	histoName = Form("hTriggerDigits%sChamber%i", cathName.Data(), 11+iChamber);
+	histoName = Form("hTriggerDigitsDisplay%sChamber%i", cathName.Data(), 11+iChamber);
 	histoTitle = Form("Chamber %i - %s: Occupancy per strip (counts/event)", 11+iChamber, cathName.Data());
 	TH2F* h3 = (TH2F*)triggerDisplay.GetEmptyDisplayHisto(histoName, AliMUONTriggerDisplay::kDisplayStrips, 
 							      iCath, iChamber, histoTitle);
@@ -1040,18 +1024,20 @@ void AliMUONQADataMakerRec::MakeRawsTrigger(AliRawReader* rawReader)
 
 	  Int_t cathode = localStruct->GetComptXY()%2;
 
-	  ERaw hindex = (cathode==0) ? kTriggerScalersBP : kTriggerScalersNBP;
-
 	  // loop over strips
 	  for (Int_t ibitxy = 0; ibitxy < 16; ++ibitxy) {
 	    if(localStruct->GetXY1(ibitxy) > 0)
-	      ((TH3F*)GetRawsData(hindex))->Fill(11+0, loCircuit, ibitxy, 2*localStruct->GetXY1(ibitxy));
+	      ((TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + 0))
+		->Fill(loCircuit, ibitxy, 2*localStruct->GetXY1(ibitxy));
 	    if(localStruct->GetXY2(ibitxy) > 0)
-	      ((TH3F*)GetRawsData(hindex))->Fill(11+1, loCircuit, ibitxy, 2*localStruct->GetXY2(ibitxy));
+	      ((TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + 1))
+		->Fill(loCircuit, ibitxy, 2*localStruct->GetXY2(ibitxy));
 	    if(localStruct->GetXY3(ibitxy) > 0)
-	      ((TH3F*)GetRawsData(hindex))->Fill(11+2, loCircuit, ibitxy, 2*localStruct->GetXY3(ibitxy));
+	      ((TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + 2))
+		->Fill(loCircuit, ibitxy, 2*localStruct->GetXY3(ibitxy));
 	    if(localStruct->GetXY4(ibitxy) > 0)
-	      ((TH3F*)GetRawsData(hindex))->Fill(11+3, loCircuit, ibitxy, 2*localStruct->GetXY4(ibitxy));
+	      ((TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + 3))
+		->Fill(loCircuit, ibitxy, 2*localStruct->GetXY4(ibitxy));
 	  } // loop on strips
 	} // iLocal
       } // iReg
@@ -1183,10 +1169,10 @@ void AliMUONQADataMakerRec::MakeRecPointsTrigger(TTree* clustersTree)
       Int_t localBoard = mDigit->ManuId();
       Int_t channel = mDigit->ManuChannel();
       Int_t cathode = mDigit->Cathode();
-      ERecPoints hindex 
-        = ( cathode == 0 ) ? kTriggerDigitsBendPlane : kTriggerDigitsNonBendPlane;
+      Int_t iChamber = ch - 11;
       
-      ((TH3F*)GetRecPointsData(hindex))->Fill(ch, localBoard, channel);
+      ((TH2F*)GetRecPointsData(kTriggerDigits + AliMpConstants::NofTriggerChambers()*cathode + iChamber))
+	->Fill(localBoard, channel);
     }
 }
 
@@ -1300,47 +1286,43 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQAv1::TASKINDEX_t task)
   // check we get histograms, otherwise return right now
   if ( task == AliQAv1::kRECPOINTS )
   {
-    if ( !GetRecPointsData(kTriggerDigitsBendPlane) ) return;
+    if ( !GetRecPointsData(kTriggerDigits) ) return;
   }
   
   if ( task == AliQAv1::kRAWS ) 
   {
-    if ( !GetRawsData(kTriggerScalersBP) ) return;
+    if ( !GetRawsData(kTriggerScalers) ) return;
   }
   
   AliMUONTriggerDisplay triggerDisplay;
   
-  TH3F* histoStrips=0x0;
+  TH2F* histoStrips=0x0;
   TH2F* histoDisplayStrips=0x0;
   AliMUONTriggerDisplay::EDisplayOption displayOption = AliMUONTriggerDisplay::kDefaultDisplay;
   if(task == AliQAv1::kRAWS) displayOption = AliMUONTriggerDisplay::kNormalizeToArea;
 
   for (Int_t iCath = 0; iCath < AliMpConstants::NofCathodes(); iCath++)
-  {
-    if(task==AliQAv1::kRECPOINTS){
-      ERecPoints hindex 
-	= ( iCath == 0 ) ? kTriggerDigitsBendPlane : kTriggerDigitsNonBendPlane;
-      histoStrips = (TH3F*)GetRecPointsData(hindex);
-    }
-    else if(task==AliQAv1::kRAWS){
-      ERaw hindex 
-	= ( iCath == 0 ) ? kTriggerScalersBP : kTriggerScalersNBP;
-      histoStrips = (TH3F*)GetRawsData(hindex);
-    }
-    if(histoStrips->GetEntries()==0) continue; // No events found => No need to display
-    
+  {    
     for (Int_t iChamber = 0; iChamber < AliMpConstants::NofTriggerChambers(); iChamber++)
     {
+      if(task==AliQAv1::kRECPOINTS){
+	histoStrips = (TH2F*)GetRecPointsData(kTriggerDigits + AliMpConstants::NofTriggerChambers()*iCath + iChamber);
+      }
+      else if(task==AliQAv1::kRAWS){
+	histoStrips = (TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*iCath + iChamber);
+      }
+
+      if(histoStrips->GetEntries()==0) continue; // No events found => No need to display
+
       if(task==AliQAv1::kRECPOINTS){
 	histoDisplayStrips = (TH2F*)GetRecPointsData(kTriggerDigitsDisplay + AliMpConstants::NofTriggerChambers()*iCath + iChamber);
       }
       else if(task==AliQAv1::kRAWS){
 	histoDisplayStrips = (TH2F*)GetRawsData(kTriggerScalersDisplay + AliMpConstants::NofTriggerChambers()*iCath + iChamber);
       }
-      Int_t bin = histoStrips->GetXaxis()->FindBin(11+iChamber);
-      histoStrips->GetXaxis()->SetRange(bin,bin);
-      TH2F* inputHisto = (TH2F*)histoStrips->Project3D("zy");
-      triggerDisplay.FillDisplayHistogram(inputHisto, histoDisplayStrips, AliMUONTriggerDisplay::kDisplayStrips, iCath, iChamber, displayOption);
+
+      triggerDisplay.FillDisplayHistogram(histoStrips, histoDisplayStrips,
+					  AliMUONTriggerDisplay::kDisplayStrips, iCath, iChamber, displayOption);
 
       Float_t scaleValue = 0.;
       if(task==AliQAv1::kRAWS) {
