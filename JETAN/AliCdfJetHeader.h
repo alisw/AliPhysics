@@ -1,8 +1,13 @@
 #ifndef ALICDFJETHEADER_H
 #define ALICDFJETHEADER_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+/*
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.
+ * See cxx source for full Copyright notice
+ *
+*/
+
+// settings for jet finder process
 
 #include "AliJetHeader.h"
 
@@ -14,13 +19,13 @@ class AliCdfJetHeader : public AliJetHeader
   virtual ~AliCdfJetHeader() { }
 
   // Getters
-  Double_t GetRadius   ()  { return fRadius; }
-  Double_t GetJetPtCut ()  { return fJetPtCut ; }
-  Int_t GetMinPartJet  ()  { return fMinPartJet ; }
+  Double_t GetRadius   () const { return fRadius; }
+  Double_t GetJetPtCut () const { return fJetPtCut ; }
+  Int_t GetMinPartJet  () const { return fMinPartJet ; }
 
   // Setters
-  void SetRadius         ( Double_t radius )          {fRadius = radius; }
-  void SetJetPtCut       ( Double_t jet_pt_cut )      { fJetPtCut = jet_pt_cut; }
+  void SetRadius         ( Double_t radius )          { fRadius = radius; }
+  void SetJetPtCut       ( Double_t jetptcut )        { fJetPtCut = jetptcut; }
   void SetDebugCDF       ( Bool_t debug )             { fDebugCDF = debug; }
   void SetAODwrite       ( Bool_t aodwrite )          { fAODwrite = aodwrite ; }
   void SetAODtracksWrite ( Bool_t aodtrackswrite )    { fAODtracksWrite = aodtrackswrite ; }
@@ -56,4 +61,3 @@ class AliCdfJetHeader : public AliJetHeader
 
   };
 #endif
-

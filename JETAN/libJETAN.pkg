@@ -8,12 +8,14 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliJetProductionData.cxx AliJetProductionDataPDC2004.cxx \
 	AliJetAnalysis.cxx AliJetDistributions.cxx \
 	AliUA1JetFinderV1.cxx AliUA1JetFinderV2.cxx AliUA1JetHeaderV1.cxx \
+	AliCdfJetFinder.cxx AliCdfJetHeader.cxx \
 	AliJetGrid.cxx AliJetUnitArray.cxx AliJetHadronCorrection.cxx \
 	AliJetHadronCorrectionv0.cxx AliJetHadronCorrectionv1.cxx \
 	AliJetFillUnitArrayTracks.cxx AliJetFillUnitArrayEMCalDigits.cxx\
 	AliJetDummyGeo.cxx AliJetDummyShishKebabTrd1Module.cxx\
 	AliJetFinderTypes.cxx \
 	AliAnalysisTaskJets.cxx \
+	AliAnalysisTaskJetsCDF.cxx \
 	AliDAJetFinder.cxx \
 	AliDAJetHeader.cxx \
 	AliJetAODReader.cxx \
@@ -24,7 +26,6 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliJetMCReaderHeader.cxx \
 	AliJetHistos.cxx \
 	AliAnalysisTaskDiJets.cxx \
-	AliCdfJetHeader.cxx \
 	AliEventShape.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
