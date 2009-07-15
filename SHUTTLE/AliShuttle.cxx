@@ -1168,6 +1168,29 @@ Bool_t AliShuttle::ContinueProcessing()
 		// Send mail to detector expert!
 		Log("SHUTTLE", Form("ContinueProcessing - Sending mail to %s expert...", 
 				    fCurrentDetector.Data()));
+		// det experts in to
+		TString to="";
+		TIter *iterExperts = 0;
+		iterExperts = new TIter(fConfig->GetResponsibles(fCurrentDetector));
+		TObjString *anExpert=0;
+		while ((anExpert = (TObjString*) iterExperts->Next()))
+			{
+				to += Form("%s, \n", anExpert->GetName());
+			}
+		delete iterExperts;
+		
+		if (to.Length() > 0)
+			to.Remove(to.Length()-3);
+		AliDebug(2, Form("to: %s",to.Data()));
+
+		if (to.IsNull()) {
+			Log("SHUTTLE", Form("List of %s responsibles not set!", fCurrentDetector.Data()));
+			return kFALSE;
+		}
+
+		Log(fCurrentDetector.Data(), Form("ContinueProcessing - Sending mail to %s expert(s):", 
+				    fCurrentDetector.Data()));
+		Log(fCurrentDetector.Data(), Form("\n%s", to.Data()));
 		if (!SendMail(kPPEMail))
 			Log("SHUTTLE", Form("ContinueProcessing - Could not send mail to %s expert",
 					    fCurrentDetector.Data()));
@@ -3303,7 +3326,7 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 		"\thttp://pcalishuttle01.cern.ch:8880/%s/%d/%d/%s.log \n\n", 
 		     fCurrentDetector.Data(), logFolder.Data(), GetCurrentRun()/10000,  
 				GetCurrentRun(), fCurrentDetector.Data());
-	body += Form("The last 10 lines of %s log file are following:\n\n", fCurrentDetector.Data());
+	body += Form("The last 15 lines of %s log file are following:\n\n", fCurrentDetector.Data());
 
 	AliDebug(2, Form("Body begin: %s", body.Data()));
 
@@ -3313,7 +3336,7 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 
 	TString logFileName = Form("%s/%d/%d/%s.log", GetShuttleLogDir(), 
 		GetCurrentRun()/10000, GetCurrentRun(), fCurrentDetector.Data());
-	TString tailCommand = Form("tail -n 10 %s >> %s", logFileName.Data(), bodyFileName.Data());
+	TString tailCommand = Form("tail -n 15 %s >> %s", logFileName.Data(), bodyFileName.Data());
 	if (gSystem->Exec(tailCommand.Data()))
 	{
 		mailBody << Form("%s log file not found ...\n\n", fCurrentDetector.Data());
