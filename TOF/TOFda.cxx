@@ -97,9 +97,17 @@ int main(int argc, char **argv) {
   }
 
   Int_t debugFlag = tofHandler->GetDebugFlag();
-  printf("the debug flag is %i\n",debugFlag);
+  printf("The debug flag is %i\n",debugFlag);
   Int_t t0Flag = tofHandler->GetT0Flag();
-  printf("the debug flag is %i\n",t0Flag);
+  printf("The T0 flag is %i\n\n",t0Flag);
+  if (t0Flag) {
+	  printf("The T0 time will be subtracted from the measured TOF time. So, in TDC bins: \n");
+	  printf("tof = tofRaw - (rawReaderT0->GetData(51,0)+rawReaderT0->GetData(52,0))/2) \n\n");
+  }
+  else {
+	  printf("The T0 time will not be used.\n");
+	  printf("tof = tofRaw \n\n");
+  }
 
   /* init some counters */
   int nevents_physics=0;
@@ -200,8 +208,9 @@ int main(int argc, char **argv) {
         //meantime = rawReaderT0->GetData(49,0); //OLD
         meantime = (Int_t)((rawReaderT0->GetData(51,0)+rawReaderT0->GetData(52,0))/2.); //Alla
 	if (debugFlag > 0) {
+		printf("\nT0 for the current event:\n");   // debugging purpose
 		printf("time zero = %i (TDC bin)\n", meantime);   // debugging purpose
-		printf("time zero (ns) = %i (%f) \n", meantime, (meantime*24.4-200)*1E-3);   // debugging purpose
+		printf("time zero = %f (ns)\n\n", (Float_t)(meantime)*24.4*1E-3);   // debugging purpose
 	}
       }
       
