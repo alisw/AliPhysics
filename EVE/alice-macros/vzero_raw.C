@@ -15,10 +15,10 @@ void vzero_raw()
 {
   gStyle->SetPalette(1, 0);
 
-  gEve->DisableRedraw();
-
   AliRawReader *reader = AliEveEventManager::AssertRawReader();
   reader->Reset();
+
+  gEve->DisableRedraw();
 
   AliEveVZEROModule* rawA = new AliEveVZEROModule("VZERO_RAW_A", kTRUE);
   rawA->LoadRaw(reader);
@@ -28,5 +28,4 @@ void vzero_raw()
   rawC->LoadRaw(reader);
 
   gEve->EnableRedraw();
-  gEve->Redraw3D();
 }

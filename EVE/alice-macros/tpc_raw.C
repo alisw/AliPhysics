@@ -19,8 +19,6 @@ void tpc_raw(Int_t mode = 3)
 {
   gStyle->SetPalette(1, 0);
 
-  gEve->DisableRedraw();
-
   AliRawReader *reader = AliEveEventManager::AssertRawReader();
   reader->Reset();
   AliTPCRawStreamV3 input(reader);
@@ -32,6 +30,8 @@ void tpc_raw(Int_t mode = 3)
   x->SetAutoPedestal(kTRUE);
 
   x->LoadRaw(input, kTRUE, kTRUE);
+
+  gEve->DisableRedraw();
 
   TEveElementList* sec2d = new TEveElementList("TPC 2D");
   gEve->AddElement(sec2d);
@@ -63,5 +63,4 @@ void tpc_raw(Int_t mode = 3)
   }
 
   gEve->EnableRedraw();
-  gEve->Redraw3D();
 }
