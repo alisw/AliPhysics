@@ -84,9 +84,11 @@ public:
     virtual Double_t  GetZDCEMEnergy(Int_t /*i*/) const {return -999.;}
  
   // Tracks
-    virtual AliVParticle *GetTrack(Int_t i)  const;
-    virtual Int_t        GetNumberOfTracks() const {return fNumberOfTracks;}
-    virtual Int_t        GetNumberOfV0s()    const {return -999;}
+    virtual AliVParticle *GetTrack(Int_t i)    const;
+    virtual Int_t        GetNumberOfTracks()   const {return fNumberOfTracks;}
+    virtual Int_t        GetNumberOfV0s()      const {return -999;}
+    virtual Int_t        GetNumberOfCascades() const {return -999;}
+    
     virtual Int_t        EventIndex(Int_t itrack);
 
   // Primary vertex
