@@ -156,10 +156,10 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
       const Double_t nFiredCells = fFiredCells->GetMean();
       if(nFiredCells>100 && nFiredCells<600) { 
 	firedOK = kTRUE;
-	Log(Form("Number of fired cells per event is %d.",nFiredCells));
+	Log(Form("Number of fired cells per event is %.1f.",nFiredCells));
       }
       else {
-	Log(Form("Number of fired cells per event is %d, possibly not a LED run!",nFiredCells));
+	Log(Form("Number of fired cells per event is %.1f, possibly not a LED run!",nFiredCells));
 	firedOK = kFALSE;
       }
       
@@ -233,7 +233,7 @@ Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)
   gaus1->SetLineColor(kBlue);
   h1->Fit(gaus1,"LERQ+");
 
-  AliInfo(Form("%s: %d entries, mean=%.3f, peak=%.3f, rms= %.3f. HG/LG = %.3f\n",
+  AliInfo(Form("%s: %.1f entries, mean=%.3f, peak=%.3f, rms= %.3f. HG/LG = %.3f\n",
 	   h1->GetTitle(),h1->GetEntries(),h1->GetMean(),max,h1->GetRMS(),
 	   gaus1->GetParameter("Mean"))); 
 
@@ -330,11 +330,11 @@ Bool_t AliPHOSPreprocessor::DoFindBadChannelsEmc(Int_t system, TList* list, AliP
     const Double_t nFiredCells = fFiredCells->GetMean();
 
     if(nFiredCells<100. || nFiredCells>600. ) {
-      Log(Form("Number of fired cells per event is %d, possibly not a LED run!",nFiredCells));
+      Log(Form("Number of fired cells per event is %.1f, possibly not a LED run!",nFiredCells));
       continue; // not a LED run!
     }
     
-    Log(Form("Number of fired cells per event %d. Begin check for bad channels.",nFiredCells));
+    Log(Form("Number of fired cells per event %.1f. Begin check for bad channels.",nFiredCells));
     
     for(Int_t mod=0; mod<5; mod++) {
       for(Int_t iX=0; iX<64; iX++) {
