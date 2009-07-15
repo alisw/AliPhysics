@@ -33,6 +33,7 @@ class AliFMDDigit;
 class AliRawReader;
 class AliESDEvent;
 class AliESDFMD;
+class AliFMDRecoParam;
 class TH1;
 
 
@@ -362,7 +363,28 @@ protected:
 				       UShort_t str, 
 				       Float_t& eta, 
 				       Float_t& phi) const;
-  
+  /** 
+   * Set-up reconstructor to use values from reconstruction
+   * parameters, if present, for this event.   If the argument @a set
+   * is @c false, then restore preset values. 
+   * 
+   * @param set 
+   */  
+  virtual void UseRecoParam(Bool_t set=kTRUE) const;
+  /** 
+   * Utility member function to get the reconstruction parameters for 
+   * this event
+   * 
+   * @return Pointer to AliFMDRecoParam object or null if not
+   * available. 
+   */
+  const AliFMDRecoParam* GetParameters() const;
+  /** 
+   * Get the numeric identifier of this detector
+   * 
+   * @return Should be 12
+   */  
+  Int_t GetIdentifier() const;
   enum Vertex_t {
     kNoVertex,   // Got no vertex
     kGenVertex,  // Got generator vertex 
@@ -373,8 +395,8 @@ protected:
   mutable TTree*        fTreeR;         // Output tree 
   mutable Float_t       fCurrentVertex; // Z-coordinate of primary vertex
   mutable AliESDFMD*    fESDObj;        // ESD output object
-  Float_t               fNoiseFactor;   // Factor of noise to check
-  Bool_t                fAngleCorrect;  // Whether to angle correct
+  mutable Float_t       fNoiseFactor;   // Factor of noise to check
+  mutable Bool_t        fAngleCorrect;  // Whether to angle correct
   mutable Vertex_t      fVertexType;    // What kind of vertex we got
   AliESDEvent*          fESD;           // ESD object(?)
   Bool_t                fDiagnostics;   // Wheter to do diagnostics

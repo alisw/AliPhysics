@@ -20,6 +20,7 @@
 // #pragma link C++ class  AliFMDMap<UShort_t>;
 // #pragma link C++ typedef AliFMDAdcMap;
 #pragma link C++ class  AliFMDReconstructor+;
+#pragma link C++ class  AliFMDRecoParam+;
 #pragma link C++ class  AliFMDRecPoint+;
 #pragma link C++ class  AliFMDRawStream+;
 #pragma link C++ class  AliFMDRawReader+;

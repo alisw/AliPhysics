@@ -3,6 +3,7 @@
 # $Id$
 
 SRCS		=  AliFMDReconstructor.cxx 	\
+		   AliFMDRecoParam.cxx		\
 		   AliFMDRawStream.cxx  	\
 		   AliFMDRawReader.cxx  	\
 		   AliFMDRecPoint.cxx		\

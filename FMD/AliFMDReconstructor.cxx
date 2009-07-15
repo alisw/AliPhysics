@@ -41,6 +41,7 @@
 #include "AliFMDDigit.h"                   // ALIFMDDIGIT_H
 #include "AliFMDSDigit.h"                  // ALIFMDDIGIT_H
 #include "AliFMDReconstructor.h"           // ALIFMDRECONSTRUCTOR_H
+#include "AliFMDRecoParam.h"               // ALIFMDRECOPARAM_H
 #include "AliFMDRawReader.h"               // ALIFMDRAWREADER_H
 #include "AliFMDRecPoint.h"	   	   // ALIFMDMULTNAIIVE_H
 #include "AliESDEvent.h"		   // ALIESDEVENT_H
@@ -253,6 +254,42 @@ AliFMDReconstructor::GetVertex(AliESDEvent* esd) const
   AliWarning("Didn't get any vertex from ESD or generator");
 }
   
+//____________________________________________________________________
+Int_t
+AliFMDReconstructor::GetIdentifier() const
+{
+  return AliReconstruction::GetDetIndex(GetDetectorName());
+}
+
+//____________________________________________________________________
+const AliFMDRecoParam*
+AliFMDReconstructor::GetParameters() const
+{
+  Int_t iDet = 12; // GetIdentifier();
+  const AliDetectorRecoParam* params = AliReconstructor::GetRecoParam(iDet);
+  if (!params || params->IsA() != AliFMDRecoParam::Class()) return 0;
+  return static_cast<const AliFMDRecoParam*>(params);
+}
+
+//____________________________________________________________________
+void 
+AliFMDReconstructor::UseRecoParam(Bool_t set) const
+{
+  static Float_t savedNoiseFactor  = fNoiseFactor;
+  static Bool_t  savedAngleCorrect = fAngleCorrect;
+  if (set) { 
+    const AliFMDRecoParam* params  = GetParameters();
+    if (params) { 
+      fNoiseFactor  = params->NoiseFactor();
+      fAngleCorrect = params->AngleCorrect();
+    }
+    return;
+  }
+  fNoiseFactor  = savedNoiseFactor;
+  fAngleCorrect = savedAngleCorrect;
+}
+  
+  
 
 //____________________________________________________________________
 void 
@@ -270,7 +307,8 @@ AliFMDReconstructor::Reconstruct(AliRawReader* reader, TTree*) const
   Short_t  adc, oldDet = -1;
   Bool_t   zs;
   Char_t   rng;
-    
+ 
+  UseRecoParam(kTRUE);
   while (rawReader.NextSignal(det, rng, sec, str, adc, zs, fac)) { 
     if (det != oldDet) { 
       fZS[det-1]       = zs;
@@ -279,6 +317,8 @@ AliFMDReconstructor::Reconstruct(AliRawReader* reader, TTree*) const
     }
     ProcessSignal(det, rng, sec, str, adc);
   }
+  UseRecoParam(kFALSE);
+  
 }
 
 //____________________________________________________________________
@@ -298,6 +338,7 @@ AliFMDReconstructor::Digitize(AliRawReader* reader, TClonesArray* sdigits) const
   Bool_t   zs;
   Char_t   rng;
     
+  UseRecoParam(kTRUE);
   while (rawReader.NextSample(det, rng, sec, str, sam, rat, adc, zs, fac)) { 
     if (!rawReader.SelectSample(sam, rat)) continue;
     if (det != oldDet) { 
@@ -307,6 +348,7 @@ AliFMDReconstructor::Digitize(AliRawReader* reader, TClonesArray* sdigits) const
     }
     DigitizeSignal(sdigits, det, rng, sec, str, sam, adc);
   }
+  UseRecoParam(kFALSE);
 }
 
 //____________________________________________________________________
@@ -345,7 +387,9 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   digitBranch->GetEntry(0);
   
   AliFMDDebug(1, ("Processing digits"));
+  UseRecoParam(kTRUE);
   ProcessDigits(digits);
+  UseRecoParam(kFALSE);
 
   Int_t written = clusterTree->Fill();
   AliFMDDebug(10, ("Filled %d bytes into cluster tree", written));
