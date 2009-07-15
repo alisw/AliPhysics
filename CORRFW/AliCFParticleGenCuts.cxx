@@ -269,8 +269,12 @@ void AliCFParticleGenCuts::SelectionBitMap(AliMCParticle* mcPart)
   Double32_t partVz=(Double32_t)mcPart->Zv();
 
   // calculate the production vertex ellipse
-  Double32_t prodVtxXYmin = partVx*partVx/(fProdVtxXMin*fProdVtxXMin) + partVy*partVy/(fProdVtxYMin*fProdVtxYMin);
-  Double32_t prodVtxXYmax = partVx*partVx/(fProdVtxXMax*fProdVtxXMax) + partVy*partVy/(fProdVtxYMax*fProdVtxYMax);
+  Double32_t prodVtxXYmin = 0.;
+  if (fProdVtxXMin!=0 && fProdVtxYMin!=0)
+	prodVtxXYmin = partVx*partVx/(fProdVtxXMin*fProdVtxXMin) + partVy*partVy/(fProdVtxYMin*fProdVtxYMin);
+  Double32_t prodVtxXYmax = 0.;
+  if(fProdVtxXMax!=0 && fProdVtxYMax!=0)
+	prodVtxXYmax = partVx*partVx/(fProdVtxXMax*fProdVtxXMax) + partVy*partVy/(fProdVtxYMax*fProdVtxYMax);
 
   Double32_t decayVx=0.;
   Double32_t decayVy=0.;
@@ -429,8 +433,12 @@ void AliCFParticleGenCuts::SelectionBitMap(AliAODMCParticle* mcPart)
   Double32_t partVz=(Double32_t)mcPart->Zv();
 
   // calculate the production vertex ellipse
-  Double32_t prodVtxXYmin = partVx*partVx/(fProdVtxXMin*fProdVtxXMin) + partVy*partVy/(fProdVtxYMin*fProdVtxYMin);
-  Double32_t prodVtxXYmax = partVx*partVx/(fProdVtxXMax*fProdVtxXMax) + partVy*partVy/(fProdVtxYMax*fProdVtxYMax);
+  Double32_t prodVtxXYmin = 0.;
+  if (fProdVtxXMin!=0 && fProdVtxYMin!=0)
+	prodVtxXYmin = partVx*partVx/(fProdVtxXMin*fProdVtxXMin) + partVy*partVy/(fProdVtxYMin*fProdVtxYMin);
+  Double32_t prodVtxXYmax = 0.;
+  if(fProdVtxXMax!=0 && fProdVtxYMax!=0)
+	prodVtxXYmax = partVx*partVx/(fProdVtxXMax*fProdVtxXMax) + partVy*partVy/(fProdVtxYMax*fProdVtxYMax);
 
   Double32_t decayVx=0.;
   Double32_t decayVy=0.;
@@ -651,12 +659,12 @@ void AliCFParticleGenCuts::DefineHistograms() {
     fhQA[kCutCharge]      [i] = new TH1F(Form("%s_charge%s"      ,GetName(),str),"",2,0,2);
     fhQA[kCutPrimSec]     [i] = new TH1F(Form("%s_primSec%s"     ,GetName(),str),"",2,0,2);
     fhQA[kCutPDGCode]     [i] = new TH1F(Form("%s_pdgCode%s"     ,GetName(),str),"",2,0,2);
-    fhQA[kCutProdVtxXMin] [i] = new TH1F(Form("%s_prodVtxXMin%s" ,GetName(),str),"",100,0,10);
-    fhQA[kCutProdVtxXMax] [i] = new TH1F(Form("%s_prodVtxXMax%s" ,GetName(),str),"",100,0,10);
-    fhQA[kCutProdVtxYMin] [i] = new TH1F(Form("%s_prodVtxYMin%s" ,GetName(),str),"",100,0,10);
-    fhQA[kCutProdVtxYMax] [i] = new TH1F(Form("%s_prodVtxYMax%s" ,GetName(),str),"",100,0,10);
-    fhQA[kCutProdVtxZMin] [i] = new TH1F(Form("%s_prodVtxZMin%s" ,GetName(),str),"",100,0,10);
-    fhQA[kCutProdVtxZMax] [i] = new TH1F(Form("%s_prodVtxZMax%s" ,GetName(),str),"",100,0,10);
+    fhQA[kCutProdVtxXMin] [i] = new TH1F(Form("%s_prodVtxXMin%s" ,GetName(),str),"",100,-10,10);
+    fhQA[kCutProdVtxXMax] [i] = new TH1F(Form("%s_prodVtxXMax%s" ,GetName(),str),"",100,-10,10);
+    fhQA[kCutProdVtxYMin] [i] = new TH1F(Form("%s_prodVtxYMin%s" ,GetName(),str),"",100,-10,10);
+    fhQA[kCutProdVtxYMax] [i] = new TH1F(Form("%s_prodVtxYMax%s" ,GetName(),str),"",100,-10,10);
+    fhQA[kCutProdVtxZMin] [i] = new TH1F(Form("%s_prodVtxZMin%s" ,GetName(),str),"",100,-10,10);
+    fhQA[kCutProdVtxZMax] [i] = new TH1F(Form("%s_prodVtxZMax%s" ,GetName(),str),"",100,-10,10);
     fhQA[kCutDecVtxXMin]  [i] = new TH1F(Form("%s_decVtxXMin%s"  ,GetName(),str),"",100,0,10);
     fhQA[kCutDecVtxXMax]  [i] = new TH1F(Form("%s_decVtxXMax%s"  ,GetName(),str),"",100,0,10);
     fhQA[kCutDecVtxYMin]  [i] = new TH1F(Form("%s_decVtxYMin%s"  ,GetName(),str),"",100,0,10);
