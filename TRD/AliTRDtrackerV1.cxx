@@ -2801,13 +2801,15 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
       track.UnsetTracklet(jLayer);
       ptrTracklet = &seeds[jLayer];
       if(!ptrTracklet->IsOK()) continue;
-      if(TMath::Abs(ptrTracklet->GetYref(1) - ptrTracklet->GetYfit(1)) >= .2) continue; // check this condition with Marian
+      //if(TMath::Abs(ptrTracklet->GetYref(1) - ptrTracklet->GetYfit(1)) >= .2) continue; // check this condition with Marian
       ptrTracklet = SetTracklet(ptrTracklet);
       ptrTracklet->UseClusters();
       track.SetTracklet(ptrTracklet, fTracklets->GetEntriesFast()-1);
     }
     AliTRDtrackV1 *ptrTrack = SetTrack(&track);
     ptrTrack->SetReconstructor(fReconstructor);
+    //ptrTrack->CookLabel(.9);
+    ptrTrack->CookPID();
     return ptrTrack;
   }
 
