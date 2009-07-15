@@ -10,8 +10,8 @@
 
 //Root includes
 #include "TTask.h"
-//#include "TArrayD.h"
 class TArrayD ;
+
 //AliRoot includes
 class AliESDEvent ;
 #include "AliPID.h" 
@@ -28,7 +28,6 @@ public:
   void     ComputePID(Double_t energy, Double_t lambda0); // give the PID of a cluster
 
   void     InitParameters();
-  //void     InitParameters(Bool_t reconstructor);
   void     SetLowFluxParam();
   void     SetHighFluxParam();
 

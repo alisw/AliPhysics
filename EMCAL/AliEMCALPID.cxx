@@ -60,21 +60,13 @@
 //#include <Riostream.h>
 
 // ROOT includes
-//#include "TTree.h"
-//#include "TVector3.h"
-//#include "TBranch.h"
-//#include "TClonesArray.h"
-//#include "TLorentzVector.h"
 #include "TMath.h"
-//#include "TRefArray.h"
 #include "TArrayD.h"
 
 // STEER includes
 #include "AliESDEvent.h"
-//#include "AliLog.h"
 #include "AliEMCALPID.h"
 #include "AliESDCaloCluster.h"
-//#include "AliEMCALRecParam.h"
 #include "AliEMCALReconstructor.h"
 
   
@@ -137,8 +129,6 @@ void AliEMCALPID::RunPID(AliESDEvent *esd)
     Int_t clusterType= clust->GetClusterType();
     if (clusterType == AliESDCaloCluster::kEMCALClusterv1 && lambda0 != 0  && energy < 1000) {
       
-      //      if (lambda0 != 0  && energy < 1000) {
-      
       // reject clusters with lambda0 = 0
       
       
@@ -169,7 +159,7 @@ void AliEMCALPID::RunPID(AliESDEvent *esd)
       }
       
       if(fReconstructor){ // In case it is called during reconstruction.
-	//	cout << "#############On remplit l esd avec les PIDWeight##########" << endl;
+	//	cout << "############# Fill ESDs with PIDWeight ##########" << endl;
 	clust->SetPid(fPIDFinal);}
     } // end if (clusterType...)
   } // end for (iCluster...)
@@ -182,14 +172,11 @@ void AliEMCALPID::ComputePID(Double_t energy, Double_t lambda0)
 // This is the main command, which uses the distributions computed and parametrised, 
 // and gives the PID by the bayesian method.
 //
-//   cout << "ENERGY  " <<energy <<" lambda0 "<< lambda0<<  endl;
   
   Double_t weightGammaEnergy  = DistEnergy(energy, 1);
   Double_t weightPiZeroEnergy = DistEnergy(energy, 2);
   Double_t weightHadronEnergy = DistEnergy(energy, 3);
-  
-  //Double_t weightHadronEnergy = 1.;
-  
+    
   Double_t energyhadron=energy;
   if(energyhadron<1.)energyhadron=1.; // no energy dependance of  parametrisation for hadrons below 1 GeV
   if (energy<2){energy =2;} // no energy dependance of parametrisation for gamma and pi0 below 2 GeV
@@ -248,7 +235,7 @@ void AliEMCALPID::ComputePID(Double_t energy, Double_t lambda0)
   SetPID(fPIDWeight[1], 1);
   SetPID(fPIDWeight[2], 2);
   
-  // print  pid Weight only for control (= in english ???)
+  // print  pid Weight only for control 
   if (fPrintInfo) {
     AliInfo(Form( "Energy in loop = %f", energy) );
     AliInfo(Form( "Lambda0 in loop = %f", lambda0) );
@@ -456,7 +443,7 @@ Double_t AliEMCALPID::PolynomialMixed2(const Double_t x, const Double_t *params)
   }  
   else
     y=0.;
-  //   cout << "y = " << y << endl;
+
   return y;
   
 }
@@ -556,7 +543,7 @@ void AliEMCALPID::SetLowFluxParam()
        fHadronEnergyProb[i] = fHadronEnergyProb[i];
   }
   
-  // New parametrisation for lambda0^2 (=x): f(x) = normLandau*TMath::Landau(x,mpvLandau,widthLandau)+normgaus*TMath::Gaus(x,meangaus,sigmagaus)
+  // New parameterization for lambda0^2 (=x): f(x) = normLandau*TMath::Landau(x,mpvLandau,widthLandau)+normgaus*TMath::Gaus(x,meangaus,sigmagaus)
   // See AliEMCALPid (index j) refers to the polynomial parameters of the fit of each parameter vs energy
   // pp
 
@@ -681,12 +668,10 @@ void AliEMCALPID::SetLowFluxParam()
   fHadronEnergyProb[3] = -3.051022e+01;
   fHadronEnergyProb[4] =-6.036931e-02;
 
-  Int_t ii= 0;
-  Int_t jj= 3;
-  AliDebug(1,Form("PID parameters (%d, %d): fGamma=%.3f, fPi=%.3f, fHadron=%.3f",
- 			ii,jj, fGamma[ii][jj],fPiZero[ii][jj],fHadron[ii][jj] ));
-  //cout << " LowFlux Parameters fGamma [2][2] = " << fGamma[2][2] << endl;
-  //cout << " LowFlux Parameters fHadron [2][2] = " << fHadron[2][2] << endl;
+//  Int_t ii= 0;
+//  Int_t jj= 3;
+//  AliDebug(1,Form("PID parameters (%d, %d): fGamma=%.3f, fPi=%.3f, fHadron=%.3f",
+// 			ii,jj, fGamma[ii][jj],fPiZero[ii][jj],fHadron[ii][jj] ));
    
   // end for proton-proton  
 
@@ -825,11 +810,9 @@ void AliEMCALPID::SetHighFluxParam()
   fHadronEnergyProb[3] =  2.030230e+00;
   fHadronEnergyProb[4] = -6.402242e-02;
 
- Int_t ii= 0;
- Int_t jj= 3;
- AliDebug(1,Form("PID parameters (%d, %d): fGamma=%.3f, fPi=%.3f, fHadron=%.3f",
- 			ii,jj, fGamma[ii][jj],fPiZero[ii][jj],fHadron[ii][jj] ));
-  //cout << " HighFlux Parameters fGamma [2][2] = " << fGamma[2][2] << endl;
-  //cout << " HighFlux Parameters fHadron [2][2] = " << fHadron[2][2] << endl;
+// Int_t ii= 0;
+// Int_t jj= 3;
+// AliDebug(1,Form("PID parameters (%d, %d): fGamma=%.3f, fPi=%.3f, fHadron=%.3f",
+// 			ii,jj, fGamma[ii][jj],fPiZero[ii][jj],fHadron[ii][jj] ));
    
 }
