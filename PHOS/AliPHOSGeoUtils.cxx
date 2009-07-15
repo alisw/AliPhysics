@@ -226,12 +226,12 @@ void AliPHOSGeoUtils::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
     pos[2]=(-(relid[3]-1)%fNCellsZInStrip+fNCellsZInStrip/2-0.5)*fCellStep ;
 
     Int_t mod = relid[0] ;
-    TGeoHMatrix * m2 = GetMatrixForStrip(mod, strip) ;
+    const TGeoHMatrix * m2 = GetMatrixForStrip(mod, strip) ;
     m2->LocalToMaster(pos,posC);
 
     //Return to PHOS local system  
     Double_t posL2[3]={posC[0],posC[1],posC[2]};
-    TGeoHMatrix *mPHOS2 = GetMatrixForModule(mod) ;
+    const TGeoHMatrix *mPHOS2 = GetMatrixForModule(mod) ;
     mPHOS2->MasterToLocal(posC,posL2);
     x=posL2[0] ;
     z=-posL2[2];
@@ -247,11 +247,11 @@ void AliPHOSGeoUtils::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
     pos[2] = - ( fNumberOfCPVPadsZ  /2. - column - 0.5 ) * fPadSizeZ  ; // of center of PHOS module
 
     //now apply possible shifts and rotations
-    TGeoHMatrix *m = GetMatrixForCPV(relid[0]) ;
+    const TGeoHMatrix *m = GetMatrixForCPV(relid[0]) ;
     m->LocalToMaster(pos,posC);
     //Return to PHOS local system
     Double_t posL[3]={0.,0.,0.,} ;
-    TGeoHMatrix *mPHOS = GetMatrixForPHOS(relid[0]) ;
+    const TGeoHMatrix *mPHOS = GetMatrixForPHOS(relid[0]) ;
     mPHOS->MasterToLocal(posC,posL);
     x=posL[0] ;
     z=posL[1];
@@ -375,7 +375,7 @@ void AliPHOSGeoUtils::RelPosInAlice(Int_t id, TVector3 & pos ) const
     ps[2]=(-(relid[3]-1)%fNCellsZInStrip+fNCellsZInStrip/2-0.5)*fCellStep ;
  
     Int_t mod = relid[0] ;
-    TGeoHMatrix * m2 = GetMatrixForStrip(mod, strip) ;
+    const TGeoHMatrix * m2 = GetMatrixForStrip(mod, strip) ;
     m2->LocalToMaster(ps,psC);
     pos.SetXYZ(psC[0],psC[1],psC[2]) ; 
  
@@ -390,7 +390,7 @@ void AliPHOSGeoUtils::RelPosInAlice(Int_t id, TVector3 & pos ) const
     pos[2] = - ( fNumberOfCPVPadsZ  /2. - column - 0.5 ) * fPadSizeZ  ; // of center of PHOS module
  
     //now apply possible shifts and rotations
-    TGeoHMatrix *m = GetMatrixForCPV(relid[0]) ;
+    const TGeoHMatrix *m = GetMatrixForCPV(relid[0]) ;
     m->LocalToMaster(ps,psC);
     pos.SetXYZ(psC[0],psC[1],-psC[2]) ; 
   }
@@ -402,7 +402,7 @@ void AliPHOSGeoUtils::Local2Global(Int_t mod, Float_t x, Float_t z,
 {
   Double_t posL[3]={x,-fCrystalShift,-z} ; //Only for EMC!!!
   Double_t posG[3] ;
-  TGeoHMatrix *mPHOS = GetMatrixForModule(mod) ;
+  const TGeoHMatrix *mPHOS = GetMatrixForModule(mod) ;
   mPHOS->LocalToMaster(posL,posG);
   globalPosition.SetXYZ(posG[0],posG[1],posG[2]) ;
 }
@@ -416,7 +416,7 @@ void AliPHOSGeoUtils::Global2Local(TVector3& localPosition,
   //Return to PHOS local system
   Double_t posG[3]={globalPosition.X(),globalPosition.Y(),globalPosition.Z()} ;
   Double_t posL[3]={0.,0.,0.} ;
-  TGeoHMatrix *mPHOS = GetMatrixForModule(module) ;
+  const TGeoHMatrix *mPHOS = GetMatrixForModule(module) ;
   mPHOS->MasterToLocal(posG,posL);
   localPosition.SetXYZ(posL[0],posL[1]+fCrystalShift,-posL[2]) ;  
  
@@ -469,7 +469,7 @@ Bool_t AliPHOSGeoUtils::ImpactOnEmc(const Double_t * vtx, const TVector3 &p,
     //create vector from (0,0,0) to center of crystal surface of imod module
     Double_t tmp[3]={0.,-fCrystalShift,0.} ;
  
-    TGeoHMatrix *m = GetMatrixForModule(imod) ;
+    const TGeoHMatrix *m = GetMatrixForModule(imod) ;
     Double_t posG[3]={0.,0.,0.} ;
     m->LocalToMaster(tmp,posG);
     TVector3 n(posG[0],posG[1],posG[2]) ; 
@@ -504,7 +504,7 @@ void AliPHOSGeoUtils::GetIncidentVector(const TVector3 &vtx, Int_t module, Float
   vInc.SetXYZ(vInc.X()+x,vInc.Y(),vInc.Z()+z) ;
 }
 //____________________________________________________________________________
-TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
+const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
   //Provides shift-rotation matrix for module mod
 
   //If GeoManager exists, take matrixes from it
@@ -531,7 +531,7 @@ TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
   return 0 ;
 }
 //____________________________________________________________________________
-TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForStrip(Int_t mod, Int_t strip)const {
+const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForStrip(Int_t mod, Int_t strip)const {
   //Provides shift-rotation matrix for strip unit of the module mod
 
   //If GeoManager exists, take matrixes from it
@@ -557,7 +557,7 @@ TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForStrip(Int_t mod, Int_t strip)const {
   return 0 ;
 }
 //____________________________________________________________________________
-TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
+const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
   //Provides shift-rotation matrix for CPV of the module mod
 
   //If GeoManager exists, take matrixes from it
@@ -584,7 +584,7 @@ TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
   return 0 ;
 } 
 //____________________________________________________________________________
-TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
+const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
   //Provides shift-rotation matrix for PHOS (EMC+CPV) 
 
   //If GeoManager exists, take matrixes from it
@@ -610,10 +610,11 @@ TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
   return 0 ;
 }
 //____________________________________________________________________________
-void AliPHOSGeoUtils::SetMisalMatrix(TGeoHMatrix * m, Int_t mod){
+void AliPHOSGeoUtils::SetMisalMatrix(const TGeoHMatrix * m, Int_t mod){
   //Fills pointers to geo matrixes
  
   fPHOSMatrix[mod]=m ;
+
   //If modules does not exist, make sure all its matrixes are zero
   if(m==NULL){
     fEMCMatrix[mod]=NULL ;
@@ -641,6 +642,7 @@ void AliPHOSGeoUtils::SetMisalMatrix(TGeoHMatrix * m, Int_t mod){
   Double_t globTII[3] ;
 
   TGeoHMatrix * mTII = new((*fMisalArray)[nr])TGeoHMatrix() ;
+  nr++ ;
   mTII->SetRotation(rotEMC) ;
   mTII->MultiplyLeft(fPHOSMatrix[mod]) ;
   fPHOSMatrix[mod]->LocalToMaster(locTII,globTII) ;
@@ -660,9 +662,9 @@ void AliPHOSGeoUtils::SetMisalMatrix(TGeoHMatrix * m, Int_t mod){
       loc[2] = (2*icol + 1 - fGeometryEMCA->GetNStripZ()) * strip[2] ;
       fEMCMatrix[mod]->LocalToMaster(loc,glob) ;
       TGeoHMatrix * mSTR = new((*fMisalArray)[nr])TGeoHMatrix(*(fEMCMatrix[mod])) ; //Use same rotation as PHOS module
+      nr++ ;
       mSTR->SetTranslation(glob) ;
       fStripMatrix[mod][istrip]=mSTR ;
-      nr++ ;
       istrip++;
     }
   }
@@ -674,6 +676,7 @@ void AliPHOSGeoUtils::SetMisalMatrix(TGeoHMatrix * m, Int_t mod){
   Double_t rot[9]={1.,0.,0.,0.,0.,1.,0.,-1.,0.} ;
 
   TGeoHMatrix * mCPV = new((*fMisalArray)[nr])TGeoHMatrix() ;
+  nr++ ;
   mCPV->SetRotation(rot) ;
   mCPV->MultiplyLeft(fPHOSMatrix[mod]) ;
   mCPV->ReflectY(kFALSE) ;

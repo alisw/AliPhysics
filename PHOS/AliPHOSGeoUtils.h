@@ -74,14 +74,14 @@ public:
   Bool_t IsInEMC(Int_t id) const { if (id > fNModules *  fNCristalsInModule ) return kFALSE; return kTRUE; } 
 
   //Method to set shift-rotational matrixes from ESDHeader
-  void SetMisalMatrix(TGeoHMatrix * m, Int_t mod) ;
+  void SetMisalMatrix(const TGeoHMatrix * m, Int_t mod) ;
 
 protected:
   //Returns shift-rotational matrixes for different volumes
-  TGeoHMatrix * GetMatrixForModule(Int_t mod)const ;
-  TGeoHMatrix * GetMatrixForStrip(Int_t mod, Int_t strip)const ;
-  TGeoHMatrix * GetMatrixForCPV(Int_t mod)const ;
-  TGeoHMatrix * GetMatrixForPHOS(Int_t mod)const ;
+  const TGeoHMatrix * GetMatrixForModule(Int_t mod)const ;
+  const TGeoHMatrix * GetMatrixForStrip(Int_t mod, Int_t strip)const ;
+  const TGeoHMatrix * GetMatrixForCPV(Int_t mod)const ;
+  const TGeoHMatrix * GetMatrixForPHOS(Int_t mod)const ;
 
 protected:
 
@@ -112,7 +112,7 @@ protected:
   TGeoHMatrix* fEMCMatrix[5] ; //Orientations of crystalls array in modules
   TGeoHMatrix* fStripMatrix[5][224];  //Orientations of strip units
   TGeoHMatrix* fCPVMatrix[5] ; //Orientations of CPV
-  TGeoHMatrix* fPHOSMatrix[5] ; //Orientations of PHOS modules
+  const TGeoHMatrix* fPHOSMatrix[5] ; //Orientations of PHOS modules
 
   TClonesArray * fMisalArray ;
 
