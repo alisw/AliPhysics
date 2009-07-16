@@ -41,12 +41,18 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
 
   AliAnalysisTaskSED0Mass(const AliAnalysisTaskSED0Mass &source);
   AliAnalysisTaskSED0Mass& operator=(const AliAnalysisTaskSED0Mass& source); 
-  void    FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC);
-  TList   *fOutput; //! list send on output slot 0
-
-  AliAnalysisVertexingHF *fVHF;  // Vertexer heavy flavour (used to pass the cuts)
-  
-  ClassDef(AliAnalysisTaskSED0Mass,2); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  void    FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout);
+  TList   *fOutputtight; //! list send on output slot 1
+  TList   *fOutputloose; //! list send on output slot 2
+  /*
+  TH1F   **fhistMass;  //! invariant mass histograms - no MC truth
+  TH1F   **fhistSgn;   //! signal invariant mass histograms - MC
+  TH1F   **fhistBkg;   //! background invariant mass histograms - MC
+  */
+  AliAnalysisVertexingHF *fVHFtight;  // Vertexer heavy flavour (used to pass the cuts)
+  AliAnalysisVertexingHF *fVHFloose;  // Vertexer heavy flavour (used to pass the cuts)
+  TH1F *fNentries; //! histogram with number of events
+  ClassDef(AliAnalysisTaskSED0Mass,1); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
