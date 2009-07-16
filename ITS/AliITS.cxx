@@ -108,7 +108,8 @@ fIdN(0),
 fIdSens(0),
 fIdName(0),
 fITSmodules(0),
-fTiming(kFALSE)
+fTiming(kFALSE),
+fSimuParam(0)
 {
   // Default initializer for ITS
   //      The default constructor of the AliITS class. In addition to
@@ -121,15 +122,17 @@ fTiming(kFALSE)
 //PH    SetMarkerColor(kRed);
 }
 //______________________________________________________________________
-AliITS::AliITS(const Char_t *title):AliDetector("ITS",title),
-fDetTypeSim(0),
-fEuclidOut(0),
-fOpt("All"),
-fIdN(0),
-fIdSens(0),
-fIdName(0),
-fITSmodules(0),
-fTiming(kFALSE)
+AliITS::AliITS(const Char_t *title):
+  AliDetector("ITS",title),
+  fDetTypeSim(0),
+  fEuclidOut(0),
+  fOpt("All"),
+  fIdN(0),
+  fIdSens(0),
+  fIdName(0),
+  fITSmodules(0),
+  fTiming(kFALSE),
+  fSimuParam(0)
 {
     //     The standard Constructor for the ITS class. 
     // It also zeros the variables
@@ -157,15 +160,17 @@ fTiming(kFALSE)
     fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
 }
 //______________________________________________________________________
-AliITS::AliITS(const char *name, const char *title):AliDetector(name,title),
-fDetTypeSim(0),
-fEuclidOut(0),
-fOpt("All"),
-fIdN(0),
-fIdSens(0),
-fIdName(0),
-fITSmodules(0),
-fTiming(kFALSE)
+AliITS::AliITS(const char *name, const char *title):
+  AliDetector(name,title),
+  fDetTypeSim(0),
+  fEuclidOut(0),
+  fOpt("All"),
+  fIdN(0),
+  fIdSens(0),
+  fIdName(0),
+  fITSmodules(0),
+  fTiming(kFALSE),
+  fSimuParam(0)
 {
   //     The standard Constructor for the ITS class. 
   // It also zeros the variables
@@ -184,7 +189,6 @@ fTiming(kFALSE)
   SetDetectors(); // default to fOpt="All". This variable not written out.
     
   fDetTypeSim   = new AliITSDetTypeSim();
-  
   //PH  SetMarkerColor(kRed);
   if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
@@ -220,7 +224,11 @@ AliITS::~AliITS(){
     if (fDetTypeSim){
       delete fDetTypeSim;
       fDetTypeSim = 0;
-   }
+    }
+    if(fSimuParam){
+      delete fSimuParam;
+      fSimuParam=0;
+    }
 }
 //______________________________________________________________________
 AliDigitizer* AliITS::CreateDigitizer(AliRunDigitizer* manager)const{
@@ -271,7 +279,7 @@ void AliITS::SetDefaults(){
     }
 
     fDetTypeSim->SetDefaults();
-
+    if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
 
 }
 //______________________________________________________________________
@@ -289,6 +297,7 @@ void AliITS::SetDefaultSimulation(){
     }
 
     fDetTypeSim->SetDefaultSimulation();
+    if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
 
 }
 
@@ -356,6 +365,7 @@ void AliITS::MakeBranchD(const char* file){
     return;
   }
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
+  if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
   MakeBranchInTreeD(fLoader->TreeD(),file);
 }
 
@@ -367,6 +377,7 @@ void AliITS:: MakeBranchInTreeD(TTree* treeD, const char* file){
     Error("MakeBranchS","fDetTypeSim is 0!");
   }
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
+  if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
 
   const Char_t *det[3] = {"SPD","SDD","SSD"};
   const Char_t* digclass;
@@ -406,6 +417,7 @@ void AliITS::SetTreeAddress(){
   }
 
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
+  if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
 
   TTree *treeS = fLoader->TreeS();
   TTree *treeD = fLoader->TreeD();
@@ -553,6 +565,7 @@ Bool_t AliITS::InitModules(Int_t size,Int_t &nmodules){
       Error("InitModules","fDetTypeSim is null!");
       return kFALSE;
     }
+    if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
 
     Int_t nl,indexMAX,index;
 
@@ -597,6 +610,8 @@ void AliITS::Hits2SDigits(){
   fLoader->LoadSDigits("recreate");
   AliRunLoader* rl = fLoader->GetRunLoader(); 
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
+  if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
+
   for (Int_t iEvent = 0; iEvent < rl->GetNumberOfEvents(); iEvent++) {
         // Do the Hits to Digits operation. Use Standard input values.
         // Event number from file, no background hit merging , use size from
@@ -622,6 +637,7 @@ void AliITS::Hits2Digits(){
   }
    
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
+  if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
   SetDefaults();
 
   fLoader->LoadHits("read");
@@ -667,6 +683,7 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
     return;
   }
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
+  if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
   if(!GetITSgeom()) return; // need transformations to do digitization.
   AliITSgeom *geom = GetITSgeom();
 
@@ -732,6 +749,7 @@ void AliITS::Hits2PreDigits(){
   }
    
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
+  if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
   SetDefaults();
   
   HitsToPreDigits(fLoader->GetRunLoader()->GetEventNumber(),
@@ -766,6 +784,7 @@ void AliITS::HitsToPreDigits(Int_t evNumber,Int_t bgrev,Int_t size,
     return;
   }
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
+  if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
 
   if(!GetITSgeom()){
     Error("HitsToPreDigits","fGeom is null!");
@@ -976,6 +995,7 @@ void AliITS::SDigitsToDigits(Option_t *opt){
 
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
   SetDefaults();
+  if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
   fDetTypeSim->SDigitsToDigits(opt,(Char_t*)GetName());
 
   // Add random noise to FO signals
@@ -1095,6 +1115,7 @@ void AliITS::Digits2Raw(){
   }
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
   SetDefaults();
+  if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
   fDetTypeSim->GetLoader()->LoadDigits();
   TTree* digits = fDetTypeSim->GetLoader()->TreeD();
   if (!digits) {

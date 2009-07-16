@@ -59,6 +59,11 @@ class AliITS : public AliDetector {
 
     AliITSmodule *GetModule(Int_t index){
         return (AliITSmodule*)(fITSmodules->At(index));}
+    virtual void SetSimuParam(AliITSSimuParam *sp){
+      fSimuParam=sp;
+      fDetTypeSim->SetSimuParam(sp);
+    }
+    AliITSSimuParam* GetSimuParam() const {return fSimuParam;}
 
     virtual void SetDetTypeSim(AliITSDetTypeSim* dts) {fDetTypeSim=dts;}
     AliITSDetTypeSim* GetDetTypeSim() const {return fDetTypeSim;}
@@ -154,11 +159,12 @@ class AliITS : public AliDetector {
     TString      *fIdName;     //[fIdN] layer identifier
     TObjArray    *fITSmodules; //! Pointer to ITS modules
     Bool_t        fTiming;     // flag to turn on/off timers.
+    AliITSSimuParam* fSimuParam; //simulation parameters
 
  private:
     AliITS(const AliITS &source); // copy constructor. Not to be used!
     AliITS& operator=(const AliITS &source); // = operator. Not to be used!
-    ClassDef(AliITS,7) // Base class for ITS
+    ClassDef(AliITS,8) // Base class for ITS
 
 };
 
