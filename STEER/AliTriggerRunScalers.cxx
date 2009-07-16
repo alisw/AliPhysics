@@ -353,6 +353,10 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
 {
  // Run over fScalersRecord, check overflow using CheckConsistency methos
  // and save corrected result in fScalersRecordESD.
+
+ // Temporary fix for the OCDB entries written with v4-16-Release
+ // where the wrong sorting was used
+ fScalersRecord.Sort();
  UInt_t c1[6];
  ULong64_t c64[6];
  AliTriggerScalersRecordESD* recESD = new AliTriggerScalersRecordESD();
