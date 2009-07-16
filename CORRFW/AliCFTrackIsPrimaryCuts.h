@@ -31,6 +31,9 @@
 // - require that the dca calculation doesn't fail
 // - accept or not accept daughter tracks of kink decays
 //
+// By default, the distance to 'vertex calculated from tracks' is used.
+// Optionally the TPC (TPC only tracks based) vertex can be used.
+//
 // The cut values for these cuts are set with the corresponding set functions.
 // All cut classes provided by the correction framework are supposed to be
 // added in the Analysis Framwork's class AliAnalysisFilter and applied by
@@ -65,6 +68,7 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   // cut value setter
+  void UseTPCvertex(Bool_t b=kFALSE)			{fUseTPCvertex = b;}
   void SetMinDCAToVertexXY(Float_t dist=0.)             {fMinDCAToVertexXY = dist;}
   void SetMinDCAToVertexZ(Float_t dist=0.)              {fMinDCAToVertexZ = dist;}
   void SetMaxDCAToVertexXY(Float_t dist=1e10)           {fMaxDCAToVertexXY = dist;}
@@ -107,11 +111,13 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
 
  private:
   void SelectionBitMap(TObject* obj);
+  void GetDCA(AliESDtrack* esdTrack);
   void DefineHistograms(); 		// books histograms and TList
   void Initialise();			// sets everything to 0
   void FillHistograms(TObject* obj, Bool_t b);
 					// Fills histograms before and after cuts
 
+  Bool_t   fUseTPCvertex;		// flag: calculate dca to TPC-vertex, off by default
   Double_t fMinDCAToVertexXY;		// cut value: min distance to main vertex in transverse plane
   Double_t fMinDCAToVertexZ;		// cut value: min longitudinal distance to main vertex
   Double_t fMaxDCAToVertexXY;		// cut value: max distance to main vertex in transverse plane
@@ -122,13 +128,13 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   Double_t fNSigmaToVertexMax;		// cut value: max distance to main vertex in units of sigma
   Double_t fSigmaDCAxy;			// cut value: impact parameter resolution in xy plane
   Double_t fSigmaDCAz;			// cut value: impact parameter resolution in z direction
+  Double_t fDCA[6];			// impact parameters
   Bool_t   fRequireSigmaToVertex;	// require calculable distance to main vertex
   Char_t   fAODType;                    // type of AOD track (undef, primary, secondary, orphan)
                                         // applicable at AOD level only !
 
   TH2F* fhDcaXYvsDcaZ[2];		// Histogram: dca xy vs. z
-  TH2F* fhDcaXYvsDcaZnorm[2];		// Histogram: (dca xy / sigma xy) vs. (dca z / simga z)
-  Bool_t  fAcceptKinkDaughters;		// accepting kink daughters
+  Bool_t fAcceptKinkDaughters;		// accepting kink daughters
 
   TH1F* fhCutStatistics;		// Histogram: statistics of what cuts the tracks did not survive
   TH2F* fhCutCorrelation;		// Histogram: 2d statistics plot

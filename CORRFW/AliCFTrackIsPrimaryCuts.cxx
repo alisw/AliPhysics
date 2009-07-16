@@ -31,6 +31,9 @@
 // - require that the dca calculation doesn't fail
 // - accept or not accept daughter tracks of kink decays
 //
+// By default, the distance to 'vertex calculated from tracks' is used.
+// Optionally the TPC (TPC only tracks based) vertex can be used.
+//
 // The cut values for these cuts are set with the corresponding set functions.
 // All cut classes provided by the correction framework are supposed to be
 // added in the Analysis Framwork's class AliAnalysisFilter and applied by
@@ -48,6 +51,7 @@
 
 #include <AliESDtrack.h>
 #include <AliLog.h>
+#include <AliExternalTrackParam.h>
 #include "AliCFTrackIsPrimaryCuts.h"
 
 ClassImp(AliCFTrackIsPrimaryCuts)
@@ -55,6 +59,7 @@ ClassImp(AliCFTrackIsPrimaryCuts)
 //__________________________________________________________________________________
 AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts() :
   AliCFCutBase(),
+  fUseTPCvertex(0),
   fMinDCAToVertexXY(0),
   fMinDCAToVertexZ(0),
   fMaxDCAToVertexXY(0),
@@ -98,6 +103,7 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts() :
 //__________________________________________________________________________________
 AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(Char_t* name, Char_t* title) :
   AliCFCutBase(name,title),
+  fUseTPCvertex(0),
   fMinDCAToVertexXY(0),
   fMinDCAToVertexZ(0),
   fMaxDCAToVertexXY(0),
@@ -141,6 +147,7 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(Char_t* name, Char_t* title) :
 //__________________________________________________________________________________
 AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(const AliCFTrackIsPrimaryCuts& c) :
   AliCFCutBase(c),
+  fUseTPCvertex(c.fUseTPCvertex),
   fMinDCAToVertexXY(c.fMinDCAToVertexXY),
   fMinDCAToVertexZ(c.fMinDCAToVertexZ),
   fMaxDCAToVertexXY(c.fMaxDCAToVertexXY),
@@ -189,6 +196,7 @@ AliCFTrackIsPrimaryCuts& AliCFTrackIsPrimaryCuts::operator=(const AliCFTrackIsPr
   //
   if (this != &c) {
     AliCFCutBase::operator=(c) ;
+    fUseTPCvertex = c.fUseTPCvertex;
     fMinDCAToVertexXY = c.fMinDCAToVertexXY;
     fMinDCAToVertexZ = c.fMinDCAToVertexZ;
     fMaxDCAToVertexXY = c.fMaxDCAToVertexXY;
@@ -224,9 +232,9 @@ AliCFTrackIsPrimaryCuts& AliCFTrackIsPrimaryCuts::operator=(const AliCFTrackIsPr
     fhBinLimSigmaDcaXY = c.fhBinLimSigmaDcaXY;
     fhBinLimSigmaDcaZ = c.fhBinLimSigmaDcaZ;
 
+    for (Int_t j=0; j<6; j++) fDCA[j] = c.fDCA[j];
     for (Int_t j=0; j<c.kNStepQA; j++){
       if(c.fhDcaXYvsDcaZ[j]) fhDcaXYvsDcaZ[j] = (TH2F*)c.fhDcaXYvsDcaZ[j]->Clone();
-      if(c.fhDcaXYvsDcaZnorm[j]) fhDcaXYvsDcaZnorm[j] = (TH2F*)c.fhDcaXYvsDcaZnorm[j]->Clone();
       for (Int_t i=0; i<c.kNHist; i++){
 	if(c.fhQA[i][j]) fhQA[i][j] = (TH1F*)c.fhQA[i][j]->Clone();
       }
@@ -246,7 +254,6 @@ AliCFTrackIsPrimaryCuts::~AliCFTrackIsPrimaryCuts()
 
   for (Int_t j=0; j<kNStepQA; j++){
     if(fhDcaXYvsDcaZ[j])	delete fhDcaXYvsDcaZ[j];
-    if(fhDcaXYvsDcaZnorm[j])	delete fhDcaXYvsDcaZnorm[j];
     for (Int_t i=0; i<kNHist; i++)
       if(fhQA[i][j]) 		delete fhQA[i][j];
   }
@@ -267,6 +274,7 @@ void AliCFTrackIsPrimaryCuts::Initialise()
   //
   // sets everything to zero
   //
+  fUseTPCvertex = 0;
   fMinDCAToVertexXY = 0;
   fMinDCAToVertexZ = 0;
   fMaxDCAToVertexXY = 0;
@@ -295,9 +303,9 @@ void AliCFTrackIsPrimaryCuts::Initialise()
   SetAcceptKinkDaughters();
   SetAODType();
 
+  for (Int_t j=0; j<6; j++) fDCA[j] = 0.;
   for (Int_t j=0; j<kNStepQA; j++)  {
     fhDcaXYvsDcaZ[j] = 0x0;
-    fhDcaXYvsDcaZnorm[j] = 0x0;
     for (Int_t i=0; i<kNHist; i++)
       fhQA[i][j] = 0x0;
   }
@@ -306,7 +314,7 @@ void AliCFTrackIsPrimaryCuts::Initialise()
   fBitmap=new TBits(0);
 
   //set default bining for QA histograms
-  SetHistogramBins(kCutNSigmaToVertex,500,0.,50.);
+  SetHistogramBins(kCutNSigmaToVertex,100,0.,10.);
   SetHistogramBins(kCutRequireSigmaToVertex,5,-0.75,1.75);
   SetHistogramBins(kCutAcceptKinkDaughters,5,-0.75,1.75);
   SetHistogramBins(kDcaXY,500,-10.,10.);
@@ -329,13 +337,52 @@ void AliCFTrackIsPrimaryCuts::Copy(TObject &c) const
   if (fhCutStatistics)  target.fhCutStatistics = (TH1F*) fhCutStatistics->Clone();
   if (fhCutCorrelation) target.fhCutCorrelation = (TH2F*) fhCutCorrelation->Clone();
 
+  for (Int_t j=0; j<6; j++) target.fDCA[j] = fDCA[j];
   for (Int_t j=0; j<kNStepQA; j++){
     if(fhDcaXYvsDcaZ[j]) target.fhDcaXYvsDcaZ[j] = (TH2F*)fhDcaXYvsDcaZ[j]->Clone();
-    if(fhDcaXYvsDcaZnorm[j]) target.fhDcaXYvsDcaZnorm[j] = (TH2F*)fhDcaXYvsDcaZnorm[j]->Clone();
     for (Int_t i=0; i<kNHist; i++)
       if(fhQA[i][j]) target.fhQA[i][j] = (TH1F*)fhQA[i][j]->Clone();
   }
   TNamed::Copy(c);
+}
+//__________________________________________________________________________________
+void AliCFTrackIsPrimaryCuts::GetDCA(AliESDtrack* esdTrack)
+{
+  if (!esdTrack) return;
+
+  Float_t b[2] = {0.,0.};
+  Float_t bCov[3] = {0.,0.,0.};
+  if(!fUseTPCvertex) esdTrack->GetImpactParameters(b,bCov);
+  if( fUseTPCvertex) esdTrack->GetImpactParametersTPC(b,bCov);
+
+  if (bCov[0]<=0 || bCov[2]<=0) {
+      bCov[0]=0; bCov[2]=0;
+  }
+  fDCA[0] = b[0]; // impact parameter xy
+  fDCA[1] = b[1]; // impact parameter z
+  fDCA[2] = TMath::Sqrt(bCov[0]); // resolution xy
+  fDCA[3] = TMath::Sqrt(bCov[2]); // resolution z
+
+  if (!fAbsDCAToVertex) {
+	if (fDCA[2] > 0) fDCA[0] = fDCA[0]/fDCA[2]; // normalised impact parameter xy
+	if (fDCA[3] > 0) fDCA[1] = fDCA[1]/fDCA[3]; // normalised impact parameter z
+  }
+
+  // get n_sigma
+  if(!fUseTPCvertex)
+	fDCA[5] = AliESDtrackCuts::GetSigmaToVertex(esdTrack);
+
+  if(fUseTPCvertex) {
+	fDCA[5] = -1;
+	if (fDCA[2]==0 || fDCA[3]==0)
+	  return;
+	fDCA[5] = 1000.;
+	Float_t d = TMath::Sqrt(TMath::Power(b[0]/fDCA[2],2) + TMath::Power(b[1]/fDCA[3],2));
+	if (TMath::Exp(-d * d / 2) < 1e-15)
+	  return;
+	fDCA[5] = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
+  }
+  return;
 }
 //__________________________________________________________________________________
 void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
@@ -364,40 +411,26 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
   if (isAODTrack) aodTrack = dynamic_cast<AliAODTrack*>(obj);
 
   // get the track to vertex parameter for ESD track
-  Float_t nSigmaToVertex = 0.;
-  if (isESDTrack) nSigmaToVertex = AliESDtrackCuts::GetSigmaToVertex(esdTrack);
+  if (isESDTrack) GetDCA(esdTrack);
 
-  Float_t b[2];
-  Float_t bRes[2];
-  Float_t bCov[3];
+  Float_t bxy = 0, bz = 0;
+  if (isESDTrack) {
+	bxy = TMath::Abs(fDCA[0]);
+ 	bz  = TMath::Abs(fDCA[1]);
+ }
   Float_t b2Dmin = 0, b2Dmax = 0;
-  if (isESDTrack) { 
-    esdTrack->GetImpactParameters(b,bCov);
-    if (bCov[0]<=0 || bCov[2]<=0) {
-// // //       AliDebugClass(1, "Estimated b resolution lower or equal zero!");
-      bCov[0]=0; bCov[2]=0;
-    }
-    b[0] = TMath::Abs(b[0]);
-    b[1] = TMath::Abs(b[1]);
-    bRes[0] = TMath::Sqrt(bCov[0]);
-    bRes[1] = TMath::Sqrt(bCov[2]);
-    if (!fAbsDCAToVertex) {
-	if (bRes[0] > 0) b[0] = b[0]/bRes[0];
-// // // 	else AliDebugClass(1, "Estimated b resolution equal zero!");
-	if (bRes[1] > 0) b[1] = b[1]/bRes[1];
-// // // 	else AliDebugClass(1, "Estimated b resolution equal zero!");
-    }
+  if (isESDTrack) {
     if (fMinDCAToVertexXY>0 && fMinDCAToVertexZ>0)
-	b2Dmin = b[0]*b[0]/fMinDCAToVertexXY/fMinDCAToVertexXY + b[1]*b[1]/fMinDCAToVertexZ/fMinDCAToVertexZ;
+	b2Dmin = fDCA[0]*fDCA[0]/fMinDCAToVertexXY/fMinDCAToVertexXY + fDCA[1]*fDCA[1]/fMinDCAToVertexZ/fMinDCAToVertexZ;
     if (fMaxDCAToVertexXY>0 && fMaxDCAToVertexZ>0) 
-	b2Dmax = b[0]*b[0]/fMaxDCAToVertexXY/fMaxDCAToVertexXY + b[1]*b[1]/fMaxDCAToVertexZ/fMaxDCAToVertexZ;
+	b2Dmax = fDCA[0]*fDCA[0]/fMaxDCAToVertexXY/fMaxDCAToVertexXY + fDCA[1]*fDCA[1]/fMaxDCAToVertexZ/fMaxDCAToVertexZ;
   }
 
   // fill the bitmap
   Int_t iCutBit = 0;
 
   if (isESDTrack) {
-    if (fDCAToVertex2D || (!fDCAToVertex2D && b[0] >= fMinDCAToVertexXY && b[0] <= fMaxDCAToVertexXY)) {
+    if (fDCAToVertex2D || (!fDCAToVertex2D && bxy >= fMinDCAToVertexXY && bxy <= fMaxDCAToVertexXY)) {
       fBitmap->SetBitNumber(iCutBit,kTRUE);
     }
   }
@@ -406,7 +439,7 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
   iCutBit++;
 
   if (isESDTrack) {
-    if (fDCAToVertex2D || (!fDCAToVertex2D && b[1] >= fMinDCAToVertexZ && b[1] <= fMaxDCAToVertexZ)) {
+    if (fDCAToVertex2D || (!fDCAToVertex2D && bz  >= fMinDCAToVertexZ && bz  <= fMaxDCAToVertexZ)) {
       fBitmap->SetBitNumber(iCutBit,kTRUE);
     }
   }
@@ -424,7 +457,7 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
   iCutBit++;
 
   if (isESDTrack) {
-    if (nSigmaToVertex >= fNSigmaToVertexMin && nSigmaToVertex <= fNSigmaToVertexMax) {
+    if (fDCA[5] >= fNSigmaToVertexMin && fDCA[5] <= fNSigmaToVertexMax) {
       fBitmap->SetBitNumber(iCutBit,kTRUE);
     }
   }
@@ -433,7 +466,7 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
   iCutBit++;
 
   if (isESDTrack) {
-    if (bRes[0] < fSigmaDCAxy) {
+    if (fDCA[2] < fSigmaDCAxy) {
       fBitmap->SetBitNumber(iCutBit,kTRUE);
     }
   }
@@ -442,7 +475,7 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
   iCutBit++;
 
   if (isESDTrack) {
-    if (bRes[1] < fSigmaDCAz) {
+    if (fDCA[3] < fSigmaDCAz) {
       fBitmap->SetBitNumber(iCutBit,kTRUE);
     }
   }
@@ -451,7 +484,7 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
   iCutBit++;
 
   if (isESDTrack) {
-    if (!fRequireSigmaToVertex || (nSigmaToVertex>=0 && fRequireSigmaToVertex)) {
+    if (!fRequireSigmaToVertex || (fDCA[5]>=0 && fRequireSigmaToVertex)) {
       fBitmap->SetBitNumber(iCutBit,kTRUE);
     }
   }
@@ -672,7 +705,6 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
     else sprintf(str,"_cut");
 
     fhDcaXYvsDcaZ[i]            = new  TH2F(Form("%s_dcaXYvsDcaZ%s",GetName(),str),"",200,-10,10,200,-10,10);
-    fhDcaXYvsDcaZnorm[i]        = new  TH2F(Form("%s_dcaXYvsDcaZnorm%s",GetName(),str),"",200,-10,10,200,-10,10);
     fhQA[kCutNSigmaToVertex][i]	= new TH1F(Form("%s_nSigmaToVertex%s",GetName(),str),"",fhNBinsNSigma-1,fhBinLimNSigma);
     fhQA[kCutRequireSigmaToVertex][i] = new TH1F(Form("%s_requireSigmaToVertex%s",GetName(),str),"",fhNBinsRequireSigma-1,fhBinLimRequireSigma);
     fhQA[kCutAcceptKinkDaughters][i] = new TH1F(Form("%s_acceptKinkDaughters%s",GetName(),str),"",fhNBinsAcceptKink-1,fhBinLimAcceptKink);
@@ -685,8 +717,6 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
 
     fhDcaXYvsDcaZ[i]->SetXTitle("impact par. d_{z}");
     fhDcaXYvsDcaZ[i]->SetYTitle("impact par. d_{xy}");
-    fhDcaXYvsDcaZnorm[i]->SetXTitle("norm. impact par. d_{z} / #sigma_{z}");
-    fhDcaXYvsDcaZnorm[i]->SetYTitle("norm. impact par. d_{xy} / #sigma_{xy}");
 
     fhQA[kCutNSigmaToVertex][i]->SetXTitle("n #sigma to vertex");
     fhQA[kCutRequireSigmaToVertex][i]->SetXTitle("require #sigma to vertex");
@@ -721,40 +751,25 @@ void AliCFTrackIsPrimaryCuts::FillHistograms(TObject* obj, Bool_t f)
   // f = 1: fill histograms after cuts
 
   // get the track to vertex parameter for ESD track
-  Float_t nSigmaToVertex = 0.;
-  if (isESDTrack) nSigmaToVertex = AliESDtrackCuts::GetSigmaToVertex(esdTrack);
   if (esdTrack) {
-    Float_t b[2];
-    Float_t bRes[2];
-    Float_t bCov[3];
-    esdTrack->GetImpactParameters(b,bCov);
-    if (bCov[0]<=0 || bCov[2]<=0) {
-      AliDebug(1, "Estimated b resolution lower or equal zero!");
-      bCov[0]=0; bCov[2]=0;
-    }
-    bRes[0] = TMath::Sqrt(bCov[0]);
-    bRes[1] = TMath::Sqrt(bCov[2]);
-  
-    fhQA[kDcaZ][f]->Fill(b[1]);
-    fhQA[kDcaXY][f]->Fill(b[0]);
-    fhDcaXYvsDcaZ[f]->Fill(b[1],b[0]);
-    fhQA[kSigmaDcaXY][f]->Fill(bRes[0]);
-    fhQA[kSigmaDcaZ][f]->Fill(bRes[1]);
 
-    if (bRes[0]!=0 && bRes[1]!=0) {
-      fhQA[kDcaZnorm][f]->Fill(b[1]/bRes[1]);
-      fhQA[kDcaXYnorm][f]->Fill(b[0]/bRes[0]);
-      fhDcaXYvsDcaZnorm[f]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
-    }
+    fhQA[kDcaZ][f]->Fill(fDCA[1]);
+    fhQA[kDcaXY][f]->Fill(fDCA[0]);
+    fhDcaXYvsDcaZ[f]->Fill(fDCA[1],fDCA[0]);
+    fhQA[kSigmaDcaXY][f]->Fill(fDCA[2]);
+    fhQA[kSigmaDcaZ][f]->Fill(fDCA[3]);
+// // // // // // //  delete histograms
+      fhQA[kDcaZnorm][f]->Fill(fDCA[1]);
+      fhQA[kDcaXYnorm][f]->Fill(fDCA[0]);
 
-    fhQA[kCutNSigmaToVertex][f]->Fill(nSigmaToVertex);
-    if (nSigmaToVertex<0 && fRequireSigmaToVertex) fhQA[kCutRequireSigmaToVertex][f]->Fill(0.);
-    if (!(nSigmaToVertex<0 && fRequireSigmaToVertex)) fhQA[kCutRequireSigmaToVertex][f]->Fill(1.);
-    
+    fhQA[kCutNSigmaToVertex][f]->Fill(fDCA[5]);
+    if (fDCA[5]<0 && fRequireSigmaToVertex) fhQA[kCutRequireSigmaToVertex][f]->Fill(0.);
+    if (!(fDCA[5]<0 && fRequireSigmaToVertex)) fhQA[kCutRequireSigmaToVertex][f]->Fill(1.);
+
     if (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0) fhQA[kCutAcceptKinkDaughters][f]->Fill(0.);
     if (!(!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)) fhQA[kCutAcceptKinkDaughters][f]->Fill(0.);
   }
-    
+
   // fill cut statistics and cut correlation histograms with information from the bitmap
   if (f) return;
 
@@ -800,7 +815,6 @@ void AliCFTrackIsPrimaryCuts::SaveHistograms(const Char_t* dir) {
       gDirectory->cd("after_cuts");
 
     fhDcaXYvsDcaZ[j]    ->Write();
-    fhDcaXYvsDcaZnorm[j]->Write();
 
     for(Int_t i=0; i<kNHist; i++) fhQA[i][j]->Write();
 
@@ -892,8 +906,8 @@ void AliCFTrackIsPrimaryCuts::DrawHistograms()
 
   // -----
 
-  TCanvas* canvas3 = new TCanvas("Track_QA_Primary_3", "Track QA Primary 3", 800, 800);
-  canvas3->Divide(2, 2);
+  TCanvas* canvas3 = new TCanvas("Track_QA_Primary_3", "Track QA Primary 3", 800, 400);
+  canvas3->Divide(2, 1);
 
   canvas3->cd(1);
   gPad->SetRightMargin(right);
@@ -912,24 +926,6 @@ void AliCFTrackIsPrimaryCuts::DrawHistograms()
   fhQA[kDcaZnorm][0]->SetStats(kFALSE);
   fhQA[kDcaZnorm][0]->Draw();
   fhQA[kDcaZnorm][1]->Draw("same");
-
-  canvas3->cd(3);
-//   fhDXYvsDZ[0]->SetStats(kFALSE);
-  gPad->SetLogz();
-  gPad->SetLeftMargin(bottom);
-  gPad->SetTopMargin(0.1);
-  gPad->SetBottomMargin(bottom);
-  gPad->SetRightMargin(0.2);
-  fhDcaXYvsDcaZnorm[0]->Draw("COLZ");
-
-  canvas3->cd(4);
-//   fhDXYvsDZ[1]->SetStats(kFALSE);
-  gPad->SetLogz();
-  gPad->SetLeftMargin(bottom);
-  gPad->SetTopMargin(0.1);
-  gPad->SetBottomMargin(bottom);
-  gPad->SetRightMargin(0.2);
-  fhDcaXYvsDcaZnorm[1]->Draw("COLZ");
 
   canvas3->SaveAs(Form("%s.eps", canvas3->GetName()));
   canvas3->SaveAs(Form("%s.ps", canvas3->GetName()));
@@ -999,7 +995,6 @@ void AliCFTrackIsPrimaryCuts::AddQAHistograms(TList *qaList) {
 
   for (Int_t j=0; j<kNStepQA; j++) {
     qaList->Add(fhDcaXYvsDcaZ[j]);
-    qaList->Add(fhDcaXYvsDcaZnorm[j]);
     for(Int_t i=0; i<kNHist; i++)
 	qaList->Add(fhQA[i][j]);
   }
