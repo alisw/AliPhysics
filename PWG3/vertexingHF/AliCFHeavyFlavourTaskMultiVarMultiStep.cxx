@@ -171,18 +171,31 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	Int_t icountRecoITSClusters = 0;
 	Int_t icountRecoPPR = 0;
 	
+	Int_t cquarks = 0;
+		
 	for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
 		AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
+		if (mcPart->GetPdgCode() == 4) cquarks++; 
+		if (mcPart->GetPdgCode() == -4) cquarks++; 
 		if (!mcPart) {
 			AliWarning("Particle not found in tree, skipping"); 
 			continue;
 		} 
 		
 		// check the MC-level cuts
+
 		if (!fCFManager->CheckParticleCuts(0, mcPart)) continue;  // 0 stands for MC level
+		Int_t pdgGranma = CheckOrigin(mcPart, mcArray);
+		Int_t abspdgGranma = TMath::Abs(pdgGranma);
+		if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
+			AliInfo(Form("Particle has a b-meson, or b-baryon mother (pdg code mother = %d )--> not coming from a c-quark, skipping...", pdgGranma));
+			continue;  // skipping particles that don't come from c quark
+		}
 		
+		//		if (TMath::Abs(pdgGranma)!=4) {
+
 		// fill the container for Gen-level selection
-		Double_t vectorMC[6] = {9999.,9999.,9999.,9999.,9999.,9999.};
+		Double_t vectorMC[7] = {9999.,9999.,9999.,9999.,9999.,9999.,9999.};
 		if (GetGeneratedValuesFromMCParticle(mcPart, mcArray, vectorMC)){
 			containerInput[0] = vectorMC[0];
 			containerInput[1] = vectorMC[1] ;
@@ -195,6 +208,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			containerInput[8] = 0.;   // dummy value, meaningless in MC, in micron
 			containerInput[9] = -100000.; // dummy value, meaningless in MC, in micron^2
 			containerInput[10] = 1.01;    // dummy value, meaningless in MC
+			containerInput[11] = vectorMC[6];    // dummy value, meaningless in MC
 			fCFManager->GetParticleContainer()->Fill(containerInput,kStepGenerated);
 			icountMC++;
 
@@ -242,7 +256,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			AliDebug(3,"Problems in filling the container");
 			continue;
 		}
- 	}    
+ 	}
+	if (cquarks<2) AliInfo(Form("Event found with %d c-quarks", cquarks));
 	
 	AliDebug(2, Form("Found %i MC particles that are D0!!",icountMC));
 	AliDebug(2, Form("Found %i MC particles that are D0 and satisfy Acc cuts!!",icountAcc));
@@ -286,7 +301,12 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			        AliDebug(2, "Skipping the particles due to cuts");
 				continue; 
 			}
-
+			Int_t pdgGranma = CheckOrigin(mcVtxHF, mcArray);
+			Int_t abspdgGranma = TMath::Abs(pdgGranma);
+			if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
+				AliInfo(Form("At Reco level, from MC info: Particle has a b-meson, or b-baryon mother (pdg code mother = %d )--> not coming from a c-quark, skipping...", pdgGranma));
+				continue;  // skipping particles that don't come from c quark
+			}
 
 			// fill the container...
 			Double_t pt = d0tokpi->Pt();
@@ -299,7 +319,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			Double_t d0pi = 0.;
 			Double_t d0K = 0.;
 			Double_t d0xd0 = d0tokpi->Prodd0d0();
-			Double_t cosPointingAngle = d0tokpi->CosPointingAngle();
+		        Double_t cosPointingAngle = d0tokpi->CosPointingAngle();
+			Double_t phi = d0tokpi->Phi();
 			Int_t pdgCode = mcVtxHF->GetPdgCode();
 			if (pdgCode > 0){
 				cosThetaStar = d0tokpi->CosThetaStarD0();
@@ -331,10 +352,11 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				containerInput[8] = d0K*1.E4;  // in micron
 				containerInput[9] = d0xd0*1.E8;  // in micron^2
 				containerInput[10] = cosPointingAngle;  // in micron
+				containerInput[11] = phi;  
 			}
 			else {
 				// ... or with generated values				
-				Double_t vectorMC[6] = {9999.,9999.,9999.,9999.,9999.,9999.};
+				Double_t vectorMC[7] = {9999.,9999.,9999.,9999.,9999.,9999.,9999.};
 				if (GetGeneratedValuesFromMCParticle(mcVtxHF, mcArray, vectorMC)){
 					containerInput[0] = vectorMC[0];
 					containerInput[1] = vectorMC[1] ;
@@ -347,6 +369,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					containerInput[8] = 0.;   // dummy value, meaningless in MC, in micron
 					containerInput[9] = 100000.; // dummy value, meaningless in MC, in micron^2
 					containerInput[10] = 1.01;    // dummy value, meaningless in MC
+					containerInput[11] = vectorMC[6];   
 				}
 				else {
 					AliDebug(3,"Problems in filling the container");
@@ -484,7 +507,6 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	// a query. It always runs on the client, it can be used to present
 	// the results graphically or save the results to file.
 	
-	Info("Terminate","");
 	AliAnalysisTaskSE::Terminate();
 	
 	AliInfo(Form("Found %i MC particles that are D0 in MC, in %d events",fCountMC,fEvents));
@@ -513,6 +535,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	TH1D* h80 =   cont->ShowProjection(8,0) ;   // d0K
 	TH1D* h90 =   cont->ShowProjection(9,0) ;   // d0xd0
 	TH1D* h100 =   cont->ShowProjection(10,0) ;   // cosPointingAngle
+	TH1D* h110 =   cont->ShowProjection(11,0) ;   // phi
 	
 	// MC-Acceptance level
 	TH1D* h01 =   cont->ShowProjection(0,1) ;   // pt
@@ -526,6 +549,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	TH1D* h81 =   cont->ShowProjection(8,1) ;   // d0K
 	TH1D* h91 =   cont->ShowProjection(9,1) ;   // d0xd0
 	TH1D* h101 =   cont->ShowProjection(10,1) ;   // cosPointingAngle
+	TH1D* h111 =   cont->ShowProjection(11,1) ;   // phi
 
 	// Reco-level
 	TH1D* h02 =   cont->ShowProjection(0,2) ;   // pt
@@ -539,6 +563,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	TH1D* h82 =   cont->ShowProjection(8,2) ;   // d0K
 	TH1D* h92 =   cont->ShowProjection(9,2) ;   // d0xd0
 	TH1D* h102 =   cont->ShowProjection(10,2) ;   // cosPointingAngle
+	TH1D* h112 =   cont->ShowProjection(11,2) ;   // phi
 	
 	h00->SetTitle("pT_D0 (GeV/c)");
 	h10->SetTitle("rapidity");
@@ -551,6 +576,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h80->SetTitle("d0_K (#mum)");
 	h90->SetTitle("d0xd0 (#mum^2)");
 	h100->SetTitle("cosPointingAngle");
+	h100->SetTitle("phi (rad)");
 
 	h00->GetXaxis()->SetTitle("pT_D0 (GeV/c)");
 	h10->GetXaxis()->SetTitle("rapidity");
@@ -563,6 +589,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h80->GetXaxis()->SetTitle("d0_K (#mum)");
 	h90->GetXaxis()->SetTitle("d0xd0 (#mum^2)");
 	h100->GetXaxis()->SetTitle("cosPointingAngle");
+	h110->GetXaxis()->SetTitle("phi (rad)");
 
 	h01->SetTitle("pT_D0 (GeV/c)");
 	h11->SetTitle("rapidity");
@@ -575,6 +602,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h81->SetTitle("d0_K (#mum)");
 	h91->SetTitle("d0xd0 (#mum^2)");
 	h101->SetTitle("cosPointingAngle");
+	h111->GetXaxis()->SetTitle("phi (rad)");
 
 	h01->GetXaxis()->SetTitle("pT_D0 (GeV/c)");
 	h11->GetXaxis()->SetTitle("rapidity");
@@ -587,6 +615,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h81->GetXaxis()->SetTitle("d0_K (#mum)");
 	h91->GetXaxis()->SetTitle("d0xd0 (#mum^2)");
 	h101->GetXaxis()->SetTitle("cosPointingAngle");
+	h111->GetXaxis()->SetTitle("phi (rad)");
 
 	h02->SetTitle("pT_D0 (GeV/c)");
 	h12->SetTitle("rapidity");
@@ -599,6 +628,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h82->SetTitle("d0_K (#mum)");
 	h92->SetTitle("d0xd0 (#mum^2)");
 	h102->SetTitle("cosPointingAngle");
+	h112->GetXaxis()->SetTitle("phi (rad)");
 
 	h02->GetXaxis()->SetTitle("pT_D0 (GeV/c)");
 	h12->GetXaxis()->SetTitle("rapidity");
@@ -611,6 +641,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h82->GetXaxis()->SetTitle("d0_K (#mum)");
 	h92->GetXaxis()->SetTitle("d0xd0 (#mum^2)");
 	h102->GetXaxis()->SetTitle("cosPointingAngle");
+	h112->GetXaxis()->SetTitle("phi (rad)");
 
 	Double_t max0 = h00->GetMaximum();
 	Double_t max1 = h10->GetMaximum();
@@ -623,6 +654,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	Double_t max8 = h80->GetMaximum();
 	Double_t max9 = h90->GetMaximum();
 	Double_t max10 = h100->GetMaximum();
+	Double_t max11 = h110->GetMaximum();
 	
 	h00->GetYaxis()->SetRangeUser(0,max0*1.2);
 	h10->GetYaxis()->SetRangeUser(0,max1*1.2);
@@ -635,6 +667,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h80->GetYaxis()->SetRangeUser(0,max8*1.2);
 	h90->GetYaxis()->SetRangeUser(0,max9*1.2);
 	h100->GetYaxis()->SetRangeUser(0,max10*1.2);
+	h110->GetYaxis()->SetRangeUser(0,max11*1.2);
 	
 	h01->GetYaxis()->SetRangeUser(0,max0*1.2);
 	h11->GetYaxis()->SetRangeUser(0,max1*1.2);
@@ -647,6 +680,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h81->GetYaxis()->SetRangeUser(0,max8*1.2);
 	h91->GetYaxis()->SetRangeUser(0,max9*1.2);
 	h101->GetYaxis()->SetRangeUser(0,max10*1.2);
+	h111->GetYaxis()->SetRangeUser(0,max11*1.2);
 	
 	h00->SetMarkerStyle(20);
 	h10->SetMarkerStyle(24);
@@ -659,6 +693,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h80->SetMarkerStyle(21);
 	h90->SetMarkerStyle(25);
 	h100->SetMarkerStyle(27);
+	h110->SetMarkerStyle(28);
 
 	h00->SetMarkerColor(2);
 	h10->SetMarkerColor(2);
@@ -671,6 +706,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h80->SetMarkerColor(2);
 	h90->SetMarkerColor(2);
 	h100->SetMarkerColor(2);
+	h110->SetMarkerColor(2);
 
 	h01->SetMarkerStyle(20) ;
 	h11->SetMarkerStyle(24) ;
@@ -683,6 +719,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h81->SetMarkerStyle(21);
 	h91->SetMarkerStyle(25);
 	h101->SetMarkerStyle(27);
+	h111->SetMarkerStyle(28);
 
 	h01->SetMarkerColor(8);
 	h11->SetMarkerColor(8);
@@ -695,6 +732,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h81->SetMarkerColor(8);
 	h91->SetMarkerColor(8);
 	h101->SetMarkerColor(8);
+	h111->SetMarkerColor(8);
 
 	h02->SetMarkerStyle(20) ;
 	h12->SetMarkerStyle(24) ;
@@ -707,6 +745,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h82->SetMarkerStyle(21);
 	h92->SetMarkerStyle(25);
 	h102->SetMarkerStyle(27);
+	h112->SetMarkerStyle(28);
 
 	h02->SetMarkerColor(4);
 	h12->SetMarkerColor(4);
@@ -719,6 +758,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h82->SetMarkerColor(4);
 	h92->SetMarkerColor(4);
 	h102->SetMarkerColor(4);
+	h112->SetMarkerColor(4);
 	
 	gStyle->SetCanvasColor(0);
 	gStyle->SetFrameFillColor(0);
@@ -820,8 +860,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	c3->cd(9);
 	c3->cd();
 
-	TCanvas * c4 =new TCanvas("c4","d0xd0, cosPointingAngle",1100,770);
-	c4->Divide(3,2);
+	TCanvas * c4 =new TCanvas("c4","d0xd0, cosPointingAngle, phi",1100,1600);
+	c4->Divide(3,3);
 	c4->cd(1);
 	h90->Draw("p");
 	c4->cd(1);
@@ -840,6 +880,15 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	c4->cd(6);
 	h102->Draw("p");
 	c4->cd(6);
+	c4->cd(7);
+	h110->Draw("p");
+	c4->cd(7);
+	c4->cd(8);
+	h111->Draw("p");
+	c4->cd(8);
+	c4->cd(9);
+	h112->Draw("p");
+	c4->cd(9);
 	c4->cd();
 
 	TFile* file_projection = new TFile("file_projection.root","RECREATE");
@@ -854,6 +903,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h80->Write("d0_K_step0");
 	h90->Write("d0xd0_step0");
 	h100->Write("cosPointingAngle_step0");
+	h110->Write("phi_step0");
 
 	h01->Write("pT_D0_step1");
 	h11->Write("rapidity_step1");
@@ -866,6 +916,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h81->Write("d0_K_step1");
 	h91->Write("d0xd0_step1");
 	h101->Write("cosPointingAngle_step1");
+	h111->Write("phi_step1");
 
 	h02->Write("pT_D0_step2");
 	h12->Write("rapidity_step2");
@@ -878,6 +929,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h80->Write("d0_K_step2");
 	h92->Write("d0xd0_step2");
 	h102->Write("cosPointingAngle_step2");
+	h112->Write("phi_step2");
 
 	file_projection->Close();
 
@@ -1006,8 +1058,8 @@ Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::CT(AliAODMCParticle* mcPart, Al
 				     (xdaughter1[1]-xmcPart[1])*(xdaughter1[1]-xmcPart[1])+
 				     (xdaughter1[2]-xmcPart[2])*(xdaughter1[2]-xmcPart[2]));
 
-	if (cT0 != cT1) {
-		AliWarning("cT from daughter 0 different from cT from daughter 1! Using cT from daughter 0, but PLEASE, CHECK....");
+	if ((cT0 - cT1)>1E-5) {
+		AliWarning(Form("cT from daughter 0 (%f) different from cT from daughter 1 (%f)! Using cT from daughter 0, but PLEASE, CHECK....",cT0,cT1));
 	}
 
 	// calculating cT from cT0
@@ -1154,7 +1206,33 @@ Bool_t AliCFHeavyFlavourTaskMultiVarMultiStep::GetGeneratedValuesFromMCParticle(
 	vectorMC[3] = pTpi ;
 	vectorMC[4] = pTK ;
 	vectorMC[5] = cT*1.E4 ;  // in micron
+	vectorMC[6] = mcPart->Phi() ;  
 	isOk = kTRUE;
 	return isOk;
+}
+//_________________________________________________________________________________________________
+Int_t AliCFHeavyFlavourTaskMultiVarMultiStep::CheckOrigin(AliAODMCParticle* mcPart, TClonesArray* mcArray)const{
+
+	//
+	// checking whether the very mother of the D0 is a charm or a bottom quark
+	//
+
+	Int_t pdgGranma = 0;
+	Int_t mother = 0;
+	mother = mcPart->GetMother();
+	Int_t istep = 0;
+	while (mother >0 ){
+		istep++;
+		AliDebug(2,Form("mother at step %d = %d", istep, mother));
+		AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(mcArray->At(mother));
+		pdgGranma = mcGranma->GetPdgCode();
+		AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
+		Int_t abspdgGranma = TMath::Abs(pdgGranma);
+		if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
+			break;
+		}
+		mother = mcGranma->GetMother();
+	}
+	return pdgGranma;
 }
 

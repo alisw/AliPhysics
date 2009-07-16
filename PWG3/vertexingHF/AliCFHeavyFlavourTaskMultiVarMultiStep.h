@@ -67,6 +67,7 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   Bool_t   GetGeneratedValuesFromMCParticle(AliAODMCParticle* mcPart, TClonesArray* mcArray, Double_t* vectorMC) const;
   void     SetMinITSClusters(Int_t minITSClusters) {fMinITSClusters = minITSClusters;}
   Int_t    GetMinITSClusters() const {return fMinITSClusters;}
+  Int_t    CheckOrigin(AliAODMCParticle* mcPart, TClonesArray* mcArray) const;
 
  protected:
   Int_t           fPDG;         //  PDG code of searched V0's
