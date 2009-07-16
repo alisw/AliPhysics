@@ -26,12 +26,23 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass()
   // Create containers for input/output
   AliAnalysisDataContainer *cinputmassD0 = mgr->CreateContainer("cinputmassD0",TChain::Class(), 
 							  AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutputmassD0 = mgr->CreateContainer("coutputmassD0",TList::Class(),
+
+  AliAnalysisDataContainer *coutputmassD01 = mgr->CreateContainer("coutputmassD01",TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   "D0InvMass.root");
+  AliAnalysisDataContainer *coutputmassD02 = mgr->CreateContainer("coutputmassD02",TList::Class(),
+							   AliAnalysisManager::kOutputContainer, 
+							   "D0InvMass.root");
+  AliAnalysisDataContainer *coutputmassD03 = mgr->CreateContainer("coutputmassD03",TH1F::Class(),
+							   AliAnalysisManager::kOutputContainer, 
+							   "D0InvMass.root");
+
   mgr->ConnectInput(massD0Task,0,mgr->GetCommonInputContainer());
 
-  mgr->ConnectOutput(massD0Task,1,coutputmassD0);
+  mgr->ConnectOutput(massD0Task,1,coutputmassD01);
+  mgr->ConnectOutput(massD0Task,2,coutputmassD02);
+  mgr->ConnectOutput(massD0Task,3,coutputmassD03);
+
 
   return massD0Task;
 }
