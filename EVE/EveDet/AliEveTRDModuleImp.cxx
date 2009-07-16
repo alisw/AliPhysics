@@ -377,7 +377,8 @@ void AliEveTRDChamber::LoadTracklets(TTree *trklTree)
   } else {
     fTracklets->Delete();
     TEveElementList *trklChild = (TEveElementList*) FindChild("Tracklets");
-    trklChild->Destroy();
+    if (trklChild)
+      trklChild->Destroy();
   }
 
 

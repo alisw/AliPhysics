@@ -27,7 +27,7 @@ TEveElementList *trd_tracklets()
       for (Int_t iTracklet = 0; iTracklet < 256; iTracklet++) {
         if (leaves[2 + iTracklet] == 0)
           break;
-        AliEveTRDTrackletOnline *evetrkl = new AliEveTRDTrackletOnline(new AliTRDtrackletWord(leaves[2 + iTracklet], leaves[0] + leaves[1]));
+        AliEveTRDTrackletOnline *evetrkl = new AliEveTRDTrackletOnline(new AliTRDtrackletWord(leaves[2 + iTracklet], 2*leaves[0] + leaves[1]));
         gEve->AddElement(evetrkl, listOfTracklets);
       }
     }

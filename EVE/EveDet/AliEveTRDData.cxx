@@ -630,7 +630,7 @@ AliEveTRDTrackletOnline::AliEveTRDTrackletOnline(AliTRDtrackletMCM *tracklet) :
   SetTitle(Form("Det: %i, ROB: %i, MCM: %i, Label: %i\n0x%08x", 
                 trkl->GetDetector(), trkl->GetROB(), trkl->GetMCM(), trkl->GetLabel(),
                 trkl->GetTrackletWord()));
-  SetLineColor(kRed);
+  SetLineColor(kGreen);
 
   AliTRDgeometry *geo = new AliTRDgeometry();
 //  TGeoHMatrix *matrix = geo->GetClusterMatrix(trkl->GetDetector());
@@ -655,7 +655,7 @@ AliEveTRDTrackletOnline::AliEveTRDTrackletOnline(AliTRDtrackletMCM *tracklet) :
   SetPoint(0, p[0], p[1], p[2]);
 
   x[0] -= length;
-  x[1] += length * trkl->GetdYdX();
+  x[1] -= length * trkl->GetdYdX();
   x[2] *= x[0] / (x[0] + length);
   geo->RotateBack(trkl->GetDetector(), x, p);
 //  matrix->LocalToMaster(x, p);
@@ -698,7 +698,7 @@ AliEveTRDTrackletOnline::AliEveTRDTrackletOnline(AliTRDtrackletWord *tracklet) :
   SetPoint(0, p[0], p[1], p[2]);
 
   x[0] -= length;
-  x[1] += length * trkl->GetdYdX();
+  x[1] -= length * trkl->GetdYdX();
   x[2] *= x[0] / (x[0] + length);
   geo->RotateBack(trkl->GetDetector(), x, p);
   SetPoint(1, p[0], p[1], p[2]);

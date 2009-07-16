@@ -32,7 +32,6 @@
 
 #include "AliTRDhit.h"
 #include "AliTRDcluster.h"
-#include "AliTRDmcmTracklet.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
 
