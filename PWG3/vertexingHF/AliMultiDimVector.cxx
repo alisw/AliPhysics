@@ -29,7 +29,6 @@
 #include "TH2.h"
 #include "AliMultiDimVector.h"
 #include "AliLog.h"
-#include "TMath.h"
 #include "TString.h"
 
 ClassImp(AliMultiDimVector)
@@ -44,7 +43,7 @@ fIsIntegrated(0)
   // default constructor
 }
 //___________________________________________________________________________
-AliMultiDimVector::AliMultiDimVector(const char *name,const char *title, const Int_t npars, Int_t nptbins, Int_t *nofcells, Float_t *loosecuts, Float_t *tightcuts, TString *axisTitles):TNamed(name,title),
+AliMultiDimVector::AliMultiDimVector(const char *name,const char *title, const Int_t nptbins, Float_t* ptlimits, const Int_t npars,  Int_t *nofcells, Float_t *loosecuts, Float_t *tightcuts, TString *axisTitles):TNamed(name,title),
 fNVariables(npars),
 fNPtBins(nptbins),
 fVett(0),
@@ -66,8 +65,10 @@ fIsIntegrated(0){
     }
     fAxisTitles[i]=axisTitles[i].Data();
   }
-  fNTotCells=ntot*fNPtBins;
+  fNTotCells=ntot*fNPtBins;  
   fVett.Set(fNTotCells); 
+  for(Int_t ipt=0;ipt<fNPtBins+1;ipt++) fPtLimits[ipt]=ptlimits[ipt];
+  for(Int_t ipt=fNPtBins+1;ipt<fgkMaxNPtBins+1;ipt++) fPtLimits[ipt]=999.;
   for (ULong64_t j=0;j<fNTotCells;j++) fVett.AddAt(0,j);
 }
 //___________________________________________________________________________
@@ -87,6 +88,8 @@ fIsIntegrated(mv.fIsIntegrated)
     fAxisTitles[i]=mv.GetAxisTitle(i);
   }
   fVett.Set(fNTotCells); 
+  
+  for(Int_t ipt=0;ipt<fNPtBins+1;ipt++) fPtLimits[ipt]=mv.GetPtLimit(ipt);
   for(ULong64_t i=0;i<fNTotCells;i++) fVett[i]=mv.GetElement(i);
 }
 //___________________________________________________________________________
@@ -103,8 +106,8 @@ void AliMultiDimVector::CopyStructure(const AliMultiDimVector* mv){
     fGreaterThan[i]=mv->GetGreaterThan(i);
     fAxisTitles[i]=mv->GetAxisTitle(i);
   }
-  fVett.Set(fNTotCells);
-  
+  for(Int_t ipt=0;ipt<fNPtBins+1;ipt++) fPtLimits[ipt]=mv->GetPtLimit(ipt);
+  fVett.Set(fNTotCells);  
 }
 //______________________________________________________________________
 Bool_t AliMultiDimVector::GetIndicesFromGlobalAddress(ULong64_t globadd, Int_t *ind, Int_t &ptbin) const {
@@ -375,6 +378,49 @@ void AliMultiDimVector::Integrate(){
   for(ULong64_t i=0;i<fNTotCells;i++) integral[i]=CountsAboveCell(i);
   for(ULong64_t i=0;i<fNTotCells;i++) fVett[i]= integral[i];
   fIsIntegrated=kTRUE;
+}//_____________________________________________________________________________ 
+ULong64_t* AliMultiDimVector::GetGlobalAddressesAboveCuts(Float_t *values, Int_t ptbin, Int_t& nVals) const{
+  // fills an array with global addresses of cells passing the cuts
+
+  Int_t ind[fgkMaxNVariables];
+  Bool_t retcode=GetIndicesFromValues(values,ind);
+  if(!retcode){ 
+    nVals=0;
+    return 0x0;
+  }
+  for(Int_t i=fNVariables; i<fgkMaxNVariables; i++) ind[i]=0;
+  Int_t mink[fgkMaxNVariables];
+  Int_t maxk[fgkMaxNVariables];
+  Int_t size=1;
+  for(Int_t i=0;i<fgkMaxNVariables;i++){
+    GetFillRange(i,ind[i],mink[i],maxk[i]);
+    size*=(maxk[i]-mink[i]+1);
+  }
+  ULong64_t* indexes=new ULong64_t[size];
+  nVals=0;
+  for(Int_t k0=mink[0]; k0<=maxk[0]; k0++){
+    for(Int_t k1=mink[1]; k1<=maxk[1]; k1++){
+      for(Int_t k2=mink[2]; k2<=maxk[2]; k2++){
+	for(Int_t k3=mink[3]; k3<=maxk[3]; k3++){
+	  for(Int_t k4=mink[4]; k4<=maxk[4]; k4++){
+	    for(Int_t k5=mink[5]; k5<=maxk[5]; k5++){
+	      for(Int_t k6=mink[6]; k6<=maxk[6]; k6++){
+		for(Int_t k7=mink[7]; k7<=maxk[7]; k7++){
+		  for(Int_t k8=mink[8]; k8<=maxk[8]; k8++){
+		    for(Int_t k9=mink[9]; k9<=maxk[9]; k9++){
+		      Int_t currentBin[fgkMaxNVariables]={k0,k1,k2,k3,k4,k5,k6,k7,k8,k9};
+		      indexes[nVals++]=GetGlobalAddressFromIndices(currentBin,ptbin);
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+  return indexes;
 }
 //_____________________________________________________________________________ 
 Float_t AliMultiDimVector::CountsAboveCell(ULong64_t globadd) const{
@@ -492,7 +538,10 @@ AliMultiDimVector* AliMultiDimVector:: ShrinkPtBins(Int_t firstBin, Int_t lastBi
     axisTitles[i]=fAxisTitles[i];
   }
   Int_t newNptbins=fNPtBins-(lastBin-firstBin);
-  AliMultiDimVector* shrinkedMV=new AliMultiDimVector(GetName(),GetTitle(),fNVariables,newNptbins,nofcells,loosecuts,tightcuts,axisTitles);
+  Float_t ptlimits[fgkMaxNPtBins+1];
+  for(Int_t ipt=0; ipt<=firstBin;ipt++) ptlimits[ipt]=fPtLimits[ipt];
+  for(Int_t ipt=firstBin+1; ipt<newNptbins+1;ipt++) ptlimits[ipt]=fPtLimits[ipt+(lastBin-firstBin)];
+  AliMultiDimVector* shrinkedMV=new AliMultiDimVector(GetName(),GetTitle(),newNptbins,ptlimits,fNVariables,nofcells,loosecuts,tightcuts,axisTitles);
   
   ULong64_t nOfPointsPerPtbin=fNTotCells/fNPtBins;
   ULong64_t addressOld,addressNew;
@@ -524,4 +573,18 @@ AliMultiDimVector* AliMultiDimVector:: ShrinkPtBins(Int_t firstBin, Int_t lastBi
     }
   }
   return shrinkedMV;
+}
+//_____________________________________________________________________________ 
+void AliMultiDimVector::PrintStatus(){
+  //
+  printf("Number of Pt bins       = %d\n",fNPtBins);
+  printf("Limits of Pt bins       = ");
+  for(Int_t ib=0;ib<fNPtBins+1;ib++) printf("%6.2f ",fPtLimits[ib]);
+  printf("\n");
+  printf("Number of cut variables = %d\n",fNVariables);
+  for(Int_t iv=0;iv<fNVariables;iv++){
+    printf("- Variable %d: %s\n",iv,fAxisTitles[iv].Data());
+    printf("    Nsteps= %d Rage = %6.2f %6.2f\n",
+	   fNCutSteps[iv],fMinLimits[iv],fMaxLimits[iv]);
+  }
 }
