@@ -47,6 +47,9 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
 
   Int_t GetQ0() const { return fQ0; }
   Int_t GetQ1() const { return fQ1; }
+  Int_t GetNHits() const { return fNHits; }
+  Int_t GetNHits0() const { return fNHits0; }
+  Int_t GetNHits1() const { return fNHits1; }
 
   UInt_t GetTrackletWord() const { return fTrackletWord; }
   void SetTrackletWord(UInt_t trackletWord) { fTrackletWord = trackletWord; }
@@ -58,6 +61,9 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   void SetLabel(Int_t label) { fLabel = label; }
   void SetQ0(Int_t charge) { fQ0 = charge; }
   void SetQ1(Int_t charge) { fQ1 = charge; }
+  void SetNHits(Int_t nhits) { fNHits = nhits; }
+  void SetNHits0(Int_t nhits) { fNHits0 = nhits; }
+  void SetNHits1(Int_t nhits) { fNHits1 = nhits; }
 
  protected:
   AliTRDgeometry *fGeo; //! TRD geometry
@@ -70,6 +76,10 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
 
   Int_t fQ0; // accumulated charge in the first time window
   Int_t fQ1; // accumulated charge in the second time window
+
+  Int_t fNHits;  // no. of contributing clusters
+  Int_t fNHits0; // no. of contributing clusters in window 0
+  Int_t fNHits1; // no. of contributing clusters in window 1
 
   Int_t fLabel; // label for MC track
 

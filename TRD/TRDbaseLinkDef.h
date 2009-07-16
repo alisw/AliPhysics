@@ -75,7 +75,6 @@
 #pragma link C++ class  AliTRDSensorArray+;
 
 #pragma link C++ class  AliTRDmcmSim+;
-#pragma link C++ class  AliTRDmcmTracklet+;
 #pragma link C++ class  AliTRDtrapConfig+;
 #pragma link C++ class  AliTRDtrackletBase+;
 #pragma link C++ class  AliTRDtrackletGTU+;

@@ -34,7 +34,7 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
   Int_t GetYbin() const { return fTracklet->GetYbin(); }
   Int_t GetdY() const { return fTracklet->GetdY(); }
   Int_t GetZbin() const { return fTracklet->GetZbin(); }
-  Double_t GetPID() const { return fTracklet->GetPID(); }
+  Int_t GetPID() const { return fTracklet->GetPID(); }
   Double_t GetPID(Int_t is) const { return fTracklet->GetPID(is); }
 
   // ----- Getters for calculated properties -----

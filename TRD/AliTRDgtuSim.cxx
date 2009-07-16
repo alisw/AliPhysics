@@ -32,7 +32,6 @@
 #include "TClonesArray.h"
 
 #include "AliTRDgtuSim.h"
-#include "AliTRDmcmTracklet.h"
 #include "AliTRDgtuTMU.h"
 #include "AliTRDtrackGTU.h"
 #include "AliTRDtrackletWord.h"
@@ -296,7 +295,7 @@ Bool_t AliTRDgtuSim::LoadTracklets(AliLoader *loader)
       for (Int_t iTracklet = 0; iTracklet < 256; iTracklet++) {
 	if (leaves[2 + iTracklet] == 0)
 	  break;
-	new((*fTrackletArray)[notrkl]) AliTRDtrackletWord(leaves[2 + iTracklet], leaves[0] + leaves[1]);
+	new((*fTrackletArray)[notrkl]) AliTRDtrackletWord(leaves[2 + iTracklet], 2*leaves[0] + leaves[1]);
 	notrkl++;
       }
       AliDebug(2,Form("Entry: %3i: Det: %3i, side: %i, 1st tracklet: 0x%08x, no: %i", iEntry, leaves[0], leaves[1], leaves[2], notrkl));

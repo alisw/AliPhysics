@@ -45,6 +45,7 @@ class AliTRDgtuTMU : public TObject {
 
   Bool_t CalculateTrackParams(AliTRDtrackGTU *track); 
   Bool_t Uniquifier(TList* inlist, TList *outlist);
+  Bool_t CalculatePID(AliTRDtrackGTU *track);
 
 protected:
   TObjArray **fTracklets; // holding all tracklets from one detector (i. e. one chamber)

@@ -645,7 +645,7 @@ Bool_t AliTRDtrapConfig::LoadConfig()
   SetTrapReg(kFTAL, 267);
   SetTrapReg(kFTLL, 356);
   SetTrapReg(kFTLS, 387);
-  SetTrapReg(kFTBY, 1);
+  SetTrapReg(kFTBY, 0);
 
   // tracklet calculation
   SetTrapReg(kTPQS0, 5);

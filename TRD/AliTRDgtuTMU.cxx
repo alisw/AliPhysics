@@ -219,14 +219,14 @@ Bool_t AliTRDgtuTMU::RunInputUnit(Int_t layer)
     alpha = ( 2 * trk->GetdY() - (alpha >> fGtuParam->GetBitExcessAlpha()) + 1 ) >> 1;
     trk->SetAlpha(alpha);
 
-    Int_t yproj = -1 * trk->GetdY() * (fGtuParam->GetCiYProj(layer)); //??? sign?
+    Int_t yproj = trk->GetdY() * (fGtuParam->GetCiYProj(layer)); //??? sign?
     yproj = ( ( ( (yproj >> fGtuParam->GetBitExcessYProj()) + trk->GetYbin() ) >> 2) + 1) >> 1;
     trk->SetYProj(yproj);
 
     trk->SetYPrime(trk->GetYbin() + fGtuParam->GetYt(fStack, layer, trk->GetZbin()));
 
-//    printf("InputUnit : GetIndex(): %3i, GetZbin(): %2i, GetY() : %5i, GetdY() : %3i, GetYPrime() : %5i, GetYProj() : %5i, GetAlpha() : %3i \n", 
-//	   trk->GetIndex(), trk->GetZbin(), trk->GetYbin(), trk->GetdY(), trk->GetYPrime(), trk->GetYProj(), trk->GetAlpha() );
+    AliDebug(10, Form("InputUnit : GetIndex(): %3i, GetZbin(): %2i, GetY() : %5i, GetdY() : %3i, GetYPrime() : %5i, GetYProj() : %5i, GetAlpha() : %3i", 
+		      trk->GetIndex(), trk->GetZbin(), trk->GetYbin(), trk->GetdY(), trk->GetYPrime(), trk->GetYProj(), trk->GetAlpha() ));
   }
   return kTRUE;
 }
@@ -238,7 +238,7 @@ Bool_t AliTRDgtuTMU::RunZChannelUnit(Int_t layer)
   TIter next(fTracklets[layer]);
 
   while (AliTRDtrackletGTU *trk = (AliTRDtrackletGTU*) next()) {
-//    printf("*TMU* Tracklet in stack %d, layer %2d: 0x%08x ", fStack, layer, trk->GetTrackletWord());
+    AliDebug(10,Form("*TMU* Tracklet in stack %d, layer %2d: 0x%08x ", fStack, layer, trk->GetTrackletWord()));
     for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++) {
       if (fGtuParam->IsInZChannel(fStack, layer, zch, trk->GetZbin()) ) {
 	trk->SetSubChannel(zch, fGtuParam->GetZSubchannel(fStack, layer, zch, trk->GetZbin()) );
@@ -680,8 +680,29 @@ Bool_t AliTRDgtuTMU::RunTrackReconstruction(TList* ListOfTracks)
   TIter next(ListOfTracks);
   while (AliTRDtrackGTU *track = (AliTRDtrackGTU*) next()) {
     CalculateTrackParams(track);
+    CalculatePID(track);
   }
   return kTRUE;
+}
+
+Bool_t AliTRDgtuTMU::CalculatePID(AliTRDtrackGTU *track)
+{
+  if (!track) {
+    AliError("No track to calculate!");
+    return kFALSE;
+  }
+
+  Int_t nTracklets = 0;
+  Int_t pidSum = 0;
+  for (Int_t layer = 0; layer < fGtuParam->GetNLayers(); layer++) {
+    if (!track->IsTrackletInLayer(layer)) {
+      continue;
+    }
+    AliTRDtrackletGTU *trk = track->GetTracklet(layer);
+    pidSum += trk->GetPID();
+    nTracklets++;
+  }
+  track->SetPID(pidSum/nTracklets);
 }
 
 Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track) 

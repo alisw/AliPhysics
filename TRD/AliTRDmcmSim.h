@@ -16,6 +16,7 @@
 #include "AliTRDcalibDB.h"
 
 class TClonesArray;
+class TH2F;
 
 class AliRunLoader;
 class AliTRDfeeParam;
@@ -34,6 +35,7 @@ class AliTRDmcmSim : public TObject {
 
           void      Init( Int_t cha, Int_t rob, Int_t mcm, Bool_t newEvent = kFALSE );   // Initialize MCM by the position parameters
 	  void      Reset();                                   // clears filter registers and internal data
+	  void      SetNTimebins(Int_t ntimebins); 
 
 	  Bool_t    LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob, Int_t mcm);
 	  void      NoiseTest(Int_t nsamples, Int_t mean, Int_t sigma, Int_t inputGain = 1, Int_t inputTail = 2);
@@ -47,6 +49,12 @@ class AliTRDmcmSim : public TObject {
           void      SetDataPedestal(Int_t iadc );              // Fill ADC data with pedestal values
   static  void      SetApplyCut(Bool_t applyCut) { fgApplyCut = applyCut; }
 
+  static  Float_t   GetChargeNorm() { return fgChargeNorm; }
+  static  void      SetChargeNorm(Float_t chargenorm) { fgChargeNorm = chargenorm; }
+
+  static  Int_t     GetAddBaseline() { return fgAddBaseline; }
+  static  void      SetAddBaseline(Int_t baseline) { fgAddBaseline = baseline; }
+
           Int_t     GetDetector() const  { return fDetector;  };     // Returns Chamber ID (0-539)
           Int_t     GetRobPos() const { return fRobPos; };     // Returns ROB position (0-7)
           Int_t     GetMcmPos() const { return fMcmPos; };     // Returns MCM position (0-17) (16,17 are mergers)
@@ -55,8 +63,8 @@ class AliTRDmcmSim : public TObject {
 	  // for the ADC/Col mapping, see: http://wiki.kip.uni-heidelberg.de/ti/TRD/index.php/Image:ROB_MCM_numbering.pdf
   static  Bool_t    GetApplyCut() { return fgApplyCut; }
 
-	  void WriteData(AliTRDarrayADC *digits);
-	  Bool_t StoreTracklets();                             // Stores tracklets via runloader
+	  void      WriteData(AliTRDarrayADC *digits);
+	  Bool_t    StoreTracklets();                          // Stores tracklets via runloader
 
 	  Int_t     ProduceRawStream( UInt_t *buf, Int_t bufsize, UInt_t iEv = 0 ); // Produce raw data stream - Read data format
 	  Int_t     ProduceTrackletStream( UInt_t *buf, Int_t bufsize ); // produce the tracklet stream for this MCM
@@ -88,6 +96,14 @@ class AliTRDmcmSim : public TObject {
 	  void      CalcFitreg();
 	  void      TrackletSelection();
 	  void      FitTracklet();
+
+  static  Int_t     GetPIDNBinsQ0() { return fgPidNBinsQ0; }
+  static  Int_t     GetPIDNBinsQ1() { return fgPidNBinsQ1; }
+  static  Int_t     GetPID(Float_t q0, Float_t q1);
+
+  static  void      SetPIDlut(TH2F *lut);
+  static  void      SetPIDlut(Int_t *lut, Int_t nbinsq0, Int_t nbinsq1);
+  static  void      SetPIDlutDefault();
 
 	  TClonesArray* GetTrackletArray() const { return fTrackletArray; }
 
@@ -181,7 +197,16 @@ class AliTRDmcmSim : public TObject {
 	  AliTRDmcmSim(const AliTRDmcmSim &m);             // not implemented
 	  AliTRDmcmSim &operator=(const AliTRDmcmSim &m);  // not implemented
 
-	  static Bool_t fgApplyCut;
+  static Bool_t fgApplyCut;
+
+  static Int_t fgAddBaseline;
+
+  static Float_t fgChargeNorm;
+  static Int_t fgPidNBinsQ0;
+  static Int_t fgPidNBinsQ1;
+  static Int_t fgPidLutDefault[40][50];
+  static Int_t *fgPidLut;
+  static Bool_t fgPidLutDelete;
 
   ClassDef(AliTRDmcmSim,4)
 };
