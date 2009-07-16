@@ -431,6 +431,9 @@ Bool_t AliHLTTPCClusterFinder::ComparePads(AliHLTTPCPad *nextPad,AliHLTTPCCluste
 
   //Checking if we have a match on the next pad
   for(UInt_t candidateNumber=0;candidateNumber<nextPad->fClusterCandidates.size();candidateNumber++){
+    if(nextPad->fUsedClusterCandidates[candidateNumber] == 1){
+      continue;
+    }
     AliHLTTPCClusters *candidate =&nextPad->fClusterCandidates[candidateNumber]; 
     //    if(cluster->fMean-candidate->fMean==1 || candidate->fMean-cluster->fMean==1 || cluster->fMean-candidate->fMean==0){
     

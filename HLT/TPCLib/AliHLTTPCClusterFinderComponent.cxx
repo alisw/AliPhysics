@@ -339,6 +339,15 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       mysize = 0;
       offset = tSize;
 
+      // Kenneth 16. July 2009
+      // 32 byte is the size of the common data header (CDH)
+      // this is introduced as a protection of empty files
+      // normally when running with file publisher where 
+      // Timms script is used to create the missing files
+      if(iter->fSize <= 32){
+	continue;
+      }
+
 
       if (fModeSwitch==0 || fModeSwitch==2 || fModeSwitch==3) {
 	HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
