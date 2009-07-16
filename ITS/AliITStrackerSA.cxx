@@ -39,6 +39,7 @@
 #include "AliITStrackSA.h"
 #include "AliITStrackerSA.h"
 #include "AliITSReconstructor.h"
+#include "AliLog.h"
 #include "AliRun.h"
 
 ClassImp(AliITStrackerSA)
@@ -337,7 +338,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 
 // Track finder using the ESD object
 
-
+  AliDebug(2,Form(" field is %f",event->GetMagneticField()));
   
   if(!fITSclusters){
     Fatal("FindTracks","ITS cluster tree is not accessed - Abort!!!\n Please use method SetClusterTree to pass the pointer to the tree\n");
@@ -470,11 +471,11 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	      if(nClusLay[nnp]!=0) layOK+=1;
 	    }
 	    if(layOK>=minNPoints){ 
-	      //printf("---NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]);
+	      AliDebug(2,Form("---NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]));
 	      AliITStrackV2* tr2 = 0;
 	      tr2 = FitTrack(trs,primaryVertex);
 	      if(!tr2) continue;
-	      //printf("---NPOINTS fit: %d\n",tr2->GetNumberOfClusters());
+	      AliDebug(2,Form("---NPOINTS fit: %d\n",tr2->GetNumberOfClusters()));
 	      
 	      StoreTrack(tr2,event);
 	      ntrack++;
@@ -532,11 +533,11 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	      if(nClusLay[nnp]!=0) layOK+=1;
 	    }
 	    if(layOK>=minNPoints){ 
-	      //printf("---NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]);
+	      AliDebug(2,Form("---NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]));
 	      AliITStrackV2* tr2 = 0;
 	      tr2 = FitTrack(trs,primaryVertex);
 	      if(!tr2) continue;
-	      //printf("---NPOINTS fit: %d\n",tr2->GetNumberOfClusters());
+	      AliDebug(2,Form("---NPOINTS fit: %d\n",tr2->GetNumberOfClusters()));
 	      
 	      StoreTrack(tr2,event);
 	      ntrack++;
@@ -593,12 +594,12 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	    if(nClusLay[nnp]!=0) layOK+=1;
 	  }
 	  if(layOK==1) {
-	    //printf("----NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]);
+	    AliDebug(2,Form("----NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]));
 	    AliITStrackV2* tr2 = 0;
 	    Bool_t onePoint = kTRUE;
 	    tr2 = FitTrack(trs,primaryVertex,onePoint);
 	    if(!tr2) continue;
-	    //printf("----NPOINTS fit: %d\n",tr2->GetNumberOfClusters());
+	    AliDebug(2,Form("----NPOINTS fit: %d\n",tr2->GetNumberOfClusters()));
 	    
 	    StoreTrack(tr2,event);
 	    ntrack++;
@@ -828,21 +829,24 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
               ot->ResetCovariance(10.);
               ot->ResetClusters();
               
-              if(RefitAt(AliITSRecoParam::GetrInsideITSscreen(),ot,trac)){ //fit from layer 1 to layer 6
-                AliITStrackMI *otrack2 = new AliITStrackMI(*ot);
-                otrack2->ResetCovariance(10.); 
-                otrack2->ResetClusters();
-                //fit from layer 6 to layer 1
-                if(RefitAt(AliITSRecoParam::GetrInsideSPD1(),otrack2,ot)) {
-		  fListOfTracks->AddLast(otrack2);
-		  fListOfSATracks->AddLast(trac);
-		} else {
-		  delete otrack2;
-		  delete trac;
-		}
+	      // Propagate inside the innermost layer with a cluster 
+	      if(ot->Propagate(ot->GetX()-0.1*ot->GetX())) {
+
+		if(RefitAt(AliITSRecoParam::GetrInsideITSscreen(),ot,trac)){ //fit from layer 1 to layer 6
+		  AliITStrackMI *otrack2 = new AliITStrackMI(*ot);
+		  otrack2->ResetCovariance(10.); 
+		  otrack2->ResetClusters();
+		  //fit from layer 6 to layer 1
+		  if(RefitAt(AliITSRecoParam::GetrInsideSPD1(),otrack2,ot)) {
+		    fListOfTracks->AddLast(otrack2);
+		    fListOfSATracks->AddLast(trac);
+		  } else {
+		    delete otrack2;
+		    delete trac;
+		  }
                               
-              }       
-          
+		}       
+	      }
               delete ot;
             }//end loop layer 6
           }//end loop layer 5
@@ -1284,3 +1288,4 @@ void AliITStrackerSA::GetCoorErrors(AliITSRecPoint* cl,Float_t &sx,Float_t &sy, 
   sz = TMath::Sqrt(cl->GetSigmaZ2());
 */
 }
+

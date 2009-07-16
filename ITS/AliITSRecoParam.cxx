@@ -45,7 +45,7 @@ const Double_t AliITSRecoParam::fgkdm=0.40;
 const Double_t AliITSRecoParam::fgkrs=50.0;
 const Double_t AliITSRecoParam::fgkds=0.001;
 const Double_t AliITSRecoParam::fgkrInsideITSscreen=49.0;
-const Double_t AliITSRecoParam::fgkrInsideSPD1=3.7;
+const Double_t AliITSRecoParam::fgkrInsideSPD1=3.5;
 const Double_t AliITSRecoParam::fgkrPipe=3.;
 const Double_t AliITSRecoParam::fgkrInsidePipe=2.7;
 const Double_t AliITSRecoParam::fgkrOutsidePipe=3.3;
@@ -717,3 +717,4 @@ void AliITSRecoParam::PrintParameters() const
 
   return;
 }
+
