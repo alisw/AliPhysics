@@ -17,7 +17,7 @@
 //
 // AliAnalysisTaskSE for the extraction of signal(e.g D+) of heavy flavor
 // decay candidates with the MC truth.
-
+// Author: Renu Bala, bala@to.infn.it
 /////////////////////////////////////////////////////////////
 
 #include <TClonesArray.h>
@@ -49,7 +49,6 @@ fHistBackground(0),
 fVHF(0)
 {
   // Default constructor
-
 }
 
 //________________________________________________________________________
@@ -68,9 +67,9 @@ fVHF(0)
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
   // Output slot #2 writes into a TNtuple container
-  DefineOutput(2,TNtuple::Class());  //My private output //AD
+  DefineOutput(2,TNtuple::Class());  //My private output
   // Output slot #3 writes into a TNtuple container
-  DefineOutput(3,TNtuple::Class());  //My private output //AD
+  DefineOutput(3,TNtuple::Class());  //My private output
 }
 
 //________________________________________________________________________
@@ -133,12 +132,9 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput->Add(fHistBackground);
   
 
-  fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Ptpi:Ptpi2:PtK:PtRec:PtTrue:PointingAngle:DecLeng:VxTrue:VxRec:InvMass:sigvert");
-  fNtupleDplusbackg = new TNtuple("fNtupleDplusbackg","D + backg","Ptpibkg:Ptpi2bkg:PtKbkg:PtRecbkg:PointingAnglebkg:DLbkg:VxRecbkg:InvMassbkg:sigvertbkg");
-
-  //fOutput->Add(fNtupleDplus); // AD
-  //fOutput->Add(fNtupleDplusbackg); //AD
-
+  fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Ptpi:PtK:Ptpi2:PtRec:PtTrue:PointingAngle:DecLeng:VxTrue:VxRec:VyRec,VzRec,InvMass:sigvert:d0Pi:d0K:d0Pi2");
+  fNtupleDplusbackg = new TNtuple("fNtupleDplusbackg","D + backg","Ptpibkg:Ptkbkg:Ptpi2bkg:PtRecbkg:PointingAnglebkg:DLbkg:VxRecbkg:VyRecbkg:VzRecbkg:InvMassbkg:sigvertbkg:d0Pibkg:d0Kbkg:d0Pi2bkg");
+  
   return;
 }
 
@@ -192,40 +188,77 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	d->SetOwnPrimaryVtx(vtx1);
 	unsetvtx=kTRUE;
       }
-      if(d->SelectDplus(fVHF->GetDplusCuts()))
-	{
+      if(d->SelectDplus(fVHF->GetDplusCuts())) {
 	  
 	  
-	  Int_t labDp = d->MatchToMC(411,arrayMC);
-	  //  if(labDp>=0) {
-	    AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
-	    if(labDp>=0) {
-	      Int_t pdgDp = TMath::Abs(partDp->GetPdgCode());
-	      if(pdgDp==411){
-
-	  fHistSignal->Fill(d->InvMassDplus());
-	  fHistMass->Fill(d->InvMassDplus());
+	Int_t labDp = d->MatchToMC(411,arrayMC);
+    
+	if(labDp>=0) {
+	  AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
+	  Int_t pdgDp = TMath::Abs(partDp->GetPdgCode());
+	  if(pdgDp==411){
 	    
-	  // Post the data already here
-	  PostData(1,fOutput);
+	    fHistSignal->Fill(d->InvMassDplus());
+	    fHistMass->Fill(d->InvMassDplus());
+	    
+	    // Post the data already here
+	    PostData(1,fOutput);
+	    
+	    AliAODMCParticle *dg0 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(0));
 
-	  fNtupleDplus->Fill(pdgDp,partDp->Px()-d->Px(),partDp->Py()-d->Py(),partDp->Pz()-d->Pz(),d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),partDp->Pt(),d->CosPointingAngle(),d->DecayLength(),partDp->Xv(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());
-	  PostData(2,fNtupleDplus); //AD
-	      }
-	    }	  
-else {     
-	    fHistBackground->Fill(d->InvMassDplus());
-	    fNtupleDplusbackg->Fill(d->PtProng(0),d->PtProng(2),d->PtProng(1),d->Pt(),d->CosPointingAngle(),d->DecayLength(),d->Xv(),d->InvMassDplus(),d->GetSigmaVert());	    
-	    PostData(3,fNtupleDplusbackg); //AD
+	    Float_t tmp[20];
+	    tmp[0]=pdgDp;
+	    tmp[1]=partDp->Px()-d->Px();
+	    tmp[2]=partDp->Py()-d->Py();
+	    tmp[3]=partDp->Pz()-d->Pz();
+	    tmp[4]=d->PtProng(0);
+	    tmp[5]=d->PtProng(1);
+	    tmp[6]=d->PtProng(2);
+	    tmp[7]=d->Pt();
+	    tmp[8]=partDp->Pt();
+	    tmp[9]=d->CosPointingAngle();
+	    tmp[10]=d->DecayLength();
+	    tmp[11]=dg0->Xv();
+	    tmp[12]=d->Xv();
+	    tmp[13]=d->Yv();
+	    tmp[14]=d->Zv();
+	    tmp[15]=d->InvMassDplus();
+	    tmp[16]=d->GetSigmaVert();
+	    tmp[17]=d->Getd0Prong(0);
+	    tmp[18]=d->Getd0Prong(1);
+	    tmp[19]=d->Getd0Prong(2);
 
+
+	    fNtupleDplus->Fill(tmp);
+	    PostData(2,fNtupleDplus);
+	  }
+	} else {     
+
+	    Float_t tmpbkg[14];
+	    tmpbkg[0]=d->PtProng(0);
+	    tmpbkg[1]=d->PtProng(1);
+	    tmpbkg[2]=d->PtProng(2);
+	    tmpbkg[3]=d->Pt();
+	    tmpbkg[4]=d->CosPointingAngle();
+	    tmpbkg[5]=d->DecayLength();
+	    tmpbkg[6]=d->Xv();
+	    tmpbkg[7]=d->Yv();
+	    tmpbkg[8]=d->Zv();
+	    tmpbkg[9]=d->InvMassDplus();
+	    tmpbkg[10]=d->GetSigmaVert();
+	    tmpbkg[11]=d->Getd0Prong(0);
+	    tmpbkg[12]=d->Getd0Prong(1);
+	    tmpbkg[13]=d->Getd0Prong(2);
+
+	  fHistBackground->Fill(d->InvMassDplus());
+	  fNtupleDplusbackg->Fill(tmpbkg);	    
+	  PostData(3,fNtupleDplusbackg);
 	  fHistMass->Fill(d->InvMassDplus());
- }
-	  
-	
 	}
-
-
 	
+	
+      }
+
       if(unsetvtx) d->UnsetOwnPrimaryVtx();
 
     }
@@ -248,16 +281,12 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
     return;
   }
 
-  //fNtupleDplus = dynamic_cast<TNtuple*>(fOutput->FindObject("fNtupleDplus"));//AD
   fHistMass = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMass"));
   fHistSignal = dynamic_cast<TH1F*>(fOutput->FindObject("fHistSignal"));
   fHistBackground = dynamic_cast<TH1F*>(fOutput->FindObject("fHistBackground"));
-  //fNtupleDplusbackg = dynamic_cast<TNtuple*>(fOutput->FindObject("fNtupleDplusbackg")); //AD
+  fNtupleDplus = dynamic_cast<TNtuple*>(GetOutputData(2));
+  fNtupleDplusbackg = dynamic_cast<TNtuple*>(GetOutputData(3));
 
-  fNtupleDplus = dynamic_cast<TNtuple*> (GetOutputData(2)); //AD
-  fNtupleDplusbackg = dynamic_cast<TNtuple*> (GetOutputData(3)); //AD
-
-
-    return;
+  return;
 }
 
