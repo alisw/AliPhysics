@@ -197,8 +197,8 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
   
   fSeedArray->Clear();
   
-  for(iter = GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){  
- 
+  for(iter = GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){ 
+  
       if(iter->fDataType != (kAliHLTDataTypeTrack|kAliHLTDataOriginTPC)) continue; 
      
       AliHLTUInt8_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(*iter);
@@ -266,7 +266,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
 	      // next line recalculates rows in the sector(ROC) system to convert clusters to the sector system
 	      if(patchTrack>1) (fClustersArray[sliceTrack][patchTrack])[pos].fPadRow -= (Int_t)AliHLTTPCTransform::GetFirstRow(2);              
 	      HLTDebug("slice %d, partition :%d, sector row: %d", sliceTrack, patchTrack, (fClustersArray[sliceTrack][patchTrack])[pos].fPadRow);
-	      
+	       
 	      // convert the HTL clusters to AliTPCclusterMI    	      
     	      AliHLTTPCOfflineCluster pConv;
     	      AliTPCclusterMI *offClus = pConv.ConvertHLTToOffline((fClustersArray[sliceTrack][patchTrack])[pos]);	      
@@ -279,6 +279,8 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
 	      
 	      // the clusters are not sorted from max to min X
 	      // errors will have to be revisited
+	      
+	      if(offClus->GetRow()>160) continue;
 	      rieman.AddPoint( offClus->GetX(),offClus->GetY(),offClus->GetZ(),TMath::Sqrt(offClus->GetSigmaY2()),TMath::Sqrt(offClus->GetSigmaZ2()) );    
 	      
 	      if(sector<36){ 

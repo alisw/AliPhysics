@@ -60,9 +60,10 @@ AliTPCclusterMI* AliHLTTPCOfflineCluster::ConvertHLTToOffline(AliHLTTPCSpacePoin
    
    AliTPCclusterMI *offCluster = new AliTPCclusterMI();
    
-   offCluster->SetPad(spacePoint.fX);	          // pad   
-   offCluster->SetRow((Int_t)spacePoint.fPadRow); // row 
-   offCluster->SetTimeBin(spacePoint.fZ);         // time bin
+   offCluster->SetRow((Int_t)spacePoint.fPadRow); // padrow
+   offCluster->SetX(spacePoint.fX);	          // X coordinate in slice system
+   offCluster->SetY(spacePoint.fY);               // Y coordinate in slice system
+   offCluster->SetZ(spacePoint.fZ);               // Z coordinate in slice system
    offCluster->SetQ(spacePoint.fCharge);     	  // charge
    offCluster->SetMax(spacePoint.fQMax);     	  // max Q (amplitude)
    offCluster->SetSigmaY2(spacePoint.fSigmaY2);   // error in Y direction
@@ -71,7 +72,7 @@ AliTPCclusterMI* AliHLTTPCOfflineCluster::ConvertHLTToOffline(AliHLTTPCSpacePoin
    //offCluster->SetType(0);		     	  // default from constructor
    //offCluster->IsUsed(0);		     	  // default from constructor
    //offCluster->SetInfo(NULL);		     	  // default from constructor
-     
+        
    return offCluster;
 }
 
@@ -81,14 +82,15 @@ AliHLTTPCSpacePointData AliHLTTPCOfflineCluster::ConvertOfflineToHLT(AliTPCclust
      
    AliHLTTPCSpacePointData spacePoint = { 0.,0.,0.,0,0,0.,0.,0,0,kFALSE,0 };
        
-   spacePoint.fX       = offCluster->GetPad();
    spacePoint.fPadRow  = offCluster->GetRow();
-   spacePoint.fZ       = offCluster->GetTimeBin();
+   spacePoint.fX       = offCluster->GetX(); // these are in the detector system
+   spacePoint.fY       = offCluster->GetY(); // the HLT clusters have to be transformed to the slice system
+   spacePoint.fZ       = offCluster->GetZ(); // for the X, Y, Z to be consistent with our definitions
    spacePoint.fCharge  = (UInt_t)offCluster->GetQ();
    spacePoint.fQMax    = (UInt_t)offCluster->GetMax();
    spacePoint.fSigmaY2 = offCluster->GetSigmaY2();
    spacePoint.fSigmaZ2 = offCluster->GetSigmaZ2();
-
+   
    return spacePoint;
    
 }
