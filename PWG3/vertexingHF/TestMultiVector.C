@@ -9,7 +9,8 @@ void TestMultiVector(){
   gSystem->Load("libPWG3");
   gSystem->Load("libPWG3vertexingHF");
 
-  Int_t nptbins=4;
+  const Int_t nptbins=4;
+  Float_t ptlimits[5]={1.,2.,3.,5.,10.};
   const Int_t npars=3;
   Int_t nofcells[npars]={20,20,20};
   Float_t looses[npars]={0.,700.,0.8};
@@ -19,9 +20,9 @@ void TestMultiVector(){
   AxisTitle[1]="TrackDispersion";
   AxisTitle[2]="CosPoint";
 
-  AliMultiDimVector* mvsig=new AliMultiDimVector("Signal","Signal",npars,nptbins,nofcells,looses,tights,AxisTitle);
-  AliMultiDimVector* mvsig2=new AliMultiDimVector("Signal","Signal",npars,nptbins,nofcells,looses,tights,AxisTitle);
-  AliMultiDimVector* mvbkg=new AliMultiDimVector("Background","Background",npars,nptbins,nofcells,looses,tights,AxisTitle);
+  AliMultiDimVector* mvsig=new AliMultiDimVector("Signal","Signal",nptbins,ptlimits,npars,nofcells,looses,tights,AxisTitle);
+  AliMultiDimVector* mvsig2=new AliMultiDimVector("Signal","Signal",nptbins,ptlimits,npars,nofcells,looses,tights,AxisTitle);
+  AliMultiDimVector* mvbkg=new AliMultiDimVector("Background","Background",nptbins,ptlimits,npars,nofcells,looses,tights,AxisTitle);
 
 
   TF1* dsig=new TF1("dsig","exp(-x/310.)",0.,5000.);

@@ -20,6 +20,7 @@
 #include "TArrayI.h"
 #include "TNamed.h"
 #include "TH2.h"
+#include "TMath.h"
 #include "TString.h"
 
 class AliMultiDimVector :  public TNamed{
@@ -27,7 +28,7 @@ class AliMultiDimVector :  public TNamed{
  public:
   AliMultiDimVector();
   AliMultiDimVector(const AliMultiDimVector &mv);
-  AliMultiDimVector(const char *name, const char *title, const Int_t npars, Int_t nptbins, Int_t *nofcells, Float_t *loosecuts, Float_t *tightcuts, TString *axisTitles);
+  AliMultiDimVector(const char *name, const char *title, const Int_t nptbins, Float_t* ptlimits, const Int_t npars, Int_t *nofcells, Float_t *loosecuts, Float_t *tightcuts, TString *axisTitles);
   virtual ~AliMultiDimVector(){};
 
   ULong64_t GetNTotCells()            const {return fNTotCells;}
@@ -51,6 +52,12 @@ class AliMultiDimVector :  public TNamed{
     ULong64_t elem=GetGlobalAddressFromIndices(ind,ptbin);
     return fVett[elem];
   }
+  Float_t   GetPtLimit(Int_t i) const{return fPtLimits[i];}
+  Int_t     GetPtBin(const Float_t pt) const{
+    Int_t theBin=TMath::BinarySearch(fNPtBins+1,fPtLimits,pt);
+    if(theBin>=fNPtBins) theBin=-1;
+    return theBin;
+  }
   void      GetEntireMultiDimVector(Float_t *vett) const {
     for(ULong64_t i=0; i<fNTotCells; i++) vett[i]=fVett[i];
   }
@@ -60,6 +67,13 @@ class AliMultiDimVector :  public TNamed{
   Bool_t    GetIndicesFromValues(Float_t *values, Int_t *ind) const;
   ULong64_t GetGlobalAddressFromValues(Float_t *values, Int_t ptbin) const;
   Bool_t    GetCutValuesFromGlobalAddress(ULong64_t globadd, Float_t *cuts, Int_t &ptbin) const;
+  
+  ULong64_t* GetGlobalAddressesAboveCuts(Float_t *values, Float_t pt, Int_t& nVals) const{
+    Int_t theBin=GetPtBin(pt);
+    if(theBin>=0) return GetGlobalAddressesAboveCuts(values,theBin,nVals);
+    else return 0x0;
+  }
+  ULong64_t* GetGlobalAddressesAboveCuts(Float_t *values, Int_t ptbin, Int_t& nVals) const;
 
   void SetElement(ULong64_t globadd,Float_t val) {fVett[globadd]=val;}
   void SetElement(Int_t *ind, Int_t ptbin, Float_t val){
@@ -96,7 +110,8 @@ class AliMultiDimVector :  public TNamed{
   TH2F*  Project(Int_t firstVar, Int_t secondVar, Int_t* fixedVars, Int_t ptbin, Float_t norm=1.);
 
   void SuppressZeroBKGEffect(AliMultiDimVector* BKG);
-   AliMultiDimVector* ShrinkPtBins(Int_t firstBin, Int_t lastBin);
+  AliMultiDimVector* ShrinkPtBins(Int_t firstBin, Int_t lastBin);
+  void PrintStatus();
 
  protected:
   void GetIntegrationLimits(Int_t iVar, Int_t iCell, Int_t& minbin, Int_t& maxbin) const;
@@ -106,9 +121,11 @@ class AliMultiDimVector :  public TNamed{
 
  private:
   static const Int_t fgkMaxNVariables=10;  // max. n. of selection variables
+  static const Int_t fgkMaxNPtBins=10;     // max. n. of Pt bins
 
   Int_t     fNVariables;                   // n. of selection variables
   Int_t     fNPtBins;                      // n. of pt bins
+  Float_t   fPtLimits[fgkMaxNPtBins+1];    // limits of pt bins
   Int_t     fNCutSteps[fgkMaxNVariables];  // n. of cut step for each variable
   Float_t   fMinLimits[fgkMaxNVariables];  // lower cut value for each variable
   Float_t   fMaxLimits[fgkMaxNVariables];  // higher cut value for each variable
@@ -118,7 +135,7 @@ class AliMultiDimVector :  public TNamed{
   ULong64_t fNTotCells;              // total number of matrix elements
   Bool_t    fIsIntegrated;           // flag for integrated matrix 
 
-  ClassDef(AliMultiDimVector,1); // a multi-dimensional vector class
+  ClassDef(AliMultiDimVector,2); // a multi-dimensional vector class
 
 };
 
