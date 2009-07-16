@@ -52,7 +52,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	UInt_t ipointing  = 10;
 	UInt_t iphi  = 11;
 
-	const Double_t phimax = TMath::Pi();
+	const Double_t phimax = 2*TMath::Pi();
 
 	//Setting up the container grid... 
 	UInt_t nstep = 6; //number of selection steps: MC, Acceptance, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included) 
