@@ -25,8 +25,10 @@
 #include <TMath.h>
 #include <TAxis.h>
 #include <TLorentzVector.h>
+#include <TObjArray.h>
 #include <TGraphErrors.h>
 
+#include "AliESDtrack.h"
 #include "AliBalance.h"
 
 ClassImp(AliBalance)
@@ -34,7 +36,7 @@ ClassImp(AliBalance)
 //____________________________________________________________________//
 AliBalance::AliBalance() :
   TObject(), 
-  fCharge(0), fNtrack(0), fV(0), fNumberOfBins(0),
+  fNumberOfBins(0),
   fAnalysisType(0), fAnalyzedEvents(0), fP2Start(0),
   fP2Stop(0), fP2Step(0), fNn(0), fNp(0) {
   // Default constructor
@@ -50,7 +52,6 @@ AliBalance::AliBalance() :
 //____________________________________________________________________//
 AliBalance::AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Bins) :
   TObject(), 
-  fCharge(0), fNtrack(0), fV(0), 
   fNumberOfBins(p2Bins), fAnalysisType(0), 
   fAnalyzedEvents(0), fP2Start(p2Start), fP2Stop(p2Stop), 
   fP2Step(TMath::Abs(fP2Start - fP2Stop) / (Double_t)fNumberOfBins), 
@@ -68,9 +69,6 @@ AliBalance::AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Bins) :
 //____________________________________________________________________//
 AliBalance::AliBalance(const AliBalance& balance):
   TObject(balance),
-  fCharge(0),
-  fNtrack(balance.fNtrack),
-  fV(0),
   fNumberOfBins(balance.fNumberOfBins),
   fAnalysisType(balance.fAnalysisType),
   fAnalyzedEvents(balance.fAnalyzedEvents),
@@ -78,10 +76,8 @@ AliBalance::AliBalance(const AliBalance& balance):
   fP2Stop(balance.fP2Stop),
   fP2Step(balance.fP2Step),
   fNn(balance.fNn),
-  fNp(balance.fNp)
-{
+  fNp(balance.fNp) {
   //copy constructor
-
   for(Int_t i = 0; i < MAXIMUM_NUMBER_OF_STEPS; i++) {
     fNpp[i] = .0;
     fNnn[i] = .0;
@@ -89,16 +85,11 @@ AliBalance::AliBalance(const AliBalance& balance):
     fB[i] = 0.0;
     ferror[i] = 0.0;
   } 
-
-  if (balance.fV) fV = new TLorentzVector(*(balance.fV));
-  if (balance.fCharge) fCharge = new Double_t(*(balance.fCharge));
 }
 
 //____________________________________________________________________//
 AliBalance::~AliBalance() {
   // Destructor
-  delete fV;
-  delete fCharge;
 }
 
 //____________________________________________________________________//
@@ -218,150 +209,224 @@ const char* AliBalance::GetAnalysisType() {
 }
 
 //____________________________________________________________________//
-void AliBalance::SetParticles(TLorentzVector *P, Double_t *charge, Int_t dim) {
-  // Sets a new particle with given 4-momentum and charge.
-  // dim is the size of the array of charges and corresponds
-  // to the number of selected tracks.
-  this->fV = P;
-  this->fCharge = charge;
-  fNtrack = dim;
-}
-
-
-//____________________________________________________________________//
-void AliBalance::CalculateBalance() {
+void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
   // Calculates the balance function
   fAnalyzedEvents++;
   Int_t i = 0 , j = 0;
   Int_t ibin = 0;
-
-  for(i = 0; i < fNtrack; i++) {
-    if(fCharge[i] > 0) fNp += 1.;
-    if(fCharge[i] < 0) fNn += 1.;
+  
+  Int_t gNtrack = gTrackArray->GetEntries();
+  for(i = 0; i < gNtrack; i++) {
+    AliESDtrack *track = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+    Short_t charge = track->Charge();
+    if(charge > 0) fNp += 1.;
+    if(charge < 0) fNn += 1.;
   }
+  //Printf("Np: %lf - Nn: %lf",fNp,fNn);
 
   //0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
   if(fAnalysisType==0) {
-    for(i = 1; i < fNtrack; i++) {
+    for(i = 1; i < gNtrack; i++) {
+      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      Short_t charge1 = track1->Charge();
+      Double_t pZ1 = track1->Pz();
+      Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
+				     TMath::Power(track1->M(),2));
       for(j = 0; j < i; j++) {
-	Double_t rap1 = 0.5*log((fV[i].E() + fV[i].Pz())/(fV[i].E() - fV[i].Pz())); 
-	Double_t rap2 = 0.5*log((fV[j].E() + fV[j].Pz())/(fV[j].E() - fV[j].Pz())); 
+	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	Short_t charge2 = track2->Charge();
+	Double_t pZ2 = track2->Pz();
+	Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
+				       TMath::Power(track2->M(),2));
+
+	Double_t rap1 = 0.5*log((energy1 + pZ1)/(energy1 - pZ1)); 
+	Double_t rap2 = 0.5*log((energy2 + pZ2)/(energy2 - pZ2)); 
 	Double_t dy = TMath::Abs(rap1 - rap2);
 	ibin = Int_t(dy/fP2Step);
-	if((fCharge[i] > 0)&&(fCharge[j] > 0)) fNpp[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] < 0)) fNnn[ibin] += 1.;
-	if((fCharge[i] > 0)&&(fCharge[j] < 0)) fNpn[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] > 0)) fNpn[ibin] += 1.;
+	if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
+	if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
+	if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
+	if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
       }
     }
   }//case 0
   if(fAnalysisType==1) {
-    for(i = 1; i < fNtrack; i++) {
+    for(i = 1; i < gNtrack; i++) {
+      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      Short_t charge1 = track1->Charge();
+      Double_t pZ1 = track1->Pz();
+      Double_t p1 = track1->P();
       for(j = 0; j < i; j++) {
-	Double_t p1 = sqrt(pow(fV[i].Px(),2) + pow(fV[i].Py(),2) + pow(fV[i].Pz(),2)); 
-	Double_t p2 = sqrt(pow(fV[j].Px(),2) + pow(fV[j].Py(),2) + pow(fV[j].Pz(),2));
-	Double_t eta1 = 0.5*log((p1 + fV[i].Pz())/(p1 - fV[i].Pz())); 
-	Double_t eta2 = 0.5*log((p2 + fV[j].Pz())/(p2 - fV[j].Pz())); 
+	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	Short_t charge2 = track2->Charge();
+	Double_t pZ2 = track2->Pz();
+	Double_t p2 = track2->P();
+	Double_t eta1 = 0.5*log((p1 + pZ1)/(p1 - pZ1)); 
+	Double_t eta2 = 0.5*log((p2 + pZ2)/(p2 - pZ2)); 
 	Double_t deta = TMath::Abs(eta1 - eta2);
 	ibin = Int_t(deta/fP2Step);
-	if((fCharge[i] > 0)&&(fCharge[j] > 0)) fNpp[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] < 0)) fNnn[ibin] += 1.;
-	if((fCharge[i] > 0)&&(fCharge[j] < 0)) fNpn[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] > 0)) fNpn[ibin] += 1.;
+	
+	if((charge1 > 0.)&&(charge2 > 0.)) fNpp[ibin] += 1.;
+	if((charge1 < 0.)&&(charge2 < 0.)) fNnn[ibin] += 1.;
+	if((charge1 > 0.)&&(charge2 < 0.)) fNpn[ibin] += 1.;
+	if((charge1 < 0.)&&(charge2 > 0.)) fNpn[ibin] += 1.;
+	//Printf("charge1: %d - eta1: %lf - charge2: %d - eta2: %lf - deta: %lf - ibin: %d - fNpp: %lf - fNnn: %lf - fNpn: %lf",charge1,eta1,charge2,eta2,deta,ibin,fNpp[ibin],fNnn[ibin],fNpn[ibin]);      
       }
     }
   }//case 1
   if(fAnalysisType==2) {
-    for(i = 1; i < fNtrack; i++) {
+    for(i = 1; i < gNtrack; i++) {
+      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      Short_t charge1 = track1->Charge();
+      Double_t pX1 = track1->Px();
+      Double_t pY1 = track1->Py();
+      Double_t pZ1 = track1->Pz();
+      Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
+				     TMath::Power(track1->M(),2));
       for(j = 0; j < i; j++) {
-	Double_t eTot = fV[i].E() + fV[j].E();
-	Double_t pxTot = fV[i].Px() + fV[j].Px();
-	Double_t pyTot = fV[i].Py() + fV[j].Py();
-	Double_t pzTot = fV[i].Pz() + fV[j].Pz();
-	Double_t q0Tot = fV[i].E() - fV[j].E();
-	Double_t qzTot = fV[i].Pz() - fV[j].Pz();
-	Double_t snn = pow(eTot,2) - pow(pxTot,2) - pow(pyTot,2) - pow(pzTot,2);
-	Double_t ptTot = sqrt( pow(pxTot,2) + pow(pyTot,2));
-	Double_t qLong = TMath::Abs(eTot*qzTot - pzTot*q0Tot)/sqrt(snn + pow(ptTot,2));
+	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	Short_t charge2 = track2->Charge();
+	Double_t pX2 = track2->Px();
+	Double_t pY2 = track2->Py();
+	Double_t pZ2 = track2->Pz();
+	Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
+				       TMath::Power(track2->M(),2));
+  	Double_t eTot = energy1 + energy2;
+	Double_t pxTot = pX1 + pX2;
+	Double_t pyTot = pY1 + pY2;
+	Double_t pzTot = pZ1 + pZ2;
+	Double_t q0Tot = energy1 - energy2;
+	Double_t qzTot = pZ1 - pZ2;
+	Double_t snn = TMath::Power(eTot,2) - TMath::Power(pxTot,2) - TMath::Power(pyTot,2) - TMath::Power(pzTot,2);
+	Double_t ptTot = TMath::Sqrt( TMath::Power(pxTot,2) + TMath::Power(pyTot,2));
+	Double_t qLong = TMath::Abs(eTot*qzTot - pzTot*q0Tot)/TMath::Sqrt(snn + TMath::Power(ptTot,2));
 	ibin = Int_t(qLong/fP2Step);
 	//cout<<ibin<<endl;
-	if((fCharge[i] > 0)&&(fCharge[j] > 0)) fNpp[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] < 0)) fNnn[ibin] += 1.;
-	if((fCharge[i] > 0)&&(fCharge[j] < 0)) fNpn[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] > 0)) fNpn[ibin] += 1.;
+	if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
+	if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
+	if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
+	if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
       }
     }
   }//case 2
   if(fAnalysisType==3) {
-    for(i = 1; i < fNtrack; i++) {
+    for(i = 1; i < gNtrack; i++) {
+      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      Short_t charge1 = track1->Charge();
+      Double_t pX1 = track1->Px();
+      Double_t pY1 = track1->Py();
+      Double_t pZ1 = track1->Pz();
+      Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
+				     TMath::Power(track1->M(),2));
       for(j = 0; j < i; j++) {
-	Double_t eTot = fV[i].E() + fV[j].E();
-	Double_t pxTot = fV[i].Px() + fV[j].Px();
-	Double_t pyTot = fV[i].Py() + fV[j].Py();
-	Double_t pzTot = fV[i].Pz() + fV[j].Pz();
-	Double_t qxTot = fV[i].Px() - fV[j].Px();
-	Double_t qyTot = fV[i].Py() - fV[j].Py();
-	Double_t snn = pow(eTot,2) - pow(pxTot,2) - pow(pyTot,2) - pow(pzTot,2);
-	Double_t ptTot = sqrt( pow(pxTot,2) + pow(pyTot,2));
-	Double_t qOut = sqrt(snn/(snn + pow(ptTot,2))) * TMath::Abs(pxTot*qxTot + pyTot*qyTot)/ptTot;
+	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	Short_t charge2 = track2->Charge();
+	Double_t pX2 = track2->Px();
+	Double_t pY2 = track2->Py();
+	Double_t pZ2 = track2->Pz();
+	Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
+				       TMath::Power(track2->M(),2));
+	Double_t eTot = energy1 + energy2;
+	Double_t pxTot = pX1 + pX2;
+	Double_t pyTot = pY1 + pY2;
+	Double_t pzTot = pZ1 + pZ2;
+	Double_t qxTot = pX1 - pX2;
+	Double_t qyTot = pY1 - pY2;
+	Double_t snn = TMath::Power(eTot,2) - TMath::Power(pxTot,2) - TMath::Power(pyTot,2) - TMath::Power(pzTot,2);
+	Double_t ptTot = TMath::Sqrt( TMath::Power(pxTot,2) + TMath::Power(pyTot,2));
+	Double_t qOut = TMath::Sqrt(snn/(snn + TMath::Power(ptTot,2))) * TMath::Abs(pxTot*qxTot + pyTot*qyTot)/ptTot;
 	ibin = Int_t(qOut/fP2Step);
 	//cout<<ibin<<endl;
-	if((fCharge[i] > 0)&&(fCharge[j] > 0)) fNpp[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] < 0)) fNnn[ibin] += 1.;
-	if((fCharge[i] > 0)&&(fCharge[j] < 0)) fNpn[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] > 0)) fNpn[ibin] += 1.;
+	if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
+	if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
+	if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
+	if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
       }
     }
   }//case 3
   if(fAnalysisType==4) {
-    for(i = 1; i < fNtrack; i++) {
+    for(i = 1; i < gNtrack; i++) {
+      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      Short_t charge1 = track1->Charge();
+      Double_t pX1 = track1->Px();
+      Double_t pY1 = track1->Py();
+      //Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
+      //TMath::Power(track1->M(),2));
       for(j = 0; j < i; j++) {
-	Double_t pxTot = fV[i].Px() + fV[j].Px();
-	Double_t pyTot = fV[i].Py() + fV[j].Py();
-	Double_t qxTot = fV[i].Px() - fV[j].Px();
-	Double_t qyTot = fV[i].Py() - fV[j].Py();
-	Double_t ptTot = sqrt( pow(pxTot,2) + pow(pyTot,2));
+	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	Short_t charge2 = track2->Charge();
+	Double_t pX2 = track2->Px();
+	Double_t pY2 = track2->Py();
+	//Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
+	//TMath::Power(track2->M(),2));
+	//Double_t eTot = energy1 + energy2;
+	Double_t pxTot = pX1 + pX2;
+	Double_t pyTot = pY1 + pY2;
+	Double_t qxTot = pX1 - pX2;
+	Double_t qyTot = pY1 - pY2;
+	Double_t ptTot = TMath::Sqrt( TMath::Power(pxTot,2) + TMath::Power(pyTot,2));
 	Double_t qSide = TMath::Abs(pxTot*qyTot - pyTot*qxTot)/ptTot;
 	ibin = Int_t(qSide/fP2Step);
 	//cout<<ibin<<endl;
-	if((fCharge[i] > 0)&&(fCharge[j] > 0)) fNpp[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] < 0)) fNnn[ibin] += 1.;
-	if((fCharge[i] > 0)&&(fCharge[j] < 0)) fNpn[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] > 0)) fNpn[ibin] += 1.;
+	if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
+	if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
+	if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
+	if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
       }
     }
   }//case 4
   if(fAnalysisType==5) {
-    for(i = 1; i < fNtrack; i++) {
+    for(i = 1; i < gNtrack; i++) {
+      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      Short_t charge1 = track1->Charge();
+      Double_t pX1 = track1->Px();
+      Double_t pY1 = track1->Py();
+      Double_t pZ1 = track1->Pz();
+      Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
+				     TMath::Power(track1->M(),2));
       for(j = 0; j < i; j++) {
-	Double_t q0Tot = fV[i].E() - fV[j].E();
-	Double_t qxTot = fV[i].Px() - fV[j].Px();
-	Double_t qyTot = fV[i].Py() - fV[j].Py();
-	Double_t qzTot = fV[i].Pz() - fV[j].Pz();
-	Double_t qInv = sqrt(TMath::Abs(-pow(q0Tot,2) +pow(qxTot,2) +pow(qyTot,2) +pow(qzTot,2)));
+	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	Short_t charge2 = track2->Charge();
+	Double_t pX2 = track2->Px();
+	Double_t pY2 = track2->Py();
+	Double_t pZ2 = track2->Pz();
+	Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
+				       TMath::Power(track2->M(),2));
+	Double_t q0Tot = energy1 - energy2;
+	Double_t qxTot = pX1 - pX2;
+	Double_t qyTot = pY1 - pY2;
+	Double_t qzTot = pZ1 - pZ2;
+	Double_t qInv = TMath::Sqrt(TMath::Abs(-TMath::Power(q0Tot,2) +TMath::Power(qxTot,2) +TMath::Power(qyTot,2) +TMath::Power(qzTot,2)));
 	ibin = Int_t(qInv/fP2Step);
 	//cout<<ibin<<endl;
-	if((fCharge[i] > 0)&&(fCharge[j] > 0)) fNpp[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] < 0)) fNnn[ibin] += 1.;
-	if((fCharge[i] > 0)&&(fCharge[j] < 0)) fNpn[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] > 0)) fNpn[ibin] += 1.;
+	if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
+	if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
+	if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
+	if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
       }
     }
   }//case 5	
   if(fAnalysisType==6) {
-    for(i = 1; i < fNtrack; i++) {
+    for(i = 1; i < gNtrack; i++) {
+      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      Short_t charge1 = track1->Charge();
+      Double_t phi1 = track1->Phi();
       for(j = 0; j < i; j++) {
-	Double_t phi1 = TMath::ATan(fV[i].Py()/fV[i].Px())*180.0/TMath::Pi();
-	Double_t phi2 = TMath::ATan(fV[j].Py()/fV[j].Px())*180.0/TMath::Pi();
+	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	Short_t charge2 = track2->Charge();
+	Double_t phi2 = track2->Phi();
 	Double_t dphi = TMath::Abs(phi1 - phi2);
 	ibin = Int_t(dphi/fP2Step);
-	if((fCharge[i] > 0)&&(fCharge[j] > 0)) fNpp[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] < 0)) fNnn[ibin] += 1.;
-	if((fCharge[i] > 0)&&(fCharge[j] < 0)) fNpn[ibin] += 1.;
-	if((fCharge[i] < 0)&&(fCharge[j] > 0)) fNpn[ibin] += 1.;
+	if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
+	if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
+	if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
+	if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
       }
     }
   }//case 6
+
+  /*for(Int_t i = 0; i < fNumberOfBins; i++) 
+    Printf("bin: %d - Npp: %lf - Nnn: %lf - Nnp: %lf - Npn: %lf",i,fNpp[i],fNnn[i],fNpn[i],fNpn[i]);*/
 }
 
 //____________________________________________________________________//
@@ -375,7 +440,7 @@ Double_t AliBalance::GetBalance(Int_t p2) {
 //____________________________________________________________________//
 Double_t AliBalance::GetError(Int_t p2) {
   // Returns the error on the BF value for bin p2
-  ferror[p2] = sqrt( Double_t(fNpp[p2])/(Double_t(fNp)*Double_t(fNp)) + Double_t(fNnn[p2])/(Double_t(fNn)*Double_t(fNn)) + Double_t(fNpn[p2])*pow((0.5/Double_t(fNp) + 0.5/Double_t(fNn)),2))/fP2Step;
+  ferror[p2] = TMath::Sqrt( Double_t(fNpp[p2])/(Double_t(fNp)*Double_t(fNp)) + Double_t(fNnn[p2])/(Double_t(fNn)*Double_t(fNn)) + Double_t(fNpn[p2])*TMath::Power((0.5/Double_t(fNp) + 0.5/Double_t(fNn)),2))/fP2Step;
 
   return ferror[p2];
 }
@@ -392,7 +457,8 @@ void AliBalance::PrintResults() {
 
   cout<<"=================================================="<<endl;
   for(Int_t i = 0; i < fNumberOfBins; i++) { 
-    x[i] = fP2Start + fP2Step*i + fP2Step/2;
+    //x[i] = fP2Start + fP2Step*i + fP2Step/2;
+    x[i] = fP2Step*i + fP2Step/2;
     cout<<"B: "<<fB[i]<<"\t Error: "<<ferror[i]<<"\t bin: "<<x[i]<<endl;
   } 
   cout<<"=================================================="<<endl;
@@ -400,20 +466,20 @@ void AliBalance::PrintResults() {
     fSumXi += x[i];
     fSumBi += fB[i];
     fSumBiXi += fB[i]*x[i];
-    fSumBiXi2 += fB[i]*pow(x[i],2);
-    fSumBi2Xi2 += pow(fB[i],2)*pow(x[i],2);
-    fSumDeltaBi2 +=  pow(ferror[i],2);
-    fSumXi2DeltaBi2 += pow(x[i],2) * pow(ferror[i],2);
+    fSumBiXi2 += fB[i]*TMath::Power(x[i],2);
+    fSumBi2Xi2 += TMath::Power(fB[i],2)*TMath::Power(x[i],2);
+    fSumDeltaBi2 +=  TMath::Power(ferror[i],2);
+    fSumXi2DeltaBi2 += TMath::Power(x[i],2) * TMath::Power(ferror[i],2);
     
-    deltaBalP2 += fP2Step*pow(ferror[i],2);
+    deltaBalP2 += fP2Step*TMath::Power(ferror[i],2);
     integral += fP2Step*fB[i];
   }
-  for(Int_t i = 1; i < fNumberOfBins; i++) deltaErrorNew += ferror[i]*(x[i]*fSumBi - fSumBiXi)/pow(fSumBi,2);
+  for(Int_t i = 1; i < fNumberOfBins; i++) deltaErrorNew += ferror[i]*(x[i]*fSumBi - fSumBiXi)/TMath::Power(fSumBi,2);
    
-  Double_t integralError = sqrt(deltaBalP2);
+  Double_t integralError = TMath::Sqrt(deltaBalP2);
   
   Double_t delta = fSumBiXi / fSumBi;
-  Double_t deltaError = (fSumBiXi / fSumBi) * sqrt(pow((sqrt(fSumXi2DeltaBi2)/fSumBiXi),2) + pow((fSumDeltaBi2/fSumBi),2) );
+  Double_t deltaError = (fSumBiXi / fSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(fSumXi2DeltaBi2)/fSumBiXi),2) + TMath::Power((fSumDeltaBi2/fSumBi),2) );
  
   cout<<"Analyzed events: "<<fAnalyzedEvents<<endl;
   cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
@@ -439,7 +505,8 @@ TGraphErrors *AliBalance::DrawBalance() {
   for(Int_t i = 0; i < fNumberOfBins; i++) {
     b[i] = GetBalance(i);
     ber[i] = GetError(i);
-    x[i] = fP2Start + fP2Step*i + fP2Step/2;
+    //x[i] = fP2Start + fP2Step*i + fP2Step/2;
+    x[i] = fP2Step*i + fP2Step/2;
     xer[i] = 0.0;
   }
   

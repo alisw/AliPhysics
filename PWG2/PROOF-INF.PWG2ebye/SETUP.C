@@ -2,7 +2,7 @@ void SETUP() {
   CheckLoadLibrary("libPWG2ebye");
 
   // Set the include paths
-  gROOT->ProcessLine(".include PWG2ebye");
+  gROOT->ProcessLine(".include PWG2ebye/EBYE");
 
   // Set our location, so that other packages can find us
   gSystem->Setenv("PWG2ebye_INCLUDE", "PWG2ebye");
