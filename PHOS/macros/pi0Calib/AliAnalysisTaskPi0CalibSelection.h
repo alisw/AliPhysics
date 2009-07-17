@@ -11,8 +11,8 @@
 
 
 #include "AliAnalysisTaskSE.h"
-#include "AliPHOSRecoParam.h"
 #include "AliPHOSGeometry.h"
+#include "AliPHOSCalibData.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDCaloCells.h"
 #include "TH1.h"
@@ -30,6 +30,8 @@ public:
   virtual void UserExec(Option_t * opt);
   
   void SetClusterMinEnergy(Float_t emin) {fEmin=emin;}
+  void SetLogWeight(Float_t weight) {fLogWeight=weight;}
+  void SetCalibCorrections(AliPHOSCalibData* cdata);
   
 private:
 
@@ -42,12 +44,13 @@ private:
 
   TList* fOutputContainer;
   TH1F*  fHmpi0[5][64][56];// two-cluster inv. mass assigned to each cell.
-
-  AliPHOSRecoParam* fRecoParam; // RecoParameters.
+  
   AliPHOSGeometry * fPhosGeo;   // PHOS geometry
+  AliPHOSCalibData* fCalibData; // corrections to CC from the previous iteration
 
   TH1F* fHmgg; //two-cluster inv.mass
   Float_t fEmin; // min. cluster energy
+  Float_t fLogWeight; // log weight used in cluster recalibration
 
   ClassDef(AliAnalysisTaskPi0CalibSelection,1);
 
