@@ -9,13 +9,15 @@
 // using calibration coefficients of the previous iteration.                 //
 //---------------------------------------------------------------------------//
 
+// Root includes
+#include "TH1.h"
 
+// AliRoot includes
 #include "AliAnalysisTaskSE.h"
-#include "AliPHOSRecoParam.h"
 #include "AliPHOSGeometry.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODCaloCells.h"
-#include "TH1.h"
+#include "AliPHOSCalibData.h"
 
 class AliAnalysisTaskPHOSPi0CalibSelection : public AliAnalysisTaskSE
 {
@@ -30,7 +32,9 @@ public:
   virtual void UserExec(Option_t * opt);
   
   void SetClusterMinEnergy(Float_t emin) {fEmin=emin;}
-  
+  void SetLogWeight(Float_t weight) {fLogWeight=weight;}
+  void SetCalibCorrections(AliPHOSCalibData* cdata);
+	
 private:
 
   AliAnalysisTaskPHOSPi0CalibSelection(const AliAnalysisTaskPHOSPi0CalibSelection&); 
@@ -43,13 +47,14 @@ private:
   TList* fOutputContainer;
   TH1F*  fHmpi0[5][64][56];// two-cluster inv. mass assigned to each cell.
 
-  AliPHOSRecoParam* fRecoParam; // RecoParameters.
   AliPHOSGeometry * fPhosGeo;   // PHOS geometry
-
+  AliPHOSCalibData* fCalibData; // corrections to CC from the previous iteration
+	
   TH1F* fHmgg; //two-cluster inv.mass
   Float_t fEmin; // min. cluster energy
-
-  ClassDef(AliAnalysisTaskPHOSPi0CalibSelection,1);
+  Float_t fLogWeight; // log weight used in cluster recalibration
+	
+  ClassDef(AliAnalysisTaskPHOSPi0CalibSelection,2);
 
 };
 

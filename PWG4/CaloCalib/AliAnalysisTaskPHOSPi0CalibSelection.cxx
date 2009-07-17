@@ -26,28 +26,21 @@
 // Root 
 #include "TLorentzVector.h"
 #include "TVector3.h"
-#include "TGeoManager.h"
 #include "TRefArray.h"
 #include "TList.h"
 
 // AliRoot
 #include "AliAnalysisTaskPHOSPi0CalibSelection.h"
-#include "AliCDBEntry.h"
-#include "AliCDBManager.h"
 #include "AliAODEvent.h"
-#include "AliPHOSPIDv1.h"
+#include "AliESDEvent.h"
 #include "AliPHOSAodCluster.h"
-#include "AliPHOSGeoUtils.h"
-#include "AliPHOSCalibData.h"
-#include "AliPHOSReconstructor.h"
 #include "AliPHOSPIDv1.h"
-
 
 ClassImp(AliAnalysisTaskPHOSPi0CalibSelection)
 
 AliAnalysisTaskPHOSPi0CalibSelection::AliAnalysisTaskPHOSPi0CalibSelection() :
-AliAnalysisTaskSE(),fOutputContainer(0x0),fRecoParam(0x0),fPhosGeo(0x0),fHmgg(0x0),
-  fEmin(0.)
+AliAnalysisTaskSE(),fOutputContainer(0x0),fPhosGeo(0x0),fCalibData(0x0),fHmgg(0x0),
+  fEmin(0.), fLogWeight(4.5)
 {
   //Default constructor.
 
@@ -62,8 +55,8 @@ AliAnalysisTaskSE(),fOutputContainer(0x0),fRecoParam(0x0),fPhosGeo(0x0),fHmgg(0x
 }
 
 AliAnalysisTaskPHOSPi0CalibSelection::AliAnalysisTaskPHOSPi0CalibSelection(const char* name) :
-  AliAnalysisTaskSE(name),fOutputContainer(0x0),fRecoParam(0x0),fPhosGeo(0x0),fHmgg(0x0),
-  fEmin(0.)
+  AliAnalysisTaskSE(name),fOutputContainer(0x0),fPhosGeo(0x0),fCalibData(0x0),fHmgg(0x0),
+  fEmin(0.), fLogWeight(4.5)
 {
   //Named constructor which should be used.
   
@@ -87,6 +80,10 @@ AliAnalysisTaskPHOSPi0CalibSelection::~AliAnalysisTaskPHOSPi0CalibSelection()
     fOutputContainer->Delete() ; 
     delete fOutputContainer ;
   }
+	
+  if(fCalibData) delete fCalibData;
+  if(fPhosGeo)   delete fPhosGeo;
+	
 }
 
 void AliAnalysisTaskPHOSPi0CalibSelection::UserCreateOutputObjects()
@@ -132,51 +129,18 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
  
   Int_t runNum = aod->GetRunNumber();
   printf("Run number: %d\n",runNum);
-  
-  if(!fPhosGeo) {
-    
-    AliCDBEntry* entryGeo = AliCDBManager::Instance()->Get("GRP/Geometry/Data",runNum);
-    if(!entryGeo) AliFatal("No Geometry entry found in OCDB!!");
-    
-    TGeoManager* geoManager = dynamic_cast<TGeoManager*>(entryGeo->GetObject());
-    if(!geoManager) AliFatal("No valid TGeoManager object found in the OCDB.");
-    
-    gGeoManager = geoManager;
-    fPhosGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
+	
+  //Get the matrix with geometry information
+  //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
+  if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) 
+		printf("Use ideal geometry, values geometry matrix not kept in AODs");
+  else{	
+	  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
+	  for(Int_t mod=0; mod<5; mod++)
+		  fPhosGeo->SetMisalMatrix(esd->GetPHOSMatrix(mod),mod) ;
   }
-  
-  //Calibrations from previous iteration
-  AliPHOSCalibData calibData(runNum);
-  
-  //Get RecoParameters. See AliQADataMakerRec::InitRecoParams().
-  if(!fRecoParam) {
-    
-    AliCDBEntry* entryRecoPar = AliCDBManager::Instance()->Get("PHOS/Calib/RecoParam",runNum);
-    if(!entryRecoPar) AliFatal("No RecoParam entry in OCDB!!");
-    
-    TObject * recoParamObj = entryRecoPar->GetObject() ;
-    AliDetectorRecoParam* rprm = 0;
-    
-    if (dynamic_cast<TObjArray*>(recoParamObj)) {
-      TObjArray *recoParamArray = dynamic_cast<TObjArray*>(recoParamObj) ;
-      for (Int_t iRP=0; iRP<recoParamArray->GetEntriesFast(); iRP++) {
-	rprm = dynamic_cast<AliDetectorRecoParam*>(recoParamArray->At(iRP)) ;
-	if (rprm->IsDefault()) break;
-      }
-    } 
-    
-    if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
-      dynamic_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
-      rprm = dynamic_cast<AliDetectorRecoParam*>(recoParamObj) ;
-    }
-    
-    if(!rprm) AliFatal("No valid RecoParam object found in the OCDB.");
-    fRecoParam = dynamic_cast<AliPHOSRecoParam*>(rprm);
-    if(!fRecoParam) AliFatal("recoparams are _NOT_ of type AliPHOSRecoParam!!");
-  }
-  
-  Float_t logWeight = fRecoParam->GetEMCLogWeight();
-  printf("Will use logWeight %.3f .\n",logWeight);
+	
+  printf("Will use fLogWeight %.3f .\n",fLogWeight);
 
   AliPHOSPIDv1 pid;
 
@@ -206,8 +170,8 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
     if(e1i<fEmin) continue;
 
     AliPHOSAodCluster clu1(*c1);
-    clu1.Recalibrate(&calibData, phsCells);
-    clu1.EvalAll(logWeight,vtx);
+    clu1.Recalibrate(fCalibData, phsCells);
+    clu1.EvalAll(fLogWeight,vtx);
     clu1.EnergyCorrection(&pid) ;
 
     clu1.GetMomentum(p1,v);
@@ -229,8 +193,8 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
       if(e2i<fEmin) continue;
       
       AliPHOSAodCluster clu2(*c2);
-      clu2.Recalibrate(&calibData, phsCells);
-      clu2.EvalAll(logWeight,vtx);
+      clu2.Recalibrate(fCalibData, phsCells);
+      clu2.EvalAll(fLogWeight,vtx);
       clu2.EnergyCorrection(&pid) ;
         
       clu2.GetMomentum(p2,v);
@@ -268,3 +232,13 @@ void AliAnalysisTaskPHOSPi0CalibSelection::MaxEnergyCellPos(AliAODCaloCells *cel
   }
 
 }
+
+void AliAnalysisTaskPHOSPi0CalibSelection::SetCalibCorrections(AliPHOSCalibData* cdata)
+{
+  //Set new correction factors (~1) to calibration coefficients, delete previous.
+
+   if(fCalibData) delete fCalibData;
+   fCalibData = cdata;
+	
+}
+

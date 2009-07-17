@@ -1,9 +1,29 @@
 void anaTask()
 {
-  
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB"); 
-  AliCDBManager::Instance()->SetSpecificStorage("PHOS/*","local://./");
-  
+  //Macro to run pi0 calibration on local AOD files.
+  //Author: Boris Polishchuk, adapted to AOD by Gustavo Conesa
+	
+  //Uncomment the line below if your ESD files are from old productions
+  //so there are no PHOS geometry matrices written in the ESD.
+  //You can find an ideal geometry here: $ALICE_ROOT/test/QA/geometry.root
+  //and copy to your working directory.
+	
+  //AliGeomManager::LoadGeometry("geometry.root");
+	
+  //You can apply misalignment by following
+  //(remember that your local OCDB in ./PHOS should contain a copy of the
+  //$ALICE_ROOT/OCDB/PHOS/Align directory while ./PHOS/Calib/EmcGainPedestals
+  //should contain the corrections to the calibration coefficients (~1) 
+  //instead of real CC (~0.005)! ):
+	
+  //   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  //   AliCDBManager::Instance()->SetSpecificStorage("PHOS/*","local://./");
+	
+  //   AliCDBManager::Instance()->SetRun(0);
+  //   AliCDBEntry* e = AliCDBManager::Instance()->Get("PHOS/Align/Data");
+  //   TClonesArray *array = (TClonesArray*) e->GetObject();
+  //   AliGeomManager::ApplyAlignObjsToGeom(*array);
+	
   // load analysis framework
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice"); //AliAnalysisTaskSE
