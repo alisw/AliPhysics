@@ -11,8 +11,8 @@
 // revised by : A. Pulvirenti [alberto.pulvirenti@ct.infn.it]
 //
 
-#ifndef AliRsnVManager_H
-#define AliRsnVManager_H
+#ifndef ALIRSNVMANAGER_H
+#define ALIRSNVMANAGER_H
 
 #include <TNamed.h>
 
@@ -23,10 +23,10 @@ class AliRsnVManager : public TNamed
     AliRsnVManager(const char*name = "default");
     ~AliRsnVManager();
 
-    virtual void        Add(TObject *pair);
-            TObjArray*  GetArray() {return &fArray;}
-            Int_t       GetEntries() {return fArray.GetEntries();}
-            Int_t       GetEntriesFast() {return fArray.GetEntriesFast();}
+    virtual void        Add(TObject *const pair);
+    TObjArray*  GetArray() {return &fArray;}
+    Int_t       GetEntries() {return fArray.GetEntries();}
+    Int_t       GetEntriesFast() {return fArray.GetEntriesFast();}
     virtual void        PrintArray() const;
     virtual void        Print(Option_t *opt = "") const;
 

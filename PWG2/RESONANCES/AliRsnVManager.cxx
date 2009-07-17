@@ -19,8 +19,8 @@ ClassImp(AliRsnVManager)
 
 //_____________________________________________________________________________
 AliRsnVManager::AliRsnVManager(const char*name) :
-  TNamed(name, name),
-  fArray(0)
+    TNamed(name, name),
+    fArray(0)
 {
 //
 // Default constructor
@@ -36,7 +36,7 @@ AliRsnVManager::~AliRsnVManager()
 }
 
 //_____________________________________________________________________________
-void AliRsnVManager::Add(TObject *obj)
+void AliRsnVManager::Add(TObject*const obj)
 {
 //
 // Add a new object in the list.

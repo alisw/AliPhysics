@@ -19,7 +19,6 @@
 // author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //
 
-#include <Riostream.h>
 #include <TString.h>
 
 #include "AliLog.h"
@@ -27,7 +26,8 @@
 #include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
 #include "AliRsnPairDef.h"
-#include "AliRsnCut.h"
+#include "AliRsnPairParticle.h"
+#include "AliRsnFunctionAxis.h"
 
 #include "AliRsnFunction.h"
 
@@ -35,13 +35,13 @@ ClassImp(AliRsnFunction)
 
 //________________________________________________________________________________________
 AliRsnFunction::AliRsnFunction() :
-  TNamed(),
-  fPairDef(0x0),
-  fAxisList("AliRsnFunctionAxis", 0),
-  fTrack(0x0),
-  fPair(0x0),
-  fEvent(0x0),
-  fHistogram(0x0)
+    TNamed(),
+    fPairDef(0x0),
+    fAxisList("AliRsnFunctionAxis", 0),
+    fTrack(0x0),
+    fPair(0x0),
+    fEvent(0x0),
+    fHistogram(0x0)
 {
 //
 // Constructor.
@@ -50,13 +50,13 @@ AliRsnFunction::AliRsnFunction() :
 
 //________________________________________________________________________________________
 AliRsnFunction::AliRsnFunction(const AliRsnFunction &copy) :
-  TNamed(copy),
-  fPairDef(copy.fPairDef),
-  fAxisList(copy.fAxisList),
-  fTrack(copy.fTrack),
-  fPair(copy.fPair),
-  fEvent(copy.fEvent),
-  fHistogram(0x0)
+    TNamed(copy),
+    fPairDef(copy.fPairDef),
+    fAxisList(copy.fAxisList),
+    fTrack(copy.fTrack),
+    fPair(copy.fPair),
+    fEvent(copy.fEvent),
+    fHistogram(0x0)
 {
 //
 // Copy constructor.
@@ -97,8 +97,7 @@ const char* AliRsnFunction::GetName() const
   TObjArrayIter next(&fAxisList);
   AliRsnFunctionAxis *axis = 0;
 
-  while ( (axis = (AliRsnFunctionAxis*)next()) )
-  {
+  while ((axis = (AliRsnFunctionAxis*)next())) {
     if (name.Length() > 1) name += '_';
     name += axis->GetName();
   }
@@ -107,10 +106,10 @@ const char* AliRsnFunction::GetName() const
 }
 
 //________________________________________________________________________________________
-void AliRsnFunction::AddAxis(AliRsnFunctionAxis *axis)
+void AliRsnFunction::AddAxis(AliRsnFunctionAxis *const axis)
 {
   Int_t size = fAxisList.GetEntries();
-  new (fAxisList[size]) AliRsnFunctionAxis(*axis);
+  new(fAxisList[size]) AliRsnFunctionAxis(*axis);
 }
 
 //________________________________________________________________________________________
@@ -136,8 +135,7 @@ THnSparseD* AliRsnFunction::CreateHistogram(const char *histoName, const char *h
 
   // retrieve binnings for main and secondary axes
   AliRsnFunctionAxis *fcnAxis = 0;
-  for (Int_t i = 0; i < size; i++)
-  {
+  for (Int_t i = 0; i < size; i++) {
     fcnAxis = (AliRsnFunctionAxis*)fAxisList.At(i);
     if (!fcnAxis) {
       nbins[i] = 0;
@@ -171,26 +169,24 @@ Bool_t AliRsnFunction::Fill()
   Double_t *values = new Double_t[nAxes];
 
   AliRsnFunctionAxis *fcnAxis = 0;
-  for (i = 0; i < nAxes; i++)
-  {
+  for (i = 0; i < nAxes; i++) {
     fcnAxis = (AliRsnFunctionAxis*)fAxisList.At(i);
     if (!fcnAxis) {
       values[i] = 0.0;
       continue;
     }
-    switch (fcnAxis->GetAxisObject())
-    {
-      case AliRsnFunctionAxis::kParticle:
-        values[i] = fcnAxis->Eval(fTrack);
-        break;
-      case AliRsnFunctionAxis::kPair:
-        values[i] = fcnAxis->Eval(fPair, fPairDef);
-        break;
-      case AliRsnFunctionAxis::kEvent:
-        values[i] = fcnAxis->Eval(fEvent);
-        break;
-      default:
-        values[i] = 0.0;
+    switch (fcnAxis->GetAxisObject()) {
+    case AliRsnFunctionAxis::kParticle:
+      values[i] = fcnAxis->Eval(fTrack);
+      break;
+    case AliRsnFunctionAxis::kPair:
+      values[i] = fcnAxis->Eval(fPair, fPairDef);
+      break;
+    case AliRsnFunctionAxis::kEvent:
+      values[i] = fcnAxis->Eval(fEvent);
+      break;
+    default:
+      values[i] = 0.0;
     }
   }
 

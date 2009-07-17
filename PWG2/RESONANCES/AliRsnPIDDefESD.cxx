@@ -24,21 +24,17 @@
 // author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //-------------------------------------------------------------------------
 
-#include <TMath.h>
 #include <TString.h>
-#include <TClonesArray.h>
-#include <TDatabasePDG.h>
 
 #include "AliLog.h"
 #include "AliESDtrack.h"
-#include "AliRsnDaughter.h"
 #include "AliRsnPIDDefESD.h"
 
 ClassImp(AliRsnPIDDefESD)
 
 //_____________________________________________________________________________
 AliRsnPIDDefESD::AliRsnPIDDefESD() :
-  fUseESDWeights(kTRUE)
+    fUseESDWeights(kTRUE)
 {
 //
 // Default constructor.
@@ -56,8 +52,8 @@ AliRsnPIDDefESD::AliRsnPIDDefESD() :
 
 //_____________________________________________________________________________
 AliRsnPIDDefESD::AliRsnPIDDefESD(const AliRsnPIDDefESD& copy) :
-  TObject(copy),
-  fUseESDWeights(copy.fUseESDWeights)
+    TObject(copy),
+    fUseESDWeights(copy.fUseESDWeights)
 {
 //
 // Copy constructor.
@@ -80,84 +76,84 @@ void AliRsnPIDDefESD::SetScheme(EScheme scheme, Double_t divValue)
 //
 
   switch (scheme) {
-    case kSchemeESD:
-      fUseESDWeights = kTRUE;
-      break;
-    case kSchemeITS:
-      fUseESDWeights = kFALSE;
-      ExcludeAll();
-      IncludeDet(kITS);
-      SetDivValue(kITS, 0.0);
-      break;
-    case kSchemeTPC:
-      fUseESDWeights = kFALSE;
-      ExcludeAll();
-      IncludeDet(kTPC);
-      SetDivValue(kTPC, 0.0);
-      break;
-    case kSchemeTOF:
-      fUseESDWeights = kFALSE;
-      ExcludeAll();
-      IncludeDet(kTOF);
-      SetDivValue(kTOF, 0.0);
-      break;
-    case kSchemeITSandTPC:
-      fUseESDWeights = kFALSE;
-      ExcludeAll();
-      IncludeDet(kITS);
-      IncludeDet(kTPC);
-      SetDivValue(kITS, 0.0);
-      SetDivValue(kTPC, 0.0);
-      break;
-    case kSchemeITSandTOF:
-      fUseESDWeights = kFALSE;
-      ExcludeAll();
-      IncludeDet(kITS);
-      IncludeDet(kTOF);
-      SetDivValue(kITS, 0.0);
-      SetDivValue(kTOF, 0.0);
-      break;
-    case kSchemeTPCandTOF:
-      fUseESDWeights = kFALSE;
-      ExcludeAll();
-      IncludeDet(kTPC);
-      IncludeDet(kTOF);
-      SetDivValue(kTPC, 0.0);
-      SetDivValue(kTOF, 0.0);
-      break;
-    case kSchemeITSandTPCandTOF:
-      fUseESDWeights = kFALSE;
-      ExcludeAll();
-      IncludeDet(kITS);
-      IncludeDet(kTPC);
-      IncludeDet(kTOF);
-      SetDivValue(kITS, 0.0);
-      SetDivValue(kTPC, 0.0);
-      SetDivValue(kTOF, 0.0);
-      break;
-    case kSchemeITSandTPCandTOFwithSP:
-      fUseESDWeights = kFALSE;
-      ExcludeAll();
-      IncludeDet(kITS);
-      IncludeDet(kTPC);
-      IncludeDet(kTOF);
-      SetDivValue(kITS, 0.0);
-      SetDivValue(kTPC, 0.0);
-      SetDivValue(kTOF, divValue);
-      break;
-    case kSchemeITSandTPCorTOFwithSP:
-      fUseESDWeights = kFALSE;
-      ExcludeAll();
-      IncludeDet(kITS);
-      IncludeDet(kTPC);
-      IncludeDet(kTOF);
-      SetDivValue(kITS, divValue, kFALSE);
-      SetDivValue(kTPC, divValue, kFALSE);
-      SetDivValue(kTOF, divValue, kTRUE);
-      break;
-    default:
-      AliWarning("PID scheme unrecognized. Set to ESD");
-      fUseESDWeights = kTRUE;
+  case kSchemeESD:
+    fUseESDWeights = kTRUE;
+    break;
+  case kSchemeITS:
+    fUseESDWeights = kFALSE;
+    ExcludeAll();
+    IncludeDet(kITS);
+    SetDivValue(kITS, 0.0);
+    break;
+  case kSchemeTPC:
+    fUseESDWeights = kFALSE;
+    ExcludeAll();
+    IncludeDet(kTPC);
+    SetDivValue(kTPC, 0.0);
+    break;
+  case kSchemeTOF:
+    fUseESDWeights = kFALSE;
+    ExcludeAll();
+    IncludeDet(kTOF);
+    SetDivValue(kTOF, 0.0);
+    break;
+  case kSchemeITSandTPC:
+    fUseESDWeights = kFALSE;
+    ExcludeAll();
+    IncludeDet(kITS);
+    IncludeDet(kTPC);
+    SetDivValue(kITS, 0.0);
+    SetDivValue(kTPC, 0.0);
+    break;
+  case kSchemeITSandTOF:
+    fUseESDWeights = kFALSE;
+    ExcludeAll();
+    IncludeDet(kITS);
+    IncludeDet(kTOF);
+    SetDivValue(kITS, 0.0);
+    SetDivValue(kTOF, 0.0);
+    break;
+  case kSchemeTPCandTOF:
+    fUseESDWeights = kFALSE;
+    ExcludeAll();
+    IncludeDet(kTPC);
+    IncludeDet(kTOF);
+    SetDivValue(kTPC, 0.0);
+    SetDivValue(kTOF, 0.0);
+    break;
+  case kSchemeITSandTPCandTOF:
+    fUseESDWeights = kFALSE;
+    ExcludeAll();
+    IncludeDet(kITS);
+    IncludeDet(kTPC);
+    IncludeDet(kTOF);
+    SetDivValue(kITS, 0.0);
+    SetDivValue(kTPC, 0.0);
+    SetDivValue(kTOF, 0.0);
+    break;
+  case kSchemeITSandTPCandTOFwithSP:
+    fUseESDWeights = kFALSE;
+    ExcludeAll();
+    IncludeDet(kITS);
+    IncludeDet(kTPC);
+    IncludeDet(kTOF);
+    SetDivValue(kITS, 0.0);
+    SetDivValue(kTPC, 0.0);
+    SetDivValue(kTOF, divValue);
+    break;
+  case kSchemeITSandTPCorTOFwithSP:
+    fUseESDWeights = kFALSE;
+    ExcludeAll();
+    IncludeDet(kITS);
+    IncludeDet(kTPC);
+    IncludeDet(kTOF);
+    SetDivValue(kITS, divValue, kFALSE);
+    SetDivValue(kTPC, divValue, kFALSE);
+    SetDivValue(kTOF, divValue, kTRUE);
+    break;
+  default:
+    AliWarning("PID scheme unrecognized. Set to ESD");
+    fUseESDWeights = kTRUE;
   }
 }
 
@@ -220,19 +216,19 @@ void AliRsnPIDDefESD::PrintStatus()
 }
 
 //_____________________________________________________________________________
-const char* AliRsnPIDDefESD::DetName(EDetector det)
+const char* AliRsnPIDDefESD::DetName(EDetector det) const
 {
 //
 // Detector name for messages
 //
 
   switch (det) {
-    case kITS: return "ITS";
-    case kTPC: return "TPC";
-    case kTRD: return "TRD";
-    case kTOF: return "TOF";
-    case kHMPID: return "HMPID";
-    default: return "undef";
+  case kITS: return "ITS";
+  case kTPC: return "TPC";
+  case kTRD: return "TRD";
+  case kTOF: return "TOF";
+  case kHMPID: return "HMPID";
+  default: return "undef";
   }
 }
 
@@ -248,8 +244,7 @@ const char* AliRsnPIDDefESD::SchemeName()
   Int_t i, ndet = 0;
 
   for (i = 0; i < kDetectors; i++)
-    if (fUseDet[i])
-    {
+    if (fUseDet[i]) {
       if (ndet > 0) out += '_';
       out.Append(DetName((EDetector)i));
     }

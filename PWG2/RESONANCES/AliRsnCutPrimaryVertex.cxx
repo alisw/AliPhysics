@@ -15,21 +15,29 @@
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
-#include "Riostream.h"
-#include "TMath.h"
 
-#include "AliLog.h"
-#include "AliESDEvent.h"
-#include "AliESDVertex.h"
+// #include "AliLog.h"
+// #include "AliESDEvent.h"
+// #include "AliESDVertex.h"
+// 
+// #include "AliRsnEvent.h"
+// #include "AliRsnCutPrimaryVertex.h"
 
-#include "AliRsnEvent.h"
+// #include "Riostream.h"
+// #include "TMath.h"
+// 
+// #include "AliLog.h"
+// #include "AliESDEvent.h"
+// #include "AliESDVertex.h"
+// 
+// #include "AliRsnEvent.h"
 #include "AliRsnCutPrimaryVertex.h"
 
 ClassImp(AliRsnCutPrimaryVertex)
 
 //_________________________________________________________________________________________________
 AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex() :
-  AliRsnCut()
+    AliRsnCut()
 {
 //
 // Default constructor.
@@ -39,7 +47,7 @@ AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex() :
 //_________________________________________________________________________________________________
 AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
 (const char *name, Int_t nContributors) :
-  AliRsnCut(name, 0, nContributors)
+    AliRsnCut(name, 0, nContributors)
 {
 //
 // Main constructor.
@@ -48,18 +56,17 @@ AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutPrimaryVertex::IsSelected(ETarget tgt, AliRsnDaughter *track)
+Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget /*tgt*/, AliRsnDaughter*/*const track*/) const
 {
 //
 // Cut checker.
 //
-
   AliWarning("Cannot apply this cut to particles");
   return kTRUE;
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutPrimaryVertex::IsSelected(ETarget /*tgt*/, AliRsnPairParticle* /*pair*/)
+Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget, AliRsnPairParticle*/*const pair*/) const
 {
 //
 // Cut checker
@@ -70,7 +77,7 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(ETarget /*tgt*/, AliRsnPairParticle* /
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutPrimaryVertex::IsSelected(ETarget /*tgt*/, AliRsnEvent *event)
+Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget, AliRsnEvent*event)
 {
 //
 // Cut checker
@@ -101,7 +108,7 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(ETarget /*tgt*/, AliRsnEvent *event)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutPrimaryVertex::IsSelected(ETarget /*tgt*/, AliRsnEvent* /*ev1*/, AliRsnEvent* /*ev2*/)
+Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget, AliRsnEvent*/*ev1*/, AliRsnEvent*/*ev2*/) const
 {
 //
 // Cut checker

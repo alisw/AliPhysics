@@ -1,18 +1,3 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
 //
 // *** Class AliRsnEvent ***
 //
@@ -26,7 +11,7 @@
 //          M. Vala (email: martin.vala@cern.ch)
 //
 
-#include <Riostream.h>
+#include <TArrayF.h>
 
 #include "AliLog.h"
 #include "AliVEvent.h"
@@ -34,6 +19,7 @@
 #include "AliAODEvent.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "AliGenEventHeader.h"
 
 #include "AliRsnEvent.h"
 
@@ -41,20 +27,28 @@ ClassImp(AliRsnEvent)
 
 //_____________________________________________________________________________
 AliRsnEvent::AliRsnEvent(AliVEvent *ref, AliMCEvent *refMC) :
-    fRef(ref),
-    fRefMC(refMC)
+  fRef(ref),
+  fRefMC(refMC),
+  fPIDDefESD()
 {
 //
-// Default constructor
+// Default constructor.
+// Set the prior probabilities to some default values
 //
+
+  fPrior[0] = 0.02;
+  fPrior[1] = 0.02;
+  fPrior[2] = 0.83;
+  fPrior[3] = 0.07;
+  fPrior[4] = 0.06;
 }
 
 //_____________________________________________________________________________
 AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
-    TObject(event),
-    fRef(event.fRef),
-    fRefMC(event.fRefMC)
-
+  TObject(event),
+  fRef(event.fRef),
+  fRefMC(event.fRefMC),
+  fPIDDefESD(event.fPIDDefESD)
 {
 //
 // Copy constructor.
@@ -71,6 +65,7 @@ AliRsnEvent& AliRsnEvent::operator= (const AliRsnEvent &event)
   (TObject)(*this) = (TObject)event;
   fRef = event.fRef;
   fRefMC = event.fRefMC;
+  fPIDDefESD = event.fPIDDefESD;
 
   return (*this);
 }
@@ -93,34 +88,45 @@ void AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t i)
 //
 
   // retrieve reference particle from reference event
+  // if it is found, by defaul track can be used (good)
   AliVParticle *ref = (AliVParticle*)fRef->GetTrack(i);
-
   if (!ref) return;
+  out.SetRef(ref);
+  out.SetGood();
 
   // if MC info is present, retrieve from it
   TParticle *refMC = 0;
   if (fRefMC) {
     Int_t label = TMath::Abs(ref->GetLabel());
     refMC = fRefMC->Stack()->Particle(label);
+    out.SetParticle(refMC);
+    out.FindMotherPDG(fRefMC->Stack());
   }
 
-  // create output object
-  out.SetRef(ref);
-  out.SetGood();
-  out.SetParticle(refMC);
-  if (fRefMC)
-    out.FindMotherPDG(fRefMC->Stack());
-
-  // retrieve primary vertex and set impact parameters
+  // retrieve vertex and set impact parameters
   Double_t dx = out.Xv(), dy = out.Yv(), dz = out.Zv();
   const AliVVertex *v = fRef->GetPrimaryVertex();
   if (v) {
     dx -= v->GetX();
     dy -= v->GetY();
     dz -= v->GetZ();
+  } else if (fRefMC) {
+    // if reference is an MC event, no primary vertex is supplied
+    // but it is possible to retrieve it from header
+    TArrayF fvertex(3);
+    fRefMC->GenEventHeader()->PrimaryVertex(fvertex);
+    dx -= fvertex[0];
+    dy -= fvertex[1];
+    dz -= fvertex[2];
   }
   out.SetDr(TMath::Sqrt(dx*dx + dy*dy));
   out.SetDz(dz);
+
+  // compute PID probabilities by combining
+  // the PID weights in the source with priors
+  // and eventually using the PIDDefESD
+  // (the AliRsnDaughter objec knows how to manage the latter)
+  out.CombineWithPriors(fPrior, &fPIDDefESD);
 
   // dynamic reference to true nature of referenced event
   // to get kink index
@@ -133,8 +139,6 @@ void AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t i)
   } else if (aod) {
     out.FindKinkIndex(aod);
   }
-
-  out.SetGood();
 }
 
 //_____________________________________________________________________________
@@ -264,8 +268,55 @@ Bool_t AliRsnEvent::GetAngleDistr
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnEvent::AcceptTrackPID
-(AliRsnDaughter *d, AliPID::EParticleType type)
+void AliRsnEvent::SetPriorProbability(Double_t *const out)
+{
+//
+// Set all prior probabilities at once, using an assayr of values.
+//
+
+  Int_t i;
+
+  for (i = 0; i < AliPID::kSPECIES; i++)
+  {
+    fPrior[i] = out[i];
+  }
+}
+
+//_____________________________________________________________________________
+void AliRsnEvent::DumpPriors()
+{
+//
+// Print all prior probabilities.
+// Printout is done using AliInfo, so this will not appear when
+// the GlobalLogLevel is set to higher level errors.
+//
+
+  Int_t i;
+  
+  for (i = 0; i < AliPID::kSPECIES; i++)
+  {
+    AliInfo(Form("Prior probability for %10s = %3.5f", AliPID::ParticleName((AliPID::EParticleType)i), fPrior[i]));
+  }
+}
+
+//_____________________________________________________________________________
+void AliRsnEvent::GetPriorProbability(Double_t *out) const
+{
+//
+// Stores in the passed argument all the values.
+//
+
+  Int_t i;
+
+  for (i = 0; i < AliPID::kSPECIES; i++)
+  {
+    out[i] = fPrior[i];
+  }
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnEvent::AcceptTrackPID(AliRsnDaughter * const d, AliPID::EParticleType type)
 {
 //
 // [PRIVATE]

@@ -1,18 +1,18 @@
+//
+// AliRsnExpresion class is used to handle operators &|! in AliRsnCut
+//
+// authors: Martin Vala (martin.vala@cern.ch)
+//          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//
+
 #ifndef ALIRSNEXPRESSION_H
 #define ALIRSNEXPRESSION_H
 
 #include <TObject.h>
-#include <TString.h>
-
-#include "AliRsnCutSet.h"
 
 class TObjArray;
-class AliRsnCutSet;
-/**
-  @author Martin Vala <Martin.Vala@cern.ch>
- */
-
-// These are the valid operators types.
+#include "AliRsnCutSet.h"
+class AliRsnVariableExpression;
 
 class AliRsnExpression : public TObject
 {
@@ -20,8 +20,7 @@ class AliRsnExpression : public TObject
   public:
 
     // operators for complex cut expressions
-    enum ECutOp
-    {
+    enum ECutOp {
       kOpAND=1,   // AND '&'
       kOpOR,      // OR '|'
       kOpNOT      // Unary negation '!'
@@ -36,17 +35,17 @@ class AliRsnExpression : public TObject
     virtual Bool_t     Value(TObjArray & vars);
     virtual TString     Unparse() const;
 
-    void SetCutSet(AliRsnCutSet* theValue) { sCutSet = theValue; }
-    AliRsnCutSet* GetCutSet() const { return sCutSet; }
+    void SetCutSet(AliRsnCutSet* const theValue) { fgCutSet = theValue; }
+    AliRsnCutSet* GetCutSet() const { return fgCutSet; }
 
 
-    TString    fVname;   // Variable name
-    static AliRsnCutSet        *sCutSet;
+    TString                     fVname;   // Variable name
+    static AliRsnCutSet        *fgCutSet;
 
   private:
-    AliRsnExpression*   fArg1;         // left argument
-    AliRsnExpression*   fArg2;         // right argument
-    Int_t                 fOperator;     // operator
+    AliRsnExpression*           fArg1;         // left argument
+    AliRsnExpression*           fArg2;         // right argument
+    Int_t                       fOperator;     // operator
 
     AliRsnExpression(int op, AliRsnExpression* a);
     AliRsnExpression(int op, AliRsnExpression* a, AliRsnExpression* b);
@@ -57,20 +56,6 @@ class AliRsnExpression : public TObject
     static AliRsnExpression*    Expression(TObjArray &st, Int_t &i);
 
     ClassDef(AliRsnExpression, 1);    // Class to evaluate an expression
-};
-
-
-///////////////////////////////////////////////////////////////////////////
-
-class AliRsnVariableExpression: public AliRsnExpression
-{
-  public:
-    AliRsnVariableExpression(TString a) : AliRsnExpression() { fVname = a;  };
-    ~AliRsnVariableExpression() {}
-    virtual Bool_t    Value(TObjArray& pgm);
-    virtual TString    Unparse() const { return fVname; }
-
-    ClassDef(AliRsnVariableExpression, 1);    // Class to define a variable expression
 };
 
 #endif

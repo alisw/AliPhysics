@@ -12,8 +12,6 @@
 #ifndef ALIRSNPAIRDEF_H
 #define ALIRSNPAIRDEF_H
 
-#include <TString.h>
-
 #include "AliPID.h"
 
 class AliRsnDaughter;
@@ -33,10 +31,11 @@ class AliRsnPairDef : public TObject
 
     // getters
     Char_t                GetCharge(Int_t i) const {if (i>=0&&i<2) return fCharge[i]; else return 0;}
+    Short_t               GetChargeShort(Int_t i) const {if (GetCharge(i) == '+') return 1; else if (GetCharge(i) == '-') return -1; else return 0;}
     AliPID::EParticleType GetType(Int_t i) const {if (i>=0&&i<2) return fType[i]; else return AliPID::kUnknown;}
     Double_t              GetMass(Int_t i) const {if (i>=0&&i<2) return fMass[i]; else return 0.0;}
     Int_t                 GetMotherPDG() const {return fMotherPDG;}
-    TString               GetPairName();
+    TString               GetPairName() const;
 
     // setters
     Bool_t SetPairElement(Int_t i, Char_t charge, AliPID::EParticleType pid);
@@ -44,8 +43,8 @@ class AliRsnPairDef : public TObject
     void   SetMotherPDG(Int_t pdg) {fMotherPDG = pdg;}
 
     // pair information methods
-    Bool_t IsLikeSign() {return (fCharge[0] == fCharge[1]);}
-    Bool_t HasEqualTypes() {return (fType[0] == fType[1]);}
+    Bool_t IsLikeSign() const {return (fCharge[0] == fCharge[1]);}
+    Bool_t HasEqualTypes() const {return (fType[0] == fType[1]);}
 
   private:
 

@@ -2,14 +2,15 @@
 
 SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnPairParticle.cxx \
+      RESONANCES/AliRsnExpression.cxx \
+      RESONANCES/AliRsnVariableExpression.cxx \
       RESONANCES/AliRsnCut.cxx \
       RESONANCES/AliRsnCutStd.cxx \
       RESONANCES/AliRsnCutBetheBloch.cxx \
-      RESONANCES/AliRsnCutESDPrimary.cxx \
       RESONANCES/AliRsnCutPrimaryVertex.cxx \
+      RESONANCES/AliRsnCutESDPrimary.cxx \
       RESONANCES/AliRsnCutSet.cxx \
       RESONANCES/AliRsnCutMgr.cxx \
-      RESONANCES/AliRsnExpression.cxx \
       RESONANCES/AliRsnPIDIndex.cxx \
       RESONANCES/AliRsnPIDDefESD.cxx \
       RESONANCES/AliRsnEvent.cxx \
@@ -25,6 +26,7 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnAnalysisManager.cxx \
       RESONANCES/AliRsnAnalysisSE.cxx \
       RESONANCES/AliRsnAnalysisME.cxx \
+      RESONANCES/AliRsnAnalysisEffSE.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 

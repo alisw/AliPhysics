@@ -10,19 +10,27 @@
 
 #include "AliRsnVAnalysisTaskSE.h"
 
+#include "AliESDEvent.h"
+#include "AliMCEvent.h"
+#include "AliAODEvent.h"
+
 ClassImp(AliRsnVAnalysisTaskSE)
 
 //_____________________________________________________________________________
-AliRsnVAnalysisTaskSE::AliRsnVAnalysisTaskSE(const char *name) :
-  AliAnalysisTaskSE(name),
-  fLogType(AliLog::kInfo),
-  fLogClassesString(""),
-  fESDEvent(0x0),
-  fMCEvent(0x0),
-  fAODEventIn(0x0),
-  fAODEventOut(0x0),
-  fOutList(0x0),
-  fTaskInfo(name)
+AliRsnVAnalysisTaskSE::AliRsnVAnalysisTaskSE
+(const char *name, Int_t numOfOutputs, Bool_t mcOnly) :
+    AliAnalysisTaskSE(name),
+    fLogType(AliLog::kInfo),
+    fLogClassesString(""),
+    fESDEvent(0x0),
+    fMCEvent(0x0),
+    fAODEventIn(0x0),
+    fAODEventOut(0x0),
+    fMCOnly(mcOnly),
+    fRsnEvent(),
+    fRsnPIDIndex(),
+    fNumberOfOutputs(numOfOutputs),
+    fTaskInfo(name)
 {
 //
 // Default constructor.
@@ -31,22 +39,32 @@ AliRsnVAnalysisTaskSE::AliRsnVAnalysisTaskSE(const char *name) :
 
   AliDebug(AliLog::kDebug+2,"<-");
 
+  if (fNumberOfOutputs<0) fNumberOfOutputs = 0;
+  if (fNumberOfOutputs>kMaxNumberOfOutputs) {
+    AliWarning(Form("We support only %d outputs. If you need more ask for it.",kMaxNumberOfOutputs));
+    AliWarning(Form("For now we are setting it to %d.",kMaxNumberOfOutputs));
+    fNumberOfOutputs = kMaxNumberOfOutputs;
+  }
+
   DefineOutput(1, TList::Class());
 
   AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
-AliRsnVAnalysisTaskSE::AliRsnVAnalysisTaskSE(const AliRsnVAnalysisTaskSE& copy) : 
-  AliAnalysisTaskSE(copy),
-  fLogType(copy.fLogType),
-  fLogClassesString(copy.fLogClassesString),
-  fESDEvent(copy.fESDEvent),
-  fMCEvent(copy.fMCEvent),
-  fAODEventIn(copy.fAODEventIn),
-  fAODEventOut(copy.fAODEventOut),
-  fOutList(copy.fOutList),
-  fTaskInfo(copy.fTaskInfo)
+AliRsnVAnalysisTaskSE::AliRsnVAnalysisTaskSE(const AliRsnVAnalysisTaskSE& copy) :
+    AliAnalysisTaskSE(copy),
+    fLogType(copy.fLogType),
+    fLogClassesString(copy.fLogClassesString),
+    fESDEvent(copy.fESDEvent),
+    fMCEvent(copy.fMCEvent),
+    fAODEventIn(copy.fAODEventIn),
+    fAODEventOut(copy.fAODEventOut),
+    fMCOnly(copy.fMCOnly),
+    fRsnEvent(),
+    fRsnPIDIndex(),
+    fNumberOfOutputs(copy.fNumberOfOutputs),
+    fTaskInfo(copy.fTaskInfo)
 {
 //
 // Copy constructor.
@@ -103,7 +121,7 @@ void AliRsnVAnalysisTaskSE::ConnectInputData(Option_t *opt)
   AliAnalysisTaskSE::ConnectInputData(opt);
 
   // getting AliESDEvent
-  fESDEvent = dynamic_cast<AliESDEvent *> (fInputEvent);
+  fESDEvent = dynamic_cast<AliESDEvent *>(fInputEvent);
 
   if (fESDEvent) {
     AliInfo(Form("Input is ESD (%p)", fESDEvent));
@@ -114,11 +132,11 @@ void AliRsnVAnalysisTaskSE::ConnectInputData(Option_t *opt)
   }
 
   // getting AliAODEvent from input
-  fAODEventIn = dynamic_cast<AliAODEvent *> (fInputEvent);
+  fAODEventIn = dynamic_cast<AliAODEvent *>(fInputEvent);
   if (fAODEventIn) AliInfo(Form("Input is AOD INPUT (%p)",fAODEventIn));
 
   // getting AliAODEvent if it is output from previous task
-  fAODEventOut = dynamic_cast<AliAODEvent *> (AODEvent());
+  fAODEventOut = dynamic_cast<AliAODEvent *>(AODEvent());
   if (fAODEventOut) AliInfo(Form("Input is AOD OUTPUT (%p)",fAODEventOut));
 
   AliDebug(AliLog::kDebug+2,"->");
@@ -152,11 +170,9 @@ void AliRsnVAnalysisTaskSE::UserCreateOutputObjects()
 
   AliDebug(AliLog::kDebug+2, "<-");
 
-  fOutList = new TList();
-  fOutList->SetOwner();
-
-  fOutList->Add(fTaskInfo.GenerateInfoList());
-
+  fOutList[0] = new TList();
+  fOutList[0]->SetOwner();
+  fTaskInfo.GenerateInfoList(fOutList[0]);
   RsnUserCreateOutputObjects();
 
   AliDebug(AliLog::kDebug+2,"<-");
@@ -165,23 +181,49 @@ void AliRsnVAnalysisTaskSE::UserCreateOutputObjects()
 //_____________________________________________________________________________
 void AliRsnVAnalysisTaskSE::UserExec(Option_t* opt)
 {
+//
+//
+//
 
   AliDebug(AliLog::kDebug+2,"<-");
+
+  // sets properly the RSN package event interface:
+  // if an ESD event is available, it has priority,
+  // otherwise the AOD event is used;
+  // if the MC information is available, it is linked
+  if (fMCOnly && fMCEvent)
+    fRsnEvent.SetRef(fMCEvent, fMCEvent);
+  else if (fESDEvent)
+    fRsnEvent.SetRef(fESDEvent, fMCEvent);
+  else if (fAODEventOut)
+    fRsnEvent.SetRef(fAODEventOut);
+  else if (fAODEventIn)
+    fRsnEvent.SetRef(fAODEventIn);
+  else {
+    AliError("NO ESD or AOD object!!! Skipping ...");
+    return;
+  }
+
+  // sort tracks w.r. to PID...
+  fRsnPIDIndex.FillFromEvent(&fRsnEvent);
 
   RsnUserExec(opt);
 
   FillInfo();
 
-  fTaskInfo.PrintInfo(fEntry);
+  fTaskInfo.PrintInfo(fTaskInfo.GetNumerOfEventsProcessed());
 
-  PostData(1, fOutList);
+  PostData(1, fOutList[0]);
 
   AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
-void AliRsnVAnalysisTaskSE::RsnUserExec(Option_t* )
+void AliRsnVAnalysisTaskSE::RsnUserExec(Option_t*)
 {
+//
+//
+//
 
   if (fESDEvent) {
     AliDebug(AliLog::kDebug+1, Form("fESDEvent is %p", fESDEvent));
@@ -214,17 +256,15 @@ void AliRsnVAnalysisTaskSE::Terminate(Option_t* opt)
   AliDebug(AliLog::kDebug+2,"<-");
   AliAnalysisTask::Terminate();
 
-  fOutList = dynamic_cast<TList*>(GetOutputData(1));
-  if (!fOutList) {
-    AliError(Form("At end of analysis, fOutList is %p", fOutList));
+  TList* list  = dynamic_cast<TList*>(GetOutputData(1));
+  if (!list) {
+    AliError(Form("At end of analysis, fOutList is %p", list));
     return;
   }
 
   RsnTerminate(opt);
 
-  TList* lEventInfo = (TList*) fOutList->FindObject(fTaskInfo.GetName());
-
-  TH1I *hEventInfo = (TH1I*) lEventInfo->FindObject(fTaskInfo.GetEventHistogramName());
+  TH1I *hEventInfo = (TH1I*) list->FindObject(fTaskInfo.GetEventHistogramName());
   if (!hEventInfo) {
     AliError(Form("hEventInfo is %p",hEventInfo));
     return;
@@ -240,7 +280,7 @@ void AliRsnVAnalysisTaskSE::Terminate(Option_t* opt)
 }
 
 //_____________________________________________________________________________
-void AliRsnVAnalysisTaskSE::RsnTerminate(Option_t* )
+void AliRsnVAnalysisTaskSE::RsnTerminate(Option_t*)
 {
 //
 // Overload this to add additional termination operations
@@ -258,18 +298,9 @@ void AliRsnVAnalysisTaskSE::FillInfo()
 //
 
   AliDebug(AliLog::kDebug+2, "<-");
-  /*
-  if (fAODEventOut) {
-    fTaskInfo.SetNumberOfTracks(fAODEventOut->GetNumberOfTracks());
-  }
-  else if (fESDEvent) {
-    fTaskInfo.SetNumberOfTracks(fESDEvent->GetNumberOfTracks());
-  }
-  else if (fAODEventIn) {
-    fTaskInfo.SetNumberOfTracks(fAODEventIn->GetNumberOfTracks());
-  }
-  */
+
   fTaskInfo.FillInfo();
+
   AliDebug(AliLog::kDebug+2,"->");
 }
 

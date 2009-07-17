@@ -17,9 +17,6 @@
 //
 #include "TMath.h"
 
-#include "AliLog.h"
-#include "AliESDtrack.h"
-
 #include "AliRsnDaughter.h"
 #include "AliRsnCutBetheBloch.h"
 
@@ -27,10 +24,10 @@ ClassImp(AliRsnCutBetheBloch)
 
 //_________________________________________________________________________________________________
 AliRsnCutBetheBloch::AliRsnCutBetheBloch() :
-  AliRsnCut(),
-  fCorrect(kTRUE),
-  fMIP(50.0),
-  fType(AliPID::kUnknown)
+    AliRsnCut(),
+    fCorrect(kTRUE),
+    fMIP(50.0),
+    fType(AliPID::kUnknown)
 {
 //
 // Default constructor.
@@ -42,10 +39,10 @@ AliRsnCutBetheBloch::AliRsnCutBetheBloch() :
 //_________________________________________________________________________________________________
 AliRsnCutBetheBloch::AliRsnCutBetheBloch
 (const char *name, Double_t fractionRange, AliPID::EParticleType type, Double_t mip, Bool_t correct) :
-  AliRsnCut(name, 0.0, fractionRange),
-  fCorrect(correct),
-  fMIP(mip),
-  fType(type)
+    AliRsnCut(name, 0.0, fractionRange),
+    fCorrect(correct),
+    fMIP(mip),
+    fType(type)
 {
 //
 // Main constructor.
@@ -59,7 +56,7 @@ AliRsnCutBetheBloch::AliRsnCutBetheBloch
 }
 
 //_____________________________________________________________________________
-Double_t AliRsnCutBetheBloch::BetheBloch(AliRsnDaughter *track)
+Double_t AliRsnCutBetheBloch::BetheBloch(AliRsnDaughter * const track)
 {
 //
 // Computes the theoretical dE/dx according to
@@ -84,8 +81,7 @@ Double_t AliRsnCutBetheBloch::BetheBloch(AliRsnDaughter *track)
 
   Double_t out = (fConst[1] - aa - bb) * fConst[0] / aa;
 
-  if (fCorrect)
-  {
+  if (fCorrect) {
     Double_t kMeanCorr = 0.1;
     Double_t meanCorr = (1 + (out - 1) * kMeanCorr);
     out *= meanCorr;
@@ -116,8 +112,7 @@ Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnDaughter *track)
 //
 
   // coherence check
-  if (tgt != AliRsnCut::kParticle)
-  {
+  if (tgt != AliRsnCut::kParticle) {
     AliError(Form("Wrong target. Skipping cut", GetName()));
     return kTRUE;
   }
@@ -127,8 +122,7 @@ Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnDaughter *track)
   if (track->RequiredPID() != fType) return kTRUE;
 
   // retrieve the TPC signal
-  AliVParticle *vpart = track->GetRef();
-  AliESDtrack *esd = dynamic_cast<AliESDtrack*>(vpart);
+  AliESDtrack *esd = track->GetRefESD();
   if (!esd) {
     AliError("ESD information unavailable");
     return kTRUE;

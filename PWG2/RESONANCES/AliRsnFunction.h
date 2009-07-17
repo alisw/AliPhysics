@@ -19,17 +19,17 @@
 // author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //
 
-#ifndef ALIRSNFunction_H
-#define ALIRSNFunction_H
+#ifndef ALIRSNFUNCTION_H
+#define ALIRSNFUNCTION_H
 
 #include <TClonesArray.h>
 #include <THnSparse.h>
 #include <TNamed.h>
 
 #include "AliRsnCut.h"
-#include "AliRsnFunctionAxis.h"
-#include "AliRsnPairParticle.h"
 
+class AliRsnFunctionAxis;
+class AliRsnPairParticle;
 class AliRsnPairDef;
 
 class AliRsnFunction : public TNamed
@@ -42,18 +42,18 @@ class AliRsnFunction : public TNamed
     virtual ~AliRsnFunction() { delete fHistogram; }
     const AliRsnFunction& operator=(const AliRsnFunction &copy);
 
-    void                 SetPairDef(AliRsnPairDef *def) {fPairDef = def;}
-    void                 SetTrack(AliRsnDaughter *track) {fTrack = track;}
-    void                 SetPair(AliRsnPairParticle *pair) {fPair = pair;}
-    void                 SetEvent(AliRsnEvent *event) {fEvent = event;}
+    void                 SetPairDef(AliRsnPairDef * const def) {fPairDef = def;}
+    void                 SetTrack(AliRsnDaughter * const track) {fTrack = track;}
+    void                 SetPair(AliRsnPairParticle * const pair) {fPair = pair;}
+    void                 SetEvent(AliRsnEvent *const event) {fEvent = event;}
 
-    AliRsnPairDef*       GetPairDef() {return fPairDef;}
-    AliRsnDaughter*      GetTrack() {return fTrack;}
-    AliRsnPairParticle*  GetPair() {return fPair;}
-    AliRsnEvent*         GetEvent() {return fEvent;}
+    AliRsnPairDef*       GetPairDef() const {return fPairDef;}
+    AliRsnDaughter*      GetTrack() const {return fTrack;}
+    AliRsnPairParticle*  GetPair() const {return fPair;}
+    AliRsnEvent*         GetEvent() const {return fEvent;}
     virtual const char*  GetName() const;
 
-    void                 AddAxis(AliRsnFunctionAxis *axis);
+    void                 AddAxis(AliRsnFunctionAxis*const axis);
     Int_t                GetNumberOfAxes() {return fAxisList.GetEntries();}
     THnSparseD*          CreateHistogram(const char *histoName, const char *histoTitle);
 

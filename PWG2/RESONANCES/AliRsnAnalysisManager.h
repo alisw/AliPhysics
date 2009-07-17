@@ -16,19 +16,23 @@
 // revised by : A. Pulvirenti [alberto.pulvirenti@ct.infn.it]
 //
 
-#ifndef AliRsnAnalysisManager_H
-#define AliRsnAnalysisManager_H
+#ifndef ALIRSNANALYSISMANAGER_H
+#define ALIRSNANALYSISMANAGER_H
 
-#include <TROOT.h>
+// #include <TROOT.h>
 
 #include "AliRsnVManager.h"
-#include "AliRsnPairManager.h"
-
+// #include "AliRsnPairManager.h"
+class TROOT;
+class AliRsnPIDIndex;
+class AliRsnEvent;
+class AliRsnPairManager;
 class AliRsnAnalysisManager : public AliRsnVManager
 {
   public:
 
     AliRsnAnalysisManager(const char*name = "defaultAnalysisMgr");
+    virtual ~AliRsnAnalysisManager() {;};
 
     //virtual void   Add(AliRsnPairManager *pair);
     virtual void   Add(TObject *pair);
@@ -36,7 +40,7 @@ class AliRsnAnalysisManager : public AliRsnVManager
     virtual void   PrintArray() const;
     virtual void   Print(Option_t *option = "") const;
 
-    TList*         InitAllPairMgrs();
+    void           InitAllPairMgrs(TList*list);
     void           ProcessAllPairMgrs(AliRsnPIDIndex *pidIndexes1, AliRsnEvent *ev1, AliRsnPIDIndex *pidIndexes2 = 0, AliRsnEvent *ev2 = 0);
 
   private:

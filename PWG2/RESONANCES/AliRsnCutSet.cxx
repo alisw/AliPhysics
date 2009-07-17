@@ -32,7 +32,7 @@ AliRsnCutSet::AliRsnCutSet() :
 //
 
   fBoolValues = new Bool_t[1];
-  AliRsnExpression::sCutSet = this;
+  AliRsnExpression::fgCutSet = this;
 }
 
 //_____________________________________________________________________________
@@ -52,7 +52,7 @@ AliRsnCutSet::AliRsnCutSet(TString name) :
 
   fBoolValues = new Bool_t[1];
   fExpression = 0;
-  AliRsnExpression::sCutSet = this;
+  AliRsnExpression::fgCutSet = this;
 }
 
 //_____________________________________________________________________________
@@ -70,7 +70,7 @@ AliRsnCutSet::AliRsnCutSet(const AliRsnCutSet & copy) :
 // Copy constructor
 //
 
-  AliRsnExpression::sCutSet = this;
+  AliRsnExpression::fgCutSet = this;
 }
 
 //_____________________________________________________________________________
@@ -101,8 +101,7 @@ void AliRsnCutSet::AddCut(AliRsnCut *cut)
   if (fBoolValues) delete fBoolValues;
 
   fBoolValues = new Bool_t[fNumOfCuts];
-  for (i = 0; i < fNumOfCuts; i++)
-  {
+  for (i = 0; i < fNumOfCuts; i++) {
     fBoolValues[i] = kTRUE;
   }
 
@@ -111,7 +110,7 @@ void AliRsnCutSet::AddCut(AliRsnCut *cut)
 }
 
 //_____________________________________________________________________________
-void AliRsnCutSet::ShowCuts()
+void AliRsnCutSet::ShowCuts() const
 {
 //
 // Prints all cuts
@@ -137,8 +136,7 @@ Bool_t AliRsnCutSet::IsSelected(AliRsnCut::ETarget type, AliRsnDaughter *daughte
 
   Bool_t boolReturn = kTRUE;
   AliRsnCut *cut;
-  for (i = 0; i < fNumOfCuts; i++)
-  {
+  for (i = 0; i < fNumOfCuts; i++) {
     cut = (AliRsnCut*)fCuts.At(i);
     fBoolValues[i] = cut->IsSelected(type,daughter);
   }
@@ -160,8 +158,7 @@ Bool_t AliRsnCutSet::IsSelected(AliRsnCut::ETarget type, AliRsnPairParticle * pa
 
   Bool_t boolReturn = kTRUE;
   AliRsnCut *cut;
-  for (i = 0; i < fNumOfCuts; i++)
-  {
+  for (i = 0; i < fNumOfCuts; i++) {
     cut = (AliRsnCut*) fCuts.At(i);
     fBoolValues[i] = cut->IsSelected(type,pair);
   }
@@ -182,8 +179,7 @@ Bool_t AliRsnCutSet::IsSelected(AliRsnCut::ETarget type, AliRsnEvent * event)
 
   Bool_t boolReturn = kTRUE;
   AliRsnCut *cut;
-  for (i = 0; i < fNumOfCuts; i++)
-  {
+  for (i = 0; i < fNumOfCuts; i++) {
     cut = (AliRsnCut*) fCuts.At(i);
     fBoolValues[i] = cut->IsSelected(type,event);
   }
@@ -204,8 +200,7 @@ Bool_t AliRsnCutSet::IsSelected(AliRsnCut::ETarget type, AliRsnEvent * ev1, AliR
 
   Bool_t boolReturn = kTRUE;
   AliRsnCut *cut;
-  for (i = 0; i < fNumOfCuts; i++)
-  {
+  for (i = 0; i < fNumOfCuts; i++) {
     cut = (AliRsnCut*) fCuts.At(i);
     fBoolValues[i] = cut->IsSelected(type,ev1,ev2);
   }
@@ -253,8 +248,7 @@ Int_t AliRsnCutSet::GetIndexByCutName(TString s)
   Int_t i;
   AliRsnCut *cut;
 
-  for (i = 0; i < fCuts.GetEntriesFast(); i++)
-  {
+  for (i = 0; i < fCuts.GetEntriesFast(); i++) {
     cut = (AliRsnCut*) fCuts.At(i);
     if (!s.CompareTo(cut->GetName())) return i;
   }
@@ -270,9 +264,8 @@ Bool_t AliRsnCutSet::Passed()
 // and gives a global response to the cut check
 //
 
-  AliRsnExpression::sCutSet = this;
-  if (!fExpression)
-  {
+  AliRsnExpression::fgCutSet = this;
+  if (!fExpression) {
     fExpression = new AliRsnExpression(fCutSchemeIndexed);
     AliDebug(AliLog::kDebug,"fExpression was created.");
   }
@@ -338,8 +331,7 @@ void AliRsnCutSet::PrintSetInfo()
   AliInfo(Form("Num of Cuts: %d", fCuts.GetEntriesFast()));
   AliInfo("====== Cuts ======");
   AliRsnCut *cut;
-  for (i = 0; i < fCuts.GetEntriesFast(); i++)
-  {
+  for (i = 0; i < fCuts.GetEntriesFast(); i++) {
     cut = (AliRsnCut*) fCuts.At(i);
     if (cut) AliInfo(Form("%d %d",i,fBoolValues[i]));
   }
@@ -359,8 +351,7 @@ TString AliRsnCutSet::GetCutSchemeIndexed()
   TString str(fCutScheme);
   AliDebug(AliLog::kDebug,Form("Num of cuts %d",fCuts.GetEntriesFast()));
   AliRsnCut *cut;
-  for (i = 0; i < fCuts.GetEntriesFast(); i++)
-  {
+  for (i = 0; i < fCuts.GetEntriesFast(); i++) {
     cut = (AliRsnCut*) fCuts.At(i);
     str.ReplaceAll(cut->GetName(),Form("%d",i));
   }

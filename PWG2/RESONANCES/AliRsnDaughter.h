@@ -20,10 +20,16 @@
 
 #include "AliPID.h"
 #include "AliVParticle.h"
+#include "AliESDtrack.h"
+#include "AliAODTrack.h"
+#include "AliMCParticle.h"
 
 class TParticle;
 class AliStack;
-class AliESDtrack;
+class AliMCParticle;
+// class AliESDtrack;
+// class AliESDtrack;
+// class AliAODTrack;
 class AliAODEvent;
 class AliRsnPIDDefESD;
 
@@ -31,8 +37,7 @@ class AliRsnDaughter : public TObject
 {
   public:
 
-    enum EPIDMethod
-    {
+    enum EPIDMethod {
       kNoPID = 0,
       kRealistic,
       kPerfect,
@@ -74,9 +79,12 @@ class AliRsnDaughter : public TObject
 
     // PID
     const Double_t        *PID() const {return fRef->PID();}
-    Bool_t                 CombineWithPriors(Double_t *priors, AliRsnPIDDefESD *pidDef = 0x0);
+    const Double_t        *ComputedWeights() const {return fPID;}
+    Bool_t                 CombineWithPriors(const Double_t* priors, AliRsnPIDDefESD* pidDef = 0x0);
     AliPID::EParticleType  RealisticPID() const;
     AliPID::EParticleType  PerfectPID() const;
+    Bool_t                 IsPerfectPID(const AliPID::EParticleType type) const  {return (PerfectPID() == type);}
+    Bool_t                 IsRealisticPID(const AliPID::EParticleType type) const  {return (RealisticPID() == type);}
     Double_t               PIDProb(AliPID::EParticleType type) const {return PID()[(Int_t)type];}
     AliPID::EParticleType  PIDType(Double_t &prob) const;
     AliPID::EParticleType  AssignedPID() const;
@@ -84,7 +92,12 @@ class AliRsnDaughter : public TObject
     void                   SetRequiredPID(AliPID::EParticleType type) {fReqPID = type;}
 
     // integer parameters
-    Short_t Charge() const {return fRef->Charge();}
+    Bool_t  IsPos() const {return (fRef->Charge() > 0);}
+    Bool_t  IsNeg() const {return (fRef->Charge() < 0);}
+    Bool_t  IsNeutral() const {return (!IsPos() && !IsNeg());}
+    Bool_t  IsSign(Char_t sign) { if (sign=='+') return IsPos(); else if (sign=='-') return IsNeg(); else return IsNeutral();}
+    Short_t Charge() const {if (IsPos()) return 1; else if (IsNeg()) return -1; else return 0;}
+    Char_t  ChargeC() const {if (IsPos()) return '+'; else if (IsNeg()) return '-'; else return '0';}
     Int_t   GetLabel() const {return fRef->GetLabel();}
     Int_t   GetID() const;
     void    SetStatus(ULong_t value) {fStatus = value;}
@@ -92,7 +105,7 @@ class AliRsnDaughter : public TObject
     Bool_t  CheckFlag(ULong_t flag) const {return ((fStatus & flag) > 0);}
     void    SetGood() {fOK = kTRUE;}
     void    SetBad() {fOK = kFALSE;}
-    Bool_t  IsOK() {return fOK;}
+    Bool_t  IsOK() const { return fOK; }
 
     // Kinkness
     Char_t  KinkIndex() const {return fKinkIndex;}
@@ -103,27 +116,30 @@ class AliRsnDaughter : public TObject
     void    SetKinkMother() {fKinkIndex = -1;}
     void    SetKinkDaughter() {fKinkIndex = 1;}
     void    SetNoKink() {fKinkIndex = 0;}
-    void    FindKinkIndex(AliESDtrack *track);
-    void    FindKinkIndex(AliAODEvent *event);
+    void    FindKinkIndex(const AliESDtrack* track);
+    void    FindKinkIndex(AliAODEvent*const event);
 
     // MC info & references
-    AliVParticle* GetRef() {return fRef;}
-    AliESDtrack*  GetRefESD();
-    TParticle*    GetParticle() {return fParticle;}
-    Int_t         GetMotherPDG() {return fMotherPDG;}
-    void          SetRef(AliVParticle *ref) {fRef = ref;}
-    void          SetParticle(TParticle *p) {fParticle = p;}
-    void          SetMotherPDG(Int_t value) {fMotherPDG = value;}
-    void          FindMotherPDG(AliStack *stack);
-    Double_t      GetMCEnergy(Double_t mass);
+    AliVParticle*  GetRef() const {return fRef;}
+    AliESDtrack*   GetRefESD() {return dynamic_cast<AliESDtrack*>(fRef);}
+    AliAODTrack*   GetRefAOD() {return dynamic_cast<AliAODTrack*>(fRef);}
+    AliMCParticle* GetRefMC()  {return dynamic_cast<AliMCParticle*>(fRef);}
+    TParticle*     GetParticle() const {return fParticle;}
+    Int_t          GetMotherPDG() const {return fMotherPDG;}
+    void           SetRef(AliVParticle * const ref) {fRef = ref;}
+    void           SetParticle(TParticle * const p) {fParticle = p;}
+    void           SetMotherPDG(Int_t value) {fMotherPDG = value;}
+    void           FindMotherPDG(AliStack *const stack);
+    Double_t       GetMCEnergy(Double_t mass);
 
     // utilities
     void          Reset();
-    void          Print(Option_t *option = "ALL") const;
+    void          Print(Option_t*const option = "ALL") const;
 
     // static functions
     static void                   SetPIDMethod(EPIDMethod method) {fgPIDMethod = method;}
     static AliPID::EParticleType  InternalType(Int_t pdgCode);
+    static const char*            MethodName(EPIDMethod method);
 
   private:
 

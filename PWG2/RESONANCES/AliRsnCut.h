@@ -48,7 +48,7 @@ class AliRsnCut : public TNamed
     AliRsnCut(const char *name, Int_t    min, Int_t    max = 0);
     AliRsnCut(const char *name, ULong_t  min, ULong_t  max = 0);
     AliRsnCut(const char *name, Double_t min, Double_t max = 0);
-    virtual ~AliRsnCut() { }
+    virtual ~AliRsnCut() {;};
 
     void             SetRange(Int_t    min, Int_t    max) {fMinI = min; fMaxI = max; fVarType = kInt;}
     void             SetRange(ULong_t  min, ULong_t  max) {fMinU = min; fMaxU = max; fVarType = kULong;}
@@ -63,7 +63,7 @@ class AliRsnCut : public TNamed
     virtual Bool_t   IsSelected(ETarget tgt, AliRsnEvent *event);
     virtual Bool_t   IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2);
 
-protected:
+  protected:
 
     Bool_t  OkValue();
     Bool_t  OkRange();

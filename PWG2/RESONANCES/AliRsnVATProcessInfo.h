@@ -7,37 +7,35 @@
 //          M. Vala (email: martin.vala@cern.ch)
 //
 
-#ifndef AliRsnVATProcessInfo_H
-#define AliRsnVATProcessInfo_H
+#ifndef ALIRSNVATPROCESSINFO_H
+#define ALIRSNVATPROCESSINFO_H
 
 #include <TNamed.h>
-#include <TH1.h>
+class TH1I;
 
 class AliRsnVATProcessInfo : public TNamed
 {
-public:
-    AliRsnVATProcessInfo(const char*name="AT_RSNInfo");
+  public:
+    AliRsnVATProcessInfo(const char*name = "AT_RSNInfo");
     AliRsnVATProcessInfo(const AliRsnVATProcessInfo& copy);
-    AliRsnVATProcessInfo& operator= (const AliRsnVATProcessInfo& /*copy*/) {
-        return *this;
-    }
+    AliRsnVATProcessInfo& operator= (const AliRsnVATProcessInfo& /*copy*/) {return *this;}
     ~AliRsnVATProcessInfo();
 
-    TList* GenerateInfoList();
+    void         GenerateInfoList(TList* list);
     virtual void FillInfo();
     virtual void PrintInfo(const Long64_t &num);
 
-    void SetNumberOfTracks(const Int_t & num) { fNumOfTracks = num; }
-    Int_t GetNumberOfTracks() { return fNumOfTracks; };
-
     const char* GetEventHistogramName() { return Form("hEventsUsed_%s",GetName()); };
+    Long64_t    GetNumerOfEventsProcessed();
+    void        SetEventUsed(Bool_t isUsed = kTRUE) { fEventUsed = isUsed; }
+    Bool_t      IsEventUsed() const { return fEventUsed; };
 
-    void SetPrintInfoNumber(const Long64_t &num=1) { fPrintInfoNumber = num; }
+    void        SetPrintInfoNumber(const Long64_t &num=1) { fPrintInfoNumber = num; }
 
-private:
+  private:
 
     TH1I         *fHistUsedEvents;
-    Int_t         fNumOfTracks;
+    Int_t         fEventUsed;
 
     Long64_t      fPrintInfoNumber;
 

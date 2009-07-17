@@ -12,24 +12,37 @@
 #ifndef ALIRSNCUTPRIMARYVERTEX_H
 #define ALIRSNCUTPRIMARYVERTEX_H
 
-#include "AliPID.h"
 #include "AliRsnCut.h"
+#include "AliPID.h"
 
+#include "Riostream.h"
+#include "TMath.h"
+
+#include "AliLog.h"
+#include "AliESDEvent.h"
+#include "AliESDVertex.h"
+
+#include "AliRsnEvent.h"
+
+class AliRsnEvent;
+class AliRsnDaughter;
+class AliRsnPairParticle;
 class AliRsnCutPrimaryVertex : public AliRsnCut
 {
- public:
+  public:
 
-  AliRsnCutPrimaryVertex();
-  AliRsnCutPrimaryVertex(const char *name, Int_t minContributors);
+    AliRsnCutPrimaryVertex();
+    AliRsnCutPrimaryVertex(const char *name, Int_t minContributors);
+    virtual ~AliRsnCutPrimaryVertex() {;};
 
-  virtual Bool_t IsSelected(ETarget tgt, AliRsnDaughter *daughter);
-  virtual Bool_t IsSelected(ETarget tgt, AliRsnPairParticle *pair);
-  virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *event);
-  virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2);
+    virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnDaughter *daughter) const;
+    virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnPairParticle *pair) const;
+    virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *event);
+    virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2) const;
 
-protected:
+  protected:
 
-  ClassDef(AliRsnCutPrimaryVertex, 1)
+    ClassDef(AliRsnCutPrimaryVertex, 1)
 };
 
 #endif

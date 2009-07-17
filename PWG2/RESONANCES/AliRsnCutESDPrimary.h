@@ -17,23 +17,24 @@
 
 class AliRsnCutESDPrimary : public AliRsnCut
 {
- public:
+  public:
 
-  AliRsnCutESDPrimary();
-  AliRsnCutESDPrimary(const char *name);
+    AliRsnCutESDPrimary();
+    AliRsnCutESDPrimary(const char *name);
+    virtual ~AliRsnCutESDPrimary() {;};
 
-  AliESDtrackCuts GetCuts() {return fCuts;}
+    AliESDtrackCuts* GetCuts() {return &fCuts;}
 
-  virtual Bool_t IsSelected(ETarget tgt, AliRsnDaughter *daughter);
-  virtual Bool_t IsSelected(ETarget tgt, AliRsnPairParticle *pair);
-  virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *event);
-  virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2);
+    virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnDaughter*const daughter);
+    virtual Bool_t IsSelected(ETarget tgt, AliRsnPairParticle *pair);
+    virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *event);
+    virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2);
 
-protected:
+  protected:
 
-  AliESDtrackCuts fCuts;  // set of ESD track cuts
+    AliESDtrackCuts fCuts;  // set of ESD track cuts
 
-  ClassDef(AliRsnCutESDPrimary, 1)
+    ClassDef(AliRsnCutESDPrimary, 1)
 };
 
 #endif

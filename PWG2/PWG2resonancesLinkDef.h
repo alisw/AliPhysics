@@ -3,6 +3,8 @@
 #pragma link C++ class AliRsnDaughter+;
 #pragma link C++ class AliRsnPairParticle+;
 
+#pragma link C++ class AliRsnExpression+;
+#pragma link C++ class AliRsnVariableExpression+;
 #pragma link C++ class AliRsnCut+;
 #pragma link C++ class AliRsnCutStd+;
 #pragma link C++ class AliRsnCutBetheBloch+;
@@ -10,8 +12,7 @@
 #pragma link C++ class AliRsnCutPrimaryVertex+;
 #pragma link C++ class AliRsnCutSet+;
 #pragma link C++ class AliRsnCutMgr+;
-#pragma link C++ class AliRsnExpression+;
-#pragma link C++ class AliRsnVariableExpression+;
+
 
 #pragma link C++ class AliRsnPIDIndex+;
 #pragma link C++ class AliRsnPIDDefESD+;
@@ -34,5 +35,6 @@
 #pragma link C++ class AliRsnAnalysisManager+;
 #pragma link C++ class AliRsnAnalysisSE+;
 #pragma link C++ class AliRsnAnalysisME+;
+#pragma link C++ class AliRsnAnalysisEffSE+;
 
 #endif
