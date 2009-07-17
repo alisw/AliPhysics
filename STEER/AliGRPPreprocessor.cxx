@@ -268,7 +268,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	if( iDcsFxs == 0 ) {
 		Log(Form("DCS FXS, successful!"));
 	} else {
-		Log(Form("DCS FXS, Could not store CTP run configuration and scalers!!!"));
+		Log(Form("DCS FXS, Could not store CTP scalers!!!"));
 		error |= 4;
 	}
 	
