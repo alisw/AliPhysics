@@ -541,10 +541,19 @@ Bool_t AliRawReader::ReadNextChar(UChar_t& data)
   return kTRUE;
 }
 
-Bool_t  AliRawReader::GotoEvent(Int_t /*event*/)
+Bool_t  AliRawReader::GotoEvent(Int_t event)
 {
-  Error("GotoEvent","Method not implemented! Nothing done");
-  return kFALSE;
+  // Random access to certain
+  // event index. Could be very slow
+  // for some non-root raw-readers.
+  // So it should be reimplemented there.
+  if (event < fEventNumber) RewindEvents();
+
+  while (fEventNumber < event) {
+    if (!NextEvent()) return kFALSE;
+  }
+
+  return kTRUE;
 }
 
 Int_t AliRawReader::CheckData() const
@@ -701,3 +710,25 @@ void AliRawReader::AddErrorLog(AliRawDataErrorLog::ERawDataErrorLevel level,
     if (prevLog) prevLog->AddCount();
 
 }
+
+Bool_t AliRawReader::GotoEventWithID(Int_t event, 
+				     UInt_t period,
+				     UInt_t orbitID,
+				     UShort_t bcID)
+{
+  // Go to certain event number by
+  // checking the event ID.
+  // Useful in case event-selection
+  // is applied and the 'event' is
+  // relative
+  if (!GotoEvent(event)) return kFALSE;
+
+  while (GetBCID()    != period  ||
+	 GetOrbitID() != orbitID ||
+	 GetPeriod()  != bcID) {
+    if (!NextEvent()) return kFALSE;
+  }
+
+  return kTRUE;
+}
+

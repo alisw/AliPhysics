@@ -123,6 +123,10 @@ class AliRawReader: public TObject {
     virtual Bool_t   NextEvent() = 0;
     virtual Bool_t   RewindEvents() = 0;
     virtual Bool_t   GotoEvent(Int_t event);
+    virtual Bool_t   GotoEventWithID(Int_t event,
+				     UInt_t period,
+				     UInt_t orbitID,
+				     UShort_t bcID);
     virtual Int_t    GetEventIndex() const { return -1; }
     virtual Int_t    GetNumberOfEvents() const { return -1; }
 
