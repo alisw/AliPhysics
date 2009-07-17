@@ -211,31 +211,26 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
     return;
   }
 
-  if (strcmp(runInfo->GetLHCState(),"STABLE_BEAMS") == 0) {
-    // In case of stable beams
-    if ((strcmp(runInfo->GetBeamType(),"A-A") == 0) ||
+    if ((strcmp(runInfo->GetLHCState(),"STABLE_BEAMS") == 0) &&
+	((strcmp(runInfo->GetBeamType(),"A-A") == 0) ||
 	(strcmp(runInfo->GetBeamType(),"A-") == 0) ||
-	(strcmp(runInfo->GetBeamType(),"-A") == 0)) {
-      // Heavy ion run (any beam tha is not pp, the event specie is set to kHighMult
+	(strcmp(runInfo->GetBeamType(),"-A") == 0))) {
+      // Heavy ion run (any beam that is not pp, the event specie is set to kHighMult
       fEventSpecie = kHighMult;
     }
-    else if ((strcmp(runInfo->GetBeamType(),"p-p") == 0) ||
-	     (strcmp(runInfo->GetBeamType(),"p-") == 0) ||
-	     (strcmp(runInfo->GetBeamType(),"-p") == 0) ||
-	     (strcmp(runInfo->GetBeamType(),"P-P") == 0) ||
-	     (strcmp(runInfo->GetBeamType(),"P-") == 0) ||
-	     (strcmp(runInfo->GetBeamType(),"-P") == 0)) {
+    else if ((strcmp(runInfo->GetLHCState(),"STABLE_BEAMS") == 0) &&
+	     ((strcmp(runInfo->GetBeamType(),"p-p") == 0) ||
+	      (strcmp(runInfo->GetBeamType(),"p-") == 0) ||
+	      (strcmp(runInfo->GetBeamType(),"-p") == 0) ||
+	      (strcmp(runInfo->GetBeamType(),"P-P") == 0) ||
+	      (strcmp(runInfo->GetBeamType(),"P-") == 0) ||
+	      (strcmp(runInfo->GetBeamType(),"-P") == 0))) {
       // Proton run, the event specie is set to kLowMult
       fEventSpecie = kLowMult;
     }
     else if (strcmp(runInfo->GetBeamType(),"-") == 0) {
       // No beams, we assume cosmic data
       fEventSpecie = kCosmic;
-    }
-    else if (strcmp(runInfo->GetBeamType(),"UNKNOWN") == 0) {
-      // No LHC beam information is available, we the default
-      // event specie
-      fEventSpecie = kDefault;
     }
 
     // Now we look into the trigger type in order to decide
@@ -263,6 +258,7 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
 	  cosmicTrigger = kTRUE;
 	  AliDebug(1,Form("Trigger %s identified as cosmic according to the list defined in OCDB.",
 			  trClass.Data()));
+	  continue;
 	}
       }
       else {
@@ -283,7 +279,6 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
 
     // Here we have to add if we have other cases
     // and also HLT info if any...
-  }
 }
 
 const AliDetectorRecoParam *AliRecoParam::GetDetRecoParam(Int_t iDet) const
