@@ -2,14 +2,15 @@
 
 set(SRCS  RESONANCES/AliRsnDaughter.cxx
     RESONANCES/AliRsnPairParticle.cxx
+    RESONANCES/AliRsnExpression.cxx
+    RESONANCES/AliRsnVariableExpression.cxx
     RESONANCES/AliRsnCut.cxx
     RESONANCES/AliRsnCutStd.cxx
     RESONANCES/AliRsnCutBetheBloch.cxx
     RESONANCES/AliRsnCutESDPrimary.cxx
-    RESONANCES/AliRsnCutPrimaryVertex.cxx 
+    RESONANCES/AliRsnCutPrimaryVertex.cxx
     RESONANCES/AliRsnCutSet.cxx
     RESONANCES/AliRsnCutMgr.cxx
-    RESONANCES/AliRsnExpression.cxx
     RESONANCES/AliRsnPIDIndex.cxx
     RESONANCES/AliRsnPIDDefESD.cxx
     RESONANCES/AliRsnEvent.cxx
@@ -25,7 +26,7 @@ set(SRCS  RESONANCES/AliRsnDaughter.cxx
     RESONANCES/AliRsnAnalysisManager.cxx
     RESONANCES/AliRsnAnalysisSE.cxx
     RESONANCES/AliRsnAnalysisME.cxx
-
+    RESONANCES/AliRsnAnalysisEffSE.cxx
 )
 
 # fill list of header files from list of source files

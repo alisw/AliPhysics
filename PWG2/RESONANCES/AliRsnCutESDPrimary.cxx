@@ -15,11 +15,6 @@
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
-#include "TMath.h"
-
-#include "AliLog.h"
-#include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
 
 #include "AliRsnDaughter.h"
 #include "AliRsnCutESDPrimary.h"
@@ -28,8 +23,8 @@ ClassImp(AliRsnCutESDPrimary)
 
 //_________________________________________________________________________________________________
 AliRsnCutESDPrimary::AliRsnCutESDPrimary() :
-  AliRsnCut(),
-  fCuts()
+    AliRsnCut(),
+    fCuts()
 {
 //
 // Default constructor.
@@ -39,8 +34,8 @@ AliRsnCutESDPrimary::AliRsnCutESDPrimary() :
 //_________________________________________________________________________________________________
 AliRsnCutESDPrimary::AliRsnCutESDPrimary
 (const char *name) :
-  AliRsnCut(name, 0.0, 0.0),
-  fCuts()
+    AliRsnCut(name, 0.0, 0.0),
+    fCuts()
 {
 //
 // Main constructor.
@@ -48,15 +43,14 @@ AliRsnCutESDPrimary::AliRsnCutESDPrimary
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutESDPrimary::IsSelected(ETarget tgt, AliRsnDaughter *track)
+Bool_t AliRsnCutESDPrimary::IsSelected(ETarget tgt, AliRsnDaughter * const track)
 {
 //
 // Cut checker.
 //
 
   // coherence check
-  if (tgt != AliRsnCut::kParticle)
-  {
+  if (tgt != AliRsnCut::kParticle) {
     AliError(Form("Wrong target. Skipping cut", GetName()));
     return kTRUE;
   }

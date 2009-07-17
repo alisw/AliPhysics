@@ -14,11 +14,8 @@
 //
 
 #include <Riostream.h>
-
 #include <TParticle.h>
-#include <TString.h>
 
-#include "AliLog.h"
 #include "AliStack.h"
 #include "AliESDtrack.h"
 #include "AliAODEvent.h"
@@ -34,15 +31,15 @@ AliRsnDaughter::EPIDMethod AliRsnDaughter::fgPIDMethod = AliRsnDaughter::kRealis
 
 //_____________________________________________________________________________
 AliRsnDaughter::AliRsnDaughter(AliVParticle *ref, TParticle *refMC) :
-  fOK((ref != 0)),
-  fKinkIndex(0),
-  fParticle(refMC),
-  fMotherPDG(0),
-  fStatus(0),
-  fDr(0.0),
-  fDz(0.0),
-  fReqPID(AliPID::kUnknown),
-  fRef(ref)
+    fOK((ref != 0)),
+    fKinkIndex(0),
+    fParticle(refMC),
+    fMotherPDG(0),
+    fStatus(0),
+    fDr(0.0),
+    fDz(0.0),
+    fReqPID(AliPID::kUnknown),
+    fRef(ref)
 {
 //
 // Default constructor.
@@ -51,16 +48,16 @@ AliRsnDaughter::AliRsnDaughter(AliVParticle *ref, TParticle *refMC) :
 
 //_____________________________________________________________________________
 AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
-  TObject(copy),
-  fOK(copy.fOK),
-  fKinkIndex(copy.fKinkIndex),
-  fParticle(copy.fParticle),
-  fMotherPDG(copy.fMotherPDG),
-  fStatus(copy.fStatus),
-  fDr(copy.fDr),
-  fDz(copy.fDz),
-  fReqPID(copy.fReqPID),
-  fRef(copy.fRef)
+    TObject(copy),
+    fOK(copy.fOK),
+    fKinkIndex(copy.fKinkIndex),
+    fParticle(copy.fParticle),
+    fMotherPDG(copy.fMotherPDG),
+    fStatus(copy.fStatus),
+    fDr(copy.fDr),
+    fDz(copy.fDz),
+    fReqPID(copy.fReqPID),
+    fRef(copy.fRef)
 {
 //
 // Copy constructor.
@@ -193,19 +190,19 @@ AliPID::EParticleType AliRsnDaughter::PerfectPID() const
 
   Int_t absPDG = TMath::Abs(fParticle->GetPdgCode());
   switch (absPDG) {
-    case   11:
-      return AliPID::kElectron;
-    case   13:
-      return AliPID::kMuon;
-    case  211:
-      return AliPID::kPion;
-    case  321:
-      return AliPID::kKaon;
-    case 2212:
-      return AliPID::kProton;
-    default:
-      AliDebug(2, Form("PDG code = %d not recognized. Return 'AliPID::kUnknown'", absPDG));
-      return AliPID::kUnknown;
+  case   11:
+    return AliPID::kElectron;
+  case   13:
+    return AliPID::kMuon;
+  case  211:
+    return AliPID::kPion;
+  case  321:
+    return AliPID::kKaon;
+  case 2212:
+    return AliPID::kProton;
+  default:
+    AliDebug(2, Form("PDG code = %d not recognized. Return 'AliPID::kUnknown'", absPDG));
+    return AliPID::kUnknown;
   }
 }
 
@@ -236,20 +233,20 @@ AliPID::EParticleType AliRsnDaughter::AssignedPID() const
 //
 
   switch (fgPIDMethod) {
-    case kNoPID:
-      return AliPID::kUnknown;
-    case kPerfect:
-      return PerfectPID();
-    case kRealistic:
-      return RealisticPID();
-    default:
-      AliWarning("PID method not properly set. Returning realistic PID");
-      return RealisticPID();
+  case kNoPID:
+    return AliPID::kUnknown;
+  case kPerfect:
+    return PerfectPID();
+  case kRealistic:
+    return RealisticPID();
+  default:
+    AliWarning("PID method not properly set. Returning realistic PID");
+    return RealisticPID();
   }
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnDaughter::CombineWithPriors(Double_t *priors, AliRsnPIDDefESD *pidDef)
+Bool_t AliRsnDaughter::CombineWithPriors(const Double_t *priors, AliRsnPIDDefESD *pidDef)
 {
 //
 // Combine current PID weights (assumed to be them) with prior probs
@@ -262,14 +259,19 @@ Bool_t AliRsnDaughter::CombineWithPriors(Double_t *priors, AliRsnPIDDefESD *pidD
   // if the reference is not ESD or the pidDef is null
   // of it is not null but is requires the ESD pid,
   // the standard PID value is used, otherwise
-  if (pidDef)
-  {
-    AliESDtrack *esdTrack = GetRefESD();
-    if (esdTrack) pidDef->ComputeWeights(esdTrack, fPID);
-  }
-  else
-  {
-    for (i = 0; i < AliPID::kSPECIES; i++) fPID[i] = fRef->PID()[i];
+  if (pidDef && GetRefESD()) {
+    pidDef->ComputeWeights(GetRefESD(), fPID);
+  } else {
+    if (fRef->PID())
+      for (i = 0; i < AliPID::kSPECIES; i++) fPID[i] = fRef->PID()[i];
+    else if (fParticle) {
+      // if the PID() returns 0x0, this is a MC particle
+      // and we set the weight corresponding to its species to 1
+      // and the others to zero
+      for (i = 0; i < AliPID::kSPECIES; i++) fPID[i] = 0.0;
+      i = (Int_t)AliRsnDaughter::InternalType(TMath::Abs(fParticle->GetPdgCode()));
+      fPID[i] = 1.0;
+    }
   }
 
   // multiply weights and priors
@@ -277,8 +279,8 @@ Bool_t AliRsnDaughter::CombineWithPriors(Double_t *priors, AliRsnPIDDefESD *pidD
     fPID[i] *= priors[i];
     sum += fPID[i];
   }
-  if (sum <= (Double_t) 0.) {
-    AliError(Form("Sum of weights = %f <= 0", sum));
+  if (sum <= 0.0) {
+    if (sum < 0.0) AliError(Form("Sum of weights = %f < 0", sum));
     return kFALSE;
   }
 
@@ -289,17 +291,7 @@ Bool_t AliRsnDaughter::CombineWithPriors(Double_t *priors, AliRsnPIDDefESD *pidD
 }
 
 //_____________________________________________________________________________
-AliESDtrack* AliRsnDaughter::GetRefESD()
-{
-//
-// Return a reference in format of ESD track
-//
-
-  return dynamic_cast<AliESDtrack *>(fRef);
-}
-
-//_____________________________________________________________________________
-void AliRsnDaughter::FindMotherPDG(AliStack *stack)
+void AliRsnDaughter::FindMotherPDG(AliStack *const stack)
 {
 //
 // Searches the stack to find the mother and retrieve its PDG code.
@@ -307,11 +299,10 @@ void AliRsnDaughter::FindMotherPDG(AliStack *stack)
 
   if (!stack || !fParticle) return;
 
-  Int_t mLabel = fParticle->GetFirstMother();
+  const Int_t mLabel = fParticle->GetFirstMother();
   if (mLabel < 0) {
     fMotherPDG = 0;
-  }
-  else {
+  } else {
     TParticle *mum = stack->Particle(mLabel);
     if (mum) fMotherPDG = mum->GetPdgCode();
     else fMotherPDG = 0;
@@ -335,7 +326,7 @@ Double_t AliRsnDaughter::GetMCEnergy(Double_t mass)
 }
 
 //_____________________________________________________________________________
-void AliRsnDaughter::FindKinkIndex(AliESDtrack *esdTrack)
+void AliRsnDaughter::FindKinkIndex(const AliESDtrack *esdTrack)
 {
 //
 // Assign kink index from an ESD track
@@ -346,15 +337,13 @@ void AliRsnDaughter::FindKinkIndex(AliESDtrack *esdTrack)
 
   if (ik[0] < 0 || ik[1] < 0 || ik[2] < 0) {
     SetKinkMother();
-  }
-  else if (ik[0] > 0 || ik[1] > 0 || ik[2] > 0) {
+  } else if (ik[0] > 0 || ik[1] > 0 || ik[2] > 0) {
     SetKinkDaughter();
-  }
-  else SetNoKink();
+  } else SetNoKink();
 }
 
 //_____________________________________________________________________________
-void AliRsnDaughter::FindKinkIndex(AliAODEvent *event)
+void AliRsnDaughter::FindKinkIndex(AliAODEvent *const event)
 {
 //
 // Assign kink index from an AOD event
@@ -400,7 +389,7 @@ void AliRsnDaughter::Reset()
 }
 
 //_____________________________________________________________________________
-void AliRsnDaughter::Print(Option_t *option) const
+void AliRsnDaughter::Print(Option_t * const option) const
 {
 //
 // Prints the values of data members, using the options:
@@ -465,33 +454,54 @@ void AliRsnDaughter::Print(Option_t *option) const
 
 //_____________________________________________________________________________
 AliPID::EParticleType AliRsnDaughter::InternalType(Int_t pdg)
+{
 //
 // Return the internal enum value corresponding to the PDG
 // code passed as argument, if possible.
 // Otherwise, returns 'AliPID::kSPECIES' by default.
 //
-{
+
   AliPID::EParticleType value;
   Int_t absPDG = TMath::Abs(pdg);
 
   switch (absPDG) {
-    case 11:
-      value = AliPID::kElectron;
-      break;
-    case 13:
-      value = AliPID::kMuon;
-      break;
-    case 211:
-      value = AliPID::kPion;
-      break;
-    case 321:
-      value = AliPID::kKaon;
-      break;
-    case 2212:
-      value = AliPID::kProton;
-      break;
-    default:
-      value = AliPID::kUnknown;
+  case 11:
+    value = AliPID::kElectron;
+    break;
+  case 13:
+    value = AliPID::kMuon;
+    break;
+  case 211:
+    value = AliPID::kPion;
+    break;
+  case 321:
+    value = AliPID::kKaon;
+    break;
+  case 2212:
+    value = AliPID::kProton;
+    break;
+  default:
+    value = AliPID::kUnknown;
   }
   return value;
+}
+
+//_____________________________________________________________________________
+const char* AliRsnDaughter::MethodName(EPIDMethod method)
+{
+//
+// Returns a string with the method name
+//
+
+  switch (method)
+  {
+    case kNoPID:
+      return "No PID";
+    case kRealistic:
+      return "Realistic";
+    case kPerfect:
+      return "Perfect";
+    default:
+      return "Unknown";
+  }
 }

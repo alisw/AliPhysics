@@ -12,8 +12,7 @@
 #ifndef ALIRSNCUTMGR_H
 #define ALIRSNCUTMGR_H
 
-#include "TNamed.h"
-#include "TObjArray.h"
+#include <TNamed.h>
 
 #include "AliRsnCut.h"
 
@@ -27,9 +26,9 @@ class AliRsnCutMgr : public TNamed
     AliRsnCutMgr(const char *name, const char* title);
     ~AliRsnCutMgr();
 
-    void          SetCutSet(AliRsnCut::ETarget type, AliRsnCutSet* cutset);
+    void          SetCutSet(AliRsnCut::ETarget type, AliRsnCutSet*const cutset);
     AliRsnCutSet* GetCutSet(AliRsnCut::ETarget type) {return fCutSets[type];}
-    Bool_t        IsSelected(AliRsnCut::ETarget type, TObject *obj);
+    Bool_t        IsSelected(AliRsnCut::ETarget type, TObject *const obj);
 
   private:
 

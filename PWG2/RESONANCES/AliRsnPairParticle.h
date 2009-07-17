@@ -17,6 +17,8 @@
 
 #include "AliRsnDaughter.h"
 
+class AliRsnPairDef;
+
 class AliRsnPairParticle : public TObject
 {
   public:
@@ -38,9 +40,11 @@ class AliRsnPairParticle : public TObject
     Double_t          GetPz() const {return fPTot[2];}
     Double_t          GetPt() const {return TMath::Sqrt(GetPt2());}
     Double_t          GetPhi() const {return TMath::Pi() + TMath::ATan2(-fPTot[1], -fPTot[0]);}
-    Double_t          GetTheta() const {if (fPTot[2]==0.0){return TMath::PiOver2();}
-      else{return TMath::ACos(fPTot[2]/GetP());}}
-    Double_t          GetEta() const {return -TMath::Log(TMath::Tan(0.5*GetTheta()));}
+    Double_t          GetTheta() const {
+      if (fPTot[2]==0.0) {return TMath::PiOver2();}
+      else {return TMath::ACos(fPTot[2]/GetP());}
+    }
+    Double_t          GetEta() const {Double_t a = TMath::Tan(0.5*GetTheta()); if (a > 0.) return -TMath::Log(a); return 999999.0;}
     Double_t          GetY(Double_t m1, Double_t m2) const {return 0.5*TMath::Log((GetEtot(m1,m2)+fPTot[2])/(GetEtot(m1,m2)-fPTot[2]));}
 
     Double_t          GetEtotMC(Double_t m1, Double_t m2) const;
@@ -52,8 +56,10 @@ class AliRsnPairParticle : public TObject
     Double_t          GetPzMC() const {return fPTotMC[2];}
     Double_t          GetPtMC() const {return TMath::Sqrt(GetPt2MC());}
     Double_t          GetPhiMC() const {return TMath::Pi() + TMath::ATan2(-fPTotMC[1], -fPTotMC[0]);}
-    Double_t          GetThetaMC() const {if (fPTotMC[2]==0.0){return TMath::PiOver2();}
-      else{return TMath::ACos(fPTotMC[2]/GetPMC());}}
+    Double_t          GetThetaMC() const {
+      if (fPTotMC[2]==0.0) {return TMath::PiOver2();}
+      else {return TMath::ACos(fPTotMC[2]/GetPMC());}
+    }
     Double_t          GetEtaMC() const {return -TMath::Log(TMath::Tan(0.5*GetThetaMC()));}
     Double_t          GetYMC(Double_t m1, Double_t m2) const {return 0.5*TMath::Log((GetEtotMC(m1,m2)+fPTotMC[2])/(GetEtotMC(m1,m2)-fPTotMC[2]));}
 
@@ -66,10 +72,11 @@ class AliRsnPairParticle : public TObject
     Bool_t            IsTruePair(Int_t refPDG = 0);
     Int_t             CommonMother();
 
-    void              SetPair(AliRsnDaughter *daughter1, AliRsnDaughter *daughter2);
+    void              SetPair(AliRsnDaughter * const daughter1, AliRsnDaughter * const daughter2);
     void              ResetPair();
     void              RotateTrack(Int_t i, Double_t angle, Bool_t isDegrees = kTRUE);
     void              PrintInfo(const Option_t *option = "ALL");
+    Bool_t            MatchesDef(AliRsnPairDef *def);
 
   private:
 

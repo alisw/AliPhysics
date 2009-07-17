@@ -1,17 +1,22 @@
-#include <Riostream.h>
+//
+// AliRsnExpresion class is used to handle operators &|! in AliRsnCut
+//
+// authors: Martin Vala (martin.vala@cern.ch)
+//          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//
+
 #include <TString.h>
 #include <TObjString.h>
 #include <TObjArray.h>
 
 #include "AliLog.h"
 
-#include "AliRsnCut.h"
-#include "AliRsnCutSet.h"
+#include "AliRsnVariableExpression.h"
 #include "AliRsnExpression.h"
 
 ClassImp(AliRsnExpression)
 
-AliRsnCutSet *AliRsnExpression::sCutSet = 0;
+AliRsnCutSet *AliRsnExpression::fgCutSet = 0;
 
 //______________________________________________________________________________
 AliRsnExpression::AliRsnExpression(TString exp) :
@@ -54,8 +59,7 @@ AliRsnExpression& AliRsnExpression::operator= (const AliRsnExpression& e)
 {
   // AliRsnExpression assignment operator.
 
-  if (this != &e)
-  {
+  if (this != &e) {
     TObject::operator= (e);
     fArg1 = e.fArg1;
     fArg2 = e.fArg2;
@@ -91,36 +95,33 @@ AliRsnExpression::AliRsnExpression(int op, AliRsnExpression* a) :
 Bool_t AliRsnExpression::Value(TObjArray &vars)
 {
   //  Evaluate the expression
-  if (fArg2 == 0 && fVname.IsNull())
-  {
+  if (fArg2 == 0 && fVname.IsNull()) {
     AliError("Expression undefined.");
     return kFALSE;
   }
 
 //   AliDebug(AliLog::kDebug,Form("fOperator %d",fOperator));
 
-  switch (fOperator)
-  {
+  switch (fOperator) {
 
-    case kOpOR :
-      return fArg1->Value(vars) || fArg2->Value(vars);
+  case kOpOR :
+    return fArg1->Value(vars) || fArg2->Value(vars);
 
-    case kOpAND :
-      return fArg1->Value(vars) && fArg2->Value(vars);
+  case kOpAND :
+    return fArg1->Value(vars) && fArg2->Value(vars);
 
-    case kOpNOT :
-      return !(fArg2->Value(vars));
+  case kOpNOT :
+    return !(fArg2->Value(vars));
 
-    case 0 :
-    {
-//       Int_t indexx = sCutSet->GetIndexByCutName ( fVname.Data() );
+  case 0 : {
+//       Int_t indexx = fgCutSet->GetIndexByCutName ( fVname.Data() );
       AliDebug(AliLog::kDebug,Form("Vname %s",fVname.Data()));
-//       return sCutSet->GetBoolValue ( indexx );
-      return sCutSet->GetBoolValue(fVname.Atoi());
+//       return fgCutSet->GetBoolValue ( indexx );
+      return fgCutSet->GetBoolValue(fVname.Atoi());
     }
 
-    default:
-      AliError("Illegal operator in expression!");
+  default:
+    AliError("Illegal operator in expression!");
 
   }
   return kFALSE;
@@ -133,16 +134,14 @@ TString AliRsnExpression::Unparse() const
   // Unparse the expression
 
   TString opVals[4] = { "", "&", "|","!" };
-  if (fArg2 == 0 && fVname.IsNull())
-  {
+  if (fArg2 == 0 && fVname.IsNull()) {
     AliError("Expression undefined.");
     return "Error";
   }
 
   if (fArg2 == 0 && !fVname.IsNull()) return fVname;
 
-  if (fArg1 == 0 && fArg2)
-  {
+  if (fArg1 == 0 && fArg2) {
     return opVals[fOperator]+fArg2->Unparse();
   }
   return "("+fArg1->Unparse() +" "+opVals[fOperator]+" "+fArg2->Unparse() +")";
@@ -155,8 +154,7 @@ TObjArray* AliRsnExpression::Tokenize(TString str) const
 
   // Remove spaces
   TString str1;
-  for (Int_t i=0; i<str.Length(); i++)
-  {
+  for (Int_t i=0; i<str.Length(); i++) {
     if (str[i] == ' ') continue;
     str1.Append(str[i]);
   }
@@ -165,8 +163,7 @@ TObjArray* AliRsnExpression::Tokenize(TString str) const
   // put all variables together
   Int_t nvt = valtok->GetEntriesFast();
   TString sumval;
-  for (Int_t i=0; i<nvt; i++)
-  {
+  for (Int_t i=0; i<nvt; i++) {
     TObjString* val = (TObjString*) valtok->At(i);
     sumval.Append(val->String());
   }
@@ -175,8 +172,7 @@ TObjArray* AliRsnExpression::Tokenize(TString str) const
   // put all operator in one string
   TString operators;
   Int_t nopt = optok->GetEntriesFast();
-  for (Int_t i=0; i<nopt; i++)
-  {
+  for (Int_t i=0; i<nopt; i++) {
     TObjString* val1 = (TObjString*) optok->At(i);
     operators.Append(val1->String());
   }
@@ -188,20 +184,17 @@ TObjArray* AliRsnExpression::Tokenize(TString str) const
   TObjArray* tokens = new TObjArray(valtok->GetEntriesFast() + operators.Length());
   int io = 0,iv = 0;
   int index = 0;
-  while (1)
-  {
+  while (1) {
     TString so = operators[io];
     int indexO = str1.Index(so, index);
     TString val2 = ((TObjString*) valtok->At(iv))->String();
     int indexV = str1.Index(val2, index);
-    if ((indexO < indexV || indexV < 0) && indexO >=0)
-    {
+    if ((indexO < indexV || indexV < 0) && indexO >=0) {
       tokens->AddLast(new TObjString(so));
       index += so.Length();
       io++;
     }
-    if ((indexV < indexO || indexO < 0) && indexV >=0)
-    {
+    if ((indexV < indexO || indexO < 0) && indexV >=0) {
       tokens->AddLast(new TObjString(val2));
       index += val2.Length();
       iv++;
@@ -236,8 +229,7 @@ AliRsnExpression* AliRsnExpression::Element(TObjArray &st, Int_t &i)
   TString token = "@";
   TObjString* valt;
   // next token
-  if (i < nt-1)
-  {
+  if (i < nt-1) {
     i++;
     valt = (TObjString*) st.At(i);
     token = valt->String();
@@ -245,35 +237,31 @@ AliRsnExpression* AliRsnExpression::Element(TObjArray &st, Int_t &i)
   // token type
   char ttok = (token[0]!='|' && token[0]!='&' &&
                token[0]!='!' && token[0]!='('&& token[0]!=')') ? 'w' : token[0];
-  switch (ttok)
-  {
-    case 'w' :
-    {
+  switch (ttok) {
+  case 'w' : {
       result = new AliRsnVariableExpression(token);
       break;
     }
-    case '(' :
-      result = Expression(st, i);
-      // next token
-      if (i < nt-1)
-      {
-        i++;
-        valt = (TObjString*) st.At(i);
-        token = valt->String();
-      }
-      if (token[0] != ')')
-      {
-        //       i--; // push back
-        AliErrorGeneral("AliRsnExpression::Element", "Mismatched parenthesis.");
-        delete result;
-        result = new AliRsnExpression;
-      }
-      break;
-    default:
-      i--; // push back
-      AliErrorGeneral("AliRsnExpression::Element", Form("Unexpected symbol on input. %s", token.Data()));
-      if (result) delete result;
+  case '(' :
+    result = Expression(st, i);
+    // next token
+    if (i < nt-1) {
+      i++;
+      valt = (TObjString*) st.At(i);
+      token = valt->String();
+    }
+    if (token[0] != ')') {
+      //       i--; // push back
+      AliErrorGeneral("AliRsnExpression::Element", "Mismatched parenthesis.");
+      delete result;
       result = new AliRsnExpression;
+    }
+    break;
+  default:
+    i--; // push back
+    AliErrorGeneral("AliRsnExpression::Element", Form("Unexpected symbol on input. %s", token.Data()));
+    if (result) delete result;
+    result = new AliRsnExpression;
   }
   return result;
 }
@@ -287,20 +275,18 @@ AliRsnExpression* AliRsnExpression::Primary(TObjArray &st, Int_t &i)
   TString token = "@";
   TObjString* valt;
   // next token
-  if (i < nt-1)
-  {
+  if (i < nt-1) {
     i++;
     valt = (TObjString*) st.At(i);
     token = valt->String();
   }
 
-  switch (token[0])
-  {
-    case '!' :
-      return new AliRsnExpression(kOpNOT, Primary(st, i));
-    default:
-      i--; // push back
-      return Element(st, i);
+  switch (token[0]) {
+  case '!' :
+    return new AliRsnExpression(kOpNOT, Primary(st, i));
+  default:
+    i--; // push back
+    return Element(st, i);
   }
 }
 
@@ -320,58 +306,37 @@ AliRsnExpression* AliRsnExpression::Expression(TObjArray &st,Int_t &i)
 
   result = Primary(st, i);
 //   cout <<"i "<<i<< "Primary " << result->Unparse() << endl;
-  while (! done)
-  {
+  while (! done) {
     // next token
     if (i < nt-1) i++;
     else break;
     valt = (TObjString*) st.At(i);
     token = valt->String();
-    switch (token[0])
-    {
-      case '&' :
-        result = new AliRsnExpression(kOpAND, result, Primary(st, i));
+    switch (token[0]) {
+    case '&' :
+      result = new AliRsnExpression(kOpAND, result, Primary(st, i));
 //   cout <<"i "<<i<< " Expression AND " << result->Unparse() << endl;
-        break;
-      case '|' :
-        result = new AliRsnExpression(kOpOR, result, Primary(st, i));
+      break;
+    case '|' :
+      result = new AliRsnExpression(kOpOR, result, Primary(st, i));
 //   cout <<"i "<<i<< " Expression OR " << result->Unparse() << endl;
-        break;
-      default:
-        done = kTRUE;
-        i--; // push back
-        break;
+      break;
+    default:
+      done = kTRUE;
+      i--; // push back
+      break;
     }
   }
   stack--;
-  if (stack == 0 && !token.IsNull() && token[0] == ')')
-  {
+  if (stack == 0 && !token.IsNull() && token[0] == ')') {
     AliErrorGeneral("AliRsnExpression::Expression", "To many closing parenthesis.");
     delete result;
     result = new AliRsnExpression;
-  }
-  else
-    if (stack == 0 && i< nt-1)
-    {
+  } else
+    if (stack == 0 && i< nt-1) {
       AliErrorGeneral("AliRsnExpression::Expression", Form("Unexpected symbol on input. %s", token.Data()));
       delete result;
       result = new AliRsnExpression;
     }
   return result;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-
-ClassImp(AliRsnVariableExpression)
-
-//______________________________________________________________________________
-Bool_t AliRsnVariableExpression::Value(TObjArray& /*pgm*/)
-{
-
-//   Int_t indexx = sCutSet->GetIndexByCutName ( fVname.Data() );
-  AliDebug(AliLog::kDebug,Form("Vname %s",fVname.Data()));
-//   return sCutSet->GetBoolValue ( indexx );
-
-  return sCutSet->GetBoolValue(fVname.Atoi());
-}
-

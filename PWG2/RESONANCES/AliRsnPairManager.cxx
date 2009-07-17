@@ -13,6 +13,7 @@
 //
 
 #include "AliLog.h"
+#include "AliRsnPair.h"
 
 #include "AliRsnPairManager.h"
 
@@ -20,7 +21,7 @@ ClassImp(AliRsnPairManager)
 
 //_____________________________________________________________________________
 AliRsnPairManager::AliRsnPairManager(const char*name) :
-  AliRsnVManager(name)
+    AliRsnVManager(name)
 {
 //
 // Default constructor
@@ -31,8 +32,7 @@ AliRsnPairManager::AliRsnPairManager(const char*name) :
 }
 
 //_____________________________________________________________________________
-//void AliRsnPairManager::Add(AliRsnPair *pair)
-void AliRsnPairManager::Add(TObject *objPair)
+void AliRsnPairManager::Add(TObject* objPair)
 {
 //
 // Adds a new AliRsnPair to the list owned by this object.
@@ -51,6 +51,17 @@ void AliRsnPairManager::Add(TObject *objPair)
 
   AliDebug(AliLog::kDebug+2, "->");
 }
+
+//_____________________________________________________________________________
+void AliRsnPairManager::AddPair(AliRsnPair* pair)
+{
+//
+// Adds a new AliRsnPair to the list owned by this object.
+//
+
+  Add(pair);
+}
+
 
 //_____________________________________________________________________________
 void AliRsnPairManager::Print(Option_t* /*dummy*/) const
@@ -85,7 +96,7 @@ void AliRsnPairManager::PrintArray() const
 }
 
 //_____________________________________________________________________________
-TList* AliRsnPairManager::InitAllPairs()
+void AliRsnPairManager::InitAllPairs(TList* list)
 {
 //
 // Initialize all pairs, and builds a TList of histograms
@@ -95,9 +106,9 @@ TList* AliRsnPairManager::InitAllPairs()
 
   AliDebug(AliLog::kDebug+2, "<-");
 
-  TList *list = new TList();
-  list->SetName(GetName());
-  list->SetOwner();
+//   TList *list = new TList();
+//   list->SetName(GetName());
+//   list->SetOwner();
 
   AliRsnPair *pair = 0;
   TObjArrayIter next(&fArray);
@@ -110,7 +121,7 @@ TList* AliRsnPairManager::InitAllPairs()
   }
 
   AliDebug(AliLog::kDebug+2, "->");
-  return list;
+//   return list;
 }
 
 //_____________________________________________________________________________

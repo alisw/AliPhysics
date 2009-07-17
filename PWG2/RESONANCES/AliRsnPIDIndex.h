@@ -4,20 +4,20 @@
 // It sorts the indexes of all tracks in an AliRsnEvent
 // for a fast retrieval of them according to charge and PID.
 //
-// author: M. Vala (email: martin.vala@cern.ch)
+// authors: Martin Vala (martin.vala@cern.ch)
+//          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
-#ifndef AliRsnPIDIndex_h
-#define AliRsnPIDIndex_h
+#ifndef ALIRSNPIDINDEX_H
+#define ALIRSNPIDINDEX_H
 
 #include <TArrayI.h>
 
-#include "AliRsnEvent.h"
-#include "AliAODTrack.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnPIDDefESD.h"
 
-class AliESDtrackCuts;
+class AliAODTrack;
+class AliRsnEvent;
 
 class AliRsnPIDIndex : public TObject
 {
@@ -30,23 +30,15 @@ class AliRsnPIDIndex : public TObject
     virtual  ~AliRsnPIDIndex();
 
     void      Print(Option_t *option = "") const;
-    void      ResetAll(Int_t num=1000);
-    
-    void      FillFromEvent(AliRsnEvent *event = 0, AliESDtrackCuts *cuts = 0);
+    void      ResetAll(Int_t num = 1000);
+
+    void      FillFromEvent(AliRsnEvent*const event = 0);
 
     void      AddIndex(const Int_t index, AliRsnDaughter::EPIDMethod meth, Char_t sign, AliPID::EParticleType type);
     void      SetCorrectIndexSize();
 
     TArrayI*  GetTracksArray(AliRsnDaughter::EPIDMethod meth, Char_t sign, AliPID::EParticleType type);
     TArrayI*  GetCharged(Char_t sign);
-    
-    // Prior probs
-    void            SetPriorProbability(AliPID::EParticleType type, Double_t p);
-    void            SetPriorProbability(Double_t *out);
-    void            DumpPriors();
-    void            GetPriorProbability(Double_t *out);
-
-    AliRsnPIDDefESD* GetPIDDef() {return &fPIDDef;}
 
   private:
 
@@ -55,9 +47,6 @@ class AliRsnPIDIndex : public TObject
 
     TArrayI   fIndex[AliRsnDaughter::kMethods][2][AliPID::kSPECIES + 1];       // index arrays of pos/neg particles of each PID
     Int_t     fNumOfIndex[AliRsnDaughter::kMethods][2][AliPID::kSPECIES + 1];  //! array size
-    
-    Double_t         fPrior[AliPID::kSPECIES]; // prior probabilities
-    AliRsnPIDDefESD  fPIDDef; // customization of weights
 
     ClassDef(AliRsnPIDIndex, 1);
 };

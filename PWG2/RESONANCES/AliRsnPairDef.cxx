@@ -9,10 +9,7 @@
 // author: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
-#include <Riostream.h>
-
 #include "AliLog.h"
-#include "AliRsnDaughter.h"
 #include "AliRsnPairDef.h"
 
 ClassImp(AliRsnPairDef)
@@ -30,8 +27,7 @@ AliRsnPairDef::AliRsnPairDef() : fMotherPDG(0)
 //
 
   Int_t i;
-  for (i = 0; i < 2; i++)
-  {
+  for (i = 0; i < 2; i++) {
     fCharge[i] = '0';
     fMass[i] = 0.0;
     fType[i] = AliPID::kUnknown;
@@ -100,18 +96,15 @@ Bool_t AliRsnPairDef::SetPairElement(Int_t i, Char_t charge, AliPID::EParticleTy
 
   AliPID pid;
 
-  if (i < 0 || i > 1)
-  {
+  if (i < 0 || i > 1) {
     AliError("Index out of range");
     return kFALSE;
   }
-  if (charge != '+' && charge != '-')
-  {
+  if (charge != '+' && charge != '-') {
     AliError(Form("Character '%c' not recognized as charge sign"));
     return kFALSE;
   }
-  if (type < 0 && type > (Int_t)AliPID::kSPECIES)
-  {
+  if (type < 0 && type > (Int_t)AliPID::kSPECIES) {
     AliError("Type index out of enumeration range");
     return kFALSE;
   }
@@ -137,7 +130,7 @@ Bool_t AliRsnPairDef::SetPair
 }
 
 //_____________________________________________________________________________
-TString AliRsnPairDef::GetPairName()
+TString AliRsnPairDef::GetPairName() const
 {
 //
 // Returns a compact string with the name of the pair,

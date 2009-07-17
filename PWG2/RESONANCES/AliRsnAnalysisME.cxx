@@ -2,10 +2,15 @@
 // Class AliRsnAnalysisME
 //
 // TODO
+// TODO
 //
 // authors: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //          Martin Vala (martin.vala@cern.ch)
 //
+
+#include "AliESDEvent.h"
+#include "AliMCEvent.h"
+#include "AliAODEvent.h"
 
 #include "AliRsnAnalysisME.h"
 
@@ -18,8 +23,7 @@ AliRsnAnalysisME::AliRsnAnalysisME(const char *name) :
     fPIDIndex(0),
     fPIDIndexMix(0),
     fEvent(),
-    fEventMix(),
-    fESDCuts(0)
+    fEventMix()
 {
 //
 // Default constructor
@@ -33,8 +37,7 @@ AliRsnAnalysisME::AliRsnAnalysisME(const AliRsnAnalysisME& copy) : AliRsnVAnalys
     fPIDIndex(copy.fPIDIndex),
     fPIDIndexMix(copy.fPIDIndexMix),
     fEvent(copy.fEvent),
-    fEventMix(copy.fEvent),
-    fESDCuts(copy.fESDCuts)
+    fEventMix(copy.fEvent)
 {
   AliDebug(AliLog::kDebug+2,"<-");
   AliDebug(AliLog::kDebug+2,"->");
@@ -43,6 +46,9 @@ AliRsnAnalysisME::AliRsnAnalysisME(const AliRsnAnalysisME& copy) : AliRsnVAnalys
 //_____________________________________________________________________________
 void AliRsnAnalysisME::RsnUserCreateOutputObjects()
 {
+//
+// TODO
+//
   AliLog::SetClassDebugLevel(GetName(), fLogType);
   AliDebug(AliLog::kDebug+2,"<-");
 //     AliRsnVAnalysisTaskME::UserCreateOutputObjects();
@@ -56,14 +62,19 @@ void AliRsnAnalysisME::RsnUserCreateOutputObjects()
 //
 //     fOutList->Add(fTaskInfo.GenerateInfoList());
 
-  fOutList->Add(fRsnAnalysisManager.InitAllPairMgrs());
+//   fOutList->Add();
+  fRsnAnalysisManager.InitAllPairMgrs(fOutList);
 //     fRsnAnalysisManager.Print();
 
   AliDebug(AliLog::kDebug+2,"->");
 }
 
-void AliRsnAnalysisME::RsnUserExec(Option_t* )
+void AliRsnAnalysisME::RsnUserExec(Option_t*)
 {
+//
+// TODO
+//
+
   AliDebug(AliLog::kDebug+2,"<-");
   if (fESDEvent) {
     AliDebug(AliLog::kDebug+1,Form("fESDEvent if %p",fESDEvent));
@@ -89,13 +100,13 @@ void AliRsnAnalysisME::RsnUserExec(Option_t* )
 
   // sort tracks w.r. to PID
   fPIDIndex.ResetAll(fEvent.GetMultiplicity());
-  fPIDIndex.SetPriorProbability(fPrior);
-  fPIDIndex.FillFromEvent(&fEvent, fESDCuts);
+  fEvent.SetPriorProbability(fPrior);
+  fPIDIndex.FillFromEvent(&fEvent);
   fPIDIndex.SetCorrectIndexSize();
 
   fPIDIndexMix.ResetAll(fEventMix.GetMultiplicity());
-  fPIDIndexMix.SetPriorProbability(fPrior);
-  fPIDIndexMix.FillFromEvent(&fEventMix, fESDCuts);
+  fEventMix.SetPriorProbability(fPrior);
+  fPIDIndexMix.FillFromEvent(&fEventMix);
   fPIDIndexMix.SetCorrectIndexSize();
 
   fRsnAnalysisManager.ProcessAllPairMgrs(&fPIDIndex, &fEvent, &fPIDIndexMix, &fEventMix);
@@ -107,14 +118,23 @@ void AliRsnAnalysisME::RsnUserExec(Option_t* )
 
 
 //_____________________________________________________________________________
-void AliRsnAnalysisME::RsnTerminate(Option_t* )
+void AliRsnAnalysisME::RsnTerminate(Option_t*)
 {
+//
+// TODO
+//
+
   AliDebug(AliLog::kDebug+2,"<-");
   AliDebug(AliLog::kDebug+2,"->");
 }
 
+//_____________________________________________________________________________
 AliRsnAnalysisManager* AliRsnAnalysisME::GetAnalysisManager(TString name)
 {
+//
+// Gets all prior probabilities to out
+//
+
   if (!name.IsNull()) {
     SetAnalysisManagerName(name.Data());
   }
@@ -149,8 +169,11 @@ void AliRsnAnalysisME::DumpPriors()
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisME::GetPriorProbability(Double_t *out)
+void AliRsnAnalysisME::GetPriorProbability(Double_t *out) const
 {
+//
+// Gets all prior probabilities to out
+//
 
   Int_t i;
   for (i=0;i<AliPID::kSPECIES;i++) {

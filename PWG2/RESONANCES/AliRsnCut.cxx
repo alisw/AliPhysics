@@ -17,28 +17,24 @@
 //
 #include "AliLog.h"
 
-#include "AliRsnDaughter.h"
-#include "AliRsnPairParticle.h"
-#include "AliRsnEvent.h"
-
 #include "AliRsnCut.h"
 
 ClassImp(AliRsnCut)
 
 //_________________________________________________________________________________________________
 AliRsnCut::AliRsnCut() :
-  TNamed(),
-  fVarType(kInt),
-  fMinI(0),
-  fMaxI(0),
-  fMinU(0),
-  fMaxU(0),
-  fMinD(0.0),
-  fMaxD(0.0),
-  fCutValueI(0),
-  fCutValueU(0),
-  fCutValueD(0.0),
-  fCutResult(kTRUE)
+    TNamed(),
+    fVarType(kInt),
+    fMinI(0),
+    fMaxI(0),
+    fMinU(0),
+    fMaxU(0),
+    fMinD(0.0),
+    fMaxD(0.0),
+    fCutValueI(0),
+    fCutValueU(0),
+    fCutValueD(0.0),
+    fCutResult(kTRUE)
 {
 //
 // Default constructor.
@@ -48,18 +44,18 @@ AliRsnCut::AliRsnCut() :
 //_________________________________________________________________________________________________
 AliRsnCut::AliRsnCut
 (const char *name, Int_t min, Int_t max) :
-  TNamed(name, ""),
-  fVarType(kInt),
-  fMinI(min),
-  fMaxI(max),
-  fMinU(0),
-  fMaxU(0),
-  fMinD(0.0),
-  fMaxD(0.0),
-  fCutValueI(0),
-  fCutValueU(0),
-  fCutValueD(0.0),
-  fCutResult(kTRUE)
+    TNamed(name, ""),
+    fVarType(kInt),
+    fMinI(min),
+    fMaxI(max),
+    fMinU(0),
+    fMaxU(0),
+    fMinD(0.0),
+    fMaxD(0.0),
+    fCutValueI(0),
+    fCutValueU(0),
+    fCutValueD(0.0),
+    fCutResult(kTRUE)
 {
 //
 // Constructor.
@@ -73,18 +69,18 @@ AliRsnCut::AliRsnCut
 //_________________________________________________________________________________________________
 AliRsnCut::AliRsnCut
 (const char *name, ULong_t min, ULong_t max) :
-  TNamed(name, ""),
-  fVarType(kULong),
-  fMinI(0),
-  fMaxI(0),
-  fMinU(min),
-  fMaxU(max),
-  fMinD(0.0),
-  fMaxD(0.0),
-  fCutValueI(0),
-  fCutValueU(0),
-  fCutValueD(0.0),
-  fCutResult(kTRUE)
+    TNamed(name, ""),
+    fVarType(kULong),
+    fMinI(0),
+    fMaxI(0),
+    fMinU(min),
+    fMaxU(max),
+    fMinD(0.0),
+    fMaxD(0.0),
+    fCutValueI(0),
+    fCutValueU(0),
+    fCutValueD(0.0),
+    fCutResult(kTRUE)
 {
 //
 // Constructor.
@@ -98,18 +94,18 @@ AliRsnCut::AliRsnCut
 //_________________________________________________________________________________________________
 AliRsnCut::AliRsnCut
 (const char *name, Double_t min, Double_t max) :
-  TNamed(name, ""),
-  fVarType(kDouble),
-  fMinI(0),
-  fMaxI(0),
-  fMinU(0),
-  fMaxU(0),
-  fMinD(min),
-  fMaxD(max),
-  fCutValueI(0),
-  fCutValueU(0),
-  fCutValueD(0.0),
-  fCutResult(kTRUE)
+    TNamed(name, ""),
+    fVarType(kDouble),
+    fMinI(0),
+    fMaxI(0),
+    fMinU(0),
+    fMaxU(0),
+    fMinD(min),
+    fMaxD(max),
+    fCutValueI(0),
+    fCutValueU(0),
+    fCutValueD(0.0),
+    fCutResult(kTRUE)
 {
 //
 // Constructor.
@@ -129,6 +125,7 @@ Bool_t AliRsnCut::IsSelected(ETarget /*tgt*/, AliRsnDaughter* /*track*/)
 // with the defined target, in order to detect a mismatch
 //
 
+  AliWarning("This cut does not provide checks on AliRsnDaughter. This function will return kTRUE");
   return kTRUE;
 }
 
@@ -141,6 +138,7 @@ Bool_t AliRsnCut::IsSelected(ETarget /*tgt*/, AliRsnPairParticle* /*pair*/)
 // with the defined target, in order to detect a mismatch
 //
 
+  AliWarning("This cut does not provide checks on AliRsnPairParticle. This function will return kTRUE");
   return kTRUE;
 }
 
@@ -153,6 +151,7 @@ Bool_t AliRsnCut::IsSelected(ETarget /*tgt*/, AliRsnEvent* /*event*/)
 // with the defined target, in order to detect a mismatch
 //
 
+  AliWarning("This cut does not provide checks on AliRsnEvent. This function will return kTRUE");
   return kTRUE;
 }
 
@@ -165,6 +164,7 @@ Bool_t AliRsnCut::IsSelected(ETarget /*tgt*/, AliRsnEvent* /*ev1*/, AliRsnEvent*
 // with the defined target, in order to detect a mismatch
 //
 
+  AliWarning("This cut does not provide checks on two AliRsnEvent's. This function will return kTRUE");
   return kTRUE;
 }
 
@@ -177,44 +177,43 @@ Bool_t AliRsnCut::OkValue()
 // Then, the cut result is kTRUE if the cut value is equal to this reference value.
 //
 
-  switch (fVarType)
-  {
-    case kInt:
-      // eval result
-      fCutResult = (fCutValueI == fMinI);
-      // print debug message
-      AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-      AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s", GetName()));
-      AliDebug(AliLog::kDebug + 3, Form("Checked value: %d", fCutValueI));
-      AliDebug(AliLog::kDebug + 3, Form("Cut value    : %d", fMinI));
-      AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-      AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
-      break;
-    case kULong:
-      // eval result
-      fCutResult = (fCutValueU == fMinU);
-      // print debug message
-      AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-      AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s", GetName()));
-      AliDebug(AliLog::kDebug + 3, Form("Checked value: %d", fCutValueU));
-      AliDebug(AliLog::kDebug + 3, Form("Cut value    : %d", fMinU));
-      AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-      AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
-      break;
-    case kDouble:
-      // eval result
-      fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
-      // print debug message
-      AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-      AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s", GetName()));
-      AliDebug(AliLog::kDebug + 3, Form("Checked value: %f", fCutValueD));
-      AliDebug(AliLog::kDebug + 3, Form("Cut value    : %f", fMinD));
-      AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-      AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
-      break;
-    default:
-      AliError(Form("fVarType = %d --> not allowed", fVarType));
-      return kFALSE;
+  switch (fVarType) {
+  case kInt:
+    // eval result
+    fCutResult = (fCutValueI == fMinI);
+    // print debug message
+    AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
+    AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s", GetName()));
+    AliDebug(AliLog::kDebug + 3, Form("Checked value: %d", fCutValueI));
+    AliDebug(AliLog::kDebug + 3, Form("Cut value    : %d", fMinI));
+    AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
+    AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
+    break;
+  case kULong:
+    // eval result
+    fCutResult = (fCutValueU == fMinU);
+    // print debug message
+    AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
+    AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s", GetName()));
+    AliDebug(AliLog::kDebug + 3, Form("Checked value: %d", fCutValueU));
+    AliDebug(AliLog::kDebug + 3, Form("Cut value    : %d", fMinU));
+    AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
+    AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
+    break;
+  case kDouble:
+    // eval result
+    fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
+    // print debug message
+    AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
+    AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s", GetName()));
+    AliDebug(AliLog::kDebug + 3, Form("Checked value: %f", fCutValueD));
+    AliDebug(AliLog::kDebug + 3, Form("Cut value    : %f", fMinD));
+    AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
+    AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
+    break;
+  default:
+    AliError(Form("fVarType = %d --> not allowed", fVarType));
+    return kFALSE;
   }
 
   return fCutResult;
@@ -229,44 +228,43 @@ Bool_t AliRsnCut::OkRange()
 // Then, the cut result is kTRUE if the cut value is inside this range.
 //
 
-  switch (fVarType)
-  {
-    case kInt:
-      // eval result
-      fCutResult = ((fCutValueI >= fMinI) && (fCutValueI <= fMaxI));
-      // print debug message
-      AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-      AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
-      AliDebug(AliLog::kDebug + 2, Form("Checked value: %d", fCutValueI));
-      AliDebug(AliLog::kDebug + 2, Form("Cut range    : %d , %d", fMinI, fMaxI));
-      AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-      AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
-      break;
-    case kULong:
-      // eval result
-      fCutResult = ((fCutValueU >= fMinU) && (fCutValueU <= fMaxU));
-      // print debug message
-      AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-      AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
-      AliDebug(AliLog::kDebug + 2, Form("Checked value: %d", fCutValueU));
-      AliDebug(AliLog::kDebug + 2, Form("Cut range    : %d , %d", fMinU, fMaxU));
-      AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-      AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
-      break;
-    case kDouble:
-      // eval result
-      fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
-      // print debug message
-      AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-      AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
-      AliDebug(AliLog::kDebug + 2, Form("Checked value: %f", fCutValueD));
-      AliDebug(AliLog::kDebug + 2, Form("Cut range    : %f , %f", fMinD, fMaxD));
-      AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-      AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
-      break;
-    default:
-      AliError(Form("fVarType = %d --> not allowed", fVarType));
-      return kFALSE;
+  switch (fVarType) {
+  case kInt:
+    // eval result
+    fCutResult = ((fCutValueI >= fMinI) && (fCutValueI <= fMaxI));
+    // print debug message
+    AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
+    AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
+    AliDebug(AliLog::kDebug + 2, Form("Checked value: %d", fCutValueI));
+    AliDebug(AliLog::kDebug + 2, Form("Cut range    : %d , %d", fMinI, fMaxI));
+    AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
+    AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
+    break;
+  case kULong:
+    // eval result
+    fCutResult = ((fCutValueU >= fMinU) && (fCutValueU <= fMaxU));
+    // print debug message
+    AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
+    AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
+    AliDebug(AliLog::kDebug + 2, Form("Checked value: %d", fCutValueU));
+    AliDebug(AliLog::kDebug + 2, Form("Cut range    : %d , %d", fMinU, fMaxU));
+    AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
+    AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
+    break;
+  case kDouble:
+    // eval result
+    fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
+    // print debug message
+    AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
+    AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
+    AliDebug(AliLog::kDebug + 2, Form("Checked value: %f", fCutValueD));
+    AliDebug(AliLog::kDebug + 2, Form("Cut range    : %f , %f", fMinD, fMaxD));
+    AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
+    AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
+    break;
+  default:
+    AliError(Form("fVarType = %d --> not allowed", fVarType));
+    return kFALSE;
   }
 
   return fCutResult;

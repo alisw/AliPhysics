@@ -58,12 +58,12 @@ class AliRsnPIDDefESD : public TObject
     void        SetDivValue(EDetector det, Double_t value,Bool_t userHigher=kTRUE);
     void        ComputeWeights(AliESDtrack *track, Double_t *weights);
     void        PrintStatus();
-    const char* DetName(EDetector);
+    const char* DetName(EDetector det) const;
     const char* SchemeName();
 
   private:
 
-    Bool_t   CheckBounds(EDetector det) { return (det >= kITS && det < kDetectors); }
+    Bool_t   CheckBounds(EDetector det) const { return (det >= kITS && det < kDetectors); }
     Bool_t   CheckDivValue(EDetector det,Double_t value);
 
     Bool_t   fUseESDWeights;          // with this flag, ESD weights are used

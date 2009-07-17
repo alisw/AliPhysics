@@ -10,10 +10,7 @@
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
-#include <TParticle.h>
-
-#include "AliLog.h"
-#include "AliRsnDaughter.h"
+#include "AliRsnPairDef.h"
 #include "AliRsnPairParticle.h"
 
 ClassImp(AliRsnPairParticle)
@@ -265,7 +262,7 @@ Int_t AliRsnPairParticle::CommonMother()
 }
 
 //_____________________________________________________________________________
-void AliRsnPairParticle::SetPair(AliRsnDaughter *daughter1, AliRsnDaughter *daughter2)
+void AliRsnPairParticle::SetPair(AliRsnDaughter * const daughter1, AliRsnDaughter * const daughter2)
 {
 //
 // Accepts two AliRsnDaughter's which are the two tracks in the pair,
@@ -379,4 +376,38 @@ void AliRsnPairParticle::PrintInfo(const Option_t *option)
   AliInfo("Track #2");
   fDaughter[1]->Print(option);
   AliInfo("========= END PAIR INFO ===========");
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnPairParticle::MatchesDef(AliRsnPairDef *def)
+{
+//
+// Checks if the daughters, in any order, do match a given decay channel,
+// using the specified identification method, which can be the 'true' one
+// or the 'realistic' one only.
+//
+
+  if (!def) return kFALSE;
+
+  Bool_t decayMatch = kFALSE;
+
+  // check #1:
+  // daughter[0] matches first member of pairDef
+  // daughter[1] matches second member of pairDef
+  if (fDaughter[0]->IsSign(def->GetCharge(0)) && fDaughter[1]->IsSign(def->GetCharge(1))) {
+    decayMatch = (fDaughter[0]->IsPerfectPID(def->GetType(0)) && fDaughter[1]->IsPerfectPID(def->GetType(1)));
+    fDaughter[0]->SetRequiredPID(def->GetType(0));
+    fDaughter[1]->SetRequiredPID(def->GetType(1));
+  }
+
+  // check #2:
+  // daughter[1] matches first member of pairDef
+  // daughter[0] matches second member of pairDef
+  if (fDaughter[1]->IsSign(def->GetCharge(0)) && fDaughter[0]->IsSign(def->GetCharge(1))) {
+    decayMatch = (fDaughter[1]->IsPerfectPID(def->GetType(0)) && fDaughter[0]->IsPerfectPID(def->GetType(1)));
+    fDaughter[1]->SetRequiredPID(def->GetType(0));
+    fDaughter[0]->SetRequiredPID(def->GetType(1));
+  }
+
+  return (decayMatch && (CommonMother() == def->GetMotherPDG()));
 }

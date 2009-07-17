@@ -12,12 +12,15 @@
 //          M. Vala (email: martin.vala@cern.ch)
 //
 
-#include <Riostream.h>
-#include <TObjArray.h>
+#include <TList.h>
 
 #include "AliLog.h"
 
+#include "AliRsnEvent.h"
 #include "AliRsnFunction.h"
+#include "AliRsnPIDIndex.h"
+#include "AliRsnCutMgr.h"
+#include "AliRsnCutStd.h"
 
 #include "AliRsnPair.h"
 
@@ -26,6 +29,7 @@ ClassImp(AliRsnPair)
 //_____________________________________________________________________________
 AliRsnPair::AliRsnPair(EPairType type, AliRsnPairDef *def) :
     TObject(),
+    fOnlyTrue(kFALSE),
     fIsMixed(kFALSE),
     fPairType(type),
     fPIDMethod(AliRsnDaughter::kRealistic),
@@ -61,28 +65,28 @@ void AliRsnPair::SetUp(EPairType type)
 //
   AliDebug(AliLog::kDebug+2,"<-");
   switch (type) {
-    case kNoPID:
-      SetAllFlags(AliRsnDaughter::kNoPID, kFALSE);
-      break;
-    case kNoPIDMix:
-      SetAllFlags(AliRsnDaughter::kNoPID, kTRUE);
-      break;
-    case kRealisticPID:
-      SetAllFlags(AliRsnDaughter::kRealistic, kFALSE);
-      break;
-    case kRealisticPIDMix:
-      SetAllFlags(AliRsnDaughter::kRealistic, kTRUE);
-      break;
-    case kPerfectPID:
-      SetAllFlags (AliRsnDaughter::kPerfect, kFALSE);
-      break;
-    case kPerfectPIDMix:
-      SetAllFlags (AliRsnDaughter::kPerfect, kTRUE);
-      break;
-    default :
-      AliWarning("Wrong type selected: setting up for realistic PID - no mixing.");
-      SetAllFlags(AliRsnDaughter::kRealistic, kFALSE);
-      break;
+  case kNoPID:
+    SetAllFlags(AliRsnDaughter::kNoPID, kFALSE);
+    break;
+  case kNoPIDMix:
+    SetAllFlags(AliRsnDaughter::kNoPID, kTRUE);
+    break;
+  case kRealisticPID:
+    SetAllFlags(AliRsnDaughter::kRealistic, kFALSE);
+    break;
+  case kRealisticPIDMix:
+    SetAllFlags(AliRsnDaughter::kRealistic, kTRUE);
+    break;
+  case kPerfectPID:
+    SetAllFlags(AliRsnDaughter::kPerfect, kFALSE);
+    break;
+  case kPerfectPIDMix:
+    SetAllFlags(AliRsnDaughter::kPerfect, kTRUE);
+    break;
+  default :
+    AliWarning("Wrong type selected: setting up for realistic PID - no mixing.");
+    SetAllFlags(AliRsnDaughter::kRealistic, kFALSE);
+    break;
   }
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -101,24 +105,23 @@ void AliRsnPair::Print(Option_t* /*option*/) const
   AliInfo(Form("Number of functions %d", fFunctions.GetEntries()));
 
   switch (fPIDMethod) {
-    case AliRsnDaughter::kNoPID:
-      AliInfo("PID method: none");
-      break;
-    case AliRsnDaughter::kRealistic:
-      AliInfo("PID method: realistic");
-      break;
-    case AliRsnDaughter::kPerfect:
-      AliInfo("PID method: perfect");
-      break;
-    default:
-      AliInfo("PID method: undefined");
+  case AliRsnDaughter::kNoPID:
+    AliInfo("PID method: none");
+    break;
+  case AliRsnDaughter::kRealistic:
+    AliInfo("PID method: realistic");
+    break;
+  case AliRsnDaughter::kPerfect:
+    AliInfo("PID method: perfect");
+    break;
+  default:
+    AliInfo("PID method: undefined");
   }
   AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
-void AliRsnPair::LoopPair
-(AliRsnPIDIndex *pidIndex1, AliRsnEvent *ev1, AliRsnPIDIndex *pidIndex2, AliRsnEvent *ev2)
+void AliRsnPair::LoopPair(AliRsnPIDIndex *const pidIndex1, AliRsnEvent *const ev1, AliRsnPIDIndex *const pidIndex2, AliRsnEvent *const ev2)
 {
 //
 // Prepare the loop for computation of functions.
@@ -136,17 +139,14 @@ void AliRsnPair::LoopPair
   TArrayI *a1 = 0;
   TArrayI *a2 = 0;
 
-  if (fPIDMethod == AliRsnDaughter::kNoPID)
-  {
+  if (fPIDMethod == AliRsnDaughter::kNoPID) {
     AliDebug(AliLog::kDebug+2, Form("Returning indexes of with NO PID (%d) ...", fPIDMethod));
     a1 = pidIndex1->GetTracksArray(fPIDMethod, fPairDef->GetCharge(0), AliPID::kUnknown);
     if (pidIndex2 && ev2)
       a2 = pidIndex2->GetTracksArray(fPIDMethod, fPairDef->GetCharge(1), AliPID::kUnknown);
     else
       a2 = pidIndex1->GetTracksArray(fPIDMethod, fPairDef->GetCharge(1), AliPID::kUnknown);
-  }
-  else
-  {
+  } else {
     AliDebug(AliLog::kDebug+2, Form("Returning indexes of with PID (%d) ...", fPIDMethod));
     a1 = pidIndex1->GetTracksArray(fPIDMethod,fPairDef->GetCharge(0), (AliPID::EParticleType)fPairDef->GetType(0));
     if (pidIndex2 && ev2)
@@ -175,19 +175,20 @@ void AliRsnPair::LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEven
 
   if (!ev2) {
     if (fIsMixed) {
-      AliDebug(AliLog::kDebug, "ev2 is null and fIsMixed is true. Skipping ...");
+      AliDebug(AliLog::kDebug+1, "ev2 is null and fIsMixed is true. Skipping ...");
       return;
     }
     ev2 = ev1;
   }
 
-  if (!a1) {AliDebug(AliLog::kDebug, "No TArrayI 1 from currentEvent->GetTracksArray(...)"); return;}
-  if (!a2) {AliDebug(AliLog::kDebug, "No TArrayI 2 from currentEvent->GetTracksArray(...)"); return;}
+  if (!a1) {AliDebug(AliLog::kDebug+1, "No TArrayI 1 from currentEvent->GetTracksArray(...)"); return;}
+  if (!a2) {AliDebug(AliLog::kDebug+1, "No TArrayI 2 from currentEvent->GetTracksArray(...)"); return;}
 
   AliDebug(AliLog::kDebug+1,Form("a1=%d a2=%d",a1->GetSize(),a2->GetSize()));
-  if (a1->GetSize()<=0) {AliDebug(AliLog::kDebug, "Size of TArrayI 1 is 0 or less ..."); return;}
-  if (a2->GetSize()<=0) {AliDebug(AliLog::kDebug, "Size of TArrayI 2 is 0 or less ..."); return;}
+  if (a1->GetSize()<=0) {AliDebug(AliLog::kDebug+1, "Size of TArrayI 1 is 0 or less ..."); return;}
+  if (a2->GetSize()<=0) {AliDebug(AliLog::kDebug+1, "Size of TArrayI 2 is 0 or less ..."); return;}
 
+  AliDebug(AliLog::kDebug,Form("Indexes_a1=%d Indexes_a2=%d",a1->GetSize(),a2->GetSize()));
 
   // cuts on events
   if (!CutPass(ev1) || !CutPass(ev2)) return;
@@ -223,16 +224,23 @@ void AliRsnPair::LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEven
       AliDebug(AliLog::kDebug+1,"daughter2 cut passed ...");
       // make pair
       fPairParticle.SetPair(&fTrack1, &fTrack2);
-
+      // in case of request, check that it is true pair
+      if (fOnlyTrue)
+      {
+        if (fPairParticle.CommonMother() != fPairDef->GetMotherPDG()) continue;
+        if (fPairParticle.GetDaughter(0)->PerfectPID() != fPairDef->GetType(0)) continue;
+        if (fPairParticle.GetDaughter(1)->PerfectPID() != fPairDef->GetType(1)) continue;
+      }
       // cuts on pair
       if (!CutPass(&fPairParticle)) continue;
       AliDebug(AliLog::kDebug+1, "pairParticle cut passed");
 
-//       fPairParticle.PrintInfo();
+      if (AliLog::GetDebugLevel("",GetName()) == AliLog::kDebug)
+        fPairParticle.PrintInfo();
 
       // fill all histograms
       TObjArrayIter nextFcn(&fFunctions);
-      while ( (fcn = (AliRsnFunction*)nextFcn()) ) {
+      while ((fcn = (AliRsnFunction*)nextFcn())) {
         fcn->SetPairDef(fPairDef);
         fcn->SetPair(&fPairParticle);
         fcn->SetEvent(ev1);
@@ -254,10 +262,10 @@ TList * AliRsnPair::GenerateHistograms(TString prefix,TList *list)
 // All generated histograms are stored into the output TList.
 //
   AliDebug(AliLog::kDebug+2,"<-");
-  if (!list){
-    TList *list = new TList();
-    list->SetName(GetPairHistName(0x0).Data());
-  }
+//   if (!list){
+//     TList *list = new TList();
+//     list->SetName(GetPairHistName(0x0).Data());
+//   }
   Char_t hName[255], hTitle[255];
   //AliRsnFunction *fcn = 0;
   AliRsnFunction *fcn = 0;
@@ -270,8 +278,8 @@ TList * AliRsnPair::GenerateHistograms(TString prefix,TList *list)
     //histos->Print();
     //list->Add(histos);
   }
-  cout << "PRINTING LIST" << endl;
-  list->Print();
+//   cout << "PRINTING LIST" << endl;
+//   list->Print();
   AliDebug(AliLog::kDebug+2,"->");
   return list;
 }
@@ -287,15 +295,15 @@ TString AliRsnPair::GetPairTypeName(EPairType type) const
   AliDebug(AliLog::kDebug+2,"<-");
   AliDebug(AliLog::kDebug+2,"->");
   switch (type) {
-    case kNoPID : return ("NOPID_");break;
-    case kNoPIDMix : return ("NOPIDMIX_");break;
-    case kRealisticPID : return ("REALISTIC_");break;
-    case kRealisticPIDMix : return ("REALISTICMIX_");break;
-    case kPerfectPID : return ("PERFECT_");break;
-    case kPerfectPIDMix : return ("PERFECTMIX_");break;
-    default:
-      AliWarning("Unrecognized value of EPairTypeName argument");
-      break;
+  case kNoPID : return ("NOPID_");break;
+  case kNoPIDMix : return ("NOPIDMIX_");break;
+  case kRealisticPID : return ("REALISTIC_");break;
+  case kRealisticPIDMix : return ("REALISTICMIX_");break;
+  case kPerfectPID : return ("PERFECT_");break;
+  case kPerfectPIDMix : return ("PERFECTMIX_");break;
+  default:
+    AliWarning("Unrecognized value of EPairTypeName argument");
+    break;
   }
 
   return "NOTYPE";
@@ -316,7 +324,7 @@ TString AliRsnPair::GetPairName() const
 }
 
 //_____________________________________________________________________________
-TString AliRsnPair::GetPairHistName(AliRsnFunction *fcn, TString text) const
+TString AliRsnPair::GetPairHistName(AliRsnFunction *const fcn, TString text) const
 {
 //
 // Returns definitive histogram name
@@ -336,7 +344,7 @@ TString AliRsnPair::GetPairHistName(AliRsnFunction *fcn, TString text) const
 }
 
 //_____________________________________________________________________________
-TString AliRsnPair::GetPairHistTitle(AliRsnFunction *fcn, TString text) const
+TString AliRsnPair::GetPairHistTitle(AliRsnFunction *const fcn, TString text) const
 {
 //
 // Returns definitive histogram title
@@ -356,14 +364,14 @@ TString AliRsnPair::GetPairHistTitle(AliRsnFunction *fcn, TString text) const
 }
 
 //_____________________________________________________________________________
-void AliRsnPair::AddFunction(AliRsnFunction *fcn)
+void AliRsnPair::AddFunction(AliRsnFunction *const fcn)
 {
 //
 // Adds a new computing function
 //
   AliDebug(AliLog::kDebug+2,"<-");
   Int_t size = fFunctions.GetEntries();
-  new (fFunctions[size]) AliRsnFunction(*fcn);
+  new(fFunctions[size]) AliRsnFunction(*fcn);
   AliDebug(AliLog::kDebug+2,"->");
 }
 

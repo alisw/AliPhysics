@@ -8,17 +8,18 @@
 // not used as typical output of analysis in this package.
 //
 
-#ifndef ALIRSNFunctionAxis_H
-#define ALIRSNFunctionAxis_H
+#ifndef ALIRSNFUNCTIONAXIS_H
+#define ALIRSNFUNCTIONAXIS_H
 
+
+class TArrayD;
 class AliRsnPairDef;
 
 class AliRsnFunctionAxis : public TObject
 {
   public:
 
-    enum EAxisType
-    {
+    enum EAxisType {
       kTrack1P,
       kTrack2P,
       kTrack1Pt,
@@ -32,8 +33,7 @@ class AliRsnFunctionAxis : public TObject
       kAxisTypes
     };
 
-    enum EAxisObject
-    {
+    enum EAxisObject {
       kParticle,
       kPair,
       kEvent,
@@ -50,15 +50,16 @@ class AliRsnFunctionAxis : public TObject
     Int_t       GetNBins() const {return fNBins;}
     Double_t    GetMin() const {return fMin;}
     Double_t    GetMax() const {return fMax;}
-    EAxisObject GetAxisObject();
+    TArrayD     GetArray() const;
+    EAxisObject GetAxisObject() const;
 
     void     SetType(EAxisType type) {fType = type;}
     void     SetBins(Int_t n, Double_t min, Double_t max);
     void     SetBins(Double_t min, Double_t max, Double_t step);
 
-    Double_t Eval(AliRsnDaughter *daughter);
-    Double_t Eval(AliRsnPairParticle *pair, AliRsnPairDef *pairDef);
-    Double_t Eval(AliRsnEvent *event);
+    Double_t Eval(AliRsnDaughter *daughter) const;
+    Double_t Eval(AliRsnPairParticle*const pair, AliRsnPairDef*const pairDef) const;
+    Double_t Eval(AliRsnEvent *const event) const;
 
   private:
 

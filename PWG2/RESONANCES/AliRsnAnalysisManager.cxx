@@ -16,9 +16,15 @@
 // revised by : A. Pulvirenti [alberto.pulvirenti@ct.infn.it]
 //
 
-#include "AliLog.h"
+#include <TROOT.h>
 
+#include "AliLog.h"
+#include "AliRsnPIDIndex.h"
+#include "AliRsnEvent.h"
+#include "AliRsnPairManager.h"
+#include "AliRsnPair.h"
 #include "AliRsnAnalysisManager.h"
+
 
 ClassImp(AliRsnAnalysisManager)
 
@@ -56,6 +62,8 @@ void AliRsnAnalysisManager::Add(TObject *objPairMgr)
   AliDebug(AliLog::kDebug+2,"->");
 }
 
+
+
 //_____________________________________________________________________________
 void AliRsnAnalysisManager::Print(Option_t* /*dummy*/) const
 {
@@ -84,7 +92,7 @@ void AliRsnAnalysisManager::PrintArray() const
 }
 
 //_____________________________________________________________________________
-TList* AliRsnAnalysisManager::InitAllPairMgrs()
+void AliRsnAnalysisManager::InitAllPairMgrs(TList *list)
 {
 //
 // Initialize all pair managers, and put all the TList of histograms
@@ -93,19 +101,20 @@ TList* AliRsnAnalysisManager::InitAllPairMgrs()
 
   AliDebug(AliLog::kDebug+2,"<-");
 
-  TList *list = new TList();
-  list->SetName(GetName());
-  list->SetOwner();
+//   TList *list = new TList();
+//   list->SetName(GetName());
+//   list->SetOwner();
 
   AliRsnPairManager *pairMgr = 0;
   TObjArrayIter next(&fArray);
   Int_t i = 0;
   while ((pairMgr = (AliRsnPairManager*)next())) {
     AliDebug(AliLog::kDebug+1, Form("InitAllPairs of the AnalysisManager(%s) [%d] ...", pairMgr->GetName(), i++));
-    list->Add(pairMgr->InitAllPairs());
+//     list->Add();
+    pairMgr->InitAllPairs(list);
   }
   AliDebug(AliLog::kDebug+2, "->");
-  return list;
+//   return list;
 }
 
 //_____________________________________________________________________________

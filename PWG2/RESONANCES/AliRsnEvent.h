@@ -1,10 +1,3 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               *
- **************************************************************************/
-
-/* $Id$ */
-
 //
 // *** Class AliRsnEvent ***
 //
@@ -21,6 +14,8 @@
 #ifndef ALIRSNEVENT_H
 #define ALIRSNEVENT_H
 
+#include "AliPID.h"
+#include "AliRsnPIDDefESD.h"
 #include "AliRsnDaughter.h"
 
 class AliVEvent;
@@ -35,25 +30,33 @@ class AliRsnEvent : public TObject
     AliRsnEvent& operator= (const AliRsnEvent& copy);
     virtual ~AliRsnEvent();
 
-    void        SetRef(AliVEvent *event, AliMCEvent *mc = 0) {fRef = event; fRefMC = mc;}
-    void        SetRefMC(AliMCEvent *mc) {fRefMC = mc;}
-    AliVEvent*  GetRef() {return fRef;}
-    AliMCEvent* GetRefMC() {return fRefMC;}
+    void             SetRef(AliVEvent *const event, AliMCEvent *const mc = 0) {fRef = event; fRefMC = mc;}
+    void             SetRefMC(AliMCEvent * const mc) {fRefMC = mc;}
+    AliVEvent*       GetRef() {return fRef;}
+    AliMCEvent*      GetRefMC() {return fRefMC;}
+    AliRsnPIDDefESD* GetPIDDefESD() {return &fPIDDefESD;}
 
-    void            SetDaughter(AliRsnDaughter &daughter, Int_t index);
-    AliRsnDaughter  GetDaughter(Int_t i);
-    Int_t           GetMultiplicity();
-    Double_t        GetVz();
-    AliRsnDaughter  GetLeadingParticle(Double_t ptMin = 0.0, AliPID::EParticleType type = AliPID::kUnknown);
-    Double_t        GetAverageMomentum(Int_t &count, AliPID::EParticleType type = AliPID::kUnknown);
-    Bool_t          GetAngleDistr(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter d);
+    void             SetDaughter(AliRsnDaughter &daughter, Int_t index);
+    AliRsnDaughter   GetDaughter(Int_t i);
+    Int_t            GetMultiplicity();
+    Double_t         GetVz();
+    AliRsnDaughter   GetLeadingParticle(Double_t ptMin = 0.0, AliPID::EParticleType type = AliPID::kUnknown);
+    Double_t         GetAverageMomentum(Int_t &count, AliPID::EParticleType type = AliPID::kUnknown);
+    Bool_t           GetAngleDistr(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter d);
+
+    void             SetPriorProbability(AliPID::EParticleType type, Double_t p) {if (type>=0&&type<(Int_t)AliPID::kSPECIES)fPrior[type]=p;}
+    void             SetPriorProbability(Double_t* const out);
+    void             DumpPriors();
+    void             GetPriorProbability(Double_t *out) const;
 
   private:
 
-    Bool_t AcceptTrackPID(AliRsnDaughter *d, AliPID::EParticleType type = AliPID::kUnknown);
+    Bool_t AcceptTrackPID(AliRsnDaughter*const d, AliPID::EParticleType type = AliPID::kUnknown);
 
-    AliVEvent  *fRef;   // pointer to input event (if it is an AOD, this is NULL)
-    AliMCEvent *fRefMC; // pointer to reference MC event (if any)
+    Double_t         fPrior[AliPID::kSPECIES]; // prior probabilities 
+    AliVEvent       *fRef;                     // pointer to input event
+    AliMCEvent      *fRefMC;                   // pointer to reference MC event (if any)
+    AliRsnPIDDefESD  fPIDDefESD;               // (optional) customization of PID weights for ESD
 
     ClassDef(AliRsnEvent, 3);
 };

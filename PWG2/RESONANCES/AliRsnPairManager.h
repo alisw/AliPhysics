@@ -16,28 +16,32 @@
 // author: M. Vala (email: martin.vala@cern.ch)
 //
 
-#ifndef AliRsnPairManager_H
-#define AliRsnPairManager_H
-
-#include <TList.h>
-
+#ifndef ALIRSNPAIRMANAGER_H
+#define ALIRSNPAIRMANAGER_H
+// #include <TObject.h>
 #include "AliRsnVManager.h"
-#include "AliRsnPair.h"
 
+class TList;
+
+class AliRsnPair;
+class AliRsnPairManager;
+class AliRsnPIDIndex;
+class AliRsnEvent;
 class AliRsnPairManager : public AliRsnVManager
 {
   public:
 
     AliRsnPairManager(const char *name = "defaultPairMgr");
+    virtual ~AliRsnPairManager() {;};
 
     //virtual void   Add(AliRsnPair *pair);
     virtual void   Add(TObject *pair);
-    virtual void   AddPair(AliRsnPair *pair) {Add(pair);}
+    virtual void   AddPair(AliRsnPair *pair);
     virtual void   PrintArray() const;
     virtual void   Print(Option_t *option = "") const;
 
-            TList* InitAllPairs();
-            void   ProcessAllPairs(AliRsnPIDIndex *pidIndexes1, AliRsnEvent *ev1, AliRsnPIDIndex *pidIndexes2 = 0, AliRsnEvent *ev2 = 0);
+    void   InitAllPairs(TList* list);
+    void   ProcessAllPairs(AliRsnPIDIndex *pidIndexes1, AliRsnEvent *ev1, AliRsnPIDIndex *pidIndexes2 = 0, AliRsnEvent *ev2 = 0);
 
   private:
 

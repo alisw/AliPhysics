@@ -7,13 +7,14 @@
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
-#ifndef AliRsnAnalysisSE_H
-#define AliRsnAnalysisSE_H
+#ifndef ALIRSNANALYSISSE_H
+#define ALIRSNANALYSISSE_H
 
 #include "AliPID.h"
 #include "AliRsnVAnalysisTaskSE.h"
 #include "AliRsnAnalysisManager.h"
 #include "AliRsnPIDIndex.h"
+#include "AliRsnEvent.h"
 
 class AliRsnPIDDefESD;
 class AliRsnCutSet;
@@ -21,43 +22,36 @@ class AliRsnCutSet;
 class AliRsnAnalysisSE : public AliRsnVAnalysisTaskSE
 {
 
-public:
-    AliRsnAnalysisSE(const char *name = "AliRsnAnalysisSE");
+  public:
+    AliRsnAnalysisSE(const char *name = "AliRsnAnalysisSE",Int_t numOfOutputs=1);
     AliRsnAnalysisSE(const AliRsnAnalysisSE& copy);
+    virtual ~AliRsnAnalysisSE() {;};
 
     // Implement this
     virtual void    RsnUserCreateOutputObjects();
     virtual void    RsnUserExec(Option_t*);
     virtual void    RsnTerminate(Option_t*);
 
-    AliRsnAnalysisManager *GetAnalysisManager(TString name = "");
-    void                   SetAnalysisManagerName(const char*name) {fRsnAnalysisManager.SetName(name);};
+    AliRsnAnalysisManager *GetAnalysisManager(Int_t index = 0, TString name = "");
+    void                   SetAnalysisManagerName(const char *name, Int_t index = 0)
+                            {fRsnAnalysisManager[index].SetName(name);}
 
-    // Prior probs
-    void            SetPriorProbability(AliPID::EParticleType type, Double_t p);
-    void            DumpPriors();
-    void            GetPriorProbability(Double_t *out);
+    AliRsnCutSet* GetEventCuts() const {return fEventCuts;}
+    void          SetEventCuts(AliRsnCutSet *const cuts) {fEventCuts = cuts;}
 
-    // ESD cuts
-    void            SetESDtrackCuts(AliESDtrackCuts *cuts) {fESDCuts = cuts;}
+    Double_t GetZeroEventPercentWarning() const { return fZeroEventPercentWarning;}
+    void     SetZeroEventPercentWarning(Double_t val = 50) { fZeroEventPercentWarning = val;}
+    void     UseZeroEventWarning(Bool_t b = true) { fUseZeroEventWarning = b;}
 
-    // Indexer
-    AliRsnPIDIndex* GetPIDIndex() {return &fPIDIndex;}
-    AliRsnPIDDefESD* GetPIDDef() {return fPIDIndex.GetPIDDef();}
-    AliRsnCutSet* GetEventCuts() {return fEventCuts;}
-    void SetEventCuts(AliRsnCutSet *cuts) {fEventCuts = cuts;}
-
-private:
+  private:
 
     AliRsnAnalysisSE& operator=(const AliRsnAnalysisSE& /*copy*/) {return *this;}
 
-    AliRsnAnalysisManager fRsnAnalysisManager;      // analysis main engine
-    AliRsnPIDIndex        fPIDIndex;                // utility --> PID sorter
-    AliRsnEvent           fEvent;                   // utility --> event interface
+    AliRsnAnalysisManager fRsnAnalysisManager[10];  // analysis main engine
     AliRsnCutSet         *fEventCuts;               // event cuts
 
-    AliESDtrackCuts      *fESDCuts;                 // ESD track cuts
-    Double_t              fPrior[AliPID::kSPECIES]; // prior probabilities
+    Double_t              fZeroEventPercentWarning; //! Percent Number for Zero Event Warning
+    Bool_t                fUseZeroEventWarning;     //! flag if Zero Event Warning is used (default is true)
 
     ClassDef(AliRsnAnalysisSE, 1)
 };

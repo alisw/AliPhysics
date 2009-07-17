@@ -29,11 +29,12 @@ class AliRsnCutSet : public TNamed
     AliRsnCutSet();
     AliRsnCutSet(TString name);
     AliRsnCutSet(const AliRsnCutSet &copy);
+    AliRsnCutSet& operator=(const AliRsnCutSet& /*copy*/) {return (*this);}
     ~AliRsnCutSet();
 
     void      AddCut(AliRsnCut* cut);
 
-    void      ShowCuts();
+    void      ShowCuts() const;
     Int_t     GetIndexByCutName(TString s);
     Bool_t    Passed();
     Bool_t    IsValidScheme();
@@ -58,8 +59,6 @@ class AliRsnCutSet : public TNamed
     TObjArray *GetCuts() { return &fCuts; }
 
   private:
-
-    AliRsnCutSet& operator=(const AliRsnCutSet& /*copy*/) {return (*this);}
 
     TObjArray     fCuts;                  // array of cuts
     Int_t         fNumOfCuts;             // number of cuts
