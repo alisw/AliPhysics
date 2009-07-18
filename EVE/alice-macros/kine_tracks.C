@@ -10,6 +10,18 @@
 // Import tracks from kinematics-tree / particle-stack.
 // Preliminary/minimal solution.
 
+#include <TEveManager.h>
+#include <TEveTrackPropagator.h>
+
+#include <EveBase/AliEveEventManager.h>
+#include <EveBase/AliEveMagField.h>
+#include <EveBase/AliEveTrack.h>
+#include <EveBase/AliEveKineTools.h>
+
+#include <AliRunLoader.h>
+#include <AliStack.h>
+#include <AliMagF.h>
+
 #include "TParticlePDG.h"
 
 // Use magnetic-field as retrieved from GRP.
@@ -18,6 +30,29 @@ Bool_t g_kine_tracks_true_field = kTRUE;
 // Use Runge-Kutta track stepper.
 Bool_t g_kine_tracks_rk_stepper = kFALSE;
 
+//==============================================================================
+
+void kine_track_propagator_setup(TEveTrackPropagator* trkProp);
+
+TEveTrackList*
+kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
+	    Bool_t   pdg_col = kTRUE, Bool_t   recurse = kTRUE,
+	    Bool_t   use_track_refs = kTRUE);
+
+void kine_daughters(AliEveTrack* parent,  AliStack* stack,
+		    Double_t     min_pt,  Double_t  min_p,
+		    Bool_t       pdg_col, Bool_t    recurse);
+
+void    set_track_color(AliEveTrack* t, Bool_t pdg_col);
+Color_t get_pdg_color(Int_t pdg);
+
+TEveElement*
+kine_track(Int_t  label,
+	   Bool_t import_mother = kTRUE, Bool_t import_daughters = kTRUE,
+	   Bool_t pdg_col       = kTRUE, Bool_t recurse          = kTRUE,
+           TEveElement* cont = 0);
+
+void kine_hide_neutrals(TEveElement* el=0, Int_t level=0);
 
 //==============================================================================
 
@@ -42,9 +77,9 @@ void kine_track_propagator_setup(TEveTrackPropagator* trkProp)
 //==============================================================================
 
 TEveTrackList*
-kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
-	    Bool_t   pdg_col = kTRUE, Bool_t   recurse = kTRUE,
-	    Bool_t   use_track_refs = kTRUE)
+kine_tracks(Double_t min_pt,  Double_t min_p,
+	    Bool_t   pdg_col, Bool_t   recurse,
+	    Bool_t   use_track_refs)
 {
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadKinematics();
@@ -65,7 +100,6 @@ kine_tracks(Double_t min_pt  = 0,     Double_t min_p   = 0,
 
   gEve->AddElement(cont);
   Int_t count = 0;
-  Int_t N = stack->GetNtrack();
   Int_t Np = stack->GetNprimary();
   for (Int_t i = 0; i < Np; ++i)
   {
@@ -151,7 +185,9 @@ void kine_daughters(AliEveTrack* parent,  AliStack* stack,
   }
 }
 
-Color_t set_track_color(AliEveTrack* t, Bool_t pdg_col)
+//==============================================================================
+
+void set_track_color(AliEveTrack* t, Bool_t pdg_col)
 {
   if (pdg_col)
     t->SetMainColor(get_pdg_color(t->GetPdg()));
@@ -187,7 +223,8 @@ Color_t get_pdg_color(Int_t pdg)
   // mesons and barions
   else if (pdga < 100000) {
     Int_t i  = pdga;
-    Int_t i0 = i%10; i /= 10;
+    // Int_t i0 = i%10;  // Not used at the moment.
+    i /= 10;
     Int_t i1 = i%10; i /= 10;
     Int_t i2 = i%10; i /= 10;
     Int_t i3 = i%10; i /= 10;
@@ -207,14 +244,13 @@ Color_t get_pdg_color(Int_t pdg)
   return col;
 }
 
-/******************************************************************************/
+//==============================================================================
 
 TEveElement*
 kine_track(Int_t  label,
-	   Bool_t import_mother    = kTRUE, Bool_t import_daughters = kTRUE,
-	   Bool_t pdg_col          = kTRUE, Bool_t recurse          = kTRUE,
-           TEveElement* cont = 0)
-
+	   Bool_t import_mother, Bool_t import_daughters,
+	   Bool_t pdg_col,       Bool_t recurse,
+           TEveElement* cont)
 {
   // Create mother and daughters tracks with given label.
   // mother     -> particle with label
@@ -238,8 +274,6 @@ kine_track(Int_t  label,
 
   if (import_mother || (import_daughters && p->GetNDaughters()))
   {
-    AliEveTrack* toptrack = 0;
-    TEveTrackList* tracklist = 0;
     TEveTrackPropagator* rs = 0;
 
     if (cont == 0)
@@ -315,3 +349,26 @@ kine_track(Int_t  label,
   return cont;
 }
 
+//==============================================================================
+
+void kine_hide_neutrals(TEveElement* el, Int_t level)
+{
+  if (el == 0)
+  {
+    el = gEve->GetCurrentEvent()->FindChild("Kine Tracks");
+    if (!el)
+      return;
+  }
+
+  TEveTrack* t = dynamic_cast<TEveTrack*>(el);
+  if (t && t->GetCharge() == 0)
+    t->SetRnrSelf(kFALSE);
+
+  for (TEveElement::List_i i = el->BeginChildren(); i != el->EndChildren(); ++i)
+  {
+    kine_hide_neutrals(*i, level + 1);
+  }
+
+  if (level == 0)
+    gEve->Redraw3D();
+}
