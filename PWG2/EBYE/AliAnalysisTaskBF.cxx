@@ -55,11 +55,11 @@ void AliAnalysisTaskBF::ConnectInputData(Option_t *) {
 void AliAnalysisTaskBF::CreateOutputObjects() {
   // Create histograms
   // Called once
-
-  fBalance = new AliBalance();
-  fBalance->SetAnalysisType(1);
-  fBalance->SetNumberOfBins(18);
-  fBalance->SetInterval(-0.9,0.9);
+  
+  //fBalance = new AliBalance();
+  //fBalance->SetAnalysisType(1);
+  //fBalance->SetNumberOfBins(18);
+  //fBalance->SetInterval(-0.9,0.9);
   //cout<<fBalance->GetAnalysisType()<<endl;
 }
 

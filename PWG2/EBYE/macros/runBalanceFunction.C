@@ -1,14 +1,14 @@
-void runBalanceFunction() {
+void runBalanceFunction(const char* mode = "ESD") {
   TStopwatch timer;
   timer.Start();
 
-  runLocal();
+  runLocal(mode);
 
   timer.Stop();
   timer.Print();
 }
 
-void runLocal() {
+void runLocal(const char* mode) {
   //____________________________________________________//
   //_____________Setting up the par files_______________//
   //____________________________________________________//
@@ -30,6 +30,8 @@ void runLocal() {
   TChain *chain = new TChain("esdTree");
   chain->Add("AliESDs.root");
 
+  gROOT->LoadMacro("configBalanceFunctionAnalysis.C");
+  AliBalance *analysis = GetBalanceFunctionObject(mode);
 
   //___________________________________________________//
   // Create the analysis manager
@@ -40,18 +42,18 @@ void runLocal() {
 
   // Create task
   gROOT->LoadMacro("AliAnalysisTaskBF.cxx+g");
-  AliAnalysisTaskBF *task = new AliAnalysisTaskBF("TaskBF");
-
+  AliAnalysisTaskBF *taskBF = new AliAnalysisTaskBF("TaskBF");
+  taskBF->SetAnalysisObject(analysis);
   // Add task
-  mgr->AddTask(task);
+  mgr->AddTask(taskBF);
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput = mgr->CreateContainer("contBF", AliBalance::Class(), AliAnalysisManager::kOutputContainer, "BF.ESD.root");
 
   // Connect input/output
-  mgr->ConnectInput(task, 0, cinput);
-  mgr->ConnectOutput(task, 0, coutput);
+  mgr->ConnectInput(taskBF, 0, cinput);
+  mgr->ConnectOutput(taskBF, 0, coutput);
 
   // Enable debug printouts
   mgr->SetDebugLevel(2);
