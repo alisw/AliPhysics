@@ -18,6 +18,9 @@ class AliAnalysisTaskBF : public AliAnalysisTask {
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
+
+  void SetAnalysisObject(AliBalance *const analysis) {
+    fBalance = analysis;}
   
  private:
   AliESDEvent *fESD;    //ESD object

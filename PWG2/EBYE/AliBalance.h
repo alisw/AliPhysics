@@ -13,11 +13,13 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+#include "TString.h"
 
 #define MAXIMUM_NUMBER_OF_STEPS	1024
 
 class TGraphErrors;
 class TObjArray;
+//class TString;
 
 class AliBalance : public TObject {
  public:
@@ -27,11 +29,13 @@ class AliBalance : public TObject {
   ~AliBalance();
   
   void SetNumberOfBins(Int_t ibins);
+  void SetAnalysisLevel(const char* analysisLevel) {fAnalysisLevel = analysisLevel;}
   void SetAnalysisType(Int_t iType);
   void SetInterval(Double_t p2Start, Double_t p2Stop);
 
   Int_t GetNumberOfBins() {return fNumberOfBins;}
   const char* GetAnalysisType();
+  const char* GetAnalysisLevel() {return fAnalysisLevel.Data();}
 
   void SetNp(Int_t np) {fNp = np;}
   void SetNn(Int_t nn) {fNn = nn;}
@@ -56,6 +60,7 @@ class AliBalance : public TObject {
   void Merge(AliBalance *b);
 
  private:
+  TString fAnalysisLevel; //ESD, AOD or MC
   Int_t fNumberOfBins; //number of bins of the analyzed interval
   Int_t fAnalysisType; //0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
   Int_t fAnalyzedEvents; //number of events that have been analyzed

@@ -27,6 +27,7 @@
 #include <TLorentzVector.h>
 #include <TObjArray.h>
 #include <TGraphErrors.h>
+#include <TString.h>
 
 #include "AliESDtrack.h"
 #include "AliBalance.h"
@@ -36,7 +37,7 @@ ClassImp(AliBalance)
 //____________________________________________________________________//
 AliBalance::AliBalance() :
   TObject(), 
-  fNumberOfBins(0),
+  fAnalysisLevel("ESD"), fNumberOfBins(0),
   fAnalysisType(0), fAnalyzedEvents(0), fP2Start(0),
   fP2Stop(0), fP2Step(0), fNn(0), fNp(0) {
   // Default constructor
@@ -51,7 +52,7 @@ AliBalance::AliBalance() :
 
 //____________________________________________________________________//
 AliBalance::AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Bins) :
-  TObject(), 
+  TObject(), fAnalysisLevel("ESD"),
   fNumberOfBins(p2Bins), fAnalysisType(0), 
   fAnalyzedEvents(0), fP2Start(p2Start), fP2Stop(p2Stop), 
   fP2Step(TMath::Abs(fP2Start - fP2Stop) / (Double_t)fNumberOfBins), 
@@ -68,7 +69,7 @@ AliBalance::AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Bins) :
 
 //____________________________________________________________________//
 AliBalance::AliBalance(const AliBalance& balance):
-  TObject(balance),
+  TObject(balance), fAnalysisLevel(balance.fAnalysisLevel),
   fNumberOfBins(balance.fNumberOfBins),
   fAnalysisType(balance.fAnalysisType),
   fAnalyzedEvents(balance.fAnalyzedEvents),
@@ -215,9 +216,14 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
   Int_t i = 0 , j = 0;
   Int_t ibin = 0;
   
+  AliESDtrack* track = 0;
+  AliESDtrack* track1 = 0;
+  AliESDtrack* track2 = 0;
+    
   Int_t gNtrack = gTrackArray->GetEntries();
   for(i = 0; i < gNtrack; i++) {
-    AliESDtrack *track = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+    if(fAnalysisLevel == "ESD")
+      track = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
     Short_t charge = track->Charge();
     if(charge > 0) fNp += 1.;
     if(charge < 0) fNn += 1.;
@@ -227,13 +233,15 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
   //0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
   if(fAnalysisType==0) {
     for(i = 1; i < gNtrack; i++) {
-      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      if(fAnalysisLevel == "ESD")
+	track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
       Short_t charge1 = track1->Charge();
       Double_t pZ1 = track1->Pz();
       Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
 				     TMath::Power(track1->M(),2));
       for(j = 0; j < i; j++) {
-	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	if(fAnalysisLevel == "ESD")
+	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
 	Short_t charge2 = track2->Charge();
 	Double_t pZ2 = track2->Pz();
 	Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
@@ -252,12 +260,14 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
   }//case 0
   if(fAnalysisType==1) {
     for(i = 1; i < gNtrack; i++) {
-      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      if(fAnalysisLevel == "ESD")
+	track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
       Short_t charge1 = track1->Charge();
       Double_t pZ1 = track1->Pz();
       Double_t p1 = track1->P();
       for(j = 0; j < i; j++) {
-	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	if(fAnalysisLevel == "ESD")
+	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
 	Short_t charge2 = track2->Charge();
 	Double_t pZ2 = track2->Pz();
 	Double_t p2 = track2->P();
@@ -276,7 +286,8 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
   }//case 1
   if(fAnalysisType==2) {
     for(i = 1; i < gNtrack; i++) {
-      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      if(fAnalysisLevel == "ESD")
+	track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
       Short_t charge1 = track1->Charge();
       Double_t pX1 = track1->Px();
       Double_t pY1 = track1->Py();
@@ -284,7 +295,8 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
       Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
 				     TMath::Power(track1->M(),2));
       for(j = 0; j < i; j++) {
-	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	if(fAnalysisLevel == "ESD")
+	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
 	Short_t charge2 = track2->Charge();
 	Double_t pX2 = track2->Px();
 	Double_t pY2 = track2->Py();
@@ -311,7 +323,8 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
   }//case 2
   if(fAnalysisType==3) {
     for(i = 1; i < gNtrack; i++) {
-      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      if(fAnalysisLevel == "ESD")
+	track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
       Short_t charge1 = track1->Charge();
       Double_t pX1 = track1->Px();
       Double_t pY1 = track1->Py();
@@ -319,7 +332,8 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
       Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
 				     TMath::Power(track1->M(),2));
       for(j = 0; j < i; j++) {
-	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	if(fAnalysisLevel == "ESD")
+	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
 	Short_t charge2 = track2->Charge();
 	Double_t pX2 = track2->Px();
 	Double_t pY2 = track2->Py();
@@ -346,14 +360,16 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
   }//case 3
   if(fAnalysisType==4) {
     for(i = 1; i < gNtrack; i++) {
-      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      if(fAnalysisLevel == "ESD")
+	track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
       Short_t charge1 = track1->Charge();
       Double_t pX1 = track1->Px();
       Double_t pY1 = track1->Py();
       //Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
       //TMath::Power(track1->M(),2));
       for(j = 0; j < i; j++) {
-	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	if(fAnalysisLevel == "ESD")
+	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
 	Short_t charge2 = track2->Charge();
 	Double_t pX2 = track2->Px();
 	Double_t pY2 = track2->Py();
@@ -377,7 +393,8 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
   }//case 4
   if(fAnalysisType==5) {
     for(i = 1; i < gNtrack; i++) {
-      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      if(fAnalysisLevel == "ESD")
+	track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
       Short_t charge1 = track1->Charge();
       Double_t pX1 = track1->Px();
       Double_t pY1 = track1->Py();
@@ -385,7 +402,8 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
       Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
 				     TMath::Power(track1->M(),2));
       for(j = 0; j < i; j++) {
-	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	if(fAnalysisLevel == "ESD")
+	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
 	Short_t charge2 = track2->Charge();
 	Double_t pX2 = track2->Px();
 	Double_t pY2 = track2->Py();
@@ -408,11 +426,13 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
   }//case 5	
   if(fAnalysisType==6) {
     for(i = 1; i < gNtrack; i++) {
-      AliESDtrack *track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
+      if(fAnalysisLevel == "ESD")
+	track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
       Short_t charge1 = track1->Charge();
       Double_t phi1 = track1->Phi();
       for(j = 0; j < i; j++) {
-	AliESDtrack *track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
+	if(fAnalysisLevel == "ESD")
+	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
 	Short_t charge2 = track2->Charge();
 	Double_t phi2 = track2->Phi();
 	Double_t dphi = TMath::Abs(phi1 - phi2);
