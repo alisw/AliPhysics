@@ -77,6 +77,12 @@ AliMUONRecoParam::AliMUONRecoParam()
   /// Constructor
   
   SetNameTitle("Dummy","Dummy");
+  for (Int_t iCh = 0; iCh < 10; iCh++) {
+    fUseChamber[iCh] = kTRUE;
+    fDefaultNonBendingReso[iCh] = 0.;
+    fDefaultBendingReso[iCh] = 0.;
+  }
+  for (Int_t iSt = 0; iSt < 5; iSt++) fRequestStation[iSt] = kTRUE;
   SetDefaultLimits();
 }
 
@@ -144,6 +150,18 @@ AliMUONRecoParam *AliMUONRecoParam::GetCosmicParam()
   
   return param;
 }
+
+//_____________________________________________________________________________
+AliMUONRecoParam *AliMUONRecoParam::GetCalibrationParam() 
+{
+  /// Return default (dummy) reconstruction parameters for calibration environment
+  
+  AliMUONRecoParam *param = new AliMUONRecoParam();
+  param->SetCalibrationParam();
+  
+  return param;
+}
+
 
 //_____________________________________________________________________________
 void AliMUONRecoParam::SetLowFluxParam() 
@@ -281,6 +299,22 @@ void AliMUONRecoParam::SetCosmicParam()
   SetPedMeanLimits(20, 700);
   SetManuOccupancyLimits(-1.,0.01); // reject manu above occ=1%
   
+}
+
+
+//_____________________________________________________________________________
+void AliMUONRecoParam::SetCalibrationParam() 
+{
+  /// Set (dummy) reconstruction parameters for calibration environment
+  
+  SetNameTitle("Calibration","Calibration");
+  SetEventSpecie(AliRecoParam::kCalib);
+
+  fPedMeanLimits[0] = 5000;
+  fPedMeanLimits[1] = 0;
+
+  fPadGoodnessMask = 0x8C00; // Pedestal is missing | is too low | too high
+
 }
 
 //_____________________________________________________________________________

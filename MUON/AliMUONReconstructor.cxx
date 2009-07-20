@@ -198,6 +198,14 @@ AliMUONReconstructor::ConvertDigits(AliRawReader* rawReader,
 {
   /// Convert raw data into digit and trigger stores
   CreateDigitMaker();
+
+  // Skip reconstruction if event is Calibration
+  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) {
+    digitStore->Clear(); // Remove possible digits from previous event
+    triggerStore->Clear(); // Remove possible triggers from previous event
+    AliInfo("Calibration event: do not convert digits");
+    return;
+  }
   
   AliCodeTimerStart(Form("%s::Raw2Digits(AliRawReader*,AliMUONVDigitStore*,AliMUONVTriggerStore*)",
                     fDigitMaker->ClassName()))

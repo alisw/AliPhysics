@@ -53,7 +53,7 @@ void MakeMUONRecoParamArray(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::I
   // set RecoParams
   AliMUONRecoParam *param;
   TObjArray recoParams;
-  
+  /*  
   // set parameters for p-p runs
   param = AliMUONRecoParam::GetLowFluxParam();
   recoParams.AddLast(param);
@@ -61,11 +61,16 @@ void MakeMUONRecoParamArray(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::I
   // set parameters for Pb-Pb runs
   param = AliMUONRecoParam::GetHighFluxParam();
   recoParams.AddLast(param);
-  
+  */
+
   // set parameters for cosmic runs
   param = AliMUONRecoParam::GetCosmicParam();
   recoParams.AddLast(param);
-  
+
+  // set (dummy) parameters for calibration runs
+  param = AliMUONRecoParam::GetCalibrationParam();
+  recoParams.AddLast(param);
+
   // identify default parameters (exit if identification failed)
   Bool_t defaultIsSet = kFALSE;
   TIter next(recoParams.MakeIterator());

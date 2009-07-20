@@ -24,6 +24,7 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   static AliMUONRecoParam *GetLowFluxParam();
   static AliMUONRecoParam *GetHighFluxParam();
   static AliMUONRecoParam *GetCosmicParam();
+  static AliMUONRecoParam *GetCalibrationParam();
   
   /// set the calibration mode (see GetCalibrationMode() for possible modes)
   void SetCalibrationMode(Option_t* mode) { fCalibrationMode = mode; fCalibrationMode.ToUpper();}
@@ -382,7 +383,7 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   void SetLowFluxParam();
   void SetHighFluxParam();
   void SetCosmicParam();
-  
+  void SetCalibrationParam();
   
   ClassDef(AliMUONRecoParam,14) // MUON reco parameters
 };
