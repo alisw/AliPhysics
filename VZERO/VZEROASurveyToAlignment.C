@@ -1,12 +1,12 @@
 void VZEROASurveyToAlignment(){
 
   // Macro to convert survey data into alignment data. 
-  // The position of four fiducial marks, sticked on the 
-  // entrance face of the V0A box is converted into the 
-  // global position of the box. Positions given by surveyers 
-  // are extracted from Survey Data Base. Thanks to Brigitte Cheynis
-  // for providing this macro witch just had to be modified in order 
-  // to obtain the desired results. 
+  // The position of fiducial marks, sticked on the V0A box 
+  // is converted into the global position of the box. 
+  // Positions given by surveyers are extracted from Survey Database. 
+  // Thanks to Brigitte Cheynis for providing this macro which just 
+  // had to be modified in order to obtain the desired results. 
+  // Further information can be found at https://edms.cern.ch/document/906073
 
   if(!gGeoManager) TGeoManager::Import("geometry.root");
 
@@ -43,7 +43,7 @@ void VZEROASurveyToAlignment(){
   const Double_t xside   = 22.627;
   const Double_t yside   = 22.627;
   const Double_t zsize   = 2.5;
-  const Double_t zoffset = 0.3;
+  const Double_t zoffset = 0.33;
   
   const Double_t zdepth  = zsize+zoffset;
   Double_t A[3]={-xside,-yside,zdepth};
@@ -56,6 +56,10 @@ void VZEROASurveyToAlignment(){
   TGeoTranslation* Ctr = new TGeoTranslation("Ctr",xside,yside,zdepth);
   TGeoTranslation* Dtr = new TGeoTranslation("Dtr",-xside,yside,zdepth);
 
+
+  // After final installation, only side A of the detector will be visible. Therefore, new reference adapters have been installed on this side.
+  // Local reference frame from the A side of view:
+  //
   //                    ^ local y
   //                    |
   //      D-------------|-------------C
@@ -65,7 +69,7 @@ void VZEROASurveyToAlignment(){
   //      |             |             |
   //      |             |             |
   //      |             |             |
-  //  ------------------|------------------> local x
+  //  ------------------|-----------------> local -x
   //      |             |             |
   //      |             |             |
   //      |             |             |
@@ -74,7 +78,7 @@ void VZEROASurveyToAlignment(){
   //      |             |             |
   //      A-------------|-------------B
   //
-  // local z exiting the plane of the screen
+  // local z entering the plane of the screen
    
   Double_t gA[3], gB[3], gC[3], gD[3];
   g3->LocalToMaster(A,gA);
@@ -92,7 +96,7 @@ void VZEROASurveyToAlignment(){
 
   AliSurveyObj *so = new AliSurveyObj();
  
-  so->FillFromLocalFile("Survey_943928_V0.txt");
+  so->FillFromLocalFile("Survey_906073_V0.txt");
   Int_t size = so->GetEntries();
 
   Printf("Title: \"%s\"", so->GetReportTitle().Data());
@@ -277,4 +281,3 @@ void VZEROASurveyToAlignment(){
   array->Delete();
 
 }
-
