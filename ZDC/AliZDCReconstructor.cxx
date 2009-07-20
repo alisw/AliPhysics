@@ -119,7 +119,7 @@ void AliZDCReconstructor::Init()
       return;
     }
     if(((beamType.CompareTo("pp"))==0) || ((beamType.CompareTo("p-p"))==0)
-     ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0 ) fRecoMode=1;
+     ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)) fRecoMode=1;
     else if((beamType.CompareTo("A-A")) == 0){
       fRecoMode=2;
       if(fIsCalibrationMB == kTRUE){ 
