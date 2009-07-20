@@ -259,42 +259,35 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
 	      // get the sector(detector) information
 	      Int_t sector, row = -99;
 	      AliHLTTPCTransform::Slice2Sector(sliceTrack, (fClustersArray[sliceTrack][patchTrack])[pos].fPadRow, sector, row);
+	               
+	      // next line recalculates rows in the sector(ROC) system
+ 	      //if(patchTrack>1) (fClustersArray[sliceTrack][patchTrack])[pos].fPadRow -= 63;//(Int_t)AliHLTTPCTransform::GetFirstRow(2);
 	      
-	      //HLTInfo("slice: %d, row: %d, sector: %d, new row :%d",sliceTrack, (fClustersArray[sliceTrack][patchTrack])[pos].fPadRow, sector, row);
-           
-	      // the clusters from the HLT cluster finder output are in the slice coordinate system
-	      // next line recalculates rows in the sector(ROC) system to convert clusters to the sector system
-	      if(patchTrack>1) (fClustersArray[sliceTrack][patchTrack])[pos].fPadRow -= (Int_t)AliHLTTPCTransform::GetFirstRow(2);              
 	      HLTDebug("slice %d, partition :%d, sector row: %d", sliceTrack, patchTrack, (fClustersArray[sliceTrack][patchTrack])[pos].fPadRow);
 	       
 	      // convert the HTL clusters to AliTPCclusterMI    	      
     	      AliHLTTPCOfflineCluster pConv;
     	      AliTPCclusterMI *offClus = pConv.ConvertHLTToOffline((fClustersArray[sliceTrack][patchTrack])[pos]);	      
-    	      offClus->IsUsed(1);
-	      offClus->SetDetector(sector);
+    	      offClus->SetDetector(sector);
 	      usedSpacePoints++;
 	      
 	      //offClusterArray->Add(offClus);
 	      
-	      
-	      // the clusters are not sorted from max to min X
-	      // errors will have to be revisited
-	      
-	      if(offClus->GetRow()>160) continue;
+	      // the clusters are not sorted from max to min X	            
 	      rieman.AddPoint( offClus->GetX(),offClus->GetY(),offClus->GetZ(),TMath::Sqrt(offClus->GetSigmaY2()),TMath::Sqrt(offClus->GetSigmaZ2()) );    
-	      
+              
+	      xmin = TMath::Min(xmin,xrow[offClus->GetRow()]); // min pad-row radius
+	      	      
 	      if(sector<36){ 
-                 xmin = TMath::Min(xmin,xrow[offClus->GetRow()]); // min pad-row radius
+                 //xmin = TMath::Min(xmin,xrow[offClus->GetRow()]); // min pad-row radius
                  alpha = angle_shift_in+angle_in*(sector%18);
               } else {
-                 xmin = TMath::Min(xmin,xrow[nrowlow+offClus->GetRow()]); // min pad-row radius
+                 //xmin = TMath::Min(xmin,xrow[nrowlow+offClus->GetRow()]); // min pad-row radius
                  alpha = angle_shift_out+angle_out*(sector%18);
               }
               //if(sector<36) HLTInfo("detector: %d, row: %d, xrow[row]: %f", sector, offClus->GetRow(), xrow[offClus->GetRow()]);
               //else          HLTInfo("detector: %d, row: %d, xrow[row]: %f", sector, offClus->GetRow(), xrow[nrowlow+offClus->GetRow()]);
           } // end of cluster loop
-
-          //HLTInfo("------------- xmin: %f", xmin);
 
           // creation of AliTPCseed by means of a Riemann fit
           rieman.Update();
