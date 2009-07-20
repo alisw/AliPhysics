@@ -118,7 +118,8 @@ void AliZDCReconstructor::Init()
       AliError("\t ZDC does not reconstruct event 4 UNKNOWN beam type\n");
       return;
     }
-    if((beamType.CompareTo("P-P")) == 0) fRecoMode=1;
+    if(((beamType.CompareTo("pp"))==0) || ((beamType.CompareTo("p-p"))==0)
+     ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0 ) fRecoMode=1;
     else if((beamType.CompareTo("A-A")) == 0){
       fRecoMode=2;
       if(fIsCalibrationMB == kTRUE){ 
@@ -147,7 +148,7 @@ void AliZDCReconstructor::Init()
     }
     
     if(fIsCalibrationMB==kFALSE)  
-      AliInfo(Form("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f GeV *****\n",beamType.Data(), fBeamEnergy));
+      printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f GeV *****\n\n",beamType.Data(), fBeamEnergy);
   }
   else{
     AliError(" ATTENTION!!!!!! No beam type nor beam energy has been set!!!!!!\n");
@@ -718,13 +719,10 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrA
 		   impPar, impPar1, impPar2,
 		   recoFlag);
 		  
-  //AliZDCReco* preco = &reco;
-  const Int_t kBufferSize = 8000;
+  const Int_t kBufferSize = 4000;
   clustersTree->Branch("ZDC", "AliZDCReco", &reco, kBufferSize);
-  
   // write the output tree
   clustersTree->Fill();
-  delete reco;
 }
 
 //_____________________________________________________________________________
@@ -1093,9 +1091,9 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
 		    
   const Int_t kBufferSize = 4000;
   clustersTree->Branch("ZDC", "AliZDCReco", &reco, kBufferSize);
+  reco->Print("");
   // write the output tree
   clustersTree->Fill();
-  delete reco;
 }
 
 //_____________________________________________________________________________
