@@ -218,7 +218,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
 
       for(vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();  element!=tracks.end(); element++){
           
-	  AliRieman rieman(1000);
+	  AliRieman rieman(element->GetNumberOfPoints());
 	  rieman.Reset();    
           AliTPCseed *seed = 0x0;
           Double_t param[5]; for(Int_t i=0; i<5;  i++) param[i] = 0.;
