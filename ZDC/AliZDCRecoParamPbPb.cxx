@@ -128,17 +128,6 @@ AliZDCRecoParamPbPb::~AliZDCRecoParamPbPb()
 }
 
 //_____________________________________________________________________________
-AliZDCRecoParamPbPb *AliZDCRecoParamPbPb::GetPbPbRecoParam() const
-{
-  //
-  // Makes default reconstruction parameters for Pb-Pb collisions
-  //
-  AliZDCRecoParamPbPb *param = new AliZDCRecoParamPbPb();  
-  return param;
-
-}
-
-//_____________________________________________________________________________
 void AliZDCRecoParamPbPb::SetGlauberMCDist()
 {
   // Setting Glauber MC distributions
@@ -151,4 +140,38 @@ void AliZDCRecoParamPbPb::SetGlauberMCDist()
   fhbDist->SetDirectory(0);
   
   fileHistos->Close();
+}
+
+//_____________________________________________________________________________
+AliZDCRecoParamPbPb *AliZDCRecoParamPbPb::GetHighFluxParam() 
+{
+  // Create high flux reco parameter
+  TH1::AddDirectory(0);
+  TH2::AddDirectory(0);
+  //
+  TFile * fileHistos = TFile::Open("$ALICE_ROOT/ZDC/GlauberMCHistos.root");
+  fileHistos->cd();
+  //
+  TH2F *hZDCvsZEM = (TH2F*) fileHistos->Get("hZDCvsZEM");
+  hZDCvsZEM->SetDirectory(0);
+  //
+  TH2F *hZDCCvsZEM = (TH2F*) fileHistos->Get("hZDCCvsZEM");
+  hZDCCvsZEM->SetDirectory(0);
+  //
+  TH2F *hZDCAvsZEM = (TH2F*) fileHistos->Get("hZDCAvsZEM");
+  hZDCAvsZEM->SetDirectory(0);
+  //
+  TH1D* hDist = (TH1D*) fileHistos->Get("hDist");
+  hDist->SetDirectory(0);
+  //
+  TH1D* hbDist = (TH1D*) fileHistos->Get("hbDist");
+  hbDist->SetDirectory(0);
+  
+  AliZDCRecoParamPbPb* zdcRecoParam = new AliZDCRecoParamPbPb(hZDCvsZEM, hZDCCvsZEM, 
+              hZDCAvsZEM, hDist, hbDist, 0.1);
+  //
+  fileHistos->Close();
+	      
+  return zdcRecoParam;
+  
 }

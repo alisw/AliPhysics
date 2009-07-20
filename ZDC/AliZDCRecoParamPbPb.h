@@ -15,7 +15,6 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliZDCRecoParam.h"
-#include "AliZDCRecoParamPbPb.h"
 
 class AliZDCRecoParamPbPb : public AliZDCRecoParam {
  public:
@@ -27,7 +26,9 @@ class AliZDCRecoParamPbPb : public AliZDCRecoParam {
   AliZDCRecoParamPbPb& operator= (const AliZDCRecoParamPbPb &recpar);
   virtual ~AliZDCRecoParamPbPb();
 
-  AliZDCRecoParamPbPb *GetPbPbRecoParam() const;
+
+  // make reco parameters for A-A collisions
+  static AliZDCRecoParamPbPb *GetHighFluxParam();
   
   TH2F* GethZDCvsZEM()   const {return fhZDCvsZEM;}  
   TH2F* GethZDCCvsZEM()  const {return fhZDCCvsZEM;}  

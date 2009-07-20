@@ -34,12 +34,11 @@ AliZDCRecoParampp::AliZDCRecoParampp() :
 }
 
 //_____________________________________________________________________________
-AliZDCRecoParampp *AliZDCRecoParampp::GetppRecoParam() const
+AliZDCRecoParampp *AliZDCRecoParampp::GetLowFluxParam() 
 {
+  // Create low flux reco parameter
+  AliZDCRecoParampp* zdcRecoParam = new AliZDCRecoParampp();
   
-  // Getting default reconstruction parameters 
+  return zdcRecoParam;
   
-  AliZDCRecoParampp *param = new AliZDCRecoParampp();
-  return param;
-
 }

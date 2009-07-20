@@ -19,7 +19,8 @@ class AliZDCRecoParampp : public AliZDCRecoParam {
   AliZDCRecoParampp();
   virtual ~AliZDCRecoParampp() {;}
 
-  AliZDCRecoParampp *GetppRecoParam() const;
+  // make reco parameters for p-p collisions
+  static AliZDCRecoParampp *GetLowFluxParam();
   
   virtual TH2F* GethZDCvsZEM()  const {AliError("NO centrality determination in p-p!"); return 0;}    
   virtual TH2F* GethZDCCvsZEM() const {AliError("NO centrality determination in p-p!"); return 0;}    

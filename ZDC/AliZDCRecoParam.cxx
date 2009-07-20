@@ -21,7 +21,11 @@
 /////////////////////////////////////////////////////////////////////
 
 
-//#include <TF1.h>
+#include <TF1.h>
+#include <TF2.h>
+#include <TFile.h>
+#include "AliZDCRecoParamPbPb.h"
+#include "AliZDCRecoParampp.h"
 #include "AliZDCRecoParam.h"
 
 ClassImp(AliZDCRecoParam)
