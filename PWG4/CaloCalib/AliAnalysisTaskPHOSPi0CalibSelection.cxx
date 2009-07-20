@@ -107,12 +107,15 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserCreateOutputObjects()
   fHmgg = new TH1F("hmgg","2-cluster invariant mass",100,0.,300.);
   fOutputContainer->Add(fHmgg);
 	
+  fCalibData = new AliPHOSCalibData();
+  fPhosGeo =  AliPHOSGeometry::GetInstance("IHEP") ;	
+
 }
 
 void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
 {
   //Analysis per event.
-  
+  if(DebugLevel() > 1) printf("AliAnalysisTaskPHOSPi0CalibSelection <<< Event %d >>>\n",(Int_t)Entry());
   AliAODEvent* aod = 0x0;
   if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) aod = dynamic_cast<AliAODEvent*>(InputEvent());
   else  if(!strcmp(InputEvent()->GetName(),"AliESDEvent")) aod = AODEvent();
@@ -125,22 +128,27 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
   //aod->GetVertex()->GetXYZ(v) ;
   TVector3 vtx(v); //Check
 	
-  printf("Vertex: (%.3f,%.3f,%.3f)\n",vtx.X(),vtx.Y(),vtx.Z());
+  if(DebugLevel() > 1) printf("AliAnalysisTaskPHOSPi0CalibSelection Vertex: (%.3f,%.3f,%.3f)\n",vtx.X(),vtx.Y(),vtx.Z());
  
   Int_t runNum = aod->GetRunNumber();
-  printf("Run number: %d\n",runNum);
+  if(DebugLevel() > 1) printf("Run number: %d\n",runNum);
 	
   //Get the matrix with geometry information
   //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
-  if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) 
-		printf("Use ideal geometry, values geometry matrix not kept in AODs");
+  if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) {
+	  if(DebugLevel() > 1) 
+		  printf("AliAnalysisTaskPHOSPi0CalibSelection Use ideal geometry, values geometry matrix not kept in AODs.\n");
+  }
   else{	
+	  if(DebugLevel() > 1) printf("AliAnalysisTaskPHOSPi0CalibSelection Load Misaligned matrices. \n");
 	  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
-	  for(Int_t mod=0; mod<5; mod++)
-		  fPhosGeo->SetMisalMatrix(esd->GetPHOSMatrix(mod),mod) ;
+	  for(Int_t mod=0; mod<5; mod++){ 
+		if(esd->GetPHOSMatrix(mod))
+			fPhosGeo->SetMisalMatrix(esd->GetPHOSMatrix(mod),mod) ;
+		}
   }
 	
-  printf("Will use fLogWeight %.3f .\n",fLogWeight);
+  if(DebugLevel() > 1) printf("AliAnalysisTaskPHOSPi0CalibSelection Will use fLogWeight %.3f .\n",fLogWeight);
 
   AliPHOSPIDv1 pid;
 
@@ -155,7 +163,7 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
   aod->GetPHOSClusters(caloClustersArr);
   
   const Int_t kNumberOfPhosClusters   = caloClustersArr->GetEntries() ;
-  printf("CaloClusters: %d\n", kNumberOfPhosClusters);
+  if(DebugLevel() > 1) printf("AliAnalysisTaskPHOSPi0CalibSelection CaloClusters: %d\n", kNumberOfPhosClusters);
 
   // PHOS cells
   AliAODCaloCells *phsCells = aod->GetPHOSCells();
@@ -205,7 +213,7 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
       fHmgg->Fill(p12.M()*1000); 
       fHmpi0[mod1][iX][iZ]->Fill(p12.M()*1000);
       
-      printf("Mass in (mod%d,%d,%d): %.3f GeV  E1_i=%f E1_ii=%f  E2_i=%f E2_ii=%f\n",
+	  if(DebugLevel() > 1) printf("AliAnalysisTaskPHOSPi0CalibSelection Mass in (mod%d,%d,%d): %.3f GeV  E1_i=%f E1_ii=%f  E2_i=%f E2_ii=%f\n",
 	     mod1,iX,iZ,p12.M(),e1i,e1ii,e2i,e2ii);
     }
     
