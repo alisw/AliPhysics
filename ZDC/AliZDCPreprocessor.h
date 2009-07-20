@@ -24,12 +24,19 @@ class AliZDCPreprocessor : public AliPreprocessor
   protected:
     virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
     virtual UInt_t Process(TMap* dcsAliasMap);
-    virtual UInt_t ProcessChMap(TString runType);
+    virtual Bool_t ProcessDCS();
     AliZDCPreprocessor(const AliZDCPreprocessor&);
     AliZDCPreprocessor& operator=(const AliZDCPreprocessor&);
 
   private:
-    AliZDCDataDCS *fData;    // CDB class that stores the data
+    UInt_t ProcessDCSData(TMap* dcsAliasMap);
+    UInt_t ProcessChMap(TString runType);
+    UInt_t ProcessppData();
+    UInt_t ProcessCalibData();
+    UInt_t ProcessPedestalData();
+    UInt_t ProcessLaserData();
+
+    AliZDCDataDCS *fData;    // OCDB class that stores DCS data
 
     ClassDef(AliZDCPreprocessor, 0);
 };

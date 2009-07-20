@@ -2238,12 +2238,17 @@ void AliZDCv3::InitTables()
      return;
   }
   
+  int read=1;
   for(k=0; k<fNalfan; k++){
      for(j=0; j<fNben; j++){
-       fscanf(fp1,"%f",&fTablen[0][k][j]);
-       fscanf(fp2,"%f",&fTablen[1][k][j]);
-       fscanf(fp3,"%f",&fTablen[2][k][j]);
-       fscanf(fp4,"%f",&fTablen[3][k][j]);
+       read = fscanf(fp1,"%f",&fTablen[0][k][j]);
+       if(read==0) AliDebug(3, " Error in reading light table 1");
+       read = fscanf(fp2,"%f",&fTablen[1][k][j]);
+       if(read==0) AliDebug(3, " Error in reading light table 2");
+       read = fscanf(fp3,"%f",&fTablen[2][k][j]);
+       if(read==0) AliDebug(3, " Error in reading light table 3");
+       read = fscanf(fp4,"%f",&fTablen[3][k][j]);
+       if(read==0) AliDebug(3, " Error in reading light table 4");
      } 
   }
   fclose(fp1);
@@ -2275,10 +2280,14 @@ void AliZDCv3::InitTables()
   
   for(k=0; k<fNalfap; k++){
      for(j=0; j<fNbep; j++){
-       fscanf(fp5,"%f",&fTablep[0][k][j]);
-       fscanf(fp6,"%f",&fTablep[1][k][j]);
-       fscanf(fp7,"%f",&fTablep[2][k][j]);
-       fscanf(fp8,"%f",&fTablep[3][k][j]);
+       read = fscanf(fp5,"%f",&fTablep[0][k][j]);
+       if(read==0) AliDebug(3, " Error in reading light table 5");
+       read = fscanf(fp6,"%f",&fTablep[1][k][j]);
+       if(read==0) AliDebug(3, " Error in reading light table 6");
+       read = fscanf(fp7,"%f",&fTablep[2][k][j]);
+       if(read==0) AliDebug(3, " Error in reading light table 7");
+       read = fscanf(fp8,"%f",&fTablep[3][k][j]);
+       if(read==0) AliDebug(3, " Error in reading light table 8");
      } 
   }
   fclose(fp5);

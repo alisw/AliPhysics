@@ -26,29 +26,86 @@ AliZDCDataDCS::AliZDCDataDCS():
    fRun(0),
    fStartTime(0),
    fEndTime(0),
+   fStartTimeDCSQuery(0),
+   fEndTimeDCSQuery(0),
    fGraphs("TGraph",kNGraphs),
    fIsProcessed(kFALSE)
 {
   // Default constructor
+  for(Int_t i=0; i<kNAliases; i++){   
+     fAliasNames[i] = "";
+     fCalibData[i] = 0.; 
+     fTimeStamp[i] = 0.; 
+  }
 }
 
 //---------------------------------------------------------------
-AliZDCDataDCS::AliZDCDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime):
+AliZDCDataDCS::AliZDCDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime,
+			 UInt_t startTimeDCSQuery, UInt_t endTimeDCSQuery):
    TObject(),
    fRun(nRun),
    fStartTime(startTime),
    fEndTime(endTime),
+   fStartTimeDCSQuery(startTimeDCSQuery),
+   fEndTimeDCSQuery(endTimeDCSQuery),
    fGraphs("TGraph",kNGraphs),
    fIsProcessed(kFALSE)
 {
    // Standard constructor
    
-   AliDebug(2,Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
+   AliDebug(2,Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s \n\tStartTime DCS Query %s \n\tEndTime DCS Query %s", nRun,
    TTimeStamp(startTime).AsString(),
-   TTimeStamp(endTime).AsString()));
+   TTimeStamp(endTime).AsString(), 
+   TTimeStamp(startTimeDCSQuery).AsString(), 
+   TTimeStamp(endTimeDCSQuery).AsString()));
 
    Init();
 
+}
+
+//---------------------------------------------------------------
+AliZDCDataDCS::AliZDCDataDCS(const AliZDCDataDCS & data):
+  TObject(data), 
+  fRun(data.fRun),
+  fStartTime(data.fStartTime),
+  fEndTime(data.fEndTime),
+  fStartTimeDCSQuery(data.fStartTimeDCSQuery),
+  fEndTimeDCSQuery(data.fEndTimeDCSQuery),
+  fGraphs(data.fGraphs),
+  fIsProcessed(data.fIsProcessed)
+{
+
+  // copy constructor
+
+  for(int i=0;i<kNAliases;i++) {
+    fAliasNames[i]=data.fAliasNames[i];
+  }
+  
+    
+}
+
+//---------------------------------------------------------------
+AliZDCDataDCS& AliZDCDataDCS:: operator=(const AliZDCDataDCS & data) { 
+
+  // assignment operator
+
+  if (this == &data)
+    return *this;
+
+  TObject::operator=(data);
+  fRun = data.GetRun();
+  fStartTime = data.GetStartTime();
+  fEndTime = data.GetEndTime();
+  fStartTimeDCSQuery = data.GetStartTimeDCSQuery();
+  fEndTimeDCSQuery = data.GetEndTimeDCSQuery();
+
+  for(int i=0;i<kNAliases;i++) {
+    fAliasNames[i]=data.GetAliasName(i);
+    fCalibData[i]=data.GetCalibData(i);
+    fTimeStamp[i]=data.GetTimeStamp(i);
+  }
+
+  return *this;
 }
 
 //---------------------------------------------------------------
@@ -59,17 +116,28 @@ AliZDCDataDCS::~AliZDCDataDCS()
 }
 
 //---------------------------------------------------------------
-void AliZDCDataDCS::ProcessData(TMap& aliasMap)
+Bool_t AliZDCDataDCS::ProcessData(TMap& aliasMap)
 {
    // Data processing
+
+   if (fEndTime==fStartTime){
+     AliError(Form(" Run with null time length: start time = %i = end time = %i",fStartTime,fEndTime));
+     return kFALSE;
+   }
+   
+   AliInfo(Form(" Start Time = %i",fStartTime));
+   AliInfo(Form(" End Time = %i",fEndTime));
+   AliInfo(Form(" Start Time DCS Query= %i",fStartTimeDCSQuery));
+   AliInfo(Form(" End Time DCS Query= %i",fEndTimeDCSQuery));
    
    TObjArray *aliasArr;
    AliDCSValue* aValue;
+  
    for(int j=0; j<kNAliases; j++){
       aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
       if(!aliasArr){
    	AliWarning(Form("Alias %s not found!", fAliasNames[j].Data()));
-   	continue;
+   	return kFALSE;
       }
       Introduce(j, aliasArr);
 
@@ -87,7 +155,7 @@ void AliZDCDataDCS::ProcessData(TMap& aliasMap)
       UInt_t ne=0;
       while((aValue = (AliDCSValue*) iterarray.Next())) {
    	val[ne] = aValue->GetFloat();
-   	time[ne] = (Double_t) (aValue->GetTimeStamp());
+   	time[ne] = (Float_t) (aValue->GetTimeStamp());
    	fCalibData[ne] = val[ne];
    	fTimeStamp[ne] = time[ne];
    	ne++;
@@ -100,7 +168,8 @@ void AliZDCDataDCS::ProcessData(TMap& aliasMap)
    }
    //
    fIsProcessed=kTRUE;
-
+   
+   return kTRUE;
 }
 
 //---------------------------------------------------------------

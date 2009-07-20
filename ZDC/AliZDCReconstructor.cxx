@@ -118,18 +118,10 @@ void AliZDCReconstructor::Init()
       AliError("\t ZDC does not reconstruct event 4 UNKNOWN beam type\n");
       return;
     }
-    if((beamType.CompareTo("P-P")) == 0){
-      fRecoMode=1;
-      fRecoParam = (AliZDCRecoParampp*) GetppRecoParamFromOCDB();
-      AliInfo(" Getting AliZDCRecoParampp object from OCDB \n");
-    }
+    if((beamType.CompareTo("P-P")) == 0) fRecoMode=1;
     else if((beamType.CompareTo("A-A")) == 0){
       fRecoMode=2;
-      if(fIsCalibrationMB == kFALSE){ 
-         fRecoParam = (AliZDCRecoParamPbPb*) GetPbPbRecoParamFromOCDB();
-         AliInfo(" Getting AliZDCRecoParamPbPb object from OCDB\n");
-      }
-      else{
+      if(fIsCalibrationMB == kTRUE){ 
         fRecoParam = new AliZDCRecoParamPbPb();
         //
         TH2F* hZDCvsZEM = new TH2F("hZDCvsZEM","hZDCvsZEM",100,0.,10.,100,0.,1000.);
