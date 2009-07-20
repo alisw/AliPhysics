@@ -4,6 +4,11 @@ void RunAlignmentDataFilterITS() {
   // A.Dainese, andrea.dainese@pd.infn.it
   //
 
+  // Input
+  Bool_t singlefile=kTRUE;
+  TString esdpath="/home/dainesea/alignData/RAWdata_CosmicsSum09/RecoSPDpro/chunk.";
+  Int_t ifirst=1, ilast=6;
+  //
   Int_t nentries=1234567890;
   Int_t firstentry=0;
 
@@ -33,8 +38,15 @@ void RunAlignmentDataFilterITS() {
   mgr->SetInputEventHandler(esdH);
 
   TChain *chainESD = new TChain("esdTree");
-  chainESD->Add("AliESDs.root");
- 
+  if(singlefile) {
+    chainESD->Add("AliESDs.root");
+  } else {
+    for(Int_t i=ifirst; i<=ilast; i++) {
+      TString esdfile=esdpath; esdfile+=i; esdfile.Append("/AliESDs.root");
+      chainESD->Add(esdfile.Data());
+    }
+  } 
+
   // Attach input
   cInput = mgr->CreateContainer("cInput",TChain::Class(),AliAnalysisManager::kInputContainer);
   //mgr->ConnectInput(taskFilter, 0, cInput); // v4-16-Release
