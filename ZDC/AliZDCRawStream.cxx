@@ -72,13 +72,36 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fIsScHeaderRead(kFALSE),
   fScStartCounter(0),
   fScEvCounter(0),
+  fDetPattern(0),
+  fTrigCountNWords(0),
+  fIsTrig1stWordRead(kFALSE),
+  fTrigCountStart(0),
+  fMBTrigInput(0),	   
+  fCentralTrigInput(0), 
+  fSCentralTrigInput(0),
+  fEMDTrigInput(0),     
+  fL0Received(0),	   
+  fMBtrig2CTP(0),	   
+  fCentralTrig2CTP(0),  
+  fSCentralTrig2CTP(0), 
+  fEMDTrig2CTP(0),	      
+  fTrigHistNWords(0),
+  fIsHist1stWordRead(kFALSE),
+  fPileUpBit1stWord(0),
+  fL0Bit1stWord(0),
+  fCentralTrigHist(0),
+  fMBTrigHist(0),
+  fPileUpBit2ndWord(0),
+  fL0Bit2ndWord(0), 
+  fSCentralTrigHist(0),
+  fEMDTrigHist(0),
   fNChannelsOn(0),
   fCurrentCh(-1),
   fCabledSignal(-1),
   fCurrScCh(-1),
-  fIsEventGood(kTRUE),
+  fIsADCEventGood(kTRUE),
   fIsL0BitSet(kTRUE),
-  fIsPileUpOff(kTRUE)
+  fIsPileUpEvent(kFALSE)
 {
   // Create an object to read ZDC raw digits
   fRawReader->Reset();
@@ -91,6 +114,8 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
       if(i<32) fScalerMap[i][j]=-1;
     }
   }
+  
+  for(Int_t k=0; k<4; k++) fCPTInput[k] = 0;
 
 }
 
@@ -131,13 +156,36 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fIsScHeaderRead(stream.fIsScHeaderRead),
   fScStartCounter(stream.fScStartCounter),
   fScEvCounter(stream.fScEvCounter),
+  fDetPattern(stream.fDetPattern),
+  fTrigCountNWords(stream.fTrigCountNWords),
+  fIsTrig1stWordRead(stream.fIsTrig1stWordRead),
+  fTrigCountStart(stream.fTrigCountStart),
+  fMBTrigInput(stream.fMBTrigInput),	   
+  fCentralTrigInput(stream.fCentralTrigInput), 
+  fSCentralTrigInput(stream.fSCentralTrigInput),
+  fEMDTrigInput(stream.fEMDTrigInput),     
+  fL0Received(stream.fL0Received),	   
+  fMBtrig2CTP(stream.fMBtrig2CTP),	   
+  fCentralTrig2CTP(stream.fCentralTrig2CTP),  
+  fSCentralTrig2CTP(stream.fSCentralTrig2CTP), 
+  fEMDTrig2CTP(stream.fEMDTrig2CTP),	      
+  fTrigHistNWords(stream.fTrigHistNWords),
+  fIsHist1stWordRead(stream.fIsHist1stWordRead),
+  fPileUpBit1stWord(stream.fPileUpBit1stWord),
+  fL0Bit1stWord(stream.fL0Bit1stWord), 
+  fCentralTrigHist(stream.fCentralTrigHist),
+  fMBTrigHist(stream.fMBTrigHist),
+  fPileUpBit2ndWord(stream.fPileUpBit2ndWord),
+  fL0Bit2ndWord(stream.fL0Bit2ndWord), 
+  fSCentralTrigHist(stream.fSCentralTrigHist),
+  fEMDTrigHist(stream.fEMDTrigHist),
   fNChannelsOn(stream.fNChannelsOn),
   fCurrentCh(stream.fCurrentCh),
   fCabledSignal(stream.GetCabledSignal()),
   fCurrScCh(stream.fCurrScCh),
-  fIsEventGood(stream.fIsEventGood),
+  fIsADCEventGood(stream.fIsADCEventGood),
   fIsL0BitSet(stream.fIsL0BitSet),
-  fIsPileUpOff(stream.fIsPileUpOff)
+  fIsPileUpEvent(stream.fIsPileUpEvent)
 
 {
   // Copy constructor
@@ -149,6 +197,8 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
       if(i<32) fScalerMap[i][j] = stream.fMapADC[i][j];
     }
   }
+  
+  for(Int_t k=0; k<4; k++) fCPTInput[k] = stream.fCPTInput[k];
 }
 
 //_____________________________________________________________________________
@@ -299,7 +349,9 @@ Bool_t AliZDCRawStream::Next()
   fIsADCHeader = kFALSE; fIsADCDataWord = kFALSE; fIsADCEOB = kFALSE;
   fIsUnderflow = kFALSE; fIsOverflow = kFALSE; 
   fSector[0] = fSector[1] = -1;
-  
+  fTrigCountNWords = 9; fTrigHistNWords = 2;
+  for(Int_t kl=0; kl<4; kl++) fCPTInput[kl] = 0;
+
   fEvType = fRawReader->GetType();
   if(fPosition==0){
     //if(fEvType==7 || fEvType ==8){ //Physics or calibration event
@@ -532,7 +584,7 @@ Bool_t AliZDCRawStream::Next()
   else if(fPosition==fDeadfaceOffset){
     if(fBuffer != 0xdeadface){
       AliWarning(" NO deadface after DARC data");
-      fRawReader->AddMajorErrorLog(kDARCError);  
+      fRawReader->AddMajorErrorLog(kDARCError); 
     }
     else{
       fPosition++;
@@ -551,6 +603,8 @@ Bool_t AliZDCRawStream::Next()
     if(fBuffer != 0xdeadbeef){
       AliWarning(" NO deadbeef after DARC global data");
       fRawReader->AddMajorErrorLog(kDARCError);  
+      fPosition++;
+      return kFALSE;
     }
     else{
       fPosition++;
@@ -575,7 +629,7 @@ Bool_t AliZDCRawStream::Next()
         fRawReader->AddMajorErrorLog(kZDCDataError);
       }
       else if((fBuffer & 0x07000000) == 0x06000001){ // Corrupted event!!!
-        fIsEventGood = kFALSE;
+        fIsADCEventGood = kFALSE;
       }
     }
     
@@ -585,7 +639,7 @@ Bool_t AliZDCRawStream::Next()
       if((fBuffer & 0x07000000) != 0x02000000){
         AliWarning("ZDC ADC -> The not valid datum is NOT followed by an ADC header!");
         fRawReader->AddMajorErrorLog(kZDCDataError);
-        fIsEventGood = kFALSE;
+        fIsADCEventGood = kFALSE;
       }
     }
      
@@ -674,7 +728,7 @@ Bool_t AliZDCRawStream::Next()
     	//printf("  AliZDCRawStream -> EOB --------------------------\n");
       }
     }//ADC module
-    // ************************************ VME MODULES ************************************
+    // ********************************* VME SCALER HEADER *********************************
     else if(fADCModule == kScalerGeo){
       if(fBuffer & 0x04000000 && fIsScHeaderRead==kFALSE){ // *** Scaler header
         fScGeo = (fBuffer & 0xf8000000)>>27;	   
@@ -691,14 +745,64 @@ Bool_t AliZDCRawStream::Next()
         fIsScEventGood = kFALSE;
       }
     }
+    // *********************************** PATTERN UNIT ***********************************
     else if(fADCModule == kPUGeo){
       // still to be implemented!!! Not yet in data!!!
+      fDetPattern = (fBuffer & 0x0000003f);
     }
+    // ******************************** TRIGGER CARD COUNTS ********************************
     else if(fADCModule == kTrigScales){
+      if(fIsTrig1stWordRead == kFALSE){
+        fTrigCountStart = fPosition;
+	fMBTrigInput = fBuffer;
+	fIsTrig1stWordRead = kTRUE;
+      }
+      else{
+        if(fPosition == fTrigCountStart+1)      fCentralTrigInput = fBuffer;     	      
+	else if(fPosition == fTrigCountStart+2) fSCentralTrigInput = fBuffer;
+	else if(fPosition == fTrigCountStart+3) fEMDTrigInput = fBuffer; 
+	else if(fPosition == fTrigCountStart+4) fL0Received = fBuffer;
+	else if(fPosition == fTrigCountStart+5) fMBtrig2CTP = fBuffer;     
+	else if(fPosition == fTrigCountStart+6) fCentralTrig2CTP = fBuffer;  
+	else if(fPosition == fTrigCountStart+7) fSCentralTrig2CTP = fBuffer; 
+	else if(fPosition == fTrigCountStart+8){
+	  fEMDTrig2CTP = fBuffer;	
+	  fIsTrig1stWordRead = kFALSE;
+	}
+      }
       
     }
+    // ********************************** TRIGGER HISTORY **********************************
     else if(fADCModule == kTrigHistory){
+      if(fIsHist1stWordRead == kFALSE){
+        fIsHist1stWordRead = kTRUE;
+	fPileUpBit1stWord = (fBuffer & 0x80000000) >> 31;
+	fL0Bit1stWord = (fBuffer & 0x40000000) >> 30;        
+	fCentralTrigHist = (fBuffer & 0x3fff8000) >> 14; 
+	fMBTrigHist =  (fBuffer & 0x00007fff);        
+	//
+	fCPTInput[0] = (fBuffer & 0x00000080) >> 6;  // MB bit
+	fCPTInput[1] = (fBuffer & 0x00400000) >> 21; // CENTRAL bit
+      }
+      else{
+	fPileUpBit2ndWord = (fBuffer & 0x80000000) >> 31;
+	fL0Bit2ndWord = (fBuffer & 0x40000000) >> 30;        
+	fSCentralTrigHist = (fBuffer & 0x3fff8000) >> 14; 
+	fEMDTrigHist =  (fBuffer & 0x00007fff);          
+	//
+	fCPTInput[2] = (fBuffer & 0x00000080) >> 6;  // SEMICENTRAL bit
+	fCPTInput[3] = (fBuffer & 0x00400000) >> 21; // EMD bit
+	//
+	// Checking if the event is good
+	// (1) both history word pile up bits must be = 0
+	if(fPileUpBit1stWord==0 && fPileUpBit2ndWord==0) fIsPileUpEvent = kFALSE;
+	else fIsPileUpEvent = kTRUE;
+	// (2) both history word L0 bits must be = 1
+	if(fL0Bit1stWord==1 && fL0Bit2ndWord==1) fIsL0BitSet = kTRUE;
+	else fIsL0BitSet = kFALSE;
+      }
     } 
+    // ********************************** VME SCALER DATA **********************************
     //  Reading VME scaler data 
     if(fIsScHeaderRead && fPosition>=fScStartCounter+1){ // *** Scaler word
       fADCModule = fScGeo;

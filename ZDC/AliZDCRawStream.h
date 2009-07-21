@@ -74,15 +74,27 @@ class AliZDCRawStream: public TObject {
     Bool_t IsUnderflow()     const {return fIsUnderflow;}
     Bool_t IsOverflow()      const {return fIsOverflow;}
     
-    UInt_t GetScGeo() const {return fScGeo;}	    
-    UInt_t GetScNWords() const {return fScNWords;}	    
+    UInt_t GetScGeo()           const {return fScGeo;}	    
+    UInt_t GetScNWords()        const {return fScNWords;}	    
     UInt_t GetScTriggerSource() const {return fScTriggerSource;}	    
-    UInt_t GetTriggerNumber() const {return fScTriggerNumber;}
-    UInt_t GetTriggerCount() const {return fScEvCounter;}
-
-    Bool_t IsEventGood() const {return fIsEventGood;} 
-    Bool_t IsL0BitSet() const {return fIsL0BitSet;}  
-    Bool_t IsPileUpOff() const {return fIsPileUpOff;} 
+    UInt_t GetTriggerNumber()   const {return fScTriggerNumber;}
+    UInt_t GetTriggerCount()    const {return fScEvCounter;}
+    
+    UInt_t GetDetectorPattern() const {return fDetPattern;}
+    
+    Int_t  GetTriggerInput2CTP() const {return *fCPTInput;}
+    Bool_t IsCPTInputMBTrigger() 
+    	{if(fCPTInput[0]==1) return kTRUE; else return kFALSE;}
+    Bool_t IsCPTInputCentralTrigger()
+    	{if(fCPTInput[1]==1) return kTRUE; else return kFALSE;}
+    Bool_t IsCPTInputSemiCentralTrigger()
+    	{if(fCPTInput[2]==1) return kTRUE; else return kFALSE;}
+    Bool_t IsCPTInputEMDTrigger()
+    	{if(fCPTInput[3]==1) return kTRUE; else return kFALSE;}
+    
+    Bool_t IsEventGood()   const {return fIsADCEventGood;} 
+    Bool_t IsL0BitSet()    const {return fIsL0BitSet;}  
+    Bool_t IsPileUpEvent() const {return fIsPileUpEvent;} 
     
     void SetNChannelsOn(Int_t val) {fNChannelsOn = val;}
     void SetSector(Int_t i, Int_t val) {fSector[i] = val;}
@@ -177,6 +189,36 @@ class AliZDCRawStream: public TObject {
     Int_t  fScStartCounter;  // position in the buffer where scaler data begins
     UInt_t fScEvCounter;     // event counter
     
+    // Pattern Unit
+    UInt_t fDetPattern;  // word from the pattern unit
+    
+    // Trigger card
+    // (1) trigger counts
+    Int_t  fTrigCountNWords;  // no. of words to read from trigger card scalers
+    Bool_t fIsTrig1stWordRead;// Trigger card scalers - 1st word read
+    Int_t  fTrigCountStart;   // Trigger card scalers - counter
+    Int_t  fMBTrigInput;      // MB          trigger input to trigger card
+    Int_t  fCentralTrigInput; // CENTRAL     trigger input to trigger card
+    Int_t  fSCentralTrigInput;// SEMICENTRAL trigger input to trigger card
+    Int_t  fEMDTrigInput;     // EMD	     trigger input to trigger card
+    Int_t  fL0Received;       // L0 received by the trigger card
+    Int_t  fMBtrig2CTP;       // trigger input to the CTP for MB
+    Int_t  fCentralTrig2CTP;  // trigger input to the CTP for CENTRAL
+    Int_t  fSCentralTrig2CTP; // trigger input to the CTP for SEMICENTRAL
+    Int_t  fEMDTrig2CTP;      // trigger input to the CTP for EMD
+    // (2) trigger history
+    Int_t  fTrigHistNWords;   // no. of words to read from trigger history data
+    Bool_t fIsHist1stWordRead;// Trigger history - 1st word read
+    Int_t  fPileUpBit1stWord; // Pile up bit from 1st word
+    Int_t  fL0Bit1stWord;     // L0 bit from 1st word
+    UInt_t fCentralTrigHist;  // history for CENTRAL trigger
+    UInt_t fMBTrigHist;       // history for CENTRAL trigger
+    Int_t  fPileUpBit2ndWord; // Pile up bit from 2nd word
+    Int_t  fL0Bit2ndWord;     // L0 bit from 2nd word
+    UInt_t fSCentralTrigHist; // history for SEMICENTRAL trigger
+    UInt_t fEMDTrigHist;      // history for EMD trigger
+    Int_t  fCPTInput[4];      // Trigger sent to the CTP
+    
     // Channel mapping 
     Int_t fNChannelsOn;      // No. of signals/ADC ch. used
     Int_t fCurrentCh;	     // current mapped ADC ch.
@@ -186,11 +228,11 @@ class AliZDCRawStream: public TObject {
     Int_t fScalerMap[32][5]; // Scaler map {Scaler mod., ch., signal, det., sec.}
     
     // Checks over raw data event quality
-    Bool_t fIsEventGood; // true if not valid datum not corrupted
-    Bool_t fIsL0BitSet;  // true if L0 bit in history words = 1 
-    Bool_t fIsPileUpOff; // true if pile up bits in history words = 0
+    Bool_t fIsADCEventGood; // true if not valid datum not corrupted
+    Bool_t fIsL0BitSet;    // true if L0 bit in history words = 1 
+    Bool_t fIsPileUpEvent; // true if pile up bits in history words = 0
     
-    ClassDef(AliZDCRawStream, 11)    // class for reading ZDC raw data
+    ClassDef(AliZDCRawStream, 12)    // class for reading ZDC raw data
 };
 
 #endif
