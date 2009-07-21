@@ -56,4 +56,3 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
 };
 
 #endif
-
