@@ -9,6 +9,7 @@
 // Author: A.Dainese, andrea.dainese@lnl.infn.it
 //***********************************************************
 
+#include <TRef.h>
 #include "AliAODRecoDecay.h"
 
 class AliAODRecoDecayHF : public AliAODRecoDecay {
@@ -31,39 +32,42 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
    
 
   // primary vertex
-  void SetOwnPrimaryVtx(const AliAODVertex *vtx2) { UnsetOwnPrimaryVtx(); fOwnPrimaryVtx = new AliAODVertex(*vtx2);}
+  void SetPrimaryVtxRef(TObject *vtx) { fEventPrimaryVtx = vtx; }
+  AliAODVertex* GetPrimaryVtxRef() const { return (AliAODVertex*)(fEventPrimaryVtx.GetObject()); }
+  void SetOwnPrimaryVtx(const AliAODVertex *vtx) { UnsetOwnPrimaryVtx(); fOwnPrimaryVtx = new AliAODVertex(*vtx);}
   void CheckOwnPrimaryVtx() const 
     {if(!fOwnPrimaryVtx) printf("fOwnPrimaryVtx not set"); return;}
   AliAODVertex* GetOwnPrimaryVtx() const {return fOwnPrimaryVtx;}
   void GetOwnPrimaryVtx(Double_t vtx[3]) const 
     {CheckOwnPrimaryVtx();fOwnPrimaryVtx->GetPosition(vtx);}
   void UnsetOwnPrimaryVtx() {if(fOwnPrimaryVtx) {delete fOwnPrimaryVtx; fOwnPrimaryVtx=0;} return;}
+  AliAODVertex* GetPrimaryVtx() const { return (GetOwnPrimaryVtx() ? GetOwnPrimaryVtx() : GetPrimaryVtxRef()); }
 
   // kinematics & topology
   Double_t DecayLength() const 
-    {CheckOwnPrimaryVtx();return AliAODRecoDecay::DecayLength(fOwnPrimaryVtx);}
+    { return AliAODRecoDecay::DecayLength(GetPrimaryVtx());}
   Double_t DecayLengthError() const 
-    {CheckOwnPrimaryVtx();return AliAODRecoDecay::DecayLengthError(fOwnPrimaryVtx);}
+    { return AliAODRecoDecay::DecayLengthError(GetPrimaryVtx());}
   Double_t NormalizedDecayLength() const 
-    {CheckOwnPrimaryVtx();return AliAODRecoDecay::NormalizedDecayLength(fOwnPrimaryVtx);}
+    { return AliAODRecoDecay::NormalizedDecayLength(GetPrimaryVtx());}
   Double_t DecayLengthXY() const 
-    {CheckOwnPrimaryVtx();return AliAODRecoDecay::DecayLengthXY(fOwnPrimaryVtx);}
+    { return AliAODRecoDecay::DecayLengthXY(GetPrimaryVtx());}
   Double_t DecayLengthXYError() const 
-    {CheckOwnPrimaryVtx();return AliAODRecoDecay::DecayLengthXYError(fOwnPrimaryVtx);}
+    { return AliAODRecoDecay::DecayLengthXYError(GetPrimaryVtx());}
   Double_t NormalizedDecayLengthXY() const 
-    {CheckOwnPrimaryVtx();return AliAODRecoDecay::NormalizedDecayLengthXY(fOwnPrimaryVtx);}
+    { return AliAODRecoDecay::NormalizedDecayLengthXY(GetPrimaryVtx());}
   Double_t Ct(UInt_t pdg) const 
-    {CheckOwnPrimaryVtx();return AliAODRecoDecay::Ct(pdg,fOwnPrimaryVtx);}
+    { return AliAODRecoDecay::Ct(pdg,GetPrimaryVtx());}
   Double_t CosPointingAngle() const 
-    {CheckOwnPrimaryVtx();return AliAODRecoDecay::CosPointingAngle(fOwnPrimaryVtx);}
+    { return AliAODRecoDecay::CosPointingAngle(GetPrimaryVtx());}
   Double_t CosPointingAngleXY() const 
-    {CheckOwnPrimaryVtx();return AliAODRecoDecay::CosPointingAngleXY(fOwnPrimaryVtx);}
+    { return AliAODRecoDecay::CosPointingAngleXY(GetPrimaryVtx());}
   Double_t ImpParXY() const 
-    {CheckOwnPrimaryVtx();return AliAODRecoDecay::ImpParXY(fOwnPrimaryVtx);}
+    { return AliAODRecoDecay::ImpParXY(GetPrimaryVtx());}
   Double_t QtProngFlightLine(Int_t ip) const 
-    {CheckOwnPrimaryVtx();return AliAODRecoDecay::QtProngFlightLine(ip,fOwnPrimaryVtx);}
+    { return AliAODRecoDecay::QtProngFlightLine(ip,GetPrimaryVtx());}
   Double_t QlProngFlightLine(Int_t ip) const 
-    {CheckOwnPrimaryVtx();return AliAODRecoDecay::QlProngFlightLine(ip,fOwnPrimaryVtx);}
+    { return AliAODRecoDecay::QlProngFlightLine(ip,GetPrimaryVtx());}
 
   // prongs
   Double_t Getd0errProng(Int_t ip) const {return fd0err[ip];}
@@ -78,10 +82,11 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
  protected:
 
   AliAODVertex *fOwnPrimaryVtx; // primary vertex for this candidate
+  TRef          fEventPrimaryVtx; // ref to primary vertex of the event
   Double_t     *fd0err;  //[fNProngs] error on prongs rphi impact param [cm]
   UShort_t     *fProngID;  //[fNProngs] track ID of daughters
 
-  ClassDef(AliAODRecoDecayHF,2)  // base class for AOD reconstructed 
+  ClassDef(AliAODRecoDecayHF,3)  // base class for AOD reconstructed 
                                  // heavy-flavour decays
 };
 

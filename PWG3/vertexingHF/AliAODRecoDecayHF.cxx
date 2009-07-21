@@ -31,6 +31,7 @@ ClassImp(AliAODRecoDecayHF)
 AliAODRecoDecayHF::AliAODRecoDecayHF() :
   AliAODRecoDecay(),
   fOwnPrimaryVtx(0x0),
+  fEventPrimaryVtx(),
   fd0err(0x0), 
   fProngID(0x0) 
 {
@@ -44,6 +45,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
 				     Double_t *d0,Double_t *d0err) :
   AliAODRecoDecay(vtx2,nprongs,charge,px,py,pz,d0),
   fOwnPrimaryVtx(0x0),
+  fEventPrimaryVtx(),
   fd0err(0x0),
   fProngID(0x0) 
 {
@@ -58,6 +60,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
 				     Double_t *d0,Double_t *d0err) :
   AliAODRecoDecay(vtx2,nprongs,charge,d0),
   fOwnPrimaryVtx(0x0),
+  fEventPrimaryVtx(),
   fd0err(0x0),
   fProngID(0x0) 
 {
@@ -74,6 +77,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(Double_t vtx1[3],Double_t vtx2[3],
 				     Double_t *d0) :
   AliAODRecoDecay(0x0,nprongs,charge,px,py,pz,d0),
   fOwnPrimaryVtx(0x0),
+  fEventPrimaryVtx(),
   fd0err(0x0),
   fProngID(0x0) 
 {
@@ -91,6 +95,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(Double_t vtx1[3],Double_t vtx2[3],
 AliAODRecoDecayHF::AliAODRecoDecayHF(const AliAODRecoDecayHF &source) :
   AliAODRecoDecay(source),
   fOwnPrimaryVtx(0x0),
+  fEventPrimaryVtx(source.fEventPrimaryVtx),
   fd0err(0x0),
   fProngID(0x0)
 {
@@ -117,6 +122,8 @@ AliAODRecoDecayHF &AliAODRecoDecayHF::operator=(const AliAODRecoDecayHF &source)
   if(&source == this) return *this;
 
   AliAODRecoDecay::operator=(source);
+
+  fEventPrimaryVtx = source.fEventPrimaryVtx;
 
   if(source.GetOwnPrimaryVtx()) fOwnPrimaryVtx = new AliAODVertex(*(source.GetOwnPrimaryVtx()));
 
