@@ -113,11 +113,16 @@ void AliZDCReconstructor::Init()
     }
     
     TString beamType = grpData->GetBeamType();
-    if(beamType==AliGRPObject::GetInvalidString()){
-      AliWarning("GRP/GRP/Data entry:  missing value for the beam energy !");
+    // This is a temporary solution to allow reconstruction in tests without beam
+    if(((beamType.CompareTo("UNKNOWN"))==0) && ((runType.CompareTo("PHYSICS")) == 0)){
+      fRecoMode=1;
+    }
+    else if(beamType==AliGRPObject::GetInvalidString()){
+      AliWarning("GRP/GRP/Data entry:  missing value for the beam type !");
       AliError("\t ZDC does not reconstruct event 4 UNKNOWN beam type\n");
       return;
     }
+    //
     if(((beamType.CompareTo("pp"))==0) || ((beamType.CompareTo("p-p"))==0)
      ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)) fRecoMode=1;
     else if((beamType.CompareTo("A-A")) == 0){
