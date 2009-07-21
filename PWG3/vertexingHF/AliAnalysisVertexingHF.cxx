@@ -390,16 +390,19 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      rd = new(aodD0toKpiRef[iD0toKpi++])AliAODRecoDecayHF2Prong(*io2Prong);
 	      rd->SetSecondaryVtx(v2Prong);
 	      v2Prong->SetParent(rd);
+	      if(fInputAOD) rd->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
 	    }
 	    if(okJPSI) {
 	      rd = new(aodJPSItoEleRef[iJPSItoEle++])AliAODRecoDecayHF2Prong(*io2Prong);
 	      rd->SetSecondaryVtx(v2Prong);
 	      if(!okD0) v2Prong->SetParent(rd); // it cannot have two mothers ...
+	      if(fInputAOD) rd->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
 	    }
 	  } else { // isLikeSign2Prong
 	    rd = new(aodLikeSign2ProngRef[iLikeSign2Prong++])AliAODRecoDecayHF2Prong(*io2Prong);
 	    rd->SetSecondaryVtx(v2Prong);
 	    v2Prong->SetParent(rd);
+	    if(fInputAOD) rd->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
 	  }
 	}
 	// D* candidates
@@ -466,6 +469,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	        rd = new(aodD0toKpiRef[iD0toKpi++])AliAODRecoDecayHF2Prong(*io2Prong);
 		rd->SetSecondaryVtx(v2Prong);
 		v2Prong->SetParent(rd);
+		if(fInputAOD) rd->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
 		okD0=kTRUE; // this is done to add it only once
 	      }
 	      // add the vertex and the cascade to the AOD
@@ -479,6 +483,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      rc = new(aodDstarRef[iDstar++])AliAODRecoCascadeHF(*ioCascade);
 	      rc->SetSecondaryVtx(vCasc);
 	      vCasc->SetParent(rc);
+	      if(fInputAOD) rc->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
 	    }
 	    twoTrackArrayCasc->Clear();
 	    trackPi=0; 
@@ -571,6 +576,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      rd = new(aodLikeSign3ProngRef[iLikeSign3Prong++])AliAODRecoDecayHF3Prong(*io3Prong);
 	      rd->SetSecondaryVtx(v3Prong);
 	      v3Prong->SetParent(rd);
+	      if(fInputAOD) rd->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
 	    }
 	  }
 	  if(io3Prong) {delete io3Prong; io3Prong=NULL;} 
@@ -633,6 +639,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      rd = new(aodCharm4ProngRef[i4Prong++])AliAODRecoDecayHF4Prong(*io4Prong);
 	      rd->SetSecondaryVtx(v4Prong);
 	      v4Prong->SetParent(rd);
+	      if(fInputAOD) rd->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
 	    }
 
 	    if(io4Prong) {delete io4Prong; io4Prong=NULL;} 
@@ -717,6 +724,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      rd = new(aodLikeSign3ProngRef[iLikeSign3Prong++])AliAODRecoDecayHF3Prong(*io3Prong);
 	      rd->SetSecondaryVtx(v3Prong);
 	      v3Prong->SetParent(rd);
+	      if(fInputAOD) rd->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
 	    }
 	  }
 	  if(io3Prong) {delete io3Prong; io3Prong=NULL;} 
