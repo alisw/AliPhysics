@@ -48,12 +48,6 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
 AliAnalysisTaskSE(),
 fOutputtight(0),
 fOutputloose(0), 
-//fNtupleD0Cmp(0),
-/*
-fhistMass(0),
-fhistSgn(0),
-fhistBkg(0),
-*/
 fVHFtight(0),
 fVHFloose(0),
 fNentries(0)
@@ -66,12 +60,6 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name):
 AliAnalysisTaskSE(name),
 fOutputtight(0), 
 fOutputloose(0), 
-//fNtupleD0Cmp(0),
-/*
-fhistMass(0),
-fhistSgn(0),
-fhistBkg(0),
-*/
 fVHFtight(0),
 fVHFloose(0),
 fNentries(0)
@@ -89,24 +77,7 @@ fNentries(0)
 //________________________________________________________________________
 AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
 {
-  // Destructor
-  /*
-  if (fhistMass){
-    delete fhistMass;
-    fhistMass=0;
-  }
-
-  if (fhistSgn){
-    delete fhistSgn;
-    fhistSgn=0;
-  }
-
-  if (fhistBkg){
-    delete fhistBkg;
-    fhistBkg=0;
-  }
-  */
-  if (fOutputtight) {
+   if (fOutputtight) {
     delete fOutputtight;
     fOutputtight = 0;
   }
@@ -122,7 +93,10 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
     delete fVHFloose;
     fVHFloose = 0;
   }
-
+  if (fNentries){
+    delete fNentries;
+    fNentries = 0;
+  }
 }  
 
 //________________________________________________________________________
@@ -172,42 +146,38 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     nameRfl="histRfl_";
     nameRfl+=i+1;
 
-    TH1F* tmpM = new TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",200,1.765,1.965);
-    tmpM->Sumw2();
+    TH1F* tmpMt = new TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",200,1.765,1.965);
+    TH1F *tmpMl=(TH1F*)tmpMt->Clone();
+    tmpMt->Sumw2();
+    tmpMl->Sumw2();
 
-    TH1F* tmpS = new TH1F(nameSgn.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
-    tmpS->Sumw2();
+    TH1F* tmpSt = new TH1F(nameSgn.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
+    TH1F *tmpSl=(TH1F*)tmpSt->Clone();
+    tmpSt->Sumw2();
+    tmpSl->Sumw2();
 
-    TH1F* tmpB = new TH1F(nameBkg.Data(), "Background invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
-    tmpB->Sumw2();
+    TH1F* tmpBt = new TH1F(nameBkg.Data(), "Background invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
+    TH1F *tmpBl=(TH1F*)tmpBt->Clone();
+    tmpBt->Sumw2();
+    tmpBl->Sumw2();
 
     //Reflection: histo filled with D0 which pass the cut (also) as D0bar and with D0bar which pass (also) the cut as D0
-    TH1F* tmpR = new TH1F(nameRfl.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
-    tmpR->Sumw2();
-
-  /*
-    tmpM->SetName(nameMass);
-    tmpS->SetName(nameSgn);
-    tmpB->SetName(nameBkg);
-    tmpR->SetName(nameRfl);
-  */
+    TH1F* tmpRt = new TH1F(nameRfl.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries",200,1.765,1.965);
+    TH1F *tmpRl=(TH1F*)tmpRt->Clone();
+    tmpRt->Sumw2();
+    tmpRl->Sumw2();
   //  printf("Created histograms %s\t%s\t%s\t%s\n",tmpM->GetName(),tmpS->GetName(),tmpB->GetName(),tmpR->GetName());
 
-    fOutputtight->Add(tmpM);
-    fOutputtight->Add(tmpS);
-    fOutputtight->Add(tmpB);
-    fOutputtight->Add(tmpR);
+    fOutputtight->Add(tmpMt);
+    fOutputtight->Add(tmpSt);
+    fOutputtight->Add(tmpBt);
+    fOutputtight->Add(tmpRt);
 
-    fOutputloose->Add(tmpM);
-    fOutputloose->Add(tmpS);
-    fOutputloose->Add(tmpB);
-    fOutputloose->Add(tmpR);
+    fOutputloose->Add(tmpMl);
+    fOutputloose->Add(tmpSl);
+    fOutputloose->Add(tmpBl);
+    fOutputloose->Add(tmpRl);
     
-//   delete tmpM;
-//   delete tmpS;
-//   delete tmpB;
-//   delete tmpR;
-
   }
 
 
@@ -272,14 +242,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       unsetvtx=kTRUE;
     }
     
-    //  cout<<"Cuts applied: ";
-    //     Double_t *cutsapplied=(Double_t*)fVHF->GetD0toKpiCuts();
-    //     for (Int_t i=0;i<9;i++){
-    //       printf(cutsapplied[i]\t);
-    //     }
-    //    cout<<endl;
-
-    //cuts order
+     //cuts order
 //       printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
 //     printf("    dca    [cm]  < %f\n",fD0toKpiCuts[1]);
 //     printf("    cosThetaStar     < %f\n",fD0toKpiCuts[2]);
@@ -304,36 +267,35 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       //printf("I'm in the bin %d\n",ptbin);
       
     }
-    else {
-      if(pt>1. && pt<=3.) {
-	ptbin=2;  
-	fVHFtight->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0003,0.9);
-	fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
-	//printf("I'm in the bin %d\n",ptbin);
-	
-      }
-       if(pt>3. && pt<=5.){
+    
+    if(pt>1. && pt<=3.) {
+      ptbin=2;  
+      fVHFtight->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0003,0.9);
+      fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
+      //printf("I'm in the bin %d\n",ptbin);
+    }
+ 
+    if(pt>3. && pt<=5.){
 	ptbin=3;  
 	fVHFtight->SetD0toKpiCuts(0.7,0.015,0.8,0.7,0.7,0.05,0.05,-0.0002,0.9);
 	fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
 	//printf("I'm in the bin %d\n",ptbin);
-	
-      } else{
-	ptbin=4;
-	fVHFtight->SetD0toKpiCuts(0.7,0.015,0.8,0.7,0.7,0.05,0.05,-0.0002,0.95);
-	fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
-      }//if(pt>5)
     }
+    if(pt>5.){
+      ptbin=4;
+      fVHFtight->SetD0toKpiCuts(0.7,0.015,0.8,0.7,0.7,0.05,0.05,-0.0002,0.95);
+      fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
+    }//if(pt>5)
+  
     //printf("I'm in the bin %d\n",ptbin);
     //old
     //fVHF->SetD0toKpiCuts(0.7,0.03,0.8,0.06,0.06,0.05,0.05,-0.0002,0.6); //2.p-p vertex reconstructed    
 
-
     FillHists(ptbin,d,mcArray,fVHFtight,fOutputtight);
     FillHists(ptbin,d,mcArray,fVHFloose,fOutputloose);
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
- 
   }
+  
      
   
    
@@ -357,8 +319,7 @@ void AliAnalysisTaskSED0Mass::FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *pa
     //printf("labD0 %d",labD0);
     
     TString fillthis="";
-    TString fillrfl= "";
-
+    
     if (okD0==1) {
       fillthis="histMass_";
       fillthis+=ptbin;
@@ -370,16 +331,16 @@ void AliAnalysisTaskSED0Mass::FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *pa
 	AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(labD0);
 	Int_t pdgD0 = partD0->GetPdgCode();
 	//cout<<"pdg = "<<pdgD0<<endl;
-	fillthis="histSgn_";
-	fillrfl="histRfl_";
-	fillthis+=ptbin;
-	fillrfl+=ptbin;
 	if (pdgD0==421){ //D0
 	  //cout<<"Fill S with D0"<<endl;
+	  fillthis="histSgn_";
+	  fillthis+=ptbin;
 	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
 
 	} else{ //it was a D0bar
-	  ((TH1F*)(listout->FindObject(fillrfl)))->Fill(invmassD0);
+	  fillthis="histRfl_";
+	  fillthis+=ptbin;
+	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
 	}
       } else {//background
 	fillthis="histBkg_";
@@ -403,8 +364,9 @@ void AliAnalysisTaskSED0Mass::FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *pa
 	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
 	  
 	} else{
-	  ((TH1F*)(listout->FindObject(fillrfl)))->Fill(invmassD0bar);
-	  
+	  fillthis="histRfl_";
+	  fillthis+=ptbin;
+	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
 	}
       } else {//background
 	fillthis="histBkg_";
