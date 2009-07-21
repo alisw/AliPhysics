@@ -182,7 +182,9 @@ int main(int argc, char **argv) {
 	  cellX    = stream.GetCellX();
 	  cellZ    = stream.GetCellZ();
 	  caloFlag = stream.GetCaloFlag();  // 0=LG, 1=HG, 2=TRU
-
+	  
+	  if(caloFlag!=0 && caloFlag!=1) continue; //TRU data!
+	  
 	  // In case of oscillating signals with ZS, 
 	  //a channel can have several bunches.
 	  
@@ -201,11 +203,15 @@ int main(int argc, char **argv) {
 	  e[cellX][cellZ][caloFlag] = fitter.GetEnergy();
 	  t[cellX][cellZ][caloFlag] = fitter.GetTime();
 	}
-
+	
+	if(stream.GetModule()<0 || stream.GetModule()>4) continue;
+	
 	if(dAs[stream.GetModule()])
 	  dAs[stream.GetModule()]->FillHistograms(e,t);
-	else
+	else {
 	  dAs[stream.GetModule()] = new AliPHOSRcuDA1(stream.GetModule(),-1);
+	  dAs[stream.GetModule()]->FillHistograms(e,t);
+	}
 	
 	for(Int_t iX=0; iX<64; iX++) {
 	  for(Int_t iZ=0; iZ<56; iZ++) {

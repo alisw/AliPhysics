@@ -119,7 +119,16 @@ int main(int argc, char **argv) {
 
   Float_t e[64][56][2];
   Float_t t[64][56][2];
-
+  
+  for(Int_t iX=0; iX<64; iX++) {
+    for(Int_t iZ=0; iZ<56; iZ++) {
+      for(Int_t iGain=0; iGain<2; iGain++) {
+        e[iX][iZ][iGain] = 0.;
+        t[iX][iZ][iGain] = 0.;
+      }
+    }
+  }
+  
   Int_t cellX    = -1;
   Int_t cellZ    = -1;
   Int_t nBunches =  0;
@@ -181,6 +190,8 @@ int main(int argc, char **argv) {
 	  cellZ    = stream.GetCellZ();
 	  caloFlag = stream.GetCaloFlag();  // 0=LG, 1=HG, 2=TRU
 	  
+	  if(caloFlag!=0 && caloFlag!=1) continue; //TRU data!
+	  
 	  // In case of oscillating signals with ZS, a channel can have several bunches
 	  nBunches = 0;
 	  while (stream.NextBunch()) {
@@ -193,7 +204,6 @@ int main(int argc, char **argv) {
 	  } // End of NextBunch()
 	  
 	  if(nBunches>1) continue;
-// 	  if (nBunches>1 || caloFlag!=0 || caloFlag!=1 || fitter.GetSignalQuality()>1) continue;
 	  
 	  e[cellX][cellZ][caloFlag] = fitter.GetEnergy();
 	  t[cellX][cellZ][caloFlag] = fitter.GetTime();
@@ -202,10 +212,14 @@ int main(int argc, char **argv) {
 	    nFired++;
 	}
 	
+	if(stream.GetModule()<0 || stream.GetModule()>4) continue;
+	
 	if(dAs[stream.GetModule()])
 	  dAs[stream.GetModule()]->FillHistograms(e,t);
-	else
+	else {
 	  dAs[stream.GetModule()] = new AliPHOSRcuDA1(stream.GetModule(),-1,0);
+	  dAs[stream.GetModule()]->FillHistograms(e,t);
+	} 
 	
 	for(Int_t iX=0; iX<64; iX++) {
 	  for(Int_t iZ=0; iZ<56; iZ++) {
