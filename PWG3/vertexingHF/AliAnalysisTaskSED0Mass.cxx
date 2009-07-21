@@ -55,7 +55,8 @@ fhistSgn(0),
 fhistBkg(0),
 */
 fVHFtight(0),
-fVHFloose(0)
+fVHFloose(0),
+fNentries(0)
 {
   // Default constructor
 }
@@ -72,7 +73,8 @@ fhistSgn(0),
 fhistBkg(0),
 */
 fVHFtight(0),
-fVHFloose(0)
+fVHFloose(0),
+fNentries(0)
 {
   // Default constructor
 
@@ -156,7 +158,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fOutputloose->SetOwner();
   fOutputloose->SetName("listloose");
 
-  const Int_t nhist=3;
+  const Int_t nhist=4;
 
   TString nameMass=" ", nameSgn=" ", nameBkg=" ", nameRfl=" ";
 
@@ -295,26 +297,32 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     //cout<<"P_t = "<<pt<<endl;
     if (pt>0. && pt<=1.) {
       ptbin=1;
-      fVHFtight->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.7);
-      fVHFloose->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,1,1,-0.00015,0.5);
+      fVHFtight->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0003,0.7);
+      fVHFloose->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
+//       fVHFtight->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.7);
+//       fVHFloose->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,1,1,-0.00015,0.5);
       //printf("I'm in the bin %d\n",ptbin);
       
     }
     else {
       if(pt>1. && pt<=3.) {
 	ptbin=2;  
-	fVHFtight->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0002,0.9);
-	fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00015,0.8);
+	fVHFtight->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0003,0.9);
+	fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
 	//printf("I'm in the bin %d\n",ptbin);
 	
       }
-      else {
+       if(pt>3. && pt<=5.){
 	ptbin=3;  
-	fVHFtight->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0001,0.9);
-	fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00005,0.8);
+	fVHFtight->SetD0toKpiCuts(0.7,0.015,0.8,0.7,0.7,0.05,0.05,-0.0002,0.9);
+	fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
 	//printf("I'm in the bin %d\n",ptbin);
 	
-      }//if(pt>3)
+      } else{
+	ptbin=4;
+	fVHFtight->SetD0toKpiCuts(0.7,0.015,0.8,0.7,0.7,0.05,0.05,-0.0002,0.95);
+	fVHFloose->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
+      }//if(pt>5)
     }
     //printf("I'm in the bin %d\n",ptbin);
     //old
@@ -427,11 +435,7 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
     return;
   }
 
-  /*  
-  fhistMass = dynamic_cast<TClonesArray*>(fOutput->FindObject("fhistMass"));
-  fhistSgn = dynamic_cast<TClonesArray*>(fOutput->FindObject("fhistSgn"));
-  fhistBkg = dynamic_cast<TClonesArray*>(fOutput->FindObject("fhistBkg"));
-  */
+
   return;
 }
 
