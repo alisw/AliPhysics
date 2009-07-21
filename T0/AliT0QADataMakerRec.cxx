@@ -117,13 +117,13 @@ void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
       for(Int_t ik=0; ik<24; ik++)
 	{  
 	  effic=0;
-	  effic = Float_t(feffC[ik])/Float_t(fnEventCal);
+	  if ( fnEventCal>0) effic = Float_t(feffC[ik])/Float_t(fnEventCal);
 	  GetRawsData(205)->SetBinContent(ik+1,effic) ;
 	  effic=0;
-	  effic = Float_t(feffA[ik])/Float_t(fnEventCal);
+	  if ( fnEventCal>0) effic = Float_t(feffA[ik])/Float_t(fnEventCal);
 	  GetRawsData(206)->SetBinContent(ik+1,effic );
 	  effic=0;
-	  effic = Float_t(feffqtc[ik])/Float_t(fnEventCal);
+	  if ( fnEventCal>0) effic = Float_t(feffqtc[ik])/Float_t(fnEventCal);
 	  GetRawsData(207)->SetBinContent(ik+1, effic);
 	}
 
