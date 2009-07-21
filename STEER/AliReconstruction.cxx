@@ -1635,6 +1635,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (reconstructor && fRecoParam.GetDetRecoParamArray(iDet)) {
         const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
         reconstructor->SetRecoParam(par);
+	reconstructor->SetEventInfo(&fEventInfo);
         if (fRunQA) {
           AliQAManager::QAManager()->SetRecoParam(iDet, par) ; 
           AliQAManager::QAManager()->SetEventSpecie(AliRecoParam::Convert(par->GetEventSpecie())) ;
@@ -1913,8 +1914,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   
     fEventInfo.Reset();
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
-      if (fReconstructor[iDet])
+      if (fReconstructor[iDet]) {
 	fReconstructor[iDet]->SetRecoParam(NULL);
+	fReconstructor[iDet]->SetEventInfo(NULL);
+      }
     }
 	
   if (fRunQA || fRunGlobalQA) 
@@ -2740,6 +2743,7 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
     if (fRecoParam.GetDetRecoParamArray(iDet) && !AliReconstructor::GetRecoParam(iDet)) {
       const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
       fReconstructor[iDet]->SetRecoParam(par);
+      fReconstructor[iDet]->SetRunInfo(fRunInfo);
     }
     return fReconstructor[iDet];
   }
@@ -2821,6 +2825,7 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
   if (fRecoParam.GetDetRecoParamArray(iDet) && !AliReconstructor::GetRecoParam(iDet)) {
     const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
     reconstructor->SetRecoParam(par);
+    reconstructor->SetRunInfo(fRunInfo);
   }
   return reconstructor;
 }

@@ -20,12 +20,14 @@ class AliVertexer;
 class AliTracker;
 class AliESDEvent;
 class AliDetectorRecoParam;
+class AliRunInfo;
+class AliEventInfo;
 
 #include "AliReconstruction.h"
 
 class AliReconstructor: public TObject {
 public:
-  AliReconstructor(): TObject(), fOption() {};
+  AliReconstructor(): TObject(), fOption(), fRunInfo(0x0), fEventInfo(0x0) {};
   virtual ~AliReconstructor() {};
 
   virtual void         Init() {};
@@ -53,12 +55,19 @@ public:
   void                 SetOption(Option_t* option) {fOption = option;};
   virtual Option_t*    GetOption() const {return fOption.Data();};
 
+  void                 SetRunInfo(AliRunInfo *runInfo) {fRunInfo = runInfo;}
+  const AliRunInfo*    GetRunInfo() const {return fRunInfo;}
+  void                 SetEventInfo(AliEventInfo *evInfo) {fEventInfo = evInfo;}
+  const AliEventInfo*  GetEventInfo() const {return fEventInfo;}
+
   void                               SetRecoParam(const AliDetectorRecoParam *par);
   static const AliDetectorRecoParam* GetRecoParam(Int_t iDet);
 
 private:
   TString                            fOption;                                       //! option for reconstruction
   static const AliDetectorRecoParam* fgRecoParam[AliReconstruction::kNDetectors]; //! event reconstruction parameters for all detectors
+  AliRunInfo*                        fRunInfo;                                    //! pointer to the run info object
+  AliEventInfo*                      fEventInfo;                                  //! pointer to the event info object
 
   ClassDef(AliReconstructor, 0)   // base class for reconstruction algorithms
 };
