@@ -30,6 +30,7 @@
 // - chi2 / cluster in the ITS
 // - chi2 / cluster in the TPC
 // - chi2 / tracklet in the TRD
+// - number of clusters in the TPC used for dEdx calculation
 // - covariance matrix diagonal elements
 // - track status (cf AliESDtrack.h)
 //
@@ -48,10 +49,11 @@
 
 #include "AliCFCutBase.h"
 
-class TH2F ;
-class TH1F ;
+class TH2F;
+class TH1F;
 class TBits;
-class AliESDtrack ;
+class AliESDtrack;
+class AliESDtrackCuts;
 
 class AliCFTrackQualityCuts : public AliCFCutBase
 {
@@ -76,6 +78,7 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   void SetMaxChi2PerClusterTPC(Double_t chi=1.e+09)	{fMaxChi2PerClusterTPC = chi;}
   void SetMaxChi2PerClusterITS(Double_t chi=1.e+09)	{fMaxChi2PerClusterITS = chi;}
   void SetMaxChi2PerTrackletTRD(Double_t chi=1.e+09)	{fMaxChi2PerTrackletTRD = chi;}
+  void SetMinNdEdxClusterTPC(UShort_t cluster=0)	{fMinNdEdxClusterTPC = cluster;}
   void SetMaxCovDiagonalElements(Float_t c1=1.e+09, Float_t c2=1.e+09, Float_t c3=1.e+09, Float_t c4=1.e+09, Float_t c5=1.e+09) 
 {fCovariance11Max=c1;fCovariance22Max=c2;fCovariance33Max=c3;fCovariance44Max=c4;fCovariance55Max=c5;}
   void SetStatus(ULong_t status=0) {fStatus = status ;}
@@ -100,6 +103,7 @@ class AliCFTrackQualityCuts : public AliCFCutBase
     kCutChi2TPC,	// chi2 per cluster in TPC
     kCutChi2ITS,	// chi2 per cluster in ITS
     kCutChi2TRD,	// chi2 per cluster in TRD
+    kCutdEdxClusterTPC,	// number of points used for dEdx
     kCutCovElement11,	// diagonal element 11 of covariance matrix
     kCutCovElement22,	// diagonal element 22 of covariance matrix
     kCutCovElement33,	// diagonal element 33 of covariance matrix
@@ -108,7 +112,7 @@ class AliCFTrackQualityCuts : public AliCFCutBase
     kCutStatus,         // track status
     kNCuts,		// number of single selections
     kNStepQA=2,		// number of QA steps (before/after the cuts)
-    kNHist=14		// number of QA histograms
+    kNHist=15		// number of QA histograms
   };
 
  private:
@@ -117,8 +121,8 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   void Initialise();			// sets everything to 0
   void FillHistograms(TObject* obj, Bool_t b);
 					// Fills histograms before and after cuts
-  Double_t fMinNClusterTPC;		// min number of clusters in TPC
-  Double_t fMinNClusterITS;		// min number of clusters in ITS
+  Int_t fMinNClusterTPC;		// min number of clusters in TPC
+  Int_t fMinNClusterITS;		// min number of clusters in ITS
   Double_t fMinNClusterTRD;		// min number of clusters in TRD
   Double_t fMinFoundClusterTPC;		// min ratio found / findable number of clusters in TPC
   Double_t fMinNTrackletTRD;		// min number of tracklets in TRD
@@ -126,7 +130,7 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   Double_t fMaxChi2PerClusterTPC;	// max chi2 per clusters in TPC
   Double_t fMaxChi2PerClusterITS;	// max chi2 per clusters in ITS
   Double_t fMaxChi2PerTrackletTRD;	// max chi2 per clusters in TRD
-
+  UShort_t fMinNdEdxClusterTPC;		// number of points used for dEdx
   Double_t fCovariance11Max ;		// max covariance matrix element 11
   Double_t fCovariance22Max ;		// max covariance matrix element 22
   Double_t fCovariance33Max ;		// max covariance matrix element 33
@@ -140,6 +144,7 @@ class AliCFTrackQualityCuts : public AliCFCutBase
 
   TH1F* fhQA[kNHist][kNStepQA];		// QA Histograms
   TBits *fBitmap ; 			// stores single selection decisions
+  AliESDtrackCuts *fTrackCuts;		// use some functionality from this class
 
   // QA histogram setters
   Int_t fhNBinsClusterTPC;		// number of bins+1: cluster TPC
@@ -151,6 +156,7 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   Int_t fhNBinsChi2TPC;			// number of bins+1: chi2 per cluster TPC
   Int_t fhNBinsChi2ITS;			// number of bins+1: chi2 per cluster ITS
   Int_t fhNBinsChi2TRD;			// number of bins+1: chi2 per cluster TRD
+  Int_t fhNBinsdEdxClusterTPC;		// number of bins+1: cluster TPC used for dEdx
   Int_t fhNBinsCovariance11;		// number of bins+1: covariance matrix element 11
   Int_t fhNBinsCovariance22;		// number of bins+1: covariance matrix element 22
   Int_t fhNBinsCovariance33;		// number of bins+1: covariance matrix element 33
@@ -166,6 +172,7 @@ class AliCFTrackQualityCuts : public AliCFCutBase
   Double_t *fhBinLimChi2TPC;	//[fhNBinsChi2TPC] bin limits: chi2 per cluster TPC
   Double_t *fhBinLimChi2ITS;	//[fhNBinsChi2ITS] bin limits: chi2 per cluster ITS
   Double_t *fhBinLimChi2TRD;	//[fhNBinsChi2TRD] bin limits: chi2 per cluster TRD
+  Double_t *fhBinLimdEdxClusterTPC;	//[fhNBinsdEdxClusterTPC] bin limits: cluster TPC used for dEdx
   Double_t *fhBinLimCovariance11;//[fhNBinsCovariance11] bin limits: covariance matrix element 11
   Double_t *fhBinLimCovariance22;//[fhNBinsCovariance22] bin limits: covariance matrix element 22
   Double_t *fhBinLimCovariance33;//[fhNBinsCovariance33] bin limits: covariance matrix element 33

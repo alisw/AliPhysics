@@ -32,7 +32,11 @@
 // - accept or not accept daughter tracks of kink decays
 //
 // By default, the distance to 'vertex calculated from tracks' is used.
-// Optionally the TPC (TPC only tracks based) vertex can be used.
+// Optionally the SPD (tracklet based) or TPC (TPC only tracks based) vertex
+// can be used.
+// Note: the distance to the TPC-vertex is already stored in the ESD,
+// the distance to the SPD-vertex has to be re-calculated by propagating each
+// track while executing this cut.
 //
 // The cut values for these cuts are set with the corresponding set functions.
 // All cut classes provided by the correction framework are supposed to be
@@ -52,7 +56,8 @@
 #include <TH2.h>
 #include "AliESDtrackCuts.h"
 class TBits;
-class AliESDtrack ;
+class AliESDtrack;
+class AliESD;
 
 class AliCFTrackIsPrimaryCuts : public AliCFCutBase
 {
@@ -68,7 +73,8 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   // cut value setter
-  void UseTPCvertex(Bool_t b=kFALSE)			{fUseTPCvertex = b;}
+  void UseSPDvertex(Bool_t b=kFALSE);
+  void UseTPCvertex(Bool_t b=kFALSE);
   void SetMinDCAToVertexXY(Float_t dist=0.)             {fMinDCAToVertexXY = dist;}
   void SetMinDCAToVertexZ(Float_t dist=0.)              {fMinDCAToVertexZ = dist;}
   void SetMaxDCAToVertexXY(Float_t dist=1e10)           {fMaxDCAToVertexXY = dist;}
@@ -91,6 +97,7 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   // please use indices from the enumeration below
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins);
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin, Double_t xmax);
+  virtual void SetEvtInfo(TObject* esd) ;
 
   // indeces/counters for single selections
   enum { 
@@ -116,7 +123,8 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   void Initialise();			// sets everything to 0
   void FillHistograms(TObject* obj, Bool_t b);
 					// Fills histograms before and after cuts
-
+  AliESD*  fESD;			// pointer to event, needed for SPD vertex
+  Bool_t   fUseSPDvertex;		// flag: calculate dca to SPD-vertex, off by default
   Bool_t   fUseTPCvertex;		// flag: calculate dca to TPC-vertex, off by default
   Double_t fMinDCAToVertexXY;		// cut value: min distance to main vertex in transverse plane
   Double_t fMinDCAToVertexZ;		// cut value: min longitudinal distance to main vertex

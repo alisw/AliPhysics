@@ -32,7 +32,11 @@
 // - accept or not accept daughter tracks of kink decays
 //
 // By default, the distance to 'vertex calculated from tracks' is used.
-// Optionally the TPC (TPC only tracks based) vertex can be used.
+// Optionally the SPD (tracklet based) or TPC (TPC only tracks based) vertex
+// can be used.
+// Note: the distance to the TPC-vertex is already stored in the ESD,
+// the distance to the SPD-vertex has to be re-calculated by propagating each
+// track while executing this cut.
 //
 // The cut values for these cuts are set with the corresponding set functions.
 // All cut classes provided by the correction framework are supposed to be
@@ -50,8 +54,8 @@
 #include <TBits.h>
 
 #include <AliESDtrack.h>
+#include <AliESD.h>
 #include <AliLog.h>
-#include <AliExternalTrackParam.h>
 #include "AliCFTrackIsPrimaryCuts.h"
 
 ClassImp(AliCFTrackIsPrimaryCuts)
@@ -59,6 +63,8 @@ ClassImp(AliCFTrackIsPrimaryCuts)
 //__________________________________________________________________________________
 AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts() :
   AliCFCutBase(),
+  fESD(0x0),
+  fUseSPDvertex(0),
   fUseTPCvertex(0),
   fMinDCAToVertexXY(0),
   fMinDCAToVertexZ(0),
@@ -103,6 +109,8 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts() :
 //__________________________________________________________________________________
 AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(Char_t* name, Char_t* title) :
   AliCFCutBase(name,title),
+  fESD(0x0),
+  fUseSPDvertex(0),
   fUseTPCvertex(0),
   fMinDCAToVertexXY(0),
   fMinDCAToVertexZ(0),
@@ -147,6 +155,8 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(Char_t* name, Char_t* title) :
 //__________________________________________________________________________________
 AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(const AliCFTrackIsPrimaryCuts& c) :
   AliCFCutBase(c),
+  fESD(c.fESD),
+  fUseSPDvertex(c.fUseSPDvertex),
   fUseTPCvertex(c.fUseTPCvertex),
   fMinDCAToVertexXY(c.fMinDCAToVertexXY),
   fMinDCAToVertexZ(c.fMinDCAToVertexZ),
@@ -196,6 +206,8 @@ AliCFTrackIsPrimaryCuts& AliCFTrackIsPrimaryCuts::operator=(const AliCFTrackIsPr
   //
   if (this != &c) {
     AliCFCutBase::operator=(c) ;
+    fESD = c.fESD;
+    fUseSPDvertex = c.fUseSPDvertex;
     fUseTPCvertex = c.fUseTPCvertex;
     fMinDCAToVertexXY = c.fMinDCAToVertexXY;
     fMinDCAToVertexZ = c.fMinDCAToVertexZ;
@@ -257,6 +269,7 @@ AliCFTrackIsPrimaryCuts::~AliCFTrackIsPrimaryCuts()
     for (Int_t i=0; i<kNHist; i++)
       if(fhQA[i][j]) 		delete fhQA[i][j];
   }
+  if(fESD) 			delete fESD;
   if(fBitmap) 			delete fBitmap;
   if(fhBinLimNSigma) 		delete fhBinLimNSigma;
   if(fhBinLimRequireSigma) 	delete fhBinLimRequireSigma;
@@ -274,6 +287,7 @@ void AliCFTrackIsPrimaryCuts::Initialise()
   //
   // sets everything to zero
   //
+  fUseSPDvertex = 0;
   fUseTPCvertex = 0;
   fMinDCAToVertexXY = 0;
   fMinDCAToVertexZ = 0;
@@ -346,14 +360,49 @@ void AliCFTrackIsPrimaryCuts::Copy(TObject &c) const
   TNamed::Copy(c);
 }
 //__________________________________________________________________________________
+void AliCFTrackIsPrimaryCuts::SetEvtInfo(TObject* esd) {
+  //
+  // Sets pointer to esd event information (AliESD)
+  //
+  if (!esd) {
+    AliError("Pointer to AliESD !");
+    return;
+  }
+  TString className(esd->ClassName());
+  if (className.CompareTo("AliESD") != 0) {
+    AliError("argument must point to an AliESD !");
+    return ;
+  }
+  fESD = (AliESD*) esd;
+}
+//__________________________________________________________________________________
+void AliCFTrackIsPrimaryCuts::UseSPDvertex(Bool_t b) {
+  fUseSPDvertex = b;
+  if(fUseTPCvertex) fUseSPDvertex = kFALSE;
+}
+//__________________________________________________________________________________
+void AliCFTrackIsPrimaryCuts::UseTPCvertex(Bool_t b) {
+  fUseTPCvertex = b;
+  if(fUseTPCvertex) fUseSPDvertex = kFALSE;
+}
+//__________________________________________________________________________________
 void AliCFTrackIsPrimaryCuts::GetDCA(AliESDtrack* esdTrack)
 {
   if (!esdTrack) return;
 
   Float_t b[2] = {0.,0.};
   Float_t bCov[3] = {0.,0.,0.};
-  if(!fUseTPCvertex) esdTrack->GetImpactParameters(b,bCov);
-  if( fUseTPCvertex) esdTrack->GetImpactParametersTPC(b,bCov);
+  if(!fUseSPDvertex && !fUseTPCvertex)	esdTrack->GetImpactParameters(b,bCov);
+  if( fUseTPCvertex)			esdTrack->GetImpactParametersTPC(b,bCov);
+
+  if( fUseSPDvertex) {
+	if (!fESD) return;
+	const AliESDVertex *vtx = fESD->GetVertex();
+	const Double_t Bz = fESD->GetMagneticField();
+	AliExternalTrackParam *cParam = 0;
+	Bool_t success = esdTrack->RelateToVertex(vtx, Bz, kVeryBig, cParam);
+	if (success) esdTrack->GetImpactParameters(b,bCov);
+  }
 
   if (bCov[0]<=0 || bCov[2]<=0) {
       bCov[0]=0; bCov[2]=0;
@@ -369,7 +418,7 @@ void AliCFTrackIsPrimaryCuts::GetDCA(AliESDtrack* esdTrack)
   }
 
   // get n_sigma
-  if(!fUseTPCvertex)
+  if(!fUseSPDvertex && !fUseTPCvertex)
 	fDCA[5] = AliESDtrackCuts::GetSigmaToVertex(esdTrack);
 
   if(fUseTPCvertex) {
