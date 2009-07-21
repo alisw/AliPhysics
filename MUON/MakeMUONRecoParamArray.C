@@ -37,13 +37,20 @@
 #endif
 
 
+
 //-----------------------------------------------------------------------
 void MakeMUONRecoParamArray(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity(),
-		       AliRecoParam::EventSpecie_t defaultParam = AliRecoParam::kLowMult)
+			    Int_t settingsForCosmicRun = kFALSE)
 {
-  /// set the reconstruction parameters and store them in the OCDB ($ALICE_ROOT/MUON/Calib/RecoParam/).
+  /// set the reconstruction parameters and store them in the OCDB ($ALICE_ROOT/OCDB/MUON/Calib/RecoParam/).
   /// - make a CDB entry for the run range [startRun, endRun]
-  /// - "defaultParam" specifies the parameters to be used as default
+  /// - the choice between two possible configurations:
+  ///   -  settingsForCosmicRun = kFALSE (default), i.e.
+  ///      LowFlux (default)
+  ///      Calibration
+  ///   - settingsForCosmicRun = kTRUE, i.e.
+  ///      Cosmic (default)
+  ///      Calibration
   
   // init CDB
   AliCDBManager* man = AliCDBManager::Instance();
@@ -53,23 +60,28 @@ void MakeMUONRecoParamArray(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::I
   // set RecoParams
   AliMUONRecoParam *param;
   TObjArray recoParams;
-  /*  
-  // set parameters for p-p runs
-  param = AliMUONRecoParam::GetLowFluxParam();
-  recoParams.AddLast(param);
-  
-  // set parameters for Pb-Pb runs
-  param = AliMUONRecoParam::GetHighFluxParam();
-  recoParams.AddLast(param);
-  */
 
-  // set parameters for cosmic runs
-  param = AliMUONRecoParam::GetCosmicParam();
-  recoParams.AddLast(param);
+  AliRecoParam::EventSpecie_t defaultParam = AliRecoParam::kLowMult;
+
+  if(!settingsForCosmicRun) {
+    // set parameters for p-p runs
+    param = AliMUONRecoParam::GetLowFluxParam();
+    recoParams.AddLast(param);
+  }
+  else {
+    // set parameters for cosmic runs
+    param = AliMUONRecoParam::GetCosmicParam();
+    recoParams.AddLast(param);
+    defaultParam = AliRecoParam::kCosmic;
+  }
 
   // set (dummy) parameters for calibration runs
   param = AliMUONRecoParam::GetCalibrationParam();
   recoParams.AddLast(param);
+
+  // set parameters for Pb-Pb runs
+  // param = AliMUONRecoParam::GetHighFluxParam();
+  // recoParams.AddLast(param);
 
   // identify default parameters (exit if identification failed)
   Bool_t defaultIsSet = kFALSE;

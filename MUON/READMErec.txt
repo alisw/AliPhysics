@@ -125,6 +125,10 @@ Three sets of default parameters are available:
 - <code>GetLowFluxParam()</code>: parameters for p-p collisions
 - <code>GetHighFluxParam()</code>: parameters for Pb-Pb collisions
 - <code>GetCosmicParam()</code>: parameters for cosmic runs
+- <code>GetCalibrationParam()</code>: parameters for cosmic runs
+
+The latter is a dummy set which allows to avoid any reconstruction in case a software trigger event is taken.
+Software triggers are sent to trigger electronics during physics run in order to read the scalers: no action from the MUON tracker is required during such events whose reconstruction has to be skipped.
 
 Every option/parameter can be set one by one. Here is the complete list of available setters:
 - <code>SetCalibrationMode("mode")</code>: set the calibration mode: NOGAIN (only do pedestal subtraction),
@@ -192,6 +196,16 @@ Every option/parameter can be set one by one. Here is the complete list of avail
 We can use the method Print("FULL") to printout all the parameters and options set in the class AliMUONRecoParam.
 
 RecoParams can be put into OCDB using the MakeMUONSingleRecoParam.C or MakeMUONRecoParamArray.C macros.
+The first stores only one (default) RecoParam.
+The latter allows to store either:
+ - LowFlux (default)
+ - Calibration
+
+for real data with bunch crossing or
+ - Cosmic (default)
+ - Calibration
+
+for cosmic runs.
 
 \section rec_s5 ESD content
 
