@@ -150,6 +150,10 @@ AliGRPRecoParam *AliGRPRecoParam::GetCosmicTestParam()
   //
   AliGRPRecoParam *param = new AliGRPRecoParam();
 
+  param->SetVertexerTracksConstraintITS(kFALSE);
+  param->SetVertexerTracksConstraintTPC(kFALSE);
+  param->SetMostProbablePt(3.0);
+
   return param;
 }
 //_____________________________________________________________________________
