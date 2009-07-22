@@ -40,7 +40,7 @@ AliFMDAnalysisTaskDndeta::AliFMDAnalysisTaskDndeta()
   fNMCevents(),
   fStandalone(kTRUE),
   fMCevent(0),
-  fLastTrackByStrip(),
+  fLastTrackByStrip(0),
   fPrimary(kTRUE)
 {
   // Default constructor
@@ -60,7 +60,7 @@ AliFMDAnalysisTaskDndeta::AliFMDAnalysisTaskDndeta(const char* name, Bool_t SE):
     fNMCevents(),
     fStandalone(kTRUE),
     fMCevent(0),
-    fLastTrackByStrip(),
+    fLastTrackByStrip(0),
     fPrimary(kTRUE)
 {
   fStandalone = SE;
@@ -270,7 +270,7 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
       if(ref->DetectorId() != AliTrackReference::kFMD)
 	continue;
       AliFMDStripIndex::Unpack(ref->UserId(),det,ring,sec,strip);
-      Float_t thisStripTrack = fLastTrackByStrip.operator()(det,ring,sec,strip);
+      Float_t thisStripTrack = fLastTrackByStrip(det,ring,sec,strip);
       if(particle->Charge() != 0 && i != thisStripTrack ) {
 	//Double_t x,y,z;
 	
@@ -281,12 +281,12 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
 	
 	//if(det == 1 && ring == 'I')
 	//	std::cout<<"hit in "<<det<<"   "<<ring<<"   "<<sec<<"   "<<strip<<"   "<<std::endl;
-	fLastTrackByStrip.operator()(det,ring,sec,strip) = (Float_t)i;
+	fLastTrackByStrip(det,ring,sec,strip) = (Float_t)i;
 	
 	if(strip >0)
-	  fLastTrackByStrip.operator()(det,ring,sec,strip-1) = (Float_t)i;
+	  fLastTrackByStrip(det,ring,sec,strip-1) = (Float_t)i;
 	if(strip < (nstrips - 1))
-	  fLastTrackByStrip.operator()(det,ring,sec,strip+1) = (Float_t)i;
+	  fLastTrackByStrip(det,ring,sec,strip+1) = (Float_t)i;
 	
 	
       }

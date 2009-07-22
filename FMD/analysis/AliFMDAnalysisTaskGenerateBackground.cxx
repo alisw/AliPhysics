@@ -30,8 +30,8 @@ AliAnalysisTaskSE(),
   fListOfPrimaries(),
   fListOfCorrection(),
   fVertexBins(),
-  fLastTrackByStrip(),
-  fHitsByStrip(),
+  fLastTrackByStrip(0),
+  fHitsByStrip(0),
   fZvtxCut(10),
   fNvtxBins(10),
   fNbinsEta(200),
@@ -46,8 +46,8 @@ AliFMDAnalysisTaskGenerateBackground::AliFMDAnalysisTaskGenerateBackground(const
   fListOfPrimaries(),
   fListOfCorrection(),
   fVertexBins(),
-  fLastTrackByStrip(),
-  fHitsByStrip(),
+  fLastTrackByStrip(0),
+  fHitsByStrip(0),
   fZvtxCut(10),
   fNvtxBins(10),
   fNbinsEta(200),
@@ -167,7 +167,7 @@ void AliFMDAnalysisTaskGenerateBackground::UserExec(Option_t */*option*/)
       if(ref->DetectorId() != AliTrackReference::kFMD)
 	continue;
       AliFMDStripIndex::Unpack(ref->UserId(),det,ring,sec,strip);
-      Float_t thisStripTrack = fLastTrackByStrip.operator()(det,ring,sec,strip);
+      Float_t thisStripTrack = fLastTrackByStrip(det,ring,sec,strip);
       if(particle->Charge() != 0 && i != thisStripTrack ) {
 	//Double_t x,y,z;
 	//AliFMDGeometry* fmdgeo = AliFMDGeometry::Instance();
@@ -182,11 +182,11 @@ void AliFMDAnalysisTaskGenerateBackground::UserExec(Option_t */*option*/)
 	TH2F* hHits = (TH2F*)fListOfHits.FindObject(Form("hHits_FMD%d%c_vtx%d", det,ring,vertexBin));
 	hHits->Fill(eta,phi);
 	Float_t nstrips = (ring =='O' ? 256 : 512);
-	fHitsByStrip.operator()(det,ring,sec,strip) +=1;
+	fHitsByStrip(det,ring,sec,strip) +=1;
 	TH1F* allHits = (TH1F*)fListOfHits.FindObject(Form("allHits_FMD%d%c",det,ring));
 	TH1F* doubleHits = (TH1F*)fListOfHits.FindObject(Form("DoubleHits_FMD%d%c",det,ring));
 	
-	if(fHitsByStrip.operator()(det,ring,sec,strip) == 1)
+	if(fHitsByStrip(det,ring,sec,strip) == 1)
 	  allHits->Fill(eta);
 	
 	doubleHits->Fill(eta);
@@ -198,11 +198,11 @@ void AliFMDAnalysisTaskGenerateBackground::UserExec(Option_t */*option*/)
 	//  doubleHits->Fill(eta);
 	//	}
 	
-	fLastTrackByStrip.operator()(det,ring,sec,strip) = (Float_t)i;
+	fLastTrackByStrip(det,ring,sec,strip) = (Float_t)i;
 	if(strip >0)
-	  fLastTrackByStrip.operator()(det,ring,sec,strip-1) = (Float_t)i;
+	  fLastTrackByStrip(det,ring,sec,strip-1) = (Float_t)i;
 	if(strip < (nstrips - 1))
-	  fLastTrackByStrip.operator()(det,ring,sec,strip+1) = (Float_t)i;
+	  fLastTrackByStrip(det,ring,sec,strip+1) = (Float_t)i;
       }
     }
 
