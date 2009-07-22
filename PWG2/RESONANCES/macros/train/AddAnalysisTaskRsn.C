@@ -14,7 +14,7 @@ Bool_t AddAnalysisTaskRsn
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   // initialize task with 4 slots:
-  AliRsnAnalysisSE *task = new AliRsnAnalysisSE("AliRsnAnalysisSE", 4);
+  AliRsnAnalysisSE *task = new AliRsnAnalysisSE("RsnAnalysis", 4);
   
   // set prior probabilities for PID
   task->SetPriorProbability(AliPID::kElectron, 0.02);
@@ -32,20 +32,20 @@ Bool_t AddAnalysisTaskRsn
 
   // manager #0: phi NO PID
   anaMgr = task->GetAnalysisManager(0);
-  anaMgr->Add(RsnConfig(AliRsnPair::kNoPID, "PHI"   , 333, AliPID::kKaon, AliPID::kKaon));
-  anaMgr->Add(RsnConfig(AliRsnPair::kNoPID, "PHI_BB", 333, AliPID::kKaon, AliPID::kKaon, 0.2));
+  anaMgr->Add(RsnConfig(AliRsnPair::kNoPID, "PHI"  , 333, AliPID::kKaon, AliPID::kKaon));
+  anaMgr->Add(RsnConfig(AliRsnPair::kNoPID, "PHIBB", 333, AliPID::kKaon, AliPID::kKaon, 0.2));
   // manager #1: phi with PID (realistic & perfect)
   anaMgr = task->GetAnalysisManager(1);
   anaMgr->Add(RsnConfig(AliRsnPair::kRealisticPID, "PHI", 333, AliPID::kKaon, AliPID::kKaon));
-  anaMgr->Add(RsnConfig(AliRsnPair::kPerfectPID  , "PHI"  , 333, AliPID::kKaon, AliPID::kKaon));
+  anaMgr->Add(RsnConfig(AliRsnPair::kPerfectPID  , "PHI", 333, AliPID::kKaon, AliPID::kKaon));
   // manager #2: kstar NO PID
   anaMgr = task->GetAnalysisManager(2);
-  anaMgr->Add(RsnConfig(AliRsnPair::kNoPID, "KSTAR"   , 313, AliPID::kPion, AliPID::kKaon));
-  anaMgr->Add(RsnConfig(AliRsnPair::kNoPID, "KSTAR_BB", 313, AliPID::kPion, AliPID::kKaon, 0.2));
+  anaMgr->Add(RsnConfig(AliRsnPair::kNoPID, "KSTAR"  , 313, AliPID::kPion, AliPID::kKaon));
+  anaMgr->Add(RsnConfig(AliRsnPair::kNoPID, "KSTARBB", 313, AliPID::kPion, AliPID::kKaon, 0.2));
   // manager #1: kstar with PID (realistic & perfect)
   anaMgr = task->GetAnalysisManager(3);
   anaMgr->Add(RsnConfig(AliRsnPair::kRealisticPID, "KSTAR", 313, AliPID::kPion, AliPID::kKaon));
-  anaMgr->Add(RsnConfig(AliRsnPair::kPerfectPID  , "KSTAR"  , 313, AliPID::kPion, AliPID::kKaon));
+  anaMgr->Add(RsnConfig(AliRsnPair::kPerfectPID  , "KSTAR", 313, AliPID::kPion, AliPID::kKaon));
 
   // setup cuts for events (good primary vertex)
   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 3);
@@ -62,7 +62,7 @@ Bool_t AddAnalysisTaskRsn
   else mgr->ConnectInput(task, 0, mgr->GetCommonOutputContainer());
 
   // define and connect output containers
-  AliAnalysisDataContainer *outputInfo = mgr->CreateContainer("RsnInfo", TList::Class(), AliAnalysisManager::kOutputContainer, "rsn_info.root");
+  AliAnalysisDataContainer *outputInfo = mgr->CreateContainer("RsnInfo", TList::Class(), AliAnalysisManager::kOutputContainer, "info.root");
   AliAnalysisDataContainer *outputRsn[4];
   outputRsn[0] = mgr->CreateContainer("PHI_NOPID"  , TList::Class(), AliAnalysisManager::kOutputContainer, "phi_nopid.root");
   outputRsn[1] = mgr->CreateContainer("PHI_PID"    , TList::Class(), AliAnalysisManager::kOutputContainer, "phi_pid.root");

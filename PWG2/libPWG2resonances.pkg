@@ -27,6 +27,7 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnAnalysisSE.cxx \
       RESONANCES/AliRsnAnalysisME.cxx \
       RESONANCES/AliRsnAnalysisEffSE.cxx \
+      RESONANCES/AliRsnAnalysisTrackEffSE.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 

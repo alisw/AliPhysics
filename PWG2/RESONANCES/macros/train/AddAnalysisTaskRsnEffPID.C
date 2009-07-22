@@ -1,20 +1,3 @@
-//
-// Macro to create the full analysis manager for Resonances
-//
-
-static Double_t  cov11 = 2;
-static Double_t  cov22 = 2;
-static Double_t  cov33 = 0.5;
-static Double_t  cov44 = 0.5;
-static Double_t  cov55 = 2;
-static Double_t  nSigmaToVertex = 4;
-static Double_t  dcaToVertex = 3.0;
-static Double_t  maxChi2PerClusterTPC = 3.5;
-static Bool_t    requireTPCRefit = kTRUE;
-static Bool_t    requireSigmaToVertex = kTRUE;
-static Bool_t    acceptKinkDaughters = kFALSE;
-static Int_t     minNClustersTPC = 50;
-
 Bool_t AddAnalysisTaskRsnEffPID
 (
   const char      *outFile = "eff_pid.root",    // output file name
@@ -43,11 +26,11 @@ Bool_t AddAnalysisTaskRsnEffPID
   task->AddPairDef(pairDef3);
 
   // axis definition
-  AliRsnFunctionAxis *axisIM   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairInvMass,  100,  0.0,   2.0);
-  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,        10,  0.0,  10.0);
-  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,       10, -1.0,   1.0);
-  AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,      8,  0.0, 200.0);
-  task->AddAxis(axisIM);
+  //AliRsnFunctionAxis *axisIM   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairInvMass,    1000,  0.0,   2.0);
+  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,          100,  0.0,  10.0);
+  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          10, -1.0,   1.0);
+  AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,         8,  0.0, 200.0);
+  //task->AddAxis(axisIM);
   task->AddAxis(axisMult);
   task->AddAxis(axisPt);
   task->AddAxis(axisEta);
@@ -136,8 +119,8 @@ Bool_t AddAnalysisTaskRsnEffPID
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
   // initialize and connect container for the output
-  AliAnalysisDataContainer *outputInfo = mgr->CreateContainer("EffPIDInfo", TList::Class(), AliAnalysisManager::kOutputContainer, "eff_pid_info.root");
-  AliAnalysisDataContainer *out = mgr->CreateContainer("CORR_PID", TList::Class(), AliAnalysisManager::kOutputContainer, outFile);
+  AliAnalysisDataContainer *outputInfo = mgr->CreateContainer("EffPIDInfo", TList::Class(), AliAnalysisManager::kOutputContainer, "info.root");
+  AliAnalysisDataContainer *out = mgr->CreateContainer("EFF_PID", TList::Class(), AliAnalysisManager::kOutputContainer, outFile);
   mgr->ConnectOutput(task, 1, outputInfo);
   mgr->ConnectOutput(task, 2, out);
 

@@ -23,25 +23,7 @@ AliRsnPairManager* RsnConfig
 
   // === NAME DEFINITIONS =========================================================================
 
-  // check if the pid type is one among the allowed ones
-  TString strMgrName(pairMgrName);
-  switch (pidType)
-  {
-    case AliRsnPair::kNoPID:
-      strMgrName.Append("_NoPID");
-      break;
-    case AliRsnPair::kPerfectPID:
-      strMgrName.Append("_PerfectPID");
-      break;
-    case AliRsnPair::kRealisticPID:
-      strMgrName.Append("_RealisticPID");
-      break;
-    default:
-      Error("ConfigRsn", "PID method not recognized.");
-      return 0x0;
-  }
-  
-  AliRsnPairManager  *pairMgr  = new AliRsnPairManager(strMgrName.Data());
+  AliRsnPairManager  *pairMgr  = new AliRsnPairManager(pairMgrName);
 
   // === PAIR DEFINITIONS =========================================================================
 
