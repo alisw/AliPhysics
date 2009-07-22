@@ -36,7 +36,7 @@
  * 
  */
 
-void transformHWCLtoSWCL(const char* input="./"){
+void transformHWCLtoSWCF(const char* input="./"){
  
   if (!input) {
     cerr << "please specify input or run without arguments" << endl;
