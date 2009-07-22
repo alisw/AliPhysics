@@ -3,7 +3,7 @@
 set(SRCS
 AliACORDEReconstructor.cxx 
 AliACORDEQADataMakerRec.cxx
-AliACORDERecoParam.cxx
+#AliACORDERecoParam.cxx
 )
 
 # fill list of header files from list of source files

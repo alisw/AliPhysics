@@ -159,6 +159,8 @@ const Int_t AliACORDEConstants::fgkModuleElectronicChannel[60] = {
 /* DCS 5_9 ITS-4*/ 41
 };
 
+
+
 ClassImp(AliACORDEConstants)
 
 //_____________________________________________________________________________

@@ -94,6 +94,8 @@ protected:
   static const Float_t fgkMaxHitTimeDifference;
   static const Int_t fgkMultiMuonThreshold;
   static const Float_t fgkMultiMuonWindow;
+
+
  private:
   ClassDef(AliACORDEConstants, 0)   // ACORDE(ACORDE) global constants
 };

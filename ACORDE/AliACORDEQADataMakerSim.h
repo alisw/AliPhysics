@@ -45,6 +45,7 @@ private:
   virtual void   MakeDigits() {}       //Dummy for the moment
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
   virtual void   StartOfDetectorCycle() ;
+
   ClassDef(AliACORDEQADataMakerSim,1)  // description 
 
 };

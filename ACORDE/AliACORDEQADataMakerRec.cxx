@@ -88,14 +88,28 @@ void AliACORDEQADataMakerRec::InitRaws()
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-  
-  TH1D *fhACORDEBitPattern[4];
-  fhACORDEBitPattern[0] = new TH1D("ACORDERawDataSM","ACORDE-SingleMuon;Bit Pattern;Counts",60,1,60);//AcordeSingleMuon BitPattern
-  fhACORDEBitPattern[1] = new TH1D("ACORDERawDataMM","ACORDE-MultiMuon;Bit Pattern;Counts",60,1,60);//AcordeMultiMuon BitPattern
-  fhACORDEBitPattern[2] = new TH1D("ACORDERawDataSMM","ACORDE-SingleMuonMultiplicity;Multiplicity;Counts",60,1,60);//AcordeSingleMuon Multiplicity
-  fhACORDEBitPattern[3] = new TH1D("ACORDERawDataMMM","ACORDE-MultiMuonMultiplicity;Multiplicity;Counts",60,1,60);//AcordeMultiMuon Multiplicity
+  char *acoModule[60]={"0_0","0_1","0_2","0_3","0_4","0_5","0_6","0_7","0_8","0_9",
+                        "1_0","1_1","1_2","1_3","1_4","1_5","1_6","1_7","1_8","1_9",
+                        "2_0","2_1","2_2","2_3","2_4","2_5","2_6","2_7","2_8","2_9",
+                        "3_0","3_1","3_2","3_3","3_4","3_5","3_6","3_7","3_8","3_9",
+                        "4_0","4_1","4_2","4_3","4_4","4_5","4_6","4_7","4_8","4_9",
+                        "5_0","5_1","5_2","5_3","5_4","5_5","5_6","5_7","5_8","5_9"};
+
+
+  TH1F *fhACORDEBitPattern[4];
+  fhACORDEBitPattern[0] = new TH1F("ACORDEBitPatternfromRAWSingle","Distribution of ACORDE fired modules from RAW-Single;Modules;Counts",60,1,60);//AcordeSingleMuon BitPattern
+  fhACORDEBitPattern[1] = new TH1F("ACORDEBitPatternfromRAWMulti","Distribution of ACORDE fired modules from RAW-Multi;Modules;Counts",60,1,60);//AcordeMultiMuon BitPattern
+  fhACORDEBitPattern[2] = new TH1F("ACORDEMultiplicityfromRAWSingle","Number of fired ACORDE modules;No. of fired ACORDE modules;No. of events in ACORDE",60,1,60);//AcordeSingleMuon Multiplicity
+  fhACORDEBitPattern[3] = new TH1F("ACORDEMultiplicityfromRAWMulti","Number of fired ACORDE modules; No. of fired ACORDE modules;No. of events in ACORDE",60,1,60);//AcordeMultiMuon Multiplicity
   for(Int_t i=0;i<4;i++) 
     Add2RawsList(fhACORDEBitPattern[i],i,!expert, image, !saveCorr);
+  
+  for (Int_t iModule = 0; iModule<60; iModule++)
+  {
+	fhACORDEBitPattern[0]->GetXaxis()->SetBinLabel(iModule+1,acoModule[iModule]);
+	fhACORDEBitPattern[1]->GetXaxis()->SetBinLabel(iModule+1,acoModule[iModule]);
+  }
+
 }
 //____________________________________________________________________________ 
 void AliACORDEQADataMakerRec::InitDigits()
@@ -105,11 +119,17 @@ void AliACORDEQADataMakerRec::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   TH1F *    fhDigitsModule;
-  TString   modulename;
-  modulename = "hDigitsModule";
-  fhDigitsModule = new TH1F(modulename.Data(),"hDigitsModuleSingle;# of modules;Counts",60,0,60);
+   char *acoModule[60]={"0_0","0_1","0_2","0_3","0_4","0_5","0_6","0_7","0_8","0_9",
+                        "1_0","1_1","1_2","1_3","1_4","1_5","1_6","1_7","1_8","1_9",
+                        "2_0","2_1","2_2","2_3","2_4","2_5","2_6","2_7","2_8","2_9",
+                        "3_0","3_1","3_2","3_3","3_4","3_5","3_6","3_7","3_8","3_9",
+                        "4_0","4_1","4_2","4_3","4_4","4_5","4_6","4_7","4_8","4_9",
+                        "5_0","5_1","5_2","5_3","5_4","5_5","5_6","5_7","5_8","5_9"};
+
+
+  fhDigitsModule = new TH1F("ACORDEBitPatternfromDigits","Distribution of ACORDE from DIGITS;Modules;Counts",60,1,60);
   Add2DigitsList(fhDigitsModule,0,!expert,image);
-    
+  for (Int_t i=0;i<60;i++) fhDigitsModule->GetXaxis()->SetBinLabel(i+1,acoModule[i]); 
 }
 
 //____________________________________________________________________________ 
@@ -130,16 +150,27 @@ void AliACORDEQADataMakerRec::InitESDs()
   
   TH1F *    fhESDsSingle;
   TH1F *    fhESDsMulti;
+   char *acoModule[60]={"0_0","0_1","0_2","0_3","0_4","0_5","0_6","0_7","0_8","0_9",
+                        "1_0","1_1","1_2","1_3","1_4","1_5","1_6","1_7","1_8","1_9",
+                        "2_0","2_1","2_2","2_3","2_4","2_5","2_6","2_7","2_8","2_9",
+                        "3_0","3_1","3_2","3_3","3_4","3_5","3_6","3_7","3_8","3_9",
+                        "4_0","4_1","4_2","4_3","4_4","4_5","4_6","4_7","4_8","4_9",
+                        "5_0","5_1","5_2","5_3","5_4","5_5","5_6","5_7","5_8","5_9"};
 
-   TString   name;
 
-   name = "hESDsSingle";
-   fhESDsSingle = new TH1F(name.Data(),"hESDsSingle;??;??",60,0,60);
+   fhESDsSingle = new TH1F("ACORDEBitPatternfromESDsSingle","Distribution of ACORDE fired modules from ESDs-Single;Modules;Counts",60,1,60);
    Add2ESDsList(fhESDsSingle,0,!expert,image);
 
-   name = "hESDsMulti";
-   fhESDsMulti = new TH1F(name.Data(),"hESDsMulti;??;??",60,0,60);
+   fhESDsMulti = new TH1F("ACORDEBitPatternfromESDsMulti","Distribution of ACORDE fired modules from ESDs-Multi;Modules;Counts",60,1,60);
    Add2ESDsList(fhESDsMulti,1,!expert,image);
+	
+   for (Int_t i=0;i<60;i++)
+   {
+	fhESDsSingle->GetXaxis()->SetBinLabel(i+1,acoModule[i]);
+	fhESDsMulti->GetXaxis()->SetBinLabel(i+1,acoModule[i]);
+   }
+
+
 }
 //____________________________________________________________________________
 void AliACORDEQADataMakerRec::MakeRaws(AliRawReader* rawReader)
