@@ -931,7 +931,6 @@ void AliCFTrackQualityCuts::FillHistograms(TObject* obj, Bool_t b)
     nClustersTRD = esdTrack->GetTRDncls();
     nTrackletsTRD = esdTrack->GetTRDntracklets();
     if (nTrackletsTRD != 0) chi2PerTrackletTRD = esdTrack->GetTRDchi2() / Float_t(nTrackletsTRD);
-    if (esdTrack->GetTPCNclsF() != 0) fractionFoundClustersTPC = fTrackCuts->GetCutVariable(2) / float(esdTrack->GetTPCNclsF());
 
 // // // include following line when AliESDtrackCuts is updated
 //     if (esdTrack->GetTPCNclsF() != 0) fractionFoundClustersTPC = fTrackCuts->GetCutVariable(2) / float(esdTrack->GetTPCNclsF());
