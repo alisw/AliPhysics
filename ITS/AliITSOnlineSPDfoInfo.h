@@ -14,6 +14,7 @@
 
 #include <TObject.h>
 #include <TArrayS.h>
+#include <TBits.h>
 
 class AliITSOnlineSPDfoInfo :  public TObject {
 
@@ -29,6 +30,7 @@ class AliITSOnlineSPDfoInfo :  public TObject {
   virtual void SetRouter(UShort_t val)   {fRouter=val;}
   virtual void SetNumTriggers(UInt_t val){fNumTriggers=val;}
   virtual void SetDBversion(Int_t val)   {fDBversion=val;}
+  void SetActiveChipsAndHS(UInt_t hs, UInt_t chip) {fActiveChipsAndHS.SetBitNumber(10*hs+chip);}
 
   // GETTERS
   UInt_t   GetRunNumber() const     {return fRunNumber;}
@@ -41,6 +43,10 @@ class AliITSOnlineSPDfoInfo :  public TObject {
 
   TArrayS GetDACIndexArray() const  {return fDACindex;}
 
+  Bool_t IsActiveHS(UInt_t hs) const ;
+  Bool_t IsActiveChip(UInt_t hs, UInt_t chip) const;
+  TBits  GetActiveChipsAndHS() const {return fActiveChipsAndHS;}
+
  protected:
   UInt_t   fRunNumber;   // run number
   UShort_t fRouter;      // router number (should be same as eq number)
@@ -49,8 +55,9 @@ class AliITSOnlineSPDfoInfo :  public TObject {
 			 
   UShort_t fNumDACindex; // number of DAC indices in TArrayI below
   TArrayS  fDACindex;    // list of DAC indices related to each DAC value
+  TBits    fActiveChipsAndHS;
 
-  ClassDef(AliITSOnlineSPDfoInfo,1)
+  ClassDef(AliITSOnlineSPDfoInfo,2)
 };
     
 #endif

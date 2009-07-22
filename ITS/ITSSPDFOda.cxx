@@ -239,6 +239,7 @@ int main(int argc, char **argv) {
             for(Int_t ihs =0; ihs < 6; ihs++) { // needed in the header to access the HS and ChipId info (in data it is different)
 	      for(Int_t ich =0; ich < 10; ich++){
 		if(!str->GetFOHchipPresent(ihs, ich)) continue;
+                  info[eqId]->SetActiveChipsAndHS(ihs,ich);
 		  Short_t measure[4] = {str->GetFOHMatrixID(),str->GetFOHpixelRow(), str->GetFOHpixelCol(), str->GetFOHchipCount(ihs,ich)}; 
                   fomanager[eqId]->AddMeasurement(dacs,measure,ihs,ich);                                            
 	      } // chip loop      
@@ -302,6 +303,7 @@ int main(int argc, char **argv) {
 	   if(dacs.GetSize() == 0) continue;
 	   for(Int_t idac =0; idac < dacs.GetSize() - 1; idac++) { // -1 (the last one is the quality flag)
 	     if(dacs.At(idac) >=0 ) {
+	     
 	       dcsfile << ((analyzer->GetFOHandler())->GetFOscanInfo())->GetDACindex(idac) << ",";
 	       dcsfile << iff << ",";
 	       dcsfile << hs << ",";

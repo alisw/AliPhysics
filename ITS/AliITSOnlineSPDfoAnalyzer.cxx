@@ -207,18 +207,20 @@ Int_t AliITSOnlineSPDfoAnalyzer::Select(const AliITSOnlineSPDfoChip *chip) const
   Float_t counts = 0;
   
   Int_t processedconfigurations = chip->GetNumberOfChipConfigs();
-  if(fHighOccupancyCheck) processedconfigurations-=1;
+  
+ 
+  
   
   for(Int_t isteps =0; isteps < processedconfigurations; isteps++){ 
     
     Int_t matrixId = ((AliITSOnlineSPDfoChipConfig*)array->At(isteps))->GetChipConfigMatrixId();
     counts = (Float_t)(((AliITSOnlineSPDfoChipConfig*)array->At(isteps))->GetChipConfigCounter());
-    
     if(matrixId==0 && counts > 0) return -1;
+    if(fHighOccupancyCheck &&  matrixId ==6) continue;
     
     Float_t efficiency = counts/npulses;
     
-    if(isteps > 0){
+    if(matrixId > 0){
       Int_t response = IsSelected(efficiency);
       if( response >=0) {
 	if(quality < response) quality = response;
@@ -234,7 +236,8 @@ Int_t AliITSOnlineSPDfoAnalyzer::IsSelected(Float_t eff) const
   //
   // returns the quality of the selection 
   //
-  for(Int_t i=0; i<3; i++){   
+  
+  for(Int_t i=0; i<3; i++){  
     if(eff <= 1.+ fGeneralThresholds[i] && eff >= 1. - fGeneralThresholds[i]  ) return i;
   }
   return -1;
@@ -248,6 +251,7 @@ void AliITSOnlineSPDfoAnalyzer::Process()
   // - if the 4-tuple survives the selection, the chip-related histograms are filled.
   // (- Per each histogram the mean values of each axis are taken)
   //
+  
   if(!fFOHandler) { 
     Warning("AliITSOnlineSPDfoAnalyzer::Process","no fo object. Exiting.. \n");
     return;
@@ -255,7 +259,6 @@ void AliITSOnlineSPDfoAnalyzer::Process()
   
   TKey *key;
   Double_t *dacvalues;
-  
   TIter iter((fFOHandler->GetFile())->GetListOfKeys());  
   while ((key = (TKey*)(iter.Next()))) {
     TString classname = key->GetClassName();
@@ -263,14 +266,15 @@ void AliITSOnlineSPDfoAnalyzer::Process()
     
     TObjArray *array = (TObjArray*)(fFOHandler->GetFile())->Get(key->GetName()); // array of chips corresponding to the DACS (size 1-60)
     if(!array){
-      printf("no array found! Exiting...");
+      printf("no array found! Exiting...\n");
       break; 
     }
     
     dacvalues = fFOHandler->GetDACvaluesD(key->GetName(), GetFOHandler()->GetFOscanInfo()->GetNumDACindex());
     
     for(Int_t i=0; i< array->GetSize(); i++){
-      AliITSOnlineSPDfoChip *chip = (AliITSOnlineSPDfoChip *)array->At(i);     
+      AliITSOnlineSPDfoChip *chip = (AliITSOnlineSPDfoChip *)array->At(i); 
+          
       if(!chip) continue;
       Int_t hs = chip->GetActiveHS();
       Int_t chipid = chip->GetChipId();     
@@ -291,7 +295,10 @@ void AliITSOnlineSPDfoAnalyzer::WriteToFile(TString outputfile)
   TFile * f = TFile::Open(outputfile.Data(),"recreate");
   for(Int_t ihs =0; ihs < 6; ihs++) {
     for(Int_t ichip =0; ichip < 10; ichip++){
-      for(Int_t i=0; i<kNqualityFlags ; i++ ) if(fNh[i][ihs][ichip]) f->WriteObjectAny(fNh[i][ihs][ichip],"THnSparse",Form("h%i_hs%i_chip%i",i,ihs,ichip));
+      for(Int_t i=0; i<kNqualityFlags ; i++ ) {
+      if(fNh[i][ihs][ichip]) f->WriteObjectAny(fNh[i][ihs][ichip],"THnSparse",Form("h%i_hs%i_chip%i",i,ihs,ichip));
+      }
+      
     }
   }
   f->Close();
@@ -327,7 +334,7 @@ void AliITSOnlineSPDfoAnalyzer::GetCanvases(const THnSparse *hn,Int_t hs, Int_t 
   //
   //
   
-  if(!hn) {printf("no thnsparse...exiting!"); return;} 
+  if(!hn) {printf("no thnsparse...exiting!\n"); return;} 
   
   gStyle->SetPalette(1);
   
@@ -392,7 +399,8 @@ TArrayI AliITSOnlineSPDfoAnalyzer::ChooseDACValues(Int_t hs, Int_t chip) const
   // closest value to the mean point in the n-dimensional histogram
   // is taken.
   
-  TH1D *h=0x0; 
+  TH1D *tmp[5];
+  if(fNdims > 5) printf("AliITSOnlineSPDfoAnalyzer::ChooseDACValues -> N. of dimensions are more than expected! Break! \n");
   TArrayI dacs(fNdims+1);
   
   for(Int_t i=0; i<fNdims+1; i++) dacs.AddAt(-1,i);
@@ -402,18 +410,18 @@ TArrayI AliITSOnlineSPDfoAnalyzer::ChooseDACValues(Int_t hs, Int_t chip) const
     if(fNh[iqual][hs][chip]->GetEntries()==0) continue;
     for(Int_t idim =0; idim<fNdims; idim++){
       if(dacs.At(idim)>=0) continue;
-      h = fNh[iqual][hs][chip]->Projection(idim); 
-      dacs.AddAt((Int_t)h->GetBinLowEdge(h->GetMaximumBin()+1),idim);
+      tmp[idim] = fNh[iqual][hs][chip]->Projection(idim);
+      dacs.AddAt((Int_t)tmp[idim]->GetBinLowEdge(tmp[idim]->GetMaximumBin()+1),idim);
       Int_t bin=-1;
-      if(fFOHandler->GetFOscanInfo()->GetDACindex(idim)==fFOHandler->kIdPreVTH && CorrectPreVTHChioce(h,bin)) {
-       dacs.AddAt((Int_t)h->GetBinLowEdge(bin+1),idim);
+      if(fFOHandler->GetFOscanInfo()->GetDACindex(idim)==fFOHandler->kIdPreVTH && CorrectPreVTHChioce(tmp[idim],bin)) {
+       dacs.AddAt((Int_t)tmp[idim]->GetBinLowEdge(bin+1),idim);
       }
       dacs.AddAt(iqual,fNdims);
     }//idim
   }//iqual
   
   if(!IsExisting(dacs,hs,chip)  && dacs.At(fNdims)>-1) {   
-    TArrayI centraldacs = GetCentralDACS(dacs.At(fNdims),hs,chip,h);
+   TArrayI centraldacs = GetCentralDACS(dacs.At(fNdims),hs,chip,tmp);
     dacs = centraldacs;
   }
   return dacs; 
@@ -437,7 +445,7 @@ Bool_t AliITSOnlineSPDfoAnalyzer::IsExisting(TArrayI dacs,Int_t hs, Int_t chip) 
   return isOk; 
 }
 //-----------------------------------------------------------
-TArrayI AliITSOnlineSPDfoAnalyzer::GetCentralDACS(Int_t qualityflag, Int_t hs, Int_t chip, const TH1D *hd) const
+TArrayI AliITSOnlineSPDfoAnalyzer::GetCentralDACS(Int_t qualityflag, Int_t hs, Int_t chip, TH1D **hd) const
 {
   //
   // This method gets the DAC values which are closest to the mean point in the N-dim histogram
@@ -449,9 +457,9 @@ TArrayI AliITSOnlineSPDfoAnalyzer::GetCentralDACS(Int_t qualityflag, Int_t hs, I
    
   Double_t *mean=new Double_t[fNdims];
   Int_t *goodbins=new Int_t[fNdims];
-  Double_t distance = 99999;
-  for(Int_t i=0; i<fNdims ;i++){ 
-    mean[i]=hd->GetMean();
+  Double_t distance = 9999999;
+    for(Int_t i=0; i<fNdims ;i++){ 
+    mean[i]=hd[i]->GetMean();
     goodbins[i]=0;
     dacs.AddAt(-1,i);
   }
@@ -464,7 +472,7 @@ TArrayI AliITSOnlineSPDfoAnalyzer::GetCentralDACS(Int_t qualityflag, Int_t hs, I
     fNh[qualityflag][hs][chip]->GetBinContent(in,bins);
     Double_t r2 = 0;  
     for(Int_t j=0; j<fNdims; j++) {
-      val[j]=hd->GetBinCenter(bins[j]);
+     val[j] = hd[j]->GetBinCenter(bins[j]);
       r2+=TMath::Power(val[j]-mean[j],2);
     }
     
@@ -474,11 +482,13 @@ TArrayI AliITSOnlineSPDfoAnalyzer::GetCentralDACS(Int_t qualityflag, Int_t hs, I
     }    
   }
   
-  for(Int_t k=0; k<fNdims; k++) {
-    Int_t a = (Int_t)( hd->GetBinCenter(goodbins[k]) + 0.5 *hd->GetBinWidth(goodbins[k]) ); 
-    dacs.AddAt(a,k);  
+  
+  for(Int_t k=0; k<fNdims; k++) {  
+   dacs.AddAt((Int_t)(hd[k]->GetBinCenter(goodbins[k]) + 0.5*hd[k]->GetBinWidth(goodbins[k])),k);
   }
+ 
   dacs.AddAt(qualityflag,fNdims);
+  
   
   delete mean;
   delete goodbins;
@@ -546,28 +556,24 @@ Bool_t AliITSOnlineSPDfoAnalyzer::CorrectPreVTHChioce(const TH1D *h,Int_t &bin) 
   //
   
   
-  Int_t maxbin = (Int_t)h->GetMaximum();
+  Int_t maxbin = (Int_t)h->GetMaximumBin();
   Double_t maxentries = h->GetBinContent(maxbin);
   
-  Int_t counts =0;
-  Int_t bins[10]={0,0,0,0,0,0,0,0,0,0};
-  Int_t binindex=0;
+  Int_t binindex = -1;
   Bool_t check=kFALSE;
 
-  for(Int_t i=0; i<= h->GetNbinsX(); i++){    
+  for(Int_t i=0; i< h->GetNbinsX(); i++){    
      if(h->GetBinContent(i) == maxentries){
-      counts++;
-      bins[binindex]=i;
-      binindex++;
+      if(binindex <= i) binindex =i;
     }
   }
   
-  if(counts>0) {
-    bin=bins[binindex-1];
+  
+  if(binindex>-1) {
+    bin=binindex;
     check = kTRUE; 
   }
   
   
   return check; 
 }
-

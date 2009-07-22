@@ -26,7 +26,7 @@ class AliITSOnlineSPDfo {
   
   virtual ~AliITSOnlineSPDfo(){ delete fArray; delete fDACnames;} //dctor
  
-  enum {kFOPOL=0, kCONVPOL=1, kCOMPREF=2, kPreVTH=3, kIdFOPOL=20, kIdCONVPOL=17, kIdCOMPREF=16, kIdPreVTH=39};
+  enum {kFOPOL=0, kCONVPOL=1, kCOMPREF=2, kCGPOL =3, kPreVTH=4, kIdFOPOL=20, kIdCONVPOL=17, kIdCOMPREF=16, kIdCGPOL=14, kIdPreVTH=39};
   
   // GENERAL METHODS
   void    AddMeasurement(const TArrayS dac, Short_t measure[3], Int_t hs, Int_t chipId);

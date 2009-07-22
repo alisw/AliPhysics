@@ -22,14 +22,18 @@
 ////////////////////////////////////////////////////////////////
 
 #include "AliITSOnlineSPDfoInfo.h"
+#include "AliLog.h"
 
 ClassImp(AliITSOnlineSPDfoInfo)
   
 //_____________________________________________________________________
 AliITSOnlineSPDfoInfo::AliITSOnlineSPDfoInfo(): 
  fRunNumber(0), fRouter(999), fNumTriggers(0),
- fDBversion(0), fNumDACindex(0), fDACindex(0)
-{}
+ fDBversion(0), fNumDACindex(0), fDACindex(0),
+ fActiveChipsAndHS()
+{
+for(Int_t i=0; i<60; i++) fActiveChipsAndHS.SetBitNumber(i,kFALSE);
+}
 //_____________________________________________________________________
 AliITSOnlineSPDfoInfo::~AliITSOnlineSPDfoInfo() 
 {}
@@ -42,6 +46,7 @@ void AliITSOnlineSPDfoInfo::ClearThis() {
   fDBversion=0;
   fNumDACindex=0;
   fDACindex.Reset();
+  for(Int_t i=0; i<60; i++) fActiveChipsAndHS.SetBitNumber(i,kFALSE);
 }
 //_____________________________________________________________________
 void AliITSOnlineSPDfoInfo::AddDACindex(Short_t index) {
@@ -56,3 +61,19 @@ Short_t AliITSOnlineSPDfoInfo::GetDACindex(UShort_t id) const {
   if (id>=fNumDACindex) return -1;
   else                  return fDACindex.At(id);
 }
+//_____________________________________________________________________
+Bool_t AliITSOnlineSPDfoInfo::IsActiveHS(UInt_t hs) const {
+  Bool_t isHS =kFALSE;
+  for(Int_t iChip =0; iChip<10; iChip++) isHS = IsActiveChip(hs,iChip);
+  return isHS;
+}
+//_____________________________________________________________________
+Bool_t AliITSOnlineSPDfoInfo::IsActiveChip(UInt_t hs, UInt_t chip) const {
+  if(hs > 5 || chip > 9) {
+    AliError(Form("hs %i or  chip %i  is out of range [hs=0-5  chip=0=9]\n",hs,chip));
+  return kFALSE;
+  }
+  return fActiveChipsAndHS.TestBitNumber(10*hs+chip);
+}
+//_____________________________________________________________________
+

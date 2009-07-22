@@ -300,9 +300,10 @@ TArrayI AliITSOnlineSPDfo::GetDACscanParams() const
   }
 
  
+ 
   for(Int_t i=0; i<fNdacs; i++) {
-    dacs.AddAt(min.At(i),3*i);
-    dacs.AddAt(max.At(i),3*i+1);
+    dacs.AddAt(min.At(i),3*i);    
+    dacs.AddAt(max.At(i),3*i+1); 
     dacs.AddAt(step.At(i),3*i+2); 
   }
  
@@ -353,7 +354,8 @@ TArrayS AliITSOnlineSPDfo::CreateDACArray(const TArrayS dacs, const TArrayS dacI
     else if(dacId.At(i)==kIdCONVPOL) dacarray.AddAt(dacs.At(i),kCONVPOL);
     else if(dacId.At(i)==kIdCOMPREF) dacarray.AddAt(dacs.At(i),kCOMPREF);
     else if(dacId.At(i)==kIdPreVTH) dacarray.AddAt(dacs.At(i),kPreVTH);
-    else dacarray.AddAt(dacs.At(i),i);
+    else if(dacId.At(i)==kIdCGPOL) dacarray.AddAt(dacs.At(i),kCGPOL);
+    else printf("new DAC included in the scan??\n");
     
   }
  
