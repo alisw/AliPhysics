@@ -48,7 +48,8 @@ void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
   
   fSharing.SetFMDData(fmd);
   fSharing.SetVertex(vertex);
-  
+  fSharing.SetOutputList(fListOfHistos);
+
   fDensity.SetOutputList(densitylist);
   fDensity.SetInputESDFMD(fmd) ;
   fDensity.SetInputVertex(vertex);

@@ -47,6 +47,7 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
     Float_t GetMultiplicityOfStrip(Float_t mult, Float_t eta, Float_t Eprev, Float_t Enext, UShort_t   det, Char_t  ring, UShort_t sec, UShort_t strip);
     void GetVertex(Double_t* vertexXYZ) ;
     void SetFMDData(AliESDFMD* fmd) {foutputESDFMD = fmd;}
+    void SetOutputList(TList* outlist) {fDiagList = outlist;}
     void SetVertex(AliESDVertex* vertex) {fEsdVertex = vertex;}
     void SetInputESD(AliESDEvent* esd) {fESD = esd;}
     Bool_t GetEventStatus() {return fStatus;}
@@ -61,7 +62,7 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
     Int_t         fNstrips;
     Bool_t        fSharedThis;
     Bool_t        fSharedPrev;
-    TList         fDiagList;
+    TList*        fDiagList;
     Bool_t        fStandalone;
     AliESDVertex* fEsdVertex;
     Bool_t        fStatus;

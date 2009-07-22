@@ -30,7 +30,7 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing()
   fNstrips(0),
   fSharedThis(kFALSE),
   fSharedPrev(kFALSE),
-  fDiagList(),
+  fDiagList(0),
   fStandalone(kTRUE),
   fEsdVertex(0),
   fStatus(kTRUE)
@@ -52,7 +52,7 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing(const char* name, Bool_t SE
     fNstrips(0),
     fSharedThis(kFALSE),
     fSharedPrev(kFALSE),
-    fDiagList(),
+    fDiagList(0),
     fStandalone(kTRUE),
     fEsdVertex(0),
     fStatus(kTRUE)
@@ -75,7 +75,10 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
   if(!fEsdVertex)
     fEsdVertex    = new AliESDVertex();
   //Diagnostics
-  fDiagList.SetName("Sharing diagnostics");
+  if(!fDiagList)
+    fDiagList = new TList();
+  
+  fDiagList->SetName("Sharing diagnostics");
   for(Int_t det = 1; det<=3; det++) {
     Int_t nRings = (det==1 ? 1 : 2);
     
@@ -92,9 +95,9 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
       TH1F* hNstripsHit    = new TH1F(Form("N_strips_hit_FMD%d%c",det,ringChar),
 				     Form("N_strips_hit_FMD%d%c",det,ringChar),
 				     25,0,25);
-      fDiagList.Add(hEdist);
-      fDiagList.Add(hEdist_after);
-      fDiagList.Add(hNstripsHit);
+      fDiagList->Add(hEdist);
+      fDiagList->Add(hEdist_after);
+      fDiagList->Add(hNstripsHit);
 
     }
   }
@@ -130,10 +133,9 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   const AliMultiplicity* testmult = fESD->GetMultiplicity();
   
   Int_t nTrackLets = testmult->GetNumberOfTracklets();
-  
   if(nTrackLets < 1000) foutputESDFMD->SetUniqueID(kTRUE);
   else foutputESDFMD->SetUniqueID(kFALSE);
-  
+
   AliESDFMD* fmd = fESD->GetFMDData();
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   if (!fmd) return;
@@ -145,7 +147,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
       UShort_t nsec = (ir == 0 ? 20  : 40);
       UShort_t nstr = (ir == 0 ? 512 : 256);
       
-      TH1F* hEdist = (TH1F*)fDiagList.FindObject(Form("Edist_before_sharing_FMD%d%c",det,ring));
+      TH1F* hEdist = (TH1F*)fDiagList->FindObject(Form("Edist_before_sharing_FMD%d%c",det,ring));
       
       for(UShort_t sec =0; sec < nsec;  sec++) {
 	fSharedThis      = kFALSE;
@@ -197,7 +199,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
     PostData(0, foutputESDFMD); 
     PostData(1, fEsdVertex); 
     PostData(2, fESD); 
-    PostData(3, &fDiagList); 
+    PostData(3, fDiagList); 
   }
 }
 //_____________________________________________________________________
@@ -307,7 +309,7 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
     Etotal += Enext;
     fSharedThis      = kTRUE;
   }
-  TH1F* hEdist = (TH1F*)fDiagList.FindObject(Form("Edist_after_sharing_FMD%d%c",det,ring));
+  TH1F* hEdist = (TH1F*)fDiagList->FindObject(Form("Edist_after_sharing_FMD%d%c",det,ring));
   hEdist->Fill(Etotal);
   
   Etotal = Etotal*TMath::Cos(Eta2Theta(eta));
