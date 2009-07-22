@@ -9,6 +9,11 @@
 
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
+#include "AliAODEvent.h"
+#include "AliAODInputHandler.h"
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliStack.h"
 
 #include "AliBalance.h"
 
@@ -21,7 +26,7 @@ ClassImp(AliAnalysisTaskBF)
 
 //________________________________________________________________________
 AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name) 
-  : AliAnalysisTask(name, ""), fESD(0), fBalance(0) {
+  : AliAnalysisTask(name, ""), fESD(0), fAOD(0), fMC(0), fBalance(0) {
   // Constructor
 
   // Define input and output slots here
@@ -35,19 +40,40 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
 void AliAnalysisTaskBF::ConnectInputData(Option_t *) {
   // Connect ESD or AOD here
   // Called once
+  TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
   if (!tree) {
     Printf("ERROR: Could not read chain from input slot 0");
   } 
   else {
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
-    if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
-    } 
+    if(gAnalysisLevel == "ESD") {
+      AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+      
+      if (!esdH) {
+	Printf("ERROR: Could not get ESDInputHandler");
+      } 
+      else
+	fESD = esdH->GetEvent();
+    }//ESD
+    else if(gAnalysisLevel == "AOD") {
+      AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+      
+      if (!aodH) {
+	Printf("ERROR: Could not get AODInputHandler");
+      } else
+	fAOD = aodH->GetEvent();
+    }//AOD
+    else if(gAnalysisLevel == "MC") {
+      AliMCEventHandler* mcH = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+      if (!mcH) {
+	Printf("ERROR: Could not retrieve MC event handler");
+      }
+      else
+	fMC = mcH->MCEvent();
+    }//MC
     else
-      fESD = esdH->GetEvent();
+      Printf("Wrong analysis type: Only ESD, AOD and MC types are allowed!");
   }
 }
 
@@ -56,39 +82,72 @@ void AliAnalysisTaskBF::CreateOutputObjects() {
   // Create histograms
   // Called once
   
-  //fBalance = new AliBalance();
-  //fBalance->SetAnalysisType(1);
-  //fBalance->SetNumberOfBins(18);
-  //fBalance->SetInterval(-0.9,0.9);
-  //cout<<fBalance->GetAnalysisType()<<endl;
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskBF::Exec(Option_t *) {
   // Main loop
   // Called for each event
-  
-  if (!fESD) {
-    Printf("ERROR: fESD not available");
-    return;
-  }
-
-  Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+  TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
   TObjArray *array = new TObjArray();
-
-  // Track loop to fill a pT spectrum
-  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-    AliESDtrack* track = fESD->GetTrack(iTracks);
-    if (!track) {
-      Printf("ERROR: Could not receive track %d", iTracks);
-      continue;
+  
+  //ESD analysis
+  if(gAnalysisLevel == "ESD") {
+    if (!fESD) {
+      Printf("ERROR: fESD not available");
+      return;
     }
-    array->Add(track);
-  } //track loop 
+    
+    Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+    for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
+      AliESDtrack* track = fESD->GetTrack(iTracks);
+      if (!track) {
+	Printf("ERROR: Could not receive track %d", iTracks);
+	continue;
+      }
+      array->Add(track);
+    } //track loop
+  }//ESD analysis
+  //AOD analysis
+  else if(gAnalysisLevel == "AOD") {
+    if (!fAOD) {
+      Printf("ERROR: fAOD not available");
+      return;
+    }
+    
+    Printf("There are %d tracks in this event", fAOD->GetNumberOfTracks());
+    for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
+      AliAODtrack* track = fAOD->GetTrack(iTracks);
+      if (!track) {
+	Printf("ERROR: Could not receive track %d", iTracks);
+	continue;
+      }
+      array->Add(track);
+    } //track loop
+  }//AOD analysis
+  //MC analysis
+  else if(gAnalysisLevel == "MC") {
+    if (!fMC) {
+      Printf("ERROR: fMC not available");
+      return;
+    }
+    
+    Printf("There are %d tracks in this event", fMC->GetNumberOfPrimaries());
+    for (Int_t iTracks = 0; iTracks < fMC->GetNumberOfPrimaries(); iTracks++) {
+      AliMCParticle* track = fMC->GetTrack(iTracks);
+      if (!track) {
+	Printf("ERROR: Could not receive particle %d", iTracks);
+	continue;
+      }
+      array->Add(track);
+    } //track loop
+  }//MC analysis
+
   fBalance->CalculateBalance(array);
   
   delete array;
+
   // Post output data.
   PostData(0, fBalance);
 }      

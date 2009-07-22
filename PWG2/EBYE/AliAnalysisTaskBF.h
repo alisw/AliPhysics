@@ -6,6 +6,8 @@
 
 class AliBalance;
 class AliESDEvent;
+class AliAODEvent;
+class AliMCEvent;
 
 #include "AliAnalysisTask.h"
 
@@ -24,6 +26,8 @@ class AliAnalysisTaskBF : public AliAnalysisTask {
   
  private:
   AliESDEvent *fESD;    //ESD object
+  AliAODEvent *fAOD;    //AOD object
+  AliMCEvent  *fMC;     //MC object
 
   AliBalance *fBalance; //BF object
    
