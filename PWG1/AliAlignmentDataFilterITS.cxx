@@ -224,7 +224,7 @@ void AliAlignmentDataFilterITS::CreateOutputObjects()
   fntCosmicMatching = new TNtuple("fntCosmicMatching","cosmic tracks matching in ITS","ncls1:ncls2:pt1:pt2:sigmad01:sigmad02:sigmaz01:sigmaz02:dxy:dz:phimu:thetamu:d0mu:z0mu");
   fListOfHistos->Add(fntCosmicMatching);
 
-  fspTree = new TTree("fspTree","Tree with ITS track points");
+  fspTree = new TTree("spTree","Tree with ITS track points");
   const AliTrackPointArray *array = 0;
   Float_t curv,curverr;
   fspTree->Branch("SP","AliTrackPointArray",&array);
