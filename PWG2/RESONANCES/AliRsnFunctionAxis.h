@@ -20,6 +20,8 @@ class AliRsnFunctionAxis : public TObject
   public:
 
     enum EAxisType {
+      kTrackPt,
+      kTrackEta,
       kTrack1P,
       kTrack2P,
       kTrack1Pt,
