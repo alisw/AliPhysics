@@ -48,7 +48,8 @@ AliTracker::AliTracker():
   fZ(0),
   fSigmaX(0.005),
   fSigmaY(0.005),
-  fSigmaZ(0.010) 
+  fSigmaZ(0.010),
+  fEventInfo(NULL)
 {
   //--------------------------------------------------------------------
   // The default constructor.
@@ -65,7 +66,8 @@ AliTracker::AliTracker(const AliTracker &atr):
   fZ(atr.fZ),
   fSigmaX(atr.fSigmaX),
   fSigmaY(atr.fSigmaY),
-  fSigmaZ(atr.fSigmaZ)
+  fSigmaZ(atr.fSigmaZ),
+  fEventInfo(atr.fEventInfo)
 {
   //--------------------------------------------------------------------
   // The default constructor.

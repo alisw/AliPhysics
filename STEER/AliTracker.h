@@ -25,6 +25,7 @@ class AliESDtrack;
 class AliExternalTrackParam;
 class AliTrackPoint;
 class AliKalmanTrack;
+class AliEventInfo;
 class AliTracker : public TObject {
 public:
   AliTracker();
@@ -79,6 +80,9 @@ public:
   static void SetResidualsArray(TObjArray **arr) { fResiduals=arr; }
   static TObjArray ** GetResidualsArray() { return fResiduals; }
 
+  void                SetEventInfo(AliEventInfo *evInfo) {fEventInfo = evInfo;}
+  const AliEventInfo* GetEventInfo() const {return fEventInfo;}
+
 protected:
   AliTracker(const AliTracker &atr);
 private:
@@ -95,8 +99,9 @@ private:
   Double_t fSigmaZ; // error of the primary vertex position in Z
   
   static AliRecoParam::EventSpecie_t fEventSpecie ; //! event specie, see AliRecoParam
+  AliEventInfo*                      fEventInfo;    //! pointer to the event info object
   
-  ClassDef(AliTracker,4) //abstract tracker
+  ClassDef(AliTracker,5) //abstract tracker
 };
 
 //__________________________________________________________________________
