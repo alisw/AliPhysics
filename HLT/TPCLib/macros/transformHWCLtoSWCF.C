@@ -37,7 +37,13 @@
  */
 
 void transformHWCLtoSWCF(const char* input="./"){
- 
+  
+  
+  if(!gSystem->AccessPathName("galice.root")){
+    cerr << "Please delete file galice.root or run at a different place." << endl;
+    return;
+  }
+
   if (!input) {
     cerr << "please specify input or run without arguments" << endl;
     return;
@@ -61,14 +67,19 @@ void transformHWCLtoSWCF(const char* input="./"){
   int iMinPart  = 0;
   int iMaxPart  = 0;
 
-  TString argument;
+  TString FCFInput;
+  //for(int slice=iMinSlice; slice<=iMaxSlice; slice++){
+    // for(int part=iMinPart; slice<=iMaxPart; part++){
+  
+         TString argument;
+         argument.Form("-datatype 'HWCLUST1' 'TPC '  -datafile ~/FCF/Cluster.fcf -dataspec 0x%02x%02x%02x%02x", iMinSlice, iMaxSlice, iMinPart, iMaxPart);
+         AliHLTConfiguration pubconf("FP", "FilePublisher", NULL, argument.Data());
+	 if(FCFInput.Length()>0) FCFInput+=" ";
+         FCFInput+="FP";
+    // }
+ // }
 
-  argument.Form("-datatype 'HWCLUST1' 'TPC '  -datafile /scratch/FCF/PulserData_Limit_0xFF.fcf -dataspec 0x%02x%02x%02x%02x", iMinSlice, iMaxSlice, iMinPart, iMaxPart);
-  
-  AliHLTConfiguration pubconf("FP", "FilePublisher", NULL, argument.Data());
-  
-  AliHLTConfiguration hwconf("FCF", "TPCHWClusterTransform", "FP", "");
-  
+  AliHLTConfiguration hwconf("FCF", "TPCHWClusterTransform", FCFInput.Data(), "");  
   AliHLTConfiguration clusDumpconf("sink1", "TPCClusterDump", "FCF", "-directory ClusterDump");
   
    
@@ -85,7 +96,7 @@ void transformHWCLtoSWCF(const char* input="./"){
   rec.SetLoadAlignFromCDB(0);
   rec.SetRunQA(":");
   rec.SetFillESD("");
-  rec.SetFillTriggerESD(false);
+  //rec.SetFillTriggerESD(false);
   rec.SetOption("HLT", "libAliHLTTPC.so loglevel=0x7c chains=sink1");
   rec.Run();
 }
