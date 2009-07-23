@@ -13,16 +13,14 @@
 
 using namespace std ;
 
-Double_t const  kPI        = TMath::Pi();
-// Double_t const  kTWOPI     = 2.*kPI;
 
 // structure of jet and particles container
 struct varContainer
   {
-  Double_t  pt; // pt of particle/jet
-  Double_t eta; // eta of particle/jet
-  Double_t phi; // phi of particle/jet
-  Int_t njet;   // njet is multiplicity of jet or if particles are stored , njet is index number of jet 
+  Double_t  pt;  // pt of particle/jet
+  Double_t eta;  // eta of particle/jet
+  Double_t phi;  // phi of particle/jet
+  Int_t    njet; // njet is multiplicity of jet or if particles are stored , njet is index number of jet 
   } ;
 
 class AliCdfJetHeader;
@@ -42,9 +40,11 @@ class AliCdfJetFinder : public AliJetFinder
     void           WriteJets() ;
     void           AnalizeJets();
     void           Clean();
-
+    
     virtual void   FinishRun();
 
+    void           SetAnalyseJets(Bool_t flag = kTRUE) {fAnalyseJets = flag;}
+    
   protected:
     AliCdfJetFinder ( const AliCdfJetFinder& jf );
     AliCdfJetFinder& operator = ( const AliCdfJetFinder& jf );
@@ -55,6 +55,8 @@ class AliCdfJetFinder : public AliJetFinder
     Bool_t fFromAod ;          // is the data taken from AOD (or ESD filter) 
     Bool_t fAODwrite ;         // write jets to AOD
     Bool_t fAODtracksWrite ;   // write jet tracks to AOD
+    Bool_t fAnalyseJets;       // analyse jets
+	
     TRefArray *fRefArr ;       // pointer to references array of tracks from AOD
 
     Int_t         fNJets;     // counter of number of jets
@@ -69,9 +71,10 @@ class AliCdfJetFinder : public AliJetFinder
     varContainer **fVectJet;      // container for Jets
 
     Double_t *fPtArray;  // momentum array
-    Int_t   *fIdxArray;  // index array of sorted pts
+    Int_t    *fIdxArray;  // index array of sorted pts
 
 
-    ClassDef(AliCdfJetFinder,1) };
+    ClassDef(AliCdfJetFinder,1)
+   };
 #endif
 

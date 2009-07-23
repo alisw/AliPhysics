@@ -64,6 +64,7 @@ AliCdfJetFinder::AliCdfJetFinder():
     fFromAod(0),
     fAODwrite(0),
     fAODtracksWrite(0),
+    fAnalyseJets(0),
     fRefArr (NULL),
     fNJets(-9999),
     fNPart(-9999),
@@ -366,7 +367,7 @@ ComputeConesWeight();
 
 if (fAODwrite) { cout << "Writing AOD" << endl ; WriteJets(); }
 
-AnalizeJets();
+if (fAnalyseJets) AnalizeJets();
 
 Clean();
 
@@ -378,7 +379,7 @@ void AliCdfJetFinder::InitData()
 // initialisation of variables and data members
 
   TClonesArray * vectArray = fReader->GetMomentumArray() ;
-    if ( vectArray == 0 ) { cout << "Could not get the momentum array" << endl; return; }
+  if ( vectArray == 0 ) { cout << "Could not get the momentum array" << endl; return; }
 
   fNPart = vectArray->GetEntries()  ; // n particles in this event;
 
@@ -583,17 +584,17 @@ for(  Int_t jetnr = 0 ; jetnr < fNJets ; jetnr++ )
   en = TMath::Sqrt ( px * px + py * py + pz * pz );
 
   AliAODJet jet (px, py, pz, en);
-  AddJet(jet);
+
 
   if (fDebug) jet.Print("");
 
   if (fFromAod && fAODtracksWrite)
-    {
-    for (  Int_t jetTrack = 0; jetTrack < fNPart; jetTrack++ )
+  {
+      for (  Int_t jetTrack = 0; jetTrack < fNPart; jetTrack++ )
       { if ( fVectParticle[jetTrack]->njet == jetnr ) { jet.AddTrack(fRefArr->At(jetTrack)) ; } }
-    }
-    // tracks REFs written in AOD
-
+  }
+  // tracks REFs written in AOD
+  AddJet(jet);
   }
 //jets vector parsed and written to AOD
 }
@@ -604,6 +605,8 @@ void AliCdfJetFinder::AnalizeJets()
 {
 // analyzing of jets and filling of histograms
 
+    const Double_t kPI = TMath::Pi();
+    
   //persistent pointer to histo20
   TH1F *hR = (TH1F*)fHistos->FindObject("histo20");
 
