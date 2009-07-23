@@ -51,6 +51,10 @@ enum {
   AliHLTFullyCacheLineAligned = -1
 };
 
+#if defined(__CUDACC__) & 0
+#define ALIHLTARRAY_STATIC_ASSERT(a, b)
+#define ALIHLTARRAY_STATIC_ASSERT_NC(a, b)
+#else
 namespace AliHLTArrayInternal
 {
   template<bool> class STATIC_ASSERT_FAILURE;
@@ -63,6 +67,7 @@ namespace AliHLTArrayInternal
   typedef AliHLTArrayInternal::STATIC_ASSERT_FAILURE<cond> ALIHLTARRAY_STATIC_ASSERT_CONCAT(_STATIC_ASSERTION_FAILED_##msg, __LINE__); \
   ALIHLTARRAY_STATIC_ASSERT_CONCAT(_STATIC_ASSERTION_FAILED_##msg, __LINE__) Error_##msg
 #define ALIHLTARRAY_STATIC_ASSERT(cond, msg) ALIHLTARRAY_STATIC_ASSERT_NC(cond, msg); (void) Error_##msg
+#endif
 
 template<typename T, int Dim> class AliHLTArray;
 
@@ -171,7 +176,7 @@ namespace AliHLTInternal
       static inline T2 *Alloc( int s ) { T2 *p = reinterpret_cast<T2 *>( _mm_malloc( s * sizeof( T2 ), 128 ) ); return new( p ) T2[s]; }
       static inline void Free( T2 *const p, int size ) {
         for ( int i = 0; i < size; ++i ) {
-          p[i].~T2();
+			p[i].~T2();
         }
         _mm_free( p );
       }
@@ -179,7 +184,7 @@ namespace AliHLTInternal
       static inline T2 *Alloc( int s ) { T2 *p; posix_memalign( &p, 128, s * sizeof( T2 ) ); return new( p ) T2[s]; }
       static inline void Free( T2 *const p, int size ) {
         for ( int i = 0; i < size; ++i ) {
-          p[i].~T2();
+			p[i].~T2();
         }
         std::free( p );
       }
@@ -386,11 +391,13 @@ class AliHLTArray : public AliHLTInternal::ArrayBase<T, Dim>
      */
     inline AliHLTArray operator-( int x ) const;
 
+#ifndef HLTCA_GPUCODE
     template<typename Other> inline AliHLTArray<Other, Dim> ReinterpretCast() const {
       AliHLTArray<Other, Dim> r;
       r.fData = reinterpret_cast<Other *>( Parent::fData );
       r.ReinterpretCast( *this, sizeof( T ), sizeof( Other ) );
     }
+#endif
 };
 
 /**
@@ -526,8 +533,11 @@ class AliHLTFixedArray : public AliHLTArray<typename AliHLTInternal::TypeForAlig
     void *operator new( size_t );
 
     // disable copy
+#ifdef HLTCA_GPUCODE
+#else
     AliHLTFixedArray( const AliHLTFixedArray & );
     AliHLTFixedArray &operator=( const AliHLTFixedArray & );
+#endif
 };
 
 
