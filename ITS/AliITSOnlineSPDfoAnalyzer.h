@@ -48,7 +48,6 @@ class AliITSOnlineSPDfoAnalyzer {
   // GETTERS
   void GetCanvases(const THnSparse *hn, Int_t ihs, Int_t ichip,Int_t iqual) const;
   TArrayI ChooseDACValues(Int_t ihs, Int_t ichip) const;
-  TArrayI GetCentralDACS(Int_t qualityflag, Int_t hs, Int_t chip, const TH1D *hd) const;
   TArrayI GetCentralDACS(Int_t qualityflag, Int_t hs, Int_t chip, TH1D **hd) const;
   AliITSOnlineSPDfo * GetFOHandler() const {return fFOHandler;}
   
