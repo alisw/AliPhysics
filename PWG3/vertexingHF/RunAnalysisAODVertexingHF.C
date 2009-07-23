@@ -14,8 +14,8 @@ void RunAnalysisAODVertexingHF()
   //
 
   //
-  TString analysisMode = "grid"; // "local", "grid", or "proof" (not yet)
-  TString inputMode    = "list"; // "list", "xml", or "dataset" (not yet)
+  TString analysisMode = "grid"; // "local", "grid", or "proof"
+  TString inputMode    = "list"; // "list", "xml", or "dataset"
   Long64_t nentries=1234567890,firstentry=0;
   Bool_t useParFiles=kFALSE;
   Bool_t useAlienPlugin=kTRUE;
@@ -28,8 +28,8 @@ void RunAnalysisAODVertexingHF()
     TGrid::Connect("alien://");
   } else if(analysisMode=="proof") {
     // Connect to the PROOF cluster
-    printf("PROOF mode not yet functional..\n");
-    return;
+    if(inputMode.Data()!="dataset") {printf("Input mode must be dataset, for proof analysis\n"); return;}
+    gEnv->SetValue("XSec.GSI.DelegProxy","2");
     TProof::Open("alicecaf");
     //TProof::Reset("alicecaf");
   }
@@ -48,8 +48,8 @@ void RunAnalysisAODVertexingHF()
     // Enable the needed packages
     //gProof->ClearPackages();
     if(!useParFiles) {
-      gProof->UploadPackage("AF-v4-16");
-      gProof->EnablePackage("AF-v4-16");
+      gProof->UploadPackage("AF-v4-17");
+      gProof->EnablePackage("AF-v4-17");
     } else {
       TString parDir="/afs/cern.ch/user/d/dainesea/code/";
       TString parFile;
@@ -108,31 +108,32 @@ void RunAnalysisAODVertexingHF()
 
   // Create Alien plugin, if requested
   if(useAlienPlugin) {  
+    if(analysisMode!="grid") {printf("Analysis mode must be grid, to use alien plugin\n"); return;}
     AliAnalysisGrid *alienHandler = CreateAlienHandler(pluginmode,useParFiles);  
     if(!alienHandler) return;
   }
 
 
   //-------------------------------------------------------------------
-  // Prepare input chain
+  // Prepare input
   TChain *chainAOD = 0;
   TString dataset; // for proof
 
   if(!useAlienPlugin) {
     TString makeAODInputChain="MakeAODInputChain.C"; makeAODInputChain.Prepend(loadMacroPath.Data());
-    gROOT->LoadMacro(makeAODInputChain.Data());
     if(inputMode=="list") {
       // Local files
+      gROOT->LoadMacro(makeAODInputChain.Data());
       chainAOD = MakeAODInputChain();// with this it reads ./AliAOD.root and ./AliAOD.VertexingHF.root
       //chainAOD = MakeAODInputChain("alien:///alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/180100/",1,1);
     } else if(inputMode=="xml") {
       // xml
+      gROOT->LoadMacro(makeAODInputChain.Data());
       chainAOD = MakeAODInputChain("collection_aod.xml","collection_aodHF.xml");
     } else if(inputMode=="dataset") {
       // CAF dataset
-      //gProof->ShowDataSet();
-      dataset="/ITS/dainesea/AODVertexingHF_LHC08x_180100_small";
-      chainAOD = MakeAODInputChainCAF(dataset.Data());
+      //gProof->ShowDataSets();
+      dataset="/ITS/dainesea/AODVertexingHF_LHC08x_180100";
     }
   }
 
@@ -145,6 +146,7 @@ void RunAnalysisAODVertexingHF()
 
   // Input
   AliAODInputHandler *inputHandler = new AliAODInputHandler();
+  if(analysisMode=="proof") inputHandler->AddFriend("AliAOD.VertexingHF.root");
   mgr->SetInputEventHandler(inputHandler);
   //-------------------------------------------------------------------
 
@@ -200,9 +202,13 @@ void RunAnalysisAODVertexingHF()
   // (the files MyTask.h MyTask.cxx AddMyTask.C have to be declared in plugin
   // configuration, see below)
   /*
-    gROOT->LoadMacro("MyTask.cxx++");
-    gROOT->LoadMacro("AddMyTask.C");
-    MyTask *myTask = AddMyTask();
+  if(analysisMode.Data()=="proof") {
+    gProof->LoadMacro("MyTask.cxx++g");
+  } else {
+    gROOT->LoadMacro("MyTask.cxx++g");
+  }
+  gROOT->LoadMacro("AddMyTask.C");
+  MyTask *myTask = AddMyTask();
   */
 
   //-------------------------------------------------------------------
@@ -215,7 +221,12 @@ void RunAnalysisAODVertexingHF()
   if(!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   if(analysisMode=="grid" && !useAlienPlugin) analysisMode="local";
-  mgr->StartAnalysis(analysisMode.Data(),chainAOD,nentries,firstentry);
+  if(chainAOD) {
+    mgr->StartAnalysis(analysisMode.Data(),chainAOD,nentries,firstentry);
+  } else {
+    // proof
+    mgr->StartAnalysis(analysisMode.Data(),dataset.Data(),nentries,firstentry);
+  }
 
   return;
 }
