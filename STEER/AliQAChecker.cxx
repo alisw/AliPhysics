@@ -153,26 +153,6 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
   // Opens and returns the file with the reference data 
   dirFile = NULL ; 
   TString refStorage(AliQAv1::GetQARefStorage()) ;
-//  if (refStorage.Contains(AliQAv1::GetLabLocalFile())) {	
-//    refStorage.ReplaceAll(AliQAv1::GetLabLocalFile(), "") ; 
-//    refStorage += AliQAv1::GetQARefFileName() ;
-//    if ( fRefFile ) 
-//      if ( fRefFile->IsOpen() ) 
-//					fRefFile->Close() ; 
-//    fRefFile = TFile::Open(refStorage.Data()) ; 
-//    if (!fRefFile) { 
-//      AliError(Form("Cannot find reference file %s", refStorage.Data())) ; 
-//      dirFile = NULL ; 
-//    }
-//    dirFile = fRefFile->GetDirectory(det) ; 
-//    if (!dirFile) {
-//      AliWarning(Form("Directory %s not found in %d", det, refStorage.Data())) ; 
-//    } else {
-//			dirFile = dirFile->GetDirectory(task) ; 
-//      if (!dirFile) 
-//				AliWarning(Form("Directory %s/%s not found in %s", det, task, refStorage.Data())) ; 
-//    }  
-//  } else 
   if (!refStorage.Contains(AliQAv1::GetLabLocalOCDB()) && !refStorage.Contains(AliQAv1::GetLabAliEnOCDB())) {
     AliError(Form("%s is not a valid location for reference data", refStorage.Data())) ; 
     return ; 
@@ -183,12 +163,7 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
       dirOCDB[specie] = NULL ; 
       if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
         continue ; 
-      //if ( strcmp(AliQAv1::GetRefDataDirName(), "") == 0 ) { // the name of the last level of the directory is not set (EventSpecie)
-        // Get it from RunInfo
-        //if (!fRunInfo)  // not yet set, get the info from GRP
-        //  LoadRunInfoFromGRP() ; 
       AliQAv1::SetQARefDataDirName(specie) ;
-      //}
       if ( ! manQA->GetLock() ) { 
         manQA->SetDefaultStorage(AliQAv1::GetQARefStorage()) ; 
         manQA->SetSpecificStorage("*", AliQAv1::GetQARefStorage()) ;
@@ -317,13 +292,21 @@ void AliQAChecker::LoadRunInfoFromGRP()
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAChecker::Run(const char * fileName)
+Bool_t AliQAChecker::Run(const char * fileName, Int_t runnumber)
 {
   // run the Quality Assurance Checker for all tasks Hits, SDigits, Digits, DigitsR, RecPoints, TrackSegments, RecParticles and ESDs
   // starting from data in file  
   TStopwatch stopwatch;
   stopwatch.Start();
-
+  
+  // set the run number
+  AliCDBManager::Instance()->SetRun(runnumber) ; 
+  // search and set the event species
+  AliQAv1 * qa = AliQAv1::Instance() ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if ( AliQAv1::GetQADataFile(fileName)->FindObjectAny(AliRecoParam::GetEventSpecieName(specie)) ) 
+      qa->SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
+  }
   //search for all detectors QA directories
   TList * detKeyList = AliQAv1::GetQADataFile(fileName)->GetListOfKeys() ; 
   TIter nextd(detKeyList) ; 
@@ -383,14 +366,16 @@ Bool_t AliQAChecker::Run(const char * fileName)
 		  qac->Run(index) ; 
     }
   }
-  AliInfo("QA performed for following detectors:") ; 
+  TString detList ; 
   for ( Int_t det = 0; det < AliQAv1::kNDET; det++) {
-    if (fFoundDetectors.Contains(AliQAv1::GetDetName(det))) {
-      AliInfoClass(Form("%s, ",AliQAv1::GetDetName(det))) ; 
-      fFoundDetectors.ReplaceAll(AliQAv1::GetDetName(det), "") ; 
+    if (fFoundDetectors.Contains(qa->GetDetName(det))) {
+      detList += qa->GetDetName(det) ; 
+      detList += " " ; 
+      fFoundDetectors.ReplaceAll(qa->GetDetName(det), "") ; 
+      qa->Show(qa->GetDetIndex(qa->GetDetName(det))) ; 
     }	
   }
-  printf("\n") ; 
+  AliInfo(Form("QA performed for following detectors: %s", detList.Data())) ; 
   return kTRUE ; 
 }
 

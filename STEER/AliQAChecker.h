@@ -39,7 +39,7 @@ public:
 //  static const char *    GetQAResultFileName() { return fgQAResultFileName.Data() ; }
 //  void                   SetQAResultDirName(const char * name) ; 
 //  void                   SetRefDirName(const char * name) ; 
-  Bool_t Run(const char * fileName = NULL) ;
+  Bool_t Run(const char * fileName = NULL, Int_t runnumber = 0) ;
   Bool_t Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TObjArray ** list);
   Bool_t Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TNtupleD ** list);
   void   SetRunInfo(AliRunInfo * ei) {fRunInfo = ei;}

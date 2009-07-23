@@ -141,45 +141,53 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/)
 	Double_t * test = new Double_t[AliRecoParam::kNSpecies] ;
 	Int_t count[AliRecoParam::kNSpecies]   = { 0 }; 
 
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+  Int_t specie ;
+  for (specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     test[specie] = 1.0 ; 
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ; 
-    if (!fDataSubDir) {
-      test[specie] = 0. ; // nothing to check
-    } else if (!fRefSubDir && !fRefOCDBSubDir) {
+    if (fDataSubDir) {
+      if (!fRefSubDir && !fRefOCDBSubDir) {
         test[specie] = -1 ; // no reference data
-    } else {
-      TList * keyList = fDataSubDir->GetListOfKeys() ; 
-      TIter next(keyList) ; 
-      TKey * key ;
-      count[specie] = 0 ; 
-      while ( (key = static_cast<TKey *>(next())) ) {
-        TObject * odata = fRefSubDir->Get(key->GetName()) ; 
-        if ( odata->IsA()->InheritsFrom("TH1") ) {
-          TH1 * hdata = static_cast<TH1*>(odata) ;
-          TH1 * href = NULL ; 
-          if (fRefSubDir) 
-            href  = static_cast<TH1*>(fRefSubDir->Get(key->GetName())) ;
-          else if (fRefOCDBSubDir[specie]) {  
-            href  = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(key->GetName())) ;
+      } else {        
+        TList * keyList = fDataSubDir->GetListOfKeys() ; 
+        TIter next(keyList) ; 
+        TKey * key ;
+        while ( (key = static_cast<TKey *>(next())) ) {
+          TDirectory * specieDir = fDataSubDir->GetDirectory(key->GetName()) ; 
+          TList * keykeyList = specieDir->GetListOfKeys() ; 
+          TIter next2(keykeyList) ; 
+          TKey * keykey ;
+          count[specie] = 0 ; 
+          while ( (keykey = static_cast<TKey *>(next2())) ) {
+            TObject * odata = specieDir->Get(keykey->GetName()) ; 
+            if ( odata->IsA()->InheritsFrom("TH1") ) {
+              TH1 * hdata = static_cast<TH1*>(odata) ;
+              TH1 * href = NULL ; 
+              if (fRefSubDir) { 
+                TDirectory * subdir = fRefSubDir->GetDirectory(key->GetName()) ;
+                href  = static_cast<TH1*>(subdir->Get(keykey->GetName())) ;
+              } else if (fRefOCDBSubDir[specie]) {  
+                href  = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(keykey->GetName())) ;
+              }
+              if (!href) 
+                test[specie] = -1 ; // no reference data ; 
+              else {
+                Double_t rv =  DiffK(hdata, href) ;
+                AliDebug(AliQAv1::GetQADebugLevel(), Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
+                test[specie] += rv ; 
+                count[specie]++ ; 
+              }
+            } else if (!odata->IsA()->InheritsFrom("TDirectory")) // skip the expert directory
+              AliError(Form("%s Is a Classname that cannot be processed", key->GetClassName())) ;
+            if (count[specie] != 0) 
+              test[specie] /= count[specie] ;
           }
-          if (!href) 
-            test[specie] = -1 ; // no reference data ; 
-          else {
-            Double_t rv =  DiffK(hdata, href) ;
-            AliDebug(AliQAv1::GetQADebugLevel(), Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
-            test[specie] += rv ; 
-            count[specie]++ ; 
-          }
-        } else
-          AliError(Form("%s Is a Classname that cannot be processed", key->GetClassName())) ;
+        }
       }
-      if (count[specie] != 0) 
-        test[specie] /= count[specie] ;
     }
   }
- 	return test ;
+  return test ;
 }  
 
 //____________________________________________________________________________
@@ -206,34 +214,33 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** li
         count[specie] = 0 ; 
         while ( (hdata = static_cast<TH1 *>(next())) ) {
           TString cln(hdata->ClassName()) ; 
-          if ( ! cln.Contains("TH1") )
-            continue ;           
-          if ( hdata) { 
-            if ( hdata->TestBit(AliQAv1::GetExpertBit()) )  // does not perform the test for expert data
-              continue ; 
-            TH1 * href = NULL ; 
-            if (fRefSubDir) 
-              href  = static_cast<TH1*>(fRefSubDir->Get(hdata->GetName())) ;
-            else if (fRefOCDBSubDir[specie])
-              href  = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(hdata->GetName())) ;
-            if (!href) 
-              test[specie] = -1 ; // no reference data ; 
-            else {
-              Double_t rv =  DiffK(hdata, href) ;
-              AliDebug(AliQAv1::GetQADebugLevel(), Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
-              test[specie] += rv ; 
-              count[specie]++ ; 
+          if ( cln.Contains("TH1") ) {
+            if ( hdata) { 
+              if ( hdata->TestBit(AliQAv1::GetExpertBit()) )  // does not perform the test for expert data
+                continue ; 
+              TH1 * href = NULL ; 
+              if (fRefSubDir) 
+                href  = static_cast<TH1*>(fRefSubDir->Get(hdata->GetName())) ;
+              else if (fRefOCDBSubDir[specie])
+                href  = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(hdata->GetName())) ;
+              if (!href) 
+                test[specie] = -1 ; // no reference data ; 
+              else {
+                Double_t rv =  DiffK(hdata, href) ;
+                AliDebug(AliQAv1::GetQADebugLevel(), Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
+                test[specie] += rv ; 
+                count[specie]++ ;
+              }
             }
-          } 
-          else
+          } else
             AliError("Data type cannot be processed") ;
+          if (count[specie] != 0) 
+            test[specie] /= count[specie] ;
         }
-        if (count[specie] != 0) 
-          test[specie] /= count[specie] ;
       }
     }
   }
-	return test ;
+  return test ;
 }  
 
 
@@ -262,15 +269,28 @@ Double_t AliQACheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
 }
 
 //____________________________________________________________________________
+void AliQACheckerBase::Run(AliQAv1::ALITASK_t index) 
+{ 
+	AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
+  
+	Double_t * rv = NULL ;
+  rv = Check(index) ;
+	SetQA(index, rv) ; 	
+	
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Test result of %s", AliQAv1::GetAliTaskName(index))) ;
+	
+  if (rv) 
+    delete [] rv ; 
+  Finish() ; 
+}
+
+//____________________________________________________________________________
 void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, TObjArray ** list) 
 { 
 	AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
   
 	Double_t * rv = NULL ;
-  if ( !list) 
-    rv = Check(index) ;
-  else 
-    rv = Check(index, list) ;
+  rv = Check(index, list) ;
 	SetQA(index, rv) ; 	
 	
   AliDebug(AliQAv1::GetQADebugLevel(), Form("Test result of %s", AliQAv1::GetAliTaskName(index))) ;
