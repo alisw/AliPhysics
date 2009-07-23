@@ -318,7 +318,7 @@ Double_t AliESDv0::AlphaV0() const {
   TVector3 momTot(Px(),Py(),Pz());
 
   Double_t lQlNeg = momNeg.Dot(momTot)/momTot.Mag();
-  Double_t lQlPos = momNeg.Dot(momTot)/momTot.Mag();
+  Double_t lQlPos = momPos.Dot(momTot)/momTot.Mag();
 
   return 1.-2./(1.+lQlNeg/lQlPos);
 }
