@@ -11,7 +11,7 @@ PATTERN="Merged.QA.Data.root"
 MERGEDOUT="Merged.QA.Data.$RUNNUMBER.root"
 dialog=/sw/bin/dialog
 Help(){
-echo "Usage: MergeAndCheck.sh -h|s|r [xxxx, yyyy, zzzz]"
+echo "Usage: MergeAndCheck.sh -h|s|r|c [xxxx, yyyy, zzzz]"
 echo "                        -h : get this list"
 echo "                        -s <production year> <production cycle> <run number> : processes MC data"
 echo "                        -r <year> <production cycle> <run number> : processes RAW data"
@@ -59,8 +59,8 @@ fi
 
 Check(){
 echo "...............Make Check of $MERGEDOUT"
-if [ -e "QA$RUNNUMBER.root" ] ; then 
-  rm QA$RUNNUMBER.root
+if [ -e "QA.$RUNNUMBER.root" ] ; then 
+  rm QA.$RUNNUMBER.root
 fi  
 if [ -e "QA.root" ] ; then 
   rm QA.root
@@ -70,17 +70,17 @@ aliroot -b << EOF
   AliQAChecker::Instance()->Run("$MERGEDOUT")
  .q
 EOF
+mv QA.root QA.$RUNNUMBER.root
 if [ ! "$?" -eq "0" ]; then
   echo "Check failed"
   exit 1
 fi
-mv QA.root QA$RUNNUMBER.root
 }
 
 Save(){
-echo "...............Save $MERGEDOUT and QA$RUNNUMBER.root in alien://$BASEDIR"
+echo "...............Save $MERGEDOUT and QA.$RUNNUMBER.root in alien://$BASEDIR"
 gbbox cp file:$MERGEDOUT $BASEDIR
-gbbox cp QA$RUNNUMBER.root $BASEDIR 
+gbbox cp file:QA$.RUNNUMBER.root $BASEDIR 
 if [ ! "$?" -eq "0" ]; then
   echo "Save failed"
   exit 1
@@ -98,7 +98,7 @@ if [ "$1" == "-h" ] ; then
  exit 0
 fi
 # run
-if [ "$1" == "-s" -o "$1" == "-r" ] ; then
+if [ "$1" == "-s" -o "$1" == "-r" -o "$1" == -a ] ; then
   if [ $# -lt 4 ] ; then
     echo "Missing data !"
     Help
@@ -116,6 +116,7 @@ if [ "$1" == "-s" -o "$1" == "-r" ] ; then
   MakeXML
   Merge
   Check
+  Save
 fi
 if [ "$1" == "-c" ] ; then 
   if [ $# -lt 2 ] ; then
@@ -126,8 +127,8 @@ if [ "$1" == "-c" ] ; then
   RUNNUMBER=$2
   MERGEDOUT="Merged.QA.Data.$RUNNUMBER.root"
   Check
-  Save
 fi
+
 # Done 
 if [ -e $XMLCOLL ] ; then 
   rm $XMLCOLL
