@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS = CaloCalib/AliAnalysisTaskPHOSPi0CalibSelection.cxx
+SRCS =  CaloCalib/AliAnalysisTaskCaloFilter.cxx CaloCalib/AliAnalysisTaskPHOSPi0CalibSelection.cxx
       
 HDRS:= $(SRCS:.cxx=.h) 
 

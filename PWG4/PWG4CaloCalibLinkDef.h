@@ -4,6 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliAnalysisTaskCaloFilter+;
 #pragma link C++ class AliAnalysisTaskPHOSPi0CalibSelection+;
 
 #endif

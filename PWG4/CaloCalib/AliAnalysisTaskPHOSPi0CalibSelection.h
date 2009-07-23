@@ -25,6 +25,8 @@ public:
 
   AliAnalysisTaskPHOSPi0CalibSelection();
   AliAnalysisTaskPHOSPi0CalibSelection(const char* name);
+  //AliAnalysisTaskPHOSPi0CalibSelection(const AliAnalysisTaskPHOSPi0CalibSelection&); 
+  //AliAnalysisTaskPHOSPi0CalibSelection& operator=(const AliAnalysisTaskPHOSPi0CalibSelection&); 
   virtual ~AliAnalysisTaskPHOSPi0CalibSelection();
 
   // Implementation of interface methods
@@ -34,11 +36,13 @@ public:
   void SetClusterMinEnergy(Float_t emin) {fEmin=emin;}
   void SetLogWeight(Float_t weight) {fLogWeight=weight;}
   void SetCalibCorrections(AliPHOSCalibData* cdata);
-	
-private:
+  void CreateAODFromESD();
+  void CreateAODFromAOD();	
 
-  AliAnalysisTaskPHOSPi0CalibSelection(const AliAnalysisTaskPHOSPi0CalibSelection&); 
-  AliAnalysisTaskPHOSPi0CalibSelection& operator=(const AliAnalysisTaskPHOSPi0CalibSelection&); 
+  void CopyAOD(Bool_t copy)   { fCopyAOD = copy ; }
+  Bool_t IsAODCopied() const { return fCopyAOD ; }
+
+private:
 
   void MaxEnergyCellPos(AliAODCaloCells *cells, AliAODCaloCluster* clu, Int_t& maxId);
 
@@ -50,11 +54,12 @@ private:
   AliPHOSGeometry * fPhosGeo;   // PHOS geometry
   AliPHOSCalibData* fCalibData; // corrections to CC from the previous iteration
 	
-  TH1F* fHmgg; //two-cluster inv.mass
+  TH1F*   fHmgg; //two-cluster inv.mass
   Float_t fEmin; // min. cluster energy
   Float_t fLogWeight; // log weight used in cluster recalibration
+  Bool_t  fCopyAOD; // Copy calo information only to AOD?
 	
-  ClassDef(AliAnalysisTaskPHOSPi0CalibSelection,2);
+  ClassDef(AliAnalysisTaskPHOSPi0CalibSelection,3);
 
 };
 
