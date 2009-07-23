@@ -57,7 +57,6 @@ public:
   void SetupSecondPass(const Int_t *flags,const Double_t *cuts=0);
 
   void SetLastLayerToTrackTo(Int_t l=0) {fLastLayerToTrackTo=l;} 
-  void SetLayersNotToSkip(const Int_t *l);
   void UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
 
   void  GetDCASigma(const AliITStrackMI* track, Float_t & sigmarfi, Float_t &sigmaz);
@@ -70,6 +69,8 @@ public:
   TObjArray* GetOriginal()        {return &fOriginal;}
   TTreeSRedirector *GetDebugStreamer() {return fDebugStreamer;}
   static Int_t CorrectForTPCtoITSDeadZoneMaterial(AliITStrackMI *t);
+  void  SetForceSkippingOfLayer();
+  Int_t ForceSkippingOfLayer(Int_t l) const { return fForceSkippingOfLayer[l]; }
 
   class AliITSdetector { 
   public:
@@ -281,7 +282,7 @@ protected:
   Int_t fPass;                           // current pass through the data 
   Int_t fConstraint[2];                  // constraint flags
   Bool_t fAfterV0;                       //indicates V0 founded
-  Int_t fLayersNotToSkip[AliITSgeomTGeo::kNLayers];     // layer masks
+  Int_t fForceSkippingOfLayer[AliITSgeomTGeo::kNLayers]; // layers to be skipped
   Int_t fLastLayerToTrackTo;             // the innermost layer to track to
   Float_t * fCoefficients;               //! working array with errors and mean cluster shape
   AliESDEvent  * fEsd;                   //! pointer to the ESD event
@@ -308,7 +309,7 @@ protected:
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
-  ClassDef(AliITStrackerMI,8)   //ITS tracker MI
+  ClassDef(AliITStrackerMI,9)   //ITS tracker MI
 };
 
 
@@ -382,3 +383,4 @@ inline void  AliITStrackerMI::AliITSdetector::GetGlobalXYZ(const AliITSRecPoint 
   xyz[1] = fR*fSinPhi + cl->GetY()*fCosPhi;
 }
 #endif
+

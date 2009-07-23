@@ -339,7 +339,8 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 // Track finder using the ESD object
 
   AliDebug(2,Form(" field is %f",event->GetMagneticField()));
-  
+  AliDebug(2,Form("SKIPPING %d %d %d %d %d %d",ForceSkippingOfLayer(0),ForceSkippingOfLayer(1),ForceSkippingOfLayer(2),ForceSkippingOfLayer(3),ForceSkippingOfLayer(4),ForceSkippingOfLayer(5)));
+
   if(!fITSclusters){
     Fatal("FindTracks","ITS cluster tree is not accessed - Abort!!!\n Please use method SetClusterTree to pass the pointer to the tree\n");
     return -1;
@@ -376,7 +377,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
   }
   for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
     AliITSlayer &layer=fgLayers[i];
-    if (!AliITSReconstructor::GetRecoParam()->GetLayersToSkip(i)) {
+    if (!ForceSkippingOfLayer(i)) {
       for(Int_t cli=0;cli<layer.GetNumberOfClusters();cli++){
 	AliITSRecPoint* cls = (AliITSRecPoint*)layer.GetCluster(cli);
 	if(cls->TestBit(kSAflag)==kTRUE) continue; //clusters used by TPC prol.
@@ -396,7 +397,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
     TClonesArray &clulay = *fCluLayer[ilay];
     TClonesArray &clucoo = *fCluCoord[ilay];
     AliITSlayer &layer=fgLayers[ilay];
-    if (!AliITSReconstructor::GetRecoParam()->GetLayersToSkip(ilay)) {
+    if (!ForceSkippingOfLayer(ilay)) {
       for(Int_t cli=0;cli<layer.GetNumberOfClusters();cli++){
 	AliITSRecPoint* cls = (AliITSRecPoint*)layer.GetCluster(cli);
 	if(cls->TestBit(kSAflag)==kTRUE) continue;
@@ -428,10 +429,10 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
     if(!fInwardFlag){ // Tracking outwards from the inner layers
       // loop on starting layer for track finding 
       for(Int_t innLay=0; innLay<=fOuterStartLayer; innLay++) {
-	if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(innLay)) continue; 
+	if(ForceSkippingOfLayer(innLay)) continue; 
 	Int_t minNPoints=iMinNPoints-innLay;
 	for(Int_t i=innLay+1;i<AliITSgeomTGeo::GetNLayers();i++)
-	  if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(i)) 
+	  if(ForceSkippingOfLayer(i)) 
 	    minNPoints--;
 	if(minNPoints<fMinNPoints) continue;
 
@@ -490,10 +491,10 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
     // loop on starting layer for track finding 
       for(Int_t outLay=AliITSgeomTGeo::GetNLayers()-1; outLay>=fInnerStartLayer; outLay--) {
 
-	if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(outLay)) continue;
+	if(ForceSkippingOfLayer(outLay)) continue;
 	Int_t minNPoints=iMinNPoints-(AliITSgeomTGeo::GetNLayers()-1-outLay);
 	for(Int_t i=0;i<outLay-1;i++)
-	  if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(i)) 
+	  if(ForceSkippingOfLayer(i)) 
 	    minNPoints--;
 	if(minNPoints<fMinNPoints) continue;
 	
@@ -933,7 +934,7 @@ void AliITStrackerSA::StoreTrack(AliITStrackV2 *t,AliESDEvent *event) const
 Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, AliITStrackSA* trs,Double_t /*zvertex*/,Int_t pflag){
   //function used to to find the clusters associated to the track
 
-  if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(layer)) return 0;
+  if(ForceSkippingOfLayer(layer)) return 0;
 
   Int_t nc=0;
   AliITSlayer &lay = fgLayers[layer];

@@ -33,7 +33,6 @@
 #include <TRandom.h>
 #include <TTreeStream.h>
 
-
 #include "AliLog.h"
 #include "AliITSPlaneEff.h"
 #include "AliITSCalibrationSPD.h"
@@ -185,6 +184,7 @@ fPlaneEff(0) {
 	
       } // end loop on detectors
     } // end loop on ladders
+    fForceSkippingOfLayer[i] = 0;
   } // end loop on layers
 
 
@@ -201,7 +201,6 @@ fPlaneEff(0) {
 		     AliITSReconstructor::GetRecoParam()->GetSigmaZVdef()}; 
   SetVertex(xyzVtx,ersVtx);
 
-  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fLayersNotToSkip[i]=AliITSRecoParam::GetLayersNotToSkip(i);
   fLastLayerToTrackTo=AliITSRecoParam::GetLastLayerToTrackTo();
   for (Int_t i=0;i<100000;i++){
     fBestTrackIndex[i]=0;
@@ -307,13 +306,6 @@ AliITStrackerMI::~AliITStrackerMI()
   }
   if(fITSChannelStatus) delete fITSChannelStatus;
   if(fPlaneEff) delete fPlaneEff;
-}
-//------------------------------------------------------------------------
-void AliITStrackerMI::SetLayersNotToSkip(const Int_t *l) {
-  //--------------------------------------------------------------------
-  //This function set masks of the layers which must be not skipped
-  //--------------------------------------------------------------------
-  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fLayersNotToSkip[i]=l[i];
 }
 //------------------------------------------------------------------------
 void AliITStrackerMI::ReadBadFromDetTypeRec() {
@@ -425,6 +417,9 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
 
   dummy.Clear();
 
+  // check whether we have to skip some layers
+  SetForceSkippingOfLayer();
+
   return 0;
 }
 //------------------------------------------------------------------------
@@ -479,6 +474,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   // The clusters must be already loaded !
   //--------------------------------------------------------------------
 
+  AliDebug(2,Form("SKIPPING %d %d %d %d %d %d",ForceSkippingOfLayer(0),ForceSkippingOfLayer(1),ForceSkippingOfLayer(2),ForceSkippingOfLayer(3),ForceSkippingOfLayer(4),ForceSkippingOfLayer(5)));
 
   fTrackingPhase="Clusters2Tracks";
 
@@ -658,6 +654,7 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
      t->SetExpQ(TMath::Max(0.8*t->GetESDtrack()->GetTPCsignal(),30.));
 
      ResetTrackToFollow(*t);
+
      /*
      // propagate to vertex [SR, GSI 17.02.2003]
      // Start Time measurement [SR, GSI 17.02.2003], corrected by I.Belikov
@@ -2247,7 +2244,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
   for(innermostlayer=0; innermostlayer<AliITSgeomTGeo::GetNLayers(); innermostlayer++) {
     if(drphi < fgLayers[innermostlayer].GetR()) break;
   }
-  //printf(" drphi  %f  innermost %d\n",drphi,innermostlayer);
+  AliDebug(2,Form(" drphi  %f  innermost %d",drphi,innermostlayer));
 
   Int_t modstatus=1; // found
   Float_t xloc,zloc;
@@ -2264,6 +2261,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
   for (Int_t ilayer = from; ilayer != to; ilayer += step) {
      AliITSlayer &layer=fgLayers[ilayer];
      Double_t r=layer.GetR();
+
      if (step<0 && xx>r) break;
 
      // material between SSD and SDD, SDD and SPD
@@ -2302,6 +2300,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      }
 
      if (idet<0) return kFALSE;
+
 
      const AliITSdetector &det=layer.GetDetector(idet);
      if (!track->Propagate(det.GetPhi(),det.GetR())) return kFALSE;
@@ -4273,6 +4272,35 @@ void AliITStrackerMI::DeleteTrksMaterialLUT() {
   return;
 }
 //------------------------------------------------------------------------
+void AliITStrackerMI::SetForceSkippingOfLayer() {
+  //-----------------------------------------------------------------
+  // Check if we are forced to skip layers
+  // either we set to skip them in RecoParam
+  // or they were off during data-taking
+  //-----------------------------------------------------------------
+
+  const AliEventInfo *eventInfo = GetEventInfo();
+ 
+  for(Int_t l=0; l<AliITSgeomTGeo::kNLayers; l++) {
+    fForceSkippingOfLayer[l] = 0;
+    // check reco param
+    if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(l)) fForceSkippingOfLayer[l] = 1;
+    // check run info
+
+    if(eventInfo) {
+      AliDebug(2,Form("GetEventInfo->GetTriggerCluster: %s",eventInfo->GetTriggerCluster()));
+      if(l==0 || l==1)  {
+	if(!strstr(eventInfo->GetTriggerCluster(),"ITSSPD")) fForceSkippingOfLayer[l] = 1;
+      } else if(l==2 || l==3) {
+	if(!strstr(eventInfo->GetTriggerCluster(),"ITSSDD")) fForceSkippingOfLayer[l] = 1; 
+      } else {
+	if(!strstr(eventInfo->GetTriggerCluster(),"ITSSSD")) fForceSkippingOfLayer[l] = 1;
+      } 
+    }
+  }
+  return;
+}
+//------------------------------------------------------------------------
 Int_t AliITStrackerMI::CheckSkipLayer(const AliITStrackMI *track,
 				      Int_t ilayer,Int_t idet) const {
   //-----------------------------------------------------------------
@@ -4283,7 +4311,7 @@ Int_t AliITStrackerMI::CheckSkipLayer(const AliITStrackMI *track,
   // return 2: track outside z acceptance of SSD/SDD and will cross both SPD
   //-----------------------------------------------------------------
 
-  if (AliITSReconstructor::GetRecoParam()->GetLayersToSkip(ilayer)) return 1;
+  if (ForceSkippingOfLayer(ilayer)) return 1;
 
   if (idet<0 && ilayer>1 && AliITSReconstructor::GetRecoParam()->GetExtendedEtaAcceptance()) {
     // check if track will cross SPD outer layer
@@ -4716,3 +4744,4 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
   }
 return;
 }
+
