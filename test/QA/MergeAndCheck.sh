@@ -38,6 +38,10 @@ fi
 MakeXML(){
 echo "...............Make XML for" $BASEDIR
 gbbox find -x MergedQACollection $BASEDIR $PATTERN > $XMLCOLL
+if [ ! "$?" -eq "0" ]; then
+  echo "MergeXML failed"
+  exit 1
+fi
 }
 
 Merge(){
@@ -47,6 +51,10 @@ aliroot -b << EOF
   qam->MergeXML("$XMLCOLL", NULL, "$MERGEDOUT")
  .q
 EOF
+if [ ! "$?" -eq "0" ]; then
+  echo "Merge failed"
+  exit 1
+fi
 }
 
 Check(){
@@ -62,8 +70,23 @@ aliroot -b << EOF
   AliQAChecker::Instance()->Run("$MERGEDOUT")
  .q
 EOF
+if [ ! "$?" -eq "0" ]; then
+  echo "Check failed"
+  exit 1
+fi
 mv QA.root QA$RUNNUMBER.root
 }
+
+Save(){
+echo "...............Save $MERGEDOUT and QA$RUNNUMBER.root in alien://$BASEDIR"
+gbbox cp file:$MERGEDOUT $BASEDIR
+gbbox cp QA$RUNNUMBER.root $BASEDIR 
+if [ ! "$?" -eq "0" ]; then
+  echo "Save failed"
+  exit 1
+fi
+}
+
 # Start
 if [ $# -eq 0 ] ; then
  Help 
@@ -103,6 +126,7 @@ if [ "$1" == "-c" ] ; then
   RUNNUMBER=$2
   MERGEDOUT="Merged.QA.Data.$RUNNUMBER.root"
   Check
+  Save
 fi
 # Done 
 if [ -e $XMLCOLL ] ; then 
