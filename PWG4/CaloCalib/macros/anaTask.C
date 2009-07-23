@@ -29,6 +29,10 @@ void anaTask()
   gSystem->Load("libANALYSISalice"); //AliAnalysisTaskSE
   gSystem->Load("libPWG4CaloCalib");
   
+  //Analysis settings
+ Bool_t bCopy = kTRUE; // True if ESD filter not called before.
+ TString eventType = "ESD";
+
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain("list.txt", 15);
   
@@ -41,22 +45,29 @@ void anaTask()
   AliAnalysisManager *mgr = new AliAnalysisManager("PHOSPi0Calib");
   
   //Input event handler
-  AliVEventHandler* esdH = new AliESDInputHandler();
-  mgr->SetInputEventHandler(esdH);
-  
+  if(eventType =="ESD"){
+    AliVEventHandler* esdH = new AliESDInputHandler();
+    mgr->SetInputEventHandler(esdH);
+  }
+  else if   if(eventType =="AOD"){
+    AliVEventHandler* aodH = new AliAODInputHandler();
+    mgr->SetInputEventHandler(aodH);
+  }
+
   //Output event handler
   AliAODHandler* aodoutHandler   = new AliAODHandler();
   aodoutHandler->SetOutputFileName("aod.root");
   mgr->SetOutputEventHandler(aodoutHandler);
   
   // ESD filter task
-  gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskESDfilter.C");
-  AliAnalysisTaskESDfilter *esdfilter = AddTaskESDfilter(kFALSE);
+  //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskESDfilter.C");
+  //AliAnalysisTaskESDfilter *esdfilter = AddTaskESDfilter(kFALSE);
   
   // Calibration task 
   //
   AliAnalysisTaskPHOSPi0CalibSelection *task = new AliAnalysisTaskPHOSPi0CalibSelection("PHOSPi0CalibSelection");
   task->SetClusterMinEnergy(0.4); 
+  task->CopyAOD(bCopy);
   mgr->AddTask(task);
   
   // Create containers for input/output
@@ -67,6 +78,21 @@ void anaTask()
   mgr->ConnectInput   (task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput2);
   
+  if(bCopy){
+
+    AliAODHandler* aodoutHandler   = new AliAODHandler();
+    aodoutHandler->SetOutputFileName("AliAODs_PHOS.root");
+    //aodoutHandler->SetCreateNonStandardAOD();
+    mgr->SetOutputEventHandler(aodoutHandler);
+
+    AliAnalysisDataContainer *coutput1 =    mgr->GetCommonOutputContainer();
+    //mgr->CreateContainer("tree", TTree::Class(),
+    //		   AliAnalysisManager::kOutputContainer, "AliAODs_PHOS.root");
+    mgr->ConnectOutput (task,     0, coutput1 );
+
+  }
+
+
   // Enable debug printouts
   //mgr->SetDebugLevel(10);
   

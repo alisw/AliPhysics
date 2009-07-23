@@ -1,7 +1,7 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-       CaloCalib/AliAnalysisTaskPHOSPi0CalibSelection.cxx 
+    CaloCalib/AliAnalysisTaskCaloFilter.cxx CaloCalib/AliAnalysisTaskPHOSPi0CalibSelection.cxx 
 )
 
 # fill list of header files from list of source files
