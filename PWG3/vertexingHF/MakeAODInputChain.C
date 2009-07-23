@@ -169,3 +169,63 @@ TChain *MakeAODInputChain(const char* pathname="",
  
   return chainAOD;
 }
+//----------------------------------------------------------------------------
+TFileCollection* MakeRootArchFileCollection(const char* collectionfileAOD,
+					    Int_t nfiles=-1){
+
+  // METHOD USEFUL FOR ANALYSIS ON THE CAF
+  // Check the presence of both AliAOD.root and AODVertexingHF.root files
+  // in the same path
+  // returns a TFileCollection suitable for storing datasets in CAF 
+  // Origin: A.Rossi, andrea.rossi@ts.infn.it
+  //
+  
+  TAlienCollection *collectionAOD       = TAlienCollection::Open(collectionfileAOD);
+  TGridResult *tagResultAOD = collectionAOD->GetGridResult("",0,0);
+
+  Int_t nmaxentr;
+  TFileCollection *proofColl=new TFileCollection("proofColl","proofColl");
+  
+  nmaxentr=tagResultAOD->GetEntries();
+    if(nfiles>0&&nmaxentr>nfiles)nmaxentr=nfiles;
+    TString aodlfn;
+    for(Int_t ifile=0; ifile<nmaxentr; ifile++) {
+      aodlfn=tagResultAOD->GetKey(ifile,"lfn");
+      aodlfn.ReplaceAll("AliAOD.root","");
+      aodlfn.ReplaceAll("AliAODs.root","");
+      TGridResult *r=gGrid->Query(aodlfn.Data(),"AliAOD.VertexingHF.root");
+        if(r->GetEntries()!=1)continue;     
+      r=gGrid->Query(aodlfn.Data(),"root_archive.zip");
+      if(r->GetEntries()!=1)continue;       
+      aodlfn.Append("root_archive.zip");      
+      printf("Adding file %s\n",aodlfn.Data());
+      proofColl->Add(r->GetKey(0,"turl"));
+    }
+    return proofColl;
+}
+//----------------------------------------------------------------------------
+void StageToCAF(TString xmlcoll="collAODLHC08x.xml",
+		TString datasetname="AODVertexingHF_LHC08x_10files",
+		Int_t nfiles=-1) {
+  //
+  // Staging a dataset to CAF
+  // andrea.dainese@pd.infn.it
+  //
+
+  //gROOT->LoadMacro("MakeAODInputChain.C");
+
+
+  TGrid::Connect("alien://");
+
+  // find -x collAODLHC08x -z /alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/* AliAOD.root > collAODLHC08x.xml
+
+  TFileCollection *proofColl = MakeRootArchFileCollection(xmlcoll.Data(),nfiles);
+  proofColl->SetAnchor("AliAOD.root");
+
+  gEnv->SetValue("XSec.GSI.DelegProxy","2");
+  TProof::Open("dainesea:PWG3@alicecaf"); 
+  gProof->RegisterDataSet(datasetname.Data(),proofColl);
+  gProof->ShowDataSets();
+
+  return;
+}
