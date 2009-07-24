@@ -23,6 +23,7 @@
 #include <TTree.h>
 #include <TList.h>
 #include <TNamed.h>
+#include <TFile.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAODEvent.h"
@@ -66,11 +67,21 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
  
     if (!fTree) return kFALSE;
    
+    TString aodTreeFName,aodFriendTreeFName;
+
     while((obj = (TNamed*)next())) {
 	if (fTree->GetTree()) {
-	    (fTree->GetTree())->AddFriend("aodTree", obj->GetName());
+	  aodTreeFName = (fTree->GetTree()->GetCurrentFile())->GetName();
+	  aodFriendTreeFName = aodTreeFName;
+	  aodFriendTreeFName.ReplaceAll("AliAOD.root",obj->GetName());
+	  aodFriendTreeFName.ReplaceAll("AliAODs.root",obj->GetName());
+	  (fTree->GetTree())->AddFriend("aodTree", aodFriendTreeFName.Data());
 	} else {
-	    fTree->AddFriend("aodTree", obj->GetName());
+	  aodTreeFName = (fTree->GetCurrentFile())->GetName();
+	  aodFriendTreeFName = aodTreeFName;
+	  aodFriendTreeFName.ReplaceAll("AliAOD.root",obj->GetName());
+	  aodFriendTreeFName.ReplaceAll("AliAODs.root",obj->GetName());
+	  fTree->AddFriend("aodTree", aodFriendTreeFName.Data());
 	}
     }
  
