@@ -29,6 +29,8 @@ ClassImp(AliAODJet)
 //______________________________________________________________________________
 AliAODJet::AliAODJet() :
     AliVParticle(),
+    fNeutralFraction(0),
+    fTrigger(0),
     fMomentum(0),
     fRefTracks(new TRefArray())
 {
@@ -37,10 +39,13 @@ AliAODJet::AliAODJet() :
     fBackgEnergy[1]   = 0.;
     fEffectiveArea[0] = 0.;   
     fEffectiveArea[1] = 0.;   
+    fEffectiveAreaError[0] = fEffectiveAreaError[1] = 0;
 }
 
 AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
     AliVParticle(),
+    fNeutralFraction(0),
+    fTrigger(0),
     fMomentum(0),
     fRefTracks(new TRefArray())
 {
@@ -48,12 +53,15 @@ AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
     fBackgEnergy[0]   = 0.;     
     fBackgEnergy[1]   = 0.;
     fEffectiveArea[0] = 0.;   
-    fEffectiveArea[1] = 0.;   
+    fEffectiveArea[1] = 0.;
+    fEffectiveAreaError[0] = fEffectiveAreaError[1] = 0;   
     fMomentum = new TLorentzVector(px, py, pz, e);
 }
 
 AliAODJet::AliAODJet(TLorentzVector & p):
     AliVParticle(),
+    fNeutralFraction(0),
+    fTrigger(0),
     fMomentum(0),
     fRefTracks(new TRefArray())
 {
@@ -61,7 +69,8 @@ AliAODJet::AliAODJet(TLorentzVector & p):
     fBackgEnergy[0]   = 0.;     
     fBackgEnergy[1]   = 0.;
     fEffectiveArea[0] = 0.;   
-    fEffectiveArea[1] = 0.;   
+    fEffectiveArea[1] = 0.;
+    fEffectiveAreaError[0] = fEffectiveAreaError[1] = 0;    
     fMomentum = new TLorentzVector(p);
 }
 
@@ -77,6 +86,8 @@ AliAODJet::~AliAODJet()
 //______________________________________________________________________________
 AliAODJet::AliAODJet(const AliAODJet& jet) :
     AliVParticle(jet),
+    fNeutralFraction(jet.fNeutralFraction),
+    fTrigger(jet.fTrigger),
     fMomentum(0),
     fRefTracks(0)
 {
@@ -85,7 +96,8 @@ AliAODJet::AliAODJet(const AliAODJet& jet) :
     fBackgEnergy[1]   = jet.fBackgEnergy[1];
     fEffectiveArea[0] = jet.fEffectiveArea[0];
     fEffectiveArea[1] = jet.fEffectiveArea[1];
-
+    fEffectiveAreaError[0] = jet.fEffectiveAreaError[0];
+    fEffectiveAreaError[1] = jet.fEffectiveAreaError[1];
     fMomentum  = new TLorentzVector(*jet.fMomentum);
     fRefTracks = new TRefArray(*jet.fRefTracks);
 }
@@ -100,7 +112,10 @@ AliAODJet& AliAODJet::operator=(const AliAODJet& jet)
     fBackgEnergy[1]   = jet.fBackgEnergy[1];
     fEffectiveArea[0] = jet.fEffectiveArea[0];
     fEffectiveArea[1] = jet.fEffectiveArea[1];
-
+    fEffectiveAreaError[0] = jet.fEffectiveAreaError[0];
+    fEffectiveAreaError[1] = jet.fEffectiveAreaError[1];
+    fNeutralFraction = jet.fNeutralFraction;
+    fTrigger = jet.fTrigger;
     delete fMomentum;
     fMomentum  = new TLorentzVector(*jet.fMomentum);
     delete fRefTracks;

@@ -43,15 +43,23 @@ class AliAODJet : public AliVParticle {
     virtual Double_t Yv()         const {return -999.;} //
     virtual Double_t Zv()         const {return -999.;} //
     virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }  
+    virtual Bool_t   IsTriggeredEMCAL(){return (fTrigger&kEMCALTriggered)==kEMCALTriggered;}
+    virtual Bool_t   IsTriggeredTRD(){return (fTrigger&kTRDTriggered)==kTRDTriggered;}
+    virtual UChar_t  Trigger(){return fTrigger;}
 
-//
     virtual void     AddTrack(TObject *tr) {fRefTracks->Add(tr);}
     TObject* GetTrack(Int_t i) {return fRefTracks->At(i);}
     virtual void     SetBgEnergy(Double_t bgEnCh, Double_t bgEnNe)
 	{fBackgEnergy[0] = bgEnCh; fBackgEnergy[1] = bgEnNe;}
-    virtual void     SetEffArea(Double_t effACh, Double_t effANe)
-	{fEffectiveArea[0] = effACh; fEffectiveArea[1] = effANe;}
+    virtual void     SetEffArea(Double_t effACh, Double_t effANe, Double_t effAErrCh = 0, Double_t effAErrNe = 0)
+	{
+	  fEffectiveArea[0] = effACh; fEffectiveArea[1] = effANe;
+	  fEffectiveAreaError[0] = effAErrCh;
+	  fEffectiveAreaError[1] = effAErrNe;
+	}
     virtual void     SetPxPyPzE(Double_t px, Double_t py, Double_t pz, Double_t e);
+    virtual void     SetTrigger(UChar_t f){fTrigger |= f;}
+    virtual void     ResetTrigger(UChar_t f){fTrigger &= ~f;}
 
     virtual TRefArray* GetRefTracks()           const { return  fRefTracks;}
     virtual Double_t   ChargedBgEnergy()        const { return  fBackgEnergy[0];}
@@ -60,6 +68,8 @@ class AliAODJet : public AliVParticle {
 
     virtual Double_t   EffectiveAreaCharged()   const { return  fEffectiveArea[0];}
     virtual Double_t   EffectiveAreaNeutral()   const { return  fEffectiveArea[1];}
+    virtual Double_t   ErrorEffectiveAreaCharged()   const { return  fEffectiveAreaError[0];}
+    virtual Double_t   ErrorEffectiveAreaNeutral()   const { return  fEffectiveAreaError[1];}
     virtual Double_t   DeltaR(const AliVParticle* part);
 
     
@@ -71,6 +81,9 @@ class AliAODJet : public AliVParticle {
     virtual const Double_t* PID() const { return NULL;}
     virtual Int_t   GetLabel()    const { return -1;}
 //
+
+
+
 
     /** Compare this class with an other instance of this class
      *  used in a TClonesArray::Sort()
@@ -86,14 +99,22 @@ class AliAODJet : public AliVParticle {
      */
     Bool_t IsSortable() const  { return kTRUE; }
 
- private:
-    Double32_t      fBackgEnergy[2];     // Subtracted background energy
-    Double32_t      fEffectiveArea[2];   // Effective jet area used for background subtraction
+    // first only one bit for EMCAL and TRD, leave space for more
+    // trigger types and/or other detectors
+    enum {kEMCALTriggered = 1<<0,
+	  kTRDTriggered = 4<<0};
 
+
+ private:
+    Double32_t      fBackgEnergy[2];        // Subtracted background energy
+    Double32_t      fEffectiveArea[2];      // Effective jet area used for background subtraction
+    Double32_t      fEffectiveAreaError[2];  //[0,1,10] relative error of jet areas, 10 bit precision
+    Double32_t      fNeutralFraction;       //[0,1,12] Neutral fraction between 0 and 1 12 bit precision;
+    UChar_t         fTrigger;             // Bit mask to flag jets triggered by a certain detector  
     TLorentzVector* fMomentum;           // Jet 4-momentum vector
     TRefArray*      fRefTracks;          // array of references to the tracks belonging to the jet
 
-    ClassDef(AliAODJet,4);
+    ClassDef(AliAODJet,5);
 
 };
 
