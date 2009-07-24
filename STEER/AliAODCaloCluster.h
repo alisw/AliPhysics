@@ -58,8 +58,8 @@ class AliAODCaloCluster : public AliAODCluster {
   Int_t    GetNTracksMatched() const { return fTracksMatched.GetEntriesFast(); }
   TObject *GetTrackMatched(Int_t i) const { return fTracksMatched.At(i); }
  
-  void SetNCells(Int_t n) { fNCells = n;}
-  Double_t GetNCells() const   { return fNCells;}
+  void  SetNCells(Int_t n) { fNCells = n;}
+  Int_t GetNCells() const   { return fNCells;}
   
   void SetCellsAbsId(UShort_t *array);
   UShort_t *GetCellsAbsId() {return  fCellsAbsId;}
