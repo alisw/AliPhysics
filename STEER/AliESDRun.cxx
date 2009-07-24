@@ -42,6 +42,7 @@ AliESDRun::AliESDRun() :
   fDiamondCovXY[1]=0.;
   fTriggerClasses.SetOwner(kTRUE);
   for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
+  for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
 }
 
 //______________________________________________________________________________
@@ -67,6 +68,13 @@ AliESDRun::AliESDRun(const AliESDRun &esd) :
       fPHOSMatrix[m]=new TGeoHMatrix(*(esd.fPHOSMatrix[m])) ;
     else
       fPHOSMatrix[m]=NULL;
+  }
+	
+  for(Int_t sm=0; sm<kNEMCALMatrix; sm++){
+	if(esd.fEMCALMatrix[sm])
+		fEMCALMatrix[sm]=new TGeoHMatrix(*(esd.fEMCALMatrix[sm])) ;
+	else
+		fEMCALMatrix[sm]=NULL;
   }
 }
 
@@ -94,6 +102,13 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
       else
 	fPHOSMatrix[m]=0;
     }
+	  
+	for(Int_t sm=0; sm<kNEMCALMatrix; sm++){
+	  if(esd.fEMCALMatrix[sm])
+		  fEMCALMatrix[sm]=new TGeoHMatrix(*(esd.fEMCALMatrix[sm])) ;
+	  else
+		  fEMCALMatrix[sm]=0;
+	}
   } 
   return *this;
 }
@@ -118,6 +133,11 @@ AliESDRun::~AliESDRun() {
   for(Int_t m=0; m<kNPHOSMatrix; m++) {
     if(fPHOSMatrix[m]) delete fPHOSMatrix[m] ;
     fPHOSMatrix[m] = NULL;
+  }
+  // Delete PHOS position matrices
+  for(Int_t sm=0; sm<kNEMCALMatrix; sm++) {
+	if(fEMCALMatrix[sm]) delete fEMCALMatrix[sm] ;
+	fEMCALMatrix[sm] = NULL;
   }
 }
 

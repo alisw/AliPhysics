@@ -115,7 +115,8 @@ public:
   void     SetTriggerClass(const char*name, Int_t index) {fESDRun->SetTriggerClass(name,index);}
   void     SetPHOSMatrix(TGeoHMatrix*matrix, Int_t i) {fESDRun->SetPHOSMatrix(matrix,i);}
   const TGeoHMatrix* GetPHOSMatrix(Int_t i) const {return fESDRun->GetPHOSMatrix(i);}
-  
+  void     SetEMCALMatrix(TGeoHMatrix*matrix, Int_t i) {fESDRun->SetEMCALMatrix(matrix,i);}
+  const TGeoHMatrix* GetEMCALMatrix(Int_t i) const {return fESDRun->GetEMCALMatrix(i);}
 
   // HEADER
   AliESDHeader* GetHeader() const {return fHeader;}

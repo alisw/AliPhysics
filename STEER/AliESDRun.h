@@ -56,9 +56,17 @@ public:
   const TGeoHMatrix* GetPHOSMatrix(Int_t i) const {
     return ((i >= 0) && (i < kNPHOSMatrix)) ? fPHOSMatrix[i] : NULL;
   }
-
+	
+  void    SetEMCALMatrix(TGeoHMatrix*matrix, Int_t i) {
+	if ((i >= 0) && (i < kNEMCALMatrix)) fEMCALMatrix[i] = matrix;
+  }
+  const TGeoHMatrix* GetEMCALMatrix(Int_t i) const {
+	return ((i >= 0) && (i < kNEMCALMatrix)) ? fEMCALMatrix[i] : NULL;
+  }
+	
   enum {kNTriggerClasses = 50};
   enum {kNPHOSMatrix = 5};
+  enum {kNEMCALMatrix = 12};
 
 private:
   Double32_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
@@ -69,8 +77,9 @@ private:
   Int_t           fRecoVersion;     // Version of reconstruction 
   TObjArray       fTriggerClasses;  // array of TNamed containing the names of the active trigger classes
   TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix]; //PHOS module position and orientation matrices
+  TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
 
-  ClassDef(AliESDRun,4)
+  ClassDef(AliESDRun,5)
 };
 
 #endif 
