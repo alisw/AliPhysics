@@ -519,7 +519,10 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	// draw some example plots....
 	
 	AliCFContainer *cont= dynamic_cast<AliCFContainer*> (GetOutputData(2));
-	
+	if(!cont) {
+	  printf("CONTAINER NOT FOUND\n");
+	  return;
+	}
 	// projecting the containers to obtain histograms
 	// first argument = variable, second argument = step
 
