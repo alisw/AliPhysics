@@ -10,7 +10,7 @@
 //-------------------------------------------------------------------------
 
 #include "TObject.h"
-#include "TString.h";
+#include "TString.h"
 
 
 class AliAODPWG4JetEventBackground : public TObject {
