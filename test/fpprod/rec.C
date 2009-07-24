@@ -14,11 +14,6 @@ void rec() {
   reco.SetSpecificStorage("GRP/GRP/Data",
 			  Form("local://%s",gSystem->pwd()));
 
-  AliGRPRecoParam *grpRecoParam = AliGRPRecoParam::GetLowFluxParam();
-  grpRecoParam->SetVertexerTracksConstraintITS(kFALSE);
-  grpRecoParam->SetVertexerTracksConstraintTPC(kFALSE);
-  reco.SetRecoParam("GRP",grpRecoParam);
-
   TStopwatch timer;
   timer.Start();
   reco.Run();

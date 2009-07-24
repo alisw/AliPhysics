@@ -23,12 +23,6 @@ void rec(const char *filename="raw.root")
   rec.SetRunQA("ALL:ALL") ;
   rec.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
 
-  AliGRPRecoParam *grpRecoParam = AliGRPRecoParam::GetLowFluxParam();
-  grpRecoParam->SetVertexerTracksConstraintITS(kFALSE);
-  grpRecoParam->SetVertexerTracksConstraintTPC(kFALSE);
-  grpRecoParam->SetMostProbablePt(3.0);
-  rec.SetRecoParam("GRP",grpRecoParam);
-
   // AliReconstruction settings
   rec.SetWriteESDfriend(kTRUE);
   rec.SetWriteAlignmentData();

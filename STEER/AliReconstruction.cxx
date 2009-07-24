@@ -3228,6 +3228,40 @@ Bool_t AliReconstruction::InitRecoParams()
 
   Bool_t isOK = kTRUE;
 
+  if (fRecoParam.GetDetRecoParamArray(kNDetectors)) {
+    AliInfo("Using custom GRP reconstruction parameters");
+  }
+  else {
+    AliInfo("Loading GRP reconstruction parameter objects");
+
+    AliCDBPath path("GRP","Calib","RecoParam");
+    AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+    if(!entry){ 
+      AliWarning("Couldn't find GRP RecoParam entry in OCDB");
+      isOK = kFALSE;
+    }
+    else {
+      TObject *recoParamObj = entry->GetObject();
+      if (dynamic_cast<TObjArray*>(recoParamObj)) {
+	// GRP has a normal TobjArray of AliDetectorRecoParam objects
+	// Registering them in AliRecoParam
+	fRecoParam.AddDetRecoParamArray(kNDetectors,dynamic_cast<TObjArray*>(recoParamObj));
+      }
+      else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
+	// GRP has only onse set of reco parameters
+	// Registering it in AliRecoParam
+	AliInfo("Single set of GRP reconstruction parameters found");
+	dynamic_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
+	fRecoParam.AddDetRecoParam(kNDetectors,dynamic_cast<AliDetectorRecoParam*>(recoParamObj));
+      }
+      else {
+	AliError("No valid GRP RecoParam object found in the OCDB");
+	isOK = kFALSE;
+      }
+      entry->SetOwner(0);
+    }
+  }
+
   TString detStr = fLoadCDB;
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
 
