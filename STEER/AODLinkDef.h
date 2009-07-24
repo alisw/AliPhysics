@@ -24,6 +24,7 @@
 #pragma link C++ class AliAODPmdCluster+;
 #pragma link C++ class AliAODFmdCluster+;
 #pragma link C++ class AliAODJet+;
+#pragma link C++ class AliAODPWG4JetEventBackground+;
 #pragma link C++ class AliAODPhoton+;
 #pragma link C++ class AliAODRedCov<3>+;
 #pragma link C++ class AliAODRedCov<4>+;
