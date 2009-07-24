@@ -221,7 +221,7 @@ void RunAnalysisAODVertexingHF()
   if(!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   if(analysisMode=="grid" && !useAlienPlugin) analysisMode="local";
-  if(chainAOD) {
+  if(analysisMode!="proof") {
     mgr->StartAnalysis(analysisMode.Data(),chainAOD,nentries,firstentry);
   } else {
     // proof
