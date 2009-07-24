@@ -12,7 +12,7 @@
 
 # SET THE FOLLOWING PARAMETERS IF NEEDED: 
 # ---------------------------------------
-YEAR=08
+YEAR=09
 DIALOG=/usr/bin/dialog
 # ---------------------------------------
 
@@ -33,7 +33,7 @@ TITLE="Standalone reconstruction of Grid rawdata chunks. v$VERSION"
 # Retrieve the list of chunks from AliEn.......
 BASEDIR="/alice/data/20"$YEAR
 PATTERN="/raw/"$YEAR"0000"$RUNNUM"*0.root"
-aliensh -c "gbbox find $BASEDIR $PATTERN" | head --lines=-1 > collection.tmp
+gbbox find $BASEDIR $PATTERN | head --lines=-1 > collection.tmp
 
 [ $(stat -c%s collection.tmp) -eq 0 ] && { echo "No chunks found for the given run"; exit 1; }
 rm -f collection.tmp2
