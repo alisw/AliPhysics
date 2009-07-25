@@ -11,6 +11,7 @@ class AliESDtrack;
 
 class AliITSChannelStatus;
 class AliITSDetTypeRec;
+class AliITSRecoParam;
 #include "AliHLTITSTrack.h" 
 #include "AliHLTITSDetector.h"
 #include "AliHLTITSLayer.h"
@@ -72,6 +73,7 @@ public:
 
 protected:
 
+  const AliITSRecoParam *GetRecoParam(){ return fRecoParam; }
   Bool_t ComputeRoad(AliHLTITSTrack* track,Int_t ilayer,Int_t idet,Double_t &zmin,Double_t &zmax,Double_t &ymin,Double_t &ymax) const;
   
   
@@ -93,6 +95,8 @@ protected:
 // method to be used for Plane Efficiency evaluation
 
   // 
+
+  const AliITSRecoParam *fRecoParam;
 
   static AliHLTITSLayer fgLayers[AliITSgeomTGeo::kNLayers];// ITS layers
   

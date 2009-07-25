@@ -115,6 +115,7 @@ AliHLTITSLayer AliITStrackerHLT::fgLayers[AliITSgeomTGeo::kNLayers]; // ITS laye
 
 AliITStrackerHLT::AliITStrackerHLT()
   :AliTracker(),
+   fRecoParam(0),
    fEsd(0),
    fUseTGeo(3),
    fxOverX0Pipe(-1.),
@@ -133,6 +134,7 @@ AliITStrackerHLT::AliITStrackerHLT()
 //------------------------------------------------------------------------
 AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom) 
 : AliTracker(),
+  fRecoParam(0),
   fEsd(0),
   fUseTGeo(3),
   fxOverX0Pipe(-1.),
@@ -149,6 +151,9 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
     AliWarning("\"geom\" is actually a dummy argument !");
   }
 
+  fRecoParam = AliITSReconstructor::GetRecoParam();
+  if( !fRecoParam ) fRecoParam = AliITSRecoParam::GetLowFluxParam();
+ 
   for (Int_t i=1; i<AliITSgeomTGeo::GetNLayers()+1; i++) {
     Int_t nlad=AliITSgeomTGeo::GetNLadders(i);
     Int_t ndet=AliITSgeomTGeo::GetNDetectors(i);
@@ -198,13 +203,13 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
   } // end loop on layers
 
   
+  Double_t xyzVtx[]={ fRecoParam->GetXVdef(),
+		      fRecoParam->GetYVdef(),
+		      fRecoParam->GetZVdef()}; 
+  Double_t ersVtx[]={ fRecoParam->GetSigmaXVdef(),
+		      fRecoParam->GetSigmaYVdef(),
+		      fRecoParam->GetSigmaZVdef()}; 
 
-  Double_t xyzVtx[]={AliITSReconstructor::GetRecoParam()->GetXVdef(),
-		     AliITSReconstructor::GetRecoParam()->GetYVdef(),
-		     AliITSReconstructor::GetRecoParam()->GetZVdef()}; 
-  Double_t ersVtx[]={AliITSReconstructor::GetRecoParam()->GetSigmaXVdef(),
-		     AliITSReconstructor::GetRecoParam()->GetSigmaYVdef(),
-		     AliITSReconstructor::GetRecoParam()->GetSigmaZVdef()}; 
   SetVertex(xyzVtx,ersVtx);
 
   // store positions of centre of SPD modules (in z)
@@ -218,11 +223,11 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
   AliITSgeomTGeo::GetTranslation(1,1,4,tr);
   fSPDdetzcentre[3] = tr[2];
 
-  fUseTGeo = AliITSReconstructor::GetRecoParam()->GetUseTGeoInTracker();
-  if(AliITSReconstructor::GetRecoParam()->GetExtendedEtaAcceptance() && fUseTGeo!=1 && fUseTGeo!=3) {
-    AliWarning("fUseTGeo changed to 3 because fExtendedEtaAcceptance is kTRUE");
-    fUseTGeo = 3;
-  }
+  //fUseTGeo = fRecoParam->GetUseTGeoInTracker();
+  //if(fRecoParam->GetExtendedEtaAcceptance() && fUseTGeo!=1 && fUseTGeo!=3) {
+  //AliWarning("fUseTGeo changed to 3 because fExtendedEtaAcceptance is kTRUE");
+  //fUseTGeo = 3;
+  //}
 
   for(Int_t i=0;i<2;i++) {fxOverX0Shield[i]=-1.;fxTimesRhoShield[i]=-1.;}
   for(Int_t i=0;i<6;i++) {fxOverX0Layer[i]=-1.;fxTimesRhoLayer[i]=-1.;}
@@ -233,6 +238,7 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
 //------------------------------------------------------------------------
 AliITStrackerHLT::AliITStrackerHLT(const AliITStrackerHLT &tracker)
 :AliTracker(tracker),
+ fRecoParam( tracker.fRecoParam),
  fEsd(tracker.fEsd),
  fUseTGeo(tracker.fUseTGeo),
  fxOverX0Pipe(tracker.fxOverX0Pipe),
@@ -284,7 +290,7 @@ void AliITStrackerHLT::ReadBadFromDetTypeRec() {
   //i.e. from OCDB
   //--------------------------------------------------------------------
 
-  if(!AliITSReconstructor::GetRecoParam()->GetUseBadZonesFromOCDB()) return;
+  if(!fRecoParam->GetUseBadZonesFromOCDB()) return;
 
   Info("ReadBadFromDetTypeRec","Reading info about bad ITS detectors and channels");
 
@@ -319,36 +325,45 @@ void AliITStrackerHLT::LoadClusters( std::vector<AliITSRecPoint> clusters)
   //--------------------------------------------------------------------
   //This function loads ITS clusters
   //--------------------------------------------------------------------
-  
+ 
   //SignDeltas(clusters,GetZ());
-  
+  //std::cout<<"CA ITS: NClusters "<<clusters.size()<<std::endl;
   for( unsigned int icl=0; icl<clusters.size(); icl++ ){
-    
+    std::cout<<"CA ITS: icl "<<icl<<std::endl;
+   
     AliITSRecPoint &cl = clusters[icl];
+    //std::cout<<"CA ITS: icl "<<icl<<": "
+    //<<cl.GetX()<<" "<<cl.GetY()<<" "<<cl.GetZ()<<" "<<cl.GetDetectorIndex()<<" "<<cl.GetLayer()
+    //<<" "<<cl.GetVolumeId()
+    //<<std::endl;
+
+
     Int_t i=cl.GetLayer();
     //Int_t ndet=fgLayers[i].GetNdetectors();
-    //Int_t detector=cl.GetDetectorIndex();
-    if (!cl.Misalign()) AliWarning("Can't misalign this cluster !");
-    fgLayers[i].InsertCluster(new AliITSRecPoint(cl));
+    //Int_t detector=cl.GetDetectorIndex();    
+    if (!cl.Misalign()) AliWarning("Can't misalign this cluster !"); //SG!!!
+    fgLayers[i].InsertCluster(new AliITSRecPoint(cl)); 
   }
 
   for( int i=0; i<AliITSgeomTGeo::GetNLayers(); i++ ){
     for( int detector = 0; detector<fgLayers[i].GetNdetectors(); detector++ ){
-
       // add dead zone "virtual" cluster in SPD, if there is a cluster within 
       // zwindow cm from the dead zone      
-      if (i<2 && AliITSReconstructor::GetRecoParam()->GetAddVirtualClustersInDeadZone()) {
-	for (Float_t xdead = 0; xdead < AliITSRecoParam::GetSPDdetxlength(); xdead += (i+1.)*AliITSReconstructor::GetRecoParam()->GetXPassDeadZoneHits()) {
+
+      fRecoParam->GetAddVirtualClustersInDeadZone();
+    
+      if (i<2 && fRecoParam->GetAddVirtualClustersInDeadZone()) {
+	for (Float_t xdead = 0; xdead < AliITSRecoParam::GetSPDdetxlength(); xdead += (i+1.)*fRecoParam->GetXPassDeadZoneHits()) {
 	  Int_t lab[4]   = {0,0,0,detector};
 	  Int_t info[3]  = {0,0,i};
 	  Float_t q      = 0.; // this identifies virtual clusters
 	  Float_t hit[5] = {xdead,
 			    0.,
-			    AliITSReconstructor::GetRecoParam()->GetSigmaXDeadZoneHit2(),
-			    AliITSReconstructor::GetRecoParam()->GetSigmaZDeadZoneHit2(),
+			    fRecoParam->GetSigmaXDeadZoneHit2(),
+			    fRecoParam->GetSigmaZDeadZoneHit2(),
 			    q};
 	  Bool_t local   = kTRUE;
-	  Double_t zwindow = AliITSReconstructor::GetRecoParam()->GetZWindowDeadZone();
+	  Double_t zwindow = fRecoParam->GetZWindowDeadZone();
 	  hit[1] = fSPDdetzcentre[0]+0.5*AliITSRecoParam::GetSPDdetzlength();
 	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
 	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
@@ -411,18 +426,18 @@ Int_t AliITStrackerHLT::LoadClusters(TTree *cTree) {
       clusters->Delete();
       // add dead zone "virtual" cluster in SPD, if there is a cluster within 
       // zwindow cm from the dead zone      
-      if (i<2 && AliITSReconstructor::GetRecoParam()->GetAddVirtualClustersInDeadZone()) {
-	for (Float_t xdead = 0; xdead < AliITSRecoParam::GetSPDdetxlength(); xdead += (i+1.)*AliITSReconstructor::GetRecoParam()->GetXPassDeadZoneHits()) {
+      if (i<2 && fRecoParam->GetAddVirtualClustersInDeadZone()) {
+	for (Float_t xdead = 0; xdead < AliITSRecoParam::GetSPDdetxlength(); xdead += (i+1.)*fRecoParam->GetXPassDeadZoneHits()) {
 	  Int_t lab[4]   = {0,0,0,detector};
 	  Int_t info[3]  = {0,0,i};
 	  Float_t q      = 0.; // this identifies virtual clusters
 	  Float_t hit[5] = {xdead,
 			    0.,
-			    AliITSReconstructor::GetRecoParam()->GetSigmaXDeadZoneHit2(),
-			    AliITSReconstructor::GetRecoParam()->GetSigmaZDeadZoneHit2(),
+			    fRecoParam->GetSigmaXDeadZoneHit2(),
+			    fRecoParam->GetSigmaZDeadZoneHit2(),
 			    q};
 	  Bool_t local   = kTRUE;
-	  Double_t zwindow = AliITSReconstructor::GetRecoParam()->GetZWindowDeadZone();
+	  Double_t zwindow = fRecoParam->GetZWindowDeadZone();
 	  hit[1] = fSPDdetzcentre[0]+0.5*AliITSRecoParam::GetSPDdetzlength();
 	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
 	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
@@ -541,7 +556,7 @@ Int_t AliITStrackerHLT::Clusters2Tracks(AliESDEvent *event) {
   // This functions reconstructs ITS tracks
   // The clusters must be already loaded !
   //--------------------------------------------------------------------
-  std::cout<<"\n\n ITS starts...\n"<<std::endl;
+  
   TStopwatch timer;
   
   fEsd = event;         // store pointer to the esd 
@@ -795,17 +810,17 @@ void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track )
     // Define criteria for track-cluster association
     
     Double_t msz = track->GetSigmaZ2() + 
-      AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
-      AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
-      AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer);
+      fRecoParam->GetNSigmaZLayerForRoadZ()*
+      fRecoParam->GetNSigmaZLayerForRoadZ()*
+      fRecoParam->GetSigmaZ2(ilayer);
 
     Double_t msy = track->GetSigmaY2() + 
-      AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
-      AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
-      AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer);
+      fRecoParam->GetNSigmaYLayerForRoadY()*
+      fRecoParam->GetNSigmaYLayerForRoadY()*
+      fRecoParam->GetSigmaY2(ilayer);
 
-     msz *= AliITSReconstructor::GetRecoParam()->GetNSigma2RoadZNonC();
-     msy *= AliITSReconstructor::GetRecoParam()->GetNSigma2RoadYNonC(); 
+     msz *= fRecoParam->GetNSigma2RoadZNonC();
+     msy *= fRecoParam->GetNSigma2RoadYNonC(); 
   
      msz = 1./msz; // 1/RoadZ^2
      msy = 1./msy; // 1/RoadY^2
@@ -816,7 +831,7 @@ void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track )
 
      const AliITSRecPoint *cl=0; 
      Int_t clidx=-1;
-     Double_t chi2trkcl=AliITSReconstructor::GetRecoParam()->GetMaxChi2(); // init with big value
+     Double_t chi2trkcl=fRecoParam->GetMaxChi2(); // init with big value
      Bool_t deadzoneSPD=kFALSE;
 
      // check if the road contains a dead zone 
@@ -884,10 +899,10 @@ void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track )
       // calculate track-clusters chi2
        chi2trkcl = GetPredictedChi2MI(track,bestCluster,ilayer); 
        //cout<<" track-clusters chi2 = "<<chi2trkcl<<endl;
-       //cout<<" max chi2 = "<<AliITSReconstructor::GetRecoParam()->GetMaxChi2s(ilayer)<<endl;
+       //cout<<" max chi2 = "<<fRecoParam->GetMaxChi2s(ilayer)<<endl;
 
        // chi2 cut
-       if (chi2trkcl < AliITSReconstructor::GetRecoParam()->GetMaxChi2s(ilayer)) {
+       if (chi2trkcl < fRecoParam->GetMaxChi2s(ilayer)) {
 	 if (bestCluster->GetQ()==0) deadzoneSPD=kTRUE; // only 1 prolongation with virtual cluster
 	 //cout<<"set index.."<<endl;	 
 	 //cout<<"set index ok"<<endl;
@@ -1300,7 +1315,7 @@ Int_t AliITStrackerHLT::CorrectForShieldMaterial(AliHLTITSTrack *t,
     if (!t->PropagateTo(xToGo,xOverX0,lengthTimesMeanDensity/xOverX0)) return 0;
     break;
   case 1:
-    nsteps= (Int_t)(TMath::Abs(t->GetX()-xToGo)/AliITSReconstructor::GetRecoParam()->GetStepSizeTGeo())+1;
+    nsteps= (Int_t)(TMath::Abs(t->GetX()-xToGo)/fRecoParam->GetStepSizeTGeo())+1;
     if (!t->PropagateToTGeo(xToGo,nsteps)) return 0; // cross the material and apply correction
     break;
   case 2:
@@ -1393,7 +1408,7 @@ Int_t AliITStrackerHLT::CorrectForLayerMaterial(AliHLTITSTrack *t,
     if (!t->PropagateTo(xToGo,xOverX0,lengthTimesMeanDensity/xOverX0)) return 0;
     break;
   case 1:
-    nsteps = (Int_t)(TMath::Abs(xOld-xToGo)/AliITSReconstructor::GetRecoParam()->GetStepSizeTGeo())+1;
+    nsteps = (Int_t)(TMath::Abs(xOld-xToGo)/fRecoParam->GetStepSizeTGeo())+1;
     if (!t->PropagateToTGeo(xToGo,nsteps)) return 0; // cross the material and apply correction
     break;
   case 2:
@@ -1405,7 +1420,7 @@ Int_t AliITStrackerHLT::CorrectForLayerMaterial(AliHLTITSTrack *t,
     if (!t->PropagateTo(xToGo,xOverX0,lengthTimesMeanDensity/xOverX0)) return 0;
     break;
   case 3:
-    nsteps = (Int_t)(TMath::Abs(xOld-xToGo)/AliITSReconstructor::GetRecoParam()->GetStepSizeTGeo())+1;
+    nsteps = (Int_t)(TMath::Abs(xOld-xToGo)/fRecoParam->GetStepSizeTGeo())+1;
     if (!t->PropagateToTGeo(xToGo,nsteps,xOverX0,lengthTimesMeanDensity)) return 0;
     Double_t angle=TMath::Sqrt((1.+t->GetTgl()*t->GetTgl())/
 			       ((1.-t->GetSnp())*(1.+t->GetSnp())));
@@ -1438,7 +1453,7 @@ Int_t AliITStrackerHLT::CheckDeadZone(AliHLTITSTrack *track,
   //-----------------------------------------------------------------
 
   // check dead zones at z=0,+-7cm in the SPD
-  if (ilayer<2 && !AliITSReconstructor::GetRecoParam()->GetAddVirtualClustersInDeadZone()) {
+  if (ilayer<2 && !fRecoParam->GetAddVirtualClustersInDeadZone()) {
     Double_t zmindead[3]={fSPDdetzcentre[0] + 0.5*AliITSRecoParam::GetSPDdetzlength(),
 			  fSPDdetzcentre[1] + 0.5*AliITSRecoParam::GetSPDdetzlength(),
 			  fSPDdetzcentre[2] + 0.5*AliITSRecoParam::GetSPDdetzlength()};
@@ -1453,7 +1468,7 @@ Int_t AliITStrackerHLT::CheckDeadZone(AliHLTITSTrack *track,
   }
 
   // check bad zones from OCDB
-  if (!AliITSReconstructor::GetRecoParam()->GetUseBadZonesFromOCDB()) return 0;
+  if (!fRecoParam->GetUseBadZonesFromOCDB()) return 0;
 
   if (idet<0) return 0;
 
@@ -1531,7 +1546,7 @@ Int_t AliITStrackerHLT::CheckDeadZone(AliHLTITSTrack *track,
   } 
 
 
-  if (!AliITSReconstructor::GetRecoParam()->GetUseSingleBadChannelsFromOCDB()
+  if (!fRecoParam->GetUseSingleBadChannelsFromOCDB()
       || ilayer==4 || ilayer==5     // SSD
       || !noClusters) return 0;
 
@@ -1545,7 +1560,7 @@ Int_t AliITStrackerHLT::CheckDeadZone(AliHLTITSTrack *track,
     AliDebug(2,Form("Bad channel in det %d of layer %d\n",idet,ilayer));
     return 3;
   }
-  //if (fITSChannelStatus->FractionOfBadInRoad(idet,zlocmin,zlocmax,xlocmin,xlocmax) > AliITSReconstructor::GetRecoParam()->GetMinFractionOfBadInRoad()) return 3;
+  //if (fITSChannelStatus->FractionOfBadInRoad(idet,zlocmin,zlocmax,xlocmin,xlocmax) > fRecoParam->GetMinFractionOfBadInRoad()) return 3;
 
   return 0;
 }
@@ -1593,16 +1608,16 @@ Bool_t AliITStrackerHLT::ComputeRoad(AliHLTITSTrack* track,Int_t ilayer,Int_t id
   // take into account the misalignment: propagate track to misaligned detector plane
   if (!TransportToPhiX( track, det.GetPhi(),det.GetRmisal() ) ) return kFALSE;
 
-  Double_t dz=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadZ()*
+  Double_t dz=fRecoParam->GetNSigmaRoadZ()*
                     TMath::Sqrt(track->GetSigmaZ2() + 
-		    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
-		    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
-		    AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
-  Double_t dy=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadY()*
+				fRecoParam->GetNSigmaZLayerForRoadZ()*
+				fRecoParam->GetNSigmaZLayerForRoadZ()*
+				fRecoParam->GetSigmaZ2(ilayer));
+  Double_t dy=fRecoParam->GetNSigmaRoadY()*
                     TMath::Sqrt(track->GetSigmaY2() + 
-		    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
-		    AliITSReconstructor::GetRecoParam()->GetNSigmaYLayerForRoadY()*
-		    AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
+				fRecoParam->GetNSigmaYLayerForRoadY()*
+				fRecoParam->GetNSigmaYLayerForRoadY()*
+				fRecoParam->GetSigmaY2(ilayer));
       
   // track at boundary between detectors, enlarge road
   Double_t boundaryWidth=AliITSRecoParam::GetBoundaryWidth();
@@ -1615,13 +1630,13 @@ Bool_t AliITStrackerHLT::ComputeRoad(AliHLTITSTrack* track,Int_t ilayer,Int_t id
     Double_t deltaXNeighbDets=AliITSRecoParam::GetDeltaXNeighbDets();
     dz = TMath::Sqrt(dz*dz+deltaXNeighbDets*deltaXNeighbDets*tgl*tgl);
     Float_t snp = TMath::Abs(track->GetSnp());
-    if (snp > AliITSReconstructor::GetRecoParam()->GetMaxSnp()) return kFALSE;
+    if (snp > fRecoParam->GetMaxSnp()) return kFALSE;
     dy = TMath::Sqrt(dy*dy+deltaXNeighbDets*deltaXNeighbDets*snp*snp);
   } // boundary
   
   // add to the road a term (up to 2-3 mm) to deal with misalignments
-  dy = TMath::Sqrt(dy*dy + AliITSReconstructor::GetRecoParam()->GetRoadMisal()*AliITSReconstructor::GetRecoParam()->GetRoadMisal());
-  dz = TMath::Sqrt(dz*dz + AliITSReconstructor::GetRecoParam()->GetRoadMisal()*AliITSReconstructor::GetRecoParam()->GetRoadMisal());
+  dy = TMath::Sqrt(dy*dy + fRecoParam->GetRoadMisal()*fRecoParam->GetRoadMisal());
+  dz = TMath::Sqrt(dz*dz + fRecoParam->GetRoadMisal()*fRecoParam->GetRoadMisal());
 
   Double_t r = fgLayers[ilayer].GetR();
   zmin = track->GetZ() - dz; 

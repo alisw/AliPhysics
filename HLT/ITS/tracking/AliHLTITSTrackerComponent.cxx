@@ -143,7 +143,6 @@ void AliHLTITSTrackerComponent::SetDefaultConfiguration()
   fFullTime = 0;
   fRecoTime = 0;
   fNEvents = 0;
-  fTracker = 0;
 }
 
 int AliHLTITSTrackerComponent::ReadConfigurationString(  const char* arguments )
@@ -368,20 +367,13 @@ int AliHLTITSTrackerComponent::DoEvent
       int nClusters = inPtr->fSpacePointCnt;
       for( int icl=0; icl<nClusters; icl++ ){
 	AliHLTITSSpacePointData &d = inPtr->fSpacePoints[icl];
-	AliITSRecPoint p;
-	p.SetY( d.fY );
-	p.SetZ( d.fZ );
-	p.SetSigmaY2( d.fSigmaY2 );
-	p.SetSigmaZ2( d.fSigmaZ2 );
-	p.SetSigmaYZ( d.fSigmaYZ );
-	p.SetQ( d.fQ );
-	p.SetNy( d.fNy );
-	p.SetNz( d.fNz );
-	p.SetLayer( d.fLayer );
-	p.SetDetectorIndex( d.fIndex );
-	p.SetLabel(0, d.fTracks[0] );
-	p.SetLabel(1, d.fTracks[1] );
-	p.SetLabel(2, d.fTracks[2] );
+
+	Int_t lab[4] = { d.fTracks[0], d.fTracks[1], d.fTracks[2], d.fIndex };
+	Int_t info[3] = { d.fNy, d.fNz, d.fLayer };
+	Float_t hit[6] = { d.fY, d.fZ, d.fSigmaY2, d.fSigmaZ2, d.fQ, d.fSigmaYZ };
+	if( d.fLayer==4 ) hit[5] = -hit[5];
+
+	AliITSRecPoint p( lab, hit, info );
 	clusters.push_back( p );
       }   
     }
