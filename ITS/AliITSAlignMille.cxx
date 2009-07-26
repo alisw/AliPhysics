@@ -1607,8 +1607,8 @@ Int_t AliITSAlignMille::LoadSuperModuleFile(const Char_t *sfile)
   Int_t nsma=sma->GetEntriesFast();
   AliInfo(Form("Array of SuperModules with %d entries\n",nsma));
   
-  Char_t st[250];
-  char symname[150];
+  Char_t st[2048];
+  char symname[250];
   UShort_t volid;
   TGeoHMatrix m;
 

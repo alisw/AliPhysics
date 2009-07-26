@@ -1250,11 +1250,14 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
     }
   }
   // build a new track with (sorted) (prealigned) good points
-  atps = (AliTrackPointArray*)fTrackBuff[ngoodpts-fMinNPtsPerTrack];
-  if (!atps) {
-    atps = new AliTrackPointArray(ngoodpts);
-    fTrackBuff.AddAtAndExpand(atps,ngoodpts-fMinNPtsPerTrack);
-  }
+  // pepo 200709
+//   atps = (AliTrackPointArray*)fTrackBuff[ngoodpts-fMinNPtsPerTrack];
+//   if (!atps) {
+//     atps = new AliTrackPointArray(ngoodpts);
+//     fTrackBuff.AddAtAndExpand(atps,ngoodpts-fMinNPtsPerTrack);
+//   }  
+  atps = new AliTrackPointArray(ngoodpts);
+  // endpepo200709
   //
   //
   for (int i=0; i<npts; i++) idx[i]=i;
@@ -1745,6 +1748,10 @@ void AliITSAlignMille2::InitTrackParams(int meth)
   //
   fLocalInitParam[1] = (sZ*sYY-sY*sZY)/det;
   fLocalInitParam[3] = (sZY*npts-sY*sZ)/det;
+  // pepo200709
+  fLocalInitParam[4] = 0.0;
+  // endpepo200709
+
   AliDebug(2,Form("X = p0gx + ugx*Y : p0gx = %f    ugx = %f\n",fLocalInitParam[0],fLocalInitParam[2]));
   //
   if (meth==1) return;
@@ -2374,8 +2381,11 @@ Int_t AliITSAlignMille2::LoadSuperModuleFile(const Char_t *sfile)
   Int_t nsma=sma->GetEntriesFast();
   AliInfo(Form("Array of SuperModules with %d entries\n",nsma));
   //
-  Char_t st[250];
-  char symname[150];
+  // pepo200709
+  Char_t st[2048];
+  char symname[250];
+  // end pepo200709
+
   UShort_t volid;
   TGeoHMatrix m;
   //
