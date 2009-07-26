@@ -345,7 +345,7 @@ int main(int argc, char **argv) {
       if(!iseq[eqId]) continue;   
       //printf("Preparing reference data for eq %d\n",eqId);
       
-      TString idf = Form("SPD_fo_scan_%d",eqId);
+      TString idf = Form("SPD_ref_fo_%d",eqId);
 #ifndef SPD_DA_OFF
       status = daqDA_FES_storeFile(files[eqId].Data(),idf.Data());
       if (status!=0) {
