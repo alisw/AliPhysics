@@ -33,6 +33,7 @@ using namespace std;
 
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
+#include "AliTPCCalPad.h"
 
 #include "TMath.h"
 #include <cstdlib>
@@ -50,7 +51,6 @@ fOfflineTransform(NULL)
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt  
-  
 }
 
 AliHLTTPCHWClusterTransformComponent::~AliHLTTPCHWClusterTransformComponent() { 
@@ -86,9 +86,8 @@ int AliHLTTPCHWClusterTransformComponent::GetOutputDataTypes(AliHLTComponentData
 
 void AliHLTTPCHWClusterTransformComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) { 
   // see header file for class documentation
-
   constBase = 0;
-  inputMultiplier = 2.0;
+  inputMultiplier = 3.0;
 }
 
 AliHLTComponent* AliHLTTPCHWClusterTransformComponent::Spawn() { 
@@ -243,47 +242,44 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	   rowPtr+=3; // this is to run for little endian architecture, the word is read from right to left
 	
     	   cluster.fPadRow  = (UChar_t)((*rowPtr)&0x3f);
-  	   cluster.fCharge  = ((UInt_t)rowCharge&0xFFFFFF)>>6; //24-bit mask to get out the charge and division with 64(>>6) for the gain correction  	   
-	   cluster.fSigmaY2 = (Float_t)buffer[nWords+3];
-    	   cluster.fSigmaZ2 = (Float_t)buffer[nWords+4];
+  	   cluster.fCharge  = ((UInt_t)rowCharge&0xFFFFFF)>>6; //24-bit mask to get out the charge and division with 64(>>6) for the gain correction
+
+	   Float_t tmpPad   = *((Float_t*)&buffer[nWords+1]);
+	   Float_t tmpTime  = *((Float_t*)&buffer[nWords+2]);
+	   cluster.fSigmaY2 = *((Float_t*)&buffer[nWords+3]);
+    	   cluster.fSigmaZ2 = *((Float_t*)&buffer[nWords+4]);
 	   
 	   // correct expressions for the error calculation
 
   	   //cluster.fSigmaY2 = TMath::Sqrt( (Float_t)buffer[nWords+3] - (Float_t)buffer[nWords+1]*(Float_t)buffer[nWords+1] );
   	   //cluster.fSigmaY2 = TMath::Sqrt( (Float_t)buffer[nWords+3] - (Float_t)buffer[nWords+1]*(Float_t)buffer[nWords+1] );
     	  
+    	   Float_t xyz[3]; xyz[0] = xyz[1] = xyz[2] = -99.;
     	  
 	   
-	   HLTInfo("padrow: %d, charge: %f, pad: %d, time: %d", cluster.fPadRow, (Float_t)cluster.fCharge, (Float_t)buffer[nWords+1], (Float_t)buffer[nWords+2]);
+	   HLTInfo("padrow: %d, charge: %f, pad: %f, time: %f", cluster.fPadRow, (Float_t)cluster.fCharge, tmpPad, tmpTime);
 	          	   
-    	   Float_t xyz[3]; xyz[0] = xyz[1] = xyz[2] = -99.;
 	   
-	  // if(fOfflineTransform == NULL){	   	   
+	   if(fOfflineTransform == NULL){	   	   
 	      cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);             	   
 	      AliHLTTPCTransform::Slice2Sector(minSlice, cluster.fPadRow, sector, thisrow);	      
-    	      AliHLTTPCTransform::Raw2Local(xyz, sector, thisrow, (Float_t)buffer[nWords+1], (Float_t)buffer[nWords+2]); 
+    	      AliHLTTPCTransform::Raw2Local(xyz, sector, thisrow, tmpPad, tmpTime); 
 	      if(minSlice>17) xyz[1]=(-1)*xyz[1];	   
 	      cluster.fX = xyz[0];
     	      cluster.fY = xyz[1];
     	      cluster.fZ = xyz[2]; 
 	      
-//     	   } else {
-// 	
-// 	      HLTInfo("padrow: %d, pad: %d", cluster.fPadRow, buffer[nWords+1]);   
-// 	   
-// 	      Double_t x[3] = {thisrow, (Float_t)buffer[nWords+1]+.5, (Float_t)buffer[nWords+2]}; 
-// 	      Int_t iSector[1]= {sector};
-// 	      fOfflineTransform->Transform(x,iSector,0,1);
-// 	      cluster.fX = x[0];
-// 	      cluster.fY = x[1];
-// 	      cluster.fZ = x[2];
-// 	      
-// 	   }
-// 	   cluster.fX = xyz[0];
-//     	   cluster.fY = xyz[1];
-//     	   cluster.fZ = xyz[2]; 
-	   
-	   //HLTInfo("X: %f, Y: %f, Z: %f, Charge: %d", cluster.fX,cluster.fY,cluster.fZ, cluster.fCharge);           
+     	   } else {
+	     cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);             	   
+	     AliHLTTPCTransform::Slice2Sector(minSlice, (UInt_t)cluster.fPadRow, sector, thisrow);	      
+	     Double_t x[3] = {(Double_t)cluster.fPadRow,tmpPad+.5,tmpTime}; 
+	     Int_t iSector[1]= {sector};
+	     fOfflineTransform->Transform(x,iSector,0,1);
+	     cluster.fX = x[0];
+	     cluster.fY = x[1];
+	     cluster.fZ = x[2];
+ 	      
+ 	   }
 	   
 	   spacePoints[nAddedClusters] = cluster;
 	   	   
