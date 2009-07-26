@@ -43,7 +43,7 @@ class AliITSModuleDaSSD : public TObject {
     Float_t*     GetCM(const Int_t chipn)   const { return chipn < fNumberOfChips ? fCm[chipn].GetArray() : NULL; }
     Float_t      GetCM(const Int_t chipn, const Long_t evn)   const;
     TArrayF*     GetCM() const { return fCm; }
-    Short_t*     GetCMFerom(const Int_t chipn)   const { return chipn < fgkChipsPerModule ? fCmFerom[chipn].GetArray() : NULL; }
+    Short_t*     GetCMFerom(const Int_t chipn)   const { return (fCmFerom && (chipn < fgkChipsPerModule)) ? fCmFerom[chipn].GetArray() : NULL; }
     Short_t      GetCMFerom(const Int_t chipn, const Long_t evn)   const;
     TArrayS*     GetCMFerom() const { return fCmFerom; }
     Int_t        GetNumberOfChips() const  { return fNumberOfChips; }
@@ -63,7 +63,8 @@ class AliITSModuleDaSSD : public TObject {
     void    DeleteCM () {if (fCm) { delete [] fCm; fNumberOfChips = 0; fCm = NULL; } }
     void    DeleteSignal() {if (fStrips) for (Int_t i = 0; i < fNumberOfStrips; i++) 
                                             if (fStrips[i]) fStrips[i]->DeleteSignal(); fEventsNumber = 0; }
-    void    SetCMFerom (Short_t* cm, const Int_t chipn)  { if (chipn < fgkChipsPerModule) fCmFerom[chipn].Set(fCmFerom[chipn].GetSize(), cm); }
+	Bool_t  AllocateCMFeromArray(void);
+    void    SetCMFerom (Short_t* cm, const Int_t chipn);
     Bool_t  SetCMFerom (const Short_t cm, const Int_t chipn, const Int_t evn);
     Bool_t  SetCMFeromEventsNumber(const Long_t eventsnumber); 
     void    DeleteCMFerom () {if (fCmFerom) { delete [] fCmFerom; fCmFerom = NULL; } }
@@ -100,8 +101,9 @@ class AliITSModuleDaSSD : public TObject {
   private:
     Bool_t ForbiddenAdcNumber (const UChar_t adcn) const { return ((adcn == 6) || (adcn == 7)); }
  
-    ClassDef(AliITSModuleDaSSD, 4) 
+    ClassDef(AliITSModuleDaSSD, 5) 
  
 };
 
 #endif
+

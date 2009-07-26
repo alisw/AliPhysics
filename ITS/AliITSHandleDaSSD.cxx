@@ -585,7 +585,6 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
         else  mddli = 0;
         if (!module->SetModuleIdData (ddlID, ad, adc, mddli)) return 0;
         module->SetModuleRorcId (equipid, equiptype);
-        module->SetCMFeromEventsNumber(fNumberOfEvents);
         modpos = fModIndRead + modind;
         modind += 1;
         fModules[modpos] = module;
@@ -597,7 +596,13 @@ Int_t AliITSHandleDaSSD::ReadModuleRawData (const Int_t modulesnumber)
           fModules[modpos]->SetStrip(strip, stripID);
         }
         strip->SetSignal(eventind, signal);
-      } else  fModules[modpos]->SetCMFerom(signal, (stripID - AliITSModuleDaSSD::GetStripsPerModuleConst()), eventind);
+	  } else  {
+        if (!(fModules[modpos]->GetCMFerom())) {
+          fModules[modpos]->AllocateCMFeromArray();
+          fModules[modpos]->SetCMFeromEventsNumber(fNumberOfEvents);
+		}
+	    fModules[modpos]->SetCMFerom(signal, (stripID - AliITSModuleDaSSD::GetStripsPerModuleConst()), eventind);
+	  }
     }
     if (++eventind > fNumberOfEvents) break;
   }
@@ -644,6 +649,7 @@ Bool_t AliITSHandleDaSSD::AddFeromCm(AliITSModuleDaSSD *const module)
   Short_t            *signal, *cmferom;
 
   if (!module) return kFALSE;
+  if (!module->GetCMFerom()) return kTRUE;
   for (Int_t chipind = 0; chipind < AliITSModuleDaSSD::GetChipsPerModuleConst(); chipind++) {
     if (!(cmferom = module->GetCMFerom(chipind))) {
       AliWarning(Form("AliITSHandleDaSSD: There is no Ferom CM values for chip %i, module %i!", chipind, module->GetModuleId()));
@@ -842,7 +848,9 @@ Bool_t AliITSHandleDaSSD::CalculateCM(AliITSModuleDaSSD *const module)
       }
       if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr)) cmsum /= (Float_t)(n);
       else cmsum = 0.0L;
-      //      if (!(module->SetCM(cmsum, chipind, ev)));
+      if (!(module->SetCM(cmsum, chipind, ev))) 
+        AliError(Form("AliITSHandleDaSSD: Error, module->SetCM(...) returned kFALSE module:chip:event : [%i]:[%i]:[%i]\n",
+	                   module->GetModuleId(), chipind, ev));
     } 
   }
   return kTRUE; 
@@ -1109,7 +1117,7 @@ Bool_t AliITSHandleDaSSD::DumpModInfo(const Float_t meannosethreshold) const
 //______________________________________________________________________________
 Bool_t AliITSHandleDaSSD::PrintModCalibrationData(const UChar_t ddlID, const UChar_t ad, const UChar_t adc, const Char_t *fname) const
 {
-// Print Module calibration data whether in file on in cout
+// Print Module calibration data whether in file or in cout
    AliITSChannelDaSSD  *strip;
    ofstream             datafile;
    ostream             *outputfile;
@@ -1465,3 +1473,4 @@ Int_t AliITSHandleDaSSD::CheckOffChips() const
   }
   return (modoff + modnd);
 }
+

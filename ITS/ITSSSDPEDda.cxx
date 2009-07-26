@@ -164,7 +164,7 @@ Bool_t ReadDAConfigurationFile(const Char_t *configfname, AliITSHandleDaSSD *con
 {
 // Dowload configuration parameters from configuration file or database
   const int nkwords = 12;
-  char *keywords[nkwords] = {"ZsDefault", "OffsetDefault", "ZsFactor", "PedestalThresholdFactor", "CmThresholdFactor",
+  char const *keywords[nkwords] = {"ZsDefault", "OffsetDefault", "ZsFactor", "PedestalThresholdFactor", "CmThresholdFactor",
                              "NModulesToProcess", "DDLMapFile", "BadChannelsFile", "ZSMinValue", "MergeBCFlag", 
                              "CheckChipsOff", "OffLadder"};
   Int_t tmpint, laddern;
@@ -322,3 +322,4 @@ Bool_t ReadDAConfigurationFile(const Char_t *configfname, AliITSHandleDaSSD *con
   if (tmparr) delete [] tmparr;
   return kTRUE;
 }
+

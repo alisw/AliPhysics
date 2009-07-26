@@ -20,7 +20,7 @@
 /// This class provides storage container ITS SSD module callibration data
 /// used by DA. 
 /// 
-/// Date: 18/07/2008
+/// Date: 09/07/2009
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSNoiseSSD.h"
@@ -110,11 +110,6 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const Int_t numberofstrips) :
      fNumberOfStrips = 0;
      fStrips = NULL;
   }  
-  fCmFerom = new (nothrow) TArrayS [fgkChipsPerModule];
-  if (!fCmFerom) {
-     AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i TArrayS objects!", fgkChipsPerModule));
-     fCmFerom = NULL;
-  }  
 }
 
 
@@ -148,17 +143,6 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const Int_t numberofstrips, const Long_t ev
      AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i AliITSChannelDaSSD* objects!", numberofstrips));
      fNumberOfStrips = 0;
      fStrips = NULL;
-  }  
-  fCmFerom = new (nothrow) TArrayS [fgkChipsPerModule];
-  if (fCmFerom) {
-    for (Int_t i = 0; i < fgkChipsPerModule; i++) {
-      fCmFerom[i].Set(eventsnumber);
-      fCmFerom[i].Reset(0);
-    }  
-  }
-  else {
-     AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i TArrayS objects!", fgkChipsPerModule));
-     fCmFerom = NULL;
   }  
 }
 
@@ -282,7 +266,7 @@ AliITSModuleDaSSD& AliITSModuleDaSSD::operator = (const AliITSModuleDaSSD& modul
        fCm = NULL;
     }  
   }  
-  if (fCmFerom) delete [] fCmFerom;
+  if (fCmFerom) { delete [] fCmFerom; fCmFerom = NULL; }
   if (module.fCmFerom) {
     fCmFerom = new (nothrow) TArrayS [module.fNumberOfChips];
     if (fCmFerom) {
@@ -425,14 +409,7 @@ Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
         return kFALSE;
       }
     }
-  } 
-  if (fCmFerom) {
-    for (Int_t ie = 0; ie < fgkChipsPerModule; ie++) {
-      fCmFerom[ie].Set(eventsnumber);
-      fCmFerom[ie].Reset(0);
-    }  
   }
-  else  AliError("AliITSModuleDaSSD: No memory was allocated for fCmFerom!");
   fEventsNumber = eventsnumber;
   return kTRUE;
 }
@@ -461,6 +438,21 @@ Float_t  AliITSModuleDaSSD::GetCM(const Int_t chipn, const Long_t evn)   const
 }
 
 
+//______________________________________________________________________________
+Bool_t  AliITSModuleDaSSD::AllocateCMFeromArray(void)
+{
+// Allocates memory for the channels which contains CM calculated in Ferom
+ if (!fCmFerom) { 
+    fCmFerom = new (nothrow) TArrayS [fgkChipsPerModule];
+    if (!fCmFerom) {
+       AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i TArrayS objects!", fgkChipsPerModule));
+       fCmFerom = NULL;
+       return kFALSE;
+    }
+  }
+  return kTRUE;
+}
+
 
 //______________________________________________________________________________
 Bool_t  AliITSModuleDaSSD::SetCMFeromEventsNumber(const Long_t eventsnumber)
@@ -484,6 +476,14 @@ Bool_t AliITSModuleDaSSD::SetCMFerom (const Short_t cm, const Int_t chipn, const
   return kTRUE;
 }
 
+
+void  AliITSModuleDaSSD::SetCMFerom (Short_t* cm, const Int_t chipn)
+// Set value of FeromCM for a given chip
+{ 
+  if (!fCmFerom) 
+    if (!AllocateCMFeromArray()) return;
+  if (chipn < fgkChipsPerModule) fCmFerom[chipn].Set(fCmFerom[chipn].GetSize(), cm); 
+}
 
 
 //______________________________________________________________________________
@@ -513,3 +513,4 @@ UChar_t AliITSModuleDaSSD::CheckIfBad(const Int_t stripn) const
   }
   return bcflags;
 }
+
