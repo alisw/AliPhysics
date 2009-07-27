@@ -14,7 +14,7 @@
 
 class AliT0DataDCS : public TObject {
 public:
-	enum {kNAliases=184, kHV=12, kLV=2, kCFD=12, kScalers=32, kTRM=10, kDRM=5}; //184
+	enum {kNAliases=191, kHV=12, kLV=2, kCFD=12, kScalers=32, kTRM=10, kDRM=5, kAtten=1}; // 191 T0 aliases
 
 	AliT0DataDCS();
 	AliT0DataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_t startTimeDCSQuery, UInt_t endTimeDCSQuery);
@@ -40,28 +40,35 @@ private:
 	void Init();
 	void Introduce(UInt_t numAlias, const TObjArray* aliasArr)const;
 
-	Int_t fRun;			// Run number
-	UInt_t fStartTime;		// Start time
-	UInt_t fEndTime;		// End time
-	Int_t fStartTimeDCSQuery; 	// Begin time DCSQuery
-  	Int_t fEndTimeDCSQuery;   	// End time DCSQuery
-	Float_t fHViA[kHV];		// Mean value of HV current in uA on A-side
-	Float_t fHVvA[kHV]; 		// Mean value of HV voltage in V on A-side
-	Float_t fLViA[kLV]; 		// Mean value of LV current in uA on A-side
-	Float_t fLVvA[kLV];		// Mean value of LV voltage in V on A-side
-	Float_t fHViC[kHV];		// Mean value of HV current in uA on C-side
-        Float_t fHVvC[kHV];		// Mean value of HV voltage in V on C-side
-        Float_t fLViC[kLV];		// Mean value of LV current in uA on C-side
-        Float_t fLVvC[kLV];		// Mean value of LV voltage in V on C-side
- 	Float_t fCFDtA[kCFD];		// Mean threshold on CFD in V on A-side	
-	Float_t fCFDwA[kCFD];		// Mean walk on CFD in V on A-side
-	Float_t fCFDtC[kCFD];		// Mean threshold on CFD in V on C-side
-        Float_t fCFDwC[kCFD];		// Mean walk on CFD in V on C-side
-        Float_t fScalerMean[kScalers];  // Mean value of T0 scaler counts from the entire run
-        Float_t fScalerSecMean[kScalers]; // Mean value of T0 scaler counts per second
-	Float_t fTRM[kTRM];		// Mean temperature on TRM in degrees of Celsius
-	Float_t fDRM[kDRM];		// Mean temperature on DRM in degrees of Celsius
-	Float_t fAtten;			// Laser amplitude in MIPs
+	Int_t fRun;				// Run number
+	UInt_t fStartTime;			// Start time
+	UInt_t fEndTime;			// End time
+	Int_t fStartTimeDCSQuery; 		// Begin time DCSQuery
+  	Int_t fEndTimeDCSQuery;   		// End time DCSQuery
+	Float_t fHViA[kHV];			// Mean value of HV current in uA on A-side
+	Float_t fHVvA[kHV]; 			// Mean value of HV voltage in V on A-side
+	Float_t fLViA[kLV]; 			// Mean value of LV current in uA on A-side
+	Float_t fLVvA[kLV];			// Mean value of LV voltage in V on A-side
+	Float_t fHViC[kHV];			// Mean value of HV current in uA on C-side
+        Float_t fHVvC[kHV];			// Mean value of HV voltage in V on C-side
+        Float_t fLViC[kLV];			// Mean value of LV current in uA on C-side
+        Float_t fLVvC[kLV];			// Mean value of LV voltage in V on C-side
+ 	Float_t fCFDtA[kCFD];			// Mean threshold on CFD in V on A-side	
+	Float_t fCFDwA[kCFD];			// Mean walk on CFD in V on A-side
+	Float_t fCFDtC[kCFD];			// Mean threshold on CFD in V on C-side
+        Float_t fCFDwC[kCFD];			// Mean walk on CFD in V on C-side
+        Float_t fScalerMean[kScalers];  	// Mean value of T0 scaler counts from the entire run
+        Float_t fScalerSecMean[kScalers]; 	// Mean value of T0 scaler counts per second
+	Float_t fTRM[kTRM];			// Mean temperature on TRM in degrees of Celsius
+	Float_t fDRM[kDRM];			// Mean temperature on DRM in degrees of Celsius
+	Float_t fAtten;				// Laser amplitude in MIPs
+	Int_t fMPDcentA;			// Multiplicity Discriminator central on A-side
+	Int_t fMPDcentC;                	// Multiplicity Discriminator central on C-side
+        Int_t fMPDsemiCentA;                	// Multiplicity Discriminator semi-central on A-side
+        Int_t fMPDsemiCentC;                	// Multiplicity Discriminator semi-central on C-side
+	Int_t fTVDCtop;				// T0 Vertex Unit top
+	Int_t fTVDCbottom;			// T0 Vertex Unit bottom
+	Int_t fMPDmode;                       // Multiplicity Discriminator on C-side only, A-side only, or both sides
 	TString fAliasNames[kNAliases];		// T0 data points aliases  
 	Bool_t fIsProcessed;			// status - was processing data successful
 	ClassDef(AliT0DataDCS, 3);

@@ -54,6 +54,13 @@ AliT0DataDCS::AliT0DataDCS():
 	fStartTimeDCSQuery(0),
 	fEndTimeDCSQuery(0),
 	fAtten(0.),
+	fMPDcentA(0),
+        fMPDcentC(0),
+        fMPDsemiCentA(0),
+        fMPDsemiCentC(0),
+        fTVDCtop(0),
+        fTVDCbottom(0),
+	fMPDmode(0),
 	fIsProcessed(kFALSE)
 {
   for(Int_t i=0;i<kScalers;i++) 
@@ -94,6 +101,13 @@ AliT0DataDCS::AliT0DataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_t 
 	fStartTimeDCSQuery(startTimeDCSQuery),
 	fEndTimeDCSQuery(endTimeDCSQuery),
 	fAtten(0.),
+	fMPDcentA(0),
+	fMPDcentC(0),
+	fMPDsemiCentA(0),
+	fMPDsemiCentC(0),
+	fTVDCtop(0),
+	fTVDCbottom(0),
+	fMPDmode(0),
 	fIsProcessed(kFALSE)
 {
   for(Int_t i=0;i<kScalers;i++)
@@ -143,6 +157,13 @@ AliT0DataDCS::AliT0DataDCS(const AliT0DataDCS & data):
   fStartTimeDCSQuery(0),
   fEndTimeDCSQuery(0),
   fAtten(0.),
+  fMPDcentA(0),
+  fMPDcentC(0),
+  fMPDsemiCentA(0),
+  fMPDsemiCentC(0),
+  fTVDCtop(0),
+  fTVDCbottom(0),
+  fMPDmode(0),
   fIsProcessed(kFALSE)
 {
 
@@ -155,7 +176,13 @@ AliT0DataDCS::AliT0DataDCS(const AliT0DataDCS & data):
   fEndTimeDCSQuery=data.fEndTimeDCSQuery;
   fIsProcessed=data.fIsProcessed;
   fAtten=data.fAtten;
-
+  fMPDcentA=data.fMPDcentA;
+  fMPDcentC=data.fMPDcentC;
+  fMPDsemiCentA=data.fMPDsemiCentA;
+  fMPDsemiCentC=data.fMPDsemiCentC;
+  fTVDCtop=data.fTVDCtop;
+  fTVDCbottom=data.fTVDCbottom;
+  fMPDmode=data.fMPDmode;
   for(int i=0;i<kNAliases;i++) 
   {
     fAliasNames[i]=data.fAliasNames[i];
@@ -235,7 +262,14 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                 Float_t t0_ac_trm[kTRM];
                 Float_t t0_ac_drm[kDRM];
 		Float_t t0_atten=0.;
-
+		Int_t t0_MPDcentA=0;
+	        Int_t t0_MPDcentC=0;
+	        Int_t t0_MPDsemiCentA=0;
+	        Int_t t0_MPDsemiCentC=0;
+        	Int_t t0_TVDCtop=0;
+	        Int_t t0_TVDCbottom=0;  		
+		Int_t t0_MPDmode=0;
+	
 		TObjArray *aliasArr;
         	for(Int_t k=0; k<kScalers; k++)
 		{
@@ -456,7 +490,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     }
                     fDRM[j-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)] = t0_ac_drm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)] / aliasEntr[j];
                   }
-                  else
+                  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+kAtten)
                   {
                     aliasEntr[j] = aliasArr->GetEntries();
 		    for(Int_t l=0; l<aliasEntr[j]; l++)
@@ -466,6 +500,76 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     }
                     fAtten = t0_atten / aliasEntr[j];
                   }
+		  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+2*kAtten)
+                  {
+                    aliasEntr[j] = aliasArr->GetEntries();
+                    for(Int_t l=0; l<aliasEntr[j]; l++)
+                    {
+                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      t0_MPDcentA += aValue->GetInt();
+                    }
+                    fMPDcentA = t0_MPDcentA / aliasEntr[j];
+                  }
+		  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+3*kAtten)
+                  {
+                    aliasEntr[j] = aliasArr->GetEntries();
+                    for(Int_t l=0; l<aliasEntr[j]; l++)
+                    {
+                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      t0_MPDcentC += aValue->GetInt();
+                    }
+                    fMPDcentC = t0_MPDcentC / aliasEntr[j];
+                  }
+                  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+4*kAtten)
+                  {
+                    aliasEntr[j] = aliasArr->GetEntries();
+                    for(Int_t l=0; l<aliasEntr[j]; l++)
+                    {
+                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      t0_MPDsemiCentA += aValue->GetInt();
+                    }
+                    fMPDsemiCentA = t0_MPDsemiCentA / aliasEntr[j];
+                  }
+		  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+5*kAtten)
+                  {
+                    aliasEntr[j] = aliasArr->GetEntries();
+                    for(Int_t l=0; l<aliasEntr[j]; l++)
+                    {
+                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      t0_MPDsemiCentC += aValue->GetInt();
+                    }
+                    fMPDsemiCentC = t0_MPDsemiCentC / aliasEntr[j];
+                  }
+		  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+6*kAtten)
+                  {
+                    aliasEntr[j] = aliasArr->GetEntries();
+                    for(Int_t l=0; l<aliasEntr[j]; l++)
+                    {
+                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      t0_TVDCtop += aValue->GetInt();
+                    }
+                    fTVDCtop = t0_TVDCtop / aliasEntr[j];
+                  }
+  		  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+7*kAtten)
+                  {
+                    aliasEntr[j] = aliasArr->GetEntries();
+                    for(Int_t l=0; l<aliasEntr[j]; l++)
+                    {
+                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      t0_TVDCbottom += aValue->GetInt();
+                    }
+                    fTVDCbottom = t0_TVDCbottom / aliasEntr[j];
+                  }
+		  else
+                  {
+                    aliasEntr[j] = aliasArr->GetEntries();
+                    for(Int_t l=0; l<aliasEntr[j]; l++)
+                    {
+                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      t0_MPDmode += aValue->GetInt();
+                    }
+                    fMPDmode = t0_MPDmode / aliasEntr[j];
+		  }
 		}
 	fIsProcessed=kTRUE;
 	return kTRUE;
@@ -573,11 +677,38 @@ void AliT0DataDCS::Init()
                   sindex.Form("%02d",i-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM));
                   fAliasNames[i] += sindex;
                 }
-		else
+		else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+kAtten)
 		{
                   fAliasNames[i] = "t00_ac_atten";
                 }
-
+                else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+2*kAtten)
+                {
+                  fAliasNames[i] = "t00_a_mpd_cent";
+                }
+		else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+3*kAtten)
+                {
+                  fAliasNames[i] = "t00_c_mpd_cent";
+                }
+		else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+4*kAtten)
+                {
+                  fAliasNames[i] = "t00_a_mpd_scent";
+                }
+                else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+5*kAtten)
+                {
+                  fAliasNames[i] = "t00_c_mpd_scent";
+                }
+		else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+6*kAtten)
+                {
+                  fAliasNames[i] = "t00_ac_tvdc_top";
+                }
+                else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+7*kAtten)
+                {
+                  fAliasNames[i] = "t00_ac_tvdc_bottom";
+                }
+		else
+		{
+                  fAliasNames[i] = "t00_ac_mpd_mode";
+                }
 	}
 
 }

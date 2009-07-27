@@ -50,7 +50,7 @@ TMap* CreateDCSAliasMap()
   aliasMap->SetOwner(1);
 
   TString aliasName;
-  Int_t n_T0aliases=184;
+  Int_t n_T0aliases=191;
   Int_t nValues=10;	
   
   for(int nAlias=0;nAlias<n_T0aliases;nAlias++)
@@ -121,9 +121,37 @@ TMap* CreateDCSAliasMap()
     {
       aliasName=Form("t00_ac_drm_%02d",nAlias-178);
     }
+    else if (nAlias < 184)
+    {
+      aliasName=Form("t00_ac_atten");
+    }
+    else if(nAlias < 185)
+    {
+      aliasName=Form("t00_a_mpd_cent");
+    }
+    else if(nAlias < 186)
+    {
+      aliasName=Form("t00_c_mpd_cent");
+    }
+    else if(nAlias < 187)
+    {
+      aliasName=Form("t00_a_mpd_scent");
+    }
+    else if(nAlias < 188)
+    {
+      aliasName=Form("t00_c_mpd_scent");
+    }
+    else if(nAlias < 189)
+    {
+      aliasName=Form("t00_ac_tvdc_top");
+    }
+    else if(nAlias < 190)
+    {
+      aliasName=Form("t00_ac_tvdc_bottom");
+    }
     else
     {
-      aliasName=Form("t00_ac_atten",nAlias-183);
+      aliasName=Form("t00_ac_mpd_mode");		
     }
 
     for (int timeStamp=0;timeStamp<nValues;timeStamp++)
@@ -151,7 +179,7 @@ void WriteDCSAliasMap()
 
   AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
-	metaData.SetResponsible("Responsible person");
+	metaData.SetResponsible("Tomek");
 	metaData.SetComment("Test object for TestPreprocessor.C");
 
   AliCDBId id("DET/DCS/Data", 0, 0);
