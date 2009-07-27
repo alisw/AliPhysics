@@ -6,7 +6,7 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTITSQHistoComponent.h
+/** @file   AliHLTITSClusterHistoComponent.h
     @author Gaute Ovrebekk
     @brief  Component for ploting clusters
 */
@@ -14,26 +14,29 @@
 #include "AliHLTProcessor.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TH3F.h"
 #include "AliHLTITSSpacePointData.h"
 #include "TClonesArray.h"
 #include "AliITSRecPoint.h"
-
-class AliHLTTPCConfMapper;
 
 /**
  * @class AliHLTITSQHistoComponent
  * Component for ploting charge in clusters
  * 
- * Component ID: \b ITSQHisto <br>
- * Library: \b libAliHLTITS.
+ * Component ID: \b ITSClusterHisto <br>
+ * Library: \b libAliHLTITS.so
  *
  * Mandatory arguments: <br>
  * 
  * 
  * Optional arguments: <br>
- * 
- *
+ * \li -plot-all <br>  
+ *      will plot all histograms in the component.
+ * \li -plot-xy <br>  
+ *      will plot a historgam of the x and y projection of the clusters.
+ * \li -plot-charge     <i> multiplicity  </i> <br> 
+ *      will plot the charge of the clusters.
+ * \li -plot-phieta <br>
+ *      will plot the phi vs eta distrubution of the clusters.
  * @ingroup alihlt_tpc_components
  */
 class AliHLTITSClusterHistoComponent : public AliHLTProcessor
@@ -88,14 +91,14 @@ private:
   int Configure(const char* arguments);
   
   TH2F * fXY;                              //! transient
-  TH3F * fXYZ;                             //! transient
+  TH2F * fPhieta;                          //! transient
   TH1F * fCharge;                          //! transient
     
   Bool_t fPlotCharge;                      //! transient
   Bool_t fPlotXY;                          //! transient
-  Bool_t fPlotXYZ;                         //! transient
+  Bool_t fPlotPhieta;                      //! transient
    
-  ClassDef(AliHLTITSClusterHistoComponent, 0);
+  ClassDef(AliHLTITSClusterHistoComponent, 1);
 
 };
 #endif

@@ -29,6 +29,7 @@ using namespace std;
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliITSRecPoint.h"
+#include "TMath.h"
 #include <TFile.h>
 #include <TString.h>
 #include "TObjString.h"
@@ -43,11 +44,11 @@ ClassImp(AliHLTITSClusterHistoComponent)
 AliHLTITSClusterHistoComponent::AliHLTITSClusterHistoComponent()
 :
 fXY(NULL),                     
-  fXYZ(NULL),                   
+  fPhieta(NULL),                   
   fCharge(NULL),   
   fPlotCharge(kFALSE),   
   fPlotXY(kTRUE),
-  fPlotXYZ(kFALSE) 
+  fPlotPhieta(kFALSE) 
 {
   // see header file for class documentation
   // or
@@ -106,11 +107,11 @@ int AliHLTITSClusterHistoComponent::DoInit( int argc, const char** argv )
 {
   fPlotCharge=kFALSE;   
   fPlotXY=kTRUE;
-  fPlotXYZ=kFALSE; 
+  fPlotPhieta=kFALSE; 
      
-  if(fPlotCharge){fCharge = new TH1F("fCharge","Total Charge of clusters",4000,0,4000);}
+  if(fPlotCharge){fCharge = new TH1F("fCharge","Total Charge of clusters",2000,0,2000);}
   if(fPlotXY){fXY = new TH2F("fXY","Global XY of ITS clusters",1600,-80,80,1600,-80,80);}
-  if(fPlotXYZ){fXYZ = new TH3F("fXYZ","Global XYZ of ITS clusters",1600,-80,80,1600,-80,80,2000,-100,100);}
+  if(fPlotPhieta){fPhieta = new TH2F("fPhieta","Global Phieta of ITS clusters",30,-1.5,1.5,60,0,2*TMath::Pi());}
   
   int iResult=0;
   TString configuration="";
@@ -133,7 +134,7 @@ int AliHLTITSClusterHistoComponent::DoDeinit()
   // see header file for class documentation
   if(fCharge!=NULL) delete fCharge;
   if(fXY!=NULL) delete fXY;     
-  if(fXYZ!=NULL) delete fXYZ;
+  if(fPhieta!=NULL) delete fPhieta;
   return 0;
 }
 
@@ -184,8 +185,14 @@ int AliHLTITSClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
       if(fPlotXY){
 	fXY->Fill(xyz[0],xyz[1]);
       }
-      if(fPlotXYZ){
-	fXYZ->Fill(xyz[0],xyz[1],xyz[2]);
+      if(fPlotPhieta){
+	Float_t rad=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]); 
+	Float_t theta=TMath::ATan2(rad,xyz[2]);
+	Float_t eta=-1*TMath::Log(TMath::Tan(theta/2.0));
+	Float_t phi=TMath::ATan2(xyz[1],xyz[0]);
+	if(phi<0.0){phi=2 * TMath::Pi() - TMath::Abs(phi);} 
+	//fPhieta->Fill(theta,phi);
+	fPhieta->Fill(eta,phi);
       }
       if(fPlotCharge){
 	fCharge->Fill(recpoint.GetQ());
@@ -201,9 +208,9 @@ int AliHLTITSClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
     AliHLTUInt32_t fSpecification = 0x0;
     PushBack( (TObject*) fXY,kAliHLTDataTypeHistogram,fSpecification);
   }
-  if(fPlotXYZ){
+  if(fPlotPhieta){
     AliHLTUInt32_t fSpecification = 0x0;
-    PushBack( (TObject*) fXYZ,kAliHLTDataTypeHistogram,fSpecification);
+    PushBack( (TObject*) fPhieta,kAliHLTDataTypeHistogram,fSpecification);
   }
   
   HLTInfo("ITSClusterHisto found %d Total Spacepoints", TotalSpacePoint);
@@ -231,7 +238,7 @@ int AliHLTITSClusterHistoComponent::Configure(const char* arguments)
       if (argument.CompareTo("-plot-all")==0) {
 	HLTInfo("Ploting all historgams");
 	fPlotXY = kTRUE;
-	fPlotXYZ = kTRUE;
+	fPlotPhieta = kTRUE;
 	fPlotCharge = kTRUE;
 	continue;
       }
@@ -242,9 +249,9 @@ int AliHLTITSClusterHistoComponent::Configure(const char* arguments)
 	continue;
       }
 
-      else if (argument.CompareTo("-plot-xyz")==0) {
-	HLTInfo("Ploting Global XYZ");
-	//fPlotXYZ = kTRUE;
+      else if (argument.CompareTo("-plot-phieta")==0) {
+	HLTInfo("Ploting Global Phieta");
+	fPlotPhieta = kTRUE;
 	continue;
       }
       else if (argument.CompareTo("-plot-charge")==0) {
@@ -262,9 +269,9 @@ int AliHLTITSClusterHistoComponent::Configure(const char* arguments)
     delete pTokens;
   }
   
-  if(!fCharge && fPlotCharge){fCharge = new TH1F("fCharge","Total Charge of clusters",4000,0,4000);}
+  if(!fCharge && fPlotCharge){fCharge = new TH1F("fCharge","Total Charge of clusters",2000,0,2000);}
   if(!fXY && fPlotXY){fXY = new TH2F("fXY","Global XY of ITS clusters",1600,-80,80,1600,-80,80);}
-  if(!fXYZ && fPlotXYZ){fXYZ = new TH3F("fXYZ","Global XYZ of ITS clusters",1600,-80,80,1600,-80,80,2000,-100,100);}
+  if(!fPhieta && fPlotPhieta){fPhieta = new TH2F("fPhieta","Global Phieta of ITS clusters",30,-1.5,1.5,60,0,2*TMath::Pi());}
   
   return iResult;
 }
