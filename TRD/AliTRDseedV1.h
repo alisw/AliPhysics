@@ -38,6 +38,7 @@
 #include "AliTRDReconstructor.h"
 
 class TTreeSRedirector;
+class TLinearFitter;
 
 class AliRieman;
 
@@ -107,6 +108,8 @@ public:
   void      GetCalibParam(Float_t &exb, Float_t &vd, Float_t &t0, Float_t &s2, Float_t &dl, Float_t &dt) const    { 
               exb = fExB; vd = fVD; t0 = fT0; s2 = fS2PRF; dl = fDiffL; dt = fDiffT;}
   AliTRDcluster*  GetClusters(Int_t i) const               { return i<0 || i>=kNclusters ? 0x0 : fClusters[i];}
+  static TLinearFitter*  GetFitterY();
+  static TLinearFitter*  GetFitterZ();
   Int_t     GetIndexes(Int_t i) const{ return i<0 || i>=kNclusters ? -1 : fIndexes[i];}
   Int_t     GetLabels(Int_t i) const { return fLabels[i];}  
   Float_t   GetMomentum(Float_t *err = 0x0) const;
@@ -215,6 +218,8 @@ private:
   Int_t            fLabels[3];              // most frequent MC labels and total number of different labels
   Double_t         fRefCov[7];              // covariance matrix of the track in the yz plane + the rest of the diagonal elements
   Double_t         fCov[3];                 // covariance matrix of the tracklet in the xy plane
+  static TLinearFitter   *fgFitterY;
+  static TLinearFitter   *fgFitterZ;
 
   ClassDef(AliTRDseedV1, 7)                 // The offline TRD tracklet 
 };

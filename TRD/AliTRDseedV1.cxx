@@ -62,6 +62,9 @@
 
 ClassImp(AliTRDseedV1)
 
+TLinearFitter *AliTRDseedV1::fgFitterY = 0x0;
+TLinearFitter *AliTRDseedV1::fgFitterZ = 0x0;
+
 //____________________________________________________________________
 AliTRDseedV1::AliTRDseedV1(Int_t det) 
   :AliTRDtrackletBase()
@@ -90,7 +93,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   //
   // Constructor
   //
-  for(Int_t ic=kNclusters; ic--;) fIndexes[ic] = -1;
+  memset(fIndexes,0xFF,kNclusters*sizeof(fIndexes[0]));
   memset(fClusters, 0, kNclusters*sizeof(AliTRDcluster*));
   memset(fPad, 0, 3*sizeof(Float_t));
   fYref[0] = 0.; fYref[1] = 0.; 
@@ -593,10 +596,17 @@ Bool_t AliTRDseedV1::CookPID()
   CookdEdx(fReconstructor->GetNdEdxSlices());
   
   // Sets the a priori probabilities
-  for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) {
-    fProb[ispec] = pd->GetProbability(ispec, GetMomentum(), &fdEdx[0], length, GetPlane());	
+  if(fReconstructor->IsHLT()){
+    // this can be done here, because in HLT we have another NN
+    // don't run HLT with the normal NN because here we assume that the NN was trained with only two output neurons!
+    memset(fProb,0,AliPID::kSPECIES*sizeof(fProb[0]));
+    fProb[AliPID::kElectron] = pd->GetProbability(AliPID::kElectron, GetMomentum(), &fdEdx[0], length, GetPlane());
+    fProb[AliPID::kPion] = 1 - fProb[AliPID::kElectron];
   }
-
+  else
+    for(int ispec=0; ispec<AliPID::kSPECIES; ispec++)
+      fProb[ispec] = pd->GetProbability(ispec, GetMomentum(), &fdEdx[0], length, GetPlane());
+  
   return kTRUE;
 }
 
@@ -763,6 +773,21 @@ UShort_t AliTRDseedV1::GetVolumeId() const
   return fClusters[ic] ? fClusters[ic]->GetVolumeId() : 0;
 }
 
+//____________________________________________________________________
+TLinearFitter* AliTRDseedV1::GetFitterY()
+{
+  if(!fgFitterY) fgFitterY = new TLinearFitter(1, "pol1");
+  fgFitterY->ClearPoints();
+  return fgFitterY;
+}
+
+//____________________________________________________________________
+TLinearFitter* AliTRDseedV1::GetFitterZ()
+{
+  if(!fgFitterZ) fgFitterZ = new TLinearFitter(1, "pol1");
+  fgFitterZ->ClearPoints();
+  return fgFitterZ;
+}
 
 //____________________________________________________________________
 void AliTRDseedV1::Calibrate()
@@ -1219,9 +1244,9 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
   Double_t yt, zt;
 
   //AliTRDtrackerV1::AliTRDLeastSquare fitterZ;
-  TLinearFitter  fitterY(1, "pol1");
-  TLinearFitter  fitterZ(1, "pol1");
-  
+  TLinearFitter& fitterY=*GetFitterY();
+  TLinearFitter& fitterZ=*GetFitterZ();
+
   // book cluster information
   Double_t qc[kNclusters], xc[kNclusters], yc[kNclusters], zc[kNclusters], sy[kNclusters];
 
