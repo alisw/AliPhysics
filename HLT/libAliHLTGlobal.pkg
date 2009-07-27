@@ -2,6 +2,8 @@
 # $Id$
 
 CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
+		AliHLTGlobalTrackMergerComponent.h \
+		AliHLTGlobalTrackMerger.h \
 		AliHLTGlobalAgent.h \
 		AliHLTVertexer.h
 

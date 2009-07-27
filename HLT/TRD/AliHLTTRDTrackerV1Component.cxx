@@ -56,7 +56,7 @@ using namespace std;
 #define CALLGRIND_STOP_INSTRUMENTATION do { } while (0)
 #endif
 
-ClassImp(AliHLTTRDTrackerV1Component);
+ClassImp(AliHLTTRDTrackerV1Component)
     
 AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component():
   AliHLTProcessor(),
@@ -95,7 +95,8 @@ void AliHLTTRDTrackerV1Component::GetInputDataTypes( vector<AliHLTComponent_Data
 AliHLTComponent_DataType AliHLTTRDTrackerV1Component::GetOutputDataType()
 {
   // Get the output data type
-  return AliHLTTRDDefinitions::fgkClusterDataType;
+  //return AliHLTTRDDefinitions::fgkClusterDataType;
+  return  kAliHLTDataTypeTrack | kAliHLTDataOriginTRD;
 }
 
 void AliHLTTRDTrackerV1Component::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -123,6 +124,7 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
   Int_t iRecoParamType = -1; // default will be the low flux
   Int_t iNtimeBins = -1;     // number of time bins for the tracker to use
   Int_t iMagneticField = -1; // magnetic field: 0==OFF and 1==ON
+  Int_t iPIDmethod = 1;      // 0=LikelyHood(LH) 1=NeuronalNetwork(NN) 2=TruncatedMean(TM)
   Bool_t bHLTMode = kTRUE, bWriteClusters = kFALSE;
   
   while ( i < argc )
@@ -144,9 +146,7 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	    }
 	  HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
 	  i += 2;
-	  
 	}
-
       else if ( !strcmp( argv[i], "-NTimeBins" ) )
 	{
 	  if ( i+1>=argc )
@@ -161,10 +161,8 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	      HLTError("Wrong Argument. Cannot convert -NTimeBins parameter '%s'", argv[i+1] );
 	      return EINVAL;
 	    }	  
-	  i += 2;
-	  
+	  i += 2; 
 	}
-
       else if ( strcmp( argv[i], "-cdb" ) == 0)
 	{
 	  if ( i+1 >= argc )
@@ -175,9 +173,7 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	  fStrorageDBpath = argv[i+1];
 	  HLTInfo("DB storage is %s", fStrorageDBpath.c_str() );	  
 	  i += 2;
-	  
-	}      
-
+	}
       else if ( strcmp( argv[i], "-geometry" ) == 0)
 	{
 	  if ( i+1 >= argc )
@@ -189,32 +185,26 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	  HLTInfo("GeomFile storage is %s", 
 		  fGeometryFileName.c_str() );	  
 	  i += 2;
-	  
-	}      
-
+	}
       // the flux parametrizations
       else if ( strcmp( argv[i], "-lowflux" ) == 0)
 	{
 	  iRecoParamType = 0;	  
 	  HLTDebug("Low flux reco selected.");
 	  i++;
-	  
-	}      
-      
+	}
       else if ( strcmp( argv[i], "-highflux" ) == 0)
 	{
 	  iRecoParamType = 1;	  
 	  HLTDebug("Low flux reco selected.");
 	  i++;
-	}      
-
+	}
       else if ( strcmp( argv[i], "-cosmics" ) == 0)
 	{
 	  iRecoParamType = 2;	  
 	  HLTDebug("Cosmic test reco selected.");
 	  i++;
-	}      
-
+	}
       else if ( strcmp( argv[i], "-magnetic_field_ON" ) == 0)
 	{
 	  iMagneticField = 1;
@@ -231,6 +221,26 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	  HLTDebug("Using standard offline tracking.");
 	  i++;
 	}
+      else if ( strcmp( argv[i], "-PIDmethod" ) == 0)
+	{
+	  if ( i+1 >= argc )
+	    {
+	      HLTError("Missing -PIDmethod argument");
+	      return ENOTSUP;	      
+	    }
+	  if( strcmp(argv[i], "LH") )
+	    iPIDmethod=0;
+	  else if( strcmp(argv[i], "NN") )
+	    iPIDmethod=1;
+	  else if( strcmp(argv[i], "TM") )
+	    iPIDmethod=2;
+	  else {
+	    HLTError("Unknown -PIDmethod argument");
+	    return ENOTSUP;	      
+	  }
+	  i += 2;
+	}
+
       else {
 	HLTError("Unknown option '%s'", argv[i] );
 	return EINVAL;
@@ -352,6 +362,12 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
     }
   if (bHLTMode)
     recoOptions += ",hlt";
+
+  switch(iPIDmethod){
+  case 0: recoOptions += ",!nn"; break;
+  case 1: recoOptions += ",nn"; break;
+  case 2: recoOptions += ",!nn"; break;
+  }
   
   fReconstructor->SetOption(recoOptions.Data());
   HLTDebug("Reconstructor options are: %s",recoOptions.Data());
@@ -418,18 +434,18 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 
   vector<AliHLTComponent_DataType> expectedDataTypes;
   GetInputDataTypes(expectedDataTypes);
-  if (evtData.fEventID == 1)
+  if (evtData.fEventID > 1)
     CALLGRIND_START_INSTRUMENTATION;
   for ( unsigned long iBlock = 0; iBlock < evtData.fBlockCnt; iBlock++ ) 
     {
       const AliHLTComponentBlockData &block = blocks[iBlock];
-      offset = totalSize;
       AliHLTComponentDataType inputDataType = block.fDataType;
       Bool_t correctDataType = kFALSE;
-      
-      for(UInt_t i = 0; i < expectedDataTypes.size(); i++)
+
+      for(UInt_t i = 0; i < expectedDataTypes.size(); i++){
 	if( expectedDataTypes.at(i) == inputDataType)
 	  correctDataType = kTRUE;
+      }
       if (!correctDataType)
 	{
 	  HLTDebug( "Block # %i/%i; Event 0x%08LX (%Lu) Wrong received datatype: %s - Skipping",
@@ -439,10 +455,11 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	  continue;
 	}
       else {
-	  HLTDebug("We get the right data type: Block # %i/%i; Event 0x%08LX (%Lu) Received datatype: %s",
-		   iBlock, evtData.fBlockCnt-1,
-		   evtData.fEventID, evtData.fEventID, 
-		   DataType2Text(inputDataType).c_str());
+	HLTDebug("We get the right data type: Block # %i/%i; Event 0x%08LX (%Lu) Received datatype: %s; Block Size: %i",
+		 iBlock, evtData.fBlockCnt-1,
+		 evtData.fEventID, evtData.fEventID, 
+		 DataType2Text(inputDataType).c_str(),
+		 block.fSize);
       }
       
       
@@ -451,8 +468,6 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       HLTDebug("TClonesArray of clusters: nbEntries = %i", clusterArray->GetEntriesFast());
       fTracker->LoadClusters(clusterArray);
 
-      
-      
       // maybe it is not so smart to create it each event? clear is enough ?
       AliESDEvent *esd = new AliESDEvent();
       esd->CreateStdContent();
@@ -461,13 +476,54 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       Int_t nTracks = esd->GetNumberOfTracks();
       HLTInfo("Number of tracks  == %d ==", nTracks);  
 
-      TClonesArray* trdTracks = fTracker->GetListOfTracks();
-   
-      if (trdTracks)
-	totalSize += TransportTracks(trdTracks, outputPtr, outputBlocks, offset, dBlockSpecification);
-      else {
-	  HLTDebug("Bad array trdTracks = 0x%x", trdTracks);
+      TClonesArray* trdTracks = 0x0;
+      //trdTracks = fTracker->GetListOfTracks();
+      
+      if(nTracks>0){
+	HLTDebug("We have an output ESDEvent: 0x%x with %i tracks", esd, nTracks);
+	AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddESDToOutput(esd, (AliHLTUInt8_t*)(outputPtr+offset));
+	totalSize += addedSize;
+	  
+	// Fill block 
+	AliHLTComponentBlockData bd;
+	FillBlockData( bd );
+	//bd.fPtr = outputPtr;
+	bd.fOffset = offset;
+	bd.fSize = addedSize;
+	bd.fSpecification = dBlockSpecification;
+	bd.fDataType = kAliHLTDataTypeTrack | kAliHLTDataOriginTRD;
+	outputBlocks.push_back( bd );
+	HLTDebug("BD fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x", bd.fPtr, bd.fOffset, bd.fSize, bd.fSpecification);
+	offset = totalSize;
+
+	if (trdTracks){
+	  //Int_t nbTracks=trdTracks->GetEntriesFast();
+	  //if (nbTracks>0){
+	  HLTDebug("We have an output array: pointer to trdTracks = 0x%x, nbEntries = %i", trdTracks, trdTracks->GetEntriesFast());
+	  
+	  AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddTracksToOutput(trdTracks, (AliHLTUInt8_t*)(outputPtr+offset));
+	  totalSize += addedSize;
+	  
+	  // Fill block 
+	  AliHLTComponentBlockData bd;
+	  FillBlockData( bd );
+	  //bd.fPtr = outputPtr;
+	  bd.fOffset = offset;
+	  bd.fSize = addedSize;
+	  bd.fSpecification = dBlockSpecification;
+	  bd.fDataType = AliHLTTRDDefinitions::fgkTRDSATracksDataType;
+	  outputBlocks.push_back( bd );
+	  HLTDebug("BD fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x", bd.fPtr, bd.fOffset, bd.fSize, bd.fSpecification);
+	  offset = totalSize;
+	}
       }
+      
+      
+      // if (trdTracks)
+      // 	totalSize += TransportTracks(trdTracks, outputPtr, outputBlocks, offset, dBlockSpecification);
+      // else {
+      // 	  HLTDebug("Bad array trdTracks = 0x%x", trdTracks);
+      // }
       
       HLTDebug("totalSize: %i", totalSize);
       
@@ -480,7 +536,6 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 
       //here we are deleting clusters (but not the TClonesArray itself)
       fTracker->UnloadClusters();
-
       AliTRDReconstructor::SetClusters(0x0);
       delete esd;
       clusterArray->Delete();
@@ -491,41 +546,4 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
   size = totalSize;
   HLTDebug("Event is done. size written to the output is %i", size);
   return 0;
-}
-
-
-/**
- * Transport tracks to the next component
- * Return Numbers of bytes written to the output
- */
-//============================================================================
-AliHLTUInt32_t AliHLTTRDTrackerV1Component::TransportTracks(TClonesArray *inTracksArray, AliHLTUInt8_t* output,
-						    vector<AliHLTComponent_BlockData>& outputBlocks, AliHLTUInt32_t inOffset, AliHLTUInt32_t inSpec)
-{
-  Int_t nbTracks=inTracksArray->GetEntriesFast();
-  if (nbTracks>0)
-    {
-      HLTDebug("We have an output array: pointer to inTracksArray = 0x%x, nbEntries = %i", inTracksArray, nbTracks);
-      
-      	// Using low-level interface 
-	// with interface classes
-	AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddTracksToOutput(inTracksArray, output);
-	
-	// Fill block 
-	AliHLTComponentBlockData bd;
-	FillBlockData( bd );
-
-	bd.fPtr = output;
-	bd.fOffset = inOffset;
-	bd.fSize = addedSize;
-	bd.fSpecification = inSpec;
-	bd.fDataType = AliHLTTRDDefinitions::fgkTRDSATracksDataType;
-	outputBlocks.push_back( bd );
-	HLTDebug("BD fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x", bd.fPtr, bd.fOffset, bd.fSize, bd.fSpecification);
-	
-	return addedSize;
-      
-      }
-  return 0;
-  
 }

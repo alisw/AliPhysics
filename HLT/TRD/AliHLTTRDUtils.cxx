@@ -23,6 +23,12 @@
 #include <TClonesArray.h>
 #include "AliHLTTRDTrack.h"
 #include "AliHLTTRDCluster.h"
+#include "AliHLTExternalTrackParam.h"
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
+#include "AliPID.h"
+
+ClassImp(AliHLTTRDUtils)
 
 AliHLTUInt32_t AliHLTTRDUtils::AddClustersToOutput(TClonesArray* inClusterArray, AliHLTUInt8_t* outBlockPtr)
 {
@@ -55,7 +61,7 @@ AliHLTUInt32_t AliHLTTRDUtils::AddClustersToOutput(TClonesArray* inClusterArray,
 
 AliHLTUInt32_t AliHLTTRDUtils::AddTracksToOutput(TClonesArray* inTrackArray, AliHLTUInt8_t* output)
 {
-  cout << "\nWriting tracks to the Memory\n ============= \n";
+  //cout << "\nWriting tracks to the Memory\n ============= \n";
   AliTRDtrackV1* track = 0;
   AliHLTUInt32_t addedSize = 0;
   AliHLTUInt8_t *iterPtr = output;
@@ -143,3 +149,49 @@ AliHLTUInt32_t AliHLTTRDUtils::ReadTracks(TClonesArray *outArray, void* inputPtr
   return counter;
 }
 
+AliHLTUInt32_t AliHLTTRDUtils::AddESDToOutput(const AliESDEvent* const esd, AliHLTUInt8_t* const outBlockPtr)
+{
+  AliESDtrack* esdTrack = 0;
+  AliHLTUInt8_t* iterPtr = outBlockPtr;
+
+  AliHLTTracksData* trksData = new(iterPtr) AliHLTTracksData;
+  iterPtr += sizeof(AliHLTTracksData);
+  trksData->fCount=0;
+  
+  if(esd){
+    Double_t pid[5];
+    for(Int_t i=0; i<esd->GetNumberOfTracks(); i++){
+      esdTrack=esd->GetTrack(i);
+      if(!esdTrack)continue;
+      AliHLTExternalTrackParam* trk = new(iterPtr) AliHLTExternalTrackParam;
+      iterPtr += sizeof(AliHLTExternalTrackParam);
+      trk->fAlpha = esdTrack->GetAlpha();
+      trk->fX = esdTrack->GetX();
+      trk->fY = esdTrack->GetY();
+      trk->fZ = esdTrack->GetZ();
+      trk->fSinPsi = esdTrack->GetSnp();
+      trk->fTgl = esdTrack->GetTgl();
+      trk->fq1Pt = esdTrack->GetSigned1Pt();
+      trk->fC[0] = esdTrack->GetSigmaY2();
+      trk->fC[1] = esdTrack->GetSigmaZY();
+      trk->fC[2] = esdTrack->GetSigmaZ2();
+      trk->fC[3] = esdTrack->GetSigmaSnpY();
+      trk->fC[4] = esdTrack->GetSigmaSnpZ();
+      trk->fC[5] = esdTrack->GetSigmaSnp2();
+      trk->fC[6] = esdTrack->GetSigmaTglY();
+      trk->fC[7] = esdTrack->GetSigmaTglZ();
+      trk->fC[8] = esdTrack->GetSigmaTglSnp();
+      trk->fC[9] = esdTrack->GetSigmaTgl2();
+      trk->fC[10] = esdTrack->GetSigma1PtY();
+      trk->fC[11] = esdTrack->GetSigma1PtZ();
+      trk->fC[12] = esdTrack->GetSigma1PtSnp();
+      trk->fC[13] = esdTrack->GetSigma1PtTgl();
+      trk->fC[14] = esdTrack->GetSigma1Pt2();
+      esdTrack->GetTRDpid(pid);
+      //trk->fTRDpid = pid[AliPID::kElectron]; ...
+      trk->fNPoints = 0;
+      trksData->fCount++;
+    }
+  }
+  return iterPtr - outBlockPtr;
+}

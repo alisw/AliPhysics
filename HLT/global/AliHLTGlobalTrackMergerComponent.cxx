@@ -25,36 +25,20 @@
 using namespace std;
 #include <climits>
 #include <cassert>
-#include "AliHLTTPCTransform.h"
-#include "AliHLTTPCGlobalMerger.h"
-#include "AliHLTTPCVertex.h"
-#include "AliHLTTPCVertexData.h"
-#include "AliHLTTPCTrack.h"
-
-//#include "AliHLTTPCSpacePointData.h"
-//#include "AliHLTTPCClusterDataFormat.h"
-#include "AliHLTTPCTrackletDataFormat.h"
-#include "AliHLTTPCTrackSegmentData.h"
-#include "AliHLTTPCTrackArray.h"
-#include "AliHLTTPCDefinitions.h"
-#include "AliHLTTRDDefinitions.h"
 #include <cstdlib>
 #include <cerrno>
 
 #include "AliESDEvent.h"
 #include "AliTracker.h"
-#include "AliTRDtrackV1.h"
 #include "AliHLTGlobalTrackMerger.h"
-
 #include "AliHLTGlobalTrackMergerComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTGlobalTrackMergerComponent);
+ClassImp(AliHLTGlobalTrackMergerComponent)
 
 //_____________________________________________________________________________
-AliHLTGlobalTrackMergerComponent::AliHLTGlobalTrackMergerComponent() : AliHLTProcessor(), 
-  fGlobalTrackMerger(0), 
-  fESD(0)
+AliHLTGlobalTrackMergerComponent::AliHLTGlobalTrackMergerComponent() : AliHLTGlobalEsdConverterComponent(), 
+  fGlobalTrackMerger(0)
 {
 }
 
@@ -75,26 +59,24 @@ const char* AliHLTGlobalTrackMergerComponent::GetComponentID()
 void AliHLTGlobalTrackMergerComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
   // see header file for class documentation
-  list.clear();
-  list.push_back( AliHLTTPCDefinitions::fgkTracksDataType );
-  list.push_back( AliHLTTRDDefinitions::fgkTRDSATracksDataType );
+  list.push_back( kAliHLTDataTypeTrack );
 }
 
 //_____________________________________________________________________________
-AliHLTComponentDataType AliHLTGlobalTrackMergerComponent::GetOutputDataType()
-{
-  // see header file for class documentation
-  return kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC;
-}
+// AliHLTComponentDataType AliHLTGlobalTrackMergerComponent::GetOutputDataType()
+// {
+//   // see header file for class documentation
+//   return kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC;
+// }
 
 //_____________________________________________________________________________
-void AliHLTGlobalTrackMergerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
-{
-  // see header file for class documentation
-  // XXX TODO: Find more realistic values.
-  constBase = 20000;
-  inputMultiplier = 1.0;
-}
+// void AliHLTGlobalTrackMergerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
+// {
+//   // see header file for class documentation
+//   // XXX TODO: Find more realistic values.
+//   constBase = 20000;
+//   inputMultiplier = 1.0;
+// }
 
 //_____________________________________________________________________________
 AliHLTComponent* AliHLTGlobalTrackMergerComponent::Spawn()
@@ -114,18 +96,15 @@ void AliHLTGlobalTrackMergerComponent::SetMergerParameters(Double_t maxy,Double_
 int AliHLTGlobalTrackMergerComponent::DoInit( int /*argc*/, const char** /*argv*/ )
 {
   // see header file for class documentation
+  const char* argv = "-notree";
+  AliHLTGlobalEsdConverterComponent::DoInit(1,&argv);
+
   int iResult = 0;
   
   // Init merger
   fGlobalTrackMerger = new AliHLTGlobalTrackMerger();
-  
-  // output of the component
-  fESD = new AliESDEvent();
-  if (fESD) {
-     fESD->CreateStdContent();
-  }
 
-  if (!fGlobalTrackMerger || !fESD ) {
+  if (!fGlobalTrackMerger ) {
      HLTError("failed creating internal objects");
      iResult=-ENOMEM;
      return iResult;
@@ -141,14 +120,13 @@ int AliHLTGlobalTrackMergerComponent::DoDeinit()
 {
   // see header file for class documentation
   if(fGlobalTrackMerger) delete fGlobalTrackMerger; fGlobalTrackMerger =0;
-  if(fESD) delete fESD; fESD = 0;
+  AliHLTGlobalEsdConverterComponent::DoDeinit();
   return 0;
 }
 
 //_____________________________________________________________________________
-int AliHLTGlobalTrackMergerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-					      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, 
-					      AliHLTUInt32_t& /*size*/, AliHLTComponentBlockDataList& /*outputBlocks*/ )
+int AliHLTGlobalTrackMergerComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, 
+					      AliHLTComponentTriggerData& /*trigData*/)
 {
   //
   // global track merger function
@@ -165,92 +143,12 @@ int AliHLTGlobalTrackMergerComponent::DoEvent( const AliHLTComponentEventData& e
     return iResult;
   }
 
-  if(!blocks) {
-    HLTError("no blocks");
-    iResult=-EINVAL;
-    return iResult;
-  }
+  fESD->Reset(); 
+  fESD->SetMagneticField(fSolenoidBz);
+  //fESD->SetMagneticField(AliTracker::GetBz());
 
-  const AliHLTComponentBlockData* iter=0;
-  AliHLTTPCTrackletData* inPtr=0;
-  Bool_t bIsTRDTrackDataBlock=kFALSE;
-  Bool_t bIsTPCTrackDataBlock=kFALSE;
-  TClonesArray *aTRDTracks=0;
-  Int_t minSlice = INT_MAX, maxSlice = 0;
-  Int_t slice;
-
-  unsigned long ndx;
-  Int_t nTRDDataBlocks = 0;
-  Int_t nTPCDataBlocks = 0;
-  for ( ndx = 0; ndx < evtData.fBlockCnt && iResult>=0; ndx++ )
-  {
-      iter = blocks+ndx;
-      bIsTRDTrackDataBlock=kFALSE;
-      bIsTPCTrackDataBlock=kFALSE;
-
-      // check if TPC or TRD tracks
-      if(!(bIsTRDTrackDataBlock=(iter->fDataType==AliHLTTRDDefinitions::fgkTRDSATracksDataType)) &&
-         !(bIsTPCTrackDataBlock=(iter->fDataType==AliHLTTPCDefinitions::fgkTracksDataType))) {
-	continue;
-      }
-
-      // collect TRD tracks from all SM
-      // one TClonesArray of tracks per SM
-      if(bIsTRDTrackDataBlock) 
-      {
-        nTRDDataBlocks++;
-	if(nTRDDataBlocks>1) continue;
-        for (TObject *pObj = (TObject *)GetFirstInputObject(AliHLTTRDDefinitions::fgkTRDSATracksDataType,"TClonesArray",0);
-	  pObj !=0 && iResult>=0;
-	  pObj = (TObject *)GetNextInputObject(0)) {
-          aTRDTracks = dynamic_cast<TClonesArray*>(pObj);
-          if (!aTRDTracks) continue;
-
-          HLTInfo("reading block %d, trdTracks %d", ndx, aTRDTracks->GetEntriesFast());
-
-	  // load TRD tracks
-	  if (fGlobalTrackMerger->LoadTracks(aTRDTracks,fESD) == kFALSE) {
-             HLTError("Cannot load TRD tracks");
-             iResult=-ENOMEM;
-             return iResult;
-	  }
-	}
-	aTRDTracks->Delete();
-      } 
-      
-      // collect TPC tracks from whole TPC
-      if (bIsTPCTrackDataBlock) 
-      {
-        nTPCDataBlocks++;
-	if(nTPCDataBlocks>1) continue;
-
-        slice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
-	if(slice<minSlice) minSlice = slice;
-	if(slice>maxSlice) maxSlice = slice;
-	
-        //minslice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
-        //maxslice=AliHLTTPCDefinitions::GetMaxSliceNr(iter->fSpecification);
-
-        AliHLTTPCTrackArray tracks;
-        inPtr=(AliHLTTPCTrackletData*)iter->fPtr;
-
-        HLTInfo("reading block %d (slice %d): %d tracklets", ndx, slice, inPtr->fTrackletCnt);
-
-        // read TPC track segments from memory
-        if((iResult=tracks.FillTracksChecked(inPtr->fTracklets, inPtr->fTrackletCnt, iter->fSize, -1/*global track*/, 0/*don't rotate*/))>=0) 
-	{
-          // load TPC tracks
-          if (fGlobalTrackMerger->LoadTracks(&tracks,fESD) == kFALSE) {
-             HLTError("Cannot load TPC tracks");
-             iResult=-ENOMEM;
-             return iResult;
-	  }
-        }
-      }
-   }
-
-   // set magnetic field 
-   fESD->SetMagneticField(AliTracker::GetBz());
+  if ((iResult=ProcessBlocks(NULL, fESD))<0) return iResult;
+  if(!fESD->GetNumberOfTracks()>0) return iResult;
 
    // merge tracks
    Bool_t isMerged = fGlobalTrackMerger->Merge(fESD);
@@ -267,7 +165,7 @@ int AliHLTGlobalTrackMergerComponent::DoEvent( const AliHLTComponentEventData& e
 
    // send output data
    //PushBack(fESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC, iSpecification);
-   PushBack(fESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC);
+   PushBack(fESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut);
 
    // clean ESD event content
    fESD->Reset();

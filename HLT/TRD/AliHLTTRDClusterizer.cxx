@@ -25,7 +25,7 @@
 #include "AliTRDReconstructor.h"
 #include <TClonesArray.h>
 
-ClassImp(AliHLTTRDClusterizer);
+ClassImp(AliHLTTRDClusterizer)
 
 //_____________________________________________________________________________
 AliHLTTRDClusterizer::AliHLTTRDClusterizer(const AliTRDReconstructor *const rec)

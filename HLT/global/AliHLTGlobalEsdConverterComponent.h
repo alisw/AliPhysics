@@ -42,7 +42,7 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
   /** standard constructor */
   AliHLTGlobalEsdConverterComponent();
   /** destructor */
-  ~AliHLTGlobalEsdConverterComponent();
+  virtual ~AliHLTGlobalEsdConverterComponent();
 
   // interface methods of base class
   const char* GetComponentID() {return "GlobalEsdConverter";};
@@ -88,17 +88,19 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
    */
   int Configure(const char* arguments);
 
-  /// the ESD
-  AliESDEvent* fESD; //! transient value
-
-  /// solenoid b field
-  Double_t fSolenoidBz; //! transient
-
   /// write object to TTree or directly
   int fWriteTree; //!transient
 
   /// verbosity level
   int fVerbosity; //!transient
+
+protected:
+
+  /// the ESD
+  AliESDEvent* fESD; //! transient value
+
+  /// solenoid b field
+  Double_t fSolenoidBz; //! transient
 
   ClassDef(AliHLTGlobalEsdConverterComponent, 0)
 };

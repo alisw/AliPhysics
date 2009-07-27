@@ -37,6 +37,7 @@
 #include "AliESDtrack.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliPID.h"
 #include "TTree.h"
 #include "TList.h"
 
@@ -331,6 +332,37 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	AliESDtrack *tESD = pESD->GetTrack( tpcID );
 	if( tESD ) tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSin );
       }
+    }
+  }
+
+  // convert the HLT TRD tracks to ESD tracks                        
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
+       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    vector<AliHLTGlobalBarrelTrack> tracks;
+    if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
+      for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
+	   element!=tracks.end(); element++) {
+	
+	Double_t TRDpid[AliPID::kSPECIES], eProb(0.2), restProb((1-eProb)/(AliPID::kSPECIES-1)); //eprob(element->GetTRDpid...);
+	for(Int_t i=0; i<AliPID::kSPECIES; i++){
+	  switch(i){
+	  case AliPID::kElectron: TRDpid[AliPID::kElectron]=eProb; break;
+	  default: TRDpid[i]=restProb; break;
+	  }
+	}
+	
+	AliESDtrack iotrack;
+	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTRDin);
+	iotrack.SetTRDpid(TRDpid);
+	
+	pESD->AddTrack(&iotrack);
+	if (fVerbosity>0) element->Print();
+      }
+      HLTInfo("converted %d track(s) to AliESDtrack and added to ESD", tracks.size());
+      iAddedDataBlocks++;
+    } else if (iResult<0) {
+      HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d", 
+	       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);
     }
   }
       

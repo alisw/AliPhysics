@@ -60,7 +60,7 @@ using namespace std;
 #include <cerrno>
 #include <string>
 
-ClassImp(AliHLTTRDClusterizerComponent);
+ClassImp(AliHLTTRDClusterizerComponent)
    
 AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent():
   AliHLTProcessor(),
@@ -130,6 +130,7 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 
   // the data type will become obsolete as soon as the formats are established
   Int_t iRecoDataType = -1; // default will be simulation
+  Int_t iyPosMethod = 1;     // 0=COG 1=LUT 2=Gauss 
   
   while ( i < argc )
     {
@@ -161,48 +162,36 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	  fStrorageDBpath = argv[i+1];
 	  HLTInfo("DB storage is %s", fStrorageDBpath.c_str() );	  
 	  i += 2;
-	  
-	}      
-
+	}
       else if ( strcmp( argv[i], "-lowflux" ) == 0)
 	{
 	  iRecoParamType = 0;	  
 	  HLTDebug("Low flux reco selected.");
 	  i++;
-	  
-	}      
-
+	}
       else if ( strcmp( argv[i], "-highflux" ) == 0)
 	{
 	  iRecoParamType = 1;	  
 	  HLTDebug("High flux reco selected.");
 	  i++;
-	  
-	}      
-
+	}
       else if ( strcmp( argv[i], "-cosmics" ) == 0)
 	{
 	  iRecoParamType = 2;	  
 	  HLTDebug("Cosmic test reco selected.");
 	  i++;
-	  
-	}      
-
+	}
       // raw data type - sim or experiment
       else if ( strcmp( argv[i], "-simulation" ) == 0)
 	{
 	  iRecoDataType = 0;
 	  i++;
-	  
 	}
-
       else if ( strcmp( argv[i], "-experiment" ) == 0)
 	{
 	  iRecoDataType = 1;
 	  i++;
-	  
 	}
-
       else if ( strcmp( argv[i], "-rawver" ) == 0)
 	{
 	  if ( i+1 >= argc )
@@ -226,7 +215,28 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	  fGeometryFileName = argv[i+1];
 	  HLTInfo("GeomFile storage is %s", fGeometryFileName.c_str() );	  
 	  i += 2;
-	}      
+	}
+
+      else if ( strcmp( argv[i], "-yPosMethod" ) == 0)
+	{
+	  if ( i+1 >= argc )
+	    {
+	      HLTError("Missing -yPosMethod argument");
+	      return ENOTSUP;	      
+	    }
+	  if( strcmp(argv[i], "COG") )
+	    iyPosMethod=0;
+	  else if( strcmp(argv[i], "LUT") )
+	    iyPosMethod=1;
+	  else if( strcmp(argv[i], "Gauss") )
+	    iyPosMethod=2;
+	  else {
+	    HLTError("Unknown -yPosMethod argument");
+	    return ENOTSUP;	      
+	  }
+	  i += 2;
+	}
+      
       else{
 	HLTError("Unknown option '%s'", argv[i] );
 	return EINVAL;
@@ -270,10 +280,15 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   fReconstructor->SetRecoParam(fRecoParam);
   fReconstructor->SetStreamLevel(0, AliTRDReconstructor::kClusterizer); // default value
   HLTInfo("Not writing clusters. I.e. output is a TClonesArray of clusters");
-  TString recoOptions="hlt,!cw,sl_cf_0,!gs,!lut";
+  TString recoOptions="hlt,!cw,sl_cf_0";
   switch(iRecoDataType){
   case 0: recoOptions += ",tc"; break;
   case 1: recoOptions += ",!tc"; break;
+  }
+  switch(iyPosMethod){
+  case 0: recoOptions += ",!gs,!lut"; break;
+  case 1: recoOptions += ",!gs,lut"; break;
+  case 2: recoOptions += ",gs,!lut"; break;
   }
   
   fReconstructor->SetOption(recoOptions.Data());
@@ -389,7 +404,6 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 	CALLGRIND_START_INSTRUMENTATION;
       
       const AliHLTComponentBlockData &block = blocks[i];
-      offset = totalSize;
       // lets not use the internal TRD data types here : AliHLTTRDDefinitions::fgkDDLRawDataType
       // which is depreciated - we use HLT global defs instead
       //      if ( block.fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD) )
@@ -428,7 +442,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 
       fMemReader->SetEquipmentID( id ); 
       
-      fClusterizer->SetMemBlock(outputPtr);
+      fClusterizer->SetMemBlock((AliHLTUInt8_t*)(outputPtr+offset));
       Bool_t iclustered = fClusterizer->Raw2ClustersChamber(fMemReader);
       if (iclustered == kTRUE)
 	{
@@ -464,8 +478,8 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 	  bd.fSpecification = gkAliEventTypeData;
 	  bd.fDataType = AliHLTTRDDefinitions::fgkClusterDataType;
 	  outputBlocks.push_back( bd );
-	  HLTDebug( "Block ; size %i; dataType %s; spec 0x%x ",
-		    bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);
+	  HLTDebug( "BD fPtr 0x%x, fOffset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);
+	  offset = totalSize;
 	      
 	}
 	else 
@@ -477,7 +491,6 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
   HLTDebug("Event is done. size written to the output is %i", size);
   return 0;
 }
-
 
 void AliHLTTRDClusterizerComponent::PrintObject( TClonesArray* inClustersArray)
 {

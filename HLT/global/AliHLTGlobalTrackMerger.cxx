@@ -22,15 +22,8 @@
     @brief  The HLT global merger base class
 */
 
-#include "AliHLTTPCTransform.h"
-#include "AliHLTTPCTrack.h"
-#include "AliHLTTPCTrackSegmentData.h"
-#include "AliHLTTPCTransform.h"
-#include "AliHLTTPCTrackArray.h"
+//#include "AliTPCReconstructor.h"
 
-#include "AliTPCReconstructor.h"
-
-#include "AliTRDtrackV1.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliTracker.h"
@@ -62,9 +55,9 @@ AliHLTGlobalTrackMerger::AliHLTGlobalTrackMerger()
   // V(0.,0.,0.), sigmaVx=sigmaVy=5.e-3 [cm], sigmaVz=5.3 [cm]    
   fVertex = new AliESDVertex;
 
-  if (AliTPCReconstructor::StreamLevel()>0) {
-    fDebugStreamer = new TTreeSRedirector("debugGlobalMerger.root");
-  }
+  // if (AliTPCReconstructor::StreamLevel()>0) {
+  //   fDebugStreamer = new TTreeSRedirector("debugGlobalMerger.root");
+  // }
 
 }
 
@@ -74,83 +67,6 @@ AliHLTGlobalTrackMerger::~AliHLTGlobalTrackMerger()
   //Destructor
   if(fVertex) delete fVertex; fVertex =0;
   if(fDebugStreamer) delete fDebugStreamer; fDebugStreamer =0;
-}
-
-//_____________________________________________________________________________
-Bool_t AliHLTGlobalTrackMerger::LoadTracks(TClonesArray *aTRDTracks, AliESDEvent *esdEvent)
-{
-  // load TRD tracks
-  if(!aTRDTracks) return kFALSE;
-
-  Int_t entries = aTRDTracks->GetEntriesFast();
-  for(Int_t i=0; i<entries; ++i) {
-    AliTRDtrackV1 *track = (AliTRDtrackV1*)aTRDTracks->At(i);
-    if(!track) continue;
-
-    FillTRDESD(track,AliESDtrack::kTRDin,esdEvent); 
-  }
-
-return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t AliHLTGlobalTrackMerger::LoadTracks(AliHLTTPCTrackArray *aTPCTracks, AliESDEvent *esdEvent)
-{
-  // load TPC tracks
-  if(!aTPCTracks) return kFALSE;
-
-  for (Int_t i=0; i<aTPCTracks->GetNTracks();++i) {
-    AliHLTTPCTrack* track=(*aTPCTracks)[i];
-    if(!track) continue;
-
-    // convert to the AliKalmanTrack 
-    Int_t local=track->Convert2AliKalmanTrack();
-    if(local<0) continue;
-
-    FillTPCESD(track,AliESDtrack::kTPCin,esdEvent); 
-  }
-
-return kTRUE;
-}
-
-//_____________________________________________________________________________
-void AliHLTGlobalTrackMerger::FillTPCESD(AliHLTTPCTrack *tpcTrack, ULong_t flags, AliESDEvent* esdEvent)
-{
-  // create AliESDtracks from AliHLTTPCTracks 
-  // and add them to AliESDEvent
-
-  if(!tpcTrack) return;
-  if(!esdEvent) return;
-
-  AliESDtrack iotrack;
-  iotrack.UpdateTrackParams(tpcTrack,flags);
-
-  Float_t points[4]={tpcTrack->GetFirstPointX(),tpcTrack->GetFirstPointY(),tpcTrack->GetLastPointX(),tpcTrack->GetLastPointY()};
-  if(tpcTrack->GetSector() == -1){ // Set first and last points for global tracks
-    Double_t s = TMath::Sin( tpcTrack->GetAlpha() );
-    Double_t c = TMath::Cos( tpcTrack->GetAlpha() );
-    points[0] =  tpcTrack->GetFirstPointX()*c + tpcTrack->GetFirstPointY()*s;
-    points[1] = -tpcTrack->GetFirstPointX()*s + tpcTrack->GetFirstPointY()*c;
-    points[2] =  tpcTrack->GetLastPointX() *c + tpcTrack->GetLastPointY() *s;
-    points[3] = -tpcTrack->GetLastPointX() *s + tpcTrack->GetLastPointY() *c;
-  }
-  iotrack.SetTPCPoints(points);
-
-  esdEvent->AddTrack(&iotrack);
-}
- 
-//_____________________________________________________________________________
-void AliHLTGlobalTrackMerger::FillTRDESD(AliTRDtrackV1* trdTrack, ULong_t flags, AliESDEvent* esdEvent)
-{
-  // create AliESDtracks from AliTRDtrackV1
-  // and add them to AliESDEvent
-
-  if(!trdTrack) return;
-  if(!esdEvent) return;
-
-  AliESDtrack iotrack;
-  iotrack.UpdateTrackParams(trdTrack,flags);
-  esdEvent->AddTrack(&iotrack);
 }
 
 //_____________________________________________________________________________
@@ -347,23 +263,23 @@ Bool_t AliHLTGlobalTrackMerger::MatchTracks(AliExternalTrackParam *trackTPC, Ali
   Double_t signed1Pt_trd=trackTRD->GetSigned1Pt();
 
   // debug stream
-  if (AliTPCReconstructor::StreamLevel()>0) {
-  //TTreeSRedirector &cstream = *fDebugStreamer;
-  *fDebugStreamer<<"match"<<
-  "x_tpc="<<x_tpc<<
-  "y_tpc="<<y_tpc<<
-  "z_tpc="<<z_tpc<<
-  "snp_tpc="<<snp_tpc<<
-  "tgl_tpc="<<tgl_tpc<<
-  "signed1Pt_tpc="<<signed1Pt_tpc<<
-  "x_trd="<<x_trd<<
-  "y_trd="<<y_trd<<
-  "z_trd="<<z_trd<<
-  "snp_trd="<<snp_trd<<
-  "tgl_trd="<<tgl_trd<<
-  "signed1Pt_trd="<<signed1Pt_trd<<
-  "\n";
-  }
+  // if (AliTPCReconstructor::StreamLevel()>0) {
+  // //TTreeSRedirector &cstream = *fDebugStreamer;
+  // *fDebugStreamer<<"match"<<
+  // "x_tpc="<<x_tpc<<
+  // "y_tpc="<<y_tpc<<
+  // "z_tpc="<<z_tpc<<
+  // "snp_tpc="<<snp_tpc<<
+  // "tgl_tpc="<<tgl_tpc<<
+  // "signed1Pt_tpc="<<signed1Pt_tpc<<
+  // "x_trd="<<x_trd<<
+  // "y_trd="<<y_trd<<
+  // "z_trd="<<z_trd<<
+  // "snp_trd="<<snp_trd<<
+  // "tgl_trd="<<tgl_trd<<
+  // "signed1Pt_trd="<<signed1Pt_trd<<
+  // "\n";
+  // }
 
   if (TMath::Abs(y_tpc-y_trd) > fMaxY) return kFALSE;
   if (TMath::Abs(z_tpc-z_trd) > fMaxZ) return kFALSE;

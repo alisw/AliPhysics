@@ -1,3 +1,4 @@
+//-*- Mode: C++ -*-
 // $Id$
 #ifndef ALIHLTGLOBALTRACKMERGERCOMPONENT_H
 #define ALIHLTGLOBALTRACKMERGERCOMPONENT_H
@@ -11,9 +12,8 @@
     @brief  HLT global track merger component.
 */
 
-#include "AliHLTProcessor.h"
+#include "AliHLTGlobalEsdConverterComponent.h"
 
-class AliESDEvent;
 class AliHLTGlobalTrackMerger;
 
 /**
@@ -23,7 +23,7 @@ class AliHLTGlobalTrackMerger;
  * @ingroup alihlt_global_components
  * @author Jacek.Otwinowski@gsi.de
  */
-class AliHLTGlobalTrackMergerComponent : public AliHLTProcessor
+class AliHLTGlobalTrackMergerComponent : public AliHLTGlobalEsdConverterComponent
     {
     public:
       /** standard constructor */
@@ -41,10 +41,10 @@ class AliHLTGlobalTrackMergerComponent : public AliHLTProcessor
 	void GetInputDataTypes(AliHLTComponentDataTypeList& list);
 
       /** @see component interface AliHLTComponent::GetOutputDataType */
-	AliHLTComponentDataType GetOutputDataType();
+	// AliHLTComponentDataType GetOutputDataType();
 
       /** @see component interface AliHLTComponent::GetOutputDataSize */
-	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+	// virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 
       /** @see component interface AliHLTComponent::Spawn */
 	AliHLTComponent* Spawn();
@@ -71,11 +71,10 @@ class AliHLTGlobalTrackMergerComponent : public AliHLTProcessor
 	int DoDeinit();
 
       /** @see component interface @ref AliHLTProcessor::DoEvent */
-	int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		     AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks );
+        int DoEvent( const AliHLTComponentEventData& evtData,
+		     AliHLTComponentTriggerData& trigData);
 
-	using AliHLTProcessor::DoEvent;
+      using AliHLTProcessor::DoEvent;
 	
     private:
       /** copy constructor prohibited */
@@ -84,7 +83,6 @@ class AliHLTGlobalTrackMergerComponent : public AliHLTProcessor
       AliHLTGlobalTrackMergerComponent& operator=(const AliHLTGlobalTrackMergerComponent&);
 
       AliHLTGlobalTrackMerger *fGlobalTrackMerger;  //! global track merger
-      AliESDEvent *fESD;                            //! AliESDEvent output from merger
 
       ClassDef(AliHLTGlobalTrackMergerComponent, 0)
 
