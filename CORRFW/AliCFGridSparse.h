@@ -170,7 +170,7 @@ inline void AliCFGridSparse::GetBinLimits(Int_t ivar, Double_t * array) const {
 }
 
 inline Int_t* AliCFGridSparse::GetNBins() const {
-  Int_t *bins = new Int_t(GetNVar());
+  Int_t *bins = new Int_t[GetNVar()];
   for (Int_t iVar=0; iVar<GetNVar(); iVar++) {
     bins[iVar] = GetNBins(iVar) ;
   }
