@@ -1,0 +1,87 @@
+#ifndef ALIHLTTRDCLUSTERHISTOCOMPONENT_H
+#define ALIHLTTRDCLUSTERHISTOCOMPONENT_H
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
+
+#include "AliHLTProcessor.h"
+#include "TH1D.h"
+
+/**
+ * @class AliHLTTRDQHistoComponent
+ * Component for ploting charge in clusters
+ * 
+ * Component ID: \b TRDQHisto <br>
+ * Library: \b libAliHLTTRD.
+ *
+ * Mandatory arguments: <br>
+ * 
+ * 
+ * Optional arguments: <br>
+ * 
+ *
+ * @ingroup alihlt_tpc_components
+ */
+class AliHLTTRDClusterHistoComponent : public AliHLTProcessor
+{
+public:
+  /** default constructor */
+  AliHLTTRDClusterHistoComponent();
+  /** destructor */
+  virtual ~AliHLTTRDClusterHistoComponent();
+
+  // Public functions to implement AliHLTComponent's interface.
+  // These functions are required for the registration process
+
+  /** interface function, see AliHLTComponent for description */
+  const char* GetComponentID();
+  /** interface function, see AliHLTComponent for description */
+  void GetInputDataTypes(AliHLTComponentDataTypeList& list);
+  /** interface function, see AliHLTComponent for description */
+  AliHLTComponentDataType GetOutputDataType();
+  /** interface function, see AliHLTComponent for description */
+  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+  /** interface function, see AliHLTComponent for description */
+  AliHLTComponent* Spawn();
+
+protected:
+
+  // Protected functions to implement AliHLTComponent's interface.
+  // These functions provide initialization as well as the actual processing
+  // capabilities of the component. 
+
+  /** interface function, see AliHLTComponent for description */
+  int DoInit( int argc, const char** argv );
+  /** interface function, see AliHLTComponent for description */
+  int DoDeinit();
+  /** interface function, see AliHLTComponent for description */
+  int DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& trigData );
+
+  int Reconfigure(const char* cdbEntry, const char* chainId);
+
+  using AliHLTProcessor::DoEvent;
+  
+private:
+  /** copy constructor prohibited */
+  AliHLTTRDClusterHistoComponent(const AliHLTTRDClusterHistoComponent&);
+  /** assignment operator prohibited */
+  AliHLTTRDClusterHistoComponent& operator=(const AliHLTTRDClusterHistoComponent&);
+  /**
+   * Configure the component.
+   * Parse a string for the configuration arguments and set the component
+   * properties.
+   */ 
+  int Configure(const char* arguments);
+
+  TH1D *fNClsDet;
+  TH1D *fClsAmp;
+  TH1D *fClsAmpDrift;
+  TH1D *fClsTB;
+
+  TH1D *fClsAmpDriftDet[540];
+  TH1D *fClsAmpDist; 
+
+  ClassDef(AliHLTTRDClusterHistoComponent, 0);
+};
+#endif
