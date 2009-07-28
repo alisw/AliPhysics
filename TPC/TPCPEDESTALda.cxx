@@ -176,6 +176,7 @@ int main(int argc, char **argv) {
   // create calibration object
   AliTPCCalibPedestal calibPedestal(config.GetConfigurationMap()); // pedestal and noise calibration
   calibPedestal.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
+  calibPedestal.SetTimeAnalysis(timeAnalysis);               // pedestal(t) calibration 
   
   //===========================//
   // loop over RAW data files //
