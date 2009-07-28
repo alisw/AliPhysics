@@ -24,9 +24,8 @@
 #include "TTree.h"
 #include "TH2D.h"
 #include "TParticle.h"
-#include <TVector3.h>
-#include <TDatabasePDG.h>
-#include <TParticlePDG.h>
+#include "TDatabasePDG.h"
+#include "TParticlePDG.h"
 #include "TF1.h"
 #include "TList.h"
 #include "TString.h"
@@ -37,13 +36,15 @@
 #include "AliStack.h"
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
+#include "AliExternalTrackParam.h"
 
 ClassImp(AliResonanceKink)
 
 //________________________________________________________________________
 AliResonanceKink::AliResonanceKink() 
   : TObject(), fListOfHistos(0), fOpeningAngle(0), fInvariantMass(0), fInvMassTrue(0), fPhiBothKinks(0), fRecPt(0), fRecEta(0), fRecEtaPt(0), fSimPt(0), fSimEta(0), fSimEtaPt(0), fSimPtKink(0), fSimEtaKink(0),  fSimEtaPtKink(0), 
-  fhdr(0), fhdz(0), f1(0), f2(0), fAnalysisType(), fvtxz(0), fNbins(0), fLowX(0), fHighX(0), fdaughter1pdg(0), fdaughter2pdg(0), fresonancePDGcode(0)
+  fhdr(0), fhdz(0), f1(0), f2(0), fAnalysisType(), fvtxz(0), fNbins(0), fLowX(0), fHighX(0), fdaughter1pdg(0), fdaughter2pdg(0), fresonancePDGcode(0), fMaxNSigmaToVertex(0), fMinPtTrackCut(0), fMaxDCAxy(0), fMaxDCAzaxis(0), 
+fMinTPCclusters(0),fMaxChi2PerTPCcluster(0), fMaxCov0(0), fMaxCov2(0), fMaxCov5(0) , fMaxCov9(0), fMaxCov14(0) //, fTPCrefitFlag(kFALSE)
 
 {
   // Constructor
@@ -52,7 +53,8 @@ AliResonanceKink::AliResonanceKink()
 //________________________________________________________________________
 AliResonanceKink::AliResonanceKink(Int_t nbins, Float_t nlowx, Float_t nhighx, Int_t daughter1, Int_t daughter2, Int_t resonancePDG) 
   : TObject(), fListOfHistos(0), fOpeningAngle(0), fInvariantMass(0), fInvMassTrue(0), fPhiBothKinks(0), fRecPt(0), fRecEta(0), fRecEtaPt(0), fSimPt(0), fSimEta(0), fSimEtaPt(0), fSimPtKink(0), fSimEtaKink(0),  fSimEtaPtKink(0), 
-  fhdr(0), fhdz(0), f1(0), f2(0), fAnalysisType(), fvtxz(0), fNbins(nbins), fLowX(nlowx), fHighX(nhighx), fdaughter1pdg(daughter1), fdaughter2pdg(daughter2), fresonancePDGcode(resonancePDG)
+  fhdr(0), fhdz(0), f1(0), f2(0), fAnalysisType(), fvtxz(0), fNbins(nbins), fLowX(nlowx), fHighX(nhighx), fdaughter1pdg(daughter1), fdaughter2pdg(daughter2), fresonancePDGcode(resonancePDG), fMaxNSigmaToVertex(0), fMinPtTrackCut(0), 
+fMaxDCAxy(0), fMaxDCAzaxis(0), fMinTPCclusters(0), fMaxChi2PerTPCcluster(0), fMaxCov0(0), fMaxCov2(0), fMaxCov5(0), fMaxCov9(0), fMaxCov14(0) //, fTPCrefitFlag(kFALSE)
 
 {
    // Constructor
@@ -86,7 +88,7 @@ AliResonanceKink::AliResonanceKink(Int_t nbins, Float_t nlowx, Float_t nhighx, I
    f2->SetParameter(2,TMath::Pi());
    
    fvtxz=new TH1D("fvtxz"," ", 100,-20.0,20.0);
-
+   
 }
 
 //________________________________________________________________________
@@ -273,32 +275,17 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
     }
     if (trackpos->GetSign() < 0) continue;
     
-    trackpos->GetPxPyPz(ptrackpos);
+    AliExternalTrackParam *tpcTrackpos = (AliExternalTrackParam *)trackpos->GetTPCInnerParam();
+    if(!tpcTrackpos) continue;
+    ptrackpos[0]=tpcTrackpos->Px();
+    ptrackpos[1]=tpcTrackpos->Py();   
+    ptrackpos[2]=tpcTrackpos->Pz();  
     
-    Float_t nSigmaToVertex = GetSigmaToVertex(trackpos);      
-
-    Float_t bpos[2];
-    Float_t bCovpos[3];
-    trackpos->GetImpactParameters(bpos,bCovpos);
-    
-    if (bCovpos[0]<=0 || bCovpos[2]<=0) {
-     Printf("Estimated b resolution lower or equal zero!");
-     bCovpos[0]=0; bCovpos[2]=0;
-    }
-
-    Float_t dcaToVertexXYpos = bpos[0];
-    Float_t dcaToVertexZpos = bpos[1];
-    
-    fhdr->Fill(dcaToVertexXYpos);
-    fhdz->Fill(dcaToVertexZpos);
-
-    if(nSigmaToVertex>=4) continue;
-    if((dcaToVertexXYpos>3.0)||(dcaToVertexZpos>3.0)) continue;
+    Bool_t firstLevelAcceptPosTrack=IsAcceptedForKink(esd, vertex, trackpos);
+    if(firstLevelAcceptPosTrack==kFALSE) continue;
     
     TVector3 posTrackMom(ptrackpos[0],ptrackpos[1],ptrackpos[2]);
-  
-    if(posTrackMom.Perp()<=0.25) continue; 
-	
+  	
     TParticle * partpos = stack->Particle(TMath::Abs(trackpos->GetLabel()));
     if (!partpos) continue;
     Int_t pdgpos = partpos->GetPdgCode();
@@ -309,57 +296,16 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
     Int_t mumpdgpos = mumpos->GetPdgCode();
     
     Int_t indexKinkPos=trackpos->GetKinkIndex(0);
-    Int_t kaonKinkFlag=0;
-    if(indexKinkPos<0){
-		
-        AliESDkink *poskink=esd->GetKink(TMath::Abs(indexKinkPos)-1);
-	const TVector3 motherMfromKinkPos(poskink->GetMotherP());
-	const TVector3 daughterMKinkPos(poskink->GetDaughterP());
-	Float_t posQt=poskink->GetQt();
-
-        Double_t maxDecAngKmuPos=f1->Eval(motherMfromKinkPos.Mag(),0.,0.,0.);
-        Double_t maxDecAngpimuPos=f2->Eval(motherMfromKinkPos.Mag(),0.,0.,0.);
-
-        Float_t kinkAnglePos=TMath::RadToDeg()*poskink->GetAngle(2);
-	 
-	Float_t energyDaughterMu=TMath::Sqrt(daughterMKinkPos.Mag()*daughterMKinkPos.Mag()+0.105658*0.105658);
-        Float_t p1XM= motherMfromKinkPos.Px();
-        Float_t p1YM= motherMfromKinkPos.Py();
-        Float_t p1ZM= motherMfromKinkPos.Pz();
-        Float_t p2XM= daughterMKinkPos.Px();
-        Float_t p2YM= daughterMKinkPos.Py();
-        Float_t p2ZM= daughterMKinkPos.Pz();
-        Float_t p3Daughter=TMath::Sqrt(((p1XM-p2XM)*(p1XM-p2XM))+((p1YM-p2YM)*(p1YM-p2YM))+((p1ZM-p2ZM)*(p1ZM-p2ZM)));
-        Double_t invariantMassKmuPos= TMath::Sqrt((energyDaughterMu+p3Daughter)*(energyDaughterMu+p3Daughter)-motherMfromKinkPos.Mag()*motherMfromKinkPos.Mag());
-
-        if((kinkAnglePos>maxDecAngpimuPos)&&(posQt>0.05)&&(posQt<0.25)&&((poskink->GetR()>110.)&&(poskink->GetR()<230.))&&(TMath::Abs(posTrackMom.Eta())<1.1)&&(invariantMassKmuPos<0.6)) {
-
-          if(posTrackMom.Mag()<=1.1) {
- 	   kaonKinkFlag=1;
- 	  }
-	  else 
-	  if (kinkAnglePos<maxDecAngKmuPos) {
-	   kaonKinkFlag=1;	
-	  }
-	}
-
-    }  //End Kink Information   
+    Bool_t posKaonKinkFlag=0;
+    if(indexKinkPos<0) posKaonKinkFlag=IsKink(esd, indexKinkPos, posTrackMom);
     
-    if(kaonKinkFlag==1) anp4pos.SetVectM(posTrackMom,daughter1pdgMass);
+    if(posKaonKinkFlag==1) anp4pos.SetVectM(posTrackMom,daughter1pdgMass);
     
     if(indexKinkPos==0) {
-      UInt_t status=trackpos->GetStatus();
-      if((status&AliESDtrack::kTPCrefit)==0) continue;
-      if(trackpos->GetTPCclusters(0)<50) continue;
-      if((trackpos->GetTPCchi2()/trackpos->GetTPCclusters(0))>3.5) continue;
-      Double_t extCovPos[15];
-      trackpos->GetExternalCovariance(extCovPos);    
-      if(extCovPos[0]>2) continue;
-      if(extCovPos[2]>2) continue;    
-      if(extCovPos[5]>0.5) continue;  
-      if(extCovPos[9]>0.5) continue;
-      if(extCovPos[14]>2) continue; 
-   
+
+    Bool_t secondLevelAcceptPosTrack=IsAcceptedForTrack(esd, vertex, trackpos);
+    if(secondLevelAcceptPosTrack==kFALSE) continue;
+
       p4pos.SetVectM(posTrackMom, daughter2pdgMass);
     
     }
@@ -369,29 +315,16 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
         AliESDtrack* trackneg=esd->GetTrack(j);
         if (trackneg->GetSign() > 0) continue;
 	
-	trackneg->GetPxPyPz(ptrackneg);
-        Float_t negSigmaToVertex = GetSigmaToVertex(trackneg);
-      
-        Float_t bneg[2];
-        Float_t bCovneg[3];
-        trackneg->GetImpactParameters(bneg,bCovneg);
-        if (bCovneg[0]<=0 || bCovneg[2]<=0) {
-          Printf("Estimated b resolution lower or equal zero!");
-          bCovneg[0]=0; bCovneg[2]=0;
-        }
-
-        Float_t dcaToVertexXYneg = bneg[0];
-        Float_t dcaToVertexZneg = bneg[1];
+        AliExternalTrackParam *tpcTrackneg = (AliExternalTrackParam *)trackneg->GetTPCInnerParam();
+        if(!tpcTrackneg) continue;
+        ptrackneg[0]=tpcTrackneg->Px();
+        ptrackneg[1]=tpcTrackneg->Py();   
+        ptrackneg[2]=tpcTrackneg->Pz();  
     
-        fhdr->Fill(dcaToVertexXYneg);
-        fhdz->Fill(dcaToVertexZneg);
-
-        if(negSigmaToVertex>=4) continue;
-        if((dcaToVertexXYneg>3.0)||(dcaToVertexZneg>3.0)) continue;
+        Bool_t firstLevelAcceptNegTrack=IsAcceptedForKink(esd, vertex, trackneg);
+        if(firstLevelAcceptNegTrack==kFALSE) continue;	
 
         TVector3 negTrackMom(ptrackneg[0],ptrackneg[1],ptrackneg[2]);
-
-        if(negTrackMom.Perp()<=0.25) continue;	
 	
         TParticle * partneg = stack->Particle(TMath::Abs(trackneg->GetLabel()));
         if (!partneg) continue;
@@ -403,66 +336,23 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
         Int_t mumpdgneg = mumneg->GetPdgCode();
 	
 	Int_t indexKinkNeg=trackneg->GetKinkIndex(0);
-	Int_t negKaonKinkFlag=0;
-	if(indexKinkNeg<0){
-		
-	 AliESDkink *negkink=esd->GetKink(TMath::Abs(indexKinkNeg)-1);
-	 const TVector3 motherMfromKinkNeg(negkink->GetMotherP());
-	 const TVector3 daughterMKinkNeg(negkink->GetDaughterP());
-	 Float_t negQt=negkink->GetQt();
-
-	 Double_t maxDecAngKmuNeg=f1->Eval(motherMfromKinkNeg.Mag(),0.,0.,0.);
-	 Double_t maxDecAngpimuNeg=f2->Eval(motherMfromKinkNeg.Mag(),0.,0.,0.);
-
-         Float_t kinkAngleNeg=TMath::RadToDeg()*negkink->GetAngle(2);
-	 
-	 Float_t energyDaughterMuNeg=TMath::Sqrt(daughterMKinkNeg.Mag()*daughterMKinkNeg.Mag()+0.105658*0.105658);
-	 Float_t p1XMNeg= motherMfromKinkNeg.Px();
-         Float_t p1YMNeg= motherMfromKinkNeg.Py();
-         Float_t p1ZMNeg= motherMfromKinkNeg.Pz();
-         Float_t p2XMNeg= daughterMKinkNeg.Px();
-         Float_t p2YMNeg= daughterMKinkNeg.Py();
-         Float_t p2ZMNeg= daughterMKinkNeg.Pz();
-         Float_t p3DaughterNeg=TMath::Sqrt(((p1XMNeg-p2XMNeg)*(p1XMNeg-p2XMNeg))+((p1YMNeg-p2YMNeg)*(p1YMNeg-p2YMNeg))+((p1ZMNeg-p2ZMNeg)*(p1ZMNeg-p2ZMNeg)));
-         Double_t invariantMassKmuNeg= TMath::Sqrt((energyDaughterMuNeg+p3DaughterNeg)*(energyDaughterMuNeg+p3DaughterNeg)-motherMfromKinkNeg.Mag()*motherMfromKinkNeg.Mag());
-
-         if((kinkAngleNeg>maxDecAngpimuNeg)&&(negQt>0.05)&&(negQt<0.25)&&((negkink->GetR()>110.)&&(negkink->GetR()<230.))&&(TMath::Abs(negTrackMom.Eta())<1.1)&&(invariantMassKmuNeg<0.6)) {
-
-           if(negTrackMom.Mag()<=1.1) {
- 	  	negKaonKinkFlag=1;
-           }
-	   else 
-	   if (kinkAngleNeg<maxDecAngKmuNeg) {
-	        negKaonKinkFlag=1;	
-	   }
-	 }
-
-	}  //End Kink Information   
+	Bool_t negKaonKinkFlag=0;
+	if(indexKinkNeg<0) negKaonKinkFlag=IsKink(esd, indexKinkNeg, negTrackMom);
 	
 	if(negKaonKinkFlag==1) p4neg.SetVectM(negTrackMom,daughter1pdgMass);
 	
 	if(indexKinkNeg==0)  {
-	   UInt_t statusneg=trackneg->GetStatus();
-
-           if((statusneg&AliESDtrack::kTPCrefit)==0) continue;
-
-           if(trackneg->GetTPCclusters(0)<50) continue;
-           if((trackneg->GetTPCchi2()/trackneg->GetTPCclusters(0))>3.5) continue;
-       	   Double_t extCovneg[15];
-           trackneg->GetExternalCovariance(extCovneg);
-           if(extCovneg[0]>2) continue;
-           if(extCovneg[2]>2) continue;    
-           if(extCovneg[5]>0.5) continue;  
-           if(extCovneg[9]>0.5) continue;
-           if(extCovneg[14]>2) continue;
-
+ 
+	   Bool_t secondLevelAcceptNegTrack=IsAcceptedForTrack(esd, vertex, trackneg);
+           if(secondLevelAcceptNegTrack==kFALSE) continue;  
+	  
 	  anp4neg.SetVectM(negTrackMom, daughter2pdgMass);
 	
         }
 	
 	Double_t openingAngle=(ptrackpos[0]*ptrackneg[0]+ptrackpos[1]*ptrackneg[1]+ptrackpos[2]*ptrackneg[2])/(posTrackMom.Mag()*negTrackMom.Mag());
 
-	if((kaonKinkFlag==1)&&(negKaonKinkFlag==1)) {
+	if((posKaonKinkFlag==1)&&(negKaonKinkFlag==1)) {
 	 p4comb=anp4pos;
 	 p4comb+=p4neg;
 	 if(openingAngle>0.6) fPhiBothKinks->Fill(p4comb.M());
@@ -487,7 +377,7 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
 	  
 	}
 	
-	if(kaonKinkFlag==1) {
+	if(posKaonKinkFlag==1) {
           anp4comb=anp4pos;
           anp4comb+=anp4neg;  
 	  fInvariantMass->Fill(anp4comb.M());
@@ -521,7 +411,7 @@ Float_t AliResonanceKink::GetSigmaToVertex(AliESDtrack* esdTrack) const {
   Float_t bRes[2];
   Float_t bCov[3];
 
-    esdTrack->GetImpactParameters(b,bCov);
+    esdTrack->GetImpactParametersTPC(b,bCov);
   
   if (bCov[0]<=0 || bCov[2]<=0) {
     bCov[0]=0; bCov[2]=0;
@@ -558,5 +448,165 @@ const AliESDVertex* AliResonanceKink::GetEventVertex(const AliESDEvent* esd) con
   }
 }
 
+//________________________________________________________________________
 
+ Bool_t AliResonanceKink::IsAcceptedForKink(AliESDEvent *localesd,
+            const AliESDVertex *localvertex, AliESDtrack* localtrack) {
+   // Apply the selections for each kink
+
+  Double_t gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
+  Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
+  Double_t dca3D = 0.0;
+  
+  AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)localtrack->GetTPCInnerParam();
+  if(!tpcTrack) {
+    gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0;
+    dca[0] = -100.; dca[1] = -100.; dca3D = -100.;
+    cov[0] = -100.; cov[1] = -100.; cov[2] = -100.;
+  }
+  else {
+    gPt = tpcTrack->Pt();
+    gPx = tpcTrack->Px();
+    gPy = tpcTrack->Py();
+    gPz = tpcTrack->Pz();
+    tpcTrack->PropagateToDCA(localvertex,
+    	       localesd->GetMagneticField(),100.,dca,cov);
+  }
+  
+  if(GetSigmaToVertex(localtrack) > fMaxNSigmaToVertex) {
+      Printf("IsAcceptedKink: Track rejected because it has a %lf sigmas to vertex TPC (max. requested: %lf)",   GetSigmaToVertex(localtrack),fMaxNSigmaToVertex);
+      return kFALSE;
+  }
+  
+  if(TMath::Abs(dca[0]) > fMaxDCAxy) {
+      Printf("IsAcceptedKink: Track rejected because it has a value of dca(xy) (TPC) of %lf (max. requested: %lf)", TMath::Abs(dca[0]), fMaxDCAxy);
+      return kFALSE;
+  }
+    
+  if(TMath::Abs(dca[1]) > fMaxDCAzaxis) {
+      Printf("IsAcceptedKink: Track rejected because it has a value of dca(z) of %lf (max. requested: %lf)", TMath::Abs(dca[1]), fMaxDCAzaxis);
+      return kFALSE;
+  }
+  
+  if(gPt < fMinPtTrackCut) {
+      Printf("IsAcceptedKink: Track rejected because it has a min value of pt of %lf (min. requested: %lf)", gPt, fMinPtTrackCut);
+      return kFALSE;
+  } 
+  
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliResonanceKink::IsAcceptedForTrack(AliESDEvent *localesd,                                                                                                                                          const AliESDVertex *localvertex, AliESDtrack *localtrack) {
+   // Apply the selections for each track
+
+  Double_t gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
+  Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
+  Double_t dca3D = 0.0;
+  
+  AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)localtrack->GetTPCInnerParam();
+  if(!tpcTrack) {
+    gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0;
+    dca[0] = -100.; dca[1] = -100.; dca3D = -100.;
+    cov[0] = -100.; cov[1] = -100.; cov[2] = -100.;
+  }
+  else {
+    gPt = tpcTrack->Pt();
+    gPx = tpcTrack->Px();
+    gPy = tpcTrack->Py();
+    gPz = tpcTrack->Pz();
+    tpcTrack->PropagateToDCA(localvertex,
+    	       localesd->GetMagneticField(),100.,dca,cov);
+  }
+  
+  Int_t fcls[200];
+  Int_t nClustersTPC=localtrack->GetTPCclusters(fcls);
+  Float_t chi2perTPCcluster=-1.0;
+  if(nClustersTPC!=0) chi2perTPCcluster=(localtrack->GetTPCchi2())/Float_t(nClustersTPC);
+  
+  Double_t extCov[15];
+  localtrack->GetExternalCovariance(extCov);
+  
+  if((localtrack->GetStatus() & AliESDtrack::kTPCrefit) == 0) {
+      Printf("IsAccepted: Track rejected because of no refited in TPC");
+      return kFALSE;
+  } 
+
+  if(nClustersTPC < fMinTPCclusters) {
+      Printf("IsAccepted: Track rejected because it has a value of nclusters (TPC) of %ld (min. requested: %ld)", nClustersTPC, fMinTPCclusters);
+      return kFALSE;
+  } 
+  
+  if(chi2perTPCcluster > fMaxChi2PerTPCcluster) {
+      Printf("IsAccepted: Track rejected because it has a value of chi2perTPCcluster of %lf (max. requested: %lf)", chi2perTPCcluster, fMaxChi2PerTPCcluster);
+      return kFALSE;
+  } 
+
+  if(extCov[0] > fMaxCov0) {
+      Printf("IsAccepted: Track rejected because it has a value of cov[0] of %lf (max. requested: %lf)", cov[0], fMaxCov0);
+      return kFALSE;
+  }
+  
+  if(extCov[2] > fMaxCov2) {
+      Printf("IsAccepted: Track rejected because it has a value of cov[2] of %lf (max. requested: %lf)", cov[2], fMaxCov2);
+      return kFALSE;
+  }
+    
+  if(extCov[5] > fMaxCov5) {
+      Printf("IsAccepted: Track rejected because it has a value of cov[5] of %lf (max. requested: %lf)", cov[5], fMaxCov5);
+      return kFALSE;
+  }  
+  
+  if(extCov[9] > fMaxCov9) {
+      Printf("IsAccepted: Track rejected because it has a value of cov[9] of %lf (max. requested: %lf)", cov[9], fMaxCov9);
+      return kFALSE;
+  }  
+  
+  if(extCov[14] > fMaxCov14) {
+      Printf("IsAccepted: Track rejected because it has a value of cov[14] of %lf (max. requested: %lf)", cov[14], fMaxCov14);
+      return kFALSE;
+  } 
  
+  return kTRUE;
+
+}
+
+//________________________________________________________________________
+Bool_t AliResonanceKink::IsKink(AliESDEvent *localesd, Int_t kinkIndex, TVector3 trackMom) 
+{
+   // Test some kinematical criteria for each kink
+
+	 AliESDkink *kink=localesd->GetKink(TMath::Abs(kinkIndex)-1);
+	 const TVector3 motherMfromKink(kink->GetMotherP());
+	 const TVector3 daughterMKink(kink->GetDaughterP());
+	 Float_t qt=kink->GetQt();
+
+	 Double_t maxDecAngKmu=f1->Eval(motherMfromKink.Mag(),0.,0.,0.);
+	 Double_t maxDecAngpimu=f2->Eval(motherMfromKink.Mag(),0.,0.,0.);
+
+         Float_t kinkAngle=TMath::RadToDeg()*kink->GetAngle(2);
+	 
+	 Float_t energyDaughterMu=TMath::Sqrt(daughterMKink.Mag()*daughterMKink.Mag()+0.105658*0.105658);
+	 Float_t p1XM= motherMfromKink.Px();
+         Float_t p1YM= motherMfromKink.Py();
+         Float_t p1ZM= motherMfromKink.Pz();
+         Float_t p2XM= daughterMKink.Px();
+         Float_t p2YM= daughterMKink.Py();
+         Float_t p2ZM= daughterMKink.Pz();
+         Float_t p3Daughter=TMath::Sqrt(((p1XM-p2XM)*(p1XM-p2XM))+((p1YM-p2YM)*(p1YM-p2YM))+((p1ZM-p2ZM)*(p1ZM-p2ZM)));
+         Double_t invariantMassKmu= TMath::Sqrt((energyDaughterMu+p3Daughter)*(energyDaughterMu+p3Daughter)-motherMfromKink.Mag()*motherMfromKink.Mag());
+
+         if((kinkAngle>maxDecAngpimu)&&(qt>0.05)&&(qt<0.25)&&((kink->GetR()>110.)&&(kink->GetR()<230.))&&(TMath::Abs(trackMom.Eta())<1.1)&&(invariantMassKmu<0.6)) {
+
+           if(trackMom.Mag()<=1.1) {
+		return kTRUE;
+           }
+	   else 
+	   if (kinkAngle<maxDecAngKmu) {
+		return kTRUE;
+	   }
+	 }
+	 return kFALSE;
+}
+
+

@@ -14,94 +14,69 @@
 //----------------------------------------------------------------------------------------------------------------
 //                        class AliAnalysisTaskKinkResonance
 //        Example of an analysis task for reconstructing resonances having at least one kaon-kink in their decay 
-//        products. It provides basic plots as well as plots helping to calculate the corrections.
-//        Usage: To analyse a resonance having a kaon in its decay products, one has to modify the integer 
-//        variables resonancePDG, daughter1 and daughter2 accordingly as well as daughter1Mass  and daughter2Mass.
-//        Also, depending on the analysis mode (ESD or MC), fAnalysisType in the constructor must also be changed 
+//        products. 
 //-----------------------------------------------------------------------------------------------------------------
-#include "TCanvas.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH2D.h"
 
-#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliESDInputHandler.h"
-#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliVEvent.h"
+#include "AliESDEvent.h"
 #include "AliResonanceKink.h"
 #include "AliAnalysisTaskKinkResonance.h"
 
 ClassImp(AliAnalysisTaskKinkResonance)
 
-//_____________________________________________________________________________
-AliAnalysisTaskKinkResonance::AliAnalysisTaskKinkResonance() 
-  : AliAnalysisTaskSE(), fESD(0), fmcEventH(0), fList(0), fKinkResonance(0)
-
-{
-  // Constructor
-}
-
 //______________________________________________________________________________
-AliAnalysisTaskKinkResonance::AliAnalysisTaskKinkResonance(const char *name) 
-  : AliAnalysisTaskSE(name), fESD(0), fmcEventH(0), fList(0), fKinkResonance(0)
+AliAnalysisTaskKinkResonance::AliAnalysisTaskKinkResonance(const char *dname) 
+  : AliAnalysisTaskSE(dname), fList(0), fKinkResonance(0)
 
 {
   // Constructor
 
   // Define input and output slots here
   // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
+  //DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskKinkResonance::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once
-  
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-  } else {
-
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-    if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
-    } else
-      fESD = esdH->GetEvent();
-      
-    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    
-    if (!eventHandler) {
-       Printf("ERROR: Could not retrieve MC event handler");
-       return;
-     }
-
-     fmcEventH = eventHandler->MCEvent(); 
-  }
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskKinkResonance::CreateOutputObjects() 
+void AliAnalysisTaskKinkResonance::UserCreateOutputObjects() 
 {
   // Create histograms
   // Called once
   
-  fList=new TList();
   fList= fKinkResonance->GetHistogramList();
    
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskKinkResonance::Exec(Option_t *) 
+void AliAnalysisTaskKinkResonance::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
    
-   fKinkResonance->Analyse(fESD, fmcEventH);
+  AliVEvent *event = InputEvent();
+  if (!event) {
+     Printf("ERROR: Could not retrieve event");
+     return;
+  }
+
+  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+  if (!esd) {
+     Printf("ERROR: Could not retrieve esd");
+     return;
+  }
+
+  AliMCEvent* mcEvent = MCEvent();
+  if (!mcEvent) {
+     Printf("ERROR: Could not retrieve MC event");
+     return;
+  }
+
+   fKinkResonance->Analyse(esd, mcEvent);
    
    PostData(1, fList);
    
