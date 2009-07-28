@@ -1,0 +1,29 @@
+Executable = "aliroot_new";
+Jobtag={"comment:jet-jet, PbPb, PYTHIA+HIJING, no quenching, run number $1, HIJING run background $2"};
+
+Packages={"VO_ALICE@AliRoot::v4-16-Rev-13","VO_ALICE@GEANT3::v1-10-1","VO_ALICE@ROOT::v5-23-04","VO_ALICE@APISCONFIG::V2.4"};
+
+TTL = "72000";
+Price = 1;
+
+Validationcommand ="/alice/cern.ch/user/a/aliprod/prod2007/configs_pbpb_hijing/validation.sh";
+
+InputFile= {"LF:/alice/cern.ch/user/c/conesa/production/configs_pp_PbPb_new/CheckESD.C","LF:/alice/cern.ch/user/c/conesa/production/configs_pp_PbPb_new/Config.C","LF:/alice/cern.ch/user/c/conesa/production/configs_pp_PbPb_new/rec.C","LF:/alice/cern.ch/user/c/conesa/production/configs_pp_PbPb_new/sim.C","LF:/alice/cern.ch/user/c/conesa/production/configs_pp_PbPb_new/simrun.C","LF:/alice/cern.ch/user/c/conesa/production/configs_pp_PbPb_new/tag.C"};
+
+OutputArchive={"log_archive:*.log,stdout,stderr,*.log@Alice::NIHAM::File","root_archive.zip:*.tag.root,galice.root,geometry.root,Kinematics.root,TrackRefs.root,AliESDs.root,AliESDfriends.root,pyxsec.root,*QA*@Alice::Subatech::SE"};
+
+InputDataCollection="LF:/alice/cern.ch/user/c/conesa/production/collection/PbPb/$2.xml";
+InputDataListFormat = "xml-single";
+InputDataList = "collection.xml";
+
+OutputDir="/alice/cern.ch/user/c/conesa/production/outPbPb/JJ/noq/$1/#alien_counter_03i#";
+
+JDLVariables={"Packages", "OutputDir"};
+GUIDFILE="guid.txt";
+
+splitarguments="simrun.C --run $1 --event #alien_counter# --process kPyJetJetEMCAL  --ecms 5500 --quench 0 --trigger 1" ;
+
+Split="se"; 
+SplitMaxInputFileNumber="1"; 
+
+Workdirectorysize={"6000MB"};
