@@ -108,16 +108,15 @@ void AliAnalysisTaskPHOSPi0CalibSelection::CreateAODFromAOD()
   for (Int_t i = 0; i < 6; i++)  covVtx[i] = 0.;
   
   // Update the header
-   AliAODHeader* headerin = aod->GetHeader();
+  AliAODHeader*headerin = aod->GetHeader();
   AliAODHeader* header = AODEvent()->GetHeader();
   header->SetRunNumber(headerin->GetRunNumber());
   header->SetBunchCrossNumber(headerin->GetBunchCrossNumber());
   header->SetOrbitNumber(headerin->GetOrbitNumber());
   header->SetPeriodNumber(headerin->GetPeriodNumber());
   header->SetEventType(headerin->GetEventType());
-  header->SetMuonMagFieldScale(headerin->GetMuonMagFieldScale()); // FIXME
-  header->SetCentrality(headerin->GetCentrality());        // FIXME
-  
+  header->SetMuonMagFieldScale(headerin->GetMuonMagFieldScale());
+  header->SetCentrality(headerin->GetCentrality()); 
   
   header->SetTriggerMask(headerin->GetTriggerMask()); 
   header->SetTriggerCluster(headerin->GetTriggerCluster());
@@ -359,8 +358,7 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserCreateOutputObjects()
 void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
 {
   //Analysis per event.
-  //if(DebugLevel() > 1) 
-printf("AliAnalysisTaskPHOSPi0CalibSelection <<< Event %d >>>\n",(Int_t)Entry());
+  if(DebugLevel() > 1) printf("AliAnalysisTaskPHOSPi0CalibSelection <<< Event %d >>>\n",(Int_t)Entry());
 
   AliAODEvent* aod = 0x0;
   if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) {

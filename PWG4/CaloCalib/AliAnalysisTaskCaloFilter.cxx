@@ -351,8 +351,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   //
   
   Long64_t ientry = Entry();
-  //  if (fDebug > 0) 
-  printf("CaloFilter: Analysing event # %5d\n", (Int_t) ientry);
+  if (fDebug > 0)  printf("CaloFilter: Analysing event # %5d\n", (Int_t) ientry);
 
   const char * dataevent =InputEvent()->GetName();
   if(!strcmp(dataevent,"AliAODEvent"))   CreateAODFromAOD();  

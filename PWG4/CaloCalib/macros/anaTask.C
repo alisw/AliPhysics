@@ -53,11 +53,6 @@ void anaTask()
     AliVEventHandler* aodH = new AliAODInputHandler();
     mgr->SetInputEventHandler(aodH);
   }
-
-  //Output event handler
-  AliAODHandler* aodoutHandler   = new AliAODHandler();
-  aodoutHandler->SetOutputFileName("aod.root");
-  mgr->SetOutputEventHandler(aodoutHandler);
   
   // ESD filter task
   //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskESDfilter.C");
