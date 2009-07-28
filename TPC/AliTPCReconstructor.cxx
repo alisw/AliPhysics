@@ -38,7 +38,7 @@
 ClassImp(AliTPCReconstructor)
 
 
-Int_t    AliTPCReconstructor::fgStreamLevel     = 0;        // stream (debug) level
+Int_t    AliTPCReconstructor::fgStreamLevel     = 1;        // stream (debug) level
 
 
 AliTPCReconstructor::AliTPCReconstructor():
