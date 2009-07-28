@@ -1,13 +1,15 @@
-# EMC config
 dn: det=EMC,o=shuttle,dc=cern,dc=ch
 objectClass: top
 objectClass: detectorConfig
 det: EMC
 strictRunOrder: 0
 responsible: gustavo.conesa.balbastre@cern.ch
+responsible: silvermy@bnl.gov
 
 dn: dcsHost=aldcs052.cern.ch,det=EMC,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
 dcsPort: 1337
 multiSplit: 4000
+dcsAlias: PT_[00..95].Temperature
+

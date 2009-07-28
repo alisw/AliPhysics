@@ -5,6 +5,7 @@ objectClass: detectorConfig
 det: EMC
 strictRunOrder: 0
 responsible: gustavo.conesa.balbastre@cern.ch
+responsible: silvermy@bnl.gov
 
 dn: dcsHost=alidcsamanda.cern.ch,det=EMC,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig

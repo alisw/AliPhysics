@@ -1,10 +1,10 @@
-# HMP config
 dn: det=HMP,o=shuttle,dc=cern,dc=ch
 objectClass: detectorConfig
 det: HMP
 strictRunOrder: 0
-responsible: Giacomo.Volpe@ba.infn.it 
+responsible: Giacomo.Volpe@ba.infn.it
 responsible: Domenico.Dibari@ba.infn.it
+responsible: Levente.Molnar@cern.ch
 
 dn: dcsHost=aldcs052.cern.ch,det=HMP,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
@@ -153,3 +153,12 @@ dcsAlias: HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.vSetRef
 dcsAlias: HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.vSetCell
 dcsAlias: HMP_DET/HMP_ENV/HMP_ENV_TENV.actual.value
 dcsAlias: HMP_DET/HMP_ENV/HMP_ENV_PENV.actual.value
+dcsAlias: HMP_DET/HMP_RUN/HMP_STATUSWORD/HMP_MP0_SW
+dcsAlias: HMP_DET/HMP_RUN/HMP_STATUSWORD/HMP_MP1_SW
+dcsAlias: HMP_DET/HMP_RUN/HMP_STATUSWORD/HMP_MP2_SW
+dcsAlias: HMP_DET/HMP_RUN/HMP_STATUSWORD/HMP_MP3_SW
+dcsAlias: HMP_DET/HMP_RUN/HMP_STATUSWORD/HMP_MP4_SW
+dcsAlias: HMP_DET/HMP_RUN/HMP_STATUSWORD/HMP_MP5_SW
+dcsAlias: HMP_DET/HMP_RUN/HMP_STATUSWORD/HMP_MP6_SW
+dcsAlias: HMP_DET/HMP_MP0/HMP_MP0_PW/HMP_MP0_GAS_PBOX.actual.value
+

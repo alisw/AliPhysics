@@ -4,7 +4,7 @@ objectClass: top
 objectClass: detectorConfig
 det: SPD
 strictRunOrder: 0
-responsible: Henrik.Tydesjo@cern.ch
+responsible: Annalisa.Mastroserio@cern.ch
 
 dn: dcsHost=alidcsamanda.cern.ch,det=SPD,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig

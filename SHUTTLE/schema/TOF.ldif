@@ -3,7 +3,8 @@ objectClass: detectorConfig
 det: TOF
 strictRunOrder: 0
 responsible: Chiara.Zampolli@bo.infn.it
-responsible: arcelli@bo.infn.it
+responsible: Silvia.Arcelli@bo.infn.it
+responsible: Roberto.Preghenella@bo.infn.it
 
 dn: dcsHost=aldcs052.cern.ch,det=TOF,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig

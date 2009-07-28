@@ -5,6 +5,9 @@ strictRunOrder: 0
 responsible: svetozar.kapusta@cern.ch
 responsible: peter.chochula@cern.ch
 responsible: Marco.Boccioli@cern.ch
+responsible: Anton.Jusko@cern.ch
+responsible: rl@hep.ph.bham.ac.uk
+
 
 dn: dcsHost=alidcsamanda.cern.ch,det=GRP,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
@@ -18,4 +21,24 @@ dcsAlias: DipolePolarity
 dcsAlias: CavernTemperature
 dcsAlias: CavernAtmosPressure
 dcsAlias: SurfaceAtmosPressure
+dcsAlias: Dipole_Inside_H[1..3]
+dcsAlias: Dipole_Inside_Temperature
+dcsAlias: Dipole_Outside_H[1..3]
+dcsAlias: Dipole_Outside_Temperature
+dcsAlias: L3_BKF13_H[1..3]
+dcsAlias: L3_BKF13_Temperature
+dcsAlias: L3_BKF17_H[1..3]
+dcsAlias: L3_BKF17_Temperature
+dcsAlias: L3_BKF4_H[1..3]
+dcsAlias: L3_BKF4_Temperature
+dcsAlias: L3_BKF8_H[1..3]
+dcsAlias: L3_BKF8_Temperature
+dcsAlias: L3_BSF13_H[1..3]
+dcsAlias: L3_BSF13_Temperature
+dcsAlias: L3_BSF17_H[1..3]
+dcsAlias: L3_BSF17_Temperature
+dcsAlias: L3_BSF4_H[1..2]
+dcsAlias: L3_BSF4_Temperature
+dcsAlias: L3_BSF8_H[1..3]
+dcsAlias: L3_BSF8_Temperature
 

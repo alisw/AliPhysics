@@ -4,6 +4,7 @@ det: TOF
 strictRunOrder: 0
 responsible: Chiara.Zampolli@bo.infn.it
 responsible: arcelli@bo.infn.it
+responsible: roberto.preghenella@bo.infn.it
 
 dn: dcsHost=alidcsamanda.cern.ch,det=TOF,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig

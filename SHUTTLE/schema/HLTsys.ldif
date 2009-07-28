@@ -4,9 +4,9 @@ objectClass: fxsConfig
 system: HLT
 dbUser: shuttle
 dbName: hlt_logbook
-dbHost: alihlt-shuttle1.cern.ch
-fxsHost: alihlt-shuttle1.cern.ch
 fxsUser: hlt-fxs
 dbTable: calib_data_test
 fxsBaseFolder: /opt/FXS-test
+dbHost: alihlt-shuttle1.cern.ch
+fxsHost: alihlt-shuttle1.cern.ch
 

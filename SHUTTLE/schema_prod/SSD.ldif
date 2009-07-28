@@ -5,6 +5,7 @@ objectClass: detectorConfig
 det: SSD
 strictRunOrder: 0
 responsible: enrico.fragiacomo@ts.infn.it
+responsible: Panos.Christakoglou@cern.ch
 
 dn: dcsHost=alidcsamanda.cern.ch,det=SSD,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig

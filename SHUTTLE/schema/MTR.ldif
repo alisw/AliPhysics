@@ -1,6 +1,21 @@
-#MTR config
 dn: det=MTR,o=shuttle,dc=cern,dc=ch
 objectClass: detectorConfig
 det: MTR
 strictRunOrder: 0
 responsible: aphecetc@in2p3.fr
+
+dn: dcsHost=aldcs052.cern.ch,det=MTR,o=shuttle,dc=cern,dc=ch
+dcsHost: aldcs052.cern.ch
+dcsPort: 1337
+objectClass: dcsConfig
+objectClass: top
+multiSplit: 4000
+dcsAlias: MTR_OUTSIDE_MT[11..12]_RPC[1..9]_HV.actual.iMon
+dcsAlias: MTR_OUTSIDE_MT[21..22]_RPC[1..9]_HV.actual.iMon
+dcsAlias: MTR_INSIDE_MT[11..12]_RPC[1..9]_HV.actual.iMon
+dcsAlias: MTR_INSIDE_MT[21..22]_RPC[1..9]_HV.actual.iMon
+dcsAlias: MTR_OUTSIDE_MT[11..12]_RPC[1..9]_HV.vEff
+dcsAlias: MTR_OUTSIDE_MT[21..22]_RPC[1..9]_HV.vEff
+dcsAlias: MTR_INSIDE_MT[11..12]_RPC[1..9]_HV.vEff
+dcsAlias: MTR_INSIDE_MT[21..22]_RPC[1..9]_HV.vEff
+

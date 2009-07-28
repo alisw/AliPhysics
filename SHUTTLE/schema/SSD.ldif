@@ -1,13 +1,14 @@
-# SSD config
 dn: det=SSD,o=shuttle,dc=cern,dc=ch
 objectClass: top
 objectClass: detectorConfig
 det: SSD
 strictRunOrder: 0
 responsible: enrico.fragiacomo@ts.infn.it
+responsible: Panos.Christakoglou@cern.ch
 
 dn: dcsHost=aldcs052.cern.ch,det=SSD,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
 dcsPort: 1337
 multiSplit: 4000
+

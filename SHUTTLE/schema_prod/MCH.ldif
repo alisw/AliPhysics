@@ -1,14 +1,11 @@
-#MCH config
 dn: det=MCH,o=shuttle_prod,dc=cern,dc=ch
 objectClass: detectorConfig
 det: MCH
 strictRunOrder: 0
 responsible: aphecetc@in2p3.fr
 
-
 dn: dcsHost=alidcsamanda.cern.ch,det=MCH,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
-dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
 dcsAlias: MchHvLvRight/Chamber[00..03]Right/Quad0Sect[0..2].actual.vMon
@@ -159,3 +156,5 @@ dcsAlias: MchDE1022sw[0..4].inValue
 dcsAlias: MchDE1023sw[0..5].inValue
 dcsAlias: MchDE1024sw[0..5].inValue
 dcsAlias: MchDE1025sw[0..5].inValue
+dcsHost: alidcsamanda.cern.ch
+
