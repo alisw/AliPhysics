@@ -25,8 +25,8 @@ public:
 
   AliAnalysisTaskPHOSPi0CalibSelection();
   AliAnalysisTaskPHOSPi0CalibSelection(const char* name);
-  //AliAnalysisTaskPHOSPi0CalibSelection(const AliAnalysisTaskPHOSPi0CalibSelection&); 
-  //AliAnalysisTaskPHOSPi0CalibSelection& operator=(const AliAnalysisTaskPHOSPi0CalibSelection&); 
+  AliAnalysisTaskPHOSPi0CalibSelection(const AliAnalysisTaskPHOSPi0CalibSelection&); 
+  AliAnalysisTaskPHOSPi0CalibSelection& operator=(const AliAnalysisTaskPHOSPi0CalibSelection&); 
   virtual ~AliAnalysisTaskPHOSPi0CalibSelection();
 
   // Implementation of interface methods
