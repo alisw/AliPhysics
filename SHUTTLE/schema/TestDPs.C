@@ -8,7 +8,7 @@ void TestDPs(const char* detector, int tsFrom, int tsTo)
 
 	AliDCSClient client("alidcsamanda.cern.ch",1337,1000,500,4000);
 
-	AliShuttleConfig config("pcalishuttle01.cern.ch", 389, "", "", "o=shuttle,dc=cern,dc=ch");
+	AliShuttleConfig config("pcalishuttle02.cern.ch", 389, "", "", "o=shuttle,dc=cern,dc=ch");
 
 	TObjArray* list = config.GetDCSAliases(detector, 0);
 	for (Int_t i=0; i<list->GetEntries(); i++)
