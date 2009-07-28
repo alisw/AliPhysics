@@ -9,6 +9,7 @@
 #pragma link C++ class AliProtonQAAnalysis+;
 #pragma link C++ class AliAnalysisTaskProtons+;
 #pragma link C++ class AliAnalysisTaskProtonsQA+;
+#pragma link C++ class AliAnalysisTaskChargedHadronSpectra+;
 #pragma link C++ class AliAnalysisTaskCheckV0+;
 #pragma link C++ class AliAnalysisTaskCheckCascade+;
 #pragma link C++ class AliAnalysisTaskCheckPerformanceCascade+;

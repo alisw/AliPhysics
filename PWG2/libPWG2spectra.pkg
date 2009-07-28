@@ -5,6 +5,7 @@ SRCS= SPECTRA/AliProtonAnalysisBase.cxx \
       SPECTRA/AliProtonQAAnalysis.cxx \
       SPECTRA/AliAnalysisTaskProtons.cxx \
       SPECTRA/AliAnalysisTaskProtonsQA.cxx \
+      SPECTRA/AliAnalysisTaskChargedHadronSpectra.cxx \
       SPECTRA/AliAnalysisTaskCheckV0.cxx \
       SPECTRA/AliAnalysisTaskCheckCascade.cxx \
       SPECTRA/AliAnalysisTaskCheckPerformanceCascade.cxx \
