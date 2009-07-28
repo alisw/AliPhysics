@@ -29,51 +29,29 @@
 #include <TVector3.h>
 #include "TF1.h"
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
+#include "AliVEvent.h"
 #include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
-
-#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
-
 #include "AliAnalysisKinkESDMC.h"
-
 #include "AliStack.h"
 #include "AliESDpid.h"
 #include "AliESDkink.h"
 
 ClassImp(AliAnalysisKinkESDMC)
 
-//________________________________________________________________________
-AliAnalysisKinkESDMC::AliAnalysisKinkESDMC() 
-  : AliAnalysisTaskSE(), fESD(0),fHistPtESD(),fHistPt(0),fHistQtAll(0),fHistQt1(0),fHistQt2(0)
-  , fHistPtKaon(0),fHistPtKPDG(0),fHistEta(0),fHistEtaK(0),fptKMC(0),fMultiplMC(0),fESDMult(0),fgenpt(0),frad(0),
-  fKinkKaon(0), fKinkKaonBg(0), fM1kaon(0),  fgenPtEtR(0),fPtKink(0),  fptKink(0),
-   fcodeH(0), fdcodeH(0), fAngMomK(0),fAngMomPi(0),
-  fRpr(0),fZpr(0),
-   fAngMomKC(0), 
-  fZvXv(0),fZvYv(0), fXvYv(0),  fPtPrKink(0), f1(0),  f2(0),
-      fListOfHistos(0)
-
-{
-  // Constructor
-
-}
-
 
 //________________________________________________________________________
 AliAnalysisKinkESDMC::AliAnalysisKinkESDMC(const char *name) 
-  : AliAnalysisTaskSE(name), fESD(0),fHistPtESD(0),fHistPt(0),fHistQtAll(0),fHistQt1(0),fHistQt2(0)
+  : AliAnalysisTaskSE(name), fHistPtESD(0),fHistPt(0),fHistQtAll(0),fHistQt1(0),fHistQt2(0)
   , fHistPtKaon(0),fHistPtKPDG(0),fHistEta(0),fHistEtaK(0),fptKMC(0),fMultiplMC(0),fESDMult(0),fgenpt(0),frad(0),
   fKinkKaon(0), fKinkKaonBg(0), fM1kaon(0),  fgenPtEtR(0),fPtKink(0),  fptKink(0),
-   fcodeH(0), fdcodeH(0), fAngMomK(0),fAngMomPi(0),
+   fcodeH(0), fdcodeH(0), fAngMomK(0),fAngMomPi(0), fAngMomKC(0),  fMultESDK(0), fMultMCK(0),
   fRpr(0),fZpr(0),
-   fAngMomKC(0),
    fZvXv(0),fZvYv(0), fXvYv(0), fPtPrKink(0),  f1(0), f2(0),
       fListOfHistos(0)
-  // , faod(0), fSignalTree(0)
 
 {
   // Constructor
@@ -85,27 +63,7 @@ AliAnalysisKinkESDMC::AliAnalysisKinkESDMC(const char *name)
 }
 
 //________________________________________________________________________
-void AliAnalysisKinkESDMC::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once
-
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-  } else {
-
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-    if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
-    } else
-      fESD = esdH->GetEvent();
-  }
-}
-
-//________________________________________________________________________
-void AliAnalysisKinkESDMC::CreateOutputObjects() 
+void AliAnalysisKinkESDMC::UserCreateOutputObjects() 
 {
   // Create histograms
   // Called once
@@ -123,41 +81,42 @@ void AliAnalysisKinkESDMC::CreateOutputObjects()
    //Open file  1= CAF 
     //OpenFile(1); 
 
-  fHistPtESD = new TH1F("fHistPtESD", "P_{T} distribution", 60, 0.0, 6.0);
+  fHistPtESD = new TH1F("fHistPtESD", "P_{T} distribution",100, 0.0,10.0);
   fHistPtESD->GetXaxis()->SetTitle("P_{T} (GeV/c)");
   fHistPtESD->GetYaxis()->SetTitle("dN/dP_{T} (c/GeV)");
   fHistPtESD->SetMarkerStyle(kFullCircle);
-  fHistPt = new TH1F("fHistPt", "P_{T} distribution", 60, 0.0, 6.0); 
+  fHistPt = new TH1F("fHistPt", "P_{T} distribution",100, 0.0,10.0); 
   fHistQtAll = new TH1F("fHistQtAll", "Q_{T} distr All Kinks ",100, 0.0,.250); 
   fHistQt1= new TH1F("fHistQt1", "Q_{T} distribution",100, 0.0,.300); 
   fHistQt2= new TH1F("fHistQt2", "Q_{T} distribution",100, 0.0,.300); 
-  fHistPtKaon = new TH1F("fHistPtKaon", "P_{T}Kaon distribution", 60, 0.0, 6.0); 
-  fHistPtKPDG = new TH1F("fHistPtKPDG", "P_{T}Kaon distribution", 60, 0.0, 6.0); 
+  fHistPtKaon = new TH1F("fHistPtKaon", "P_{T}Kaon distribution",100, 0.0,10.0); 
+  fHistPtKPDG = new TH1F("fHistPtKPDG", "P_{T}Kaon distribution",100, 0.0,10.0); 
   fHistEta= new TH1F("fHistEta", "Eta distribution", 26,-1.3, 1.3); 
   fHistEtaK= new TH1F("fHistEtaK", "EtaK distribution", 26,-1.3, 1.3); 
-  fptKMC= new TH1F("fptKMC", "P_{T}Kaon generated", 60, 0.0, 6.0); 
-  fMultiplMC= new TH1F("fMultiplMC", "charge multiplicity MC", 60, 0.5,120.5); 
+  fptKMC= new TH1F("fptKMC", "P_{T}Kaon generated",100, 0.0,10.0); 
+  fMultiplMC= new TH1F("fMultiplMC", "charge multiplicity MC",60, 0.5,120.5); 
   fESDMult= new TH1F("fESDMult", "charge multipliESD", 60, 0.5,120.5); 
-  fgenpt= new TH1F("fgenpt", "genpt   K distribution", 60, 0.0, 6.0); 
+  fgenpt= new TH1F("fgenpt", "genpt   K distribution",100, 0.0,10.0); 
   frad= new TH1F("frad", "radius  K generated",100,0.,400.); 
-  fKinkKaon= new TH1F("fKinkKaon", "P_{T}Kaon kinks identi", 60, 0.0, 6.0); 
-  fKinkKaonBg= new TH1F("fKinkKaonBg", "P_{T}Kaon kinks backgr", 60, 0.0, 6.0); 
+  fKinkKaon= new TH1F("fKinkKaon", "P_{T}Kaon kinks identi",100, 0.0,10.0); 
+  fKinkKaonBg= new TH1F("fKinkKaonBg", "P_{T}Kaon kinks backgr",100, 0.0,10.0); 
   fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",80,0.0, 0.8); 
-  fgenPtEtR= new TH1F("fgenPtEtR", "P_{T}Kaon distribution", 60, 0.0, 6.0); 
-  fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  bution", 60, 0.0, 6.0); 
-  fptKink= new TH1F("fptKink", "P_{T}Kaon Kink  bution", 60, 0.0, 6.0); 
+  fgenPtEtR= new TH1F("fgenPtEtR", "P_{T}Kaon distribution",100, 0.0,10.0); 
+  fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  bution",100, 0.0,10.0); 
+  fptKink= new TH1F("fptKink", "P_{T}Kaon Kink  bution",100, 0.0,10.0); 
   fcodeH   = new TH2F("fcodeH", "code vrs dcode dist. kinks,K",100,0.,2500.,100,0.,2500.);
   fdcodeH = new TH2F("fdcodeH", "code vrs dcode dist. kinks,K",100,0.,2500.,100,0.,2500.);
   fAngMomK= new TH2F("fAngMomK","Decay angle vrs Mother Mom,K",100,0.0,5.0,80,0.,80.);
   fAngMomPi= new TH2F("fAngMomPi","Decay angle vrs Mother Mom,Pi",100,0.0,5.0,80,0.,80.);
-
+  fAngMomKC= new TH2F("fAngMomKC","Decay angle vrs Mother Mom,K",100,0.0,5.0,80,0.,80.);
+  fMultESDK=new TH1F("fMultESDK", "charge multipliESD kaons", 60, 0.5,240.5); 
+  fMultMCK=new TH1F("fMultMCK", "charge multipli MC kaons",100, 0.5,600.5); 
   fRpr = new TH1D("fRpr", "rad distribution  PID pr",50,0.0, 2.5);
   fZpr = new TH1D("fZpr", "z distribution PID pr  ",60,-15.,15.);
-  fAngMomKC= new TH2F("fAngMomKC","Decay angle vrs Mother Mom,K",100,0.0,5.0,80,0.,80.);
   fZvXv= new TH2F("fZvXv","Xv-Zv main vtx",60,-0.5,0.5,60, -15., 15.0);
   fZvYv= new TH2F("fZvYv","Yv-Zv main vtx",60,-0.5,0.5, 60, -15., 15.);
   fXvYv= new TH2F("fXvYv","Xv-Yv main vtx", 60,-1.5,1.5, 60, -1.5, 1.5);
-  fPtPrKink=new TH1F("fPtPrKink","pt of ESD  kaonKink tracks", 60, 0.0, 6.0);
+  fPtPrKink=new TH1F("fPtPrKink","pt of ESD  kaonKink tracks",100, 0.0,10.0);
 
    fListOfHistos=new TList();
 
@@ -185,9 +144,11 @@ void AliAnalysisKinkESDMC::CreateOutputObjects()
    fListOfHistos->Add(fdcodeH);
    fListOfHistos->Add(fAngMomK);
    fListOfHistos->Add(fAngMomPi);
+   fListOfHistos->Add(fAngMomKC);
+   fListOfHistos->Add(fMultESDK);
+   fListOfHistos->Add(fMultMCK);
    fListOfHistos->Add(fRpr);
    fListOfHistos->Add(fZpr);
-   fListOfHistos->Add(fAngMomKC);
    fListOfHistos->Add(fZvXv);
    fListOfHistos->Add(fZvYv);
    fListOfHistos->Add(fXvYv);
@@ -195,21 +156,27 @@ void AliAnalysisKinkESDMC::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisKinkESDMC::Exec(Option_t *) 
+void AliAnalysisKinkESDMC::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
 
   // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
   // This handler can return the current MC event
- 
-  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (!eventHandler) {
-    Printf("ERROR: Could not retrieve MC event handler");
-    return;
+  
+   AliVEvent *event = InputEvent();
+  if (!event) {
+     Printf("ERROR: Could not retrieve event");
+     return;
   }
 
-  AliMCEvent* mcEvent = eventHandler->MCEvent();
+  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+  if (!esd) {
+     Printf("ERROR: Could not retrieve esd");
+     return;
+  }
+
+  AliMCEvent* mcEvent = MCEvent();
   if (!mcEvent) {
      Printf("ERROR: Could not retrieve MC event");
      return;
@@ -217,34 +184,34 @@ void AliAnalysisKinkESDMC::Exec(Option_t *)
 
   Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
 
-  if (!fESD) {
-    Printf("ERROR: fESD not available");
-    return;
-  }
   AliStack* stack=mcEvent->Stack();
   
 //primary tracks  in MC
          Int_t  nPrim = stack->GetNprimary();
 //
-  const AliESDVertex *vertex=GetEventVertex(fESD);
+  const AliESDVertex *vertex=GetEventVertex(esd);
     if(!vertex) return;
 //
   Double_t vpos[3];
   vertex->GetXYZ(vpos);
     fZpr->Fill(vpos[2]);         
- fZvXv->Fill( vpos[1], vpos[2]);  
- fZvYv->Fill( vpos[0], vpos[2]);  
+// fZvXv->Fill( vpos[1], vpos[2]);  
+// fZvYv->Fill( vpos[0], vpos[2]);  
 
   Double_t vtrack[3], ptrack[3];
   
      
+ // Int_t nESDTracK = 0;
 
-   Int_t nGoodTracks =  fESD->GetNumberOfTracks();
+   Int_t nGoodTracks =  esd->GetNumberOfTracks();
     fESDMult->Fill(nGoodTracks);
+     
 //
 // track loop
-  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-    AliESDtrack* track = fESD->GetTrack(iTracks);
+   for (Int_t iTracks = 0; iTracks < esd->GetNumberOfTracks(); iTracks++) {
+// loop only on primary tracks
+
+    AliESDtrack* track = esd->GetTrack(iTracks);
     if (!track) {
       Printf("ERROR: Could not receive track %d", iTracks);
       continue;
@@ -253,26 +220,39 @@ void AliAnalysisKinkESDMC::Exec(Option_t *)
 
     fHistPt->Fill(track->Pt());
 
+    
+    Int_t label = track->GetLabel();
+    label = TMath::Abs(label);
+    TParticle * part = stack->Particle(label);
+    if (!part) continue;
+// loop only on Primary tracks
+// gia oles tis troxies 5/7/2009      if (label > nPrim) continue;
+//      if (label > nPrim) continue; /// primary tracks only 
+     //  ta nominal cauts tis apomakrynoun ols  if (label < nPrim) continue;    // gia tis secondary  , 5/7/2009
+
       //   pt cut at 300 MeV
         if ( (track->Pt())<.300)continue;
 
-    UInt_t status=track->GetStatus();
+//    UInt_t status=track->GetStatus();
 
   //  if((status&AliESDtrack::kITSrefit)==0) continue;
-    if((status&AliESDtrack::kTPCrefit)==0) continue;
-      if((track->GetTPCchi2()/track->GetTPCclusters(0))>3.5) continue;
+  //  if((status&AliESDtrack::kTPCrefit)==0) continue;
+  // ayksanei to ratio BG/real    if((track->GetTPCchi2()/track->GetTPCclusters(0))>4.5) continue;
+     if((track->GetTPCchi2()/track->GetTPCclusters(0))>4.5) continue;
 
       Double_t extCovPos[15];
       track->GetExternalCovariance(extCovPos);    
-      if(extCovPos[0]>2) continue;
-      if(extCovPos[2]>2) continue;    
-      if(extCovPos[5]>0.5) continue;  
-      if(extCovPos[9]>0.5) continue;
-      if(extCovPos[14]>2) continue;
+    //  if(extCovPos[0]>2) continue;
+    //  if(extCovPos[2]>2) continue;    
+    //  if(extCovPos[5]>0.5) continue;  
+    //  if(extCovPos[9]>0.5) continue;
+    //  if(extCovPos[14]>2) continue;
 
 
     track->GetXYZ(vtrack);
  fXvYv->Fill(vtrack[0],vtrack[1]);  
+ fZvYv->Fill(vtrack[0],vtrack[2]);  
+ fZvXv->Fill(vtrack[1],vtrack[2]);  
 
 // track momentum
      track->GetPxPyPz(ptrack);
@@ -298,18 +278,17 @@ void AliAnalysisKinkESDMC::Exec(Option_t *)
     Float_t dcaToVertexZpos = bpos[1];
     
     fRpr->Fill(dcaToVertexZpos);
-
+//  test for secondary kinks   , 5/7/2009  
     if(nSigmaToVertex>=4) continue;
-    if((dcaToVertexXYpos>3.0)||(dcaToVertexZpos>3.0)) continue;
+ //    if((dcaToVertexXYpos>3.0)||(dcaToVertexZpos>3.0)) continue;  //arxiko 
+     //if((dcaToVertexXYpos>0.4)||(dcaToVertexZpos>3.0)) continue;// me Zpos > 5 clen the secondaries
+     if((dcaToVertexXYpos>2.4)||(dcaToVertexZpos>5.0)) continue;// me Zpos > 5 clen the secondaries
+    // if((dcaToVertexXYpos>3.0)||(dcaToVertexZpos>3.0)) continue; // me ayto krataei 4 fakes apo ta 5
+    // if((dcaToVertexXYpos>4.0)||(dcaToVertexZpos>5.0)) continue;
     
-    
-    Int_t label = track->GetLabel();
-    label = TMath::Abs(label);
-    TParticle * part = stack->Particle(label);
-    if (!part) continue;
 
  //  cut on eta 
-        if(  (TMath::Abs(trackEta )) > 1.1 ) continue;
+        if(  (TMath::Abs(trackEta )) > 0.9 ) continue;
     fHistPtESD->Fill(track->Pt());
 
    // Add Kink analysis
@@ -321,7 +300,7 @@ void AliAnalysisKinkESDMC::Exec(Option_t *)
 
 	// select kink class	
 
-	  AliESDkink *kink=fESD->GetKink(TMath::Abs(indexKinkPos)-1);
+	  AliESDkink *kink=esd->GetKink(TMath::Abs(indexKinkPos)-1);
 //
 	
 	  Int_t eSDfLabel1=kink->GetLabel(0);
@@ -336,24 +315,34 @@ void AliAnalysisKinkESDMC::Exec(Option_t *)
 	   const TVector3 daughterMKink(kink->GetDaughterP());
 	   Float_t qT=kink->GetQt();
 
-           fHistEta->Fill(trackEta) ;  //   Eta distr
+           //fHistEta->Fill(trackEta) ;  //   Eta distr
            fHistQtAll->Fill(qT) ;  //  Qt   distr
                   
            fptKink->Fill(motherMfromKink.Pt()); /// pt from kink
 
+           Float_t kinkAngle=TMath::RadToDeg()*kink->GetAngle(2);
+
 //       fake kinks, small Qt and small kink angle
+    if(( kinkAngle<1.)&&(TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==13)) fHistQt1  ->Fill(qT) ;  //  Qt   distr
            if ( qT<0.012) fcodeH->Fill( TMath::Abs(code1), TMath::Abs(dcode1) );
            if(qT<0.012) continue;  // remove fake kinks
+           if( (kinkAngle<1.)  ) continue;
 
-           Float_t kinkAngle=TMath::RadToDeg()*kink->GetAngle(2);
-	 
 //remove the double taracks 
             
-           if( (kinkAngle<1.)  ) continue;
+           //if( (kinkAngle<1.)  ) continue;
 //
-           if( (qT>0.05)&& ( qT<0.25)  )   fHistQt2->Fill(qT);  // candidate kaon kinks
 
-           if (TMath::Abs(code1)==321)     fHistPtKPDG->Fill(track->Pt());  // ALL KAONS (pdg) inside kink sample
+      if((kink->GetR()>120.)&&(kink->GetR()<220.)&&(TMath::Abs(trackEta)<0.9)&&(label<nPrim)) {
+         if(       ( (TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==13))||    
+           ( (TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==11))  ||    
+           ( (TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==211))  ) { 
+               fHistPtKPDG->Fill(track->Pt());  // ALL KAONS (pdg) inside ESD  kink sample
+           fHistEta->Fill(trackEta) ;  //   Eta distr of PDG kink ESD  kaons
+    fMultESDK->Fill(nGoodTracks);
+     }
+     }
+           if( (qT>0.05)&& ( qT<0.25)  )   fHistQt2->Fill(qT);  // candidate kaon kinks
 
 //          maximum decay angle at a given mother momentum
 	   Double_t maxDecAngKmu=f1->Eval(motherMfromKink.Mag(),0.,0.,0.);
@@ -376,23 +365,29 @@ void AliAnalysisKinkESDMC::Exec(Option_t *)
          fM1kaon->Fill(invariantMassKmu);
 
 //  kaon selection from kinks
-if((kinkAngle>maxDecAngpimu)&&(qT>0.05)&&(qT<0.25)&&((kink->GetR()>110.)&&(kink->GetR()<230.))&&(TMath::Abs(trackEta)<1.1)&&(invariantMassKmu<0.6)) {
-                fHistEtaK->Fill(trackEta);
+if((kinkAngle>maxDecAngpimu)&&(qT>0.05)&&(qT<0.25)&&((kink->GetR()>120.)&&(kink->GetR()<220.))&&(TMath::Abs(trackEta)<0.9)&&(invariantMassKmu<0.6)) {
+              //  fHistEtaK->Fill(trackEta);
 
-                if(TMath::Abs(code1)==321) fAngMomKC->Fill(motherMfromKink.Mag(), kinkAngle);  // real kaons
+                // if(TMath::Abs(code1)==321) fAngMomKC->Fill(motherMfromKink.Mag(), kinkAngle);  // real kaons
 
-                fHistQt1  ->Fill(qT) ;  //  Qt   distr
+//                fHistQt1  ->Fill(qT) ;  //  Qt   distr
                 if ( (kinkAngle>maxDecAngKmu) && ( motherMfromKink.Mag()> 1.1 ) ) continue; // maximum angle selection
 
+                if(TMath::Abs(code1)==321) fAngMomKC->Fill(motherMfromKink.Mag(), kinkAngle);  // real kaons
                                     fHistPtKaon->Fill(track->Pt());   //all PID kink-kaon
 
 // background inside the identified kaons, e.g KK  ,  Kp
          if((TMath::Abs(code1)==321)&&(( TMath::Abs(dcode1)) >=(TMath::Abs(code1)) )) fdcodeH->Fill( TMath::Abs(code1), TMath::Abs(dcode1));
-
-         if((TMath::Abs(code1)==321) ) { 
+//  kaons from k to mun and k to pipi and to e decay 
+         if(       ( (TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==13))||    
+           ( (TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==11))  ||    
+           ( (TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==211))  ) { 
+  //       if((TMath::Abs(code1)==321) ) { 
 
          if ( label< nPrim ) fPtPrKink->Fill(track->Pt());
-             fKinkKaon->Fill(track->Pt());        }
+             fKinkKaon->Fill(track->Pt());        
+                fHistEtaK->Fill(trackEta);
+                             }
          else {
              fKinkKaonBg->Fill(track->Pt());     
           }   // primary and secondary 
@@ -409,8 +404,9 @@ if((kinkAngle>maxDecAngpimu)&&(qT>0.05)&&(qT<0.25)&&((kink->GetR()>110.)&&(kink-
 
   // variable to count tracks
   Int_t nMCTracks = 0;
+  Int_t nMCKinkKs = 0;
 
-for (Int_t iMc = 0; iMc < nPrim; ++iMc)
+for (Int_t iMc = 0; iMc < nPrim; iMc++)
   {
    // AliDebug(AliLog::kDebug+1, Form("MC Loop: Processing particle %d.", iMc));
 
@@ -425,7 +421,7 @@ for (Int_t iMc = 0; iMc < nPrim; ++iMc)
  //   
     Float_t eta = particle->Eta();
 
-    if (TMath::Abs(eta) > 1.1)
+    if (TMath::Abs(eta) > 0.9)
       continue;
 
             Double_t ptK = particle->Pt();
@@ -433,10 +429,14 @@ for (Int_t iMc = 0; iMc < nPrim; ++iMc)
    if( ptK <0.300) continue;
 
       Float_t code = particle->GetPdgCode();
-      if (code==321 || code==-321){
+            Int_t  mcProcess=-1011;
+      if ((code==321)||(code==-321)){
 	    
+
 	      fptKMC->Fill(ptK);
+
     
+  // fMultiplMC->Fill(nPrim);
 
 	    Int_t firstD=particle->GetFirstDaughter();
 	    Int_t lastD=particle->GetLastDaughter();
@@ -445,27 +445,33 @@ for (Int_t iMc = 0; iMc < nPrim; ++iMc)
 	     TParticle*    daughter1=stack->Particle(k+1);
 	     Float_t dcode = daughter1->GetPdgCode();
 
+        mcProcess=daughter1->GetUniqueID();
+     if (mcProcess==4) {        
     
 
-		 frad->Fill(daughter1->R());
+		 // frad->Fill(daughter1->R());
 
-		 if (((daughter1->R())>110)&&((daughter1->R())<230) ){
+		 if (((daughter1->R())>120)&&((daughter1->R())<220) ){
         if (( ( code==321 )&& ( dcode ==-13  ))|| (( code == -321 )&& ( dcode == 13))) fgenPtEtR->Fill( ptK );//to muon
         if (( ( code==321 )&& ( dcode ==211  ))|| (( code == -321 )&& ( dcode ==-211))) fgenPtEtR->Fill( ptK );//to pion
-     //   if (( ( code==321 )&& ( dcode ==-11  ))|| (( code == -321 )&& ( dcode ==11))) fgenPtEtR->Fill( ptK );// to electr
+        if (( ( code==321 )&& ( dcode ==-11  ))|| (( code == -321 )&& ( dcode ==11))) fgenPtEtR->Fill( ptK );// to electr
 
+  //fMultMCK->Fill(nPrim);
+		 frad->Fill(daughter1->R());
+    nMCKinkKs++;
        }
 //  next only  to mu decay
 		 if (((code==321)&&(dcode==-13))||((code==-321)&&(dcode==13))){
 
 		 
-		    if (((daughter1->R())>110)&&((daughter1->R())<230)){
+		    if (((daughter1->R())>120)&&((daughter1->R())<220)){
 		    fgenpt->Fill(ptK);
 		    }
 		    }
-       }
+		    }//    decay
+       }//  daughters
 
-      }
+      }   /// kaons
 
 
       
@@ -474,6 +480,7 @@ for (Int_t iMc = 0; iMc < nPrim; ++iMc)
 
 //  printf("hello mc");
   fMultiplMC->Fill(nMCTracks);
+  if( nMCKinkKs>0) fMultMCK->Fill(nPrim);
 
   PostData(1, fListOfHistos);
 

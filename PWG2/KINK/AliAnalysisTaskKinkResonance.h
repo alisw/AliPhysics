@@ -11,29 +11,25 @@
 //------------------------------------------------------------------------------
 
 class TList;
-class AliESDEvent;
-class AliMCEvent;
 class AliResonanceKink;
 class TH1D;
 
+#include "AliAnalysisTaskSE.h"
+
 class AliAnalysisTaskKinkResonance : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskKinkResonance();
-  AliAnalysisTaskKinkResonance(const char *name);
+  AliAnalysisTaskKinkResonance(const char *dname = "AliAnalysisTaskKinkResonance");
   virtual ~AliAnalysisTaskKinkResonance() {}
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   
   void SetAnalysisKinkObject(AliResonanceKink * const kinkResonance) {
     fKinkResonance=kinkResonance;}
   
  private:
-  AliESDEvent       *fESD;    //! ESD object
-  AliMCEvent        *fmcEventH;
-  TList             *fList; //! List 
+  TList             *fList; // List 
   AliResonanceKink  *fKinkResonance;
   
   AliAnalysisTaskKinkResonance(const AliAnalysisTaskKinkResonance&); // not implemented
