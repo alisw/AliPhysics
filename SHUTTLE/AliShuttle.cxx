@@ -200,6 +200,7 @@ Bool_t AliShuttle::StoreLocally(const TString& localUri,
 	//
 	// returns 0 if fail, 1 otherwise
 
+
 	if (fTestMode & kErrorStorage)
 	{
 		Log(fCurrentDetector, "StoreLocally - In TESTMODE - Simulating error while storing locally");
@@ -234,14 +235,18 @@ Bool_t AliShuttle::StoreLocally(const TString& localUri,
 	if (!(AliCDBManager::Instance()->GetStorage(localUri))) {
 		Log("SHUTTLE", Form("StoreLocally - Cannot activate local %s storage", cdbType));
 	} else {
+	        Int_t logLevel = AliLog::GetGlobalLogLevel();
+	        AliLog::SetGlobalLogLevel(AliLog::kError);
 		result = AliCDBManager::Instance()->GetStorage(localUri)
 					->Put(object, id, metaData);
+                AliLog::SetGlobalLogLevel((AliLog::EType_t)logLevel);
 	}
 
 	if(!result) {
 
 		Log(fCurrentDetector, Form("StoreLocally - Can't store object <%s>!", id.ToString().Data()));
 	}
+
 
 	return result;
 }
@@ -983,9 +988,14 @@ Bool_t AliShuttle::WriteShuttleStatus(AliShuttleStatus* status)
 	fStatusEntry = new AliCDBEntry(status, id, new AliCDBMetaData);
 	fStatusEntry->SetOwner(1);
 
+	Int_t logLevel = AliLog::GetGlobalLogLevel();
+        AliLog::SetGlobalLogLevel(AliLog::kError);
+
 	UInt_t result = AliCDBManager::Instance()->GetStorage(fgkLocalCDB)->Put(fStatusEntry);
 
-	if (!result) {
+        AliLog::SetGlobalLogLevel((AliLog::EType_t)logLevel);
+
+ 	if (!result) {
 		Log("SHUTTLE", Form("WriteShuttleStatus - Failed for %s, run %d",
 						fCurrentDetector.Data(), run));
 		return kFALSE;
@@ -1025,7 +1035,12 @@ void AliShuttle::UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t 
 	status->SetStatus(newStatus);
 	if (increaseCount) status->IncreaseCount();
 
+	Int_t logLevel = AliLog::GetGlobalLogLevel();
+        AliLog::SetGlobalLogLevel(AliLog::kError);
+
 	AliCDBManager::Instance()->GetStorage(fgkLocalCDB)->Put(fStatusEntry);
+
+        AliLog::SetGlobalLogLevel((AliLog::EType_t)logLevel);
 
 	SendMLDetInfo();
 }
