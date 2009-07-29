@@ -19,7 +19,8 @@ class AliFMDAnalysisTaskSE : public AliAnalysisTaskSE
       fDensity(o.fDensity),
       fBackground(o.fBackground),
       fDndeta(o.fDndeta),
-      fPrimary(o.fPrimary) {}
+      fPrimary(o.fPrimary),
+      fRecordHits(o.fRecordHits) {}
     AliFMDAnalysisTaskSE& operator=(const AliFMDAnalysisTaskSE&) { return *this; }
     
     virtual void Init();
@@ -27,7 +28,7 @@ class AliFMDAnalysisTaskSE : public AliAnalysisTaskSE
     virtual void UserExec(Option_t* /*option*/);
     void  Terminate(Option_t */*option*/);
     void  SetAnalyzePrimary(Bool_t prim) {fPrimary = prim;}
-    
+    void  SetRecordHits(Bool_t recordhits) {fRecordHits = recordhits;}
  private:
     
     TList* fListOfHistos;
@@ -36,6 +37,7 @@ class AliFMDAnalysisTaskSE : public AliAnalysisTaskSE
     AliFMDAnalysisTaskBackgroundCorrection fBackground;
     AliFMDAnalysisTaskDndeta               fDndeta;
     Bool_t                                 fPrimary;
+    Bool_t                                 fRecordHits;
     ClassDef(AliFMDAnalysisTaskSE, 1);
 
 };

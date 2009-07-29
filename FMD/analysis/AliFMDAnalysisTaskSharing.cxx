@@ -17,6 +17,7 @@
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
 #include "AliFMDAnaParameters.h"
+//#include "/home/canute/ALICE/AliRoot/PWG0/AliPWG0Helper.h"
 //#include "AliFMDParameters.h"
 
 ClassImp(AliFMDAnalysisTaskSharing)
@@ -122,7 +123,17 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   Double_t vertex[3];
   GetVertex(vertex);
   fEsdVertex->SetXYZ(vertex);
-  
+  /*
+    Bool_t isTriggered = AliPWG0Helper::IsEventTriggered(fESD, AliPWG0Helper::kMB1);
+    
+    if(!isTriggered) {
+    fStatus = kFALSE;
+    std::cout<<"no trigger"<<std::endl;
+    return;
+    }
+    else
+    fStatus = kTRUE;
+  */
   if(vertex[0] == 0 && vertex[1] == 0 && vertex[2] == 0) {
   
     fStatus = kFALSE;

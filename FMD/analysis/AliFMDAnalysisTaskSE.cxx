@@ -2,6 +2,8 @@
 #include "AliESDEvent.h"
 #include "iostream"
 #include "AliESDFMD.h"
+#include "AliMCEventHandler.h"
+#include "AliAnalysisManager.h"
 
 ClassImp(AliFMDAnalysisTaskSE)
 
@@ -13,7 +15,8 @@ AliAnalysisTaskSE(),
   fDensity("Density",kFALSE),
   fBackground("BackgroundCorrected",kFALSE),
   fDndeta("dNdeta",kFALSE),
-  fPrimary(kTRUE)
+  fPrimary(kTRUE),
+  fRecordHits(kFALSE)
 {
   // Default constructor
 }
@@ -25,7 +28,8 @@ AliFMDAnalysisTaskSE::AliFMDAnalysisTaskSE(const char* name):
   fDensity("Density",kFALSE),
   fBackground("BackgroundCorrected",kFALSE),
   fDndeta("dNdeta",kFALSE),
-  fPrimary(kTRUE)
+  fPrimary(kTRUE),
+  fRecordHits(kFALSE)
 {
   
   DefineOutput(1, TList::Class());
@@ -63,6 +67,7 @@ void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
   fDndeta.SetInputList(bgcorlist); 
   fDndeta.SetOutputList(fListOfHistos); 
   fDndeta.SetAnalyzePrimary(fPrimary);
+  fDndeta.SetRecordHits(fRecordHits);
   fSharing.CreateOutputObjects();
   fDensity.CreateOutputObjects();
   fBackground.CreateOutputObjects();
@@ -89,8 +94,12 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
     fDensity.Exec("");
     if(fDensity.GetEventStatus()) {
       fBackground.Exec("");  
-      AliMCEvent* mcevent = MCEvent();
-      fDndeta.SetMCEvent(mcevent);
+      //AliMCEvent* mcevent =  MCEvent();
+      if(fPrimary) {
+	AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+	AliMCEvent* mcevent = eventHandler->MCEvent();
+	fDndeta.SetMCEvent(mcevent);
+      }
       fDndeta.Exec("");
       
     }
