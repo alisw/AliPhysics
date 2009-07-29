@@ -78,6 +78,8 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   UShort_t GetProngID(Int_t ip) const 
     {if(fProngID) {return fProngID[ip];} else {return 9999;}}
 
+  // check if it is like-sign
+  Bool_t IsLikeSign() const;
 
  protected:
 
@@ -103,4 +105,23 @@ inline void AliAODRecoDecayHF::SetProngIDs(Int_t nIDs,UShort_t *id)
   return;
 }
 
+inline Bool_t AliAODRecoDecayHF::IsLikeSign() const
+{
+  // check if it is like-sign
+
+  Int_t ndg=GetNDaughters();
+  if(!ndg) {
+    printf("Daughters not available\n");
+    return kFALSE;
+  }
+  Int_t chargeDg0 = ((AliAODTrack*)GetDaughter(0))->Charge();
+
+  for(Int_t i=1; i<ndg; i++) {
+    if(chargeDg0!=((AliAODTrack*)GetDaughter(i))->Charge()) return kFALSE;
+  }
+
+  return kTRUE;
+}
+
 #endif
+
