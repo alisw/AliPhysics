@@ -286,7 +286,7 @@ void AliShuttleLogbookEntry::Print(Option_t* option) const
 		}
 	}
 
-	AliInfo(Form("%s",message.Data()));
+	AliInfo(message.Data());
 }
 //______________________________________________________________________________________________
 void AliShuttleLogbookEntry::SetRunParameter(const char* key, const char* value){
