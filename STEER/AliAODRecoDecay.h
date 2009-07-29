@@ -52,7 +52,6 @@ class AliAODRecoDecay : public AliVTrack {
   // If no, return -1
   // If yes, return label (>=0) of the AliAODMCParticle
   Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray) const;
-  Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray,Int_t *dgLabels) const;
 
   // PID
   void      SetPID(Int_t nprongs,Double_t *pid);
@@ -170,6 +169,9 @@ class AliAODRecoDecay : public AliVTrack {
     {printf("Dummy function"); return (Double_t)-999.;}
   Int_t GetLabel() const {return -1;}
  protected:
+
+  Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray,Int_t dgLabels[10],Int_t ndg) const;
+  Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray,Int_t dgLabels[10]) const { return MatchToMC(pdgabs,mcArray,dgLabels,GetNDaughters()); }
 
   TRef     fSecondaryVtx;  // decay vertex
   AliAODVertex *fOwnSecondaryVtx;  // temporary solution (to work outside AliAODEvent)
