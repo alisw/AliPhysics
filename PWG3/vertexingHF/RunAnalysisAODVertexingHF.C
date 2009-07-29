@@ -21,6 +21,7 @@ void RunAnalysisAODVertexingHF()
   Bool_t useAlienPlugin=kTRUE;
   TString pluginmode="full";
   TString loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/";
+  //TString loadMacroPath="./"; // this is normally needed for CAF
   //
 
   if(analysisMode=="grid") {
@@ -47,12 +48,16 @@ void RunAnalysisAODVertexingHF()
     gSystem->Load("libVMC.so");    
     // Enable the needed packages
     //gProof->ClearPackages();
+    TString parDir="/afs/cern.ch/user/d/dainesea/code/";
+    TString parFile;
     if(!useParFiles) {
       gProof->UploadPackage("AF-v4-17");
       gProof->EnablePackage("AF-v4-17");
+      // --- Enable the PWG3vertexingHF Package
+      parFile="PWG3vertexingHF.par"; parFile.Prepend(parDir.Data());
+      gProof->UploadPackage(parFile.Data());
+      gProof->EnablePackage("PWG3vertexingHF");
     } else {
-      TString parDir="/afs/cern.ch/user/d/dainesea/code/";
-      TString parFile;
       // --- Enable the STEERBase Package
       parFile="STEERBase.par"; parFile.Prepend(parDir.Data());
       gProof->UploadPackage(parFile.Data());
