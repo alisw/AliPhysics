@@ -76,7 +76,7 @@ void AliAnalysisTaskSEVertexingHFTest()
   // Output 
   AliAODHandler *aodHandler = new AliAODHandler();
   if(createAOD) {
-    aodHandler->SetOutputFileName("AliAODs.root");
+    aodHandler->SetOutputFileName("AliAOD.root");
   } else {
     aodHandler->SetOutputFileName("AliAOD.VertexingHF.root");
     aodHandler->SetCreateNonStandardAOD();
