@@ -238,7 +238,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 			 posRec[1],posTrue[1],erry,
 			 posRec[2],posTrue[2],errz,
 			 d2->GetReducedChi2(),d2->Pt(),invmass);
-	//PostData(2,fNtupleCmp);
+	PostData(2,fNtupleCmp);
 	//}
 	if(unsetvtx) d2->UnsetOwnPrimaryVtx();
       }
@@ -265,7 +265,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 			 posRec[1],posTrue[1],erry,
 			 posRec[2],posTrue[2],errz,
 			 d3->GetReducedChi2(),d3->Pt(),invmass);
-	//PostData(2,fNtupleCmp);
+	PostData(2,fNtupleCmp);
 	//}
 	if(unsetvtx) d3->UnsetOwnPrimaryVtx();
       }
@@ -294,7 +294,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 			 posRec[1],posTrue[1],erry,
 			 posRec[2],posTrue[2],errz,
 			 d4->GetReducedChi2(),d4->Pt(),invmass);
-	//PostData(2,fNtupleCmp);
+	PostData(2,fNtupleCmp);
 	//}
 	if(unsetvtx) d4->UnsetOwnPrimaryVtx();
       }
