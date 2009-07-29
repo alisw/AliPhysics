@@ -285,17 +285,9 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   AliReconstruction rec;
   rec.SetInput(input);
   rec.SetRunVertexFinder(kFALSE);
-  rec.SetRunLocalReconstruction("HLT");
-  rec.SetRunTracking("");
+  rec.SetRunReconstruction("HLT");
   rec.SetLoadAlignFromCDB(0);
   rec.SetRunQA(":");
-
-  // NOTE: FillESD is a step in the AliReconstruction sequence and has
-  // nothing to do with the fact that this macro writes ESD output
-  // HLT processes the HLTOUT during FillESD and extracts data which
-  // has already been prepared. This step is currently not necessary for
-  // this macro
-  rec.SetFillESD("");
   rec.SetOption("HLT", option);
   rec.Run();
 }
