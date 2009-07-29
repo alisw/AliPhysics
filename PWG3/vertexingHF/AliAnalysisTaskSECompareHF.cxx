@@ -213,6 +213,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
     switch(nprongs) {
     case 2: // look for D0->Kpi
       d2 = (AliAODRecoDecayHF2Prong*)vtx->GetParent();
+      if(d2->IsLikeSign()) continue;
       if(d2->Charge() != 0) continue; // these are D* 
       lab = d2->MatchToMC(421,mcArray);
       if(lab>=0) {
@@ -237,13 +238,14 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 			 posRec[1],posTrue[1],erry,
 			 posRec[2],posTrue[2],errz,
 			 d2->GetReducedChi2(),d2->Pt(),invmass);
-	PostData(2,fNtupleCmp);
+	//PostData(2,fNtupleCmp);
 	//}
 	if(unsetvtx) d2->UnsetOwnPrimaryVtx();
       }
       break;
     case 3: // look for D+
       d3 = (AliAODRecoDecayHF3Prong*)vtx->GetParent();
+      if(d3->IsLikeSign()) continue;
       lab = d3->MatchToMC(411,mcArray);
       if(lab>=0) {
 	unsetvtx=kFALSE;
@@ -263,13 +265,14 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 			 posRec[1],posTrue[1],erry,
 			 posRec[2],posTrue[2],errz,
 			 d3->GetReducedChi2(),d3->Pt(),invmass);
-	PostData(2,fNtupleCmp);
+	//PostData(2,fNtupleCmp);
 	//}
 	if(unsetvtx) d3->UnsetOwnPrimaryVtx();
       }
       break;
     case 4: // look for D0->Kpipipi
       d4 = (AliAODRecoDecayHF4Prong*)vtx->GetParent();
+      if(d4->IsLikeSign()) continue;
       lab = d4->MatchToMC(421,mcArray);
       if(lab>=0) {
 	unsetvtx=kFALSE;
@@ -291,7 +294,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 			 posRec[1],posTrue[1],erry,
 			 posRec[2],posTrue[2],errz,
 			 d4->GetReducedChi2(),d4->Pt(),invmass);
-	PostData(2,fNtupleCmp);
+	//PostData(2,fNtupleCmp);
 	//}
 	if(unsetvtx) d4->UnsetOwnPrimaryVtx();
       }
@@ -332,7 +335,7 @@ void AliAnalysisTaskSECompareHF::Terminate(Option_t */*option*/)
   fHistMass = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMass"));
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
 
-  fNtupleCmp = dynamic_cast<TNtuple*> (GetOutputData(2));
+  //fNtupleCmp = dynamic_cast<TNtuple*> (GetOutputData(2));
 
   return;
 }
