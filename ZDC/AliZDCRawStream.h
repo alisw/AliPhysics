@@ -79,6 +79,7 @@ class AliZDCRawStream: public TObject {
     UInt_t GetScTriggerSource() const {return fScTriggerSource;}	    
     UInt_t GetTriggerNumber()   const {return fScTriggerNumber;}
     UInt_t GetTriggerCount()    const {return fScEvCounter;}
+    Bool_t IsScHeaderRead()     const {return fIsScHeaderRead;}
     
     UInt_t GetDetectorPattern() const {return fDetPattern;}
     
@@ -92,9 +93,9 @@ class AliZDCRawStream: public TObject {
     Bool_t IsCPTInputEMDTrigger()
     	{if(fCPTInput[3]==1) return kTRUE; else return kFALSE;}
     
-    Bool_t IsEventGood()   const {return fIsADCEventGood;} 
-    Bool_t IsL0BitSet()    const {return fIsL0BitSet;}  
-    Bool_t IsPileUpEvent() const {return fIsPileUpEvent;} 
+    Bool_t IsADCEventGood() const {return fIsADCEventGood;} 
+    Bool_t IsL0BitSet()     const {return fIsL0BitSet;}  
+    Bool_t IsPileUpEvent()  const {return fIsPileUpEvent;} 
     
     void SetNChannelsOn(Int_t val) {fNChannelsOn = val;}
     void SetSector(Int_t i, Int_t val) {fSector[i] = val;}
@@ -184,8 +185,8 @@ class AliZDCRawStream: public TObject {
     UInt_t fScNWords;        // no. of words in scaler event
     UInt_t fScTriggerSource; // Trigger source 
     UInt_t fScTriggerNumber; // no. of triggers
-    UInt_t fIsScEventGood;   // true if scaler event is good
-    UInt_t fIsScHeaderRead;  // true if scaler event is good
+    Bool_t fIsScEventGood;   // true if scaler event is good
+    Bool_t fIsScHeaderRead;  // true if scaler header is read
     Int_t  fScStartCounter;  // position in the buffer where scaler data begins
     UInt_t fScEvCounter;     // event counter
     
@@ -195,7 +196,7 @@ class AliZDCRawStream: public TObject {
     // Trigger card
     // (1) trigger counts
     Int_t  fTrigCountNWords;  // no. of words to read from trigger card scalers
-    Bool_t fIsTrig1stWordRead;// Trigger card scalers - 1st word read
+    Bool_t fIsTriggerScaler;// Trigger card scalers - 1st word read
     Int_t  fTrigCountStart;   // Trigger card scalers - counter
     Int_t  fMBTrigInput;      // MB          trigger input to trigger card
     Int_t  fCentralTrigInput; // CENTRAL     trigger input to trigger card
@@ -208,7 +209,8 @@ class AliZDCRawStream: public TObject {
     Int_t  fEMDTrig2CTP;      // trigger input to the CTP for EMD
     // (2) trigger history
     Int_t  fTrigHistNWords;   // no. of words to read from trigger history data
-    Bool_t fIsHist1stWordRead;// Trigger history - 1st word read
+    Bool_t fIsTriggerHistory; // Trigger history - 1st word read
+    Int_t  fTrigHistStart;    // Trigger card history - counter
     Int_t  fPileUpBit1stWord; // Pile up bit from 1st word
     Int_t  fL0Bit1stWord;     // L0 bit from 1st word
     UInt_t fCentralTrigHist;  // history for CENTRAL trigger
@@ -232,7 +234,7 @@ class AliZDCRawStream: public TObject {
     Bool_t fIsL0BitSet;    // true if L0 bit in history words = 1 
     Bool_t fIsPileUpEvent; // true if pile up bits in history words = 0
     
-    ClassDef(AliZDCRawStream, 12)    // class for reading ZDC raw data
+    ClassDef(AliZDCRawStream, 14)    // class for reading ZDC raw data
 };
 
 #endif

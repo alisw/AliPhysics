@@ -74,7 +74,7 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fScEvCounter(0),
   fDetPattern(0),
   fTrigCountNWords(0),
-  fIsTrig1stWordRead(kFALSE),
+  fIsTriggerScaler(kFALSE),
   fTrigCountStart(0),
   fMBTrigInput(0),	   
   fCentralTrigInput(0), 
@@ -86,7 +86,8 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fSCentralTrig2CTP(0), 
   fEMDTrig2CTP(0),	      
   fTrigHistNWords(0),
-  fIsHist1stWordRead(kFALSE),
+  fIsTriggerHistory(kFALSE),
+  fTrigHistStart(0),
   fPileUpBit1stWord(0),
   fL0Bit1stWord(0),
   fCentralTrigHist(0),
@@ -158,7 +159,7 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fScEvCounter(stream.fScEvCounter),
   fDetPattern(stream.fDetPattern),
   fTrigCountNWords(stream.fTrigCountNWords),
-  fIsTrig1stWordRead(stream.fIsTrig1stWordRead),
+  fIsTriggerScaler(stream.fIsTriggerScaler),
   fTrigCountStart(stream.fTrigCountStart),
   fMBTrigInput(stream.fMBTrigInput),	   
   fCentralTrigInput(stream.fCentralTrigInput), 
@@ -170,7 +171,8 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fSCentralTrig2CTP(stream.fSCentralTrig2CTP), 
   fEMDTrig2CTP(stream.fEMDTrig2CTP),	      
   fTrigHistNWords(stream.fTrigHistNWords),
-  fIsHist1stWordRead(stream.fIsHist1stWordRead),
+  fIsTriggerHistory(stream.fIsTriggerHistory),
+  fTrigHistStart(stream.fTrigHistStart),
   fPileUpBit1stWord(stream.fPileUpBit1stWord),
   fL0Bit1stWord(stream.fL0Bit1stWord), 
   fCentralTrigHist(stream.fCentralTrigHist),
@@ -343,13 +345,12 @@ Bool_t AliZDCRawStream::Next()
 
   if(!fRawReader->ReadNextInt((UInt_t&) fBuffer)) return kFALSE;
   const int kNch = 48;
-  Bool_t readScaler = kFALSE;
   Int_t kFirstADCGeo=0, kLastADCGeo=3, kScalerGeo=8, kPUGeo=29, kTrigScales=30, kTrigHistory=31;
   fIsHeaderMapping = kFALSE; fIsChMapping = kFALSE; 
   fIsADCHeader = kFALSE; fIsADCDataWord = kFALSE; fIsADCEOB = kFALSE;
   fIsUnderflow = kFALSE; fIsOverflow = kFALSE; 
   fSector[0] = fSector[1] = -1;
-  fTrigCountNWords = 9; fTrigHistNWords = 2;
+//  fTrigCountNWords = 9; fTrigHistNWords = 2;
   for(Int_t kl=0; kl<4; kl++) fCPTInput[kl] = 0;
 
   fEvType = fRawReader->GetType();
@@ -382,7 +383,6 @@ Bool_t AliZDCRawStream::Next()
     if(fIsCalib){
       fDeadfaceOffset = 9;
       fDeadbeefOffset = 25;
-      readScaler = kTRUE;
     }
     else{
       fDeadfaceOffset = 1;
@@ -640,6 +640,8 @@ Bool_t AliZDCRawStream::Next()
         AliWarning("ZDC ADC -> The not valid datum is NOT followed by an ADC header!");
         fRawReader->AddMajorErrorLog(kZDCDataError);
         fIsADCEventGood = kFALSE;
+	fPosition++;
+	return kFALSE;
       }
     }
      
@@ -650,7 +652,6 @@ Bool_t AliZDCRawStream::Next()
     // - Trigger card scales GEO = 30
     // - Trigger card history GEO = 31
     fADCModule = (Int_t) ((fBuffer & 0xf8000000)>>27);
-    //printf("  AliZDCRawStream -> Module GEO address %d\n",fADCModule);
     
     // ************************************ ADC MODULES ************************************
     if(fADCModule>=kFirstADCGeo && fADCModule<=kLastADCGeo){
@@ -736,9 +737,9 @@ Bool_t AliZDCRawStream::Next()
         fScTriggerSource = (fBuffer & 0x00030000)>>16;	   
         fScTriggerNumber = (fBuffer & 0x0000ffff);
         fIsScHeaderRead = kTRUE; 
-	fScStartCounter = (Int_t) (fPosition);
+	fScStartCounter = fPosition;
         //Ch. debug
-        //printf("  AliZDCRawStream -> SCALER HEADER: geo %d Nwords %d TrigSource %d TrigNo. %d\n",
+        //printf("  AliZDCRawStream -> VME SCALER HEADER: geo %d Nwords %d TrigSource %d TrigNo. %d\n",
         //   fScGeo,fScNWords,fScTriggerSource,fScTriggerNumber);
       } 
       else if(!(fBuffer & 0x04000000)){
@@ -749,71 +750,107 @@ Bool_t AliZDCRawStream::Next()
     else if(fADCModule == kPUGeo){
       // still to be implemented!!! Not yet in data!!!
       fDetPattern = (fBuffer & 0x0000003f);
+      // Ch. debug
+      //printf("  AliZDCRawStream -> Pattern Unit\n");
+      
     }
     // ******************************** TRIGGER CARD COUNTS ********************************
     else if(fADCModule == kTrigScales){
-      if(fIsTrig1stWordRead == kFALSE){
+      if(fIsTriggerScaler == kFALSE){
+        fTrigCountNWords = (Int_t) ((fBuffer & 0xfc0000)>>17);
         fTrigCountStart = fPosition;
-	fMBTrigInput = fBuffer;
-	fIsTrig1stWordRead = kTRUE;
+	fIsTriggerScaler = kTRUE;
       }
-      else{
-        if(fPosition == fTrigCountStart+1)      fCentralTrigInput = fBuffer;     	      
-	else if(fPosition == fTrigCountStart+2) fSCentralTrigInput = fBuffer;
-	else if(fPosition == fTrigCountStart+3) fEMDTrigInput = fBuffer; 
-	else if(fPosition == fTrigCountStart+4) fL0Received = fBuffer;
-	else if(fPosition == fTrigCountStart+5) fMBtrig2CTP = fBuffer;     
-	else if(fPosition == fTrigCountStart+6) fCentralTrig2CTP = fBuffer;  
-	else if(fPosition == fTrigCountStart+7) fSCentralTrig2CTP = fBuffer; 
-	else if(fPosition == fTrigCountStart+8){
-	  fEMDTrig2CTP = fBuffer;	
-	  fIsTrig1stWordRead = kFALSE;
-	}
-      }
-      
+      // Ch. debug
+      //printf("  AliZDCRawStream -> Trigger Scaler header\n");      
     }
     // ********************************** TRIGGER HISTORY **********************************
     else if(fADCModule == kTrigHistory){
-      if(fIsHist1stWordRead == kFALSE){
-        fIsHist1stWordRead = kTRUE;
-	fPileUpBit1stWord = (fBuffer & 0x80000000) >> 31;
-	fL0Bit1stWord = (fBuffer & 0x40000000) >> 30;        
-	fCentralTrigHist = (fBuffer & 0x3fff8000) >> 14; 
-	fMBTrigHist =  (fBuffer & 0x00007fff);        
-	//
-	fCPTInput[0] = (fBuffer & 0x00000080) >> 6;  // MB bit
-	fCPTInput[1] = (fBuffer & 0x00400000) >> 21; // CENTRAL bit
+      if(fIsTriggerHistory == kFALSE){
+        fTrigHistNWords = (Int_t) ((fBuffer & 0xfc0000)>>17);
+	fTrigHistStart = fPosition;
+        fIsTriggerHistory = kTRUE;
       }
-      else{
-	fPileUpBit2ndWord = (fBuffer & 0x80000000) >> 31;
-	fL0Bit2ndWord = (fBuffer & 0x40000000) >> 30;        
-	fSCentralTrigHist = (fBuffer & 0x3fff8000) >> 14; 
-	fEMDTrigHist =  (fBuffer & 0x00007fff);          
-	//
-	fCPTInput[2] = (fBuffer & 0x00000080) >> 6;  // SEMICENTRAL bit
-	fCPTInput[3] = (fBuffer & 0x00400000) >> 21; // EMD bit
-	//
-	// Checking if the event is good
-	// (1) both history word pile up bits must be = 0
-	if(fPileUpBit1stWord==0 && fPileUpBit2ndWord==0) fIsPileUpEvent = kFALSE;
-	else fIsPileUpEvent = kTRUE;
-	// (2) both history word L0 bits must be = 1
-	if(fL0Bit1stWord==1 && fL0Bit2ndWord==1) fIsL0BitSet = kTRUE;
-	else fIsL0BitSet = kFALSE;
-      }
+      // Ch. debug
+      //printf("  AliZDCRawStream -> Trigger History header\n");
+      
     } 
     // ********************************** VME SCALER DATA **********************************
     //  Reading VME scaler data 
     if(fIsScHeaderRead && fPosition>=fScStartCounter+1){ // *** Scaler word
-      fADCModule = fScGeo;
+      fADCModule = kScalerGeo;
       fScEvCounter = fBuffer;
       Int_t nWords = (Int_t) (fScNWords);
       if(fPosition == fScStartCounter+nWords) fIsScHeaderRead = kFALSE;
       //Ch. debug
       //printf("  AliZDCRawStream -> scaler datum %d", fScEvCounter);
     }
+    // ******************************** TRIGGER SCALER DATA ********************************
+    //  Reading trigger scaler data 
+    if(fIsTriggerScaler && fPosition>=fTrigCountStart+1){
+      fADCModule = kTrigScales;
+      if(fPosition == fTrigCountStart+1)      fMBTrigInput = fBuffer;		    
+      else if(fPosition == fTrigCountStart+2) fCentralTrigInput = fBuffer;		    
+      else if(fPosition == fTrigCountStart+3) fSCentralTrigInput = fBuffer;
+      else if(fPosition == fTrigCountStart+4) fEMDTrigInput = fBuffer; 
+      else if(fPosition == fTrigCountStart+5) fL0Received = fBuffer;
+      else if(fPosition == fTrigCountStart+6) fMBtrig2CTP = fBuffer;	 
+      else if(fPosition == fTrigCountStart+7) fCentralTrig2CTP = fBuffer;  
+      else if(fPosition == fTrigCountStart+8) fSCentralTrig2CTP = fBuffer; 
+      else if(fPosition == fTrigCountStart+9){
+        fEMDTrig2CTP = fBuffer;       
+        fIsTriggerScaler = kFALSE;
+      }
+      // Ch. debug
+      //printf("  AliZDCRawStream -> Trigger Scaler datum %d\n", fPosition-fTrigCountStart);
+    }
+    // ******************************* TRIGGER HISTORY WORDS ******************************
+    //  Reading trigger history
+    if(fIsTriggerHistory && fPosition>=fTrigHistStart+1){
+	fADCModule = kTrigHistory;	
+	if(fPosition == fTrigHistStart+1){
+	  fPileUpBit1stWord = (fBuffer & 0x80000000) >> 31;
+	  fL0Bit1stWord = (fBuffer & 0x40000000) >> 30;        
+	  fCentralTrigHist = (fBuffer & 0x3fff8000) >> 14; 
+	  fMBTrigHist =  (fBuffer & 0x00007fff);        
+	  //
+	  fCPTInput[0] = (fBuffer & 0x00000080) >> 6;  // MB bit
+	  fCPTInput[1] = (fBuffer & 0x00400000) >> 21; // CENTRAL bit
+        }
+	
+	else if(fPosition == fTrigHistStart+fTrigHistNWords){
+          fPileUpBit2ndWord = (fBuffer & 0x80000000) >> 31;
+          fL0Bit2ndWord = (fBuffer & 0x40000000) >> 30;	     
+          fSCentralTrigHist = (fBuffer & 0x3fff8000) >> 14; 
+          fEMDTrigHist =  (fBuffer & 0x00007fff); 	 
+          //
+          fCPTInput[2] = (fBuffer & 0x00000080) >> 6;  // SEMICENTRAL bit
+          fCPTInput[3] = (fBuffer & 0x00400000) >> 21; // EMD bit
+	  //
+	  fIsTriggerHistory = kFALSE;
+          
+	  // Checking if the event is good
+          // (1) both history word pile up bits must be = 0
+          if(fPileUpBit1stWord==0 && fPileUpBit2ndWord==0) fIsPileUpEvent = kFALSE;
+          else{
+            fIsPileUpEvent = kTRUE;
+	    printf("  AliZDCRawStream -> PILE UP EVENT: bitPileUp0 %d bitPileUp1 %d\n",
+	  	fPileUpBit1stWord, fPileUpBit2ndWord);
+          }
+	  // (2) both history word L0 bits must be = 1
+          if(fL0Bit1stWord==1 && fL0Bit2ndWord==1) fIsL0BitSet = kTRUE;
+          else{
+            fIsL0BitSet = kFALSE;
+	    printf("  AliZDCRawStream -> L0 wrongly set: bitL0word0 %d bitL0word1 %d\n",
+	    	fL0Bit1stWord, fL0Bit2ndWord);
+          }
+        }       
+        // Ch. debug
+        //printf("  AliZDCRawStream -> Trigger history word %d\n", fPosition-fTrigHistStart);
+    }
     
   }
+
   fPosition++;
 
   return kTRUE;

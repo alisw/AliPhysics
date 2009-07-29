@@ -377,19 +377,23 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   }  
 
   //fNRun = (Int_t) rawReader->GetRunNumber();
-  Bool_t chOff=kFALSE, isUndflw=kFALSE, isOvflw=kFALSE;
+  Bool_t chOff=kFALSE, isUndflw=kFALSE, isOvflw=kFALSE, isADCEvGood=kFALSE;
+  Int_t kFirstADCGeo=0, kLastADCGeo=3, kScalerGeo=8, kPUGeo=29, kTrigScales=30, kTrigHistory=31;
   //
   rawReader->Reset();
   AliZDCRawStream rawData(rawReader);
   while(rawData.Next()){
-   if(rawData.IsCalibration() == kFALSE){ // Reading ADCs
-    //printf(" **** Reading ADC raw data **** \n");
+   //if(rawData.IsCalibration() == kFALSE){ // Reading ADCs
+   if((rawData.GetADCModule()>=kFirstADCGeo) && (rawData.GetADCModule()<=kLastADCGeo)){    
+    //printf(" **** Reading ADC raw data from module %d **** \n",rawData.GetADCModule());
     //
-    if(rawData.GetNChannelsOn() < 48 ) chOff=kTRUE;
-    if((rawData.IsADCDataWord()) && (rawData.IsOverflow() == kTRUE))  isUndflw=kTRUE;
-    if((rawData.IsADCDataWord()) && (rawData.IsUnderflow() == kTRUE)) isOvflw=kTRUE;
-
-    if((rawData.IsADCDataWord()) && (isUndflw==kFALSE) && (isOvflw==kFALSE)){
+    if((rawData.IsADCDataWord()) && (rawData.GetNChannelsOn()<48))  chOff = kTRUE;
+    if((rawData.IsADCDataWord()) && (rawData.IsOverflow() == kTRUE)) isUndflw = kTRUE;
+    if((rawData.IsADCDataWord()) && (rawData.IsUnderflow() == kTRUE)) isOvflw = kTRUE;
+    if((rawData.IsADCDataWord()) && (rawData.IsADCEventGood() == kTRUE)) isADCEvGood = kTRUE;
+    
+    if((rawData.IsADCDataWord()) && (isUndflw==kFALSE) 
+        && (isOvflw==kFALSE) && (isADCEvGood==kTRUE)){
      
       Int_t adcMod = rawData.GetADCModule();
       Int_t det = rawData.GetSector(0);
