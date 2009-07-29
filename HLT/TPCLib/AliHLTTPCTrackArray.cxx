@@ -37,6 +37,7 @@
 #include "AliHLTTPCTrackSegmentData.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCConfMapPoint.h"
+#include "AliHLTExternalTrackParam.h"
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -246,6 +247,117 @@ int AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* tr
 {
   //Read tracks from shared memory (or memory)
   return FillTracksChecked(tr, ntracks, 0, slice, bTransform);
+}
+
+int AliHLTTPCTrackArray::FillTracksChecked(AliHLTExternalTrackParam* tr, Int_t ntracks, unsigned int sizeInByte, Int_t slice, Int_t bTransform)
+{
+  int iResult=0;
+  AliHLTExternalTrackParam *trs = tr;
+  
+  for(Int_t i=0; i<ntracks; i++){
+    if (sizeInByte>0 && 
+	(((AliHLTUInt8_t*)trs)+sizeof(AliHLTExternalTrackParam)>((AliHLTUInt8_t*)tr)+sizeInByte ||
+	 ((AliHLTUInt8_t*)trs)+sizeof(AliHLTExternalTrackParam)+trs->fNPoints*sizeof(UInt_t)>((AliHLTUInt8_t*)tr)+sizeInByte)) {
+      iResult=-EDOM;
+      break;
+    }
+    AliHLTTPCTrack *track = NextTrack(); 
+    track->SetId( i );
+    track->SetPt(trs->fq1Pt);
+    track->SetPterr(trs->fC[14]);
+    Float_t psi[1];
+    psi[0]=trs->fSinPsi;
+    if (slice>=0 && bTransform!=0)  {
+      AliHLTTPCTransform::Local2GlobalAngle(psi,slice);
+    }
+    //cout << "psi " << psi[0] << endl;
+    track->SetPsi(psi[0]);
+    track->SetTgl(trs->fTgl);
+    track->SetPsierr(trs->fC[5]);
+    track->SetTglerr(trs->fC[9]);
+    track->SetY0err(trs->fC[0]);
+    track->SetZ0err(trs->fC[2]);
+    track->SetNHits(trs->fNPoints);
+    //track->SetCharge(trs->fCharge);
+    Float_t first[3];
+    first[0]=trs->fX;first[1]=trs->fY;first[2]=trs->fZ;
+    if (slice>=0 && bTransform!=0)  {
+      AliHLTTPCTransform::Local2Global(first,slice);
+    }
+    //cout << "first point: " << first[0] << " " << first[1] << " " << first[3] << endl;
+    track->SetFirstPoint(first[0],first[1],first[2]);
+    Float_t last[3];
+    last[0]=trs->fLastX;last[1]=trs->fLastY;last[2]=trs->fLastZ;
+    if (slice>=0 && bTransform!=0)  {
+      AliHLTTPCTransform::Local2Global(last,slice);
+    }
+    //cout << "last point: " << last[0] << " " << last[1] << " " << last[3] << endl;
+    track->SetLastPoint(last[0],last[1],last[2]);
+    track->SetHits( trs->fNPoints, trs->fPointIDs );
+
+    //if (slice>=0 && bTransform!=0)  {
+      // Matthias Feb07: as everything is now in global coordinates, sector should
+      // be set to 0. But as the display does a check on the sector, we have to set
+      // it to the slice no. I suspect, that the transformation is done twice.
+      //track->SetSector(0);
+    
+      track->SetSector(slice);
+    
+    //} else {
+      // the parameters are in local coordinates, set the sector no
+      //#ifndef INCLUDE_TPC_HOUGH
+      //if (slice<0) track->SetSector(0);
+      //else track->SetSector(slice);
+      //#else 
+      // Matthias Feb 2007: this is some kind of legacy ...
+      // the INCLUDE_TPC_HOUGH has never been switched on in the new TPCLib
+      // and this line was below in the corresponding block. As the slice
+      // parameter is very useful but not available if the define is off
+      // we distinguish the two cases here. Should be cleaned up.
+      // Matthias April 2007: update, try to integrate Cvetans Hough tracker
+      // so we need the support for the AliHLTTPCHoughTrack. I dont have the
+      // full control of this code (should we use slice or trs->fSector?)
+      // But the FillTracks method is never called from the hough code, so we
+      // take 'slice'
+      if (GetTrackType()=='h') {
+	AliErrorClassStream() << "FillTracks was never used with AliHLTTPCHoughTrack:" 
+			   << " CHECK THIS CODE!!!" << endl;
+      }
+      //track->SetSector(trs->fSector);
+      //#endif // INCLUDE_TPC_HOUGH
+      //}
+
+    // this is currently a quick hack for straight lines of the first version 
+    // of the CA tracker.
+    // we have to think about a more general way of treating straight and curved
+    // tracks
+    if ( trs->fq1Pt == -9876.0 ||  trs->fq1Pt == -1.0) {
+      track->SetPhi0(atan2(first[1],first[0]));
+      track->SetKappa(1.0);
+      track->SetRadius(999999.0);
+    } else {
+      // Matthias Feb07: just tried to take this away, but this causes the tracks
+      // in the display not to be drawn. But we still have to tink about this.
+      track->CalculateHelix();
+    }
+
+#ifdef INCLUDE_TPC_HOUGH
+#ifdef ROWHOUGHPARAMS
+    if(GetTrackType()=='h') {
+      ((AliHLTTPCHoughTrack *)track)->SetWeight(trs->fWeight);
+      ((AliHLTTPCHoughTrack *)track)->SetBinXY(trs->fBinX,trs->fBinY,trs->fBinXSize,trs->fBinYSize);
+    }
+    track->SetMCid(trs->fTrackID);
+    track->SetRowRange(trs->fRowRange1,trs->fRowRange2);
+    track->SetPID(trs->fPID);
+#endif
+#endif // INCLUDE_TPC_HOUGH
+    track->CheckConsistency();
+
+    UChar_t *tmpP = (UChar_t*)trs;
+    tmpP += sizeof(AliHLTExternalTrackParam)+trs->fNPoints*sizeof(UInt_t);
+    trs = (AliHLTExternalTrackParam*)tmpP;
+  }
 }
 
 int AliHLTTPCTrackArray::FillTracksChecked(AliHLTTPCTrackSegmentData* tr, Int_t ntracks, unsigned int sizeInByte, Int_t slice, Int_t bTransform)

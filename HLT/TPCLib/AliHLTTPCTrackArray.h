@@ -20,7 +20,7 @@ class AliHLTTPCConfMapTrack;
 class AliHLTTPCTrack;
 class AliHLTTPCTrackSegmentData;
 class AliHLTTPCTrackSegmentDataV1;
-
+class AliHLTExternalTrackParam;
 /**
  * @class AliHLTTPCTrackArray
  * Array of AliHLTTrack objects.
@@ -129,6 +129,7 @@ class AliHLTTPCTrackArray {
    * @param bTransform   transform to global coordinates if 1
    */
   int FillTracksChecked(AliHLTTPCTrackSegmentData* tr, Int_t ntracks, unsigned int sizeInByte, Int_t slice=-1, Int_t bTransform=1);
+  int FillTracksChecked(AliHLTExternalTrackParam* tr, Int_t ntracks, unsigned int sizeInByte, Int_t slice=-1, Int_t bTransform=1);
 
   /**
    * Fill array from version1 structure.

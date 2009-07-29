@@ -33,17 +33,18 @@ using namespace std;
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTTPCTrackArray.h"
+#include "AliHLTTPCTrack.h"
+//#include "AliHLTGlobalBarrelTrack.h"
+#include "AliHLTExternalTrackParam.h"
+#include "AliHLTDataTypes.h"
+
 #include <TFile.h>
 #include <TString.h>
 #include "TNtuple.h"
 #include "TObjString.h"
 #include "TObjArray.h"
-#include "AliHLTTPCTrackArray.h"
-#include "AliHLTTPCTrack.h"
 
-//#include "AliHLTTPC.h"
-//#include <stdlib.h>
-//#include <cerrno>
 
 AliHLTTPCTrackHistoComponent gAliHLTTPCTrackHistoComponent;
 
@@ -51,90 +52,88 @@ AliHLTTPCTrackHistoComponent gAliHLTTPCTrackHistoComponent;
 ClassImp(AliHLTTPCTrackHistoComponent)
 
 AliHLTTPCTrackHistoComponent::AliHLTTPCTrackHistoComponent()
-:
-fClusters(NULL),
+  :
+  fMinSlice(35),
+  fMaxSlice(0),
+  fMinPartition(5),
+  fMaxPartition(0),
+  fClusters(NULL),
   fTracks(NULL),
   fTracksArray(NULL)
+  //fClustersArray(NULL),
+  //fNSpacePoints(NULL)
 {
-  
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
 }
 
-AliHLTTPCTrackHistoComponent::~AliHLTTPCTrackHistoComponent()
-{
-  // see header file for class documentation
+AliHLTTPCTrackHistoComponent::~AliHLTTPCTrackHistoComponent(){
+// see header file for class documentation
 }
 
 // Public functions to implement AliHLTComponent's interface.
 // These functions are required for the registration process
 
-const char* AliHLTTPCTrackHistoComponent::GetComponentID()
-{
-  // see header file for class documentation
+const char* AliHLTTPCTrackHistoComponent::GetComponentID(){
+// see header file for class documentation
   
   return "TPCTrackHisto";
 }
 
-void AliHLTTPCTrackHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
-{
-  // see header file for class documentation
+void AliHLTTPCTrackHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list){
+// see header file for class documentation
   list.clear();
-  list.push_back( AliHLTTPCDefinitions::fgkClustersDataType );
-  list.push_back( AliHLTTPCDefinitions::fgkTrackSegmentsDataType );
-  list.push_back( AliHLTTPCDefinitions::fgkTracksDataType );
+  list.push_back(AliHLTTPCDefinitions::fgkClustersDataType);
+  list.push_back(AliHLTTPCDefinitions::fgkTrackSegmentsDataType);
+  //list.push_back(AliHLTTPCDefinitions::fgkTracksDataType);
+  list.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
+  list.push_back(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC);
 }
 
-AliHLTComponentDataType AliHLTTPCTrackHistoComponent::GetOutputDataType()
-{
-  // see header file for class documentation
+AliHLTComponentDataType AliHLTTPCTrackHistoComponent::GetOutputDataType(){
+// see header file for class documentation
   return kAliHLTDataTypeTNtuple;
-
 }
 
-void AliHLTTPCTrackHistoComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
-{
-  // see header file for class documentation
-  // XXX TODO: Find more realistic values.
+void AliHLTTPCTrackHistoComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ){
+// see header file for class documentation
+  
   constBase = 0;
-  inputMultiplier = 1;
+  inputMultiplier = 1;// XXX TODO: Find more realistic value
 }
 
-AliHLTComponent* AliHLTTPCTrackHistoComponent::Spawn()
-{
-  // see header file for class documentation
+AliHLTComponent* AliHLTTPCTrackHistoComponent::Spawn(){
+// see header file for class documentation
   return new AliHLTTPCTrackHistoComponent;
 }
 
-int AliHLTTPCTrackHistoComponent::DoInit( int argc, const char** argv )
-{
+int AliHLTTPCTrackHistoComponent::DoInit( int argc, const char** argv ){
+// see header file for class documentation
  
-  fClusters = new TNtuple("fCluster", "fCluster", "charge:qmax:residualY:residualZ:used:event"); 
-  fTracks = new TNtuple("fTracks", "fTracks", "pt:eta:psi:nclusters:event"); 
-  fTracksArray=new AliHLTTPCTrackArray();
+  fClusters = new TNtuple("fClusters", "fClusters", "charge:qmax:residualY:residualZ:event"); 
+  fTracks   = new TNtuple("fTracks",  "fTracks",  "pt:eta:psi:nclusters:event"); 
+  fTracksArray = new AliHLTTPCTrackArray();
 
-  int iResult=0;
-  TString configuration="";
-  TString argument="";
-  for (int i=0; i<argc && iResult>=0; i++) {
-    argument=argv[i];
-    if (!configuration.IsNull()) configuration+=" ";
-    configuration+=argument;
+  int iResult = 0;
+  TString configuration = "";
+  TString argument = "";
+  for(int i=0; i<argc && iResult>=0; i++){
+      argument = argv[i];
+      if(!configuration.IsNull()) configuration += " ";
+      configuration += argument;
   }
   
-  if (!configuration.IsNull()) {
-    iResult=Configure(configuration.Data());
+  if(!configuration.IsNull()){
+     iResult = Configure(configuration.Data());
   }  
   return iResult; 
 }
   
-int AliHLTTPCTrackHistoComponent::DoDeinit()
-{
-  // see header file for class documentation
+int AliHLTTPCTrackHistoComponent::DoDeinit(){
+// see header file for class documentation
   
   delete fClusters;
   delete fTracks;
@@ -143,103 +142,82 @@ int AliHLTTPCTrackHistoComponent::DoDeinit()
   return 0;
 }
 
-int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
-{
-  if(!fTracksArray){fTracksArray=new AliHLTTPCTrackArray();}
+int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/){
+// see header file for class documentation
 
-  const AliHLTComponentBlockData* iter = NULL;
+  if(GetFirstInputBlock(kAliHLTDataTypeSOR) || GetFirstInputBlock(kAliHLTDataTypeEOR)) return 0;  
+  if(!fTracksArray) fTracksArray = new AliHLTTPCTrackArray();
 
-  if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
-    return 0;
+  const AliHLTComponentBlockData *iter = NULL;
 
-  Int_t TotalTrack = 0;
-
-  //Reading Merged Tracks
-  for ( iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkTracksDataType); iter != NULL; iter = GetNextInputBlock() ) {
-    if(iter->fDataType!=AliHLTTPCDefinitions::fgkTracksDataType){continue;}
-    ReadTracks(iter,TotalTrack);  
-  }
-
-  //Reading Tracks form slice
-  for ( iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkTrackSegmentsDataType); iter != NULL; iter = GetNextInputBlock() ) {
-    if(iter->fDataType!=AliHLTTPCDefinitions::fgkTrackSegmentsDataType){continue;}
-    ReadTracks(iter,TotalTrack);
-  }
-
-  int TotalSpacePoint = 0;
-  int nClustersUsed=0;
+//   //----------------- loop over slice tracks ----------------------//
+//  
+//   for(iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkTrackSegmentsDataType); iter != NULL; iter = GetNextInputBlock()){
+//       if(iter->fDataType!=AliHLTTPCDefinitions::fgkTrackSegmentsDataType)continue;
+//       ReadTracks(iter,totalTracks);
+//   }
+  
  
-  for ( iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkClustersDataType); iter != NULL; iter = GetNextInputBlock() ) {
-    
-    if(iter->fDataType!=AliHLTTPCDefinitions::fgkClustersDataType){continue;}
-
-    AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
-    AliHLTUInt8_t patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
-
-    //HLTDebug ( "Input Data - TPC cluster - Slice/Patch: %d/%d.", slice, patch );
-    const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*) iter->fPtr;
-    Int_t nSpacepoint = (Int_t) clusterData->fSpacePointCnt;    
-    TotalSpacePoint += nSpacepoint;
-    //HLTInfo("TrackHisto found %d Spacepoints in slice %d patch %d", nSpacepoint, slice, patch);
-    AliHLTTPCSpacePointData *clusters = (AliHLTTPCSpacePointData*) clusterData->fSpacePoints;
-    
-    if (fClustersArray[slice][patch]!=NULL) {
-      delete(fClustersArray[slice][patch]);
-      fClustersArray[slice][patch]=NULL;
-    }
-    Int_t arraysize=nSpacepoint*sizeof(AliHLTTPCSpacePointData);
-    fClustersArray[slice][patch] = (AliHLTTPCSpacePointData*)new Byte_t[arraysize];
-    if (fClustersArray[slice][patch]) {
-      memcpy(fClustersArray[slice][patch], clusters, arraysize);
-      fNcl[slice][patch]=nSpacepoint;
-    } else {
-      fNcl[slice][patch]=nSpacepoint;
-      HLTError ( "Memory allocation failed!" );
-    }
-
-    for(int i=0;i<nSpacepoint;i++){
-      UInt_t idCluster = clusters[i].fID;
-      Int_t sliceCl = (idCluster>>25) & 0x7f;
-      Int_t patchCl = (idCluster>>22) & 0x7;
-      UInt_t pos = idCluster&0x3fffff;
-      Int_t used = 0;
-      Float_t resy = 0, resz = 0;
-      for(UInt_t id=0;id<fTrackClusterID[sliceCl][patchCl].size();id++){
-	if(fTrackClusterID[sliceCl][patchCl][id]==pos){
-	  clusters[i].fUsed=kTRUE;
-	  nClustersUsed++;
-	  used=1;
-	  FillResidual(pos,sliceCl,patchCl,resy,resz);
-	}
-      }
-      if(used==1){
-	fClusters->Fill(clusters[i].fCharge,clusters[i].fQMax,resy,resz,used,GetEventId()); 
-      }
-      else{
-	fClusters->Fill(clusters[i].fCharge,clusters[i].fQMax,-100,-100,used,GetEventId()); 
-      }
-    }
-  } 
+ 
+  //----------------- loop over cluster blocks ---------------------//
   
-  HLTInfo("TrackHisto found %d Spacepoints",TotalSpacePoint);
-  HLTInfo("TrackHisto found %d Tracks",TotalTrack);
+  Int_t totalSpacePoints = 0;
   
+  for(iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkClustersDataType); iter != NULL; iter = GetNextInputBlock()){
+            
+      if(iter->fDataType!=AliHLTTPCDefinitions::fgkClustersDataType) continue;
+
+      AliHLTUInt8_t minSlice     = AliHLTTPCDefinitions::GetMinSliceNr(*iter);
+      AliHLTUInt8_t minPartition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
+      //HLTDebug("Input Data - TPC cluster - slice/partition: %d/%d.", minSlice, minPartition);
+
+      const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*)iter->fPtr;
+      Int_t nSpacepoint = (Int_t)clusterData->fSpacePointCnt;    
+      totalSpacePoints += nSpacepoint;
+      HLTDebug("TrackHisto component found %d spacepoints in slice %d partition %d", nSpacepoint, minSlice, minPartition);
+      
+      AliHLTTPCSpacePointData *clusters = (AliHLTTPCSpacePointData*)clusterData->fSpacePoints;
+      
+      if(fClustersArray[minSlice][minPartition] != NULL){
+         //delete(fClustersArray[minSlice][minPartition]);
+         fClustersArray[minSlice][minPartition] = NULL;
+      }      
+
+      // fill the array with AliHLTTPCSpacePointData pointers
+      // it will be used in the track loop to access information
+      // for the used clusters only
+      fClustersArray[minSlice][minPartition] = clusters;
+      fNSpacePoints[minSlice][minPartition]  = nSpacepoint;
+      
+      if(nSpacepoint==0) fClustersArray[minSlice][minPartition] = NULL;
+
+  } // end of loop over cluster data blocks
+  
+  HLTInfo("TrackHisto found %d spacepoints",totalSpacePoints);
+  
+  
+  
+  
+  //----------------- loop over merged tracks -------------------//
+
+  Int_t totalTracks = 0;
+  
+  for(iter = GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){    
+      if(iter->fDataType != (kAliHLTDataTypeTrack|kAliHLTDataOriginTPC)) continue; 
+      ReadTracks(iter,totalTracks);
+  }
+  
+  HLTInfo("TrackHisto found %d tracks",     totalTracks);  
   PushHisto();
 
   delete fTracksArray;
-  fTracksArray=NULL;
-
-  for(UInt_t i=0;i<36;i++){
-    for(UInt_t j=0;j<6;j++){ 
-      fTrackClusterID[i][j].clear();
-    }
-  }
+  fTracksArray = NULL;
 
   return 0;
 }
  
- int AliHLTTPCTrackHistoComponent::Configure(const char* arguments)
- {
+int AliHLTTPCTrackHistoComponent::Configure(const char* arguments){
+// see header file for class documentation
    
    int iResult=0;
    if (!arguments) return iResult;
@@ -258,22 +236,68 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
        break;
      }
      delete pTokens;
-   }
-   
+   }   
    return iResult;
  }
  
 void AliHLTTPCTrackHistoComponent::ReadTracks(const AliHLTComponentBlockData* iter,Int_t &tt){
+// see header file for class documentation
 
-  AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
-  //AliHLTUInt8_t patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
+  AliHLTUInt8_t slice	  = AliHLTTPCDefinitions::GetMinSliceNr(*iter);
+  AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
+ 
+  if( slice     < fMinSlice )	  fMinSlice     = slice;
+  if( slice     > fMaxSlice )	  fMaxSlice     = slice;
+  if( partition < fMinPartition ) fMinPartition = partition;
+  if( partition > fMaxPartition ) fMaxPartition = partition;
+   
+  AliHLTTracksData *trackData = (AliHLTTracksData*)(iter->fPtr);
+  AliHLTUInt32_t nTracks = trackData->fCount;
+ 
+
+  AliHLTExternalTrackParam *track = (AliHLTExternalTrackParam*)trackData->fTracklets;
+  tt+= nTracks;
+
+  fTracksArray->FillTracksChecked(trackData->fTracklets,trackData->fCount,iter->fSize,slice,true);
   
-  //HLTDebug ( "Input Data - TPC cluster - Slice/Patch: %d/%d.", slice, patch );
+  Int_t usedSpacePoints = 0;
+  
+  for(AliHLTUInt32_t i=0;i<nTracks;i++){
+   
+    UInt_t nHits = track->fNPoints;
+    fTracks->Fill( track->fq1Pt, track->fSinPsi, track->fTgl, nHits, GetEventId() ); 
+    
+    const UInt_t *hitnum = track->fPointIDs;
+    for(UInt_t h=0; h<nHits; h++){
+       
+        UInt_t idTrack = hitnum[h];
+        Int_t sliceTrack = (idTrack>>25) & 0x7f;
+        Int_t patchTrack = (idTrack>>22) & 0x7;
+        UInt_t pos = idTrack&0x3fffff;
+          
+        // use the fClustersArray that was filled in the cluster loop
+        if( !fClustersArray[sliceTrack][patchTrack]  ) continue;
+        if( fNSpacePoints[sliceTrack][patchTrack]<pos ) HLTError("Space point array out of boundaries!");
+	
+	Float_t resy = 0., resz = 0.;
+     
+        FillResidual(pos,sliceTrack,patchTrack,resy,resz);
+        fClusters->Fill( (fClustersArray[sliceTrack][patchTrack])[pos].fCharge, (fClustersArray[sliceTrack][patchTrack])[pos].fQMax, resy, resz, GetEventId() );
+
+        usedSpacePoints++;
+    }
+    UChar_t *tmpP = (UChar_t*)track;
+    tmpP += sizeof(AliHLTExternalTrackParam)+track->fNPoints*sizeof(UInt_t);
+    track = (AliHLTExternalTrackParam*)tmpP;
+  }
+
+
+/*  //HLTDebug ( "Input Data - TPC cluster - Slice/Patch: %d/%d.", slice, partition );
   AliHLTTPCTrackletData* trackData = (AliHLTTPCTrackletData*) iter->fPtr;
   AliHLTUInt32_t nTracks = trackData->fTrackletCnt;
   fTracksArray->FillTracksChecked(trackData->fTracklets,trackData->fTrackletCnt,iter->fSize,slice,true);
-  tt += nTracks;
-  //HLTInfo("TrackHisto found %d Tracks in slice %d patch %d", nTracks, slice, patch);
+  
+  //HLTInfo("TrackHisto found %d Tracks in slice %d partition %d", nTracks, slice, partition);
   AliHLTTPCTrackSegmentData *tracks = (AliHLTTPCTrackSegmentData*) trackData->fTracklets;
   
   for(AliHLTUInt32_t i=0;i<nTracks;i++){
@@ -292,40 +316,44 @@ void AliHLTTPCTrackHistoComponent::ReadTracks(const AliHLTComponentBlockData* it
     UChar_t *tmpP = (UChar_t*)tracks;
     tmpP += sizeof(AliHLTTPCTrackSegmentData)+tracks->fNPoints*sizeof(UInt_t);
     tracks = (AliHLTTPCTrackSegmentData*)tmpP;
-  } 
+  } */
 }
 
 void AliHLTTPCTrackHistoComponent::PushHisto(){
+// see header file for class documentation
 
-    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(0,35,0,5);
-    PushBack( (TObject*) fTracks,kAliHLTDataTypeTNtuple, fSpecification);   
-    PushBack( (TObject*) fClusters,kAliHLTDataTypeTNtuple, fSpecification);   
-  
+    AliHLTUInt32_t fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(fMinSlice,fMaxSlice,fMinPartition,fMaxPartition);
+    PushBack( (TObject*)fTracks,  kAliHLTDataTypeTNtuple, fSpecification);   
+    PushBack( (TObject*)fClusters,kAliHLTDataTypeTNtuple, fSpecification);     
 }
-void AliHLTTPCTrackHistoComponent::FillResidual( UInt_t pos,AliHLTUInt8_t slice,AliHLTUInt8_t patch,Float_t& resy,Float_t& resz){
 
-  AliHLTTPCSpacePointData *cl =  &fClustersArray[slice][patch][pos];
-  if(!cl){return;}
+void AliHLTTPCTrackHistoComponent::FillResidual(UInt_t pos,AliHLTUInt8_t slice,AliHLTUInt8_t partition,Float_t& resy,Float_t& resz){
+// see header file for class documentation
+
+  AliHLTTPCSpacePointData *cl =  &fClustersArray[slice][partition][pos];
+  if(!cl) return;
 
   AliHLTTPCTrack *gtrack = NULL;
 
-  for(int i=0;i<fTracksArray->GetNTracks();i++){
-    AliHLTTPCTrack *tt = fTracksArray->GetCheckedTrack(i); 
-    UInt_t *hitnum =tt->GetHitNumbers();
-    Int_t nHits = tt->GetNHits();
-    for(Int_t h=0; h<nHits; h++){
-      UInt_t id=hitnum[h];
-      Int_t Tslice = (id>>25) & 0x7f;
-      Int_t Tpatch = (id>>22) & 0x7;
-      UInt_t Tpos = id&0x3fffff; 
-      if(Tslice==slice && Tpatch==patch && Tpos==pos) {
-	gtrack = tt; 
-	break;
-      }
-    }
-  }
-  
-  if(!gtrack){return;}
+   for(int i=0;i<fTracksArray->GetNTracks();i++){
+       
+       AliHLTTPCTrack *tt = fTracksArray->GetCheckedTrack(i); 
+       UInt_t *hitnum =tt->GetHitNumbers();
+       Int_t nHits = tt->GetNHits();
+         
+ 	for(Int_t h=0; h<nHits; h++){
+ 	    UInt_t id=hitnum[h];
+             Int_t Tslice = (id>>25) & 0x7f;
+             Int_t Tpatch = (id>>22) & 0x7;
+             UInt_t Tpos = id&0x3fffff; 
+             if(Tslice==slice && Tpatch==partition && Tpos==pos){
+ 	       gtrack = tt; 
+ 	       break;
+             }
+         }
+   }
+   
+  if(!gtrack) return;
 
   Int_t tslice = gtrack->GetSector();
   Double_t radius = gtrack->GetRadius();      // radius
@@ -389,8 +417,7 @@ void AliHLTTPCTrackHistoComponent::FillResidual( UInt_t pos,AliHLTUInt8_t slice,
        
        resy = deltaY;
        resz = deltaZ;
-  }
-  else{
+  } else {
     resy = -1000;
     resz = -1000;
   }

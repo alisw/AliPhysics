@@ -113,15 +113,20 @@ private:
   void PushHisto();
   void FillResidual( UInt_t pos,AliHLTUInt8_t slice,AliHLTUInt8_t patch,Float_t& resy,Float_t& resz);
  
-  TNtuple *fClusters;                                              //! transient  
-  TNtuple *fTracks;                                                //! transient
+  AliHLTUInt8_t fMinSlice;     //! transient
+  AliHLTUInt8_t fMaxSlice;     //! transient
+  AliHLTUInt8_t fMinPartition; //! transient
+  AliHLTUInt8_t fMaxPartition; //! transient
+ 
+  TNtuple *fClusters;                             //! transient  
+  TNtuple *fTracks;                               //! transient
 
-  vector<UInt_t> fTrackClusterID[36][6];                           //! transient
+  vector<UInt_t> fTrackClusterID[36][6];          //! transient
+ 
+  AliHLTTPCTrackArray     *fTracksArray;          //! transient
+  AliHLTTPCSpacePointData *fClustersArray[36][6]; //! transient
+  UInt_t                   fNSpacePoints[36][6];  //! transient
 
-  AliHLTTPCTrackArray *fTracksArray;                               //! transient
-  AliHLTTPCSpacePointData *fClustersArray[36][6];                  //! transient
-  UInt_t fNcl[36][6];                                              //! transient
-  
   ClassDef(AliHLTTPCTrackHistoComponent, 1);
 
 };
