@@ -133,7 +133,8 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
     return -1;
   }
 
-  if(!GetNDaughters()) {
+  Int_t ndg=GetNDaughters();
+  if(!ndg) {
     AliError("No daughters available");
     return -1;
   }
@@ -143,10 +144,10 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
 
   if(lab2Prong<0) return -1;
 
-  Int_t *dgLabels = new Int_t[GetNDaughters()];
+  Int_t dgLabels[10];
 
   // loop on daughters and write labels
-  for(Int_t i=0; i<GetNDaughters(); i++) {
+  for(Int_t i=0; i<ndg; i++) {
     AliVTrack *trk = (AliVTrack*)GetDaughter(i);
     Int_t lab = trk->GetLabel();
     if(lab==-1) { // this daughter is the 2prong
@@ -158,11 +159,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
     dgLabels[i] = lab;
   }
 
-  Int_t labMother = AliAODRecoDecay::MatchToMC(pdgabs,mcArray,dgLabels);
-
-  delete [] dgLabels; dgLabels=NULL;
-
-  return labMother;
+  return AliAODRecoDecay::MatchToMC(pdgabs,mcArray,dgLabels,ndg);
 }
 //-----------------------------------------------------------------------------
 Bool_t AliAODRecoCascadeHF::SelectDstar(const Double_t *cutsDstar,
