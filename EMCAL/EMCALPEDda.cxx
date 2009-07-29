@@ -213,9 +213,11 @@ int main(int argc, char **argv) {
   // closing down; see if we can delete our analysis helper also
   //
   delete calibPedestal;
+  /* // AliCaloAltroMapping no longer appears to be delete-able
   for(Int_t iFile=0; iFile<kNRCU; iFile++) {
     if (mapping[iFile]) delete mapping[iFile];
   }
+  */
 
   /* store the result file on FES */
 #ifdef LOCAL_DEBUG
