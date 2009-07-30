@@ -467,7 +467,7 @@ void AliAnalysisManager::PackOutput(TList *target)
                } else {
                   if (output->GetData()->InheritsFrom(TTree::Class())) {
                      TTree *tree = (TTree*)output->GetData();
-                     tree->SetDirectory(file);
+                     // tree->SetDirectory(file);
                      tree->AutoSave();
                   } else {
                      output->GetData()->Write();
