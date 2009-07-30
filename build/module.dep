@@ -12,7 +12,7 @@ HERWIG/module.mk:	HERWIG/libherwig.pkg
 HIJING/module.mk:	HIJING/libhijing.pkg
 HLT/module.mk:		HLT/bindHLTdumpraw.pkg  HLT/libAliHLTRCU.pkg HLT/libHLTbase.pkg HLT/libAliHLTComp.pkg HLT/libAliHLTSample.pkg HLT/libHLTinterface.pkg HLT/libAliHLTHOMER.pkg HLT/libAliHLTTPC.pkg HLT/libHLTrec.pkg HLT/libAliHLTITS.pkg HLT/libAliHLTTRD.pkg HLT/libHLTshuttle.pkg HLT/libAliHLTMUON.pkg HLT/libAliHLTTrigger.pkg HLT/libHLTsim.pkg HLT/libAliHLTPHOS.pkg HLT/libAliHLTEMCAL.pkg HLT/libAliHLTUtil.pkg HLT/libHLTpendolino.pkg
 ITS/module.mk:		ITS/libITSbase.pkg ITS/libITSsim.pkg ITS/libITSrec.pkg
-JETAN/module.mk:	JETAN/libJETAN.pkg JETAN/libJETANMC.pkg
+JETAN/module.mk:	JETAN/libJETAN.pkg JETAN/libFASTJETAN.pkg
 MICROCERN/module.mk:	MICROCERN/libmicrocern.pkg
 MONITOR/module.mk:	MONITOR/libMONITOR.pkg MONITOR/binmonitorGDC.pkg MONITOR/binmonitorCheck.pkg MONITOR/binderoot.pkg
 MUON/module.mk:		MUON/binmchview.pkg MUON/libMUONgeometry.pkg MUON/libMUONshuttle.pkg MUON/libMUONbase.pkg MUON/libMUONgraphics.pkg  MUON/libMUONsim.pkg MUON/libMUONcalib.pkg MUON/libMUONmapping.pkg MUON/libMUONtrigger.pkg MUON/libMUONcore.pkg MUON/libMUONraw.pkg MUON/libMUONevaluation.pkg  MUON/libMUONrec.pkg
