@@ -40,6 +40,12 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
   virtual ~AliHLTEsdManagerImplementation();
 
   /**
+   * Inherited from base class, see AliHLTEsdManager::SetOption() for
+   * documentation.
+   */
+  virtual int SetOption(const char* option);
+
+  /**
    * Convert data buffer to ESD.
    * The buffer is supposed to describe a streamed AliESDEvent object.
    * If no target object is specified, the ESD is written to a file AliHLTdetESDs.root,
@@ -185,8 +191,10 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
 
   /** target directory */
   TString fDirectory; //!transient
+  /** write local files */
+  bool fWriteLocal; //!transient
 
-  ClassDef(AliHLTEsdManagerImplementation, 1)
+  ClassDef(AliHLTEsdManagerImplementation, 2)
 };
 
 #endif

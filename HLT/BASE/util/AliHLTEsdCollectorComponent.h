@@ -25,6 +25,9 @@ class AliHLTEsdManager;
  * multiple events into one file. It does not implement merging of ESDs
  * from one event but several origins.
  *
+ * The file name of the ESD file is derived from the origin of the ESD data
+ * block.
+ *
  * <h2>General properties:</h2>
  *
  * Component ID: \b EsdCollector                                      <br>
@@ -37,7 +40,9 @@ class AliHLTEsdManager;
  *
  * <h2>Optional arguments:</h2>
  * The only AliHLTFileWriter argument of relevance is the \em -directory
- * argument. See AliHLTFileWriter for full list of arguments.
+ * argument. See AliHLTFileWriter for full list of arguments. Note: The
+ * file name of the ESD file is derieved from the origin of the ESD
+ * data block.
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->

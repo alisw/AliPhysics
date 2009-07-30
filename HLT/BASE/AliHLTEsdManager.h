@@ -53,6 +53,17 @@ class AliHLTEsdManager : public AliHLTLogging {
   static void Delete(AliHLTEsdManager* instance);
 
   /**
+   * Set the options for the ESD merging and writing
+   * Takes a string of blank separated options.
+   * \li -writelocal   use local file writing in the specified diectory
+   *                   The file name is derived from the data origin
+   * \li -directory=<> Set the directory path
+   *                   This makes the SetDirectory method obsolete
+   * @return neg error code if failed
+   */
+  virtual int SetOption(const char* option)=0;
+
+  /**
    * Convert data buffer to ESD.
    * The buffer is supposed to describe a streamed AliESDEvent object.
    * If no target object is specified, the ESD is written to a file AliHLTdetESDs.root,

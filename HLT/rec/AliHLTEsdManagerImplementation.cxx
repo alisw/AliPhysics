@@ -42,8 +42,9 @@ ClassImp(AliHLTEsdManagerImplementation)
 
 AliHLTEsdManagerImplementation::AliHLTEsdManagerImplementation()
   :
-  fESDs(),
-  fDirectory()
+  fESDs()
+  , fDirectory()
+  , fWriteLocal(false)
 {
   // see header file for class documentation
   // or
@@ -61,6 +62,35 @@ AliHLTEsdManagerImplementation::~AliHLTEsdManagerImplementation()
     }
     fESDs[i]=NULL;
   }
+}
+
+int AliHLTEsdManagerImplementation::SetOption(const char* option)
+{
+  // see header file for class documentation
+  int iResult=0;
+  TString strOptions=option;
+  TObjArray* pTokens=strOptions.Tokenize(" ");
+  if (pTokens) {
+    if (pTokens->GetEntriesFast()>0) {
+      for (int n=0; n<pTokens->GetEntriesFast(); n++) {
+	TString data=((TObjString*)pTokens->At(n))->GetString();
+	if (data.IsNull()) continue;
+
+	if (data.CompareTo("-writelocal")==0) {
+	  fWriteLocal=true;
+	} else if (data.Contains("-directory=")) {
+	  data.ReplaceAll("-directory=", "");
+	  SetDirectory(data.Data());
+	} else {
+	  HLTError("unknown argument %s", data.Data());
+	  iResult=-EINVAL;
+	  break;
+	}
+      }
+    }
+    delete pTokens;
+  }
+  return iResult;
 }
 
 AliHLTEsdManagerImplementation::AliHLTEsdListEntry* AliHLTEsdManagerImplementation::Find(AliHLTComponentDataType dt) const
@@ -130,7 +160,15 @@ int AliHLTEsdManagerImplementation::WriteESD(const AliHLTUInt8_t* pBuffer, AliHL
 	    warningPrinted=true;
 #endif //HAVE_NOT_ESD_COPY
 	  }
-	  entry->WriteESD(pESD, eventno);
+
+	  // Matthias 2009-06-06: writing of individual ESD files for the different origins was a
+	  // first attempt when functionality was missing in the AliRoot framework and remained as
+	  // debugging feature. ESD merging is now implemented and data written to the hltEsd, so
+	  // the feature is now disabled by default because it causes increasing memory consumption.
+	  // Presumably not because of a memory leak but the way the internal TTree is used and kept
+	  // in memory.
+	  // Writing of local files can be optionally switched on as e.g. by the EsdCollector component.
+	  if (fWriteLocal) entry->WriteESD(pESD, eventno);
 	} else {
 	  HLTError("internal mismatch, can not create list entry");
 	  iResult=-ENOMEM;
@@ -249,13 +287,6 @@ int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(AliESDEvent* pS
 {
   // see header file for class documentation
   int iResult=0;
-
-  // Matthias 2009-06-06: writing of individual ESD files for the different origins was a
-  // first attempt when functionality was missing in the AliRoot framework and remained as
-  // debugging feature. ESD merging is now implemented and data written to the hltEsd, so
-  // the feature is now disabled because it causes increasing memory consumption. Presumably
-  // not because of a memory leak but the way the internal TTree is used and kept in memory. 
-  return 0;
 
 #ifndef HAVE_NOT_ESD_COPY
   if (fName.IsNull()) {

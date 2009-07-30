@@ -60,7 +60,12 @@ int AliHLTEsdCollectorComponent::InitWriter()
   if (GetExtension().IsNull()) SetExtension("root");
 
   if ((fpManager=AliHLTEsdManager::New())) {
-    fpManager->SetDirectory(GetDirectory().Data());
+    TString option="-writelocal";
+    if (!GetDirectory().IsNull()) {
+      option+=" -directory=";
+      option+=GetDirectory();
+    }
+    iResult=fpManager->SetOption(option.Data());
   } else {
     HLTError("can not find AliHLTEsdManager class descriptor");
     iResult=-ENODEV;
