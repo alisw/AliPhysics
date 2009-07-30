@@ -2,12 +2,10 @@ dn: det=GRP,o=shuttle_prod,dc=cern,dc=ch
 objectClass: detectorConfig
 det: GRP
 strictRunOrder: 0
-responsible: svetozar.kapusta@cern.ch
 responsible: peter.chochula@cern.ch
 responsible: Marco.Boccioli@cern.ch
 responsible: Anton.Jusko@cern.ch
 responsible: rl@hep.ph.bham.ac.uk
-
 
 dn: dcsHost=alidcsamanda.cern.ch,det=GRP,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
