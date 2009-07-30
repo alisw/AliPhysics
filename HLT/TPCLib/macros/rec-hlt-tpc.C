@@ -16,7 +16,8 @@
  *   aliroot -b -q rec-hlt-tpc.C'("input.root")'
  * </pre>
  *
- * The second parameter changes which clusterfinder you use:
+ * The ClusterFinder uses the offline altro decoder v3 by default. The former
+ * CF components can be selected by means of the second parameter:
  *    - decoder, uses TPCClusterFinderDecoder. This is default.
  *    - packed, uses TPCClusterFinderPacked
  *
@@ -61,7 +62,7 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   //
   // Setting up which output to give
   //
-  bool bUseClusterFinderDecoder=true;
+  int clusterFinderType=0; // 0 = v3; 1 = decoder; 2 = packed (offline v1)
   bool bUseCA=true;   // use the CA tracker and merger
   TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=";
   Bool_t esdout=kFALSE, dumpout=kFALSE, histout=kFALSE, chout=kFALSE, cdout=kFALSE;
@@ -94,11 +95,11 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
 	continue;
       }
       if (argument.CompareTo("decoder",TString::kIgnoreCase)==0) {
-	bUseClusterFinderDecoder = kTRUE;
+	clusterFinderType = 1;
 	continue;
       }
       if (argument.CompareTo("packed",TString::kIgnoreCase)==0) {
-	bUseClusterFinderDecoder = kFALSE;
+	clusterFinderType = 2;
 	continue;
       }
       if (argument.CompareTo("trackhistogram",TString::kIgnoreCase)==0) {
@@ -188,10 +189,12 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
 
       // cluster finder components
       cf.Form("CF_%02d_%d", slice, part);
-      if (bUseClusterFinderDecoder) {
+      if (clusterFinderType==1) {
 	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderDecoder", publisher.Data(), "-timebins 1001");
-      } else {
+      } else if (clusterFinderType==2) {
 	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderPacked", publisher.Data(), "-timebins 1001 -sorted");
+      } else {
+	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinder32bit", publisher.Data(), "-timebins 1001");
       }
       if (trackerInput.Length()>0) trackerInput+=" ";
       trackerInput+=cf;
