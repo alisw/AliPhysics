@@ -623,7 +623,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
       qcCommonHistRes4 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults4thOrderQC"));
       if(qcCommonHistRes4) {
 	flowValue[binQC4-1] = (qcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);
-	//flowError[binQC4-1] = (qcCommonHistRes4->GetHistIntFlow())->GetBinError(1);
+	flowError[binQC4-1] = (qcCommonHistRes4->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[binQC4RP-1] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinContent(1);
 	//flowErrorRP[binQC4RP-1] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[binQC4POI-1] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinContent(1);
@@ -633,7 +633,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
       qcCommonHistRes6 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults6thOrderQC"));
       if(qcCommonHistRes6) {
 	flowValue[binQC6-1] = (qcCommonHistRes6->GetHistIntFlow())->GetBinContent(1);
-	//flowError[binQC6-1] = (qcCommonHistRes6->GetHistIntFlow())->GetBinError(1);
+	flowError[binQC6-1] = (qcCommonHistRes6->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[binQC6RP-1] = (qcCommonHistRes6->GetHistIntFlowRP())->GetBinContent(1);
 	//flowErrorRP[binQC6RP-1] = (qcCommonHistRes6->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[binQC6POI-1] = (qcCommonHistRes6->GetHistIntFlowPOI())->GetBinContent(1);
