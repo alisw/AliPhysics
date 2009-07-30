@@ -162,7 +162,7 @@ Bool_t AliTRDgtuSim::RunGTUFromTrackletFile(TString filename, Int_t event, Int_t
 Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd) 
 {
     if (!LoadTracklets(loader)) {
-	AliError("Could not load the tracklets. Aborting ...");
+	AliError("Could not load the tracklets. Nothing done ...");
 	return kFALSE;
     }
 

@@ -333,7 +333,7 @@ Bool_t AliTRDgtuTMU::RunTrackFinder(Int_t zch, TList* /* ListOfTracks */)
        if (0 <= ptrA[reflayer] && ptrA[reflayer] < notr[reflayer])
 	 trkRA = (AliTRDtrackletGTU*) fZChannelTracklets[reflayer][zch].At(ptrA[reflayer]);
        else  {
-	 AliDebug(10,Form("No valid tracklet in the reference at ptr: %i! Aborting!", ptrA[reflayer]));
+	 AliDebug(10,Form("No valid tracklet in the reference at ptr: %i! Nothing done!", ptrA[reflayer]));
 	 break; 
        }
 
