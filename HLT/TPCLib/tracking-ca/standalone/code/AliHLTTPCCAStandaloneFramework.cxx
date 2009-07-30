@@ -28,7 +28,7 @@
 
 //If not building GPU Code then build dummy functions to link against
 #ifndef BUILD_GPU
-int AliHLTTPCCAGPUTracker::InitGPU() {return(0);}
+int AliHLTTPCCAGPUTracker::InitGPU(int forceDeviceID) {return(0);}
 void StandalonePerfTime(int i) {}
 //template <class T> inline T* AliHLTTPCCAGPUTracker::alignPointer(T* ptr, int alignment) {return(NULL);}
 //bool AliHLTTPCCAGPUTracker::CUDA_FAILED_MSG(cudaError_t error) {return(true);}

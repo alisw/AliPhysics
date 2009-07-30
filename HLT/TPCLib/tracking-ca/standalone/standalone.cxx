@@ -11,7 +11,7 @@
 int main(int argc, char** argv)
 {
 	int i;
-	int RUNGPU = 1, SAVE = 0, DebugLevel = 0, NEvents = 100, StartEvent = 0, noprompt = 0;
+	int RUNGPU = 1, SAVE = 0, DebugLevel = 0, NEvents = 100, StartEvent = 0, noprompt = 0, cudaDevice = -1;
 	AliHLTTPCCAStandaloneFramework &hlt = AliHLTTPCCAStandaloneFramework::Instance();
 	char EventsDir[256] = "";
 
@@ -42,6 +42,11 @@ int main(int argc, char** argv)
 	if ( !strcmp( argv[i], "-DEBUG" ) && argc >= i)
 	{
 		DebugLevel = atoi(argv[i + 1]);
+	}
+
+	if ( !strcmp( argv[i], "-CUDA" ) && argc >= i)
+	{
+		cudaDevice = atoi(argv[i + 1]);
 	}
 	
 	if ( !strcmp( argv[i], "-N" ) && argc >= i)
