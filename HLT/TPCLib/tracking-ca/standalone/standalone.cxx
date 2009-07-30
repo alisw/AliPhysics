@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 	else
 		printf("Standalone Test Framework for CA Tracker - Using CPU\n");
 
-	if (RUNGPU && hlt.InitGPU())
+	if (RUNGPU && hlt.InitGPU(cudaDevice))
 	{
 		printf("Error Initialising GPU\n");
 		printf("Press a key to exit!\n");

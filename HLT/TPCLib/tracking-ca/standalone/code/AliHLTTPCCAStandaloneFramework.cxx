@@ -292,10 +292,10 @@ void AliHLTTPCCAStandaloneFramework::ReadTracks( std::istream &in )
   //fMerger.Output()->Read( in );
 }
 
-int AliHLTTPCCAStandaloneFramework::InitGPU()
+int AliHLTTPCCAStandaloneFramework::InitGPU(int forceDeviceID)
 {
 	if (fUseGPUTracker) return(1);
-	int retVal = fGPUTracker.InitGPU();
+	int retVal = fGPUTracker.InitGPU(forceDeviceID);
 	fUseGPUTracker = retVal == 0;
 	return(retVal);
 }
