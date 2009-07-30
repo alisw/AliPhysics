@@ -309,6 +309,11 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 			}
 		}
 	}
+	else {
+		Log("Trigger configuration NOT FOUND in DAQ logbook");
+		error |= 16;
+	}
+
 	/*  the DCS should not been used any more to access this stuff!!!
 	// ...or from DCS FXS
 	else{
@@ -345,7 +350,6 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	md.SetComment("Output parameters from the GRP preprocessor.");
 	
 	Bool_t result = kTRUE;
-	Log("Before storing");
 	result = Store("GRP", "Data", grpobj, &md); 
 	delete grpobj;
 	
