@@ -52,6 +52,7 @@ AliFlowCommonHist::AliFlowCommonHist():TNamed(),
   fHistEtaPOI(NULL),
   fHistProMeanPtperBin(NULL),
   fHistQ(NULL),
+  fHarmonic(NULL),
   fHistList(NULL)
 {
   
@@ -72,6 +73,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistEtaPOI(new TH1F(*a.fHistEtaPOI)),
   fHistProMeanPtperBin(new TProfile(*a.fHistProMeanPtperBin)),
   fHistQ(new TH1F(*a.fHistQ)),
+  fHarmonic(new TProfile(*a.fHarmonic)),
   fHistList(NULL)
 {
   // copy constructor
@@ -87,6 +89,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHistEtaRP);          
   fHistList-> Add(fHistEtaPOI);         
   fHistList-> Add(fHistProMeanPtperBin); 
+  fHistList-> Add(fHarmonic);  
   fHistList-> Add(fHistQ);           
   //  TListIter next = TListIter(a.fHistList);
 
@@ -125,6 +128,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
    fHistEtaPOI(NULL),
    fHistProMeanPtperBin(NULL),
    fHistQ(NULL),
+   fHarmonic(NULL),
    fHistList(NULL)
  {
 
@@ -226,6 +230,12 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistQ = new TH1F(sName.Data(), sName.Data(),iNbinsQ, dQMin, dQMax);
   fHistQ ->SetXTitle("Q_{vector}/Mult");
   fHistQ ->SetYTitle("Counts");  
+  
+  //harmonic
+  sName = "Control_Flow_Harmonic_";
+  sName +=anInput;
+  fHarmonic = new TProfile(sName.Data(),sName.Data(),1,0,1);
+  fHarmonic ->SetYTitle("harmonic");
 
   //list of histograms if added here also add in copy constructor
   fHistList = new TList();
@@ -238,9 +248,9 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHistPhiPOI);         
   fHistList-> Add(fHistEtaRP);          
   fHistList-> Add(fHistEtaPOI);         
-  fHistList-> Add(fHistProMeanPtperBin); 
+  fHistList-> Add(fHistProMeanPtperBin);
+  fHistList-> Add(fHarmonic);  
   fHistList-> Add(fHistQ);           
-
 
 
 }
@@ -262,6 +272,7 @@ AliFlowCommonHist::~AliFlowCommonHist()
   delete fHistEtaPOI;
   delete fHistProMeanPtperBin;
   delete fHistQ;
+  delete fHarmonic;
   delete fHistList;
 }
 

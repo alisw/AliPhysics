@@ -50,7 +50,8 @@ class AliFlowCommonHist: public TNamed {
   TH1F*     GetHistEtaRP()           {return fHistEtaRP; } ;  
   TH1F*     GetHistEtaPOI()          {return fHistEtaPOI;  } ;   
   TProfile* GetHistProMeanPtperBin() {return fHistProMeanPtperBin; } ;
-  TH1F*     GetHistQ()               {return fHistQ; } ;            
+  TH1F*     GetHistQ()               {return fHistQ; } ;    
+  TProfile* GetHarmonic()            {return fHarmonic; } ;        
   TList*    GetHistList()            {return fHistList;} ;  
 
   virtual Double_t  Merge(TCollection *aList);  //merge function
@@ -75,6 +76,7 @@ class AliFlowCommonHist: public TNamed {
   TH1F*     fHistEtaPOI;          //eta distribution for POI selection
   TProfile* fHistProMeanPtperBin; //mean pt for each pt bin (for POI selection)
   TH1F*     fHistQ;               //Qvector distribution
+  TProfile* fHarmonic;            //harmonic 
 
   TList*    fHistList;            //list to hold all histograms  
 

@@ -29,13 +29,13 @@ Bool_t QA = kTRUE;
 Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 
-void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 100, 
+//void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 100, 
 		 //const Char_t* dataDir="/data/alice2/kolk/PP/LHC09a4/81119", Int_t offset = 0)
 		 //const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0)
-		 const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
-//void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 10000, 
-		 //	 const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8158X", Int_t offset = 0)
-		 //const Char_t* dataDir="/PWG2/akisiel/Therminator_c2030", Int_t offset=0)
+		 //const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
+void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 1000, 
+		 //const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8158X", Int_t offset = 0)
+		 const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
 {
   TStopwatch timer;
   timer.Start();
@@ -157,8 +157,9 @@ void LoadLibraries(const anaModes mode) {
     //
     
     //  set to debug root versus if needed
-    //  TProof::Mgr("alicecaf")->SetROOTVersion("v5-21-01-alice_dbg");
-    //  TProof::Mgr("alicecaf")->SetROOTVersion("v5-21-01-alice");
+    //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a_dbg");
+    TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a");
+    
     
     // Connect to proof
     // Put appropriate username here
@@ -197,10 +198,10 @@ void LoadLibraries(const anaModes mode) {
     gProof->UploadPackage("CORRFW.par");
     gProof->EnablePackage("CORRFW");
     // Enable Flow Analysis
-    //    gProof->ClearPackage("PWG2flowCommon");
+    gProof->ClearPackage("PWG2flowCommon");
     gProof->UploadPackage("PWG2flowCommon.par");
     gProof->EnablePackage("PWG2flowCommon");
-    //    gProof->ClearPackage("PWG2flowTasks");
+    gProof->ClearPackage("PWG2flowTasks");
     gProof->UploadPackage("PWG2flowTasks.par");
     gProof->EnablePackage("PWG2flowTasks");
     //
