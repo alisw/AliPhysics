@@ -423,7 +423,7 @@ c.....select flavor and z-value .....................................
           idflb=9
       endif
 
-      if(alfm/log(q2*z*(1.-z)/qcdlam).lt.rangen()) goto 390
+      if(alfm.lt.rangen()*log(q2*z*(1.-z)/qcdlam)) goto 390
 
       if(ij(1).ne.j1.or.ij(2).eq.0)then
         if(E.lt.sqrt(q2))goto 390
