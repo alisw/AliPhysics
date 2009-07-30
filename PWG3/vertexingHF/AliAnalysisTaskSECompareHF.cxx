@@ -28,6 +28,7 @@
 
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
+#include "AliESDtrack.h"
 #include "AliAODTrack.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
@@ -121,7 +122,7 @@ void AliAnalysisTaskSECompareHF::UserCreateOutputObjects()
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
 
-  fNtupleCmp = new TNtuple("fNtupleCmp","Charm comparison","pdg:nprongs:VxRec:VxTrue:ErrVx:VyRec:VyTrue:ErrVy:VzRec:VzTrue:ErrVz:Chi2toNDF:PtRec:Mrec");
+  fNtupleCmp = new TNtuple("fNtupleCmp","Charm comparison","pdg:nprongs:VxRec:VxTrue:ErrVx:VyRec:VyTrue:ErrVy:VzRec:VzTrue:ErrVz:Chi2toNDF:PtRec:Mrec:CPta:Prodd0");
 
   return;
 }
@@ -209,6 +210,15 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 
     // get parent AliAODRecoDecayHF
     nprongs= vtx->GetNDaughters();
+    // check that the daughters have kITSrefit and kTPCrefit
+    Bool_t allDgOK=kTRUE;
+    for(Int_t idg=0; idg<nprongs; idg++) {
+      AliAODTrack *track = (AliAODTrack*)vtx->GetDaughter(idg);
+      if(!(track->GetStatus()&AliESDtrack::kITSrefit)) allDgOK=kFALSE;
+      if(!(track->GetStatus()&AliESDtrack::kTPCrefit)) allDgOK=kFALSE;
+    }
+    if(!allDgOK) continue;
+
 
     switch(nprongs) {
     case 2: // look for D0->Kpi
@@ -223,23 +233,25 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	  unsetvtx=kTRUE;
 	}
 	okD0=0; okD0bar=0; 
-	//if(d2->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) { // no cuts, otherwise we bias the resolution
-	AliAODMCParticle *dMC = (AliAODMCParticle*)mcArray->At(lab);
-	pdg = dMC->GetPdgCode();
-	invmass = (pdg==421 ? d2->InvMassD0() : d2->InvMassD0bar());
-	fHistMass->Fill(invmass);
-	// Post the data already here
-	PostData(1,fOutput);
-	// get a daughter for true pos of decay vertex
-	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
-	dg0MC->XvYvZv(posTrue);
-	fNtupleCmp->Fill(pdg,nprongs,
-			 posRec[0],posTrue[0],errx,
-			 posRec[1],posTrue[1],erry,
-			 posRec[2],posTrue[2],errz,
-			 d2->GetReducedChi2(),d2->Pt(),invmass);
-	PostData(2,fNtupleCmp);
-	//}
+	if(d2->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) { // beware: cuts may bias the resolution!
+	  AliAODMCParticle *dMC = (AliAODMCParticle*)mcArray->At(lab);
+	  pdg = dMC->GetPdgCode();
+	  invmass = (pdg==421 ? d2->InvMassD0() : d2->InvMassD0bar());
+	  fHistMass->Fill(invmass);
+	  // Post the data already here
+	  PostData(1,fOutput);
+	  // get a daughter for true pos of decay vertex
+	  AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
+	  dg0MC->XvYvZv(posTrue);
+	  Float_t tmp[16]={(Float_t)pdg,(Float_t)nprongs,
+			   (Float_t)posRec[0],(Float_t)posTrue[0],(Float_t)errx,
+			   (Float_t)posRec[1],(Float_t)posTrue[1],(Float_t)erry,
+			   (Float_t)posRec[2],(Float_t)posTrue[2],(Float_t)errz,
+			   (Float_t)d2->GetReducedChi2(),(Float_t)d2->Pt(),(Float_t)invmass,
+			   (Float_t)d2->CosPointingAngle(),(Float_t)d2->Prodd0d0()};
+	  fNtupleCmp->Fill(tmp);
+	  PostData(2,fNtupleCmp);
+	}
 	if(unsetvtx) d2->UnsetOwnPrimaryVtx();
       }
       break;
@@ -260,11 +272,13 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	// get a daughter for true pos of decay vertex
 	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
 	dg0MC->XvYvZv(posTrue);
-	fNtupleCmp->Fill(pdg,nprongs,
-			 posRec[0],posTrue[0],errx,
-			 posRec[1],posTrue[1],erry,
-			 posRec[2],posTrue[2],errz,
-			 d3->GetReducedChi2(),d3->Pt(),invmass);
+	Float_t tmp[16]={(Float_t)pdg,(Float_t)nprongs,
+			 (Float_t)posRec[0],(Float_t)posTrue[0],(Float_t)errx,
+			 (Float_t)posRec[1],(Float_t)posTrue[1],(Float_t)erry,
+			 (Float_t)posRec[2],(Float_t)posTrue[2],(Float_t)errz,
+			 (Float_t)d3->GetReducedChi2(),(Float_t)d3->Pt(),(Float_t)invmass,
+			 (Float_t)d3->CosPointingAngle(),(Float_t)(d3->Getd0Prong(0)*d3->Getd0Prong(1)*d3->Getd0Prong(2))};
+	fNtupleCmp->Fill(tmp);
 	PostData(2,fNtupleCmp);
 	//}
 	if(unsetvtx) d3->UnsetOwnPrimaryVtx();
@@ -289,11 +303,13 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	// get a daughter for true pos of decay vertex
 	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
 	dg0MC->XvYvZv(posTrue);
-	fNtupleCmp->Fill(pdg,nprongs,
-			 posRec[0],posTrue[0],errx,
-			 posRec[1],posTrue[1],erry,
-			 posRec[2],posTrue[2],errz,
-			 d4->GetReducedChi2(),d4->Pt(),invmass);
+	Float_t tmp[16]={(Float_t)pdg,(Float_t)nprongs,
+			 (Float_t)posRec[0],(Float_t)posTrue[0],(Float_t)errx,
+			 (Float_t)posRec[1],(Float_t)posTrue[1],(Float_t)erry,
+			 (Float_t)posRec[2],(Float_t)posTrue[2],(Float_t)errz,
+			 (Float_t)d4->GetReducedChi2(),(Float_t)d4->Pt(),(Float_t)invmass,
+			 (Float_t)d4->CosPointingAngle(),(Float_t)(d4->Getd0Prong(0)*d4->Getd0Prong(1)*d4->Getd0Prong(2)*d4->Getd0Prong(3))};
+	fNtupleCmp->Fill(tmp);
 	PostData(2,fNtupleCmp);
 	//}
 	if(unsetvtx) d4->UnsetOwnPrimaryVtx();
