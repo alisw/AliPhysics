@@ -107,10 +107,10 @@ AliTRDchamberTimeBin &AliTRDchamberTimeBin::operator=(const AliTRDchamberTimeBin
 //_____________________________________________________________________________
 void AliTRDchamberTimeBin::Clear(const Option_t *) 
 { 
-  for(Int_t it = 0; it<kMaxClustersLayer; it++){
-    if(IsOwner()) delete fClusters[it];
-    fClusters[it] = NULL;
-  } 
+  if(IsOwner())
+    for(Int_t it = 0; it<kMaxClustersLayer; it++)
+      delete fClusters[it];
+  memset(fClusters,0,kMaxClustersLayer*sizeof(fClusters[0]));
   fN = 0; 
 }
 
