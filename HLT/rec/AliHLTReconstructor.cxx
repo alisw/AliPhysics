@@ -104,6 +104,8 @@ void AliHLTReconstructor::Init()
     return;
   }
 
+  TString esdManagerOptions;
+
   // the options scan has been moved to AliHLTSystem, the old code
   // here is kept to be able to run an older version of the HLT code
   // with newer AliRoot versions.
@@ -129,6 +131,11 @@ void AliHLTReconstructor::Init()
 	}
       } else if (token.Contains("alilog=off")) {
 	pSystem->SwitchAliLog(0);
+      } else if (token.Contains("esdmanager=")) {
+	token.ReplaceAll("esdmanager=", "");
+	token.ReplaceAll(","," ");
+	token.ReplaceAll("'","");
+	esdManagerOptions=token;
       } else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
 	libs+=token;
 	libs+=" ";
@@ -170,6 +177,7 @@ void AliHLTReconstructor::Init()
   fFctProcessHLTOUT=(void (*)())gSystem->DynFindSymbol("libHLTinterface.so", "AliHLTSystemProcessHLTOUT");
 
   fpEsdManager=AliHLTEsdManager::New();
+  fpEsdManager->SetOption(esdManagerOptions.Data());
 }
 
 void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clustersTree*/) const 

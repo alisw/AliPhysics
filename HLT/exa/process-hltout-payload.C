@@ -22,7 +22,7 @@ void process_hltout_payload(const char* input)
 
   gSystem->Load("libHLTrec");
   AliHLTReconstructor hltRec;
-  hltRec.Init("chains=");
+  hltRec.Init("chains= esdmanager='-writelocal'");
 
   AliRawReader* rawreader=AliRawReader::Create(input);
   if (!rawreader) {
