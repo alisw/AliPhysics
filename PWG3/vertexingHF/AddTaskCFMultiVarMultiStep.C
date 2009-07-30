@@ -278,7 +278,44 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	task->SetFillFromGenerated(kFALSE);
 	task->SetMinITSClusters(minITSClusters);
 	task->SetCFManager(man); //here is set the CF manager
-		
+	
+        //-----------------------------------------------------------//
+        //   create correlation matrix for unfolding - only eta-pt   //
+        //-----------------------------------------------------------//
+
+        Bool_t AcceptanceUnf = kTRUE; // unfold at acceptance level, otherwise PPR
+
+        Int_t thnDim[4];
+        
+        //first half  : reconstructed 
+        //second half : MC
+
+        thnDim[0] = iBin[0];
+        thnDim[2] = iBin[0];
+        thnDim[1] = iBin[1];
+        thnDim[3] = iBin[1];
+
+        THnSparseD* correlation = new THnSparseD("correlation","THnSparse with correlations",4,thnDim);
+        Double_t** binEdges = new Double_t[2];
+
+        // set bin limits
+
+        binEdges[0]= binLim0;
+        binEdges[1]= binLim1;
+
+        correlation->SetBinEdges(0,binEdges[0]);
+        correlation->SetBinEdges(2,binEdges[0]);
+
+        correlation->SetBinEdges(1,binEdges[1]);
+        correlation->SetBinEdges(3,binEdges[1]);
+
+        correlation->Sumw2();
+  
+        // correlation matrix ready
+        //------------------------------------------------//
+
+        task->SetCorrelationMatrix(correlation); // correlation matrix for unfolding
+	
 	// Create and connect containers for input/output
 	
 	// ------ input data ------
@@ -295,14 +332,16 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist0", TH1I::Class(),AliAnalysisManager::kOutputContainer,"output.root");
 	// output Correction Framework Container (for acceptance & efficiency calculations)
 	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,"output.root");
-	
+// Unfolding - correlation matrix
+        AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("corr0", THnSparseD::Class(),AliAnalysisManager::kOutputContainer,"output.root");
+
 	mgr->AddTask(task);
 	
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	mgr->ConnectOutput(task,0,coutput0);
 	mgr->ConnectOutput(task,1,coutput1);
 	mgr->ConnectOutput(task,2,coutput2);
-	
+        mgr->ConnectOutput(task,3,coutput3);
 	return task;
 }
 

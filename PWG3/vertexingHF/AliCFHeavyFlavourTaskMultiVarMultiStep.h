@@ -18,6 +18,7 @@
 //-----------------------------------------------------------------------
 // Class for HF corrections as a function of many variables and step 
 // Author : C. Zampolli, CERN
+// Base class for HF Unfolding - agrelli@uu.nl
 //-----------------------------------------------------------------------
 
 
@@ -31,6 +32,7 @@ class AliCFManager;
 class AliAODRecoDecay;
 class AliAODRecoDecayHF2Prong;
 class AliAODMCParticle;
+class THnSparse;
 
 class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   public:
@@ -54,6 +56,12 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   void     UserCreateOutputObjects();
   void     UserExec(Option_t *option);
   void     Terminate(Option_t *);
+
+ // UNFOLDING
+  void     SetCorrelationMatrix(THnSparse* h) {fCorrelation=h;}
+  void     SetAcceptanceUnf(Bool_t AcceptanceUnf) {fAcceptanceUnf = AcceptanceUnf;}
+  Bool_t   GetAcceptanceUnf() const {return fAcceptanceUnf;}
+
   
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
   void           SetCFManager(AliCFManager* io) {fCFManager = io;}   // global correction manager
@@ -73,6 +81,7 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   Int_t           fPDG;         //  PDG code of searched V0's
   AliCFManager   *fCFManager;   //  pointer to the CF manager
   TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
+  THnSparse* fCorrelation;      //  response matrix for unfolding
   Int_t fCountMC;               //  MC particle found
   Int_t fCountAcc;              //  MC particle found that satisfy acceptance cuts
   Int_t fCountReco;             //  Reco particle found that satisfy cuts
@@ -83,8 +92,9 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   Bool_t fFillFromGenerated;    //  flag to indicate whether data container should be filled 
                                 //  with generated values also for reconstructed particles
   Int_t fMinITSClusters;        //  min n. of ITS clusters for RecoDecay
+  Bool_t fAcceptanceUnf;        //  flag for unfolding before or after cuts.
   
-  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,1); // class for HF corrections as a function of many variables
+  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,2); // class for HF corrections as a function of many variables
 };
 
 #endif
