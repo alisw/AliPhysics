@@ -15,13 +15,21 @@
 //
 //
 
-#include <Riostream.h>
-#include <vector>
-
+#include <Riostream.h> 
 #include <TObject.h>
-#include <TList.h>
-#include <TVector3.h>
+#include <TRefArray.h>
+#include <TMath.h>
+#include "AliESDtrack.h"
+#include "AliAODTrack.h"
+#include "AliVParticle.h"
+#include "AliESDCaloCells.h"
+#include "AliAODCaloCells.h"
+#include "AliESDCaloCluster.h"
+#include "AliAODCaloCluster.h"
 #include "AliJetFinderTypes.h"
+
+class TList;
+class TVector3;
 
 class AliJetUnitArray : public TObject
 {
@@ -68,36 +76,36 @@ class AliJetUnitArray : public TObject
   { 
     fUnitDetectorFlag = detectorflag; 
   } 
-  void SetUnitPxPyPz(Bool_t init, vector<Float_t> v3);
-  void SetUnitEtN(Bool_t init, Float_t et); // Added for background studies
   void SetUnitSignalFlagC(Bool_t init, AliJetFinderUnitSignalFlagType_t flag);
   void SetUnitSignalFlagN(Bool_t init, AliJetFinderUnitSignalFlagType_t flag);
   void SetUnitMass(Float_t mass) {fUnitMass = mass;}
+  void SetUnitTrackRef(TRefArray* trackref)     {fUnitTrackRef = trackref;}
+  void SetUnitCellRef(TRefArray* cellref)       {fUnitCellRef = cellref;}
+  void SetUnitClusterRef(TRefArray* clusterref) {fUnitClusterRef = clusterref;}
 
   // Getter
-  Float_t GetUnitEnergy() const            {return fUnitEnergy;}
-  Float_t GetUnitEta() const               {return fUnitEta;}
-  Float_t GetUnitPhi() const               {return fUnitPhi;} 
-  Float_t GetUnitPx() const                {return fUnitPx;}
-  Float_t GetUnitPy() const                {return fUnitPy;}
-  Float_t GetUnitPz() const                {return fUnitPz;}
-  Float_t GetUnitDeta() const              {return fUnitDeta;}
-  Float_t GetUnitDphi() const              {return fUnitDphi;}         
-  Int_t   GetUnitID() const                {return fUnitID;}
-  Int_t   GetUnitTrackID() const           {return fUnitTrackID;}
-  Int_t   GetUnitEntries() const           {return fUnitNum;}
-  Int_t   GetUnitClusterID() const         {return fUnitClusterID;}
-  Float_t GetUnitMass() const              {return fUnitMass;}
-  Bool_t  GetUnitPxPyPz(Int_t ind, Float_t &px, Float_t &py, Float_t &pz);
-  Bool_t  GetUnitPxPyPzE(Int_t ind, Float_t &px, Float_t &py, Float_t &pz, Float_t &en);
-  Bool_t  GetUnitEtN(Int_t ind, Float_t &et); // Added for background studies
-  Bool_t  GetUnitSignalFlagC(Int_t ind, AliJetFinderUnitSignalFlagType_t &flagc);
-  Bool_t  GetUnitSignalFlagN(Int_t ind, AliJetFinderUnitSignalFlagType_t &flagn);
-  Int_t   GetUnitVectorSize() {return fV.size();}
-  Int_t   GetUnitVectorSizeC() {return fVc.size();}
-  Int_t   GetUnitVectorSizeN() {return fVn.size();}
+  Float_t     GetUnitEnergy() const            {return fUnitEnergy;}
+  Float_t     GetUnitEta() const               {return fUnitEta;}
+  Float_t     GetUnitPhi() const               {return fUnitPhi;} 
+  Float_t     GetUnitPx() const                {return fUnitPx;}
+  Float_t     GetUnitPy() const                {return fUnitPy;}
+  Float_t     GetUnitPz() const                {return fUnitPz;}
+  Float_t     GetUnitDeta() const              {return fUnitDeta;}
+  Float_t     GetUnitDphi() const              {return fUnitDphi;}         
+  Int_t       GetUnitID() const                {return fUnitID;}
+  Int_t       GetUnitTrackID() const           {return fUnitTrackID;}
+  Int_t       GetUnitEntries() const           {return fUnitNum;}
+  Int_t       GetUnitClusterID() const         {return fUnitClusterID;}
+  Float_t     GetUnitMass() const              {return fUnitMass;}
+  Bool_t      GetUnitSignalFlagC(Int_t ind, AliJetFinderUnitSignalFlagType_t &flagc);
+  Bool_t      GetUnitSignalFlagN(Int_t ind, AliJetFinderUnitSignalFlagType_t &flagn);
+  TRefArray*  GetUnitTrackRef() const          {return fUnitTrackRef;}
+  TRefArray*  GetUnitCellRef() const           {return fUnitCellRef;}
+  TRefArray*  GetUnitClusterRef() const        {return fUnitClusterRef;}
 
-  Float_t EtaToTheta(Float_t arg) const;
+  Float_t     EtaToTheta(Float_t arg) const;
+  void        ClearUnitTrackRef();
+  void        ClearUnitCellRef();
 
   AliJetFinderUnitFlagType_t GetUnitFlag() const     
   {
@@ -121,6 +129,8 @@ class AliJetUnitArray : public TObject
   }
 
  protected:
+  AliJetUnitArray(const AliJetUnitArray& rUnit);
+  AliJetUnitArray& operator = (const AliJetUnitArray& rhs);
   Bool_t operator>  ( AliJetUnitArray unit1) const;
   Bool_t operator<  ( AliJetUnitArray unit1) const;
   Bool_t operator== ( AliJetUnitArray unit1) const;
@@ -143,10 +153,11 @@ class AliJetUnitArray : public TObject
   Float_t                            fUnitPy;           // Py of charged track
   Float_t                            fUnitPz;           // Pz of charged track
   Float_t                            fUnitMass;         // Mass of particle
-  vector< vector< Float_t > >                  fV;      //|| vector to store part information in each cell
   vector< AliJetFinderUnitSignalFlagType_t >   fVc;     //|| added for background studies
   vector< AliJetFinderUnitSignalFlagType_t >   fVn;     //|| added for background studies
-  vector< Float_t >                            fVet;    //|| added for background studies          
+  TRefArray*                         fUnitTrackRef;     //! pointer to array of references to esd tracks
+  TRefArray*                         fUnitCellRef;      //! pointer to array of references to esd cells
+  TRefArray*                         fUnitClusterRef;   //! pointer to array of references to esd clusters
 
   ClassDef(AliJetUnitArray,1)
 

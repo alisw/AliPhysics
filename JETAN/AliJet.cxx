@@ -23,7 +23,6 @@
 
  
 #include <Riostream.h>
-//#include <vector.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 
@@ -44,12 +43,8 @@ AliJet::AliJet():
   fPtIn(0),
   fPtChPtCutIn(0),
   fEnTotChPtCutIn(0),
-  fVectorSizeIn(0),
   fDetIn(0),
-  fVPx(0),
-  fVPy(0),
-  fVPz(0)
-	      //  fVectorIn(0)
+  fTrackRef(new TRefArray())
 {
   // Default constructor
   fJets = new TClonesArray("TLorentzVector",1000);
@@ -62,7 +57,6 @@ AliJet::AliJet():
   fNCells = TArrayI();
   fPtChPtCutIn = TArrayF();
   fEnTotChPtCutIn = TArrayF();
-  fVectorSizeIn = TArrayI();
   fDetIn = TArrayI();
 } 
 
@@ -280,34 +274,6 @@ void AliJet::SetDetectorFlagIn(Int_t* x)
 
 ////////////////////////////////////////////////////////////////////////
 
-void AliJet::SetVectorSizeIn(Int_t* x)
-{
-  if (fNInput>0) fVectorSizeIn.Set(fNInput, x);
-}
-
-////////////////////////////////////////////////////////////////////////
-
-void AliJet::SetVectorPxIn(vector< vector<Float_t> > pxT)
-{
-  fVPx = pxT;;
-}
-
-////////////////////////////////////////////////////////////////////////
-
-void AliJet::SetVectorPyIn(vector< vector<Float_t> > pyT)
-{
-  fVPy = pyT;;
-}
-
-////////////////////////////////////////////////////////////////////////
-
-void AliJet::SetVectorPzIn(vector< vector<Float_t> > pzT)
-{
-  fVPz = pzT;;
-}
-
-////////////////////////////////////////////////////////////////////////
-
 void AliJet::SetPtFromSignal(Float_t* p)
 {
   // set information of percentage of pt of jets
@@ -348,7 +314,6 @@ void AliJet::ClearJets(Option_t *option)
   fNCells.Set(0);
   fPtChPtCutIn.Set(0);
   fEnTotChPtCutIn.Set(0);
-  fVectorSizeIn.Set(0);
   fDetIn.Set(0);
 }
 

@@ -28,8 +28,11 @@
 #pragma link C++ class AliJetHadronCorrection+; 
 #pragma link C++ class AliJetHadronCorrectionv0+;
 #pragma link C++ class AliJetHadronCorrectionv1+; 
-#pragma link C++ class AliJetFillUnitArrayTracks+;
-#pragma link C++ class AliJetFillUnitArrayEMCalDigits+;
+#pragma link C++ class AliJetFillUnitArray+;
+#pragma link C++ class AliJetESDFillUnitArrayTracks+;
+#pragma link C++ class AliJetESDFillUnitArrayEMCalDigits+;
+#pragma link C++ class AliJetAODFillUnitArrayTracks+;
+#pragma link C++ class AliJetAODFillUnitArrayEMCalDigits+;
 #pragma link C++ class AliJetDummyGeo+;
 #pragma link C++ class AliJetDummyShishKebabTrd1Module+;
 #pragma link C++ class AliAnalysisTaskJets+;

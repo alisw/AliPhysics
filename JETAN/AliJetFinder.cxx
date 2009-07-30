@@ -25,18 +25,17 @@
 
 #include <Riostream.h>
 #include <TFile.h>
-#include <TClonesArray.h>
-#include <TProcessID.h>
 
 #include "AliJetFinder.h"
 #include "AliJet.h"
 #include "AliAODJet.h"
-#include "AliJetReader.h"
-#include "AliJetReaderHeader.h"
 #include "AliJetControlPlots.h"
 #include "AliLeading.h"
 #include "AliAODEvent.h"
 #include "AliJetUnitArray.h"
+
+class TProcessID;
+class TClonesArray;
 
 ClassImp(AliJetFinder)
 
@@ -252,7 +251,6 @@ Bool_t AliJetFinder::ProcessEvent2()
   FindJets();
   
   Int_t         nEntRef    = ref->GetEntries();
-  vector<Float_t> vtmp;
 
   for(Int_t i=0; i<nEntRef; i++)
     { 
@@ -261,10 +259,11 @@ Bool_t AliJetFinder::ProcessEvent2()
       ((AliJetUnitArray*)ref->At(i))->SetUnitEnergy(0.);
       ((AliJetUnitArray*)ref->At(i))->SetUnitCutFlag(kPtSmaller);
       ((AliJetUnitArray*)ref->At(i))->SetUnitCutFlag2(kPtSmaller);
-      ((AliJetUnitArray*)ref->At(i))->SetUnitPxPyPz(kTRUE,vtmp);
       ((AliJetUnitArray*)ref->At(i))->SetUnitSignalFlag(kBad);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitSignalFlagC(kTRUE,kBad);
       ((AliJetUnitArray*)ref->At(i))->SetUnitDetectorFlag(kTpc);
       ((AliJetUnitArray*)ref->At(i))->SetUnitFlag(kOutJet);
+      ((AliJetUnitArray*)ref->At(i))->ClearUnitTrackRef();
 
       // Reset process ID
       AliJetUnitArray* uA = (AliJetUnitArray*)ref->At(i);

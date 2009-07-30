@@ -12,14 +12,20 @@
 //          magali.estienne@subatech.in2p3.fr
 //---------------------------------------------------------------------
 
+//#include <Riostream.h>
+//#include <vector>
+
 #include <TObject.h>
 #include "AliAODJet.h"
 #include "AliJetReader.h"
+#include "AliJetHeader.h"
+#include "AliJet.h"
+#include "AliJetReaderHeader.h"
 
 class TFile;
 class TChain;
-class AliJet;
-class AliJetHeader;
+//class AliJet;
+//class AliJetHeader;
 class AliJetControlPlots;
 class AliLeading;
 class AliAODJet;
@@ -53,7 +59,7 @@ class AliJetFinder : public TObject
   virtual void          Reset() {fNAODjets = 0;}
   virtual void          FindJets() {}
   virtual void          FindJetsC(){}
-  virtual void          WriteJHeaderToFile() { }
+  virtual void          WriteJHeaderToFile() {}
   // some methods to allow steering from the outside
   virtual Bool_t        ProcessEvent();
   virtual Bool_t        ProcessEvent2();
@@ -63,7 +69,7 @@ class AliJetFinder : public TObject
   virtual void          ConnectAODNonStd(AliAODEvent* aod,const char* bname);
   virtual TTree         *MakeTreeJ(char* name);
   virtual void          WriteHeaders();
-  virtual void          WriteJetsToFile() {;}
+  virtual void          WriteJetsToFile() const {;}
   virtual void          TestJet() {;}
 
  protected:

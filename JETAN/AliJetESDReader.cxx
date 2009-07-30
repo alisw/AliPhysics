@@ -45,8 +45,8 @@
 #include "AliESD.h"
 #include "AliESDtrack.h"
 #include "AliJetDummyGeo.h"
-#include "AliJetFillUnitArrayTracks.h"
-#include "AliJetFillUnitArrayEMCalDigits.h"
+#include "AliJetESDFillUnitArrayTracks.h"
+#include "AliJetESDFillUnitArrayEMCalDigits.h"
 #include "AliJetUnitArray.h"
 #include "AliAnalysisTask.h"
 
@@ -67,9 +67,11 @@ AliJetESDReader::AliJetESDReader():
   fGrid3(0),
   fGrid4(0),
   fPtCut(0),
-  fHCorrection(0),
-  fECorrection(0),
+  fApplyElectronCorrection(kFALSE),
   fEFlag(kFALSE),
+  fApplyMIPCorrection(kTRUE),
+  fApplyFractionHadronicCorrection(kFALSE),
+  fFractionHadronicCorrection(0.3),
   fNumUnits(0),
   fDebug(0),
   fMass(0),
@@ -150,6 +152,68 @@ void AliJetESDReader::OpenInputFiles()
   }
 
 }
+
+//__________________________________________________________
+void AliJetESDReader::SetApplyMIPCorrection(Bool_t val)
+{
+  //
+  // Set flag to apply MIP correction fApplyMIPCorrection
+  // - exclusive with fApplyFractionHadronicCorrection
+  //
+
+  fApplyMIPCorrection = val;
+  if(fApplyMIPCorrection == kTRUE)
+    {
+      SetApplyFractionHadronicCorrection(kFALSE);
+      printf("Enabling MIP Correction \n");
+    }
+  else 
+    {
+      printf("Disabling MIP Correction \n");
+    }
+}
+
+//__________________________________________________________
+void AliJetESDReader::SetApplyFractionHadronicCorrection(Bool_t val)
+{
+  //
+  // Set flag to apply EMC hadronic correction fApplyFractionHadronicCorrection
+  // - exclusive with fApplyMIPCorrection
+  //
+
+  fApplyFractionHadronicCorrection = val;
+  if(fApplyFractionHadronicCorrection == kTRUE)
+    {
+      SetApplyMIPCorrection(kFALSE);
+      printf("Enabling Fraction Hadronic Correction \n");
+    }
+  else 
+    {
+      printf("Disabling Fraction Hadronic Correction \n");
+    }
+}
+
+//__________________________________________________________
+void AliJetESDReader::SetFractionHadronicCorrection(Double_t val)
+{
+  //
+  // Set value to fFractionHadronicCorrection (default is 0.3)
+  // apply EMC hadronic correction fApplyFractionHadronicCorrection
+  // - exclusive with fApplyMIPCorrection
+  //
+
+  fFractionHadronicCorrection = val;
+  if(fFractionHadronicCorrection > 0.0 && fFractionHadronicCorrection <= 1.0)
+    {
+      SetApplyFractionHadronicCorrection(kTRUE);
+      printf("Fraction Hadronic Correction %1.3f \n",fFractionHadronicCorrection);
+    }
+  else 
+    {
+      SetApplyFractionHadronicCorrection(kFALSE);
+    }
+}
+
 
 //____________________________________________________________________________
 void AliJetESDReader::SetInputEvent(TObject* esd, TObject* /*aod*/, TObject* /*mc*/) {
@@ -247,7 +311,7 @@ void AliJetESDReader::CreateTasks(TChain* tree)
   // Create global reader task for analysis 
   fFillUnitArray = new TTask("fFillUnitArray","Fill unit array jet finder");
   // Create a task for to fill the charged particle information 
-  fFillUAFromTracks = new AliJetFillUnitArrayTracks(); 
+  fFillUAFromTracks = new AliJetESDFillUnitArrayTracks(); 
   fFillUAFromTracks->SetReaderHeader(fReaderHeader);
   fFillUAFromTracks->SetGeom(fGeom);
   fFillUAFromTracks->SetTPCGrid(fTpcGrid);
@@ -260,15 +324,17 @@ void AliJetESDReader::CreateTasks(TChain* tree)
       fFillUAFromTracks->SetGrid3(fGrid3);
       fFillUAFromTracks->SetGrid4(fGrid4);
     }
-  fFillUAFromTracks->SetHadCorrection(fHCorrection);
+  fFillUAFromTracks->SetApplyMIPCorrection(fApplyMIPCorrection);
   fFillUAFromTracks->SetHadCorrector(fHadCorr);
   // Create a task for to fill the neutral particle information 
-  fFillUAFromEMCalDigits = new AliJetFillUnitArrayEMCalDigits();
+  fFillUAFromEMCalDigits = new AliJetESDFillUnitArrayEMCalDigits();
   fFillUAFromEMCalDigits->SetReaderHeader(fReaderHeader);
   fFillUAFromEMCalDigits->SetGeom(fGeom);
   fFillUAFromEMCalDigits->SetTPCGrid(fTpcGrid);
   fFillUAFromEMCalDigits->SetEMCalGrid(fEmcalGrid);
-  fFillUAFromEMCalDigits->SetEleCorrection(fECorrection);
+  fFillUAFromEMCalDigits->SetApplyFractionHadronicCorrection(fApplyFractionHadronicCorrection);
+  fFillUAFromEMCalDigits->SetFractionHadronicCorrection(fFractionHadronicCorrection);
+  fFillUAFromEMCalDigits->SetApplyElectronCorrection(fApplyElectronCorrection);
   // Add the task to global task
   fFillUnitArray->Add(fFillUAFromTracks);
   fFillUnitArray->Add(fFillUAFromEMCalDigits);
@@ -289,7 +355,6 @@ Bool_t AliJetESDReader::ExecTasks(Bool_t procid, TRefArray* refArray)
 
   fProcId = procid;
   fRefArray = refArray;
-  vector<Float_t> vtmp(3);
 
   // clear momentum array
   ClearArray();
@@ -446,15 +511,6 @@ void AliJetESDReader::InitUnitArray()
 	  fGrid4->SetIndexIJ();
 	  n4 = fGrid4->GetNEntries();
 
-	  if(fDebug>1) 
-	    {
-	      cout << "n0 cells: " << n0 << "phimin0: " << phimin0 << ", phimax0: " << phimax0 << endl;
-	      cout << "n1 cells: " << n1 << "phimin1: " << phimin1 << ", phimax1: " << phimax1 << endl;
-	      cout << "n2 cells: " << n2 << "phimin2: " << phimin2 << ", phimax2: " << phimax2 << endl;
-	      cout << "n3 cells: " << n3 << "phimin3: " << phimin3 << ", phimax3: " << phimax3 << endl;
-	      cout << "n4 cells: " << n4 << "phimin4: " << phimin4 << ", phimax4: " << phimax4 << endl;
-	    }
-	  
 	  nGaps = n0+n1+n2+n3+n4;
 
 	}

@@ -22,15 +22,13 @@
 //*-- Author: Sarah Blyth (LBL/UCT)
 // --
 // Revised Version for JETAN 
-// -- Magali Estienne (IReS)
-
-//#include <vector>
-
-#include <TVector3.h>
-#include <TLorentzVector.h>
-#include <TClonesArray.h>
+// -- Magali Estienne (magali.estienne@subatech.in2p3.fr)
 
 #include "AliJetUnitArray.h"
+
+class TVector3;
+class TLorentzVector;
+class TClonesArray;
 
 ClassImp(AliJetUnitArray)
 
@@ -53,10 +51,11 @@ AliJetUnitArray::AliJetUnitArray():
   fUnitPy(0.),
   fUnitPz(0.),
   fUnitMass(0.),
-  fV(0),
   fVc(0),
   fVn(0),
-  fVet(0)
+  fUnitTrackRef(new TRefArray),
+  fUnitCellRef(new TRefArray),
+  fUnitClusterRef(new TRefArray)
 {
   // Default constructor
 }  
@@ -74,16 +73,17 @@ AliJetUnitArray::AliJetUnitArray(Int_t absId, Int_t esdId, Float_t eta, Float_t 
   fUnitFlag(inout),
   fUnitCutFlag(cut),
   fUnitCutFlag2(cut2),
-  fUnitSignalFlag(signal), 
+  fUnitSignalFlag(kBad), 
   fUnitDetectorFlag(det),
   fUnitPx(0.),
   fUnitPy(0.),
   fUnitPz(0.),
   fUnitMass(mass),
-  fV(0),
   fVc(0),
   fVn(0),
-  fVet(0)
+  fUnitTrackRef(new TRefArray),
+  fUnitCellRef(new TRefArray),
+  fUnitClusterRef(new TRefArray)
 {
   //abs ID (in a eta,phi grid, track ID in ESD, eta, phi, energy, px, py, pz, Deta, Dphi, detector flag, in/out jet, mass
 
@@ -109,18 +109,94 @@ AliJetUnitArray::AliJetUnitArray(Int_t absId, Int_t esdId, Float_t eta, Float_t 
   fUnitPy(py),
   fUnitPz(pz),
   fUnitMass(mass),
-  fV(0),
   fVc(0),
   fVn(0),
-  fVet(0)
+  fUnitTrackRef(new TRefArray),
+  fUnitCellRef(new TRefArray),
+  fUnitClusterRef(new TRefArray)
 {
   // Constructor 2
 }
  
+AliJetUnitArray::AliJetUnitArray(const AliJetUnitArray& rUnit):
+  TObject(rUnit),
+  fUnitEnergy(rUnit.fUnitEnergy),
+  fUnitEta(rUnit.fUnitEta),
+  fUnitPhi(rUnit.fUnitPhi),
+  fUnitDeta(rUnit.fUnitDeta),
+  fUnitDphi(rUnit.fUnitDphi),
+  fUnitID(rUnit.fUnitID),
+  fUnitTrackID(rUnit.fUnitTrackID),
+  fUnitNum(rUnit.fUnitNum),
+  fUnitClusterID(rUnit.fUnitClusterID),
+  fUnitFlag(rUnit.fUnitFlag),
+  fUnitCutFlag(rUnit.fUnitCutFlag),
+  fUnitCutFlag2(rUnit.fUnitCutFlag2),
+  fUnitSignalFlag(rUnit.fUnitSignalFlag),
+  fUnitDetectorFlag(rUnit.fUnitDetectorFlag),
+  fUnitPx(rUnit.fUnitPx),
+  fUnitPy(rUnit.fUnitPy),
+  fUnitPz(rUnit.fUnitPz),
+  fUnitMass(rUnit.fUnitMass),
+  fVc(rUnit.fVc),
+  fVn(rUnit.fVn),
+  fUnitTrackRef(rUnit.fUnitTrackRef),
+  fUnitCellRef(rUnit.fUnitCellRef),
+  fUnitClusterRef(rUnit.fUnitClusterRef)
+{
+  // Copy constructor
+}
+
+AliJetUnitArray& AliJetUnitArray::operator=(const AliJetUnitArray& rhs)
+{
+  // Assignment
+  fUnitEnergy = rhs.fUnitEnergy;
+  fUnitEta = rhs.fUnitEta;
+  fUnitPhi = rhs.fUnitPhi;
+  fUnitDeta = rhs.fUnitDeta;
+  fUnitDphi = rhs.fUnitDphi;
+  fUnitID = rhs.fUnitID;
+  fUnitTrackID = rhs.fUnitTrackID;
+  fUnitNum = rhs.fUnitNum;
+  fUnitClusterID = rhs.fUnitClusterID;
+  fUnitFlag = rhs.fUnitFlag;
+  fUnitCutFlag = rhs.fUnitCutFlag;
+  fUnitCutFlag2 = rhs.fUnitCutFlag2;
+  fUnitSignalFlag = rhs.fUnitSignalFlag;
+  fUnitDetectorFlag = rhs.fUnitDetectorFlag;
+  fUnitPx = rhs.fUnitPx;
+  fUnitPy = rhs.fUnitPy;
+  fUnitPz = rhs.fUnitPz;
+  fUnitMass = rhs.fUnitMass;
+  fVc = rhs.fVc;
+  fVn = rhs.fVn;
+  fUnitTrackRef = rhs.fUnitTrackRef;
+  fUnitCellRef = rhs.fUnitCellRef;
+  fUnitClusterRef = rhs.fUnitClusterRef;
+
+  return *this;
+
+}
+
+
 //------------------------------------------------------------------------
 AliJetUnitArray::~AliJetUnitArray()
 {
   // Destructor 
+  delete fUnitTrackRef;
+  delete fUnitCellRef;
+  delete fUnitClusterRef;
+
+}
+
+void AliJetUnitArray::ClearUnitTrackRef()
+{
+  fUnitTrackRef->Clear();
+}
+
+void AliJetUnitArray::ClearUnitCellRef()
+{
+  fUnitCellRef->Clear();
 }
 
 //------------------------------------------------------------------------
@@ -145,32 +221,6 @@ void AliJetUnitArray::SetUnitSignalFlagN(Bool_t init, AliJetFinderUnitSignalFlag
   else fVn.push_back(flag);
 }
 
-//------------------------------------------------------------------------
-void AliJetUnitArray::SetUnitEtN(Bool_t init, Float_t et)
-{
-  // Set transverse energy of the neutral cell
-  if(init){
-    if(!fVet.empty())
-      fVet.clear();
-  }
-  else fVet.push_back(et);
-}
-
-
-//------------------------------------------------------------------------
-void AliJetUnitArray::SetUnitPxPyPz(Bool_t init, vector<Float_t> v3)
-{
-  // Set momentum components of the charged particle
-  if(init)
-    {
-      if(!fV.empty()){
-	fV.clear();
-      }
-    }
-  else{
-    fV.push_back(v3);
-  }
-}
 
 //------------------------------------------------------------------------
 Bool_t AliJetUnitArray::GetUnitSignalFlagC(Int_t ind, AliJetFinderUnitSignalFlagType_t &flagc)
@@ -191,47 +241,6 @@ Bool_t AliJetUnitArray::GetUnitSignalFlagN(Int_t ind, AliJetFinderUnitSignalFlag
   if(ind <= (Int_t)fVn.size())
     {
       flagn = (AliJetFinderUnitSignalFlagType_t)fVn[ind];
-      return kTRUE;
-    }
-  else return kFALSE;
-}
-
-//------------------------------------------------------------------------
-Bool_t AliJetUnitArray::GetUnitEtN(Int_t ind, Float_t &et)
-{
-  // Get transverse energy of the neutral cell
-  if(ind <= (Int_t)fVet.size())
-    {
-      et = (Float_t)fVet[ind];
-      return kTRUE;
-    }
-  else return kFALSE;
-}
-
-//------------------------------------------------------------------------
-Bool_t AliJetUnitArray::GetUnitPxPyPz(Int_t ind, Float_t &px, Float_t &py, Float_t &pz)
-{
-  // Get momentum components of the charged particle
-  if(ind <= (Int_t)fV.size())
-    {
-      px = (Float_t)fV[ind][0];
-      py = (Float_t)fV[ind][1];
-      pz = (Float_t)fV[ind][2];
-      return kTRUE;
-    }
-  else return kFALSE;
-}
-
-//------------------------------------------------------------------------
-Bool_t AliJetUnitArray::GetUnitPxPyPzE(Int_t ind, Float_t &px, Float_t &py, Float_t &pz, Float_t &en)
-{
-// Get 4-momentum components of the charged particle
-  if(ind <= (Int_t)fV.size())
-    {
-      px = (Float_t)fV[ind][0];
-      py = (Float_t)fV[ind][1];
-      pz = (Float_t)fV[ind][2];
-      en = TMath::Sqrt(px*px+py*py+pz*pz);
       return kTRUE;
     }
   else return kFALSE;

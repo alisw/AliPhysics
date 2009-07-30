@@ -14,8 +14,6 @@
 // Author : magali.estienne@subatech.in2p3.fr
 //---------------------------------------------------------------------
 
-#include <vector>
-
 #include "AliJetReader.h"
 #include "AliJetUnitArray.h"
 #include "AliJetGrid.h"
@@ -50,16 +48,18 @@ class AliJetESDReader : public AliJetReader
   void       SetTPCGrid(AliJetGrid *grid)   {fTpcGrid = grid;}
   void       SetEMCalGrid(AliJetGrid *grid) {fEmcalGrid = grid;}
   // Correction of hadronic energy
-  void       SetHadronCorrection(Int_t flag = 1) {fHCorrection = flag;}
-  void       SetHadronCorrector(AliJetHadronCorrectionv1* corr) {fHadCorr = corr;}
-  void       SetElectronCorrection(Int_t flag = 1) {fECorrection = flag; fEFlag=kTRUE;}
+  void       SetHadronCorrector(AliJetHadronCorrection* corr) {fHadCorr = corr;}
+  void       SetApplyElectronCorrection(Int_t flag = 1) {fECorrection = flag; fEFlag=kTRUE;}
+  void       SetApplyMIPCorrection(Bool_t val);
+  void       SetApplyFractionHadronicCorrection(Bool_t val);
+  void       SetFractionHadronicCorrection(Double_t val);
 
  protected:
   AliJetDummyGeo             *fGeom;             //! EMCAL Geometry 
   TChain                     *fChain;            //! chain for reconstructed tracks
-  TChain                     *fTree;             //! tree for reconstructed tracks
+  TChain                     *fTree;             //! tree to get the EMCal geometry
   AliESDEvent                *fESD;              //! pointer to esd
-  AliJetHadronCorrectionv1   *fHadCorr;          //! Pointer to Hadron Correction Object 
+  AliJetHadronCorrection     *fHadCorr;          //! Pointer to Hadron Correction Object 
   AliJetGrid                 *fTpcGrid;          //! Pointer to grid object
   AliJetGrid                 *fEmcalGrid;        //! Pointer to grid object
   AliJetGrid                 *fGrid0;            // Pointer to grid object
@@ -68,9 +68,11 @@ class AliJetESDReader : public AliJetReader
   AliJetGrid                 *fGrid3;            // Pointer to grid object
   AliJetGrid                 *fGrid4;            // Pointer to grid object
   Float_t                     fPtCut;            // Pt cut for tracks to minimise background contribution
-  Int_t                       fHCorrection;      // Hadron correction flag
-  Int_t                       fECorrection;      // Electron correction flag
+  Int_t                       fApplyElectronCorrection;      // Electron correction flag
   Bool_t                      fEFlag;            // if (fEFlag == kFALSE) => fECorrection automatically setted
+  Bool_t                      fApplyMIPCorrection; // Apply MIP or not ? Exclusive with fApplyFractionHadronicCorrection
+  Bool_t                      fApplyFractionHadronicCorrection; // Another type of charged particle energy deposition in EMC
+  Double_t                    fFractionHadronicCorrection; // Fraction of momentum of the TPC track to be subtracted from EMC tower
   Int_t                       fNumUnits;         // Number of units in the unit object array
                                                  // (same as num towers in EMCAL)
   Int_t                       fDebug;            //! Debug option

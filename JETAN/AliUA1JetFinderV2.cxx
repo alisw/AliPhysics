@@ -23,26 +23,22 @@
 // Author: magali.estienne@subatech.in2p3.fr
 //---------------------------------------------------------------------
 
-#include <Riostream.h>
-#include <vector>
-
-#include <TArrayF.h>
 #include <TClonesArray.h>
-#include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TRefArray.h>
+#include "TFile.h"
 
 #include "AliUA1JetFinderV2.h"
 #include "AliUA1JetHeaderV1.h"
 #include "AliJetUnitArray.h"
-#include "AliJetReaderHeader.h"
-#include "AliJetReader.h"
-#include "AliJet.h"
-#include "AliAODJet.h"
 
+class TArrayF;
+class TFile;
+class AliJetReader;
+class AliAODJet;
 
 ClassImp(AliUA1JetFinderV2)
 
@@ -109,8 +105,8 @@ void AliUA1JetFinderV2::FindJetsC()
     ptT[i]  = lv->Pt();
     etaT[i] = lv->Eta();
     phiT[i] = ((lv->Phi() < 0) ? (lv->Phi()) + 2 * TMath::Pi() : lv->Phi());
-    cFlagT[i] = fReader->GetCutFlag(i); // Temporarily added
-    sFlagT[i] = fReader->GetSignalFlag(i); // Temporarily added peut-etre a mettre apres cut en pt !!!
+    cFlagT[i] = fReader->GetCutFlag(i); 
+    sFlagT[i] = fReader->GetSignalFlag(i); 
     
     if (fReader->GetCutFlag(i) != 1) continue;
     fLego->Fill(etaT[i], phiT[i], ptT[i]);
@@ -127,10 +123,10 @@ void AliUA1JetFinderV2::FindJetsC()
   Double_t dEtTotal = (TMath::Sqrt(npart))*TMath::Sqrt(meanpt * meanpt + ptRMS*ptRMS);
   
   // arrays to hold jets
-  Float_t* etaJet    = new Float_t[30];
-  Float_t* phiJet    = new Float_t[30];
-  Float_t* etJet     = new Float_t[30];
-  Float_t* etsigJet  = new Float_t[30]; //signal et in jet
+  Float_t* etaJet    = new Float_t[30];  // eta jet
+  Float_t* phiJet    = new Float_t[30];  // phi jet
+  Float_t* etJet     = new Float_t[30];  // et jet
+  Float_t* etsigJet  = new Float_t[30];  // signal et in jet
   Float_t* etallJet  = new Float_t[30];  // total et in jet (tmp variable)
   Int_t*   ncellsJet = new Int_t[30];
   Int_t*   multJet   = new Int_t[30];
@@ -138,7 +134,7 @@ void AliUA1JetFinderV2::FindJetsC()
   Float_t* etaJetOk    = new Float_t[30];
   Float_t* phiJetOk    = new Float_t[30];
   Float_t* etJetOk     = new Float_t[30];
-  Float_t* etsigJetOk  = new Float_t[30]; //signal et in jet
+  Float_t* etsigJetOk  = new Float_t[30];  // signal et in jet
   Float_t* etallJetOk  = new Float_t[30];  // total et in jet (tmp variable)
   Int_t*   ncellsJetOk = new Int_t[30];
   Int_t*   multJetOk   = new Int_t[30];
@@ -181,7 +177,6 @@ void AliUA1JetFinderV2::FindJetsC()
     //subtract background
     Float_t etbgTotalN = 0.0; //new background
     if(header->GetBackgMode() == 1) // standard
-      //      SubtractBackgC(nIn,nj,etbgTotalN,ptT,etaT,phiT,cFlagT,sFlagT,etJet,etaJet,phiJet,etsigJet,multJet,injet);
       SubtractBackgC(nIn,nj,etbgTotalN,ptT,etaT,phiT,etJet,etaJet,phiJet,etsigJet,multJet,injet);
     if(header->GetBackgMode() == 2) //cone
       SubtractBackgCone(nIn,nj,etbgTotalN,ptT,etaT,phiT,cFlagT,sFlagT,etJet,etaJet,phiJet,etsigJet,multJet,injet);
@@ -210,6 +205,7 @@ void AliUA1JetFinderV2::FindJetsC()
     phiJetOk[p]    = phiJet[idx[p]];
     etJetOk[p]     = etJet[idx[p]];
     etallJetOk[p]  = etJet[idx[p]];
+    etsigJetOk[p]  = etsigJet[idx[p]];
     ncellsJetOk[p] = ncellsJet[idx[p]];
     multJetOk[p]   = multJet[idx[p]];
   }
@@ -325,8 +321,9 @@ void AliUA1JetFinderV2::FindJets()
   Int_t              nCand    = fReader->GetNumCandidate();
   Int_t              nCandCut = fReader->GetNumCandidateCut();
   Int_t              nIn      = fUnit->GetEntries();
-  Float_t            fPtMin   = fReader->GetReaderHeader()->GetPtCut();
+  Float_t            ptMin   = fReader->GetReaderHeader()->GetPtCut();
 
+  fDebug   = fReader->GetReaderHeader()->GetDebug();
   if (nIn == 0) return;
 
   Int_t nCandidateCut = 0;
@@ -337,36 +334,34 @@ void AliUA1JetFinderV2::FindJets()
 
   // local arrays for input No Cuts
   // Both pt < ptMin and pt > ptMin
-  Float_t* ptT       = new Float_t[nCandidate];
-  Float_t* en2T      = new Float_t[nCandidate];
-  Float_t* pt2T      = new Float_t[nCandidate];
-  Int_t*   detT      = new Int_t[nCandidate]; 
-  Float_t* etaT      = new Float_t[nCandidate];
-  Float_t* phiT      = new Float_t[nCandidate];
-  Float_t* cFlagT    = new Float_t[nCandidate];
-  Float_t* cFlag2T   = new Float_t[nCandidate];
-  Float_t* sFlagT    = new Float_t[nCandidate];
-  Float_t* cClusterT = new Float_t[nCandidate];
-  Int_t*   vectT     = new Int_t[nCandidate];
-  Int_t    loop1     = 0;
-  Int_t*   injet     = new Int_t[nCandidate];
-  Int_t*   sflag     = new Int_t[nCandidate];
-  vector< vector<Float_t> > pxT;
-  vector< vector<Float_t> > pyT;
-  vector< vector<Float_t> > pzT;
+  Float_t*   ptT       = new Float_t[nCandidate];
+  Float_t*   en2T      = new Float_t[nCandidate];
+  Float_t*   pt2T      = new Float_t[nCandidate];
+  Int_t*     detT      = new Int_t[nCandidate]; 
+  Float_t*   etaT      = new Float_t[nCandidate];
+  Float_t*   phiT      = new Float_t[nCandidate];
+  Float_t*   cFlagT    = new Float_t[nCandidate];
+  Float_t*   cFlag2T   = new Float_t[nCandidate];
+  Float_t*   sFlagT    = new Float_t[nCandidate];
+  Float_t*   cClusterT = new Float_t[nCandidate];
+  Int_t*     vectT     = new Int_t[nCandidate];
+  Int_t      loop1     = 0;
+  Int_t*     injet     = new Int_t[nCandidate];
+  Int_t*     sflag     = new Int_t[nCandidate];
+  TRefArray* trackRef  = new TRefArray();
 
   //total energy in array
   Float_t  etbgTotal = 0.0;
-  TH1F* hPtTotal = new TH1F("hPt","Pt distribution of all particles ",100,0.0,15.0);
+  TH1F*    hPtTotal  = new TH1F("hPt","Pt distribution of all particles ",100,0.0,15.0);
 
   // Input cell info
-  Float_t *etCell = new Float_t[nIn];   //! Cell Energy - Extracted from UnitArray
-  Float_t *etaCell = new Float_t[nIn];  //! Cell eta - Extracted from UnitArray
-  Float_t *phiCell = new Float_t[nIn];  //! Cell phi - Extracted from UnitArray
-  Int_t   *flagCell = new Int_t[nIn];   //! Cell phi - Extracted from UnitArray
-  Float_t *etCell2 = new Float_t[nIn];  //! Cell Energy - Extracted from UnitArray
-  Float_t *etaCell2 = new Float_t[nIn]; //! Cell eta - Extracted from UnitArray
-  Float_t *phiCell2 = new Float_t[nIn]; //! Cell phi - Extracted from UnitArray
+  Float_t *etCell    = new Float_t[nIn];   //! Cell Energy - Extracted from UnitArray
+  Float_t *etaCell   = new Float_t[nIn];  //! Cell eta - Extracted from UnitArray
+  Float_t *phiCell   = new Float_t[nIn];  //! Cell phi - Extracted from UnitArray
+  Int_t   *flagCell  = new Int_t[nIn];   //! Cell phi - Extracted from UnitArray
+  Float_t *etCell2   = new Float_t[nIn];  //! Cell Energy - Extracted from UnitArray
+  Float_t *etaCell2  = new Float_t[nIn]; //! Cell eta - Extracted from UnitArray
+  Float_t *phiCell2  = new Float_t[nIn]; //! Cell phi - Extracted from UnitArray
   Int_t   *flagCell2 = new Int_t[nIn];  //! Cell phi - Extracted from UnitArray
 
   // Information extracted from fUnitArray
@@ -376,25 +371,13 @@ void AliUA1JetFinderV2::FindJets()
       // Recover particle information from UnitArray
       
       AliJetUnitArray *uArray = (AliJetUnitArray*)fUnit->At(i);
-      
+      TRefArray* ref = uArray->GetUnitTrackRef();
+      Int_t nRef = ref->GetEntries();
+
       if(uArray->GetUnitEnergy()>0.){
-	vector<Float_t> vtmpx; 
-	vector<Float_t> vtmpy; 
-	vector<Float_t> vtmpz; 
-	for(Int_t j=0; j<uArray->GetUnitVectorSize();j++)
-	  {
-	    Float_t x=0.;  Float_t y=0.;  Float_t z=0.;
-	    uArray->GetUnitPxPyPz(j,x,y,z);
-	    vtmpx.push_back(x);
-	    vtmpy.push_back(y);
-	    vtmpz.push_back(z);
-	  }
-	pxT.push_back(vtmpx);
-	pyT.push_back(vtmpy);
-	pzT.push_back(vtmpz);
-	vtmpx.clear();
-	vtmpy.clear();
-	vtmpz.clear();
+
+	for(Int_t jpart=0; jpart<nRef;jpart++)
+	  trackRef->Add((AliVTrack*)ref->At(jpart));
 	ptT[loop1]   = uArray->GetUnitEnergy();
         detT[loop1]  = uArray->GetUnitDetectorFlag();
 	etaT[loop1]  = uArray->GetUnitEta();
@@ -402,7 +385,7 @@ void AliUA1JetFinderV2::FindJets()
 	cFlagT[loop1]= uArray->GetUnitCutFlag();   // pt cut tpc
 	cFlag2T[loop1]= uArray->GetUnitCutFlag2(); // pt cut emcal
 	sFlagT[loop1]= uArray->GetUnitSignalFlag();
-	vectT[loop1] = uArray->GetUnitVectorSize();
+	vectT[loop1] = nRef;
 	if(cFlagT[loop1] == 1 || cFlag2T[loop1] == 1) {
 	  pt2T[loop1] = 0.;
 	  en2T[loop1] = 0.;
@@ -414,11 +397,13 @@ void AliUA1JetFinderV2::FindJets()
 	  }
 	  if(detT[loop1]==0){ // TPC+ITS
 	    Float_t pt = 0.;
-	    for(Int_t j=0; j<vectT[loop1];j++){
+	    for(Int_t j=0; j<nRef;j++){
 	      Float_t x=0.;  Float_t y=0.;  Float_t z=0.;
-	      uArray->GetUnitPxPyPz(j,x,y,z);
+	      x = ((AliVTrack*)ref->At(j))->Px();
+	      y = ((AliVTrack*)ref->At(j))->Py();
+	      z = ((AliVTrack*)ref->At(j))->Pz();
 	      pt = TMath::Sqrt(x*x+y*y);
-	      if(pt>fPtMin) {
+	      if(pt>ptMin) {
 		pt2T[loop1] += pt;
 		en2T[loop1] += pt;
 		hPtTotal->Fill(pt);
@@ -430,11 +415,13 @@ void AliUA1JetFinderV2::FindJets()
 	    Float_t ptCTot = 0.;
 	    Float_t pt = 0.;
 	    Float_t enC = 0.;
-	    for(Int_t j=0; j<vectT[loop1];j++) {
+	    for(Int_t j=0; j<nRef;j++){
 	      Float_t x=0.;  Float_t y=0.;  Float_t z=0.;
-	      uArray->GetUnitPxPyPz(j,x,y,z);
+	      x = ((AliVTrack*)ref->At(j))->Px();
+	      y = ((AliVTrack*)ref->At(j))->Py();
+	      z = ((AliVTrack*)ref->At(j))->Pz();
 	      pt = TMath::Sqrt(x*x+y*y);
-	      if(pt>fPtMin) {
+	      if(pt>ptMin) {
 		pt2T[loop1]+=pt;
 		en2T[loop1]+=pt;
 		hPtTotal->Fill(pt);
@@ -466,12 +453,14 @@ void AliUA1JetFinderV2::FindJets()
         }
         if(uArray->GetUnitDetectorFlag()==0){ // TPC case
           Float_t pt = 0.; Float_t et1 = 0.; Float_t et2 = 0.;
-          for(Int_t j=0; j<uArray->GetUnitVectorSize();j++)
+          for(Int_t j=0; j<nRef;j++)
             {
               Float_t x=0.;  Float_t y=0.;  Float_t z=0.;
-              uArray->GetUnitPxPyPz(j,x,y,z);
+	      x = ((AliVTrack*)ref->At(j))->Px();
+	      y = ((AliVTrack*)ref->At(j))->Py();
+	      z = ((AliVTrack*)ref->At(j))->Pz();
               pt = TMath::Sqrt(x*x+y*y);
-              if(pt>fPtMin) {
+              if(pt>ptMin) {
                 et1 += pt;
                 et2 += pt;
               }
@@ -490,12 +479,14 @@ void AliUA1JetFinderV2::FindJets()
           Float_t ptCTot = 0.;
           Float_t pt = 0.; Float_t et1 = 0.; Float_t et2 = 0.;
           Float_t enC = 0.;
-          for(Int_t j=0; j<uArray->GetUnitVectorSize();j++)
+          for(Int_t j=0; j<nRef;j++)
             {
               Float_t x=0.;  Float_t y=0.;  Float_t z=0.;
-              uArray->GetUnitPxPyPz(j,x,y,z);
+	      x = ((AliVTrack*)ref->At(j))->Px();
+	      y = ((AliVTrack*)ref->At(j))->Py();
+	      z = ((AliVTrack*)ref->At(j))->Pz();
               pt = TMath::Sqrt(x*x+y*y);
-              if(pt>fPtMin) {
+              if(pt>ptMin) {
                 et1 += pt;
                 et2 += pt;
               }
@@ -625,6 +616,7 @@ void AliUA1JetFinderV2::FindJets()
       phiJetOk[p]    = phiJet[idx[p]];
       etJetOk[p]     = etJet[idx[p]];
       etallJetOk[p]  = etJet[idx[p]];
+      etsigJetOk[p]  = etsigJet[idx[p]];
       ncellsJetOk[p] = ncellsJet[idx[p]];
       multJetOk[p]   = multJet[idx[p]];
     }
@@ -682,10 +674,7 @@ void AliUA1JetFinderV2::FindJets()
   fJets->SetEtaIn(etaT);
   fJets->SetPhiIn(phiT);
   fJets->SetPtIn(ptT);
-  fJets->SetVectorSizeIn(vectT);
-  fJets->SetVectorPxIn(pxT);
-  fJets->SetVectorPyIn(pyT);
-  fJets->SetVectorPzIn(pzT);
+  fJets->SetTrackReferences(trackRef);
   fJets->SetDetectorFlagIn(detT);
   fJets->SetEtAvg(etbgTotal/(2*(header->GetLegoEtaMax())*(header->GetLegoPhiMax()-header->GetLegoPhiMin())));
 
@@ -695,9 +684,8 @@ void AliUA1JetFinderV2::FindJets()
   delete pt2T;
   delete etaT;
   delete phiT;
-  pxT.clear();
-  pyT.clear();
-  pzT.clear();
+  trackRef->Delete();
+  delete trackRef;
   delete detT;
   delete cFlagT;
   delete cFlag2T;
@@ -740,13 +728,18 @@ void AliUA1JetFinderV2::FindJets()
 
 ////////////////////////////////////////////////////////////////////////
 void AliUA1JetFinderV2::RunAlgoritm(Int_t nIn, Float_t* etCell, Float_t* etaCell, Float_t* phiCell, 
-				    Int_t* flagCell, Float_t* etCell2, Float_t* etaCell2, Float_t* phiCell2, 
-				    Int_t* flagCell2, Float_t etbgTotal, Double_t dEtTotal, 
-				    Int_t& nJets, Float_t* etJet,Float_t* etaJet, Float_t* phiJet,
-				    Float_t* etallJet, Int_t* ncellsJet)
+				    Int_t* flagCell, const Float_t* etCell2, const Float_t* etaCell2, 
+				    const Float_t* phiCell2, const Int_t* flagCell2, Float_t etbgTotal, 
+				    Double_t dEtTotal, Int_t& nJets, Float_t* etJet,Float_t* etaJet, 
+				    Float_t* phiJet, Float_t* etallJet, Int_t* ncellsJet)
 {
-  
+  //
+  // Main method for jet finding
+  // UA1 base cone finder
+  //
+
   Int_t nCell  = nIn; 
+  fDebug = fReader->GetReaderHeader()->GetDebug();
 
   // Dump lego
   // Check enough space! *to be done*
@@ -1137,10 +1130,10 @@ void AliUA1JetFinderV2::RunAlgoritmC(Float_t etbgTotal, Double_t dEtTotal, Int_t
 }
 
 ////////////////////////////////////////////////////////////////////////
-void AliUA1JetFinderV2::SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN, Float_t* ptT, 
-				      Int_t*vectT, Float_t* etaT, Float_t* phiT, Float_t* cFlagT, Float_t* cFlag2T, 
-				      Float_t* sFlagT, Float_t* etJet,Float_t* etaJet, Float_t* phiJet, 
-				      Float_t* etsigJet, Int_t* multJet, Int_t* injet)
+void AliUA1JetFinderV2::SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&etbgTotalN, const Float_t* ptT, 
+				      const Int_t*vectT, const Float_t* etaT, const Float_t* phiT, const Float_t* cFlagT, 
+				      const Float_t* cFlag2T, const Float_t* sFlagT, Float_t* etJet, const Float_t* etaJet, 
+				      const Float_t* phiJet, Float_t* etsigJet, Int_t* multJet, Int_t* injet)
 {
   //
   // Background subtraction using cone method but without correction in dE/deta distribution
@@ -1149,7 +1142,8 @@ void AliUA1JetFinderV2::SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN, 
   
   //calculate energy inside and outside cones
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
-  fOpt = fReader->GetReaderHeader()->GetDetector();
+  Int_t              fOpt = fReader->GetReaderHeader()->GetDetector();
+  fDebug = fReader->GetReaderHeader()->GetDebug();
   Float_t rc= header->GetRadius();
   Float_t etIn[30];
   Float_t etOut = 0;
@@ -1342,9 +1336,9 @@ void AliUA1JetFinderV2::SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN, 
 }
 
 ////////////////////////////////////////////////////////////////////////
-void AliUA1JetFinderV2::SubtractBackgC(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN,
-				       Float_t* ptT, Float_t* etaT, Float_t* phiT,
-				       Float_t* etJet,Float_t* etaJet, Float_t* phiJet, Float_t* etsigJet,
+void AliUA1JetFinderV2::SubtractBackgC(const Int_t& nIn, const Int_t&nJ, Float_t&etbgTotalN,
+				       const Float_t* ptT, const Float_t* etaT, const Float_t* phiT,
+				       Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet,
 				       Int_t* multJet, Int_t* injet)
 {
   //background subtraction using cone method but without correction in dE/deta distribution
@@ -1408,10 +1402,10 @@ void AliUA1JetFinderV2::SubtractBackgC(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN,
 
 
 ////////////////////////////////////////////////////////////////////////
-void AliUA1JetFinderV2::SubtractBackgStat(Int_t& nIn, Int_t&nJ,Float_t&etbgTotalN,
-		      Float_t* ptT, Float_t* etaT, Float_t* phiT, Float_t* cFlagT, Float_t* sFlagT,
-                      Float_t* etJet,Float_t* etaJet, Float_t* phiJet, Float_t* etsigJet,
-                      Int_t* multJet, Int_t* injet)
+void AliUA1JetFinderV2::SubtractBackgStat(const Int_t& nIn, const Int_t&nJ,Float_t&etbgTotalN,
+		      const Float_t* ptT, const Float_t* etaT, const Float_t* phiT, const Float_t* cFlagT, 
+		      const Float_t* sFlagT, Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, 
+		      Float_t* etsigJet, Int_t* multJet, Int_t* injet)
 {
 
   //background subtraction using statistical method
@@ -1473,9 +1467,9 @@ void AliUA1JetFinderV2::SubtractBackgStat(Int_t& nIn, Int_t&nJ,Float_t&etbgTotal
 }
 
 ////////////////////////////////////////////////////////////////////////
-void AliUA1JetFinderV2::SubtractBackgCone(Int_t& nIn, Int_t&nJ,Float_t& etbgTotalN, Float_t* ptT,
-					  Float_t* etaT, Float_t* phiT, Float_t* cFlagT, Float_t* sFlagT,
-					  Float_t* etJet,Float_t* etaJet, Float_t* phiJet, Float_t* etsigJet,
+void AliUA1JetFinderV2::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float_t& etbgTotalN, Float_t* ptT,
+					  Float_t* etaT, const Float_t* phiT, const Float_t* cFlagT, const Float_t* sFlagT,
+					  Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet,
 					  Int_t* multJet, Int_t* injet)
 {
   // Cone background subtraction method taking into acount dEt/deta distribution
@@ -1587,9 +1581,9 @@ void AliUA1JetFinderV2::SubtractBackgCone(Int_t& nIn, Int_t&nJ,Float_t& etbgTota
 }
 
 ////////////////////////////////////////////////////////////////////////
-void AliUA1JetFinderV2::SubtractBackgRatio(Int_t& nIn, Int_t&nJ,Float_t& etbgTotalN,
-		      Float_t* ptT, Float_t* etaT, Float_t* phiT, Float_t* cFlagT, Float_t* sFlagT,
-		      Float_t* etJet,Float_t* etaJet, Float_t* phiJet, Float_t* etsigJet,
+void AliUA1JetFinderV2::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ,Float_t& etbgTotalN,
+		      Float_t* ptT, Float_t* etaT, const Float_t* phiT, const Float_t* cFlagT, const Float_t* sFlagT,
+		      Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet,
 		      Int_t* multJet, Int_t* injet)
 {
   // Ratio background subtraction method taking into acount dEt/deta distribution

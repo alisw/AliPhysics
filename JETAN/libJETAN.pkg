@@ -11,7 +11,9 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliCdfJetFinder.cxx AliCdfJetHeader.cxx \
 	AliJetGrid.cxx AliJetUnitArray.cxx AliJetHadronCorrection.cxx \
 	AliJetHadronCorrectionv0.cxx AliJetHadronCorrectionv1.cxx \
-	AliJetFillUnitArrayTracks.cxx AliJetFillUnitArrayEMCalDigits.cxx\
+        AliJetFillUnitArray.cxx	AliJetESDFillUnitArrayTracks.cxx \
+	AliJetESDFillUnitArrayEMCalDigits.cxx AliJetAODFillUnitArrayTracks.cxx \
+	AliJetAODFillUnitArrayEMCalDigits.cxx \
 	AliJetDummyGeo.cxx AliJetDummyShishKebabTrd1Module.cxx\
 	AliJetFinderTypes.cxx \
 	AliAnalysisTaskJets.cxx \

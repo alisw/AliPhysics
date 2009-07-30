@@ -29,8 +29,8 @@
 #include "AliJetReaderHeader.h"
 #include "AliESDEvent.h"
 #include "AliHeader.h"
-#include "AliJetFillUnitArrayTracks.h" 
-#include "AliJetFillUnitArrayEMCalDigits.h"
+#include "AliJetESDFillUnitArrayTracks.h" 
+#include "AliJetESDFillUnitArrayEMCalDigits.h"
 #include "AliJetUnitArray.h"
 #include "AliJetHadronCorrectionv1.h"
 
@@ -51,10 +51,9 @@ AliJetReader::AliJetReader():
   fSignalFlag(0),
   fCutFlag(0),
   fUnitArray(new TClonesArray("AliJetUnitArray",60000)),
-  fUnitArrayNoCuts(new TClonesArray("AliJetUnitArray",60000)),
   fArrayInitialised(0),
-  fFillUAFromTracks(new AliJetFillUnitArrayTracks()), 
-  fFillUAFromEMCalDigits(new AliJetFillUnitArrayEMCalDigits()),
+  fFillUAFromTracks(new AliJetESDFillUnitArrayTracks()), 
+  fFillUAFromEMCalDigits(new AliJetESDFillUnitArrayEMCalDigits()),
   fNumCandidate(0),
   fNumCandidateCut(0),
   fHadronCorrector(0),
@@ -82,11 +81,6 @@ AliJetReader::~AliJetReader()
       delete fUnitArray;
   }
   
-  if (fUnitArrayNoCuts) {
-    fUnitArrayNoCuts->Delete();
-    delete fUnitArrayNoCuts;
-  }
-
   if (fFillUnitArray) {
     delete fFillUnitArray;
   }

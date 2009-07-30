@@ -12,11 +12,11 @@
 //---------------------------------------------------------------------
 
 #include <Riostream.h>
-#include <vector>
  
 #include <TObject.h>
 #include <TArrayI.h>
 #include <TArrayF.h>
+#include <TRefArray.h>
 
 class TClonesArray;
 class TLorentzVector;
@@ -41,10 +41,7 @@ class AliJet : public TObject
   TArrayF       GetPtIn() const { return fPtIn; }
   TArrayF       GetPtChargedPtCutIn() const { return fPtChPtCutIn; }
   TArrayF       GetEnTotChargedPtCutIn() const {return fEnTotChPtCutIn; }
-  TArrayI       GetVectorSizeIn() const { return fVectorSizeIn;  }
-  vector< vector<Float_t> > GetVectorPxIn() const { return fVPx; }
-  vector< vector<Float_t> > GetVectorPyIn() const { return fVPy; }
-  vector< vector<Float_t> > GetVectorPzIn() const { return fVPz; }
+  TRefArray*    GetTrackRef() const { return fTrackRef;}
   TArrayI       GetDetectorFlagIn() const { return fDetIn; } 
   Double_t      GetEtAvg() const { return fEtAvg; }
 
@@ -74,10 +71,7 @@ class AliJet : public TObject
   void SetInJet(Int_t* idx);
   void SetPtChargedPtCutIn(Float_t* pt2T);
   void SetEnTotChargedPtCutIn(Float_t* en2T);
-  void SetVectorSizeIn(Int_t* vectT);
-  void SetVectorPxIn(vector< vector<Float_t> > pxT);
-  void SetVectorPyIn(vector< vector<Float_t> > pyT);
-  void SetVectorPzIn(vector< vector<Float_t> > pzT);
+  void SetTrackReferences(TRefArray* ref) {fTrackRef = ref;}
   void SetDetectorFlagIn(Int_t* detT);
   void SetEtAvg(Double_t et) { fEtAvg = et; }
   // others
@@ -105,11 +99,8 @@ class AliJet : public TObject
   TArrayF  fPtIn;                 // Arrays of input particles kine:Pt
   TArrayF  fPtChPtCutIn;          // Arrays of input particles kin:Pt Charged with pt cut
   TArrayF  fEnTotChPtCutIn;       // Arrays of total energy with pt cut on charged + cut min on cell
-  TArrayI  fVectorSizeIn;         // Arrays of number of charged tracks in each unitArray
   TArrayI  fDetIn;                // Arrays of detector type of each UnitArray
-  vector< vector<Float_t> > fVPx; //||
-  vector< vector<Float_t> > fVPy; //||
-  vector< vector<Float_t> > fVPz; //||
+  TRefArray* fTrackRef;           //|| Reference to tracks which could belongs to the jet
 
   ClassDef(AliJet,2)
 };

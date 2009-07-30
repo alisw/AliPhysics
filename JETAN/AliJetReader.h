@@ -22,10 +22,9 @@ class AliJetReaderHeader;
 class AliESDEvent;
 class AliHeader;
 class AliJetUnitArray;
-class AliJetHadronCorrectionv1;
+class AliJetHadronCorrection;
 class AliJet;
-class AliJetFillUnitArrayTracks;
-class AliJetFillUnitArrayEMCalDigits;
+class AliJetFillUnitArray;
 
 class AliJetReader : public TObject 
 {
@@ -37,8 +36,6 @@ class AliJetReader : public TObject
   virtual TClonesArray*       GetMomentumArray()     const {return fMomentumArray;}
   virtual TRefArray*          GetReferences()        const {return 0;}   
   virtual TClonesArray        *GetUnitArray() const {return fUnitArray;}  
-  virtual TClonesArray        *GetUnitArrayNoCuts()  const {return fUnitArrayNoCuts;} 
-
   virtual AliJetReaderHeader* GetReaderHeader()      const {return fReaderHeader;}
   virtual AliHeader           *GetAliHeader() const  {return fAliHeader;}
   virtual Int_t               GetSignalFlag(Int_t i) const {return fSignalFlag[i];}
@@ -50,17 +47,16 @@ class AliJetReader : public TObject
   // Setters
   virtual Bool_t FillMomentumArray() {return kTRUE;}
   virtual Bool_t ReadEventLoader(Int_t) {return kTRUE;}
-  virtual void   FillUnitArrayFromTPCTracks(Int_t) {}     // temporarily not used
-  virtual void   FillUnitArrayFromEMCALHits() {}          // temporarily not used
-  virtual void   FillUnitArrayFromEMCALDigits(Int_t) {}   // temporarily not used
   virtual void   InitUnitArray() {}
   virtual void   InitParameters() {}
   virtual void   CreateTasks(TChain* /*tree*/) {}
   virtual Bool_t ExecTasks(Bool_t /*procid*/, TRefArray* /*refArray*/) {return kFALSE;}
   // Correction of hadronic energy 
-  virtual void   SetHadronCorrector(AliJetHadronCorrectionv1*) {;} 
-  virtual void   SetHadronCorrection(Int_t) {;} 
-  virtual void   SetElectronCorrection(Int_t) {;} 
+  virtual void   SetHadronCorrector(AliJetHadronCorrection*) {;} 
+  virtual void   SetApplyMIPCorrection(Bool_t /*val*/){;}
+  virtual void   SetApplyFractionHadronicCorrection(Bool_t /*val*/){;}
+  virtual void   SetFractionHadronicCorrection(Double_t /*val*/){;}
+  virtual void   SetApplyElectronCorrection(Int_t /*flag*/) {;}
   virtual void   SetReaderHeader(AliJetReaderHeader* header) 
   {fReaderHeader = header;}
   virtual void   SetESD(AliESDEvent* esd) { fESD = esd;}
@@ -89,14 +85,13 @@ class AliJetReader : public TObject
                                                            // from the underlying event
   TArrayI                          fCutFlag;               // to flag if a particle passed the pt cut or not
   TClonesArray                    *fUnitArray;             // array of digit position and energy 
-  TClonesArray                    *fUnitArrayNoCuts;       //|| array of digit position and energy 
   Bool_t                           fArrayInitialised;      // To check that array of units is initialised  
-  AliJetFillUnitArrayTracks       *fFillUAFromTracks;      // For charged particle task
-  AliJetFillUnitArrayEMCalDigits  *fFillUAFromEMCalDigits; // For neutral particle task
+  AliJetFillUnitArray             *fFillUAFromTracks;      // For charged particle task
+  AliJetFillUnitArray             *fFillUAFromEMCalDigits; // For neutral particle task
   Int_t                            fNumCandidate;          // Number of entries different from zero in unitarray
   Int_t                            fNumCandidateCut;       // Number of entries different from zero in unitarray
                                                            // which pass pt cut
-  AliJetHadronCorrectionv1        *fHadronCorrector;       //! Pointer to hadronic correction 
+  AliJetHadronCorrection          *fHadronCorrector;       //! Pointer to hadronic correction 
   Int_t                            fHCorrection;           //  Hadron correction flag 
   Int_t                            fECorrection;           //  Electron correction flag 
   Bool_t                           fEFlag;                 //  Electron correction flag 
