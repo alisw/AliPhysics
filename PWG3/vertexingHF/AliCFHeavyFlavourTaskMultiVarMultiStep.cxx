@@ -23,7 +23,11 @@
 //-----------------------------------------------------------------------
 // Author : C. Zampolli, CERN
 //-----------------------------------------------------------------------
-
+//-----------------------------------------------------------------------
+// Base class for HF Unfolding (pt and eta)
+// correlation matrix filled at Acceptance and PPR level
+// Author: A.Grelli ,  Utrecht - agrelli@uu.nl
+//----------------------------------------------------------------------- 
 #include <TCanvas.h>
 #include <TParticle.h>
 #include <TDatabasePDG.h>
@@ -42,13 +46,16 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODMCParticle.h"
-
+#include "TChain.h"
+#include "THnSparse.h"
+#include "TH2D.h"
 //__________________________________________________________________________
 AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep() :
 	AliAnalysisTaskSE(),
 	fPDG(0),
 	fCFManager(0x0),
 	fHistEventsProcessed(0x0),
+        fCorrelation(0x0),
 	fCountMC(0),
 	fCountAcc(0),
 	fCountReco(0),
@@ -57,7 +64,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep()
 	fCountRecoPPR(0),
 	fEvents(0),
 	fFillFromGenerated(kFALSE),
-	fMinITSClusters(5)
+	fMinITSClusters(5),
+        fAcceptanceUnf(kTRUE)
 {
 	//
 	//Default ctor
@@ -69,6 +77,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
 	fPDG(0),
 	fCFManager(0x0),
 	fHistEventsProcessed(0x0),
+        fCorrelation(0x0),
 	fCountMC(0),
 	fCountAcc(0),
 	fCountReco(0),
@@ -77,7 +86,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
 	fCountRecoPPR(0),
 	fEvents(0),
 	fFillFromGenerated(kFALSE),
-	fMinITSClusters(5)
+	fMinITSClusters(5),
+        fAcceptanceUnf(kTRUE)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -89,6 +99,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
 	*/
 	DefineOutput(1,TH1I::Class());
 	DefineOutput(2,AliCFContainer::Class());
+        DefineOutput(3,THnSparseD::Class());
 }
 
 //___________________________________________________________________________
@@ -112,6 +123,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
 	fPDG(c.fPDG),
 	fCFManager(c.fCFManager),
 	fHistEventsProcessed(c.fHistEventsProcessed),
+        fCorrelation(c.fCorrelation),
 	fCountMC(c.fCountMC),
 	fCountAcc(c.fCountAcc),
 	fCountReco(c.fCountReco),
@@ -120,7 +132,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
 	fCountRecoPPR(c.fCountRecoPPR),
 	fEvents(c.fEvents),
 	fFillFromGenerated(c.fFillFromGenerated),
-	fMinITSClusters(c.fMinITSClusters)
+	fMinITSClusters(c.fMinITSClusters),
+        fAcceptanceUnf(c.fAcceptanceUnf)
 {
 	//
 	// Copy Constructor
@@ -134,6 +147,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::~AliCFHeavyFlavourTaskMultiVarMultiStep(
 	//
 	if (fCFManager)           delete fCFManager ;
 	if (fHistEventsProcessed) delete fHistEventsProcessed ;
+        if (fCorrelation) delete fCorrelation ;
 }
 
 //_________________________________________________
@@ -386,7 +400,25 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			if (acceptanceProng0 && acceptanceProng1) {
 				AliDebug(2,"D0 reco daughters in acceptance");
 				fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoAcceptance) ;
-				icountRecoAcc++;   
+				icountRecoAcc++; 
+
+                                if(fAcceptanceUnf){
+
+                                   Double_t fill[4]; //fill response matrix
+ 
+                                   // dimensions 0&1 : pt,eta (Rec)
+
+                                   fill[0] = pt ;
+                                   fill[1] = rapidity;
+ 
+                                   // dimensions 2&3 : pt,eta (MC)
+
+                                   fill[2] = mcVtxHF->Pt();
+                                   fill[3] = mcVtxHF->Y();
+
+                                   fCorrelation->Fill(fill);
+
+                                }  
 
 				// cut on the min n. of clusters in ITS
 				Int_t ncls0=0;
@@ -452,6 +484,24 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 						AliDebug(2,"Particle passed PPR cuts");
 						fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPPR) ;   
 						icountRecoPPR++;
+
+                                                if(!fAcceptanceUnf){ // unfolding
+
+                                                  Double_t fill[4]; //fill response matrix
+ 
+                                                  // dimensions 0&1 : pt,eta (Rec)
+
+                                                  fill[0] = pt ;
+                                                  fill[1] = rapidity;
+ 
+                                                  // dimensions 2&3 : pt,eta (MC)
+
+                                                  fill[2] = mcVtxHF->Pt();
+                                                  fill[3] = mcVtxHF->Y();
+
+                                                  fCorrelation->Fill(fill);
+
+                                               }
 					}
 					else{
 						AliDebug(2,"Particle skipped due to PPR cuts");
@@ -497,6 +547,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	/* PostData(0) is taken care of by AliAnalysisTaskSE */
 	PostData(1,fHistEventsProcessed) ;
 	PostData(2,fCFManager->GetParticleContainer()) ;
+        PostData(3,fCorrelation) ;
 }
 
 
@@ -894,7 +945,23 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	c4->cd(9);
 	c4->cd();
 
+        THnSparseD* hcorr = dynamic_cast<THnSparseD*> (GetOutputData(3));
+
+        TH2D* corr1 =hcorr->Projection(0,2);
+        TH2D* corr2 = hcorr->Projection(1,3);
+
+        TCanvas * c7 =new TCanvas("c7","",800,400);
+        c7->Divide(2,1);
+        c7->cd(1);
+        corr1->Draw("text");
+        c7->cd(2);
+        corr2->Draw("text");
+      
+
 	TFile* file_projection = new TFile("file_projection.root","RECREATE");
+
+        corr1->Write();
+        corr2->Write();
 	h00->Write("pT_D0_step0");
 	h10->Write("rapidity_step0");
 	h20->Write("cosThetaStar_step0");
@@ -935,6 +1002,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h112->Write("phi_step2");
 
 	file_projection->Close();
+
+    
 
 	/*
 	c1->SaveAs("Plots/pT_rapidity_cosThetaStar.eps");
