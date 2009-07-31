@@ -319,9 +319,9 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				continue;
 			}
 
-                        const Double_t d0tokpi_cuts[9] = {0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.};
+                        const Double_t d0tokpiCuts[9] = {0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.};
                         Int_t okD0, okD0bar;
-			if (!(d0tokpi->SelectD0(&d0tokpi_cuts[0],okD0,okD0bar))){
+			if (!(d0tokpi->SelectD0(&d0tokpiCuts[0],okD0,okD0bar))){
 				// skipping candidate
 				continue;
 			} 
