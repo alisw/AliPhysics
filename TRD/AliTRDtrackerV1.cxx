@@ -71,7 +71,7 @@ const  Double_t AliTRDtrackerV1::fgkMaxChi2            = 12.0;  //
 const  Double_t AliTRDtrackerV1::fgkMaxSnp             =  0.95; // Maximum local sine of the azimuthal angle
 const  Double_t AliTRDtrackerV1::fgkMaxStep            =  2.0;  // Maximal step size in propagation 
 Double_t AliTRDtrackerV1::fgTopologicQA[kNConfigs] = {
-  0.1112, 0.1112, 0.1112, 0.0786, 0.0786,
+  0.5112, 0.5112, 0.5112, 0.0786, 0.0786,
   0.0786, 0.0786, 0.0579, 0.0579, 0.0474,
   0.0474, 0.0408, 0.0335, 0.0335, 0.0335
 };  
@@ -836,7 +836,6 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       }
       ptrTracklet->UpdateUsed();
     }
-
     // propagate track to the radial position of the tracklet
     ptrTracklet->UseClusters(); // TODO ? do we need this here ?
     // fit tracklet no tilt correction
@@ -860,16 +859,39 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       t.SetStatus(AliTRDtrackV1::kSnp);
       break;
     }
-  
     if(kPropagateIn){
       t.SetTrackLow(); 
       kPropagateIn = kFALSE;
     }
-
-    // update Kalman with the TRD measurement
     Double_t cov[3]; ptrTracklet->GetCovAt(x, cov);
     Double_t p[2] = { ptrTracklet->GetY(), ptrTracklet->GetZ()};
     Double_t chi2 = ((AliExternalTrackParam)t).GetPredictedChi2(p, cov);
+    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 2){
+      Double_t ytrack = ptrTracklet->GetYref(0);
+      Double_t ztrack = ptrTracklet->GetZref(0);
+      Double_t ytracklet = ptrTracklet->GetYfit(0);
+      Double_t ztracklet = ptrTracklet->GetZfit(0);
+      Double_t phitrack = ptrTracklet->GetYref(1);
+      Double_t phitracklet = ptrTracklet->GetYfit(1);
+      Double_t thetatrack = ptrTracklet->GetZref(1);
+      Double_t thetatracklet = ptrTracklet->GetZfit(1);
+   
+      TTreeSRedirector &mystreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
+      mystreamer << "FollowBackProlongation1"
+        << "il="              << ily
+        << "x="               << x
+        << "ytrack="          << ytrack
+        << "ztrack="          << ztrack
+        << "ytracklet="       << ytracklet
+        << "ztracklet="       << ztracklet
+        << "phitrack="        << phitrack
+        << "thetatrack="      << thetatrack
+        << "phitracklet="     << phitracklet
+        << "thetatracklet="   << thetatracklet
+        << "chi2="            << chi2
+        << "\n";
+    }
+    // update Kalman with the TRD measurement
     if(chi2>1e+10){ // TODO
       t.SetStatus(AliTRDtrackV1::kChi2, ily);
       continue; 
@@ -1127,8 +1149,10 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
   AliTRDcluster *cl = 0x0;
 
   Double_t xref = CalculateReferenceX(tracklets);
-  Double_t x, y, z, t, tilt, dx, w, we;
-  Double_t uvt[4];
+  Double_t x, y, z, t, tilt, dx, w, we, erry, errz;
+  Double_t uvt[4], sumPolY[5], sumPolZ[3];
+  memset(sumPolY, 0, sizeof(Double_t) * 5);
+  memset(sumPolZ, 0, sizeof(Double_t) * 3);
   Int_t nPoints = 0;
   // Containers for Least-square fitter
   for(Int_t ipl = 0; ipl < kNPlanes; ipl++){
@@ -1154,6 +1178,18 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
       we *= sigError ? TMath::Sqrt(cl->GetSigmaY2()+tilt*tilt*cl->GetSigmaZ2()) : 0.2;
       fitter->AddPoint(uvt, w, we);
       zfitter.AddPoint(&x, z, static_cast<Double_t>(TMath::Sqrt(cl->GetSigmaZ2())));
+      // adding points for covariance matrix estimation
+      erry = 1./(TMath::Sqrt(cl->GetSigmaY2()) + 0.1);  // 0.1 is a systematic error (due to misalignment and miscalibration)
+      erry *= erry;
+      errz = 1./cl->GetSigmaZ2();
+      for(Int_t ipol = 0; ipol < 5; ipol++){
+        sumPolY[ipol] += erry;
+        erry *= x;
+        if(ipol < 3){
+          sumPolZ[ipol] += errz;
+          errz *= x;
+        }
+      }
       nPoints++;
     }
   }
@@ -1195,16 +1231,45 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
 
   Double_t chi2track = fitter->GetChisquare()/Double_t(nPoints);
 
+  // Prepare error calculation
+  TMatrixD covarPolY(3,3);
+  covarPolY(0,0) = sumPolY[0]; covarPolY(1,1) = sumPolY[2]; covarPolY(2,2) = sumPolY[4];
+  covarPolY(0,1) = covarPolY(1,0) = sumPolY[1];
+  covarPolY(0,2) = covarPolY(2,0) = sumPolY[2];
+  covarPolY(2,1) = covarPolY(1,2) = sumPolY[3];
+  covarPolY.Invert();
+  TMatrixD covarPolZ(2,2);
+  covarPolZ(0,0) = sumPolZ[0]; covarPolZ(1,1) = sumPolZ[2];
+  covarPolZ(1,0) = covarPolZ(0,1) = sumPolZ[1];
+  covarPolZ.Invert();
+
   // Update the tracklets
-  Double_t dy, dz;
+  Double_t x1, dy, dz;
+  Double_t cov[15];
+  memset(cov, 0, sizeof(Double_t) * 15);
   for(Int_t iLayer = 0; iLayer < AliTRDtrackerV1::kNPlanes; iLayer++) {
 
     x  = tracklets[iLayer].GetX0();
+    x1 = x - xref;
     y  = 0;
     z  = 0;
     dy = 0;
     dz = 0;
-
+    memset(cov, 0, sizeof(Double_t) * 3);
+    TMatrixD transform(3,3);
+    transform(0,0) = 1;
+    transform(0,1) = x;
+    transform(0,2) = x*x;
+    transform(1,1) = 1;
+    transform(1,2) = x;
+    transform(2,2) = 1;
+    TMatrixD covariance(transform, TMatrixD::kMult, covarPolY);
+    covariance *= transform.T();
+    TMatrixD transformZ(2,2);
+    transformZ(0,0) = transformZ(1,1) = 1;
+    transformZ(0,1) = x;
+    TMatrixD covarZ(transformZ, TMatrixD::kMult, covarPolZ);
+    covarZ *= transformZ.T();
     // y:     R^2 = (x - x0)^2 + (y - y0)^2
     //     =>   y = y0 +/- Sqrt(R^2 - (x - x0)^2)
     //          R = Sqrt() = 1/Curvature
@@ -1216,6 +1281,9 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
       res = TMath::Sqrt(res);
       y    = (1.0 - res) / a;
     }
+    cov[0] = covariance(0,0);
+    cov[2] = covarZ(0,0);
+    cov[1] = 0.;
 
     // dy:      R^2 = (x - x0)^2 + (y - y0)^2
     //     =>     y = +/- Sqrt(R^2 - (x - x0)^2) + y0
@@ -1225,9 +1293,9 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
     Double_t x0 = -b / a;
     if (-c * a + b * b + 1 > 0) {
       if (1.0/(curvature * curvature) - (x - x0) * (x - x0) > 0.0) {
-  Double_t yderiv = (x - x0) / TMath::Sqrt(1.0/(curvature * curvature) - (x - x0) * (x - x0));
-  if (a < 0) yderiv *= -1.0;
-  dy = yderiv;
+       Double_t yderiv = (x - x0) / TMath::Sqrt(1.0/(curvature * curvature) - (x - x0) * (x - x0));
+        if (a < 0) yderiv *= -1.0;
+        dy = yderiv;
       }
     }
     z  = offset + slope * (x - xref);
@@ -1237,6 +1305,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
     tracklets[iLayer].SetZref(0, z);
     tracklets[iLayer].SetZref(1, dz);
     tracklets[iLayer].SetC(curvature);
+    tracklets[iLayer].SetCovRef(cov);
     tracklets[iLayer].SetChi2(chi2track);
   }
   
@@ -2112,9 +2181,10 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
       pars[1] = ntracks;
       pars[2] = istack;
       ntracks = MakeSeeds(stack, &sseed[6*ntracks], pars);
+      //AliInfo(Form("Number of Tracks after iteration step %d: %d\n", iconf, ntracks));
       if(ntracks == kMaxTracksStack) break;
     }
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 10) AliInfo(Form("Candidate TRD tracks %d in iteration %d.", ntracks, fSieveSeeding));
+    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 1) AliInfo(Form("Candidate TRD tracks %d in iteration %d.", ntracks, fSieveSeeding));
     
     if(!ntracks) break;
     
@@ -2232,7 +2302,6 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
           for(Int_t iseed = AliTRDgeometry::kNlayer; iseed--;) dseed[iseed] = new AliTRDseedV1(lseed[iseed]);
 
           //Int_t eventNrInFile = esd->GetEventNumberInFile();
-          //AliInfo(Form("Number of clusters %d.", nclusters));
           Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
           Int_t trackNumber = AliTRDtrackerDebug::GetTrackNumber();
           Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
@@ -2478,7 +2547,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
     x0[iLayer] = glb[0];
   }
 
-  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 10){
+  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 2){
     AliInfo(Form("Making seeds Stack[%d] Config[%d] Tracks[%d]...", istack, config, ntracks));
   }
 
@@ -2521,8 +2590,8 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
         //printf("Found c[1] candidate 2 %p\n", c[2]);
         if(!c[2]) continue;
               
-        // 				AliInfo("Seeding clusters found. Building seeds ...");
-        // 				for(Int_t i = 0; i < kNSeedPlanes; i++) printf("%i. coordinates: x = %6.3f, y = %6.3f, z = %6.3f\n", i, c[i]->GetX(), c[i]->GetY(), c[i]->GetZ());
+       	//AliInfo("Seeding clusters found. Building seeds ...");
+       	//for(Int_t i = 0; i < kNSeedPlanes; i++) printf("%i. coordinates: x = %6.3f, y = %6.3f, z = %6.3f\n", i, c[i]->GetX(), c[i]->GetY(), c[i]->GetZ());
               
         for (Int_t il = 0; il < kNPlanes; il++) cseed[il].Reset();
       
@@ -2587,24 +2656,32 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
               <<"\n";
         }
         if(chi2[0] > fReconstructor->GetRecoParam() ->GetChi2Z()/*7./(3. - sLayer)*//*iter*/){
-//          //AliInfo(Form("Failed chi2 filter on chi2Z [%f].", chi2[0]));
+          //AliInfo(Form("Failed chi2 filter on chi2Z [%f].", chi2[0]));
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
         }
         if(chi2[1] > fReconstructor->GetRecoParam() ->GetChi2Y()/*1./(3. - sLayer)*//*iter*/){
-//          //AliInfo(Form("Failed chi2 filter on chi2Y [%f].", chi2[1]));
+          //AliInfo(Form("Failed chi2 filter on chi2Y [%f].", chi2[1]));
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
         }
         //AliInfo("Passed chi2 filter.");
       
         // try attaching clusters to tracklets
-        Int_t mlayers = 0;
+        Int_t mlayers = 0; 
+	      AliTRDcluster *cl = NULL;
         for(int iLayer=0; iLayer<kNSeedPlanes; iLayer++){
           Int_t jLayer = planes[iLayer];
+	        Int_t nNotInChamber = 0;
           if(!cseed[jLayer].AttachClusters(stack[jLayer], kTRUE)) continue;
+          cseed[jLayer].Fit();
           cseed[jLayer].UpdateUsed();
-          if(!cseed[jLayer].IsOK()) continue;
+	        cseed[jLayer].ResetClusterIter();
+	        while((cl = cseed[jLayer].NextCluster())){
+	  	      if(!cl->IsInChamber()) nNotInChamber++;
+	        }
+          //printf("clusters[%d], used[%d], not in chamber[%d]\n", cseed[jLayer].GetN(), cseed[jLayer].GetNUsed(), nNotInChamber);
+	        if(cseed[jLayer].GetN() - (cseed[jLayer].GetNUsed() + nNotInChamber) < 5) continue; // checking for Cluster which are not in chamber is a much stronger restriction on real data
           mlayers++;
         }
 
@@ -2621,6 +2698,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
             Int_t jLayer = planesExt[iLayer];
             if(!(chamber = stack[jLayer])) continue;
             cseed[jLayer].AttachClusters(chamber, kTRUE);
+            cseed[jLayer].Fit();
           }
           fTrackQuality[ntracks] = 1.; // dummy value
           ntracks++;
@@ -2699,7 +2777,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 *ss
       
         // do the final track fitting (Once with vertex constraint and once without vertex constraint)
         Double_t chi2Vals[3];
-        chi2Vals[0] = FitTiltedRieman(&cseed[0], kFALSE);
+        chi2Vals[0] = FitTiltedRieman(&cseed[0], kTRUE);
         if(fReconstructor->HasVertexConstrained())
           chi2Vals[1] = FitTiltedRiemanConstraint(&cseed[0], GetZ()); // Do Vertex Constrained fit if desired
         else
@@ -2801,15 +2879,14 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 *seeds, Double_t *params)
       track.UnsetTracklet(jLayer);
       ptrTracklet = &seeds[jLayer];
       if(!ptrTracklet->IsOK()) continue;
-      //if(TMath::Abs(ptrTracklet->GetYref(1) - ptrTracklet->GetYfit(1)) >= .2) continue; // check this condition with Marian
+      if(TMath::Abs(ptrTracklet->GetYref(1) - ptrTracklet->GetYfit(1)) >= .2) continue; // check this condition with Marian
       ptrTracklet = SetTracklet(ptrTracklet);
       ptrTracklet->UseClusters();
       track.SetTracklet(ptrTracklet, fTracklets->GetEntriesFast()-1);
     }
     AliTRDtrackV1 *ptrTrack = SetTrack(&track);
-    ptrTrack->SetReconstructor(fReconstructor);
-    //ptrTrack->CookLabel(.9);
     ptrTrack->CookPID();
+    ptrTrack->SetReconstructor(fReconstructor);
     return ptrTrack;
   }
 
@@ -2969,8 +3046,8 @@ Double_t AliTRDtrackerV1::CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Doub
   Double_t likeChi2Z  = TMath::Exp(-chi2[2] * 0.14);			// Chi2Z 
   Double_t likeChi2TC = (fReconstructor->HasVertexConstrained()) ? 
   											TMath::Exp(-chi2[1] * 0.677) : 1;			// Constrained Tilted Riemann
-  Double_t likeChi2TR = TMath::Exp(-chi2[0] * 0.78);			// Non-constrained Tilted Riemann
-  Double_t likeChi2Phi= TMath::Exp(-chi2phi * 3.23);
+  Double_t likeChi2TR = TMath::Exp(-chi2[0] * 0.0078);			// Non-constrained Tilted Riemann
+  Double_t likeChi2Phi= TMath::Exp(-chi2phi * 3.23);//3.23
   Double_t trackLikelihood     = likeChi2Z * likeChi2TR * likeChi2Phi;
 
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 2){
@@ -2987,7 +3064,7 @@ Double_t AliTRDtrackerV1::CalculateTrackLikelihood(AliTRDseedV1 *tracklets, Doub
         << "TrackLikelihood=" << trackLikelihood
         << "\n";
   }
-
+  
   return trackLikelihood;
 }
 
@@ -3040,7 +3117,6 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4])
   Double_t likeN     = TMath::Exp(-(fRecoPars->GetNMeanClusters() - nclusters) / fRecoPars->GetNSigmaClusters());
   Double_t like      = likea * likechi2y * likechi2z * likeN;
 
-  //	AliInfo(Form("sumda(%f) chi2[0](%f) chi2[1](%f) likea(%f) likechi2y(%f) likechi2z(%f) nclusters(%d) likeN(%f)", sumda, chi2[0], chi2[1], likea, likechi2y, likechi2z, nclusters, likeN));
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 2){
     Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
     Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
@@ -3320,58 +3396,7 @@ AliKalmanTrack* AliTRDtrackerV1::GetTrack(Int_t idx) const
   return idx >= 0 && idx < ntrk ? (AliKalmanTrack*)fTracks->UncheckedAt(idx) : 0x0;
 }
 
-//____________________________________________________________________
-Float_t AliTRDtrackerV1::CalculateReferenceX(AliTRDseedV1 *tracklets){
-  //
-  // Calculates the reference x-position for the tilted Rieman fit defined as middle
-  // of the stack (middle between layers 2 and 3). For the calculation all the tracklets
-  // are taken into account
-  // 
-  // Parameters:	- Array of tracklets(AliTRDseedV1)
-  //
-  // Output:		- The reference x-position(Float_t)
-  //
-  Int_t nDistances = 0;
-  Float_t meanDistance = 0.;
-  Int_t startIndex = 5;
-  for(Int_t il =5; il > 0; il--){
-    if(tracklets[il].IsOK() && tracklets[il -1].IsOK()){
-      Float_t xdiff = tracklets[il].GetX0() - tracklets[il -1].GetX0();
-      meanDistance += xdiff;
-      nDistances++;
-    }
-    if(tracklets[il].IsOK()) startIndex = il;
-  }
-  if(tracklets[0].IsOK()) startIndex = 0;
-  if(!nDistances){
-    // We should normally never get here
-    Float_t xpos[2]; memset(xpos, 0, sizeof(Float_t) * 2);
-    Int_t iok = 0, idiff = 0;
-    // This attempt is worse and should be avoided:
-    // check for two chambers which are OK and repeat this without taking the mean value
-    // Strategy avoids a division by 0;
-    for(Int_t il = 5; il >= 0; il--){
-      if(tracklets[il].IsOK()){
-  xpos[iok] = tracklets[il].GetX0();
-  iok++;
-  startIndex = il;
-      }
-      if(iok) idiff++;	// to get the right difference;
-      if(iok > 1) break;
-    }
-    if(iok > 1){
-      meanDistance = (xpos[0] - xpos[1])/idiff;
-    }
-    else{
-      // we have do not even have 2 layers which are OK? The we do not need to fit at all
-      return 331.;
-    }
-  }
-  else{
-    meanDistance /= nDistances;
-  }
-  return tracklets[startIndex].GetX0() + (2.5 - startIndex) * meanDistance - 0.5 * (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
-}
+
 
 // //_____________________________________________________________________________
 // Int_t AliTRDtrackerV1::Freq(Int_t n, const Int_t *inlist
@@ -3476,6 +3501,88 @@ Float_t AliTRDtrackerV1::GetChi2Z(AliTRDseedV1 *tracklets) const
   return n ? chi2/n : 0.;
 }
 
+//____________________________________________________________________
+Float_t AliTRDtrackerV1::CalculateReferenceX(AliTRDseedV1 *tracklets){
+ 	//
+ 	// Calculates the reference x-position for the tilted Rieman fit defined as middle
+ 	// of the stack (middle between layers 2 and 3). For the calculation all the tracklets
+ 	// are taken into account
+ 	//
+ 	// Parameters: - Array of tracklets(AliTRDseedV1)
+ 	//
+ 	// Output: - The reference x-position(Float_t)
+  // Only kept for compatibility with the old code
+ 	//
+ 	Int_t nDistances = 0;
+ 	Float_t meanDistance = 0.;
+ 	Int_t startIndex = 5;
+ 	for(Int_t il =5; il > 0; il--){
+   	if(tracklets[il].IsOK() && tracklets[il -1].IsOK()){
+     	Float_t xdiff = tracklets[il].GetX0() - tracklets[il -1].GetX0();
+ 	    meanDistance += xdiff;
+ 	    nDistances++;
+	  }
+ 	  if(tracklets[il].IsOK()) startIndex = il;
+ 	}
+ 	if(tracklets[0].IsOK()) startIndex = 0;
+ 	if(!nDistances){
+ 	  // We should normally never get here
+ 	  Float_t xpos[2]; memset(xpos, 0, sizeof(Float_t) * 2);
+ 	  Int_t iok = 0, idiff = 0;
+ 	  // This attempt is worse and should be avoided:
+ 	  // check for two chambers which are OK and repeat this without taking the mean value
+ 	  // Strategy avoids a division by 0;
+ 	  for(Int_t il = 5; il >= 0; il--){
+ 	    if(tracklets[il].IsOK()){
+ 	      xpos[iok] = tracklets[il].GetX0();
+ 	      iok++;
+ 	      startIndex = il;
+ 	    }
+ 	    if(iok) idiff++; // to get the right difference;
+ 	    if(iok > 1) break;
+	  }
+ 	  if(iok > 1){
+ 	    meanDistance = (xpos[0] - xpos[1])/idiff;
+ 	  }
+ 	  else{
+ 	    // we have do not even have 2 layers which are OK? The we do not need to fit at all
+ 	    return 331.;
+   	}
+ 	}
+	else{
+	  meanDistance /= nDistances;
+	}
+	return tracklets[startIndex].GetX0() + (2.5 - startIndex) * meanDistance - 0.5 * (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
+}
+
+//_____________________________________________________________________________
+Double_t AliTRDtrackerV1::FitTiltedRiemanV1(AliTRDseedV1 *tracklets){
+  //
+  // Track Fitter Function using the new class implementation of 
+  // the Rieman fit
+  //
+  AliTRDtrackFitterRieman fitter;
+  fitter.SetRiemanFitter(GetTiltedRiemanFitter());
+  fitter.Reset();
+  for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++) fitter.SetTracklet(il, &tracklets[il]);
+  Double_t chi2 = fitter.Eval();
+  // Update the tracklets
+  Double_t cov[15]; Double_t x0;
+  memset(cov, 0, sizeof(Double_t) * 15);
+  for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
+    x0 = tracklets[il].GetX0();
+    tracklets[il].SetYref(0, fitter.GetYat(x0));
+    tracklets[il].SetZref(0, fitter.GetZat(x0));
+    tracklets[il].SetYref(1, fitter.GetDyDxAt(x0));
+    tracklets[il].SetZref(1, fitter.GetDzDx());
+    tracklets[il].SetC(fitter.GetCurvature());
+    fitter.GetCovAt(x0, cov);
+    tracklets[il].SetCovRef(cov);
+    tracklets[il].SetChi2(chi2);
+  }
+  return chi2;
+}
+
 ///////////////////////////////////////////////////////
 //                                                   //
 // Resources of class AliTRDLeastSquare              //
@@ -3564,3 +3671,335 @@ void AliTRDtrackerV1::AliTRDLeastSquare::GetCovarianceMatrix(Double_t *storage) 
   memcpy(storage, fCovarianceMatrix, sizeof(Double_t) * 3);
 }
 
+//_____________________________________________________________________________
+void AliTRDtrackerV1::AliTRDLeastSquare::Reset(){
+  //
+  // Reset the fitter
+  //
+  memset(fParams, 0, sizeof(Double_t) * 2);
+  memset(fCovarianceMatrix, 0, sizeof(Double_t) * 3);
+  memset(fSums, 0, sizeof(Double_t) * 6);
+}
+
+///////////////////////////////////////////////////////
+//                                                   //
+// Resources of class AliTRDtrackFitterRieman        //
+//                                                   //
+///////////////////////////////////////////////////////
+
+//_____________________________________________________________________________
+AliTRDtrackerV1::AliTRDtrackFitterRieman::AliTRDtrackFitterRieman():
+  fTrackFitter(NULL),
+  fZfitter(NULL),
+  fCovarPolY(NULL),
+  fCovarPolZ(NULL),
+  fXref(0.),
+  fSysClusterError(0.)
+{
+  //
+  // Default constructor
+  //
+  fZfitter = new AliTRDLeastSquare;
+  fCovarPolY = new TMatrixD(3,3);
+  fCovarPolZ = new TMatrixD(2,2);
+  memset(fTracklets, 0, sizeof(AliTRDseedV1 *) * 6);
+  memset(fParameters, 0, sizeof(Double_t) * 5);
+  memset(fSumPolY, 0, sizeof(Double_t) * 5);
+  memset(fSumPolZ, 0, sizeof(Double_t) * 2);
+}
+
+//_____________________________________________________________________________
+AliTRDtrackerV1::AliTRDtrackFitterRieman::~AliTRDtrackFitterRieman(){
+  //
+  // Destructor
+  //
+  if(fZfitter) delete fZfitter;
+  if(fCovarPolY) delete fCovarPolY;
+  if(fCovarPolZ) delete fCovarPolZ;
+}
+
+//_____________________________________________________________________________
+void AliTRDtrackerV1::AliTRDtrackFitterRieman::Reset(){
+  //
+  // Reset the Fitter
+  //
+  if(fTrackFitter){
+    fTrackFitter->StoreData(kTRUE);
+    fTrackFitter->ClearPoints();
+  }
+  if(fZfitter){
+    fZfitter->Reset();
+  }
+  fXref = 0.;
+  memset(fTracklets, 0, sizeof(AliTRDseedV1 *) * AliTRDgeometry::kNlayer);
+  memset(fParameters, 0, sizeof(Double_t) * 5);
+  memset(fSumPolY, 0, sizeof(Double_t) * 5);
+  memset(fSumPolZ, 0, sizeof(Double_t) * 2);
+  for(Int_t irow = 0; irow < fCovarPolY->GetNrows(); irow++)
+    for(Int_t icol = 0; icol < fCovarPolY->GetNcols(); icol++){
+      (*fCovarPolY)(irow, icol) = 0.;
+      if(irow < 2 && icol < 2)
+        (*fCovarPolZ)(irow, icol) = 0.;
+    }
+}
+
+//_____________________________________________________________________________
+void AliTRDtrackerV1::AliTRDtrackFitterRieman::SetTracklet(Int_t itr, AliTRDseedV1 *tracklet){ 
+  //
+  // Add tracklet into the fitter
+  //
+  if(itr >= AliTRDgeometry::kNlayer) return;
+  fTracklets[itr] = tracklet; 
+}
+
+//_____________________________________________________________________________
+Double_t AliTRDtrackerV1::AliTRDtrackFitterRieman::Eval(){
+  //
+  // Perform the fit
+  // 1. Apply linear transformation and store points in the fitter
+  // 2. Evaluate the fit
+  // 3. Check if the result of the fit in z-direction is reasonable
+  // if not
+  // 3a. Fix the parameters 3 and 4 with the results of a simple least
+  //     square fit
+  // 3b. Redo the fit with the fixed parameters
+  // 4. Store fit results (parameters and errors)
+  //
+  if(!fTrackFitter){
+    return 1e10;
+  }
+  fXref = CalculateReferenceX();
+  for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++) UpdateFitters(fTracklets[il]);
+  if(!fTrackFitter->GetNpoints()) return 1e10;
+  // perform the fit
+  fTrackFitter->Eval();
+  fZfitter->Eval();
+  fParameters[3] = fTrackFitter->GetParameter(3);
+  fParameters[4] = fTrackFitter->GetParameter(4);
+  if(!CheckAcceptable(fParameters[3], fParameters[4])) {
+    fTrackFitter->FixParameter(3, fZfitter->GetFunctionValue(&fXref));
+    fTrackFitter->FixParameter(4, fZfitter->GetFunctionParameter(1));
+    fTrackFitter->Eval();
+    fTrackFitter->ReleaseParameter(3);
+    fTrackFitter->ReleaseParameter(4);
+    fParameters[3] = fTrackFitter->GetParameter(3);
+    fParameters[4] = fTrackFitter->GetParameter(4);
+  }
+  // Update the Fit Parameters and the errors
+  fParameters[0] = fTrackFitter->GetParameter(0);
+  fParameters[1] = fTrackFitter->GetParameter(1);
+  fParameters[2] = fTrackFitter->GetParameter(2);
+
+  // Prepare Covariance estimation
+  (*fCovarPolY)(0,0) = fSumPolY[0]; (*fCovarPolY)(1,1) = fSumPolY[2]; (*fCovarPolY)(2,2) = fSumPolY[4];
+  (*fCovarPolY)(1,0) = (*fCovarPolY)(0,1) = fSumPolY[1];
+  (*fCovarPolY)(2,0) = (*fCovarPolY)(0,2) = fSumPolY[2];
+  (*fCovarPolY)(2,1) = (*fCovarPolY)(1,2) = fSumPolY[3];
+  fCovarPolY->Invert();
+  (*fCovarPolZ)(0,0) = fSumPolZ[0]; (*fCovarPolZ)(1,1) = fSumPolZ[2];
+  (*fCovarPolZ)(1,0) = (*fCovarPolZ)(0,1) = fSumPolZ[1];
+  fCovarPolZ->Invert();
+  return fTrackFitter->GetChisquare() / fTrackFitter->GetNpoints();
+}
+
+//_____________________________________________________________________________
+void AliTRDtrackerV1::AliTRDtrackFitterRieman::UpdateFitters(AliTRDseedV1 *tracklet){
+  //
+  // Does the transformations and updates the fitters
+  // The following transformation is applied
+  //
+  AliTRDcluster *cl = NULL;
+  Double_t x, y, z, dx, t, w, we, yerr, zerr;
+  Double_t uvt[4];
+  if(!tracklet || !tracklet->IsOK()) return; 
+  Double_t tilt = tracklet->GetTilt();
+  for(Int_t itb = 0; itb < AliTRDseedV1::kNclusters; itb++){
+    if(!(cl = tracklet->GetClusters(itb))) continue;
+    if(!cl->IsInChamber()) continue;
+    if (!tracklet->IsUsable(itb)) continue;
+    x = cl->GetX();
+    y = cl->GetY();
+    z = cl->GetZ();
+    dx = x - fXref;
+    // Transformation
+    t = 1./(x*x + y*y);
+    uvt[0] = 2. * x * t;
+    uvt[1] = t;
+    uvt[2] = 2. * tilt * t;
+    uvt[3] = 2. * tilt * dx * t;
+    w = 2. * (y + tilt*z) * t;
+    // error definition changes for the different calls
+    we = 2. * t;
+    we *= TMath::Sqrt(cl->GetSigmaY2()+tilt*tilt*cl->GetSigmaZ2());
+    // Update sums for error calculation
+    yerr = 1./(TMath::Sqrt(cl->GetSigmaY2()) + fSysClusterError);
+    yerr *= yerr;
+    zerr = 1./cl->GetSigmaZ2();
+    for(Int_t ipol = 0; ipol < 5; ipol++){
+      fSumPolY[ipol] += yerr;
+      yerr *= x;
+      if(ipol < 3){
+        fSumPolZ[ipol] += zerr;
+        zerr *= x;
+      }
+    }
+    fTrackFitter->AddPoint(uvt, w, we);
+    fZfitter->AddPoint(&x, z, static_cast<Double_t>(TMath::Sqrt(cl->GetSigmaZ2())));
+  }
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDtrackerV1::AliTRDtrackFitterRieman::CheckAcceptable(Double_t offset, Double_t slope){
+  // 
+  // Check whether z-results are acceptable
+  // Definition: Distance between tracklet fit and track fit has to be
+  // less then half a padlength
+  // Point of comparision is at the anode wire
+  //
+  Bool_t acceptablez = kTRUE;
+  Double_t zref = 0.0;
+  for (Int_t iLayer = 0; iLayer < kNPlanes; iLayer++) {
+    if(!fTracklets[iLayer]->IsOK()) continue;
+    zref = offset + slope * (fTracklets[iLayer]->GetX0() - fXref);
+    if (TMath::Abs(fTracklets[iLayer]->GetZfit(0) - zref) > fTracklets[iLayer]->GetPadLength() * 0.5 + 1.0) 
+      acceptablez = kFALSE;
+  }
+  return acceptablez;
+}
+
+//_____________________________________________________________________________
+Double_t AliTRDtrackerV1::AliTRDtrackFitterRieman::GetYat(Double_t x) const {
+  //
+  // Calculate y position out of the track parameters
+  // y:     R^2 = (x - x0)^2 + (y - y0)^2
+  //     =>   y = y0 +/- Sqrt(R^2 - (x - x0)^2)
+  //          R = Sqrt() = 1/Curvature
+  //     =>   y = y0 +/- Sqrt(1/Curvature^2 - (x - x0)^2)
+  //
+  Double_t y = 0;
+  Double_t disc = (x * fParameters[0] + fParameters[1]);
+  disc = 1 - fParameters[0]*fParameters[2] + fParameters[1]*fParameters[1] - disc*disc;
+  if (disc >= 0) {
+    disc = TMath::Sqrt(disc);
+    y    = (1.0 - disc) / fParameters[0];
+  }
+  return y;
+}
+
+//_____________________________________________________________________________
+Double_t AliTRDtrackerV1::AliTRDtrackFitterRieman::GetZat(Double_t x) const {
+  //
+  // Return z position for a given x position
+  // Simple linear function
+  //
+  return fParameters[3] + fParameters[4] * (x - fXref);
+}
+
+//_____________________________________________________________________________
+Double_t AliTRDtrackerV1::AliTRDtrackFitterRieman::GetDyDxAt(Double_t x) const {
+  //
+  // Calculate dydx at a given radial position out of the track parameters
+  // dy:      R^2 = (x - x0)^2 + (y - y0)^2
+  //     =>     y = +/- Sqrt(R^2 - (x - x0)^2) + y0
+  //     => dy/dx = (x - x0)/Sqrt(R^2 - (x - x0)^2) 
+  // Curvature: cr = 1/R = a/Sqrt(1 + b^2 - c*a)
+  //     => dy/dx =  (x - x0)/(1/(cr^2) - (x - x0)^2) 
+  //
+  Double_t x0 = -fParameters[1] / fParameters[0];
+  Double_t curvature = GetCurvature();
+  Double_t dy = 0;
+  if (-fParameters[2] * fParameters[0] + fParameters[1] * fParameters[1] + 1 > 0) {
+    if (1.0/(curvature * curvature) - (x - x0) * (x - x0) > 0.0) {
+     Double_t yderiv = (x - x0) / TMath::Sqrt(1.0/(curvature * curvature) - (x - x0) * (x - x0));
+      if (fParameters[0] < 0) yderiv *= -1.0;
+      dy = yderiv;
+    }
+  }
+  return dy;
+}
+
+//_____________________________________________________________________________
+Double_t AliTRDtrackerV1::AliTRDtrackFitterRieman::GetCurvature() const {
+  //
+  // Calculate track curvature
+  //
+  //
+  Double_t curvature =  1.0 + fParameters[1]*fParameters[1] - fParameters[2]*fParameters[0];
+  if (curvature > 0.0) 
+    curvature  =  fParameters[0] / TMath::Sqrt(curvature);
+  return curvature;
+}
+
+//_____________________________________________________________________________
+void AliTRDtrackerV1::AliTRDtrackFitterRieman::GetCovAt(Double_t x, Double_t *cov) const {
+  //
+  // Error Definition according to gauss error propagation
+  //  
+  TMatrixD transform(3,3);
+  transform(0,0) = transform(1,1) = transform(2,2) = 1;
+  transform(0,1) = transform(1,2) = x;
+  transform(0,2) = x*x;
+  TMatrixD covariance(transform, TMatrixD::kMult, *fCovarPolY);
+  covariance *= transform.T();
+  cov[0] = covariance(0,0);
+  TMatrixD transformZ(2,2);
+  transformZ(0,0) = transformZ(1,1) = 1;
+  transformZ(0,1) = x;
+  TMatrixD covarZ(transformZ, TMatrixD::kMult, *fCovarPolZ);
+  covarZ *= transformZ.T();
+  cov[1] = covarZ(0,0);
+  cov[2] = 0;
+}
+
+//____________________________________________________________________
+Double_t AliTRDtrackerV1::AliTRDtrackFitterRieman::CalculateReferenceX(){
+  //
+  // Calculates the reference x-position for the tilted Rieman fit defined as middle
+  // of the stack (middle between layers 2 and 3). For the calculation all the tracklets
+  // are taken into account
+  // 
+  // Parameters:	- Array of tracklets(AliTRDseedV1)
+  //
+  // Output:		- The reference x-position(Float_t)
+  //
+  Int_t nDistances = 0;
+  Float_t meanDistance = 0.;
+  Int_t startIndex = 5;
+  for(Int_t il =5; il > 0; il--){
+    if(fTracklets[il]->IsOK() && fTracklets[il -1]->IsOK()){
+      Float_t xdiff = fTracklets[il]->GetX0() - fTracklets[il -1]->GetX0();
+      meanDistance += xdiff;
+      nDistances++;
+    }
+    if(fTracklets[il]->IsOK()) startIndex = il;
+  }
+  if(fTracklets[0]->IsOK()) startIndex = 0;
+  if(!nDistances){
+    // We should normally never get here
+    Float_t xpos[2]; memset(xpos, 0, sizeof(Float_t) * 2);
+    Int_t iok = 0, idiff = 0;
+    // This attempt is worse and should be avoided:
+    // check for two chambers which are OK and repeat this without taking the mean value
+    // Strategy avoids a division by 0;
+    for(Int_t il = 5; il >= 0; il--){
+      if(fTracklets[il]->IsOK()){
+        xpos[iok] = fTracklets[il]->GetX0();
+        iok++;
+        startIndex = il;
+      }
+      if(iok) idiff++;	// to get the right difference;
+      if(iok > 1) break;
+    }
+    if(iok > 1){
+      meanDistance = (xpos[0] - xpos[1])/idiff;
+    }
+    else{
+      // we have do not even have 2 layers which are OK? The we do not need to fit at all
+      return 331.;
+    }
+  }
+  else{
+    meanDistance /= nDistances;
+  }
+  return fTracklets[startIndex]->GetX0() + (2.5 - startIndex) * meanDistance - 0.5 * (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
+}

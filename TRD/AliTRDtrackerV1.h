@@ -25,6 +25,10 @@
 #include "AliTRDtrackingSector.h"
 #endif
 
+#ifndef ROOT_TMatrixDfwd
+#include <TMatrixDfwd.h>
+#endif
+
 /**************************************************************************
 * Class Status see source file                                           *
 **************************************************************************/
@@ -60,7 +64,7 @@ public:
     , kNTimeBins          = 35
     , kNPlanes            = 6
     , kNSeedPlanes        = 4
-    , kMaxTracksStack     = 100
+    , kMaxTracksStack     = 1000
     , kNConfigs           = 15
   };
   AliTRDtrackerV1(AliTRDReconstructor *rec = 0x0);
@@ -86,6 +90,7 @@ public:
   static Float_t  FitRieman(AliTRDseedV1 *tracklets, Double_t *chi2, Int_t *planes = 0x0);
   static Float_t  FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Double_t zVertex);
   static Float_t  FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigError);
+  static Double_t FitTiltedRiemanV1(AliTRDseedV1 *tracklets);
   
   static Double_t FitRiemanTilt(const AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t err=0, Int_t np = 0, AliTrackPoint *points = 0x0);
   static Double_t FitLine(const AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = 0x0, Bool_t err=0, Int_t np = 0, AliTrackPoint *points = 0x0);
@@ -116,6 +121,7 @@ public:
     void		AddPoint(Double_t *x, Double_t y, Double_t sigmaY);
     void		RemovePoint(Double_t *x, Double_t y, Double_t sigmaY);
     void		Eval();
+    void    Reset();
     
     Double_t	GetFunctionParameter(Int_t ParNumber) const {return fParams[ParNumber];}
     Double_t	GetFunctionValue(Double_t *xpos) const;
@@ -126,6 +132,43 @@ public:
     Double_t 	fParams[2];						// Fitparameter	
     Double_t 	fCovarianceMatrix[3];			// Covariance Matrix
     Double_t 	fSums[6];						// Sums
+  };
+
+  class AliTRDtrackFitterRieman{
+    public:
+      AliTRDtrackFitterRieman();
+      ~AliTRDtrackFitterRieman();
+
+      Double_t Eval();
+      void Reset();
+
+      Double_t GetYat(Double_t x) const;
+      Double_t GetDyDxAt(Double_t x) const;
+      Double_t GetZat(Double_t x) const;
+      Double_t GetDzDx() const { return fParameters[4]; };
+      Double_t GetCurvature() const;
+      void GetCovAt(Double_t x, Double_t *cov) const;
+
+      void SetRiemanFitter(TLinearFitter *fitter) { fTrackFitter = fitter; }
+      void SetTracklet(Int_t il, AliTRDseedV1 *tracklet);
+      void SetSysClusterError(Double_t err) { fSysClusterError = err; };
+    private:
+      AliTRDtrackFitterRieman(const AliTRDtrackFitterRieman &);
+      AliTRDtrackFitterRieman &operator=(const AliTRDtrackFitterRieman &);
+      void UpdateFitters(AliTRDseedV1 *tracklet);
+      Bool_t CheckAcceptable(Double_t offset, Double_t slope);
+      Double_t CalculateReferenceX();
+
+      TLinearFitter *fTrackFitter;        // Fitter for linearized track model
+      AliTRDLeastSquare *fZfitter;        // Linear fitter in z-Direction
+      AliTRDseedV1 *fTracklets[kNPlanes]; // Tracklet container
+      TMatrixD *fCovarPolY;               // Polynomial Covariance Matrix Estimation (y-direction)
+      TMatrixD *fCovarPolZ;               // Polynomial Covariance Matrix Estimation (z-direction)
+      Double_t fXref;                     // Reference x position for fit in z-Direction
+      Double_t fSysClusterError;          // Systematic cluster Error
+      Double_t fParameters[5];            // Track Model Parameter
+      Double_t fSumPolY[5];               // Sums for polynomial Covariance Matrix Estimation (y-direction)
+      Double_t fSumPolZ[3];               // Sums for polynomial Covariance Matrix Estimation (z-direction)
   };
 
 protected:
