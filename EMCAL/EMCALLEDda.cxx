@@ -121,7 +121,7 @@ TString side[] = {"A","C"};//+ and - pseudorapidity supermodules
     path2 += i;
     path2 += side[j]; 
     path2 += ".data";
-    mapping[i] = new AliCaloAltroMapping(path2.Data());
+    mapping[j*2 + i] = new AliCaloAltroMapping(path2.Data());
   }
  }
 
@@ -228,11 +228,9 @@ TString side[] = {"A","C"};//+ and - pseudorapidity supermodules
   //
   delete calibPedestal;
   delete calibSignal;
-  /* // AliCaloAltroMapping no longer appears to be delete-able
   for(Int_t iFile=0; iFile<kNRCU; iFile++) {
     if (mapping[iFile]) delete mapping[iFile];
   }
-  */
 
   /* store the result file on FES */
 #ifdef LOCAL_DEBUG

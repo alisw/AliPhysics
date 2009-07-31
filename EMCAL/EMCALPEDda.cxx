@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
      path2 += i;
      path2 +=side[j]; 
      path2 += ".data";
-     mapping[i] = new AliCaloAltroMapping(path2.Data());
+     mapping[j*2 + i] = new AliCaloAltroMapping(path2.Data());
    }
  }
   /* set up our analysis class */  
@@ -213,11 +213,9 @@ int main(int argc, char **argv) {
   // closing down; see if we can delete our analysis helper also
   //
   delete calibPedestal;
-  /* // AliCaloAltroMapping no longer appears to be delete-able
   for(Int_t iFile=0; iFile<kNRCU; iFile++) {
     if (mapping[iFile]) delete mapping[iFile];
   }
-  */
 
   /* store the result file on FES */
 #ifdef LOCAL_DEBUG
