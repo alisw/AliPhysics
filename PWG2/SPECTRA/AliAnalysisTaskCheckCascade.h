@@ -15,6 +15,7 @@
 class TList;
 class TH1F;
 class TH2F;
+class TH3F;
  
 
 #include "TString.h"
@@ -125,15 +126,15 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 	TH2F	*f2dHistXiRadiusVsEffMassOmegaMinus;	//! transv. casc. decay radius Vs Omega- Eff mass, under Omega- hyp.
 	TH2F	*f2dHistXiRadiusVsEffMassOmegaPlus;	//! transv. casc. decay radius Vs Omega+ Eff mass, under Omega+ hyp.
 	
-	TH2F	*f2dHistXiPtVsEffMassXiMinus;		//! casc. transv. momemtum Vs Xi- Eff mass
-	TH2F	*f2dHistXiPtVsEffMassXiPlus;		//! casc. transv. momemtum Vs Xi+ Eff mass
-	TH2F	*f2dHistXiPtVsEffMassOmegaMinus;	//! casc. transv. momemtum Vs Omega- Eff mass
-	TH2F	*f2dHistXiPtVsEffMassOmegaPlus;		//! casc. transv. momemtum Vs Omega+ Eff mass
+	TH3F	*f3dHistXiPtVsEffMassVsYXiMinus;	//! casc. transv. momemtum Vs Xi- Eff mass Vs Y
+	TH3F	*f3dHistXiPtVsEffMassVsYXiPlus;		//! casc. transv. momemtum Vs Xi+ Eff mass Vs Y
+	TH3F	*f3dHistXiPtVsEffMassVsYOmegaMinus;	//! casc. transv. momemtum Vs Omega- Eff mass Vs Y
+	TH3F	*f3dHistXiPtVsEffMassVsYOmegaPlus;	//! casc. transv. momemtum Vs Omega+ Eff mass Vs Y
 
   AliAnalysisTaskCheckCascade(const AliAnalysisTaskCheckCascade&);            // not implemented
   AliAnalysisTaskCheckCascade& operator=(const AliAnalysisTaskCheckCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascade, 3);
+  ClassDef(AliAnalysisTaskCheckCascade, 4);
 };
 
 #endif

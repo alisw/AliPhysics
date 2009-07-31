@@ -60,14 +60,10 @@ fListHistCascade(0),
     
    // Xi-
    fHistEtaGenCascXiMinus(0),
-      
-   fHistYGenCascMidRapXiMinus(0),		
-   fHistEtaGenCascMidRapXiMinus(0),
-   fHistThetaGenCascMidRapXiMinus(0),
-   fHistPtGenCascMidRapXiMinus(0),
+   f2dHistGenPtVsGenYGenXiMinus(0),
    
     fHistThetaGenCascXiMinus(0),
-    fHistPtFdblGenCascXiMinus(0),
+    f2dHistGenPtVsGenYFdblXiMinus(0),
     
     fHistThetaLambdaXiMinus(0), 
     fHistThetaBachXiMinus(0),
@@ -82,14 +78,10 @@ fListHistCascade(0),
    
    // Xi+
    fHistEtaGenCascXiPlus(0),
-      
-    fHistYGenCascMidRapXiPlus(0),
-    fHistEtaGenCascMidRapXiPlus(0),
-    fHistThetaGenCascMidRapXiPlus(0),
-    fHistPtGenCascMidRapXiPlus(0),
+   f2dHistGenPtVsGenYGenXiPlus(0),
    
     fHistThetaGenCascXiPlus(0), 
-    fHistPtFdblGenCascXiPlus(0),
+    f2dHistGenPtVsGenYFdblXiPlus(0),
     
     fHistThetaLambdaXiPlus(0), 
     fHistThetaBachXiPlus(0),
@@ -103,14 +95,10 @@ fListHistCascade(0),
    
    // Omega-
    fHistEtaGenCascOmegaMinus(0),
-   
-    fHistYGenCascMidRapOmegaMinus(0),
-    fHistEtaGenCascMidRapOmegaMinus(0),
-    fHistThetaGenCascMidRapOmegaMinus(0),
-    fHistPtGenCascMidRapOmegaMinus(0),
+   f2dHistGenPtVsGenYGenOmegaMinus(0),
    
     fHistThetaGenCascOmegaMinus(0),
-    fHistPtFdblGenCascOmegaMinus(0),
+    f2dHistGenPtVsGenYFdblOmegaMinus(0),
     
     fHistThetaLambdaOmegaMinus(0), 
     fHistThetaBachOmegaMinus(0),
@@ -125,14 +113,10 @@ fListHistCascade(0),
    
    // Omega+
    fHistEtaGenCascOmegaPlus(0),
-    
-    fHistYGenCascMidRapOmegaPlus(0),
-    fHistEtaGenCascMidRapOmegaPlus(0),
-    fHistThetaGenCascMidRapOmegaPlus(0),
-    fHistPtGenCascMidRapOmegaPlus(0),
+   f2dHistGenPtVsGenYGenOmegaPlus(0),
    
     fHistThetaGenCascOmegaPlus(0),
-    fHistPtFdblGenCascOmegaPlus(0),
+    f2dHistGenPtVsGenYFdblOmegaPlus(0),
     
     fHistThetaLambdaOmegaPlus(0), 
     fHistThetaBachOmegaPlus(0),
@@ -162,36 +146,24 @@ fListHistCascade(0),
     fHistMassWithMcPIDXiMinus(0), fHistMassWithMcPIDXiPlus(0),
     fHistMassWithMcPIDOmegaMinus(0), fHistMassWithMcPIDOmegaPlus(0),
 	
+    
 	// - Effective mass histos for the cascade candidates associated with MC
     fHistAsMCMassXiMinus(0),		
     fHistAsMCMassXiPlus(0),		
     fHistAsMCMassOmegaMinus(0),
     fHistAsMCMassOmegaPlus(0),
     
-	// - Generated Pt of the the cascade candidates associated with MC + Info Comb. PID
-    fHistAsMCandCombPIDGenPtXiMinus(0),
-    fHistAsMCandCombPIDGenPtXiPlus(0),
-    fHistAsMCandCombPIDGenPtOmegaMinus(0),
-    fHistAsMCandCombPIDGenPtOmegaPlus(0),
-	
-	// - Generated Pt of the the cascade candidates associated with MC
-    fHistAsMCGenPtXiMinus(0),		
-    fHistAsMCGenPtXiPlus(0),		
-    fHistAsMCGenPtOmegaMinus(0),
-    fHistAsMCGenPtOmegaPlus(0),
-	
-	// - Generated Y of the the cascade candidates associated with MC
-    fHistAsMCGenYXiMinus(0),		
-    fHistAsMCGenYXiPlus(0),	
-    fHistAsMCGenYOmegaMinus(0),
-    fHistAsMCGenYOmegaPlus(0),
-    
-    	// - Generated Y Vs Generated Pt, for the cascade candidates associated with MC
-    f2dHistAsMCGenYVsGenPtXiMinus(0),
-    f2dHistAsMCGenYVsGenPtXiPlus(0),
-    f2dHistAsMCGenYVsGenPtOmegaMinus(0),
-    f2dHistAsMCGenYVsGenPtOmegaPlus(0),
-    
+	// - Generated Pt Vs generated y, for the cascade candidates associated with MC + Info Comb. PID
+    f2dHistAsMCandCombPIDGenPtVsGenYXiMinus(0),
+    f2dHistAsMCandCombPIDGenPtVsGenYXiPlus(0),
+    f2dHistAsMCandCombPIDGenPtVsGenYOmegaMinus(0),
+    f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus(0),
+	   
+    	// - Generated Pt Vs generated y, for the cascade candidates associated with MC
+    f2dHistAsMCGenPtVsGenYXiMinus(0),
+    f2dHistAsMCGenPtVsGenYXiPlus(0),
+    f2dHistAsMCGenPtVsGenYOmegaMinus(0),
+    f2dHistAsMCGenPtVsGenYOmegaPlus(0),
     
     	// - Generated Eta of the the cascade candidates associated with MC
     fHistAsMCGenEtaXiMinus(0),
@@ -232,16 +204,12 @@ fListHistCascade(0),
     fHistEtaGenProton(0),
     fHistEtaGenAntiProton(0),
     
-   // Xi-
-    fHistEtaGenCascXiMinus(0),
-      
-    fHistYGenCascMidRapXiMinus(0),		
-    fHistEtaGenCascMidRapXiMinus(0),
-    fHistThetaGenCascMidRapXiMinus(0),
-    fHistPtGenCascMidRapXiMinus(0),
+// Xi-
+   fHistEtaGenCascXiMinus(0),
+   f2dHistGenPtVsGenYGenXiMinus(0),
    
     fHistThetaGenCascXiMinus(0),
-    fHistPtFdblGenCascXiMinus(0),
+    f2dHistGenPtVsGenYFdblXiMinus(0),
     
     fHistThetaLambdaXiMinus(0), 
     fHistThetaBachXiMinus(0),
@@ -255,15 +223,11 @@ fListHistCascade(0),
    
    
    // Xi+
-    fHistEtaGenCascXiPlus(0),
-      
-    fHistYGenCascMidRapXiPlus(0),
-    fHistEtaGenCascMidRapXiPlus(0),
-    fHistThetaGenCascMidRapXiPlus(0),
-    fHistPtGenCascMidRapXiPlus(0),
+   fHistEtaGenCascXiPlus(0),
+   f2dHistGenPtVsGenYGenXiPlus(0),
    
     fHistThetaGenCascXiPlus(0), 
-    fHistPtFdblGenCascXiPlus(0),
+    f2dHistGenPtVsGenYFdblXiPlus(0),
     
     fHistThetaLambdaXiPlus(0), 
     fHistThetaBachXiPlus(0),
@@ -276,15 +240,11 @@ fListHistCascade(0),
     fHistPtBarDghterXiPlus(0),
    
    // Omega-
-    fHistEtaGenCascOmegaMinus(0),
-   
-    fHistYGenCascMidRapOmegaMinus(0),
-    fHistEtaGenCascMidRapOmegaMinus(0),
-    fHistThetaGenCascMidRapOmegaMinus(0),
-    fHistPtGenCascMidRapOmegaMinus(0),
+   fHistEtaGenCascOmegaMinus(0),
+   f2dHistGenPtVsGenYGenOmegaMinus(0),
    
     fHistThetaGenCascOmegaMinus(0),
-    fHistPtFdblGenCascOmegaMinus(0),
+    f2dHistGenPtVsGenYFdblOmegaMinus(0),
     
     fHistThetaLambdaOmegaMinus(0), 
     fHistThetaBachOmegaMinus(0),
@@ -298,15 +258,11 @@ fListHistCascade(0),
    
    
    // Omega+
-    fHistEtaGenCascOmegaPlus(0),
-    
-    fHistYGenCascMidRapOmegaPlus(0),
-    fHistEtaGenCascMidRapOmegaPlus(0),
-    fHistThetaGenCascMidRapOmegaPlus(0),
-    fHistPtGenCascMidRapOmegaPlus(0),
+   fHistEtaGenCascOmegaPlus(0),
+   f2dHistGenPtVsGenYGenOmegaPlus(0),
    
     fHistThetaGenCascOmegaPlus(0),
-    fHistPtFdblGenCascOmegaPlus(0),
+    f2dHistGenPtVsGenYFdblOmegaPlus(0),
     
     fHistThetaLambdaOmegaPlus(0), 
     fHistThetaBachOmegaPlus(0),
@@ -324,47 +280,36 @@ fListHistCascade(0),
     fHistMassXiPlus(0),
     fHistMassOmegaMinus(0),
     fHistMassOmegaPlus(0),
-	
+    
 	// - Effective mass histos with combined PID
     fHistMassWithCombPIDXiMinus(0), fHistMassWithCombPIDXiPlus(0),
     fHistMassWithCombPIDOmegaMinus(0), fHistMassWithCombPIDOmegaPlus(0),
-    
+    	
 	// - PID Probability versus MC Pt(bachelor track)
     f2dHistPIDprobaKaonVsMCPtBach(0), f2dHistPIDprobaPionVsMCPtBach(0),
     
     	// - Effective mass histos with perfect MC PID on the bachelor
     fHistMassWithMcPIDXiMinus(0), fHistMassWithMcPIDXiPlus(0),
     fHistMassWithMcPIDOmegaMinus(0), fHistMassWithMcPIDOmegaPlus(0),
+	
     
 	// - Effective mass histos for the cascade candidates associated with MC
     fHistAsMCMassXiMinus(0),		
     fHistAsMCMassXiPlus(0),		
     fHistAsMCMassOmegaMinus(0),
     fHistAsMCMassOmegaPlus(0),
-    	
-	// - Generated Pt of the the cascade candidates associated with MC + Info Comb. PID
-    fHistAsMCandCombPIDGenPtXiMinus(0),
-    fHistAsMCandCombPIDGenPtXiPlus(0),
-    fHistAsMCandCombPIDGenPtOmegaMinus(0),
-    fHistAsMCandCombPIDGenPtOmegaPlus(0),
     
-	// - Generated Pt of the the cascade candidates associated with MC
-    fHistAsMCGenPtXiMinus(0),		
-    fHistAsMCGenPtXiPlus(0),		
-    fHistAsMCGenPtOmegaMinus(0),
-    fHistAsMCGenPtOmegaPlus(0),
-	
-	// - Generated Y of the the cascade candidates associated with MC
-    fHistAsMCGenYXiMinus(0),		
-    fHistAsMCGenYXiPlus(0),	
-    fHistAsMCGenYOmegaMinus(0),
-    fHistAsMCGenYOmegaPlus(0),
-    
-    	// - Generated Y Vs Generated Pt, for the cascade candidates associated with MC
-    f2dHistAsMCGenYVsGenPtXiMinus(0),
-    f2dHistAsMCGenYVsGenPtXiPlus(0),
-    f2dHistAsMCGenYVsGenPtOmegaMinus(0),
-    f2dHistAsMCGenYVsGenPtOmegaPlus(0),
+	// - Generated Pt Vs generated y, for the cascade candidates associated with MC + Info Comb. PID
+    f2dHistAsMCandCombPIDGenPtVsGenYXiMinus(0),
+    f2dHistAsMCandCombPIDGenPtVsGenYXiPlus(0),
+    f2dHistAsMCandCombPIDGenPtVsGenYOmegaMinus(0),
+    f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus(0),
+	   
+    	// - Generated Pt Vs generated y, for the cascade candidates associated with MC
+    f2dHistAsMCGenPtVsGenYXiMinus(0),
+    f2dHistAsMCGenPtVsGenYXiPlus(0),
+    f2dHistAsMCGenPtVsGenYOmegaMinus(0),
+    f2dHistAsMCGenPtVsGenYOmegaPlus(0),
     
     	// - Generated Eta of the the cascade candidates associated with MC
     fHistAsMCGenEtaXiMinus(0),
@@ -384,11 +329,7 @@ fListHistCascade(0),
     f2dHistAsMCResROmegaMinus(0),
     f2dHistAsMCResROmegaPlus(0)
 	
-    
-    
-  
-    
-   
+
 {
   // Constructor
 
@@ -453,25 +394,9 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
      fListHistCascade->Add(fHistEtaGenCascXiMinus);
   }
   
-  // - Plots for |y(MC)| < 1	
-  if (!fHistYGenCascMidRapXiMinus) {
-	  fHistYGenCascMidRapXiMinus = new TH1F("fHistYGenCascMidRapXiMinus", "Y of #Xi^{-} generated at mid rapidity;Y;Number of Casc", 240, -1.2, 1.2);
-	  fListHistCascade->Add(fHistYGenCascMidRapXiMinus );
-  }
-  
-  if (!fHistEtaGenCascMidRapXiMinus) {
-	  fHistEtaGenCascMidRapXiMinus = new TH1F("fHistEtaGenCascMidRapXiMinus", "#eta of #Xi^{-} generated at mid rapidity;#eta;Number of Casc", 100, -5, 5);
-	  fListHistCascade->Add(fHistEtaGenCascMidRapXiMinus );
-  }
-  
-  if (!fHistThetaGenCascMidRapXiMinus) {
-	  fHistThetaGenCascMidRapXiMinus = new TH1F("fHistThetaGenCascMidRapXiMinus", "#theta of #Xi^{-} generated at mid rapidity;#theta (deg);Number of Casc", 200, -10, 190);
-	  fListHistCascade->Add(fHistThetaGenCascMidRapXiMinus );
-  }
-  
-  if (!fHistPtGenCascMidRapXiMinus) {
-	  fHistPtGenCascMidRapXiMinus = new TH1F("fHistPtGenCascMidRapXiMinus", "P_{t} of #Xi^{-} generated at mid rapidity;P_{t} (GeV/c);Number of Casc", 200, 0., 10.);
-	  fListHistCascade->Add(fHistPtGenCascMidRapXiMinus );
+  if (!f2dHistGenPtVsGenYGenXiMinus) {
+     f2dHistGenPtVsGenYGenXiMinus = new TH2F("f2dHistGenPtVsGenYGenXiMinus", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 240, -1.2, 1.2);
+     fListHistCascade->Add(f2dHistGenPtVsGenYGenXiMinus);
   }
   
   
@@ -482,9 +407,9 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
      fListHistCascade->Add(fHistThetaGenCascXiMinus);
   }
 
-  if (!fHistPtFdblGenCascXiMinus) {
-	  fHistPtFdblGenCascXiMinus = new TH1F("fHistPtFdblGenCascXiMinus","P_{t} of findable generated #Xi^{-};P_{t} (GeV/c);Number of Casc", 200, 0, 10);
-	  fListHistCascade->Add(fHistPtFdblGenCascXiMinus );
+  if (!f2dHistGenPtVsGenYFdblXiMinus) {
+     f2dHistGenPtVsGenYFdblXiMinus = new TH2F("f2dHistGenPtVsGenYFdblXiMinus", "MC P_{t} Vs MC Y of findable Gen #Xi^{-}; Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 240, -1.2, 1.2);
+     fListHistCascade->Add(f2dHistGenPtVsGenYFdblXiMinus);
   }
   
 		// - Theta distribution the daughters (control plots)
@@ -536,25 +461,9 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
      fListHistCascade->Add(fHistEtaGenCascXiPlus);
   }
   
-  // - Plots for |y(MC)| < 1	
-  if (!fHistYGenCascMidRapXiPlus) {
-	  fHistYGenCascMidRapXiPlus = new TH1F("fHistYGenCascMidRapXiPlus", "Y of #Xi^{+} generated at mid rapidity;Y;Number of Casc", 240, -1.2, 1.2);
-	  fListHistCascade->Add(fHistYGenCascMidRapXiPlus );
-  }
-  
-  if (!fHistEtaGenCascMidRapXiPlus) {
-	  fHistEtaGenCascMidRapXiPlus = new TH1F("fHistEtaGenCascMidRapXiPlus", "#eta of #Xi^{+} generated at mid rapidity;#eta;Number of Casc", 100, -5, 5);
-	  fListHistCascade->Add(fHistEtaGenCascMidRapXiPlus );
-  }
-  
-  if (!fHistThetaGenCascMidRapXiPlus) {
-	  fHistThetaGenCascMidRapXiPlus = new TH1F("fHistThetaGenCascMidRapXiPlus", "#theta of #Xi^{+} generated at mid rapidity;#theta (deg);Number of Casc", 200, -10, 190);
-	  fListHistCascade->Add(fHistThetaGenCascMidRapXiPlus );
-  }
-  
-  if (!fHistPtGenCascMidRapXiPlus) {
-	  fHistPtGenCascMidRapXiPlus = new TH1F("fHistPtGenCascMidRapXiPlus", "P_{t} of #Xi^{+} generated at mid rapidity;P_{t} (GeV/c);Number of Casc", 200, 0., 10.);
-	  fListHistCascade->Add(fHistPtGenCascMidRapXiPlus );
+  if (!f2dHistGenPtVsGenYGenXiPlus) {
+     f2dHistGenPtVsGenYGenXiPlus = new TH2F("f2dHistGenPtVsGenYGenXiPlus", "MC P_{t} Vs MC Y of Gen #Xi^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 240, -1.2, 1.2);
+     fListHistCascade->Add(f2dHistGenPtVsGenYGenXiPlus);
   }
   
   
@@ -565,9 +474,9 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
      fListHistCascade->Add(fHistThetaGenCascXiPlus);
   }
  
-  if (!fHistPtFdblGenCascXiPlus) {
-	  fHistPtFdblGenCascXiPlus = new TH1F("fHistPtFdblGenCascXiPlus","P_{t} of findable generated #Xi^{+};P_{t} (GeV/c);Number of Casc", 200, 0, 10);
-	  fListHistCascade->Add(fHistPtFdblGenCascXiPlus );
+  if (!f2dHistGenPtVsGenYFdblXiPlus) {
+     f2dHistGenPtVsGenYFdblXiPlus = new TH2F("f2dHistGenPtVsGenYFdblXiPlus", "MC P_{t} Vs MC Y of findable Gen #Xi^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 240, -1.2, 1.2);
+     fListHistCascade->Add(f2dHistGenPtVsGenYFdblXiPlus);
   }
   
   		// - Theta distribution the daughters (control plots)
@@ -618,27 +527,10 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
      fListHistCascade->Add(fHistEtaGenCascOmegaMinus);
   }
   
-  // - Plots for |y(MC)| < 1	
-  if (!fHistYGenCascMidRapOmegaMinus) {
-	  fHistYGenCascMidRapOmegaMinus = new TH1F("fHistYGenCascMidRapOmegaMinus", "Y of #Omega^{-} generated at mid rapidity;Y;Number of Casc", 240, -1.2, 1.2);
-	  fListHistCascade->Add(fHistYGenCascMidRapOmegaMinus );
+  if (!f2dHistGenPtVsGenYGenOmegaMinus) {
+     f2dHistGenPtVsGenYGenOmegaMinus = new TH2F("f2dHistGenPtVsGenYGenOmegaMinus", "MC P_{t} Vs MC Y of Gen #Omega^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 240, -1.2, 1.2);
+     fListHistCascade->Add(f2dHistGenPtVsGenYGenOmegaMinus);
   }
-  
-  if (!fHistEtaGenCascMidRapOmegaMinus) {
-	  fHistEtaGenCascMidRapOmegaMinus = new TH1F("fHistEtaGenCascMidRapOmegaMinus", "#eta of #Omega^{-} generated at mid rapidity;#eta;Number of Casc", 100, -5, 5);
-	  fListHistCascade->Add(fHistEtaGenCascMidRapOmegaMinus );
-  }
-  
-  if (!fHistThetaGenCascMidRapOmegaMinus) {
-	  fHistThetaGenCascMidRapOmegaMinus = new TH1F("fHistThetaGenCascMidRapOmegaMinus", "#theta of #Omega^{-} generated at mid rapidity;#theta (deg);Number of Casc", 200, -10, 190);
-	  fListHistCascade->Add(fHistThetaGenCascMidRapOmegaMinus );
-  }
-  
-  if (!fHistPtGenCascMidRapOmegaMinus) {
-	  fHistPtGenCascMidRapOmegaMinus = new TH1F("fHistPtGenCascMidRapOmegaMinus", "P_{t} of #Omega^{-} generated at mid rapidity;P_{t} (GeV/c);Number of Casc", 200, 0., 10.);
-	  fListHistCascade->Add(fHistPtGenCascMidRapOmegaMinus );
-  }
-  
   
   
   // - Info at the generation level of multi-strange particle
@@ -648,9 +540,9 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
      fListHistCascade->Add(fHistThetaGenCascOmegaMinus);
   }
  
-  if (!fHistPtFdblGenCascOmegaMinus) {
-	  fHistPtFdblGenCascOmegaMinus = new TH1F("fHistPtFdblGenCascOmegaMinus","P_{t} of findable generated #Omega^{-};P_{t} (GeV/c);Number of Casc", 200, 0, 10);
-	  fListHistCascade->Add(fHistPtFdblGenCascOmegaMinus );
+  if (!f2dHistGenPtVsGenYFdblOmegaMinus) {
+     f2dHistGenPtVsGenYFdblOmegaMinus = new TH2F("f2dHistGenPtVsGenYFdblOmegaMinus", "MC P_{t} Vs MC Y of findable Gen #Omega^{-}; Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 240, -1.2, 1.2);
+     fListHistCascade->Add(f2dHistGenPtVsGenYFdblOmegaMinus);
   }
   
   		// - Theta distribution the daughters (control plots)
@@ -701,25 +593,9 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
      fListHistCascade->Add(fHistEtaGenCascOmegaPlus);
   }
   
-  // - Plots for |y(MC)| < 1	
-  if (!fHistYGenCascMidRapOmegaPlus) {
-	  fHistYGenCascMidRapOmegaPlus = new TH1F("fHistYGenCascMidRapOmegaPlus", "Y of #Omega^{+} generated at mid rapidity;Y;Number of Casc", 240, -1.2, 1.2);
-	  fListHistCascade->Add(fHistYGenCascMidRapOmegaPlus );
-  }
-  
-  if (!fHistEtaGenCascMidRapOmegaPlus) {
-	  fHistEtaGenCascMidRapOmegaPlus = new TH1F("fHistEtaGenCascMidRapOmegaPlus", "#eta of #Omega^{+} generated at mid rapidity;#eta;Number of Casc", 100, -5, 5);
-	  fListHistCascade->Add(fHistEtaGenCascMidRapOmegaPlus );
-  }
-  
-  if (!fHistThetaGenCascMidRapOmegaPlus) {
-	  fHistThetaGenCascMidRapOmegaPlus = new TH1F("fHistThetaGenCascMidRapOmegaPlus", "#theta of #Omega^{+} generated at mid rapidity;#theta (deg);Number of Casc", 200, -10, 190);
-	  fListHistCascade->Add(fHistThetaGenCascMidRapOmegaPlus );
-  }
-  
-  if (!fHistPtGenCascMidRapOmegaPlus) {
-	  fHistPtGenCascMidRapOmegaPlus = new TH1F("fHistPtGenCascMidRapOmegaPlus", "P_{t} of #Omega^{+} generated at mid rapidity;P_{t} (GeV/c);Number of Casc", 200, 0., 10.);
-	  fListHistCascade->Add(fHistPtGenCascMidRapOmegaPlus );
+  if (!f2dHistGenPtVsGenYGenOmegaPlus) {
+     f2dHistGenPtVsGenYGenOmegaPlus = new TH2F("f2dHistGenPtVsGenYGenOmegaPlus", "MC P_{t} Vs MC Y of Gen #Omega^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 240, -1.2, 1.2);
+     fListHistCascade->Add(f2dHistGenPtVsGenYGenOmegaPlus);
   }
   
   
@@ -731,10 +607,11 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
      fListHistCascade->Add(fHistThetaGenCascOmegaPlus);
   }
  
-  if (!fHistPtFdblGenCascOmegaPlus) {
-	  fHistPtFdblGenCascOmegaPlus = new TH1F("fHistPtFdblGenCascOmegaPlus","P_{t} of findable generated #Omega^{+};P_{t} (GeV/c);Number of Casc", 200, 0, 10);
-	  fListHistCascade->Add(fHistPtFdblGenCascOmegaPlus );
+  if (!f2dHistGenPtVsGenYFdblOmegaPlus) {
+     f2dHistGenPtVsGenYFdblOmegaPlus = new TH2F("f2dHistGenPtVsGenYFdblOmegaPlus", "MC P_{t} Vs MC Y of findable Gen #Omega^{+}; Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 240, -1.2, 1.2);
+     fListHistCascade->Add(f2dHistGenPtVsGenYFdblOmegaPlus);
   }
+
   
   		// - Theta distribution the daughters (control plots)
   
@@ -883,94 +760,50 @@ void AliAnalysisTaskCheckPerformanceCascade::UserCreateOutputObjects()
   }
   
 		
-		// - Generated Pt of the the cascade candidates associated with MC + profiting from Comb. PID
+		// -  Generated Pt Vs generated Y of the cascade candidates associated with MC 
+		//     + having the proper maximum proba of combined PID for the bachelor
   
-  if (!fHistAsMCandCombPIDGenPtXiMinus) {
-	  fHistAsMCandCombPIDGenPtXiMinus = new TH1F("fHistAsMCandCombPIDGenPtXiMinus", "P_{t} of gen. #Xi^{-} (associated+Bach.PID);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
-	  fListHistCascade->Add(fHistAsMCandCombPIDGenPtXiMinus );
+  if (!f2dHistAsMCandCombPIDGenPtVsGenYXiMinus) {
+     f2dHistAsMCandCombPIDGenPtVsGenYXiMinus = new TH2F("f2dHistAsMCandCombPIDGenPtVsGenYXiMinus", "MC P_{t} Vs MC Y of #Xi^{-} (associated+Bach.PID); Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 240, -1.2, 1.2);
+     fListHistCascade->Add(f2dHistAsMCandCombPIDGenPtVsGenYXiMinus);
   }
   
-  if (!fHistAsMCandCombPIDGenPtXiPlus) {
-	  fHistAsMCandCombPIDGenPtXiPlus = new TH1F("fHistAsMCandCombPIDGenPtXiPlus", "P_{t} of gen. #Xi^{+} (associated+Bach.PID);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
-	  fListHistCascade->Add(fHistAsMCandCombPIDGenPtXiPlus );
+  if (!f2dHistAsMCandCombPIDGenPtVsGenYXiPlus) {
+     f2dHistAsMCandCombPIDGenPtVsGenYXiPlus = new TH2F("f2dHistAsMCandCombPIDGenPtVsGenYXiPlus", "MC P_{t} Vs MC Y of #Xi^{+} (associated+Bach.PID); Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 240, -1.2, 1.2);
+     fListHistCascade->Add(f2dHistAsMCandCombPIDGenPtVsGenYXiPlus);
   }
   
-  if (!fHistAsMCandCombPIDGenPtOmegaMinus) {
-	  fHistAsMCandCombPIDGenPtOmegaMinus = new TH1F("fHistAsMCandCombPIDGenPtOmegaMinus", "P_{t} of gen. #Omega^{-} (associated+Bach.PID);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
-	  fListHistCascade->Add(fHistAsMCandCombPIDGenPtOmegaMinus );
+  if (!f2dHistAsMCandCombPIDGenPtVsGenYOmegaMinus) {
+     f2dHistAsMCandCombPIDGenPtVsGenYOmegaMinus = new TH2F("f2dHistAsMCandCombPIDGenPtVsGenYOmegaMinus", "MC P_{t} Vs MC Y of #Omega^{-} (associated+Bach.PID); Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 240, -1.2, 1.2);
+     fListHistCascade->Add(f2dHistAsMCandCombPIDGenPtVsGenYOmegaMinus);
   }
   
-  if (!fHistAsMCandCombPIDGenPtOmegaPlus) {
-	  fHistAsMCandCombPIDGenPtOmegaPlus = new TH1F("fHistAsMCandCombPIDGenPtOmegaPlus", "P_{t} of gen. #Omega^{+} (associated+Bach.PID);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
-	  fListHistCascade->Add(fHistAsMCandCombPIDGenPtOmegaPlus );
+  if (!f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus) {
+     f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus = new TH2F("f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus", "MC P_{t} Vs MC Y of #Omega^{+} (associated+Bach.PID); Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 240, -1.2, 1.2);
+     fListHistCascade->Add(f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus);
   }
   
 
-  		// - Generated Pt of the the cascade candidates associated with MC
+  		// - Generated Pt Vs Generated Y, for the cascade candidates associated with MC
   
-  if (!fHistAsMCGenPtXiMinus) {
-	  fHistAsMCGenPtXiMinus = new TH1F("fHistAsMCGenPtXiMinus", "P_{t} of gen. #Xi^{-} (associated);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
-	  fListHistCascade->Add(fHistAsMCGenPtXiMinus );
+  if (!f2dHistAsMCGenPtVsGenYXiMinus) {
+  	f2dHistAsMCGenPtVsGenYXiMinus = new TH2F("f2dHistAsMCGenPtVsGenYXiMinus", "MC P_{t} Vs MC Y of gen. #Xi^{-} (associated);Pt_{MC} (GeV/c); Rapidity, Y_{MC}",200, 0., 10., 240, -1.2, 1.2);
+	  fListHistCascade->Add(f2dHistAsMCGenPtVsGenYXiMinus );
   }
   
-  if (!fHistAsMCGenPtXiPlus) {
-	  fHistAsMCGenPtXiPlus = new TH1F("fHistAsMCGenPtXiPlus", "P_{t} of gen. #Xi^{+} (associated);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
-	  fListHistCascade->Add(fHistAsMCGenPtXiPlus );
+  if (!f2dHistAsMCGenPtVsGenYXiPlus) {
+	  f2dHistAsMCGenPtVsGenYXiPlus = new TH2F("f2dHistAsMCGenPtVsGenYXiPlus", "MC P_{t} Vs MC Y of gen. #Xi^{+} (associated);Pt_{MC} (GeV/c); Rapidity, Y_{MC}",200, 0., 10., 240, -1.2, 1.2);
+	  fListHistCascade->Add(f2dHistAsMCGenPtVsGenYXiPlus );
   }
   
-  if (!fHistAsMCGenPtOmegaMinus) {
-	  fHistAsMCGenPtOmegaMinus = new TH1F("fHistAsMCGenPtOmegaMinus", "P_{t} of gen. #Omega^{-} (associated);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
-	  fListHistCascade->Add(fHistAsMCGenPtOmegaMinus );
+  if (!f2dHistAsMCGenPtVsGenYOmegaMinus) {
+	  f2dHistAsMCGenPtVsGenYOmegaMinus = new TH2F("f2dHistAsMCGenPtVsGenYOmegaMinus", "MC P_{t} Vs MC Y of gen. #Omega^{-} (associated);Pt_{MC} (GeV/c); Rapidity, Y_{MC}",200, 0., 10., 240, -1.2, 1.2);
+	  fListHistCascade->Add(f2dHistAsMCGenPtVsGenYOmegaMinus );
   }
   
-  if (!fHistAsMCGenPtOmegaPlus) {
-	  fHistAsMCGenPtOmegaPlus = new TH1F("fHistAsMCGenPtOmegaPlus", "P_{t} of gen. #Omega^{+} (associated);Pt_{MC} (GeV/c);Number of Casc", 200, 0., 10.);
-	  fListHistCascade->Add(fHistAsMCGenPtOmegaPlus );
-  }
-   
-  
-  		// - Generated Y of the the cascade candidates associated with MC
-  
-  if (!fHistAsMCGenYXiMinus) {
-	  fHistAsMCGenYXiMinus = new TH1F("fHistAsMCGenYXiMinus", "Rapidity, Y of gen. #Xi^{-} (associated);Rapidity, Y;Number of Casc", 240, -1.2, 1.2);
-	  fListHistCascade->Add(fHistAsMCGenYXiMinus );
-  }
-  
-  if (!fHistAsMCGenYXiPlus) {
-	  fHistAsMCGenYXiPlus = new TH1F("fHistAsMCGenYXiPlus", "Rapidity, Y of gen. #Xi^{+} (associated);Rapidity, Y;Number of Casc", 240, -1.2, 1.2);
-	  fListHistCascade->Add(fHistAsMCGenYXiPlus );
-  }
-  
-  if (!fHistAsMCGenYOmegaMinus) {
-	  fHistAsMCGenYOmegaMinus = new TH1F("fHistAsMCGenYOmegaMinus", "Rapidity, Y of gen. #Omega^{-} (associated);Rapidity, Y;Number of Casc", 240, -1.2, 1.2);
-	  fListHistCascade->Add(fHistAsMCGenYOmegaMinus );
-  }
-  
-  if (!fHistAsMCGenYOmegaPlus) {
-	  fHistAsMCGenYOmegaPlus = new TH1F("fHistAsMCGenYOmegaPlus", "Rapidity, Y of gen. #Omega^{+} (associated);Rapidity, Y;Number of Casc", 240, -1.2, 1.2);
-	  fListHistCascade->Add(fHistAsMCGenYOmegaPlus );
-  }
-  
-  		// - Generated Y Vs Generated Pt, for the cascade candidates associated with MC
-  
-  if (!f2dHistAsMCGenYVsGenPtXiMinus) {
-  	f2dHistAsMCGenYVsGenPtXiMinus = new TH2F("f2dHistAsMCGenYVsGenPtXiMinus", "Y Vs P_{t} of gen. #Xi^{-} (associated);Rapidity, Y;P_{t} (GeV/c)",240, -1.2, 1.2, 200, 0., 10.);
-	  fListHistCascade->Add(f2dHistAsMCGenYVsGenPtXiMinus );
-  }
-  
-  if (!f2dHistAsMCGenYVsGenPtXiPlus) {
-	  f2dHistAsMCGenYVsGenPtXiPlus = new TH2F("f2dHistAsMCGenYVsGenPtXiPlus", "Y Vs P_{t} of gen. #Xi^{+} (associated);Rapidity, Y;P_{t} (GeV/c)",240, -1.2, 1.2, 200, 0., 10.);
-	  fListHistCascade->Add(f2dHistAsMCGenYVsGenPtXiPlus );
-  }
-  
-  if (!f2dHistAsMCGenYVsGenPtOmegaMinus) {
-	  f2dHistAsMCGenYVsGenPtOmegaMinus = new TH2F("f2dHistAsMCGenYVsGenPtOmegaMinus", "Y Vs P_{t} of gen. #Omega^{-} (associated);Rapidity, Y;P_{t} (GeV/c)",240, -1.2, 1.2, 200, 0., 10.);
-	  fListHistCascade->Add(f2dHistAsMCGenYVsGenPtOmegaMinus );
-  }
-  
-  if (!f2dHistAsMCGenYVsGenPtOmegaPlus) {
-	  f2dHistAsMCGenYVsGenPtOmegaPlus = new TH2F("f2dHistAsMCGenYVsGenPtOmegaPlus", "Y Vs P_{t} of gen. #Omega^{+} (associated);Rapidity, Y;P_{t} (GeV/c)",240, -1.2, 1.2, 200, 0., 10.);
-	  fListHistCascade->Add(f2dHistAsMCGenYVsGenPtOmegaPlus );
+  if (!f2dHistAsMCGenPtVsGenYOmegaPlus) {
+	  f2dHistAsMCGenPtVsGenYOmegaPlus = new TH2F("f2dHistAsMCGenPtVsGenYOmegaPlus", "MC P_{t} Vs MC Y of gen. #Omega^{+} (associated);Pt_{MC} (GeV/c); Rapidity, Y_{MC}",200, 0., 10., 240, -1.2, 1.2);
+	  fListHistCascade->Add(f2dHistAsMCGenPtVsGenYOmegaPlus );
   } 
   
   
@@ -1159,15 +992,12 @@ void AliAnalysisTaskCheckPerformanceCascade::UserExec(Option_t *)
 	Int_t lPdgCodeDghtMesV0       = 0;
 	Int_t lPdgCodeDghtBarV0       = 0;
 	
-	TH1F *lHistEtaGenCasc         = 0;
 	
-	TH1F *lHistYGenCascMidRap     = 0;
-	TH1F *lHistEtaGenCascMidRap   = 0;
-	TH1F *lHistThetaGenCascMidRap = 0;
-	TH1F *lHistPtGenCascMidRap    = 0;
-	
+	TH1F *lHistEtaGenCasc         = 0;	
+	TH2F *l2dHistGenPtVsGenYGen   = 0;
+		
 	TH1F *lHistThetaGenCasc       = 0;
-	TH1F *lHistPtFdblGenCasc      = 0;
+	TH2F *l2dHistGenPtVsGenYFdbl  = 0;
 	TH1F *lHistThetaLambda        = 0;
 	TH1F *lHistThetaBach          = 0;
 	TH1F *lHistThetaBarDghter     = 0;
@@ -1190,24 +1020,19 @@ switch (iCascType)
          lPdgCodeDghtBarV0  =   2212;  //Proton 
 	 	
 	 	// any Xi-
-	 lHistEtaGenCasc     = (TH1F*)fHistEtaGenCascXiMinus;
-	 
-	 	// cascades within |y| < 1
-	 lHistYGenCascMidRap     	= fHistYGenCascMidRapXiMinus;		
-	 lHistEtaGenCascMidRap		= fHistEtaGenCascMidRapXiMinus;
-	 lHistThetaGenCascMidRap	= fHistThetaGenCascMidRapXiMinus;	
-	 lHistPtGenCascMidRap		= fHistPtGenCascMidRapXiMinus;		
-	 	
+	 lHistEtaGenCasc        = fHistEtaGenCascXiMinus;
+	 l2dHistGenPtVsGenYGen  = f2dHistGenPtVsGenYGenXiMinus;
+	
 	 	// cascades generated within acceptance (cut in pt + theta)
-	 lHistThetaGenCasc   = fHistThetaGenCascXiMinus;
-	 lHistPtFdblGenCasc  = fHistPtFdblGenCascXiMinus;
-	 lHistThetaLambda    = fHistThetaLambdaXiMinus;
-	 lHistThetaBach      = fHistThetaBachXiMinus;
-	 lHistThetaBarDghter = fHistThetaBarDghterXiMinus;
-	 lHistThetaMesDghter = fHistThetaMesDghterXiMinus;
-	 lHistPtBach	     = fHistPtBachXiMinus;
-	 lHistPtBarDghter    = fHistPtBarDghterXiMinus;
-	 lHistPtMesDghter    = fHistPtMesDghterXiMinus;
+	 lHistThetaGenCasc      = fHistThetaGenCascXiMinus;
+	 l2dHistGenPtVsGenYFdbl = f2dHistGenPtVsGenYFdblXiMinus;
+	 lHistThetaLambda       = fHistThetaLambdaXiMinus;
+	 lHistThetaBach         = fHistThetaBachXiMinus;
+	 lHistThetaBarDghter    = fHistThetaBarDghterXiMinus;
+	 lHistThetaMesDghter    = fHistThetaMesDghterXiMinus;
+	 lHistPtBach	        = fHistPtBachXiMinus;
+	 lHistPtBarDghter       = fHistPtBarDghterXiMinus;
+	 lHistPtMesDghter       = fHistPtMesDghterXiMinus;
         break; 
            
     case 2: // Xi+
@@ -1218,24 +1043,19 @@ switch (iCascType)
          lPdgCodeDghtBarV0   =  -2212;  //AntiProton  
 	 
 	 	// any Xi+
-	 lHistEtaGenCasc     		= fHistEtaGenCascXiPlus;
-	 
-	 	// cascades within |y| < 1
-	 lHistYGenCascMidRap     	= fHistYGenCascMidRapXiPlus;		
-	 lHistEtaGenCascMidRap		= fHistEtaGenCascMidRapXiPlus;
-	 lHistThetaGenCascMidRap	= fHistThetaGenCascMidRapXiPlus;	
-	 lHistPtGenCascMidRap		= fHistPtGenCascMidRapXiPlus;		
-	 	
+	 lHistEtaGenCasc     	= fHistEtaGenCascXiPlus;
+	 l2dHistGenPtVsGenYGen  = f2dHistGenPtVsGenYGenXiPlus;
+	
 	 	// cascades generated within acceptance (cut in pt + theta)	 
-	 lHistThetaGenCasc   = fHistThetaGenCascXiPlus;
-	 lHistPtFdblGenCasc  = fHistPtFdblGenCascXiPlus;
-	 lHistThetaLambda    = fHistThetaLambdaXiPlus;
-	 lHistThetaBach      = fHistThetaBachXiPlus;
-	 lHistThetaBarDghter = fHistThetaBarDghterXiPlus;
-	 lHistThetaMesDghter = fHistThetaMesDghterXiPlus;
-	 lHistPtBach	     = fHistPtBachXiPlus;
-	 lHistPtBarDghter    = fHistPtBarDghterXiPlus;
-	 lHistPtMesDghter    = fHistPtMesDghterXiPlus;  
+	 lHistThetaGenCasc      = fHistThetaGenCascXiPlus;
+	 l2dHistGenPtVsGenYFdbl = f2dHistGenPtVsGenYFdblXiPlus;
+	 lHistThetaLambda       = fHistThetaLambdaXiPlus;
+	 lHistThetaBach         = fHistThetaBachXiPlus;
+	 lHistThetaBarDghter    = fHistThetaBarDghterXiPlus;
+	 lHistThetaMesDghter    = fHistThetaMesDghterXiPlus;
+	 lHistPtBach	        = fHistPtBachXiPlus;
+	 lHistPtBarDghter       = fHistPtBarDghterXiPlus;
+	 lHistPtMesDghter       = fHistPtMesDghterXiPlus;  
     	break;
    
     case 3: // Omega-
@@ -1246,24 +1066,19 @@ switch (iCascType)
          lPdgCodeDghtBarV0  =   2212;  //Proton 
 	 
 	 	// any Omega-
-	 lHistEtaGenCasc     = fHistEtaGenCascOmegaMinus;
-	 	
-	 	// cascades within |y| < 1
-	 lHistYGenCascMidRap     	= fHistYGenCascMidRapOmegaMinus;		
-	 lHistEtaGenCascMidRap		= fHistEtaGenCascMidRapOmegaMinus;
-	 lHistThetaGenCascMidRap	= fHistThetaGenCascMidRapOmegaMinus;	
-	 lHistPtGenCascMidRap		= fHistPtGenCascMidRapOmegaMinus;		
-	 	
+	 lHistEtaGenCasc        = fHistEtaGenCascOmegaMinus;	 	
+	 l2dHistGenPtVsGenYGen  = f2dHistGenPtVsGenYGenOmegaMinus;	
+	
 	 	// cascades generated within acceptance (cut in pt + theta)
-	 lHistThetaGenCasc   = fHistThetaGenCascOmegaMinus;
-	 lHistPtFdblGenCasc  = fHistPtFdblGenCascOmegaMinus;
-	 lHistThetaLambda    = fHistThetaLambdaOmegaMinus;
-	 lHistThetaBach      = fHistThetaBachOmegaMinus;
-	 lHistThetaBarDghter = fHistThetaBarDghterOmegaMinus;
-	 lHistThetaMesDghter = fHistThetaMesDghterOmegaMinus;
-	 lHistPtBach	     = fHistPtBachOmegaMinus;
-	 lHistPtBarDghter    = fHistPtBarDghterOmegaMinus;
-	 lHistPtMesDghter    = fHistPtMesDghterOmegaMinus;   
+	 lHistThetaGenCasc      = fHistThetaGenCascOmegaMinus;
+	 l2dHistGenPtVsGenYFdbl = f2dHistGenPtVsGenYFdblOmegaMinus;
+	 lHistThetaLambda       = fHistThetaLambdaOmegaMinus;
+	 lHistThetaBach         = fHistThetaBachOmegaMinus;
+	 lHistThetaBarDghter    = fHistThetaBarDghterOmegaMinus;
+	 lHistThetaMesDghter    = fHistThetaMesDghterOmegaMinus;
+	 lHistPtBach	        = fHistPtBachOmegaMinus;
+	 lHistPtBarDghter       = fHistPtBarDghterOmegaMinus;
+	 lHistPtMesDghter       = fHistPtMesDghterOmegaMinus;   
         break;
     
     case 4:  // Omega+
@@ -1274,24 +1089,19 @@ switch (iCascType)
          lPdgCodeDghtBarV0  =  -2212;  //AntiProton 
 	 
 	 	// any Omega+
-	 lHistEtaGenCasc     = fHistEtaGenCascOmegaPlus;
-	 
-	 	// cascades within |y| < 1
-	 lHistYGenCascMidRap     	= fHistYGenCascMidRapOmegaPlus;		
-	 lHistEtaGenCascMidRap		= fHistEtaGenCascMidRapOmegaPlus;
-	 lHistThetaGenCascMidRap	= fHistThetaGenCascMidRapOmegaPlus;	
-	 lHistPtGenCascMidRap		= fHistPtGenCascMidRapOmegaPlus;		
+	 lHistEtaGenCasc        = fHistEtaGenCascOmegaPlus;
+	 l2dHistGenPtVsGenYGen  = f2dHistGenPtVsGenYGenOmegaPlus;		
 	 	
 	 	// cascades generated within acceptance (cut in pt + theta)
-	 lHistThetaGenCasc   = fHistThetaGenCascOmegaPlus;
-	 lHistPtFdblGenCasc  = fHistPtFdblGenCascOmegaPlus;
-	 lHistThetaLambda    = fHistThetaLambdaOmegaPlus;
-	 lHistThetaBach      = fHistThetaBachOmegaPlus;
-	 lHistThetaBarDghter = fHistThetaBarDghterOmegaPlus;
-	 lHistThetaMesDghter = fHistThetaMesDghterOmegaPlus;
-	 lHistPtBach	     = fHistPtBachOmegaPlus;
-	 lHistPtBarDghter    = fHistPtBarDghterOmegaPlus;
-	 lHistPtMesDghter    = fHistPtMesDghterOmegaPlus;  
+	 lHistThetaGenCasc      = fHistThetaGenCascOmegaPlus;
+	 l2dHistGenPtVsGenYFdbl = f2dHistGenPtVsGenYFdblOmegaPlus;
+	 lHistThetaLambda       = fHistThetaLambdaOmegaPlus;
+	 lHistThetaBach         = fHistThetaBachOmegaPlus;
+	 lHistThetaBarDghter    = fHistThetaBarDghterOmegaPlus;
+	 lHistThetaMesDghter    = fHistThetaMesDghterOmegaPlus;
+	 lHistPtBach	        = fHistPtBachOmegaPlus;
+	 lHistPtBarDghter       = fHistPtBarDghterOmegaPlus;
+	 lHistPtMesDghter       = fHistPtMesDghterOmegaPlus;  
         break;
 
   }// end switch cascade
@@ -1309,7 +1119,7 @@ switch (iCascType)
 	}
 	 
     	if( lCurrentParticle->GetPdgCode() == lPdgCodeCasc ){  // Here !
-   		//cout << "Xi- ds boucle " << iCurrentLabelStack << "/ " << iNumberOfPrimaries << endl;
+   		//cout << "Xi- within loop " << iCurrentLabelStack << "/ " << iNumberOfPrimaries << endl;
 		
 		// -  Xi level ... _____________________________________________________________
 		TParticle* xiMC = 0x0;
@@ -1320,23 +1130,15 @@ switch (iCascType)
 		
 		}
 		
-		Double_t lRadToDeg = 180.0/TMath::Pi();
+		// Fill the first histos : = any generated Xi, not necessarily within the acceptance
+		Double_t lRapXiMC = 0.5*TMath::Log((xiMC->Energy() + xiMC->Pz()) / (xiMC->Energy() - xiMC->Pz() +1.e-13));
 		
-		// Fill the histo in pseudo-rapidity : = any generated Xi, not necessarily within the acceptance
-		lHistEtaGenCasc->Fill( xiMC->Eta() );
+		lHistEtaGenCasc 	->Fill( xiMC->Eta() );	 
+		l2dHistGenPtVsGenYGen 	->Fill( xiMC->Pt(), lRapXiMC  );    	
+			
 		
-	 
-	 	// cascades within |y| < 1
-		Double_t lRapXi = 0.5*TMath::Log((xiMC->Energy() + xiMC->Pz()) / (xiMC->Energy() - xiMC->Pz() +1.e-13));
 		
-		if( TMath::Abs(lRapXi) < 1) {
-			lHistYGenCascMidRap 	->Fill( lRapXi    			);    	
-			lHistEtaGenCascMidRap	->Fill( xiMC->Eta() 			); 
-			lHistThetaGenCascMidRap ->Fill( lRadToDeg * xiMC->Theta()	);
-			lHistPtGenCascMidRap	->Fill( xiMC->Pt() 			);
-		}
-		
-		// Check the emission of particle stays within the acceptance of the detector (cut in pt + theta)
+		// Check the emission of particle stays within the acceptance of the detector (cut in theta)
 		if( xiMC->Theta() < TMath::Pi()/4.0  ||    xiMC->Theta() > 3.0*TMath::Pi()/4.0 ) continue;	
 		if( xiMC->GetNDaughters() != 2) continue;
 		if( xiMC->GetDaughter(0) < 0 )  continue;
@@ -1367,7 +1169,7 @@ switch (iCascType)
 		// V0 otherwise - Case 3	
 			else continue;
 		
-			// Check the emission of particle stays within the acceptance of the detector
+			// Check the emission of particle stays within the acceptance of the detector (cut in pt + theta)
 			if( lLambda->Theta() < TMath::Pi()/4.0  ||    lLambda->Theta() > 3.0*TMath::Pi()/4.0 ) continue;
 			if( lBach->Theta() < TMath::Pi()/4.0    ||    lBach->Theta() > 3.0*TMath::Pi()/4.0 )   continue;
 		
@@ -1420,9 +1222,11 @@ switch (iCascType)
 		//cout << "Name of the file containing generated Xi :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() 
 		//						     <<  endl;	
 			
+		Double_t lRadToDeg = 180.0/TMath::Pi();	
+			
 		// - Filling histos ... _________________________________________________________________	
 			lHistThetaGenCasc	->Fill( lRadToDeg * xiMC->Theta()  );
-			lHistPtFdblGenCasc	->Fill( xiMC->Pt() );
+			l2dHistGenPtVsGenYFdbl	->Fill( xiMC->Pt(), lRapXiMC );
 			
 			// - Fill theta histos for Lambda and Bach
 			lHistThetaLambda	->Fill( lRadToDeg * lLambda->Theta() );
@@ -1443,14 +1247,10 @@ switch (iCascType)
      
 // - Re-initialisation of the local TH1F pointers
 lHistEtaGenCasc         = 0x0;
-
-lHistYGenCascMidRap     = 0x0;
-lHistEtaGenCascMidRap   = 0x0;
-lHistThetaGenCascMidRap = 0x0;
-lHistPtGenCascMidRap    = 0x0;
+l2dHistGenPtVsGenYGen   = 0x0;
 
 lHistThetaGenCasc       = 0x0;
-lHistPtFdblGenCasc      = 0x0;
+l2dHistGenPtVsGenYFdbl  = 0x0;
 lHistThetaLambda        = 0x0;
 lHistThetaBach          = 0x0;
 lHistThetaBarDghter     = 0x0;
@@ -1763,14 +1563,12 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	Double_t lrecoPt           = xiESD->Pt();
 	Double_t lrecoTransvRadius = TMath::Sqrt( xiESD->Xv() * xiESD->Xv() + xiESD->Yv() * xiESD->Yv() );
 	
-	// - Effective mass histos for the cascade candidates associated with MC
+	// - Histos for the cascade candidates associated with MC
 	
 	if( lChargeXi < 0 && lAssoXiMinus){	
 		fHistAsMCMassXiMinus	      ->Fill( lInvMassXiMinus  );
-		fHistAsMCGenPtXiMinus         ->Fill( lmcPt            );
-		if(lIsBachelorPion)	fHistAsMCandCombPIDGenPtXiMinus->Fill( lmcPt );
-		fHistAsMCGenYXiMinus          ->Fill( lmcRapXi         );
-		f2dHistAsMCGenYVsGenPtXiMinus ->Fill( lmcRapXi, lmcPt  );
+		if(lIsBachelorPion)	f2dHistAsMCandCombPIDGenPtVsGenYXiMinus->Fill( lmcPt, lmcRapXi );
+		f2dHistAsMCGenPtVsGenYXiMinus ->Fill( lmcPt, lmcRapXi  );
 		fHistAsMCGenEtaXiMinus        ->Fill( lmcEta           );
 		f2dHistAsMCResPtXiMinus       ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
 		f2dHistAsMCResRXiMinus        ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
@@ -1778,10 +1576,8 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	
 	else if( lChargeXi > 0 && lAssoXiPlus){	
 		fHistAsMCMassXiPlus	      ->Fill( lInvMassXiPlus   );
-		fHistAsMCGenPtXiPlus          ->Fill( lmcPt            );
-		if(lIsBachelorPion)	fHistAsMCandCombPIDGenPtXiPlus->Fill( lmcPt );
-		fHistAsMCGenYXiPlus           ->Fill( lmcRapXi         );
-		f2dHistAsMCGenYVsGenPtXiPlus  ->Fill( lmcRapXi, lmcPt  );
+		if(lIsBachelorPion)	f2dHistAsMCandCombPIDGenPtVsGenYXiPlus->Fill( lmcPt, lmcRapXi );
+		f2dHistAsMCGenPtVsGenYXiPlus  ->Fill( lmcPt, lmcRapXi  );
 		fHistAsMCGenEtaXiPlus         ->Fill( lmcEta           );
 		f2dHistAsMCResPtXiPlus        ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
 		f2dHistAsMCResRXiPlus         ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
@@ -1789,10 +1585,8 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	
 	else if( lChargeXi < 0 && lAssoOmegaMinus){	
 		fHistAsMCMassOmegaMinus          ->Fill( lInvMassOmegaMinus );
-		fHistAsMCGenPtOmegaMinus         ->Fill( lmcPt              );
-		if(lIsBachelorKaon)	fHistAsMCandCombPIDGenPtOmegaMinus->Fill( lmcPt );
-		fHistAsMCGenYOmegaMinus          ->Fill( lmcRapXi           );
-		f2dHistAsMCGenYVsGenPtOmegaMinus ->Fill( lmcRapXi, lmcPt    );
+		if(lIsBachelorKaon)	f2dHistAsMCandCombPIDGenPtVsGenYOmegaMinus->Fill( lmcPt, lmcRapXi );
+		f2dHistAsMCGenPtVsGenYOmegaMinus ->Fill( lmcPt, lmcRapXi    );
 		fHistAsMCGenEtaOmegaMinus        ->Fill( lmcEta             );
 		f2dHistAsMCResPtOmegaMinus       ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
 		f2dHistAsMCResROmegaMinus        ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
@@ -1800,10 +1594,8 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	
 	else if( lChargeXi > 0 && lAssoOmegaPlus){	
 		fHistAsMCMassOmegaPlus           ->Fill( lInvMassOmegaPlus );
-		fHistAsMCGenPtOmegaPlus          ->Fill( lmcPt             );
-		if(lIsBachelorKaon)	fHistAsMCandCombPIDGenPtOmegaPlus->Fill( lmcPt );
-		fHistAsMCGenYOmegaPlus           ->Fill( lmcRapXi          );
-		f2dHistAsMCGenYVsGenPtOmegaPlus  ->Fill( lmcRapXi, lmcPt   );
+		if(lIsBachelorKaon)	f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus->Fill( lmcPt, lmcRapXi );
+		f2dHistAsMCGenPtVsGenYOmegaPlus  ->Fill( lmcPt, lmcRapXi   );
 		fHistAsMCGenEtaOmegaPlus         ->Fill( lmcEta            );
 		f2dHistAsMCResPtOmegaPlus        ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
 		f2dHistAsMCResROmegaPlus         ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
