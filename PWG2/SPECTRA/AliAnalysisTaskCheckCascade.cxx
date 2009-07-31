@@ -40,6 +40,7 @@ class AliAODv0;
 #include "TList.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TCanvas.h"
 #include "TMath.h"
 
@@ -102,8 +103,8 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade()
     f2dHistXiRadiusVsEffMassXiMinus(0), f2dHistXiRadiusVsEffMassXiPlus(0),
     f2dHistXiRadiusVsEffMassOmegaMinus(0), f2dHistXiRadiusVsEffMassOmegaPlus(0),
     
-    f2dHistXiPtVsEffMassXiMinus(0), f2dHistXiPtVsEffMassXiPlus(0),
-    f2dHistXiPtVsEffMassOmegaMinus(0), f2dHistXiPtVsEffMassOmegaPlus(0)
+    f3dHistXiPtVsEffMassVsYXiMinus(0), f3dHistXiPtVsEffMassVsYXiPlus(0),
+    f3dHistXiPtVsEffMassVsYOmegaMinus(0), f3dHistXiPtVsEffMassVsYOmegaPlus(0)
 
 {
   // Dummy Constructor
@@ -160,8 +161,8 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade(const char *name)
     f2dHistXiRadiusVsEffMassXiMinus(0), f2dHistXiRadiusVsEffMassXiPlus(0),
     f2dHistXiRadiusVsEffMassOmegaMinus(0), f2dHistXiRadiusVsEffMassOmegaPlus(0),
     
-    f2dHistXiPtVsEffMassXiMinus(0), f2dHistXiPtVsEffMassXiPlus(0),
-    f2dHistXiPtVsEffMassOmegaMinus(0), f2dHistXiPtVsEffMassOmegaPlus(0)
+    f3dHistXiPtVsEffMassVsYXiMinus(0), f3dHistXiPtVsEffMassVsYXiPlus(0),
+    f3dHistXiPtVsEffMassVsYOmegaMinus(0), f3dHistXiPtVsEffMassVsYOmegaPlus(0)
 
 {
   // Constructor
@@ -521,24 +522,24 @@ if(! f2dHistXiRadiusVsEffMassOmegaPlus) {
 
 //-------
 
-if(! f2dHistXiPtVsEffMassXiMinus) {
-	f2dHistXiPtVsEffMassXiMinus = new TH2F( "f2dHistXiPtVsEffMassXiMinus", "Pt_{cascade} Vs M_{#Xi^{-} candidates}; Pt_{cascade} (GeV/c); M( #Lambda , #pi^{-} ) (GeV/c^{2}) ", 100, 0., 10.0, 200, 1.2, 2.0);
-	fListHistCascade->Add(f2dHistXiPtVsEffMassXiMinus);
+if(! f3dHistXiPtVsEffMassVsYXiMinus) {
+	f3dHistXiPtVsEffMassVsYXiMinus = new TH3F( "f3dHistXiPtVsEffMassVsYXiMinus", "Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}; Pt_{cascade} (GeV/c); M( #Lambda , #pi^{-} ) (GeV/c^{2}) ;Y_{#Xi} ", 100, 0., 10.0, 200, 1.2, 2.0, 48, -1.2,1.2);
+	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYXiMinus);
 }
 
-if(! f2dHistXiPtVsEffMassXiPlus) {
-	f2dHistXiPtVsEffMassXiPlus = new TH2F( "f2dHistXiPtVsEffMassXiPlus", "Pt_{cascade} Vs M_{#Xi^{+} candidates}; Pt_{cascade} (GeV/c); M( #Lambda , #pi^{+} ) (GeV/c^{2}) ", 100, 0., 10.0, 200, 1.2, 2.0);
-	fListHistCascade->Add(f2dHistXiPtVsEffMassXiPlus);
+if(! f3dHistXiPtVsEffMassVsYXiPlus) {
+	f3dHistXiPtVsEffMassVsYXiPlus = new TH3F( "f3dHistXiPtVsEffMassVsYXiPlus", "Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}; Pt_{cascade} (GeV/c); M( #Lambda , #pi^{+} ) (GeV/c^{2}); Y_{#Xi}", 100, 0., 10.0, 200, 1.2, 2.0, 48, -1.2,1.2);
+	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYXiPlus);
 }
 
-if(! f2dHistXiPtVsEffMassOmegaMinus) {
-	f2dHistXiPtVsEffMassOmegaMinus = new TH2F( "f2dHistXiPtVsEffMassOmegaMinus", "Pt_{cascade} Vs M_{#Omega^{-} candidates}; Pt_{cascade} (GeV/c); M( #Lambda , K^{-} ) (GeV/c^{2}) ", 100, 0., 10.0, 250, 1.5, 2.5);
-	fListHistCascade->Add(f2dHistXiPtVsEffMassOmegaMinus);
+if(! f3dHistXiPtVsEffMassVsYOmegaMinus) {
+	f3dHistXiPtVsEffMassVsYOmegaMinus = new TH3F( "f3dHistXiPtVsEffMassVsYOmegaMinus", "Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}; Pt_{cascade} (GeV/c); M( #Lambda , K^{-} ) (GeV/c^{2}); Y_{#Omega}", 100, 0., 10.0, 250, 1.5, 2.5, 48, -1.2,1.2);
+	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYOmegaMinus);
 }
 
-if(! f2dHistXiPtVsEffMassOmegaPlus) {
-	f2dHistXiPtVsEffMassOmegaPlus = new TH2F( "f2dHistXiPtVsEffMassOmegaPlus", "Pt_{cascade} Vs M_{#Omega^{+} candidates}; Pt_{cascade} (GeV/c); M( #Lambda , K^{+} ) (GeV/c^{2}) ", 100, 0., 10.0, 250, 1.5, 2.5);
-	fListHistCascade->Add(f2dHistXiPtVsEffMassOmegaPlus);
+if(! f3dHistXiPtVsEffMassVsYOmegaPlus) {
+	f3dHistXiPtVsEffMassVsYOmegaPlus = new TH3F( "f3dHistXiPtVsEffMassVsYOmegaPlus", "Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}; Pt_{cascade} (GeV/c); M( #Lambda , K^{+} ) (GeV/c^{2}); Y_{#Omega}", 100, 0., 10.0, 250, 1.5, 2.5, 48, -1.2,1.2);
+	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYOmegaPlus);
 }
 
 
@@ -579,6 +580,7 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		return;
 	}
 	ncascades = lAODevent->GetNumberOfCascades();
+	// printf("Number of cascade(s) = %d \n", ncascades);
   }
 	
   // ---------------------------------------------------------------
@@ -662,8 +664,6 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 
   fHistTrackMultiplicity  ->Fill( (InputEvent())->GetNumberOfTracks() );
   fHistCascadeMultiplicity->Fill( ncascades );
-  
-  
   
   
   for (Int_t iXi = 0; iXi < ncascades; iXi++)
@@ -1012,8 +1012,35 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		// - II.Step 5 : PID on the bachelor
 		//-------------
 	
+	/*
+	// Reasonable guess for the priors for the cascade track sample
+	Double_t lPriorsGuessXi[5]    = {0.0, 0.0, 2, 0, 1};
+	Double_t lPriorsGuessOmega[5] = {0.0, 0.0, 1, 1, 1};
+	AliPID pidXi;		pidXi.SetPriors(    lPriorsGuessXi    );
+	AliPID pidOmega;	pidOmega.SetPriors( lPriorsGuessOmega );
 	
-	// To be developed
+	const AliAODTrack *bachTrackXi = lAODevent->GetTrack( xi->GetBachID() );
+	
+	if( bachTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists, the AOD flags = a copy of the ESD ones
+		Double_t r[10]; bachTrackXi->GetPID(r);
+		pidXi.SetProbabilities(r);
+		pidOmega.SetProbabilities(r);
+		// Check if the bachelor track is a pion
+		Double_t ppion = pidXi.GetProbability(AliPID::kPion);
+		if (ppion > pidXi.GetProbability(AliPID::kElectron) &&
+		    ppion > pidXi.GetProbability(AliPID::kMuon)     &&
+		    ppion > pidXi.GetProbability(AliPID::kKaon)     &&
+		    ppion > pidXi.GetProbability(AliPID::kProton)   )     lIsBachelorPion = kTRUE;
+		// Check if the bachelor track is a kaon
+		Double_t pkaon = pidOmega.GetProbability(AliPID::kKaon);
+		if (pkaon > pidOmega.GetProbability(AliPID::kElectron) &&
+		    pkaon > pidOmega.GetProbability(AliPID::kMuon)     &&
+		    pkaon > pidOmega.GetProbability(AliPID::kPion)     &&
+		    pkaon > pidOmega.GetProbability(AliPID::kProton)   )  lIsBachelorKaon = kTRUE;
+		
+	}// end if bachelor track with existing combined PID
+	*/
+	
 	
 		// - II.Step 6 : extra info for QA (AOD)
 		// miscellaneous pieces onf info that may help regarding data quality assessment.
@@ -1047,7 +1074,7 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 
 
   // -------------------------------------
-  // III - Filling the TH1Fs
+  // III - Filling the TH1,2,3Fs
   
 
 	// - III.Step 1	
@@ -1135,16 +1162,16 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		f2dHistEffMassXiVsEffMassOmegaMinus ->Fill( lInvMassXiMinus, lInvMassOmegaMinus );
 		f2dHistXiRadiusVsEffMassXiMinus     ->Fill( lXiRadius, lInvMassXiMinus );
 		f2dHistXiRadiusVsEffMassOmegaMinus  ->Fill( lXiRadius, lInvMassOmegaMinus );
-		f2dHistXiPtVsEffMassXiMinus         ->Fill( lXiTransvMom, lInvMassXiMinus );
-		f2dHistXiPtVsEffMassOmegaMinus      ->Fill( lXiTransvMom, lInvMassOmegaMinus );
+		f3dHistXiPtVsEffMassVsYXiMinus      ->Fill( lXiTransvMom, lInvMassXiMinus,    lRapXi    );
+		f3dHistXiPtVsEffMassVsYOmegaMinus   ->Fill( lXiTransvMom, lInvMassOmegaMinus, lRapOmega );
 	}
 	else{
 		f2dHistEffMassLambdaVsEffMassXiPlus ->Fill( lInvMassLambdaAsCascDghter, lInvMassXiPlus );
 		f2dHistEffMassXiVsEffMassOmegaPlus  ->Fill( lInvMassXiPlus, lInvMassOmegaPlus );
 		f2dHistXiRadiusVsEffMassXiPlus      ->Fill( lXiRadius, lInvMassXiPlus);
 		f2dHistXiRadiusVsEffMassOmegaPlus   ->Fill( lXiRadius, lInvMassOmegaPlus );
-		f2dHistXiPtVsEffMassXiPlus          ->Fill( lXiTransvMom, lInvMassXiPlus );
-		f2dHistXiPtVsEffMassOmegaPlus       ->Fill( lXiTransvMom, lInvMassOmegaPlus );
+		f3dHistXiPtVsEffMassVsYXiPlus       ->Fill( lXiTransvMom, lInvMassXiPlus,    lRapXi    );
+		f3dHistXiPtVsEffMassVsYOmegaPlus    ->Fill( lXiTransvMom, lInvMassOmegaPlus, lRapOmega );
 	}
 		
    
