@@ -588,9 +588,7 @@ AliTRDrawStream::ResetPerMCM()
   fMCM->fAdcDataPos = NULL;
   fMCM->fADCcounter = 0;
 
-  for (Int_t i=0; i<21; i++){
-    fMCM->fADCchannel[i] = 0;
-  }
+  memset(fMCM->fADCchannel, 0, TRD_MAX_ADC*sizeof(UInt_t));
 }
 
 //------------------------------------------------------------
@@ -606,9 +604,7 @@ AliTRDrawStream::ResetPerADC()
   fADC->fIsShared = kTRUE;
   fADC->fCorrupted = 0;
 
-  for (Int_t i=0; i<30; i++){
-    fADC->fSignals[i] = 0;
-  }
+  memset(fADC->fSignals, 0, TRD_MAX_TBINS*sizeof(Int_t));
 }
 
 //------------------------------------------------------------
@@ -626,10 +622,10 @@ AliTRDrawStream::ResetMemory()
     for (Int_t ilink=0; ilink<12; ilink++){
         fHC = &fStack->fHalfChambers[ilink];
         ResetPerHC();
-        for (Int_t imcm=0; imcm<12; imcm++){
+        for (Int_t imcm=0; imcm<TRD_MAX_MCM; imcm++){
           fMCM = &fHC->fMCMs[imcm];
           ResetPerMCM();
-          for (Int_t iadc=0; iadc<12; iadc++){
+          for (Int_t iadc=0; iadc<TRD_MAX_ADC; iadc++){
               fADC = &fMCM->fADCs[iadc];
               ResetPerADC();
           }
@@ -1727,7 +1723,7 @@ AliTRDrawStream::DecodeHC()
           if (fHC->fCorrupted < 4) fHC->fCorrupted += 4; // benchmark hc data corruption as 4
     
     if (fgSkipData == kTRUE || fHC->fCorrupted >= 16)
-              return kFALSE; // stop HC data reading
+              {fHC->fMCMmax++; return kFALSE;} // stop HC data reading
           
           fHC->fMCMmax++; // increase mcm counter to match with expected rob/mcm number
 
@@ -2228,7 +2224,7 @@ const char *AliTRDrawStream::DumpMCMadcMask(const struct AliTRDrawMCM *mcm)
     return Form("Unable to dump. Null received as parameter!?!");
 
   TString tsreturn = Form("[Word] : 0x%08x => [Mask] : 0x%08x : ", mcm->fADCMaskWord, mcm->fADCMask);
-  for (Int_t i = 0; i < 21; i++)
+  for (Int_t i = 0; i < TRD_MAX_ADC; i++)
     {
       tsreturn += Form("%d ", mcm->fADCchannel[i]);
     }
