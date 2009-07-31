@@ -87,12 +87,23 @@ AliMpExMapIterator::~AliMpExMapIterator()
 }
 
 //_____________________________________________________________________________
+#if ROOT_VERSION_CODE >= 334081
+//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+Bool_t 
+AliMpExMapIterator::Next(Long64_t& index, TObject*& object)
+#else
 Bool_t 
 AliMpExMapIterator::Next(Long_t& index, TObject*& object)
+#endif
 {
 /// Move to next object in iteration
 
+#if ROOT_VERSION_CODE >= 334081
+//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+  Long64_t value(0);
+#else
   Long_t value(0);
+#endif
 
   object = 0;
   
@@ -113,7 +124,12 @@ AliMpExMapIterator::Next()
 /// Return the next object in iteration.
 /// The returned object must not be deleted by the user.  
 
+#if ROOT_VERSION_CODE >= 334081
+//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+  Long64_t dummy;
+#else
   Long_t dummy;
+#endif
   TObject* o(0x0);
   Next(dummy,o);
   return o;
@@ -127,7 +143,12 @@ AliMpExMapIterator::Next(Int_t& key)
 /// The returned object must not be deleted by the user.  
 
   TObject* o;
+#if ROOT_VERSION_CODE >= 334081
+//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+  Long64_t index;
+#else
   Long_t index;
+#endif
   Next(index,o);
   key = (Int_t)(index);
   return o;
@@ -140,7 +161,12 @@ AliMpExMapIterator::Next(Int_t& keyFirst, Int_t& keySecond)
 /// Return the next object in iteration and fill the key.
 /// The returned object must not be deleted by the user.  
 
+#if ROOT_VERSION_CODE >= 334081
+//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+  Long64_t index;
+#else
   Long_t index;
+#endif
   TObject* o(0x0);
   Next(index,o);
   keyFirst = AliMpExMap::GetPairFirst(index);
@@ -155,7 +181,12 @@ AliMpExMapIterator::Next(TString& key)
 /// Return the next object in iteration and fill the key.
 /// The returned object must not be deleted by the user.  
 
+#if ROOT_VERSION_CODE >= 334081
+//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+  Long64_t index;
+#else
   Long_t index;
+#endif
   TObject* o(0x0);
   Next(index,o);
   key = AliMpExMap::GetString(index);
