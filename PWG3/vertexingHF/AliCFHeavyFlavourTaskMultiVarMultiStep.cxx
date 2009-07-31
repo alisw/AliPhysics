@@ -46,6 +46,7 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODMCParticle.h"
+#include "AliESDtrack.h"
 #include "TChain.h"
 #include "THnSparse.h"
 #include "TH2D.h"
@@ -310,6 +311,21 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				continue;
 			}
 					
+			// check whether the daughters have kTPCrefit set
+			AliAODTrack *track0 = (AliAODTrack*)d0tokpi->GetDaughter(0);
+			AliAODTrack *track1 = (AliAODTrack*)d0tokpi->GetDaughter(1);
+			if((!(track0->GetStatus()&AliESDtrack::kTPCrefit)) || (!(track1->GetStatus()&AliESDtrack::kTPCrefit))) {
+				// skipping if at least one daughter does not have kTPCrefit
+				continue;
+			}
+
+                        const Double_t d0tokpi_cuts[9] = {0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.};
+                        Int_t okD0, okD0bar;
+			if (!(d0tokpi->SelectD0(&d0tokpi_cuts[0],okD0,okD0bar))){
+				// skipping candidate
+				continue;
+			} 
+
 			// check if associated MC v0 passes the cuts
 			if (!fCFManager->CheckParticleCuts(0 ,mcVtxHF)) {  // 0 stands for MC
 			        AliDebug(2, "Skipping the particles due to cuts");
