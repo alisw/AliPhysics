@@ -17,7 +17,40 @@
  * @class  AliHLTTriggerBarrelCosmic
  * HLT cosmics trigger component for the central barrel region.
  * 
+ * <b> NOTE: UNDER DEVELOPMENT </b>
+ *
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b BarrelCosmicsTrigger                                  <br>
+ * Library: \b libAliHLTTrigger.so                                        <br>
+ * Input Data Types:  kAliHLTDataTypeESDObject, kAliHLTDataTypeESDTree
+ *                    kAliHLTDataTypeTrack                                <br>
+ * Output Data Types: ::kAliHLTAnyDataType                                <br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ *
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ *
+ * By default, configuration is loaded from OCDB, can be overridden by
+ * component arguments.
+ *
+ * <h2>Default CDB entries:</h2>
+ * HLT/ConfigHLT/BarrelCosmicsTrigger: TObjString storing the arguments
+ *
+ * <h2>Performance:</h2>
  * 
+ *
+ * <h2>Memory consumption:</h2>
+ * 
+ *
+ * <h2>Output size:</h2>
+ * 
+ * \ingroup alihlt_trigger_components
  */
 class AliHLTTriggerBarrelCosmic : public AliHLTTrigger
 {

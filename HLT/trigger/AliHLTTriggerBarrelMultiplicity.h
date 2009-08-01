@@ -22,6 +22,46 @@ class AliESDtrack;
  * central barrel.
  * 
  * Triggers on charged particle number in a certain pt range.
+ *
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b BarrelMultiplicityTrigger                             <br>
+ * Library: \b libAliHLTTrigger.so                                        <br>
+ * Input Data Types:  kAliHLTDataTypeESDObject, kAliHLTDataTypeESDTree
+ *                    kAliHLTDataTypeTrack                                <br>
+ * Output Data Types: ::kAliHLTAnyDataType                                <br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ *
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -mintracks     <i> n   </i> <br>
+ *      required number of tracks for a trigger
+ * \li -minpt    <i> pt  </i> <br>
+ *      required minimum pt for a trigger
+ * \li -maxpt    <i> pt  </i> <br>
+ *      required maximum pt for a trigger
+ *
+ * By default, configuration is loaded from OCDB, can be overridden by
+ * component arguments.
+ *
+ * <h2>Default CDB entries:</h2>
+ * HLT/ConfigHLT/BarrelMultiplicityTrigger: TObjString storing the arguments
+ *
+ * <h2>Performance:</h2>
+ * 
+ *
+ * <h2>Memory consumption:</h2>
+ * 
+ *
+ * <h2>Output size:</h2>
+ * 
+ *
+ * \ingroup alihlt_trigger_components
  */
 class AliHLTTriggerBarrelMultiplicity : public AliHLTTrigger
 {

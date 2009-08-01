@@ -18,6 +18,48 @@ class AliHLTTriggerDecision;
 /**
  * \class AliHLTTrigger
  * This is the base class from which all HLT trigger components should inherit.
+ *
+ * The class implements an AliHLTProcessor and implements specific functions
+ * for the implementation of a trigger component.
+ *
+ * Mandatory functions to be implemented by the child class
+ * - GetTriggerName()                                        <br>
+ *   must return a unique char string, serves also as component id
+ * - DoTrigger()
+ *   this is the processing method. Can loop over all input blocks and
+ *   calculate a trigger decision based on the input
+ * - Spawn()
+ *   refer to AliHLTComponent::Spawn() for more details
+ *
+ * The class provides default methods for the following methods of the
+ * component interface. The methods can still be overloaded if needed:
+ * - AliHLTComponent::GetNumberOfInputBlocks()
+ * - AliHLTComponent::GetInputDataTypes()
+ * - AliHLTComponent::GetOutputDataType()
+ * - AliHLTComponent::GetOutputDataTypes()
+ * - AliHLTComponent::GetOutputDataSize()
+ *
+ * Within the DoTrigger() function, the component has access to the input
+ * data via:
+ * - AliHLTComponent::GetFirstInputObject()
+ * - AliHLTComponent::GetNextInputObject()
+ * - AliHLTComponent::GetFirstInputBlock()
+ * - AliHLTComponent::GetNextInputBlock()
+ * - GetEventData()
+ * - GetTriggerData()
+ *
+ * Further information about the event and the external trigger classes
+ * can be checked by the base class methods:
+ * - AliHLTComponent::EvaluateCTPTriggerClass()
+ * - AliHLTComponent::GetRunNo() const;
+ * - AliHLTComponent::GetRunType() const;
+ * - AliHLTComponent::GetEventId()
+ *
+ * Inside DoTrigger() the component can call TriggerEvent() to create a
+ * trigger. The trigger information is stored and propagated in an
+ * AliHLTTriggerDecision object.
+ *
+ * \ingroup alihlt_trigger_components
  */
 class AliHLTTrigger : public AliHLTProcessor
 {
@@ -56,7 +98,7 @@ class AliHLTTrigger : public AliHLTProcessor
    * \note The underlying non const version of GetOutputDataTypes adds the value
    *    kAliHLTDataTypeTObject to the list.
    */
-  virtual void GetOutputDataTypes(AliHLTComponentDataTypeList& /*list*/) const {}
+  virtual void GetOutputDataTypes(AliHLTComponentDataTypeList& list) const {}
 
   /**
    * Get a ratio by how much the data volume is shrunk or enhanced.
@@ -104,8 +146,8 @@ class AliHLTTrigger : public AliHLTProcessor
   /**
    * Fills the output with the given trigger decision. This should be called in the
    * DoTrigger method when a custom trigger decision has been constructed.
-   * @param value  The custom trigger decision object.
-   * @param datatype  The data block type to use (set to
+   * @param result    The custom trigger decision object.
+   * @param type  The data block type to use (set to
    *    kAliHLTDataTypeTObject|kAliHLTDataOriginOut by default).
    * @param spec  The data block specification to use (set to kAliHLTVoidDataSpec
    *    by default).
