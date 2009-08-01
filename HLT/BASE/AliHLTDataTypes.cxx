@@ -51,6 +51,9 @@ const AliHLTComponentDataType kAliHLTDataTypeFXSCalib = AliHLTComponentDataTypeI
 const char kAliHLTDDLDataTypeIDstring[8] = kAliHLTDDLDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeDDL = AliHLTComponentDataTypeInitializer(kAliHLTDDLDataTypeIDstring, kAliHLTDataOriginOut);
 
+/** DAQ readout list */
+const AliHLTComponentDataType kAliHLTDataTypeDAQRDOUT = AliHLTComponentDataTypeInitializer(kAliHLTDAQRDOUTDataTypeID, kAliHLTDataOriginAny);
+
 /** SOR data type */
 const char kAliHLTSORDataTypeIDstring[8] = kAliHLTSORDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeSOR = AliHLTComponentDataTypeInitializer(kAliHLTSORDataTypeIDstring, kAliHLTDataOriginPrivate);
@@ -126,6 +129,14 @@ const AliHLTComponentDataType kAliHLTDataTypeRunStatistics = AliHLTComponentData
 /** Run summary */
 const char kAliHLTRunSummaryDataTypeIDstring[8] = kAliHLTRunSummaryDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeRunSummary = AliHLTComponentDataTypeInitializer(kAliHLTRunSummaryDataTypeIDstring, kAliHLTDataOriginOut);
+
+/** Trigger decision */
+const char kAliHLTTriggerDecisionDataTypeIDstring[8] = kAliHLTTriggerDecisionDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeTriggerDecision = AliHLTComponentDataTypeInitializer(kAliHLTTriggerDecisionDataTypeIDstring, kAliHLTDataOriginOut);
+
+/** Global trigger decision */
+const char kAliHLTGlobalTriggerDataTypeIDstring[8] = kAliHLTGlobalTriggerDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeGlobalTrigger = AliHLTComponentDataTypeInitializer(kAliHLTGlobalTriggerDataTypeIDstring, kAliHLTDataOriginOut);
 
 /** Component statistics */
 const char  kAliHLTComponentStatisticsDataTypeIDstring[8] = kAliHLTComponentStatisticsDataTypeID;
