@@ -41,7 +41,7 @@ void makeComponentConfigurationObject(const char* path, const char* param="",
   if (!man->IsDefaultStorageSet()) {
     if (cdbUri) {
       storage=cdbUri;
-      if (storage.Contains("://")!=0) {
+      if (storage.Contains("://")==0) {
 	storage="local://"; storage+=cdbUri;
       }
     } else {
