@@ -178,14 +178,14 @@ void AliHLTTriggerDomain::Add(const AliHLTReadoutList& list)
   {
     if (list.DetectorEnabled(detId[deti]))
     {
-      Add("DAQRDOUT", AliHLTDAQ::OnlineName(deti));
+      Add(kAliHLTDAQRDOUTDataTypeID, AliHLTDAQ::OnlineName(deti));
     }
     else
     {
       for (Int_t i = 0; i < AliHLTDAQ::NumberOfDdls(deti); i++)
       {
         Int_t ddlId = AliHLTDAQ::DdlID(deti, i);
-        if (list.IsDDLEnabled(ddlId)) Add("DAQRDOUT", AliHLTDAQ::OnlineName(deti), ddlId);
+        if (list.IsDDLEnabled(ddlId)) Add(kAliHLTDAQRDOUTDataTypeID, AliHLTDAQ::OnlineName(deti), ddlId);
       }
     }
   }
@@ -308,14 +308,14 @@ void AliHLTTriggerDomain::Remove(const AliHLTReadoutList& list)
   {
     if (list.DetectorEnabled(detId[deti]))
     {
-      Remove("DAQRDOUT", AliHLTDAQ::OnlineName(deti));
+      Remove(kAliHLTDAQRDOUTDataTypeID, AliHLTDAQ::OnlineName(deti));
     }
     else
     {
       for (Int_t i = 0; i < AliHLTDAQ::NumberOfDdls(deti); i++)
       {
         Int_t ddlId = AliHLTDAQ::DdlID(deti, i);
-        if (list.IsDDLEnabled(ddlId)) Remove("DAQRDOUT", AliHLTDAQ::OnlineName(deti), ddlId);
+        if (list.IsDDLEnabled(ddlId)) Remove(kAliHLTDAQRDOUTDataTypeID, AliHLTDAQ::OnlineName(deti), ddlId);
       }
     }
   }
@@ -841,7 +841,7 @@ AliHLTTriggerDomain::operator AliHLTReadoutList () const
     for (Int_t i = 0; i < AliHLTDAQ::NumberOfDdls(deti); i++)
     {
       Int_t ddlId = AliHLTDAQ::DdlID(deti, i);
-      if (Contains(AliHLTDomainEntry("DAQRDOUT", AliHLTDAQ::OnlineName(deti), ddlId)))
+      if (Contains(AliHLTDomainEntry(kAliHLTDAQRDOUTDataTypeID, AliHLTDAQ::OnlineName(deti), ddlId)))
       {
         result.EnableDDLBit(ddlId);
       }
