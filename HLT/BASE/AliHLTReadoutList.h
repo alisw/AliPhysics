@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id:$
+// $Id$
 #ifndef ALIHLTREADOUTLIST_H
 #define ALIHLTREADOUTLIST_H
 /* This file is property of and copyright by the ALICE HLT Project        *
@@ -213,6 +213,18 @@ class AliHLTReadoutList : public TObject
    * \return  Reference to the AliHLTEventDDL raw structure.
    */
   operator AliHLTEventDDL& () { return fReadoutList; }
+
+  /**
+   * Access method to the binary buffer.
+   * \return pointer to the binary buffer.
+   */
+  AliHLTEventDDL* Buffer() { return &fReadoutList; }
+
+  /**
+   * Access to the size of the binary buffer.
+   * \return size of the binary buffer
+   */
+  unsigned BufferSize() { return sizeof(fReadoutList); }
   
   /**
    * Assignment operator performs a deep copy.

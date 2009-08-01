@@ -24,6 +24,7 @@
 
 #include "AliHLTTrigger.h"
 #include "AliHLTTriggerDecision.h"
+#include "AliHLTReadoutList.h"
 
 ClassImp(AliHLTTrigger)
 
@@ -105,9 +106,7 @@ int AliHLTTrigger::TriggerEvent(bool value)
   AliHLTTriggerDecision triggerResult(value, GetTriggerName(), fTriggerDomain, fDescription);
   // Append the readout list if it contains anything.
   triggerResult.TriggerDomain().Add(fReadoutList);
-  fTriggerEventResult = PushBack(&triggerResult, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
-  if (fTriggerEventResult == 0) fDecisionMade = true;
-  return fTriggerEventResult;
+  return TriggerEvent(&triggerResult, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
 }
 
 
@@ -121,6 +120,10 @@ int AliHLTTrigger::TriggerEvent(
   
   if (fTriggerEventResult != 0) return fTriggerEventResult;  // Do not do anything if a previous call failed.
   fTriggerEventResult = PushBack(result, type, spec);
+  if (fTriggerEventResult) {
+    fTriggerEventResult = PushBack(result->ReadoutList().Buffer(), result->ReadoutList().BufferSize(), kAliHLTDataTypeDAQRDOUT|kAliHLTDataOriginOut);
+  }
+  
   if (fTriggerEventResult == 0) fDecisionMade = true;
   return fTriggerEventResult;
 }
