@@ -409,7 +409,7 @@ const char* AliHLTHOMERReader::GetBlockSendNodeID( unsigned long ndx ) const
 #ifdef DEBUG
     if ( fBlocks[ndx].fSource >= fDataSourceCnt )
 	{
-	fprintf( stderr, "%s:%d: Internal Error: fBlocks[ndx].fSource (%lu) >= fDataSourceCnt (%lu)\n",
+	fprintf( stderr, "%s:%d: Internal Error: fBlocks[ndx].fSource (%u) >= fDataSourceCnt (%u)\n",
 		 __FILE__, __LINE__, fBlocks[ndx].fSource, fDataSourceCnt );
 	return NULL;
 	}
