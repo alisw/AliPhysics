@@ -64,7 +64,7 @@ public:
     , kNTimeBins          = 35
     , kNPlanes            = 6
     , kNSeedPlanes        = 4
-    , kMaxTracksStack     = 1000
+    , kMaxTracksStack     = 100
     , kNConfigs           = 15
   };
   AliTRDtrackerV1(AliTRDReconstructor *rec = 0x0);
