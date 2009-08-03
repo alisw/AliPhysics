@@ -62,6 +62,7 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateCorrectionsForNonUniformAcceptanceForIntFlowCosTerms();  
     virtual void CalculateCorrectionsForNonUniformAcceptanceForIntFlowSinTerms();  
     virtual void CalculateQProductsForIntFlow();
+    virtual void CalculateSumAndProductOfEventWeights();
     virtual void CalculateWeightedCorrelationsForIntegratedFlow();
     virtual void CalculateWeightedQProductsForIntFlow();
     virtual void EvaluateNestedLoopsForIntegratedFlow(AliFlowEventSimple* anEvent); 
@@ -160,6 +161,10 @@ class AliFlowAnalysisWithQCumulants{
   TH1D* GetCorrections(Int_t pW, Int_t eW) const {return this->fCorrections[pW][eW];};
   void SetCovariances(TH1D* const cov, Int_t pW, Int_t eW) {this->fCovariances[pW][eW] = cov;};
   TH1D* GetCovariances(Int_t pW, Int_t eW) const {return this->fCovariances[pW][eW];};
+  void SetSumOfEventWeights(TH1D* const soew, Int_t pW, Int_t eW, Int_t power) {this->fSumOfEventWeights[pW][eW][power] = soew;};
+  TH1D* GetSumOfEventWeights(Int_t pW, Int_t eW, Int_t power) const {return this->fSumOfEventWeights[pW][eW][power];};
+  void SetProductOfEventWeights(TH1D* const poew, Int_t pW, Int_t eW) {this->fProductOfEventWeights[pW][eW] = poew;};
+  TH1D* GetProductOfEventWeights(Int_t pW, Int_t eW) const {return this->fProductOfEventWeights[pW][eW];};
   void SetCumulants(TH1D* const cumulants, Int_t pW, Int_t eW, Int_t nua) {this->fCumulants[pW][eW][nua] = cumulants;};
   TH1D* GetCumulants(Int_t pW, Int_t eW, Int_t nua) const {return this->fCumulants[pW][eW][nua];};
   void SetIntFlow(TH1D* const intFlow, Int_t pW, Int_t eW, Int_t nua) {this->fIntFlow[pW][eW][nua] = intFlow;};
@@ -299,8 +304,11 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fCorrelations[2][2]; // final results for average correlations: [0=pW not used,1=pW used][0=exact eW,1=non-exact eW]
   TH1D *fCorrections[2][2]; // corrections for non-uniform acceptance to integrated Q-cumulants: [0=pW not used,1=pW used][0=exact eW,1=non-exact eW]
   TH1D *fCovariances[2][2]; // covariances of multi-particle correlations: [0=pW not used,1=pW used][0=exact eW,1=non-exact eW]
+  TH1D *fSumOfEventWeights[2][2][2]; // [0=pW not used,1=pW used][0=exact eW,1=non-exact eW][0=power 1,1=power 2][0=eW for <2>, 1=eW for <4>, ...]
+  TH1D *fProductOfEventWeights[2][2]; // [0=pW not used,1=pW used][0=exact eW,1=non-exact eW][0=eWs for <2><4>, 1=eWs for <2><6>, ...]
   TH1D *fCumulants[2][2][2]; // integrated Q-cumulants: [0=pW not used,1=pW used][0=exact eW,1=non-exact eW][0=not corrected, 1=corrected]
   TH1D *fIntFlow[2][2][2]; // int. flow estimates from Q-cumulants: [0=pW not used,1=pW used][0=exact eW,1=non-exact eW][0=not corrected, 1=corrected]
+  
   
   // 4.) differential flow
   TList *fDiffFlowList;

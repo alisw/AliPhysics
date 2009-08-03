@@ -384,6 +384,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   if(nRP>0) this->CalculateCorrectionsForNonUniformAcceptanceForIntFlowCosTerms();
   if(nRP>0) this->CalculateCorrectionsForNonUniformAcceptanceForIntFlowSinTerms();
   if(nRP>3) this->CalculateQProductsForIntFlow();
+  if(nRP>1) this->CalculateSumAndProductOfEventWeights();
   // with weights:
   if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
   {
@@ -1617,6 +1618,7 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
      TString pWeightsFlag[2] = {"pWeights not used","pWeights used"};
      TString eWeightsFlag[2] = {"exact eWeights","non-exact eWeights"};
      TString nuaFlag[2] = {"not corrected","corrected"};
+     TString powerFlag[2] = {"linear","quadratic"};
      //TString sinCosFlag[2] = {"sin","cos"};     
      // correlations (results):
      TH1D *correlations = dynamic_cast<TH1D*>(intFlowResults->FindObject(Form("fCorrelations: %s, %s",pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data())));
@@ -1650,8 +1652,34 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
         cout<<"WARNING: covariances is NULL in AFAWQC::GOH() !!!!"<<endl;
         cout<<"pW = "<<pW<<endl;
         cout<<"eW = "<<eW<<endl;
-       }                      
-        
+       } 
+     // sum of linear and quadratic event weights (results):
+     for(Int_t power=0;power<2;power++)
+     {
+      TH1D *sumOfEventWeights = dynamic_cast<TH1D*>(intFlowResults->FindObject(Form("fSumOfEventWeights: %s, %s, %s",pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data(),powerFlag[power].Data())));
+      if(sumOfEventWeights) 
+      {
+       this->SetSumOfEventWeights(sumOfEventWeights,pW,eW,power);
+      } else 
+        {
+         cout<<"WARNING: sumOfEventWeights is NULL in AFAWQC::GOH() !!!!"<<endl;
+         cout<<"pW    = "<<pW<<endl;
+         cout<<"eW    = "<<eW<<endl;
+         cout<<"power = "<<power<<endl;
+        }                                   
+     } // end of for(Int_t power=0;power<2;power++)                                                                  
+     // products of event weights (results):
+     TH1D *productOfEventWeights = dynamic_cast<TH1D*>(intFlowResults->FindObject(Form("fProductOfEventWeights: %s, %s",pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data())));
+     if(productOfEventWeights) 
+     {
+      this->SetProductOfEventWeights(productOfEventWeights,pW,eW);
+     } else 
+       {
+        cout<<"WARNING: productOfEventWeights is NULL in AFAWQC::GOH() !!!!"<<endl;
+        cout<<"pW = "<<pW<<endl;
+        cout<<"eW = "<<eW<<endl;
+       } 
+       
      for(Int_t nua=0;nua<2;nua++)
      {
       // integrated Q-cumulants:
@@ -3329,6 +3357,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  TString eWeightsFlag[2] = {"exact eWeights","non-exact eWeights"};
  TString nuaFlag[2] = {"not corrected","corrected"};
  TString sinCosFlag[2] = {"sin","cos"};
+ TString powerFlag[2] = {"linear","quadratic"};
   
  for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++)
  {
@@ -3496,6 +3525,33 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
    // add fCovariances[pW][eW] to list fIntFlowResults: 
    fIntFlowResults->Add(fCovariances[pW][eW]);
   
+   // final results for sum of event weights:
+   for(Int_t power=0;power<2;power++)
+   {
+    fSumOfEventWeights[pW][eW][power] = new TH1D(Form("fSumOfEventWeights: %s, %s, %s",pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data(),powerFlag[power].Data()),Form("SumOfEventWeights (%s, %s, %s)",pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data(),powerFlag[power].Data()),4,0,4);
+    fSumOfEventWeights[pW][eW][power]->SetLabelSize(0.05);
+    fSumOfEventWeights[pW][eW][power]->SetMarkerStyle(25);
+    (fSumOfEventWeights[pW][eW][power]->GetXaxis())->SetBinLabel(1,"#sum_{i=1}^{N} w_{<2>}");
+    (fSumOfEventWeights[pW][eW][power]->GetXaxis())->SetBinLabel(2,"#sum_{i=1}^{N} w_{<4>}");
+    (fSumOfEventWeights[pW][eW][power]->GetXaxis())->SetBinLabel(3,"#sum_{i=1}^{N} w_{<6>}");
+    (fSumOfEventWeights[pW][eW][power]->GetXaxis())->SetBinLabel(4,"#sum_{i=1}^{N} w_{<8>}");
+    // add fSumOfEventWeights[pW][eW] to list fIntFlowResults: 
+    fIntFlowResults->Add(fSumOfEventWeights[pW][eW][power]);
+   } 
+   
+   // final results for sum of product of event weights:
+   fProductOfEventWeights[pW][eW] = new TH1D(Form("fProductOfEventWeights: %s, %s",pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data()),Form("ProductOfEventWeights (%s, %s)",pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data()),6,0,6);
+   fProductOfEventWeights[pW][eW]->SetLabelSize(0.05);
+   fProductOfEventWeights[pW][eW]->SetMarkerStyle(25);
+   (fProductOfEventWeights[pW][eW]->GetXaxis())->SetBinLabel(1,"#sum_{i=1}^{N} w_{<2>} w_{<4>}");
+   (fProductOfEventWeights[pW][eW]->GetXaxis())->SetBinLabel(2,"#sum_{i=1}^{N} w_{<2>} w_{<6>}");
+   (fProductOfEventWeights[pW][eW]->GetXaxis())->SetBinLabel(3,"#sum_{i=1}^{N} w_{<2>} w_{<8>}");
+   (fProductOfEventWeights[pW][eW]->GetXaxis())->SetBinLabel(4,"#sum_{i=1}^{N} w_{<4>} w_{<6>}");
+   (fProductOfEventWeights[pW][eW]->GetXaxis())->SetBinLabel(5,"#sum_{i=1}^{N} w_{<4>} w_{<8>}");
+   (fProductOfEventWeights[pW][eW]->GetXaxis())->SetBinLabel(6,"#sum_{i=1}^{N} w_{<6>} w_{<8>}");
+   // add fProductOfEventWeights[pW][eW] to list fIntFlowResults: 
+   fIntFlowResults->Add(fProductOfEventWeights[pW][eW]);
+
    for(Int_t nua=0;nua<2;nua++)
    {
     // integrated Q-cumulants:
@@ -5005,19 +5061,23 @@ void AliFlowAnalysisWithQCumulants::CalculateCovariancesForIntFlow(Bool_t usePar
   eW = 0;
  }
   
- if(!(fQCorrelations[pW][eW] && fQProducts[pW][eW] && fCovariances[pW][eW]))
- {
-  cout<<"WARNING: fQCorrelations[pW][eW] && fQProducts[pW][eW] && fCovariances[pW][eW] is NULL in AFAWQC::CCFIF() !!!!"<<endl;
-  cout<<"pW = "<<pW<<endl;
-  cout<<"eW = "<<eW<<endl;
-  exit(0);
- }
+ for(Int_t power=0;power<2;power++)
+ { 
+  if(!(fQCorrelations[pW][eW] && fQProducts[pW][eW] && fCovariances[pW][eW] && fSumOfEventWeights[pW][eW][power] && fProductOfEventWeights[pW][eW]))
+  { 
+   cout<<"WARNING: fQCorrelations[pW][eW] && fQProducts[pW][eW] && fCovariances[pW][eW] && fSumOfEventWeights[pW][eW][power] && fProductOfEventWeights[pW][eW] is NULL in AFAWQC::CCFIF() !!!!"<<endl;
+   cout<<"pW    = "<<pW<<endl;
+   cout<<"eW    = "<<eW<<endl;
+   cout<<"power = "<<power<<endl;
+   exit(0);
+  }
+ } 
  
  // average 2-, 4-, 6- and 8-particle azimuthal correlations for all events:
- Double_t two = fQCorrelations[pW][eW]->GetBinContent(1); // <<2>>  
- Double_t four = fQCorrelations[pW][eW]->GetBinContent(11); // <<4>>  
- Double_t six = fQCorrelations[pW][eW]->GetBinContent(24); // <<6>>  
- Double_t eight = fQCorrelations[pW][eW]->GetBinContent(31); // <<8>> 
+ Double_t two = fCorrelations[pW][eW]->GetBinContent(1); // <<2>>  
+ Double_t four = fCorrelations[pW][eW]->GetBinContent(11); // <<4>>  
+ Double_t six = fCorrelations[pW][eW]->GetBinContent(24); // <<6>>  
+ Double_t eight = fCorrelations[pW][eW]->GetBinContent(31); // <<8>> 
  // average products of 2-, 4-, 6- and 8-particle azimuthal correlations:  
  Double_t product24 = fQProducts[pW][eW]->GetBinContent(1); // <<2><4>>  
  Double_t product26 = fQProducts[pW][eW]->GetBinContent(2); // <<2><6>>  
@@ -5025,19 +5085,81 @@ void AliFlowAnalysisWithQCumulants::CalculateCovariancesForIntFlow(Bool_t usePar
  Double_t product46 = fQProducts[pW][eW]->GetBinContent(4); // <<4><6>> 
  Double_t product48 = fQProducts[pW][eW]->GetBinContent(5); // <<4><8>>  
  Double_t product68 = fQProducts[pW][eW]->GetBinContent(6); // <<6><8>>
- // covariances: 
- Double_t cov24 = product24-two*four; // Cov(2,4) = <<2><4>>-<<2>><<4>>
- fCovariances[pW][eW]->SetBinContent(1,cov24);
- Double_t cov26 = product26-two*six; // Cov(2,6) = <<2><6>>-<<2>><<6>>
- fCovariances[pW][eW]->SetBinContent(2,cov26); 
- Double_t cov28 = product28-two*eight; // Cov(2,8) = <<2><8>>-<<2>><<8>>
- fCovariances[pW][eW]->SetBinContent(3,cov28); 
- Double_t cov46 = product46-four*six; // Cov(4,6) = <<4><6>>-<<4>><<6>>
- fCovariances[pW][eW]->SetBinContent(4,cov46); 
- Double_t cov48 = product48-four*eight; // Cov(4,8) = <<4><8>>-<<4>><<8>>
- fCovariances[pW][eW]->SetBinContent(5,cov48); 
- Double_t cov68 = product68-six*eight; // Cov(6,8) = <<6><8>>-<<6>><<8>>
- fCovariances[pW][eW]->SetBinContent(6,cov68); 
+ // denominator in the expression for the unbiased estimator for covariance:
+ Double_t denom24 = 0.; 
+ if(fSumOfEventWeights[pW][eW][0]->GetBinContent(1) && fSumOfEventWeights[pW][eW][0]->GetBinContent(2))
+ {
+  denom24 = 1-(fProductOfEventWeights[pW][eW]->GetBinContent(1))/
+              (fSumOfEventWeights[pW][eW][0]->GetBinContent(1) * fSumOfEventWeights[pW][eW][0]->GetBinContent(2));
+ }
+ Double_t denom26 = 0.; 
+ if(fSumOfEventWeights[pW][eW][0]->GetBinContent(1) && fSumOfEventWeights[pW][eW][0]->GetBinContent(3))
+ {
+  denom26 = 1-(fProductOfEventWeights[pW][eW]->GetBinContent(2))/
+              (fSumOfEventWeights[pW][eW][0]->GetBinContent(1) * fSumOfEventWeights[pW][eW][0]->GetBinContent(3));
+ }
+ Double_t denom28 = 0.; 
+ if(fSumOfEventWeights[pW][eW][0]->GetBinContent(1) && fSumOfEventWeights[pW][eW][0]->GetBinContent(4))
+ {
+  denom28 = 1-(fProductOfEventWeights[pW][eW]->GetBinContent(3))/
+              (fSumOfEventWeights[pW][eW][0]->GetBinContent(1) * fSumOfEventWeights[pW][eW][0]->GetBinContent(4));
+ }
+ Double_t denom46 = 0.; 
+ if(fSumOfEventWeights[pW][eW][0]->GetBinContent(2) && fSumOfEventWeights[pW][eW][0]->GetBinContent(3))
+ {
+  denom46 = 1-(fProductOfEventWeights[pW][eW]->GetBinContent(4))/
+              (fSumOfEventWeights[pW][eW][0]->GetBinContent(2) * fSumOfEventWeights[pW][eW][0]->GetBinContent(3));
+ }
+ Double_t denom48 = 0.; 
+ if(fSumOfEventWeights[pW][eW][0]->GetBinContent(2) && fSumOfEventWeights[pW][eW][0]->GetBinContent(4))
+ {
+  denom48 = 1-(fProductOfEventWeights[pW][eW]->GetBinContent(5))/
+              (fSumOfEventWeights[pW][eW][0]->GetBinContent(2) * fSumOfEventWeights[pW][eW][0]->GetBinContent(4));
+ }
+ Double_t denom68 = 0.; 
+ if(fSumOfEventWeights[pW][eW][0]->GetBinContent(3) && fSumOfEventWeights[pW][eW][0]->GetBinContent(4))
+ {
+  denom68 = 1-(fProductOfEventWeights[pW][eW]->GetBinContent(6))/
+              (fSumOfEventWeights[pW][eW][0]->GetBinContent(3) * fSumOfEventWeights[pW][eW][0]->GetBinContent(4));
+ }
+ 
+ // final covariances: 
+ Double_t cov24 = 0.;
+ if(denom24)
+ {
+  cov24 = (product24-two*four)/denom24; // Cov(<2>,<4>) 
+  fCovariances[pW][eW]->SetBinContent(1,cov24);
+ } 
+ Double_t cov26 = 0.;
+ if(denom26)
+ {
+  cov26 = (product26-two*six)/denom26; // Cov(<2>,<6>) 
+  fCovariances[pW][eW]->SetBinContent(2,cov26);
+ } 
+ Double_t cov28 = 0.;
+ if(denom28)
+ {
+  cov28 = (product28-two*eight)/denom28; // Cov(<2>,<8>) 
+  fCovariances[pW][eW]->SetBinContent(3,cov28);
+ } 
+ Double_t cov46 = 0.;
+ if(denom46)
+ {
+  cov46 = (product46-four*six)/denom46; // Cov(<4>,<6>) 
+  fCovariances[pW][eW]->SetBinContent(4,cov46);
+ } 
+ Double_t cov48 = 0.;
+ if(denom48)
+ {
+  cov48 = (product48-four*eight)/denom48; // Cov(<4>,<8>) 
+  fCovariances[pW][eW]->SetBinContent(5,cov48);
+ } 
+ Double_t cov68 = 0.;
+ if(denom68)
+ {
+  cov68 = (product68-six*eight)/denom68; // Cov(<6>,<8>) 
+  fCovariances[pW][eW]->SetBinContent(6,cov68);
+ } 
 
 } // end of AliFlowAnalysisWithQCumulants::CalculateCovariancesForIntFlow(Bool_t useParticleWeights, TString eventWeights)
 
@@ -5060,66 +5182,108 @@ void AliFlowAnalysisWithQCumulants::FinalizeCorrelationsForIntFlow(Bool_t usePar
   eW = 0;
  }
  
- if(!(fQCorrelations[pW][eW] && fCorrelations[pW][eW] && fAvMultiplicity))
+ for(Int_t power=0;power<2;power++)
  {
-  cout<<"WARNING: fQCorrelations[pW][eW] && fCorrelations[pW][eW] && fAvMultiplicity is NULL in AFAWQC::CCFIF() !!!!"<<endl;
-  cout<<"pW = "<<pW<<endl;
-  cout<<"eW = "<<eW<<endl;
-  exit(0);
+  if(!(fQCorrelations[pW][eW] && fCorrelations[pW][eW] && fSumOfEventWeights[pW][eW][power])) 
+  {
+   cout<<"WARNING: fQCorrelations[pW][eW] && fCorrelations[pW][eW] && fSumOfEventWeights[pW][eW][power] is NULL in AFAWQC::FCFIF() !!!!"<<endl;
+   cout<<"pW    = "<<pW<<endl;
+   cout<<"eW    = "<<eW<<endl;
+   cout<<"power = "<<power<<endl;
+   exit(0);
+  }
  }
  
- Double_t nEvts2p = fAvMultiplicity->GetBinEntries(3); // # of events for which nRP >= 2
- Double_t nEvts3p = fAvMultiplicity->GetBinEntries(4); // # of events for which nRP >= 3
- Double_t nEvts4p = fAvMultiplicity->GetBinEntries(5); // # of events for which nRP >= 4
- Double_t nEvts5p = fAvMultiplicity->GetBinEntries(6); // # of events for which nRP >= 5
- Double_t nEvts6p = fAvMultiplicity->GetBinEntries(7); // # of events for which nRP >= 6
- Double_t nEvts7p = fAvMultiplicity->GetBinEntries(8); // # of events for which nRP >= 7
- Double_t nEvts8p = fAvMultiplicity->GetBinEntries(9); // # of events for which nRP >= 8
- 
- Double_t correlation = 0.;
- Double_t spread = 0.;
- Double_t nEvts = 0.;
- Double_t error = 0.; // error = spread/sqrt{nEvts}
- 
- for(Int_t i=1;i<33;i++)
+ // <<2>>:
+ Double_t correlation2p = fQCorrelations[pW][eW]->GetBinContent(1);  
+ Double_t spread2p = fQCorrelations[pW][eW]->GetBinError(1); 
+ Double_t sumOfEventWeightsLinear2p = fSumOfEventWeights[pW][eW][0]->GetBinContent(1);
+ Double_t sumOfEventWeightsQuadratic2p = fSumOfEventWeights[pW][eW][1]->GetBinContent(1);
+ // stat.error = termA * spread * termB:
+ // termB = 1/sqrt(1-termA^2)
+ Double_t termA2p = 0.;  
+ Double_t termB2p = 0.;
+ Double_t statError2p = 0.;
+ if(sumOfEventWeightsLinear2p)
  {
-  if(i<=4)
-  {
-   nEvts = nEvts2p;
-  } else if(i>=6 && i<=9)
-    {
-     nEvts = nEvts3p;     
-    } else if(i>=11 && i<=17)
-      {
-       nEvts = nEvts4p;           
-      } else if(i>=19 && i<=22) 
-        {
-         nEvts = nEvts5p; 
-        } else if(i>=24 && i<=27) 
-          {
-           nEvts = nEvts6p;
-          } else if(i==29)
-            {
-             nEvts = nEvts7p;
-            } else if(i==31)
-              { 
-               nEvts = nEvts8p;
-              } else 
-                {
-                 nEvts = 0.;
-                } 
-                
-  correlation = fQCorrelations[pW][eW]->GetBinContent(i);
-  spread = fQCorrelations[pW][eW]->GetBinError(i);
-  if(nEvts>0.) 
-  {
-   error = spread/pow(nEvts,0.5);
-   fCorrelations[pW][eW]->SetBinContent(i,correlation);
-   fCorrelations[pW][eW]->SetBinError(i,error);
-  }   
- } // end of for(Int_t i=1;i<33;i++)   
- 
+  termA2p = pow(sumOfEventWeightsQuadratic2p,0.5)/sumOfEventWeightsLinear2p;
+ } else
+   {
+    cout<<"WARNING: sumOfEventWeightsLinear2p == 0 in in AFAWQC::FCFIF() !!!!"<<endl;
+   }
+      
+ if(1-pow(termA2p,2.) > 0)
+ {
+  termB2p = 1./pow(1-pow(termA2p,2.),0.5);
+ } else
+   {
+    cout<<"WARNING: 1-pow(termA2p,2.) <= 0 in in AFAWQC::FCFIF() !!!!"<<endl;   
+   }     
    
+ statError2p = termA2p*spread2p*termB2p;
+ fCorrelations[pW][eW]->SetBinContent(1,correlation2p);
+ fCorrelations[pW][eW]->SetBinError(1,statError2p);
+         
+ // <<4>>:
+ Double_t correlation4p = fQCorrelations[pW][eW]->GetBinContent(11);  
+ Double_t spread4p = fQCorrelations[pW][eW]->GetBinError(11); 
+ Double_t sumOfEventWeightsLinear4p = fSumOfEventWeights[pW][eW][0]->GetBinContent(2);
+ Double_t sumOfEventWeightsQuadratic4p = fSumOfEventWeights[pW][eW][1]->GetBinContent(2);
+ Double_t termA4p = 0.;  
+ Double_t termB4p = 0.;
+ Double_t statError4p = 0.;
+ if(sumOfEventWeightsLinear4p)
+ {
+  termA4p = pow(sumOfEventWeightsQuadratic4p,0.5)/sumOfEventWeightsLinear4p;
+ } else
+   {
+    cout<<"WARNING: sumOfEventWeightsLinear4p == 0 in in AFAWQC::FCFIF() !!!!"<<endl;
+   }
+ if(1-pow(termA4p,2.) > 0)
+ {
+  termB4p = 1./pow(1-pow(termA4p,2.),0.5);
+ } else
+   {
+    cout<<"WARNING: 1-pow(termA4p,2.) <= 0 in in AFAWQC::FCFIF() !!!!"<<endl;   
+   }  
+   
+ statError4p = termA4p*spread4p*termB4p;
+ fCorrelations[pW][eW]->SetBinContent(11,correlation4p);
+ fCorrelations[pW][eW]->SetBinError(11,statError4p);
+
+ // <<6>>:
+ Double_t correlation6p = fQCorrelations[pW][eW]->GetBinContent(24);  
+ Double_t spread6p = fQCorrelations[pW][eW]->GetBinError(24); 
+ Double_t sumOfEventWeightsLinear6p = fSumOfEventWeights[pW][eW][0]->GetBinContent(3);
+ Double_t sumOfEventWeightsQuadratic6p = fSumOfEventWeights[pW][eW][1]->GetBinContent(3);
+ Double_t termA6p = 0.;  
+ Double_t termB6p = 0.;
+ Double_t statError6p = 0.;
+ if(sumOfEventWeightsLinear6p)
+ {
+  termA6p = pow(sumOfEventWeightsQuadratic6p,0.5)/sumOfEventWeightsLinear6p;
+ } else
+   {
+    cout<<"WARNING: sumOfEventWeightsLinear6p == 0 in in AFAWQC::FCFIF() !!!!"<<endl;
+   }
+ if(1-pow(termA6p,2.) > 0)
+ {
+  termB6p = 1./pow(1-pow(termA6p,2.),0.5);
+ } else
+   {
+    cout<<"WARNING: 1-pow(termA6p,2.) <= 0 in in AFAWQC::FCFIF() !!!!"<<endl;   
+   }  
+   
+ statError6p = termA6p*spread6p*termB6p;
+ fCorrelations[pW][eW]->SetBinContent(24,correlation6p);
+ fCorrelations[pW][eW]->SetBinError(24,statError6p);
+              
+ // <<8>>             
+ Double_t correlation8p = fQCorrelations[pW][eW]->GetBinContent(31);  
+ // ...
+ fCorrelations[pW][eW]->SetBinContent(31,correlation8p);
+ // ... 
+                          
 } // end of AliFlowAnalysisWithQCumulants::FinalizeCorrelationsForIntFlow(Bool_t useParticleWeights, TString eventWeights)
 
 
@@ -5185,36 +5349,56 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForIntFlow(Bool_t useParti
   eW = 0;
  }
  
- if(!(fQCorrelations[pW][eW] && fCovariances[pW][eW] && fCumulants[pW][eW][0] && fAvMultiplicity))
+ if(!(fCorrelations[pW][eW] && fCovariances[pW][eW] && fCumulants[pW][eW][0] && fAvMultiplicity))
  {
-  cout<<"WARNING: fQCorrelations[pW][eW] && fCovariances[pW][eW] && fCumulants[pW][eW][0] && fAvMultiplicity is NULL in AFAWQC::CCFIF() !!!!"<<endl;
+  cout<<"WARNING: fCorrelations[pW][eW] && fCovariances[pW][eW] && fCumulants[pW][eW][0] && fAvMultiplicity is NULL in AFAWQC::CCFIF() !!!!"<<endl;
   cout<<"pW = "<<pW<<endl;
   cout<<"eW = "<<eW<<endl;
   exit(0);
  }
  
- // number of events:
- Double_t nEvts2p = fAvMultiplicity->GetBinEntries(3); // # of events for which nRP >= 2
- Double_t nEvts4p = fAvMultiplicity->GetBinEntries(5); // # of events for which nRP >= 4
- Double_t nEvts6p = fAvMultiplicity->GetBinEntries(7); // # of events for which nRP >= 6
- //Double_t nEvts8p = fAvMultiplicity->GetBinEntries(9); // # of events for which nRP >= 8 
  // correlations:
- Double_t two = fQCorrelations[pW][eW]->GetBinContent(1); // <<2>> 
- Double_t four = fQCorrelations[pW][eW]->GetBinContent(11); // <<4>>  
- Double_t six = fQCorrelations[pW][eW]->GetBinContent(24); // <<6>> 
- Double_t eight = fQCorrelations[pW][eW]->GetBinContent(31); // <<8>>  
+ Double_t two = fCorrelations[pW][eW]->GetBinContent(1); // <<2>> 
+ Double_t four = fCorrelations[pW][eW]->GetBinContent(11); // <<4>>  
+ Double_t six = fCorrelations[pW][eW]->GetBinContent(24); // <<6>> 
+ Double_t eight = fCorrelations[pW][eW]->GetBinContent(31); // <<8>>  
+ // stat. error of correlations:
+ Double_t twoError = fCorrelations[pW][eW]->GetBinError(1); // stat. error of <<2>>   
+ Double_t fourError = fCorrelations[pW][eW]->GetBinError(11); // stat. error of <<4>>  
+ Double_t sixError = fCorrelations[pW][eW]->GetBinError(24); // stat. error of <<6>>  
+ //Double_t eightError = fQCorrelations[pW]->GetBinError(31); // stat. error of <<8>>
  // spread of correlations:
- Double_t twoSpread = fQCorrelations[pW][eW]->GetBinError(1); // spread of <<2>>   
- Double_t fourSpread = fQCorrelations[pW][eW]->GetBinError(11); // spread of <<4>>  
- Double_t sixSpread = fQCorrelations[pW][eW]->GetBinError(24); // spread of <<6>>  
- //Double_t eightSpread = fQCorrelations[pW]->GetBinError(31); // spread of <<8>>
+ Double_t twoSpread = 0.; // spread of <<2>>
+ Double_t fourSpread = 0.; // spread of <<6>>
+ Double_t sixSpread = 0.; // spread of <<8>>
+ //Double_t eightSpread = 0.;
+ // stat. error = prefactor * spread:
+ Double_t twoPrefactor = 0; 
+ if(fSumOfEventWeights[pW][eW][0]->GetBinContent(1))
+ {
+  twoPrefactor = pow(fSumOfEventWeights[pW][eW][1]->GetBinContent(1),0.5)/fSumOfEventWeights[pW][eW][0]->GetBinContent(1);
+  if(twoPrefactor) twoSpread = twoError/twoPrefactor;
+ }
+ Double_t fourPrefactor = 0; 
+ if(fSumOfEventWeights[pW][eW][0]->GetBinContent(2))
+ {
+  fourPrefactor = pow(fSumOfEventWeights[pW][eW][1]->GetBinContent(2),0.5)/fSumOfEventWeights[pW][eW][0]->GetBinContent(2);
+  if(fourPrefactor) fourSpread = fourError/fourPrefactor;
+ }
+ Double_t sixPrefactor = 0; 
+ if(fSumOfEventWeights[pW][eW][0]->GetBinContent(3))
+ {
+  sixPrefactor = pow(fSumOfEventWeights[pW][eW][1]->GetBinContent(3),0.5)/fSumOfEventWeights[pW][eW][0]->GetBinContent(3);
+  if(sixPrefactor) sixSpread = sixError/sixPrefactor;
+ }
+ // ... 8th
  // covariances:
- Double_t cov24 = fCovariances[pW][eW]->GetBinContent(1); // Cov(2,4) = <<2><4>> - <<2>><<4>>
- Double_t cov26 = fCovariances[pW][eW]->GetBinContent(2); // Cov(2,6) = <<2><6>> - <<2>><<6>> 
- //Double_t cov28 = fCovariances[pW]->GetBinContent(3); // Cov(2,8) = <<2><8>> - <<2>><<8>>
- Double_t cov46 = fCovariances[pW][eW]->GetBinContent(4); // Cov(4,6) = <<4><6>> - <<4>><<6>>
- //Double_t cov48 = fCovariances[pW]->GetBinContent(5); // Cov(4,8) = <<4><8>> - <<4>><<8>> 
- //Double_t cov68 = fCovariances[pW]->GetBinContent(6); // Cov(6,8) = <<6><8>> - <<6>><<8>>   
+ Double_t cov24 = fCovariances[pW][eW]->GetBinContent(1); // Cov(<2>,<4>)
+ Double_t cov26 = fCovariances[pW][eW]->GetBinContent(2); // Cov(<2>,<6>) 
+ //Double_t cov28 = fCovariances[pW]->GetBinContent(3); // Cov(<2>,<8>)
+ Double_t cov46 = fCovariances[pW][eW]->GetBinContent(4); // Cov(<4>,<6>)
+ //Double_t cov48 = fCovariances[pW]->GetBinContent(5); // Cov(<4>,<8>) 
+ //Double_t cov68 = fCovariances[pW]->GetBinContent(6); // Cov(<6>,<8>)  
  // cumulants: 
  Double_t qc2 = 0.; // QC{2}
  Double_t qc4 = 0.; // QC{4}
@@ -5226,13 +5410,18 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForIntFlow(Bool_t useParti
  if(six) qc6 = six-9.*two*four+12.*pow(two,3.); 
  if(eight) qc8 = eight-16.*two*six-18.*pow(four,2.)+144.*pow(two,2.)*four-144.*pow(two,4.); 
  
+ // stat. error of cumulants:
+ Double_t qc2Error = 0; // stat. error of QC{2}
+ Double_t qc4Error = 0; // stat. error of QC{4}
+ Double_t qc6Error = 0; // stat. error of QC{6}
+ // Double_t qc8Error = 0; // stat. error of QC{8} // to be improved (calculated)
  // spread of cumulants:
- Double_t qc2Spread = 0; // spread of QC{2}
+ //Double_t qc2Spread = 0; // spread of QC{2}
  Double_t qc4Spread = 0; // spread of QC{4}
  Double_t qc6Spread = 0; // spread of QC{6}
  // Double_t qc8Spread = 0; // spread of QC{8} // to be improved (calculated)
  
- qc2Spread = twoSpread;
+ qc2Error = twoError; // final stat. error of QC{2}
  
  if(16.*pow(two,2.)*pow(twoSpread,2.)+pow(fourSpread,2.)-8.*two*cov24 >= 0.)
  {
@@ -5241,7 +5430,9 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForIntFlow(Bool_t useParti
    {
     cout<<"WARNING: spread of QC{4} is imaginary !!!!"<<endl;
    }
-   
+  
+ qc4Error = fourPrefactor*qc4Spread; // final stat. error of QC{4}  
+     
  if(81.*pow(4.*pow(two,2.)-four,2.)*pow(twoSpread,2.)   
     + 81.*pow(two,2.)*pow(fourSpread,2.)+pow(sixSpread,2.) 
     - 162.*(4.*pow(two,2.)-four)*two*cov24
@@ -5255,20 +5446,11 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForIntFlow(Bool_t useParti
                   - 18.*two*cov46,0.5);
  } else 
    {
-    cout<<"WARNING: spread of QC{6} is imaginary !!!!"<<endl;
-   }         
+    cout<<"WARNING: stat. error of QC{6} is imaginary !!!!"<<endl;
+   }          
    
- // statistical errors for cumulants:
- Double_t qc2Error = 0; // qc2Error = qc2Spread/sqrt{nEvts2p}
- Double_t qc4Error = 0; // qc4Error = qc4Spread/sqrt{nEvts4p}
- Double_t qc6Error = 0; // qc8Error = qc6Spread/sqrt{nEvts6p}
- // Double_t qc8Error = 0; // qc8Error = qc8Spread/sqrt{nEvts8p} // to be improved (calculated)
-     
- if(nEvts2p>0.) qc2Error = qc2Spread/pow(nEvts2p,0.5);   
- if(nEvts4p>0.) qc4Error = qc4Spread/pow(nEvts4p,0.5);   
- if(nEvts6p>0.) qc6Error = qc6Spread/pow(nEvts6p,0.5);   
- // if(nEvts8p>0.) qc8Error = qc8Spread/pow(nEvts8p,0.5); // to be improved (calculated)  
-  
+ qc6Error = sixPrefactor*qc6Spread; // final stat. error of QC{6} 
+   
  // store the results and statistical errors for cumulants:
  fCumulants[pW][eW][0]->SetBinContent(1,qc2);
  fCumulants[pW][eW][0]->SetBinError(1,qc2Error);
@@ -5754,6 +5936,11 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForIntFlow()
    fCorrelations[pW][eW] = NULL;
    fCovariances[pW][eW] = NULL;
    fCorrections[pW][eW] = NULL;
+   fProductOfEventWeights[pW][eW] = NULL;
+   for(Int_t power=0;power<2;power++) 
+   {
+    fSumOfEventWeights[pW][eW][power] = NULL;    
+   }
    for(Int_t nua=0;nua<2;nua++) // not corrected or corrected
    {
     fCumulants[pW][eW][nua] = NULL;
@@ -7441,4 +7628,40 @@ void AliFlowAnalysisWithQCumulants::AccessConstants()
 } // end of void AliFlowAnalysisWithQCumulants::AccessConstants()
 
 
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateSumAndProductOfEventWeights()
+{
+ // 1.) calculate sum of linear and quadratic event weights;
+ // 2.) calculate products of event weights
+ 
+ Double_t dMult = (*fSMpk)(0,0); // multiplicity (number of particles used to determine the reaction plane)
+
+ Double_t eventWeight[4] = {0}; 
+ eventWeight[0] = dMult*(dMult-1); // event weight for <2> 
+ eventWeight[1] = dMult*(dMult-1)*(dMult-2)*(dMult-3); // event weight for <4> 
+ eventWeight[2] = dMult*(dMult-1)*(dMult-2)*(dMult-3)*(dMult-4)*(dMult-5); // event weight for <6> 
+ eventWeight[3] = dMult*(dMult-1)*(dMult-2)*(dMult-3)*(dMult-4)*(dMult-5)*(dMult-6)*(dMult-7); // event weight for <8> 
+ 
+ for(Int_t p=0;p<2;p++)
+ {
+  for(Int_t c=0;c<4;c++)
+  { 
+   fSumOfEventWeights[0][0][p]->Fill(c+0.5,pow(eventWeight[c],p+1)); 
+  }
+ }
+  
+ // to be improved (hardwired pW and eW):
+ fProductOfEventWeights[0][0]->Fill(0.5,eventWeight[0]*eventWeight[1]); 
+ fProductOfEventWeights[0][0]->Fill(1.5,eventWeight[0]*eventWeight[2]); 
+ fProductOfEventWeights[0][0]->Fill(2.5,eventWeight[0]*eventWeight[3]); 
+ fProductOfEventWeights[0][0]->Fill(3.5,eventWeight[1]*eventWeight[2]); 
+ fProductOfEventWeights[0][0]->Fill(4.5,eventWeight[1]*eventWeight[3]); 
+ fProductOfEventWeights[0][0]->Fill(5.5,eventWeight[2]*eventWeight[3]); 
+       
+} // end of void AliFlowAnalysisWithQCumulants::CalculateSumAndProductOfEventWeights()
+
+
+//================================================================================================================================
 
