@@ -122,6 +122,7 @@ void AliAnalysisTaskSECompareHF::UserCreateOutputObjects()
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
 
+  OpenFile(2); // 2 is the slot number of the ntuple
   fNtupleCmp = new TNtuple("fNtupleCmp","Charm comparison","pdg:nprongs:VxRec:VxTrue:ErrVx:VyRec:VyTrue:ErrVy:VzRec:VzTrue:ErrVz:Chi2toNDF:PtRec:Mrec:CPta:Prodd0");
 
   return;
