@@ -2,13 +2,16 @@
 
 SRCS:= \
 epos167/epostimer.cxx		\
-TEpos.cxx AliGenEpos.cxx AliGenEposEventHeader.cxx
+TEpos.cxx AliGenEpos.cxx AliGenEposEventHeader.cxx  \
+AliGenEposIsajetToPdgConverter.cxx
 
 HDRS=TEpos.h AliGenEpos.h AliGenEposEventHeader.h   \
+AliGenEposIsajetToPdgConverter.h
 
 DHDR:=EPOSLinkDef.h
 
-EXPORT:=TEpos.h AliGenEpos.h AliGenEposEventHeader.h
+EXPORT:=TEpos.h AliGenEpos.h AliGenEposEventHeader.h  \
+AliGenEposIsajetToPdgConverter.h
 
 EINCLUDE:=EVGEN
 

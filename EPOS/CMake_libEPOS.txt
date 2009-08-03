@@ -3,6 +3,7 @@
 set(SRCS
 epos167/epostimer.cxx
 TEpos.cxx AliGenEpos.cxx AliGenEposEventHeader.cxx
+AliGenEposIsajetToPdgConverter.cxx
 )
 
 set(FSRCS
@@ -35,6 +36,7 @@ Set(HDRS
 TEpos.h
 AliGenEpos.h
 AliGenEposEventHeader.h
+AliGenEposIsajetToPdgConverter.h
 )
 
 Set(SRCS ${SRCS} ${FSRCS})

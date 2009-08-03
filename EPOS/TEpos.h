@@ -24,6 +24,7 @@
 
 #include <vector>
 class TObjArray;
+class AliGenEposIsajetToPdgConverter;
 
 class TEpos : public TGenerator {
 
@@ -31,6 +32,8 @@ class TEpos : public TGenerator {
 public:
 
    TEpos();
+   TEpos(const TEpos& rhs);
+   TEpos& operator=(const TEpos& rhs);
 
    virtual            ~TEpos();
 
@@ -117,6 +120,7 @@ protected:
 
 
 private:
+   AliGenEposIsajetToPdgConverter* fIdConverter;// PDG helper object
    ClassDef(TEpos,1)  //Interface to EPOS Event Generator
 };
 

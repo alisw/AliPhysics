@@ -1,5 +1,5 @@
 /*
- * AliGenEpos.cpp
+ * AliGenEpos.cxx
  *
  *  ALICE event generator based on EPOS model from Klaus Werner
  *
@@ -10,6 +10,7 @@
 #include "AliGenEpos.h"
 #include "TEpos.h"
 #include "TParticle.h"
+#include "TMath.h"
 #include "AliLog.h"
 #include "AliGenEventHeader.h"
 #include "AliGenEposEventHeader.h"
@@ -20,7 +21,7 @@ AliGenEpos::AliGenEpos() : AliGenMC(),
 		fBmin(0),
 		fBmax(10000),
 		fPhiMin(0),
-		fPhiMax(2*3.1415926),
+		fPhiMax(TMath::TwoPi()),
 		fFilterModelOutput(kFALSE) {
 	SetMC(new TEpos());
 }
@@ -29,7 +30,7 @@ AliGenEpos::AliGenEpos(Int_t npart) : AliGenMC(npart),
 		fBmin(0),
 		fBmax(10000),
 		fPhiMin(0),
-		fPhiMax(2*3.1415926),
+		fPhiMax(TMath::TwoPi()),
 		fFilterModelOutput(kFALSE) {
 	SetMC(new TEpos());
 }
@@ -53,7 +54,7 @@ void AliGenEpos::Generate() {
 	  Float_t polar[3]   =   {0,0,0};
 	  Float_t origin0[3]  =   {0,0,0};
 	  Float_t origin[3]   =   {0,0,0};
-
+	  fNprimaries = 0;
 	  Int_t nt  = 0; //output parameter for PushTrack
 
 	  Vertex();
@@ -76,7 +77,7 @@ void AliGenEpos::Generate() {
 		  iparticle = (TParticle *) fParticles.At(i);
 		  //Bool_t isNullEntry = iparticle->GetStatusCode() == 0;
 		  //Bool_t isCommentOrUnknown = iparticle->GetStatusCode() > 2;
-		  Bool_t hasDecayed = iparticle->GetStatusCode() == 2;
+		  Bool_t hasDecayed = iparticle->GetStatusCode() >= 2;
 		  Bool_t isFinalState = iparticle->GetStatusCode() == 1;
 		  Int_t imo = iparticle->GetFirstMother();
 		  Bool_t  hasMother = (imo >=0);
@@ -157,6 +158,7 @@ void AliGenEpos::Generate() {
 
 	// Event Vertex
 	  header->SetPrimaryVertex(fVertex);
+	  header->FillInternalFields(GetTEpos());
 	  AddHeader(header);
 	  fCollisionGeometry = (AliGenEposEventHeader*)  header;
 

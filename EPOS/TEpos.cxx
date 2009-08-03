@@ -21,12 +21,14 @@
 #include <TParticle.h>
 #include <TROOT.h>
 #include <TRandom.h>
+#include <TMath.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include "eposproc.h"
 #include "EPOScommon.h"
+#include "AliGenEposIsajetToPdgConverter.h"
 #include "TEpos.h"
 
 using namespace std;
@@ -41,15 +43,44 @@ TEpos::TEpos()  : TGenerator("EPOS", "Epos event generator"),
 		fBminim(0.0),
 		fBmaxim(10000.0),
 		fPhimin(0.0),
-		fPhimax(2*3.1415927),
+		fPhimax(TMath::TwoPi()),
 		fEcms(-1),
 		fSplitting(kFALSE),
 		fNoDecays(),
-		fExtraInputLines()
+		fExtraInputLines(),
+		fIdConverter()
 {
+	fIdConverter=new AliGenEposIsajetToPdgConverter();
 }
 
-TEpos::~TEpos() {}
+TEpos::TEpos(const TEpos&)  : TGenerator("EPOS", "Epos event generator"),
+		fLaproj(0),
+		fMaproj(0),
+		fLatarg(0),
+		fMatarg(0),
+		fBminim(0.0),
+		fBmaxim(10000.0),
+		fPhimin(0.0),
+		fPhimax(TMath::TwoPi()),
+		fEcms(-1),
+		fSplitting(kFALSE),
+		fNoDecays(),
+		fExtraInputLines(),
+		fIdConverter()
+{
+	fIdConverter = new AliGenEposIsajetToPdgConverter();
+}
+
+TEpos::~TEpos() {
+	delete fIdConverter;
+}
+
+TEpos& TEpos::operator=(const TEpos&) {
+	if (!fIdConverter) {
+		fIdConverter = new AliGenEposIsajetToPdgConverter();
+	}
+	return *this;
+}
 
 void TEpos::Initialize() {
 	Int_t nopeno = 0;
@@ -97,12 +128,8 @@ Int_t TEpos::ImportParticles(TClonesArray *particles, Option_t *) {
       			if (mother->GetFirstDaughter()==-1)
  				mother->SetFirstDaughter(iPart);
     		}
-		TDatabasePDG *pdgDb = TDatabasePDG::Instance();
 		Int_t status = cptl.istptl[iPart] + 1;
-		Int_t pdg = pdgDb->ConvertIsajetToPdg(cptl.idptl[iPart]);
-		if (pdg == 0) {
-			printf("TEpos: Warning, unknown particle, index: %d, ISAJET: %d\n",iPart,cptl.idptl[iPart]);
-		}
+		Int_t pdg = fIdConverter->ConvertIsajetToPdg(cptl.idptl[iPart]);
     		new((*particles)[iPart]) TParticle(pdg, status,
 				 tFather, -1, -1, -1,
 				 cptl.pptl[iPart][0], cptl.pptl[iPart][1],cptl.pptl[iPart][2],cptl.pptl[iPart][3],
@@ -127,12 +154,8 @@ TObjArray*  TEpos::ImportParticles(Option_t *) {
       			if (mother->GetFirstDaughter()==-1)
  				mother->SetFirstDaughter(iPart);
     		}
-		TDatabasePDG *pdgDb = TDatabasePDG::Instance();
 		Int_t status = cptl.istptl[iPart] + 1;
-		Int_t pdg = pdgDb->ConvertIsajetToPdg(cptl.idptl[iPart]);
-		if (pdg == 0) {
-			printf("TEpos: Warning, unknown particle, index: %d, ISAJET: %d\n",iPart,cptl.idptl[iPart]);
-		}
+		Int_t pdg = fIdConverter->ConvertIsajetToPdg(cptl.idptl[iPart]);
     		TParticle* p = new TParticle(pdg, status,
 				 tFather, -1, -1, -1,
 				 cptl.pptl[iPart][0], cptl.pptl[iPart][1],cptl.pptl[iPart][2],cptl.pptl[iPart][3],
@@ -168,7 +191,7 @@ void TEpos::GenerateInputFile() {
 	file << "fname copy none" << endl;
 	file << "fname log none" << endl;
 	file << "fname check none" << endl;
-	file << "fname data /tmp/epos.out" << endl;
+//	file << "fname data /tmp/epos.out" << endl;
 	file << "fname initl " << epo << "/epos.initl" << endl;
 	file << "fname inidi " << epo << "/epos.inidi" << endl;
 	file << "fname inidr " << epo << "/epos.inidr" << endl;
@@ -219,9 +242,9 @@ void TEpos::GenerateInputFile() {
 		file << fExtraInputLines[i] << endl;
 	}
 
-    file << "output epos" << endl;
-    file << "record event nevt nptl b endrecord" << endl;
-    file << "record particle i id fa mo c1 c2 st endrecord" << endl;
+//    file << "output epos" << endl;
+//    file << "record event nevt nptl b endrecord" << endl;
+//    file << "record particle i id fa mo c1 c2 st endrecord" << endl;
 
 	file << "input " << epo << "/epos.param" << endl;
 	file << "runprogram" << endl;
