@@ -40,6 +40,7 @@ public:
    virtual void        SetAdditionalLibs(const char *list)               {fAdditionalLibs = list;}
    virtual void        SetPrice(Int_t price=1)                           {fPrice = price;}
    virtual void        SetRunRange(Int_t min, Int_t max)                 {fRunRange[0] = min; fRunRange[1] = max;}
+   virtual void        SetJobTag(const char *tag="")                     {fJobTag = tag;}
    virtual void        SetNrunsPerMaster(Int_t nruns=1)                  {fNrunsPerMaster = nruns;}
    virtual void        SetMaxMergeFiles(Int_t nfiles)                    {fMaxMergeFiles = nfiles;}
    virtual void        SetSplitMode(const char *type="se")               {fSplitMode = type;}
@@ -133,6 +134,7 @@ private:
    TString          fIncludePath;     // Include path
    TString          fCloseSE;         // Preffered storage element. Taken from alien_CLOSE_SE environment.
    TString          fFriendChainName; // File name to construct friend chain (for AOD)
+   TString          fJobTag;          // Job tag
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    

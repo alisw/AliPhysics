@@ -49,6 +49,7 @@ enum EPluginRunMode {
    virtual void        SetAnalysisSource(const char *name="myAnalysisClass.cxx") = 0;
    virtual void        SetAdditionalLibs(const char *list)               = 0;
    virtual void        SetPrice(Int_t price=1)                           = 0;
+   virtual void        SetJobTag(const char *tag="")                     = 0;
    virtual void        SetSplitMode(const char *type="se")               = 0;
    virtual void        SetSplitMaxInputFileNumber(Int_t nfiles=100)      = 0;
    virtual void        SetAPIVersion(const char *version)                = 0;

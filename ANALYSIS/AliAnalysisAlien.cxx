@@ -78,6 +78,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fIncludePath(),
                   fCloseSE(),
                   fFriendChainName(),
+                  fJobTag(),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -123,6 +124,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fIncludePath(),
                   fCloseSE(),
                   fFriendChainName(),
+                  fJobTag(),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -168,6 +170,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fIncludePath(other.fIncludePath),
                   fCloseSE(other.fCloseSE),
                   fFriendChainName(other.fFriendChainName),
+                  fJobTag(other.fJobTag),
                   fInputFiles(0),
                   fPackages(0)
 {
@@ -241,6 +244,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fIncludePath             = other.fIncludePath;
       fCloseSE                 = other.fCloseSE;
       fFriendChainName         = other.fFriendChainName;
+      fJobTag                  = other.fJobTag;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
          TIter next(other.fInputFiles);
@@ -900,7 +904,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    sjdl.ReplaceAll("\n\n", "\n");
    sjdl.ReplaceAll("OutputDirectory", "OutputDir");
    sjdl += "JDLVariables = \n{\n   \"Packages\",\n   \"OutputDir\"\n};\n";
-   sjdl.Prepend("JobTag = \"Automatically generated analysis JDL\";\n");
+   sjdl.Prepend(Form("Jobtag = {\n   \"comment:%s\";\n}\n", fJobTag.Data()));
    index = sjdl.Index("JDLVariables");
    if (index >= 0) sjdl.Insert(index, "\n# JDL variables\n");
    // Write jdl to file
@@ -1204,6 +1208,7 @@ void AliAnalysisAlien::SetDefaults()
    fOutputFiles                = "";  // Like "AliAODs.root histos.root"
    fInputFormat                = "xml-single";
    fJDLName                    = "analysis.jdl";
+   fJobTag                     = "Automatically generated analysis JDL";
    fMergeExcludes              = "";
 }   
 
