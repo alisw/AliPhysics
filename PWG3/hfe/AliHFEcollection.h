@@ -23,8 +23,8 @@
  */
 
 
-#ifndef __ALIHFECOLLECTION_H__
-#define __ALIHFECOLLECTION_H__
+#ifndef ALIHFECOLLECTION_H
+#define ALIHFECOLLECTION_H
 
 #ifndef ROOT_TNamed
 #include "TNamed.h"
@@ -44,17 +44,17 @@ class AliHFEcollection : public TNamed{
   virtual ~AliHFEcollection();
   
 
-  virtual void Browse(TBrowser*);
+  virtual void Browse(TBrowser *b);
 
   // Set & Create functions
   Bool_t CreateTH1F(const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax);
 
   Bool_t CreateTH2F(const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY);
 
-  Bool_t CreateTH1Fvector1(Int_t _X, const char* _name, const char* _title, Int_t _nBin, Float_t _nMin, Float_t _nMax);
-  Bool_t CreateTH2Fvector1(Int_t _X, const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY);
+  Bool_t CreateTH1Fvector1(Int_t X, const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax);
+  Bool_t CreateTH2Fvector1(Int_t X, const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY);
 
-  Bool_t CreateTH1Fvector2(Int_t _X, Int_t _Y, const char* _name, const char* _title, Int_t _nBin, Float_t _nMin, Float_t _nMax);
+  Bool_t CreateTH1Fvector2(Int_t X, Int_t Y, const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax);
   
 
   Long64_t Merge(TCollection *list);
@@ -62,15 +62,15 @@ class AliHFEcollection : public TNamed{
   // Get functions
   TList* GetList()  const  { return fListE; }
   TObject* Get(const char* name); 
-  TObject* Get(const char* name, Int_t _X);
-  TObject* Get(const char* name, Int_t _X, Int_t _Y);
+  TObject* Get(const char* name, Int_t X);
+  TObject* Get(const char* name, Int_t X, Int_t Y);
 
  private:
-  Bool_t CheckObject(const char*);
+  Bool_t CheckObject(const char* name);
    void Copy(TObject &ref) const;
 
  private:
-  TList*                           fListE;
+  TList*                           fListE;      //! Object container
 
   ClassDef(AliHFEcollection, 1)
 

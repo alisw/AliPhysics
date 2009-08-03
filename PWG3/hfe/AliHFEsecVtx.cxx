@@ -351,6 +351,7 @@ void AliHFEsecVtx::AnaPair(AliESDtrack* track1, AliESDtrack* track2, Int_t index
         AliKFParticle::SetField(fESD1->GetMagneticField());
         AliKFParticle kfTrack1(*track1, pdg1);
         AliKFParticle kfTrack2(*track2, pdg2);
+
         AliKFParticle kfSecondary(kfTrack1,kfTrack2);
 
         // copy primary vertex from ESD
@@ -1284,7 +1285,7 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrackLabel)
 */
 
 //_______________________________________________________________________________________________
-Bool_t AliHFEsecVtx::SingleTrackCut(AliESDtrack* track)
+Bool_t AliHFEsecVtx::SingleTrackCut(AliESDtrack* track) const
 {
         // test cuts 
 
@@ -1305,4 +1306,3 @@ Bool_t AliHFEsecVtx::SingleTrackCut(AliESDtrack* track)
 */
         return kTRUE;
 }
-

@@ -65,7 +65,7 @@ AliHFEpidBase &AliHFEpidBase::operator=(const AliHFEpidBase &ref){
   }
 
   return *this;
-  }
+}
 
 //___________________________________________________________________
 void AliHFEpidBase::Copy(TObject &ref) const {
@@ -86,7 +86,7 @@ Int_t AliHFEpidBase::GetPdgCode(AliVParticle *track){
   AliMCParticle *mctrack = 0x0;
   if(TString(track->IsA()->GetName()).CompareTo("AliESDtrack") == 0)
     mctrack = fMCEvent->GetTrack(TMath::Abs((dynamic_cast<AliESDtrack *>(track))->GetLabel()));
-  else if(TString(track->IsA()->GetName()).CompareTo("AliESDtrack") == 0)
+  else if(TString(track->IsA()->GetName()).CompareTo("AliMCParticle") == 0)
     mctrack = dynamic_cast<AliMCParticle *>(track);
   if(!mctrack) return 0;
   return mctrack->Particle()->GetPdgCode();

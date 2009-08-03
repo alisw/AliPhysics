@@ -12,8 +12,8 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-#ifndef __ALIHFEEXTRACUTS_H__
-#define __ALIHFEEXTRACUTS_H__
+#ifndef ALIHFEEXTRACUTS_H
+#define ALIHFEEXTRACUTS_H
 
 // #ifndef ALICFCUTBASE_H
 #include "AliCFCutBase.h"
@@ -36,7 +36,7 @@ class AliHFEextraCuts : public AliCFCutBase{
     AliHFEextraCuts(const Char_t *name, const Char_t *title);
     AliHFEextraCuts(const AliHFEextraCuts &c);
     AliHFEextraCuts &operator=(const AliHFEextraCuts &c);
-    ~AliHFEextraCuts();
+    virtual ~AliHFEextraCuts();
     
     virtual Bool_t IsSelected(TObject *o);
     virtual Bool_t IsSelected(TList *) { return kTRUE; };
@@ -49,14 +49,17 @@ class AliHFEextraCuts : public AliCFCutBase{
     inline void SetMaxImpactParamZ(Double_t impactParam);
     inline void SetMinTrackletsTRD(Int_t minTracklets);
 
+    void SetCheckITSstatus(Bool_t check) { fCheck = check; };
+    Bool_t GetCheckITSstatus() const { return fCheck; };
+
     void SetDebugLevel(Int_t level) { fDebugLevel = level; };
     Int_t GetDebugLevel() const { return fDebugLevel; };
     
   protected:
     virtual void AddQAHistograms(TList *qaList);
     Bool_t CheckESDCuts(AliESDtrack *track);
-    Bool_t CheckMCCuts(AliMCParticle */*track*/);
-    Bool_t CheckITSstatus(Int_t itsStatus);
+    Bool_t CheckMCCuts(AliMCParticle * /*track*/) const;
+    Bool_t CheckITSstatus(Int_t itsStatus) const;
     void FillQAhistosESD(AliESDtrack *track, UInt_t when);
 //     void FillQAhistosMC(AliMCParticle *track, UInt_t when);
     void FillCutCorrelation(ULong64_t survivedCut);
@@ -86,6 +89,8 @@ class AliHFEextraCuts : public AliCFCutBase{
     Float_t fClusterRatioTPC;		// Ratio of findable vs. found clusters in TPC
     UChar_t fMinTrackletsTRD;		// Min. Number of Tracklets inside TRD
     UChar_t fPixelITS;			// Cut on ITS Pixels
+
+    Bool_t  fCheck;                     // check
     
     TList *fQAlist;			//! Directory for QA histograms
   
@@ -115,13 +120,13 @@ void AliHFEextraCuts::SetMinImpactParamR(Double_t impactParam){
 //__________________________________________________________
 void AliHFEextraCuts::SetMaxImpactParamR(Double_t impactParam){
   SETBIT(fRequirements, kMaxImpactParamR);
-  fImpactParamCut[1] = impactParam;
+  fImpactParamCut[2] = impactParam;
 }
 
 //__________________________________________________________
 void AliHFEextraCuts::SetMinImpactParamZ(Double_t impactParam){
   SETBIT(fRequirements, kMinImpactParamZ);
-  fImpactParamCut[2] = impactParam;
+  fImpactParamCut[1] = impactParam;
 }
 
 //__________________________________________________________

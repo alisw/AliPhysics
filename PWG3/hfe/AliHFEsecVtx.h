@@ -25,7 +25,7 @@
 #define ALIHFESECVTX_H
 
 #ifndef ROOT_TObject
-#include <TObject.h>
+//#include <TObject.h>
 #endif
 
 class TH1F;
@@ -57,7 +57,7 @@ class AliHFEsecVtx : public TObject {
                 Int_t PairCode(AliESDtrack* track1,AliESDtrack* track2); // return corresponding pair code to pdg code
                 Int_t GetElectronSource(Int_t mclabel); // return origin of the electron
 
-                Bool_t SingleTrackCut(AliESDtrack* track1); // single track cut
+                Bool_t SingleTrackCut(AliESDtrack* track1) const; // single track cut
 
         protected:
 
@@ -92,7 +92,7 @@ class AliHFEsecVtx : public TObject {
                 enum {kAll, kDirectCharm, kDirectBeauty, kBeautyCharm, kGamma, kPi0, kElse, kBeautyGamma, kBeautyPi0, kBeautyElse};
                 enum {kCharm=4, kBeauty=5};
 
-                struct histspair{
+                struct AliHistspair{
                         TH2F *fInvMass; // histogram to store pair invariant mass
                         TH2F *fInvMassCut1; // histogram to store pair invariant mass after cut1
                         TH2F *fInvMassCut2; // histogram to store pair invariant mass after cut2
@@ -102,9 +102,41 @@ class AliHFEsecVtx : public TObject {
                         TH2F *fSignedLxy; // histogram to store signed Lxy
                         TH1F *fKFIP; // histogram to store pair impact parameter
                         TH1F *fIPMax; // histogram to store larger impact parameter among pair tracks
+
+			AliHistspair()
+			: fInvMass()
+			, fInvMassCut1()
+			, fInvMassCut2()
+			, fKFChi2()
+			, fOpenAngle()
+			, fCosOpenAngle()
+			, fSignedLxy()
+			, fKFIP()
+			, fIPMax()
+			{
+			  // define constructor
+			}
+			AliHistspair(const AliHistspair & p)
+			: fInvMass(p.fInvMass)
+			, fInvMassCut1(p.fInvMassCut1)
+			, fInvMassCut2(p.fInvMassCut2)
+			, fKFChi2(p.fKFChi2)
+			, fOpenAngle(p.fOpenAngle)
+			, fCosOpenAngle(p.fCosOpenAngle)
+			, fSignedLxy(p.fSignedLxy)
+			, fKFIP(p.fKFIP)
+			, fIPMax(p.fIPMax)
+			{
+			  // copy constructor
+			}
+			AliHistspair &operator=(const AliHistspair &)
+			{
+			  // assignment operator, not yet implemented
+			  return *this;
+			}
                 };
 
-                struct histstag{
+                struct AliHiststag{
                         TH1F *fPtBeautyElec; // histogram for electrons of single track cut passed 
                         TH1F *fPtTaggedElec; // histogram for total b tagged electrons
                         TH1F *fPtRightTaggedElec; // histogram for right b tagged electrons
@@ -125,10 +157,64 @@ class AliHFEsecVtx : public TObject {
                         TH1F *fSignedLxyNotBeautyElec2trkVtx; // histogram for mis-tagged b signed Lxy of two track vertex
                         TH1F *fChi2BeautyElec2trkVtx; // histogram for right-tagged b chi2 of two track vertex
                         TH1F *fChi2NotBeautyElec2trkVtx; // histogram for mis-tagged b chi2 of two track vertex
+
+			AliHiststag()
+			: fPtBeautyElec()
+			, fPtTaggedElec()
+			, fPtRightTaggedElec()
+			, fPtWrongTaggedElec()
+			, fInvmassBeautyElecSecVtx()
+			, fInvmassNotBeautyElecSecVtx()
+			, fSignedLxyBeautyElecSecVtx()
+			, fSignedLxyNotBeautyElecSecVtx()
+			, fDistTwoVtxBeautyElecSecVtx()
+			, fDistTwoVtxNotBeautyElecSecVtx()
+			, fCosPhiBeautyElecSecVtx()
+			, fCosPhiNotBeautyElecSecVtx()
+			, fChi2BeautyElecSecVtx()
+			, fChi2NotBeautyElecSecVtx()
+			, fInvmassBeautyElec2trkVtx()
+			, fInvmassNotBeautyElec2trkVtx()
+			, fSignedLxyBeautyElec2trkVtx()
+			, fSignedLxyNotBeautyElec2trkVtx()
+			, fChi2BeautyElec2trkVtx()
+			, fChi2NotBeautyElec2trkVtx()
+			{
+			  // define constructor
+			}
+			AliHiststag(const AliHiststag & p)
+			: fPtBeautyElec(p.fPtBeautyElec)
+			, fPtTaggedElec(p.fPtTaggedElec)
+			, fPtRightTaggedElec(p.fPtRightTaggedElec)
+			, fPtWrongTaggedElec(p.fPtWrongTaggedElec)
+			, fInvmassBeautyElecSecVtx(p.fInvmassBeautyElecSecVtx)
+			, fInvmassNotBeautyElecSecVtx(p.fInvmassNotBeautyElecSecVtx)
+			, fSignedLxyBeautyElecSecVtx(p.fSignedLxyBeautyElecSecVtx)
+			, fSignedLxyNotBeautyElecSecVtx(p.fSignedLxyNotBeautyElecSecVtx)
+			, fDistTwoVtxBeautyElecSecVtx(p.fDistTwoVtxBeautyElecSecVtx)
+			, fDistTwoVtxNotBeautyElecSecVtx(p.fDistTwoVtxNotBeautyElecSecVtx)
+			, fCosPhiBeautyElecSecVtx(p.fCosPhiBeautyElecSecVtx)
+			, fCosPhiNotBeautyElecSecVtx(p.fCosPhiNotBeautyElecSecVtx)
+			, fChi2BeautyElecSecVtx(p.fChi2BeautyElecSecVtx)
+			, fChi2NotBeautyElecSecVtx(p.fChi2NotBeautyElecSecVtx)
+			, fInvmassBeautyElec2trkVtx(p.fInvmassBeautyElec2trkVtx)
+			, fInvmassNotBeautyElec2trkVtx(p.fInvmassNotBeautyElec2trkVtx)
+			, fSignedLxyBeautyElec2trkVtx(p.fSignedLxyBeautyElec2trkVtx)
+			, fSignedLxyNotBeautyElec2trkVtx(p.fSignedLxyNotBeautyElec2trkVtx)
+			, fChi2BeautyElec2trkVtx(p.fChi2BeautyElec2trkVtx)
+			, fChi2NotBeautyElec2trkVtx(p.fChi2NotBeautyElec2trkVtx)
+			{
+			  // copy constructor
+			}
+			AliHiststag &operator=(const AliHiststag &)
+			{
+			  // assignment operator, not yet implemented
+			  return *this;
+			}
                 };
 
-                histspair fHistPair[10]; // struct of above given histogram for different electron sources
-                histstag fHistTagged; // struct of above given histogram
+                AliHistspair fHistPair[10]; // struct of above given histogram for different electron sources
+                AliHiststag fHistTagged; // struct of above given histogram
 
                 Int_t fPairTagged; // number of tagged e-h pairs
                 Int_t fpairedTrackID[20]; // paird hadron track track 

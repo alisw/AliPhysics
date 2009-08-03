@@ -12,10 +12,10 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-#ifndef __ALIHFEPIDTPC_H__
-#define __ALIHFEPIDTPC_H__
+#ifndef ALIHFEPIDTPC_H
+#define ALIHFEPIDTPC_H
 
-#ifndef __ALIHFEPIDBASE_H__
+#ifndef ALIHFEPIDBASE_H
 #include "AliHFEpidBase.h"
 #endif
 
@@ -67,10 +67,9 @@ class AliHFEpidTPC : public AliHFEpidBase{
     virtual Int_t IsSelected(AliVParticle *track);
     virtual Bool_t HasQAhistos() const { return kTRUE; };
 
-    void AddTPCdEdxLineCrossing(Int_t species, Double_t p, Double_t sigma_p);
+    void AddTPCdEdxLineCrossing(Int_t species, Double_t sigma);
     void SetTPCnSigma(Short_t nSigma) { fNsigmaTPC = nSigma; };
-    Double_t Likelihood(const AliESDtrack *track, Int_t species);
-    Double_t Likelihood(const AliESDtrack *track, Int_t species, Float_t rsig);
+    Double_t Likelihood(const AliESDtrack *track, Int_t species, Float_t rsig = 2.);
 
     Double_t Suppression(const AliESDtrack *track, Int_t species);
 
@@ -78,10 +77,8 @@ class AliHFEpidTPC : public AliHFEpidBase{
     void Copy(TObject &o) const;
     void AddQAhistograms(TList *qaList);
     void FillTPChistograms(const AliESDtrack *track);
-    Double_t GetTPCsigma(Double_t p, Int_t species);
  
   private:
-    Double_t fLineCrossingCenter[AliPID::kSPECIES];         // Line crossing ExclusionPoints
     Double_t fLineCrossingSigma[AliPID::kSPECIES];          // with of the exclusion point
     UChar_t fLineCrossingsEnabled;                          // Bitmap showing which line crossing is set
     Short_t fNsigmaTPC;                                     // TPC sigma band

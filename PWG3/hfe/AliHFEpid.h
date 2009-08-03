@@ -12,8 +12,8 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-#ifndef __ALIHFEPID_H__
-#define __ALIHFEPID_H__
+#ifndef ALIHFEPID_H
+#define ALIHFEPID_H
 
 #ifndef ROOT_TObject
 #include <TObject.h>
@@ -34,10 +34,18 @@ class AliHFEpid : public TObject{
   enum{
     kMCpid = 0,
     kESDpid = 1,
-    kTPCpid = 2,
-    kTRDpid = 3,
-    kTOFpid = 4,
-    kNdetectorPID = 5
+    kITSpid = 2,
+    kTPCpid = 3,
+    kTRDpid = 4,
+    kTOFpid = 5,
+    kNdetectorPID = 6
+  };
+  enum{
+    kCombinedTPCTRD=0
+  };
+  enum{
+    kTRDSignal = 0,
+    kITSSignal = 1
   };
   public:
     AliHFEpid();
@@ -56,7 +64,9 @@ class AliHFEpid : public TObject{
     TList *GetQAhistograms() const { return fQAlist; };
 
   protected:
-    Bool_t MakePID_TPC_TOF(AliESDtrack *track);
+    Bool_t MakePidTpcTof(AliESDtrack *track);
+    Bool_t MakePidTpcTrd(AliESDtrack *track);
+    void MakePlotsItsTpc(AliESDtrack *track);
   private:
     AliHFEpidBase *fDetectorPID[kNdetectorPID];    //! Detector PID classes
     UInt_t fEnabledDetectors;             // Enabled Detectors

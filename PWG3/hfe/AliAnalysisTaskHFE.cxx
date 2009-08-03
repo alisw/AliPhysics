@@ -37,6 +37,7 @@
 #include <TObjArray.h>
 #include <TParticle.h>
 #include <TProfile.h>
+#include <TString.h>
 #include <TTree.h>
 
 #include "AliCFContainer.h"
@@ -62,6 +63,8 @@
 //____________________________________________________________
 AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   AliAnalysisTask("PID efficiency Analysis", "")
+  , fQAlevel(0)
+  , fPIDdetectors("")
   , fESD(0x0)
   , fMC(0x0)
   , fCFM(0x0)
@@ -72,6 +75,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fSecVtx(0x0)
   , fMCQA(0x0)
   , fNEvents(0x0)
+  , fNElectronTracksEvent(0x0)
   , fQA(0x0)
   , fOutput(0x0)
   , fHistMCQA(0x0)
@@ -92,31 +96,28 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
 
 //____________________________________________________________
 AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
-  AliAnalysisTask("PID efficiency Analysis COPY", "")
-  , fESD(0x0)
-  , fMC(0x0)
-  , fCFM(0x0)
-  , fCorrelation(0x0)
-  , fFakeElectrons(0x0)
-  , fPID(0x0)
-  , fCuts(0x0)
-  , fSecVtx(0x0)
-  , fMCQA(0x0)
-  , fNEvents(0x0)
-  , fQA(0x0)
-  , fOutput(0x0)
-  , fHistMCQA(0x0)
-  , fHistSECVTX(0x0)
+  AliAnalysisTask(ref)
+  , fQAlevel(ref.fQAlevel)
+  , fPIDdetectors(ref.fPIDdetectors)
+  , fESD(ref.fESD)
+  , fMC(ref.fMC)
+  , fCFM(ref.fCFM)
+  , fCorrelation(ref.fCorrelation)
+  , fFakeElectrons(ref.fFakeElectrons)
+  , fPID(ref.fPID)
+  , fCuts(ref.fCuts)
+  , fSecVtx(ref.fSecVtx)
+  , fMCQA(ref.fMCQA)
+  , fNEvents(ref.fNEvents)
+  , fNElectronTracksEvent(ref.fNElectronTracksEvent)
+  , fQA(ref.fQA)
+  , fOutput(ref.fOutput)
+  , fHistMCQA(ref.fHistMCQA)
+  , fHistSECVTX(ref.fHistSECVTX)
 {
   //
   // Copy Constructor
   //
-  DefineInput(0, TChain::Class());
-  DefineOutput(0, TH1I::Class());
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
-
-  ref.Copy(*this);
 }
 
 //____________________________________________________________
@@ -124,9 +125,25 @@ AliAnalysisTaskHFE &AliAnalysisTaskHFE::operator=(const AliAnalysisTaskHFE &ref)
   //
   // Assignment operator
   //
-  if(this != &ref)
-    ref.Copy(*this);
-
+  if(this == &ref) return *this;
+  AliAnalysisTask::operator=(ref);
+  fQAlevel = ref.fQAlevel;
+  fPIDdetectors = ref.fPIDdetectors;
+  fESD = ref.fESD;
+  fMC = ref.fMC;
+  fCFM = ref.fCFM;
+  fCorrelation = ref.fCorrelation;
+  fFakeElectrons = ref.fFakeElectrons;
+  fPID = ref.fPID;
+  fCuts = ref.fCuts;
+  fSecVtx = ref.fSecVtx;
+  fMCQA = ref.fMCQA;
+  fNEvents = ref.fNEvents;
+  fNElectronTracksEvent = ref.fNElectronTracksEvent;
+  fQA = ref.fQA;
+  fOutput = ref.fOutput;
+  fHistMCQA = ref.fHistMCQA;
+  fHistSECVTX = ref.fHistSECVTX;
   return *this;
 }
 
@@ -163,30 +180,15 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
 }
 
 //____________________________________________________________
-void AliAnalysisTaskHFE::Copy(TObject &o) const {
-  //
-  // Make a copy of the task objecy
-  //
-  
-  AliAnalysisTaskHFE &target = dynamic_cast<AliAnalysisTaskHFE &>(o);
-
-  // copy objects
-  if(fPID) target.fPID = new AliHFEpid(*fPID);
-  if(fCuts) target.fCuts = new AliHFEcuts(*fCuts);
-
-  if(fESD || fMC) target.ConnectInputData(0x0);
-  if(fOutput || fQA) target.CreateOutputObjects();
-}
-
-//____________________________________________________________
 void AliAnalysisTaskHFE::ConnectInputData(Option_t *){
-  TTree *esdchain = dynamic_cast<TChain *>(GetInputData(0));
+/*  TTree *esdchain = dynamic_cast<TChain *>(GetInputData(0));
   if(!esdchain){
     AliError("ESD chain empty");
     return;
   } else {
     esdchain->SetBranchStatus("Tracks", 1);
   }
+*/
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(!esdH){      
     AliError("No ESD input handler");
@@ -206,6 +208,7 @@ void AliAnalysisTaskHFE::ConnectInputData(Option_t *){
 //____________________________________________________________
 void AliAnalysisTaskHFE::CreateOutputObjects(){
   fNEvents = new TH1I("nEvents", "Number of Events in the Analysis", 2, 0, 2); // Number of Events neccessary for the analysis and not a QA histogram
+  fNElectronTracksEvent = new TH1I("nElectronTracksEvent", "Number of Electron Candidates", 100, 0, 100);
   // First Step: TRD alone
   if(!fQA) fQA = new TList;
   fQA->AddAt(new TProfile("conr", "Electron PID contamination", 20, 0, 20), 0);
@@ -223,45 +226,50 @@ void AliAnalysisTaskHFE::CreateOutputObjects(){
   // Temporary fix: Initialize particle cuts with 0x0
   for(Int_t istep = 0; istep < fCFM->GetParticleContainer()->GetNStep(); istep++)
     fCFM->SetParticleCutsList(istep, 0x0);
-  if(IsQAOn()){
+  if(IsQAOn(kCUTqa)){
+    AliInfo("QA on for Cuts");
     fCuts->SetDebugMode();
     fQA->Add(fCuts->GetQAhistograms());
   }
   fCuts->CreateStandardCuts();
+  fCuts->SetMinNTrackletsTRD(0);  // Minimal requirement to get a minimum biased electron sample (only TPC and ITS requirements allowed)
   fCuts->Initialize(fCFM);
   // add output objects to the List
   fOutput->AddAt(fCFM->GetParticleContainer(), 0);
   fOutput->AddAt(fCorrelation, 1);
   fOutput->AddAt(fFakeElectrons, 2);
+  fOutput->AddAt(fNElectronTracksEvent, 3);
 
   // Initialize PID
-  if(IsQAOn()){
-    AliInfo("QA on for Cuts and PID");
+  if(IsQAOn(kPIDqa)){
+    AliInfo("PID QA switched on");
     fPID->SetQAOn();
     fQA->Add(fPID->GetQAhistograms());
   }
   fPID->SetHasMCData(kTRUE);
-  fPID->InitializePID("TRD");
+  if(!fPIDdetectors.Length()) AddPIDdetector("TPC");
+  fPID->InitializePID(fPIDdetectors.Data());     // Only restrictions to TPC allowed 
 
   // mcQA----------------------------------
-  if (IsMCQAOn()) {
+  if (IsQAOn(kMCqa)) {
     AliInfo("MC QA on");
     if(!fMCQA) fMCQA = new AliHFEmcQA;
     if(!fHistMCQA) fHistMCQA = new TList();
+    fHistMCQA->SetName("MCqa");
     fMCQA->CreateHistograms(AliHFEmcQA::kCharm,0,"mcqa_");               // create histograms for charm
     fMCQA->CreateHistograms(AliHFEmcQA::kBeauty,0,"mcqa_");              // create histograms for beauty
     fMCQA->CreateHistograms(AliHFEmcQA::kCharm,1,"mcqa_barrel_");        // create histograms for charm 
     fMCQA->CreateHistograms(AliHFEmcQA::kBeauty,1,"mcqa_barrel_");       // create histograms for beauty
-    TIter next_(gDirectory->GetList());
-    TObject *obj_;
-    int counter_ = 0;
+    TIter next(gDirectory->GetList());
+    TObject *obj;
+    int counter = 0;
     TString objname;
-    while ((obj_ = next_.Next())) {
-      objname = obj_->GetName();
+    while ((obj = next.Next())) {
+      objname = obj->GetName();
       TObjArray *toks = objname.Tokenize("_");
       if (toks->GetEntriesFast()){
         TObjString *fpart = (TObjString *)(toks->UncheckedAt(0));
-        if ((fpart->String()).CompareTo("mcqa") == 0) fHistMCQA->AddAt(obj_, counter_++);
+        if ((fpart->String()).CompareTo("mcqa") == 0) fHistMCQA->AddAt(obj, counter++);
       }
     }
     fQA->Add(fHistMCQA);
@@ -273,20 +281,21 @@ void AliAnalysisTaskHFE::CreateOutputObjects(){
     fSecVtx = new AliHFEsecVtx;
 
     if(!fHistSECVTX) fHistSECVTX = new TList();
+    fHistSECVTX->SetName("SecVtx");
     fSecVtx->CreateHistograms("secvtx_");
-    TIter next__(gDirectory->GetList());
-    TObject *obj__;
-    int counter__ = 0;
+    TIter next(gDirectory->GetList());
+    TObject *obj;
+    int counter = 0;
     TString objname;
-    while ((obj__ = next__.Next())) {
-      objname = obj__->GetName();
+    while ((obj = next.Next())) {
+      objname = obj->GetName();
       TObjArray *toks = objname.Tokenize("_");
       if (toks->GetEntriesFast()){
         TObjString *fpart = (TObjString *)(toks->UncheckedAt(0));
-        if ((fpart->String()).CompareTo("secvtx") == 0) fHistSECVTX->AddAt(obj__, counter__++);
+        if ((fpart->String()).CompareTo("secvtx") == 0) fHistSECVTX->AddAt(obj, counter++);
       }
     }
-  fOutput->Add(fHistSECVTX);
+    fOutput->Add(fHistSECVTX);
   } 
 }
 
@@ -319,7 +328,7 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
   }
 
   // run mc QA ------------------------------------------------
-  if (IsMCQAOn()) {
+  if (IsQAOn(kMCqa)) {
     AliDebug(2, "Running MC QA");
 
     fMCQA->SetStack(fMC->Stack());
@@ -377,6 +386,7 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
   //
 
   Int_t nbtrackrec = fESD->GetNumberOfTracks();
+  Int_t nElectronCandidates = 0;
   AliESDtrack *track = 0x0, *htrack = 0x0;
   Int_t pid = 0;
   // For double counted tracks
@@ -551,6 +561,7 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
 
     // track accepted, do PID
     if(!fPID->IsSelected(track)) continue;
+    nElectronCandidates++;
 
 
     // Fill Containers
@@ -602,7 +613,8 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
     }
   }
   fNEvents->Fill(1);
-  
+  fNElectronTracksEvent->Fill(nElectronCandidates);
+
   // release memory
   delete[] indexRecKineTPC;
   delete[] indexRecKineITS;
@@ -683,3 +695,27 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
     fFakeElectrons->SetBinEdges(idim, binEdges[idim]);
 }
 
+void AliAnalysisTaskHFE::AddPIDdetector(Char_t *detector){
+  if(!fPIDdetectors.Length()) 
+    fPIDdetectors = detector;
+  else
+    fPIDdetectors += Form(":%s", detector);
+}
+
+//____________________________________________________________
+void AliAnalysisTaskHFE::PrintStatus(){
+  printf("\n\tAnalysis Settings\n\t========================================\n\n");
+  printf("\tSecondary Vertex finding: %s\n", IsSecVtxOn() ? "YES" : "NO");
+  printf("\tPrimary Vertex resolution: %s\n", IsPriVtxOn() ? "YES" : "NO");
+  printf("\n");
+  printf("\tParticle Identification Detectors:\n");
+  TObjArray *detectors = fPIDdetectors.Tokenize(":");
+  for(Int_t idet = 0; idet < detectors->GetEntries(); idet++)
+    printf("\t\t%s\n", (dynamic_cast<TObjString *>(detectors->At(idet)))->String().Data());
+  printf("\n");
+  printf("\tQA: \n");
+  printf("\t\tPID: %s\n", IsQAOn(kPIDqa) ? "YES" :  "NO");
+  printf("\t\tCUTS: %s\n", IsQAOn(kCUTqa) ? "YES" : "NO");
+  printf("\t\tMC: %s\n", IsQAOn(kMCqa) ? "YES" : "NO");
+  printf("\n");
+}
