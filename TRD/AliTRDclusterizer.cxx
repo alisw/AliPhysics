@@ -1051,12 +1051,12 @@ void AliTRDclusterizer::AddTrackletsToArray()
     {
       Int_t trkl=0;
       trackletword=fTrackletContainer[side];
-      do{
+      while(trackletword[trkl]>0){
 	Int_t n = TrackletsArray()->GetEntriesFast();
 	AliTRDtrackletWord tmp(trackletword[trkl]);
 	new((*TrackletsArray())[n]) AliTRDcluster(&tmp,fDet,fVolid);
 	trkl++;
-      }while(trackletword[trkl]>0);
+      }
     }
 }
 

@@ -83,7 +83,7 @@ class AliTRDclusterizer : public TNamed
   Bool_t   WriteClusters(Int_t det);
   void     ResetRecPoints();
   virtual TClonesArray    *RecPoints();
-  TClonesArray    *TrackletsArray();
+  virtual TClonesArray    *TrackletsArray();
   Bool_t   WriteTracklets(Int_t det);
 
   Bool_t   Raw2Clusters(AliRawReader *rawReader);
@@ -120,7 +120,7 @@ protected:
   void             CreateCluster(const MaxStruct &Max); 
   inline void      CalcAdditionalInfo(const MaxStruct &Max, Short_t *const signals, Int_t &nPadCount);
   virtual void     AddClusterToArray(AliTRDcluster *cluster);
-  inline void      AddTrackletsToArray();
+  virtual void     AddTrackletsToArray();
 
   const AliTRDReconstructor *fReconstructor; //! reconstructor
   AliRunLoader        *fRunLoader;           //! Run Loader
