@@ -120,8 +120,8 @@ int AliHLTTrigger::TriggerEvent(
   
   if (fTriggerEventResult != 0) return fTriggerEventResult;  // Do not do anything if a previous call failed.
   fTriggerEventResult = PushBack(result, type, spec);
-  if (fTriggerEventResult) {
-    fTriggerEventResult = PushBack(result->ReadoutList().Buffer(), result->ReadoutList().BufferSize(), kAliHLTDataTypeDAQRDOUT|kAliHLTDataOriginOut);
+  if (fTriggerEventResult == 0) {
+    fTriggerEventResult = PushBack(result->ReadoutList().Buffer(), result->ReadoutList().BufferSize(), "HLTRDLST", "HLT "/*kAliHLTDataTypeDAQRDOUT|kAliHLTDataOriginOut*/);
   }
   
   if (fTriggerEventResult == 0) fDecisionMade = true;

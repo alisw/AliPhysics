@@ -98,7 +98,7 @@ class AliHLTTrigger : public AliHLTProcessor
    * \note The underlying non const version of GetOutputDataTypes adds the value
    *    kAliHLTDataTypeTObject to the list.
    */
-  virtual void GetOutputDataTypes(AliHLTComponentDataTypeList& list) const {}
+  virtual void GetOutputDataTypes(AliHLTComponentDataTypeList& /*list*/) const {}
 
   /**
    * Get a ratio by how much the data volume is shrunk or enhanced.
