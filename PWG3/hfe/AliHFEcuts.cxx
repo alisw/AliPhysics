@@ -43,8 +43,6 @@
 
 ClassImp(AliHFEcuts)
 
-const Int_t AliHFEcuts::kNcutSteps = 8;
-const Int_t AliHFEcuts::kNcutESDSteps = 6;
 //__________________________________________________________________
 AliHFEcuts::AliHFEcuts():
   fRequirements(0),
@@ -195,10 +193,10 @@ void AliHFEcuts::SetAcceptanceCutList(){
   accCuts->SetMinNHitTRD(12);
   if(IsInDebugMode()) accCuts->SetQAOn(fHistQA);
   
-  TObjArray *PartAccCuts = new TObjArray();
-  PartAccCuts->SetName("fPartAccCuts");
-  PartAccCuts->AddLast(accCuts);
-  fCutList->AddLast(PartAccCuts);
+  TObjArray *partAccCuts = new TObjArray();
+  partAccCuts->SetName("fPartAccCuts");
+  partAccCuts->AddLast(accCuts);
+  fCutList->AddLast(partAccCuts);
 }
 
 //__________________________________________________________________
@@ -275,13 +273,11 @@ void AliHFEcuts::SetRecPrimaryCutList(){
   //  No Kink daughters
   //
   AliCFTrackIsPrimaryCuts *primaryCut = new AliCFTrackIsPrimaryCuts("fCutsPrimaryCuts", "REC Primary Cuts");
-#ifdef V4_17_00
   if(IsRequireDCAToVertex()){
     primaryCut->SetDCAToVertex2D(kTRUE);
     primaryCut->SetMaxDCAToVertexXY(fDCAtoVtx[0]);
     primaryCut->SetMaxDCAToVertexZ(fDCAtoVtx[1]);
   }
-#endif
   if(IsRequireSigmaToVertex()){
     primaryCut->SetRequireSigmaToVertex(kTRUE);
     primaryCut->SetMaxNSigmaToVertex(fSigmaToVtx);
@@ -304,12 +300,10 @@ void AliHFEcuts::SetHFElectronITSCuts(){
   if(IsRequireITSpixel()){
     hfecuts->SetRequireITSpixel(AliHFEextraCuts::ITSPixel_t(fCutITSPixel));
   }
-#ifndef V4_17_00
   if(IsRequireDCAToVertex()){
     hfecuts->SetMaxImpactParamR(fDCAtoVtx[0]);
     hfecuts->SetMaxImpactParamZ(fDCAtoVtx[1]);
   }
-#endif
   
   if(IsInDebugMode()) hfecuts->SetQAOn(fHistQA);
   

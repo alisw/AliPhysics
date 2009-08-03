@@ -36,37 +36,40 @@ class TList;
 
 class AliAnalysisTaskHFE : public AliAnalysisTask{
   enum{
-    kIsQAOn = BIT(18),
-    kIsMCQAOn = BIT(19),
-    kIsSecVtxOn = BIT(20),
-    kIsPriVtxOn = BIT(21)
+    kIsSecVtxOn = BIT(19),
+    kIsPriVtxOn = BIT(20)
   };
   public:
+  enum{
+    kPIDqa = 0,
+    kCUTqa = 1,
+    kMCqa = 2
+  };
     AliAnalysisTaskHFE();
     AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref);
     AliAnalysisTaskHFE& operator=(const AliAnalysisTaskHFE &ref);
-    ~AliAnalysisTaskHFE();
+    virtual ~AliAnalysisTaskHFE();
 
     virtual void ConnectInputData(Option_t *);
     virtual void CreateOutputObjects();
     virtual void Exec(Option_t *);
     virtual void Terminate(Option_t *);
 
-    Bool_t IsQAOn() const     { return TestBit(kIsQAOn); };
-    Bool_t IsMCQAOn() const   { return TestBit(kIsMCQAOn); };
+    Bool_t IsQAOn(Int_t qaLevel) const { return TESTBIT(fQAlevel, qaLevel); };
     Bool_t IsSecVtxOn() const { return TestBit(kIsSecVtxOn); };
     Bool_t IsPriVtxOn() const { return TestBit(kIsPriVtxOn); };
-    void SetQAOn()            { SetBit(kIsQAOn, kTRUE); };
-    void SetMCQAOn()          { SetBit(kIsMCQAOn, kTRUE); };
+    void SetQAOn(Int_t qaLevel) { SETBIT(fQAlevel, qaLevel); };
     void SetPriVtxOn()        { SetBit(kIsPriVtxOn, kTRUE); };
     void SetSecVtxOn()        { SetBit(kIsSecVtxOn, kTRUE); };
+    void SetPIDdetectors(Char_t *detectors){ fPIDdetectors = detectors; }
+    void AddPIDdetector(Char_t *detector);
+    void PrintStatus();
  
-  protected:
-    void Copy(TObject &o) const;
-
   private:
     void MakeParticleContainer();
-
+    
+    ULong_t fQAlevel;                     // QA level
+    TString fPIDdetectors;                // Detectors for Particle Identification
     AliESDEvent *fESD;                    //! The ESD Event
     AliMCEvent *fMC;                      //! The MC Event
     AliCFManager *fCFM;                   //! Correction Framework Manager
@@ -77,6 +80,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     AliHFEsecVtx *fSecVtx;                //! Secondary Vertex Analysis
     AliHFEmcQA *fMCQA;                    //! MC QA
     TH1I *fNEvents;                       //! counter for the number of Events
+    TH1I *fNElectronTracksEvent;          //! Number of Electron candidates after PID decision per Event
     TList *fQA;                           //! QA histos for the cuts
     TList *fOutput;                       //! Container for Task Output
     TList *fHistMCQA;                     //! Output container for MC QA histograms 

@@ -12,10 +12,10 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-#ifndef __ALIHFEPIDMC_H__
-#define __ALIHFEPIDMC_H__
+#ifndef ALIHFEPIDMC_H
+#define ALIHFEPIDMC_H
 
- #ifndef __ALIHFEPIDBASE_H__
+ #ifndef ALIHFEPIDBASE_H
  #include "AliHFEpidBase.h"
  #endif
 

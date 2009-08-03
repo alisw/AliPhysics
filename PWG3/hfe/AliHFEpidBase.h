@@ -12,8 +12,8 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-#ifndef __ALIHFEPIDBASE_H__
-#define __ALIHFEPIDBASE_H__
+#ifndef ALIHFEPIDBASE_H
+#define ALIHFEPIDBASE_H
  
  #ifndef ROOT_TNamed
  #include <TNamed.h>

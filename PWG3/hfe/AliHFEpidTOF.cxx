@@ -93,7 +93,7 @@ Bool_t AliHFEpidTOF::InitializePID(){
 }
 
 //___________________________________________________________________
-Int_t AliHFEpidTOF::IsSelected(AliVParticle *_track)
+Int_t AliHFEpidTOF::IsSelected(AliVParticle *vtrack)
 {
 
   //
@@ -105,7 +105,7 @@ Int_t AliHFEpidTOF::IsSelected(AliVParticle *_track)
   // returns 10 (== kUnknown)if PID can not be assigned
   //
 
-  AliESDtrack *track = dynamic_cast<AliESDtrack*>(_track);
+  AliESDtrack *track = dynamic_cast<AliESDtrack*>(vtrack);
   Long_t status = 0;
   status = track->GetStatus(); 
 
@@ -130,13 +130,13 @@ Int_t AliHFEpidTOF::IsSelected(AliVParticle *_track)
   (dynamic_cast<TH1F *>(fQAList->At(kHistTOFlength)))->Fill(tItrackL);
   // get the TOF pid probabilities
   Double_t tESDpid[5] = {0., 0., 0., 0., 0.};
-  Float_t tTOFpid_sum = 0.;
+  Float_t tTOFpidSum = 0.;
   // find the largest PID probability
   track->GetTOFpid(tESDpid);
   Double_t tMAXpid = 0.;
   Int_t tMAXindex = -1;
   for(Int_t i=0; i<5; ++i){
-    tTOFpid_sum += tESDpid[i];
+    tTOFpidSum += tESDpid[i];
     if(tESDpid[i] > tMAXpid){
       tMAXpid = tESDpid[i];
       tMAXindex = i;
@@ -146,12 +146,12 @@ Int_t AliHFEpidTOF::IsSelected(AliVParticle *_track)
   Double_t p = track->GetOuterParam()->P();
   Double_t beta = (tItrackL/100.)/(TMath::C()*(tTOFsignal/1e12));
   
-  if(TMath::Abs(tTOFpid_sum - 1) > 0.01) return AliPID::kUnknown;
+  if(TMath::Abs(tTOFpidSum - 1) > 0.01) return AliPID::kUnknown;
   else{
     // should be the same as AliPID flags
     
-    (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpid_0+tMAXindex)))->Fill(beta, p);
-    (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpid_beta_v_P)))->Fill(beta, p);
+    (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpid0+tMAXindex)))->Fill(beta, p);
+    (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpidBetavP)))->Fill(beta, p);
     return tMAXindex;
   }
 }
@@ -165,14 +165,14 @@ void AliHFEpidTOF::AddQAhistograms(TList *qaList){
   fQAList = new TList;
   fQAList->SetName("fTOFqaHistos");
   fQAList->AddAt(new TH1F("hTOF_flags", "TOF flags;flags (see code for info);counts", 10, -0.25, 4.75), kHistTOFpidFlags);
-  fQAList->AddAt(new TH2F("fTOFbeta_v_P_no","beta -v- P; beta;momentum [GeV/c]", 120, 0, 1.2, 200, 0, 20), kHistTOFpid_beta_v_P);
+  fQAList->AddAt(new TH2F("fTOFbeta_v_P_no","beta -v- P; beta;momentum [GeV/c]", 120, 0, 1.2, 200, 0, 20), kHistTOFpidBetavP);
   fQAList->AddAt(new TH1F("hTOF_signal", "TOF signal; TOF signal [ns];counts", 1000, 12, 50), kHistTOFsignal);
   fQAList->AddAt(new TH1F("hTOF_length", "TOF track length; length [cm];counts", 400, 300, 700), kHistTOFlength);
-  fQAList->AddAt(new TH2F("hTOFpid_electron", "TOF reco electron; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid_0);
-  fQAList->AddAt(new TH2F("hTOFpid_muon", "TOF reco muon; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid_1);
-  fQAList->AddAt(new TH2F("hTOFpid_pion", "TOF reco pion; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid_2);
-  fQAList->AddAt(new TH2F("hTOFpid_kaon", "TOF reco kaon; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid_3);
-  fQAList->AddAt(new TH2F("hTOFpid_proton", "TOF reco proton; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid_4);
+  fQAList->AddAt(new TH2F("hTOFpid_electron", "TOF reco electron; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid0);
+  fQAList->AddAt(new TH2F("hTOFpid_muon", "TOF reco muon; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid1);
+  fQAList->AddAt(new TH2F("hTOFpid_pion", "TOF reco pion; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid2);
+  fQAList->AddAt(new TH2F("hTOFpid_kaon", "TOF reco kaon; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid3);
+  fQAList->AddAt(new TH2F("hTOFpid_proton", "TOF reco proton; beta ; momentum [GeV/c]", 120, 0, 1.2, 200, 0, 5), kHistTOFpid4);
 
   qaList->AddLast(fQAList);
 }

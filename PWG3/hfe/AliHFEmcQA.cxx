@@ -412,7 +412,7 @@ void AliHFEmcQA::GetHadronKine(Int_t iTrack, const Int_t kquark)
     Int_t pdgcodeCopy = pdgcode;
 
     // if the mother is charmed hadron  
-    Bool_t IsDirectCharm = kFALSE;
+    Bool_t isDirectCharm = kFALSE;
     if ( int(abs(pdgcode)/100.) == kCharm || int(abs(pdgcode)/1000.) == kCharm ) {
 
           // iterate until you find B hadron as a mother or become top ancester 
@@ -420,7 +420,7 @@ void AliHFEmcQA::GetHadronKine(Int_t iTrack, const Int_t kquark)
 
              Int_t jLabel = mcpart->GetFirstMother();
              if (jLabel == -1){
-               IsDirectCharm = kTRUE;
+               isDirectCharm = kTRUE;
                break; // if there is no ancester
              }
              if (jLabel < 0){ // safety protection
@@ -438,7 +438,7 @@ void AliHFEmcQA::GetHadronKine(Int_t iTrack, const Int_t kquark)
              mcpart = mother;
           } // end of iteration 
     } // end of if
-    if((IsDirectCharm == kTRUE && kquark == kCharm) || kquark == kBeauty) {
+    if((isDirectCharm == kTRUE && kquark == kCharm) || kquark == kBeauty) {
          for (Int_t i=0; i<fNparents; i++){
             if (abs(pdgcodeCopy)==fParentSelect[iq][i]){
 
@@ -572,18 +572,18 @@ void AliHFEmcQA::GetDecayedKine(Int_t iTrack, const Int_t kquark, Int_t kdecayed
 
 
 //__________________________________________
-void AliHFEmcQA::IdentifyMother(Int_t mother_label, Int_t &mother_pdg, Int_t &grandmother_label)
+void AliHFEmcQA::IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel)
 {
        // find mother pdg code and label 
 
-       if (mother_label < 0) { 
+       if (motherlabel < 0) { 
          AliDebug(1, "Stack label is negative, return\n");
          return; 
        }
-       TParticle *heavysMother = fStack->Particle(mother_label);
-       mother_pdg = heavysMother->GetPdgCode();
-       grandmother_label = heavysMother->GetFirstMother();
-       AliDebug(1,Form("ancestor pdg code= %d\n",mother_pdg));
+       TParticle *heavysMother = fStack->Particle(motherlabel);
+       motherpdg = heavysMother->GetPdgCode();
+       grandmotherlabel = heavysMother->GetFirstMother();
+       AliDebug(1,Form("ancestor pdg code= %d\n",motherpdg));
 }
 
 //__________________________________________
@@ -675,4 +675,3 @@ Float_t AliHFEmcQA::GetRapidity(TParticle *part)
        else rapidity = 0.5*(TMath::Log((part->Energy()+part->Pz()) / (part->Energy()-part->Pz()))); 
        return rapidity;
 }
-

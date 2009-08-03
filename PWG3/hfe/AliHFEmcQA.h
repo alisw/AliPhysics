@@ -29,7 +29,7 @@
 #define ALIHFEMCQA_H
 
 #ifndef ROOT_TObject
-#include <TObject.h>
+//#include <TObject.h>
 #endif
 
 class TH1F;
@@ -61,7 +61,7 @@ class AliHFEmcQA: public TObject {
                 void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
 
         protected:
-                void IdentifyMother(Int_t mother_label, Int_t &mother_pdg, Int_t &grandmother_label); // 
+                void IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel); // 
                 void HardScattering(const Int_t kquark, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from hard scattering
                 void ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // report if the quark production process is unknown
                 Bool_t IsFromInitialShower(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from initial parton shower 
@@ -76,28 +76,76 @@ class AliHFEmcQA: public TObject {
                 static const Int_t fgkqType; // number of particle type to be checked
 
 
-                enum ProcessType_t
+                enum ProcessType
                         {
                         kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
                         };
 
-                struct hists{
+                struct AliHists{
                         TH1F *fPdgCode; // histogram to store particle pdg code
                         TH1F *fPt; // histogram to store pt
                         TH1F *fY; // histogram to store rapidity
                         TH1F *fEta; // histogram to store eta
+
+			AliHists()
+			  : fPdgCode()
+			  , fPt()
+			  , fY()
+			  , fEta()
+                        {
+			  // default constructor
+			};
+			AliHists(const AliHists & p)
+			  : fPdgCode(p.fPdgCode)
+			  , fPt(p.fPt)
+			  , fY(p.fY)
+			  , fEta(p.fEta)
+                        {
+			  // copy constructor
+			};
+			AliHists &operator=(const AliHists &)
+			{
+			  // assignment operator, not yet implemented 
+			  return *this;
+			}
                 };
-                struct histsComm {
+                struct AliHistsComm {
                         TH1F *fNq; // histogram to store number of quark
                         TH1F *fProcessID; // histogram to store process id 
                         TH2F *fePtRatio; // fraction of electron pT from D or B hadron
                         TH2F *fDePtRatio; // fraction of D electron pT from B hadron 
                         TH2F *feDistance; // distance between electron production point to mother particle 
                         TH2F *fDeDistance; // distance between D electron production point to mother particle
+
+			AliHistsComm()
+			  : fNq()
+			  , fProcessID()
+			  , fePtRatio()
+			  , fDePtRatio()
+			  , feDistance()
+			  , fDeDistance()
+                        {
+			  // default constructor
+			};
+			AliHistsComm(const AliHistsComm & p)
+			  : fNq(p.fNq)
+			  , fProcessID(p.fProcessID)
+			  , fePtRatio(p.fePtRatio)
+			  , fDePtRatio(p.fDePtRatio)
+			  , feDistance(p.feDistance)
+			  , fDeDistance(p.fDeDistance)
+                        {
+			  // copy constructor
+			};
+			AliHistsComm &operator=(const AliHistsComm &)
+			{
+			  // assignment operator, not yet implemented 
+			  return *this;
+			}
                 };
 
-                hists fHist[2][7][5]; // struct of histograms to store kinematics of given particles
-                histsComm fHistComm[2][5]; // struct of additional histograms of given particles
+                AliHists fHist[2][7][5]; // struct of histograms to store kinematics of given particles
+                AliHistsComm fHistComm[2][5]; // struct of additional histograms of given particles
 
                 TParticle *fHeavyQuark[50]; // store pointer of heavy flavour quark 
                 Int_t fIsHeavy[2]; // count of heavy flavour
@@ -105,8 +153,7 @@ class AliHFEmcQA: public TObject {
                 Int_t fParentSelect[2][7]; // heavy hadron species
 
 
-        ClassDef(AliHFEmcQA,0);  // QA for MC electrons
+        ClassDef(AliHFEmcQA,0);
 };
 
 #endif
-

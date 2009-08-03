@@ -48,15 +48,14 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   // add a list here
     AliHFEpidBase(name)
   , fLineCrossingsEnabled(0)
-  , fNsigmaTPC(2)
-  , fPID(0x0)
-  , fPIDtpcESD(0x0)
-  , fQAList(0x0)
+  , fNsigmaTPC(3)
+  , fPID(NULL)
+  , fPIDtpcESD(NULL)
+  , fQAList(NULL)
 {
   //
   // default  constructor
   // 
-  memset(fLineCrossingCenter, 0, sizeof(Double_t) * AliPID::kSPECIES);
   memset(fLineCrossingSigma, 0, sizeof(Double_t) * AliPID::kSPECIES);
   fPID = new AliPID;
   fPIDtpcESD = new AliTPCpidESD;
@@ -67,9 +66,9 @@ AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
     AliHFEpidBase("")
   , fLineCrossingsEnabled(0)
   , fNsigmaTPC(2)
-  , fPID(0x0)
-  , fPIDtpcESD(0x0)
-  , fQAList(0x0)
+  , fPID(NULL)
+  , fPIDtpcESD(NULL)
+  , fQAList(NULL)
 {
   //
   // Copy constructor
@@ -88,6 +87,7 @@ AliHFEpidTPC &AliHFEpidTPC::operator=(const AliHFEpidTPC &ref){
   return *this;
 }
 
+//___________________________________________________________________
 void AliHFEpidTPC::Copy(TObject &o) const{
   //
   // Copy function 
@@ -100,6 +100,7 @@ void AliHFEpidTPC::Copy(TObject &o) const{
   target.fPID = new AliPID(*fPID);
   target.fPIDtpcESD = new AliTPCpidESD(*fPIDtpcESD);
   target.fQAList = dynamic_cast<TList *>(fQAList->Clone());
+  memcpy(target.fLineCrossingSigma, fLineCrossingSigma, sizeof(Double_t) * AliPID::kSPECIES);
 
   AliHFEpidBase::Copy(target);
 }
@@ -122,8 +123,8 @@ Bool_t AliHFEpidTPC::InitializePID(){
   //
   // Add TPC dE/dx Line crossings
   //
-  AddTPCdEdxLineCrossing(AliPID::kKaon, 0.3, 0.018);
-  AddTPCdEdxLineCrossing(AliPID::kProton, 0.9, 0.054);
+  //AddTPCdEdxLineCrossing(AliPID::kKaon, 0.3, 0.018);
+  //AddTPCdEdxLineCrossing(AliPID::kProton, 0.9, 0.054);
   return kTRUE;
 }
 
@@ -135,17 +136,16 @@ Int_t AliHFEpidTPC::IsSelected(AliVParticle *track)
   // for electrons
   // exclusion of the crossing points
   //
-  AliESDtrack *esdTrack = 0x0;
+  AliESDtrack *esdTrack = NULL;
   if(!(esdTrack = dynamic_cast<AliESDtrack *>(track))) return kFALSE;
   if(IsQAon()) FillTPChistograms(esdTrack);
-  Double_t TPCsignal = esdTrack->GetTPCsignal();
   // exclude crossing points:
   // Determine the bethe values for each particle species
-  Double_t p = esdTrack->GetInnerParam()->P();
   Bool_t isLineCrossing = kFALSE;
   for(Int_t ispecies = 0; ispecies < AliPID::kSPECIES; ispecies++){
+    if(ispecies == AliPID::kElectron) continue;
     if(!(fLineCrossingsEnabled & 1 << ispecies)) continue;
-    if(TMath::Abs(p - fLineCrossingCenter[ispecies]) < fLineCrossingSigma[ispecies]){
+    if(fPIDtpcESD->GetNumberOfSigmas(esdTrack, (AliPID::EParticleType)ispecies) < fLineCrossingSigma[ispecies]){
       // Point in a line crossing region, no PID possible
       isLineCrossing = kTRUE;
       break;
@@ -153,13 +153,12 @@ Int_t AliHFEpidTPC::IsSelected(AliVParticle *track)
   }
   if(isLineCrossing) return 0;
   // Check whether distance from the electron line is smaller than n-sigma
-  Double_t beta = p/fPID->ParticleMass(AliPID::kElectron);
-  if(TMath::Abs(TPCsignal - 50*fPIDtpcESD->Bethe(beta)) < GetTPCsigma(p,0)) return 11;
+  if(fPIDtpcESD->GetNumberOfSigmas(esdTrack, AliPID::kElectron) < fNsigmaTPC ) return 11;
   return 0;
 }
 
 //___________________________________________________________________
-void AliHFEpidTPC::AddTPCdEdxLineCrossing(Int_t species, Double_t p, Double_t sigma_p){
+void AliHFEpidTPC::AddTPCdEdxLineCrossing(Int_t species, Double_t sigma){
   //
   // Add exclusion point for the TPC PID where a dEdx line crosses the electron line
   // Stores line center and line sigma
@@ -169,20 +168,7 @@ void AliHFEpidTPC::AddTPCdEdxLineCrossing(Int_t species, Double_t p, Double_t si
     return;
   }
   fLineCrossingsEnabled |= 1 << species;
-  fLineCrossingCenter[species] = p;
-  fLineCrossingSigma[species] = sigma_p;
-}
-
-//___________________________________________________________________
-Double_t AliHFEpidTPC::GetTPCsigma(Double_t p, Int_t species){
-  //
-  // return the TPC sigma, momentum dependent
-  //
-  if(p < 0.1 || p > 20.) return 0.;
-  Double_t beta = p/fPID->ParticleMass(species);
- 
-  
-  return 50*fPIDtpcESD->Bethe(beta) * 0.06;
+  fLineCrossingSigma[species] = sigma;
 }
 
 //___________________________________________________________________
@@ -195,66 +181,26 @@ Double_t AliHFEpidTPC::Likelihood(const AliESDtrack *track, Int_t species, Float
   //IMPORTANT: Tracks which are judged to be outliers get negative likelihoods -> unusable for combination with further detectors!
   
   if(!track) return -1.;
-  Int_t hypo; //marks particle hypotheses for 2-sigma bands
-  Double_t beta;//well o.k., it corresponds to gamma * beta
-  Double_t p = track->GetInnerParam()->P();
-  Double_t TPCsignal = track->GetTPCsignal();
   Bool_t outlier = kTRUE;
   // Check whether distance from the respective particle line is smaller than r sigma
-  for(hypo = 0; hypo < 5; hypo++)
-    {
-      beta = p/fPID->ParticleMass(hypo);
-      if(TMath::Abs(TPCsignal - (GetTPCsigma(p, hypo))/0.06) > (rsig * GetTPCsigma(p,hypo)))
-	outlier = kTRUE;
-      else 
-	{
-	  outlier = kFALSE;
-	  break;
-	}
-    }
+  for(Int_t hypo = 0; hypo < AliPID::kSPECIES; hypo++){
+    if(fPIDtpcESD->GetNumberOfSigmas(track, (AliPID::EParticleType)hypo) > rsig)
+      outlier = kTRUE;
+    else {
+	    outlier = kFALSE;
+	    break;
+	  }
+  }
   if(outlier)
     return -2.;
 
-  Double_t TPCprob[5];
+  Double_t tpcProb[5];
 
-  track->GetTPCpid(TPCprob);
+  track->GetTPCpid(tpcProb);
 
-  return TPCprob[species];
+  return tpcProb[species];
 }
-//___________________________________________________________________
-Double_t AliHFEpidTPC::Likelihood(const AliESDtrack *track, Int_t species)
-{
-  //default: rsig = 2.
-  // for everything else, see above!
 
-  if(!track) return -1.;
-  Int_t hypo; //marks particle hypotheses for 2-sigma bands
-  Double_t beta;
-  Double_t p = track->GetInnerParam()->P();
-  Double_t TPCsignal = track->GetTPCsignal();
-  Bool_t outlier = kTRUE;
-  // Check whether distance from the respective particle line is smaller than 2 sigma
-  for(hypo = 0; hypo < 5; hypo++)
-    {
-      beta = p/fPID->ParticleMass(hypo);
-     
-      if(TMath::Abs(TPCsignal - (GetTPCsigma(p, hypo))/0.06) > (2. * GetTPCsigma(p,hypo)))
-	outlier = kTRUE;
-      else 
-	{
-	  outlier = kFALSE;
-	  break;
-	}
-    }
-  if(outlier == kTRUE)
-    return -2.;
-
-  Double_t TPCprob[5];
-
-  track->GetTPCpid(TPCprob);
-
-  return TPCprob[species];
-}
 //___________________________________________________________________
 Double_t  AliHFEpidTPC::Suppression(const AliESDtrack *track, Int_t species)
 {
@@ -272,17 +218,18 @@ Double_t  AliHFEpidTPC::Suppression(const AliESDtrack *track, Int_t species)
 
 
 }
+
 //___________________________________________________________________
 void AliHFEpidTPC::FillTPChistograms(const AliESDtrack *track){
   //
   if(!track)
     return;
  
-  Double_t tpc_signal = track->GetTPCsignal();
+  Double_t tpcSignal = track->GetTPCsignal();
   Double_t p = track->GetInnerParam() ? track->GetInnerParam()->P() : track->P();
   if(HasMCData()){
     switch(TMath::Abs(GetPdgCode(const_cast<AliESDtrack *>(track)))){
-      case 11:   (dynamic_cast<TH2I *>(fQAList->At(kHistTPCelectron)))->Fill(p, tpc_signal);
+      case 11:   (dynamic_cast<TH2I *>(fQAList->At(kHistTPCelectron)))->Fill(p, tpcSignal);
 	(dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobEl)))->Fill(p, Likelihood(track, 0));
 	//histograms with ratio of likelihood to be electron/to be other species (a check for quality of likelihood PID);
 	(dynamic_cast<TH2F *>(fQAList->At(kHistTPCenhanceElPi)))->Fill(p, -Suppression(track, 2));
@@ -297,37 +244,34 @@ void AliHFEpidTPC::FillTPChistograms(const AliESDtrack *track){
 	(dynamic_cast<TH2F *>(fQAList->At(kHistTPCElprobPro)))->Fill(p, Likelihood(track, 4));
 	break;
 	//___________________________________________________________________________________________
-    case 13: (dynamic_cast<TH2I *>(fQAList->At(kHistTPCmuon)))->Fill(p, tpc_signal);
+    case 13: (dynamic_cast<TH2I *>(fQAList->At(kHistTPCmuon)))->Fill(p, tpcSignal);
       //Likelihood of muon to be an electron
       (dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobMu)))->Fill(p, Likelihood(track, 0));
       //ratio of likelihood for muon to be a muon/an electron -> indicator for quality of muon suppression
       //below functions are the same for other species
 	(dynamic_cast<TH2F *>(fQAList->At(kHistTPCsuppressMu)))->Fill(p, Suppression(track, 1));
       break;
-      case 211:  (dynamic_cast<TH2I *>(fQAList->At(kHistTPCpion)))->Fill(p, tpc_signal);
+      case 211:  (dynamic_cast<TH2I *>(fQAList->At(kHistTPCpion)))->Fill(p, tpcSignal);
 	(dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobPi)))->Fill(p, Likelihood(track, 0));
 	(dynamic_cast<TH2F *>(fQAList->At(kHistTPCsuppressPi)))->Fill(p, Suppression(track, 2));
           break;
-      case 321:  (dynamic_cast<TH2I *>(fQAList->At(kHistTPCkaon)))->Fill(p, tpc_signal);
+      case 321:  (dynamic_cast<TH2I *>(fQAList->At(kHistTPCkaon)))->Fill(p, tpcSignal);
 	(dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobKa)))->Fill(p, Likelihood(track, 0));
 	(dynamic_cast<TH2F *>(fQAList->At(kHistTPCsuppressKa)))->Fill(p, Suppression(track, 3));
           break;
-      case 2212: (dynamic_cast<TH2I *>(fQAList->At(kHistTPCproton)))->Fill(p, tpc_signal);
+      case 2212: (dynamic_cast<TH2I *>(fQAList->At(kHistTPCproton)))->Fill(p, tpcSignal);
 	(dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobPro)))->Fill(p, Likelihood(track, 0));
 	(dynamic_cast<TH2F *>(fQAList->At(kHistTPCsuppressPro)))->Fill(p, Suppression(track, 4));
           break;
-      default: (dynamic_cast<TH2I *>(fQAList->At(kHistTPCothers)))->Fill(p, tpc_signal);
+      default: (dynamic_cast<TH2I *>(fQAList->At(kHistTPCothers)))->Fill(p, tpcSignal);
 	(dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobOth)))->Fill(p, Likelihood(track, 0));
 
 	break;
     }
   }
   //TPC signal and Likelihood to be electron for all tracks (independent of MC information)
-  (dynamic_cast<TH2I *>(fQAList->At(kHistTPCall)))->Fill(p, tpc_signal);
+  (dynamic_cast<TH2I *>(fQAList->At(kHistTPCall)))->Fill(p, tpcSignal);
  (dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobAll)))->Fill(p, Likelihood(track, 0));
- 
-
-  
 }
 
 //___________________________________________________________________

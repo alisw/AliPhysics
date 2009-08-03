@@ -22,6 +22,8 @@
  *                                                                      *
  ************************************************************************/
 #include <TClass.h>
+#include <THnSparse.h>
+#include <TH3F.h>
 #include <TIterator.h>
 #include <TList.h>
 #include <TObjArray.h>
@@ -29,9 +31,12 @@
 #include <TString.h>
 
 #include "AliESDtrack.h"
+#include "AliLog.h"
+#include "AliPID.h"
 
 #include "AliHFEpid.h"
 #include "AliHFEpidBase.h"
+#include "AliHFEpidITS.h"
 #include "AliHFEpidTPC.h"
 #include "AliHFEpidTRD.h"
 #include "AliHFEpidTOF.h"
@@ -111,10 +116,11 @@ AliHFEpid::~AliHFEpid(){
   //
   // Destructor
   //
-  if(fQAlist) delete fQAlist; fQAlist = 0x0;  // Each detector has to care about its Histograms
   for(Int_t idet = 0; idet < kNdetectorPID; idet++){
-    if(fDetectorPID[idet]) delete fDetectorPID[idet];
-  }
+    if(fDetectorPID[idet])
+      delete fDetectorPID[idet];
+  } 
+  if(fQAlist) delete fQAlist; fQAlist = 0x0;  // Each detector has to care about its Histograms
 }
 
 //____________________________________________________________
@@ -125,8 +131,11 @@ Bool_t AliHFEpid::InitializePID(TString detectors){
   // + Initializes Detector PID objects
   // + Handles QA
   //
+  AliInfo(Form("Doing InitializePID for Detectors %s", detectors.Data()));
   fDetectorPID[kMCpid] = new AliHFEpidMC("Monte Carlo PID"); // Always there
+  fDetectorPID[kITSpid] = new AliHFEpidITS("ITS development PID");  // Development version of the ITS pid, for the moment always there
   SETBIT(fEnabledDetectors, kMCpid);
+  SETBIT(fEnabledDetectors, kITSpid);
   
   TObjArray *detsEnabled = detectors.Tokenize(":");
   TIterator *detIterator = detsEnabled->MakeIterator();
@@ -162,16 +171,21 @@ Bool_t AliHFEpid::IsSelected(AliVParticle *track){
   // Steers PID decision for single detectors respectively combined
   // PID decision
   //
-  
   if(TString(track->IsA()->GetName()).CompareTo("AliMCparticle") == 0){
     return (TMath::Abs(fDetectorPID[kMCpid]->IsSelected(track)) == 11);
   }
   if(TString(track->IsA()->GetName()).CompareTo("AliESDtrack") == 0){
-    if(TESTBIT(fEnabledDetectors, kTPCpid) && TESTBIT(fEnabledDetectors, kTOFpid)){
-      // case TPC-TOF
-      return MakePID_TPC_TOF(dynamic_cast<AliESDtrack *>(track));
-    } else if(TESTBIT(fEnabledDetectors, kTPCpid)){
-      return (TMath::Abs(fDetectorPID[kTPCpid]->IsSelected(track)) ==11);
+    if(TESTBIT(fEnabledDetectors, kTPCpid)){
+      if(IsQAOn()) 
+        MakePlotsItsTpc(dynamic_cast<AliESDtrack *>(track));  // First fill the QA histograms
+      if(TESTBIT(fEnabledDetectors, kTOFpid)){
+        // case TPC-TOF
+        return MakePidTpcTof(dynamic_cast<AliESDtrack *>(track));
+      } else if(TESTBIT(fEnabledDetectors, kTRDpid)){
+        // case TPC-TRD with low level detector Signals
+        return MakePidTpcTrd(dynamic_cast<AliESDtrack *>(track));
+      } else
+        return (TMath::Abs(fDetectorPID[kTPCpid]->IsSelected(track)) ==11);
     } else if(TESTBIT(fEnabledDetectors, kTRDpid)){
       return (TMath::Abs(fDetectorPID[kTRDpid]->IsSelected(track)) ==11);
     } else if(TESTBIT(fEnabledDetectors, kTOFpid)){
@@ -183,7 +197,7 @@ Bool_t AliHFEpid::IsSelected(AliVParticle *track){
 }
 
 //____________________________________________________________
-Bool_t AliHFEpid::MakePID_TPC_TOF(AliESDtrack *track){
+Bool_t AliHFEpid::MakePidTpcTof(AliESDtrack *track){
   //
   // Combines TPC and TOF PID decision
   //
@@ -192,16 +206,119 @@ Bool_t AliHFEpid::MakePID_TPC_TOF(AliESDtrack *track){
 }
 
 //____________________________________________________________
+Bool_t AliHFEpid::MakePidTpcTrd(AliESDtrack *track){
+  //
+  // Combination of TPC and TRD PID
+  // Fills Histograms TPC Signal vs. TRD signal for different
+  // momentum slices
+  //
+  Double_t content[10];
+  content[0] = -1;
+  content[1] = track->P();
+  content[2] = track->GetTPCsignal();
+  AliHFEpidTRD *trdPid = dynamic_cast<AliHFEpidTRD *>(fDetectorPID[kTRDpid]);
+  content[3] = trdPid->GetTRDSignalV1(track);
+  content[4] = trdPid->GetTRDSignalV2(track);
+  AliDebug(1, Form("Momentum: %f, TRD Signal: Method 1[%f], Method 2[%f]", content[1], content[3], content[4]));
+  if(IsQAOn()){
+    if(HasMCData()){
+      // Fill My Histograms for MC PID
+      Int_t pdg = TMath::Abs(fDetectorPID[kMCpid]->IsSelected(track));
+      Int_t pid = -1;
+      switch(pdg){
+        case 11:    pid = AliPID::kElectron; break;
+        case 13:    pid = AliPID::kMuon; break;
+        case 211:   pid = AliPID::kPion; break;
+        case 321:   pid = AliPID::kKaon; break;
+        case 2212:  pid = AliPID::kProton; break;
+        default:    pid = -1;
+      };
+      content[0] = pid;
+    }
+    (dynamic_cast<THnSparse *>(fQAlist->At(kTRDSignal)))->Fill(content);
+  }
+  return trdPid->IsSelected(track);
+}
+
+//____________________________________________________________
+void AliHFEpid::MakePlotsItsTpc(AliESDtrack *track){
+  //
+  // Make a plot ITS signal - TPC signal for several momentum bins
+  //
+  Double_t content[10];
+  content[0] = -1;
+  content[1] = track->GetTPCInnerParam() ? track->GetTPCInnerParam()->P() : track->P();
+  content[2] = (dynamic_cast<AliHFEpidITS *>(fDetectorPID[kITSpid]))->GetITSSignalV1(track);
+  content[3] = track->GetTPCsignal();
+  AliDebug(1, Form("Momentum %f, TPC Signal %f, ITS Signal %f", content[1], content[2], content[3]));
+  if(HasMCData()){
+    // Fill My Histograms for MC PID
+    Int_t pdg = TMath::Abs(fDetectorPID[kMCpid]->IsSelected(track));
+    Int_t pid = -1;
+    switch(pdg){
+      case 11:    pid = AliPID::kElectron; break;
+      case 13:    pid = AliPID::kMuon; break;
+      case 211:   pid = AliPID::kPion; break;
+      case 321:   pid = AliPID::kKaon; break;
+      case 2212:  pid = AliPID::kProton; break;
+      default:    pid = -1;
+    };
+    content[0] = pid;
+  }
+  (dynamic_cast<THnSparse *>(fQAlist->At(kITSSignal)))->Fill(content);
+}
+
+//____________________________________________________________
 void AliHFEpid::SetQAOn(){
   //
   // Switch on QA
   //
-  SetBit(kIsQAOn);
+  SetBit(kIsQAOn, kTRUE);
+  if(fQAlist) return;
   fQAlist = new TList;
   fQAlist->SetName("PIDqa");
+  THnSparseF *histo = NULL;
+
+  // Prepare axis for QA histograms
+  const Int_t kMomentumBins = 41;
+  const Double_t kPtMin = 0.1;
+  const Double_t kPtMax = 10.;
+  Double_t momentumBins[kMomentumBins];
+  for(Int_t ibin = 0; ibin < kMomentumBins; ibin++)
+    momentumBins[ibin] = static_cast<Double_t>(TMath::Power(10,TMath::Log10(kPtMin) + (TMath::Log10(kPtMax)-TMath::Log10(kPtMin))/(kMomentumBins-1)*static_cast<Double_t>(ibin)));
+
+  // Add Histogram for combined TPC-TRD PID
+  const Int_t kDimensionsTRDsig = 5;
+  Int_t kNbinsTRDsig[kDimensionsTRDsig] = {AliPID::kSPECIES + 1, kMomentumBins - 1, 200, 3000, 3000};
+  Double_t binMinTRDsig[kDimensionsTRDsig] = {-1., 0.1, 0, 0, 0};
+  Double_t binMaxTRDsig[kDimensionsTRDsig] = {AliPID::kSPECIES, 10., 200., 3000., 3000.};
+  fQAlist->AddAt((histo = new THnSparseF("fCombTPCTRDpid", "Combined TPC-TRD PID", kDimensionsTRDsig, kNbinsTRDsig, binMinTRDsig, binMaxTRDsig)), kTRDSignal);
+  histo->GetAxis(1)->Set(kMomentumBins - 1, momentumBins);
+  histo->GetAxis(0)->SetTitle("Particle Species");
+  histo->GetAxis(1)->SetTitle("p / GeV/c");
+  histo->GetAxis(2)->SetTitle("TPC Signal / a.u.");
+  histo->GetAxis(3)->SetTitle("TRD Signal / a.u.");
+  histo->GetAxis(4)->SetTitle("TRD Signal / a.u.");
+
+  // Add Histogram for combined TPC-ITS PID
+  const Int_t kDimensionsITSsig = 4;
+  Int_t kNbinsITSsig[kDimensionsITSsig] = {AliPID::kSPECIES + 1, kMomentumBins - 1, 200, 1000};
+  Double_t binMinITSsig[kDimensionsITSsig] = {-1., 0.1, 0., 0.};
+  Double_t binMaxITSsig[kDimensionsITSsig] = {AliPID::kSPECIES, 10., 200., 300.};
+  fQAlist->AddAt((histo = new THnSparseF("fCombTPCITSpid", "Combined TPC-ITS PID", kDimensionsITSsig, kNbinsITSsig, binMinITSsig, binMaxITSsig)), kITSSignal);
+  histo->GetAxis(0)->Set(kMomentumBins - 1, momentumBins);
+  histo->GetAxis(0)->SetTitle("Particle Species");
+  histo->GetAxis(1)->SetTitle("p / GeV/c");
+  histo->GetAxis(2)->SetTitle("TPC Signal / a.u.");
+  histo->GetAxis(3)->SetTitle("ITS Signal / a.u.");
 }
 
+//____________________________________________________________
 void AliHFEpid::SetMCEvent(AliMCEvent *event){
+  //
+  // Set MC Event for the detector PID classes
+  //
   for(Int_t idet = 0; idet < kNdetectorPID; idet++)
     if(fDetectorPID[idet]) fDetectorPID[idet]->SetMCEvent(event);
 }
+

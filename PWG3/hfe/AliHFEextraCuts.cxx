@@ -30,6 +30,7 @@
 #include <TH2F.h>
 #include <TList.h>
 #include <TString.h>
+#include <TMath.h>
 
 #include "AliESDtrack.h"
 #include "AliLog.h"
@@ -47,6 +48,7 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fClusterRatioTPC(0.),
   fMinTrackletsTRD(0),
   fPixelITS(0),
+  fCheck(kTRUE),
   fQAlist(0x0),
   fDebugLevel(0)
 {
@@ -64,6 +66,7 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fClusterRatioTPC(c.fClusterRatioTPC),
   fMinTrackletsTRD(c.fMinTrackletsTRD),
   fPixelITS(c.fPixelITS),
+  fCheck(c.fCheck),
   fQAlist(0x0),
   fDebugLevel(c.fDebugLevel)
 {
@@ -91,6 +94,7 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fClusterRatioTPC = c.fClusterRatioTPC;
     fMinTrackletsTRD = c.fMinTrackletsTRD;
     fPixelITS = c.fPixelITS;
+    fCheck = c.fCheck;
     fDebugLevel = c.fDebugLevel;
 
     memcpy(fImpactParamCut, c.fImpactParamCut, sizeof(Float_t) * 4);
@@ -136,16 +140,12 @@ Bool_t AliHFEextraCuts::CheckESDCuts(AliESDtrack *track){
   ULong64_t survivedCut = 0;	// Bitmap for cuts which are passed by the track, later to be compared with fRequirements
   if(IsQAOn()) FillQAhistosESD(track, kBeforeCuts);
   // Apply cuts
-  Float_t impact_r, impact_z, ratioTPC;
-  track->GetImpactParameters(impact_r, impact_z);
+  Float_t impactR, impactZ, ratioTPC;
+  track->GetImpactParameters(impactR, impactZ);
   // printf("Check TPC findable clusters: %d, found Clusters: %d\n", track->GetTPCNclsF(), track->GetTPCNcls());
   ratioTPC = track->GetTPCNclsF() > 0. ? static_cast<Float_t>(track->GetTPCNcls())/static_cast<Float_t>(track->GetTPCNclsF()) : 1.;
   UChar_t trdTracklets;
-  #ifdef TRUNK
   trdTracklets = track->GetTRDntrackletsPID();
-  #else
-  trdTracklets = track->GetTRDpidQuality();
-  #endif  
   UChar_t itsPixel = track->GetITSClusterMap();
   Int_t det, status1, status2;
   Float_t xloc, zloc;
@@ -153,19 +153,19 @@ Bool_t AliHFEextraCuts::CheckESDCuts(AliESDtrack *track){
   track->GetITSModuleIndexInfo(1, det, status2, xloc, zloc);
   if(TESTBIT(fRequirements, kMinImpactParamR)){
     // cut on min. Impact Parameter in Radial direction
-    if(impact_r >= fImpactParamCut[0]) SETBIT(survivedCut, kMinImpactParamR);
+    if(TMath::Abs(impactR) >= fImpactParamCut[0]) SETBIT(survivedCut, kMinImpactParamR);
   }
   if(TESTBIT(fRequirements, kMinImpactParamZ)){
     // cut on min. Impact Parameter in Z direction
-    if(impact_z >= fImpactParamCut[1]) SETBIT(survivedCut, kMinImpactParamZ);
+    if(TMath::Abs(impactZ) >= fImpactParamCut[1]) SETBIT(survivedCut, kMinImpactParamZ);
   }
   if(TESTBIT(fRequirements, kMaxImpactParamR)){
     // cut on max. Impact Parameter in Radial direction
-    if(impact_r <= fImpactParamCut[2]) SETBIT(survivedCut, kMaxImpactParamR);
+    if(TMath::Abs(impactR) <= fImpactParamCut[2]) SETBIT(survivedCut, kMaxImpactParamR);
   }
   if(TESTBIT(fRequirements, kMaxImpactParamZ)){
     // cut on max. Impact Parameter in Z direction
-    if(impact_z <= fImpactParamCut[3]) SETBIT(survivedCut, kMaxImpactParamZ);
+    if(TMath::Abs(impactZ) <= fImpactParamCut[3]) SETBIT(survivedCut, kMaxImpactParamZ);
   }
   if(TESTBIT(fRequirements, kClusterRatioTPC)){
     // cut on min ratio of found TPC clusters vs findable TPC clusters
@@ -183,28 +183,66 @@ Bool_t AliHFEextraCuts::CheckESDCuts(AliESDtrack *track){
     }
     switch(fPixelITS){
       case kFirst: 
-          if(itsPixel & BIT(0)) 
-            SETBIT(survivedCut, kPixelITS);
-          else if(!CheckITSstatus(status1))
-            SETBIT(survivedCut, kPixelITS);
+	if(!TESTBIT(itsPixel, 0)) {
+	  if(fCheck){
+	    if(!CheckITSstatus(status1)) {
+	      SETBIT(survivedCut, kPixelITS);
+	    }
+	  }
+	}
+	else {
+	  SETBIT(survivedCut, kPixelITS);
+	}
 		    break;
       case kSecond: 
-          if(itsPixel & BIT(1)) 
-            SETBIT(survivedCut, kPixelITS);
-          else if(!CheckITSstatus(status2))
-            SETBIT(survivedCut, kPixelITS);
+	if(!TESTBIT(itsPixel, 1)) {
+	  if(fCheck) {
+	    if(!CheckITSstatus(status2)) {
+	      SETBIT(survivedCut, kPixelITS);
+	    }
+	  }
+	}
+	else { 
+	  SETBIT(survivedCut, kPixelITS);
+	}
 		    break;
       case kBoth: 
-          if((itsPixel & BIT(0)) && (itsPixel & BIT(1))) 
-            SETBIT(survivedCut, kPixelITS);
-          else if(!CheckITSstatus(status1) && !CheckITSstatus(status2))
-            SETBIT(survivedCut, kPixelITS);
-		    break;
+	if(!(TESTBIT(track->GetITSClusterMap(),0))) {
+	  if(fCheck) {  
+	    if(!CheckITSstatus(status1)) {
+	      if(!(TESTBIT(track->GetITSClusterMap(),1))) {
+		if(!CheckITSstatus(status2)) {
+		  SETBIT(survivedCut, kPixelITS);
+		}
+	      }
+	      else SETBIT(survivedCut, kPixelITS);
+	    }
+	  }
+	}
+	else {
+	  
+	  if(!(TESTBIT(track->GetITSClusterMap(),1))) {
+	    if(fCheck) {
+	      if(!CheckITSstatus(status2)) {
+		SETBIT(survivedCut, kPixelITS);
+	      }
+	    }
+	  }
+	  else SETBIT(survivedCut, kPixelITS);
+	
+	}
+	           break;
       case kAny: 
-          if((itsPixel & BIT(0)) || (itsPixel & BIT(1))) 
-            SETBIT(survivedCut, kPixelITS);
-          else if(!CheckITSstatus(status1) || !CheckITSstatus(status2))
-            SETBIT(survivedCut, kPixelITS);
+	if((!TESTBIT(itsPixel, 0)) && (!TESTBIT(itsPixel, 1))){
+	  if(fCheck){
+	    if(!CheckITSstatus(status1) || (!CheckITSstatus(status2))) {
+	      SETBIT(survivedCut, kPixelITS);
+	    }
+	  }
+	}
+	else { 
+	  SETBIT(survivedCut, kPixelITS);
+	}
 		    break;
       default: break;
     }
@@ -222,7 +260,7 @@ Bool_t AliHFEextraCuts::CheckESDCuts(AliESDtrack *track){
 }
 
 //______________________________________________________
-Bool_t AliHFEextraCuts::CheckMCCuts(AliMCParticle */*track*/){
+Bool_t AliHFEextraCuts::CheckMCCuts(AliMCParticle */*track*/) const {
   //
   // Checks cuts on Monte Carlo tracks
   // returns true if track is selected
@@ -239,17 +277,13 @@ void AliHFEextraCuts::FillQAhistosESD(AliESDtrack *track, UInt_t when){
   // Function can be called before cuts or after cut application (second argument)
   //
   TList *container = dynamic_cast<TList *>(fQAlist->At(when));
-  Float_t impact_r, impact_z;
-  track->GetImpactParameters(impact_r, impact_z);
-  (dynamic_cast<TH1F *>(container->At(0)))->Fill(impact_r);
-  (dynamic_cast<TH1F *>(container->At(1)))->Fill(impact_z);
+  Float_t impactR, impactZ;
+  track->GetImpactParameters(impactR, impactZ);
+  (dynamic_cast<TH1F *>(container->At(0)))->Fill(impactR);
+  (dynamic_cast<TH1F *>(container->At(1)))->Fill(impactZ);
   // printf("TPC findable clusters: %d, found Clusters: %d\n", track->GetTPCNclsF(), track->GetTPCNcls());
   (dynamic_cast<TH1F *>(container->At(2)))->Fill(track->GetTPCNclsF() > 0. ? static_cast<Float_t>(track->GetTPCNcls())/static_cast<Float_t>(track->GetTPCNclsF()) : 1.);
-  #ifdef TRUNK
   (dynamic_cast<TH1F *>(container->At(3)))->Fill(track->GetTRDntrackletsPID());
-  #else
-  (dynamic_cast<TH1F *>(container->At(3)))->Fill(track->GetTRDpidQuality());
-  #endif
   UChar_t itsPixel = track->GetITSClusterMap();
   TH1 *pixelHist = dynamic_cast<TH1F *>(container->At(4));
   Int_t firstEntry = pixelHist->GetXaxis()->GetFirst();
@@ -357,7 +391,7 @@ void AliHFEextraCuts::PrintBitMap(Int_t bitmap){
 }
 
 //______________________________________________________
-Bool_t AliHFEextraCuts::CheckITSstatus(Int_t itsStatus){
+Bool_t AliHFEextraCuts::CheckITSstatus(Int_t itsStatus) const {
   //
   // Check whether ITS area is dead
   //

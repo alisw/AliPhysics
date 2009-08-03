@@ -275,7 +275,7 @@ void AliHFEpriVtx::CountPriVxtElecContributor(AliESDtrack *ESDelectron, Int_t so
 }
 
 //_______________________________________________________________________________________________
-void AliHFEpriVtx::FillNprimVtxContributor()
+void AliHFEpriVtx::FillNprimVtxContributor() const
 {
         //
         // Fill histogram with number of electrons contributing to the primary vertex

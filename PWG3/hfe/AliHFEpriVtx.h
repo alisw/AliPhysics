@@ -19,11 +19,11 @@
  *                                                                        *
  **************************************************************************/
 
-#ifndef _ALIHFEPRIVTX_H_
-#define _ALIHFEPRIVTX_H_
+#ifndef ALIHFEPRIVTX_H
+#define ALIHFEPRIVTX_H
 
 #ifndef ROOT_TObject
-#include <TObject.h>
+//#include <TObject.h>
 #endif
 
 class TH1F;
@@ -51,7 +51,7 @@ class AliHFEpriVtx : public TObject {
                 void FillNtracks(); // fill counted number of tracks
                 void CountPriVxtElecContributor(AliESDtrack *ESDelectron, Int_t sourcePart, Int_t recpid, Double_t recprob); 
                 void GetNPriVxtContributor();
-                void FillNprimVtxContributor();
+                void FillNprimVtxContributor() const;
 
                 Int_t GetMCPID(AliESDtrack *track); // return mc pid
 
@@ -64,16 +64,42 @@ class AliHFEpriVtx : public TObject {
 
                 enum kSources {kAll, kDirectCharm, kDirectBeauty, kBeautyCharm, kGamma, kPi0, kElse, kBeautyGamma, kBeautyPi0, kBeautyElse};
 
-                struct hists{
+                struct AliHists{
                         TH1F *fNtracks; // histogram to fill number of counted tracks for different sources
                         TH1F *fNprimVtxContributor; // histogram to fill number of tracks contributing primary vertex 
                         TH1F *fPtElec; // histogram to fill pt of electron tracks
                         TH1F *fPtElecContributor; // histogram to fill pt of electron tracks contributing primary vertex
                         Int_t fNtrackCount; // number of counted track
                         Int_t fNprimVtxContributorCount; // number of tracks contributing primary vertex
-                };
 
-                hists fPrimVtx[10]; //
+			AliHists()
+			: fNtracks()
+			, fNprimVtxContributor()
+			, fPtElec()
+			, fPtElecContributor()
+			, fNtrackCount(0)
+			, fNprimVtxContributorCount(0)
+			{
+			  // default constructor
+			}
+
+			AliHists(const AliHists & p)
+			: fNtracks(p.fNtracks)
+			, fNprimVtxContributor(p.fNprimVtxContributor)
+			, fPtElec(p.fPtElec)
+			, fPtElecContributor(p.fPtElecContributor)
+			, fNtrackCount(p.fNtrackCount)
+			, fNprimVtxContributorCount(p.fNprimVtxContributorCount)
+			{
+			  // copy constructor
+			}
+			AliHists &operator=(const AliHists &)
+			{
+			  // assignment operator, not yet implemented
+			  return *this;
+			}
+                };
+                AliHists fPrimVtx[10]; // define structure of histograms
 
                 Int_t fNtrackswoPid; //  number of track counted
                 TH1F *fHNtrackswoPid; // histogram to fill number of track counted
