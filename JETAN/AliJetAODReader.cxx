@@ -449,21 +449,21 @@ void AliJetAODReader::InitUnitArray()
 {
   //Initialises unit arrays
   Int_t nElements = fTpcGrid->GetNEntries();
-  Float_t eta = 0., phi = 0., Deta = 0., Dphi = 0.;
+  Float_t eta = 0., phi = 0., deltaEta = 0., deltaPhi = 0.;
   if(fArrayInitialised) fUnitArray->Delete();
 
   if(fTpcGrid->GetGridType()==0)
     { // Fill the following quantities :
-      // Good track ID, (Eta,Phi) position ID, eta, phi, energy, px, py, pz, Deta, Dphi,
+      // Good track ID, (Eta,Phi) position ID, eta, phi, energy, px, py, pz, deltaEta, deltaPhi,
       // detector flag, in/out jet, pt cut, mass, cluster ID)
       for(Int_t nBin = 1; nBin < nElements+1; nBin++)
         {
           //      fTpcGrid->GetEtaPhiFromIndex2(nBin,eta,phi);
           fTpcGrid->GetEtaPhiFromIndex2(nBin,phi,eta);
           phi = ((phi < 0) ? phi + 2. * TMath::Pi() : phi);
-          Deta = fTpcGrid->GetDeta();
-          Dphi = fTpcGrid->GetDphi();
-          new ((*fUnitArray)[nBin-1]) AliJetUnitArray(nBin-1,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
+          deltaEta = fTpcGrid->GetDeta();
+          deltaPhi = fTpcGrid->GetDphi();
+          new ((*fUnitArray)[nBin-1]) AliJetUnitArray(nBin-1,0,eta,phi,0.,deltaEta,deltaPhi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
         }
     }
 
@@ -519,60 +519,60 @@ void AliJetAODReader::InitUnitArray()
 	      fGeom->EtaPhiFromIndex(nBin, eta, phi); // From EMCal geometry 
 	      // fEmcalGrid->GetEtaPhiFromIndex2(nBin,phi,eta); // My function from Grid
 	      phi = ((phi < 0) ? phi + 2. * TMath::Pi() : phi);
-	      Deta = fEmcalGrid->GetDeta(); // Modify with the exact detector values
-	      Dphi = fEmcalGrid->GetDphi(); // Modify with the exact detector values
-	      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
+	      deltaEta = fEmcalGrid->GetDeta(); // Modify with the exact detector values
+	      deltaPhi = fEmcalGrid->GetDphi(); // Modify with the exact detector values
+	      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,deltaEta,deltaPhi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 	    } 
 	  else {
 	    if(nBin>=fNumUnits && nBin<fNumUnits+nElements){
 	      fTpcGrid->GetEtaPhiFromIndex2(nBin+1-fNumUnits,phi,eta);
 	      phi = ((phi < 0) ? phi + 2. * TMath::Pi() : phi);
-	      Deta = fTpcGrid->GetDeta();
-	      Dphi = fTpcGrid->GetDphi();
-	      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
+	      deltaEta = fTpcGrid->GetDeta();
+	      deltaPhi = fTpcGrid->GetDphi();
+	      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,deltaEta,deltaPhi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 	    }
 	    else {
 	      if(fDZ) {
 		if(nBin>=fNumUnits+nElements && nBin<fNumUnits+nElements+nGaps){
 		  if(nBin<fNumUnits+nElements+n0)
 		    {
-		      Float_t phi = eta = 0.;
+		      phi = eta = 0.;
 		      fGrid0->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements),phi,eta);
-		      Deta = fGrid0->GetDeta(); 
-		      Dphi = fGrid0->GetDphi(); 
-		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
+		      deltaEta = fGrid0->GetDeta(); 
+		      deltaPhi = fGrid0->GetDphi(); 
+		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,deltaEta,deltaPhi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0 && nBin<fNumUnits+nElements+n0+n1)
 		    {
-		      Float_t phi = eta = 0.;
+		      phi = eta = 0.;
 		      fGrid1->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0),phi,eta);
-		      Deta = fGrid1->GetDeta(); 
-		      Dphi = fGrid1->GetDphi(); 
-		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
+		      deltaEta = fGrid1->GetDeta(); 
+		      deltaPhi = fGrid1->GetDphi(); 
+		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,deltaEta,deltaPhi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0+n1 && nBin<fNumUnits+nElements+n0+n1+n2)
 		    {
-		      Float_t phi = eta = 0.;
+		      phi = eta = 0.;
 		      fGrid2->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0+n1),phi,eta);
-		      Deta = fGrid2->GetDeta(); 
-		      Dphi = fGrid2->GetDphi(); 
-		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
+		      deltaEta = fGrid2->GetDeta(); 
+		      deltaPhi = fGrid2->GetDphi(); 
+		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,deltaEta,deltaPhi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0+n1+n2 && nBin<fNumUnits+nElements+n0+n1+n2+n3)
 		    {
-		      Float_t phi = eta = 0.;
+		      phi = eta = 0.;
 		      fGrid3->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0+n1+n2),phi,eta);
-		      Deta = fGrid3->GetDeta(); 
-		      Dphi = fGrid3->GetDphi(); 
-		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
+		      deltaEta = fGrid3->GetDeta(); 
+		      deltaPhi = fGrid3->GetDphi(); 
+		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,deltaEta,deltaPhi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 		    }
 		  else if(nBin>=fNumUnits+nElements+n0+n1+n2+n3 && nBin<fNumUnits+nElements+nGaps)
 		    {
-		      Float_t phi = eta = 0.;
+		      phi = eta = 0.;
 		      fGrid4->GetEtaPhiFromIndex2(nBin+1-(fNumUnits+nElements+n0+n1+n2+n3),phi,eta);
-		      Deta = fGrid4->GetDeta(); 
-		      Dphi = fGrid4->GetDphi(); 
-		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,Deta,Dphi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
+		      deltaEta = fGrid4->GetDeta(); 
+		      deltaPhi = fGrid4->GetDphi(); 
+		      new ((*fUnitArray)[nBin]) AliJetUnitArray(nBin,0,eta,phi,0.,deltaEta,deltaPhi,kTpc,kOutJet,kPtSmaller,kPtSmaller,kBad,0.,-1);
 		    }
 		}
 	      } // end if(fDZ)
