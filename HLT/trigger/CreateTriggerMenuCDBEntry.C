@@ -1,3 +1,4 @@
+//$Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
@@ -72,16 +73,31 @@ void CreateTriggerMenuCDBEntry(
 		cerr << "ERROR: Could not get storage for: " << cdbPath << endl;
 		return;
 	}
-	
+
+	///////////////////////////////////////////////////////////////////////////////////////////	
 	// Create the trigger menu.
 	AliHLTGlobalTriggerConfig config("Default Global Trigger Config");
+
+
 	//config.AddSymbol("triggerClasses", "AliHLTUInt64_t", "this->GetTriggerClasses()", "0x0", "AliHLTEventSummary");
 	//config.AddItem("triggerClasses != 0x0", "domainAll", "CTP triggered");
 
 	config.AddSymbol("domainAll", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:***\")");
-	config.AddItem("BarrelMultiplicityTrigger", "BarrelMultiplicityTrigger", "charged barrel track multiplicity triggered");
 
+	///////////////////////////////////////////////////////////////////////////////////////////	
+	// the domain definitions for the global HLT output and the HLT DDLs
+	config.AddSymbol("domainHLTOUT", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:HLT \")");
+	config.AddSymbol("domainHLTDDL", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"DAQRDOUT:HLT\\0\")");
+
+	///////////////////////////////////////////////////////////////////////////////////////////	
+	// NOTE: always make sure that the global HLT output and the HLT DDLs are included
+	// in the readout, i.e. add domainHLTOUT|domainHLTDDL to the trigger domain
+	config.AddItem("BarrelMultiplicityTrigger", "BarrelMultiplicityTrigger|domainHLTOUT|domainHLTDDL", "charged barrel track multiplicity triggered");
+	
+	///////////////////////////////////////////////////////////////////////////////////////////	
+	// default domain in case there is no global trigger
 	// readout the output of the reconstruction
+	// this refers to the domain domainHLTOUT|domainHLTDDL
 	config.SetDefaultTriggerDescription("No HLT global trigger");
 	config.DefaultTriggerDomain().Add("*******", "HLT ");
 	AliHLTReadoutList readoutlist;
@@ -91,6 +107,7 @@ void CreateTriggerMenuCDBEntry(
 	TObject* menu = AliHLTGlobalTriggerConfig::Menu()->Clone();
 	menu->Print();
 
+	///////////////////////////////////////////////////////////////////////////////////////////	
 	// Write the trigger menu object to the CDB.
 	AliCDBId id("HLT/ConfigHLT/HLTGlobalTrigger", firstRun, lastRun, version);
 	AliCDBMetaData* metaData = new AliCDBMetaData();
