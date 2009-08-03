@@ -30,7 +30,8 @@ AliAnalysisTaskSECompareHF *AddTaskCompareHF()
 							   "CmpHF.root");
   AliAnalysisDataContainer *coutputCmp2 = mgr->CreateContainer("coutputCmp2",TNtuple::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   "CmpHF.root");
+							   "CmpHFnt.root");
+  coutputCmp2->SetSpecialOutput();
 
   mgr->ConnectInput(hfTask,0,mgr->GetCommonInputContainer());
 
