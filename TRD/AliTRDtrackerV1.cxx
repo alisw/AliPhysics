@@ -3650,9 +3650,10 @@ void AliTRDtrackerV1::AliTRDLeastSquare::Eval(){
   //	printf("fParams[0] = %f, fParams[1] = %f\n", fParams[0], fParams[1]);
   
   // Covariance matrix
-  fCovarianceMatrix[0] = fSums[4] - fSums[1] * fSums[1] / fSums[0];
-  fCovarianceMatrix[1] = fSums[5] - fSums[2] * fSums[2] / fSums[0];
-  fCovarianceMatrix[2] = fSums[3] - fSums[1] * fSums[2] / fSums[0];
+  Double_t sqrnorm = fSums[0] * fSums[0];
+  fCovarianceMatrix[0] = fSums[4] / fSums[0] - fSums[1] * fSums[1] / sqrnorm;
+  fCovarianceMatrix[1] = fSums[5] / fSums[0] - fSums[2] * fSums[2] / sqrnorm;
+  fCovarianceMatrix[2] = fSums[3] / fSums[0] - fSums[1] * fSums[2] / sqrnorm;
 }
 
 //_____________________________________________________________________________
