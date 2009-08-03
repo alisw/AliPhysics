@@ -13,6 +13,7 @@
 
 #pragma link C++ class  AliHFEpid+;
 #pragma link C++ class  AliHFEpidBase+;
+#pragma link C++ class  AliHFEpidITS+;
 #pragma link C++ class  AliHFEpidTPC+;
 #pragma link C++ class  AliHFEpidTRD+;
 #pragma link C++ class  AliHFEpidTOF+;
