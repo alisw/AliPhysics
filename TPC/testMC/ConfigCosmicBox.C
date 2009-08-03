@@ -486,8 +486,8 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	  AliGenFixed *generCosmic = new AliGenFixed(1);
 	  //
 	  Int_t sign = (gRandom->Rndm()>0.5)?  1:-1;
-	  Double_t xcosmic = (gRandom->Rndm()-0.5)*2.*370.;
-	  Double_t zcosmic = (gRandom->Rndm()-0.5)*2.*370.;
+	  //Double_t xcosmic = (gRandom->Rndm()-0.5)*2.*370.;
+	  //Double_t zcosmic = (gRandom->Rndm()-0.5)*2.*370.;
 	  Double_t mom = gRandom->Exp(8.);	  
 	  //	  Double_t theta = gRandom->Gaus(0.5*TMath::Pi(),0.42);
 	  //Double_t phi = gRandom->Gaus(-0.5*TMath::Pi(),0.42);
@@ -498,9 +498,9 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	  generCosmic->SetTheta(theta);
 	  generCosmic->SetVertex(xcosmic,700.,zcosmic);        //vertex position  - This is ignored
 	  
-	  generCosmic->SetVRange(-xcosmic,xcosmic,
+	  generCosmic->SetVRange(-700,700,
 				 700,701, 
-				 -zcosmic,zcosmic);
+				 -700,700);
 	  generCosmic->SetPart(13*sign);
 	  generCosmic->SetVertexSmear(kPerEvent);
 	  char gname[1000];
