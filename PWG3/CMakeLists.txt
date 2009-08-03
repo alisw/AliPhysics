@@ -34,4 +34,6 @@ include(CMake_libPWG3vertexingHF.txt)
 
 include(CMake_libPWG3vertexingOld.txt)
 
+include(CMake_libPWG3hfe.txt)
+
 include(CMake_libPWG3muon.txt)
