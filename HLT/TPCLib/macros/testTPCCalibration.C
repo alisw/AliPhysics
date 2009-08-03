@@ -28,6 +28,9 @@
  */
 
 void testTPCCalibration(const char* input="./", const char* option=" "){
+
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libTPCcalib");  
   
   if(!gSystem->AccessPathName("galice.root")){
     cerr << "Please delete file galice.root or run at a different place." << endl;
