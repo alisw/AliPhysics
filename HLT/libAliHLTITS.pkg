@@ -6,9 +6,7 @@ CLASS_HDRS:=  	AliHLTITStrack.h \
 		AliHLTITSVertexerZ.h \
 		AliHLTITSclusterer.h \
 		AliHLTITSAgent.h\
-		AliHLTITSClusterFinderSPDComponent.h\
-		AliHLTITSClusterFinderSSDComponent.h\
-		AliHLTITSClusterFinderSDDComponent.h\
+		AliHLTITSClusterFinderComponent.h\
 		AliHLTITSClusterHistoComponent.h \
 		AliHLTITSCompressRawDataSDDComponent.h \
 		AliHLTITSQAComponent.h \

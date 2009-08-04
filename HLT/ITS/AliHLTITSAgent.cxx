@@ -32,9 +32,7 @@
 
 // header file of the module preprocessor
 #include "AliHLTITSCompressRawDataSDDComponent.h"
-#include "AliHLTITSClusterFinderSPDComponent.h"
-#include "AliHLTITSClusterFinderSSDComponent.h"
-#include "AliHLTITSClusterFinderSDDComponent.h"
+#include "AliHLTITSClusterFinderComponent.h"
 #include "AliHLTITSClusterHistoComponent.h"
 #include "AliHLTITSTrackerComponent.h"
 
@@ -130,9 +128,9 @@ int AliHLTITSAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   assert(pHandler);
   if (!pHandler) return -EINVAL;
   pHandler->AddComponent(new AliHLTITSCompressRawDataSDDComponent);
-  pHandler->AddComponent(new AliHLTITSClusterFinderSPDComponent);
-  pHandler->AddComponent(new AliHLTITSClusterFinderSSDComponent);
-  pHandler->AddComponent(new AliHLTITSClusterFinderSDDComponent);
+  pHandler->AddComponent(new AliHLTITSClusterFinderComponent(AliHLTITSClusterFinderComponent::kClusterFinderSPD));
+  pHandler->AddComponent(new AliHLTITSClusterFinderComponent(AliHLTITSClusterFinderComponent::kClusterFinderSDD));
+  pHandler->AddComponent(new AliHLTITSClusterFinderComponent(AliHLTITSClusterFinderComponent::kClusterFinderSSD));
   pHandler->AddComponent(new AliHLTITSClusterHistoComponent);
   pHandler->AddComponent(new AliHLTITSTrackerComponent);
 

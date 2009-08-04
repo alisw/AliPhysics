@@ -1,13 +1,13 @@
 //-*- Mode: C++ -*-
 // $Id$
-#ifndef ALIHLTITSCLUSTERFINDERSPDCOMPONENT_H
-#define ALIHLTITSCLUSTERFINDERSPDCOMPONENT_H
+#ifndef ALIHLTITSCLUSTERFINDERCOMPONENT_H
+#define ALIHLTITSCLUSTERFINDERCOMPONENT_H
 
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTITSClusterFinderSPDComponent.cxx
+/** @file   AliHLTITSClusterFinderComponent.cxx
     @author Gaute Øvrebekk <st05886@alf.uib.no>
     @date   
     @brief  Component to run the offline clusterfinder.
@@ -15,25 +15,24 @@
 
 #include "AliHLTProcessor.h"
 #include "AliRawReaderMemory.h"
-#include "AliITSClusterFinderV2SPD.h"
+#include "AliITSClusterFinder.h"
 #include "AliITSDetTypeRec.h"
-#include "AliITSCalibrationSPD.h"
 #include "AliITSgeom.h"
 #include "AliITSInitGeometry.h"
 
 /**
- * @class AliHLTITSClusterFinderSPDComponent
- * HLT Component to run the ITS offline clusterfinder for SPD.
+ * @class AliHLTITSClusterFinderComponent
+ * HLT Component to run the ITS offline clusterfinders.
  *
  * <h2>General properties:</h2>
  *
- * Component ID: \b ITSClusterFinderSPD                     <br>
+ * Component ID: \b ITSClusterFinderSPD or ITSClusterFinderSDD or ITSClusterFinderSSD <br>
  * Library: \b libAliHLTITS.so                              <br>
  * Input Data Types:                                        <br> 
- *    kAliHLTDataTypeDDLRaw|kAliHLTDataOriginITSSPD         <br>
+ *    kAliHLTDataTypeDDLRaw|kAliHLTDataOriginITSSPD or kAliHLTDataTypeDDLRaw|kAliHLTDataOriginITSSDD or kAliHLTDataTypeDDLRaw|kAliHLTDataOriginITSSD <br>
  *      
  * Output Data Types:                                       <br>
- *    kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD       <br>
+ *    kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD or kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD or kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD <br>
  *
  * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -62,21 +61,30 @@
  *
  * @ingroup alihlt_its_components
  */
-class AliHLTITSClusterFinderSPDComponent : public AliHLTProcessor
+class AliHLTITSClusterFinderComponent : public AliHLTProcessor
 {
  public:
-
+  /**
+   * Defines for selecting clusterfinder for SPD, SDD or SSD.
+   */
+  enum {
+    kClusterFinderSPD,
+    kClusterFinderSDD,
+    kClusterFinderSSD
+  };
   /*
    * ---------------------------------------------------------------------------------
    *                            Constructor / Destructor
    * ---------------------------------------------------------------------------------
    */
   
-  /** constructor */
-  AliHLTITSClusterFinderSPDComponent();
+  /** constructor
+   *  @param mode    input type see e.g. @ref kClusterFinderSPD
+   */
+  AliHLTITSClusterFinderComponent(int mode);
 
   /** destructor */
-  virtual ~AliHLTITSClusterFinderSPDComponent();
+  virtual ~AliHLTITSClusterFinderComponent();
 
   /*
    * ---------------------------------------------------------------------------------
@@ -93,6 +101,9 @@ class AliHLTITSClusterFinderSPDComponent : public AliHLTProcessor
 
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponentDataType GetOutputDataType();
+
+  /** interface function, see @ref AliHLTComponent for description */
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
 
   /** interface function, see @ref AliHLTComponent for description */
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
@@ -116,34 +127,52 @@ class AliHLTITSClusterFinderSPDComponent : public AliHLTProcessor
   /** DeInitialization */
   Int_t DoDeinit();
   
-  Int_t fNModules;             // total number of modules
-
   /** EventLoop */
   //Int_t DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
   //	 AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr
   //	 ,AliHLTUInt32_t& size, AliHLTComponentBlockList& outputBlocks);
 
   Int_t DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/);
+
+  int Reconfigure(const char* cdbEntry, const char* chainId);
 		
   using AliHLTProcessor::DoEvent;
  
   ///////////////////////////////////////////////////////////////////////////////////
     
-    private:
-  
+ private:
+  /** standard constructor prohibited */
+  AliHLTITSClusterFinderComponent();
   /** copy constructor prohibited */
-  AliHLTITSClusterFinderSPDComponent(const AliHLTITSClusterFinderSPDComponent&);
+  AliHLTITSClusterFinderComponent(const AliHLTITSClusterFinderComponent&);
   /** assignment operator prohibited */
-  AliHLTITSClusterFinderSPDComponent& operator=(const AliHLTITSClusterFinderSPDComponent&);
-
+  AliHLTITSClusterFinderComponent& operator=(const AliHLTITSClusterFinderComponent&);
+  /**
+   * Configure the component.
+   * Parse a string for the configuration arguments and set the component
+   * properties.
+   */
+  int Configure(const char* arguments);
   /*
    * ---------------------------------------------------------------------------------
    *                             Members - private
    * ---------------------------------------------------------------------------------
    */
 
+  /**
+   * switch to indicated the ClusterFinder
+   * use fModeSwitch = 0 for SPD
+   * use fModeSwitch = 1 for SDD
+   * use fModeSwitch = 2 for SSD
+   */
+  Int_t fModeSwitch;      
+
+  Int_t fNModules;             // total number of modules
+  Int_t fId;                   // ddl offset
+  Int_t fNddl;                 // number of ddl's
+  
   /** the cluster finder object */
-  AliITSClusterFinderV2SPD* fClusterFinder;                   //!transient
+  AliITSClusterFinder* fClusterFinder;                        //!transient
 
   /** the reader object for data decoding */
   AliRawReaderMemory* fRawReader;                             //!transient
@@ -154,7 +183,7 @@ class AliHLTITSClusterFinderSPDComponent : public AliHLTProcessor
 
   AliITSInitGeometry* fgeomInit;                              //!transient
 
-  ClassDef(AliHLTITSClusterFinderSPDComponent, 1)
+  ClassDef(AliHLTITSClusterFinderComponent, 0)
     
     };
 #endif
