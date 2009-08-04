@@ -21,27 +21,18 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TFile.h>
 #include <TObjString.h>
 #include <TObjArray.h>
-#include <TClonesArray.h>
+#include <TTreeStream.h>
+#include <TDirectory.h>
 
-#include "AliRunLoader.h"
 #include "AliRawReader.h"
-#include "AliLog.h"
-#include "AliESDTrdTrack.h"
-#include "AliESDEvent.h"
 
 #include "AliTRDReconstructor.h"
 #include "AliTRDclusterizer.h"
-#include "AliTRDtracker.h"
-#include "AliTRDpidESD.h"
 #include "AliTRDrawData.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDtrackerV1.h"
-#include "AliTRDrecoParam.h"
-
-#include "TTreeStream.h"
 
 #define SETFLG(n,f) ((n) |= f)
 #define CLRFLG(n,f) ((n) &= ~f)
@@ -143,6 +134,10 @@ AliTRDReconstructor::AliTRDReconstructor(const AliTRDReconstructor &r)
   :AliReconstructor(r)
   ,fSteerParam(r.fSteerParam)
 {
+  //
+  // Copy constructor
+  //
+
   memcpy(fStreamLevel, r.fStreamLevel, kNtasks*sizeof(UChar_t));
   memcpy(fTCParams, r.fTCParams, 8*sizeof(Double_t));
   memcpy(fDebugStream, r.fDebugStream, sizeof(TTreeSRedirector *) *kNtasks);
@@ -153,6 +148,10 @@ AliTRDReconstructor::AliTRDReconstructor(const AliTRDReconstructor &r)
 //_____________________________________________________________________________
 AliTRDReconstructor::~AliTRDReconstructor()
 {
+  //
+  // Destructor
+  //
+
   if(fgClusters) {
     fgClusters->Delete(); delete fgClusters;
   }
@@ -285,29 +284,30 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
 //_____________________________________________________________________________
 void AliTRDReconstructor::SetOption(Option_t *opt)
 {
-// Read option string into the steer param.
-//
+  //
+  // Read option string into the steer param.
+  //
 
   AliReconstructor::SetOption(opt);
 
   TString s(opt);
   TObjArray *opar = s.Tokenize(",");
   for(Int_t ipar=0; ipar<opar->GetEntriesFast(); ipar++){
-    Bool_t PROCESSED = kFALSE;
+    Bool_t processed = kFALSE;
     TString sopt(((TObjString*)(*opar)[ipar])->String());
     for(Int_t iopt=0; iopt<kNsteer; iopt++){
       if(!sopt.Contains(fgSteerFlags[iopt])) continue;
       SETFLG(fSteerParam, BIT(iopt));
       if(sopt.Contains("!")) CLRFLG(fSteerParam, BIT(iopt));
-      PROCESSED = kTRUE;
+      processed = kTRUE;
       break;	
     }
     // extra rules
     if(sopt.Contains("gs") && !sopt.Contains("!")){
-      CLRFLG(fSteerParam, kLUT); PROCESSED = kTRUE;
+      CLRFLG(fSteerParam, kLUT); processed = kTRUE;
     }
 
-    if(PROCESSED) continue;
+    if(processed) continue;
 
     if(sopt.Contains("sl")){
       TObjArray *stl = sopt.Tokenize("_");
@@ -317,14 +317,14 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
       Int_t level = levelstring.Atoi();
 
       // Set the stream Level
-      PROCESSED = kFALSE;
+      processed = kFALSE;
       for(Int_t it=0; it<kNtasks; it++){
         if(taskstr.CompareTo(fgTaskFlags[it]) != 0) continue;
         SetStreamLevel(level, ETRDReconstructorTask(it));
-        PROCESSED = kTRUE;
+        processed = kTRUE;
       }
     } 
-    if(PROCESSED) continue;
+    if(processed) continue;
 
     AliWarning(Form("Unknown option flag %s.", sopt.Data()));
   }
@@ -350,6 +350,10 @@ void AliTRDReconstructor::SetStreamLevel(Int_t level, ETRDReconstructorTask task
 //_____________________________________________________________________________
 void AliTRDReconstructor::Options(UInt_t steer, UChar_t *stream)
 {
+  //
+  // Print the options
+  //
+
   for(Int_t iopt=0; iopt<kNsteer; iopt++){
     AliDebugGeneral("AliTRDReconstructor", 1, Form(" %s[%s]%s", fgSteerNames[iopt], fgSteerFlags[iopt], steer ?(((steer>>iopt)&1)?" : ON":" : OFF"):""));
   }

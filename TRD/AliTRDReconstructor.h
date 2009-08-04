@@ -13,8 +13,8 @@
 
 #include "AliReconstructor.h"
 #include "AliDetectorRecoParam.h"
-#include "AliTRDrecoParam.h"
 #include "AliTRDpidUtil.h"
+#include "AliTRDrecoParam.h"
 
 class TClonesArray;
 class TTreeSRedirector;
@@ -94,7 +94,7 @@ public:
   virtual void        Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;
   virtual void        Reconstruct(TTree *digitsTree, TTree *clusterTree) const;
 
-  static void         SetClusters(TClonesArray *clusters) {fgClusters = clusters;}
+  static void         SetClusters(TClonesArray *clusters) {fgClusters = clusters;} 
   static void         SetTracklets(TClonesArray *tracklets) {fgTracklets = tracklets;}
   void	              SetOption(Option_t *opt);
   inline void         SetTCParams(Double_t *par);
