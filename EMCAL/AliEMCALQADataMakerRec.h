@@ -46,8 +46,6 @@ public:
 
   void SetSuperModules(int i) {fSuperModules = i;}; //The number of SuperModules
   int GetSuperModules() const {return fSuperModules;}; //The number of SuperModules
-  
-private:
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
   virtual void   InitESDs() ; 
   virtual void   InitDigits() ; 
@@ -60,6 +58,7 @@ private:
   virtual void   MakeRaws(AliRawReader* rawReader) ; 
   virtual void   StartOfDetectorCycle() ; 
 
+private:
   int fSuperModules; //The number of SuperModules activated
 
   ClassDef(AliEMCALQADataMakerRec,2)  // description 
