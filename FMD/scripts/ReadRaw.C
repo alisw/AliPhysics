@@ -7,80 +7,61 @@
     @brief Read raw data into a TClonesArray - for testing 
  */
 void
-ReadRaw(const char* file=0, Int_t evno=0, bool old=false)
+ReadRaw(const char* src=0, Int_t nEv=0, Int_t skip=0)
 {
-  TString        src(file ? file : "");
+  AliLog::SetModuleDebugLevel("FMD", 10);
+
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetRun(0);
   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  AliLog::SetModuleDebugLevel("FMD", 1);
-  AliFMDParameters::Instance()->Init();
-  AliFMDParameters::Instance()->UseRcuTrailer(!old);
-  AliFMDParameters::Instance()->UseCompleteHeader(!old);
-  AliRawReader*                   r = 0;
-  if (src.IsNull())               {
-    std::cout << "Reading via AliRawReaderFile" << std::endl;
-    r = new AliRawReaderFile(0);
-  }
-  else if (src.EndsWith(".root")) { 
-    std::cout << "Reading via AliRawReaderRoot" << std::endl;
-    r = new AliRawReaderRoot(src.Data(), evno);
-  }
-  else if (src.EndsWith(".raw"))  {
-    std::cout << "Reading via AliRawReaderDate" << std::endl;
-    r = new AliRawReaderDate(src.Data());
-  }
-  else {
-    std::cerr << "Unknown raw type for source " << src 
-	      << " assuming simulated raw files in directory " << src 
-	      << std::endl;
-    r = new AliRawReaderFile(src);
-  }
-  AliFMDRawReader* fr = new AliFMDRawReader(r, 0);
-  TClonesArray*    a  = new TClonesArray("AliFMDDigit", 0);
-  fr->ReadAdcs(a);
 
-  std::cout << "Read " << a->GetEntriesFast() << " digits" << std::endl;
+  AliRawReader*    reader    = AliRawReader::Create(src);
+  AliFMDRawReader* fmdReader = new AliFMDRawReader(reader, 0);
+  TClonesArray*    array     = new TClonesArray("AliFMDDigit", 0);
+
+  Int_t evCnt = 0;
+  while (reader->NextEvent()) {
+    if (nEv > 0 && (evCnt-skip) > nEv) break;
+    evCnt++;
+    array->Clear();
+    fmdReader->ReadAdcs(array);
+
+    std::cout << "Event # " << evCnt << std::endl;
+
+    AliFMDBoolMap read(0);
+    read.Reset(kFALSE);
+    std::cout << "Read " << array->GetEntriesFast() << " digits" << std::endl;
   
-  bool read[3][2][40][512];
-  for (UShort_t det = 0; det < 3; det++) {
-    for (UShort_t rng = 0; rng < 2; rng++) { 
-      for (UShort_t sec = 0; sec < 40; sec++) {
-	for (UShort_t str = 0; str < 512; str++) { 
-	  read[det][rng][sec][str] = false;
+#if 0
+    TIter next(array);
+    AliFMDDigit* digit = 0;
+    while ((digit = static_cast<AliFMDDigit*>(next()))) {
+      UShort_t d = digit->Detector();
+      Char_t   r = digit->Ring();
+      UShort_t s = digit->Sector();
+      UShort_t t = digit->Strip();
+      read(d,r,s,t) = true;
+    }
+    const UShort_t lineLength = 64;
+    for (UShort_t d = 1; d <= 3; d++) {
+      UShort_t nr = (d == 1 ? 1 : 2);
+      for (UShort_t q = 0; q < nr; q++) { 
+	Char_t   r  = q == 0 ? 'I' : 'O';
+	UShort_t ns = q == 0 ?  20 :  40;
+	UShort_t nt = q == 0 ? 512 : 256;
+	std::cout << "FMD" << d << r << ":" << std::endl;
+	for (UShort_t s = 0; s < ns; s++) {
+	  std::cout << " Sector " << s << "\n" << std::flush;
+	  for (UShort_t t = 0; t < nt; t++) { 
+	    bool on = read(d,r,s,t);
+	    if (t % lineLength == 0) std::cout << "  ";
+	    std::cout << (on ? '+' : '-');
+	    if (t % lineLength == lineLength-1) std::cout << "\n";
+	  }
 	}
       }
     }
-  }
-  
-
-  TIter next(a);
-  AliFMDDigit* d = 0;
-  while ((d = static_cast<AliFMDDigit*>(next()))) {
-    UShort_t det = d->Detector() - 1;
-    UShort_t rng = d->Ring() == 'I' ? 0 : 1;
-    UShort_t sec = d->Sector();
-    UShort_t str = d->Strip();
-    read[det][rng][sec][str] = true;
-  }
-  const UShort_t lineLength = 64;
-  for (UShort_t det = 0; det < 3; det++) {
-    for (UShort_t rng = 0; rng < 2; rng++) { 
-      if (det == 0 && rng == 1) continue;
-      Char_t   rid  = rng == 0 ? 'I' : 'O';
-      UShort_t nsec = rng == 0 ?  20 :  40;
-      UShort_t nstr = rng == 0 ? 512 : 256;
-      std::cout << "FMD" << det+1 << rid << ":" << std::endl;
-      for (UShort_t sec = 0; sec < nsec; sec++) {
-	std::cout << " Sector " << sec << "\n" << std::flush;
-	for (UShort_t str = 0; str < nstr; str++) { 
-	  bool on = read[det][rng][sec][str];
-	  if (str % lineLength == 0) std::cout << "  ";
-	  std::cout << (on ? '+' : '-');
-	  if (str % lineLength == lineLength-1) std::cout << "\n";
-	}
-      }
-    }
+#endif
   }
   // a->ls();
 }

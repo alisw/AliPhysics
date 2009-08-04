@@ -8,16 +8,18 @@
     @ingroup FMD_script
  */
 Bool_t
-CheckFile(const char* prefix, int number, TString& f)
+CheckFile(const char* prefix, const char* path, int number, TString& f)
 {
   f = (Form("%s%d.csv", prefix, number));
-  std::cout << "Checking if " << f << " exists ... " << std::flush;
-  f = gSystem->Which("$(HOME)/calib/", f.Data());
+  std::cout << "Checking if " << f << " exists in " << path << " ... " 
+	    << std::flush;
+  f = gSystem->Which(path, f.Data());
   std::cout << '"' << f << '"' << std::endl;
   return !f.IsNull();
 }
 void
-PatternCalib(const char* file="raw.root", Int_t runno=0)
+PatternCalib(const char* file="raw.root", const char* calib="$(HOME)/calib/", 
+	     Int_t runno=0)
 {
   // AliLog::SetModuleDebugLevel("FMD", 1);
   gSystem->Load("libFMDutil.so");
@@ -36,20 +38,20 @@ PatternCalib(const char* file="raw.root", Int_t runno=0)
   Bool_t gotGains = kFALSE;
   for (Int_t i = 1; i <= 3; i++) { 
     TString f;
-    if (CheckFile("conditions", i, f)) {
+    if (CheckFile("conditions", calib, i, f)) {
       gotConds = kTRUE;
       std::cout << "Reading conditions for FMD" <<i<< " from " <<f<< std::endl;
       std::ifstream in(f.Data());
       range->ReadFromFile(in);
       rate->ReadFromFile(in);
     }
-    if (CheckFile("peds", i, f)) {
+    if (CheckFile("peds", calib, i, f)) {
       gotPeds = kTRUE;
       std::cout << "Reading pedestals for FMD" <<i<< " from " <<f<< std::endl;
       std::ifstream in(f.Data());
       peds->ReadFromFile(in);
     }
-    if (CheckFile("gains", i, f)) {
+    if (CheckFile("gains", calib, i, f)) {
       gotGains = kTRUE;
       std::cout << "Reading gains for FMD" <<i<< " from " <<f<< std::endl;
       std::ifstream in(f.Data());
