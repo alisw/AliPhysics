@@ -40,10 +40,9 @@
 
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskFittingQDistribution.h"
-#include "AliFittingQDistribution.h"
+#include "AliFlowAnalysisWithFittingQDistribution.h"
 #include "AliFlowCommonConstants.h"
 #include "AliFlowCommonHistResults.h"
-#include "AliFittingFunctionsForQDistribution.h"
 
 ClassImp(AliAnalysisTaskFittingQDistribution)
 
@@ -104,7 +103,7 @@ void AliAnalysisTaskFittingQDistribution::CreateOutputObjects()
   
   
   //analyser
-  fFQDA = new AliFittingQDistribution();
+  fFQDA = new AliFlowAnalysisWithFittingQDistribution();
   fFQDA->Init();
   
   //weights:
@@ -154,7 +153,7 @@ void AliAnalysisTaskFittingQDistribution::Terminate(Option_t *)
   fListHistos = (TList*)GetOutputData(0);
   //fListHistos->Print();
   
-  fFQDA = new AliFittingQDistribution();
+  fFQDA = new AliFlowAnalysisWithFittingQDistribution();
   
   if(fListHistos) 
   {	     

@@ -25,7 +25,7 @@
 class AliESDEvent;
 class AliAODEvent;
 class AliCFManager;
-class AliFittingQDistribution;
+class AliFlowAnalysisWithFittingQDistribution;
 class AliFlowEventSimpleMaker;
 class TFile;
 
@@ -50,7 +50,7 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTask{
   AliAnalysisTaskFittingQDistribution& operator=(const AliAnalysisTaskFittingQDistribution& aatfqd);
 
   AliFlowEventSimple* fEvent;             // the input event
-  AliFittingQDistribution* fFQDA;         // Fitting q-distribution Analysis (FQDA) object
+  AliFlowAnalysisWithFittingQDistribution* fFQDA;         // Fitting q-distribution Analysis (FQDA) object
   TList  *fListHistos;                    // collection of output 
      
   Bool_t       fUseWeights;               // use any weights

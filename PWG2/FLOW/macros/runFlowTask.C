@@ -33,9 +33,9 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 		 //const Char_t* dataDir="/data/alice2/kolk/PP/LHC09a4/81119", Int_t offset = 0)
 		 //const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0)
 		 //const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
-void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 1000, 
-		 //const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8158X", Int_t offset = 0)
-		 const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
+void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 1000000, 
+		 const Char_t* dataDir="/COMMON/COMMON/LHC09a14_0.9TeV_0.5T", Int_t offset = 0)
+                 //const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
 {
   TStopwatch timer;
   timer.Start();
