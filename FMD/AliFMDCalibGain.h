@@ -18,6 +18,7 @@
 # include <AliFMDFloatMap.h>
 #endif
 #include <iosfwd>
+class AliFMDBoolMap;
 
 //____________________________________________________________________
 /** @brief Gain value and width for each strip in the FMD 
@@ -63,6 +64,28 @@ public:
   /** @return threshold */
   Float_t Threshold() const { return fThreshold; }
   const AliFMDFloatMap& Values() const { return fValue; }
+  /** 
+   * Make a dead map based on the gain of the channels.  If the gain 
+   * of a paraticular channel falls outside the range specified by @a
+   * min and @a max, then the channel is marked as dead. 
+   *
+   * If the argument @a dead is non-null, then the map passed is
+   * modified.  That is, channels marked as dead in the map will
+   * remain marked.   Channels that meat the criterion (gain outside
+   * the specified range) will in addition be marked as dead. 
+   *
+   * If the argument @a dead is null, then a new map is created and a
+   * pointer to this will be returned. 
+   * 
+   * @param min Minimum value of gain for a channel before it is
+   * @param max Maximum value of gain for a channel before it is
+   * marked as dead. 
+   * @param dead If non-null, then modify this map. 
+   * 
+   * @return A pointer to possibly newly allocated dead map. 
+   */
+  AliFMDBoolMap* MakeDeadMap(Float_t min, Float_t max, 
+			     AliFMDBoolMap* dead=0) const;
 private:
   AliFMDFloatMap fValue;       // Map
   Float_t        fThreshold;   // Global threshold

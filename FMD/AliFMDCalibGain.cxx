@@ -30,6 +30,10 @@
 #include <iostream>
 #include <TString.h>
 #include <AliLog.h>
+#include "AliFMDDebug.h"
+
+#include "AliFMDBoolMap.h"
+
 
 //____________________________________________________________________
 ClassImp(AliFMDCalibGain)
@@ -83,6 +87,65 @@ AliFMDCalibGain::Value(UShort_t det, Char_t ring, UShort_t sec,
 {
   // Get the value for a strip 
   return fValue(det, ring, sec, str);
+}
+
+//____________________________________________________________________
+namespace {
+  struct MakeDead : public AliFMDMap::ForOne
+  {
+    MakeDead(AliFMDBoolMap* dead, Float_t min, Float_t max) 
+      : fDead(dead), fMin(min), fMax(max), fCount(0)
+    {}
+    MakeDead(const MakeDead& other) 
+      : fDead(other.fDead), fMin(other.fMin), fMax(other.fMax), 
+	fCount(other.fCount)
+    {}
+    MakeDead& operator=(const MakeDead& other) 
+    { 
+      fDead   = other.fDead;
+      fMin    = other.fMin;
+      fMax    = other.fMax;
+      fCount  = other.fCount;
+      return *this;
+    }
+    Bool_t operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, Float_t v)
+    {
+      AliDebugGeneral("AliFMDCalibGain::MakeDeadMap", 100, 
+		      Form("Checking if gain of FMD%d%c[%2d,%3d]=%f "
+			   "is out of range [%f,%f]", 
+			   d, r, s, t, v, fMin, fMax));
+      if (v > fMax || v < fMin) {
+	fDead->operator()(d,r,s,t) = kTRUE;
+	fCount++;
+      }
+      return kTRUE;
+    }
+    Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, Int_t) 
+    { return kFALSE; }
+    Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, UShort_t) 
+    { return kFALSE; }
+    Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, Bool_t)
+    { return kFALSE; }
+    AliFMDBoolMap* fDead;
+    Float_t        fMin;
+    Float_t        fMax;
+    Int_t          fCount;
+  };
+}
+
+//____________________________________________________________________
+AliFMDBoolMap*
+AliFMDCalibGain::MakeDeadMap(Float_t min, Float_t max, 
+			     AliFMDBoolMap* dead) const
+{
+  if (!dead) { 
+    dead = new AliFMDBoolMap(0,0,0,0);
+    dead->Reset(kFALSE);
+  }
+  MakeDead dm(dead, min, max);
+  fValue.ForEach(dm);
+  AliFMDDebug(1, ("Found a total of %d dead channels", dm.fCount));
+  return dead;
 }
 
 //____________________________________________________________________

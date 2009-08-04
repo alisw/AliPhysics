@@ -157,6 +157,87 @@ AliFMDParameters::Init(AliFMDPreprocessor* pp, Bool_t forceReInit, UInt_t what)
 }
 
 //__________________________________________________________________
+Bool_t
+AliFMDParameters::CheckFile(const char* prefix, 
+			    const char* path, 
+			    int         number, 
+			    TString&    f) const
+{
+  f = (Form("%s%d.csv", prefix, number));
+  AliFMDDebug(5, ("Checking if %s exists in %s ...", f.Data(), path));
+  f = gSystem->Which(path, f.Data());
+  AliFMDDebug(5, ("Got back '%s'", f.Data()));
+  return !f.IsNull();
+}
+
+//__________________________________________________________________
+void
+AliFMDParameters::Init(const char* path, Bool_t forceReInit, UInt_t what)
+{
+  // Initialize the parameters manager.  Pedestals, gains, strip
+  // range, and sample rate is read from local comma separated value
+  // files if available.  Otherwise, the calibrations are obtained
+  // from OCDB.
+  if (forceReInit) fIsInit = kFALSE;
+  if (fIsInit) return;
+
+  AliFMDCalibStripRange*  range = 0;
+  AliFMDCalibSampleRate*  rate  = 0;
+  AliFMDCalibPedestal*    peds  = 0;
+  AliFMDCalibGain*        gains = 0;
+
+  for (Int_t i = 1; i <= 3; i++) { 
+    TString f;
+    if (((what & kSampleRate) || (what & kStripRange)) && 
+	CheckFile("conditions", path, i, f)) {
+      if (!rate  && (what & kSampleRate)) rate  = new AliFMDCalibSampleRate;
+      if (!range && (what & kStripRange)) range = new AliFMDCalibStripRange;
+      std::ifstream in(f.Data());
+      if (range) range->ReadFromFile(in);
+      if (rate)  rate->ReadFromFile(in);
+      in.close();
+    }
+    if ((what & kPedestal) && CheckFile("peds", path, i, f)) {
+      if (!peds) peds  = new AliFMDCalibPedestal;
+      std::ifstream in(f.Data());
+      peds->ReadFromFile(in);
+      in.close();
+    }
+    if ((what & kPulseGain) && CheckFile("gains", path, i, f)) { 
+      if (!gains) gains = new AliFMDCalibGain;
+      std::ifstream in(f.Data());
+      gains->ReadFromFile(in);
+      in.close();
+    }
+  }
+
+  if (range) what &= ~kStripRange;
+  if (rate)  what &= ~kSampleRate;
+  if (peds)  what &= ~kPedestal;
+  if (gains) what &= ~kPulseGain;
+
+  Init(kFALSE, what);
+  
+  if (range) SetStripRange(range);
+  if (rate)  SetSampleRate(rate);
+  if (peds)  SetPedestal(peds);
+  if (gains) SetGain(gains);
+
+  fIsInit = kTRUE;
+}
+
+//__________________________________________________________________
+void
+AliFMDParameters::MakeDeadMap(Float_t maxNoise, 
+			      Float_t minGain, 
+			      Float_t maxGain)
+{
+  if (fPedestal)  
+    fDeadMap = fPedestal->MakeDeadMap(maxNoise, fDeadMap);
+  if (fPulseGain) 
+    fDeadMap = fPulseGain->MakeDeadMap(minGain, maxGain, fDeadMap);
+}
+//__________________________________________________________________
 #define DET2IDX(det,ring,sec,str) \
   (det * 1000 + (ring == 'I' ? 0 : 512) + str)  
   

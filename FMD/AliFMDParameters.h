@@ -93,10 +93,13 @@ public:
     /** ALTRO data map */ 
     kAltroMap = 0x20, // Altro channel map
     /** Strip Range */
-    kStripRange = 0x40 //Strip range
-    
+    kStripRange = 0x40 //Strip range, 
   };
-  
+  enum { 
+    kAll = (kPulseGain|kPedestal|kDeadMap|kSampleRate|
+	    kZeroSuppression|kAltroMap|kStripRange)
+  };
+    
   /** Singleton access
       @return  single to */
   static AliFMDParameters* Instance();
@@ -104,16 +107,57 @@ public:
   /** Initialize the manager.  This tries to read the parameters from
       CDB.  If that fails, the class uses the hard-coded parameters. 
    */
-  void Init(Bool_t forceReInit=kFALSE, 
-	    UInt_t what = (kPulseGain|kPedestal|kDeadMap|kSampleRate|
-			   kZeroSuppression|kAltroMap|kStripRange));
+  void Init(Bool_t forceReInit=kFALSE, UInt_t what=kAll );
   /** Initialize the manager.  This tries to read the parameters from
       CDB.  If that fails, the class uses the hard-coded parameters. 
    */
   void Init(AliFMDPreprocessor* pp, 
-	    Bool_t forceReInit=kFALSE, 
-	    UInt_t what = (kPulseGain|kPedestal|kDeadMap|kSampleRate|
-			   kZeroSuppression|kAltroMap|kStripRange));
+	    Bool_t              forceReInit=kFALSE, 
+	    UInt_t              what=kAll);
+  /** 
+   * Initialize the manager.  This will try to read some calibrations
+   * (sample rate, strip range, gains, pedestals) from local comma
+   * separated value (CSV) files in the directory pointed at by @a
+   * path.  If they are not found, then they will be retrieved from
+   * OCDB as appropriately.   Other calibrations are always read from
+   * OCDB.  
+   * 
+   * The CSV files should be named as 
+   * 
+   * - Pedestals: <tt>peds</tt><i>det_number</i><tt>.csv</tt>
+   * - Gains: <tt>gains</tt><i>det_number</i><tt>.csv</tt>
+   * - Sample Rate: <tt>conditions</tt><i>det_number</i><tt>.csv</tt>
+   * - Strip Range: <tt>conditions</tt><i>det_number</i><tt>.csv</tt>
+   *
+   * where <i>det_number</i> is the detector number (1, 2, or 3). 
+   *
+   * @param path        Where to look for the CSV files
+   * @param forceReInit Always reinitialise 
+   * @param what        What calibrations to load. 
+   */  
+  void Init(const char* path, 
+	    Bool_t      forceReInit=kFALSE, 
+	    UInt_t      what=kAll);
+  
+  /** 
+   * Automatically generate a dead map from the pedestals and gains.
+   * A channel is marked as dead of the noise is too high (currently
+   * more than 10 ADC counts), or the gain is unreasonable (currently
+   * larger than 10, or smaller than 0.1). 
+   * 
+   * The procedure does not overwrite channels previously marked as
+   * dead - e.g., channels marked as dead in the calibration loaded
+   * from OCDB will continue to be marked as dead.  That is, this
+   * procedure will never make a channel un-dead. 
+   *
+   * @param maxNoise  Maximum noise value before a channel is marked
+   * as dead. 
+   * @param minGain   Minimum value of the calibrated gain before a
+   * channel is considered dead. 
+   * @param maxGain   Maximum value of the calibrated gain before a
+   * channel is considered dead. 
+   */
+  void MakeDeadMap(Float_t maxNoise=10, Float_t minGain=.1, Float_t maxGain=10);
   /** Print all parameters. 
       @param option Option string */
   void Print(Option_t* option="A") const;
@@ -488,6 +532,19 @@ protected:
   virtual ~AliFMDParameters() {}
   /** Singleton instance  */
   static AliFMDParameters* fgInstance;   // Static singleton instance
+  /** 
+   * Check if the file <i>prefix</i><i>number</i> exists in @a path, 
+   * and write the full path to @a f.  
+   * 
+   * @param prefix  File prefix (cond, peds, gains, ...)
+   * @param path    Path to files
+   * @param number  Detector number (1, 2, or 3)
+   * @param f       On return full path to file (if found)
+   * 
+   * @return @c true if file exists and is readable, @c false otherwise
+   */
+  Bool_t CheckFile(const char* prefix, const char* path, 
+		   int         number, TString&    f) const;
   /** Get an entry from either global AliCDBManager or passed
       AliFMDPreprocessor. 
       @param path  Path to CDB object. 

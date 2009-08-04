@@ -22,6 +22,7 @@
 # include <AliFMDFloatMap.h>
 #endif
 #include <iosfwd>
+class AliFMDBoolMap;
 
 //____________________________________________________________________
 /** @brief Pedestal value and width for each strip in the FMD 
@@ -70,7 +71,26 @@ public:
      @param inFile inputFile
    */
   Bool_t ReadFromFile(std::istream & inFile);
-
+  /** 
+   * Make a dead map based on the noise of the channels.  If the noise
+   * of a paraticular channel is larger than @a maxW, then the channel
+   * is marked as dead. 
+   *
+   * If the argument @a dead is non-null, then the map passed is
+   * modified.  That is, channels marked as dead in the map will
+   * remain marked.   Channels that meat the criterion (noise larger
+   * than @a maxW) will in addition be marked as dead. 
+   *
+   * If the argument @a dead is null, then a new map is created and a
+   * pointer to this will be returned. 
+   * 
+   * @param maxW Maximum value of noise for a channel before it is
+   * marked as dead. 
+   * @param dead If non-null, then modify this map. 
+   * 
+   * @return A pointer to possibly newly allocated dead map. 
+   */
+  AliFMDBoolMap* MakeDeadMap(Float_t maxW, AliFMDBoolMap* dead=0) const;
 private:
   AliFMDFloatMap fValue; /** Pedestal */
   AliFMDFloatMap fWidth; /** Pedestal width */

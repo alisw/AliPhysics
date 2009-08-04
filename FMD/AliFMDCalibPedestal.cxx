@@ -31,6 +31,8 @@
 #include <iostream>
 #include <TString.h>
 #include <AliLog.h>
+#include "AliFMDDebug.h"
+#include "AliFMDBoolMap.h"
 
 //____________________________________________________________________
 ClassImp(AliFMDCalibPedestal)
@@ -94,6 +96,60 @@ AliFMDCalibPedestal::Width(UShort_t det, Char_t ring, UShort_t sec,
 {
   // Get pedestal width for a strip 
   return fWidth(det, ring, sec, str);
+}
+
+//____________________________________________________________________
+namespace {
+  struct MakeDead : public AliFMDMap::ForOne
+  {
+    MakeDead(AliFMDBoolMap* dead, Float_t max) 
+      : fDead(dead), fMax(max), fCount(0)
+    {}
+    MakeDead(const MakeDead& other) 
+      : fDead(other.fDead), fMax(other.fMax), fCount(other.fCount)
+    {}
+    MakeDead& operator=(const MakeDead& other) 
+    { 
+      fDead   = other.fDead;
+      fMax    = other.fMax;
+      fCount  = other.fCount;
+      return *this;
+    }
+    Bool_t operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, Float_t v)
+    {
+      AliDebugGeneral("AliFMDCalibPedestal::MakeDeadMap", 100, 
+		      Form("Checking if noise of FMD%d%c[%2d,%3d]=%f "
+			      "is larger than %f", d, r, s, t, v, fMax));
+      if (v > fMax) {
+	fDead->operator()(d,r,s,t) = kTRUE;
+	fCount++;
+      }
+      return kTRUE;
+    }
+    Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, Int_t) 
+    { return kFALSE; }
+    Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, UShort_t)
+    { return kFALSE; }
+    Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, Bool_t)
+    { return kFALSE; }
+    AliFMDBoolMap* fDead;
+    Float_t        fMax;
+    Int_t          fCount;
+  };
+}
+
+//____________________________________________________________________
+AliFMDBoolMap*
+AliFMDCalibPedestal::MakeDeadMap(Float_t maxW, AliFMDBoolMap* dead) const
+{
+  if (!dead) { 
+    dead = new AliFMDBoolMap(0,0,0,0);
+    dead->Reset(kFALSE);
+  }
+  MakeDead dm(dead, maxW);
+  fWidth.ForEach(dm);
+  AliFMDDebug(1, ("Found a total of %d dead channels", dm.fCount));
+  return dead;
 }
 
 //____________________________________________________________________
