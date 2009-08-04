@@ -11,7 +11,7 @@
  * using the AliHLTReconstructor.
  *
  * @author Matthias.Richter@ift.uib.no
- * @ingroup alihlt_tutorial
+ * @ingroup alihlt_programs
  */
 void process_hltout_payload(const char* input)
 {
