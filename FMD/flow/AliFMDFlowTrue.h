@@ -36,7 +36,9 @@
 
 
 /** @defgroup x_true Classes for handling Flow when the event plane is
-    known. */
+    known. 
+
+    @ingroup FMD_flow */
 /** @class TrueBin flow/True.h <flow/True.h>
     @brief A specialised Bin of flow in case the event plane is 
     well-known. 

@@ -39,16 +39,21 @@
 //Forward declaration 
 class TBrowser;
 
+/** @defgroup FMD_flow Flow code
+    @brief Code to do flow analysis. 
+*/
 /** @defgroup c_binned Binned flow 
     @brief This group contains code for binned flow analysis.  Two
     kinds of "histograms" are defined - a 1 dimensional and a 2
     dimensional set of binned objects of class AliFMDFlowBin.   
 
-    Objects of class AliFMDFlowBin contains all the code needed to compute
+    Objects of class hAliFMDFlowBin contains all the code needed to compute
     flow in a given bin.   
 
     The class AliFMDFlowAxis encodes look-up of a object of class
     AliFMDFlowBin in a flow "Histogram"
+
+    @ingroup FMD_flow 
 */
 //______________________________________________________
 /** @class AliFMDFlowBin flow/AliFMDFlowBin.h <flow/AliFMDFlowBin.h>
@@ -62,7 +67,6 @@ class TBrowser;
     AliFMDFlowResolution to calculate the event plane angle
     resolution.
 
-    @ingroup c_binned 
 */
 class AliFMDFlowBin : public TObject
 {

@@ -36,8 +36,10 @@
     The convinience functions I and DiffI returns a single value
     of @f$ I_{\nu}(x)@f$ or @f$ dI_{\nu}(x)/dx@f$ for a specified
     value of @f$ \nu@f$. 
-    
-    @example test_bessel.cxx */
+
+    @ingroup FMD_flow
+
+    @example TestBessel.cxx */
 
 /** Namespace for Bessel functions 
     @ingroup z_bessel */

@@ -33,7 +33,9 @@ class TBrowser;
 
 /** @defgroup a_basic Basic classes for doing Flow analysis. 
     @brief This group of class handles the low-level stuff to do
-    flow analysis. */
+    flow analysis. 
+    @ingroup FMD_flow
+*/
 //______________________________________________________
 /** @class AliFMDFlowHarmonic flow/AliFMDFlowHarmonic.h <flow/AliFMDFlowHarmonic.h>
     @brief Calculate the @f$ n^{th}@f$ order harmonic

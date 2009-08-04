@@ -44,8 +44,7 @@ class TH1;
 /** @class AliFMDFlowBinned1D flow/AliFMDFlowBinned1D.h <flow/AliFMDFlowBinned1D.h>
     @brief A 1 dimensional "histogram" of objects of class AliFMDFlowBin. 
     @ingroup c_binned 
-    @example test_flow.cxx 
-    @example ana_flow.cxx 
+    @example TestFlow.C 
 */
 class AliFMDFlowBinned1D : public TNamed, 
 			   public TAttLine, 

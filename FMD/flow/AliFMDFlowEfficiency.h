@@ -23,6 +23,8 @@
 /** @defgroup z_eff Efficiency calculations 
     @brief Functions to do efficiency calculations based on a
     Baysian analysis. 
+
+    @ingroup FMD_flow
 */
 /** Namespace for efficency calculations 
     @ingroup z_eff */

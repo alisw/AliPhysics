@@ -24,7 +24,9 @@
 #endif
 
 /** @defgroup u_utils Utilities 
-    @brief Group of utility classes and functions */
+    @brief Group of utility classes and functions 
+    @ingroup FMD_flow 
+ */
 //__________________________________________________________________
 /** Normalize the angle @a ang to the interval @f$ [0,2\pi)@f$ 
     @ingroup u_utils
