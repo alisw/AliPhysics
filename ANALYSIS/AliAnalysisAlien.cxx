@@ -904,7 +904,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    sjdl.ReplaceAll("\n\n", "\n");
    sjdl.ReplaceAll("OutputDirectory", "OutputDir");
    sjdl += "JDLVariables = \n{\n   \"Packages\",\n   \"OutputDir\"\n};\n";
-   sjdl.Prepend(Form("Jobtag = {\n   \"comment:%s\";\n}\n", fJobTag.Data()));
+   sjdl.Prepend(Form("Jobtag = {\n   \"comment:%s\"\n};\n", fJobTag.Data()));
    index = sjdl.Index("JDLVariables");
    if (index >= 0) sjdl.Insert(index, "\n# JDL variables\n");
    // Write jdl to file
