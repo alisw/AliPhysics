@@ -24,11 +24,10 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TObjArray.h>
 #include <TMath.h>
+#include <TGeoGlobalMagField.h>
 
-#include "AliTracker.h"
-#include "AliRun.h"
+#include "AliLog.h"
 #include "AliMagF.h"
 
 #include "AliTRDCommonParam.h"
