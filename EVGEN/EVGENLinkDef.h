@@ -59,4 +59,5 @@
 #pragma link C++ class  AliGenThermalPhotons+;
 #pragma link C++ class  AliGenPromptPhotons+;
 #pragma link C++ class  AliGenPileup+;
+#pragma link C++ class  AliGenFunction+;
 #endif
