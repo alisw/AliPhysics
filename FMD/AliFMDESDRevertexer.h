@@ -65,7 +65,7 @@ public:
    * 
    * @param eta Psuedo rapidity @f$ \eta=-\log[\tan(\theta/2)]@f$ 
    * 
-   * @return Polar angle @f$ \theta=2\atan[\exp(-\eta)]@f$
+   * @return Polar angle @f$ \theta=2\tan^{-1}[\exp(-\eta)]@f$
    */  
   Double_t Eta2Theta(Double_t eta) const;
 protected:
@@ -153,7 +153,7 @@ AliFMDESDRevertexer::Eta2Theta(Double_t eta) const
   // Parameters:
   //	eta Psuedo rapidity @f$ \eta=-\log[\tan(\theta/2)]@f$ 
   // Return:
-   //	Polar angle @f$ \theta=2\atan[\exp(-\eta)]@f$
+  //	Polar angle @f$ \theta=2\atan[\exp(-\eta)]@f$
   return 2 * TMath::ATan(TMath::Exp(-eta));
 }
 
