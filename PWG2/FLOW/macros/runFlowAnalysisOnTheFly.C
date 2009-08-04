@@ -24,6 +24,12 @@ Bool_t usePhiWeights = kFALSE; // phi weights (correction for non-uniform azimut
 Bool_t usePtWeights  = kFALSE; // pt weights 
 Bool_t useEtaWeights = kFALSE; // eta weights
 
+// Run same flow analysis method but with different settings/aims
+// You will have to label each setting/aim with your own label (see examples bellow): 
+Bool_t GFC_Additional_Analysis = kFALSE;
+Bool_t QC_Additional_Analysis  = kFALSE;
+Bool_t FQD_Additional_Analysis = kFALSE;
+
 // Parameters for the simulation of events 'on the fly': 
 Bool_t bSameSeed = kFALSE; // use always the same seed for random generators. 
                            // usage of same seed (kTRUE) is relevant in two cases:
@@ -102,7 +108,7 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR};
 // mLocalPAR: Analyze data on your computer using root + PAR files
 // mLocalSource: Analyze data on your computer using root + source files
                                           
-int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
+int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=4400)
 {
  TStopwatch timer;
  timer.Start();
@@ -189,17 +195,17 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
  eventMakerOnTheFly->Init();
   
  //---------------------------------------------------------------------------------------
- // Initialize all the flow methods:  
- AliFlowAnalysisWithQCumulants    *qc       = NULL;
- AliFlowAnalysisWithCumulants     *gfc      = NULL;
- AliFittingQDistribution          *fqd      = NULL;
- AliFlowAnalysisWithLeeYangZeros  *lyz1sum  = NULL;
- AliFlowAnalysisWithLeeYangZeros  *lyz1prod = NULL;
- AliFlowAnalysisWithLeeYangZeros  *lyz2sum  = NULL;
- AliFlowAnalysisWithLeeYangZeros  *lyz2prod = NULL;
- AliFlowAnalysisWithLYZEventPlane *lyzep    = NULL;
- AliFlowAnalysisWithScalarProduct *sp       = NULL;
- AliFlowAnalysisWithMCEventPlane  *mcep     = NULL;   
+ // Initialize all the flow methods for default analysis:  
+ AliFlowAnalysisWithQCumulants *qc = NULL;
+ AliFlowAnalysisWithCumulants *gfc = NULL;
+ AliFlowAnalysisWithFittingQDistribution *fqd = NULL;
+ AliFlowAnalysisWithLeeYangZeros *lyz1sum  = NULL;
+ AliFlowAnalysisWithLeeYangZeros *lyz1prod = NULL;
+ AliFlowAnalysisWithLeeYangZeros *lyz2sum  = NULL;
+ AliFlowAnalysisWithLeeYangZeros *lyz2prod = NULL;
+ AliFlowAnalysisWithLYZEventPlane *lyzep = NULL;
+ AliFlowAnalysisWithScalarProduct *sp = NULL;
+ AliFlowAnalysisWithMCEventPlane *mcep = NULL;   
 
  // MCEP = monte carlo event plane
  if (MCEP) {
@@ -207,32 +213,34 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
    mcep->Init();
  }
 
-  // QC = Q-cumulants  
+ // QC = Q-cumulants  
  if(QC) { 
    AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
-   qc->Init();
    if(listWithWeights) qc->SetWeightsList(listWithWeights);
    if(usePhiWeights) qc->SetUsePhiWeights(usePhiWeights);
    if(usePtWeights) qc->SetUsePtWeights(usePtWeights);
    if(useEtaWeights) qc->SetUseEtaWeights(useEtaWeights);
+   qc->SetEvaluateNestedLoopsForIntFlow(kFALSE);
+   qc->SetEvaluateNestedLoopsForDiffFlow(kFALSE);
+   qc->Init();  
  }
   
  // GFC = Generating Function Cumulants 
  if(GFC) {
    AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants();
-   gfc->Init();
    if(listWithWeights) gfc->SetWeightsList(listWithWeights);
    if(usePhiWeights) gfc->SetUsePhiWeights(usePhiWeights);
    if(usePtWeights) gfc->SetUsePtWeights(usePtWeights);
    if(useEtaWeights) gfc->SetUseEtaWeights(useEtaWeights);
+   gfc->Init();
  }
  
  // FQD = Fitting q-distribution 
  if(FQD) {
-   AliFittingQDistribution* fqd = new AliFittingQDistribution();
-   fqd->Init();
+   AliFlowAnalysisWithFittingQDistribution* fqd = new AliFlowAnalysisWithFittingQDistribution();
    if(listWithWeights) fqd->SetWeightsList(listWithWeights);
    if(usePhiWeights) fqd->SetUsePhiWeights(usePhiWeights);  
+   fqd->Init();
  }
  
  // SP = Scalar Product 
@@ -322,6 +330,67 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
    }
  }
  //---------------------------------------------------------------------------------------
+ 
+ //---------------------------------------------------------------------------------------
+ // Initialize all the flow methods for additional analysis with different settings/aims
+ // Label each setting/aim with different label !!!!
+ 
+ // GFC:    
+ TString gfcDefaultName = "outputGFCanalysis"; 
+ // 1.) GFC analysis for elliptic flow with r0 = 1.5: 
+ AliFlowAnalysisWithCumulants *gfc_1;
+ TString gfcAnalysisLabels_1 = "_r0_1.5"; // all histograms and output file name will have this label
+ TString gfcOutputFileName_1;
+ gfcOutputFileName_1 = gfcDefaultName.Data();
+ gfcOutputFileName_1 += gfcAnalysisLabels_1.Data();
+ gfcOutputFileName_1 += ".root";
+ if(GFC_Additional_Analysis)
+ {
+  gfc_1 = new AliFlowAnalysisWithCumulants();
+  //gfc_1->SetAnalysisLabel(gfcAnalysisLabels_1.Data());
+  if(listWithWeights) gfc_1->SetWeightsList(listWithWeights);
+  if(usePhiWeights) gfc_1->SetUsePhiWeights(usePhiWeights);
+  if(usePtWeights) gfc_1->SetUsePtWeights(usePtWeights);
+  if(useEtaWeights) gfc_1->SetUseEtaWeights(useEtaWeights);
+  gfc_1->Init();
+ }
+ 
+ // QC:
+ TString qcDefaultName = "outputQCanalysis"; 
+ // 1.) QC analysis for directed flow: 
+ AliFlowAnalysisWithQCumulants *qc_1;
+ TString qcAnalysisLabels_1 = "_v1"; // all histograms and output file name will have this label
+ TString qcOutputFileName_1;
+ qcOutputFileName_1 = qcDefaultName.Data();
+ qcOutputFileName_1 += qcAnalysisLabels_1.Data();
+ qcOutputFileName_1 += ".root";
+ if(QC_Additional_Analysis)
+ {
+  qc_1 = new AliFlowAnalysisWithQCumulants();
+  //qc_1->SetAnalysisLabel(qcAnalysisLabels_1->Data());
+  if(listWithWeights) qc_1->SetWeightsList(listWithWeights);
+  if(usePhiWeights) qc_1->SetUsePhiWeights(usePhiWeights);
+  qc_1->Init();
+ }
+ 
+ // FQD:
+ TString fqdDefaultName = "outputFQDanalysis";
+ // 1.) FQD fitting with fixed sigma:
+ AliFlowAnalysisWithFittingQDistribution *fqd_1;
+ TString fqdAnalysisLabels_1 = "_fixedSigma"; // all histograms and output file name will have this label
+ TString fqdOutputFileName_1;
+ fqdOutputFileName_1 = fqdDefaultName.Data();
+ fqdOutputFileName_1 += fqdAnalysisLabels_1.Data();
+ fqdOutputFileName_1 += ".root";
+ if(FQD_Additional_Analysis)
+ { 
+  fqd_1 = new AliFlowAnalysisWithFittingQDistribution();
+  //fqd_1->SetAnalysisLabel(fqdAnalysisLabels_1->Data());
+  if(listWithWeights) fqd_1->SetWeightsList(listWithWeights);
+  if(usePhiWeights) fqd_1->SetUsePhiWeights(usePhiWeights);
+  fqd_1->Init();
+ }
+ //---------------------------------------------------------------------------------------
   
  // set the global event parameters: 
  eventMakerOnTheFly->SetNoOfLoops(iLoops);
@@ -401,6 +470,22 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
    if(LYZEP)   lyzep->Make(event,ep);
    if(SP)      sp->Make(event);
    
+   if(GFC_Additional_Analysis)
+   {
+    // r0 = 1.5:
+    gfc_1->Make(event);
+   }
+   if(QC_Additional_Analysis)
+   {
+    // v1:
+    qc_1->Make(event);
+   }
+   if(FQD_Additional_Analysis)
+   {
+    // fixed sigma:
+    fqd_1->Make(event);
+   }
+   
    delete event;
  } // end of for(Int_t i=0;i<nEvts;i++)
  //---------------------------------------------------------------------------------------  
@@ -408,7 +493,7 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
 
 
  //---------------------------------------------------------------------------------------  
- // calculating and storing the final results of flow analysis
+ // calculating and storing the final results of default flow analysis:
  if(MCEP)    {mcep->Finish();    mcep->WriteHistograms("outputMCEPanalysis.root");}
  if(SP)      {sp->Finish();      sp->WriteHistograms("outputSPanalysis.root");}
  if(QC)      {qc->Finish();      qc->WriteHistograms("outputQCanalysis.root");}
@@ -421,7 +506,27 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
  if(LYZEP)   {lyzep->Finish();   lyzep->WriteHistograms("outputLYZEPanalysis.root");}
  //---------------------------------------------------------------------------------------  
  
- 
+ //---------------------------------------------------------------------------------------  
+ // calculating and storing the final results of flow analysis with different settings/aims:
+ if(GFC_Additional_Analysis)
+ {
+  // r0 = 1.5:
+  gfc_1->Finish();
+  gfc_1->WriteHistograms(gfcOutputFileName_1.Data());
+ }
+ if(QC_Additional_Analysis)
+ {
+  // v1:
+  qc_1->Finish();
+  qc_1->WriteHistograms(qcOutputFileName_1.Data());
+ }
+ if(FQD_Additional_Analysis)
+ {
+  // fixed sigma:
+  fqd_1->Finish();
+  fqd_1->WriteHistograms(fqdOutputFileName_1.Data());
+ }
+ //---------------------------------------------------------------------------------------
  
  cout<<endl;
  cout<<endl;
@@ -562,7 +667,6 @@ void LoadLibraries(const anaModes mode) {
     
     // Functions needed for various methods
     gROOT->LoadMacro("AliFlowCommon/AliCumulantsFunctions.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFittingFunctionsForQDistribution.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowLYZEventPlane.cxx+");
     
     // Flow Analysis code for various methods
@@ -572,7 +676,7 @@ void LoadLibraries(const anaModes mode) {
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLeeYangZeros.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithCumulants.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx+"); 
-    gROOT->LoadMacro("AliFlowCommon/AliFittingQDistribution.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithFittingQDistribution.cxx+");
     
     // Class to fill the FlowEvent on the fly (generate Monte Carlo events)
     gROOT->LoadMacro("AliFlowCommon/AliFlowEventSimpleMakerOnTheFly.cxx+");   

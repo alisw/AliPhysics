@@ -136,16 +136,16 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 10, const char*
   }
 
   //flow methods:  
-  AliFlowAnalysisWithQCumulants    *qc       = NULL;
-  AliFlowAnalysisWithCumulants     *gfc      = NULL;
-  AliFittingQDistribution          *fqd      = NULL;
-  AliFlowAnalysisWithLeeYangZeros  *lyz1sum  = NULL;
-  AliFlowAnalysisWithLeeYangZeros  *lyz1prod = NULL;
-  AliFlowAnalysisWithLeeYangZeros  *lyz2sum  = NULL;
-  AliFlowAnalysisWithLeeYangZeros  *lyz2prod = NULL;
-  AliFlowAnalysisWithLYZEventPlane *lyzep    = NULL;
-  AliFlowAnalysisWithScalarProduct *sp       = NULL;
-  AliFlowAnalysisWithMCEventPlane  *mcep     = NULL;   
+  AliFlowAnalysisWithQCumulants *qc = NULL;
+  AliFlowAnalysisWithCumulants *gfc = NULL;
+  AliFlowAnalysisWithFittingQDistribution *fqd = NULL;
+  AliFlowAnalysisWithLeeYangZeros *lyz1sum = NULL;
+  AliFlowAnalysisWithLeeYangZeros *lyz1prod = NULL;
+  AliFlowAnalysisWithLeeYangZeros *lyz2sum = NULL;
+  AliFlowAnalysisWithLeeYangZeros *lyz2prod = NULL;
+  AliFlowAnalysisWithLYZEventPlane *lyzep = NULL;
+  AliFlowAnalysisWithScalarProduct *sp = NULL;
+  AliFlowAnalysisWithMCEventPlane *mcep = NULL;   
 
   //MCEP = monte carlo event plane
   if (MCEP) {
@@ -175,7 +175,7 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 10, const char*
   
   //FQD = Fitting q-distribution 
   if(FQD) {
-    AliFittingQDistribution* fqd = new AliFittingQDistribution();
+    AliFlowAnalysisWithFittingQDistribution* fqd = new AliFlowAnalysisWithFittingQDistribution();
     fqd->Init();
     if(listWithWeights) fqd->SetWeightsList(listWithWeights);
     if(usePhiWeights) fqd->SetUsePhiWeights(usePhiWeights);
@@ -554,7 +554,6 @@ void LoadLibraries(const anaModes mode) {
     
     // Functions needed for various methods
     gROOT->LoadMacro("AliFlowCommon/AliCumulantsFunctions.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFittingFunctionsForQDistribution.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowLYZEventPlane.cxx+");
     
     // Flow Analysis code for various methods
@@ -564,7 +563,7 @@ void LoadLibraries(const anaModes mode) {
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLeeYangZeros.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithCumulants.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx+"); 
-    gROOT->LoadMacro("AliFlowCommon/AliFittingQDistribution.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithFittingQDistribution.cxx+");
     
     // Class to fill the FlowEvent without aliroot dependence
     // can be found in the directory FlowEventMakers

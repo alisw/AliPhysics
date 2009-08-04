@@ -199,7 +199,7 @@ void redoFinish(TString type="", Int_t mode=mLocal)
    }
  if(mergedListFQD)
  {
-  AliFittingQDistribution* fqd = new AliFittingQDistribution();
+  AliFlowAnalysisWithFittingQDistribution* fqd = new AliFlowAnalysisWithFittingQDistribution();
   fqd->GetOutputHistograms(mergedListFQD);
   fqd->Finish(kTRUE);
   // save the final results for FQD in final output file: 
@@ -672,7 +672,7 @@ void redoFinish(TString type="", Int_t mode=mLocal)
      }
      if(mergedListInSubsetFQD)
      {
-      AliFittingQDistribution *fqd = new AliFittingQDistribution();
+      AliFlowAnalysisWithFittingQDistribution *fqd = new AliFlowAnalysisWithFittingQDistribution();
       fqd->GetOutputHistograms(mergedListInSubsetFQD);
       cout<<endl;
       cout<<"!!!! WARNING WARNING WARNING WARNING !!!!"<<endl;
