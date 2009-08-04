@@ -17,11 +17,13 @@
     @b Contents 
     - @ref intro 
     - @ref structure 
-      - @ref base  (see also @ref FMD_base)
-      - @ref sim   (see also @ref FMD_sim)
-      - @ref rec   (see also @ref FMD_rec)
-      - @ref util  (see also @ref FMD_util)
-    - @ref script  (see also @ref FMD_script)
+      - @ref base     (see also @ref FMD_base)
+      - @ref sim      (see also @ref FMD_sim)
+      - @ref rec      (see also @ref FMD_rec)
+      - @ref flow     (see also @ref FMD_flow)
+      - @ref ana      (see also @ref FMD_ana)
+      - @ref util     (see also @ref FMD_util)
+    - @ref script     (see also @ref FMD_script)
     - @ref quick
     - @ref authors
     
@@ -126,6 +128,16 @@
       are made AliFMDReconstructor. 
 
     - AliFMDRawReader: Classes to read raw data files. 
+
+    @subsection flow libFMDflow:
+    
+    This library contains flow analysis code that works similar to 
+    histograms. 
+
+    @subsection ana libFMDanalysis:
+    
+    This library contains analysis code.
+
 
     @subsection util libFMDutil:
 

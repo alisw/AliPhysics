@@ -521,10 +521,10 @@ AliFMDDisplay::Idle()
     gApplication->StopIdleing();
     if (fContinous) break;
   }
-  AliFMDDebug(1, ("After idle loop"));
+  AliFMDDebug(3, ("After idle loop"));
   if (fMarkers) fMarkers->Delete();
   if (fHits)    fHits->Clear();
-  AliFMDDebug(1, ("After clearing caches"));
+  AliFMDDebug(3, ("After clearing caches"));
 }
 
 //____________________________________________________________________
@@ -707,7 +707,7 @@ AliFMDDisplay::InsideCut(Float_t val, const Float_t& min,
   Float_t h = fSlider->GetMaximum();
   if (l == h) { l = 0; h = 1; }
   if (val < r * l + min || val > r * h + min) { 
-    AliFMDDebug(1, ("Value %f is outside cut %f - %f (range %f - %f)", 
+    AliFMDDebug(2, ("Value %f is outside cut %f - %f (range %f - %f)", 
 		    val, min+r*l, min+r*h, min, max));
     return kFALSE;
   }

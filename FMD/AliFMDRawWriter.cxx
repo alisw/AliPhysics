@@ -37,9 +37,9 @@
 // that format.  
 //
 // #include <AliLog.h>		// ALILOG_H
-#include "AliFMDDebug.h" // Better debug macros
+#include "AliFMDDebug.h"        // Better debug macros
 #include <AliLoader.h>		// ALILOADER_H
-#include <AliAltroBuffer.h>     // ALIALTROBUFFER_H
+#include <AliAltroBufferV3.h>   // ALIALTROBUFFER_H
 #include "AliFMD.h"		// ALIFMD_H
 #include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
@@ -189,7 +189,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
   TArrayF noise(pars->GetChannelsPerAltro() * 8);
 
   // The Altro buffer 
-  AliAltroBuffer* altro = 0;
+  AliAltroBufferV3* altro = 0;
   
   Int_t totalWords = 0;
   Int_t nCounts    = 0;
@@ -261,11 +261,11 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
 	}
 	prevddl = ddl;
 	// Need to open a new DDL! 
-	TString filename(AliDAQ::DdlFileName(fFMD->GetName(),  ddl));
+	TString filename(AliDAQ::DdlFileName(fFMD ? fFMD->GetName() : "FMD",  ddl));
 	AliFMDDebug(5, ("New altro buffer with DDL file %s", filename.Data()));
 	// Create a new altro buffer - a `1' as the second argument
 	// means `write mode' 
-	altro = new AliAltroBuffer(filename.Data());
+	altro = new AliAltroBufferV3(filename.Data());
 	altro->SetMapping(pars->GetAltroMap());      
 	// Write a dummy (first argument is true) header to the DDL
 	// file - later on, when we close the file, we write the real
