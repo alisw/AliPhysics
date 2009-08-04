@@ -109,6 +109,7 @@ AliFMDGeometry::AliFMDGeometry()
     fUseFMD1(kFALSE),
     fUseFMD2(kFALSE),
     fUseFMD3(kFALSE),
+    fIsInitTrans(kFALSE),
     fBuilder(0),
     fDetectorOff(0),
     fModuleOff(0),  
@@ -146,6 +147,7 @@ AliFMDGeometry::AliFMDGeometry(const AliFMDGeometry& other)
     fUseFMD1(other.fUseFMD1), 
     fUseFMD2(other.fUseFMD2), 
     fUseFMD3(other.fUseFMD3), 
+    fIsInitTrans(other.fIsInitTrans),
     fBuilder(other.fBuilder),
     fDetectorOff(other.fDetectorOff),
     fModuleOff(other.fModuleOff),  
@@ -194,17 +196,20 @@ AliFMDGeometry::Init()
 
 //____________________________________________________________________
 void
-AliFMDGeometry::InitTransformations()
+AliFMDGeometry::InitTransformations(Bool_t force)
 {
   // Find all local <-> global transforms 
+  if (force) fIsInitTrans = kFALSE;
+  if (fIsInitTrans) return; 
   if (!gGeoManager) {
     AliError("No TGeoManager defined");
     return;
   }
-  AliFMDDebug(0, ("Initialising transforms for FMD geometry"));
+  AliFMDDebug(1, ("Initialising transforms for FMD geometry"));
   if (fFMD1) fFMD1->InitTransformations();
   if (fFMD2) fFMD2->InitTransformations();
   if (fFMD3) fFMD3->InitTransformations();
+  fIsInitTrans = kTRUE;
 }
 
 //____________________________________________________________________

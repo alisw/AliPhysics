@@ -88,7 +88,7 @@ public:
   /** Initialize */
   virtual void Init();
   /** Initialize transforms */
-  virtual void InitTransformations();
+  virtual void InitTransformations(Bool_t force=kFALSE);
   /** @return Get inner description */
   AliFMDRing*     GetInner() const { return fInner; }
   /** @return Get outer description */
@@ -220,6 +220,7 @@ protected:
   Bool_t	fUseFMD1;	// Wheter to Use FMD1 or not
   Bool_t	fUseFMD2;	// Wheter to Use FMD2 or not
   Bool_t	fUseFMD3;	// Wheter to Use FMD3 or not
+  Bool_t        fIsInitTrans;   // Transforms initialised?
   static AliFMDGeometry* fgInstance; // Singleton instance 
   /** CTOR */
   AliFMDGeometry();
