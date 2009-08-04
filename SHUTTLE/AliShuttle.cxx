@@ -3338,7 +3338,7 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 	
 	
 	body += Form("Find the %s log for the current run on \n\n"
-		"\thttp://pcalishuttle01.cern.ch:8880/%s/%d/%d/%s.log \n\n", 
+		"\thttp://pcalishuttle02.cern.ch/%s/%d/%d/%s.log \n\n", 
 		     fCurrentDetector.Data(), logFolder.Data(), GetCurrentRun()/10000,  
 				GetCurrentRun(), fCurrentDetector.Data());
 	body += Form("The last 15 lines of %s log file are following:\n\n", fCurrentDetector.Data());
