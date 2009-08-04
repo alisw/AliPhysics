@@ -5,6 +5,12 @@
 #include <TObjArray.h>
 #include <TH1F.h>
 
+/**
+ * @ingroup FMD_ana
+ * @brief Find most-probable value of MIP peak for one or more
+ * particles. 
+ * 
+ */
 class AliFMDAnaCalibEnergyDistribution : public TObject
 {
   
@@ -30,3 +36,6 @@ class AliFMDAnaCalibEnergyDistribution : public TObject
 };
 
 #endif
+// Local Variables:
+//   mode: C++
+// End:

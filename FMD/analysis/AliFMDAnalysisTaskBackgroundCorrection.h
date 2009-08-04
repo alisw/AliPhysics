@@ -11,6 +11,12 @@
 #include "TArrayI.h"
 #include "TH1I.h"
 
+/**
+ * @ingroup FMD_ana
+ * @brief Applu the background correction
+ * particles. 
+ * 
+ */
 class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
 {
  public:
@@ -57,3 +63,6 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
 };
  
 #endif
+// Local Variables:
+//   mode: C++
+// End:

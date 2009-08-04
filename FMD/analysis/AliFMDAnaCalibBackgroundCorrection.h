@@ -10,6 +10,11 @@ class TH2F;
 class TH1F;
 class TBrowser;
 
+/**
+ * @ingroup FMD_ana
+ * @brief Do the background correction
+ * 
+ */
 class AliFMDAnaCalibBackgroundCorrection : public TObject
 {
   
@@ -40,3 +45,6 @@ class AliFMDAnaCalibBackgroundCorrection : public TObject
 };
 
 #endif
+// Local Variables:
+//   mode: C++
+// End:

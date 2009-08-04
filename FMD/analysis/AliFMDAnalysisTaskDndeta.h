@@ -12,6 +12,10 @@
 #include "TH1I.h"
 #include "AliMCEvent.h"
 #include "AliFMDFloatMap.h"
+
+/**
+ * @ingroup FMD_ana
+ */
 class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
 {
  public:
@@ -67,3 +71,6 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
 };
  
 #endif
+// Local Variables:
+//   mode: C++ 
+// End:

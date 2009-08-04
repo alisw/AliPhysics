@@ -6,6 +6,13 @@
 #include "AliFMDFloatMap.h"
 #include "TH1F.h"
 
+/**
+ * Make a background distribution from simulated data
+ * @ingroup FMD_ana
+ * 
+ * 
+ */
+
 class AliFMDAnaCalibBackgroundCorrection;
 
 class AliFMDAnalysisTaskGenerateBackground : public AliAnalysisTaskSE
@@ -54,3 +61,6 @@ class AliFMDAnalysisTaskGenerateBackground : public AliAnalysisTaskSE
 
 };
 #endif
+// Local Variables:
+//   mode: C++ 
+// End:

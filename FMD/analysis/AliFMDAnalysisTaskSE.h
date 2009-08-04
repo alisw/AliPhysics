@@ -7,6 +7,24 @@
 #include "AliFMDAnalysisTaskBackgroundCorrection.h"
 #include "AliFMDAnalysisTaskDndeta.h"
 
+/** @defgroup FMD_ana Analysis tasks 
+    @brief Various classes to do analysis tasks 
+*/
+
+/**
+ * @class AliFMDAnalysisTaskSE
+ * @brief Collected analysis task 
+ * @ingroup FMD_ana
+ *
+ * Collector of various analysis tasks.  It will do the full chain of 
+ * analysis tasks:
+ *
+ * - AliFMDAnalysisTaskSharing
+ * - AliFMDAnalysisTaskDensity
+ * - AliFMDAnalysisTaskBackgroundCorrection
+ * - AliFMDAnalysisTaskDndeta
+ */
+
 class AliFMDAnalysisTaskSE : public AliAnalysisTaskSE
 {
  public:
@@ -42,3 +60,6 @@ class AliFMDAnalysisTaskSE : public AliAnalysisTaskSE
 
 };
 #endif
+// Local Variables:
+//  mode: C++ 
+// End:

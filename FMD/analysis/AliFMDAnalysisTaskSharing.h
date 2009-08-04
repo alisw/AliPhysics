@@ -14,7 +14,12 @@ class TChain;
 class AliAODEvent;
 class AliESDVertex;
 
-
+/**
+ * Do the sharing correction. 
+ * @ingroup FMD_ana
+ * 
+ * 
+ */
 class AliFMDAnalysisTaskSharing : public AliAnalysisTask
 {
  public:
@@ -71,3 +76,6 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
 };
  
 #endif
+// Local Variables:
+//  mode: C++
+// End Variables;

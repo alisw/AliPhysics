@@ -18,6 +18,9 @@ class AliAODEvent;
 class TF1;
 
 
+/**
+ * @ingroup FMD_ana
+ */
 class AliFMDAnalysisTaskDensity : public AliAnalysisTask
 {
  public:
@@ -66,3 +69,6 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
 };
  
 #endif
+// Local Variables:
+//   mode: C++ 
+// End:

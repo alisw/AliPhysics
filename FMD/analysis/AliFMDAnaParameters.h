@@ -46,6 +46,9 @@
 //  Should get ata fromm Conditions DB.
 //
 
+/**
+ * @ingroup FMD_ana
+ */
 class AliFMDAnaParameters : public TNamed
 {
 public:

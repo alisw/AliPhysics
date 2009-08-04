@@ -14,6 +14,9 @@ class AliAODEvent;
 
 
 
+/**
+ * @ingroup FMD_ana
+ */
 class AliFMDAnalysisTaskCollector : public AliAnalysisTask
 {
  public:
@@ -53,3 +56,6 @@ class AliFMDAnalysisTaskCollector : public AliAnalysisTask
 };
  
 #endif
+// Local Variables:
+//   mode: C++ 
+// End:
