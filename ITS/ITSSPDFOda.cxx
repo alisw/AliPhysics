@@ -356,6 +356,21 @@ int main(int argc, char **argv) {
       idsFXSfile << Form("%s\n",idf.Data());   
     }
     
+
+
+  printf("Preparing id list file\n");
+  idsFXSfile.close();
+  TString idlist = "SPD_id_list";
+#ifndef SPD_DA_OFF
+  status = daqDA_FES_storeFile(idsFXSFileName.Data(),idlist.Data());
+  if (status!=0) {
+    printf("Failed to export file %s , status %d\n",idsFXSFileName.Data(),status);
+    return -1;
+  }
+#endif
+
+
+
     timer.Stop();
     timer.Print();   
     printf("DA finished.\n");
