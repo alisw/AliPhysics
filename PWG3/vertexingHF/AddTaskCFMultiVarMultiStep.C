@@ -74,7 +74,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	const Int_t nbin8  = 100 ; //bins in d0K
 	const Int_t nbin9  = 80 ; //bins in d0xd0
 	const Int_t nbin10  = 1050 ; //bins in cosPointingAngle
-	const Int_t nbin11  = 100 ; //bins in Phi
+	const Int_t nbin11  = 20 ; //bins in Phi
 
 	//arrays for the number of bins in each dimension
 	Int_t iBin[nvar];
@@ -208,35 +208,24 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	
 	// Gen-Level kinematic cuts
 	AliCFTrackKineCuts *mcKineCuts = new AliCFTrackKineCuts("mcKineCuts","MC-level kinematic cuts");
-	//   mcKineCuts->SetPtRange(ptmin,ptmax);
-	//   mcKineCuts->SetRapidityRange(ymin,ymax);
-	//   mcKineCuts->SetChargeMC(charge);
 	
 	//Particle-Level cuts:  
 	AliCFParticleGenCuts* mcGenCuts = new AliCFParticleGenCuts("mcGenCuts","MC particle generation cuts");
-	//mcGenCuts->SetRequireIsPrimary();
 	mcGenCuts->SetRequirePdgCode(PDG, kTRUE);  // kTRUE set in order to include D0_bar
 	mcGenCuts->SetAODMC(1); //special flag for reading MC in AOD tree (important)
 	
 	// Acceptance cuts:
 	AliCFAcceptanceCuts* accCuts = new AliCFAcceptanceCuts("accCuts", "Acceptance cuts");
-	//accCuts->SetMinNHitITS(3);
-	//accCuts->SetMinNHitTPC(2);
 	AliCFTrackKineCuts *kineAccCuts = new AliCFTrackKineCuts("kineAccCuts","Kine-Acceptance cuts");
 	kineAccCuts->SetPtRange(ptmin,ptmax);
 	kineAccCuts->SetEtaRange(etamin,etamax);
 
 	// Rec-Level kinematic cuts
 	AliCFTrackKineCuts *recKineCuts = new AliCFTrackKineCuts("recKineCuts","rec-level kine cuts");
-	//   recKineCuts->SetPtRange(ptmin,ptmax);
-	//   recKineCuts->SetRapidityRange(ymin,ymax);
-	//   recKineCuts->SetChargeRec(charge);
 	
 	AliCFTrackQualityCuts *recQualityCuts = new AliCFTrackQualityCuts("recQualityCuts","rec-level quality cuts");
-	//recQualityCuts->SetStatus(AliESDtrack::kITSrefit);
 	
 	AliCFTrackIsPrimaryCuts *recIsPrimaryCuts = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts","rec-level isPrimary cuts");
-	//recIsPrimaryCuts->SetAODType(AliAODTrack::kPrimary);
 	
 	printf("CREATE MC KINE CUTS\n");
 	TObjArray* mcList = new TObjArray(0) ;
@@ -248,21 +237,23 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	accList->AddLast(kineAccCuts);
 
 	printf("CREATE RECONSTRUCTION CUTS\n");
-	TObjArray* recList = new TObjArray(0) ;
+	TObjArray* recList = new TObjArray(0) ;   // not used!! 
 	recList->AddLast(recKineCuts);
 	recList->AddLast(recQualityCuts);
 	recList->AddLast(recIsPrimaryCuts);
 	
+	TObjArray* emptyList = new TObjArray(0);
+
 	//CREATE THE INTERFACE TO CORRECTION FRAMEWORK USED IN THE TASK
 	printf("CREATE INTERFACE AND CUTS\n");
 	AliCFManager* man = new AliCFManager() ;
 	man->SetParticleContainer     (container);
 	man->SetParticleCutsList(0 , mcList); // MC
 	man->SetParticleCutsList(1 , accList); // Acceptance 
-	man->SetParticleCutsList(2 , recList); // AOD 
-	man->SetParticleCutsList(3 , recList); // AOD in Acceptance
-	man->SetParticleCutsList(4 , recList); // AOD with required n. of ITS clusters
-	man->SetParticleCutsList(5 , recList); // AOD Reco (PPR cuts implemented in Task)
+	man->SetParticleCutsList(2 , emptyList); // AOD 
+	man->SetParticleCutsList(3 , emptyList); // AOD in Acceptance
+	man->SetParticleCutsList(4 , emptyList); // AOD with required n. of ITS clusters
+	man->SetParticleCutsList(5 , emptyList); // AOD Reco (PPR cuts implemented in Task)
 	
 	// Get the pointer to the existing analysis manager via the static access method.
 	//==============================================================================
