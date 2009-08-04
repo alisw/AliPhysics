@@ -1373,6 +1373,10 @@ Bool_t AliTRDdigitizer::Digits2SDigits(AliTRDdigitsManager *manDig
 
   AliDebug(1,"Start converting digits to s-digits");
 
+  if (!fGeo) {
+    fGeo = new AliTRDgeometry();
+  }
+
   AliTRDcalibDB     *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
     AliFatal("Could not get calibration object");
@@ -1401,8 +1405,8 @@ Bool_t AliTRDdigitizer::Digits2SDigits(AliTRDdigitsManager *manDig
   Double_t baseline     = simParam->GetADCbaseline() 
                         / adcConvert;
   // The electronics baseline in electrons
-  Double_t baselineEl   = baseline
-                        / convert;
+  //Double_t baselineEl   = baseline
+  //                      / convert;
 
   // The gainfactor calibration objects
   //const AliTRDCalDet *calGainFactorDet      = calibration->GetGainFactorDet();  
