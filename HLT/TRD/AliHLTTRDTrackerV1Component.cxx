@@ -36,6 +36,7 @@ using namespace std;
 
 #include "AliGeomManager.h"
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliESDEvent.h"
 #include "AliMagF.h"
 #include "AliESDfriend.h"
@@ -60,18 +61,14 @@ ClassImp(AliHLTTRDTrackerV1Component)
     
 AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component():
   AliHLTProcessor(),
-  fOutputPercentage(100), // By default we copy to the output exactly what we got as input  
-  fStrorageDBpath("local://$ALICE_ROOT/OCDB"),
-  fCDB(NULL),
-  fGeometryFileName(""),
+  fOutputPercentage(100), // By default we copy to the output exactly what we got as input 
   fTracker(NULL),
   fRecoParam(NULL),
-  fReconstructor(NULL)
+  fReconstructor(NULL),
+  fESD(NULL)
 {
   // Default constructor
 
-  fGeometryFileName = getenv("ALICE_ROOT");
-  fGeometryFileName += "/HLT/TRD/geometry.root";
 }
 
 AliHLTTRDTrackerV1Component::~AliHLTTRDTrackerV1Component()
@@ -126,6 +123,7 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
   Int_t iMagneticField = -1; // magnetic field: 0==OFF and 1==ON
   Int_t iPIDmethod = 1;      // 0=LikelyHood(LH) 1=NeuronalNetwork(NN) 2=TruncatedMean(TM)
   Bool_t bHLTMode = kTRUE, bWriteClusters = kFALSE;
+  string geometryFileName = "";
   
   while ( i < argc )
     {
@@ -144,7 +142,7 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	      HLTError("Cannot convert output_percentage parameter '%s'", argv[i+1] );
 	      return EINVAL;
 	    }
-	  HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
+	  HLTInfo("Output percentage set to %i %%", fOutputPercentage );
 	  i += 2;
 	}
       else if ( !strcmp( argv[i], "-NTimeBins" ) )
@@ -163,17 +161,6 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	    }	  
 	  i += 2; 
 	}
-      else if ( strcmp( argv[i], "-cdb" ) == 0)
-	{
-	  if ( i+1 >= argc )
-	    {
-	      HLTError( "Missing -cdb argument");
-	      return ENOTSUP;	      
-	    }
-	  fStrorageDBpath = argv[i+1];
-	  HLTInfo("DB storage is %s", fStrorageDBpath.c_str() );	  
-	  i += 2;
-	}
       else if ( strcmp( argv[i], "-geometry" ) == 0)
 	{
 	  if ( i+1 >= argc )
@@ -181,9 +168,9 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 	      HLTError("Missing -geometry argument");
 	      return ENOTSUP;	      
 	    }
-	  fGeometryFileName = argv[i+1];
+	  geometryFileName = argv[i+1];
 	  HLTInfo("GeomFile storage is %s", 
-		  fGeometryFileName.c_str() );	  
+		  geometryFileName.c_str() );
 	  i += 2;
 	}
       // the flux parametrizations
@@ -248,20 +235,44 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
       
     }
 
-  // THE "REAL" INIT COMES HERE
-  // offline condition data base
-  fCDB = AliCDBManager::Instance();
-  if (!fCDB)
-    {
-      HLTError("Could not get CDB instance", "fCDB 0x%x", fCDB);
-      return -1;
+   // THE "REAL" INIT COMES HERE
+   // offline condition data base
+  
+  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
+    HLTError("DefaultStorage is not Set in CDBManager");
+    return -1;
+  }
+  if(AliCDBManager::Instance()->GetRun()<0){
+    AliCDBManager *cdb = AliCDBManager::Instance();
+    if (cdb)
+      {
+  	cdb->SetRun(0);
+  	HLTWarning("Setting CDB Runnumber to 0. CDB instance 0x%x", cdb);
+      }
+    else
+      {
+  	HLTError("Could not get CDB instance", "cdb 0x%x", cdb);
+  	return -1;
+      }
+  }
+  HLTInfo("CDB default storage: %s; RunNo: %i", (AliCDBManager::Instance()->GetDefaultStorage()->GetBaseFolder()).Data(), AliCDBManager::Instance()->GetRun());
+  
+  if(!AliGeomManager::GetGeometry()){
+    if(!TFile::Open(geometryFileName.c_str())){
+      HLTInfo("Loading standard geometry file");
+      AliGeomManager::LoadGeometry();
+    }else{
+      HLTWarning("Loading non-standard geometry file");
+      AliGeomManager::LoadGeometry(geometryFileName.c_str());
     }
-  else
-    {
-      fCDB->SetRun(0); // THIS HAS TO BE RETRIEVED !!!
-      fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
-      HLTDebug("CDB instance", "fCDB 0x%x", fCDB);
+    if(!AliGeomManager::GetGeometry()){
+      HLTError("Cannot load geometry");
+      return EINVAL;
     }
+  }
+  else{
+    HLTInfo("Geometry Already Loaded");
+  }
 
   // check if the N of time bins make sense
   if (iNtimeBins <= 0)
@@ -372,29 +383,13 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
   fReconstructor->SetOption(recoOptions.Data());
   HLTDebug("Reconstructor options are: %s",recoOptions.Data());
   
-  if((AliGeomManager::GetGeometry()) == NULL){
-    
-    if ( TFile::Open(fGeometryFileName.c_str())) {
-      AliGeomManager::LoadGeometry(fGeometryFileName.c_str());
-    }
-    else {
-      HLTError("Cannot load geometry from file %s",fGeometryFileName.c_str());
-      return EINVAL;
-    }
-  }
-  else
-    HLTInfo("Geometry Already Loaded");
-  
   // create the tracker
   fTracker = new AliTRDtrackerV1();
-  fTracker->SetReconstructor(fReconstructor);
   HLTDebug("TRDTracker at 0x%x", fTracker);
+  fTracker->SetReconstructor(fReconstructor);
 
-  if (fTracker == 0)
-    {
-      HLTError("Unable to create the tracker!");
-      return -1;
-    }
+  fESD = new AliESDEvent;
+  fESD->CreateStdContent();
 
   return 0;
 }
@@ -412,6 +407,8 @@ int AliHLTTRDTrackerV1Component::DoDeinit()
   fReconstructor->SetClusters(0x0);
   delete fReconstructor;
   fReconstructor = 0x0;
+  delete fESD;
+  fESD=NULL;
   
   AliTRDcalibDB::Terminate();
 
@@ -426,16 +423,20 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 					  vector<AliHLTComponent_BlockData>& outputBlocks )
 {
   // Process an event
+
+  if (evtData.fEventID == 1)
+    CALLGRIND_START_INSTRUMENTATION;
+
+  HLTDebug("NofBlocks %i", evtData.fBlockCnt );
   
-  HLTDebug("NofBlocks %lu", evtData.fBlockCnt );
-  
+  fESD->Reset();
+  //fESD->SetMagneticField(fSolenoidBz);
+
   AliHLTUInt32_t totalSize = 0, offset = 0;
   AliHLTUInt32_t dBlockSpecification = 0;
 
   vector<AliHLTComponent_DataType> expectedDataTypes;
   GetInputDataTypes(expectedDataTypes);
-  if (evtData.fEventID > 1)
-    CALLGRIND_START_INSTRUMENTATION;
   for ( unsigned long iBlock = 0; iBlock < evtData.fBlockCnt; iBlock++ ) 
     {
       const AliHLTComponentBlockData &block = blocks[iBlock];
@@ -468,20 +469,17 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       HLTDebug("TClonesArray of clusters: nbEntries = %i", clusterArray->GetEntriesFast());
       fTracker->LoadClusters(clusterArray);
 
-      // maybe it is not so smart to create it each event? clear is enough ?
-      AliESDEvent *esd = new AliESDEvent();
-      esd->CreateStdContent();
-      fTracker->Clusters2Tracks(esd);
+      fTracker->Clusters2Tracks(fESD);
 
-      Int_t nTracks = esd->GetNumberOfTracks();
+      Int_t nTracks = fESD->GetNumberOfTracks();
       HLTInfo("Number of tracks  == %d ==", nTracks);  
 
       TClonesArray* trdTracks = 0x0;
       //trdTracks = fTracker->GetListOfTracks();
       
       if(nTracks>0){
-	HLTDebug("We have an output ESDEvent: 0x%x with %i tracks", esd, nTracks);
-	AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddESDToOutput(esd, (AliHLTUInt8_t*)(outputPtr+offset));
+	HLTDebug("We have an output ESDEvent: 0x%x with %i tracks", fESD, nTracks);
+	AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddESDToOutput(fESD, (AliHLTUInt8_t*)(outputPtr+offset));
 	totalSize += addedSize;
 	  
 	// Fill block 
@@ -537,7 +535,6 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       //here we are deleting clusters (but not the TClonesArray itself)
       fTracker->UnloadClusters();
       AliTRDReconstructor::SetClusters(0x0);
-      delete esd;
       clusterArray->Delete();
       delete clusterArray;
       

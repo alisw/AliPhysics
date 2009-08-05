@@ -30,7 +30,9 @@ ClassImp(AliHLTTRDClusterizer)
 //_____________________________________________________________________________
 AliHLTTRDClusterizer::AliHLTTRDClusterizer(const AliTRDReconstructor *const rec)
   :AliTRDclusterizer(rec)
-  , fMemBlock(NULL)
+  ,fClMemBlock(NULL)
+  ,fTrMemBlock(NULL)
+  ,fTrMemCurrPtr(NULL)
 {
   //
   // AliHLTTRDClusterizer default constructor
@@ -40,7 +42,9 @@ AliHLTTRDClusterizer::AliHLTTRDClusterizer(const AliTRDReconstructor *const rec)
 //_____________________________________________________________________________
 AliHLTTRDClusterizer::AliHLTTRDClusterizer(const Text_t *const name, const Text_t *const title, const AliTRDReconstructor *const rec)
   : AliTRDclusterizer(name,title,rec)
-  , fMemBlock(NULL)
+  ,fClMemBlock(NULL)
+  ,fTrMemBlock(NULL)
+  ,fTrMemCurrPtr(NULL)
 {
   //
   // AliHLTTRDClusterizer constructor
@@ -50,7 +54,9 @@ AliHLTTRDClusterizer::AliHLTTRDClusterizer(const Text_t *const name, const Text_
 //_____________________________________________________________________________
 AliHLTTRDClusterizer::AliHLTTRDClusterizer(const AliHLTTRDClusterizer& c)
   : AliTRDclusterizer(c)
-  , fMemBlock(NULL)
+  ,fClMemBlock(NULL)
+  ,fTrMemBlock(NULL)
+  ,fTrMemCurrPtr(NULL)
 {
   //
   // AliHLTTRDClusterizer copy constructor
@@ -76,7 +82,9 @@ void AliHLTTRDClusterizer::Copy(TObject& c) const
   // Copy function
   //
 
-  ((AliHLTTRDClusterizer&)c).fMemBlock  = NULL;
+  ((AliHLTTRDClusterizer&)c).fClMemBlock = NULL;
+  ((AliHLTTRDClusterizer&)c).fTrMemBlock = NULL;
+  ((AliHLTTRDClusterizer&)c).fTrMemCurrPtr = NULL;
 }
 
 //_____________________________________________________________________________
@@ -86,6 +94,39 @@ void AliHLTTRDClusterizer::AddClusterToArray(AliTRDcluster *cluster)
   // Add a cluster to the array
   //
 
-  AliHLTTRDCluster *ptr = &(((AliHLTTRDCluster*)GetMemBlock())[fNoOfClusters]);
+  AliHLTTRDCluster *ptr = &(((AliHLTTRDCluster*)GetClMemBlock())[fNoOfClusters]);
   new(ptr) AliHLTTRDCluster(cluster);
+}
+
+//_____________________________________________________________________________
+void AliHLTTRDClusterizer::AddTrackletsToArray()
+{
+  //
+  // Add the online tracklets of this chamber to the array
+  //
+
+  // memcpy(&(((UInt_t*)GetTrMemBlock())[fNoOfTracklets]),fTrackletContainer[0],256*sizeof(UInt_t));
+  // memcpy(&(((UInt_t*)GetTrMemBlock())[fNoOfTracklets+256]),fTrackletContainer[1],256*sizeof(UInt_t));
+
+  // fNoOfTracklets += 512;
+
+  UInt_t* trackletword;
+  AliHLTTRDTrackletWordArray* trklArr = new(fTrMemCurrPtr) AliHLTTRDTrackletWordArray(fDet);
+  fTrMemCurrPtr += sizeof(AliHLTTRDTrackletWordArray);
+  for(Int_t side=0; side<2; side++)
+    {
+      Int_t trkl=0;
+      trackletword=fTrackletContainer[side];
+      while(trackletword[trkl]>0){
+	trkl++;
+      }
+      memcpy(fTrMemCurrPtr,fTrackletContainer[side],trkl*sizeof(UInt_t));
+      fTrMemCurrPtr += trkl*sizeof(UInt_t);
+      trklArr->fCount += trkl;
+    }
+
+  // fTrackletContainer[0]+=256;
+  // fTrackletContainer[1]+=256;
+  // fNoOfTracklets += 512;
+
 }

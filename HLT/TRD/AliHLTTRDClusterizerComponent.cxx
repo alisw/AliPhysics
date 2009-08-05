@@ -42,6 +42,7 @@ using namespace std;
 #include "AliGeomManager.h"
 #include "AliTRDReconstructor.h"
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliHLTTRDClusterizer.h"
 #include "AliTRDrecoParam.h"
 #include "AliTRDrawStreamBase.h"
@@ -64,19 +65,15 @@ ClassImp(AliHLTTRDClusterizerComponent)
    
 AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent():
   AliHLTProcessor(),
-  fOutputPercentage(100), // By default we copy to the output exactly what we got as input
-  fStrorageDBpath("local://$ALICE_ROOT/OCDB"),
+  fOutputPercentage(500),
+  fOutputConst(0),
   fClusterizer(NULL),
   fRecoParam(NULL),
-  fCDB(NULL),
   fMemReader(NULL),
-  fReconstructor(NULL),
-  fGeometryFileName("")
+  fReconstructor(NULL)
 {
   // Default constructor
 
-  fGeometryFileName = getenv("ALICE_ROOT");
-  fGeometryFileName += "/HLT/TRD/geometry.root";
 }
 
 AliHLTTRDClusterizerComponent::~AliHLTTRDClusterizerComponent()
@@ -96,19 +93,29 @@ void AliHLTTRDClusterizerComponent::GetInputDataTypes( vector<AliHLTComponent_Da
 {
   // Get the list of input data
   list.clear(); // We do not have any requirements for our input data type(s).
-  list.push_back( AliHLTTRDDefinitions::fgkDDLRawDataType );
+  list.push_back( (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD) );
 }
 
 AliHLTComponent_DataType AliHLTTRDClusterizerComponent::GetOutputDataType()
 {
   // Get the output data type
-  return AliHLTTRDDefinitions::fgkClusterDataType;
+  return kAliHLTMultipleDataType;
 }
+
+int AliHLTTRDClusterizerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
+{
+  // Get the output data type
+  tgtList.clear();
+  tgtList.push_back(AliHLTTRDDefinitions::fgkClusterDataType);
+  tgtList.push_back(AliHLTTRDDefinitions::fgkMCMtrackletDataType);
+  return tgtList.size();
+}
+
 
 void AliHLTTRDClusterizerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
   // Get the output data size
-  constBase = 0;
+  constBase = fOutputConst;
   inputMultiplier = ((double)fOutputPercentage)/100.0;
 }
 
@@ -121,7 +128,6 @@ AliHLTComponent* AliHLTTRDClusterizerComponent::Spawn()
 int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 {
   // perform initialization. We check whether our relative output size is specified in the arguments.
-  fOutputPercentage = 100;
   Int_t iRawDataVersion = 2;
   int i = 0;
   char* cpErr;
@@ -131,6 +137,8 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   // the data type will become obsolete as soon as the formats are established
   Int_t iRecoDataType = -1; // default will be simulation
   Int_t iyPosMethod = 1;     // 0=COG 1=LUT 2=Gauss 
+  Bool_t bProcessTracklets = kFALSE;
+  string geometryFileName = "";
   
   while ( i < argc )
     {
@@ -149,18 +157,7 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	      HLTError("Cannot convert output_percentage parameter '%s'", argv[i+1] );
 	      return EINVAL;
 	    }
-	  HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
-	  i += 2;
-	}
-      else if ( strcmp( argv[i], "-cdb" ) == 0)
-	{
-	  if ( i+1 >= argc )
-	    {
-	      HLTError("Missing -cdb argument");
-	      return ENOTSUP;	      
-	    }
-	  fStrorageDBpath = argv[i+1];
-	  HLTInfo("DB storage is %s", fStrorageDBpath.c_str() );	  
+	  HLTInfo("Output percentage set to %i %%", fOutputPercentage );
 	  i += 2;
 	}
       else if ( strcmp( argv[i], "-lowflux" ) == 0)
@@ -212,11 +209,15 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	      HLTError("Missing -geometry argument");
 	      return ENOTSUP;	      
 	    }
-	  fGeometryFileName = argv[i+1];
-	  HLTInfo("GeomFile storage is %s", fGeometryFileName.c_str() );	  
+	  geometryFileName = argv[i+1];
+	  HLTInfo("GeomFile storage is %s", geometryFileName.c_str() );	  
 	  i += 2;
-	}
-
+	} 
+      else if ( strcmp( argv[i], "-processTracklets" ) == 0)
+	{
+	  bProcessTracklets = kTRUE;
+ 	  i++; 
+ 	}
       else if ( strcmp( argv[i], "-yPosMethod" ) == 0)
 	{
 	  if ( i+1 >= argc )
@@ -236,6 +237,11 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	  }
 	  i += 2;
 	}
+      else if ( strcmp( argv[i], "-noZS" ) == 0) //no zero surpression in the input data
+	{
+	  fOutputPercentage = 100;
+ 	  i++; 
+ 	}
       
       else{
 	HLTError("Unknown option '%s'", argv[i] );
@@ -246,7 +252,7 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 
   // THE "REAL" INIT COMES HERE
 
-  if (iRecoParamType < 0 || iRecoParamType > 2)
+if (iRecoParamType < 0 || iRecoParamType > 2)
     {
       HLTWarning("No reco param selected. Use -lowflux or -highflux flag. Defaulting to low flux.");
       iRecoParamType = 0;
@@ -290,7 +296,10 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   case 1: recoOptions += ",!gs,lut"; break;
   case 2: recoOptions += ",gs,!lut"; break;
   }
-  
+  if(bProcessTracklets) recoOptions += ",tp";
+  else  recoOptions += ",!tp";
+
+  HLTInfo("Reconstructor options: %s",recoOptions.Data());
   fReconstructor->SetOption(recoOptions.Data());
   
   // init the raw data type to be used...
@@ -315,30 +324,42 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
     }
 
   // the DATA BASE STUFF
-  fCDB = AliCDBManager::Instance();
-  if (!fCDB)
-    {
-      HLTError("Could not get CDB instance", "fCDB 0x%x", fCDB);
+  
+  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
+    HLTError("DefaultStorage is not Set in CDBManager");
+    return -1;
+  }
+  if(AliCDBManager::Instance()->GetRun()<0){
+    AliCDBManager *cdb = AliCDBManager::Instance();
+    if (cdb)
+      {
+  	cdb->SetRun(0);
+  	HLTWarning("Setting CDB Runnumber to 0. CDB instance 0x%x", cdb);
+      }
+    else
+      {
+  	HLTError("Could not get CDB instance", "cdb 0x%x", cdb);
+  	return -1;
+      }
+  }
+  HLTInfo("CDB default storage: %s; RunNo: %i", (AliCDBManager::Instance()->GetDefaultStorage()->GetBaseFolder()).Data(), AliCDBManager::Instance()->GetRun());
+  
+  if(!AliGeomManager::GetGeometry()){
+    if(!TFile::Open(geometryFileName.c_str())){
+      HLTInfo("Loading standard geometry file");
+      AliGeomManager::LoadGeometry();
+    }else{
+      HLTWarning("Loading non-standard geometry file");
+      AliGeomManager::LoadGeometry(geometryFileName.c_str());
     }
-  else
-    {
-      fCDB->SetRun(0); // THIS HAS TO BE RETRIEVED !!!
-      fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
-      HLTDebug("CDB instance; fCDB 0x%x", fCDB);
-    }
-
-  if((AliGeomManager::GetGeometry()) == NULL){
-    
-    if ( TFile::Open(fGeometryFileName.c_str())) {
-      AliGeomManager::LoadGeometry(fGeometryFileName.c_str());
-    }
-    else {
-      HLTError("Cannot load geometry from file %s",fGeometryFileName.c_str());
+    if(!AliGeomManager::GetGeometry()){
+      HLTError("Cannot load geometry");
       return EINVAL;
     }
   }
-  else
+  else{
     HLTInfo("Geometry Already Loaded");
+  }  
   
   fMemReader = new AliRawReaderMemory;
 
@@ -346,6 +367,9 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   fClusterizer->SetReconstructor(fReconstructor);
   fClusterizer->SetUseLabels(kFALSE);
   fClusterizer->SetRawVersion(iRawDataVersion);
+
+  if(fReconstructor->IsProcessingTracklets())
+    fOutputConst = fClusterizer->GetTrMemBlockSize();
   return 0;
 }
 
@@ -361,14 +385,6 @@ int AliHLTTRDClusterizerComponent::DoDeinit()
   delete fReconstructor;
   fReconstructor = 0x0;
   return 0;
-
-
-  if (fCDB)
-    {
-      HLTDebug("destroy fCDB");
-      fCDB->Destroy();
-      fCDB = 0;
-    }
 
   if (fRecoParam)
     {
@@ -386,7 +402,11 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 					    vector<AliHLTComponent_BlockData>& outputBlocks )
 {
   // Process an event
-  HLTDebug( "NofBlocks %lu", evtData.fBlockCnt );
+
+  if (evtData.fEventID == 1)
+    CALLGRIND_START_INSTRUMENTATION;
+
+  HLTDebug( "NofBlocks %i", evtData.fBlockCnt );
   // Process an event
   AliHLTUInt32_t totalSize = 0, offset = 0;
 
@@ -398,20 +418,17 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 
   // Loop over all input blocks in the event
   AliHLTComponentDataType expectedDataType = (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD);
-  for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
-    {
-      if (evtData.fEventID == 1)
-	CALLGRIND_START_INSTRUMENTATION;
-      
-      const AliHLTComponentBlockData &block = blocks[i];
+  for ( UInt_t iBlock = 0; iBlock < evtData.fBlockCnt; iBlock++ )
+    {      
+      const AliHLTComponentBlockData &block = blocks[iBlock];
       // lets not use the internal TRD data types here : AliHLTTRDDefinitions::fgkDDLRawDataType
       // which is depreciated - we use HLT global defs instead
       //      if ( block.fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD) )
       AliHLTComponentDataType inputDataType = block.fDataType;
       if ( inputDataType != expectedDataType)
 	{
-	  HLTDebug( "Block # %i/%i; Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s; Skipping",
-		    i, evtData.fBlockCnt,
+	  HLTDebug( "Block # %i/%i; Event 0x%08LX (%Lu) Wrong received datatype: %s - required datatype: %s; Skipping",
+		    iBlock, evtData.fBlockCnt,
 		    evtData.fEventID, evtData.fEventID, 
 		    DataType2Text(inputDataType).c_str(), 
 		    DataType2Text(expectedDataType).c_str());
@@ -419,10 +436,11 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 	}
       else 
 	{
-	HLTDebug("We get the right data type: Block # %i/%i; Event 0x%08LX (%Lu) Received datatype: %s",
-		    i, evtData.fBlockCnt,
-		    evtData.fEventID, evtData.fEventID, 
-		    DataType2Text(inputDataType).c_str());
+	  HLTDebug("We get the right data type: Block # %i/%i; Event 0x%08LX (%Lu) Received datatype: %s; Block Size: %i",
+		   iBlock, evtData.fBlockCnt,
+		   evtData.fEventID, evtData.fEventID, 
+		   DataType2Text(inputDataType).c_str(),
+		   block.fSize);
 	}
       
       //      fMemReader->Reset();
@@ -442,7 +460,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 
       fMemReader->SetEquipmentID( id ); 
       
-      fClusterizer->SetMemBlock((AliHLTUInt8_t*)(outputPtr+offset));
+      fClusterizer->SetMemBlock(outputPtr+offset);
       Bool_t iclustered = fClusterizer->Raw2ClustersChamber(fMemReader);
       if (iclustered == kTRUE)
 	{
@@ -457,18 +475,20 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
       // put the tree into output
       //fcTree->Print();
       
-      AliHLTUInt32_t addedSize = fClusterizer->GetAddedSize();
+      AliHLTUInt32_t addedSize;
+      if(fReconstructor->IsProcessingTracklets()){
+	addedSize = fClusterizer->GetAddedTrSize();
+	totalSize += fClusterizer->GetTrMemBlockSize();  //if IsProcessingTracklets() is enabled we always reserve a data block of size GetTrMemBlockSize() for the tracklets
 	if (addedSize > 0){
 	  // Using low-level interface 
 	  // with interface classes
-	  totalSize += addedSize;
 	  if ( totalSize > size )
 	    {
 	      HLTError("Too much data; Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.",
 		       totalSize, size );
 	      return EMSGSIZE;
 	    }
-		
+
 	  // Fill block 
 	  AliHLTComponentBlockData bd;
 	  FillBlockData( bd );
@@ -476,14 +496,40 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 	  bd.fSize = addedSize;
 	  //bd.fSpecification = spec;
 	  bd.fSpecification = gkAliEventTypeData;
-	  bd.fDataType = AliHLTTRDDefinitions::fgkClusterDataType;
+	  bd.fDataType = AliHLTTRDDefinitions::fgkMCMtrackletDataType;
 	  outputBlocks.push_back( bd );
 	  HLTDebug( "BD fPtr 0x%x, fOffset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);
-	  offset = totalSize;
-	      
 	}
-	else 
-	  HLTWarning("Array of clusters is empty!");
+	offset = totalSize;
+      }
+
+      addedSize = fClusterizer->GetAddedClSize();
+      if (addedSize > 0){
+	// Using low-level interface 
+	// with interface classes
+	totalSize += addedSize;
+	if ( totalSize > size )
+	  {
+	    HLTError("Too much data; Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.",
+		     totalSize, size );
+	    return EMSGSIZE;
+	  }
+		
+	// Fill block 
+	AliHLTComponentBlockData bd;
+	FillBlockData( bd );
+	bd.fOffset = offset;
+	bd.fSize = addedSize;
+	//bd.fSpecification = spec;
+	bd.fSpecification = gkAliEventTypeData;
+	bd.fDataType = AliHLTTRDDefinitions::fgkClusterDataType;
+	outputBlocks.push_back( bd );
+	HLTDebug( "BD fPtr 0x%x, fOffset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);
+	offset = totalSize;
+	      
+      }
+      else 
+	HLTWarning("Array of clusters is empty!");
     }
   fReconstructor->SetClusters(0x0);
 
@@ -505,4 +551,3 @@ void AliHLTTRDClusterizerComponent::PrintObject( TClonesArray* inClustersArray)
   }
   
 }
-

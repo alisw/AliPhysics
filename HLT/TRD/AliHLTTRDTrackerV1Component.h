@@ -19,67 +19,64 @@ class AliMagF;
 class AliTRDtrackerV1;
 class AliTRDrecoParam;
 class AliTRDReconstructor;
+class AliESDEvent;
 
 /**
  * @class AliHLTTRDTrackerV1Component
  * @brief A TRDTrackerV1 HLT processing component. 
  *
  * Uses the second generation TRD tracker AliTRDtrackerV1
-*/
+ */
 
 class AliHLTTRDTrackerV1Component : public AliHLTProcessor
-    {
-    public:
-	AliHLTTRDTrackerV1Component();
-	virtual ~AliHLTTRDTrackerV1Component();
+{
+public:
+  AliHLTTRDTrackerV1Component();
+  virtual ~AliHLTTRDTrackerV1Component();
 
-	// Public functions to implement AliHLTComponent's interface.
-	// These functions are required for the registration process
+  // Public functions to implement AliHLTComponent's interface.
+  // These functions are required for the registration process
 
-	const char* GetComponentID();
-	void GetInputDataTypes( vector<AliHLTComponent_DataType>& list);
-	AliHLTComponent_DataType GetOutputDataType();
-	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
-	AliHLTComponent* Spawn();
+  const char* GetComponentID();
+  void GetInputDataTypes( vector<AliHLTComponent_DataType>& list);
+  AliHLTComponent_DataType GetOutputDataType();
+  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+  AliHLTComponent* Spawn();
 	
-    protected:
-	AliHLTUInt32_t TransportTracks(TClonesArray *inTracksArray, AliHLTUInt8_t* output,
-				       vector<AliHLTComponent_BlockData>& outputBlocks, AliHLTUInt32_t inOffset, AliHLTUInt32_t inSpec);
+protected:
+  AliHLTUInt32_t TransportTracks(TClonesArray *inTracksArray, AliHLTUInt8_t* output,
+				 vector<AliHLTComponent_BlockData>& outputBlocks, AliHLTUInt32_t inOffset, AliHLTUInt32_t inSpec);
 	
-	// Protected functions to implement AliHLTComponent's interface.
-	// These functions provide initialization as well as the actual processing
-	// capabilities of the component. 
+  // Protected functions to implement AliHLTComponent's interface.
+  // These functions provide initialization as well as the actual processing
+  // capabilities of the component. 
 
-	int DoInit( int argc, const char** argv );
-	int DoDeinit();
-	int DoEvent( const AliHLTComponentEventData& evtData, 
-		     const AliHLTComponentBlockData* blocks, 
-		     AliHLTComponent_TriggerData& /*trigData*/, 
-		     AliHLTUInt8_t* outputPtr, 
-		     AliHLTUInt32_t& size, 
-		     vector<AliHLTComponent_BlockData>& outputBlocks );
-	using AliHLTProcessor::DoEvent;
+  int DoInit( int argc, const char** argv );
+  int DoDeinit();
+  int DoEvent( const AliHLTComponentEventData& evtData, 
+	       const AliHLTComponentBlockData* blocks, 
+	       AliHLTComponent_TriggerData& /*trigData*/, 
+	       AliHLTUInt8_t* outputPtr, 
+	       AliHLTUInt32_t& size, 
+	       vector<AliHLTComponent_BlockData>& outputBlocks );
+  using AliHLTProcessor::DoEvent;
 	
-    private:
-	/** copy constructor prohibited */
-	AliHLTTRDTrackerV1Component(const AliHLTTRDTrackerV1Component&);
-	/** assignment operator prohibited */
-	AliHLTTRDTrackerV1Component& operator=(const AliHLTTRDTrackerV1Component&);
+private:
+  /** copy constructor prohibited */
+  AliHLTTRDTrackerV1Component(const AliHLTTRDTrackerV1Component&);
+  /** assignment operator prohibited */
+  AliHLTTRDTrackerV1Component& operator=(const AliHLTTRDTrackerV1Component&);
 
-	// The size of the output data produced, as a percentage of the input data's size.
-	// Can be greater than 100 (%)
-	unsigned fOutputPercentage; // Output volume in percentage of the input
-
-	string fStrorageDBpath; // Default path for OCDB
-	AliCDBManager *fCDB; //! Pointer to OCDB
-
-	string fGeometryFileName; // Path to geometry file 
+  // The size of the output data produced, as a percentage of the input data's size.
+  // Can be greater than 100 (%)
+  unsigned fOutputPercentage; // Output volume in percentage of the input
 	
-	AliTRDtrackerV1 *fTracker;//! Offline-pure/HLT tracker V1
-	AliTRDrecoParam *fRecoParam; //! Offline reco params
-	AliTRDReconstructor * fReconstructor;
-	
-	ClassDef(AliHLTTRDTrackerV1Component, 0)
+  AliTRDtrackerV1 *fTracker;//! Offline-pure/HLT tracker V1
+  AliTRDrecoParam *fRecoParam; //! Offline reco params
+  AliTRDReconstructor * fReconstructor;
+  AliESDEvent*     fESD;
 
-    };
+  ClassDef(AliHLTTRDTrackerV1Component, 1)
+
+};
 #endif

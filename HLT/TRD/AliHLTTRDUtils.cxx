@@ -1,3 +1,4 @@
+// $Id:$
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -106,6 +107,7 @@ AliHLTUInt32_t AliHLTTRDUtils::ReadClusters(TClonesArray *outArray, void* inputP
 
       AliTRDcluster* curTRDCluster = new((*outArray)[i]) AliTRDcluster();
       curCluster->ExportTRDCluster(curTRDCluster);
+      curTRDCluster->SetRPhiMethod(AliTRDcluster::kCOG);
       //HLTDebug(" fX = %f; fY = %f; fZ = %f", curTRDCluster->GetX(), curTRDCluster->GetY(), curTRDCluster->GetZ());
       curSize += clusterSize; 
       i++;

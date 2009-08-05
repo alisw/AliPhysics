@@ -76,10 +76,8 @@ class AliHLTTRDCalibrationComponent : public AliHLTCalibrationProcessor
 	// The size of the output data produced, as a percentage of the input data's size.
 	// Can be greater than 100 (%)	
 	unsigned fOutputPercentage; // Output volume in percentage of the input
-	string fStrorageDBpath; // Default path for OCDB
-	AliCDBManager *fCDB; //! Pointer to OCDB
 	
-	ClassDef(AliHLTTRDCalibrationComponent, 0)
+	ClassDef(AliHLTTRDCalibrationComponent, 1)
 
     };
 #endif

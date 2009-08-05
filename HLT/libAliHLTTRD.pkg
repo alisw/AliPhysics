@@ -19,6 +19,7 @@ CLASS_HDRS:= \
 
 # library sources
 MODULE_SRCS= \
+	AliHLTTRDTrackletWordArray.h \
 	$(CLASS_HDRS:.h=.cxx)
 
 # library headers

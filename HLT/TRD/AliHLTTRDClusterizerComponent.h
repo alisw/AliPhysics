@@ -28,60 +28,56 @@ class AliTRDReconstructor;
  * @ingroup alihlt_tutorial
  */
 class AliHLTTRDClusterizerComponent : public AliHLTProcessor
-    {
-    public:
-	AliHLTTRDClusterizerComponent();
-	virtual ~AliHLTTRDClusterizerComponent();
+{
+public:
+  AliHLTTRDClusterizerComponent();
+  virtual ~AliHLTTRDClusterizerComponent();
 
-	// Public functions to implement AliHLTComponent's interface.
-	// These functions are required for the registration process
+  // Public functions to implement AliHLTComponent's interface.
+  // These functions are required for the registration process
 
-	const char* GetComponentID();
-	void GetInputDataTypes( vector<AliHLTComponent_DataType>& list);
-	AliHLTComponent_DataType GetOutputDataType();
-	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
-	AliHLTComponent* Spawn();
+  const char* GetComponentID();
+  void GetInputDataTypes( vector<AliHLTComponent_DataType>& list);
+  AliHLTComponent_DataType GetOutputDataType();
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
+  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+  AliHLTComponent* Spawn();
 	
-    protected:
+protected:
 	
-	// Protected functions to implement AliHLTComponent's interface.
-	// These functions provide initialization as well as the actual processing
-	// capabilities of the component. 
+  // Protected functions to implement AliHLTComponent's interface.
+  // These functions provide initialization as well as the actual processing
+  // capabilities of the component. 
 
-	int DoInit( int argc, const char** argv );
-	int DoDeinit();
-	int DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-		     AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		     AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
+  int DoInit( int argc, const char** argv );
+  int DoDeinit();
+  int DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
+	       AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+	       AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
 
-	void PrintObject( TClonesArray* inClustersArray);
-	using AliHLTProcessor::DoEvent;
-	
-
-	
-    private:
-	/** copy constructor prohibited */
-	AliHLTTRDClusterizerComponent(const AliHLTTRDClusterizerComponent&);
-	/** assignment operator prohibited */
-	AliHLTTRDClusterizerComponent& operator=(const AliHLTTRDClusterizerComponent&);
-
-	// The size of the output data produced, as a percentage of the input data's size.
-	// Can be greater than 100 (%)
-
-	unsigned fOutputPercentage; // Output volume in percentage of the input
-
-	string fStrorageDBpath; // Default path for OCDB
-
-	AliHLTTRDClusterizer *fClusterizer; //! Offline derived HLT clusterizer
-	AliTRDrecoParam *fRecoParam; //! Offline reco params
-	AliCDBManager *fCDB; //! Pointer to OCDB
-	AliRawReaderMemory *fMemReader; //! Input raw data reader
-	AliTRDReconstructor *fReconstructor;
+  void PrintObject( TClonesArray* inClustersArray);
+  using AliHLTProcessor::DoEvent;
 	
 
-	string fGeometryFileName; // Path to geometry file 
 	
-	ClassDef(AliHLTTRDClusterizerComponent, 0)
+private:
+  /** copy constructor prohibited */
+  AliHLTTRDClusterizerComponent(const AliHLTTRDClusterizerComponent&);
+  /** assignment operator prohibited */
+  AliHLTTRDClusterizerComponent& operator=(const AliHLTTRDClusterizerComponent&);
 
-    };
+  // The size of the output data produced, as a percentage of the input data's size.
+  // Can be greater than 100 (%)
+
+  unsigned int fOutputPercentage; // Output volume in percentage of the input
+  unsigned int fOutputConst;
+
+  AliHLTTRDClusterizer *fClusterizer; //! Offline derived HLT clusterizer
+  AliTRDrecoParam *fRecoParam; //! Offline reco params
+  AliRawReaderMemory *fMemReader; //! Input raw data reader
+  AliTRDReconstructor *fReconstructor;
+	
+  ClassDef(AliHLTTRDClusterizerComponent, 1)
+
+};
 #endif
