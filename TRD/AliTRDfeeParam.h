@@ -89,7 +89,7 @@ class AliTRDfeeParam : public TObject
 
   static  Int_t    GetTFtype()            { return fgkTFtype;       }
   //static  Int_t    GetTFnExp()            { return fgkTFnExp;       }
-          Int_t    GetTFnExp()            { return fTFnExp;         }
+          Int_t    GetTFnExp()      const { return fTFnExp;         }
           Float_t  GetTFr1()        const { return fTFr1;           }
           Float_t  GetTFr2()        const { return fTFr2;           }
           Float_t  GetTFc1()        const { return fTFc1;           }
@@ -173,11 +173,11 @@ class AliTRDfeeParam : public TObject
  // Tracklet  processing on/off 
   static       Bool_t   fgTracklet; // tracklet processing
 
-  // max. nr of tracklet words for one mcm
-  static const Int_t    fgkMaxNrOfTracklets = 4; 
+  static const Int_t    fgkMaxNrOfTracklets = 4;          // Max. nr of tracklet words for one mcm
 
-  // additional tracklet folder structure output, containing all necessary Monte Carlo information; maybe this should go somewhere else;
-  static const Bool_t   fgkMCTrackletOutput = kTRUE; // default should be kTRUE
+  // additional tracklet folder structure output, 
+  // containing all necessary Monte Carlo information; maybe this should go somewhere else;
+  static const Bool_t   fgkMCTrackletOutput = kTRUE;      // Default should be kTRUE
 
   // following need Instance because initialized in constructor
                Float_t  fTFr1;                            // Time constant [us] long (old name fR1)
@@ -206,11 +206,8 @@ class AliTRDfeeParam : public TObject
   static const Int_t    fgkMinClusterCharge   = 20;       // Hit detection [in ADC units]
 
   //new
-  //time constants for linear fit
-  static const Int_t    fgkPREPLinearFitStart = 5;
-  static const Int_t    fgkPREPLinearFitEnd   = 20;
-
-
+  static const Int_t    fgkPREPLinearFitStart = 5;        // Time constants for linear fit
+  static const Int_t    fgkPREPLinearFitEnd   = 20;       // Time constants for linear fit
 
   // OLD TRAP processing parameters calculated from above
   //static const Float_t  fClusThr;                       // Cluster threshold

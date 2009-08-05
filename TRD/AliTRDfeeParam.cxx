@@ -32,12 +32,12 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <TMath.h>
+//#include <TMath.h>
 
 #include "AliLog.h"
 
 #include "AliTRDfeeParam.h"
-#include "AliTRDgeometry.h"
+//#include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
 
 ClassImp(AliTRDfeeParam)
