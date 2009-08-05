@@ -596,16 +596,8 @@ Bool_t AliTRDseedV1::CookPID()
   CookdEdx(fReconstructor->GetNdEdxSlices());
   
   // Sets the a priori probabilities
-  if(fReconstructor->IsHLT()){
-    // this can be done here, because in HLT we have another NN
-    // don't run HLT with the normal NN because here we assume that the NN was trained with only two output neurons!
-    memset(fProb,0,AliPID::kSPECIES*sizeof(fProb[0]));
-    fProb[AliPID::kElectron] = pd->GetProbability(AliPID::kElectron, GetMomentum(), &fdEdx[0], length, GetPlane());
-    fProb[AliPID::kPion] = 1 - fProb[AliPID::kElectron];
-  }
-  else
-    for(int ispec=0; ispec<AliPID::kSPECIES; ispec++)
-      fProb[ispec] = pd->GetProbability(ispec, GetMomentum(), &fdEdx[0], length, GetPlane());
+  for(int ispec=0; ispec<AliPID::kSPECIES; ispec++)
+    fProb[ispec] = pd->GetProbability(ispec, GetMomentum(), &fdEdx[0], length, GetPlane());
   
   return kTRUE;
 }
@@ -906,7 +898,6 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
   Int_t t0 = 14;
   Int_t kClmin = Int_t(fReconstructor->GetRecoParam() ->GetFindableClusters()*AliTRDtrackerV1::GetNTimeBins());
 
-  Double_t sysCov[5]; fReconstructor->GetRecoParam()->GetSysCovMatrix(sysCov);
   Double_t s2yTrk= fRefCov[0], 
            s2yCl = 0., 
            s2zCl = GetPadLength()*GetPadLength()/12., 
@@ -947,7 +938,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
     // get standard cluster error corrected for tilt
     cp.SetLocalTimeBin(it);
     cp.SetSigmaY2(0.02, fDiffT, fExB, dx, -1./*zt*/, fYref[1]);
-    s2yCl = (cp.GetSigmaY2() + sysCov[0] + t2*s2zCl)/(1.+t2);
+    s2yCl = (cp.GetSigmaY2() + t2*s2zCl)/(1.+t2);
     // get estimated road
     kroady = 3.*TMath::Sqrt(12.*(s2yTrk + s2yCl));
 
