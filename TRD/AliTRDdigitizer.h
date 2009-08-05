@@ -40,10 +40,10 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual void         Copy(TObject &d) const;
           Bool_t       InitDetector();
           void         InitOutput(Int_t iEvent);
-  virtual void         Exec(Option_t *option = 0);  
+  virtual void         Exec(const Option_t * const option = 0);  
 
   virtual Bool_t       Open(const Char_t *file, Int_t nEvent = 0);
-  virtual Bool_t       Open(AliRunLoader *runLoader, Int_t nEvent = 0);
+  virtual Bool_t       Open(AliRunLoader * const runLoader, Int_t nEvent = 0);
   virtual Bool_t       MakeBranch(TTree *tree) const;
   virtual Bool_t       WriteDigits() const;
 
@@ -53,10 +53,10 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual Bool_t       MakeDigits();
 
           Bool_t       SortHits(Float_t **hits, Int_t *nhit);
-          Bool_t       ConvertHits(Int_t det, Float_t *hits, Int_t nhit, AliTRDarraySignal *signals);
+          Bool_t       ConvertHits(Int_t det, const Float_t * const hits, Int_t nhit, AliTRDarraySignal *signals);
           Bool_t       ConvertSignals(Int_t det, AliTRDarraySignal *signals);
 
-          Bool_t       Digits2SDigits(AliTRDdigitsManager *manDig, AliTRDdigitsManager *manSDig);
+          Bool_t       Digits2SDigits(AliTRDdigitsManager * const manDig, AliTRDdigitsManager * const manSDig);
           Bool_t       SDigits2Digits();
           Bool_t       MergeSDigits();
           Bool_t       ConvertSDigits();
@@ -66,17 +66,17 @@ class AliTRDdigitizer : public AliDigitizer {
           Bool_t       CopyDictionary(Int_t det);
 	  void         CompressOutputArrays(Int_t det);
 
-          void         SetCompress(Int_t c = 1)             { fCompress        = c;   }
-          void         SetSDigits(Int_t v = 1)              { fSDigits         = v;   }
-          void         SetEvent(Int_t v = 0)                { fEvent           = v;   }
-          void         SetManager(AliTRDdigitsManager *man) { fDigitsManager   = man; }
-          void         SetGeometry(AliTRDgeometry *geo)     { fGeo             = geo; }
-          void         SetMergeSignalOnly(Bool_t m = kTRUE) { fMergeSignalOnly = m;   }
+          void         SetCompress(Int_t c = 1)                    { fCompress        = c;   }
+          void         SetSDigits(Int_t v = 1)                     { fSDigits         = v;   }
+          void         SetEvent(Int_t v = 0)                       { fEvent           = v;   }
+          void         SetManager(AliTRDdigitsManager * const man) { fDigitsManager   = man; }
+          void         SetGeometry(AliTRDgeometry * const geo)     { fGeo             = geo; }
+          void         SetMergeSignalOnly(Bool_t m = kTRUE)        { fMergeSignalOnly = m;   }
 
-  AliTRDdigitsManager *Digits() const                       { return fDigitsManager;  }
+  AliTRDdigitsManager *Digits() const                              { return fDigitsManager;  }
 
-          Bool_t       GetCompress() const                  { return fCompress;       }
-          Bool_t       GetSDigits() const                   { return fSDigits;        }
+          Bool_t       GetCompress() const                         { return fCompress;       }
+          Bool_t       GetSDigits() const                          { return fSDigits;        }
           Float_t      GetLorentzFactor(Float_t vdrift);
 
           Int_t        Diffusion(Float_t vdrift, Double_t absdriftlength

@@ -36,32 +36,25 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <TF1.h>
-#include <TFile.h>
-#include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
 #include <TList.h>
 #include <TMath.h>
-#include <TROOT.h>
 #include <TRandom.h>
-#include <TTask.h>
 #include <TTree.h>
-#include <TVector.h>
 
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliConfig.h"
-#include "AliMagF.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliLog.h"
+
 #include "AliTRD.h"
 #include "AliTRDhit.h"
 #include "AliTRDdigitizer.h"
-
 #include "AliTRDarrayDictionary.h"
 #include "AliTRDarrayADC.h"
 #include "AliTRDarraySignal.h"
@@ -288,7 +281,7 @@ void AliTRDdigitizer::Copy(TObject &d) const
 }
 
 //_____________________________________________________________________________
-void AliTRDdigitizer::Exec(Option_t *option)
+void AliTRDdigitizer::Exec(const Option_t * const option)
 {
   //
   // Executes the merging
@@ -484,7 +477,7 @@ Bool_t AliTRDdigitizer::Open(const Char_t *file, Int_t nEvent)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitizer::Open(AliRunLoader *runLoader, Int_t nEvent)
+Bool_t AliTRDdigitizer::Open(AliRunLoader * const runLoader, Int_t nEvent)
 {
   //
   // Opens a ROOT-file with TRD-hits and reads in the hit-tree
@@ -800,7 +793,9 @@ Bool_t AliTRDdigitizer::SortHits(Float_t **hits, Int_t *nhit)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitizer::ConvertHits(Int_t det, Float_t *hits, Int_t nhit
+Bool_t AliTRDdigitizer::ConvertHits(Int_t det
+                                  , const Float_t * const hits
+                                  , Int_t nhit
                                   , AliTRDarraySignal *signals)
 {
   //
@@ -1364,8 +1359,8 @@ Bool_t AliTRDdigitizer::Signal2SDigits(Int_t det, AliTRDarraySignal *signals)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitizer::Digits2SDigits(AliTRDdigitsManager *manDig
-                                     , AliTRDdigitsManager *manSDig)
+Bool_t AliTRDdigitizer::Digits2SDigits(AliTRDdigitsManager * const manDig
+                                     , AliTRDdigitsManager * const manSDig)
 {
   //
   // Converts digits into s-digits. Needed for embedding into real data.
