@@ -35,29 +35,30 @@
 ClassImp(AliTRDSensorArray)
 
 //_____________________________________________________________________________
-AliTRDSensorArray::AliTRDSensorArray () :
-					AliDCSSensorArray (),
-					fAmanda (""),
-					fStoreName ("")
-					
+AliTRDSensorArray::AliTRDSensorArray() 
+  :AliDCSSensorArray()
+  ,fAmanda("")
+  ,fStoreName("")					
 {
-	//default constructor
+  //
+  // Default constructor
+  //
 	
 }
 
-
-
 //_____________________________________________________________________________
-AliTRDSensorArray::AliTRDSensorArray (const char * amanda, 
-				      const char * storeName, 
-				      Float_t /*diffCut*/,
-				      TClonesArray * trdSensor) :
-					AliDCSSensorArray (),
-					fAmanda 	(amanda),
-					fStoreName 	(storeName)
-					
+AliTRDSensorArray::AliTRDSensorArray(const char *amanda 
+				   , const char *storeName
+				   , Float_t /*diffCut*/
+				   , TClonesArray * const trdSensor) 
+  :AliDCSSensorArray()
+  ,fAmanda(amanda)
+  ,fStoreName(storeName)				
 {
-	//constructor set fMinGraph to 0, fValCut to 0, fDiffCut to 0
+  //
+  // Constructor set fMinGraph to 0, fValCut to 0, fDiffCut to 0
+  //
+
 	fSensors 	= trdSensor;
 	fMinGraph 	= 0;
 	fValCut		= -1;
@@ -79,22 +80,24 @@ AliTRDSensorArray::AliTRDSensorArray (const char * amanda,
 }
 
 //_____________________________________________________________________________
-AliTRDSensorArray::AliTRDSensorArray (const AliTRDSensorArray & source) :
-                                        AliDCSSensorArray(source),
-					fAmanda 	(source.fAmanda),
-					fStoreName 	(source.fStoreName)
-					
+AliTRDSensorArray::AliTRDSensorArray(const AliTRDSensorArray & source) 
+  :AliDCSSensorArray(source)
+  ,fAmanda(source.fAmanda)
+  ,fStoreName(source.fStoreName)				
 {
-	// copy constructor
+  //
+  // Copy constructor
+  //
+
 	fSensors 	= source.fSensors;
 	fMinGraph	= 0;
 	fValCut		= -1;
 	fDiffCut	= -1;
+
 }
 	
-
 //_____________________________________________________________________________
-AliTRDSensorArray:: ~AliTRDSensorArray ()
+AliTRDSensorArray::~AliTRDSensorArray()
 {
   //
   // Destructor
@@ -103,7 +106,7 @@ AliTRDSensorArray:: ~AliTRDSensorArray ()
 }
 
 //_____________________________________________________________________________		
-AliTRDSensorArray & AliTRDSensorArray::operator=(const AliTRDSensorArray & source)
+AliTRDSensorArray &AliTRDSensorArray::operator=(const AliTRDSensorArray &source)
 {
   //
   // Assignment operator
@@ -116,10 +119,12 @@ AliTRDSensorArray & AliTRDSensorArray::operator=(const AliTRDSensorArray & sourc
 }
 
 //_____________________________________________________________________________
-TObjArray *  AliTRDSensorArray::GetList () 
+TObjArray *AliTRDSensorArray::GetList() 
 {
-	// return TObjArray with a list of AliTRDSensorArray corresponding to each
-	// group of sensor 
+  //
+  // Return TObjArray with a list of AliTRDSensorArray corresponding to each
+  // group of sensor 
+  //
 	
 	TObjArray * list = new TObjArray (20);
 	list->SetOwner (kTRUE);
@@ -206,22 +211,30 @@ TObjArray *  AliTRDSensorArray::GetList ()
 //_____________________________________________________________________________
 TMap* AliTRDSensorArray::ExtractDCS(TMap *dcsMap)
 {
-	//Return Tmap with TGraph inside corresponding to values in dcsMap
-	return AliDCSSensorArray::ExtractDCS (dcsMap);
+  //
+  // Return Tmap with TGraph inside corresponding to values in dcsMap
+  //
+
+	return AliDCSSensorArray::ExtractDCS(dcsMap);
 }
 
 //_____________________________________________________________________________
-void AliTRDSensorArray::SetGraph (TMap * map)
+void AliTRDSensorArray::SetGraph(TMap *map)
 {
-	// assigne list of TGraph to the current instance
-	AliDCSSensorArray::SetGraph (map);
+  //
+  // Assign list of TGraph to the current instance
+  //
+
+	AliDCSSensorArray::SetGraph(map);
 }
 
-
 //_____________________________________________________________________________
-Int_t AliTRDSensorArray::GetNGraph () const
+Int_t AliTRDSensorArray::GetNGraph() const
 {
-	// return the number of TGraph
+  //
+  // Return the number of TGraph
+  //
+
 	Int_t nGraph = 0;
 	Int_t nsensors = fSensors->GetEntries();
 	
