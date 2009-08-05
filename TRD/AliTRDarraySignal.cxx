@@ -24,8 +24,9 @@
 //                                                     //
 /////////////////////////////////////////////////////////
 
+#include <TArray.h>
+
 #include "AliTRDarraySignal.h"
-//#include "AliLog.h"
 #include "AliTRDfeeParam.h"
 
 ClassImp(AliTRDarraySignal)

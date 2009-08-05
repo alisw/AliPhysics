@@ -24,6 +24,8 @@
 //                                                     //
 /////////////////////////////////////////////////////////
 
+#include <TArray.h>
+
 #include "AliTRDarrayDictionary.h"
 #include "AliTRDfeeParam.h"
 
