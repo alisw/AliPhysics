@@ -37,15 +37,14 @@ ClassImp(AliHLTHOMERSourceDesc)
 //##################################################################################
 AliHLTHOMERSourceDesc::AliHLTHOMERSourceDesc() :
   fSelected( kFALSE ),
+  fSourceName(),
   fHostname(),
   fPort(),
-  fSourceName(),
-  fClassName(),
+  fDataType(),
   fDetector(),
-  fSubDetector(),
-  fSubSubDetector(),
   fSpecification(),
-  fDataType() {
+  fSubDetector(),
+  fSubSubDetector() {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -53,26 +52,37 @@ AliHLTHOMERSourceDesc::AliHLTHOMERSourceDesc() :
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-
-//##################################################################################
-AliHLTHOMERSourceDesc::AliHLTHOMERSourceDesc( TString hostname, Int_t port ) :
-  fSelected( kFALSE ),
-  fHostname( hostname ),
-  fPort( port ),
-  fSourceName(),
-  fClassName(),
-  fDetector(),
-  fSubDetector(),
-  fSubSubDetector(), 
-  fSpecification(),
-  fDataType() {
-  // see header file for class documentation
-
-}
-
-
 //##################################################################################
 AliHLTHOMERSourceDesc::~AliHLTHOMERSourceDesc() {
   // see header file for class documentation
 }
 
+/*
+ * ---------------------------------------------------------------------------------
+ *                        Setter - public
+ * ---------------------------------------------------------------------------------
+ */
+
+//#################################################################################
+void AliHLTHOMERSourceDesc::SetService( TString hostname, Int_t port, TString origin, 
+					TString type, TString /*spec*/ ) {
+  // see header file for class documentation
+
+  fSourceName.Form("%s_%s%_%ul", fDetector.Data(), fDataType.Data(), fSpecification); 
+
+  fHostname = hostname;
+  fPort = port;
+  
+  fDataType = type;
+  fDataType.Remove( TString::kTrailing, ' ' );
+  
+  fDetector = origin;
+  fDetector.Remove( TString::kTrailing, ' ' );
+  
+  // -- Temporary until Specification is set in service
+  fSpecification = 0;
+  fSubDetector = 0;
+  fSubSubDetector = 0;
+
+  return;
+}

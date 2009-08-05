@@ -41,17 +41,17 @@ class AliHLTHOMERSourceDesc : public TNamed {
 
 public:
 
-  /** standard constructor */
+  /**  constructor */
   AliHLTHOMERSourceDesc();       
-
-  /** constructor 
-   * @param hostname   hostname of the source
-   * @param port       port of the source
-   */
-  AliHLTHOMERSourceDesc( TString hostname, Int_t port );
 
   /** destructor */
   virtual ~AliHLTHOMERSourceDesc();
+
+  /*
+   * ---------------------------------------------------------------------------------
+   *                        Selection - public
+   * ---------------------------------------------------------------------------------
+   */
 
   // -- SELECTION --
 
@@ -62,43 +62,36 @@ public:
 
   /** Checks if Source is selected to readout 
    * @return           returns state, either kTRUE or kFALSE
-  */
+   */
   Bool_t IsSelected()           { return fSelected; }
 
   /** Select this source */
   void Select()                 { fSelected = kTRUE; }
-
+  
   /** Deselect this source */
   void Deselect()               { fSelected = kFALSE; }
 
-  // -- SETTER --
-
-  /** Set node name of this source 
-   * @param hostname   hostname of the source
-   * @param port       port of the source
+  /*
+   * ---------------------------------------------------------------------------------
+   *                        Setter - public
+   * ---------------------------------------------------------------------------------
    */
-   void SetHostnamePort( TString hostname, Int_t port )   { fHostname = hostname; fPort = port; }
 
-  /** Set name/obj name of this source 
-   *  @param s1        source name
-   *  @param s2        source class name, default is ""
+  /** Set Service of this source 
+   *  @param hostname  hostname of the source
+   *  @param port      port of the source
+   *  @param origin    HLT data origin
+   *  @param type      HLT data type
+   *  @param spec      HLT data specification
    */
-  void SetSourceName( TString s1, TString s2="" )         { fSourceName = s1; fClassName = s2; }
+  void SetService( TString hostname, Int_t port, TString origin, 
+		   TString type, TString spec );
 
-  /** Set detector, sub detector and sub sub detector of this source 
-   *  @param s1        detector name
-   *  @param s2        subdetector name
-   *  @param s3        subsubdetector name
+  /*
+   * ---------------------------------------------------------------------------------
+   *                        Getter - public
+   * ---------------------------------------------------------------------------------
    */
-  void SetDetectors( TString s1, TString s2, TString s3 ) { fDetector = s1; fSubDetector = s2; fSubSubDetector = s3; }
-
-  /** Set HLT specification anf HLT data type of this source 
-   *  @param ul        HLT specification
-   *  @param s         HLT data type
-   */
-  void SetSourceType( ULong_t ul, TString s )             { fSpecification = ul, fDataType = s; }
- 
-  // -- GETTER --
 
   /** Get node name of this source 
    * @return           hostname
@@ -108,17 +101,12 @@ public:
   /** Get node name of this source 
    * @return           port
    */
-  Int_t GetPort()             { return fPort; }
+  Int_t   GetPort()           { return fPort; }
 
   /** Get name of this source 
    * @return           name
    */
   TString GetSourceName()     { return fSourceName; }
-
-  /** Get object name of this source
-   * @return           class name
-   */
-  TString GetClassName()      { return fClassName; }
 
   /** Get detector of this source 
    * @return           detector
@@ -128,12 +116,12 @@ public:
   /** Get sub detector of this source 
    * @return           subdetector
    */
-  TString GetSubDetector()    { return fSubDetector; }
+  Int_t   GetSubDetector()    { return fSubDetector; }
 
   /** Get sub sub detector of this source 
    * @return           subsubdetector
    */
-  TString GetSubSubDetector() { return fSubSubDetector; }
+  Int_t   GetSubSubDetector() { return fSubSubDetector; }
 
   /** Get HLT data type of this source
    * @return           HLT data type
@@ -145,16 +133,30 @@ public:
    */
   ULong_t GetSpecification()  { return fSpecification; }
 
+  ///////////////////////////////////////////////////////////////////////////////////
 
 private:
+
   /** copy constructor prohibited */
   AliHLTHOMERSourceDesc(const AliHLTHOMERSourceDesc&);
   
   /** assignment operator prohibited */
   AliHLTHOMERSourceDesc& operator=(const AliHLTHOMERSourceDesc&);
 
+  /*
+   * ---------------------------------------------------------------------------------
+   *                            Members - private
+   * ---------------------------------------------------------------------------------
+   */
+
   /** is selected to read out */
   Bool_t fSelected;             // see above
+
+  /** Name of Source */
+  TString fSourceName;          // see above
+
+  // -- Service Specifications --
+  // ----------------------------
 
   /** Name of HOMER Node */
   TString fHostname;            // see above
@@ -162,28 +164,25 @@ private:
   /** Name of HOMER port */
   Int_t fPort;                  // see above
 
-  /** Name of Source */
-  TString fSourceName;          // see above
+  // -- Data Specifications --
+  // -------------------------
 
-  /** Object Name of Source */
-  TString fClassName;           // see above
+  /** HLT DataType */
+  TString fDataType;            // see above
 
   /** Detector Name, e.g. PHOS 
    *  corresponds to HLT origin
    */
   TString fDetector;            // see above
 
-  /** SubDetector Name e.g. MODULE */
-  TString fSubDetector;         // see above
-
-  /** SubSubDetector Name e.g. PARTITION */
-  TString fSubSubDetector;      // see above
-
   /** HLT Specification */
   ULong_t fSpecification;       // see above
 
-  /** HLT DataType */
-  TString fDataType;            // see above
+  /** SubDetector Name e.g. MODULE */
+  Int_t   fSubDetector;         // see above
+
+  /** SubSubDetector Name e.g. PARTITION */
+  Int_t   fSubSubDetector;      // see above
 
   ClassDef( AliHLTHOMERSourceDesc, 0 )
 };

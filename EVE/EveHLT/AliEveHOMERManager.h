@@ -99,15 +99,6 @@ public:
   /** Get pointer to block List */
   TList* GetBlockList() { return fBlockList; } // Get pointer to block List
   
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Test Realm ....
-   * ---------------------------------------------------------------------------------
-   */
-
-  /** Still under testing ... */
-  void DumpTPCCalib(TString objectName, Bool_t dumpToFile);
-
   ///////////////////////////////////////////////////////////////////////////////////
 
 protected:
@@ -221,9 +212,6 @@ private:
 
   // == sources ==
   AliEveHOMERSourceList* fSrcList;                // List of HOMER Sources
-
-  //-----------------------------------------------------------------------------------------
-  AliTPCPreprocessorOnline* fTPCPre;              // Preprocessor for TPC calibration.
 
   ClassDef(AliEveHOMERManager, 0); // Manage connections to HLT data-sources.
 };

@@ -165,7 +165,7 @@ Int_t AliEveHOMERSrcTranslator::FillSourceDesc( AliHLTHOMERSourceDesc* source, T
 
   TMap * objectMap = (TMap*) fObjectMap->GetValue( detector );
 
-
+#if 0
 
   if ( ! objectMap->FindObject( name ) ) {
   cout << "DET..." << detector.Data() << endl;    
@@ -178,6 +178,7 @@ Int_t AliEveHOMERSrcTranslator::FillSourceDesc( AliHLTHOMERSourceDesc* source, T
     source->SetSourceName( name, srcObject->GetClassName() );
     source->SetSourceType( srcObject->GetSpecification(), srcObject->GetDataType() );
   }
+#endif
 
   return iResult;
 }

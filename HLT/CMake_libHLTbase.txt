@@ -25,6 +25,8 @@ BASE/AliHLTModuleAgent.cxx
 BASE/AliHLTModulePreprocessor.cxx
 BASE/AliHLTShuttleInterface.cxx
 BASE/AliHLTHOMERLibManager.cxx
+BASE/AliHLTHOMERManager.cxx
+BASE/AliHLTHOMERProxyHandler.cxx
 BASE/AliHLTHOMERBlockDesc.cxx
 BASE/AliHLTHOMERSourceDesc.cxx
 BASE/AliHLTEsdManager.cxx

@@ -191,7 +191,7 @@ void AliEveHOMERSourceMapByType::FillMap(const TList* handles, Bool_t def_state)
     insert(srcid, srcst, def_state);
 
     srcid.fDet = h->GetDetector();
-    if (h->GetSubDetector().IsNull())
+    if (h->GetSubDetector() == 0)
     {
       srcst.fHandle = h;
       insert(srcid, srcst, def_state);
@@ -200,7 +200,7 @@ void AliEveHOMERSourceMapByType::FillMap(const TList* handles, Bool_t def_state)
     insert(srcid, srcst, def_state);
 
     srcid.fSDet = h->GetSubDetector();
-    if (h->GetSubSubDetector().IsNull())
+    if (h->GetSubSubDetector() == 0)
     {
       srcst.fHandle = h;
       insert(srcid, srcst, def_state);

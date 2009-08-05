@@ -23,6 +23,8 @@ class AliHLTMessage;
 #include "TString.h"
 #include "TObject.h"
 
+//#include "AliHLTLogging.h"
+
 /**
  * @class AliHLTHOMERBlockDesc
  * This class contains the data which comes from 1 block, delivered via the 
@@ -33,7 +35,7 @@ class AliHLTMessage;
  * 
  * @ingroup alihlt_homer
  */
-class AliHLTHOMERBlockDesc : public TObject {
+class AliHLTHOMERBlockDesc : public TObject/*, public AliHLTLogging*/ {
 
 public:
 
@@ -45,15 +47,6 @@ public:
 
   /** standard constructor */
   AliHLTHOMERBlockDesc();       
-
-  /** Constructor, set block data 
-   * @param data           Pointer to data
-   * @param size           Size of data
-   * @param origin         Detector
-   * @param dataType       HLT data type  
-   * @param specification  HLT specification
-   */
-  AliHLTHOMERBlockDesc( void * data, ULong_t size, TString origin, TString dataType, ULong_t specification );  
 
   /** destructor */
   virtual ~AliHLTHOMERBlockDesc();
@@ -87,6 +80,11 @@ public:
   /** Returns Pointer to TObject */
   TObject* GetTObject()           { return fTObject;   }
 
+  /** Get class name of this block 
+   * @return           class name
+   */
+  TString GetClassName()          { return fClassName; }
+
   /*
    * ---------------------------------------------------------------------------------
    *                            Data Handling - Getter - public
@@ -108,6 +106,11 @@ public:
    */
   ULong_t GetSize()               { return fSize; }
 
+  /** Get name of this block
+   * @return           name
+   */
+  TString GetBlockName()          { return fBlockName; }
+
   /** Get detector of this block 
    * @return           Detector name
    */
@@ -123,30 +126,27 @@ public:
    */
   ULong_t GetSpecification()      { return fSpecification; }
 
-  /** Get class name of this block 
-   * @return           class name
-   */
-  TString GetClassName()          { return fClassName; }
-
   /** Get sub detector of this block 
    * @return           subdetector
    */
-  TString GetSubDetector()        { return fSubDetector; }
+  Int_t   GetSubDetector()        { return fSubDetector; }
 
   /** Get sub sub detector of this block
    * @return           subsubdetector
    */
-  TString GetSubSubDetector()     { return fSubSubDetector; }
+  Int_t   GetSubSubDetector()     { return fSubSubDetector; }
 
   /** Returns kTRUE if HLT specification indicates a subdetector range
    * @return           kTRUE if subdetector range
    */
-  Bool_t HasSubDetectorRange()    { return fHasSubDetectorRange; }
+  Bool_t  HasSubDetectorRange()   { return fHasSubDetectorRange; }
 
   /** Returns kTRUE if HLT specification indicates a subsubdetector range
    * @return           kTRUE if subsubdetector range
    */
-  Bool_t HasSubSubDetectorRange() { return fHasSubSubDetectorRange; }
+  Bool_t  HasSubSubDetectorRange(){ return fHasSubSubDetectorRange; }
+
+  ///////////////////////////////////////////////////////////////////////////////////
 
 private:
 
@@ -155,6 +155,12 @@ private:
 
   /** assignment operator prohibited */
   AliHLTHOMERBlockDesc& operator=(const AliHLTHOMERBlockDesc&);
+
+  /*
+   * ---------------------------------------------------------------------------------
+   *                            Data Handling - private
+   * --------------------------------------------------------------------------------- 
+   */
 
   /** Set all additional members*/
   void SetBlockParameters();
@@ -177,11 +183,20 @@ private:
    * --------------------------------------------------------------------------------- 
    */
 
+  // -- Block properties --
+  // ----------------------
+
   /** Pointer to data of the block */
-  void* fData;                      //! transient
+  void*   fData;                    //! transient
 	      
   /** Size of data */
   ULong_t fSize;                    // see above
+
+  /** Block Name */
+  TString fBlockName;               // see above
+
+  // -- Data flags --
+  // ----------------
 
   /** States if block contains a TObject */
   Bool_t fIsTObject;                // see above
@@ -189,35 +204,48 @@ private:
   /** States if block contains a raw data */
   Bool_t fIsRawData;                // see above
 
+  // -- TObject properties --
+  // ------------------------
+
   /** AliHTMessage object containg a TObject */
   AliHLTMessage* fMessage;          //! transient
 
   /** TObject extracted out of @see AliHLTMessage */
-  TObject* fTObject;                //! transient
+  TObject*       fTObject;          //! transient
 
   /** Class Name of the block */
-  TString fClassName;               // see above
-
-  /** Detector Name, e.g. PHOS */
-  TString fDetector;                // see above
-
-  /** SubDetector Name e.g. MODULE */
-  TString fSubDetector;             // see above
-
-  /** SubSubDetector Name e.g. PARTITION */
-  TString fSubSubDetector;          // see above
-
-  /** HLT Specification */
-  ULong_t fSpecification;           // see above
+  TString        fClassName;        // see above
+  
+  // -- Data Specifications --
+  // -------------------------
 
   /** HLT DataType */
   TString fDataType;                // see above 
 
+  /** Detector Name, e.g. PHOS */
+  TString fDetector;                // see above
+
+  /** HLT Specification */
+  ULong_t fSpecification;           // see above
+
+  // XXXXXXXXXXXXXXXXXXXXXXXX REMOVE IF NOT NEEDED XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  // -- Sub Detector Specifications --
+  // ---------------------------------
+  
+  /** SubDetector Name e.g. MODULE */
+  Int_t   fSubDetector;             // see above
+
+  /** SubSubDetector Name e.g. PARTITION */
+  Int_t   fSubSubDetector;          // see above
+
   /** States id block has a subdetector range */
-  Bool_t fHasSubDetectorRange;      // see above
+  Bool_t  fHasSubDetectorRange;     // see above
 
   /** States id block has a subsubdetector range */
-  Bool_t fHasSubSubDetectorRange;   // see above
+  Bool_t  fHasSubSubDetectorRange;  // see above
+
+  // XXXXXXXXXXXXXXXXXXXXXXXX REMOVE IF NOT NEEDED XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   ClassDef( AliHLTHOMERBlockDesc, 0 )
 };

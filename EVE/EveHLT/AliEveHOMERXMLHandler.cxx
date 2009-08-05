@@ -229,6 +229,7 @@ Int_t AliEveHOMERXMLHandler::AddSourceTDS( TXMLNode * xmlNode ) {
 
     TString xmlParent = attrNode->GetText();
 
+#if 0
     AliHLTHOMERSourceDesc * source = new AliHLTHOMERSourceDesc( hostname, port );
 
     if ( FillSourceInformation( xmlParent, source ) ) {
@@ -242,7 +243,7 @@ Int_t AliEveHOMERXMLHandler::AddSourceTDS( TXMLNode * xmlNode ) {
       AliInfo( Form("New Source added : %s", xmlParent.Data()) );
 #endif
     }
-
+#endif 
   } // while ( ( attrNode = prevNode->GetNextNode() ) ) {
 
   return iResult;
@@ -288,12 +289,12 @@ Int_t AliEveHOMERXMLHandler::FillSourceInformation( TString xmlParent, AliHLTHOM
   subSubDetector.Remove( TString::kLeading, '0' );
   
   // -- Set detector / subDetector / subSubDetector
-  source->SetDetectors( detector, subDetector, subSubDetector );  
+  //  source->SetDetectors( detector, subDetector, subSubDetector );  
 
   // -- Fill dataType / specification / className
   iResult = fSrcTranslator->FillSourceDesc( source, name );
 
-#if EVE_DEBUG
+#if 0
   AliInfo( Form("Set Source %s , Type %s, ClassName %s .", name.Data(), 
 		source->GetDataType().Data(), source->GetClassName().Data()) );
   AliInfo( Form("    Detector %s , SubDetector : %s, SubSubDetector %s .",

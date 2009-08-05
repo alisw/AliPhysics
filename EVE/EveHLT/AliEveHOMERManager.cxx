@@ -17,17 +17,6 @@
 
 #include "AliEveHOMERManager.h"
 
-#define use_aliroot
-#define use_root
-#define ROWHOUGHPARAMS
-#define use_reconstruction
-#define use_newio
-#define ROOTVERSION    "unchecked"
-#define ALIROOTVERSION "unchecked"
-#define __ROOT__
-#define USE_ALILOG
-#define LINUX
-
 #define EVE_DEBUG 1
 // -- -- -- -- -- -- -- 
 #include "AliHLTHOMERLibManager.h"
@@ -46,11 +35,6 @@
 #include "TObjArray.h"
 // -- -- -- -- -- -- -- 
 #include "AliLog.h"
-#include "AliTPCCalibPedestal.h"
-#include "AliTPCCalibPulser.h"
-#include "AliTPCCalibCE.h"
-#include "AliTPCPreprocessorOnline.h"
-#include "AliTPCCalROC.h"
 
 //______________________________________________________________________________
 //
@@ -77,8 +61,7 @@ AliEveHOMERManager::AliEveHOMERManager( TString xmlFile ) :
   fCurrentBlk(0),
   fConnected(kFALSE),
   fStateHasChanged(kTRUE),
-  fSrcList(NULL),
-  fTPCPre(NULL) {
+  fSrcList(NULL) {
   // This Class should handle the communication
   // from the HLT to AliEVE. The HLT sends data via 
   // the HOMER interface on several TCP ports of nodes 
@@ -118,11 +101,6 @@ AliEveHOMERManager::~AliEveHOMERManager() {
  if ( fSrcList != NULL )
     delete fSrcList;
   fSrcList = NULL;
-  
-  if ( fTPCPre != NULL )
-    delete fTPCPre;
-  fTPCPre = NULL;
-
 }
 
 /*
@@ -445,8 +423,9 @@ Int_t AliEveHOMERManager::NextEvent(){
 Int_t AliEveHOMERManager::CreateBlockList() {
   // Create a TList of blocks, which have been readout
 
-  Int_t iResult = 0;
 
+  Int_t iResult = 0;
+#if 0
   // -- Initialize block list
   if ( fBlockList != NULL )
     delete fBlockList;
@@ -476,7 +455,7 @@ Int_t AliEveHOMERManager::CreateBlockList() {
     iter = GetNextBlk();
 
   } // while ( iter != NULL ){
-
+#endif
   return iResult;
 }
 
@@ -622,12 +601,12 @@ ULong_t AliEveHOMERManager::GetBlkSpecification( Int_t ndx ) {
 }
 
 //##################################################################################
-Bool_t AliEveHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
+Bool_t AliEveHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc */* block*/ ) {
   // Checks if current Block should was requested
   // * return           returns kTRUE, if block should was requested
 
   Bool_t requested = kFALSE;
-
+#if 0
   AliHLTHOMERSourceDesc * source= NULL;
 
   // -- Read all sources and check if they should be read out
@@ -679,148 +658,7 @@ Bool_t AliEveHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
 
   }
 #endif
-
+#endif
   return requested;
 }
 
-/*
- * ---------------------------------------------------------------------------------
- *                            Test Realm ....
- * ---------------------------------------------------------------------------------
- */
-
-//##################################################################################
-void AliEveHOMERManager::DumpTPCCalib(TString objectName, Bool_t dumpToFile) {
-  // Still under testing ...
-
-  if ( fTPCPre != NULL )
-    delete fTPCPre;
-
-  fTPCPre = new AliTPCPreprocessorOnline();
-
-  TList* blockList = GetBlockList();
-
-  AliHLTHOMERBlockDesc *desc = 0;
-
-  TIter next(blockList);
-
-  while ( ( desc = (AliHLTHOMERBlockDesc*)next() ) ) {
-    if ( ! desc->IsTObject() )
-      continue;
-
-    Int_t sectorTPC = 0;
-
-    if ( desc->GetSubSubDetector().Atoi() <= 1 ) {
-      sectorTPC = desc->GetSubDetector().Atoi();
-    }
-    else {
-      sectorTPC = 36 + desc->GetSubDetector().Atoi();
-    }
-
-    if ( ! objectName.CompareTo( desc->GetClassName() ) ){
-
-      //
-      // AliTPCCalibPedestal
-      //
-
-      if ( ! objectName.CompareTo( "AliTPCCalibPedestal" ) ) {
-	AliTPCCalROC* calROC = NULL;
-
-	AliTPCCalibPedestal * cal = (AliTPCCalibPedestal*) desc->GetTObject();
-	if ( cal == NULL ) {
-	  cout << "error 1" << endl;
-	  continue;
-	}
-
-	cal->Analyse();
-
-	calROC = cal->GetCalRocRMS(sectorTPC);
-	if ( calROC == NULL ) {
-	  cout << "error 2" << endl;
-	  continue;
-	}
-
-	calROC->SetName(Form("RMS_ROC%d", sectorTPC));
-	fTPCPre->AddComponent((TObject*) calROC );
-
-	calROC = cal->GetCalRocPedestal(sectorTPC);
-	if ( calROC == NULL ) {
-	  cout << "error 3" << endl;
-	  continue;
-	}
-
-
-	calROC->SetName(Form("Pedestal_ROC%d", sectorTPC));
-	cout << "added" << endl;
-	fTPCPre->AddComponent((TObject*) calROC );
-      }
-
-      //
-      // AliTPCCalibPulser
-      //
-      /*
-      else if ( ! objectName.CompareTo( "AliTPCCalibPulser" ) ) {
-	AliTPCCalROC* calROC = NULL;
-
-	AliTPCCalibPulser * cal = (AliTPCCalibPulser*) desc->GetTObject();
-
-	cal->Analyse();
-
-	calROC = cal->GetCalRocT0(sectorTPC);
-	calROC->SetName(Form("T0_ROC%d", sectorTPC));
-	fTPCPre->AddComponent((TObject*) calROC );
-
-	calROC = cal->GetCalRocQ(sectorTPC);
-	calROC->SetName(Form("Q_ROC%d", sectorTPC));
-	fTPCPre->AddComponent((TObject*) calROC );
-
-	calROC = cal->GetCalRocRMS(sectorTPC);
-	calROC->SetName(Form("RMS_ROC%d", sectorTPC));
-	fTPCPre->AddComponent((TObject*) calROC );
-
-	calROC = cal->GetCalRocOutliers(sectorTPC);
-	calROC->SetName(Form("Outliers_ROC%d", sectorTPC));
-	fTPCPre->AddComponent((TObject*) calROC );
-      }
-
-*/
-      //
-      // AliTPCCalibCE
-      //
-      /*
-      else if ( ! objectName.CompareTo( "AliTPCCalibCE" ) ) {
-	AliTPCCalROC* calROC = NULL;
-
-	AliTPCCalibPulser * cal = (AliTPCCalibPulser*) desc->GetTObject();
-
-	cal->Analyse();
-
-	calROC = cal->GetCalRocT0(sectorTPC);
-	calROC->SetName(Form("T0_ROC%d", sectorTPC));
-	fTPCPre->AddComponent((TObject*) calROC );
-
-	calROC = cal->GetCalRocQ(sectorTPC);
-	calROC->SetName(Form("Q_ROC%d", sectorTPC));
-	fTPCPre->AddComponent((TObject*) calROC );
-
-	calROC = cal->GetCalRocRMS(sectorTPC);
-	calROC->SetName(Form("RMS_ROC%d", sectorTPC));
-	fTPCPre->AddComponent((TObject*) calROC );
-
-	calROC = cal->GetCalRocOutliers(sectorTPC);
-	calROC->SetName(Form("Outliers_ROC%d", sectorTPC));
-	fTPCPre->AddComponent((TObject*) calROC );
-      }
-      */
-    } // if ( ! objectName.CompareTo( desc->GetClassName() ) ) {
-
-  } // while ( ( desc = (AliHLTHOMERBlockDesc*)next() ) ) {
-
-  if ( dumpToFile ) {
-
-    fTPCPre->DumpToFile("pedestals.root");
-    cout << "DUMP" << endl;
-  }
-
-
-}
