@@ -82,7 +82,7 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
       Float_t noise=cal->GetNoiseAfterElectronics(iAn);
       Float_t gain=cal->GetChannelGain(iAn);
       if(cal->IsBadChannel(iAn)) hchstatus->Fill(0);
-      if(!cal->IsBadChannel(iAn)){
+      if(!cal->IsBadChannel(iAn) && !cal->IsChipBad(ic) && !cal->IsBad() ){
 	hbase->Fill(base);
 	hchstatus->Fill(1);
 	hnoise->Fill(noise);
@@ -210,10 +210,10 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
   gbad->GetYaxis()->SetTitle("Anode Status (1=OK, 0=bad)");
 }
 
-void ShowCalibrationSDD(Int_t nrun, Int_t nv, Char_t* dir="LHC08d", Int_t nmod=0){
+void ShowCalibrationSDD(Int_t nrun, Int_t nv, Int_t year=2009, Int_t nmod=0){
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
-  sprintf(filnam,"alien:///alice/data/2008/%s/OCDB/ITS/Calib/CalibSDD/Run%d_999999999_v%d_s0.root",dir,nrun,nv);
+  sprintf(filnam,"alien:///alice/data/%d/OCDB/ITS/Calib/CalibSDD/Run%d_999999999_v%d_s0.root",year,nrun,nv);
   printf("Open file: %s\n",filnam);
   ShowCalibrationSDD(nmod,filnam);
 }

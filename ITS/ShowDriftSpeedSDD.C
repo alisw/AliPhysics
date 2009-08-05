@@ -36,6 +36,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   vvsmod1->SetTitle("Drift Speed vs. mod. number");
   Char_t tit[100];
   for(Int_t i=firstmod; i<lastmod; i++){
+    Int_t iMod=i+240;
     c0->Clear();
     c0->Divide(2,1);
     Int_t i0=2*i;
@@ -51,7 +52,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     gvdr1[i]->SetMinimum(5.);
     gvdr0[i]->SetMaximum(9.);
     gvdr1[i]->SetMaximum(9.);
-    sprintf(tit,"Mod %d\n",i);
+    sprintf(tit,"Mod %d\n",iMod);
     gvdr0[i]->SetTitle(tit);
     gvdr1[i]->SetTitle(tit);
 
@@ -63,7 +64,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
       gvdr0[i]->SetPoint(iAn,(Float_t)iAn,vel0);
       gvdr1[i]->SetPoint(iAn,(Float_t)iAn,vel1);
     }
-    printf(" Mod. %d \t v(an 128l)= %f\n",i,vdriftarr0->GetDriftSpeed(0,128));
+    printf(" Mod. %d \t v(an 128l)= %f",iMod,vdriftarr0->GetDriftSpeed(0,128));
     printf("        \t v(an 128r)= %f\n",vdriftarr1->GetDriftSpeed(0,128));
     c0->cd(1);
     gvdr0[i]->Draw("AP");
@@ -79,8 +80,8 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     if(vdriftarr0) vel0=vdriftarr0->GetDriftSpeed(0,128);
     Float_t vel1=0;
     if(vdriftarr1) vel1=vdriftarr1->GetDriftSpeed(0,128);
-    vvsmod0->SetPoint(vvsmod0->GetN(),(Float_t)i,vel0);
-    vvsmod1->SetPoint(vvsmod1->GetN(),(Float_t)i,vel1);
+    vvsmod0->SetPoint(vvsmod0->GetN(),(Float_t)iMod,vel0);
+    vvsmod1->SetPoint(vvsmod1->GetN(),(Float_t)iMod,vel1);
     
     //    getchar();
   }
@@ -106,10 +107,10 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
 
 
 
-void ShowDriftSpeedSDD(Int_t nrun, Int_t nv, Char_t* dir="LHC08d"){
+void ShowDriftSpeedSDD(Int_t nrun, Int_t nv, Int_t year=2009){
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
-  sprintf(filnam,"alien:///alice/data/2008/%s/OCDB/ITS/Calib/DriftSpeedSDD/Run%d_999999999_v%d_s0.root",dir,nrun,nv);
+  sprintf(filnam,"alien:///alice/data/%d/OCDB/ITS/Calib/DriftSpeedSDD/Run%d_999999999_v%d_s0.root",year,nrun,nv);
   printf("Open file: %s\n",filnam);
   ShowDriftSpeedSDD(filnam,0,260);
 }
