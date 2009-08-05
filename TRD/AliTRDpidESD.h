@@ -15,7 +15,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <Rtypes.h>
+//#include <Rtypes.h>
 
 #include <TObject.h>
 
@@ -33,8 +33,8 @@ class AliTRDpidESD : public TObject {
   AliTRDpidESD &operator=(const AliTRDpidESD &p);
 
   virtual void    Copy(TObject &p) const;
-  static  Bool_t  CheckTrack(AliESDtrack *t);
-          Int_t   MakePID(AliESDEvent *event);
+  static  Bool_t  CheckTrack(AliESDtrack * const t);
+          Int_t   MakePID(AliESDEvent * const event);
 
           void    SetCheckTrackStatus(Bool_t status = kTRUE) { fgCheckTrackStatus = status; };
           void    SetCheckKinkStatus(Bool_t status = kTRUE)  { fgCheckKinkStatus  = status; };
@@ -46,7 +46,7 @@ class AliTRDpidESD : public TObject {
 
 private:
 
-          Bool_t  RecalculateTrackSegmentKine(AliESDtrack *t
+          Bool_t  RecalculateTrackSegmentKine(AliESDtrack * const t
                                             , Int_t plan
                                             , Float_t &mom
                                             , Float_t &length);

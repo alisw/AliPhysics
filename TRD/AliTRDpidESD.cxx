@@ -31,17 +31,14 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliTracker.h"
-#include "AliRun.h"
 
 #include "AliTRDpidESD.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDtrack.h"
-#include "Cal/AliTRDCalPID.h"
 
 ClassImp(AliTRDpidESD)
 
@@ -111,7 +108,7 @@ void AliTRDpidESD::Copy(TObject &p) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
+Int_t AliTRDpidESD::MakePID(AliESDEvent * const event)
 {
   //
   // This function calculates the PID probabilities based on TRD signals
@@ -220,7 +217,7 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDpidESD::CheckTrack(AliESDtrack *t)
+Bool_t AliTRDpidESD::CheckTrack(AliESDtrack * const t)
 {
   //
   // Check if track is eligible for PID calculations
@@ -240,7 +237,7 @@ Bool_t AliTRDpidESD::CheckTrack(AliESDtrack *t)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDpidESD::RecalculateTrackSegmentKine(AliESDtrack *esd
+Bool_t AliTRDpidESD::RecalculateTrackSegmentKine(AliESDtrack * const esd
                                               , Int_t layer
                                               , Float_t &mom
                                               , Float_t &length)
