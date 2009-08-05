@@ -150,7 +150,7 @@ void AliTRDSignalIndex::Copy(TObject &a) const
   ((AliTRDSignalIndex &)a).fLayer         = fLayer;
   ((AliTRDSignalIndex &)a).fStack         = fStack;
   ((AliTRDSignalIndex &)a).fSM            = fSM;
-  ((AliTRDSignalIndex &)a).fMaxLimit    = fMaxLimit;
+  ((AliTRDSignalIndex &)a).fMaxLimit      = fMaxLimit;
   ((AliTRDSignalIndex &)a).fPositionRC    = fPositionRC;
   ((AliTRDSignalIndex &)a).fSortedWasInit = fSortedWasInit;
   ((AliTRDSignalIndex &)a).fCurrRow       = fCurrRow;

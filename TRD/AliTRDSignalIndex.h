@@ -1,5 +1,5 @@
-#ifndef AliTRDSIGNALINDEX_H
-#define AliTRDSIGNALINDEX_H
+#ifndef ALITRDSIGNALINDEX_H
+#define ALITRDSIGNALINDEX_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -36,7 +36,7 @@ class AliTRDSignalIndex : public TObject
   void     ResetContentConditional(const Int_t nrow, const Int_t ncol, const Int_t ntime);
   void     ResetContent();
   void     ResetCounters();
-  void     ResetTbinCounter() { }
+  void     ResetTbinCounter() const { };
 
   void     ResetArrays();
 
@@ -87,8 +87,8 @@ class AliTRDSignalIndex : public TObject
   Int_t     fStack;              //  Stack position in the full TRD
   Int_t     fSM;                 //  Super module - position in the full TRD
 
-  Bool_t   *fBoolIndex;          //  
-  Short_t  *fSortedIndex;        //  
+  Bool_t   *fBoolIndex;          //  Indices
+  Short_t  *fSortedIndex;        //  Sorted indices
   Int_t     fMaxLimit;           //  Max number of things in the array
   Int_t     fPositionRC;         //  Position in the SortedIndex
   Bool_t    fSortedWasInit;      //  Was SortedIndex initialized?
