@@ -17,6 +17,7 @@ class AliTRDtrackletWord;
 
 class AliTRDcluster : public AliCluster {
 public:
+
   enum ETRDclusterStatus { 
     kInChamber = BIT(16) // Out of fiducial volume of chamber (signal tails)
    ,kFivePad   = BIT(17) // Deconvoluted clusters
@@ -32,67 +33,73 @@ public:
 
   AliTRDcluster();
   AliTRDcluster(Int_t det, UChar_t col, UChar_t row, UChar_t time, const Short_t *sig, UShort_t volid);
-  AliTRDcluster(
-    Int_t det, Float_t q, Float_t *pos, Float_t *sig,
-    Int_t *tracks, Char_t npads, Short_t *signals,
-    UChar_t col, UChar_t row, UChar_t time,
-    Char_t timebin, Float_t center, UShort_t volid);
+  AliTRDcluster(Int_t det, Float_t q, Float_t *pos, Float_t *sig
+	      , Int_t *tracks, Char_t npads, Short_t * const signals
+	      , UChar_t col, UChar_t row, UChar_t time
+	      , Char_t timebin, Float_t center, UShort_t volid);
   AliTRDcluster(const AliTRDtrackletWord *const tracklet, Int_t det, UShort_t volid);
   AliTRDcluster(const AliTRDcluster &c);
   virtual ~AliTRDcluster() {};
+  AliTRDcluster    &operator=(const AliTRDcluster &c);
 
-  virtual void     AddTrackIndex(Int_t *i); 
-  void     Clear(Option_t *o="");
+  virtual void      AddTrackIndex(const Int_t * const i); 
+          void      Clear(Option_t *o="");
   
-  Bool_t   IsEqual(const TObject *otherCluster) const;
-  Bool_t   IsInChamber() const             { return TestBit(kInChamber);       }
-  Bool_t   IsMasked() const                { return fClusterMasking ? kTRUE : kFALSE; }
-  Bool_t   IsShared() const                { return IsClusterShared();}
-  Bool_t   IsUsed() const                  { return IsClusterUsed(); }
-  Bool_t   IsFivePad() const               { return TestBit(kFivePad);}
-  inline Bool_t IsRPhiMethod(ETRDclusterStatus m) const;
+          Bool_t    IsEqual(const TObject *otherCluster) const;
+          Bool_t    IsInChamber() const             { return TestBit(kInChamber);  }
+          Bool_t    IsMasked() const                { return fClusterMasking ? kTRUE : kFALSE; }
+          Bool_t    IsShared() const                { return IsClusterShared();    }
+          Bool_t    IsUsed() const                  { return IsClusterUsed();      }
+          Bool_t    IsFivePad() const               { return TestBit(kFivePad);    }
+  inline  Bool_t    IsRPhiMethod(ETRDclusterStatus m) const;
 
-  UChar_t  GetPadMaskedPosition() const    { return fClusterMasking & 7; }
-  UChar_t  GetPadMaskedStatus() const      { return fClusterMasking >> 3; }
-  Int_t    GetDetector() const             { return fDetector;      }
-  Int_t    GetLocalTimeBin() const         { return fLocalTimeBin;  }
-  Float_t  GetQ() const                    { return fQ;             }
-  Int_t    GetNPads() const                { return fNPads;         }
-  Float_t  GetCenter() const               { return fCenter;        }
-  Int_t    GetPadCol() const               { return fPadCol;        }
-  Int_t    GetPadRow() const               { return fPadRow;        }
-  Int_t    GetPadTime() const              { return fPadTime;       }
-  Short_t *GetSignals()                    { return fSignals;       }
-  Float_t  GetSumS() const;
-  static Double_t  GetSX(Int_t tb, Double_t z=-1);
-  static Double_t  GetSYdrift(Int_t tb, Int_t ly=0, Double_t z=-1);
-  static Double_t  GetSYcharge(Float_t q);
-  static Double_t  GetSYprf(Int_t ly, Double_t center, Double_t s2);
-  static Double_t  GetXcorr(Int_t tb, Double_t z=-1);
-  static Double_t  GetYcorr(Int_t ly, Float_t y);
-  Float_t  GetXloc(Double_t t0, Double_t vd, Double_t *const q=0x0, Double_t *const xq=0x0, Double_t z = 0.2);
-  Float_t  GetYloc(Double_t y0, Double_t s2, Double_t W, Double_t *const y1=0x0, Double_t *const y2=0x0);
+          UChar_t   GetPadMaskedPosition() const    { return fClusterMasking & 7;  }
+          UChar_t   GetPadMaskedStatus() const      { return fClusterMasking >> 3; }
+          Int_t     GetDetector() const             { return fDetector;            }
+          Int_t     GetLocalTimeBin() const         { return fLocalTimeBin;        }
+          Float_t   GetQ() const                    { return fQ;                   }
+          Int_t     GetNPads() const                { return fNPads;               }
+          Float_t   GetCenter() const               { return fCenter;              }
+          Int_t     GetPadCol() const               { return fPadCol;              }
+          Int_t     GetPadRow() const               { return fPadRow;              }
+          Int_t     GetPadTime() const              { return fPadTime;             }
+          Short_t  *GetSignals()                    { return fSignals;             }
+          Float_t   GetSumS() const;
 
-  void     Print(Option_t* o="") const;
+  static  Double_t  GetSX(Int_t tb, Double_t z=-1);
+  static  Double_t  GetSYdrift(Int_t tb, Int_t ly=0, Double_t z=-1);
+  static  Double_t  GetSYcharge(Float_t q);
+  static  Double_t  GetSYprf(Int_t ly, Double_t center, Double_t s2);
+  static  Double_t  GetXcorr(Int_t tb, Double_t z=-1);
+  static  Double_t  GetYcorr(Int_t ly, Float_t y);
+          Float_t   GetXloc(Double_t t0, Double_t vd
+                          , const Double_t *const q = 0x0
+                          , const Double_t *const xq = 0x0
+                          , Double_t z = 0.2);
+          Float_t   GetYloc(Double_t y0, Double_t s2, Double_t W, Double_t *const y1=0x0, Double_t *const y2=0x0);
 
-  void     SetLocalTimeBin(Char_t t)       { fLocalTimeBin = t;     }
-  void     SetInChamber(Bool_t in = kTRUE) { SetBit(kInChamber,in); }
-  void     SetNPads(Int_t n)               { fNPads = n; }
-  void     SetPadMaskedPosition(UChar_t position);
-  void     SetPadMaskedStatus(UChar_t status);
-  void     SetPadCol(UChar_t inPadCol){ fPadCol = inPadCol;}
-  void     SetPadRow(UChar_t inPadRow){ fPadRow = inPadRow;}
-  void     SetPadTime(UChar_t inPadTime){ fPadTime = inPadTime;}
+  void        Print(Option_t* o="") const;
+
+  void        SetLocalTimeBin(Char_t t)                   { fLocalTimeBin   = t;                }
+  void        SetNPads(Int_t n)                           { fNPads          = n;                }
+  void        SetPadCol(UChar_t inPadCol)                 { fPadCol         = inPadCol;         }
+  void        SetPadRow(UChar_t inPadRow)                 { fPadRow         = inPadRow;         }
+  void        SetPadTime(UChar_t inPadTime)               { fPadTime        = inPadTime;        }
+  void        SetDetector(Short_t inDetector)             { fDetector       = inDetector;       }
+  void        SetQ(Float_t inQ)                           { fQ              = inQ;              }
+  void        SetClusterMasking(UChar_t inClusterMasking) { fClusterMasking = inClusterMasking; }
+  void        SetShared(Bool_t sh  = kTRUE)               { SetBit(AliCluster::kShared,sh);     }
+  void        SetFivePad(Bool_t b = kTRUE)                { SetBit(kFivePad,b);                 }
+  void        SetInChamber(Bool_t in = kTRUE)             { SetBit(kInChamber,in);              }
+  void        SetPadMaskedPosition(UChar_t position);
+  void        SetPadMaskedStatus(UChar_t status);
+  void        SetSigmaY2(Float_t s2, Float_t dt, Float_t exb, Float_t x0, Float_t z=-1., Float_t tgp=0.);
   inline void SetRPhiMethod(ETRDclusterStatus m);
-  void     SetDetector(Short_t inDetector){ fDetector = inDetector;}
-  void     SetQ(Float_t inQ){ fQ = inQ;}
-  void     SetClusterMasking(UChar_t inClusterMasking){ fClusterMasking = inClusterMasking;}
-  void     SetShared(Bool_t sh  = kTRUE)   { SetBit(AliCluster::kShared,sh);    }
-  void     SetSigmaY2(Float_t s2, Float_t dt, Float_t exb, Float_t x0, Float_t z=-1., Float_t tgp=0.);
-  void     Use(Int_t u = 1)                  { SetBit(AliCluster::kUsed, u ? kTRUE : kFALSE);              }
-  void     SetFivePad(Bool_t b = kTRUE) { SetBit(kFivePad,b);}
+
+  void        Use(Int_t u = 1)                            { SetBit(AliCluster::kUsed, u ? kTRUE : kFALSE); }
 
 protected:
+
   UChar_t fPadCol;         //  Central pad number in column direction
   UChar_t fPadRow;         //  Central pad number in row direction
   UChar_t fPadTime;        //  Uncalibrated time bin number
@@ -105,15 +112,17 @@ protected:
   Float_t fCenter;         //  Center of the cluster relative to the pad 
 
 private:
-  Float_t  GetDYcog(Double_t *const y1=0x0, Double_t *const y2=0x0);
-  Float_t  GetDYlut(Double_t *const y1=0x0, Double_t *const y2=0x0);
-  Float_t  GetDYgauss(Double_t sw, Double_t *const y1=0x0, Double_t *const y2=0x0);
+
+         Float_t   GetDYcog(const Double_t *const y1=0x0, const Double_t *const y2=0x0);
+         Float_t   GetDYlut(const Double_t *const y1=0x0, const Double_t *const y2=0x0);
+         Float_t   GetDYgauss(Double_t sw, Double_t *const y1=0x0, Double_t *const y2=0x0);
   static void      FillLUT();
 
   static const Int_t   fgkNlut;              //!  Number of bins of the LUT
   static Double_t     *fgLUT;                //! The lookup table
 
-  ClassDef(AliTRDcluster, 7)        //  Cluster for the TRD
+  ClassDef(AliTRDcluster, 7)                 //  Cluster for the TRD
+
 };
 
 //________________________________________________

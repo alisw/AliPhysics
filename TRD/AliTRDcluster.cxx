@@ -21,9 +21,10 @@
 //                                                                           //
 /////////////////////////////////////////////////////////////////////////////// 
 
-#include "TMath.h"
+#include <TMath.h>
 
 #include "AliLog.h"
+
 #include "AliTRDcluster.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
@@ -58,7 +59,8 @@ AliTRDcluster::AliTRDcluster()
 }
 
 //___________________________________________________________________________
-AliTRDcluster::AliTRDcluster(Int_t det, UChar_t col, UChar_t row, UChar_t time, const Short_t *sig, UShort_t vid) 
+AliTRDcluster::AliTRDcluster(Int_t det, UChar_t col, UChar_t row, UChar_t time
+                           , const Short_t *sig, UShort_t vid) 
   :AliCluster() 
   ,fPadCol(col)
   ,fPadRow(row)
@@ -85,7 +87,7 @@ AliTRDcluster::AliTRDcluster(Int_t det, UChar_t col, UChar_t row, UChar_t time, 
 //___________________________________________________________________________
 AliTRDcluster::AliTRDcluster(Int_t det, Float_t q
                            , Float_t *pos, Float_t *sig
-                           , Int_t *tracks, Char_t npads, Short_t *signals
+                           , Int_t *tracks, Char_t npads, Short_t * const signals
                            , UChar_t col, UChar_t row, UChar_t time
                            , Char_t timebin, Float_t center, UShort_t volid)
   :AliCluster(volid,pos[0],pos[1],pos[2],sig[0],sig[1],0.0,0x0) 
@@ -164,7 +166,22 @@ AliTRDcluster::AliTRDcluster(const AliTRDcluster &c)
 }
 
 //_____________________________________________________________________________
-void AliTRDcluster::AddTrackIndex(Int_t *track)
+AliTRDcluster &AliTRDcluster::operator=(const AliTRDcluster &c)
+{
+  //
+  // Assignment operator
+  // 
+
+  if (this != &c) {
+    ((AliTRDcluster &) c).Copy(*this);
+  }
+
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDcluster::AddTrackIndex(const Int_t * const track)
 {
   //
   // Adds track index. Currently assumed that track is an array of
@@ -286,27 +303,29 @@ Float_t AliTRDcluster::GetSumS() const
 //___________________________________________________________________________
 Double_t AliTRDcluster::GetSX(Int_t tb, Double_t z)
 {
-// Returns the error parameterization in the radial direction for TRD clusters as function of 
-// the calibrated time bin (tb) and optionally distance to anode wire (z). By default (no z information) 
-// the mean value over all cluster to wire distance is chosen.
-// 
-// There are several contributions which are entering in the definition of the radial errors of the clusters. 
-// Although an analytic defition should be possible for the moment this is not yet available but instead a 
-// numerical parameterization is provided (see AliTRDclusterResolution::ProcessSigma() for the calibration 
-// method). The result is displayed in the figure below as a 2D plot and also as the projection on the drift axis. 
-//
-//Begin_Html
-//<img src="TRD/clusterXerrorDiff2D.gif">
-//End_Html
-//
-// Here is a list of uncertainty components:
-// - Time Response Function (TRF) - the major contribution. since TRF is also not symmetric (even if tail is 
-//   cancelled) it also creates a systematic shift dependent on the charge distribution before and after the cluster.
-// - longitudinal diffusion - increase the width of TRF and scales with square root of drift length
-// - variation in the drift velocity within the drift cell 
-//
-// Author
-// A.Bercuci <A.Bercuci@gsi.de>
+  //
+  // Returns the error parameterization in the radial direction for TRD clusters as function of 
+  // the calibrated time bin (tb) and optionally distance to anode wire (z). By default (no z information) 
+  // the mean value over all cluster to wire distance is chosen.
+  // 
+  // There are several contributions which are entering in the definition of the radial errors of the clusters. 
+  // Although an analytic defition should be possible for the moment this is not yet available but instead a 
+  // numerical parameterization is provided (see AliTRDclusterResolution::ProcessSigma() for the calibration 
+  // method). The result is displayed in the figure below as a 2D plot and also as the projection on the drift axis. 
+  //
+  //Begin_Html
+  //<img src="TRD/clusterXerrorDiff2D.gif">
+  //End_Html
+  //
+  // Here is a list of uncertainty components:
+  // - Time Response Function (TRF) - the major contribution. since TRF is also not symmetric (even if tail is 
+  //   cancelled) it also creates a systematic shift dependent on the charge distribution before and after the cluster.
+  // - longitudinal diffusion - increase the width of TRF and scales with square root of drift length
+  // - variation in the drift velocity within the drift cell 
+  //
+  // Author
+  // A.Bercuci <A.Bercuci@gsi.de>
+  //
 
   if(tb<1 || tb>=24) return 10.; // return huge [10cm]
   const Double_t sx[24][10]={
@@ -339,34 +358,36 @@ Double_t AliTRDcluster::GetSX(Int_t tb, Double_t z)
   
   Double_t m = 0.; for(Int_t id=10; id--;) m+=sx[tb][id];
   return m*.1;
+
 }
 
 //___________________________________________________________________________
 Double_t AliTRDcluster::GetSYdrift(Int_t tb, Int_t ly, Double_t/* z*/)
 {
-// Returns the error parameterization for TRD clusters as function of the drift length (here calibrated time bin tb)
-// and optionally distance to anode wire (z) for the LUT r-phi cluster shape. By default (no z information) the largest 
-// value over all cluster to wire values is chosen.
-// 
-// For the LUT method the dependence of s_y with x and d is obtained via a fit to the cluster to MC 
-// resolution. (see class AliTRDclusterResolution for more details). A normalization to the reference radial position
-// x0 = 0.675 (tb=5 for ideal vd) is also applied (see GetSYprf()). The function is *NOT* calibration aware ! 
-// The result is displayed in the figure below as a 2D plot and also as the projection on the drift axis. A comparison 
-// with the GAUS parameterization is also given
-//
-// For the GAUS method the dependence of s_y with x is *analytic* and it is expressed by the relation.
-// BEGIN_LATEX
-// #sigma^{2}_{y} = #sigma^{2}_{PRF} + #frac{x#delta_{t}^{2}}{(1+tg(#alpha_{L}))^{2}}
-// END_LATEX
-// The result is displayed in the figure below as function of the drift time and compared with the LUT parameterization.
-//Begin_Html
-//<img src="TRD/clusterYerrorDiff2D.gif">
-//<img src="TRD/clusterYerrorDiff1D.gif">
-//End_Html
-//
-// Author
-// A.Bercuci <A.Bercuci@gsi.de>
-
+  //
+  // Returns the error parameterization for TRD clusters as function of the drift length (here calibrated time bin tb)
+  // and optionally distance to anode wire (z) for the LUT r-phi cluster shape. By default (no z information) the largest 
+  // value over all cluster to wire values is chosen.
+  // 
+  // For the LUT method the dependence of s_y with x and d is obtained via a fit to the cluster to MC 
+  // resolution. (see class AliTRDclusterResolution for more details). A normalization to the reference radial position
+  // x0 = 0.675 (tb=5 for ideal vd) is also applied (see GetSYprf()). The function is *NOT* calibration aware ! 
+  // The result is displayed in the figure below as a 2D plot and also as the projection on the drift axis. A comparison 
+  // with the GAUS parameterization is also given
+  //
+  // For the GAUS method the dependence of s_y with x is *analytic* and it is expressed by the relation.
+  // BEGIN_LATEX
+  // #sigma^{2}_{y} = #sigma^{2}_{PRF} + #frac{x#delta_{t}^{2}}{(1+tg(#alpha_{L}))^{2}}
+  // END_LATEX
+  // The result is displayed in the figure below as function of the drift time and compared with the LUT parameterization.
+  //Begin_Html
+  //<img src="TRD/clusterYerrorDiff2D.gif">
+  //<img src="TRD/clusterYerrorDiff1D.gif">
+  //End_Html
+  //
+  // Author
+  // A.Bercuci <A.Bercuci@gsi.de>
+  //
 
   if(tb<1 || tb>=24) return 10.; // return huge [10cm]
   const Float_t lSy[6][24] = {
@@ -440,27 +461,29 @@ Double_t AliTRDcluster::GetSYdrift(Int_t tb, Int_t ly, Double_t/* z*/)
 //___________________________________________________________________________
 Double_t AliTRDcluster::GetSYcharge(Float_t q)
 {
-// Parameterization of the r-phi resolution component due to cluster charge.
-// The value is the offset from the nominal cluster resolution defined as the
-// cluster resolution at average cluster charge (q0).
-// 
-// BEGIN_LATEX
-// #Delta #sigma_{y}(q) = a*(#frac{1}{q} - #frac{1}{q_{0}})
-// q_{0} #approx 50
-// END_LATEX
-// The definition is *NOT* robust against gain fluctuations and thus two approaches are possible
-// when residual miscalibration are available:
-//   - determine parameterization with a resolution matching those of the gain
-//   - define an analytic model which scales with the gain.
-// 
-// For more details please see AliTRDclusterResolution::ProcessCharge()
-//
-//Begin_Html
-//<img src="TRD/clusterQerror.gif">
-//End_Html
-//
-// Author
-// A.Bercuci <A.Bercuci@gsi.de>
+  //
+  // Parameterization of the r-phi resolution component due to cluster charge.
+  // The value is the offset from the nominal cluster resolution defined as the
+  // cluster resolution at average cluster charge (q0).
+  // 
+  // BEGIN_LATEX
+  // #Delta #sigma_{y}(q) = a*(#frac{1}{q} - #frac{1}{q_{0}})
+  // q_{0} #approx 50
+  // END_LATEX
+  // The definition is *NOT* robust against gain fluctuations and thus two approaches are possible
+  // when residual miscalibration are available:
+  //   - determine parameterization with a resolution matching those of the gain
+  //   - define an analytic model which scales with the gain.
+  // 
+  // For more details please see AliTRDclusterResolution::ProcessCharge()
+  //
+  //Begin_Html
+  //<img src="TRD/clusterQerror.gif">
+  //End_Html
+  //
+  // Author
+  // A.Bercuci <A.Bercuci@gsi.de>
+  //
 
   const Float_t sq0inv = 0.019962; // [1/q0]
   const Float_t sqb    = 0.037328; // [cm]
@@ -471,18 +494,20 @@ Double_t AliTRDcluster::GetSYcharge(Float_t q)
 //___________________________________________________________________________
 Double_t AliTRDcluster::GetSYprf(Int_t ly, Double_t center, Double_t s2)
 {
-// Parameterization of the cluster error in the r-phi direction due to charge sharing between 
-// adiacent pads. Should be identical to what is provided in the OCDB as PRF [TODO]
-//
-// The parameterization is obtained from fitting cluster resolution at phi=exb and |x-0.675|<0.225. 
-// For more details see AliTRDclusterResolution::ProcessCenter().
-//
-//Begin_Html
-//<img src="TRD/clusterPRFerror.gif">
-//End_Html
-//
-// Author
-// A.Bercuci <A.Bercuci@gsi.de>
+  //
+  // Parameterization of the cluster error in the r-phi direction due to charge sharing between 
+  // adiacent pads. Should be identical to what is provided in the OCDB as PRF [TODO]
+  //
+  // The parameterization is obtained from fitting cluster resolution at phi=exb and |x-0.675|<0.225. 
+  // For more details see AliTRDclusterResolution::ProcessCenter().
+  //
+  //Begin_Html
+  //<img src="TRD/clusterPRFerror.gif">
+  //End_Html
+  //
+  // Author
+  // A.Bercuci <A.Bercuci@gsi.de>
+  //
 
 /*  const Float_t scy[AliTRDgeometry::kNlayer][4] = {
     {2.827e-02, 9.600e-04, 4.296e-01, 2.271e-02},
@@ -501,14 +526,16 @@ Double_t AliTRDcluster::GetSYprf(Int_t ly, Double_t center, Double_t s2)
 //___________________________________________________________________________
 Double_t AliTRDcluster::GetXcorr(Int_t tb, Double_t z)
 {
-// Drift length correction [cm]. Due to variation of mean drift velocity along the drift region
-// from nominal vd at xd->infinity. For drift velocity determination based on tracking information 
-// the correction should be negligible.
-//Begin_Html
-//<img src="TRD/clusterXcorr.gif">
-//End_Html
-// TODO to be parametrized in term of drift velocity at infinite drift length
-// A.Bercuci (Mar 28 2009)
+  //
+  // Drift length correction [cm]. Due to variation of mean drift velocity along the drift region
+  // from nominal vd at xd->infinity. For drift velocity determination based on tracking information 
+  // the correction should be negligible.
+  //Begin_Html
+  //<img src="TRD/clusterXcorr.gif">
+  //End_Html
+  // TODO to be parametrized in term of drift velocity at infinite drift length
+  // A.Bercuci (Mar 28 2009)
+  //
 
   if(tb<0 || tb>=24) return 0.;
   const Int_t nd = 5;
@@ -573,10 +600,12 @@ Double_t AliTRDcluster::GetXcorr(Int_t tb, Double_t z)
 //___________________________________________________________________________
 Double_t AliTRDcluster::GetYcorr(Int_t ly, Float_t y)
 {
-// PRF correction for the LUT r-phi cluster shape.
-//Begin_Html
-//<img src="TRD/clusterYcorr.gif">
-//End_Html
+  //
+  // PRF correction for the LUT r-phi cluster shape.
+  //Begin_Html
+  //<img src="TRD/clusterYcorr.gif">
+  //End_Html
+  //
 
   const Float_t cy[AliTRDgeometry::kNlayer][3] = {
     { 4.014e-04, 8.605e-03, -6.880e+00},
@@ -591,44 +620,47 @@ Double_t AliTRDcluster::GetYcorr(Int_t ly, Float_t y)
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const /*q*/, Double_t *const /*xq*/, Double_t /*z*/)
+Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd
+                             , const Double_t *const /*q*/
+                             , const Double_t *const /*xq*/
+                             , Double_t /*z*/)
 {
-//
-// (Re)Calculate cluster position in the x direction in local chamber coordinates (with respect to the anode wire 
-// position) using all available information from tracking.
-// Input parameters:
-//   t0 - calibration aware trigger delay [us]
-//   vd - drift velocity in the region of the cluster [cm/us]
-//   z  - distance to the anode wire [cm]. By default average over the drift cell width.
-//   q & xq - array of charges and cluster positions from previous clusters in the tracklet [a.u.]
-// Output values :
-//   return x position of the cluster with respect to the 
-//   anode wire using all tracking information
-//
-// The estimation of the radial position is based on calculating the drift time and the drift velocity at the point of 
-// estimation. The drift time can be estimated according to the expression:
-// BEGIN_LATEX
-// t_{drift} = t_{bin} - t_{0} - t_{cause}(x) - t_{TC}(q_{i-1}, q_{i-2}, ...)
-// END_LATEX
-// where t_0 is the delay of the trigger signal. t_cause is the causality delay between ionisation electrons hitting 
-// the anode and the registration of maximum signal by the electronics - it is due to the rising time of the TRF 
-// A second order correction here comes from the fact that the time spreading of charge at anode is the convolution of
-// TRF with the diffusion and thus cross-talk between clusters before and after local clusters changes with drift length. 
-// t_TC is the residual charge from previous (in time) clusters due to residual tails after tail cancellation. 
-// This tends to push cluster forward and depends on the magnitude of their charge.
-//
-// The drift velocity varies with the drift length (and distance to anode wire) as described by cell structure simulation. 
-// Thus one, in principle, can calculate iteratively the drift length from the expression:
-// BEGIN_LATEX
-// x = t_{drift}(x)*v_{drift}(x)
-// END_LATEX
-// In practice we use a numerical approach (AliTRDcluster::GetXcorr()) to correct for anisochronity obtained from MC 
-// comparison (see AliTRDclusterResolution::ProcessSigma()). Also the calibration of 0 approximation (no x dependence)
-// for t_cause is obtained from MC comparisons and impossible to disentangle in real life from trigger delay.
-//
-// Author
-// Alex Bercuci <A.Bercuci@gsi.de>
-//
+  //
+  // (Re)Calculate cluster position in the x direction in local chamber coordinates (with respect to the anode wire 
+  // position) using all available information from tracking.
+  // Input parameters:
+  //   t0 - calibration aware trigger delay [us]
+  //   vd - drift velocity in the region of the cluster [cm/us]
+  //   z  - distance to the anode wire [cm]. By default average over the drift cell width.
+  //   q & xq - array of charges and cluster positions from previous clusters in the tracklet [a.u.]
+  // Output values :
+  //   return x position of the cluster with respect to the 
+  //   anode wire using all tracking information
+  //
+  // The estimation of the radial position is based on calculating the drift time and the drift velocity at the point of 
+  // estimation. The drift time can be estimated according to the expression:
+  // BEGIN_LATEX
+  // t_{drift} = t_{bin} - t_{0} - t_{cause}(x) - t_{TC}(q_{i-1}, q_{i-2}, ...)
+  // END_LATEX
+  // where t_0 is the delay of the trigger signal. t_cause is the causality delay between ionisation electrons hitting 
+  // the anode and the registration of maximum signal by the electronics - it is due to the rising time of the TRF 
+  // A second order correction here comes from the fact that the time spreading of charge at anode is the convolution of
+  // TRF with the diffusion and thus cross-talk between clusters before and after local clusters changes with drift length. 
+  // t_TC is the residual charge from previous (in time) clusters due to residual tails after tail cancellation. 
+  // This tends to push cluster forward and depends on the magnitude of their charge.
+  //
+  // The drift velocity varies with the drift length (and distance to anode wire) as described by cell structure simulation. 
+  // Thus one, in principle, can calculate iteratively the drift length from the expression:
+  // BEGIN_LATEX
+  // x = t_{drift}(x)*v_{drift}(x)
+  // END_LATEX
+  // In practice we use a numerical approach (AliTRDcluster::GetXcorr()) to correct for anisochronity obtained from MC 
+  // comparison (see AliTRDclusterResolution::ProcessSigma()). Also the calibration of 0 approximation (no x dependence)
+  // for t_cause is obtained from MC comparisons and impossible to disentangle in real life from trigger delay.
+  //
+  // Author
+  // Alex Bercuci <A.Bercuci@gsi.de>
+  //
 
   AliTRDCommonParam *cp = AliTRDCommonParam::Instance(); 
   Double_t fFreq = cp->GetSamplingFrequency();
@@ -679,13 +711,18 @@ Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd, Double_t *const /*q*/, 
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDcluster::GetYloc(Double_t y0, Double_t s2, Double_t W, Double_t *const y1, Double_t *const y2)
+Float_t AliTRDcluster::GetYloc(Double_t y0, Double_t s2, Double_t W
+                             , Double_t *const y1, Double_t *const y2)
 {
-// Calculate, in tracking cooordinate system, the r-phi offset the cluster from the middle of the center pad. Three possible methods are implemented:
-//   - Center of Gravity (COG) see AliTRDcluster::GetDYcog()
-//   - Look-up Table (LUT) see AliTRDcluster::GetDYlut()
-//   - Gauss shape (GAUS) see AliTRDcluster::GetDYgauss()
-// In addition for the case of LUT method position corrections are also applied (see AliTRDcluster::GetYcorr())
+  //
+  // Calculate, in tracking cooordinate system, the r-phi offset the cluster
+  // from the middle of the center pad. Three possible methods are implemented:
+  //   - Center of Gravity (COG) see AliTRDcluster::GetDYcog()
+  //   - Look-up Table (LUT) see AliTRDcluster::GetDYlut()
+  //   - Gauss shape (GAUS) see AliTRDcluster::GetDYgauss()
+  // In addition for the case of LUT method position corrections are also
+  // applied (see AliTRDcluster::GetYcorr())
+  //
 
   if(IsRPhiMethod(kCOG)) GetDYcog();
   else if(IsRPhiMethod(kLUT)) GetDYlut();
@@ -701,44 +738,46 @@ Float_t AliTRDcluster::GetYloc(Double_t y0, Double_t s2, Double_t W, Double_t *c
 //___________________________________________________________________________
 void AliTRDcluster::SetSigmaY2(Float_t s2, Float_t dt, Float_t exb, Float_t x, Float_t z, Float_t tgp)
 {
-// Set variance of TRD cluster in the r-phi direction for each method.
-// Parameters :
-//   - s2  - variance due to PRF width for the case of Gauss model. Replaced by parameterization in case of LUT.
-//   - dt  - transversal diffusion coeficient 
-//   - exb - tg of lorentz angle
-//   - x   - drift length - with respect to the anode wire
-//   - z   - offset from the anode wire
-//   - tgp - local tangent of the track momentum azimuthal angle
-//
-// The ingredients from which the error is computed are:
-//   - PRF (charge sharing on adjacent pads)  - see AliTRDcluster::GetSYprf()
-//   - diffusion (dependence with drift length and [2nd order] distance to anode wire) - see AliTRDcluster::GetSYdrift()
-//   - charge of the cluster (complex dependence on gain and tail cancellation) - see AliTRDcluster::GetSYcharge()
-//   - lorentz angle (dependence on the drift length and [2nd order] distance to anode wire) - see AliTRDcluster::GetSX()
-//   - track angle (superposition of charges on the anode wire) - see AliTRDseedV1::Fit()
-//   - projection of radial(x) error on r-phi due to fixed value assumed in tracking for x - see AliTRDseedV1::Fit()
-//
-// The last 2 contributions to cluster error can be estimated only during tracking when the track angle 
-// is known (tgp). For this reason the errors (and optional position) of TRD clusters are recalculated during 
-// tracking and thus clusters attached to tracks might differ from bare clusters.
-// 
-// Taking into account all contributions one can write the the TRD cluster error parameterization as:
-// BEGIN_LATEX
-// #sigma_{y}^{2} = (#sigma_{diff}*Gauss(0, s_{ly}) + #delta_{#sigma}(q))^{2} + tg^{2}(#alpha_{L})*#sigma_{x}^{2} + tg^{2}(#phi-#alpha_{L})*#sigma_{x}^{2}+[tg(#phi-#alpha_{L})*tg(#alpha_{L})*x]^{2}/12
-// END_LATEX
-// From this formula one can deduce a that the simplest calibration method for PRF and diffusion contributions is 
-// by measuring resolution at B=0T and phi=0. To disentangle further the two remaining contributions one has 
-// to represent s2 as a function of drift length. 
-// 
-// In the gaussian model the diffusion contribution can be expressed as:
-// BEGIN_LATEX
-// #sigma^{2}_{y} = #sigma^{2}_{PRF} + #frac{x#delta_{t}^{2}}{(1+tg(#alpha_{L}))^{2}}
-// END_LATEX
-// thus resulting the PRF contribution. For the case of the LUT model both contributions have to be determined from 
-// the fit (see AliTRDclusterResolution::ProcessCenter() for details).
-// 
-// Author:
-// A.Bercuci <A.Bercuci@gsi.de>
+  //
+  // Set variance of TRD cluster in the r-phi direction for each method.
+  // Parameters :
+  //   - s2  - variance due to PRF width for the case of Gauss model. Replaced by parameterization in case of LUT.
+  //   - dt  - transversal diffusion coeficient 
+  //   - exb - tg of lorentz angle
+  //   - x   - drift length - with respect to the anode wire
+  //   - z   - offset from the anode wire
+  //   - tgp - local tangent of the track momentum azimuthal angle
+  //
+  // The ingredients from which the error is computed are:
+  //   - PRF (charge sharing on adjacent pads)  - see AliTRDcluster::GetSYprf()
+  //   - diffusion (dependence with drift length and [2nd order] distance to anode wire) - see AliTRDcluster::GetSYdrift()
+  //   - charge of the cluster (complex dependence on gain and tail cancellation) - see AliTRDcluster::GetSYcharge()
+  //   - lorentz angle (dependence on the drift length and [2nd order] distance to anode wire) - see AliTRDcluster::GetSX()
+  //   - track angle (superposition of charges on the anode wire) - see AliTRDseedV1::Fit()
+  //   - projection of radial(x) error on r-phi due to fixed value assumed in tracking for x - see AliTRDseedV1::Fit()
+  //
+  // The last 2 contributions to cluster error can be estimated only during tracking when the track angle 
+  // is known (tgp). For this reason the errors (and optional position) of TRD clusters are recalculated during 
+  // tracking and thus clusters attached to tracks might differ from bare clusters.
+  // 
+  // Taking into account all contributions one can write the the TRD cluster error parameterization as:
+  // BEGIN_LATEX
+  // #sigma_{y}^{2} = (#sigma_{diff}*Gauss(0, s_{ly}) + #delta_{#sigma}(q))^{2} + tg^{2}(#alpha_{L})*#sigma_{x}^{2} + tg^{2}(#phi-#alpha_{L})*#sigma_{x}^{2}+[tg(#phi-#alpha_{L})*tg(#alpha_{L})*x]^{2}/12
+  // END_LATEX
+  // From this formula one can deduce a that the simplest calibration method for PRF and diffusion contributions is 
+  // by measuring resolution at B=0T and phi=0. To disentangle further the two remaining contributions one has 
+  // to represent s2 as a function of drift length. 
+  // 
+  // In the gaussian model the diffusion contribution can be expressed as:
+  // BEGIN_LATEX
+  // #sigma^{2}_{y} = #sigma^{2}_{PRF} + #frac{x#delta_{t}^{2}}{(1+tg(#alpha_{L}))^{2}}
+  // END_LATEX
+  // thus resulting the PRF contribution. For the case of the LUT model both contributions have to be determined from 
+  // the fit (see AliTRDclusterResolution::ProcessCenter() for details).
+  // 
+  // Author:
+  // A.Bercuci <A.Bercuci@gsi.de>
+  //
 
   Float_t sigmaY2 = 0.;
   Int_t ly = AliTRDgeometry::GetLayer(fDetector);
@@ -775,6 +814,7 @@ void AliTRDcluster::SetSigmaY2(Float_t s2, Float_t dt, Float_t exb, Float_t x, F
   sigmaY2+= tgg*x*x*exb2/12.; //printf("angle[%6.2f]\n", 1.e4*TMath::Sqrt(sigmaY2));
 
   AliCluster::SetSigmaY2(sigmaY2);
+
 }
 
 //_____________________________________________________________________________
@@ -801,11 +841,16 @@ Bool_t AliTRDcluster::IsEqual(const TObject *o) const
   if ( IsUsed() != inCluster->IsUsed() ) return kFALSE;
   
   return kTRUE;
+
 }
 
 //_____________________________________________________________________________
 void AliTRDcluster::Print(Option_t *o) const
 {
+  //
+  // Print cluster information
+  //
+
   AliInfo(Form("Det[%3d] LTrC[%+6.2f %+6.2f %+6.2f] Q[%5.1f] FLAG[in(%c) use(%c) sh(%c)] Y[%s]", 
     fDetector, GetX(), GetY(), GetZ(), fQ, 
     IsInChamber() ? 'y' : 'n', 
@@ -815,48 +860,58 @@ void AliTRDcluster::Print(Option_t *o) const
   ));
 
   if(strcmp(o, "a")!=0) return;
-  AliInfo(Form("LChC[c(%3d) r(%2d) t(%2d)] t-t0[%2d] Npad[%d] cen[%5.3f] mask[%d]", fPadCol, fPadRow, fPadTime, fLocalTimeBin, fNPads, fCenter, fClusterMasking)); 
-  AliInfo(Form("Signals[%3d %3d %3d %3d %3d %3d %3d]", fSignals[0], fSignals[1], fSignals[2], fSignals[3], fSignals[4], fSignals[5], fSignals[6]));
-}
+  AliInfo(Form("LChC[c(%3d) r(%2d) t(%2d)] t-t0[%2d] Npad[%d] cen[%5.3f] mask[%d]"
+             , fPadCol, fPadRow, fPadTime, fLocalTimeBin, fNPads, fCenter, fClusterMasking)); 
+  AliInfo(Form("Signals[%3d %3d %3d %3d %3d %3d %3d]"
+             , fSignals[0], fSignals[1], fSignals[2], fSignals[3]
+             , fSignals[4], fSignals[5], fSignals[6]));
 
+}
 
 //_____________________________________________________________________________
 void AliTRDcluster::SetPadMaskedPosition(UChar_t position)
 {
   //
-  // store the pad corruption position code
+  // Store the pad corruption position code
   // 
   // Code: 1 = left cluster
   //       2 = middle cluster;
   //       4 = right cluster
   //
-  for(Int_t ipos = 0; ipos < 3; ipos++)
-    if(TESTBIT(position, ipos))
+
+  for (Int_t ipos = 0; ipos < 3; ipos++) {
+    if (TESTBIT(position, ipos))
       SETBIT(fClusterMasking, ipos);
+  }
 }
 
 //_____________________________________________________________________________
 void AliTRDcluster::SetPadMaskedStatus(UChar_t status)
 {
   //
-  // store the status of the corrupted pad
+  // Store the status of the corrupted pad
   //
   // Code: 2 = noisy
   //       4 = Bridged Left
   //       8 = Bridged Right
   //      32 = Not Connected
-  for(Int_t ipos = 0; ipos < 5; ipos++)
+  //
+
+  for (Int_t ipos = 0; ipos < 5; ipos++) {
     if(TESTBIT(status, ipos))
       SETBIT(fClusterMasking, ipos + 3);
+  }
+
 }
 
 //___________________________________________________________________________
-Float_t AliTRDcluster::GetDYcog(Double_t *const, Double_t *const)
+Float_t AliTRDcluster::GetDYcog(const Double_t *const, const Double_t *const)
 {
-//
-// Get COG position
-// Used for clusters with more than 3 pads - where LUT not applicable
-//
+  //
+  // Get COG position
+  // Used for clusters with more than 3 pads - where LUT not applicable
+  //
+
   Double_t sum = fSignals[1]
                 +fSignals[2]
                 +fSignals[3] 
@@ -867,13 +922,13 @@ Float_t AliTRDcluster::GetDYcog(Double_t *const, Double_t *const)
   // Go to 3 pad COG ????
   // ???????????? CBL
   fCenter = (0.0 * (-fSignals[1] + fSignals[5])
-                      + (-fSignals[2] + fSignals[4])) / sum;
+                    + (-fSignals[2] + fSignals[4])) / sum;
 
   return fCenter;
 }
 
 //___________________________________________________________________________
-Float_t AliTRDcluster::GetDYlut(Double_t *const, Double_t *const)
+Float_t AliTRDcluster::GetDYlut(const Double_t *const, const Double_t *const)
 {
   //
   // Calculates the cluster position using the lookup table.
