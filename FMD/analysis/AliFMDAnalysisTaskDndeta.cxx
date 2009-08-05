@@ -33,16 +33,16 @@ AliFMDAnalysisTaskDndeta::AliFMDAnalysisTaskDndeta()
 : fDebug(0),
   fOutputList(0),
   fInputList(0),
-  fArray(0),
+// fArray(0),
   fInputArray(0),
   fVertexString(0x0),
   fNevents(),
   fNMCevents(),
   fStandalone(kTRUE),
-  fMCevent(0),
-  fLastTrackByStrip(0),
-  fPrimary(kTRUE),
-  fRecordHits(kFALSE)
+//fMCevent(0),
+  fLastTrackByStrip(0)
+//  fPrimary(kTRUE),
+//  fRecordHits(kFALSE)
 {
   // Default constructor
   DefineInput (0, TList::Class());
@@ -54,16 +54,16 @@ AliFMDAnalysisTaskDndeta::AliFMDAnalysisTaskDndeta(const char* name, Bool_t SE):
     fDebug(0),
     fOutputList(0),
     fInputList(0),
-    fArray(),
+    //  fArray(),
     fInputArray(0),
     fVertexString(0x0),
     fNevents(),
     fNMCevents(),
     fStandalone(kTRUE),
-    fMCevent(0),
-    fLastTrackByStrip(0),
-    fPrimary(kTRUE),
-    fRecordHits(kFALSE)
+    //  fMCevent(0),
+    fLastTrackByStrip(0)
+    //   fPrimary(kTRUE),
+    //  fRecordHits(kFALSE)
 {
   fStandalone = SE;
   if(fStandalone) {
@@ -78,8 +78,8 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
 {
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
-  fArray.SetName("FMD");
-  fArray.SetOwner();
+  // fArray.SetName("FMD");
+  //  fArray.SetOwner();
   
   if(!fOutputList)
     fOutputList = new TList();
@@ -87,6 +87,7 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
   
   
   TH2F* hMult = 0;
+  TH2F* hMultTrVtx = 0;
   TH1F* hHits = 0;
   TH1F* hPrimVertexBin = 0;
   
@@ -103,18 +104,18 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
   
   for(Int_t det =1; det<=3;det++)
     {
-      TObjArray* detArray = new TObjArray();
-      detArray->SetName(Form("FMD%d",det));
-      fArray.AddAtAndExpand(detArray,det);
+      // TObjArray* detArray = new TObjArray();
+      // detArray->SetName(Form("FMD%d",det));
+      // fArray.AddAtAndExpand(detArray,det);
       Int_t nRings = (det==1 ? 1 : 2);
       for(Int_t ring = 0;ring<nRings;ring++)
 	{
 	  Char_t ringChar = (ring == 0 ? 'I' : 'O');
 	  Int_t  nSec     = (ring == 0 ? 20 : 40);
 	  
-	  TObjArray* vtxArray = new TObjArray();
-	  vtxArray->SetName(Form("FMD%d%c",det,ringChar));
-	  detArray->AddAtAndExpand(vtxArray,ring);
+	  //  TObjArray* vtxArray = new TObjArray();
+	  // vtxArray->SetName(Form("FMD%d%c",det,ringChar));
+	  // detArray->AddAtAndExpand(vtxArray,ring);
 	  for(Int_t i = 0; i< nVtxbins; i++) {
 	    TH2F* hBg = pars->GetBackgroundCorrection(det, ringChar, i);
 	    hMult  = new TH2F(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i),Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i),
@@ -133,8 +134,9 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
 	    hMult->Sumw2();
 	    hHits->Sumw2();
 	    fOutputList->Add(hMult);
+	    // fOutputList->Add(hMultTrVtx);
 	    fOutputList->Add(hHits);
-	    vtxArray->AddAtAndExpand(hMult,i);
+	    //vtxArray->AddAtAndExpand(hMult,i);
 	    
 	  }
 	} 
@@ -171,28 +173,31 @@ void AliFMDAnalysisTaskDndeta::ConnectInputData(Option_t */*option*/)
 //_____________________________________________________________________
 void AliFMDAnalysisTaskDndeta::Exec(Option_t */*option*/)
 {
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   Int_t vtxbin   = fVertexString->GetString().Atoi();
   fNevents.Fill(vtxbin);
   for(UShort_t det=1;det<=3;det++) {
     //TObjArray* detInputArray = (TObjArray*)fInputArray->At(det);
-    TObjArray* detArray = (TObjArray*)fArray.At(det);
+    // TObjArray* detArray = (TObjArray*)fArray.At(det);
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
       Char_t ringChar = (ir == 0 ? 'I' : 'O');
       //TObjArray* vtxInputArray = (TObjArray*)detInputArray->At(ir);
-      TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
-      TH2F* hMultTotal = (TH2F*)vtxArray->At(vtxbin);
+      //TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
+      // TH2F* hMultTotal = (TH2F*)vtxArray->At(vtxbin);
       
+      TH2F* hMultTotal = (TH2F*)fOutputList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
+     
       
       TH2F* hMultInput = (TH2F*)fInputList->FindObject(Form("mult_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
       
       hMultTotal->Add(hMultInput);
-      
+      //hMultTrVtx->Add(hMultInput);
       
     }
   }
   
-  if(fMCevent && fPrimary)
+  if(pars->GetProcessPrimary())
     ProcessPrimary();
   
   if(fStandalone) {
@@ -209,15 +214,26 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
   Int_t nVtxbins = pars->GetNvtxBins();
   
   for(UShort_t det=1;det<=3;det++) {
-    TObjArray* detArray = (TObjArray*)fArray.At(det);
+    // TObjArray* detArray = (TObjArray*)fArray.At(det);
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
-      TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
+      // TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
       Char_t ringChar = (ir == 0 ? 'I' : 'O');
       for(Int_t i =0; i<nVtxbins; i++) {
-	TH2F* hMultTotal = (TH2F*)vtxArray->At(i);
+	
+	//TH2F* hMultTotal = (TH2F*)vtxArray->At(i);
+	//hMultTotal->Scale(pars->GetTriggerEfficiency(i));
+	TH2F* hMultTotal = (TH2F*)fOutputList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i));
+	TH2F* hMultTrVtx = (TH2F*)hMultTotal->Clone(Form("dNdeta_FMD_TrVtx_%d%c_vtxbin%d",det,ringChar,i));
+	
+	hMultTotal->Scale(pars->GetEventSelectionEfficiency(i));
+	//std::cout<<pars->GetTriggerEfficiency(i)<<std::endl;
+	std::cout<<pars->GetEventSelectionEfficiency(i)<<std::endl;	
 	TH1D* hMultProj   = hMultTotal->ProjectionX(Form("dNdeta_FMD%d%c_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
+	TH1D* hMultProjTrVtx   = hMultTrVtx->ProjectionX(Form("dNdeta_FMD_TrVtx_%d%c_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
+	fOutputList->Add(hMultTrVtx);
 	fOutputList->Add(hMultProj);
+	fOutputList->Add(hMultProjTrVtx);
       }
     }
   }
@@ -226,15 +242,20 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
 //_____________________________________________________________________
 void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
   
+  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  AliMCEvent* mcEvent = eventHandler->MCEvent();
+  if(!mcEvent)
+    return;
+  
   fLastTrackByStrip.Reset(-1);
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
   AliMCParticle* particle = 0;
-  AliStack* stack = fMCevent->Stack();
+  AliStack* stack = mcEvent->Stack();
   
   TH1F* hPrimary = (TH1F*)fOutputList->FindObject("hMultvsEta");
-  AliHeader* header            = fMCevent->Header();
+  AliHeader* header            = mcEvent->Header();
   AliGenEventHeader* genHeader = header->GenEventHeader();
   
   TArrayF vertex;
@@ -249,11 +270,11 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
   
   // we loop over the primaries only unless we need the hits (diagnostics running slowly)
   Int_t nTracks = stack->GetNprimary();
-  if(fRecordHits)
+  if(pars->GetProcessHits())
     nTracks = stack->GetNtrack();
   
   for(Int_t i = 0 ;i<nTracks;i++) {
-    particle = fMCevent->GetTrack(i);
+    particle = mcEvent->GetTrack(i);
     if(!particle)
       continue;
    
@@ -269,7 +290,7 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
       }
     
     }
-    if(fRecordHits) {
+    if(pars->GetProcessPrimary()) {
       for(Int_t j=0; j<particle->GetNumberOfTrackReferences();j++) {
       
       AliTrackReference* ref = particle->GetTrackReference(j);

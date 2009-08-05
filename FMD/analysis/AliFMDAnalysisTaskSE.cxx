@@ -4,6 +4,7 @@
 #include "AliESDFMD.h"
 #include "AliMCEventHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliFMDAnaParameters.h"
 
 ClassImp(AliFMDAnalysisTaskSE)
 
@@ -14,9 +15,9 @@ AliAnalysisTaskSE(),
   fSharing("Sharing",kFALSE),
   fDensity("Density",kFALSE),
   fBackground("BackgroundCorrected",kFALSE),
-  fDndeta("dNdeta",kFALSE),
-  fPrimary(kTRUE),
-  fRecordHits(kFALSE)
+  fDndeta("dNdeta",kFALSE)
+//  fPrimary(kTRUE),
+//  fRecordHits(kFALSE)
 {
   // Default constructor
 }
@@ -27,9 +28,9 @@ AliFMDAnalysisTaskSE::AliFMDAnalysisTaskSE(const char* name):
   fSharing("Sharing",kFALSE),
   fDensity("Density",kFALSE),
   fBackground("BackgroundCorrected",kFALSE),
-  fDndeta("dNdeta",kFALSE),
-  fPrimary(kTRUE),
-  fRecordHits(kFALSE)
+  fDndeta("dNdeta",kFALSE)
+  //  fPrimary(kTRUE),
+  //  fRecordHits(kFALSE)
 {
   
   DefineOutput(1, TList::Class());
@@ -66,8 +67,8 @@ void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
   fDndeta.SetInputVertex(vtxString1);
   fDndeta.SetInputList(bgcorlist); 
   fDndeta.SetOutputList(fListOfHistos); 
-  fDndeta.SetAnalyzePrimary(fPrimary);
-  fDndeta.SetRecordHits(fRecordHits);
+  //fDndeta.SetAnalyzePrimary(fPrimary);
+  //fDndeta.SetRecordHits(fRecordHits);
   fSharing.CreateOutputObjects();
   fDensity.CreateOutputObjects();
   fBackground.CreateOutputObjects();
@@ -86,6 +87,7 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
   //
+  //  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   AliESDEvent* fESD = (AliESDEvent*)InputEvent();
   fSharing.SetInputESD(fESD);
   
@@ -94,12 +96,6 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
     fDensity.Exec("");
     if(fDensity.GetEventStatus()) {
       fBackground.Exec("");  
-      //AliMCEvent* mcevent =  MCEvent();
-      if(fPrimary) {
-	AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-	AliMCEvent* mcevent = eventHandler->MCEvent();
-	fDndeta.SetMCEvent(mcevent);
-      }
       fDndeta.Exec("");
       
     }

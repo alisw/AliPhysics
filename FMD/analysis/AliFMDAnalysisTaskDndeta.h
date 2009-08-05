@@ -26,16 +26,17 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
       fDebug(o.fDebug),
       fOutputList(0),
       fInputList(0),
-      fArray(o.fArray),
+      //fArray(o.fArray),
       fInputArray(o.fInputArray),
       fVertexString(o.fVertexString),
       fNevents(o.fNevents),
       fNMCevents(o.fNMCevents),
       fStandalone(o.fStandalone),
-      fMCevent(o.fMCevent),
-      fLastTrackByStrip(o.fLastTrackByStrip),
-      fPrimary(o.fPrimary),
-      fRecordHits(o.fRecordHits) {}
+      //fMCevent(o.fMCevent),
+      fLastTrackByStrip(o.fLastTrackByStrip)
+      // fPrimary(o.fPrimary),
+      //fRecordHits(o.fRecordHits) 
+{}
     AliFMDAnalysisTaskDndeta& operator=(const AliFMDAnalysisTaskDndeta&) { return *this; }
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option = "");
@@ -48,25 +49,25 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
     void SetInputList(TList* inputList) {fInputList = inputList;}
     void SetInputVertex(TObjString* vtxString) {fVertexString = vtxString;}
     void SetOutputList(TList* outputList) {fOutputList = outputList;}
-    void SetMCEvent(AliMCEvent* mcevent) {fMCevent = mcevent;}
+    // void SetMCEvent(AliMCEvent* mcevent) {fMCevent = mcevent;}
     void ProcessPrimary();
     TList* GetOutputList() {return fOutputList;}
-    void SetAnalyzePrimary(Bool_t prim) {fPrimary = prim;}
-    void SetRecordHits(Bool_t recordhits) {fRecordHits = recordhits;}
+    // void SetAnalyzePrimary(Bool_t prim) {fPrimary = prim;}
+    // void SetRecordHits(Bool_t recordhits) {fRecordHits = recordhits;}
  private:
     Int_t         fDebug;        //  Debug flag
     TList*        fOutputList;
     TList*        fInputList;
-    TObjArray     fArray;
+    //TObjArray     fArray;
     TObjArray*    fInputArray;
     TObjString*   fVertexString;
     TH1I          fNevents;
     TH1I          fNMCevents;
     Bool_t        fStandalone;
-    AliMCEvent*   fMCevent;
+    // AliMCEvent*   fMCevent;
     AliFMDFloatMap fLastTrackByStrip;
-    Bool_t        fPrimary;
-    Bool_t        fRecordHits;
+    //Bool_t        fPrimary;
+    //Bool_t        fRecordHits;
     ClassDef(AliFMDAnalysisTaskDndeta, 0); // Analysis task for FMD analysis
 };
  

@@ -4,18 +4,19 @@
 SRCS		=  analysis/AliFMDAnaParameters.cxx	\
 		   analysis/AliFMDAnaCalibEnergyDistribution.cxx \
 		   analysis/AliFMDAnaCalibBackgroundCorrection.cxx \
-	           analysis/AliFMDAnalysisTaskESDReader.cxx	\
+                   analysis/AliFMDAnaCalibEventSelectionEfficiency.cxx \
+                   analysis/AliFMDAnalysisTaskESDReader.cxx	\
 	           analysis/AliFMDAnalysisTaskSharing.cxx       \
 		   analysis/AliFMDAnalysisTaskDensity.cxx       \
 		   analysis/AliFMDAnalysisTaskBackgroundCorrection.cxx \
 		   analysis/AliFMDAnalysisTaskCollector.cxx   \
 		   analysis/AliFMDAnalysisTaskDndeta.cxx         \
 		   analysis/AliFMDAnalysisTaskSE.cxx       \
-		   analysis/AliFMDAnalysisTaskGenerateBackground.cxx
+		   analysis/AliFMDAnalysisTaskGenerateCorrection.cxx
 
 
 HDRS		=  $(SRCS:.cxx=.h) 
-EINCLUDE 	:= ANALYSIS 
+EINCLUDE 	:= ANALYSIS PWG0
 #ELIBS           := ANALYSIS
 #ELIBSDIR	:= $(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)
 DHDR		:= analysis/FMDanalysisLinkDef.h

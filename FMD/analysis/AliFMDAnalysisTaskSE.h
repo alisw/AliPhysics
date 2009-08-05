@@ -36,17 +36,18 @@ class AliFMDAnalysisTaskSE : public AliAnalysisTaskSE
       fSharing(o.fSharing),
       fDensity(o.fDensity),
       fBackground(o.fBackground),
-      fDndeta(o.fDndeta),
-      fPrimary(o.fPrimary),
-      fRecordHits(o.fRecordHits) {}
+      fDndeta(o.fDndeta)
+      //      fPrimary(o.fPrimary),
+      // fRecordHits(o.fRecordHits) 
+	{}
     AliFMDAnalysisTaskSE& operator=(const AliFMDAnalysisTaskSE&) { return *this; }
     
     virtual void Init();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t* /*option*/);
     void  Terminate(Option_t */*option*/);
-    void  SetAnalyzePrimary(Bool_t prim) {fPrimary = prim;}
-    void  SetRecordHits(Bool_t recordhits) {fRecordHits = recordhits;}
+    //   void  SetAnalyzePrimary(Bool_t prim) {fPrimary = prim;}
+    //   void  SetRecordHits(Bool_t recordhits) {fRecordHits = recordhits;}
  private:
     
     TList* fListOfHistos;
@@ -54,8 +55,8 @@ class AliFMDAnalysisTaskSE : public AliAnalysisTaskSE
     AliFMDAnalysisTaskDensity              fDensity;
     AliFMDAnalysisTaskBackgroundCorrection fBackground;
     AliFMDAnalysisTaskDndeta               fDndeta;
-    Bool_t                                 fPrimary;
-    Bool_t                                 fRecordHits;
+    //   Bool_t                                 fPrimary;
+    //  Bool_t                                 fRecordHits;
     ClassDef(AliFMDAnalysisTaskSE, 1);
 
 };

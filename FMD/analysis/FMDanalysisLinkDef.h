@@ -31,6 +31,7 @@
 #pragma link C++ class AliFMDAnalysisTaskDndeta+;
 #pragma link C++ class AliFMDAnaCalibBackgroundCorrection+;
 #pragma link C++ class AliFMDAnaCalibEnergyDistribution+;
+#pragma link C++ class AliFMDAnaCalibEventSelectionEfficiency+;
 #pragma link C++ class AliFMDAnaParameters+;
 #pragma link C++ class AliFMDAnaCalibEnergyDistribution+;
 #pragma link C++ class AliFMDAnaCalibBackgroundCorrection+;
@@ -39,7 +40,7 @@
 #pragma link C++ class AliFMDAnalysisTaskDensity+;
 #pragma link C++ class AliFMDAnalysisTaskBackgroundCorrection+;
 #pragma link C++ class AliFMDAnalysisTaskCollector+;
-#pragma link C++ class AliFMDAnalysisTaskGenerateBackground+;
+#pragma link C++ class AliFMDAnalysisTaskGenerateCorrection+;
 
 #else
 # error Not for compilation 

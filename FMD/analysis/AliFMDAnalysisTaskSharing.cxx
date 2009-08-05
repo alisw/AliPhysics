@@ -13,12 +13,17 @@
 #include "AliESDFMD.h"
 //#include "AliFMDGeometry.h"
 #include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
 #include "AliFMDAnaParameters.h"
 //#include "/home/canute/ALICE/AliRoot/PWG0/AliPWG0Helper.h"
 //#include "AliFMDParameters.h"
+#include "AliGenEventHeader.h"
+#include "AliHeader.h"
+#include "AliStack.h"
+#include "AliMCParticle.h"
 
 ClassImp(AliFMDAnalysisTaskSharing)
 
@@ -80,6 +85,28 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
     fDiagList = new TList();
   
   fDiagList->SetName("Sharing diagnostics");
+  
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  TH2F* hBg   = pars->GetBackgroundCorrection(1, 'I', 0);
+  TH1F* hPrimary = new TH1F("hMultvsEtaNoCuts","hMultvsEtaNoCuts",
+			    hBg->GetNbinsX(),
+			    hBg->GetXaxis()->GetXmin(),
+			    hBg->GetXaxis()->GetXmax());
+  hPrimary->Sumw2();
+  fDiagList->Add(hPrimary);
+  TH1F* hPrimVertexBin = 0;
+  for(Int_t i = 0; i< pars->GetNvtxBins(); i++) {
+    
+    hPrimVertexBin = new TH1F(Form("primmult_NoCuts_vtxbin%d",i),
+			      Form("primmult_NoCuts_vtxbin%d",i),
+			      hBg->GetNbinsX(),
+			      hBg->GetXaxis()->GetXmin(),
+			      hBg->GetXaxis()->GetXmax());
+    hPrimVertexBin->Sumw2();
+    fDiagList->Add(hPrimVertexBin);
+    
+  }
+  
   for(Int_t det = 1; det<=3; det++) {
     Int_t nRings = (det==1 ? 1 : 2);
     
@@ -93,15 +120,19 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
 				     1000,0,25);
       
       
-      TH1F* hNstripsHit    = new TH1F(Form("N_strips_hit_FMD%d%c",det,ringChar),
-				     Form("N_strips_hit_FMD%d%c",det,ringChar),
-				     25,0,25);
+      //TH1F* hNstripsHit    = new TH1F(Form("N_strips_hit_FMD%d%c",det,ringChar),
+      //				     Form("N_strips_hit_FMD%d%c",det,ringChar),
+      //				     25,0,25);
       fDiagList->Add(hEdist);
       fDiagList->Add(hEdist_after);
-      fDiagList->Add(hNstripsHit);
+      //fDiagList->Add(hNstripsHit);
 
     }
   }
+  TH1F*  nMCevents = new TH1F("nMCEventsNoCuts","nMCEventsNoCuts",pars->GetNvtxBins(),0,pars->GetNvtxBins());
+  
+  fDiagList->Add(nMCevents);
+  
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::ConnectInputData(Option_t */*option*/)
@@ -120,35 +151,41 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   
   foutputESDFMD->Clear();
   
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   Double_t vertex[3];
-  GetVertex(vertex);
+  pars->GetVertex(fESD,vertex);
   fEsdVertex->SetXYZ(vertex);
-  /*
-    Bool_t isTriggered = AliPWG0Helper::IsEventTriggered(fESD, AliPWG0Helper::kMB1);
-    
-    if(!isTriggered) {
-    fStatus = kFALSE;
-    std::cout<<"no trigger"<<std::endl;
-    return;
-    }
-    else
-    fStatus = kTRUE;
-  */
-  if(vertex[0] == 0 && vertex[1] == 0 && vertex[2] == 0) {
   
+  // Process primaries here to get true MC distribution
+  if(pars->GetProcessPrimary())
+    ProcessPrimary();
+  
+  Bool_t isTriggered = pars->IsEventTriggered(fESD);
+  
+  if(!isTriggered) {
     fStatus = kFALSE;
     return;
   }
   else
     fStatus = kTRUE;
+  
+  if(vertex[0] == 0 && vertex[1] == 0 && vertex[2] == 0) {
+    
+    fStatus = kFALSE;
+    return;
+  }
+  else
+    fStatus = kTRUE;
+  
+  
   const AliMultiplicity* testmult = fESD->GetMultiplicity();
   
   Int_t nTrackLets = testmult->GetNumberOfTracklets();
   if(nTrackLets < 1000) foutputESDFMD->SetUniqueID(kTRUE);
   else foutputESDFMD->SetUniqueID(kFALSE);
-
+  
   AliESDFMD* fmd = fESD->GetFMDData();
-  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  
   if (!fmd) return;
   Int_t nHits = 0;
   for(UShort_t det=1;det<=3;det++) {
@@ -206,6 +243,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
     }
   }
   
+   
   if(fStandalone) {
     PostData(0, foutputESDFMD); 
     PostData(1, fEsdVertex); 
@@ -240,52 +278,7 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
   // Float_t cutPart = pars->GetMPV(det,ring,eta) - 5*pars->GetSigma(det,ring,eta);
   Float_t Etotal  = mult;
   
-  //if(mult > 5)
-  //  std::cout<<mult<<"    "<<det<<"    "<<ring<<"   "<<sec<<"    "<<strip<<std::endl;
-  //Float_t slow_particle_cut = 2*pars->GetMPV(det,ring,eta);
-  
-  //if(recopars->IsDead(det,ring,sec,strip))
-  //  std::cout<<"dead channel"<<std::endl;
-  //if(foutputESDFMD->GetUniqueID() == kTRUE) {
-  // Float_t mpv = pars->GetMPV(det,ring,eta);
-  
-  /*
-  if(foutputESDFMD->GetUniqueID() == kFALSE) {
-    
-    if(mult > 15)
-      return 0;
 
-    if(mult > cutLow ) {
-      fEnergy = fEnergy + mult;
-      fNstrips++;
-    }
-    
-    if( (Enext < cutLow && fEnergy > 0 )   || fNstrips >2 ){
-      
-      //if((fEnergy*TMath::Cos(Eta2Theta(eta))) > cutPart || fNstrips > 1) {
-      nParticles = 1;
-      merged_energy = fEnergy*TMath::Cos(Eta2Theta(eta));
-      TH1F* hEdist = (TH1F*)fDiagList.FindObject(Form("Edist_after_sharing_FMD%d%c",det,ring));
-      hEdist->Fill(fEnergy);
-      TH1F* hNstrips = (TH1F*)fDiagList.FindObject(Form("N_strips_hit_FMD%d%c",det,ring));
-      hNstrips->Fill(fNstrips);
-      // std::cout<<Form("Merged signals %f %f %f into %f , %f in det %d, ring %c, sec %d, strip %d",Eprev, mult, Enext, fEnergy/TMath::Cos(Eta2Theta(eta)),fEnergy,det,ring,sec,strip )<<std::endl;
-      
-      // }
-    // else
-    //std::cout<<Form("NO HIT  for  %f %f %f into %f , %f in strip %d, sec %d, ring %c, det %d, cuts %f , %f",Eprev, mult, Enext, fEnergy/TMath::Cos(Eta2Theta(eta)),fEnergy,strip,sec,ring,det,cutPart,cutHigh )<<std::endl;
-      
-      fEnergy  = 0;
-      fNstrips = 0;
-    
-    return merged_energy;
-    }
-    
-    
-    return 0;
-    
-  }
-  else {*/
     //std::cout<<det<<ring<<"   "<<sec<<"    "<<strip<<"   "<<cutLow<<std::endl;
   if(fSharedThis) {
     fSharedThis      = kFALSE;
@@ -342,33 +335,7 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
   return merged_energy; 
   //}  
 }
-//_____________________________________________________________________
-void AliFMDAnalysisTaskSharing::GetVertex(Double_t* vertexXYZ) 
-{
-  const AliESDVertex* vertex = 0;
-  vertex = fESD->GetPrimaryVertex();
-  if(!vertex || (vertexXYZ[0] == 0 && vertexXYZ[1] == 0 && vertexXYZ[2] == 0))        
-    vertex = fESD->GetPrimaryVertexSPD();
-  if(!vertex || (vertexXYZ[0] == 0 && vertexXYZ[1] == 0 && vertexXYZ[2] == 0))        
-    vertex = fESD->GetPrimaryVertexTPC();
-  if(!vertex || (vertexXYZ[0] == 0 && vertexXYZ[1] == 0 && vertexXYZ[2] == 0))    
-    vertex = fESD->GetVertex();
-  if (vertex && (vertexXYZ[0] != 0 || vertexXYZ[1] != 0 || vertexXYZ[2] != 0)) {
-    vertex->GetXYZ(vertexXYZ);
-    //std::cout<<vertex->GetName()<<"   "<< vertex->GetTitle() <<"   "<< vertex->GetZv()<<std::endl;
-    return;
-  }
-  else if (fESD->GetESDTZERO()) { 
-    vertexXYZ[0] = 0;
-    vertexXYZ[1] = 0;
-    vertexXYZ[2] = fESD->GetT0zVertex();
-    
-    return;
-  }
-  
-  return;
-  
-}
+
 //_____________________________________________________________________
 Float_t AliFMDAnalysisTaskSharing::Eta2Theta(Float_t eta) {
 
@@ -383,30 +350,64 @@ Float_t AliFMDAnalysisTaskSharing::Eta2Theta(Float_t eta) {
 
 
 }
+
+
+
 //_____________________________________________________________________
-/*Double_t AliFMDAnalysisTaskSharing::EtaFromStrip(UShort_t det, 
-						Char_t ring, 
-						UShort_t sector, 
-						UShort_t strip, 
-						Double_t zvtx)
-{
-   
-  AliFMDGeometry* geo = AliFMDGeometry::Instance();
+void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   
-  Double_t x,y,z;
-  geo->Detector2XYZ(det,ring,sector,strip,x,y,z);
+  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  AliMCEvent* mcEvent = eventHandler->MCEvent();
+  if(!mcEvent)
+    return;
   
-  Double_t r = TMath::Sqrt(x*x+y*y);
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
-  Double_t z_real      = z-zvtx;
-  Double_t theta       = TMath::ATan2(r,z_real);
-  // std::cout<<"From EtaFromStrip "<<theta<<std::endl;
-  Double_t eta         =  -1*TMath::Log(TMath::Tan(0.5*theta));
+  AliMCParticle* particle = 0;
   
-  // std::cout<<det<<"   "<<ring<<"   "<<sector<<"   "<<strip<<"   "<<r<<"    "<<z_real<<"   "<<theta<<"    "<<eta<<std::endl;
+  AliStack* stack = mcEvent->Stack();
   
-  return eta;
-  }*/
+  TH1F* hPrimary = (TH1F*)fDiagList->FindObject("hMultvsEtaNoCuts");
+  AliHeader* header            = mcEvent->Header();
+  AliGenEventHeader* genHeader = header->GenEventHeader();
+  
+  
+  
+  TArrayF vertex;
+  genHeader->PrimaryVertex(vertex);
+  if(TMath::Abs(vertex.At(2)) > pars->GetVtxCutZ())
+    return;
+  
+  Double_t delta           = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
+  Double_t vertexBinDouble = (vertex.At(2) + pars->GetVtxCutZ()) / delta;
+  Int_t    vertexBin       = (Int_t)vertexBinDouble;
+  
+  Bool_t firstTrack = kTRUE;
+  
+  Int_t nTracks = stack->GetNprimary();
+  TH1F* nMCevents = (TH1F*)fDiagList->FindObject("nMCEventsNoCuts");
+  for(Int_t i = 0 ;i<nTracks;i++) {
+    particle = mcEvent->GetTrack(i);
+    if(!particle)
+      continue;
+    
+    if(stack->IsPhysicalPrimary(i) && particle->Charge() != 0) {
+      hPrimary->Fill(particle->Eta());
+      
+
+      TH1F* hPrimVtxBin = (TH1F*)fDiagList->FindObject(Form("primmult_NoCuts_vtxbin%d",vertexBin));
+      hPrimVtxBin->Fill(particle->Eta());
+      
+      if(firstTrack) {
+	nMCevents->Fill(vertexBin);
+	firstTrack = kFALSE;
+      }
+    
+    }
+  }
+
+}
+
 //_____________________________________________________________________
 //
 // EOF

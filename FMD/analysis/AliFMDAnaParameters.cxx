@@ -32,6 +32,8 @@
 #include <TH2D.h>
 #include <TF1.h>
 #include <TMath.h>
+#include "AliESDEvent.h"
+#include "AliESDVertex.h"
 
 //====================================================================
 ClassImp(AliFMDAnaParameters)
@@ -43,6 +45,7 @@ ClassImp(AliFMDAnaParameters)
 //const char* AliFMDAnaParameters::fgkEnergyDists = "FMD/Correction/EnergyDistribution";
 const char* AliFMDAnaParameters::fgkBackgroundID = "background";
 const char* AliFMDAnaParameters::fgkEnergyDistributionID = "energydistributions";
+const char* AliFMDAnaParameters::fgkEventSelectionEffID  = "eventselectionefficiency";
 //____________________________________________________________________
 AliFMDAnaParameters* AliFMDAnaParameters::fgInstance = 0;
 
@@ -61,10 +64,15 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fIsInit(kFALSE),
   fBackground(0),
   fEnergyDistribution(0),
+  fEventSelectionEfficiency(0),
   fCorner1(4.2231, 26.6638),
   fCorner2(1.8357, 27.9500),
   fEnergyPath("$ALICE_ROOT/FMD/Correction/EnergyDistribution/energydistributions.root"),
-  fBackgroundPath("$ALICE_ROOT/FMD/Correction/Background/background.root")
+  fBackgroundPath("$ALICE_ROOT/FMD/Correction/Background/background.root"),
+  fEventSelectionEffPath("$ALICE_ROOT/FMD/Correction/EventSelectionEfficiency/eventselectionefficiency.root"),
+  fProcessPrimary(kFALSE),
+  fProcessHits(kFALSE),
+  fTrigger(AliPWG0Helper::kMB1)
 {
   
   
@@ -81,7 +89,7 @@ void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
   if (fIsInit) return;
   if (what & kBackgroundCorrection)       InitBackground();
   if (what & kEnergyDistributions)        InitEnergyDists();
-  
+  if (what & kEventSelectionEfficiency)   InitEventSelectionEff();
   
   fIsInit = kTRUE;
 }
@@ -98,6 +106,7 @@ void AliFMDAnaParameters::InitBackground() {
   if (!fBackground) AliFatal("Invalid background object from CDB");
   
 }
+
 //____________________________________________________________________
 
 void AliFMDAnaParameters::InitEnergyDists() {
@@ -109,6 +118,20 @@ void AliFMDAnaParameters::InitEnergyDists() {
   fEnergyDistribution = dynamic_cast<AliFMDAnaCalibEnergyDistribution*>(fin->Get(fgkEnergyDistributionID));
   
   if (!fEnergyDistribution) AliFatal("Invalid background object from CDB");
+  
+}
+
+//____________________________________________________________________
+
+void AliFMDAnaParameters::InitEventSelectionEff() {
+  
+  //AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
+  TFile* fin = TFile::Open(fEventSelectionEffPath.Data());
+  
+  if (!fin) return;
+  
+  fEventSelectionEfficiency = dynamic_cast<AliFMDAnaCalibEventSelectionEfficiency*>(fin->Get(fgkEventSelectionEffID));
+  if (!fEventSelectionEfficiency) AliFatal("Invalid background object from CDB");
   
 }
 //____________________________________________________________________
@@ -266,6 +289,15 @@ TH1F* AliFMDAnaParameters::GetDoubleHitCorrection(Int_t det,
   return fBackground->GetDoubleHitCorrection(det,ring);
 }
 //_____________________________________________________________________
+Float_t AliFMDAnaParameters::GetEventSelectionEfficiency(Int_t vtxbin) {
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
+  return fEventSelectionEfficiency->GetCorrection(vtxbin);
+
+}
+//_____________________________________________________________________
 Float_t AliFMDAnaParameters::GetMaxR(Char_t ring) const{
   Float_t radius = 0;
   if(ring == 'I')
@@ -368,27 +400,45 @@ Float_t AliFMDAnaParameters::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t
   Float_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
   
   return eta;
-}/*
-//____________________________________________________________________
-AliCDBEntry* AliFMDAnaParameters::GetEntry(const char* path, Bool_t fatal) const
-{
-  // Get an entry from the CDB or via preprocessor 
-  AliCDBEntry* entry = 0;
-  AliCDBManager* cdb = AliCDBManager::Instance();
-  entry              = cdb->Get(path);
-  
-  if (!entry) { 
-    TString msg(Form("No %s found in CDB, perhaps you need to "
-		     "use AliFMDCalibFaker?", path));
-    if (fatal) { AliFatal(msg.Data()); }
-    else       AliLog::Message(AliLog::kWarning, msg.Data(), "FMD", 
-			       "AliFMDParameters", "GetEntry", __FILE__, 
-			       __LINE__);
-    return 0;
-  }
-  return entry;
 }
- */
+
+//_____________________________________________________________________
+
+void AliFMDAnaParameters::GetVertex(AliESDEvent* esd, Double_t* vertexXYZ) 
+{
+  const AliESDVertex* vertex = 0;
+  vertex = esd->GetPrimaryVertex();
+  if(!vertex || (vertexXYZ[0] == 0 && vertexXYZ[1] == 0 && vertexXYZ[2] == 0))        
+    vertex = esd->GetPrimaryVertexSPD();
+  if(!vertex || (vertexXYZ[0] == 0 && vertexXYZ[1] == 0 && vertexXYZ[2] == 0))        
+    vertex = esd->GetPrimaryVertexTPC();
+  if(!vertex || (vertexXYZ[0] == 0 && vertexXYZ[1] == 0 && vertexXYZ[2] == 0))    
+    vertex = esd->GetVertex();
+  if (vertex && (vertexXYZ[0] != 0 || vertexXYZ[1] != 0 || vertexXYZ[2] != 0)) {
+    vertex->GetXYZ(vertexXYZ);
+    //std::cout<<vertex->GetName()<<"   "<< vertex->GetTitle() <<"   "<< vertex->GetZv()<<std::endl;
+    return;
+  }
+  else if (esd->GetESDTZERO()) { 
+    vertexXYZ[0] = 0;
+    vertexXYZ[1] = 0;
+    vertexXYZ[2] = esd->GetT0zVertex();
+    
+    return;
+  }
+  
+  return;
+  
+}
+//____________________________________________________________________
+Bool_t AliFMDAnaParameters::IsEventTriggered(AliESDEvent* esd) { 
+
+  
+  Bool_t trigger = AliPWG0Helper::IsEventTriggered(esd, AliPWG0Helper::kMB1);
+  //  Bool_t trigger = AliPWG0Helper::IsEventTriggered(esd, fTrigger);
+  return trigger;
+}
+
 //____________________________________________________________________
 Float_t 
 AliFMDAnaParameters::GetStripLength(Char_t ring, UShort_t strip)  

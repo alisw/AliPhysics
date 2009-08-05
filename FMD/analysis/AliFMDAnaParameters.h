@@ -37,14 +37,11 @@
 #include "TH1F.h"
 #include "AliFMDAnaCalibBackgroundCorrection.h"
 #include "AliFMDAnaCalibEnergyDistribution.h"
+#include "AliFMDAnaCalibEventSelectionEfficiency.h"
 #include <TVector2.h>
 #include <TString.h>
-//____________________________________________________________________
-//
-//  Singleton class to handle various parameters (not geometry) of the
-//  FMD
-//  Should get ata fromm Conditions DB.
-//
+#include "AliPWG0Helper.h"
+class AliESDEvent;
 
 /**
  * @ingroup FMD_ana
@@ -55,15 +52,16 @@ public:
   /** Enumeration of things to initialize */ 
   enum What { 
     /** Pulser gain */ 
-    kBackgroundCorrection = 0x1, // Background Correction 
-    kEnergyDistributions  = 0x2 // Energy Distributions
+    kBackgroundCorrection         = 0x1, // Background Correction 
+    kEnergyDistributions          = 0x2, // Energy Distributions
+    kEventSelectionEfficiency     = 0x4  // Event Selection Efficiency
   };
   
   /** Singleton access
       @return  single to */
   static AliFMDAnaParameters* Instance();
   
-  void Init(Bool_t forceReInit=kTRUE, UInt_t what=kBackgroundCorrection|kEnergyDistributions);
+  void Init(Bool_t forceReInit=kTRUE, UInt_t what=kBackgroundCorrection|kEnergyDistributions|kEventSelectionEfficiency);
   Float_t GetVtxCutZ();
   Int_t GetNvtxBins();
   Int_t GetNetaBins();
@@ -77,8 +75,11 @@ public:
   // static const char* GetEdistPath()      { return fgkEnergyDists;}
   static const char* GetBackgroundID() { return fgkBackgroundID;}
   static const char* GetEdistID()      { return fgkEnergyDistributionID;}
+  static const char* GetEventSelectionEffID()      { return fgkEventSelectionEffID;}
   TH2F* GetBackgroundCorrection(Int_t det, Char_t ring, Int_t vtxbin);
   TH1F* GetDoubleHitCorrection(Int_t det, Char_t ring);
+  
+  Float_t GetEventSelectionEfficiency(Int_t vtxbin);
   Float_t GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec) const;
   Float_t GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx) const;
   Float_t  GetStripLength(Char_t ring, UShort_t strip)  ;
@@ -87,8 +88,14 @@ public:
   Float_t  GetMinR(Char_t ring) const;
   void     SetBackgroundPath(const Char_t* bgpath) {fBackgroundPath.Form(bgpath);}
   void     SetEnergyPath(const Char_t* epath) {fEnergyPath.Form(epath);}
-  
-  
+  void     SetProcessPrimary(Bool_t prim=kTRUE) {fProcessPrimary = prim;}
+  void     SetProcessHits(Bool_t hits=kTRUE) {fProcessHits = hits;}
+  Bool_t   GetProcessPrimary() {return fProcessPrimary;}
+  Bool_t   GetProcessHits() {return fProcessHits;}
+  void     GetVertex(AliESDEvent* esd, Double_t* vertexXYZ);
+  void     SetTriggerDefinition(AliPWG0Helper::Trigger trigger) {fTrigger = trigger;}
+  Int_t    SetTriggerDefinition() {return fTrigger;}
+  Bool_t   IsEventTriggered(AliESDEvent* esd);
 protected:
   
   AliFMDAnaParameters();
@@ -98,10 +105,14 @@ protected:
       fIsInit(o.fIsInit),
       fBackground(o.fBackground),
       fEnergyDistribution(o.fEnergyDistribution),
+      fEventSelectionEfficiency(o.fEventSelectionEfficiency),
       fCorner1(o.fCorner1),
       fCorner2(o.fCorner2),
       fEnergyPath(o.fEnergyPath),
-      fBackgroundPath(o.fBackgroundPath)
+      fBackgroundPath(o.fBackgroundPath),
+      fProcessPrimary(o.fProcessPrimary),
+      fProcessHits(o.fProcessHits),
+      fTrigger(o.fTrigger)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}
@@ -111,6 +122,8 @@ protected:
   //  AliCDBEntry* GetEntry(const char* path, Bool_t fatal=kTRUE) const ;
   void InitBackground();
   void InitEnergyDists();
+  void InitEventSelectionEff();
+  
   TH1F* GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta);
   TObjArray* GetBackgroundArray();
   
@@ -120,17 +133,24 @@ protected:
   Bool_t fIsInit;
   //TObjArray*  fBackgroundArray;
   // TObjArray*  fEdistArray;
-  AliFMDAnaCalibBackgroundCorrection* fBackground;
-  AliFMDAnaCalibEnergyDistribution* fEnergyDistribution;
+  AliFMDAnaCalibBackgroundCorrection*         fBackground;
+  AliFMDAnaCalibEnergyDistribution*           fEnergyDistribution;
+  AliFMDAnaCalibEventSelectionEfficiency*     fEventSelectionEfficiency;
+  
   //static const char* fgkBackgroundCorrection;
   //static const char* fgkEnergyDists;
   static const char* fgkBackgroundID;
   static const char* fgkEnergyDistributionID ;
+  static const char* fgkEventSelectionEffID ;
+  
   TVector2 fCorner1;
   TVector2 fCorner2;
-  TString fEnergyPath;
-  TString fBackgroundPath;
-
+  TString  fEnergyPath;
+  TString  fBackgroundPath;
+  TString  fEventSelectionEffPath;
+  Bool_t   fProcessPrimary;
+  Bool_t   fProcessHits; 
+  AliPWG0Helper::Trigger  fTrigger;
   ClassDef(AliFMDAnaParameters,0) // Manager of parameters
 };
 

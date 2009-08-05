@@ -50,7 +50,7 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
     virtual void Terminate(Option_t* /* option*/) {}
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     Float_t GetMultiplicityOfStrip(Float_t mult, Float_t eta, Float_t Eprev, Float_t Enext, UShort_t   det, Char_t  ring, UShort_t sec, UShort_t strip);
-    void GetVertex(Double_t* vertexXYZ) ;
+    // void GetVertex(Double_t* vertexXYZ) ;
     void SetFMDData(AliESDFMD* fmd) {foutputESDFMD = fmd;}
     void SetOutputList(TList* outlist) {fDiagList = outlist;}
     void SetVertex(AliESDVertex* vertex) {fEsdVertex = vertex;}
@@ -59,6 +59,8 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
  private:
     Float_t Eta2Theta(Float_t eta);
     Double_t EtaFromStrip(UShort_t det, Char_t ring, UShort_t sector, UShort_t strip, Double_t zvtx);
+    void ProcessPrimary();
+    
     Int_t         fDebug;        //  Debug flag
     AliESDEvent*  fESD;          //! ESD
     // AliESDEvent   fOutputESD;

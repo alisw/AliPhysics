@@ -316,37 +316,6 @@ Float_t AliFMDAnalysisTaskDensity::GetAcceptanceCorrection(Char_t ring, UShort_t
   return correction;
 }
 //_____________________________________________________________________
-/*Float_t AliFMDAnalysisTaskDensity::GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec)
-{
-  Int_t nsec = (ring == 'I' ? 20 : 40);
-  Float_t basephi = 0;
-  if(det == 1) 
-    basephi = 1.72787594; 
-  if(det == 2 && ring == 'I')
-    basephi = 0.15707963;
-  if(det == 2 && ring == 'O')
-    basephi = 0.078539818;
-  if(det == 3 && ring == 'I')
-    basephi = 2.984513044;
-  if(det == 3 && ring == 'O')
-    basephi = 3.06305289;
-  
-  Float_t step = 2*TMath::Pi() / nsec;
-  Float_t phi = 0;
-  if(det == 3)
-    phi = basephi - sec*step;
-  else
-    phi = basephi + sec*step;
-  
-  if(phi < 0) 
-    phi = phi +2*TMath::Pi();
-  if(phi > 2*TMath::Pi() )
-    phi = phi - 2*TMath::Pi();
-  
-  return phi;
-}
-
-*/
 //
 //EOF
 //
