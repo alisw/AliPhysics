@@ -263,15 +263,14 @@ AliGRPObject::~AliGRPObject() {
 }
 
 //-----------------------------------------------------------------------------
-
-Float_t* AliGRPObject::GetHallProbes(DP_HallProbes hp) const {
+Float_t* AliGRPObject::GetHallProbesArray(DP_HallProbes hp) const {
 
 	//
 	// method to return array of statistical
         // variables for Hall Probe hp
 	//
 
-	Float_t * array = new Float_t[fPoints];
+	Float_t* array = new Float_t[fPoints];
 	Int_t shift = fPoints*(Int_t)hp; 
 	for (Int_t i=0;i<fPoints; i++){
 
@@ -281,7 +280,6 @@ Float_t* AliGRPObject::GetHallProbes(DP_HallProbes hp) const {
 
 	return array;
 }
-
 //-------------------------------------------------------------------------------
 
 void AliGRPObject::SetHallProbes(DP_HallProbes hp, const Float_t* hall_probe){

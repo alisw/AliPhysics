@@ -71,7 +71,7 @@ class AliGRPObject : public TObject {
 	AliDCSSensor*   GetCavernAtmosPressure() const {return fCavernAtmosPressure;}
 	AliDCSSensor*   GetSurfaceAtmosPressure() const {return fSurfaceAtmosPressure;}
 
-	Float_t*  GetHallProbes(DP_HallProbes hp) const;
+	Float_t*  GetHallProbesArray(DP_HallProbes hp) const;
 	Float_t   GetHallProbes(Int_t hp) const {return fHallProbes[hp];}
 	Float_t   GetHallProbes(DP_HallProbes hp, Stats stat) const {return fHallProbes[hp*fPoints+stat];}
 
