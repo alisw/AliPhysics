@@ -745,7 +745,7 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
  fittingFun->SetParameters(fvStart*pow(AvM,0.5),fSigma2Start,norm); // to be improved (add setter for starting v)         
  fittingFun->SetParLimits(0,fvMin*pow(AvM,0.5),fvMax*pow(AvM,0.5)); // to be improved (add setters for vmin and vmax)
  
- if(s2NF)
+ if(s2NF == 0)
  {
   fittingFun->SetParLimits(1,fSigma2Min,fSigma2Max); // to be improved (add setters for sigma^2_min and sigma^2_max)      
  } else
@@ -773,7 +773,7 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
   fIntFlow[pW][s2NF]->SetBinContent(1,v);
   fIntFlow[pW][s2NF]->SetBinError(1,vError);
  }
- if(s2NF)
+ if(s2NF == 0)
  {
   sigma2 = fittingFun->GetParameter(1);
   sigma2Error = fittingFun->GetParError(1);
