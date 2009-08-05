@@ -64,10 +64,10 @@ class AliTRDcalibDB : public TObject {
   AliTRDCalROC                       *GetPRFROC(Int_t det);
   Float_t                             GetPRFWidth(Int_t det, Int_t col, Int_t row);
 
-  Float_t*                            GetSampledPRF() { return fPRFsmp; };
-  Int_t                               GetPRFbin()     { return fPRFbin; };
-  Float_t                             GetPRFlo()      { return fPRFlo;  };
-  Float_t                             GetPRFhi()      { return fPRFhi;  };
+  Float_t*                            GetSampledPRF() const { return fPRFsmp; };
+  Int_t                               GetPRFbin() const     { return fPRFbin; };
+  Float_t                             GetPRFlo() const      { return fPRFlo;  };
+  Float_t                             GetPRFhi() const      { return fPRFhi;  };
 
   Int_t                               GetNumberOfTimeBins();
 

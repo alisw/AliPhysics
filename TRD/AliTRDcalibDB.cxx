@@ -28,20 +28,13 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TMath.h>
-#include <TRandom.h>
 #include <TClonesArray.h>
 
 #include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliLog.h"
 
 #include "AliTRDcalibDB.h"
-#include "AliTRDrecoParam.h"
-#include "AliTRDgeometry.h"
-#include "AliTRDpadPlane.h"
-#include "AliTRDCommonParam.h"
 
 #include "Cal/AliTRDCalROC.h"
 #include "Cal/AliTRDCalPad.h"
@@ -821,14 +814,19 @@ Char_t AliTRDcalibDB::GetChamberStatus(Int_t det)
 //_____________________________________________________________________________
 AliTRDrecoParam* AliTRDcalibDB::GetRecoParam(Int_t */*eventtype*/)
 {
+  //
+  // Returns the TRD reconstruction parameters from the OCDB
+  //
+
   const TClonesArray *recos = dynamic_cast<const TClonesArray*>(GetCachedCDBObject(kIDRecoParam));
-  if(!recos) return 0x0;
+  if (!recos) return 0x0;
 
   // calculate entry based on event type info
   Int_t n = 0; //f(eventtype[0], eventtype[1], ....)
-  return (AliTRDrecoParam*)recos->UncheckedAt(n);
-}
 
+  return (AliTRDrecoParam*)recos->UncheckedAt(n);
+
+}
 
 //_____________________________________________________________________________
 Bool_t AliTRDcalibDB::IsPadMasked(Int_t det, Int_t col, Int_t row)
