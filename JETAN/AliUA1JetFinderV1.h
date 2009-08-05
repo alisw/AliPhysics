@@ -29,25 +29,25 @@ class AliUA1JetFinderV1 : public AliJetFinder
                    Float_t* etJet,Float_t* etaJet, Float_t* phiJet,
                    Float_t* etallJet, Int_t* ncellsJet);
 
-  void SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&EtbgTotalN,
-                      Float_t* ptT, Float_t* etaT, Float_t* phiT,
-                      Float_t* etJet,Float_t* etaJet, Float_t* phiJet,
-                      Float_t* etsigJet,Int_t* multJet, Int_t* injet);
-
-  void SubtractBackgCone(Int_t& nIn, Int_t&nJ,Float_t& EtbgTotalN,
-                      Float_t* ptT, Float_t* etaT, Float_t* phiT,
-                      Float_t* etJet,Float_t* etaJet, Float_t* phiJet,
-                      Float_t* etsigJet, Int_t* multJet, Int_t* injet);
-
-  void SubtractBackgRatio(Int_t& nIn, Int_t&nJ,Float_t& EtbgTotalN,
-                      Float_t* ptT, Float_t* etaT, Float_t* phiT,
-                      Float_t* etJet,Float_t* etaJet, Float_t* phiJet,
-                      Float_t* etsigJet, Int_t* multJet, Int_t* injet);
-
-  void SubtractBackgStat(Int_t& nIn, Int_t&nJ,Float_t&EtbgTotalN,
-                      Float_t* ptT, Float_t* etaT, Float_t* phiT,
-                      Float_t* etJet,Float_t* etaJet, Float_t* phiJet,
-                      Float_t* etsigJet, Int_t* multJet, Int_t* injet);
+  void SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&EtbgTotalN,
+		     const Float_t* ptT, const Float_t* etaT, const Float_t* phiT,
+                     Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet,
+		     Float_t* etsigJet,Int_t* multJet, Int_t* injet);
+  
+  void SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float_t& EtbgTotalN,
+			 const Float_t* ptT, const Float_t* etaT, const Float_t* phiT,
+			 Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet,
+			 Float_t* etsigJet, Int_t* multJet, Int_t* injet);
+  
+  void SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ,Float_t& EtbgTotalN,
+			  const Float_t* ptT, const Float_t* etaT, const Float_t* phiT,
+			  Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet,
+			  Float_t* etsigJet, Int_t* multJet, Int_t* injet);
+  
+  void SubtractBackgStat(const Int_t& nIn, const Int_t&nJ,Float_t&EtbgTotalN,
+			 const Float_t* ptT, const Float_t* etaT, const Float_t* phiT,
+			 Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet,
+			 Float_t* etsigJet, Int_t* multJet, Int_t* injet);
   void Reset();
   void Init();
   void WriteJHeaderToFile();

@@ -476,10 +476,10 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
 }
 ////////////////////////////////////////////////////////////////////////
 
-void AliUA1JetFinderV1::SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN,
-                      Float_t* ptT, Float_t* etaT, Float_t* phiT,
-                      Float_t* etJet,Float_t* etaJet, Float_t* phiJet, Float_t* etsigJet,
-                      Int_t* multJet, Int_t* injet)
+void AliUA1JetFinderV1::SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&etbgTotalN,
+				      const Float_t* ptT, const Float_t* etaT, const Float_t* phiT,
+				      Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet,
+				      Int_t* multJet, Int_t* injet)
 {
   //background subtraction using cone method but without correction in dE/deta distribution
 
@@ -543,10 +543,10 @@ void AliUA1JetFinderV1::SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN,
 
 ////////////////////////////////////////////////////////////////////////
 
-void AliUA1JetFinderV1::SubtractBackgStat(Int_t& nIn, Int_t&nJ,Float_t&etbgTotalN,
-                      Float_t* ptT, Float_t* etaT, Float_t* phiT,
-                      Float_t* etJet,Float_t* etaJet, Float_t* phiJet, Float_t* etsigJet,
-                      Int_t* multJet, Int_t* injet)
+void AliUA1JetFinderV1::SubtractBackgStat(const Int_t& nIn, const Int_t&nJ,Float_t&etbgTotalN,
+					  const Float_t* ptT, const Float_t* etaT, const Float_t* phiT,
+					  Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet,
+					  Int_t* multJet, Int_t* injet)
 {
 
   //background subtraction using statistical method
@@ -607,10 +607,10 @@ void AliUA1JetFinderV1::SubtractBackgStat(Int_t& nIn, Int_t&nJ,Float_t&etbgTotal
 
 ////////////////////////////////////////////////////////////////////////
 
-void AliUA1JetFinderV1::SubtractBackgCone(Int_t& nIn, Int_t&nJ,Float_t& etbgTotalN,
-                      Float_t* ptT, Float_t* etaT, Float_t* phiT,
-                      Float_t* etJet,Float_t* etaJet, Float_t* phiJet, Float_t* etsigJet,
-                      Int_t* multJet, Int_t* injet)
+void AliUA1JetFinderV1::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float_t& etbgTotalN,
+					  const Float_t* ptT, const Float_t* etaT, const Float_t* phiT,
+					  Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet,
+					  Int_t* multJet, Int_t* injet)
 {
    // Cone background subtraction method taking into acount dEt/deta distribution
     AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
@@ -722,10 +722,10 @@ void AliUA1JetFinderV1::SubtractBackgCone(Int_t& nIn, Int_t&nJ,Float_t& etbgTota
 ////////////////////////////////////////////////////////////////////////
 
 
-void AliUA1JetFinderV1::SubtractBackgRatio(Int_t& nIn, Int_t&nJ,Float_t& etbgTotalN,
-                      Float_t* ptT, Float_t* etaT, Float_t* phiT,
-                      Float_t* etJet,Float_t* etaJet, Float_t* phiJet, Float_t* etsigJet,
-                       Int_t* multJet, Int_t* injet)
+void AliUA1JetFinderV1::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ, Float_t& etbgTotalN,
+					   const Float_t* ptT, const Float_t* etaT, const Float_t* phiT,
+					   Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet,
+					   Int_t* multJet, Int_t* injet)
 {
    // Ratio background subtraction method taking into acount dEt/deta distribution
     AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
