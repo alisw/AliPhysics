@@ -24,8 +24,6 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <TMath.h>
-
 #include "AliRun.h"
 
 #include "AliTRDSimParam.h"
