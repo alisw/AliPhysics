@@ -83,7 +83,7 @@ class AliTRDclusterizer : public TNamed
   Bool_t   WriteClusters(Int_t det);
   void     ResetRecPoints();
   virtual TClonesArray    *RecPoints();
-  virtual TClonesArray    *TrackletsArray();
+  TClonesArray    *TrackletsArray();
   Bool_t   WriteTracklets(Int_t det);
 
   Bool_t   Raw2Clusters(AliRawReader *rawReader);
@@ -100,7 +100,7 @@ class AliTRDclusterizer : public TNamed
   Int_t            GetAddedClusters() {return fNoOfClusters;}
 
   Bool_t   IsClustersOwner() const {return TestBit(kClOwner);}
-  virtual void     SetClustersOwner(Bool_t own=kTRUE) {SetBit(kTrOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
+  virtual void     SetClustersOwner(Bool_t own=kTRUE) {SetBit(kClOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
   void     SetTrackletsOwner(Bool_t own=kTRUE) {SetBit(kTrOwner, own); if(!own) {fTracklets = 0x0; } }
 
 protected:
@@ -120,7 +120,7 @@ protected:
   void             CreateCluster(const MaxStruct &Max); 
   inline void      CalcAdditionalInfo(const MaxStruct &Max, Short_t *const signals, Int_t &nPadCount);
   virtual void     AddClusterToArray(AliTRDcluster *cluster);
-  virtual void     AddTrackletsToArray();
+  inline void      AddTrackletsToArray();
 
   const AliTRDReconstructor *fReconstructor; //! reconstructor
   AliRunLoader        *fRunLoader;           //! Run Loader
