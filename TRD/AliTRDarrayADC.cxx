@@ -30,7 +30,7 @@
 
 ClassImp(AliTRDarrayADC)
 
-Short_t *AliTRDarrayADC::fLutPadNumbering = 0x0;
+Short_t *AliTRDarrayADC::fgLutPadNumbering = 0x0;
 
 //____________________________________________________________________________________
 AliTRDarrayADC::AliTRDarrayADC()
@@ -578,7 +578,7 @@ Short_t AliTRDarrayADC::GetData(Int_t nrow, Int_t ncol, Int_t ntime) const
   // the method GetDataByAdcCol
   //
 
-  Int_t corrcolumn = fLutPadNumbering[ncol];
+  Int_t corrcolumn = fgLutPadNumbering[ncol];
 
   return fADC[(nrow*fNumberOfChannels+corrcolumn)*fNtime+ntime];
 
@@ -592,7 +592,7 @@ void AliTRDarrayADC::SetData(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value)
   // the method SetDataByAdcCol
   //
 
-  Int_t colnumb = fLutPadNumbering[ncol];
+  Int_t colnumb = fgLutPadNumbering[ncol];
 
   fADC[(nrow*fNumberOfChannels+colnumb)*fNtime+ntime]=value;
 
@@ -606,10 +606,10 @@ void AliTRDarrayADC::CreateLut()
   // pad numbering and mcm channel numbering
   //
 
-  if(fLutPadNumbering)  return;
+  if(fgLutPadNumbering)  return;
   
-   fLutPadNumbering = new Short_t[AliTRDfeeParam::GetNcol()];
-   memset(fLutPadNumbering,0,sizeof(Short_t)*AliTRDfeeParam::GetNcol());
+   fgLutPadNumbering = new Short_t[AliTRDfeeParam::GetNcol()];
+   memset(fgLutPadNumbering,0,sizeof(Short_t)*AliTRDfeeParam::GetNcol());
 
   for(Int_t mcm=0; mcm<8; mcm++)
     {
@@ -618,7 +618,7 @@ void AliTRDarrayADC::CreateLut()
       Int_t shiftposition = 1+3*mcm;
       for(Int_t index=lowerlimit;index<upperlimit;index++)
 	{
-	  fLutPadNumbering[index]=index+shiftposition;
+	  fgLutPadNumbering[index]=index+shiftposition;
 	}
     }
 }

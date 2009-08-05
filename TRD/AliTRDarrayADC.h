@@ -57,16 +57,16 @@ class AliTRDarrayADC: public TObject
   Int_t fNtime;   //Number of time bins
   Int_t fNAdim;   //Dimension of the ADC array
   Short_t* fADC;  //[fNAdim]   //Pointer to adc values
-  static Short_t *fLutPadNumbering;   //  [fNcol] Look Up Table
+  static Short_t *fgLutPadNumbering;   //  [fNcol] Look Up Table
 
-  ClassDef(AliTRDarrayADC,3) //ADC container class
+  ClassDef(AliTRDarrayADC,4) //ADC container class
     
 };
 
 inline void AliTRDarrayADC::GetData(Int_t r, Int_t c, Int_t t, Int_t n, Short_t *vals) const
 {
-  Int_t ColNum = fLutPadNumbering[c];
-  for(Int_t ic=n, idx = (r*fNumberOfChannels+ColNum)*fNtime+t; ic--; idx+=fNtime) vals[ic] = fADC[idx];
+  Int_t colNum = fgLutPadNumbering[c];
+  for(Int_t ic=n, idx = (r*fNumberOfChannels+colNum)*fNtime+t; ic--; idx+=fNtime) vals[ic] = fADC[idx];
  }
 
 #endif 

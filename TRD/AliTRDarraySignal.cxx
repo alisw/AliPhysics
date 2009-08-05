@@ -26,12 +26,11 @@
 
 #include "AliTRDarraySignal.h"
 //#include "AliLog.h"
-#include "TArray.h" //for memset
 #include "AliTRDfeeParam.h"
 
 ClassImp(AliTRDarraySignal)
 
-Short_t *AliTRDarraySignal::fLutPadNumbering = 0x0;
+Short_t *AliTRDarraySignal::fgLutPadNumbering = 0x0;
 
 //_______________________________________________________________________
 AliTRDarraySignal::AliTRDarraySignal()
@@ -164,7 +163,7 @@ void AliTRDarraySignal::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
 }
 
 //_______________________________________________________________________
-Int_t AliTRDarraySignal::GetOverThreshold(Float_t threshold)
+Int_t AliTRDarraySignal::GetOverThreshold(Float_t threshold) const
 {
   //
   // Get the number of entries over the threshold 
@@ -391,7 +390,7 @@ Float_t AliTRDarraySignal::GetData(Int_t nrow, Int_t ncol, Int_t ntime) const
   // the method GetDataByAdcCol
   //
 
-  Int_t corrcolumn = fLutPadNumbering[ncol];
+  Int_t corrcolumn = fgLutPadNumbering[ncol];
 
   return fSignal[(nrow*fNumberOfChannels+corrcolumn)*fNtime+ntime];
 
@@ -405,7 +404,7 @@ void AliTRDarraySignal::SetData(Int_t nrow, Int_t ncol, Int_t ntime, Float_t val
   // the method SetDataByAdcCol
   //
 
-  Int_t colnumb = fLutPadNumbering[ncol];
+  Int_t colnumb = fgLutPadNumbering[ncol];
 
   fSignal[(nrow*fNumberOfChannels+colnumb)*fNtime+ntime]=value;
 
@@ -419,10 +418,10 @@ void AliTRDarraySignal::CreateLut()
   // pad numbering and mcm channel numbering
   //
 
-  if(fLutPadNumbering)  return;
+  if(fgLutPadNumbering)  return;
   
-   fLutPadNumbering = new Short_t[AliTRDfeeParam::GetNcol()];
-   memset(fLutPadNumbering,0,sizeof(Short_t)*AliTRDfeeParam::GetNcol());
+   fgLutPadNumbering = new Short_t[AliTRDfeeParam::GetNcol()];
+   memset(fgLutPadNumbering,0,sizeof(Short_t)*AliTRDfeeParam::GetNcol());
 
   for(Int_t mcm=0; mcm<8; mcm++)
     {
@@ -431,7 +430,7 @@ void AliTRDarraySignal::CreateLut()
       Int_t shiftposition = 1+3*mcm;
       for(Int_t index=lowerlimit;index<upperlimit;index++)
 	{
-	  fLutPadNumbering[index]=index+shiftposition;
+	  fgLutPadNumbering[index]=index+shiftposition;
 	}
     }
 }

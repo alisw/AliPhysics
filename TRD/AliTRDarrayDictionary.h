@@ -48,9 +48,9 @@ class AliTRDarrayDictionary: public TObject
   Int_t   fNtime;       //Number of time bins
   Int_t   fNDdim;       //Dimension of the Dictionary array
   Int_t*  fDictionary;  //[fNDdim]  //Pointer to integers array
-  static Short_t *fLutPadNumbering;   //  [fNcol] Look Up Table
+  static Short_t *fgLutPadNumbering;   //  [fNcol] Look Up Table
 
-  ClassDef(AliTRDarrayDictionary,2) //Dictionary container class
+  ClassDef(AliTRDarrayDictionary,3) //Dictionary container class
     
 };
 #endif

@@ -25,12 +25,11 @@
 /////////////////////////////////////////////////////////
 
 #include "AliTRDarrayDictionary.h"
-#include "TArray.h"
 #include "AliTRDfeeParam.h"
 
 ClassImp(AliTRDarrayDictionary)
 
-Short_t *AliTRDarrayDictionary::fLutPadNumbering = 0x0;
+Short_t *AliTRDarrayDictionary::fgLutPadNumbering = 0x0;
 
 //________________________________________________________________________________
 AliTRDarrayDictionary::AliTRDarrayDictionary()
@@ -364,7 +363,7 @@ Int_t AliTRDarrayDictionary::GetData(Int_t nrow, Int_t ncol, Int_t ntime) const
   // the method GetDataByAdcCol
   //
 
-  Int_t corrcolumn = fLutPadNumbering[ncol];
+  Int_t corrcolumn = fgLutPadNumbering[ncol];
 
   return fDictionary[(nrow*fNumberOfChannels+corrcolumn)*fNtime+ntime];
 
@@ -378,7 +377,7 @@ void AliTRDarrayDictionary::SetData(Int_t nrow, Int_t ncol, Int_t ntime, Int_t v
   // the method SetDataByAdcCol
   //
 
-  Int_t colnumb = fLutPadNumbering[ncol];
+  Int_t colnumb = fgLutPadNumbering[ncol];
 
   fDictionary[(nrow*fNumberOfChannels+colnumb)*fNtime+ntime]=value;
 
@@ -392,10 +391,10 @@ void AliTRDarrayDictionary::CreateLut()
   // pad numbering and mcm channel numbering
   //
 
-  if(fLutPadNumbering)  return;
+  if(fgLutPadNumbering)  return;
   
-   fLutPadNumbering = new Short_t[AliTRDfeeParam::GetNcol()];
-   memset(fLutPadNumbering,0,sizeof(Short_t)*AliTRDfeeParam::GetNcol());
+   fgLutPadNumbering = new Short_t[AliTRDfeeParam::GetNcol()];
+   memset(fgLutPadNumbering,0,sizeof(Short_t)*AliTRDfeeParam::GetNcol());
 
   for(Int_t mcm=0; mcm<8; mcm++)
     {
@@ -404,7 +403,7 @@ void AliTRDarrayDictionary::CreateLut()
       Int_t shiftposition = 1+3*mcm;
       for(Int_t index=lowerlimit;index<upperlimit;index++)
 	{
-	  fLutPadNumbering[index]=index+shiftposition;
+	  fgLutPadNumbering[index]=index+shiftposition;
 	}
     }
 }

@@ -36,7 +36,7 @@ class AliTRDarraySignal: public TObject
               {fSignal[(row*fNumberOfChannels+col)*fNtime+time]=value;};
   Bool_t  HasData() const {return fNtime ? 1 : 0;};
   Int_t   GetDim() const {return fNdim;};
-  Int_t   GetOverThreshold(Float_t threshold);
+  Int_t   GetOverThreshold(Float_t threshold) const;
   void    Compress(Float_t minval);
   void    Expand();
   void    Reset();
@@ -53,9 +53,9 @@ class AliTRDarraySignal: public TObject
   Int_t    fNtime;     //Number of time bins
   Int_t    fNdim;      //Dimension of the array
   Float_t *fSignal;    //[fNdim]  //Pointer to signals
-  static Short_t *fLutPadNumbering;   //  [fNcol] Look Up Table 
+  static Short_t *fgLutPadNumbering;   //  [fNcol] Look Up Table        
 
-  ClassDef(AliTRDarraySignal,2)  //Signal container class
+  ClassDef(AliTRDarraySignal,3)  //Signal container class
     
 };
 #endif
