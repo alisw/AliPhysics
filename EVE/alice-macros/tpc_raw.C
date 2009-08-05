@@ -54,9 +54,6 @@ void tpc_raw(Int_t mode = 3)
       t->SetSectorID(i);
       t->SetAutoTrans(kTRUE);
       t->SetDataSource(x);
-      t->SetMinTime(40);
-      t->SetMaxTime(980);
-      t->SetDriftVel(2.273);
       sec3d->AddElement(t);
       t->IncRTS();
     }

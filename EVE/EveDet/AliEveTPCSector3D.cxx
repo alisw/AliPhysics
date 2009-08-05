@@ -41,7 +41,7 @@ AliEveTPCSector3D::AliEveTPCSector3D(const Text_t* n, const Text_t* t) :
   fPointSetOn     (0),
   fPointSetMaxVal (0),
 
-  fDriftVel  (1),
+  fDriftVel  (1.07),
   fZStep     (250.0/900)
 {
   // Constructor.
