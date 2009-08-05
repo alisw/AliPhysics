@@ -24,11 +24,11 @@
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
 #include <TVirtualMC.h>
+#include <TMath.h>
 
 #include "AliLog.h"
 #include "AliAlignObjParams.h"
 
-#include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
 
@@ -2816,7 +2816,9 @@ void AliTRDgeometry::AssembleChamber(Int_t ilayer, Int_t istack)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::RotateBack(Int_t det, Double_t *loc, Double_t *glb) const
+Bool_t AliTRDgeometry::RotateBack(Int_t det
+                                , const Double_t * const loc
+                                , Double_t *glb) const
 {
   //
   // Rotates a chambers to transform the corresponding local frame
