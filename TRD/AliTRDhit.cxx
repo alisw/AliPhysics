@@ -40,7 +40,7 @@ AliTRDhit::AliTRDhit()
 
 //_____________________________________________________________________________
 AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t det
-                   , Float_t *hits, Int_t q, Float_t time)
+                   , const Float_t * const hits, Int_t q, Float_t time)
   :AliHit(shunt,track)
   ,fDetector((UShort_t) det)
   ,fQ((Short_t) q)

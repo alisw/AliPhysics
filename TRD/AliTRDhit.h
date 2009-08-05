@@ -18,7 +18,7 @@ class AliTRDhit : public AliHit {
  public:
 
   AliTRDhit();
-  AliTRDhit(Int_t shunt, Int_t track, Int_t det, Float_t *hits, Int_t q, Float_t time);
+  AliTRDhit(Int_t shunt, Int_t track, Int_t det, const Float_t * const hits, Int_t q, Float_t time);
   virtual ~AliTRDhit();
 
           Int_t    GetDetector() const         { return fDetector; }
