@@ -12,7 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "TMath.h"
+
 #include "../AliTRDgeometry.h"
 
 class TH1F;
@@ -41,10 +41,10 @@ class AliTRDCalDet : public TNamed {
                                                  { fData[AliTRDgeometry::GetDetector(p,c,s)] = value; };
 
   // statistic
-  Double_t GetMean(AliTRDCalDet *outlierDet=0);
-  Double_t GetRMS(AliTRDCalDet *outlierDet=0);
-  Double_t GetMedian(AliTRDCalDet *outlierDet=0);
-  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, AliTRDCalDet *outlierDet=0);     
+  Double_t GetMean(AliTRDCalDet * const outlierDet=0) const;
+  Double_t GetRMS(AliTRDCalDet * const outlierDet=0) const;
+  Double_t GetMedian(AliTRDCalDet * const outlierDet=0) const;
+  Double_t GetLTM(Double_t * sigma=0, Double_t fraction=0.9, AliTRDCalDet * const outlierDet=0);     
 
   // Plot functions
   TH1F * MakeHisto1Distribution(Float_t min=4, Float_t max=-4, Int_t type=0);     

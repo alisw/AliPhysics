@@ -29,18 +29,13 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <stdlib.h>
-
 #include <TH1.h>
 #include <TRandom.h>
 #include <TMath.h>
-#include <TParticle.h>
 #include <TVirtualMC.h>
 #include <TVirtualMCStack.h>
 
 #include "AliModule.h"
-#include "AliLog.h"
-#include "AliMC.h"
 
 #include "AliTRDsimTR.h"
 
@@ -945,7 +940,9 @@ Double_t AliTRDsimTR::GetMuAi(Double_t energyMeV)
 
 //_____________________________________________________________________________
 Double_t AliTRDsimTR::Interpolate(Double_t energyMeV
-                              , Double_t *en, Double_t *mu, Int_t n)
+                                , Double_t *en
+                                , const Double_t * const mu
+                                , Int_t n)
 {
   //
   // Interpolates the photon absorbtion cross section 
@@ -967,7 +964,7 @@ Double_t AliTRDsimTR::Interpolate(Double_t energyMeV
 
 //_____________________________________________________________________________
 Int_t AliTRDsimTR::Locate(Double_t *xv, Int_t n, Double_t xval
-                      , Int_t &kl, Double_t &dx) 
+                        , Int_t &kl, Double_t &dx) 
 {
   //
   // Locates a point (xval) in a 1-dim grid (xv(n))

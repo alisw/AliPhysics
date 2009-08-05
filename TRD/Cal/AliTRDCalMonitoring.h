@@ -1,5 +1,5 @@
-#ifndef AliTRDCALMONITORING_H
-#define AliTRDCALMONITORING_H
+#ifndef ALITRDCALMONITORING_H
+#define ALITRDCALMONITORING_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 

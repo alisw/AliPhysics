@@ -780,6 +780,7 @@ AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UInt_t **
           } 
         } 
 
+
       if (det != lastdet) 
   { 
     // If new detector found

@@ -26,13 +26,9 @@
 
 #include <TFile.h>
 #include <TROOT.h>
-#include <TObject.h>
 #include <TMultiLayerPerceptron.h>
 
-#include "AliLog.h"
 #include "AliPID.h"
-#include "AliESD.h"
-#include "AliESDtrack.h"
 #include "AliTRDtrack.h"
 
 #include "AliTRDgeometry.h"
@@ -131,7 +127,7 @@ TObject *AliTRDCalPIDNN::GetModel(Int_t ip, Int_t, Int_t iplane) const
   if (ip<0 || ip>= kNMom) return 0x0;
   
   AliInfo(Form("Retrive MultiLayerPerceptron for %5.2f GeV/c for plane %d" 
-         ,fTrackMomentum[ip]
+         ,fgTrackMomentum[ip]
          ,iplane));
   
   return fModel->At(GetModelID(ip, 0, iplane));
@@ -139,7 +135,8 @@ TObject *AliTRDCalPIDNN::GetModel(Int_t ip, Int_t, Int_t iplane) const
 }
 
 //_________________________________________________________________________
-Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom, Float_t *dedx
+Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom
+                                      , const Float_t * const dedx
                                       , Float_t, Int_t iplane) const
 {
   //
@@ -154,9 +151,9 @@ Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom, Float_t *dedx
   // find the interval in momentum and track segment length which applies for this data
   
   Int_t imom = 1;
-  while (imom<AliTRDCalPID::kNMom-1 && mom>fTrackMomentum[imom]) imom++;
+  while (imom<AliTRDCalPID::kNMom-1 && mom>fgTrackMomentum[imom]) imom++;
   Double_t lNN1, lNN2;
-  Double_t mom1 = fTrackMomentum[imom-1], mom2 = fTrackMomentum[imom];
+  Double_t mom1 = fgTrackMomentum[imom-1], mom2 = fgTrackMomentum[imom];
 
   TMultiLayerPerceptron *nn = 0x0;
   if(!(nn = (TMultiLayerPerceptron *) fModel->At(GetModelID(imom-1, spec, iplane/*, ilength*/)))){
@@ -182,10 +179,10 @@ Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom, Float_t *dedx
   lNN2 = nn->Evaluate(spec, ddedx);
   
   // return interpolation over momentum binning
-  if      (mom < fTrackMomentum[0]) {
+  if      (mom < fgTrackMomentum[0]) {
     return lNN1;
   }
-  else if (mom > fTrackMomentum[AliTRDCalPID::kNMom-1]) {
+  else if (mom > fgTrackMomentum[AliTRDCalPID::kNMom-1]) {
     return lNN2;
   }
   else {
@@ -207,7 +204,7 @@ void AliTRDCalPIDNN::Init()
 }
 
 //_________________________________________________________________________
-Int_t AliTRDCalPIDNN::GetModelID(Int_t mom, Int_t, Int_t plane) const
+Int_t AliTRDCalPIDNN::GetModelID(Int_t mom, Int_t /*ii*/, Int_t plane) const
 {
   
   // returns the ID of the NN distribution (66 MLPs, ID from 56 to 121)

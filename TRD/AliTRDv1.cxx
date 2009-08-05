@@ -21,19 +21,14 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <stdlib.h> 
-
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TRandom.h>
-#include <TVector.h>
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
 
-#include "AliConst.h"
-#include "AliLog.h"
 #include "AliTrackReference.h"
 #include "AliMC.h"
 #include "AliRun.h"
@@ -41,7 +36,6 @@
 
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
-#include "AliTRDhit.h"
 #include "AliTRDsimTR.h"
 #include "AliTRDv1.h"
 

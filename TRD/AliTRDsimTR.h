@@ -36,7 +36,7 @@ class AliTRDsimTR : public TObject {
                            , Int_t &nPhoton, Float_t *ePhoton);
   virtual Double_t Sigma(Double_t energykeV);
   virtual Double_t Interpolate(Double_t energyMeV
-                             , Double_t *en, Double_t *mu, Int_t n);
+                             , Double_t *en, const Double_t * const mu, Int_t n);
   virtual Int_t    Locate(Double_t *xv, Int_t n, Double_t xval
                         , Int_t &kl, Double_t &dx);
   virtual Double_t Omega(Float_t rho, Float_t z, Float_t a)  { return (28.8 * TMath::Sqrt(rho * z / a)); };

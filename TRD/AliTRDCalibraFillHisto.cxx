@@ -1137,8 +1137,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, I
   for(Int_t k = 0;  k < npoints; k++){
     //Take the cluster
     AliTRDcluster *cl      = (AliTRDcluster *) t->GetCluster(k+index0);
-    Short_t  *signals      = cl->GetSignals();              // signal
-    Double_t     time      = cl->GetPadTime();              // time bin
+    Short_t *signals       = cl->GetSignals();              // signal
+    Double_t time          = cl->GetPadTime();              // time bin
     Float_t padPosTracklet = line[0]+line[1]*time;          // reconstruct position from fit
     Float_t padPos         = cl->GetPadCol();               // middle pad
     Double_t dpad          = padPosTracklet - padPos;       // reconstruct position relative to middle pad from fit 

@@ -26,7 +26,6 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <TH1F.h>
 #include <TH2F.h>
 #include <TFile.h>
 #include <TROOT.h>
@@ -39,7 +38,7 @@
 
 ClassImp(AliTRDCalPIDLQ)
 
-Float_t AliTRDCalPIDLQ::fTrackSegLength[kNLength] = { 3.7, 3.9, 4.2, 5.0 };
+Float_t AliTRDCalPIDLQ::fgTrackSegLength[kNLength] = { 3.7, 3.9, 4.2, 5.0 };
 
 //_________________________________________________________________________
 AliTRDCalPIDLQ::AliTRDCalPIDLQ()
@@ -139,7 +138,7 @@ TObject* AliTRDCalPIDLQ::GetModel(Int_t ip, Int_t iType, Int_t iplane) const    
   if (iType < 0 || iType >= AliPID::kSPECIES) return 0x0;
 	if(ip<0 || ip>= kNMom ) return 0x0;
 
-	AliInfo(Form("Retrive dEdx histogram for %s of %5.2f GeV/c", fPartName[iType], fTrackMomentum[ip]));
+  AliInfo(Form("Retrive dEdx histogram for %s of %5.2f GeV/c", fPartName[iType], fgTrackMomentum[ip]));
   
   return fModel->At(GetModelID(ip, iType, iplane));
 }
@@ -160,16 +159,16 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Float_t mom, Float_t *dedx, 
 	
 	// find the interval in momentum and track segment length which applies for this data
 	Int_t ilength = 1;
-  while(ilength<kNLength-1 && length>fTrackSegLength[ilength]){
+  while(ilength<kNLength-1 && length>fgTrackSegLength[ilength]){
 		ilength++;
 	}
 	Int_t imom = 1;
-  while(imom<kNMom-1 && mom>fTrackMomentum[imom]) imom++;
+  while(imom<kNMom-1 && mom>fgTrackMomentum[imom]) imom++;
 
 	Int_t nbinsx, nbinsy;
 	TAxis *ax = 0x0, *ay = 0x0;
-	Double_t LQ1, LQ2;
-	Double_t mom1 = fTrackMomentum[imom-1], mom2 = fTrackMomentum[imom];
+	Double_t lq1, lq2;
+	Double_t mom1 = fgTrackMomentum[imom-1], mom2 = fgTrackMomentum[imom];
 	TH2 *hist = 0x0;
 	if(!(hist = (TH2D*)fModel->At(GetModelID(imom-1, spec, iplane)))){
 		AliInfo(Form("Looking for spec(%d) mom(%f) Ex(%f) Ey(%f) length(%f)", spec, mom, dedx[0], dedx[1], length));
@@ -182,31 +181,31 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Float_t mom, Float_t *dedx, 
         Bool_t kX = (x < ax->GetBinUpEdge(nbinsx));
 	Bool_t kY = (y < ay->GetBinUpEdge(nbinsy));
 	if(kX)
-		if(kY) LQ1 = hist->GetBinContent( hist->FindBin(x, y)); 
+		if(kY) lq1 = hist->GetBinContent( hist->FindBin(x, y)); 
     //fEstimator->Estimate2D2(hist, x, y);
-		else LQ1 = hist->GetBinContent(ax->FindBin(x), nbinsy);
+		else lq1 = hist->GetBinContent(ax->FindBin(x), nbinsy);
 	else
-		if(kY) LQ1 = hist->GetBinContent(nbinsx, ay->FindBin(y));
-	 	else LQ1 = hist->GetBinContent(nbinsx, nbinsy);
+		if(kY) lq1 = hist->GetBinContent(nbinsx, ay->FindBin(y));
+	 	else lq1 = hist->GetBinContent(nbinsx, nbinsy);
 
 
 	if(!(hist = (TH2D*)fModel->At(GetModelID(imom, spec, iplane)))){
 		AliInfo(Form("Looking for spec(%d) mom(%f) Ex(%f) Ey(%f) length(%f)", spec, mom, dedx[0], dedx[1], length));
 		AliError(Form("EHistogram id %d not found in DB.", GetModelID(imom, spec, iplane)));
-		return LQ1;
+		return lq1;
 	}
 	if(kX)
-		if(kY) LQ2 = hist->GetBinContent( hist->FindBin(x, y)); 
+		if(kY) lq2 = hist->GetBinContent( hist->FindBin(x, y)); 
     //fEstimator->Estimate2D2(hist, x, y);
-		else LQ2 = hist->GetBinContent(ax->FindBin(x), nbinsy);
+		else lq2 = hist->GetBinContent(ax->FindBin(x), nbinsy);
 	else
-		if(kY) LQ2 = hist->GetBinContent(nbinsx, ay->FindBin(y));
-	 	else LQ2 = hist->GetBinContent(nbinsx, nbinsy);
+		if(kY) lq2 = hist->GetBinContent(nbinsx, ay->FindBin(y));
+	 	else lq2 = hist->GetBinContent(nbinsx, nbinsy);
 	
         // return interpolation over momentum binning
-        if(mom < fTrackMomentum[0]) return LQ1;
-        else if(mom > fTrackMomentum[kNMom-1]) return LQ2;
-        else return LQ1 + (LQ2 - LQ1)*(mom - mom1)/(mom2 - mom1);
+        if(mom < fgTrackMomentum[0]) return lq1;
+        else if(mom > fgTrackMomentum[kNMom-1]) return lq2;
+        else return lq1 + (lq2 - lq1)*(mom - mom1)/(mom2 - mom1);
 
 }
 
@@ -223,7 +222,7 @@ void AliTRDCalPIDLQ::Init()
 }
 
 //_________________________________________________________________________
-Int_t AliTRDCalPIDLQ::GetModelID(Int_t mom, Int_t spec, Int_t) const
+Int_t AliTRDCalPIDLQ::GetModelID(Int_t mom, Int_t spec, Int_t /*ii*/) const
 {  
   // returns the ID of the LQ distribution (55 Histos, ID from 1 to 55)
 

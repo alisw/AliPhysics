@@ -131,6 +131,10 @@ AliTRDCalDCS &AliTRDCalDCS::operator=(const AliTRDCalDCS &cd)
 //_____________________________________________________________________________
 void AliTRDCalDCS::EvaluateGlobalParameters()
 {
+  //
+  // Do an evaluation of all global parameters
+  //
+
   for(Int_t i=0; i<540; i++) {
     AliTRDCalDCSFEE *iDCSFEEObj;
     iDCSFEEObj = GetCalDCSFEEObj(i);

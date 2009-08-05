@@ -1,5 +1,5 @@
-#ifndef AliTRDCalChamberStatus_H
-#define AliTRDCalChamberStatus_H
+#ifndef ALITRDCalChamberStatus_H
+#define ALITRDCalChamberStatus_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 

@@ -108,7 +108,7 @@ void AliTRDCalDet::Copy(TObject &c) const
 }
 
 //___________________________________________________________________________________
-Double_t AliTRDCalDet::GetMean(AliTRDCalDet* outlierDet) 
+Double_t AliTRDCalDet::GetMean(AliTRDCalDet * const outlierDet) const
 {
   //
   // Calculate the mean
@@ -116,20 +116,20 @@ Double_t AliTRDCalDet::GetMean(AliTRDCalDet* outlierDet)
 
   if (!outlierDet) return TMath::Mean(kNdet,fData);
   Double_t *ddata = new Double_t[kNdet];
-  Int_t NPoints = 0;
+  Int_t nPoints = 0;
   for (Int_t i=0;i<kNdet;i++) {
     if (!(outlierDet->GetValue(i))) {
-      ddata[NPoints]= fData[NPoints];
-      NPoints++;
+      ddata[nPoints]= fData[nPoints];
+      nPoints++;
     }
   }
-  Double_t mean = TMath::Mean(NPoints,ddata);
+  Double_t mean = TMath::Mean(nPoints,ddata);
   delete [] ddata;
   return mean;
 }
 
 //_______________________________________________________________________________________
-Double_t AliTRDCalDet::GetMedian(AliTRDCalDet* outlierDet) 
+Double_t AliTRDCalDet::GetMedian(AliTRDCalDet * const outlierDet) const
 {
   //
   // Calculate the median
@@ -137,21 +137,21 @@ Double_t AliTRDCalDet::GetMedian(AliTRDCalDet* outlierDet)
 
   if (!outlierDet) return (Double_t) TMath::Median(kNdet,fData);
   Double_t *ddata = new Double_t[kNdet];
-  Int_t NPoints = 0;
+  Int_t nPoints = 0;
   for (Int_t i=0;i<kNdet;i++) {
     if (!(outlierDet->GetValue(i))) {
-      ddata[NPoints]= fData[NPoints];
-      NPoints++;
+      ddata[nPoints]= fData[nPoints];
+      nPoints++;
     }
   }
-  Double_t mean = TMath::Median(NPoints,ddata);
+  Double_t mean = TMath::Median(nPoints,ddata);
   delete [] ddata;
   return mean;
 
 }
 
 //____________________________________________________________________________________________
-Double_t AliTRDCalDet::GetRMS(AliTRDCalDet* outlierDet) 
+Double_t AliTRDCalDet::GetRMS(AliTRDCalDet * const outlierDet) const
 {
   //
   // Calculate the RMS
@@ -159,20 +159,22 @@ Double_t AliTRDCalDet::GetRMS(AliTRDCalDet* outlierDet)
 
   if (!outlierDet) return TMath::RMS(kNdet,fData);
   Double_t *ddata = new Double_t[kNdet];
-  Int_t NPoints = 0;
+  Int_t nPoints = 0;
   for (Int_t i=0;i<kNdet;i++) {
     if (!(outlierDet->GetValue(i))) {
-      ddata[NPoints]= fData[NPoints];
-      NPoints++;
+      ddata[nPoints]= fData[nPoints];
+      nPoints++;
     }
   }
-  Double_t mean = TMath::RMS(NPoints,ddata);
+  Double_t mean = TMath::RMS(nPoints,ddata);
   delete [] ddata;
   return mean;
 }
 
 //______________________________________________________________________________________________
-Double_t AliTRDCalDet::GetLTM(Double_t *sigma, Double_t fraction, AliTRDCalDet* outlierDet)
+Double_t AliTRDCalDet::GetLTM(Double_t *sigma
+                            , Double_t fraction
+                            , AliTRDCalDet * const outlierDet)
 {
   //
   //  Calculate LTM mean and sigma
@@ -180,15 +182,15 @@ Double_t AliTRDCalDet::GetLTM(Double_t *sigma, Double_t fraction, AliTRDCalDet* 
 
   Double_t *ddata = new Double_t[kNdet];
   Double_t mean=0, lsigma=0;
-  UInt_t NPoints = 0;
+  UInt_t nPoints = 0;
   for (Int_t i=0;i<kNdet;i++) {
      if (!outlierDet || !(outlierDet->GetValue(i))) {
-        ddata[NPoints]= fData[NPoints];
-        NPoints++;
+        ddata[nPoints]= fData[nPoints];
+        nPoints++;
      }
   }
-  Int_t hh = TMath::Min(TMath::Nint(fraction *NPoints), Int_t(NPoints));
-  AliMathBase::EvaluateUni(NPoints,ddata, mean, lsigma, hh);
+  Int_t hh = TMath::Min(TMath::Nint(fraction *nPoints), Int_t(nPoints));
+  AliMathBase::EvaluateUni(nPoints,ddata, mean, lsigma, hh);
   if (sigma) *sigma=lsigma;
   delete [] ddata;
   return mean;

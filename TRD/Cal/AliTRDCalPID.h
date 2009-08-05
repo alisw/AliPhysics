@@ -15,13 +15,9 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef ROOT_TNamed
 #include <TNamed.h>
-#endif
 
-#ifndef ALIPID_H
 #include "AliPID.h"
-#endif
 
 class AliTRDCalPID : public TNamed
 {
@@ -38,40 +34,39 @@ class AliTRDCalPID : public TNamed
 
   virtual Bool_t   LoadReferences(Char_t *refFile) = 0;
   static  Double_t GetMomentum(Int_t ip) { 
-    return (ip<0 || ip>=kNMom) ? -1.0 : fTrackMomentum[ip]; }
+    return (ip<0 || ip>=kNMom) ? -1.0 : fgTrackMomentum[ip]; }
   static  Double_t GetMomentumBinning(Int_t ip) { 
-    return (ip<0 || ip>=kNMom+1) ? -1.0 : fTrackMomentumBinning[ip]; }
+    return (ip<0 || ip>=kNMom+1) ? -1.0 : fgTrackMomentumBinning[ip]; }
   virtual TObject *GetModel(Int_t ip, Int_t iType, Int_t iPlane) const = 0;
-  virtual Double_t GetProbability(Int_t spec, Float_t mom, Float_t *dedx
+  virtual Double_t GetProbability(Int_t spec, Float_t mom
+                                , const Float_t * const dedx
                                 , Float_t length, Int_t plane) const = 0;
-  static  Color_t  GetPartColor(Int_t i)              { return fPartColor[i]; }
+  static  Color_t  GetPartColor(Int_t i)                    { return fgPartColor[i]; }
   static  Int_t    GetPartIndex(Int_t pdg);
-  static  const Char_t  *GetPartName(Int_t i)               { return fPartName[i]; }
-  static  const Char_t  *GetPartSymb(Int_t i)               { return fPartSymb[i]; }
+  static  const Char_t  *GetPartName(Int_t i)               { return fPartName[i];   }
+  static  const Char_t  *GetPartSymb(Int_t i)               { return fPartSymb[i];   }
 
-          void     SetPartName(Int_t i, const Char_t *name) { fPartName[i] = name; }
-          void     SetPartSymb(Int_t i, const Char_t *symb) { fPartSymb[i] = symb; }
+          void     SetPartName(Int_t i, const Char_t *name) { fPartName[i] = name;   }
+          void     SetPartSymb(Int_t i, const Char_t *symb) { fPartSymb[i] = symb;   }
 
  protected:
 
   virtual void     Init() = 0;
   virtual Int_t    GetModelID(Int_t mom, Int_t spec, Int_t plane) const = 0;
 
+  static const Char_t   *fPartName[AliPID::kSPECIES];     //! Names of particle species
+  static const Char_t   *fPartSymb[AliPID::kSPECIES];     //! Symbols of particle species
+  static       Color_t   fgPartColor[AliPID::kSPECIES];   //! Colors of particle species
+  static       Float_t   fgTrackMomentum[kNMom];          //  Track momenta for which response functions are available
+  static       Float_t   fgTrackMomentumBinning[kNMom+1]; //  Defines the start and the endpoints of the momentum bins
+  TObjArray             *fModel;                          //  Model for probability estimate
+
  private:
 
   AliTRDCalPID(const AliTRDCalPID& pd);
   AliTRDCalPID    &operator=(const AliTRDCalPID &c);
 
- protected:
-
-  static const Char_t   *fPartName[AliPID::kSPECIES]; //! Names of particle species
-  static const Char_t   *fPartSymb[AliPID::kSPECIES]; //! Symbols of particle species
-  static  Color_t  fPartColor[AliPID::kSPECIES]; //! Colors of particle species
-  static  Float_t   fTrackMomentum[kNMom]; //  Track momenta for which response functions are available
-  static  Float_t   fTrackMomentumBinning[kNMom+1]; //  Defines the start and the endpoints of the momentum bins
-  TObjArray        *fModel;                //  Model for probability estimate
-
-  ClassDef(AliTRDCalPID, 3)                //  Base class for TRD PID methods
+  ClassDef(AliTRDCalPID, 4)                               //  Base class for TRD PID methods
 
 };
 #endif

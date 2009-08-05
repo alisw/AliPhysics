@@ -1,5 +1,5 @@
-#ifndef AliTRDCALDCSPTR_H
-#define AliTRDCALDCSPTR_H
+#ifndef ALITRDCALDCSPTR_H
+#define ALITRDCALDCSPTR_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 

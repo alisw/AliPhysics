@@ -63,8 +63,8 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE()
   //
   // AliTRDCalDCSFEE default constructor
   //
-  for(Int_t i=0; i<nROB; i++) {
-    for(Int_t j=0; j<nMCM; j++) {
+  for(Int_t i=0; i<fgkROB; i++) {
+    for(Int_t j=0; j<fgkMCM; j++) {
       fRStateGSM[i][j]  = -1;
       fRStateNI[i][j]   = -1;
       fRStateEV[i][j]   = -1;
@@ -104,8 +104,8 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE(const char *name, const char *title)
   //
   // AliTRDCalDCSFEE constructor
   //
-  for(Int_t i=0; i<nROB; i++) {
-    for(Int_t j=0; j<nMCM; j++) {
+  for(Int_t i=0; i<fgkROB; i++) {
+    for(Int_t j=0; j<fgkMCM; j++) {
       fRStateGSM[i][j]  = -1;
       fRStateNI[i][j]   = -1;
       fRStateEV[i][j]   = -1;

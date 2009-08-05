@@ -1,5 +1,5 @@
-#ifndef AliTRDCALDCS_H
-#define AliTRDCALDCS_H
+#ifndef ALITRDCALDCS_H
+#define ALITRDCALDCS_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -31,9 +31,9 @@ class AliTRDCalDCS : public TNamed {
   virtual ~AliTRDCalDCS() { };
 
   void    EvaluateGlobalParameters();
-  void    SetFEEArr(TObjArray *fa)             { fFEEArr              = fa;    }
-  void    SetPTRArr(TObjArray *pa)             { fPTRArr              = pa;    }
-  void    SetGTUArr(TObjArray *ga)             { fGTUArr              = ga;    }
+  void    SetFEEArr(TObjArray * const fa)      { fFEEArr              = fa;    }
+  void    SetPTRArr(TObjArray * const pa)      { fPTRArr              = pa;    }
+  void    SetGTUArr(TObjArray * const ga)      { fGTUArr              = ga;    }
   
   Int_t   GetGlobalNumberOfTimeBins() const    { return fGNumberOfTimeBins;    }
   Int_t   GetGlobalConfigTag() const           { return fGConfigTag;           }

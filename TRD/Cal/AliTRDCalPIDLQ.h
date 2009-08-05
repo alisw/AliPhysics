@@ -15,9 +15,7 @@
 //                                                                        //          
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALITRDCALPID_H
 #include "AliTRDCalPID.h"
-#endif
 
 class AliTRDCalPIDLQ : public AliTRDCalPID
 {
@@ -34,9 +32,13 @@ class AliTRDCalPIDLQ : public AliTRDCalPID
 
   Bool_t          LoadReferences(Char_t* refFile);
   TObject*        GetModel(Int_t ip, Int_t iType, Int_t iPlane) const;
-  static Double_t GetLength(Int_t il) { return (il<0 || il>=kNLength) ? -1. : fTrackSegLength[il]; }
+  static Double_t GetLength(Int_t il) { return (il<0 || il>=kNLength) ? -1. : fgTrackSegLength[il]; }
          Double_t GetProbability(Int_t spec, Float_t mom, Float_t *dedx
                                , Float_t length, Int_t plane) const;
+
+ protected:
+
+  static Float_t  fgTrackSegLength[kNLength]; // Track segment lengths
 
  private:
 
@@ -44,13 +46,9 @@ class AliTRDCalPIDLQ : public AliTRDCalPID
   AliTRDCalPIDLQ&   operator=(const AliTRDCalPIDLQ &c);
 
   void     Init();
-  Int_t    GetModelID(Int_t mom, Int_t , Int_t) const;
+  Int_t    GetModelID(Int_t mom, Int_t spec, Int_t ii) const;
 
- protected:
-
-  static Float_t  fTrackSegLength[kNLength];  // Track segment lengths
-
-  ClassDef(AliTRDCalPIDLQ, 1)                 // LQ PID reference manager
+  ClassDef(AliTRDCalPIDLQ, 2)                 // LQ PID reference manager
 
 };
 #endif

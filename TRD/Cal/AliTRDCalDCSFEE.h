@@ -1,5 +1,5 @@
-#ifndef AliTRDCALDCSFEE_H
-#define AliTRDCALDCSFEE_H
+#ifndef ALITRDCALDCSFEE_H
+#define ALITRDCALDCSFEE_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -80,37 +80,38 @@ class AliTRDCalDCSFEE : public TNamed {
   Int_t   GetMCMPtCnt(Int_t r,Int_t m) const         { return fRStatePTRG[r][m];     }
 
  protected:
-  static const Int_t nROB = 8;
-  static const Int_t nMCM = 18;
-  
-  Int_t   fStatusBit;              // 0 if everything is OK, otherwise !=0 (see impl. file)
-  Int_t   fDCSID;                  // ID of the DCS-Board
-  Int_t   fSM;                     // the number of the supermode 0..17
-  Int_t   fStack;                  // the number of the stack 0..4
-  Int_t   fLayer;                  // the number of the layer 0..5
-  Int_t   fNumberOfTimeBins;       // Number of timebins  
-  Int_t   fConfigTag;              // Configuration tag
-  Int_t   fSingleHitThres;         // threshold of single hits (arg of readout param)
-  Int_t   fThrPdClsThres;          // threshold of 3-pad clusters (arg of readout param)
-  Int_t   fSelNoZS;                // write every fSelNoZS'th event without ZS
-  Int_t   fTCFilterWeight;         // tail cancellation filter weight
-  Int_t   fTCFilterShortDecPar;    // tail cancellation filter short decay parameter
-  Int_t   fTCFilterLongDecPar;     // tail cancellation filter long decay parameter
-  Int_t   fFastStatNoise;          // collect statistics for fast noise mode
-  Int_t   fRStateGSM[nROB][nMCM];  // array of the global states of the MCMs
-  Int_t   fRStateNI[nROB][nMCM];   // array of the network interface states of the MCMs
-  Int_t   fRStateEV[nROB][nMCM];   // array of the event counters of the MCMs
-  Int_t   fRStatePTRG[nROB][nMCM]; // array of the pretrigger counters of the MCMs
-  TString fFilterType;             // filter type (p, pgt, nf)
-  TString fReadoutParam;           // readout parameter (zs, nozs, testpattern)
-  TString fTestPattern;            // value of testpattern (for readout param)
-  TString fTrackletMode;           // tracklet mode (trk, csmtrk, notrk)
-  TString fTrackletDef;            // definition for tracklet mode trk
-  TString fTriggerSetup;           // trigger setup (ptrg, autotrg, autol0)
-  TString fAddOptions;             // additional options (nopm, nion)
-  TString fConfigName;             // Configuration name
-  TString fConfigVersion;          // Configuration version
 
-  ClassDef(AliTRDCalDCSFEE,3)      // TRD calibration class for TRD FEE parameters
+  static const Int_t fgkROB = 8;       // Number of readout boards
+  static const Int_t fgkMCM = 18;      // Number of MCMs
+  
+  Int_t   fStatusBit;                  // 0 if everything is OK, otherwise !=0 (see impl. file)
+  Int_t   fDCSID;                      // ID of the DCS-Board
+  Int_t   fSM;                         // the number of the supermode 0..17
+  Int_t   fStack;                      // the number of the stack 0..4
+  Int_t   fLayer;                      // the number of the layer 0..5
+  Int_t   fNumberOfTimeBins;           // Number of timebins  
+  Int_t   fConfigTag;                  // Configuration tag
+  Int_t   fSingleHitThres;             // threshold of single hits (arg of readout param)
+  Int_t   fThrPdClsThres;              // threshold of 3-pad clusters (arg of readout param)
+  Int_t   fSelNoZS;                    // write every fSelNoZS'th event without ZS
+  Int_t   fTCFilterWeight;             // tail cancellation filter weight
+  Int_t   fTCFilterShortDecPar;        // tail cancellation filter short decay parameter
+  Int_t   fTCFilterLongDecPar;         // tail cancellation filter long decay parameter
+  Int_t   fFastStatNoise;              // collect statistics for fast noise mode
+  Int_t   fRStateGSM[fgkROB][fgkMCM];  // array of the global states of the MCMs
+  Int_t   fRStateNI[fgkROB][fgkMCM];   // array of the network interface states of the MCMs
+  Int_t   fRStateEV[fgkROB][fgkMCM];   // array of the event counters of the MCMs
+  Int_t   fRStatePTRG[fgkROB][fgkMCM]; // array of the pretrigger counters of the MCMs
+  TString fFilterType;                 // filter type (p, pgt, nf)
+  TString fReadoutParam;               // readout parameter (zs, nozs, testpattern)
+  TString fTestPattern;                // value of testpattern (for readout param)
+  TString fTrackletMode;               // tracklet mode (trk, csmtrk, notrk)
+  TString fTrackletDef;                // definition for tracklet mode trk
+  TString fTriggerSetup;               // trigger setup (ptrg, autotrg, autol0)
+  TString fAddOptions;                 // additional options (nopm, nion)
+  TString fConfigName;                 // Configuration name
+  TString fConfigVersion;              // Configuration version
+
+  ClassDef(AliTRDCalDCSFEE,3)          // TRD calibration class for TRD FEE parameters
 };
 #endif

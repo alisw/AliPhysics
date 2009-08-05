@@ -14,9 +14,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALITRDCALPID_H
 #include "AliTRDCalPID.h"
-#endif
 
 class AliTRDCalPIDNN : public AliTRDCalPID
 {
@@ -31,7 +29,9 @@ class AliTRDCalPIDNN : public AliTRDCalPID
   virtual  ~AliTRDCalPIDNN();
   Bool_t    LoadReferences(Char_t *refFile);
   TObject  *GetModel(Int_t ip, Int_t iType, Int_t iPlane) const;
-  Double_t  GetProbability(Int_t spec, Float_t mom, Float_t *dedx, Float_t length, Int_t plane) const;
+  Double_t  GetProbability(Int_t spec, Float_t mom
+                         , const Float_t * const dedx
+                         , Float_t length, Int_t plane) const;
 
  private:
 
@@ -39,7 +39,7 @@ class AliTRDCalPIDNN : public AliTRDCalPID
   AliTRDCalPIDNN &operator=(const AliTRDCalPIDNN &c);
            
   void     Init();
-  Int_t    GetModelID(Int_t mom, Int_t , Int_t) const;
+  Int_t    GetModelID(Int_t mom, Int_t ii, Int_t plane) const;
 
   ClassDef(AliTRDCalPIDNN, 1) // NN PID reference manager
 

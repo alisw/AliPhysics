@@ -25,29 +25,19 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TFile.h>
-#include <TROOT.h>
-
-#include "AliLog.h"
-#include "AliESD.h"
-#include "AliESDtrack.h"
+#include <TObjArray.h>
 
 #include "AliTRDCalPID.h"
-#include "AliTRDcalibDB.h"
 
 ClassImp(AliTRDCalPID)
 
-const Char_t* AliTRDCalPID::fPartName[AliPID::kSPECIES] = { "electron", "muon", "pion", "kaon", "proton"};
-const Char_t* AliTRDCalPID::fPartSymb[AliPID::kSPECIES] = { "EL", "MU", "PI", "KA", "PR"};
-Color_t AliTRDCalPID::fPartColor[AliPID::kSPECIES] = { kRed, kGreen, kBlue, kYellow, kMagenta};
-Float_t AliTRDCalPID::fTrackMomentum[kNMom]       = {  
-    0.6,  0.8,  1.0,  1.5,  2.0
-   ,3.0,  4.0,  5.0,  6.0,  8.0, 10.0};
-Float_t AliTRDCalPID::fTrackMomentumBinning[kNMom+1]       = {  
-    0.5,  0.7,  0.9,  1.25, 1.75, 2.5,  
-    3.5,  4.5,  5.5,  7.0,  9.0, 12.0};
+const Char_t* AliTRDCalPID::fPartName[AliPID::kSPECIES]     = { "electron", "muon", "pion", "kaon", "proton"};
+const Char_t* AliTRDCalPID::fPartSymb[AliPID::kSPECIES]     = { "EL", "MU", "PI", "KA", "PR"};
+Color_t       AliTRDCalPID::fgPartColor[AliPID::kSPECIES]   = { kRed, kGreen, kBlue, kYellow, kMagenta};
+Float_t       AliTRDCalPID::fgTrackMomentum[kNMom]          = {   0.6,   0.8,   1.0,   1.5,   2.0
+                                                              ,   3.0,   4.0,   5.0,   6.0,   8.0,  10.0  };
+Float_t       AliTRDCalPID::fgTrackMomentumBinning[kNMom+1] = {   0.5,   0.7,   0.9,   1.25,  1.75,  2.5
+							      ,   3.5,   4.5,   5.5,   7.0,   9.0,  12.0  };
 
 //_________________________________________________________________________
 AliTRDCalPID::AliTRDCalPID()
@@ -87,6 +77,10 @@ AliTRDCalPID::~AliTRDCalPID()
 //_________________________________________________________________________
 Int_t AliTRDCalPID::GetPartIndex(Int_t pdg)
 {
+  //
+  // Return the index to a given particle, defined by its PDG code
+  //
+
   for(Int_t is=0; is<AliPID::kSPECIES; is++){
     if(TMath::Abs(pdg) == AliPID::ParticleCode(is)) return is;
   }
