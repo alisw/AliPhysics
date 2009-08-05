@@ -480,33 +480,46 @@ void AliITSQADataMakerRec::InitESDs()
   TH2F* hSPDTrackletsvsFiredChips0 = 
     new TH2F("hSPDTrackletsvsFiredChips0","N SPD Tracklets vs N FiredChips Layer0",
               300,0.,300.,300,0.,300.);
-  hSPDTrackletsvsFiredChips0->GetXaxis()->SetTitle("N SPD Tracklets"); 
-  hSPDTrackletsvsFiredChips0->GetYaxis()->SetTitle("N FiredChips Layer0"); 
+  hSPDTrackletsvsFiredChips0->GetXaxis()->SetTitle("N FiredChips Layer0"); 
+  hSPDTrackletsvsFiredChips0->GetYaxis()->SetTitle("N SPD Tracklets"); 
   hSPDTrackletsvsFiredChips0->Sumw2();
   Add2ESDsList(hSPDTrackletsvsFiredChips0, 16, expertHistogram ); 
 
   TH2F* hSPDTrackletsvsFiredChips1 = 
     new TH2F("hSPDTrackletsvsFiredChips1","N SPD Tracklets vs N FiredChips Layer1",
               300,0.,300.,300,0.,300.);
-  hSPDTrackletsvsFiredChips1->GetXaxis()->SetTitle("N SPD Tracklets"); 
-  hSPDTrackletsvsFiredChips1->GetYaxis()->SetTitle("N FiredChips Layer1"); 
+  hSPDTrackletsvsFiredChips1->GetXaxis()->SetTitle("N FiredChips Layer1"); 
+  hSPDTrackletsvsFiredChips1->GetYaxis()->SetTitle("N SPD Tracklets"); 
   hSPDTrackletsvsFiredChips1->Sumw2();
   Add2ESDsList(hSPDTrackletsvsFiredChips1, 17, expertHistogram); 
+
+  TH2F* hSPDFiredChips1vsFiredChips0 = 
+    new TH2F("hSPDFiredChips1vsFiredChips0","N FiredChips Layer1 vs N FiredChips Layer0",
+              300,0.,300.,300,0.,300.);
+  hSPDFiredChips1vsFiredChips0->GetXaxis()->SetTitle("N FiredChips Layer0"); 
+  hSPDFiredChips1vsFiredChips0->GetYaxis()->SetTitle("N FiredChips Layer1"); 
+  hSPDFiredChips1vsFiredChips0->Sumw2();
+  Add2ESDsList(hSPDFiredChips1vsFiredChips0, 18, expertHistogram ); 
     
   TH1F* hSPDTrackletsDePhi = 
     new TH1F("hSPDTrackletsDePhi","DeltaPhi SPD Tracklets; DeltaPhi [rad]; N events",200,-0.2,0.2);
   hSPDTrackletsDePhi->Sumw2();
-  Add2ESDsList(hSPDTrackletsDePhi, 18); 
+  Add2ESDsList(hSPDTrackletsDePhi, 19); 
     
   TH1F* hSPDTrackletsPhi = 
     new TH1F("hSPDTrackletsPhi","Phi SPD Tracklets; Phi [rad]; N events",1000,0.,2*TMath::Pi());
   hSPDTrackletsPhi->Sumw2();
-  Add2ESDsList(hSPDTrackletsPhi, 19); 
+  Add2ESDsList(hSPDTrackletsPhi, 20); 
     
+  TH1F* hSPDTrackletsDeTheta = 
+    new TH1F("hSPDTrackletsDeTheta","DeltaTheta SPD Tracklets; DeltaTheta [rad]; N events",200,-0.2,0.2);
+  hSPDTrackletsDeTheta->Sumw2();
+  Add2ESDsList(hSPDTrackletsDeTheta, 21); 
+
   TH1F* hSPDTrackletsTheta = 
     new TH1F("hSPDTrackletsTheta","Theta SPD Tracklets; Theta [rad]; N events",500,0.,TMath::Pi());
   hSPDTrackletsTheta->Sumw2();
-  Add2ESDsList(hSPDTrackletsTheta, 20); 
+  Add2ESDsList(hSPDTrackletsTheta, 22); 
 
   // map of layers skipped by tracking (set in AliITSRecoParam)
   TH1F *hESDSkippedLayers = 
@@ -514,7 +527,7 @@ void AliITSQADataMakerRec::InitESDs()
 	     6, -0.5, 5.5);
   hESDSkippedLayers->Sumw2();
   hESDSkippedLayers->SetMinimum(0);
-  Add2ESDsList(hESDSkippedLayers, 21, expertHistogram);
+  Add2ESDsList(hESDSkippedLayers, 23, expertHistogram);
 
 
   return;
@@ -565,7 +578,7 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
 	}
       }
       track->GetITSModuleIndexInfo(layer,idet,status,xloc,zloc);
-      if(status==3) GetESDsData(21)->SetBinContent(layer,1);
+      if(status==3) GetESDsData(23)->SetBinContent(layer,1);
     }     
 
   } // end loop on tracks
@@ -607,15 +620,18 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
   Short_t nFiredChips1 = ((AliMultiplicity*)(esd->GetMultiplicity()))->GetNumberOfFiredChips(1);
   GetESDsData(16)->Fill(nFiredChips0,mult);
   GetESDsData(17)->Fill(nFiredChips1,mult);
+  GetESDsData(18)->Fill(nFiredChips0,nFiredChips1);
 
   // Loop over tracklets
   for (Int_t itr=0; itr<mult; ++itr) {
-    Float_t dePhiTr = ((AliMultiplicity*)(esd->GetMultiplicity()))->GetDeltaPhi(itr);
+    Float_t dePhiTr   = ((AliMultiplicity*)(esd->GetMultiplicity()))->GetDeltaPhi(itr);
+    Float_t deThetaTr = ((AliMultiplicity*)(esd->GetMultiplicity()))->GetDeltaTheta(itr);
     Float_t phiTr   = ((AliMultiplicity*)(esd->GetMultiplicity()))->GetPhi(itr);
     Float_t thetaTr = ((AliMultiplicity*)(esd->GetMultiplicity()))->GetTheta(itr);
-    GetESDsData(18)->Fill(dePhiTr);
-    GetESDsData(19)->Fill(phiTr);
-    GetESDsData(20)->Fill(thetaTr);
+    GetESDsData(19)->Fill(dePhiTr);
+    GetESDsData(20)->Fill(phiTr);
+    GetESDsData(21)->Fill(deThetaTr);
+    GetESDsData(22)->Fill(thetaTr);
   } // end loop on tracklets
 
   return;

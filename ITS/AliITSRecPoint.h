@@ -74,6 +74,7 @@ class AliITSRecPoint : public AliCluster {
   Float_t GetDeltaProbability() const{return fDeltaProb;} //probability to belong to the delta ray
   Float_t GetDriftTime() const{return  fDriftTime;}
   Int_t GetNpixels() const; // for SPD returns fType, i.e. the number of pixels in the cluster (-1 for SDD and SSD)
+  Int_t GetSPDclusterType() const; // for SPD returns cluster type according to conventional numbering (-1 for SDD and SSD)
 
  protected:
 

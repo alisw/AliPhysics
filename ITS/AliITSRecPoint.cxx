@@ -190,6 +190,47 @@ Int_t AliITSRecPoint::GetNpixels() const {
 }
 
 //----------------------------------------------------------------------
+Int_t AliITSRecPoint::GetSPDclusterType() const {
+//
+// returns the type of cluster according to conventional numbering
+//
+
+ Int_t type = -1;
+ if(fLayer > 1) return type;
+ else {
+
+   switch (fType) {
+     case 1 : type = 1 ;break;
+     case 2 : if(fNy == 2) type = 2;
+              else         type = 3;
+              break;
+     case 3 : if(fNy == 3)      type = 4;
+              else if(fNz == 3) type = 6;
+              else              type = 5;
+              break;
+     case 4 : if(fNz == 1)                  type = 7;
+              else if(fNz == 2 && fNy == 2) type = 8;
+              else if(fNy == 2 && fNz == 3) type = 11;
+              else if(fNy == 3 && fNz == 2) type = 9;
+              else if(fNz == 4)             type = 15;
+              else                          type = 17;
+              break;
+     case 5 : if(fNy == 3 && fNz == 2)  type = 10;
+              if(fNy == 2 && fNz == 3 ) type = 12;
+              if(fNy == 5)              type = 16;
+              else                      type = 17;
+              break; 
+     case 6 : if(fNy ==3 && fNz == 2) type = 13;
+              if(fNy ==2 && fNz == 3) type = 14;
+              else type = 17;
+   }  
+
+   return type;
+ }
+
+	}
+
+//----------------------------------------------------------------------
 void AliITSRecPoint::Read(istream *is){
 ////////////////////////////////////////////////////////////////////////
 // Standard input format for this class.
