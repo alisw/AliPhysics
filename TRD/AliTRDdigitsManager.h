@@ -39,8 +39,8 @@ class AliTRDdigitsManager : public TObject {
   virtual void                ResetArrays(Int_t det);
   virtual Bool_t              BuildIndexes(Int_t det);
 
-  virtual Bool_t              MakeBranch(TTree *tree);
-  virtual Bool_t              ReadDigits(TTree *tree);
+  virtual Bool_t              MakeBranch(TTree * const tree);
+  virtual Bool_t              ReadDigits(TTree * consttree);
   virtual Bool_t              WriteDigits();
 
   virtual void                SetEvent(Int_t evt)             { fEvent           = evt;  };
@@ -62,21 +62,21 @@ class AliTRDdigitsManager : public TObject {
   AliTRDarrayDictionary      *GetDictionary(Int_t det, Int_t i) const;  
   
   AliTRDSignalIndex          *GetIndexes(Int_t det);
-  TObjArray                  *GetIndexes()                    { return fSignalIndexes;   };
+  TObjArray                  *GetIndexes() const              { return fSignalIndexes;   };
 
   void                        RemoveDigits(Int_t det);
   void                        RemoveDictionaries(Int_t det);
   void                        RemoveIndexes(Int_t det);
   void                        ClearIndexes(Int_t det);
   
-  Int_t                       GetTrack(Int_t track, AliTRDdigit *digit) const;
+  Int_t                       GetTrack(Int_t track, AliTRDdigit * const digit) const;
   Short_t                     GetDigitAmp(Int_t row, Int_t col, Int_t time, Int_t det) const;
   UChar_t                     GetPadStatus(Int_t row, Int_t col, Int_t time, Int_t det) const;
 
-  Bool_t                      LoadArray(TObjArray *object, const Char_t *branchname, TTree *tree=0);  
-  Bool_t                      LoadArrayDict(TObjArray *object, const Char_t *branchname, TTree *tree=0);  
-  Bool_t                      StoreArray(TObjArray *array1, const Char_t *branchname, TTree *tree=0); 
-  Bool_t                      StoreArrayDict(TObjArray *array3, const Char_t *branchname, TTree *tree=0); 
+  Bool_t                      LoadArray(TObjArray * const object, const Char_t *branchname, TTree * const tree=0);  
+  Bool_t                      LoadArrayDict(TObjArray * const object, const Char_t *branchname, TTree * const tree=0);  
+  Bool_t                      StoreArray(TObjArray * const array1, const Char_t *branchname, TTree * const tree=0); 
+  Bool_t                      StoreArrayDict(TObjArray * const array3, const Char_t *branchname, TTree * const tree=0); 
   
  protected:
   

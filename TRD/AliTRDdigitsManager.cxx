@@ -22,12 +22,10 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h> 
-#include <TROOT.h>
 #include <TTree.h>                                                              
-#include <TFile.h>
-#include "AliRun.h"
+
 #include "AliLog.h"
+
 #include "AliTRDdigitsManager.h"
 #include "AliTRDarrayDictionary.h"
 #include "AliTRDarrayADC.h"
@@ -280,24 +278,25 @@ void AliTRDdigitsManager::ResetArrays()
 //_____________________________________________________________________________
 void AliTRDdigitsManager::ResetArrays(Int_t det)
 {
-  Int_t RecoDet = fRawRec ? 0 : det;
 
-  RemoveDigits(RecoDet);
-  RemoveDictionaries(RecoDet);
-  RemoveIndexes(RecoDet);
+  Int_t recoDet = fRawRec ? 0 : det;
+
+  RemoveDigits(recoDet);
+  RemoveDictionaries(recoDet);
+  RemoveIndexes(recoDet);
 
   if (fHasSDigits)
-    fDigits->AddAt(new AliTRDarraySignal(),RecoDet);
+    fDigits->AddAt(new AliTRDarraySignal(),recoDet);
   else
-    fDigits->AddAt(new AliTRDarrayADC(),RecoDet);
+    fDigits->AddAt(new AliTRDarrayADC(),recoDet);
 
   if (fUseDictionaries) 
     {
       for (Int_t iDict = 0; iDict < kNDict; iDict++)
-	fDict[iDict]->AddAt(new AliTRDarrayDictionary(),RecoDet);
+	fDict[iDict]->AddAt(new AliTRDarrayDictionary(),recoDet);
     }
   
-  fSignalIndexes->AddAt(new AliTRDSignalIndex(),RecoDet);
+  fSignalIndexes->AddAt(new AliTRDSignalIndex(),recoDet);
 }
 
 //_____________________________________________________________________________
@@ -327,7 +326,7 @@ UChar_t AliTRDdigitsManager::GetPadStatus(Int_t row, Int_t col, Int_t time, Int_
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree)  
+Bool_t AliTRDdigitsManager::MakeBranch(TTree * const tree)  
 {
   //
   // Creates the tree and branches for the digits and the dictionary
@@ -419,7 +418,7 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::ReadDigits(TTree *tree)
+Bool_t AliTRDdigitsManager::ReadDigits(TTree * const tree)
 {
   //
   // Reads the digit information from the input file
@@ -623,7 +622,7 @@ AliTRDarrayDictionary *AliTRDdigitsManager::GetDictionary(Int_t det
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdigitsManager::GetTrack(Int_t track, AliTRDdigit *digit) const
+Int_t AliTRDdigitsManager::GetTrack(Int_t track, AliTRDdigit * const digit) const
 {
   // 
   // Returns the MC-track numbers from the dictionary for a given digit
@@ -800,9 +799,9 @@ Bool_t AliTRDdigitsManager::BuildIndexes(Int_t det)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::LoadArray(TObjArray *object
+Bool_t AliTRDdigitsManager::LoadArray(TObjArray * const object
                                     , const Char_t *branchname
-                                    , TTree *tree)
+                                    , TTree * const tree)
 {
   //
   // Loads all detectors of the array from the branch <branchname> of
@@ -860,9 +859,9 @@ Bool_t AliTRDdigitsManager::LoadArray(TObjArray *object
 }
 
 //________________________________________________________________________________________________
-Bool_t AliTRDdigitsManager::LoadArrayDict(TObjArray *object
+Bool_t AliTRDdigitsManager::LoadArrayDict(TObjArray * const object
                                         , const Char_t *branchname
-                                        , TTree *tree)
+                                        , TTree * const tree)
 {
   //
   // Loads all detectors of the array from the branch <branchname> of
@@ -905,9 +904,9 @@ Bool_t AliTRDdigitsManager::LoadArrayDict(TObjArray *object
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::StoreArray(TObjArray *array1
+Bool_t AliTRDdigitsManager::StoreArray(TObjArray * const array1
                                      , const Char_t *branchname
-                                     , TTree *tree)
+                                     , TTree * const tree)
 {
   //
   // Stores all the detectors of the array in the branch <branchname> of 
@@ -964,9 +963,9 @@ Bool_t AliTRDdigitsManager::StoreArray(TObjArray *array1
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::StoreArrayDict(TObjArray *array3
+Bool_t AliTRDdigitsManager::StoreArrayDict(TObjArray * const array3
                                          , const Char_t *branchname
-                                         , TTree *tree)
+                                         , TTree * const tree)
 {
   //
   // Stores all the dictionary arrays of the detectors of the array in the branch <branchname> of 
