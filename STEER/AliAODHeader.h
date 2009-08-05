@@ -13,6 +13,8 @@
 #include "AliVHeader.h"
 #include "AliAODVertex.h"
 
+class TGeoHMatrix;
+
 class AliAODHeader : public AliVHeader {
 
  public :
@@ -103,7 +105,23 @@ class AliAODHeader : public AliVHeader {
   }
 
   void Print(Option_t* option = "") const;
+
+  void    SetPHOSMatrix(TGeoHMatrix*matrix, Int_t i) {
+      if ((i >= 0) && (i < kNPHOSMatrix)) fPHOSMatrix[i] = matrix;
+  }
+  const TGeoHMatrix* GetPHOSMatrix(Int_t i) const {
+      return ((i >= 0) && (i < kNPHOSMatrix)) ? fPHOSMatrix[i] : NULL;
+  }
   
+  void    SetEMCALMatrix(TGeoHMatrix*matrix, Int_t i) {
+      if ((i >= 0) && (i < kNEMCALMatrix)) fEMCALMatrix[i] = matrix;
+  }
+  const TGeoHMatrix* GetEMCALMatrix(Int_t i) const {
+      return ((i >= 0) && (i < kNEMCALMatrix)) ? fEMCALMatrix[i] : NULL;
+  }
+  
+  enum {kNPHOSMatrix = 5};
+  enum {kNEMCALMatrix = 12};
   
  private :
   
@@ -130,8 +148,10 @@ class AliAODHeader : public AliVHeader {
 
   Double32_t      fDiamondXY[2];    // Interaction diamond (x,y) in RUN
   Double32_t      fDiamondCovXY[3]; // Interaction diamond covariance (x,y) in RUN
-  
-  ClassDef(AliAODHeader,7);
+  TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix];   //PHOS module position and orientation matrices
+  TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
+
+  ClassDef(AliAODHeader,8);
 };
 
 #endif

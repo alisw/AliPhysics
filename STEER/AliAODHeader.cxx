@@ -21,6 +21,7 @@
 //-------------------------------------------------------------------------
 
 #include "AliAODHeader.h"
+#include <TGeoMatrix.h>
 
 ClassImp(AliAODHeader)
 
@@ -54,6 +55,8 @@ AliAODHeader::AliAODHeader() :
   for(Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
   fDiamondCovXY[1]=0.;
+  for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
+  for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
 }
 
 //______________________________________________________________________________
@@ -91,6 +94,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   for(Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
   fDiamondCovXY[1]=0.;
+  for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
+  for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
 }
 
 //______________________________________________________________________________
@@ -142,6 +147,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   for(Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
   fDiamondCovXY[1]=0.;
+  for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
+  for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
 }
 
 //______________________________________________________________________________
@@ -183,6 +190,22 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   SetZDCEMEnergy(hdr.fZDCEMEnergy[0], hdr.fZDCEMEnergy[1]);
   for(Int_t i=0; i<2; i++) fDiamondXY[i]=hdr.fDiamondXY[i];
   for(Int_t i=0; i<3; i++) fDiamondCovXY[i]=hdr.fDiamondCovXY[i];
+
+
+  for(Int_t m=0; m<kNPHOSMatrix; m++){
+      if(hdr.fPHOSMatrix[m])
+	  fPHOSMatrix[m]=new TGeoHMatrix(*(hdr.fPHOSMatrix[m])) ;
+      else
+	  fPHOSMatrix[m]=0;
+  }
+  
+  for(Int_t sm=0; sm<kNEMCALMatrix; sm++){
+      if(hdr.fEMCALMatrix[sm])
+	  fEMCALMatrix[sm]=new TGeoHMatrix(*(hdr.fEMCALMatrix[sm])) ;
+      else
+	  fEMCALMatrix[sm]=0;
+  }
+
 }
 
 //______________________________________________________________________________
@@ -217,6 +240,21 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     SetZDCEMEnergy(hdr.fZDCEMEnergy[0], hdr.fZDCEMEnergy[1]);
     for(Int_t i=0; i<2; i++) fDiamondXY[i]=hdr.fDiamondXY[i];
     for(Int_t i=0; i<3; i++) fDiamondCovXY[i]=hdr.fDiamondCovXY[i];
+
+    for(Int_t m=0; m<kNPHOSMatrix; m++){
+	if(hdr.fPHOSMatrix[m])
+	    fPHOSMatrix[m]=new TGeoHMatrix(*(hdr.fPHOSMatrix[m])) ;
+	else
+	    fPHOSMatrix[m]=0;
+    }
+    
+    for(Int_t sm=0; sm<kNEMCALMatrix; sm++){
+	if(hdr.fEMCALMatrix[sm])
+	    fEMCALMatrix[sm]=new TGeoHMatrix(*(hdr.fEMCALMatrix[sm])) ;
+	else
+	    fEMCALMatrix[sm]=0;
+  }
+
   }
 
 
