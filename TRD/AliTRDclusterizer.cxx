@@ -21,17 +21,11 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TF1.h>
-#include <TTree.h>
-#include <TH1.h>
-#include <TFile.h>
 #include <TClonesArray.h>
 #include <TObjArray.h>
 
 #include "AliRunLoader.h"
 #include "AliLoader.h"
-#include "AliRawReader.h"
-#include "AliLog.h"
 #include "AliAlignObj.h"
 
 #include "AliTRDclusterizer.h"
@@ -43,8 +37,6 @@
 #include "AliTRDdigitsManager.h"
 #include "AliTRDrawData.h"
 #include "AliTRDcalibDB.h"
-#include "AliTRDrecoParam.h"
-#include "AliTRDCommonParam.h"
 #include "AliTRDtransform.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDrawStreamBase.h"
@@ -348,7 +340,7 @@ Bool_t AliTRDclusterizer::OpenOutput()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDclusterizer::OpenOutput(TTree *clusterTree)
+Bool_t AliTRDclusterizer::OpenOutput(TTree *const clusterTree)
 {
   //
   // Connect the output tree
@@ -705,7 +697,7 @@ UChar_t AliTRDclusterizer::GetStatus(Short_t &signal)
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizer::SetPadStatus(const UChar_t status, UChar_t &out){
+void AliTRDclusterizer::SetPadStatus(const UChar_t status, UChar_t &out) const {
   //
   // Set the pad status into out
   // First three bits are needed for the position encoding
@@ -1028,7 +1020,7 @@ void AliTRDclusterizer::CalcAdditionalInfo(const MaxStruct &Max, Short_t *const 
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizer::AddClusterToArray(AliTRDcluster *cluster)
+void AliTRDclusterizer::AddClusterToArray(AliTRDcluster* cluster)
 {
   //
   // Add a cluster to the array
@@ -1129,7 +1121,7 @@ Bool_t AliTRDclusterizer::AddLabels()
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDclusterizer::Unfold(Double_t eps, Int_t layer, Double_t *padSignal) const
+Float_t AliTRDclusterizer::Unfold(Double_t eps, Int_t layer, const Double_t *const padSignal) const
 {
   //
   // Method to unfold neighbouring maxima.

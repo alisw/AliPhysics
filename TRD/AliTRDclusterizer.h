@@ -73,7 +73,7 @@ class AliTRDclusterizer : public TNamed
   Bool_t   Open(const Char_t *name, Int_t nEvent = 0);
   Bool_t   OpenInput(Int_t nEvent = 0);
   Bool_t   OpenOutput();
-  Bool_t   OpenOutput(TTree *clusterTree);
+  Bool_t   OpenOutput(TTree *const clusterTree);
   Bool_t   OpenTrackletOutput();
 
   Bool_t   ReadDigits();
@@ -83,7 +83,7 @@ class AliTRDclusterizer : public TNamed
   Bool_t   WriteClusters(Int_t det);
   void     ResetRecPoints();
   virtual TClonesArray    *RecPoints();
-  TClonesArray    *TrackletsArray();
+  virtual TClonesArray    *TrackletsArray();
   Bool_t   WriteTracklets(Int_t det);
 
   Bool_t   Raw2Clusters(AliRawReader *rawReader);
@@ -97,7 +97,7 @@ class AliTRDclusterizer : public TNamed
   void     SetRawVersion(const Int_t iver) { fRawVersion = iver; } // set the expected raw data version
   void             SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
   static UChar_t   GetStatus(Short_t &signal);
-  Int_t            GetAddedClusters() {return fNoOfClusters;}
+  Int_t            GetAddedClusters() const {return fNoOfClusters;}
 
   Bool_t   IsClustersOwner() const {return TestBit(kClOwner);}
   virtual void     SetClustersOwner(Bool_t own=kTRUE) {SetBit(kClOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
@@ -109,9 +109,9 @@ protected:
 			     ,const Int_t nTimeTotal, const Int_t nexp);
   void             TailCancelation();
 
-  Float_t  Unfold(Double_t eps, Int_t layer, Double_t *padSignal) const;
+  Float_t  Unfold(Double_t eps, Int_t layer, const Double_t *const padSignal) const;
   
-  void             SetPadStatus(const UChar_t status, UChar_t &encoding);
+  void             SetPadStatus(const UChar_t status, UChar_t &encoding) const;
   UChar_t          GetPadStatus(UChar_t encoding) const;
   Int_t            GetCorruption(UChar_t encoding) const;
 
@@ -119,8 +119,8 @@ protected:
   Bool_t           FivePadCluster(MaxStruct &ThisMax, MaxStruct &NeighbourMax);
   void             CreateCluster(const MaxStruct &Max); 
   inline void      CalcAdditionalInfo(const MaxStruct &Max, Short_t *const signals, Int_t &nPadCount);
-  virtual void     AddClusterToArray(AliTRDcluster *cluster);
-  inline void      AddTrackletsToArray();
+  virtual void     AddClusterToArray(AliTRDcluster* cluster);
+  virtual void     AddTrackletsToArray();
 
   const AliTRDReconstructor *fReconstructor; //! reconstructor
   AliRunLoader        *fRunLoader;           //! Run Loader
