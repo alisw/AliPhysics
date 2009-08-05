@@ -19,7 +19,7 @@ class AliTRDdigit : public AliDigitNew {
  public:
 
   AliTRDdigit();
-  AliTRDdigit(Int_t *digits, Int_t *amp);
+  AliTRDdigit(Int_t * const digits, const Int_t *amp);
   virtual ~AliTRDdigit();
 
           Int_t  GetDetector() const { return fId;   };

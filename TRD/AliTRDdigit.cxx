@@ -41,7 +41,7 @@ AliTRDdigit::AliTRDdigit()
 }
 
 //_____________________________________________________________________________
-AliTRDdigit::AliTRDdigit(Int_t *digits, Int_t *amp)
+AliTRDdigit::AliTRDdigit(Int_t * const digits, const Int_t *amp)
   :AliDigitNew()
   ,fRow(0)
   ,fCol(0)
