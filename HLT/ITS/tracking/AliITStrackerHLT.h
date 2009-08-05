@@ -58,7 +58,6 @@ public:
 
   Double_t GetPredictedChi2MI(AliHLTITSTrack* track, const AliITSRecPoint *cluster,Int_t layer);
   Int_t UpdateMI(AliHLTITSTrack* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;  
-  void SetDetTypeRec(const AliITSDetTypeRec *detTypeRec) {fkDetTypeRec = detTypeRec; ReadBadFromDetTypeRec(); }
 
   TTreeSRedirector *GetDebugStreamer() {return fDebugStreamer;}
   static Int_t CorrectForTPCtoITSDeadZoneMaterial(AliHLTITSTrack *t);
@@ -87,11 +86,12 @@ protected:
   Int_t CorrectForShieldMaterial(AliHLTITSTrack *t, TString shield, TString direction="inward");
   Int_t CorrectForLayerMaterial(AliHLTITSTrack *t, Int_t layerindex, Double_t oldGlobXYZ[3], TString direction="inward");
   void UpdateESDtrack(AliESDtrack *tESD,AliHLTITSTrack* track, ULong_t flags) const;
-  void ReadBadFromDetTypeRec();
   
-  Int_t CheckDeadZone(AliHLTITSTrack *track,Int_t ilayer,Int_t idet,Double_t dz,Double_t dy,Bool_t noClusters=kFALSE) const;
   Bool_t LocalModuleCoord(Int_t ilayer,Int_t idet,const AliHLTITSTrack *track,
 			  Float_t &xloc,Float_t &zloc) const;
+
+
+
 // method to be used for Plane Efficiency evaluation
 
   // 
@@ -114,7 +114,6 @@ protected:
 
   TTreeSRedirector *fDebugStreamer;      //!debug streamer
   AliITSChannelStatus *fITSChannelStatus;//! bitmaps with channel status for SPD and SDD
-  const AliITSDetTypeRec *fkDetTypeRec;         //! ITS det type rec, from AliITSReconstructor
   std::vector< AliHLTITSTrack > fTracks;
 
 private:
