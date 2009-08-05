@@ -56,6 +56,7 @@
 #include "TTreeStream.h"
 
 #include <cstdio>
+#include <climits>
 #include <cstring>
 #include <iostream>
 
@@ -221,7 +222,7 @@ void AliTRDinfoGen::Exec(Option_t *){
 
     // read MC info
     Int_t fPdg = -1;
-    Int_t label = -1; UInt_t alab=-1;
+    Int_t label = -1; UInt_t alab=UINT_MAX;
     if(HasMCdata()){
       label = esdTrack->GetLabel(); 
       alab = TMath::Abs(label);
