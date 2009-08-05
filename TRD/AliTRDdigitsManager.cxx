@@ -278,6 +278,9 @@ void AliTRDdigitsManager::ResetArrays()
 //_____________________________________________________________________________
 void AliTRDdigitsManager::ResetArrays(Int_t det)
 {
+  //
+  // Reset the data arrays
+  //
 
   Int_t recoDet = fRawRec ? 0 : det;
 
