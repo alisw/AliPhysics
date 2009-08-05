@@ -34,11 +34,13 @@
 #include "TFile.h"
 #include "TList.h" 
 #include "TF1.h"
+#include "TLegend.h"
 #include "TParticle.h"
 #include "TProfile.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
 #include "AliFlowAnalysisWithFittingQDistribution.h"
+
 
 class TH1;
 class TGraph;
@@ -82,7 +84,19 @@ AliFlowAnalysisWithFittingQDistribution::AliFlowAnalysisWithFittingQDistribution
  fUseParticleWeights(NULL),
  fPhiWeights(NULL),
  fPtWeights(NULL),
- fEtaWeights(NULL)
+ fEtaWeights(NULL),
+ // fitting parameters with default values:
+ fFittingParameters(NULL), 
+ fTreshold(5),
+ fvStart(0.05),
+ fvMin(0.0),
+ fvMax(0.25),
+ fSigma2Start(0.75),
+ fSigma2Min(0.5), // (should be kept fixed at 0.5 according to theorists...)
+ fSigma2Max(2.5),
+ fPlotResults(kFALSE),
+ // rest:
+ fLegend(NULL)
  {
   // constructor 
   
@@ -127,6 +141,9 @@ void AliFlowAnalysisWithFittingQDistribution::Init()
  this->BookCommonHistograms();
  this->BookAndFillWeightsHistograms();
  this->BookEverythingForDistributions();
+ 
+ // store fitting parameters:  
+ this->StoreFittingParameters();
  
  // nest lists:
  fWeightsList->SetName("Weights");
@@ -346,11 +363,27 @@ void AliFlowAnalysisWithFittingQDistribution::GetOutputHistograms(TList *outputL
       } 
    } // end of for(Int_t f=0;f<2;f++)
   } // end of for(Int_t pW=0;pW<1+(Int_t)(bUsePhiWeights||bUsePtWeights||bUseEtaWeights);pW++)
+  
+  // 5.) fitting parameters:
+  // q-distribution:
+  TString fittingParametersName = "fFittingParameters";
+  fittingParametersName += fAnalysisLabel->Data();
+  TProfile *fittingParameters = NULL;
+  fittingParameters = dynamic_cast<TProfile*>(outputListHistos->FindObject(fittingParametersName.Data()));
+  if(fittingParameters)
+  {
+   this->SetFittingParameters(fittingParameters);
+  } else
+    {
+     cout<<"WARNING:fittingParameters is NULL in AFAWFQD::GOH() !!!!"<<endl;
+    }
+  
  } else // to if(outputListHistos)
    {
     cout<<"WARNING: outputListHistos is NULL in AFAWFQD::GOH() !!!!"<<endl;
     exit(0);
    } 
+    
    
 } // end of void AliFlowAnalysisWithFittingQDistribution::GetOutputHistograms(TList *outputListHistos) 
 
@@ -362,19 +395,26 @@ void AliFlowAnalysisWithFittingQDistribution::Finish(Bool_t doFit)
 {
  // calculate the final results
  
- // a) acces the constants;
+ // a) acces the constants and fitting paremeters;
  // b) access the flags;
  // c) do final fit;
  // d) fill common hist results;
  // e) print on the screen the final results.
  
- // access the constants:
+ // access the constants and fitting paremeters:
  this->AccessConstants();
+ this->AccessFittingParameters();
  
  // access the flags: 
  fUsePhiWeights = (Int_t)fUseParticleWeights->GetBinContent(1); 
  fUsePtWeights = (Int_t)fUseParticleWeights->GetBinContent(2); 
  fUseEtaWeights = (Int_t)fUseParticleWeights->GetBinContent(3);
+
+ // to be improved (moved somewhere else):
+ if(fPlotResults)
+ {
+  fLegend = new TLegend(0.6,0.55,0.85,0.7); 
+ }
 
  // do final fit:             
  if(doFit) 
@@ -636,6 +676,21 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
   
  } // end of for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // pW not used or used
  
+ // book profile fFittingParameters whiuch will hols fitting parameters:
+ TString fFittingParametersName = "fFittingParameters";
+ fFittingParametersName += fAnalysisLabel->Data(); 
+ fFittingParameters = new TProfile(fFittingParametersName.Data(),"Parameters for fitting q-distribution",8,0,8);
+ fFittingParameters->SetLabelSize(0.05);
+ (fFittingParameters->GetXaxis())->SetBinLabel(1,"Treshold");
+ (fFittingParameters->GetXaxis())->SetBinLabel(2,"starting v_{n}");
+ (fFittingParameters->GetXaxis())->SetBinLabel(3,"min. v_{n}");
+ (fFittingParameters->GetXaxis())->SetBinLabel(4,"max. v_{n}");
+ (fFittingParameters->GetXaxis())->SetBinLabel(5,"starting #sigma^{2}");
+ (fFittingParameters->GetXaxis())->SetBinLabel(6,"min. #sigma^{2}");
+ (fFittingParameters->GetXaxis())->SetBinLabel(7,"max. #sigma^{2}");
+ (fFittingParameters->GetXaxis())->SetBinLabel(8,"plot or not?");
+ fHistList->Add(fFittingParameters);
+ 
 } // end of void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
 
 
@@ -648,7 +703,7 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
  
  // shortcuts for flags:
  Int_t pW = (Int_t)(useParticleWeights);
- Int_t s2NF = (Int_t)(sigma2NotFixed);
+ Int_t s2NF = 1-(Int_t)(sigma2NotFixed);
  
  for(Int_t f=0;f<2;f++)
  {
@@ -665,9 +720,9 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
  Double_t AvM = fSumOfParticleWeights[pW]->GetMean(1);
  //Int_t nEvts = (Int_t)fSumOfParticleWeights[pW]->GetEntries();
  
- // for fitting take into account only bins with at least 5 entries:
- Int_t binMin = fqDistribution[pW]->FindFirstBinAbove(5); // to be improved (add setter for this)  
- Int_t binMax = fqDistribution[pW]->FindLastBinAbove(5); // to be improved (add setter for this) 
+ // for fitting take into account only bins with at least fTreshold entries:
+ Int_t binMin = fqDistribution[pW]->FindFirstBinAbove(fTreshold); // to be improved (add setter for this)  
+ Int_t binMax = fqDistribution[pW]->FindLastBinAbove(fTreshold); // to be improved (add setter for this) 
  Double_t binWidth = fqDistribution[pW]->GetBinWidth(4); // assuming that all bins have the same width 
  if(binWidth == 0) 
  {
@@ -687,11 +742,12 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
  TF1 *fittingFun = new TF1("fittingFun","[2]*(x/[1])*exp(-(x*x+[0]*[0])/(2.*[1]))*TMath::BesselI0(x*[0]/[1])",qmin,qmax); 
  
  fittingFun->SetParNames("v*sqrt{sum of particle weights}","sigma^2","norm");
- fittingFun->SetParameters(0.05*pow(AvM,0.5),0.75,norm); // to be improved (add setter for starting v)         
- fittingFun->SetParLimits(0,0.0*pow(AvM,0.5),0.25*pow(AvM,0.5)); // to be improved (add setters for vmin and vmax)
+ fittingFun->SetParameters(fvStart*pow(AvM,0.5),fSigma2Start,norm); // to be improved (add setter for starting v)         
+ fittingFun->SetParLimits(0,fvMin*pow(AvM,0.5),fvMax*pow(AvM,0.5)); // to be improved (add setters for vmin and vmax)
+ 
  if(s2NF)
  {
-  fittingFun->SetParLimits(1,0.5,2.5); // to be improved (add setters for sigma^2_min and sigma^2_max)      
+  fittingFun->SetParLimits(1,fSigma2Min,fSigma2Max); // to be improved (add setters for sigma^2_min and sigma^2_max)      
  } else
    {
     fittingFun->FixParameter(1,0.5);
@@ -726,21 +782,33 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
   fSigma2[pW][0]->SetBinError(1,sigma2Error);  
  } else // sigma^2 not fitted, but fixed to 0.5
    {
-    // sigma2 = 0.5;
-    fSigma2[pW][1]->SetBinContent(1,0.5);  
+    sigma2 = 0.5;
+    fSigma2[pW][1]->SetBinContent(1,sigma2);  
     fSigma2[pW][1]->SetBinError(1,0.);
    }
  
- // drawing:
- //fqDistribution[pW]->Draw("");
- //fittingFun->Draw("SAME");
- 
- // to be improved (fill chi)
- //fchrFQD->FillChi(v*pow(AvM,0.5));
- //RP:
- //fchrFQD->FillIntegratedFlowRP(v,errorv);
- //fchrFQD->FillChiRP(v*pow(AvM,0.5));
- 
+ if(fPlotResults)
+ {
+  if(s2NF == 0)
+  { 
+   fqDistribution[pW]->SetFillColor(16);  
+   fqDistribution[pW]->SetTitle("Fitted q-distribution");
+   fqDistribution[pW]->Draw("");
+   fLegend->AddEntry(fqDistribution[pW],"q-distribution","f"); 
+   fittingFun->SetLineColor(2); // 2 = red color   
+   fittingFun->Draw("SAME");
+   fLegend->AddEntry("fittingFun","#sigma^{2} fitted","l");
+  } else
+    {
+     // to be improved (perhaps there is a better way to implement this?)
+     TF1 *fittingFunTemp = (TF1*)fittingFun->Clone("fittingFunTemp");
+     fittingFunTemp->SetLineColor(4); // 4 = blue color
+     fittingFunTemp->Draw("SAME"); 
+     fLegend->AddEntry("fittingFunTemp","#sigma^{2} fixed","l");
+     fLegend->Draw("SAME");      
+    } 
+ } // end of if(fPlotResults)
+
 } // end of void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights)
 
 
@@ -763,17 +831,34 @@ void AliFlowAnalysisWithFittingQDistribution::FillCommonHistResultsIntFlow(Bool_
   exit(0); 
  }  
  
+ if(!fSumOfParticleWeights[pW])
+ {
+  cout<<"WARNING: fSumOfParticleWeights[pW] is NULL in AFAWFQD::FCHRIF() !!!!"<<endl;
+  cout<<"pW = "<<pW<<endl;
+  exit(0);
+ }
+ 
  if(!(fCommonHistsResults))
  {
   cout<<"WARNING: fCommonHistsResults is NULL in AFAWFQD::FCHRIF() !!!!"<<endl; 
   exit(0);
  }
   
+ // fill integrated flow:
  Double_t v = fIntFlow[pW][s2NF]->GetBinContent(1); 
  Double_t vError = fIntFlow[pW][s2NF]->GetBinError(1);
  
  fCommonHistsResults->FillIntegratedFlow(v,vError);   
  
+ // fill chi:
+ Double_t AvM = fSumOfParticleWeights[pW]->GetMean(1);
+ Double_t chi = AvM*pow(v,2); 
+ if(chi>=0)
+ {
+  fCommonHistsResults->FillChi(pow(chi,0.5));   
+  fCommonHistsResults->FillChiRP(pow(chi,0.5));   
+ }
+   
 } // end of void AliFlowAnalysisWithFittingQDistribution::FillCommonHistResultsIntFlow(Bool_t useParticleWeights, Bool_t sigma2NotFixed) 
 
 
@@ -858,3 +943,60 @@ void AliFlowAnalysisWithFittingQDistribution::PrintFinalResultsForIntegratedFlow
 
 
 //================================================================================================================================ 
+
+
+void AliFlowAnalysisWithFittingQDistribution::StoreFittingParameters()
+{
+ // store fitting parameters in profile fFittingParameters
+ 
+ // Binning of fFittingParameters is organized as follows:
+ // 1st bin: fTreshold
+ // 2nd bin: fvStart
+ // 3rd bin: fvMin
+ // 4th bin: fvMax
+ // 5th bin: fSigma2Start
+ // 6th bin: fSigma2Min
+ // 7th bin: fSigma2Max
+ 
+ if(!fFittingParameters)
+ {
+  cout<<"WARNING: fFittingParameters is NULL in AFAWFQD::SFP() !!!!"<<endl;
+  exit(0);
+ }
+ 
+ fFittingParameters->Reset();
+ fFittingParameters->Fill(0.5,fTreshold);
+ fFittingParameters->Fill(1.5,fvStart);
+ fFittingParameters->Fill(2.5,fvMin);
+ fFittingParameters->Fill(3.5,fvMax);
+ fFittingParameters->Fill(4.5,fSigma2Start);
+ fFittingParameters->Fill(5.5,fSigma2Min);
+ fFittingParameters->Fill(6.5,fSigma2Max);
+ fFittingParameters->Fill(7.5,fPlotResults);
+ 
+} // end of void AliFlowAnalysisWithFittingQDistribution::StoreFittingParameters()
+
+
+//================================================================================================================================ 
+
+
+void AliFlowAnalysisWithFittingQDistribution::AccessFittingParameters()
+{
+ // access fitting parameters:
+ 
+ if(!fFittingParameters)
+ {
+  cout<<"WARNING: fFittingParameters is NULL in AFAWFQD::AFP() !!!!"<<endl;
+  exit(0);
+ }
+ 
+ fTreshold = fFittingParameters->GetBinContent(1);
+ fvStart = fFittingParameters->GetBinContent(2);
+ fvMin = fFittingParameters->GetBinContent(3);
+ fvMax = fFittingParameters->GetBinContent(4);
+ fSigma2Start = fFittingParameters->GetBinContent(5);
+ fSigma2Min = fFittingParameters->GetBinContent(6);
+ fSigma2Max = fFittingParameters->GetBinContent(7);
+ fPlotResults = (Bool_t) fFittingParameters->GetBinContent(8);
+ 
+} // end of void AliFlowAnalysisWithFittingQDistribution::AccessFittingParameters()

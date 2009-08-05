@@ -25,6 +25,7 @@ class TList;
 class TFile;
 
 class TH1;
+class TLegend;
 class TProfile;
 
 class AliFlowEventSimple;
@@ -47,6 +48,8 @@ class AliFlowAnalysisWithFittingQDistribution{
    virtual void BookCommonHistograms();
    virtual void BookAndFillWeightsHistograms();
    virtual void BookEverythingForDistributions();
+   virtual void StoreFittingParameters();
+   virtual void AccessFittingParameters();
   // 2.) method Make() and methods called within Make(): 
   virtual void Make(AliFlowEventSimple* anEvent);
   // 3.) method Finish() and methods called within Finish(): 
@@ -100,7 +103,28 @@ class AliFlowAnalysisWithFittingQDistribution{
   TH1D* GetIntFlow(Int_t pW, Int_t sigmaFixed) const {return this->fIntFlow[pW][sigmaFixed];};
   void SetSigma2(TH1D* const sigma2, Int_t pW, Int_t sigmaFixed) {this->fSigma2[pW][sigmaFixed] = sigma2;};
   TH1D* GetSigma2(Int_t pW, Int_t sigmaFixed) const {return this->fSigma2[pW][sigmaFixed];};
+  // 5.) fitting parameters:
+  void SetFittingParameters(TProfile* const fp) {this->fFittingParameters = fp;};
+  TProfile* GetFittingParameters() const {return this->fFittingParameters;};
+  void SetTreshold(Double_t const treshold) {this->fTreshold = treshold;};
+  Double_t GetTreshold() const {return this->fTreshold;};
+  void SetvStart(Double_t const vStart) {this->fvStart = vStart;};
+  Double_t GetvStart() const {return this->fvStart;};
+  void SetvMin(Double_t const vMin) {this->fvMin = vMin;};
+  Double_t GetvMin() const {return this->fvMin;};
+  void SetvMax(Double_t const vMax) {this->fvMax = vMax;};
+  Double_t GetvMax() const {return this->fvMax;};
+  void SetSigma2Start(Double_t const Sigma2Start) {this->fSigma2Start = Sigma2Start;};
+  Double_t GetSigma2Start() const {return this->fSigma2Start;};
+  void SetSigma2Min(Double_t const Sigma2Min) {this->fSigma2Min = Sigma2Min;};
+  Double_t GetSigma2Min() const {return this->fSigma2Min;};
+  void SetSigma2Max(Double_t const Sigma2Max) {this->fSigma2Max = Sigma2Max;};
+  Double_t GetSigma2Max() const {return this->fSigma2Max;};
+  void SetPlotResults(Bool_t const pr) {this->fPlotResults = pr;};
+  Double_t GetPlotResults() const {return this->fPlotResults;};
   
+  
+
  private:
   AliFlowAnalysisWithFittingQDistribution(const AliFlowAnalysisWithFittingQDistribution &afawfqd);
   AliFlowAnalysisWithFittingQDistribution& operator=(const AliFlowAnalysisWithFittingQDistribution &afawfqd);
@@ -139,7 +163,20 @@ class AliFlowAnalysisWithFittingQDistribution{
   // 4.) final results of fitting:
   TH1D *fIntFlow[2][2]; // final result for integrated flow [0=pWeights are unit (not used), 1=pWeights are used][0=sigma^2 not fixed, 1=sigma^2 fixed to 1/2]  
   TH1D *fSigma2[2][2]; // final results for sigma^2 [0=pWeights are unit (not used), 1=pWeights are used][0=sigma^2 not fixed, 1=sigma^2 fixed to 1/2]
-    
+  // 5.) fitting parameters:
+  TProfile *fFittingParameters; // profile to hold all fitting parameters
+  Double_t fTreshold; // add comment here
+  Double_t fvStart; // fitting of v will start from this point
+  Double_t fvMin; // v range, lower boundary
+  Double_t fvMax; // v range, upper boundary
+  Double_t fSigma2Start; // fitting of sigma2 will start from this point
+  Double_t fSigma2Min; // sigma2 range, lower boundary (this should be kept fixed at 0.5 according to theorists...)
+  Double_t fSigma2Max; // sigma2 range, upper boundary
+  Bool_t fPlotResults; // plot q-distribution and resulting fitting function
+  // 6.) rest:
+  TLegend *fLegend; // legend // to be improved (do I need this as data memeber?)
+  
+     
   ClassDef(AliFlowAnalysisWithFittingQDistribution, 0);
 };
 
