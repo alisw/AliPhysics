@@ -168,7 +168,7 @@ void AliHLTHOMERManager::SetSourceState( AliHLTHOMERSourceDesc * source, Bool_t 
  */
 
 //##################################################################################
-Int_t AliHLTHOMERManager::ConnectHOMER(){
+Int_t AliHLTHOMERManager::ConnectHOMER( TString detector="" ){
   // see header file for class documentation
 
   Int_t iResult = 0;
@@ -188,7 +188,7 @@ Int_t AliHLTHOMERManager::ConnectHOMER(){
   const char ** sourceHostnames = new const char* [fSourceList->GetEntries()];
   UInt_t sourceCount = 0;
 
-  CreateReadoutList( sourceHostnames, sourcePorts, sourceCount );
+  CreateReadoutList( sourceHostnames, sourcePorts, sourceCount, detector );
   if ( sourceCount == 0 ) {
     HLTError("No sources selected, aborting.");
     return -1;
@@ -254,7 +254,7 @@ void AliHLTHOMERManager::DisconnectHOMER(){
 }
 
 //##################################################################################
-Int_t AliHLTHOMERManager::ReconnectHOMER(){
+Int_t AliHLTHOMERManager::ReconnectHOMER( TString detector="" ){
   // see header file for class documentation
   
   Int_t iResult = 0;
@@ -262,7 +262,7 @@ Int_t AliHLTHOMERManager::ReconnectHOMER(){
   if ( IsConnected() )
     DisconnectHOMER();
 
-  iResult = ConnectHOMER();
+  iResult = ConnectHOMER(detector);
   if ( iResult ) {
     HLTError("Error reconnecting.");
   }
@@ -369,8 +369,8 @@ Int_t AliHLTHOMERManager::NextEvent(){
  */
 
 //##################################################################################
-void AliHLTHOMERManager::CreateReadoutList( const char** sourceHostnames, 
-					    UShort_t *sourcePorts, UInt_t &sourceCount ){
+void AliHLTHOMERManager::CreateReadoutList( const char** sourceHostnames, UShort_t *sourcePorts, 
+					    UInt_t &sourceCount, TString detector ){
   // see header file for class documentation
 
   AliHLTHOMERSourceDesc * source= NULL;
@@ -379,8 +379,19 @@ void AliHLTHOMERManager::CreateReadoutList( const char** sourceHostnames,
   TIter next( fSourceList );
   while ( ( source = dynamic_cast<AliHLTHOMERSourceDesc*>(next()) ) ) {
 
-    if ( ! source->IsSelected() )
-      continue;
+    
+
+    // -- If detector name given
+    if ( ! detector.IsNull() ) {
+      // -- Continue if detector name doesn't match
+      if ( detector.CompareTo(source->GetDetector()) )
+	continue;
+    }
+    else {
+      // -- Continue if source is not selected
+      if ( ! source->IsSelected() )
+	continue;
+    }
     
     Bool_t exists = kFALSE;
     

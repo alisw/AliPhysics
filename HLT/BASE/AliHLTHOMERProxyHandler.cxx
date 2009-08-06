@@ -257,7 +257,7 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
   TDOMParser xmlParser;
   xmlParser.SetValidate(kFALSE);
 
-  HLTInfo("XMLResponse:\n %s",fXmlRpcResponse.Data());
+  HLTDebug("XMLResponse:\n %s",fXmlRpcResponse.Data());
 
   iResult = xmlParser.ParseBuffer(fXmlRpcResponse.Data(), fXmlRpcResponse.Length());
   if ( iResult < 0 ) {
@@ -280,7 +280,7 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
   // -- Get Content
   TString xmlContent(node->GetText() );
 
-  HLTInfo("XMLContent:\n %s",xmlContent.Data());
+  HLTDebug("XMLContent:\n %s",xmlContent.Data());
 
   iResult = xmlParser.ParseBuffer(xmlContent.Data(), xmlContent.Length());
   if ( iResult < 0 ) {
@@ -384,7 +384,7 @@ Int_t AliHLTHOMERProxyHandler::AddService(TXMLNode *innerNode) {
   // ----------------------
 
   AliHLTHOMERSourceDesc * source = new AliHLTHOMERSourceDesc();
-  source->SetService( hostname, port, dataType, dataOrigin, dataSpecification );
+  source->SetService( hostname, port, dataOrigin, dataType, dataSpecification );
 
   fSourceList->Add( source );
 

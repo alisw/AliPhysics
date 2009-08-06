@@ -45,14 +45,32 @@ Int_t HOMERManager() {
 
   printf( "== CONNECT HOMER ==\n" );
   
-  iResult = hM->ConnectHOMER();
+  iResult = hM->ConnectHOMER("TPC");
   if (iResult) return iResult;
   
-  //  printf( "== NEXT EVENT ==\n" );
+  printf( "== NEXT EVENT ==\n" );
   
   iResult = hM->NextEvent();
   if (iResult) return iResult;
 
+  printf( "== LOOP OVER BLOCKS ==\n" );
+
+  TObject * object =  NULL;  
+
+  TIter next(hM->GetBlockList());
+  AliHLTHOMERBlockDesc* block = NULL;
+
+  while ((block = (AliHLTHOMERBlockDesc*)next())) {
+   
+    printf ( "Det : %s\n" ,block->GetDetector().Data() );
+    printf ( "Datatype : %s\n" ,block->GetDataType().Data() );
+    
+    if ( block->IsTObject() )
+      object = block->GetTObject();
+    
+    printf("ClassName %s\n", block->GetClassName() );
+    
+  }
 
   // -- Destroy hM object
   if (hM)

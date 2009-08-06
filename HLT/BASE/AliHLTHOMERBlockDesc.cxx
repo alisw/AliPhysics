@@ -33,6 +33,8 @@
 
 #include "AliHLTMessage.h"
 
+#include "AliLog.h"
+
 #include "TMath.h"
 #include "TClass.h"
 
@@ -96,7 +98,7 @@ void AliHLTHOMERBlockDesc::SetBlock( void * data, ULong_t size, TString origin,
   fDataType = dataType;
   fSpecification = specification; 
 
-  fBlockName.Form("%s_%s%_%ul", fDetector.Data(), fDataType.Data(), fSpecification ); 
+  fBlockName.Form("%s_%s%_%lu", fDetector.Data(), fDataType.Data(), fSpecification ); 
 
   // -- Set block parameters
   SetBlockParameters();
@@ -195,12 +197,10 @@ void AliHLTHOMERBlockDesc::SetBlockParameters() {
   }
   
   // -- Check if classname has been defined
-  /*
-    if ( iResult < 0 ) {
-    HLTWarning( "The classname for data type %s for the detector %s has not been defined yet.", 
-    fDataType.Data(), fDetector.Data());
-    }
-  */
+  if ( iResult < 0 ) {
+    AliWarning( Form("The classname for data type %s for the detector %s has not been defined yet.", 
+		     fDataType.Data(), fDetector.Data()) );
+  }
   return;
 }
   

@@ -90,19 +90,21 @@ public:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Connect to HOMER sources, out of Readout List, 
+  /** Connect to HOMER sources, of a certain detector.
    *  which gets created when state has changed 
-   *  @return 0 on success, <0 for failure
+   *  @param detector    Detector to be connected to
+   *  @return            0 on success, <0 for failure
    */
-  Int_t ConnectHOMER();
+  Int_t ConnectHOMER( TString detector );
 
   /** Disconnect from HOMER sources */
   void  DisconnectHOMER();
 
   /** Reconnect from HOMER sources 
-   *  @return 0 on success, <0 for failure
+   *  @param detector    Detector to be connected to
+   *  @return            0 on success, <0 for failure
    */
-  Int_t ReconnectHOMER();
+  Int_t ReconnectHOMER( TString detector);
 
   /*
    * ---------------------------------------------------------------------------------
@@ -114,6 +116,11 @@ public:
    *  @return 0 on success, <0 for failure
    */
   virtual Int_t NextEvent();
+
+  /** Loads the next Cycle, after being connected 
+   *  @return 0 on success, <0 for failure
+   */
+  virtual Int_t NextCycle() { return NextEvent(); }
 
   /** Get event ID */
   ULong_t GetEventID() { return fEventID; }    // Get event ID
@@ -148,9 +155,10 @@ private:
    *  @param socurceHostnames   Array of selected hostnames
    *  @param socurcePorts       Array of selected ports
    *  @param socurceCount       Number of selected hostname:port
+   *  @param detector           detector to be selected
    */
   void CreateReadoutList( const char** sourceHostnames, UShort_t* sourcePorts, 
-			  UInt_t &sourceCount);
+			  UInt_t &sourceCount, TString detector );
 
   /** Checks if already connected to HOMER sources */
   Bool_t IsConnected() { return fConnected; }  
