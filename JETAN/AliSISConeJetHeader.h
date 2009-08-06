@@ -24,31 +24,31 @@ class AliSISConeJetHeader : public AliJetHeader
   virtual ~AliSISConeJetHeader() { }
 
   // Getters
-  Bool_t                       GetBGMode()                     {return fBGMode;}
-  Bool_t                       GetDebug()                      {return fDebug;}
+  Bool_t                       GetBGMode()                     const {return fBGMode;}
+  Bool_t                       GetDebug()                      const {return fDebug;}
 
-  Int_t                        GetActiveAreaRepeats()          {return fActiveAreaRepeats;}
-  Int_t                        GetAreaTypeNumber()             {return fAreaTypeNumber;}
-  Int_t                        GetBGAlgorithm()                {return fBGAlgo;}        
-  Int_t                        GetNPassMax()                   {return fNPassMax;}
-  Int_t                        GetSplitMergeScale()            {return fSplitMergeScaleNumber;}
+  Int_t                        GetActiveAreaRepeats()          const {return fActiveAreaRepeats;}
+  Int_t                        GetAreaTypeNumber()             const {return fAreaTypeNumber;}
+  Int_t                        GetBGAlgorithm()                const {return fBGAlgo;}        
+  Int_t                        GetNPassMax()                   const {return fNPassMax;}
+  Int_t                        GetSplitMergeScale()            const {return fSplitMergeScaleNumber;}
 
-  Double_t                     GetGhostEtaMax()                {return fGhostEtaMax;}
-  Double_t                     GetGhostArea()                  {return fGhostArea;}
-  Double_t                     GetEffectiveRFact()             {return fEffectiveRFact;}
-  Double_t                     GetRapMax()                     {return fRapMax;}
-  Double_t                     GetRapMin()                     {return fRapMin;}
-  Double_t                     GetPhiMax()                     {return fPhiMax;}
-  Double_t                     GetPhiMin()                     {return fPhiMin;}
-  Double_t                     GetConeRadius()                 {return fConeRadius;}
-  Double_t                     GetOverlapThreshold()           {return fOverlapThreshold;}
-  Double_t                     GetPtProtojetMin()              {return fPtProtoJetMin;}
-  Double_t                     GetCaching()                    {return fCaching;}
-  Double_t                     GetSplitMergeStoppingScale()    {return fSplitMergeStoppingScale;}
-  Double_t                     GetMinJetPt()                   {return fMinJetPt;}  
-  Double_t                     GetGridScatter()                {return fGridScatter;}
-  Double_t                     GetKtScatter()                  {return fKtScatter;}
-  Double_t                     GetMeanGhostKt()                {return fMeanGhostKt;}
+  Double_t                     GetGhostEtaMax()                const {return fGhostEtaMax;}
+  Double_t                     GetGhostArea()                  const {return fGhostArea;}
+  Double_t                     GetEffectiveRFact()             const {return fEffectiveRFact;}
+  Double_t                     GetRapMax()                     const {return fRapMax;}
+  Double_t                     GetRapMin()                     const {return fRapMin;}
+  Double_t                     GetPhiMax()                     const {return fPhiMax;}
+  Double_t                     GetPhiMin()                     const {return fPhiMin;}
+  Double_t                     GetConeRadius()                 const {return fConeRadius;}
+  Double_t                     GetOverlapThreshold()           const {return fOverlapThreshold;}
+  Double_t                     GetPtProtojetMin()              const {return fPtProtoJetMin;}
+  Double_t                     GetCaching()                    const {return fCaching;}
+  Double_t                     GetSplitMergeStoppingScale()    const {return fSplitMergeStoppingScale;}
+  Double_t                     GetMinJetPt()                   const {return fMinJetPt;}  
+  Double_t                     GetGridScatter()                const {return fGridScatter;}
+  Double_t                     GetKtScatter()                  const {return fKtScatter;}
+  Double_t                     GetMeanGhostKt()                const {return fMeanGhostKt;}
 
   // Setters
   void SetBGAlgorithm(Int_t value)                     {fBGAlgo = value;}
