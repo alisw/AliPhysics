@@ -358,6 +358,7 @@ int AliHLTTPCTrackArray::FillTracksChecked(AliHLTExternalTrackParam* tr, Int_t n
     tmpP += sizeof(AliHLTExternalTrackParam)+trs->fNPoints*sizeof(UInt_t);
     trs = (AliHLTExternalTrackParam*)tmpP;
   }
+  return iResult;
 }
 
 int AliHLTTPCTrackArray::FillTracksChecked(AliHLTTPCTrackSegmentData* tr, Int_t ntracks, unsigned int sizeInByte, Int_t slice, Int_t bTransform)

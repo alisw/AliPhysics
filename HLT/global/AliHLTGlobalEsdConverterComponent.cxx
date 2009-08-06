@@ -46,10 +46,10 @@ ClassImp(AliHLTGlobalEsdConverterComponent)
 
 AliHLTGlobalEsdConverterComponent::AliHLTGlobalEsdConverterComponent()
   : AliHLTProcessor()
-  , fESD(NULL)
-  , fSolenoidBz(5)
   , fWriteTree(0)
   , fVerbosity(0)
+  , fESD(NULL)
+  , fSolenoidBz(5)
 {
   // see header file for class documentation
   // or

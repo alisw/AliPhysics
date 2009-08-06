@@ -281,6 +281,7 @@ Bool_t AliHLTGlobalTrackMerger::MatchTracks(AliExternalTrackParam *trackTPC, Ali
   // "\n";
   // }
 
+  if (TMath::Abs(x_tpc-x_trd) > 0) {/* get rid of warning*/;}
   if (TMath::Abs(y_tpc-y_trd) > fMaxY) return kFALSE;
   if (TMath::Abs(z_tpc-z_trd) > fMaxZ) return kFALSE;
   if (TMath::Abs(snp_tpc-snp_trd) > fMaxSnp) return kFALSE;
