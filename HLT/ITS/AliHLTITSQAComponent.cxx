@@ -164,15 +164,13 @@ int AliHLTITSQAComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, A
       info[2]=clusters[i].fLayer;
 
       AliITSRecPoint recpoint(lab,hit,info);
-      // will be enabled later, needs the trunk of 2009-07-03
-      // fAliITSQADataMakerRec->FillRecPoint(recpoint);
+      fAliITSQADataMakerRec->FillRecPoint(recpoint);
     }
   }
 	for(Int_t i=0; i<6; i++) {
 		//if(fPlotCharge){
-		AliHLTUInt32_t fSpecification = 0x0;
-		// will be enabled later, needs the trunk of 2009-07-03
-		//PushBack( (TObject*) fAliITSQADataMakerRec->GetITSGlobalHisto(i),kAliHLTDataTypeHistogram,fSpecification);
+		AliHLTUInt32_t specification = 0x0;
+		PushBack( (TObject*) fAliITSQADataMakerRec->GetITSGlobalHisto(i),kAliHLTDataTypeHistogram,specification);
 		//}
 	}
 	HLTInfo("ITSClusterHisto found %d Total Spacepoints", TotalSpacePoint);
