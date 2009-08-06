@@ -84,6 +84,7 @@
 #include <AliCDBEntry.h>
 #include <AliLog.h>
 #include <AliMagF.h>
+#include <AliSplineFit.h>
 
 #include "AliTPCcalibDB.h"
 #include "AliTPCAltroMapping.h"
@@ -940,17 +941,216 @@ AliTPCCalibVdrift *     AliTPCcalibDB::GetVdrift(Int_t run){
   return vdrift;
 }
 
+Float_t AliTPCcalibDB::GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp, const char * sensorName, Int_t sigDigits)
+{
+  //
+  // Get Value for a DCS sensor 'sensorName', run 'run' at time 'timeStamp'
+  //
+  Float_t val=0;
+  const TString sensorNameString(sensorName);
+  AliDCSSensor *sensor = arr->GetSensor(sensorNameString);
+  if (!sensor) return val;
+  val=sensor->GetValue(timeStamp);
+  if (sigDigits>=0){
+    val=(Float_t)TMath::Floor(val * TMath::Power(10., sigDigits) + .5) / TMath::Power(10., sigDigits);
+  }
+  return val;
+}
 
-Float_t AliTPCcalibDB::GetChamberHighVoltage(Int_t timeStamp, Int_t run, Int_t sector) {
+Float_t AliTPCcalibDB::GetDCSSensorMeanValue(AliDCSSensorArray *arr, const char * sensorName, Int_t sigDigits)
+{
+  //
+  // Get mean Value for a DCS sensor 'sensorName' during run 'run'
+  //
+  Float_t val=0;
+  const TString sensorNameString(sensorName);
+  AliDCSSensor *sensor = arr->GetSensor(sensorNameString);
+  if (!sensor) return val;
+  
+  //current hack until the spline fit problem is solved
+  if (!sensor->GetFit()) return val;
+  Int_t nKnots=sensor->GetFit()->GetKnots();
+  Double_t tMid=(sensor->GetEndTime()-sensor->GetStartTime())/2.;
+  for (Int_t iKnot=0;iKnot<nKnots;++iKnot){
+    if (sensor->GetFit()->GetX()[iKnot]>tMid/3600.) break;
+    val=(Float_t)sensor->GetFit()->GetY0()[iKnot];
+  }
+/*  
+  TGraph *gr=sensor->MakeGraph();
+  if (gr) val=(Float_t)gr->GetMean(2);
+  delete gr;
+  */
+  if (sigDigits>=0){
+    val/=10;
+    val=(Float_t)TMath::Floor(val * TMath::Power(10., sigDigits) + .5) / TMath::Power(10., sigDigits);
+    val*=10;
+  }
+  return val;
+}
+
+Float_t AliTPCcalibDB::GetChamberHighVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits) {
   //
   // return the chamber HV for given run and time: 0-35 IROC, 36-72 OROC
+  // if timeStamp==-1 return mean value
   //
+  Float_t val=0;
+  TString sensorName="";
   TTimeStamp stamp(timeStamp);
   AliDCSSensorArray* voltageArray = AliTPCcalibDB::Instance()->GetVoltageSensors(run);
-  if (!voltageArray) return 0;
-  AliDCSSensor *sensor = voltageArray->GetSensor((sector+1)*3);
-  if (!sensor) return 0;
-  return sensor->GetValue(stamp);
+  if (!voltageArray || (sector<0) || (sector>71)) return val;
+  Char_t sideName='A';
+  if ((sector/18)%2==1) sideName='C';
+  if (sector<36){
+    //IROC
+    sensorName=Form("TPC_ANODE_I_%c%02d_VMEAS",sideName,sector%18);
+  }else{
+    //OROC
+    sensorName=Form("TPC_ANODE_O_%c%02d_0_VMEAS",sideName,sector%18);
+  }
+  if (timeStamp==-1){
+    val=AliTPCcalibDB::GetDCSSensorMeanValue(voltageArray, sensorName.Data(),sigDigits);
+  } else {
+    val=AliTPCcalibDB::GetDCSSensorValue(voltageArray, timeStamp, sensorName.Data(),sigDigits);
+  }
+  return val;
+}
+Float_t AliTPCcalibDB::GetSkirtVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits)
+{
+  //
+  // Get the skirt voltage for 'run' at 'timeStamp' and 'sector': 0-35 IROC, 36-72 OROC
+  // type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
+  // if timeStamp==-1 return the mean value for the run
+  //
+  Float_t val=0;
+  TString sensorName="";
+  TTimeStamp stamp(timeStamp);
+  AliDCSSensorArray* voltageArray = AliTPCcalibDB::Instance()->GetVoltageSensors(run);
+  if (!voltageArray || (sector<0) || (sector>71)) return val;
+  Char_t sideName='A';
+  if ((sector/18)%2==1) sideName='C';
+  sensorName=Form("TPC_SKIRT_%c_VMEAS",sideName);
+  if (timeStamp==-1){
+    val=AliTPCcalibDB::GetDCSSensorMeanValue(voltageArray, sensorName.Data(),sigDigits);
+  } else {
+    val=AliTPCcalibDB::GetDCSSensorValue(voltageArray, timeStamp, sensorName.Data(),sigDigits);
+  }
+  return val;
+}
+
+Float_t AliTPCcalibDB::GetCoverVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits)
+{
+  //
+  // Get the cover voltage for run 'run' at time 'timeStamp'
+  // type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
+  // if timeStamp==-1 return the mean value for the run
+  //
+  Float_t val=0;
+  TString sensorName="";
+  TTimeStamp stamp(timeStamp);
+  AliDCSSensorArray* voltageArray = AliTPCcalibDB::Instance()->GetVoltageSensors(run);
+  if (!voltageArray || (sector<0) || (sector>71)) return val;
+  Char_t sideName='A';
+  if ((sector/18)%2==1) sideName='C';
+  if (sector<36){
+    //IROC
+    sensorName=Form("TPC_COVER_I_%c_VMEAS",sideName);
+  }else{
+    //OROC
+    sensorName=Form("TPC_COVER_O_%c_VMEAS",sideName);
+  }
+  if (timeStamp==-1){
+    val=AliTPCcalibDB::GetDCSSensorMeanValue(voltageArray, sensorName.Data(),sigDigits);
+  } else {
+    val=AliTPCcalibDB::GetDCSSensorValue(voltageArray, timeStamp, sensorName.Data(),sigDigits);
+  }
+  return val;
+}
+
+Float_t AliTPCcalibDB::GetGGoffsetVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits)
+{
+  //
+  // Get the GG offset voltage for run 'run' at time 'timeStamp'
+  // type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
+  // if timeStamp==-1 return the mean value for the run
+  //
+  Float_t val=0;
+  TString sensorName="";
+  TTimeStamp stamp(timeStamp);
+  AliDCSSensorArray* voltageArray = AliTPCcalibDB::Instance()->GetVoltageSensors(run);
+  if (!voltageArray || (sector<0) || (sector>71)) return val;
+  Char_t sideName='A';
+  if ((sector/18)%2==1) sideName='C';
+  if (sector<36){
+    //IROC
+    sensorName=Form("TPC_GATE_I_%c_OFF_VMEAS",sideName);
+  }else{
+    //OROC
+    sensorName=Form("TPC_GATE_O_%c_OFF_VMEAS",sideName);
+  }
+  if (timeStamp==-1){
+    val=AliTPCcalibDB::GetDCSSensorMeanValue(voltageArray, sensorName.Data(),sigDigits);
+  } else {
+    val=AliTPCcalibDB::GetDCSSensorValue(voltageArray, timeStamp, sensorName.Data(),sigDigits);
+  }
+  return val;
+}
+
+Float_t AliTPCcalibDB::GetGGnegVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits)
+{
+  //
+  // Get the GG offset voltage for run 'run' at time 'timeStamp'
+  // type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
+  // if timeStamp==-1 return the mean value for the run
+  //
+  Float_t val=0;
+  TString sensorName="";
+  TTimeStamp stamp(timeStamp);
+  AliDCSSensorArray* voltageArray = AliTPCcalibDB::Instance()->GetVoltageSensors(run);
+  if (!voltageArray || (sector<0) || (sector>71)) return val;
+  Char_t sideName='A';
+  if ((sector/18)%2==1) sideName='C';
+  if (sector<36){
+    //IROC
+    sensorName=Form("TPC_GATE_I_%c_NEG_VMEAS",sideName);
+  }else{
+    //OROC
+    sensorName=Form("TPC_GATE_O_%c_NEG_VMEAS",sideName);
+  }
+  if (timeStamp==-1){
+    val=AliTPCcalibDB::GetDCSSensorMeanValue(voltageArray, sensorName.Data(),sigDigits);
+  } else {
+    val=AliTPCcalibDB::GetDCSSensorValue(voltageArray, timeStamp, sensorName.Data(),sigDigits);
+  }
+  return val;
+}
+
+Float_t AliTPCcalibDB::GetGGposVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits)
+{
+  //
+  // Get the GG offset voltage for run 'run' at time 'timeStamp'
+  // type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
+  // if timeStamp==-1 return the mean value for the run
+  //
+  Float_t val=0;
+  TString sensorName="";
+  TTimeStamp stamp(timeStamp);
+  AliDCSSensorArray* voltageArray = AliTPCcalibDB::Instance()->GetVoltageSensors(run);
+  if (!voltageArray || (sector<0) || (sector>71)) return val;
+  Char_t sideName='A';
+  if ((sector/18)%2==1) sideName='C';
+  if (sector<36){
+    //IROC
+    sensorName=Form("TPC_GATE_I_%c_POS_VMEAS",sideName);
+  }else{
+    //OROC
+    sensorName=Form("TPC_GATE_O_%c_POS_VMEAS",sideName);
+  }
+  if (timeStamp==-1){
+    val=AliTPCcalibDB::GetDCSSensorMeanValue(voltageArray, sensorName.Data(),sigDigits);
+  } else {
+    val=AliTPCcalibDB::GetDCSSensorValue(voltageArray, timeStamp, sensorName.Data(),sigDigits);
+  }
+  return val;
 }
 
 Float_t AliTPCcalibDB::GetPressure(Int_t timeStamp, Int_t run, Int_t type){

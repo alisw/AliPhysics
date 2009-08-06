@@ -64,7 +64,17 @@ class AliTPCcalibDB : public TObject
   static AliGRPObject * GetGRP(Int_t run);
   static TMap *  GetGRPMap(Int_t run);
   static Float_t GetPressure(Int_t timeStamp, Int_t run, Int_t type=0);
-  static Float_t GetChamberHighVoltage(Int_t timeStamp, Int_t run, Int_t sector);
+  //Voltage information
+  static Float_t GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp, const char * sensorName, Int_t sigDigits=-1);
+  static Float_t GetDCSSensorMeanValue(AliDCSSensorArray *arr, const char * sensorName, Int_t sigDigits=-1);
+  
+  static Float_t GetChamberHighVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
+  static Float_t GetSkirtVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
+  static Float_t GetCoverVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
+  static Float_t GetGGoffsetVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
+  static Float_t GetGGnegVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
+  static Float_t GetGGposVoltage(Int_t run, Int_t sector, Int_t timeStamp=-1, Int_t sigDigits=0);
+  
   static Float_t GetValueGoofie(Int_t timeStamp, Int_t run, Int_t type);
   static Bool_t  GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,TVectorD& fit);
   static Float_t GetTemperature(Int_t timeStamp, Int_t run, Int_t side);
