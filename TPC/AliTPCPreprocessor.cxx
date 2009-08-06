@@ -159,7 +159,7 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
            fConfigOK = kFALSE;
            return;
         }
-        fHighVoltage = new AliDCSSensorArray(startTimeLocal, endTimeLocal, confTree);
+        fHighVoltage = new AliDCSSensorArray(startTime, endTime, confTree);
       }
 
    // High voltage status values
@@ -176,7 +176,7 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
            fConfigOK = kFALSE;
            return;
         }
-        fHighVoltageStat = new AliDCSSensorArray(startTimeLocal, endTimeLocal, confTree);
+        fHighVoltageStat = new AliDCSSensorArray(startTime, endTime, confTree);
       }
 
    // Goofie values
@@ -488,7 +488,7 @@ UInt_t AliTPCPreprocessor::MapHighVoltage(TMap* dcsAliasMap)
   UInt_t result=0;
   TMap *map = fHighVoltage->ExtractDCS(dcsAliasMap);
   if (map) {
-    fHighVoltage->MakeSplineFit(map);
+    fHighVoltage->MakeSplineFit(map, kTRUE);   // keep both spline fits and original maps
     Double_t fitFraction = 1.0*fHighVoltage->NumFits()/fHighVoltage->NumSensors(); 
     if (fitFraction > kFitFraction ) {
       AliInfo(Form("High voltage recordings extracted, fits performed.\n"));
