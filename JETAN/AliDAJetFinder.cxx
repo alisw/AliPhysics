@@ -136,7 +136,7 @@ void AliDAJetFinder::InitDetAnn(Double_t &dEtSum,Double_t **xData,TVectorD *vPx,
 }
 
 //-----------------------------------------------------------------------------------
-void AliDAJetFinder::DoubleClusters(Int_t nc,Int_t &nk,TVectorD *vPy,TMatrixD *mY)
+void AliDAJetFinder::DoubleClusters(Int_t nc,Int_t &nk,  TVectorD *vPy,  TMatrixD *mY) const
 {
 	for(Int_t iClust=0; iClust<nc; iClust++){
 		(*vPy)(iClust)=(*vPy)(iClust)/2;
@@ -147,7 +147,7 @@ void AliDAJetFinder::DoubleClusters(Int_t nc,Int_t &nk,TVectorD *vPy,TMatrixD *m
 }
 
 //-----------------------------------------------------------------------------------
-void AliDAJetFinder::Annealing(Int_t nk,Double_t **xData,TVectorD *vPx,TVectorD *vPy,TMatrixD *mPyx,TMatrixD *mY)
+void AliDAJetFinder::Annealing(Int_t nk,Double_t **xData,  TVectorD *vPx,  TVectorD *vPy,  TMatrixD *mPyx,  TMatrixD *mY)
 {
 // Main part of the algorithm
 	const Double_t pi=TMath::Pi();
@@ -238,11 +238,11 @@ void AliDAJetFinder::Annealing(Int_t nk,Double_t **xData,TVectorD *vPx,TVectorD 
     delete y;
     delete y1;
     delete ry;
-	delete [] m;
+    delete [] m;
 }
 
 //-----------------------------------------------------------------------------------
-void AliDAJetFinder::NumCl(Int_t &nc,Int_t &nk,TVectorD *vPy,TMatrixD *mPyx,TMatrixD *mY)
+void AliDAJetFinder::NumCl(Int_t &nc,Int_t &nk,TVectorD *vPy,  TMatrixD *mPyx,TMatrixD *mY)
 {
 	static Bool_t growcl=true;
 	
@@ -299,7 +299,7 @@ void AliDAJetFinder::NumCl(Int_t &nc,Int_t &nk,TVectorD *vPy,TMatrixD *mPyx,TMat
 }
 
 //-----------------------------------------------------------------------------------
-void AliDAJetFinder::ReduceClusters(Int_t **iSame,Int_t nc,Int_t &ncout,Int_t **cont,Int_t *nSameOut)
+void AliDAJetFinder::ReduceClusters(Int_t **iSame,Int_t nc,Int_t &ncout,Int_t **cont,Int_t *nSameOut) const
 {
 	Int_t *nSame = new Int_t[nc];
 	Int_t *iperm = new Int_t[nc];
@@ -378,7 +378,7 @@ void AliDAJetFinder::EndDetAnn(Int_t &nk,Double_t **xData,Int_t *xx,Double_t etx
 }
 
 //-----------------------------------------------------------------------------------
-void AliDAJetFinder::StoreJets(Int_t nk,Double_t **xData,Int_t *xx,TMatrixD *mY)
+void AliDAJetFinder::StoreJets(Int_t nk,Double_t **xData,  Int_t *xx,  TMatrixD *mY)
 {
 //evaluate significant clusters properties
 	const Double_t pi=TMath::Pi();
