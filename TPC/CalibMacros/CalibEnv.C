@@ -1,15 +1,25 @@
 /*
+.x ~/NimStyle.C
+.x ~/rootlogon.C
+
 gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
 
+
+
+.L $ALICE_ROOT/TPC/CalibMacros/CalibEnv.C+
+Init();
+CalibEnv("listAll.txt");
+GetTree();
+
+TFile f("dcsTime.root")
+
+//
+// if you want to use alien OCDB
+// 
 gSystem->Load("libXrdClient.so");
 gSystem->Load("libNetx.so");
 if (!gGrid) TGrid::Connect("alien://",0,0,"t");
 
-
-.L CalibEnv.C++
-Init();
-CalibEnv("listAll.txt");
-TFile f("dcsTime.root")
 
 
 */
@@ -41,6 +51,9 @@ TFile f("dcsTime.root")
 #include "TTreeStream.h"
 #include "AliTPCTempMap.h"
 
+
+TTree * dcsTree=0;
+
 void ProcessGoofie( AliDCSSensorArray* goofieArray, TVectorD & vecEntries, TVectorD & vecMedian, TVectorD &vecMean, TVectorD &vecRMS);
 
 void Init(){
@@ -49,10 +62,10 @@ void Init(){
   //
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT/OCDB");
-  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/HighVoltage","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie","local:///lustre_alpha/alice/alien/alice/data/2008/LHC08d/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/HighVoltage","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
   AliCDBManager::Instance()->SetRun(1);
 }
 
@@ -64,7 +77,7 @@ void InitAlien(const char *path="LHC08b"){
   TString alpath="alien://folder=/alice/data/2008/";
   alpath+=path;
   alpath+="/OCDB";
-    
+  
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data",alpath.Data());
@@ -77,7 +90,7 @@ void InitAlien(const char *path="LHC08b"){
 void CalibEnv(const char * runList){
   //
   //
-  //  
+  //
   AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
   ifstream in;
   in.open(runList);
@@ -130,21 +143,44 @@ void CalibEnv(const char * runList){
       Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,irun,0);
       Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,irun,1);
       //
-      Double_t voltagesIROC[36]; 
-      Double_t voltagesOROC[36]; 
-      for(Int_t j=1; j<36; j++) voltagesIROC[j-1] = AliTPCcalibDB::Instance()->GetChamberHighVoltage(startTime, irun, j);
-      for(Int_t j=36; j<72; j++) voltagesOROC[j-36] = AliTPCcalibDB::Instance()->GetChamberHighVoltage(startTime, irun, j);
-      Double_t voltIROC = TMath::Median(36, voltagesIROC);
-      Double_t voltOROC = TMath::Median(36, voltagesOROC);
+      TVectorD voltagesIROC(36); 
+      TVectorD voltagesOROC(36); 
+      for(Int_t j=1; j<36; j++) voltagesIROC[j-1] = AliTPCcalibDB::Instance()->GetChamberHighVoltage(irun, j,tstamp);
+      for(Int_t j=36; j<72; j++) voltagesOROC[j-36] = AliTPCcalibDB::Instance()->GetChamberHighVoltage(irun, j,tstamp);
+      Double_t voltIROC = TMath::Median(36, voltagesIROC.GetMatrixArray());
+      Double_t voltOROC = TMath::Median(36, voltagesOROC.GetMatrixArray());
+      //
+      Float_t  coverIA=AliTPCcalibDB::GetCoverVoltage(irun,0,tstamp);
+      Float_t  coverIC=AliTPCcalibDB::GetCoverVoltage(irun,18,tstamp);
+      Float_t  coverOA=AliTPCcalibDB::GetCoverVoltage(irun,36,tstamp);
+      Float_t  coverOC=AliTPCcalibDB::GetCoverVoltage(irun,54,tstamp);
+      Float_t  skirtA=AliTPCcalibDB::GetSkirtVoltage(irun,0,tstamp);
+      Float_t  skirtC=AliTPCcalibDB::GetSkirtVoltage(irun,18,tstamp);
+      Float_t  ggOffA=AliTPCcalibDB::GetGGoffsetVoltage(irun,0,tstamp);
+      Float_t  ggOffC=AliTPCcalibDB::GetGGoffsetVoltage(irun,18,tstamp);
+
+
 
       //tempMap->GetLinearFitter(0,0,itime);
       (*pcstream)<<"dcs"<<
 	"run="<<irun<<
 	"time="<<itime<<
-	"voltageIROC="<<voltIROC<<
-	"voltageOROC="<<voltOROC<<
-	"ptrel0="<<ptrelative0<<
-	"ptrel1="<<ptrelative1<<
+	// voltage setting
+	"VIROC.="<<&voltagesIROC<<
+	"VOROC.="<<&voltagesOROC<<
+	"medianVIROC="<<voltIROC<<
+	"medianVOROC="<<voltOROC<<
+        "coverIA=" << coverIA <<
+        "coverIC=" << coverIC <<
+        "coverOA=" << coverOA <<
+        "coverOC=" << coverOC <<
+        "skirtA=" << skirtA <<
+        "skirtC=" << skirtC <<
+        "ggOffA=" << ggOffA <<
+        "ggOffC=" << ggOffC <<
+	//
+	"ptrel0="<<ptrelative0<<  // deltaTP/TP  - A side
+	"ptrel1="<<ptrelative1<<  // deltaTP/TPC - C side
 	"goofie.="<<&vecGoofie<<
 	"goofieE.="<<&vecEntries<<
 	"goofieMean.="<<&vecMean<<
@@ -171,7 +207,7 @@ void CalibEnv(const char * runList){
 
 void ProcessGoofie( AliDCSSensorArray* goofieArray, TVectorD & vecEntries, TVectorD & vecMedian, TVectorD &vecMean, TVectorD &vecRMS){
   /*
-    
+  
   1       TPC_ANODE_I_A00_STAT
   2       TPC_DVM_CO2
   3       TPC_DVM_DriftVelocity
@@ -210,18 +246,18 @@ void ProcessGoofie( AliDCSSensorArray* goofieArray, TVectorD & vecEntries, TVect
       values.ResizeTo(npoints);
       Int_t nused =0;
       for (Int_t ipoint=0; ipoint<npoints; ipoint++){
-	if (TMath::Abs(gsensor->GetGraph()->GetY()[ipoint])>kEpsilon && 
-	   TMath::Abs(gsensor->GetGraph()->GetY()[ipoint])<kBig ){
-	  values[nused]=gsensor->GetGraph()->GetY()[ipoint];
-	  nused++;
-	}
+        if (TMath::Abs(gsensor->GetGraph()->GetY()[ipoint])>kEpsilon &&
+            TMath::Abs(gsensor->GetGraph()->GetY()[ipoint])<kBig ){
+              values[nused]=gsensor->GetGraph()->GetY()[ipoint];
+              nused++;
+            }
       }
       //
-      vecEntries[isensor]= nused;      
+      vecEntries[isensor]= nused;
       if (nused>1){
-	vecMedian[isensor] = TMath::Median(nused,values.GetMatrixArray());
-	vecMean[isensor]   = TMath::Mean(nused,values.GetMatrixArray());
-	vecRMS[isensor]    = TMath::RMS(nused,values.GetMatrixArray());
+        vecMedian[isensor] = TMath::Median(nused,values.GetMatrixArray());
+        vecMean[isensor]   = TMath::Mean(nused,values.GetMatrixArray());
+        vecRMS[isensor]    = TMath::RMS(nused,values.GetMatrixArray());
       }
     }
   }
@@ -252,8 +288,27 @@ void FilterMag(const char * runList){
       printf("Run%d\tL3 current%f\tBz\t%f\n",irun,current,bz);
     }
   }
+  
+}
+
+
+void GetTree(){
+  TFile *fdcs = new TFile("dcsTime.root");
+  dcsTree  = (TTree*)fdcs->Get("dcs"); 
+  //
+  // mean temp A
+ 
+  dcsTree->Draw("temp30.fElements[0]");
 
 }
+
+void GetNominalValues(){
+  //
+  if (!dcsTree) return;
+}
+
+
+
 
 /*
 
@@ -266,4 +321,28 @@ TLinearFitter * fitter = tempMap->GetLinearFitter(0,0,tempArray->GetStartTime())
 
 AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(62084);
 
+*/
+
+/*
+
+void PlotPressureResol(){
+  //
+  // Example
+  //
+  dcs->Draw("100000*(press-press2-4.782)/press/sqrt(2.)>>his(100,-50,50)","run>61400","")
+  his->SetXTitle("#sigma_{P/P_{0}}(10^{-5})");
+  gPad->SaveAs("picDCS/deltaPoverP.eps");
+  gPad->SaveAs("picDCS/deltaPoverP.gif");
+ 
+}
+void PlotTresol(){
+  //
+  // T resolution example
+  // plot difference of the temperature from A and C side
+  // Supposing the error is independent - (division by sqrt(2))
+  dcs->Draw("100000*(temp30.fElements[0]-temp31.fElements[0]+0.00509)/(temp31.fElements[0]+273.15)/sqrt(2.)>>his(100,-5,5)","run>61400","");
+  his->SetXTitle("#sigma_{T/T_{0}}(10^{-5})");
+  gPad->SaveAs("picDCS/deltaToverT.eps");
+  gPad->SaveAs("picDCS/deltaToverT.gif");
+}
 */
