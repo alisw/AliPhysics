@@ -36,7 +36,8 @@ AliAnalysisTaskSE(),
   fZvtxCut(10),
   fNvtxBins(10),
   fNbinsEta(200),
-  fBackground(0)
+  fBackground(0),
+  fEventSelectionEff(0)
 {
   // Default constructor
 }
@@ -52,7 +53,8 @@ AliFMDAnalysisTaskGenerateCorrection::AliFMDAnalysisTaskGenerateCorrection(const
   fZvtxCut(10),
   fNvtxBins(10),
   fNbinsEta(200),
-  fBackground(0)
+  fBackground(0),
+  fEventSelectionEff(0)
 {
  
   DefineOutput(1, TList::Class());

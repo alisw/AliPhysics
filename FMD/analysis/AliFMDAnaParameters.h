@@ -40,7 +40,7 @@
 #include "AliFMDAnaCalibEventSelectionEfficiency.h"
 #include <TVector2.h>
 #include <TString.h>
-#include "AliPWG0Helper.h"
+//#include "AliPWG0Helper.h"
 class AliESDEvent;
 
 /**
@@ -56,6 +56,8 @@ public:
     kEnergyDistributions          = 0x2, // Energy Distributions
     kEventSelectionEfficiency     = 0x4  // Event Selection Efficiency
   };
+  
+  enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR };
   
   /** Singleton access
       @return  single to */
@@ -93,7 +95,7 @@ public:
   Bool_t   GetProcessPrimary() {return fProcessPrimary;}
   Bool_t   GetProcessHits() {return fProcessHits;}
   void     GetVertex(AliESDEvent* esd, Double_t* vertexXYZ);
-  void     SetTriggerDefinition(AliPWG0Helper::Trigger trigger) {fTrigger = trigger;}
+  void     SetTriggerDefinition(Trigger trigger) {fTrigger = trigger;}
   Int_t    SetTriggerDefinition() {return fTrigger;}
   Bool_t   IsEventTriggered(AliESDEvent* esd);
 protected:
@@ -110,6 +112,7 @@ protected:
       fCorner2(o.fCorner2),
       fEnergyPath(o.fEnergyPath),
       fBackgroundPath(o.fBackgroundPath),
+      fEventSelectionEffPath(o.fEventSelectionEffPath),
       fProcessPrimary(o.fProcessPrimary),
       fProcessHits(o.fProcessHits),
       fTrigger(o.fTrigger)
@@ -150,7 +153,8 @@ protected:
   TString  fEventSelectionEffPath;
   Bool_t   fProcessPrimary;
   Bool_t   fProcessHits; 
-  AliPWG0Helper::Trigger  fTrigger;
+  Trigger  fTrigger;
+  
   ClassDef(AliFMDAnaParameters,0) // Manager of parameters
 };
 

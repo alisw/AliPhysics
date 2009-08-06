@@ -72,7 +72,7 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fEventSelectionEffPath("$ALICE_ROOT/FMD/Correction/EventSelectionEfficiency/eventselectionefficiency.root"),
   fProcessPrimary(kFALSE),
   fProcessHits(kFALSE),
-  fTrigger(AliPWG0Helper::kMB1)
+  fTrigger(kMB1)
 {
   
   
@@ -430,13 +430,36 @@ void AliFMDAnaParameters::GetVertex(AliESDEvent* esd, Double_t* vertexXYZ)
   return;
   
 }
-//____________________________________________________________________
-Bool_t AliFMDAnaParameters::IsEventTriggered(AliESDEvent* esd) { 
 
+//____________________________________________________________________
+Bool_t AliFMDAnaParameters::IsEventTriggered(AliESDEvent *esd) {
+  // check if the event was triggered
+  ULong64_t triggerMask = esd->GetTriggerMask();
   
-  Bool_t trigger = AliPWG0Helper::IsEventTriggered(esd, AliPWG0Helper::kMB1);
-  //  Bool_t trigger = AliPWG0Helper::IsEventTriggered(esd, fTrigger);
-  return trigger;
+  // definitions from p-p.cfg
+  ULong64_t spdFO = (1 << 14);
+  ULong64_t v0left = (1 << 11);
+  ULong64_t v0right = (1 << 12);
+  
+  switch (fTrigger) {
+  case kMB1: {
+    if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
+      return kTRUE;
+    break;
+  }
+  case kMB2: {
+    if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
+      return kTRUE;
+    break;
+  }
+  case kSPDFASTOR: {
+    if (triggerMask & spdFO)
+      return kTRUE;
+    break;
+  }
+  }//switch
+
+  return kFALSE;
 }
 
 //____________________________________________________________________

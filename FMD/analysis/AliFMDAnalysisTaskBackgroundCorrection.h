@@ -28,8 +28,6 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
       fOutputList(0),
       fInputList(0),
       fHitList(0),
-      fArray(o.fArray),
-      fInputArray(o.fInputArray),
       fVertexString(o.fVertexString),
       fNevents(o.fNevents),
       fStandalone(o.fStandalone), 
@@ -53,8 +51,6 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
     TList*        fOutputList;
     TList*        fInputList;
     TList*        fHitList;
-    TObjArray     fArray;
-    TObjArray*    fInputArray;
     TObjString*   fVertexString;
     TH1I          fNevents;
     Bool_t        fStandalone;

@@ -7,7 +7,6 @@
 #include "TH1F.h"
 
 class AliFMDAnaCalibBackgroundCorrection;
-class AliFMDAnaCalibTriggerEfficiency;
 class AliFMDAnaCalibEventSelectionEfficiency;
 
 class AliFMDAnalysisTaskGenerateCorrection : public AliAnalysisTaskSE
@@ -26,7 +25,8 @@ class AliFMDAnalysisTaskGenerateCorrection : public AliAnalysisTaskSE
       fZvtxCut(o.fZvtxCut),
       fNvtxBins(o.fNvtxBins),
       fNbinsEta(o.fNbinsEta),
-      fBackground(o.fBackground)
+      fBackground(o.fBackground),
+      fEventSelectionEff(o.fEventSelectionEff)
       {}
     AliFMDAnalysisTaskGenerateCorrection& operator=(const AliFMDAnalysisTaskGenerateCorrection&) { return *this; }
     
@@ -52,7 +52,6 @@ class AliFMDAnalysisTaskGenerateCorrection : public AliAnalysisTaskSE
     Int_t fNvtxBins;
     Int_t fNbinsEta;
     AliFMDAnaCalibBackgroundCorrection* fBackground;
-    AliFMDAnaCalibTriggerEfficiency*    fTriggerEff;
     AliFMDAnaCalibEventSelectionEfficiency*     fEventSelectionEff;
     
     ClassDef(AliFMDAnalysisTaskGenerateCorrection, 1);

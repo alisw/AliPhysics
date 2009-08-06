@@ -16,8 +16,6 @@ AliAnalysisTaskSE(),
   fDensity("Density",kFALSE),
   fBackground("BackgroundCorrected",kFALSE),
   fDndeta("dNdeta",kFALSE)
-//  fPrimary(kTRUE),
-//  fRecordHits(kFALSE)
 {
   // Default constructor
 }
@@ -29,8 +27,6 @@ AliFMDAnalysisTaskSE::AliFMDAnalysisTaskSE(const char* name):
   fDensity("Density",kFALSE),
   fBackground("BackgroundCorrected",kFALSE),
   fDndeta("dNdeta",kFALSE)
-  //  fPrimary(kTRUE),
-  //  fRecordHits(kFALSE)
 {
   
   DefineOutput(1, TList::Class());
@@ -44,8 +40,6 @@ void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
   
   AliESDFMD* fmd = new AliESDFMD();
   AliESDVertex* vertex = new AliESDVertex();
-  
-  TObjString* vtxString1 = new TObjString();
   
   TList* densitylist = new TList();
   
@@ -62,13 +56,10 @@ void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
   fBackground.SetInputList(densitylist);
   fBackground.SetOutputList(bgcorlist);
   fBackground.SetHitList(fListOfHistos);
-  fBackground.SetOutputVertex(vtxString1);
-  
-  fDndeta.SetInputVertex(vtxString1);
+
   fDndeta.SetInputList(bgcorlist); 
   fDndeta.SetOutputList(fListOfHistos); 
-  //fDndeta.SetAnalyzePrimary(fPrimary);
-  //fDndeta.SetRecordHits(fRecordHits);
+  
   fSharing.CreateOutputObjects();
   fDensity.CreateOutputObjects();
   fBackground.CreateOutputObjects();

@@ -30,7 +30,6 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
  AliFMDAnalysisTaskDensity(const AliFMDAnalysisTaskDensity& o) : AliAnalysisTask(),
       fDebug(o.fDebug),
       fOutputList(),
-      fArray(o.fArray),
       fESD(o.fESD),
       fVertexString(o.fVertexString),
       fVertex(o.fVertex),
@@ -56,7 +55,6 @@ class AliFMDAnalysisTaskDensity : public AliAnalysisTask
     
     Int_t         fDebug;        //  Debug flag
     TList*        fOutputList;
-    TObjArray     fArray;
     AliESDFMD*    fESD;
     TObjString    fVertexString;
     AliESDVertex* fVertex;

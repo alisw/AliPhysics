@@ -30,7 +30,6 @@ ClassImp(AliFMDAnalysisTaskDensity)
 AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity()
 : fDebug(0),
   fOutputList(),
-  fArray(),
   fESD(0x0),
   fVertexString(),
   fVertex(0),
@@ -47,7 +46,6 @@ AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity(const char* name, Bool_t SE
     AliAnalysisTask(name, "Density"),
     fDebug(0),
     fOutputList(0),
-    fArray(),
     fESD(0x0),
     fVertexString(),
     fVertex(0),
@@ -61,25 +59,16 @@ AliFMDAnalysisTaskDensity::AliFMDAnalysisTaskDensity(const char* name, Bool_t SE
     DefineOutput(0, TList::Class());
   }
   
-  /*  fFuncPos = new TF1("funcPos","pol1",0,6);
-  fFuncPos->SetParameters(0.99925,0.00298301);
-  fFuncNeg = new TF1("funcNeg","pol1",-6,0);
-  fFuncNeg->SetParameters(0.987583,-0.0101022);*/
-  
-  
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskDensity::CreateOutputObjects()
 {
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
-  fArray.SetName("FMD");
-  fArray.SetOwner();
   if(!fOutputList)
     fOutputList = new TList();
   fOutputList->SetName("density_list");
   
-  fOutputList->Add(&fArray);
   fOutputList->Add(&fVertexString);
   
   TH2F* hMult = 0;
@@ -88,18 +77,12 @@ void AliFMDAnalysisTaskDensity::CreateOutputObjects()
   
   for(Int_t det =1; det<=3;det++)
     {
-      TObjArray* detArray = new TObjArray();
-      detArray->SetName(Form("FMD%d",det));
-      fArray.AddAtAndExpand(detArray,det);
       Int_t nRings = (det==1 ? 1 : 2);
       for(Int_t ring = 0;ring<nRings;ring++)
 	{
 	  Char_t ringChar = (ring == 0 ? 'I' : 'O');
 	  Int_t  nSec     = (ring == 0 ? 20 : 40);
 	  
-	  TObjArray* vtxArray = new TObjArray();
-	  vtxArray->SetName(Form("FMD%d%c",det,ringChar));
-	  detArray->AddAtAndExpand(vtxArray,ring);
 	  for(Int_t i = 0; i< nVtxbins; i++) {
 	    TH2F* hBg = pars->GetBackgroundCorrection(det, ringChar, i);
 	    
@@ -109,7 +92,7 @@ void AliFMDAnalysisTaskDensity::CreateOutputObjects()
 			      hBg->GetXaxis()->GetXmax(),
 			      nSec, 0, 2*TMath::Pi());
 	    
-	    vtxArray->AddAtAndExpand(hMult,i);
+	    fOutputList->Add(hMult);
 	  }
 	} 
     }
@@ -153,17 +136,13 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
   
   Int_t vtxbin = (Int_t)vertexBinDouble;
   
-
-  
   fVertexString.SetString(Form("%d",vtxbin));
   //Reset everything
   for(UShort_t det=1;det<=3;det++) {
-    TObjArray* detArray = (TObjArray*)fArray.At(det);
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
-      TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
-      
-      TH2F* hMult   = (TH2F*)vtxArray->At(vtxbin); 
+      Char_t   ring = (ir == 0 ? 'I' : 'O');
+      TH2F* hMult   = (TH2F*)fOutputList->FindObject(Form("FMD%d%c_vtxbin%d",det,ring,vtxbin));
       hMult->Reset();
     }
     
@@ -171,49 +150,27 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
   
   
   for(UShort_t det=1;det<=3;det++) {
-    TObjArray* detArray = (TObjArray*)fArray.At(det);
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
-      TObjArray* vtxArray = (TObjArray*)detArray->At(ir);
-      
-      TH2F* hMult   = (TH2F*)vtxArray->At(vtxbin);
       
       Char_t   ring = (ir == 0 ? 'I' : 'O');
+      TH2F* hMult   = (TH2F*)fOutputList->FindObject(Form("FMD%d%c_vtxbin%d",det,ring,vtxbin));
+     
       UShort_t nsec = (ir == 0 ? 20  : 40);
       UShort_t nstr = (ir == 0 ? 512 : 256);
       
       for(UShort_t sec =0; sec < nsec;  sec++)  {
 	for(UShort_t strip = 0; strip < nstr; strip++) {
 	  Float_t mult = fESD->Multiplicity(det,ring,sec,strip);
-	  //Float_t eta = fESD->Eta(det,ring,sec,strip);
-	  
+		  
 	  if(mult == 0 || mult == AliESDFMD::kInvalidMult) continue;
-	  //Particle number cut goes here...
-	  //Double_t x,y,z;
-	  //geo->Detector2XYZ(det,ring,sec,strip,x,y,z);
-	  // Float_t phi = TMath::ATan2(y,x);
-	  // if(phi<0)
-	  //  phi = phi+2*TMath::Pi();
-	  
+			  
 	  Float_t phi = pars->GetPhiFromSector(det,ring,sec);
 	  Float_t eta = pars->GetEtaFromStrip(det,ring,sec,strip,vertex[2]);
-	  //std::cout<<phi<<"     "<<phicalc<<std::endl;
-	  //  Float_t   r     = TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
-	 // Float_t   theta = TMath::ATan2(r,z-vertex[2]);
-	  // Float_t   etacalc   = -1*TMath::Log(TMath::Tan(0.5*theta));
-	   
-	   //  std::cout<<eta<<"    "<<etacalc<<std::endl;
-	   //eta = etacalc;
-	     
-	  //  Float_t m   = pars->GetMPV(det,ring,eta);
-	  //  Float_t s   = pars->GetSigma(det,ring,eta);
-	  //AliFMDParameters* recopars = AliFMDParameters::Instance();
-	  
+		  
 	  Float_t mult_cut = 0.15;//m-2*s;//0.15;//0.2;//m-3*s;// 0.2;//0.01;//m-2*s;//0.2;
 	  if(ring == 'I')
 	    mult_cut = 0.10;
-	  
-	  //mult_cut = (5*recopars->GetPedestalWidth(det,ring,sec,strip))/(recopars->GetPulseGain(det,ring,sec,strip)*recopars->GetDACPerMIP());
 	  
 	  Float_t nParticles = 0;
 	  if(fESD->GetUniqueID() == kTRUE) {
@@ -258,23 +215,16 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	  //std::cout<<"before "<<correction<<std::endl;
 	  if(fESD->GetUniqueID() == kTRUE) {
 	    TH1F* hDoubleHitCorrection = pars->GetDoubleHitCorrection(det,ring);
-	    //if(det == 3) 
 	    
 	    if(hDoubleHitCorrection->GetBinContent(hDoubleHitCorrection->FindBin(eta)) != 0)
 	      correction = correction / hDoubleHitCorrection->GetBinContent(hDoubleHitCorrection->FindBin(eta));
 	    
-	    //else
-	    //  correction = correction / pars->GetDoubleHitCorrection()->GetBinContent(pars->GetDoubleHitCorrection()->FindBin(eta));
 	  }
 	  
-	  // std::cout<<correction<<std::endl;
 	  if(correction) nParticles = nParticles / correction;
 	  if(nParticles > 0)
 	    hMult->Fill(eta,phi,nParticles);
 	  
-	  //if(det == 1 && ring =='I' && nParticles >0)
-	  //if(nParticles > 0)
-	  //  std::cout<<det<<"    "<<ring<<"    "<<sec<<"    "<<strip<<"   "<<mult<<std::endl;
 	  
 	}
       }

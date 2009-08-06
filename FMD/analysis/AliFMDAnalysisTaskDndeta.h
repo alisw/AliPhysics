@@ -23,52 +23,39 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
     AliFMDAnalysisTaskDndeta(const char* name, Bool_t SE = kTRUE);
     virtual ~AliFMDAnalysisTaskDndeta() {;}
  AliFMDAnalysisTaskDndeta(const AliFMDAnalysisTaskDndeta& o) : AliAnalysisTask(),
-      fDebug(o.fDebug),
-      fOutputList(0),
-      fInputList(0),
-      //fArray(o.fArray),
-      fInputArray(o.fInputArray),
-      fVertexString(o.fVertexString),
-      fNevents(o.fNevents),
-      fNMCevents(o.fNMCevents),
-      fStandalone(o.fStandalone),
-      //fMCevent(o.fMCevent),
-      fLastTrackByStrip(o.fLastTrackByStrip)
-      // fPrimary(o.fPrimary),
-      //fRecordHits(o.fRecordHits) 
-{}
-    AliFMDAnalysisTaskDndeta& operator=(const AliFMDAnalysisTaskDndeta&) { return *this; }
-    // Implementation of interface methods
-    virtual void ConnectInputData(Option_t *option = "");
-    virtual void CreateOutputObjects();
-    virtual void Init() {}
-    virtual void LocalInit() {Init();}
-    virtual void Exec(Option_t *option);
-    virtual void Terminate(Option_t *option);
-    virtual void SetDebugLevel(Int_t level) {fDebug = level;}
-    void SetInputList(TList* inputList) {fInputList = inputList;}
-    void SetInputVertex(TObjString* vtxString) {fVertexString = vtxString;}
-    void SetOutputList(TList* outputList) {fOutputList = outputList;}
-    // void SetMCEvent(AliMCEvent* mcevent) {fMCevent = mcevent;}
-    void ProcessPrimary();
-    TList* GetOutputList() {return fOutputList;}
-    // void SetAnalyzePrimary(Bool_t prim) {fPrimary = prim;}
-    // void SetRecordHits(Bool_t recordhits) {fRecordHits = recordhits;}
+							       fDebug(o.fDebug),
+							       fOutputList(0),
+							       fInputList(0),
+							       fVertexString(o.fVertexString),
+							       fNevents(o.fNevents),
+							       fNMCevents(o.fNMCevents),
+							       fStandalone(o.fStandalone),
+							       fLastTrackByStrip(o.fLastTrackByStrip)  {}
+  AliFMDAnalysisTaskDndeta& operator=(const AliFMDAnalysisTaskDndeta&) { return *this; }
+  // Implementation of interface methods
+  virtual void ConnectInputData(Option_t *option = "");
+  virtual void CreateOutputObjects();
+  virtual void Init() {}
+  virtual void LocalInit() {Init();}
+  virtual void Exec(Option_t *option);
+  virtual void Terminate(Option_t *option);
+  virtual void SetDebugLevel(Int_t level) {fDebug = level;}
+  void SetInputList(TList* inputList) {fInputList = inputList;}
+  void SetInputVertex(TObjString* vtxString) {fVertexString = vtxString;}
+  void SetOutputList(TList* outputList) {fOutputList = outputList;}
+  void ProcessPrimary();
+  TList* GetOutputList() {return fOutputList;}
+   
  private:
-    Int_t         fDebug;        //  Debug flag
-    TList*        fOutputList;
-    TList*        fInputList;
-    //TObjArray     fArray;
-    TObjArray*    fInputArray;
-    TObjString*   fVertexString;
-    TH1I          fNevents;
-    TH1I          fNMCevents;
-    Bool_t        fStandalone;
-    // AliMCEvent*   fMCevent;
-    AliFMDFloatMap fLastTrackByStrip;
-    //Bool_t        fPrimary;
-    //Bool_t        fRecordHits;
-    ClassDef(AliFMDAnalysisTaskDndeta, 0); // Analysis task for FMD analysis
+  Int_t         fDebug;        //  Debug flag
+  TList*        fOutputList;
+  TList*        fInputList;
+  TObjString*   fVertexString;
+  TH1I          fNevents;
+  TH1I          fNMCevents;
+  Bool_t        fStandalone;
+  AliFMDFloatMap fLastTrackByStrip;
+  ClassDef(AliFMDAnalysisTaskDndeta, 0); // Analysis task for FMD analysis
 };
  
 #endif

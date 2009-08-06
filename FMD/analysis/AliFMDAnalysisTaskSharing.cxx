@@ -275,6 +275,7 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
   
   
   Float_t cutHigh = pars->GetMPV(det,ring,eta) - 3*pars->GetSigma(det,ring,eta);
+   
   // Float_t cutPart = pars->GetMPV(det,ring,eta) - 5*pars->GetSigma(det,ring,eta);
   Float_t Etotal  = mult;
   
