@@ -117,19 +117,18 @@ void AliHLTITSClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentD
 
 AliHLTComponentDataType AliHLTITSClusterFinderComponent::GetOutputDataType() {
   // see header file for class documentation
-  return kAliHLTMultipleDataType;
-
-}
-
-int AliHLTITSClusterFinderComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
-
-{
-  // see header file for class documentation
-  tgtList.clear();
-  tgtList.push_back(kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD);
-  tgtList.push_back(kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD);
-  tgtList.push_back(kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD);
-  return tgtList.size();
+  switch(fModeSwitch){
+  case kClusterFinderSPD:
+    return kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD;
+    break;
+  case kClusterFinderSDD: 	 
+    return kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD;
+    break;
+  case kClusterFinderSSD:
+    return kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD;
+    break;
+  }
+  return kAliHLTVoidDataType;
 }
 
 void AliHLTITSClusterFinderComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
@@ -239,7 +238,7 @@ Int_t AliHLTITSClusterFinderComponent::DoEvent( const AliHLTComponentEventData& 
 
   if ( evtData.fBlockCnt<=0 )
       {
-	Logging( kHLTLogWarning, "HLT::ITSClusterFinder::DoEvent", "DoEvent", "no blocks in event" );
+	HLTDebug("no blocks in event" );
 	return 0;
       }
   AliHLTComponentDataType datatype;
