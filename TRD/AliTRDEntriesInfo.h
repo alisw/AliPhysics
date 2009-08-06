@@ -33,7 +33,7 @@ class AliTRDEntriesInfo : public AliTRDUshortInfo
   //
   // statistic
   //
-  Int_t GetSum(); 
+  Int_t GetSum() const; 
   
   // algebra
   Bool_t TestAdd(const AliTRDEntriesInfo * info);

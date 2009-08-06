@@ -27,10 +27,10 @@ class AliTRDPhInfo : public AliTRDUshortInfo
   AliTRDPhInfo &operator=(const AliTRDPhInfo &c);
 
   Float_t At(Int_t bin) const                  { return (Float_t) (fData[bin]*3000.0/65535.0);  };
-  Float_t AtS(Int_t bin) const                  { return (Float_t) (fData[bin]*3000.0/65535.0*fData[bin]*3000.0/65535.0);  };
+  Float_t AtS(Int_t bin) const                 { return (Float_t) (fData[bin]*3000.0/65535.0*fData[bin]*3000.0/65535.0);  };
 
   void   AddAt(Float_t value, Int_t bin)       { fData[bin] = (UShort_t) (value*65535.0/3000.0);  };
-  void   AddAtS(Float_t value, Int_t bin)       { fData[bin] = (UShort_t) (TMath::Sqrt(TMath::Abs(value))*65535.0/3000.0);  };
+  void   AddAtS(Float_t value, Int_t bin)      { fData[bin] = (UShort_t) (TMath::Sqrt(TMath::Abs(value))*65535.0/3000.0); };
   
   
  protected:

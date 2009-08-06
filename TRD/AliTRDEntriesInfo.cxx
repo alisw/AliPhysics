@@ -24,26 +24,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <TStyle.h>
-
 #include "AliTRDEntriesInfo.h"
-#include "TMath.h"
-#include "AliMathBase.h"
-#include "TLinearFitter.h"
-#include "TArrayI.h"
-#include "TH2F.h"
-#include "TH1F.h"
-#include "TArrayF.h"
-#include "TGraph2D.h"
-#include "TGraphDelaunay.h"
-#include "TList.h"
-
-#include "AliTRDCommonParam.h"
-#include "AliTRDpadPlane.h"
-#include "AliLog.h"
 
 ClassImp(AliTRDEntriesInfo)
 
@@ -95,7 +76,7 @@ AliTRDEntriesInfo &AliTRDEntriesInfo::operator=(const AliTRDEntriesInfo &c)
 
 }
 //___________________________________________________________________________________
-Int_t AliTRDEntriesInfo::GetSum() 
+Int_t AliTRDEntriesInfo::GetSum() const
 {
   //
   // Calculate the sum of entries
