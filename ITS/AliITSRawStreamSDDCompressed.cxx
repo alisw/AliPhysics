@@ -24,7 +24,7 @@
 //   29  |                                                       //
 //   28  |-> 4 bits to identify the Carlos (0-11) inside the DDL //
 //   27 -                                                        //
-//   26 detecot side (0= left, =right)                           //
+//   26 detecor side (0= left, =right)                           //
 //   25 -                                                        //
 //   24  |                                                       //
 //   23  |                                                       //
@@ -52,9 +52,11 @@
 //    1  |                                                       //
 //    0 -                                                        //
 //                                                               //
-// Plus 2 types of control words:                                //
-// - Jitter word     = 1000                                      //
-// - End of module data (needed by the Cluster Finder)   = 1111  //
+// Plus 3 types of control words                                 //
+// identified by the the 4 most significant bits (31-28)         //
+// 1) Jitter word     = 1000                                     //
+// 2) JTAG answer     = 1100                                     //
+// 3) End of module data (needed by the Cluster Finder)   = 1111 //
 //                                                               //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //                                                               //
@@ -149,11 +151,11 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
 // returns kTRUE and fCompletedModule=kFALSE and fCompletedDDL=kTRUE  when a DDL is completed (=jitter word)
 
 
-  UInt_t maskjit=8;    // Jitter word has the 4 most significant bits = 1000
-  UInt_t maskeom=15;   // end of module has the 4 most significant bits = 1111
+  UInt_t idJit=8;    // Jitter word has the 4 most significant bits = 1000
+  UInt_t idEom=15;   // end of module has the 4 most significant bits = 1111
+  UInt_t idJtag=12;  // end of module has the 4 most significant bits = 1100
+
   UInt_t maskmod=15;   // last 4 bits for module number in end of module word
-  //  UInt_t maskDDL=0xFF; // last 8 bits for DDL number in start of DDL word
-    
   UInt_t maskCarlos=15<<27; // 4 bits  (27-30) for CarlosId in data word
   UInt_t maskSide=1<<26;    // 1 bit   (26)    for side     in data word
   UInt_t maskAnode=255<<18; // 8 bits  (18-25) for Nanode   in data word
@@ -166,19 +168,25 @@ Bool_t AliITSRawStreamSDDCompressed::Next()
     UInt_t mostsigbits=fData>>28; 
     if(fData==0xFFFFFFFF){ 
       // CarlosRX header do nothing
-    } else if(mostsigbits==maskeom){
+    } else if(mostsigbits==idEom){
+      // end of module word
       fCarlosId=fData&maskmod;
       fDDL=fRawReader->GetDDLID();
       fModuleID = GetModuleNumber(fDDL,fCarlosId);
       fCompletedDDL=kFALSE;
       fCompletedModule=kTRUE;
       return kTRUE;
-    } else if(mostsigbits==maskjit){
+    } else if(mostsigbits==idJit){
+      // jitter word
       fJitter = fData&0x000000ff;      
       fCompletedModule=kFALSE;
       fCompletedDDL=kTRUE;
       return kTRUE;
-    }else{
+    } else if(mostsigbits==idJtag){
+      // jtag word -> skipped
+      continue;
+    }else if(mostsigbits<8){
+      // data word
       fCarlosId=(fData&maskCarlos)>>27;
       fDDL=fRawReader->GetDDLID();
       fModuleID = GetModuleNumber(fDDL,fCarlosId);
