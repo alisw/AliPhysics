@@ -68,8 +68,6 @@
 
 Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so"};
 // define setup
-Bool_t mc      = kTRUE;
-Bool_t friends = kTRUE;
 TCanvas *c = 0x0;
 void mergeProd(const Char_t *mark="TRD.Performance.root", const Char_t *files=0);
 void processTRD(TNamed* task);
@@ -91,6 +89,9 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
     Error("makeResults.C", Form("Failed to load %s.", libs[ilib]));
     return;
   }
+
+  Bool_t mc = HasReadMCData(opt);
+  Bool_t friends = HasReadFriendData(opt);
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);

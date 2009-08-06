@@ -63,6 +63,8 @@ const Char_t *fgkTRDtaskOpt[NTRDTASKS+1] = {
 #include "TError.h"
 #endif
 
+#include <cstring>
+
 //____________________________________________
 Int_t ParseOptions(Char_t *trd)
 {
@@ -95,6 +97,14 @@ Int_t ParseOptions(Char_t *trd)
   return fSteerTask;
 }
 
+//____________________________________________
+Bool_t HasReadMCData(Char_t *opt){
+  return !(Bool_t)strstr(opt, "NOMC");
+}
 
+//____________________________________________
+Bool_t HasReadFriendData(Char_t *opt){
+  return !(Bool_t)strstr(opt, "NOFR");
+}
 #endif
 
