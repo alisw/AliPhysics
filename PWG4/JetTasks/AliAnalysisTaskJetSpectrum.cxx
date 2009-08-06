@@ -42,7 +42,6 @@
 #include "AliJetReader.h"
 #include "AliJetReaderHeader.h"
 #include "AliUA1JetHeaderV1.h"
-#include "AliJet.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
