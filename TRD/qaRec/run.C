@@ -79,8 +79,6 @@
 
 
 Bool_t MEM = kFALSE;
-Bool_t fHasMCdata = kTRUE;
-Bool_t fHasFriends = kTRUE;
 
 TChain* MakeChainLST(const char* filename = 0x0);
 TChain* MakeChainXML(const char* filename = 0x0);
@@ -103,6 +101,8 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   if(gSystem->Load("libANALYSIS.so")<0) return;
   if(gSystem->Load("libANALYSISalice.so")<0) return;
 
+  Bool_t fHasMCdata = HasReadMCData(trd);
+  Bool_t fHasFriends = HasReadFriendData(trd);
 /*    } else if(s.CompareTo("NOFR") == 0){ 
       fHasFriends = kFALSE;
     } else if(s.CompareTo("NOMC") == 0){ 
