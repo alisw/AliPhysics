@@ -477,9 +477,10 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       TClonesArray* trdTracks = 0x0;
       //trdTracks = fTracker->GetListOfTracks();
       
+      AliHLTUInt32_t addedSize=0;
       if(nTracks>0){
 	HLTDebug("We have an output ESDEvent: 0x%x with %i tracks", fESD, nTracks);
-	AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddESDToOutput(fESD, (AliHLTUInt8_t*)(outputPtr+offset));
+	addedSize= AliHLTTRDUtils::AddESDToOutput(fESD, (AliHLTUInt8_t*)(outputPtr+offset));
 	totalSize += addedSize;
 	  
 	// Fill block 
@@ -499,11 +500,10 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	  //if (nbTracks>0){
 	  HLTDebug("We have an output array: pointer to trdTracks = 0x%x, nbEntries = %i", trdTracks, trdTracks->GetEntriesFast());
 	  
-	  AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddTracksToOutput(trdTracks, (AliHLTUInt8_t*)(outputPtr+offset));
+	  addedSize = AliHLTTRDUtils::AddTracksToOutput(trdTracks, (AliHLTUInt8_t*)(outputPtr+offset));
 	  totalSize += addedSize;
 	  
 	  // Fill block 
-	  AliHLTComponentBlockData bd;
 	  FillBlockData( bd );
 	  //bd.fPtr = outputPtr;
 	  bd.fOffset = offset;
