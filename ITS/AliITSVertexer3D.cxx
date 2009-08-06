@@ -415,7 +415,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	    Double_t curvErr=0;
 	    if(bField>0.00001){
 	      Double_t curvRadius=fMeanPtSelTrk/(0.3*bField)*100; //cm 
-	      Double_t dRad=TMath::Sqrt(TMath::Power((gc1[0]-gc2[0]),2)+TMath::Power((gc1[1]-gc2[1]),2));
+	      Double_t dRad=TMath::Sqrt((gc1[0]-gc2[0])*(gc1[0]-gc2[0])+(gc1[1]-gc2[1])*(gc1[1]-gc2[1]));
 	      Double_t aux=dRad/2.+rad1;
 	      curvErr=TMath::Sqrt(curvRadius*curvRadius-dRad*dRad/4.)-TMath::Sqrt(curvRadius*curvRadius-aux*aux); //cm
 	    }
