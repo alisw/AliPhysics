@@ -63,7 +63,7 @@ class AliJetReader : public TObject
 
   // Others
   virtual void   OpenInputFiles() {}
-  virtual void   SetInputEvent(TObject* /*esd*/, TObject* /*aod*/, TObject* /*mc*/) {;}
+  virtual void   SetInputEvent(const TObject* /*esd*/, const TObject* /*aod*/, const TObject* /*mc*/) {;}
   virtual void   ConnectTree(TTree* /*tree*/, TObject* /*data*/) {}
   virtual Bool_t GetGenJets(AliJet* /*genJets*/) {return kFALSE;}
   

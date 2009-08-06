@@ -36,14 +36,14 @@ class AliJetAODReader : public AliJetReader
   void   CreateTasks(TChain* tree);
   Bool_t ExecTasks(Bool_t procid, TRefArray* refArray);
 
-  void SetInputEvent(TObject* /*esd*/, TObject* aod, TObject* /*mc*/) {fAOD = (AliAODEvent*) aod;}
+  void SetInputEvent(const TObject* /*esd*/, const TObject* aod, const TObject* /*mc*/) {fAOD = (AliAODEvent*) aod;}
   void SetTPCGrid(AliJetGrid *grid)   {fTpcGrid = grid;}
   void SetEMCalGrid(AliJetGrid *grid) {fEmcalGrid = grid;}
   // Correction of hadronic energy
-  void SetHadronCorrection(Int_t flag = 1) {fHCorrection = flag;}
+  void SetHadronCorrection(const Int_t flag = 1) {fHCorrection = flag;}
   void SetHadronCorrector(AliJetHadronCorrection* corr) {fHadCorr = corr;}
-  void SetApplyElectronCorrection(Int_t flag = 1) {fECorrection = flag; fEFlag=kTRUE;}
-  void SetApplyMIPCorrection(Bool_t val);
+  void SetApplyElectronCorrection(const Int_t flag = 1) {fECorrection = flag; fEFlag=kTRUE;}
+  void SetApplyMIPCorrection(const Bool_t val);
   void SetApplyFractionHadronicCorrection(Bool_t val);
   void SetFractionHadronicCorrection(Double_t val);
 
@@ -55,8 +55,6 @@ class AliJetAODReader : public AliJetReader
   AliJetAODReader &operator=(const AliJetAODReader &det);
 
  private:
-  TChain                     *fChain;  //! chain for reconstructed tracks
-  TChain                     *fTree;   //! tree to get the EMCal geometry
   AliAODEvent                *fAOD;    //! pointer to aod
   TRefArray                  *fRef;    // pointer to array of references to tracks
   Int_t                       fDebug;  // Debug option
@@ -72,9 +70,7 @@ class AliJetAODReader : public AliJetReader
   AliJetGrid                 *fGrid3;            // Pointer to grid object
   AliJetGrid                 *fGrid4;            // Pointer to grid object
   Float_t                     fPtCut;            // Pt cut for tracks to minimise background contribution
-  Int_t                       fHCorrection;      // Hadron correction flag
   Int_t                       fApplyElectronCorrection;      // Electron correction flag
-  Bool_t                      fEFlag;            // if (fEFlag == kFALSE) => fECorrection automatically setted
   Bool_t                      fApplyMIPCorrection; // Apply MIP or not ? Exclusive with fApplyFractionHadronicCorrection
   Bool_t                      fApplyFractionHadronicCorrection; // Another type of charged particle energy deposition in EMC
   Double_t                    fFractionHadronicCorrection; // Fraction of momentum of the TPC track to be subtracted from EMC tower
@@ -86,12 +82,8 @@ class AliJetAODReader : public AliJetReader
   Bool_t                      fDZ;               // Use or not dead zones
   Int_t                       fNeta;             // Number of bins in eta of tpc grid
   Int_t                       fNphi;             // Number of bins in phi of tpc grid
-  Bool_t                      fArrayInitialised; // To check that array of units is initialised
-
   TRefArray                  *fRefArray;         // array of digit position and energy
   Bool_t                      fProcId;           // Bool_t for TProcessID synchronization
-
-
   ClassDef(AliJetAODReader,1)
 };
  

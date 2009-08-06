@@ -44,7 +44,7 @@ class AliJetESDReader : public AliJetReader
   Int_t      GetTrackSign() const {return fSign;}  // returns sign of the track
  
   // Setters
-  void       SetInputEvent(TObject* esd, TObject* aod, TObject* mc);
+  void       SetInputEvent(const TObject* esd, const TObject* aod, const TObject* mc);
   void       SetTPCGrid(AliJetGrid *grid)   {fTpcGrid = grid;}
   void       SetEMCalGrid(AliJetGrid *grid) {fEmcalGrid = grid;}
   // Correction of hadronic energy

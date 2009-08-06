@@ -46,8 +46,6 @@ ClassImp(AliJetAODReader)
 
 AliJetAODReader::AliJetAODReader():
     AliJetReader(),
-    fChain(0x0),
-    fTree(0x0),
     fAOD(0x0),
     fRef(new TRefArray),
     fDebug(0),
@@ -62,9 +60,7 @@ AliJetAODReader::AliJetAODReader():
     fGrid3(0),
     fGrid4(0),
     fPtCut(0),
-    fHCorrection(0),
     fApplyElectronCorrection(kFALSE),
-    fEFlag(kFALSE),
     fApplyMIPCorrection(kTRUE),
     fApplyFractionHadronicCorrection(kFALSE),
     fFractionHadronicCorrection(0.3),
@@ -75,10 +71,8 @@ AliJetAODReader::AliJetAODReader():
     fDZ(0),
     fNeta(0),
     fNphi(0),
-    fArrayInitialised(0),
     fRefArray(0x0),
     fProcId(kFALSE)
-
 {
   // Constructor    
 }
@@ -88,7 +82,6 @@ AliJetAODReader::AliJetAODReader():
 AliJetAODReader::~AliJetAODReader()
 {
   // Destructor
-    delete fChain;
     delete fAOD;
     delete fRef;
     delete fTpcGrid;

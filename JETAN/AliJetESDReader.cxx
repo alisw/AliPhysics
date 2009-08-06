@@ -216,7 +216,7 @@ void AliJetESDReader::SetFractionHadronicCorrection(Double_t val)
 
 
 //____________________________________________________________________________
-void AliJetESDReader::SetInputEvent(TObject* esd, TObject* /*aod*/, TObject* /*mc*/) {
+void AliJetESDReader::SetInputEvent(const TObject* esd, const TObject* /*aod*/, const TObject* /*mc*/) {
     // Connect the tree
      fESD   = (AliESDEvent*) esd;
 }
