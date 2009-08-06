@@ -52,16 +52,6 @@
 
 ClassImp(AliT0QAChecker)
 
-
-//____________________________________________________________________________
-Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t /*index*/)
-{
-  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    rv[specie] = 0.0 ; 
-  return rv ;  
-}
-
 //__________________________________________________________________
 Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index,TObjArray ** list)
 {

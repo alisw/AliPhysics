@@ -30,7 +30,6 @@ protected:
 
   using AliQACheckerBase::Check;
   
-  virtual Double_t * Check(AliQAv1::ALITASK_t index) ;
   virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list) ;
   virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;	
 	

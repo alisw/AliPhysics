@@ -28,7 +28,6 @@ public:
  protected:
 
   virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list) ;
-  virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/) {return NULL;} 
   
   ClassDef(AliTOFQAChecker,2)  // description 
 

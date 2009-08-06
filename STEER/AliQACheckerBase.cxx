@@ -132,61 +132,43 @@ AliQACheckerBase::~AliQACheckerBase()
 }
 
 //____________________________________________________________________________
-Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/) 
+Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t index) 
 {
   // Performs a basic checking
   // Compares all the histograms stored in the directory
   // With reference histograms either in a file of in OCDB  
 
-	Double_t * test = new Double_t[AliRecoParam::kNSpecies] ;
-	Int_t count[AliRecoParam::kNSpecies]   = { 0 }; 
-
+  TObjArray ** list = new TObjArray *[AliRecoParam::kNSpecies] ; 
   Int_t specie ;
   for (specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    test[specie] = 1.0 ; 
+    list[specie] =  new TObjArray(AliQAv1::GetMaxQAObj()) ; 
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ; 
     if (fDataSubDir) {
-      if (!fRefSubDir && !fRefOCDBSubDir) {
-        test[specie] = -1 ; // no reference data
-      } else {        
-        TList * keyList = fDataSubDir->GetListOfKeys() ; 
-        TIter next(keyList) ; 
-        TKey * key ;
-        while ( (key = static_cast<TKey *>(next())) ) {
-          TDirectory * specieDir = fDataSubDir->GetDirectory(key->GetName()) ; 
-          TList * keykeyList = specieDir->GetListOfKeys() ; 
-          TIter next2(keykeyList) ; 
-          TKey * keykey ;
-          count[specie] = 0 ; 
-          while ( (keykey = static_cast<TKey *>(next2())) ) {
-            TObject * odata = specieDir->Get(keykey->GetName()) ; 
-            if ( odata->IsA()->InheritsFrom("TH1") ) {
-              TH1 * hdata = static_cast<TH1*>(odata) ;
-              TH1 * href = NULL ; 
-              if (fRefSubDir) { 
-                TDirectory * subdir = fRefSubDir->GetDirectory(key->GetName()) ;
-                href  = static_cast<TH1*>(subdir->Get(keykey->GetName())) ;
-              } else if (fRefOCDBSubDir[specie]) {  
-                href  = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(keykey->GetName())) ;
-              }
-              if (!href) 
-                test[specie] = -1 ; // no reference data ; 
-              else {
-                Double_t rv =  DiffK(hdata, href) ;
-                AliDebug(AliQAv1::GetQADebugLevel(), Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
-                test[specie] += rv ; 
-                count[specie]++ ; 
-              }
-            } else if (!odata->IsA()->InheritsFrom("TDirectory")) // skip the expert directory
-              AliError(Form("%s Is a Classname that cannot be processed", key->GetClassName())) ;
-            if (count[specie] != 0) 
-              test[specie] /= count[specie] ;
-          }
+      TList * keyList = fDataSubDir->GetListOfKeys() ; 
+      TIter next(keyList) ; 
+      TKey * key ;
+      while ( (key = static_cast<TKey *>(next())) ) {
+        TDirectory * specieDir = fDataSubDir->GetDirectory(key->GetName()) ; 
+        TList * keykeyList = specieDir->GetListOfKeys() ; 
+        TIter next2(keykeyList) ; 
+        TKey * keykey ;
+        while ( (keykey = static_cast<TKey *>(next2())) ) {
+          TObject * odata = specieDir->Get(keykey->GetName()) ; 
+          if ( odata->IsA()->InheritsFrom("TH1") ) {
+            TH1 * hdata = static_cast<TH1*>(odata) ;
+            list[specie]->Add(hdata) ; 
+          } else if (!odata->IsA()->InheritsFrom("TDirectory")) // skip the expert directory
+            AliError(Form("%s Is a Classname that cannot be processed", key->GetClassName())) ;
         }
       }
     }
   }
+ 
+  Double_t * test = AliQACheckerBase::Check(index, list) ;
+  
+  delete[] list ; 
+    
   return test ;
 }  
 

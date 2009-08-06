@@ -62,17 +62,6 @@ AliMUONQAChecker::AliMUONQAChecker(const AliMUONQAChecker& qac) :
 
 //______________________________________________________________________________
 Double_t *
-AliMUONQAChecker::Check(AliQAv1::ALITASK_t /*index*/)
-{
-  /// Check data
-  
-  AliError(Form("This method is not implemented. Should it be ? fDataSubDir = %p (%s)",
-                fDataSubDir, ( fDataSubDir ? fDataSubDir->GetPath() : "")));
-  return NULL;
-}
-
-//______________________________________________________________________________
-Double_t *
 AliMUONQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
 {
   /// Check objects in list

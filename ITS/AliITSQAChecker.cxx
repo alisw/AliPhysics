@@ -84,15 +84,6 @@ AliITSQAChecker& AliITSQAChecker::operator=(const AliITSQAChecker& qac){
 }
 
 //____________________________________________________________________________
-Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t /*index*/)
-{
-  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    rv[specie] = 0.5 ; 
-  return rv ;  
-}
-
-//____________________________________________________________________________
 Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
 {
   
