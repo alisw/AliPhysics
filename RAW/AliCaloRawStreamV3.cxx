@@ -168,7 +168,7 @@ void AliCaloRawStreamV3::ApplyAltroMapping()
 
   Int_t rcuIndex = ddlNumber % fNRCU;
 
-  if(fCalo=="EMCAL"){ // EMCAL may need to increase RCU index for the maps
+  if( fNRCU == 2 ){ // EMCAL may need to increase RCU index for the maps
     if (fModule%2 == 1) { rcuIndex += 2; } // other='C' side maps
   }
 
