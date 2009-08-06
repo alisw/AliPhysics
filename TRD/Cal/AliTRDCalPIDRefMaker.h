@@ -11,9 +11,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef ROOT_TObject
 #include "TObject.h"
-#endif
 
 class TH1;
 class TH2;
@@ -30,11 +28,12 @@ public:
   AliTRDCalPIDRefMaker& operator=(const AliTRDCalPIDRefMaker &ref);
 
          Bool_t   BuildLQReferences(const Char_t *filename="TRDpidLQ.root", const Char_t *dir =".");
-         Bool_t   BuildNNReferences(const Char_t *filename="TRDpidNN.root", const Char_t *dir =".");
+         Bool_t   BuildNNReferences(const Char_t *filename="TRDpidNN.root", const Char_t *dir =".") const;
  
-  static Double_t Estimate2D2(TH2 *h, Float_t &x, Float_t &y);
-  static Double_t Estimate2D1(TH2 *h, Float_t &x, Float_t &y, Float_t &dCT, Float_t &rmin, Float_t &rmax);
-  //     Double_t Estimate3D2(TH3 *h, Float_t &x, Float_t &y, Float_t &z);
+  static Double_t Estimate2D2(TH2 * const h, Float_t &x, Float_t &y);
+  static Double_t Estimate2D1(TH2 * const h, Float_t &x, Float_t &y, const Float_t &dCT
+                            , const Float_t &rmin, const Float_t &rmax);
+  //     Double_t Estimate3D2(TH3 * const h, Float_t &x, Float_t &y, Float_t &z);
 
 private:
          Int_t    CheckProdDirTree(const Char_t *dir=".");
@@ -44,13 +43,13 @@ private:
  
 
 private:
-         TPrincipal    *fPrinc[5];  // Used for principal component analysis
-  static TLinearFitter *fFitter2D2; // Working object for linear fitter
-  static TLinearFitter *fFitter2D1; // Working object for linear fitter
-         TH2           *fH2dEdx[5]; // dE/dx data holders
-         TH1           *fH1TB[2];   // Max time bin data holders
+         TPrincipal    *fPrinc[5];   // Used for principal component analysis
+  static TLinearFitter *fgFitter2D2; // Working object for linear fitter
+  static TLinearFitter *fgFitter2D1; // Working object for linear fitter
+         TH2           *fH2dEdx[5];  // dE/dx data holders
+         TH1           *fH1TB[2];    // Max time bin data holders
 
-  ClassDef(AliTRDCalPIDRefMaker, 2) // Reference histograms builder
+  ClassDef(AliTRDCalPIDRefMaker, 3)  // Reference histograms builder
 
 };
 

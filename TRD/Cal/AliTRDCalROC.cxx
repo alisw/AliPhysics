@@ -24,26 +24,14 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <fstream>
-#include <string>
 #include <TStyle.h>
+#include <TMath.h>
+#include <TH2F.h>
+#include <TH1F.h>
+
+#include "AliMathBase.h"
 
 #include "AliTRDCalROC.h"
-#include "TMath.h"
-#include "AliMathBase.h"
-#include "TLinearFitter.h"
-#include "TArrayI.h"
-#include "TH2F.h"
-#include "TH1F.h"
-#include "TArrayF.h"
-#include "TGraph2D.h"
-#include "TGraphDelaunay.h"
-#include "TList.h"
-
-#include "AliTRDCommonParam.h"
-#include "AliTRDpadPlane.h"
-#include "AliLog.h"
 
 ClassImp(AliTRDCalROC)
 
@@ -231,73 +219,73 @@ void AliTRDCalROC::Copy(TObject &c) const
 }
 
 //___________________________________________________________________________________
-Double_t AliTRDCalROC::GetMean(AliTRDCalROC* outlierROC) 
+Double_t AliTRDCalROC::GetMean(AliTRDCalROC* const outlierROC) const
 {
   //
   // Calculate the mean
   //
 
    Double_t *ddata = new Double_t[fNchannels];
-   Int_t NPoints = 0;
+   Int_t nPoints = 0;
    for (Int_t i=0;i<fNchannels;i++) {
       if ((!outlierROC) || (!(outlierROC->GetValue(i)))) {
 	if(fData[i] > 0.000000000000001){
-         ddata[NPoints]= (Double_t) fData[i]/10000;
-         NPoints++;
+         ddata[nPoints]= (Double_t) fData[i]/10000;
+         nPoints++;
 	}
       }
    }
-   Double_t mean = TMath::Mean(NPoints,ddata);
+   Double_t mean = TMath::Mean(nPoints,ddata);
    delete [] ddata;
    return mean;
 }
 
 //_______________________________________________________________________________________
-Double_t AliTRDCalROC::GetMedian(AliTRDCalROC* outlierROC) 
+Double_t AliTRDCalROC::GetMedian(AliTRDCalROC* const outlierROC) const
 {
   //
   // Calculate the median
   //
 
   Double_t *ddata = new Double_t[fNchannels];
-   Int_t NPoints = 0;
+   Int_t nPoints = 0;
    for (Int_t i=0;i<fNchannels;i++) {
        if ((!outlierROC) || (!(outlierROC->GetValue(i)))) {
 	 if(fData[i] > 0.000000000000001){         
-	   ddata[NPoints]= (Double_t) fData[i]/10000;
-	   NPoints++;
+	   ddata[nPoints]= (Double_t) fData[i]/10000;
+	   nPoints++;
 	 }
        }
    }
-   Double_t mean = TMath::Median(NPoints,ddata);
+   Double_t mean = TMath::Median(nPoints,ddata);
    delete [] ddata;
    return mean;
 }
 
 //____________________________________________________________________________________________
-Double_t AliTRDCalROC::GetRMS(AliTRDCalROC* outlierROC) 
+Double_t AliTRDCalROC::GetRMS(AliTRDCalROC* const outlierROC) const
 {
   //
   // Calculate the RMS
   //
 
   Double_t *ddata = new Double_t[fNchannels];
-  Int_t NPoints = 0;
+  Int_t nPoints = 0;
   for (Int_t i=0;i<fNchannels;i++) {
     if ((!outlierROC) || (!(outlierROC->GetValue(i)))) {
        if(fData[i] > 0.000000000000001){
-         ddata[NPoints]= (Double_t)fData[i]/10000;
-         NPoints++;
+         ddata[nPoints]= (Double_t)fData[i]/10000;
+         nPoints++;
        }
     }
   }
-  Double_t mean = TMath::RMS(NPoints,ddata);
+  Double_t mean = TMath::RMS(nPoints,ddata);
   delete [] ddata;
   return mean;
 }
 
 //______________________________________________________________________________________________
-Double_t AliTRDCalROC::GetLTM(Double_t *sigma, Double_t fraction, AliTRDCalROC* outlierROC)
+Double_t AliTRDCalROC::GetLTM(Double_t *sigma, Double_t fraction, AliTRDCalROC* const outlierROC)
 {
   //
   //  Calculate LTM mean and sigma
@@ -305,17 +293,17 @@ Double_t AliTRDCalROC::GetLTM(Double_t *sigma, Double_t fraction, AliTRDCalROC* 
 
   Double_t *ddata = new Double_t[fNchannels];
   Double_t mean=0, lsigma=0;
-  UInt_t NPoints = 0;
+  UInt_t nPoints = 0;
   for (Int_t i=0;i<fNchannels;i++) {
      if (!outlierROC || !(outlierROC->GetValue(i))) {
        if(fData[i] > 0.000000000000001){
-	 ddata[NPoints]= (Double_t) fData[i]/10000;
-	 NPoints++;
+	 ddata[nPoints]= (Double_t) fData[i]/10000;
+	 nPoints++;
        }
      }
   }
-  Int_t hh = TMath::Min(TMath::Nint(fraction *NPoints), Int_t(NPoints));
-  AliMathBase::EvaluateUni(NPoints,ddata, mean, lsigma, hh);
+  Int_t hh = TMath::Min(TMath::Nint(fraction *nPoints), Int_t(nPoints));
+  AliMathBase::EvaluateUni(nPoints,ddata, mean, lsigma, hh);
   if (sigma) *sigma=lsigma;
   delete [] ddata;
   return mean;
@@ -327,6 +315,7 @@ Bool_t AliTRDCalROC::Add(Float_t c1)
   //
   // add constant
   //
+
   Bool_t result = kTRUE;
   for (Int_t  idata = 0; idata< fNchannels; idata++) {
     if(((GetValue(idata)+c1) <= 6.5535) && ((GetValue(idata)+c1) >= 0.0)) SetValue(idata,GetValue(idata)+c1);
@@ -344,6 +333,7 @@ Bool_t AliTRDCalROC::Multiply(Float_t c1)
   //
   // multiply constant
   //
+
   Bool_t result = kTRUE;
   if(c1 < 0) return kFALSE;
   for (Int_t  idata = 0; idata< fNchannels; idata++) {
@@ -362,6 +352,7 @@ Bool_t AliTRDCalROC::Add(const AliTRDCalROC * roc, Double_t c1)
   //
   // add values 
   //
+
   Bool_t result = kTRUE;
   for (Int_t  idata = 0; idata< fNchannels; idata++){
     if(((GetValue(idata)+roc->GetValue(idata)*c1) <= 6.5535) && 
@@ -381,6 +372,7 @@ Bool_t AliTRDCalROC::Multiply(const AliTRDCalROC*  roc)
   //
   // multiply values - per by pad
   //
+
   Bool_t result = kTRUE;
   for (Int_t  idata = 0; idata< fNchannels; idata++){
     if((GetValue(idata)*roc->GetValue(idata)) <= 6.5535) 
@@ -399,6 +391,7 @@ Bool_t AliTRDCalROC::Divide(const AliTRDCalROC*  roc)
   //
   // divide values 
   //
+
   Bool_t result = kTRUE;
   Float_t kEpsilon=0.00000000000000001;
   for (Int_t  idata = 0; idata< fNchannels; idata++){
@@ -423,6 +416,7 @@ Bool_t AliTRDCalROC::Unfold()
   // This is for the noise study
   // Return kFALSE if one or more of the pad col was not normalised
   //
+
   Bool_t result = kTRUE;
   Float_t kEpsilon=0.00000000000000001;
   
@@ -470,6 +464,7 @@ TH2F * AliTRDCalROC::MakeHisto2D(Float_t min, Float_t max,Int_t type,  Float_t m
   // type -1 = user defined range
   //       0 = nsigma cut nsigma=min
   //       1 = delta cut around median delta=min
+
   Float_t kEpsilonr = 0.005;
   gStyle->SetPalette(1);
   
@@ -524,8 +519,8 @@ TH1F * AliTRDCalROC::MakeHisto1D(Float_t min, Float_t max,Int_t type,  Float_t m
   // type -1 = user defined range
   //       0 = nsigma cut nsigma=min
   //       1 = delta cut around median delta=min
-  Float_t kEpsilonr = 0.005;
 
+  Float_t kEpsilonr = 0.005;
 
   if (type>=0){
     if (type==0){

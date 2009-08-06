@@ -32,15 +32,14 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <fstream>
+
 #include <TFile.h>
 #include <TProfile2D.h>
-#include <TStopwatch.h>
 #include <TObjString.h>
 #include <TString.h>
 #include <TList.h>
-#include <TCollection.h>
 #include <TSAXParser.h>
-#include <fstream>
 
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
@@ -51,13 +50,12 @@
 #include "AliTRDCalibraMode.h"
 #include "AliTRDCalibPadStatus.h"
 #include "AliTRDSaxHandler.h"
-#include "Cal/AliTRDCalDet.h"
+#include "AliTRDgeometry.h"
 #include "Cal/AliTRDCalPad.h"
 #include "Cal/AliTRDCalPadStatus.h"
 #include "Cal/AliTRDCalDCS.h"
 #include "Cal/AliTRDCalSingleChamberStatus.h"
 #include "Cal/AliTRDCalROC.h"
-
 
 ClassImp(AliTRDPreprocessor)
 
@@ -481,8 +479,11 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
   return error; 
   
 }
+
 //__________________________________________________________________
-Bool_t AliTRDPreprocessor::AreThereDataPedestal(AliTRDCalSingleChamberStatus *calROCStatus, Bool_t second){
+Bool_t AliTRDPreprocessor::AreThereDataPedestal(AliTRDCalSingleChamberStatus * const calROCStatus
+                                              , Bool_t second)
+{
 
   //
   // Data for this half chamber

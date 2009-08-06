@@ -1,5 +1,5 @@
-#ifndef AliTRDCalSingleChamberStatus_H
-#define AliTRDCalSingleChamberStatus_H
+#ifndef ALITRDCALSINGLECHAMBERSTATUS_H
+#define ALITRDCALSINGLECHAMBERSTATUS_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -22,8 +22,7 @@ class AliTRDCalSingleChamberStatus : public TObject {
        , kPadBridgedLeft  = 4
        , kPadBridgedRight = 8
        , kReadSecond      = 16 
-       , kNotConnected    = 32
-};
+       , kNotConnected    = 32};
 
   AliTRDCalSingleChamberStatus();
   AliTRDCalSingleChamberStatus(Int_t p, Int_t c, Int_t cols);

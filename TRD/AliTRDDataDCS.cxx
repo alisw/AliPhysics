@@ -36,14 +36,14 @@
 
 #include <TGraph.h>
 #include <TObjArray.h>
-#include <AliCDBMetaData.h>
 #include <TMap.h>
 
 #include "AliDCSValue.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
-#include "AliTRDDataDCS.h"
 #include "AliSplineFit.h"
+
+#include "AliTRDDataDCS.h"
 
 ClassImp(AliTRDDataDCS)
 
@@ -243,8 +243,9 @@ Bool_t AliTRDDataDCS::ExtractDCS (TMap *dcsAlias)
 }
 
 //_____________________________________________________________________________
-TGraph *AliTRDDataDCS::FindAndMakeGraph (TMap *dcsMap, const char *amandaStr, 
-					  char dataType)
+TGraph *AliTRDDataDCS::FindAndMakeGraph (TMap * const dcsMap
+                                       , const char *amandaStr
+				       , char dataType)
 {
   //
   // Create the graphs
@@ -359,7 +360,7 @@ Bool_t AliTRDDataDCS::PerformFit()
 }
 
 //_____________________________________________________________________________
-AliSplineFit *AliTRDDataDCS::Fit(TGraph *graph, 
+AliSplineFit *AliTRDDataDCS::Fit(const TGraph * const graph, 
 			         Int_t  minPoints, Int_t  iter, 
 			         Double_t  maxDelta, Int_t  fitReq)
 {
@@ -381,7 +382,7 @@ AliSplineFit *AliTRDDataDCS::Fit(TGraph *graph,
 }
 
 //_____________________________________________________________________________
-void AliTRDDataDCS::Print(Option_t* option) const
+void AliTRDDataDCS::Print(const Option_t * const option) const
 {
   //
   // Print function

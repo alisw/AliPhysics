@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
-//#include "../TPC/AliTransform.h"
 
 class TGeoHMatrix;
 
@@ -25,9 +24,10 @@ class AliTRDCalROC;
 class AliTRDCalDet;
 class AliTRDpadPlane;
 
-//class AliTRDtransform : public AliTransform {
 class AliTRDtransform : public TObject {
-public:
+
+ public:
+
   AliTRDtransform();
   AliTRDtransform(Int_t det);
   AliTRDtransform(const AliTRDtransform &t);
@@ -41,6 +41,7 @@ public:
           void     SetDetector(Int_t det);
 
 protected:
+
   AliTRDgeometry     *fGeo;                 //  TRD geometry
   Int_t               fDetector;            //  Detector number
 
@@ -50,8 +51,8 @@ protected:
   AliTRDCalROC       *fCalVdriftROC;        //  Pad wise Vdrift calibration object
   AliTRDCalROC       *fCalT0ROC;            //  Pad wise T0 calibration object
   AliTRDCalROC       *fCalPRFROC;           //  Pad wise PRF calibration object
-  const AliTRDCalDet *fCalVdriftDet;        //  ROC wise Vdrift calibration object
-  const AliTRDCalDet *fCalT0Det;            //  ROC wise T0 calibration object
+  const AliTRDCalDet *fkCalVdriftDet;       //  ROC wise Vdrift calibration object
+  const AliTRDCalDet *fkCalT0Det;           //  ROC wise T0 calibration object
   Double_t            fCalVdriftDetValue;   //  ROC wise Vdrift calibration value
   Double_t            fCalT0DetValue;       //  ROC wise T0 calibration value
 
@@ -62,8 +63,7 @@ protected:
 
   TGeoHMatrix        *fMatrix;              //  Transformation matrix for a given chamber
 
-  ClassDef(AliTRDtransform, 2)              //  Transforms clusters
+  ClassDef(AliTRDtransform, 3)              //  Transforms clusters
 
 };
-
 #endif

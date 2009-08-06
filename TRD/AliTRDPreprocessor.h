@@ -44,7 +44,7 @@ class AliTRDPreprocessor : public AliPreprocessor
 	  UInt_t  ProcessDCSConfigData(); // process DCS configuration
 
 
-	  Bool_t AreThereDataPedestal(AliTRDCalSingleChamberStatus *calROCStatus, Bool_t second);
+	  Bool_t AreThereDataPedestal(AliTRDCalSingleChamberStatus * const calROCStatus, Bool_t second);
 	  void   SetDefaultStatus(AliTRDCalSingleChamberStatus &calROCStatus, Bool_t second);
 	  void   SetStatus(AliTRDCalSingleChamberStatus &calROCStatus, AliTRDCalSingleChamberStatus *calROCStatusPrevious,Bool_t second);
 	  void   SetDefaultNoise(AliTRDCalROC &calROCNoise, Bool_t second);

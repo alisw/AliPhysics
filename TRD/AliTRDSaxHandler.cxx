@@ -24,11 +24,8 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <cstdlib>
-#include <Riostream.h>
 #include <TList.h>
 #include <TXMLAttr.h>
-#include <TSAXParser.h>
 #include <TObjArray.h>
 
 #include "AliLog.h"
@@ -42,7 +39,6 @@
 #include "Cal/AliTRDCalDCSGTU.h"
 
 ClassImp(AliTRDSaxHandler)
-
   
 //_____________________________________________________________________________
 AliTRDSaxHandler::AliTRDSaxHandler()

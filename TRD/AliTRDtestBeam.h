@@ -1,5 +1,5 @@
-#ifndef AliTRDTESTBEAM_H
-#define AliTRDTESTBEAM_H
+#ifndef ALITRDTESTBEAM_H
+#define ALITRDTESTBEAM_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -100,7 +100,7 @@ protected:
 
   // data reading
   
-  Int_t Int(Int_t i, Char_t *start) const;
+  Int_t Int(Int_t i, const Char_t * const start) const;
   Int_t DecodeSi();
 
   //

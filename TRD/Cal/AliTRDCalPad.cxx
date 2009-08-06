@@ -26,11 +26,12 @@
 #include <TH1F.h>
 #include <TStyle.h>
 
+//#include "AliMathBase.h"
+
 #include "AliTRDCalPad.h"
 #include "AliTRDCalROC.h"
 #include "AliTRDCalDet.h"
 #include "AliTRDpadPlane.h"
-#include "AliMathBase.h"
 #include "AliTRDgeometry.h"
 
 ClassImp(AliTRDCalPad)
@@ -201,7 +202,8 @@ Double_t AliTRDCalPad::GetMeanRMS(Double_t &rms, const AliTRDCalDet *calDet, Int
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDCalPad::GetMean(const AliTRDCalDet *calDet, Int_t type, AliTRDCalPad* outlierPad)
+Double_t AliTRDCalPad::GetMean(const AliTRDCalDet *calDet, Int_t type
+                             , AliTRDCalPad* const outlierPad)
 {
     //
     // return mean of the mean of all ROCs
@@ -228,7 +230,8 @@ Double_t AliTRDCalPad::GetMean(const AliTRDCalDet *calDet, Int_t type, AliTRDCal
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDCalPad::GetRMS(const AliTRDCalDet *calDet, Int_t type, AliTRDCalPad* outlierPad)
+Double_t AliTRDCalPad::GetRMS(const AliTRDCalDet *calDet, Int_t type
+                            , AliTRDCalPad* const outlierPad)
 {
     //
     // return mean of the RMS of all ROCs
@@ -256,7 +259,7 @@ Double_t AliTRDCalPad::GetRMS(const AliTRDCalDet *calDet, Int_t type, AliTRDCalP
 
 //_____________________________________________________________________________
 Double_t AliTRDCalPad::GetMedian(const AliTRDCalDet *calDet, Int_t type
-                               , AliTRDCalPad* outlierPad)
+                               , AliTRDCalPad* const outlierPad)
 {
     //
     // return mean of the median of all ROCs
@@ -285,7 +288,7 @@ Double_t AliTRDCalPad::GetMedian(const AliTRDCalDet *calDet, Int_t type
 //_____________________________________________________________________________
 Double_t AliTRDCalPad::GetLTM(Double_t *sigma, Double_t fraction
                             , const AliTRDCalDet *calDet, Int_t type
-                            , AliTRDCalPad* outlierPad)
+                            , AliTRDCalPad* const outlierPad)
 {
     //
     // return mean of the LTM and sigma of all ROCs

@@ -1,5 +1,5 @@
-#ifndef AliTRDSAXHANDLER_H
-#define AliTRDSAXHANDLER_H
+#ifndef ALITRDSAXHANDLER_H
+#define ALITRDSAXHANDLER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * * See cxx source for full Copyright notice */
 
@@ -33,9 +33,9 @@ public:
   virtual ~AliTRDSaxHandler();
   AliTRDSaxHandler &operator=(const AliTRDSaxHandler &sh);
 
-  TObjArray*    GetDCSFEEDataArray()  { return fFEEArr;        }
-  TObjArray*    GetDCSPTRDataArray()  { return fPTRArr;        }
-  TObjArray*    GetDCSGTUDataArray()  { return fGTUArr;        }
+  TObjArray*    GetDCSFEEDataArray() const { return fFEEArr;        }
+  TObjArray*    GetDCSPTRDataArray() const { return fPTRArr;        }
+  TObjArray*    GetDCSGTUDataArray() const { return fGTUArr;        }
   AliTRDCalDCS* GetCalDCSObj(); // to be called by the preprocessor
 
   Int_t         GetHandlerStatus() const { return fHandlerStatus; }

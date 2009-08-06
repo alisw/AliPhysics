@@ -45,11 +45,11 @@ class AliTRDCalPad : public TNamed
 
   // Statistic
   Double_t GetMeanRMS(Double_t &rms, const AliTRDCalDet *calDet = 0, Int_t type = 0);
-  Double_t GetMean(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0);
-  Double_t GetRMS(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0) ;
-  Double_t GetMedian(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0) ;
+  Double_t GetMean(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* const outlierPad = 0);
+  Double_t GetRMS(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* const outlierPad = 0);
+  Double_t GetMedian(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* const outlierPad = 0);
   Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9
-                , const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0);
+                , const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* const outlierPad = 0);
 
   // Plot functions
   TH1F    *MakeHisto1D(const AliTRDCalDet *calDet = 0, Int_t typedet=0, Float_t min=4, Float_t max=-4,Int_t type=0);

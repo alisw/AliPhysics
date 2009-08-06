@@ -33,18 +33,15 @@
 #include <TTree.h>
 #include <TH2D.h>
 #include <TH2I.h>
-#include <TH3D.h>
 #include <TParticle.h>
 #include <TParticle.h>
 #include <TPrincipal.h>
 #include <TVector3.h>
 #include <TLinearFitter.h>
-#include <TVectorT.h>
 #include <TCanvas.h>
 #include <TEllipse.h>
 #include <TMarker.h>
 
-#include "AliLog.h"
 #include "AliPID.h"
 #include "AliESD.h"
 #include "AliRun.h"
@@ -60,12 +57,10 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDtrack.h"
 
-#include <vector>
-
 ClassImp(AliTRDCalPIDRefMaker)
 
-TLinearFitter *AliTRDCalPIDRefMaker::fFitter2D2 = 0x0;
-TLinearFitter *AliTRDCalPIDRefMaker::fFitter2D1 = 0x0;
+TLinearFitter *AliTRDCalPIDRefMaker::fgFitter2D2 = 0x0;
+TLinearFitter *AliTRDCalPIDRefMaker::fgFitter2D1 = 0x0;
 
 //__________________________________________________________________
 AliTRDCalPIDRefMaker::AliTRDCalPIDRefMaker()
@@ -109,8 +104,8 @@ AliTRDCalPIDRefMaker::~AliTRDCalPIDRefMaker()
 		if(fH2dEdx[ispec]) delete fH2dEdx[ispec];
 		if(fPrinc[ispec]) delete fPrinc[ispec]; 
 	}	
-	if(fFitter2D1){ delete fFitter2D1; fFitter2D1 = 0x0;}
-	if(fFitter2D2){ delete fFitter2D2; fFitter2D2 = 0x0;}
+	if(fgFitter2D1){ delete fgFitter2D1; fgFitter2D1 = 0x0;}
+	if(fgFitter2D2){ delete fgFitter2D2; fgFitter2D2 = 0x0;}
 
 }
 
@@ -364,13 +359,13 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(const Char_t *File, const Char_t 
 }
 
 //__________________________________________________________________
-Bool_t AliTRDCalPIDRefMaker::BuildNNReferences(const Char_t* /*File*/, const Char_t* /*dir*/)
+Bool_t AliTRDCalPIDRefMaker::BuildNNReferences(const Char_t* /*File*/, const Char_t* /*dir*/) const
 {
 	return kTRUE;
 }
 
 //__________________________________________________________________
-Double_t AliTRDCalPIDRefMaker::Estimate2D2(TH2 *h, Float_t &x, Float_t &y)
+Double_t AliTRDCalPIDRefMaker::Estimate2D2(TH2 * const h, Float_t &x, Float_t &y)
 {
   //
   // Linear interpolation of data point with a parabolic expresion using
@@ -399,9 +394,9 @@ Double_t AliTRDCalPIDRefMaker::Estimate2D2(TH2 *h, Float_t &x, Float_t &y)
 	Double_t entries;
 
 	// late construction of fitter
-	if(!fFitter2D2) fFitter2D2 = new TLinearFitter(6, "1++x++y++x*x++y*y++x*y");
+	if(!fgFitter2D2) fgFitter2D2 = new TLinearFitter(6, "1++x++y++x*x++y*y++x*y");
 		
-	fFitter2D2->ClearPoints();
+	fgFitter2D2->ClearPoints();
 	Int_t npoints=0;
 	Int_t binx0, binx1, biny0, biny1;
 	for(int bin=0; bin<5; bin++){
@@ -415,13 +410,13 @@ Double_t AliTRDCalPIDRefMaker::Estimate2D2(TH2 *h, Float_t &x, Float_t &y)
 				if((entries = h->GetBinContent(ibin, jbin)) == 0.) continue;
 				p[0] = ax->GetBinCenter(ibin);
 				p[1] = ay->GetBinCenter(jbin);
-				fFitter2D2->AddPoint(p, log(entries), 1./sqrt(entries));
+				fgFitter2D2->AddPoint(p, log(entries), 1./sqrt(entries));
 				npoints++;
 			}
 		}
 		if(npoints>=25) break;
 	}
-	if(fFitter2D2->Eval() == 1){
+	if(fgFitter2D2->Eval() == 1){
 		printf("<I2> x = %9.4f y = %9.4f\n", x, y);
 		printf("\tbinx %d biny %d\n", binx, biny);
 		printf("\tpoints %d\n", npoints);
@@ -429,16 +424,17 @@ Double_t AliTRDCalPIDRefMaker::Estimate2D2(TH2 *h, Float_t &x, Float_t &y)
 		return 0.;
 	}
 	TVectorD vec(6);
-	fFitter2D2->GetParameters(vec);
+	fgFitter2D2->GetParameters(vec);
 	Double_t result = vec[0] + x*vec[1] + y*vec[2] + x*x*vec[3] + y*y*vec[4] + x*y*vec[5];
 	return exp(result);
 
 }
 
 //__________________________________________________________________
-Double_t AliTRDCalPIDRefMaker::Estimate2D1(TH2 *h, Float_t &x, Float_t &y
-                                      , Float_t &dCT, Float_t &rmin
-                                      , Float_t &rmax)
+Double_t AliTRDCalPIDRefMaker::Estimate2D1(TH2 * const h, Float_t &x, Float_t &y
+                                         , const Float_t &dCT
+                                         , const Float_t &rmin
+                                         , const Float_t &rmax)
 {
   //
   // Linear interpolation of data point with a plane using
@@ -462,9 +458,9 @@ Double_t AliTRDCalPIDRefMaker::Estimate2D1(TH2 *h, Float_t &x, Float_t &y
 	Double_t rxy = sqrt(x*x + y*y), rpxy;
 
 	// late construction of fitter	
-	if(!fFitter2D1) fFitter2D1 = new TLinearFitter(3, "1++x++y");
+	if(!fgFitter2D1) fgFitter2D1 = new TLinearFitter(3, "1++x++y");
 	
-	fFitter2D1->ClearPoints();
+	fgFitter2D1->ClearPoints();
 	Int_t npoints=0;
 	for(int ibin=1; ibin<=nbinsx; ibin++){
 		for(int jbin=1; jbin<=nbinsy; jbin++){
@@ -475,24 +471,24 @@ Double_t AliTRDCalPIDRefMaker::Estimate2D1(TH2 *h, Float_t &x, Float_t &y
 			if((x*p[0] + y*p[1])/rxy/rpxy < dCT) continue;
 			if(rpxy<rmin || rpxy > rmax) continue;
 			
-			fFitter2D1->AddPoint(p, log(entries), 1./sqrt(entries));
+			fgFitter2D1->AddPoint(p, log(entries), 1./sqrt(entries));
 			npoints++;
 		}
 	}
 	if(npoints<15) return 0.;
-	if(fFitter2D1->Eval() == 1){
+	if(fgFitter2D1->Eval() == 1){
 		printf("<O2> x = %9.4f y = %9.4f\n", x, y);
 		printf("\tpoints %d\n", npoints);
 		return 0.;
 	}
 	TVectorD vec(3);
-	fFitter2D1->GetParameters(vec);
+	fgFitter2D1->GetParameters(vec);
 	Double_t result = vec[0] + x*vec[1] + y*vec[2];
 	return exp(result);
 }
 
 //__________________________________________________________________
-// Double_t	AliTRDCalPIDRefMaker::Estimate3D2(TH3 *h, Float_t &x, Float_t &y, Float_t &z)
+// Double_t	AliTRDCalPIDRefMaker::Estimate3D2(TH3 * const h, Float_t &x, Float_t &y, Float_t &z)
 // {
 // 	// Author Alex Bercuci (A.Bercuci@gsi.de)
 // 	return 0.;
@@ -602,12 +598,12 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 	//const Float_t dPhiRange = .1;
 	Int_t nPoints[nPhi], nFitPoints, binStart, binStop;
 	TLinearFitter refsFitter[nPhi], refsLongFitter(6, "1++x++y++x*x++y*y++x*y");
-	Float_t fFitterRange[nPhi];
+	Float_t fgFitterRange[nPhi];
 	Bool_t kFitterStatus[nPhi];
 	for(int iphi=0; iphi<nPhi; iphi++){
 		refsFitter[iphi].SetDim(3);
 		refsFitter[iphi].SetFormula("1++x++y");//++x*x++y*y++x*y");
-		fFitterRange[iphi] = .8;
+		fgFitterRange[iphi] = .8;
 		kFitterStatus[iphi] = kFALSE;
 	}
 	std::vector<UShort_t> storeX[nPhi], storeY[nPhi];
@@ -615,7 +611,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 	// define working variables
 	Float_t x0, y0, rx, ry;
 	//Float_t rc, rmin, rmax, dr, dCT;
-	Double_t Phi, r;
+	Double_t phi, r;
 	Int_t iPhi;
 	Double_t entries;
 	for(int ispec=0; ispec<5; ispec++){
@@ -623,7 +619,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 		for(int iphi=0; iphi<nPhi; iphi++){
 			nPoints[iphi] = 0;
 			refsFitter[iphi].ClearPoints();
-			fFitterRange[iphi] = .8;
+			fgFitterRange[iphi] = .8;
 			kFitterStatus[iphi] = kFALSE;
 			storeX[iphi].clear();
 			storeY[iphi].clear();
@@ -669,8 +665,8 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 				if(position < 1.) continue;
 				
 				r = sqrt(rxy[0]*rxy[0] + rxy[1]*rxy[1]);
-				Phi   = ((rxy[1] > 0.) ? 1. : -1.) * TMath::ACos(rxy[0]/r); // [-pi, pi]
-				iPhi = nPhi/2 + Int_t(Phi/dPhi) - ((Phi/dPhi > 0.) ? 0 : 1);
+				phi   = ((rxy[1] > 0.) ? 1. : -1.) * TMath::ACos(rxy[0]/r); // [-pi, pi]
+				iPhi = nPhi/2 + Int_t(phi/dPhi) - ((phi/dPhi > 0.) ? 0 : 1);
 				
 				refsFitter[iPhi].AddPoint(rxy, log(entries), 1./sqrt(entries));
 				nPoints[iPhi]++;
@@ -704,8 +700,8 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 					fH2dEdx[ispec]->SetBinContent(ibin, jbin, estimate/xy[0]/xy[1]);
 				} else { // interpolation outside the covariance ellipse
 					r = sqrt(rxy[0]*rxy[0] + rxy[1]*rxy[1]);
-					Phi   = ((rxy[1] > 0.) ? 1. : -1.) * TMath::ACos(rxy[0]/r); // [-pi, pi]
-					iPhi = nPhi/2 + Int_t(Phi/dPhi) - ((Phi/dPhi > 0.) ? 0 : 1);
+					phi   = ((rxy[1] > 0.) ? 1. : -1.) * TMath::ACos(rxy[0]/r); // [-pi, pi]
+					iPhi = nPhi/2 + Int_t(phi/dPhi) - ((phi/dPhi > 0.) ? 0 : 1);
 	
 					storeX[iPhi].push_back(ibin);
 					storeY[iPhi].push_back(jbin);
@@ -718,8 +714,8 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 		TVectorD vec(3);
 		Int_t xbin, ybin;
 		for(int iphi=0; iphi<nPhi; iphi++){
-			Phi = iphi * dPhi - TMath::Pi();
-			if(TMath::Abs(TMath::Abs(Phi)-TMath::Pi()) < 100.*TMath::DegToRad()) continue;
+			phi = iphi * dPhi - TMath::Pi();
+			if(TMath::Abs(TMath::Abs(phi)-TMath::Pi()) < 100.*TMath::DegToRad()) continue;
 				
 			
 			refsFitter[iphi].Eval();

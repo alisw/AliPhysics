@@ -25,8 +25,6 @@
 #include <TGeoMatrix.h>
 
 #include "AliLog.h"
-#include "AliTracker.h"
-#include "AliCodeTimer.h"
 
 #include "AliTRDtransform.h"
 #include "AliTRDcluster.h"
@@ -40,8 +38,6 @@
 ClassImp(AliTRDtransform)
 
 //_____________________________________________________________________________
-//AliTRDtransform::AliTRDtransform()
-//  :AliTransform()
 AliTRDtransform::AliTRDtransform()
   :TObject()
   ,fGeo(0x0)
@@ -51,8 +47,8 @@ AliTRDtransform::AliTRDtransform()
   ,fCalVdriftROC(0x0)
   ,fCalT0ROC(0x0)
   ,fCalPRFROC(0x0)
-  ,fCalVdriftDet(0x0)
-  ,fCalT0Det(0x0)
+  ,fkCalVdriftDet(0x0)
+  ,fkCalT0Det(0x0)
   ,fCalVdriftDetValue(0)
   ,fCalT0DetValue(0)
   ,fSamplingFrequency(0)
@@ -67,8 +63,6 @@ AliTRDtransform::AliTRDtransform()
 }
 
 //_____________________________________________________________________________
-//AliTRDtransform::AliTRDtransform(Int_t det)
-//  :AliTransform()
 AliTRDtransform::AliTRDtransform(Int_t det)
   :TObject()
   ,fGeo(0x0)
@@ -78,8 +72,8 @@ AliTRDtransform::AliTRDtransform(Int_t det)
   ,fCalVdriftROC(0x0)
   ,fCalT0ROC(0x0)
   ,fCalPRFROC(0x0)
-  ,fCalVdriftDet(0x0)
-  ,fCalT0Det(0x0)
+  ,fkCalVdriftDet(0x0)
+  ,fkCalT0Det(0x0)
   ,fCalVdriftDetValue(0)
   ,fCalT0DetValue(0)
   ,fSamplingFrequency(0)
@@ -108,16 +102,14 @@ AliTRDtransform::AliTRDtransform(Int_t det)
   }
 
   // Get the calibration objects for the global calibration
-  fCalVdriftDet      = fCalibration->GetVdriftDet();
-  fCalT0Det          = fCalibration->GetT0Det();
+  fkCalVdriftDet     = fCalibration->GetVdriftDet();
+  fkCalT0Det         = fCalibration->GetT0Det();
 
   SetDetector(det);
 
 }
 
 //_____________________________________________________________________________
-//AliTRDtransform::AliTRDtransform(const AliTRDtransform &t)
-//  :AliTransform(t)
 AliTRDtransform::AliTRDtransform(const AliTRDtransform &t)
   :TObject(t)
   ,fGeo(0x0)
@@ -127,8 +119,8 @@ AliTRDtransform::AliTRDtransform(const AliTRDtransform &t)
   ,fCalVdriftROC(0x0)
   ,fCalT0ROC(0x0)
   ,fCalPRFROC(0x0)
-  ,fCalVdriftDet(0x0)
-  ,fCalT0Det(0x0)
+  ,fkCalVdriftDet(0x0)
+  ,fkCalT0Det(0x0)
   ,fCalVdriftDetValue(0)
   ,fCalT0DetValue(0)
   ,fSamplingFrequency(0)
@@ -156,8 +148,8 @@ AliTRDtransform::AliTRDtransform(const AliTRDtransform &t)
   if (!fCalibration) {
     AliError("Cannot find calibration object");
   }
-  fCalVdriftDet      = fCalibration->GetVdriftDet();
-  fCalT0Det          = fCalibration->GetT0Det();
+  fkCalVdriftDet     = fCalibration->GetVdriftDet();
+  fkCalT0Det         = fCalibration->GetT0Det();
 
 }
 
@@ -190,8 +182,8 @@ void AliTRDtransform::SetDetector(Int_t det)
   fCalPRFROC         = fCalibration->GetPRFROC(det);
 
   // Get the detector wise defined calibration values
-  fCalVdriftDetValue = fCalVdriftDet->GetValue(det);
-  fCalT0DetValue     = fCalT0Det->GetValue(det);
+  fCalVdriftDetValue = fkCalVdriftDet->GetValue(det);
+  fCalT0DetValue     = fkCalT0Det->GetValue(det);
 
   // Shift needed to define Z-position relative to middle of chamber
   Int_t layer        = fGeo->GetLayer(det);
@@ -261,6 +253,7 @@ Bool_t AliTRDtransform::Transform(AliTRDcluster *c)
   c->SetSigmaZ2(fPadPlane->GetRowSize(row)*fPadPlane->GetRowSize(row)/12.);
   
   return kTRUE;
+
 }
 
 //_____________________________________________________________________________
@@ -275,4 +268,5 @@ void AliTRDtransform::Recalibrate(AliTRDcluster *c, Bool_t setDet)
 
   if (setDet) SetDetector(c->GetDetector());
   Transform(c);
+
 }

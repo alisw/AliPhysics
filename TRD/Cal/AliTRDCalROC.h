@@ -12,8 +12,6 @@
 //////////////////////////////////////////////////
 
 #include <TObject.h>
-#include <TMath.h>
-#include <TLinearFitter.h>
 
 class TArrayI;
 class TArrayF;
@@ -35,26 +33,25 @@ class AliTRDCalROC : public TObject
   AliTRDCalROC &operator=(const AliTRDCalROC &c);
   virtual void  Copy(TObject &c) const;
 
-  Int_t         GetNrows() const                { return fNrows; };
-  Int_t         GetNcols() const                { return fNcols; };
+  Int_t         GetNrows() const                   { return fNrows; };
+  Int_t         GetNcols() const                   { return fNcols; };
 
-  Int_t         GetChannel(Int_t c, Int_t r)    { return r+c*fNrows; };
-  Int_t         GetNchannels() const            { return fNchannels; };
+  Int_t         GetChannel(Int_t c, Int_t r) const { return r+c*fNrows; };
+  Int_t         GetNchannels() const               { return fNchannels; };
 
-  Float_t       GetValue(Int_t ich) const       { return (Float_t) fData[ich] / 10000;  };
-  Float_t       GetValue(Int_t col, Int_t row)  { return GetValue(GetChannel(col,row)); };
+  Float_t       GetValue(Int_t ich) const          { return (Float_t) fData[ich] / 10000;  };
+  Float_t       GetValue(Int_t col, Int_t row)     { return GetValue(GetChannel(col,row)); };
 
-  void          SetValue(Int_t ich, Float_t value) 
-                                                { fData[ich] = (UShort_t) (value * 10000); };
+  void          SetValue(Int_t ich, Float_t value) { fData[ich] = (UShort_t) (value * 10000); };
   void          SetValue(Int_t col, Int_t row, Float_t value) 
-                                                { SetValue(GetChannel(col,row), value);    };
+                                                   { SetValue(GetChannel(col,row), value);    };
 
   // statistic
   //
-  Double_t GetMean(AliTRDCalROC *outlierROC=0); 
-  Double_t GetRMS(AliTRDCalROC *outlierROC=0);
-  Double_t GetMedian(AliTRDCalROC *outlierROC=0);
-  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, AliTRDCalROC *outlierROC=0);
+  Double_t GetMean(AliTRDCalROC * const outlierROC=0) const; 
+  Double_t GetRMS(AliTRDCalROC * const outlierROC=0) const;
+  Double_t GetMedian(AliTRDCalROC * const outlierROC=0) const;
+  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, AliTRDCalROC * const outlierROC=0);
 
   // algebra
   Bool_t Add(Float_t c1);

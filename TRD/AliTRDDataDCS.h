@@ -88,13 +88,14 @@ class AliTRDDataDCS : public TNamed
   AliSplineFit * GetFitLuminosity () const 				{return GetFit (kLuminosity);}
   AliSplineFit * GetFitMagneticField () const				{return GetFit (kMagneticField);}
   
-  void Print (Option_t* option = "") const;
+  void Print (const Option_t * const option = "") const;
     
  protected :
           
-      TGraph * FindAndMakeGraph (TMap * dcsMap, const char * amandaStr,
-				 char dataType);
-    AliSplineFit * Fit (TGraph * graph,
+    TGraph       * FindAndMakeGraph (TMap * const dcsMap
+                                   , const char * amandaStr
+				   , char dataType);
+    AliSplineFit * Fit (const TGraph * const graph,
 			Int_t  kMinPoints, Int_t  kIter, 
 			Double_t  kMaxDelta, Int_t  kFitReq);
     
