@@ -268,7 +268,7 @@ TClonesArray*  AliJetKineReader::GetGeneratedJets()
     return fGenJets;
 }
 
-void AliJetKineReader::SetInputEvent(TObject* /*esd*/, TObject* /*aod*/, TObject* mc)
+void AliJetKineReader::SetInputEvent(const TObject* /*esd*/, const TObject* /*aod*/, const TObject* mc)
 {
     // Connect the input event
     fMCEvent = (AliMCEvent*) mc;

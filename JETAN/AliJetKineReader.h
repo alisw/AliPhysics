@@ -24,7 +24,7 @@ class AliJetKineReader : public AliJetReader
   // Setters
   Bool_t  FillMomentumArray();
   void    OpenInputFiles();
-  void    SetInputEvent(TObject* esd, TObject* aod, TObject* mc);
+  void    SetInputEvent(const TObject* esd, const TObject* aod, const TObject* mc);
   // Fast Simulation
   Float_t SmearMomentum(Int_t ind, Float_t p);
   Bool_t  Efficiency(Float_t pt, Float_t eta, Float_t phi);
