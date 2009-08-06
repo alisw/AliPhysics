@@ -1074,7 +1074,7 @@ void AliTRDmcmSim::ZSMapping()
   }
 }
 
-void AliTRDmcmSim::DumpData( char *f, char *target )
+void AliTRDmcmSim::DumpData( const char * const f, const char * const target )
 {
   //
   // Dump data stored (for debugging).
@@ -1648,7 +1648,6 @@ void AliTRDmcmSim::FitTracklet()
 
         // calculate MC label
         Int_t mcLabel = -1;
-	Int_t nHits = 0;
 	Int_t nHits0 = 0;
 	Int_t nHits1 = 0;
         if (fDigitsManager) {
@@ -1705,6 +1704,8 @@ void AliTRDmcmSim::FitTracklet()
 
 Int_t AliTRDmcmSim::GetPID(Float_t q0, Float_t q1) 
 {
+  // get PID from accumulated charges q0 and q1
+
   Int_t binQ0 = (Int_t) (q0 * fgPidNBinsQ0) + 1;
   Int_t binQ1 = (Int_t) (q1 * fgPidNBinsQ1) + 1;
   binQ0 = binQ0 >= fgPidNBinsQ0 ? fgPidNBinsQ0-1 : binQ0;
@@ -1715,6 +1716,8 @@ Int_t AliTRDmcmSim::GetPID(Float_t q0, Float_t q1)
 
 void AliTRDmcmSim::SetPIDlut(Int_t *lut, Int_t nbinsq0, Int_t nbinsq1)
 {
+  // set a user-defined PID LUT
+
   if (fgPidLutDelete)
     delete [] fgPidLut;
 
@@ -1726,6 +1729,8 @@ void AliTRDmcmSim::SetPIDlut(Int_t *lut, Int_t nbinsq0, Int_t nbinsq1)
 
 void AliTRDmcmSim::SetPIDlut(TH2F *lut)
 {
+  // set a user-defined PID LUT from a 2D histogram
+
   if (fgPidLutDelete)
     delete [] fgPidLut;
 
@@ -1745,6 +1750,8 @@ void AliTRDmcmSim::SetPIDlut(TH2F *lut)
 
 void AliTRDmcmSim::SetPIDlutDefault()
 {
+  // use the default PID LUT
+
   if (fgPidLutDelete )
     delete [] fgPidLut;
 
@@ -1776,6 +1783,8 @@ void AliTRDmcmSim::Tracklet()
 
 Bool_t AliTRDmcmSim::StoreTracklets() 
 {
+  // store the found tracklets via the loader
+
   if (fTrackletArray->GetEntriesFast() == 0) 
     return kTRUE;
 

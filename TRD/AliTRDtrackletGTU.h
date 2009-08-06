@@ -34,14 +34,14 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
   Int_t GetYbin() const { return fTracklet->GetYbin(); }
   Int_t GetdY() const { return fTracklet->GetdY(); }
   Int_t GetZbin() const { return fTracklet->GetZbin(); }
-  Int_t GetPID() const { return fTracklet->GetPID(); }
+  Int_t GetPID() const { return ((Int_t) (255 * fTracklet->GetPID())); }
   Double_t GetPID(Int_t is) const { return fTracklet->GetPID(is); }
 
   // ----- Getters for calculated properties -----
   Int_t GetYProj() const { return fYProj; }
   Int_t GetAlpha() const { return fAlpha; }
   Int_t GetYPrime() const { return fYPrime; }
-  Int_t GetSubChannel(Int_t zch);
+  Int_t GetSubChannel(Int_t zch) const;
 
   // ----- Getters for offline corresponding values -----
   Bool_t CookPID() { return kFALSE; }

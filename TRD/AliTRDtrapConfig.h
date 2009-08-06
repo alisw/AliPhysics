@@ -1,5 +1,13 @@
 #ifndef ALITRDTRAPCONFIG_H
 #define ALITRDTRAPCONFIG_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+// 
+// Class holding the configuration of the tracklet processor 
+// in the TRD FEE
+//
+
 
 #include <TObject.h>
 #include <TString.h>
@@ -445,12 +453,12 @@ class AliTRDtrapConfig : public TObject
 		  kDMDELS,      
 		  kLastReg };   // enum of all TRAP registers, to be used for access to them
 
-  inline const char* GetRegName(TrapReg_t reg)       { return fRegs[reg].name.Data(); }
-  inline UShort_t    GetRegAddress(TrapReg_t reg)    { return fRegs[reg].addr; }
-  inline UShort_t    GetRegNBits(TrapReg_t reg)      { return fRegs[reg].nbits; }
-  inline UInt_t      GetRegResetValue(TrapReg_t reg) { return fRegs[reg].res_val; }
+  const char* GetRegName(TrapReg_t reg)       const { return fRegs[reg].fName.Data(); }
+  UShort_t    GetRegAddress(TrapReg_t reg)    const { return fRegs[reg].fAddr; }
+  UShort_t    GetRegNBits(TrapReg_t reg)      const { return fRegs[reg].fNbits; }
+  UInt_t      GetRegResetValue(TrapReg_t reg) const { return fRegs[reg].fResetValue; }
 
-  TrapReg_t          GetRegByAddress(Int_t address);
+  TrapReg_t          GetRegByAddress(Int_t address) const;
 
   Int_t  GetTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1);
   Bool_t PrintTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1);
@@ -472,12 +480,12 @@ class AliTRDtrapConfig : public TObject
   static AliTRDtrapConfig *fgInstance;  // pointer to instance (singleton)
 
   struct SimpleReg_t {
-    TString   name;   // Name of the register
-    UShort_t  addr;    // Address in GIO of TRAP
-    UShort_t  nbits;   // Number of bits, from 1 to 32
-    UInt_t    res_val; // reset value
+    TString   fName;       // Name of the register
+    UShort_t  fAddr;       // Address in GIO of TRAP
+    UShort_t  fNbits;      // Number of bits, from 1 to 32
+    UInt_t    fResetValue; // reset value
     SimpleReg_t(char *nnn = 0, UShort_t a = 0, UShort_t n = 0, UInt_t r = 0) : 
-      name(nnn), addr(a), nbits(n), res_val(r) {}
+      fName(nnn), fAddr(a), fNbits(n), fResetValue(r) {}
   };
 
   struct RegValue_t {
@@ -485,7 +493,7 @@ class AliTRDtrapConfig : public TObject
       kInvalid = 0,
       kGlobal,
       kIndividual
-    } state;
+    } state; // mode of storage (global or per MCM)
     union {
       Int_t globalValue;
       Int_t *individualValue;
@@ -496,15 +504,15 @@ class AliTRDtrapConfig : public TObject
   RegValue_t fRegisterValue[kLastReg];  // array of TRAP register values in use
 
   Bool_t AddValues(UInt_t det, UInt_t cmd, UInt_t extali, UInt_t addr, UInt_t data);
-  Short_t GetRobAB( UShort_t robsel, UShort_t linkpair );  // Converts the ROB part of the extended ALICE ID to robs
+  Short_t GetRobAB( UShort_t robsel, UShort_t linkpair ) const;  // Converts the ROB part of the extended ALICE ID to robs
   Short_t ChipmaskToMCMlist( Int_t cmA, Int_t cmB, UShort_t linkpair ); // Converts the chipmask to a list of MCMs 
 
   static const UInt_t fgkScsnCmdWrite=10;  // Command number for the write command 
   static const Int_t fgkMaxLinkPairs=4;    // number of linkpairs used during configuration
   static const Int_t fgkMaxMcm;            // max. no. of MCMs to be treated
-  static const Int_t fMcmlistSize=256;     // list of MCMs to which a value has to be written
+  static const Int_t fgkMcmlistSize=256;     // list of MCMs to which a value has to be written
 
-  Int_t fMcmlist[fMcmlistSize];  // stores the list of MCMs after the conversion from extAliID -> AliID
+  Int_t fMcmlist[fgkMcmlistSize];  // stores the list of MCMs after the conversion from extAliID -> AliID
 
   AliTRDtrapConfig(); // private constructor due to singleton implementation
 
@@ -529,6 +537,11 @@ class AliTRDtrapConfig : public TObject
 		    kDBankEHeader,
 		    kDBankSCSNData };
 */
+
+
+ private:
+  AliTRDtrapConfig& operator=(const AliTRDtrapConfig &rhs); // not implemented
+  AliTRDtrapConfig(const AliTRDtrapConfig& cfg); // not implemented
 
   ClassDef(AliTRDtrapConfig, 2);
 };

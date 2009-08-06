@@ -13,7 +13,6 @@
 // --------------------------------------------------------
 
 #include "TObject.h"
-#include "TVectorD.h"
 
 class AliTRDgeometry;
 
@@ -24,24 +23,24 @@ class AliTRDgtuParam : public TObject {
   static AliTRDgtuParam *Instance(); // Singleton
   static void Terminate(); 
 
-  static inline Int_t GetNLinks() { return fgkNLinks; }
-  static inline Int_t GetNLayers() { return fgkNLinks/2; }
-  static inline Int_t GetNZChannels() { return fgkNZChannels; }
-  static inline Int_t GetNRefLayers() { return fgkNRefLayers; }
+  static Int_t GetNLinks() { return fgkNLinks; }
+  static Int_t GetNLayers() { return fgkNLinks/2; }
+  static Int_t GetNZChannels() { return fgkNZChannels; }
+  static Int_t GetNRefLayers() { return fgkNRefLayers; }
 
-  static inline Float_t GetChamberThickness() { return 3.0; }
+  static Float_t GetChamberThickness() { return 3.0; }
 
   // ----- Bin widths (granularity) -----
-  static inline Float_t GetBinWidthY() { return fgkBinWidthY; }
-  static inline Float_t GetBinWidthdY() { return fgkBinWidthdY; }
+  static Float_t GetBinWidthY() { return fgkBinWidthY; }
+  static Float_t GetBinWidthdY() { return fgkBinWidthdY; }
 
   // ----- Bit Widths (used for internal representation) -----
-  static inline Int_t GetBitWidthY() { return fgkBitWidthY; }
-  static inline Int_t GetBitWidthdY() { return fgkBitWidthdY; }
-  static inline Int_t GetBitWidthYProj() { return fgkBitWidthYProj; }
-  static inline Int_t GetBitExcessY() { return fgkBitExcessY; }
-  static inline Int_t GetBitExcessAlpha() { return fgkBitExcessAlpha; }
-  static inline Int_t GetBitExcessYProj() { return fgkBitExcessYProj; }
+  static Int_t GetBitWidthY() { return fgkBitWidthY; }
+  static Int_t GetBitWidthdY() { return fgkBitWidthdY; }
+  static Int_t GetBitWidthYProj() { return fgkBitWidthYProj; }
+  static Int_t GetBitExcessY() { return fgkBitExcessY; }
+  static Int_t GetBitExcessAlpha() { return fgkBitExcessAlpha; }
+  static Int_t GetBitExcessYProj() { return fgkBitExcessYProj; }
 
   AliTRDgeometry* GetGeo() const { return fGeo; }
   Float_t GetVertexSize() const { return fVertexSize; }
@@ -54,14 +53,14 @@ class AliTRDgtuParam : public TObject {
   Int_t GetRefLayer(Int_t refLayerIdx) const;
 //  Bool_t GetFitParams(TVectorD &rhs, Int_t k); // const
   Bool_t GetIntersectionPoints(Int_t k, Float_t &x1, Float_t &x2); // const
-  Float_t GetRadius(Int_t a, Float_t b, Float_t x1, Float_t x2); // const
+  Float_t GetRadius(Int_t a, Float_t b, Float_t x1, Float_t x2) const;
 
   Bool_t IsInZChannel(Int_t stack, Int_t layer, Int_t zchannel, Int_t zpos) const;
 
   void SetVertexSize(Float_t vertexsize) { fVertexSize = vertexsize; }
 
   // z-channel map
-  Int_t zChannelGen(); // could have different modes (for beam-beam, cosmics, ...)
+  Int_t GenerateZChannelMap(); // could have different modes (for beam-beam, cosmics, ...)
   Bool_t DisplayZChannelMap(Int_t zchannel = -1, Int_t subch = 0) const;
 
   // variables for pt-reconstruction (not used at the moment)

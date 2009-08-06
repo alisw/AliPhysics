@@ -12,8 +12,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef ROOT_TObject
-#  include <TObject.h>
-#endif
+# include <TObject.h>
+#endif 
+#include <TVectorD.h>
 
 class TTree;
 class TProfile2D;

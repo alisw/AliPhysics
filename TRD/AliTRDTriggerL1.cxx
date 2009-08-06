@@ -48,6 +48,8 @@ AliTRDTriggerL1::~AliTRDTriggerL1()
 
 void AliTRDTriggerL1::CreateInputs()
 {
+  // create the trigger inputs for TRD
+
   if (fInputs.GetEntriesFast() > 0)
     return;
 
@@ -57,6 +59,8 @@ void AliTRDTriggerL1::CreateInputs()
 
 void AliTRDTriggerL1::Trigger()
 {
+  // run the trigger algorithms
+
   AliRunLoader *runLoader = AliRunLoader::Instance();
   if (!runLoader)
     return;
@@ -84,8 +88,8 @@ void AliTRDTriggerL1::Trigger()
   Int_t trackThreshold2 = 2;
   
   // trigger algorithms to come, e.g.
-  Bool_t triggered_highpt = kFALSE;
-  Bool_t triggered_jet = kFALSE;
+  Bool_t triggeredHighPt = kFALSE;
+  Bool_t triggeredJet = kFALSE;
   
   if (branch) {
     AliTRDtrackGTU *trk = 0x0;
@@ -97,7 +101,7 @@ void AliTRDTriggerL1::Trigger()
       if (TMath::Abs(trk->GetPt()) > 3.0) {
         AliDebug(1, Form("Found track in sector %2i, stack %i with pt = %3.1f, triggered", 
                          trk->GetSector(), trk->GetStack(), trk->GetPt()));
-        triggered_highpt = kTRUE;
+        triggeredHighPt = kTRUE;
       }
     }
 
@@ -113,19 +117,19 @@ void AliTRDTriggerL1::Trigger()
     }
     for (Int_t iStack = 0; iStack < 90; iStack++) {
       if ((nTracks1[iStack] >= trackThreshold1) || (nTracks2[iStack] >= trackThreshold2))
-        triggered_jet = kTRUE;
+        triggeredJet = kTRUE;
     }
   }
   else {
     AliWarning("GTU Branch not found");
   }
 
-  if (triggered_highpt) { 
+  if (triggeredHighPt) { 
     AliInfo("Fired high-pt trigger");
     SetInput("1HSH");
   }
 
-  if (triggered_jet) {
+  if (triggeredJet) {
     AliInfo("Fired jet trigger");
     SetInput("1HJT");
   }

@@ -40,8 +40,8 @@ class AliTRDmcmSim : public TObject {
 	  Bool_t    LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob, Int_t mcm);
 	  void      NoiseTest(Int_t nsamples, Int_t mean, Int_t sigma, Int_t inputGain = 1, Int_t inputTail = 2);
 
-	  Int_t     GetDataRaw(Int_t iadc, Int_t timebin)      { return (fADCR[iadc][timebin] >> 2); } // Get unfiltered ADC data 
-	  Int_t     GetDataFiltered(Int_t iadc, Int_t timebin) { return (fADCF[iadc][timebin] >> 2); } // Get filtered ADC data
+	  Int_t     GetDataRaw(Int_t iadc, Int_t timebin)      const { return (fADCR[iadc][timebin] >> 2); } // Get unfiltered ADC data 
+	  Int_t     GetDataFiltered(Int_t iadc, Int_t timebin) const { return (fADCF[iadc][timebin] >> 2); } // Get filtered ADC data
           void      SetData(Int_t iadc, Int_t *adc);           // Set ADC data with array 
           void      SetData(Int_t iadc, Int_t it, Int_t adc ); // Set ADC data
 	  void      SetData(AliTRDarrayADC *adcArray, 
@@ -110,7 +110,7 @@ class AliTRDmcmSim : public TObject {
 	  // data display
 	  void      Print(Option_t* const option="") const;   // print stored data to stdout
 	  void      Draw(Option_t* const option ="");         // draw data (ADC data, hits and tracklets)
-	  void      DumpData( char *f, char *target );  // Dump data stored (only for debugging)
+	  void      DumpData( const char *const f, const char *const target );  // Dump data stored (only for debugging)
 
  protected:
 	  Bool_t    CheckInitialized();                 // Check whether the class is initialized
@@ -197,16 +197,16 @@ class AliTRDmcmSim : public TObject {
 	  AliTRDmcmSim(const AliTRDmcmSim &m);             // not implemented
 	  AliTRDmcmSim &operator=(const AliTRDmcmSim &m);  // not implemented
 
-  static Bool_t fgApplyCut;
+  static Bool_t fgApplyCut;               // apply cut on deflection length
 
-  static Int_t fgAddBaseline;
+  static Int_t fgAddBaseline;             // add baseline to the ADC values 
 
-  static Float_t fgChargeNorm;
-  static Int_t fgPidNBinsQ0;
-  static Int_t fgPidNBinsQ1;
-  static Int_t fgPidLutDefault[40][50];
-  static Int_t *fgPidLut;
-  static Bool_t fgPidLutDelete;
+  static Float_t fgChargeNorm;            // normalization factor for charge (for PID)
+  static Int_t fgPidNBinsQ0;              // number of bins in the PID LUT for Q0
+  static Int_t fgPidNBinsQ1;              // number of bins in the PID LUT for Q1  
+  static Int_t fgPidLutDefault[40][50];   // the default PID LUT
+  static Int_t *fgPidLut;                 // pointer to user defined PID LUT
+  static Bool_t fgPidLutDelete;           // owns the LUT
 
   ClassDef(AliTRDmcmSim,4)
 };

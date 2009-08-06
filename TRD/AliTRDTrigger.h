@@ -26,7 +26,7 @@ class AliTRDTrigger : public AliTriggerDetector {
   virtual void Trigger();
 
  private:
-  TObjArray fTriggers;
+  TObjArray fTriggers; // array of all contributing triggers
 
   ClassDef(AliTRDTrigger, 1);
 

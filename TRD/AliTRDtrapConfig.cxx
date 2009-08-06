@@ -1,3 +1,26 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  TRAP config                                                           //
+//                                                                        //
+//  Author: J. Klein (Jochen.Klein@cern.ch)                               //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include "AliLog.h"
 
 #include "AliTRDgeometry.h"
@@ -790,7 +813,7 @@ Bool_t AliTRDtrapConfig::AddValues(UInt_t det, UInt_t cmd, UInt_t extali, UInt_t
     for(Int_t linkPair=0; linkPair<fgkMaxLinkPairs; linkPair++) {
       if(ExtAliToAli(extali, linkPair, rocType)!=0) {
         Int_t i=0;
-        while(fMcmlist[i] != -1 && i<fMcmlistSize) {
+        while(fMcmlist[i] != -1 && i<fgkMcmlistSize) {
           if(fMcmlist[i]==127)
             SetTrapReg( (TrapReg_t) mcmReg, data, det);
           else
@@ -868,7 +891,7 @@ Int_t AliTRDtrapConfig::ExtAliToAli( UInt_t dest, UShort_t linkpair, UShort_t ro
 }
 
 
-Short_t AliTRDtrapConfig::GetRobAB( UShort_t robsel, UShort_t linkpair )
+Short_t AliTRDtrapConfig::GetRobAB( UShort_t robsel, UShort_t linkpair ) const
 {
   // Converts the ROB part of the extended ALICE ID to robs
 
@@ -915,12 +938,15 @@ Short_t AliTRDtrapConfig::ChipmaskToMCMlist( Int_t cmA, Int_t cmB, UShort_t link
 }
 
 
-AliTRDtrapConfig::TrapReg_t AliTRDtrapConfig::GetRegByAddress(Int_t address)
+AliTRDtrapConfig::TrapReg_t AliTRDtrapConfig::GetRegByAddress(Int_t address) const
 {
+  // get register by its address
+  // used for reading of configuration data as sent to real FEE
+
   TrapReg_t mcmReg = kLastReg;
   Int_t reg  = 0;
   do {
-    if(fRegs[reg].addr == address)
+    if(fRegs[reg].fAddr == address)
       mcmReg = (TrapReg_t) reg;
     reg++;
   }  while (mcmReg == kLastReg && reg < kLastReg);

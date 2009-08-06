@@ -98,6 +98,8 @@ AliTRDtrackletGTU::AliTRDtrackletGTU(const AliTRDtrackletGTU& tracklet) :
 
 AliTRDtrackletGTU& AliTRDtrackletGTU::operator=(const AliTRDtrackletGTU &rhs)
 {
+  // assignment operator
+
   if (&rhs != this) {
     fTracklet = rhs.fTracklet;
     for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++) 
@@ -171,7 +173,7 @@ void AliTRDtrackletGTU::SetSubChannel(Int_t zch, Int_t subch)
   fSubChannel[zch] = subch;
 }
 
-Int_t AliTRDtrackletGTU::GetSubChannel(Int_t zch) 
+Int_t AliTRDtrackletGTU::GetSubChannel(Int_t zch) const
 {
   // get the subchannel in the given z-channel
   return fSubChannel[zch];
@@ -179,6 +181,8 @@ Int_t AliTRDtrackletGTU::GetSubChannel(Int_t zch)
 
 Int_t AliTRDtrackletGTU::GetLabel() const
 {
+  // get the MC label for the tracklet, -1 if none
+
     if ( fTracklet->IsA() == TClass::GetClass("AliTRDtrackletMCM"))
 	return ((AliTRDtrackletMCM*) fTracklet)->GetLabel();
     else

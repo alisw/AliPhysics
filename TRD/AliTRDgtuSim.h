@@ -26,16 +26,16 @@ class AliTRDgtuSim : public TObject {
   AliTRDgtuSim(AliRunLoader *rl = 0x0);
   ~AliTRDgtuSim();
 
-  Bool_t LoadTracklets(AliLoader *loader);
+  Bool_t LoadTracklets(AliLoader * const loader);
 
   Bool_t RunGTU(AliLoader *loader, AliESDEvent *esd = 0x0);
   Bool_t RunGTUFromTrackletFile(TString filename, Int_t event, Int_t noev = 1);
 
   TTree* GetTreeOfTracks() { return fTrackTree; }
-  Bool_t WriteTracksToTree(TList *ListOfTracks, Int_t event = 0); 
-  Bool_t WriteTracksToDataFile(TList *ListOfTracks, Int_t event);
-  Bool_t WriteTreesToFile();
-  Bool_t WriteTracksToESD(TList *ListOfTracks, AliESDEvent *esd);
+  Bool_t WriteTracksToTree(TList *listOfTracks, Int_t event = 0); 
+  Bool_t WriteTracksToDataFile(TList *listOfTracks, Int_t event);
+  Bool_t WriteTreesToFile() const;
+  Bool_t WriteTracksToESD(const TList *const listOfTracks, AliESDEvent *esd);
   Bool_t WriteTracksToLoader();
 
  protected:

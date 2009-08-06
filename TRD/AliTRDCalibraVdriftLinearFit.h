@@ -12,8 +12,10 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TObjArray.h"
+//#include "TObjArray.h"
+#include "TObject.h"
 
+//class TVectorD;
 class TObjArray;
 class TH2F;
 class TTreeSRedirector;

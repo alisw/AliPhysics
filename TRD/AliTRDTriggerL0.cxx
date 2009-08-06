@@ -30,8 +30,6 @@
 #include "AliLoader.h"
 
 #include "AliTRDTriggerL0.h"
-#include "AliTRDgtuSim.h"
-#include "AliTRDtrackGTU.h"
 
 AliTRDTriggerL0::AliTRDTriggerL0()
 {
