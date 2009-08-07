@@ -22,6 +22,7 @@
 #include "AliEveTRDLoader.h"
 #include "AliEveTRDLoaderImp.h"
 
+#include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliPID.h"
 #include "AliTrackPointArray.h"
