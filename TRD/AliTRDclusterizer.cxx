@@ -1358,7 +1358,7 @@ TClonesArray *AliTRDclusterizer::TrackletsArray()
   //
 
   if (!fTracklets && fReconstructor->IsProcessingTracklets()) {
-    fTracklets = new TClonesArray("AliTRDcluster", 2*MAX_TRACKLETS_PERHC);
+    fTracklets = new TClonesArray("AliTRDcluster", 2*MAXTRACKLETSPERHC);
     //SetClustersOwner(kTRUE);
     //AliTRDReconstructor::SetTracklets(0x0);
   }
