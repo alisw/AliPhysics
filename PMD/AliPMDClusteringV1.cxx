@@ -967,8 +967,12 @@ void AliPMDClusteringV1::FindIsoCell(Int_t idet, Int_t ismn, Double_t celladc[][
 		{
 		  id1 = irow + neibx[ii];
 		  jd1 = icol + neiby[ii];
+		  if (id1 < 0) id1 = 0;
+		  if (id1 > kMaxRow-1) id1 = kMaxRow - 1;
+		  if (jd1 < 0) jd1 = 0;
+		  if (jd1 > kMaxCol-1) jd1 = kMaxCol - 1;
 		  Float_t adc = (Float_t) celladc[id1][jd1];
-		  if(adc == 0.)
+		  if(adc < 1.)
 		    {
 		      isocount++;
 		      if(isocount == kCellNeighbour)
