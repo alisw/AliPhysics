@@ -94,6 +94,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fEtaMax(0),
  fEtaBinWidth(0),
  fHarmonic(2),
+ fAnalysisLabel(NULL),
  // 2.) weights:
  fWeightsList(NULL),
  fUsePhiWeights(kFALSE),
@@ -147,6 +148,9 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
   fWeightsList->SetName("Weights");
   fWeightsList->SetOwner(kTRUE);
     
+  // analysis label;
+  fAnalysisLabel = new TString();
+      
   // initialize all arrays:  
   this->InitializeArraysForIntFlow();
   this->InitializeArraysForDiffFlow();
@@ -1739,11 +1743,11 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   
   // nested list in the list of profiles fDiffFlowListProfiles "Profiles":
   TList *dfpType[2] = {NULL};
-  TList *dfpParticleWeights[2][2] = {NULL};
-  TList *dfpEventWeights[2][2][2] = {NULL};
-  TList *diffFlowCorrelations[2][2][2] = {NULL};
-  TList *diffFlowProductsOfCorrelations[2][2][2] = {NULL};
-  TList *diffFlowCorrectionTerms[2][2][2][2] = {NULL};
+  TList *dfpParticleWeights[2][2] = {{NULL}};
+  TList *dfpEventWeights[2][2][2] = {{{NULL}}};
+  TList *diffFlowCorrelations[2][2][2] = {{{NULL}}};
+  TList *diffFlowProductsOfCorrelations[2][2][2] = {{{NULL}}};
+  TList *diffFlowCorrectionTerms[2][2][2][2] = {{{{NULL}}}};
   
   if(diffFlowListProfiles)
   {
@@ -1798,9 +1802,9 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
      cout<<"WARNING: diffFlowListProfiles is NULL in AFAWQC::GOH() !!!!"<<endl;
     }  
   
-  TProfile2D *correlationsPro[2][2][2][4] = {NULL};
-  TProfile2D *productsOfCorrelationsPro[2][2][2][5] = {NULL};
-  TProfile2D *correctionTermsPro[2][2][2][2][2] = {NULL};
+  TProfile2D *correlationsPro[2][2][2][4] = {{{{NULL}}}};
+  TProfile2D *productsOfCorrelationsPro[2][2][2][5] = {{{{NULL}}}};
+  TProfile2D *correctionTermsPro[2][2][2][2][2] = {{{{{NULL}}}}};
   
   TString correlationName[4] = {"<2'>","<4'>","<6'>","<8'>"};
   TString cumulantName[4] = {"QC{2'}","QC{4'}","QC{6'}","QC{8'}"};
@@ -1922,14 +1926,14 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   
   // nested list in the list of results fDiffFlowListResults "Results":
   TList *dfrType[2] = {NULL};
-  TList *dfrParticleWeights[2][2] = {NULL};
-  TList *dfrEventWeights[2][2][2] = {NULL};
-  TList *dfrCorrections[2][2][2][2] = {NULL}; 
-  TList *diffFlowFinalCorrelations[2][2][2] = {NULL}; 
-  TList *diffFlowFinalCorrections[2][2][2] = {NULL}; 
-  TList *diffFlowFinalCovariances[2][2][2] = {NULL};   
-  TList *diffFlowFinalCumulants[2][2][2][2] = {NULL};  
-  TList *diffFlowFinalFlow[2][2][2][2] = {NULL}; 
+  TList *dfrParticleWeights[2][2] = {{NULL}};
+  TList *dfrEventWeights[2][2][2] = {{{NULL}}};
+  TList *dfrCorrections[2][2][2][2] = {{{{NULL}}}}; 
+  TList *diffFlowFinalCorrelations[2][2][2] = {{{NULL}}}; 
+  TList *diffFlowFinalCorrections[2][2][2] = {{{NULL}}}; 
+  TList *diffFlowFinalCovariances[2][2][2] = {{{NULL}}};   
+  TList *diffFlowFinalCumulants[2][2][2][2] = {{{{NULL}}}};  
+  TList *diffFlowFinalFlow[2][2][2][2] = {{{{NULL}}}}; 
  
   if(diffFlowListResults)
   {
@@ -1993,20 +1997,20 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
      cout<<"WARNING: diffFlowListResults is NULL in AFAWQC::GOH() !!!!"<<endl;
     }
  
- TH2D *finalCorrelations2D[2][2][2][4] = {NULL};
- TH1D *finalCorrelations1D[2][2][2][2][4] = {NULL}; 
- TH2D *finalCumulants2D[2][2][2][2][4] = {NULL};
- TH1D *finalCumulantsPt[2][2][2][2][4] = {NULL}; 
- TH1D *finalCumulantsEta[2][2][2][2][4] = {NULL}; 
- TH2D *finalCorrections2D[2][2][2][4] = {NULL};
- TH1D *finalCorrections1D[2][2][2][2][4] = {NULL}; 
- TH2D *finalCovariances2D[2][2][2][4] = {NULL};
- TH1D *finalCovariances1D[2][2][2][2][4] = {NULL}; 
- TH2D *finalFlow2D[2][2][2][2][4] = {NULL};
- TH1D *finalFlowPt[2][2][2][2][4] = {NULL}; 
- TH1D *finalFlowEta[2][2][2][2][4] = {NULL}; 
+ TH2D *finalCorrelations2D[2][2][2][4] = {{{{NULL}}}};
+ TH1D *finalCorrelations1D[2][2][2][2][4] = {{{{{NULL}}}}}; 
+ TH2D *finalCumulants2D[2][2][2][2][4] = {{{{{NULL}}}}};
+ TH1D *finalCumulantsPt[2][2][2][2][4] = {{{{{NULL}}}}}; 
+ TH1D *finalCumulantsEta[2][2][2][2][4] = {{{{{NULL}}}}}; 
+ TH2D *finalCorrections2D[2][2][2][4] = {{{{NULL}}}};
+ TH1D *finalCorrections1D[2][2][2][2][4] = {{{{{NULL}}}}}; 
+ TH2D *finalCovariances2D[2][2][2][4] = {{{{NULL}}}};
+ TH1D *finalCovariances1D[2][2][2][2][4] = {{{{{NULL}}}}}; 
+ TH2D *finalFlow2D[2][2][2][2][4] = {{{{{NULL}}}}};
+ TH1D *finalFlowPt[2][2][2][2][4] = {{{{{NULL}}}}}; 
+ TH1D *finalFlowEta[2][2][2][2][4] = {{{{{NULL}}}}}; 
  TH2D *nonEmptyBins2D[2] = {NULL};
- TH1D *nonEmptyBins1D[2][2] = {NULL};
+ TH1D *nonEmptyBins1D[2][2] = {{NULL}};
  
  for(Int_t t=0;t<2;t++)
  {
