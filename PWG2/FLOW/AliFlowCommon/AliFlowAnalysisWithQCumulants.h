@@ -125,6 +125,8 @@ class AliFlowAnalysisWithQCumulants{
   AliFlowCommonHistResults* GetCommonHistsResults8th() const {return this->fCommonHistsResults8th;};
   void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
   Int_t GetHarmonic() const {return this->fHarmonic;};
+  void SetAnalysisLabel(const char *aLabel) {this->fAnalysisLabel->Append(*aLabel);};
+  TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
   
   // 2.) weights:
   void SetWeightsList(TList* wlist) {this->fWeightsList = wlist;}
@@ -274,6 +276,7 @@ class AliFlowAnalysisWithQCumulants{
   Double_t fEtaMax; // maximum eta
   Double_t fEtaBinWidth; // bin width for eta histograms  
   Int_t fHarmonic; // harmonic 
+  TString *fAnalysisLabel; // analysis label (all histograms and output file will have this label)
   
   // 2.) weights
   TList *fWeightsList; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
