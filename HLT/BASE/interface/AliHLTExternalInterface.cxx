@@ -188,8 +188,8 @@ int AliHLTAnalysisGetOutputSize( AliHLTComponentHandle handle, unsigned long* co
   AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
   if (!comp) return ENXIO;
   // TODO: extend component interface
-  if (constEventBase) *constEventBase=0;
-  comp->GetOutputDataSize( *constBlockBase, *inputBlockMultiplier );
+  if (constBlockBase) *constBlockBase=0;
+  comp->GetOutputDataSize( *constEventBase, *inputBlockMultiplier );
   return 0;
 }
 
