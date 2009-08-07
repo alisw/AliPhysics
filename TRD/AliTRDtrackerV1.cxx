@@ -3593,7 +3593,7 @@ AliTRDtrackerV1::AliTRDLeastSquare::AliTRDLeastSquare(){
   // Constructor of the nested class AliTRDtrackFitterLeastSquare
   //
   memset(fParams, 0, sizeof(Double_t) * 2);
-  memset(fSums, 0, sizeof(Double_t) * 5);
+  memset(fSums, 0, sizeof(Double_t) * 6);
   memset(fCovarianceMatrix, 0, sizeof(Double_t) * 3);
 
 }
