@@ -77,9 +77,9 @@ class AliGRPPreprocessor: public AliPreprocessor {
   
   virtual     UInt_t   Process(TMap* valueSet);
 
-                AliGRPObject*  ProcessDaqLB();
+               Int_t   ProcessDaqLB(AliGRPObject* grpobj);
               UInt_t   ProcessDaqFxs();
-              UInt_t   ProcessDcsFxs();
+              UInt_t   ProcessDcsFxs(TString partition="", TString detector="");
                Int_t   ProcessDcsDPs(TMap* valueSet, AliGRPObject* grpobj);
                Int_t   ProcessLHCDPs(const TMap* valueSet, AliGRPObject* grpobj);
                Int_t   ProcessL3DPs(const TMap* valueSet, AliGRPObject* grpobj);
@@ -98,7 +98,8 @@ class AliGRPPreprocessor: public AliPreprocessor {
 
  private:
  
-  static const Int_t   fgknDAQLbPar;            //! number of DAQ lb parameters
+  static const Int_t   fgknDAQLbPar;            //! number of DAQ lb parameters for PHYSICS runs
+  static const Int_t   fgknDAQLbParReduced;     //! number of DAQ lb parameters for non PHYSICS runs
   static const Int_t   fgknDCSDP;               //! number of dcs dps
   static const char*   fgkDCSDataPoints[];      //! names of dcs dps
   static const char*   fgkLHCState[];           //! names of LHC States

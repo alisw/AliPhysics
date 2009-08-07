@@ -20,6 +20,7 @@
 //                  Global Run Parameters (GRP) preprocessor
 //    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //    Modified: Ernesto.Lopez.Torres@cern.ch  CEADEN-CERN
+//    Modified: Chiara.Zampolli@cern.ch  CERN
 //-------------------------------------------------------------------------
 
 #include <TChain.h>
@@ -59,7 +60,8 @@ ClassImp(AliGRPPreprocessor)
 
 //_______________________________________________________________
 
-  const Int_t AliGRPPreprocessor::fgknDAQLbPar = 8; // num parameters in the logbook
+  const Int_t AliGRPPreprocessor::fgknDAQLbPar = 8; // num parameters in the logbook for PHYSICS runs, when beamType from DAQ logbook != cosmic
+  const Int_t AliGRPPreprocessor::fgknDAQLbParReduced = 7; // num parameters in the logbook for the other cases
   const Int_t AliGRPPreprocessor::fgknDCSDP = 50;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknDCSDPHallProbes = 40;   // number of dcs dps
   const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
@@ -180,7 +182,8 @@ ClassImp(AliGRPPreprocessor)
                    "(DAQ FXS ERROR)",
                    "(DCS FXS ERROR)",
                    "(DCS data points ERROR)",
-                   "(Trigger Configuration ERROR)"
+                   "(Trigger Configuration ERROR)",
+                   "(DAQ logbook ERROR determining partition of the run)"
   };
 
 //_______________________________________________________________
@@ -232,7 +235,6 @@ void AliGRPPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   }
   AliInfo(Form("Pressure Entries: %d",array->GetEntries()));
 
-  //  fPressure = new AliDCSSensorArray(fStartTime, fEndTime, array);
   fPressure = new AliDCSSensorArray(GetStartTimeDCSQuery(), GetEndTimeDCSQuery(), array);
 }
 
@@ -242,6 +244,13 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 {
 	// process data retrieved by the Shuttle
 	
+	// retrieving "partition" and "detector" fields from DAQ logbook to 
+	// determine the partition in which the run was taken
+	// the partition is used to decide how to react in case of errors for CTP
+
+	TString partition = (TString)GetRunParameter("partition");  
+	TString detector = (TString)GetRunParameter("detector");   
+
 	AliGRPObject *grpobj = new AliGRPObject();  // object to store data
 
 	//=================//
@@ -249,7 +258,15 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	//=================//
 	UInt_t error = 0;
 	
-	grpobj = ProcessDaqLB();
+	Int_t iDaqLB = ProcessDaqLB(grpobj);
+	TString runType = (TString)GetRunType();
+	TString beamType = (TString)GetRunParameter("beamType");
+	if((runType == "PHYSICS" && iDaqLB == fgknDAQLbPar && beamType!="cosmic") ||  (runType == "PHYSICS" && iDaqLB == fgknDAQLbParReduced && beamType=="cosmic") || (runType != "PHYSICS" && iDaqLB == fgknDAQLbParReduced)) {
+		Log(Form("DAQ Logbook, successful!"));
+	} else {
+		Log(Form("DAQ Logbook, could not get all expected entries!!!"));
+		error |= 1;
+	}
 
 	//=================//
 	// DAQ FXS         //
@@ -265,12 +282,15 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	//=================//
 	// DCS FXS         //
 	//=================//
-	UInt_t iDcsFxs = ProcessDcsFxs();
+	UInt_t iDcsFxs = ProcessDcsFxs(partition, detector);
 	if( iDcsFxs == 0 ) {
 		Log(Form("DCS FXS, successful!"));
-	} else {
+	} else  if (iDcsFxs ==1) {
 		Log(Form("DCS FXS, Could not store CTP scalers!!!"));
 		error |= 4;
+	} else{
+		Log(Form("Incorrect field in DAQ logbook for partition = %s and detector = %s, going into error without CTP scalers...",partition.Data(),detector.Data()));
+		error |= 32;
 	}
 	
 	//=================//
@@ -287,64 +307,72 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	//=======================//
 	// Trigger Configuration //
 	//=======================//
-	// either from DAQ logbook.....
+
 	const char * triggerConf = GetTriggerConfiguration();
-	if (triggerConf!= NULL) {
-		Log("Found trigger configuration in DAQ logbook");
-		AliTriggerConfiguration *runcfg = AliTriggerConfiguration::LoadConfigurationFromString(triggerConf);	  
-		if (!runcfg) {
-			Log("Bad CTP run configuration file from DAQ logbook! The corresponding CDB entry will not be filled!");
+
+	if (partition.IsNull() && !detector.IsNull()){ // standalone partition
+		Log("STANDALONE partition for current run, using Trigger Configuration dummy value");
+		AliCDBEntry *cdbEntry = GetFromOCDB("CTP","DummyConfig");
+		if (!cdbEntry) {
+			Log(Form("No dummy CTP configuration entry found, going into error..."));
 			error |= 16;
 		}
-		else {
-			TString titleCTPcfg = Form("CTP cfg for run %i from DAQ",fRun);
-			runcfg->SetTitle(titleCTPcfg);
-			AliCDBMetaData metaData;
-			metaData.SetBeamPeriod(0);
-			metaData.SetResponsible("Roman Lietava");
-			metaData.SetComment("CTP run configuration from DAQ logbook");
-			if (!Store("CTP","Config", runcfg, &metaData, 0, 0)) {
-				Log("Unable to store the CTP run configuration object to OCDB!");
+		else{
+			AliTriggerConfiguration *runcfg = (AliTriggerConfiguration*)cdbEntry->GetObject();
+			if (!runcfg){
+				Log(Form("dummy CTP config not found in OCDB entry, going into error..."));
 				error |= 16;
 			}
+			else {
+				TString titleCTPcfg = Form("CTP cfg for run %i from Dummy entry in OCDB",fRun);
+				runcfg->SetTitle(titleCTPcfg);
+				AliCDBMetaData metaData;
+				metaData.SetResponsible("Roman Lietava");
+				metaData.SetComment("CTP run configuration from dummy entry in OCDB");
+				if (!Store("CTP","Config", runcfg, &metaData, 0, 0)) {
+					Log("Unable to store the dummy CTP run configuration object to OCDB!");
+					error |= 16;
+				}
+			}
 		}
-	}
-	else {
-		Log("Trigger configuration NOT FOUND in DAQ logbook");
-		error |= 16;
 	}
 
-	/*  the DCS should not been used any more to access this stuff!!!
-	// ...or from DCS FXS
-	else{
-		Log("No trigger configuration found in the DAQ logbook!! Trying reading from DCS FXS...");
-		TString runcfgfile = GetFile(kDCS, "CTP_runconfig", "");
-		if (runcfgfile.IsNull()) {
-			Log("No CTP runconfig files has been found in DCS FXS!");
-			error |= 16;
-		}
-		else {
-			Log(Form("File with Id CTP_runconfig found! Copied to %s",runcfgfile.Data()));
-			AliTriggerConfiguration *runcfg = AliTriggerConfiguration::LoadConfiguration(runcfgfile);
+	else if (!partition.IsNull() && detector.IsNull()){ // global partition
+		Log("GLOBAL partition for current run, using Trigger Configuration from DAQ Logbook");
+		if (triggerConf!= NULL) {
+			Log("Found trigger configuration in DAQ logbook");
+			AliTriggerConfiguration *runcfg = AliTriggerConfiguration::LoadConfigurationFromString(triggerConf);	  
 			if (!runcfg) {
-				Log("Bad CTP run configuration file from DCS FXS! The corresponding CDB entry will not be filled!");
-				error |= 16;;
+				Log("Bad CTP run configuration file from DAQ logbook! The corresponding CDB entry will not be filled!");
+				error |= 16;
 			}
 			else {
-				TString titleCTPcfg = Form("CTP cfg for run %i from DCS",fRun);
+				TString titleCTPcfg = Form("CTP cfg for run %i from DAQ",fRun);
 				runcfg->SetTitle(titleCTPcfg);
 				AliCDBMetaData metaData;
 				metaData.SetBeamPeriod(0);
 				metaData.SetResponsible("Roman Lietava");
-				metaData.SetComment("CTP run configuration from DCS FXS");
+				metaData.SetComment("CTP run configuration from DAQ logbook");
 				if (!Store("CTP","Config", runcfg, &metaData, 0, 0)) {
 					Log("Unable to store the CTP run configuration object to OCDB!");
 					error |= 16;
 				}
 			}
 		}
+
+		else {
+			Log("Trigger configuration NULL in DAQ logbook");
+			error |= 16;
+		}
 	}
-	*/
+
+	else {
+		Log(Form("Incorrect field in DAQ logbook for partition = %s and detector = %s, going into error without trigger configuration...",partition.Data(),detector.Data()));
+		error |= 32;
+	}
+
+	// storing AliGRPObject in OCDB
+
 	AliCDBMetaData md;
 	md.SetResponsible("Ernesto Lopez Torres");
 	md.SetComment("Output parameters from the GRP preprocessor.");
@@ -357,12 +385,13 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		Log("GRP Preprocessor Success");
 		return 0;
 	} else {
-		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s",
+		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s",
 			  kppError[(error&1)?1:0],
 			  kppError[(error&2)?2:0],
 			  kppError[(error&4)?3:0],
 			  kppError[(error&8)?4:0],
-			  kppError[(error&16)?5:0]
+			  kppError[(error&16)?5:0],
+			  kppError[(error&32)?6:0]
 			  ));
 		return error;
 	}
@@ -370,24 +399,24 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 
 //_______________________________________________________________
 
-AliGRPObject* AliGRPPreprocessor::ProcessDaqLB()
+Int_t AliGRPPreprocessor::ProcessDaqLB(AliGRPObject* grpObj)
 {
 	//Getting the DAQ lb information
 	
-	time_t timeStart         = (time_t)(((TString)GetRunParameter("DAQ_time_start")).Atoi());
-	time_t timeEnd         = (time_t)(((TString)GetRunParameter("DAQ_time_end")).Atoi());
-	Float_t beamEnergy         = (Float_t)(((TString)GetRunParameter("beamEnergy")).Atof());
+	time_t timeStart = (time_t)(((TString)GetRunParameter("DAQ_time_start")).Atoi());
+	time_t timeEnd = (time_t)(((TString)GetRunParameter("DAQ_time_end")).Atoi());
+	Float_t beamEnergy = (Float_t)(((TString)GetRunParameter("beamEnergy")).Atof());
 	TString beamType = (TString)GetRunParameter("beamType");
 	Char_t numberOfDetectors = (Char_t)(((TString)GetRunParameter("numberOfDetectors")).Atoi());
-	UInt_t  detectorMask= (UInt_t)(((TString)GetRunParameter("detectorMask")).Atoi());
+	UInt_t  detectorMask = (UInt_t)(((TString)GetRunParameter("detectorMask")).Atoi());
 	TString lhcPeriod = (TString)GetRunParameter("LHCperiod");
 	TString runType = (TString)GetRunType();
 
-	AliGRPObject* grpObj = new AliGRPObject();
-
+	UInt_t nparameter = 0;
 	if (timeStart != 0){
 		grpObj->SetTimeStart(timeStart);
 		Log(Form("Start time for run %d: %d",fRun, (Int_t)timeStart));
+		nparameter++;
 	} 
 	else {
 		Log(Form("Start time not put in logbook, setting to invalid in GRP entry!"));
@@ -396,6 +425,7 @@ AliGRPObject* AliGRPPreprocessor::ProcessDaqLB()
 	if (timeEnd != 0){
 		grpObj->SetTimeEnd(timeEnd);
 		Log(Form("End time for run %d: %i",fRun, (Int_t)timeEnd));
+		nparameter++;
 	} 
 	else {
 		Log(Form("End time not put in logbook, setting to invalid in GRP entry!"));
@@ -404,16 +434,24 @@ AliGRPObject* AliGRPPreprocessor::ProcessDaqLB()
 	if (beamEnergy != 0){
 		grpObj->SetBeamEnergy(beamEnergy);
 		Log(Form("Beam Energy for run %d: %f",fRun, beamEnergy));
+		if ((runType == "PHYSICS" && beamType!="cosmic")){
+			nparameter++; // increasing nparameters only in case we're in PHYSICS runs with beamType != cosmic
+		}
 	} 
 	else {
-		Log(Form("Beam Energy not put in logbook, setting to invalid in GRP entry!"));
+		if ((runType == "PHYSICS" && beamType!="cosmic")){
+			Log(Form("Beam Energy not put in logbook, setting to invalid in GRP entry, and producing an error (beamType = %s, runType = %s)",beamType.Data(), runType.Data()));
+		}
+		else{
+			Log(Form("Beam Energy not put in logbook, setting to invalid in GRP entry, but not producing any error (beamType = %s, runType = %s)",beamType.Data(), runType.Data()));
+		}
 	}
 
-		Log(Form("Beam Type for run %d: %s",fRun, beamType.Data()));
 		
 	if (beamType.Length() != 0){
 		grpObj->SetBeamType(beamType);
 		Log(Form("Beam Type for run %d: %s",fRun, beamType.Data()));
+		nparameter++; 
 	} 
 	else {
 		Log(Form("Beam Type not put in logbook, setting to invalid in GRP entry!"));
@@ -422,6 +460,7 @@ AliGRPObject* AliGRPPreprocessor::ProcessDaqLB()
 	if (numberOfDetectors != 0){
 		grpObj->SetNumberOfDetectors(numberOfDetectors);
 		Log(Form("Number Of Detectors for run %d: %d",fRun, (Int_t)numberOfDetectors));
+		nparameter++;
 	} 
 	else {
 		Log(Form("Number Of Detectors not put in logbook, setting to invalid in GRP entry!"));
@@ -430,6 +469,7 @@ AliGRPObject* AliGRPPreprocessor::ProcessDaqLB()
 	if (detectorMask != 0){
 		grpObj->SetDetectorMask(detectorMask);
 		Log(Form("Detector Mask for run %d: %d",fRun, detectorMask));
+		nparameter++;
 	} 
 	else {
 		Log(Form("Detector Mask not put in logbook, setting to invalid in GRP entry!"));
@@ -438,17 +478,21 @@ AliGRPObject* AliGRPPreprocessor::ProcessDaqLB()
 	if (lhcPeriod.Length() != 0) {
 		grpObj->SetLHCPeriod(lhcPeriod);
 		Log(Form("LHC period (DAQ) for run %d: %s",fRun, lhcPeriod.Data()));
-	} else {
+		nparameter++;
+	} 
+	else {
 		Log(Form("LHCperiod not put in logbook, setting to invalid in GRP entry!"));
 	}
 	if (runType.Length() != 0) {
 		grpObj->SetRunType(runType);
 		Log(Form("Run Type (DAQ) for run %d: %s",fRun, runType.Data()));
-	} else {
+		nparameter++;
+	} 
+	else {
 		Log(Form("Run Type not put in logbook, setting to invalid in GRP entry!"));
 	}
 
-	return grpObj;
+	return nparameter;
 }
 
 //_______________________________________________________________
@@ -535,56 +579,75 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 }
 
 //_______________________________________________________________
-UInt_t AliGRPPreprocessor::ProcessDcsFxs()
+UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 {
 
 	// processing the info
 	// stored in the DCS FXS
 	// coming from the trigger
 
-	{
-		// Get the CTP counters information
-		TList* list = GetFileSources(kDCS,"CTP_xcounters");  
-		if (!list) {
-			Log("No CTP counters file: connection problems with DCS FXS logbook!");
+	// Get the CTP counters information
+
+	if (partition.IsNull() && !detector.IsNull()){ // standalone partition
+		Log("STANDALONE partition for current run, using Trigger Configuration dummy value");
+		AliCDBEntry *cdbEntry = GetFromOCDB("CTP","DummyScalers");
+		if (!cdbEntry) {
+			Log(Form("No dummy CTP scalers entry found, going into error..."));
 			return 1;
 		}
-		
-		if (list->GetEntries() == 0) {
-			Log("No CTP counters file to be processed!");
-			return 1;
-		}
-		else {
-			TIter iter(list);
-			TObjString *source;
-			while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
-				TString countersfile = GetFile(kDCS, "CTP_xcounters", source->GetName());
-				if (countersfile.IsNull()) {
-					Log("No CTP counters files has been found: empty source!");
-				}
-				else {
-					Log(Form("File with Id CTP_xcounters found in source %s! Copied to %s",source->GetName(),countersfile.Data()));
-					AliTriggerRunScalers *scalers = AliTriggerRunScalers::ReadScalers(countersfile);
-					if (!scalers) {
-						Log("Bad CTP counters file! The corresponding CDB entry will not be filled!");
-						return 1;
-					}
-					else {
-						AliCDBMetaData metaData;
-						metaData.SetBeamPeriod(0);
-						metaData.SetResponsible("Roman Lietava");
-						metaData.SetComment("CTP scalers");
-						if (!Store("CTP","Scalers", scalers, &metaData, 0, 0)) {
-							Log("Unable to store the CTP scalers object to OCDB!");
-						}
-					}
+		else{
+			AliTriggerRunScalers *scalers = (AliTriggerRunScalers*)cdbEntry->GetObject();
+			if (!scalers){
+				Log(Form("CTP dummy scalers not found in OCDB entry, going into error..."));
+				return 1;
+			}
+			else {
+				AliCDBMetaData metaData;
+				metaData.SetResponsible("Roman Lietava");
+				metaData.SetComment("CTP scalers from dummy entry in OCDB");
+				if (!Store("CTP","Scalers", scalers, &metaData, 0, 0)) {
+					Log("Unable to store the dummy CTP scalers object to OCDB!");
+					return 1;
 				}
 			}
 		}
-		delete list;
+	}
+
+	else if (!partition.IsNull() && detector.IsNull()){ // global partition
+		Log("GLOBAL partition for current run, using CTP scalers from DCS FXS");
+		TString countersfile = GetFile(kDCS, "CTP_xcounters","");
+		if (countersfile.IsNull()) {
+			Log("No CTP counters files has been found: empty source!");
+			return 1;
+		}
+		else {
+			Log(Form("File with Id CTP_xcounters found in DCS FXS! Copied to %s",countersfile.Data()));
+			AliTriggerRunScalers *scalers = AliTriggerRunScalers::ReadScalers(countersfile);
+			if (!scalers) {
+				Log("Bad CTP counters file! The corresponding CDB entry will not be filled!");
+				return 1;
+			}
+			else {
+				AliCDBMetaData metaData;
+				metaData.SetBeamPeriod(0);
+				metaData.SetResponsible("Roman Lietava");
+				metaData.SetComment("CTP scalers");
+				if (!Store("CTP","Scalers", scalers, &metaData, 0, 0)) {
+					Log("Unable to store the CTP scalers object to OCDB!");
+					return 1;
+				}
+			}
+		}
 	}
 	
+
+	else{	
+		Log(Form("Incorrect field in DAQ logbook for partition = %s and detector = %s, going into error...",partition.Data(),detector.Data()));
+		return 2;
+	}
+
 	return 0;
+
 }
 //_______________________________________________________________
 
@@ -787,46 +850,6 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 		
 	}
 
-	/*	indexDP = kCavernAtmosPressure;
-	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
-	if(!array) {
-		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
-	} 
-	else {
-		Float_t *floatDCS = ProcessFloatAll(array);
-		grpObj->SetCavernAtmosPressure(floatDCS);
-		delete floatDCS;
-		nEnvEntries++;
-	}
-	
-
-	if (array) array = 0x0;
-
-	AliInfo(Form("==========SurfaceAtmosPressure==========="));
-	indexDP = kSurfaceAtmosPressure;
-	AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap);
-	dcsSensorArray->Print();
-	AliInfo(Form("fPressure = %p",fPressure));
-	AliInfo(Form("dcsSensorArray = %p",dcsSensorArray));
-	if( fPressure->NumFits()==0 ) {
-		Log("Problem with the pressure sensor values!!!");
-	} 
-	else {
-		AliDCSSensor* sensorP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
-		AliDebug(2,Form("sensorP2 = %p", sensorP2));
-		if( sensorP2->GetFit() ) {
-			Log(Form("<%s> for run %d: Sensor Fit found",fgkDCSDataPoints[indexDP], fRun));
-			grpObj->SetSurfaceAtmosPressure(sensorP2);
-			nEnvEntries++;
-		} 
-		//if (sensorP2) delete sensorP2;
-		else {
-			Log(Form("ERROR Sensor Fit for %s not found: ", fgkDCSDataPoints[indexDP] ));
-		}
-		
-	}
-	*/
-
 	return nEnvEntries;
 }
 //_______________________________________________________________
@@ -990,7 +1013,7 @@ AliSplineFit* AliGRPPreprocessor::GetSplineFit(const TObjArray *array, const TSt
 		v = (AliDCSValue*)array->At(iarray);
 		value[iarray] = v->GetFloat();
 		time[iarray] = v->GetTimeStamp();
-		AliInfo(Form("iarray = %d, value = %f, time = %f",iarray,value[iarray],time[iarray]));
+		AliDebug(2,Form("iarray = %d, value = %f, time = %f",iarray,value[iarray],time[iarray]));
 	}
 	TGraph* gr = new TGraph(entriesarray,value,time);
 	if (!gr ) {
@@ -1134,8 +1157,8 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 	parameters[3] = aDCSArraySDMean;
 	parameters[4] = aDCSArraySDMedian;
 
-	//    	AliDebug(2,Form("mean = %f, truncated mean = %f, median = %f, SD wrt mean = %f, SD wrt median = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
-    	AliInfo(Form("mean = %f, truncated mean = %f, median = %f, SD wrt mean = %f, SD wrt median = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
+	AliDebug(2,Form("mean = %f, truncated mean = %f, median = %f, SD wrt mean = %f, SD wrt median = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
+    	//AliInfo(Form("mean = %f, truncated mean = %f, median = %f, SD wrt mean = %f, SD wrt median = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
 
 	return parameters;
 }

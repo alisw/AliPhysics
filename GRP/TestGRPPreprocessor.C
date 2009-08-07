@@ -7,71 +7,61 @@
 //   ReadDCSAliasMap() reads from a file
 //   CreateInputFilesMap() creates a list of local files, that can be accessed by the shuttle
   
+// Taking as input runtype and errorLevel
+// errorLevel used to simulate errors:
+// 0 --> no error
+// 1 --> DAQ logbook error
+// 2 --> DAQ FXS error
+// 3 --> DAQ logbook_trigger_config erro
+// 4 --> DCS FXS error
+// 5 --> DCS DPs error
+// 6 --> Missing beamEnergy
+// 7 --> null buffer for Trigger Config
+
+// Need to include dummy files in TestShuttle/TestCDB for CTP Configuration and Scalers 
+// (see macro $ALICE_ROOT/GRP/MakeCTPDummyEntries.C)
+
+// Modified by C. Zampolli 
+
+
 #include <iostream>
 #include <fstream>
 using namespace std;
 
-void TestGRPPreprocessor()
+void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE", TString detector="", TString beamType = "p-p", Int_t errorLevel=0)
 {
-  // load library
-//  gSystem->Load("libSTEER.so");        // needed for AliGRPPreprocessor
   gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
 
-  // create AliTestShuttle instance
-  // The parameters are run, startTime, endTime
   Int_t kRun = 7;
   AliTestShuttle* shuttle = new AliTestShuttle(kRun, 1, 10);
 
-  // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
-  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB");
-  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestReference");
+  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
 
   printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
   printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());
 
+  // setting runtype
+  shuttle->SetInputRunType(runtype);
 
-  // The shuttle can read DCS data, if the preprocessor should be tested to process DCS data,
-  // some fake data has to be created.
-  //
-  // The "fake" input data can be taken using either (a) or (b):
-  // (a) data from a file: Use ReadDCSAliasMap()
-  //     the format of the file is explained in ReadDCSAliasMap()
-  //     To use it uncomment the following line:
-  //
-  //TMap* dcsAliasMap = ReadDCSAliasMap();
-  //
-  // (b) generated in this macro: Use CreateDCSAliasMap() and its documentation
-  //     To use it uncomment the following line:
-  //
-  TMap* dcsAliasMap = CreateDCSAliasMap();
-
-  // now give the alias map to the shuttle
+  // simulating DCS DPs
+  TMap* dcsAliasMap = CreateDCSAliasMap(errorLevel);
   shuttle->SetDCSInput(dcsAliasMap);
 
-  // The shuttle can also process files that originate from DCS, DAQ and HLT.
-  // To test it, we provide some local files and locations where these would be found when
-  // the online machinery would be there.
-  // In real life this functions would be produces by the sub-detectors
-  // calibration programs in DCS, DAQ or HLT. These files can then be retrieved using the Shuttle.
-  //
-  // Files are added with the function AliTestShuttle::AddInputFile. The syntax is:
-  // AddInputFile(<system>, <detector>, <id>, <source>, <local-file>)
-  // In this example we add a file originating from the GDC with the id PEDESTALS
-  // Three files originating from different LDCs but with the same id are also added
-  // Note that the test preprocessor name is TPC. The name of the detector's preprocessor must follow
-  // the "online" naming convention ALICE-INT-2003-039.
-  //shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_test000.tag.root", "GDC0", "runTags01.root");
-  //shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_test001.tag.root", "GDC1", "runTags02.root");
-  //shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_test002.tag.root", "GDC2", "runTags03.root");
+  // simulating input from DAQ FXS
+  if (errorLevel != 2){
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021390_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root", "GDC0", "$ALICE_ROOT/GRP/ShuttleInput/run000021390_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021390_GRP_gdc1_Period_TDSMtest.Seq_0.tag.root", "GDC1", "$ALICE_ROOT/GRP/ShuttleInput/run000021390_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021391_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root", "GDC0", "$ALICE_ROOT/GRP/ShuttleInput/run000021391_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021391_GRP_gdc1_Period_TDSMtest.Seq_0.tag.root", "GDC1", "$ALICE_ROOT/GRP/ShuttleInput/run000021391_GRP_gdc1_Period_TDSMtest.Seq_0.tag.root");
+	  
+  }
 
-  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021390_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root", "GDC0", "$ALICE_ROOT/GRP/ShuttleInput/run000021390_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root");
-  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021390_GRP_gdc1_Period_TDSMtest.Seq_0.tag.root", "GDC1", "$ALICE_ROOT/GRP/ShuttleInput/run000021390_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root");
-  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021391_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root", "GDC0", "$ALICE_ROOT/GRP/ShuttleInput/run000021391_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root");
-  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021391_GRP_gdc1_Period_TDSMtest.Seq_0.tag.root", "GDC1", "$ALICE_ROOT/GRP/ShuttleInput/run000021391_GRP_gdc1_Period_TDSMtest.Seq_0.tag.root");
-       
-  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "CTP_runconfig", "", gSystem->ExpandPathName("$ALICE_ROOT/GRP/CTP/p-p.cfg"));
-  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "CTP_xcounters", "DCS FXS", gSystem->ExpandPathName("$ALICE_ROOT/GRP/CTP/xcounters.txt"));
-  
+  // simulating input from DCS FXS
+  if (errorLevel != 4 && !partition.IsNull() && detector.IsNull()){
+	  shuttle->AddInputFile(AliShuttleInterface::kDCS, "GRP", "CTP_xcounters", "", gSystem->ExpandPathName("$ALICE_ROOT/GRP/CTP/xcounters.txt"));
+  }
+
   Char_t * filename = gSystem->ExpandPathName("$ALICE_ROOT/GRP/CTP/p-p.cfg");
   ifstream is;
   is.open(filename);
@@ -81,39 +71,35 @@ void TestGRPPreprocessor()
   is.seekg(0,ios::beg);
   is.read(buffer,length);
   is.close();
+  const char *emptybuffer = NULL;
 
-  shuttle->SetInputTriggerConfiguration(buffer);
+  // simulating input from DAQ logbook_trigger_config
+  if {
+	  (errorLevel != 3 errorLevel != 7 && !partition.IsNull() && detector.IsNull()) shuttle->SetInputTriggerConfiguration(buffer);
+  }
+  else if (errorLevel == 7) {
+	  shuttle->SetInputTriggerConfiguration(emptybuffer);
+  }
   
-  // The shuttle can read run type stored in the DAQ logbook.
-  // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
-  // using GetRunType function.
-  shuttle->SetInputRunType("PHYSICS");
+  // simulating input from DAQ logbook
+  if (errorLevel != 1){
+	shuttle->AddInputRunParameter("DAQ_time_start", "1233213.22");
+  }
+  if (errorLevel != 6){
+	shuttle->AddInputRunParameter("beamEnergy", "1400.");
+  }
 
-  // The shuttle can read run parameters stored in the DAQ run logbook.
-  // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
-  // using GetRunParameter function.
-  shuttle->AddInputRunParameter("time_start", "1233213.22");
-  shuttle->AddInputRunParameter("time_end",   "1345645.22");
-  shuttle->AddInputRunParameter("beamEnergy", "1400.");
-  shuttle->AddInputRunParameter("beamType",    "p-p");
+  shuttle->AddInputRunParameter("DAQ_time_end",   "1345645.22");
+  shuttle->AddInputRunParameter("beamType",    beamType);
   shuttle->AddInputRunParameter("numberOfDetectors", "5");
   shuttle->AddInputRunParameter("detectorMask", "34555");
   shuttle->AddInputRunParameter("LHCperiod",    "LHC08b");
+  shuttle->AddInputRunParameter("partition",partition);
+  shuttle->AddInputRunParameter("detector",detector);
 
-//  shuttle->AddInputRunParameter("totalEvents", "30000");
-//  shuttle->AddInputRunParameter("NumberOfGDCs", "15");
-
-  // TODO(5) NOT NEEDED
-  //
-  // This is for preprocessor that require data from HLT.
-  // Since HLT may be switched off, the preprocessor should first query the Run logbook where
-  // the HLT status is stored. SHUTTLE implements a shortcut function (GetHLTStatus) that returns
-  // a bool directly. 1 = HLT ON, 0 = HLT OFF
-  //
-
+  // simulating HLT
   Bool_t hltStatus = kTRUE;
   shuttle->SetInputHLTStatus(hltStatus);
-
 
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
   AliPreprocessor* test = new AliGRPPreprocessor(shuttle);
@@ -123,10 +109,6 @@ void TestGRPPreprocessor()
 
   printf("\n\n");
 
-  // In the preprocessor AliShuttleInterface::Store should be called to put the final
-  // data to the CDB. To check if all went fine have a look at the files produced in
-  // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data
-  //
   // Check the file which should have been created
   AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
   			->Get("GRP/GRP/Data", kRun);
@@ -138,38 +120,67 @@ void TestGRPPreprocessor()
   chkEntry->GetObject()->Print();
   printf("\n\n");
 
-  AliDCSSensor* sen = (AliDCSSensor*)(((TMap*)chkEntry->GetObject())->GetValue("fP2Pressure"));
-  if(sen)
-    sen->GetFit()->MakeGraph(1.5, 9.5, 15)->Draw();
-
-//  AliTestDataDCS* output = dynamic_cast<AliTestDataDCS*> (chkEntry->GetObject());
-  // If everything went fine, draw the result
-//  if (output) {
-//    output->Print();
-//  }
-
-
 }
 
-TMap* CreateDCSAliasMap()
+TMap* CreateDCSAliasMap(Int_t errorLevel)
 {
   // Creates a DCS structure
   // The structure is the following:
-  //   TMap (key --> value)
-  //     <DCSAlias> --> <valueList>
-  //     <DCSAlias> is a string
-  //     <valueList> is a TObjArray of AliDCSValue
-  //     An AliDCSValue consists of timestamp and a value in form of a AliSimpleValue
+  // TMap (key --> value)
+  // <DCSAlias> --> <valueList>
+  // <DCSAlias> is a string
+  // <valueList> is a TObjArray of AliDCSValue
+  // An AliDCSValue consists of timestamp and a value in form of a AliSimpleValue
   
-  const Int_t fgknDCSDP = 10;
+  const Int_t fgknDCSDP = 50;
   const char* fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
-                   "LHCState",
+                   "LHCState",              // missing in DCS
                    "L3Polarity",
                    "DipolePolarity",
-                   "LHCLuminosity",
-                   "BeamIntensity",
+                   "LHCLuminosity",         // missing in DCS
+                   "BeamIntensity",         // missing in DCS
                    "L3Current",
                    "DipoleCurrent",
+		   "L3_BSF17_H1",
+		   "L3_BSF17_H2",
+		   "L3_BSF17_H3",
+		   "L3_BSF17_Temperature",
+		   "L3_BSF4_H1",
+		   "L3_BSF4_H2",
+		   "L3_BSF4_H3",
+		   "L3_BSF4_Temperature",
+		   "L3_BKF17_H1",
+		   "L3_BKF17_H2",
+		   "L3_BKF17_H3",
+		   "L3_BKF17_Temperature",
+		   "L3_BKF4_H1",
+		   "L3_BKF4_H2",
+		   "L3_BKF4_H3",
+		   "L3_BKF4_Temperature",
+		   "L3_BSF13_H1",
+		   "L3_BSF13_H2",
+		   "L3_BSF13_H3",
+		   "L3_BSF13_Temperature",
+		   "L3_BSF8_H1",
+		   "L3_BSF8_H2",
+		   "L3_BSF8_H3",
+		   "L3_BSF8_Temperature",
+		   "L3_BKF13_H1",
+		   "L3_BKF13_H2",
+		   "L3_BKF13_H3",
+		   "L3_BKF13_Temperature",
+		   "L3_BKF8_H1",
+		   "L3_BKF8_H2",
+		   "L3_BKF8_H3",
+		   "L3_BKF8_Temperature",
+		   "Dipole_Inside_H1",
+		   "Dipole_Inside_H2",
+		   "Dipole_Inside_H3",
+		   "Dipole_Inside_Temperature",
+		   "Dipole_Outside_H1",
+		   "Dipole_Outside_H2",
+		   "Dipole_Outside_H3",
+		   "Dipole_Outside_Temperature",
                    "CavernTemperature",
                    "CavernAtmosPressure",
                    "SurfaceAtmosPressure"
@@ -185,37 +196,67 @@ TMap* CreateDCSAliasMap()
   // LHCState
   valueSet = new TObjArray;
   valueSet->SetOwner(1);
-  dcsVal = new AliDCSValue( 'F', 0 );
+  dcsVal = new AliDCSValue( 'F', 2 );
   valueSet->Add(dcsVal);
-//  aliasMap->Add( new TObjString(fgkDCSDataPoints[0]), valueSet );
+  aliasMap->Add( new TObjString(fgkDCSDataPoints[0]), valueSet );
 
   // L3Polarity
   valueSet = new TObjArray;
   valueSet->SetOwner(1);
-  dcsVal = new AliDCSValue( kTRUE, 0 );
+  dcsVal = new AliDCSValue( kTRUE, 2 );
   valueSet->Add(dcsVal);
   aliasMap->Add( new TObjString(fgkDCSDataPoints[1]), valueSet );
   
   // DipolePolarity
   valueSet = new TObjArray;
   valueSet->SetOwner(1);
-  dcsVal = new AliDCSValue( kTRUE, 0 );
+  dcsVal = new AliDCSValue( kTRUE, 2 );
   valueSet->Add(dcsVal);
   aliasMap->Add( new TObjString(fgkDCSDataPoints[2]), valueSet );
   
   TRandom random;
 
-  //  for( int nAlias=3; nAlias<fgknDCSDP-1; nAlias++)  {
-  for( int nAlias=3; nAlias<fgknDCSDP; nAlias++)  {
+  Int_t maxDPindex = 0;
+  if (errorLevel != 5) {
+	  maxDPindex = fgknDCSDP;
+  }
+  else {
+	  maxDPindex = 3;  // simulating only a few DP in case errorLevel=5
+  }
+
+  for( int nAlias=3; nAlias<maxDPindex; nAlias++)  {
+	  if (nAlias>=7 && nAlias < 47) continue; 
     valueSet = new TObjArray;
     valueSet->SetOwner(1);
 
-    for (int timeStamp=0; timeStamp<100; timeStamp++) {
-      dcsVal = new AliDCSValue((Float_t) (random.Gaus()+5*nAlias), timeStamp);
-      //printf("%s\n",dcsVal->ToString().Data());
+    for (int timeStamp=0; timeStamp<10; timeStamp++) {
+      dcsVal = new AliDCSValue((Float_t) (timeStamp+1+10*nAlias), timeStamp+1);
       valueSet->Add(dcsVal);
     }
     aliasMap->Add( new TObjString( fgkDCSDataPoints[nAlias]), valueSet );
+  }
+
+  // Hall Probes
+  TString probe1[3] = {"L3_BSF","L3_BKF","Dipole_"};
+  TString probe2[6] = {"17_","4_","13_","8_","Inside_","Outside_"};
+  TString probe3[4] = {"H1","H2","H3","Temperature"};
+  Int_t hp = 0;
+
+  for (Int_t i=0;i<3;i++){
+	  for (Int_t j=0;j<6;j++){
+		  for (Int_t k=0;k<4;k++){
+			  TString dpAlias = probe1[i]+probe2[j]+probe3[k];
+			  valueSet = new TObjArray;
+			  valueSet->SetOwner(1);
+			  for (int timeStamp=0; timeStamp<10; timeStamp++) {
+				  dcsVal = new AliDCSValue((Float_t) (timeStamp+1+10*hp), timeStamp+1);
+				  valueSet->Add(dcsVal);
+				  //cout << " hall probe = " << dpAlias << " with value = " << dcsVal->GetFloat() << endl;
+			  }
+			  aliasMap->Add( new TObjString(dpAlias), valueSet );
+			  hp++;
+		  }
+	  }
   }
 
   return aliasMap;
@@ -241,7 +282,7 @@ void WriteDCSAliasMap()
 {
   // This writes the output from CreateDCSAliasMap to a CDB file
 
-  TMap* dcsAliasMap = CreateDCSAliasMap();
+  TMap* dcsAliasMap = CreateDCSAliasMap(Int_t errorLevel);
 
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
