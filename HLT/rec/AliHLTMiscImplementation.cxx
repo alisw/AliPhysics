@@ -24,6 +24,7 @@
 #include "AliHLTMiscImplementation.h"
 #include "AliHLTLogging.h"
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -77,7 +78,12 @@ int AliHLTMiscImplementation::SetCDBRunNo(int runNo)
 AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo, int version, int subVersion)
 {
   // see header file for function documentation
-  AliCDBManager::Instance()->UnloadFromCache(path);
+  AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
+  if (!store) {
+    return NULL;
+  }
+  if (version<0) version = store->GetLatestVersion(path, runNo);
+  if (subVersion<0) subVersion = store->GetLatestSubVersion(path, runNo, version);
   return AliCDBManager::Instance()->Get(path, runNo, version, subVersion);
 }
 
