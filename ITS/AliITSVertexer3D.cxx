@@ -54,6 +54,7 @@ AliITSVertexer3D::AliITSVertexer3D():
   fUsedCluster(kMaxCluPerMod*kNSPDMod),
   fZHisto(0),
   fDCAforPileup(0.),
+  fDiffPhiforPileup(0.),
   fBinSizeR(0.),
   fBinSizeZ(0.),
   fPileupAlgo(0)
@@ -71,6 +72,7 @@ AliITSVertexer3D::AliITSVertexer3D():
   SetMeanPSelTracks();
   SetMeanPtSelTracks();
   SetMinDCAforPileup();
+  SetDeltaPhiforPileup();
   SetPileupAlgo();
   SetBinSizeR();
   SetBinSizeZ();
@@ -305,7 +307,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   } else if(optCuts==2){
     xbeam=fVert3D.GetXv();
     ybeam=fVert3D.GetYv();
-    deltaPhi = fDiffPhiMax; 
+    deltaPhi = fDiffPhiforPileup;
     deltaR=fMaxRCut;
   }
 
