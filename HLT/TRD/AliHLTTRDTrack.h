@@ -1,6 +1,7 @@
 #ifndef ALIHLTTRDTRACK_H
 #define ALIHLTTRDTRACK_H
 
+#include "AliESDtrack.h"
 #include "AliTRDtrackV1.h"
 #include "AliHLTLogging.h"
 class AliHLTTRDTracklet;
