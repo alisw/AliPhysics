@@ -298,14 +298,14 @@ int main(int argc, char **argv) {
 
 #ifdef ALI_AMORE
   amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-  Int_t status =0;
-  status += amoreDA.Send("TimeInfo",&timeinfo);
-  status += amoreDA.Send("Baselines",basHistos);
-  status += amoreDA.Send("RawNoise",noiseHistos);
-  status += amoreDA.Send("CommonMode",cmnHistos);
-  status += amoreDA.Send("CorrectedNoise",corrnHistos);
-  status += amoreDA.Send("NoisyChannels",statusHistos);
-  if ( status )
+  Int_t statusamore =0;
+  statusamore += amoreDA.Send("TimeInfo",&timeinfo);
+  statusamore += amoreDA.Send("Baselines",basHistos);
+  statusamore += amoreDA.Send("RawNoise",noiseHistos);
+  statusamore += amoreDA.Send("CommonMode",cmnHistos);
+  statusamore += amoreDA.Send("CorrectedNoise",corrnHistos);
+  statusamore += amoreDA.Send("NoisyChannels",statusHistos);
+  if ( statusamore )
     printf("Warning: Failed to write Arrays in the AMORE database\n");
   else 
     printf("amoreDA.Send() OK\n");
