@@ -322,7 +322,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     for (int i=0; i<fTrigger->Counters().GetSize(); i++) {
       count+=fTrigger->Counters()[i];
     }
-    HLTInfo("total events: %lu - triggered events: %lu", GetEventCount()+1, count);
+    HLTInfo("total events: %d - triggered events: %lu", GetEventCount()+1, count);
   }
   
   // Add the input objects used to the global decision.
