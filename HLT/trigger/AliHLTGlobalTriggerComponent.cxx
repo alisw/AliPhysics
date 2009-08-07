@@ -39,6 +39,7 @@
 #include "TObjString.h"
 #include "TSystem.h"
 #include "TInterpreter.h"
+#include "TDatime.h"
 #include <fstream>
 #include <cerrno>
 
@@ -260,10 +261,12 @@ Int_t AliHLTGlobalTriggerComponent::DoDeinit()
     fTrigger = NULL;
   }
 
-  if (!fCodeFileName.IsNull() && gSystem->AccessPathName(fCodeFileName)==0) {
+  if (!fCodeFileName.IsNull() && gSystem->AccessPathName(fCodeFileName)==0 && !fDebugMode) {
+    fCodeFileName.ReplaceAll(".cxx", "*");
     TString command="rm "; command+=fCodeFileName;
     gSystem->Exec(command);
   }
+  fCodeFileName="";
   
   return 0;
 }
@@ -310,7 +313,17 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
       (triggerResult == true) ? triggerDomain : GetTriggerDomain(),
       (triggerResult == true) ? description.Data() : GetDescription()
     );
-  decision.SetCounters(fTrigger->Counters());
+  decision.SetCounters(fTrigger->Counters(), GetEventCount()+1);
+  static UInt_t lastTime=0;
+  TDatime time;
+  if (time.Get()-lastTime>5) {
+    lastTime=time.Get();
+    ULong64_t count=0;
+    for (int i=0; i<fTrigger->Counters().GetSize(); i++) {
+      count+=fTrigger->Counters()[i];
+    }
+    HLTInfo("total events: %lu - triggered events: %lu", GetEventCount()+1, count);
+  }
   
   // Add the input objects used to the global decision.
   obj = GetFirstInputObject();

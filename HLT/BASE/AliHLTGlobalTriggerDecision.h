@@ -124,8 +124,9 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
   
   /**
    * Sets the counter array.
+   * If the number of events is specified, an additional counter is added at the end.
    */
-  void SetCounters(const TArrayL64& counters) { fCounters = counters; }
+  void SetCounters(const TArrayL64& counters, Long64_t eventCount=0);
   
   /**
    * Returns the event trigger counters associated with the global trigger classes.
