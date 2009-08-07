@@ -1,6 +1,8 @@
 void MakeCTPDummyEntries(){
 
-	// macro to put in OCDB the dummy entries for CTP configuration and scalers
+	// Example macro to put in OCDB the dummy entries for CTP configuration and scalers
+	// The entries are at present taken from $ALICE_ROOT 
+	// Should be used to test the GRP preprocessor 
 
 	AliCDBManager *man = AliCDBManager::Instance();
 	man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
