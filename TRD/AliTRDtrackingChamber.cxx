@@ -62,7 +62,7 @@ void AliTRDtrackingChamber::InsertCluster(AliTRDcluster *c, Int_t index)
 }
 
 //_______________________________________________________
-Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *geo, const AliTRDCalDet *cal, Bool_t hlt)
+Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *const geo, const AliTRDCalDet *cal, Bool_t hlt)
 {
 // Init chamber and all time bins (AliTRDchamberTimeBin)
 // Calculates radial position of the chamber based on 
@@ -200,7 +200,7 @@ Double_t AliTRDtrackingChamber::GetQuality()
 
 
 //_______________________________________________________
-Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, AliTRDgeometry *geo, const AliTRDReconstructor *rec)
+Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, AliTRDgeometry * const geo, const AliTRDReconstructor *rec)
 {
   //
   // Creates a seeding layer
@@ -234,7 +234,7 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
   Int_t hvals[kMaxPads + 1];	memset(hvals, 0, sizeof(Int_t)*kMaxPads);	 // one entry in addition for termination flag
   Float_t *sigmas[kMaxRows];
   Float_t svals[kMaxPads];	memset(svals, 0, sizeof(Float_t)*kMaxPads);	
-  AliTRDcluster *c = 0x0;
+  AliTRDcluster *c = NULL;
   for(Int_t irs = 0; irs < kMaxRows; irs++){
     histogram[irs] = &hvals[irs*kMaxCols];
     sigmas[irs] = &svals[irs*kMaxCols];
@@ -379,7 +379,7 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
       pos[2] = z/n;
       sig[0] = .02;
       sig[1] = sigcands[ican];
-      fakeLayer->InsertCluster(new AliTRDcluster(fDetector, 0., pos, sig, 0x0, 3, signal, col, row, 0, 0, 0., 0), fakeIndex++);
+      fakeLayer->InsertCluster(new AliTRDcluster(fDetector, 0., pos, sig, NULL, 3, signal, col, row, 0, 0, 0., 0), fakeIndex++);
     }
   }
   fakeLayer->BuildIndices();
@@ -409,6 +409,7 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
 //_______________________________________________________
 void AliTRDtrackingChamber::Print(Option_t *opt) const
 {
+  // Print the chamber status
   if(!GetNClusters()) return;
   AliInfo(Form("fDetector   = %d", fDetector));
   AliInfo(Form("fX0         = %7.3f", fX0));

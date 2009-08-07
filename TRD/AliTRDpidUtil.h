@@ -31,7 +31,7 @@ public:
 
   Bool_t       CalculatePionEffi(TH1* histo1, TH1* histo2);
 
-  static Float_t  ElectronEfficiency()   { return fEleEffi;};
+  static Float_t  ElectronEfficiency()   { return fgEleEffi;};
   
   static Bool_t   IsElectron(const AliESDtrack *track, ETRDPIDMethod method = kNN);
   static Double_t GetSystematicError(const AliESDtrack *track, ETRDPIDMethod method = kNN);
@@ -43,13 +43,13 @@ public:
 
   static Int_t GetMomentumBin(Double_t p);
   static Int_t Pdg2Pid(Int_t pdg);
-  static void  SetElectronEfficiency(Float_t eleeffi) {fEleEffi = eleeffi;};
+  static void  SetElectronEfficiency(Float_t eleeffi) {fgEleEffi = eleeffi;};
 
 private:
   AliTRDpidUtil(const AliTRDpidUtil&);               // not implemented
   AliTRDpidUtil& operator=(const AliTRDpidUtil&);    // not implemented
 
-  static Float_t fEleEffi;               // electron efficiency
+  static Float_t fgEleEffi;               // electron efficiency
 
   Double_t fCalcEleEffi;                 // electron efficiency after calculation
   Double_t fPionEffi;                    // pion efficiency 

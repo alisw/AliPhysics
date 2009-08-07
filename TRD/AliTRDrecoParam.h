@@ -111,7 +111,7 @@ private:
   Double_t  fkTrackLikelihood;       // Track likelihood for tracklets Rieman fit
   
   Double_t  fSysCovMatrix[5];        // Systematic uncertainty from calibration and alignment for each tracklet
-  Double_t  fPIDThreshold[AliTRDCalPID::kNMom];
+  Double_t  fPIDThreshold[AliTRDCalPID::kNMom];   // PID Thresholds for Electron candidate decision
 
   // Clusterization parameter
   Double_t  fMinMaxCutSigma;         // Threshold sigma noise pad middle

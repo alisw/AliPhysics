@@ -17,9 +17,7 @@
 //                                                                        // 
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALITRDTRACKERV1_H
 #include "AliTRDtrackerV1.h"
-#endif
 
 class TTree;
 class TCanvas;

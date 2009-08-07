@@ -29,7 +29,7 @@
 #include <TMultiLayerPerceptron.h>
 
 #include "AliPID.h"
-#include "AliTRDtrack.h"
+#include "AliLog.h"
 
 #include "AliTRDgeometry.h"
 #include "AliTRDCalPIDNN.h"
@@ -162,11 +162,11 @@ Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom
     return 0.;
   }
 
-  Double_t ddedx[AliTRDtrack::kNMLPslice];
+  Double_t ddedx[AliTRDCalPID::kNSlicesNN];
 
-  for (int inode=0; inode<AliTRDtrack::kNMLPslice; inode++) {
+  for (int inode=0; inode<AliTRDCalPID::kNSlicesNN; inode++) {
     ddedx[inode] = (((Double_t) dedx[inode]/kMLPscale)*3)          // Bug fix! Needs new reference data or different calculation of dedx!!!!
-                 / (AliTRDcalibDB::Instance()->GetNumberOfTimeBins()/AliTRDtrack::kNMLPslice);
+                 / (AliTRDcalibDB::Instance()->GetNumberOfTimeBins()/AliTRDCalPID::kNSlicesNN);
   }
 
   lNN1 = nn->Evaluate(spec, ddedx);

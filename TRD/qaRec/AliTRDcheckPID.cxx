@@ -507,7 +507,7 @@ TH1 *AliTRDcheckPID::PlotdEdxSlice(const AliTRDtrackV1 *track)
     tracklet = cTrack.GetTracklet(iChamb);
     if(!tracklet) continue;
     tracklet -> CookdEdx(AliTRDpidUtil::kLQslices);
-    fdEdx = tracklet->GetdEdx();
+    fdEdx = const_cast<Float_t *>(tracklet->GetdEdx());
     for(Int_t iSlice = 0; iSlice < AliTRDpidUtil::kLQslices; iSlice++){
       hdEdxSlice -> Fill(species * fMomentumAxis->GetNbins() * AliTRDpidUtil::kLQslices + (iMomBin-1) * AliTRDpidUtil::kLQslices + iSlice, fdEdx[iSlice]);
     }

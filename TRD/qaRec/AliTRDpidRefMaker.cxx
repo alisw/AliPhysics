@@ -221,7 +221,7 @@ void AliTRDpidRefMaker::Exec(Option_t *)
     for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
       if(!(TRDtracklet = TRDtrack -> GetTracklet(ily))) continue;
       TRDtracklet->CookdEdx(AliTRDpidUtil::kNNslices);
-      dedx = TRDtracklet->GetdEdx();
+      dedx = const_cast<Float_t *>(TRDtracklet->GetdEdx());
       for(Int_t iSlice = 0; iSlice < AliTRDpidUtil::kNNslices; iSlice++)
 	dedx[iSlice] = dedx[iSlice]/AliTRDCalPIDNN::kMLPscale;
       memcpy(fdEdx, dedx, AliTRDpidUtil::kNNslices*sizeof(Float_t));
@@ -236,7 +236,7 @@ void AliTRDpidRefMaker::Exec(Option_t *)
     for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
       if(!(TRDtracklet = TRDtrack -> GetTracklet(ily))) continue;
       TRDtracklet->CookdEdx(AliTRDpidUtil::kLQslices);
-      dedx = TRDtracklet->GetdEdx();
+      dedx = const_cast<Float_t *>(TRDtracklet->GetdEdx());
       memcpy(fdEdx, dedx, AliTRDpidUtil::kLQslices*sizeof(Float_t));
       if(fDebugLevel>=2) Printf("LayerLQ : %d", ily);
       fLayer = ily;

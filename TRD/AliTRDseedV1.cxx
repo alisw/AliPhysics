@@ -62,14 +62,14 @@
 
 ClassImp(AliTRDseedV1)
 
-TLinearFitter *AliTRDseedV1::fgFitterY = 0x0;
-TLinearFitter *AliTRDseedV1::fgFitterZ = 0x0;
+TLinearFitter *AliTRDseedV1::fgFitterY = NULL;
+TLinearFitter *AliTRDseedV1::fgFitterZ = NULL;
 
 //____________________________________________________________________
 AliTRDseedV1::AliTRDseedV1(Int_t det) 
   :AliTRDtrackletBase()
-  ,fReconstructor(0x0)
-  ,fClusterIter(0x0)
+  ,fkReconstructor(NULL)
+  ,fClusterIter(NULL)
   ,fExB(0.)
   ,fVD(0.)
   ,fT0(0.)
@@ -114,8 +114,8 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
 //____________________________________________________________________
 AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   :AliTRDtrackletBase((AliTRDtrackletBase&)ref)
-  ,fReconstructor(0x0)
-  ,fClusterIter(0x0)
+  ,fkReconstructor(NULL)
+  ,fClusterIter(NULL)
   ,fExB(0.)
   ,fVD(0.)
   ,fT0(0.)
@@ -176,7 +176,7 @@ AliTRDseedV1::~AliTRDseedV1()
       if(!fClusters[itb]) continue; 
       //AliInfo(Form("deleting c %p @ %d", fClusters[itb], itb));
       delete fClusters[itb];
-      fClusters[itb] = 0x0;
+      fClusters[itb] = NULL;
     }
   }
 }
@@ -191,8 +191,8 @@ void AliTRDseedV1::Copy(TObject &ref) const
   //AliInfo("");
   AliTRDseedV1 &target = (AliTRDseedV1 &)ref; 
 
-  target.fReconstructor = fReconstructor;
-  target.fClusterIter   = 0x0;
+  target.fkReconstructor = fkReconstructor;
+  target.fClusterIter   = NULL;
   target.fExB           = fExB;
   target.fVD            = fVD;
   target.fT0            = fT0;
@@ -347,7 +347,7 @@ void AliTRDseedV1::UseClusters()
       if((*c)->IsShared() || (*c)->IsUsed()){ 
         if((*c)->IsShared()) SetNShared(GetNShared()-1);
         else SetNUsed(GetNUsed()-1);
-        (*c) = 0x0;
+        (*c) = NULL;
         fIndexes[ic] = -1;
         SetN(GetN()-1);
         continue;
@@ -392,7 +392,7 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
 
   const Double_t kDriftLength = (.5 * AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
 
-  AliTRDcluster *c = 0x0;
+  AliTRDcluster *c = NULL;
   for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++){
     if(!(c = fClusters[ic]) && !(c = fClusters[ic+kNtb])) continue;
     Float_t dx = TMath::Abs(fX0 - c->GetX());
@@ -417,7 +417,7 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
     nclusters[slice]++;
   } // End of loop over clusters
 
-  //if(fReconstructor->GetPIDMethod() == AliTRDReconstructor::kLQPID){
+  //if(fkReconstructor->GetPIDMethod() == AliTRDReconstructor::kLQPID){
   if(nslices == AliTRDpidUtil::kLQslices){
   // calculate mean charge per slice (only LQ PID)
     for(int is=0; is<nslices; is++){ 
@@ -546,7 +546,7 @@ Float_t AliTRDseedV1::GetMomentum(Float_t *err) const
 Float_t* AliTRDseedV1::GetProbability(Bool_t force)
 {	
   if(!force) return &fProb[0];
-  if(!CookPID()) return 0x0;
+  if(!CookPID()) return NULL;
   return &fProb[0];
 }
 
@@ -558,7 +558,7 @@ Bool_t AliTRDseedV1::CookPID()
 // Parameters
 //
 // Output
-//   returns pointer to the probability array and 0x0 if missing DB access 
+//   returns pointer to the probability array and NULL if missing DB access 
 //
 // Retrieve PID probabilities for e+-, mu+-, K+-, pi+- and p+- from the DB according to tracklet information:
 // - estimated momentum at tracklet reference point 
@@ -575,25 +575,25 @@ Bool_t AliTRDseedV1::CookPID()
     return kFALSE;
   }
 
-  if (!fReconstructor) {
+  if (!fkReconstructor) {
     AliError("Reconstructor not set.");
     return kFALSE;
   }
 
   // Retrieve the CDB container class with the parametric detector response
-  const AliTRDCalPID *pd = calibration->GetPIDObject(fReconstructor->GetPIDMethod());
+  const AliTRDCalPID *pd = calibration->GetPIDObject(fkReconstructor->GetPIDMethod());
   if (!pd) {
     AliError("No access to AliTRDCalPID object");
     return kFALSE;
   }
-  //AliInfo(Form("Method[%d] : %s", fReconstructor->GetRecoParam() ->GetPIDMethod(), pd->IsA()->GetName()));
+  //AliInfo(Form("Method[%d] : %s", fkReconstructor->GetRecoParam() ->GetPIDMethod(), pd->IsA()->GetName()));
 
   // calculate tracklet length TO DO
   Float_t length = (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
   /// TMath::Sqrt((1.0 - fSnp[iPlane]*fSnp[iPlane]) / (1.0 + fTgl[iPlane]*fTgl[iPlane]));
   
   //calculate dE/dx
-  CookdEdx(fReconstructor->GetNdEdxSlices());
+  CookdEdx(fkReconstructor->GetNdEdxSlices());
   
   // Sets the a priori probabilities
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++)
@@ -671,9 +671,9 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
   //GetPadLength()*GetPadLength()/12.;
 
   // insert systematic uncertainties
-  if(fReconstructor){
+  if(fkReconstructor){
     Double_t sys[15]; memset(sys, 0, 15*sizeof(Double_t));
-    fReconstructor->GetRecoParam()->GetSysCovMatrix(sys);
+    fkReconstructor->GetRecoParam()->GetSysCovMatrix(sys);
     sy2 += sys[0];
     sz2 += sys[1];
   }
@@ -688,7 +688,7 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
 }
 
 //____________________________________________________________
-Double_t AliTRDseedV1::GetCovSqrt(Double_t *c, Double_t *d)
+Double_t AliTRDseedV1::GetCovSqrt(const Double_t * const c, Double_t *d)
 {
 // Helper function to calculate the square root of the covariance matrix. 
 // The input matrix is stored in the vector c and the result in the vector d. 
@@ -707,38 +707,38 @@ Double_t AliTRDseedV1::GetCovSqrt(Double_t *c, Double_t *d)
 // Author A.Bercuci <A.Bercuci@gsi.de>
 // Date   Mar 19 2009
 
-  Double_t L[2], // eigenvalues
-           V[3]; // eigenvectors
+  Double_t l[2], // eigenvalues
+           v[3]; // eigenvectors
   // the secular equation and its solution :
   // (c[0]-L)(c[2]-L)-c[1]^2 = 0
   // L^2 - L*Tr(c)+DET(c) = 0
   // L12 = [Tr(c) +- sqrt(Tr(c)^2-4*DET(c))]/2
-  Double_t Tr = c[0]+c[2],           // trace
-          DET = c[0]*c[2]-c[1]*c[1]; // determinant
-  if(TMath::Abs(DET)<1.e-20) return -1.;
-  Double_t DD = TMath::Sqrt(Tr*Tr - 4*DET);
-  L[0] = .5*(Tr + DD);
-  L[1] = .5*(Tr - DD);
-  if(L[0]<0. || L[1]<0.) return -1.;
+  Double_t tr = c[0]+c[2],           // trace
+          det = c[0]*c[2]-c[1]*c[1]; // determinant
+  if(TMath::Abs(det)<1.e-20) return -1.;
+  Double_t dd = TMath::Sqrt(tr*tr - 4*det);
+  l[0] = .5*(tr + dd);
+  l[1] = .5*(tr - dd);
+  if(l[0]<0. || l[1]<0.) return -1.;
 
   // the sym V matrix
   // | v00   v10|
   // | v10   v11|
-  Double_t tmp = (L[0]-c[0])/c[1];
-  V[0] = TMath::Sqrt(1./(tmp*tmp+1));
-  V[1] = tmp*V[0];
-  V[2] = V[1]*c[1]/(L[1]-c[2]);
+  Double_t tmp = (l[0]-c[0])/c[1];
+  v[0] = TMath::Sqrt(1./(tmp*tmp+1));
+  v[1] = tmp*v[0];
+  v[2] = v[1]*c[1]/(l[1]-c[2]);
   // the VD^{1/2}V is: 
-  L[0] = TMath::Sqrt(L[0]); L[1] = TMath::Sqrt(L[1]);
-  d[0] = V[0]*V[0]*L[0]+V[1]*V[1]*L[1];
-  d[1] = V[0]*V[1]*L[0]+V[1]*V[2]*L[1];
-  d[2] = V[1]*V[1]*L[0]+V[2]*V[2]*L[1];
+  l[0] = TMath::Sqrt(l[0]); l[1] = TMath::Sqrt(l[1]);
+  d[0] = v[0]*v[0]*l[0]+v[1]*v[1]*l[1];
+  d[1] = v[0]*v[1]*l[0]+v[1]*v[2]*l[1];
+  d[2] = v[1]*v[1]*l[0]+v[2]*v[2]*l[1];
 
   return 1.;
 }
 
 //____________________________________________________________
-Double_t AliTRDseedV1::GetCovInv(Double_t *c, Double_t *d)
+Double_t AliTRDseedV1::GetCovInv(const Double_t * const c, Double_t *d)
 {
 // Helper function to calculate the inverse of the covariance matrix.
 // The input matrix is stored in the vector c and the result in the vector d. 
@@ -748,13 +748,13 @@ Double_t AliTRDseedV1::GetCovInv(Double_t *c, Double_t *d)
 // Author A.Bercuci <A.Bercuci@gsi.de>
 // Date   Mar 19 2009
 
-  Double_t Det = c[0]*c[2] - c[1]*c[1];
-  if(TMath::Abs(Det)<1.e-20) return 0.;
-  Double_t InvDet = 1./Det;
-  d[0] = c[2]*InvDet;
-  d[1] =-c[1]*InvDet;
-  d[2] = c[0]*InvDet;
-  return Det;
+  Double_t det = c[0]*c[2] - c[1]*c[1];
+  if(TMath::Abs(det)<1.e-20) return 0.;
+  Double_t invDet = 1./det;
+  d[0] = c[2]*invDet;
+  d[1] =-c[1]*invDet;
+  d[2] = c[0]*invDet;
+  return det;
 }
 
 //____________________________________________________________________
@@ -859,7 +859,7 @@ void AliTRDseedV1::SetPadPlane(AliTRDpadPlane *p)
 
 
 //____________________________________________________________________
-Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
+Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t tilt)
 {
 //
 // Projective algorithm to attach clusters to seeding tracklets. The following steps are performed :
@@ -889,28 +889,28 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
 // Debug  : level >3
 
   Bool_t kPRINT = kFALSE;
-  if(!fReconstructor->GetRecoParam() ){
+  if(!fkReconstructor->GetRecoParam() ){
     AliError("Seed can not be used without a valid RecoParam.");
     return kFALSE;
   }
   // Initialize reco params for this tracklet
   // 1. first time bin in the drift region
   Int_t t0 = 14;
-  Int_t kClmin = Int_t(fReconstructor->GetRecoParam() ->GetFindableClusters()*AliTRDtrackerV1::GetNTimeBins());
+  Int_t kClmin = Int_t(fkReconstructor->GetRecoParam() ->GetFindableClusters()*AliTRDtrackerV1::GetNTimeBins());
 
-  Double_t sysCov[5]; fReconstructor->GetRecoParam()->GetSysCovMatrix(sysCov);	
+  Double_t sysCov[5]; fkReconstructor->GetRecoParam()->GetSysCovMatrix(sysCov);	
   Double_t s2yTrk= fRefCov[0], 
            s2yCl = 0., 
            s2zCl = GetPadLength()*GetPadLength()/12., 
            syRef = TMath::Sqrt(s2yTrk),
            t2    = GetTilt()*GetTilt();
   //define roads
-  Double_t kroady = 1., //fReconstructor->GetRecoParam() ->GetRoad1y();
+  Double_t kroady = 1., //fkReconstructor->GetRecoParam() ->GetRoad1y();
            kroadz = GetPadLength() * 1.5 + 1.;
   // define probing cluster (the perfect cluster) and default calibration
   Short_t sig[] = {0, 0, 10, 30, 10, 0,0};
   AliTRDcluster cp(fDet, 6, 75, 0, sig, 0);
-  if(fReconstructor->IsHLT())cp.SetRPhiMethod(AliTRDcluster::kCOG);
+  if(fkReconstructor->IsHLT())cp.SetRPhiMethod(AliTRDcluster::kCOG);
   Calibrate();
 
   if(kPRINT) printf("AttachClusters() sy[%f] road[%f]\n", syRef, kroady);
@@ -926,8 +926,8 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
   memset(clst, 0, kNrows*kNcls*sizeof(AliTRDcluster*));
 
   // Do cluster projection
-  AliTRDcluster *c = 0x0;
-  AliTRDchamberTimeBin *layer = 0x0;
+  AliTRDcluster *c = NULL;
+  AliTRDchamberTimeBin *layer = NULL;
   Bool_t kBUFFER = kFALSE;
   for (Int_t it = 0; it < kNtb; it++) {
     if(!(layer = chamber->GetTB(it))) continue;
@@ -993,8 +993,8 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
       continue;
     } 
 
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 3){
-      TTreeSRedirector &cstreamer = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
+    if(fkReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 3){
+      TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
       TVectorD vdy(ncl[ir], yres[ir]);
       UChar_t stat(0);
       if(IsKink()) SETBIT(stat, 0);
@@ -1016,7 +1016,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt)
     Bool_t kFOUND = kFALSE;
     for(Int_t ic = ncl[ir]; ic--;){
       if(yres[ir][ic] - mean > 3. * syDis){ 
-        clst[ir][ic] = 0x0; continue;
+        clst[ir][ic] = NULL; continue;
       }
       nrow[nr]++; kFOUND = kTRUE;
     }
@@ -1107,7 +1107,7 @@ void AliTRDseedV1::Bootstrap(const AliTRDReconstructor *rec)
 // 
 //   A.Bercuci <A.Bercuci@gsi.de> Oct 30th 2008
 //
-  fReconstructor = rec;
+  fkReconstructor = rec;
   AliTRDgeometry g;
   AliTRDpadPlane *pp = g.GetPadPlane(fDet);
   fPad[0] = pp->GetLengthIPad();
@@ -1244,7 +1244,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
   Double_t qc[kNclusters], xc[kNclusters], yc[kNclusters], zc[kNclusters], sy[kNclusters];
 
   Int_t n = 0;
-  AliTRDcluster *c=0x0, **jc = &fClusters[0];
+  AliTRDcluster *c=NULL, **jc = &fClusters[0];
   for (Int_t ic=0; ic<kNtb; ic++, ++jc) {
     xc[ic]  = -1.;
     yc[ic]  = 999.;
@@ -1274,7 +1274,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     c->SetSigmaY2(fS2PRF, fDiffT, fExB, xc[n], zcorr?zt:-1., dydx);
     sy[n]  = TMath::Sqrt(c->GetSigmaY2());
 
-    yc[n]   = fReconstructor->UseGAUS() ? 
+    yc[n]   = fkReconstructor->UseGAUS() ? 
       c->GetYloc(y0, sy[n], GetPadWidth()): c->GetY();
     zc[n]   = c->GetZ();
     //optional tilt correction

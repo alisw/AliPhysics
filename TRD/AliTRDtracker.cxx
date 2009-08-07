@@ -36,7 +36,8 @@
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
-#include "AliAlignObj.h"
+//#include "AliAlignObj.h"
+#include "AliGeomManager.h"
 #include "AliRieman.h"
 #include "AliTrackPointArray.h"
 
@@ -75,18 +76,18 @@ AliTRDtracker::AliTRDtracker(AliTRDReconstructor *rec)
   ,fTimeBinsPerPlane(0)
   ,fAddTRDseeds(kFALSE)
   ,fNoTilt(kFALSE)
-  ,fHBackfit(0x0)
-  ,fHClSearch(0x0)
-  ,fHRefit(0x0)
-  ,fHX(0x0)
-  ,fHNCl(0x0)
-  ,fHNClTrack(0x0)
-  ,fHMinYPos(0x0)
-  ,fHMinYNeg(0x0)
-  ,fHMinZ(0x0)
-  ,fHMinD(0x0)
-  ,fHDeltaX(0x0)
-  ,fHXCl(0x0)
+  ,fHBackfit(NULL)
+  ,fHClSearch(NULL)
+  ,fHRefit(NULL)
+  ,fHX(NULL)
+  ,fHNCl(NULL)
+  ,fHNClTrack(NULL)
+  ,fHMinYPos(NULL)
+  ,fHMinYNeg(NULL)
+  ,fHMinZ(NULL)
+  ,fHMinD(NULL)
+  ,fHDeltaX(NULL)
+  ,fHXCl(NULL)
   ,fDebugStreamer(0)
 {
   //
@@ -115,18 +116,18 @@ AliTRDtracker::AliTRDtracker(const AliTRDtracker &t)
   ,fTimeBinsPerPlane(0)
   ,fAddTRDseeds(kFALSE)
   ,fNoTilt(kFALSE)
-  ,fHBackfit(0x0)
-  ,fHClSearch(0x0)
-  ,fHRefit(0x0)
-  ,fHX(0x0)
-  ,fHNCl(0x0)
-  ,fHNClTrack(0x0)
-  ,fHMinYPos(0x0)
-  ,fHMinYNeg(0x0)
-  ,fHMinZ(0x0)
-  ,fHMinD(0x0)
-  ,fHDeltaX(0x0)
-  ,fHXCl(0x0)
+  ,fHBackfit(NULL)
+  ,fHClSearch(NULL)
+  ,fHRefit(NULL)
+  ,fHX(NULL)
+  ,fHNCl(NULL)
+  ,fHNClTrack(NULL)
+  ,fHMinYPos(NULL)
+  ,fHMinYNeg(NULL)
+  ,fHMinZ(NULL)
+  ,fHMinD(NULL)
+  ,fHDeltaX(NULL)
+  ,fHXCl(NULL)
   ,fDebugStreamer(0)
 {
   //
@@ -149,18 +150,18 @@ AliTRDtracker::AliTRDtracker(const TFile */*geomfile*/, AliTRDReconstructor *rec
   ,fTimeBinsPerPlane(0)
   ,fAddTRDseeds(kFALSE)
   ,fNoTilt(kFALSE)
-  ,fHBackfit(0x0)
-  ,fHClSearch(0x0)
-  ,fHRefit(0x0)
-  ,fHX(0x0)
-  ,fHNCl(0x0)
-  ,fHNClTrack(0x0)
-  ,fHMinYPos(0x0)
-  ,fHMinYNeg(0x0)
-  ,fHMinZ(0x0)
-  ,fHMinD(0x0)
-  ,fHDeltaX(0x0)
-  ,fHXCl(0x0)
+  ,fHBackfit(NULL)
+  ,fHClSearch(NULL)
+  ,fHRefit(NULL)
+  ,fHX(NULL)
+  ,fHNCl(NULL)
+  ,fHNClTrack(NULL)
+  ,fHMinYPos(NULL)
+  ,fHMinYNeg(NULL)
+  ,fHMinZ(NULL)
+  ,fHMinD(NULL)
+  ,fHDeltaX(NULL)
+  ,fHXCl(NULL)
   ,fDebugStreamer(0)
 {
   // 
@@ -319,7 +320,7 @@ Int_t  AliTRDtracker::GlobalToLocalID(Int_t gid)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDtracker::AdjustSector(AliTRDtrack *track) 
+Bool_t AliTRDtracker::AdjustSector(AliTRDtrack* const track) const 
 {
   //
   // Rotates the track when necessary
@@ -345,7 +346,7 @@ Bool_t AliTRDtracker::AdjustSector(AliTRDtrack *track)
 }
 
 //_____________________________________________________________________________
-AliTRDcluster *AliTRDtracker::GetCluster(AliTRDtrack *track, Int_t plane
+AliTRDcluster *AliTRDtracker::GetCluster(AliTRDtrack * const track, Int_t plane
                                        , Int_t timebin, UInt_t &index)
 {
   //
@@ -353,7 +354,7 @@ AliTRDcluster *AliTRDtracker::GetCluster(AliTRDtrack *track, Int_t plane
   //
 
   AliTRDcluster *cl =0;
-  Int_t *indexes = track->GetBackupIndexes();
+  const Int_t *indexes = track->GetBackupIndexes();
 
   for (UInt_t i = 0; i < kMaxTimeBinIndex; i++) {
     if (indexes[i] == 0) {
@@ -379,14 +380,14 @@ AliTRDcluster *AliTRDtracker::GetCluster(AliTRDtrack *track, Int_t plane
 }
 
 //_____________________________________________________________________________
-Int_t  AliTRDtracker::GetLastPlane(AliTRDtrack *track)
+Int_t  AliTRDtracker::GetLastPlane(AliTRDtrack * const track)
 {
   //
   // Return last updated plane
   //
 
   Int_t  lastplane = 0;
-  Int_t *indexes   = track->GetBackupIndexes();
+  const Int_t *indexes   = track->GetBackupIndexes();
 
   for (UInt_t i = 0; i < kMaxTimeBinIndex; i++) {
     AliTRDcluster *cli = (AliTRDcluster *) fClusters->UncheckedAt(indexes[i]);
@@ -601,9 +602,9 @@ Int_t AliTRDtracker::PropagateBack(AliESDEvent *event)
 				seed->UpdateTrackParams(track,AliESDtrack::kTRDout);
 				fHBackfit->Fill(10);
 	
-        seed->SetNumberOfTRDslices(AliTRDtrack::kNslice);
+        seed->SetNumberOfTRDslices(AliTRDCalPID::kNSlicesLQ);
 				for (Int_t i = 0; i < AliTRDtrack::kNplane; i++) {
-					for (Int_t j = 0; j < AliTRDtrack::kNslice; j++) {
+					for (Int_t j = 0; j < AliTRDCalPID::kNSlicesLQ; j++) {
 						seed->SetTRDslice(track->GetPIDsignals(i,j),i,j);
 					}
 					seed->SetTRDTimBin(track->GetPIDTimBin(i),i);
@@ -625,9 +626,9 @@ Int_t AliTRDtracker::PropagateBack(AliESDEvent *event)
 	
 				//seed->SetStatus(AliESDtrack::kTRDStop);
 
-        seed->SetNumberOfTRDslices(AliTRDtrack::kNslice);
+        seed->SetNumberOfTRDslices(AliTRDCalPID::kNSlicesLQ);
 				for (Int_t i = 0; i < AliTRDtrack::kNplane; i++) {
-					for (Int_t j = 0; j <AliTRDtrack::kNslice; j++) {
+					for (Int_t j = 0; j <AliTRDCalPID::kNSlicesLQ; j++) {
 						seed->SetTRDslice(track->GetPIDsignals(i,j),i,j);
 					}
 					seed->SetTRDTimBin(track->GetPIDTimBin(i),i);
@@ -712,15 +713,15 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
     seed2.ResetCovariance(50.0); 
 
     AliTRDtrack *pt = new AliTRDtrack(seed2,seed2.GetAlpha());
-    Int_t *indexes2 = seed2.GetIndexes();
+    const Int_t *indexes2 = seed2.GetIndexes();
     for (Int_t l = 0; l < AliTRDtrack::kNplane;++l) {
-      for (Int_t j = 0; j < AliTRDtrack::kNslice;j++) {
+      for (Int_t j = 0; j < AliTRDCalPID::kNSlicesLQ;j++) {
         pt->SetPIDsignals(seed2.GetPIDsignals(l,j),l,j);
       }
       pt->SetPIDTimBin(seed2.GetPIDTimBin(l),l);
     }
 
-    Int_t *indexes3 = pt->GetBackupIndexes();
+    Int_t *indexes3 = const_cast<Int_t *>(pt->GetBackupIndexes());
     for (Int_t l = 0; l < 200;++l) {
       if (indexes2[l] == 0) {
         break;
@@ -748,7 +749,7 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
       fHRefit->Fill(5);
 
       for (Int_t l = 0; l < AliTRDtrack::kNplane; ++l) {
-        for (Int_t j = 0; j < AliTRDtrack::kNslice; j++) {
+        for (Int_t j = 0; j < AliTRDCalPID::kNSlicesLQ; j++) {
           seed->SetTRDslice(pt->GetPIDsignals(l,j),l,j);
         }
         seed->SetTRDTimBin(pt->GetPIDTimBin(l),l);
@@ -768,7 +769,7 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
         fHRefit->Fill(6);
 
         for (Int_t l = 0; l < AliTRDtrack::kNplane; ++l) {
-          for (Int_t j = 0; j < AliTRDtrack::kNslice; j++) {
+          for (Int_t j = 0; j < AliTRDCalPID::kNSlicesLQ; j++) {
             seed->SetTRDslice(pt2->GetPIDsignals(l,j),l,j);
           }
           seed->SetTRDTimBin(pt2->GetPIDTimBin(l),l);
@@ -2491,7 +2492,7 @@ Int_t AliTRDtracker::ReadClusters(TObjArray *array, TTree *clusterTree) const
   // Loop through all entries in the tree
   Int_t nEntries   = (Int_t) clusterTree->GetEntries();
   Int_t nbytes     = 0;
-  AliTRDcluster *c = 0x0;
+  AliTRDcluster *c = NULL;
   for (Int_t iEntry = 0; iEntry < nEntries; iEntry++) {    
     
     // Import the tree
@@ -2783,7 +2784,7 @@ AliTRDtracker::AliTRDtrackingSector
     //Double_t xtop    = x0 + dxAmp;
 		
 		//temporary !! (A.Bercuci)
-    Int_t T0 = (Int_t)fCalibration->GetT0Average(AliTRDgeometry::GetDetector(layer, 2, gs));
+    Int_t t0 = (Int_t)fCalibration->GetT0Average(AliTRDgeometry::GetDetector(layer, 2, gs));
 
     Int_t nTimeBins =  AliTRDcalibDB::Instance()->GetNumberOfTimeBins();    
     for (Int_t iTime = 0; iTime < nTimeBins; iTime++) {
@@ -2797,7 +2798,7 @@ AliTRDtracker::AliTRDtrackingSector
       ppl->SetYmax(ymax,ymaxsensitive);
       ppl->SetZ(zc,zmax,zmaxsensitive);
       ppl->SetHoles(holes);
-      if(iTime == T0) ppl->SetT0();
+      if(iTime == t0) ppl->SetT0();
 			
 			InsertLayer(ppl);      
 
@@ -3781,7 +3782,7 @@ Int_t AliTRDtracker::Freq(Int_t n, const Int_t *inlist
 }
 
 //_____________________________________________________________________________
-AliTRDtrack *AliTRDtracker::RegisterSeed(AliTRDseed *seeds, Double_t *params)
+AliTRDtrack *AliTRDtracker::RegisterSeed(AliTRDseed * const seeds, Double_t *params)
 {
   //
   // Build a TRD track out of tracklet candidates

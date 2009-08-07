@@ -22,8 +22,8 @@
 #include "AliTRDgeometry.h" 
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
+#include "AliTRDtracklet.h"
 #include "AliTRDcalibDB.h"
-#include "Cal/AliTRDCalPID.h"
 
 ClassImp(AliTRDtrack)
 
@@ -31,6 +31,7 @@ ClassImp(AliTRDtrack)
 //                                                                           //
 //  Represents a reconstructed TRD track                                     //
 //  Local TRD Kalman track                                                   //
+//  Part of the old TRD tracking code                                        //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -60,7 +61,7 @@ AliTRDtrack::AliTRDtrack()
   //
 
   for (Int_t i = 0; i < kNplane; i++) {
-    for (Int_t j = 0; j < kNslice; j++) {
+    for (Int_t j = 0; j < AliTRDCalPID::kNSlicesLQ; j++) {
       fdEdxPlane[i][j] = 0.0;
     }
     fTimBinPlane[i] = -1;
@@ -139,7 +140,7 @@ AliTRDtrack::AliTRDtrack(AliTRDcluster *c, Int_t index
   fClusters[0] = c;
 
   for (Int_t i = 0; i < kNplane; i++) {
-    for (Int_t j = 0; j < kNslice; j++) {
+    for (Int_t j = 0; j < AliTRDCalPID::kNSlicesLQ; j++) {
       fdEdxPlane[i][j] = 0.0;
     }
     fTimBinPlane[i] = -1;
@@ -199,7 +200,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack &t/*, const Bool_t owner*/)
   //
 
   for (Int_t i = 0; i < kNplane; i++) {
-    for (Int_t j = 0; j < kNslice; j++) {
+    for (Int_t j = 0; j < AliTRDCalPID::kNSlicesLQ; j++) {
       fdEdxPlane[i][j] = t.fdEdxPlane[i][j];
     }
     fTimBinPlane[i] = t.fTimBinPlane[i];
@@ -270,7 +271,7 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack &t, Double_t /*alpha*/)
   SetNumberOfClusters(0);
 
   for (Int_t i = 0; i < kNplane; i++) {
-    for (Int_t j = 0; j < kNslice; j++) {
+    for (Int_t j = 0; j < AliTRDCalPID::kNSlicesLQ; j++) {
       fdEdxPlane[i][j] = 0.0;
     }
     fTimBinPlane[i] = -1;
@@ -333,7 +334,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack &t)
   }
 
   for (Int_t i = 0; i < kNplane; i++) {
-    for (Int_t j = 0; j < kNslice; j++) {
+    for (Int_t j = 0; j < AliTRDCalPID::kNSlicesLQ; j++) {
       fdEdxPlane[i][j] = t.GetTRDslice(i,j);
     }
     fTimBinPlane[i] = t.GetTRDTimBin(i);
@@ -492,7 +493,7 @@ void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
   // Max charge in chamber
   Double_t  maxcharge[kNplane]; 
   // Number of clusters attached to track per chamber and slice
-  Int_t     nCluster[kNplane][kNslice];
+  Int_t     nCluster[kNplane][AliTRDCalPID::kNSlicesLQ];
   // Number of time bins in chamber
   Int_t ntb = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
   Int_t plane;                  // Plane of current cluster
@@ -504,7 +505,7 @@ void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
   for (Int_t iPlane = 0; iPlane < kNplane; iPlane++) {
     fTimBinPlane[iPlane] = -1;
     maxcharge[iPlane]    =  0.0;
-    for (Int_t iSlice = 0; iSlice < kNslice; iSlice++) {
+    for (Int_t iSlice = 0; iSlice < AliTRDCalPID::kNSlicesLQ; iSlice++) {
       fdEdxPlane[iPlane][iSlice] = 0.0;
       nCluster[iPlane][iSlice]   = 0;
     }
@@ -530,7 +531,7 @@ void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
       continue;
     }
 	
-    slice = tb * kNslice / ntb;
+    slice = tb * AliTRDCalPID::kNSlicesLQ / ntb;
 
     fdEdxPlane[plane][slice] += fdQdl[iClus];
     if (fdQdl[iClus] > maxcharge[plane]) {
@@ -544,7 +545,7 @@ void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
 	
   // Normalize fdEdxPlane to number of clusters and set track segments
   for (Int_t iPlane = 0; iPlane < kNplane; iPlane++) {
-    for (Int_t iSlice = 0; iSlice < kNslice; iSlice++) {
+    for (Int_t iSlice = 0; iSlice < AliTRDCalPID::kNSlicesLQ; iSlice++) {
       if (nCluster[iPlane][iSlice]) {
         fdEdxPlane[iPlane][iSlice] /= nCluster[iPlane][iSlice];
       }
@@ -572,8 +573,8 @@ void AliTRDtrack::CookdEdxNN(Float_t *dedx)
 
   // Reset class and local contors/variables
   for (Int_t iPlane = 0; iPlane < kNplane; iPlane++){
-    for (Int_t iSlice = 0; iSlice < kNMLPslice; iSlice++) {
-      *(dedx + (kNMLPslice * iPlane) + iSlice) = 0.0;
+    for (Int_t iSlice = 0; iSlice < AliTRDCalPID::kNSlicesNN; iSlice++) {
+      *(dedx + (AliTRDCalPID::kNSlicesNN * iPlane) + iSlice) = 0.0;
     }
   }
 
@@ -599,9 +600,9 @@ void AliTRDtrack::CookdEdxNN(Float_t *dedx)
       continue;
     }
 
-    slice   = tb * kNMLPslice / ntb;
+    slice   = tb * AliTRDCalPID::kNSlicesNN / ntb;
 	  
-    *(dedx+(kNMLPslice * plane) + slice) += fdQdl[iClus]/kMLPscale;
+    *(dedx+(AliTRDCalPID::kNSlicesNN * plane) + slice) += fdQdl[iClus]/kMLPscale;
 	
   } // End of loop over cluster
 
@@ -676,7 +677,7 @@ Bool_t AliTRDtrack::CookPID(Int_t &pidQuality)
   }
 
   // Calculate the input for the NN if fPIDmethod is kNN
-  Float_t ldEdxNN[AliTRDgeometry::kNlayer * kNMLPslice], *dedx = 0x0;
+  Float_t ldEdxNN[AliTRDgeometry::kNlayer * AliTRDCalPID::kNSlicesNN], *dedx = 0x0;
   if(fPIDmethod == kNN) {
     CookdEdxNN(&ldEdxNN[0]);
   }
@@ -717,7 +718,7 @@ Bool_t AliTRDtrack::CookPID(Int_t &pidQuality)
 	dedx = fdEdxPlane[iPlane];
 	break;
       case kNN:
-	dedx = &ldEdxNN[iPlane*kNMLPslice];
+	dedx = &ldEdxNN[iPlane*AliTRDCalPID::kNSlicesNN];
 	break;
       }
       fPID[iSpecies] *= pd->GetProbability(iSpecies, fMom[iPlane], dedx, length, iPlane);
@@ -840,7 +841,7 @@ Bool_t AliTRDtrack::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
 
 //_____________________________________________________________________________
 Bool_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq
-                         , Int_t index, Double_t h01)
+                         , Int_t index, Double_t h01) 
 {
   //
   // Assignes the found cluster <c> to the track and updates 

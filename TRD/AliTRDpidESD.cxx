@@ -38,7 +38,7 @@
 #include "AliTRDpidESD.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
-#include "AliTRDtrack.h"
+#include "Cal/AliTRDCalPID.h"
 
 ClassImp(AliTRDpidESD)
 
@@ -49,7 +49,7 @@ Int_t   AliTRDpidESD::fgMinPlane         = 0;
 //_____________________________________________________________________________
 AliTRDpidESD::AliTRDpidESD()
   :TObject()
-  ,fTrack(0x0)
+  ,fTrack(NULL)
 {
   //
   // Default constructor
@@ -60,7 +60,7 @@ AliTRDpidESD::AliTRDpidESD()
 //_____________________________________________________________________________
 AliTRDpidESD::AliTRDpidESD(const AliTRDpidESD &p)
   :TObject(p)
-  ,fTrack(0x0)
+  ,fTrack(NULL)
 {
   //
   // AliTRDpidESD copy constructor
@@ -103,7 +103,7 @@ void AliTRDpidESD::Copy(TObject &p) const
   ((AliTRDpidESD &) p).fgCheckTrackStatus         = fgCheckTrackStatus;
   ((AliTRDpidESD &) p).fgCheckKinkStatus          = fgCheckKinkStatus;
   ((AliTRDpidESD &) p).fgMinPlane                 = fgMinPlane;
-  ((AliTRDpidESD &) p).fTrack                     = 0x0;
+  ((AliTRDpidESD &) p).fTrack                     = NULL;
   
 }
 
@@ -146,8 +146,8 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent * const event)
 
   // Loop through all ESD tracks
   Double_t p[10];
-  AliESDtrack *t = 0x0;
-  Float_t dedx[AliTRDtrack::kNslice], dEdx;
+  AliESDtrack *t = NULL;
+  Float_t dedx[AliTRDCalPID::kNSlicesLQ], dEdx;
   Int_t   timebin;
   Float_t mom, length;
   Int_t   nPlanePID;
@@ -170,7 +170,7 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent * const event)
 
     for (Int_t iLayer = 0; iLayer < AliTRDgeometry::kNlayer; iLayer++) {
       // read data for track segment
-      for(int iSlice=0; iSlice<AliTRDtrack::kNslice; iSlice++)
+      for(int iSlice=0; iSlice<AliTRDCalPID::kNSlicesLQ; iSlice++)
         dedx[iSlice] = t->GetTRDslice(iLayer, iSlice);
       dEdx    = t->GetTRDslice(iLayer, -1);
       timebin = t->GetTRDTimBin(iLayer);
@@ -264,7 +264,7 @@ Bool_t AliTRDpidESD::RecalculateTrackSegmentKine(AliESDtrack * const esd
     return kFALSE;
   }
 
-  AliExternalTrackParam *param = 0x0;
+  AliExternalTrackParam *param = NULL;
   if(!fTrack){
     fTrack = new AliExternalTrackParam(*op);
     param = fTrack;

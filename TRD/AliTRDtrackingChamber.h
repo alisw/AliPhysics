@@ -36,17 +36,17 @@ public:
   virtual ~AliTRDtrackingChamber(){}
   
   void     Bootstrap(const AliTRDReconstructor *rec);
-  Bool_t   Build(AliTRDgeometry *geo, const AliTRDCalDet *cal, Bool_t hlt = kFALSE);
-  void     Clear(const Option_t *opt = 0x0);
+  Bool_t   Build(AliTRDgeometry *const geo, const AliTRDCalDet *cal, Bool_t hlt = kFALSE);
+  void     Clear(const Option_t *opt = NULL);
   Int_t    GetDetector() const {return fDetector;}
   Int_t    GetNClusters() const;
   Double_t GetQuality();
-  Bool_t   GetSeedingLayer(AliTRDchamberTimeBin *&layer, AliTRDgeometry *geo, const AliTRDReconstructor *rec);
+  Bool_t   GetSeedingLayer(AliTRDchamberTimeBin *&layer, AliTRDgeometry * const geo, const AliTRDReconstructor *rec);
   Float_t  GetX()        const {return fX0;}
-  AliTRDchamberTimeBin* GetTB(int tb) {return tb >= 0 && tb < AliTRDseedV1::kNtb ? &fTB[tb] : 0x0;}
+  AliTRDchamberTimeBin* GetTB(int tb) {return tb >= 0 && tb < AliTRDseedV1::kNtb ? &fTB[tb] : NULL;}
   void     InsertCluster(AliTRDcluster *c, Int_t index);
   
-  void     Print(Option_t *opt = 0x0) const;
+  void     Print(Option_t *opt = NULL) const;
 
   void     SetDetector(Int_t det) { fDetector = det;}
   void     SetOwner();

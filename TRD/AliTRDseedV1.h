@@ -69,7 +69,7 @@ public:
   AliTRDseedV1(const AliTRDseedV1 &ref);
   AliTRDseedV1& operator=(const AliTRDseedV1 &ref);
 
-  Bool_t    AttachClusters(AliTRDtrackingChamber *chamber, Bool_t tilt = kFALSE);
+  Bool_t    AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t tilt = kFALSE);
   void      Bootstrap(const AliTRDReconstructor *rec);
   void      Calibrate();
   void      CookdEdx(Int_t nslices);
@@ -96,23 +96,23 @@ public:
   void      GetCovAt(Double_t x, Double_t *cov) const;
   void      GetCovXY(Double_t *cov) const { memcpy(cov, &fCov[0], 3*sizeof(Double_t));}
   void      GetCovRef(Double_t *cov) const { memcpy(cov, &fRefCov, 7*sizeof(Double_t));}
-  static Double_t GetCovSqrt(Double_t *c, Double_t *d);
-  static Double_t GetCovInv(Double_t *c, Double_t *d);
+  static Double_t GetCovSqrt(const Double_t * const c, Double_t *d);
+  static Double_t GetCovInv(const Double_t * const c, Double_t *d);
   Float_t   GetdX() const            { return fdX;}
-  Float_t*  GetdEdx()                { return &fdEdx[0];}
-  Float_t   GetdQdl(Int_t ic, Float_t *dx=0x0) const;
+  const Float_t*  GetdEdx() const    { return &fdEdx[0];}
+  Float_t   GetdQdl(Int_t ic, Float_t *dx=NULL) const;
   Float_t   GetdYdX() const          { return fYfit[1]; } 
   Float_t   GetdZdX() const          { return fZref[1]; }
   Int_t     GetdY() const            { return Int_t(GetY()/0.014);}
   Int_t     GetDetector() const      { return fDet;}
   void      GetCalibParam(Float_t &exb, Float_t &vd, Float_t &t0, Float_t &s2, Float_t &dl, Float_t &dt) const    { 
               exb = fExB; vd = fVD; t0 = fT0; s2 = fS2PRF; dl = fDiffL; dt = fDiffT;}
-  AliTRDcluster*  GetClusters(Int_t i) const               { return i<0 || i>=kNclusters ? 0x0 : fClusters[i];}
+  AliTRDcluster*  GetClusters(Int_t i) const               { return i<0 || i>=kNclusters ? NULL: fClusters[i];}
   static TLinearFitter*  GetFitterY();
   static TLinearFitter*  GetFitterZ();
   Int_t     GetIndexes(Int_t i) const{ return i<0 || i>=kNclusters ? -1 : fIndexes[i];}
   Int_t     GetLabels(Int_t i) const { return fLabels[i];}  
-  Float_t   GetMomentum(Float_t *err = 0x0) const;
+  Float_t   GetMomentum(Float_t *err = NULL) const;
   Int_t     GetN() const             { return (Int_t)fN&0x1f;}
   Int_t     GetN2() const            { return GetN();}
   Int_t     GetNUsed() const         { return Int_t((fN>>5)&0x1f);}
@@ -168,7 +168,7 @@ public:
   void      SetTilt(Float_t tilt)    { fPad[2] = tilt; }
   void      SetDetector(Int_t d)     { fDet = d;  }
   void      SetDX(Float_t inDX)      { fdX = inDX;}
-  void      SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
+  void      SetReconstructor(const AliTRDReconstructor *rec) {fkReconstructor = rec;}
   void      SetX0(Float_t x0)        { fX0 = x0; }
   void      SetYref(Int_t i, Float_t y) { fYref[i]     = y;}
   void      SetZref(Int_t i, Float_t z) { fZref[i]     = z;}
@@ -185,7 +185,7 @@ private:
   inline void SetNUsed(Int_t n);
   inline void SetNShared(Int_t n);
 
-  const AliTRDReconstructor *fReconstructor;//! local reconstructor
+  const AliTRDReconstructor *fkReconstructor;//! local reconstructor
   AliTRDcluster  **fClusterIter;            //! clusters iterator
   Int_t            fIndexes[kNclusters];    //! Indexes
   Float_t          fExB;                    //! tg(a_L) @ tracklet location
@@ -218,8 +218,8 @@ private:
   Int_t            fLabels[3];              // most frequent MC labels and total number of different labels
   Double_t         fRefCov[7];              // covariance matrix of the track in the yz plane + the rest of the diagonal elements
   Double_t         fCov[3];                 // covariance matrix of the tracklet in the xy plane
-  static TLinearFitter   *fgFitterY;
-  static TLinearFitter   *fgFitterZ;
+  static TLinearFitter   *fgFitterY;        // Linear Fitter for tracklet fit in xy-plane
+  static TLinearFitter   *fgFitterZ;        // Linear Fitter for tracklet fit in xz-plane
 
   ClassDef(AliTRDseedV1, 7)                 // The offline TRD tracklet 
 };
@@ -268,7 +268,7 @@ inline void AliTRDseedV1::Init(const AliRieman *rieman)
   fZref[1] = rieman->GetDZat(fX0);
   fYref[0] = rieman->GetYat(fX0);
   fYref[1] = rieman->GetDYat(fX0);
-  if(fReconstructor && fReconstructor->IsHLT()){
+  if(fkReconstructor && fkReconstructor->IsHLT()){
     fRefCov[0] = 1;
     fRefCov[2] = 10;
   }else{
@@ -294,7 +294,7 @@ inline AliTRDcluster* AliTRDseedV1::NextCluster()
     }
     return *fClusterIter;
   }
-  return 0x0;
+  return NULL;
 }
 
 //____________________________________________________________
@@ -312,7 +312,7 @@ inline AliTRDcluster* AliTRDseedV1::PrevCluster()
     }
     return *fClusterIter;
   }
-  return 0x0;
+  return NULL;
 }
 
 //____________________________________________________________

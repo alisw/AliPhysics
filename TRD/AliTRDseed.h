@@ -60,8 +60,8 @@ public:
           Float_t  GetMeanz() const                         { return fMeanz;         }
           Float_t  GetZProb() const                         { return fZProb;         }
           Int_t    GetLabels(Int_t i) const                 { return fLabels[i];     }
-	  Float_t  GetMPads() const                         { return fMPads;         }
-	  Int_t    GetNbClusters() const                    { return fN;             }
+	        Float_t  GetMPads() const                         { return fMPads;         }
+	        Int_t    GetNbClusters() const                    { return fN;             }
           Int_t    GetN2() const                            { return fN2;            }
           Int_t    GetNChange() const                       { return fNChange;       }
           Int_t    GetNUsed() const                         { return fNUsed;         }
@@ -79,7 +79,7 @@ public:
           void     SetY(Int_t i, Float_t y)                 { fY[i]        = y;      }
           void     SetZ(Int_t i, Float_t z)                 { fZ[i]        = z;      }
           void     SetIndexes(Int_t i, Int_t idx)           { fIndexes[i]  = idx;    }
-          void     SetClusters(Int_t i, AliTRDcluster *c)   { fClusters[i] = c;      }
+          void     SetClusters(Int_t i, AliTRDcluster * const c)   { fClusters[i] = c;      }
           void     SetUsable(Int_t i, Bool_t usable)        { fUsable[i]   = usable; }
           void     SetYref(Int_t i, Float_t yref)           { fYref[i]     = yref;   }
           void     SetZref(Int_t i, Float_t zref)           { fZref[i]     = zref;   }

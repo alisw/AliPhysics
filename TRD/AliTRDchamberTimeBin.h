@@ -16,11 +16,9 @@
 #include "TObject.h"
 #endif
 
-#ifndef ALITRDCLUSTER_H
-#include "AliTRDcluster.h"
-#endif
-
+class AliTRDcluster;
 class AliTRDReconstructor;
+
 class AliTRDchamberTimeBin : public TObject
 {
 public:
@@ -42,16 +40,16 @@ public:
   AliTRDchamberTimeBin&
                  operator=(const AliTRDchamberTimeBin &myLayer);
   AliTRDcluster* operator[](const Int_t i) const {
-    return ((i < fN) && (i >= 0)) ? fClusters[i] : 0x0;
+    return ((i < fN) && (i >= 0)) ? fClusters[i] : NULL;
   }
 
   void           Bootstrap(const AliTRDReconstructor *rec, Int_t det);
   void           BuildIndices(Int_t iter = 0);
-  void           BuildCond(AliTRDcluster *cl, Double_t *cond, UChar_t Layer, Double_t theta=0., Double_t phi=0.);
-  void           Clear(const Option_t *opt = 0x0);
-  AliTRDcluster* GetCluster(Int_t index) const {return index < fN && index >= 0 ? fClusters[index] : 0x0;}
+  void           BuildCond(AliTRDcluster * const cl, Double_t *cond, UChar_t Layer, Double_t theta=0., Double_t phi=0.);
+  void           Clear(const Option_t *opt = NULL);
+  AliTRDcluster* GetCluster(Int_t index) const {return index < fN && index >= 0 ? fClusters[index] : NULL;}
   Int_t          GetGlobalIndex(Int_t index) const {return ((index < fN) && (index >= 0)) ? fIndex[index] : 0; }
-  void           GetClusters(Double_t *cond, Int_t *index, Int_t& ncl, Int_t BufferSize = kMaxClustersLayer);
+  void           GetClusters(const Double_t * const cond, Int_t *index, Int_t& ncl, Int_t BufferSize = kMaxClustersLayer);
   AliTRDcluster* GetNearestCluster(Double_t *cond);
   Double_t       GetX()                            const {
   return fX;      }
@@ -66,12 +64,12 @@ public:
   Bool_t         IsT0() const {return TestBit(kT0);}
   Bool_t         IsOwner() const {return TestBit(kOwner);}
 
-  void           Print(Option_t *opt=0x0) const;
+  void           Print(Option_t *opt=NULL) const;
   Int_t          SearchNearestCluster(Double_t y, Double_t z, Double_t Roady, Double_t Roadz) const;
   void           SetRange(Float_t z0, Float_t zLength);
   void           SetNRows(Int_t nRows){ fNRows = nRows; }
   void           SetPlane(Int_t plane){ fPlane = plane; }
-  void           SetReconstructor(const AliTRDReconstructor *rec) {fReconstructor = rec;}
+  void           SetReconstructor(const AliTRDReconstructor *rec) {fkReconstructor = rec;}
   void           SetStack(Int_t stack){ fStack = stack; }
   void           SetSector(Int_t sector){ fSector = sector; }
   void           SetOwner(Bool_t copy=kTRUE);
@@ -84,7 +82,7 @@ private:
   Int_t          FindNearestYCluster(Double_t y, UChar_t z) const;
 
 private:
-  const AliTRDReconstructor *fReconstructor; //!
+  const AliTRDReconstructor *fkReconstructor; //!
   Char_t        fPlane;               //! Plane number
   Char_t        fStack;               //!  stack number in supermodule
   Char_t        fSector;              //! Sector mumber

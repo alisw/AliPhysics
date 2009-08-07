@@ -28,6 +28,7 @@
 #include "TClass.h"
 #include "TH1F.h"
 
+#include "AliESDTrdTrack.h"
 #include "AliLog.h"
 #include "AliTRDgtuParam.h"
 #include "AliTRDtrackGTU.h"
@@ -70,7 +71,7 @@ AliTRDtrackGTU::~AliTRDtrackGTU()
   delete fTracklets;
 }
 
-void AliTRDtrackGTU::AddTracklet(AliTRDtrackletGTU *tracklet, Int_t layer) 
+void AliTRDtrackGTU::AddTracklet(const AliTRDtrackletGTU * const tracklet, Int_t layer) 
 {
 // add a tracklet to this track
 

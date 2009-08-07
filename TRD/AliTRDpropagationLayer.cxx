@@ -113,8 +113,8 @@ AliTRDpropagationLayer::AliTRDpropagationLayer(const AliTRDpropagationLayer &p)
   :TObject((TObject&)p)
   ,fN(p.fN)
   ,fSec(p.fSec)
-  ,fClusters(0x0)
-  ,fIndex(0x0)
+  ,fClusters(NULL)
+  ,fIndex(NULL)
   ,fX(p.fX)
   ,fdX(p.fdX)
   ,fRho(p.fRho)
@@ -220,7 +220,7 @@ void AliTRDpropagationLayer::Copy(TObject &o) const
 }
 
 //_____________________________________________________________________________
-void AliTRDpropagationLayer::SetZ(Double_t *center, Double_t *w, Double_t *wsensitive )
+void AliTRDpropagationLayer::SetZ(Double_t * const center, Double_t * const w, Double_t * const wsensitive )
 {
   //
   // Set centers and the width of sectors
@@ -235,7 +235,7 @@ void AliTRDpropagationLayer::SetZ(Double_t *center, Double_t *w, Double_t *wsens
 }
 
 //_____________________________________________________________________________
-void AliTRDpropagationLayer::SetHoles(Bool_t *holes)
+void AliTRDpropagationLayer::SetHoles(Bool_t * const holes)
 {
   //
   // Set centers and the width of sectors

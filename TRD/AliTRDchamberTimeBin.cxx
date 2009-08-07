@@ -31,13 +31,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-#include <TROOT.h>
 #include <TMath.h>
-#include <TStopwatch.h>
 #include <TTreeStream.h>
 
 #include "AliLog.h"
-
+#include "AliTRDcluster.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDchamberTimeBin.h"
@@ -49,7 +47,7 @@ ClassImp(AliTRDchamberTimeBin)
 //_____________________________________________________________________________
 AliTRDchamberTimeBin::AliTRDchamberTimeBin(Int_t plane, Int_t stack, Int_t sector, Double_t z0, Double_t zLength)
   :TObject()
-  ,fReconstructor(0x0)
+  ,fkReconstructor(NULL)
   ,fPlane(plane)
   ,fStack(stack)
   ,fSector(sector)
@@ -73,7 +71,7 @@ AliTRDchamberTimeBin::AliTRDchamberTimeBin(Int_t plane, Int_t stack, Int_t secto
 //_____________________________________________________________________________
 AliTRDchamberTimeBin::AliTRDchamberTimeBin(const AliTRDchamberTimeBin &layer):
   TObject()
-  ,fReconstructor(layer.fReconstructor)
+  ,fkReconstructor(layer.fkReconstructor)
   ,fPlane(layer.fPlane)
   ,fStack(layer.fStack)
   ,fSector(layer.fSector)
@@ -107,6 +105,7 @@ AliTRDchamberTimeBin &AliTRDchamberTimeBin::operator=(const AliTRDchamberTimeBin
 //_____________________________________________________________________________
 void AliTRDchamberTimeBin::Clear(const Option_t *) 
 { 
+  // Reset the Chamber Timebin
   if(IsOwner())
     for(Int_t it = 0; it<kMaxClustersLayer; it++)
       delete fClusters[it];
@@ -120,7 +119,7 @@ void AliTRDchamberTimeBin::Copy(TObject &o) const
 // Copy method. Performs a deep copy of all data from this object to object o.
   
   AliTRDchamberTimeBin &layer = (AliTRDchamberTimeBin &)o;
-  layer.fReconstructor = fReconstructor;
+  layer.fkReconstructor = fkReconstructor;
   layer.fPlane       = fPlane;
   layer.fStack       = fStack;
   layer.fSector      = fSector;
@@ -216,7 +215,7 @@ void AliTRDchamberTimeBin::Bootstrap(const AliTRDReconstructor *rec, Int_t det)
 // Reinitialize all data members from the clusters array
 // It has to be used after reading from disk
 
-  fReconstructor = rec;
+  fkReconstructor = rec;
   fPlane  = AliTRDgeometry::GetLayer(det);
   fStack  = AliTRDgeometry::GetStack(det);
   fSector = AliTRDgeometry::GetSector(det);
@@ -247,7 +246,7 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
   Int_t nClStack = 0;					// Internal counter
   for(Int_t i = 0; i < fN; i++){
     if(fClusters[i]->IsUsed() || fClusters[i]->IsShared()){
-      fClusters[i] = 0x0;
+      fClusters[i] = NULL;
       fIndex[i] = 0xffff;
     } else nClStack++;
   }
@@ -268,7 +267,7 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
   nClStack = 0;
   // Defining iterators
   AliTRDcluster **fcliter = &fClusters[0], **hcliter = &helpCL[0]; UInt_t *finditer = &fIndex[0], *hinditer = &helpInd[0];
-  AliTRDcluster *tmpcl = 0x0;
+  AliTRDcluster *tmpcl = NULL;
   for(Int_t i = 0; i < TMath::Min(fN, kMaxClustersLayer); i++){
     if(!(tmpcl = *(fcliter++))){
     	finditer++;
@@ -276,7 +275,7 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
     }
     *(hcliter++)  = tmpcl;
     *(hinditer++) = *finditer;
-    tmpcl = 0x0;
+    tmpcl = NULL;
     *(finditer++) = 0xffff;
     nClStack++;
   }
@@ -317,9 +316,9 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
     fX += cl->GetX(); 
     
     // Debug Streaming
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 3){
+    if(fkReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 3){
       AliTRDcluster dcl(*cl);
-      TTreeSRedirector &cstream = *fReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
+      TTreeSRedirector &cstream = *fkReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
       cstream << "BuildIndices"
       << "Plane="    << fPlane
       << "Stack="    << fStack
@@ -513,7 +512,7 @@ Int_t AliTRDchamberTimeBin::SearchNearestCluster(Double_t y, Double_t z, Double_
 }
 
 //_____________________________________________________________________________
-void AliTRDchamberTimeBin::BuildCond(AliTRDcluster *cl, Double_t *cond, UChar_t Layer, Double_t theta, Double_t phi)
+void AliTRDchamberTimeBin::BuildCond(AliTRDcluster * const cl, Double_t *cond, UChar_t Layer, Double_t theta, Double_t phi)
 {
 // Helper function to calculate the area where to expect a cluster in THIS
 // layer. 
@@ -537,7 +536,7 @@ void AliTRDchamberTimeBin::BuildCond(AliTRDcluster *cl, Double_t *cond, UChar_t 
 //End_Html
 //
 
-  if(!fReconstructor){
+  if(!fkReconstructor){
     AliError("Reconstructor not set.");
     return;
   }
@@ -545,18 +544,18 @@ void AliTRDchamberTimeBin::BuildCond(AliTRDcluster *cl, Double_t *cond, UChar_t 
   if(Layer == 0){
     cond[0] = cl->GetY();			// center: y-Direction
     cond[1] = cl->GetZ();			// center: z-Direction
-    cond[2] = fReconstructor->GetRecoParam()->GetMaxPhi()   * (cl->GetX() - GetX()) + 1.0;			// deviation: y-Direction
-    cond[3] = fReconstructor->GetRecoParam()->GetMaxTheta() * (cl->GetX() - GetX()) + 1.0;			// deviation: z-Direction
+    cond[2] = fkReconstructor->GetRecoParam()->GetMaxPhi()   * (cl->GetX() - GetX()) + 1.0;			// deviation: y-Direction
+    cond[3] = fkReconstructor->GetRecoParam()->GetMaxTheta() * (cl->GetX() - GetX()) + 1.0;			// deviation: z-Direction
   } else {
     cond[0] = cl->GetY() + phi   * (GetX() - cl->GetX()); 
     cond[1] = cl->GetZ() + theta * (GetX() - cl->GetX());
-    cond[2] = fReconstructor->GetRecoParam()->GetRoad0y() + phi;
-    cond[3] = fReconstructor->GetRecoParam()->GetRoad0z();
+    cond[2] = fkReconstructor->GetRecoParam()->GetRoad0y() + phi;
+    cond[3] = fkReconstructor->GetRecoParam()->GetRoad0z();
   }
 }
 
 //_____________________________________________________________________________
-void AliTRDchamberTimeBin::GetClusters(Double_t *cond, Int_t *index, Int_t& ncl, Int_t BufferSize)
+void AliTRDchamberTimeBin::GetClusters(const Double_t * const cond, Int_t *index, Int_t& ncl, Int_t BufferSize)
 {
 // Finds all clusters situated in this layer inside a rectangle  given by the center an ranges.
 //
@@ -631,11 +630,11 @@ AliTRDcluster *AliTRDchamberTimeBin::GetNearestCluster(Double_t *cond)
 // successfull) by the help of the method FindNearestCluster
   
   
-  Double_t maxroad  = fReconstructor->GetRecoParam()->GetRoad2y();
-  Double_t maxroadz = fReconstructor->GetRecoParam()->GetRoad2z();
+  Double_t maxroad  = fkReconstructor->GetRecoParam()->GetRoad2y();
+  Double_t maxroadz = fkReconstructor->GetRecoParam()->GetRoad2z();
   
   Int_t index = SearchNearestCluster(cond[0],cond[1],maxroad,maxroadz);
-  AliTRDcluster *returnCluster = 0x0;
+  AliTRDcluster *returnCluster = NULL;
   if(index != -1) returnCluster = (AliTRDcluster *) fClusters[index];
   return returnCluster;
 }

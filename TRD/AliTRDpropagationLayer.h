@@ -42,8 +42,8 @@ class AliTRDpropagationLayer : public TObject
   void         SetYmax(Double_t w, Double_t wsensitive)         { fYmax          = w;
                                                                   fYmaxSensitive = wsensitive;  }
 
-  void         SetZ(Double_t* center, Double_t *w, Double_t *wsensitive);
-  void         SetHoles(Bool_t* holes);
+  void         SetZ(Double_t * const center, Double_t * const w, Double_t * const wsensitive);
+  void         SetHoles(Bool_t * const holes);
   //void         SetHole(Double_t Zmax, Double_t Ymax
   //		       , Double_t rho = 1.29e-3, Double_t x0 = 36.66
   //                   , Double_t Yc = 0.0, Double_t Zc = 0.0);
@@ -65,7 +65,7 @@ class AliTRDpropagationLayer : public TObject
   Bool_t       IsSensitive() const                              { return (fTimeBinIndex >= 0) ? kTRUE : kFALSE;}
 	Bool_t       IsT0() const {return TestBit(1);}
 
-  void         Clear(const Option_t * /*o*/)                    { ; } 
+  void         Clear(const Option_t * /*o*/) const              { ; } 
   void         Clear()                                          { for (Int_t i = 0; i < fN; i++) 
                                                                     fClusters[i] = NULL;
 		                                                  fN = 0;                       }

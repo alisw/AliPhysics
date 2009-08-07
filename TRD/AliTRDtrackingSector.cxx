@@ -25,10 +25,6 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDcalibDB.h"
-#include "AliTRDCommonParam.h"
-#include "AliTRDReconstructor.h"
-#include "AliTRDpadPlane.h"
 #include "AliTRDtrackingSector.h"
 #include "AliTRDtrackingChamber.h"
 
@@ -39,7 +35,7 @@ ClassImp(AliTRDtrackingSector)
 AliTRDtrackingSector::AliTRDtrackingSector()
   :fSector(-1)
   ,fN(0)
-  ,fGeom(0x0)
+  ,fGeom(NULL)
 {
   // Default constructor
   
@@ -71,7 +67,7 @@ void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec, const AliTRDCalD
 // 	Propagate radial position information (calibration/alignment aware) from chambers to sector level
 //
   
-  AliTRDchamberTimeBin *tb = 0x0;
+  AliTRDchamberTimeBin *tb = NULL;
   AliTRDtrackingChamber **tc = &fChamber[0];
   for(Int_t ic = 0; (ic<AliTRDgeometry::kNdets) && (*tc); ic++, tc++){
     for(Int_t itb=0; itb<AliTRDseedV1::kNtb; itb++){
@@ -108,7 +104,7 @@ void AliTRDtrackingSector::Clear(const Option_t *opt)
   AliTRDtrackingChamber **tc = &fChamber[0];
   for(Int_t ich=0; ich<fN; ich++, tc++){ 
     (*tc)->Clear(opt);
-    delete (*tc); (*tc) = 0x0;   // I would avoid
+    delete (*tc); (*tc) = NULL;   // I would avoid
   }	
   memset(fIndex, -1, AliTRDgeometry::kNdets*sizeof(Char_t));
   fN = 0;
@@ -122,7 +118,7 @@ AliTRDtrackingChamber* AliTRDtrackingSector::GetChamber(Int_t stack, Int_t layer
   
   Int_t ch = stack*AliTRDgeometry::kNlayer + layer;
   if(fIndex[ch] >= 0) return fChamber[Int_t(fIndex[ch])];
-  else if(!build) return 0x0;
+  else if(!build) return NULL;
   
   // CHAMBER HAS TO BE BUILD
   Int_t rch = ch;do rch--; while(rch>=0 && fIndex[rch]<0);
@@ -143,19 +139,19 @@ AliTRDtrackingChamber** AliTRDtrackingSector::GetStack(Int_t stack)
 // Return chamber at position (stack, plane) in current 
 // sector or build a new one if it is not already created
   
-  if(stack<0 || stack>=AliTRDgeometry::kNstack) return 0x0;
+  if(stack<0 || stack>=AliTRDgeometry::kNstack) return NULL;
   
   Int_t ich, n = 0;
   for(int il=0; il<AliTRDgeometry::kNlayer; il++){
     ich = stack*AliTRDgeometry::kNlayer + il;
-    if(fIndex[ich] < 0) fStack[il] = 0x0; 
+    if(fIndex[ich] < 0) fStack[il] = NULL; 
     else{
       fStack[il] = fChamber[Int_t(fIndex[ich])];
       n++;
     }
   }
   
-  return n ? &fStack[0] : 0x0;
+  return n ? &fStack[0] : NULL;
 }
 
 //_____________________________________________________________________________

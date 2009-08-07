@@ -25,7 +25,9 @@ class AliTRDCalPID : public TNamed
  public:
 
   enum {
-    kNMom   = 11
+    kNMom   = 11,
+    kNSlicesLQ = 3,
+    kNSlicesNN = 8
   };
 
   AliTRDCalPID();

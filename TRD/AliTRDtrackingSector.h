@@ -32,18 +32,18 @@ public:
   AliTRDtrackingSector(AliTRDgeometry* geo, Int_t gs);
   virtual ~AliTRDtrackingSector(){;}
     
-  void     Clear(const Option_t *opt = 0x0);
+  void     Clear(const Option_t *opt = NULL);
   Int_t    GetNChambers() const             { return fN; }
   Double_t GetX(Int_t pl) const                  { return pl >=0 && pl < AliTRDgeometry::kNlayer ? fX0[pl] : 0.; }
-  AliTRDtrackingChamber* GetChamber(Int_t i) const  { return i>=0 && i < fN ? fChamber[i] : 0x0;  }
+  AliTRDtrackingChamber* GetChamber(Int_t i) const  { return i>=0 && i < fN ? fChamber[i] : NULL;  }
   AliTRDtrackingChamber* GetChamber(Int_t stack, Int_t plane, Bool_t build = kFALSE);
   AliTRDtrackingChamber** GetStack(Int_t stack);
   Int_t    GetSector() const {return fSector;}	
 
   void     Init(const AliTRDReconstructor *rec, const AliTRDCalDet *cal);
-  void     Print(Option_t *opt = 0x0) const;
+  void     Print(Option_t *opt = NULL) const;
   
-  void     SetGeometry(AliTRDgeometry *geo) {fGeom = geo;}
+  void     SetGeometry(AliTRDgeometry *const geo) {fGeom = geo;}
   
 private:
   AliTRDtrackingSector(const AliTRDtrackingSector &/*t*/);

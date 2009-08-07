@@ -55,7 +55,6 @@
 #include "AliTRDCalPID.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDtrack.h"
 
 ClassImp(AliTRDCalPIDRefMaker)
 
@@ -286,11 +285,11 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(const Char_t *File, const Char_t 
 					
 					Float_t mom;
                                         //Float_t length;
-					Double_t dedx[AliTRDtrack::kNslice], dEdx;
+					Double_t dedx[AliTRDCalPID::kNSlicesLQ], dEdx;
 					Int_t timebin;
 					for (Int_t iLayer=0; iLayer<AliTRDgeometry::kNlayer; iLayer++){
 						// read data for track segment
-						for(int iSlice=0; iSlice<AliTRDtrack::kNslice; iSlice++)
+						for(int iSlice=0; iSlice<AliTRDCalPID::kNSlicesLQ; iSlice++)
 							dedx[iSlice] = esdTrack->GetTRDslice(iLayer, iSlice);
 						dEdx    = esdTrack->GetTRDslice(iLayer, -1);
 						timebin = esdTrack->GetTRDTimBin(iLayer);

@@ -59,13 +59,13 @@ class AliTRDtracker : public AliTracker {
        , kMaxTimeBinIndex      = 216
        , kTrackingSectors      = 18   };
   
-  AliTRDtracker(AliTRDReconstructor *rec = 0x0);
+  AliTRDtracker(AliTRDReconstructor *rec = NULL);
   AliTRDtracker(const AliTRDtracker &t);
-  AliTRDtracker(const TFile *in, AliTRDReconstructor *rec = 0x0);
+  AliTRDtracker(const TFile *in, AliTRDReconstructor *rec = NULL);
   virtual         ~AliTRDtracker(); 
   AliTRDtracker   &operator=(const AliTRDtracker &/*t*/) { return *this;          } 
   
-  void             SetReconstructor(AliTRDReconstructor *rec) {fReconstructor = rec;}
+  void             SetReconstructor(AliTRDReconstructor * const rec) {fReconstructor = rec;}
   void             SetAddTRDseeds()               { fAddTRDseeds = kTRUE;         }
   void             SetNoTilt()                    { fNoTilt      = kTRUE;         }
   
@@ -73,7 +73,7 @@ class AliTRDtracker : public AliTracker {
   Double_t         GetMaxChi2() const             { return fgkMaxChi2;            }
   Float_t          GetLabelFraction() const       { return fgkLabelFraction;      }
   Float_t          GetMinClustersInTrack() const  { return fgkMinClustersInTrack; }
-  Int_t            GetLastPlane(AliTRDtrack *track);
+  Int_t            GetLastPlane(AliTRDtrack *const track);
   Double_t         GetTiltFactor(const AliTRDcluster *c);
   virtual Bool_t   GetTrackPoint(Int_t index, AliTrackPoint& p) const;
   Double_t         GetX(Int_t sec, Int_t plane, Int_t localTB) const;
@@ -100,14 +100,14 @@ class AliTRDtracker : public AliTracker {
   void             UnloadClusters();
   virtual void     UseClusters(const AliKalmanTrack *t, Int_t from = 0) const;  
   Int_t            ReadClusters(TObjArray *array, TTree *in) const;
-  AliTRDcluster   *GetCluster(AliTRDtrack *track, Int_t plane, Int_t timebin, UInt_t &index);
+  AliTRDcluster   *GetCluster(AliTRDtrack * const track, Int_t plane, Int_t timebin, UInt_t &index);
   Int_t            FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack *track
                               , Int_t *clusters, AliTRDtracklet &tracklet);  
   
  protected:
 
-  Bool_t           AdjustSector(AliTRDtrack *track); 
-  AliTRDtrack     *RegisterSeed(AliTRDseed *seeds, Double_t *params);
+  Bool_t           AdjustSector(AliTRDtrack *const track) const; 
+  AliTRDtrack     *RegisterSeed(AliTRDseed * const seeds, Double_t *params);
   Int_t            FollowBackProlongation(AliTRDtrack &t);
   //void             MakeSeedsMI(Int_t inner, Int_t outer, AliESDEvent *esd = 0);
   
@@ -131,7 +131,7 @@ class AliTRDtracker : public AliTracker {
     Int_t    GetOuterTimeBin() const;
     Int_t    GetLayerNumber(Int_t tb) const        { return fTimeBinIndex[tb];   }
     Double_t GetX(Int_t pl) const                  { return fLayers[pl]->GetX(); }
-    AliTRDpropagationLayer* GetLayer(Int_t i)      { return fLayers[i];          }
+    AliTRDpropagationLayer* GetLayer(Int_t i) const { return fLayers[i];          }
     Int_t    GetSector() const {return fGeomSector;}	
     
     void     MapTimeBinLayers();
@@ -150,7 +150,7 @@ class AliTRDtracker : public AliTracker {
   };
   
  protected:
-  AliTRDReconstructor     *fReconstructor;
+  AliTRDReconstructor     *fReconstructor;                 // TRD Reconstructor
   AliTRDgeometry          *fGeom;                          // Pointer to TRD geometry
   AliTRDtrackingSector    *fTrSec[kTrackingSectors];       // Array of tracking sectors;    
   Int_t                    fNclusters;                     // Number of clusters in TRD 

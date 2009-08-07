@@ -25,8 +25,6 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDtrackerDebug.h"
-
 #include "TFile.h"
 #include "TTree.h"
 #include "TTreeStream.h"
@@ -36,12 +34,14 @@
 #include "TMath.h"
 
 #include "AliLog.h"
+
 #include "AliTRDgeometry.h"
 #include "AliTRDtrackV1.h"
 #include "AliTRDseedV1.h"
-#include "AliTRDseed.h"
 #include "AliTRDcluster.h"
 #include "AliTRDgeometry.h"
+
+#include "AliTRDtrackerDebug.h"
 
 ClassImp(AliTRDtrackerDebug)
 
@@ -51,10 +51,10 @@ Int_t AliTRDtrackerDebug::fgCandidateNumber = 0;
 
 //____________________________________________________
 AliTRDtrackerDebug::AliTRDtrackerDebug() : AliTRDtrackerV1()
-  ,fOutputStreamer(0x0)
-  ,fTree(0x0)
-  ,fTracklet(0x0)
-  ,fTrack(0x0)
+  ,fOutputStreamer(NULL)
+  ,fTree(NULL)
+  ,fTracklet(NULL)
+  ,fTrack(NULL)
   ,fNClusters(0)
   ,fAlpha(0.)
 {
@@ -74,7 +74,7 @@ AliTRDtrackerDebug::~AliTRDtrackerDebug()
 
 
 //____________________________________________________
-void AliTRDtrackerDebug::Draw(Option_t *)
+void AliTRDtrackerDebug::Draw(Option_t *) 
 {
 // steer draw function
 }
@@ -119,7 +119,7 @@ Int_t AliTRDtrackerDebug::Process()
     //printf("Processing track %d [%d] ...\n", it, fNClusters);
     ResidualsTrackletsTrack();
 
-    const AliTRDseedV1 *tracklet = 0x0;
+    const AliTRDseedV1 *tracklet = NULL;
     for(int ip = 5; ip>=0; ip--){
       if(!(tracklet = fTrack->GetTracklet(ip))) continue;
       if(!tracklet->GetN()) continue;
@@ -139,7 +139,7 @@ void AliTRDtrackerDebug::ResidualsClustersTrack(const AliTRDseedV1 *tracklet)
 // Calculate averange distances from clusters to the TRD track	
   
   Double_t x[3]; 
-  AliTRDcluster *c = 0x0;
+  AliTRDcluster *c = NULL;
   for(int ic=0; ic<35/*AliTRDseed:knTimebins*/; ic++){
     if(!(c = tracklet->GetClusters(ic))) continue;
     Double_t xc = c->GetX(), yc = c->GetY(), zc = c->GetZ();
@@ -176,7 +176,7 @@ void AliTRDtrackerDebug::ResidualsClustersTracklet(const AliTRDseedV1 *tracklet)
           //z0 = tracklet->GetZfit(0), 
           //zs = tracklet->GetZfit(1);
   
-  AliTRDcluster *c = 0x0;
+  AliTRDcluster *c = NULL;
   for(int ic=0; ic<35/*AliTRDseed:knTimebins*/; ic++){
     if(!(c = tracklet->GetClusters(ic))) continue;
     Double_t xc = c->GetX(), yc = c->GetY()/*, zc = c->GetZ()*/;
@@ -200,7 +200,7 @@ void AliTRDtrackerDebug::ResidualsClustersParametrisation(const AliTRDseedV1 *tr
   
   // store cluster positions
   Double_t x0 = tracklet->GetX0();
-  AliTRDcluster *c = 0x0;
+  AliTRDcluster *c = NULL;
   
   Double_t x[2]; Int_t ncl, mcl, jc;
   TLinearFitter fitter(3, "hyp2");
@@ -242,8 +242,9 @@ void AliTRDtrackerDebug::ResidualsTrackletsTrack() const
 
   // build a working copy of the tracklets attached to the track 
   // and initialize working variables fX, fY and fZ
-  AliTRDseedV1 tracklet[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-  const AliTRDseedV1 *ctracklet = 0x0;
+  //AliTRDseedV1 tracklet[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
+  AliTRDseedV1 tracklet[6];
+  const AliTRDseedV1 *ctracklet = NULL;
   for(int ip = 0; ip<6; ip++){
     if(!(ctracklet = fTrack->GetTracklet(ip))) continue;
     tracklet[ip] = (*ctracklet); 
@@ -267,7 +268,7 @@ void AliTRDtrackerDebug::ResidualsTrackletsTrack() const
     tracklet[ip].SetX0(x0);
 
     // fit Rieman with tilt correction
-    AliTRDtrackerV1::FitRiemanTilt(0x0, &tracklet[0], kTRUE);
+    AliTRDtrackerV1::FitRiemanTilt(NULL, &tracklet[0], kTRUE);
 
     // make a copy of the fit result
     Double_t 
@@ -340,7 +341,7 @@ void AliTRDtrackerDebug::AnalyseFindable(Char_t *treename){
   
   AliTRDseedV1 *tracklets[kNPlanes];
   for(Int_t iPlane = 0; iPlane < AliTRDtrackerV1::kNPlanes; iPlane++)
-    tracklets[iPlane] = 0x0;
+    tracklets[iPlane] = NULL;
   for(Int_t iPlane = 0; iPlane < kNPlanes; iPlane++)
     fTree->SetBranchAddress(Form("S%d.", iPlane), &tracklets[iPlane]);
   fTree->SetBranchAddress("EventNumber", &fgEventNumber);
@@ -385,7 +386,7 @@ void AliTRDtrackerDebug::AnalyseTiltedRiemanFit(){
   fTree = (TTree *)(debfile->Get("MakeSeeds2"));
   if(!fTree) return;
   Int_t nEntries = fTree->GetEntries();
-  TLinearFitter *tiltedRiemanFitter = 0x0;
+  TLinearFitter *tiltedRiemanFitter = NULL;
   fTree->SetBranchAddress("FitterT.", &tiltedRiemanFitter);
   fTree->SetBranchAddress("EventNumber", &fgEventNumber);
   fTree->SetBranchAddress("CandidateNumber", &fgCandidateNumber);
@@ -459,7 +460,7 @@ Float_t AliTRDtrackerDebug::GetDCA(Float_t a, Float_t b, Float_t c) const {
 //____________________________________________________
 void AliTRDtrackerDebug::AnalyseMinMax()
 {
-//
+  // Development function related to the old tracking code
   TFile *debfile = TFile::Open("TRD.TrackerDebug.root");
   if(!debfile){
     AliError("File TRD.TrackerDebug.root not found!");
@@ -470,8 +471,8 @@ void AliTRDtrackerDebug::AnalyseMinMax()
     AliError("Tree MakeSeeds0 not found in File TRD.TrackerDebug.root.");
     return;
   }
-  AliTRDseedV1 *cseed[4] = {0x0, 0x0, 0x0, 0x0};
-  AliTRDcluster *c[4] = {0x0, 0x0, 0x0, 0x0};
+  AliTRDseedV1 *cseed[4] = {NULL, NULL, NULL, NULL};
+  AliTRDcluster *c[4] = {NULL, NULL, NULL, NULL};
   for(Int_t il = 0; il < 4; il++){
     fTree->SetBranchAddress(Form("Seed%d.", il),	&cseed[il]);
     fTree->SetBranchAddress(Form("c%d.",il), &c[il]);
@@ -514,18 +515,18 @@ TCanvas* AliTRDtrackerDebug::PlotSeedingConfiguration(const Char_t *direction, I
   
   if((strcmp(direction, "y") != 0) && (strcmp(direction, "z") != 0)){
     AliError(Form("Direction %s does not exist. Abborting!", direction));
-    return 0x0;
+    return NULL;
   }
 
   TFile *debfile = TFile::Open("TRD.TrackerDebug.root");
   if(!debfile){
     AliError("File TRD.TrackerDebug.root not found!");
-    return 0x0; 
+    return NULL; 
   }
   fTree = (TTree *)(debfile->Get("MakeSeeds0"));
   if(!fTree){
     AliError("Tree MakeSeeds0 not found in File TRD.TrackerDebug.root.");
-    return 0x0;
+    return NULL;
   }
   
   TGraph *seedcl = new TGraph(4);
@@ -535,8 +536,8 @@ TCanvas* AliTRDtrackerDebug::PlotSeedingConfiguration(const Char_t *direction, I
   seedcl->SetMarkerColor(kRed);
   seedRef->SetMarkerStyle(2);
 
-  AliTRDcluster *c[4] = {0x0, 0x0, 0x0, 0x0};
-  AliRieman *rim = 0x0;
+  AliTRDcluster *c[4] = {NULL, NULL, NULL, NULL};
+  AliRieman *rim = NULL;
   Bool_t found = kFALSE;
   for(Int_t il = 0; il < 4; il++) fTree->SetBranchAddress(Form("c%d.",il), &c[il]);
   fTree->SetBranchAddress("EventNumber", &fgEventNumber);
@@ -595,7 +596,7 @@ TCanvas* AliTRDtrackerDebug::PlotSeedingConfiguration(const Char_t *direction, I
     delete seedcl;
     delete seedRef;
     delete riemanFit;
-    return 0x0;
+    return NULL;
   }
 }
 
@@ -617,15 +618,15 @@ TCanvas* AliTRDtrackerDebug::PlotFullTrackFit(Int_t event, Int_t candidate, Int_
   
   if(strcmp(direction, "y") && strcmp(direction, "z")){
     AliError(Form("Direction %s does not exist. Abborting!", direction));
-    return 0x0;
+    return NULL;
   }
 
   TFile *debfile = TFile::Open("TRD.TrackerDebug.root");
   if(!debfile){
     AliError("File TRD.TrackerDebug.root not found.");
-    return 0x0;
+    return NULL;
   }
-  TString *treename = 0x0;
+  TString *treename = NULL;
   if(iteration > -1)
     treename = new TString("ImproveSeedQuality");
   else
@@ -634,7 +635,7 @@ TCanvas* AliTRDtrackerDebug::PlotFullTrackFit(Int_t event, Int_t candidate, Int_
   if(!fTree){
     AliError(Form("Tree %s not found in File TRD.TrackerDebug.root.", treename->Data()));
     delete treename;
-    return 0x0;
+    return NULL;
   }
   delete treename;
 
@@ -646,8 +647,8 @@ TCanvas* AliTRDtrackerDebug::PlotFullTrackFit(Int_t event, Int_t candidate, Int_
       clp[AliTRDtrackerV1::kNPlanes * AliTRDtrackerV1::kNTimeBins];
   Int_t nLayers = 0, ncls = 0;
   
-  TLinearFitter *fitter = 0x0;
-  AliTRDseedV1 *tracklet[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+  TLinearFitter *fitter = NULL;
+  AliTRDseedV1 *tracklet[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
   for(Int_t iLayer = 0; iLayer < 6; iLayer++)
     fTree->SetBranchAddress(Form("S%d.", iLayer), &tracklet[iLayer]);
   fTree->SetBranchAddress("FitterT.", &fitter);
@@ -774,7 +775,7 @@ TCanvas* AliTRDtrackerDebug::PlotFullTrackFit(Int_t event, Int_t candidate, Int_
   else{
     AliError(Form("Combination consisting of event %d and candidate %d not found", event, candidate));
     delete fitfun;
-    return 0x0;
+    return NULL;
   }
 }
 

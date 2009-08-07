@@ -11,17 +11,13 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALIKALMANTRACK_H
+//#ifndef ALIKALMANTRACK_H
 #include "AliKalmanTrack.h"
-#endif
+//#endif
 
-#ifndef ALIESDTRACK_H
-#include "AliESDtrack.h"
-#endif
-
-#ifndef ALITRDSEEDV1_H
+//#ifndef ALITRDSEEDV1_H
 #include "AliTRDseedV1.h"
-#endif
+//#endif
 
 class AliTRDcluster;
 class AliESDtrack;
@@ -70,7 +66,7 @@ public:
   };
 
   AliTRDtrackV1();
-  AliTRDtrackV1(AliTRDseedV1 *trklts, const Double_t p[5], const Double_t cov[15], Double_t x, Double_t alpha);
+  AliTRDtrackV1(const AliTRDseedV1 * const trklts, const Double_t p[5], const Double_t cov[15], Double_t x, Double_t alpha);
   AliTRDtrackV1(const AliESDtrack &ref);
   AliTRDtrackV1(const AliTRDtrackV1 &ref);
   virtual ~AliTRDtrackV1();
@@ -94,13 +90,13 @@ public:
   Int_t          GetProlongation(Double_t xk, Double_t &y, Double_t &z);
   inline UChar_t GetStatusTRD(Int_t ly=-1) const;
   Int_t          GetSector() const;
-  AliTRDseedV1*  GetTracklet(Int_t plane) const {return plane >=0 && plane <kNplane ? fTracklet[plane] : 0x0;}
+  AliTRDseedV1*  GetTracklet(Int_t plane) const {return plane >=0 && plane <kNplane ? fTracklet[plane] : NULL;}
   Int_t          GetTrackletIndex(Int_t plane) const          { return (plane>=0 && plane<kNplane) ? fTrackletIndex[plane] : -1;}
   AliExternalTrackParam*
                  GetTrackLow() const  { return fTrackLow;} 
   AliExternalTrackParam*
                  GetTrackHigh() const  { return fTrackHigh;} 
-  UShort_t*      GetTrackletIndexes() { return &fTrackletIndex[0];}
+  const UShort_t* GetTrackletIndexes() const { return &fTrackletIndex[0];}
   
   Bool_t         IsEqual(const TObject *inTrack) const;
   Bool_t         IsKink() const    { return TestBit(kKink);}
@@ -123,17 +119,17 @@ public:
   UChar_t        SetNumberOfTrackletsPID(Bool_t recalc);
   void           SetOwner();
   void           SetPID(Short_t is, Double_t inPID){if (is >=0 && is < AliPID::kSPECIES) fPID[is]=inPID;};
-  void           SetPIDquality(UChar_t /*inPIDquality*/){/*fPIDquality = inPIDquality*/;};
+  void           SetPIDquality(UChar_t /*inPIDquality*/) const {/*fPIDquality = inPIDquality*/;};
   inline void    SetStatus(UChar_t stat, Int_t ly=-1);
   void           SetStopped(Bool_t stop) {SetBit(kStopped, stop);}
-  void           SetTracklet(AliTRDseedV1 *trklt,  Int_t index);
+  void           SetTracklet(AliTRDseedV1 *const trklt,  Int_t index);
   void           SetTrackLow();
-  void           SetTrackHigh(const AliExternalTrackParam *op=0x0);
+  void           SetTrackHigh(const AliExternalTrackParam *op=NULL);
   inline void    SetReconstructor(const AliTRDReconstructor *rec);
   inline Float_t StatusForTOF();
   void           UnsetTracklet(Int_t plane);
   Bool_t         Update(Double_t *p, Double_t *cov, Double_t chi2);
-  Bool_t         Update(const AliCluster *, Double_t, Int_t)                        { return kFALSE; };
+  Bool_t         Update(const AliCluster *, Double_t, Int_t) { return kFALSE; };
   void           UpdateESDtrack(AliESDtrack *t);
 
 private:
@@ -142,7 +138,7 @@ private:
   Double32_t   fPID[AliPID::kSPECIES]; //  PID probabilities
   Double32_t   fBudget[3];             //  Integrated material budget
   Double32_t   fDE;                    //  Integrated delta energy
-  const AliTRDReconstructor *fReconstructor;//! reconstructor link 
+  const AliTRDReconstructor *fkReconstructor;//! reconstructor link 
   AliTRDtrackV1 *fBackupTrack;         //! Backup track
   AliTRDseedV1 *fTracklet[kNplane];    //  Tracklets array defining the track
   AliExternalTrackParam *fTrackLow;    // parameters of the track which enter TRD from below (TPC) 
@@ -206,7 +202,7 @@ inline void AliTRDtrackV1::SetReconstructor(const AliTRDReconstructor *rec)
     if(!fTracklet[ip]) continue;
     fTracklet[ip]->SetReconstructor(rec);
   }
-  fReconstructor = rec;
+  fkReconstructor = rec;
 }
 
 //____________________________________________________

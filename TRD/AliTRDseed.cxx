@@ -27,7 +27,6 @@
 #include "AliMathBase.h"
 
 #include "AliTRDseed.h"
-#include "AliTRDcalibDB.h"
 #include "AliTRDcluster.h"
 #include "AliTRDtracker.h"
 #include "AliTRDtrackerV1.h"
@@ -64,7 +63,7 @@ AliTRDseed::AliTRDseed()
     fY[i]        = 0;   // y position
     fZ[i]        = 0;   // z position
     fIndexes[i]  = 0;   // Indexes
-    fClusters[i] = 0x0; // Clusters
+    fClusters[i] = NULL; // Clusters
     fUsable[i]   = 0;   // Indication  - usable cluster
   }
 
@@ -185,7 +184,7 @@ void AliTRDseed::Reset()
     fY[i]        = 0;  // Y position
     fZ[i]        = 0;  // Z position
     fIndexes[i]  = 0;  // Indexes
-    fClusters[i] = 0x0;  // Clusters
+    fClusters[i] = NULL;  // Clusters
     fUsable[i]   = kFALSE;    
   }
 
@@ -447,8 +446,8 @@ void AliTRDseed::Update()
     fUsable[i] = kFALSE;
     if (!fClusters[i]) continue;
     if (!fClusters[i]->IsInChamber()) continue;
-    if (TMath::Abs(fZ[i] - allowedz[i]) > 2){fClusters[i] = 0x0; continue;}
-    if (TMath::Abs(yres[i] - mean) > 4.0 * sigma){fClusters[i] = 0x0;  continue;}
+    if (TMath::Abs(fZ[i] - allowedz[i]) > 2){fClusters[i] = NULL; continue;}
+    if (TMath::Abs(yres[i] - mean) > 4.0 * sigma){fClusters[i] = NULL;  continue;}
     fUsable[i] = kTRUE;
     fN2++;
     fMPads += fClusters[i]->GetNPads();

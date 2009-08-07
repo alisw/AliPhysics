@@ -14,7 +14,7 @@
 #include "TClonesArray.h"
 
 #include "AliTRDtrackletGTU.h"
-#include "AliESDTrdTrack.h"
+class AliESDTrdTrack;
 
 class AliTRDtrackGTU : public TObject {
  public:
@@ -48,7 +48,7 @@ class AliTRDtrackGTU : public TObject {
   Int_t GetYapprox();
 
 
-  void AddTracklet(AliTRDtrackletGTU *tracklet, Int_t layer);
+  void AddTracklet(const AliTRDtrackletGTU * const tracklet, Int_t layer);
 
   void SetStack(Int_t stack) { fStack = stack; }
   void SetSector(Int_t sector) { fSector = sector; }
