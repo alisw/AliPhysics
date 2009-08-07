@@ -1250,13 +1250,15 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
     }
   }
   // build a new track with (sorted) (prealigned) good points
-  // pepo 200709
-//   atps = (AliTrackPointArray*)fTrackBuff[ngoodpts-fMinNPtsPerTrack];
-//   if (!atps) {
-//     atps = new AliTrackPointArray(ngoodpts);
-//     fTrackBuff.AddAtAndExpand(atps,ngoodpts-fMinNPtsPerTrack);
-//   }  
-  atps = new AliTrackPointArray(ngoodpts);
+  // pepo200709
+  //atps = (AliTrackPointArray*)fTrackBuff[ngoodpts-fMinNPtsPerTrack];
+  atps = (AliTrackPointArray*)fTrackBuff[ngoodpts];
+  if (!atps) {
+    atps = new AliTrackPointArray(ngoodpts);
+    //    fTrackBuff.AddAtAndExpand(atps,ngoodpts-fMinNPtsPerTrack);
+    fTrackBuff.AddAtAndExpand(atps,ngoodpts);
+  }  
+  //  atps = new AliTrackPointArray(ngoodpts);
   // endpepo200709
   //
   //
