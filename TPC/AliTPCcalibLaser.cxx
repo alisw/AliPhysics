@@ -143,6 +143,7 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   fDeltaPhiP(336),
   fSignals(336),
   //
+  fHisLaser(0),      //  N dim histogram of laser
   fHisNclIn(0),      //->Number of clusters inner
   fHisNclOut(0),     //->Number of clusters outer
   fHisNclIO(0),      //->Number of cluster inner outer
@@ -238,6 +239,7 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title, Bool
   fSignals(336),           // array of dedx signals
   //
   //
+  fHisLaser(0),      //  N dim histogram of laser
   fHisNclIn(0),      //->Number of clusters inner
   fHisNclOut(0),     //->Number of clusters outer
   fHisNclIO(0),      //->Number of cluster inner outer
@@ -337,6 +339,7 @@ AliTPCcalibLaser::AliTPCcalibLaser(const AliTPCcalibLaser& calibLaser):
   fSignals(((calibLaser.fSignals))),           // array of dedx signals
   //
   //
+  fHisLaser(0),      //  N dim histogram of laser
   fHisNclIn(new TH2F(*(calibLaser.fHisNclIn))),      //->Number of clusters inner
   fHisNclOut(new TH2F(*(calibLaser.fHisNclOut))),     //->Number of clusters outer
   fHisNclIO(new TH2F(*(calibLaser.fHisNclIO))),      //->Number of cluster inner outer
@@ -435,6 +438,7 @@ AliTPCcalibLaser::~AliTPCcalibLaser() {
   // destructor
   //
   if ( fHisNclIn){
+    delete fHisLaser;      //->
     delete fHisNclIn;      //->Number of clusters inner
     delete fHisNclOut;     //->Number of clusters outer
     delete fHisNclIO;      //->Number of cluster inner outer
@@ -588,6 +592,7 @@ void AliTPCcalibLaser::MakeDistHisto(Int_t id){
     //
     if (!fTracksEsdParam.At(id)) return;
     if (!AcceptLaser(id)) return;
+    Double_t xhis[12]={0,0,0,0,0,0,0,0,0,0,0,0};
     //
     //
     TH1F * hisdz = (TH1F*)fDeltaZ.At(id);
@@ -624,7 +629,21 @@ void AliTPCcalibLaser::MakeDistHisto(Int_t id){
     if (hisdphi) hisdphi->Fill(dphi);
     if (hisdphiP) hisdphiP->Fill(dphiP);
     if (hisSignal) hisSignal->Fill(TMath::Sqrt(TMath::Abs(track->GetTPCsignal())));
+    // fill HisLaser
+    xhis[0] = ltrp->GetId();
+    xhis[1] = ltrp->GetSide();
+    xhis[2] = ltrp->GetRod();
+    xhis[3] = ltrp->GetBundle();
+    xhis[4] = ltrp->GetBeam();
+    xhis[5] = dphi;
+    xhis[6] = fFitZ[id];
+    xhis[7] = param->GetParameter()[2]-ltrp->GetParameter()[2]; //dp2
+    xhis[8] = param->GetParameter()[3]-ltrp->GetParameter()[3]; //dp3
+    xhis[9] = param->GetParameter()[4];
+    xhis[10]= track->GetTPCNcls();
+    xhis[11]= TMath::Sqrt(TMath::Abs(track->GetTPCsignal()));
     // }
+    fHisLaser->Fill(xhis);
 }
 
 void AliTPCcalibLaser::FitDriftV(){
@@ -1856,7 +1875,7 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run){
     Float_t rmsphiP = hisphiP->GetRMS();
     Float_t meanZ = hisZ->GetMean();
     Float_t rmsZ = hisZ->GetRMS();
-    if (hisphi->GetRMS()>0)
+    if (hisphi->GetRMS()>hisphi->GetBinWidth(1))
       hisphi->Fit(&fg,"","",hisphi->GetMean()-4*hisphi->GetRMS(),hisphi->GetMean()+4*hisphi->GetRMS());
     Double_t gphi1 = fg.GetParameter(1);
     Double_t gphi2 = fg.GetParameter(2);
@@ -1865,17 +1884,17 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run){
     Double_t gphiP1 = fg.GetParameter(1);
     Double_t gphiP2 = fg.GetParameter(2);
     //
-    if (hisZ->GetRMS()>0)
-      hisZ->Fit(&fg,"","",hisZ->GetMean()-4*hisZ->GetRMS()-0.1,hisZ->GetMean()+4*hisZ->GetRMS()+0.1);
+    if (hisZ->GetRMS()>hisZ->GetBinWidth(1))
+      hisZ->Fit(&fg,"","");
     Double_t gz1 = fg.GetParameter(1);
     Double_t gz2 = fg.GetParameter(2);
     //
-    if (hisP3->GetRMS()>0)
+    if (hisP3->GetRMS()>hisP3->GetBinWidth(1))
       hisP3->Fit(&fg,"","",hisP3->GetMean()-4*hisP3->GetRMS(),hisP3->GetMean()+4*hisP3->GetRMS());
     Double_t gp31 = fg.GetParameter(1);
     Double_t gp32 = fg.GetParameter(2);
     //
-    if (hisP4->GetRMS()>0)
+    if (hisP4->GetRMS()>hisP4->GetBinWidth(1))
       hisP4->Fit(&fg,"","",hisP4->GetMean()-4*hisP4->GetRMS(),hisP4->GetMean()+4*hisP4->GetRMS());
     Double_t gp41 = fg.GetParameter(1);
     Double_t gp42 = fg.GetParameter(2);
@@ -2720,6 +2739,76 @@ void   AliTPCcalibLaser::MakeFitHistos(){
   SetBeamParameters(fBeamOffsetZInner, fBeamSlopeZInner, fBeamSectorInner,3);
   SetBeamParameters(fBeamOffsetYOuter, fBeamSlopeYOuter, fBeamSectorOuter,0);
   SetBeamParameters(fBeamOffsetYInner, fBeamSlopeYInner, fBeamSectorInner,1);
+  //
+  // Make THnSparse
+  //
+  //                   id   side   rod  bundle  beam  dP0  dP1  dP2  dP3  dP4 ncl dEdx 
+  Int_t binsLaser[12]= {336,  //id
+			2,    //side
+			6,    //rod
+			4,    //bundle
+			7,    //beam
+			300,  //dP0
+			300,  //dP1
+			300,  //dP2
+			300,  //dP3
+			300,  //dP4
+			80,   //ncl
+			50};   //dEdx
+  Double_t xminLaser[12]= {0,  //id
+			0,     //side
+			0,     //rod
+			0,     //bundle
+			0,     //beam
+			-1,    //dP0
+			-1,    //dP1
+			-0.01,   //dP2
+			-0.01,  //dP3
+			-0.1,  //dP4
+			0,   //ncl
+			0};   //sqrt dEdx
+  Double_t xmaxLaser[12]= {336,  //id
+			2,    //side
+			6,    //rod
+			4,    //bundle
+			7,    //beam
+			1,  //dP0
+			1,  //dP1
+			0.01,  //dP2
+			0.01,  //dP3
+			0.1,  //dP4
+			160,   //ncl
+			40};   //sqrt dEdx
+  
+  TString nameLaser[12]= {"id",
+			  "side",
+			  "rod",
+			  "bundle",
+			  "beam",
+			  "dP0",
+			  "dP1",
+			  "dP2",
+			  "dP3",
+			  "dP4",
+			  "ncl",
+			  "sqrt dEdx"};
+  TString titleLaser[12]= {"id",
+			  "side",
+			  "rod",
+			  "bundle",
+			  "beam",
+			  "#Delta_{P0}",
+			  "#Delta_{P1}",
+			  "#Delta_{P2}",
+			  "#Delta_{P3}",
+			  "#Delta_{P4}",
+			  "N_{cl}",
+			  "#sqrt{dEdx}"};
+  fHisLaser = new THnSparseS("dLaser","#Delta_{Laser}", 12, binsLaser,xminLaser, xmaxLaser);
+  for (Int_t iaxis=1; iaxis<12; iaxis++){
+    fHisLaser->GetAxis(iaxis)->SetName(nameLaser[iaxis]);
+    fHisLaser->GetAxis(iaxis)->SetTitle(titleLaser[iaxis]);
+  }
 }
 
 void AliTPCcalibLaser::MergeFitHistos(AliTPCcalibLaser * laser){
@@ -2727,10 +2816,11 @@ void AliTPCcalibLaser::MergeFitHistos(AliTPCcalibLaser * laser){
   // Merge content of histograms 
   //
   // Only first histogram is checked - all other should be the same
+  if (fHisLaser &&laser->fHisLaser) fHisLaser->Add(laser->fHisLaser);
+
   if (!laser->fHisNclIn) return;  // empty histograms
   if (!fHisNclIn) MakeFitHistos();
   //
-  
   fHisNclIn->Add(laser->fHisNclIn  );      //->Number of clusters inner
   fHisNclOut->Add(laser->fHisNclOut  );     //->Number of clusters outer
   fHisNclIO->Add(laser->fHisNclIO  );      //->Number of cluster inner outer

@@ -443,6 +443,10 @@ Bool_t AliTPCcalibCalib::RejectCluster(AliTPCclusterMI* cl, AliExternalTrackPara
 
   Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation    
   AliTPCseed::GetError(cl, param,cov[0],cov[2]);
+  if (param->GetSigmaY2()<0 || param->GetSigmaZ2()){
+    AliError("Wrong parameters");
+    return kFALSE;
+  }
   Double_t py = (cl->GetY()-param->GetY())/TMath::Sqrt(cov[0]*cov[0]+param->GetSigmaY2());
   Double_t pz = (cl->GetZ()-param->GetZ())/TMath::Sqrt(cov[2]*cov[2]+param->GetSigmaZ2());
   //

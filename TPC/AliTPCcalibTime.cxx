@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -103,8 +104,8 @@ AliTPCcalibTime::AliTPCcalibTime()
   :AliTPCcalibBase(), 
    fLaser(0),       // pointer to laser calibration
    fDz(0),          // current delta z
-   fCutMaxD(2),        // maximal distance in rfi ditection
-   fCutMaxDz(20),      // maximal distance in rfi ditection
+   fCutMaxD(3),        // maximal distance in rfi ditection
+   fCutMaxDz(25),      // maximal distance in rfi ditection
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99),  // direction vector products
    fCutTracks(10),
@@ -131,7 +132,7 @@ AliTPCcalibTime::AliTPCcalibTime()
     fHistVdriftLaserA[i]=0;
     fHistVdriftLaserC[i]=0;
   }
-  for (Int_t i=0;i<5;i++) {
+  for (Int_t i=0;i<10;i++) {
     fCosmiMatchingHisto[i]=0;
   }
 }
@@ -139,14 +140,14 @@ AliTPCcalibTime::AliTPCcalibTime()
 
 AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeVdrift)
   :AliTPCcalibBase(),
-   fLaser(0),       // pointer to laser calibration
-   fDz(0),          // current delta z
-   fCutMaxD(2),        // maximal distance in rfi ditection
-   fCutMaxDz(20),      // maximal distance in rfi ditection
-   fCutTheta(0.03),    // maximal distan theta
-   fCutMinDir(-0.99),  // direction vector products
+   fLaser(0),            // pointer to laser calibration
+   fDz(0),               // current delta z
+   fCutMaxD(5*0.5356),   // maximal distance in rfi ditection
+   fCutMaxDz(5*4.541),   // maximal distance in rfi ditection
+   fCutTheta(5*0.004644),// maximal distan theta
+   fCutMinDir(-0.99),    // direction vector products
    fCutTracks(10),
-   fMapDz(0),          //NEW! Tmap of V drifts for different triggers
+   fMapDz(0),            //Tmap of V drifts for different triggers
    fTimeBins(0),
    fTimeStart(0),
    fTimeEnd(0),
@@ -181,7 +182,7 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   fVdriftEnd  =  20.0/500.0;
   fRunBins    = 100000;
   fRunStart   = -0.5;
-  fRunEnd     = 0.5;
+  fRunEnd     = 99999.5;
 
   Int_t    binsVdriftLaser[4] = {fTimeBins , fPtBins , fVdriftBins*20, fRunBins };
   Double_t xminVdriftLaser[4] = {fTimeStart, fPtStart, fVdriftStart  , fRunStart};
@@ -206,24 +207,49 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
 
   fMapDz=new TMap();
 
-  for (Int_t i=0;i<5;i++) {
-    fCosmiMatchingHisto[i]=new TH1F("Cosmics matching","Cosmics matching",100,0,0);
-  }
+  fCosmiMatchingHisto[0]=new TH1F("Cosmics matching","p0-all"   ,100,-10*0.5356  ,10*0.5356  );
+  fCosmiMatchingHisto[1]=new TH1F("Cosmics matching","p1-all"   ,100,-10*4.541   ,10*4.541   );
+  fCosmiMatchingHisto[2]=new TH1F("Cosmics matching","p2-all"   ,100,-10*0.01134 ,10*0.01134 );
+  fCosmiMatchingHisto[3]=new TH1F("Cosmics matching","p3-all"   ,100,-10*0.004644,10*0.004644);
+  fCosmiMatchingHisto[4]=new TH1F("Cosmics matching","p4-all"   ,100,-10*0.03773 ,10*0.03773 );
+  fCosmiMatchingHisto[5]=new TH1F("Cosmics matching","p0-isPair",100,-10*0.5356  ,10*0.5356  );
+  fCosmiMatchingHisto[6]=new TH1F("Cosmics matching","p1-isPair",100,-10*4.541   ,10*4.541   );
+  fCosmiMatchingHisto[7]=new TH1F("Cosmics matching","p2-isPair",100,-10*0.01134 ,10*0.01134 );
+  fCosmiMatchingHisto[8]=new TH1F("Cosmics matching","p3-isPair",100,-10*0.004644,10*0.004644);
+  fCosmiMatchingHisto[9]=new TH1F("Cosmics matching","p4-isPair",100,-10*0.03773 ,10*0.03773 );
+//  Char_t nameHisto[3]={'p','0','\n'};
+//  for (Int_t i=0;i<10;i++){
+//    fCosmiMatchingHisto[i]=new TH1F("Cosmics matching",nameHisto,8192,0,0);
+//    nameHisto[1]++;
+//    if(i==4) nameHisto[1]='0';
+//  }
 }
 
 AliTPCcalibTime::~AliTPCcalibTime(){
   //
   // Destructor
   //
-  for (Int_t i=0;i<3;i++){
-    delete fHistVdriftLaserA[i];
-    delete fHistVdriftLaserC[i];
+  for(Int_t i=0;i<3;i++){
+    if(fHistVdriftLaserA[i]){
+      delete fHistVdriftLaserA[i];
+      fHistVdriftLaserA[i]=NULL;
+    }
+    if(fHistVdriftLaserC[i]){
+      delete fHistVdriftLaserC[i];
+      fHistVdriftLaserC[i]=NULL;
+    }
   }
-  fMapDz->SetOwner();
-  fMapDz->Delete();
-  delete fMapDz;  
-  for (Int_t i=0;i<5;i++) {
-    delete fCosmiMatchingHisto[i];
+  if(fMapDz){
+    fMapDz->SetOwner();
+    fMapDz->Delete();
+    delete fMapDz;
+    fMapDz=NULL;
+  }
+  for(Int_t i=0;i<5;i++){
+    if(fCosmiMatchingHisto[i]){
+      delete fCosmiMatchingHisto[i];
+      fCosmiMatchingHisto[i]=NULL;
+    }
   }
 }
 
@@ -418,6 +444,7 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
   //
   // Find pairs
   //
+
   for (Int_t i=0;i<ntracks;++i) {
     AliESDtrack *track0 = event->GetTrack(i);
     // track0 - choosen upper part
@@ -483,16 +510,18 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
       param0.GetXYZ(xyz0);
       param1.GetXYZ(xyz1);
       Bool_t isPair = IsPair(&param0,&param1);
+      Bool_t isCross = IsCross(track0, track1);
+
+//      Double_t z0 = track0->GetOuterParam()->GetZ();
+//      Double_t z1 = track1->GetOuterParam()->GetZ();
       
-      Double_t z0 = track0->GetOuterParam()->GetZ();
-      Double_t z1 = track1->GetOuterParam()->GetZ();
+//      Double_t z0inner = track0->GetInnerParam()->GetZ();
+//      Double_t z1inner = track1->GetInnerParam()->GetZ();
       
-      Double_t z0inner = track0->GetInnerParam()->GetZ();
-      Double_t z1inner = track1->GetInnerParam()->GetZ();
-      
-      if (isPair && z0>0 && z0inner>0 && z1<0 && z1inner<0) {
+      if (isPair && isCross){
 	if (track0->GetTPCNcls() > 80) {
 	  fDz = param0.GetZ() - param1.GetZ();
+	  if(track0->GetOuterParam()->GetZ()<0) fDz=-fDz;
 	  TTimeStamp tstamp(fTime);
 	  Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
 	  Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
@@ -512,6 +541,22 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
 	    fMapDz->Add(new TObjString("all"),curHist);
 	  }
 	  curHist->Fill(vecVdrift);
+	}
+      }
+      TTreeSRedirector *cstream = GetDebugStreamer();
+      if (fStreamLevel>0){
+        if (cstream){
+        (*cstream)<<"trackInfo"<<
+	  "tr0.="<<track0<<
+	  "tr1.="<<track1<<
+	  "p0.="<<&param0<<
+	  "p1.="<<&param1<<
+	  "isPair="<<isPair<<
+	  "isCross="<<isCross<<
+	  "fDz="<<fDz<<
+	  "fRun="<<fRun<<
+	  "fTime="<<fTime<<
+	  "\n";
 	}
       }
     } // end 2nd order loop        
@@ -565,7 +610,6 @@ void AliTPCcalibTime::Analyze(){}
 THnSparse* AliTPCcalibTime::GetHistoDrift(TObjString* name){
   return (THnSparseF*)(fMapDz->GetValue(name));
 }
-
 THnSparse* AliTPCcalibTime::GetHistoDrift(const char* name){
   TObjString* objName=new TObjString(name);
   THnSparse* histoDrift=0;
@@ -609,7 +653,7 @@ TMap* AliTPCcalibTime::GetGraphDrift(){
 }
 
 TGraph* AliTPCcalibTime::GetFitDrift(TObjString* name){
-  TGraphErrors* graphDrift=GetGraphDrift(name);
+  TGraph* graphDrift=GetGraphDrift(name);
   TGraph* fitDrift=0;
   if(graphDrift && graphDrift->GetN()){
     AliSplineFit fit;
@@ -643,7 +687,6 @@ TMap* AliTPCcalibTime::GetFitDrift(){
   while((addPair=(TPair*)(fMapDz->FindObject(iterator->Next())))) mapFitDrift->Add((TObjString*)addPair->Key(), GetFitDrift((TObjString*)addPair->Key()));
   return mapFitDrift;
 }
-
 Long64_t AliTPCcalibTime::Merge(TCollection *li) {
 
   TIterator* iter = li->MakeIterator();
@@ -676,11 +719,7 @@ Long64_t AliTPCcalibTime::Merge(TCollection *li) {
       }
       localHist->Add(addHist);
     }
-    if (cal->GetCosmiMatchingHisto(0)) fCosmiMatchingHisto[0]->Add(cal->GetCosmiMatchingHisto(0));
-    if (cal->GetCosmiMatchingHisto(1)) fCosmiMatchingHisto[1]->Add(cal->GetCosmiMatchingHisto(1));
-    if (cal->GetCosmiMatchingHisto(2)) fCosmiMatchingHisto[2]->Add(cal->GetCosmiMatchingHisto(2));
-    if (cal->GetCosmiMatchingHisto(3)) fCosmiMatchingHisto[3]->Add(cal->GetCosmiMatchingHisto(3));
-    if (cal->GetCosmiMatchingHisto(4)) fCosmiMatchingHisto[4]->Add(cal->GetCosmiMatchingHisto(4));
+    for(Int_t i=0;i<10;i++) if (cal->GetCosmiMatchingHisto(i)) fCosmiMatchingHisto[i]->Add(cal->GetCosmiMatchingHisto(i));
   }
   return 0;
 }
@@ -702,7 +741,7 @@ Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPara
   const Double_t *p1 = tr1->GetParameter();
   fCosmiMatchingHisto[0]->Fill(p0[0]+p1[0]);
   fCosmiMatchingHisto[1]->Fill(p0[1]-p1[1]);
-  fCosmiMatchingHisto[2]->Fill(tr0->GetAlpha()+tr1->GetAlpha());
+  fCosmiMatchingHisto[2]->Fill(tr1->GetAlpha()-tr0->GetAlpha()+TMath::Pi());
   fCosmiMatchingHisto[3]->Fill(p0[3]+p1[3]);
   fCosmiMatchingHisto[4]->Fill(p0[4]+p1[4]);
   
@@ -714,6 +753,40 @@ Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPara
   tr1->GetDirection(d1);       
   if (d0[0]*d1[0] + d0[1]*d1[1] + d0[2]*d1[2] >fCutMinDir) return kFALSE;
 
+  fCosmiMatchingHisto[5]->Fill(p0[0]+p1[0]);
+  fCosmiMatchingHisto[6]->Fill(p0[1]-p1[1]);
+  fCosmiMatchingHisto[7]->Fill(tr1->GetAlpha()-tr0->GetAlpha()+TMath::Pi());
+  fCosmiMatchingHisto[8]->Fill(p0[3]+p1[3]);
+  fCosmiMatchingHisto[9]->Fill(p0[4]+p1[4]);
+
   return kTRUE;  
 }
+Bool_t AliTPCcalibTime::IsCross(AliESDtrack *tr0, AliESDtrack *tr1){
+  return  tr0->GetOuterParam()->GetZ()*tr1->GetOuterParam()->GetZ()<0 && tr0->GetInnerParam()->GetZ()*tr1->GetInnerParam()->GetZ()<0 && tr0->GetOuterParam()->GetZ()*tr0->GetInnerParam()->GetZ()>0 && tr1->GetOuterParam()->GetZ()*tr1->GetInnerParam()->GetZ()>0;
+}
+
+/*
+chainDrift->Draw("p0.fP[0]+p1.fP[0]","isPair");
+  mean ~-0.02  ~-0.03913
+  RMS  ~ 0.5   ~ 0.5356    --> 3    (fCutMaxD)
+
+chainDrift->Draw("p0.fP[1]-p1.fP[1]","isPair");
+  mean         ~ 0.1855
+  RMS          ~ 4.541     -->25    (fCutMaxDz)
+
+chainDrift->Draw("p1.fAlpha-p0.fAlpha+pi","isPair");
+//chainDrift->Draw("p1.fAlpha+p0.fAlpha","isPair");
+//chainDrift->Draw("p1.fP[2]-p0.fP[2]+pi","isPair");
+//chainDrift->Draw("p1.fP[2]+p0.fP[2]","isPair");
+  mean ~ 0     ~ 0.001898
+  RMS  ~ 0.009 ~ 0.01134   --> 0.06
+
+chainDrift->Draw("p0.fP[3]+p1.fP[3]","isPair");
+  mean ~ 0.0013 ~ 0.001539
+  RMS  ~ 0.003  ~ 0.004644 --> 0.03  (fCutTheta)
+
+chainDrift->Draw("p1.fP[4]+p0.fP[4]>>his(100,-0.2,0.2)","isPair")
+  mean ~ 0.012  ~-0.0009729
+  RMS  ~ 0.036  ~ 0.03773  --> 0.2
+*/
 

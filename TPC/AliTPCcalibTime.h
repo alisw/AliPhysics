@@ -37,7 +37,8 @@ public:
   void                   ProcessLaser (AliESDEvent *event);
   void                   ProcessCosmic(AliESDEvent *event);
   Bool_t                 IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
-  //
+  Bool_t                 IsCross(AliESDtrack *tr0, AliESDtrack *tr1);
+
   THnSparse* GetHistVdriftLaserA(Int_t index=1){return fHistVdriftLaserA[index];};
   THnSparse* GetHistVdriftLaserC(Int_t index=1){return fHistVdriftLaserC[index];};
   THnSparse* GetHistoDrift(TObjString* name);
@@ -73,7 +74,7 @@ private:
   AliTPCcalibTime(const AliTPCcalibTime&); 
   AliTPCcalibTime& operator=(const AliTPCcalibTime&); 
 
-  TH1F* fCosmiMatchingHisto[5];
+  TH1F* fCosmiMatchingHisto[10];
 
   // laser histo
   THnSparse * fHistVdriftLaserA[3];	//Histograms for V drift from laser
