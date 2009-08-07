@@ -26,7 +26,7 @@ case "$1" in
     *         ) SEARCH="det=$1"; FILE="$1.ldif";;
 esac
 
-ldapsearch -H ldap://pcalishuttle01.cern.ch  -x -b "$SEARCH,o=shuttle_prod,dc=cern,dc=ch" -L -L -L > verify.out
+ldapsearch -H ldap://pcalishuttle02.cern.ch  -x -b "$SEARCH,o=shuttle_prod,dc=cern,dc=ch" -L -L -L > verify.out
 cat verify.out | ./unfoldlines.pl > verify1.out
 
 diff --ignore-space-change --ignore-blank-lines verify1.out $FILE | grep -v "> #" | grep -v '^0[a-z]'
