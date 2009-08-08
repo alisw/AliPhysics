@@ -26,10 +26,22 @@ class AliEMCALQADataMakerRec: public AliQADataMakerRec {
 
 public:
   //Histograms for Raw data control
-  enum HRawType_t {kNsmodLG,kNsmodHG,kTimeLG,kTimeHG,
-		   kSigLG,kSigHG,kNtotLG,kNtotHG,
-		   kPedLG,kPedHG,
-		   kPedRMSLG,kPedRMSHG} ;
+  enum HRawType_t { 
+    // first normal Low Gain and High Gain info
+    kNsmodLG,kNsmodHG,kTimeLG,kTimeHG,
+    kSigLG,kSigHG,kNtotLG,kNtotHG,
+    kPedLG,kPedHG,
+    kPedRMSLG,kPedRMSHG,
+    // then TRU info
+    kNsmodTRU,kTimeTRU,
+    kSigTRU,kNtotTRU,
+    kPedTRU,kPedRMSTRU,
+    // and also LED Mon info
+    kNsmodLGLEDMon,kNsmodHGLEDMon,kTimeLGLEDMon,kTimeHGLEDMon,
+    kSigLGLEDMon,kSigHGLEDMon,kNtotLGLEDMon,kNtotHGLEDMon,
+    kPedLGLEDMon,kPedHGLEDMon,
+    kPedRMSLGLEDMon,kPedRMSHGLEDMon
+  } ;
 
   //Histograms for RecPoints  control
   enum HRPType_t {kRecPE,kRecPM,kRecPDigM};
@@ -61,7 +73,7 @@ public:
 private:
   int fSuperModules; //The number of SuperModules activated
 
-  ClassDef(AliEMCALQADataMakerRec,2)  // description 
+  ClassDef(AliEMCALQADataMakerRec,3)  // description 
 
 };
 

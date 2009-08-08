@@ -30,6 +30,10 @@ public:
   static const int fgkSampleMax = 1023; // highest possible sample value (10-bit = 0x3ff)
   static const int fgkOverflowCut = 950; // saturation starts around here; also exist as private constant in AliEMCALRawUtils, should probably be replaced
   static const int fgkSampleMin = 0; // lowest possible sample value 
+
+  // TRU numbers
+  static const int fgkEMCALTRUsPerSM = 3; // number of TRU's in a SuperModule
+  static const int fgkEMCAL2x2PerTRU = 96; // number of 2x2's in a TRU
   
   // RAW/AliCaloAltroMapping provides the correspondence information between
   // an electronics HWAddress (Branch<<1 | FEC<<7 | ALTRO<<4 | Channel) 
