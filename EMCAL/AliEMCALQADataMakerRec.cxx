@@ -52,19 +52,23 @@ ClassImp(AliEMCALQADataMakerRec)
 //____________________________________________________________________________ 
   AliEMCALQADataMakerRec::AliEMCALQADataMakerRec() : 
     AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kEMCAL), "EMCAL Quality Assurance Data Maker"),
-    fSuperModules(4) // FIXME!!! number of SuperModules; 4 for 2009; update default to 12 for later runs..
+    fSuperModules(4), // FIXME!!! number of SuperModules; 4 for 2009; update default to 12 for later runs..
+    fFirstPedestalSample(0),
+    fLastPedestalSample(15)
 {
   // ctor
 }
 
 //____________________________________________________________________________ 
 AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qadm) :
-  AliQADataMakerRec(), fSuperModules()
+  AliQADataMakerRec(), 
+  fSuperModules(qadm.GetSuperModules()), 
+  fFirstPedestalSample(qadm.GetFirstPedestalSample()), 
+  fLastPedestalSample(qadm.GetLastPedestalSample())  
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
-  fSuperModules = qadm.GetSuperModules();
 }
 
 //__________________________________________________________________
@@ -348,8 +352,6 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
   // for the pedestal calculation
   Bool_t selectPedestalSamples = kTRUE;
-  int firstPedestalSample = 0;
-  int lastPedestalSample = 15;
 
   // SM counters; decl. should be safe, assuming we don't get more than expected SuperModules..
   int nTotalSMLG[AliEMCALGeoParams::fgkEMCALModules] = {0};
@@ -397,7 +399,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  }
 
 	  // should we add it for the pedestal calculation?
-	  if ( (firstPedestalSample<=time && time<=lastPedestalSample) || // sample time in range
+	  if ( (fFirstPedestalSample<=time && time<=fLastPedestalSample) || // sample time in range
 	       !selectPedestalSamples ) { // or we don't restrict the sample range.. - then we'll take all 
 	    sampleSum += sample;
 	    squaredSampleSum += sample*sample;

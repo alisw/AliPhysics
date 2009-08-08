@@ -58,6 +58,13 @@ public:
 
   void SetSuperModules(int i) {fSuperModules = i;}; //The number of SuperModules
   int GetSuperModules() const {return fSuperModules;}; //The number of SuperModules
+
+  // for pedestal calculation with raw data
+  void SetFirstPedestalSample(int i) {fFirstPedestalSample = i;}; // first sample 
+  int GetFirstPedestalSample() const {return fFirstPedestalSample;}; // first sample 
+  void SetLastPedestalSample(int i) {fLastPedestalSample = i;}; // last sample 
+  int GetLastPedestalSample() const {return fLastPedestalSample;}; // last sample 
+
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
   virtual void   InitESDs() ; 
   virtual void   InitDigits() ; 
@@ -72,6 +79,8 @@ public:
 
 private:
   int fSuperModules; //The number of SuperModules activated
+  int fFirstPedestalSample; // first sample for pedestal calculation
+  int fLastPedestalSample; // last sample for pedestal calculation
 
   ClassDef(AliEMCALQADataMakerRec,3)  // description 
 
