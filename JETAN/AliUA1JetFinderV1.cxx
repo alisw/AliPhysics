@@ -33,7 +33,6 @@
 #include "AliUA1JetHeaderV1.h"
 #include "AliJetReaderHeader.h"
 #include "AliJetReader.h"
-#include "AliJet.h"
 #include "AliAODJet.h"
 #include "AliLog.h"
 
@@ -103,8 +102,6 @@ void AliUA1JetFinderV1::FindJets()
     hPtTotal->Fill(ptT[i]);
     etbgTotal+= ptT[i];
   }
-
-  fJets->SetNinput(nIn);
 
   // calculate total energy and fluctuation in map
   Double_t meanpt = hPtTotal->GetMean();
@@ -197,7 +194,7 @@ void AliUA1JetFinderV1::FindJets()
       py = etJet[kj] * TMath::Sin(phiJet[kj]);
       pz = etJet[kj] / TMath::Tan(2.0 * TMath::ATan(TMath::Exp(-etaJet[kj])));
       en = TMath::Sqrt(px * px + py * py + pz * pz);
-      fJets->AddJet(px, py, pz, en);
+      
       AliAODJet jet(px, py, pz, en);
 
       if (fromAod){
@@ -236,15 +233,6 @@ void AliUA1JetFinderV1::FindJets()
        }
        if(bflag == 0) injet[bj] = -1; // set as background particle
    }
-  fJets->SetNCells(ncells);
-  fJets->SetPtFromSignal(percentage);
-  fJets->SetMultiplicities(mult);
-  fJets->SetInJet(injet);
-  fJets->SetEtaIn(etaT);
-  fJets->SetPhiIn(phiT);
-  fJets->SetPtIn(ptT);
-  fJets->SetEtAvg(etbgTotal/(4*(header->GetLegoEtaMax())*TMath::Pi()));
-
 
   //delete
   delete [] ptT;
@@ -844,7 +832,6 @@ void AliUA1JetFinderV1::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ, Flo
 void AliUA1JetFinderV1::Reset()
 {
   fLego->Reset();
-  fJets->ClearJets();
   AliJetFinder::Reset();
 }
 

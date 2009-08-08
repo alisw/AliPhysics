@@ -19,15 +19,9 @@
 #include "AliAODJet.h"
 #include "AliJetReader.h"
 #include "AliJetHeader.h"
-#include "AliJet.h"
 #include "AliJetReaderHeader.h"
 
-class TFile;
 class TChain;
-//class AliJet;
-//class AliJetHeader;
-class AliJetControlPlots;
-class AliLeading;
 class AliAODJet;
 class AliAODEvent;
 
@@ -37,21 +31,14 @@ class AliJetFinder : public TObject
   AliJetFinder();
   virtual ~AliJetFinder();
 
-  // getters
+  // Getters
   virtual AliJetReader *GetReader() {return fReader;}
   virtual AliJetHeader *GetHeader() {return fHeader;}
-  virtual AliJet       *GetJets() {return fJets;}
-  virtual Bool_t        GetPlotMode() const {return fPlotMode;}
-  virtual TFile        *GetOutputFile() {return fOut;}
-  // setters
-  virtual void          SetPlotMode(Bool_t b);
-  virtual void          SetOutputFile(const char *name="jets.root");
+  // Setters
   virtual void          SetJetReader(AliJetReader* r) {fReader=r;}
   virtual void          SetJetHeader(AliJetHeader* h) {fHeader=h;}
-  // others
+  // Others
   virtual void          AddJet(AliAODJet jet);
-  virtual void          PrintJets();
-  virtual void          Run();
   virtual void          WriteRHeaderToFile();  
   // the following have to be implemented for each specific finder
   virtual void          Init() {}
@@ -63,30 +50,18 @@ class AliJetFinder : public TObject
   // some methods to allow steering from the outside
   virtual Bool_t        ProcessEvent();
   virtual Bool_t        ProcessEvent2();
-  virtual void          FinishRun();
   virtual void          ConnectTree(TTree* tree, TObject* data);
   virtual void          ConnectAOD(AliAODEvent* aod);
   virtual void          ConnectAODNonStd(AliAODEvent* aod,const char* bname);
-  virtual TTree         *MakeTreeJ(char* name);
   virtual void          WriteHeaders();
-  virtual void          WriteJetsToFile() const {;}
-  virtual void          TestJet() {;}
 
  protected:
   AliJetFinder(const AliJetFinder& rJetFinder);
   AliJetFinder& operator = (const AliJetFinder& rhsf);
-  TTree* fTreeJ;                 //! pointer to jet tree
-  Bool_t fPlotMode;              //! do you want control plots?
-  AliJet* fJets;                 //! pointer to jet class
-  AliJet* fGenJets;              //! pointer to generated jets
-  AliLeading*   fLeading;        //! pointer to leading particle data 
   AliJetReader* fReader;         //  pointer to reader
   AliJetHeader* fHeader;         //  pointer to header
   TClonesArray* fAODjets;        //! reconstructed jets
   Int_t         fNAODjets;       //! number of reconstructed jets
-  AliJetControlPlots* fPlots;    //! pointer to control plots
-  TFile* fOut;                   //! output file
-
   ClassDef(AliJetFinder,2)
 };
 

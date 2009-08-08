@@ -35,7 +35,6 @@
 #include <TClonesArray.h>
 
 #include "AliHeader.h"
-#include "AliJet.h"
 #include "AliJetKineReader.h"
 #include "AliJetReader.h"
 #include "AliJetReaderHeader.h"
@@ -132,7 +131,6 @@ void AliSISConeJetFinder::FindJets()
 	    return;
 	  }
 	
-	fJets->SetNinput(nIn) ; // fJets = AliJet number of input objects
 	Float_t px,py,pz,en;
 	
 	// Load input vectors
@@ -153,11 +151,9 @@ void AliSISConeJetFinder::FindJets()
     else {
       TClonesArray* fUnit = fReader->GetUnitArray();
       if(fUnit == 0) { cout << "Could not get the momentum array" << endl; return; }
-      Int_t         nCandidate = fReader->GetNumCandidate();
       Int_t         nIn = fUnit->GetEntries();
       if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
-      fJets->SetNinput(nCandidate); // number of input objects // ME
-      // Information extracted from fUnitArray
+        // Information extracted from fUnitArray
       // load input vectors and calculate total energy in array
       Float_t pt,eta,phi,theta,px,py,pz,en;
       Int_t ipart = 0;

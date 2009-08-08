@@ -114,7 +114,6 @@ void AliUA1JetFinderV2::FindJetsC()
     etbgTotal+= ptT[i];
   }
   
-  fJets->SetNinput(nIn);
   
   // calculate total energy and fluctuation in map
   Double_t meanpt   = hPtTotal->GetMean();
@@ -220,7 +219,6 @@ void AliUA1JetFinderV2::FindJetsC()
       py = etJetOk[kj] * TMath::Sin(phiJetOk[kj]);
       pz = etJetOk[kj] / TMath::Tan(2.0 * TMath::ATan(TMath::Exp(-etaJetOk[kj])));
       en = TMath::Sqrt(px * px + py * py + pz * pz);
-      fJets->AddJet(px, py, pz, en);
       
       AliAODJet jet(px, py, pz, en);
       jet.Print("");
@@ -257,14 +255,6 @@ void AliUA1JetFinderV2::FindJetsC()
       if(bflag == 0) injet[bj] = -1; // set as background particle
     }
 
-  fJets->SetNCells(ncells);
-  fJets->SetPtFromSignal(percentage);
-  fJets->SetMultiplicities(mult);
-  fJets->SetInJet(injet);
-  fJets->SetEtaIn(etaT);
-  fJets->SetPhiIn(phiT);
-  fJets->SetPtIn(ptT);
-  fJets->SetEtAvg(etbgTotal/(4*(header->GetLegoEtaMax())*TMath::Pi()));
  
   //delete
   delete[] ptT;
@@ -516,7 +506,6 @@ void AliUA1JetFinderV2::FindJets()
       }
     } // end loop on nCandidate
 
-  fJets->SetNinput(nCandidate);
 
   // calculate total energy and fluctuation in map
   Double_t meanpt = hPtTotal->GetMean();
@@ -631,7 +620,7 @@ void AliUA1JetFinderV2::FindJets()
       py = etJetOk[kj] * TMath::Sin(phiJetOk[kj]);
       pz = etJetOk[kj] / TMath::Tan(2.0 * TMath::ATan(TMath::Exp(-etaJetOk[kj])));
       en = TMath::Sqrt(px * px + py * py + pz * pz);
-      fJets->AddJet(px, py, pz, en);
+
       AliAODJet jet(px, py, pz, en);
       jet.Print("");
       
@@ -667,16 +656,6 @@ void AliUA1JetFinderV2::FindJets()
     if(bflag == 0) injet[bj] = -1; // set as background particle
   }
 
-  fJets->SetNCells(ncells);
-  fJets->SetPtFromSignal(percentage);
-  fJets->SetMultiplicities(mult);
-  fJets->SetInJet(injet);
-  fJets->SetEtaIn(etaT);
-  fJets->SetPhiIn(phiT);
-  fJets->SetPtIn(ptT);
-  fJets->SetTrackReferences(trackRef);
-  fJets->SetDetectorFlagIn(detT);
-  fJets->SetEtAvg(etbgTotal/(2*(header->GetLegoEtaMax())*(header->GetLegoPhiMax()-header->GetLegoPhiMin())));
 
   //delete
   delete ptT;
@@ -1699,7 +1678,6 @@ void AliUA1JetFinderV2::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ,Floa
 void AliUA1JetFinderV2::Reset()
 {
   fLego->Reset();
-  fJets->ClearJets();
   AliJetFinder::Reset();
 }
 

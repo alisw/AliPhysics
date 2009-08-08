@@ -27,7 +27,6 @@
 #include "AliPxconeJetFinder.h"
 #include "AliPxconeJetHeader.h"
 #include "AliJetReader.h"
-#include "AliJet.h"
 
 ClassImp(AliPxconeJetFinder)
 

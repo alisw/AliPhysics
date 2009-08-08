@@ -37,7 +37,6 @@
 #include "AliFastJetHeaderV1.h"
 #include "AliJetReaderHeader.h"
 #include "AliJetReader.h"
-#include "AliJet.h"
 #include "AliJetUnitArray.h"
 
 #include "fastjet/PseudoJet.hh"
@@ -100,7 +99,6 @@ void AliFastJetFinder::FindJets()
       if(lvArray == 0) { cout << "Could not get the momentum array" << endl; return; }
       Int_t nIn =  lvArray->GetEntries();
       if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
-      fJets->SetNinput(nIn) ; // number of input objects
       Float_t px,py,pz,en;
       // load input vectors
       for(Int_t i = 0; i < nIn; i++){ // loop for all input particles
@@ -118,10 +116,8 @@ void AliFastJetFinder::FindJets()
   else {
     TClonesArray* fUnit = fReader->GetUnitArray();
     if(fUnit == 0) { cout << "Could not get the momentum array" << endl; return; }
-    Int_t         nCandidate = fReader->GetNumCandidate();
     Int_t         nIn = fUnit->GetEntries();
     if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
-    fJets->SetNinput(nCandidate); // number of input objects // ME
     // Information extracted from fUnitArray
     // load input vectors and calculate total energy in array
     Float_t pt,eta,phi,theta,px,py,pz,en;

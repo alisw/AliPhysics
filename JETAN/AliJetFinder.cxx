@@ -27,10 +27,7 @@
 #include <TFile.h>
 
 #include "AliJetFinder.h"
-#include "AliJet.h"
 #include "AliAODJet.h"
-#include "AliJetControlPlots.h"
-#include "AliLeading.h"
 #include "AliAODEvent.h"
 #include "AliJetUnitArray.h"
 
@@ -40,26 +37,14 @@ class TClonesArray;
 ClassImp(AliJetFinder)
 
 AliJetFinder::AliJetFinder():
-    fTreeJ(0),
-    fPlotMode(kFALSE),
-    fJets(0),
-    fGenJets(0),
-    fLeading(0),
     fReader(0x0),
     fHeader(0x0),
     fAODjets(0x0),
-    fNAODjets(0),
-    fPlots(0x0),
-    fOut(0x0)
-    
+    fNAODjets(0)
 {
   //
   // Constructor
   //
-
-  fJets    = new AliJet();
-  fGenJets = new AliJet();
-  fLeading = new AliLeading();
   fAODjets = 0;
 }
 
@@ -69,57 +54,9 @@ AliJetFinder::~AliJetFinder()
   //
   // Destructor
   //
-
-  // Reset and delete jets
-  fJets->ClearJets();
-  delete fJets;
-  fGenJets->ClearJets();
-  delete fGenJets;
-  // close file
-  if (fOut) {
-    fOut->Close();
-    fOut->Delete();
-  }
-  delete fOut;
-  // reset and delete control plots
-  if (fPlots) delete fPlots;
 }
 
-////////////////////////////////////////////////////////////////////////
-void AliJetFinder::SetOutputFile(const char */*name*/)
-{
-  //  opens output file 
-  //  fOut = new TFile(name,"recreate");
-}
 
-////////////////////////////////////////////////////////////////////////
-void AliJetFinder::PrintJets()
-{
-  // Print jet information
-  cout << " Jets found with jet algorithm:" << endl;
-  fJets->PrintJets();
-  cout << " Jets found by pythia:" << endl;
-  fGenJets->PrintJets();
-}
-
-////////////////////////////////////////////////////////////////////////
-void AliJetFinder::SetPlotMode(Bool_t b)
-{
-  // Sets the plotting mode
-  fPlotMode=b;
-  if (b && !fPlots) fPlots = new AliJetControlPlots(); 
-}
-
-////////////////////////////////////////////////////////////////////////
-TTree* AliJetFinder::MakeTreeJ(char* name)
-{
-    // Create the tree for reconstructed jets
-    fTreeJ = new TTree(name, "AliJet");
-    fTreeJ->Branch("FoundJet",   &fJets,   1000);
-    fTreeJ->Branch("GenJet",     &fGenJets,1000);
-    fTreeJ->Branch("LeadingPart",&fLeading,1000);
-    return fTreeJ;
-}
 
 ////////////////////////////////////////////////////////////////////////
 void AliJetFinder::WriteRHeaderToFile()
@@ -129,65 +66,6 @@ void AliJetFinder::WriteRHeaderToFile()
     rh->Write();
 }
 
-////////////////////////////////////////////////////////////////////////
-void AliJetFinder::Run()
-{
-  // Do some initialization
-  Init();
-  // connect files
-  fReader->OpenInputFiles();
-
-  // write headers
-  WriteHeaders();
-  // loop over events
-  Int_t nFirst, nLast, option, debug, arrayInitialised; 
-  nFirst = fReader->GetReaderHeader()->GetFirstEvent();
-  nLast  = fReader->GetReaderHeader()->GetLastEvent();
-
-  option = fReader->GetReaderHeader()->GetDetector();
-  debug  = fReader->GetReaderHeader()->GetDebug();
-  arrayInitialised = fReader->GetArrayInitialised();
-
-  // loop over events
-  for (Int_t i=nFirst;i<nLast;i++) {
-      fReader->FillMomentumArray();
-      fLeading->FindLeading(fReader);
-      fReader->GetGenJets(fGenJets);
-
-      if (option == 0) { // TPC with fMomentumArray
-	  if(debug > 1) 
-	      printf("In FindJetsC() routine: find jets with fMomentumArray !!!\n");
-	  FindJetsC();
-      } else {
-	if(debug > 1) printf("In FindJets() routine: find jets with fUnitArray !!!\n");
-	FindJets();
-      }
-      if (fOut) {
-	  fOut->cd();
-      }
-      
-      if (fPlots) fPlots->FillHistos(fJets);
-      fLeading->Reset();
-      fGenJets->ClearJets();
-      Reset();
-  } 
-
-  // write out
-  if (fPlots) {
-      fPlots->Normalize();
-      fPlots->PlotHistos();
-  }
-  if (fOut) {
-      fOut->cd();
-      fPlots->Write();
-      fOut->Close();
-  }
-}
-
-
-//
-// The following methods have been added to allow for event steering from the outside
-//
 
 ////////////////////////////////////////////////////////////////////////
 void AliJetFinder::ConnectTree(TTree* tree, TObject* data)
@@ -216,16 +94,8 @@ Bool_t AliJetFinder::ProcessEvent()
 
   Bool_t ok = fReader->FillMomentumArray();
   if (!ok) return kFALSE;
-  
-  // Leading particles
-  fLeading->FindLeading(fReader);
   // Jets
   FindJets(); // V1
-  //  FindJetsC(); // V2
-  
-  if (fPlots) fPlots->FillHistos(fJets);
-  fLeading->Reset();
-  fGenJets->ClearJets();
   Reset();  
   return kTRUE;
 }
@@ -244,13 +114,10 @@ Bool_t AliJetFinder::ProcessEvent2()
 
   // Delete reference pointer  
   if (!ok) {delete ref; return kFALSE;}
-  
-  // Leading particles
-  fLeading->FindLeading(fReader);
   // Jets
   FindJets();
   
-  Int_t         nEntRef    = ref->GetEntries();
+  Int_t nEntRef = ref->GetEntries();
 
   for(Int_t i=0; i<nEntRef; i++)
     { 
@@ -275,40 +142,18 @@ Bool_t AliJetFinder::ProcessEvent2()
   ref->Delete();
   delete ref;
 
-  if (fPlots) fPlots->FillHistos(fJets);
-  fLeading->Reset();
-  fGenJets->ClearJets();
   Reset();
 
   return kTRUE;
 }
 
-////////////////////////////////////////////////////////////////////////
-void AliJetFinder::FinishRun()
-{
-    // Finish a run
-    if (fPlots) {
-	fPlots->Normalize();
-	fPlots->PlotHistos();
-    }
-    
-    if (fOut) {
-	 fOut->cd();
-	 if (fPlots) {
-	     fPlots->Write();
-	 }
-	 fOut->Close();
-    }
-}
 
-////////////////////////////////////////////////////////////////////////
 void AliJetFinder::AddJet(AliAODJet p)
 {
 // Add new jet to the list
   new ((*fAODjets)[fNAODjets++]) AliAODJet(p);
 }
 
-////////////////////////////////////////////////////////////////////////
 void AliJetFinder::ConnectAOD(AliAODEvent* aod)
 {
 // Connect to the AOD

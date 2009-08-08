@@ -46,7 +46,6 @@ Changelog
 
 #include "AliJetReader.h"
 #include "AliJetReaderHeader.h"
-#include "AliJet.h"
 #include "AliAODJet.h"
 #include "AliAODEvent.h"
 #include "AliJetFinder.h"
@@ -384,8 +383,6 @@ void AliCdfJetFinder::InitData()
   fNPart = vectArray->GetEntries()  ; // n particles in this event;
 
   if ( fNPart == 0 ) { return ; } // if event empty then exit
-
-  fJets->SetNinput ( fNPart ) ; // number of input objects
 
   fVectParticle = new varContainer* [fNPart]; // container for Particles
 
