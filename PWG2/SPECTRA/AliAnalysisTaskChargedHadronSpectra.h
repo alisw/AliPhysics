@@ -29,9 +29,8 @@ class AliAnalysisTaskChargedHadronSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskChargedHadronSpectra();
   virtual ~AliAnalysisTaskChargedHadronSpectra() {}
   //
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   //
   void           SetESDtrackCuts(AliESDtrackCuts * trackCuts){fESDtrackCuts = trackCuts;};
@@ -50,7 +49,7 @@ class AliAnalysisTaskChargedHadronSpectra : public AliAnalysisTaskSE {
   Int_t GetPythiaEventProcessType(const AliHeader* aHeader, const Bool_t adebug = kFALSE) const;
   //
   AliESDEvent *fESD;                  //! ESD object
-  TList       *fListHist;             // list for histograms
+  TList       *fListHist;             //! list for histograms
   //
   AliESDtrackCuts * fESDtrackCuts;    // basic cut variables
   AliTPCpidESD    * fPidObject;       // basic TPC object for n-sigma cuts
@@ -59,44 +58,44 @@ class AliAnalysisTaskChargedHadronSpectra : public AliAnalysisTaskSE {
   //
   // MC histogram
   //
-  TH3F        *fHistPtMCKaon;        // (mult,eta,pT) for Kaons MC truth; neg. x-axis for neg. particles, pos. x-axis for pos. particles
-  TH3F        *fHistPtMCProton;      // (mult,eta,pT) for Protons MC truth; neg. x-axis for neg. particles, pos. x-axis for pos. particles
-  TH3F        *fHistPtMCPion;        // (mult,eta,pT) for Pions MC truth; neg. x-axis for neg. particles, pos. x-axis for pos. particles
-  TH3F        *fHistPtMCElectron;    // (mult,eta,pT) for Electrons MC truth; neg. x-axis for neg. particles, pos. x-axis for pos. particles
-  TH3F        *fHistPtMCMuon;        // (mult,eta,pT) for Muons MC truth; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistPtMCKaon;        //! (mult,eta,pT) for Kaons MC truth; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistPtMCProton;      //! (mult,eta,pT) for Protons MC truth; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistPtMCPion;        //! (mult,eta,pT) for Pions MC truth; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistPtMCElectron;    //! (mult,eta,pT) for Electrons MC truth; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistPtMCMuon;        //! (mult,eta,pT) for Muons MC truth; neg. x-axis for neg. particles, pos. x-axis for pos. particles
 
   // reconstructed particle histograms
-  TH3F        *fHistPtEtaKaon;       //  (mult,eta,pT) for Kaons; neg. x-axis for neg. particles, pos. x-axis for pos. particles
-  TH3F        *fHistPtEtaKaonNoKink; //  (mult,eta,pT) for Kaons withou accepting the Kink mother; neg. x-axis for neg. particles, pos. x-axis for pos. particles
-  TH3F        *fHistPtEtaProton;     //  (mult,eta,pT) for Protons; neg. x-axis for neg. particles, pos. x-axis for pos. particles
-  TH3F        *fHistPtEtaProtonDCA;  //  (DCA,eta,pT) for Protons; neg. x-axis for neg. particles, pos. x-axis for pos. particles; special histogram for protons
-  TH3F        *fHistPtEtaPion;       //  (mult,eta,pT) for Pions; neg. x-axis for neg. particles, pos. x-axis for pos. particles
-  TH3F        *fHistPtEtaElectron;   //  (mult,eta,pT) for Electrons; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistPtEtaKaon;       //!  (mult,eta,pT) for Kaons; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistPtEtaKaonNoKink; //!  (mult,eta,pT) for Kaons withou accepting the Kink mother; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistPtEtaProton;     //!  (mult,eta,pT) for Protons; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistPtEtaProtonDCA;  //!  (DCA,eta,pT) for Protons; neg. x-axis for neg. particles, pos. x-axis for pos. particles; special histogram for protons
+  TH3F        *fHistPtEtaPion;       //!  (mult,eta,pT) for Pions; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistPtEtaElectron;   //!  (mult,eta,pT) for Electrons; neg. x-axis for neg. particles, pos. x-axis for pos. particles
   //
-  TH3F        *fHistClassicKaon;     // (Pt,eta,delta dEdx) for Kaons for different eta; neg. x-axis for neg. particles, pos. x-axis for pos. particles
-  TH3F        *fHistClassicProton;   // (Pt,eta,delta dEdx) for Protons for different eta; neg. x-axis for neg. particles, pos. x-axis for pos. particles
-  TH3F        *fHistClassicPion;     // (Pt,eta,delta dEdx) for Pions for different eta; neg. x-axis for neg. particles, pos. x-axis for pos. particles
-  TH3F        *fHistClassicElectron; // (Pt,eta,delta dEdx) for Electrons for different eta; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistClassicKaon;     //! (Pt,eta,delta dEdx) for Kaons for different eta; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistClassicProton;   //! (Pt,eta,delta dEdx) for Protons for different eta; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistClassicPion;     //! (Pt,eta,delta dEdx) for Pions for different eta; neg. x-axis for neg. particles, pos. x-axis for pos. particles
+  TH3F        *fHistClassicElectron; //! (Pt,eta,delta dEdx) for Electrons for different eta; neg. x-axis for neg. particles, pos. x-axis for pos. particles
    
   // histograms of general interest
-  TH2F        *fDeDx;                 // dEdx spectrum
-  TH1F        *fHistTrackPerEvent;    // tracks per event for multiplicity studies
-  TH2F        *fHistTrackPerEventMC;  // (code, TrackPerEvent) MC tracks per event, codes represent different event types (non-diffractive,..)
-  TH2F        *fSecProtons;           // control histogram for secondary interactions
-  TH1F        *fVertexZ;              // control histogram for the z-position of the vertex
+  TH2F        *fDeDx;                 //! dEdx spectrum
+  TH1F        *fHistTrackPerEvent;    //! tracks per event for multiplicity studies
+  TH2F        *fHistTrackPerEventMC;  //! (code, TrackPerEvent) MC tracks per event, codes represent different event types (non-diffractive,..)
+  TH2F        *fSecProtons;           //! control histogram for secondary interactions
+  TH1F        *fVertexZ;              //! control histogram for the z-position of the vertex
   //
-  TH2F        *fHistEtaNcls;          // 2d histogram (eta, nTPCclusters) which will define our acceptance
-  TH2F        *fHistEtaPhi;           // 2d histogram (eta, phi) which will show dead regions
+  TH2F        *fHistEtaNcls;          //! 2d histogram (eta, nTPCclusters) which will define our acceptance
+  TH2F        *fHistEtaPhi;           //! 2d histogram (eta, phi) which will show dead regions
 
   // histograms for efficiency studies
-  TH3F        *fHistEffProton;        // (code,eta,pT) special hist. for eff. studies; code 0: true primary p, 1: true sec. p, 2: misidentified, 3: weak decay sec.
-  TH3F        *fHistEffProtonDCA;     // (code,dca,pT) special hist. for eff. studies; code 0: true primary p, 1: true sec. p, 2: misidentified, 3: weak decay sec.
-  TH3F        *fHistEffPion;          // (code,eta,pT) special hist. for eff. studies; code 0: true primary pi, 1: true sec. pi, 2: misidentified, 3: weak decay sec., 4: muons
-  TH3F        *fHistEffKaon;          // (code,eta,pT) special hist. for eff. studies; code 0: true primary K, 1: true sec. K, 2: misidentified, 3: weak decay sec.
+  TH3F        *fHistEffProton;       //! (code,eta,pT) special hist. for eff. studies; code 0: true primary p, 1: true sec. p, 2: misidentified, 3: weak decay sec.
+  TH3F        *fHistEffProtonDCA;    //! (code,dca,pT) special hist. for eff. studies; code 0: true primary p, 1: true sec. p, 2: misidentified, 3: weak decay sec.
+  TH3F        *fHistEffPion;         //! (code,eta,pT) special hist. for eff. studies; code 0: true primary pi, 1: true sec. pi, 2: misidentified, 3: weak decay sec., 4: muons
+  TH3F        *fHistEffKaon;         //! (code,eta,pT) special hist. for eff. studies; code 0: true primary K, 1: true sec. K, 2: misidentified, 3: weak decay sec.
 
   // two more histograms for the electron background in the dN/dpT paper
-  TH1F        *fHighPtElectrons;      // histogram for the electrons at high pT for background estimation in Jacek's paper
-  TH1F        *fHighPtHadrons;        // histogram for the hardrons at high pT for background estimation in Jacek's paper
+  TH1F        *fHighPtElectrons;      //! histogram for the electrons at high pT for background estimation in Jacek's paper
+  TH1F        *fHighPtHadrons;        //! histogram for the hardrons at high pT for background estimation in Jacek's paper
   
 
   AliAnalysisTaskChargedHadronSpectra(const AliAnalysisTaskChargedHadronSpectra&); 

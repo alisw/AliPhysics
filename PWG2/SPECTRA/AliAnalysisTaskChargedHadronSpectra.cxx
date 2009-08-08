@@ -151,46 +151,23 @@ AliAnalysisTaskChargedHadronSpectra::AliAnalysisTaskChargedHadronSpectra(const c
   Printf("*** CONSTRUCTOR CALLED ****");
   // Define input and output slots here
   // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
+  //DefineInput(0, TChain::Class()); <-> not needed in AliAnalysisTaskSE
   
   // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());
+  DefineOutput(1, TList::Class());
 
  
 
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskChargedHadronSpectra::ConnectInputData(Option_t *) 
-{
-  // Connect ESD or AOD here
-  // Called once for each file
-
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-  } else {
-
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-    if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
-    } else {
-      //esdH->SetActiveBranches("ESDfriend"); 
-      fESD = esdH->GetEvent();
-      Printf("*** CONNECTED INPUT ****");
-    }
-    
-  }
-}
 
 //________________________________________________________________________
-void AliAnalysisTaskChargedHadronSpectra::CreateOutputObjects() 
+void AliAnalysisTaskChargedHadronSpectra::UserCreateOutputObjects() 
 {
   // Create histograms
   // Called once
   fListHist = new TList();
-  fListHist->SetOwner();
+  //fListHist->SetOwner(); // Whoever knows how the data handling is ...?
 
   const Int_t kPtBins = 2*56;
   const Double_t kPtMax  = 16.0;
@@ -314,7 +291,7 @@ void AliAnalysisTaskChargedHadronSpectra::CreateOutputObjects()
   fESDtrackCuts->SetMaxCovDiagonalElements(2, 2, 0.5, 0.5, 2);  // BEWARE STANDARD VALUES ARE: 2, 2, 0.5, 0.5, 2
   fESDtrackCuts->SetMaxNsigmaToVertex(3);
   fESDtrackCuts->SetRequireSigmaToVertex(kTRUE);
-  fESDtrackCuts->SetRequireTPCRefit(kTRUE);
+  fESDtrackCuts->SetRequireTPCRefit(kFALSE);
   fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
   fESDtrackCuts->SetMinNClustersTPC(100);
   fESDtrackCuts->SetMaxChi2PerClusterTPC(3.5);
@@ -327,7 +304,7 @@ void AliAnalysisTaskChargedHadronSpectra::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskChargedHadronSpectra::Exec(Option_t *) 
+void AliAnalysisTaskChargedHadronSpectra::UserExec(Option_t *) 
 {
   // main event loop
   
@@ -347,6 +324,7 @@ void AliAnalysisTaskChargedHadronSpectra::Exec(Option_t *)
     if (fMCtrue) return;
   }
   
+  fESD = dynamic_cast<AliESDEvent*>( InputEvent() );
   if (!fESD) {
     //Printf("ERROR: fESD not available");
     return;
@@ -363,13 +341,13 @@ void AliAnalysisTaskChargedHadronSpectra::Exec(Option_t *)
  const AliESDVertex *vertex = fESD->GetPrimaryVertexTPC();
  if (!vertex) {
    fHistTrackPerEvent->Fill(trackCounter);
-   PostData(0, fListHist);
+   PostData(1, fListHist);
    return;
  } else {
    if (vertex->GetZv() != 0) fVertexZ->Fill(vertex->GetZv());
    if (TMath::Abs(vertex->GetZv()) > 10) {
      fHistTrackPerEvent->Fill(trackCounter);
-     PostData(0, fListHist);
+     PostData(1, fListHist);
      return;
    }   
  }
@@ -466,6 +444,7 @@ void AliAnalysisTaskChargedHadronSpectra::Exec(Option_t *)
  foKaon.SetParameters(fAlephParameters);
  foMuon.SetParameters(fAlephParameters);  
  
+ const Float_t k2sigmaCorr = 1/0.9545;
 
  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
  
@@ -532,72 +511,72 @@ void AliAnalysisTaskChargedHadronSpectra::Exec(Option_t *)
    /* 2sigma PID with 2sigma eff correction! */
    // PION
    if (TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kPion)) < 2) {
-     fHistPtEtaPion->Fill(trackCounter, eta, sign*pT, 1/0.9545);
+     fHistPtEtaPion->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
      //
      if (trackCounter < 300 && fMCtrue) {
        TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
        Int_t pdg = TMath::Abs(trackMC->GetPdgCode());
-       if (pdg == 211 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) fHistEffPion->Fill(0,eta,sign*pT,1/0.9545);
+       if (pdg == 211 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) fHistEffPion->Fill(0,eta,sign*pT,k2sigmaCorr);
        if (pdg == 211 && !stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) {
-	 fHistEffPion->Fill(1,eta,sign*pT,1/0.9545);
+	 fHistEffPion->Fill(1,eta,sign*pT,k2sigmaCorr);
 	 TParticle *trackMother = stack->Particle(trackMC->GetFirstMother());
 	 Int_t code = TMath::Abs(trackMother->GetPdgCode());
-	 if (code==3122||code==3222||code==3212||code==3112||code==3322||code==3312||code==3332||code==130||code==310) fHistEffPion->Fill(3,eta,sign*pT,1/0.9545);
+	 if (code==3122||code==3222||code==3212||code==3112||code==3322||code==3312||code==3332||code==130||code==310) fHistEffPion->Fill(3,eta,sign*pT,k2sigmaCorr);
        }
-       if (TMath::Abs(trackMC->GetPdgCode()) != 211) fHistEffPion->Fill(2,eta,sign*pT,1/0.9545);
-       if (TMath::Abs(trackMC->GetPdgCode()) == 13)  fHistEffPion->Fill(4,eta,sign*pT,1/0.9545);
+       if (TMath::Abs(trackMC->GetPdgCode()) != 211) fHistEffPion->Fill(2,eta,sign*pT,k2sigmaCorr);
+       if (TMath::Abs(trackMC->GetPdgCode()) == 13)  fHistEffPion->Fill(4,eta,sign*pT,k2sigmaCorr);
        }
    }
    // KAON
    if (TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kKaon)) < 2) {
-     fHistPtEtaKaon->Fill(trackCounter, eta, sign*pT, 1/0.9545);
+     fHistPtEtaKaon->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
      //
      if (trackCounter < 300 && fMCtrue) {
        TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
        Int_t pdg = TMath::Abs(trackMC->GetPdgCode());
-       if (pdg == 321 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) fHistEffKaon->Fill(0,eta,sign*pT,1/0.9545);
+       if (pdg == 321 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) fHistEffKaon->Fill(0,eta,sign*pT,k2sigmaCorr);
        if (pdg == 321 && !stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) {
-	 fHistEffKaon->Fill(1,eta,sign*pT,1/0.9545);
+	 fHistEffKaon->Fill(1,eta,sign*pT,k2sigmaCorr);
 	 TParticle *trackMother = stack->Particle(trackMC->GetFirstMother());
 	 Int_t code = TMath::Abs(trackMother->GetPdgCode());
-	 if (code==3122||code==3222||code==3212||code==3112||code==3322||code==3312||code==3332||code==130||code==310) fHistEffKaon->Fill(3,eta,sign*pT,1/0.9545);
+	 if (code==3122||code==3222||code==3212||code==3112||code==3322||code==3312||code==3332||code==130||code==310) fHistEffKaon->Fill(3,eta,sign*pT,k2sigmaCorr);
        }
-	 if (TMath::Abs(trackMC->GetPdgCode()) != 321) fHistEffKaon->Fill(2,eta,sign*pT,1/0.9545);
+	 if (TMath::Abs(trackMC->GetPdgCode()) != 321) fHistEffKaon->Fill(2,eta,sign*pT,k2sigmaCorr);
      }
    }
    // KAON NO KINK
-   if (TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kKaon)) < 2 && track->GetKinkIndex(0)==0) fHistPtEtaKaonNoKink->Fill(trackCounter, eta, sign*pT, 1/0.9545);
+   if (TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kKaon)) < 2 && track->GetKinkIndex(0)==0) fHistPtEtaKaonNoKink->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
    // PROTON
    if (TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kProton)) < 2) {
-     fHistPtEtaProton->Fill(trackCounter, eta, sign*pT, 1/0.9545);
+     fHistPtEtaProton->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
      //
      track->GetImpactParameters(dca,cov);
      Float_t primVtxDCA = TMath::Sqrt(dca[0]*dca[0] + dca[1]*dca[1]);
-     fHistPtEtaProtonDCA->Fill(primVtxDCA, eta, sign*pT, 1/0.9545);
+     fHistPtEtaProtonDCA->Fill(primVtxDCA, eta, sign*pT, k2sigmaCorr);
      //
      if (trackCounter < 300 && fMCtrue) {
        TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
        Int_t pdg = TMath::Abs(trackMC->GetPdgCode());
        if (pdg == 2212 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) {
-	 fHistEffProton->Fill(0.,eta,sign*pT,1/0.9545);
-	 if (eta < 0.15) fHistEffProtonDCA->Fill(0.,primVtxDCA,sign*pT,1/0.9545);
+	 fHistEffProton->Fill(0.,eta,sign*pT,k2sigmaCorr);
+	 if (eta < 0.15) fHistEffProtonDCA->Fill(0.,primVtxDCA,sign*pT,k2sigmaCorr);
        }
        if (pdg == 2212 && !stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) {
-	 fHistEffProton->Fill(1,eta,sign*pT,1/0.9545);
-	 if (eta < 0.15) fHistEffProtonDCA->Fill(1,primVtxDCA,sign*pT,1/0.9545);
+	 fHistEffProton->Fill(1,eta,sign*pT,k2sigmaCorr);
+	 if (eta < 0.15) fHistEffProtonDCA->Fill(1,primVtxDCA,sign*pT,k2sigmaCorr);
 	 TParticle *trackMother = stack->Particle(trackMC->GetFirstMother());
 	 Int_t code = TMath::Abs(trackMother->GetPdgCode());
 	 if (code==3122||code==3222||code==3212||code==3112||code==3322||code==3312||code==3332||code==130||code==310) {
-	   fHistEffProton->Fill(3,eta,sign*pT,1/0.9545);
-	   if (eta < 0.15) fHistEffProtonDCA->Fill(3,primVtxDCA,sign*pT,1/0.9545);
+	   fHistEffProton->Fill(3,eta,sign*pT,k2sigmaCorr);
+	   if (eta < 0.15) fHistEffProtonDCA->Fill(3,primVtxDCA,sign*pT,k2sigmaCorr);
 	 }
 	 if (code!=3122&&code!=3222&&code!=3212&&code!=3112&&code!=3322&&code!=3312&&code!=3332&&code!=130&&code!=310) fSecProtons->Fill(trackMC->Vx(),trackMC->Vy());
        }
-       if (TMath::Abs(trackMC->GetPdgCode()) != 2212) fHistEffProton->Fill(2,eta,sign*pT,1/0.9545);
+       if (TMath::Abs(trackMC->GetPdgCode()) != 2212) fHistEffProton->Fill(2,eta,sign*pT,k2sigmaCorr);
      }
    }
    // ELECTRON
-   if (TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kElectron))) fHistPtEtaElectron->Fill(trackCounter, eta, sign*pT, 1/0.9545);
+   if (TMath::Abs(fPidObject->GetNumberOfSigmas(track,AliPID::kElectron))) fHistPtEtaElectron->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
    
    delete track;
    
@@ -608,7 +587,7 @@ void AliAnalysisTaskChargedHadronSpectra::Exec(Option_t *)
  // Post output data
  
  
- PostData(0, fListHist);
+ PostData(1, fListHist);
 
 }      
 
