@@ -10,7 +10,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   Bool_t debug         = kTRUE;
   Bool_t useMC         = kTRUE;
   Bool_t readTR        = kFALSE;
-  Bool_t bPROOF        = kFALSE;
+  Bool_t bPROOF        = kTRUE;
   Bool_t bLOCALPAR     = kFALSE;  // flag that swtiches on loading of local par files insead of loading libs, needed for grid and local testing
 
     
@@ -24,6 +24,8 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   Int_t iDIJETAN       = 1;
   Int_t iPWG4SPECTRUM  = 1;
   Int_t iPWG4JFSYSTEMATICS  = 1;
+  Int_t iPWG4JETCORRECTION  = 1;
+  Int_t iPWG4THREEJETS  = 1;
   Int_t iPWG4UE        = 0;
   Int_t iPWG4PID        = 0;
 
@@ -40,8 +42,8 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   TString dataset(ds);
   TChain *chain = 0;
   // CKB quick hack for local analysis
-  gROOT->LoadMacro("CreateESDChain.C");
-  TChain *chain = CreateESDChain("tmp.txt",1000);
+  // gROOT->LoadMacro("CreateESDChain.C");
+  // TChain *chain = CreateESDChain("tmp.txt",1000);
 
  
   printf("==================================================================\n");
@@ -57,6 +59,9 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   if (iDIJETAN)     printf("=  DiJet analysis                                                 =\n");
   if (iPWG4SPECTRUM)printf("=  PWG4 Jet spectrum analysis                                    =\n");
   if (iPWG4JFSYSTEMATICS)printf("=  PWG4 Jet Finder systematics                                   =\n");
+  if (iPWG4JETCORRECTION)printf("=  PWG4 Jet Correction                                   =\n");
+  if (iPWG4THREEJETS)printf("=  PWG4 Three Jets                                   =\n");
+
   if (iPWG4UE)      printf("=  PWG4 UE                                                        =\n");
   printf("==================================================================\n");
   if (useMC) printf(":: use MC    TRUE\n");
@@ -77,8 +82,8 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   // TProof::Reset("alicecaf"); 
   // One may enable a different ROOT version on CAF
   
-  const char* proofNode = "localhost";
-  //  const char* proofNode = "alicecaf";
+  //  const char* proofNode = "localhost";
+  const char* proofNode = "alicecaf";
   
   // Connect to proof
   if(bPROOF){
@@ -116,7 +121,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
       gProof->EnablePackage("JETAN");
     }   
     // --- Enable particle correlation analysis
-    if (iPWG4UE||iPWG4SPECTRUM||iPWGJFSYSTEMATICS) {
+    if (iPWG4UE||iPWG4SPECTRUM||iPWG4JFSYSTEMATICS||iPWG4JETCORRECTION||iPWG4THREEJETS) {
       gProof->UploadPackage("PWG4JetTasks.par");
       gProof->EnablePackage("PWG4JetTasks");
     }   
@@ -154,7 +159,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
       // --- Enable the JETAN Package
       if (iJETAN||iJETANESD||iJETANMC||iJETANMC2) gSystem->Load("libJETAN");
       // --- Enable particle correlation analysis
-      if (iPWG4UE||iPWG4SPECTRUM||iPWG4JFSYSTEMATICS)gSystem->Load("libPWG4JetTasks"); 
+      if (iPWG4UE||iPWG4SPECTRUM||iPWG4JFSYSTEMATICS||iPWG4THREEJETS)gSystem->Load("libPWG4JetTasks"); 
     }
 
   }
@@ -244,6 +249,16 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
       gROOT->LoadMacro("AddTaskJFSystematics.C");
       AliAnalysisTaskJFSystematics* pwg4jfs = AddTaskJFSystematics();
       pwg4jfs->SetDebugLevel(11);
+    }   
+    if (iPWG4JETCORRECTION) {
+      gROOT->LoadMacro("AddTaskJetCorrections.C");
+      AliAnalysisTaskJetCorrections* pwg4jc = AddTaskJetCorrections();
+      pwg4jc->SetDebugLevel(11);
+    }   
+    if (iPWG4THREEJETS) {
+      gROOT->LoadMacro("AddTaskThreeJets.C");
+      AliAnalysisTaskThreeJets* pwg4jjj = AddTaskThreeJets();
+      pwg4jjj->SetDebugLevel(11);
     }   
     if (iPWG4UE) {
       gROOT->LoadMacro("AddTaskUE.C");
