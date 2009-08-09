@@ -196,11 +196,11 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
       for(Int_t i =0; i<nVtxbins; i++) {
 	
 	TH2F* hMultTotal = (TH2F*)fOutputList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i));
-	TH2F* hMultTrVtx = (TH2F*)hMultTotal->Clone(Form("dNdeta_FMD_TrVtx_%d%c_vtxbin%d",det,ringChar,i));
+	TH2F* hMultTrVtx = (TH2F*)hMultTotal->Clone(Form("dNdeta_FMD%d%c_TrVtx_vtxbin%d",det,ringChar,i));
 	
 	hMultTotal->Scale(pars->GetEventSelectionEfficiency(i));
 	TH1D* hMultProj   = hMultTotal->ProjectionX(Form("dNdeta_FMD%d%c_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
-	TH1D* hMultProjTrVtx   = hMultTrVtx->ProjectionX(Form("dNdeta_FMD_TrVtx_%d%c_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
+	TH1D* hMultProjTrVtx   = hMultTrVtx->ProjectionX(Form("dNdeta_FMD%d%c_TrVtx_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
 	fOutputList->Add(hMultTrVtx);
 	fOutputList->Add(hMultProj);
 	fOutputList->Add(hMultProjTrVtx);
@@ -260,7 +260,7 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
       }
     
     }
-    if(pars->GetProcessPrimary()) {
+    if(pars->GetProcessHits()) {
       for(Int_t j=0; j<particle->GetNumberOfTrackReferences();j++) {
       
       AliTrackReference* ref = particle->GetTrackReference(j);
