@@ -36,13 +36,13 @@ class AliAnaESDSpectraQA: public AliAnalysisTask {
 
   enum {kNegA,kPosA,kNegC,kPosC};
   struct hists {
-    TH3F *PhiPtNPointTPC;
-    TH3F *PhiPtNPointITS;
-    TH3F *PhiPtChisqC;
-    TH3F *PhiPtChisqTPC;
-    TH3F *PhiPtDCAR;
-    TH3F *PhiPtDCAZ;
-    TH3F *PhiPtSigmaToVertex;
+    TH3F *fPhiPtNPointTPC;
+    TH3F *fPhiPtNPointITS;
+    TH3F *fPhiPtChisqC;
+    TH3F *fPhiPtChisqTPC;
+    TH3F *fPhiPtDCAR;
+    TH3F *fPhiPtDCAZ;
+    TH3F *fPhiPtSigmaToVertex;
   };
 
   hists fHists[4];  //! Internal pointers to hists, do not stream
